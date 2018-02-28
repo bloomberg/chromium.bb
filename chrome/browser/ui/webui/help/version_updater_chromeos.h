@@ -33,7 +33,7 @@ class VersionUpdaterCros : public VersionUpdater,
   // Gets the last update status, without triggering a new check or download.
   void GetUpdateStatus(const StatusCallback& callback);
 
-  void GetEolStatus(const EolStatusCallback& callback) override;
+  void GetEolStatus(EolStatusCallback callback) override;
 
  protected:
   friend class VersionUpdater;
@@ -58,7 +58,7 @@ class VersionUpdaterCros : public VersionUpdater,
                     const std::string& current_channel);
 
   // Callback from UpdateEngineClient::GetEolStatus().
-  void OnGetEolStatus(const EolStatusCallback& cb,
+  void OnGetEolStatus(EolStatusCallback cb,
                       update_engine::EndOfLifeStatus status);
 
   // BrowserContext in which the class was instantiated.

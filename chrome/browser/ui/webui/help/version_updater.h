@@ -48,7 +48,7 @@ class VersionUpdater {
   // types.
 #if defined(OS_CHROMEOS)
   typedef base::Callback<void(const std::string&)> ChannelCallback;
-  typedef base::Callback<void(update_engine::EndOfLifeStatus status)>
+  typedef base::OnceCallback<void(update_engine::EndOfLifeStatus status)>
       EolStatusCallback;
 #endif
 
@@ -91,7 +91,7 @@ class VersionUpdater {
                           bool is_powerwash_allowed) = 0;
   virtual void GetChannel(bool get_current_channel,
                           const ChannelCallback& callback) = 0;
-  virtual void GetEolStatus(const EolStatusCallback& callback) = 0;
+  virtual void GetEolStatus(EolStatusCallback callback) = 0;
 
   // Sets a one time permission on a certain update in Update Engine.
   // - update_version: the Chrome OS version we want to update to.

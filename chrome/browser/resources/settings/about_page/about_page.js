@@ -34,6 +34,9 @@ Polymer({
 
     /** @private {?RegulatoryInfo} */
     regulatoryInfo_: Object,
+
+    /** @private */
+    hasEndOfLife_: Boolean,
     // </if>
 
     // <if expr="_google_chrome and is_macosx">
@@ -41,6 +44,7 @@ Polymer({
     promoteUpdaterStatus_: Object,
     // </if>
 
+    // <if expr="not chromeos">
     /** @private {!{obsolete: boolean, endOfLine: boolean}} */
     obsoleteSystemInfo_: {
       type: Object,
@@ -51,6 +55,7 @@ Polymer({
         };
       },
     },
+    // </if>
 
     /** @private */
     showUpdateStatus_: Boolean,
@@ -73,7 +78,7 @@ Polymer({
     showCheckUpdates_: {
       type: Boolean,
       computed: 'computeShowCheckUpdates_(' +
-          'currentUpdateStatusEvent_, hasCheckedForUpdates_)',
+          'currentUpdateStatusEvent_, hasCheckedForUpdates_, hasEndOfLife_)',
     },
 
     /** @private {!Map<string, string>} */
@@ -117,7 +122,7 @@ Polymer({
 
     // <if expr="chromeos">
     'updateShowUpdateStatus_(' +
-        'obsoleteSystemInfo_, currentUpdateStatusEvent_,' +
+        'hasEndOfLife_, currentUpdateStatusEvent_,' +
         'hasCheckedForUpdates_)',
     'updateShowRelaunch_(currentUpdateStatusEvent_, targetChannel_,' +
         'currentChannel_)',
@@ -154,6 +159,10 @@ Polymer({
 
     this.aboutBrowserProxy_.getRegulatoryInfo().then(info => {
       this.regulatoryInfo_ = info;
+    });
+
+    this.aboutBrowserProxy_.getHasEndOfLife().then(result => {
+      this.hasEndOfLife_ = result;
     });
     // </if>
     // <if expr="not chromeos">
@@ -250,10 +259,22 @@ Polymer({
       this.showUpdateStatus_ = false;
       return;
     }
+
+    // Do not show "updated" status if the device is end of life.
+    if (this.hasEndOfLife_) {
+      this.showUpdateStatus_ = false;
+      return;
+    }
+    // </if>
+
+    // <if expr="not chromeos">
+    if (this.obsoleteSystemInfo_.endOfLine) {
+      this.showUpdateStatus_ = false;
+      return;
+    }
     // </if>
     this.showUpdateStatus_ =
-        this.currentUpdateStatusEvent_.status != UpdateStatus.DISABLED &&
-        !this.obsoleteSystemInfo_.endOfLine;
+        this.currentUpdateStatusEvent_.status != UpdateStatus.DISABLED;
   },
 
   /**
@@ -353,11 +374,21 @@ Polymer({
    * @return {?string}
    * @private
    */
-  getIcon_: function() {
+  getUpdateStatusIcon_: function() {
+    // <if expr="chromeos">
+    // If Chrome OS has reached end of life, display a special icon and
+    // ignore UpdateStatus.
+    if (this.hasEndOfLife_) {
+      return 'settings:end-of-life';
+    }
+    // </if>
+
+    // <if expr="not chromeos">
     // If this platform has reached the end of the line, display an error icon
     // and ignore UpdateStatus.
     if (this.obsoleteSystemInfo_.endOfLine)
       return 'settings:error';
+    // </if>
 
     switch (this.currentUpdateStatusEvent_.status) {
       case UpdateStatus.DISABLED_BY_ADMIN:
@@ -376,9 +407,17 @@ Polymer({
    * @return {?string}
    * @private
    */
-  getIconSrc_: function() {
+  getThrobberSrcIfUpdating_: function() {
+    // <if expr="chromeos">
+    if (this.hasEndOfLife_) {
+      return null;
+    }
+    // </if>
+
+    // <if expr="not chromeos">
     if (this.obsoleteSystemInfo_.endOfLine)
       return null;
+    // </if>
 
     switch (this.currentUpdateStatusEvent_.status) {
       case UpdateStatus.CHECKING:
@@ -440,6 +479,11 @@ Polymer({
    * @private
    */
   computeShowCheckUpdates_: function() {
+    // Disable update button if the device is end of life.
+    if (this.hasEndOfLife_) {
+      return false;
+    }
+
     // Enable the update button if we are in a stale 'updated' status or
     // update has failed. Disable it otherwise.
     const staleUpdatedStatus =
@@ -501,4 +545,20 @@ Polymer({
     this.aboutBrowserProxy_.openFeedbackDialog();
   },
   // </if>
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  shouldShowIcons_: function() {
+    // <if expr="chromeos">
+    if (this.hasEndOfLife_)
+      return true;
+    // </if>
+    // <if expr="not chromeos">
+    if (this.obsoleteSystemInfo_.endOfLine)
+      return true;
+    // </if>
+    return this.showUpdateStatus_;
+  },
 });

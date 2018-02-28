@@ -206,7 +206,7 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
                        weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
-  void GetEolStatus(const GetEolStatusCallback& callback) override {
+  void GetEolStatus(GetEolStatusCallback callback) override {
     dbus::MethodCall method_call(update_engine::kUpdateEngineInterface,
                                  update_engine::kGetEolStatus);
 
@@ -214,7 +214,7 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
     update_engine_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&UpdateEngineClientImpl::OnGetEolStatus,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   void SetUpdateOverCellularPermission(bool allowed,
@@ -414,18 +414,17 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
   }
 
   // Called when a response for GetEolStatus() is received.
-  void OnGetEolStatus(const GetEolStatusCallback& callback,
-                      dbus::Response* response) {
+  void OnGetEolStatus(GetEolStatusCallback callback, dbus::Response* response) {
     if (!response) {
       LOG(ERROR) << "Failed to request getting eol status";
-      callback.Run(update_engine::EndOfLifeStatus::kSupported);
+      std::move(callback).Run(update_engine::EndOfLifeStatus::kSupported);
       return;
     }
     dbus::MessageReader reader(response);
     int status;
     if (!reader.PopInt32(&status)) {
       LOG(ERROR) << "Incorrect response: " << response->ToString();
-      callback.Run(update_engine::EndOfLifeStatus::kSupported);
+      std::move(callback).Run(update_engine::EndOfLifeStatus::kSupported);
       return;
     }
 
@@ -433,12 +432,13 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
     if (status > update_engine::EndOfLifeStatus::kEol ||
         status < update_engine::EndOfLifeStatus::kSupported) {
       LOG(ERROR) << "Incorrect status value: " << status;
-      callback.Run(update_engine::EndOfLifeStatus::kSupported);
+      std::move(callback).Run(update_engine::EndOfLifeStatus::kSupported);
       return;
     }
 
     VLOG(1) << "Eol status received: " << status;
-    callback.Run(static_cast<update_engine::EndOfLifeStatus>(status));
+    std::move(callback).Run(
+        static_cast<update_engine::EndOfLifeStatus>(status));
   }
 
   // Called when a response for SetUpdateOverCellularPermission() is received.
@@ -599,8 +599,8 @@ class UpdateEngineClientStubImpl : public UpdateEngineClient {
       callback.Run(target_channel_);
   }
 
-  void GetEolStatus(const GetEolStatusCallback& callback) override {
-    callback.Run(update_engine::EndOfLifeStatus::kSupported);
+  void GetEolStatus(GetEolStatusCallback callback) override {
+    std::move(callback).Run(update_engine::EndOfLifeStatus::kSupported);
   }
 
   void SetUpdateOverCellularPermission(bool allowed,

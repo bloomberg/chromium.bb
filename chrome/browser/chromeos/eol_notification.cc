@@ -104,8 +104,8 @@ void EolNotification::CheckEolStatus() {
       DBusThreadManager::Get()->GetUpdateEngineClient();
 
   // Request the Eol Status.
-  update_engine_client->GetEolStatus(
-      base::Bind(&EolNotification::OnEolStatus, weak_factory_.GetWeakPtr()));
+  update_engine_client->GetEolStatus(base::BindOnce(
+      &EolNotification::OnEolStatus, weak_factory_.GetWeakPtr()));
 }
 
 void EolNotification::OnEolStatus(update_engine::EndOfLifeStatus status) {

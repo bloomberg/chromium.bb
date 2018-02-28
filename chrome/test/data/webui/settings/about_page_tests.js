@@ -15,11 +15,8 @@ cr.define('settings_about_page', function() {
 
       if (cr.isChromeOS) {
         methodNames.push(
-          'getChannelInfo',
-          'getVersionInfo',
-          'getRegulatoryInfo',
-          'refreshTPMFirmwareUpdateStatus',
-          'setChannel');
+            'getChannelInfo', 'getVersionInfo', 'getRegulatoryInfo',
+            'getHasEndOfLife', 'refreshTPMFirmwareUpdateStatus', 'setChannel');
       }
 
       if (cr.isMac)
@@ -52,6 +49,9 @@ cr.define('settings_about_page', function() {
         this.tpmFirmwareUpdateStatus_ = {
           updateAvailable: false,
         };
+
+        /** @private {boolean} */
+        this.hasEndOfLife_ = false;
       }
     }
 
@@ -129,6 +129,12 @@ cr.define('settings_about_page', function() {
       this.regulatoryInfo_ = regulatoryInfo;
     };
 
+    /** @param {boolean} hasEndOfLife */
+    TestAboutPageBrowserProxy.prototype.setHasEndOfLife = function(
+        hasEndOfLife) {
+      this.hasEndOfLife_ = hasEndOfLife;
+    };
+
     /** @override */
     TestAboutPageBrowserProxy.prototype.getChannelInfo = function() {
       this.methodCalled('getChannelInfo');
@@ -145,6 +151,12 @@ cr.define('settings_about_page', function() {
     TestAboutPageBrowserProxy.prototype.getRegulatoryInfo = function() {
       this.methodCalled('getRegulatoryInfo');
       return Promise.resolve(this.regulatoryInfo_);
+    };
+
+    /** @override */
+    TestAboutPageBrowserProxy.prototype.getHasEndOfLife = function() {
+      this.methodCalled('getHasEndOfLife');
+      return Promise.resolve(this.hasEndOfLife_);
     };
 
     /** @override */
@@ -302,85 +314,83 @@ cr.define('settings_about_page', function() {
         assertTrue(!!page.$$('#updateStatusMessage a[hidden]'));
       });
 
-      /**
-       * Test that when the current platform has been marked as deprecated (but
-       * not end of the line) a deprecation warning message is displayed,
-       * without interfering with the update status message and icon.
-       */
-      test('ObsoleteSystem', function() {
-        loadTimeData.overrideValues({
-          aboutObsoleteNowOrSoon: true,
-          aboutObsoleteEndOfTheLine: false,
+      if (!cr.isChromeOS) {
+        /**
+         * Test that when the current platform has been marked as deprecated
+         * (but not end of the line) a deprecation warning message is displayed,
+         * without interfering with the update status message and icon.
+         */
+        test('ObsoleteSystem', function() {
+          loadTimeData.overrideValues({
+            aboutObsoleteNowOrSoon: true,
+            aboutObsoleteEndOfTheLine: false,
+          });
+
+          return initNewPage().then(function() {
+            const icon = page.$$('iron-icon');
+            assertTrue(!!icon);
+            assertTrue(!!page.$.updateStatusMessage);
+            assertTrue(!!page.$.deprecationWarning);
+            assertFalse(page.$.deprecationWarning.hidden);
+
+            fireStatusChanged(UpdateStatus.CHECKING);
+            assertEquals(SPINNER_ICON, icon.src);
+            assertEquals(null, icon.getAttribute('icon'));
+            assertFalse(page.$.deprecationWarning.hidden);
+            assertFalse(page.$.updateStatusMessage.hidden);
+
+            fireStatusChanged(UpdateStatus.UPDATING);
+            assertEquals(SPINNER_ICON, icon.src);
+            assertEquals(null, icon.getAttribute('icon'));
+            assertFalse(page.$.deprecationWarning.hidden);
+            assertFalse(page.$.updateStatusMessage.hidden);
+
+            fireStatusChanged(UpdateStatus.NEARLY_UPDATED);
+            assertEquals(null, icon.src);
+            assertEquals('settings:check-circle', icon.icon);
+            assertFalse(page.$.deprecationWarning.hidden);
+            assertFalse(page.$.updateStatusMessage.hidden);
+          });
         });
 
-        return initNewPage().then(function() {
-          const icon = page.$$('iron-icon');
-          assertTrue(!!icon);
-          assertTrue(!!page.$.updateStatusMessage);
-          assertTrue(!!page.$.deprecationWarning);
+        /**
+         * Test that when the current platform has reached the end of the line,
+         * a deprecation warning message and an error icon is displayed.
+         */
+        test('ObsoleteSystemEndOfLine', function() {
+          loadTimeData.overrideValues({
+            aboutObsoleteNowOrSoon: true,
+            aboutObsoleteEndOfTheLine: true,
+          });
+          return initNewPage().then(function() {
+            const icon = page.$$('iron-icon');
+            assertTrue(!!icon);
+            assertTrue(!!page.$.deprecationWarning);
+            assertTrue(!!page.$.updateStatusMessage);
 
-          assertFalse(page.$.deprecationWarning.hidden);
-          // Update status message should be hidden before user has checked for
-          // updates, on ChromeOS.
-          assertEquals(cr.isChromeOS, page.$.updateStatusMessage.hidden);
+            assertFalse(page.$.deprecationWarning.hidden);
+            assertFalse(page.$.deprecationWarning.hidden);
 
-          fireStatusChanged(UpdateStatus.CHECKING);
-          assertEquals(SPINNER_ICON, icon.src);
-          assertEquals(null, icon.getAttribute('icon'));
-          assertFalse(page.$.deprecationWarning.hidden);
-          assertFalse(page.$.updateStatusMessage.hidden);
+            fireStatusChanged(UpdateStatus.CHECKING);
+            assertEquals(null, icon.src);
+            assertEquals('settings:error', icon.icon);
+            assertFalse(page.$.deprecationWarning.hidden);
+            assertTrue(page.$.updateStatusMessage.hidden);
 
-          fireStatusChanged(UpdateStatus.UPDATING);
-          assertEquals(SPINNER_ICON, icon.src);
-          assertEquals(null, icon.getAttribute('icon'));
-          assertFalse(page.$.deprecationWarning.hidden);
-          assertFalse(page.$.updateStatusMessage.hidden);
+            fireStatusChanged(UpdateStatus.FAILED);
+            assertEquals(null, icon.src);
+            assertEquals('settings:error', icon.icon);
+            assertFalse(page.$.deprecationWarning.hidden);
+            assertTrue(page.$.updateStatusMessage.hidden);
 
-          fireStatusChanged(UpdateStatus.NEARLY_UPDATED);
-          assertEquals(null, icon.src);
-          assertEquals('settings:check-circle', icon.icon);
-          assertFalse(page.$.deprecationWarning.hidden);
-          assertFalse(page.$.updateStatusMessage.hidden);
+            fireStatusChanged(UpdateStatus.UPDATED);
+            assertEquals(null, icon.src);
+            assertEquals('settings:error', icon.icon);
+            assertFalse(page.$.deprecationWarning.hidden);
+            assertTrue(page.$.updateStatusMessage.hidden);
+          });
         });
-      });
-
-      /**
-       * Test that when the current platform has reached the end of the line, a
-       * deprecation warning message and an error icon is displayed.
-       */
-      test('ObsoleteSystemEndOfLine', function() {
-        loadTimeData.overrideValues({
-          aboutObsoleteNowOrSoon: true,
-          aboutObsoleteEndOfTheLine: true,
-        });
-        return initNewPage().then(function() {
-          const icon = page.$$('iron-icon');
-          assertTrue(!!icon);
-          assertTrue(!!page.$.deprecationWarning);
-          assertTrue(!!page.$.updateStatusMessage);
-
-          assertFalse(page.$.deprecationWarning.hidden);
-          assertFalse(page.$.deprecationWarning.hidden);
-
-          fireStatusChanged(UpdateStatus.CHECKING);
-          assertEquals(null, icon.src);
-          assertEquals('settings:error', icon.icon);
-          assertFalse(page.$.deprecationWarning.hidden);
-          assertTrue(page.$.updateStatusMessage.hidden);
-
-          fireStatusChanged(UpdateStatus.FAILED);
-          assertEquals(null, icon.src);
-          assertEquals('settings:error', icon.icon);
-          assertFalse(page.$.deprecationWarning.hidden);
-          assertTrue(page.$.updateStatusMessage.hidden);
-
-          fireStatusChanged(UpdateStatus.UPDATED);
-          assertEquals(null, icon.src);
-          assertEquals('settings:error', icon.icon);
-          assertFalse(page.$.deprecationWarning.hidden);
-          assertTrue(page.$.updateStatusMessage.hidden);
-        });
-      });
+      }
 
       test('Relaunch', function() {
         let relaunch = page.$.relaunch;
@@ -597,6 +607,51 @@ cr.define('settings_about_page', function() {
                   assertTrue(requestTpmFirmwareUpdate);
                 });
           });
+        });
+
+        test('DeviceEndOfLife', function() {
+          /**
+           * Checks the visibility of the end of life message and icon.
+           * @param {boolean} isShowing Whether the end of life UI is expected
+           *     to be visible.
+           * @return {!Promise}
+           */
+          function checkHasEndOfLife(isShowing) {
+            return aboutBrowserProxy.whenCalled('getHasEndOfLife')
+                .then(function() {
+                  const endOfLifeMessageContainer =
+                      page.$.endOfLifeMessageContainer;
+                  assertTrue(!!endOfLifeMessageContainer);
+                  assertEquals(isShowing, !endOfLifeMessageContainer.hidden);
+
+                  // Update status message should be hidden before user has
+                  // checked for updates.
+                  assertTrue(page.$.updateStatusMessage.hidden);
+
+                  fireStatusChanged(UpdateStatus.CHECKING);
+                  assertEquals(isShowing, page.$.updateStatusMessage.hidden);
+
+                  if (isShowing) {
+                    const icon = page.$$('iron-icon');
+                    assertTrue(!!icon);
+                    assertEquals(null, icon.src);
+                    assertEquals('settings:end-of-life', icon.icon);
+
+                    const checkForUpdates = page.$.checkForUpdates;
+                    assertTrue(!!checkForUpdates);
+                    assertTrue(checkForUpdates.hidden);
+                  }
+                });
+          }
+
+          return checkHasEndOfLife(false)
+              .then(function() {
+                aboutBrowserProxy.setHasEndOfLife(true);
+                return initNewPage();
+              })
+              .then(function() {
+                return checkHasEndOfLife(true);
+              });
         });
       }
 

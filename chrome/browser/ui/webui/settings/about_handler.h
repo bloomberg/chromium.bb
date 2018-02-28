@@ -147,6 +147,16 @@ class AboutHandler : public settings::SettingsPageUIHandler,
   void OnRegulatoryLabelTextRead(std::string callback_id,
                                  const base::FilePath& label_dir_path,
                                  const std::string& text);
+
+  // Retrieves device end of life status.
+  // Will asynchronously resolve the provided callback with a boolean
+  // indicating whether the device has reached end-of-life status (will no
+  // longer receive updates).
+  void HandleGetHasEndOfLife(const base::ListValue* args);
+
+  // Callbacks for version_updater_->GetEolStatus calls.
+  void OnGetEndOfLifeStatus(std::string callback_id,
+                            update_engine::EndOfLifeStatus status);
 #endif
 
   // Specialized instance of the VersionUpdater used to update the browser.
