@@ -447,10 +447,6 @@ class ListHashSetNode : public ListHashSetNodeBase<ValueArg> {
     allocator->Deallocate(this);
   }
 
-  // This is not called in normal tracing, but it is called if we find a
-  // pointer to a node on the stack using conservative scanning. Since the
-  // original ListHashSet may no longer exist we make sure to mark the
-  // neighbours in the chain too.
   template <typename VisitorDispatcher>
   void Trace(VisitorDispatcher visitor) {
     // The conservative stack scan can find nodes that have been removed
