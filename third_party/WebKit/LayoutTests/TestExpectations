@@ -3412,7 +3412,6 @@ crbug.com/417782 http/tests/devtools/tracing/timeline-paint/timeline-paint-with-
 crbug.com/417782 http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations.js [ Timeout ]
 crbug.com/417782 http/tests/devtools/tracing/timeline-paint/timeline-paint-with-style-recalc-invalidations.js [ Timeout ]
 crbug.com/417782 http/tests/devtools/tracing/timeline-paint/timeline-paint.js [ Failure ]
-crbug.com/417782 http/tests/misc/acid3.html [ Failure ]
 crbug.com/417782 inspector-protocol/css/css-get-background-colors.js [ Failure ]
 crbug.com/417782 inspector-protocol/dom-snapshot/dom-snapshot-getSnapshot.js [ Failure ]
 crbug.com/417782 paint/invalidation/window-resize/window-resize-vertical-writing-mode.html [ Crash ]

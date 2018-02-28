@@ -212,7 +212,7 @@ layer at (57,350) size 0x0
               text run at (0,2272) width 8: ">"
 layer at (57,350) size 0x0
   LayoutIFrame (floating) {IFRAME} at (0,0) size 0x0
-    layer at (0,0) size 0x0
+    layer at (0,0) size 0x0 scrollWidth 1 scrollHeight 8
       LayoutView at (0,0) size 0x0
     layer at (0,0) size 0x8
       LayoutBlockFlow {HTML} at (0,0) size 0x8
