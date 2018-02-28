@@ -109,6 +109,8 @@ DiceSigninButton::DiceSigninButton(const AccountInfo& account,
         views::Button::STATE_NORMAL,
         gfx::CreateVectorIcon(kSigninButtonDropDownArrowIcon,
                               kDropDownArrowIconSize, SK_ColorWHITE));
+    arrow_->SetAccessibleName(l10n_util::GetStringUTF16(
+        IDS_PROFILES_DICE_SIGNIN_WITH_ANOTHER_ACCOUNT_BUTTON));
     AddChildView(arrow_);
   }
 
