@@ -358,9 +358,10 @@ class AudioParamTimeline {
   // Handle the case where the last event in the timeline is in the
   // past.  Returns false if any event is not in the past. Otherwise,
   // return true and also fill in |values| with |defaultValue|.
+  // |defaultValue| may be updated with a new value.
   bool HandleAllEventsInThePast(double current_time,
                                 double sample_rate,
-                                float default_value,
+                                float& default_value,
                                 unsigned number_of_values,
                                 float* values);
 

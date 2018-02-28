@@ -23,10 +23,10 @@
 
         // Find the time where setTargetAtTime is close enough to the limit.
         // Since we're approaching 1, use a value of eps smaller than
-        // kSetTargetThreshold (5e-7) in AudioParamTimeline.cpp.  This is to
+        // kSetTargetThreshold (1.5e-6) in AudioParamTimeline.cpp.  This is to
         // account for round-off in the actual implementation (which uses a
         // filter and not the formula.)
-        let limitThreshold = 1e-7;
+        let limitThreshold = 1e-6;
 
         runTest(should, {
           sampleRate: sampleRate,
@@ -35,7 +35,8 @@
           timeConstant: timeConstant,
           eps: limitThreshold,
           // Experimentally determined
-          threshold: 2.4e-5
+          threshold: 2.4e-5,
+          tailThreshold: {relativeThreshold: 9.8234e-7}
         }).then(() => task.done());
       })
 
@@ -70,7 +71,8 @@
           timeConstant: timeConstant,
           eps: limitThreshold,
           // Experimentally determined
-          threshold: 1.3e-7
+          threshold: 1.3e-7,
+          tailThreshold: {absoluteThreshold: 9.7950e-22}
         }).then(() => task.done());
       });
 
@@ -148,7 +150,7 @@
                   {absoluteThreshold: options.threshold});
 
           should(actual.slice(tailFrame), 'Tail output for ' + message)
-              .containValues([options.v1]);
+              .beCloseToArray(expected.slice(tailFrame), options.tailThreshold);
         });
       }
 
