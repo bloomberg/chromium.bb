@@ -251,15 +251,29 @@ public class SavePasswordsPreferencesTest {
     /**
      * Taps the menu item to trigger exporting and ensures that reauthentication passes.
      */
-    private void reauthenticateAndRequestExport() {
+    private void reauthenticateAndRequestExport(Preferences preferences) {
         openActionBarOverflowOrOptionsMenu(
                 InstrumentationRegistry.getInstrumentation().getTargetContext());
-        // Before exporting, pretend that the last successful reauthentication just
-        // happened. This will allow the export flow to continue.
-        ReauthenticationManager.recordLastReauth(
-                System.currentTimeMillis(), ReauthenticationManager.REAUTH_SCOPE_BULK);
+
+        // Avoid launching the Android-provided reauthentication challenge, which cannot be
+        // completed in the test.
+        ReauthenticationManager.setSkipSystemReauth(true);
         Espresso.onView(withText(R.string.save_password_preferences_export_action_title))
                 .perform(click());
+
+        // Now Chrome thinks it triggered the challenge and is waiting to be resumed. Once resumed
+        // it will check the reauthentication result. First, update the reauth timestamp to indicate
+        // a successful reauth:
+        ReauthenticationManager.recordLastReauth(
+                System.currentTimeMillis(), ReauthenticationManager.REAUTH_SCOPE_BULK);
+
+        // Now call onResume to nudge Chrome into continuing the export flow.
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                preferences.getFragmentForTest().onResume();
+            }
+        });
     }
 
     @Retention(RetentionPolicy.SOURCE)
@@ -603,14 +617,7 @@ public class SavePasswordsPreferencesTest {
                 PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
                         SavePasswordsPreferences.class.getName());
 
-        openActionBarOverflowOrOptionsMenu(
-                InstrumentationRegistry.getInstrumentation().getTargetContext());
-        // Before tapping the menu item for export, pretend that the last successful
-        // reauthentication just happened. This will allow the export flow to continue.
-        ReauthenticationManager.recordLastReauth(
-                System.currentTimeMillis(), ReauthenticationManager.REAUTH_SCOPE_BULK);
-        Espresso.onView(withText(R.string.save_password_preferences_export_action_title))
-                .perform(click());
+        reauthenticateAndRequestExport(preferences);
 
         // Check that the warning dialog is displayed.
         Espresso.onView(withText(R.string.settings_passwords_export_description))
@@ -717,6 +724,46 @@ public class SavePasswordsPreferencesTest {
     }
 
     /**
+     * Check that the export always requires a reauthentication, even if the last one happened
+     * recently.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @EnableFeatures("PasswordExport")
+    public void testExportRequiresReauth() throws Exception {
+        setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
+
+        ReauthenticationManager.setApiOverride(ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+        ReauthenticationManager.setScreenLockSetUpOverride(
+                ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+
+        final Preferences preferences =
+                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
+                        SavePasswordsPreferences.class.getName());
+
+        // Ensure that the last reauthentication time stamp is recent enough.
+        ReauthenticationManager.recordLastReauth(
+                System.currentTimeMillis(), ReauthenticationManager.REAUTH_SCOPE_BULK);
+
+        // Start export.
+        openActionBarOverflowOrOptionsMenu(
+                InstrumentationRegistry.getInstrumentation().getTargetContext());
+
+        // Avoid launching the Android-provided reauthentication challenge, which cannot be
+        // completed in the test.
+        ReauthenticationManager.setSkipSystemReauth(true);
+        Espresso.onView(withText(R.string.save_password_preferences_export_action_title))
+                .perform(click());
+
+        // Check that Chrome indeed issued an (ignored) request to reauthenticate the user rather
+        // than re-using the recent reauthentication, by observing that the next step in the flow
+        // (progress bar) is not shown.
+        Espresso.onView(withText(R.string.settings_passwords_preparing_export))
+                .check(doesNotExist());
+    }
+
+    /**
      * Check that the export flow ends up with sending off a share intent with the exported
      * passwords.
      */
@@ -737,7 +784,7 @@ public class SavePasswordsPreferencesTest {
 
         Intents.init();
 
-        reauthenticateAndRequestExport();
+        reauthenticateAndRequestExport(preferences);
 
         // Pretend that passwords have been serialized to go directly to the intent.
         mHandler.getExportCallback().onResult(new byte[] {1, 2, 3});
@@ -785,7 +832,7 @@ public class SavePasswordsPreferencesTest {
 
         Intents.init();
 
-        reauthenticateAndRequestExport();
+        reauthenticateAndRequestExport(preferences);
 
         // Call onResume to simulate that the user put Chrome into background by opening "recent
         // apps" and then restored Chrome by choosing it from the list.
@@ -840,7 +887,7 @@ public class SavePasswordsPreferencesTest {
                 PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
                         SavePasswordsPreferences.class.getName());
 
-        reauthenticateAndRequestExport();
+        reauthenticateAndRequestExport(preferences);
 
         // Cancel the export warning.
         Espresso.onView(withText(R.string.cancel)).perform(click());
@@ -868,7 +915,7 @@ public class SavePasswordsPreferencesTest {
                 PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
                         SavePasswordsPreferences.class.getName());
 
-        reauthenticateAndRequestExport();
+        reauthenticateAndRequestExport(preferences);
 
         // Call onResume to simulate that the user put Chrome into background by opening "recent
         // apps" and then restored Chrome by choosing it from the list.
@@ -957,7 +1004,7 @@ public class SavePasswordsPreferencesTest {
                 PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
                         SavePasswordsPreferences.class.getName());
 
-        reauthenticateAndRequestExport();
+        reauthenticateAndRequestExport(preferences);
 
         // Verify that the warning dialog is shown and then dismiss it through pressing back (as
         // opposed to the cancel button).
@@ -991,7 +1038,7 @@ public class SavePasswordsPreferencesTest {
 
         Intents.init();
 
-        reauthenticateAndRequestExport();
+        reauthenticateAndRequestExport(preferences);
 
         // Before triggering the sharing intent chooser, stub it out to avoid leaving system UI open
         // after the test is finished.
@@ -1040,7 +1087,7 @@ public class SavePasswordsPreferencesTest {
                 PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
                         SavePasswordsPreferences.class.getName());
 
-        reauthenticateAndRequestExport();
+        reauthenticateAndRequestExport(preferences);
 
         // Confirm the export warning to fire the sharing intent.
         Espresso.onView(withText(R.string.save_password_preferences_export_action_title))
@@ -1082,7 +1129,7 @@ public class SavePasswordsPreferencesTest {
                 PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
                         SavePasswordsPreferences.class.getName());
 
-        reauthenticateAndRequestExport();
+        reauthenticateAndRequestExport(preferences);
 
         // Confirm the export warning.
         Espresso.onView(withText(R.string.save_password_preferences_export_action_title))
@@ -1124,7 +1171,7 @@ public class SavePasswordsPreferencesTest {
                 PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
                         SavePasswordsPreferences.class.getName());
 
-        reauthenticateAndRequestExport();
+        reauthenticateAndRequestExport(preferences);
 
         // Confirm the export warning.
         Espresso.onView(withText(R.string.save_password_preferences_export_action_title))
@@ -1161,7 +1208,7 @@ public class SavePasswordsPreferencesTest {
                 PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
                         SavePasswordsPreferences.class.getName());
 
-        reauthenticateAndRequestExport();
+        reauthenticateAndRequestExport(preferences);
 
         // Confirm the export warning.
         Espresso.onView(withText(R.string.save_password_preferences_export_action_title))
@@ -1209,7 +1256,7 @@ public class SavePasswordsPreferencesTest {
                 PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
                         SavePasswordsPreferences.class.getName());
 
-        reauthenticateAndRequestExport();
+        reauthenticateAndRequestExport(preferences);
 
         // Request showing an arbitrary error while the confirmation dialog is still up.
         requestShowingExportError(

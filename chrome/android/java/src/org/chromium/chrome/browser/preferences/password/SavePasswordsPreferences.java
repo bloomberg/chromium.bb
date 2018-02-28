@@ -392,10 +392,9 @@ public class SavePasswordsPreferences
                     .show();
             // Re-enable exporting, the current one was cancelled by Chrome.
             mExportState = EXPORT_STATE_INACTIVE;
-        } else if (ReauthenticationManager.authenticationStillValid(
-                           ReauthenticationManager.REAUTH_SCOPE_BULK)) {
-            exportAfterReauth();
         } else {
+            // Always trigger reauthentication at the start of the exporting flow, even if the last
+            // one succeeded recently.
             ReauthenticationManager.displayReauthenticationFragment(
                     R.string.lockscreen_description_export, getView().getId(), getFragmentManager(),
                     ReauthenticationManager.REAUTH_SCOPE_BULK);
@@ -553,8 +552,8 @@ public class SavePasswordsPreferences
                         intent.setPackage(getActivity().getPackageName());
                         getActivity().startActivity(intent);
                     } else if (positiveButtonLabelId == R.string.try_again) {
-                        mExportState = EXPORT_STATE_INACTIVE;
-                        startExporting();
+                        mExportState = EXPORT_STATE_REQUESTED;
+                        exportAfterReauth();
                     }
                 } else if (which == AlertDialog.BUTTON_NEGATIVE) {
                     // Re-enable exporting, the current one was just cancelled.
