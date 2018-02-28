@@ -2771,6 +2771,47 @@ TEST_P(WebViewTest, LongPressLink) {
             web_view->HandleInputEvent(WebCoalescedInputEvent(event)));
 }
 
+// Tests that we send touchcancel when drag start by long press.
+TEST_P(WebViewTest, TouchCancelOnStartDragging) {
+  RegisterMockedHttpURLLoad("long_press_draggable_div.html");
+
+  URLTestHelpers::RegisterMockedURLLoad(
+      ToKURL("http://www.test.com/foo.png"),
+      testing::CoreTestDataPath("white-1x1.png"));
+  WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
+      base_url_ + "long_press_draggable_div.html");
+
+  web_view->SettingsImpl()->SetTouchDragDropEnabled(true);
+  web_view->Resize(WebSize(500, 300));
+  web_view->UpdateAllLifecyclePhases();
+  RunPendingTasks();
+
+  WebPointerEvent pointer_down(
+      WebInputEvent::kPointerDown,
+      WebPointerProperties(1, WebPointerProperties::PointerType::kTouch), 5, 5);
+  pointer_down.SetPositionInWidget(250, 8);
+  web_view->HandleInputEvent(WebCoalescedInputEvent(pointer_down));
+  web_view->DispatchBufferedTouchEvents();
+
+  WebString target_id = WebString::FromUTF8("target");
+
+  // Send long press to start dragging
+  EXPECT_TRUE(TapElementById(WebInputEvent::kGestureLongPress, target_id));
+  EXPECT_STREQ("dragstart",
+               web_view->MainFrameImpl()->GetDocument().Title().Utf8().data());
+
+  // Check pointer cancel is sent to dom.
+  WebPointerEvent pointer_cancel(
+      WebInputEvent::kPointerCancel,
+      WebPointerProperties(1, WebPointerProperties::PointerType::kTouch), 5, 5);
+  pointer_cancel.SetPositionInWidget(250, 8);
+  EXPECT_NE(WebInputEventResult::kHandledSuppressed,
+            web_view->HandleInputEvent(WebCoalescedInputEvent(pointer_cancel)));
+  web_view->DispatchBufferedTouchEvents();
+  EXPECT_STREQ("touchcancel",
+               web_view->MainFrameImpl()->GetDocument().Title().Utf8().data());
+}
+
 TEST_P(WebViewTest, showContextMenuOnLongPressingLinks) {
   RegisterMockedHttpURLLoad("long_press_links_and_images.html");
 
