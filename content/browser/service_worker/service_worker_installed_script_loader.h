@@ -23,7 +23,7 @@ namespace content {
 // again, which is an unusual case. In the usual cases, installed scripts are
 // served to installed service workers via service worker script streaming
 // (i.e., ServiceWorkerInstalledScriptsSender) and non-installed scripts are
-// served to non-installed service workers via ServiceWorkerScriptURLLoader.
+// served to non-installed service workers via ServiceWorkerNewScriptLoader.
 class CONTENT_EXPORT ServiceWorkerInstalledScriptLoader
     : public network::mojom::URLLoader,
       public ServiceWorkerInstalledScriptReader::Client,

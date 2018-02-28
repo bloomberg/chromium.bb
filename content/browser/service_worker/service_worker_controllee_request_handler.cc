@@ -222,7 +222,7 @@ void ServiceWorkerControlleeRequestHandler::MaybeCreateLoader(
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
 
   url_job_ = std::make_unique<ServiceWorkerURLJobWrapper>(
-      std::make_unique<ServiceWorkerURLLoaderJob>(
+      std::make_unique<ServiceWorkerNavigationLoader>(
           std::move(callback), this, resource_request,
           base::WrapRefCounted(context_->loader_factory_getter())));
 

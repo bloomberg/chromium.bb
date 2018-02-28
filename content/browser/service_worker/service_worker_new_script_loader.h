@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_SCRIPT_URL_LOADER_H_
-#define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_SCRIPT_URL_LOADER_H_
+#ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_NEW_SCRIPT_LOADER_H_
+#define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_NEW_SCRIPT_LOADER_H_
 
 #include "base/macros.h"
 #include "content/browser/service_worker/service_worker_version.h"
@@ -44,11 +44,11 @@ struct HttpResponseInfoIOBuffer;
 // this class also performs the "byte-for-byte" comparison for updating the
 // worker. If the script is identical, the load succeeds but no script is
 // written, and ServiceWorkerVersion is told to terminate startup.
-class CONTENT_EXPORT ServiceWorkerScriptURLLoader
+class CONTENT_EXPORT ServiceWorkerNewScriptLoader
     : public network::mojom::URLLoader,
       public network::mojom::URLLoaderClient {
  public:
-  ServiceWorkerScriptURLLoader(
+  ServiceWorkerNewScriptLoader(
       int32_t routing_id,
       int32_t request_id,
       uint32_t options,
@@ -57,7 +57,7 @@ class CONTENT_EXPORT ServiceWorkerScriptURLLoader
       scoped_refptr<ServiceWorkerVersion> version,
       scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation);
-  ~ServiceWorkerScriptURLLoader() override;
+  ~ServiceWorkerNewScriptLoader() override;
 
   // network::mojom::URLLoader:
   void FollowRedirect() override;
@@ -145,11 +145,11 @@ class CONTENT_EXPORT ServiceWorkerScriptURLLoader
 
   State state_ = State::kNotStarted;
 
-  base::WeakPtrFactory<ServiceWorkerScriptURLLoader> weak_factory_;
+  base::WeakPtrFactory<ServiceWorkerNewScriptLoader> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerScriptURLLoader);
+  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerNewScriptLoader);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_SCRIPT_URL_LOADER_H_
+#endif  // CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_NEW_SCRIPT_LOADER_H_

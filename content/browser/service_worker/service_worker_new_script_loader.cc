@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/service_worker/service_worker_script_url_loader.h"
+#include "content/browser/service_worker/service_worker_new_script_loader.h"
 
 #include <memory>
 #include "base/numerics/safe_conversions.h"
@@ -23,11 +23,11 @@
 namespace content {
 
 // We chose this size because the AppCache uses this.
-const uint32_t ServiceWorkerScriptURLLoader::kReadBufferSize = 32768;
+const uint32_t ServiceWorkerNewScriptLoader::kReadBufferSize = 32768;
 
 // TODO(nhiroki): We're doing multiple things in the ctor. Consider factors out
 // some of them into a separate function.
-ServiceWorkerScriptURLLoader::ServiceWorkerScriptURLLoader(
+ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,
@@ -43,7 +43,7 @@ ServiceWorkerScriptURLLoader::ServiceWorkerScriptURLLoader(
       network_watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL),
       client_(std::move(client)),
       weak_factory_(this) {
-  // ServiceWorkerScriptURLLoader is used for fetching the service worker main
+  // ServiceWorkerNewScriptLoader is used for fetching the service worker main
   // script (RESOURCE_TYPE_SERVICE_WORKER) during worker startup or
   // importScripts() (RESOURCE_TYPE_SCRIPT).
   // TODO(nhiroki): In the current implementation, importScripts() can be called
@@ -101,34 +101,34 @@ ServiceWorkerScriptURLLoader::ServiceWorkerScriptURLLoader(
       resource_request, std::move(network_client), traffic_annotation);
 }
 
-ServiceWorkerScriptURLLoader::~ServiceWorkerScriptURLLoader() = default;
+ServiceWorkerNewScriptLoader::~ServiceWorkerNewScriptLoader() = default;
 
-void ServiceWorkerScriptURLLoader::FollowRedirect() {
+void ServiceWorkerNewScriptLoader::FollowRedirect() {
   // Resource requests for service worker scripts should not follow redirects.
   // See comments in OnReceiveRedirect().
   NOTREACHED();
 }
 
-void ServiceWorkerScriptURLLoader::ProceedWithResponse() {
+void ServiceWorkerNewScriptLoader::ProceedWithResponse() {
   NOTREACHED();
 }
 
-void ServiceWorkerScriptURLLoader::SetPriority(net::RequestPriority priority,
+void ServiceWorkerNewScriptLoader::SetPriority(net::RequestPriority priority,
                                                int32_t intra_priority_value) {
   network_loader_->SetPriority(priority, intra_priority_value);
 }
 
-void ServiceWorkerScriptURLLoader::PauseReadingBodyFromNet() {
+void ServiceWorkerNewScriptLoader::PauseReadingBodyFromNet() {
   network_loader_->PauseReadingBodyFromNet();
 }
 
-void ServiceWorkerScriptURLLoader::ResumeReadingBodyFromNet() {
+void ServiceWorkerNewScriptLoader::ResumeReadingBodyFromNet() {
   network_loader_->ResumeReadingBodyFromNet();
 }
 
 // URLLoaderClient for network loader ------------------------------------------
 
-void ServiceWorkerScriptURLLoader::OnReceiveResponse(
+void ServiceWorkerNewScriptLoader::OnReceiveResponse(
     const network::ResourceResponseHead& response_head,
     const base::Optional<net::SSLInfo>& ssl_info,
     network::mojom::DownloadedTempFilePtr downloaded_file) {
@@ -208,7 +208,7 @@ void ServiceWorkerScriptURLLoader::OnReceiveResponse(
                              std::move(downloaded_file));
 }
 
-void ServiceWorkerScriptURLLoader::OnReceiveRedirect(
+void ServiceWorkerNewScriptLoader::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
     const network::ResourceResponseHead& response_head) {
   // Resource requests for service worker scripts should not follow redirects.
@@ -221,12 +221,12 @@ void ServiceWorkerScriptURLLoader::OnReceiveRedirect(
   CommitCompleted(network::URLLoaderCompletionStatus(net::ERR_UNSAFE_REDIRECT));
 }
 
-void ServiceWorkerScriptURLLoader::OnDataDownloaded(int64_t data_len,
+void ServiceWorkerNewScriptLoader::OnDataDownloaded(int64_t data_len,
                                                     int64_t encoded_data_len) {
   client_->OnDataDownloaded(data_len, encoded_data_len);
 }
 
-void ServiceWorkerScriptURLLoader::OnUploadProgress(
+void ServiceWorkerNewScriptLoader::OnUploadProgress(
     int64_t current_position,
     int64_t total_size,
     OnUploadProgressCallback ack_callback) {
@@ -234,17 +234,17 @@ void ServiceWorkerScriptURLLoader::OnUploadProgress(
                             std::move(ack_callback));
 }
 
-void ServiceWorkerScriptURLLoader::OnReceiveCachedMetadata(
+void ServiceWorkerNewScriptLoader::OnReceiveCachedMetadata(
     const std::vector<uint8_t>& data) {
   client_->OnReceiveCachedMetadata(data);
 }
 
-void ServiceWorkerScriptURLLoader::OnTransferSizeUpdated(
+void ServiceWorkerNewScriptLoader::OnTransferSizeUpdated(
     int32_t transfer_size_diff) {
   client_->OnTransferSizeUpdated(transfer_size_diff);
 }
 
-void ServiceWorkerScriptURLLoader::OnStartLoadingResponseBody(
+void ServiceWorkerNewScriptLoader::OnStartLoadingResponseBody(
     mojo::ScopedDataPipeConsumerHandle consumer) {
   // Create a pair of the consumer and producer for responding to the client.
   mojo::ScopedDataPipeConsumerHandle client_consumer;
@@ -261,7 +261,7 @@ void ServiceWorkerScriptURLLoader::OnStartLoadingResponseBody(
   MaybeStartNetworkConsumerHandleWatcher();
 }
 
-void ServiceWorkerScriptURLLoader::OnComplete(
+void ServiceWorkerNewScriptLoader::OnComplete(
     const network::URLLoaderCompletionStatus& status) {
   if (status.error_code != net::OK) {
     CommitCompleted(status);
@@ -287,7 +287,7 @@ void ServiceWorkerScriptURLLoader::OnComplete(
 
 // End of URLLoaderClient ------------------------------------------------------
 
-void ServiceWorkerScriptURLLoader::AdvanceState(State new_state) {
+void ServiceWorkerNewScriptLoader::AdvanceState(State new_state) {
   switch (state_) {
     case State::kNotStarted:
       DCHECK_EQ(State::kStarted, new_state);
@@ -310,11 +310,11 @@ void ServiceWorkerScriptURLLoader::AdvanceState(State new_state) {
   state_ = new_state;
 }
 
-void ServiceWorkerScriptURLLoader::WriteHeaders(
+void ServiceWorkerNewScriptLoader::WriteHeaders(
     scoped_refptr<HttpResponseInfoIOBuffer> info_buffer) {
   net::Error error = cache_writer_->MaybeWriteHeaders(
       info_buffer.get(),
-      base::BindOnce(&ServiceWorkerScriptURLLoader::OnWriteHeadersComplete,
+      base::BindOnce(&ServiceWorkerNewScriptLoader::OnWriteHeadersComplete,
                      weak_factory_.GetWeakPtr()));
   if (error == net::ERR_IO_PENDING) {
     // OnWriteHeadersComplete() will be called asynchronously.
@@ -325,7 +325,7 @@ void ServiceWorkerScriptURLLoader::WriteHeaders(
   OnWriteHeadersComplete(error);
 }
 
-void ServiceWorkerScriptURLLoader::OnWriteHeadersComplete(net::Error error) {
+void ServiceWorkerNewScriptLoader::OnWriteHeadersComplete(net::Error error) {
   DCHECK_NE(net::ERR_IO_PENDING, error);
   if (error != net::OK) {
     CommitCompleted(network::URLLoaderCompletionStatus(error));
@@ -335,7 +335,7 @@ void ServiceWorkerScriptURLLoader::OnWriteHeadersComplete(net::Error error) {
   MaybeStartNetworkConsumerHandleWatcher();
 }
 
-void ServiceWorkerScriptURLLoader::MaybeStartNetworkConsumerHandleWatcher() {
+void ServiceWorkerNewScriptLoader::MaybeStartNetworkConsumerHandleWatcher() {
   if (!network_consumer_.is_valid()) {
     // Wait until the network consumer handle is ready to read.
     // OnStartLoadingResponseBody() will continue the sequence.
@@ -350,12 +350,12 @@ void ServiceWorkerScriptURLLoader::MaybeStartNetworkConsumerHandleWatcher() {
   network_watcher_.Watch(
       network_consumer_.get(),
       MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
-      base::Bind(&ServiceWorkerScriptURLLoader::OnNetworkDataAvailable,
+      base::Bind(&ServiceWorkerNewScriptLoader::OnNetworkDataAvailable,
                  weak_factory_.GetWeakPtr()));
   network_watcher_.ArmOrNotify();
 }
 
-void ServiceWorkerScriptURLLoader::OnNetworkDataAvailable(MojoResult) {
+void ServiceWorkerNewScriptLoader::OnNetworkDataAvailable(MojoResult) {
   DCHECK(network_consumer_.is_valid());
   scoped_refptr<network::MojoToNetPendingBuffer> pending_buffer;
   uint32_t bytes_available = 0;
@@ -380,7 +380,7 @@ void ServiceWorkerScriptURLLoader::OnNetworkDataAvailable(MojoResult) {
   NOTREACHED() << static_cast<int>(result);
 }
 
-void ServiceWorkerScriptURLLoader::WriteData(
+void ServiceWorkerNewScriptLoader::WriteData(
     scoped_refptr<network::MojoToNetPendingBuffer> pending_buffer,
     uint32_t bytes_available) {
   // Cap the buffer size up to |kReadBufferSize|. The remaining will be written
@@ -413,7 +413,7 @@ void ServiceWorkerScriptURLLoader::WriteData(
   // successfully wrote to the data pipe (i.e., |bytes_written|).
   net::Error error = cache_writer_->MaybeWriteData(
       buffer.get(), base::strict_cast<size_t>(bytes_written),
-      base::BindOnce(&ServiceWorkerScriptURLLoader::OnWriteDataComplete,
+      base::BindOnce(&ServiceWorkerNewScriptLoader::OnWriteDataComplete,
                      weak_factory_.GetWeakPtr(),
                      base::WrapRefCounted(pending_buffer.get()),
                      bytes_written));
@@ -426,7 +426,7 @@ void ServiceWorkerScriptURLLoader::WriteData(
   OnWriteDataComplete(std::move(pending_buffer), bytes_written, error);
 }
 
-void ServiceWorkerScriptURLLoader::OnWriteDataComplete(
+void ServiceWorkerNewScriptLoader::OnWriteDataComplete(
     scoped_refptr<network::MojoToNetPendingBuffer> pending_buffer,
     uint32_t bytes_written,
     net::Error error) {
@@ -442,7 +442,7 @@ void ServiceWorkerScriptURLLoader::OnWriteDataComplete(
   network_watcher_.ArmOrNotify();
 }
 
-void ServiceWorkerScriptURLLoader::CommitCompleted(
+void ServiceWorkerNewScriptLoader::CommitCompleted(
     const network::URLLoaderCompletionStatus& status) {
   AdvanceState(State::kCompleted);
   net::Error error_code = static_cast<net::Error>(status.error_code);

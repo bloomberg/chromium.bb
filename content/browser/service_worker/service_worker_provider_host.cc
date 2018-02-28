@@ -22,7 +22,7 @@
 #include "content/browser/service_worker/service_worker_controllee_request_handler.h"
 #include "content/browser/service_worker/service_worker_dispatcher_host.h"
 #include "content/browser/service_worker/service_worker_registration_object_host.h"
-#include "content/browser/service_worker/service_worker_script_url_loader_factory.h"
+#include "content/browser/service_worker/service_worker_script_loader_factory.h"
 #include "content/browser/service_worker/service_worker_type_converters.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/url_loader_factory_getter.h"
@@ -669,7 +669,7 @@ ServiceWorkerProviderHost::CompleteStartWorkerPreparation(
       script_loader_factory_ptr_info;
   if (ServiceWorkerUtils::IsServicificationEnabled()) {
     mojo::MakeStrongAssociatedBinding(
-        std::make_unique<ServiceWorkerScriptURLLoaderFactory>(
+        std::make_unique<ServiceWorkerScriptLoaderFactory>(
             context_, AsWeakPtr(), context_->loader_factory_getter()),
         mojo::MakeRequest(&script_loader_factory_ptr_info));
     provider_info->script_loader_factory_ptr_info =

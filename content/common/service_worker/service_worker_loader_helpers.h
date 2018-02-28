@@ -20,7 +20,7 @@ struct ResourceResponseHead;
 namespace content {
 
 // Helper functions for service worker classes that use URLLoader
-//(e.g., ServiceWorkerURLLoaderJob and ServiceWorkerSubresourceLoader).
+//(e.g., ServiceWorkerNavigationLoader and ServiceWorkerSubresourceLoader).
 class ServiceWorkerLoaderHelpers {
  public:
   // Populates |out_head->headers| with the given |status_code|, |status_text|,
