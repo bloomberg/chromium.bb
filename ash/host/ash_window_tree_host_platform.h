@@ -25,7 +25,7 @@ class ASH_EXPORT AshWindowTreeHostPlatform
   AshWindowTreeHostPlatform();
 
   // AshWindowTreeHost:
-  bool ConfineCursorToRootWindow() override;
+  void ConfineCursorToRootWindow() override;
   void SetRootWindowTransformer(
       std::unique_ptr<RootWindowTransformer> transformer) override;
   gfx::Insets GetHostInsets() const override;

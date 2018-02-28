@@ -34,8 +34,9 @@ class ASH_EXPORT AshWindowTreeHost {
   static std::unique_ptr<AshWindowTreeHost> Create(
       const AshWindowTreeHostInitParams& init_params);
 
-  // Clips the cursor to the bounds of the root window.
-  virtual bool ConfineCursorToRootWindow() = 0;
+  // Confines the cursor to the bounds of the root window. This should do
+  // nothing if allow_confine_cursor() returns false.
+  virtual void ConfineCursorToRootWindow() = 0;
 
   virtual void SetRootWindowTransformer(
       std::unique_ptr<RootWindowTransformer> transformer) = 0;
@@ -54,8 +55,17 @@ class ASH_EXPORT AshWindowTreeHost {
   virtual void ClearCursorConfig() = 0;
 
  protected:
+  // Returns true if cursor confinement should be allowed. For development
+  // builds this will return false, for ease of switching between windows,
+  // unless --ash-constrain-pointer-to-root is provided. This is always true on
+  // a Chrome OS device.
+  bool allow_confine_cursor() const { return allow_confine_cursor_; }
+
   // Translates the native mouse location into screen coordinates.
   void TranslateLocatedEvent(ui::LocatedEvent* event);
+
+ private:
+  const bool allow_confine_cursor_;
 };
 
 }  // namespace ash

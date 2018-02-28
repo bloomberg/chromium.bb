@@ -27,11 +27,13 @@ AshWindowTreeHostMus::AshWindowTreeHostMus(
 
 AshWindowTreeHostMus::~AshWindowTreeHostMus() = default;
 
-bool AshWindowTreeHostMus::ConfineCursorToRootWindow() {
+void AshWindowTreeHostMus::ConfineCursorToRootWindow() {
+  if (!allow_confine_cursor())
+    return;
+
   gfx::Rect confined_bounds(GetBoundsInPixels().size());
   confined_bounds.Inset(transformer_helper_->GetHostInsets());
   ConfineCursorToBounds(confined_bounds);
-  return true;
 }
 
 void AshWindowTreeHostMus::SetRootWindowTransformer(

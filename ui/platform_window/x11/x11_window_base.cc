@@ -36,15 +36,16 @@ X11WindowBase::X11WindowBase(PlatformWindowDelegate* delegate,
                              const gfx::Rect& bounds)
     : delegate_(delegate),
       xdisplay_(gfx::GetXDisplay()),
-      xwindow_(x11::None),
       xroot_window_(DefaultRootWindow(xdisplay_)),
       bounds_(bounds),
       state_(ui::PlatformWindowState::PLATFORM_WINDOW_STATE_UNKNOWN) {
   DCHECK(delegate_);
   Create();
+  pointer_barriers_.fill(x11::None);
 }
 
 X11WindowBase::~X11WindowBase() {
+  UnConfineCursor();
   Destroy();
 }
 
@@ -257,10 +258,47 @@ void X11WindowBase::MoveCursorTo(const gfx::Point& location) {
                bounds_.x() + location.x(), bounds_.y() + location.y());
 }
 
-void X11WindowBase::ConfineCursorToBounds(const gfx::Rect& bounds) {}
+void X11WindowBase::ConfineCursorToBounds(const gfx::Rect& bounds) {
+  UnConfineCursor();
+
+  if (bounds.IsEmpty())
+    return;
+
+  gfx::Rect barrier = bounds + bounds_.OffsetFromOrigin();
+
+  // Top horizontal barrier.
+  pointer_barriers_[0] = XFixesCreatePointerBarrier(
+      xdisplay_, xroot_window_, barrier.x(), barrier.y(), barrier.right(),
+      barrier.y(), BarrierPositiveY, 0, XIAllDevices);
+  // Bottom horizontal barrier.
+  pointer_barriers_[1] = XFixesCreatePointerBarrier(
+      xdisplay_, xroot_window_, barrier.x(), barrier.bottom(), barrier.right(),
+      barrier.bottom(), BarrierNegativeY, 0, XIAllDevices);
+  // Left vertical barrier.
+  pointer_barriers_[2] = XFixesCreatePointerBarrier(
+      xdisplay_, xroot_window_, barrier.x(), barrier.y(), barrier.x(),
+      barrier.bottom(), BarrierPositiveX, 0, XIAllDevices);
+  // Right vertical barrier.
+  pointer_barriers_[3] = XFixesCreatePointerBarrier(
+      xdisplay_, xroot_window_, barrier.right(), barrier.y(), barrier.right(),
+      barrier.bottom(), BarrierNegativeX, 0, XIAllDevices);
+
+  has_pointer_barriers_ = true;
+}
 
 PlatformImeController* X11WindowBase::GetPlatformImeController() {
   return nullptr;
+}
+
+void X11WindowBase::UnConfineCursor() {
+  if (!has_pointer_barriers_)
+    return;
+
+  for (XID pointer_barrier : pointer_barriers_)
+    XFixesDestroyPointerBarrier(xdisplay_, pointer_barrier);
+  pointer_barriers_.fill(x11::None);
+
+  has_pointer_barriers_ = false;
 }
 
 bool X11WindowBase::IsEventForXWindow(const XEvent& xev) const {
