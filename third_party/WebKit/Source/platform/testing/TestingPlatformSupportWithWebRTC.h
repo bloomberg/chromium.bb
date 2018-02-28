@@ -42,8 +42,6 @@ class MockWebRTCPeerConnectionHandler : public WebRTCPeerConnectionHandler {
   WebRTCDataChannelHandler* CreateDataChannel(
       const WebString& label,
       const WebRTCDataChannelInit&) override;
-  WebRTCDTMFSenderHandler* CreateDTMFSender(
-      const WebMediaStreamTrack&) override;
   void Stop() override;
 };
 

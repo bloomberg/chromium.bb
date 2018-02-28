@@ -48,6 +48,9 @@ class RTCRtpSender final : public ScriptWrappable {
   Member<RTCPeerConnection> pc_;
   std::unique_ptr<WebRTCRtpSender> sender_;
   Member<MediaStreamTrack> track_;
+  // The spec says that "kind" should be looked up in transceiver, but
+  // keeping it in sender at least until transceiver is implemented.
+  String kind_;
   Member<RTCDTMFSender> dtmf_;
   MediaStreamVector streams_;
 };

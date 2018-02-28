@@ -41,7 +41,6 @@ class WebMediaConstraints;
 class WebMediaStream;
 class WebMediaStreamTrack;
 class WebRTCAnswerOptions;
-class WebRTCDTMFSenderHandler;
 class WebRTCDataChannelHandler;
 enum class WebRTCErrorType;
 class WebRTCOfferOptions;
@@ -102,8 +101,6 @@ class WebRTCPeerConnectionHandler {
   // Removes the sender, returning whether successful. On success, the sender's
   // track must have been set to null.
   virtual bool RemoveTrack(WebRTCRtpSender*) = 0;
-  virtual WebRTCDTMFSenderHandler* CreateDTMFSender(
-      const WebMediaStreamTrack&) = 0;
   virtual void Stop() = 0;
 };
 

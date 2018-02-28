@@ -52,27 +52,15 @@ static const int kDefaultInterToneGapMs = 70;
 
 RTCDTMFSender* RTCDTMFSender::Create(
     ExecutionContext* context,
-    WebRTCPeerConnectionHandler* peer_connection_handler,
-    MediaStreamTrack* track,
-    ExceptionState& exception_state) {
-  std::unique_ptr<WebRTCDTMFSenderHandler> handler = base::WrapUnique(
-      peer_connection_handler->CreateDTMFSender(track->Component()));
-  if (!handler) {
-    exception_state.ThrowDOMException(kNotSupportedError,
-                                      "The MediaStreamTrack provided is not an "
-                                      "element of a MediaStream that's "
-                                      "currently in the local streams set.");
-    return nullptr;
-  }
-
-  return new RTCDTMFSender(context, track, std::move(handler));
+    std::unique_ptr<WebRTCDTMFSenderHandler> dtmf_sender_handler) {
+  DCHECK(dtmf_sender_handler);
+  return new RTCDTMFSender(context, std::move(dtmf_sender_handler));
 }
 
 RTCDTMFSender::RTCDTMFSender(ExecutionContext* context,
-                             MediaStreamTrack* track,
                              std::unique_ptr<WebRTCDTMFSenderHandler> handler)
     : ContextLifecycleObserver(context),
-      track_(track),
+      track_(nullptr),
       duration_(kDefaultToneDurationMs),
       inter_tone_gap_(kDefaultInterToneGapMs),
       handler_(std::move(handler)),
@@ -98,6 +86,10 @@ bool RTCDTMFSender::canInsertDTMF() const {
 
 MediaStreamTrack* RTCDTMFSender::track() const {
   return track_.Get();
+}
+
+void RTCDTMFSender::SetTrack(MediaStreamTrack* track) {
+  track_ = track;
 }
 
 String RTCDTMFSender::toneBuffer() const {
