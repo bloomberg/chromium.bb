@@ -61,6 +61,7 @@ void AutocompleteHistoryManager::OnGetAutocompleteSuggestions(
 
   query_id_ = query_id;
   if (!autofill_client_->IsAutocompleteEnabled() ||
+      !autofill_client_->IsAutofillSupported() ||
       form_control_type == "textarea" ||
       IsInAutofillSuggestionsDisabledExperiment()) {
     SendSuggestions(nullptr);
