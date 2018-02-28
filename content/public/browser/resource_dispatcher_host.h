@@ -71,9 +71,6 @@ class CONTENT_EXPORT ResourceDispatcherHost {
   // dialog boxes.
   virtual void SetAllowCrossOriginAuthPrompt(bool value) = 0;
 
-  // Clears the ResourceDispatcherHostLoginDelegate associated with the request.
-  virtual void ClearLoginDelegateForRequest(net::URLRequest* request) = 0;
-
   // Registers the |interceptor| for the |http_header| passed in.
   // The |starts_with| parameter is used to match the prefix of the
   // |http_header| in the response and the interceptor will be invoked if there

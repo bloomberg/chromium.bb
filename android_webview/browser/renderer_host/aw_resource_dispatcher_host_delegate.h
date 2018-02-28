@@ -15,7 +15,6 @@
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 
 namespace content {
-class ResourceDispatcherHostLoginDelegate;
 class ResourceContext;
 struct ResourceResponse;
 }  // namespace content
@@ -43,9 +42,6 @@ class AwResourceDispatcherHostDelegate
                         bool is_new_request,
                         std::vector<std::unique_ptr<content::ResourceThrottle>>*
                             throttles) override;
-  content::ResourceDispatcherHostLoginDelegate* CreateLoginDelegate(
-      net::AuthChallengeInfo* auth_info,
-      net::URLRequest* request) override;
   bool HandleExternalProtocol(const GURL& url,
                               content::ResourceRequestInfo* info) override;
   void OnResponseStarted(net::URLRequest* request,

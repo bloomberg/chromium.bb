@@ -22,7 +22,6 @@
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_content_browser_client.h"
-#include "content/shell/browser/shell_resource_dispatcher_host_delegate.h"
 #include "net/base/escape.h"
 #include "net/ssl/ssl_server_config.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -89,9 +88,8 @@ class WorkerTest : public ContentBrowserTest {
     ShellContentBrowserClient* browser_client =
         ShellContentBrowserClient::Get();
     scoped_refptr<MessageLoopRunner> runner = new MessageLoopRunner();
-    browser_client->resource_dispatcher_host_delegate()->
-        set_login_request_callback(
-            base::Bind(&QuitUIMessageLoop, runner->QuitClosure()));
+    browser_client->set_login_request_callback(
+        base::Bind(&QuitUIMessageLoop, runner->QuitClosure()));
     shell()->LoadURL(url);
     runner->Run();
   }

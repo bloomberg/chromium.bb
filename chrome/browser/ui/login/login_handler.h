@@ -8,9 +8,11 @@
 #include <memory>
 #include <string>
 
+#include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/synchronization/lock.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "content/public/browser/notification_observer.h"
@@ -28,8 +30,7 @@ class WebContents;
 
 namespace net {
 class AuthChallengeInfo;
-class HttpNetworkSession;
-class URLRequest;
+class AuthCredentials;
 }  // namespace net
 
 // This is the base implementation for the OS-specific classes that route
@@ -54,12 +55,19 @@ class LoginHandler : public content::ResourceDispatcherHostLoginDelegate,
     const autofill::PasswordForm& form;
   };
 
-  LoginHandler(net::AuthChallengeInfo* auth_info, net::URLRequest* request);
+  LoginHandler(
+      net::AuthChallengeInfo* auth_info,
+      content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
+      const base::Callback<void(const base::Optional<net::AuthCredentials>&)>&
+          auth_required_callback);
 
   // Builds the platform specific LoginHandler. Used from within
   // CreateLoginPrompt() which creates tasks.
-  static LoginHandler* Create(net::AuthChallengeInfo* auth_info,
-                              net::URLRequest* request);
+  static LoginHandler* Create(
+      net::AuthChallengeInfo* auth_info,
+      content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
+      const base::Callback<void(const base::Optional<net::AuthCredentials>&)>&
+          auth_required_callback);
 
   void SetInterstitialDelegate(
       const base::WeakPtr<LoginInterstitialDelegate> delegate) {
@@ -136,8 +144,13 @@ class LoginHandler : public content::ResourceDispatcherHostLoginDelegate,
   virtual void CloseDialog() = 0;
 
  private:
-  friend LoginHandler* CreateLoginPrompt(net::AuthChallengeInfo* auth_info,
-                                         net::URLRequest* request);
+  friend LoginHandler* CreateLoginPrompt(
+      net::AuthChallengeInfo* auth_info,
+      content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
+      bool is_main_frame,
+      const GURL& url,
+      const base::Callback<void(const base::Optional<net::AuthCredentials>&)>&
+          auth_required_callback);
   FRIEND_TEST_ALL_PREFIXES(LoginHandlerTest, DialogStringsAndRealm);
 
   // Starts observing notifications from other LoginHandlers.
@@ -217,13 +230,6 @@ class LoginHandler : public content::ResourceDispatcherHostLoginDelegate,
   // Who/where/what asked for the authentication.
   scoped_refptr<net::AuthChallengeInfo> auth_info_;
 
-  // The request that wants login data.
-  // This should only be accessed on the IO loop.
-  net::URLRequest* request_;
-
-  // The HttpNetworkSession |request_| is associated with.
-  const net::HttpNetworkSession* http_network_session_;
-
   // The PasswordForm sent to the PasswordManager. This is so we can refer to it
   // when later notifying the password manager if the credentials were accepted
   // or rejected.  This should only be accessed on the UI loop.
@@ -243,6 +249,9 @@ class LoginHandler : public content::ResourceDispatcherHostLoginDelegate,
   // Observes other login handlers so this login handler can respond.
   // This is only accessed on the UI thread.
   std::unique_ptr<content::NotificationRegistrar> registrar_;
+
+  base::Callback<void(const base::Optional<net::AuthCredentials>&)>
+      auth_required_callback_;
 
   base::WeakPtr<LoginInterstitialDelegate> interstitial_delegate_;
 
@@ -300,7 +309,12 @@ class AuthSuppliedLoginNotificationDetails : public LoginNotificationDetails {
 // which can be used to set or cancel authentication programmatically.  The
 // caller must invoke OnRequestCancelled() on this LoginHandler before
 // destroying the net::URLRequest.
-LoginHandler* CreateLoginPrompt(net::AuthChallengeInfo* auth_info,
-                                net::URLRequest* request);
+LoginHandler* CreateLoginPrompt(
+    net::AuthChallengeInfo* auth_info,
+    content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
+    bool is_main_frame,
+    const GURL& url,
+    const base::Callback<void(const base::Optional<net::AuthCredentials>&)>&
+        auth_required_callback);
 
 #endif  // CHROME_BROWSER_UI_LOGIN_LOGIN_HANDLER_H_
