@@ -79,23 +79,20 @@ scoped_refptr<VideoFrame> VideoRendererAlgorithm::Render(
     ++ready_frame.render_count;
     UpdateEffectiveFramesQueued();
 
-    // If time stops, we should reset the |first_frame_| marker, since we can no
-    // longer use cadence overage information for this frame.
+    // If time stops, we should reset the |first_frame_| marker.
     if (!was_time_moving_)
       first_frame_ = true;
     return ready_frame.frame;
   }
 
   last_deadline_max_ = deadline_max;
-  base::TimeDelta selected_frame_drift;
+  base::TimeDelta selected_frame_drift, cadence_frame_drift;
 
   // Step 4: Attempt to find the best frame by cadence.
-  int cadence_overage = 0;
-  const int cadence_frame =
-      FindBestFrameByCadence(first_frame_ ? nullptr : &cadence_overage);
+  const int cadence_frame = FindBestFrameByCadence();
   int frame_to_render = cadence_frame;
   if (frame_to_render >= 0) {
-    selected_frame_drift =
+    cadence_frame_drift = selected_frame_drift =
         CalculateAbsoluteDriftForFrame(deadline_min, frame_to_render);
   }
 
@@ -133,8 +130,12 @@ scoped_refptr<VideoFrame> VideoRendererAlgorithm::Render(
   const bool ignored_cadence_frame =
       cadence_frame >= 0 && frame_to_render != cadence_frame;
   if (ignored_cadence_frame) {
-    cadence_overage = 0;
-    DVLOG(2) << "Cadence frame overridden by drift: " << selected_frame_drift;
+    DVLOG(2) << "Cadence frame "
+             << frame_queue_[cadence_frame].frame->timestamp() << " ("
+             << cadence_frame << ") overridden by drift: "
+             << cadence_frame_drift.InMillisecondsF() << "ms, using "
+             << frame_queue_[frame_to_render].frame->timestamp() << "("
+             << frame_to_render << ") instead.";
   }
 
   last_render_had_glitch_ = selected_frame_drift > max_acceptable_drift_;
@@ -205,30 +206,14 @@ scoped_refptr<VideoFrame> VideoRendererAlgorithm::Render(
   }
 
   // Step 8: Congratulations, the frame selection gauntlet has been passed!
-  //
-  // If we ended up choosing a frame selected by cadence, carry over the overage
-  // values from the previous frame.  Overage is treated as having been
-  // displayed and dropped for each count.  If the frame wasn't selected by
-  // cadence, |cadence_overage| will be zero.
-  //
-  // Frames far into the future may be rendered many times before video playback
-  // starts, so we always ignore any overages for the first frame.
-  if (first_frame_ && frame_to_render > 0) {
-    DCHECK_EQ(cadence_overage, 0);
+  if (first_frame_ && frame_to_render > 0)
     first_frame_ = false;
-  }
 
-  // Ignore one frame of overage if the last call to Render() ignored the
-  // frame selected by cadence due to drift.
-  if (last_render_ignored_cadence_frame_ && cadence_overage > 0)
-    cadence_overage -= 1;
+  ++frame_queue_.front().render_count;
 
-  last_render_ignored_cadence_frame_ = ignored_cadence_frame;
-  frame_queue_.front().render_count += cadence_overage + 1;
-  frame_queue_.front().drop_count += cadence_overage;
-
-  // Once we reach a glitch in our cadence sequence, reset the base frame
-  // number used for defining the cadence sequence.
+  // Once we reach a glitch in our cadence sequence, reset the base frame number
+  // used for defining the cadence sequence; the sequence restarts from the
+  // selected frame.
   if (ignored_cadence_frame) {
     cadence_frame_counter_ = 0;
     UpdateCadenceForFrames();
@@ -322,7 +307,6 @@ void VideoRendererAlgorithm::Reset(ResetFlag reset_flag) {
   }
   first_frame_ = true;
   effective_frames_queued_ = cadence_frame_counter_ = 0;
-  last_render_ignored_cadence_frame_ = false;
   was_time_moving_ = false;
 
   // Default to ATSC IS/191 recommendations for maximum acceptable drift before
@@ -589,8 +573,7 @@ void VideoRendererAlgorithm::UpdateCadenceForFrames() {
   }
 }
 
-int VideoRendererAlgorithm::FindBestFrameByCadence(
-    int* remaining_overage) const {
+int VideoRendererAlgorithm::FindBestFrameByCadence() const {
   DCHECK(!frame_queue_.empty());
   if (!cadence_estimator_.has_cadence())
     return -1;
@@ -599,34 +582,15 @@ int VideoRendererAlgorithm::FindBestFrameByCadence(
   DCHECK(cadence_estimator_.has_cadence());
   const ReadyFrame& current_frame = frame_queue_.front();
 
-  if (remaining_overage) {
-    DCHECK_EQ(*remaining_overage, 0);
-  }
-
   // If the current frame is below cadence, we should prefer it.
   if (current_frame.render_count < current_frame.ideal_render_count)
     return 0;
 
-  // For over-rendered frames we need to ensure we skip frames and subtract
-  // each skipped frame's ideal cadence from the over-render count until we
-  // find a frame which still has a positive ideal render count.
-  int render_count_overage = std::max(
-      0, current_frame.render_count - current_frame.ideal_render_count);
-
   // If the current frame is on cadence or over cadence, find the next frame
   // with a positive ideal render count.
   for (size_t i = 1; i < frame_queue_.size(); ++i) {
-    const ReadyFrame& frame = frame_queue_[i];
-    if (frame.ideal_render_count > render_count_overage) {
-      if (remaining_overage)
-        *remaining_overage = render_count_overage;
+    if (frame_queue_[i].ideal_render_count > 0)
       return i;
-    } else {
-      // The ideal render count should always be zero or smaller than the
-      // over-render count.
-      render_count_overage -= frame.ideal_render_count;
-      DCHECK_GE(render_count_overage, 0);
-    }
   }
 
   // We don't have enough frames to find a better once by cadence.
@@ -785,7 +749,7 @@ size_t VideoRendererAlgorithm::CountEffectiveFramesQueued() const {
   }
 
   // Find the first usable frame to start counting from.
-  const int start_index = FindBestFrameByCadence(nullptr);
+  const int start_index = FindBestFrameByCadence();
   if (start_index < 0)
     return 0;
 

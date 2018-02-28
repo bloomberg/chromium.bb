@@ -410,15 +410,14 @@ class VideoRendererImplTest : public testing::Test {
       WaitableMessageLoopEvent event;
       EXPECT_CALL(mock_cb_, OnBufferingStateChange(BUFFERING_HAVE_NOTHING))
           .WillOnce(RunClosure(event.GetClosure()));
-      EXPECT_CALL(mock_cb_, FrameReceived(HasTimestampMatcher(20))).Times(1);
+      EXPECT_CALL(mock_cb_, FrameReceived(HasTimestampMatcher(60))).Times(1);
       EXPECT_CALL(mock_cb_, OnStatisticsUpdate(_)).Times(AnyNumber());
-      AdvanceTimeInMs(20);
+      AdvanceTimeInMs(79);
       event.RunAndWait();
       Mock::VerifyAndClearExpectations(&mock_cb_);
     }
 
-    AdvanceTimeInMs(59);
-    EXPECT_EQ(3u, renderer_->frames_queued_for_testing());
+    EXPECT_EQ(1u, renderer_->frames_queued_for_testing());
     time_source_.StopTicking();
     renderer_->OnTimeStopped();
     EXPECT_EQ(0u, renderer_->frames_queued_for_testing());
