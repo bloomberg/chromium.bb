@@ -18,5 +18,7 @@ void MoveContentBelowHeader(id<CRWWebViewProxy> proxy, FullscreenModel* model) {
   DCHECK(model);
   CGFloat padding = model->progress() * model->GetToolbarHeight();
   proxy.scrollViewProxy.contentOffset = CGPointMake(0, -padding);
-  proxy.topContentPadding = padding;
+  UIEdgeInsets contentInset = proxy.contentInset;
+  contentInset.top = padding;
+  proxy.contentInset = contentInset;
 }
