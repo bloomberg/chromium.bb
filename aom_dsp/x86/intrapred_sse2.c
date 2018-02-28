@@ -51,6 +51,18 @@ static INLINE void dc_store_32xh(const __m128i *row, int height, uint8_t *dst,
   }
 }
 
+static INLINE void dc_store_64xh(const __m128i *row, int height, uint8_t *dst,
+                                 ptrdiff_t stride) {
+  int i;
+  for (i = 0; i < height; ++i) {
+    _mm_store_si128((__m128i *)dst, *row);
+    _mm_store_si128((__m128i *)(dst + 16), *row);
+    _mm_store_si128((__m128i *)(dst + 32), *row);
+    _mm_store_si128((__m128i *)(dst + 48), *row);
+    dst += stride;
+  }
+}
+
 static INLINE __m128i dc_sum_4(const uint8_t *ref) {
   __m128i x = _mm_loadl_epi64((__m128i const *)ref);
   const __m128i zero = _mm_setzero_si128();
@@ -384,6 +396,42 @@ void aom_dc_128_predictor_32x16_sse2(uint8_t *dst, ptrdiff_t stride,
   (void)left;
   const __m128i row = _mm_set1_epi8((uint8_t)128);
   dc_store_32xh(&row, 16, dst, stride);
+}
+
+void aom_dc_128_predictor_32x64_sse2(uint8_t *dst, ptrdiff_t stride,
+                                     const uint8_t *above,
+                                     const uint8_t *left) {
+  (void)above;
+  (void)left;
+  const __m128i row = _mm_set1_epi8((uint8_t)128);
+  dc_store_32xh(&row, 64, dst, stride);
+}
+
+void aom_dc_128_predictor_64x64_sse2(uint8_t *dst, ptrdiff_t stride,
+                                     const uint8_t *above,
+                                     const uint8_t *left) {
+  (void)above;
+  (void)left;
+  const __m128i row = _mm_set1_epi8((uint8_t)128);
+  dc_store_64xh(&row, 64, dst, stride);
+}
+
+void aom_dc_128_predictor_64x32_sse2(uint8_t *dst, ptrdiff_t stride,
+                                     const uint8_t *above,
+                                     const uint8_t *left) {
+  (void)above;
+  (void)left;
+  const __m128i row = _mm_set1_epi8((uint8_t)128);
+  dc_store_64xh(&row, 32, dst, stride);
+}
+
+void aom_dc_128_predictor_64x16_sse2(uint8_t *dst, ptrdiff_t stride,
+                                     const uint8_t *above,
+                                     const uint8_t *left) {
+  (void)above;
+  (void)left;
+  const __m128i row = _mm_set1_epi8((uint8_t)128);
+  dc_store_64xh(&row, 16, dst, stride);
 }
 
 // -----------------------------------------------------------------------------

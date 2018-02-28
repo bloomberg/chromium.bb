@@ -32,6 +32,16 @@ static INLINE void row_store_32xh(const __m256i *r, int height, uint8_t *dst,
   }
 }
 
+static INLINE void row_store_64xh(const __m256i *r, int height, uint8_t *dst,
+                                  ptrdiff_t stride) {
+  int i;
+  for (i = 0; i < height; ++i) {
+    _mm256_storeu_si256((__m256i *)dst, *r);
+    _mm256_storeu_si256((__m256i *)(dst + 32), *r);
+    dst += stride;
+  }
+}
+
 void aom_dc_predictor_32x32_avx2(uint8_t *dst, ptrdiff_t stride,
                                  const uint8_t *above, const uint8_t *left) {
   const __m256i sum_above = dc_sum_32(above);
@@ -209,6 +219,42 @@ void aom_dc_128_predictor_32x16_avx2(uint8_t *dst, ptrdiff_t stride,
   (void)left;
   const __m256i row = _mm256_set1_epi8((uint8_t)0x80);
   row_store_32xh(&row, 16, dst, stride);
+}
+
+void aom_dc_128_predictor_32x64_avx2(uint8_t *dst, ptrdiff_t stride,
+                                     const uint8_t *above,
+                                     const uint8_t *left) {
+  (void)above;
+  (void)left;
+  const __m256i row = _mm256_set1_epi8((uint8_t)0x80);
+  row_store_32xh(&row, 64, dst, stride);
+}
+
+void aom_dc_128_predictor_64x64_avx2(uint8_t *dst, ptrdiff_t stride,
+                                     const uint8_t *above,
+                                     const uint8_t *left) {
+  (void)above;
+  (void)left;
+  const __m256i row = _mm256_set1_epi8((uint8_t)0x80);
+  row_store_64xh(&row, 64, dst, stride);
+}
+
+void aom_dc_128_predictor_64x32_avx2(uint8_t *dst, ptrdiff_t stride,
+                                     const uint8_t *above,
+                                     const uint8_t *left) {
+  (void)above;
+  (void)left;
+  const __m256i row = _mm256_set1_epi8((uint8_t)0x80);
+  row_store_64xh(&row, 32, dst, stride);
+}
+
+void aom_dc_128_predictor_64x16_avx2(uint8_t *dst, ptrdiff_t stride,
+                                     const uint8_t *above,
+                                     const uint8_t *left) {
+  (void)above;
+  (void)left;
+  const __m256i row = _mm256_set1_epi8((uint8_t)0x80);
+  row_store_64xh(&row, 16, dst, stride);
 }
 
 void aom_v_predictor_32x16_avx2(uint8_t *dst, ptrdiff_t stride,
