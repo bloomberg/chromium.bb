@@ -264,8 +264,6 @@
 
 # http://crbug.com/721414
 # TODO(rockot): add support for webRequest API.
--DeclarativeNetRequestBrowserTest.RendererCacheCleared/0
--DeclarativeNetRequestBrowserTest.RendererCacheCleared/1
 -DevToolsFrontendInWebRequestApiTest.HiddenRequests
 -ExtensionWebRequestApiTest.PostData1
 -ExtensionWebRequestApiTest.PostData2

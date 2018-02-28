@@ -47,6 +47,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/test/test_data_directory.h"
+#include "services/network/public/cpp/features.h"
 
 namespace extensions {
 namespace declarative_net_request {
@@ -987,7 +988,12 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, RendererCacheCleared) {
   ui_test_utils::NavigateToURL(browser(), url);
   EXPECT_EQ(content::PAGE_TYPE_NORMAL, GetPageType());
   EXPECT_TRUE(WasFrameWithScriptLoaded(GetMainFrame()));
-  EXPECT_TRUE(script_monitor.GetAndResetRequestSeen(false));
+
+  // NOTE: When the Network Service is enabled, the RulesetMatcher will not see
+  // network requests if no rulesets are active.
+  EXPECT_TRUE(
+      base::FeatureList::IsEnabled(network::features::kNetworkService) ||
+      script_monitor.GetAndResetRequestSeen(false));
 
   // Another request to |url| should not cause a network request for
   // script.js since it will be served by the renderer's in-memory
@@ -1021,7 +1027,9 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, RendererCacheCleared) {
   ui_test_utils::NavigateToURL(browser(), url);
   EXPECT_EQ(content::PAGE_TYPE_NORMAL, GetPageType());
   EXPECT_TRUE(WasFrameWithScriptLoaded(GetMainFrame()));
-  EXPECT_TRUE(script_monitor.GetAndResetRequestSeen(false));
+  EXPECT_TRUE(
+      base::FeatureList::IsEnabled(network::features::kNetworkService) ||
+      script_monitor.GetAndResetRequestSeen(false));
 
   // Clear RulesetManager's observer.
   content::BrowserThread::PostTask(
