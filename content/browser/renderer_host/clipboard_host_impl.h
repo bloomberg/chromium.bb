@@ -51,10 +51,6 @@ class CONTENT_EXPORT ClipboardHostImpl : public blink::mojom::ClipboardHost {
   explicit ClipboardHostImpl(
       scoped_refptr<ChromeBlobStorageContext> blob_storage_context);
 
-  void ReadAndEncodeImage(const SkBitmap& bitmap, ReadImageCallback callback);
-  void OnReadAndEncodeImageFinished(std::vector<uint8_t> png_data,
-                                    ReadImageCallback callback);
-
   // content::mojom::ClipboardHost
   void GetSequenceNumber(ui::ClipboardType clipboard_type,
                          GetSequenceNumberCallback callback) override;
