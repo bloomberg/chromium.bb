@@ -58,6 +58,8 @@ enum JSONParserOptions {
 
 class BASE_EXPORT JSONReader {
  public:
+  static const int kStackMaxDepth;
+
   // Error codes during parsing.
   enum JsonParseError {
     JSON_NO_ERROR = 0,
@@ -82,11 +84,8 @@ class BASE_EXPORT JSONReader {
   static const char kUnsupportedEncoding[];
   static const char kUnquotedDictionaryKey[];
 
-  // Constructs a reader with the default options, JSON_PARSE_RFC.
-  JSONReader();
-
-  // Constructs a reader with custom options.
-  explicit JSONReader(int options);
+  // Constructs a reader.
+  JSONReader(int options = JSON_PARSE_RFC, int max_depth = kStackMaxDepth);
 
   ~JSONReader();
 
@@ -94,10 +93,9 @@ class BASE_EXPORT JSONReader {
   // If |json| is not a properly formed JSON string, returns nullptr.
   // Wrap this in base::FooValue::From() to check the Value is of type Foo and
   // convert to a FooValue at the same time.
-  static std::unique_ptr<Value> Read(StringPiece json);
-
-  // Same as Read() above, but the parser respects the given |options|.
-  static std::unique_ptr<Value> Read(StringPiece json, int options);
+  static std::unique_ptr<Value> Read(StringPiece json,
+                                     int options = JSON_PARSE_RFC,
+                                     int max_depth = kStackMaxDepth);
 
   // Reads and parses |json| like Read(). |error_code_out| and |error_msg_out|
   // are optional. If specified and nullptr is returned, they will be populated

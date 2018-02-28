@@ -25,28 +25,24 @@ namespace internal {
 
 namespace {
 
-// Chosen to support 99.9% of documents found in the wild late 2016.
-// http://crbug.com/673263
-const int kStackMaxDepth = 200;
-
 const int32_t kExtendedASCIIStart = 0x80;
 
 // Simple class that checks for maximum recursion/"stack overflow."
 class StackMarker {
  public:
-  explicit StackMarker(int* depth) : depth_(depth) {
+  StackMarker(int max_depth, int* depth)
+      : max_depth_(max_depth), depth_(depth) {
     ++(*depth_);
-    DCHECK_LE(*depth_, kStackMaxDepth);
+    DCHECK_LE(*depth_, max_depth_);
   }
   ~StackMarker() {
     --(*depth_);
   }
 
-  bool IsTooDeep() const {
-    return *depth_ >= kStackMaxDepth;
-  }
+  bool IsTooDeep() const { return *depth_ >= max_depth_; }
 
  private:
+  const int max_depth_;
   int* const depth_;
 
   DISALLOW_COPY_AND_ASSIGN(StackMarker);
@@ -57,8 +53,9 @@ class StackMarker {
 // This is U+FFFD.
 const char kUnicodeReplacementString[] = "\xEF\xBF\xBD";
 
-JSONParser::JSONParser(int options)
+JSONParser::JSONParser(int options, int max_depth)
     : options_(options),
+      max_depth_(max_depth),
       start_pos_(nullptr),
       pos_(nullptr),
       end_pos_(nullptr),
@@ -69,6 +66,7 @@ JSONParser::JSONParser(int options)
       error_code_(JSONReader::JSON_NO_ERROR),
       error_line_(0),
       error_column_(0) {
+  CHECK_LE(max_depth, JSONReader::kStackMaxDepth);
 }
 
 JSONParser::~JSONParser() = default;
@@ -343,7 +341,7 @@ Optional<Value> JSONParser::ConsumeDictionary() {
     return nullopt;
   }
 
-  StackMarker depth_check(&stack_depth_);
+  StackMarker depth_check(max_depth_, &stack_depth_);
   if (depth_check.IsTooDeep()) {
     ReportError(JSONReader::JSON_TOO_MUCH_NESTING, 1);
     return nullopt;
@@ -408,7 +406,7 @@ Optional<Value> JSONParser::ConsumeList() {
     return nullopt;
   }
 
-  StackMarker depth_check(&stack_depth_);
+  StackMarker depth_check(max_depth_, &stack_depth_);
   if (depth_check.IsTooDeep()) {
     ReportError(JSONReader::JSON_TOO_MUCH_NESTING, 1);
     return nullopt;
