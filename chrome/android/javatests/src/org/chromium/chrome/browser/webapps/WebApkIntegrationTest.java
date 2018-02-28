@@ -183,7 +183,7 @@ public class WebApkIntegrationTest {
         Assert.assertEquals(0, RecordHistogram.getHistogramTotalCountForTesting(histogramName));
         WebappDataStorage storage = WebappRegistry.getInstance().getWebappDataStorage(
                 WebApkConstants.WEBAPK_ID_PREFIX + packageName);
-        Assert.assertNotEquals(WebappDataStorage.TIMESTAMP_INVALID, storage.getLastUsedTime());
+        Assert.assertNotEquals(WebappDataStorage.TIMESTAMP_INVALID, storage.getLastUsedTimeMs());
     }
 
     /** Test that the "WebApk.LaunchInterval" histogram is recorded on susbequent launches. */

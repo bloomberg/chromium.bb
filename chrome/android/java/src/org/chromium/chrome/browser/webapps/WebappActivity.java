@@ -600,7 +600,7 @@ public class WebappActivity extends SingleTabActivity {
         // with the heuristic.
         if (mWebappInfo.isLaunchedFromHomescreen()) {
             boolean previouslyLaunched = storage.hasBeenLaunched();
-            long previousUsageTimestamp = storage.getLastUsedTime();
+            long previousUsageTimestamp = storage.getLastUsedTimeMs();
             storage.setHasBeenLaunched();
             // TODO(yusufo): WebappRegistry#unregisterOldWebapps uses this information to delete
             // WebappDataStorage objects for legacy webapps which haven't been used in a while.

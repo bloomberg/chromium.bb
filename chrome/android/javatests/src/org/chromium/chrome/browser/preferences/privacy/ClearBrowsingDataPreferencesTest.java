@@ -172,7 +172,7 @@ public class ClearBrowsingDataPreferencesTest {
         WebappDataStorage storage = WebappRegistry.getInstance().getWebappDataStorage("first");
         Assert.assertEquals("", storage.getScope());
         Assert.assertEquals("", storage.getUrl());
-        Assert.assertEquals(0, storage.getLastUsedTime());
+        Assert.assertEquals(0, storage.getLastUsedTimeMs());
     }
 
     /**
