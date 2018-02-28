@@ -283,4 +283,9 @@ void CookieManager::CloneInterface(
   AddRequest(std::move(new_interface));
 }
 
+void CookieManager::FlushCookieStore(FlushCookieStoreCallback callback) {
+  // Flushes the backing store (if any) to disk.
+  cookie_store_->FlushStore(std::move(callback));
+}
+
 }  // namespace network

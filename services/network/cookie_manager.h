@@ -65,6 +65,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieManager
     return listener_registrations_.size();
   }
 
+  void FlushCookieStore(FlushCookieStoreCallback callback) override;
+
  private:
   // State associated with a CookieChangeListener.
   struct ListenerRegistration {
