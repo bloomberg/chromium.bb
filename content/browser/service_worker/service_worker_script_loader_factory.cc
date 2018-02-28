@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/service_worker/service_worker_script_url_loader_factory.h"
+#include "content/browser/service_worker/service_worker_script_loader_factory.h"
 
 #include <memory>
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_installed_script_loader.h"
+#include "content/browser/service_worker/service_worker_new_script_loader.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
-#include "content/browser/service_worker/service_worker_script_url_loader.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/common/service_worker/service_worker_utils.h"
@@ -17,7 +17,7 @@
 
 namespace content {
 
-ServiceWorkerScriptURLLoaderFactory::ServiceWorkerScriptURLLoaderFactory(
+ServiceWorkerScriptLoaderFactory::ServiceWorkerScriptLoaderFactory(
     base::WeakPtr<ServiceWorkerContextCore> context,
     base::WeakPtr<ServiceWorkerProviderHost> provider_host,
     scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter)
@@ -27,10 +27,9 @@ ServiceWorkerScriptURLLoaderFactory::ServiceWorkerScriptURLLoaderFactory(
   DCHECK(provider_host_->IsHostToRunningServiceWorker());
 }
 
-ServiceWorkerScriptURLLoaderFactory::~ServiceWorkerScriptURLLoaderFactory() =
-    default;
+ServiceWorkerScriptLoaderFactory::~ServiceWorkerScriptLoaderFactory() = default;
 
-void ServiceWorkerScriptURLLoaderFactory::CreateLoaderAndStart(
+void ServiceWorkerScriptLoaderFactory::CreateLoaderAndStart(
     network::mojom::URLLoaderRequest request,
     int32_t routing_id,
     int32_t request_id,
@@ -73,21 +72,21 @@ void ServiceWorkerScriptURLLoaderFactory::CreateLoaderAndStart(
 
   // The common case: load the script from network and install it.
   mojo::MakeStrongBinding(
-      std::make_unique<ServiceWorkerScriptURLLoader>(
+      std::make_unique<ServiceWorkerNewScriptLoader>(
           routing_id, request_id, options, resource_request, std::move(client),
           provider_host_->running_hosted_version(), loader_factory_getter_,
           traffic_annotation),
       std::move(request));
 }
 
-void ServiceWorkerScriptURLLoaderFactory::Clone(
+void ServiceWorkerScriptLoaderFactory::Clone(
     network::mojom::URLLoaderFactoryRequest request) {
   // This method is required to support synchronous requests which are not
   // performed during installation.
   NOTREACHED();
 }
 
-bool ServiceWorkerScriptURLLoaderFactory::ShouldHandleScriptRequest(
+bool ServiceWorkerScriptLoaderFactory::ShouldHandleScriptRequest(
     const network::ResourceRequest& resource_request) {
   if (!context_ || !provider_host_)
     return false;
@@ -97,9 +96,8 @@ bool ServiceWorkerScriptURLLoaderFactory::ShouldHandleScriptRequest(
   if (!version)
     return false;
 
-  // We use ServiceWorkerScriptURLLoader only for fetching the service worker
-  // main script (RESOURCE_TYPE_SERVICE_WORKER) or importScripts()
-  // (RESOURCE_TYPE_SCRIPT).
+  // Handle only the service worker main script (RESOURCE_TYPE_SERVICE_WORKER)
+  // or importScripts() (RESOURCE_TYPE_SCRIPT).
   switch (resource_request.resource_type) {
     case RESOURCE_TYPE_SERVICE_WORKER:
       // The main script should be fetched only when we start a new service

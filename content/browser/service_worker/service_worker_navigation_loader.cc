@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/service_worker/service_worker_url_loader_job.h"
+#include "content/browser/service_worker/service_worker_navigation_loader.h"
 
 #include <utility>
 
@@ -34,13 +34,13 @@ bool BodyHasNoDataPipeGetters(const network::ResourceRequestBody* body) {
 }  // namespace
 
 // This class waits for completion of a stream response from the service worker.
-// It calls ServiceWorkerURLLoader::CommitCompleted() upon completion of the
-// response.
-class ServiceWorkerURLLoaderJob::StreamWaiter
+// It calls ServiceWorkerNavigationLoader::CommitCompleted() upon completion of
+// the response.
+class ServiceWorkerNavigationLoader::StreamWaiter
     : public blink::mojom::ServiceWorkerStreamCallback {
  public:
   StreamWaiter(
-      ServiceWorkerURLLoaderJob* owner,
+      ServiceWorkerNavigationLoader* owner,
       scoped_refptr<ServiceWorkerVersion> streaming_version,
       blink::mojom::ServiceWorkerStreamCallbackRequest callback_request)
       : owner_(owner),
@@ -63,14 +63,14 @@ class ServiceWorkerURLLoaderJob::StreamWaiter
   }
 
  private:
-  ServiceWorkerURLLoaderJob* owner_;
+  ServiceWorkerNavigationLoader* owner_;
   scoped_refptr<ServiceWorkerVersion> streaming_version_;
   mojo::Binding<blink::mojom::ServiceWorkerStreamCallback> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(StreamWaiter);
 };
 
-ServiceWorkerURLLoaderJob::ServiceWorkerURLLoaderJob(
+ServiceWorkerNavigationLoader::ServiceWorkerNavigationLoader(
     URLLoaderRequestHandler::LoaderCallback callback,
     Delegate* delegate,
     const network::ResourceRequest& resource_request,
@@ -93,9 +93,9 @@ ServiceWorkerURLLoaderJob::ServiceWorkerURLLoaderJob(
   response_head_.load_timing.request_start_time = base::Time::Now();
 }
 
-ServiceWorkerURLLoaderJob::~ServiceWorkerURLLoaderJob() = default;
+ServiceWorkerNavigationLoader::~ServiceWorkerNavigationLoader() = default;
 
-void ServiceWorkerURLLoaderJob::FallbackToNetwork() {
+void ServiceWorkerNavigationLoader::FallbackToNetwork() {
   response_type_ = ResponseType::FALLBACK_TO_NETWORK;
   // This could be called multiple times in some cases because we simply
   // call this synchronously here and don't wait for a separate async
@@ -105,25 +105,25 @@ void ServiceWorkerURLLoaderJob::FallbackToNetwork() {
     std::move(loader_callback_).Run({});
 }
 
-void ServiceWorkerURLLoaderJob::FallbackToNetworkOrRenderer() {
+void ServiceWorkerNavigationLoader::FallbackToNetworkOrRenderer() {
   // TODO(kinuko): Implement this. Now we always fallback to network.
   FallbackToNetwork();
 }
 
-void ServiceWorkerURLLoaderJob::ForwardToServiceWorker() {
+void ServiceWorkerNavigationLoader::ForwardToServiceWorker() {
   response_type_ = ResponseType::FORWARD_TO_SERVICE_WORKER;
   StartRequest();
 }
 
-bool ServiceWorkerURLLoaderJob::ShouldFallbackToNetwork() {
+bool ServiceWorkerNavigationLoader::ShouldFallbackToNetwork() {
   return response_type_ == ResponseType::FALLBACK_TO_NETWORK;
 }
 
-void ServiceWorkerURLLoaderJob::FailDueToLostController() {
+void ServiceWorkerNavigationLoader::FailDueToLostController() {
   NOTIMPLEMENTED();
 }
 
-void ServiceWorkerURLLoaderJob::Cancel() {
+void ServiceWorkerNavigationLoader::Cancel() {
   status_ = Status::kCancelled;
   weak_factory_.InvalidateWeakPtrs();
   fetch_dispatcher_.reset();
@@ -135,16 +135,16 @@ void ServiceWorkerURLLoaderJob::Cancel() {
   DeleteIfNeeded();
 }
 
-bool ServiceWorkerURLLoaderJob::WasCanceled() const {
+bool ServiceWorkerNavigationLoader::WasCanceled() const {
   return status_ == Status::kCancelled;
 }
 
-void ServiceWorkerURLLoaderJob::DetachedFromRequest() {
+void ServiceWorkerNavigationLoader::DetachedFromRequest() {
   detached_from_request_ = true;
   DeleteIfNeeded();
 }
 
-void ServiceWorkerURLLoaderJob::StartRequest() {
+void ServiceWorkerNavigationLoader::StartRequest() {
   DCHECK_EQ(ResponseType::FORWARD_TO_SERVICE_WORKER, response_type_);
   DCHECK_EQ(Status::kNotStarted, status_);
   status_ = Status::kStarted;
@@ -179,10 +179,10 @@ void ServiceWorkerURLLoaderJob::StartRequest() {
       0 /* request_body_blob_size */, nullptr /* request_body_blob */,
       std::string() /* client_id */, active_worker,
       net::NetLogWithSource() /* TODO(scottmg): net log? */,
-      base::BindOnce(&ServiceWorkerURLLoaderJob::DidPrepareFetchEvent,
+      base::BindOnce(&ServiceWorkerNavigationLoader::DidPrepareFetchEvent,
                      weak_factory_.GetWeakPtr(),
                      base::WrapRefCounted(active_worker)),
-      base::BindOnce(&ServiceWorkerURLLoaderJob::DidDispatchFetchEvent,
+      base::BindOnce(&ServiceWorkerNavigationLoader::DidDispatchFetchEvent,
                      weak_factory_.GetWeakPtr()));
   did_navigation_preload_ =
       fetch_dispatcher_->MaybeStartNavigationPreloadWithURLLoader(
@@ -194,7 +194,7 @@ void ServiceWorkerURLLoaderJob::StartRequest() {
   fetch_dispatcher_->Run();
 }
 
-void ServiceWorkerURLLoaderJob::CommitResponseHeaders() {
+void ServiceWorkerNavigationLoader::CommitResponseHeaders() {
   DCHECK_EQ(Status::kStarted, status_);
   DCHECK(url_loader_client_.is_bound());
   status_ = Status::kSentHeader;
@@ -202,7 +202,7 @@ void ServiceWorkerURLLoaderJob::CommitResponseHeaders() {
                                         nullptr /* downloaded_file */);
 }
 
-void ServiceWorkerURLLoaderJob::CommitCompleted(int error_code) {
+void ServiceWorkerNavigationLoader::CommitCompleted(int error_code) {
   DCHECK_LT(status_, Status::kCompleted);
   DCHECK(url_loader_client_.is_bound());
   status_ = Status::kCompleted;
@@ -214,20 +214,20 @@ void ServiceWorkerURLLoaderJob::CommitCompleted(int error_code) {
       network::URLLoaderCompletionStatus(error_code));
 }
 
-void ServiceWorkerURLLoaderJob::ReturnNetworkError() {
+void ServiceWorkerNavigationLoader::ReturnNetworkError() {
   DCHECK(!url_loader_client_.is_bound());
   DCHECK(loader_callback_);
   std::move(loader_callback_)
-      .Run(base::BindOnce(&ServiceWorkerURLLoaderJob::StartErrorResponse,
+      .Run(base::BindOnce(&ServiceWorkerNavigationLoader::StartErrorResponse,
                           weak_factory_.GetWeakPtr()));
 }
 
-void ServiceWorkerURLLoaderJob::DidPrepareFetchEvent(
+void ServiceWorkerNavigationLoader::DidPrepareFetchEvent(
     scoped_refptr<ServiceWorkerVersion> version) {
   response_head_.service_worker_ready_time = base::TimeTicks::Now();
 }
 
-void ServiceWorkerURLLoaderJob::DidDispatchFetchEvent(
+void ServiceWorkerNavigationLoader::DidDispatchFetchEvent(
     ServiceWorkerStatusCode status,
     ServiceWorkerFetchDispatcher::FetchEventResult fetch_result,
     const ServiceWorkerResponse& response,
@@ -274,12 +274,12 @@ void ServiceWorkerURLLoaderJob::DidDispatchFetchEvent(
   ssl_info_ = main_script_http_info->ssl_info;
 
   std::move(loader_callback_)
-      .Run(base::BindOnce(&ServiceWorkerURLLoaderJob::StartResponse,
+      .Run(base::BindOnce(&ServiceWorkerNavigationLoader::StartResponse,
                           weak_factory_.GetWeakPtr(), response, version,
                           std::move(body_as_stream), std::move(body_as_blob)));
 }
 
-void ServiceWorkerURLLoaderJob::StartResponse(
+void ServiceWorkerNavigationLoader::StartResponse(
     const ServiceWorkerResponse& response,
     scoped_refptr<ServiceWorkerVersion> version,
     blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
@@ -290,7 +290,7 @@ void ServiceWorkerURLLoaderJob::StartResponse(
   DCHECK(!url_loader_client_.is_bound());
   binding_.Bind(std::move(request));
   binding_.set_connection_error_handler(base::BindOnce(
-      &ServiceWorkerURLLoaderJob::Cancel, base::Unretained(this)));
+      &ServiceWorkerNavigationLoader::Cancel, base::Unretained(this)));
   url_loader_client_ = std::move(client);
 
   ServiceWorkerLoaderHelpers::SaveResponseInfo(response, &response_head_);
@@ -336,7 +336,7 @@ void ServiceWorkerURLLoaderJob::StartResponse(
     mojo::ScopedDataPipeConsumerHandle data_pipe;
     int error = ServiceWorkerLoaderHelpers::ReadBlobResponseBody(
         &body_as_blob_, resource_request_.headers,
-        base::BindOnce(&ServiceWorkerURLLoaderJob::OnBlobReadingComplete,
+        base::BindOnce(&ServiceWorkerNavigationLoader::OnBlobReadingComplete,
                        weak_factory_.GetWeakPtr()),
         &data_pipe);
     if (error != net::OK) {
@@ -352,7 +352,7 @@ void ServiceWorkerURLLoaderJob::StartResponse(
   CommitCompleted(net::OK);
 }
 
-void ServiceWorkerURLLoaderJob::StartErrorResponse(
+void ServiceWorkerNavigationLoader::StartErrorResponse(
     network::mojom::URLLoaderRequest request,
     network::mojom::URLLoaderClientPtr client) {
   DCHECK_EQ(Status::kStarted, status_);
@@ -363,31 +363,31 @@ void ServiceWorkerURLLoaderJob::StartErrorResponse(
 
 // URLLoader implementation----------------------------------------
 
-void ServiceWorkerURLLoaderJob::FollowRedirect() {
+void ServiceWorkerNavigationLoader::FollowRedirect() {
   NOTIMPLEMENTED();
 }
 
-void ServiceWorkerURLLoaderJob::ProceedWithResponse() {
+void ServiceWorkerNavigationLoader::ProceedWithResponse() {
   // TODO(arthursonzogni): Implement this for navigation requests if the
   // ServiceWorker service is enabled before the Network Service.
   NOTREACHED();
 }
 
-void ServiceWorkerURLLoaderJob::SetPriority(net::RequestPriority priority,
-                                            int32_t intra_priority_value) {
+void ServiceWorkerNavigationLoader::SetPriority(net::RequestPriority priority,
+                                                int32_t intra_priority_value) {
   NOTIMPLEMENTED();
 }
 
-void ServiceWorkerURLLoaderJob::PauseReadingBodyFromNet() {}
+void ServiceWorkerNavigationLoader::PauseReadingBodyFromNet() {}
 
-void ServiceWorkerURLLoaderJob::ResumeReadingBodyFromNet() {}
+void ServiceWorkerNavigationLoader::ResumeReadingBodyFromNet() {}
 
-void ServiceWorkerURLLoaderJob::OnBlobReadingComplete(int net_error) {
+void ServiceWorkerNavigationLoader::OnBlobReadingComplete(int net_error) {
   CommitCompleted(net_error);
   body_as_blob_.reset();
 }
 
-void ServiceWorkerURLLoaderJob::DeleteIfNeeded() {
+void ServiceWorkerNavigationLoader::DeleteIfNeeded() {
   if (!binding_.is_bound() && detached_from_request_)
     delete this;
 }

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_SCRIPT_URL_LOADER_FACTORY_H_
-#define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_SCRIPT_URL_LOADER_FACTORY_H_
+#ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_SCRIPT_LOADER_FACTORY_H_
+#define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_SCRIPT_LOADER_FACTORY_H_
 
 #include "base/macros.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -17,16 +17,22 @@ class URLLoaderFactoryGetter;
 // S13nServiceWorker:
 // Created per one running service worker for loading its scripts (only during
 // installation, eventually). This is kept alive while
-// ServiceWorkerNetworkProvider in the renderer process is alive.  Used only
-// when IsServicificationEnabled is true.
-class ServiceWorkerScriptURLLoaderFactory
+// ServiceWorkerNetworkProvider in the renderer process is alive.
+//
+// This factory handles requests for the scripts of a new (installing)
+// service worker. For installed workers, service worker script streaming
+// (ServiceWorkerInstalledScriptsSender) is used instead.
+//
+// This factory creates either a ServiceWorkerNewScriptLoader or a
+// ServiceWorkerInstalledScriptLoader to load a script.
+class ServiceWorkerScriptLoaderFactory
     : public network::mojom::URLLoaderFactory {
  public:
-  ServiceWorkerScriptURLLoaderFactory(
+  ServiceWorkerScriptLoaderFactory(
       base::WeakPtr<ServiceWorkerContextCore> context,
       base::WeakPtr<ServiceWorkerProviderHost> provider_host,
       scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter);
-  ~ServiceWorkerScriptURLLoaderFactory() override;
+  ~ServiceWorkerScriptLoaderFactory() override;
 
   // network::mojom::URLLoaderFactory:
   void CreateLoaderAndStart(network::mojom::URLLoaderRequest request,
@@ -47,9 +53,9 @@ class ServiceWorkerScriptURLLoaderFactory
   base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
   scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter_;
 
-  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerScriptURLLoaderFactory);
+  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerScriptLoaderFactory);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_SCRIPT_URL_LOADER_FACTORY_H_
+#endif  // CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_SCRIPT_LOADER_FACTORY_H_

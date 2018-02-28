@@ -13,7 +13,7 @@
 namespace content {
 
 class ServiceWorkerURLRequestJob;
-class ServiceWorkerURLLoaderJob;
+class ServiceWorkerNavigationLoader;
 class ServiceWorkerVersion;
 
 // This class is a helper to support having
@@ -24,7 +24,7 @@ class ServiceWorkerVersion;
 // underlying implementation.
 class ServiceWorkerURLJobWrapper {
  public:
-  // A helper used by the ServiceWorkerURLLoaderJob or
+  // A helper used by the ServiceWorkerNavigationLoader or
   // ServiceWorkerURLRequestJob.
   class CONTENT_EXPORT Delegate {
    public:
@@ -32,7 +32,7 @@ class ServiceWorkerURLJobWrapper {
 
     // Will be invoked before the request is restarted. The caller
     // can use this opportunity to grab state from the
-    // ServiceWorkerURLLoaderJob or ServiceWorkerURLRequestJob to determine
+    // ServiceWorkerNavigationLoader or ServiceWorkerURLRequestJob to determine
     // how it should behave when the request is restarted.
     virtual void OnPrepareToRestart() = 0;
 
@@ -59,7 +59,7 @@ class ServiceWorkerURLJobWrapper {
 
   // S13nServiceWorker.
   explicit ServiceWorkerURLJobWrapper(
-      std::unique_ptr<ServiceWorkerURLLoaderJob> url_loader_job);
+      std::unique_ptr<ServiceWorkerNavigationLoader> url_loader_job);
 
   ~ServiceWorkerURLJobWrapper();
 
@@ -83,7 +83,7 @@ class ServiceWorkerURLJobWrapper {
  private:
   enum class JobType { kURLRequest, kURLLoader };
   base::WeakPtr<ServiceWorkerURLRequestJob> url_request_job_;
-  std::unique_ptr<ServiceWorkerURLLoaderJob> url_loader_job_;
+  std::unique_ptr<ServiceWorkerNavigationLoader> url_loader_job_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerURLJobWrapper);
 };

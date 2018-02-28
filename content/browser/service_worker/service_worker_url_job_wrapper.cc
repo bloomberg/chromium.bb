@@ -4,7 +4,7 @@
 
 #include "content/browser/service_worker/service_worker_url_job_wrapper.h"
 
-#include "content/browser/service_worker/service_worker_url_loader_job.h"
+#include "content/browser/service_worker/service_worker_navigation_loader.h"
 #include "content/browser/service_worker/service_worker_url_request_job.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/content_switches.h"
@@ -16,7 +16,7 @@ ServiceWorkerURLJobWrapper::ServiceWorkerURLJobWrapper(
     : url_request_job_(std::move(url_request_job)) {}
 
 ServiceWorkerURLJobWrapper::ServiceWorkerURLJobWrapper(
-    std::unique_ptr<ServiceWorkerURLLoaderJob> url_loader_job)
+    std::unique_ptr<ServiceWorkerNavigationLoader> url_loader_job)
     : url_loader_job_(std::move(url_loader_job)) {}
 
 ServiceWorkerURLJobWrapper::~ServiceWorkerURLJobWrapper() {

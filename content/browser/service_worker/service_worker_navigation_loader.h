@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_URL_LOADER_JOB_H_
-#define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_URL_LOADER_JOB_H_
+#ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_NAVIGATION_LOADER_H_
+#define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_NAVIGATION_LOADER_H_
 
 #include <memory>
 #include <vector>
@@ -30,12 +30,18 @@ struct ServiceWorkerResponse;
 class ServiceWorkerVersion;
 
 // S13nServiceWorker:
-// ServiceWorkerURLLoaderJob works similar to ServiceWorkerURLRequestJob
-// but with network::mojom::URLLoader instead of URLRequest.
+// ServiceWorkerNavigationLoader is the URLLoader used for navigation requests
+// that (potentially) go through a service worker. This loader is only used for
+// the main resource request; once the navigation is committed, the page loads
+// subresources via ServiceWorkerSubresourceLoader.
+//
+// This class works similarly to ServiceWorkerURLRequestJob but with
+// network::mojom::URLLoader instead of URLRequest.
+//
 // This class is owned by the job wrapper until it is bound to a URLLoader
 // request. After it is bound |this| is kept alive until the Mojo connection
 // to this URLLoader is dropped.
-class CONTENT_EXPORT ServiceWorkerURLLoaderJob
+class CONTENT_EXPORT ServiceWorkerNavigationLoader
     : public network::mojom::URLLoader {
  public:
   using Delegate = ServiceWorkerURLJobWrapper::Delegate;
@@ -65,13 +71,13 @@ class CONTENT_EXPORT ServiceWorkerURLLoaderJob
   //    NavigationURLLoaderNetworkService (for resource loading for navigation).
   //    This forwards the blob/stream data pipe to the NavigationURLLoader if
   //    the response body was sent as a blob/stream.
-  ServiceWorkerURLLoaderJob(
+  ServiceWorkerNavigationLoader(
       URLLoaderRequestHandler::LoaderCallback loader_callback,
       Delegate* delegate,
       const network::ResourceRequest& resource_request,
       scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter);
 
-  ~ServiceWorkerURLLoaderJob() override;
+  ~ServiceWorkerNavigationLoader() override;
 
   // Called via URLJobWrapper.
   void FallbackToNetwork();
@@ -171,11 +177,11 @@ class CONTENT_EXPORT ServiceWorkerURLLoaderJob
 
   bool detached_from_request_ = false;
 
-  base::WeakPtrFactory<ServiceWorkerURLLoaderJob> weak_factory_;
+  base::WeakPtrFactory<ServiceWorkerNavigationLoader> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerURLLoaderJob);
+  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerNavigationLoader);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_URL_LOADER_JOB_H_
+#endif  // CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_NAVIGATION_LOADER_H_

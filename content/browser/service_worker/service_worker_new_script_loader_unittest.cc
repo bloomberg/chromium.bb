@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/service_worker/service_worker_script_url_loader.h"
+#include "content/browser/service_worker/service_worker_new_script_loader.h"
 
 #include <map>
 #include <utility>
@@ -32,7 +32,7 @@ namespace {
 const char kNormalScriptURL[] = "https://example.com/normal.js";
 
 // MockHTTPServer is a utility to provide mocked responses for
-// ServiceWorkerScriptURLLoader.
+// ServiceWorkerNewScriptLoader.
 class MockHTTPServer {
  public:
   struct Response {
@@ -61,10 +61,10 @@ class MockHTTPServer {
 
 // A URLLoaderFactory that returns a mocked response provided by MockHTTPServer.
 //
-// TODO(nhiroki): We copied this from service_worker_url_loader_job_unittest.cc
-// instead of making it a common test helper because we might want to customize
-// the mock factory to add more tests later. Merge this and that if we're
-// convinced it's better.
+// TODO(nhiroki): We copied this from
+// service_worker_navigation_loader_unittest.cc instead of making it a common
+// test helper because we might want to customize the mock factory to add more
+// tests later. Merge this and that if we're convinced it's better.
 class MockNetworkURLLoaderFactory final
     : public network::mojom::URLLoaderFactory {
  public:
@@ -120,7 +120,7 @@ class MockNetworkURLLoaderFactory final
   }
 
  private:
-  // This is owned by ServiceWorkerScriptURLLoaderTest.
+  // This is owned by ServiceWorkerNewScriptLoaderTest.
   MockHTTPServer* mock_server_;
 
   DISALLOW_COPY_AND_ASSIGN(MockNetworkURLLoaderFactory);
@@ -128,14 +128,14 @@ class MockNetworkURLLoaderFactory final
 
 }  // namespace
 
-// ServiceWorkerScriptURLLoaderTest is for testing the handling of requests for
-// installing service worker scripts via ServiceWorkerScriptURLLoader.
-class ServiceWorkerScriptURLLoaderTest : public testing::Test {
+// ServiceWorkerNewScriptLoaderTest is for testing the handling of requests for
+// installing service worker scripts via ServiceWorkerNewScriptLoader.
+class ServiceWorkerNewScriptLoaderTest : public testing::Test {
  public:
-  ServiceWorkerScriptURLLoaderTest()
+  ServiceWorkerNewScriptLoaderTest()
       : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
         mock_server_(std::make_unique<MockHTTPServer>()) {}
-  ~ServiceWorkerScriptURLLoaderTest() override = default;
+  ~ServiceWorkerNewScriptLoaderTest() override = default;
 
   ServiceWorkerContextCore* context() { return helper_->context(); }
 
@@ -226,7 +226,7 @@ class ServiceWorkerScriptURLLoaderTest : public testing::Test {
     DCHECK(!loader_);
     DCHECK(!client_);
     client_ = std::make_unique<network::TestURLLoaderClient>();
-    loader_ = std::make_unique<ServiceWorkerScriptURLLoader>(
+    loader_ = std::make_unique<ServiceWorkerNewScriptLoader>(
         routing_id, request_id, options, request, client_->CreateInterfacePtr(),
         version_, helper_->url_loader_factory_getter(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
@@ -285,13 +285,13 @@ class ServiceWorkerScriptURLLoaderTest : public testing::Test {
 
   scoped_refptr<ServiceWorkerRegistration> registration_;
   scoped_refptr<ServiceWorkerVersion> version_;
-  std::unique_ptr<ServiceWorkerScriptURLLoader> loader_;
+  std::unique_ptr<ServiceWorkerNewScriptLoader> loader_;
   std::unique_ptr<MockHTTPServer> mock_server_;
 
   std::unique_ptr<network::TestURLLoaderClient> client_;
 };
 
-TEST_F(ServiceWorkerScriptURLLoaderTest, Success) {
+TEST_F(ServiceWorkerNewScriptLoaderTest, Success) {
   const GURL kScriptURL(kNormalScriptURL);
   SetUpRegistration(kScriptURL);
   DoRequest(kScriptURL);
@@ -310,7 +310,7 @@ TEST_F(ServiceWorkerScriptURLLoaderTest, Success) {
   EXPECT_TRUE(VerifyStoredResponse(kScriptURL));
 }
 
-TEST_F(ServiceWorkerScriptURLLoaderTest, Success_EmptyBody) {
+TEST_F(ServiceWorkerNewScriptLoaderTest, Success_EmptyBody) {
   const GURL kScriptURL("https://example.com/empty.js");
   mock_server_->Set(
       kScriptURL,
@@ -334,13 +334,13 @@ TEST_F(ServiceWorkerScriptURLLoaderTest, Success_EmptyBody) {
   EXPECT_TRUE(VerifyStoredResponse(kScriptURL));
 }
 
-TEST_F(ServiceWorkerScriptURLLoaderTest, Success_LargeBody) {
+TEST_F(ServiceWorkerNewScriptLoaderTest, Success_LargeBody) {
   // Create a response that has a larger body than the script loader's buffer
   // to test chunked data write. We chose this multiplier to avoid hitting the
   // limit of mojo's data pipe buffer (it's about kReadBufferSize * 2 as of
   // now).
   const uint32_t kBodySize =
-      ServiceWorkerScriptURLLoader::kReadBufferSize * 1.6;
+      ServiceWorkerNewScriptLoader::kReadBufferSize * 1.6;
   const GURL kScriptURL("https://example.com/large-body.js");
   mock_server_->Set(
       kScriptURL,
@@ -364,7 +364,7 @@ TEST_F(ServiceWorkerScriptURLLoaderTest, Success_LargeBody) {
   EXPECT_TRUE(VerifyStoredResponse(kScriptURL));
 }
 
-TEST_F(ServiceWorkerScriptURLLoaderTest, Error_404) {
+TEST_F(ServiceWorkerNewScriptLoaderTest, Error_404) {
   const GURL kScriptURL("https://example.com/nonexistent.js");
   mock_server_->Set(kScriptURL, MockHTTPServer::Response(
                                     std::string("HTTP/1.1 404 Not Found\n\n"),
@@ -381,7 +381,7 @@ TEST_F(ServiceWorkerScriptURLLoaderTest, Error_404) {
   EXPECT_FALSE(VerifyStoredResponse(kScriptURL));
 }
 
-TEST_F(ServiceWorkerScriptURLLoaderTest, Error_Redirect) {
+TEST_F(ServiceWorkerNewScriptLoaderTest, Error_Redirect) {
   const GURL kScriptURL("https://example.com/redirect.js");
   mock_server_->Set(
       kScriptURL,
@@ -399,7 +399,7 @@ TEST_F(ServiceWorkerScriptURLLoaderTest, Error_Redirect) {
   EXPECT_FALSE(VerifyStoredResponse(kScriptURL));
 }
 
-TEST_F(ServiceWorkerScriptURLLoaderTest, Error_CertificateError) {
+TEST_F(ServiceWorkerNewScriptLoaderTest, Error_CertificateError) {
   // Serve a response with a certificate error.
   const GURL kScriptURL("https://example.com/certificate-error.js");
   MockHTTPServer::Response response(std::string("HTTP/1.1 200 OK\n\n"),
@@ -420,7 +420,7 @@ TEST_F(ServiceWorkerScriptURLLoaderTest, Error_CertificateError) {
   EXPECT_FALSE(VerifyStoredResponse(kScriptURL));
 }
 
-TEST_F(ServiceWorkerScriptURLLoaderTest, Error_NoMimeType) {
+TEST_F(ServiceWorkerNewScriptLoaderTest, Error_NoMimeType) {
   const GURL kScriptURL("https://example.com/no-mime-type.js");
   mock_server_->Set(kScriptURL, MockHTTPServer::Response(
                                     std::string("HTTP/1.1 200 OK\n\n"),
@@ -438,7 +438,7 @@ TEST_F(ServiceWorkerScriptURLLoaderTest, Error_NoMimeType) {
   EXPECT_FALSE(VerifyStoredResponse(kScriptURL));
 }
 
-TEST_F(ServiceWorkerScriptURLLoaderTest, Error_BadMimeType) {
+TEST_F(ServiceWorkerNewScriptLoaderTest, Error_BadMimeType) {
   const GURL kScriptURL("https://example.com/bad-mime-type.js");
   mock_server_->Set(kScriptURL, MockHTTPServer::Response(
                                     std::string("HTTP/1.1 200 OK\n"
@@ -458,7 +458,7 @@ TEST_F(ServiceWorkerScriptURLLoaderTest, Error_BadMimeType) {
   EXPECT_FALSE(VerifyStoredResponse(kScriptURL));
 }
 
-TEST_F(ServiceWorkerScriptURLLoaderTest, Success_PathRestriction) {
+TEST_F(ServiceWorkerNewScriptLoaderTest, Success_PathRestriction) {
   // |kScope| is not under the default scope ("/out-of-scope/"), but the
   // Service-Worker-Allowed header allows it.
   const GURL kScriptURL("https://example.com/out-of-scope/normal.js");
@@ -486,7 +486,7 @@ TEST_F(ServiceWorkerScriptURLLoaderTest, Success_PathRestriction) {
   EXPECT_TRUE(VerifyStoredResponse(kScriptURL));
 }
 
-TEST_F(ServiceWorkerScriptURLLoaderTest, Error_PathRestriction) {
+TEST_F(ServiceWorkerNewScriptLoaderTest, Error_PathRestriction) {
   // |kScope| is not under the default scope ("/out-of-scope/") and the
   // Service-Worker-Allowed header is not specified.
   const GURL kScriptURL("https://example.com/out-of-scope/normal.js");
@@ -509,7 +509,7 @@ TEST_F(ServiceWorkerScriptURLLoaderTest, Error_PathRestriction) {
   EXPECT_FALSE(VerifyStoredResponse(kScriptURL));
 }
 
-TEST_F(ServiceWorkerScriptURLLoaderTest, Error_RedundantWorker) {
+TEST_F(ServiceWorkerNewScriptLoaderTest, Error_RedundantWorker) {
   const GURL kScriptURL(kNormalScriptURL);
   SetUpRegistration(kScriptURL);
   DoRequest(kScriptURL);
@@ -528,7 +528,7 @@ TEST_F(ServiceWorkerScriptURLLoaderTest, Error_RedundantWorker) {
   EXPECT_FALSE(VerifyStoredResponse(kScriptURL));
 }
 
-TEST_F(ServiceWorkerScriptURLLoaderTest, Update) {
+TEST_F(ServiceWorkerNewScriptLoaderTest, Update) {
   // Set up a registration with an incumbent.
   const GURL kScriptURL(kNormalScriptURL);
   SetUpRegistration(kScriptURL);
@@ -549,7 +549,7 @@ TEST_F(ServiceWorkerScriptURLLoaderTest, Update) {
   EXPECT_EQ(1UL, version_->script_cache_map()->size());
 }
 
-TEST_F(ServiceWorkerScriptURLLoaderTest, Update_IdenticalScript) {
+TEST_F(ServiceWorkerNewScriptLoaderTest, Update_IdenticalScript) {
   // Set up a registration with an incumbent.
   const GURL kScriptURL(kNormalScriptURL);
   SetUpRegistration(kScriptURL);
