@@ -155,20 +155,6 @@ std::unique_ptr<base::ListValue> ProxyList::ToValue() const {
 bool ProxyList::Fallback(ProxyRetryInfoMap* proxy_retry_info,
                          int net_error,
                          const NetLogWithSource& net_log) {
-  // TODO(eroman): It would be good if instead of removing failed proxies
-  // from the list, we simply annotated them with the error code they failed
-  // with. Of course, ProxyResolutionService::ReconsiderProxyAfterError() would
-  // need to be given this information by the network transaction.
-  //
-  // The advantage of this approach is when the network transaction
-  // fails, we could output the full list of proxies that were attempted, and
-  // why each one of those failed (as opposed to just the last failure).
-  //
-  // And also, before failing the transaction wholesale, we could go back and
-  // retry the "bad proxies" which we never tried to begin with.
-  // (RemoveBadProxies would annotate them as 'expected bad' rather then delete
-  // them from the list, so we would know what they were).
-
   if (proxies_.empty()) {
     NOTREACHED();
     return false;
