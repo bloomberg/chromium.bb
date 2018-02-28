@@ -172,8 +172,12 @@ void NetworkStateNotifier::ConnectFailed(const std::string& service_path,
   const NetworkState* network =
       NetworkHandler::Get()->network_state_handler()->GetNetworkState(
           service_path);
-  if (ShouldConnectFailedNotificationBeShown(error_name, network))
-    ShowNetworkConnectErrorForGuid(error_name, network ? network->guid() : "");
+  if (!ShouldConnectFailedNotificationBeShown(error_name, network)) {
+    NET_LOG(EVENT) << "Skipping notification for: " << service_path
+                   << " Error: " << error_name;
+    return;
+  }
+  ShowNetworkConnectErrorForGuid(error_name, network ? network->guid() : "");
 }
 
 void NetworkStateNotifier::DisconnectRequested(
@@ -348,6 +352,7 @@ void NetworkStateNotifier::ConnectErrorPropertiesSucceeded(
   shill_properties.GetStringWithoutPathExpansion(shill::kStateProperty, &state);
   if (NetworkState::StateIsConnected(state) ||
       NetworkState::StateIsConnecting(state)) {
+    NET_LOG(EVENT) << "Skipping connect error notification. State: " << state;
     // Network is no longer in an error state. This can happen if an
     // unexpected idle state transition occurs, see http://crbug.com/333955.
     return;

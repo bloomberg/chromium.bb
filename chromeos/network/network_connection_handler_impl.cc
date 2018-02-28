@@ -237,7 +237,7 @@ void NetworkConnectionHandlerImpl::ConnectToNetwork(
   // Clear any existing queued connect request.
   queued_connect_.reset();
   if (HasConnectingNetwork(service_path)) {
-    NET_LOG_USER("Connect Request While Pending", service_path);
+    NET_LOG(USER) << "Connect Request while pending: " << service_path;
     InvokeConnectErrorCallback(service_path, error_callback, kErrorConnecting);
     return;
   }
@@ -252,6 +252,7 @@ void NetworkConnectionHandlerImpl::ConnectToNetwork(
   if (network) {
     // For existing networks, perform some immediate consistency checks.
     if (network->IsConnectedState()) {
+      NET_LOG(ERROR) << "Connect Request while connected: " << service_path;
       InvokeConnectErrorCallback(service_path, error_callback, kErrorConnected);
       return;
     }
@@ -742,10 +743,10 @@ void NetworkConnectionHandlerImpl::HandleShillConnectFailure(
   } else if (dbus_error_name == shill::kErrorResultInProgress) {
     error = kErrorConnecting;
   } else {
-    NET_LOG_ERROR("Connect Failure, Shill error: " + dbus_error_name,
-                  service_path);
     error = kErrorConnectFailed;
   }
+  NET_LOG(ERROR) << "Connect Failure: " << service_path << " Error: " << error
+                 << " Shill error: " << dbus_error_name;
   InvokeConnectErrorCallback(service_path, error_callback, error);
 }
 
