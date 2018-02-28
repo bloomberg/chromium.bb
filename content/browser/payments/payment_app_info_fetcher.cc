@@ -79,24 +79,24 @@ void PaymentAppInfoFetcher::SelfDeleteFetcher::Start(
   }
 
   for (const auto& frame : *provider_hosts) {
+    // Find out the render frame host registering the payment app.
     RenderFrameHostImpl* render_frame_host =
         RenderFrameHostImpl::FromID(frame.first, frame.second);
-    if (!render_frame_host)
-      continue;
-
-    WebContentsImpl* context_web_content = static_cast<WebContentsImpl*>(
-        WebContents::FromRenderFrameHost(render_frame_host));
-    if (!context_web_content || context_web_content->IsHidden() ||
+    if (!render_frame_host ||
         context_url.spec().compare(
-            context_web_content->GetLastCommittedURL().spec()) != 0) {
+            render_frame_host->GetLastCommittedURL().spec()) != 0) {
       continue;
     }
 
     // Get the main frame since web app manifest is only available in the main
     // frame's document by definition. The main frame's document must come from
     // the same origin.
+    RenderFrameHostImpl* top_level_render_frame_host = render_frame_host;
+    while (top_level_render_frame_host->GetParent() != nullptr) {
+      top_level_render_frame_host = top_level_render_frame_host->GetParent();
+    }
     WebContentsImpl* top_level_web_content = static_cast<WebContentsImpl*>(
-        WebContents::FromRenderFrameHost(context_web_content->GetMainFrame()));
+        WebContents::FromRenderFrameHost(top_level_render_frame_host));
     if (!top_level_web_content || top_level_web_content->IsHidden() ||
         !url::IsSameOriginWith(context_url,
                                top_level_web_content->GetLastCommittedURL())) {
