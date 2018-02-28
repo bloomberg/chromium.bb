@@ -44,6 +44,10 @@ class PLATFORM_EXPORT Matrix3DTransformOperation final
     return false;
   }
 
+  static bool IsMatchingOperationType(OperationType type) {
+    return type == kMatrix3D;
+  }
+
  private:
   OperationType GetType() const override { return kMatrix3D; }
 
@@ -69,6 +73,8 @@ class PLATFORM_EXPORT Matrix3DTransformOperation final
 
   TransformationMatrix matrix_;
 };
+
+DEFINE_TRANSFORM_TYPE_CASTS(Matrix3DTransformOperation);
 
 }  // namespace blink
 

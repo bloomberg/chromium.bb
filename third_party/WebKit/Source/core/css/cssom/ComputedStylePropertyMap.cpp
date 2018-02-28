@@ -5,13 +5,157 @@
 #include "core/css/cssom/ComputedStylePropertyMap.h"
 
 #include "core/css/CSSCustomPropertyDeclaration.h"
+#include "core/css/CSSFunctionValue.h"
+#include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSVariableData.h"
 #include "core/css/ComputedStyleCSSValueMapping.h"
 #include "core/dom/Document.h"
 #include "core/dom/PseudoElement.h"
 #include "core/style/ComputedStyle.h"
+#include "platform/transforms/Matrix3DTransformOperation.h"
+#include "platform/transforms/MatrixTransformOperation.h"
+#include "platform/transforms/PerspectiveTransformOperation.h"
+#include "platform/transforms/SkewTransformOperation.h"
 
 namespace blink {
+
+namespace {
+
+// We collapse functions like translateX into translate, since we will reify
+// them as a translate anyway.
+const CSSValue* ComputedTransformComponent(const TransformOperation& operation,
+                                           float zoom) {
+  switch (operation.GetType()) {
+    case TransformOperation::kScaleX:
+    case TransformOperation::kScaleY:
+    case TransformOperation::kScaleZ:
+    case TransformOperation::kScale:
+    case TransformOperation::kScale3D: {
+      const auto& scale = ToScaleTransformOperation(operation);
+      CSSFunctionValue* result = CSSFunctionValue::Create(
+          operation.Is3DOperation() ? CSSValueScale3d : CSSValueScale);
+      result->Append(*CSSPrimitiveValue::Create(
+          scale.X(), CSSPrimitiveValue::UnitType::kNumber));
+      result->Append(*CSSPrimitiveValue::Create(
+          scale.Y(), CSSPrimitiveValue::UnitType::kNumber));
+      if (operation.Is3DOperation()) {
+        result->Append(*CSSPrimitiveValue::Create(
+            scale.Z(), CSSPrimitiveValue::UnitType::kNumber));
+      }
+      return result;
+    }
+    case TransformOperation::kTranslateX:
+    case TransformOperation::kTranslateY:
+    case TransformOperation::kTranslateZ:
+    case TransformOperation::kTranslate:
+    case TransformOperation::kTranslate3D: {
+      const auto& translate = ToTranslateTransformOperation(operation);
+      CSSFunctionValue* result = CSSFunctionValue::Create(
+          operation.Is3DOperation() ? CSSValueTranslate3d : CSSValueTranslate);
+      result->Append(*CSSPrimitiveValue::Create(translate.X(), zoom));
+      result->Append(*CSSPrimitiveValue::Create(translate.Y(), zoom));
+      if (operation.Is3DOperation()) {
+        result->Append(*CSSPrimitiveValue::Create(
+            translate.Z(), CSSPrimitiveValue::UnitType::kPixels));
+      }
+      return result;
+    }
+    case TransformOperation::kRotateX:
+    case TransformOperation::kRotateY:
+    case TransformOperation::kRotate3D: {
+      const auto& rotate = ToRotateTransformOperation(operation);
+      CSSFunctionValue* result = CSSFunctionValue::Create(CSSValueRotate3d);
+      result->Append(*CSSPrimitiveValue::Create(
+          rotate.X(), CSSPrimitiveValue::UnitType::kNumber));
+      result->Append(*CSSPrimitiveValue::Create(
+          rotate.Y(), CSSPrimitiveValue::UnitType::kNumber));
+      result->Append(*CSSPrimitiveValue::Create(
+          rotate.Z(), CSSPrimitiveValue::UnitType::kNumber));
+      result->Append(*CSSPrimitiveValue::Create(
+          rotate.Angle(), CSSPrimitiveValue::UnitType::kDegrees));
+      return result;
+    }
+    case TransformOperation::kRotate: {
+      const auto& rotate = ToRotateTransformOperation(operation);
+      CSSFunctionValue* result = CSSFunctionValue::Create(CSSValueRotate);
+      result->Append(*CSSPrimitiveValue::Create(
+          rotate.Angle(), CSSPrimitiveValue::UnitType::kDegrees));
+      return result;
+    }
+    case TransformOperation::kSkewX: {
+      const auto& skew = ToSkewTransformOperation(operation);
+      CSSFunctionValue* result = CSSFunctionValue::Create(CSSValueSkewX);
+      result->Append(*CSSPrimitiveValue::Create(
+          skew.AngleX(), CSSPrimitiveValue::UnitType::kDegrees));
+      return result;
+    }
+    case TransformOperation::kSkewY: {
+      const auto& skew = ToSkewTransformOperation(operation);
+      CSSFunctionValue* result = CSSFunctionValue::Create(CSSValueSkewY);
+      result->Append(*CSSPrimitiveValue::Create(
+          skew.AngleY(), CSSPrimitiveValue::UnitType::kDegrees));
+      return result;
+    }
+    case TransformOperation::kSkew: {
+      const auto& skew = ToSkewTransformOperation(operation);
+      CSSFunctionValue* result = CSSFunctionValue::Create(CSSValueSkew);
+      result->Append(*CSSPrimitiveValue::Create(
+          skew.AngleX(), CSSPrimitiveValue::UnitType::kDegrees));
+      result->Append(*CSSPrimitiveValue::Create(
+          skew.AngleY(), CSSPrimitiveValue::UnitType::kDegrees));
+      return result;
+    }
+    case TransformOperation::kPerspective: {
+      const auto& perspective = ToPerspectiveTransformOperation(operation);
+      CSSFunctionValue* result = CSSFunctionValue::Create(CSSValuePerspective);
+      result->Append(*CSSPrimitiveValue::Create(
+          perspective.Perspective(), CSSPrimitiveValue::UnitType::kPixels));
+      return result;
+    }
+    case TransformOperation::kMatrix: {
+      const auto& matrix = ToMatrixTransformOperation(operation).Matrix();
+      CSSFunctionValue* result = CSSFunctionValue::Create(CSSValueMatrix);
+      double values[6] = {matrix.A(), matrix.B(), matrix.C(),
+                          matrix.D(), matrix.E(), matrix.F()};
+      for (double value : values) {
+        result->Append(*CSSPrimitiveValue::Create(
+            value, CSSPrimitiveValue::UnitType::kNumber));
+      }
+      return result;
+    }
+    case TransformOperation::kMatrix3D: {
+      const auto& matrix = ToMatrix3DTransformOperation(operation).Matrix();
+      CSSFunctionValue* result = CSSFunctionValue::Create(CSSValueMatrix3d);
+      double values[16] = {
+          matrix.M11(), matrix.M12(), matrix.M13(), matrix.M14(),
+          matrix.M21(), matrix.M22(), matrix.M23(), matrix.M24(),
+          matrix.M31(), matrix.M32(), matrix.M33(), matrix.M34(),
+          matrix.M41(), matrix.M42(), matrix.M43(), matrix.M44()};
+      for (double value : values) {
+        result->Append(*CSSPrimitiveValue::Create(
+            value, CSSPrimitiveValue::UnitType::kNumber));
+      }
+      return result;
+    }
+    default:
+      NOTREACHED();
+      return nullptr;
+  }
+}
+
+const CSSValue* ComputedTransform(const ComputedStyle& style) {
+  if (style.Transform().Operations().size() == 0)
+    return CSSIdentifierValue::Create(CSSValueNone);
+
+  CSSValueList* components = CSSValueList::CreateSpaceSeparated();
+  for (const auto& operation : style.Transform().Operations()) {
+    components->Append(
+        *ComputedTransformComponent(*operation, style.EffectiveZoom()));
+  }
+  return components;
+}
+
+}  // namespace
 
 unsigned int ComputedStylePropertyMap::size() {
   const ComputedStyle* style = UpdateStyle();
@@ -63,9 +207,17 @@ const CSSValue* ComputedStylePropertyMap::GetProperty(
   const ComputedStyle* style = UpdateStyle();
   if (!style)
     return nullptr;
-  return CSSProperty::Get(property_id)
-      .CSSValueFromComputedStyle(*style, nullptr /* layout_object */,
-                                 StyledNode(), false);
+
+  // Special cases for properties where CSSProperty::CSSValueFromComputedStyle
+  // doesn't return the correct computed value
+  switch (property_id) {
+    case CSSPropertyTransform:
+      return ComputedTransform(*style);
+    default:
+      return CSSProperty::Get(property_id)
+          .CSSValueFromComputedStyle(*style, nullptr /* layout_object */,
+                                     StyledNode(), false);
+  }
 }
 
 const CSSValue* ComputedStylePropertyMap::GetCustomProperty(

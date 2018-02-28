@@ -55,6 +55,10 @@ class PLATFORM_EXPORT MatrixTransformOperation final
     return false;
   }
 
+  static bool IsMatchingOperationType(OperationType type) {
+    return type == kMatrix;
+  }
+
  private:
   OperationType GetType() const override { return kMatrix; }
 
@@ -97,6 +101,8 @@ class PLATFORM_EXPORT MatrixTransformOperation final
   double e_;
   double f_;
 };
+
+DEFINE_TRANSFORM_TYPE_CASTS(MatrixTransformOperation);
 
 }  // namespace blink
 
