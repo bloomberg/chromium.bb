@@ -141,6 +141,8 @@ class WebrtcTransport : public Transport {
 
   bool connected_ = false;
 
+  bool want_ice_restart_ = false;
+
   std::unique_ptr<buzz::XmlElement> pending_transport_info_message_;
   base::OneShotTimer transport_info_timer_;
 
