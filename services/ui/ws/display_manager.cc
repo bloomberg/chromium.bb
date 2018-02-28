@@ -168,7 +168,7 @@ bool DisplayManager::SetDisplayConfiguration(
     }
   }
   for (size_t i = 0; i < mirrors.size(); ++i) {
-    NOTIMPLEMENTED() << "TODO(crbug.com/764472): Mus mirroring/unified mode.";
+    NOTIMPLEMENTED() << "TODO(crbug.com/806318): Mus+Viz mirroring/unified";
     Display* ws_mirror = GetDisplayById(mirrors[i].id());
     const auto& metrics = viewport_metrics[displays.size() + i];
     if (!ws_mirror) {
