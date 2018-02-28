@@ -73,14 +73,19 @@ class HostScanSchedulerImplTest : public NetworkStateTest {
         network_state_handler(), fake_host_scanner_.get(),
         session_manager_.get());
 
-    mock_timer_ = new base::MockTimer(true /* retain_user_task */,
-                                      false /* is_repeating */);
+    mock_host_scan_batch_timer_ = new base::MockTimer(
+        true /* retain_user_task */, false /* is_repeating */);
+    mock_delay_scan_after_unlock_timer_ = new base::MockTimer(
+        true /* retain_user_task */, false /* is_repeating */);
+
     // Advance the clock by an arbitrary value to ensure that when Now() is
     // called, the Unix epoch will not be returned.
     test_clock_.Advance(base::TimeDelta::FromSeconds(10));
     test_task_runner_ = base::MakeRefCounted<base::TestSimpleTaskRunner>();
-    host_scan_scheduler_->SetTestDoubles(base::WrapUnique(mock_timer_),
-                                         &test_clock_, test_task_runner_);
+    host_scan_scheduler_->SetTestDoubles(
+        base::WrapUnique(mock_host_scan_batch_timer_),
+        base::WrapUnique(mock_delay_scan_after_unlock_timer_), &test_clock_,
+        test_task_runner_);
   }
 
   void TearDown() override {
@@ -159,7 +164,8 @@ class HostScanSchedulerImplTest : public NetworkStateTest {
   std::unique_ptr<FakeHostScanner> fake_host_scanner_;
   std::unique_ptr<session_manager::SessionManager> session_manager_;
 
-  base::MockTimer* mock_timer_;
+  base::MockTimer* mock_host_scan_batch_timer_;
+  base::MockTimer* mock_delay_scan_after_unlock_timer_;
   base::SimpleTestClock test_clock_;
   scoped_refptr<base::TestSimpleTaskRunner> test_task_runner_;
 
@@ -181,7 +187,7 @@ TEST_F(HostScanSchedulerImplTest, ScheduleScan) {
       network_state_handler()->GetScanningByType(NetworkTypePattern::Tether()));
 
   // Fire the timer; the duration should be recorded.
-  mock_timer_->Fire();
+  mock_host_scan_batch_timer_->Fire();
   VerifyScanDuration(5u /* expected_num_sections */);
 }
 
@@ -189,9 +195,16 @@ TEST_F(HostScanSchedulerImplTest, ScansWhenDeviceUnlocked) {
   // Lock the screen. This should not trigger a scan.
   SetScreenLockedState(true /* is_locked */);
   EXPECT_EQ(0u, fake_host_scanner_->num_scans_started());
+  EXPECT_FALSE(mock_delay_scan_after_unlock_timer_->IsRunning());
 
-  // Unlock the screen. A scan should start.
+  // Unlock the screen. A scan should not yet have been started, but the timer
+  // should have.
   SetScreenLockedState(false /* is_locked */);
+  EXPECT_EQ(0u, fake_host_scanner_->num_scans_started());
+  ASSERT_TRUE(mock_delay_scan_after_unlock_timer_->IsRunning());
+
+  // Fire the timer; this should start the scan.
+  mock_delay_scan_after_unlock_timer_->Fire();
   EXPECT_EQ(1u, fake_host_scanner_->num_scans_started());
 }
 
@@ -213,7 +226,7 @@ TEST_F(HostScanSchedulerImplTest, ScanRequested) {
   EXPECT_EQ(1u, fake_host_scanner_->num_scans_started());
   EXPECT_FALSE(
       network_state_handler()->GetScanningByType(NetworkTypePattern::Tether()));
-  mock_timer_->Fire();
+  mock_host_scan_batch_timer_->Fire();
   VerifyScanDuration(5u /* expected_num_sections */);
 
   // A new scan should be allowed once a scan is not active.
@@ -243,39 +256,42 @@ TEST_F(HostScanSchedulerImplTest, HostScanBatchMetric) {
   host_scan_scheduler_->ScheduleScan();
   test_clock_.Advance(base::TimeDelta::FromSeconds(5));
   fake_host_scanner_->StopScan();
-  EXPECT_TRUE(mock_timer_->IsRunning());
+  EXPECT_TRUE(mock_host_scan_batch_timer_->IsRunning());
 
   // Advance the clock by 1 second and start another scan. The timer should have
   // been stopped.
   test_clock_.Advance(base::TimeDelta::FromSeconds(1));
-  EXPECT_LT(base::TimeDelta::FromSeconds(1), mock_timer_->GetCurrentDelay());
+  EXPECT_LT(base::TimeDelta::FromSeconds(1),
+            mock_host_scan_batch_timer_->GetCurrentDelay());
   host_scan_scheduler_->ScheduleScan();
-  EXPECT_FALSE(mock_timer_->IsRunning());
+  EXPECT_FALSE(mock_host_scan_batch_timer_->IsRunning());
 
   // Stop the scan; the duration should not have been recorded, and the timer
   // should be running again.
   test_clock_.Advance(base::TimeDelta::FromSeconds(5));
   fake_host_scanner_->StopScan();
-  EXPECT_TRUE(mock_timer_->IsRunning());
+  EXPECT_TRUE(mock_host_scan_batch_timer_->IsRunning());
 
   // Advance the clock by 59 seconds and start another scan. The timer should
   // have been stopped.
   test_clock_.Advance(base::TimeDelta::FromSeconds(59));
-  EXPECT_LT(base::TimeDelta::FromSeconds(59), mock_timer_->GetCurrentDelay());
+  EXPECT_LT(base::TimeDelta::FromSeconds(59),
+            mock_host_scan_batch_timer_->GetCurrentDelay());
   host_scan_scheduler_->ScheduleScan();
-  EXPECT_FALSE(mock_timer_->IsRunning());
+  EXPECT_FALSE(mock_host_scan_batch_timer_->IsRunning());
 
   // Stop the scan; the duration should not have been recorded, and the timer
   // should be running again.
   test_clock_.Advance(base::TimeDelta::FromSeconds(5));
   fake_host_scanner_->StopScan();
-  EXPECT_TRUE(mock_timer_->IsRunning());
+  EXPECT_TRUE(mock_host_scan_batch_timer_->IsRunning());
 
   // Advance the clock by 60 seconds, which should be equal to the timer's
   // delay. Since this is a MockTimer, we need to manually fire the timer.
   test_clock_.Advance(base::TimeDelta::FromSeconds(60));
-  EXPECT_EQ(base::TimeDelta::FromSeconds(60), mock_timer_->GetCurrentDelay());
-  mock_timer_->Fire();
+  EXPECT_EQ(base::TimeDelta::FromSeconds(60),
+            mock_host_scan_batch_timer_->GetCurrentDelay());
+  mock_host_scan_batch_timer_->Fire();
 
   // The scan duration should be equal to the three 5-second scans as well as
   // the 1-second and 59-second breaks between the three scans.
@@ -286,10 +302,11 @@ TEST_F(HostScanSchedulerImplTest, HostScanBatchMetric) {
   host_scan_scheduler_->ScheduleScan();
   test_clock_.Advance(base::TimeDelta::FromSeconds(5));
   fake_host_scanner_->StopScan();
-  EXPECT_TRUE(mock_timer_->IsRunning());
+  EXPECT_TRUE(mock_host_scan_batch_timer_->IsRunning());
   test_clock_.Advance(base::TimeDelta::FromSeconds(60));
-  EXPECT_EQ(base::TimeDelta::FromSeconds(60), mock_timer_->GetCurrentDelay());
-  mock_timer_->Fire();
+  EXPECT_EQ(base::TimeDelta::FromSeconds(60),
+            mock_host_scan_batch_timer_->GetCurrentDelay());
+  mock_host_scan_batch_timer_->Fire();
   VerifyScanDuration(5u /* expected_num_sections */);
 }
 
