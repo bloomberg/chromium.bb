@@ -17896,6 +17896,8 @@ Called by update_net_error_codes.py.-->
   <int value="2372" label="AsyncClipboardAPIWriteText"/>
   <int value="2373" label="OpenerNavigationWithoutGesture"/>
   <int value="2374" label="GetComputedStyleWebkitAppearance"/>
+  <int value="2375" label="V8LockManager_Request_Method"/>
+  <int value="2376" label="V8LockManager_Query_Method"/>
 </enum>
 
 <enum name="FeedbackSource">
