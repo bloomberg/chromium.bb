@@ -36,7 +36,7 @@ class RasterizeAndRecordMicroUnitTest(page_test_test_case.PageTestTestCase):
     except legacy_page_test.TestNotSupportedOnPlatformError as failure:
       logging.warning(str(failure))
       return
-    self.assertEquals(0, len(results.failures))
+    self.assertFalse(results.had_failures)
 
     rasterize_time = results.FindAllPageSpecificValuesNamed('rasterize_time')
     self.assertEquals(len(rasterize_time), 1)

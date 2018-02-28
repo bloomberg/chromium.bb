@@ -35,7 +35,7 @@ class ThreadTimesUnitTest(page_test_test_case.PageTestTestCase):
     measurement = thread_times.ThreadTimes()
     timeline_options = self._options
     results = self.RunMeasurement(measurement, ps, options=timeline_options)
-    self.assertFalse(len(results.failures), results.failures)
+    self.assertFalse(results.had_failures)
 
     for interval in timeline.IntervalNames:
       for category in timeline.TimelineThreadCategories.values():
@@ -48,7 +48,7 @@ class ThreadTimesUnitTest(page_test_test_case.PageTestTestCase):
     ps = self.CreateStorySetFromFileInUnittestDataDir('scrollable_page.html')
     measurement = thread_times.ThreadTimes(report_silk_details=True)
     results = self.RunMeasurement(measurement, ps, options=self._options)
-    self.assertEquals(0, len(results.failures))
+    self.assertFalse(results.had_failures)
 
     main_thread = 'renderer_main'
     expected_trace_categories = ['blink', 'cc', 'idle']
