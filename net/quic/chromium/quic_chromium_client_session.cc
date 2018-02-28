@@ -1254,8 +1254,29 @@ QuicChromiumClientSession::CreateIncomingDynamicStream(QuicStreamId id) {
   if (!ShouldCreateIncomingDynamicStream(id)) {
     return nullptr;
   }
-  // TODO(https://crbug.com/656607): Add proper annotation.
-  return CreateIncomingReliableStreamImpl(id, NO_TRAFFIC_ANNOTATION_BUG_656607);
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("quic_chromium_incoming_session", R"(
+      semantics {
+        sender: "Quic Chromium Client Session"
+        description:
+          "When a web server needs to push a response to a client, an incoming "
+          "stream is created to reply the client with pushed message instead "
+          "of a message from the network."
+        trigger:
+          "A request by a server to push a response to the client."
+        data: "None."
+        destination: OTHER
+        destination_other:
+          "This stream is not used for sending data."
+      }
+      policy {
+        cookies_allowed: NO
+        setting: "This feature cannot be disabled in settings."
+        policy_exception_justification:
+          "Essential for network access."
+      }
+  )");
+  return CreateIncomingReliableStreamImpl(id, traffic_annotation);
 }
 
 QuicChromiumClientStream*
