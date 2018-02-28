@@ -144,6 +144,7 @@ void MediaEngagementSession::RecordUkmMetrics() {
       .SetEngagement_Score(round(score.actual_score() * 100))
       .SetPlaybacks_Delta(significant_playback_recorded_)
       .SetEngagement_IsHigh(score.high_score())
+      .SetEngagement_IsHigh_Changes(score.high_score_changes())
       .SetEngagement_IsPreloaded(is_preloaded)
       .SetPlayer_Audible_Delta(audible_players_total_)
       .SetPlayer_Audible_Total(score.audible_playbacks())

@@ -36,6 +36,7 @@ class MediaEngagementScore final {
   static const char kAudiblePlaybacksKey[];
   static const char kSignificantPlaybacksKey[];
   static const char kVisitsWithMediaTagKey[];
+  static const char kHighScoreChanges[];
 
   // Origins with a number of visits less than this number will recieve
   // a score of zero.
@@ -59,6 +60,9 @@ class MediaEngagementScore final {
 
   // Returns whether the total score is considered high.
   bool high_score() const { return is_high_; }
+
+  // Returns the number of times the high engagement bit was changed.
+  int high_score_changes() const { return high_score_changes_; }
 
   // Returns the origin associated with this score.
   const GURL& origin() const { return origin_; }
@@ -157,6 +161,9 @@ class MediaEngagementScore final {
 
   // If the current score is considered high.
   bool is_high_ = false;
+
+  // Number of times the high engagement bit was changed for this origin.
+  int high_score_changes_ = 0;
 
   // The current engagement score.
   double actual_score_ = 0.0;

@@ -242,7 +242,7 @@ TEST_F(MediaEngagementSessionTest, TotalPlayers) {
 }
 
 // Checks that ukm_source_id_ is set when GetUkmRecorder is called.
-TEST_F(MediaEngagementSessionTest, GetkmRecorder_SetsUkmSourceId) {
+TEST_F(MediaEngagementSessionTest, GetUkmRecorder_SetsUkmSourceId) {
   scoped_refptr<MediaEngagementSession> session = new MediaEngagementSession(
       service(), origin(), MediaEngagementSession::RestoreType::kNotRestored);
 
@@ -253,7 +253,7 @@ TEST_F(MediaEngagementSessionTest, GetkmRecorder_SetsUkmSourceId) {
 }
 
 // Checks that GetUkmRecorder() does not return nullptr.
-TEST_F(MediaEngagementSessionTest, GetkmRecorder_NotNull) {
+TEST_F(MediaEngagementSessionTest, GetUkmRecorder_NotNull) {
   scoped_refptr<MediaEngagementSession> session = new MediaEngagementSession(
       service(), origin(), MediaEngagementSession::RestoreType::kNotRestored);
 
@@ -565,6 +565,8 @@ TEST_F(MediaEngagementSessionTest, RecordUkmMetrics) {
                      ukm_entry, Entry::kPlayer_Significant_TotalName));
     EXPECT_EQ(0, *test_ukm_recorder().GetEntryMetric(
                      ukm_entry, Entry::kPlaybacks_SecondsSinceLastName));
+    EXPECT_EQ(0, *test_ukm_recorder().GetEntryMetric(
+                     ukm_entry, Entry::kEngagement_IsHigh_ChangesName));
   }
 
   SetSignificantPlaybackRecordedForSession(session.get(), false);
@@ -598,6 +600,8 @@ TEST_F(MediaEngagementSessionTest, RecordUkmMetrics) {
                      ukm_entry, Entry::kPlayer_Significant_TotalName));
     EXPECT_EQ(0, *test_ukm_recorder().GetEntryMetric(
                      ukm_entry, Entry::kPlaybacks_SecondsSinceLastName));
+    EXPECT_EQ(0, *test_ukm_recorder().GetEntryMetric(
+                     ukm_entry, Entry::kEngagement_IsHigh_ChangesName));
   }
 }
 

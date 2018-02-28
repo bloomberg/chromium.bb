@@ -1009,6 +1009,7 @@ be describing additional metrics about the same event.
     and the new number of significant media playbacks that occured this visit.
   </summary>
   <metric name="Engagement.IsHigh"/>
+  <metric name="Engagement.IsHigh.Changes"/>
   <metric name="Engagement.IsPreloaded"/>
   <metric name="Engagement.Score"/>
   <metric name="Playbacks.Delta"/>
