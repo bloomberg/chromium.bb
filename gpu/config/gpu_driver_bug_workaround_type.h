@@ -101,6 +101,8 @@
          dont_initialize_uninitialized_locals)               \
   GPU_OP(DONT_REMOVE_INVARIANT_FOR_FRAGMENT_INPUT,           \
          dont_remove_invariant_for_fragment_input)           \
+  GPU_OP(DONT_USE_EGLCLIENTWAITSYNC_WITH_TIMEOUT,            \
+         dont_use_eglclientwaitsync_with_timeout)            \
   GPU_OP(DONT_USE_LOOPS_TO_INITIALIZE_VARIABLES,             \
          dont_use_loops_to_initialize_variables)             \
   GPU_OP(ETC1_POWER_OF_TWO_ONLY,                             \

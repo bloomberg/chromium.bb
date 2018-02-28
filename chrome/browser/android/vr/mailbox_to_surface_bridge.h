@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_ANDROID_VR_MAILBOX_TO_SURFACE_BRIDGE_H_
 #define CHROME_BROWSER_ANDROID_VR_MAILBOX_TO_SURFACE_BRIDGE_H_
 
+#include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 
 namespace gl {
@@ -27,8 +28,16 @@ namespace vr {
 
 class MailboxToSurfaceBridge {
  public:
-  MailboxToSurfaceBridge();
+  explicit MailboxToSurfaceBridge(base::OnceClosure on_initialized);
   ~MailboxToSurfaceBridge();
+
+  // Returns true if the GPU process connection is established and ready to use.
+  // Equivalent to waiting for on_initialized to be called.
+  bool IsReady();
+
+  // Checks if a workaround from "gpu/config/gpu_driver_bug_workaround_type.h"
+  // is active. Requires initialization to be complete.
+  bool IsGpuWorkaroundEnabled(int32_t workaround);
 
   void CreateSurface(gl::SurfaceTexture*);
 
@@ -49,6 +58,7 @@ class MailboxToSurfaceBridge {
   scoped_refptr<viz::ContextProvider> context_provider_;
   gpu::gles2::GLES2Interface* gl_ = nullptr;
   int surface_handle_ = 0;
+  base::OnceClosure on_initialized_;
 
   // Saved state for a pending resize, the dimensions are only
   // valid if needs_resize_ is true.

@@ -2782,6 +2782,29 @@
       "features": [
         "max_msaa_sample_count_4"
       ]
+    },
+    {
+      "id": 260,
+      "cr_bugs": [760389],
+      "description": "eglClientWaitSyncKHR with nonzero timeout waits too long",
+      "comment": [
+        "This bug is specific to Samsung S8/S8+ on Android N, but there ",
+        "isn't currently a way to restrict the filter to those devices. The ",
+        "functionality is currently only used for WebVR on Daydream ready ",
+        "devices, and the non-Samsung Daydream devices generally use ",
+        "Android O, so an overbroad match seems acceptable."
+      ],
+      "os": {
+        "type": "android",
+        "version": {
+          "op": "<",
+          "value": "8.0"
+        }
+      },
+      "gl_renderer": "Adreno \\(TM\\) 540",
+      "features": [
+        "dont_use_eglclientwaitsync_with_timeout"
+      ]
     }
   ]
 }
