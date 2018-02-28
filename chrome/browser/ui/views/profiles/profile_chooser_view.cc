@@ -42,6 +42,7 @@
 #include "chrome/browser/ui/profile_chooser_constants.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/user_manager.h"
+#include "chrome/browser/ui/views/accessibility/non_accessible_image_view.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "chrome/browser/ui/views/hover_button.h"
@@ -1060,7 +1061,7 @@ views::View* ProfileChooserView::CreateDiceSigninView() {
       kDiceSigninPromoIllustrationShowCountMax) {
     // Add the illustration.
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    views::ImageView* illustration = new views::ImageView();
+    views::ImageView* illustration = new NonAccessibleImageView();
     illustration->SetImage(
         *rb.GetNativeImageNamed(IDR_PROFILES_DICE_TURN_ON_SYNC).ToImageSkia());
     view->AddChildView(illustration);
