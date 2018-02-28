@@ -37,6 +37,21 @@ int GetDividerAndArrowReservedWidth() {
          kDropDownArrowButtonWidth;
 }
 
+base::string16 GetButtonTitleForAccount(const AccountInfo& account) {
+  if (!account.given_name.empty()) {
+    return l10n_util::GetStringFUTF16(
+        IDS_PROFILES_DICE_SIGNIN_FIRST_ACCOUNT_BUTTON,
+        base::UTF8ToUTF16(account.given_name));
+  }
+  if (!account.full_name.empty()) {
+    return l10n_util::GetStringFUTF16(
+        IDS_PROFILES_DICE_SIGNIN_FIRST_ACCOUNT_BUTTON,
+        base::UTF8ToUTF16(account.full_name));
+  }
+  return l10n_util::GetStringUTF16(
+      IDS_PROFILES_DICE_SIGNIN_FIRST_ACCOUNT_BUTTON_NO_NAME);
+}
+
 // Sizes |image| to 40x40, adds a white background in case it is transparent and
 // shapes it circular.
 gfx::ImageSkia PrepareAvatarImage(const gfx::Image& image) {
@@ -98,14 +113,7 @@ DiceSigninButton::DiceSigninButton(const AccountInfo& account,
   }
 
   // Set the title text for main Sign-in button.
-  base::string16 button_title =
-      account_->full_name.empty()
-          ? l10n_util::GetStringUTF16(
-                IDS_PROFILES_DICE_SIGNIN_FIRST_ACCOUNT_BUTTON_NO_NAME)
-          : l10n_util::GetStringFUTF16(
-                IDS_PROFILES_DICE_SIGNIN_FIRST_ACCOUNT_BUTTON,
-                base::UTF8ToUTF16(account_->full_name));
-  SetText(button_title);
+  SetText(GetButtonTitleForAccount(account));
   SetFocusForPlatform();
   SetProminent(true);
   SetHorizontalAlignment(gfx::ALIGN_LEFT);
