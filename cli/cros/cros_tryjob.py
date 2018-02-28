@@ -498,6 +498,9 @@ List Examples:
         help='Used with SPEC logic to force a particular '
              'git revision of chrome rather than the latest. '
              'HEAD is a valid value.')
+    how_group.add_argument(
+        '--debug-cidb', dest='passthrough', action='append_option',
+        help='Force Debug CIDB to be used.')
 
     # Overrides for the build configs testing behaviors.
     test_group = parser.add_argument_group(

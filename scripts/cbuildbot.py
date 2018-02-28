@@ -477,6 +477,8 @@ def _CreateParser():
                           default=False, dest='sanity_check_build',
                           api=constants.REEXEC_API_SANITY_CHECK_BUILD,
                           help='Run the build as a sanity check build.')
+  group.add_remote_option('--debug-cidb', action='store_true', default=False,
+                          help='Force Debug CIDB to be used.')
 
   parser.add_argument_group(group)
 
@@ -758,6 +760,9 @@ _ENVIRONMENT_STANDALONE = 'standalone'
 
 def _GetRunEnvironment(options, build_config):
   """Determine whether this is a prod/debug/standalone run."""
+  if options.debug_cidb:
+    return _ENVIRONMENT_DEBUG
+
   # Look up the buildbot waterfall.
   wfall = os.environ.get('BUILDBOT_MASTERNAME', '')
 
