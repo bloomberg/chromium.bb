@@ -121,10 +121,9 @@ bool DeserializeSection10(base::PickleIterator* iter,
 }
 
 bool HaveSameLabel(const FormFieldData& field1, const FormFieldData& field2) {
-  if (field1.label == field2.label &&
-      field1.label_source == field2.label_source) {
+  if (field1.label == field2.label)
     return true;
-  }
+
   // Assume the labels same if they come from same source but not LABEL tag
   // when kAutofillSkipComparingInferredLabels is enabled.
   if (base::FeatureList::IsEnabled(
@@ -253,10 +252,6 @@ bool FormFieldData::operator<(const FormFieldData& field) const {
   if (text_direction < field.text_direction)
     return true;
   if (text_direction > field.text_direction)
-    return false;
-  if (label_source < field.label_source)
-    return true;
-  if (label_source > field.label_source)
     return false;
   // See SameFieldAs above for why we don't check option_values/contents.
   return false;
