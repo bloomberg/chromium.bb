@@ -16,8 +16,10 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.os.SystemClock;
+import android.provider.Browser;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
+import android.support.customtabs.CustomTabsIntent;
 import android.support.customtabs.CustomTabsService;
 import android.support.customtabs.CustomTabsSessionToken;
 import android.support.customtabs.TrustedWebUtils;
@@ -47,6 +49,7 @@ import org.chromium.chrome.browser.browserservices.OriginVerifier;
 import org.chromium.chrome.browser.browserservices.OriginVerifier.OriginVerificationListener;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.customtabs.CustomTabAppMenuPropertiesDelegate;
+import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.document.DocumentUtils;
@@ -718,7 +721,7 @@ public class WebappActivity extends SingleTabActivity {
         };
     }
 
-    protected WebappScopePolicy scopePolicy() {
+    public WebappScopePolicy scopePolicy() {
         return isVerified() ? WebappScopePolicy.STRICT : WebappScopePolicy.LEGACY;
     }
 
@@ -762,6 +765,23 @@ public class WebappActivity extends SingleTabActivity {
         if (getBrowserSession() == null) return null;
         return CustomTabsConnection.getInstance().getClientPackageNameForSession(
                 getBrowserSession());
+    }
+
+    public CustomTabsIntent buildCustomTabIntentForURL(String url) {
+        CustomTabsIntent.Builder intentBuilder = new CustomTabsIntent.Builder();
+        intentBuilder.setShowTitle(true);
+        if (mWebappInfo.hasValidThemeColor()) {
+            // Need to cast as themeColor is a long to contain possible error results.
+            intentBuilder.setToolbarColor((int) mWebappInfo.themeColor());
+        }
+        CustomTabsIntent customTabIntent = intentBuilder.build();
+        customTabIntent.intent.setPackage(getPackageName());
+        customTabIntent.intent.putExtra(
+                CustomTabIntentDataProvider.EXTRA_SEND_TO_EXTERNAL_DEFAULT_HANDLER, true);
+        customTabIntent.intent.putExtra(
+                CustomTabIntentDataProvider.EXTRA_BROWSER_LAUNCH_SOURCE, getActivityType());
+        customTabIntent.intent.putExtra(Browser.EXTRA_APPLICATION_ID, mWebappInfo.apkPackageName());
+        return customTabIntent;
     }
 
     private void updateToolbarCloseButtonVisibility() {

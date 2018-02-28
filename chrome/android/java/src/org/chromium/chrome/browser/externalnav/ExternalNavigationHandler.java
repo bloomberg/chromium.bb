@@ -30,6 +30,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.util.UrlUtilities;
+import org.chromium.chrome.browser.webapps.WebappScopePolicy;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.ui.base.PageTransition;
 
@@ -275,12 +276,6 @@ public class ExternalNavigationHandler {
             }
         }
 
-        // http://crbug.com/647569 : Stay in a PWA window for a URL within the same scope.
-        if (mDelegate.isWithinCurrentWebappScope(params.getUrl())) {
-            if (DEBUG) Log.i(TAG, "NO_OVERRIDE: Stay in PWA window");
-            return OverrideUrlLoadingResult.NO_OVERRIDE;
-        }
-
         // http://crbug.com/181186: We need to show the intent picker when we receive a redirect
         // following a form submit.
         boolean isRedirectFromFormSubmit = isFormSubmit && params.isRedirect();
@@ -353,6 +348,15 @@ public class ExternalNavigationHandler {
         if (CommandLine.getInstance().hasSwitch(
                 ChromeSwitches.DISABLE_EXTERNAL_INTENT_REQUESTS)) {
             Log.w(TAG, "External intent handling is disabled by a command-line flag.");
+            return OverrideUrlLoadingResult.NO_OVERRIDE;
+        }
+
+        // http://crbug.com/647569 : Stay in a PWA window for a URL within the same scope.
+        @WebappScopePolicy.NavigationDirective
+        int webappScopePolicyDirective = mDelegate.applyWebappScopePolicyForUrl(params.getUrl());
+        if (webappScopePolicyDirective
+                == WebappScopePolicy.NavigationDirective.IGNORE_EXTERNAL_INTENT_REQUESTS) {
+            if (DEBUG) Log.i(TAG, "NO_OVERRIDE: Stay in PWA window");
             return OverrideUrlLoadingResult.NO_OVERRIDE;
         }
 
@@ -443,6 +447,23 @@ public class ExternalNavigationHandler {
                         && mDelegate.maybeLaunchInstantApp(params.getTab(), params.getUrl(),
                                 params.getReferrerUrl(), false)) {
                     if (DEBUG) Log.i(TAG, "OVERRIDE_WITH_EXTERNAL_INTENT: Instant Apps link");
+                    return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
+                }
+
+                // For normal links in a webapp, launch a CCT when a user navigates to a link which
+                // is outside of the webapp's scope. This is the preferred handling for when a user
+                // navigates outside of a webapp's scope. The benefit of showing out-of-scope web
+                // content in a CCT is that the state of the in-scope page (e.g. scroll position) is
+                // preserved and is available when the user closes the CCT. This enables the state
+                // of the twitter.com web page to be preserved when a user taps an out-of-scope
+                // link. WebappActivity has fallback behavior for cases that a CCT is not launched
+                // (e.g. JS navigation when PWA is in the background). The fallback behavior changes
+                // the appearance of the WebappActivity to make it look like a CCT.
+                if (webappScopePolicyDirective
+                        == WebappScopePolicy.NavigationDirective.LAUNCH_CCT) {
+                    mDelegate.launchCctForWebappUrl(params.getUrl(),
+                            params.shouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent());
+                    if (DEBUG) Log.i(TAG, "OVERRIDE_WITH_EXTERNAL_INTENT: Launch CCT");
                     return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
                 }
 
