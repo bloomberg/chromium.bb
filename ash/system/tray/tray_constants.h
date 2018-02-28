@@ -129,6 +129,10 @@ constexpr SkColor kUnifiedMenuTextColor = SkColorSetRGB(0xf1, 0xf2, 0xf3);
 constexpr SkColor kUnifiedMenuIconColor = SkColorSetRGB(0xf1, 0xf2, 0xf3);
 constexpr SkColor kUnifiedMenuIconColorDisabled =
     SkColorSetA(kUnifiedMenuIconColor, 0xa3);
+constexpr SkColor kUnifiedMenuButtonColor =
+    SkColorSetA(kUnifiedMenuIconColor, 0x14);
+
+constexpr int kUnifiedTopShortcutSpacing = 16;
 
 }  // namespace ash
 

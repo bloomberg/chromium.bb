@@ -12,6 +12,7 @@
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/login_status.h"
 #include "ash/metrics/user_metrics_recorder.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -41,6 +42,7 @@
 #include "ash/system/screen_security/screen_share_tray_item.h"
 #include "ash/system/screen_security/screen_tray_item.h"
 #include "ash/system/session/tray_session_length_limit.h"
+#include "ash/system/status_area_widget.h"
 #include "ash/system/supervised/tray_supervised_user.h"
 #include "ash/system/tiles/tray_tiles.h"
 #include "ash/system/tray/system_tray_controller.h"
@@ -51,6 +53,7 @@
 #include "ash/system/tray_accessibility.h"
 #include "ash/system/tray_caps_lock.h"
 #include "ash/system/tray_tracing.h"
+#include "ash/system/unified/unified_system_tray.h"
 #include "ash/system/update/tray_update.h"
 #include "ash/system/user/tray_user.h"
 #include "ash/system/web_notification/web_notification_tray.h"
@@ -576,6 +579,11 @@ void SystemTray::ClickedOutsideBubble() {
 bool SystemTray::PerformAction(const ui::Event& event) {
   UserMetricsRecorder::RecordUserClickOnTray(
       LoginMetricsRecorder::TrayClickTarget::kSystemTray);
+
+  if (features::IsSystemTrayUnifiedEnabled()) {
+    return shelf()->GetStatusAreaWidget()->system_tray_unified()->PerformAction(
+        event);
+  }
 
   // If we're already showing a full system tray menu, either default or
   // detailed menu, hide it; otherwise, show it (and hide any popup that's
