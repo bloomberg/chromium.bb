@@ -19,6 +19,35 @@ namespace {
 // limit is the min of this and limits_.max_bytes_data_item_size.
 constexpr size_t kMaxMemoryChunkSize = 512 * 1024;
 
+// Helper for RunCallbackWhenDataPipeReady, called when the watcher signals us.
+void OnPipeReady(
+    mojo::ScopedDataPipeConsumerHandle pipe,
+    base::OnceCallback<void(mojo::ScopedDataPipeConsumerHandle)> callback,
+    std::unique_ptr<mojo::SimpleWatcher> watcher,
+    MojoResult result,
+    const mojo::HandleSignalsState& state) {
+  // If no more data can be read we must be done, so invalidate the pipe.
+  if (!state.readable())
+    pipe.reset();
+  std::move(callback).Run(std::move(pipe));
+}
+
+// Method that calls a callback when the provided data pipe becomes readable, or
+// is closed.
+void RunCallbackWhenDataPipeReady(
+    mojo::ScopedDataPipeConsumerHandle pipe,
+    base::OnceCallback<void(mojo::ScopedDataPipeConsumerHandle)> callback) {
+  auto watcher = std::make_unique<mojo::SimpleWatcher>(
+      FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC);
+  auto* watcher_ptr = watcher.get();
+  auto raw_pipe = pipe.get();
+  watcher_ptr->Watch(
+      raw_pipe, MOJO_HANDLE_SIGNAL_READABLE, MOJO_WATCH_CONDITION_SATISFIED,
+      base::BindRepeating(&OnPipeReady, base::Passed(std::move(pipe)),
+                          base::Passed(std::move(callback)),
+                          base::Passed(std::move(watcher))));
+}
+
 // Helper base-class that reads upto a certain number of bytes from a data pipe.
 // Deletes itself when done.
 class DataPipeConsumerHelper {
@@ -197,6 +226,7 @@ BlobBuilderFromStream::BlobBuilderFromStream(
       kMaxBytesInMemory(
           context->memory_controller().limits().min_page_file_size),
       kFileBlockSize(context->memory_controller().limits().min_page_file_size),
+      kMaxFileSize(context->memory_controller().limits().max_file_size),
       context_(std::move(context)),
       callback_(std::move(callback)),
       content_type_(std::move(content_type)),
@@ -204,73 +234,108 @@ BlobBuilderFromStream::BlobBuilderFromStream(
       weak_factory_(this) {
   DCHECK(context_);
 
-  // TODO(mek): Take length_hint into account to determine strategy.
-  AllocateMoreSpace(std::move(data));
+  AllocateMoreMemorySpace(length_hint, std::move(data));
 }
 
 BlobBuilderFromStream::~BlobBuilderFromStream() {
   OnError();
 }
 
-void BlobBuilderFromStream::AllocateMoreSpace(
+void BlobBuilderFromStream::AllocateMoreMemorySpace(
+    uint64_t length_hint,
     mojo::ScopedDataPipeConsumerHandle pipe) {
   if (!context_ || !callback_) {
     OnError();
     return;
   }
+  if (!pipe.is_valid()) {
+    OnSuccess();
+    return;
+  }
 
   // If too much data has already been saved in memory, switch to using disk
   // backed data.
-  if (ShouldStoreNextBlockOnDisk()) {
-    AllocateMoreFileSpace(std::move(pipe));
+  if (ShouldStoreNextBlockOnDisk(length_hint)) {
+    AllocateMoreFileSpace(length_hint, std::move(pipe));
     return;
   }
 
+  if (!length_hint)
+    length_hint = kMemoryBlockSize;
+
   if (context_->memory_controller().GetAvailableMemoryForBlobs() <
-      kMemoryBlockSize) {
+      length_hint) {
     OnError();
     return;
   }
-  auto item = base::MakeRefCounted<ShareableBlobDataItem>(
-      BlobDataItem::CreateBytesDescription(kMemoryBlockSize),
-      ShareableBlobDataItem::QUOTA_NEEDED);
+
+  std::vector<scoped_refptr<ShareableBlobDataItem>> chunk_items;
+  while (length_hint > 0) {
+    const auto block_size = std::min<uint64_t>(kMemoryBlockSize, length_hint);
+    chunk_items.push_back(base::MakeRefCounted<ShareableBlobDataItem>(
+        BlobDataItem::CreateBytesDescription(block_size),
+        ShareableBlobDataItem::QUOTA_NEEDED));
+    length_hint -= block_size;
+  }
+  auto items_copy = chunk_items;
   pending_quota_task_ =
       context_->mutable_memory_controller()->ReserveMemoryQuota(
-          {item},
-          base::BindOnce(&BlobBuilderFromStream::QuotaAllocated,
-                         base::Unretained(this), std::move(pipe), item));
+          std::move(chunk_items),
+          base::BindOnce(&BlobBuilderFromStream::MemoryQuotaAllocated,
+                         base::Unretained(this), std::move(pipe),
+                         std::move(items_copy), 0));
 }
 
-void BlobBuilderFromStream::QuotaAllocated(
+void BlobBuilderFromStream::MemoryQuotaAllocated(
     mojo::ScopedDataPipeConsumerHandle pipe,
-    scoped_refptr<ShareableBlobDataItem> item,
+    std::vector<scoped_refptr<ShareableBlobDataItem>> chunk_items,
+    size_t item_to_populate,
     bool success) {
   if (!success || !context_ || !callback_) {
     OnError();
     return;
   }
+  DCHECK_LT(item_to_populate, chunk_items.size());
+  auto item = chunk_items[item_to_populate];
   WritePipeToFutureDataHelper::CreateAndStart(
       std::move(pipe), item->item(),
       base::BindOnce(&BlobBuilderFromStream::DidWriteToMemory,
-                     weak_factory_.GetWeakPtr(), item));
+                     weak_factory_.GetWeakPtr(), std::move(chunk_items),
+                     item_to_populate));
 }
 
 void BlobBuilderFromStream::DidWriteToMemory(
-    scoped_refptr<ShareableBlobDataItem> item,
+    std::vector<scoped_refptr<ShareableBlobDataItem>> chunk_items,
+    size_t populated_item_index,
     uint64_t bytes_written,
     mojo::ScopedDataPipeConsumerHandle pipe) {
   if (!context_ || !callback_) {
     OnError();
     return;
   }
+  DCHECK_LE(populated_item_index, chunk_items.size());
+  auto item = chunk_items[populated_item_index];
   item->set_state(ShareableBlobDataItem::POPULATED_WITH_QUOTA);
   current_total_size_ += bytes_written;
   if (pipe.is_valid()) {
     DCHECK_EQ(item->item()->length(), bytes_written);
     items_.push_back(std::move(item));
-    AllocateMoreSpace(std::move(pipe));
+    // If we still have allocated items for this chunk, just keep going with
+    // those items.
+    if (populated_item_index + 1 < chunk_items.size()) {
+      MemoryQuotaAllocated(std::move(pipe), std::move(chunk_items),
+                           populated_item_index + 1, true);
+    } else {
+      RunCallbackWhenDataPipeReady(
+          std::move(pipe),
+          base::BindOnce(&BlobBuilderFromStream::AllocateMoreMemorySpace,
+                         weak_factory_.GetWeakPtr(), 0));
+    }
   } else {
-    // Pipe has closed, so we must be done.
+    // Pipe has closed, so we must be done. If we allocated more items than we
+    // ended up filling, those remaining items in |chunk_items| will just go out
+    // of scope, resulting in them being destroyed and their allocations to be
+    // freed.
     DCHECK_LE(bytes_written, item->item()->length());
     if (bytes_written > 0) {
       item->item()->ShrinkBytes(bytes_written);
@@ -282,48 +347,70 @@ void BlobBuilderFromStream::DidWriteToMemory(
 }
 
 void BlobBuilderFromStream::AllocateMoreFileSpace(
+    uint64_t length_hint,
     mojo::ScopedDataPipeConsumerHandle pipe) {
   if (!context_ || !callback_) {
     OnError();
     return;
   }
+  if (!pipe.is_valid()) {
+    OnSuccess();
+    return;
+  }
+
+  if (!length_hint)
+    length_hint = kFileBlockSize;
 
   // TODO(mek): Extend existing file until max_page_file_size is reached, rather
   // then creating multiple min_page_file_size files.
 
   if (context_->memory_controller().GetAvailableFileSpaceForBlobs() <
-      kFileBlockSize) {
+      length_hint) {
     OnError();
     return;
   }
-  auto item = base::MakeRefCounted<ShareableBlobDataItem>(
-      BlobDataItem::CreateFutureFile(0, kFileBlockSize, 0),
-      ShareableBlobDataItem::QUOTA_NEEDED);
+
+  std::vector<scoped_refptr<ShareableBlobDataItem>> chunk_items;
+  while (length_hint > 0) {
+    const auto file_size = std::min(kMaxFileSize, length_hint);
+    chunk_items.push_back(base::MakeRefCounted<ShareableBlobDataItem>(
+        BlobDataItem::CreateFutureFile(0, file_size, chunk_items.size()),
+        ShareableBlobDataItem::QUOTA_NEEDED));
+    length_hint -= file_size;
+  }
+  auto items_copy = chunk_items;
   pending_quota_task_ = context_->mutable_memory_controller()->ReserveFileQuota(
-      {item},
+      std::move(chunk_items),
       base::BindOnce(&BlobBuilderFromStream::FileQuotaAllocated,
-                     weak_factory_.GetWeakPtr(), std::move(pipe), item));
+                     base::Unretained(this), std::move(pipe),
+                     std::move(items_copy), 0));
 }
 
 void BlobBuilderFromStream::FileQuotaAllocated(
     mojo::ScopedDataPipeConsumerHandle pipe,
-    scoped_refptr<ShareableBlobDataItem> item,
+    std::vector<scoped_refptr<ShareableBlobDataItem>> chunk_items,
+    size_t item_to_populate,
     std::vector<BlobMemoryController::FileCreationInfo> info,
     bool success) {
   if (!success || !context_ || !callback_) {
     OnError();
     return;
   }
-  DCHECK_EQ(1u, info.size());
+  DCHECK_EQ(chunk_items.size(), info.size());
+  DCHECK_LT(item_to_populate, chunk_items.size());
+  auto item = chunk_items[item_to_populate];
+  base::File file = std::move(info[item_to_populate].file);
   WritePipeToFileHelper::CreateAndStart(
-      std::move(pipe), std::move(info[0].file), item->item()->length(),
+      std::move(pipe), std::move(file), item->item()->length(),
       base::BindOnce(&BlobBuilderFromStream::DidWriteToFile,
-                     weak_factory_.GetWeakPtr(), item, info[0].file_reference));
+                     weak_factory_.GetWeakPtr(), std::move(chunk_items),
+                     std::move(info), item_to_populate));
 }
 
 void BlobBuilderFromStream::DidWriteToFile(
-    scoped_refptr<ShareableBlobDataItem> item,
-    scoped_refptr<ShareableFileReference> file,
+    std::vector<scoped_refptr<ShareableBlobDataItem>> chunk_items,
+    std::vector<BlobMemoryController::FileCreationInfo> info,
+    size_t populated_item_index,
     uint64_t bytes_written,
     mojo::ScopedDataPipeConsumerHandle pipe,
     const base::Time& modification_time) {
@@ -331,16 +418,33 @@ void BlobBuilderFromStream::DidWriteToFile(
     OnError();
     return;
   }
+  DCHECK_EQ(chunk_items.size(), info.size());
+  DCHECK_LE(populated_item_index, chunk_items.size());
+  auto item = chunk_items[populated_item_index];
+  auto file = info[populated_item_index].file_reference;
   item->item()->PopulateFile(file->path(), modification_time, file);
   item->set_state(ShareableBlobDataItem::POPULATED_WITH_QUOTA);
   current_total_size_ += bytes_written;
   if (pipe.is_valid()) {
     DCHECK_EQ(item->item()->length(), bytes_written);
     items_.push_back(std::move(item));
-    // Once we start writing to file, we keep writing to file.
-    AllocateMoreFileSpace(std::move(pipe));
+    // If we still have allocated items for this chunk, just keep going with
+    // those items.
+    if (populated_item_index + 1 < chunk_items.size()) {
+      FileQuotaAllocated(std::move(pipe), std::move(chunk_items),
+                         populated_item_index + 1, std::move(info), true);
+    } else {
+      // Once we start writing to file, we keep writing to file.
+      RunCallbackWhenDataPipeReady(
+          std::move(pipe),
+          base::BindOnce(&BlobBuilderFromStream::AllocateMoreFileSpace,
+                         weak_factory_.GetWeakPtr(), 0));
+    }
   } else {
-    // Pipe has closed, so we must be done.
+    // Pipe has closed, so we must be done. If we allocated more items than we
+    // ended up filling, those remaining items in |chunk_items| will just go out
+    // of scope, resulting in them being destroyed and their allocations to be
+    // freed.
     DCHECK_LE(bytes_written, item->item()->length());
     if (bytes_written > 0) {
       context_->mutable_memory_controller()->ShrinkFileAllocation(
@@ -372,15 +476,27 @@ void BlobBuilderFromStream::OnSuccess() {
                                       content_disposition_, std::move(items_)));
 }
 
-bool BlobBuilderFromStream::ShouldStoreNextBlockOnDisk() {
+bool BlobBuilderFromStream::ShouldStoreNextBlockOnDisk(uint64_t length_hint) {
   DCHECK(context_);
   const BlobMemoryController& controller = context_->memory_controller();
+
+  // Can't write to disk if paging isn't enabled.
   if (!controller.file_paging_enabled())
     return false;
+
+  // If we need more space than we want to fit in memory, immediately
+  // start writing to disk.
+  if (length_hint > kMaxBytesInMemory)
+    return true;
+
+  // If the next memory block would cause us to use more memory than we'd like,
+  // switch to disk.
   if (current_total_size_ + kMemoryBlockSize > kMaxBytesInMemory &&
       controller.GetAvailableFileSpaceForBlobs() >= kFileBlockSize) {
     return true;
   }
+
+  // Switch to disk if otherwise we'd need to page out some other blob.
   return controller.GetAvailableMemoryForBlobs() < kMemoryBlockSize;
 }
 
