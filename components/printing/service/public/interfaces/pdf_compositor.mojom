@@ -15,6 +15,12 @@ interface PdfCompositor {
     COMPOSTING_FAILURE,
   };
 
+  // Notifies that a subframe is unavailable, such as the render frame process
+  // hosting it crashed or terminated. The subframe will be composited with no
+  // content in the composited result.
+  // |frame_guid| is this subframe's global unique id.
+  NotifyUnavailableSubframe(uint64 frame_guid);
+
   // Add the content of a subframe for composition.
   // |frame_guid| is this subframe's global unique id.
   // |serialized_content| points to a buffer of a serialized Skia picture which

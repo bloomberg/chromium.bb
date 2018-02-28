@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 
+#include "base/containers/flat_set.h"
 #include "base/optional.h"
 #include "components/printing/service/public/cpp/pdf_service_mojo_types.h"
 #include "components/printing/service/public/interfaces/pdf_compositor.mojom.h"
@@ -35,6 +36,7 @@ class PrintCompositeClient
   // content::WebContentsObserver
   bool OnMessageReceived(const IPC::Message& message,
                          content::RenderFrameHost* render_frame_host) override;
+  void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
 
   // IPC message handler.
   void OnDidPrintFrameContent(
@@ -122,6 +124,14 @@ class PrintCompositeClient
   // Stores the mapping between document cookies and their corresponding
   // requests.
   std::map<int, mojom::PdfCompositorPtr> compositor_map_;
+
+  // Stores the mapping between render frame's global unique id and document
+  // cookies that requested such frame.
+  std::map<uint64_t, base::flat_set<int>> pending_subframe_cookies_;
+
+  // Stores the mapping between document cookie and all the printed subframes
+  // for that document.
+  std::map<int, base::flat_set<uint64_t>> printed_subframes_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintCompositeClient);
 };
