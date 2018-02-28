@@ -39,6 +39,7 @@
 
 <dom-module id="oobe-eula-md">
   <template>
+    <link rel="stylesheet" href="chrome://resources/css/throbber.css">
     <link rel="stylesheet" href="oobe_eula.css">
     <link rel="stylesheet" href="oobe_dialog_parameters.css">
     <link rel="stylesheet" href="oobe_flex_layout.css">
@@ -91,6 +92,41 @@
           <div i18n-content="oobeEulaAcceptAndContinueButtonText"
               id="accept-button-text">
           </div>
+        </oobe-text-button>
+      </div>
+    </oobe-dialog>
+    <oobe-dialog id="installationSettingsDialog" role="dialog"
+        has-buttons hidden>
+      <hd-iron-icon class="oobe-icon"
+          icon1x="oobe-eula-32:googleg" icon2x="oobe-eula-64:googleg">
+      </hd-iron-icon>
+      <div class="header">
+        <h1 class="title" i18n-content="eulaSystemInstallationSettings"></h1>
+        <div class="subtitle">
+          <div i18n-content="eulaTpmDesc"></div>
+          <div class='tpm-password'>
+            <div hidden="[[isPasswordEmpty_(password)]]"
+                i18n-content="eulaTpmKeyDesc"></div>
+            <div hidden="[[!isPasswordEmpty_(password)]]"
+                i18n-content="eulaTpmDescPowerwash"></div>
+            <div class="layout horizontal"
+                hidden="[[!isWaitingForPassword_(password)]]">
+              <div class="installation-settings-spinner throbber"></div>
+              <div i18n-content="eulaTpmBusy"></div>
+            </div>
+            <div class='password-row layout horizontal'>
+              <div class="flex"></div>
+              <div>{{password}}</div>
+              <div class="flex"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="bottom-buttons flex layout horizontal">
+        <div class="flex"></div>
+        <oobe-text-button id="settings-close-button" inverse
+            on-tap="onInstallationSettingsCloseClicked_">
+          <div i18n-content="eulaSystemInstallationSettingsOkButton"></div>
         </oobe-text-button>
       </div>
     </oobe-dialog>

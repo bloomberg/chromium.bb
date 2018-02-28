@@ -316,6 +316,25 @@ login.createScreen('EulaScreen', 'eula', function() {
     },
 
     /**
+     * Sets TPM password.
+     * @param {text} password TPM password to be shown.
+     */
+    setTpmPassword: function(password) {
+      if (loadTimeData.getString('newOobeUI') == 'on') {
+        $('oobe-eula-md').password = password;
+      } else {
+        $('tpm-busy').hidden = true;
+        if (password.length) {
+          $('tpm-password').textContent = password;
+          $('tpm-password').hidden = false;
+        } else {
+          $('tpm-desc').hidden = true;
+          $('tpm-desc-powerwash').hidden = false;
+        }
+      }
+    },
+
+    /**
      * Load Eula into the given webview. Online version is attempted first with
      * a timeout. If it fails to load, fallback to chrome://terms. The loaded
      * terms contents is then set to the webview via data url. Webview is

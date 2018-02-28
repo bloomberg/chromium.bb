@@ -227,15 +227,7 @@ cr.define('cr.ui.Oobe', function() {
      * @param {text} password TPM password to be shown.
      */
     setTpmPassword: function(password) {
-      $('tpm-busy').hidden = true;
-
-      if (password.length) {
-        $('tpm-password').textContent = password;
-        $('tpm-password').hidden = false;
-      } else {
-        $('tpm-desc').hidden = true;
-        $('tpm-desc-powerwash').hidden = false;
-      }
+      $('eula').setTpmPassword(password);
     },
 
     /**
