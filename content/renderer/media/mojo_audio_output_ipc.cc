@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "media/audio/audio_device_description.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "mojo/public/cpp/system/platform_handle.h"
@@ -71,11 +72,9 @@ void MojoAudioOutputIPC::CreateStream(media::AudioOutputIPCDelegate* delegate,
     // No authorization requested yet. Request one for the default device.
     // Since the delegate didn't explicitly request authorization, we shouldn't
     // send a callback to it.
-    if (!DoRequestDeviceAuthorization(
-            0, media::AudioDeviceDescription::kDefaultDeviceId,
-            base::BindOnce(&TrivialAuthorizedCallback))) {
-      return;
-    }
+    DoRequestDeviceAuthorization(
+        0, media::AudioDeviceDescription::kDefaultDeviceId,
+        base::BindOnce(&TrivialAuthorizedCallback));
   }
 
   DCHECK_EQ(delegate_, delegate);
@@ -90,7 +89,7 @@ void MojoAudioOutputIPC::CreateStream(media::AudioOutputIPCDelegate* delegate,
 
   // Don't set a connection error handler. Either an error has already been
   // signaled through the AudioOutputStreamClient interface, or the connection
-  // is broken because because the frame owning |this| was destroyed, in which
+  // is broken because the frame owning |this| was destroyed, in which
   // case |this| will soon be cleaned up anyways.
 }
 
@@ -158,7 +157,7 @@ MojoAudioOutputIPC::MakeProviderRequest() {
   return request;
 }
 
-bool MojoAudioOutputIPC::DoRequestDeviceAuthorization(
+void MojoAudioOutputIPC::DoRequestDeviceAuthorization(
     int session_id,
     const std::string& device_id,
     AuthorizationCB callback) {
@@ -167,20 +166,22 @@ bool MojoAudioOutputIPC::DoRequestDeviceAuthorization(
   if (!factory) {
     LOG(ERROR) << "MojoAudioOutputIPC failed to acquire factory";
 
-    // Resetting the callback ensures consistent behaviour with when the factory
-    // is destroyed before reply, i.e. calling OnDeviceAuthorized with
-    // ERROR_INTERNAL in the normal case. Note that this operation might destroy
-    // |this|. The AudioOutputIPCDelegate will call CloseStream as necessary.
-    callback.Reset();
-    // As |this| may be deleted, no new lines may be added here.
-    return false;
+    // Create a provider request for consistency with the normal case.
+    MakeProviderRequest();
+    // Resetting the callback asynchronously ensures consistent behaviour with
+    // when the factory is destroyed before reply, i.e. calling
+    // OnDeviceAuthorized with ERROR_INTERNAL in the normal case.
+    // The AudioOutputIPCDelegate will call CloseStream as necessary.
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce([](AuthorizationCB cb) {}, std::move(callback)));
+    return;
   }
 
   static_assert(sizeof(int) == sizeof(int32_t),
                 "sizeof(int) == sizeof(int32_t)");
   factory->RequestDeviceAuthorization(MakeProviderRequest(), session_id,
                                       device_id, std::move(callback));
-  return true;
 }
 
 void MojoAudioOutputIPC::ReceivedDeviceAuthorization(

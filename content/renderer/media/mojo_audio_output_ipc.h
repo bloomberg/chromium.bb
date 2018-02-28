@@ -58,10 +58,10 @@ class CONTENT_EXPORT MojoAudioOutputIPC
   bool StreamCreationRequested();
   media::mojom::AudioOutputStreamProviderRequest MakeProviderRequest();
 
-  // Tries to acquire a RendererAudioOutputStreamFactory, returns true on
-  // success. On failure, |this| has been deleted, so returning immediately
-  // is required.
-  bool DoRequestDeviceAuthorization(int session_id,
+  // Tries to acquire a RendererAudioOutputStreamFactory and requests device
+  // authorization. On failure to aquire a factory, |callback| is destructed
+  // asynchronously.
+  void DoRequestDeviceAuthorization(int session_id,
                                     const std::string& device_id,
                                     AuthorizationCB callback);
 
