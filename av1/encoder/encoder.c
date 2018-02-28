@@ -6812,9 +6812,12 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
       !frame_is_intra_only(cm)) {
     if (cpi->common.seq_params.force_integer_mv == 2) {
       struct lookahead_entry *previous_entry =
-          cpi->lookahead->buf + cpi->previous_index;
-      cpi->common.cur_frame_force_integer_mv = is_integer_mv(
-          cpi, cpi->source, &previous_entry->img, cpi->previous_hash_table);
+          av1_lookahead_peek(cpi->lookahead, cpi->previous_index);
+      if (!previous_entry)
+        cpi->common.cur_frame_force_integer_mv = 0;
+      else
+        cpi->common.cur_frame_force_integer_mv = is_integer_mv(
+            cpi, cpi->source, &previous_entry->img, cpi->previous_hash_table);
     } else {
       cpi->common.cur_frame_force_integer_mv =
           cpi->common.seq_params.force_integer_mv;
