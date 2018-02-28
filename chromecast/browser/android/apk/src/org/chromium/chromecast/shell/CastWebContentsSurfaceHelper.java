@@ -95,8 +95,8 @@ class CastWebContentsSurfaceHelper {
             IntentFilter filter = new IntentFilter();
             filter.addAction(CastIntents.ACTION_STOP_WEB_CONTENT);
             return new LocalBroadcastReceiverScope(filter, (Intent intent) -> {
-                Log.d(TAG, "Intent action=" + intent.getAction());
                 String intentUri = intent.getStringExtra(CastWebContentsComponent.INTENT_EXTRA_URI);
+                Log.d(TAG, "Intent action=" + intent.getAction() + "; URI=" + intentUri);
                 if (!uri.toString().equals(intentUri)) {
                     Log.d(TAG, "Current URI=" + uri + "; intent URI=" + intentUri);
                     return;
@@ -140,14 +140,15 @@ class CastWebContentsSurfaceHelper {
             @Override
             public void run() {
                 if (currentInstanceId != null && currentInstanceId.equals(mInstanceId)) {
-                    Log.d(TAG, "Finishing.");
                     if (mShowInFragment) {
                         Intent in = new Intent();
                         in.setAction(CastIntents.ACTION_ON_WEB_CONTENT_STOPPED);
                         in.putExtra(CastWebContentsComponent.INTENT_EXTRA_URI, mUri.toString());
+                        Log.d(TAG, "Sending intent: ON_WEB_CONTENT_STOPPED: URI=" + mUri);
                         LocalBroadcastManager.getInstance(ContextUtils.getApplicationContext())
                                 .sendBroadcastSync(in);
                     } else {
+                        Log.d(TAG, "Finishing cast content activity of URI:" + mUri);
                         mHostActivity.finish();
                     }
                 }
