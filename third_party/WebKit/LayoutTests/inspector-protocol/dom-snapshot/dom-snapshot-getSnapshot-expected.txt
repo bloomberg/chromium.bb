@@ -745,7 +745,7 @@ Tests DOMSnapshot.getSnapshot method.
       "boundingBox": {
         "x": 0,
         "y": 0,
-        "width": 785,
+        "width": 800,
         "height": 600
       }
     },
