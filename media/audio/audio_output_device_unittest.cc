@@ -114,9 +114,7 @@ ACTION_P(QuitLoop, task_runner) {
 
 }  // namespace.
 
-class AudioOutputDeviceTest
-    : public testing::Test,
-      public testing::WithParamInterface<bool> {
+class AudioOutputDeviceTest : public testing::Test {
  public:
   AudioOutputDeviceTest();
   ~AudioOutputDeviceTest();
@@ -309,7 +307,7 @@ void AudioOutputDeviceTest::VerifyBitstreamFields() {
   EXPECT_EQ(kBitstreamFrames, buffer->params.bitstream_frames);
 }
 
-TEST_P(AudioOutputDeviceTest, Initialize) {
+TEST_F(AudioOutputDeviceTest, Initialize) {
   // Tests that the object can be constructed, initialized and destructed
   // without having ever been started.
   StopAudioDevice();
@@ -317,13 +315,13 @@ TEST_P(AudioOutputDeviceTest, Initialize) {
 
 // Calls Start() followed by an immediate Stop() and check for the basic message
 // filter messages being sent in that case.
-TEST_P(AudioOutputDeviceTest, StartStop) {
+TEST_F(AudioOutputDeviceTest, StartStop) {
   StartAudioDevice();
   StopAudioDevice();
 }
 
 // AudioOutputDevice supports multiple start/stop sequences.
-TEST_P(AudioOutputDeviceTest, StartStopStartStop) {
+TEST_F(AudioOutputDeviceTest, StartStopStartStop) {
   StartAudioDevice();
   StopAudioDevice();
   StartAudioDevice();
@@ -332,7 +330,7 @@ TEST_P(AudioOutputDeviceTest, StartStopStartStop) {
 
 // Simulate receiving OnStreamCreated() prior to processing ShutDownOnIOThread()
 // on the IO loop.
-TEST_P(AudioOutputDeviceTest, StopBeforeRender) {
+TEST_F(AudioOutputDeviceTest, StopBeforeRender) {
   StartAudioDevice();
 
   // Call Stop() but don't run the IO loop yet.
@@ -345,7 +343,7 @@ TEST_P(AudioOutputDeviceTest, StopBeforeRender) {
 }
 
 // Full test with output only.
-TEST_P(AudioOutputDeviceTest, CreateStream) {
+TEST_F(AudioOutputDeviceTest, CreateStream) {
   StartAudioDevice();
   ExpectRenderCallback();
   CreateStream();
@@ -354,7 +352,7 @@ TEST_P(AudioOutputDeviceTest, CreateStream) {
 }
 
 // Full test with output only with nondefault device.
-TEST_P(AudioOutputDeviceTest, NonDefaultCreateStream) {
+TEST_F(AudioOutputDeviceTest, NonDefaultCreateStream) {
   SetDevice(kNonDefaultDeviceId);
   StartAudioDevice();
   ExpectRenderCallback();
@@ -364,7 +362,7 @@ TEST_P(AudioOutputDeviceTest, NonDefaultCreateStream) {
 }
 
 // Multiple start/stop with nondefault device
-TEST_P(AudioOutputDeviceTest, NonDefaultStartStopStartStop) {
+TEST_F(AudioOutputDeviceTest, NonDefaultStartStopStartStop) {
   SetDevice(kNonDefaultDeviceId);
   StartAudioDevice();
   StopAudioDevice();
@@ -378,13 +376,23 @@ TEST_P(AudioOutputDeviceTest, NonDefaultStartStopStartStop) {
   StopAudioDevice();
 }
 
-TEST_P(AudioOutputDeviceTest, UnauthorizedDevice) {
+TEST_F(AudioOutputDeviceTest, UnauthorizedDevice) {
   SetDevice(kUnauthorizedDeviceId);
   StartAudioDevice();
   StopAudioDevice();
 }
 
-TEST_P(AudioOutputDeviceTest, AuthorizationTimedOut) {
+TEST_F(AudioOutputDeviceTest,
+       StartUnauthorizedDeviceAndStopBeforeErrorFires_NoError) {
+  SetDevice(kUnauthorizedDeviceId);
+  audio_device_->Start();
+  // Don't run the runloop. We stop before |audio_device| gets the
+  // authorization error, so it's not allowed to dereference |callback_|.
+  EXPECT_CALL(callback_, OnRenderError()).Times(0);
+  StopAudioDevice();
+}
+
+TEST_F(AudioOutputDeviceTest, AuthorizationTimedOut) {
   base::Thread thread("DeviceInfo");
   thread.Start();
 
@@ -415,7 +423,7 @@ TEST_P(AudioOutputDeviceTest, AuthorizationTimedOut) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_P(AudioOutputDeviceTest, BitstreamFormatTest) {
+TEST_F(AudioOutputDeviceTest, BitstreamFormatTest) {
   SetupBitstreamParameters();
   StartAudioDevice();
   ExpectRenderCallback();
@@ -425,7 +433,5 @@ TEST_P(AudioOutputDeviceTest, BitstreamFormatTest) {
   VerifyBitstreamFields();
   StopAudioDevice();
 }
-
-INSTANTIATE_TEST_CASE_P(Render, AudioOutputDeviceTest, Values(false));
 
 }  // namespace media.
