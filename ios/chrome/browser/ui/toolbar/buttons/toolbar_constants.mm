@@ -12,12 +12,15 @@ const CGFloat kToolbarBackgroundColor = 0xF2F2F2;
 const CGFloat kIncognitoToolbarBackgroundColor = 0x505050;
 const CGFloat kNTPBackgroundColorBrightnessIncognito = 34.0 / 255.0;
 
-const CGFloat kLocationBarVerticalMargin = 7.0f;
-const CGFloat kExpandedLocationBarVerticalMargin = 2.0f;
-const CGFloat kButtonVerticalMargin = 4.0f;
+const CGFloat kTopButtonsBottomMargin = 3.0f;
+const CGFloat kBottomButtonsBottomMargin = 2.0f;
+const CGFloat kAdaptiveToolbarMargin = 4.0f;
+const CGFloat kAdaptiveToolbarStackViewSpacing = 11.0f;
 const CGFloat kLeadingMarginIPad = 4.0f;
 const CGFloat kHorizontalMargin = 1.0f;
 const CGFloat kStackViewSpacing = -2.0f;
+const CGFloat kLocationBarVerticalMargin = 7.0f;
+const CGFloat kButtonVerticalMargin = 4.0f;
 
 const CGFloat kLocationBarBorderWidth = 0.33f;
 const CGFloat kLocationBarBorderColor = 0xA3A3A3;
@@ -29,6 +32,7 @@ const CGFloat kIcongnitoLocationBackgroundColor = 0x737373;
 const CGFloat kProgressBarHeight = 2.0f;
 
 const CGFloat kToolsMenuButtonWidth = 44.0f;
+const CGFloat kAdaptiveToolbarButtonHeight = 44.0f;
 const CGFloat kAdaptiveToolbarButtonWidth = 44.0f;
 const CGFloat kToolbarButtonWidth = 48.0f;
 const CGFloat kLeadingLocationBarButtonWidth = 40.0f;
@@ -48,14 +52,18 @@ const NSInteger kShowTabStripButtonMaxTabCount = 99;
 
 const LayoutOffset kToolbarButtonAnimationOffset = -10.0;
 
-const CGFloat kAdaptiveToolbarHorizontalMargin = 8;
+const CGFloat kExpandedLocationBarHorizontalMargin = 8;
+const CGFloat kContractedLocationBarHorizontalMargin = 19;
 
 const CGFloat kAdaptiveLocationBarCornerRadius = 11;
 const CGFloat kIcongnitoAdaptiveLocationBackgroundColor = 0x6A6A6A;
 const CGFloat kAdaptiveLocationBarBackgroundAlpha = 0.12;
+const CGFloat kAdaptiveLocationBarVerticalMargin = 6.0f;
 
 const CGFloat kToolbarHeight = 56;
-const CGFloat kToolbarHeightFullscreen = 35;
+const CGFloat kTopToolbarUnsplitMargin = 2;
+const CGFloat kAdaptiveToolbarHeight = 48;
+const CGFloat kToolbarHeightFullscreen = 20;
 
 NSString* const kToolbarToolsMenuButtonIdentifier =
     @"kToolbarToolsMenuButtonIdentifier";
@@ -67,6 +75,8 @@ NSString* const kToolbarOmniboxButtonIdentifier =
     @"kToolbarOmniboxButtonIdentifier";
 
 const NSInteger kStackButtonMaxTabCount = 99;
+
+const NSInteger kTabGridButtonFontSize = 13;
 
 const NSInteger kFontSizeFewerThanTenTabs = 11;
 const NSInteger kFontSizeTenTabsOrMore = 9;

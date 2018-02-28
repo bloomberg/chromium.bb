@@ -38,6 +38,8 @@
   return button;
 }
 
+// TODO(crbug.com/800266): Remove this method as it is handled in the
+// TabGridButton.
 - (void)layoutSubviews {
   [super layoutSubviews];
   // If the UIButton title has text it will center it on top of the image,

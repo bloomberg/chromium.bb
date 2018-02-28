@@ -165,10 +165,11 @@
   CGFloat alphaValue = fmax(progress * 2 - 1, 0);
   self.view.leadingStackView.alpha = alphaValue;
   self.view.trailingStackView.alpha = alphaValue;
-  self.view.locationBarHeight.constant =
-      AlignValueToPixel(kToolbarHeightFullscreen +
-                        (kToolbarHeight - kToolbarHeightFullscreen) * progress -
-                        2 * kLocationBarVerticalMargin);
+  self.view.locationBarHeight.constant = AlignValueToPixel(
+      kToolbarHeightFullscreen +
+      (kAdaptiveToolbarHeight - 2 * kAdaptiveLocationBarVerticalMargin -
+       kToolbarHeightFullscreen) *
+          progress);
   self.view.locationBarContainer.backgroundColor =
       [self.buttonFactory.toolbarConfiguration
           locationBarBackgroundColorWithVisibility:alphaValue];

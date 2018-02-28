@@ -23,13 +23,21 @@ const CGFloat kDotOffsetXVertical = 22;
 const CGFloat kDotOffsetYVertical = 18;
 // Vertical space between dots.
 const CGFloat kVerticalSpaceBetweenDots = 6;
+// Diameter of the dots.
+const CGFloat kDotDiameterVertical = 4;
+// Width of the line at the apogee.
+const CGFloat kLineWidthAtApogeeVertical = 5;
 
 // *** Constants for the adaptive toolbar, 3 horizontal dots. ***
 // Position of the leftmost dot.
-const CGFloat kDotOffsetXHorizontal = 18;
-const CGFloat kDotOffsetYHorizontal = 28;
+const CGFloat kDotOffsetXHorizontal = 12;
+const CGFloat kDotOffsetYHorizontal = 22;
 // Horizontal space between dots.
-const CGFloat kHorizontalSpaceBetweenDots = 6;
+const CGFloat kHorizontalSpaceBetweenDots = 10;
+// Diameter of the dots.
+const CGFloat kDotDiameterHorizontal = 6;
+// Width of the line at the apogee.
+const CGFloat kLineWidthAtApogeeHorizontal = 5;
 
 // The maximum width of the segment/dots.
 const CGFloat kMaxWidthOfStroke = 7.4;
@@ -50,10 +58,8 @@ const double kFramesBetweenAnimationOfEachDot = 3;
 // exactly equal to strokeStart, the line is not drawn.
 const CGFloat kStrokeStartAtRest = 0.5;
 const CGFloat kStrokeEndAtRest = kStrokeStartAtRest + 0.001;
-const CGFloat kLineWidthAtRest = 4;
 const CGFloat kStrokeStartAtApogee = 0;
 const CGFloat kStrokeEndAtApogee = 1;
-const CGFloat kLineWidthAtApogee = 3;
 }  // namespace
 
 @interface ToolbarToolsMenuButton ()<CAAnimationDelegate> {
@@ -183,7 +189,7 @@ const CGFloat kLineWidthAtApogee = 3;
     [pathLayer setPath:path.CGPath];
     [pathLayer setStrokeColor:[self.tintColor CGColor]];
     [pathLayer setFillColor:nil];
-    [pathLayer setLineWidth:kLineWidthAtRest];
+    [pathLayer setLineWidth:[self dotsDiameter]];
     [pathLayer setLineCap:kCALineCapRound];
     [pathLayer setStrokeStart:kStrokeStartAtRest];
     [pathLayer setStrokeEnd:kStrokeEndAtRest];
@@ -291,9 +297,9 @@ const CGFloat kLineWidthAtApogee = 3;
 
     // Width of the stroke animation.
     CAAnimation* lineWidthAnimation =
-        [self animationWithInitialValue:@(kLineWidthAtRest)
-                      intermediaryValue:@(kLineWidthAtApogee)
-                             finalValue:@(kLineWidthAtRest)
+        [self animationWithInitialValue:@([self dotsDiameter])
+                      intermediaryValue:@([self lineWidthAtApogee])
+                             finalValue:@([self dotsDiameter])
                              frameStart:frameStart
                              forKeyPath:@"lineWidth"];
 
@@ -408,6 +414,24 @@ const CGFloat kLineWidthAtApogee = 3;
     return kMaxWidthOfStroke;
   } else {
     return 0;
+  }
+}
+
+// Returns the diameter of the dots.
+- (CGFloat)dotsDiameter {
+  if (IsUIRefreshPhase1Enabled()) {
+    return kDotDiameterHorizontal;
+  } else {
+    return kDotDiameterVertical;
+  }
+}
+
+// Returns the width of the line at the apogge.
+- (CGFloat)lineWidthAtApogee {
+  if (IsUIRefreshPhase1Enabled()) {
+    return kLineWidthAtApogeeHorizontal;
+  } else {
+    return kLineWidthAtApogeeVertical;
   }
 }
 

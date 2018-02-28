@@ -156,12 +156,12 @@
   // Calculate the amount to shrink the width and height of background so that
   // it's where the focused adapative toolbar focuses.
   self.backgroundLeadingConstraint.constant =
-      (safeAreaInsets.left + kAdaptiveToolbarHorizontalMargin) * percent;
+      (safeAreaInsets.left + kExpandedLocationBarHorizontalMargin) * percent;
   // TODO(crbug.com/805636) Placeholder for specifications. For now using hard
   // coded size of cancel button of 64pt.
   CGFloat kCancelButtonWidth = 64;
   self.backgroundTrailingConstraint.constant =
-      -(safeAreaInsets.right + kAdaptiveToolbarHorizontalMargin +
+      -(safeAreaInsets.right + kExpandedLocationBarHorizontalMargin +
         kCancelButtonWidth) *
       percent;
   // TODO(crbug.com/805636) Placeholder for specifications. For now using hard
