@@ -275,6 +275,257 @@ static const int mode_lf_lut[] = {
   1, 1, 1, 1, 1, 1, 0, 1  // INTER_COMPOUND_MODES (GLOBAL_GLOBALMV == 0)
 };
 
+#if LOOP_FILTER_BITMASK
+// 256 bit masks (64x64 / 4x4) for left transform size for Y plane.
+// We use 4 uint64_t to represent the 256 bit.
+// Each 1 represents a position where we should apply a loop filter
+// across the left border of an 4x4 block boundary.
+//
+// In the case of TX_8x8->  ( in low order byte first we end up with
+// a mask that looks like this (-- and | are used for better view)
+//
+//    10101010|10101010
+//    10101010|10101010
+//    10101010|10101010
+//    10101010|10101010
+//    10101010|10101010
+//    10101010|10101010
+//    10101010|10101010
+//    10101010|10101010
+//    -----------------
+//    10101010|10101010
+//    10101010|10101010
+//    10101010|10101010
+//    10101010|10101010
+//    10101010|10101010
+//    10101010|10101010
+//    10101010|10101010
+//    10101010|10101010
+//
+// A loopfilter should be applied to every other 4x4 horizontally.
+// TODO(chengchen): make these tables static
+const FilterMaskY left_txform_mask[TX_SIZES] = {
+  { { 0xffffffffffffffffULL,  // TX_4X4,
+      0xffffffffffffffffULL, 0xffffffffffffffffULL, 0xffffffffffffffffULL } },
+
+  { { 0x5555555555555555ULL,  // TX_8X8,
+      0x5555555555555555ULL, 0x5555555555555555ULL, 0x5555555555555555ULL } },
+
+  { { 0x1111111111111111ULL,  // TX_16X16,
+      0x1111111111111111ULL, 0x1111111111111111ULL, 0x1111111111111111ULL } },
+
+  { { 0x0101010101010101ULL,  // TX_32X32,
+      0x0101010101010101ULL, 0x0101010101010101ULL, 0x0101010101010101ULL } },
+
+  { { 0x0001000100010001ULL,  // TX_64X64,
+      0x0001000100010001ULL, 0x0001000100010001ULL, 0x0001000100010001ULL } },
+};
+
+// 256 bit masks (64x64 / 4x4) for above transform size for Y plane.
+// We use 4 uint64_t to represent the 256 bit.
+// Each 1 represents a position where we should apply a loop filter
+// across the top border of an 4x4 block boundary.
+//
+// In the case of TX_8x8->  ( in low order byte first we end up with
+// a mask that looks like this
+//
+//    11111111|11111111
+//    00000000|00000000
+//    11111111|11111111
+//    00000000|00000000
+//    11111111|11111111
+//    00000000|00000000
+//    11111111|11111111
+//    00000000|00000000
+//    -----------------
+//    11111111|11111111
+//    00000000|00000000
+//    11111111|11111111
+//    00000000|00000000
+//    11111111|11111111
+//    00000000|00000000
+//    11111111|11111111
+//    00000000|00000000
+//
+// A loopfilter should be applied to every other 4x4 horizontally.
+const FilterMaskY above_txform_mask[TX_SIZES] = {
+  { { 0xffffffffffffffffULL,  // TX_4X4
+      0xffffffffffffffffULL, 0xffffffffffffffffULL, 0xffffffffffffffffULL } },
+
+  { { 0x0000ffff0000ffffULL,  // TX_8X8
+      0x0000ffff0000ffffULL, 0x0000ffff0000ffffULL, 0x0000ffff0000ffffULL } },
+
+  { { 0x000000000000ffffULL,  // TX_16X16
+      0x000000000000ffffULL, 0x000000000000ffffULL, 0x000000000000ffffULL } },
+
+  { { 0x000000000000ffffULL,  // TX_32X32
+      0x0000000000000000ULL, 0x000000000000ffffULL, 0x0000000000000000ULL } },
+
+  { { 0x000000000000ffffULL,  // TX_64X64
+      0x0000000000000000ULL, 0x0000000000000000ULL, 0x0000000000000000ULL } },
+};
+
+// 64 bit mask to shift and set for each prediction size. A bit is set for
+// each 4x4 block that would be in the top left most block of the given block
+// size in the 64x64 block.
+const FilterMaskY size_mask_y[BLOCK_SIZES_ALL] = {
+  { { 0x0000000000000001ULL,  // BLOCK_4X4
+      0x0000000000000000ULL, 0x0000000000000000ULL, 0x0000000000000000ULL } },
+
+  { { 0x0000000000010001ULL,  // BLOCK_4X8
+      0x0000000000000000ULL, 0x0000000000000000ULL, 0x0000000000000000ULL } },
+
+  { { 0x0000000000000003ULL,  // BLOCK_8X4
+      0x0000000000000000ULL, 0x0000000000000000ULL, 0x0000000000000000ULL } },
+
+  { { 0x0000000000030003ULL,  // BLOCK_8X8
+      0x0000000000000000ULL, 0x0000000000000000ULL, 0x0000000000000000ULL } },
+
+  { { 0x0003000300030003ULL,  // BLOCK_8X16
+      0x0000000000000000ULL, 0x0000000000000000ULL, 0x0000000000000000ULL } },
+
+  { { 0x00000000000f000fULL,  // BLOCK_16X8
+      0x0000000000000000ULL, 0x0000000000000000ULL, 0x0000000000000000ULL } },
+
+  { { 0x000f000f000f000fULL,  // BLOCK_16X16
+      0x0000000000000000ULL, 0x0000000000000000ULL, 0x0000000000000000ULL } },
+
+  { { 0x000f000f000f000fULL,  // BLOCK_16X32
+      0x000f000f000f000fULL, 0x0000000000000000ULL, 0x0000000000000000ULL } },
+
+  { { 0x00ff00ff00ff00ffULL,  // BLOCK_32X16
+      0x0000000000000000ULL, 0x0000000000000000ULL, 0x0000000000000000ULL } },
+
+  { { 0x00ff00ff00ff00ffULL,  // BLOCK_32X32
+      0x00ff00ff00ff00ffULL, 0x0000000000000000ULL, 0x0000000000000000ULL } },
+
+  { { 0x00ff00ff00ff00ffULL,  // BLOCK_32X64
+      0x00ff00ff00ff00ffULL, 0x00ff00ff00ff00ffULL, 0x00ff00ff00ff00ffULL } },
+
+  { { 0xffffffffffffffffULL,  // BLOCK_64X32
+      0xffffffffffffffffULL, 0x0000000000000000ULL, 0x0000000000000000ULL } },
+
+  { { 0xffffffffffffffffULL,  // BLOCK_64X64
+      0xffffffffffffffffULL, 0xffffffffffffffffULL, 0xffffffffffffffffULL } },
+
+#if CONFIG_EXT_PARTITION
+  // Y plane max coding block size is 128x128, but the codec divides it
+  // into 4 64x64 blocks.
+  // BLOCK_64X128
+  { { 0x0ULL, 0x0ULL, 0x0ULL, 0x0ULL } },
+  // BLOCK_128X64
+  { { 0x0ULL, 0x0ULL, 0x0ULL, 0x0ULL } },
+  // BLOCK_128X128
+  { { 0x0ULL, 0x0ULL, 0x0ULL, 0x0ULL } },
+#endif
+
+  { { 0x0001000100010001ULL,  // BLOCK_4X16
+      0x0000000000000000ULL, 0x0000000000000000ULL, 0x0000000000000000ULL } },
+
+  { { 0x000000000000000fULL,  // BLOCK_16X4
+      0x0000000000000000ULL, 0x0000000000000000ULL, 0x0000000000000000ULL } },
+
+  { { 0x0003000300030003ULL,  // BLOCK_8X32
+      0x0003000300030003ULL, 0x0000000000000000ULL, 0x0000000000000000ULL } },
+
+  { { 0x0000000000ff00ffULL,  // BLOCK_32X8
+      0x0000000000000000ULL, 0x0000000000000000ULL, 0x0000000000000000ULL } },
+
+  { { 0x000f000f000f000fULL,  // BLOCK_16X64
+      0x000f000f000f000fULL, 0x000f000f000f000fULL, 0x000f000f000f000fULL } },
+
+  { { 0xffffffffffffffffULL,  // BLOCK_64X16
+      0x0000000000000000ULL, 0x0000000000000000ULL, 0x0000000000000000ULL } },
+#if CONFIG_EXT_PARTITION
+  // BLOCK_32X128
+  { { 0x0ULL, 0x0ULL, 0x0ULL, 0x0ULL } },
+  // BLOCK_128X32
+  { { 0x0ULL, 0x0ULL, 0x0ULL, 0x0ULL } },
+#endif
+};
+
+// U/V plane max transform size is 32x32 (format 420).
+// 64 bit masks (32x32 / 4x4) for left transform size for U/V plane.
+// We use one uint64_t to represent the 64 bit.
+// Each 1 represents a position where we should apply a loop filter
+// across the left border of an 4x4 block boundary.
+//
+// In the case of TX_8x8->  ( in low order byte first we end up with
+// a mask that looks like this
+//
+//    10101010
+//    10101010
+//    10101010
+//    10101010
+//    10101010
+//    10101010
+//    10101010
+//    10101010
+const FilterMaskUV left_txform_mask_uv[TX_SIZES - 1] = {
+  0xffffffffffffffffULL,  // TX_4X4
+  0x5555555555555555ULL,  // TX_8X8
+  0x1111111111111111ULL,  // TX_16X16
+  0x0101010101010101ULL,  // TX_32X32
+};
+
+// 64 bit masks (32x32 / 4x4) for above transform size for U/V plane.
+// We use one uint64_t to represent the 64 bit.
+// Each 1 represents a position where we should apply a loop filter
+// across the top border of an 4x4 block boundary.
+//
+// In the case of TX_8x8->  ( in low order byte first we end up with
+// a mask that looks like this
+//
+//    11111111
+//    00000000
+//    11111111
+//    00000000
+//    11111111
+//    00000000
+//    11111111
+//    00000000
+const FilterMaskUV above_txform_mask_uv[TX_SIZES - 1] = {
+  0xffffffffffffffffULL,  // TX_4X4
+  0x00ff00ff00ff00ffULL,  // TX_8X8
+  0x000000ff000000ffULL,  // TX_16X16
+  0x00000000000000ffULL,  // TX_32X32
+};
+
+// Y plane max coding block size is 128x128, but the codec divides it
+// into 4 64x64 blocks. U/V plane follows the pattern and size is
+// halved accordingly (format 420).
+const FilterMaskUV size_mask_u_v[BLOCK_SIZES_ALL] = {
+  0x0000000000000001ULL,  // BLOCK_4X4
+  0x0000000000000101ULL,  // BLOCK_4X8
+  0x0000000000000003ULL,  // BLOCK_8X4
+  0x0000000000000303ULL,  // BLOCK_8X8
+  0x0000000003030303ULL,  // BLOCK_8X16,
+  0x0000000000000f0fULL,  // BLOCK_16X8
+  0x000000000f0f0f0fULL,  // BLOCK_16X16
+  0x0f0f0f0f0f0f0f0fULL,  // BLOCK_16X32,
+  0x00000000ffffffffULL,  // BLOCK_32X16,
+  0xffffffffffffffffULL,  // BLOCK_32X32,
+  0xffffffffffffffffULL,  // BLOCK_32X64,
+  0xffffffffffffffffULL,  // BLOCK_64X32,
+  0xffffffffffffffffULL,  // BLOCK_64X64,
+#if CONFIG_EXT_PARTITION
+  0xffffffffffffffffULL,  // BLOCK_64X128,
+  0xffffffffffffffffULL,  // BLOCK_128X64,
+  0xffffffffffffffffULL,  // BLOCK_128X128,
+#endif
+  0x0000000001010101ULL,  // BLOCK_4X16,
+  0x000000000000000fULL,  // BLOCK_16X4,
+  0x0303030303030303ULL,  // BLOCK_8X32,
+  0x000000000000ffffULL,  // BLOCK_32X8,
+  0x0f0f0f0f0f0f0f0fULL,  // BLOCK_16X64,
+  0x00000000ffffffffULL,  // BLOCK_64X16
+#if CONFIG_EXT_PARTITION
+  0xffffffffffffffffULL,  // BLOCK_32X128,
+  0xffffffffffffffffULL,  // BLOCK_128X32,
+#endif
+};
+#endif  // LOOP_FILTER_BITMASK
+
 static void update_sharpness(loop_filter_info_n *lfi, int sharpness_lvl) {
   int lvl;
 
