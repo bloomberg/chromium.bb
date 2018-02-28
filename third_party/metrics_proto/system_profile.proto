@@ -939,6 +939,13 @@ message SystemProfileProto {
     EPSON_INKJET_PRINTER_ESCPR = 14;
     CROS_TERMINA = 15;
     STAR_CUPS_DRIVER = 16;
+    SPEECH_SYNTHESIS_SV_SE = 17;
+    OPTIMIZATION_HINTS = 18;
+    DOWNLOADABLE_STRINGS = 19;
+    VR_ASSETS = 20;
+    RTANALYTICS_LIGHT = 21;
+    RTANALYTICS_FULL = 22;
+    CELLULAR = 23;
   }
 
   // Information about what Chrome components are registered and at which

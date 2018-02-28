@@ -23,7 +23,7 @@ import "system_profile.proto";
 import "translate_event.proto";
 import "user_action_event.proto";
 
-// Next tag: 18
+// Next tag: 19
 message ChromeUserMetricsExtension {
   // The product (i.e. end user application) for a given UMA log.
   enum Product {
