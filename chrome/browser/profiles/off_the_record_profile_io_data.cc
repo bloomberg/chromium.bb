@@ -47,6 +47,7 @@
 #endif
 
 #if BUILDFLAG(ENABLE_REPORTING)
+#include "net/network_error_logging/network_error_logging_delegate.h"
 #include "net/network_error_logging/network_error_logging_service.h"
 #include "net/reporting/reporting_policy.h"
 #include "net/reporting/reporting_service.h"
@@ -298,7 +299,8 @@ net::URLRequestContext* OffTheRecordProfileIOData::InitializeAppRequestContext(
   }
   if (context->network_error_logging_service()) {
     context->SetNetworkErrorLoggingService(
-        net::NetworkErrorLoggingService::Create());
+        net::NetworkErrorLoggingService::Create(
+            net::NetworkErrorLoggingDelegate::Create()));
     context->network_error_logging_service()->SetReportingService(
         context->reporting_service());
   }
