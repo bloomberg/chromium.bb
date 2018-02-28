@@ -28,28 +28,90 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// This header defines the following macros to export component's symbols.
+//
+// - PLATFORM_EXPORT
+//   Exports non-template symbols.
+//
+// - PLATFORM_TEMPLATE_CLASS_EXPORT
+//   Exports an entire definition of class template.
+//
+// - PLATFORM_EXTERN_TEMPLATE_EXPORT
+//   Applicable to template declarations (except for definitions). The
+//   corresponding definition must come along with PLATFORM_TEMPLATE_EXPORT.
+//   Template specialization uses this macro to declare that such a
+//   specialization exists without providing an actual definition.
+//
+// - PLATFORM_TEMPLATE_EXPORT
+//   Applicable to template definitions whose declarations are annotated
+//   with PLATFORM_EXTERN_TEMPLATE_EXPORT. Template specialization uses this
+//   macro to provide an actual definition.
+
 #ifndef PlatformExport_h
 #define PlatformExport_h
 
+#include "build/build_config.h"
+
+//
+// BLINK_PLATFORM_IMPLEMENTATION
+//
 #if !defined(BLINK_PLATFORM_IMPLEMENTATION)
 #define BLINK_PLATFORM_IMPLEMENTATION 0
 #endif
 
-#if defined(COMPONENT_BUILD)
-#if defined(WIN32)
+//
+// PLATFORM_EXPORT
+//
+#if !defined(COMPONENT_BUILD)
+#define PLATFORM_EXPORT  // No need of export
+#else
+
+#if defined(COMPILER_MSVC)
 #if BLINK_PLATFORM_IMPLEMENTATION
 #define PLATFORM_EXPORT __declspec(dllexport)
 #else
 #define PLATFORM_EXPORT __declspec(dllimport)
 #endif
-#else  // defined(WIN32)
+#endif  // defined(COMPILER_MSVC)
+
+#if defined(COMPILER_GCC)
+#if BLINK_PLATFORM_IMPLEMENTATION
 #define PLATFORM_EXPORT __attribute__((visibility("default")))
-#endif
-#else  // defined(COMPONENT_BUILD)
+#else
 #define PLATFORM_EXPORT
 #endif
+#endif  // defined(COMPILER_GCC)
 
-#if defined(_MSC_VER)
+#endif  // !defined(COMPONENT_BUILD)
+
+//
+// PLATFORM_TEMPLATE_CLASS_EXPORT
+// PLATFORM_EXTERN_TEMPLATE_EXPORT
+// PLATFORM_TEMPLATE_EXPORT
+//
+#if BLINK_PLATFORM_IMPLEMENTATION
+
+#if defined(COMPILER_MSVC)
+#define PLATFORM_TEMPLATE_CLASS_EXPORT
+#define PLATFORM_EXTERN_TEMPLATE_EXPORT PLATFORM_EXPORT
+#define PLATFORM_TEMPLATE_EXPORT PLATFORM_EXPORT
+#endif
+
+#if defined(COMPILER_GCC)
+#define PLATFORM_TEMPLATE_CLASS_EXPORT PLATFORM_EXPORT
+#define PLATFORM_EXTERN_TEMPLATE_EXPORT PLATFORM_EXPORT
+#define PLATFORM_TEMPLATE_EXPORT
+#endif
+
+#else  // BLINK_PLATFORM_IMPLEMENTATION
+
+#define PLATFORM_TEMPLATE_CLASS_EXPORT
+#define PLATFORM_EXTERN_TEMPLATE_EXPORT PLATFORM_EXPORT
+#define PLATFORM_TEMPLATE_EXPORT
+
+#endif  // BLINK_PLATFORM_IMPLEMENTATION
+
+#if defined(COMPILER_MSVC)
 // MSVC Compiler warning C4275:
 // non dll-interface class 'Bar' used as base for dll-interface class 'Foo'.
 // Note that this is intended to be used only when no access to the base class'
