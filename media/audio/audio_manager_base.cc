@@ -341,7 +341,15 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStreamProxy(
   // If we're not using AudioOutputResampler our output parameters are the same
   // as our input parameters.
   AudioParameters output_params = params;
-  if (params.format() == AudioParameters::AUDIO_PCM_LOW_LATENCY) {
+
+  // If audio has been disabled force usage of a fake audio stream.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableAudioOutput)) {
+    output_params.set_format(AudioParameters::AUDIO_FAKE);
+  }
+
+  if (params.format() == AudioParameters::AUDIO_PCM_LOW_LATENCY &&
+      output_params.format() != AudioParameters::AUDIO_FAKE) {
     output_params =
         GetPreferredOutputStreamParameters(output_device_id, params);
 
@@ -371,7 +379,6 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStreamProxy(
     }
 
     output_params.set_latency_tag(params.latency_tag());
-
   } else {
     switch (output_params.format()) {
       case AudioParameters::AUDIO_PCM_LINEAR:

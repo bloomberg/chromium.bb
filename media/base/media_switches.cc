@@ -15,6 +15,8 @@ const char kAudioBufferSize[] = "audio-buffer-size";
 // Command line flag name to set the autoplay policy.
 const char kAutoplayPolicy[] = "autoplay-policy";
 
+const char kDisableAudioOutput[] = "disable-audio-output";
+
 // Set number of threads to use for video decoding.
 const char kVideoThreads[] = "video-threads";
 
