@@ -186,7 +186,7 @@ const base::Feature kContentFullscreen{"ContentFullscreen",
 // Enables a site-wide permission in the UI which controls access to the
 // asynchronous Clipboard web API.
 const base::Feature kClipboardContentSetting{"ClipboardContentSetting",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if defined(OS_CHROMEOS)
 // Enable project Crostini, Linux VMs on Chrome OS.
