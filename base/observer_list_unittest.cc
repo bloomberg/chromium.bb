@@ -23,6 +23,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_restrictions.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -1226,5 +1227,53 @@ TEST(ObserverListTest, AddObserverInTheLastObserve) {
 
   EXPECT_EQ(-10, b.total);
 }
+
+class MockLogAssertHandler {
+ public:
+  MOCK_METHOD4(
+      HandleLogAssert,
+      void(const char*, int, const base::StringPiece, const base::StringPiece));
+};
+
+#if DCHECK_IS_ON()
+TEST(ObserverListTest, NonReentrantObserverList) {
+  using ::testing::_;
+
+  ObserverList<Foo, /*check_empty=*/false, /*allow_reentrancy=*/false>
+      non_reentrant_observer_list;
+  Adder a(1);
+  non_reentrant_observer_list.AddObserver(&a);
+
+  ::testing::StrictMock<MockLogAssertHandler> handler;
+  EXPECT_CALL(handler, HandleLogAssert(_, _, _, _)).Times(1);
+  {
+    logging::ScopedLogAssertHandler scoped_handler_b(base::BindRepeating(
+        &MockLogAssertHandler::HandleLogAssert, base::Unretained(&handler)));
+    for (const Foo& a : non_reentrant_observer_list) {
+      for (const Foo& b : non_reentrant_observer_list) {
+        std::ignore = a;
+        std::ignore = b;
+      }
+    }
+  }
+}
+
+TEST(ObserverListTest, ReentrantObserverList) {
+  using ::testing::_;
+
+  ReentrantObserverList<Foo> reentrant_observer_list;
+  Adder a(1);
+  reentrant_observer_list.AddObserver(&a);
+  bool passed = false;
+  for (const Foo& a : reentrant_observer_list) {
+    for (const Foo& b : reentrant_observer_list) {
+      std::ignore = a;
+      std::ignore = b;
+      passed = true;
+    }
+  }
+  EXPECT_TRUE(passed);
+}
+#endif
 
 }  // namespace base
