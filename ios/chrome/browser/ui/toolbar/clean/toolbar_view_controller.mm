@@ -472,6 +472,10 @@ const CGFloat kScrollFadeDistance = 30;
   _loading = loading;
   self.view.reloadButton.hiddenInCurrentState = loading;
   self.view.stopButton.hiddenInCurrentState = !loading;
+
+  if (IsIPadIdiom())
+    return;
+
   if (!loading) {
     [self stopProgressBar];
   } else if (self.view.progressBar.hidden) {
