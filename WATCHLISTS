@@ -1087,6 +1087,10 @@
     'mojo': {
       'filepath': 'mojo',
     },
+    'multidevice': {
+      'filepath': 'components/multidevice/'\
+                  '|chromeos/components/multidevice_setup/',
+    },
     'mus': {
       'filepath': 'services/ui/'\
                   '|mojo/gpu/',
@@ -2109,6 +2113,11 @@
              'darin@chromium.org',
              'qsr+mojo@chromium.org',
              'viettrungluu+watch@chromium.org'],
+    'multidevice': ['jhawkins+watch-multidevice@chromium.org',
+                    'jlklein+watch-multidevice@chromium.org',
+                    'jordynass+watch-multidevice@chromium.org',
+                    'khorimoto+watch-multidevice@chromium.org',
+                    'lesliewatkins+watch-multidevice@chromium.org'],
     'mus': ['rjkroege@chromium.org'],
     'nacl': ['native-client-reviews@googlegroups.com'],
     'native_client_sdk': ['binji+watch@chromium.org',
