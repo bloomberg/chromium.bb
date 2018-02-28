@@ -5,9 +5,11 @@
 #include "core/layout/ng/inline/ng_physical_text_fragment.h"
 
 #include "core/dom/Node.h"
+#include "core/editing/PositionWithAffinity.h"
 #include "core/layout/LayoutTextFragment.h"
 #include "core/layout/ng/geometry/ng_physical_offset_rect.h"
 #include "core/layout/ng/inline/ng_line_height_metrics.h"
+#include "core/layout/ng/inline/ng_offset_mapping.h"
 #include "core/style/ComputedStyle.h"
 
 namespace blink {
@@ -85,6 +87,30 @@ bool NGPhysicalTextFragment::IsAnonymousText() const {
     return !ToLayoutTextFragment(layout_object)->AssociatedTextNode();
   const Node* node = GetNode();
   return !node || node->IsPseudoElement();
+}
+
+unsigned NGPhysicalTextFragment::TextOffsetForPoint(
+    const NGPhysicalOffset& point) const {
+  if (IsLineBreak())
+    return StartOffset();
+  DCHECK(TextShapeResult());
+  const LayoutUnit& point_in_line_direction =
+      Style().IsHorizontalWritingMode() ? point.left : point.top;
+  const bool include_partial_glyphs = true;
+  return TextShapeResult()->OffsetForPosition(point_in_line_direction.ToFloat(),
+                                              include_partial_glyphs) +
+         StartOffset();
+}
+
+PositionWithAffinity NGPhysicalTextFragment::PositionForPoint(
+    const NGPhysicalOffset& point) const {
+  if (IsAnonymousText())
+    return PositionWithAffinity();
+  const unsigned text_offset = TextOffsetForPoint(point);
+  const Position position =
+      NGOffsetMapping::GetFor(GetLayoutObject())->GetFirstPosition(text_offset);
+  // TODO(xiaochengh): Adjust TextAffinity.
+  return PositionWithAffinity(position, TextAffinity::kDownstream);
 }
 
 }  // namespace blink
