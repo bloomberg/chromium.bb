@@ -59,7 +59,7 @@ void EventTargeter::FindTargetForLocationNow(
             event_location.display_id);
     if (hit_test_query) {
       viz::Target target = hit_test_query->FindTargetForLocation(
-          event_source, gfx::ToFlooredPoint(event_location.raw_location));
+          event_source, event_location.raw_location);
       if (target.frame_sink_id.is_valid()) {
         ServerWindow* target_window =
             event_targeter_delegate_->GetWindowFromFrameSinkId(

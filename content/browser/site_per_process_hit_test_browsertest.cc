@@ -3142,10 +3142,6 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessGestureHitTestBrowserTest,
 #endif
 IN_PROC_BROWSER_TEST_P(SitePerProcessNonIntegerScaleFactorHitTestBrowserTest,
                        MAYBE_MouseClickWithNonIntegerScaleFactor) {
-  // TODO(riajiang): Update HitTestQuery to take in floating point.
-  if (GetParam())
-    return;
-
   GURL initial_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), initial_url));
 
@@ -3184,9 +3180,17 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessNonIntegerScaleFactorHitTestBrowserTest,
   router->RouteMouseEvent(rwhv, &mouse_event, ui::LatencyInfo());
 
   EXPECT_TRUE(event_monitor.EventWasReceived());
-  EXPECT_EQ(mouse_down_coords,
-            gfx::Point(event_monitor.event().PositionInWidget().x,
-                       event_monitor.event().PositionInWidget().y));
+  EXPECT_EQ(mouse_down_coords.x(), event_monitor.event().PositionInWidget().x);
+  // The transform from browser to renderer is (2, 35) in DIP. When we
+  // scale that to pixels, it's (3, 53). Note that 35 * 1.5 should be 52.5,
+  // so we already lost precision there in the transform from draw quad.
+  EXPECT_NEAR(mouse_down_coords.y(), event_monitor.event().PositionInWidget().y,
+              1);
+}
+
+IN_PROC_BROWSER_TEST_P(SitePerProcessNonIntegerScaleFactorHitTestBrowserTest,
+                       NestedSurfaceHitTestTest) {
+  NestedSurfaceHitTestTestHelper(shell(), embedded_test_server());
 }
 
 // Verify InputTargetClient works within an OOPIF process.

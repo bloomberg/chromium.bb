@@ -261,8 +261,14 @@ RenderWidgetTargetResult RenderWidgetHostInputEventRouter::FindViewAtLocation(
     const gfx::PointF& point_in_screen,
     viz::EventSource source,
     gfx::PointF* transformed_point) const {
-  viz::FrameSinkId frame_sink_id;
+  // Short circuit if owner_map has only one RenderWidgetHostView, no need for
+  // hit testing.
+  if (owner_map_.size() <= 1) {
+    *transformed_point = point;
+    return {root_view, false, *transformed_point};
+  }
 
+  viz::FrameSinkId frame_sink_id;
   bool query_renderer = false;
   if (use_viz_hit_test_) {
     const auto& display_hit_test_query_map =
@@ -275,35 +281,24 @@ RenderWidgetTargetResult RenderWidgetHostInputEventRouter::FindViewAtLocation(
     // display HitTestQuery does a hit test in the coordinate space of the root
     // window. The following translation should account for that discrepancy.
     // TODO(riajiang): Get rid of |point_in_screen| since it's not used.
-    gfx::Point point_in_root =
-        gfx::ToFlooredPoint(point) + root_view->GetOffsetFromRootSurface();
+    gfx::PointF point_in_root = point + root_view->GetOffsetFromRootSurface();
     viz::HitTestQuery* query = iter->second.get();
-    // TODO(kenrb): Add the short circuit to avoid hit testing when there is
-    // only one RenderWidgetHostView in the map. It is absent right now to
-    // make it easier to test the Viz hit testing code in development.
     float device_scale_factor = root_view->GetDeviceScaleFactor();
     DCHECK(device_scale_factor != 0.0f);
-    gfx::Point point_in_root_in_pixels =
+    gfx::PointF point_in_root_in_pixels =
         gfx::ConvertPointToPixel(device_scale_factor, point_in_root);
     viz::Target target =
         query->FindTargetForLocation(source, point_in_root_in_pixels);
     frame_sink_id = target.frame_sink_id;
     if (frame_sink_id.is_valid()) {
-      *transformed_point = gfx::ConvertPointToDIP(
-          device_scale_factor, gfx::PointF(target.location_in_target));
+      *transformed_point = gfx::ConvertPointToDIP(device_scale_factor,
+                                                  target.location_in_target);
     } else {
       *transformed_point = point;
     }
     if (target.flags & viz::mojom::kHitTestAsk)
       query_renderer = true;
   } else {
-    // Short circuit if owner_map has only one RenderWidgetHostView, no need for
-    // hit testing.
-    if (owner_map_.size() <= 1) {
-      *transformed_point = point;
-      return {root_view, false, *transformed_point};
-    }
-
     // The hittest delegate is used to reject hittesting quads based on extra
     // hittesting data send by the renderer.
     HittestDelegate delegate(hittest_data_);

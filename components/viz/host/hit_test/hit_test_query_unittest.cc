@@ -64,9 +64,9 @@ TEST_F(HitTestQueryTest, OneSurface) {
                               e_bounds, transform_e_to_e, 0);  // e
 
   // All points are in e's coordinate system when we reach this case.
-  gfx::Point point1(1, 1);
-  gfx::Point point2(600, 600);
-  gfx::Point point3(0, 0);
+  gfx::PointF point1(1, 1);
+  gfx::PointF point2(600, 600);
+  gfx::PointF point3(0, 0);
 
   Target target1 =
       hit_test_query().FindTargetForLocation(EventSource::MOUSE, point1);
@@ -78,7 +78,7 @@ TEST_F(HitTestQueryTest, OneSurface) {
   Target target2 =
       hit_test_query().FindTargetForLocation(EventSource::MOUSE, point2);
   EXPECT_EQ(target2.frame_sink_id, FrameSinkId());
-  EXPECT_EQ(target2.location_in_target, gfx::Point());
+  EXPECT_EQ(target2.location_in_target, gfx::PointF());
   EXPECT_FALSE(target2.flags);
 
   // There's a valid Target for point3, see Rect::Contains.
@@ -121,10 +121,10 @@ TEST_F(HitTestQueryTest, OneEmbedderTwoChildren) {
                               c2_bounds_in_e, transform_e_to_c2, 0);  // c2
 
   // All points are in e's coordinate system when we reach this case.
-  gfx::Point point1(99, 200);
-  gfx::Point point2(150, 150);
-  gfx::Point point3(400, 400);
-  gfx::Point point4(650, 350);
+  gfx::PointF point1(99, 200);
+  gfx::PointF point2(150, 150);
+  gfx::PointF point3(400, 400);
+  gfx::PointF point4(650, 350);
 
   Target target1 =
       hit_test_query().FindTargetForLocation(EventSource::MOUSE, point1);
@@ -135,19 +135,19 @@ TEST_F(HitTestQueryTest, OneEmbedderTwoChildren) {
   Target target2 =
       hit_test_query().FindTargetForLocation(EventSource::MOUSE, point2);
   EXPECT_EQ(target2.frame_sink_id, c1_id);
-  EXPECT_EQ(target2.location_in_target, gfx::Point(50, 50));
+  EXPECT_EQ(target2.location_in_target, gfx::PointF(50, 50));
   EXPECT_EQ(target2.flags, mojom::kHitTestMine | mojom::kHitTestMouse);
 
   Target target3 =
       hit_test_query().FindTargetForLocation(EventSource::MOUSE, point3);
   EXPECT_EQ(target3.frame_sink_id, c2_id);
-  EXPECT_EQ(target3.location_in_target, gfx::Point(100, 100));
+  EXPECT_EQ(target3.location_in_target, gfx::PointF(100, 100));
   EXPECT_EQ(target3.flags, mojom::kHitTestMine | mojom::kHitTestMouse);
 
   Target target4 =
       hit_test_query().FindTargetForLocation(EventSource::MOUSE, point4);
   EXPECT_EQ(target4.frame_sink_id, FrameSinkId());
-  EXPECT_EQ(target4.location_in_target, gfx::Point());
+  EXPECT_EQ(target4.location_in_target, gfx::PointF());
   EXPECT_FALSE(target4.flags);
 }
 
@@ -171,8 +171,8 @@ TEST_F(HitTestQueryTest, OneEmbedderRotatedChild) {
                               c_bounds_in_e, transform_e_to_c, 0);  // c
 
   // All points are in e's coordinate system when we reach this case.
-  gfx::Point point1(150, 120);  // Point(-22, -12) after transform.
-  gfx::Point point2(550, 400);  // Point(185, 194) after transform.
+  gfx::PointF point1(150, 120);  // Point(-22.07, -12.07) after transform.
+  gfx::PointF point2(550, 400);  // Point(184.78, 194.41) after transform.
 
   Target target1 =
       hit_test_query().FindTargetForLocation(EventSource::MOUSE, point1);
@@ -183,7 +183,8 @@ TEST_F(HitTestQueryTest, OneEmbedderRotatedChild) {
   Target target2 =
       hit_test_query().FindTargetForLocation(EventSource::MOUSE, point2);
   EXPECT_EQ(target2.frame_sink_id, c_id);
-  EXPECT_EQ(target2.location_in_target, gfx::Point(185, 194));
+  EXPECT_NEAR(target2.location_in_target.x(), 185, .5);
+  EXPECT_NEAR(target2.location_in_target.y(), 194, .5);
   EXPECT_EQ(target2.flags, mojom::kHitTestMine | mojom::kHitTestMouse);
 }
 
@@ -227,10 +228,10 @@ TEST_F(HitTestQueryTest, ClippedChildWithTabAndTransparentBackground) {
                               b_bounds_in_c, transform_c_to_b, 0);  // b
 
   // All points are in e's coordinate system when we reach this case.
-  gfx::Point point1(1, 1);
-  gfx::Point point2(202, 102);
-  gfx::Point point3(403, 103);
-  gfx::Point point4(202, 202);
+  gfx::PointF point1(1, 1);
+  gfx::PointF point2(202, 102);
+  gfx::PointF point3(403, 103);
+  gfx::PointF point4(202, 202);
 
   Target target1 =
       hit_test_query().FindTargetForLocation(EventSource::MOUSE, point1);
@@ -241,7 +242,7 @@ TEST_F(HitTestQueryTest, ClippedChildWithTabAndTransparentBackground) {
   Target target2 =
       hit_test_query().FindTargetForLocation(EventSource::MOUSE, point2);
   EXPECT_EQ(target2.frame_sink_id, a_id);
-  EXPECT_EQ(target2.location_in_target, gfx::Point(2, 2));
+  EXPECT_EQ(target2.location_in_target, gfx::PointF(2, 2));
   EXPECT_EQ(target2.flags, mojom::kHitTestMine | mojom::kHitTestMouse);
 
   Target target3 =
@@ -253,7 +254,7 @@ TEST_F(HitTestQueryTest, ClippedChildWithTabAndTransparentBackground) {
   Target target4 =
       hit_test_query().FindTargetForLocation(EventSource::MOUSE, point4);
   EXPECT_EQ(target4.frame_sink_id, b_id);
-  EXPECT_EQ(target4.location_in_target, gfx::Point(2, 2));
+  EXPECT_EQ(target4.location_in_target, gfx::PointF(2, 2));
   EXPECT_EQ(target4.flags, mojom::kHitTestMine | mojom::kHitTestMouse);
 }
 
@@ -305,10 +306,10 @@ TEST_F(HitTestQueryTest, ClippedChildWithChildUnderneath) {
                               d_bounds_in_e, transform_e_to_d, 0);  // d
 
   // All points are in e's coordinate system when we reach this case.
-  gfx::Point point1(1, 1);
-  gfx::Point point2(202, 102);
-  gfx::Point point3(450, 150);
-  gfx::Point point4(202, 202);
+  gfx::PointF point1(1, 1);
+  gfx::PointF point2(202, 102);
+  gfx::PointF point3(450, 150);
+  gfx::PointF point4(202, 202);
 
   Target target1 =
       hit_test_query().FindTargetForLocation(EventSource::MOUSE, point1);
@@ -319,19 +320,19 @@ TEST_F(HitTestQueryTest, ClippedChildWithChildUnderneath) {
   Target target2 =
       hit_test_query().FindTargetForLocation(EventSource::MOUSE, point2);
   EXPECT_EQ(target2.frame_sink_id, a_id);
-  EXPECT_EQ(target2.location_in_target, gfx::Point(2, 2));
+  EXPECT_EQ(target2.location_in_target, gfx::PointF(2, 2));
   EXPECT_EQ(target2.flags, mojom::kHitTestMine | mojom::kHitTestMouse);
 
   Target target3 =
       hit_test_query().FindTargetForLocation(EventSource::MOUSE, point3);
   EXPECT_EQ(target3.frame_sink_id, d_id);
-  EXPECT_EQ(target3.location_in_target, gfx::Point(50, 100));
+  EXPECT_EQ(target3.location_in_target, gfx::PointF(50, 100));
   EXPECT_EQ(target3.flags, mojom::kHitTestMine | mojom::kHitTestMouse);
 
   Target target4 =
       hit_test_query().FindTargetForLocation(EventSource::MOUSE, point4);
   EXPECT_EQ(target4.frame_sink_id, b_id);
-  EXPECT_EQ(target4.location_in_target, gfx::Point(2, 2));
+  EXPECT_EQ(target4.location_in_target, gfx::PointF(2, 2));
   EXPECT_EQ(target4.flags, mojom::kHitTestMine | mojom::kHitTestMouse);
 }
 
@@ -371,10 +372,10 @@ TEST_F(HitTestQueryTest, ClippedChildWithChildUnderneathTransform) {
                               d_bounds_in_e, transform_e_to_d, 0);  // d
 
   // All points are in e's coordinate system when we reach this case.
-  gfx::Point point1(1, 1);
-  gfx::Point point2(202, 102);
-  gfx::Point point3(450, 150);
-  gfx::Point point4(202, 202);
+  gfx::PointF point1(1, 1);
+  gfx::PointF point2(202, 102);
+  gfx::PointF point3(450, 150);
+  gfx::PointF point4(202, 202);
 
   std::vector<FrameSinkId> target_ancestors1{e_id};
   EXPECT_EQ(hit_test_query().TransformLocationForTarget(
@@ -383,15 +384,15 @@ TEST_F(HitTestQueryTest, ClippedChildWithChildUnderneathTransform) {
   std::vector<FrameSinkId> target_ancestors2{a_id, c_id, e_id};
   EXPECT_EQ(hit_test_query().TransformLocationForTarget(
                 EventSource::MOUSE, target_ancestors2, point2),
-            gfx::Point(2, 2));
+            gfx::PointF(2, 2));
   std::vector<FrameSinkId> target_ancestors3{d_id, e_id};
   EXPECT_EQ(hit_test_query().TransformLocationForTarget(
                 EventSource::MOUSE, target_ancestors3, point3),
-            gfx::Point(50, 100));
+            gfx::PointF(50, 100));
   std::vector<FrameSinkId> target_ancestors4{b_id, c_id, e_id};
   EXPECT_EQ(hit_test_query().TransformLocationForTarget(
                 EventSource::MOUSE, target_ancestors4, point4),
-            gfx::Point(2, 2));
+            gfx::PointF(2, 2));
 }
 
 // One embedder with two clipped children with a tab and transparent background.
@@ -459,13 +460,13 @@ TEST_F(HitTestQueryTest, ClippedChildrenWithTabAndTransparentBackground) {
                               h_bounds_in_c2, transform_c2_to_h, 0);  // h
 
   // All points are in e's coordinate system when we reach this case.
-  gfx::Point point1(1, 1);
-  gfx::Point point2(202, 102);
-  gfx::Point point3(403, 103);
-  gfx::Point point4(202, 202);
-  gfx::Point point5(250, 750);
-  gfx::Point point6(450, 750);
-  gfx::Point point7(350, 1100);
+  gfx::PointF point1(1, 1);
+  gfx::PointF point2(202, 102);
+  gfx::PointF point3(403, 103);
+  gfx::PointF point4(202, 202);
+  gfx::PointF point5(250, 750);
+  gfx::PointF point6(450, 750);
+  gfx::PointF point7(350, 1100);
 
   Target target1 =
       hit_test_query().FindTargetForLocation(EventSource::MOUSE, point1);
@@ -476,7 +477,7 @@ TEST_F(HitTestQueryTest, ClippedChildrenWithTabAndTransparentBackground) {
   Target target2 =
       hit_test_query().FindTargetForLocation(EventSource::MOUSE, point2);
   EXPECT_EQ(target2.frame_sink_id, a_id);
-  EXPECT_EQ(target2.location_in_target, gfx::Point(2, 2));
+  EXPECT_EQ(target2.location_in_target, gfx::PointF(2, 2));
   EXPECT_EQ(target2.flags, mojom::kHitTestMine | mojom::kHitTestMouse);
 
   Target target3 =
@@ -488,13 +489,13 @@ TEST_F(HitTestQueryTest, ClippedChildrenWithTabAndTransparentBackground) {
   Target target4 =
       hit_test_query().FindTargetForLocation(EventSource::MOUSE, point4);
   EXPECT_EQ(target4.frame_sink_id, b_id);
-  EXPECT_EQ(target4.location_in_target, gfx::Point(2, 2));
+  EXPECT_EQ(target4.location_in_target, gfx::PointF(2, 2));
   EXPECT_EQ(target4.flags, mojom::kHitTestMine | mojom::kHitTestMouse);
 
   Target target5 =
       hit_test_query().FindTargetForLocation(EventSource::MOUSE, point5);
   EXPECT_EQ(target5.frame_sink_id, g_id);
-  EXPECT_EQ(target5.location_in_target, gfx::Point(50, 50));
+  EXPECT_EQ(target5.location_in_target, gfx::PointF(50, 50));
   EXPECT_EQ(target5.flags, mojom::kHitTestMine | mojom::kHitTestMouse);
 
   Target target6 =
@@ -506,7 +507,7 @@ TEST_F(HitTestQueryTest, ClippedChildrenWithTabAndTransparentBackground) {
   Target target7 =
       hit_test_query().FindTargetForLocation(EventSource::MOUSE, point7);
   EXPECT_EQ(target7.frame_sink_id, h_id);
-  EXPECT_EQ(target7.location_in_target, gfx::Point(150, 300));
+  EXPECT_EQ(target7.location_in_target, gfx::PointF(150, 300));
   EXPECT_EQ(target7.flags, mojom::kHitTestMine | mojom::kHitTestMouse);
 }
 
@@ -561,13 +562,13 @@ TEST_F(HitTestQueryTest,
                               h_bounds_in_c2, transform_c2_to_h, 0);  // h
 
   // All points are in e's coordinate system when we reach this case.
-  gfx::Point point1(1, 1);
-  gfx::Point point2(202, 102);
-  gfx::Point point3(403, 103);
-  gfx::Point point4(202, 202);
-  gfx::Point point5(250, 750);
-  gfx::Point point6(450, 750);
-  gfx::Point point7(350, 1100);
+  gfx::PointF point1(1, 1);
+  gfx::PointF point2(202, 102);
+  gfx::PointF point3(403, 103);
+  gfx::PointF point4(202, 202);
+  gfx::PointF point5(250, 750);
+  gfx::PointF point6(450, 750);
+  gfx::PointF point7(350, 1100);
 
   std::vector<FrameSinkId> target_ancestors1{e_id};
   EXPECT_EQ(hit_test_query().TransformLocationForTarget(
@@ -576,25 +577,25 @@ TEST_F(HitTestQueryTest,
   std::vector<FrameSinkId> target_ancestors2{a_id, c1_id, e_id};
   EXPECT_EQ(hit_test_query().TransformLocationForTarget(
                 EventSource::MOUSE, target_ancestors2, point2),
-            gfx::Point(2, 2));
+            gfx::PointF(2, 2));
   EXPECT_EQ(hit_test_query().TransformLocationForTarget(
                 EventSource::MOUSE, target_ancestors1, point3),
             point3);
   std::vector<FrameSinkId> target_ancestors3{b_id, c1_id, e_id};
   EXPECT_EQ(hit_test_query().TransformLocationForTarget(
                 EventSource::MOUSE, target_ancestors3, point4),
-            gfx::Point(2, 2));
+            gfx::PointF(2, 2));
   std::vector<FrameSinkId> target_ancestors4{g_id, c2_id, e_id};
   EXPECT_EQ(hit_test_query().TransformLocationForTarget(
                 EventSource::MOUSE, target_ancestors4, point5),
-            gfx::Point(50, 50));
+            gfx::PointF(50, 50));
   EXPECT_EQ(hit_test_query().TransformLocationForTarget(
                 EventSource::MOUSE, target_ancestors1, point6),
             point6);
   std::vector<FrameSinkId> target_ancestors5{h_id, c2_id, e_id};
   EXPECT_EQ(hit_test_query().TransformLocationForTarget(
                 EventSource::MOUSE, target_ancestors5, point7),
-            gfx::Point(150, 300));
+            gfx::PointF(150, 300));
 }
 
 // Children that are multiple layers deep.
@@ -653,10 +654,10 @@ TEST_F(HitTestQueryTest, MultipleLayerChild) {
                               c2_bounds_in_e, transform_e_to_c2, 0);  // c2
 
   // All points are in e's coordinate system when we reach this case.
-  gfx::Point point1(1, 1);
-  gfx::Point point2(300, 350);
-  gfx::Point point3(550, 350);
-  gfx::Point point4(900, 350);
+  gfx::PointF point1(1, 1);
+  gfx::PointF point2(300, 350);
+  gfx::PointF point3(550, 350);
+  gfx::PointF point4(900, 350);
 
   Target target1 =
       hit_test_query().FindTargetForLocation(EventSource::MOUSE, point1);
@@ -667,19 +668,19 @@ TEST_F(HitTestQueryTest, MultipleLayerChild) {
   Target target2 =
       hit_test_query().FindTargetForLocation(EventSource::MOUSE, point2);
   EXPECT_EQ(target2.frame_sink_id, g_id);
-  EXPECT_EQ(target2.location_in_target, gfx::Point(0, 20));
+  EXPECT_EQ(target2.location_in_target, gfx::PointF(0, 20));
   EXPECT_EQ(target2.flags, mojom::kHitTestMine | mojom::kHitTestMouse);
 
   Target target3 =
       hit_test_query().FindTargetForLocation(EventSource::MOUSE, point3);
   EXPECT_EQ(target3.frame_sink_id, b_id);
-  EXPECT_EQ(target3.location_in_target, gfx::Point(400, 220));
+  EXPECT_EQ(target3.location_in_target, gfx::PointF(400, 220));
   EXPECT_EQ(target3.flags, mojom::kHitTestMine | mojom::kHitTestMouse);
 
   Target target4 =
       hit_test_query().FindTargetForLocation(EventSource::MOUSE, point4);
   EXPECT_EQ(target4.frame_sink_id, c2_id);
-  EXPECT_EQ(target4.location_in_target, gfx::Point(500, 300));
+  EXPECT_EQ(target4.location_in_target, gfx::PointF(500, 300));
   EXPECT_EQ(target4.flags, mojom::kHitTestMine | mojom::kHitTestMouse);
 }
 
@@ -739,10 +740,10 @@ TEST_F(HitTestQueryTest, MultipleLayerTransparentChild) {
                               c2_bounds_in_e, transform_e_to_c2, 0);  // c2
 
   // All points are in e's coordinate system when we reach this case.
-  gfx::Point point1(1, 1);
-  gfx::Point point2(300, 350);
-  gfx::Point point3(450, 350);
-  gfx::Point point4(900, 350);
+  gfx::PointF point1(1, 1);
+  gfx::PointF point2(300, 350);
+  gfx::PointF point3(450, 350);
+  gfx::PointF point4(900, 350);
 
   Target target1 =
       hit_test_query().FindTargetForLocation(EventSource::MOUSE, point1);
@@ -759,13 +760,13 @@ TEST_F(HitTestQueryTest, MultipleLayerTransparentChild) {
   Target target3 =
       hit_test_query().FindTargetForLocation(EventSource::MOUSE, point3);
   EXPECT_EQ(target3.frame_sink_id, c2_id);
-  EXPECT_EQ(target3.location_in_target, gfx::Point(50, 300));
+  EXPECT_EQ(target3.location_in_target, gfx::PointF(50, 300));
   EXPECT_TRUE(target3.flags);
 
   Target target4 =
       hit_test_query().FindTargetForLocation(EventSource::MOUSE, point4);
   EXPECT_EQ(target4.frame_sink_id, c2_id);
-  EXPECT_EQ(target4.location_in_target, gfx::Point(500, 300));
+  EXPECT_EQ(target4.location_in_target, gfx::PointF(500, 300));
   EXPECT_TRUE(target4.flags);
 }
 
@@ -798,21 +799,21 @@ TEST_F(HitTestQueryTest, InvalidAggregatedHitTestRegionData) {
                               b_bounds_in_c, transform_c_to_b, 0);  // b
 
   // All points are in e's coordinate system when we reach this case.
-  gfx::Point point1(1, 1);
-  gfx::Point point2(202, 102);
+  gfx::PointF point1(1, 1);
+  gfx::PointF point2(202, 102);
 
   // |child_count| is invalid, which is a security fault. For now, check to see
   // if the returned Target is invalid.
   Target target1 =
       hit_test_query().FindTargetForLocation(EventSource::MOUSE, point1);
   EXPECT_EQ(target1.frame_sink_id, FrameSinkId());
-  EXPECT_EQ(target1.location_in_target, gfx::Point());
+  EXPECT_EQ(target1.location_in_target, gfx::PointF());
   EXPECT_FALSE(target1.flags);
 
   Target target2 =
       hit_test_query().FindTargetForLocation(EventSource::MOUSE, point2);
   EXPECT_EQ(target2.frame_sink_id, FrameSinkId());
-  EXPECT_EQ(target2.location_in_target, gfx::Point());
+  EXPECT_EQ(target2.location_in_target, gfx::PointF());
   EXPECT_FALSE(target2.flags);
 
   AggregatedHitTestRegion* aggregated_hit_test_region_list_max =
@@ -833,7 +834,7 @@ TEST_F(HitTestQueryTest, InvalidAggregatedHitTestRegionData) {
   Target target3 =
       hit_test_query().FindTargetForLocation(EventSource::MOUSE, point1);
   EXPECT_EQ(target3.frame_sink_id, FrameSinkId());
-  EXPECT_EQ(target3.location_in_target, gfx::Point());
+  EXPECT_EQ(target3.location_in_target, gfx::PointF());
   EXPECT_FALSE(target3.flags);
 
   AggregatedHitTestRegion* aggregated_hit_test_region_list_bigger =
@@ -854,7 +855,7 @@ TEST_F(HitTestQueryTest, InvalidAggregatedHitTestRegionData) {
   Target target4 =
       hit_test_query().FindTargetForLocation(EventSource::MOUSE, point1);
   EXPECT_EQ(target4.frame_sink_id, FrameSinkId());
-  EXPECT_EQ(target4.location_in_target, gfx::Point());
+  EXPECT_EQ(target4.location_in_target, gfx::PointF());
   EXPECT_FALSE(target4.flags);
 }
 
@@ -882,8 +883,8 @@ TEST_F(HitTestQueryTest, MouseTouchFlags) {
                               c2_bounds_in_e, transform_e_to_c2, 0);  // c2
 
   // All points are in e's coordinate system when we reach this case.
-  gfx::Point point1(80, 80);
-  gfx::Point point2(150, 150);
+  gfx::PointF point1(80, 80);
+  gfx::PointF point2(150, 150);
 
   Target target1 =
       hit_test_query().FindTargetForLocation(EventSource::MOUSE, point1);
@@ -895,19 +896,19 @@ TEST_F(HitTestQueryTest, MouseTouchFlags) {
   Target target2 =
       hit_test_query().FindTargetForLocation(EventSource::TOUCH, point1);
   EXPECT_EQ(target2.frame_sink_id, c2_id);
-  EXPECT_EQ(target2.location_in_target, gfx::Point(5, 5));
+  EXPECT_EQ(target2.location_in_target, gfx::PointF(5, 5));
   EXPECT_EQ(target2.flags, mojom::kHitTestMine | mojom::kHitTestTouch);
 
   Target target3 =
       hit_test_query().FindTargetForLocation(EventSource::MOUSE, point2);
   EXPECT_EQ(target3.frame_sink_id, c1_id);
-  EXPECT_EQ(target3.location_in_target, gfx::Point(50, 50));
+  EXPECT_EQ(target3.location_in_target, gfx::PointF(50, 50));
   EXPECT_EQ(target3.flags, mojom::kHitTestMine | mojom::kHitTestMouse);
 
   Target target4 =
       hit_test_query().FindTargetForLocation(EventSource::TOUCH, point2);
   EXPECT_EQ(target4.frame_sink_id, c2_id);
-  EXPECT_EQ(target4.location_in_target, gfx::Point(75, 75));
+  EXPECT_EQ(target4.location_in_target, gfx::PointF(75, 75));
   EXPECT_EQ(target4.flags, mojom::kHitTestMine | mojom::kHitTestTouch);
 }
 
@@ -922,8 +923,8 @@ TEST_F(HitTestQueryTest, RootHitTestAskFlag) {
                               e_bounds, transform_e_to_e, 0);  // e
 
   // All points are in e's coordinate system when we reach this case.
-  gfx::Point point1(1, 1);
-  gfx::Point point2(600, 600);
+  gfx::PointF point1(1, 1);
+  gfx::PointF point2(600, 600);
 
   // point1 is inside e but we have to ask clients for targeting.
   Target target1 =
@@ -936,7 +937,7 @@ TEST_F(HitTestQueryTest, RootHitTestAskFlag) {
   Target target2 =
       hit_test_query().FindTargetForLocation(EventSource::MOUSE, point2);
   EXPECT_EQ(target2.frame_sink_id, FrameSinkId());
-  EXPECT_EQ(target2.location_in_target, gfx::Point());
+  EXPECT_EQ(target2.location_in_target, gfx::PointF());
   EXPECT_FALSE(target2.flags);
 }
 
@@ -972,9 +973,9 @@ TEST_F(HitTestQueryTest, ChildHitTestAskFlag) {
                               c2_bounds_in_e, transform_e_to_c2, 0);  // c2
 
   // All points are in e's coordinate system when we reach this case.
-  gfx::Point point1(99, 200);
-  gfx::Point point2(150, 150);
-  gfx::Point point3(400, 400);
+  gfx::PointF point1(99, 200);
+  gfx::PointF point2(150, 150);
+  gfx::PointF point3(400, 400);
 
   Target target1 =
       hit_test_query().FindTargetForLocation(EventSource::MOUSE, point1);
@@ -985,7 +986,7 @@ TEST_F(HitTestQueryTest, ChildHitTestAskFlag) {
   Target target2 =
       hit_test_query().FindTargetForLocation(EventSource::MOUSE, point2);
   EXPECT_EQ(target2.frame_sink_id, c1_id);
-  EXPECT_EQ(target2.location_in_target, gfx::Point(50, 50));
+  EXPECT_EQ(target2.location_in_target, gfx::PointF(50, 50));
   EXPECT_EQ(target2.flags, mojom::kHitTestMine | mojom::kHitTestMouse);
 
   // point3 is inside c2 but we have to ask clients for targeting. Event
@@ -993,7 +994,7 @@ TEST_F(HitTestQueryTest, ChildHitTestAskFlag) {
   Target target3 =
       hit_test_query().FindTargetForLocation(EventSource::MOUSE, point3);
   EXPECT_EQ(target3.frame_sink_id, c2_id);
-  EXPECT_EQ(target3.location_in_target, gfx::Point(100, 100));
+  EXPECT_EQ(target3.location_in_target, gfx::PointF(100, 100));
   EXPECT_EQ(target3.flags, mojom::kHitTestAsk | mojom::kHitTestMouse);
 }
 
