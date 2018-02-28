@@ -557,7 +557,7 @@
 
       'android_mojo': 'android_release_trybot_arm64',
       'android_n5x_swarming_dbg': 'android_debug_trybot_arm64',
-      'android_n5x_swarming_rel': 'android_release_trybot_arm64',
+      'android_n5x_swarming_rel': 'android_release_trybot_arm64_no_symbols',
       'android_optional_gpu_tests_rel': 'gpu_tests_android_release_trybot_arm64',
       'android_unswarmed_n5_rel': 'android_release_trybot',
       'android_unswarmed_n5x_rel': 'android_release_trybot_arm64',
@@ -976,6 +976,10 @@
 
     'android_release_trybot_arm64': [
       'android', 'release_trybot', 'arm64', 'strip_debug_info',
+    ],
+
+    'android_release_trybot_arm64_no_symbols': [
+      'android', 'release_trybot', 'arm64', 'no_symbols',
     ],
 
     'android_shared_release_bot_x64': [
