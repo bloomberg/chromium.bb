@@ -18,29 +18,24 @@ class UserActivityEvent;
 
 class UserActivityLoggerDelegateUkm : public UserActivityLoggerDelegate {
  public:
-  // Places |original_value| into buckets of size 5, i.e. if |original_value| is
-  // in [0, 5), we map it 0; if it is in [5, 10), we map it to 5 etc.
-  // |original_value| should be in the range of [0, 100].
-  static int BucketEveryFivePercents(int original_value);
-
-  // Both |boundary_end| and |rounding| are seconds.
+  // Both |boundary_end| and |rounding| must be positive.
   struct Bucket {
     int boundary_end;
     int rounding;
   };
 
-  // Bucket |timestamp_sec| using given |buckets|, which is an array of
-  // Bucket and must be sorted in ascending order of
-  // |boundary_end|. An example
-  // of |buckets| is {{60, 1}, {300, 10}, {600, 20}}. This function looks for
-  // the first |boundary_end| > |timestamp_sec| and bucket it to the nearest
-  // |rounding|. If |timestamp_sec| is greater than all |boundary_end|, the
-  // function returns the largest |boundary_end|. Using the above |buckets|
-  // example, the function will return 30 if |timestamp_sec| = 30, and 290 if
-  // |timestamp_sec| = 299.
-  static int ExponentiallyBucketTimestamp(int timestamp_sec,
-                                          const Bucket* buckets,
-                                          size_t num_buckets);
+  // Bucketize |original_value| using given |buckets|, which is an array of
+  // Bucket and must be sorted in ascending order of |boundary_end|.
+  // |original_value| must be non-negative. An example of |buckets| is
+  // {{60, 1}, {300, 10}, {600, 20}}. This function looks for the first
+  // |boundary_end| > |original_value| and bucket it to the nearest |rounding|.
+  // If |original_value| is greater than all |boundary_end|, the function
+  // returns the largest |boundary_end|. Using the above |buckets| example, the
+  // function will return 30 if |original_value| = 30, and 290 if
+  // |original_value| = 299.
+  static int Bucketize(int original_value,
+                       const Bucket* buckets,
+                       size_t num_buckets);
 
   UserActivityLoggerDelegateUkm();
   ~UserActivityLoggerDelegateUkm() override;

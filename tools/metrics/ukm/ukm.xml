@@ -2636,6 +2636,11 @@ be describing additional metrics about the same event.
       |chromeos::power::ml::UserActivityEvent::Event::Type|.
     </summary>
   </metric>
+  <metric name="KeyEventsInLastHour">
+    <summary>
+      Number of key events in the past hour.
+    </summary>
+  </metric>
   <metric name="LastActivityDay">
     <summary>
       An enum representing the last activity day of the week, defined in
@@ -2650,6 +2655,11 @@ be describing additional metrics about the same event.
   <metric name="LastUserActivityTime">
     <summary>
       Last user activity time as hours since midnight in the local time zone.
+    </summary>
+  </metric>
+  <metric name="MouseEventsInLastHour">
+    <summary>
+      Number of mouse events in the past hour.
     </summary>
   </metric>
   <metric name="OnBattery">
@@ -2698,6 +2708,11 @@ be describing additional metrics about the same event.
   <metric name="TimeSinceLastVideoEnded">
     <summary>
       Time from the end of the last video playing in seconds.
+    </summary>
+  </metric>
+  <metric name="TouchEventsInLastHour">
+    <summary>
+      Number of touch events in the past hour.
     </summary>
   </metric>
 </event>

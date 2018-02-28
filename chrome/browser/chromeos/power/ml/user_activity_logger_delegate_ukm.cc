@@ -24,10 +24,18 @@ namespace ml {
 
 namespace {
 
+constexpr UserActivityLoggerDelegateUkm::Bucket kBatteryPercentBuckets[] = {
+    {100, 5}};
+
 constexpr UserActivityLoggerDelegateUkm::Bucket kEventLogDurationBuckets[] = {
     {60, 1},
     {300, 10},
     {600, 20}};
+
+constexpr UserActivityLoggerDelegateUkm::Bucket kUserInputEventBuckets[] = {
+    {100, 1},
+    {1000, 100},
+    {10000, 1000}};
 
 constexpr UserActivityLoggerDelegateUkm::Bucket
     kRecentVideoPlayingTimeBuckets[] = {{60, 1},
@@ -44,23 +52,15 @@ constexpr UserActivityLoggerDelegateUkm::Bucket
 
 }  // namespace
 
-// static
-int UserActivityLoggerDelegateUkm::BucketEveryFivePercents(int original_value) {
+int UserActivityLoggerDelegateUkm::Bucketize(int original_value,
+                                             const Bucket* buckets,
+                                             size_t num_buckets) {
   DCHECK_GE(original_value, 0);
-  DCHECK_LE(original_value, 100);
-  return 5 * (original_value / 5);
-}
-
-int UserActivityLoggerDelegateUkm::ExponentiallyBucketTimestamp(
-    int timestamp_sec,
-    const Bucket* buckets,
-    size_t num_buckets) {
-  DCHECK_GE(timestamp_sec, 0);
   DCHECK(buckets);
   for (size_t i = 0; i < num_buckets; ++i) {
     const Bucket& bucket = buckets[i];
-    if (timestamp_sec < bucket.boundary_end) {
-      return bucket.rounding * (timestamp_sec / bucket.rounding);
+    if (original_value < bucket.boundary_end) {
+      return bucket.rounding * (original_value / bucket.rounding);
     }
   }
   return buckets[num_buckets - 1].boundary_end;
@@ -138,19 +138,19 @@ void UserActivityLoggerDelegateUkm::LogActivity(
   user_activity.SetSequenceId(next_sequence_id_++)
       .SetDeviceMode(event.features().device_mode())
       .SetDeviceType(event.features().device_type())
-      .SetEventLogDuration(ExponentiallyBucketTimestamp(
-          event.event().log_duration_sec(), kEventLogDurationBuckets,
-          arraysize(kEventLogDurationBuckets)))
+      .SetEventLogDuration(Bucketize(event.event().log_duration_sec(),
+                                     kEventLogDurationBuckets,
+                                     arraysize(kEventLogDurationBuckets)))
       .SetEventReason(event.event().reason())
       .SetEventType(event.event().type())
       .SetLastActivityDay(event.features().last_activity_day())
       .SetLastActivityTime(
           std::floor(event.features().last_activity_time_sec() / 3600))
       .SetRecentTimeActive(event.features().recent_time_active_sec())
-      .SetRecentVideoPlayingTime(ExponentiallyBucketTimestamp(
-          event.features().video_playing_time_sec(),
-          kRecentVideoPlayingTimeBuckets,
-          arraysize(kRecentVideoPlayingTimeBuckets)));
+      .SetRecentVideoPlayingTime(
+          Bucketize(event.features().video_playing_time_sec(),
+                    kRecentVideoPlayingTimeBuckets,
+                    arraysize(kRecentVideoPlayingTimeBuckets)));
 
   if (event.features().has_on_to_dim_sec()) {
     user_activity.SetScreenDimDelay(event.features().on_to_dim_sec());
@@ -178,8 +178,9 @@ void UserActivityLoggerDelegateUkm::LogActivity(
   }
 
   if (event.features().has_battery_percent()) {
-    user_activity.SetBatteryPercent(BucketEveryFivePercents(
-        std::floor(event.features().battery_percent())));
+    user_activity.SetBatteryPercent(
+        Bucketize(std::floor(event.features().battery_percent()),
+                  kBatteryPercentBuckets, arraysize(kBatteryPercentBuckets)));
   }
 
   if (event.features().has_device_management()) {
@@ -187,10 +188,28 @@ void UserActivityLoggerDelegateUkm::LogActivity(
   }
 
   if (event.features().has_time_since_video_ended_sec()) {
-    user_activity.SetTimeSinceLastVideoEnded(ExponentiallyBucketTimestamp(
-        event.features().time_since_video_ended_sec(),
-        kTimeSinceLastVideoEndedBuckets,
-        arraysize(kTimeSinceLastVideoEndedBuckets)));
+    user_activity.SetTimeSinceLastVideoEnded(
+        Bucketize(event.features().time_since_video_ended_sec(),
+                  kTimeSinceLastVideoEndedBuckets,
+                  arraysize(kTimeSinceLastVideoEndedBuckets)));
+  }
+
+  if (event.features().has_key_events_in_last_hour()) {
+    user_activity.SetKeyEventsInLastHour(
+        Bucketize(event.features().key_events_in_last_hour(),
+                  kUserInputEventBuckets, arraysize(kUserInputEventBuckets)));
+  }
+
+  if (event.features().has_mouse_events_in_last_hour()) {
+    user_activity.SetMouseEventsInLastHour(
+        Bucketize(event.features().mouse_events_in_last_hour(),
+                  kUserInputEventBuckets, arraysize(kUserInputEventBuckets)));
+  }
+
+  if (event.features().has_touch_events_in_last_hour()) {
+    user_activity.SetTouchEventsInLastHour(
+        Bucketize(event.features().touch_events_in_last_hour(),
+                  kUserInputEventBuckets, arraysize(kUserInputEventBuckets)));
   }
 
   user_activity.Record(ukm_recorder_);
