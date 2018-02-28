@@ -144,6 +144,7 @@ void BoxPainter::PaintBoxDecorationBackgroundWithRect(
           BoundsForDrawingRecorder(paint_info, LayoutPoint())))
     recorder.SetKnownToBeOpaque();
 
+  bool needs_end_layer = false;
   if (!painting_overflow_contents) {
     // FIXME: Should eventually give the theme control over whether the box
     // shadow should paint, since controls could have custom shadows of their
@@ -155,8 +156,10 @@ void BoxPainter::PaintBoxDecorationBackgroundWithRect(
       FloatRoundedRect border = style.GetRoundedBorderFor(paint_rect);
       paint_info.context.ClipRoundedRect(border);
 
-      if (box_decoration_data.bleed_avoidance == kBackgroundBleedClipLayer)
+      if (box_decoration_data.bleed_avoidance == kBackgroundBleedClipLayer) {
         paint_info.context.BeginLayer();
+        needs_end_layer = true;
+      }
     }
   }
 
@@ -202,7 +205,7 @@ void BoxPainter::PaintBoxDecorationBackgroundWithRect(
     }
   }
 
-  if (box_decoration_data.bleed_avoidance == kBackgroundBleedClipLayer)
+  if (needs_end_layer)
     paint_info.context.EndLayer();
 }
 
