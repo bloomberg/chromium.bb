@@ -32,9 +32,9 @@
 #define DataTransferItem_h
 
 #include "base/macros.h"
+#include "bindings/core/v8/v8_function_string_callback.h"
 #include "core/CoreExport.h"
 #include "platform/bindings/ScriptWrappable.h"
-#include "platform/bindings/TraceWrapperMember.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"
 
@@ -45,7 +45,6 @@ class DataTransfer;
 class ExecutionContext;
 class File;
 class ScriptState;
-class V8FunctionStringCallback;
 
 class CORE_EXPORT DataTransferItem final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
@@ -62,19 +61,18 @@ class CORE_EXPORT DataTransferItem final : public ScriptWrappable {
   DataTransfer* GetDataTransfer() { return data_transfer_.Get(); }
   DataObjectItem* GetDataObjectItem() { return item_.Get(); }
 
-  void Trace(blink::Visitor*);
-  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
+  void Trace(blink::Visitor*) override;
 
  private:
   DataTransferItem(DataTransfer*, DataObjectItem*);
 
-  void RunGetAsStringTask(ExecutionContext*,
-                          V8FunctionStringCallback*,
-                          const String& data);
+  void RunGetAsStringTask(
+      ExecutionContext*,
+      V8PersistentCallbackFunction<V8FunctionStringCallback>*,
+      const String& data);
 
   Member<DataTransfer> data_transfer_;
   Member<DataObjectItem> item_;
-  HeapVector<TraceWrapperMember<V8FunctionStringCallback>> callbacks_;
   DISALLOW_COPY_AND_ASSIGN(DataTransferItem);
 };
 

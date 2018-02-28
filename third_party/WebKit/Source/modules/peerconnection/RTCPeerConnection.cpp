@@ -137,9 +137,10 @@ void AsyncCallErrorCallback(V8RTCPeerConnectionErrorCallback* error_callback,
                             DOMException* exception) {
   DCHECK(error_callback);
   Microtask::EnqueueMicrotask(
-      WTF::Bind(&V8RTCPeerConnectionErrorCallback::InvokeAndReportException,
-                WrapPersistentCallbackFunction(error_callback), nullptr,
-                WrapPersistent(exception)));
+      WTF::Bind(&V8PersistentCallbackFunction<
+                    V8RTCPeerConnectionErrorCallback>::InvokeAndReportException,
+                WrapPersistent(ToV8PersistentCallbackFunction(error_callback)),
+                nullptr, WrapPersistent(exception)));
 }
 
 bool CallErrorCallbackIfSignalingStateClosed(

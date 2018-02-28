@@ -27,6 +27,7 @@
 #define Database_h
 
 #include "base/single_thread_task_runner.h"
+#include "bindings/modules/v8/v8_database_callback.h"
 #include "modules/webdatabase/DatabaseBasicTypes.h"
 #include "modules/webdatabase/DatabaseError.h"
 #include "modules/webdatabase/SQLTransaction.h"
@@ -46,7 +47,6 @@ class DatabaseContext;
 class ExecutionContext;
 class SQLTransactionClient;
 class SQLTransactionCoordinator;
-class V8DatabaseCallback;
 
 class Database final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
@@ -135,7 +135,8 @@ class Database final : public ScriptWrappable {
   bool PerformOpenAndVerify(bool set_version_in_new_database,
                             DatabaseError&,
                             String& error_message);
-  void RunCreationCallback(V8DatabaseCallback* creation_callback);
+  void RunCreationCallback(
+      V8PersistentCallbackFunction<V8DatabaseCallback>* creation_callback);
 
   void ScheduleTransaction();
 

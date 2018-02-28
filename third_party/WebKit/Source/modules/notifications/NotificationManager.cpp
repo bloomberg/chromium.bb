@@ -5,7 +5,6 @@
 #include "modules/notifications/NotificationManager.h"
 
 #include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "bindings/modules/v8/v8_notification_permission_callback.h"
 #include "core/frame/Frame.h"
 #include "core/frame/LocalFrame.h"
 #include "modules/notifications/Notification.h"
@@ -84,16 +83,18 @@ ScriptPromise NotificationManager::RequestPermission(
   permission_service_->RequestPermission(
       CreatePermissionDescriptor(mojom::blink::PermissionName::NOTIFICATIONS),
       Frame::HasTransientUserActivation(doc ? doc->GetFrame() : nullptr),
-      WTF::Bind(&NotificationManager::OnPermissionRequestComplete,
-                WrapPersistent(this), WrapPersistent(resolver),
-                WrapPersistentCallbackFunction(deprecated_callback)));
+      WTF::Bind(
+          &NotificationManager::OnPermissionRequestComplete,
+          WrapPersistent(this), WrapPersistent(resolver),
+          WrapPersistent(ToV8PersistentCallbackFunction(deprecated_callback))));
 
   return promise;
 }
 
 void NotificationManager::OnPermissionRequestComplete(
     ScriptPromiseResolver* resolver,
-    V8NotificationPermissionCallback* deprecated_callback,
+    V8PersistentCallbackFunction<V8NotificationPermissionCallback>*
+        deprecated_callback,
     mojom::blink::PermissionStatus status) {
   String status_string = Notification::PermissionString(status);
   if (deprecated_callback)

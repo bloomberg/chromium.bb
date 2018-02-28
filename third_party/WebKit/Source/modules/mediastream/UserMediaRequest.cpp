@@ -355,12 +355,8 @@ class UserMediaRequest::V8Callbacks final : public UserMediaRequest::Callbacks {
  private:
   V8Callbacks(V8NavigatorUserMediaSuccessCallback* success_callback,
               V8NavigatorUserMediaErrorCallback* error_callback)
-      : success_callback_(
-            V8PersistentCallbackFunction<
-                V8NavigatorUserMediaSuccessCallback>::Create(success_callback)),
-        error_callback_(
-            V8PersistentCallbackFunction<
-                V8NavigatorUserMediaErrorCallback>::Create(error_callback)) {}
+      : success_callback_(ToV8PersistentCallbackFunction(success_callback)),
+        error_callback_(ToV8PersistentCallbackFunction(error_callback)) {}
 
   // As Blink does not hold a UserMediaRequest and lets content/ hold it,
   // we cannot use wrapper-tracing to keep the underlying callback functions.

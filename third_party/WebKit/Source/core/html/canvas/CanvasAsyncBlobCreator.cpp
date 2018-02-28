@@ -185,7 +185,7 @@ CanvasAsyncBlobCreator::CanvasAsyncBlobCreator(
       mime_type_(mime_type),
       start_time_(start_time),
       static_bitmap_image_loaded_(false),
-      callback_(V8PersistentCallbackFunction<V8BlobCallback>::Create(callback)),
+      callback_(ToV8PersistentCallbackFunction(callback)),
       script_promise_resolver_(resolver) {
   DCHECK(image);
   sk_sp<SkImage> skia_image = image_->PaintImageForCurrentFrame().GetSkImage();
@@ -401,7 +401,8 @@ void CanvasAsyncBlobCreator::CreateBlobAndReturnResult() {
   if (function_type_ == kHTMLCanvasToBlobCallback) {
     context_->GetTaskRunner(TaskType::kCanvasBlobSerialization)
         ->PostTask(FROM_HERE,
-                   WTF::Bind(&V8BlobCallback::InvokeAndReportException,
+                   WTF::Bind(&V8PersistentCallbackFunction<
+                                 V8BlobCallback>::InvokeAndReportException,
                              WrapPersistent(callback_.Get()), nullptr,
                              WrapPersistent(result_blob)));
   } else {
@@ -419,7 +420,8 @@ void CanvasAsyncBlobCreator::CreateNullAndReturnResult() {
     context_->GetTaskRunner(TaskType::kCanvasBlobSerialization)
         ->PostTask(
             FROM_HERE,
-            WTF::Bind(&V8BlobCallback::InvokeAndReportException,
+            WTF::Bind(&V8PersistentCallbackFunction<
+                          V8BlobCallback>::InvokeAndReportException,
                       WrapPersistent(callback_.Get()), nullptr, nullptr));
   } else {
     script_promise_resolver_->Reject(DOMException::Create(

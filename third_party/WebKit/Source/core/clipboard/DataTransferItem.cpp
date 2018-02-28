@@ -32,7 +32,6 @@
 
 #include "base/location.h"
 #include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/v8_function_string_callback.h"
 #include "core/clipboard/DataObjectItem.h"
 #include "core/clipboard/DataTransfer.h"
 #include "core/dom/ExecutionContext.h"
@@ -76,14 +75,16 @@ void DataTransferItem::getAsString(ScriptState* script_state,
   if (!callback || item_->Kind() != DataObjectItem::kStringKind)
     return;
 
-  callbacks_.emplace_back(callback);
+  auto* v8persistent_callback = ToV8PersistentCallbackFunction(callback);
   ExecutionContext* context = ExecutionContext::From(script_state);
-  probe::AsyncTaskScheduled(context, "DataTransferItem.getAsString", callback);
+  probe::AsyncTaskScheduled(context, "DataTransferItem.getAsString",
+                            v8persistent_callback);
   context->GetTaskRunner(TaskType::kUserInteraction)
       ->PostTask(FROM_HERE,
                  WTF::Bind(&DataTransferItem::RunGetAsStringTask,
                            WrapPersistent(this), WrapPersistent(context),
-                           WrapPersistent(callback), item_->GetAsString()));
+                           WrapPersistent(v8persistent_callback),
+                           item_->GetAsString()));
 }
 
 File* DataTransferItem::getAsFile() const {
@@ -97,30 +98,20 @@ DataTransferItem::DataTransferItem(DataTransfer* data_transfer,
                                    DataObjectItem* item)
     : data_transfer_(data_transfer), item_(item) {}
 
-void DataTransferItem::RunGetAsStringTask(ExecutionContext* context,
-                                          V8FunctionStringCallback* callback,
-                                          const String& data) {
+void DataTransferItem::RunGetAsStringTask(
+    ExecutionContext* context,
+    V8PersistentCallbackFunction<V8FunctionStringCallback>* callback,
+    const String& data) {
   DCHECK(callback);
   probe::AsyncTask async_task(context, callback);
   if (context)
     callback->InvokeAndReportException(nullptr, data);
-  size_t index = callbacks_.Find(callback);
-  DCHECK(index != kNotFound);
-  callbacks_.EraseAt(index);
 }
 
 void DataTransferItem::Trace(blink::Visitor* visitor) {
   visitor->Trace(data_transfer_);
   visitor->Trace(item_);
-  visitor->Trace(callbacks_);
   ScriptWrappable::Trace(visitor);
-}
-
-void DataTransferItem::TraceWrappers(
-    const ScriptWrappableVisitor* visitor) const {
-  for (auto callback : callbacks_)
-    visitor->TraceWrappers(callback);
-  ScriptWrappable::TraceWrappers(visitor);
 }
 
 }  // namespace blink

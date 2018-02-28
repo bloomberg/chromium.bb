@@ -60,8 +60,7 @@ class ScrollStateCallbackV8Impl : public ScrollStateCallback {
       V8ScrollStateCallback* callback,
       WebNativeScrollBehavior native_scroll_behavior)
       : ScrollStateCallback(native_scroll_behavior),
-        callback_(V8PersistentCallbackFunction<V8ScrollStateCallback>::Create(
-            callback)) {}
+        callback_(ToV8PersistentCallbackFunction(callback)) {}
 
   Member<V8PersistentCallbackFunction<V8ScrollStateCallback>> callback_;
 };
