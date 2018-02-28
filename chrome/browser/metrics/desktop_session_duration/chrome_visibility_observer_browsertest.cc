@@ -31,7 +31,9 @@ class MockChromeVisibilityObserver : public metrics::ChromeVisibilityObserver {
 
 class ChromeVisibilityObserverBrowserTest : public InProcessBrowserTest {};
 
-IN_PROC_BROWSER_TEST_F(ChromeVisibilityObserverBrowserTest, VisibilityTest) {
+// TODO(https://crbug.com/817172): This test is flaky.
+IN_PROC_BROWSER_TEST_F(ChromeVisibilityObserverBrowserTest,
+                       DISABLED_VisibilityTest) {
   // Deactivate the initial browser window, to make observer start inactive.
   browser()->window()->Deactivate();
   base::RunLoop().RunUntilIdle();
