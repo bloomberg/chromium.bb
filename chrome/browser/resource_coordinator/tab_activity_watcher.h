@@ -40,6 +40,7 @@ class TabActivityWatcher : public TabStripModelObserver,
                      content::WebContents* contents,
                      int index,
                      bool foreground) override;
+  void TabDetachedAt(content::WebContents* contents, int index) override;
   void TabReplacedAt(TabStripModel* tab_strip_model,
                      content::WebContents* old_contents,
                      content::WebContents* new_contents,
@@ -47,17 +48,9 @@ class TabActivityWatcher : public TabStripModelObserver,
   void TabPinnedStateChanged(TabStripModel* tab_strip_model,
                              content::WebContents* contents,
                              int index) override;
+
   // BrowserTabStripTrackerDelegate:
   bool ShouldTrackBrowser(Browser* browser) override;
-
-  // Called from WebContentsData when a tab is being hidden.
-  void OnWasHidden(content::WebContents* web_contents);
-
-  // Called from WebContentsData when a tab has stopped loading.
-  void OnDidStopLoading(content::WebContents* web_contents);
-
-  // Logs the tab with |web_contents|, unless it is being destroyed.
-  void MaybeLogTab(content::WebContents* web_contents);
 
   // Resets internal state.
   void ResetForTesting();

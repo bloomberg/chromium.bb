@@ -10,9 +10,13 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "ui/base/page_transition_types.h"
 
+namespace base {
+class TimeDelta;
+}  // namespace base
+
 namespace content {
 class WebContents;
-}
+}  // namespace content
 
 // Logs metrics for a tab and its WebContents when requested.
 // Must be used on the UI thread.
@@ -48,6 +52,20 @@ class TabMetricsLogger {
   // nothing if |ukm_source_id| is zero.
   void LogBackgroundTab(ukm::SourceId ukm_source_id,
                         const TabMetrics& tab_metrics);
+
+  // Logs TabManager.Background.ForegroundedOrClosed UKM for a tab that was
+  // shown after being inactive.
+  void LogBackgroundTabShown(ukm::SourceId ukm_source_id,
+                             base::TimeDelta inactive_duration);
+
+  // Logs TabManager.Background.ForegroundedOrClosed UKM for a tab that was
+  // closed after being inactive.
+  void LogBackgroundTabClosed(ukm::SourceId ukm_source_id,
+                              base::TimeDelta inactive_duration);
+
+  // Logs TabManager.TabLifetime UKM for a closed tab.
+  void LogTabLifetime(ukm::SourceId ukm_source_id,
+                      base::TimeDelta time_since_navigation);
 
   // Returns the ContentType that matches |mime_type|.
   static metrics::TabMetricsEvent::ContentType GetContentTypeFromMimeType(
