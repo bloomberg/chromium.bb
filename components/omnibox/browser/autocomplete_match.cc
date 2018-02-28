@@ -603,9 +603,8 @@ void AutocompleteMatch::EnsureUWYTIsAllowedToBeDefault(
     TemplateURLService* template_url_service) {
   if (!allowed_to_be_default_match) {
     const GURL& stripped_canonical_input_url =
-        AutocompleteMatch::GURLToStrippedGURL(
-            input.canonicalized_url(), input, template_url_service,
-            base::string16());
+        GURLToStrippedGURL(input.canonicalized_url(), input,
+                           template_url_service, base::string16());
     ComputeStrippedDestinationURL(input, template_url_service);
     allowed_to_be_default_match =
         stripped_canonical_input_url == stripped_destination_url;

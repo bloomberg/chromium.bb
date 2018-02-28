@@ -99,17 +99,17 @@ SearchProvider::Providers::Providers(TemplateURLService* template_url_service)
     : template_url_service_(template_url_service) {}
 
 const TemplateURL* SearchProvider::Providers::GetDefaultProviderURL() const {
-  return default_provider_.empty()
-             ? nullptr
-             : template_url_service_->GetTemplateURLForKeyword(
-                   default_provider_);
+  if (default_provider_.empty())
+    return nullptr;
+  DCHECK(template_url_service_);
+  return template_url_service_->GetTemplateURLForKeyword(default_provider_);
 }
 
 const TemplateURL* SearchProvider::Providers::GetKeywordProviderURL() const {
-  return keyword_provider_.empty()
-             ? nullptr
-             : template_url_service_->GetTemplateURLForKeyword(
-                   keyword_provider_);
+  if (keyword_provider_.empty())
+    return nullptr;
+  DCHECK(template_url_service_);
+  return template_url_service_->GetTemplateURLForKeyword(keyword_provider_);
 }
 
 

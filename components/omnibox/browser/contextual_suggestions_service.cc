@@ -152,12 +152,11 @@ GURL ContextualSuggestionsService::ContextualSuggestionsUrl(
 GURL ContextualSuggestionsService::ExperimentalContextualSuggestionsUrl(
     const std::string& current_url,
     const TemplateURLService* template_url_service) const {
-  if (current_url.empty()) {
+  if (current_url.empty() || template_url_service == nullptr) {
     return GURL();
   }
 
-  if (!base::FeatureList::IsEnabled(omnibox::kZeroSuggestRedirectToChrome) ||
-      template_url_service == nullptr) {
+  if (!base::FeatureList::IsEnabled(omnibox::kZeroSuggestRedirectToChrome)) {
     return GURL();
   }
 

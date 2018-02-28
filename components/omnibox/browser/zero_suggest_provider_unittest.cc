@@ -102,8 +102,7 @@ void FakeEmptyTopSites::GetMostVisitedURLs(
   mv_callback = callback;
 }
 
-class FakeAutocompleteProviderClient
-    : public testing::NiceMock<MockAutocompleteProviderClient> {
+class FakeAutocompleteProviderClient : public MockAutocompleteProviderClient {
  public:
   FakeAutocompleteProviderClient()
       : template_url_service_(new TemplateURLService(nullptr, 0)),

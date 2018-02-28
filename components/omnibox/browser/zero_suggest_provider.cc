@@ -413,6 +413,7 @@ void ZeroSuggestProvider::ConvertResultsToAutocompleteMatches() {
   matches_.clear();
 
   TemplateURLService* template_url_service = client()->GetTemplateURLService();
+  DCHECK(template_url_service);
   const TemplateURL* default_provider =
       template_url_service->GetDefaultSearchProvider();
   // Fail if we can't set the clickthrough URL for query suggestions.
@@ -539,6 +540,7 @@ ZeroSuggestProvider::ResultType ZeroSuggestProvider::TypeOfResultToRun(
   // Check if the URL can be sent in any suggest request.
   const TemplateURLService* template_url_service =
       client()->GetTemplateURLService();
+  DCHECK(template_url_service);
   const TemplateURL* default_provider =
       template_url_service->GetDefaultSearchProvider();
   const bool can_send_current_url = CanSendURL(
