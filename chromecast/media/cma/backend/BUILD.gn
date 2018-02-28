@@ -175,11 +175,11 @@ cast_source_set("for_mixer_audio") {
 test("cast_audio_backend_unittests") {
   testonly = true
   sources = [
+    "audio_fader_unittest.cc",
     "filter_group_unittest.cc",
     "mock_mixer_source.cc",
     "mock_mixer_source.h",
-
-    # "stream_mixer_unittest.cc",
+    "stream_mixer_unittest.cc",
   ]
 
   deps = [
