@@ -49,11 +49,15 @@ rtc_static_library("rtc_xmllite") {
 
   deps = [
     "//third_party/webrtc/rtc_base:rtc_base",
+    "//third_party/webrtc_overrides:task_queue_impl",
   ]
   public_deps = [
     "//third_party/expat",
   ]
-  all_dependent_configs = [ ":libjingle_xmpp_common_config" ]
+  all_dependent_configs = [
+    ":libjingle_xmpp_common_config",
+    "//third_party/webrtc_overrides:jingle_unexported_configs",
+  ]
 }
 
 config("rtc_xmpp_warnings_config") {
@@ -101,6 +105,7 @@ rtc_static_library("rtc_xmpp") {
   deps = [
     ":rtc_xmllite",
     "//third_party/webrtc/rtc_base:rtc_base_approved",
+    "//third_party/webrtc_overrides:task_queue_impl",
   ]
   public_deps = [
     ":rtc_task_runner",
