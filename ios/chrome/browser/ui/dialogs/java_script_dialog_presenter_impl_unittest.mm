@@ -7,14 +7,17 @@
 #import <Foundation/Foundation.h>
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
+using JavaScriptDialogPresenterImplTest = PlatformTest;
+
 // Tests that GetTruncatedMessageText() correctly truncates the length of a
 // string to the expected length.
-TEST(JavaScriptDialogPresenterImplTest, GetTruncatedMessageText) {
+TEST_F(JavaScriptDialogPresenterImplTest, GetTruncatedMessageText) {
   NSMutableString* text = [@"text" mutableCopy];
   while (text.length < kJavaScriptDialogMaxMessageLength) {
     [text appendString:text];

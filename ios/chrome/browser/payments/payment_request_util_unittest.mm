@@ -12,13 +12,11 @@
 #include "components/payments/core/payment_response.h"
 #include "components/payments/mojom/payment_request_data.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 namespace payment_request_util {
 
-class PaymentRequestUtilTest : public testing::Test {
- protected:
-  PaymentRequestUtilTest() {}
-};
+using PaymentRequestUtilTest = PlatformTest;
 
 // Tests that serializing a default PaymentResponse yields the expected result.
 TEST_F(PaymentRequestUtilTest,
