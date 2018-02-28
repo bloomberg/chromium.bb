@@ -43,6 +43,26 @@ float LinearToDecibels(float linear) {
 
 double DiscreteTimeConstantForSampleRate(double time_constant,
                                          double sample_rate) {
+  // From the WebAudio spec, the formula for setTargetAtTime is
+  //
+  //   v(t) = V1 + (V0 - V1)*exp(-t/tau)
+  //
+  // where tau is the time constant, V1 is the target value and V0 is
+  // the starting value.
+  //
+  // Rewrite this as
+  //
+  //   v(t) = V0 + (V1 - V0)*(1-exp(-t/tau))
+  //
+  // The implementation of setTargetAtTime uses this form.  So at the
+  // sample points, we have
+  //
+  //   v(n/Fs) = V0 + (V1 - V0)*(1-exp(-n/(Fs*tau)))
+  //
+  // where Fs is the sample rate of the sampled systme.  Thus, the
+  // discrete time constant is
+  //
+  //   1 - exp(-1/(Fs*tau)
   return 1 - exp(-1 / (sample_rate * time_constant));
 }
 
