@@ -59,6 +59,7 @@
 #endif
 
 #if BUILDFLAG(ENABLE_REPORTING)
+#include "net/network_error_logging/network_error_logging_delegate.h"
 #include "net/network_error_logging/network_error_logging_service.h"
 #include "net/reporting/reporting_policy.h"
 #include "net/reporting/reporting_service.h"
@@ -641,7 +642,8 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
 
   if (network_error_logging_enabled_) {
     storage->set_network_error_logging_service(
-        NetworkErrorLoggingService::Create());
+        NetworkErrorLoggingService::Create(
+            NetworkErrorLoggingDelegate::Create()));
   }
 
   // If both Reporting and Network Error Logging are actually enabled, then

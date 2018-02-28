@@ -18,6 +18,7 @@
 #include "base/values.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
+#include "net/network_error_logging/network_error_logging_delegate.h"
 #include "net/reporting/reporting_service.h"
 #include "net/socket/next_proto.h"
 #include "url/gurl.h"
@@ -120,7 +121,11 @@ bool RequestWasSuccessful(
 
 class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
  public:
-  NetworkErrorLoggingServiceImpl() = default;
+  explicit NetworkErrorLoggingServiceImpl(
+      std::unique_ptr<NetworkErrorLoggingDelegate> delegate)
+      : delegate_(std::move(delegate)) {
+    DCHECK(delegate_);
+  }
 
   // NetworkErrorLoggingService implementation:
 
@@ -241,6 +246,8 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
   // PolicyMap.
   using WildcardPolicyMap =
       std::map<std::string, std::set<const OriginPolicy*>>;
+
+  std::unique_ptr<NetworkErrorLoggingDelegate> delegate_;
 
   PolicyMap policies_;
   WildcardPolicyMap wildcard_policies_;
@@ -413,9 +420,9 @@ const char NetworkErrorLoggingService::kElapsedTimeKey[] = "elapsed-time";
 const char NetworkErrorLoggingService::kTypeKey[] = "type";
 
 // static
-std::unique_ptr<NetworkErrorLoggingService>
-NetworkErrorLoggingService::Create() {
-  return std::make_unique<NetworkErrorLoggingServiceImpl>();
+std::unique_ptr<NetworkErrorLoggingService> NetworkErrorLoggingService::Create(
+    std::unique_ptr<NetworkErrorLoggingDelegate> delegate) {
+  return std::make_unique<NetworkErrorLoggingServiceImpl>(std::move(delegate));
 }
 
 NetworkErrorLoggingService::~NetworkErrorLoggingService() = default;
