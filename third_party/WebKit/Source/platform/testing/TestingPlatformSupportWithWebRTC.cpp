@@ -6,6 +6,7 @@
 
 #include <memory>
 #include "public/platform/WebMediaStreamTrack.h"
+#include "public/platform/WebRTCDTMFSenderHandler.h"
 #include "public/platform/WebRTCError.h"
 #include "public/platform/WebRTCRtpReceiver.h"
 #include "public/platform/WebRTCRtpSender.h"
@@ -27,6 +28,9 @@ class DummyWebRTCRtpSender : public WebRTCRtpSender {
   uintptr_t Id() const override { return id_; }
   WebMediaStreamTrack Track() const override { return WebMediaStreamTrack(); }
   void ReplaceTrack(WebMediaStreamTrack, WebRTCVoidRequest) override {}
+  std::unique_ptr<WebRTCDTMFSenderHandler> GetDtmfSender() const override {
+    return nullptr;
+  }
 
  private:
   const uintptr_t id_;
@@ -100,11 +104,6 @@ bool MockWebRTCPeerConnectionHandler::RemoveTrack(WebRTCRtpSender*) {
 WebRTCDataChannelHandler* MockWebRTCPeerConnectionHandler::CreateDataChannel(
     const WebString& label,
     const WebRTCDataChannelInit&) {
-  return nullptr;
-}
-
-WebRTCDTMFSenderHandler* MockWebRTCPeerConnectionHandler::CreateDTMFSender(
-    const WebMediaStreamTrack&) {
   return nullptr;
 }
 

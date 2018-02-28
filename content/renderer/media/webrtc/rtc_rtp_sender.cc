@@ -5,6 +5,7 @@
 #include "content/renderer/media/webrtc/rtc_rtp_sender.h"
 
 #include "base/logging.h"
+#include "content/renderer/media/webrtc/rtc_dtmf_sender_handler.h"
 
 namespace content {
 
@@ -108,6 +109,14 @@ class RTCRtpSender::RTCRtpSenderInternal
             &RTCRtpSender::RTCRtpSenderInternal::ReplaceTrackOnSignalingThread,
             this, std::move(track_ref), base::Unretained(webrtc_track),
             std::move(callback)));
+  }
+
+  std::unique_ptr<blink::WebRTCDTMFSenderHandler> GetDtmfSender() const {
+    // The webrtc_sender is a proxy, so this is a blocking call to the
+    // webrtc signalling thread.
+    DCHECK(main_thread_->BelongsToCurrentThread());
+    auto dtmf_sender = webrtc_sender()->GetDtmfSender();
+    return std::make_unique<RtcDtmfSenderHandler>(dtmf_sender);
   }
 
   bool RemoveFromPeerConnection(webrtc::PeerConnectionInterface* pc) {
@@ -240,6 +249,11 @@ void RTCRtpSender::ReplaceTrack(blink::WebMediaStreamTrack with_track,
   internal_->ReplaceTrack(
       std::move(with_track),
       base::BindOnce(&OnReplaceTrackCompleted, std::move(request)));
+}
+
+std::unique_ptr<blink::WebRTCDTMFSenderHandler> RTCRtpSender::GetDtmfSender()
+    const {
+  return internal_->GetDtmfSender();
 }
 
 webrtc::RtpSenderInterface* RTCRtpSender::webrtc_sender() const {

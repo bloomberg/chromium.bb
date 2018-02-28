@@ -152,8 +152,6 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   blink::WebRTCDataChannelHandler* CreateDataChannel(
       const blink::WebString& label,
       const blink::WebRTCDataChannelInit& init) override;
-  blink::WebRTCDTMFSenderHandler* CreateDTMFSender(
-      const blink::WebMediaStreamTrack& track) override;
   void Stop() override;
 
   // Delegate functions to allow for mocking of WebKit interfaces.

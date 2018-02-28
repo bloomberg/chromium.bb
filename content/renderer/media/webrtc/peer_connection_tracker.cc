@@ -719,16 +719,6 @@ void PeerConnectionTracker::TrackOnRenegotiationNeeded(
   SendPeerConnectionUpdate(id, "onRenegotiationNeeded", std::string());
 }
 
-void PeerConnectionTracker::TrackCreateDTMFSender(
-    RTCPeerConnectionHandler* pc_handler,
-    const blink::WebMediaStreamTrack& track) {
-  DCHECK(main_thread_.CalledOnValidThread());
-  int id = GetLocalIDForHandler(pc_handler);
-  if (id == -1)
-    return;
-  SendPeerConnectionUpdate(id, "createDTMFSender", track.Id().Utf8());
-}
-
 void PeerConnectionTracker::TrackGetUserMedia(
     const blink::WebUserMediaRequest& user_media_request) {
   DCHECK(main_thread_.CalledOnValidThread());

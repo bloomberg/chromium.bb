@@ -37,7 +37,6 @@ namespace blink {
 class ExceptionState;
 class MediaStreamTrack;
 class WebRTCDTMFSenderHandler;
-class WebRTCPeerConnectionHandler;
 
 class RTCDTMFSender final : public EventTargetWithInlineData,
                             public WebRTCDTMFSenderHandlerClient,
@@ -48,13 +47,12 @@ class RTCDTMFSender final : public EventTargetWithInlineData,
 
  public:
   static RTCDTMFSender* Create(ExecutionContext*,
-                               WebRTCPeerConnectionHandler*,
-                               MediaStreamTrack*,
-                               ExceptionState&);
+                               std::unique_ptr<WebRTCDTMFSenderHandler>);
   ~RTCDTMFSender() override;
 
   bool canInsertDTMF() const;
   MediaStreamTrack* track() const;
+  void SetTrack(MediaStreamTrack*);
   String toneBuffer() const;
   int duration() const { return duration_; }
   int interToneGap() const { return inter_tone_gap_; }
@@ -79,7 +77,6 @@ class RTCDTMFSender final : public EventTargetWithInlineData,
 
  private:
   RTCDTMFSender(ExecutionContext*,
-                MediaStreamTrack*,
                 std::unique_ptr<WebRTCDTMFSenderHandler>);
   void Dispose();
 

@@ -1542,24 +1542,4 @@ TEST_F(RTCPeerConnectionHandlerTest, CreateDataChannel) {
   channel->SetClient(nullptr);
 }
 
-TEST_F(RTCPeerConnectionHandlerTest, CreateDtmfSender) {
-  std::string stream_label = "local_stream";
-  blink::WebMediaStream local_stream(CreateLocalMediaStream(stream_label));
-  EXPECT_TRUE(AddStream(local_stream));
-
-  blink::WebVector<blink::WebMediaStreamTrack> tracks;
-  local_stream.AudioTracks(tracks);
-  ASSERT_LE(1ul, tracks.size());
-
-  EXPECT_CALL(*mock_tracker_.get(),
-              TrackCreateDTMFSender(pc_handler_.get(),
-                                    testing::Ref(tracks[0])));
-
-  std::unique_ptr<blink::WebRTCDTMFSenderHandler> sender(
-      pc_handler_->CreateDTMFSender(tracks[0]));
-  EXPECT_TRUE(sender.get());
-
-  StopAllTracks(local_stream);
-}
-
 }  // namespace content

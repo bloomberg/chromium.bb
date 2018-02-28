@@ -1418,22 +1418,25 @@ RTCDTMFSender* RTCPeerConnection::createDTMFSender(
                                       "track.kind is not 'audio'.");
     return nullptr;
   }
-  bool is_local_track = false;
+  RTCRtpSender* found_rtp_sender = nullptr;
   for (const auto& rtp_sender : rtp_senders_) {
     if (rtp_sender->track() == track) {
-      is_local_track = true;
+      found_rtp_sender = rtp_sender;
       break;
     }
   }
-  if (!is_local_track) {
+  if (!found_rtp_sender) {
     exception_state.ThrowDOMException(
         kSyntaxError, "No RTCRtpSender is available for the track provided.");
     return nullptr;
   }
-  RTCDTMFSender* dtmf_sender = RTCDTMFSender::Create(
-      GetExecutionContext(), peer_handler_.get(), track, exception_state);
-  if (exception_state.HadException())
+  RTCDTMFSender* dtmf_sender = found_rtp_sender->dtmf();
+  if (!dtmf_sender) {
+    exception_state.ThrowDOMException(kSyntaxError,
+                                      "Unable to create DTMF sender for track");
     return nullptr;
+  }
+  dtmf_sender->SetTrack(track);
   return dtmf_sender;
 }
 

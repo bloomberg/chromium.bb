@@ -65,6 +65,8 @@ class CONTENT_EXPORT RTCRtpSender : public blink::WebRTCRtpSender {
   blink::WebMediaStreamTrack Track() const override;
   void ReplaceTrack(blink::WebMediaStreamTrack with_track,
                     blink::WebRTCVoidRequest request) override;
+  std::unique_ptr<blink::WebRTCDTMFSenderHandler> GetDtmfSender()
+      const override;
 
   webrtc::RtpSenderInterface* webrtc_sender() const;
   const webrtc::MediaStreamTrackInterface* webrtc_track() const;

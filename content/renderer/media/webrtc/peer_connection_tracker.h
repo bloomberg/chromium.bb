@@ -160,11 +160,6 @@ class CONTENT_EXPORT PeerConnectionTracker
   // Sends an update when onRenegotiationNeeded is called.
   virtual void TrackOnRenegotiationNeeded(RTCPeerConnectionHandler* pc_handler);
 
-  // Sends an update when a DTMFSender is created.
-  virtual void TrackCreateDTMFSender(
-      RTCPeerConnectionHandler* pc_handler,
-      const blink::WebMediaStreamTrack& track);
-
   // Sends an update when getUserMedia is called.
   virtual void TrackGetUserMedia(
       const blink::WebUserMediaRequest& user_media_request);

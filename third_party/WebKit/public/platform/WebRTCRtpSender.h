@@ -12,6 +12,7 @@
 namespace blink {
 
 class WebMediaStreamTrack;
+class WebRTCDTMFSenderHandler;
 
 // Implementations of this interface keep the corresponding WebRTC-layer sender
 // alive through reference counting. Multiple |WebRTCRtpSender|s could reference
@@ -30,6 +31,7 @@ class BLINK_PLATFORM_EXPORT WebRTCRtpSender {
   // on RTCError, as to surface both exception type and error message.
   // https://crbug.com/790007
   virtual void ReplaceTrack(WebMediaStreamTrack, WebRTCVoidRequest) = 0;
+  virtual std::unique_ptr<WebRTCDTMFSenderHandler> GetDtmfSender() const = 0;
 };
 
 }  // namespace blink

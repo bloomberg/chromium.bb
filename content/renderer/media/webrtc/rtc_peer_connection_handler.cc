@@ -1982,33 +1982,6 @@ blink::WebRTCDataChannelHandler* RTCPeerConnectionHandler::CreateDataChannel(
   return new RtcDataChannelHandler(task_runner_, webrtc_channel);
 }
 
-blink::WebRTCDTMFSenderHandler* RTCPeerConnectionHandler::CreateDTMFSender(
-    const blink::WebMediaStreamTrack& track) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!track.IsNull());
-  DCHECK(track.Source().GetType() == blink::WebMediaStreamSource::kTypeAudio);
-  TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::createDTMFSender");
-  DVLOG(1) << "createDTMFSender.";
-  auto adapter_ref = track_adapter_map_->GetLocalTrackAdapter(track);
-  if (!adapter_ref) {
-    DLOG(ERROR) << "Audio track with ID '" << track.Id().Utf8()
-                << "' has no known WebRtc sink.";
-    return nullptr;
-  }
-  webrtc::AudioTrackInterface* webrtc_track =
-      static_cast<webrtc::AudioTrackInterface*>(adapter_ref->webrtc_track());
-  DCHECK(webrtc_track);
-  rtc::scoped_refptr<webrtc::DtmfSenderInterface> sender(
-      native_peer_connection_->CreateDtmfSender(webrtc_track));
-  if (!sender) {
-    DLOG(ERROR) << "Could not create native DTMF sender.";
-    return nullptr;
-  }
-  if (peer_connection_tracker_)
-    peer_connection_tracker_->TrackCreateDTMFSender(this, track);
-  return new RtcDtmfSenderHandler(sender);
-}
-
 void RTCPeerConnectionHandler::Stop() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << "RTCPeerConnectionHandler::stop";

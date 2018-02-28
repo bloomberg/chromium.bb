@@ -10,6 +10,7 @@
 #include "modules/peerconnection/RTCDTMFSender.h"
 #include "modules/peerconnection/RTCPeerConnection.h"
 #include "platform/peerconnection/RTCVoidRequest.h"
+#include "public/platform/WebRTCDTMFSenderHandler.h"
 
 namespace blink {
 
@@ -61,6 +62,7 @@ RTCRtpSender::RTCRtpSender(RTCPeerConnection* pc,
   DCHECK(pc_);
   DCHECK(sender_);
   DCHECK(track_);
+  kind_ = track->kind();
 }
 
 MediaStreamTrack* RTCRtpSender::track() {
@@ -91,6 +93,15 @@ WebRTCRtpSender* RTCRtpSender::web_sender() {
 
 void RTCRtpSender::SetTrack(MediaStreamTrack* track) {
   track_ = track;
+  if (track) {
+    if (kind_.IsNull()) {
+      kind_ = track->kind();
+    } else if (kind_ != track->kind()) {
+      LOG(ERROR) << "Trying to set track to a different kind: Old " << kind_
+                 << " new " << track->kind();
+      NOTREACHED();
+    }
+  }
 }
 
 MediaStreamVector RTCRtpSender::streams() const {
@@ -99,17 +110,14 @@ MediaStreamVector RTCRtpSender::streams() const {
 
 RTCDTMFSender* RTCRtpSender::dtmf() {
   // Lazy initialization of dtmf_ to avoid overhead when not used.
-  // TODO(hta): Redefine layers below to use sender as argument, and
-  // stop depending on track being present.
-  // https://crbug.com/814214
-  if (!dtmf_ && track_ && track_->kind() == "audio") {
-    ExceptionState exception_state(nullptr, ExceptionState::kUnknownContext,
-                                   nullptr, nullptr);
-    dtmf_ = pc_->createDTMFSender(track_, exception_state);
-    if (exception_state.HadException()) {
-      LOG(ERROR) << "Unable to create DTMF sender attribute on an audio sender:"
-                 << exception_state.Message();
+  if (!dtmf_ && kind_ == "audio") {
+    auto handler = sender_->GetDtmfSender();
+    if (!handler) {
+      LOG(ERROR) << "Unable to create DTMF sender attribute on an audio sender";
+      return nullptr;
     }
+    dtmf_ =
+        RTCDTMFSender::Create(pc_->GetExecutionContext(), std::move(handler));
   }
   return dtmf_;
 }
