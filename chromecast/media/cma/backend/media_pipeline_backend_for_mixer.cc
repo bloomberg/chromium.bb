@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/media/cma/backend/media_pipeline_backend_audio.h"
+#include "chromecast/media/cma/backend/media_pipeline_backend_for_mixer.h"
 
 #include <limits>
 
@@ -13,14 +13,14 @@
 namespace chromecast {
 namespace media {
 
-MediaPipelineBackendAudio::MediaPipelineBackendAudio(
+MediaPipelineBackendForMixer::MediaPipelineBackendForMixer(
     const MediaPipelineDeviceParams& params)
     : state_(kStateUninitialized), params_(params) {}
 
-MediaPipelineBackendAudio::~MediaPipelineBackendAudio() {}
+MediaPipelineBackendForMixer::~MediaPipelineBackendForMixer() {}
 
-MediaPipelineBackendAudio::AudioDecoder*
-MediaPipelineBackendAudio::CreateAudioDecoder() {
+MediaPipelineBackendForMixer::AudioDecoder*
+MediaPipelineBackendForMixer::CreateAudioDecoder() {
   DCHECK_EQ(kStateUninitialized, state_);
   if (audio_decoder_)
     return nullptr;
@@ -28,8 +28,8 @@ MediaPipelineBackendAudio::CreateAudioDecoder() {
   return audio_decoder_.get();
 }
 
-MediaPipelineBackendAudio::VideoDecoder*
-MediaPipelineBackendAudio::CreateVideoDecoder() {
+MediaPipelineBackendForMixer::VideoDecoder*
+MediaPipelineBackendForMixer::CreateVideoDecoder() {
   DCHECK_EQ(kStateUninitialized, state_);
   if (video_decoder_)
     return nullptr;
@@ -37,7 +37,7 @@ MediaPipelineBackendAudio::CreateVideoDecoder() {
   return video_decoder_.get();
 }
 
-bool MediaPipelineBackendAudio::Initialize() {
+bool MediaPipelineBackendForMixer::Initialize() {
   DCHECK_EQ(kStateUninitialized, state_);
   if (audio_decoder_)
     audio_decoder_->Initialize();
@@ -45,7 +45,7 @@ bool MediaPipelineBackendAudio::Initialize() {
   return true;
 }
 
-bool MediaPipelineBackendAudio::Start(int64_t start_pts) {
+bool MediaPipelineBackendForMixer::Start(int64_t start_pts) {
   DCHECK_EQ(kStateInitialized, state_);
   if (audio_decoder_ && !audio_decoder_->Start(start_pts))
     return false;
@@ -53,7 +53,7 @@ bool MediaPipelineBackendAudio::Start(int64_t start_pts) {
   return true;
 }
 
-void MediaPipelineBackendAudio::Stop() {
+void MediaPipelineBackendForMixer::Stop() {
   DCHECK(state_ == kStatePlaying || state_ == kStatePaused)
       << "Invalid state " << state_;
   if (audio_decoder_)
@@ -62,7 +62,7 @@ void MediaPipelineBackendAudio::Stop() {
   state_ = kStateInitialized;
 }
 
-bool MediaPipelineBackendAudio::Pause() {
+bool MediaPipelineBackendForMixer::Pause() {
   DCHECK_EQ(kStatePlaying, state_);
   if (audio_decoder_ && !audio_decoder_->Pause())
     return false;
@@ -70,7 +70,7 @@ bool MediaPipelineBackendAudio::Pause() {
   return true;
 }
 
-bool MediaPipelineBackendAudio::Resume() {
+bool MediaPipelineBackendForMixer::Resume() {
   DCHECK_EQ(kStatePaused, state_);
   if (audio_decoder_ && !audio_decoder_->Resume())
     return false;
@@ -78,34 +78,34 @@ bool MediaPipelineBackendAudio::Resume() {
   return true;
 }
 
-bool MediaPipelineBackendAudio::SetPlaybackRate(float rate) {
+bool MediaPipelineBackendForMixer::SetPlaybackRate(float rate) {
   if (audio_decoder_) {
     return audio_decoder_->SetPlaybackRate(rate);
   }
   return true;
 }
 
-int64_t MediaPipelineBackendAudio::GetCurrentPts() {
+int64_t MediaPipelineBackendForMixer::GetCurrentPts() {
   if (audio_decoder_)
     return audio_decoder_->GetCurrentPts();
   return std::numeric_limits<int64_t>::min();
 }
 
-bool MediaPipelineBackendAudio::Primary() const {
+bool MediaPipelineBackendForMixer::Primary() const {
   return (params_.audio_type !=
           MediaPipelineDeviceParams::kAudioStreamSoundEffects);
 }
 
-std::string MediaPipelineBackendAudio::DeviceId() const {
+std::string MediaPipelineBackendForMixer::DeviceId() const {
   return params_.device_id;
 }
 
-AudioContentType MediaPipelineBackendAudio::ContentType() const {
+AudioContentType MediaPipelineBackendForMixer::ContentType() const {
   return params_.content_type;
 }
 
 const scoped_refptr<base::SingleThreadTaskRunner>&
-MediaPipelineBackendAudio::GetTaskRunner() const {
+MediaPipelineBackendForMixer::GetTaskRunner() const {
   return static_cast<TaskRunnerImpl*>(params_.task_runner)->runner();
 }
 

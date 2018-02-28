@@ -12,7 +12,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromecast/base/init_command_line_shlib.h"
 #include "chromecast/base/task_runner_impl.h"
-#include "chromecast/media/cma/backend/media_pipeline_backend_audio.h"
+#include "chromecast/media/cma/backend/media_pipeline_backend_for_mixer.h"
 #include "chromecast/media/cma/backend/stream_mixer.h"
 #include "chromecast/public/graphics_types.h"
 #include "chromecast/public/media/media_pipeline_device_params.h"
@@ -75,7 +75,7 @@ MediaPipelineBackend* CastMediaShlib::CreateMediaPipelineBackend(
     g_thread_task_runner_handle = new base::ThreadTaskRunnerHandle(task_runner);
   }
 
-  return new MediaPipelineBackendAudio(params);
+  return new MediaPipelineBackendForMixer(params);
 }
 
 double CastMediaShlib::GetMediaClockRate() {

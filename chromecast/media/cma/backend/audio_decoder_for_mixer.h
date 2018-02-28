@@ -29,7 +29,7 @@ class AudioRendererAlgorithm;
 namespace chromecast {
 namespace media {
 class DecoderBufferBase;
-class MediaPipelineBackendAudio;
+class MediaPipelineBackendForMixer;
 
 // AudioDecoder implementation that streams decoded stream to the StreamMixer.
 class AudioDecoderForMixer : public MediaPipelineBackend::AudioDecoder,
@@ -37,7 +37,7 @@ class AudioDecoderForMixer : public MediaPipelineBackend::AudioDecoder,
  public:
   using BufferStatus = MediaPipelineBackend::BufferStatus;
 
-  explicit AudioDecoderForMixer(MediaPipelineBackendAudio* backend);
+  explicit AudioDecoderForMixer(MediaPipelineBackendForMixer* backend);
   ~AudioDecoderForMixer() override;
 
   void Initialize();
@@ -86,7 +86,7 @@ class AudioDecoderForMixer : public MediaPipelineBackend::AudioDecoder,
   bool ShouldStartClock() const;
   void UpdateStatistics(Statistics delta);
 
-  MediaPipelineBackendAudio* const backend_;
+  MediaPipelineBackendForMixer* const backend_;
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   MediaPipelineBackend::Decoder::Delegate* delegate_;
 

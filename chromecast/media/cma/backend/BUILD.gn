@@ -117,7 +117,7 @@ cast_source_set("public") {
   ]
 }
 
-cast_source_set("audio") {
+cast_source_set("for_mixer_audio") {
   sources = [
     "audio_decoder_for_mixer.cc",
     "audio_decoder_for_mixer.h",
@@ -130,8 +130,8 @@ cast_source_set("audio") {
     "filter_group.cc",
     "filter_group.h",
     "media_codec_support_cast_audio.cc",
-    "media_pipeline_backend_audio.cc",
-    "media_pipeline_backend_audio.h",
+    "media_pipeline_backend_for_mixer.cc",
+    "media_pipeline_backend_for_mixer.h",
     "mixer_input.cc",
     "mixer_input.h",
     "post_processing_pipeline.h",
@@ -183,7 +183,7 @@ test("cast_audio_backend_unittests") {
   ]
 
   deps = [
-    ":audio",
+    ":for_mixer_audio",
     ":public",
     "//base",
     "//base/test:run_all_unittests",

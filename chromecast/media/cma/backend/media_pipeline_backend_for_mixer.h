@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_MEDIA_CMA_BACKEND_MEDIA_PIPELINE_BACKEND_AUDIO_H_
-#define CHROMECAST_MEDIA_CMA_BACKEND_MEDIA_PIPELINE_BACKEND_AUDIO_H_
+#ifndef CHROMECAST_MEDIA_CMA_BACKEND_MEDIA_PIPELINE_BACKEND_FOR_MIXER_H_
+#define CHROMECAST_MEDIA_CMA_BACKEND_MEDIA_PIPELINE_BACKEND_FOR_MIXER_H_
 
 #include <memory>
 #include <string>
@@ -26,10 +26,11 @@ class AudioDecoderForMixer;
 class VideoDecoderNull;
 
 // CMA Backend implementation for audio devices.
-class MediaPipelineBackendAudio : public MediaPipelineBackend {
+class MediaPipelineBackendForMixer : public MediaPipelineBackend {
  public:
-  explicit MediaPipelineBackendAudio(const MediaPipelineDeviceParams& params);
-  ~MediaPipelineBackendAudio() override;
+  explicit MediaPipelineBackendForMixer(
+      const MediaPipelineDeviceParams& params);
+  ~MediaPipelineBackendForMixer() override;
 
   // MediaPipelineBackend implementation:
   AudioDecoder* CreateAudioDecoder() override;
@@ -61,10 +62,10 @@ class MediaPipelineBackendAudio : public MediaPipelineBackend {
   std::unique_ptr<VideoDecoderNull> video_decoder_;
   std::unique_ptr<AudioDecoderForMixer> audio_decoder_;
 
-  DISALLOW_COPY_AND_ASSIGN(MediaPipelineBackendAudio);
+  DISALLOW_COPY_AND_ASSIGN(MediaPipelineBackendForMixer);
 };
 
 }  // namespace media
 }  // namespace chromecast
 
-#endif  // CHROMECAST_MEDIA_CMA_BACKEND_MEDIA_PIPELINE_BACKEND_AUDIO_H_
+#endif  // CHROMECAST_MEDIA_CMA_BACKEND_MEDIA_PIPELINE_BACKEND_FOR_MIXER_H_
