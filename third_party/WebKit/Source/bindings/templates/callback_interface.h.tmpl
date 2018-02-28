@@ -24,11 +24,9 @@ class {{exported}}{{v8_class}} final : public CallbackInterfaceBase {
   ~{{v8_class}}() override = default;
 
 {% for method in methods %}
-  {# TODO(yukishiino): Change the return type to v8::Maybe<T> so that the
-     function returns a return value or throws an exception. #}
   // Performs "call a user object's operation".
   // https://heycam.github.io/webidl/#call-a-user-objects-operation
-  {{method.cpp_type}} {{method.name}}({{method.argument_declarations | join(', ')}});
+  v8::Maybe<{{method.cpp_type}}> {{method.name}}({{method.argument_declarations | join(', ')}}) WARN_UNUSED_RESULT;
 
 {% endfor %}
 

@@ -29,39 +29,39 @@ class CORE_EXPORT V8TestCallbackInterface final : public CallbackInterfaceBase {
 
   // Performs "call a user object's operation".
   // https://heycam.github.io/webidl/#call-a-user-objects-operation
-  void voidMethod(ScriptWrappable* callback_this_value);
+  v8::Maybe<void> voidMethod(ScriptWrappable* callback_this_value) WARN_UNUSED_RESULT;
 
   // Performs "call a user object's operation".
   // https://heycam.github.io/webidl/#call-a-user-objects-operation
-  bool booleanMethod(ScriptWrappable* callback_this_value);
+  v8::Maybe<bool> booleanMethod(ScriptWrappable* callback_this_value) WARN_UNUSED_RESULT;
 
   // Performs "call a user object's operation".
   // https://heycam.github.io/webidl/#call-a-user-objects-operation
-  void voidMethodBooleanArg(ScriptWrappable* callback_this_value, bool boolArg);
+  v8::Maybe<void> voidMethodBooleanArg(ScriptWrappable* callback_this_value, bool boolArg) WARN_UNUSED_RESULT;
 
   // Performs "call a user object's operation".
   // https://heycam.github.io/webidl/#call-a-user-objects-operation
-  void voidMethodSequenceArg(ScriptWrappable* callback_this_value, const HeapVector<Member<TestInterfaceEmpty>>& sequenceArg);
+  v8::Maybe<void> voidMethodSequenceArg(ScriptWrappable* callback_this_value, const HeapVector<Member<TestInterfaceEmpty>>& sequenceArg) WARN_UNUSED_RESULT;
 
   // Performs "call a user object's operation".
   // https://heycam.github.io/webidl/#call-a-user-objects-operation
-  void voidMethodFloatArg(ScriptWrappable* callback_this_value, float floatArg);
+  v8::Maybe<void> voidMethodFloatArg(ScriptWrappable* callback_this_value, float floatArg) WARN_UNUSED_RESULT;
 
   // Performs "call a user object's operation".
   // https://heycam.github.io/webidl/#call-a-user-objects-operation
-  void voidMethodTestInterfaceEmptyArg(ScriptWrappable* callback_this_value, TestInterfaceEmpty* testInterfaceEmptyArg);
+  v8::Maybe<void> voidMethodTestInterfaceEmptyArg(ScriptWrappable* callback_this_value, TestInterfaceEmpty* testInterfaceEmptyArg) WARN_UNUSED_RESULT;
 
   // Performs "call a user object's operation".
   // https://heycam.github.io/webidl/#call-a-user-objects-operation
-  void voidMethodTestInterfaceEmptyStringArg(ScriptWrappable* callback_this_value, TestInterfaceEmpty* testInterfaceEmptyArg, const String& stringArg);
+  v8::Maybe<void> voidMethodTestInterfaceEmptyStringArg(ScriptWrappable* callback_this_value, TestInterfaceEmpty* testInterfaceEmptyArg, const String& stringArg) WARN_UNUSED_RESULT;
 
   // Performs "call a user object's operation".
   // https://heycam.github.io/webidl/#call-a-user-objects-operation
-  void callbackWithThisValueVoidMethodStringArg(ScriptWrappable* callback_this_value, const String& stringArg);
+  v8::Maybe<void> callbackWithThisValueVoidMethodStringArg(ScriptWrappable* callback_this_value, const String& stringArg) WARN_UNUSED_RESULT;
 
   // Performs "call a user object's operation".
   // https://heycam.github.io/webidl/#call-a-user-objects-operation
-  void customVoidMethodTestInterfaceEmptyArg(ScriptWrappable* callback_this_value, TestInterfaceEmpty* testInterfaceEmptyArg);
+  v8::Maybe<void> customVoidMethodTestInterfaceEmptyArg(ScriptWrappable* callback_this_value, TestInterfaceEmpty* testInterfaceEmptyArg) WARN_UNUSED_RESULT;
 
  private:
   explicit V8TestCallbackInterface(v8::Local<v8::Object> callback_object)

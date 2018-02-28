@@ -49,7 +49,12 @@ void SQLStatement::OnSuccessV8Impl::Trace(blink::Visitor* visitor) {
 
 bool SQLStatement::OnSuccessV8Impl::OnSuccess(SQLTransaction* transaction,
                                               SQLResultSet* result_set) {
-  return callback_->handleEvent(nullptr, transaction, result_set);
+  v8::TryCatch try_catch(callback_->GetIsolate());
+  try_catch.SetVerbose(true);
+
+  // An exception if any is killed with the v8::TryCatch above and reported
+  // to the global exception handler.
+  return callback_->handleEvent(nullptr, transaction, result_set).IsJust();
 }
 
 void SQLStatement::OnErrorV8Impl::Trace(blink::Visitor* visitor) {
@@ -59,7 +64,23 @@ void SQLStatement::OnErrorV8Impl::Trace(blink::Visitor* visitor) {
 
 bool SQLStatement::OnErrorV8Impl::OnError(SQLTransaction* transaction,
                                           SQLError* error) {
-  return callback_->handleEvent(nullptr, transaction, error);
+  v8::TryCatch try_catch(callback_->GetIsolate());
+  try_catch.SetVerbose(true);
+
+  // 4.3.2 Processing model
+  // https://www.w3.org/TR/webdatabase/#sqlstatementcallback
+  // step 6.(In case of error).2. If the error callback returns false, then move
+  // on to the next statement, if any, or onto the next overall step otherwise.
+  // step 6.(In case of error).3. Otherwise, the error callback did not return
+  // false, or there was no error callback. Jump to the last step in the overall
+  // steps.
+  bool return_value;
+  // An exception if any is killed with the v8::TryCatch above and reported
+  // to the global exception handler.
+  if (!callback_->handleEvent(nullptr, transaction, error).To(&return_value)) {
+    return true;
+  }
+  return return_value;
 }
 
 SQLStatement* SQLStatement::Create(Database* database,
