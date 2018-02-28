@@ -1660,6 +1660,32 @@ CommandHandler.COMMANDS_['open-gear-menu'] = /** @type {Command} */ ({
 });
 
 /**
+ * Handle back button.
+ * @type {Command}
+ */
+CommandHandler.COMMANDS_['browser-back'] = /** @type {Command} */ ({
+  /**
+   * @param {!Event} event Command event.
+   * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
+   */
+  execute: function(event, fileManager) {
+    // TODO(fukino): It should be better to minimize Files app only when there
+    // is no back stack, and otherwise use BrowserBack for history navigation.
+    // https://crbug.com/624100.
+    const currentWindow = chrome.app.window.current();
+    if (currentWindow)
+      currentWindow.minimize();
+  },
+  /**
+   * @param {!Event} event Command event.
+   * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
+   */
+  canExecute: function(event, fileManager) {
+    event.canExecute = CommandUtil.canExecuteAlways;
+  }
+});
+
+/**
  * Configures the currently selected volume.
  */
 CommandHandler.COMMANDS_['configure'] = /** @type {Command} */ ({
