@@ -31,16 +31,11 @@ class WebContentsModalDialogManager
   void SetDelegate(WebContentsModalDialogManagerDelegate* d);
 
 #if defined(OS_MACOSX)
-  // Note: These methods are not defined inside components/web_modal/ as their
+  // Note: This method is not defined inside components/web_modal/ as its
   // definition (needed for Cocoa builds) depends on chrome/browser/ui/cocoa/.
   static SingleWebContentsDialogManager* CreateNativeWebModalManager(
       gfx::NativeWindow dialog,
       SingleWebContentsDialogManagerDelegate* native_delegate);
-
-  // Whether the browser is using Cocoa UI. See http://crbug.com/802257 for
-  // details.
-  static bool IsCocoaBrowser();
-
 #endif
 
   // Allow clients to supply their own native dialog manager. Suitable for
