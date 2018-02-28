@@ -98,6 +98,18 @@ class ASH_EXPORT DockedMagnifierController
   // ash::WindowTreeHostManager::Observer:
   void OnDisplayConfigurationChanged() override;
 
+  // Getters and setters of the enabled status of the Fullscreen Magnifier.
+  // We need these so that we can guarantee that both magnifiers are mutually
+  // exclusive (i.e. only one can be on at the same time).
+  // Note: We can't use the ash::MagnificationController since it's not hooked
+  // to the associated user-prefs except when Chrome is running (via
+  // chromeos::MagnificationManager), so we can't assert this behavior in
+  // ash_unittests. Keep them public for now.
+  // TODO(afakhry): Refactor the Fullscreen Magnifier and remove these
+  // functions. https://crbug.com/817157.
+  bool GetFullscreenMagnifierEnabled() const;
+  void SetFullscreenMagnifierEnabled(bool enabled);
+
   void FlushClientPtrForTesting();
 
   const views::Widget* GetViewportWidgetForTesting() const;
@@ -123,6 +135,7 @@ class ASH_EXPORT DockedMagnifierController
   // Handlers of prefs changes.
   void OnEnabledPrefChanged();
   void OnScalePrefChanged();
+  void OnFullscreenMagnifierEnabledPrefChanged();
 
   void Refresh();
 

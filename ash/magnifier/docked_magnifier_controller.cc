@@ -351,6 +351,19 @@ void DockedMagnifierController::OnDisplayConfigurationChanged() {
   CenterOnPoint(GetCursorScreenPoint());
 }
 
+bool DockedMagnifierController::GetFullscreenMagnifierEnabled() const {
+  return active_user_pref_service_ &&
+         active_user_pref_service_->GetBoolean(
+             prefs::kAccessibilityScreenMagnifierEnabled);
+}
+
+void DockedMagnifierController::SetFullscreenMagnifierEnabled(bool enabled) {
+  if (active_user_pref_service_) {
+    active_user_pref_service_->SetBoolean(
+        prefs::kAccessibilityScreenMagnifierEnabled, enabled);
+  }
+}
+
 void DockedMagnifierController::FlushClientPtrForTesting() {
   client_.FlushForTesting();
 }
@@ -450,6 +463,11 @@ void DockedMagnifierController::InitFromUserPrefs() {
       prefs::kDockedMagnifierScale,
       base::BindRepeating(&DockedMagnifierController::OnScalePrefChanged,
                           base::Unretained(this)));
+  pref_change_registrar_->Add(
+      prefs::kAccessibilityScreenMagnifierEnabled,
+      base::BindRepeating(
+          &DockedMagnifierController::OnFullscreenMagnifierEnabledPrefChanged,
+          base::Unretained(this)));
 
   OnEnabledPrefChanged();
   NotifyClientWithStatusChanged();
@@ -458,6 +476,8 @@ void DockedMagnifierController::InitFromUserPrefs() {
 void DockedMagnifierController::OnEnabledPrefChanged() {
   Shell* shell = Shell::Get();
   if (GetEnabled()) {
+    // Enabling the Docked Magnifier disables the Fullscreen Magnifier.
+    SetFullscreenMagnifierEnabled(false);
     // Calling refresh will result in the creation of the magnifier viewport and
     // its associated layers.
     Refresh();
@@ -494,6 +514,12 @@ void DockedMagnifierController::OnScalePrefChanged() {
     is_minimum_point_of_interest_height_valid_ = false;
     Refresh();
   }
+}
+
+void DockedMagnifierController::OnFullscreenMagnifierEnabledPrefChanged() {
+  // Enabling the Fullscreen Magnifier disables the Docked Magnifier.
+  if (GetFullscreenMagnifierEnabled())
+    SetEnabled(false);
 }
 
 void DockedMagnifierController::Refresh() {
