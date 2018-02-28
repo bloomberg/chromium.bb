@@ -6,6 +6,7 @@
 
 #include "core/html/HTMLIFrameElement.h"
 #include "core/layout/LayoutTreeAsText.h"
+#include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/paint/ObjectPaintProperties.h"
 #include "core/paint/PaintPropertyTreePrinter.h"
 #include "platform/graphics/paint/GeometryMapper.h"
@@ -5175,6 +5176,28 @@ TEST_P(PaintPropertyTreeBuilderTest,
   // In SPv175 mode, all paint chunks contained by the new opacity effect
   // node need to be re-painted.
   EXPECT_TRUE(ToLayoutBoxModelObject(target)->Layer()->NeedsRepaint());
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, SVGRootWithMask) {
+  // SPv1 has no effect tree.
+  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
+    return;
+  SetBodyInnerHTML(R"HTML(
+    <svg id="svg" width="16" height="16" mask="url(#test)">
+      <rect width="100%" height="16" fill="#fff"></rect>
+      <defs>
+        <mask id="test">
+          <g>
+            <rect width="100%" height="100%" fill="#ffffff" style=""></rect>
+          </g>
+        </mask>
+      </defs>
+    </svg>
+  )HTML");
+
+  const LayoutSVGRoot& root =
+      *ToLayoutSVGRoot(GetLayoutObjectByElementId("svg"));
+  EXPECT_TRUE(root.FirstFragment().PaintProperties()->Mask());
 }
 
 }  // namespace blink

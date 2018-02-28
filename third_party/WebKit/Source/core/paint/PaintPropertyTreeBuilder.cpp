@@ -669,15 +669,21 @@ static bool NeedsEffect(const LayoutObject& object) {
   const bool is_css_isolated_group =
       object.IsBoxModelObject() && style.IsStackingContext();
 
-  if (!is_css_isolated_group && !object.IsSVGChild())
+  if (!is_css_isolated_group && !object.IsSVG())
     return false;
 
   if (object.IsSVG()) {
-    // This handles SVGRoot objects which have PaintLayers.
-    if (object.IsSVGRoot() && object.HasNonIsolatedBlendingDescendants())
+    if (object.IsSVGRoot() && is_css_isolated_group &&
+        object.HasNonIsolatedBlendingDescendants())
       return true;
     if (SVGLayoutSupport::IsIsolationRequired(&object))
       return true;
+    if (SVGResources* resources =
+            SVGResourcesCache::CachedResourcesForLayoutObject(object)) {
+      if (resources->Masker()) {
+        return true;
+      }
+    }
   } else if (object.IsBoxModelObject()) {
     if (PaintLayer* layer = ToLayoutBoxModelObject(object).Layer()) {
       if (layer->HasNonIsolatedDescendantWithBlendMode())
@@ -698,14 +704,6 @@ static bool NeedsEffect(const LayoutObject& object) {
 
   if (CompositingReasonFinder::RequiresCompositingForOpacityAnimation(style))
     return true;
-
-  if (object.IsSVGChild()) {
-    if (SVGResources* resources =
-            SVGResourcesCache::CachedResourcesForLayoutObject(object)) {
-      if (resources->Masker())
-        return true;
-    }
-  }
 
   if (object.StyleRef().HasMask())
     return true;
