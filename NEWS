@@ -27,7 +27,7 @@ issues]].
   purpose. Thanks to Ludovic Oger.
 - The Mongolian table has been improved and there is now also support
   for grade 2 thanks to Tsengel Maidar.
-
+- Minor updates to the Danish tables thanks to Bue Vester-Andersen
 ** Other changes
 *** Improved documentation
 - Extend the documentation on multipass opcodes. Thanks to Dave Mielke
