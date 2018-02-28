@@ -47,6 +47,7 @@
 #include "chrome/install_static/install_details.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome/installer/setup/archive_patch_helper.h"
+#include "chrome/installer/setup/buildflags.h"
 #include "chrome/installer/setup/install.h"
 #include "chrome/installer/setup/install_worker.h"
 #include "chrome/installer/setup/installer_crash_reporting.h"
@@ -311,18 +312,15 @@ bool UncompressAndPatchChromeArchive(
   }
   archive_helper->set_patch_source(patch_source);
 
-  // Try courgette first. Failing that, try bspatch.
   // Patch application sometimes takes a very long time, so use 100 buckets for
   // up to an hour.
   start_time = base::TimeTicks::Now();
   installer_state.SetStage(installer::PATCHING);
-  if (!archive_helper->CourgetteEnsemblePatch()) {
-    if (!archive_helper->BinaryPatch()) {
-      *install_status = installer::APPLY_DIFF_PATCH_FAILED;
-      installer_state.WriteInstallerResult(
-          *install_status, IDS_INSTALL_UNCOMPRESSION_FAILED_BASE, NULL);
-      return false;
-    }
+  if (!archive_helper->ApplyPatch()) {
+    *install_status = installer::APPLY_DIFF_PATCH_FAILED;
+    installer_state.WriteInstallerResult(
+        *install_status, IDS_INSTALL_UNCOMPRESSION_FAILED_BASE, NULL);
+    return false;
   }
 
   // Record patch time only if it was successful.
@@ -1000,6 +998,11 @@ bool HandleNonInstallCmdLineOptions(const base::FilePath& setup_exe,
       *exit_code = installer::BsdiffPatchFiles(input_file,
                                                patch_file,
                                                output_file);
+#if BUILDFLAG(ZUCCHINI)
+    } else if (patch_type_str == installer::kZucchini) {
+      *exit_code =
+          installer::ZucchiniPatchFiles(input_file, patch_file, output_file);
+#endif  // BUILDFLAG(ZUCCHINI)
     } else {
       *exit_code = installer::PATCH_INVALID_ARGUMENTS;
     }
