@@ -12,6 +12,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 #include "url/gurl.h"
 
 using autofill::FormData;
@@ -56,7 +57,7 @@ struct FormParsingTestCase {
   ParseResultIndices save_result;
 };
 
-class FormParserTest : public testing::Test {
+class FormParserTest : public PlatformTest {
  public:
   FormParserTest() {}
 

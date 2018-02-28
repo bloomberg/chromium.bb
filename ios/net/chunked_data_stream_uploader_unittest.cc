@@ -10,6 +10,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 namespace net {
 
@@ -47,7 +48,7 @@ class MockChunkedDataStreamUploaderDelegate
   int data_length_;
 };
 
-class ChunkedDataStreamUploaderTest : public testing::Test {
+class ChunkedDataStreamUploaderTest : public PlatformTest {
  public:
   ChunkedDataStreamUploaderTest() : callback_count(0) {
     delegate_ = std::make_unique<MockChunkedDataStreamUploaderDelegate>();

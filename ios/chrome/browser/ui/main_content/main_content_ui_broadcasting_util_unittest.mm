@@ -9,10 +9,13 @@
 #import "ios/chrome/browser/ui/main_content/test/main_content_broadcast_test_util.h"
 #import "ios/chrome/browser/ui/main_content/test/test_main_content_ui_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+using MainContentUIBroadcastingUtilTest = PlatformTest;
 
 // Test implementation of MainContentUI.
 @interface TestMainContentUI : NSObject<MainContentUI>
@@ -33,7 +36,7 @@
 
 // Tests that the MainContentUIBroadcastingUtil functions successfully start
 // and stop broadcasting main content properties.
-TEST(MainContentUIBroadcastingUtilTest, StartStop) {
+TEST_F(MainContentUIBroadcastingUtilTest, StartStop) {
   TestMainContentUI* ui = [[TestMainContentUI alloc] init];
   ChromeBroadcaster* broadcaster = [[ChromeBroadcaster alloc] init];
   VerifyMainContentUIBroadcast(ui.mainContentUIState, broadcaster, false);
