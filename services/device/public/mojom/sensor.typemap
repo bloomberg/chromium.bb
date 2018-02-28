@@ -7,9 +7,9 @@ public_headers = [
   "//services/device/public/cpp/generic_sensor/platform_sensor_configuration.h",
 ]
 traits_headers =
-    [ "//services/device/public/cpp/generic_sensor/sensor_struct_traits.h" ]
+    [ "//services/device/public/cpp/generic_sensor/sensor_mojom_traits.h" ]
 sources = [
-  "//services/device/public/cpp/generic_sensor/sensor_struct_traits.cc",
+  "//services/device/public/cpp/generic_sensor/sensor_mojom_traits.cc",
 ]
 type_mappings =
     [ "device.mojom.SensorConfiguration=device::PlatformSensorConfiguration" ]
