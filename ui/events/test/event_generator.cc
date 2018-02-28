@@ -306,14 +306,18 @@ void EventGenerator::PressMoveAndReleaseTouchToCenterOf(EventTarget* window) {
 }
 
 void EventGenerator::GestureTapAt(const gfx::Point& location) {
+  UpdateCurrentDispatcher(location);
+  gfx::Point converted_location = location;
+  delegate()->ConvertPointToTarget(current_target_, &converted_location);
+
   const int kTouchId = 2;
   ui::TouchEvent press(
-      ui::ET_TOUCH_PRESSED, location, ui::EventTimeForNow(),
+      ui::ET_TOUCH_PRESSED, converted_location, ui::EventTimeForNow(),
       ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, kTouchId));
   Dispatch(&press);
 
   ui::TouchEvent release(
-      ui::ET_TOUCH_RELEASED, location,
+      ui::ET_TOUCH_RELEASED, converted_location,
       press.time_stamp() + base::TimeDelta::FromMilliseconds(50),
       ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, kTouchId));
   Dispatch(&release);

@@ -138,7 +138,7 @@ class MagnificationControllerImpl : public MagnificationController,
 
   // For test
   gfx::Point GetPointOfInterestForTesting() override {
-    return point_of_interest_;
+    return point_of_interest_in_root_;
   }
 
   bool IsOnAnimationForTesting() const override { return is_on_animation_; }
@@ -297,7 +297,7 @@ class MagnificationControllerImpl : public MagnificationController,
 
   // Stores the last mouse cursor (or last touched) location. This value is
   // used on zooming to keep this location visible.
-  gfx::Point point_of_interest_;
+  gfx::Point point_of_interest_in_root_;
 
   // Current scale, origin (left-top) position of the magnification window.
   float scale_;
@@ -362,7 +362,7 @@ MagnificationControllerImpl::MagnificationControllerImpl()
   root_window_->AddObserver(this);
   root_window_->GetHost()->GetEventSource()->AddEventRewriter(this);
 
-  point_of_interest_ = root_window_->bounds().CenterPoint();
+  point_of_interest_in_root_ = root_window_->bounds().CenterPoint();
 
   gesture_provider_client_ = std::make_unique<GestureProviderClient>();
   gesture_provider_ = std::make_unique<ui::GestureProviderAura>(
@@ -384,7 +384,7 @@ void MagnificationControllerImpl::RedrawKeepingMousePosition(
     float scale,
     bool animate,
     bool ignore_mouse_change) {
-  gfx::Point mouse_in_root = point_of_interest_;
+  gfx::Point mouse_in_root = point_of_interest_in_root_;
   // mouse_in_root is invalid value when the cursor is hidden.
   if (!root_window_->bounds().Contains(mouse_in_root))
     mouse_in_root = root_window_->bounds().CenterPoint();
@@ -634,7 +634,7 @@ void MagnificationControllerImpl::OnWindowDestroying(
     CHECK_NE(target_root_window, root_window);
     // Don't redraw the old root window as it's being destroyed.
     SwitchTargetRootWindow(target_root_window, false);
-    point_of_interest_ = target_root_window->bounds().CenterPoint();
+    point_of_interest_in_root_ = target_root_window->bounds().CenterPoint();
   }
 }
 
@@ -736,7 +736,7 @@ void MagnificationControllerImpl::OnMouseEvent(ui::MouseEvent* event) {
   if (root_bounds.Contains(event->root_location())) {
     // This must be before |SwitchTargetRootWindow()|.
     if (event->type() != ui::ET_MOUSE_CAPTURE_CHANGED)
-      point_of_interest_ = event->root_location();
+      point_of_interest_in_root_ = event->root_location();
 
     if (current_root != root_window_) {
       DCHECK(current_root);
@@ -783,11 +783,15 @@ void MagnificationControllerImpl::OnScrollEvent(ui::ScrollEvent* event) {
 void MagnificationControllerImpl::OnTouchEvent(ui::TouchEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
   aura::Window* current_root = target->GetRootWindow();
-  if (current_root == root_window_) {
-    gfx::Rect root_bounds = current_root->bounds();
-    if (root_bounds.Contains(event->root_location()))
-      point_of_interest_ = event->root_location();
-  }
+
+  gfx::Rect root_bounds = current_root->bounds();
+  if (!root_bounds.Contains(event->root_location()))
+    return;
+
+  point_of_interest_in_root_ = event->root_location();
+
+  if (current_root != root_window_)
+    SwitchTargetRootWindow(current_root, true);
 }
 
 ui::EventRewriteStatus MagnificationControllerImpl::RewriteEvent(
