@@ -44074,6 +44074,7 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="21785164" label="intranet_redirect_detector"/>
   <int value="22096011" label="test_partial"/>
   <int value="22265491" label="user_info_fetcher"/>
+  <int value="22573197" label="cast_udp_socket"/>
   <int value="22774132" label="devtools_free_data_source"/>
   <int value="23472048" label="network_location_provider"/>
   <int value="24058523" label="CRD_relay_session_request"/>
@@ -44172,6 +44173,7 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="78917933" label="one_google_bar_service"/>
   <int value="79227717" label="dns_transaction"/>
   <int value="79442849" label="sigined_exchange_cert_fetcher"/>
+  <int value="79895226" label="dns_over_https"/>
   <int value="79957943" label="safe_browsing_chunk_backup_request"/>
   <int value="80832574" label="history_notice_utils_popup"/>
   <int value="81157007" label="resource_dispatcher_host"/>
@@ -44184,6 +44186,7 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="84575287" label="background_performance_tracer"/>
   <int value="84889397" label="cryptauth_enrollment_flow_setup"/>
   <int value="87558948" label="cast_message_handler"/>
+  <int value="87635401" label="quic_chromium_incoming_session"/>
   <int value="87775794" label="adb_client_socket"/>
   <int value="88754904" label="captive_portal_service"/>
   <int value="88863520" label="autofill_query"/>
