@@ -345,7 +345,7 @@ ServerWindow* WindowTree::ProcessSetDisplayRoot(
   }
 
   if (!mirrors.empty())
-    NOTIMPLEMENTED() << "TODO(crbug.com/764472): Mus unified mode support.";
+    NOTIMPLEMENTED() << "TODO(crbug.com/806318): Mus+Viz mirroring/unified";
 
   DCHECK(display);
   WindowManagerDisplayRoot* display_root =
