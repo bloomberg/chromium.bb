@@ -1869,7 +1869,7 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
                                BLOCK_SIZE plane_bsize, TX_SIZE tx_size,
                                const ENTROPY_CONTEXT *a,
                                const ENTROPY_CONTEXT *l, int fast_tx_search,
-                               int use_fast_coef_costing,
+                               int use_fast_coef_costing, int64_t ref_best_rd,
                                RD_STATS *best_rd_stats) {
   const AV1_COMMON *cm = &cpi->common;
   MACROBLOCKD *xd = &x->e_mbd;
@@ -1968,6 +1968,9 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
       best_eob = x->plane[plane].eobs[block];
     }
 
+    if (cpi->sf.adaptive_txb_search)
+      if ((best_rd - (best_rd >> 2)) > ref_best_rd) break;
+
     // Skip transform type search when we found the block has been quantized to
     // all zero and at the same time, it has better rdcost than doing transform.
     if (cpi->sf.tx_type_search.skip_tx_search && !best_eob) break;
@@ -2042,7 +2045,8 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
   }
 
   search_txk_type(cpi, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
-                  a, l, 0, args->use_fast_coef_costing, &this_rd_stats);
+                  a, l, 0, args->use_fast_coef_costing, INT64_MAX,
+                  &this_rd_stats);
 
 #if CONFIG_CFL
   if (plane == AOM_PLANE_Y && xd->cfl.store_y && is_cfl_allowed(mbmi)) {
@@ -3467,7 +3471,8 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
                        int blk_row, int blk_col, int plane, int block,
                        int plane_bsize, const ENTROPY_CONTEXT *a,
                        const ENTROPY_CONTEXT *l, RD_STATS *rd_stats,
-                       int fast_tx_search, TX_SIZE_RD_INFO *rd_info_array) {
+                       int fast_tx_search, int64_t ref_rdcost,
+                       TX_SIZE_RD_INFO *rd_info_array) {
   const struct macroblock_plane *const p = &x->plane[plane];
   TXB_CTX txb_ctx;
   get_txb_ctx(plane_bsize, tx_size, plane, a, l, &txb_ctx);
@@ -3494,7 +3499,7 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
 
   RD_STATS this_rd_stats;
   search_txk_type(cpi, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
-                  a, l, fast_tx_search, 0, &this_rd_stats);
+                  a, l, fast_tx_search, 0, ref_rdcost, &this_rd_stats);
 
   av1_merge_rd_stats(rd_stats, &this_rd_stats);
 
@@ -3566,7 +3571,7 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
     mbmi->inter_tx_size[index] = tx_size;
     av1_tx_block_rd_b(
         cpi, x, tx_size, blk_row, blk_col, plane, block, plane_bsize, pta, ptl,
-        rd_stats, fast_tx_search,
+        rd_stats, fast_tx_search, ref_best_rd,
         rd_info_node != NULL ? rd_info_node->rd_info_array : NULL);
     if (rd_stats->rate == INT_MAX) return;
 
@@ -3598,6 +3603,9 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
         av1_get_txk_type_index(plane_bsize, blk_row, blk_col);
     best_tx_type = mbmi->txk_type[txk_type_idx];
   }
+
+  if (cpi->sf.adaptive_txb_search)
+    if (this_rd > ref_best_rd) return;
 
   int tx_split_prune_flag = 0;
   if (cpi->sf.tx_type_search.prune_mode >= PRUNE_2D_ACCURATE)
@@ -3938,7 +3946,7 @@ static void tx_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
     rd_stats->zero_rate = zero_blk_rate;
     rd_stats->ref_rdcost = ref_best_rd;
     av1_tx_block_rd_b(cpi, x, tx_size, blk_row, blk_col, plane, block,
-                      plane_bsize, ta, tl, rd_stats, fast, NULL);
+                      plane_bsize, ta, tl, rd_stats, fast, ref_best_rd, NULL);
     const int mi_width = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
     if (RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist) >=
             RDCOST(x->rdmult, zero_blk_rate, rd_stats->sse) ||
@@ -4490,7 +4498,7 @@ static void tx_block_rd(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
     ENTROPY_CONTEXT *ta = above_ctx + blk_col;
     ENTROPY_CONTEXT *tl = left_ctx + blk_row;
     av1_tx_block_rd_b(cpi, x, tx_size, blk_row, blk_col, plane, block,
-                      plane_bsize, ta, tl, rd_stats, fast, NULL);
+                      plane_bsize, ta, tl, rd_stats, fast, INT64_MAX, NULL);
     av1_set_txb_context(x, plane, block, tx_size, ta, tl);
   } else {
     const TX_SIZE sub_txs = sub_tx_size_map[1][tx_size];
