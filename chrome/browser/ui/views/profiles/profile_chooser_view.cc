@@ -964,7 +964,11 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
   HoverButton* profile_card = new HoverButton(
       this, std::move(current_profile_photo), hover_button_title,
       show_email ? avatar_item.username : base::string16());
-  if (show_email)
+  // TODO(crbug.com/815047): Sometimes, |avatar_item.username| is empty when
+  // |show_email| is true, which should never happen. This causes a crash when
+  // setting the elision behavior, so until this bug is fixed, avoid the crash
+  // by checking that the username is not empty.
+  if (show_email && !avatar_item.username.empty())
     profile_card->SetSubtitleElideBehavior(gfx::ELIDE_EMAIL);
   current_profile_card_ = profile_card;
   view->AddChildView(current_profile_card_);
