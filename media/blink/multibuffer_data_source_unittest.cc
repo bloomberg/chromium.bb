@@ -389,8 +389,8 @@ class MultibufferDataSourceTest : public testing::Test {
   }
 
   void CheckReadThenDefer() {
-    EXPECT_EQ(0, preload_low());
-    EXPECT_EQ(0, preload_high());
+    EXPECT_EQ(2 << 14, preload_low());
+    EXPECT_EQ(3 << 14, preload_high());
   }
 
   void CheckNeverDefer() {
@@ -1180,6 +1180,9 @@ TEST_F(MultibufferDataSourceTest, ExternalResource_Response206_VerifyDefer) {
   EXPECT_CALL(*this, ReadCallback(kDataSize));
   ReadAt(0);
 
+  EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize * 2));
+  ReceiveData(kDataSize);
+
   ASSERT_TRUE(active_loader());
   EXPECT_TRUE(data_provider()->deferred());
 }
@@ -1202,6 +1205,12 @@ TEST_F(MultibufferDataSourceTest,
 
   EXPECT_CALL(*this, ReadCallback(kDataSize));
   EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize * 2));
+  ReceiveData(kDataSize);
+
+  EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize * 3));
+  ReceiveData(kDataSize);
+
+  EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize * 4));
   ReceiveData(kDataSize);
 
   EXPECT_FALSE(active_loader_allownull());
@@ -1230,9 +1239,16 @@ TEST_F(MultibufferDataSourceTest,
 
   ReceiveDataLow(2000);
   EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize * 2 + 2000));
+  EXPECT_CALL(host_, AddBufferedByteRange(kDataSize * 2, kDataSize * 2 + 2000));
   ReceiveDataLow(kDataSize);
 
   base::RunLoop().RunUntilIdle();
+
+  EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize * 3 + 2000));
+  ReceiveData(kDataSize);
+
+  EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize * 4 + 2000));
+  ReceiveData(kDataSize);
 
   EXPECT_FALSE(active_loader_allownull());
 }
