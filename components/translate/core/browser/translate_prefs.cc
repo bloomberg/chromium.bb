@@ -102,7 +102,7 @@ const base::Feature kImprovedLanguageSettings{"ImprovedLanguageSettings",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kRegionalLocalesAsDisplayUI{
-    "RegionalLocalesAsDisplayUI", base::FEATURE_DISABLED_BY_DEFAULT};
+    "RegionalLocalesAsDisplayUI", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kTranslateRecentTarget{"TranslateRecentTarget",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
