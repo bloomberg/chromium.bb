@@ -152,12 +152,13 @@ void UpdateCheckerImpl::CheckForUpdatesHelper(
 
   request_sender_ = std::make_unique<RequestSender>(config_);
   request_sender_->Send(
-      config_->EnabledCupSigning(),
+      urls,
+      BuildUpdateCheckExtraRequestHeaders(config_, ids_checked_, is_foreground),
       BuildUpdateCheckRequest(*config_, session_id, ids_checked_, components,
                               metadata_, additional_attributes,
                               enabled_component_updates,
                               updater_state_attributes_),
-      base::make_optional(is_foreground), urls,
+      config_->EnabledCupSigning(),
       base::BindOnce(&UpdateCheckerImpl::OnRequestSenderComplete,
                      base::Unretained(this), base::ConstRef(components)));
 }

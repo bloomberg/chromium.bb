@@ -133,9 +133,13 @@ TEST_F(PingManagerTest, SendPing) {
         << interceptor->GetRequestsAsString();
     EXPECT_NE(string::npos, interceptor->GetRequestBody(0).find(" sessionid="));
 
-    // Check the ping request does not carry the interactivity header.
+    // Check the ping request does not carry the specific extra request headers.
     EXPECT_FALSE(interceptor->GetRequests()[0].second.HasHeader(
         "X-GoogleUpdate-Interactivity"));
+    EXPECT_FALSE(interceptor->GetRequests()[0].second.HasHeader(
+        "X-GoogleUpdate-Updater"));
+    EXPECT_FALSE(
+        interceptor->GetRequests()[0].second.HasHeader("X-GoogleUpdate-AppId"));
 
     interceptor->Reset();
   }

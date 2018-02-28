@@ -5,9 +5,13 @@
 #include <string>
 
 #include "base/files/file_path.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/path_service.h"
+#include "base/strings/string_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "components/update_client/protocol_builder.h"
+#include "components/update_client/test_configurator.h"
 #include "components/update_client/updater_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -70,6 +74,47 @@ TEST(BuildProtocolRequest, UpdaterStateAttributes) {
 #else
   EXPECT_EQ(std::string::npos, request.find(updater_element));
 #endif  // GOOGLE_CHROME_BUILD
+}
+
+TEST(BuildProtocolRequest, BuildUpdateCheckExtraRequestHeaders) {
+  base::test::ScopedTaskEnvironment scoped_task_environment;
+  auto config = base::MakeRefCounted<TestConfigurator>();
+
+  auto headers = BuildUpdateCheckExtraRequestHeaders(config, {}, true);
+  EXPECT_STREQ("fake_prodid-30.0", headers["X-GoogleUpdate-Updater"].c_str());
+  EXPECT_STREQ("fg", headers["X-GoogleUpdate-Interactivity"].c_str());
+  EXPECT_EQ("", headers["X-GoogleUpdate-AppId"]);
+
+  headers = BuildUpdateCheckExtraRequestHeaders(config, {}, false);
+  EXPECT_STREQ("fake_prodid-30.0", headers["X-GoogleUpdate-Updater"].c_str());
+  EXPECT_STREQ("bg", headers["X-GoogleUpdate-Interactivity"].c_str());
+  EXPECT_EQ("", headers["X-GoogleUpdate-AppId"]);
+
+  headers = BuildUpdateCheckExtraRequestHeaders(
+      config, {"jebgalgnebhfojomionfpkfelancnnkf"}, true);
+  EXPECT_STREQ("fake_prodid-30.0", headers["X-GoogleUpdate-Updater"].c_str());
+  EXPECT_STREQ("fg", headers["X-GoogleUpdate-Interactivity"].c_str());
+  EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf",
+               headers["X-GoogleUpdate-AppId"].c_str());
+
+  headers = BuildUpdateCheckExtraRequestHeaders(
+      config,
+      {"jebgalgnebhfojomionfpkfelancnnkf", "ihfokbkgjpifbbojhneepfflplebdkc"},
+      true);
+  EXPECT_STREQ("fake_prodid-30.0", headers["X-GoogleUpdate-Updater"].c_str());
+  EXPECT_STREQ("fg", headers["X-GoogleUpdate-Interactivity"].c_str());
+  EXPECT_STREQ(
+      "jebgalgnebhfojomionfpkfelancnnkf,ihfokbkgjpifbbojhneepfflplebdkc",
+      headers["X-GoogleUpdate-AppId"].c_str());
+
+  headers = BuildUpdateCheckExtraRequestHeaders(
+      config, std::vector<std::string>(40, "jebgalgnebhfojomionfpkfelancnnkf"),
+      true);
+  EXPECT_STREQ(
+      base::JoinString(
+          std::vector<std::string>(30, "jebgalgnebhfojomionfpkfelancnnkf"), ",")
+          .c_str(),
+      headers["X-GoogleUpdate-AppId"].c_str());
 }
 
 }  // namespace update_client

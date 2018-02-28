@@ -16,7 +16,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/update_client/configurator.h"
 #include "components/update_client/protocol_builder.h"
@@ -85,8 +84,8 @@ void PingSender::SendPing(const Component& component, Callback callback) {
   callback_ = std::move(callback);
 
   request_sender_ = std::make_unique<RequestSender>(config_);
-  request_sender_->Send(false, BuildEventPingRequest(*config_, component),
-                        base::nullopt, urls,
+  request_sender_->Send(urls, {}, BuildEventPingRequest(*config_, component),
+                        false,
                         base::BindOnce(&PingSender::SendPingComplete, this));
 }
 
