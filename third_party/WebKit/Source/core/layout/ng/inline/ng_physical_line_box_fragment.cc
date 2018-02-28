@@ -91,4 +91,9 @@ bool NGPhysicalLineBoxFragment::HasSoftWrapFromPreviousLine(
   return previous_line->HasSoftWrapToNextLine();
 }
 
+PositionWithAffinity NGPhysicalLineBoxFragment::PositionForPoint(
+    const NGPhysicalOffset& point) const {
+  return PositionForPointInInlineLevelBox(point);
+}
+
 }  // namespace blink

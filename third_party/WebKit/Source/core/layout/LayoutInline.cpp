@@ -963,6 +963,11 @@ bool LayoutInline::HitTestCulledInline(
 
 PositionWithAffinity LayoutInline::PositionForPoint(
     const LayoutPoint& point) const {
+  if (const LayoutBlockFlow* ng_block_flow = EnclosingNGBlockFlow())
+    return ng_block_flow->PositionForPoint(point);
+
+  DCHECK(CanUseInlineBox(*this));
+
   // FIXME: Does not deal with relative positioned inlines (should it?)
 
   // If there are continuations, test them first because our containing block

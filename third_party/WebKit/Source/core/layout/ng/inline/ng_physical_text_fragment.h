@@ -116,6 +116,11 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
   // pseudo-element, ...) instead of from a DOM text node.
   bool IsAnonymousText() const;
 
+  // Returns the text offset in the fragment placed closest to the given point.
+  unsigned TextOffsetForPoint(const NGPhysicalOffset&) const;
+
+  PositionWithAffinity PositionForPoint(const NGPhysicalOffset&) const override;
+
  private:
   // The text of NGInlineNode; i.e., of a parent block. The text for this
   // fragment is a substring(start_offset_, end_offset_) of this string.

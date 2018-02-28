@@ -1,19 +1,22 @@
 # These tests currently fail when they run with --enable-blink-features=LayoutNG
 # See https://crbug.com/591099.
 
-# Need support for getBoundingClientRect() with LayoutNG.
+# Need support for Range.getClientRects() and Range.getBoundingClientRect()
 crbug.com/755750 accessibility/selection-affinity.html [ Failure ]
+crbug.com/755750 fast/dom/Document/CaretRangeFromPoint/caretRangeFromPoint-in-zoom-and-scroll.html [ Failure ]
 
 ## Reverse hosting of editable block
 crbug.com/707656 editing/execCommand/format-block-crash.html [ Crash Pass ]
 crbug.com/707656 editing/input/scroll-viewport-page-up-down.html [ Failure ]
 crbug.com/707656 editing/undo/undo-indent.html [ Crash Pass ]
+crbug.com/707656 editing/selection/click-on-body-margin.html [ Failure ]
 crbug.com/707656 external/wpt/html/editing/editing-0/spelling-and-grammar-checking/spelling-markers-001.html [ Crash Pass ]
 crbug.com/707656 external/wpt/html/editing/focus/processing-model/focus-fixup-rule-one-no-dialogs.html [ Crash Pass ]
 crbug.com/789878 fast/css/first-letter-capitalized-edit-select-crash.html [ Failure ]
 crbug.com/707656 fast/css/readwrite-contenteditable-recalc.html [ Crash Pass ]
 crbug.com/789878 fast/css/readwrite-contenteditable.html [ Failure ]
 crbug.com/789878 fast/inline/inline-focus-ring.html [ Failure ]
+crbug.com/707656 fast/inline-block/14498-positionForCoordinates.html [ Failure ]
 
 # NGPhysicalFragment has stale style.
 crbug.com/812981 scrollbars/scrollbar-pointer-events.html [ Failure ]
@@ -2661,14 +2664,6 @@ crbug.com/591099 fast/doctypes/003.html [ Failure ]
 crbug.com/591099 fast/doctypes/004.html [ Failure ]
 crbug.com/591099 fast/dom/34176.html [ Failure ]
 crbug.com/591099 fast/dom/52776.html [ Failure ]
-crbug.com/714962 fast/dom/Document/CaretRangeFromPoint/basic.html [ Failure ]
-crbug.com/714962 fast/dom/Document/CaretRangeFromPoint/caretRangeFromPoint-in-strict-mode-wtih-checkbox.html [ Failure ]
-crbug.com/714962 fast/dom/Document/CaretRangeFromPoint/caretRangeFromPoint-in-user-select-none.html [ Failure ]
-crbug.com/714962 fast/dom/Document/CaretRangeFromPoint/caretRangeFromPoint-in-zoom-and-scroll.html [ Failure ]
-crbug.com/591099 fast/dom/Document/CaretRangeFromPoint/caretRangeFromPoint-with-before-style.html [ Failure ]
-crbug.com/714962 fast/dom/Document/CaretRangeFromPoint/caretRangeFromPoint-with-first-letter-style.html [ Failure ]
-crbug.com/714962 fast/dom/Document/CaretRangeFromPoint/hittest-relative-to-viewport.html [ Failure ]
-crbug.com/714962 fast/dom/Document/CaretRangeFromPoint/replace-element.html [ Failure ]
 crbug.com/714962 fast/dom/Element/client-rect-list-argument.html [ Failure ]
 crbug.com/591099 fast/dom/Element/getBoundingClientRect.html [ Failure ]
 crbug.com/714962 fast/dom/Element/getClientRects.html [ Failure ]

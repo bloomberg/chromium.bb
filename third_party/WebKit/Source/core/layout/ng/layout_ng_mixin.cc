@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "core/editing/PositionWithAffinity.h"
 #include "core/layout/HitTestLocation.h"
 #include "core/layout/ng/inline/ng_inline_node_data.h"
 #include "core/layout/ng/ng_constraint_space.h"
@@ -207,6 +208,29 @@ bool LayoutNGMixin<Base>::NodeAtPoint(
   return NGBlockFlowPainter(*this).NodeAtPoint(result, location_in_container,
                                                accumulated_offset,
                                                accumulated_offset, action);
+}
+
+template <typename Base>
+PositionWithAffinity LayoutNGMixin<Base>::PositionForPoint(
+    const LayoutPoint& point) const {
+  if (Base::IsAtomicInlineLevel()) {
+    const PositionWithAffinity atomic_inline_position =
+        Base::PositionForPointIfOutsideAtomicInlineLevel(point);
+    if (atomic_inline_position.IsNotNull())
+      return atomic_inline_position;
+  }
+
+  if (!Base::ChildrenInline())
+    return LayoutBlock::PositionForPoint(point);
+
+  if (!CurrentFragment())
+    return Base::CreatePositionWithAffinity(0);
+
+  const PositionWithAffinity ng_position =
+      CurrentFragment()->PositionForPoint(NGPhysicalOffset(point));
+  if (ng_position.IsNotNull())
+    return ng_position;
+  return Base::CreatePositionWithAffinity(0);
 }
 
 template class LayoutNGMixin<LayoutTableCell>;

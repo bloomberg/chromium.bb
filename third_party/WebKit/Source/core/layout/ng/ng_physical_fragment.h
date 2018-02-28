@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
+#include "core/editing/Forward.h"
 #include "core/layout/ng/geometry/ng_physical_offset.h"
 #include "core/layout/ng/geometry/ng_physical_size.h"
 #include "core/layout/ng/ng_break_token.h"
@@ -158,6 +159,9 @@ class CORE_EXPORT NGPhysicalFragment
   }
 
   bool IsPlaced() const { return is_placed_; }
+
+  virtual PositionWithAffinity PositionForPoint(
+      const NGPhysicalOffset&) const = 0;
 
   scoped_refptr<NGPhysicalFragment> CloneWithoutOffset() const;
 

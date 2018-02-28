@@ -4,6 +4,8 @@
 
 #include "core/layout/ng/ng_physical_box_fragment.h"
 
+#include "core/editing/PositionWithAffinity.h"
+#include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutObject.h"
 
@@ -125,6 +127,14 @@ NGPhysicalOffsetRect NGPhysicalBoxFragment::VisualRectWithContents() const {
   NGPhysicalOffsetRect visual_rect = SelfVisualRect();
   visual_rect.Unite(ContentsVisualRect());
   return visual_rect;
+}
+
+PositionWithAffinity NGPhysicalBoxFragment::PositionForPoint(
+    const NGPhysicalOffset& point) const {
+  if (!IsBlockFlow())
+    return PositionForPointInInlineLevelBox(point);
+
+  return PositionForPointInInlineFormattingContext(point);
 }
 
 scoped_refptr<NGPhysicalFragment> NGPhysicalBoxFragment::CloneWithoutOffset()

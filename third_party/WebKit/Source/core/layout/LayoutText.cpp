@@ -674,6 +674,10 @@ CreatePositionWithAffinityForBoxAfterAdjustingOffsetForBiDi(
 
 PositionWithAffinity LayoutText::PositionForPoint(
     const LayoutPoint& point) const {
+  if (const LayoutBlockFlow* ng_block_flow = EnclosingNGBlockFlow())
+    return ng_block_flow->PositionForPoint(point);
+
+  DCHECK(CanUseInlineBox(*this));
   if (!FirstTextBox() || TextLength() == 0)
     return CreatePositionWithAffinity(0);
 

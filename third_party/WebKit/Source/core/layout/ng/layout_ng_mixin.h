@@ -47,6 +47,8 @@ class CORE_TEMPLATE_CLASS_EXPORT LayoutNGMixin : public Base {
                    const LayoutPoint& accumulated_offset,
                    HitTestAction) override;
 
+  PositionWithAffinity PositionForPoint(const LayoutPoint&) const override;
+
   // Returns the last layout result for this block flow with the given
   // constraint space and break token, or null if it is not up-to-date or
   // otherwise unavailable.
