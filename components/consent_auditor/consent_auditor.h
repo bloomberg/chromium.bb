@@ -25,8 +25,14 @@ class PrefRegistrySimple;
 
 namespace consent_auditor {
 
-// These enum is used in histograms. Entries should not be renumbered and
+// Feature for which a consent moment is to be recorded.
+//
+// This enum is used in histograms. Entries should not be renumbered and
 // numeric values should never be reused.
+//
+// A Java counterpart will be generated for this enum.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.consent_auditor
+// GENERATED_JAVA_CLASS_NAME_OVERRIDE: ConsentAuditorFeature
 enum class Feature {
   CHROME_SYNC = 0,
 
@@ -36,6 +42,10 @@ enum class Feature {
   FEATURE_COUNT = 2
 };
 
+// Whether a consent is given or not given.
+//
+// A Java counterpart will be generated for this enum.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.consent_auditor
 enum class ConsentStatus { NOT_GIVEN, GIVEN };
 
 class ConsentAuditor : public KeyedService {

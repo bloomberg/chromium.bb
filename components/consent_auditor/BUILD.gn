@@ -2,6 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+if (is_android) {
+  import("//build/config/android/rules.gni")
+}
+
 static_library("consent_auditor") {
   sources = [
     "consent_auditor.cc",
@@ -15,6 +19,14 @@ static_library("consent_auditor") {
     "//components/prefs",
     "//components/sync",
   ]
+}
+
+if (is_android) {
+  java_cpp_enum("consent_auditor_java") {
+    sources = [
+      "consent_auditor.h",
+    ]
+  }
 }
 
 source_set("unit_tests") {
