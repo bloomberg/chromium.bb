@@ -12,7 +12,12 @@
 // it is used.
 @interface AppInitializer : NSObject
 
-+ (void)initializeApp;
+// Called when the launch process has just begun.
++ (void)onAppWillFinishLaunching;
+
+// Called when the launch process is almost done and the app's window is about
+// to present.
++ (void)onAppDidFinishLaunching;
 
 @end
 

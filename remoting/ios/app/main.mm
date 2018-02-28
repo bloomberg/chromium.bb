@@ -9,7 +9,6 @@
 #import <UIKit/UIKit.h>
 
 #import "remoting/ios/app/app_delegate.h"
-#import "remoting/ios/app/app_initializer.h"
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
@@ -43,7 +42,6 @@ int main(int argc, char* argv[]) {
       ui::ResourceBundle::DO_NOT_LOAD_COMMON_RESOURCES);
 
   @autoreleasepool {
-    [AppInitializer initializeApp];
     return UIApplicationMain(
         argc, argv, nil, NSStringFromClass([AppDelegate class]));
   }

@@ -15,13 +15,16 @@
 
 @implementation AppInitializer
 
-+ (void)initializeApp {
++ (void)onAppWillFinishLaunching {
   // |authentication| is nil by default and needs to be injected here.
   RemotingService.instance.authentication =
       [[RemotingOAuthAuthentication alloc] init];
   HelpAndFeedback.instance = [[HelpAndFeedback alloc] init];
   RefreshControlProvider.instance =
       [[RefreshControlProviderChromium alloc] init];
+}
+
++ (void)onAppDidFinishLaunching {
 }
 
 @end
