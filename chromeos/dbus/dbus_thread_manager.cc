@@ -26,6 +26,7 @@
 #include "chromeos/dbus/debug_daemon_client.h"
 #include "chromeos/dbus/easy_unlock_client.h"
 #include "chromeos/dbus/gsm_sms_client.h"
+#include "chromeos/dbus/hammerd_client.h"
 #include "chromeos/dbus/image_burner_client.h"
 #include "chromeos/dbus/image_loader_client.h"
 #include "chromeos/dbus/lorgnette_manager_client.h"
@@ -191,6 +192,10 @@ DBusThreadManager::GetShillThirdPartyVpnDriverClient() {
 
 GsmSMSClient* DBusThreadManager::GetGsmSMSClient() {
   return clients_common_->gsm_sms_client_.get();
+}
+
+HammerdClient* DBusThreadManager::GetHammerdClient() {
+  return clients_common_->hammerd_client_.get();
 }
 
 ImageBurnerClient* DBusThreadManager::GetImageBurnerClient() {
@@ -364,6 +369,12 @@ void DBusThreadManagerSetter::SetCryptohomeClient(
 void DBusThreadManagerSetter::SetDebugDaemonClient(
     std::unique_ptr<DebugDaemonClient> client) {
   DBusThreadManager::Get()->clients_browser_->debug_daemon_client_ =
+      std::move(client);
+}
+
+void DBusThreadManagerSetter::SetHammerdClient(
+    std::unique_ptr<HammerdClient> client) {
+  DBusThreadManager::Get()->clients_common_->hammerd_client_ =
       std::move(client);
 }
 
