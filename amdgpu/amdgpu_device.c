@@ -323,9 +323,9 @@ int amdgpu_query_sw_info(amdgpu_device_handle dev, enum amdgpu_sw_info info,
 	switch (info) {
 	case amdgpu_sw_info_address32_hi:
 		if (dev->vamgr_high_32.va_max)
-			*val32 = dev->vamgr_high_32.va_max >> 32;
+			*val32 = (dev->vamgr_high_32.va_max - 1) >> 32;
 		else
-			*val32 = dev->vamgr_32.va_max >> 32;
+			*val32 = (dev->vamgr_32.va_max - 1) >> 32;
 		return 0;
 	}
 	return -EINVAL;
