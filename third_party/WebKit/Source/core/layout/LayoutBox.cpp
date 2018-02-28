@@ -54,6 +54,8 @@
 #include "core/layout/api/LineLayoutBlockFlow.h"
 #include "core/layout/api/LineLayoutBox.h"
 #include "core/layout/custom/LayoutCustom.h"
+#include "core/layout/custom/LayoutWorklet.h"
+#include "core/layout/custom/LayoutWorkletGlobalScopeProxy.h"
 #include "core/layout/ng/geometry/ng_box_strut.h"
 #include "core/layout/ng/ng_fragmentation_utils.h"
 #include "core/layout/shapes/ShapeOutsideInfo.h"
@@ -142,6 +144,7 @@ void LayoutBox::WillBeDestroyed() {
 void LayoutBox::InsertedIntoTree() {
   LayoutBoxModelObject::InsertedIntoTree();
   AddScrollSnapMapping();
+  AddCustomLayoutChildIfNeeded();
 
   if (IsOrthogonalWritingModeRoot())
     MarkOrthogonalWritingModeRoot();
@@ -151,6 +154,7 @@ void LayoutBox::WillBeRemovedFromTree() {
   if (!DocumentBeingDestroyed() && IsOrthogonalWritingModeRoot())
     UnmarkOrthogonalWritingModeRoot();
 
+  ClearCustomLayoutChild();
   ClearScrollSnapMapping();
   LayoutBoxModelObject::WillBeRemovedFromTree();
 }
@@ -344,6 +348,11 @@ void LayoutBox::StyleDidChange(StyleDifference diff,
         scrolling_coordinator->NotifyTransformChanged(frame, *this);
     }
   }
+
+  // Update the script style map, from the new computed style.
+  if (IsCustomItem())
+    GetCustomLayoutChild()->styleMap()->UpdateStyle(GetDocument(), StyleRef());
+
   // Non-atomic inlines should be LayoutInline or LayoutText, not LayoutBox.
   DCHECK(!IsInline() || IsAtomicInlineLevel());
 }
@@ -5944,6 +5953,37 @@ void LayoutBox::RemoveSnapArea(const LayoutBox& snap_area) {
 
 SnapAreaSet* LayoutBox::SnapAreas() const {
   return rare_data_ ? rare_data_->snap_areas_.get() : nullptr;
+}
+
+CustomLayoutChild* LayoutBox::GetCustomLayoutChild() const {
+  DCHECK(rare_data_);
+  DCHECK(rare_data_->layout_child_);
+  return rare_data_->layout_child_.Get();
+}
+
+void LayoutBox::AddCustomLayoutChildIfNeeded() {
+  if (!IsCustomItem())
+    return;
+
+  const AtomicString& name = Parent()->StyleRef().DisplayLayoutCustomName();
+  LayoutWorklet* worklet = LayoutWorklet::From(*GetDocument().domWindow());
+  const CSSLayoutDefinition* definition =
+      worklet->Proxy()->FindDefinition(name);
+
+  // If there isn't a definition yet, the web developer defined layout isn't
+  // loaded yet (or is invalid). The layout tree will get re-attached when
+  // loaded, so don't bother creating a script representation of this node yet.
+  if (!definition)
+    return;
+
+  EnsureRareData().layout_child_ = new CustomLayoutChild(*definition, this);
+}
+
+void LayoutBox::ClearCustomLayoutChild() {
+  if (!rare_data_)
+    return;
+
+  rare_data_->layout_child_ = nullptr;
 }
 
 void LayoutBox::SetPendingOffsetToScroll(LayoutSize offset) {

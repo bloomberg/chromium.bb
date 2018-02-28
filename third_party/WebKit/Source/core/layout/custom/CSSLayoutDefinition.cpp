@@ -60,27 +60,46 @@ bool CSSLayoutDefinition::Instance::Layout(
 
   v8::Isolate* isolate = script_state->GetIsolate();
   v8::Local<v8::Object> instance = instance_.NewLocal(isolate);
+  v8::Local<v8::Context> context = script_state->GetContext();
 
   v8::Local<v8::Function> layout = definition_->layout_.NewLocal(isolate);
 
-  // TODO(ikilpatrick): We can (and should) be smarter about the style map
-  // here. Instead of creating a new one each time, we should have one that
-  // lives on the layout object, and gets re-populated when various properties
-  // change. Internally this should hold onto CSSValues, instead of creating
-  // new ones each access.
-  // This should be shared with the CSS paint, but without the invalidation.
-  DCHECK(layout_custom.GetNode());
+  // TODO(ikilpatrick): Determine if knowing the size of the array ahead of
+  // time improves performance in any noticable way.
+  v8::Local<v8::Array> children = v8::Array::New(isolate, 0);
+  uint32_t index = 0;
+
+  for (LayoutBox* child = layout_custom.FirstChildBox(); child;
+       child = child->NextSiblingBox()) {
+    if (child->IsOutOfFlowPositioned())
+      continue;
+
+    CustomLayoutChild* layout_child = child->GetCustomLayoutChild();
+    DCHECK(layout_child);
+
+    bool success;
+    if (!children
+             ->CreateDataProperty(
+                 context, index++,
+                 ToV8(layout_child, context->Global(), isolate))
+             .To(&success) &&
+        success)
+      return false;
+  }
+
+  // TODO(ikilpatrick): Instead of creating a new style_map each time here,
+  // store on LayoutCustom, and update when the style changes.
   StylePropertyMapReadOnly* style_map =
       new PrepopulatedComputedStylePropertyMap(
           layout_custom.GetDocument(), layout_custom.StyleRef(),
           layout_custom.GetNode(), definition_->native_invalidation_properties_,
           definition_->custom_invalidation_properties_);
 
-  // TODO(ikilpatrick): Fill in children array, layout constraints, and edges.
+  // TODO(ikilpatrick): Fill in layout constraints, and edges.
   Vector<v8::Local<v8::Value>> argv = {
-      v8::Array::New(isolate, 0),  // children array
-      v8::Undefined(isolate),      // edges
-      v8::Undefined(isolate),      // constraints
+      children,
+      v8::Undefined(isolate),  // edges
+      v8::Undefined(isolate),  // constraints
       ToV8(style_map, script_state->GetContext()->Global(), isolate),
   };
 

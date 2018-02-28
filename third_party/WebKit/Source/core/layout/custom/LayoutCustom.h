@@ -29,6 +29,9 @@ class LayoutCustom final : public LayoutBlockFlow {
 
   bool CreatesNewFormattingContext() const override { return true; }
 
+  void AddChild(LayoutObject* new_child, LayoutObject* before_child) override;
+  void RemoveChild(LayoutObject* child) override;
+
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
   void UpdateBlockLayout(bool relayout_children) override;
 

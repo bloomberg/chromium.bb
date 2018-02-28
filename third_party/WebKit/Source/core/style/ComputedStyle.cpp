@@ -649,6 +649,11 @@ bool ComputedStyle::DiffNeedsFullLayout(const Document& document,
       return true;
   }
 
+  if (DisplayLayoutCustomParentName()) {
+    if (DiffNeedsFullLayoutForLayoutCustomChild(document, other))
+      return true;
+  }
+
   return false;
 }
 
@@ -672,6 +677,30 @@ bool ComputedStyle::DiffNeedsFullLayoutForLayoutCustom(
     return true;
 
   if (!CustomPropertiesEqual(definition->CustomInvalidationProperties(), other))
+    return true;
+
+  return false;
+}
+
+bool ComputedStyle::DiffNeedsFullLayoutForLayoutCustomChild(
+    const Document& document,
+    const ComputedStyle& other) const {
+  LayoutWorklet* worklet = LayoutWorklet::From(*document.domWindow());
+  const AtomicString& name = DisplayLayoutCustomParentName();
+
+  if (!worklet->GetDocumentDefinitionMap()->Contains(name))
+    return false;
+
+  const DocumentLayoutDefinition* definition =
+      worklet->GetDocumentDefinitionMap()->at(name);
+  if (definition == kInvalidDocumentLayoutDefinition)
+    return false;
+
+  if (!PropertiesEqual(definition->ChildNativeInvalidationProperties(), other))
+    return true;
+
+  if (!CustomPropertiesEqual(definition->ChildCustomInvalidationProperties(),
+                             other))
     return true;
 
   return false;

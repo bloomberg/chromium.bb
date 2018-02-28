@@ -28,6 +28,7 @@
 #include "core/CoreExport.h"
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/OverflowModel.h"
+#include "core/layout/custom/CustomLayoutChild.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "platform/wtf/Compiler.h"
 #include "platform/wtf/PtrUtil.h"
@@ -117,6 +118,12 @@ struct LayoutBoxRareData {
   // TODO(sunyunjia): We should get rid of this variable and move the next
   // rect_to_scroll calculation into ScrollRectToVisible. crbug.com/741830
   LayoutSize pending_offset_to_scroll_;
+
+  // Used by CSSLayoutDefinition::Instance::Layout. Represents the script
+  // object for this box that web developers can query style, and perform
+  // layout upon. Only created if IsCustomItem() is true.
+  Persistent<CustomLayoutChild> layout_child_;
+
   DISALLOW_COPY_AND_ASSIGN(LayoutBoxRareData);
 };
 
@@ -1325,6 +1332,13 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // For snap containers, returns all associated snap areas.
   SnapAreaSet* SnapAreas() const;
   void ClearSnapAreas();
+
+  // CustomLayoutChild only exists if this LayoutBox is a IsCustomItem (aka. a
+  // child of a LayoutCustom). This is created/destroyed when this LayoutBox is
+  // inserted/removed from the layout tree.
+  CustomLayoutChild* GetCustomLayoutChild() const;
+  void AddCustomLayoutChildIfNeeded();
+  void ClearCustomLayoutChild();
 
   bool HitTestClippedOutByBorder(const HitTestLocation& location_in_container,
                                  const LayoutPoint& border_box_location) const;

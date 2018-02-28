@@ -292,6 +292,7 @@ core_idl_files =
                     "inspector/InspectorOverlayHost.idl",
                     "intersection_observer/IntersectionObserver.idl",
                     "intersection_observer/IntersectionObserverEntry.idl",
+                    "layout/custom/LayoutChild.idl",
                     "layout/custom/LayoutWorkletGlobalScope.idl",
                     "loader/appcache/ApplicationCache.idl",
                     "messaging/MessageChannel.idl",
