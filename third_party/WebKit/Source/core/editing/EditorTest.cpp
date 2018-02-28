@@ -50,7 +50,7 @@ TEST_F(EditorTest, DontCopyHiddenSelections) {
   checkbox.focus();
 
   Editor& editor = GetDocument().GetFrame()->GetEditor();
-  editor.Copy(kCommandFromMenuOrKeyBinding);
+  editor.CreateCommand("Copy").Execute();
 
   const String copied = Pasteboard::GeneralPasteboard()->PlainText();
   EXPECT_TRUE(copied.IsEmpty()) << copied << " was copied.";

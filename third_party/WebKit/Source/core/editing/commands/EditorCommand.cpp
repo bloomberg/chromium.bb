@@ -749,6 +749,29 @@ static bool CanWriteClipboard(LocalFrame& frame, EditorCommandSource source) {
   return frame.GetContentSettingsClient()->AllowWriteToClipboard(default_value);
 }
 
+// Returns true if Editor should continue with default processing.
+static bool DispatchCopyOrCutEvent(LocalFrame& frame,
+                                   EditorCommandSource source,
+                                   const AtomicString& event_type) {
+  // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  if (IsInPasswordField(
+          frame.Selection().ComputeVisibleSelectionInDOMTree().Start()))
+    return true;
+
+  return frame.GetEditor().DispatchClipboardEvent(
+      event_type, kDataTransferWritable, source);
+}
+
+static void WriteSelectionToPasteboard(LocalFrame& frame) {
+  const KURL& url = frame.GetDocument()->Url();
+  const String html = frame.Selection().SelectedHTMLForClipboard();
+  const String plain_text = frame.SelectedTextForClipboard();
+  Pasteboard::GeneralPasteboard()->WriteHTML(
+      html, url, plain_text, frame.GetEditor().CanSmartCopyOrDelete());
+}
+
 static bool ExecuteCopy(LocalFrame& frame,
                         Event*,
                         EditorCommandSource source,
@@ -760,7 +783,40 @@ static bool ExecuteCopy(LocalFrame& frame,
   // |canExecute()|. See also "Cut", and "Paste" command.
   if (!CanWriteClipboard(frame, source))
     return false;
-  frame.GetEditor().Copy(source);
+  if (!DispatchCopyOrCutEvent(frame, source, EventTypeNames::copy))
+    return true;
+  if (!frame.GetEditor().CanCopy())
+    return true;
+
+  // Since copy is a read-only operation it succeeds anytime a selection
+  // is *visible*. In contrast to cut or paste, the selection does not
+  // need to be focused - being visible is enough.
+  if (source == kCommandFromMenuOrKeyBinding && frame.Selection().IsHidden())
+    return true;
+
+  // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  // A 'copy' event handler might have dirtied the layout so we need to update
+  // before we obtain the selection.
+  frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+
+  if (EnclosingTextControl(
+          frame.Selection().ComputeVisibleSelectionInDOMTree().Start())) {
+    Pasteboard::GeneralPasteboard()->WritePlainText(
+        frame.SelectedTextForClipboard(),
+        frame.GetEditor().CanSmartCopyOrDelete()
+            ? Pasteboard::kCanSmartReplace
+            : Pasteboard::kCannotSmartReplace);
+    return true;
+  }
+  const Document* const document = frame.GetDocument();
+  if (HTMLImageElement* image_element =
+          ImageElementFromImageDocument(document)) {
+    WriteImageNodeToPasteboard(Pasteboard::GeneralPasteboard(), *image_element,
+                               document->title());
+    return true;
+  }
+  WriteSelectionToPasteboard(frame);
   return true;
 }
 
@@ -774,6 +830,19 @@ static bool ExecuteCreateLink(LocalFrame& frame,
   return CreateLinkCommand::Create(*frame.GetDocument(), value)->Apply();
 }
 
+static bool CanDeleteRange(const EphemeralRange& range) {
+  if (range.IsCollapsed())
+    return false;
+
+  const Node* const start_container =
+      range.StartPosition().ComputeContainerNode();
+  const Node* const end_container = range.EndPosition().ComputeContainerNode();
+  if (!start_container || !end_container)
+    return false;
+
+  return HasEditableStyle(*start_container) && HasEditableStyle(*end_container);
+}
+
 static bool ExecuteCut(LocalFrame& frame,
                        Event*,
                        EditorCommandSource source,
@@ -785,7 +854,49 @@ static bool ExecuteCut(LocalFrame& frame,
   // |canExecute()|. See also "Copy", and "Paste" command.
   if (!CanWriteClipboard(frame, source))
     return false;
-  frame.GetEditor().Cut(source);
+  if (!DispatchCopyOrCutEvent(frame, source, EventTypeNames::cut))
+    return true;
+  if (!frame.GetEditor().CanCut())
+    return true;
+
+  // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  // A 'cut' event handler might have dirtied the layout so we need to update
+  // before we obtain the selection.
+  frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+
+  if (source == kCommandFromMenuOrKeyBinding &&
+      !frame.Selection().SelectionHasFocus())
+    return true;
+
+  if (!CanDeleteRange(frame.GetEditor().SelectedRange()))
+    return true;
+  if (EnclosingTextControl(
+          frame.Selection().ComputeVisibleSelectionInDOMTree().Start())) {
+    const String plain_text = frame.SelectedTextForClipboard();
+    Pasteboard::GeneralPasteboard()->WritePlainText(
+        plain_text, frame.GetEditor().CanSmartCopyOrDelete()
+                        ? Pasteboard::kCanSmartReplace
+                        : Pasteboard::kCannotSmartReplace);
+  } else {
+    WriteSelectionToPasteboard(frame);
+  }
+
+  if (source == kCommandFromMenuOrKeyBinding) {
+    if (DispatchBeforeInputDataTransfer(
+            frame.GetEditor().FindEventTargetForClipboardEvent(source),
+            InputEvent::InputType::kDeleteByCut,
+            nullptr) != DispatchEventResult::kNotCanceled)
+      return true;
+    // 'beforeinput' event handler may destroy target frame.
+    if (frame.GetDocument()->GetFrame() != frame)
+      return true;
+  }
+  frame.GetEditor().DeleteSelectionWithSmartDelete(
+      frame.GetEditor().CanSmartCopyOrDelete() ? DeleteMode::kSmart
+                                               : DeleteMode::kSimple,
+      InputEvent::InputType::kDeleteByCut);
+
   return true;
 }
 
@@ -2527,22 +2638,10 @@ static bool EnableCaretInEditableText(LocalFrame& frame,
 // because we allow elements that are not normally selectable to implement
 // copy/paste (like divs, or a document body).
 
-static bool CanDHTMLCopyOrCut(LocalFrame& frame,
-                              EditorCommandSource source,
-                              const AtomicString& event_type) {
-  // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited. See http://crbug.com/590369 for more details.
-  frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
-  return !IsInPasswordField(
-             frame.Selection().ComputeVisibleSelectionInDOMTree().Start()) &&
-         !frame.GetEditor().DispatchClipboardEvent(event_type,
-                                                   kDataTransferNumb, source);
-}
-
 static bool EnabledCopy(LocalFrame& frame, Event*, EditorCommandSource source) {
   if (!CanWriteClipboard(frame, source))
     return false;
-  return CanDHTMLCopyOrCut(frame, source, EventTypeNames::beforecopy) ||
+  return !DispatchCopyOrCutEvent(frame, source, EventTypeNames::beforecopy) ||
          frame.GetEditor().CanCopy();
 }
 
@@ -2552,7 +2651,7 @@ static bool EnabledCut(LocalFrame& frame, Event*, EditorCommandSource source) {
   if (source == kCommandFromMenuOrKeyBinding &&
       !frame.Selection().SelectionHasFocus())
     return false;
-  return CanDHTMLCopyOrCut(frame, source, EventTypeNames::beforecut) ||
+  return !DispatchCopyOrCutEvent(frame, source, EventTypeNames::beforecut) ||
          frame.GetEditor().CanCut();
 }
 

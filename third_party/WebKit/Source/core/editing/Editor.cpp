@@ -268,19 +268,6 @@ bool Editor::CanCut() const {
   return CanCopy() && CanDelete();
 }
 
-static HTMLImageElement* ImageElementFromImageDocument(Document* document) {
-  if (!document)
-    return nullptr;
-  if (!document->IsImageDocument())
-    return nullptr;
-
-  HTMLElement* body = document->body();
-  if (!body)
-    return nullptr;
-
-  return ToHTMLImageElementOrNull(body->firstChild());
-}
-
 bool Editor::CanCopy() const {
   if (ImageElementFromImageDocument(GetFrame().GetDocument()))
     return true;
@@ -340,38 +327,6 @@ void Editor::DeleteSelectionWithSmartDelete(
           .Build(),
       input_type, reference_move_position)
       ->Apply();
-}
-
-bool Editor::DispatchCopyEvent(EditorCommandSource source) {
-  // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited.  See http://crbug.com/590369 for more details.
-  GetFrame().GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
-  if (IsInPasswordField(
-          GetFrameSelection().ComputeVisibleSelectionInDOMTree().Start()))
-    return true;
-
-  return DispatchClipboardEvent(EventTypeNames::copy, kDataTransferWritable,
-                                source);
-}
-
-bool Editor::DispatchCutEvent(EditorCommandSource source) {
-  // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited.  See http://crbug.com/590369 for more details.
-  GetFrame().GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
-  if (IsInPasswordField(
-          GetFrameSelection().ComputeVisibleSelectionInDOMTree().Start()))
-    return true;
-
-  return DispatchClipboardEvent(EventTypeNames::cut, kDataTransferWritable,
-                                source);
-}
-
-void Editor::WriteSelectionToPasteboard() {
-  KURL url = GetFrame().GetDocument()->Url();
-  String html = GetFrameSelection().SelectedHTMLForClipboard();
-  String plain_text = GetFrame().SelectedTextForClipboard();
-  Pasteboard::GeneralPasteboard()->WriteHTML(html, url, plain_text,
-                                             CanSmartCopyOrDelete());
 }
 
 bool Editor::DispatchClipboardEvent(const AtomicString& event_type,
@@ -517,18 +472,6 @@ EphemeralRange Editor::SelectedRange() {
       .Selection()
       .ComputeVisibleSelectionInDOMTreeDeprecated()
       .ToNormalizedEphemeralRange();
-}
-
-bool Editor::CanDeleteRange(const EphemeralRange& range) const {
-  if (range.IsCollapsed())
-    return false;
-
-  Node* start_container = range.StartPosition().ComputeContainerNode();
-  Node* end_container = range.EndPosition().ComputeContainerNode();
-  if (!start_container || !end_container)
-    return false;
-
-  return HasEditableStyle(*start_container) && HasEditableStyle(*end_container);
 }
 
 void Editor::RespondToChangedContents(const Position& position) {
@@ -809,88 +752,6 @@ bool Editor::InsertParagraphSeparator() {
                     : ScrollAlignment::kAlignCenterIfNeeded);
 
   return true;
-}
-
-void Editor::Cut(EditorCommandSource source) {
-  if (!DispatchCutEvent(source))
-    return;
-  if (!CanCut())
-    return;
-
-  // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited.  See http://crbug.com/590369 for more details.
-  // A 'cut' event handler might have dirtied the layout so we need to update
-  // before we obtain the selection.
-  GetFrame().GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
-
-  if (source == kCommandFromMenuOrKeyBinding &&
-      !GetFrameSelection().SelectionHasFocus())
-    return;
-
-  // TODO(yosin) We should use early return style here.
-  if (CanDeleteRange(SelectedRange())) {
-    if (EnclosingTextControl(GetFrame()
-                                 .Selection()
-                                 .ComputeVisibleSelectionInDOMTree()
-                                 .Start())) {
-      String plain_text = GetFrame().SelectedTextForClipboard();
-      Pasteboard::GeneralPasteboard()->WritePlainText(
-          plain_text, CanSmartCopyOrDelete() ? Pasteboard::kCanSmartReplace
-                                             : Pasteboard::kCannotSmartReplace);
-    } else {
-      WriteSelectionToPasteboard();
-    }
-
-    if (source == kCommandFromMenuOrKeyBinding) {
-      if (DispatchBeforeInputDataTransfer(
-              FindEventTargetForClipboardEvent(source),
-              InputEvent::InputType::kDeleteByCut,
-              nullptr) != DispatchEventResult::kNotCanceled)
-        return;
-      // 'beforeinput' event handler may destroy target frame.
-      if (frame_->GetDocument()->GetFrame() != frame_)
-        return;
-    }
-    DeleteSelectionWithSmartDelete(
-        CanSmartCopyOrDelete() ? DeleteMode::kSmart : DeleteMode::kSimple,
-        InputEvent::InputType::kDeleteByCut);
-  }
-}
-
-void Editor::Copy(EditorCommandSource source) {
-  if (!DispatchCopyEvent(source))
-    return;
-  if (!CanCopy())
-    return;
-
-  // Since copy is a read-only operation it succeeds anytime a selection
-  // is *visible*. In contrast to cut or paste, the selection does not
-  // need to be focused - being visible is enough.
-  if (source == kCommandFromMenuOrKeyBinding && GetFrameSelection().IsHidden())
-    return;
-
-  // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited.  See http://crbug.com/590369 for more details.
-  // A 'copy' event handler might have dirtied the layout so we need to update
-  // before we obtain the selection.
-  GetFrame().GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
-
-  if (EnclosingTextControl(
-          GetFrameSelection().ComputeVisibleSelectionInDOMTree().Start())) {
-    Pasteboard::GeneralPasteboard()->WritePlainText(
-        GetFrame().SelectedTextForClipboard(),
-        CanSmartCopyOrDelete() ? Pasteboard::kCanSmartReplace
-                               : Pasteboard::kCannotSmartReplace);
-  } else {
-    Document* document = GetFrame().GetDocument();
-    if (HTMLImageElement* image_element =
-            ImageElementFromImageDocument(document)) {
-      WriteImageNodeToPasteboard(Pasteboard::GeneralPasteboard(),
-                                 *image_element, document->title());
-    } else {
-      WriteSelectionToPasteboard();
-    }
-  }
 }
 
 static void CountEditingEvent(ExecutionContext* execution_context,
