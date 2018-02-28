@@ -1680,6 +1680,7 @@ int av1_count_colors_highbd(const uint8_t *src8, int stride, int rows, int cols,
     for (int c = 0; c < cols; ++c) {
       const int this_val = src[r * stride + c];
       assert(this_val < max_pix_val);
+      if (this_val >= max_pix_val) return 0;
       ++val_count[this_val];
     }
   }
