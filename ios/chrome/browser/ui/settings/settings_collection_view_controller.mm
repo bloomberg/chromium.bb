@@ -495,7 +495,7 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
 
   _savePasswordsDetailItem =
       [self detailItemWithType:ItemTypeSavedPasswords
-                          text:l10n_util::GetNSString(IDS_IOS_SAVE_PASSWORDS)
+                          text:l10n_util::GetNSString(IDS_IOS_PASSWORDS)
                     detailText:passwordsDetail];
 
   return _savePasswordsDetailItem;
