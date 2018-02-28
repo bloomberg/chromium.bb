@@ -55,6 +55,7 @@
 #include "ash/metrics/time_to_first_present_recorder.h"
 #include "ash/new_window_controller.h"
 #include "ash/note_taking_controller.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shelf_model.h"
@@ -456,7 +457,7 @@ bool Shell::ShouldSaveDisplaySettings() {
 }
 
 DockedMagnifierController* Shell::docked_magnifier_controller() {
-  DCHECK(switches::IsDockedMagnifierEnabled());
+  DCHECK(features::IsDockedMagnifierEnabled());
   return docked_magnifier_controller_.get();
 }
 
@@ -1064,7 +1065,7 @@ void Shell::Init(ui::ContextFactory* context_factory,
 
   high_contrast_controller_.reset(new HighContrastController);
 
-  if (switches::IsDockedMagnifierEnabled()) {
+  if (features::IsDockedMagnifierEnabled()) {
     docked_magnifier_controller_ =
         std::make_unique<DockedMagnifierController>();
   }

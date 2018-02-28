@@ -1453,7 +1453,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"ash-enable-docked-magnifier",
      flag_descriptions::kEnableDockedMagnifierName,
      flag_descriptions::kEnableDockedMagnifierDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(ash::switches::kAshEnableDockedMagnifier)},
+     FEATURE_VALUE_TYPE(ash::features::kDockedMagnifier)},
     {"ash-enable-night-light", flag_descriptions::kEnableNightLightName,
      flag_descriptions::kEnableNightLightDescription, kOsAll,
      SINGLE_VALUE_TYPE(ash::switches::kAshEnableNightLight)},

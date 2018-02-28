@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/ash/chrome_browser_main_extra_parts_ash.h"
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/mus_property_mirror_ash.h"
 #include "ash/public/cpp/shelf_model.h"
@@ -277,7 +278,7 @@ void ChromeBrowserMainExtraPartsAsh::PostBrowserStart() {
     night_light_client_->Start();
   }
 
-  if (ash::switches::IsDockedMagnifierEnabled()) {
+  if (ash::features::IsDockedMagnifierEnabled()) {
     docked_magnifier_client_ = std::make_unique<DockedMagnifierClient>();
     docked_magnifier_client_->Start();
   }

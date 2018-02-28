@@ -9,8 +9,8 @@
 
 #include "ash/display/display_util.h"
 #include "ash/magnifier/magnifier_test_utils.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
-#include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/interfaces/docked_magnifier_controller.mojom.h"
 #include "ash/session/session_controller.h"
@@ -19,6 +19,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/session_manager_types.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -88,8 +89,7 @@ class DockedMagnifierTest : public NoSessionAshTestBase {
   // AshTestBase:
   void SetUp() override {
     // Explicitly enable the Docked Magnifier feature for the tests.
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        ash::switches::kAshEnableDockedMagnifier);
+    scoped_feature_list_.InitAndEnableFeature(features::kDockedMagnifier);
 
     NoSessionAshTestBase::SetUp();
 
@@ -112,6 +112,8 @@ class DockedMagnifierTest : public NoSessionAshTestBase {
 
  private:
   DockedMagnifierTestClient test_client_;
+
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(DockedMagnifierTest);
 };

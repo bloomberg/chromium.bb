@@ -12,7 +12,7 @@
 #include "ash/ash_view_ids.h"
 #include "ash/magnifier/docked_magnifier_controller.h"
 #include "ash/public/cpp/accessibility_types.h"
-#include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
@@ -96,7 +96,7 @@ uint32_t GetAccessibilityState() {
     state |= A11Y_TAP_DRAGGING;
   if (controller->IsSelectToSpeakEnabled())
     state |= A11Y_SELECT_TO_SPEAK;
-  if (switches::IsDockedMagnifierEnabled() &&
+  if (features::IsDockedMagnifierEnabled() &&
       Shell::Get()->docked_magnifier_controller()->GetEnabled()) {
     state |= A11Y_DOCKED_MAGNIFIER;
   }
@@ -180,7 +180,7 @@ void AccessibilityDetailedView::OnAccessibilityStatusChanged() {
   TrayPopupUtils::UpdateCheckMarkVisibility(screen_magnifier_view_,
                                             screen_magnifier_enabled_);
 
-  if (switches::IsDockedMagnifierEnabled()) {
+  if (features::IsDockedMagnifierEnabled()) {
     docked_magnifier_enabled_ =
         Shell::Get()->docked_magnifier_controller()->GetEnabled();
     TrayPopupUtils::UpdateCheckMarkVisibility(docked_magnifier_view_,
@@ -261,7 +261,7 @@ void AccessibilityDetailedView::AppendAccessibilityList() {
           IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SCREEN_MAGNIFIER),
       screen_magnifier_enabled_);
 
-  if (switches::IsDockedMagnifierEnabled()) {
+  if (features::IsDockedMagnifierEnabled()) {
     docked_magnifier_enabled_ =
         Shell::Get()->docked_magnifier_controller()->GetEnabled();
     docked_magnifier_view_ = AddScrollListCheckableItem(
@@ -361,7 +361,7 @@ void AccessibilityDetailedView::HandleViewClicked(views::View* view) {
                      ? UserMetricsAction("StatusArea_MagnifierDisabled")
                      : UserMetricsAction("StatusArea_MagnifierEnabled"));
     delegate->SetMagnifierEnabled(!delegate->IsMagnifierEnabled());
-  } else if (switches::IsDockedMagnifierEnabled() &&
+  } else if (features::IsDockedMagnifierEnabled() &&
              view == docked_magnifier_view_) {
     auto* docked_magnifier_controller =
         Shell::Get()->docked_magnifier_controller();

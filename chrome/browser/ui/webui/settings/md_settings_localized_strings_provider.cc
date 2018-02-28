@@ -37,6 +37,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -259,7 +260,7 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
           chromeos::switches::kEnableExperimentalAccessibilityFeatures));
 
   html_source->AddBoolean("dockedMagnifierFeatureEnabled",
-                          ash::switches::IsDockedMagnifierEnabled());
+                          ash::features::IsDockedMagnifierEnabled());
 #endif
 }
 
