@@ -12,6 +12,7 @@
 
 namespace remoting {
 
+// TODO(yuweih): See if we can rewrite this in Protobuf.
 // This is the representation of the log entry being sent to the telemetry
 // server. The content should be synced with chromoting_event.js and
 // chromoting_extensions.proto.
@@ -38,6 +39,8 @@ class ChromotingEvent {
     NACL_PLUGIN_CRASHED = 18,
     INVALID_ACCOUNT = 19
   };
+
+  enum class ConnectionType { DIRECT = 1, STUN = 2, RELAY = 3 };
 
   enum class Mode { IT2ME = 1, ME2ME = 2 };
 
@@ -89,6 +92,7 @@ class ChromotingEvent {
 
   static const char kCaptureLatencyKey[];
   static const char kConnectionErrorKey[];
+  static const char kConnectionTypeKey[];
   static const char kCpuKey[];
   static const char kDecodeLatencyKey[];
   static const char kEncodeLatencyKey[];
@@ -103,6 +107,7 @@ class ChromotingEvent {
   static const char kModeKey[];
   static const char kOsKey[];
   static const char kOsVersionKey[];
+  static const char kPreviousSessionStateKey[];
   static const char kRenderLatencyKey[];
   static const char kRoleKey[];
   static const char kRoundtripLatencyKey[];
@@ -139,6 +144,8 @@ class ChromotingEvent {
   void IncrementSendAttempts();
   int send_attempts() const { return send_attempts_; }
 
+  const base::Value* GetValue(const std::string& key) const;
+
   // Returns a copy of the internal dictionary value.
   std::unique_ptr<base::DictionaryValue> CopyDictionaryValue() const;
 
@@ -147,6 +154,11 @@ class ChromotingEvent {
 
   // Converts the OS type String into the enum value.
   static Os ParseOsFromString(const std::string& os);
+
+  // Converts an enum value of a enum class defined above to its name as a
+  // string, e.g. HOST_OFFLINE -> "host-offline".
+  template <typename EnumType>
+  static const char* EnumToString(EnumType value);
 
  private:
   std::unique_ptr<base::DictionaryValue> values_map_;

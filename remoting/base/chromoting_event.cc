@@ -13,6 +13,45 @@ namespace remoting {
 
 namespace {
 
+const NameMapElement<ChromotingEvent::ConnectionError> kConnectionErrorNames[]{
+    {ChromotingEvent::ConnectionError::NONE, "none"},
+    {ChromotingEvent::ConnectionError::HOST_OFFLINE, "host-offline"},
+    {ChromotingEvent::ConnectionError::SESSION_REJECTED, "session-rejected"},
+    {ChromotingEvent::ConnectionError::INCOMPATIBLE_PROTOCOL,
+     "incompatible-protocol"},
+    {ChromotingEvent::ConnectionError::NETWORK_FAILURE, "network-failure"},
+    {ChromotingEvent::ConnectionError::UNKNOWN_ERROR, "unknown-error"},
+    {ChromotingEvent::ConnectionError::INVALID_ACCESS_CODE,
+     "invalid-access-code"},
+    {ChromotingEvent::ConnectionError::MISSING_PLUGIN, "missing-plugin"},
+    {ChromotingEvent::ConnectionError::AUTHENTICATION_FAILED,
+     "authentication-failed"},
+    {ChromotingEvent::ConnectionError::BAD_VERSION, "bad-version"},
+    {ChromotingEvent::ConnectionError::HOST_OVERLOAD, "host-overload"},
+    {ChromotingEvent::ConnectionError::P2P_FAILURE, "p2p-failure"},
+    {ChromotingEvent::ConnectionError::UNEXPECTED, "unexpected"},
+    {ChromotingEvent::ConnectionError::CLIENT_SUSPENDED, "client-suspended"},
+    {ChromotingEvent::ConnectionError::NACL_DISABLED, "nacl-disabled"},
+    {ChromotingEvent::ConnectionError::MAX_SESSION_LENGTH,
+     "max-session-length"},
+    {ChromotingEvent::ConnectionError::HOST_CONFIGURATION_ERROR,
+     "host-configuration-error"},
+    {ChromotingEvent::ConnectionError::NACL_PLUGIN_CRASHED,
+     "nacl-plugin-crashed"},
+    {ChromotingEvent::ConnectionError::INVALID_ACCOUNT, "invalid-account"},
+};
+
+const NameMapElement<ChromotingEvent::ConnectionType> kConnectionTypeNames[]{
+    {ChromotingEvent::ConnectionType::DIRECT, "direct"},
+    {ChromotingEvent::ConnectionType::STUN, "stun"},
+    {ChromotingEvent::ConnectionType::RELAY, "relay"},
+};
+
+const NameMapElement<ChromotingEvent::Mode> kModeNames[]{
+    {ChromotingEvent::Mode::IT2ME, "it2me"},
+    {ChromotingEvent::Mode::ME2ME, "me2me"},
+};
+
 const NameMapElement<ChromotingEvent::Os> kOsNames[] = {
     {ChromotingEvent::Os::CHROMOTING_LINUX, "linux"},
     {ChromotingEvent::Os::CHROMOTING_CHROMEOS, "chromeos"},
@@ -22,10 +61,32 @@ const NameMapElement<ChromotingEvent::Os> kOsNames[] = {
     {ChromotingEvent::Os::CHROMOTING_IOS, "ios"},
 };
 
+const NameMapElement<ChromotingEvent::SessionState> kSessionStateNames[]{
+    {ChromotingEvent::SessionState::UNKNOWN, "unknown"},
+    {ChromotingEvent::SessionState::CREATED, "created"},
+    {ChromotingEvent::SessionState::BAD_PLUGIN_VERSION, "bad-plugin-version"},
+    {ChromotingEvent::SessionState::UNKNOWN_PLUGIN_ERROR,
+     "unknown-plugin-error"},
+    {ChromotingEvent::SessionState::CONNECTING, "connecting"},
+    {ChromotingEvent::SessionState::INITIALIZING, "initializing"},
+    {ChromotingEvent::SessionState::CONNECTED, "connected"},
+    {ChromotingEvent::SessionState::CLOSED, "closed"},
+    {ChromotingEvent::SessionState::CONNECTION_FAILED, "connection-failed"},
+    {ChromotingEvent::SessionState::UNDEFINED, "undefined"},
+    {ChromotingEvent::SessionState::PLUGIN_DISABLED, "plugin-disabled"},
+    {ChromotingEvent::SessionState::CONNECTION_DROPPED, "connection-dropped"},
+    {ChromotingEvent::SessionState::CONNECTION_CANCELED, "connection-canceled"},
+    {ChromotingEvent::SessionState::AUTHENTICATED, "authenticated"},
+    {ChromotingEvent::SessionState::STARTED, "started"},
+    {ChromotingEvent::SessionState::SIGNALING, "signaling"},
+    {ChromotingEvent::SessionState::CREATING_PLUGIN, "creating-plugin"},
+};
+
 }  // namespace
 
 const char ChromotingEvent::kCaptureLatencyKey[] = "capture_latency";
 const char ChromotingEvent::kConnectionErrorKey[] = "connection_error";
+const char ChromotingEvent::kConnectionTypeKey[] = "connection_type";
 const char ChromotingEvent::kCpuKey[] = "cpu";
 const char ChromotingEvent::kDecodeLatencyKey[] = "decode_latency";
 const char ChromotingEvent::kEncodeLatencyKey[] = "encode_latency";
@@ -40,6 +101,8 @@ const char ChromotingEvent::kMaxRoundtripLatencyKey[] = "max_roundtrip_latency";
 const char ChromotingEvent::kModeKey[] = "mode";
 const char ChromotingEvent::kOsKey[] = "os";
 const char ChromotingEvent::kOsVersionKey[] = "os_version";
+const char ChromotingEvent::kPreviousSessionStateKey[] =
+    "previous_session_state";
 const char ChromotingEvent::kRenderLatencyKey[] = "render_latency";
 const char ChromotingEvent::kRoleKey[] = "role";
 const char ChromotingEvent::kRoundtripLatencyKey[] = "roundtrip_latency";
@@ -127,6 +190,10 @@ void ChromotingEvent::IncrementSendAttempts() {
   send_attempts_++;
 }
 
+const base::Value* ChromotingEvent::GetValue(const std::string& key) const {
+  return values_map_->FindKey(key);
+}
+
 std::unique_ptr<base::DictionaryValue> ChromotingEvent::CopyDictionaryValue()
     const {
   return values_map_->CreateDeepCopy();
@@ -148,6 +215,36 @@ ChromotingEvent::Os ChromotingEvent::ParseOsFromString(const std::string& os) {
   }
 
   return result;
+}
+
+// static
+template <>
+const char* ChromotingEvent::EnumToString(ConnectionError value) {
+  return ValueToName(kConnectionErrorNames, value);
+}
+
+// static
+template <>
+const char* ChromotingEvent::EnumToString(ConnectionType value) {
+  return ValueToName(kConnectionTypeNames, value);
+}
+
+// static
+template <>
+const char* ChromotingEvent::EnumToString(Mode value) {
+  return ValueToName(kModeNames, value);
+}
+
+// static
+template <>
+const char* ChromotingEvent::EnumToString(Os value) {
+  return ValueToName(kOsNames, value);
+}
+
+// static
+template <>
+const char* ChromotingEvent::EnumToString(SessionState value) {
+  return ValueToName(kSessionStateNames, value);
 }
 
 }  // namespace remoting
