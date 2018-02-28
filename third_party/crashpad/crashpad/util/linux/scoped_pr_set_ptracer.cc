@@ -12,16 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "util/win/capture_context.h"
+#include "util/linux/scoped_pr_set_ptracer.h"
+
+#include <errno.h>
+#include <sys/prctl.h>
 
 #include "base/logging.h"
 
 namespace crashpad {
 
-void CaptureContext(CONTEXT* context) {
-  // Don't use this file in production.
-  CHECK(false)
-      << "Don't use this! For cross builds only. See https://crbug.com/762167.";
+ScopedPrSetPtracer::ScopedPrSetPtracer(pid_t pid, bool may_log)
+    : success_(false), may_log_(may_log) {
+  success_ = prctl(PR_SET_PTRACER, pid, 0, 0, 0) == 0;
+  PLOG_IF(ERROR, !success_ && may_log && errno != EINVAL) << "prctl";
+}
+
+ScopedPrSetPtracer::~ScopedPrSetPtracer() {
+  if (success_) {
+    int res = prctl(PR_SET_PTRACER, 0, 0, 0, 0);
+    PLOG_IF(ERROR, res != 0 && may_log_) << "prctl";
+  }
 }
 
 }  // namespace crashpad
