@@ -41,8 +41,8 @@ namespace update_client {
 
 std::unique_ptr<net::URLFetcher> SendProtocolRequest(
     const GURL& url,
+    const std::map<std::string, std::string>& protocol_request_extra_headers,
     const std::string& protocol_request,
-    const base::Optional<bool> is_foreground,
     net::URLFetcherDelegate* url_fetcher_delegate,
     scoped_refptr<net::URLRequestContextGetter> url_request_context_getter) {
   net::NetworkTrafficAnnotationTag traffic_annotation =
@@ -86,10 +86,9 @@ std::unique_ptr<net::URLFetcher> SendProtocolRequest(
                             net::LOAD_DO_NOT_SAVE_COOKIES |
                             net::LOAD_DISABLE_CACHE);
   url_fetcher->SetAutomaticallyRetryOn5xx(false);
-  if (is_foreground.has_value()) {
+  for (const auto& header : protocol_request_extra_headers)
     url_fetcher->AddExtraRequestHeader(base::StringPrintf(
-        "X-GoogleUpdate-Interactivity: %s", *is_foreground ? "fg" : "bg"));
-  }
+        "%s: %s", header.first.c_str(), header.second.c_str()));
 
   url_fetcher->Start();
   return url_fetcher;

@@ -74,6 +74,13 @@ void UpdateEngine::Update(bool is_foreground,
                           Callback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  if (ids.empty()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(callback), Error::INVALID_ARGUMENT));
+    return;
+  }
+
   if (IsThrottled(is_foreground)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), Error::RETRY_LATER));

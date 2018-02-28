@@ -303,6 +303,10 @@ TEST_P(UpdateCheckerTest, UpdateCheckSuccess) {
   std::string header;
   extra_request_headers.GetHeader("X-GoogleUpdate-Interactivity", &header);
   EXPECT_STREQ(is_foreground ? "fg" : "bg", header.c_str());
+  extra_request_headers.GetHeader("X-GoogleUpdate-Updater", &header);
+  EXPECT_STREQ("fake_prodid-30.0", header.c_str());
+  extra_request_headers.GetHeader("X-GoogleUpdate-AppId", &header);
+  EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf", header.c_str());
 }
 
 // Tests that an invalid "ap" is not serialized.

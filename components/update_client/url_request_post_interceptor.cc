@@ -49,7 +49,6 @@ class URLRequestMockJob : public net::URLRequestSimpleJob {
     mime_type->assign("text/plain");
     charset->assign("US-ASCII");
     data->assign(response_body_);
-
     return net::OK;
   }
 

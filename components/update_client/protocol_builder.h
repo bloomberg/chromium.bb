@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_UPDATE_CLIENT_PROTOCOL_BUILDER_H_
 #define COMPONENTS_UPDATE_CLIENT_PROTOCOL_BUILDER_H_
 
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -113,6 +114,14 @@ std::string BuildProtocolRequest(
     const std::string& request_body,
     const std::string& additional_attributes,
     const std::unique_ptr<UpdaterState::Attributes>& updater_state_attributes);
+
+// Creates the values for the DDOS extra request headers sent with the update
+// check. These headers include "X-GoogleUpdate-Updater",
+// "X-GoogleUpdate-AppId", and  "X-GoogleUpdate-Interactivity".
+std::map<std::string, std::string> BuildUpdateCheckExtraRequestHeaders(
+    scoped_refptr<Configurator> config,
+    const std::vector<std::string>& ids,
+    bool is_foreground);
 
 }  // namespace update_client
 

@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -14,7 +15,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
@@ -61,10 +61,10 @@ class RequestSender : public net::URLFetcherDelegate {
   // If this optional parameter is set, the values of "fg" or "bg" are sent
   // for true or false values of this parameter. Otherwise the header is not
   // sent at all.
-  void Send(bool use_signing,
+  void Send(const std::vector<GURL>& urls,
+            const std::map<std::string, std::string>& request_extra_headers,
             const std::string& request_body,
-            base::Optional<bool> is_foreground,
-            const std::vector<GURL>& urls,
+            bool use_signing,
             RequestSenderCallback request_sender_callback);
 
  private:
@@ -103,10 +103,11 @@ class RequestSender : public net::URLFetcherDelegate {
   base::ThreadChecker thread_checker_;
 
   const scoped_refptr<Configurator> config_;
-  bool use_signing_;  // True if CUP signing is used.
+
   std::vector<GURL> urls_;
+  std::map<std::string, std::string> request_extra_headers_;
   std::string request_body_;
-  base::Optional<bool> is_foreground_;
+  bool use_signing_;  // True if CUP signing is used.
   RequestSenderCallback request_sender_callback_;
 
   std::string public_key_;

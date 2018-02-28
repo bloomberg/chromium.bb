@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/optional.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
@@ -145,7 +144,8 @@ TEST_P(RequestSenderTest, RequestSendSuccess) {
   const bool is_foreground = GetParam();
   request_sender_ = std::make_unique<RequestSender>(config_);
   request_sender_->Send(
-      false, "test", base::make_optional(is_foreground), urls,
+      urls, {{"X-GoogleUpdate-Interactivity", is_foreground ? "fg" : "bg"}},
+      "test", false,
       base::BindOnce(&RequestSenderTest::RequestSenderComplete,
                      base::Unretained(this)));
   RunThreads();
@@ -191,7 +191,7 @@ TEST_F(RequestSenderTest, RequestSendSuccessWithFallback) {
   const std::vector<GURL> urls = {GURL(kUrl1), GURL(kUrl2)};
   request_sender_ = std::make_unique<RequestSender>(config_);
   request_sender_->Send(
-      false, "test", base::make_optional(false), urls,
+      urls, {}, "test", false,
       base::BindOnce(&RequestSenderTest::RequestSenderComplete,
                      base::Unretained(this)));
   RunThreads();
@@ -220,7 +220,7 @@ TEST_F(RequestSenderTest, RequestSendFailed) {
   const std::vector<GURL> urls = {GURL(kUrl1), GURL(kUrl2)};
   request_sender_ = std::make_unique<RequestSender>(config_);
   request_sender_->Send(
-      false, "test", base::nullopt, urls,
+      urls, {}, "test", false,
       base::BindOnce(&RequestSenderTest::RequestSenderComplete,
                      base::Unretained(this)));
   RunThreads();
@@ -244,7 +244,7 @@ TEST_F(RequestSenderTest, RequestSendFailedNoUrls) {
   std::vector<GURL> urls;
   request_sender_ = std::make_unique<RequestSender>(config_);
   request_sender_->Send(
-      false, "test", base::nullopt, urls,
+      urls, std::map<std::string, std::string>(), "test", false,
       base::BindOnce(&RequestSenderTest::RequestSenderComplete,
                      base::Unretained(this)));
   RunThreads();
@@ -260,7 +260,7 @@ TEST_F(RequestSenderTest, RequestSendCupError) {
   const std::vector<GURL> urls = {GURL(kUrl1)};
   request_sender_ = std::make_unique<RequestSender>(config_);
   request_sender_->Send(
-      true, "test", base::nullopt, urls,
+      urls, {}, "test", true,
       base::BindOnce(&RequestSenderTest::RequestSenderComplete,
                      base::Unretained(this)));
   RunThreads();
