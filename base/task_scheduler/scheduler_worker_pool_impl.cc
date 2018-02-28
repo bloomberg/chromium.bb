@@ -345,17 +345,17 @@ void SchedulerWorkerPoolImpl::DisallowWorkerCleanupForTesting() {
   worker_cleanup_disallowed_for_testing_ = true;
 }
 
-size_t SchedulerWorkerPoolImpl::NumberOfWorkersForTesting() {
+size_t SchedulerWorkerPoolImpl::NumberOfWorkersForTesting() const {
   AutoSchedulerLock auto_lock(lock_);
   return workers_.size();
 }
 
-size_t SchedulerWorkerPoolImpl::GetWorkerCapacityForTesting() {
+size_t SchedulerWorkerPoolImpl::GetWorkerCapacityForTesting() const {
   AutoSchedulerLock auto_lock(lock_);
   return worker_capacity_;
 }
 
-size_t SchedulerWorkerPoolImpl::NumberOfIdleWorkersForTesting() {
+size_t SchedulerWorkerPoolImpl::NumberOfIdleWorkersForTesting() const {
   AutoSchedulerLock auto_lock(lock_);
   return idle_workers_stack_.Size();
 }

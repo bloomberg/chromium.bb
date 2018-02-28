@@ -120,13 +120,13 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   void DisallowWorkerCleanupForTesting();
 
   // Returns the number of workers in this worker pool.
-  size_t NumberOfWorkersForTesting();
+  size_t NumberOfWorkersForTesting() const;
 
   // Returns |worker_capacity_|.
-  size_t GetWorkerCapacityForTesting();
+  size_t GetWorkerCapacityForTesting() const;
 
   // Returns the number of workers that are idle (i.e. not running tasks).
-  size_t NumberOfIdleWorkersForTesting();
+  size_t NumberOfIdleWorkersForTesting() const;
 
   // Sets the MayBlock waiting threshold to TimeDelta::Max().
   void MaximizeMayBlockThresholdForTesting();
