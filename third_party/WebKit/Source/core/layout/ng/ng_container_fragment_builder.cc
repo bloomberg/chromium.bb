@@ -167,6 +167,9 @@ void NGContainerFragmentBuilder::GetAndClearOutOfFlowDescendantCandidates(
     const LayoutObject* current_container) {
   DCHECK(descendant_candidates->IsEmpty());
 
+  if (oof_positioned_candidates_.size() == 0)
+    return;
+
   descendant_candidates->ReserveCapacity(oof_positioned_candidates_.size());
 
   DCHECK_GE(inline_size_, LayoutUnit());
