@@ -8,16 +8,13 @@
 #include "base/macros.h"
 #include "chrome/browser/conflicts/module_database_observer_win.h"
 
-class InstalledPrograms;
 struct ModuleInfoData;
 struct ModuleInfoKey;
 
 // Records metrics about third party modules loaded into Chrome.
 class ThirdPartyMetricsRecorder : public ModuleDatabaseObserver {
  public:
-  // |installed_programs| must outlive |this|.
-  explicit ThirdPartyMetricsRecorder(
-      const InstalledPrograms& installed_programs);
+  ThirdPartyMetricsRecorder();
   ~ThirdPartyMetricsRecorder() override;
 
   // ModuleDatabaseObserver:
@@ -26,8 +23,6 @@ class ThirdPartyMetricsRecorder : public ModuleDatabaseObserver {
   void OnModuleDatabaseIdle() override;
 
  private:
-  const InstalledPrograms& installed_programs_;
-
   // Flag used to avoid sending module counts multiple times.
   bool metrics_emitted_ = false;
 

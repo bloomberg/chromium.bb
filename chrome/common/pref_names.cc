@@ -2442,6 +2442,7 @@ const char kNumberHistoryPageIOSPromoShown[] =
 // True if the user has dismissed the "desktop to iOS" history page promotion.
 const char kHistoryPageIOSPromoDismissed[] = "history_page_ios_promo_dismissed";
 
+#if defined(GOOGLE_CHROME_BUILD)
 // Acts as a cache to remember problematic programs through restarts. Used for
 // the third-party conflicts warning.
 const char kProblematicPrograms[] = "problematic_programs";
@@ -2449,7 +2450,8 @@ const char kProblematicPrograms[] = "problematic_programs";
 // A boolean value, controlling whether third party software is allowed to
 // inject into Chrome's processes.
 const char kThirdPartyBlockingEnabled[] = "third_party_blocking_enabled";
-#endif
+#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // defined(OS_WIN)
 
 // An integer that keeps track of prompt waves for the settings reset
 // prompt. Users will be prompted to reset settings at most once per prompt wave

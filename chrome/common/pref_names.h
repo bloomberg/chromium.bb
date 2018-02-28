@@ -868,9 +868,11 @@ extern const char kBookmarksFootNoteIOSPromoDismissed[];
 extern const char kNumberHistoryPageIOSPromoShown[];
 extern const char kHistoryPageIOSPromoDismissed[];
 
+#if defined(GOOGLE_CHROME_BUILD)
 extern const char kProblematicPrograms[];
 extern const char kThirdPartyBlockingEnabled[];
-#endif
+#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // defined(OS_WIN)
 
 extern const char kSettingsResetPromptPromptWave[];
 extern const char kSettingsResetPromptLastTriggeredForDefaultSearch[];
