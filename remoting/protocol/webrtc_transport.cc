@@ -209,13 +209,7 @@ class WebrtcTransport::PeerConnectionWrapper
         rtc_config, &constraints, std::move(port_allocator), nullptr, this);
   }
 
-// TODO(sakal): Remove this ifdef after migration to virtual PeerConnection
-// observer is complete.
-#ifdef VIRTUAL_PEERCONNECTION_OBSERVER_DESTRUCTOR
   ~PeerConnectionWrapper() override {
-#else
-  virtual ~PeerConnectionWrapper() {
-#endif
     // PeerConnection creates threads internally, which are stopped when the
     // connection is closed. Thread.Stop() is a blocking operation.
     // See crbug.com/660081.
