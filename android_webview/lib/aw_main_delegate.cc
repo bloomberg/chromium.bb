@@ -173,6 +173,10 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   CommandLineHelper::AddEnabledFeature(
       *cl, autofill::features::kAutofillSkipComparingInferredLabels.name);
 
+  CommandLineHelper::AddDisabledFeature(
+      *cl, autofill::features::kAutofillRestrictUnownedFieldsToFormlessCheckout
+               .name);
+
   android_webview::RegisterPathProvider();
 
   safe_browsing_api_handler_.reset(
