@@ -21,14 +21,10 @@ class MultipageSkpicturePrinterUnitTest(page_test_test_case.PageTestTestCase):
   def tearDown(self):
     shutil.rmtree(self._mskp_outdir)
 
-  @decorators.Disabled('android')
+  # Picture printing is not supported on all platforms.
+  @decorators.Disabled('android', 'chromeos')
   def testSkpicturePrinter(self):
     ps = self.CreateStorySetFromFileInUnittestDataDir('blank.html')
     measurement = multipage_skpicture_printer.MultipageSkpicturePrinter(
         self._mskp_outdir)
-    results = self.RunMeasurement(measurement, ps, options=self._options)
-
-    # Picture printing is not supported on all platforms.
-    if results.failures:
-      assert 'not supported' in results.failures[0].exc_info[1].message
-      return
+    self.RunMeasurement(measurement, ps, options=self._options)
