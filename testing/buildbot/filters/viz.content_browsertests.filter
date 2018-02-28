@@ -60,6 +60,7 @@
 -SitePerProcessHitTestBrowserTest.SubframeTouchEventRouting*
 -SitePerProcessHitTestBrowserTest.SurfaceHitTestPointerEventsNone*
 -SitePerProcessHitTestBrowserTest.SurfaceHitTestTest*
+-SitePerProcessNonIntegerScaleFactorHitTestBrowserTest.NestedSurfaceHitTestTest*
 
 # Copy Surface timing out http://crbug.com/785257
 -GLAndSoftwareCompositing/CompositingRenderWidgetHostViewBrowserTest.*

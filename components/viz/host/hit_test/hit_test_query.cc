@@ -5,6 +5,7 @@
 #include "components/viz/host/hit_test/hit_test_query.h"
 
 #include "services/viz/public/interfaces/hit_test/hit_test_region_list.mojom.h"
+#include "ui/gfx/geometry/point_conversions.h"
 
 namespace viz {
 namespace {
@@ -51,7 +52,7 @@ void HitTestQuery::SwitchActiveAggregatedHitTestRegionList(
 
 Target HitTestQuery::FindTargetForLocation(
     EventSource event_source,
-    const gfx::Point& location_in_root) const {
+    const gfx::PointF& location_in_root) const {
   Target target;
   if (!active_hit_test_list_size_)
     return target;
@@ -61,14 +62,14 @@ Target HitTestQuery::FindTargetForLocation(
   return target;
 }
 
-gfx::Point HitTestQuery::TransformLocationForTarget(
+gfx::PointF HitTestQuery::TransformLocationForTarget(
     EventSource event_source,
     const std::vector<FrameSinkId>& target_ancestors,
-    const gfx::Point& location_in_root) const {
+    const gfx::PointF& location_in_root) const {
   if (!active_hit_test_list_size_)
     return location_in_root;
 
-  gfx::Point location_in_target(location_in_root);
+  gfx::PointF location_in_target(location_in_root);
   // TODO(riajiang): Cache the matrix product such that the transform can be
   // done immediately. crbug/758062.
   DCHECK(target_ancestors.size() > 0u &&
@@ -84,12 +85,12 @@ gfx::Point HitTestQuery::TransformLocationForTarget(
 
 bool HitTestQuery::FindTargetInRegionForLocation(
     EventSource event_source,
-    const gfx::Point& location_in_parent,
+    const gfx::PointF& location_in_parent,
     AggregatedHitTestRegion* region,
     Target* target) const {
-  gfx::Point location_transformed(location_in_parent);
+  gfx::PointF location_transformed(location_in_parent);
   region->transform.TransformPoint(&location_transformed);
-  if (!region->rect.Contains(location_transformed))
+  if (!gfx::RectF(region->rect).Contains(location_transformed))
     return false;
 
   if (region->child_count < 0 ||
@@ -100,8 +101,8 @@ bool HitTestQuery::FindTargetInRegionForLocation(
   AggregatedHitTestRegion* child_region = region + 1;
   AggregatedHitTestRegion* child_region_end =
       child_region + region->child_count;
-  gfx::Point location_in_target(location_transformed);
-  location_in_target.Offset(-region->rect.x(), -region->rect.y());
+  gfx::PointF location_in_target =
+      location_transformed - region->rect.OffsetFromOrigin();
   while (child_region < child_region_end) {
     if (FindTargetInRegionForLocation(event_source, location_in_target,
                                       child_region, target)) {
@@ -135,7 +136,7 @@ bool HitTestQuery::TransformLocationForTargetRecursively(
     const std::vector<FrameSinkId>& target_ancestors,
     size_t target_ancestor,
     AggregatedHitTestRegion* region,
-    gfx::Point* location_in_target) const {
+    gfx::PointF* location_in_target) const {
   bool match_touch_or_mouse_region =
       ShouldUseTouchBounds(event_source)
           ? (region->flags & mojom::kHitTestTouch) != 0u
