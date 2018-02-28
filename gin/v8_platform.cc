@@ -327,7 +327,9 @@ std::shared_ptr<v8::TaskRunner> V8Platform::GetForegroundTaskRunner(
 
 std::shared_ptr<v8::TaskRunner> V8Platform::GetBackgroundTaskRunner(
     v8::Isolate* isolate) {
-  return std::make_shared<V8BackgroundTaskRunner>();
+  static std::shared_ptr<v8::TaskRunner> v8_background_task_runner =
+      std::make_shared<V8BackgroundTaskRunner>();
+  return v8_background_task_runner;
 }
 
 size_t V8Platform::NumberOfAvailableBackgroundThreads() {
