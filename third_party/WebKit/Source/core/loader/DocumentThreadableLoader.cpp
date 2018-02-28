@@ -65,7 +65,6 @@
 #include "public/platform/Platform.h"
 #include "public/platform/TaskType.h"
 #include "public/platform/WebCORS.h"
-#include "public/platform/WebCORSPreflightResultCache.h"
 #include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebURLRequest.h"
 #include "services/network/public/mojom/cors.mojom-blink.h"
@@ -576,7 +575,7 @@ void DocumentThreadableLoader::MakeCrossOriginAccessRequestBlinkCORS(
   probe::shouldForceCORSPreflight(GetExecutionContext(),
                                   &should_ignore_preflight_cache);
   if (should_ignore_preflight_cache ||
-      !WebCORSPreflightResultCache::Shared().CanSkipPreflight(
+      !CORS::CheckIfRequestCanSkipPreflight(
           GetSecurityOrigin()->ToString(), cross_origin_request.Url(),
           cross_origin_request.GetFetchCredentialsMode(),
           cross_origin_request.HttpMethod(),
@@ -937,8 +936,8 @@ void DocumentThreadableLoader::HandlePreflightResponse(
     }
   }
 
-  WebString access_control_error_description;
-  if (!WebCORSPreflightResultCache::Shared().EnsureResultAndMayAppendEntry(
+  String access_control_error_description;
+  if (!CORS::EnsurePreflightResultAndCacheOnSuccess(
           response.HttpHeaderFields(), GetSecurityOrigin()->ToString(),
           actual_request_.Url(), actual_request_.HttpMethod(),
           actual_request_.HttpHeaderFields(),
