@@ -319,19 +319,11 @@ int main(int argc, const char **argv) {
 
   /* Partition */
   cts_each_dim[0] = PARTITION_CONTEXTS;
-#if CONFIG_EXT_PARTITION_TYPES
   cts_each_dim[1] = EXT_PARTITION_TYPES;
   optimize_cdf_table(&fc.partition[0][0], probsfile, 2, cts_each_dim,
                      "static const aom_cdf_prob\n"
                      "default_partition_cdf[PARTITION_CONTEXTS][CDF_SIZE(EXT_"
                      "PARTITION_TYPES)]");
-#else
-  cts_each_dim[1] = PARTITION_TYPES;
-  optimize_cdf_table(
-      &fc.partition[0][0], probsfile, 2, cts_each_dim,
-      "static const aom_cdf_prob\n"
-      "default_partition_cdf[PARTITION_CONTEXTS][CDF_SIZE(PARTITION_TYPES)]");
-#endif
 
   /* Interpolation filter */
   cts_each_dim[0] = SWITCHABLE_FILTER_CONTEXTS;

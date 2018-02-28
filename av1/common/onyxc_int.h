@@ -925,21 +925,10 @@ static INLINE void update_partition_context(MACROBLOCKD *xd, int mi_row,
   PARTITION_CONTEXT *const left_ctx =
       xd->left_seg_context + (mi_row & MAX_MIB_MASK);
 
-#if CONFIG_EXT_PARTITION_TYPES
   const int bw = mi_size_wide[bsize];
   const int bh = mi_size_high[bsize];
   memset(above_ctx, partition_context_lookup[subsize].above, bw);
   memset(left_ctx, partition_context_lookup[subsize].left, bh);
-#else
-  // num_4x4_blocks_wide_lookup[bsize] / 2
-  const int bs = mi_size_wide[bsize];
-
-  // update the partition context at the end notes. set partition bits
-  // of block sizes larger than the current one to be one, and partition
-  // bits of smaller block sizes to be zero.
-  memset(above_ctx, partition_context_lookup[subsize].above, bs);
-  memset(left_ctx, partition_context_lookup[subsize].left, bs);
-#endif  // CONFIG_EXT_PARTITION_TYPES
 }
 
 static INLINE int is_chroma_reference(int mi_row, int mi_col, BLOCK_SIZE bsize,
@@ -1013,7 +1002,6 @@ static INLINE void partition_gather_horz_alike(aom_cdf_prob *out,
   out[0] = CDF_PROB_TOP;
   out[0] -= cdf_element_prob(in, PARTITION_HORZ);
   out[0] -= cdf_element_prob(in, PARTITION_SPLIT);
-#if CONFIG_EXT_PARTITION_TYPES
   out[0] -= cdf_element_prob(in, PARTITION_HORZ_A);
   out[0] -= cdf_element_prob(in, PARTITION_HORZ_B);
   out[0] -= cdf_element_prob(in, PARTITION_VERT_A);
@@ -1021,7 +1009,6 @@ static INLINE void partition_gather_horz_alike(aom_cdf_prob *out,
   if (bsize != BLOCK_128X128)
 #endif  // !ALLOW_128X32_BLOCKS
     out[0] -= cdf_element_prob(in, PARTITION_HORZ_4);
-#endif  // CONFIG_EXT_PARTITION_TYPES
   out[0] = AOM_ICDF(out[0]);
   out[1] = AOM_ICDF(CDF_PROB_TOP);
 }
@@ -1033,7 +1020,6 @@ static INLINE void partition_gather_vert_alike(aom_cdf_prob *out,
   out[0] = CDF_PROB_TOP;
   out[0] -= cdf_element_prob(in, PARTITION_VERT);
   out[0] -= cdf_element_prob(in, PARTITION_SPLIT);
-#if CONFIG_EXT_PARTITION_TYPES
   out[0] -= cdf_element_prob(in, PARTITION_HORZ_A);
   out[0] -= cdf_element_prob(in, PARTITION_VERT_A);
   out[0] -= cdf_element_prob(in, PARTITION_VERT_B);
@@ -1041,12 +1027,10 @@ static INLINE void partition_gather_vert_alike(aom_cdf_prob *out,
   if (bsize != BLOCK_128X128)
 #endif  // !ALLOW_128X32_BLOCKS
     out[0] -= cdf_element_prob(in, PARTITION_VERT_4);
-#endif  // CONFIG_EXT_PARTITION_TYPES
   out[0] = AOM_ICDF(out[0]);
   out[1] = AOM_ICDF(CDF_PROB_TOP);
 }
 
-#if CONFIG_EXT_PARTITION_TYPES
 static INLINE void update_ext_partition_context(MACROBLOCKD *xd, int mi_row,
                                                 int mi_col, BLOCK_SIZE subsize,
                                                 BLOCK_SIZE bsize,
@@ -1085,7 +1069,6 @@ static INLINE void update_ext_partition_context(MACROBLOCKD *xd, int mi_row,
     }
   }
 }
-#endif  // CONFIG_EXT_PARTITION_TYPES
 
 static INLINE int partition_plane_context(const MACROBLOCKD *xd, int mi_row,
                                           int mi_col, BLOCK_SIZE bsize) {
@@ -1105,7 +1088,6 @@ static INLINE int partition_plane_context(const MACROBLOCKD *xd, int mi_row,
 // Return the number of elements in the partition CDF when
 // partitioning the (square) block with luma block size of bsize.
 static INLINE int partition_cdf_length(BLOCK_SIZE bsize) {
-#if CONFIG_EXT_PARTITION_TYPES
   if (bsize <= BLOCK_8X8) return PARTITION_TYPES;
 #if !ALLOW_128X32_BLOCKS
   else if (bsize == BLOCK_128X128)
@@ -1113,10 +1095,6 @@ static INLINE int partition_cdf_length(BLOCK_SIZE bsize) {
 #endif  // !ALLOW_128X32_BLOCKS
   else
     return EXT_PARTITION_TYPES;
-#else
-  (void)bsize;
-  return PARTITION_TYPES;
-#endif
 }
 
 static INLINE int max_block_wide(const MACROBLOCKD *xd, BLOCK_SIZE bsize,
@@ -1332,7 +1310,6 @@ static INLINE PARTITION_TYPE get_partition(const AV1_COMMON *const cm,
   const int sshigh = mi_size_high[subsize];
   const int sswide = mi_size_wide[subsize];
 
-#if CONFIG_EXT_PARTITION_TYPES
   if (bsize > BLOCK_8X8 && mi_row + bwide / 2 < cm->mi_rows &&
       mi_col + bhigh / 2 < cm->mi_cols) {
     // In this case, the block might be using an extended partition
@@ -1378,7 +1355,6 @@ static INLINE PARTITION_TYPE get_partition(const AV1_COMMON *const cm,
       return PARTITION_SPLIT;
     }
   }
-#endif
   const int vert_split = sswide < bwide;
   const int horz_split = sshigh < bhigh;
   const int split_idx = (vert_split << 1) | horz_split;

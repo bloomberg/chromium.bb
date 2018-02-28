@@ -82,7 +82,6 @@ static void alloc_tree_contexts(AV1_COMMON *cm, PC_TREE *tree, int num_pix,
   alloc_mode_context(cm, num_pix / 2, &tree->horizontal[1]);
   alloc_mode_context(cm, num_pix / 2, &tree->vertical[1]);
 
-#if CONFIG_EXT_PARTITION_TYPES
   alloc_mode_context(cm, num_pix / 4, &tree->horizontala[0]);
   alloc_mode_context(cm, num_pix / 4, &tree->horizontala[1]);
   alloc_mode_context(cm, num_pix / 2, &tree->horizontala[2]);
@@ -103,11 +102,9 @@ static void alloc_tree_contexts(AV1_COMMON *cm, PC_TREE *tree, int num_pix,
     alloc_mode_context(cm, num_pix / 4, &tree->horizontal4[i]);
     alloc_mode_context(cm, num_pix / 4, &tree->vertical4[i]);
   }
-#endif  // CONFIG_EXT_PARTITION_TYPES
 }
 
 static void free_tree_contexts(PC_TREE *tree, const int num_planes) {
-#if CONFIG_EXT_PARTITION_TYPES
   int i;
   for (i = 0; i < 3; i++) {
     free_mode_context(&tree->horizontala[i], num_planes);
@@ -119,7 +116,6 @@ static void free_tree_contexts(PC_TREE *tree, const int num_planes) {
     free_mode_context(&tree->horizontal4[i], num_planes);
     free_mode_context(&tree->vertical4[i], num_planes);
   }
-#endif  // CONFIG_EXT_PARTITION_TYPES
   free_mode_context(&tree->none, num_planes);
   free_mode_context(&tree->horizontal[0], num_planes);
   free_mode_context(&tree->horizontal[1], num_planes);
@@ -189,7 +185,6 @@ void av1_free_pc_tree(ThreadData *td, const int num_planes) {
   td->pc_tree = NULL;
 }
 
-#if CONFIG_EXT_PARTITION_TYPES
 void av1_copy_tree_context(PICK_MODE_CONTEXT *dst_ctx,
                            PICK_MODE_CONTEXT *src_ctx, int num_planes) {
   dst_ctx->mic = src_ctx->mic;
@@ -219,4 +214,3 @@ void av1_copy_tree_context(PICK_MODE_CONTEXT *dst_ctx,
 
   dst_ctx->partition = src_ctx->partition;
 }
-#endif  // CONFIG_EXT_PARTITION_TYPES

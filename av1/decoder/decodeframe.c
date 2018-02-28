@@ -277,10 +277,7 @@ static void set_offsets(AV1_COMMON *const cm, MACROBLOCKD *const xd,
 
 static void decode_mbmi_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
                               int mi_row, int mi_col, aom_reader *r,
-#if CONFIG_EXT_PARTITION_TYPES
-                              PARTITION_TYPE partition,
-#endif  // CONFIG_EXT_PARTITION_TYPES
-                              BLOCK_SIZE bsize) {
+                              PARTITION_TYPE partition, BLOCK_SIZE bsize) {
   AV1_COMMON *const cm = &pbi->common;
   const int bw = mi_size_wide[bsize];
   const int bh = mi_size_high[bsize];
@@ -291,9 +288,7 @@ static void decode_mbmi_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
   aom_accounting_set_context(&pbi->accounting, mi_col, mi_row);
 #endif
   set_offsets(cm, xd, bsize, mi_row, mi_col, bw, bh, x_mis, y_mis);
-#if CONFIG_EXT_PARTITION_TYPES
   xd->mi[0]->mbmi.partition = partition;
-#endif
   av1_read_mode_info(pbi, xd, mi_row, mi_col, r, x_mis, y_mis);
   if (bsize >= BLOCK_8X8 && (cm->subsampling_x || cm->subsampling_y)) {
     const BLOCK_SIZE uv_subsize =
@@ -636,15 +631,8 @@ static void read_filter_intra_mode_info(MACROBLOCKD *const xd, aom_reader *r) {
 
 static void decode_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
                          int mi_row, int mi_col, aom_reader *r,
-#if CONFIG_EXT_PARTITION_TYPES
-                         PARTITION_TYPE partition,
-#endif  // CONFIG_EXT_PARTITION_TYPES
-                         BLOCK_SIZE bsize) {
-  decode_mbmi_block(pbi, xd, mi_row, mi_col, r,
-#if CONFIG_EXT_PARTITION_TYPES
-                    partition,
-#endif
-                    bsize);
+                         PARTITION_TYPE partition, BLOCK_SIZE bsize) {
+  decode_mbmi_block(pbi, xd, mi_row, mi_col, r, partition, bsize);
 
   if (!is_inter_block(&xd->mi[0]->mbmi)) {
     for (int plane = 0; plane < AOMMIN(2, av1_num_planes(&pbi->common));
@@ -721,10 +709,8 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
   const int hbs = num_8x8_wh >> 1;
   PARTITION_TYPE partition;
   BLOCK_SIZE subsize;
-#if CONFIG_EXT_PARTITION_TYPES
   const int quarter_step = num_8x8_wh / 4;
   BLOCK_SIZE bsize2 = get_subsize(bsize, PARTITION_SPLIT);
-#endif
   const int has_rows = (mi_row + hbs) < cm->mi_rows;
   const int has_cols = (mi_col + hbs) < cm->mi_cols;
 
@@ -761,11 +747,7 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
   }
 
 #define DEC_BLOCK_STX_ARG
-#if CONFIG_EXT_PARTITION_TYPES
 #define DEC_BLOCK_EPT_ARG partition,
-#else
-#define DEC_BLOCK_EPT_ARG
-#endif
 #define DEC_BLOCK(db_r, db_c, db_subsize)                   \
   decode_block(pbi, xd, DEC_BLOCK_STX_ARG(db_r), (db_c), r, \
                DEC_BLOCK_EPT_ARG(db_subsize))
@@ -788,7 +770,6 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
       DEC_PARTITION(mi_row + hbs, mi_col, subsize);
       DEC_PARTITION(mi_row + hbs, mi_col + hbs, subsize);
       break;
-#if CONFIG_EXT_PARTITION_TYPES
     case PARTITION_HORZ_A:
       DEC_BLOCK(mi_row, mi_col, bsize2);
       DEC_BLOCK(mi_row, mi_col + hbs, bsize2);
@@ -823,7 +804,6 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
         DEC_BLOCK(mi_row, this_mi_col, subsize);
       }
       break;
-#endif  // CONFIG_EXT_PARTITION_TYPES
     default: assert(0 && "Invalid partition type");
   }
 
@@ -832,14 +812,7 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
 #undef DEC_BLOCK_EPT_ARG
 #undef DEC_BLOCK_STX_ARG
 
-#if CONFIG_EXT_PARTITION_TYPES
   update_ext_partition_context(xd, mi_row, mi_col, subsize, bsize, partition);
-#else
-  // update partition context
-  if (bsize >= BLOCK_8X8 &&
-      (bsize == BLOCK_8X8 || partition != PARTITION_SPLIT))
-    update_partition_context(xd, mi_row, mi_col, subsize, bsize);
-#endif  // CONFIG_EXT_PARTITION_TYPES
 }
 
 static void setup_bool_decoder(const uint8_t *data, const uint8_t *data_end,

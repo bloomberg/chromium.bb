@@ -147,7 +147,6 @@ typedef enum ATTRIBUTE_PACKED {
   PARTITION_HORZ,
   PARTITION_VERT,
   PARTITION_SPLIT,
-#if CONFIG_EXT_PARTITION_TYPES
   PARTITION_HORZ_A,  // HORZ split and the top partition is split again
   PARTITION_HORZ_B,  // HORZ split and the bottom partition is split again
   PARTITION_VERT_A,  // VERT split and the left partition is split again
@@ -155,7 +154,6 @@ typedef enum ATTRIBUTE_PACKED {
   PARTITION_HORZ_4,  // 4:1 horizontal partition
   PARTITION_VERT_4,  // 4:1 vertical partition
   EXT_PARTITION_TYPES,
-#endif  // CONFIG_EXT_PARTITION_TYPES
   PARTITION_TYPES = PARTITION_SPLIT + 1,
   PARTITION_INVALID = 255
 } PARTITION_TYPE;

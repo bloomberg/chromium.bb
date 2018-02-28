@@ -92,12 +92,8 @@ static void count_segs_sb(const AV1_COMMON *cm, MACROBLOCKD *xd,
                           BLOCK_SIZE bsize) {
   const int mis = cm->mi_stride;
   const int bs = mi_size_wide[bsize], hbs = bs / 2;
-#if CONFIG_EXT_PARTITION_TYPES
   PARTITION_TYPE partition;
   const int qbs = bs / 4;
-#else
-  int bw, bh;
-#endif  // CONFIG_EXT_PARTITION_TYPES
 
   if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) return;
 
@@ -106,7 +102,6 @@ static void count_segs_sb(const AV1_COMMON *cm, MACROBLOCKD *xd,
              no_pred_segcounts, temporal_predictor_count, t_unpred_seg_counts, \
              (cs_bw), (cs_bh), mi_row + (cs_rowoff), mi_col + (cs_coloff));
 
-#if CONFIG_EXT_PARTITION_TYPES
   if (bsize == BLOCK_8X8)
     partition = PARTITION_NONE;
   else
@@ -173,34 +168,6 @@ static void count_segs_sb(const AV1_COMMON *cm, MACROBLOCKD *xd,
     } break;
     default: assert(0);
   }
-#else
-  bw = mi_size_wide[mi[0]->mbmi.sb_type];
-  bh = mi_size_high[mi[0]->mbmi.sb_type];
-
-  if (bw == bs && bh == bs) {
-    CSEGS(bs, bs, 0, 0);
-  } else if (bw == bs && bh < bs) {
-    CSEGS(bs, hbs, 0, 0);
-    CSEGS(bs, hbs, hbs, 0);
-  } else if (bw < bs && bh == bs) {
-    CSEGS(hbs, bs, 0, 0);
-    CSEGS(hbs, bs, 0, hbs);
-  } else {
-    const BLOCK_SIZE subsize = subsize_lookup[PARTITION_SPLIT][bsize];
-    int n;
-
-    assert(bw < bs && bh < bs);
-
-    for (n = 0; n < 4; n++) {
-      const int mi_dc = hbs * (n & 1);
-      const int mi_dr = hbs * (n >> 1);
-
-      count_segs_sb(cm, xd, tile, &mi[mi_dr * mis + mi_dc], no_pred_segcounts,
-                    temporal_predictor_count, t_unpred_seg_counts,
-                    mi_row + mi_dr, mi_col + mi_dc, subsize);
-    }
-  }
-#endif  // CONFIG_EXT_PARTITION_TYPES
 
 #undef CSEGS
 }

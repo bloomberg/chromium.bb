@@ -586,10 +586,7 @@ static int set_segment_rdmult(const AV1_COMP *const cpi, MACROBLOCK *const x,
 
 static void rd_pick_sb_modes(const AV1_COMP *const cpi, TileDataEnc *tile_data,
                              MACROBLOCK *const x, int mi_row, int mi_col,
-                             RD_STATS *rd_cost,
-#if CONFIG_EXT_PARTITION_TYPES
-                             PARTITION_TYPE partition,
-#endif
+                             RD_STATS *rd_cost, PARTITION_TYPE partition,
                              BLOCK_SIZE bsize, PICK_MODE_CONTEXT *ctx,
                              int64_t best_rd) {
   const AV1_COMMON *const cm = &cpi->common;
@@ -611,18 +608,14 @@ static void rd_pick_sb_modes(const AV1_COMP *const cpi, TileDataEnc *tile_data,
 
   if (ctx->rd_mode_is_ready) {
     assert(ctx_mbmi->sb_type == bsize);
-#if CONFIG_EXT_PARTITION_TYPES
     assert(ctx_mbmi->partition == partition);
-#endif  // CONFIG_EXT_PARTITION_TYPES
     *mbmi = *ctx_mbmi;
     rd_cost->rate = ctx->rate;
     rd_cost->dist = ctx->dist;
     rd_cost->rdcost = ctx->rdcost;
   } else {
     mbmi->sb_type = bsize;
-#if CONFIG_EXT_PARTITION_TYPES
     mbmi->partition = partition;
-#endif  // CONFIG_EXT_PARTITION_TYPES
   }
 
 #if CONFIG_RD_DEBUG
@@ -1413,10 +1406,8 @@ static void save_context(const MACROBLOCK *x, RD_SEARCH_MACROBLOCK_CONTEXT *ctx,
 static void encode_b(const AV1_COMP *const cpi, TileDataEnc *tile_data,
                      ThreadData *td, TOKENEXTRA **tp, int mi_row, int mi_col,
                      RUN_TYPE dry_run, BLOCK_SIZE bsize,
-#if CONFIG_EXT_PARTITION_TYPES
-                     PARTITION_TYPE partition,
-#endif
-                     PICK_MODE_CONTEXT *ctx, int *rate) {
+                     PARTITION_TYPE partition, PICK_MODE_CONTEXT *ctx,
+                     int *rate) {
   TileInfo *const tile = &tile_data->tile_info;
   MACROBLOCK *const x = &td->mb;
 #if CONFIG_EXT_DELTA_Q
@@ -1425,9 +1416,7 @@ static void encode_b(const AV1_COMP *const cpi, TileDataEnc *tile_data,
 #endif
 
   set_offsets(cpi, tile, x, mi_row, mi_col, bsize);
-#if CONFIG_EXT_PARTITION_TYPES
   x->e_mbd.mi[0]->mbmi.partition = partition;
-#endif
   update_state(cpi, tile_data, td, ctx, mi_row, mi_col, bsize, dry_run);
 
   av1_set_coeff_buffer(cpi, x, mi_row, mi_col);
@@ -1478,11 +1467,9 @@ static void encode_sb(const AV1_COMP *const cpi, ThreadData *td,
                       : -1;
   const PARTITION_TYPE partition = pc_tree->partitioning;
   const BLOCK_SIZE subsize = get_subsize(bsize, partition);
-#if CONFIG_EXT_PARTITION_TYPES
   int quarter_step = mi_size_wide[bsize] / 4;
   int i;
   BLOCK_SIZE bsize2 = get_subsize(bsize, PARTITION_SPLIT);
-#endif  // CONFIG_EXT_PARTITION_TYPES
 
   if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) return;
 
@@ -1491,37 +1478,22 @@ static void encode_sb(const AV1_COMP *const cpi, ThreadData *td,
   switch (partition) {
     case PARTITION_NONE:
       encode_b(cpi, tile_data, td, tp, mi_row, mi_col, dry_run, subsize,
-#if CONFIG_EXT_PARTITION_TYPES
-               partition,
-#endif
-               &pc_tree->none, rate);
+               partition, &pc_tree->none, rate);
       break;
     case PARTITION_VERT:
       encode_b(cpi, tile_data, td, tp, mi_row, mi_col, dry_run, subsize,
-#if CONFIG_EXT_PARTITION_TYPES
-               partition,
-#endif
-               &pc_tree->vertical[0], rate);
+               partition, &pc_tree->vertical[0], rate);
       if (mi_col + hbs < cm->mi_cols) {
         encode_b(cpi, tile_data, td, tp, mi_row, mi_col + hbs, dry_run, subsize,
-#if CONFIG_EXT_PARTITION_TYPES
-                 partition,
-#endif
-                 &pc_tree->vertical[1], rate);
+                 partition, &pc_tree->vertical[1], rate);
       }
       break;
     case PARTITION_HORZ:
       encode_b(cpi, tile_data, td, tp, mi_row, mi_col, dry_run, subsize,
-#if CONFIG_EXT_PARTITION_TYPES
-               partition,
-#endif
-               &pc_tree->horizontal[0], rate);
+               partition, &pc_tree->horizontal[0], rate);
       if (mi_row + hbs < cm->mi_rows) {
         encode_b(cpi, tile_data, td, tp, mi_row + hbs, mi_col, dry_run, subsize,
-#if CONFIG_EXT_PARTITION_TYPES
-                 partition,
-#endif
-                 &pc_tree->horizontal[1], rate);
+                 partition, &pc_tree->horizontal[1], rate);
       }
       break;
     case PARTITION_SPLIT:
@@ -1535,7 +1507,6 @@ static void encode_sb(const AV1_COMP *const cpi, ThreadData *td,
                 subsize, pc_tree->split[3], rate);
       break;
 
-#if CONFIG_EXT_PARTITION_TYPES
     case PARTITION_HORZ_A:
       encode_b(cpi, tile_data, td, tp, mi_row, mi_col, dry_run, bsize2,
                partition, &pc_tree->horizontala[0], rate);
@@ -1587,16 +1558,10 @@ static void encode_sb(const AV1_COMP *const cpi, ThreadData *td,
                  partition, &pc_tree->vertical4[i], rate);
       }
       break;
-#endif  // CONFIG_EXT_PARTITION_TYPES
     default: assert(0 && "Invalid partition type."); break;
   }
 
-#if CONFIG_EXT_PARTITION_TYPES
   update_ext_partition_context(xd, mi_row, mi_col, subsize, bsize, partition);
-#else
-  if (partition != PARTITION_SPLIT || bsize == BLOCK_8X8)
-    update_partition_context(xd, mi_row, mi_col, subsize, bsize);
-#endif  // CONFIG_EXT_PARTITION_TYPES
 }
 
 // Check to see if the given partition size is allowed for a specified number
@@ -1744,10 +1709,7 @@ static void rd_use_partition(AV1_COMP *cpi, ThreadData *td,
         mi_row + hbs < cm->mi_rows && mi_col + hbs < cm->mi_cols) {
       pc_tree->partitioning = PARTITION_NONE;
       rd_pick_sb_modes(cpi, tile_data, x, mi_row, mi_col, &none_rdc,
-#if CONFIG_EXT_PARTITION_TYPES
-                       PARTITION_NONE,
-#endif
-                       bsize, ctx_none, INT64_MAX);
+                       PARTITION_NONE, bsize, ctx_none, INT64_MAX);
 
       if (none_rdc.rate < INT_MAX) {
         none_rdc.rate += x->partition_cost[pl][PARTITION_NONE];
@@ -1763,17 +1725,12 @@ static void rd_use_partition(AV1_COMP *cpi, ThreadData *td,
   switch (partition) {
     case PARTITION_NONE:
       rd_pick_sb_modes(cpi, tile_data, x, mi_row, mi_col, &last_part_rdc,
-#if CONFIG_EXT_PARTITION_TYPES
-                       PARTITION_NONE,
-#endif
-                       bsize, ctx_none, INT64_MAX);
+                       PARTITION_NONE, bsize, ctx_none, INT64_MAX);
       break;
     case PARTITION_HORZ:
       rd_pick_sb_modes(cpi, tile_data, x, mi_row, mi_col, &last_part_rdc,
-#if CONFIG_EXT_PARTITION_TYPES
-                       PARTITION_HORZ,
-#endif
-                       subsize, &pc_tree->horizontal[0], INT64_MAX);
+                       PARTITION_HORZ, subsize, &pc_tree->horizontal[0],
+                       INT64_MAX);
       if (last_part_rdc.rate != INT_MAX && bsize >= BLOCK_8X8 &&
           mi_row + hbs < cm->mi_rows) {
         RD_STATS tmp_rdc;
@@ -1783,10 +1740,8 @@ static void rd_use_partition(AV1_COMP *cpi, ThreadData *td,
         encode_superblock(cpi, tile_data, td, tp, DRY_RUN_NORMAL, mi_row,
                           mi_col, subsize, NULL);
         rd_pick_sb_modes(cpi, tile_data, x, mi_row + hbs, mi_col, &tmp_rdc,
-#if CONFIG_EXT_PARTITION_TYPES
-                         PARTITION_HORZ,
-#endif
-                         subsize, &pc_tree->horizontal[1], INT64_MAX);
+                         PARTITION_HORZ, subsize, &pc_tree->horizontal[1],
+                         INT64_MAX);
         if (tmp_rdc.rate == INT_MAX || tmp_rdc.dist == INT64_MAX) {
           av1_invalid_rd_stats(&last_part_rdc);
           break;
@@ -1798,10 +1753,8 @@ static void rd_use_partition(AV1_COMP *cpi, ThreadData *td,
       break;
     case PARTITION_VERT:
       rd_pick_sb_modes(cpi, tile_data, x, mi_row, mi_col, &last_part_rdc,
-#if CONFIG_EXT_PARTITION_TYPES
-                       PARTITION_VERT,
-#endif
-                       subsize, &pc_tree->vertical[0], INT64_MAX);
+                       PARTITION_VERT, subsize, &pc_tree->vertical[0],
+                       INT64_MAX);
       if (last_part_rdc.rate != INT_MAX && bsize >= BLOCK_8X8 &&
           mi_col + hbs < cm->mi_cols) {
         RD_STATS tmp_rdc;
@@ -1811,11 +1764,8 @@ static void rd_use_partition(AV1_COMP *cpi, ThreadData *td,
         encode_superblock(cpi, tile_data, td, tp, DRY_RUN_NORMAL, mi_row,
                           mi_col, subsize, NULL);
         rd_pick_sb_modes(cpi, tile_data, x, mi_row, mi_col + hbs, &tmp_rdc,
-#if CONFIG_EXT_PARTITION_TYPES
-                         PARTITION_VERT,
-#endif
-                         subsize, &pc_tree->vertical[bsize > BLOCK_8X8],
-                         INT64_MAX);
+                         PARTITION_VERT, subsize,
+                         &pc_tree->vertical[bsize > BLOCK_8X8], INT64_MAX);
         if (tmp_rdc.rate == INT_MAX || tmp_rdc.dist == INT64_MAX) {
           av1_invalid_rd_stats(&last_part_rdc);
           break;
@@ -1850,14 +1800,12 @@ static void rd_use_partition(AV1_COMP *cpi, ThreadData *td,
         last_part_rdc.dist += tmp_rdc.dist;
       }
       break;
-#if CONFIG_EXT_PARTITION_TYPES
     case PARTITION_VERT_A:
     case PARTITION_VERT_B:
     case PARTITION_HORZ_A:
     case PARTITION_HORZ_B:
     case PARTITION_HORZ_4:
     case PARTITION_VERT_4: assert(0 && "Cannot handle extended partiton types");
-#endif  //  CONFIG_EXT_PARTITION_TYPES
     default: assert(0); break;
   }
 
@@ -1891,11 +1839,8 @@ static void rd_use_partition(AV1_COMP *cpi, ThreadData *td,
       save_context(x, &x_ctx, mi_row, mi_col, bsize, num_planes);
       pc_tree->split[i]->partitioning = PARTITION_NONE;
       rd_pick_sb_modes(cpi, tile_data, x, mi_row + y_idx, mi_col + x_idx,
-                       &tmp_rdc,
-#if CONFIG_EXT_PARTITION_TYPES
-                       PARTITION_SPLIT,
-#endif
-                       split_subsize, &pc_tree->split[i]->none, INT64_MAX);
+                       &tmp_rdc, PARTITION_SPLIT, split_subsize,
+                       &pc_tree->split[i]->none, INT64_MAX);
 
       restore_context(x, &x_ctx, mi_row, mi_col, bsize, num_planes);
       if (tmp_rdc.rate == INT_MAX || tmp_rdc.dist == INT64_MAX) {
@@ -2205,7 +2150,6 @@ static INLINE int get_motion_inconsistency(MOTION_DIRECTION this_mv,
 }
 #endif
 
-#if CONFIG_EXT_PARTITION_TYPES
 // Try searching for an encoding for the given subblock. Returns zero if the
 // rdcost is already too high (to tell the caller not to bother searching for
 // encodings of further subblocks)
@@ -2313,7 +2257,6 @@ static void rd_test_partition3(const AV1_COMP *const cpi, ThreadData *td,
 
 #undef RTP_STX_TRY_ARGS
 }
-#endif  // CONFIG_EXT_PARTITION_TYPES
 
 #if CONFIG_DIST_8X8
 static int64_t dist_8x8_yuv(const AV1_COMP *const cpi, MACROBLOCK *const x,
@@ -2458,10 +2401,7 @@ static void rd_pick_sqr_partition(const AV1_COMP *const cpi, ThreadData *td,
     if (bsize_at_least_8x8) pc_tree->partitioning = PARTITION_NONE;
 
     rd_pick_sb_modes(cpi, tile_data, x, mi_row, mi_col, &this_rdc,
-#if CONFIG_EXT_PARTITION_TYPES
-                     PARTITION_NONE,
-#endif
-                     bsize, ctx_none, best_rdc.rdcost);
+                     PARTITION_NONE, bsize, ctx_none, best_rdc.rdcost);
     if (none_rd) *none_rd = this_rdc.rdcost;
     if (this_rdc.rate != INT_MAX) {
       if (bsize_at_least_8x8) {
@@ -2536,11 +2476,7 @@ static void rd_pick_sqr_partition(const AV1_COMP *const cpi, ThreadData *td,
       if (cpi->sf.adaptive_motion_search) load_pred_mv(x, ctx_none);
 
       pc_tree->split[idx]->index = idx;
-#if CONFIG_EXT_PARTITION_TYPES
       int64_t *p_split_rd = &split_rd[idx];
-#else
-      int64_t *p_split_rd = NULL;
-#endif  // CONFIG_EXT_PARTITION_TYPES
       rd_pick_sqr_partition(cpi, td, tile_data, tp, mi_row + y_idx,
                             mi_col + x_idx, subsize, &this_rdc,
                             temp_best_rdcost - sum_rdc.rdcost,
@@ -2660,7 +2596,6 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
       pl >= 0 ? x->partition_cost[pl] : x->partition_cost[0];
 
   int do_rectangular_split = 1;
-#if CONFIG_EXT_PARTITION_TYPES
   int64_t split_rd[4] = { 0, 0, 0, 0 };
   int64_t horz_rd[2] = { 0, 0 };
   int64_t vert_rd[2] = { 0, 0 };
@@ -2668,10 +2603,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
   int split_ctx_is_ready[2] = { 0, 0 };
   int horz_ctx_is_ready = 0;
   int vert_ctx_is_ready = 0;
-#endif  // CONFIG_EXT_PARTITION_TYPES
-#if CONFIG_EXT_PARTITION_TYPES
   BLOCK_SIZE bsize2 = get_subsize(bsize, PARTITION_SPLIT);
-#endif
 
   // Override skipping rectangular partition operations for edge blocks
   const int has_rows = (mi_row + mi_step < cm->mi_rows);
@@ -2849,10 +2781,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
   // PARTITION_NONE
   if (partition_none_allowed) {
     rd_pick_sb_modes(cpi, tile_data, x, mi_row, mi_col, &this_rdc,
-#if CONFIG_EXT_PARTITION_TYPES
-                     PARTITION_NONE,
-#endif
-                     bsize, ctx_none, best_rdc.rdcost);
+                     PARTITION_NONE, bsize, ctx_none, best_rdc.rdcost);
     if (none_rd) *none_rd = this_rdc.rdcost;
     if (this_rdc.rate != INT_MAX) {
       if (bsize_at_least_8x8) {
@@ -2970,11 +2899,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
       if (cpi->sf.adaptive_motion_search) load_pred_mv(x, ctx_none);
 
       pc_tree->split[idx]->index = idx;
-#if CONFIG_EXT_PARTITION_TYPES
       int64_t *p_split_rd = &split_rd[idx];
-#else
-      int64_t *p_split_rd = NULL;
-#endif  // CONFIG_EXT_PARTITION_TYPES
       rd_pick_partition(cpi, td, tile_data, tp, mi_row + y_idx, mi_col + x_idx,
                         subsize, &this_rdc, best_rdc.rdcost - sum_rdc.rdcost,
                         pc_tree->split[idx], p_split_rd);
@@ -2987,7 +2912,6 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
         sum_rdc.dist += this_rdc.dist;
         sum_rdc.rdcost += this_rdc.rdcost;
 
-#if CONFIG_EXT_PARTITION_TYPES
         if (idx <= 1 && (bsize <= BLOCK_8X8 ||
                          pc_tree->split[idx]->partitioning == PARTITION_NONE)) {
           MB_MODE_INFO *const mbmi = &(pc_tree->split[idx]->none.mic.mbmi);
@@ -3000,7 +2924,6 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
               split_ctx_is_ready[idx] = 1;
           }
         }
-#endif  // CONFIG_EXT_PARTITION_TYPES
       }
     }
     reached_last_index = (idx == 4);
@@ -3049,17 +2972,12 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
           av1_extract_interp_filter(ctx_none->mic.mbmi.interp_filters, 0);
 
     rd_pick_sb_modes(cpi, tile_data, x, mi_row, mi_col, &sum_rdc,
-#if CONFIG_EXT_PARTITION_TYPES
-                     PARTITION_HORZ,
-#endif
-                     subsize, &pc_tree->horizontal[0], best_rdc.rdcost);
-#if CONFIG_EXT_PARTITION_TYPES
+                     PARTITION_HORZ, subsize, &pc_tree->horizontal[0],
+                     best_rdc.rdcost);
     horz_rd[0] = sum_rdc.rdcost;
-#endif  // CONFIG_EXT_PARTITION_TYPES
 
     if (sum_rdc.rdcost < best_rdc.rdcost && has_rows) {
       PICK_MODE_CONTEXT *ctx_h = &pc_tree->horizontal[0];
-#if CONFIG_EXT_PARTITION_TYPES
       MB_MODE_INFO *const mbmi = &(pc_tree->horizontal[0].mic.mbmi);
       PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
       // Neither palette mode nor cfl predicted
@@ -3069,7 +2987,6 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
 #endif  // CONFIG_CFL
           horz_ctx_is_ready = 1;
       }
-#endif  // CONFIG_EXT_PARTITION_TYPES
       update_state(cpi, tile_data, td, ctx_h, mi_row, mi_col, subsize, 1);
       encode_superblock(cpi, tile_data, td, tp, DRY_RUN_NORMAL, mi_row, mi_col,
                         subsize, NULL);
@@ -3082,14 +2999,9 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
             av1_extract_interp_filter(ctx_h->mic.mbmi.interp_filters, 0);
 
       rd_pick_sb_modes(cpi, tile_data, x, mi_row + mi_step, mi_col, &this_rdc,
-#if CONFIG_EXT_PARTITION_TYPES
-                       PARTITION_HORZ,
-#endif
-                       subsize, &pc_tree->horizontal[1],
+                       PARTITION_HORZ, subsize, &pc_tree->horizontal[1],
                        best_rdc.rdcost - sum_rdc.rdcost);
-#if CONFIG_EXT_PARTITION_TYPES
       horz_rd[1] = this_rdc.rdcost;
-#endif  // CONFIG_EXT_PARTITION_TYPES
 
 #if CONFIG_DIST_8X8
       if (x->using_dist_8x8 && this_rdc.rate != INT_MAX && bsize == BLOCK_8X8) {
@@ -3149,16 +3061,11 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
           av1_extract_interp_filter(ctx_none->mic.mbmi.interp_filters, 0);
 
     rd_pick_sb_modes(cpi, tile_data, x, mi_row, mi_col, &sum_rdc,
-#if CONFIG_EXT_PARTITION_TYPES
-                     PARTITION_VERT,
-#endif
-                     subsize, &pc_tree->vertical[0], best_rdc.rdcost);
-#if CONFIG_EXT_PARTITION_TYPES
+                     PARTITION_VERT, subsize, &pc_tree->vertical[0],
+                     best_rdc.rdcost);
     vert_rd[0] = sum_rdc.rdcost;
-#endif  // CONFIG_EXT_PARTITION_TYPES
     const int64_t vert_max_rdcost = best_rdc.rdcost;
     if (sum_rdc.rdcost < vert_max_rdcost && has_cols) {
-#if CONFIG_EXT_PARTITION_TYPES
       MB_MODE_INFO *const mbmi = &(pc_tree->vertical[0].mic.mbmi);
       PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
       // Neither palette mode nor cfl predicted
@@ -3168,7 +3075,6 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
 #endif  // CONFIG_CFL
           vert_ctx_is_ready = 1;
       }
-#endif  // CONFIG_EXT_PARTITION_TYPES
       update_state(cpi, tile_data, td, &pc_tree->vertical[0], mi_row, mi_col,
                    subsize, 1);
       encode_superblock(cpi, tile_data, td, tp, DRY_RUN_NORMAL, mi_row, mi_col,
@@ -3182,14 +3088,9 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
             av1_extract_interp_filter(ctx_none->mic.mbmi.interp_filters, 0);
 
       rd_pick_sb_modes(cpi, tile_data, x, mi_row, mi_col + mi_step, &this_rdc,
-#if CONFIG_EXT_PARTITION_TYPES
-                       PARTITION_VERT,
-#endif
-                       subsize, &pc_tree->vertical[1],
+                       PARTITION_VERT, subsize, &pc_tree->vertical[1],
                        best_rdc.rdcost - sum_rdc.rdcost);
-#if CONFIG_EXT_PARTITION_TYPES
       vert_rd[1] = this_rdc.rdcost;
-#endif  // CONFIG_EXT_PARTITION_TYPES
 
 #if CONFIG_DIST_8X8
       if (x->using_dist_8x8 && this_rdc.rate != INT_MAX && bsize == BLOCK_8X8) {
@@ -3235,7 +3136,6 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
     restore_context(x, &x_ctx, mi_row, mi_col, bsize, num_planes);
   }
 
-#if CONFIG_EXT_PARTITION_TYPES
   const int ext_partition_allowed =
       do_rectangular_split && bsize > BLOCK_8X8 && partition_none_allowed;
 
@@ -3458,7 +3358,6 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
     }
     restore_context(x, &x_ctx, mi_row, mi_col, bsize, num_planes);
   }
-#endif  // CONFIG_EXT_PARTITION_TYPES
 
   // TODO(jbb): This code added so that we avoid static analysis
   // warning related to the fact that best_rd isn't used after this

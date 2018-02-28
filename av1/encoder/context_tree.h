@@ -69,9 +69,7 @@ typedef struct {
   // search loop
   MV pred_mv[TOTAL_REFS_PER_FRAME];
   InterpFilter pred_interp_filter;
-#if CONFIG_EXT_PARTITION_TYPES
   PARTITION_TYPE partition;
-#endif
 } PICK_MODE_CONTEXT;
 
 typedef struct PC_TREE {
@@ -81,24 +79,20 @@ typedef struct PC_TREE {
   PICK_MODE_CONTEXT none;
   PICK_MODE_CONTEXT horizontal[2];
   PICK_MODE_CONTEXT vertical[2];
-#if CONFIG_EXT_PARTITION_TYPES
   PICK_MODE_CONTEXT horizontala[3];
   PICK_MODE_CONTEXT horizontalb[3];
   PICK_MODE_CONTEXT verticala[3];
   PICK_MODE_CONTEXT verticalb[3];
   PICK_MODE_CONTEXT horizontal4[4];
   PICK_MODE_CONTEXT vertical4[4];
-#endif
   CB_TREE_SEARCH cb_search_range;
   struct PC_TREE *split[4];
 } PC_TREE;
 
 void av1_setup_pc_tree(struct AV1Common *cm, struct ThreadData *td);
 void av1_free_pc_tree(struct ThreadData *td, const int num_planes);
-#if CONFIG_EXT_PARTITION_TYPES
 void av1_copy_tree_context(PICK_MODE_CONTEXT *dst_ctx,
                            PICK_MODE_CONTEXT *src_ctx, int num_planes);
-#endif  // CONFIG_EXT_PARTITON_TYPES
 
 #ifdef __cplusplus
 }  // extern "C"

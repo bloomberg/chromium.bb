@@ -157,11 +157,7 @@ typedef struct frame_contexts {
 #else
   aom_cdf_prob uv_mode_cdf[INTRA_MODES][CDF_SIZE(UV_INTRA_MODES)];
 #endif
-#if CONFIG_EXT_PARTITION_TYPES
   aom_cdf_prob partition_cdf[PARTITION_CONTEXTS][CDF_SIZE(EXT_PARTITION_TYPES)];
-#else
-  aom_cdf_prob partition_cdf[PARTITION_CONTEXTS][CDF_SIZE(PARTITION_TYPES)];
-#endif
   aom_cdf_prob switchable_interp_cdf[SWITCHABLE_FILTER_CONTEXTS]
                                     [CDF_SIZE(SWITCHABLE_FILTERS)];
   /* kf_y_cdf is discarded after use, so does not require persistent storage.
@@ -206,11 +202,7 @@ typedef struct FRAME_COUNTS {
   unsigned int uv_mode[INTRA_MODES][UV_INTRA_MODES];
 #endif  // CONFIG_CFL
 #endif  // CONFIG_ENTROPY_STATS
-#if CONFIG_EXT_PARTITION_TYPES
   unsigned int partition[PARTITION_CONTEXTS][EXT_PARTITION_TYPES];
-#else
-  unsigned int partition[PARTITION_CONTEXTS][PARTITION_TYPES];
-#endif
   unsigned int switchable_interp[SWITCHABLE_FILTER_CONTEXTS]
                                 [SWITCHABLE_FILTERS];
 

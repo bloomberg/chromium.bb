@@ -193,7 +193,7 @@ sadMxh(8);
 sadMxh(4);
 #endif  // CONFIG_JNT_COMP
 
-#if CONFIG_AV1 && CONFIG_EXT_PARTITION_TYPES
+#if CONFIG_AV1
 sadMxN(4, 16)
 sadMxNx4D(4, 16)
 sadMxN(16, 4)
@@ -389,7 +389,7 @@ highbd_sadMxNxK(4, 4, 3)
 highbd_sadMxNxK(4, 4, 8)
 highbd_sadMxNx4D(4, 4)
 
-#if CONFIG_AV1 && CONFIG_EXT_PARTITION_TYPES
+#if CONFIG_AV1
 highbd_sadMxN(4, 16)
 highbd_sadMxNx4D(4, 16)
 highbd_sadMxN(16, 4)

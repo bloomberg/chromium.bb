@@ -236,7 +236,7 @@ jnt_sadMxN_sse2(8, 4)
 jnt_sadMxN_sse2(4, 8)
 jnt_sadMxN_sse2(4, 4)
 
-#if CONFIG_AV1 && CONFIG_EXT_PARTITION_TYPES
+#if CONFIG_AV1
 jnt_sadMxN_sse2(4, 16)
 jnt_sadMxN_sse2(16, 4)
 jnt_sadMxN_sse2(8, 32)

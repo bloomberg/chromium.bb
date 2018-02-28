@@ -1758,10 +1758,8 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
   const AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *const xd = &cpi->td.mb.e_mbd;
   const int hbs = mi_size_wide[bsize] / 2;
-#if CONFIG_EXT_PARTITION_TYPES
   const int quarter_step = mi_size_wide[bsize] / 4;
   int i;
-#endif  // CONFIG_EXT_PARTITION_TYPES
   const PARTITION_TYPE partition = get_partition(cm, mi_row, mi_col, bsize);
   const BLOCK_SIZE subsize = get_subsize(bsize, partition);
 
@@ -1807,7 +1805,6 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
       write_modes_sb(cpi, tile, w, tok, tok_end, mi_row + hbs, mi_col + hbs,
                      subsize);
       break;
-#if CONFIG_EXT_PARTITION_TYPES
     case PARTITION_HORZ_A:
       write_modes_b(cpi, tile, w, tok, tok_end, mi_row, mi_col);
       write_modes_b(cpi, tile, w, tok, tok_end, mi_row, mi_col + hbs);
@@ -1844,18 +1841,11 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
         write_modes_b(cpi, tile, w, tok, tok_end, mi_row, this_mi_col);
       }
       break;
-#endif  // CONFIG_EXT_PARTITION_TYPES
     default: assert(0);
   }
 
-// update partition context
-#if CONFIG_EXT_PARTITION_TYPES
+  // update partition context
   update_ext_partition_context(xd, mi_row, mi_col, subsize, bsize, partition);
-#else
-  if (bsize >= BLOCK_8X8 &&
-      (bsize == BLOCK_8X8 || partition != PARTITION_SPLIT))
-    update_partition_context(xd, mi_row, mi_col, subsize, bsize);
-#endif  // CONFIG_EXT_PARTITION_TYPES
 }
 
 static void write_modes(AV1_COMP *const cpi, const TileInfo *const tile,

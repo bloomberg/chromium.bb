@@ -84,71 +84,11 @@ static INLINE void sync_write(AV1LfSync *const lf_sync, int r, int c,
 #endif  // CONFIG_MULTITHREAD
 }
 
-#if !CONFIG_EXT_PARTITION_TYPES
-static INLINE enum lf_path get_loop_filter_path(
-    int y_only, struct macroblockd_plane planes[MAX_MB_PLANE]) {
-  if (y_only)
-    return LF_PATH_444;
-  else if (planes[1].subsampling_y == 1 && planes[1].subsampling_x == 1)
-    return LF_PATH_420;
-  else if (planes[1].subsampling_y == 0 && planes[1].subsampling_x == 0)
-    return LF_PATH_444;
-  else
-    return LF_PATH_SLOW;
-}
-
-static INLINE void loop_filter_block_plane_ver(
-    AV1_COMMON *cm, struct macroblockd_plane planes[MAX_MB_PLANE], int plane,
-    MODE_INFO **mi, int mi_row, int mi_col, enum lf_path path,
-    LOOP_FILTER_MASK *lfm) {
-  if (plane == 0) {
-    av1_filter_block_plane_ss00_ver(cm, &planes[0], mi_row, lfm);
-  } else {
-    switch (path) {
-      case LF_PATH_420:
-        av1_filter_block_plane_ss11_ver(cm, &planes[plane], mi_row, lfm);
-        break;
-      case LF_PATH_444:
-        av1_filter_block_plane_ss00_ver(cm, &planes[plane], mi_row, lfm);
-        break;
-      case LF_PATH_SLOW:
-        av1_filter_block_plane_non420_ver(cm, &planes[plane], mi, mi_row,
-                                          mi_col, plane);
-        break;
-    }
-  }
-}
-
-static INLINE void loop_filter_block_plane_hor(
-    AV1_COMMON *cm, struct macroblockd_plane planes[MAX_MB_PLANE], int plane,
-    MODE_INFO **mi, int mi_row, int mi_col, enum lf_path path,
-    LOOP_FILTER_MASK *lfm) {
-  if (plane == 0) {
-    av1_filter_block_plane_ss00_hor(cm, &planes[0], mi_row, lfm);
-  } else {
-    switch (path) {
-      case LF_PATH_420:
-        av1_filter_block_plane_ss11_hor(cm, &planes[plane], mi_row, lfm);
-        break;
-      case LF_PATH_444:
-        av1_filter_block_plane_ss00_hor(cm, &planes[plane], mi_row, lfm);
-        break;
-      case LF_PATH_SLOW:
-        av1_filter_block_plane_non420_hor(cm, &planes[plane], mi, mi_row,
-                                          mi_col, plane);
-        break;
-    }
-  }
-}
-#endif
 // Row-based multi-threaded loopfilter hook
 static int loop_filter_ver_row_worker(AV1LfSync *const lf_sync,
                                       LFWorkerData *const lf_data) {
   const int num_planes = lf_data->y_only ? 1 : MAX_MB_PLANE;
   int mi_row, mi_col;
-#if !CONFIG_EXT_PARTITION_TYPES
-  enum lf_path path = get_loop_filter_path(lf_data->y_only, lf_data->planes);
-#endif
   for (mi_row = lf_data->start; mi_row < lf_data->stop;
        mi_row += lf_sync->num_workers * lf_data->cm->seq_params.mib_size) {
     MODE_INFO **const mi =
@@ -165,16 +105,9 @@ static int loop_filter_ver_row_worker(AV1LfSync *const lf_sync,
       av1_setup_mask(lf_data->cm, mi_row, mi_col, mi + mi_col,
                      lf_data->cm->mi_stride, &lfm);
 
-#if CONFIG_EXT_PARTITION_TYPES
       for (plane = 0; plane < num_planes; ++plane)
         av1_filter_block_plane_non420_ver(lf_data->cm, &lf_data->planes[plane],
                                           mi + mi_col, mi_row, mi_col, plane);
-#else
-
-      for (plane = 0; plane < num_planes; ++plane)
-        loop_filter_block_plane_ver(lf_data->cm, lf_data->planes, plane,
-                                    mi + mi_col, mi_row, mi_col, path, &lfm);
-#endif
     }
   }
   return 1;
@@ -186,9 +119,6 @@ static int loop_filter_hor_row_worker(AV1LfSync *const lf_sync,
   const int sb_cols = mi_cols_aligned_to_sb(lf_data->cm) >>
                       lf_data->cm->seq_params.mib_size_log2;
   int mi_row, mi_col;
-#if !CONFIG_EXT_PARTITION_TYPES
-  enum lf_path path = get_loop_filter_path(lf_data->y_only, lf_data->planes);
-#endif
 
   for (mi_row = lf_data->start; mi_row < lf_data->stop;
        mi_row += lf_sync->num_workers * lf_data->cm->seq_params.mib_size) {
@@ -211,15 +141,9 @@ static int loop_filter_hor_row_worker(AV1LfSync *const lf_sync,
                            av1_num_planes(lf_data->cm));
       av1_setup_mask(lf_data->cm, mi_row, mi_col, mi + mi_col,
                      lf_data->cm->mi_stride, &lfm);
-#if CONFIG_EXT_PARTITION_TYPES
       for (plane = 0; plane < num_planes; ++plane)
         av1_filter_block_plane_non420_hor(lf_data->cm, &lf_data->planes[plane],
                                           mi + mi_col, mi_row, mi_col, plane);
-#else
-      for (plane = 0; plane < num_planes; ++plane)
-        loop_filter_block_plane_hor(lf_data->cm, lf_data->planes, plane,
-                                    mi + mi_col, mi_row, mi_col, path, &lfm);
-#endif
       sync_write(lf_sync, r, c, sb_cols);
     }
   }

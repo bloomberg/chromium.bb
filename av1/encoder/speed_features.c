@@ -146,9 +146,7 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->tx_size_search_init_depth_rect = 1;
     sf->tx_size_search_init_depth_sqr = 1;
     sf->two_pass_partition_search = 1;
-#if CONFIG_EXT_PARTITION_TYPES
     sf->prune_ext_partition_types_search = 1;
-#endif  // CONFIG_EXT_PARTITION_TYPES
     sf->use_fast_interpolation_filter_search = 1;
 #if 0   // CONFIG_HASH_ME
     // TODO(mfo): Activate feature once it gives positive results.
@@ -385,9 +383,7 @@ static void set_dev_sf(AV1_COMP *cpi, SPEED_FEATURES *sf, int speed) {
       sf->use_square_partition_only = !frame_is_intra_only(cm);
     }
     sf->less_rectangular_check = 1;
-#if CONFIG_EXT_PARTITION_TYPES
     sf->prune_ext_partition_types_search = 1;
-#endif  // CONFIG_EXT_PARTITION_TYPES
   }
 
   if (speed & LOOP_FILTER_SF) {
@@ -501,9 +497,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
   sf->partition_search_breakout_dist_thr = 0;
   sf->partition_search_breakout_rate_thr = 0;
   sf->simple_model_rd_from_var = 0;
-#if CONFIG_EXT_PARTITION_TYPES
   sf->prune_ext_partition_types_search = 0;
-#endif  // CONFIG_EXT_PARTITION_TYPES
   sf->fast_cdef_search = 0;
 
   // Set this at the appropriate speed levels

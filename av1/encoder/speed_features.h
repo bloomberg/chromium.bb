@@ -361,10 +361,8 @@ typedef struct SPEED_FEATURES {
   // aggressive than lower ones.
   int selective_ref_frame;
 
-#if CONFIG_EXT_PARTITION_TYPES
   // Conditionally prune extended partition types search
   int prune_ext_partition_types_search;
-#endif  // CONFIG_EXT_PARTITION_TYPES
 
   int fast_cdef_search;
 

@@ -733,7 +733,6 @@ static const aom_cdf_prob
 #endif  // CONFIG_CFL
     };
 
-#if CONFIG_EXT_PARTITION_TYPES
 static const aom_cdf_prob default_partition_cdf[PARTITION_CONTEXTS][CDF_SIZE(
     EXT_PARTITION_TYPES)] = {
   // 8x8 -> 4x4 only supports the four legacy partition types
@@ -769,21 +768,6 @@ static const aom_cdf_prob default_partition_cdf[PARTITION_CONTEXTS][CDF_SIZE(
   { AOM_CDF8(1280, 1710, 2069, 31978, 32193, 32409, 32410) },
 #endif  // ALLOW_128X32_BLOCKS
 };
-#else
-static const aom_cdf_prob
-    default_partition_cdf[PARTITION_CONTEXTS][CDF_SIZE(PARTITION_TYPES)] = {
-      { AOM_CDF4(25472, 28949, 31052) }, { AOM_CDF4(18816, 22250, 28783) },
-      { AOM_CDF4(18944, 26126, 29188) }, { AOM_CDF4(15488, 22508, 27077) },
-      { AOM_CDF4(22272, 25265, 27815) }, { AOM_CDF4(11776, 15138, 20854) },
-      { AOM_CDF4(10496, 19109, 21777) }, { AOM_CDF4(6784, 10743, 14098) },
-      { AOM_CDF4(22656, 24947, 26749) }, { AOM_CDF4(8704, 11148, 16469) },
-      { AOM_CDF4(6656, 14714, 16477) },  { AOM_CDF4(2176, 3849, 5205) },
-      { AOM_CDF4(28416, 28994, 29436) }, { AOM_CDF4(9216, 10688, 14483) },
-      { AOM_CDF4(7424, 10592, 11632) },  { AOM_CDF4(1280, 2141, 2859) },
-      { AOM_CDF4(28416, 28994, 29436) }, { AOM_CDF4(9216, 10688, 14483) },
-      { AOM_CDF4(7424, 10592, 11632) },  { AOM_CDF4(1280, 2141, 2859) },
-    };
-#endif
 
 static const aom_cdf_prob default_intra_ext_tx_cdf
     [EXT_TX_SETS_INTRA][EXT_TX_SIZES][INTRA_MODES][CDF_SIZE(TX_TYPES)] = {

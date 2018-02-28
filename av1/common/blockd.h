@@ -270,9 +270,7 @@ typedef struct MB_MODE_INFO {
   int_mv mv[2];
   int_mv pred_mv[2];
   uint8_t ref_mv_idx;
-#if CONFIG_EXT_PARTITION_TYPES
   PARTITION_TYPE partition;
-#endif
   /* deringing gain *per-superblock* */
   int8_t cdef_strength;
   int current_q_index;

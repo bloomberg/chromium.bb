@@ -47,16 +47,14 @@ foreach $w (@block_widths) {
     push @block_sizes, [$w, $h] if ($w <= 2*$h && $h <= 2*$w) ;
   }
 }
-if (aom_config("CONFIG_EXT_PARTITION_TYPES") eq "yes") {
-  push @block_sizes, [4, 16];
-  push @block_sizes, [16, 4];
-  push @block_sizes, [8, 32];
-  push @block_sizes, [32, 8];
-  push @block_sizes, [16, 64];
-  push @block_sizes, [64, 16];
-  push @block_sizes, [32, 128];
-  push @block_sizes, [128, 32];
-}
+push @block_sizes, [4, 16];
+push @block_sizes, [16, 4];
+push @block_sizes, [8, 32];
+push @block_sizes, [32, 8];
+push @block_sizes, [16, 64];
+push @block_sizes, [64, 16];
+push @block_sizes, [32, 128];
+push @block_sizes, [128, 32];
 
 @tx_dims = (2, 4, 8, 16, 32, 64);
 @tx_sizes = ();
@@ -689,16 +687,14 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
     specialize qw/aom_jnt_sad4x8_avg     ssse3/;
     specialize qw/aom_jnt_sad4x4_avg     ssse3/;
 
-    if (aom_config("CONFIG_EXT_PARTITION_TYPES") eq "yes") {
-      specialize qw/aom_jnt_sad4x16_avg     ssse3/;
-      specialize qw/aom_jnt_sad16x4_avg     ssse3/;
-      specialize qw/aom_jnt_sad8x32_avg     ssse3/;
-      specialize qw/aom_jnt_sad32x8_avg     ssse3/;
-      specialize qw/aom_jnt_sad16x64_avg     ssse3/;
-      specialize qw/aom_jnt_sad64x16_avg     ssse3/;
-      specialize qw/aom_jnt_sad32x128_avg     ssse3/;
-      specialize qw/aom_jnt_sad128x32_avg     ssse3/;
-    }
+    specialize qw/aom_jnt_sad4x16_avg     ssse3/;
+    specialize qw/aom_jnt_sad16x4_avg     ssse3/;
+    specialize qw/aom_jnt_sad8x32_avg     ssse3/;
+    specialize qw/aom_jnt_sad32x8_avg     ssse3/;
+    specialize qw/aom_jnt_sad16x64_avg     ssse3/;
+    specialize qw/aom_jnt_sad64x16_avg     ssse3/;
+    specialize qw/aom_jnt_sad32x128_avg     ssse3/;
+    specialize qw/aom_jnt_sad128x32_avg     ssse3/;
 
     add_proto qw/unsigned int/, "aom_sad4xh", "const uint8_t *a, int a_stride, const uint8_t *b, int b_stride, int width, int height";
     add_proto qw/unsigned int/, "aom_sad8xh", "const uint8_t *a, int a_stride, const uint8_t *b, int b_stride, int width, int height";
@@ -754,19 +750,18 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
     specialize qw/aom_highbd_sad16x8_avg    avx2 sse2/;
     specialize qw/aom_highbd_sad8x4_avg     sse2/;
 
-    if (aom_config("CONFIG_EXT_PARTITION_TYPES") eq "yes") {
-      specialize qw/aom_highbd_sad16x4       sse2/;
-      specialize qw/aom_highbd_sad8x32       sse2/;
-      specialize qw/aom_highbd_sad32x8       sse2/;
-      specialize qw/aom_highbd_sad16x64      sse2/;
-      specialize qw/aom_highbd_sad64x16      sse2/;
+    specialize qw/aom_highbd_sad16x4       sse2/;
+    specialize qw/aom_highbd_sad8x32       sse2/;
+    specialize qw/aom_highbd_sad32x8       sse2/;
+    specialize qw/aom_highbd_sad16x64      sse2/;
+    specialize qw/aom_highbd_sad64x16      sse2/;
 
-      specialize qw/aom_highbd_sad16x4_avg   sse2/;
-      specialize qw/aom_highbd_sad8x32_avg   sse2/;
-      specialize qw/aom_highbd_sad32x8_avg   sse2/;
-      specialize qw/aom_highbd_sad16x64_avg  sse2/;
-      specialize qw/aom_highbd_sad64x16_avg  sse2/;
-    }
+    specialize qw/aom_highbd_sad16x4_avg   sse2/;
+    specialize qw/aom_highbd_sad8x32_avg   sse2/;
+    specialize qw/aom_highbd_sad32x8_avg   sse2/;
+    specialize qw/aom_highbd_sad16x64_avg  sse2/;
+    specialize qw/aom_highbd_sad64x16_avg  sse2/;
+
   #
   # Masked SAD
   #
@@ -884,50 +879,46 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
   specialize qw/aom_sad4x8x4d               msa sse2/;
   specialize qw/aom_sad4x4x4d               msa sse2/;
 
-  if (aom_config("CONFIG_EXT_PARTITION_TYPES") eq "yes") {
-    specialize qw/aom_sad4x16x4d  sse2/;
-    specialize qw/aom_sad16x4x4d  sse2/;
-    specialize qw/aom_sad8x32x4d  sse2/;
-    specialize qw/aom_sad32x8x4d  sse2/;
-    specialize qw/aom_sad16x64x4d sse2/;
-    specialize qw/aom_sad64x16x4d sse2/;
+  specialize qw/aom_sad4x16x4d  sse2/;
+  specialize qw/aom_sad16x4x4d  sse2/;
+  specialize qw/aom_sad8x32x4d  sse2/;
+  specialize qw/aom_sad32x8x4d  sse2/;
+  specialize qw/aom_sad16x64x4d sse2/;
+  specialize qw/aom_sad64x16x4d sse2/;
+
+  #
+  # Multi-block SAD, comparing a reference to N independent blocks
+  #
+  foreach (@block_sizes) {
+    ($w, $h) = @$_;
+    add_proto qw/void/, "aom_highbd_sad${w}x${h}x4d", "const uint8_t *src_ptr, int src_stride, const uint8_t * const ref_ptr[], int ref_stride, uint32_t *sad_array";
+    if ($w != 128 && $h != 128) {
+      specialize "aom_highbd_sad${w}x${h}x4d", qw/sse2/;
+    }
   }
+  specialize qw/aom_highbd_sad128x128x4d avx2/;
+  specialize qw/aom_highbd_sad128x64x4d  avx2/;
+  specialize qw/aom_highbd_sad64x128x4d  avx2/;
+  specialize qw/aom_highbd_sad64x64x4d   sse2 avx2/;
+  specialize qw/aom_highbd_sad64x32x4d   sse2 avx2/;
+  specialize qw/aom_highbd_sad32x64x4d   sse2 avx2/;
+  specialize qw/aom_highbd_sad32x32x4d   sse2 avx2/;
+  specialize qw/aom_highbd_sad32x16x4d   sse2 avx2/;
+  specialize qw/aom_highbd_sad16x32x4d   sse2 avx2/;
+  specialize qw/aom_highbd_sad16x16x4d   sse2 avx2/;
+  specialize qw/aom_highbd_sad16x8x4d    sse2 avx2/;
+  specialize qw/aom_highbd_sad8x16x4d    sse2/;
+  specialize qw/aom_highbd_sad8x8x4d     sse2/;
+  specialize qw/aom_highbd_sad8x4x4d     sse2/;
+  specialize qw/aom_highbd_sad4x8x4d     sse2/;
+  specialize qw/aom_highbd_sad4x4x4d     sse2/;
 
-    #
-    # Multi-block SAD, comparing a reference to N independent blocks
-    #
-    foreach (@block_sizes) {
-      ($w, $h) = @$_;
-      add_proto qw/void/, "aom_highbd_sad${w}x${h}x4d", "const uint8_t *src_ptr, int src_stride, const uint8_t * const ref_ptr[], int ref_stride, uint32_t *sad_array";
-      if ($w != 128 && $h != 128) {
-        specialize "aom_highbd_sad${w}x${h}x4d", qw/sse2/;
-      }
-    }
-    specialize qw/aom_highbd_sad128x128x4d avx2/;
-    specialize qw/aom_highbd_sad128x64x4d  avx2/;
-    specialize qw/aom_highbd_sad64x128x4d  avx2/;
-    specialize qw/aom_highbd_sad64x64x4d   sse2 avx2/;
-    specialize qw/aom_highbd_sad64x32x4d   sse2 avx2/;
-    specialize qw/aom_highbd_sad32x64x4d   sse2 avx2/;
-    specialize qw/aom_highbd_sad32x32x4d   sse2 avx2/;
-    specialize qw/aom_highbd_sad32x16x4d   sse2 avx2/;
-    specialize qw/aom_highbd_sad16x32x4d   sse2 avx2/;
-    specialize qw/aom_highbd_sad16x16x4d   sse2 avx2/;
-    specialize qw/aom_highbd_sad16x8x4d    sse2 avx2/;
-    specialize qw/aom_highbd_sad8x16x4d    sse2/;
-    specialize qw/aom_highbd_sad8x8x4d     sse2/;
-    specialize qw/aom_highbd_sad8x4x4d     sse2/;
-    specialize qw/aom_highbd_sad4x8x4d     sse2/;
-    specialize qw/aom_highbd_sad4x4x4d     sse2/;
-
-    if (aom_config("CONFIG_EXT_PARTITION_TYPES") eq "yes") {
-      specialize qw/aom_highbd_sad4x16x4d  sse2/;
-      specialize qw/aom_highbd_sad16x4x4d  sse2/;
-      specialize qw/aom_highbd_sad8x32x4d  sse2/;
-      specialize qw/aom_highbd_sad32x8x4d  sse2/;
-      specialize qw/aom_highbd_sad16x64x4d sse2/;
-      specialize qw/aom_highbd_sad64x16x4d sse2/;
-    }
+  specialize qw/aom_highbd_sad4x16x4d  sse2/;
+  specialize qw/aom_highbd_sad16x4x4d  sse2/;
+  specialize qw/aom_highbd_sad8x32x4d  sse2/;
+  specialize qw/aom_highbd_sad32x8x4d  sse2/;
+  specialize qw/aom_highbd_sad16x64x4d sse2/;
+  specialize qw/aom_highbd_sad64x16x4d sse2/;
 
 
   #
@@ -1078,26 +1069,24 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
   specialize qw/aom_sub_pixel_avg_variance4x8        msa sse2 ssse3/;
   specialize qw/aom_sub_pixel_avg_variance4x4        msa sse2 ssse3/;
 
-  if (aom_config("CONFIG_EXT_PARTITION_TYPES") eq "yes") {
-    specialize qw/aom_variance4x16 sse2/;
-    specialize qw/aom_variance16x4 sse2/;
-    specialize qw/aom_variance8x32 sse2/;
-    specialize qw/aom_variance32x8 sse2/;
-    specialize qw/aom_variance16x64 sse2/;
-    specialize qw/aom_variance64x16 sse2/;
-    specialize qw/aom_sub_pixel_variance4x16 sse2 ssse3/;
-    specialize qw/aom_sub_pixel_variance16x4 sse2 ssse3/;
-    specialize qw/aom_sub_pixel_variance8x32 sse2 ssse3/;
-    specialize qw/aom_sub_pixel_variance32x8 sse2 ssse3/;
-    specialize qw/aom_sub_pixel_variance16x64 sse2 ssse3/;
-    specialize qw/aom_sub_pixel_variance64x16 sse2 ssse3/;
-    specialize qw/aom_sub_pixel_avg_variance4x16 sse2 ssse3/;
-    specialize qw/aom_sub_pixel_avg_variance16x4 sse2 ssse3/;
-    specialize qw/aom_sub_pixel_avg_variance8x32 sse2 ssse3/;
-    specialize qw/aom_sub_pixel_avg_variance32x8 sse2 ssse3/;
-    specialize qw/aom_sub_pixel_avg_variance16x64 sse2 ssse3/;
-    specialize qw/aom_sub_pixel_avg_variance64x16 sse2 ssse3/;
-  }
+  specialize qw/aom_variance4x16 sse2/;
+  specialize qw/aom_variance16x4 sse2/;
+  specialize qw/aom_variance8x32 sse2/;
+  specialize qw/aom_variance32x8 sse2/;
+  specialize qw/aom_variance16x64 sse2/;
+  specialize qw/aom_variance64x16 sse2/;
+  specialize qw/aom_sub_pixel_variance4x16 sse2 ssse3/;
+  specialize qw/aom_sub_pixel_variance16x4 sse2 ssse3/;
+  specialize qw/aom_sub_pixel_variance8x32 sse2 ssse3/;
+  specialize qw/aom_sub_pixel_variance32x8 sse2 ssse3/;
+  specialize qw/aom_sub_pixel_variance16x64 sse2 ssse3/;
+  specialize qw/aom_sub_pixel_variance64x16 sse2 ssse3/;
+  specialize qw/aom_sub_pixel_avg_variance4x16 sse2 ssse3/;
+  specialize qw/aom_sub_pixel_avg_variance16x4 sse2 ssse3/;
+  specialize qw/aom_sub_pixel_avg_variance8x32 sse2 ssse3/;
+  specialize qw/aom_sub_pixel_avg_variance32x8 sse2 ssse3/;
+  specialize qw/aom_sub_pixel_avg_variance16x64 sse2 ssse3/;
+  specialize qw/aom_sub_pixel_avg_variance64x16 sse2 ssse3/;
 
   if (aom_config("CONFIG_JNT_COMP") eq "yes") {
     specialize qw/aom_jnt_sub_pixel_avg_variance64x64 ssse3/;
@@ -1114,16 +1103,14 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
     specialize qw/aom_jnt_sub_pixel_avg_variance4x8   ssse3/;
     specialize qw/aom_jnt_sub_pixel_avg_variance4x4   ssse3/;
 
-    if (aom_config("CONFIG_EXT_PARTITION_TYPES") eq "yes") {
-      specialize qw/aom_jnt_sub_pixel_avg_variance4x16  ssse3/;
-      specialize qw/aom_jnt_sub_pixel_avg_variance16x4  ssse3/;
-      specialize qw/aom_jnt_sub_pixel_avg_variance8x32  ssse3/;
-      specialize qw/aom_jnt_sub_pixel_avg_variance32x8  ssse3/;
-      specialize qw/aom_jnt_sub_pixel_avg_variance16x64 ssse3/;
-      specialize qw/aom_jnt_sub_pixel_avg_variance64x16 ssse3/;
-      specialize qw/aom_jnt_sub_pixel_avg_variance128x32   ssse3/;
-      specialize qw/aom_jnt_sub_pixel_avg_variance32x128   ssse3/;
-    }
+    specialize qw/aom_jnt_sub_pixel_avg_variance4x16  ssse3/;
+    specialize qw/aom_jnt_sub_pixel_avg_variance16x4  ssse3/;
+    specialize qw/aom_jnt_sub_pixel_avg_variance8x32  ssse3/;
+    specialize qw/aom_jnt_sub_pixel_avg_variance32x8  ssse3/;
+    specialize qw/aom_jnt_sub_pixel_avg_variance16x64 ssse3/;
+    specialize qw/aom_jnt_sub_pixel_avg_variance64x16 ssse3/;
+    specialize qw/aom_jnt_sub_pixel_avg_variance128x32   ssse3/;
+    specialize qw/aom_jnt_sub_pixel_avg_variance32x128   ssse3/;
 
     specialize qw/aom_jnt_sub_pixel_avg_variance128x128  ssse3/;
     specialize qw/aom_jnt_sub_pixel_avg_variance128x64   ssse3/;

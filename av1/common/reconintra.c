@@ -143,19 +143,14 @@ static const uint8_t *const has_tr_tables[BLOCK_SIZES_ALL] = {
   has_tr_32x64, has_tr_64x32, has_tr_64x64,
   // 64x128,    128x64,         128x128
   has_tr_64x128, has_tr_128x64, has_tr_128x128,
-#if CONFIG_EXT_PARTITION_TYPES
   // 4x16,      16x4,            8x32
   has_tr_4x16, has_tr_16x4, has_tr_8x32,
   // 32x8,      16x64,           64x16
   has_tr_32x8, has_tr_16x64, has_tr_64x16,
   // 32x128,    128x32
   has_tr_32x128, has_tr_128x32
-#else
-  NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
-#endif
 };
 
-#if CONFIG_EXT_PARTITION_TYPES
 uint8_t has_tr_vert_8x8[32] = {
   255, 255, 0, 0, 119, 119, 0, 0, 127, 127, 0, 0, 119, 119, 0, 0,
   255, 127, 0, 0, 119, 119, 0, 0, 127, 127, 0, 0, 119, 119, 0, 0,
@@ -189,12 +184,10 @@ static const uint8_t *const has_tr_vert_tables[BLOCK_SIZES] = {
   // 64x128,   128x64,      128x128
   has_tr_64x128, NULL, has_tr_128x128
 };
-#endif  // CONFIG_EXT_PARTITION_TYPES
 
 static const uint8_t *get_has_tr_table(PARTITION_TYPE partition,
                                        BLOCK_SIZE bsize) {
   const uint8_t *ret = NULL;
-#if CONFIG_EXT_PARTITION_TYPES
   // If this is a mixed vertical partition, look up bsize in orders_vert.
   if (partition == PARTITION_VERT_A || partition == PARTITION_VERT_B) {
     assert(bsize < BLOCK_SIZES);
@@ -202,10 +195,6 @@ static const uint8_t *get_has_tr_table(PARTITION_TYPE partition,
   } else {
     ret = has_tr_tables[bsize];
   }
-#else
-  (void)partition;
-  ret = has_tr_tables[bsize];
-#endif  // CONFIG_EXT_PARTITION_TYPES
   assert(ret);
   return ret;
 }
@@ -343,19 +332,14 @@ static const uint8_t *const has_bl_tables[BLOCK_SIZES_ALL] = {
   has_bl_32x64, has_bl_64x32, has_bl_64x64,
   // 64x128,      128x64,      128x128
   has_bl_64x128, has_bl_128x64, has_bl_128x128,
-#if CONFIG_EXT_PARTITION_TYPES
   // 4x16,        16x4,        8x32
   has_bl_4x16, has_bl_16x4, has_bl_8x32,
   // 32x8,        16x64,       64x16
   has_bl_32x8, has_bl_16x64, has_bl_64x16,
   // 32x128,      128x32
   has_bl_32x128, has_bl_128x32
-#else
-  NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
-#endif
 };
 
-#if CONFIG_EXT_PARTITION_TYPES
 uint8_t has_bl_vert_8x8[32] = {
   254, 255, 16, 17, 254, 255, 0, 1, 254, 255, 16, 17, 254, 255, 0, 0,
   254, 255, 16, 17, 254, 255, 0, 1, 254, 255, 16, 17, 254, 255, 0, 0,
@@ -389,12 +373,10 @@ static const uint8_t *const has_bl_vert_tables[BLOCK_SIZES] = {
   // 64x128,  128x64,      128x128
   has_bl_64x128, NULL, has_bl_128x128
 };
-#endif  // CONFIG_EXT_PARTITION_TYPES
 
 static const uint8_t *get_has_bl_table(PARTITION_TYPE partition,
                                        BLOCK_SIZE bsize) {
   const uint8_t *ret = NULL;
-#if CONFIG_EXT_PARTITION_TYPES
   // If this is a mixed vertical partition, look up bsize in orders_vert.
   if (partition == PARTITION_VERT_A || partition == PARTITION_VERT_B) {
     assert(bsize < BLOCK_SIZES);
@@ -402,10 +384,6 @@ static const uint8_t *get_has_bl_table(PARTITION_TYPE partition,
   } else {
     ret = has_bl_tables[bsize];
   }
-#else
-  (void)partition;
-  ret = has_bl_tables[bsize];
-#endif  // CONFIG_EXT_PARTITION_TYPES
   assert(ret);
   return ret;
 }
@@ -1875,11 +1853,7 @@ void av1_predict_intra_block(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                              (MI_SIZE_LOG2 - tx_size_high_log2[0])) <
                    xd->tile.mi_row_end);
 
-#if CONFIG_EXT_PARTITION_TYPES
   const PARTITION_TYPE partition = mbmi->partition;
-#else
-  const PARTITION_TYPE partition = PARTITION_NONE;
-#endif
 
   // force 4x4 chroma component block size.
   bsize = scale_chroma_bsize(bsize, pd->subsampling_x, pd->subsampling_y);

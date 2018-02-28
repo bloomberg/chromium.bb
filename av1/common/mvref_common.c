@@ -387,7 +387,6 @@ static int has_top_right(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   if (xd->n8_w > xd->n8_h)
     if (xd->is_sec_rect) has_tr = 0;
 
-#if CONFIG_EXT_PARTITION_TYPES
   // The bottom left square of a Vertical A (in the old format) does
   // not have a top right as it is decoded before the right hand
   // rectangle of the partition
@@ -395,7 +394,6 @@ static int has_top_right(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     if (xd->n8_w == xd->n8_h)
       if (mask_row & bs) has_tr = 0;
   }
-#endif  // CONFIG_EXT_PARTITION_TYPES
 
   return has_tr;
 }
@@ -1244,7 +1242,6 @@ static void find_mv_refs_idx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   mv_ref_search[3].col = -1;
   mv_ref_search[4].row = -1;
   mv_ref_search[4].col = -1;
-#if CONFIG_EXT_PARTITION_TYPES
   if (num_8x8_blocks_wide == num_8x8_blocks_high) {
     mv_ref_search[5].row = -1;
     mv_ref_search[5].col = 0;
@@ -1256,12 +1253,6 @@ static void find_mv_refs_idx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     mv_ref_search[6].row = num_8x8_blocks_high;
     mv_ref_search[6].col = -1;
   }
-#else
-  mv_ref_search[5].row = -1;
-  mv_ref_search[5].col = num_8x8_blocks_wide;
-  mv_ref_search[6].row = num_8x8_blocks_high;
-  mv_ref_search[6].col = -1;
-#endif  // CONFIG_EXT_PARTITION_TYPES
   mv_ref_search[7].row = -1;
   mv_ref_search[7].col = -3;
   mv_ref_search[8].row = num_8x8_blocks_high - 1;

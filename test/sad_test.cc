@@ -1328,7 +1328,6 @@ const JntSadMxhParam jnt_sad_sse2_tests[] = {
   make_tuple(128, 128, &aom_sad128xh_sse2, -1),
   make_tuple(128, 64, &aom_sad128xh_sse2, -1),
   make_tuple(64, 128, &aom_sad64xh_sse2, -1),
-#if CONFIG_EXT_PARTITION_TYPES
   make_tuple(4, 16, &aom_sad4xh_sse2, -1),
   make_tuple(16, 4, &aom_sad16xh_sse2, -1),
   make_tuple(8, 32, &aom_sad8xh_sse2, -1),
@@ -1337,7 +1336,6 @@ const JntSadMxhParam jnt_sad_sse2_tests[] = {
   make_tuple(64, 16, &aom_sad64xh_sse2, -1),
   make_tuple(32, 128, &aom_sad32xh_sse2, -1),
   make_tuple(128, 32, &aom_sad128xh_sse2, -1),
-#endif  // CONFIG_EXT_PARTITION_TYPES
 };
 INSTANTIATE_TEST_CASE_P(SSE2, JntSADTest,
                         ::testing::ValuesIn(jnt_sad_sse2_tests));
