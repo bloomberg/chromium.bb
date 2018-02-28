@@ -96,6 +96,7 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient& client)
       contents_visible_(true),
       is_root_for_isolated_group_(false),
       hit_testable_without_draws_content_(false),
+      needs_check_raster_invalidation_(false),
       has_scroll_parent_(false),
       has_clip_parent_(false),
       painted_(false),
@@ -337,7 +338,9 @@ void GraphicsLayer::PaintRecursivelyInternal(
 
 bool GraphicsLayer::Paint(const IntRect* interest_rect,
                           GraphicsContext::DisabledMode disabled_mode) {
-  if (!PaintWithoutCommit(interest_rect, disabled_mode))
+  if (PaintWithoutCommit(interest_rect, disabled_mode))
+    GetPaintController().CommitNewDisplayItems();
+  else if (!needs_check_raster_invalidation_)
     return false;
 
 #if DCHECK_IS_ON()
@@ -346,8 +349,6 @@ bool GraphicsLayer::Paint(const IntRect* interest_rect,
                << " interest_rect=" << InterestRect().ToString();
   }
 #endif
-
-  GetPaintController().CommitNewDisplayItems();
 
   if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
     DCHECK(layer_state_) << "No layer state for GraphicsLayer: " << DebugName();
@@ -372,6 +373,7 @@ bool GraphicsLayer::Paint(const IntRect* interest_rect,
     }
   }
 
+  needs_check_raster_invalidation_ = false;
   return true;
 }
 

@@ -303,14 +303,12 @@ class FragmentPaintPropertyTreeBuilder {
       const LayoutObject& object,
       PaintPropertyTreeBuilderContext& full_context,
       PaintPropertyTreeBuilderFragmentContext& context,
-      FragmentData& fragment_data,
-      bool& property_added_or_removed)
+      FragmentData& fragment_data)
       : object_(object),
         full_context_(full_context),
         context_(context),
         fragment_data_(fragment_data),
-        properties_(fragment_data.PaintProperties()),
-        property_added_or_removed_(property_added_or_removed) {}
+        properties_(fragment_data.PaintProperties()) {}
 
   ~FragmentPaintPropertyTreeBuilder() {
     full_context_.force_subtree_update |= property_added_or_removed_;
@@ -322,6 +320,9 @@ class FragmentPaintPropertyTreeBuilder {
 
   ALWAYS_INLINE void UpdateForSelf();
   ALWAYS_INLINE void UpdateForChildren();
+
+  bool PropertyChanged() const { return property_changed_; }
+  bool PropertyAddedOrRemoved() const { return property_added_or_removed_; }
 
  private:
   ALWAYS_INLINE void UpdatePaintOffset();
@@ -354,12 +355,16 @@ class FragmentPaintPropertyTreeBuilder {
 
   void OnUpdate(const ObjectPaintProperties::UpdateResult& result) {
     property_added_or_removed_ |= result.NewNodeCreated();
+    property_changed_ |= !result.Unchanged();
   }
   void OnUpdateClip(const ObjectPaintProperties::UpdateResult& result) {
     OnUpdate(result);
     full_context_.clip_changed |= !result.Unchanged();
   }
-  void OnClear(bool cleared) { property_added_or_removed_ |= cleared; }
+  void OnClear(bool cleared) {
+    property_added_or_removed_ |= cleared;
+    property_changed_ |= cleared;
+  }
   void OnClearClip(bool cleared) {
     OnClear(cleared);
     full_context_.clip_changed |= cleared;
@@ -373,7 +378,8 @@ class FragmentPaintPropertyTreeBuilder {
   PaintPropertyTreeBuilderFragmentContext& context_;
   FragmentData& fragment_data_;
   ObjectPaintProperties* properties_;
-  bool& property_added_or_removed_;
+  bool property_changed_ = false;
+  bool property_added_or_removed_ = false;
 };
 
 static bool NeedsScrollNode(const LayoutObject& object) {
@@ -2325,7 +2331,7 @@ void ObjectPaintPropertyTreeBuilder::UpdatePaintingLayer() {
   DCHECK(context_.painting_layer == object_.PaintingLayer());
 }
 
-void ObjectPaintPropertyTreeBuilder::UpdateForSelf() {
+bool ObjectPaintPropertyTreeBuilder::UpdateForSelf() {
   UpdatePaintingLayer();
 
   if (ObjectTypeMightNeedPaintProperties())
@@ -2333,12 +2339,15 @@ void ObjectPaintPropertyTreeBuilder::UpdateForSelf() {
   else
     object_.GetMutableForPainting().FirstFragment().ClearNextFragment();
 
+  bool property_changed = false;
   bool property_added_or_removed = false;
   auto* fragment_data = &object_.GetMutableForPainting().FirstFragment();
   for (auto& fragment_context : context_.fragments) {
-    FragmentPaintPropertyTreeBuilder(object_, context_, fragment_context,
-                                     *fragment_data, property_added_or_removed)
-        .UpdateForSelf();
+    FragmentPaintPropertyTreeBuilder builder(object_, context_,
+                                             fragment_context, *fragment_data);
+    builder.UpdateForSelf();
+    property_changed |= builder.PropertyChanged();
+    property_added_or_removed |= builder.PropertyAddedOrRemoved();
     fragment_data = fragment_data->NextFragment();
   }
   DCHECK(!fragment_data);
@@ -2347,18 +2356,23 @@ void ObjectPaintPropertyTreeBuilder::UpdateForSelf() {
   if (property_added_or_removed &&
       RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
     context_.painting_layer->SetNeedsRepaint();
+
+  return property_changed;
 }
 
-void ObjectPaintPropertyTreeBuilder::UpdateForChildren() {
+bool ObjectPaintPropertyTreeBuilder::UpdateForChildren() {
   if (!ObjectTypeMightNeedPaintProperties())
-    return;
+    return false;
 
+  bool property_changed = false;
   bool property_added_or_removed = false;
   auto* fragment_data = &object_.GetMutableForPainting().FirstFragment();
   for (auto& fragment_context : context_.fragments) {
-    FragmentPaintPropertyTreeBuilder(object_, context_, fragment_context,
-                                     *fragment_data, property_added_or_removed)
-        .UpdateForChildren();
+    FragmentPaintPropertyTreeBuilder builder(object_, context_,
+                                             fragment_context, *fragment_data);
+    builder.UpdateForChildren();
+    property_changed |= builder.PropertyChanged();
+    property_added_or_removed |= builder.PropertyAddedOrRemoved();
     context_.force_subtree_update |= object_.SubtreeNeedsPaintPropertyUpdate();
     fragment_data = fragment_data->NextFragment();
   }
@@ -2373,6 +2387,8 @@ void ObjectPaintPropertyTreeBuilder::UpdateForChildren() {
   if (property_added_or_removed &&
       RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
     context_.painting_layer->SetNeedsRepaint();
+
+  return property_changed;
 }
 
 }  // namespace blink

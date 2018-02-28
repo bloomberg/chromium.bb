@@ -5159,7 +5159,7 @@ TEST_P(PaintPropertyTreeBuilderTest,
   SetBodyInnerHTML(R"HTML(
     <div id="opacity" style="isolation: isolate; width: 100px: height: 100px">
       <div id="target"
-          style="will-change: transform; width: 100px: height: 100gpx">
+          style="will-change: transform; width: 100px: height: 100px">
       </div>
     </div>
   )HTML");
