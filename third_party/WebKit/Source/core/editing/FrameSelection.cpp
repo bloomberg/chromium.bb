@@ -538,10 +538,8 @@ bool FrameSelection::ComputeAbsoluteBounds(IntRect& anchor,
         ComputeVisibleSelectionInDOMTree().ToNormalizedEphemeralRange();
     if (selected_range.IsNull())
       return false;
-    anchor = frame_->GetEditor().FirstRectForRange(
-        EphemeralRange(selected_range.StartPosition()));
-    focus = frame_->GetEditor().FirstRectForRange(
-        EphemeralRange(selected_range.EndPosition()));
+    anchor = FirstRectForRange(EphemeralRange(selected_range.StartPosition()));
+    focus = FirstRectForRange(EphemeralRange(selected_range.EndPosition()));
   }
 
   if (!ComputeVisibleSelectionInDOMTree().IsBaseFirst())

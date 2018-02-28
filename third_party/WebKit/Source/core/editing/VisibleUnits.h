@@ -281,6 +281,9 @@ CORE_EXPORT IntRect ComputeTextRect(const EphemeralRange&);
 IntRect ComputeTextRect(const EphemeralRangeInFlatTree&);
 FloatRect ComputeTextFloatRect(const EphemeralRange&);
 
+// |FirstRectForRange| requires up-to-date layout.
+IntRect FirstRectForRange(const EphemeralRange&);
+
 // Export below functions only for |VisibleUnit| family.
 enum BoundarySearchContextAvailability {
   kDontHaveMoreContext,
