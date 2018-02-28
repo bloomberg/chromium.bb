@@ -17,8 +17,9 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
-#include "chromecast/media/cma/backend/alsa/mixer_output_stream_alsa.h"
-#include "chromecast/media/cma/backend/alsa/mock_alsa_wrapper.h"
+#include "chromecast/media/cma/backend/mixer_input.h"
+#include "chromecast/media/cma/backend/mixer_output_stream.h"
+#include "chromecast/media/cma/backend/mock_mixer_source.h"
 #include "chromecast/media/cma/backend/post_processing_pipeline.h"
 #include "chromecast/public/volume_control.h"
 #include "media/audio/audio_device_description.h"
@@ -29,6 +30,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
+using testing::NiceMock;
 
 namespace chromecast {
 namespace media {
@@ -40,15 +42,10 @@ using FloatType = ::media::Float32SampleTypeTraits;
 // Testing constants that are common to multiple test cases.
 const size_t kBytesPerSample = sizeof(int32_t);
 const int kNumChannels = 2;
-const int kTestMaxReadSize = 4096;
 
 // kTestSamplesPerSecond needs to be higher than kLowSampleRateCutoff for the
 // mixer to use it.
 const int kTestSamplesPerSecond = 48000;
-
-// Stream mixer alsa will never pull more than this many frames at a time.
-const int kMaxWriteSizeMs = 20;
-const int kMaxChunkSize = kTestSamplesPerSecond * kMaxWriteSizeMs / 1000;
 
 // This array holds |NUM_DATA_SETS| sets of arbitrary interleaved float data.
 // Each set holds |NUM_SAMPLES| / kNumChannels frames of data.
@@ -57,7 +54,7 @@ const int kMaxChunkSize = kTestSamplesPerSecond * kMaxWriteSizeMs / 1000;
 
 // Note: Test data should be represented as 32-bit integers and copied into
 // ::media::AudioBus instances, rather than wrapping statically declared float
-// arrays. The latter method is brittle, as ::media::AudioBus requires 16-bit
+// arrays. The latter method is brittle, as ::media::AudioBus requires 16-byte
 // alignment for internal data.
 const int32_t kTestData[NUM_DATA_SETS][NUM_SAMPLES] = {
     {
@@ -91,7 +88,7 @@ const int32_t kTestData[NUM_DATA_SETS][NUM_SAMPLES] = {
         -877887021,  -870241979,  1322678128,  -344799975,
     }};
 
-// Compensate for integer arithmatic errors.
+// Compensate for integer arithmetic errors.
 const int kMaxDelayErrorUs = 2;
 
 const char kDelayModuleSolib[] = "delay.so";
@@ -147,161 +144,71 @@ std::unique_ptr<::media::AudioBus> GetTestData(size_t index) {
   return data;
 }
 
-class MockInputQueue : public StreamMixer::InputQueue {
+class MockMixerOutput : public MixerOutputStream {
  public:
-  MockInputQueue(int samples_per_second,
-                 const std::string& device_id =
-                     ::media::AudioDeviceDescription::kDefaultDeviceId)
-      : paused_(true),
-        samples_per_second_(samples_per_second),
-        max_read_size_(kTestMaxReadSize),
-        multiplier_(1.0),
-        primary_(true),
-        deleting_(false),
-        device_id_(device_id),
-        filter_group_(nullptr) {
-    ON_CALL(*this, GetResampledData(_, _))
+  MockMixerOutput() {
+    ON_CALL(*this, Start(_, _))
+        .WillByDefault(testing::Invoke(this, &MockMixerOutput::StartImpl));
+    ON_CALL(*this, GetSampleRate())
         .WillByDefault(
-            testing::Invoke(this, &MockInputQueue::DoGetResampledData));
-    ON_CALL(*this, VolumeScaleAccumulate(_, _, _, _))
+            testing::Invoke(this, &MockMixerOutput::GetSampleRateImpl));
+    ON_CALL(*this, GetRenderingDelay())
         .WillByDefault(
-            testing::Invoke(this, &MockInputQueue::DoVolumeScaleAccumulate));
-    ON_CALL(*this, PrepareToDelete(_))
+            testing::Invoke(this, &MockMixerOutput::GetRenderingDelayImpl));
+    ON_CALL(*this, OptimalWriteFramesCount())
         .WillByDefault(
-            testing::Invoke(this, &MockInputQueue::DoPrepareToDelete));
+            testing::Invoke(this, &MockMixerOutput::OptimalWriteFramesImpl));
+    ON_CALL(*this, Write(_, _, _))
+        .WillByDefault(testing::Invoke(this, &MockMixerOutput::WriteImpl));
   }
-  ~MockInputQueue() override {}
 
-  bool paused() const { return paused_; }
+  MOCK_METHOD2(Start, bool(int, int));
+  MOCK_METHOD0(GetSampleRate, int());
+  MOCK_METHOD0(GetRenderingDelay,
+               MediaPipelineBackend::AudioDecoder::RenderingDelay());
+  MOCK_METHOD0(OptimalWriteFramesCount, int());
+  MOCK_METHOD3(Write, bool(const float*, int, bool*));
+  MOCK_METHOD0(Stop, void());
 
-  // StreamMixer::InputQueue implementation:
-  int input_samples_per_second() const override { return samples_per_second_; }
-  bool primary() const override { return primary_; }
-  bool IsDeleting() const override { return deleting_; }
-  MOCK_METHOD1(Initialize,
-               void(const MediaPipelineBackend::AudioDecoder::RenderingDelay&
-                        mixer_rendering_delay));
-  std::string device_id() const override { return device_id_; }
-  AudioContentType content_type() const override {
-    return AudioContentType::kMedia;
-  }
-  void set_filter_group(FilterGroup* group) override { filter_group_ = group; }
-  FilterGroup* filter_group() override { return filter_group_; }
-  int MaxReadSize() override { return max_read_size_; }
-  MOCK_METHOD2(GetResampledData, void(::media::AudioBus* dest, int frames));
-  MOCK_METHOD4(
-      VolumeScaleAccumulate,
-      void(bool repeat_transition, const float* src, int frames, float* dest));
-  MOCK_METHOD0(OnSkipped, void());
-  MOCK_METHOD1(AfterWriteFrames,
-               void(const MediaPipelineBackend::AudioDecoder::RenderingDelay&
-                        mixer_rendering_delay));
-  MOCK_METHOD1(SignalError, void(StreamMixerInput::MixerError error));
-  MOCK_METHOD1(PrepareToDelete, void(const OnReadyToDeleteCb& delete_cb));
+  int sample_rate() const { return sample_rate_; }
+  const std::vector<float>& data() const { return data_; }
 
-  void SetContentTypeVolume(float volume, int fade_ms) override {}
-  void SetMuted(bool muted) override {}
-  float TargetVolume() override { return multiplier_; }
-  float InstantaneousVolume() override { return multiplier_; }
-
-  // Setters and getters for test control.
-  void SetPaused(bool paused) { paused_ = paused; }
-  void SetMaxReadSize(int max_read_size) { max_read_size_ = max_read_size; }
-  void SetData(std::unique_ptr<::media::AudioBus> data) {
-    CHECK(!data_);
-    data_ = std::move(data);
-    max_read_size_ = data_->frames();
-  }
-  void SetVolumeMultiplier(float multiplier) {
-    CHECK(multiplier >= 0.0 && multiplier <= 1.0);
-    multiplier_ = multiplier;
-  }
-  void SetPrimary(bool primary) { primary_ = primary; }
-  const ::media::AudioBus& data() {
-    CHECK(data_);
-    return *data_;
-  }
-  float multiplier() const { return multiplier_; }
+  void ClearData() { data_.clear(); }
 
  private:
-  void DoGetResampledData(::media::AudioBus* dest, int frames) {
-    CHECK(dest);
-    CHECK_GE(dest->frames(), frames);
-    if (data_) {
-      data_->CopyPartialFramesTo(0, frames, 0, dest);
-    } else {
-      dest->ZeroFramesPartial(0, frames);
-    }
+  bool StartImpl(int requested_sample_rate, int channels) {
+    sample_rate_ = requested_sample_rate;
+    return true;
   }
 
-  void DoVolumeScaleAccumulate(bool repeat_transition,
-                               const float* src,
-                               int frames,
-                               float* dest) {
-    CHECK(src);
-    CHECK(dest);
-    CHECK(multiplier_ >= 0.0 && multiplier_ <= 1.0);
-    ::media::vector_math::FMAC(src, multiplier_, frames, dest);
+  int GetSampleRateImpl() { return sample_rate_; }
+
+  MediaPipelineBackend::AudioDecoder::RenderingDelay GetRenderingDelayImpl() {
+    return MediaPipelineBackend::AudioDecoder::RenderingDelay();
   }
 
-  void DoPrepareToDelete(const OnReadyToDeleteCb& delete_cb) {
-    deleting_ = true;
-    delete_cb.Run(this);
+  int OptimalWriteFramesImpl() { return 256; }
+
+  bool WriteImpl(const float* data,
+                 int data_size,
+                 bool* out_playback_interrupted) {
+    *out_playback_interrupted = false;
+    data_.insert(data_.end(), data, data + data_size);
+    return true;
   }
 
-  bool paused_;
-  int samples_per_second_;
-  int max_read_size_;
-  float multiplier_;
-  bool primary_;
-  bool deleting_;
-  const std::string device_id_;
-  FilterGroup* filter_group_;
-
-  std::unique_ptr<::media::AudioBus> data_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockInputQueue);
+  int sample_rate_ = 0;
+  std::vector<float> data_;
 };
 
+class MockPostProcessorFactory;
 class MockPostProcessor : public PostProcessingPipeline {
  public:
-  MockPostProcessor(const std::string& name,
+  MockPostProcessor(MockPostProcessorFactory* factory,
+                    const std::string& name,
                     const base::ListValue* filter_description_list,
-                    int channels)
-      : name_(name), num_output_channels_(channels) {
-    CHECK(instances_.insert({name_, this}).second);
-
-    ON_CALL(*this, ProcessFrames(_, _, _, _))
-        .WillByDefault(
-            testing::Invoke(this, &MockPostProcessor::DoProcessFrames));
-
-    if (!filter_description_list) {
-      // This happens for PostProcessingPipeline with no post-processors.
-      return;
-    }
-
-    // Parse |filter_description_list| for parameters.
-    for (size_t i = 0; i < filter_description_list->GetSize(); ++i) {
-      const base::DictionaryValue* description_dict;
-      CHECK(filter_description_list->GetDictionary(i, &description_dict));
-      std::string solib;
-      CHECK(description_dict->GetString("processor", &solib));
-      // This will initially be called with the actual pipeline on creation.
-      // Ignore and wait for the call to ResetPostProcessorsForTest.
-      if (solib == kDelayModuleSolib) {
-        const base::DictionaryValue* processor_config_dict;
-        CHECK(
-            description_dict->GetDictionary("config", &processor_config_dict));
-        int module_delay;
-        CHECK(processor_config_dict->GetInteger("delay", &module_delay));
-        rendering_delay_ += module_delay;
-        processor_config_dict->GetBoolean("ringing", &ringing_);
-        processor_config_dict->GetInteger("output_channels",
-                                          &num_output_channels_);
-      }
-    }
-  }
-  ~MockPostProcessor() override { instances_.erase(name_); }
+                    int channels);
+  ~MockPostProcessor() override;
   MOCK_METHOD4(
       ProcessFrames,
       int(float* data, int num_frames, float current_volume, bool is_silence));
@@ -316,9 +223,6 @@ class MockPostProcessor : public PostProcessingPipeline {
   MOCK_METHOD2(SetPostProcessorConfig,
                void(const std::string& name, const std::string& config));
   MOCK_METHOD1(UpdatePlayoutChannel, void(int));
-  static std::unordered_map<std::string, MockPostProcessor*>* instances() {
-    return &instances_;
-  }
 
  private:
   int DoProcessFrames(float* data,
@@ -329,8 +233,8 @@ class MockPostProcessor : public PostProcessingPipeline {
     return rendering_delay_;
   }
 
-  static std::unordered_map<std::string, MockPostProcessor*> instances_;
-  std::string name_;
+  MockPostProcessorFactory* const factory_;
+  const std::string name_;
   int rendering_delay_ = 0;
   bool ringing_ = false;
   float* output_buffer_ = nullptr;
@@ -338,22 +242,6 @@ class MockPostProcessor : public PostProcessingPipeline {
 
   DISALLOW_COPY_AND_ASSIGN(MockPostProcessor);
 };
-
-std::unordered_map<std::string, MockPostProcessor*>
-    MockPostProcessor::instances_;
-
-#define EXPECT_CALL_ALL_POSTPROCESSORS(call_sig)        \
-  do {                                                  \
-    for (auto& itr : *MockPostProcessor::instances()) { \
-      EXPECT_CALL(*itr.second, call_sig);               \
-    }                                                   \
-  } while (0);
-
-void VerifyAndClearPostProcessors() {
-  for (auto& itr : *MockPostProcessor::instances()) {
-    testing::Mock::VerifyAndClearExpectations(itr.second);
-  }
-}
 
 class MockPostProcessorFactory : public PostProcessingPipelineFactory {
  public:
@@ -364,9 +252,67 @@ class MockPostProcessorFactory : public PostProcessingPipelineFactory {
       const base::ListValue* filter_description_list,
       int channels) override {
     return std::make_unique<testing::NiceMock<MockPostProcessor>>(
-        name, filter_description_list, channels);
+        this, name, filter_description_list, channels);
   }
+
+  std::unordered_map<std::string, MockPostProcessor*> instances;
 };
+
+#define EXPECT_CALL_ALL_POSTPROCESSORS(factory, call_sig) \
+  do {                                                    \
+    for (auto& itr : factory->instances) {                \
+      EXPECT_CALL(*itr.second, call_sig);                 \
+    }                                                     \
+  } while (0);
+
+void VerifyAndClearPostProcessors(MockPostProcessorFactory* factory) {
+  for (auto& itr : factory->instances) {
+    testing::Mock::VerifyAndClearExpectations(itr.second);
+  }
+}
+
+MockPostProcessor::MockPostProcessor(
+    MockPostProcessorFactory* factory,
+    const std::string& name,
+    const base::ListValue* filter_description_list,
+    int channels)
+    : factory_(factory), name_(name), num_output_channels_(channels) {
+  DCHECK(factory_);
+  CHECK(factory_->instances.insert({name_, this}).second);
+
+  ON_CALL(*this, ProcessFrames(_, _, _, _))
+      .WillByDefault(
+          testing::Invoke(this, &MockPostProcessor::DoProcessFrames));
+
+  if (!filter_description_list) {
+    // This happens for PostProcessingPipeline with no post-processors.
+    return;
+  }
+
+  // Parse |filter_description_list| for parameters.
+  for (size_t i = 0; i < filter_description_list->GetSize(); ++i) {
+    const base::DictionaryValue* description_dict;
+    CHECK(filter_description_list->GetDictionary(i, &description_dict));
+    std::string solib;
+    CHECK(description_dict->GetString("processor", &solib));
+    // This will initially be called with the actual pipeline on creation.
+    // Ignore and wait for the call to ResetPostProcessorsForTest.
+    if (solib == kDelayModuleSolib) {
+      const base::DictionaryValue* processor_config_dict;
+      CHECK(description_dict->GetDictionary("config", &processor_config_dict));
+      int module_delay;
+      CHECK(processor_config_dict->GetInteger("delay", &module_delay));
+      rendering_delay_ += module_delay;
+      processor_config_dict->GetBoolean("ringing", &ringing_);
+      processor_config_dict->GetInteger("output_channels",
+                                        &num_output_channels_);
+    }
+  }
+}
+
+MockPostProcessor::~MockPostProcessor() {
+  factory_->instances.erase(name_);
+}
 
 class MockLoopbackAudioObserver : public CastMediaShlib::LoopbackAudioObserver {
  public:
@@ -385,11 +331,11 @@ class MockLoopbackAudioObserver : public CastMediaShlib::LoopbackAudioObserver {
 // Given |inputs|, returns mixed audio data according to the mixing method used
 // by the mixer.
 std::unique_ptr<::media::AudioBus> GetMixedAudioData(
-    const std::vector<testing::StrictMock<MockInputQueue>*>& inputs) {
-  int read_size = std::numeric_limits<int>::max();
+    const std::vector<MockMixerSource*>& inputs) {
+  int read_size = 0;
   for (auto* input : inputs) {
     CHECK(input);
-    read_size = std::min(input->MaxReadSize(), read_size);
+    read_size = std::max(input->data().frames(), read_size);
   }
 
   // Verify all inputs are the right size.
@@ -407,8 +353,11 @@ std::unique_ptr<::media::AudioBus> GetMixedAudioData(
 
       // Sum the sample from each input stream, scaling each stream.
       *result = 0.0;
-      for (auto* input : inputs)
-        *result += *(input->data().channel(c) + f) * input->multiplier();
+      for (auto* input : inputs) {
+        if (input->data().frames() > f) {
+          *result += *(input->data().channel(c) + f) * input->multiplier();
+        }
+      }
 
       // Clamp the mixed sample between 1.0 and -1.0.
       *result = std::min(1.0f, std::max(-1.0f, *result));
@@ -419,19 +368,25 @@ std::unique_ptr<::media::AudioBus> GetMixedAudioData(
 
 // Like the method above, but accepts a single input. This returns an AudioBus
 // with this input after it is scaled and clipped.
-std::unique_ptr<::media::AudioBus> GetMixedAudioData(
-    testing::StrictMock<MockInputQueue>* input) {
-  return GetMixedAudioData(
-      std::vector<testing::StrictMock<MockInputQueue>*>(1, input));
+std::unique_ptr<::media::AudioBus> GetMixedAudioData(MockMixerSource* input) {
+  return GetMixedAudioData(std::vector<MockMixerSource*>(1, input));
 }
 
-void ToPlanar(const uint8_t* interleaved,
+std::unique_ptr<::media::AudioBus> GetMixedAudioData(
+    const std::vector<std::unique_ptr<MockMixerSource>>& inputs) {
+  std::vector<MockMixerSource*> ptrs;
+  for (const auto& i : inputs) {
+    ptrs.push_back(i.get());
+  }
+  return GetMixedAudioData(ptrs);
+}
+
+void ToPlanar(const float* interleaved,
               int num_frames,
               ::media::AudioBus* planar) {
   ASSERT_GE(planar->frames(), num_frames);
 
-  planar->FromInterleaved<FloatType>(
-      reinterpret_cast<const float*>(interleaved), num_frames);
+  planar->FromInterleaved<FloatType>(interleaved, num_frames);
 }
 
 // Asserts that |expected| matches |actual| exactly.
@@ -442,8 +397,9 @@ void CompareAudioData(const ::media::AudioBus& expected,
   for (int c = 0; c < expected.channels(); ++c) {
     const float* expected_data = expected.channel(c);
     const float* actual_data = actual.channel(c);
-    for (int f = 0; f < expected.frames(); ++f)
-      ASSERT_FLOAT_EQ(*expected_data++, *actual_data++) << c << " " << f;
+    for (int f = 0; f < expected.frames(); ++f) {
+      EXPECT_FLOAT_EQ(*expected_data++, *actual_data++) << c << " " << f;
+    }
   }
 }
 
@@ -477,313 +433,276 @@ std::string DeathRegex(const std::string& regex) {
 
 class StreamMixerTest : public testing::Test {
  protected:
-  StreamMixerTest()
-      : message_loop_(new base::MessageLoop()),
-        mock_alsa_(new testing::NiceMock<MockAlsaWrapper>()) {
-    StreamMixer::MakeSingleThreadedForTest();
+  StreamMixerTest() : message_loop_(new base::MessageLoop()) {
+    auto output = std::make_unique<NiceMock<MockMixerOutput>>();
+    mock_output_ = output.get();
+    mixer_ = std::make_unique<StreamMixer>(std::move(output), nullptr,
+                                           base::ThreadTaskRunnerHandle::Get());
+    mixer_->SetVolume(AudioContentType::kMedia, 1.0f);
+
     std::string test_pipeline_json = base::StringPrintf(
         kTestPipelineJsonTemplate, kDelayModuleSolib, kDefaultProcessorDelay,
         kDelayModuleSolib, kTtsProcessorDelay, kDelayModuleSolib,
         kMixProcessorDelay, kDelayModuleSolib, kLinearizeProcessorDelay);
-    StreamMixer::Get()->ResetPostProcessorsForTest(
-        std::make_unique<MockPostProcessorFactory>(), test_pipeline_json);
-    CHECK_EQ(MockPostProcessor::instances()->size(),
+    auto factory = std::make_unique<MockPostProcessorFactory>();
+    pp_factory_ = factory.get();
+    mixer_->ResetPostProcessorsForTest(std::move(factory), test_pipeline_json);
+    CHECK_EQ(pp_factory_->instances.size(),
              static_cast<size_t>(kNumPostProcessors));
-
-    auto output = std::make_unique<MixerOutputStreamAlsa>();
-    output->SetAlsaWrapperForTest(base::WrapUnique(mock_alsa_));
-    StreamMixer::Get()->SetMixerOutputStreamForTest(std::move(output));
   }
 
-  ~StreamMixerTest() override { StreamMixer::Get()->ClearInputsForTest(); }
+  void PlaybackOnce() {
+    // Run one playback iteration.
+    EXPECT_CALL(*mock_output_, Write(_,
+                                     mock_output_->OptimalWriteFramesCount() *
+                                         mixer_->num_output_channels(),
+                                     _))
+        .Times(1);
+    base::RunLoop run_loop;
+    message_loop_->task_runner()->PostTask(FROM_HERE, run_loop.QuitClosure());
+    run_loop.Run();
+  }
 
-  MockAlsaWrapper* mock_alsa() { return mock_alsa_; }
+  void WaitForRemoval() {
+    // Need to wait for the removal task (it is always posted).
+    base::RunLoop run_loop;
+    message_loop_->task_runner()->PostTask(FROM_HERE, run_loop.QuitClosure());
+    run_loop.Run();
+  }
 
- private:
+ protected:
   const std::unique_ptr<base::MessageLoop> message_loop_;
-  testing::NiceMock<MockAlsaWrapper>* mock_alsa_;
+  MockMixerOutput* mock_output_;
+  std::unique_ptr<StreamMixer> mixer_;
+  MockPostProcessorFactory* pp_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(StreamMixerTest);
 };
 
 TEST_F(StreamMixerTest, AddSingleInput) {
-  auto* input = new testing::StrictMock<MockInputQueue>(kTestSamplesPerSecond);
-  StreamMixer* mixer = StreamMixer::Get();
+  MockMixerSource input(kTestSamplesPerSecond);
 
-  EXPECT_CALL(*input, Initialize(_)).Times(1);
-  mixer->AddInput(base::WrapUnique(input));
-  EXPECT_EQ(StreamMixer::kStateNormalPlayback, mixer->state());
+  EXPECT_CALL(input, InitializeAudioPlayback(_, _)).Times(1);
+  EXPECT_CALL(*mock_output_, Start(kTestSamplesPerSecond, _)).Times(1);
+  EXPECT_CALL(*mock_output_, Stop()).Times(0);
+  mixer_->AddInput(&input);
+
+  mixer_.reset();
 }
 
 TEST_F(StreamMixerTest, AddMultipleInputs) {
-  auto* input1 = new testing::StrictMock<MockInputQueue>(kTestSamplesPerSecond);
-  auto* input2 =
-      new testing::StrictMock<MockInputQueue>(kTestSamplesPerSecond * 2);
-  StreamMixer* mixer = StreamMixer::Get();
+  MockMixerSource input1(kTestSamplesPerSecond);
+  MockMixerSource input2(kTestSamplesPerSecond * 2);
 
-  EXPECT_CALL(*input1, Initialize(_)).Times(1);
-  EXPECT_CALL(*input2, Initialize(_)).Times(1);
-  mixer->AddInput(base::WrapUnique(input1));
-  mixer->AddInput(base::WrapUnique(input2));
+  EXPECT_CALL(input1, InitializeAudioPlayback(_, _)).Times(1);
+  EXPECT_CALL(input2, InitializeAudioPlayback(_, _)).Times(1);
+  EXPECT_CALL(*mock_output_, Start(kTestSamplesPerSecond, _)).Times(1);
+  EXPECT_CALL(*mock_output_, Stop()).Times(0);
+  mixer_->AddInput(&input1);
+  mixer_->AddInput(&input2);
 
-  // The mixer should be ready to play, and should sample to the initial
-  // sample rate.
-  EXPECT_EQ(kTestSamplesPerSecond, mixer->output_samples_per_second());
-  EXPECT_EQ(StreamMixer::kStateNormalPlayback, mixer->state());
+  mixer_.reset();
 }
 
 TEST_F(StreamMixerTest, RemoveInput) {
-  std::vector<testing::StrictMock<MockInputQueue>*> inputs;
-  const int kNumInputs = 3;
-  for (int i = 0; i < kNumInputs; ++i) {
-    inputs.push_back(new testing::StrictMock<MockInputQueue>(
-        kTestSamplesPerSecond * (i + 1)));
-  }
-
-  StreamMixer* mixer = StreamMixer::Get();
-  for (size_t i = 0; i < inputs.size(); ++i) {
-    EXPECT_CALL(*inputs[i], Initialize(_)).Times(1);
-    mixer->AddInput(base::WrapUnique(inputs[i]));
-  }
-
-  EXPECT_EQ(StreamMixer::kStateNormalPlayback, mixer->state());
-
-  for (size_t i = 0; i < inputs.size(); ++i) {
-    EXPECT_CALL(*inputs[i], PrepareToDelete(_)).Times(1);
-    mixer->RemoveInput(inputs[i]);
-  }
-
-  // Need to wait for the removal task (it is always posted).
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_TRUE(mixer->empty());
-  EXPECT_EQ(StreamMixer::kStateNormalPlayback, mixer->state());
-}
-
-TEST_F(StreamMixerTest, WriteFrames) {
-  std::vector<testing::StrictMock<MockInputQueue>*> inputs;
+  std::vector<std::unique_ptr<MockMixerSource>> inputs;
   const int kNumInputs = 3;
   for (int i = 0; i < kNumInputs; ++i) {
     inputs.push_back(
-        new testing::StrictMock<MockInputQueue>(kTestSamplesPerSecond));
-    inputs.back()->SetPaused(false);
+        std::make_unique<MockMixerSource>(kTestSamplesPerSecond * (i + 1)));
   }
 
-  StreamMixer* mixer = StreamMixer::Get();
-  mixer->SetFilterFrameAlignmentForTest(1);
+  EXPECT_CALL(*mock_output_, Start(kTestSamplesPerSecond, _)).Times(1);
+  EXPECT_CALL(*mock_output_, Stop()).Times(0);
+
   for (size_t i = 0; i < inputs.size(); ++i) {
-    EXPECT_CALL(*inputs[i], Initialize(_)).Times(1);
-    mixer->AddInput(base::WrapUnique(inputs[i]));
+    EXPECT_CALL(*inputs[i], InitializeAudioPlayback(_, _)).Times(1);
+    mixer_->AddInput(inputs[i].get());
   }
 
-  ASSERT_EQ(StreamMixer::kStateNormalPlayback, mixer->state());
-
-  // The mixer should pull data from all streams, using the smallest
-  // MaxReadSize provided by any of the channels.
-  // TODO(slan): Check that the proper number of frames is pulled.
-  ASSERT_EQ(3u, inputs.size());
-  inputs[0]->SetMaxReadSize(kMaxChunkSize + 1);
-  inputs[1]->SetMaxReadSize(kMaxChunkSize - 1);
-  inputs[2]->SetMaxReadSize(kMaxChunkSize * 2);
-  for (auto* input : inputs) {
-    EXPECT_CALL(*input, GetResampledData(_, kMaxChunkSize - 1)).Times(1);
-    EXPECT_CALL(*input, VolumeScaleAccumulate(_, _, kMaxChunkSize - 1, _))
-        .Times(kNumChannels);
-    EXPECT_CALL(*input, AfterWriteFrames(_)).Times(1);
+  for (size_t i = 0; i < inputs.size(); ++i) {
+    EXPECT_CALL(*inputs[i], FinalizeAudioPlayback()).Times(1);
+    mixer_->RemoveInput(inputs[i].get());
   }
 
-  // TODO(slan): Verify that the data is mixed properly with math.
-  EXPECT_CALL(*mock_alsa(), PcmWritei(_, _, kMaxChunkSize - 1)).Times(1);
-  mixer->WriteFramesForTest();
+  WaitForRemoval();
+}
 
-  // Make two of these streams non-primary, and exhaust a non-primary stream.
-  // All non-empty streams shall be polled for data and the mixer shall write
-  // to ALSA.
-  inputs[1]->SetPrimary(false);
-  inputs[1]->SetMaxReadSize(0);
-  EXPECT_CALL(*inputs[1], OnSkipped());
-  inputs[2]->SetPrimary(false);
-  for (auto* input : inputs) {
-    if (input != inputs[1]) {
-      EXPECT_CALL(*input, GetResampledData(_, kMaxChunkSize)).Times(1);
-      EXPECT_CALL(*input, VolumeScaleAccumulate(_, _, kMaxChunkSize, _))
-          .Times(kNumChannels);
-    }
-    EXPECT_CALL(*input, AfterWriteFrames(_)).Times(1);
+TEST_F(StreamMixerTest, WriteFrames) {
+  std::vector<std::unique_ptr<MockMixerSource>> inputs;
+  const int kNumInputs = 3;
+  for (int i = 0; i < kNumInputs; ++i) {
+    inputs.push_back(std::make_unique<MockMixerSource>(kTestSamplesPerSecond));
   }
-  // Note that the new smallest stream shall dictate the length of the write.
-  EXPECT_CALL(*mock_alsa(), PcmWritei(_, _, kMaxChunkSize)).Times(1);
-  mixer->WriteFramesForTest();
 
-  // Exhaust a primary stream. No streams shall be polled for data, and no
-  // data shall be written to ALSA.
-  inputs[0]->SetMaxReadSize(0);
-  EXPECT_CALL(*mock_alsa(), PcmWritei(_, _, _)).Times(0);
-  mixer->WriteFramesForTest();
+  EXPECT_CALL(*mock_output_, Start(kTestSamplesPerSecond, _)).Times(1);
+  EXPECT_CALL(*mock_output_, Stop()).Times(0);
+
+  for (size_t i = 0; i < inputs.size(); ++i) {
+    EXPECT_CALL(*inputs[i], InitializeAudioPlayback(_, _)).Times(1);
+    mixer_->AddInput(inputs[i].get());
+  }
+
+  for (size_t i = 0; i < inputs.size(); ++i) {
+    EXPECT_CALL(*inputs[i], FillAudioPlaybackFrames(_, _, _)).Times(1);
+  }
+
+  PlaybackOnce();
+
+  mixer_.reset();
 }
 
 TEST_F(StreamMixerTest, OneStreamMixesProperly) {
-  auto* input = new testing::StrictMock<MockInputQueue>(kTestSamplesPerSecond);
-  input->SetPaused(false);
+  MockMixerSource input(kTestSamplesPerSecond);
 
-  StreamMixer* mixer = StreamMixer::Get();
-  EXPECT_CALL(*input, Initialize(_)).Times(1);
-  mixer->SetFilterFrameAlignmentForTest(4);
-  mixer->AddInput(base::WrapUnique(input));
-  EXPECT_EQ(StreamMixer::kStateNormalPlayback, mixer->state());
+  EXPECT_CALL(input, InitializeAudioPlayback(_, _)).Times(1);
+  EXPECT_CALL(*mock_output_, Start(kTestSamplesPerSecond, _)).Times(1);
+  EXPECT_CALL(*mock_output_, Stop()).Times(0);
+  mixer_->AddInput(&input);
+  mock_output_->ClearData();
 
   // Populate the stream with data.
   const int kNumFrames = 32;
-  input->SetData(GetTestData(0));
+  input.SetData(GetTestData(0));
 
-  ASSERT_EQ(mock_alsa()->data().size(), 0u);
+  EXPECT_CALL(input, FillAudioPlaybackFrames(_, _, _)).Times(1);
+  PlaybackOnce();
 
-  // Write the stream to ALSA.
-  EXPECT_CALL(*input, GetResampledData(_, kNumFrames));
-  EXPECT_CALL(*input, VolumeScaleAccumulate(_, _, kNumFrames, _))
-      .Times(kNumChannels);
-  EXPECT_CALL(*input, AfterWriteFrames(_));
-  mixer->WriteFramesForTest();
-
-  // Get the actual stream rendered to ALSA, and compare it against the
-  // expected stream. The stream should match exactly.
+  // Get the actual mixed output, and compare it against the expected stream.
+  // The stream should match exactly.
   auto actual = ::media::AudioBus::Create(kNumChannels, kNumFrames);
-  ASSERT_GT(mock_alsa()->data().size(), 0u);
-  ToPlanar(&(mock_alsa()->data()[0]), kNumFrames, actual.get());
-  CompareAudioData(input->data(), *actual);
+  ASSERT_GE(mock_output_->data().size(), static_cast<size_t>(kNumFrames));
+  ToPlanar(mock_output_->data().data(), kNumFrames, actual.get());
+  auto expected = GetMixedAudioData(&input);
+  CompareAudioData(*expected, *actual);
+
+  mixer_.reset();
 }
 
 TEST_F(StreamMixerTest, OneStreamIsScaledDownProperly) {
-  auto* input = new testing::StrictMock<MockInputQueue>(kTestSamplesPerSecond);
-  input->SetPaused(false);
+  MockMixerSource input(kTestSamplesPerSecond);
 
-  StreamMixer* mixer = StreamMixer::Get();
-  EXPECT_CALL(*input, Initialize(_)).Times(1);
-  mixer->SetFilterFrameAlignmentForTest(4);
-  mixer->AddInput(base::WrapUnique(input));
-  EXPECT_EQ(StreamMixer::kStateNormalPlayback, mixer->state());
+  EXPECT_CALL(input, InitializeAudioPlayback(_, _)).Times(1);
+  EXPECT_CALL(*mock_output_, Start(kTestSamplesPerSecond, _)).Times(1);
+  EXPECT_CALL(*mock_output_, Stop()).Times(0);
+  mixer_->AddInput(&input);
+  mock_output_->ClearData();
 
   // Populate the stream with data.
   const int kNumFrames = 32;
   ASSERT_EQ(sizeof(kTestData[0]), kNumChannels * kNumFrames * kBytesPerSample);
-  auto data = GetTestData(0);
-  input->SetData(std::move(data));
+  input.SetData(GetTestData(0));
 
-  // Set a volume multiplier on the stream.
-  input->SetVolumeMultiplier(0.75);
+  // Set the volume multiplier.
+  input.set_multiplier(0.75f);
+  mixer_->SetVolumeMultiplier(&input, input.multiplier());
 
-  // Write the stream to ALSA.
-  EXPECT_CALL(*input, GetResampledData(_, kNumFrames));
-  EXPECT_CALL(*input, VolumeScaleAccumulate(_, _, kNumFrames, _))
-      .Times(kNumChannels);
-  EXPECT_CALL(*input, AfterWriteFrames(_));
-  mixer->WriteFramesForTest();
+  EXPECT_CALL(input, FillAudioPlaybackFrames(_, _, _)).Times(1);
+  PlaybackOnce();
 
-  // Check that the retrieved stream is scaled correctly.
+  // Get the actual mixed output, and compare it against the expected stream.
+  // The stream should match exactly.
   auto actual = ::media::AudioBus::Create(kNumChannels, kNumFrames);
-  ToPlanar(&(mock_alsa()->data()[0]), kNumFrames, actual.get());
-  auto expected = GetMixedAudioData(input);
+  ASSERT_GE(mock_output_->data().size(), static_cast<size_t>(kNumFrames));
+  ToPlanar(mock_output_->data().data(), kNumFrames, actual.get());
+  auto expected = GetMixedAudioData(&input);
   CompareAudioData(*expected, *actual);
+
+  mixer_.reset();
 }
 
 TEST_F(StreamMixerTest, TwoUnscaledStreamsMixProperly) {
   // Create a group of input streams.
-  std::vector<testing::StrictMock<MockInputQueue>*> inputs;
+  std::vector<std::unique_ptr<MockMixerSource>> inputs;
   const int kNumInputs = 2;
   for (int i = 0; i < kNumInputs; ++i) {
-    inputs.push_back(
-        new testing::StrictMock<MockInputQueue>(kTestSamplesPerSecond));
-    inputs.back()->SetPaused(false);
+    inputs.push_back(std::make_unique<MockMixerSource>(kTestSamplesPerSecond));
   }
 
-  StreamMixer* mixer = StreamMixer::Get();
-  mixer->SetFilterFrameAlignmentForTest(4);
+  EXPECT_CALL(*mock_output_, Start(kTestSamplesPerSecond, _)).Times(1);
+  EXPECT_CALL(*mock_output_, Stop()).Times(0);
+
   for (size_t i = 0; i < inputs.size(); ++i) {
-    EXPECT_CALL(*inputs[i], Initialize(_)).Times(1);
-    mixer->AddInput(base::WrapUnique(inputs[i]));
+    EXPECT_CALL(*inputs[i], InitializeAudioPlayback(_, _)).Times(1);
+    mixer_->AddInput(inputs[i].get());
   }
+  mock_output_->ClearData();
 
-  // Poll the inputs for data.
+  // Populate the streams with data.
   const int kNumFrames = 32;
   for (size_t i = 0; i < inputs.size(); ++i) {
     inputs[i]->SetData(GetTestData(i));
-    EXPECT_CALL(*inputs[i], GetResampledData(_, kNumFrames));
-    EXPECT_CALL(*inputs[i], VolumeScaleAccumulate(_, _, kNumFrames, _))
-        .Times(kNumChannels);
-    EXPECT_CALL(*inputs[i], AfterWriteFrames(_));
+    EXPECT_CALL(*inputs[i], FillAudioPlaybackFrames(_, _, _)).Times(1);
   }
 
-  EXPECT_CALL(*mock_alsa(), PcmWritei(_, _, kNumFrames)).Times(1);
-  mixer->WriteFramesForTest();
+  PlaybackOnce();
 
-  // Mix the inputs manually.
-  auto expected = GetMixedAudioData(inputs);
-
-  // Get the actual stream rendered to ALSA, and compare it against the
-  // expected stream. The stream should match exactly.
+  // Get the actual mixed output, and compare it against the expected stream.
+  // The stream should match exactly.
   auto actual = ::media::AudioBus::Create(kNumChannels, kNumFrames);
-  ToPlanar(&(mock_alsa()->data()[0]), kNumFrames, actual.get());
+  ASSERT_GE(mock_output_->data().size(), static_cast<size_t>(kNumFrames));
+  ToPlanar(mock_output_->data().data(), kNumFrames, actual.get());
+  auto expected = GetMixedAudioData(inputs);
   CompareAudioData(*expected, *actual);
+
+  mixer_.reset();
 }
 
 TEST_F(StreamMixerTest, TwoUnscaledStreamsWithDifferentIdsMixProperly) {
   // Create a group of input streams.
-  std::vector<testing::StrictMock<MockInputQueue>*> inputs;
-  inputs.push_back(new testing::StrictMock<MockInputQueue>(
+  std::vector<std::unique_ptr<MockMixerSource>> inputs;
+  inputs.push_back(std::make_unique<MockMixerSource>(
       kTestSamplesPerSecond,
       ::media::AudioDeviceDescription::kDefaultDeviceId));
-  inputs.back()->SetPaused(false);
-  inputs.push_back(new testing::StrictMock<MockInputQueue>(
+  inputs.push_back(std::make_unique<MockMixerSource>(
       kTestSamplesPerSecond,
       ::media::AudioDeviceDescription::kCommunicationsDeviceId));
-  inputs.back()->SetPaused(false);
 
-  StreamMixer* mixer = StreamMixer::Get();
-  mixer->SetFilterFrameAlignmentForTest(4);
+  EXPECT_CALL(*mock_output_, Start(kTestSamplesPerSecond, _)).Times(1);
+  EXPECT_CALL(*mock_output_, Stop()).Times(0);
+
   for (size_t i = 0; i < inputs.size(); ++i) {
-    EXPECT_CALL(*inputs[i], Initialize(_)).Times(1);
-    mixer->AddInput(base::WrapUnique(inputs[i]));
+    EXPECT_CALL(*inputs[i], InitializeAudioPlayback(_, _)).Times(1);
+    mixer_->AddInput(inputs[i].get());
   }
+  mock_output_->ClearData();
 
-  // Poll the inputs for data.
+  // Populate the streams with data.
   const int kNumFrames = 32;
   for (size_t i = 0; i < inputs.size(); ++i) {
     inputs[i]->SetData(GetTestData(i));
-    EXPECT_CALL(*inputs[i], GetResampledData(_, kNumFrames));
-    EXPECT_CALL(*inputs[i], VolumeScaleAccumulate(_, _, kNumFrames, _))
-        .Times(kNumChannels);
-    EXPECT_CALL(*inputs[i], AfterWriteFrames(_));
+    EXPECT_CALL(*inputs[i], FillAudioPlaybackFrames(_, _, _)).Times(1);
   }
 
-  EXPECT_CALL(*mock_alsa(), PcmWritei(_, _, kNumFrames)).Times(1);
-  mixer->WriteFramesForTest();
+  PlaybackOnce();
 
-  // Mix the inputs manually.
-  auto expected = GetMixedAudioData(inputs);
-
-  // Get the actual stream rendered to ALSA, and compare it against the
-  // expected stream. The stream should match exactly.
+  // Get the actual mixed output, and compare it against the expected stream.
+  // The stream should match exactly.
   auto actual = ::media::AudioBus::Create(kNumChannels, kNumFrames);
-  ToPlanar(&(mock_alsa()->data()[0]), kNumFrames, actual.get());
+  ASSERT_GE(mock_output_->data().size(), static_cast<size_t>(kNumFrames));
+  ToPlanar(mock_output_->data().data(), kNumFrames, actual.get());
+  auto expected = GetMixedAudioData(inputs);
   CompareAudioData(*expected, *actual);
+
+  mixer_.reset();
 }
 
 TEST_F(StreamMixerTest, TwoUnscaledStreamsMixProperlyWithEdgeCases) {
   // Create a group of input streams.
-  std::vector<testing::StrictMock<MockInputQueue>*> inputs;
+  std::vector<std::unique_ptr<MockMixerSource>> inputs;
   const int kNumInputs = 2;
   for (int i = 0; i < kNumInputs; ++i) {
-    inputs.push_back(
-        new testing::StrictMock<MockInputQueue>(kTestSamplesPerSecond));
-    inputs.back()->SetPaused(false);
+    inputs.push_back(std::make_unique<MockMixerSource>(kTestSamplesPerSecond));
   }
 
-  StreamMixer* mixer = StreamMixer::Get();
-  mixer->SetFilterFrameAlignmentForTest(4);
+  EXPECT_CALL(*mock_output_, Start(kTestSamplesPerSecond, _)).Times(1);
+  EXPECT_CALL(*mock_output_, Stop()).Times(0);
+
   for (size_t i = 0; i < inputs.size(); ++i) {
-    EXPECT_CALL(*inputs[i], Initialize(_)).Times(1);
-    mixer->AddInput(base::WrapUnique(inputs[i]));
+    EXPECT_CALL(*inputs[i], InitializeAudioPlayback(_, _)).Times(1);
+    mixer_->AddInput(inputs[i].get());
   }
+  mock_output_->ClearData();
 
   // Create edge case data for the inputs. By mixing these two short streams,
   // every combination of {-(2^31), 0, 2^31-1} is tested. This test case is
@@ -810,174 +729,29 @@ TEST_F(StreamMixerTest, TwoUnscaledStreamsMixProperlyWithEdgeCases) {
       kMinSample, kMinSample, 0.0, 0.0, kMaxSample, kMaxSample, 0.0, 0.0,
   };
 
+  // Populate the streams with data.
   for (size_t i = 0; i < inputs.size(); ++i) {
     auto test_data = ::media::AudioBus::Create(kNumChannels, kNumFrames);
     test_data->FromInterleaved(kEdgeData[i], kNumFrames, kBytesPerSample);
     inputs[i]->SetData(std::move(test_data));
-    EXPECT_CALL(*inputs[i], GetResampledData(_, kNumFrames));
-    EXPECT_CALL(*inputs[i], VolumeScaleAccumulate(_, _, kNumFrames, _))
-        .Times(kNumChannels);
-    EXPECT_CALL(*inputs[i], AfterWriteFrames(_));
+    EXPECT_CALL(*inputs[i], FillAudioPlaybackFrames(_, _, _)).Times(1);
   }
 
-  EXPECT_CALL(*mock_alsa(), PcmWritei(_, _, kNumFrames)).Times(1);
-  mixer->WriteFramesForTest();
+  PlaybackOnce();
+
+  // Get the actual mixed output, and compare it against the expected stream.
+  // The stream should match exactly.
+  auto actual = ::media::AudioBus::Create(kNumChannels, kNumFrames);
+  ASSERT_GE(mock_output_->data().size(), static_cast<size_t>(kNumFrames));
+  ToPlanar(mock_output_->data().data(), kNumFrames, actual.get());
 
   // Use the hand-calculated results above.
   auto expected = ::media::AudioBus::Create(kNumChannels, kNumFrames);
   expected->FromInterleaved(kResult, kNumFrames, kBytesPerSample);
 
-  // Get the actual stream rendered to ALSA, and compare it against the
-  // expected stream. The stream should match exactly.
-  auto actual = ::media::AudioBus::Create(kNumChannels, kNumFrames);
-  ToPlanar(&(mock_alsa()->data()[0]), kNumFrames, actual.get());
   CompareAudioData(*expected, *actual);
-}
 
-TEST_F(StreamMixerTest, WriteBuffersOfVaryingLength) {
-  auto* input = new testing::StrictMock<MockInputQueue>(kTestSamplesPerSecond);
-  input->SetPaused(false);
-
-  StreamMixer* mixer = StreamMixer::Get();
-  mixer->SetFilterFrameAlignmentForTest(4);
-  EXPECT_CALL(*input, Initialize(_)).Times(1);
-  mixer->AddInput(base::WrapUnique(input));
-  EXPECT_EQ(StreamMixer::kStateNormalPlayback, mixer->state());
-
-  // The input stream will provide buffers of several different lengths.
-  input->SetMaxReadSize(8);
-  EXPECT_CALL(*input, GetResampledData(_, 8));
-  EXPECT_CALL(*input, VolumeScaleAccumulate(_, _, 8, _)).Times(kNumChannels);
-  EXPECT_CALL(*input, AfterWriteFrames(_));
-  EXPECT_CALL(*mock_alsa(), PcmWritei(_, _, 8)).Times(1);
-  mixer->WriteFramesForTest();
-
-  input->SetMaxReadSize(100);
-  EXPECT_CALL(*input, GetResampledData(_, 100));
-  EXPECT_CALL(*input, VolumeScaleAccumulate(_, _, 100, _)).Times(kNumChannels);
-  EXPECT_CALL(*input, AfterWriteFrames(_));
-  EXPECT_CALL(*mock_alsa(), PcmWritei(_, _, 100)).Times(1);
-  mixer->WriteFramesForTest();
-
-  input->SetMaxReadSize(32);
-  EXPECT_CALL(*input, GetResampledData(_, 32));
-  EXPECT_CALL(*input, VolumeScaleAccumulate(_, _, 32, _)).Times(kNumChannels);
-  EXPECT_CALL(*input, AfterWriteFrames(_));
-  EXPECT_CALL(*mock_alsa(), PcmWritei(_, _, 32)).Times(1);
-  mixer->WriteFramesForTest();
-
-  input->SetMaxReadSize(kMaxChunkSize + 1);
-  EXPECT_CALL(*input, GetResampledData(_, kMaxChunkSize));
-  EXPECT_CALL(*input, VolumeScaleAccumulate(_, _, kMaxChunkSize, _))
-      .Times(kNumChannels);
-  EXPECT_CALL(*input, AfterWriteFrames(_));
-  EXPECT_CALL(*mock_alsa(), PcmWritei(_, _, kMaxChunkSize)).Times(1);
-  mixer->WriteFramesForTest();
-}
-
-TEST_F(StreamMixerTest, StuckStreamWithoutUnderrun) {
-  // Create a group of input streams.
-  std::vector<testing::StrictMock<MockInputQueue>*> inputs;
-  const int kNumInputs = 2;
-  for (int i = 0; i < kNumInputs; ++i) {
-    inputs.push_back(
-        new testing::StrictMock<MockInputQueue>(kTestSamplesPerSecond));
-    inputs.back()->SetMaxReadSize(0);
-    inputs.back()->SetPaused(false);
-  }
-
-  StreamMixer* mixer = StreamMixer::Get();
-  for (size_t i = 0; i < inputs.size(); ++i) {
-    EXPECT_CALL(*inputs[i], Initialize(_)).Times(1);
-    mixer->AddInput(base::WrapUnique(inputs[i]));
-  }
-
-  // Poll the inputs for data. Should not pull any data since one input has none
-  // to give.
-  inputs[0]->SetData(GetTestData(0));
-  EXPECT_CALL(*inputs[0], GetResampledData(_, _)).Times(0);
-  EXPECT_CALL(*inputs[0], VolumeScaleAccumulate(_, _, _, _)).Times(0);
-  EXPECT_CALL(*inputs[0], AfterWriteFrames(_)).Times(0);
-
-  EXPECT_CALL(*mock_alsa(), PcmWritei(_, _, _)).Times(0);
-  mixer->WriteFramesForTest();
-}
-
-TEST_F(StreamMixerTest, StuckStreamWithUnderrun) {
-  // Create a group of input streams.
-  std::vector<testing::StrictMock<MockInputQueue>*> inputs;
-  const int kNumInputs = 2;
-  for (int i = 0; i < kNumInputs; ++i) {
-    inputs.push_back(
-        new testing::StrictMock<MockInputQueue>(kTestSamplesPerSecond));
-    inputs.back()->SetMaxReadSize(0);
-    inputs.back()->SetPaused(false);
-  }
-
-  StreamMixer* mixer = StreamMixer::Get();
-  mixer->SetFilterFrameAlignmentForTest(4);
-  for (size_t i = 0; i < inputs.size(); ++i) {
-    EXPECT_CALL(*inputs[i], Initialize(_)).Times(1);
-    mixer->AddInput(base::WrapUnique(inputs[i]));
-  }
-
-  mock_alsa()->set_state(SND_PCM_STATE_XRUN);
-
-  // Poll the inputs for data. The first input will provide data (since the
-  // output is in an underrun condition); the second input can't provide any
-  // data, but AfterWriteFrames() will still be called on it so that it has the
-  // correct rendering delay.
-  const int kNumFrames = 32;
-  inputs[0]->SetData(GetTestData(0));
-  EXPECT_CALL(*inputs[0], GetResampledData(_, kNumFrames));
-  EXPECT_CALL(*inputs[0], VolumeScaleAccumulate(_, _, kNumFrames, _))
-      .Times(kNumChannels);
-  EXPECT_CALL(*inputs[0], AfterWriteFrames(_));
-  EXPECT_CALL(*inputs[1], GetResampledData(_, _)).Times(0);
-  EXPECT_CALL(*inputs[1], VolumeScaleAccumulate(_, _, kNumFrames, _)).Times(0);
-  EXPECT_CALL(*inputs[1], OnSkipped());
-  EXPECT_CALL(*inputs[1], AfterWriteFrames(_));
-
-  EXPECT_CALL(*mock_alsa(), PcmWritei(_, _, kNumFrames)).Times(1);
-  mixer->WriteFramesForTest();
-}
-
-TEST_F(StreamMixerTest, StuckStreamWithLowBuffer) {
-  // Create a group of input streams.
-  std::vector<testing::StrictMock<MockInputQueue>*> inputs;
-  const int kNumInputs = 2;
-  for (int i = 0; i < kNumInputs; ++i) {
-    inputs.push_back(
-        new testing::StrictMock<MockInputQueue>(kTestSamplesPerSecond));
-    inputs.back()->SetMaxReadSize(0);
-    inputs.back()->SetPaused(false);
-  }
-
-  StreamMixer* mixer = StreamMixer::Get();
-  for (size_t i = 0; i < inputs.size(); ++i) {
-    EXPECT_CALL(*inputs[i], Initialize(_)).Times(1);
-    mixer->AddInput(base::WrapUnique(inputs[i]));
-  }
-
-  mock_alsa()->set_avail(4086);
-
-  // Poll the inputs for data. The first input will provide data (since the
-  // output is in an low buffer condition); the second input can't provide any
-  // data, but AfterWriteFrames() will still be called on it so that it has the
-  // correct rendering delay.
-  const int kNumFrames = 32;
-  inputs[0]->SetData(GetTestData(0));
-  EXPECT_CALL(*inputs[0], GetResampledData(_, kNumFrames));
-  EXPECT_CALL(*inputs[0], VolumeScaleAccumulate(_, _, kNumFrames, _))
-      .Times(kNumChannels);
-  EXPECT_CALL(*inputs[0], AfterWriteFrames(_));
-  EXPECT_CALL(*inputs[1], GetResampledData(_, _)).Times(0);
-  EXPECT_CALL(*inputs[1], VolumeScaleAccumulate(_, _, _, _)).Times(0);
-  EXPECT_CALL(*inputs[1], OnSkipped());
-  EXPECT_CALL(*inputs[1], AfterWriteFrames(_));
-
-  EXPECT_CALL(*mock_alsa(), PcmWritei(_, _, kNumFrames)).Times(1);
-  mixer->WriteFramesForTest();
+  mixer_.reset();
 }
 
 #define EXPECT_POSTPROCESSOR_CALL_PROCESSFRAMES(map, name, times, frames, \
@@ -991,162 +765,86 @@ TEST_F(StreamMixerTest, StuckStreamWithLowBuffer) {
 
 TEST_F(StreamMixerTest, PostProcessorDelayListedDeviceId) {
   int common_delay = kMixProcessorDelay + kLinearizeProcessorDelay;
-  std::vector<testing::StrictMock<MockInputQueue>*> inputs;
+
+  std::vector<std::unique_ptr<MockMixerSource>> inputs;
   std::vector<int64_t> delays;
-  inputs.push_back(new testing::StrictMock<MockInputQueue>(
-      kTestSamplesPerSecond, "default"));
+  inputs.push_back(
+      std::make_unique<MockMixerSource>(kTestSamplesPerSecond, "default"));
   delays.push_back(common_delay + kDefaultProcessorDelay);
 
-  inputs.push_back(new testing::StrictMock<MockInputQueue>(
-      kTestSamplesPerSecond, "communications"));
+  inputs.push_back(std::make_unique<MockMixerSource>(kTestSamplesPerSecond,
+                                                     "communications"));
   delays.push_back(common_delay);
 
-  inputs.push_back(new testing::StrictMock<MockInputQueue>(
-      kTestSamplesPerSecond, "assistant-tts"));
+  inputs.push_back(std::make_unique<MockMixerSource>(kTestSamplesPerSecond,
+                                                     "assistant-tts"));
   delays.push_back(common_delay + kTtsProcessorDelay);
 
   // Convert delay from frames to microseconds.
   std::transform(delays.begin(), delays.end(), delays.begin(),
                  &FramesToDelayUs);
 
-  const int kNumFrames = 12;
-  for (auto* input : inputs) {
-    input->SetMaxReadSize(kNumFrames);
-    input->SetPaused(false);
-  }
-
-  StreamMixer* mixer = StreamMixer::Get();
-  mixer->SetFilterFrameAlignmentForTest(4);
   for (size_t i = 0; i < inputs.size(); ++i) {
-    EXPECT_CALL(*inputs[i], Initialize(_)).Times(1);
-    mixer->AddInput(base::WrapUnique(inputs[i]));
+    EXPECT_CALL(*inputs[i], InitializeAudioPlayback(_, _)).Times(1);
+    mixer_->AddInput(inputs[i].get());
   }
 
-  mock_alsa()->set_avail(4086);
-
-  auto* post_processors = MockPostProcessor::instances();
-  EXPECT_POSTPROCESSOR_CALL_PROCESSFRAMES(post_processors, "default", 1,
-                                          kNumFrames, false);
-  EXPECT_POSTPROCESSOR_CALL_PROCESSFRAMES(post_processors, "mix", 1, kNumFrames,
+  auto* post_processors = &pp_factory_->instances;
+  EXPECT_POSTPROCESSOR_CALL_PROCESSFRAMES(post_processors, "default", 1, _,
                                           false);
-  EXPECT_POSTPROCESSOR_CALL_PROCESSFRAMES(post_processors, "linearize", 1,
-                                          kNumFrames, false);
+  EXPECT_POSTPROCESSOR_CALL_PROCESSFRAMES(post_processors, "mix", 1, _, false);
+  EXPECT_POSTPROCESSOR_CALL_PROCESSFRAMES(post_processors, "linearize", 1, _,
+                                          false);
   EXPECT_POSTPROCESSOR_CALL_PROCESSFRAMES(post_processors, "communications", 1,
-                                          kNumFrames, false);
+                                          _, false);
   EXPECT_POSTPROCESSOR_CALL_PROCESSFRAMES(post_processors, "assistant-tts", 1,
-                                          kNumFrames, false);
+                                          _, false);
 
   // Poll the inputs for data. Each input will get a different
   // rendering delay based on their device type.
   for (size_t i = 0; i < inputs.size(); ++i) {
-    EXPECT_CALL(*inputs[i], GetResampledData(_, kNumFrames));
-    EXPECT_CALL(*inputs[i], VolumeScaleAccumulate(_, _, kNumFrames, _))
-        .Times(kNumChannels);
-    EXPECT_CALL(*inputs[i], AfterWriteFrames(
-                                MatchDelay(delays[i], inputs[i]->device_id())));
+    EXPECT_CALL(*inputs[i],
+                FillAudioPlaybackFrames(
+                    _, MatchDelay(delays[i], inputs[i]->device_id()), _))
+        .Times(1);
   }
-  mixer->WriteFramesForTest();
+
+  PlaybackOnce();
+
+  mixer_.reset();
 }
 
 TEST_F(StreamMixerTest, PostProcessorDelayUnlistedDevice) {
   const std::string device_id = "not-a-device-id";
-  testing::StrictMock<MockInputQueue>* input =
-      new testing::StrictMock<MockInputQueue>(kTestSamplesPerSecond, device_id);
-
-  // Delay should be based on default processor
-  int64_t delay = FramesToDelayUs(
-      kDefaultProcessorDelay + kLinearizeProcessorDelay + kMixProcessorDelay);
-  const int kNumFrames = 12;
-  input->SetMaxReadSize(kNumFrames);
-  input->SetPaused(false);
-
-  auto* post_processors = MockPostProcessor::instances();
-  EXPECT_POSTPROCESSOR_CALL_PROCESSFRAMES(post_processors, "default", 1,
-                                          kNumFrames, false);
-  EXPECT_POSTPROCESSOR_CALL_PROCESSFRAMES(post_processors, "mix", 1, kNumFrames,
-                                          false);
-  EXPECT_POSTPROCESSOR_CALL_PROCESSFRAMES(post_processors, "linearize", 1,
-                                          kNumFrames, false);
-
+  MockMixerSource input(kTestSamplesPerSecond, device_id);
+  auto* post_processors = &pp_factory_->instances;
   // These will be called once to ensure their buffers are initialized.
+  EXPECT_POSTPROCESSOR_CALL_PROCESSFRAMES(post_processors, "default", 1, _, _);
+  EXPECT_POSTPROCESSOR_CALL_PROCESSFRAMES(post_processors, "mix", 1, _, _);
+  EXPECT_POSTPROCESSOR_CALL_PROCESSFRAMES(post_processors, "linearize", 1, _,
+                                          _);
   EXPECT_POSTPROCESSOR_CALL_PROCESSFRAMES(post_processors, "communications", 1,
                                           _, _);
   EXPECT_POSTPROCESSOR_CALL_PROCESSFRAMES(post_processors, "assistant-tts", 1,
                                           _, _);
+  mixer_->AddInput(&input);
 
-  StreamMixer* mixer = StreamMixer::Get();
-  EXPECT_CALL(*input, Initialize(_));
-  mixer->AddInput(base::WrapUnique(input));
+  // Delay should be based on default processor.
+  int64_t delay = FramesToDelayUs(
+      kDefaultProcessorDelay + kLinearizeProcessorDelay + kMixProcessorDelay);
 
-  EXPECT_CALL(*input, GetResampledData(_, kNumFrames));
-  EXPECT_CALL(*input, VolumeScaleAccumulate(_, _, kNumFrames, _))
-      .Times(kNumChannels);
-  EXPECT_CALL(*input, AfterWriteFrames(MatchDelay(delay, device_id)));
-  mixer->SetFilterFrameAlignmentForTest(4);
-  mixer->WriteFramesForTest();
-}
+  EXPECT_POSTPROCESSOR_CALL_PROCESSFRAMES(post_processors, "default", 1, _,
+                                          false);
+  EXPECT_POSTPROCESSOR_CALL_PROCESSFRAMES(post_processors, "mix", 1, _, false);
+  EXPECT_POSTPROCESSOR_CALL_PROCESSFRAMES(post_processors, "linearize", 1, _,
+                                          false);
 
-TEST_F(StreamMixerTest, OneStreamTruncatedProperlyFrameAlignment4) {
-  auto* input = new testing::StrictMock<MockInputQueue>(kTestSamplesPerSecond);
-  input->SetPaused(false);
+  EXPECT_CALL(input,
+              FillAudioPlaybackFrames(_, MatchDelay(delay, device_id), _))
+      .Times(1);
+  PlaybackOnce();
 
-  StreamMixer* mixer = StreamMixer::Get();
-  mixer->SetFilterFrameAlignmentForTest(4);
-  EXPECT_CALL(*input, Initialize(_)).Times(1);
-  mixer->AddInput(base::WrapUnique(input));
-  EXPECT_EQ(StreamMixer::kStateNormalPlayback, mixer->state());
-
-  // Precalculated output chunk sizes for given input chunk sizes assuming
-  // 4 frame alignment.
-  int in_out[6][2] = {{4, 4}, {7, 4}, {8, 8}, {9, 8}, {880, 880}, {882, 880}};
-
-  for (int i = 0; i < 6; ++i) {
-    int readSize = in_out[i][0];
-    int expectedSize = in_out[i][1];
-    input->SetMaxReadSize(readSize);
-    EXPECT_CALL(*input, GetResampledData(_, expectedSize));
-    EXPECT_CALL(*input, VolumeScaleAccumulate(_, _, expectedSize, _))
-        .Times(kNumChannels);
-    EXPECT_CALL(*input, AfterWriteFrames(_));
-    EXPECT_CALL(*mock_alsa(), PcmWritei(_, _, expectedSize)).Times(1);
-    mixer->WriteFramesForTest();
-  }
-}
-
-TEST_F(StreamMixerTest, OneStreamTruncatedProperlyFrameAlignment256) {
-  auto* input = new testing::StrictMock<MockInputQueue>(kTestSamplesPerSecond);
-  input->SetPaused(false);
-
-  StreamMixer* mixer = StreamMixer::Get();
-  mixer->SetFilterFrameAlignmentForTest(256);
-  EXPECT_CALL(*input, Initialize(_)).Times(1);
-  mixer->AddInput(base::WrapUnique(input));
-  EXPECT_EQ(StreamMixer::kStateNormalPlayback, mixer->state());
-
-  // Precalculated output chunk sizes for given input chunk sizes assuming
-  // 256 frame alignment.
-  int in_out[4][2] = {{256, 256}, {511, 256}, {512, 512}, {513, 512}};
-
-  for (int i = 0; i < 4; ++i) {
-    int readSize = in_out[i][0];
-    int expectedSize = in_out[i][1];
-    input->SetMaxReadSize(readSize);
-    EXPECT_CALL(*input, GetResampledData(_, expectedSize));
-    EXPECT_CALL(*input, VolumeScaleAccumulate(_, _, expectedSize, _))
-        .Times(kNumChannels);
-    EXPECT_CALL(*input, AfterWriteFrames(_));
-    EXPECT_CALL(*mock_alsa(), PcmWritei(_, _, expectedSize)).Times(1);
-    mixer->WriteFramesForTest();
-  }
-
-  // Do nothing if there isn't enough data.
-  input->SetMaxReadSize(123);  // 0 < 123 < filter frame alignment
-  EXPECT_CALL(*input, GetResampledData(_, _)).Times(0);
-  EXPECT_CALL(*input, VolumeScaleAccumulate(_, _, _, _)).Times(0);
-  EXPECT_CALL(*input, AfterWriteFrames(_)).Times(0);
-
-  EXPECT_CALL(*mock_alsa(), PcmWritei(_, _, _)).Times(0);
-  mixer->WriteFramesForTest();
+  mixer_.reset();
 }
 
 TEST_F(StreamMixerTest, PostProcessorRingingWithoutInput) {
@@ -1170,48 +868,41 @@ TEST_F(StreamMixerTest, PostProcessorRingingWithoutInput) {
 }
 )json";
 
-  const int kNumFrames = 32;
-  testing::NiceMock<MockInputQueue>* input =
-      new testing::NiceMock<MockInputQueue>(kTestSamplesPerSecond, "default");
-  input->SetMaxReadSize(kNumFrames);
-  input->SetPaused(false);
+  MockMixerSource input(kTestSamplesPerSecond, "default");
 
-  StreamMixer* mixer = StreamMixer::Get();
   std::string test_pipeline_json = base::StringPrintf(
       kTestPipelineJson, kDelayModuleSolib, kDelayModuleSolib);
-  mixer->SetFilterFrameAlignmentForTest(4);
-  mixer->ResetPostProcessorsForTest(
-      std::make_unique<MockPostProcessorFactory>(), test_pipeline_json);
-  mixer->AddInput(base::WrapUnique(input));
+  auto factory = std::make_unique<MockPostProcessorFactory>();
+  MockPostProcessorFactory* factory_ptr = factory.get();
+  mixer_->ResetPostProcessorsForTest(std::move(factory), test_pipeline_json);
+  mixer_->AddInput(&input);
 
   // "mix" + "linearize" should be automatic
-  CHECK_EQ(MockPostProcessor::instances()->size(), 4u);
+  CHECK_EQ(factory_ptr->instances.size(), 4u);
 
-  mock_alsa()->set_avail(4086);
-
-  auto* post_processors = MockPostProcessor::instances();
-  EXPECT_POSTPROCESSOR_CALL_PROCESSFRAMES(post_processors, "default", 1,
-                                          kNumFrames, false);
-  EXPECT_POSTPROCESSOR_CALL_PROCESSFRAMES(post_processors, "mix", 1, kNumFrames,
+  auto* post_processors = &factory_ptr->instances;
+  EXPECT_POSTPROCESSOR_CALL_PROCESSFRAMES(post_processors, "default", 1, _,
                                           false);
-  EXPECT_POSTPROCESSOR_CALL_PROCESSFRAMES(post_processors, "linearize", 1,
-                                          kNumFrames, false);
+  EXPECT_POSTPROCESSOR_CALL_PROCESSFRAMES(post_processors, "mix", 1, _, false);
+  EXPECT_POSTPROCESSOR_CALL_PROCESSFRAMES(post_processors, "linearize", 1, _,
+                                          false);
   EXPECT_POSTPROCESSOR_CALL_PROCESSFRAMES(post_processors, "assistant-tts", 1,
-                                          kNumFrames, true);
+                                          _, true);
 
-  mixer->WriteFramesForTest();
+  PlaybackOnce();
+  mixer_.reset();
 }
 
 TEST_F(StreamMixerTest, PostProcessorProvidesDefaultPipeline) {
-  StreamMixer* mixer = StreamMixer::Get();
-  mixer->ResetPostProcessorsForTest(
-      std::make_unique<MockPostProcessorFactory>(), "{}");
+  auto factory = std::make_unique<MockPostProcessorFactory>();
+  MockPostProcessorFactory* factory_ptr = factory.get();
+  mixer_->ResetPostProcessorsForTest(std::move(factory), "{}");
 
-  auto* instances = MockPostProcessor::instances();
+  auto* instances = &factory_ptr->instances;
   CHECK(instances->find("default") == instances->end());
   CHECK(instances->find("mix") != instances->end());
   CHECK(instances->find("linearize") != instances->end());
-  CHECK_EQ(MockPostProcessor::instances()->size(), 2u);
+  CHECK_EQ(instances->size(), 2u);
 }
 
 TEST_F(StreamMixerTest, MultiplePostProcessorsInOneStream) {
@@ -1251,136 +942,134 @@ TEST_F(StreamMixerTest, MultiplePostProcessorsInOneStream) {
       kDelayModuleSolib  // intentionally omitted processor name
       );
 
-  StreamMixer* mixer = StreamMixer::Get();
-  mixer->ResetPostProcessorsForTest(
-      std::make_unique<MockPostProcessorFactory>(), json);
+  auto factory = std::make_unique<MockPostProcessorFactory>();
+  MockPostProcessorFactory* factory_ptr = factory.get();
+  mixer_->ResetPostProcessorsForTest(std::move(factory), json);
 
   // "mix" + "linearize" + "default"
-  CHECK_EQ(MockPostProcessor::instances()->size(), 3u);
+  EXPECT_EQ(factory_ptr->instances.size(), 3u);
 
-  auto* post_processors = MockPostProcessor::instances();
-  CHECK_EQ(post_processors->find("default")->second->delay(), 110);
-  CHECK_EQ(post_processors->find("mix")->second->delay(), 11000);
-  CHECK_EQ(post_processors->find("linearize")->second->delay(), 0);
-  mixer->WriteFramesForTest();
+  auto* post_processors = &factory_ptr->instances;
+  EXPECT_EQ(post_processors->find("default")->second->delay(), 110);
+  EXPECT_EQ(post_processors->find("mix")->second->delay(), 11000);
+  EXPECT_EQ(post_processors->find("linearize")->second->delay(), 0);
 }
 
 TEST_F(StreamMixerTest, PicksPlayoutChannel) {
-  StreamMixer* mixer = StreamMixer::Get();
-  mixer->ResetPostProcessorsForTest(
-      std::make_unique<MockPostProcessorFactory>(), "{}");
+  auto factory = std::make_unique<MockPostProcessorFactory>();
+  MockPostProcessorFactory* factory_ptr = factory.get();
+  mixer_->ResetPostProcessorsForTest(std::move(factory), "{}");
 
-  EXPECT_CALL_ALL_POSTPROCESSORS(UpdatePlayoutChannel(kChannelAll));
-
-  // Add an input to initialize the post processors.
-  // Not necessary, but realistic.
-  testing::NiceMock<MockInputQueue>* input =
-      new testing::NiceMock<MockInputQueue>(kTestSamplesPerSecond);
-  mixer->AddInput(base::WrapUnique(input));
-  VerifyAndClearPostProcessors();
+  MockMixerSource input1(kTestSamplesPerSecond);
+  MockMixerSource input2(kTestSamplesPerSecond);
+  MockMixerSource input3(kTestSamplesPerSecond);
+  MockMixerSource input4(kTestSamplesPerSecond);
+  input1.set_playout_channel(kChannelAll);
+  input2.set_playout_channel(0);
+  input3.set_playout_channel(1);
+  input4.set_playout_channel(1);
 
   // Requests: all = 0 ch0 = 0 ch1 = 1.
-  EXPECT_CALL_ALL_POSTPROCESSORS(UpdatePlayoutChannel(1));
-  mixer->AddPlayoutChannelRequest(1);
-  VerifyAndClearPostProcessors();
+  EXPECT_CALL_ALL_POSTPROCESSORS(factory_ptr, UpdatePlayoutChannel(1));
+  mixer_->AddInput(&input3);
+  VerifyAndClearPostProcessors(factory_ptr);
 
   // Requests: all = 0 ch0 = 0 ch1 = 2.
-  EXPECT_CALL_ALL_POSTPROCESSORS(UpdatePlayoutChannel(1));
-  mixer->AddPlayoutChannelRequest(1);
-  VerifyAndClearPostProcessors();
+  EXPECT_CALL_ALL_POSTPROCESSORS(factory_ptr, UpdatePlayoutChannel(1));
+  mixer_->AddInput(&input4);
+  VerifyAndClearPostProcessors(factory_ptr);
 
   // Requests: all = 1 ch0 = 0 ch1 = 2.
   // Prioritizes all.
-  EXPECT_CALL_ALL_POSTPROCESSORS(UpdatePlayoutChannel(kChannelAll));
-  mixer->AddPlayoutChannelRequest(kChannelAll);
-  VerifyAndClearPostProcessors();
+  EXPECT_CALL_ALL_POSTPROCESSORS(factory_ptr,
+                                 UpdatePlayoutChannel(kChannelAll));
+  mixer_->AddInput(&input1);
+  VerifyAndClearPostProcessors(factory_ptr);
 
   // Requests: all = 1 ch0 = 0 ch1 = 1.
-  EXPECT_CALL_ALL_POSTPROCESSORS(UpdatePlayoutChannel(kChannelAll));
-  mixer->RemovePlayoutChannelRequest(1);
-  VerifyAndClearPostProcessors();
+  EXPECT_CALL_ALL_POSTPROCESSORS(factory_ptr,
+                                 UpdatePlayoutChannel(kChannelAll));
+  mixer_->RemoveInput(&input3);
+  WaitForRemoval();
+  VerifyAndClearPostProcessors(factory_ptr);
 
   // Requests: all = 0 ch0 = 0 ch1 = 1.
-  EXPECT_CALL_ALL_POSTPROCESSORS(UpdatePlayoutChannel(1));
-  mixer->RemovePlayoutChannelRequest(kChannelAll);
-  VerifyAndClearPostProcessors();
+  EXPECT_CALL_ALL_POSTPROCESSORS(factory_ptr, UpdatePlayoutChannel(1));
+  mixer_->RemoveInput(&input1);
+  WaitForRemoval();
+  VerifyAndClearPostProcessors(factory_ptr);
 
   // Requests: all = 0 ch0 = 0 ch1 = 0.
-  EXPECT_CALL_ALL_POSTPROCESSORS(UpdatePlayoutChannel(kChannelAll));
-  mixer->RemovePlayoutChannelRequest(1);
-  VerifyAndClearPostProcessors();
+  EXPECT_CALL_ALL_POSTPROCESSORS(factory_ptr,
+                                 UpdatePlayoutChannel(kChannelAll));
+  mixer_->RemoveInput(&input4);
+  WaitForRemoval();
+  VerifyAndClearPostProcessors(factory_ptr);
 
   // Requests: all = 0 ch0 = 1 ch1 = 0
-  EXPECT_CALL_ALL_POSTPROCESSORS(UpdatePlayoutChannel(0));
-  mixer->AddPlayoutChannelRequest(0);
-  VerifyAndClearPostProcessors();
+  EXPECT_CALL_ALL_POSTPROCESSORS(factory_ptr, UpdatePlayoutChannel(0));
+  mixer_->AddInput(&input2);
+  VerifyAndClearPostProcessors(factory_ptr);
 
   // Requests: all = 1 ch0 = 1 ch1 = 0
-  EXPECT_CALL_ALL_POSTPROCESSORS(UpdatePlayoutChannel(kChannelAll));
-  mixer->AddPlayoutChannelRequest(kChannelAll);
-  VerifyAndClearPostProcessors();
+  EXPECT_CALL_ALL_POSTPROCESSORS(factory_ptr,
+                                 UpdatePlayoutChannel(kChannelAll));
+  mixer_->AddInput(&input1);
+  VerifyAndClearPostProcessors(factory_ptr);
+
+  mixer_->RemoveInput(&input1);
+  mixer_->RemoveInput(&input2);
+  WaitForRemoval();
 }
 
 TEST_F(StreamMixerTest, SetPostProcessorConfig) {
   std::string name = "ThisIsMyName";
   std::string config = "ThisIsMyConfig";
-  StreamMixer* mixer = StreamMixer::Get();
-  auto* post_processors = MockPostProcessor::instances();
 
-  for (auto const& x : *post_processors) {
+  for (auto const& x : pp_factory_->instances) {
     EXPECT_CALL(*(x.second), SetPostProcessorConfig(name, config));
   }
 
-  mixer->SetPostProcessorConfig(name, config);
+  mixer_->SetPostProcessorConfig(name, config);
 }
 
 TEST_F(StreamMixerTest, ObserverGets2ChannelsByDefault) {
-  StreamMixer* mixer = StreamMixer::Get();
-  const int kNumFrames = 256;
-  const int kNumChannels = 2;
-  testing::NiceMock<MockInputQueue>* input =
-      new testing::NiceMock<MockInputQueue>(kTestSamplesPerSecond);
+  MockMixerSource input(kTestSamplesPerSecond);
   testing::StrictMock<MockLoopbackAudioObserver> observer;
-  mixer->AddInput(base::WrapUnique(input));
-
-  input->SetPaused(false);
-  input->SetMaxReadSize(kNumFrames);
-  mixer->AddLoopbackAudioObserver(&observer);
-
-  EXPECT_CALL(
-      observer,
-      OnLoopbackAudio(_, kSampleFormatF32, kTestSamplesPerSecond, kNumChannels,
-                      _, kNumChannels * kNumFrames * sizeof(float)));
-
-  mixer->WriteFramesForTest();
-
-  EXPECT_CALL(observer, OnRemoved());
-  mixer->RemoveLoopbackAudioObserver(&observer);
-}
-
-TEST_F(StreamMixerTest, ObserverGets1ChannelIfNumOutputChannelsIs1) {
-  StreamMixer* mixer = StreamMixer::Get();
-  const int kNumFrames = 256;
-  const int kNumOutputChannels = 1;
-  mixer->SetNumOutputChannelsForTest(kNumOutputChannels);
-  testing::NiceMock<MockInputQueue>* input =
-      new testing::NiceMock<MockInputQueue>(kTestSamplesPerSecond);
-  testing::StrictMock<MockLoopbackAudioObserver> observer;
-  mixer->AddInput(base::WrapUnique(input));
-
-  input->SetPaused(false);
-  input->SetMaxReadSize(kNumFrames);
-  mixer->AddLoopbackAudioObserver(&observer);
+  mixer_->AddInput(&input);
+  mixer_->AddLoopbackAudioObserver(&observer);
 
   EXPECT_CALL(observer,
               OnLoopbackAudio(_, kSampleFormatF32, kTestSamplesPerSecond,
-                              kNumOutputChannels, _,
-                              kNumOutputChannels * kNumFrames * sizeof(float)));
+                              kNumChannels, _, _));
 
-  mixer->WriteFramesForTest();
+  PlaybackOnce();
 
   EXPECT_CALL(observer, OnRemoved());
-  mixer->RemoveLoopbackAudioObserver(&observer);
+  mixer_->RemoveLoopbackAudioObserver(&observer);
+
+  mixer_.reset();
+}
+
+TEST_F(StreamMixerTest, ObserverGets1ChannelIfNumOutputChannelsIs1) {
+  const int kNumOutputChannels = 1;
+  mixer_->SetNumOutputChannelsForTest(kNumOutputChannels);
+
+  MockMixerSource input(kTestSamplesPerSecond);
+  testing::StrictMock<MockLoopbackAudioObserver> observer;
+  mixer_->AddInput(&input);
+  mixer_->AddLoopbackAudioObserver(&observer);
+
+  EXPECT_CALL(observer,
+              OnLoopbackAudio(_, kSampleFormatF32, kTestSamplesPerSecond,
+                              kNumOutputChannels, _, _));
+
+  PlaybackOnce();
+
+  EXPECT_CALL(observer, OnRemoved());
+  mixer_->RemoveLoopbackAudioObserver(&observer);
+
+  mixer_.reset();
 }
 
 using StreamMixerDeathTest = StreamMixerTest;
@@ -1400,21 +1089,21 @@ TEST_F(StreamMixerDeathTest, InvalidStreamTypeCrashes) {
 }
 )json";
 
-  EXPECT_DEATH(StreamMixer::Get()->ResetPostProcessorsForTest(
+  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
+  EXPECT_DEATH(mixer_->ResetPostProcessorsForTest(
                    std::make_unique<MockPostProcessorFactory>(), json),
                DeathRegex("foobar is not a stream type"));
 }
 
 TEST_F(StreamMixerDeathTest, BadJsonCrashes) {
   const std::string json("{{");
-  EXPECT_DEATH(StreamMixer::Get()->ResetPostProcessorsForTest(
+  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
+  EXPECT_DEATH(mixer_->ResetPostProcessorsForTest(
                    std::make_unique<MockPostProcessorFactory>(), json),
                DeathRegex("Invalid JSON"));
 }
 
 TEST_F(StreamMixerDeathTest, CrashesIfChannelCountDoesNotMatchFlags) {
-  StreamMixer* mixer = StreamMixer::Get();
-  const int kNumOutputChannels = 2;
   const std::string config = R"Json({
 "postprocessors": {
   "linearize": {
@@ -1426,16 +1115,14 @@ TEST_F(StreamMixerDeathTest, CrashesIfChannelCountDoesNotMatchFlags) {
   }
 }})Json";
 
-  mixer->SetNumOutputChannelsForTest(kNumOutputChannels);
-  ASSERT_DEATH(mixer->ResetPostProcessorsForTest(
+  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
+  ASSERT_DEATH(mixer_->ResetPostProcessorsForTest(
                    std::make_unique<MockPostProcessorFactory>(), config),
                DeathRegex("PostProcessor configuration channel count does not "
                           "match command line flag"));
 }
 
 TEST_F(StreamMixerDeathTest, CrashesIfMoreThan2LoopbackChannels) {
-  StreamMixer* mixer = StreamMixer::Get();
-  const int kNumOutputChannels = 2;
   const std::string config = R"Json({
 "postprocessors": {
   "output_streams": [{
@@ -1455,8 +1142,8 @@ TEST_F(StreamMixerDeathTest, CrashesIfMoreThan2LoopbackChannels) {
   }
 }})Json";
 
-  mixer->SetNumOutputChannelsForTest(kNumOutputChannels);
-  ASSERT_DEATH(mixer->ResetPostProcessorsForTest(
+  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
+  ASSERT_DEATH(mixer_->ResetPostProcessorsForTest(
                    std::make_unique<MockPostProcessorFactory>(), config),
                DeathRegex("loopback_channel_count <= 2"));
 }
