@@ -282,14 +282,26 @@ _OS_NEGATIVE_FILTER['android:chrome_stable'] = (
 _OS_NEGATIVE_FILTER['android:chromium'] = (
     _OS_NEGATIVE_FILTER['android:chrome'] + [
         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2286
-        'CorrectEventFiringTest.*',
-        'FormHandlingTest.*',
-        'BasicMouseInterfaceTest.*',
-        'JavascriptEnabledDriverTest.*',
+        'CorrectEventFiringTest.testClearingAnElementShouldCauseTheOnChangeHandlerToFire',
+        'CorrectEventFiringTest.testClickEventsShouldBubble',
+        'CorrectEventFiringTest.testSubmittingFormFromFormElementShouldFireOnSubmitForThatForm',
+        'CorrectEventFiringTest.testSendingKeysToAFocusedElementShouldNotBlurThatElement',
+        'CorrectEventFiringTest.testShouldReportTheXAndYCoordinatesWhenClicking',
+        'CorrectEventFiringTest.testShouldEmitClickEventWhenClickingOnATextInputElement',
+        'CorrectEventFiringTest.testSendingKeysToAnElementShouldCauseTheFocusEventToFire',
         'ElementAttributeTest.testShouldReturnAnAbsoluteUrlWhenGettingHrefAttributeOfAValidAnchorTag',
-        'I18nTest.testCn',
-        'TypingTest.testShouldBeAbleToUseArrowKeys',
-        'PageLoadingTest.testShouldBeAbleToLoadAPageWithFramesetsAndWaitUntilAllFramesAreLoaded',
+        'JavascriptEnabledDriverTest.testShouldBeAbleToFindElementAfterJavascriptCausesANewPageToLoad',
+        'JavascriptEnabledDriverTest.testShouldBeAbleToSwitchToFocusedElement',
+        'JavascriptEnabledDriverTest.testShouldBeAbleToDetermineTheLocationOfAnElement',
+        'JavascriptEnabledDriverTest.testIfNoElementHasFocusTheActiveElementIsTheBody',
+        'JavascriptEnabledDriverTest.testShouldWaitForLoadsToCompleteAfterJavascriptCausesANewPageToLoad',
+        'FormHandlingTest.testShouldSubmitAFormUsingTheEnterKey',
+        'FormHandlingTest.testShouldSubmitAFormUsingTheNewlineLiteral',
+        'BasicMouseInterfaceTest.testDoubleClickThenGet',
+        'MiscTest.testShouldReturnTheSourceOfAPage',
+        'MiscTest.testClickingShouldNotTrampleWOrHInGlobalScope',
+        'MiscTest.testShouldReportTheCurrentUrlCorrectly',
+        'MiscTest.testStimulatesStrangeOnloadInteractionInFirefox'
     ]
 )
 _OS_NEGATIVE_FILTER['android:chrome_beta'] = (
