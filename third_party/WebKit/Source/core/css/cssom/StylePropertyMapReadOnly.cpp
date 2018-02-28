@@ -6,11 +6,13 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/CSSPropertyNames.h"
+#include "core/StylePropertyShorthand.h"
 #include "core/css/CSSCustomPropertyDeclaration.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/CSSVariableReferenceValue.h"
 #include "core/css/cssom/CSSStyleValue.h"
 #include "core/css/cssom/CSSUnparsedValue.h"
+#include "core/css/cssom/CSSUnsupportedShorthandValue.h"
 #include "core/css/cssom/StyleValueFactory.h"
 #include "core/css/properties/CSSProperty.h"
 
@@ -66,13 +68,17 @@ CSSStyleValue* StylePropertyMapReadOnly::get(const String& property_name,
   }
 
   DCHECK(isValidCSSPropertyID(property_id));
+  const CSSProperty& property = CSSProperty::Get(property_id);
+  if (property.IsShorthand())
+    return GetShorthandProperty(property);
+
   const CSSValue* value = (property_id == CSSPropertyVariable)
                               ? GetCustomProperty(AtomicString(property_name))
                               : GetProperty(property_id);
   if (!value)
     return nullptr;
 
-  if (CSSProperty::Get(property_id).IsRepeated()) {
+  if (property.IsRepeated()) {
     CSSStyleValueVector values =
         StyleValueFactory::CssValueToStyleValueVector(property_id, *value);
     return values.IsEmpty() ? nullptr : values[0];
@@ -91,6 +97,14 @@ CSSStyleValueVector StylePropertyMapReadOnly::getAll(
   }
 
   DCHECK(isValidCSSPropertyID(property_id));
+  const CSSProperty& property = CSSProperty::Get(property_id);
+  if (property.IsShorthand()) {
+    CSSStyleValueVector values;
+    if (CSSStyleValue* value = GetShorthandProperty(property))
+      values.push_back(value);
+    return values;
+  }
+
   const CSSValue* value = (property_id == CSSPropertyVariable)
                               ? GetCustomProperty(AtomicString(property_name))
                               : GetProperty(property_id);
@@ -122,6 +136,23 @@ StylePropertyMapReadOnly::StartIteration(ScriptState*, ExceptionState&) {
     return ComparePropertyNames(a.first, b.first);
   });
   return new StylePropertyMapIterationSource(result);
+}
+
+CSSStyleValue* StylePropertyMapReadOnly::GetShorthandProperty(
+    const CSSProperty& property) {
+  DCHECK(property.IsShorthand());
+  auto* result = CSSUnsupportedShorthandValue::Create(property.PropertyID());
+  const StylePropertyShorthand& shorthand =
+      shorthandForProperty(property.PropertyID());
+  for (size_t i = 0; i < shorthand.length(); i++) {
+    const CSSValue* longhand_value =
+        GetProperty(shorthand.properties()[i]->PropertyID());
+    if (!longhand_value)
+      return nullptr;
+
+    result->Append(longhand_value);
+  }
+  return result;
 }
 
 }  // namespace blink
