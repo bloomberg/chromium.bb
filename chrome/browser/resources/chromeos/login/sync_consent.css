@@ -36,6 +36,10 @@ a {
   width: fit-content;
 }
 
+#syncConsentOverviewDialog .bottom-buttons {
+  padding: 0 6px; /* = 8px - 2px button border */
+}
+
 /************* Settings Section **************/
 #syncConsentSettingsDialog oobe-a11y-option {
   border-top: var(--sync-consent-dialog-list-item-border);
