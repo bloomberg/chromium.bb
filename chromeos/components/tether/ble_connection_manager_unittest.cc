@@ -187,10 +187,8 @@ class FakeConnectionFactory final
     EXPECT_EQ(expected_adapter_, adapter);
     EXPECT_EQ(expected_remote_service_uuid_, remote_service_uuid);
     EXPECT_FALSE(should_set_low_connection_latency);
-
-    return base::WrapUnique<FakeConnectionWithAddress>(
-        new FakeConnectionWithAddress(remote_device,
-                                      bluetooth_device->GetAddress()));
+    return base::WrapUnique(new FakeConnectionWithAddress(
+        remote_device, bluetooth_device->GetAddress()));
   }
 
  private:
@@ -236,6 +234,10 @@ class BleConnectionManagerTest : public testing::Test {
    public:
     FakeSecureChannelFactory() = default;
 
+    std::vector<FakeSecureChannel*>& created_channels() {
+      return created_channels_;
+    }
+
     void SetExpectedDeviceAddress(const std::string& expected_device_address) {
       expected_device_address_ = expected_device_address;
     }
@@ -246,12 +248,15 @@ class BleConnectionManagerTest : public testing::Test {
       FakeConnectionWithAddress* fake_connection =
           static_cast<FakeConnectionWithAddress*>(connection.get());
       EXPECT_EQ(expected_device_address_, fake_connection->GetDeviceAddress());
-      return base::WrapUnique(
-          new FakeSecureChannel(std::move(connection), cryptauth_service));
+      FakeSecureChannel* channel =
+          new FakeSecureChannel(std::move(connection), cryptauth_service);
+      created_channels_.push_back(channel);
+      return base::WrapUnique(channel);
     }
 
    private:
     std::string expected_device_address_;
+    std::vector<FakeSecureChannel*> created_channels_;
   };
 
   BleConnectionManagerTest() : test_devices_(CreateTestDevices(4)) {
@@ -423,7 +428,8 @@ class BleConnectionManagerTest : public testing::Test {
   void VerifyDeviceNotRegistered(const cryptauth::RemoteDevice& remote_device) {
     BleConnectionManager::ConnectionMetadata* connection_metadata =
         manager_->GetConnectionMetadata(remote_device.GetDeviceId());
-    EXPECT_FALSE(connection_metadata);
+    if (connection_metadata)
+      EXPECT_FALSE(connection_metadata->HasReasonForConnection());
   }
 
   // Registers |remote_device|, creates a connection to that device at
@@ -771,10 +777,18 @@ TEST_F(BleConnectionManagerTest, TestSuccessfulConnection_SendAndReceive) {
   VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
       {test_devices_[0].GetDeviceId(),
        cryptauth::SecureChannel::Status::AUTHENTICATED,
+       cryptauth::SecureChannel::Status::DISCONNECTING,
+       BleConnectionManager::StateChangeDetail::STATE_CHANGE_DETAIL_NONE}});
+  VerifyDeviceNotRegistered(test_devices_[0]);
+
+  fake_secure_channel_factory_->created_channels()[0]->ChangeStatus(
+      cryptauth::SecureChannel::Status::DISCONNECTED);
+  VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
+      {test_devices_[0].GetDeviceId(),
+       cryptauth::SecureChannel::Status::DISCONNECTING,
        cryptauth::SecureChannel::Status::DISCONNECTED,
        BleConnectionManager::StateChangeDetail::
            STATE_CHANGE_DETAIL_DEVICE_WAS_UNREGISTERED}});
-  VerifyDeviceNotRegistered(test_devices_[0]);
 }
 
 // Test for fix to crbug.com/706640. This test will crash without the fix.
@@ -827,10 +841,18 @@ TEST_F(BleConnectionManagerTest,
   VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
       {test_devices_[0].GetDeviceId(),
        cryptauth::SecureChannel::Status::AUTHENTICATED,
+       cryptauth::SecureChannel::Status::DISCONNECTING,
+       BleConnectionManager::StateChangeDetail::STATE_CHANGE_DETAIL_NONE}});
+  VerifyDeviceNotRegistered(test_devices_[0]);
+
+  fake_secure_channel_factory_->created_channels()[0]->ChangeStatus(
+      cryptauth::SecureChannel::Status::DISCONNECTED);
+  VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
+      {test_devices_[0].GetDeviceId(),
+       cryptauth::SecureChannel::Status::DISCONNECTING,
        cryptauth::SecureChannel::Status::DISCONNECTED,
        BleConnectionManager::StateChangeDetail::
            STATE_CHANGE_DETAIL_DEVICE_WAS_UNREGISTERED}});
-  VerifyDeviceNotRegistered(test_devices_[0]);
 }
 
 TEST_F(BleConnectionManagerTest, TestGetStatusForDevice) {
@@ -893,14 +915,24 @@ TEST_F(BleConnectionManagerTest, TestGetStatusForDevice) {
       manager_->GetStatusForDevice(test_devices_[0].GetDeviceId(), &status));
   EXPECT_EQ(cryptauth::SecureChannel::Status::AUTHENTICATED, status);
 
-  // Now, unregister the device and check that GetStatusForDevice() once again
-  // returns false.
+  // Now, unregister the device.
   manager_->UnregisterRemoteDevice(
       test_devices_[0].GetDeviceId(),
       ConnectionReason::TETHER_AVAILABILITY_REQUEST);
   VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
       {test_devices_[0].GetDeviceId(),
        cryptauth::SecureChannel::Status::AUTHENTICATED,
+       cryptauth::SecureChannel::Status::DISCONNECTING,
+       BleConnectionManager::StateChangeDetail::STATE_CHANGE_DETAIL_NONE}});
+  EXPECT_TRUE(
+      manager_->GetStatusForDevice(test_devices_[0].GetDeviceId(), &status));
+  EXPECT_EQ(cryptauth::SecureChannel::Status::DISCONNECTING, status);
+
+  fake_secure_channel_factory_->created_channels()[0]->ChangeStatus(
+      cryptauth::SecureChannel::Status::DISCONNECTED);
+  VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
+      {test_devices_[0].GetDeviceId(),
+       cryptauth::SecureChannel::Status::DISCONNECTING,
        cryptauth::SecureChannel::Status::DISCONNECTED,
        BleConnectionManager::StateChangeDetail::
            STATE_CHANGE_DETAIL_DEVICE_WAS_UNREGISTERED}});
@@ -1082,6 +1114,14 @@ TEST_F(BleConnectionManagerTest, TwoDevices_OneConnects) {
   VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
       {test_devices_[0].GetDeviceId(),
        cryptauth::SecureChannel::Status::AUTHENTICATED,
+       cryptauth::SecureChannel::Status::DISCONNECTING,
+       BleConnectionManager::StateChangeDetail::STATE_CHANGE_DETAIL_NONE}});
+
+  fake_secure_channel_factory_->created_channels()[0]->ChangeStatus(
+      cryptauth::SecureChannel::Status::DISCONNECTED);
+  VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
+      {test_devices_[0].GetDeviceId(),
+       cryptauth::SecureChannel::Status::DISCONNECTING,
        cryptauth::SecureChannel::Status::DISCONNECTED,
        BleConnectionManager::StateChangeDetail::
            STATE_CHANGE_DETAIL_DEVICE_WAS_UNREGISTERED}});
@@ -1145,10 +1185,18 @@ TEST_F(BleConnectionManagerTest, TwoDevices_BothConnectSendAndReceive) {
   VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
       {test_devices_[0].GetDeviceId(),
        cryptauth::SecureChannel::Status::AUTHENTICATED,
+       cryptauth::SecureChannel::Status::DISCONNECTING,
+       BleConnectionManager::StateChangeDetail::STATE_CHANGE_DETAIL_NONE}});
+  VerifyDeviceNotRegistered(test_devices_[0]);
+
+  fake_secure_channel_factory_->created_channels()[0]->ChangeStatus(
+      cryptauth::SecureChannel::Status::DISCONNECTED);
+  VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
+      {test_devices_[0].GetDeviceId(),
+       cryptauth::SecureChannel::Status::DISCONNECTING,
        cryptauth::SecureChannel::Status::DISCONNECTED,
        BleConnectionManager::StateChangeDetail::
            STATE_CHANGE_DETAIL_DEVICE_WAS_UNREGISTERED}});
-  VerifyDeviceNotRegistered(test_devices_[0]);
 
   manager_->UnregisterRemoteDevice(
       test_devices_[1].GetDeviceId(),
@@ -1156,10 +1204,18 @@ TEST_F(BleConnectionManagerTest, TwoDevices_BothConnectSendAndReceive) {
   VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
       {test_devices_[1].GetDeviceId(),
        cryptauth::SecureChannel::Status::AUTHENTICATED,
+       cryptauth::SecureChannel::Status::DISCONNECTING,
+       BleConnectionManager::StateChangeDetail::STATE_CHANGE_DETAIL_NONE}});
+  VerifyDeviceNotRegistered(test_devices_[1]);
+
+  fake_secure_channel_factory_->created_channels()[1]->ChangeStatus(
+      cryptauth::SecureChannel::Status::DISCONNECTED);
+  VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
+      {test_devices_[1].GetDeviceId(),
+       cryptauth::SecureChannel::Status::DISCONNECTING,
        cryptauth::SecureChannel::Status::DISCONNECTED,
        BleConnectionManager::StateChangeDetail::
            STATE_CHANGE_DETAIL_DEVICE_WAS_UNREGISTERED}});
-  VerifyDeviceNotRegistered(test_devices_[1]);
 }
 
 TEST_F(BleConnectionManagerTest, FourDevices_ComprehensiveTest) {
@@ -1235,6 +1291,13 @@ TEST_F(BleConnectionManagerTest, FourDevices_ComprehensiveTest) {
   VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
       {test_devices_[0].GetDeviceId(),
        cryptauth::SecureChannel::Status::AUTHENTICATED,
+       cryptauth::SecureChannel::Status::DISCONNECTING,
+       BleConnectionManager::StateChangeDetail::STATE_CHANGE_DETAIL_NONE}});
+  fake_secure_channel_factory_->created_channels()[0]->ChangeStatus(
+      cryptauth::SecureChannel::Status::DISCONNECTED);
+  VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
+      {test_devices_[0].GetDeviceId(),
+       cryptauth::SecureChannel::Status::DISCONNECTING,
        cryptauth::SecureChannel::Status::DISCONNECTED,
        BleConnectionManager::StateChangeDetail::
            STATE_CHANGE_DETAIL_DEVICE_WAS_UNREGISTERED}});
@@ -1293,9 +1356,8 @@ TEST_F(BleConnectionManagerTest, FourDevices_ComprehensiveTest) {
   VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
       {test_devices_[3].GetDeviceId(),
        cryptauth::SecureChannel::Status::AUTHENTICATED,
-       cryptauth::SecureChannel::Status::DISCONNECTED,
-       BleConnectionManager::StateChangeDetail::
-           STATE_CHANGE_DETAIL_DEVICE_WAS_UNREGISTERED},
+       cryptauth::SecureChannel::Status::DISCONNECTING,
+       BleConnectionManager::StateChangeDetail::STATE_CHANGE_DETAIL_NONE},
       {test_devices_[1].GetDeviceId(),
        cryptauth::SecureChannel::Status::CONNECTING,
        cryptauth::SecureChannel::Status::DISCONNECTED,
@@ -1303,6 +1365,15 @@ TEST_F(BleConnectionManagerTest, FourDevices_ComprehensiveTest) {
            STATE_CHANGE_DETAIL_DEVICE_WAS_UNREGISTERED},
       {test_devices_[2].GetDeviceId(),
        cryptauth::SecureChannel::Status::CONNECTING,
+       cryptauth::SecureChannel::Status::DISCONNECTED,
+       BleConnectionManager::StateChangeDetail::
+           STATE_CHANGE_DETAIL_DEVICE_WAS_UNREGISTERED}});
+
+  fake_secure_channel_factory_->created_channels()[1]->ChangeStatus(
+      cryptauth::SecureChannel::Status::DISCONNECTED);
+  VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
+      {test_devices_[3].GetDeviceId(),
+       cryptauth::SecureChannel::Status::DISCONNECTING,
        cryptauth::SecureChannel::Status::DISCONNECTED,
        BleConnectionManager::StateChangeDetail::
            STATE_CHANGE_DETAIL_DEVICE_WAS_UNREGISTERED}});
@@ -1343,10 +1414,18 @@ TEST_F(BleConnectionManagerTest, ObserverUnregisters) {
   VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
       {test_devices_[0].GetDeviceId(),
        cryptauth::SecureChannel::Status::AUTHENTICATED,
+       cryptauth::SecureChannel::Status::DISCONNECTING,
+       BleConnectionManager::StateChangeDetail::STATE_CHANGE_DETAIL_NONE}});
+  VerifyDeviceNotRegistered(test_devices_[0]);
+
+  fake_secure_channel_factory_->created_channels()[0]->ChangeStatus(
+      cryptauth::SecureChannel::Status::DISCONNECTED);
+  VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
+      {test_devices_[0].GetDeviceId(),
+       cryptauth::SecureChannel::Status::DISCONNECTING,
        cryptauth::SecureChannel::Status::DISCONNECTED,
        BleConnectionManager::StateChangeDetail::
            STATE_CHANGE_DETAIL_DEVICE_WAS_UNREGISTERED}});
-  VerifyDeviceNotRegistered(test_devices_[0]);
 
   // Now, register the device again. This should cause a "disconnected =>
   // connecting" status change. This time, the multiple observers will respond

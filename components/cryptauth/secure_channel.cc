@@ -53,6 +53,8 @@ std::string SecureChannel::StatusToString(const Status& status) {
       return "[authenticating]";
     case Status::AUTHENTICATED:
       return "[authenticated]";
+    case Status::DISCONNECTING:
+      return "[disconnecting]";
     default:
       return "[unknown status]";
   }
@@ -100,6 +102,8 @@ int SecureChannel::SendMessage(const std::string& feature,
 
 void SecureChannel::Disconnect() {
   if (connection_->IsConnected()) {
+    TransitionToStatus(Status::DISCONNECTING);
+
     // If |connection_| is active, calling Disconnect() will eventually cause
     // its status to transition to DISCONNECTED, which will in turn cause this
     // class to transition to DISCONNECTED.

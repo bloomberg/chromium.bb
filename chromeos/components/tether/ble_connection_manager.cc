@@ -147,6 +147,11 @@ int BleConnectionManager::ConnectionMetadata::SendMessage(
   return secure_channel_->SendMessage(std::string(kTetherFeature), payload);
 }
 
+void BleConnectionManager::ConnectionMetadata::Disconnect() {
+  DCHECK(HasSecureChannel());
+  secure_channel_->Disconnect();
+}
+
 void BleConnectionManager::ConnectionMetadata::OnSecureChannelStatusChanged(
     cryptauth::SecureChannel* secure_channel,
     const cryptauth::SecureChannel::Status& old_status,
@@ -272,24 +277,22 @@ void BleConnectionManager::UnregisterRemoteDevice(
 
   connection_metadata->UnregisterConnectionReason(connection_reason);
   if (!connection_metadata->HasReasonForConnection()) {
-    // Use a copy of the device ID. It's possible that the device ID passed to
-    // this function will be destroyed due to fields being manipulated below.
-    const std::string device_id_copy = device_id;
+    if (connection_metadata->HasEstablishedConnection()) {
+      connection_metadata->Disconnect();
+    } else {
+      // |device_id| references memory that will be deleted below; make a copy.
+      const std::string device_id_copy = device_id;
+      cryptauth::SecureChannel::Status status_before_erase =
+          connection_metadata->GetStatus();
+      device_id_to_metadata_map_.erase(device_id_copy);
 
-    cryptauth::SecureChannel::Status status_before_disconnect =
-        connection_metadata->GetStatus();
-    device_id_to_metadata_map_.erase(device_id_copy);
-    if (status_before_disconnect ==
-        cryptauth::SecureChannel::Status::CONNECTING) {
-      StopConnectionAttemptAndMoveToEndOfQueue(device_id_copy);
-    }
-    if (status_before_disconnect !=
-        cryptauth::SecureChannel::Status::DISCONNECTED) {
-      // Send a status update for the disconnection.
-      NotifySecureChannelStatusChanged(
-          device_id_copy, status_before_disconnect,
-          cryptauth::SecureChannel::Status::DISCONNECTED,
-          StateChangeDetail::STATE_CHANGE_DETAIL_DEVICE_WAS_UNREGISTERED);
+      if (status_before_erase == cryptauth::SecureChannel::Status::CONNECTING) {
+        StopConnectionAttemptAndMoveToEndOfQueue(device_id_copy);
+        NotifySecureChannelStatusChanged(
+            device_id_copy, cryptauth::SecureChannel::Status::CONNECTING,
+            cryptauth::SecureChannel::Status::DISCONNECTED,
+            StateChangeDetail::STATE_CHANGE_DETAIL_DEVICE_WAS_UNREGISTERED);
+      }
     }
   }
 
@@ -539,8 +542,24 @@ void BleConnectionManager::OnSecureChannelStatusChanged(
     const cryptauth::SecureChannel::Status& old_status,
     const cryptauth::SecureChannel::Status& new_status,
     StateChangeDetail state_change_detail) {
-  NotifySecureChannelStatusChanged(device_id, old_status, new_status,
-                                   state_change_detail);
+  ConnectionMetadata* connection_metadata = GetConnectionMetadata(device_id);
+  DCHECK(connection_metadata);
+
+  // Create copies of the references passed to this function. If the map entry
+  // is erased below, the references will point to deleted memory.
+  const std::string device_id_copy = device_id;
+  const cryptauth::SecureChannel::Status old_status_copy = old_status;
+  const cryptauth::SecureChannel::Status new_status_copy = new_status;
+
+  if (!connection_metadata->HasReasonForConnection() &&
+      new_status == cryptauth::SecureChannel::Status::DISCONNECTED) {
+    device_id_to_metadata_map_.erase(device_id_copy);
+    state_change_detail =
+        StateChangeDetail::STATE_CHANGE_DETAIL_DEVICE_WAS_UNREGISTERED;
+  }
+
+  NotifySecureChannelStatusChanged(device_id_copy, old_status_copy,
+                                   new_status_copy, state_change_detail);
   UpdateConnectionAttempts();
 }
 

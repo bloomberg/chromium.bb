@@ -564,9 +564,6 @@ class CryptAuthBluetoothLowEnergyWeaveClientConnectionTest
     connection->Disconnect();
 
     if (connection->IsConnected()) {
-      connection->DestroyConnection(
-          BluetoothLowEnergyWeaveClientConnection::BleWeaveConnectionResult::
-              BLE_WEAVE_CONNECTION_RESULT_CLOSED_NORMALLY);
       EXPECT_EQ(last_value_written_on_tx_characteristic_,
                 kConnectionCloseSuccess);
       RunWriteCharacteristicSuccessCallback();
@@ -574,6 +571,21 @@ class CryptAuthBluetoothLowEnergyWeaveClientConnectionTest
 
     EXPECT_EQ(connection->sub_status(), SubStatus::DISCONNECTED);
     EXPECT_EQ(connection->status(), Connection::DISCONNECTED);
+  }
+
+  void DeleteConnectionWithoutCallingDisconnect(
+      std::unique_ptr<TestBluetoothLowEnergyWeaveClientConnection>*
+          connection) {
+    bool was_connected = (*connection)->IsConnected();
+    if (was_connected) {
+      EXPECT_CALL(*tx_characteristic_, WriteRemoteCharacteristic(_, _, _))
+          .WillOnce(
+              DoAll(SaveArg<0>(&last_value_written_on_tx_characteristic_),
+                    SaveArg<1>(&write_remote_characteristic_success_callback_),
+                    SaveArg<2>(&write_remote_characteristic_error_callback_)));
+    }
+
+    connection->reset();
   }
 
   void InitializeConnection(
@@ -707,7 +719,7 @@ TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
       CreateConnection(true /* should_set_low_connection_latency */));
   Disconnect(connection.get());
 
-  connection.reset();
+  DeleteConnectionWithoutCallingDisconnect(&connection);
   VerifyBleWeaveConnectionResult(
       BluetoothLowEnergyWeaveClientConnection::BleWeaveConnectionResult::
           BLE_WEAVE_CONNECTION_RESULT_CLOSED_NORMALLY);
@@ -722,7 +734,7 @@ TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
   NotifySessionStarted(connection.get());
   ConnectionResponseReceived(connection.get(), kDefaultMaxPacketSize);
 
-  connection.reset();
+  DeleteConnectionWithoutCallingDisconnect(&connection);
   VerifyBleWeaveConnectionResult(
       BluetoothLowEnergyWeaveClientConnection::BleWeaveConnectionResult::
           BLE_WEAVE_CONNECTION_RESULT_CLOSED_NORMALLY);
@@ -736,6 +748,34 @@ TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
   EXPECT_EQ(connection->sub_status(), SubStatus::CONNECTED_AND_IDLE);
   Disconnect(connection.get());
 
+  VerifyBleWeaveConnectionResult(
+      BluetoothLowEnergyWeaveClientConnection::BleWeaveConnectionResult::
+          BLE_WEAVE_CONNECTION_RESULT_CLOSED_NORMALLY);
+}
+
+TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
+       DisconnectCalledTwice) {
+  std::unique_ptr<TestBluetoothLowEnergyWeaveClientConnection> connection(
+      CreateConnection(true /* should_set_low_connection_latency */));
+  InitializeConnection(connection.get(), kDefaultMaxPacketSize);
+  EXPECT_EQ(connection->sub_status(), SubStatus::CONNECTED_AND_IDLE);
+
+  EXPECT_CALL(*tx_characteristic_, WriteRemoteCharacteristic(_, _, _))
+      .WillOnce(
+          DoAll(SaveArg<0>(&last_value_written_on_tx_characteristic_),
+                SaveArg<1>(&write_remote_characteristic_success_callback_),
+                SaveArg<2>(&write_remote_characteristic_error_callback_)));
+
+  // Call Disconnect() twice; this should only result in one "close connection"
+  // message (verified via WillOnce() above).
+  connection->Disconnect();
+  connection->Disconnect();
+
+  EXPECT_EQ(last_value_written_on_tx_characteristic_, kConnectionCloseSuccess);
+  RunWriteCharacteristicSuccessCallback();
+
+  EXPECT_EQ(connection->sub_status(), SubStatus::DISCONNECTED);
+  EXPECT_EQ(connection->status(), Connection::DISCONNECTED);
   VerifyBleWeaveConnectionResult(
       BluetoothLowEnergyWeaveClientConnection::BleWeaveConnectionResult::
           BLE_WEAVE_CONNECTION_RESULT_CLOSED_NORMALLY);
@@ -774,7 +814,7 @@ TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
   CharacteristicsFound(connection.get());
   Disconnect(connection.get());
 
-  connection.reset();
+  DeleteConnectionWithoutCallingDisconnect(&connection);
   VerifyBleWeaveConnectionResult(
       BluetoothLowEnergyWeaveClientConnection::BleWeaveConnectionResult::
           BLE_WEAVE_CONNECTION_RESULT_CLOSED_NORMALLY);
@@ -922,7 +962,7 @@ TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
 
   EXPECT_EQ(received_bytes, kSmallMessage);
 
-  connection.reset();
+  DeleteConnectionWithoutCallingDisconnect(&connection);
   VerifyBleWeaveConnectionResult(
       BluetoothLowEnergyWeaveClientConnection::BleWeaveConnectionResult::
           BLE_WEAVE_CONNECTION_RESULT_CLOSED_NORMALLY);
@@ -947,7 +987,7 @@ TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
   }
   EXPECT_EQ(received_bytes, kLargeMessage);
 
-  connection.reset();
+  DeleteConnectionWithoutCallingDisconnect(&connection);
   VerifyBleWeaveConnectionResult(
       BluetoothLowEnergyWeaveClientConnection::BleWeaveConnectionResult::
           BLE_WEAVE_CONNECTION_RESULT_CLOSED_NORMALLY);
@@ -979,7 +1019,7 @@ TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
   EXPECT_EQ(kSmallMessage, connection_observer_->GetLastDeserializedMessage());
   EXPECT_TRUE(connection_observer_->last_send_success());
 
-  connection.reset();
+  DeleteConnectionWithoutCallingDisconnect(&connection);
   VerifyBleWeaveConnectionResult(
       BluetoothLowEnergyWeaveClientConnection::BleWeaveConnectionResult::
           BLE_WEAVE_CONNECTION_RESULT_CLOSED_NORMALLY);
@@ -1030,7 +1070,7 @@ TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
   EXPECT_EQ(kLargeMessage, connection_observer_->GetLastDeserializedMessage());
   EXPECT_TRUE(connection_observer_->last_send_success());
 
-  connection.reset();
+  DeleteConnectionWithoutCallingDisconnect(&connection);
   VerifyBleWeaveConnectionResult(
       BluetoothLowEnergyWeaveClientConnection::BleWeaveConnectionResult::
           BLE_WEAVE_CONNECTION_RESULT_CLOSED_NORMALLY);
@@ -1214,7 +1254,8 @@ TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
   InitializeConnection(connection, kDefaultMaxPacketSize);
 
   EXPECT_CALL(*tx_characteristic_, WriteRemoteCharacteristic(_, _, _))
-      .WillOnce(
+      .Times(2)
+      .WillRepeatedly(
           DoAll(SaveArg<0>(&last_value_written_on_tx_characteristic_),
                 SaveArg<1>(&write_remote_characteristic_success_callback_),
                 SaveArg<2>(&write_remote_characteristic_error_callback_)));
@@ -1229,6 +1270,9 @@ TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
   EXPECT_EQ(1, connection_observer_->num_send_completed());
   EXPECT_EQ(kSmallMessage, connection_observer_->GetLastDeserializedMessage());
   EXPECT_TRUE(connection_observer_->last_send_success());
+
+  // Connection close packet should have been sent when the object was deleted.
+  EXPECT_EQ(last_value_written_on_tx_characteristic_, kConnectionCloseSuccess);
 
   // We cannot check if connection's status and sub_status are DISCONNECTED
   // because it has been deleted.
@@ -1330,7 +1374,7 @@ TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
 
   VerifyGattConnectionResultSuccess();
 
-  connection.reset();
+  DeleteConnectionWithoutCallingDisconnect(&connection);
   VerifyBleWeaveConnectionResult(
       BluetoothLowEnergyWeaveClientConnection::BleWeaveConnectionResult::
           BLE_WEAVE_CONNECTION_RESULT_CLOSED_NORMALLY);
@@ -1375,7 +1419,7 @@ TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
 
   VerifyGattConnectionResultSuccess();
 
-  connection.reset();
+  DeleteConnectionWithoutCallingDisconnect(&connection);
   VerifyBleWeaveConnectionResult(
       BluetoothLowEnergyWeaveClientConnection::BleWeaveConnectionResult::
           BLE_WEAVE_CONNECTION_RESULT_CLOSED_NORMALLY);
