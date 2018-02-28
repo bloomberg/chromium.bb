@@ -754,13 +754,14 @@ void av1_convolve_x_sr_avx2(const uint8_t *src, int src_stride, uint8_t *dst,
          ((conv_params->round_0 + conv_params->round_1) == 2 * FILTER_BITS));
   assert(conv_params->round_0 > 0);
 
-  for (i = 0; i < h; ++i) {
-    for (j = 0; j < w; j += 16) {
-      // 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 8 9 10 11 12 13 14 15 16 17 18
-      // 19 20 21 22 23
-      const __m256i data = _mm256_inserti128_si256(
-          _mm256_loadu_si256((__m256i *)&src_ptr[(i * src_stride) + j]),
-          _mm_loadu_si128((__m128i *)&src_ptr[(i * src_stride) + (j + 8)]), 1);
+  if (w <= 8) {
+    for (i = 0; i < h; i += 2) {
+      const __m256i data = _mm256_permute2x128_si256(
+          _mm256_castsi128_si256(
+              _mm_loadu_si128((__m128i *)(&src_ptr[i * src_stride]))),
+          _mm256_castsi128_si256(_mm_loadu_si128(
+              (__m128i *)(&src_ptr[i * src_stride + src_stride]))),
+          0x20);
 
       __m256i res_16b = convolve_lowbd_x(data, coeffs, filt);
 
@@ -774,22 +775,48 @@ void av1_convolve_x_sr_avx2(const uint8_t *src, int src_stride, uint8_t *dst,
       // 8 bit conversion and saturation to uint8
       __m256i res_8b = _mm256_packus_epi16(res_16b, res_16b);
 
-      // Store values into the destination buffer
-      if (w - j > 8) {
+      const __m128i res_0 = _mm256_castsi256_si128(res_8b);
+      const __m128i res_1 = _mm256_extracti128_si256(res_8b, 1);
+      if (w > 4) {
+        _mm_storel_epi64((__m128i *)&dst[i * dst_stride], res_0);
+        _mm_storel_epi64((__m128i *)&dst[i * dst_stride + dst_stride], res_1);
+      } else if (w > 2) {
+        xx_storel_32(&dst[i * dst_stride], res_0);
+        xx_storel_32(&dst[i * dst_stride + dst_stride], res_1);
+      } else {
+        __m128i *const p_0 = (__m128i *)&dst[i * dst_stride];
+        __m128i *const p_1 = (__m128i *)&dst[i * dst_stride + dst_stride];
+        *(uint16_t *)p_0 = _mm_cvtsi128_si32(res_0);
+        *(uint16_t *)p_1 = _mm_cvtsi128_si32(res_1);
+      }
+    }
+  } else {
+    for (i = 0; i < h; ++i) {
+      for (j = 0; j < w; j += 16) {
+        // 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 8 9 10 11 12 13 14 15 16 17 18
+        // 19 20 21 22 23
+        const __m256i data = _mm256_inserti128_si256(
+            _mm256_loadu_si256((__m256i *)&src_ptr[(i * src_stride) + j]),
+            _mm_loadu_si128((__m128i *)&src_ptr[(i * src_stride) + (j + 8)]),
+            1);
+
+        __m256i res_16b = convolve_lowbd_x(data, coeffs, filt);
+
+        res_16b = _mm256_sra_epi16(_mm256_add_epi16(res_16b, round_0_const),
+                                   round_0_shift);
+
+        res_16b = _mm256_sra_epi16(_mm256_add_epi16(res_16b, round_const),
+                                   round_shift);
+
+        /* rounding code */
+        // 8 bit conversion and saturation to uint8
+        __m256i res_8b = _mm256_packus_epi16(res_16b, res_16b);
+
+        // Store values into the destination buffer
         // 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
         res_8b = _mm256_permute4x64_epi64(res_8b, 216);
         __m128i res = _mm256_castsi256_si128(res_8b);
         _mm_storeu_si128((__m128i *)&dst[i * dst_stride + j], res);
-      } else {
-        __m128i res = _mm256_castsi256_si128(res_8b);
-        if (w - j > 4) {
-          _mm_storel_epi64((__m128i *)&dst[i * dst_stride + j], res);
-        } else if (w - j > 2) {
-          xx_storel_32(&dst[i * dst_stride + j], res);
-        } else {
-          __m128i *const p = (__m128i *)&dst[i * dst_stride + j];
-          *(uint16_t *)p = _mm_cvtsi128_si32(res);
-        }
       }
     }
   }
