@@ -103,7 +103,6 @@ typedef struct {
 
 typedef struct {
   TX_SIZE tx_size;
-  TX_SIZE min_tx_size;
   TX_SIZE inter_tx_size[INTER_TX_SIZE_BUF_LEN];
   uint8_t blk_skip[MAX_MIB_SIZE * MAX_MIB_SIZE * 8];
   TX_TYPE txk_type[TXK_TYPE_BUF_LEN];

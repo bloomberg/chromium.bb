@@ -376,7 +376,6 @@ static void reset_tx_size(MACROBLOCKD *xd, MB_MODE_INFO *mbmi,
   }
   if (is_inter_block(mbmi)) {
     memset(mbmi->inter_tx_size, mbmi->tx_size, sizeof(mbmi->inter_tx_size));
-    mbmi->min_tx_size = mbmi->tx_size;
   }
 }
 
@@ -4709,7 +4708,6 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
       }
     }
 
-    mbmi->min_tx_size = mbmi->tx_size;
     av1_update_txb_context(cpi, td, dry_run, bsize, rate, mi_row, mi_col,
                            tile_data->allow_update_cdf);
   } else {
@@ -4749,7 +4747,6 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
 #endif
 
     av1_encode_sb(cpi, x, bsize, mi_row, mi_col, dry_run);
-    if (mbmi->skip) mbmi->min_tx_size = mbmi->tx_size;
     av1_tokenize_sb_vartx(cpi, td, t, dry_run, mi_row, mi_col, bsize, rate,
                           tile_data->allow_update_cdf);
   }
@@ -4757,17 +4754,15 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
   if (!dry_run) {
     if (av1_allow_intrabc(cm) && is_intrabc_block(mbmi))
       td->intrabc_used_this_tile = 1;
-    TX_SIZE tx_size =
-        is_inter && !mbmi->skip ? mbmi->min_tx_size : mbmi->tx_size;
     if (cm->tx_mode == TX_MODE_SELECT && !xd->lossless[mbmi->segment_id] &&
         mbmi->sb_type > BLOCK_4X4 && !(is_inter && (mbmi->skip || seg_skip))) {
       if (is_inter) {
         tx_partition_count_update(cm, x, bsize, mi_row, mi_col, td->counts,
                                   tile_data->allow_update_cdf);
       } else {
-        if (tx_size != get_max_rect_tx_size(bsize)) ++x->txb_split_count;
+        if (mbmi->tx_size != get_max_rect_tx_size(bsize)) ++x->txb_split_count;
       }
-      assert(IMPLIES(is_rect_tx(tx_size), is_rect_tx_allowed(xd, mbmi)));
+      assert(IMPLIES(is_rect_tx(mbmi->tx_size), is_rect_tx_allowed(xd, mbmi)));
     } else {
       int i, j;
       TX_SIZE intra_tx_size;
@@ -4779,12 +4774,12 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
           intra_tx_size = tx_size_from_tx_mode(bsize, cm->tx_mode);
         }
       } else {
-        intra_tx_size = tx_size;
+        intra_tx_size = mbmi->tx_size;
         if (block_signals_txsize(bsize) && !xd->lossless[mbmi->segment_id] &&
             tile_data->allow_update_cdf) {
           const int tx_size_ctx = get_tx_size_context(xd);
           const int32_t tx_size_cat = bsize_to_tx_size_cat(bsize, 0);
-          const int depth = tx_size_to_depth(tx_size, bsize, 0);
+          const int depth = tx_size_to_depth(intra_tx_size, bsize, 0);
           const int max_depths = bsize_to_max_depth(bsize, 0);
           update_cdf(xd->tile_ctx->tx_size_cdf[tx_size_cat][tx_size_ctx], depth,
                      max_depths + 1);
@@ -4796,7 +4791,6 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
           if (mi_col + i < cm->mi_cols && mi_row + j < cm->mi_rows)
             mi_8x8[mis * j + i]->mbmi.tx_size = intra_tx_size;
 
-      mbmi->min_tx_size = intra_tx_size;
       if (intra_tx_size != get_max_rect_tx_size(bsize)) ++x->txb_split_count;
     }
   }

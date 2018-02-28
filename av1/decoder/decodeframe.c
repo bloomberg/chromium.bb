@@ -515,7 +515,6 @@ static void read_tx_size_vartx(MACROBLOCKD *xd, MB_MODE_INFO *mbmi,
       }
     }
     mbmi->tx_size = tx_size;
-    mbmi->min_tx_size = TXSIZEMIN(mbmi->min_tx_size, tx_size);
     txfm_partition_update(xd->above_txfm_context + blk_col,
                           xd->left_txfm_context + blk_row, tx_size, tx_size);
     return;
@@ -540,7 +539,6 @@ static void read_tx_size_vartx(MACROBLOCKD *xd, MB_MODE_INFO *mbmi,
         }
       }
       mbmi->tx_size = sub_txs;
-      mbmi->min_tx_size = mbmi->tx_size;
       txfm_partition_update(xd->above_txfm_context + blk_col,
                             xd->left_txfm_context + blk_row, sub_txs, tx_size);
       return;
@@ -563,7 +561,6 @@ static void read_tx_size_vartx(MACROBLOCKD *xd, MB_MODE_INFO *mbmi,
       }
     }
     mbmi->tx_size = tx_size;
-    mbmi->min_tx_size = TXSIZEMIN(mbmi->min_tx_size, tx_size);
     txfm_partition_update(xd->above_txfm_context + blk_col,
                           xd->left_txfm_context + blk_row, tx_size, tx_size);
   }
@@ -645,7 +642,6 @@ static void decode_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
     const int width = block_size_wide[bsize] >> tx_size_wide_log2[0];
     const int height = block_size_high[bsize] >> tx_size_wide_log2[0];
 
-    mbmi->min_tx_size = TX_SIZES_LARGEST;
     for (int idy = 0; idy < height; idy += bh)
       for (int idx = 0; idx < width; idx += bw)
         read_tx_size_vartx(xd, mbmi, max_tx_size, 0, idy, idx, r);
@@ -653,7 +649,6 @@ static void decode_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
     mbmi->tx_size = read_tx_size(cm, xd, inter_block_tx, !mbmi->skip, r);
     if (inter_block_tx)
       memset(mbmi->inter_tx_size, mbmi->tx_size, sizeof(mbmi->inter_tx_size));
-    mbmi->min_tx_size = mbmi->tx_size;
     set_txfm_ctxs(mbmi->tx_size, xd->n8_w, xd->n8_h,
                   mbmi->skip && is_inter_block(mbmi), xd);
   }

@@ -2377,7 +2377,6 @@ static void choose_largest_tx_size(const AV1_COMP *const cpi, MACROBLOCK *x,
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   const int is_inter = is_inter_block(mbmi);
   mbmi->tx_size = tx_size_from_tx_mode(bs, cm->tx_mode);
-  mbmi->min_tx_size = mbmi->tx_size;
   const TxSetType tx_set_type =
       get_ext_tx_set_type(mbmi->tx_size, bs, is_inter, cm->reduced_tx_set_used);
   prune_tx(cpi, bs, x, xd, tx_set_type, 0);
@@ -2397,8 +2396,6 @@ static void choose_smallest_tx_size(const AV1_COMP *const cpi, MACROBLOCK *x,
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
 
   mbmi->tx_size = TX_4X4;
-  mbmi->min_tx_size = TX_4X4;
-
   if (skip_invalid_tx_size_for_filter_intra(mbmi, AOM_PLANE_Y, rd_stats)) {
     return;
   }
@@ -2500,7 +2497,6 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
          sizeof(best_txk_type[0]) * TXK_TYPE_BUF_LEN);
   memcpy(x->blk_skip[0], best_blk_skip, sizeof(best_blk_skip[0]) * n4);
 
-  mbmi->min_tx_size = mbmi->tx_size;
   // Reset the pruning flags.
   av1_zero(x->tx_search_prune);
 }
@@ -3867,8 +3863,6 @@ static int64_t select_tx_size_fix_type(const AV1_COMP *cpi, MACROBLOCK *x,
   int s0 = x->skip_cost[skip_ctx][0];
   int s1 = x->skip_cost[skip_ctx][1];
   int64_t rd;
-  const int max_blocks_high = max_block_high(xd, bsize, 0);
-  const int max_blocks_wide = max_block_wide(xd, bsize, 0);
 
   // TODO(debargha): enable this as a speed feature where the
   // select_inter_block_yrd() function above will use a simplified search
@@ -3884,15 +3878,6 @@ static int64_t select_tx_size_fix_type(const AV1_COMP *cpi, MACROBLOCK *x,
   select_inter_block_yrd(cpi, x, rd_stats, bsize, rd_thresh, fast_tx_search,
                          rd_info_tree);
   if (rd_stats->rate == INT_MAX) return INT64_MAX;
-
-  mbmi->min_tx_size = mbmi->inter_tx_size[0];
-  for (int row = 0; row < max_blocks_high; ++row) {
-    for (int col = 0; col < max_blocks_wide; ++col) {
-      const int index = av1_get_txb_size_index(bsize, row, col);
-      mbmi->min_tx_size =
-          TXSIZEMIN(mbmi->min_tx_size, mbmi->inter_tx_size[index]);
-    }
-  }
 
   // If fast_tx_search is true, only DCT and 1D DCT were tested in
   // select_inter_block_yrd() above. Do a better search for tx type with
@@ -4110,7 +4095,6 @@ static void save_tx_rd_info(int n4, uint32_t hash, const MACROBLOCK *const x,
   const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   tx_rd_info->hash_value = hash;
   tx_rd_info->tx_size = mbmi->tx_size;
-  tx_rd_info->min_tx_size = mbmi->min_tx_size;
   memcpy(tx_rd_info->blk_skip, x->blk_skip[0],
          sizeof(tx_rd_info->blk_skip[0]) * n4);
   av1_copy(tx_rd_info->inter_tx_size, mbmi->inter_tx_size);
@@ -4123,7 +4107,6 @@ static void fetch_tx_rd_info(int n4, const TX_RD_INFO *const tx_rd_info,
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   mbmi->tx_size = tx_rd_info->tx_size;
-  mbmi->min_tx_size = tx_rd_info->min_tx_size;
   memcpy(x->blk_skip[0], tx_rd_info->blk_skip,
          sizeof(tx_rd_info->blk_skip[0]) * n4);
   av1_copy(mbmi->inter_tx_size, tx_rd_info->inter_tx_size);
@@ -4356,7 +4339,6 @@ static void set_skip_flag(const AV1_COMP *cpi, MACROBLOCK *x,
   memset(mbmi->txk_type, DCT_DCT, sizeof(mbmi->txk_type[0]) * TXK_TYPE_BUF_LEN);
   memset(mbmi->inter_tx_size, tx_size, sizeof(mbmi->inter_tx_size));
   mbmi->tx_size = tx_size;
-  mbmi->min_tx_size = tx_size;
   memset(x->blk_skip[0], 1, sizeof(uint8_t) * n4);
   rd_stats->skip = 1;
 
@@ -4394,7 +4376,6 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
   const int is_inter = is_inter_block(mbmi);
   TX_SIZE best_tx_size[INTER_TX_SIZE_BUF_LEN] = { 0 };
   TX_SIZE best_tx = max_txsize_rect_lookup[bsize];
-  TX_SIZE best_min_tx_size = TX_SIZES_ALL;
   uint8_t best_blk_skip[MAX_MIB_SIZE * MAX_MIB_SIZE];
   const int n4 = bsize_to_num_blk(bsize);
   // Get the tx_size 1 level down
@@ -4460,7 +4441,6 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
     best_rd = rd;
     *rd_stats = this_rd_stats;
     best_tx = mbmi->tx_size;
-    best_min_tx_size = mbmi->min_tx_size;
     memcpy(best_blk_skip, x->blk_skip[0], sizeof(best_blk_skip[0]) * n4);
     found = 1;
     av1_copy(best_tx_size, mbmi->inter_tx_size);
@@ -4479,7 +4459,6 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
   // array into mbmi.
   av1_copy(mbmi->inter_tx_size, best_tx_size);
   mbmi->tx_size = best_tx;
-  mbmi->min_tx_size = best_min_tx_size;
   memcpy(x->blk_skip[0], best_blk_skip, sizeof(best_blk_skip[0]) * n4);
 
   // Save the RD search results into tx_rd_record.
@@ -9676,7 +9655,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
       for (i = 0; i < num_planes; ++i)
         memcpy(ctx->blk_skip[i], x->blk_skip[i],
                sizeof(uint8_t) * ctx->num_4x4_blk);
-      best_mbmode.min_tx_size = mbmi->min_tx_size;
       av1_copy(best_mbmode.txk_type, mbmi->txk_type);
       rd_cost->rate +=
           (rd_stats_y.rate + rd_stats_uv.rate - best_rate_y - best_rate_uv);
@@ -9809,7 +9787,6 @@ PALETTE_EXIT:
                                 : max_txsize_rect_lookup[bsize];
       memset(best_mbmode.inter_tx_size, best_mbmode.tx_size,
              sizeof(best_mbmode.inter_tx_size));
-      best_mbmode.min_tx_size = best_mbmode.tx_size;
       set_txfm_ctxs(best_mbmode.tx_size, xd->n8_w, xd->n8_h,
                     best_mbmode.skip && is_inter_block(mbmi), xd);
 

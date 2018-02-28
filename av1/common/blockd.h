@@ -230,7 +230,6 @@ typedef struct MB_MODE_INFO {
   BLOCK_SIZE sb_type;
   PREDICTION_MODE mode;
   TX_SIZE tx_size;
-  TX_SIZE min_tx_size;
   uint8_t inter_tx_size[INTER_TX_SIZE_BUF_LEN];
   int8_t skip;
   int8_t skip_mode;
