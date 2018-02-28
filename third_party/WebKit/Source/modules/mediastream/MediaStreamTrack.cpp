@@ -320,30 +320,30 @@ void MediaStreamTrack::getCapabilities(MediaTrackCapabilities& capabilities) {
   }
 
   if (component_->Source()->GetType() == MediaStreamSource::kTypeVideo) {
-    LongRange width, height;
     if (platform_capabilities.width.size() == 2) {
+      LongRange width;
       width.setMin(platform_capabilities.width[0]);
       width.setMax(platform_capabilities.width[1]);
+      capabilities.setWidth(width);
     }
     if (platform_capabilities.height.size() == 2) {
+      LongRange height;
       height.setMin(platform_capabilities.height[0]);
       height.setMax(platform_capabilities.height[1]);
+      capabilities.setHeight(height);
     }
-    capabilities.setWidth(width);
-    capabilities.setHeight(height);
-
-    DoubleRange aspect_ratio, frame_rate;
     if (platform_capabilities.aspect_ratio.size() == 2) {
+      DoubleRange aspect_ratio;
       aspect_ratio.setMin(platform_capabilities.aspect_ratio[0]);
       aspect_ratio.setMax(platform_capabilities.aspect_ratio[1]);
+      capabilities.setAspectRatio(aspect_ratio);
     }
     if (platform_capabilities.frame_rate.size() == 2) {
+      DoubleRange frame_rate;
       frame_rate.setMin(platform_capabilities.frame_rate[0]);
       frame_rate.setMax(platform_capabilities.frame_rate[1]);
+      capabilities.setFrameRate(frame_rate);
     }
-    capabilities.setAspectRatio(aspect_ratio);
-    capabilities.setFrameRate(frame_rate);
-
     Vector<String> facing_mode;
     switch (platform_capabilities.facing_mode) {
       case WebMediaStreamTrack::FacingMode::kUser:
