@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/platform_window/x11/x11_window_ozone.h"
+#include "ui/ozone/platform/x11/x11_window_ozone.h"
 
 #include "base/bind.h"
 #include "ui/events/event.h"
@@ -10,8 +10,8 @@
 #include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/x/x11.h"
-#include "ui/platform_window/x11/x11_cursor_ozone.h"
-#include "ui/platform_window/x11/x11_window_manager_ozone.h"
+#include "ui/ozone/platform/x11/x11_cursor_ozone.h"
+#include "ui/ozone/platform/x11/x11_window_manager_ozone.h"
 
 namespace ui {
 

@@ -2,17 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_PLATFORM_WINDOW_X11_X11_WINDOW_MANAGER_OZONE_H_
-#define UI_PLATFORM_WINDOW_X11_X11_WINDOW_MANAGER_OZONE_H_
+#ifndef UI_OZONE_PLATFORM_X11_X11_WINDOW_MANAGER_OZONE_H_
+#define UI_OZONE_PLATFORM_X11_X11_WINDOW_MANAGER_OZONE_H_
 
 #include "base/macros.h"
-#include "ui/platform_window/x11/x11_window_export.h"
 
 namespace ui {
 
 class X11WindowOzone;
 
-class X11_WINDOW_EXPORT X11WindowManagerOzone {
+class X11WindowManagerOzone {
  public:
   X11WindowManagerOzone();
   ~X11WindowManagerOzone();
@@ -35,4 +34,4 @@ class X11_WINDOW_EXPORT X11WindowManagerOzone {
 
 }  // namespace ui
 
-#endif  // UI_PLATFORM_WINDOW_X11_X11_WINDOW_MANAGER_OZONE_H_
+#endif  // UI_OZONE_PLATFORM_X11_X11_WINDOW_MANAGER_OZONE_H_

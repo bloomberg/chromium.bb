@@ -34,20 +34,7 @@ jumbo_component("x11") {
     "x11_window_export.h",
   ]
 
-  if (ozone_platform_x11) {
-    sources += [
-      "x11_cursor_ozone.cc",
-      "x11_cursor_ozone.h",
-      "x11_window_manager_ozone.cc",
-      "x11_window_manager_ozone.h",
-      "x11_window_ozone.cc",
-      "x11_window_ozone.h",
-    ]
-    deps += [
-      "//ui/base",
-      "//ui/base/x",
-    ]
-  } else if (use_x11) {
+  if (use_x11) {
     sources += [
       "x11_window.cc",
       "x11_window.h",
