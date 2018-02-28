@@ -32,12 +32,51 @@
 #include "url/gurl.h"
 
 namespace content {
-
 namespace {
 
 void ReleaseSharedMemoryPixels(void* addr, void* context) {
   MojoResult result = MojoUnmapBuffer(context);
   DCHECK_EQ(MOJO_RESULT_OK, result);
+}
+
+void OnReadAndEncodeImageFinished(
+    scoped_refptr<ChromeBlobStorageContext> blob_storage_context,
+    std::vector<uint8_t> png_data,
+    ClipboardHostImpl::ReadImageCallback callback) {
+  // |blob_storage_context| must be accessed only on the IO thread.
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  blink::mojom::SerializedBlobPtr blob;
+  if (png_data.size() < std::numeric_limits<uint32_t>::max()) {
+    std::unique_ptr<content::BlobHandle> blob_handle =
+        blob_storage_context->CreateMemoryBackedBlob(
+            reinterpret_cast<char*>(png_data.data()), png_data.size(), "");
+    if (blob_handle) {
+      std::string blob_uuid = blob_handle->GetUUID();
+      blob = blink::mojom::SerializedBlob::New(
+          blob_uuid, ui::Clipboard::kMimeTypePNG,
+          static_cast<int64_t>(png_data.size()),
+          blob_handle->PassBlob().PassInterface());
+    }
+  }
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::BindOnce(std::move(callback), std::move(blob)));
+}
+
+void ReadAndEncodeImage(
+    scoped_refptr<ChromeBlobStorageContext> blob_storage_context,
+    const SkBitmap& bitmap,
+    ClipboardHostImpl::ReadImageCallback callback) {
+  std::vector<uint8_t> png_data;
+  if (!gfx::PNGCodec::FastEncodeBGRASkBitmap(bitmap, false, &png_data)) {
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::BindOnce(std::move(callback), nullptr));
+    return;
+  }
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&OnReadAndEncodeImageFinished,
+                     std::move(blob_storage_context), std::move(png_data),
+                     std::move(callback)));
 }
 
 }  // namespace
@@ -159,51 +198,16 @@ void ClipboardHostImpl::ReadImage(ui::ClipboardType clipboard_type,
 
   SkBitmap bitmap = clipboard_->ReadImage(clipboard_type);
 
+  if (bitmap.isNull()) {
+    std::move(callback).Run(nullptr);
+    return;
+  }
   base::PostTaskWithTraits(
       FROM_HERE,
       {base::MayBlock(), base::TaskPriority::BACKGROUND,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-      base::BindOnce(&ClipboardHostImpl::ReadAndEncodeImage,
-                     base::Unretained(this), bitmap, std::move(callback)));
-}
-
-void ClipboardHostImpl::ReadAndEncodeImage(const SkBitmap& bitmap,
-                                           ReadImageCallback callback) {
-  if (!bitmap.isNull()) {
-    std::vector<uint8_t> png_data;
-    if (gfx::PNGCodec::FastEncodeBGRASkBitmap(bitmap, false, &png_data)) {
-      BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
-          base::BindOnce(&ClipboardHostImpl::OnReadAndEncodeImageFinished,
-                         base::Unretained(this), std::move(png_data),
-                         std::move(callback)));
-      return;
-    }
-  }
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::BindOnce(std::move(callback), nullptr));
-}
-
-void ClipboardHostImpl::OnReadAndEncodeImageFinished(
-    std::vector<uint8_t> png_data,
-    ReadImageCallback callback) {
-  // |blob_storage_context_| must be accessed only on the IO thread.
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  blink::mojom::SerializedBlobPtr blob;
-  if (png_data.size() < std::numeric_limits<uint32_t>::max()) {
-    std::unique_ptr<content::BlobHandle> blob_handle =
-        blob_storage_context_->CreateMemoryBackedBlob(
-            reinterpret_cast<char*>(png_data.data()), png_data.size(), "");
-    if (blob_handle) {
-      std::string blob_uuid = blob_handle->GetUUID();
-      blob = blink::mojom::SerializedBlob::New(
-          blob_uuid, ui::Clipboard::kMimeTypePNG,
-          static_cast<int64_t>(png_data.size()),
-          blob_handle->PassBlob().PassInterface());
-    }
-  }
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::BindOnce(std::move(callback), std::move(blob)));
+      base::BindOnce(&ReadAndEncodeImage, blob_storage_context_,
+                     std::move(bitmap), std::move(callback)));
 }
 
 void ClipboardHostImpl::ReadCustomData(ui::ClipboardType clipboard_type,
