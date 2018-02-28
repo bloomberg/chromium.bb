@@ -255,8 +255,8 @@ void SVGTextContentElement::SvgAttributeChanged(
       attr_name == XMLNames::spaceAttr) {
     SVGElement::InvalidationGuard invalidation_guard(this);
 
-    if (LayoutObject* layout_object = this->GetLayoutObject())
-      MarkForLayoutAndParentResourceInvalidation(layout_object);
+    if (LayoutObject* layout_object = GetLayoutObject())
+      MarkForLayoutAndParentResourceInvalidation(*layout_object);
 
     return;
   }

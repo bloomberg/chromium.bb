@@ -76,14 +76,14 @@ void SVGTextPositioningElement::SvgAttributeChanged(
   if (update_relative_lengths || attr_name == SVGNames::rotateAttr) {
     SVGElement::InvalidationGuard invalidation_guard(this);
 
-    LayoutObject* layout_object = this->GetLayoutObject();
+    LayoutObject* layout_object = GetLayoutObject();
     if (!layout_object)
       return;
 
     if (LayoutSVGText* text_layout_object =
             LayoutSVGText::LocateLayoutSVGTextAncestor(layout_object))
       text_layout_object->SetNeedsPositioningValuesUpdate();
-    MarkForLayoutAndParentResourceInvalidation(layout_object);
+    MarkForLayoutAndParentResourceInvalidation(*layout_object);
     return;
   }
 

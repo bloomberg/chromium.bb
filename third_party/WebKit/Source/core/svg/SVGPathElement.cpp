@@ -83,8 +83,8 @@ void SVGPathElement::SvgAttributeChanged(const QualifiedName& attr_name) {
 
   if (attr_name == SVGNames::pathLengthAttr) {
     SVGElement::InvalidationGuard invalidation_guard(this);
-    if (GetLayoutObject())
-      MarkForLayoutAndParentResourceInvalidation(GetLayoutObject());
+    if (LayoutObject* layout_object = GetLayoutObject())
+      MarkForLayoutAndParentResourceInvalidation(*layout_object);
     return;
   }
 

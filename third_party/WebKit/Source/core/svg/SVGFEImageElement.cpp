@@ -144,8 +144,8 @@ void SVGFEImageElement::ImageNotifyFinished(ImageResourceContent*) {
   if (!parent || !IsSVGFilterElement(parent) || !parent->GetLayoutObject())
     return;
 
-  if (LayoutObject* layout_object = this->GetLayoutObject())
-    MarkForLayoutAndParentResourceInvalidation(layout_object);
+  if (LayoutObject* layout_object = GetLayoutObject())
+    MarkForLayoutAndParentResourceInvalidation(*layout_object);
 }
 
 FilterEffect* SVGFEImageElement::Build(SVGFilterBuilder*, Filter* filter) {

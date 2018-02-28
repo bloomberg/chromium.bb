@@ -304,7 +304,7 @@ void SVGAnimateMotionElement::InvalidateForAnimateMotionTransformChange(
   object.SetNeedsTransformUpdate();
   // The transform paint property relies on the SVG transform value.
   object.SetNeedsPaintPropertyUpdate();
-  MarkForLayoutAndParentResourceInvalidation(&object);
+  MarkForLayoutAndParentResourceInvalidation(object);
 }
 
 }  // namespace blink

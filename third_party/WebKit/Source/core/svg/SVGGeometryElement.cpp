@@ -188,7 +188,7 @@ void SVGGeometryElement::GeometryAttributeChanged() {
   SVGElement::InvalidationGuard invalidation_guard(this);
   if (LayoutSVGShape* layout_object = ToLayoutSVGShape(GetLayoutObject())) {
     layout_object->SetNeedsShapeUpdate();
-    MarkForLayoutAndParentResourceInvalidation(layout_object);
+    MarkForLayoutAndParentResourceInvalidation(*layout_object);
   }
 }
 

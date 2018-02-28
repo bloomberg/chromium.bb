@@ -99,7 +99,7 @@ void SVGTextPathElement::SvgAttributeChanged(const QualifiedName& attr_name) {
       attr_name == SVGNames::methodAttr || attr_name == SVGNames::spacingAttr) {
     SVGElement::InvalidationGuard invalidation_guard(this);
     if (LayoutObject* object = GetLayoutObject())
-      MarkForLayoutAndParentResourceInvalidation(object);
+      MarkForLayoutAndParentResourceInvalidation(*object);
 
     return;
   }
@@ -131,8 +131,8 @@ void SVGTextPathElement::BuildPendingResource() {
     AddReferenceTo(ToSVGElement(target));
   }
 
-  if (LayoutObject* layout_object = this->GetLayoutObject())
-    MarkForLayoutAndParentResourceInvalidation(layout_object);
+  if (LayoutObject* layout_object = GetLayoutObject())
+    MarkForLayoutAndParentResourceInvalidation(*layout_object);
 }
 
 Node::InsertionNotificationRequest SVGTextPathElement::InsertedInto(

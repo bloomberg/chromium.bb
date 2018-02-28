@@ -298,8 +298,8 @@ void SVGSVGElement::SvgAttributeChanged(const QualifiedName& attr_name) {
   if (update_relative_lengths_or_view_box ||
       SVGZoomAndPan::IsKnownAttribute(attr_name)) {
     SVGElement::InvalidationGuard invalidation_guard(this);
-    if (auto* layout_object = this->GetLayoutObject())
-      MarkForLayoutAndParentResourceInvalidation(layout_object);
+    if (auto* layout_object = GetLayoutObject())
+      MarkForLayoutAndParentResourceInvalidation(*layout_object);
     return;
   }
 
@@ -701,8 +701,8 @@ void SVGSVGElement::SetViewSpec(SVGViewSpec* view_spec) {
   if (!view_spec_ && !view_spec)
     return;
   view_spec_ = view_spec;
-  if (LayoutObject* layout_object = this->GetLayoutObject())
-    MarkForLayoutAndParentResourceInvalidation(layout_object);
+  if (LayoutObject* layout_object = GetLayoutObject())
+    MarkForLayoutAndParentResourceInvalidation(*layout_object);
 }
 
 void SVGSVGElement::SetupInitialView(const String& fragment_identifier,

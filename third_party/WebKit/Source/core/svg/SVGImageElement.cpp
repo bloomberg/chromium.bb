@@ -131,7 +131,7 @@ void SVGImageElement::SvgAttributeChanged(const QualifiedName& attr_name) {
       UpdateRelativeLengthsInformation();
     }
 
-    LayoutObject* object = this->GetLayoutObject();
+    LayoutObject* object = GetLayoutObject();
     if (!object)
       return;
 
@@ -139,7 +139,7 @@ void SVGImageElement::SvgAttributeChanged(const QualifiedName& attr_name) {
     // viewport didn't change, however since we don't have the computed
     // style yet we can't use updateBoundingBox/updateImageContainerSize.
     // See http://crbug.com/466200.
-    MarkForLayoutAndParentResourceInvalidation(object);
+    MarkForLayoutAndParentResourceInvalidation(*object);
     return;
   }
 
