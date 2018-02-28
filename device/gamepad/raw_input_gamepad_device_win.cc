@@ -326,7 +326,7 @@ void RawInputGamepadDeviceWin::QueryAxisCapabilities(uint16_t axis_count) {
 
   for (size_t i = 0; i < axis_count; i++) {
     size_t axis_index = axes_caps[i].Range.UsageMin - kAxisMinimumUsageNumber;
-    if (axis_index < Gamepad::kAxesLengthCap) {
+    if (axis_index < Gamepad::kAxesLengthCap && !axes_[axis_index].active) {
       axes_[axis_index].caps = axes_caps[i];
       axes_[axis_index].value = 0;
       axes_[axis_index].active = true;
