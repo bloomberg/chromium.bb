@@ -7,7 +7,7 @@
 
 #include "build/build_config.h"
 #include "platform/heap/Heap.h"
-#include "platform/heap/IncrementalMarkingFlag.h"
+#include "platform/heap/HeapFlags.h"
 #include "platform/heap/Persistent.h"
 #include "platform/heap/TraceTraits.h"
 #include "platform/wtf/Allocator.h"

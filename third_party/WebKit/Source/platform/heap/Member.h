@@ -6,8 +6,8 @@
 #define Member_h
 
 #include "platform/heap/Heap.h"
+#include "platform/heap/HeapFlags.h"
 #include "platform/heap/HeapPage.h"
-#include "platform/heap/IncrementalMarkingFlag.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/HashFunctions.h"
 #include "platform/wtf/HashTraits.h"

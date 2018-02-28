@@ -10,15 +10,18 @@ import("//testing/test.gni")
 declare_args() {
   # Enables incremental marking in Oilpan.
   enable_blink_heap_incremental_marking = false
+
+  # Enables heap verification.
+  enable_blink_heap_verification = false
 }
 
-buildflag_header("blink_heap_incremental_marking") {
-  header = "IncrementalMarkingFlag.h"
-
+buildflag_header("blink_heap_flags") {
+  header = "HeapFlags.h"
   header_dir = "blink/platform/heap"
 
   flags = [
     "BLINK_HEAP_INCREMENTAL_MARKING=$enable_blink_heap_incremental_marking",
+    "BLINK_HEAP_VERIFICATION=$enable_blink_heap_verification",
   ]
 }
 
