@@ -30,19 +30,21 @@ class U2fRegister : public U2fRequest {
       base::Optional<RegisterResponseData> response_data)>;
 
   static std::unique_ptr<U2fRequest> TryRegistration(
+      std::string relying_party_id,
       service_manager::Connector* connector,
       const base::flat_set<U2fTransportProtocol>& protocols,
       std::vector<std::vector<uint8_t>> registered_keys,
       std::vector<uint8_t> challenge_digest,
-      std::vector<uint8_t> application_parameter,
+      std::vector<uint8_t> app_id_digest,
       bool individual_attestation_ok,
       RegisterResponseCallback completion_callback);
 
-  U2fRegister(service_manager::Connector* connector,
+  U2fRegister(std::string relying_party_id,
+              service_manager::Connector* connector,
               const base::flat_set<U2fTransportProtocol>& protocols,
               std::vector<std::vector<uint8_t>> registered_keys,
               std::vector<uint8_t> challenge_digest,
-              std::vector<uint8_t> application_parameter,
+              std::vector<uint8_t> app_id_digest,
               bool individual_attestation_ok,
               RegisterResponseCallback completion_callback);
   ~U2fRegister() override;

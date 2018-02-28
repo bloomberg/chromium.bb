@@ -28,46 +28,31 @@ class U2fSign : public U2fRequest {
                               base::Optional<SignResponseData> response_data)>;
 
   static std::unique_ptr<U2fRequest> TrySign(
+      std::string relying_party_id,
       service_manager::Connector* connector,
       const base::flat_set<U2fTransportProtocol>& protocols,
       std::vector<std::vector<uint8_t>> registered_keys,
       std::vector<uint8_t> challenge_digest,
-      std::vector<uint8_t> application_parameter,
-      base::Optional<std::vector<uint8_t>> alt_application_parameter,
+      std::vector<uint8_t> app_id_digest,
       SignResponseCallback completion_callback);
 
-  U2fSign(service_manager::Connector* connector,
+  U2fSign(std::string relying_party_id,
+          service_manager::Connector* connector,
           const base::flat_set<U2fTransportProtocol>& protocols,
           std::vector<std::vector<uint8_t>> registered_keys,
           std::vector<uint8_t> challenge_digest,
-          std::vector<uint8_t> application_parameter,
-          base::Optional<std::vector<uint8_t>> alt_application_parameter,
+          std::vector<uint8_t> app_id_digest,
           SignResponseCallback completion_callback);
   ~U2fSign() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(U2fSignTest, TestCreateSignApduCommand);
 
-  // Enumerates the two types of |application_parameter| values used: the
-  // "primary" value is the hash of the relying party ID[1] and is always
-  // provided. The "alternative" value is the hash of a U2F AppID, specified in
-  // an extension[2], for compatibility with keys that were registered with the
-  // old API.
-  //
-  // [1] https://w3c.github.io/webauthn/#rp-id
-  // [2] https://w3c.github.io/webauthn/#sctn-appid-extension
-  enum class ApplicationParameterType {
-    kPrimary,
-    kAlternative,
-  };
-
   void TryDevice() override;
   void OnTryDevice(std::vector<std::vector<uint8_t>>::const_iterator it,
-                   ApplicationParameterType application_parameter_type,
                    U2fReturnCode return_code,
                    const std::vector<uint8_t>& response_data);
 
-  base::Optional<std::vector<uint8_t>> alt_application_parameter_;
   SignResponseCallback completion_callback_;
 
   base::WeakPtrFactory<U2fSign> weak_factory_;

@@ -112,10 +112,6 @@ struct PublicKeyCredentialRequestOptions {
   // A list of credentials the relying party knows about and would
   // accept as the signing credential.
   array<PublicKeyCredentialDescriptor> allow_credentials;
-
-  // The contents of the appid extension, if any. See
-  // https://w3c.github.io/webauthn/#sctn-appid-extension
-  string? appid;
 };
 
 // See https://w3c.github.io/webauthn/#enumdef-attestationconveyancepreference

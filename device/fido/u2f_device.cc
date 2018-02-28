@@ -18,12 +18,12 @@ U2fDevice::U2fDevice() = default;
 
 U2fDevice::~U2fDevice() = default;
 
-void U2fDevice::Register(const std::vector<uint8_t>& application_parameter,
+void U2fDevice::Register(const std::vector<uint8_t>& app_param,
                          const std::vector<uint8_t>& challenge_param,
                          bool individual_attestation_ok,
                          MessageCallback callback) {
-  auto register_cmd = U2fApduCommand::CreateRegister(
-      application_parameter, challenge_param, individual_attestation_ok);
+  auto register_cmd = U2fApduCommand::CreateRegister(app_param, challenge_param,
+                                                     individual_attestation_ok);
   if (!register_cmd) {
     std::move(callback).Run(U2fReturnCode::INVALID_PARAMS,
                             std::vector<uint8_t>());
@@ -34,13 +34,13 @@ void U2fDevice::Register(const std::vector<uint8_t>& application_parameter,
                                 std::move(callback)));
 }
 
-void U2fDevice::Sign(const std::vector<uint8_t>& application_parameter,
+void U2fDevice::Sign(const std::vector<uint8_t>& app_param,
                      const std::vector<uint8_t>& challenge_param,
                      const std::vector<uint8_t>& key_handle,
                      MessageCallback callback,
                      bool check_only) {
-  auto sign_cmd = U2fApduCommand::CreateSign(
-      application_parameter, challenge_param, key_handle, check_only);
+  auto sign_cmd = U2fApduCommand::CreateSign(app_param, challenge_param,
+                                             key_handle, check_only);
   if (!sign_cmd) {
     std::move(callback).Run(U2fReturnCode::INVALID_PARAMS,
                             std::vector<uint8_t>());

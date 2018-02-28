@@ -456,7 +456,6 @@ modules_dictionary_idl_files =
           "cookie_store/CookieListItem.idl",
           "cookie_store/CookieStoreGetOptions.idl",
           "cookie_store/CookieStoreSetOptions.idl",
-          "credentialmanager/AuthenticationExtensionsClientInputs.idl",
           "credentialmanager/AuthenticatorSelectionCriteria.idl",
           "credentialmanager/CollectedClientData.idl",
           "credentialmanager/CredentialCreationOptions.idl",

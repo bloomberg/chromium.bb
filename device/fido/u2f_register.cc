@@ -14,31 +14,35 @@ namespace device {
 
 // static
 std::unique_ptr<U2fRequest> U2fRegister::TryRegistration(
+    std::string relying_party_id,
     service_manager::Connector* connector,
     const base::flat_set<U2fTransportProtocol>& protocols,
     std::vector<std::vector<uint8_t>> registered_keys,
     std::vector<uint8_t> challenge_digest,
-    std::vector<uint8_t> application_parameter,
+    std::vector<uint8_t> app_id_digest,
     bool individual_attestation_ok,
     RegisterResponseCallback completion_callback) {
   std::unique_ptr<U2fRequest> request = std::make_unique<U2fRegister>(
-      connector, protocols, std::move(registered_keys),
-      std::move(challenge_digest), std::move(application_parameter),
-      individual_attestation_ok, std::move(completion_callback));
+      std::move(relying_party_id), connector, protocols,
+      std::move(registered_keys), std::move(challenge_digest),
+      std::move(app_id_digest), individual_attestation_ok,
+      std::move(completion_callback));
   request->Start();
   return request;
 }
 
-U2fRegister::U2fRegister(service_manager::Connector* connector,
+U2fRegister::U2fRegister(std::string relying_party_id,
+                         service_manager::Connector* connector,
                          const base::flat_set<U2fTransportProtocol>& protocols,
                          std::vector<std::vector<uint8_t>> registered_keys,
                          std::vector<uint8_t> challenge_digest,
-                         std::vector<uint8_t> application_parameter,
+                         std::vector<uint8_t> app_id_digest,
                          bool individual_attestation_ok,
                          RegisterResponseCallback completion_callback)
-    : U2fRequest(connector,
+    : U2fRequest(std::move(relying_party_id),
+                 connector,
                  protocols,
-                 std::move(application_parameter),
+                 std::move(app_id_digest),
                  std::move(challenge_digest),
                  std::move(registered_keys)),
       individual_attestation_ok_(individual_attestation_ok),
@@ -51,12 +55,12 @@ void U2fRegister::TryDevice() {
   DCHECK(current_device_);
   if (registered_keys_.size() > 0 && !CheckedForDuplicateRegistration()) {
     auto it = registered_keys_.cbegin();
-    current_device_->Sign(application_parameter_, challenge_digest_, *it,
+    current_device_->Sign(app_id_digest_, challenge_digest_, *it,
                           base::Bind(&U2fRegister::OnTryCheckRegistration,
                                      weak_factory_.GetWeakPtr(), it),
                           true);
   } else {
-    current_device_->Register(application_parameter_, challenge_digest_,
+    current_device_->Register(app_id_digest_, challenge_digest_,
                               individual_attestation_ok_,
                               base::Bind(&U2fRegister::OnTryDevice,
                                          weak_factory_.GetWeakPtr(), false));
@@ -72,7 +76,7 @@ void U2fRegister::OnTryCheckRegistration(
     case U2fReturnCode::CONDITIONS_NOT_SATISFIED:
       // Duplicate registration found. Call bogus registration to check for
       // user presence (touch) and terminate the registration process.
-      current_device_->Register(U2fRequest::GetBogusApplicationParameter(),
+      current_device_->Register(U2fRequest::GetBogusAppParam(),
                                 U2fRequest::GetBogusChallenge(),
                                 false /* no individual attestation */,
                                 base::Bind(&U2fRegister::OnTryDevice,
@@ -83,7 +87,7 @@ void U2fRegister::OnTryCheckRegistration(
       // Continue to iterate through the provided key handles in the exclude
       // list and check for already registered keys.
       if (++it != registered_keys_.end()) {
-        current_device_->Sign(application_parameter_, challenge_digest_, *it,
+        current_device_->Sign(app_id_digest_, challenge_digest_, *it,
                               base::Bind(&U2fRegister::OnTryCheckRegistration,
                                          weak_factory_.GetWeakPtr(), it),
                               true);
@@ -133,7 +137,7 @@ void U2fRegister::OnTryDevice(bool is_duplicate_registration,
         break;
       }
       auto response = RegisterResponseData::CreateFromU2fRegisterResponse(
-          application_parameter_, std::move(response_data));
+          relying_party_id_, std::move(response_data));
       if (!response) {
         // The response data was corrupted / didn't parse properly.
         std::move(completion_callback_)
