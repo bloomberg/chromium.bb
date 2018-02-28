@@ -1,4 +1,4 @@
-// Copyright 2017 The Crashpad Authors. All rights reserved.
+// Copyright 2018 The Crashpad Authors. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,29 +12,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "test/linux/scoped_pr_set_ptracer.h"
+#ifndef CRASHPAD_UTIL_THREAD_STOPPABLE_H_
+#define CRASHPAD_UTIL_THREAD_STOPPABLE_H_
 
-#include <errno.h>
-#include <sys/prctl.h>
-
-#include "gtest/gtest.h"
-#include "test/errors.h"
+#include "base/macros.h"
 
 namespace crashpad {
-namespace test {
 
-ScopedPrSetPtracer::ScopedPrSetPtracer(pid_t pid) {
-  success_ = prctl(PR_SET_PTRACER, pid, 0, 0, 0) == 0;
-  if (!success_) {
-    EXPECT_EQ(errno, EINVAL) << ErrnoMessage("prctl");
-  }
-}
+//! \brief An interface for operations that may be Started and Stopped.
+class Stoppable {
+ public:
+  virtual ~Stoppable() = default;
 
-ScopedPrSetPtracer::~ScopedPrSetPtracer() {
-  if (success_) {
-    EXPECT_EQ(prctl(PR_SET_PTRACER, 0, 0, 0, 0), 0) << ErrnoMessage("prctl");
-  }
-}
+  //! \brief Starts the operation.
+  virtual void Start() = 0;
 
-}  // namespace test
+  //! \brief Stops the operation.
+  virtual void Stop() = 0;
+
+ protected:
+  Stoppable() = default;
+};
+
 }  // namespace crashpad
+
+#endif  // CRASHPAD_UTIL_THREAD_STOPPABLE_H_
