@@ -353,8 +353,7 @@ static INLINE cfl_subsample_hbd_fn cfl_subsampling_hbd(TX_SIZE tx_size,
                                                        int sub_x, int sub_y) {
   if (sub_x == 1) {
     if (sub_y == 1) {
-      // TODO(ltrudeau) Remove _c when HBD 420 SIMD is added
-      return cfl_get_luma_subsampling_420_hbd_c(tx_size);
+      return cfl_get_luma_subsampling_420_hbd(tx_size);
     }
     // TODO(ltrudeau) Remove _c when HBD 422 SIMD is added
     return cfl_get_luma_subsampling_422_hbd_c(tx_size);

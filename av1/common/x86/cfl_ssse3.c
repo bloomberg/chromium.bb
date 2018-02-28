@@ -171,6 +171,65 @@ static INLINE void cfl_luma_subsampling_444_lbd_ssse3(const uint8_t *input,
   } while (pred_buf_m128i < end);
 }
 
+/**
+ * Adds 4 pixels (in a 2x2 grid) and multiplies them by 2. Resulting in a more
+ * precise version of a box filter 4:2:0 pixel subsampling in Q3.
+ *
+ * The CfL prediction buffer is always of size CFL_BUF_SQUARE. However, the
+ * active area is specified using width and height.
+ *
+ * Note: We don't need to worry about going over the active area, as long as we
+ * stay inside the CfL prediction buffer.
+ */
+static INLINE void cfl_luma_subsampling_420_hbd_ssse3(const uint16_t *input,
+                                                      int input_stride,
+                                                      int16_t *pred_buf_q3,
+                                                      int width, int height) {
+  const int16_t *end = pred_buf_q3 + (height >> 1) * CFL_BUF_LINE;
+  const int luma_stride = input_stride << 1;
+  do {
+    if (width == 4) {
+      const __m128i top = _mm_loadl_epi64((__m128i *)input);
+      const __m128i bot = _mm_loadl_epi64((__m128i *)(input + input_stride));
+      __m128i sum = _mm_add_epi16(top, bot);
+      sum = _mm_hadd_epi16(sum, sum);
+      *((int *)pred_buf_q3) = _mm_cvtsi128_si32(_mm_add_epi16(sum, sum));
+    } else {
+      const __m128i top = _mm_loadu_si128((__m128i *)input);
+      const __m128i bot = _mm_loadu_si128((__m128i *)(input + input_stride));
+      __m128i sum = _mm_add_epi16(top, bot);
+      if (width == 8) {
+        sum = _mm_hadd_epi16(sum, sum);
+        _mm_storel_epi64((__m128i *)pred_buf_q3, _mm_add_epi16(sum, sum));
+      } else {
+        const __m128i top_1 = _mm_loadu_si128(((__m128i *)input) + 1);
+        const __m128i bot_1 =
+            _mm_loadu_si128(((__m128i *)(input + input_stride)) + 1);
+        sum = _mm_hadd_epi16(sum, _mm_add_epi16(top_1, bot_1));
+        _mm_storeu_si128((__m128i *)pred_buf_q3, _mm_add_epi16(sum, sum));
+        if (width == 32) {
+          const __m128i top_2 = _mm_loadu_si128(((__m128i *)input) + 2);
+          const __m128i bot_2 =
+              _mm_loadu_si128(((__m128i *)(input + input_stride)) + 2);
+          const __m128i top_3 = _mm_loadu_si128(((__m128i *)input) + 3);
+          const __m128i bot_3 =
+              _mm_loadu_si128(((__m128i *)(input + input_stride)) + 3);
+          const __m128i sum_2 = _mm_add_epi16(top_2, bot_2);
+          const __m128i sum_3 = _mm_add_epi16(top_3, bot_3);
+          __m128i next_sum = _mm_hadd_epi16(sum_2, sum_3);
+          _mm_storeu_si128(((__m128i *)pred_buf_q3) + 1,
+                           _mm_add_epi16(next_sum, next_sum));
+        }
+      }
+    }
+    input += luma_stride;
+  } while ((pred_buf_q3 += CFL_BUF_LINE) < end);
+}
+
+// TODO(ltrudeau) Move this function into CFL_GET_SUBSAMPLE_FUNCTION when AVX2
+// and NEON versions are ready.
+CFL_SUBSAMPLE_FUNCTIONS(ssse3, 420, hbd)
+
 CFL_GET_SUBSAMPLE_FUNCTION(ssse3)
 
 static INLINE __m128i predict_unclipped(const __m128i *input, __m128i alpha_q12,
