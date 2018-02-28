@@ -205,7 +205,7 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
           initWithReauthenticationModule:reauthenticationModule_
                                 delegate:self];
     }
-    self.title = l10n_util::GetNSString(IDS_IOS_SAVE_PASSWORDS);
+    self.title = l10n_util::GetNSString(IDS_IOS_PASSWORDS);
     self.collectionViewAccessibilityIdentifier =
         @"SavePasswordsCollectionViewController";
     self.shouldHideDoneButton = YES;

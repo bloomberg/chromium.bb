@@ -295,7 +295,7 @@ id<GREYMatcher> SettingsMenuPrivacyButton() {
 }
 
 id<GREYMatcher> SettingsMenuPasswordsButton() {
-  return ButtonWithAccessibilityLabelId(IDS_IOS_SAVE_PASSWORDS);
+  return ButtonWithAccessibilityLabelId(IDS_IOS_PASSWORDS);
 }
 
 id<GREYMatcher> PaymentRequestView() {
