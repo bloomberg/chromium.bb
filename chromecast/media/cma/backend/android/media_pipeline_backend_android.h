@@ -24,7 +24,7 @@ namespace media {
 class AudioDecoderAndroid;
 class VideoDecoderNull;
 
-// TODO(ckuiper): This class is very similar to MediaPipelineBackendAudio
+// TODO(ckuiper): This class is very similar to MediaPipelineBackendForMixer
 // (alsa/media_pipeline_backend_alsa.h) and should be consolidated into one
 // shared class/file.
 class MediaPipelineBackendAndroid : public MediaPipelineBackend {

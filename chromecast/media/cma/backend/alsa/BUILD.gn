@@ -18,7 +18,7 @@ cast_shared_library("libcast_media_1.0_audio") {
   deps = [
     "//base",
     "//chromecast/base",
-    "//chromecast/media/cma/backend:audio",
+    "//chromecast/media/cma/backend:for_mixer_audio",
     "//chromecast/public",
     "//chromecast/public/media",
     "//media",
