@@ -55,8 +55,7 @@ WebViewPersonalDataManagerFactory::BuildServiceInstanceFor(
       WebViewWebDataServiceWrapperFactory::GetAutofillWebDataForBrowserState(
           browser_state, ServiceAccessType::EXPLICIT_ACCESS),
       browser_state->GetPrefs(),
-      WebViewIdentityManagerFactory::GetInstance()->GetForBrowserState(
-          browser_state),
+      WebViewIdentityManagerFactory::GetForBrowserState(browser_state),
       browser_state->IsOffTheRecord());
   return service;
 }

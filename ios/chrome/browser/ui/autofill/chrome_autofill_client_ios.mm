@@ -46,9 +46,8 @@ ChromeAutofillClientIOS::ChromeAutofillClientIOS(
           browser_state->GetOriginalChromeBrowserState())),
       web_state_(web_state),
       bridge_(bridge),
-      identity_manager_(
-          IdentityManagerFactory::GetInstance()->GetForBrowserState(
-              browser_state->GetOriginalChromeBrowserState())),
+      identity_manager_(IdentityManagerFactory::GetForBrowserState(
+          browser_state->GetOriginalChromeBrowserState())),
       autofill_web_data_service_(
           ios::WebDataServiceFactory::GetAutofillWebDataForBrowserState(
               browser_state,
