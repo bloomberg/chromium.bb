@@ -8,6 +8,7 @@ import org.chromium.blink.mojom.RemoteInvocationArgument;
 import org.chromium.blink.mojom.RemoteInvocationError;
 import org.chromium.blink.mojom.RemoteInvocationResult;
 import org.chromium.blink.mojom.RemoteObject;
+import org.chromium.blink.mojom.SingletonJavaScriptValue;
 import org.chromium.mojo.system.MojoException;
 import org.chromium.mojo_base.mojom.String16;
 
@@ -272,6 +273,26 @@ class RemoteObjectImpl implements RemoteObject {
                 } else {
                     // LIVECONNECT_COMPLIANCE: Existing behavior is to convert to NULL. Spec
                     // requires handling java.lang.Object.
+                    return null;
+                }
+            case RemoteInvocationArgument.Tag.SingletonValue:
+                int singletonValue = argument.getSingletonValue();
+                boolean isUndefined = singletonValue == SingletonJavaScriptValue.UNDEFINED;
+                if (parameterType == String.class) {
+                    // LIVECONNECT_COMPLIANCE: Existing behavior is to convert undefined to
+                    // "undefined". Spec requires converting undefined to NULL.
+                    // TODO(jbroman): Don't coerce undefined to string if this is inside the
+                    // conversion of an array.
+                    return argument.getSingletonValue() == SingletonJavaScriptValue.UNDEFINED
+                            ? "undefined"
+                            : null;
+                } else if (parameterType.isPrimitive()) {
+                    return getPrimitiveZero(parameterType);
+                } else if (parameterType.isArray()) {
+                    // LIVECONNECT_COMPLIANCE: Existing behavior is to convert to NULL. Spec
+                    // requires raising a JavaScript exception.
+                    return null;
+                } else {
                     return null;
                 }
             default:

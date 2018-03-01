@@ -23,6 +23,7 @@ import org.chromium.blink.mojom.RemoteInvocationArgument;
 import org.chromium.blink.mojom.RemoteInvocationError;
 import org.chromium.blink.mojom.RemoteInvocationResult;
 import org.chromium.blink.mojom.RemoteObject;
+import org.chromium.blink.mojom.SingletonJavaScriptValue;
 import org.chromium.mojo_base.mojom.String16;
 
 import java.lang.annotation.ElementType;
@@ -504,6 +505,65 @@ public final class RemoteObjectImplTest {
         inOrder.verify(consumer, times(2)).accept(null);
     }
 
+    @Test
+    public void testArgumentConversionNull() {
+        final Consumer<Object> consumer = (Consumer<Object>) mock(Consumer.class);
+        Object target = new VariantConsumer(consumer);
+
+        RemoteObject remoteObject = new RemoteObjectImpl(target, TestJavascriptInterface.class);
+        RemoteObject.InvokeMethodResponse response = mock(RemoteObject.InvokeMethodResponse.class);
+        RemoteInvocationArgument args[] = {nullArgument()};
+        remoteObject.invokeMethod("consumeByte", args, response);
+        remoteObject.invokeMethod("consumeChar", args, response);
+        remoteObject.invokeMethod("consumeShort", args, response);
+        remoteObject.invokeMethod("consumeInt", args, response);
+        remoteObject.invokeMethod("consumeLong", args, response);
+        remoteObject.invokeMethod("consumeFloat", args, response);
+        remoteObject.invokeMethod("consumeDouble", args, response);
+        remoteObject.invokeMethod("consumeString", args, response);
+        remoteObject.invokeMethod("consumeObjectArray", args, response);
+        remoteObject.invokeMethod("consumeObject", args, response);
+
+        verify(consumer).accept((byte) 0);
+        verify(consumer).accept('\u0000');
+        verify(consumer).accept((short) 0);
+        verify(consumer).accept((int) 0);
+        verify(consumer).accept((long) 0);
+        verify(consumer).accept((float) 0);
+        verify(consumer).accept((double) 0);
+        verify(consumer, times(3)).accept(null);
+    }
+
+    @Test
+    public void testArgumentConversionUndefined() {
+        final Consumer<Object> consumer = (Consumer<Object>) mock(Consumer.class);
+        Object target = new VariantConsumer(consumer);
+
+        RemoteObject remoteObject = new RemoteObjectImpl(target, TestJavascriptInterface.class);
+        RemoteObject.InvokeMethodResponse response = mock(RemoteObject.InvokeMethodResponse.class);
+        RemoteInvocationArgument args[] = {undefinedArgument()};
+        remoteObject.invokeMethod("consumeByte", args, response);
+        remoteObject.invokeMethod("consumeChar", args, response);
+        remoteObject.invokeMethod("consumeShort", args, response);
+        remoteObject.invokeMethod("consumeInt", args, response);
+        remoteObject.invokeMethod("consumeLong", args, response);
+        remoteObject.invokeMethod("consumeFloat", args, response);
+        remoteObject.invokeMethod("consumeDouble", args, response);
+        remoteObject.invokeMethod("consumeString", args, response);
+        remoteObject.invokeMethod("consumeObjectArray", args, response);
+        remoteObject.invokeMethod("consumeObject", args, response);
+
+        verify(consumer).accept((byte) 0);
+        verify(consumer).accept('\u0000');
+        verify(consumer).accept((short) 0);
+        verify(consumer).accept((int) 0);
+        verify(consumer).accept((long) 0);
+        verify(consumer).accept((float) 0);
+        verify(consumer).accept((double) 0);
+        verify(consumer).accept("undefined");
+        verify(consumer, times(2)).accept(null);
+    }
+
     private RemoteInvocationResult resultHasError(final int error) {
         return ArgumentMatchers.argThat(result -> result.error == error);
     }
@@ -532,6 +592,18 @@ public final class RemoteObjectImplTest {
         }
         RemoteInvocationArgument argument = new RemoteInvocationArgument();
         argument.setStringValue(string16);
+        return argument;
+    }
+
+    private RemoteInvocationArgument nullArgument() {
+        RemoteInvocationArgument argument = new RemoteInvocationArgument();
+        argument.setSingletonValue(SingletonJavaScriptValue.NULL);
+        return argument;
+    }
+
+    private RemoteInvocationArgument undefinedArgument() {
+        RemoteInvocationArgument argument = new RemoteInvocationArgument();
+        argument.setSingletonValue(SingletonJavaScriptValue.UNDEFINED);
         return argument;
     }
 }
