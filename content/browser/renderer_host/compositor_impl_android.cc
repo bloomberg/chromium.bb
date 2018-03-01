@@ -289,6 +289,8 @@ class AndroidOutputSurface
     GetCommandBufferProxy()->SetSwapBuffersCompletionCallback(
         base::Bind(&AndroidOutputSurface::OnSwapBuffersCompleted,
                    weak_ptr_factory_.GetWeakPtr()));
+    GetCommandBufferProxy()->SetPresentationCallback(base::BindRepeating(
+        &AndroidOutputSurface::OnPresentation, weak_ptr_factory_.GetWeakPtr()));
   }
 
   void EnsureBackbuffer() override {}
@@ -347,6 +349,11 @@ class AndroidOutputSurface
     client_->DidReceiveSwapBuffersAck(params.swap_response.swap_id);
     swap_buffers_callback_.Run();
     latency_info_cache_.OnSwapBuffersCompleted(params.swap_response);
+  }
+
+  void OnPresentation(uint64_t swap_id,
+                      const gfx::PresentationFeedback& feedback) {
+    client_->DidReceivePresentationFeedback(swap_id, feedback);
   }
 
  private:
