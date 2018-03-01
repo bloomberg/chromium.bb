@@ -118,7 +118,7 @@
       }
     </style>
     <div class="settings-box" id="banner">
-      <img src="../images/sync_banner.svg">
+      <img src="../images/sync_banner.svg" alt="">
     </div>
     <div class="settings-box first two-line" id="promo-headers"
         hidden="[[syncStatus.signedIn]]">
@@ -138,7 +138,7 @@
     <template is="dom-if" if="[[shouldShowAvatarRow_]]">
       <div class="settings-box first two-line" id="avatar-row">
         <div id="avatar-container">
-          <img class="account-icon"
+          <img class="account-icon" alt=""
               src="[[getAccountImageSrc_(shownAccount_.avatarImage)]]">
           <div id="sync-logo-container" syncing$="[[syncStatus.signedIn]]">
             <iron-icon icon="notification:sync"></iron-icon>
@@ -154,7 +154,7 @@
           </div>
         </div>
         <button is="paper-icon-button-light" id="dropdown-arrow"
-            on-click="onMenuButtonTap_" title="$i18n{moreActions}"
+            on-click="onMenuButtonTap_" title="$i18n{useAnotherAccount}"
             class="icon-arrow-dropdown" hidden="[[syncStatus.signedIn]]">
         </button>
         <div class="separator" hidden="[[syncStatus.signedIn]]"></div>
@@ -174,14 +174,14 @@
         <dialog is="cr-action-menu" id="menu" auto-reposition>
           <template is="dom-repeat" items="[[storedAccounts_]]">
             <button class="dropdown-item" on-click="onAccountTap_" slot="item">
-              <img class="account-icon small"
+              <img class="account-icon small" alt=""
                   src="[[getAccountImageSrc_(item.avatarImage)]]">
               <span>[[item.email]]</span>
             </button>
           </template>
           <button class="dropdown-item" on-click="onSigninTap_" slot="item"
               disabled="[[syncStatus.setupInProgress]]" id="sign-in-item">
-            <img class="account-icon small"
+            <img class="account-icon small" alt=""
                 src="chrome://theme/IDR_PROFILE_AVATAR_PLACEHOLDER_LARGE">
             <span>$i18n{useAnotherAccount}</span>
           </button>
