@@ -18,9 +18,6 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/ui/blocked_content/list_item_position.h"
 #include "chrome/browser/ui/blocked_content/popup_opener_tab_helper.h"
-#include "components/rappor/public/rappor_parameters.h"
-#include "components/rappor/public/rappor_utils.h"
-#include "components/rappor/rappor_service_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -85,15 +82,6 @@ void LogTabUnderAttempt(content::NavigationHandle* handle,
                         base::Optional<ukm::SourceId> opener_source_id,
                         bool off_the_record) {
   LogAction(TabUnderNavigationThrottle::Action::kDidTabUnder, off_the_record);
-
-  // Log RAPPOR / UKM based on the opener URL, not the URL navigated to.
-  const GURL& opener_url = handle->GetWebContents()->GetLastCommittedURL();
-  if (rappor::RapporService* rappor_service =
-          g_browser_process->rappor_service()) {
-    rappor_service->RecordSampleString(
-        "Tab.TabUnder.Opener", rappor::UMA_RAPPOR_TYPE,
-        rappor::GetDomainAndRegistrySampleFromGURL(opener_url));
-  }
 
   // The source id should generally be set, except for very rare circumstances
   // where the popup opener tab helper is not observing at the time the

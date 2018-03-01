@@ -2434,6 +2434,9 @@ now we are only interested in H264, VP8 and VP9.
 </rappor-metric>
 
 <rappor-metric name="Tab.TabUnder.Opener" type="UMA_RAPPOR_TYPE">
+  <obsolete>
+    Now logged in UKM (see AbusiveExperienceHeuristic)
+  </obsolete>
   <owner>csharrison@chromium.org</owner>
   <summary>
     The domain and registry of the URL that attempted to initiate a
