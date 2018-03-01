@@ -29,6 +29,8 @@ FormSaverImpl::~FormSaverImpl() = default;
 void FormSaverImpl::PermanentlyBlacklist(PasswordForm* observed) {
   observed->preferred = false;
   observed->blacklisted_by_user = true;
+  observed->username_value.clear();
+  observed->password_value.clear();
   observed->other_possible_usernames.clear();
   observed->date_created = base::Time::Now();
 
