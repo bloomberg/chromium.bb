@@ -228,7 +228,7 @@ TEST(AnimationTimingCalculationsTest, TransformedTime) {
   //     currentIteration, iterationDuration, iterationTime, timing)
 
   // Iteration time is null
-  EXPECT_TRUE(IsNull(CalculateTransformedTime(1, 2, NullValue(), timing)));
+  EXPECT_FALSE(CalculateTransformedTime(1, 2, NullValue(), timing).has_value());
 
   // PlaybackDirectionForwards
   EXPECT_EQ(12, CalculateTransformedTime(0, 20, 12, timing));
@@ -253,7 +253,7 @@ TEST(AnimationTimingCalculationsTest, TransformedTime) {
   EXPECT_EQ(5, CalculateTransformedTime(1, 20, 12, timing));
 
   // Timing function when directed time is null.
-  EXPECT_TRUE(IsNull(CalculateTransformedTime(1, 2, NullValue(), timing)));
+  EXPECT_FALSE(CalculateTransformedTime(1, 2, NullValue(), timing).has_value());
 
   // Timing function when iterationDuration is infinity
   timing.direction = Timing::PlaybackDirection::NORMAL;

@@ -185,13 +185,13 @@ void KeyframeEffectReadOnly::ApplyEffects() {
   DCHECK_GE(iteration, 0);
   bool changed = false;
   if (sampled_effect_) {
-    changed = model_->Sample(clampTo<int>(iteration, 0), Progress(),
+    changed = model_->Sample(clampTo<int>(iteration, 0), Progress().value(),
                              IterationDuration(),
                              sampled_effect_->MutableInterpolations());
   } else {
     Vector<scoped_refptr<Interpolation>> interpolations;
-    model_->Sample(clampTo<int>(iteration, 0), Progress(), IterationDuration(),
-                   interpolations);
+    model_->Sample(clampTo<int>(iteration, 0), Progress().value(),
+                   IterationDuration(), interpolations);
     if (!interpolations.IsEmpty()) {
       SampledEffect* sampled_effect =
           SampledEffect::Create(this, owner_->SequenceNumber());

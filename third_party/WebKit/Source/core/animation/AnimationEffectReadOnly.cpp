@@ -101,7 +101,7 @@ void AnimationEffectReadOnly::getComputedTiming(
 
   if (EnsureCalculated().is_in_effect) {
     computed_timing.setLocalTime(EnsureCalculated().local_time * 1000);
-    computed_timing.setProgress(EnsureCalculated().progress);
+    computed_timing.setProgress(EnsureCalculated().progress.value());
     computed_timing.setCurrentIteration(EnsureCalculated().current_iteration);
   } else {
     computed_timing.setLocalTimeToNull();
@@ -159,7 +159,7 @@ void AnimationEffectReadOnly::UpdateInheritedTime(
         local_time, kParentPhase, current_phase, timing_);
 
     double current_iteration;
-    double progress;
+    WTF::Optional<double> progress;
     if (const double iteration_duration = this->IterationDuration()) {
       const double start_offset = MultiplyZeroAlwaysGivesZero(
           timing_.iteration_start, iteration_duration);
@@ -172,7 +172,7 @@ void AnimationEffectReadOnly::UpdateInheritedTime(
 
       current_iteration = CalculateCurrentIteration(
           iteration_duration, iteration_time, scaled_active_time, timing_);
-      const double transformed_time = CalculateTransformedTime(
+      const WTF::Optional<double> transformed_time = CalculateTransformedTime(
           current_iteration, iteration_duration, iteration_time, timing_);
 
       // The infinite iterationDuration case here is a workaround because
@@ -181,8 +181,8 @@ void AnimationEffectReadOnly::UpdateInheritedTime(
       // https://github.com/w3c/web-animations/issues/142
       if (!std::isfinite(iteration_duration))
         progress = fmod(timing_.iteration_start, 1.0);
-      else
-        progress = transformed_time / iteration_duration;
+      else if (transformed_time)
+        progress = transformed_time.value() / iteration_duration;
 
       if (!IsNull(iteration_time)) {
         time_to_next_iteration = (iteration_duration - iteration_time) /

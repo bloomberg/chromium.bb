@@ -35,6 +35,7 @@
 #include "core/animation/Timing.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/Optional.h"
 
 namespace blink {
 
@@ -99,7 +100,7 @@ class CORE_EXPORT AnimationEffectReadOnly : public ScriptWrappable {
   double CurrentIteration() const {
     return EnsureCalculated().current_iteration;
   }
-  double Progress() const { return EnsureCalculated().progress; }
+  WTF::Optional<double> Progress() const { return EnsureCalculated().progress; }
   double TimeToForwardsEffectChange() const {
     return EnsureCalculated().time_to_forwards_effect_change;
   }
@@ -166,7 +167,7 @@ class CORE_EXPORT AnimationEffectReadOnly : public ScriptWrappable {
     DISALLOW_NEW();
     Phase phase;
     double current_iteration;
-    double progress;
+    WTF::Optional<double> progress;
     bool is_current;
     bool is_in_effect;
     bool is_in_play;

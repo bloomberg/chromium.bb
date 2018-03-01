@@ -75,7 +75,6 @@ bool KeyframeEffectModelBase::Sample(
     double iteration_duration,
     Vector<scoped_refptr<Interpolation>>& result) const {
   DCHECK_GE(iteration, 0);
-  DCHECK(!IsNull(fraction));
   EnsureKeyframeGroups();
   EnsureInterpolationEffectPopulated();
 
