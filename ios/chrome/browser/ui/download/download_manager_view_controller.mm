@@ -17,6 +17,11 @@
 #error "This file requires ARC support."
 #endif
 
+NSString* const kDownloadManagerNotStartedImage = @"download_file";
+NSString* const kDownloadManagerInProgressImage = @"download_progress";
+NSString* const kDownloadManagerSucceededImage = @"download_done";
+NSString* const kDownloadManagerFailedImage = @"download_error";
+
 namespace {
 // Layout Guide name for action button UILayoutGuide.
 GuideName* const kActionButtonGuide = @"kDownloadManagerActionButtonGuide";
@@ -35,6 +40,7 @@ NSString* GetSizeString(long long size_in_bytes) {
 
 @interface DownloadManagerViewController () {
   UIButton* _closeButton;
+  UIImageView* _statusIcon;
   UILabel* _statusLabel;
   UIButton* _actionButton;
   UIButton* _installDriveButton;
@@ -89,6 +95,7 @@ NSString* GetSizeString(long long size_in_bytes) {
   [self.view addSubview:self.downloadControlsRow];
   [self.view addSubview:self.installDriveControlsRow];
   [self.downloadControlsRow addSubview:self.closeButton];
+  [self.downloadControlsRow addSubview:self.statusIcon];
   [self.downloadControlsRow addSubview:self.statusLabel];
   [self.downloadControlsRow addSubview:self.actionButton];
   [self.installDriveControlsRow addSubview:self.installDriveButton];
@@ -161,13 +168,22 @@ NSString* GetSizeString(long long size_in_bytes) {
         constraintEqualToAnchor:downloadRow.trailingAnchor],
   ]];
 
+  // status icon constraints.
+  UIImageView* statusIcon = self.statusIcon;
+  [NSLayoutConstraint activateConstraints:@[
+    [statusIcon.centerYAnchor
+        constraintEqualToAnchor:downloadRow.centerYAnchor],
+    [statusIcon.leadingAnchor
+        constraintEqualToAnchor:downloadRow.leadingAnchor],
+  ]];
+
   // status label constraints.
   UILabel* statusLabel = self.statusLabel;
   [NSLayoutConstraint activateConstraints:@[
     [statusLabel.centerYAnchor
         constraintEqualToAnchor:downloadRow.centerYAnchor],
-    [statusLabel.leadingAnchor
-        constraintEqualToAnchor:downloadRow.leadingAnchor],
+    [statusLabel.leadingAnchor constraintEqualToAnchor:statusIcon.trailingAnchor
+                                              constant:kElementMargin],
     [statusLabel.trailingAnchor
         constraintLessThanOrEqualToAnchor:actionButton.leadingAnchor
                                  constant:-kElementMargin],
@@ -218,6 +234,7 @@ NSString* GetSizeString(long long size_in_bytes) {
 - (void)setState:(DownloadManagerState)state {
   if (_state != state) {
     _state = state;
+    [self updateStatusIcon];
     [self updateStatusLabel];
     [self updateActionButton];
   }
@@ -291,6 +308,15 @@ NSString* GetSizeString(long long size_in_bytes) {
            forControlEvents:UIControlEventTouchUpInside];
   }
   return _closeButton;
+}
+
+- (UIImageView*)statusIcon {
+  if (!_statusIcon) {
+    _statusIcon = [[UIImageView alloc] initWithFrame:CGRectZero];
+    _statusIcon.translatesAutoresizingMaskIntoConstraints = NO;
+    [self updateStatusIcon];
+  }
+  return _statusIcon;
 }
 
 - (UILabel*)statusLabel {
@@ -405,6 +431,27 @@ NSString* GetSizeString(long long size_in_bytes) {
   self.bottomConstraint = [firstAnchor constraintEqualToAnchor:secondAnchor];
 
   self.bottomConstraint.active = YES;
+}
+
+// Updates status icon image depending on |state|.
+- (void)updateStatusIcon {
+  NSString* imageName = nil;
+  switch (_state) {
+    case kDownloadManagerStateNotStarted:
+      imageName = kDownloadManagerNotStartedImage;
+      break;
+    case kDownloadManagerStateInProgress:
+      imageName = kDownloadManagerInProgressImage;
+      break;
+    case kDownloadManagerStateSuceeded:
+      imageName = kDownloadManagerSucceededImage;
+      break;
+    case kDownloadManagerStateFailed:
+      imageName = kDownloadManagerFailedImage;
+      break;
+  }
+  DCHECK(imageName);
+  self.statusIcon.image = [UIImage imageNamed:imageName];
 }
 
 // Updates status label text depending on |state|.
