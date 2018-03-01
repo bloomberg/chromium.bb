@@ -1238,9 +1238,10 @@ void av1_superres_upscale(AV1_COMMON *cm, BufferPool *const pool) {
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate copy buffer for superres upscaling");
 
-  // Copy function assumes the frames are the same size, doesn't copy bit_depth.
+  // Copy function assumes the frames are the same size.
+  // Note that it does not copy YV12_BUFFER_CONFIG config data.
   aom_yv12_copy_frame(frame_to_show, &copy_buffer, num_planes);
-  copy_buffer.bit_depth = frame_to_show->bit_depth;
+
   assert(copy_buffer.y_crop_width == aligned_width);
   assert(copy_buffer.y_crop_height == cm->height);
 
@@ -1259,6 +1260,7 @@ void av1_superres_upscale(AV1_COMMON *cm, BufferPool *const pool) {
           &cm->error, AOM_CODEC_MEM_ERROR,
           "Failed to free current frame buffer before superres upscaling");
 
+    // aom_realloc_frame_buffer() leaves config data for frame_to_show intact
     if (aom_realloc_frame_buffer(frame_to_show, cm->superres_upscaled_width,
                                  cm->superres_upscaled_height,
                                  cm->subsampling_x, cm->subsampling_y,
@@ -1268,7 +1270,18 @@ void av1_superres_upscale(AV1_COMMON *cm, BufferPool *const pool) {
           &cm->error, AOM_CODEC_MEM_ERROR,
           "Failed to allocate current frame buffer for superres upscaling");
   } else {
+    // Make a copy of the config data for frame_to_show in copy_buffer
+    copy_buffer.bit_depth = frame_to_show->bit_depth;
+    copy_buffer.color_primaries = frame_to_show->color_primaries;
+    copy_buffer.transfer_characteristics =
+        frame_to_show->transfer_characteristics;
+    copy_buffer.matrix_coefficients = frame_to_show->matrix_coefficients;
+    copy_buffer.monochrome = frame_to_show->monochrome;
+    copy_buffer.chroma_sample_position = frame_to_show->chroma_sample_position;
+    copy_buffer.color_range = frame_to_show->color_range;
+
     // Don't use callbacks on the encoder.
+    // aom_alloc_frame_buffer() clears the config data for frame_to_show
     if (aom_alloc_frame_buffer(frame_to_show, cm->superres_upscaled_width,
                                cm->superres_upscaled_height, cm->subsampling_x,
                                cm->subsampling_y, cm->use_highbitdepth,
@@ -1276,11 +1289,21 @@ void av1_superres_upscale(AV1_COMMON *cm, BufferPool *const pool) {
       aom_internal_error(
           &cm->error, AOM_CODEC_MEM_ERROR,
           "Failed to reallocate current frame buffer for superres upscaling");
+
+    // Restore config data to frame_to_show
+    frame_to_show->bit_depth = copy_buffer.bit_depth;
+    frame_to_show->color_primaries = copy_buffer.color_primaries;
+    frame_to_show->transfer_characteristics =
+        copy_buffer.transfer_characteristics;
+    frame_to_show->matrix_coefficients = copy_buffer.matrix_coefficients;
+    frame_to_show->monochrome = copy_buffer.monochrome;
+    frame_to_show->chroma_sample_position = copy_buffer.chroma_sample_position;
+    frame_to_show->color_range = copy_buffer.color_range;
   }
   // TODO(afergs): verify frame_to_show is correct after realloc
   //               encoder:
   //               decoder:
-  frame_to_show->bit_depth = copy_buffer.bit_depth;
+
   assert(frame_to_show->y_crop_width == cm->superres_upscaled_width);
   assert(frame_to_show->y_crop_height == cm->superres_upscaled_height);
 
