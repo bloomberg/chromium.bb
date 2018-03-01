@@ -38,4 +38,18 @@ public class BothTest {
         Both<String, String> x = Both.both("a", "b");
         assertEquals(x.toString(), "a, b");
     }
+
+    @Test
+    public void testUseGetFirstAsMethodReference() {
+        Both<Integer, String> x = Both.both(1, "one");
+        Function<Both<Integer, String>, Integer> getFirst = Both::getFirst;
+        assertEquals((int) getFirst.apply(x), 1);
+    }
+
+    @Test
+    public void testUseGetSecondAsMethodReference() {
+        Both<Integer, String> x = Both.both(2, "two");
+        Function<Both<Integer, String>, String> getSecond = Both::getSecond;
+        assertEquals(getSecond.apply(x), "two");
+    }
 }

@@ -74,6 +74,19 @@ public abstract class Observable<T> {
         return controller;
     }
 
+    /**
+     * Returns an Observable that is activated only when the given Observable is not activated.
+     */
+    public static Observable<Unit> not(Observable<?> observable) {
+        Controller<Unit> opposite = new Controller<>();
+        opposite.set(Unit.unit());
+        observable.watch(() -> {
+            opposite.reset();
+            return () -> opposite.set(Unit.unit());
+        });
+        return opposite;
+    }
+
     // Adapter of ScopeFactory to two callbacks that Observables use to notify of state changes.
     protected static class StateObserver<T> {
         private final ScopeFactory<? super T> mFactory;

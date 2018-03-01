@@ -399,4 +399,52 @@ public class ObservableAndControllerTest {
         controller.reset();
         assertThat(TransitionLogger.sResult, contains("enter: a", "exit: a"));
     }
+
+    @Test
+    public void testNotIsActivatedAtTheStart() {
+        Controller<String> invertThis = new Controller<>();
+        List<String> result = new ArrayList<>();
+        Observable.not(invertThis).watch(() -> {
+            result.add("enter inverted");
+            return () -> result.add("exit inverted");
+        });
+        assertThat(result, contains("enter inverted"));
+    }
+
+    @Test
+    public void testNotIsDeactivatedAtTheStartIfSourceIsAlreadyActivated() {
+        Controller<String> invertThis = new Controller<>();
+        List<String> result = new ArrayList<>();
+        invertThis.set("way ahead of you");
+        Observable.not(invertThis).watch(() -> {
+            result.add("enter inverted");
+            return () -> result.add("exit inverted");
+        });
+        assertThat(result, emptyIterable());
+    }
+
+    @Test
+    public void testNotExitsWhenSourceIsActivated() {
+        Controller<String> invertThis = new Controller<>();
+        List<String> result = new ArrayList<>();
+        Observable.not(invertThis).watch(() -> {
+            result.add("enter inverted");
+            return () -> result.add("exit inverted");
+        });
+        invertThis.set("first");
+        assertThat(result, contains("enter inverted", "exit inverted"));
+    }
+
+    @Test
+    public void testNotReentersWhenSourceIsReset() {
+        Controller<String> invertThis = new Controller<>();
+        List<String> result = new ArrayList<>();
+        Observable.not(invertThis).watch(() -> {
+            result.add("enter inverted");
+            return () -> result.add("exit inverted");
+        });
+        invertThis.set("first");
+        invertThis.reset();
+        assertThat(result, contains("enter inverted", "exit inverted", "enter inverted"));
+    }
 }
