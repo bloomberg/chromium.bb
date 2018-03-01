@@ -45,7 +45,8 @@ class VIEWS_EXPORT NativeViewAccessibilityBase
   gfx::NativeViewAccessible ChildAtIndex(int index) override;
   gfx::NativeWindow GetTopLevelWidget() override;
   gfx::NativeViewAccessible GetParent() override;
-  gfx::Rect GetScreenBoundsRect() const override;
+  gfx::Rect GetClippedScreenBoundsRect() const override;
+  gfx::Rect GetUnclippedScreenBoundsRect() const override;
   gfx::NativeViewAccessible HitTestSync(int x, int y) override;
   gfx::NativeViewAccessible GetFocus() override;
   ui::AXPlatformNode* GetFromNodeID(int32_t id) override;

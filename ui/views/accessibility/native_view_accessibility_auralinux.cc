@@ -98,7 +98,10 @@ class AuraLinuxApplication
     return widget->GetRootView()->GetNativeViewAccessible();
   }
 
-  gfx::Rect GetScreenBoundsRect() const override { return gfx::Rect(); }
+  gfx::Rect GetClippedScreenBoundsRect() const override { return gfx::Rect(); }
+  gfx::Rect GetUnclippedScreenBoundsRect() const override {
+    return gfx::Rect();
+  }
 
   gfx::NativeViewAccessible HitTestSync(int x, int y) override {
     return nullptr;

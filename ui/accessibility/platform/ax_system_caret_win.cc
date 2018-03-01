@@ -95,9 +95,13 @@ gfx::NativeViewAccessible AXSystemCaretWin::ChildAtIndex(int index) {
   return nullptr;
 }
 
-gfx::Rect AXSystemCaretWin::GetScreenBoundsRect() const {
-  gfx::Rect bounds = ToEnclosingRect(data_.location);
-  return bounds;
+gfx::Rect AXSystemCaretWin::GetClippedScreenBoundsRect() const {
+  // We could optionally add clipping here if ever needed.
+  return ToEnclosingRect(data_.location);
+}
+
+gfx::Rect AXSystemCaretWin::GetUnclippedScreenBoundsRect() const {
+  return ToEnclosingRect(data_.location);
 }
 
 gfx::NativeViewAccessible AXSystemCaretWin::HitTestSync(int x, int y) {

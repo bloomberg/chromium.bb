@@ -101,7 +101,8 @@ TEST_F(NativeViewAccessibilityTest, RoleShouldMatch) {
 TEST_F(NativeViewAccessibilityTest, BoundsShouldMatch) {
   gfx::Rect bounds =
       gfx::ToEnclosingRect(button_accessibility()->GetData().location);
-  gfx::Rect screen_bounds = button_accessibility()->GetScreenBoundsRect();
+  gfx::Rect screen_bounds =
+      button_accessibility()->GetUnclippedScreenBoundsRect();
 
   EXPECT_EQ(button_->GetBoundsInScreen(), bounds);
   EXPECT_EQ(screen_bounds, bounds);
