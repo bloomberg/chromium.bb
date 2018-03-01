@@ -2844,9 +2844,12 @@ blink::WebPlugin* RenderFrameImpl::CreatePlugin(
         this, delegate->GetWeakPtr());
   }
 
+  // TODO(tsepez): extract origin to lock from WebPluginParams url.
+  base::Optional<url::Origin> origin_lock;
+
   bool pepper_plugin_was_registered = false;
   scoped_refptr<PluginModule> pepper_module(PluginModule::Create(
-      this, info, &pepper_plugin_was_registered));
+      this, info, origin_lock, &pepper_plugin_was_registered));
   if (pepper_plugin_was_registered) {
     if (pepper_module.get()) {
       return new PepperWebPluginImpl(

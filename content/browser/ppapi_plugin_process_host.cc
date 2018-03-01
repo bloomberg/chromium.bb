@@ -164,10 +164,10 @@ PpapiPluginProcessHost::~PpapiPluginProcessHost() {
 // static
 PpapiPluginProcessHost* PpapiPluginProcessHost::CreatePluginHost(
     const PepperPluginInfo& info,
-    const base::FilePath& profile_data_directory) {
-  PpapiPluginProcessHost* plugin_host = new PpapiPluginProcessHost(
-      info, profile_data_directory);
-  DCHECK(plugin_host);
+    const base::FilePath& profile_data_directory,
+    const base::Optional<url::Origin>& origin_lock) {
+  PpapiPluginProcessHost* plugin_host =
+      new PpapiPluginProcessHost(info, profile_data_directory, origin_lock);
   if (plugin_host->Init(info))
     return plugin_host;
 
@@ -274,8 +274,10 @@ void PpapiPluginProcessHost::OpenChannelToPlugin(Client* client) {
 
 PpapiPluginProcessHost::PpapiPluginProcessHost(
     const PepperPluginInfo& info,
-    const base::FilePath& profile_data_directory)
+    const base::FilePath& profile_data_directory,
+    const base::Optional<url::Origin>& origin_lock)
     : profile_data_directory_(profile_data_directory),
+      origin_lock_(origin_lock),
       is_broker_(false) {
   uint32_t base_permissions = info.permissions;
 
@@ -286,13 +288,12 @@ PpapiPluginProcessHost::PpapiPluginProcessHost(
     base_permissions |= ppapi::PERMISSION_DEV_CHANNEL;
   permissions_ = ppapi::PpapiPermissions::GetForCommandLine(base_permissions);
 
-  process_.reset(new BrowserChildProcessHostImpl(
-      PROCESS_TYPE_PPAPI_PLUGIN, this, mojom::kPluginServiceName));
+  process_ = std::make_unique<BrowserChildProcessHostImpl>(
+      PROCESS_TYPE_PPAPI_PLUGIN, this, mojom::kPluginServiceName);
 
-  host_impl_.reset(new BrowserPpapiHostImpl(this, permissions_, info.name,
-                                            info.path, profile_data_directory,
-                                            false /* in_process */,
-                                            false /* external_plugin */));
+  host_impl_ = std::make_unique<BrowserPpapiHostImpl>(
+      this, permissions_, info.name, info.path, profile_data_directory,
+      false /* in_process */, false /* external_plugin */);
 
   filter_ = new PepperMessageFilter();
   process_->AddFilter(filter_.get());
@@ -302,21 +303,19 @@ PpapiPluginProcessHost::PpapiPluginProcessHost(
 
   // Only request network status updates if the plugin has dev permissions.
   if (permissions_.HasPermission(ppapi::PERMISSION_DEV))
-    network_observer_.reset(new PluginNetworkObserver(this));
+    network_observer_ = std::make_unique<PluginNetworkObserver>(this);
 }
 
 PpapiPluginProcessHost::PpapiPluginProcessHost() : is_broker_(true) {
-  process_.reset(new BrowserChildProcessHostImpl(
-      PROCESS_TYPE_PPAPI_BROKER, this, mojom::kPluginServiceName));
+  process_ = std::make_unique<BrowserChildProcessHostImpl>(
+      PROCESS_TYPE_PPAPI_BROKER, this, mojom::kPluginServiceName);
 
   ppapi::PpapiPermissions permissions;  // No permissions.
   // The plugin name, path and profile data directory shouldn't be needed for
   // the broker.
-  host_impl_.reset(new BrowserPpapiHostImpl(this, permissions,
-                                            std::string(), base::FilePath(),
-                                            base::FilePath(),
-                                            false /* in_process */,
-                                            false /* external_plugin */));
+  host_impl_ = std::make_unique<BrowserPpapiHostImpl>(
+      this, permissions, std::string(), base::FilePath(), base::FilePath(),
+      false /* in_process */, false /* external_plugin */);
 }
 
 bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
@@ -417,8 +416,8 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
 }
 
 void PpapiPluginProcessHost::RequestPluginChannel(Client* client) {
-  base::ProcessHandle process_handle;
-  int renderer_child_id;
+  base::ProcessHandle process_handle = base::kNullProcessHandle;
+  int renderer_child_id = base::kNullProcessId;
   client->GetPpapiChannelInfo(&process_handle, &renderer_child_id);
 
   base::ProcessId process_id = base::kNullProcessId;

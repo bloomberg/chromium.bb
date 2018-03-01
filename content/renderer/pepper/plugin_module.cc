@@ -774,13 +774,14 @@ bool PluginModule::InitializeModule(
 scoped_refptr<PluginModule> PluginModule::Create(
     RenderFrameImpl* render_frame,
     const WebPluginInfo& webplugin_info,
+    const base::Optional<url::Origin>& origin_lock,
     bool* pepper_plugin_was_registered) {
   *pepper_plugin_was_registered = true;
 
   // See if a module has already been loaded for this plugin.
   base::FilePath path(webplugin_info.path);
   scoped_refptr<PluginModule> module =
-      PepperPluginRegistry::GetInstance()->GetLiveModule(path);
+      PepperPluginRegistry::GetInstance()->GetLiveModule(path, origin_lock);
   if (module.get()) {
     if (!module->renderer_ppapi_host()) {
       // If the module exists and no embedder state was associated with it,
@@ -809,7 +810,7 @@ scoped_refptr<PluginModule> PluginModule::Create(
   base::ProcessId peer_pid = 0;
   int plugin_child_id = 0;
   render_frame->Send(new FrameHostMsg_OpenChannelToPepperPlugin(
-      path, &channel_handle, &peer_pid, &plugin_child_id));
+      path, origin_lock, &channel_handle, &peer_pid, &plugin_child_id));
   if (!channel_handle.is_mojo_channel_handle()) {
     // Couldn't be initialized.
     return scoped_refptr<PluginModule>();
@@ -820,7 +821,8 @@ scoped_refptr<PluginModule> PluginModule::Create(
   // AddLiveModule must be called before any early returns since the
   // module's destructor will remove itself.
   module = new PluginModule(info->name, info->version, path, permissions);
-  PepperPluginRegistry::GetInstance()->AddLiveModule(path, module.get());
+  PepperPluginRegistry::GetInstance()->AddLiveModule(path, origin_lock,
+                                                     module.get());
 
   if (!module->CreateOutOfProcessModule(render_frame,
                                         path,

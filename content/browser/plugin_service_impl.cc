@@ -124,10 +124,12 @@ void PluginServiceImpl::Init() {
 
 PpapiPluginProcessHost* PluginServiceImpl::FindPpapiPluginProcess(
     const base::FilePath& plugin_path,
-    const base::FilePath& profile_data_directory) {
+    const base::FilePath& profile_data_directory,
+    const base::Optional<url::Origin>& origin_lock) {
   for (PpapiPluginProcessHostIterator iter; !iter.Done(); ++iter) {
     if (iter->plugin_path() == plugin_path &&
-        iter->profile_data_directory() == profile_data_directory) {
+        iter->profile_data_directory() == profile_data_directory &&
+        (!iter->origin_lock() || iter->origin_lock() == origin_lock)) {
       return *iter;
     }
   }
@@ -147,18 +149,14 @@ PpapiPluginProcessHost* PluginServiceImpl::FindPpapiBrokerProcess(
 PpapiPluginProcessHost* PluginServiceImpl::FindOrStartPpapiPluginProcess(
     int render_process_id,
     const base::FilePath& plugin_path,
-    const base::FilePath& profile_data_directory) {
+    const base::FilePath& profile_data_directory,
+    const base::Optional<url::Origin>& origin_lock) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (filter_ && !filter_->CanLoadPlugin(render_process_id, plugin_path)) {
     VLOG(1) << "Unable to load ppapi plugin: " << plugin_path.MaybeAsASCII();
     return nullptr;
   }
-
-  PpapiPluginProcessHost* plugin_host =
-      FindPpapiPluginProcess(plugin_path, profile_data_directory);
-  if (plugin_host)
-    return plugin_host;
 
   // Validate that the plugin is actually registered.
   PepperPluginInfo* info = GetRegisteredPpapiPluginInfo(plugin_path);
@@ -167,6 +165,11 @@ PpapiPluginProcessHost* PluginServiceImpl::FindOrStartPpapiPluginProcess(
             << plugin_path.MaybeAsASCII();
     return nullptr;
   }
+
+  PpapiPluginProcessHost* plugin_host =
+      FindPpapiPluginProcess(plugin_path, profile_data_directory, origin_lock);
+  if (plugin_host)
+    return plugin_host;
 
   // Record when PPAPI Flash process is started for the first time.
   static bool counted = false;
@@ -179,7 +182,7 @@ PpapiPluginProcessHost* PluginServiceImpl::FindOrStartPpapiPluginProcess(
 
   // This plugin isn't loaded by any plugin process, so create a new process.
   plugin_host = PpapiPluginProcessHost::CreatePluginHost(
-      *info, profile_data_directory);
+      *info, profile_data_directory, origin_lock);
   if (!plugin_host) {
     VLOG(1) << "Unable to create ppapi plugin process for: "
             << plugin_path.MaybeAsASCII();
@@ -216,9 +219,10 @@ void PluginServiceImpl::OpenChannelToPpapiPlugin(
     int render_process_id,
     const base::FilePath& plugin_path,
     const base::FilePath& profile_data_directory,
+    const base::Optional<url::Origin>& origin_lock,
     PpapiPluginProcessHost::PluginClient* client) {
   PpapiPluginProcessHost* plugin_host = FindOrStartPpapiPluginProcess(
-      render_process_id, plugin_path, profile_data_directory);
+      render_process_id, plugin_path, profile_data_directory, origin_lock);
   if (plugin_host) {
     plugin_host->OpenChannelToPlugin(client);
   } else {
