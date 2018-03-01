@@ -2363,6 +2363,24 @@
             ]
         }
     ],
+    "OomIntervention": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Intervention_R2",
+                    "params": {
+                        "pause_renderer": "true"
+                    },
+                    "enable_features": [
+                        "OomIntervention"
+                    ]
+                }
+            ]
+        }
+    ],
     "OutOfProcessPac": [
         {
             "platforms": [
