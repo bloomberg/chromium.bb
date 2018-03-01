@@ -160,11 +160,13 @@ api::automation::EventType ToAutomationEvent(
     case ui::AXEventGenerator::Event::EXPANDED:
     case ui::AXEventGenerator::Event::LIVE_REGION_NODE_CHANGED:
     case ui::AXEventGenerator::Event::NAME_CHANGED:
-    case ui::AXEventGenerator::Event::OTHER_ATTRIBUTE_CHANGED:
     case ui::AXEventGenerator::Event::ROLE_CHANGED:
     case ui::AXEventGenerator::Event::SELECTED_CHANGED:
     case ui::AXEventGenerator::Event::STATE_CHANGED:
       return api::automation::EVENT_TYPE_ARIAATTRIBUTECHANGED;
+
+    case ui::AXEventGenerator::Event::OTHER_ATTRIBUTE_CHANGED:
+      return api::automation::EVENT_TYPE_NONE;
   }
 
   NOTREACHED();
