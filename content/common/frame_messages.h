@@ -1397,8 +1397,9 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_PluginContentOriginAllowed,
 // plugin is hung.
 //
 // On error an empty string and null handles are returned.
-IPC_SYNC_MESSAGE_CONTROL1_3(FrameHostMsg_OpenChannelToPepperPlugin,
+IPC_SYNC_MESSAGE_CONTROL2_3(FrameHostMsg_OpenChannelToPepperPlugin,
                             base::FilePath /* path */,
+                            base::Optional<url::Origin>, /* origin_lock */
                             IPC::ChannelHandle /* handle to channel */,
                             base::ProcessId /* plugin_pid */,
                             int /* plugin_child_id */)

@@ -613,9 +613,10 @@ void RenderFrameMessageFilter::OnGetPluginInfo(
 
 void RenderFrameMessageFilter::OnOpenChannelToPepperPlugin(
     const base::FilePath& path,
+    const base::Optional<url::Origin>& origin_lock,
     IPC::Message* reply_msg) {
   plugin_service_->OpenChannelToPpapiPlugin(
-      render_process_id_, path, profile_data_directory_,
+      render_process_id_, path, profile_data_directory_, origin_lock,
       new OpenChannelToPpapiPluginCallback(this, reply_msg));
 }
 

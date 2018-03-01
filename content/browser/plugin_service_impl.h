@@ -21,6 +21,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
+#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/waitable_event_watcher.h"
@@ -32,6 +33,7 @@
 #include "content/public/common/pepper_plugin_info.h"
 #include "ipc/ipc_channel_handle.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 #if defined(OS_WIN)
 #include "base/win/registry.h"
@@ -94,7 +96,8 @@ class CONTENT_EXPORT PluginServiceImpl : public PluginService {
   PpapiPluginProcessHost* FindOrStartPpapiPluginProcess(
       int render_process_id,
       const base::FilePath& plugin_path,
-      const base::FilePath& profile_data_directory);
+      const base::FilePath& profile_data_directory,
+      const base::Optional<url::Origin>& origin_lock);
   PpapiPluginProcessHost* FindOrStartPpapiBrokerProcess(
       int render_process_id, const base::FilePath& plugin_path);
 
@@ -104,6 +107,7 @@ class CONTENT_EXPORT PluginServiceImpl : public PluginService {
   void OpenChannelToPpapiPlugin(int render_process_id,
                                 const base::FilePath& plugin_path,
                                 const base::FilePath& profile_data_directory,
+                                const base::Optional<url::Origin>& origin_lock,
                                 PpapiPluginProcessHost::PluginClient* client);
   void OpenChannelToPpapiBroker(int render_process_id,
                                 int render_frame_id,
@@ -133,7 +137,8 @@ class CONTENT_EXPORT PluginServiceImpl : public PluginService {
   // started.
   PpapiPluginProcessHost* FindPpapiPluginProcess(
       const base::FilePath& plugin_path,
-      const base::FilePath& profile_data_directory);
+      const base::FilePath& profile_data_directory,
+      const base::Optional<url::Origin>& origin_lock);
   PpapiPluginProcessHost* FindPpapiBrokerProcess(
       const base::FilePath& broker_path);
 

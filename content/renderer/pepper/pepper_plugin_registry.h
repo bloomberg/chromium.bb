@@ -10,7 +10,9 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "content/public/common/pepper_plugin_info.h"
+#include "url/origin.h"
 
 namespace content {
 class PluginModule;
@@ -34,15 +36,20 @@ class PepperPluginRegistry {
 
   // Returns an existing loaded module for the given path. It will search for
   // both preloaded in-process or currently active (non crashed) out-of-process
-  // plugins matching the given name. Returns NULL if the plugin hasn't been
-  // loaded.
-  PluginModule* GetLiveModule(const base::FilePath& path);
+  // plugins matching the given name (and origin if supplied). Returns NULL if
+  // the plugin hasn't been loaded.
+  PluginModule* GetLiveModule(const base::FilePath& path,
+                              const base::Optional<url::Origin>& origin_lock);
 
   // Notifies the registry that a new non-preloaded module has been created.
   // This is normally called for out-of-process plugins. Once this is called,
   // the module is available to be returned by GetModule(). The module will
   // automatically unregister itself by calling PluginModuleDestroyed().
-  void AddLiveModule(const base::FilePath& path, PluginModule* module);
+  // |origin_lock| is used to segregate plugins by origin, omitted if the
+  // plugin is to handle content from all origins.
+  void AddLiveModule(const base::FilePath& path,
+                     const base::Optional<url::Origin>& origin_lock,
+                     PluginModule* module);
 
   void PluginModuleDead(PluginModule* dead_module);
 
@@ -65,7 +72,9 @@ class PepperPluginRegistry {
   // non-crashed modules. If an out-of-process module crashes, it may
   // continue as long as there are WebKit references to it, but it will not
   // appear in this list.
-  typedef std::map<base::FilePath, PluginModule*> NonOwningModuleMap;
+  using NonOwningModuleMap =
+      std::map<std::pair<base::FilePath, base::Optional<url::Origin>>,
+               PluginModule*>;
   NonOwningModuleMap live_modules_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperPluginRegistry);
