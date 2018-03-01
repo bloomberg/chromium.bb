@@ -265,7 +265,9 @@ void VrController::UpdateState(const gvr::Mat4f& head_direction) {
 
 void VrController::UpdateTouchInfo() {
   CHECK(touch_info_ != nullptr) << "touch_info_ not initialized properly.";
-  if (IsTouching() && state_ == SCROLLING &&
+  const bool effectively_scrolling =
+      (IsTouching() && state_ == SCROLLING) || state_ == POST_SCROLL;
+  if (effectively_scrolling &&
       (controller_state_->GetLastTouchTimestamp() == last_touch_timestamp_ ||
        (cur_touch_point_->position == prev_touch_point_->position &&
         extrapolated_touch_ < kMaxNumOfExtrapolations))) {
@@ -330,10 +332,23 @@ void VrController::UpdateGestureFromTouchInfo(blink::WebGestureEvent* gesture) {
     case SCROLLING:
       HandleScrollingState(gesture);
       break;
+    // The user has finished scrolling, but we'll hallucinate a few points
+    // before really finishing.
+    case POST_SCROLL:
+      HandlePostScrollingState(gesture);
+      break;
     default:
       NOTREACHED();
       break;
   }
+}
+
+void VrController::UpdateGestureWithScrollDelta(
+    blink::WebGestureEvent* gesture) {
+  gesture->data.scroll_update.delta_x =
+      displacement_.x() * kDisplacementScaleFactor;
+  gesture->data.scroll_update.delta_y =
+      displacement_.y() * kDisplacementScaleFactor;
 }
 
 void VrController::HandleWaitingState(blink::WebGestureEvent* gesture) {
@@ -375,9 +390,25 @@ void VrController::HandleDetectingState(blink::WebGestureEvent* gesture) {
   }
 }
 
-void VrController::HandleScrollingState(blink::WebGestureEvent* gesture) {
-  if (touch_info_->touch_up || !(touch_info_->is_touching) ||
+void VrController::HandlePostScrollingState(blink::WebGestureEvent* gesture) {
+  if (extrapolated_touch_ > kMaxNumOfExtrapolations ||
       ButtonDownHappened(gvr::kControllerButtonClick)) {
+    gesture->SetType(blink::WebInputEvent::kGestureScrollEnd);
+    UpdateGestureParameters();
+    if (touch_info_->touch_down || touch_info_->is_touching) {
+      HandleWaitingState(gesture);
+    }
+  } else {
+    gesture->SetType(blink::WebInputEvent::kGestureScrollUpdate);
+    UpdateGestureParameters();
+    UpdateGestureWithScrollDelta(gesture);
+  }
+}
+
+void VrController::HandleScrollingState(blink::WebGestureEvent* gesture) {
+  if (touch_info_->touch_up || !(touch_info_->is_touching)) {
+    state_ = POST_SCROLL;
+  } else if (ButtonDownHappened(gvr::kControllerButtonClick)) {
     // Gesture ends.
     gesture->SetType(blink::WebInputEvent::kGestureScrollEnd);
     UpdateGestureParameters();
@@ -385,19 +416,9 @@ void VrController::HandleScrollingState(blink::WebGestureEvent* gesture) {
     // User continues scrolling and there is a change in touch position.
     gesture->SetType(blink::WebInputEvent::kGestureScrollUpdate);
     UpdateGestureParameters();
-    if (IsHorizontalGesture()) {
-      gesture->data.scroll_update.delta_x =
-          displacement_.x() * kDisplacementScaleFactor;
-    } else {
-      gesture->data.scroll_update.delta_y =
-          displacement_.y() * kDisplacementScaleFactor;
-    }
+    UpdateGestureWithScrollDelta(gesture);
     last_velocity_ = overall_velocity_;
   }
-}
-
-bool VrController::IsHorizontalGesture() {
-  return std::abs(last_velocity_.x()) > std::abs(last_velocity_.y());
 }
 
 bool VrController::InSlop(const gfx::Vector2dF touch_position) {
