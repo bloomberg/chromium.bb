@@ -21,6 +21,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.download.DownloadItem;
 import org.chromium.chrome.browser.download.DownloadSharedPreferenceHelper;
+import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.download.ui.BackendProvider.DownloadDelegate;
 import org.chromium.chrome.browser.download.ui.DownloadHistoryItemWrapper.DownloadItemWrapper;
 import org.chromium.chrome.browser.download.ui.DownloadHistoryItemWrapper.OfflineItemWrapper;
@@ -272,12 +273,16 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
         assert list.size() == 0;
 
         int[] itemCounts = new int[DownloadFilter.FILTER_BOUNDARY];
+        int[] viewedItemCounts = new int[DownloadFilter.FILTER_BOUNDARY];
 
         for (DownloadItem item : result) {
             DownloadItemWrapper wrapper = createDownloadItemWrapper(item);
             if (addDownloadHistoryItemWrapper(wrapper)
                     && wrapper.isVisibleToUser(DownloadFilter.FILTER_ALL)) {
                 itemCounts[wrapper.getFilterType()]++;
+
+                if (DownloadUtils.isDownloadViewed(wrapper.getItem()))
+                    viewedItemCounts[wrapper.getFilterType()]++;
                 if (!isOffTheRecord && wrapper.getFilterType() == DownloadFilter.FILTER_OTHER) {
                     RecordHistogram.recordEnumeratedHistogram(
                             "Android.DownloadManager.OtherExtensions.InitialCount",
@@ -287,7 +292,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
             }
         }
 
-        if (!isOffTheRecord) recordDownloadCountHistograms(itemCounts);
+        if (!isOffTheRecord) recordDownloadCountHistograms(itemCounts, viewedItemCounts);
 
         list.setIsInitialized();
         onItemsRetrieved(isOffTheRecord
@@ -732,7 +737,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
         return new DownloadItemWrapper(item, mBackendProvider, mParentComponent);
     }
 
-    private void recordDownloadCountHistograms(int[] itemCounts) {
+    private void recordDownloadCountHistograms(int[] itemCounts, int[] viewedItemCounts) {
         RecordHistogram.recordCountHistogram("Android.DownloadManager.InitialCount.Audio",
                 itemCounts[DownloadFilter.FILTER_AUDIO]);
         RecordHistogram.recordCountHistogram("Android.DownloadManager.InitialCount.Document",
@@ -743,6 +748,17 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
                 itemCounts[DownloadFilter.FILTER_OTHER]);
         RecordHistogram.recordCountHistogram("Android.DownloadManager.InitialCount.Video",
                 itemCounts[DownloadFilter.FILTER_VIDEO]);
+
+        RecordHistogram.recordCountHistogram("Android.DownloadManager.InitialCount.Viewed.Audio",
+                viewedItemCounts[DownloadFilter.FILTER_AUDIO]);
+        RecordHistogram.recordCountHistogram("Android.DownloadManager.InitialCount.Viewed.Document",
+                viewedItemCounts[DownloadFilter.FILTER_DOCUMENT]);
+        RecordHistogram.recordCountHistogram("Android.DownloadManager.InitialCount.Viewed.Image",
+                viewedItemCounts[DownloadFilter.FILTER_IMAGE]);
+        RecordHistogram.recordCountHistogram("Android.DownloadManager.InitialCount.Viewed.Other",
+                viewedItemCounts[DownloadFilter.FILTER_OTHER]);
+        RecordHistogram.recordCountHistogram("Android.DownloadManager.InitialCount.Viewed.Video",
+                viewedItemCounts[DownloadFilter.FILTER_VIDEO]);
     }
 
     private void recordTotalDownloadCountHistogram() {
