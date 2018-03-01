@@ -47,4 +47,7 @@ include_rules = [
 
   # TODO(sanfin): Remove this by fixing the crash handler on android.
   "!chromecast/app",
+
+  # TODO(slan): Remove this when the network service is shipped on Cast.
+  "+services/network",
 ]
