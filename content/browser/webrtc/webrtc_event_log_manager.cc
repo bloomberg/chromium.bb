@@ -514,12 +514,12 @@ void WebRtcEventLogManager::StartRemoteLoggingInternal(
     PeerConnectionKey key,
     const base::FilePath& browser_context_dir,
     size_t max_file_size_bytes,
-    const std::string metadata,
+    const std::string& metadata,
     base::OnceCallback<void(bool)> reply) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   const bool result = remote_logs_manager_.StartRemoteLogging(
-      key, browser_context_dir, max_file_size_bytes, std::move(metadata));
+      key, browser_context_dir, max_file_size_bytes, metadata);
 
   if (reply) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
@@ -530,16 +530,14 @@ void WebRtcEventLogManager::StartRemoteLoggingInternal(
 void WebRtcEventLogManager::OnWebRtcEventLogWriteInternal(
     PeerConnectionKey key,
     bool remote_logging_allowed,
-    const std::string message,
+    const std::string& message,
     base::OnceCallback<void(std::pair<bool, bool>)> reply) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
-  const bool local_result =
-      local_logs_manager_.EventLogWrite(key, std::move(message));
+  const bool local_result = local_logs_manager_.EventLogWrite(key, message);
   const bool remote_result =
-      remote_logging_allowed
-          ? remote_logs_manager_.EventLogWrite(key, std::move(message))
-          : false;
+      remote_logging_allowed ? remote_logs_manager_.EventLogWrite(key, message)
+                             : false;
 
   if (reply) {
     BrowserThread::PostTask(
