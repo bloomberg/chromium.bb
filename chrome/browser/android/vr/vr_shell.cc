@@ -35,6 +35,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/vr/assets_loader.h"
 #include "chrome/browser/vr/metrics_helper.h"
+#include "chrome/browser/vr/model/assets.h"
 #include "chrome/browser/vr/model/omnibox_suggestions.h"
 #include "chrome/browser/vr/model/text_input_info.h"
 #include "chrome/browser/vr/toolbar_helper.h"
@@ -86,6 +87,9 @@ constexpr base::TimeDelta poll_media_access_interval_ =
 
 constexpr base::TimeDelta kExitVrDueToUnsupportedModeDelay =
     base::TimeDelta::FromSeconds(5);
+
+constexpr base::TimeDelta kAssetsComponentWaitDelay =
+    base::TimeDelta::FromSeconds(2);
 
 static constexpr float kInchesToMeters = 0.0254f;
 // Screen pixel density of the Google Pixel phone in pixels per inch.
@@ -144,6 +148,7 @@ VrShell::VrShell(JNIEnv* env,
       reprojected_rendering_(reprojected_rendering),
       display_size_meters_(display_width_meters, display_height_meters),
       display_size_pixels_(display_width_pixels, display_height_pixels),
+      waiting_for_assets_component_timer_(false, false),
       weak_ptr_factory_(this) {
   DVLOG(1) << __FUNCTION__ << "=" << this;
   DCHECK(g_vr_shell_instance == nullptr);
@@ -166,6 +171,15 @@ VrShell::VrShell(JNIEnv* env,
       ui_initial_state.web_vr_autopresentation_expected) {
     UMA_HISTOGRAM_BOOLEAN("VRAutopresentedWebVR",
                           ui_initial_state.web_vr_autopresentation_expected);
+  }
+
+  if (AssetsLoader::GetInstance()->ComponentReady()) {
+    LoadAssets();
+  } else {
+    waiting_for_assets_component_timer_.Start(
+        FROM_HERE, kAssetsComponentWaitDelay,
+        base::BindRepeating(&VrShell::OnAssetsComponentWaitTimeout,
+                            weak_ptr_factory_.GetWeakPtr()));
   }
 
   AssetsLoader::GetInstance()->SetOnComponentReadyCallback(base::BindRepeating(
@@ -986,8 +1000,16 @@ void VrShell::OnVoiceResults(const base::string16& result) {
       base::android::ConvertUTF8ToJavaString(env, url.spec()));
 }
 
+void VrShell::LoadAssets() {
+  AssetsLoader::GetInstance()->Load(
+      base::BindOnce(&VrShell::OnAssetsLoaded, base::Unretained(this)));
+}
+
 void VrShell::OnAssetsLoaded(AssetsLoadStatus status,
+                             std::unique_ptr<Assets> assets,
                              const base::Version& component_version) {
+  ui_->OnAssetsLoaded(status, std::move(assets), component_version);
+
   if (status == AssetsLoadStatus::kSuccess) {
     VLOG(1) << "Successfully loaded VR assets component";
   } else {
@@ -999,7 +1021,16 @@ void VrShell::OnAssetsLoaded(AssetsLoadStatus status,
 }
 
 void VrShell::OnAssetsComponentReady() {
-  ui_->OnAssetsComponentReady();
+  if (waiting_for_assets_component_timer_.IsRunning()) {
+    waiting_for_assets_component_timer_.Stop();
+    LoadAssets();
+  } else {
+    ui_->OnAssetsComponentReady();
+  }
+}
+
+void VrShell::OnAssetsComponentWaitTimeout() {
+  ui_->OnAssetsUnavailable();
 }
 
 void VrShell::AcceptDoffPromptForTesting(
@@ -1039,8 +1070,7 @@ jlong JNI_VrShellImpl_Init(JNIEnv* env,
       has_or_can_request_audio_permission;
   ui_initial_state.skips_redraw_when_not_dirty =
       base::FeatureList::IsEnabled(features::kVrBrowsingExperimentalRendering);
-  ui_initial_state.assets_available =
-      AssetsLoader::GetInstance()->ComponentReady();
+  ui_initial_state.assets_available = true;
 
   return reinterpret_cast<intptr_t>(new VrShell(
       env, obj, ui_initial_state,

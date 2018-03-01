@@ -5,11 +5,17 @@
 #ifndef CHROME_BROWSER_VR_BROWSER_UI_INTERFACE_H_
 #define CHROME_BROWSER_VR_BROWSER_UI_INTERFACE_H_
 
+#include "chrome/browser/vr/assets_load_status.h"
 #include "chrome/browser/vr/ui_unsupported_mode.h"
 #include "components/security_state/core/security_state.h"
 
+namespace base {
+class Version;
+}  // namespace base
+
 namespace vr {
 
+struct Assets;
 struct OmniboxSuggestions;
 struct ToolbarState;
 
@@ -39,6 +45,10 @@ class BrowserUiInterface {
   virtual void SetOmniboxSuggestions(
       std::unique_ptr<OmniboxSuggestions> suggestions) = 0;
   virtual void OnAssetsComponentReady() = 0;
+  virtual void OnAssetsLoaded(AssetsLoadStatus status,
+                              std::unique_ptr<Assets> assets,
+                              const base::Version& component_version) = 0;
+  virtual void OnAssetsUnavailable() = 0;
 
   // Web contents text input related.
   virtual void ShowSoftInput(bool show) = 0;

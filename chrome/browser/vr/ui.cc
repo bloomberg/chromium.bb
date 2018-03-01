@@ -389,10 +389,9 @@ void Ui::OnAssetsLoading() {
 void Ui::OnAssetsLoaded(AssetsLoadStatus status,
                         std::unique_ptr<Assets> assets,
                         const base::Version& component_version) {
+  model_->waiting_for_background = false;
+
   if (status != AssetsLoadStatus::kSuccess) {
-    // If we already loaded assets successfully keep using them. Otherwise, show
-    // fallback.
-    model_->background_available = model_->background_loaded;
     return;
   }
 
@@ -405,8 +404,11 @@ void Ui::OnAssetsLoaded(AssetsLoadStatus status,
                                 std::move(assets->fullscreen_gradient));
 
   ColorScheme::UpdateForComponent(component_version);
-  model_->background_available = true;
   model_->background_loaded = true;
+}
+
+void Ui::OnAssetsUnavailable() {
+  model_->waiting_for_background = false;
 }
 
 void Ui::ReinitializeForTest(const UiInitialState& ui_initial_state) {
@@ -435,7 +437,7 @@ void Ui::InitializeModel(const UiInitialState& ui_initial_state) {
   model_->browsing_disabled = ui_initial_state.browsing_disabled;
   model_->skips_redraw_when_not_dirty =
       ui_initial_state.skips_redraw_when_not_dirty;
-  model_->background_available = ui_initial_state.assets_available;
+  model_->waiting_for_background = ui_initial_state.assets_available;
   model_->supports_selection = ui_initial_state.supports_selection;
 }
 
