@@ -404,8 +404,9 @@ SelectToSpeak.prototype = {
     // say which node is selected and at what charOffset. See
     // https://crbug.com/803160 for more.
     let anchorPosition =
-        getDeepEquivalentForSelection(anchorObject, anchorOffset);
-    let focusPosition = getDeepEquivalentForSelection(focusObject, focusOffset);
+        getDeepEquivalentForSelection(anchorObject, anchorOffset, true);
+    let focusPosition =
+        getDeepEquivalentForSelection(focusObject, focusOffset, false);
     let firstPosition;
     let lastPosition;
     if (anchorPosition.node === focusPosition.node) {
@@ -437,8 +438,9 @@ SelectToSpeak.prototype = {
     }
     if (lastPosition.node.role != RoleType.STATIC_TEXT &&
         lastPosition.node.role != RoleType.INLINE_TEXT_BOX) {
-      lastPosition.offset =
-          lastPosition.node.name ? lastPosition.node.name.length : 0;
+      lastPosition.offset = lastPosition.node.name ?
+          lastPosition.node.name.length :
+          lastPosition.node.value ? lastPosition.node.value.length : 0;
     }
     this.readNodesInSelection_(firstPosition, lastPosition, focusedNode);
   },
@@ -474,12 +476,19 @@ SelectToSpeak.prototype = {
       selectedNode = AutomationUtil.findNextNode(
           selectedNode, constants.Dir.FORWARD,
           AutomationPredicate.leafWithText);
-      if (selectedNode) {
-        if (!shouldIgnoreNode(selectedNode, /* include offscreen */ true))
-          nodes.push(selectedNode);
-      } else {
+      if (!selectedNode) {
         break;
+      } else if (isTextField(selectedNode)) {
+        // Dive down into the next text node.
+        // Why does leafWithText return text fields?
+        selectedNode = AutomationUtil.findNextNode(
+            selectedNode, constants.Dir.FORWARD,
+            AutomationPredicate.leafWithText);
+        if (!selectedNode)
+          break;
       }
+      if (!shouldIgnoreNode(selectedNode, /* include offscreen */ true))
+        nodes.push(selectedNode);
     }
     if (nodes.length > 0) {
       if (lastPosition.node !== nodes[nodes.length - 1]) {
@@ -520,6 +529,9 @@ SelectToSpeak.prototype = {
    * @param {AutomationNode=} root The root node to listen for events on.
    */
   initializeScrollingToOffscreenNodes_: function(root) {
+    if (!root) {
+      return;
+    }
     this.scrollToSpokenNode_ = true;
     let listener = (event) => {
       if (event.eventFrom != 'action') {

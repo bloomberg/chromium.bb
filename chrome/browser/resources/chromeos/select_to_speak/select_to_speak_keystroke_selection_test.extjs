@@ -99,15 +99,31 @@ SelectToSpeakKeystrokeSelectionTest.prototype = {
         setFocusCallback(desktop);
     });
   },
+
+  generateHtmlWithSelection: function(selectionCode, bodyHtml) {
+  return 'data:text/html;charset=utf-8,' +
+      '<script type="text/javascript">' +
+        'function doSelection() {' +
+        'let selection = window.getSelection();' +
+        'let range = document.createRange();' +
+        'selection.removeAllRanges();' +
+        selectionCode +
+        'selection.addRange(range);}' +
+    '</script>' +
+    '<body onload="doSelection()">' +
+    bodyHtml +
+    '</body>';
+  }
 }
 
 TEST_F('SelectToSpeakKeystrokeSelectionTest', 'SpeaksTextAtKeystrokeFullText',
     function() {
-  this.testSimpleTextAtKeystroke('This is some text', 0, 17, 'This is some text');
+  this.testSimpleTextAtKeystroke('This is some text', 0, 17,
+      'This is some text');
 });
 
-TEST_F('SelectToSpeakKeystrokeSelectionTest', 'SpeaksTextAtKeystrokePartialText',
-    function() {
+TEST_F('SelectToSpeakKeystrokeSelectionTest',
+    'SpeaksTextAtKeystrokePartialText', function() {
   this.testSimpleTextAtKeystroke('This is some text', 0, 12, 'This is some');
 });
 
@@ -116,8 +132,8 @@ TEST_F('SelectToSpeakKeystrokeSelectionTest', 'SpeaksTextAtKeystrokeSingleWord',
   this.testSimpleTextAtKeystroke('This is some text', 8, 12, 'some');
 });
 
-TEST_F('SelectToSpeakKeystrokeSelectionTest', 'SpeaksTextAtKeystrokePartialWord',
-    function() {
+TEST_F('SelectToSpeakKeystrokeSelectionTest',
+    'SpeaksTextAtKeystrokePartialWord', function() {
   this.testSimpleTextAtKeystroke('This is some text', 8, 10, 'so');
 });
 
@@ -189,11 +205,296 @@ TEST_F('SelectToSpeakKeystrokeSelectionTest',
   this.testReadTextAtKeystroke(
       '<div id="empty"></div><div><p>This is some <b>bold</b> text</p></div>',
       function(desktop) {
-        let firstNode = this.findTextNode(desktop, 'This is some ').root.children[0];        
+        let firstNode =
+            this.findTextNode(desktop, 'This is some ').root.children[0];
         let lastNode = this.findTextNode(desktop, ' text');
         chrome.automation.setDocumentSelection({
             anchorObject: firstNode, anchorOffset: 0,
             focusObject: lastNode, focusOffset: 5
         });
       }, 'This is some bold text');
+});
+
+TEST_F('SelectToSpeakKeystrokeSelectionTest',
+    'HandlesSingleImageCorrectlyWithAutomation', function() {
+  this.testReadTextAtKeystroke(
+      '<img src="pipe.jpg" alt="one"/>',
+      function(desktop) {
+        let container = desktop.findAll({role: 'genericContainer'})[0];
+        chrome.automation.setDocumentSelection({
+            anchorObject: container, anchorOffset: 0,
+            focusObject: container, focusOffset: 1
+        });
+      }, 'one');
+});
+
+TEST_F('SelectToSpeakKeystrokeSelectionTest',
+    'HandlesMultipleImagesCorrectlyWithAutomation', function() {
+  this.testReadTextAtKeystroke('<img src="pipe.jpg" alt="one"/>' +
+      '<img src="pipe.jpg" alt="two"/><img src="pipe.jpg" alt="three"/>',
+      function(desktop) {
+        let container = desktop.findAll({role: 'genericContainer'})[0];
+        chrome.automation.setDocumentSelection({
+            anchorObject: container, anchorOffset: 1,
+            focusObject: container, focusOffset: 2
+        });
+      }, 'two');
+});
+
+TEST_F('SelectToSpeakKeystrokeSelectionTest',
+    'HandlesMultipleImagesCorrectlyWithJS1', function() {
+  // Using JS to do the selection instead of Automation, so that we can
+  // ensure this is stable against changes in chrome.automation.
+  let selectionCode =
+      'let body = document.getElementsByTagName("body")[0];' + 
+      'range.setStart(body, 1);' + 
+      'range.setEnd(body, 2);';
+  this.runWithLoadedTree(this.generateHtmlWithSelection(selectionCode,
+      '<img id="one" src="pipe.jpg" alt="one"/>' +
+      '<img id="two" src="pipe.jpg" alt="two"/>' +
+      '<img id="three" src="pipe.jpg" alt="three"/>'), function() {
+        this.triggerReadSelectedText();
+        assertTrue(this.mockTts.currentlySpeaking());
+        assertEquals(this.mockTts.pendingUtterances().length, 1);
+        this.assertEqualsCollapseWhitespace(
+            this.mockTts.pendingUtterances()[0], 'two');
+  });
+});
+
+TEST_F('SelectToSpeakKeystrokeSelectionTest',
+    'HandlesMultipleImagesCorrectlyWithJS2', function() {
+  let selectionCode =
+      'let body = document.getElementsByTagName("body")[0];' + 
+      'range.setStart(body, 1);' + 
+      'range.setEnd(body, 3);';
+  this.runWithLoadedTree(this.generateHtmlWithSelection(selectionCode,
+      '<img id="one" src="pipe.jpg" alt="one"/>' +
+      '<img id="two" src="pipe.jpg" alt="two"/>' +
+      '<img id="three" src="pipe.jpg" alt="three"/>'), function() {
+        this.triggerReadSelectedText();
+        assertTrue(this.mockTts.currentlySpeaking());
+        assertEquals(this.mockTts.pendingUtterances().length, 1);
+        this.assertEqualsCollapseWhitespace(
+            this.mockTts.pendingUtterances()[0], 'two three');
+  });
+});
+
+TEST_F('SelectToSpeakKeystrokeSelectionTest', 'TextFieldFullySelected',
+    function() {
+  let selectionCode =
+      'let p = document.getElementsByTagName("p")[0];' +
+      'let body = document.getElementsByTagName("body")[0];' + 
+      'range.setStart(p, 0);' + 
+      'range.setEnd(body, 2);';
+  this.runWithLoadedTree(this.generateHtmlWithSelection(selectionCode,
+      '<p>paragraph</p>' +
+      '<input type="text" value="text field"></input>'), function() {
+        this.triggerReadSelectedText();
+        assertTrue(this.mockTts.currentlySpeaking());
+        assertEquals(this.mockTts.pendingUtterances().length, 2);
+        this.assertEqualsCollapseWhitespace(
+            this.mockTts.pendingUtterances()[0], 'paragraph');
+        this.assertEqualsCollapseWhitespace(
+            this.mockTts.pendingUtterances()[1], 'text field');
+  });
+});
+
+TEST_F('SelectToSpeakKeystrokeSelectionTest', 'TwoTextFieldsFullySelected',
+    function() {
+  let selectionCode =
+      'let body = document.getElementsByTagName("body")[0];' + 
+      'range.setStart(body, 0);' + 
+      'range.setEnd(body, 2);';
+  this.runWithLoadedTree(this.generateHtmlWithSelection(selectionCode,
+      '<input type="text" value="one"></input><textarea cols="5">two three</textarea>'),
+      function() {
+        this.triggerReadSelectedText();
+        assertTrue(this.mockTts.currentlySpeaking());
+        assertEquals(this.mockTts.pendingUtterances().length, 2);
+        this.assertEqualsCollapseWhitespace(
+            this.mockTts.pendingUtterances()[0], 'one');
+        this.assertEqualsCollapseWhitespace(
+            this.mockTts.pendingUtterances()[1], 'two three');
+  });
+});
+
+TEST_F('SelectToSpeakKeystrokeSelectionTest', 'TextInputPartiallySelected',
+    function() {
+  let html = 'data:text/html;charset=utf-8,' +
+      '<script type="text/javascript">' +
+        'function doSelection() {' +
+          'let input = document.getElementById("input");' +
+          'input.focus();' +
+          'input.setSelectionRange(5, 10);' +
+        '}' + 
+    '</script>' + 
+    '<body onload="doSelection()">' +
+    '<input id="input" type="text" value="text field"></input>' +
+    '</body>';
+  this.runWithLoadedTree(html, function() {
+        this.triggerReadSelectedText();
+        assertTrue(this.mockTts.currentlySpeaking());
+        assertEquals(this.mockTts.pendingUtterances().length, 1);
+        this.assertEqualsCollapseWhitespace(
+            this.mockTts.pendingUtterances()[0], 'field');
+  });
+});
+
+TEST_F('SelectToSpeakKeystrokeSelectionTest', 'TextAreaPartiallySelected',
+    function() {
+  let html = 'data:text/html;charset=utf-8,' +
+      '<script type="text/javascript">' +
+        'function doSelection() {' +
+          'let input = document.getElementById("input");' +
+          'input.focus();' +
+          'input.setSelectionRange(6, 17);' +
+        '}' + 
+    '</script>' + 
+    '<body onload="doSelection()">' +
+    '<textarea id="input" type="text" cols="10">first line second line</textarea>' +
+    '</body>';
+  this.runWithLoadedTree(html, function() {
+        this.triggerReadSelectedText();
+        assertTrue(this.mockTts.currentlySpeaking());
+        assertEquals(this.mockTts.pendingUtterances().length, 1);
+        this.assertEqualsCollapseWhitespace(
+            this.mockTts.pendingUtterances()[0], 'line second');
+  });
+});
+
+TEST_F('SelectToSpeakKeystrokeSelectionTest', 'HandlesTextWithBr',
+    function() {
+  let selectionCode =
+      'let body = document.getElementsByTagName("body")[0];' + 
+      'range.setStart(body, 0);' + 
+      'range.setEnd(body, 3);';
+  this.runWithLoadedTree(this.generateHtmlWithSelection(selectionCode,
+      'Test<br/><br/>Unread'), function() {
+        this.triggerReadSelectedText();
+        assertTrue(this.mockTts.currentlySpeaking());
+        assertEquals(this.mockTts.pendingUtterances().length, 1);
+        this.assertEqualsCollapseWhitespace(
+            this.mockTts.pendingUtterances()[0], 'Test');
+  });
+});
+
+TEST_F('SelectToSpeakKeystrokeSelectionTest', 'HandlesTextWithBrComplex',
+    function() {
+  let selectionCode =
+      'let p = document.getElementsByTagName("p")[0];' +
+      'let body = document.getElementsByTagName("body")[0];' + 
+      'range.setStart(p, 0);' + 
+      'range.setEnd(body, 2);';
+  this.runWithLoadedTree(this.generateHtmlWithSelection(selectionCode,
+      '<p>Some text</p><br/><br/>Unread'), function() {
+        this.triggerReadSelectedText();
+        assertTrue(this.mockTts.currentlySpeaking());
+        assertEquals(this.mockTts.pendingUtterances().length, 1);
+        this.assertEqualsCollapseWhitespace(
+            this.mockTts.pendingUtterances()[0], 'Some text');
+  });
+});
+
+TEST_F('SelectToSpeakKeystrokeSelectionTest', 'HandlesTextWithBrAfterText',
+    function() {
+  // A bug was that if the selection was on the rootWebArea, paragraphs were
+  // not counted correctly. The more divs and paragraphs before the selection,
+  // the further off it got.
+  let selectionCode =
+      'let p = document.getElementsByTagName("p")[0];' +
+      'let body = document.getElementsByTagName("body")[0];' + 
+      'range.setStart(p, 1);' + 
+      'range.setEnd(body, 2);';
+  this.runWithLoadedTree(this.generateHtmlWithSelection(selectionCode,
+      '<p>Unread</p><p>Some text</p><br/>Unread'), function() {
+        this.triggerReadSelectedText();
+        assertTrue(this.mockTts.currentlySpeaking());
+        assertEquals(this.mockTts.pendingUtterances().length, 1);
+        this.assertEqualsCollapseWhitespace(
+            this.mockTts.pendingUtterances()[0], 'Some text');
+  });
+});
+
+TEST_F('SelectToSpeakKeystrokeSelectionTest', 'HandlesTextAreaAndBrs',
+    function() {
+  let selectionCode =
+      'let body = document.getElementsByTagName("body")[0];' + 
+      'range.setStart(body, 1);' + 
+      'range.setEnd(body, 4);';
+  this.runWithLoadedTree(this.generateHtmlWithSelection(selectionCode,
+      '<br/><br/><textarea>Some text</textarea><br/><br/>Unread'),
+      function() {
+        this.triggerReadSelectedText();
+        assertTrue(this.mockTts.currentlySpeaking());
+        assertEquals(this.mockTts.pendingUtterances().length, 1);
+        this.assertEqualsCollapseWhitespace(
+            this.mockTts.pendingUtterances()[0], 'Some text');
+  });
+});
+
+TEST_F('SelectToSpeakKeystrokeSelectionTest', 'textFieldWithComboBoxSimple',
+    function() {
+  let selectionCode =
+      'let body = document.getElementsByTagName("body")[0];' + 
+      'range.setStart(body, 0);' + 
+      'range.setEnd(body, 1);';
+  this.runWithLoadedTree(this.generateHtmlWithSelection(selectionCode,
+      '<input list="list" value="one"></label><datalist id="list">' +
+      '<option value="one"></datalist>'), function() {
+        this.triggerReadSelectedText();
+        assertTrue(this.mockTts.currentlySpeaking());
+        assertEquals(this.mockTts.pendingUtterances().length, 1);
+        this.assertEqualsCollapseWhitespace(
+            this.mockTts.pendingUtterances()[0], 'one');
+  });
+});
+
+TEST_F('SelectToSpeakKeystrokeSelectionTest',
+    'contentEditableInternallySelected', function() {
+  let html = 'data:text/html;charset=utf-8,' +
+      '<script type="text/javascript">' +
+        'function doSelection() {' +
+          'let input = document.getElementById("input");' +
+          'input.focus();' +
+          'let selection = window.getSelection();' +
+          'let range = document.createRange();' +
+          'selection.removeAllRanges();' +
+          'let p1 = document.getElementsByTagName("p")[0];' +
+          'let p2 = document.getElementsByTagName("p")[1];' +
+          'range.setStart(p1.firstChild, 1);' + 
+          'range.setEnd(p2.firstChild, 3);' +
+          'selection.addRange(range);' +
+        '}' + 
+      '</script>' + 
+      '<body onload="doSelection()">' +
+      '<div id="input" contenteditable><p>a b c</p><p>d e f</p></div>' +
+      '</body>';
+  this.runWithLoadedTree(html, function() {
+        this.triggerReadSelectedText();
+        assertTrue(this.mockTts.currentlySpeaking());
+        assertEquals(this.mockTts.pendingUtterances().length, 2);
+        this.assertEqualsCollapseWhitespace(
+            this.mockTts.pendingUtterances()[0], 'b c');
+        this.assertEqualsCollapseWhitespace(
+            this.mockTts.pendingUtterances()[1], 'd e');
+   });
+});
+
+TEST_F('SelectToSpeakKeystrokeSelectionTest',
+    'contentEditableExternallySelected', function() {
+  let selectionCode =
+      'let body = document.getElementsByTagName("body")[0];' +
+      'range.setStart(body, 1);' + 
+      'range.setEnd(body, 2);';
+  this.runWithLoadedTree(this.generateHtmlWithSelection(selectionCode,
+      'Unread <div id="input" contenteditable><p>a b c</p><p>d e f</p></div>' +
+      ' Unread'),
+      function() {
+        this.triggerReadSelectedText();
+        assertTrue(this.mockTts.currentlySpeaking());
+        this.assertEqualsCollapseWhitespace(
+            this.mockTts.pendingUtterances()[0], 'a b c');
+        this.assertEqualsCollapseWhitespace(
+            this.mockTts.pendingUtterances()[1], 'd e f');
+   });
 });

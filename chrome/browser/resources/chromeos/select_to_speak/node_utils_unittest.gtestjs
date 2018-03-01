@@ -182,54 +182,71 @@ TEST_F('SelectToSpeakNodeUtilsUnitTest',
   assertEquals(6, result.offset);
 });
 
-TEST_F('SelectToSpeakNodeUtilsUnitTest', 'getDeepEquivalentForSelectionSimpleChildren',
-    function() {
-  let child1 = {name: 'Hello,', children: []};
-  let child2 = {name: ' world', children: []};
-  let root = {name: 'Hello, world', children: [child1, child2]};
-  let result = getDeepEquivalentForSelection(root, 0);
+TEST_F('SelectToSpeakNodeUtilsUnitTest',
+    'getDeepEquivalentForSelectionSimpleChildren', function() {
+  let child1 = {name: 'Hello,', children: [], role: 'inlineTextBox', state: {}};
+  let child2 = {name: ' world', children: [], role: 'inlineTextBox', state: {}};
+  let root = {name: 'Hello, world', children: [child1, child2],
+      role: 'staticText', state: {}};
+  child1.parent = root;
+  child2.parent = root;
+  let result = getDeepEquivalentForSelection(root, 0, true);
   assertEquals(child1, result.node);
   assertEquals(0, result.offset);
 
-  result = getDeepEquivalentForSelection(root, 5);
+  // Get the last index of the first child
+  result = getDeepEquivalentForSelection(root, 5, false);
   assertEquals(child1, result.node);
   assertEquals(5, result.offset);
 
-  result = getDeepEquivalentForSelection(root, 6);
+  // Get the first index of the second child
+  result = getDeepEquivalentForSelection(root, 6, true);
   assertEquals(child2, result.node);
   assertEquals(0, result.offset);
 
-  result = getDeepEquivalentForSelection(root, 9);
+  result = getDeepEquivalentForSelection(root, 9, true);
   assertEquals(child2, result.node);
   assertEquals(3, result.offset);
 });
 
 TEST_F('SelectToSpeakNodeUtilsUnitTest',
     'getDeepEquivalentForSelectionComplexChildren', function() {
-  let child1 = {name: 'Hello', children: []};
-  let child2 = {name: undefined, children: []};  // Empty name
-  let child3 = {name: ',', children: []};
-  let child4 = {name: 'Hello,', children: [child1, child2, child3]};
+  let child1 = {name: 'Hello', children: [], role: 'inlineTextBox', state: {}};
+  // Empty name
+  let child2 = {name: undefined, children: [], role: 'inlineTextBox',
+      state: {}};
+  let child3 = {name: ',', children: [], role: 'inlineTextBox', state: {}};
+  let child4 = {name: 'Hello,', children: [child1, child2, child3],
+      role: 'staticText', state: {}};
+  child1.parent = child4;
+  child2.parent = child4;
+  child3.parent = child4;
 
-  let child5 = {name: ' ', children: []};
-  let child6 = {name: 'world', children: []};
-  let child7 = {name: ' world', children: [child5, child6]};
+  let child5 = {name: ' ', children: [], role: 'inlineTextBox', state: {}};
+  let child6 = {name: 'world', children: [], role: 'inlineTextBox', state: {}};
+  let child7 = {name: ' world', children: [child5, child6], role: 'staticText',
+      state: {}};
+  child5.parent = child7;
+  child6.parent = child7;
 
-  let root = {name: 'Hello, world', children: [child4, child7]};
+  let root = {name: 'Hello, world', children: [child4, child7],
+      role: 'genericContainer', state: {}};
+  child4.parent = root;
+  child7.parent = root;
 
-  let result = getDeepEquivalentForSelection(root, 0);
+  let result = getDeepEquivalentForSelection(root, 0, true);
   assertEquals(child1, result.node);
   assertEquals(0, result.offset);
 
-  result = getDeepEquivalentForSelection(root, 5);
+  result = getDeepEquivalentForSelection(root, 5, true);
   assertEquals(child3, result.node);
   assertEquals(0, result.offset);
 
-  result = getDeepEquivalentForSelection(root, 6);
+  result = getDeepEquivalentForSelection(root, 6, true);
   assertEquals(child5, result.node);
   assertEquals(0, result.offset);
 
-  result = getDeepEquivalentForSelection(root, 9);
+  result = getDeepEquivalentForSelection(root, 9, true);
   assertEquals(child6, result.node);
   assertEquals(2, result.offset);
 });

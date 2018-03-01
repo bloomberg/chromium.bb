@@ -156,6 +156,7 @@ js2gtest("select_to_speak_extjs_tests") {
     "../chromevox/testing/callback_helper.js",
     "mock_tts.js",
     "select_to_speak_e2e_test_base.js",
+    "pipe.jpg",
   ]
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 }
