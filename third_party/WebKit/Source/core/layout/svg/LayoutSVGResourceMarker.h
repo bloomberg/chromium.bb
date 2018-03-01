@@ -26,8 +26,6 @@
 
 namespace blink {
 
-class LayoutObject;
-
 class LayoutSVGResourceMarker final : public LayoutSVGResourceContainer {
  public:
   explicit LayoutSVGResourceMarker(SVGMarkerElement*);
@@ -36,8 +34,6 @@ class LayoutSVGResourceMarker final : public LayoutSVGResourceContainer {
   const char* GetName() const override { return "LayoutSVGResourceMarker"; }
 
   void RemoveAllClientsFromCache(bool mark_for_invalidation = true) override;
-  void RemoveClientFromCache(LayoutObject&,
-                             bool mark_for_invalidation = true) override;
 
   // Calculates marker boundaries, mapped to the target element's coordinate
   // space.

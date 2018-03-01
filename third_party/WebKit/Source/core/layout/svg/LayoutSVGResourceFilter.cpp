@@ -73,23 +73,13 @@ void LayoutSVGResourceFilter::RemoveAllClientsFromCache(
                                     : kParentOnlyInvalidation);
 }
 
-void LayoutSVGResourceFilter::RemoveClientFromCache(
-    LayoutObject& client,
-    bool mark_for_invalidation) {
+bool LayoutSVGResourceFilter::RemoveClientFromCache(LayoutObject& client) {
   auto entry = filter_.find(&client);
-  bool filter_cached = entry != filter_.end();
-  if (filter_cached) {
-    entry->value->Dispose();
-    filter_.erase(entry);
-  }
-
-  // If the filter has a cached subtree, invalidate the associated display item.
-  if (mark_for_invalidation && filter_cached)
-    MarkClientForInvalidation(client, kPaintInvalidation);
-
-  MarkClientForInvalidation(client, mark_for_invalidation
-                                        ? kBoundariesInvalidation
-                                        : kParentOnlyInvalidation);
+  if (entry == filter_.end())
+    return false;
+  entry->value->Dispose();
+  filter_.erase(entry);
+  return true;
 }
 
 FloatRect LayoutSVGResourceFilter::ResourceBoundingBox(

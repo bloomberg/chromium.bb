@@ -147,29 +147,25 @@ void LayoutSVGResourceContainer::MarkAllClientsForInvalidation(
 
 void LayoutSVGResourceContainer::MarkClientForInvalidation(
     LayoutObject& client,
-    InvalidationMode mode) {
-  DCHECK(!clients_.IsEmpty());
-
-  switch (mode) {
-    case kLayoutAndBoundariesInvalidation:
-    case kBoundariesInvalidation:
-      client.SetNeedsBoundariesUpdate();
-      break;
-    case kPaintInvalidation:
-      // Since LayoutSVGInlineTexts don't have SVGResources (they use their
-      // parent's), they will not be notified of changes to paint servers. So
-      // if the client is one that could have a LayoutSVGInlineText use a
-      // paint invalidation reason that will force paint invalidation of the
-      // entire <text>/<tspan>/... subtree.
-      client.SetShouldDoFullPaintInvalidation(
-          PaintInvalidationReason::kSVGResource);
-      client.InvalidateClipPathCache();
-      // Invalidate paint properties to update effects if any.
-      client.SetNeedsPaintPropertyUpdate();
-      break;
-    case kParentOnlyInvalidation:
-      break;
+    unsigned invalidation_mask) {
+  if (invalidation_mask & kPaintInvalidation) {
+    // Since LayoutSVGInlineTexts don't have SVGResources (they use their
+    // parent's), they will not be notified of changes to paint servers. So
+    // if the client is one that could have a LayoutSVGInlineText use a
+    // paint invalidation reason that will force paint invalidation of the
+    // entire <text>/<tspan>/... subtree.
+    client.SetShouldDoFullPaintInvalidation(
+        PaintInvalidationReason::kSVGResource);
+    client.InvalidateClipPathCache();
+    // Invalidate paint properties to update effects if any.
+    client.SetNeedsPaintPropertyUpdate();
   }
+
+  // kLayoutAndBoundariesInvalidation and kBoundariesInvalidation are
+  // handled in the same way.
+  if (invalidation_mask &
+      (kBoundariesInvalidation | kLayoutAndBoundariesInvalidation))
+    client.SetNeedsBoundariesUpdate();
 }
 
 void LayoutSVGResourceContainer::AddClient(LayoutObject& client) {
@@ -178,7 +174,7 @@ void LayoutSVGResourceContainer::AddClient(LayoutObject& client) {
 }
 
 bool LayoutSVGResourceContainer::RemoveClient(LayoutObject& client) {
-  RemoveClientFromCache(client, false);
+  RemoveClientFromCache(client);
   clients_.erase(&client);
   return clients_.IsEmpty();
 }
@@ -207,7 +203,11 @@ static inline void RemoveFromCacheAndInvalidateDependencies(
     bool needs_layout) {
   if (SVGResources* resources =
           SVGResourcesCache::CachedResourcesForLayoutObject(object)) {
-    resources->RemoveClientFromCacheAffectingObjectBounds(object);
+    if (unsigned invalidation_mask =
+            resources->RemoveClientFromCacheAffectingObjectBounds(object)) {
+      LayoutSVGResourceContainer::MarkClientForInvalidation(object,
+                                                            invalidation_mask);
+    }
   }
 
   if (!object.GetNode() || !object.GetNode()->IsSVGElement())

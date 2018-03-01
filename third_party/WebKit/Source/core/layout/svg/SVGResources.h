@@ -99,9 +99,7 @@ class SVGResources {
   // Methods operating on all cached resources
   void RemoveClientFromCache(LayoutObject&,
                              bool mark_for_invalidation = true) const;
-  void RemoveClientFromCacheAffectingObjectBounds(
-      LayoutObject&,
-      bool mark_for_invalidation = true) const;
+  unsigned RemoveClientFromCacheAffectingObjectBounds(LayoutObject&) const;
   void ResourceDestroyed(LayoutSVGResourceContainer*);
   void ClearReferencesTo(LayoutSVGResourceContainer*);
 

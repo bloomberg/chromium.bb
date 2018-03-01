@@ -118,14 +118,6 @@ void LayoutSVGResourceClipper::RemoveAllClientsFromCache(
                                     : kParentOnlyInvalidation);
 }
 
-void LayoutSVGResourceClipper::RemoveClientFromCache(
-    LayoutObject& client,
-    bool mark_for_invalidation) {
-  MarkClientForInvalidation(client, mark_for_invalidation
-                                        ? kBoundariesInvalidation
-                                        : kParentOnlyInvalidation);
-}
-
 Optional<Path> LayoutSVGResourceClipper::AsPath() {
   if (clip_content_path_validity_ == kClipContentPathValid)
     return Optional<Path>(clip_content_path_);
