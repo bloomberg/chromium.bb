@@ -92,6 +92,17 @@ function nameLength(node) {
 }
 
 /**
+ * Returns true if a node is a text field type, but not for any other type,
+ * including contentEditables.
+ * @param {AutomationNode} node The node to check
+ * @return {boolean} True if the node is a text field type.
+ */
+function isTextField(node) {
+  return node.role == RoleType.TEXT_FIELD ||
+      node.role == RoleType.TEXT_FIELD_WITH_COMBO_BOX;
+}
+
+/**
  * Gets the first (left-most) leaf node of a node. Returns undefined if
  *  none is found.
  * @param {AutomationNode} node The node to search for the first leaf.
@@ -176,28 +187,84 @@ var Position;
  * similar to chrome.automation.focusObject.
  * @param {number} offset The integer offset of the selection. This is
  * similar to chrome.automation.focusOffset.
+ * @param {boolean} isStart whether this is the start or end of a selection.
  * @return {!Position} The node matching the selected offset.
  */
-function getDeepEquivalentForSelection(parent, offset) {
+function getDeepEquivalentForSelection(parent, offset, isStart) {
   if (parent.children.length == 0)
     return {node: parent, offset: offset};
   // Create a stack of children nodes to search through.
-  let nodesToCheck = parent.children.slice().reverse();
+  let nodesToCheck;
+  if (isTextField(parent) && parent.firstChild &&
+      parent.firstChild.firstChild) {
+    // Skip ahead.
+    nodesToCheck = parent.firstChild.children.slice().reverse();
+  } else {
+    nodesToCheck = parent.children.slice().reverse();
+  }
   let index = 0;
-  var node;
+  var node = parent;
   // Delve down into the children recursively to find the
   // one at this offset.
   while (nodesToCheck.length > 0) {
     node = nodesToCheck.pop();
+    if (node.state.invisible)
+      continue;
     if (node.children.length > 0) {
-      nodesToCheck = nodesToCheck.concat(node.children.slice().reverse());
+      // If the parent is a textField, then the whole text
+      // field is selected. Ignore its contents.
+      // If only part of the text field was selected, the parent type would
+      // have been a text field.
+      if (!isTextField(node)) {
+        nodesToCheck = nodesToCheck.concat(node.children.slice().reverse());
+      }
+      if (node.role != RoleType.LINE_BREAK &&
+          (node.parent && node.parent.parent &&
+           !isTextField(node.parent.parent))) {
+        // If this is inside a textField, or if it is a line break, don't
+        // count the node itself. Otherwise it counts.
+        index += 1;
+      }
     } else {
-      index += node.name ? node.name.length : 0;
-      if (index > offset) {
-        return {node: node, offset: offset - index + node.name.length};
+      if (node.role == RoleType.STATIC_TEXT ||
+          node.role == RoleType.INLINE_TEXT_BOX) {
+        // How many characters are in the name.
+        index += nameLength(node);
+      } else {
+        // Add one for itself only.
+        index += 1;
       }
     }
+    // Check if we've indexed far enough into the nodes of this parent to be
+    // past the offset if |isStart|, or at the offset if !|isStart|.
+    if (((isStart && index > offset) || (!isStart && index >= offset))) {
+      // If the node is a text field type with children, return its first
+      // (or last if !|isStart|) leaf child. Otherwise, just return the node
+      // and its offset. textField nodes are indexed differently in selection
+      // from others -- it seems as though the whole node counts only once in
+      // the selection index if the textField is entirely selected, whereas a
+      // normal staticText will count for itself plus one. This is probably
+      // because textFields cannot be partially selected if other elements
+      // outside of themselves are selected.
+      if (isTextField(node)) {
+        let leafNode =
+            isStart ? getFirstLeafChild(node) : getLastLeafChild(node);
+        if (leafNode) {
+          return {node: leafNode, offset: isStart ? 0 : nameLength(leafNode)};
+        }
+      }
+      let result = offset - index + nameLength(node);
+      return {node: node, offset: result > 0 ? result : 0};
+    }
   }
-  // We are off the end of the last node.
-  return {node: node, offset: node.name ? node.name.length : 0};
+  // We are at the end of the last node.
+  // If it's a textField we skipped, go ahead and find the first (or last, if
+  // !|isStart|) child, otherwise just return this node itself.
+  if (isTextField(node)) {
+    let leafNode = isStart ? getFirstLeafChild(node) : getLastLeafChild(node);
+    if (leafNode) {
+      return {node: leafNode, offset: isStart ? 0 : nameLength(leafNode)};
+    }
+  }
+  return {node: node, offset: nameLength(node)};
 }
