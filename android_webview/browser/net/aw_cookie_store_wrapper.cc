@@ -4,117 +4,17 @@
 
 #include "android_webview/browser/net/aw_cookie_store_wrapper.h"
 
+#include <memory>
 #include <string>
 
 #include "android_webview/browser/net/init_native_callback.h"
-#include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "net/cookies/canonical_cookie.h"
 #include "url/gurl.h"
 
 namespace android_webview {
 
 namespace {
-
-// Posts |task| to the thread that the global CookieStore lives on.
-void PostTaskToCookieStoreTaskRunner(base::OnceClosure task) {
-  GetCookieStoreTaskRunner()->PostTask(FROM_HERE, std::move(task));
-}
-
-class AwCookieChangedSubscription
-    : public net::CookieStore::CookieChangedSubscription {
- public:
-  explicit AwCookieChangedSubscription(
-      std::unique_ptr<net::CookieStore::CookieChangedCallbackList::Subscription>
-          subscription)
-      : subscription_(std::move(subscription)) {}
-
- private:
-  std::unique_ptr<net::CookieStore::CookieChangedCallbackList::Subscription>
-      subscription_;
-
-  DISALLOW_COPY_AND_ASSIGN(AwCookieChangedSubscription);
-};
-
-// Wraps a subscription to cookie change notifications for the global
-// CookieStore for a consumer that lives on another thread. Handles passing
-// messages between thread, and destroys itself when the consumer unsubscribes.
-// Must be created on the consumer's thread. Each instance only supports a
-// single subscription.
-class SubscriptionWrapper {
- public:
-  SubscriptionWrapper() : weak_factory_(this) {}
-
-  std::unique_ptr<net::CookieStore::CookieChangedSubscription> Subscribe(
-      const GURL& url,
-      const std::string& name,
-      const net::CookieStore::CookieChangedCallback& callback) {
-    // This class is only intended to be used for a single subscription.
-    DCHECK(callback_list_.empty());
-
-    nested_subscription_ =
-        new NestedSubscription(url, name, weak_factory_.GetWeakPtr());
-    return std::make_unique<AwCookieChangedSubscription>(
-        callback_list_.Add(callback));
-  }
-
- private:
-  // The NestedSubscription is responsible for creating and managing the
-  // underlying subscription to the real CookieStore, and posting notifications
-  // back to |callback_list_|.
-  class NestedSubscription
-      : public base::RefCountedDeleteOnSequence<NestedSubscription> {
-   public:
-    NestedSubscription(const GURL& url,
-                       const std::string& name,
-                       base::WeakPtr<SubscriptionWrapper> subscription_wrapper)
-        : base::RefCountedDeleteOnSequence<NestedSubscription>(
-              GetCookieStoreTaskRunner()),
-          subscription_wrapper_(subscription_wrapper),
-          client_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
-      PostTaskToCookieStoreTaskRunner(
-          base::Bind(&NestedSubscription::Subscribe, this, url, name));
-    }
-
-   private:
-    friend class base::RefCountedDeleteOnSequence<NestedSubscription>;
-    friend class base::DeleteHelper<NestedSubscription>;
-
-    ~NestedSubscription() {}
-
-    void Subscribe(const GURL& url, const std::string& name) {
-      subscription_ = GetCookieStore()->AddCallbackForCookie(
-          url, name, base::Bind(&NestedSubscription::OnChanged, this));
-    }
-
-    void OnChanged(const net::CanonicalCookie& cookie,
-                   net::CookieStore::ChangeCause cause) {
-      client_task_runner_->PostTask(
-          FROM_HERE, base::Bind(&SubscriptionWrapper::OnChanged,
-                                subscription_wrapper_, cookie, cause));
-    }
-
-    base::WeakPtr<SubscriptionWrapper> subscription_wrapper_;
-    scoped_refptr<base::TaskRunner> client_task_runner_;
-
-    std::unique_ptr<net::CookieStore::CookieChangedSubscription> subscription_;
-
-    DISALLOW_COPY_AND_ASSIGN(NestedSubscription);
-  };
-
-  void OnChanged(const net::CanonicalCookie& cookie,
-                 net::CookieStore::ChangeCause cause) {
-    callback_list_.Notify(cookie, cause);
-  }
-
-  // The "list" only had one entry, so can just clean up now.
-  void OnUnsubscribe() { delete this; }
-
-  scoped_refptr<NestedSubscription> nested_subscription_;
-  net::CookieStore::CookieChangedCallbackList callback_list_;
-  base::WeakPtrFactory<SubscriptionWrapper> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(SubscriptionWrapper);
-};
 
 void SetCookieWithOptionsAsyncOnCookieThread(
     const GURL& url,
@@ -296,29 +196,8 @@ void AwCookieStoreWrapper::SetForceKeepSessionState() {
       base::Bind(&SetForceKeepSessionStateOnCookieThread));
 }
 
-std::unique_ptr<net::CookieStore::CookieChangedSubscription>
-AwCookieStoreWrapper::AddCallbackForCookie(
-    const GURL& url,
-    const std::string& name,
-    const CookieChangedCallback& callback) {
-  DCHECK(client_task_runner_->RunsTasksInCurrentSequence());
-
-  // The SubscriptionWrapper is owned by the subscription itself, and has no
-  // connection to the AwCookieStoreWrapper after creation. Other CookieStore
-  // implementations DCHECK if a subscription outlasts the cookie store,
-  // unfortunately, this design makes DCHECKing if there's an outstanding
-  // subscription when the AwCookieStoreWrapper is destroyed a bit ugly.
-  // TODO(mmenke):  Still worth adding a DCHECK?
-  SubscriptionWrapper* subscription = new SubscriptionWrapper();
-  return subscription->Subscribe(url, name, callback);
-}
-
-std::unique_ptr<net::CookieStore::CookieChangedSubscription>
-AwCookieStoreWrapper::AddCallbackForAllChanges(
-    const CookieChangedCallback& callback) {
-  // TODO(rdsmith): Implement when needed by Android Webview consumer.
-  CHECK(false);
-  return nullptr;
+net::CookieChangeDispatcher& AwCookieStoreWrapper::GetChangeDispatcher() {
+  return change_dispatcher_;
 }
 
 bool AwCookieStoreWrapper::IsEphemeral() {

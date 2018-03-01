@@ -16,7 +16,7 @@
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/browser/webdata/token_web_data.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
-#include "net/cookies/cookie_store.h"
+#include "net/cookies/cookie_change_dispatcher.h"
 #include "url/gurl.h"
 
 class PrefService;
@@ -35,12 +35,12 @@ class URLRequestContextGetter;
 class SigninClient : public KeyedService {
  public:
   // The subcription for cookie changed notifications.
-  class CookieChangedSubscription {
+  class CookieChangeSubscription {
    public:
-    virtual ~CookieChangedSubscription() {}
+    virtual ~CookieChangeSubscription() = default;
   };
 
-  ~SigninClient() override {}
+  ~SigninClient() override = default;
 
   // If |for_ephemeral| is true, special kind of device ID for ephemeral users
   // is generated.
@@ -83,11 +83,11 @@ class SigninClient : public KeyedService {
   // Adds a callback to be called each time a cookie for |url| with name |name|
   // changes.
   // Note that |callback| will always be called on the thread that
-  // |AddCookieChangedCallback| was called on.
-  virtual std::unique_ptr<CookieChangedSubscription> AddCookieChangedCallback(
+  // |AddCookieChangeCallback| was called on.
+  virtual std::unique_ptr<CookieChangeSubscription> AddCookieChangeCallback(
       const GURL& url,
       const std::string& name,
-      const net::CookieStore::CookieChangedCallback& callback) = 0;
+      net::CookieChangeCallback callback) = 0;
 
   // Called after Google signin has succeeded.
   virtual void OnSignedIn(const std::string& account_id,

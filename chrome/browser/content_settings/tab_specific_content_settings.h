@@ -333,11 +333,11 @@ class TabSpecificContentSettings
                      const GURL& first_party_url,
                      const net::CookieList& cookie_list,
                      bool blocked_by_policy);
-  void OnCookieChanged(const GURL& url,
-                       const GURL& first_party_url,
-                       const net::CanonicalCookie& cookie,
-                       const net::CookieOptions& options,
-                       bool blocked_by_policy);
+  void OnCookieChange(const GURL& url,
+                      const GURL& first_party_url,
+                      const net::CanonicalCookie& cookie,
+                      const net::CookieOptions& options,
+                      bool blocked_by_policy);
   void OnFileSystemAccessed(const GURL& url,
                             bool blocked_by_policy);
   void OnIndexedDBAccessed(const GURL& url,

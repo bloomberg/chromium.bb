@@ -76,7 +76,7 @@ TEST_F(TabSpecificContentSettingsTest, BlockedContent) {
   std::unique_ptr<net::CanonicalCookie> cookie1(
       net::CanonicalCookie::Create(origin, "A=B", base::Time::Now(), options));
   ASSERT_TRUE(cookie1);
-  content_settings->OnCookieChanged(origin, origin, *cookie1, options, false);
+  content_settings->OnCookieChange(origin, origin, *cookie1, options, false);
 #if !defined(OS_ANDROID)
   content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES);
 #endif
@@ -110,13 +110,13 @@ TEST_F(TabSpecificContentSettingsTest, BlockedContent) {
       CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC));
   EXPECT_TRUE(content_settings->IsContentBlocked(
       CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA));
-  content_settings->OnCookieChanged(origin, origin, *cookie1, options, false);
+  content_settings->OnCookieChange(origin, origin, *cookie1, options, false);
 
   // Block a cookie.
   std::unique_ptr<net::CanonicalCookie> cookie2(
       net::CanonicalCookie::Create(origin, "C=D", base::Time::Now(), options));
   ASSERT_TRUE(cookie2);
-  content_settings->OnCookieChanged(origin, origin, *cookie2, options, true);
+  content_settings->OnCookieChange(origin, origin, *cookie2, options, true);
   EXPECT_TRUE(
       content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES));
 
@@ -202,7 +202,7 @@ TEST_F(TabSpecificContentSettingsTest, AllowedContent) {
   std::unique_ptr<net::CanonicalCookie> cookie1(
       net::CanonicalCookie::Create(origin, "A=B", base::Time::Now(), options));
   ASSERT_TRUE(cookie1);
-  content_settings->OnCookieChanged(origin, origin, *cookie1, options, false);
+  content_settings->OnCookieChange(origin, origin, *cookie1, options, false);
   ASSERT_TRUE(
       content_settings->IsContentAllowed(CONTENT_SETTINGS_TYPE_COOKIES));
   ASSERT_FALSE(
@@ -212,7 +212,7 @@ TEST_F(TabSpecificContentSettingsTest, AllowedContent) {
   std::unique_ptr<net::CanonicalCookie> cookie2(
       net::CanonicalCookie::Create(origin, "C=D", base::Time::Now(), options));
   ASSERT_TRUE(cookie2);
-  content_settings->OnCookieChanged(origin, origin, *cookie2, options, true);
+  content_settings->OnCookieChange(origin, origin, *cookie2, options, true);
   ASSERT_TRUE(
       content_settings->IsContentAllowed(CONTENT_SETTINGS_TYPE_COOKIES));
   ASSERT_TRUE(
@@ -249,8 +249,8 @@ TEST_F(TabSpecificContentSettingsTest, SiteDataObserver) {
   std::unique_ptr<net::CanonicalCookie> cookie(
       net::CanonicalCookie::Create(origin, "A=B", base::Time::Now(), options));
   ASSERT_TRUE(cookie);
-  content_settings->OnCookieChanged(origin, origin, *cookie, options,
-                                    blocked_by_policy);
+  content_settings->OnCookieChange(origin, origin, *cookie, options,
+                                   blocked_by_policy);
 
   net::CookieList cookie_list;
   std::unique_ptr<net::CanonicalCookie> other_cookie(

@@ -12,6 +12,7 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "net/cookies/cookie_change_dispatcher.h"
 #include "net/cookies/cookie_store.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 
@@ -75,10 +76,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieManager
 
     // Translates a CookieStore change callback to a CookieChangeListener call.
     void DispatchCookieStoreChange(const net::CanonicalCookie& cookie,
-                                   net::CookieStore::ChangeCause cause);
+                                   net::CookieChangeCause cause);
 
     // Owns the callback registration in the store.
-    std::unique_ptr<net::CookieStore::CookieChangedSubscription> subscription;
+    std::unique_ptr<net::CookieChangeSubscription> subscription;
 
     // The observer receiving change notifications.
     network::mojom::CookieChangeListenerPtr listener;

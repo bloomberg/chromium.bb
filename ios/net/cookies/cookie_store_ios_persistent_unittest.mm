@@ -72,10 +72,11 @@ class CookieStoreIOSPersistentTest : public PlatformTest {
         backend_(new net::TestPersistentCookieStore),
         store_(
             std::make_unique<net::CookieStoreIOSPersistent>(backend_.get())) {
-    cookie_changed_callback_ = store_->AddCallbackForCookie(
-        kTestCookieURL, "abc",
-        base::Bind(&net::RecordCookieChanges, &cookies_changed_,
-                   &cookies_removed_));
+    cookie_change_subscription_ =
+        store_->GetChangeDispatcher().AddCallbackForCookie(
+            kTestCookieURL, "abc",
+            base::BindRepeating(&net::RecordCookieChanges, &cookies_changed_,
+                                &cookies_removed_));
   }
 
   ~CookieStoreIOSPersistentTest() override {}
@@ -101,8 +102,7 @@ class CookieStoreIOSPersistentTest : public PlatformTest {
   ScopedTestingCookieStoreIOSClient scoped_cookie_store_ios_client_;
   scoped_refptr<net::TestPersistentCookieStore> backend_;
   std::unique_ptr<net::CookieStoreIOS> store_;
-  std::unique_ptr<net::CookieStore::CookieChangedSubscription>
-      cookie_changed_callback_;
+  std::unique_ptr<net::CookieChangeSubscription> cookie_change_subscription_;
   std::vector<net::CanonicalCookie> cookies_changed_;
   std::vector<bool> cookies_removed_;
 };

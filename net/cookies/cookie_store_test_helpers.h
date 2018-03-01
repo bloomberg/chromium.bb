@@ -11,9 +11,30 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/macros.h"
+#include "net/cookies/cookie_change_dispatcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+class GURL;
+
 namespace net {
+
+class DelayedCookieMonsterChangeDispatcher : public CookieChangeDispatcher {
+ public:
+  DelayedCookieMonsterChangeDispatcher();
+  ~DelayedCookieMonsterChangeDispatcher() override;
+
+  // net::CookieChangeDispatcher
+  std::unique_ptr<CookieChangeSubscription> AddCallbackForCookie(
+      const GURL& url,
+      const std::string& name,
+      CookieChangeCallback callback) override WARN_UNUSED_RESULT;
+  std::unique_ptr<CookieChangeSubscription> AddCallbackForAllChanges(
+      CookieChangeCallback callback) override WARN_UNUSED_RESULT;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DelayedCookieMonsterChangeDispatcher);
+};
 
 class DelayedCookieMonster : public CookieStore {
  public:
@@ -70,13 +91,7 @@ class DelayedCookieMonster : public CookieStore {
 
   void FlushStore(base::OnceClosure callback) override;
 
-  std::unique_ptr<CookieStore::CookieChangedSubscription> AddCallbackForCookie(
-      const GURL& url,
-      const std::string& name,
-      const CookieChangedCallback& callback) override;
-
-  std::unique_ptr<CookieStore::CookieChangedSubscription>
-  AddCallbackForAllChanges(const CookieChangedCallback& callback) override;
+  CookieChangeDispatcher& GetChangeDispatcher() override;
 
   bool IsEphemeral() override;
 
@@ -98,12 +113,15 @@ class DelayedCookieMonster : public CookieStore {
   friend class base::RefCountedThreadSafe<DelayedCookieMonster>;
 
   std::unique_ptr<CookieMonster> cookie_monster_;
+  DelayedCookieMonsterChangeDispatcher change_dispatcher_;
 
   bool did_run_;
   bool result_;
   std::string cookie_;
   std::string cookie_line_;
   CookieList cookie_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(DelayedCookieMonster);
 };
 
 class CookieURLHelper {

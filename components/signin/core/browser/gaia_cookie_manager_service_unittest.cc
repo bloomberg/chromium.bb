@@ -657,7 +657,7 @@ TEST_F(GaiaCookieManagerServiceTest, ListAccountsAcceptsNull) {
   ASSERT_EQ(1u, accounts.size());
 }
 
-TEST_F(GaiaCookieManagerServiceTest, ListAccountsAfterOnCookieChanged) {
+TEST_F(GaiaCookieManagerServiceTest, ListAccountsAfterOnCookieChange) {
   InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
   MockObserver observer(&helper);
 
@@ -688,9 +688,9 @@ TEST_F(GaiaCookieManagerServiceTest, ListAccountsAfterOnCookieChanged) {
               OnGaiaAccountsInCookieUpdated(
                   ListedAccountEquals(empty_list_accounts),
                   ListedAccountEquals(empty_signed_out_accounts), no_error()));
-  helper.ForceOnCookieChangedProcessing();
+  helper.ForceOnCookieChangeProcessing();
 
-  // OnCookieChanged should invalidate cached data.
+  // OnCookieChange should invalidate cached data.
   ASSERT_FALSE(helper.ListAccounts(&list_accounts, &signed_out_accounts,
                                    GaiaConstants::kChromeSource));
   ASSERT_TRUE(list_accounts.empty());

@@ -11,7 +11,7 @@
 #include "base/callback_forward.h"
 #include "base/task_scheduler/post_task.h"
 #include "ios/net/cookies/cookie_store_ios_client.h"
-#include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_change_dispatcher.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_store.h"
 #include "url/gurl.h"
@@ -74,7 +74,7 @@ class ScopedTestingCookieStoreIOSClient {
 void RecordCookieChanges(std::vector<net::CanonicalCookie>* out_cookies,
                          std::vector<bool>* out_removes,
                          const net::CanonicalCookie& cookie,
-                         net::CookieStore::ChangeCause cause);
+                         net::CookieChangeCause cause);
 
 // Sets a cookie.
 void SetCookie(const std::string& cookie_line,

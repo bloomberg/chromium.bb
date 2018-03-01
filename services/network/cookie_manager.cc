@@ -121,21 +121,21 @@ class PredicateWrapper {
 };
 
 network::mojom::CookieChangeCause ChangeCauseTranslation(
-    net::CookieStore::ChangeCause net_cause) {
+    net::CookieChangeCause net_cause) {
   switch (net_cause) {
-    case net::CookieStore::ChangeCause::INSERTED:
+    case net::CookieChangeCause::INSERTED:
       return network::mojom::CookieChangeCause::INSERTED;
-    case net::CookieStore::ChangeCause::EXPLICIT:
+    case net::CookieChangeCause::EXPLICIT:
       return network::mojom::CookieChangeCause::EXPLICIT;
-    case net::CookieStore::ChangeCause::UNKNOWN_DELETION:
+    case net::CookieChangeCause::UNKNOWN_DELETION:
       return network::mojom::CookieChangeCause::UNKNOWN_DELETION;
-    case net::CookieStore::ChangeCause::OVERWRITE:
+    case net::CookieChangeCause::OVERWRITE:
       return network::mojom::CookieChangeCause::OVERWRITE;
-    case net::CookieStore::ChangeCause::EXPIRED:
+    case net::CookieChangeCause::EXPIRED:
       return network::mojom::CookieChangeCause::EXPIRED;
-    case net::CookieStore::ChangeCause::EVICTED:
+    case net::CookieChangeCause::EVICTED:
       return network::mojom::CookieChangeCause::EVICTED;
-    case net::CookieStore::ChangeCause::EXPIRED_OVERWRITE:
+    case net::CookieChangeCause::EXPIRED_OVERWRITE:
       return network::mojom::CookieChangeCause::EXPIRED_OVERWRITE;
   }
   NOTREACHED();
@@ -150,7 +150,7 @@ CookieManager::ListenerRegistration::~ListenerRegistration() {}
 
 void CookieManager::ListenerRegistration::DispatchCookieStoreChange(
     const net::CanonicalCookie& cookie,
-    net::CookieStore::ChangeCause cause) {
+    net::CookieChangeCause cause) {
   listener->OnCookieChange(cookie, ChangeCauseTranslation(cause));
 }
 
@@ -210,14 +210,15 @@ void CookieManager::AddCookieChangeListener(
   auto listener_registration = std::make_unique<ListenerRegistration>();
   listener_registration->listener = std::move(listener);
 
-  listener_registration->subscription = cookie_store_->AddCallbackForCookie(
-      url, name,
-      base::BindRepeating(
-          &CookieManager::ListenerRegistration::DispatchCookieStoreChange,
-          // base::Unretained is safe as destruction of the
-          // ListenerRegistration will also destroy the
-          // CookieChangedSubscription, unregistering the callback.
-          base::Unretained(listener_registration.get())));
+  listener_registration->subscription =
+      cookie_store_->GetChangeDispatcher().AddCallbackForCookie(
+          url, name,
+          base::BindRepeating(
+              &CookieManager::ListenerRegistration::DispatchCookieStoreChange,
+              // base::Unretained is safe as destruction of the
+              // ListenerRegistration will also destroy the
+              // CookieChangedSubscription, unregistering the callback.
+              base::Unretained(listener_registration.get())));
 
   listener_registration->listener.set_connection_error_handler(
       base::BindOnce(&CookieManager::RemoveChangeListener,
@@ -241,12 +242,13 @@ void CookieManager::AddGlobalChangeListener(
   listener_registration->listener = std::move(listener);
 
   listener_registration->subscription =
-      cookie_store_->AddCallbackForAllChanges(base::BindRepeating(
-          &CookieManager::ListenerRegistration::DispatchCookieStoreChange,
-          // base::Unretained is safe as destruction of the
-          // ListenerRegistration will also destroy the
-          // CookieChangedSubscription, unregistering the callback.
-          base::Unretained(listener_registration.get())));
+      cookie_store_->GetChangeDispatcher().AddCallbackForAllChanges(
+          base::BindRepeating(
+              &CookieManager::ListenerRegistration::DispatchCookieStoreChange,
+              // base::Unretained is safe as destruction of the
+              // ListenerRegistration will also destroy the
+              // CookieChangedSubscription, unregistering the callback.
+              base::Unretained(listener_registration.get())));
 
   listener_registration->listener.set_connection_error_handler(
       base::BindOnce(&CookieManager::RemoveChangeListener,

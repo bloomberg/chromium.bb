@@ -342,14 +342,14 @@ GaiaCookieManagerService::~GaiaCookieManagerService() {
 }
 
 void GaiaCookieManagerService::Init() {
-  cookie_changed_subscription_ = signin_client_->AddCookieChangedCallback(
+  cookie_change_subscription_ = signin_client_->AddCookieChangeCallback(
       GaiaUrls::GetInstance()->google_url(), kGaiaCookieName,
-      base::Bind(&GaiaCookieManagerService::OnCookieChanged,
-                 base::Unretained(this)));
+      base::BindRepeating(&GaiaCookieManagerService::OnCookieChange,
+                          base::Unretained(this)));
 }
 
 void GaiaCookieManagerService::Shutdown() {
-  cookie_changed_subscription_.reset();
+  cookie_change_subscription_.reset();
 }
 
 
@@ -426,14 +426,14 @@ void GaiaCookieManagerService::TriggerListAccounts(const std::string& source) {
   }
 }
 
-void GaiaCookieManagerService::ForceOnCookieChangedProcessing() {
+void GaiaCookieManagerService::ForceOnCookieChangeProcessing() {
   GURL google_url = GaiaUrls::GetInstance()->google_url();
   std::unique_ptr<net::CanonicalCookie> cookie(
       std::make_unique<net::CanonicalCookie>(
           kGaiaCookieName, std::string(), "." + google_url.host(), "/",
           base::Time(), base::Time(), base::Time(), false, false,
           net::CookieSameSite::DEFAULT_MODE, net::COOKIE_PRIORITY_DEFAULT));
-  OnCookieChanged(*cookie, net::CookieStore::ChangeCause::UNKNOWN_DELETION);
+  OnCookieChange(*cookie, net::CookieChangeCause::UNKNOWN_DELETION);
 }
 
 void GaiaCookieManagerService::LogOutAllAccounts(const std::string& source) {
@@ -523,9 +523,9 @@ std::string GaiaCookieManagerService::GetDefaultSourceForRequest() {
   return source_;
 }
 
-void GaiaCookieManagerService::OnCookieChanged(
+void GaiaCookieManagerService::OnCookieChange(
     const net::CanonicalCookie& cookie,
-    net::CookieStore::ChangeCause cause) {
+    net::CookieChangeCause cause) {
   DCHECK_EQ(kGaiaCookieName, cookie.Name());
   DCHECK(cookie.IsDomainMatch(GaiaUrls::GetInstance()->google_url().host()));
   list_accounts_stale_ = true;
@@ -538,25 +538,25 @@ void GaiaCookieManagerService::OnCookieChanged(
     // Build gaia "source" based on cause to help track down channel id issues.
     std::string source(GetDefaultSourceForRequest());
     switch (cause) {
-      case net::CookieStore::ChangeCause::INSERTED:
+      case net::CookieChangeCause::INSERTED:
         source += "INSERTED";
         break;
-      case net::CookieStore::ChangeCause::EXPLICIT:
+      case net::CookieChangeCause::EXPLICIT:
         source += "EXPLICIT";
         break;
-      case net::CookieStore::ChangeCause::UNKNOWN_DELETION:
+      case net::CookieChangeCause::UNKNOWN_DELETION:
         source += "UNKNOWN_DELETION";
         break;
-      case net::CookieStore::ChangeCause::OVERWRITE:
+      case net::CookieChangeCause::OVERWRITE:
         source += "OVERWRITE";
         break;
-      case net::CookieStore::ChangeCause::EXPIRED:
+      case net::CookieChangeCause::EXPIRED:
         source += "EXPIRED";
         break;
-      case net::CookieStore::ChangeCause::EVICTED:
+      case net::CookieChangeCause::EVICTED:
         source += "EVICTED";
         break;
-      case net::CookieStore::ChangeCause::EXPIRED_OVERWRITE:
+      case net::CookieChangeCause::EXPIRED_OVERWRITE:
         source += "EXPIRED_OVERWRITE";
         break;
     }

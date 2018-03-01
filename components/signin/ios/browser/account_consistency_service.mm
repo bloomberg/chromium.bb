@@ -475,7 +475,7 @@ void AccountConsistencyService::OnBrowsingDataRemoved() {
   signin_client_->GetPrefs()->Set(kDomainsWithCookiePref, dict);
 
   // APISID cookie has been removed, notify the GCMS.
-  gaia_cookie_manager_service_->ForceOnCookieChangedProcessing();
+  gaia_cookie_manager_service_->ForceOnCookieChangeProcessing();
 }
 
 void AccountConsistencyService::OnAddAccountToCookieCompleted(

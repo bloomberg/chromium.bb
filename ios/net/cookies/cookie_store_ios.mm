@@ -42,20 +42,20 @@ namespace net {
 
 namespace {
 
-class CookieStoreIOSCookieChangedSubscription
-    : public CookieStore::CookieChangedSubscription {
+class CookieStoreIOSCookieChangeSubscription : public CookieChangeSubscription {
  public:
-  CookieStoreIOSCookieChangedSubscription(
-      std::unique_ptr<CookieStore::CookieChangedCallbackList::Subscription>
-          subscription)
+  using CookieChangeCallbackList =
+      base::CallbackList<void(const CanonicalCookie& cookie,
+                              CookieChangeCause cause)>;
+  CookieStoreIOSCookieChangeSubscription(
+      std::unique_ptr<CookieChangeCallbackList::Subscription> subscription)
       : subscription_(std::move(subscription)) {}
-  ~CookieStoreIOSCookieChangedSubscription() override {}
+  ~CookieStoreIOSCookieChangeSubscription() override {}
 
  private:
-  std::unique_ptr<CookieStore::CookieChangedCallbackList::Subscription>
-      subscription_;
+  std::unique_ptr<CookieChangeCallbackList::Subscription> subscription_;
 
-  DISALLOW_COPY_AND_ASSIGN(CookieStoreIOSCookieChangedSubscription);
+  DISALLOW_COPY_AND_ASSIGN(CookieStoreIOSCookieChangeSubscription);
 };
 
 #pragma mark NotificationTrampoline
@@ -214,6 +214,34 @@ bool HasExplicitDomain(const std::string& cookie_line) {
 }  // namespace
 
 #pragma mark -
+
+#pragma mark CookieStoreIOS::CookieChangeDispatcherIOS
+
+CookieStoreIOS::CookieChangeDispatcherIOS::CookieChangeDispatcherIOS(
+    CookieStoreIOS* cookie_store)
+    : cookie_store_(cookie_store) {
+  DCHECK(cookie_store);
+}
+
+CookieStoreIOS::CookieChangeDispatcherIOS::~CookieChangeDispatcherIOS() =
+    default;
+
+std::unique_ptr<CookieChangeSubscription>
+CookieStoreIOS::CookieChangeDispatcherIOS::AddCallbackForCookie(
+    const GURL& gurl,
+    const std::string& name,
+    CookieChangeCallback callback) {
+  return cookie_store_->AddCallbackForCookie(gurl, name, std::move(callback));
+}
+
+std::unique_ptr<CookieChangeSubscription>
+CookieStoreIOS::CookieChangeDispatcherIOS::AddCallbackForAllChanges(
+    CookieChangeCallback callback) {
+  // Implement when needed by iOS consumers.
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+
 #pragma mark CookieStoreIOS
 
 CookieStoreIOS::CookieStoreIOS(
@@ -482,6 +510,7 @@ CookieStoreIOS::CookieStoreIOS(
       system_store_(std::move(system_store)),
       metrics_enabled_(false),
       cookie_cache_(new CookieCache()),
+      change_dispatcher_(this),
       weak_factory_(this) {
   DCHECK(system_store_);
 
@@ -590,34 +619,30 @@ void CookieStoreIOS::OnSystemCookiesChanged() {
       FROM_HERE, flush_closure_.callback(), base::TimeDelta::FromSeconds(10));
 }
 
-std::unique_ptr<net::CookieStore::CookieChangedSubscription>
-CookieStoreIOS::AddCallbackForCookie(const GURL& gurl,
-                                     const std::string& name,
-                                     const CookieChangedCallback& callback) {
+CookieChangeDispatcher& CookieStoreIOS::GetChangeDispatcher() {
+  return change_dispatcher_;
+}
+
+bool CookieStoreIOS::IsEphemeral() {
+  return cookie_monster_->IsEphemeral();
+}
+
+std::unique_ptr<CookieChangeSubscription> CookieStoreIOS::AddCallbackForCookie(
+    const GURL& gurl,
+    const std::string& name,
+    CookieChangeCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   // Prefill cookie cache with all pertinent cookies for |url| if needed.
   std::pair<GURL, std::string> key(gurl, name);
   if (hook_map_.count(key) == 0) {
     UpdateCacheForCookieFromSystem(gurl, name, /*run_callbacks=*/false);
-    hook_map_[key] = std::make_unique<CookieChangedCallbackList>();
+    hook_map_[key] = std::make_unique<CookieChangeCallbackList>();
   }
 
   DCHECK(hook_map_.find(key) != hook_map_.end());
-  return std::make_unique<CookieStoreIOSCookieChangedSubscription>(
-      hook_map_[key]->Add(callback));
-}
-
-std::unique_ptr<net::CookieStore::CookieChangedSubscription>
-CookieStoreIOS::AddCallbackForAllChanges(
-    const CookieChangedCallback& callback) {
-  // Implement when needed by iOS consumers.
-  NOTIMPLEMENTED();
-  return nullptr;
-}
-
-bool CookieStoreIOS::IsEphemeral() {
-  return cookie_monster_->IsEphemeral();
+  return std::make_unique<CookieStoreIOSCookieChangeSubscription>(
+      hook_map_[key]->Add(std::move(callback)));
 }
 
 void CookieStoreIOS::UpdateCacheForCookieFromSystem(
@@ -650,9 +675,9 @@ void CookieStoreIOS::UpdateCacheForCookies(const GURL& gurl,
       gurl, cookie_name, cookies, &out_removed_cookies, &out_added_cookies);
   if (run_callbacks && changes) {
     RunCallbacksForCookies(gurl, cookie_name, out_removed_cookies,
-                           net::CookieStore::ChangeCause::UNKNOWN_DELETION);
+                           net::CookieChangeCause::UNKNOWN_DELETION);
     RunCallbacksForCookies(gurl, cookie_name, out_added_cookies,
-                           net::CookieStore::ChangeCause::INSERTED);
+                           net::CookieChangeCause::INSERTED);
   }
 }
 
@@ -660,13 +685,13 @@ void CookieStoreIOS::RunCallbacksForCookies(
     const GURL& url,
     const std::string& name,
     const std::vector<net::CanonicalCookie>& cookies,
-    net::CookieStore::ChangeCause cause) {
+    net::CookieChangeCause cause) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (cookies.empty())
     return;
 
   std::pair<GURL, std::string> key(url, name);
-  CookieChangedCallbackList* callbacks = hook_map_[key].get();
+  CookieChangeCallbackList* callbacks = hook_map_[key].get();
   for (const auto& cookie : cookies) {
     DCHECK_EQ(name, cookie.Name());
     callbacks->Notify(cookie, cause);
@@ -684,9 +709,9 @@ void CookieStoreIOS::GotCookieListFor(const std::pair<GURL, std::string> key,
   if (cookie_cache_->Update(key.first, key.second, filtered, &removed_cookies,
                             &added_cookies)) {
     RunCallbacksForCookies(key.first, key.second, removed_cookies,
-                           net::CookieStore::ChangeCause::UNKNOWN_DELETION);
+                           net::CookieChangeCause::UNKNOWN_DELETION);
     RunCallbacksForCookies(key.first, key.second, added_cookies,
-                           net::CookieStore::ChangeCause::INSERTED);
+                           net::CookieChangeCause::INSERTED);
   }
 }
 

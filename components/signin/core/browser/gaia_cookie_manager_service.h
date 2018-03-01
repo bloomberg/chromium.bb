@@ -194,10 +194,10 @@ class GaiaCookieManagerService : public KeyedService,
   // that a check which GAIA should be done can force it.
   void TriggerListAccounts(const std::string& source);
 
-  // Forces the processing of OnCookieChanged. This is public so that callers
+  // Forces the processing of OnCookieChange. This is public so that callers
   // that know the GAIA APISID cookie might have changed can inform the
   // service. Virtual for testing.
-  virtual void ForceOnCookieChangedProcessing();
+  virtual void ForceOnCookieChangeProcessing();
 
   // Add or remove observers of this helper.
   void AddObserver(Observer* observer);
@@ -248,8 +248,8 @@ class GaiaCookieManagerService : public KeyedService,
 
   // Called when a cookie changes. If the cookie relates to a GAIA APISID
   // cookie, then we call ListAccounts and fire OnGaiaAccountsInCookieUpdated.
-  void OnCookieChanged(const net::CanonicalCookie& cookie,
-                       net::CookieStore::ChangeCause cause);
+  void OnCookieChange(const net::CanonicalCookie& cookie,
+                      net::CookieChangeCause cause);
 
   // Overridden from UbertokenConsumer.
   void OnUbertokenSuccess(const std::string& token) override;
@@ -306,8 +306,8 @@ class GaiaCookieManagerService : public KeyedService,
   std::string access_token_;
 
   // Subscription to be called whenever the GAIA cookies change.
-  std::unique_ptr<SigninClient::CookieChangedSubscription>
-      cookie_changed_subscription_;
+  std::unique_ptr<SigninClient::CookieChangeSubscription>
+      cookie_change_subscription_;
 
   // A worklist for this class. Stores any pending requests that couldn't be
   // executed right away, since this class only permits one request to be
