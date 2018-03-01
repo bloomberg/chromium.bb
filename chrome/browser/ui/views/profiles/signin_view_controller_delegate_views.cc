@@ -39,8 +39,8 @@ int GetSyncConfirmationDialogPreferredHeight(Profile* profile) {
 }
 
 int GetSyncConfirmationDialogPreferredWidth(Profile* profile) {
-  // With Unity profiles, we show a different sync confirmation dialog which
-  // uses a different width.
+  // With Unity-enabled profiles, we show a different sync confirmation dialog
+  // which uses a different width.
   return IsUnifiedConsentEnabled(profile) && profile->IsSyncAllowed()
              ? kModalDialogWidthForDice
              : kModalDialogWidth;
