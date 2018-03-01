@@ -151,10 +151,16 @@ static uint32_t read_tile_group_header(AV1Decoder *pbi,
                                        int *startTile, int *endTile) {
   AV1_COMMON *const cm = &pbi->common;
   uint32_t saved_bit_offset = rb->bit_offset;
+  int tile_start_and_end_present_flag = 0;
+  const int num_tiles = pbi->common.tile_rows * pbi->common.tile_cols;
 
-  if (pbi->common.large_scale_tile) {
+  if (!pbi->common.large_scale_tile && num_tiles > 1) {
+    tile_start_and_end_present_flag = aom_rb_read_bit(rb);
+  }
+  if (pbi->common.large_scale_tile || num_tiles == 1 ||
+      !tile_start_and_end_present_flag) {
     *startTile = 0;
-    *endTile = pbi->common.tile_rows * pbi->common.tile_cols - 1;
+    *endTile = num_tiles - 1;
     return ((rb->bit_offset - saved_bit_offset + 7) >> 3);
   }
 

@@ -3623,12 +3623,19 @@ static uint32_t write_frame_header_obu(AV1_COMP *cpi,
 }
 
 static uint32_t write_tile_group_header(uint8_t *const dst, int startTile,
-                                        int endTile, int tiles_log2) {
+                                        int endTile, int tiles_log2,
+                                        int tile_start_and_end_present_flag) {
   struct aom_write_bit_buffer wb = { dst, 0 };
   uint32_t size = 0;
 
-  aom_wb_write_literal(&wb, startTile, tiles_log2);
-  aom_wb_write_literal(&wb, endTile, tiles_log2);
+  if (!tiles_log2) return size;
+
+  aom_wb_write_bit(&wb, tile_start_and_end_present_flag);
+
+  if (tile_start_and_end_present_flag) {
+    aom_wb_write_literal(&wb, startTile, tiles_log2);
+    aom_wb_write_literal(&wb, endTile, tiles_log2);
+  }
 
   size = aom_wb_bytes_written(&wb);
   return size;
@@ -3827,13 +3834,10 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
 #if CONFIG_OBU_SIZING
         obu_header_size = curr_tg_data_size;
 #endif  // CONFIG_OBU_SIZING
-
-        if (n_log2_tiles) {
-          curr_tg_data_size += write_tile_group_header(
-              data + curr_tg_data_size + PRE_OBU_SIZE_BYTES, tile_idx,
-              AOMMIN(tile_idx + tg_size - 1, tile_cols * tile_rows - 1),
-              n_log2_tiles);
-        }
+        curr_tg_data_size += write_tile_group_header(
+            data + curr_tg_data_size + PRE_OBU_SIZE_BYTES, tile_idx,
+            AOMMIN(tile_idx + tg_size - 1, tile_cols * tile_rows - 1),
+            n_log2_tiles, cm->num_tg > 1);
         total_size += curr_tg_data_size + PRE_OBU_SIZE_BYTES;
         tile_data_start += curr_tg_data_size + PRE_OBU_SIZE_BYTES;
         new_tg = 0;
