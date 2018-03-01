@@ -20,7 +20,8 @@ ChromeDevToolsSession::ChromeDevToolsSession(
       client_(client),
       dispatcher_(std::make_unique<protocol::UberDispatcher>(this)) {
   dispatcher_->setFallThroughForNotFound(true);
-  if (agent_host->GetWebContents()) {
+  if (agent_host->GetWebContents() &&
+      agent_host->GetType() == content::DevToolsAgentHost::kTypePage) {
     page_handler_ = std::make_unique<PageHandler>(agent_host->GetWebContents(),
                                                   dispatcher_.get());
   }
