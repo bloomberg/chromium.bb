@@ -1855,6 +1855,24 @@
             ]
         }
     ],
+    "LocalScreenCasting": [
+        {
+            "platforms": [
+                "linux",
+                "mac",
+                "win",
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "LocalScreenCasting"
+                    ]
+                }
+            ]
+        }
+    ],
     "LowPriorityIframes": [
         {
             "platforms": [
