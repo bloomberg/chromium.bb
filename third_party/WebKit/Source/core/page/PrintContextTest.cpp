@@ -433,9 +433,8 @@ TEST_F(PrintContextFrameTest, SubframePrintPageLayout) {
   EXPECT_EQ(target->OffsetWidth(), 800);
   GetDocument().GetFrame()->EndPrinting();
   EXPECT_EQ(parent->OffsetWidth(), 800);
-  // Child document requires relayout triggered from higher level
-  // to return back to the original size.
-  EXPECT_EQ(child->OffsetWidth(), 400);
+  //  The child frame should return to the original size.
+  EXPECT_EQ(child->OffsetWidth(), 800);
   EXPECT_EQ(target->OffsetWidth(), 800);
 }
 
