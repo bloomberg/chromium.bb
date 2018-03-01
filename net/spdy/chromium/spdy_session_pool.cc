@@ -206,7 +206,8 @@ base::WeakPtr<SpdySession> SpdySessionPool::FindAvailableSession(
         continue;
       }
 
-      const base::WeakPtr<SpdySession>& available_session =
+      // Make copy of WeakPtr as call to UnmapKey() will delete original.
+      const base::WeakPtr<SpdySession> available_session =
           available_session_it->second;
       DCHECK(base::ContainsKey(sessions_, available_session.get()));
 
