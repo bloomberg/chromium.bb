@@ -28,6 +28,10 @@ void IOSChromePasswordManagerDriver::FillPasswordForm(
   [delegate_ fillPasswordForm:form_data completionHandler:nil];
 }
 
+void IOSChromePasswordManagerDriver::InformNoSavedCredentials() {
+  [delegate_ onNoSavedCredentials];
+}
+
 void IOSChromePasswordManagerDriver::FormsEligibleForGenerationFound(
     const std::vector<autofill::PasswordFormGenerationData>& forms) {
   // TODO(crbug.com/569579): Implement.

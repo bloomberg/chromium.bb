@@ -679,6 +679,7 @@ void PasswordFormManager::ProcessFrameInternal(
   driver->AllowPasswordGenerationForForm(observed_form_);
 
   if (best_matches_.empty()) {
+    driver->InformNoSavedCredentials();
     metrics_recorder_->RecordFillEvent(
         PasswordFormMetricsRecorder::kManagerFillEventNoCredential);
     return;

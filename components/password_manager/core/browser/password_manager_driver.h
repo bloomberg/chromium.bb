@@ -39,6 +39,11 @@ class PasswordManagerDriver
   virtual void FillPasswordForm(
       const autofill::PasswordFormFillData& form_data) = 0;
 
+  // Informs the driver that there are no saved credentials in the password
+  // store for the current page.
+  // TODO(https://crbug.com/621355): Remove and observe FormFetcher instead.
+  virtual void InformNoSavedCredentials() {}
+
   // Informs the driver that |form| can be used for password generation.
   virtual void AllowPasswordGenerationForForm(
       const autofill::PasswordForm& form) = 0;

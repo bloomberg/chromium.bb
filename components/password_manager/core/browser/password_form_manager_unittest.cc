@@ -332,6 +332,7 @@ class MockPasswordManagerDriver : public StubPasswordManagerDriver {
   ~MockPasswordManagerDriver() {}
 
   MOCK_METHOD1(FillPasswordForm, void(const autofill::PasswordFormFillData&));
+  MOCK_METHOD0(InformNoSavedCredentials, void());
   MOCK_METHOD1(ShowInitialPasswordAccountSuggestions,
                void(const autofill::PasswordFormFillData&));
   MOCK_METHOD1(AllowPasswordGenerationForForm,
@@ -2734,6 +2735,12 @@ TEST_F(PasswordFormManagerTest, GenerationStatusNotUpdatedIfPasswordUnchanged) {
 TEST_F(PasswordFormManagerTest, ProcessFrame) {
   EXPECT_CALL(*client()->mock_driver(), FillPasswordForm(_));
   fake_form_fetcher()->SetNonFederated({saved_match()}, 0u);
+}
+
+// Test that driver is informed when there are not saved credentials.
+TEST_F(PasswordFormManagerTest, InformNoSavedCredentials) {
+  EXPECT_CALL(*client()->mock_driver(), InformNoSavedCredentials());
+  fake_form_fetcher()->SetNonFederated({}, 0u);
 }
 
 // Test that ProcessFrame can also be called directly, resulting in an
