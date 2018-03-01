@@ -113,12 +113,6 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   // Waits until all workers are idle.
   void WaitForAllWorkersIdleForTesting();
 
-  // Disallows worker cleanup. If the suggested reclaim time is not
-  // TimeDelta::Max(), the test must call this before JoinForTesting() to
-  // prevent thread detachment during the process of joining all of the threads,
-  // and as a result, threads running after JoinForTesting().
-  void DisallowWorkerCleanupForTesting();
-
   // Returns the number of workers in this worker pool.
   size_t NumberOfWorkersForTesting() const;
 

@@ -309,9 +309,9 @@ void SchedulerWorkerPoolImpl::JoinForTesting() {
 
     DCHECK_GT(workers_.size(), size_t(0)) << "Joined an unstarted worker pool.";
 
-    DCHECK(!CanWorkerCleanupForTestingLockRequired() ||
-           suggested_reclaim_time_.is_max())
-        << "Workers can cleanup during join.";
+    // Ensure SchedulerWorkers in |workers_| do not attempt to cleanup while
+    // being joined.
+    worker_cleanup_disallowed_for_testing_ = true;
 
     // Make a copy of the SchedulerWorkers so that we can call
     // SchedulerWorker::JoinForTesting() without holding |lock_| since
@@ -338,11 +338,6 @@ void SchedulerWorkerPoolImpl::JoinForTesting() {
 
   DCHECK(!join_for_testing_returned_.IsSignaled());
   join_for_testing_returned_.Signal();
-}
-
-void SchedulerWorkerPoolImpl::DisallowWorkerCleanupForTesting() {
-  AutoSchedulerLock auto_lock(lock_);
-  worker_cleanup_disallowed_for_testing_ = true;
 }
 
 size_t SchedulerWorkerPoolImpl::NumberOfWorkersForTesting() const {
@@ -519,7 +514,7 @@ bool SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
 
   return worker != outer_->PeekAtIdleWorkersStackLockRequired() &&
-         LIKELY(outer_->CanWorkerCleanupForTestingLockRequired());
+         LIKELY(!outer_->worker_cleanup_disallowed_for_testing_);
 }
 
 void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::CleanupLockRequired(
@@ -826,11 +821,6 @@ void SchedulerWorkerPoolImpl::RemoveFromIdleWorkersStackLockRequired(
     SchedulerWorker* worker) {
   lock_.AssertAcquired();
   idle_workers_stack_.Remove(worker);
-}
-
-bool SchedulerWorkerPoolImpl::CanWorkerCleanupForTestingLockRequired() {
-  lock_.AssertAcquired();
-  return !worker_cleanup_disallowed_for_testing_;
 }
 
 SchedulerWorker*
