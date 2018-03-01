@@ -16,7 +16,7 @@ enum ScrollbarOrientation { HORIZONTAL, VERTICAL };
 enum ScrollDirection { SCROLL_BACKWARD, SCROLL_FORWARD };
 // For now, TRACK includes everything but the thumb including background and
 // buttons.
-enum ScrollbarPart { THUMB, TRACK };
+enum ScrollbarPart { THUMB, TRACK, TICKMARKS };
 
 class Scrollbar {
  public:
@@ -31,6 +31,7 @@ class Scrollbar {
   virtual int ThumbLength() const = 0;
   virtual gfx::Rect TrackRect() const = 0;
   virtual float ThumbOpacity() const = 0;
+  virtual bool HasTickmarks() const = 0;
   virtual bool NeedsPaintPart(ScrollbarPart part) const = 0;
   virtual void PaintPart(PaintCanvas* canvas,
                          ScrollbarPart part,

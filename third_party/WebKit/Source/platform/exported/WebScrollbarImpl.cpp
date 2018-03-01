@@ -64,6 +64,13 @@ bool WebScrollbarImpl::IsScrollableAreaActive() const {
   return scrollbar_->IsScrollableAreaActive();
 }
 
+bool WebScrollbarImpl::HasTickmarks() const {
+  Vector<IntRect> tickmarks;
+  scrollbar_->GetTickmarks(tickmarks);
+
+  return !tickmarks.IsEmpty();
+}
+
 void WebScrollbarImpl::GetTickmarks(WebVector<WebRect>& web_tickmarks) const {
   Vector<IntRect> tickmarks;
   scrollbar_->GetTickmarks(tickmarks);

@@ -90,6 +90,11 @@ void PaintedOverlayScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
     scrollbar_layer->SetAperture(gfx::Rect());
     scrollbar_layer->set_thumb_ui_resource_id(0);
   }
+
+  if (track_resource_.get())
+    scrollbar_layer->set_track_ui_resource_id(track_resource_->id());
+  else
+    scrollbar_layer->set_track_ui_resource_id(0);
 }
 
 ScrollbarLayerInterface* PaintedOverlayScrollbarLayer::ToScrollbarLayer() {
@@ -99,8 +104,10 @@ ScrollbarLayerInterface* PaintedOverlayScrollbarLayer::ToScrollbarLayer() {
 void PaintedOverlayScrollbarLayer::SetLayerTreeHost(LayerTreeHost* host) {
   // When the LTH is set to null or has changed, then this layer should remove
   // all of its associated resources.
-  if (host != layer_tree_host())
-    thumb_resource_ = nullptr;
+  if (host != layer_tree_host()) {
+    thumb_resource_.reset();
+    track_resource_.reset();
+  }
 
   Layer::SetLayerTreeHost(host);
 }
@@ -121,6 +128,7 @@ bool PaintedOverlayScrollbarLayer::Update() {
   updated |= UpdateProperty(scrollbar_->ThumbThickness(), &thumb_thickness_);
   updated |= UpdateProperty(scrollbar_->ThumbLength(), &thumb_length_);
   updated |= PaintThumbIfNeeded();
+  updated |= PaintTickmarks();
 
   return updated;
 }
@@ -156,6 +164,45 @@ bool PaintedOverlayScrollbarLayer::PaintThumbIfNeeded() {
 
   SetNeedsPushProperties();
 
+  return true;
+}
+
+bool PaintedOverlayScrollbarLayer::PaintTickmarks() {
+  if (!scrollbar_->HasTickmarks()) {
+    if (!track_resource_) {
+      return false;
+    } else {
+      // Remove previous tickmarks.
+      track_resource_.reset();
+      SetNeedsPushProperties();
+      return true;
+    }
+  }
+
+  gfx::Rect paint_rect = gfx::Rect(gfx::Point(), track_rect_.size());
+
+  DCHECK(!paint_rect.size().IsEmpty());
+
+  SkBitmap skbitmap;
+  skbitmap.allocN32Pixels(paint_rect.width(), paint_rect.height());
+  SkiaPaintCanvas canvas(skbitmap);
+
+  SkRect content_skrect = RectToSkRect(paint_rect);
+  PaintFlags flags;
+  flags.setAntiAlias(false);
+  flags.setBlendMode(SkBlendMode::kClear);
+  canvas.drawRect(content_skrect, flags);
+  canvas.clipRect(content_skrect);
+
+  scrollbar_->PaintPart(&canvas, TICKMARKS, paint_rect);
+  // Make sure that the pixels are no longer mutable to unavoid unnecessary
+  // allocation and copying.
+  skbitmap.setImmutable();
+
+  track_resource_ = ScopedUIResource::Create(
+      layer_tree_host()->GetUIResourceManager(), UIResourceBitmap(skbitmap));
+
+  SetNeedsPushProperties();
   return true;
 }
 

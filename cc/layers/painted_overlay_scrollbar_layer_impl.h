@@ -47,6 +47,10 @@ class CC_EXPORT PaintedOverlayScrollbarLayerImpl
     thumb_ui_resource_id_ = uid;
   }
 
+  void set_track_ui_resource_id(UIResourceId uid) {
+    track_ui_resource_id_ = uid;
+  }
+
  protected:
   PaintedOverlayScrollbarLayerImpl(LayerTreeImpl* tree_impl,
                                    int id,
@@ -63,7 +67,16 @@ class CC_EXPORT PaintedOverlayScrollbarLayerImpl
  private:
   const char* LayerTypeAsString() const override;
 
+  void AppendThumbQuads(viz::RenderPass* render_pass,
+                        AppendQuadsData* append_quads_data,
+                        viz::SharedQuadState* shared_quad_state);
+
+  void AppendTrackQuads(viz::RenderPass* render_pass,
+                        AppendQuadsData* append_quads_data,
+                        viz::SharedQuadState* shared_quad_state);
+
   UIResourceId thumb_ui_resource_id_;
+  UIResourceId track_ui_resource_id_;
 
   int thumb_thickness_;
   int thumb_length_;
