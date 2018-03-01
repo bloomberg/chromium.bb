@@ -128,6 +128,8 @@ void UserActivityLogger::SuspendDone(const base::TimeDelta& sleep_duration) {
     // REACTIVATE event.
     MaybeLogEvent(UserActivityEvent::Event::REACTIVATE,
                   UserActivityEvent::Event::USER_ACTIVITY);
+
+    suspend_reason_ = base::nullopt;
     return;
   }
 
