@@ -20,7 +20,7 @@
 #include "test/util.h"
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
-namespace AV1Hash {
+namespace {
 
 ////////////////////////////////////////
 // C version reference code from
@@ -28,16 +28,16 @@ namespace AV1Hash {
 ////////////////////////////////////////
 
 /* CRC-32C (iSCSI) polynomial in reversed bit order. */
-#define POLY 0x82f63b78
+const uint32_t POLY = 0x82f63b78;
 
 /* Table for a quadword-at-a-time software crc. */
-static uint32_t crc32c_table[8][256];
+uint32_t kCrc32cTable[8][256];
 
 /* Construct table for software CRC-32C calculation. */
-static void crc32c_init_sw(void) {
-  uint32_t n, crc, k;
+static void Crc32cInitSw() {
+  uint32_t crc;
 
-  for (n = 0; n < 256; n++) {
+  for (int n = 0; n < 256; n++) {
     crc = n;
     crc = crc & 1 ? (crc >> 1) ^ POLY : crc >> 1;
     crc = crc & 1 ? (crc >> 1) ^ POLY : crc >> 1;
@@ -47,13 +47,13 @@ static void crc32c_init_sw(void) {
     crc = crc & 1 ? (crc >> 1) ^ POLY : crc >> 1;
     crc = crc & 1 ? (crc >> 1) ^ POLY : crc >> 1;
     crc = crc & 1 ? (crc >> 1) ^ POLY : crc >> 1;
-    crc32c_table[0][n] = crc;
+    kCrc32cTable[0][n] = crc;
   }
-  for (n = 0; n < 256; n++) {
-    crc = crc32c_table[0][n];
-    for (k = 1; k < 8; k++) {
-      crc = crc32c_table[0][crc & 0xff] ^ (crc >> 8);
-      crc32c_table[k][n] = crc;
+  for (int n = 0; n < 256; n++) {
+    crc = kCrc32cTable[0][n];
+    for (int k = 1; k < 8; k++) {
+      crc = kCrc32cTable[0][crc & 0xff] ^ (crc >> 8);
+      kCrc32cTable[k][n] = crc;
     }
   }
 }
@@ -61,36 +61,36 @@ static void crc32c_init_sw(void) {
 /* Table-driven software version as a fall-back.  This is about 15 times slower
    than using the hardware instructions.  This assumes little-endian integers,
    as is the case on Intel processors that the assembler code here is for. */
-uint32_t crc32c_sw(const void *buf, size_t len, uint32_t crci) {
-  const unsigned char *next = (const unsigned char *)buf;
+uint32_t Crc32cSw(const void *buf, size_t len, uint32_t crci) {
+  const uint8_t *next = reinterpret_cast<const uint8_t *>(buf);
   uint64_t crc;
 
   crc = crci ^ 0xffffffff;
   while (len && ((uintptr_t)next & 7) != 0) {
-    crc = crc32c_table[0][(crc ^ *next++) & 0xff] ^ (crc >> 8);
+    crc = kCrc32cTable[0][(crc ^ *next++) & 0xff] ^ (crc >> 8);
     len--;
   }
   while (len >= 8) {
     crc ^= *(uint64_t *)next;
-    crc = crc32c_table[7][crc & 0xff] ^ crc32c_table[6][(crc >> 8) & 0xff] ^
-          crc32c_table[5][(crc >> 16) & 0xff] ^
-          crc32c_table[4][(crc >> 24) & 0xff] ^
-          crc32c_table[3][(crc >> 32) & 0xff] ^
-          crc32c_table[2][(crc >> 40) & 0xff] ^
-          crc32c_table[1][(crc >> 48) & 0xff] ^ crc32c_table[0][crc >> 56];
+    crc = kCrc32cTable[7][crc & 0xff] ^ kCrc32cTable[6][(crc >> 8) & 0xff] ^
+          kCrc32cTable[5][(crc >> 16) & 0xff] ^
+          kCrc32cTable[4][(crc >> 24) & 0xff] ^
+          kCrc32cTable[3][(crc >> 32) & 0xff] ^
+          kCrc32cTable[2][(crc >> 40) & 0xff] ^
+          kCrc32cTable[1][(crc >> 48) & 0xff] ^ kCrc32cTable[0][crc >> 56];
     next += 8;
     len -= 8;
   }
   while (len) {
-    crc = crc32c_table[0][(crc ^ *next++) & 0xff] ^ (crc >> 8);
+    crc = kCrc32cTable[0][(crc ^ *next++) & 0xff] ^ (crc >> 8);
     len--;
   }
   return (uint32_t)crc ^ 0xffffffff;
 }
 
-static uint32_t get_crc32c_value_ref(void *calculator, uint8_t *p, int length) {
+static uint32_t GetCrc32cValueRef(void *calculator, uint8_t *p, int length) {
   (void)calculator;
-  return crc32c_sw(p, length, 0);
+  return Crc32cSw(p, length, 0);
 }
 
 typedef uint32_t (*get_crc_value_func)(void *calculator, uint8_t *p,
@@ -121,16 +121,17 @@ AV1CrcHashTest::~AV1CrcHashTest() { ; }
 void AV1CrcHashTest::SetUp() {
   rnd_.Reset(libaom_test::ACMRandom::DeterministicSeed());
   av1_crc_calculator_init(&calc_, 24, 0x5D6DCB);
-  crc32c_init_sw();
+  Crc32cInitSw();
   bsize_ = GET_PARAM(2);
   length_ = bsize_ * bsize_ * sizeof(uint16_t);
-  buffer_ = (uint8_t *)malloc(length_);
+  buffer_ = new uint8_t[length_];
+  ASSERT_TRUE(buffer_ != NULL);
   for (int i = 0; i < length_; ++i) {
     buffer_[i] = rnd_.Rand8();
   }
 }
 
-void AV1CrcHashTest::TearDown() { free(buffer_); }
+void AV1CrcHashTest::TearDown() { delete[] buffer_; }
 
 void AV1CrcHashTest::RunCheckOutput(get_crc_value_func test_impl,
                                     get_crc_value_func ref_impl) {
@@ -144,7 +145,7 @@ void AV1CrcHashTest::RunCheckOutput(get_crc_value_func test_impl,
   buffer_[0] += 1;
   uint32_t crc3 = test_impl(&calc_, buffer_, length_);
   uint32_t crc4 = ref_impl(&calc_, buffer_, length_);
-  ASSERT_NE(crc0, crc3);  // crc shoud not equal to previours one
+  ASSERT_NE(crc0, crc3);  // crc shoud not equal to previous one
   ASSERT_EQ(crc3, crc4);
 }
 
@@ -153,7 +154,7 @@ void AV1CrcHashTest::RunSpeedTest(get_crc_value_func test_impl) {
   const int repeat = 10000000 / (bsize_ + bsize_);
 
   aom_usec_timer timer;
-  double time[2] = { 0 };
+  double time[2];
   for (int i = 0; i < 2; ++i) {
     aom_usec_timer_start(&timer);
     for (int j = 0; j < repeat; ++j) {
@@ -184,8 +185,8 @@ INSTANTIATE_TEST_CASE_P(
 INSTANTIATE_TEST_CASE_P(
     SSE4_2, AV1CrcHashTest,
     ::testing::Combine(::testing::Values(&av1_get_crc_value_sse4_2),
-                       ::testing::Values(&get_crc32c_value_ref),
+                       ::testing::Values(&GetCrc32cValueRef),
                        ::testing::ValuesIn(kValidBlockSize)));
 #endif
 
-}  // namespace AV1Hash
+}  // namespace
