@@ -33,8 +33,6 @@
         'annotation.h',
         'annotation_list.cc',
         'annotation_list.h',
-        'capture_context_mac.S',
-        'capture_context_mac.h',
         'crash_report_database.cc',
         'crash_report_database.h',
         'crash_report_database_mac.mm',
@@ -52,6 +50,7 @@
         'simple_string_dictionary.h',
         'simple_address_range_bag.h',
         'simulate_crash.h',
+        'simulate_crash_linux.h',
         'simulate_crash_mac.cc',
         'simulate_crash_mac.h',
         'simulate_crash_win.h',
@@ -64,9 +63,18 @@
             ],
           },
         }],
-        ['OS!="mac"', {
-          'sources!': [
-            'capture_context_mac.S',
+        ['OS=="linux" or OS=="android"', {
+          'sources': [
+            'crashpad_info_note.S',
+            'crash_report_database_generic.cc',
+          ],
+        }],
+      ],
+      'target_conditions': [
+        ['OS=="android"', {
+          'sources/': [
+            ['include', '^crashpad_client_linux\\.cc$'],
+            ['include', '^simulate_crash_linux\\.h$'],
           ],
         }],
       ],
