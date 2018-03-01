@@ -31,11 +31,6 @@ class ASH_EXPORT MagnificationController {
 
   virtual ~MagnificationController() {}
 
-  // Factor of magnification scale. For example, when this value is 1.189, scale
-  // value will be changed x1.000, x1.189, x1.414, x1.681, x2.000, ...
-  // Note: this value is 2.0 ^ (1 / 4).
-  static constexpr float kMagnificationScaleFactor = 1.18920712f;
-
   // Creates a new MagnificationController. The caller takes ownership of the
   // returned object.
   static MagnificationController* CreateInstance();
@@ -57,6 +52,11 @@ class ASH_EXPORT MagnificationController {
   virtual void SetScale(float scale, bool animate) = 0;
   // Returns the current magnification ratio.
   virtual float GetScale() const = 0;
+
+  // Maps the current scale value to an index in the range between the minimum
+  // and maximum scale values, and steps up or down the scale depending on the
+  // value of |delta_index|.
+  void StepToNextScaleValue(int delta_index);
 
   // Set the top-left point of the magnification window.
   virtual void MoveWindow(int x, int y, bool animate) = 0;
@@ -98,23 +98,6 @@ class ASH_EXPORT MagnificationController {
   MagnificationController() {}
 
   FRIEND_TEST_ALL_PREFIXES(MagnificationControllerTest, AdjustScaleFromScroll);
-
-  // Calculates the new scale if it were to be adjusted exponentially by the
-  // given |linear_offset|. This allows linear changes in scroll offset
-  // to have exponential changes on the scale, so that as the user zooms in,
-  // they appear to zoom faster through higher resolutions. This also has the
-  // effect that whether the user moves their fingers quickly or slowly on
-  // the trackpad (changing the number of events fired), the resulting zoom
-  // will only depend on the distance their fingers traveled.
-  // |linear_offset| should generally be between 0 and 1, to result in a set
-  // scale between |kNonMagnifiedScale| and |kMaxMagnifiedScale|.
-  // The resulting scale should be an exponential of the form
-  // y = M * x ^ 2 + c, where y is the resulting scale, M is the difference
-  // between |kNonMagnifiedScale| and |kMaxMagnifiedScale|, and c is
-  // |kNonMagnifiedScale| scale. This creates a mapping from |linear_offset|
-  // in (0, 1) to scale in (min, max).
-  // Protected so it may be accessed by classes who inherit from this.
-  float GetScaleFromScroll(float linear_offset);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MagnificationController);
