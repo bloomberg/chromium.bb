@@ -1363,14 +1363,7 @@ for_updatePositions(const widechar *outChars, int inLength, int outLength, int s
 		return 0;
 	memcpy(&output->chars[output->length], outChars, outLength * CHARSIZE);
 	if (!*cursorStatus) {
-		if ((mode & (compbrlAtCursor | compbrlLeftCursor))) {
-			if ((*pos >= compbrlStart) && (*pos < compbrlEnd)) {
-				*cursorStatus = 2;
-				return doCompTrans(compbrlStart, compbrlEnd, table, pos, mode, input,
-						output, posMapping, emphasisBuffer, transNoteBuffer, transRule,
-						cursorPosition, cursorStatus, compbrlStart, compbrlEnd);
-			}
-		} else if (*cursorPosition >= *pos && *cursorPosition < (*pos + inLength)) {
+		if (*cursorPosition >= *pos && *cursorPosition < (*pos + inLength)) {
 			*cursorPosition = output->length;
 			*cursorStatus = 1;
 		} else if (input.chars[*cursorPosition] == 0 &&
