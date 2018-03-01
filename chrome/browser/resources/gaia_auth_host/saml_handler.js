@@ -469,7 +469,7 @@ cr.define('cr.login', function() {
       this.authDomain = extractDomain(msg.url);
       this.dispatchEvent(new CustomEvent('authPageLoaded', {
         detail: {
-          url: url,
+          url: msg.url,
           isSAMLPage: this.isSamlPage_,
           domain: this.authDomain
         }
