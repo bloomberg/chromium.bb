@@ -332,9 +332,9 @@ StyleSheetList& TreeScope::MoreStyleSheets() {
 }
 
 void TreeScope::SetMoreStyleSheets(StyleSheetList* more_style_sheets) {
+  GetDocument().GetStyleEngine().MoreStyleSheetsWillChange(
+      *this, more_style_sheets_, more_style_sheets);
   more_style_sheets_ = more_style_sheets;
-  // TODO(rakina): handle changes to moreStyleSheets contents through CSSOM
-  GetDocument().GetStyleEngine().MoreStyleSheetsChangedInScope(*this);
 }
 
 DOMSelection* TreeScope::GetSelection() const {
