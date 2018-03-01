@@ -31,6 +31,7 @@ constexpr int kDividerVerticalPadding = 10;
 
 // Minimum height for the personalized Dice sign-in button.
 constexpr int kMinAccountButtonHeight = 64;
+constexpr int kMinTextHeight = 20;
 
 int GetDividerAndArrowReservedWidth() {
   return 2 * kDividerHorizontalPadding + kDividerWidth +
@@ -143,9 +144,10 @@ int DiceSigninButton::GetHeightForWidth(int width) const {
   // Title and subtitle are labels with a single line. So their preferred
   // height is not affected by |width|.
   int height_without_subtitle = MdTextButton::GetHeightForWidth(width);
-  int title_subtitle_height = label()->GetHeightForWidth(width) +
-                              subtitle_->GetHeightForWidth(width) +
-                              GetInsets().height();
+  int title_subtitle_height =
+      std::max(label()->GetHeightForWidth(width), kMinTextHeight) +
+      std::max(subtitle_->GetHeightForWidth(width), kMinTextHeight) +
+      GetInsets().height();
   return std::max({height_without_subtitle, title_subtitle_height,
                    kMinAccountButtonHeight});
 }
@@ -162,9 +164,10 @@ gfx::Size DiceSigninButton::CalculatePreferredSize() const {
   }
 
   // Additional height is needed for the subtitle.
-  int pref_height_with_subtitle = label()->CalculatePreferredSize().height() +
-                                  subtitle_->CalculatePreferredSize().height() +
-                                  GetInsets().height();
+  int pref_height_with_subtitle =
+      std::max(label()->CalculatePreferredSize().height(), kMinTextHeight) +
+      std::max(subtitle_->CalculatePreferredSize().height(), kMinTextHeight) +
+      GetInsets().height();
   int pref_height =
       std::max(parent_pref_size.height(), pref_height_with_subtitle);
   return gfx::Size(pref_width, std::max(pref_height, kMinAccountButtonHeight));
@@ -182,9 +185,11 @@ void DiceSigninButton::Layout() {
   int total_height = initial_title_size.height();
   int title_x = title->bounds().x();
   int title_width = initial_title_size.width();
-  int title_height = title->GetHeightForWidth(title_width);
+  int title_height =
+      std::max(title->GetHeightForWidth(title_width), kMinTextHeight);
   int subtitle_width = GetChildAreaBounds().width() - title_x;
-  int subtitle_height = subtitle_->GetHeightForWidth(subtitle_width);
+  int subtitle_height =
+      std::max(subtitle_->GetHeightForWidth(subtitle_width), kMinTextHeight);
   int title_y =
       std::max(0, (total_height - title_height - subtitle_height) / 2);
   title->SetBounds(title_x, title_y, title_width, title_height);
