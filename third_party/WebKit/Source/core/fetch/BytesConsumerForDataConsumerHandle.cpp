@@ -18,7 +18,9 @@ BytesConsumerForDataConsumerHandle::BytesConsumerForDataConsumerHandle(
     ExecutionContext* execution_context,
     std::unique_ptr<WebDataConsumerHandle> handle)
     : execution_context_(execution_context),
-      reader_(handle->ObtainReader(this)) {}
+      reader_(handle->ObtainReader(
+          this,
+          execution_context->GetTaskRunner(TaskType::kNetworking))) {}
 
 BytesConsumerForDataConsumerHandle::~BytesConsumerForDataConsumerHandle() {}
 

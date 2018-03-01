@@ -8,7 +8,12 @@
 #include <stddef.h>
 #include <memory>
 
+#include "base/memory/scoped_refptr.h"
 #include "public/platform/WebCommon.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}  // namespace base
 
 namespace blink {
 
@@ -103,7 +108,10 @@ class BLINK_PLATFORM_EXPORT WebDataConsumerHandle {
   // if |client| is not null.
   // If |client| is not null and the handle is not waiting, client
   // notification is called asynchronously.
-  virtual std::unique_ptr<Reader> ObtainReader(Client*) = 0;
+  // |task_runner| cannot be null.
+  virtual std::unique_ptr<Reader> ObtainReader(
+      Client*,
+      scoped_refptr<base::SingleThreadTaskRunner>) = 0;
 
   // Returns a string literal (e.g. class name) for debugging only.
   virtual const char* DebugName() const = 0;

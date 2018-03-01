@@ -28,7 +28,9 @@ class WaitingHandle final : public WebDataConsumerHandle {
       return kUnexpectedError;
     }
   };
-  std::unique_ptr<Reader> ObtainReader(Client*) override {
+  std::unique_ptr<Reader> ObtainReader(
+      Client*,
+      scoped_refptr<base::SingleThreadTaskRunner>) override {
     return std::make_unique<ReaderImpl>();
   }
 
@@ -250,7 +252,9 @@ DataConsumerHandleTestUtil::ReplayingHandle::~ReplayingHandle() {
 }
 
 std::unique_ptr<WebDataConsumerHandle::Reader>
-DataConsumerHandleTestUtil::ReplayingHandle::ObtainReader(Client* client) {
+DataConsumerHandleTestUtil::ReplayingHandle::ObtainReader(
+    Client* client,
+    scoped_refptr<base::SingleThreadTaskRunner>) {
   return std::make_unique<ReaderImpl>(context_, client);
 }
 

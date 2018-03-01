@@ -199,7 +199,8 @@ class FetchManager::Loader final
                 Response* response,
                 FetchManager::Loader* loader,
                 String integrity_metadata,
-                const KURL& url)
+                const KURL& url,
+                scoped_refptr<base::SingleThreadTaskRunner> task_runner)
         : handle_(std::move(handle)),
           updater_(updater),
           response_(response),
@@ -207,7 +208,7 @@ class FetchManager::Loader final
           integrity_metadata_(integrity_metadata),
           url_(url),
           finished_(false) {
-      reader_ = handle_->ObtainReader(this);
+      reader_ = handle_->ObtainReader(this, std::move(task_runner));
     }
 
     void Cancel() {
@@ -516,9 +517,10 @@ void FetchManager::Loader::DidReceiveResponse(
     resolver_.Clear();
   } else {
     DCHECK(!integrity_verifier_);
-    integrity_verifier_ =
-        new SRIVerifier(std::move(handle), sri_consumer, r, this,
-                        request_->Integrity(), response.Url());
+    integrity_verifier_ = new SRIVerifier(
+        std::move(handle), sri_consumer, r, this, request_->Integrity(),
+        response.Url(),
+        resolver_->GetExecutionContext()->GetTaskRunner(TaskType::kNetworking));
   }
 }
 

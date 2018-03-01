@@ -84,7 +84,8 @@ class MockDataConsumerHandle final : public WebDataConsumerHandle {
   };
 
   std::unique_ptr<WebDataConsumerHandle::Reader> ObtainReader(
-      Client*) override {
+      Client*,
+      scoped_refptr<base::SingleThreadTaskRunner>) override {
     return std::make_unique<Reader>(proxy_);
   }
   Persistent<MockReaderProxy> proxy_;
