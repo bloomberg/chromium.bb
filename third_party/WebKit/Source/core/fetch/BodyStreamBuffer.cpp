@@ -89,10 +89,12 @@ class BodyStreamBuffer::LoaderClient final
 };
 
 BodyStreamBuffer::BodyStreamBuffer(ScriptState* script_state,
-                                   BytesConsumer* consumer)
+                                   BytesConsumer* consumer,
+                                   AbortSignal* signal)
     : UnderlyingSourceBase(script_state),
       script_state_(script_state),
       consumer_(consumer),
+      signal_(signal),
       made_from_readable_stream_(false) {
   v8::Local<v8::Value> body_value = ToV8(this, script_state);
   DCHECK(!body_value.IsEmpty());
@@ -106,6 +108,14 @@ BodyStreamBuffer::BodyStreamBuffer(ScriptState* script_state,
   V8PrivateProperty::GetInternalBodyStream(script_state->GetIsolate())
       .Set(body, readable_stream.V8Value());
   consumer_->SetClient(this);
+  if (signal) {
+    if (signal->aborted()) {
+      Abort();
+    } else {
+      signal->AddAlgorithm(
+          WTF::Bind(&BodyStreamBuffer::Abort, WrapWeakPersistent(this)));
+    }
+  }
   OnStateChange();
 }
 
@@ -113,6 +123,7 @@ BodyStreamBuffer::BodyStreamBuffer(ScriptState* script_state,
                                    ScriptValue stream)
     : UnderlyingSourceBase(script_state),
       script_state_(script_state),
+      signal_(nullptr),
       made_from_readable_stream_(true) {
   DCHECK(ReadableStreamOperations::IsReadableStream(script_state, stream));
   v8::Local<v8::Value> body_value = ToV8(this, script_state);
@@ -177,6 +188,9 @@ void BodyStreamBuffer::StartLoading(FetchDataLoader* loader,
   DCHECK(!loader_);
   DCHECK(script_state_->ContextIsValid());
   loader_ = loader;
+  // TODO(ricea): Call Abort() on |client| if |signal_| is aborted.  Add an
+  // algorithm to |signal_| to call Abort() on |client| when SignalAbort() is
+  // called.
   loader->Start(ReleaseHandle(),
                 new LoaderClient(ExecutionContext::From(script_state_.get()),
                                  this, client));
@@ -201,8 +215,8 @@ void BodyStreamBuffer::Tee(BodyStreamBuffer** branch1,
   BytesConsumer* dest2 = nullptr;
   BytesConsumer::Tee(ExecutionContext::From(script_state_.get()),
                      ReleaseHandle(), &dest1, &dest2);
-  *branch1 = new BodyStreamBuffer(script_state_.get(), dest1);
-  *branch2 = new BodyStreamBuffer(script_state_.get(), dest2);
+  *branch1 = new BodyStreamBuffer(script_state_.get(), dest1, signal_);
+  *branch2 = new BodyStreamBuffer(script_state_.get(), dest2, signal_);
 }
 
 ScriptPromise BodyStreamBuffer::pull(ScriptState* script_state) {
@@ -297,6 +311,17 @@ void BodyStreamBuffer::CloseAndLockAndDisturb() {
   ScriptValue reader = ReadableStreamOperations::GetReader(
       script_state_.get(), Stream(), exception_state);
   ReadableStreamOperations::DefaultReaderRead(script_state_.get(), reader);
+}
+
+bool BodyStreamBuffer::IsAborted() {
+  if (!signal_)
+    return false;
+  return signal_->aborted();
+}
+
+void BodyStreamBuffer::Abort() {
+  Controller()->GetError(DOMException::Create(kAbortError));
+  CancelConsumer();
 }
 
 void BodyStreamBuffer::Close() {

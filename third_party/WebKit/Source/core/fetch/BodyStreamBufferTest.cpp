@@ -87,7 +87,8 @@ TEST_F(BodyStreamBufferTest, Tee) {
   src->Add(BytesConsumerCommand(BytesConsumerCommand::kData, "hello, "));
   src->Add(BytesConsumerCommand(BytesConsumerCommand::kData, "world"));
   src->Add(BytesConsumerCommand(BytesConsumerCommand::kDone));
-  BodyStreamBuffer* buffer = new BodyStreamBuffer(scope.GetScriptState(), src);
+  BodyStreamBuffer* buffer =
+      new BodyStreamBuffer(scope.GetScriptState(), src, nullptr);
 
   BodyStreamBuffer* new1;
   BodyStreamBuffer* new2;
@@ -171,7 +172,8 @@ TEST_F(BodyStreamBufferTest, DrainAsBlobDataHandle) {
       BlobDataHandle::Create(std::move(data), size);
   BodyStreamBuffer* buffer = new BodyStreamBuffer(
       scope.GetScriptState(),
-      new BlobBytesConsumer(scope.GetExecutionContext(), blob_data_handle));
+      new BlobBytesConsumer(scope.GetExecutionContext(), blob_data_handle),
+      nullptr);
 
   EXPECT_FALSE(buffer->IsStreamLocked());
   EXPECT_FALSE(buffer->IsStreamDisturbed());
@@ -190,7 +192,8 @@ TEST_F(BodyStreamBufferTest, DrainAsBlobDataHandleReturnsNull) {
   V8TestingScope scope;
   // This BytesConsumer is not drainable.
   BytesConsumer* src = new ReplayingBytesConsumer(&scope.GetDocument());
-  BodyStreamBuffer* buffer = new BodyStreamBuffer(scope.GetScriptState(), src);
+  BodyStreamBuffer* buffer =
+      new BodyStreamBuffer(scope.GetScriptState(), src, nullptr);
 
   EXPECT_FALSE(buffer->IsStreamLocked());
   EXPECT_FALSE(buffer->IsStreamDisturbed());
@@ -236,7 +239,8 @@ TEST_F(BodyStreamBufferTest, DrainAsFormData) {
 
   BodyStreamBuffer* buffer = new BodyStreamBuffer(
       scope.GetScriptState(),
-      new FormDataBytesConsumer(scope.GetExecutionContext(), input_form_data));
+      new FormDataBytesConsumer(scope.GetExecutionContext(), input_form_data),
+      nullptr);
 
   EXPECT_FALSE(buffer->IsStreamLocked());
   EXPECT_FALSE(buffer->IsStreamDisturbed());
@@ -254,7 +258,8 @@ TEST_F(BodyStreamBufferTest, DrainAsFormDataReturnsNull) {
   V8TestingScope scope;
   // This BytesConsumer is not drainable.
   BytesConsumer* src = new ReplayingBytesConsumer(&scope.GetDocument());
-  BodyStreamBuffer* buffer = new BodyStreamBuffer(scope.GetScriptState(), src);
+  BodyStreamBuffer* buffer =
+      new BodyStreamBuffer(scope.GetScriptState(), src, nullptr);
 
   EXPECT_FALSE(buffer->IsStreamLocked());
   EXPECT_FALSE(buffer->IsStreamDisturbed());
@@ -305,7 +310,8 @@ TEST_F(BodyStreamBufferTest, LoadBodyStreamBufferAsArrayBuffer) {
   src->Add(BytesConsumerCommand(BytesConsumerCommand::kWait));
   src->Add(BytesConsumerCommand(BytesConsumerCommand::kData, "hello"));
   src->Add(BytesConsumerCommand(BytesConsumerCommand::kDone));
-  BodyStreamBuffer* buffer = new BodyStreamBuffer(scope.GetScriptState(), src);
+  BodyStreamBuffer* buffer =
+      new BodyStreamBuffer(scope.GetScriptState(), src, nullptr);
   buffer->StartLoading(FetchDataLoader::CreateLoaderAsArrayBuffer(), client);
 
   EXPECT_TRUE(buffer->IsStreamLocked());
@@ -341,7 +347,8 @@ TEST_F(BodyStreamBufferTest, LoadBodyStreamBufferAsBlob) {
   src->Add(BytesConsumerCommand(BytesConsumerCommand::kWait));
   src->Add(BytesConsumerCommand(BytesConsumerCommand::kData, "hello"));
   src->Add(BytesConsumerCommand(BytesConsumerCommand::kDone));
-  BodyStreamBuffer* buffer = new BodyStreamBuffer(scope.GetScriptState(), src);
+  BodyStreamBuffer* buffer =
+      new BodyStreamBuffer(scope.GetScriptState(), src, nullptr);
   buffer->StartLoading(FetchDataLoader::CreateLoaderAsBlobHandle("text/plain"),
                        client);
 
@@ -374,7 +381,8 @@ TEST_F(BodyStreamBufferTest, LoadBodyStreamBufferAsString) {
   src->Add(BytesConsumerCommand(BytesConsumerCommand::kWait));
   src->Add(BytesConsumerCommand(BytesConsumerCommand::kData, "hello"));
   src->Add(BytesConsumerCommand(BytesConsumerCommand::kDone));
-  BodyStreamBuffer* buffer = new BodyStreamBuffer(scope.GetScriptState(), src);
+  BodyStreamBuffer* buffer =
+      new BodyStreamBuffer(scope.GetScriptState(), src, nullptr);
   buffer->StartLoading(FetchDataLoader::CreateLoaderAsString(), client);
 
   EXPECT_TRUE(buffer->IsStreamLocked());
@@ -401,7 +409,7 @@ TEST_F(BodyStreamBufferTest, LoadClosedHandle) {
   EXPECT_CALL(checkpoint, Call(2));
 
   BodyStreamBuffer* buffer = new BodyStreamBuffer(
-      scope.GetScriptState(), BytesConsumer::CreateClosed());
+      scope.GetScriptState(), BytesConsumer::CreateClosed(), nullptr);
 
   EXPECT_TRUE(buffer->IsStreamClosed());
 
@@ -430,7 +438,7 @@ TEST_F(BodyStreamBufferTest, LoadErroredHandle) {
 
   BodyStreamBuffer* buffer = new BodyStreamBuffer(
       scope.GetScriptState(),
-      BytesConsumer::CreateErrored(BytesConsumer::Error()));
+      BytesConsumer::CreateErrored(BytesConsumer::Error()), nullptr);
 
   EXPECT_TRUE(buffer->IsStreamErrored());
 
@@ -463,7 +471,7 @@ TEST_F(BodyStreamBufferTest, LoaderShouldBeKeptAliveByBodyStreamBuffer) {
   src->Add(BytesConsumerCommand(BytesConsumerCommand::kData, "hello"));
   src->Add(BytesConsumerCommand(BytesConsumerCommand::kDone));
   Persistent<BodyStreamBuffer> buffer =
-      new BodyStreamBuffer(scope.GetScriptState(), src);
+      new BodyStreamBuffer(scope.GetScriptState(), src, nullptr);
   buffer->StartLoading(FetchDataLoader::CreateLoaderAsString(), client);
 
   ThreadState::Current()->CollectAllGarbage();
@@ -479,7 +487,7 @@ TEST_F(BodyStreamBufferTest, SourceShouldBeCanceledWhenCanceled) {
           scope.GetExecutionContext());
 
   BodyStreamBuffer* buffer =
-      new BodyStreamBuffer(scope.GetScriptState(), consumer);
+      new BodyStreamBuffer(scope.GetScriptState(), consumer, nullptr);
   ScriptValue reason(scope.GetScriptState(),
                      V8String(scope.GetScriptState()->GetIsolate(), "reason"));
   EXPECT_FALSE(consumer->IsCancelled());
@@ -495,7 +503,7 @@ TEST_F(BodyStreamBufferTest, NestedPull) {
   src->Add(BytesConsumerCommand(BytesConsumerCommand::kData, "hello"));
   src->Add(BytesConsumerCommand(BytesConsumerCommand::kError));
   Persistent<BodyStreamBuffer> buffer =
-      new BodyStreamBuffer(scope.GetScriptState(), src);
+      new BodyStreamBuffer(scope.GetScriptState(), src, nullptr);
 
   auto result =
       scope.GetScriptState()->GetContext()->Global()->CreateDataProperty(
@@ -514,6 +522,29 @@ TEST_F(BodyStreamBufferTest, NestedPull) {
 
   testing::RunPendingTasks();
   v8::MicrotasksScope::PerformCheckpoint(scope.GetScriptState()->GetIsolate());
+}
+
+TEST_F(BodyStreamBufferTest, NullAbortSignalIsNotAborted) {
+  V8TestingScope scope;
+  // This BytesConsumer is not drainable.
+  BytesConsumer* src = new ReplayingBytesConsumer(&scope.GetDocument());
+  BodyStreamBuffer* buffer =
+      new BodyStreamBuffer(scope.GetScriptState(), src, nullptr);
+
+  EXPECT_FALSE(buffer->IsAborted());
+}
+
+TEST_F(BodyStreamBufferTest, AbortSignalMakesAborted) {
+  V8TestingScope scope;
+  // This BytesConsumer is not drainable.
+  BytesConsumer* src = new ReplayingBytesConsumer(&scope.GetDocument());
+  auto* signal = new AbortSignal(scope.GetExecutionContext());
+  BodyStreamBuffer* buffer =
+      new BodyStreamBuffer(scope.GetScriptState(), src, signal);
+
+  EXPECT_FALSE(buffer->IsAborted());
+  signal->SignalAbort();
+  EXPECT_TRUE(buffer->IsAborted());
 }
 
 }  // namespace

@@ -5493,6 +5493,7 @@ interface Request
     getter redirect
     getter referrer
     getter referrerPolicy
+    getter signal
     getter url
     method arrayBuffer
     method blob

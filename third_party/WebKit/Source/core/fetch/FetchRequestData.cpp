@@ -37,12 +37,14 @@ FetchRequestData* FetchRequestData::Create(
     request->SetBuffer(new BodyStreamBuffer(
         script_state,
         new FormDataBytesConsumer(ExecutionContext::From(script_state),
-                                  std::move(body))));
+                                  std::move(body)),
+        nullptr /* AbortSignal */));
   } else if (web_request.GetBlobDataHandle()) {
     request->SetBuffer(new BodyStreamBuffer(
         script_state,
         new BlobBytesConsumer(ExecutionContext::From(script_state),
-                              web_request.GetBlobDataHandle())));
+                              web_request.GetBlobDataHandle()),
+        nullptr /* AbortSignal */));
   }
   request->SetContext(web_request.GetRequestContext());
   request->SetReferrer(
@@ -97,7 +99,8 @@ FetchRequestData* FetchRequestData::Pass(ScriptState* script_state) {
   FetchRequestData* request = FetchRequestData::CloneExceptBody();
   if (buffer_) {
     request->buffer_ = buffer_;
-    buffer_ = new BodyStreamBuffer(script_state, BytesConsumer::CreateClosed());
+    buffer_ = new BodyStreamBuffer(script_state, BytesConsumer::CreateClosed(),
+                                   nullptr /* AbortSignal */);
     buffer_->CloseAndLockAndDisturb();
   }
   request->url_loader_factory_ = std::move(url_loader_factory_);

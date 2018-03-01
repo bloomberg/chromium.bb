@@ -16,6 +16,7 @@
 
 namespace blink {
 
+class AbortSignal;
 class BytesConsumer;
 class Dictionary;
 class ExecutionContext;
@@ -39,6 +40,7 @@ class RequestInit {
   const String& Redirect() const { return redirect_; }
   const String& Integrity() const { return integrity_; }
   const WTF::Optional<bool>& Keepalive() const { return keepalive_; }
+  WTF::Optional<AbortSignal*> Signal() const;
   bool AreAnyMembersSet() const { return are_any_members_set_; }
 
  private:
@@ -71,6 +73,7 @@ class RequestInit {
   String redirect_;
   String integrity_;
   WTF::Optional<bool> keepalive_;
+  WTF::Optional<Member<AbortSignal>> signal_;
   // True if any members in RequestInit are set and hence the referrer member
   // should be used in the Request constructor.
   bool are_any_members_set_ = false;

@@ -710,11 +710,11 @@ TEST_F(CacheStorageTest, Add) {
   fetcher->SetExpectedFetchUrl(&url);
 
   Request* request = NewRequestFromUrl(url);
-  Response* response =
-      Response::Create(GetScriptState(),
-                       new BodyStreamBuffer(GetScriptState(),
-                                            new FormDataBytesConsumer(content)),
-                       content_type, ResponseInit(), exception_state);
+  Response* response = Response::Create(
+      GetScriptState(),
+      new BodyStreamBuffer(GetScriptState(), new FormDataBytesConsumer(content),
+                           nullptr),
+      content_type, ResponseInit(), exception_state);
   fetcher->SetResponse(response);
 
   WebVector<WebServiceWorkerCache::BatchOperation> expected_put_operations(

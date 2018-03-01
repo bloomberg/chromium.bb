@@ -6,6 +6,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "bindings/core/v8/ToV8ForCore.h"
+#include "core/dom/AbortSignal.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/fetch/BytesConsumerForDataConsumerHandle.h"
 #include "core/fetch/Request.h"
@@ -134,12 +135,15 @@ void FetchEvent::OnNavigationPreloadResponse(
   DCHECK(!preload_response_);
   ScriptState::Scope scope(script_state);
   preload_response_ = std::move(response);
+  // TODO(ricea): Verify that this response can't be aborted from JS.
   FetchResponseData* response_data =
       data_consume_handle
           ? FetchResponseData::CreateWithBuffer(new BodyStreamBuffer(
-                script_state, new BytesConsumerForDataConsumerHandle(
-                                  ExecutionContext::From(script_state),
-                                  std::move(data_consume_handle))))
+                script_state,
+                new BytesConsumerForDataConsumerHandle(
+                    ExecutionContext::From(script_state),
+                    std::move(data_consume_handle)),
+                new AbortSignal(ExecutionContext::From(script_state))))
           : FetchResponseData::Create();
   Vector<KURL> url_list(1);
   url_list[0] = preload_response_->Url();

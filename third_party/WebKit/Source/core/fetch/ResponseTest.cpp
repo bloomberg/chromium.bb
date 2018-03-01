@@ -223,7 +223,7 @@ BodyStreamBuffer* CreateHelloWorldBuffer(ScriptState* script_state) {
   src->Add(BytesConsumerCommand(BytesConsumerCommand::kData, "Hello, "));
   src->Add(BytesConsumerCommand(BytesConsumerCommand::kData, "world"));
   src->Add(BytesConsumerCommand(BytesConsumerCommand::kDone));
-  return new BodyStreamBuffer(script_state, src);
+  return new BodyStreamBuffer(script_state, src, nullptr);
 }
 
 TEST(ServiceWorkerResponseTest, BodyStreamBufferCloneDefault) {
@@ -289,7 +289,7 @@ TEST(ServiceWorkerResponseTest, BodyStreamBufferCloneError) {
   V8TestingScope scope;
   BodyStreamBuffer* buffer = new BodyStreamBuffer(
       scope.GetScriptState(),
-      BytesConsumer::CreateErrored(BytesConsumer::Error()));
+      BytesConsumer::CreateErrored(BytesConsumer::Error()), nullptr);
   FetchResponseData* fetch_response_data =
       FetchResponseData::CreateWithBuffer(buffer);
   Vector<KURL> url_list;

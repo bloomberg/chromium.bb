@@ -2294,7 +2294,6 @@ crbug.com/626703 [ Linux Win ] external/wpt/css/selectors/selector-required-type
 crbug.com/626703 [ Linux Win ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-baseline-multi-item-vert-001b.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/2dcontext/the-canvas-state/canvas_state_restore_001.htm [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-flexbox/auto-margins-001.html [ Failure ]
-crbug.com/626703 virtual/outofblink-cors/external/wpt/fetch/api/abort/general.html [ Timeout ]
 crbug.com/626703 virtual/outofblink-cors/external/wpt/http/basic-auth-cache-test.html [ Timeout ]
 crbug.com/626703 virtual/outofblink-cors/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Timeout ]
 crbug.com/626703 virtual/navigation-mojo-response/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Timeout ]
@@ -3416,16 +3415,6 @@ crbug.com/417782 virtual/threaded/http/tests/devtools/tracing/timeline-paint/tim
 ################################################################################
 
 crbug.com/813468 [ Mac ] virtual/navigation-mojo-response/http/tests/serviceworker/chromium/memory-cache.html [ Failure Pass ]
-
-# TODO(ricea): Remove these once fetch abort implementation is complete
-crbug.com/750599 external/wpt/fetch/api/abort/general-serviceworker.https.html [ Timeout ]
-crbug.com/750599 external/wpt/fetch/api/abort/general-sharedworker.html [ Timeout ]
-crbug.com/750599 external/wpt/fetch/api/abort/general.any.html [ Timeout ]
-crbug.com/750599 external/wpt/fetch/api/abort/general.any.worker.html [ Timeout ]
-crbug.com/750599 virtual/outofblink-cors/external/wpt/fetch/api/abort/general-serviceworker.https.html [ Timeout ]
-crbug.com/750599 virtual/outofblink-cors/external/wpt/fetch/api/abort/general-sharedworker.html [ Timeout ]
-crbug.com/750599 virtual/outofblink-cors/external/wpt/fetch/api/abort/general.any.html [ Timeout ]
-crbug.com/750599 virtual/outofblink-cors/external/wpt/fetch/api/abort/general.any.worker.html [ Timeout ]
 
 crbug.com/794338 media/video-rotation.html [ Skip ]
 crbug.com/811605 media/video-poster-after-loadedmetadata.html [ Failure Pass ]
