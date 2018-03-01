@@ -120,7 +120,7 @@ var CrPolicyIndicatorBehavior = {
       return '';  // Tooltips may not be defined, e.g. in OOBE.
     switch (type) {
       case CrPolicyIndicatorType.EXTENSION:
-        return CrPolicyStrings.controlledSettingExtension;
+        return CrPolicyStrings.controlledSettingExtension.replace('$1', name);
       case CrPolicyIndicatorType.PRIMARY_USER:
         return CrPolicyStrings.controlledSettingShared.replace('$1', name);
       case CrPolicyIndicatorType.OWNER:
