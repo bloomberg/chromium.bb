@@ -392,8 +392,8 @@ SamplingHeapProfiler* SamplingHeapProfiler::GetInstance() {
 }
 
 // static
-void SamplingHeapProfiler::SuppressRandomnessForTest() {
-  g_deterministic = true;
+void SamplingHeapProfiler::SuppressRandomnessForTest(bool suppress) {
+  g_deterministic = suppress;
 }
 
 void SamplingHeapProfiler::AddSamplesObserver(SamplesObserver* observer) {

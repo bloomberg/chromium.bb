@@ -7,7 +7,8 @@
 #include <stdlib.h>
 
 #include "base/allocator/allocator_shim.h"
-#include "base/debug/stack_trace.h"
+#include "base/debug/alias.h"
+#include "base/threading/simple_thread.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -47,7 +48,7 @@ class SamplesCollector : public SamplingHeapProfiler::SamplesObserver {
 TEST_F(SamplingHeapProfilerTest, CollectSamples) {
   SamplesCollector collector(10000);
   SamplingHeapProfiler* profiler = SamplingHeapProfiler::GetInstance();
-  profiler->SuppressRandomnessForTest();
+  profiler->SuppressRandomnessForTest(true);
   profiler->SetSamplingInterval(1024);
   profiler->Start();
   profiler->AddSamplesObserver(&collector);
@@ -57,6 +58,89 @@ TEST_F(SamplingHeapProfilerTest, CollectSamples) {
   profiler->RemoveSamplesObserver(&collector);
   CHECK(collector.sample_added);
   CHECK(collector.sample_removed);
+}
+
+const int kNumberOfAllocations = 10000;
+
+NOINLINE void Allocate1() {
+  void* p = malloc(400);
+  base::debug::Alias(&p);
+}
+
+NOINLINE void Allocate2() {
+  void* p = malloc(700);
+  base::debug::Alias(&p);
+}
+
+NOINLINE void Allocate3() {
+  void* p = malloc(20480);
+  base::debug::Alias(&p);
+}
+
+class MyThread1 : public SimpleThread {
+ public:
+  MyThread1() : SimpleThread("MyThread1") {}
+  void Run() override {
+    for (int i = 0; i < kNumberOfAllocations; ++i)
+      Allocate1();
+  }
+};
+
+class MyThread2 : public SimpleThread {
+ public:
+  MyThread2() : SimpleThread("MyThread2") {}
+  void Run() override {
+    for (int i = 0; i < kNumberOfAllocations; ++i)
+      Allocate2();
+  }
+};
+
+void CheckAllocationPattern(void (*allocate_callback)()) {
+  SamplingHeapProfiler* profiler = SamplingHeapProfiler::GetInstance();
+  profiler->SuppressRandomnessForTest(false);
+  profiler->SetSamplingInterval(10240);
+  for (int i = 0; i < 40; ++i) {
+    uint32_t id = profiler->Start();
+    allocate_callback();
+    std::vector<SamplingHeapProfiler::Sample> samples =
+        profiler->GetSamples(id);
+    profiler->Stop();
+    std::map<size_t, size_t> buckets;
+    for (auto& sample : samples) {
+      buckets[sample.size] += sample.size * sample.count;
+    }
+    for (auto& it : buckets) {
+      if (it.first == 400 || it.first == 700 || it.first == 20480)
+        printf("%u,", static_cast<uint32_t>(it.second));
+    }
+    printf("\n");
+  }
+}
+
+// Manual tests to check precision of the sampling profiler.
+// Yes, they do leak lots of memory.
+
+TEST_F(SamplingHeapProfilerTest, DISABLED_ParallelLargeSmallStats) {
+  CheckAllocationPattern([]() {
+    SimpleThread* t1 = new MyThread1();
+    SimpleThread* t2 = new MyThread2();
+    t1->Start();
+    t2->Start();
+    for (int i = 0; i < kNumberOfAllocations; ++i)
+      Allocate3();
+    t1->Join();
+    t2->Join();
+  });
+}
+
+TEST_F(SamplingHeapProfilerTest, DISABLED_SequentialLargeSmallStats) {
+  CheckAllocationPattern([]() {
+    for (int i = 0; i < kNumberOfAllocations; ++i) {
+      Allocate1();
+      Allocate2();
+      Allocate3();
+    }
+  });
 }
 
 }  // namespace

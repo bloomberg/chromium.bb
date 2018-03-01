@@ -65,7 +65,7 @@ class BASE_EXPORT SamplingHeapProfiler {
   uint32_t Start();
   void Stop();
   void SetSamplingInterval(size_t sampling_interval);
-  void SuppressRandomnessForTest();
+  void SuppressRandomnessForTest(bool suppress);
 
   std::vector<Sample> GetSamples(uint32_t profile_id);
 
