@@ -1970,14 +1970,9 @@ void RenderWidget::UpdateCompositorSurface(
   if (!compositor_)
     return;
 
-  if (IsUseZoomForDSFEnabled()) {
-    compositor_->SetViewportSizeAndScale(physical_backing_size_, 1.f,
-                                         local_surface_id_);
-    compositor_->SetPaintedDeviceScaleFactor(GetOriginalDeviceScaleFactor());
-  } else {
-    compositor_->SetViewportSizeAndScale(
-        physical_backing_size_, device_scale_factor_, local_surface_id_);
-  }
+  compositor_->SetViewportSizeAndScale(physical_backing_size_,
+                                       GetOriginalDeviceScaleFactor(),
+                                       local_surface_id_);
 
   if (device_scale_factor_changed)
     UpdateWebViewWithDeviceScaleFactor();

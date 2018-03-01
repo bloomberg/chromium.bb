@@ -148,6 +148,10 @@ class CC_EXPORT LayerTreeSettings {
   // Whether to request presentation time regardless if existance of
   // presentation time callbacks.
   bool always_request_presentation_time = false;
+
+  // Whether SetViewportSizeAndScale should update the painted scale factor or
+  // the device scale factor.
+  bool use_painted_device_scale_factor = false;
 };
 
 }  // namespace cc

@@ -170,7 +170,6 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   void SetIsAcceleratedCompositingActive(bool);
   void UpdateLayerTreeViewport();
   void UpdateLayerTreeBackgroundColor();
-  void UpdateLayerTreeDeviceScaleFactor();
   void UpdateBaseBackgroundColor();
 
   // PageWidgetEventHandler functions

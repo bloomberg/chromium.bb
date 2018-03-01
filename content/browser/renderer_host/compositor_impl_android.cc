@@ -546,7 +546,9 @@ void CompositorImpl::SetRootWindow(gfx::NativeWindow root_window) {
     resource_manager_.Init(host_->GetUIResourceManager());
   }
   host_->SetRootLayer(root_window_->GetLayer());
-  host_->SetPaintedDeviceScaleFactor(root_window_->GetDipScale());
+  // TODO(ccameron): Ensure a valid LocalSurfaceId here.
+  host_->SetViewportSizeAndScale(size_, root_window_->GetDipScale(),
+                                 viz::LocalSurfaceId());
 }
 
 void CompositorImpl::SetRootLayer(scoped_refptr<cc::Layer> root_layer) {
@@ -610,6 +612,7 @@ void CompositorImpl::CreateLayerTreeHost() {
   settings.initial_debug_state.show_fps_counter =
       command_line->HasSwitch(cc::switches::kUIShowFPSCounter);
   settings.single_thread_proxy_scheduler = true;
+  settings.use_painted_device_scale_factor = true;
 
   animation_host_ = cc::AnimationHost::CreateMainInstance();
 
@@ -621,7 +624,9 @@ void CompositorImpl::CreateLayerTreeHost() {
   params.mutator_host = animation_host_.get();
   host_ = cc::LayerTreeHost::CreateSingleThreaded(this, &params);
   DCHECK(!host_->IsVisible());
-  host_->SetViewportSizeAndScale(size_, 1.f, viz::LocalSurfaceId());
+  // TODO(ccameron): Ensure a valid LocalSurfaceId here.
+  host_->SetViewportSizeAndScale(size_, root_window_->GetDipScale(),
+                                 viz::LocalSurfaceId());
 
   if (needs_animate_)
     host_->SetNeedsAnimate();
@@ -660,8 +665,11 @@ void CompositorImpl::SetWindowBounds(const gfx::Size& size) {
     return;
 
   size_ = size;
-  if (host_)
-    host_->SetViewportSizeAndScale(size_, 1.f, viz::LocalSurfaceId());
+  if (host_) {
+    // TODO(ccameron): Ensure a valid LocalSurfaceId here.
+    host_->SetViewportSizeAndScale(size_, root_window_->GetDipScale(),
+                                   viz::LocalSurfaceId());
+  }
   if (display_)
     display_->Resize(size);
   root_window_->GetLayer()->SetBounds(size);
@@ -963,7 +971,10 @@ void CompositorImpl::OnDisplayMetricsChanged(const display::Display& display,
       display.id() == display::Screen::GetScreen()
                           ->GetDisplayNearestWindow(root_window_)
                           .id()) {
-    host_->SetPaintedDeviceScaleFactor(root_window_->GetDipScale());
+    // TODO(ccameron): This is transiently incorrect -- |size_| must be
+    // recalculated here as well. Is the call in SetWindowBounds sufficient?
+    host_->SetViewportSizeAndScale(size_, root_window_->GetDipScale(),
+                                   viz::LocalSurfaceId());
   }
 }
 

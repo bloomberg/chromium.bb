@@ -7960,8 +7960,17 @@ MULTI_THREAD_TEST_F(LayerTreeHostTestDestroyWhileInitializingOutputSurface);
 // frame's metadata.
 class LayerTreeHostTestPaintedDeviceScaleFactor : public LayerTreeHostTest {
  protected:
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    settings->use_painted_device_scale_factor = true;
+    LayerTreeHostTest::InitializeSettings(settings);
+  }
+
+  void SetupTree() override {
+    SetInitialDeviceScaleFactor(2.f);
+    LayerTreeHostTest::SetupTree();
+  }
+
   void BeginTest() override {
-    layer_tree_host()->SetPaintedDeviceScaleFactor(2.0f);
     EXPECT_EQ(1.0f, layer_tree_host()->device_scale_factor());
     PostSetNeedsCommitToMainThread();
   }

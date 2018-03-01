@@ -2755,9 +2755,6 @@ void WebViewImpl::SetDeviceScaleFactor(float scale_factor) {
     return;
 
   GetPage()->SetDeviceScaleFactorDeprecated(scale_factor);
-
-  if (layer_tree_view_)
-    UpdateLayerTreeDeviceScaleFactor();
 }
 
 void WebViewImpl::SetZoomFactorForDeviceScaleFactor(
@@ -3185,8 +3182,6 @@ void WebViewImpl::SetCompositorDeviceScaleFactorOverride(
     SetZoomLevel(ZoomLevel());
     return;
   }
-  if (GetPage() && layer_tree_view_)
-    UpdateLayerTreeDeviceScaleFactor();
 }
 
 void WebViewImpl::SetDeviceEmulationTransform(
@@ -3770,16 +3765,6 @@ void WebViewImpl::UpdateLayerTreeBackgroundColor() {
   if (!layer_tree_view_)
     return;
   layer_tree_view_->SetBackgroundColor(BackgroundColor());
-}
-
-void WebViewImpl::UpdateLayerTreeDeviceScaleFactor() {
-  DCHECK(GetPage());
-  DCHECK(layer_tree_view_);
-
-  float device_scale_factor = compositor_device_scale_factor_override_
-                                  ? compositor_device_scale_factor_override_
-                                  : GetPage()->DeviceScaleFactorDeprecated();
-  layer_tree_view_->SetDeviceScaleFactor(device_scale_factor);
 }
 
 void WebViewImpl::UpdateDeviceEmulationTransform() {

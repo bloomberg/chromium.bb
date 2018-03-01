@@ -1053,15 +1053,30 @@ void LayerTreeHost::SetViewportSizeAndScale(
   // TODO(ccameron): Add CHECKs here for surface invariants violations.
   if (settings_.enable_surface_synchronization)
     SetLocalSurfaceId(local_surface_id);
-  if (device_viewport_size_ == device_viewport_size &&
-      device_scale_factor_ == device_scale_factor)
-    return;
 
-  device_viewport_size_ = device_viewport_size;
-  device_scale_factor_ = device_scale_factor;
+  bool changed = false;
+  if (device_viewport_size_ != device_viewport_size) {
+    device_viewport_size_ = device_viewport_size;
+    changed = true;
+  }
+  if (settings_.use_painted_device_scale_factor) {
+    DCHECK_EQ(device_scale_factor_, 1.f);
+    if (painted_device_scale_factor_ != device_scale_factor) {
+      painted_device_scale_factor_ = device_scale_factor;
+      changed = true;
+    }
+  } else {
+    DCHECK_EQ(painted_device_scale_factor_, 1.f);
+    if (device_scale_factor_ != device_scale_factor) {
+      device_scale_factor_ = device_scale_factor;
+      changed = true;
+    }
+  }
 
-  SetPropertyTreesNeedRebuild();
-  SetNeedsCommit();
+  if (changed) {
+    SetPropertyTreesNeedRebuild();
+    SetNeedsCommit();
+  }
 }
 
 void LayerTreeHost::SetBrowserControlsHeight(float top_height,
@@ -1128,15 +1143,6 @@ void LayerTreeHost::SetRecordingScaleFactor(float recording_scale_factor) {
   if (recording_scale_factor_ == recording_scale_factor)
     return;
   recording_scale_factor_ = recording_scale_factor;
-}
-
-void LayerTreeHost::SetPaintedDeviceScaleFactor(
-    float painted_device_scale_factor) {
-  if (painted_device_scale_factor_ == painted_device_scale_factor)
-    return;
-  painted_device_scale_factor_ = painted_device_scale_factor;
-
-  SetNeedsCommit();
 }
 
 void LayerTreeHost::SetRasterColorSpace(

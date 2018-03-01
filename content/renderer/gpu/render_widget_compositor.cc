@@ -59,6 +59,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/screen_info.h"
+#include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/gpu/render_widget_compositor_delegate.h"
 #include "content/renderer/input/input_handler_manager.h"
@@ -600,6 +601,7 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
   settings.always_request_presentation_time =
       cmd.HasSwitch(cc::switches::kAlwaysRequestPresentationTime);
 
+  settings.use_painted_device_scale_factor = IsUseZoomForDSFEnabled();
   return settings;
 }
 
@@ -804,14 +806,6 @@ WebSize RenderWidgetCompositor::GetViewportSize() const {
 WebFloatPoint RenderWidgetCompositor::adjustEventPointForPinchZoom(
     const WebFloatPoint& point) const {
   return point;
-}
-
-void RenderWidgetCompositor::SetDeviceScaleFactor(float device_scale) {
-  // TODO(ccameron): This causes transient (if not real) surface invariants
-  // violations.
-  layer_tree_host_->SetViewportSizeAndScale(
-      layer_tree_host_->device_viewport_size(), device_scale,
-      layer_tree_host_->local_surface_id());
 }
 
 void RenderWidgetCompositor::SetBackgroundColor(blink::WebColor color) {
@@ -1287,10 +1281,6 @@ void RenderWidgetCompositor::DidLoseLayerTreeFrameSink() {}
 void RenderWidgetCompositor::SetFrameSinkId(
     const viz::FrameSinkId& frame_sink_id) {
   frame_sink_id_ = frame_sink_id;
-}
-
-void RenderWidgetCompositor::SetPaintedDeviceScaleFactor(float device_scale) {
-  layer_tree_host_->SetPaintedDeviceScaleFactor(device_scale);
 }
 
 void RenderWidgetCompositor::SetRasterColorSpace(
