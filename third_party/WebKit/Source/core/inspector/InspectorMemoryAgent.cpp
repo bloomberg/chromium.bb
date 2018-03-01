@@ -107,7 +107,7 @@ Response InspectorMemoryAgent::startSampling(
   base::SamplingHeapProfiler::GetInstance()->SetSamplingInterval(interval);
   state_->setInteger(MemoryAgentState::samplingProfileInterval, interval);
   if (in_suppressRandomness.fromMaybe(false))
-    base::SamplingHeapProfiler::GetInstance()->SuppressRandomnessForTest();
+    base::SamplingHeapProfiler::GetInstance()->SuppressRandomnessForTest(true);
   profile_id_ = base::SamplingHeapProfiler::GetInstance()->Start();
   return Response::OK();
 }
