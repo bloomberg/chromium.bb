@@ -79,6 +79,7 @@ class BLINK_PLATFORM_EXPORT WebScrollbar {
   virtual int Maximum() const = 0;
   virtual int TotalSize() const = 0;
   virtual bool IsScrollableAreaActive() const = 0;
+  virtual bool HasTickmarks() const = 0;
   virtual void GetTickmarks(WebVector<WebRect>& tickmarks) const = 0;
   virtual ScrollbarControlSize GetControlSize() const = 0;
   virtual ScrollbarPart PressedPart() const = 0;

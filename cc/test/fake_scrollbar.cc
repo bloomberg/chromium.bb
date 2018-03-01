@@ -30,6 +30,7 @@ FakeScrollbar::FakeScrollbar(bool paint,
       thumb_opacity_(1),
       needs_paint_thumb_(true),
       needs_paint_track_(true),
+      has_tickmarks_(false),
       track_rect_(0, 0, 100, 10),
       fill_color_(SK_ColorGREEN) {}
 
@@ -69,6 +70,10 @@ bool FakeScrollbar::NeedsPaintPart(ScrollbarPart part) const {
   if (part == THUMB)
     return needs_paint_thumb_;
   return needs_paint_track_;
+}
+
+bool FakeScrollbar::HasTickmarks() const {
+  return has_tickmarks_;
 }
 
 void FakeScrollbar::PaintPart(PaintCanvas* canvas,

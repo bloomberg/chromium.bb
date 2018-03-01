@@ -53,6 +53,7 @@ class CC_EXPORT PaintedOverlayScrollbarLayer : public ScrollbarLayerInterface,
   }
 
   bool PaintThumbIfNeeded();
+  bool PaintTickmarks();
 
   std::unique_ptr<Scrollbar> scrollbar_;
   ElementId scroll_element_id_;
@@ -65,6 +66,7 @@ class CC_EXPORT PaintedOverlayScrollbarLayer : public ScrollbarLayerInterface,
   gfx::Rect aperture_;
 
   std::unique_ptr<ScopedUIResource> thumb_resource_;
+  std::unique_ptr<ScopedUIResource> track_resource_;
 
   DISALLOW_COPY_AND_ASSIGN(PaintedOverlayScrollbarLayer);
 };

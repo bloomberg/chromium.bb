@@ -55,6 +55,7 @@ class PLATFORM_EXPORT WebScrollbarImpl final : public WebScrollbar {
   int Maximum() const override;
   int TotalSize() const override;
   bool IsScrollableAreaActive() const override;
+  bool HasTickmarks() const override;
   void GetTickmarks(WebVector<WebRect>& tickmarks) const override;
   ScrollbarControlSize GetControlSize() const override;
   ScrollbarPart PressedPart() const override;
