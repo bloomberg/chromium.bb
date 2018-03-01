@@ -587,8 +587,12 @@ void LocalFrame::SetPrinting(bool printing,
   // Subframes of the one we're printing don't lay out to the page size.
   for (Frame* child = Tree().FirstChild(); child;
        child = child->Tree().NextSibling()) {
-    if (child->IsLocalFrame())
-      ToLocalFrame(child)->StartPrintingWithoutPrintingLayout();
+    if (child->IsLocalFrame()) {
+      if (printing)
+        ToLocalFrame(child)->StartPrintingWithoutPrintingLayout();
+      else
+        ToLocalFrame(child)->EndPrinting();
+    }
   }
 
   View()->SetSubtreeNeedsPaintPropertyUpdate();
