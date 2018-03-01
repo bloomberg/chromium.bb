@@ -82,6 +82,7 @@ void av1_set_coeff_buffer(const AV1_COMP *const cpi, MACROBLOCK *const x,
   int offset = (mi_row >> mib_size_log2) * stride + (mi_col >> mib_size_log2);
   CB_COEFF_BUFFER *coeff_buf = &cpi->coeff_buffer_base[offset];
   const int txb_offset = x->cb_offset / (TX_SIZE_W_MIN * TX_SIZE_H_MIN);
+  assert(x->cb_offset < (1 << num_pels_log2_lookup[cm->seq_params.sb_size]));
   for (int plane = 0; plane < num_planes; ++plane) {
     x->mbmi_ext->tcoeff[plane] = coeff_buf->tcoeff[plane] + x->cb_offset;
     x->mbmi_ext->eobs[plane] = coeff_buf->eobs[plane] + txb_offset;

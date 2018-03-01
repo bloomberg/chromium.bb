@@ -1401,7 +1401,7 @@ static void encode_b(const AV1_COMP *const cpi, TileDataEnc *tile_data,
   x->e_mbd.mi[0]->mbmi.partition = partition;
   update_state(cpi, tile_data, td, ctx, mi_row, mi_col, bsize, dry_run);
 
-  av1_set_coeff_buffer(cpi, x, mi_row, mi_col);
+  if (!dry_run) av1_set_coeff_buffer(cpi, x, mi_row, mi_col);
 
   encode_superblock(cpi, tile_data, td, tp, dry_run, mi_row, mi_col, bsize,
                     rate);
