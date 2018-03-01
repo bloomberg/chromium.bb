@@ -577,20 +577,24 @@ void av1_convolve_2d_copy_sr_sse2(const uint8_t *src, int src_stride,
 
   if (w == 2) {
     do {
-      *(uint16_t *)dst = *(uint16_t *)src;
+      __m128i s = _mm_loadl_epi64((__m128i *)src);
+      *(uint16_t *)dst = _mm_cvtsi128_si32(s);
       src += src_stride;
       dst += dst_stride;
-      *(uint16_t *)dst = *(uint16_t *)src;
+      s = _mm_loadl_epi64((__m128i *)src);
+      *(uint16_t *)dst = _mm_cvtsi128_si32(s);
       src += src_stride;
       dst += dst_stride;
       h -= 2;
     } while (h);
   } else if (w == 4) {
     do {
-      *(uint32_t *)dst = *(uint32_t *)src;
+      __m128i s = _mm_loadl_epi64((__m128i *)src);
+      *(uint32_t *)dst = _mm_cvtsi128_si32(s);
       src += src_stride;
       dst += dst_stride;
-      *(uint32_t *)dst = *(uint32_t *)src;
+      s = _mm_loadl_epi64((__m128i *)src);
+      *(uint32_t *)dst = _mm_cvtsi128_si32(s);
       src += src_stride;
       dst += dst_stride;
       h -= 2;
