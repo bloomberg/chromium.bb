@@ -194,7 +194,13 @@ TEST_F(ContextMenuJsTest, TextAreaStopsProximity) {
 }
 
 // Tests the javascript of the url of the an image present in the DOM.
-TEST_F(ContextMenuJsTest, LinkOfImage) {
+// TODO(crbug.com/796418): This test is flaky on devices.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_LinkOfImage LinkOfImage
+#else
+#define MAYBE_LinkOfImage FLAKY_LinkOfImage
+#endif
+TEST_F(ContextMenuJsTest, MAYBE_LinkOfImage) {
   // A page with a large image surrounded by a link.
   static const char image[] =
       "<a href='%s'><img width=400 height=400 src='foo'></img></a>";
