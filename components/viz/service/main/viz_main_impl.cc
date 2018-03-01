@@ -42,7 +42,7 @@
 namespace {
 
 std::unique_ptr<base::Thread> CreateAndStartCompositorThread() {
-  auto thread = std::make_unique<base::Thread>("CompositorThread");
+  auto thread = std::make_unique<base::Thread>("VizCompositorThread");
   base::Thread::Options thread_options;
   thread_options.message_loop_type = base::MessageLoop::TYPE_DEFAULT;
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)

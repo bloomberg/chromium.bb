@@ -17,6 +17,7 @@ TimelineThreadCategories = {
     "Chrome_InProcGpuThread": "GPU",
     "CrGpuMain": "GPU",
     "AsyncTransferThread": "GPU_transfer",
+    "VizCompositorThread": "display_compositor",
     "CrBrowserMain": "browser",
     "Browser Compositor": "browser",
     "CrRendererMain": "renderer_main",
@@ -32,7 +33,8 @@ _MatchBySubString = ["IOThread", "CompositorTileWorker"]
 
 AllThreads = TimelineThreadCategories.values()
 NoThreads = []
-FastPathThreads = ["GPU", "renderer_compositor", "browser", "IO"]
+FastPathThreads = [
+  "GPU", "display_compositor", "renderer_compositor", "browser", "IO"]
 
 ReportMainThreadOnly = ["renderer_main"]
 ReportSilkDetails = ["renderer_main"]
