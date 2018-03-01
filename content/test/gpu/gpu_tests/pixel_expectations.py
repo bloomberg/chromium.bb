@@ -139,3 +139,33 @@ class PixelExpectations(GpuTestExpectations):
 
     self.Fail('Pixel_CSSFilterEffects', ['mac'], bug=815045)
     self.Fail('Pixel_CSSFilterEffects_NoOverlays', ['mac'], bug=815045)
+
+    # TODO(kainino): temporary suppressions for perf experiment
+    self.Fail('Pixel_2DCanvasWebGL',
+        ['mac', 'intel'], bug=815154)
+    self.Fail('Pixel_IOSurface2DCanvasWebGL',
+        ['mac', 'intel'], bug=815154)
+    self.Fail('Pixel_OffscreenCanvasTransferAfterStyleResize',
+        ['mac', 'intel'], bug=815154)
+    self.Fail('Pixel_OffscreenCanvasTransferBeforeStyleResize',
+        ['mac', 'intel'], bug=815154)
+    self.Fail('Pixel_OffscreenCanvasWebGLDefault',
+        ['mac', 'intel'], bug=815154)
+    self.Fail('Pixel_OffscreenCanvasWebGLDefaultWorker',
+        ['mac', 'intel'], bug=815154)
+    self.Fail('Pixel_OffscreenCanvasWebGLSoftwareCompositing',
+        ['mac', 'intel'], bug=815154)
+    self.Fail('Pixel_OffscreenCanvasWebGLSoftwareCompositingWorker',
+        ['mac', 'intel'], bug=815154)
+    self.Fail('Pixel_OffscreenCanvasWebglResizeOnWorker',
+        ['mac', 'intel'], bug=815154)
+    self.Fail('Pixel_WebGLGreenTriangle_AA_Alpha',
+        ['mac', 'intel'], bug=815154)
+    self.Fail('Pixel_WebGLGreenTriangle_AA_Alpha_SwiftShader',
+        ['mac', 'intel'], bug=815154)
+    self.Fail('Pixel_WebGLGreenTriangle_AA_NoAlpha',
+        ['mac', 'intel'], bug=815154)
+    self.Fail('Pixel_WebGLGreenTriangle_NonChromiumImage_AA_Alpha',
+        ['mac', 'intel'], bug=815154)
+    self.Fail('Pixel_WebGLGreenTriangle_NonChromiumImage_AA_NoAlpha',
+        ['mac', 'intel'], bug=815154)
