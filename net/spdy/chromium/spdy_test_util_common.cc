@@ -190,7 +190,7 @@ class PriorityGetter : public BufferedSpdyFramerVisitorInterface {
   void OnStreamPadding(SpdyStreamId stream_id, size_t len) override {}
   void OnSettings() override {}
   void OnSettingsAck() override {}
-  void OnSetting(SpdySettingsIds id, uint32_t value) override {}
+  void OnSetting(SpdyKnownSettingsId id, uint32_t value) override {}
   void OnSettingsEnd() override {}
   void OnPing(SpdyPingId unique_id, bool is_ack) override {}
   void OnRstStream(SpdyStreamId stream_id, SpdyErrorCode error_code) override {}
@@ -402,7 +402,8 @@ HttpNetworkSession::Context SpdySessionDependencies::CreateSessionContext(
   context.cert_transparency_verifier =
       session_deps->cert_transparency_verifier.get();
   context.ct_policy_enforcer = session_deps->ct_policy_enforcer.get();
-  context.proxy_resolution_service = session_deps->proxy_resolution_service.get();
+  context.proxy_resolution_service =
+      session_deps->proxy_resolution_service.get();
   context.ssl_config_service = session_deps->ssl_config_service.get();
   context.http_auth_handler_factory =
       session_deps->http_auth_handler_factory.get();

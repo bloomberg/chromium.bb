@@ -508,7 +508,7 @@ SpdySerializedFrame SpdyFramer::SerializeSettings(
        ++it) {
     int setting_id = it->first;
     DCHECK_GE(setting_id, 0);
-    builder.WriteUInt16(static_cast<uint16_t>(setting_id));
+    builder.WriteUInt16(static_cast<SpdySettingsId>(setting_id));
     builder.WriteUInt32(it->second);
   }
   DCHECK_EQ(size, builder.length());
@@ -1004,7 +1004,7 @@ bool SpdyFramer::SerializeSettings(const SpdySettingsIR& settings,
        ++it) {
     int setting_id = it->first;
     DCHECK_GE(setting_id, 0);
-    ok = ok && builder.WriteUInt16(static_cast<uint16_t>(setting_id)) &&
+    ok = ok && builder.WriteUInt16(static_cast<SpdySettingsId>(setting_id)) &&
          builder.WriteUInt32(it->second);
   }
   DCHECK_EQ(size, builder.length());

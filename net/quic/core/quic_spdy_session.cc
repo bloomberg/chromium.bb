@@ -119,7 +119,7 @@ class QuicSpdySession::SpdyFramerVisitor
                     QUIC_INVALID_HEADERS_STREAM_DATA);
   }
 
-  void OnSetting(SpdySettingsIds id, uint32_t value) override {
+  void OnSetting(SpdyKnownSettingsId id, uint32_t value) override {
     if (!GetQuicReloadableFlag(quic_respect_http2_settings_frame)) {
       CloseConnection("SPDY SETTINGS frame received.",
                       QUIC_INVALID_HEADERS_STREAM_DATA);

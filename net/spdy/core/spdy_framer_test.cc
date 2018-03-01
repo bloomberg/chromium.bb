@@ -334,7 +334,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
     ++fin_frame_count_;
   }
 
-  void OnSetting(SpdySettingsIds id, uint32_t value) override {
+  void OnSetting(SpdyKnownSettingsId id, uint32_t value) override {
     VLOG(1) << "OnSetting(" << id << ", " << std::hex << value << ")";
     ++setting_count_;
   }
@@ -541,7 +541,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
 
 class TestExtension : public ExtensionVisitorInterface {
  public:
-  void OnSetting(uint16_t id, uint32_t value) override {
+  void OnSetting(SpdySettingsId id, uint32_t value) override {
     settings_received_.push_back({id, value});
   }
 
@@ -563,7 +563,7 @@ class TestExtension : public ExtensionVisitorInterface {
     payload_.append(data, len);
   }
 
-  std::vector<std::pair<uint16_t, uint32_t>> settings_received_;
+  std::vector<std::pair<SpdySettingsId, uint32_t>> settings_received_;
   SpdyStreamId stream_id_ = 0;
   size_t length_ = 0;
   uint8_t type_ = 0;
@@ -1640,7 +1640,7 @@ TEST_P(SpdyFramerTest, CreateSettings) {
     uint32_t kValue = 0x0a0b0c0d;
     SpdySettingsIR settings_ir;
 
-    SpdySettingsIds kId = SETTINGS_INITIAL_WINDOW_SIZE;
+    SpdyKnownSettingsId kId = SETTINGS_INITIAL_WINDOW_SIZE;
     settings_ir.AddSetting(kId, kValue);
 
     SpdySerializedFrame frame(framer_.SerializeSettings(settings_ir));
@@ -2760,7 +2760,7 @@ TEST_F(SpdyControlFrameIteratorTest, RstStreamFrameWithIterator) {
 TEST_F(SpdyControlFrameIteratorTest, SettingsFrameWithIterator) {
   auto ir = SpdyMakeUnique<SpdySettingsIR>();
   uint32_t kValue = 0x0a0b0c0d;
-  SpdySettingsIds kId = SETTINGS_INITIAL_WINDOW_SIZE;
+  SpdyKnownSettingsId kId = SETTINGS_INITIAL_WINDOW_SIZE;
   ir->AddSetting(kId, kValue);
   RunTest(std::move(ir));
 }

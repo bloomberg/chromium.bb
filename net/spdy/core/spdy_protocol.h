@@ -34,8 +34,11 @@
 
 namespace net {
 
-// A stream id is a 31 bit entity.
-typedef uint32_t SpdyStreamId;
+// A stream ID is a 31-bit entity.
+using SpdyStreamId = uint32_t;
+
+// A SETTINGS ID is a 16-bit entity.
+using SpdySettingsId = uint16_t;
 
 // Specifies the stream ID used to denote the current session (for
 // flow control).
@@ -141,7 +144,7 @@ enum Http2SettingsControlFlags {
 };
 
 // Wire values of HTTP/2 setting identifiers.
-enum SpdySettingsIds : uint16_t {
+enum SpdyKnownSettingsId : SpdySettingsId {
   // HPACK header table maximum size.
   SETTINGS_HEADER_TABLE_SIZE = 0x1,
   SETTINGS_MIN = SETTINGS_HEADER_TABLE_SIZE,
@@ -166,14 +169,14 @@ enum SpdySettingsIds : uint16_t {
 // This explicit operator is needed, otherwise compiler finds
 // overloaded operator to be ambiguous.
 SPDY_EXPORT_PRIVATE std::ostream& operator<<(std::ostream& out,
-                                             SpdySettingsIds id);
+                                             SpdyKnownSettingsId id);
 
 // This operator is needed, because SpdyFrameType is an enum class,
 // therefore implicit conversion to underlying integer type is not allowed.
 SPDY_EXPORT_PRIVATE std::ostream& operator<<(std::ostream& out,
                                              SpdyFrameType frame_type);
 
-using SettingsMap = std::map<SpdySettingsIds, uint32_t>;
+using SettingsMap = std::map<SpdyKnownSettingsId, uint32_t>;
 
 // HTTP/2 error codes, RFC 7540 Section 7.
 enum SpdyErrorCode : uint32_t {
@@ -256,13 +259,13 @@ const char* FrameTypeToString(SpdyFrameType frame_type);
 
 // If |wire_setting_id| is the on-the-wire representation of a defined SETTINGS
 // parameter, parse it to |*setting_id| and return true.
-SPDY_EXPORT_PRIVATE bool ParseSettingsId(uint16_t wire_setting_id,
-                                         SpdySettingsIds* setting_id);
+SPDY_EXPORT_PRIVATE bool ParseSettingsId(SpdySettingsId wire_setting_id,
+                                         SpdyKnownSettingsId* setting_id);
 
-// Return if |id| corresponds to a defined setting;
-// stringify |id| to |*settings_id_string| regardless.
-SPDY_EXPORT_PRIVATE bool SettingsIdToString(SpdySettingsIds id,
-                                            const char** settings_id_string);
+// Returns a string representation of the |id| for logging/debugging. Returns
+// the |id| prefixed with "SETTINGS_UNKNOWN_" for unknown SETTINGS IDs. To parse
+// the |id| into a SpdyKnownSettingsId (if applicable), use ParseSettingsId().
+SPDY_EXPORT_PRIVATE SpdyString SettingsIdToString(SpdySettingsId id);
 
 // Parse |wire_error_code| to a SpdyErrorCode.
 // Treat unrecognized error codes as INTERNAL_ERROR
@@ -287,7 +290,7 @@ const size_t kPriorityFrameSize = kFrameHeaderSize + 5;
 const size_t kRstStreamFrameSize = kFrameHeaderSize + 4;
 const size_t kSettingsFrameMinimumSize = kFrameHeaderSize;
 const size_t kSettingsOneSettingSize =
-    sizeof(uint32_t) + sizeof(SpdySettingsIds);
+    sizeof(uint32_t) + sizeof(SpdySettingsId);
 // PUSH_PROMISE frame has promised_stream_id (4 octet) field.
 const size_t kPushPromiseFrameMinimumSize = kFrameHeaderSize + 4;
 // PING frame has opaque_bytes (8 octet) field.
@@ -600,7 +603,9 @@ class SPDY_EXPORT_PRIVATE SpdySettingsIR : public SpdyFrameIR {
 
   // Overwrites as appropriate.
   const SettingsMap& values() const { return values_; }
-  void AddSetting(SpdySettingsIds id, int32_t value) { values_[id] = value; }
+  void AddSetting(SpdyKnownSettingsId id, int32_t value) {
+    values_[id] = value;
+  }
 
   bool is_ack() const { return is_ack_; }
   void set_is_ack(bool is_ack) { is_ack_ = is_ack; }

@@ -6,6 +6,8 @@
 
 #include <map>
 #include <unordered_set>
+#include <utility>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/feature_list.h"
@@ -98,7 +100,7 @@ net::SettingsMap GetHttp2Settings(
     uint32_t value;
     if (!base::StringToUint(key_value.second, &value))
       continue;
-    http2_settings[static_cast<net::SpdySettingsIds>(key)] = value;
+    http2_settings[static_cast<net::SpdyKnownSettingsId>(key)] = value;
   }
 
   return http2_settings;

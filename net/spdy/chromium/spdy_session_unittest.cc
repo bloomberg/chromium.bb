@@ -40,6 +40,8 @@
 #include "net/spdy/chromium/spdy_stream_test_util.h"
 #include "net/spdy/chromium/spdy_test_util_common.h"
 #include "net/spdy/core/spdy_test_utils.h"
+#include "net/spdy/platform/api/spdy_string.h"
+#include "net/spdy/platform/api/spdy_string_piece.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
@@ -1925,11 +1927,12 @@ TEST_F(SpdySessionTest, WaitingForWrongPing) {
 TEST_F(SpdySessionTest, OnSettings) {
   session_deps_.host_resolver->set_synchronous_mode(true);
 
-  const SpdySettingsIds kSpdySettingsIds = SETTINGS_MAX_CONCURRENT_STREAMS;
+  const SpdyKnownSettingsId kSpdyKnownSettingsId =
+      SETTINGS_MAX_CONCURRENT_STREAMS;
 
   SettingsMap new_settings;
   const uint32_t max_concurrent_streams = kInitialMaxConcurrentStreams + 1;
-  new_settings[kSpdySettingsIds] = max_concurrent_streams;
+  new_settings[kSpdyKnownSettingsId] = max_concurrent_streams;
   SpdySerializedFrame settings_frame(
       spdy_util_.ConstructSpdySettings(new_settings));
   MockRead reads[] = {
@@ -2723,9 +2726,10 @@ TEST_F(SpdySessionTest, CloseTwoStalledCreateStream) {
   // TODO(rtenneti): Define a helper class/methods and move the common code in
   // this file.
   SettingsMap new_settings;
-  const SpdySettingsIds kSpdySettingsIds1 = SETTINGS_MAX_CONCURRENT_STREAMS;
+  const SpdyKnownSettingsId kSpdyKnownSettingsId1 =
+      SETTINGS_MAX_CONCURRENT_STREAMS;
   const uint32_t max_concurrent_streams = 1;
-  new_settings[kSpdySettingsIds1] = max_concurrent_streams;
+  new_settings[kSpdyKnownSettingsId1] = max_concurrent_streams;
 
   SpdySerializedFrame settings_ack(spdy_util_.ConstructSpdySettingsAck());
   SpdySerializedFrame req1(spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST));
@@ -2967,9 +2971,9 @@ TEST_F(SpdySessionTest, ReadDataWithoutYielding) {
   test_stream.GetBytes(payload_data, kPayloadSize);
 
   SpdySerializedFrame partial_data_frame(spdy_util_.ConstructSpdyDataFrame(
-      1, base::StringPiece(payload_data, kPayloadSize), /*fin=*/false));
+      1, SpdyStringPiece(payload_data, kPayloadSize), /*fin=*/false));
   SpdySerializedFrame finish_data_frame(spdy_util_.ConstructSpdyDataFrame(
-      1, base::StringPiece(payload_data, kPayloadSize - 1), /*fin=*/true));
+      1, SpdyStringPiece(payload_data, kPayloadSize - 1), /*fin=*/true));
 
   SpdySerializedFrame resp1(spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
 
@@ -3174,7 +3178,7 @@ TEST_F(SpdySessionTest, TestYieldingDuringReadData) {
   test_stream.GetBytes(payload_data, kPayloadSize);
 
   SpdySerializedFrame partial_data_frame(spdy_util_.ConstructSpdyDataFrame(
-      1, base::StringPiece(payload_data, kPayloadSize), /*fin=*/false));
+      1, SpdyStringPiece(payload_data, kPayloadSize), /*fin=*/false));
   SpdySerializedFrame finish_data_frame(
       spdy_util_.ConstructSpdyDataFrame(1, "h", /*fin=*/true));
 
@@ -3271,10 +3275,10 @@ TEST_F(SpdySessionTest, TestYieldingDuringAsyncReadData) {
   test_stream2.GetBytes(twok_payload_data, kTwoKPayloadSize);
 
   SpdySerializedFrame eightk_data_frame(spdy_util_.ConstructSpdyDataFrame(
-      1, base::StringPiece(eightk_payload_data, kEightKPayloadSize),
+      1, SpdyStringPiece(eightk_payload_data, kEightKPayloadSize),
       /*fin=*/false));
   SpdySerializedFrame twok_data_frame(spdy_util_.ConstructSpdyDataFrame(
-      1, base::StringPiece(twok_payload_data, kTwoKPayloadSize),
+      1, SpdyStringPiece(twok_payload_data, kTwoKPayloadSize),
       /*fin=*/false));
   SpdySerializedFrame finish_data_frame(
       spdy_util_.ConstructSpdyDataFrame(1, "h", /*fin=*/true));
@@ -6020,15 +6024,15 @@ TEST_F(SendInitialSettingsOnNewSpdySessionTest, OverwriteValues) {
 // Unknown parameters should still be sent to the server.
 TEST_F(SendInitialSettingsOnNewSpdySessionTest, UnknownSettings) {
   // The following parameters are not defined in the HTTP/2 specification.
-  session_deps_.http2_settings[static_cast<SpdySettingsIds>(7)] = 1234;
-  session_deps_.http2_settings[static_cast<SpdySettingsIds>(25)] = 5678;
+  session_deps_.http2_settings[static_cast<SpdyKnownSettingsId>(7)] = 1234;
+  session_deps_.http2_settings[static_cast<SpdyKnownSettingsId>(25)] = 5678;
 
   SettingsMap expected_settings;
   expected_settings[SETTINGS_HEADER_TABLE_SIZE] = kSpdyMaxHeaderTableSize;
   expected_settings[SETTINGS_MAX_CONCURRENT_STREAMS] =
       kSpdyMaxConcurrentPushedStreams;
-  expected_settings[static_cast<SpdySettingsIds>(7)] = 1234;
-  expected_settings[static_cast<SpdySettingsIds>(25)] = 5678;
+  expected_settings[static_cast<SpdyKnownSettingsId>(7)] = 1234;
+  expected_settings[static_cast<SpdyKnownSettingsId>(25)] = 5678;
   RunInitialSettingsTest(expected_settings);
 }
 
@@ -6320,7 +6324,7 @@ TEST_F(AltSvcFrameTest, DoNotProcessAltSvcFrameOnNonExistentStream) {
 // Regression test for https://crbug.com/810404.
 TEST_F(AltSvcFrameTest, InvalidOrigin) {
   // This origin parses to an invalid GURL with https scheme.
-  const std::string origin("https:?");
+  const SpdyString origin("https:?");
   const GURL origin_gurl(origin);
   EXPECT_FALSE(origin_gurl.is_valid());
   EXPECT_TRUE(origin_gurl.host().empty());

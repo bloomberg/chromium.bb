@@ -441,7 +441,7 @@ void QuicHttpDecoderAdapter::OnSetting(
     const QuicHttpSettingFields& setting_fields) {
   DVLOG(1) << "OnSetting: " << setting_fields;
   const uint16_t parameter = static_cast<uint16_t>(setting_fields.parameter);
-  SpdySettingsIds setting_id;
+  SpdyKnownSettingsId setting_id;
   if (!ParseSettingsId(parameter, &setting_id)) {
     if (extension_ == nullptr) {
       DVLOG(1) << "Ignoring unknown setting id: " << setting_fields;

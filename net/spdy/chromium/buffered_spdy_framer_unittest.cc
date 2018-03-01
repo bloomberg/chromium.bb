@@ -80,7 +80,7 @@ class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
 
   void OnSettingsEnd() override {}
 
-  void OnSetting(SpdySettingsIds id, uint32_t value) override {
+  void OnSetting(SpdyKnownSettingsId id, uint32_t value) override {
     setting_count_++;
   }
 
