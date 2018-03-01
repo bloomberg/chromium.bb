@@ -192,9 +192,6 @@ class CONTENT_EXPORT FrameTreeNode {
   // Set the current name and notify proxies about the update.
   void SetFrameName(const std::string& name, const std::string& unique_name);
 
-  // Set the frame's feature policy header, clearing any existing header.
-  void SetFeaturePolicyHeader(const blink::ParsedFeaturePolicy& parsed_header);
-
   // Add CSP headers to replication state, notify proxies about the update.
   void AddContentSecurityPolicies(
       const std::vector<ContentSecurityPolicyHeader>& headers);
@@ -360,10 +357,13 @@ class CONTENT_EXPORT FrameTreeNode {
 
   // Updates the active sandbox flags in this frame, in response to a
   // Content-Security-Policy header adding additional flags, in addition to
-  // those given to this frame by its parent. Note that on navigation, these
-  // updates will be cleared, and the flags in the pending frame policy will be
-  // applied to the frame.
-  void UpdateActiveSandboxFlags(blink::WebSandboxFlags sandbox_flags);
+  // those given to this frame by its parent, or in response to the
+  // Feature-Policy header being set. Note that on navigation, these updates
+  // will be cleared, and the flags in the pending frame policy will be applied
+  // to the frame.
+  void UpdateFramePolicyHeaders(
+      blink::WebSandboxFlags sandbox_flags,
+      const blink::ParsedFeaturePolicy& parsed_header);
 
   // Returns whether the frame received a user gesture.
   bool has_received_user_gesture() const {

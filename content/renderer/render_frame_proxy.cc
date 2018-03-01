@@ -342,17 +342,19 @@ void RenderFrameProxy::OnDidUpdateFramePolicy(
                                   frame_policy.container_policy);
 }
 
-// Update the proxy's SecurityContext with new sandbox flags that were set
-// during navigation. Unlike changes to the FrameOwner, which are handled by
-// OnDidUpdateFramePolicy, these flags should be considered effective
-// immediately.
+// Update the proxy's SecurityContext with new sandbox flags or feature policy
+// that were set during navigation. Unlike changes to the FrameOwner, which are
+// handled by OnDidUpdateFramePolicy, these changes should be considered
+// effective immediately.
 //
-// These flags are needed on the remote frame's SecurityContext to ensure that
-// sandbox flags are inherited properly if this proxy ever parents a local
-// frame.
-void RenderFrameProxy::OnDidSetActiveSandboxFlags(
-    blink::WebSandboxFlags active_sandbox_flags) {
+// These flags / policy are needed on the remote frame's SecurityContext to
+// ensure that sandbox flags and feature policy are inherited properly if this
+// proxy ever parents a local frame.
+void RenderFrameProxy::OnDidSetFramePolicyHeaders(
+    blink::WebSandboxFlags active_sandbox_flags,
+    blink::ParsedFeaturePolicy feature_policy_header) {
   web_frame_->SetReplicatedSandboxFlags(active_sandbox_flags);
+  web_frame_->SetReplicatedFeaturePolicyHeader(feature_policy_header);
 }
 
 void RenderFrameProxy::SetChildFrameSurface(
@@ -393,8 +395,8 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_DidStartLoading, OnDidStartLoading)
     IPC_MESSAGE_HANDLER(FrameMsg_DidStopLoading, OnDidStopLoading)
     IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateFramePolicy, OnDidUpdateFramePolicy)
-    IPC_MESSAGE_HANDLER(FrameMsg_DidSetActiveSandboxFlags,
-                        OnDidSetActiveSandboxFlags)
+    IPC_MESSAGE_HANDLER(FrameMsg_DidSetFramePolicyHeaders,
+                        OnDidSetFramePolicyHeaders)
     IPC_MESSAGE_HANDLER(FrameMsg_ForwardResourceTimingToParent,
                         OnForwardResourceTimingToParent)
     IPC_MESSAGE_HANDLER(FrameMsg_DispatchLoad, OnDispatchLoad)
