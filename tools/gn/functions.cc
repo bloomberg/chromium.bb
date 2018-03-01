@@ -964,9 +964,10 @@ Value RunPrint(Scope* scope,
 
   const BuildSettings::PrintCallback& cb =
       scope->settings()->build_settings()->print_callback();
-  if (cb.is_null())
+  if (cb.is_null()) {
     printf("%s", output.c_str());
-  else
+    fflush(stdout);
+  } else
     cb.Run(output);
 
   return Value();
