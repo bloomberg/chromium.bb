@@ -1364,7 +1364,9 @@ void ThreadState::MarkPhaseVisitRoots() {
   // Disallow allocation during garbage collection (but not during the
   // finalization that happens when the visitorScope is torn down).
   NoAllocationScope no_allocation_scope(this);
-  StackFrameDepthScope stack_depth_scope(&Heap().GetStackFrameDepth());
+  // StackFrameDepth should be disabled so we don't trace most of the object
+  // graph in one incremental marking step.
+  DCHECK(!Heap().GetStackFrameDepth().IsEnabled());
 
   // 1. Trace persistent roots.
   Heap().VisitPersistentRoots(current_gc_data_.visitor.get());
