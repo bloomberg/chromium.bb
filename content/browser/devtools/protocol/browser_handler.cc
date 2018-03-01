@@ -7,11 +7,15 @@
 #include <string.h>
 #include <algorithm>
 
+#include "base/command_line.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
+#include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/user_agent.h"
 #include "v8/include/v8-version-string.h"
 
@@ -106,6 +110,27 @@ Response BrowserHandler::GetHistogram(
   *out_histogram = Convert(*in_histogram);
 
   return Response::OK();
+}
+
+Response BrowserHandler::GetCommandLine(
+    std::unique_ptr<protocol::Array<String>>* arguments) {
+  *arguments = protocol::Array<String>::create();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  // The commandline is potentially sensitive, only return it if it
+  // contains kEnableAutomation.
+  if (command_line->HasSwitch(switches::kEnableAutomation)) {
+    for (const auto& arg : command_line->argv()) {
+#if defined(OS_WIN)
+      (*arguments)->addItem(base::UTF16ToUTF8(arg.c_str()));
+#else
+      (*arguments)->addItem(arg.c_str());
+#endif
+    }
+    return Response::OK();
+  } else {
+    return Response::Error(
+        "Command line not returned because --enable-automation not set.");
+  }
 }
 
 }  // namespace protocol
