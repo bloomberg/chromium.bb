@@ -76,6 +76,8 @@ class TabUnderNavigationThrottle : public content::NavigationThrottle {
   content::NavigationThrottle::ThrottleCheckResult MaybeBlockNavigation();
   void ShowUI();
 
+  bool HasOpenedPopupSinceLastUserGesture() const;
+
   // content::NavigationThrottle:
   content::NavigationThrottle::ThrottleCheckResult WillStartRequest() override;
   content::NavigationThrottle::ThrottleCheckResult WillRedirectRequest()
@@ -84,11 +86,15 @@ class TabUnderNavigationThrottle : public content::NavigationThrottle {
 
   // Store whether we're off the record as a member to avoid looking it up all
   // the time.
-  bool off_the_record_ = false;
+  const bool off_the_record_ = false;
 
   // True if the experiment is turned on and the class should actually attempt
   // to block tab-unders.
-  bool block_ = false;
+  const bool block_ = false;
+
+  // Tracks whether this WebContents has opened a popup since the last user
+  // gesture, at the time this navigation is starting.
+  const bool has_opened_popup_since_last_user_gesture_at_start_ = false;
 
   // True if the throttle has seen a tab under.
   bool seen_tab_under_ = false;
