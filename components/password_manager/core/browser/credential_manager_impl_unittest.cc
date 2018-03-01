@@ -1504,6 +1504,24 @@ TEST_F(CredentialManagerImplTest, GetSynthesizedFormForOrigin) {
   EXPECT_EQ(autofill::PasswordForm::SCHEME_HTML, synthesized.scheme);
 }
 
+TEST_F(CredentialManagerImplTest, GetBlacklistedPasswordCredential) {
+  autofill::PasswordForm blacklisted;
+  blacklisted.blacklisted_by_user = true;
+  blacklisted.origin = form_.origin;
+  blacklisted.signon_realm = blacklisted.origin.spec();
+  // Deliberately use a wrong format with a non-empty username to simulate a
+  // leak. See https://crbug.com/817754.
+  blacklisted.username_value = base::ASCIIToUTF16("Username");
+  store_->AddLogin(blacklisted);
+
+  EXPECT_CALL(*client_, PromptUserToChooseCredentialsPtr(_, _, _)).Times(0);
+  EXPECT_CALL(*client_, NotifyUserAutoSigninPtr()).Times(0);
+
+  std::vector<GURL> federations;
+  ExpectCredentialType(CredentialMediationRequirement::kOptional, true,
+                       federations, CredentialType::CREDENTIAL_TYPE_EMPTY);
+}
+
 TEST_F(CredentialManagerImplTest, BlacklistPasswordCredential) {
   EXPECT_CALL(*client_, PromptUserToSavePasswordPtr(_));
 
