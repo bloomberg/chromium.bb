@@ -62,6 +62,11 @@ gfx::Transform ComputeRotateAroundCenterTransform(const gfx::Rect& bounds,
   return transform;
 }
 
+bool IsPhantomState(IndicatorState indicator_state) {
+  return indicator_state == IndicatorState::kPhantomLeft ||
+         indicator_state == IndicatorState::kPhantomRight;
+}
+
 // Calculate whether the phantom window should physically be on the left or top
 // of the screen. kPhantomLeft and kPhantomRight correspond with LEFT_SNAPPED
 // and RIGHT_SNAPPED which do not always correspond to the physical left and
@@ -161,6 +166,7 @@ class SplitViewOverviewOverlay::SplitViewOverviewOverlayView
   void OnIndicatorTypeChanged(IndicatorState indicator_state) {
     DCHECK_NE(indicator_state_, indicator_state);
 
+    previous_indicator_state_ = indicator_state_;
     indicator_state_ = indicator_state;
 
     switch (indicator_state) {
@@ -271,16 +277,18 @@ class SplitViewOverviewOverlay::SplitViewOverviewOverlayView
     // |main_transform|. The other window, which will shrink and fade out, will
     // be transformed by |other_transform|.
     gfx::Transform main_transform, other_transform;
-    const bool phantom_left = IsPhantomOnLeftTopOfScreen(indicator_state_);
-    if (indicator_state_ == IndicatorState::kPhantomLeft ||
-        indicator_state_ == IndicatorState::kPhantomRight) {
+    const bool phantom_left =
+        IsPhantomOnLeftTopOfScreen(indicator_state_) ||
+        IsPhantomOnLeftTopOfScreen(previous_indicator_state_);
+    if (IsPhantomState(indicator_state_) ||
+        (indicator_state_ == IndicatorState::kDragArea &&
+         IsPhantomState(previous_indicator_state_))) {
       // Get the phantom window bounds from the split view controller.
       gfx::Rect phantom_bounds =
           Shell::Get()->split_view_controller()->GetSnappedWindowBoundsInScreen(
-              GetWidget()->GetNativeWindow(),
-              indicator_state_ == IndicatorState::kPhantomLeft
-                  ? SplitViewController::LEFT
-                  : SplitViewController::RIGHT);
+              GetWidget()->GetNativeWindow(), phantom_left
+                                                  ? SplitViewController::LEFT
+                                                  : SplitViewController::RIGHT);
       phantom_bounds.Inset(kHighlightScreenEdgePaddingDp,
                            kHighlightScreenEdgePaddingDp);
 
@@ -327,23 +335,38 @@ class SplitViewOverviewOverlay::SplitViewOverviewOverlayView
         // Scale the other window so that it becomes hidden.
         other_transform.Scale(1.0, 1.0 / static_cast<double>(highlight_height));
       }
+
+      if (IsPhantomState(previous_indicator_state_)) {
+        // If the previous state was a phantom state, first apply a transform,
+        // otherwise no animation will happen if we try to transform from
+        // identity to identity. (OnImplicitAnimationsCompleted sets the bounds
+        // and all transforms to identity to preserve rounded edges).
+        left_hightlight_view_->layer()->SetTransform(
+            phantom_left ? main_transform : other_transform);
+        right_hightlight_view_->layer()->SetTransform(
+            phantom_left ? other_transform : main_transform);
+        main_transform.MakeIdentity();
+        other_transform.MakeIdentity();
+      }
     }
 
     DoSplitviewTransformAnimation(
         left_hightlight_view_->layer(),
         SPLITVIEW_ANIMATION_PHANTOM_SLIDE_IN_OUT,
         phantom_left ? main_transform : other_transform, this);
-    left_hightlight_view_->SetBounds(kHighlightScreenEdgePaddingDp,
-                                     kHighlightScreenEdgePaddingDp,
-                                     highlight_width, highlight_height);
+    left_hightlight_bounds_ =
+        gfx::Rect(kHighlightScreenEdgePaddingDp, kHighlightScreenEdgePaddingDp,
+                  highlight_width, highlight_height);
+    left_hightlight_view_->SetBoundsRect(left_hightlight_bounds_);
 
     DoSplitviewTransformAnimation(
         right_hightlight_view_->layer(),
         SPLITVIEW_ANIMATION_PHANTOM_SLIDE_IN_OUT,
         phantom_left ? other_transform : main_transform, nullptr);
-    right_hightlight_view_->SetBounds(right_bottom_origin.x(),
-                                      right_bottom_origin.y(), highlight_width,
-                                      highlight_height);
+    right_hightlight_bounds_ =
+        gfx::Rect(right_bottom_origin.x(), right_bottom_origin.y(),
+                  highlight_width, highlight_height);
+    right_hightlight_view_->SetBoundsRect(right_hightlight_bounds_);
 
     // Calculate the bounds of the views which contain the guidance text and
     // icon. Rotate the two views in landscape mode.
@@ -374,19 +397,29 @@ class SplitViewOverviewOverlay::SplitViewOverviewOverlayView
 
   // ui::ImplicitAnimationObserver:
   void OnImplicitAnimationsCompleted() override {
-    // The rounding after scaling the element looks very weird, even after
-    // applying the reverse scale, possibly because of the differences in the x
-    // and y scaling. Remove the rounding when a phantom window shows up.
-    // TODO(sammiequon): Investigate a method which does not require
-    // transforming the rounded edges, perhaps a three layered element where the
-    // middle is a rectangle which gets transformed, and the left and right only
-    // shift bounds. This would also optimized repainting.
-    for (RoundedRectView* view : GetHighlightViews()) {
-      const gfx::Vector2dF scale = view->layer()->transform().Scale2d();
-      if (scale.x() == 1.f && scale.y() == 1.f)
-        view->SetCornerRadius(kHighlightScreenRoundRectRadiusDp);
-      else
-        view->SetCornerRadius(0);
+    // Set the final bounds and the layer transforms to identity, so that the
+    // proper rounding on the rounded rect corners show up.
+    gfx::Rect phantom_bounds =
+        Shell::Get()->split_view_controller()->GetSnappedWindowBoundsInScreen(
+            GetWidget()->GetNativeWindow(),
+            indicator_state_ == IndicatorState::kPhantomLeft
+                ? SplitViewController::LEFT
+                : SplitViewController::RIGHT);
+    phantom_bounds.Inset(kHighlightScreenEdgePaddingDp,
+                         kHighlightScreenEdgePaddingDp);
+
+    constexpr gfx::Rect kEmptyRect;
+    left_hightlight_view_->layer()->SetTransform(gfx::Transform());
+    right_hightlight_view_->layer()->SetTransform(gfx::Transform());
+    if (IsPhantomOnLeftTopOfScreen(indicator_state_)) {
+      left_hightlight_view_->SetBoundsRect(phantom_bounds);
+      right_hightlight_view_->SetBoundsRect(kEmptyRect);
+    } else if (IsPhantomState(indicator_state_)) {
+      left_hightlight_view_->SetBoundsRect(kEmptyRect);
+      right_hightlight_view_->SetBoundsRect(phantom_bounds);
+    } else {
+      left_hightlight_view_->SetBoundsRect(left_hightlight_bounds_);
+      right_hightlight_view_->SetBoundsRect(right_hightlight_bounds_);
     }
   }
 
@@ -403,7 +436,13 @@ class SplitViewOverviewOverlay::SplitViewOverviewOverlayView
   RotatedImageLabelView* left_rotated_view_ = nullptr;
   RotatedImageLabelView* right_rotated_view_ = nullptr;
 
+  // Cache the bounds calculated in Layout(), so that they do not have to be
+  // recalculated when animation is finished.
+  gfx::Rect left_hightlight_bounds_;
+  gfx::Rect right_hightlight_bounds_;
+
   IndicatorState indicator_state_ = IndicatorState::kNone;
+  IndicatorState previous_indicator_state_ = IndicatorState::kNone;
 
   DISALLOW_COPY_AND_ASSIGN(SplitViewOverviewOverlayView);
 };
