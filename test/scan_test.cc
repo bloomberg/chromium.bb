@@ -107,7 +107,7 @@ TEST(Av1ScanTest, Dependency) {
       }
       SCAN_MODE scan_mode;
       TX_CLASS tx_class = tx_type_to_class[(TX_TYPE)tx_type];
-      if ((tx_class == TX_CLASS_2D) || org_rows == 64 || org_cols == 64) {
+      if (tx_class == TX_CLASS_2D) {
         if (rows == cols) {
           scan_mode = SCAN_MODE_ZIG_ZAG;
         } else if (rows > cols) {
