@@ -255,6 +255,9 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   void DrawQuadGeometry(const gfx::Transform& projection_matrix,
                         const gfx::Transform& draw_transform,
                         const gfx::RectF& quad_rect);
+  void DrawQuadGeometryWithAA(const DrawQuad* quad,
+                              gfx::QuadF* local_quad,
+                              const gfx::Rect& tile_rect);
 
   // If |dst_color_space| is invalid, then no color conversion (apart from
   // YUV to RGB conversion) is performed. This explicit argument is available
