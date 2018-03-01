@@ -10,7 +10,6 @@
     ConstructorCallWith=ScriptState,
     Global=(Worklet,AudioWorklet),
     MeasureAs=AudioWorkletNodeConstructor,
-    OriginTrialEnabled=AudioWorklet,
     RaisesException=Constructor
 ] interface AudioWorkletNode : AudioNode {
     readonly attribute AudioParamMap parameters;

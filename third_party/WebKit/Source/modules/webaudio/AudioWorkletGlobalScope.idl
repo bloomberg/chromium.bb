@@ -6,8 +6,7 @@
 
 [
     Exposed=AudioWorklet,
-    Global=(Worklet,AudioWorklet),
-    OriginTrialEnabled=AudioWorklet
+    Global=(Worklet,AudioWorklet)
 ] interface AudioWorkletGlobalScope : WorkletGlobalScope {
     [RaisesException, MeasureAs=AudioWorkletGlobalScopeRegisterProcessor] void registerProcessor(DOMString name, Function processorConstructor);
     readonly attribute unsigned long long currentFrame;
