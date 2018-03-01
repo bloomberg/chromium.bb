@@ -291,12 +291,34 @@ int SchedulerWorkerPoolImpl::GetMaxConcurrentNonBlockedTasksDeprecated() const {
 
 void SchedulerWorkerPoolImpl::WaitForWorkersIdleForTesting(size_t n) {
   AutoSchedulerLock auto_lock(lock_);
+
+  DCHECK_EQ(0U, num_workers_cleaned_up_for_testing_)
+      << "Workers detached prior to waiting for a specific number of idle "
+         "workers. Doing the wait under such conditions is flaky.";
+
   WaitForWorkersIdleLockRequiredForTesting(n);
 }
 
 void SchedulerWorkerPoolImpl::WaitForAllWorkersIdleForTesting() {
   AutoSchedulerLock auto_lock(lock_);
   WaitForWorkersIdleLockRequiredForTesting(workers_.size());
+}
+
+void SchedulerWorkerPoolImpl::WaitForWorkersCleanedUpForTesting(size_t n) {
+  AutoSchedulerLock auto_lock(lock_);
+
+  DCHECK_EQ(0U, num_workers_cleaned_up_for_testing_)
+      << "Called WaitForWorkersCleanedUpForTesting() after some workers had "
+         "already cleaned up on their own.";
+
+  DCHECK(!num_workers_cleaned_up_for_testing_cv_)
+      << "Called WaitForWorkersCleanedUpForTesting() multiple times in the "
+         "same test.";
+
+  num_workers_cleaned_up_for_testing_cv_ = lock_.CreateConditionVariable();
+
+  while (num_workers_cleaned_up_for_testing_ < n)
+    num_workers_cleaned_up_for_testing_cv_->Wait();
 }
 
 void SchedulerWorkerPoolImpl::JoinForTesting() {
@@ -533,6 +555,10 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::CleanupLockRequired(
       std::find(outer_->workers_.begin(), outer_->workers_.end(), worker);
   DCHECK(worker_iter != outer_->workers_.end());
   outer_->workers_.erase(worker_iter);
+
+  ++outer_->num_workers_cleaned_up_for_testing_;
+  if (outer_->num_workers_cleaned_up_for_testing_cv_)
+    outer_->num_workers_cleaned_up_for_testing_cv_->Signal();
 }
 
 void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::
