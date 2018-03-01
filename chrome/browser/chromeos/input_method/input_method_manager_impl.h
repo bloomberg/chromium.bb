@@ -83,6 +83,9 @@ class InputMethodManagerImpl : public InputMethodManager,
     void RemoveInputMethodExtension(const std::string& extension_id) override;
     void ChangeInputMethod(const std::string& input_method_id,
                            bool show_message) override;
+    void ChangeInputMethodToJpKeyboard() override;
+    void ChangeInputMethodToJpIme() override;
+    void ToggleInputMethodForJpIme() override;
     bool EnableInputMethod(
         const std::string& new_active_input_method_id) override;
     void EnableLoginLayouts(

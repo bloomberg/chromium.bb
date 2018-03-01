@@ -75,6 +75,40 @@ ui::EventDispatchDetails InputMethodChromeOS::DispatchKeyEvent(
       // handled in event rewriter.
       keyboard->SetCapsLockEnabled(event->IsCapsLockOn());
     }
+
+    // For JP106 language input keys, makes sure they can be passed to the app
+    // so that the VDI web apps can be supported. See https://crbug.com/816341.
+    // VKEY_CONVERT: Henkan key
+    // VKEY_NONCONVERT: Muhenkan key
+    // VKEY_DBE_SBCSCHAR/VKEY_DBE_DBCSCHAR: ZenkakuHankaku key
+    chromeos::input_method::InputMethodManager::State* state =
+        manager->GetActiveIMEState().get();
+    if (event->type() == ET_KEY_PRESSED && state) {
+      bool language_input_key = true;
+      switch (event->key_code()) {
+        case ui::VKEY_CONVERT:
+          state->ChangeInputMethodToJpIme();
+          break;
+        case ui::VKEY_NONCONVERT:
+          state->ChangeInputMethodToJpKeyboard();
+          break;
+        case ui::VKEY_DBE_SBCSCHAR:
+        case ui::VKEY_DBE_DBCSCHAR:
+          state->ToggleInputMethodForJpIme();
+          break;
+        default:
+          language_input_key = false;
+          break;
+      }
+      if (language_input_key) {
+        // Dispatches the event to app/blink.
+        // TODO(shuchen): Eventually, the language input keys should be handed
+        // over to the IME extension to process. And IMF can handle if the IME
+        // extension didn't handle.
+        return DispatchKeyEventPostIME(
+            event, std::make_unique<AckCallback>(std::move(ack_callback)));
+      }
+    }
   }
 
   // If |context_| is not usable, then we can only dispatch the key event as is.

@@ -28,6 +28,12 @@ void MockInputMethodManager::State::ChangeInputMethod(
     const std::string& input_method_id,
     bool show_message) {}
 
+void MockInputMethodManager::State::ChangeInputMethodToJpKeyboard() {}
+
+void MockInputMethodManager::State::ChangeInputMethodToJpIme() {}
+
+void MockInputMethodManager::State::ToggleInputMethodForJpIme() {}
+
 bool MockInputMethodManager::State::EnableInputMethod(
     const std::string& new_active_input_method_id) {
   return true;
