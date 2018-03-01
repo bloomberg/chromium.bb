@@ -107,7 +107,7 @@ class MockFrameHost : public mojom::FrameHost {
 
   void UpdateEncoding(const std::string& encoding_name) override {}
 
-  void FrameRectsChanged(const gfx::Rect& frame_rect) override {}
+  void FrameSizeChanged(const gfx::Size& frame_size) override {}
 
   void OnUpdatePictureInPictureSurfaceId(
       const viz::SurfaceId& surface_id) override {}

@@ -703,8 +703,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Notifies the render frame that a user gesture was received.
   void SetHasReceivedUserGesture();
 
-  // Returns the current rect for this frame.
-  const base::Optional<gfx::Rect>& frame_rect() const { return frame_rect_; }
+  // Returns the current size for this frame.
+  const base::Optional<gfx::Size>& frame_size() const { return frame_size_; }
 
  protected:
   friend class RenderFrameHostFactory;
@@ -905,7 +905,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const blink::ParsedFeaturePolicy& parsed_header) override;
   void CancelInitialHistoryLoad() override;
   void UpdateEncoding(const std::string& encoding) override;
-  void FrameRectsChanged(const gfx::Rect& frame_rect) override;
+  void FrameSizeChanged(const gfx::Size& frame_size) override;
   void OnUpdatePictureInPictureSurfaceId(
       const viz::SurfaceId& surface_id) override;
 
@@ -1350,8 +1350,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // audio streams).
   bool is_audible_;
 
-  // Used for tracking the latest rect of the RenderFrame.
-  base::Optional<gfx::Rect> frame_rect_;
+  // Used for tracking the latest size of the RenderFrame.
+  base::Optional<gfx::Size> frame_size_;
 
   // The Previews state of the last navigation. This is used during history
   // navigation of subframes to ensure that subframes navigate with the same

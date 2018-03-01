@@ -1958,10 +1958,10 @@ bool RenderFrameHostManager::ReinitializeRenderFrame(
     // is re-initialized.
     RenderFrameProxyHost* proxy_to_parent = GetProxyToParent();
     if (proxy_to_parent) {
-      const gfx::Rect* rect = render_frame_host->frame_rect()
-                                  ? &*render_frame_host->frame_rect()
+      const gfx::Size* size = render_frame_host->frame_size()
+                                  ? &*render_frame_host->frame_size()
                                   : nullptr;
-      GetProxyToParent()->SetChildRWHView(render_frame_host->GetView(), rect);
+      GetProxyToParent()->SetChildRWHView(render_frame_host->GetView(), size);
     }
   }
 
@@ -2107,9 +2107,9 @@ void RenderFrameHostManager::CommitPending() {
         MSG_ROUTING_NONE);
   }
 
-  // Store the old_render_frame_host's current frame_rect so that it can be used
+  // Store the old_render_frame_host's current frame size so that it can be used
   // to initialize the child RWHV.
-  base::Optional<gfx::Rect> old_rect = old_render_frame_host->frame_rect();
+  base::Optional<gfx::Size> old_size = old_render_frame_host->frame_size();
 
   // Swap out the old frame now that the new one is visible.
   // This will swap it out and schedule it for deletion when the swap out ack
@@ -2130,7 +2130,7 @@ void RenderFrameHostManager::CommitPending() {
   RenderFrameProxyHost* proxy_to_parent = GetProxyToParent();
   if (proxy_to_parent) {
     proxy_to_parent->SetChildRWHView(render_frame_host_->GetView(),
-                                     old_rect ? &*old_rect : nullptr);
+                                     old_size ? &*old_size : nullptr);
   }
 
   // Show the new view (or a sad tab) if necessary.

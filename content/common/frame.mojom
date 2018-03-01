@@ -311,10 +311,10 @@ interface FrameHost {
   // proper encoding name. Sent for top-level frames.
   UpdateEncoding(string encoding_name);
 
-  // The FrameRect represents the frame's size and position. The rect is
-  // replicated in the browser so that the browser can correctly set the initial
-  // size of the frame in case of a cross-process navigation.
-  FrameRectsChanged(gfx.mojom.Rect rect);
+  // The frame's size is replicated in the browser so that the browser can
+  // correctly set the initial size of the frame in case of a cross-process
+  // navigation.
+  FrameSizeChanged(gfx.mojom.Size size);
 
   // Sent by the renderer to update Picture-in-Picture with SurfaceId information
   // to be used to show content in the Picture-in-Picture window.

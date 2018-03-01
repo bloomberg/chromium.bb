@@ -1671,6 +1671,10 @@ class CONTENT_EXPORT RenderFrameImpl
   // use inside of Blink.
   std::unique_ptr<blink::WebComputedAXTree> computed_ax_tree_;
 
+  // Used for tracking the frame's size and replicating it to the browser
+  // process when it changes.
+  base::Optional<gfx::Size> frame_size_;
+
 #if defined(OS_MACOSX)
   // Return the mojo interface for making ClipboardHost calls.
   blink::mojom::ClipboardHostPtr clipboard_host_;

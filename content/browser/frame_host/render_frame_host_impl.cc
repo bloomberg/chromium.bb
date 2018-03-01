@@ -2373,8 +2373,8 @@ void RenderFrameHostImpl::UpdateEncoding(const std::string& encoding_name) {
   delegate_->UpdateEncoding(this, encoding_name);
 }
 
-void RenderFrameHostImpl::FrameRectsChanged(const gfx::Rect& frame_rect) {
-  frame_rect_ = frame_rect;
+void RenderFrameHostImpl::FrameSizeChanged(const gfx::Size& frame_size) {
+  frame_size_ = frame_size;
 }
 
 void RenderFrameHostImpl::OnUpdatePictureInPictureSurfaceId(
