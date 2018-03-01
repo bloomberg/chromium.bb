@@ -25,6 +25,7 @@ class KeyboardShortcutItemView : public views::View {
   ~KeyboardShortcutItemView() override = default;
 
   // views::View:
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   int GetHeightForWidth(int w) const override;
   void Layout() override;
 
@@ -60,6 +61,9 @@ class KeyboardShortcutItemView : public views::View {
   // This variable saves the result of the last GetHeightForWidth call in order
   // to avoid repeated calculation.
   mutable gfx::Size calculated_size_;
+
+  // Accessibility data.
+  base::string16 accessible_name_;
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardShortcutItemView);
 };
