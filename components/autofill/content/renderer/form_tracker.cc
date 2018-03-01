@@ -78,7 +78,8 @@ void FormTracker::TextFieldDidChange(const WebFormControlElement& element) {
   // that pastes aren't necessarily user gestures because Blink's conception of
   // user gestures is centered around creating new windows/tabs.
   if (user_gesture_required_ &&
-      !blink::WebUserGestureIndicator::IsProcessingUserGesture() &&
+      !blink::WebUserGestureIndicator::IsProcessingUserGesture(
+          render_frame()->GetWebFrame()) &&
       !render_frame()->IsPasting())
     return;
 
