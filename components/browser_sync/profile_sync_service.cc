@@ -26,7 +26,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/browser_sync/browser_sync_switches.h"
-#include "components/history/core/browser/typed_url_data_type_controller.h"
 #include "components/invalidation/impl/invalidation_prefs.h"
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"

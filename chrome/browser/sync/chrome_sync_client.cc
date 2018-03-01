@@ -401,17 +401,6 @@ ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
       return history ? history->AsWeakPtr()
                      : base::WeakPtr<history::HistoryService>();
     }
-    case syncer::TYPED_URLS: {
-      // We request history service with explicit access here because this
-      // codepath is executed on backend thread while HistoryServiceFactory
-      // checks preference value in implicit mode and PrefService expectes calls
-      // only from UI thread.
-      history::HistoryService* history = HistoryServiceFactory::GetForProfile(
-          profile_, ServiceAccessType::EXPLICIT_ACCESS);
-      if (!history)
-        return base::WeakPtr<history::TypedUrlSyncableService>();
-      return history->GetTypedUrlSyncableService()->AsWeakPtr();
-    }
 #if BUILDFLAG(ENABLE_SPELLCHECK)
     case syncer::DICTIONARY:
       return SpellcheckServiceFactory::GetForContext(profile_)->

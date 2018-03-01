@@ -40,9 +40,7 @@ import org.chromium.content_public.browser.ContentViewCore;
  * Test suite for Sync.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        // TODO(crbug.com/781368) remove once feature enabled.
-        "enable-features=SyncUSSTypedURL"})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class SyncTest {
     @Rule
     public SyncTestRule mSyncTestRule = new SyncTestRule();

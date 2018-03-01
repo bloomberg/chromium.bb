@@ -22,7 +22,6 @@
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/dom_distiller/core/dom_distiller_features.h"
 #include "components/history/core/browser/history_delete_directives_data_type_controller.h"
-#include "components/history/core/browser/typed_url_data_type_controller.h"
 #include "components/history/core/browser/typed_url_model_type_controller.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/sync/browser/password_data_type_controller.h"
@@ -202,15 +201,9 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
     // TypedUrl sync is enabled by default.  Register unless explicitly
     // disabled.
     if (!disabled_types.Has(syncer::TYPED_URLS)) {
-      if (base::FeatureList::IsEnabled(switches::kSyncUSSTypedURL)) {
-        sync_service->RegisterDataTypeController(
-            std::make_unique<history::TypedURLModelTypeController>(
-                sync_client_, history_disabled_pref_));
-      } else {
-        sync_service->RegisterDataTypeController(
-            std::make_unique<TypedUrlDataTypeController>(
-                error_callback, sync_client_, history_disabled_pref_));
-      }
+      sync_service->RegisterDataTypeController(
+          std::make_unique<history::TypedURLModelTypeController>(
+              sync_client_, history_disabled_pref_));
     }
 
     // Delete directive sync is enabled by default.

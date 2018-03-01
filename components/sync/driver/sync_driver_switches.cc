@@ -61,8 +61,4 @@ const base::Feature kSyncUserTranslationEvents{
 const base::Feature kSyncUSSBookmarks{"SyncUSSBookmarks",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables USS implementation of typed URL datatype.
-const base::Feature kSyncUSSTypedURL{"SyncUSSTypedURL",
-                                     base::FEATURE_DISABLED_BY_DEFAULT};
-
 }  // namespace switches

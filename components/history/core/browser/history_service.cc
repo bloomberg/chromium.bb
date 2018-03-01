@@ -239,10 +239,6 @@ TypedURLSyncBridge* HistoryService::GetTypedURLSyncBridge() const {
   return history_backend_->GetTypedURLSyncBridge();
 }
 
-TypedUrlSyncableService* HistoryService::GetTypedUrlSyncableService() const {
-  return history_backend_->GetTypedUrlSyncableService();
-}
-
 void HistoryService::Shutdown() {
   DCHECK(thread_checker_.CalledOnValidThread());
   Cleanup();

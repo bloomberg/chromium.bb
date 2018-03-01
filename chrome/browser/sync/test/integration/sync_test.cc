@@ -215,9 +215,6 @@ SyncTest::SyncTest(TestType test_type)
       configuration_refresher_(std::make_unique<ConfigurationRefresher>()),
       use_verifier_(true),
       create_gaia_account_at_runtime_(false) {
-  // TODO(crbug.com/781368) remove once feature enabled.
-  feature_list_.InitWithFeatures({switches::kSyncUSSTypedURL}, {});
-
   sync_datatype_helper::AssociateWithTest(this);
   switch (test_type_) {
     case SINGLE_CLIENT:
