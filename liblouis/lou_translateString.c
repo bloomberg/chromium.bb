@@ -3422,8 +3422,7 @@ translateString(const TranslationTableHeader *table, int mode, int currentPass,
 		case CTO_UpperCase:
 			/* Only needs special handling if not within compbrl and
 			 * the table defines a capital sign. */
-			if (!(mode & (compbrlAtCursor | compbrlLeftCursor) && pos >= compbrlStart &&
-						pos <= compbrlEnd) &&
+			if (!(mode & (compbrlAtCursor | compbrlLeftCursor)) &&
 					(transRule->dotslen == 1 &&
 							table->emphRules[capsRule][letterOffset])) {
 				putCharacter(curCharDef->lowercase, table, &pos, *input, output,
