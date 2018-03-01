@@ -1937,6 +1937,7 @@ source_set("unit_tests") {
     "policy/affiliated_cloud_policy_invalidator_unittest.cc",
     "policy/affiliated_invalidation_service_provider_impl_unittest.cc",
     "policy/android_management_client_unittest.cc",
+    "policy/app_install_event_log_collector_unittest.cc",
     "policy/app_install_event_log_manager_unittest.cc",
     "policy/app_install_event_log_manager_wrapper_unittest.cc",
     "policy/app_install_event_log_unittest.cc",
