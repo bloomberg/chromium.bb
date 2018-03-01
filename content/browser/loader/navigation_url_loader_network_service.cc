@@ -477,8 +477,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
       handlers_.push_back(std::make_unique<WebPackageRequestHandler>(
           url::Origin::Create(request_info->common_params.url),
           GetURLLoaderOptions(request_info->is_main_frame),
-          base::MakeRefCounted<WeakWrapperSharedURLLoaderFactory>(
-              default_url_loader_factory_getter_->GetNetworkFactory()),
+          default_url_loader_factory_getter_->GetNetworkFactory(),
           base::BindRepeating(
               &URLLoaderRequestController::CreateURLLoaderThrottles,
               base::Unretained(this))));
@@ -585,8 +584,6 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
       factory = base::MakeRefCounted<WeakWrapperSharedURLLoaderFactory>(
           non_network_factory.get());
     } else {
-      auto* raw_factory =
-          default_url_loader_factory_getter_->GetNetworkFactory();
       default_loader_used_ = true;
 
       // NOTE: We only support embedders proxying network-service-bound requests
@@ -598,12 +595,14 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
       if (proxied_factory_request_.is_pending() &&
           !resource_request_->url.SchemeIs(url::kDataScheme)) {
         DCHECK(proxied_factory_info_.is_valid());
-        raw_factory->Clone(std::move(proxied_factory_request_));
+        // TODO(chongz): |CloneNetworkFactory| doesn't support reconnection and
+        // we should find a way to avoid using it.
+        default_url_loader_factory_getter_->CloneNetworkFactory(
+            std::move(proxied_factory_request_));
         factory = base::MakeRefCounted<WrapperSharedURLLoaderFactory>(
             std::move(proxied_factory_info_));
       } else {
-        factory = base::MakeRefCounted<WeakWrapperSharedURLLoaderFactory>(
-            raw_factory);
+        factory = default_url_loader_factory_getter_->GetNetworkFactory();
       }
     }
     url_chain_.push_back(resource_request_->url);

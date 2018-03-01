@@ -14,6 +14,7 @@
 
 namespace content {
 
+class SharedURLLoaderFactory;
 class StoragePartitionImpl;
 
 // Holds on to URLLoaderFactory for a given StoragePartition and allows code
@@ -34,9 +35,16 @@ class URLLoaderFactoryGetter
   // be called when the partition is going away.
   void OnStoragePartitionDestroyed();
 
-  // Called on the IO thread to get the URLLoaderFactory to the network service.
-  // The pointer shouldn't be cached.
-  CONTENT_EXPORT network::mojom::URLLoaderFactory* GetNetworkFactory();
+  // Called on the IO thread to get a shared wrapper to this
+  // URLLoaderFactoryGetter, which can be used to access the URLLoaderFactory
+  // to the network service and supports auto-reconnect after crash.
+  CONTENT_EXPORT scoped_refptr<SharedURLLoaderFactory> GetNetworkFactory();
+
+  // Called on the IO thread. Will clone the internal factory to the network
+  // service which doesn't support auto-reconnect after crash.
+  // TODO(chongz): Remove this method and use |GetNetworkFactory()| instead.
+  CONTENT_EXPORT void CloneNetworkFactory(
+      network::mojom::URLLoaderFactoryRequest network_factory_request);
 
   // Called on the IO thread to get the URLLoaderFactory to the blob service.
   // The pointer shouldn't be cached.
@@ -52,10 +60,10 @@ class URLLoaderFactoryGetter
     return &network_factory_;
   }
 
-  // When this global function is set, if GetNetworkFactory is called and
-  // |test_factory_| is null, then the callback will be run.
-  // This method must be called either on the IO thread or before threads start.
-  // This callback is run on the IO thread.
+  // When this global function is set, if GetNetworkFactory or
+  // CloneNetworkFactory is called and |test_factory_| is null, then the
+  // callback will be run. This method must be called either on the IO thread or
+  // before threads start. This callback is run on the IO thread.
   using GetNetworkFactoryCallback = base::RepeatingCallback<void(
       URLLoaderFactoryGetter* url_loader_factory_getter)>;
   CONTENT_EXPORT static void SetGetNetworkFactoryCallbackForTesting(
@@ -65,6 +73,8 @@ class URLLoaderFactoryGetter
   CONTENT_EXPORT void FlushNetworkInterfaceOnIOThreadForTesting();
 
  private:
+  class URLLoaderFactoryForIOThread;
+
   friend class base::DeleteHelper<URLLoaderFactoryGetter>;
   friend struct BrowserThread::DeleteOnThread<BrowserThread::IO>;
 
@@ -76,6 +86,10 @@ class URLLoaderFactoryGetter
   // Send |network_factory_request| to cached |StoragePartitionImpl|.
   void HandleNetworkFactoryRequestOnUIThread(
       network::mojom::URLLoaderFactoryRequest network_factory_request);
+
+  // Called on the IO thread to get the URLLoaderFactory to the network service.
+  // The pointer shouldn't be cached.
+  network::mojom::URLLoaderFactory* GetURLLoaderFactory();
 
   // Call |network_factory_.FlushForTesting()|. For test use only.
   void FlushNetworkInterfaceForTesting();
