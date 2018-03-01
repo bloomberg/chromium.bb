@@ -71,6 +71,8 @@ const char* kNewTaskActions[] = {
     "MobileNTPShowBookmarks",
     "MobileNTPShowMostVisited",
     "MobileNTPShowOpenTabs",
+    "MobileNTPShowHistory",
+    "MobileNTPShowReadingList",
     "MobileNTPSwitchToBookmarks",
     "MobileNTPSwitchToMostVisited",
     "MobileNTPSwitchToOpenTabs",
