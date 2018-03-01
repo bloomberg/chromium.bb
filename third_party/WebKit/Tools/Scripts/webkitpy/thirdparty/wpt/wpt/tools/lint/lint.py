@@ -430,7 +430,7 @@ def check_parsed(repo_root, path, f):
     for reftest_node in source_file.reftest_nodes:
         href = reftest_node.attrib.get("href", "").strip(space_chars)
         parts = urlsplit(href)
-        if parts.scheme or parts.netloc:
+        if (parts.scheme or parts.netloc) and parts != urlsplit("about:blank"):
             errors.append(("ABSOLUTE-URL-REF",
                      "Reference test with a reference file specified via an absolute URL: '%s'" % href, path, None))
             continue
@@ -722,7 +722,8 @@ def changed_files(wpt_root):
 
 def lint_paths(kwargs, wpt_root):
     if kwargs.get("paths"):
-        paths = kwargs["paths"]
+        r = os.path.realpath(wpt_root)
+        paths = [os.path.relpath(os.path.realpath(x), r) for x in kwargs["paths"]]
     elif kwargs["all"]:
         paths = list(all_filesystem_paths(wpt_root))
     else:
