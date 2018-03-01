@@ -93,7 +93,7 @@ bool ExecProcess(const base::CommandLine& cmdline,
                      &cmdline_str[0],
                      nullptr, nullptr,
                      TRUE,  // Handles are inherited.
-                     0, nullptr,
+                     NORMAL_PRIORITY_CLASS, nullptr,
                      startup_dir.value().c_str(),
                      &start_info, &temp_process_info)) {
     return false;
