@@ -115,6 +115,7 @@
 #include "core/page/PrintContext.h"
 #include "core/page/scrolling/RootScrollerController.h"
 #include "core/page/scrolling/ScrollState.h"
+#include "core/page/scrolling/ScrollingCoordinatorContext.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/compositing/CompositedLayerMapping.h"
 #include "core/paint/compositing/PaintLayerCompositor.h"
@@ -2304,6 +2305,16 @@ String Internals::mainThreadScrollingReasons(
   document->GetFrame()->View()->UpdateAllLifecyclePhases();
 
   return document->GetFrame()->View()->MainThreadScrollingReasonsAsText();
+}
+
+void Internals::markGestureScrollRegionDirty(
+    Document* document,
+    ExceptionState& exception_state) const {
+  FrameView* frame_view = document->View();
+  if (!frame_view || !frame_view->IsLocalFrameView())
+    return;
+  LocalFrameView* lfv = static_cast<LocalFrameView*>(frame_view);
+  lfv->GetScrollingContext()->SetScrollGestureRegionIsDirty(true);
 }
 
 DOMRectList* Internals::nonFastScrollableRects(

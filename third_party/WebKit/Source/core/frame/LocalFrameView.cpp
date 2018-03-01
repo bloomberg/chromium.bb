@@ -2729,8 +2729,10 @@ IntRect LocalFrameView::ScrollableAreaBoundingBox() const {
   if (!owner_layout_object)
     return FrameRect();
 
-  return owner_layout_object->AbsoluteContentQuad(kTraverseDocumentBoundaries)
-      .EnclosingBoundingBox();
+  LocalFrameView* local_root = GetFrame().LocalFrameRoot().View();
+  return local_root->RootFrameToDocument(local_root->AbsoluteToRootFrame(
+      owner_layout_object->AbsoluteContentQuad(kTraverseDocumentBoundaries)
+          .EnclosingBoundingBox()));
 }
 
 bool LocalFrameView::IsScrollable() const {
@@ -3747,10 +3749,9 @@ IntPoint LocalFrameView::ConvertSelfToChild(const EmbeddedContentView& child,
 
 IntRect LocalFrameView::AbsoluteToRootFrame(
     const IntRect& absolute_rect) const {
-  IntPoint offset = AbsoluteToRootFrame(absolute_rect.Location());
-  IntRect root_frame_rect = absolute_rect;
-  root_frame_rect.SetLocation(offset);
-  return root_frame_rect;
+  IntRect root_frame_rect(absolute_rect);
+  root_frame_rect.Move(-ScrollOffsetInt());
+  return ConvertToRootFrame(root_frame_rect);
 }
 
 IntPoint LocalFrameView::AbsoluteToRootFrame(
