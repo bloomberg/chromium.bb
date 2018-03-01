@@ -1,5 +1,6 @@
 This is a testharness.js-based test.
 PASS Can set 'outline-style' to CSS-wide keywords
+PASS Can set 'outline-style' to var() references
 FAIL Can set 'outline-style' to the 'auto' keyword Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
 PASS Can set 'outline-style' to the 'none' keyword
 PASS Can set 'outline-style' to the 'dotted' keyword

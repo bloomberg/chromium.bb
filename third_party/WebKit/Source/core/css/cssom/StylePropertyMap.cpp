@@ -114,7 +114,7 @@ const CSSValue* CoerceStyleValuesOrStrings(
   for (const auto& css_value : css_values) {
     if (!css_value)
       return nullptr;
-    if (css_value->IsCSSWideKeyword())
+    if (css_value->IsCSSWideKeyword() || css_value->IsVariableReferenceValue())
       return css_values.size() == 1U ? css_value : nullptr;
 
     result->Append(*css_value);
@@ -144,10 +144,13 @@ void StylePropertyMap::set(const ExecutionContext* execution_context,
     }
 
     String css_text;
-    if (values[0].IsCSSStyleValue() && values[0].GetAsCSSStyleValue())
-      css_text = values[0].GetAsCSSStyleValue()->toString();
-    else
+    if (values[0].IsCSSStyleValue()) {
+      CSSStyleValue* style_value = values[0].GetAsCSSStyleValue();
+      if (style_value && CSSOMTypes::PropertyCanTake(property_id, *style_value))
+        css_text = style_value->toString();
+    } else {
       css_text = values[0].GetAsString();
+    }
 
     if (css_text.IsEmpty() ||
         !SetShorthandProperty(property.PropertyID(), css_text,

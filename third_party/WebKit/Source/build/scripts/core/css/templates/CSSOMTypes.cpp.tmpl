@@ -69,6 +69,9 @@ bool CSSOMTypes::PropertyCanTake(CSSPropertyID id,
   if (value.GetType() == CSSStyleValue::kUnknownType) {
     return ToCSSUnsupportedStyleValue(value).GetProperty() == id;
   }
+  if (value.GetType() == CSSStyleValue::kUnparsedType) {
+    return true;
+  }
 
   switch (id) {
     case CSSPropertyVariable:

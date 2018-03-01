@@ -1,5 +1,6 @@
 This is a testharness.js-based test.
 PASS Can set 'font-weight' to CSS-wide keywords
+PASS Can set 'font-weight' to var() references
 PASS Can set 'font-weight' to the 'normal' keyword
 PASS Can set 'font-weight' to the 'bold' keyword
 PASS Can set 'font-weight' to the 'bolder' keyword

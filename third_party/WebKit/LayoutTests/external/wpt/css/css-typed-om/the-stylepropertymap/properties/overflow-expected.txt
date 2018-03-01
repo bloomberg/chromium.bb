@@ -1,5 +1,6 @@
 This is a testharness.js-based test.
 PASS Can set 'overflow-x' to CSS-wide keywords
+PASS Can set 'overflow-x' to var() references
 PASS Can set 'overflow-x' to the 'visible' keyword
 PASS Can set 'overflow-x' to the 'hidden' keyword
 FAIL Can set 'overflow-x' to the 'clip' keyword Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
@@ -12,6 +13,7 @@ PASS Setting 'overflow-x' to a number throws TypeError
 PASS Setting 'overflow-x' to a position throws TypeError
 PASS Setting 'overflow-x' to a transform throws TypeError
 PASS Can set 'overflow-y' to CSS-wide keywords
+PASS Can set 'overflow-y' to var() references
 PASS Can set 'overflow-y' to the 'visible' keyword
 PASS Can set 'overflow-y' to the 'hidden' keyword
 FAIL Can set 'overflow-y' to the 'clip' keyword Failed to execute 'set' on 'StylePropertyMap': Invalid type for property

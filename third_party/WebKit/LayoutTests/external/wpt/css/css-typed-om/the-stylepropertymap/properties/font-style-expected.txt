@@ -1,5 +1,6 @@
 This is a testharness.js-based test.
 PASS Can set 'font-style' to CSS-wide keywords
+PASS Can set 'font-style' to var() references
 PASS Can set 'font-style' to the 'normal' keyword
 PASS Can set 'font-style' to the 'italic' keyword
 FAIL Can set 'font-style' to the 'oblique' keyword assert_equals: expected "oblique" but got "italic"
