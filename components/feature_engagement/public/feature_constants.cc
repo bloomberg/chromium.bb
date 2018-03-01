@@ -4,7 +4,7 @@
 
 #include "components/feature_engagement/public/feature_constants.h"
 
-#include "components/feature_engagement/features.h"
+#include "components/feature_engagement/buildflags.h"
 
 namespace feature_engagement {
 

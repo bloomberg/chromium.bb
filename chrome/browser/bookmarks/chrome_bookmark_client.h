@@ -11,7 +11,7 @@
 #include "base/deferred_sequenced_task_runner.h"
 #include "base/macros.h"
 #include "components/bookmarks/browser/bookmark_client.h"
-#include "components/offline_pages/features/features.h"
+#include "components/offline_pages/buildflags/buildflags.h"
 
 class GURL;
 class Profile;

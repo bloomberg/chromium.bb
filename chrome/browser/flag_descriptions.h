@@ -10,7 +10,7 @@
 #include "build/build_config.h"
 #include "build/buildflag.h"
 #include "chrome/common/buildflags.h"
-#include "components/nacl/common/features.h"
+#include "components/nacl/common/buildflags.h"
 #include "device/vr/features/features.h"
 #include "media/media_features.h"
 

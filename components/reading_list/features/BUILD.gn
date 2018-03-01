@@ -1,8 +1,8 @@
 import("//build/buildflag_header.gni")
 import("//components/reading_list/features/reading_list.gni")
 
-buildflag_header("reading_list_enable_flags") {
-  header = "reading_list_enable_flags.h"
+buildflag_header("reading_list_buildflags") {
+  header = "reading_list_buildflags.h"
   _enabled = is_ios && enable_reading_list
   flags = [ "ENABLE_READING_LIST=$_enabled" ]
 }
@@ -16,6 +16,6 @@ source_set("flags") {
     "//base",
   ]
   public_deps = [
-    "//components/reading_list/features:reading_list_enable_flags",
+    "//components/reading_list/features:reading_list_buildflags",
   ]
 }

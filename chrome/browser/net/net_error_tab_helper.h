@@ -14,7 +14,7 @@
 #include "chrome/browser/net/dns_probe_service.h"
 #include "chrome/common/network_diagnostics.mojom.h"
 #include "components/error_page/common/net_error_info.h"
-#include "components/offline_pages/features/features.h"
+#include "components/offline_pages/buildflags/buildflags.h"
 #include "components/prefs/pref_member.h"
 #include "content/public/browser/reload_type.h"
 #include "content/public/browser/web_contents_binding_set.h"

@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/nacl/common/features.h"
+#include "components/nacl/common/buildflags.h"
 
 namespace task_manager {
 

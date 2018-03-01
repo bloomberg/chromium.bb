@@ -4,7 +4,7 @@
 
 #include "extensions/common/common_manifest_handlers.h"
 
-#include "components/nacl/common/features.h"
+#include "components/nacl/common/buildflags.h"
 #include "extensions/common/api/bluetooth/bluetooth_manifest_handler.h"
 #include "extensions/common/api/declarative/declarative_manifest_handler.h"
 #include "extensions/common/api/declarative_net_request/dnr_manifest_handler.h"

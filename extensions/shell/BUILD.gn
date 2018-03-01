@@ -42,7 +42,7 @@ source_set("app_shell_lib") {
     "//components/guest_view/renderer",
     "//components/keep_alive_registry",
     "//components/keyed_service/content:content",
-    "//components/nacl/common:features",
+    "//components/nacl/common:buildflags",
     "//components/network_session_configurator/common",
     "//components/pref_registry",
     "//components/prefs",

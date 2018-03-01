@@ -1659,7 +1659,7 @@ test("content_unittests") {
     "//components/leveldb/public/cpp",
     "//components/network_session_configurator/browser",
     "//components/network_session_configurator/common",
-    "//components/offline_pages/features:features",
+    "//components/offline_pages/buildflags",
     "//components/payments/mojom",
     "//components/rappor:test_support",
     "//components/ukm:test_support",
