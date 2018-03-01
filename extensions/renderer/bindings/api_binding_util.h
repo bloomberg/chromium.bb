@@ -7,10 +7,14 @@
 
 #include <string>
 
+#include "base/callback.h"
+#include "base/macros.h"
 #include "v8/include/v8.h"
 
 namespace extensions {
 namespace binding {
+
+class ContextInvalidationData;
 
 // Returns true if the given |context| is considered valid. Contexts can be
 // invalidated if various objects or scripts hold onto references after when
@@ -26,6 +30,25 @@ bool IsContextValidOrThrowError(v8::Local<v8::Context> context);
 
 // Marks the given |context| as invalid.
 void InvalidateContext(v8::Local<v8::Context> context);
+
+// A helper class to watch for context invalidation. If the context is
+// invalidated before this object is destroyed, the passed in closure will be
+// called.
+class ContextInvalidationListener {
+ public:
+  ContextInvalidationListener(v8::Local<v8::Context> context,
+                              base::OnceClosure on_invalidated);
+  ~ContextInvalidationListener();
+
+  void OnInvalidated();
+
+ private:
+  base::OnceClosure on_invalidated_;
+
+  ContextInvalidationData* context_invalidation_data_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(ContextInvalidationListener);
+};
 
 // Returns the string version of the current platform, one of "chromeos",
 // "linux", "win", or "mac".

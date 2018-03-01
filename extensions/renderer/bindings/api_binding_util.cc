@@ -5,24 +5,77 @@
 #include "extensions/renderer/bindings/api_binding_util.h"
 
 #include "base/logging.h"
+#include "base/observer_list.h"
 #include "base/supports_user_data.h"
 #include "build/build_config.h"
+#include "extensions/renderer/bindings/get_per_context_data.h"
 #include "gin/converter.h"
 #include "gin/per_context_data.h"
 
 namespace extensions {
 namespace binding {
 
-namespace {
+class ContextInvalidationData : public base::SupportsUserData::Data {
+ public:
+  ContextInvalidationData();
+  ~ContextInvalidationData() override;
 
-constexpr char kInvalidatedContextFlagKey[] = "extension_invalidated_context";
+  static constexpr char kPerContextDataKey[] = "extension_context_invalidation";
 
-}  // namespace
+  void Invalidate();
+
+  void AddListener(ContextInvalidationListener* listener);
+  void RemoveListener(ContextInvalidationListener* listener);
+
+  bool is_context_valid() const { return is_context_valid_; }
+
+ private:
+  bool is_context_valid_ = true;
+  base::ObserverList<ContextInvalidationListener> invalidation_listeners_;
+
+  DISALLOW_COPY_AND_ASSIGN(ContextInvalidationData);
+};
+
+constexpr char ContextInvalidationData::kPerContextDataKey[];
+
+ContextInvalidationData::ContextInvalidationData() = default;
+ContextInvalidationData::~ContextInvalidationData() {
+  if (is_context_valid_)
+    Invalidate();
+}
+
+void ContextInvalidationData::AddListener(
+    ContextInvalidationListener* listener) {
+  DCHECK(is_context_valid_);
+  invalidation_listeners_.AddObserver(listener);
+}
+
+void ContextInvalidationData::RemoveListener(
+    ContextInvalidationListener* listener) {
+  DCHECK(is_context_valid_);
+  DCHECK(invalidation_listeners_.HasObserver(listener));
+  invalidation_listeners_.RemoveObserver(listener);
+}
+
+void ContextInvalidationData::Invalidate() {
+  DCHECK(is_context_valid_);
+  is_context_valid_ = false;
+
+  for (ContextInvalidationListener& listener : invalidation_listeners_)
+    listener.OnInvalidated();
+}
 
 bool IsContextValid(v8::Local<v8::Context> context) {
   gin::PerContextData* per_context_data = gin::PerContextData::From(context);
-  return per_context_data &&
-         per_context_data->GetUserData(kInvalidatedContextFlagKey) == nullptr;
+  if (!per_context_data)
+    return false;
+
+  auto* invalidation_data =
+      static_cast<ContextInvalidationData*>(per_context_data->GetUserData(
+          ContextInvalidationData::kPerContextDataKey));
+  // The context is valid if we've never created invalidation data for it, or if
+  // we have and it hasn't been marked as invalid.
+  return !invalidation_data || invalidation_data->is_context_valid();
 }
 
 bool IsContextValidOrThrowError(v8::Local<v8::Context> context) {
@@ -35,16 +88,12 @@ bool IsContextValidOrThrowError(v8::Local<v8::Context> context) {
 }
 
 void InvalidateContext(v8::Local<v8::Context> context) {
-  gin::PerContextData* per_context_data = gin::PerContextData::From(context);
-  if (!per_context_data)
-    return;  // Context is already invalidated at a higher level.
+  ContextInvalidationData* data =
+      GetPerContextData<ContextInvalidationData>(context, kCreateIfMissing);
+  if (!data)
+    return;
 
-  // Add an empty SupportsUserData::Data that just serves as a flag for
-  // invalidated contexts. If the context has data associated with the key, it
-  // has been invalidated.
-  per_context_data->SetUserData(
-      kInvalidatedContextFlagKey,
-      std::make_unique<base::SupportsUserData::Data>());
+  data->Invalidate();
 }
 
 std::string GetPlatformString() {
@@ -60,6 +109,33 @@ std::string GetPlatformString() {
   NOTREACHED();
   return std::string();
 #endif
+}
+
+ContextInvalidationListener::ContextInvalidationListener(
+    v8::Local<v8::Context> context,
+    base::OnceClosure on_invalidated)
+    : on_invalidated_(std::move(on_invalidated)),
+      context_invalidation_data_(
+          GetPerContextData<ContextInvalidationData>(context,
+                                                     kCreateIfMissing)) {
+  // We should never add an invalidation observer to an invalid context.
+  DCHECK(context_invalidation_data_);
+  DCHECK(context_invalidation_data_->is_context_valid());
+  context_invalidation_data_->AddListener(this);
+}
+
+ContextInvalidationListener::~ContextInvalidationListener() {
+  if (!on_invalidated_)
+    return;  // Context was invalidated.
+
+  DCHECK(context_invalidation_data_);
+  context_invalidation_data_->RemoveListener(this);
+}
+
+void ContextInvalidationListener::OnInvalidated() {
+  DCHECK(on_invalidated_);
+  context_invalidation_data_ = nullptr;
+  std::move(on_invalidated_).Run();
 }
 
 }  // namespace binding

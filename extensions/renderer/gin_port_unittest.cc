@@ -77,13 +77,16 @@ class GinPortTest : public APIBindingTest {
 
   void OnWillDisposeContext(v8::Local<v8::Context> context) override {
     event_handler_->InvalidateContext(context);
+    binding::InvalidateContext(context);
   }
 
-  gin::Handle<GinPort> CreatePort(const PortId& port_id,
+  gin::Handle<GinPort> CreatePort(v8::Local<v8::Context> context,
+                                  const PortId& port_id,
                                   const char* name = kDefaultPortName) {
-    return gin::CreateHandle(isolate(),
-                             new GinPort(port_id, kDefaultRoutingId, name,
-                                         event_handler(), delegate()));
+    EXPECT_EQ(context, context->GetIsolate()->GetCurrentContext());
+    return gin::CreateHandle(
+        isolate(), new GinPort(context, port_id, kDefaultRoutingId, name,
+                               event_handler(), delegate()));
   }
 
   APIEventHandler* event_handler() { return event_handler_.get(); }
@@ -104,7 +107,7 @@ TEST_F(GinPortTest, TestGetName) {
   v8::Local<v8::Context> context = MainContext();
 
   PortId port_id(base::UnguessableToken::Create(), 0, true);
-  gin::Handle<GinPort> port = CreatePort(port_id);
+  gin::Handle<GinPort> port = CreatePort(context, port_id);
 
   v8::Local<v8::Object> port_obj = port.ToV8().As<v8::Object>();
 
@@ -118,7 +121,7 @@ TEST_F(GinPortTest, TestDispatchMessage) {
   v8::Local<v8::Context> context = MainContext();
 
   PortId port_id(base::UnguessableToken::Create(), 0, true);
-  gin::Handle<GinPort> port = CreatePort(port_id);
+  gin::Handle<GinPort> port = CreatePort(context, port_id);
 
   v8::Local<v8::Object> port_obj = port.ToV8().As<v8::Object>();
 
@@ -152,7 +155,7 @@ TEST_F(GinPortTest, TestPostMessage) {
   v8::Local<v8::Context> context = MainContext();
 
   PortId port_id(base::UnguessableToken::Create(), 0, true);
-  gin::Handle<GinPort> port = CreatePort(port_id);
+  gin::Handle<GinPort> port = CreatePort(context, port_id);
 
   v8::Local<v8::Object> port_obj = port.ToV8().As<v8::Object>();
 
@@ -234,7 +237,7 @@ TEST_F(GinPortTest, TestPostMessage) {
   {
     // Disconnect the port and send a message. Should fail.
     port->DispatchOnDisconnect(context);
-    EXPECT_TRUE(port->is_closed());
+    EXPECT_TRUE(port->is_closed_for_testing());
     const char kFunction[] =
         "(function(port) { port.postMessage({data: [42]}); })";
     v8::Local<v8::Function> function = FunctionFromString(context, kFunction);
@@ -256,7 +259,7 @@ TEST_F(GinPortTest, TestNativeDisconnect) {
   v8::Local<v8::Context> context = MainContext();
 
   PortId port_id(base::UnguessableToken::Create(), 0, true);
-  gin::Handle<GinPort> port = CreatePort(port_id);
+  gin::Handle<GinPort> port = CreatePort(context, port_id);
 
   v8::Local<v8::Object> port_obj = port.ToV8().As<v8::Object>();
 
@@ -275,7 +278,7 @@ TEST_F(GinPortTest, TestNativeDisconnect) {
   port->DispatchOnDisconnect(context);
   EXPECT_EQ("true", GetStringPropertyFromObject(context->Global(), context,
                                                 "onDisconnectPortValid"));
-  EXPECT_TRUE(port->is_closed());
+  EXPECT_TRUE(port->is_closed_for_testing());
 }
 
 // Tests calling disconnect() from JS.
@@ -284,7 +287,7 @@ TEST_F(GinPortTest, TestJSDisconnect) {
   v8::Local<v8::Context> context = MainContext();
 
   PortId port_id(base::UnguessableToken::Create(), 0, true);
-  gin::Handle<GinPort> port = CreatePort(port_id);
+  gin::Handle<GinPort> port = CreatePort(context, port_id);
 
   v8::Local<v8::Object> port_obj = port.ToV8().As<v8::Object>();
 
@@ -295,7 +298,7 @@ TEST_F(GinPortTest, TestJSDisconnect) {
   v8::Local<v8::Value> args[] = {port_obj};
   RunFunction(function, context, arraysize(args), args);
   ::testing::Mock::VerifyAndClearExpectations(delegate());
-  EXPECT_TRUE(port->is_closed());
+  EXPECT_TRUE(port->is_closed_for_testing());
 }
 
 // Tests setting and getting the 'sender' property.
@@ -304,7 +307,7 @@ TEST_F(GinPortTest, TestSenderProperty) {
   v8::Local<v8::Context> context = MainContext();
 
   PortId port_id(base::UnguessableToken::Create(), 0, true);
-  gin::Handle<GinPort> port = CreatePort(port_id);
+  gin::Handle<GinPort> port = CreatePort(context, port_id);
 
   v8::Local<v8::Object> port_obj = port.ToV8().As<v8::Object>();
 
@@ -316,6 +319,47 @@ TEST_F(GinPortTest, TestSenderProperty) {
 
   EXPECT_EQ(R"({"prop":42})",
             GetStringPropertyFromObject(port_obj, context, "sender"));
+}
+
+TEST_F(GinPortTest, TryUsingPortAfterInvalidation) {
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = MainContext();
+
+  PortId port_id(base::UnguessableToken::Create(), 0, true);
+  gin::Handle<GinPort> port = CreatePort(context, port_id);
+
+  v8::Local<v8::Object> port_obj = port.ToV8().As<v8::Object>();
+
+  constexpr char kTrySendMessage[] =
+      "(function(port) { port.postMessage('hi'); })";
+  v8::Local<v8::Function> send_message_function =
+      FunctionFromString(context, kTrySendMessage);
+
+  constexpr char kTryDisconnect[] = "(function(port) { port.disconnect(); })";
+  v8::Local<v8::Function> disconnect_function =
+      FunctionFromString(context, kTryDisconnect);
+
+  constexpr char kTryGetOnMessage[] =
+      "(function(port) { return port.onMessage; })";
+  v8::Local<v8::Function> get_on_message_function =
+      FunctionFromString(context, kTryGetOnMessage);
+
+  constexpr char kTryGetOnDisconnect[] =
+      "(function(port) { return port.onDisconnect; })";
+  v8::Local<v8::Function> get_on_disconnect_function =
+      FunctionFromString(context, kTryGetOnDisconnect);
+
+  DisposeContext(context);
+
+  v8::Local<v8::Value> function_args[] = {port_obj};
+  for (const auto& function :
+       {send_message_function, disconnect_function, get_on_message_function,
+        get_on_disconnect_function}) {
+    SCOPED_TRACE(gin::V8ToString(function->ToString(context).ToLocalChecked()));
+    RunFunctionAndExpectError(function, context, arraysize(function_args),
+                              function_args,
+                              "Uncaught Error: Extension context invalidated.");
+  }
 }
 
 }  // namespace extensions
