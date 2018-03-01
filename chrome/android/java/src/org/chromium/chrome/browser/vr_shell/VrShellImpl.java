@@ -5,8 +5,10 @@
 package org.chromium.chrome.browser.vr_shell;
 
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
+import android.os.Build;
 import android.os.StrictMode;
 import android.util.DisplayMetrics;
 import android.view.KeyEvent;
@@ -303,8 +305,7 @@ public class VrShellImpl
     }
 
     @Override
-    // TODO(crbug.com/762588): Fix getRealMetrics and remove suppression.
-    @SuppressLint("NewApi")
+    @TargetApi(Build.VERSION_CODES.N)
     public void initializeNative(Tab currentTab, boolean forWebVr,
             boolean webVrAutopresentationExpected, boolean inCct) {
         Tab tab = mActivity.getActivityTab();
