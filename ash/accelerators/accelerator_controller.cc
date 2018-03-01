@@ -18,10 +18,12 @@
 #include "ash/focus_cycler.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/ime/ime_switch_type.h"
+#include "ash/magnifier/docked_magnifier_controller.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/media_controller.h"
 #include "ash/multi_profile_uma.h"
 #include "ash/new_window_controller.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/config.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
@@ -869,34 +871,30 @@ void HandleVolumeUp(mojom::VolumeController* volume_controller,
     volume_controller->VolumeUp();
 }
 
-bool CanHandleMagnifyScreen() {
-  return Shell::Get()->magnification_controller()->IsEnabled();
+bool CanHandleActiveMagnifierZoom() {
+  return Shell::Get()->magnification_controller()->IsEnabled() ||
+         (features::IsDockedMagnifierEnabled() &&
+          Shell::Get()->docked_magnifier_controller()->GetEnabled());
 }
 
-// Magnify the screen
-void HandleMagnifyScreen(int delta_index) {
+// Change the scale of the active magnifier.
+void HandleActiveMagnifierZoom(int delta_index) {
   // TODO(crbug.com/612331): Mash support.
   if (Shell::GetAshConfig() == Config::MASH) {
     NOTIMPLEMENTED();
     return;
   }
 
-  if (!Shell::Get()->magnification_controller()->IsEnabled())
+  if (Shell::Get()->magnification_controller()->IsEnabled()) {
+    Shell::Get()->magnification_controller()->StepToNextScaleValue(delta_index);
     return;
+  }
 
-  // TODO(yoshiki): Move the following logic to MagnificationController.
-  float scale = Shell::Get()->magnification_controller()->GetScale();
-  // Calculate rounded logarithm (base kMagnificationScaleFactor) of scale.
-  int scale_index =
-      std::round(std::log(scale) /
-                 std::log(MagnificationController::kMagnificationScaleFactor));
-
-  int new_scale_index = std::max(0, std::min(8, scale_index + delta_index));
-
-  Shell::Get()->magnification_controller()->SetScale(
-      std::pow(MagnificationController::kMagnificationScaleFactor,
-               new_scale_index),
-      true);
+  if (features::IsDockedMagnifierEnabled() &&
+      Shell::Get()->docked_magnifier_controller()->GetEnabled()) {
+    Shell::Get()->docked_magnifier_controller()->StepToNextScaleValue(
+        delta_index);
+  }
 }
 
 bool CanHandleTouchHud() {
@@ -1187,9 +1185,9 @@ bool AcceleratorController::CanPerformAction(
       return CanHandleDisableCapsLock(previous_accelerator);
     case LOCK_SCREEN:
       return CanHandleLock();
-    case MAGNIFY_SCREEN_ZOOM_IN:
-    case MAGNIFY_SCREEN_ZOOM_OUT:
-      return CanHandleMagnifyScreen();
+    case MAGNIFIER_ZOOM_IN:
+    case MAGNIFIER_ZOOM_OUT:
+      return CanHandleActiveMagnifierZoom();
     case MOVE_WINDOW_TO_ABOVE_DISPLAY:
     case MOVE_WINDOW_TO_BELOW_DISPLAY:
     case MOVE_WINDOW_TO_LEFT_DISPLAY:
@@ -1420,11 +1418,11 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
     case LOCK_SCREEN:
       HandleLock();
       break;
-    case MAGNIFY_SCREEN_ZOOM_IN:
-      HandleMagnifyScreen(1);
+    case MAGNIFIER_ZOOM_IN:
+      HandleActiveMagnifierZoom(1);
       break;
-    case MAGNIFY_SCREEN_ZOOM_OUT:
-      HandleMagnifyScreen(-1);
+    case MAGNIFIER_ZOOM_OUT:
+      HandleActiveMagnifierZoom(-1);
       break;
     case MEDIA_NEXT_TRACK:
       HandleMediaNextTrack();

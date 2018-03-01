@@ -73,6 +73,11 @@ class ASH_EXPORT DockedMagnifierController
   void SetEnabled(bool enabled);
   void SetScale(float scale);
 
+  // Maps the current scale value to an index in the range between the minimum
+  // and maximum scale values, and steps up or down the scale depending on the
+  // value of |delta_index|.
+  void StepToNextScaleValue(int delta_index);
+
   // ash::mojom::DockedMagnifierController:
   void SetClient(mojom::DockedMagnifierClientPtr client) override;
   void CenterOnPoint(const gfx::Point& point_in_screen) override;

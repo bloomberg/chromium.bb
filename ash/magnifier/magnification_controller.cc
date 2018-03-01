@@ -12,6 +12,7 @@
 #include "ash/display/root_window_transformers.h"
 #include "ash/host/ash_window_tree_host.h"
 #include "ash/host/root_window_transformer.h"
+#include "ash/magnifier/magnifier_scale_utils.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/config.h"
 #include "ash/root_window_controller.h"
@@ -93,6 +94,12 @@ ui::InputMethod* GetInputMethod(aura::Window* root_window) {
 }  // namespace
 
 namespace ash {
+
+void MagnificationController::StepToNextScaleValue(int delta_index) {
+  SetScale(magnifier_scale_utils::GetNextMagnifierScaleValue(
+               delta_index, GetScale(), kNonMagnifiedScale, kMaxMagnifiedScale),
+           true /* animate */);
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // MagnificationControllerImpl:
@@ -770,10 +777,10 @@ void MagnificationControllerImpl::OnScrollEvent(ui::ScrollEvent* event) {
     }
 
     if (event->type() == ui::ET_SCROLL) {
-      ui::ScrollEvent* scroll_event = event->AsScrollEvent();
-      SetScale(GetScaleFromScroll(scroll_event->y_offset() *
-                                  kScrollScaleChangeFactor),
-               false);
+      SetScale(magnifier_scale_utils::GetScaleFromScroll(
+                   event->y_offset() * kScrollScaleChangeFactor, GetScale(),
+                   kMaxMagnifiedScale, kNonMagnifiedScale),
+               false /* animate */);
       event->StopPropagation();
       return;
     }
@@ -1125,18 +1132,6 @@ void MagnificationControllerImpl::OnCaretBoundsChanged(
 // static
 MagnificationController* MagnificationController::CreateInstance() {
   return new MagnificationControllerImpl();
-}
-
-float MagnificationController::GetScaleFromScroll(float linear_offset) {
-  float scale = GetScale();
-  const int scale_range = kMaxMagnifiedScale - kNonMagnifiedScale;
-  // Adjust the scale linearly based on the |linear_offset|
-  float linear_adjustment =
-      std::sqrt((scale - kNonMagnifiedScale) / scale_range);
-  linear_adjustment += linear_offset;
-  scale =
-      scale_range * linear_adjustment * linear_adjustment + kNonMagnifiedScale;
-  return scale;
 }
 
 }  // namespace ash

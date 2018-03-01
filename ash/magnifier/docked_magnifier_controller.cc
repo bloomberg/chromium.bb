@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "ash/host/ash_window_tree_host.h"
+#include "ash/magnifier/magnifier_scale_utils.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
@@ -177,6 +178,11 @@ void DockedMagnifierController::SetScale(float scale) {
   }
 }
 
+void DockedMagnifierController::StepToNextScaleValue(int delta_index) {
+  SetScale(magnifier_scale_utils::GetNextMagnifierScaleValue(
+      delta_index, GetScale(), kMinMagnifierScale, kMaxMagnifierScale));
+}
+
 void DockedMagnifierController::SetClient(
     mojom::DockedMagnifierClientPtr client) {
   client_ = std::move(client);
@@ -285,13 +291,12 @@ void DockedMagnifierController::OnScrollEvent(ui::ScrollEvent* event) {
   }
 
   if (event->type() == ui::ET_SCROLL) {
-    // TODO(afakhry): Examine the need for a more complicated scale calculation
-    // such as the one in the fullscreen magnifier. We may not need that here.
-    const float y_offset = event->y_offset() * kScrollScaleFactor;
     // Notes: - Clamping of the new scale value happens inside SetScale().
     //        - Refreshing the viewport happens in the handler of the scale pref
     //          changes.
-    SetScale(GetScale() + y_offset);
+    SetScale(magnifier_scale_utils::GetScaleFromScroll(
+        event->y_offset() * kScrollScaleFactor, GetScale(), kMaxMagnifierScale,
+        kMinMagnifierScale));
     event->StopPropagation();
   }
 }
