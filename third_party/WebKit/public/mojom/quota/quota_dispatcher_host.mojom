@@ -13,7 +13,6 @@ import "url/mojom/origin.mojom";
 // success.
 // TODO(sashab): Remove |origin|, with the browser using the one directly from
 // the RenderFrameHost instead.
-// TODO(sashab): Move this API and the necessary types to WebKit/common/.
 interface QuotaDispatcherHost {
   // Render process queries the storage partition's storage usage and quota
   // information from the browser process. The callback will be called with the

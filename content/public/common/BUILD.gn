@@ -287,7 +287,7 @@ jumbo_source_set("common_sources") {
     "//services/service_manager/public/cpp",
     "//skia",
     "//storage/common",
-    "//third_party/WebKit/common:blink_common",
+    "//third_party/WebKit/public/common",
     "//third_party/icu",
     "//ui/accessibility",
     "//ui/base",

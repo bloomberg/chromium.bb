@@ -10,8 +10,8 @@ include_rules = [
     "+build",
     "+net",
     "+mojo",
+    "+third_party/WebKit/common",
     "+third_party/WebKit/public/common",
     "+third_party/WebKit/public/mojom",
-    "+third_party/WebKit/common",  # TODO(kinuko): Remove this.
     "+url",
 ]

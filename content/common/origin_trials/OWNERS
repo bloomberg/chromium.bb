@@ -2,6 +2,7 @@
 #   //chrome/common/origin_trials/
 #   //content/renderer/origin_trials/
 #   //third_party/WebKit/common/origin_trials/
+#   //third_party/WebKit/public/common/origin_trials/
 #   //tools/origin_trials/
 
 chasej@chromium.org

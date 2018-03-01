@@ -19,9 +19,9 @@ class OriginTrialPolicy;
 
 // TrialPolicyImpl is an adaptor to fit the policy provided by the content
 // embedder via ContentClient to the interface allowed by the DEPS rules of
-// third_party/WebKit/common
+// third_party/WebKit/public/common
 // TODO(avallee, kinuko): Plumb the the content embedder policy straight through
-// to the users in third_party/WebKit/common/origin_trials.
+// to the users in third_party/WebKit/public/common/origin_trials.
 class CONTENT_EXPORT TrialPolicyImpl : public blink::TrialPolicy {
  public:
   bool IsOriginTrialsSupported() const override;

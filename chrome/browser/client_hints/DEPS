@@ -3,7 +3,6 @@ include_rules = [
   # WebKit/public/common, or the ones that are strictly enum/POD,
   # header-only types, and some selected common code.
   "-third_party/WebKit",
-  "+third_party/WebKit/common",  # TODO(kinuko): Remove this.
   "+third_party/WebKit/public/common",
   "+third_party/WebKit/public/platform/WebClientHintsType.h",
 ]
