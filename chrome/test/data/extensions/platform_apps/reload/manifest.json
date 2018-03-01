@@ -1,5 +1,6 @@
 {
   "name": "Platform App Test: runtime.reload API",
+  "manifest_version": 2,
   "version": "1",
   "app": {
     "background": {

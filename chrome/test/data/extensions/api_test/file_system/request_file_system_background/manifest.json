@@ -1,5 +1,6 @@
 {
   "name": "chrome.fileSystem.requestFileSystem background page test",
+  "manifest_version": 2,
   "version": "0.1",
   "description": "Test for requesting file systems via chrome.fileSystem.requestFileSystem.",
   "app": {

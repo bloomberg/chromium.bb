@@ -1,5 +1,6 @@
 {
    "name": "snowflake theme",
+  "manifest_version": 2,
    "theme": {
       "colors": {
          "frame": [ 158, 210, 242 ],

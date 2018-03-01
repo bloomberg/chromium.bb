@@ -1,5 +1,6 @@
 {
   "name": "chrome.fileSystem.requestFileSystem not on Chrome OS",
+  "manifest_version": 2,
   "version": "0.1",
   "description": "Test for requesting file systems via chrome.fileSystem.requestFileSystem when not running on Chrome OS",
   "app": {

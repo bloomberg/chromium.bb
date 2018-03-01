@@ -1,5 +1,6 @@
 {
   "name": "Activity Log Test APP",
+  "manifest_version": 2,
   "description": "Used to test Activity Log with an app",
   "version": "0.1",
   "app": {

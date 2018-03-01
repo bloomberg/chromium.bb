@@ -1,5 +1,6 @@
 {
   "name": "<webview> html5 popup.",
+  "manifest_version": 2,
   "description": "Test that checks popup positioning correctness",
   "version": "1",
   "permissions": [

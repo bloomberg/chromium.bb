@@ -1,5 +1,6 @@
 {
   "name": "Kiosk Only Test",
+  "manifest_version": 2,
   "description": "Test for 'kiosk_only' manifest attribute",
   "version": "1",
   "app": {

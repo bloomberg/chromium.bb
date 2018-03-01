@@ -1,5 +1,6 @@
 {
   "name": "<webview> drag and drop",
+  "manifest_version": 2,
   "description": "Drag and drop within a webview, currently requires --enable-browser-tag-drag-drop flag to work",
   "version": "1",
   "permissions": [

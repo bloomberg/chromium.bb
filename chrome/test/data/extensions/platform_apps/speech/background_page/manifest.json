@@ -1,5 +1,6 @@
 {
   "name": "Platform App Test: Speech recognition",
+  "manifest_version": 2,
   "description": "webkitSpeechRecognition test from background page of an app.",
   "version": "1",
   "permissions": [

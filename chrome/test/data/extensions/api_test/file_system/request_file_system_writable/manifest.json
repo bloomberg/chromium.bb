@@ -1,5 +1,6 @@
 {
   "name": "chrome.fileSystem.requestFileSystem writable test",
+  "manifest_version": 2,
   "version": "0.1",
   "description": "Test for requesting writable file systems via chrome.fileSystem.requestFileSystem.",
   "app": {

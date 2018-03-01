@@ -1,5 +1,6 @@
 {
   "name": "app.windows properties",
+  "manifest_version": 2,
   "version": "1",
   "app": {
     "background": {

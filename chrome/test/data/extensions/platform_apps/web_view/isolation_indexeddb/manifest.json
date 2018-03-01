@@ -1,5 +1,6 @@
 {
   "name": "Platform App Test: web view Indexed DB isolation",
+  "manifest_version": 2,
   "version": "1",
   "permissions": [
     "webview"

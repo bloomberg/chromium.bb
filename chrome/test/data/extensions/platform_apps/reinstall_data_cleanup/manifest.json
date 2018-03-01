@@ -1,5 +1,6 @@
 {
   "name": "Platform App Test: reinstall data cleanup",
+  "manifest_version": 2,
   "version": "1",
   "app": {
     "background": {

@@ -1,5 +1,6 @@
 {
   "name": "Platform App Test: restore window state",
+  "manifest_version": 2,
   "version": "1",
   "app": {
     "background": {
