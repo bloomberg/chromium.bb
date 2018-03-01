@@ -190,10 +190,10 @@ TEST_F(SupervisedUserSyncServiceTest, MergeExisting) {
   {
     DictionaryPrefUpdate update(prefs(), prefs::kSupervisedUsers);
     base::DictionaryValue* supervised_users = update.Get();
-    auto dict = base::MakeUnique<base::DictionaryValue>();
+    auto dict = std::make_unique<base::DictionaryValue>();
     dict->SetString(kNameKey, kName1);
     supervised_users->Set(kUserId1, std::move(dict));
-    dict = base::MakeUnique<base::DictionaryValue>();
+    dict = std::make_unique<base::DictionaryValue>();
     dict->SetString(kNameKey, kName2);
     dict->SetBoolean(kAcknowledgedKey, true);
     supervised_users->Set(kUserId2, std::move(dict));

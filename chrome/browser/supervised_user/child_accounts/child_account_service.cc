@@ -176,26 +176,26 @@ bool ChildAccountService::SetActive(bool active) {
 
     settings_service->SetLocalSetting(
         supervised_users::kRecordHistoryIncludesSessionSync,
-        base::MakeUnique<base::Value>(false));
+        std::make_unique<base::Value>(false));
 
     // In contrast to legacy SUs, child account SUs must sign in.
     settings_service->SetLocalSetting(supervised_users::kSigninAllowed,
-                                      base::MakeUnique<base::Value>(true));
+                                      std::make_unique<base::Value>(true));
 
     // Always allow cookies, to avoid website compatibility issues.
     settings_service->SetLocalSetting(supervised_users::kCookiesAlwaysAllowed,
-                                      base::MakeUnique<base::Value>(true));
+                                      std::make_unique<base::Value>(true));
 
     // SafeSearch is controlled at the account level, so don't override it
     // client-side.
     settings_service->SetLocalSetting(supervised_users::kForceSafeSearch,
-                                      base::MakeUnique<base::Value>(false));
+                                      std::make_unique<base::Value>(false));
 
 #if defined(OS_CHROMEOS)
     // Mirror account consistency is required for child accounts on Chrome OS.
     settings_service->SetLocalSetting(
         supervised_users::kAccountConsistencyMirrorRequired,
-        base::MakeUnique<base::Value>(true));
+        std::make_unique<base::Value>(true));
 #endif
 
 #if !defined(OS_CHROMEOS)

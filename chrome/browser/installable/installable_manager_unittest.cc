@@ -13,7 +13,7 @@ using IconPurpose = content::Manifest::Icon::IconPurpose;
 class InstallableManagerUnitTest : public testing::Test {
  public:
   InstallableManagerUnitTest()
-      : manager_(base::MakeUnique<InstallableManager>(nullptr)) {}
+      : manager_(std::make_unique<InstallableManager>(nullptr)) {}
 
  protected:
   static base::NullableString16 ToNullableUTF16(const std::string& str) {

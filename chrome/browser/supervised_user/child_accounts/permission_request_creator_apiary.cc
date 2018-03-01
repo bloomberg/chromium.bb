@@ -158,7 +158,7 @@ void PermissionRequestCreatorApiary::CreateRequest(
     const std::string& request_type,
     const std::string& object_ref,
     const SuccessCallback& callback) {
-  requests_.push_back(base::MakeUnique<Request>(request_type, object_ref,
+  requests_.push_back(std::make_unique<Request>(request_type, object_ref,
                                                 callback, url_fetcher_id_));
   StartFetching(requests_.back().get());
 }

@@ -69,7 +69,7 @@ void ConnectAsyncWithBackoff(
           retry_delay);
     }
   } else {
-    auto peer_connection = base::MakeUnique<mojo::edk::PeerConnection>();
+    auto peer_connection = std::make_unique<mojo::edk::PeerConnection>();
     mojo::FuseMessagePipes(
         peer_connection->Connect(mojo::edk::ConnectionParams(
             mojo::edk::TransportProtocol::kLegacy, std::move(os_pipe_handle))),

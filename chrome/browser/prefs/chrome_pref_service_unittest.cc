@@ -62,13 +62,13 @@ class ChromePrefServiceWebKitPrefs : public ChromeRenderViewHostTestHarness {
     sync_preferences::TestingPrefServiceSyncable* pref_services =
         profile()->GetTestingPrefService();
     pref_services->SetUserPref(prefs::kDefaultCharset,
-                               base::MakeUnique<base::Value>("utf8"));
+                               std::make_unique<base::Value>("utf8"));
     pref_services->SetUserPref(prefs::kWebKitDefaultFontSize,
-                               base::MakeUnique<base::Value>(20));
+                               std::make_unique<base::Value>(20));
     pref_services->SetUserPref(prefs::kWebKitTextAreasAreResizable,
-                               base::MakeUnique<base::Value>(false));
+                               std::make_unique<base::Value>(false));
     pref_services->SetUserPref("webkit.webprefs.foo",
-                               base::MakeUnique<base::Value>("bar"));
+                               std::make_unique<base::Value>("bar"));
   }
 };
 

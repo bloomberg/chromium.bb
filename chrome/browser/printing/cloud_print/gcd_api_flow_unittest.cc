@@ -59,12 +59,12 @@ class GCDApiFlowTest : public testing::Test {
         request_context_.get());
     token_service_.AddAccount(account_id_);
 
-    std::unique_ptr<MockDelegate> delegate = base::MakeUnique<MockDelegate>();
+    std::unique_ptr<MockDelegate> delegate = std::make_unique<MockDelegate>();
     mock_delegate_ = delegate.get();
     EXPECT_CALL(*mock_delegate_, GetURL())
         .WillRepeatedly(Return(
             GURL("https://www.google.com/cloudprint/confirm?token=SomeToken")));
-    gcd_flow_ = base::MakeUnique<GCDApiFlowImpl>(request_context_.get(),
+    gcd_flow_ = std::make_unique<GCDApiFlowImpl>(request_context_.get(),
                                                  &token_service_, account_id_);
     gcd_flow_->Start(std::move(delegate));
   }

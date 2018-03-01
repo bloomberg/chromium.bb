@@ -102,7 +102,7 @@ PluginsResourceService::~PluginsResourceService() {
 // static
 void PluginsResourceService::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(prefs::kPluginsMetadata,
-                                   base::MakeUnique<base::DictionaryValue>());
+                                   std::make_unique<base::DictionaryValue>());
   registry->RegisterStringPref(prefs::kPluginsResourceCacheUpdate, "0");
 }
 

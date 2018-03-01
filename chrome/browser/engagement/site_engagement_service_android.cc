@@ -21,7 +21,7 @@ SiteEngagementServiceAndroid::GetOrCreate(JNIEnv* env,
   SiteEngagementServiceAndroid* android_service = service->GetAndroidService();
   if (!android_service) {
     service->SetAndroidService(
-        base::MakeUnique<SiteEngagementServiceAndroid>(env, service));
+        std::make_unique<SiteEngagementServiceAndroid>(env, service));
     android_service = service->GetAndroidService();
   }
 

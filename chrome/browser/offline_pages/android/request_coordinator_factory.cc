@@ -62,7 +62,7 @@ KeyedService* RequestCoordinatorFactory::BuildServiceInstanceFor(
       OfflinePageModelFactory::GetInstance()->GetForBrowserContext(context);
 
   std::unique_ptr<LoadTerminationListenerImpl> load_termination_listener =
-      base::MakeUnique<LoadTerminationListenerImpl>();
+      std::make_unique<LoadTerminationListenerImpl>();
   offliner.reset(new BackgroundLoaderOffliner(
       context, policy.get(), model, std::move(load_termination_listener)));
 
@@ -89,7 +89,7 @@ KeyedService* RequestCoordinatorFactory::BuildServiceInstanceFor(
 
   DownloadNotifyingObserver::CreateAndStartObserving(
       request_coordinator,
-      base::MakeUnique<android::OfflinePageNotificationBridge>());
+      std::make_unique<android::OfflinePageNotificationBridge>());
 
   CCTRequestObserver::AttachToRequestCoordinator(request_coordinator);
 

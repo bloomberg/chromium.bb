@@ -10,7 +10,7 @@
 SubresourceFilterProfileContext::SubresourceFilterProfileContext(
     Profile* profile)
     : settings_manager_(
-          base::MakeUnique<SubresourceFilterContentSettingsManager>(profile)) {}
+          std::make_unique<SubresourceFilterContentSettingsManager>(profile)) {}
 
 SubresourceFilterProfileContext::~SubresourceFilterProfileContext() {}
 

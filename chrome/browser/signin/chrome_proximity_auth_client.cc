@@ -106,7 +106,7 @@ ChromeProximityAuthClient::CreateSecureMessageDelegate() {
 // don't use it here (as opposed to other methods in this class) because the
 // CryptAuthService is not available on the ChromeOS login screen.
 #if defined(OS_CHROMEOS)
-  return base::MakeUnique<chromeos::SecureMessageDelegateChromeOS>();
+  return std::make_unique<chromeos::SecureMessageDelegateChromeOS>();
 #else
   return nullptr;
 #endif

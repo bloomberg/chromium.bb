@@ -202,7 +202,7 @@ class HangingPacRequestProxyScriptBrowserTest : public InProcessBrowserTest {
     // This must be created after the main message loop has been set up.
     // Waits for one connection.  Additional connections are fine.
     connection_listener_ =
-        base::MakeUnique<net::test_server::SimpleConnectionListener>(
+        std::make_unique<net::test_server::SimpleConnectionListener>(
             1, net::test_server::SimpleConnectionListener::
                    ALLOW_ADDITIONAL_CONNECTIONS);
     embedded_test_server()->SetConnectionListener(connection_listener_.get());

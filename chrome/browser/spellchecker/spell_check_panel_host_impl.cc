@@ -17,7 +17,7 @@ SpellCheckPanelHostImpl::~SpellCheckPanelHostImpl() = default;
 // static
 void SpellCheckPanelHostImpl::Create(
     spellcheck::mojom::SpellCheckPanelHostRequest request) {
-  mojo::MakeStrongBinding(base::MakeUnique<SpellCheckPanelHostImpl>(),
+  mojo::MakeStrongBinding(std::make_unique<SpellCheckPanelHostImpl>(),
                           std::move(request));
 }
 

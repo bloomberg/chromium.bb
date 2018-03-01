@@ -81,7 +81,7 @@ class OneGoogleBarFetcherImplTest : public testing::Test {
       : task_runner_(new base::TestSimpleTaskRunner()),
         request_context_getter_(
             new net::TestURLRequestContextGetter(task_runner_)),
-        google_url_tracker_(base::MakeUnique<GoogleURLTrackerClientStub>(),
+        google_url_tracker_(std::make_unique<GoogleURLTrackerClientStub>(),
                             GoogleURLTracker::UNIT_TEST_MODE),
         one_google_bar_fetcher_(request_context_getter_.get(),
                                 &google_url_tracker_,

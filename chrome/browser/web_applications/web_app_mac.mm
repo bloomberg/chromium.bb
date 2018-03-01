@@ -395,7 +395,7 @@ void GetImageResourcesOnUIThread(
 
   ui::ResourceBundle& resource_bundle = ui::ResourceBundle::GetSharedInstance();
   std::unique_ptr<ResourceIDToImage> result =
-      base::MakeUnique<ResourceIDToImage>();
+      std::make_unique<ResourceIDToImage>();
 
   // These resource ID should match to the ones used by
   // SetWorkspaceIconOnFILEThread below.

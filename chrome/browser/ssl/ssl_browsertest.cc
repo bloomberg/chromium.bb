@@ -1574,7 +1574,7 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, InAppTestHTTPSExpiredCertAndProceed) {
 // Visits a page with https error and proceed. Then open the app and proceed.
 IN_PROC_BROWSER_TEST_P(SSLUITestCommitted,
                        InAppTestHTTPSExpiredCertAndPreviouslyProceeded) {
-  auto feature_list = base::MakeUnique<base::test::ScopedFeatureList>();
+  auto feature_list = std::make_unique<base::test::ScopedFeatureList>();
   feature_list->InitAndEnableFeature(features::kDesktopPWAWindowing);
 
   ASSERT_TRUE(https_server_expired_.Start());
@@ -7076,7 +7076,7 @@ class SSLUIDynamicInterstitialTest : public CertVerifierBrowserTest {
   std::unique_ptr<chrome_browser_ssl::SSLErrorAssistantConfig>
   CreateSSLErrorAssistantConfig() {
     auto config_proto =
-        base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
+        std::make_unique<chrome_browser_ssl::SSLErrorAssistantConfig>();
     config_proto->set_version_id(kLargeVersionId);
     return config_proto;
   }

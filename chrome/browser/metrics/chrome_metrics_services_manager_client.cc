@@ -229,7 +229,7 @@ void ChromeMetricsServicesManagerClient::OnCrosSettingsCreated() {
 std::unique_ptr<rappor::RapporServiceImpl>
 ChromeMetricsServicesManagerClient::CreateRapporServiceImpl() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return base::MakeUnique<rappor::RapporServiceImpl>(
+  return std::make_unique<rappor::RapporServiceImpl>(
       local_state_, base::Bind(&chrome::IsIncognitoSessionActive));
 }
 
@@ -237,7 +237,7 @@ std::unique_ptr<variations::VariationsService>
 ChromeMetricsServicesManagerClient::CreateVariationsService() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return variations::VariationsService::Create(
-      base::MakeUnique<ChromeVariationsServiceClient>(), local_state_,
+      std::make_unique<ChromeVariationsServiceClient>(), local_state_,
       GetMetricsStateManager(), switches::kDisableBackgroundNetworking,
       chrome_variations::CreateUIStringOverrider());
 }

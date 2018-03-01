@@ -224,7 +224,7 @@ TabManager::TabManager()
       is_session_restore_loading_tabs_(false),
       restored_tab_count_(0u),
       background_tab_loading_mode_(BackgroundTabLoadingMode::kStaggered),
-      force_load_timer_(base::MakeUnique<base::OneShotTimer>(GetTickClock())),
+      force_load_timer_(std::make_unique<base::OneShotTimer>(GetTickClock())),
       loading_slots_(kNumOfLoadingSlots),
       weak_ptr_factory_(this) {
 #if defined(OS_CHROMEOS)

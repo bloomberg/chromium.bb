@@ -738,7 +738,7 @@ void BackgroundContentsService::RegisterBackgroundContents(
     return;
 
   // No entry for this application yet, so add one.
-  auto dict = base::MakeUnique<base::DictionaryValue>();
+  auto dict = std::make_unique<base::DictionaryValue>();
   dict->SetString(kUrlKey, background_contents->GetURL().spec());
   dict->SetString(kFrameNameKey, contents_map_[appid].frame_name);
   pref->SetWithoutPathExpansion(appid, std::move(dict));

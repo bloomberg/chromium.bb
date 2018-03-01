@@ -519,7 +519,7 @@ class DevToolsExtensionTest : public DevToolsSanityTest,
                                         const std::string& devtools_page,
                                         const std::string& panel_iframe_src) {
     test_extension_dirs_.push_back(
-        base::MakeUnique<extensions::TestExtensionDir>());
+        std::make_unique<extensions::TestExtensionDir>());
     extensions::TestExtensionDir* dir = test_extension_dirs_.back().get();
 
     extensions::DictionaryBuilder manifest;

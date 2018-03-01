@@ -929,7 +929,7 @@ void RenderViewContextMenu::AppendPrintPreviewItems() {
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   if (!print_preview_menu_observer_) {
     print_preview_menu_observer_ =
-        base::MakeUnique<PrintPreviewContextMenuObserver>(source_web_contents_);
+        std::make_unique<PrintPreviewContextMenuObserver>(source_web_contents_);
   }
 
   observers_.AddObserver(print_preview_menu_observer_.get());
@@ -1466,7 +1466,7 @@ void RenderViewContextMenu::AppendLanguageSettings() {
   if (!spelling_options_submenu_observer_) {
     const int kLanguageRadioGroup = 1;
     spelling_options_submenu_observer_ =
-        base::MakeUnique<SpellingOptionsSubMenuObserver>(this, this,
+        std::make_unique<SpellingOptionsSubMenuObserver>(this, this,
                                                          kLanguageRadioGroup);
   }
 
@@ -1478,7 +1478,7 @@ void RenderViewContextMenu::AppendLanguageSettings() {
 void RenderViewContextMenu::AppendSpellingSuggestionItems() {
   if (!spelling_suggestions_menu_observer_) {
     spelling_suggestions_menu_observer_ =
-        base::MakeUnique<SpellingMenuObserver>(this);
+        std::make_unique<SpellingMenuObserver>(this);
   }
   observers_.AddObserver(spelling_suggestions_menu_observer_.get());
   spelling_suggestions_menu_observer_->InitMenu(params_);
@@ -2374,7 +2374,7 @@ void RenderViewContextMenu::ExecSaveLinkAs() {
           policy_exception_justification: "Not implemented."
         })");
 
-  auto dl_params = base::MakeUnique<DownloadUrlParameters>(
+  auto dl_params = std::make_unique<DownloadUrlParameters>(
       url, render_frame_host->GetProcess()->GetID(),
       render_frame_host->GetRenderViewHost()->GetRoutingID(),
       render_frame_host->GetRoutingID(),

@@ -47,7 +47,7 @@ class FakeIncognitoWindowTracker : public IncognitoWindowTracker {
       : IncognitoWindowTracker(profile),
         feature_tracker_(feature_tracker),
         pref_service_(
-            base::MakeUnique<sync_preferences::TestingPrefServiceSyncable>()) {
+            std::make_unique<sync_preferences::TestingPrefServiceSyncable>()) {
     SessionDurationUpdater::RegisterProfilePrefs(pref_service_->registry());
   }
 
@@ -70,11 +70,11 @@ class IncognitoWindowTrackerEventTest : public testing::Test {
   void SetUp() override {
     // Start the DesktopSessionDurationTracker to track active session time.
     metrics::DesktopSessionDurationTracker::Initialize();
-    testing_profile_manager_ = base::MakeUnique<TestingProfileManager>(
+    testing_profile_manager_ = std::make_unique<TestingProfileManager>(
         TestingBrowserProcess::GetGlobal());
     ASSERT_TRUE(testing_profile_manager_->SetUp());
-    mock_tracker_ = base::MakeUnique<testing::StrictMock<test::MockTracker>>();
-    incognito_window_tracker_ = base::MakeUnique<FakeIncognitoWindowTracker>(
+    mock_tracker_ = std::make_unique<testing::StrictMock<test::MockTracker>>();
+    incognito_window_tracker_ = std::make_unique<FakeIncognitoWindowTracker>(
         mock_tracker_.get(),
         testing_profile_manager_->CreateTestingProfile(kTestProfileName));
   }
@@ -131,7 +131,7 @@ class IncognitoWindowTrackerTest : public testing::Test {
     trials_[kIPHIncognitoWindowFeature.name] = incognito_window_trial;
 
     std::unique_ptr<base::FeatureList> feature_list =
-        base::MakeUnique<base::FeatureList>();
+        std::make_unique<base::FeatureList>();
     feature_list->RegisterFieldTrialOverride(
         kIPHIncognitoWindowFeature.name,
         base::FeatureList::OVERRIDE_ENABLE_FEATURE, incognito_window_trial);
@@ -159,13 +159,13 @@ class IncognitoWindowTrackerTest : public testing::Test {
     // Start the DesktopSessionDurationTracker to track active session time.
     metrics::DesktopSessionDurationTracker::Initialize();
 
-    testing_profile_manager_ = base::MakeUnique<TestingProfileManager>(
+    testing_profile_manager_ = std::make_unique<TestingProfileManager>(
         TestingBrowserProcess::GetGlobal());
     ASSERT_TRUE(testing_profile_manager_->SetUp());
 
     feature_engagement_tracker_ = CreateTestTracker();
 
-    incognito_window_tracker_ = base::MakeUnique<FakeIncognitoWindowTracker>(
+    incognito_window_tracker_ = std::make_unique<FakeIncognitoWindowTracker>(
         feature_engagement_tracker_.get(),
         testing_profile_manager_->CreateTestingProfile(kTestProfileName));
 

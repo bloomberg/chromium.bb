@@ -690,7 +690,7 @@ class SwReporterOnDemandFetcherTest : public ::testing::Test,
   void CreateOnDemandFetcherAndVerifyExpectations(bool can_be_updated) {
     component_can_be_updated_ = can_be_updated;
 
-    fetcher_ = base::MakeUnique<SwReporterOnDemandFetcher>(
+    fetcher_ = std::make_unique<SwReporterOnDemandFetcher>(
         &mock_cus_,
         base::BindOnce(&SwReporterOnDemandFetcherTest::SetErrorCallbackCalled,
                        base::Unretained(this)));

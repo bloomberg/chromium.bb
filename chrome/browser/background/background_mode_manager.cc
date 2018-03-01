@@ -979,7 +979,7 @@ void BackgroundModeManager::UpdateStatusTrayIconContextMenu() {
       if (bmd->GetBackgroundClientCount() > 0) {
         // The submenu constructor caller owns the lifetime of the submenu.
         // The containing menu does not handle the lifetime.
-        submenus.push_back(base::MakeUnique<StatusIconMenuModel>(bmd));
+        submenus.push_back(std::make_unique<StatusIconMenuModel>(bmd));
         bmd->BuildProfileMenu(submenus.back().get(), menu.get());
         profiles_using_background_mode++;
       }

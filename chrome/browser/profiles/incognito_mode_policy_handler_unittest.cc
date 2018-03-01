@@ -37,14 +37,14 @@ class IncognitoModePolicyHandlerTest
     if (incognito_enabled != INCOGNITO_ENABLED_UNKNOWN) {
       policy.Set(key::kIncognitoEnabled, POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                 base::MakeUnique<base::Value>(incognito_enabled ==
+                 std::make_unique<base::Value>(incognito_enabled ==
                                                INCOGNITO_ENABLED_TRUE),
                  nullptr);
     }
     if (availability >= 0) {
       policy.Set(key::kIncognitoModeAvailability, POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                 base::MakeUnique<base::Value>(availability), nullptr);
+                 std::make_unique<base::Value>(availability), nullptr);
     }
     UpdateProviderPolicy(policy);
   }

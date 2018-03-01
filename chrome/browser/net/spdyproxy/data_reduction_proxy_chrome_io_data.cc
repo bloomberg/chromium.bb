@@ -111,11 +111,11 @@ CreateDataReductionProxyChromeIOData(
               version_info::GetChannelString(chrome::GetChannel())));
 
   data_reduction_proxy_io_data->set_lofi_decider(
-      base::MakeUnique<data_reduction_proxy::ContentLoFiDecider>());
+      std::make_unique<data_reduction_proxy::ContentLoFiDecider>());
   data_reduction_proxy_io_data->set_resource_type_provider(
-      base::MakeUnique<data_reduction_proxy::ContentResourceTypeProvider>());
+      std::make_unique<data_reduction_proxy::ContentResourceTypeProvider>());
   data_reduction_proxy_io_data->set_lofi_ui_service(
-      base::MakeUnique<data_reduction_proxy::ContentLoFiUIService>(
+      std::make_unique<data_reduction_proxy::ContentLoFiUIService>(
           ui_task_runner, base::Bind(&OnLoFiResponseReceivedOnUI)));
 
   return data_reduction_proxy_io_data;

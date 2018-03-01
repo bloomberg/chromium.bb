@@ -108,7 +108,7 @@ void AddString(base::DictionaryValue* dictionary,
 // Populates |translated_strings| dictionary for the local NTP. |is_google|
 // indicates that this page is the Google local NTP.
 std::unique_ptr<base::DictionaryValue> GetTranslatedStrings(bool is_google) {
-  auto translated_strings = base::MakeUnique<base::DictionaryValue>();
+  auto translated_strings = std::make_unique<base::DictionaryValue>();
 
   AddString(translated_strings.get(), "thumbnailRemovedNotification",
             IDS_NEW_TAB_THUMBNAIL_REMOVED_NOTIFICATION);
@@ -203,7 +203,7 @@ std::string GetLocalNtpPath() {
 
 std::unique_ptr<base::DictionaryValue> ConvertOGBDataToDict(
     const OneGoogleBarData& og) {
-  auto result = base::MakeUnique<base::DictionaryValue>();
+  auto result = std::make_unique<base::DictionaryValue>();
   result->SetString("barHtml", og.bar_html);
   result->SetString("inHeadScript", og.in_head_script);
   result->SetString("inHeadStyle", og.in_head_style);
@@ -235,7 +235,7 @@ std::string LogoTypeToString(search_provider_logos::LogoType type) {
 
 std::unique_ptr<base::DictionaryValue> ConvertLogoMetadataToDict(
     const LogoMetadata& meta) {
-  auto result = base::MakeUnique<base::DictionaryValue>();
+  auto result = std::make_unique<base::DictionaryValue>();
   result->SetString("type", LogoTypeToString(meta.type));
   result->SetString("onClickUrl", meta.on_click_url.spec());
   result->SetString("altText", meta.alt_text);
@@ -389,7 +389,7 @@ class LocalNtpSource::DesktopLogoObserver {
                        LogoCallbackReason type,
                        const base::Optional<EncodedLogo>& logo) {
     scoped_refptr<base::RefCountedString> response;
-    auto ddl = base::MakeUnique<base::DictionaryValue>();
+    auto ddl = std::make_unique<base::DictionaryValue>();
     ddl->SetInteger("v", version_started_);
     if (type == LogoCallbackReason::DETERMINED) {
       ddl->SetBoolean("usable", true);
@@ -484,14 +484,14 @@ LocalNtpSource::LocalNtpSource(Profile* profile)
 
   if (base::FeatureList::IsEnabled(features::kDoodlesOnLocalNtp)) {
     logo_service_ = LogoServiceFactory::GetForProfile(profile_);
-    logo_observer_ = base::MakeUnique<DesktopLogoObserver>();
+    logo_observer_ = std::make_unique<DesktopLogoObserver>();
   }
 
   TemplateURLService* template_url_service =
       TemplateURLServiceFactory::GetForProfile(profile_);
   if (template_url_service) {
     google_tracker_ =
-        base::MakeUnique<GoogleSearchProviderTracker>(template_url_service);
+        std::make_unique<GoogleSearchProviderTracker>(template_url_service);
   }
 }
 

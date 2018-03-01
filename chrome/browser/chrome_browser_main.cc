@@ -1851,7 +1851,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 #if BUILDFLAG(ENABLE_NACL)
   // NaClBrowserDelegateImpl is accessed inside PostProfileInit().
   // So make sure to create it before that.
-  nacl::NaClBrowser::SetDelegate(base::MakeUnique<NaClBrowserDelegateImpl>(
+  nacl::NaClBrowser::SetDelegate(std::make_unique<NaClBrowserDelegateImpl>(
       browser_process_->profile_manager()));
 #endif  // BUILDFLAG(ENABLE_NACL)
 

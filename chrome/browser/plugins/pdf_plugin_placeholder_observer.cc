@@ -95,7 +95,7 @@ void PDFPluginPlaceholderObserver::OnOpenPDF(
           }
         })");
   std::unique_ptr<download::DownloadUrlParameters> params =
-      base::MakeUnique<download::DownloadUrlParameters>(
+      std::make_unique<download::DownloadUrlParameters>(
           url, web_contents()->GetRenderViewHost()->GetProcess()->GetID(),
           web_contents()->GetRenderViewHost()->GetRoutingID(),
           render_frame_host->GetRoutingID(),

@@ -47,7 +47,7 @@ class FakeNewTabTracker : public NewTabTracker {
       : NewTabTracker(profile),
         feature_tracker_(feature_tracker),
         pref_service_(
-            base::MakeUnique<sync_preferences::TestingPrefServiceSyncable>()) {
+            std::make_unique<sync_preferences::TestingPrefServiceSyncable>()) {
     SessionDurationUpdater::RegisterProfilePrefs(pref_service_->registry());
   }
 
@@ -71,11 +71,11 @@ class NewTabTrackerEventTest : public testing::Test {
   void SetUp() override {
     // Start the DesktopSessionDurationTracker to track active session time.
     metrics::DesktopSessionDurationTracker::Initialize();
-    testing_profile_manager_ = base::MakeUnique<TestingProfileManager>(
+    testing_profile_manager_ = std::make_unique<TestingProfileManager>(
         TestingBrowserProcess::GetGlobal());
     ASSERT_TRUE(testing_profile_manager_->SetUp());
-    mock_tracker_ = base::MakeUnique<testing::StrictMock<test::MockTracker>>();
-    new_tab_tracker_ = base::MakeUnique<FakeNewTabTracker>(
+    mock_tracker_ = std::make_unique<testing::StrictMock<test::MockTracker>>();
+    new_tab_tracker_ = std::make_unique<FakeNewTabTracker>(
         mock_tracker_.get(),
         testing_profile_manager_->CreateTestingProfile(kTestProfileName));
   }
@@ -137,7 +137,7 @@ class NewTabTrackerTest : public testing::Test {
     trials_[kIPHNewTabFeature.name] = new_tab_trial;
 
     std::unique_ptr<base::FeatureList> feature_list =
-        base::MakeUnique<base::FeatureList>();
+        std::make_unique<base::FeatureList>();
     feature_list->RegisterFieldTrialOverride(
         kIPHNewTabFeature.name, base::FeatureList::OVERRIDE_ENABLE_FEATURE,
         new_tab_trial);
@@ -167,13 +167,13 @@ class NewTabTrackerTest : public testing::Test {
     // Start the DesktopSessionDurationTracker to track active session time.
     metrics::DesktopSessionDurationTracker::Initialize();
 
-    testing_profile_manager_ = base::MakeUnique<TestingProfileManager>(
+    testing_profile_manager_ = std::make_unique<TestingProfileManager>(
         TestingBrowserProcess::GetGlobal());
     ASSERT_TRUE(testing_profile_manager_->SetUp());
 
     feature_engagement_tracker_ = CreateTestTracker();
 
-    new_tab_tracker_ = base::MakeUnique<FakeNewTabTracker>(
+    new_tab_tracker_ = std::make_unique<FakeNewTabTracker>(
         feature_engagement_tracker_.get(),
         testing_profile_manager_->CreateTestingProfile(kTestProfileName));
 

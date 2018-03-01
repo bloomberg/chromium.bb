@@ -75,7 +75,7 @@ void ChromeSubresourceFilterClient::MaybeAppendNavigationThrottles(
     std::vector<std::unique_ptr<content::NavigationThrottle>>* throttles) {
   if (navigation_handle->IsInMainFrame()) {
     throttles->push_back(
-        base::MakeUnique<subresource_filter::
+        std::make_unique<subresource_filter::
                              SubresourceFilterSafeBrowsingActivationThrottle>(
             navigation_handle, this,
             content::BrowserThread::GetTaskRunnerForThread(

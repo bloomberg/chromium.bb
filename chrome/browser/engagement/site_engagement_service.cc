@@ -118,12 +118,12 @@ bool SiteEngagementService::IsEnabled() {
 double SiteEngagementService::GetScoreFromSettings(
     HostContentSettingsMap* settings,
     const GURL& origin) {
-  auto clock = base::MakeUnique<base::DefaultClock>();
+  auto clock = std::make_unique<base::DefaultClock>();
   return SiteEngagementScore(clock.get(), origin, settings).GetTotalScore();
 }
 
 SiteEngagementService::SiteEngagementService(Profile* profile)
-    : SiteEngagementService(profile, base::MakeUnique<base::DefaultClock>()) {
+    : SiteEngagementService(profile, std::make_unique<base::DefaultClock>()) {
   content::BrowserThread::PostAfterStartupTask(
       FROM_HERE,
       content::BrowserThread::GetTaskRunnerForThread(

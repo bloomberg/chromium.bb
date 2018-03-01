@@ -153,7 +153,7 @@ TEST_F(PrefProviderTest, DiscardObsoleteFullscreenAndMouselockPreferences) {
   // Set some pref data. Each content setting type has the following value:
   // {"[*.]example.com": {"setting": 1}}
   base::DictionaryValue pref_data;
-  auto data_for_pattern = base::MakeUnique<base::DictionaryValue>();
+  auto data_for_pattern = std::make_unique<base::DictionaryValue>();
   data_for_pattern->SetInteger("setting", CONTENT_SETTING_ALLOW);
   pref_data.SetWithoutPathExpansion(kPattern, std::move(data_for_pattern));
   prefs->Set(kFullscreenPrefPath, pref_data);
@@ -397,7 +397,7 @@ TEST_F(PrefProviderTest, Deadlock) {
     DictionaryPrefUpdate update(&prefs, info->pref_name());
     base::DictionaryValue* mutable_settings = update.Get();
     mutable_settings->SetWithoutPathExpansion(
-        "www.example.com,*", base::MakeUnique<base::DictionaryValue>());
+        "www.example.com,*", std::make_unique<base::DictionaryValue>());
   }
   EXPECT_TRUE(observer.notification_received());
 
@@ -554,7 +554,7 @@ TEST_F(PrefProviderTest, LastModified) {
       ContentSettingsPattern::FromString("google.com");
   ContentSettingsPattern pattern_2 =
       ContentSettingsPattern::FromString("www.google.com");
-  auto value = base::MakeUnique<base::Value>(CONTENT_SETTING_ALLOW);
+  auto value = std::make_unique<base::Value>(CONTENT_SETTING_ALLOW);
 
   // Create a  provider and set a few settings.
   PrefProvider provider(&prefs, false /* incognito */,
@@ -585,7 +585,7 @@ TEST_F(PrefProviderTest, LastModified) {
   EXPECT_EQ(last_modified, t1);
 
   // A change for pattern_1, which will update the last_modified timestamp.
-  auto value2 = base::MakeUnique<base::Value>(CONTENT_SETTING_BLOCK);
+  auto value2 = std::make_unique<base::Value>(CONTENT_SETTING_BLOCK);
   provider.SetWebsiteSetting(pattern_1, ContentSettingsPattern::Wildcard(),
                              CONTENT_SETTINGS_TYPE_COOKIES, std::string(),
                              value2->DeepCopy());

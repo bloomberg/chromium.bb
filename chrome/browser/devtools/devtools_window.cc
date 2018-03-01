@@ -1499,7 +1499,7 @@ void DevToolsWindow::CreateDevToolsBrowser() {
   if (!prefs->GetDictionary(prefs::kAppWindowPlacement)->HasKey(kDevToolsApp)) {
     DictionaryPrefUpdate update(prefs, prefs::kAppWindowPlacement);
     base::DictionaryValue* wp_prefs = update.Get();
-    auto dev_tools_defaults = base::MakeUnique<base::DictionaryValue>();
+    auto dev_tools_defaults = std::make_unique<base::DictionaryValue>();
     dev_tools_defaults->SetInteger("left", 100);
     dev_tools_defaults->SetInteger("top", 100);
     dev_tools_defaults->SetInteger("right", 740);

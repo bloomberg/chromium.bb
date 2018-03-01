@@ -107,7 +107,7 @@ class ChromeSpeechRecognitionManagerDelegate::TabWatcher
     if (FindWebContents(web_contents) != registered_web_contents_.end())
       return;
 
-    registered_web_contents_.push_back(base::MakeUnique<WebContentsTracker>(
+    registered_web_contents_.push_back(std::make_unique<WebContentsTracker>(
         web_contents,
         base::Bind(&TabWatcher::OnTabClosed,
                    // |this| outlives WebContentsTracker.

@@ -72,7 +72,7 @@ IN_PROC_BROWSER_TEST_F(ResourceCoordinatorRenderProcessProbeBrowserTest,
 
   resource_coordinator::ResourceCoordinatorRenderProcessProbe probe;
   probe.set_render_process_metrics_handler_for_testing(
-      base::MakeUnique<MockResourceCoordinatorRenderProcessMetricsHandler>());
+      std::make_unique<MockResourceCoordinatorRenderProcessMetricsHandler>());
   set_probe(&probe);
 
   ASSERT_TRUE(embedded_test_server()->Start());

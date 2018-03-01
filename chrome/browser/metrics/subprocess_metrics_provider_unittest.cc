@@ -72,8 +72,8 @@ class SubprocessMetricsProviderTest : public testing::Test {
   std::unique_ptr<base::PersistentHistogramAllocator> CreateDuplicateAllocator(
       base::PersistentHistogramAllocator* allocator) {
     // Just wrap around the data segment in-use by the passed allocator.
-    return base::MakeUnique<base::PersistentHistogramAllocator>(
-        base::MakeUnique<base::PersistentMemoryAllocator>(
+    return std::make_unique<base::PersistentHistogramAllocator>(
+        std::make_unique<base::PersistentMemoryAllocator>(
             const_cast<void*>(allocator->data()), allocator->length(), 0, 0,
             std::string(), false));
   }

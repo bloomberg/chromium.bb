@@ -48,10 +48,10 @@ namespace {
 std::string BuildGetFamilyProfileResponse(
     const FamilyInfoFetcher::FamilyProfile& family) {
   base::DictionaryValue dict;
-  auto family_dict = base::MakeUnique<base::DictionaryValue>();
+  auto family_dict = std::make_unique<base::DictionaryValue>();
   family_dict->SetKey("familyId", base::Value(family.id));
   std::unique_ptr<base::DictionaryValue> profile_dict =
-      base::MakeUnique<base::DictionaryValue>();
+      std::make_unique<base::DictionaryValue>();
   profile_dict->SetKey("name", base::Value(family.name));
   family_dict->SetWithoutPathExpansion("profile", std::move(profile_dict));
   dict.SetWithoutPathExpansion("family", std::move(family_dict));
@@ -63,7 +63,7 @@ std::string BuildGetFamilyProfileResponse(
 std::string BuildEmptyGetFamilyProfileResponse() {
   base::DictionaryValue dict;
   dict.SetWithoutPathExpansion("family",
-                               base::MakeUnique<base::DictionaryValue>());
+                               std::make_unique<base::DictionaryValue>());
   std::string result;
   base::JSONWriter::Write(dict, &result);
   return result;
@@ -72,7 +72,7 @@ std::string BuildEmptyGetFamilyProfileResponse() {
 std::string BuildGetFamilyMembersResponse(
     const std::vector<FamilyInfoFetcher::FamilyMember>& members) {
   base::DictionaryValue dict;
-  auto list = base::MakeUnique<base::ListValue>();
+  auto list = std::make_unique<base::ListValue>();
   for (size_t i = 0; i < members.size(); i++) {
     const FamilyInfoFetcher::FamilyMember& member = members[i];
     std::unique_ptr<base::DictionaryValue> member_dict(
@@ -84,7 +84,7 @@ std::string BuildGetFamilyMembersResponse(
         !member.email.empty() ||
         !member.profile_url.empty() ||
         !member.profile_image_url.empty()) {
-      auto profile_dict = base::MakeUnique<base::DictionaryValue>();
+      auto profile_dict = std::make_unique<base::DictionaryValue>();
       if (!member.display_name.empty())
         profile_dict->SetKey("displayName", base::Value(member.display_name));
       if (!member.email.empty())

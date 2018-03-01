@@ -112,7 +112,7 @@ base::LazyInstance<DevToolsUIBindingsList>::Leaky
 
 std::unique_ptr<base::DictionaryValue> CreateFileSystemValue(
     DevToolsFileHelper::FileSystem file_system) {
-  auto file_system_value = base::MakeUnique<base::DictionaryValue>();
+  auto file_system_value = std::make_unique<base::DictionaryValue>();
   file_system_value->SetString("type", file_system.type);
   file_system_value->SetString("fileSystemName", file_system.file_system_name);
   file_system_value->SetString("rootURL", file_system.root_url);
@@ -1072,7 +1072,7 @@ void DevToolsUIBindings::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK(it != pending_requests_.end());
 
   base::DictionaryValue response;
-  auto headers = base::MakeUnique<base::DictionaryValue>();
+  auto headers = std::make_unique<base::DictionaryValue>();
   net::HttpResponseHeaders* rh = source->GetResponseHeaders();
   response.SetInteger("statusCode", rh ? rh->response_code() : 200);
 

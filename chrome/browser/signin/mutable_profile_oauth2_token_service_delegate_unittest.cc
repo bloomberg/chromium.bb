@@ -656,7 +656,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, GaiaIdMigration) {
     ListPrefUpdate update(&pref_service_,
                           AccountTrackerService::kAccountInfoPref);
     update->Clear();
-    auto dict = base::MakeUnique<base::DictionaryValue>();
+    auto dict = std::make_unique<base::DictionaryValue>();
     dict->SetString("account_id", base::UTF8ToUTF16(email));
     dict->SetString("email", base::UTF8ToUTF16(email));
     dict->SetString("gaia", base::UTF8ToUTF16(gaia_id));
@@ -714,12 +714,12 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
     ListPrefUpdate update(&pref_service_,
                           AccountTrackerService::kAccountInfoPref);
     update->Clear();
-    auto dict = base::MakeUnique<base::DictionaryValue>();
+    auto dict = std::make_unique<base::DictionaryValue>();
     dict->SetString("account_id", base::UTF8ToUTF16(email1));
     dict->SetString("email", base::UTF8ToUTF16(email1));
     dict->SetString("gaia", base::UTF8ToUTF16(gaia_id1));
     update->Append(std::move(dict));
-    dict = base::MakeUnique<base::DictionaryValue>();
+    dict = std::make_unique<base::DictionaryValue>();
     dict->SetString("account_id", base::UTF8ToUTF16(email2));
     dict->SetString("email", base::UTF8ToUTF16(email2));
     dict->SetString("gaia", base::UTF8ToUTF16(gaia_id2));

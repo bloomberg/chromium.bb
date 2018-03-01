@@ -163,7 +163,7 @@ class UkmBrowserTest : public SyncTest {
         ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
 
     sync_service->OverrideNetworkResourcesForTest(
-        base::MakeUnique<fake_server::FakeServerNetworkResources>(
+        std::make_unique<fake_server::FakeServerNetworkResources>(
             GetFakeServer()->AsWeakPtr()));
 
     std::string username;

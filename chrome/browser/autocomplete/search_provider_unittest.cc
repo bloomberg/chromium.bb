@@ -284,7 +284,7 @@ void SearchProviderTest::SetUp() {
   data.SetShortName(ASCIIToUTF16("t"));
   data.SetURL("http://defaultturl/{searchTerms}");
   data.suggestions_url = "http://defaultturl2/{searchTerms}";
-  default_t_url_ = turl_model->Add(base::MakeUnique<TemplateURL>(data));
+  default_t_url_ = turl_model->Add(std::make_unique<TemplateURL>(data));
   turl_model->SetUserSelectedDefaultSearchProvider(default_t_url_);
   TemplateURLID default_provider_id = default_t_url_->id();
   ASSERT_NE(0, default_provider_id);
@@ -297,7 +297,7 @@ void SearchProviderTest::SetUp() {
   data.SetKeyword(ASCIIToUTF16("k"));
   data.SetURL("http://keyword/{searchTerms}");
   data.suggestions_url = "http://suggest_keyword/{searchTerms}";
-  keyword_t_url_ = turl_model->Add(base::MakeUnique<TemplateURL>(data));
+  keyword_t_url_ = turl_model->Add(std::make_unique<TemplateURL>(data));
   ASSERT_NE(0, keyword_t_url_->id());
 
   // Add a page and search term for keyword_t_url_.
@@ -505,7 +505,7 @@ void SearchProviderTest::ResetFieldTrialList() {
   // a DCHECK.
   field_trial_list_.reset();
   field_trial_list_.reset(new base::FieldTrialList(
-      base::MakeUnique<variations::SHA1EntropyProvider>("foo")));
+      std::make_unique<variations::SHA1EntropyProvider>("foo")));
   variations::testing::ClearAllVariationParams();
 }
 
@@ -1000,7 +1000,7 @@ TEST_F(SearchProviderTest, KeywordOrderingAndDescriptions) {
   profile_.BlockUntilHistoryProcessesPendingRequests();
 
   AutocompleteController controller(
-      base::MakeUnique<ChromeAutocompleteProviderClient>(&profile_), nullptr,
+      std::make_unique<ChromeAutocompleteProviderClient>(&profile_), nullptr,
       AutocompleteProvider::TYPE_SEARCH);
   AutocompleteInput input(ASCIIToUTF16("k t"),
                           metrics::OmniboxEventProto::OTHER,
@@ -1156,7 +1156,7 @@ TEST_F(SearchProviderTest, CommandLineOverrides) {
   data.SetShortName(ASCIIToUTF16("default"));
   data.SetKeyword(data.short_name());
   data.SetURL("{google:baseURL}{searchTerms}");
-  default_t_url_ = turl_model->Add(base::MakeUnique<TemplateURL>(data));
+  default_t_url_ = turl_model->Add(std::make_unique<TemplateURL>(data));
   turl_model->SetUserSelectedDefaultSearchProvider(default_t_url_);
 
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
@@ -3507,7 +3507,7 @@ TEST_F(SearchProviderTest, SuggestQueryUsesToken) {
   data.SetURL("http://example/{searchTerms}{google:sessionToken}");
   data.suggestions_url =
       "http://suggest/?q={searchTerms}&{google:sessionToken}";
-  default_t_url_ = turl_model->Add(base::MakeUnique<TemplateURL>(data));
+  default_t_url_ = turl_model->Add(std::make_unique<TemplateURL>(data));
   turl_model->SetUserSelectedDefaultSearchProvider(default_t_url_);
 
   base::string16 term = term1_.substr(0, term1_.length() - 1);

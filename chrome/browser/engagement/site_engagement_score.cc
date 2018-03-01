@@ -42,7 +42,7 @@ std::unique_ptr<base::DictionaryValue> GetSiteEngagementScoreDictForSettings(
     const HostContentSettingsMap* settings,
     const GURL& origin_url) {
   if (!settings)
-    return base::MakeUnique<base::DictionaryValue>();
+    return std::make_unique<base::DictionaryValue>();
 
   std::unique_ptr<base::DictionaryValue> value =
       base::DictionaryValue::From(settings->GetWebsiteSetting(
@@ -52,7 +52,7 @@ std::unique_ptr<base::DictionaryValue> GetSiteEngagementScoreDictForSettings(
   if (value.get())
     return value;
 
-  return base::MakeUnique<base::DictionaryValue>();
+  return std::make_unique<base::DictionaryValue>();
 }
 
 }  // namespace

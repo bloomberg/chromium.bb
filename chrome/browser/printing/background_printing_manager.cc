@@ -72,7 +72,7 @@ void BackgroundPrintingManager::OwnPrintPreviewDialog(
   CHECK(!HasPrintPreviewDialog(preview_dialog));
 
   printing_contents_map_[preview_dialog] =
-      base::MakeUnique<Observer>(this, preview_dialog);
+      std::make_unique<Observer>(this, preview_dialog);
 
   // Watch for print jobs finishing. Everything else is watched for by the
   // Observer. TODO(avi, cait): finish the job of removing this last

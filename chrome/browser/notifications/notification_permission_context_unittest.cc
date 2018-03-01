@@ -100,7 +100,7 @@ class NotificationPermissionContextTest
   base::TestMockTimeTaskRunner* SwitchToMockTime() {
     EXPECT_FALSE(mock_time_task_runner_);
     mock_time_task_runner_ =
-        base::MakeUnique<base::ScopedMockTimeMessageLoopTaskRunner>();
+        std::make_unique<base::ScopedMockTimeMessageLoopTaskRunner>();
     return mock_time_task_runner_->task_runner();
   }
 

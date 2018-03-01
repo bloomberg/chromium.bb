@@ -94,7 +94,7 @@ void BrowserProcessPlatformPart::ShutdownDeviceDisablingManager() {
 
 void BrowserProcessPlatformPart::InitializeSessionManager() {
   DCHECK(!session_manager_);
-  session_manager_ = base::MakeUnique<chromeos::ChromeSessionManager>();
+  session_manager_ = std::make_unique<chromeos::ChromeSessionManager>();
 }
 
 void BrowserProcessPlatformPart::ShutdownSessionManager() {
@@ -181,7 +181,7 @@ void BrowserProcessPlatformPart::RegisterInProcessServices(
     service_manager::EmbeddedServiceInfo info;
     info.factory = base::Bind([] {
       return std::unique_ptr<service_manager::Service>(
-          base::MakeUnique<AshPrefConnector>());
+          std::make_unique<AshPrefConnector>());
     });
     info.task_runner = base::ThreadTaskRunnerHandle::Get();
     services->insert(
@@ -215,7 +215,7 @@ BrowserProcessPlatformPart::GetInputDeviceControllerClient() {
             ? chromeos::kChromeServiceName
             : ui::mojom::kServiceName;
     input_device_controller_client_ =
-        base::MakeUnique<ui::InputDeviceControllerClient>(
+        std::make_unique<ui::InputDeviceControllerClient>(
             content::ServiceManagerConnection::GetForProcess()->GetConnector(),
             service_name);
   }

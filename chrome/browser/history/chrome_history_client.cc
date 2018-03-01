@@ -70,7 +70,7 @@ void ChromeHistoryClient::NotifyProfileError(sql::InitStatus init_status,
 
 std::unique_ptr<history::HistoryBackendClient>
 ChromeHistoryClient::CreateBackendClient() {
-  return base::MakeUnique<ChromeHistoryBackendClient>(bookmark_model_);
+  return std::make_unique<ChromeHistoryBackendClient>(bookmark_model_);
 }
 
 void ChromeHistoryClient::BookmarkModelChanged() {

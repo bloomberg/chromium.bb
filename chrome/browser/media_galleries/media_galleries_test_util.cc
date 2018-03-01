@@ -42,22 +42,22 @@ scoped_refptr<extensions::Extension> AddMediaGalleriesApp(
     const std::string& name,
     const std::vector<std::string>& media_galleries_permissions,
     Profile* profile) {
-  auto manifest = base::MakeUnique<base::DictionaryValue>();
+  auto manifest = std::make_unique<base::DictionaryValue>();
   manifest->SetString(extensions::manifest_keys::kName, name);
   manifest->SetString(extensions::manifest_keys::kVersion, "0.1");
   manifest->SetInteger(extensions::manifest_keys::kManifestVersion, 2);
-  auto background_script_list = base::MakeUnique<base::ListValue>();
+  auto background_script_list = std::make_unique<base::ListValue>();
   background_script_list->AppendString("background.js");
   manifest->Set(extensions::manifest_keys::kPlatformAppBackgroundScripts,
                 std::move(background_script_list));
 
-  auto permission_detail_list = base::MakeUnique<base::ListValue>();
+  auto permission_detail_list = std::make_unique<base::ListValue>();
   for (size_t i = 0; i < media_galleries_permissions.size(); i++)
     permission_detail_list->AppendString(media_galleries_permissions[i]);
-  auto media_galleries_permission = base::MakeUnique<base::DictionaryValue>();
+  auto media_galleries_permission = std::make_unique<base::DictionaryValue>();
   media_galleries_permission->Set("mediaGalleries",
                                   std::move(permission_detail_list));
-  auto permission_list = base::MakeUnique<base::ListValue>();
+  auto permission_list = std::make_unique<base::ListValue>();
   permission_list->Append(std::move(media_galleries_permission));
   manifest->Set(extensions::manifest_keys::kPermissions,
                 std::move(permission_list));

@@ -41,7 +41,7 @@ OneGoogleBarService::OneGoogleBarService(
     GaiaCookieManagerService* cookie_service,
     std::unique_ptr<OneGoogleBarFetcher> fetcher)
     : fetcher_(std::move(fetcher)),
-      signin_observer_(base::MakeUnique<SigninObserver>(
+      signin_observer_(std::make_unique<SigninObserver>(
           cookie_service,
           base::Bind(&OneGoogleBarService::SigninStatusChanged,
                      base::Unretained(this)))) {}

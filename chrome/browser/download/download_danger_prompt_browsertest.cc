@@ -75,7 +75,7 @@ class DownloadDangerPromptTest
         expected_action_(DownloadDangerPrompt::CANCEL),
         did_receive_callback_(false),
         test_safe_browsing_factory_(
-            base::MakeUnique<TestSafeBrowsingServiceFactory>()) {}
+            std::make_unique<TestSafeBrowsingServiceFactory>()) {}
 
   ~DownloadDangerPromptTest() override {}
 
@@ -160,7 +160,7 @@ class DownloadDangerPromptTest
         base::FilePath(FILE_PATH_LITERAL("evil.exe"))));
     EXPECT_CALL(download_, GetDangerType()).WillRepeatedly(Return(danger_type));
     auto token_obj =
-        base::MakeUnique<DownloadProtectionService::DownloadPingToken>(token);
+        std::make_unique<DownloadProtectionService::DownloadPingToken>(token);
     download_.SetUserData(DownloadProtectionService::kDownloadPingTokenKey,
                           std::move(token_obj));
   }

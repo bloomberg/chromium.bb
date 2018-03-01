@@ -51,7 +51,7 @@ class TestService : public BitmapFetcherService {
   std::unique_ptr<BitmapFetcher> CreateFetcher(
       const GURL& url,
       const net::NetworkTrafficAnnotationTag& traffic_annotation) override {
-    return base::MakeUnique<BitmapFetcher>(url, this, traffic_annotation);
+    return std::make_unique<BitmapFetcher>(url, this, traffic_annotation);
   }
 };
 

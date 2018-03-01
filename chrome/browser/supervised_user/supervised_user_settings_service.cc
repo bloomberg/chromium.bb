@@ -454,7 +454,7 @@ base::DictionaryValue* SupervisedUserSettingsService::GetDictionaryAndSplitKey(
   if (!split_settings->GetDictionary(prefix, &dict)) {
     DCHECK(!split_settings->HasKey(prefix));
     dict = split_settings->SetDictionary(
-        prefix, base::MakeUnique<base::DictionaryValue>());
+        prefix, std::make_unique<base::DictionaryValue>());
   }
   key->erase(0, pos + 1);
   return dict;
@@ -474,7 +474,7 @@ SupervisedUserSettingsService::GetSettings() {
     if (!SettingShouldApplyToPrefs(it.key()))
       continue;
 
-    settings->Set(it.key(), base::MakeUnique<base::Value>(it.value().Clone()));
+    settings->Set(it.key(), std::make_unique<base::Value>(it.value().Clone()));
   }
 
   base::DictionaryValue* split_settings = GetSplitSettings();
@@ -483,7 +483,7 @@ SupervisedUserSettingsService::GetSettings() {
     if (!SettingShouldApplyToPrefs(it.key()))
       continue;
 
-    settings->Set(it.key(), base::MakeUnique<base::Value>(it.value().Clone()));
+    settings->Set(it.key(), std::make_unique<base::Value>(it.value().Clone()));
   }
 
   return settings;

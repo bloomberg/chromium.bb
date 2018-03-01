@@ -90,7 +90,7 @@ static scoped_refptr<Extension> CreateExtension(
   base::DictionaryValue manifest;
   manifest.SetString(extensions::manifest_keys::kVersion, "1.0.0.0");
   manifest.SetString(extensions::manifest_keys::kName, name);
-  auto permissions = base::MakeUnique<base::ListValue>();
+  auto permissions = std::make_unique<base::ListValue>();
   if (background_permission) {
     permissions->AppendString("background");
   }

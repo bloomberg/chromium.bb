@@ -468,7 +468,7 @@ void SupervisedUserService::SetActive(bool active) {
           supervised_users::kSupervisedUserPseudoEmail);
 
       if (base::FeatureList::IsEnabled(features::kSupervisedUserCreation)) {
-        permissions_creators_.push_back(base::MakeUnique<
+        permissions_creators_.push_back(std::make_unique<
                                         PermissionRequestCreatorSync>(
             GetSettingsService(),
             SupervisedUserSharedSettingsServiceFactory::GetForBrowserContext(

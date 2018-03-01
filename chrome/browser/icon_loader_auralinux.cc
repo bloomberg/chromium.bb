@@ -43,7 +43,7 @@ void IconLoader::ReadIcon() {
   std::unique_ptr<gfx::Image> image;
   views::LinuxUI* ui = views::LinuxUI::instance();
   if (ui) {
-    image = base::MakeUnique<gfx::Image>(
+    image = std::make_unique<gfx::Image>(
         ui->GetIconForContentType(group_, size_pixels));
     if (image->IsEmpty())
       image = nullptr;

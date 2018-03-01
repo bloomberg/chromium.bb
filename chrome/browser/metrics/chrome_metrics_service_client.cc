@@ -382,7 +382,7 @@ ChromeMetricsServiceClient::ChromeMetricsServiceClient(
   RecordCommandLineMetrics();
   RegisterForNotifications();
 #if defined(OS_ANDROID)
-  incognito_observer_ = base::MakeUnique<AndroidIncognitoObserver>(this);
+  incognito_observer_ = std::make_unique<AndroidIncognitoObserver>(this);
 #endif
 }
 
@@ -498,7 +498,7 @@ ChromeMetricsServiceClient::CreateUploader(
     base::StringPiece mime_type,
     metrics::MetricsLogUploader::MetricServiceType service_type,
     const metrics::MetricsLogUploader::UploadCallback& on_upload_complete) {
-  return base::MakeUnique<metrics::NetMetricsLogUploader>(
+  return std::make_unique<metrics::NetMetricsLogUploader>(
       g_browser_process->system_request_context(), server_url,
       insecure_server_url, mime_type, service_type, on_upload_complete);
 }
@@ -561,64 +561,64 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
 
   // Gets access to persistent metrics shared by sub-processes.
   metrics_service_->RegisterMetricsProvider(
-      base::MakeUnique<SubprocessMetricsProvider>());
+      std::make_unique<SubprocessMetricsProvider>());
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   metrics_service_->RegisterMetricsProvider(
-      base::MakeUnique<ExtensionsMetricsProvider>(metrics_state_manager_));
+      std::make_unique<ExtensionsMetricsProvider>(metrics_state_manager_));
 #endif
 
   metrics_service_->RegisterMetricsProvider(
-      base::MakeUnique<metrics::NetworkMetricsProvider>(
-          base::MakeUnique<metrics::NetworkQualityEstimatorProviderImpl>(
+      std::make_unique<metrics::NetworkMetricsProvider>(
+          std::make_unique<metrics::NetworkQualityEstimatorProviderImpl>(
               g_browser_process->io_thread())));
 
   // Currently, we configure OmniboxMetricsProvider to not log events to UMA
   // if there is a single incognito session visible. In the future, it may
   // be worth revisiting this to still log events from non-incognito sessions.
   metrics_service_->RegisterMetricsProvider(
-      base::MakeUnique<OmniboxMetricsProvider>(
+      std::make_unique<OmniboxMetricsProvider>(
           base::Bind(&chrome::IsIncognitoSessionActive)));
 
   metrics_service_->RegisterMetricsProvider(
-      base::MakeUnique<ChromeStabilityMetricsProvider>(local_state));
+      std::make_unique<ChromeStabilityMetricsProvider>(local_state));
 
   metrics_service_->RegisterMetricsProvider(
-      base::MakeUnique<metrics::GPUMetricsProvider>());
+      std::make_unique<metrics::GPUMetricsProvider>());
 
   metrics_service_->RegisterMetricsProvider(
-      base::MakeUnique<metrics::ScreenInfoMetricsProvider>());
+      std::make_unique<metrics::ScreenInfoMetricsProvider>());
 
   metrics_service_->RegisterMetricsProvider(CreateFileMetricsProvider(
       ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled()));
 
   metrics_service_->RegisterMetricsProvider(
-      base::MakeUnique<metrics::DriveMetricsProvider>(
+      std::make_unique<metrics::DriveMetricsProvider>(
           chrome::FILE_LOCAL_STATE));
 
   metrics_service_->RegisterMetricsProvider(
-      base::MakeUnique<metrics::CallStackProfileMetricsProvider>());
+      std::make_unique<metrics::CallStackProfileMetricsProvider>());
 
   metrics_service_->RegisterMetricsProvider(
-      base::MakeUnique<metrics::SamplingMetricsProvider>());
+      std::make_unique<metrics::SamplingMetricsProvider>());
 
   metrics_service_->RegisterMetricsProvider(
-      base::MakeUnique<translate::TranslateRankerMetricsProvider>());
+      std::make_unique<translate::TranslateRankerMetricsProvider>());
 
   metrics_service_->RegisterMetricsProvider(
-      base::MakeUnique<metrics::ComponentMetricsProvider>(
+      std::make_unique<metrics::ComponentMetricsProvider>(
           g_browser_process->component_updater()));
 
 #if defined(OS_ANDROID)
   metrics_service_->RegisterMetricsProvider(
-      base::MakeUnique<AndroidMetricsProvider>());
+      std::make_unique<AndroidMetricsProvider>());
   metrics_service_->RegisterMetricsProvider(
-      base::MakeUnique<PageLoadMetricsProvider>());
+      std::make_unique<PageLoadMetricsProvider>());
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_WIN)
   metrics_service_->RegisterMetricsProvider(
-      base::MakeUnique<GoogleUpdateMetricsProviderWin>());
+      std::make_unique<GoogleUpdateMetricsProviderWin>());
 
   base::FilePath user_data_dir;
   base::FilePath crash_dir;
@@ -629,12 +629,12 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
     crash_dir = base::FilePath();
   }
   metrics_service_->RegisterMetricsProvider(
-      base::MakeUnique<browser_watcher::WatcherMetricsProviderWin>(
+      std::make_unique<browser_watcher::WatcherMetricsProviderWin>(
           chrome::GetBrowserExitCodesRegistryPath(), user_data_dir, crash_dir,
           base::Bind(&GetExecutableVersionDetails)));
 
   metrics_service_->RegisterMetricsProvider(
-      base::MakeUnique<AntiVirusMetricsProvider>());
+      std::make_unique<AntiVirusMetricsProvider>());
 #endif  // defined(OS_WIN)
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -645,10 +645,10 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
 
 #if defined(OS_CHROMEOS)
   metrics_service_->RegisterMetricsProvider(
-      base::MakeUnique<ChromeOSMetricsProvider>());
+      std::make_unique<ChromeOSMetricsProvider>());
 
   metrics_service_->RegisterMetricsProvider(
-      base::MakeUnique<SigninStatusMetricsProviderChromeOS>());
+      std::make_unique<SigninStatusMetricsProviderChromeOS>());
 
   // Record default UMA state as opt-out for all Chrome OS users, if not
   // recorded yet.
@@ -659,40 +659,40 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
   }
 
   metrics_service_->RegisterMetricsProvider(
-      base::MakeUnique<chromeos::PrinterMetricsProvider>());
+      std::make_unique<chromeos::PrinterMetricsProvider>());
 #endif  // defined(OS_CHROMEOS)
 
 #if !defined(OS_CHROMEOS)
   metrics_service_->RegisterMetricsProvider(
       SigninStatusMetricsProvider::CreateInstance(
-          base::MakeUnique<ChromeSigninStatusMetricsProviderDelegate>()));
+          std::make_unique<ChromeSigninStatusMetricsProviderDelegate>()));
 #endif  // !defined(OS_CHROMEOS)
 
   metrics_service_->RegisterMetricsProvider(
-      base::MakeUnique<syncer::DeviceCountMetricsProvider>(
+      std::make_unique<syncer::DeviceCountMetricsProvider>(
           base::Bind(&browser_sync::ChromeSyncClient::GetDeviceInfoTrackers)));
 
   metrics_service_->RegisterMetricsProvider(
-      base::MakeUnique<HttpsEngagementMetricsProvider>());
+      std::make_unique<HttpsEngagementMetricsProvider>());
 
   metrics_service_->RegisterMetricsProvider(
-      base::MakeUnique<CertificateReportingMetricsProvider>());
+      std::make_unique<CertificateReportingMetricsProvider>());
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
   metrics_service_->RegisterMetricsProvider(
-      base::MakeUnique<UpgradeMetricsProvider>());
+      std::make_unique<UpgradeMetricsProvider>());
 #endif  //! defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 }
 
 void ChromeMetricsServiceClient::RegisterUKMProviders() {
   ukm_service_->RegisterMetricsProvider(
-      base::MakeUnique<metrics::NetworkMetricsProvider>(
-          base::MakeUnique<metrics::NetworkQualityEstimatorProviderImpl>(
+      std::make_unique<metrics::NetworkMetricsProvider>(
+          std::make_unique<metrics::NetworkQualityEstimatorProviderImpl>(
               g_browser_process->io_thread())));
 
   // TODO(rkaplow): Support synthetic trials for UKM.
   ukm_service_->RegisterMetricsProvider(
-      base::MakeUnique<variations::FieldTrialsProvider>(nullptr,
+      std::make_unique<variations::FieldTrialsProvider>(nullptr,
                                                         kUKMFieldTrialSuffix));
 }
 

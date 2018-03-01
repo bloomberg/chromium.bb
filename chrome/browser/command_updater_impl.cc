@@ -99,6 +99,6 @@ CommandUpdaterImpl::GetCommand(int id, bool create) {
 
   DCHECK(create);
   std::unique_ptr<Command>& entry = commands_[id];
-  entry = base::MakeUnique<Command>();
+  entry = std::make_unique<Command>();
   return entry.get();
 }

@@ -104,7 +104,7 @@ scoped_refptr<RefcountedKeyedService>
 
 #if defined(OS_ANDROID)
     auto channels_provider =
-        base::MakeUnique<NotificationChannelsProviderAndroid>();
+        std::make_unique<NotificationChannelsProviderAndroid>();
     if (base::FeatureList::IsEnabled(features::kSiteNotificationChannels)) {
       channels_provider->MigrateToChannelsIfNecessary(
           profile->GetPrefs(), settings_map->GetPrefProvider());

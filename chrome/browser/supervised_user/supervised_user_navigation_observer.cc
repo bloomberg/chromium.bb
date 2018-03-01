@@ -114,7 +114,7 @@ void SupervisedUserNavigationObserver::OnRequestBlockedInternal(
   std::unique_ptr<NavigationEntry> entry = NavigationEntry::Create();
   entry->SetVirtualURL(url);
   entry->SetTimestamp(timestamp);
-  auto serialized_entry = base::MakeUnique<sessions::SerializedNavigationEntry>(
+  auto serialized_entry = std::make_unique<sessions::SerializedNavigationEntry>(
       sessions::ContentSerializedNavigationBuilder::FromNavigationEntry(
           blocked_navigations_.size(), *entry));
   blocked_navigations_.push_back(std::move(serialized_entry));

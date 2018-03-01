@@ -19,7 +19,7 @@ void CacheStatsRecorder::Create(
     int render_process_id,
     chrome::mojom::CacheStatsRecorderAssociatedRequest request) {
   mojo::MakeStrongAssociatedBinding(
-      base::MakeUnique<CacheStatsRecorder>(render_process_id),
+      std::make_unique<CacheStatsRecorder>(render_process_id),
       std::move(request));
 }
 

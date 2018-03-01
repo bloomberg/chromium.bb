@@ -134,7 +134,7 @@ const size_t SwapThrashingMonitorDelegateWin::HardFaultDeltasWindow::
     kHardFaultDeltasWindowSize = 12;
 
 SwapThrashingMonitorDelegateWin::SwapThrashingMonitorDelegateWin()
-    : hard_fault_deltas_window_(base::MakeUnique<HardFaultDeltasWindow>()) {}
+    : hard_fault_deltas_window_(std::make_unique<HardFaultDeltasWindow>()) {}
 
 SwapThrashingMonitorDelegateWin::~SwapThrashingMonitorDelegateWin() {}
 

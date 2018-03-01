@@ -144,7 +144,7 @@ bool OffStoreInstallAllowedByPrefs(Profile* profile, const DownloadItem& item) {
 
 std::unique_ptr<base::AutoReset<bool>> OverrideOffstoreInstallAllowedForTesting(
     bool allowed) {
-  return base::MakeUnique<base::AutoReset<bool>>(
+  return std::make_unique<base::AutoReset<bool>>(
       &g_allow_offstore_install_for_testing, allowed);
 }
 

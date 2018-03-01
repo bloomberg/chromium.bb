@@ -910,7 +910,7 @@ void LocalFileSyncContext::DidGetWritingStatusForSync(
   DCHECK(file_util);
 
   base::File::Error file_error = file_util->GetFileInfo(
-      base::MakeUnique<FileSystemOperationContext>(file_system_context).get(),
+      std::make_unique<FileSystemOperationContext>(file_system_context).get(),
       url, &file_info, &platform_path);
 
   storage::ScopedFile snapshot;

@@ -180,7 +180,7 @@ void SubprocessMetricsProvider::RenderProcessReady(
       host->TakeMetricsAllocator();
   if (allocator) {
     RegisterSubprocessAllocator(
-        host->GetID(), base::MakeUnique<base::PersistentHistogramAllocator>(
+        host->GetID(), std::make_unique<base::PersistentHistogramAllocator>(
                            std::move(allocator)));
   }
 }
@@ -221,6 +221,6 @@ SubprocessMetricsProvider::GetSubprocessHistogramAllocatorOnIOThread(int id) {
   if (!allocator)
     return nullptr;
 
-  return base::MakeUnique<base::PersistentHistogramAllocator>(
+  return std::make_unique<base::PersistentHistogramAllocator>(
       std::move(allocator));
 }

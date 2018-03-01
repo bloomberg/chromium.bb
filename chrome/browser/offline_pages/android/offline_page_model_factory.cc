@@ -65,7 +65,7 @@ KeyedService* OfflinePageModelFactory::BuildServiceInstanceFor(
   std::unique_ptr<ArchiveManager> archive_manager(new ArchiveManager(
       temporary_archives_dir, persistent_archives_dir,
       DownloadPrefs::GetDefaultDownloadDirectory(), background_task_runner));
-  auto clock = base::MakeUnique<base::DefaultClock>();
+  auto clock = std::make_unique<base::DefaultClock>();
 
   std::unique_ptr<SystemDownloadManager> download_manager(
       new android::OfflinePagesDownloadManagerBridge());

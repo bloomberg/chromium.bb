@@ -131,7 +131,7 @@ class PreviewsInfoBarTabHelperUnitTest
       return;
     }
     std::unique_ptr<ChromeNavigationData> navigation_data =
-        base::MakeUnique<ChromeNavigationData>();
+        std::make_unique<ChromeNavigationData>();
     navigation_data->set_previews_user_data(std::move(previews_user_data));
     content::WebContentsTester::For(web_contents())
         ->SetNavigationData(test_handle_.get(), std::move(navigation_data));
@@ -213,7 +213,7 @@ TEST_F(PreviewsInfoBarTabHelperUnitTest, TestPreviewsIDSet) {
 
   uint64_t id = 5u;
   std::unique_ptr<previews::PreviewsUserData> previews_user_data =
-      base::MakeUnique<previews::PreviewsUserData>(id);
+      std::make_unique<previews::PreviewsUserData>(id);
   set_previews_user_data(std::move(previews_user_data));
 
   CallDidFinishNavigation();

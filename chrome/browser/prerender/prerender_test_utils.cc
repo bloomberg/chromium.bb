@@ -432,7 +432,7 @@ DestructionWaiter::DestructionWaiter(TestPrerenderContents* prerender_contents,
     // The contents was already destroyed by the time this was called.
     MarkDestruction(prerender_contents->final_status());
   } else {
-    marker_ = base::MakeUnique<DestructionMarker>(this);
+    marker_ = std::make_unique<DestructionMarker>(this);
     prerender_contents->AddObserver(marker_.get());
   }
 }
@@ -565,7 +565,7 @@ void FirstContentfulPaintManagerWaiter::OnFirstContentfulPaint() {
 void FirstContentfulPaintManagerWaiter::Wait() {
   if (saw_fcp_)
     return;
-  waiter_ = base::MakeUnique<base::RunLoop>();
+  waiter_ = std::make_unique<base::RunLoop>();
   waiter_->Run();
   waiter_.reset();
 }
@@ -618,9 +618,9 @@ TestPrerenderContentsFactory::ExpectedContents::~ExpectedContents() {}
 
 PrerenderInProcessBrowserTest::PrerenderInProcessBrowserTest()
     : external_protocol_handler_delegate_(
-          base::MakeUnique<NeverRunsExternalProtocolHandlerDelegate>()),
+          std::make_unique<NeverRunsExternalProtocolHandlerDelegate>()),
       safe_browsing_factory_(
-          base::MakeUnique<safe_browsing::TestSafeBrowsingServiceFactory>()),
+          std::make_unique<safe_browsing::TestSafeBrowsingServiceFactory>()),
       prerender_contents_factory_(nullptr),
       explicitly_set_browser_(nullptr),
       autostart_test_server_(true) {}
@@ -853,7 +853,7 @@ void CreateCountingInterceptorOnIO(
     const base::WeakPtr<RequestCounter>& counter) {
   CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
-      url, base::MakeUnique<CountingInterceptor>(file, counter));
+      url, std::make_unique<CountingInterceptor>(file, counter));
 }
 
 void InterceptRequest(const GURL& url,

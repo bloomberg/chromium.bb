@@ -288,7 +288,7 @@ void GeolocationPermissionContextTests::SetupRequestManager(
 
   // Create a MockPermissionPromptFactory for the PermissionRequestManager.
   mock_permission_prompt_factories_.push_back(
-      base::MakeUnique<MockPermissionPromptFactory>(
+      std::make_unique<MockPermissionPromptFactory>(
           permission_request_manager));
 }
 
@@ -1064,7 +1064,7 @@ TEST_F(GeolocationPermissionContextTests, SearchGeolocationInIncognito) {
   SearchPermissionsService* service =
       SearchPermissionsService::Factory::GetForBrowserContext(profile());
   std::unique_ptr<TestSearchEngineDelegate> delegate =
-      base::MakeUnique<TestSearchEngineDelegate>();
+      std::make_unique<TestSearchEngineDelegate>();
   TestSearchEngineDelegate* delegate_ptr = delegate.get();
   service->SetSearchEngineDelegateForTest(std::move(delegate));
   delegate_ptr->UpdateDSEOrigin();

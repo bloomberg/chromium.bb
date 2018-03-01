@@ -89,7 +89,7 @@ BitmapFetcherService::RequestId BitmapFetcherService::RequestImage(
   if (current_request_id_ == REQUEST_ID_INVALID)
     ++current_request_id_;
   int request_id = current_request_id_;
-  auto request = base::MakeUnique<BitmapFetcherRequest>(request_id, observer);
+  auto request = std::make_unique<BitmapFetcherRequest>(request_id, observer);
 
   // Reject invalid URLs.
   if (!url.is_valid())

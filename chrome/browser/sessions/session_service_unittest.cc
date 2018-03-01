@@ -526,9 +526,9 @@ TEST_F(SessionServiceTest, IgnorePopups) {
 
 TEST_F(SessionServiceTest, RemoveUnusedRestoreWindowsTest) {
   std::vector<std::unique_ptr<sessions::SessionWindow>> windows_list;
-  windows_list.push_back(base::MakeUnique<sessions::SessionWindow>());
+  windows_list.push_back(std::make_unique<sessions::SessionWindow>());
   windows_list.back()->type = sessions::SessionWindow::TYPE_TABBED;
-  windows_list.push_back(base::MakeUnique<sessions::SessionWindow>());
+  windows_list.push_back(std::make_unique<sessions::SessionWindow>());
   windows_list.back()->type = sessions::SessionWindow::TYPE_POPUP;
 
   service()->RemoveUnusedRestoreWindows(&windows_list);

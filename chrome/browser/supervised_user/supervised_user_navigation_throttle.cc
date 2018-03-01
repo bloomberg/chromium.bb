@@ -127,7 +127,7 @@ SupervisedUserNavigationThrottle::MaybeCreateThrottleFor(
       navigation_handle->GetWebContents()->GetBrowserContext());
   if (!profile->IsSupervised())
     return nullptr;
-  // Can't use base::MakeUnique because the constructor is private.
+  // Can't use std::make_unique because the constructor is private.
   return base::WrapUnique(
       new SupervisedUserNavigationThrottle(navigation_handle));
 }

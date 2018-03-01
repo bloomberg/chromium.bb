@@ -482,7 +482,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   NavigateToFile("/password/password_form.html");
 
   NavigationObserver observer(WebContents());
-  auto prompt_observer = base::MakeUnique<BubbleObserver>(WebContents());
+  auto prompt_observer = std::make_unique<BubbleObserver>(WebContents());
   std::string fill_and_submit =
       "document.getElementById('username_different_action').value = 'temp';"
       "document.getElementById('password_different_action').value = 'random';"
@@ -521,7 +521,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   NavigateToFile("/password/password_form.html");
 
   NavigationObserver observer(WebContents());
-  auto prompt_observer = base::MakeUnique<BubbleObserver>(WebContents());
+  auto prompt_observer = std::make_unique<BubbleObserver>(WebContents());
   std::string fill_and_submit =
       "document.getElementById('username_contains_username').value = 'temp';"
       "document.getElementById('password_contains_username').value = 'random';"
@@ -539,7 +539,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   NavigateToFile("/password/navigate_to_same_url_empty_actions.html");
 
   NavigationObserver observer(WebContents());
-  auto prompt_observer = base::MakeUnique<BubbleObserver>(WebContents());
+  auto prompt_observer = std::make_unique<BubbleObserver>(WebContents());
   std::string fill_and_submit =
       "document.getElementById('username').value = 'temp';"
       "document.getElementById('password').value = 'random';"

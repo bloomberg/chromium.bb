@@ -297,7 +297,7 @@ void OneGoogleBarFetcherImpl::Fetch(OneGoogleCallback callback) {
   // Note: If there is an ongoing request, abandon it. It's possible that
   // something has changed in the meantime (e.g. signin state) that would make
   // the result obsolete.
-  pending_request_ = base::MakeUnique<AuthenticatedURLFetcher>(
+  pending_request_ = std::make_unique<AuthenticatedURLFetcher>(
       request_context_, google_base_url, application_locale_, api_url_override_,
       account_consistency_mirror_required_,
       base::BindOnce(&OneGoogleBarFetcherImpl::FetchDone,

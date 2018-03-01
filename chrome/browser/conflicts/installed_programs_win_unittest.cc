@@ -118,7 +118,7 @@ class InstalledProgramsTest : public testing::Test {
 
   void InitializeInstalledProgramsSynchronously() {
     installed_programs_.Initialize(
-        base::Closure(), base::MakeUnique<MockMsiUtil>(component_paths_map_));
+        base::Closure(), std::make_unique<MockMsiUtil>(component_paths_map_));
     scoped_task_environment_.RunUntilIdle();
   }
 

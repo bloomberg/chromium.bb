@@ -72,8 +72,8 @@ class OriginTrialsComponentInstallerTest : public PlatformTest {
 
   void LoadUpdates(std::unique_ptr<base::DictionaryValue> manifest) {
     if (!manifest) {
-      manifest = base::MakeUnique<base::DictionaryValue>();
-      manifest->Set(kManifestOriginTrialsKey, base::MakeUnique<base::Value>());
+      manifest = std::make_unique<base::DictionaryValue>();
+      manifest->Set(kManifestOriginTrialsKey, std::make_unique<base::Value>());
     }
     ASSERT_TRUE(policy_->VerifyInstallation(*manifest, temp_dir_.GetPath()));
     const base::Version expected_version(kTestUpdateVersion);
@@ -168,7 +168,7 @@ TEST_F(OriginTrialsComponentInstallerTest,
 TEST_F(OriginTrialsComponentInstallerTest, PublicKeySetWhenOverrideExists) {
   ASSERT_FALSE(local_state()->HasPrefPath(prefs::kOriginTrialPublicKey));
 
-  auto manifest = base::MakeUnique<base::DictionaryValue>();
+  auto manifest = std::make_unique<base::DictionaryValue>();
   manifest->SetString(kManifestPublicKeyPath, kNewPublicKey);
   LoadUpdates(std::move(manifest));
 
@@ -192,8 +192,8 @@ TEST_F(OriginTrialsComponentInstallerTest,
   AddDisabledFeaturesToPrefs(kExistingDisabledFeatures);
   ASSERT_TRUE(local_state()->HasPrefPath(prefs::kOriginTrialDisabledFeatures));
 
-  auto manifest = base::MakeUnique<base::DictionaryValue>();
-  auto disabled_feature_list = base::MakeUnique<base::ListValue>();
+  auto manifest = std::make_unique<base::DictionaryValue>();
+  auto disabled_feature_list = std::make_unique<base::ListValue>();
   manifest->Set(kManifestDisabledFeaturesPath,
                 std::move(disabled_feature_list));
 
@@ -205,8 +205,8 @@ TEST_F(OriginTrialsComponentInstallerTest,
 TEST_F(OriginTrialsComponentInstallerTest, DisabledFeaturesSetWhenListExists) {
   ASSERT_FALSE(local_state()->HasPrefPath(prefs::kOriginTrialDisabledFeatures));
 
-  auto manifest = base::MakeUnique<base::DictionaryValue>();
-  auto disabled_feature_list = base::MakeUnique<base::ListValue>();
+  auto manifest = std::make_unique<base::DictionaryValue>();
+  auto disabled_feature_list = std::make_unique<base::ListValue>();
   disabled_feature_list->AppendString(kNewDisabledFeature1);
   manifest->Set(kManifestDisabledFeaturesPath,
                 std::move(disabled_feature_list));
@@ -222,8 +222,8 @@ TEST_F(OriginTrialsComponentInstallerTest,
   AddDisabledFeaturesToPrefs(kExistingDisabledFeatures);
   ASSERT_TRUE(local_state()->HasPrefPath(prefs::kOriginTrialDisabledFeatures));
 
-  auto manifest = base::MakeUnique<base::DictionaryValue>();
-  auto disabled_feature_list = base::MakeUnique<base::ListValue>();
+  auto manifest = std::make_unique<base::DictionaryValue>();
+  auto disabled_feature_list = std::make_unique<base::ListValue>();
   disabled_feature_list->AppendStrings(kNewDisabledFeatures);
   manifest->Set(kManifestDisabledFeaturesPath,
                 std::move(disabled_feature_list));
@@ -250,8 +250,8 @@ TEST_F(OriginTrialsComponentInstallerTest,
   ASSERT_TRUE(local_state()->HasPrefPath(prefs::kOriginTrialDisabledTokens));
 
   // Load with disabled tokens key in manifest, but no list values
-  auto manifest = base::MakeUnique<base::DictionaryValue>();
-  manifest->Set(kManifestDisabledTokensPath, base::MakeUnique<base::Value>());
+  auto manifest = std::make_unique<base::DictionaryValue>();
+  manifest->Set(kManifestDisabledTokensPath, std::make_unique<base::Value>());
 
   LoadUpdates(std::move(manifest));
 
@@ -263,8 +263,8 @@ TEST_F(OriginTrialsComponentInstallerTest,
   AddDisabledTokensToPrefs(kExistingDisabledTokens);
   ASSERT_TRUE(local_state()->HasPrefPath(prefs::kOriginTrialDisabledTokens));
 
-  auto manifest = base::MakeUnique<base::DictionaryValue>();
-  auto disabled_token_list = base::MakeUnique<base::ListValue>();
+  auto manifest = std::make_unique<base::DictionaryValue>();
+  auto disabled_token_list = std::make_unique<base::ListValue>();
   manifest->Set(kManifestDisabledTokenSignaturesPath,
                 std::move(disabled_token_list));
 
@@ -276,8 +276,8 @@ TEST_F(OriginTrialsComponentInstallerTest,
 TEST_F(OriginTrialsComponentInstallerTest, DisabledTokensSetWhenListExists) {
   ASSERT_FALSE(local_state()->HasPrefPath(prefs::kOriginTrialDisabledTokens));
 
-  auto manifest = base::MakeUnique<base::DictionaryValue>();
-  auto disabled_token_list = base::MakeUnique<base::ListValue>();
+  auto manifest = std::make_unique<base::DictionaryValue>();
+  auto disabled_token_list = std::make_unique<base::ListValue>();
   disabled_token_list->AppendString(kNewDisabledToken1);
   manifest->Set(kManifestDisabledTokenSignaturesPath,
                 std::move(disabled_token_list));
@@ -293,8 +293,8 @@ TEST_F(OriginTrialsComponentInstallerTest,
   AddDisabledTokensToPrefs(kExistingDisabledTokens);
   ASSERT_TRUE(local_state()->HasPrefPath(prefs::kOriginTrialDisabledTokens));
 
-  auto manifest = base::MakeUnique<base::DictionaryValue>();
-  auto disabled_token_list = base::MakeUnique<base::ListValue>();
+  auto manifest = std::make_unique<base::DictionaryValue>();
+  auto disabled_token_list = std::make_unique<base::ListValue>();
   disabled_token_list->AppendStrings(kNewDisabledTokens);
   manifest->Set(kManifestDisabledTokenSignaturesPath,
                 std::move(disabled_token_list));

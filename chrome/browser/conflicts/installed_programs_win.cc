@@ -168,7 +168,7 @@ std::unique_ptr<InstalledPrograms::ProgramsData> GetProgramsData(
     std::unique_ptr<MsiUtil> msi_util) {
   SCOPED_UMA_HISTOGRAM_TIMER("ThirdPartyModules.InstalledPrograms.GetDataTime");
 
-  auto programs_data = base::MakeUnique<InstalledPrograms::ProgramsData>();
+  auto programs_data = std::make_unique<InstalledPrograms::ProgramsData>();
 
   // Iterate over all the variants of the uninstall registry key.
   const wchar_t kUninstallKeyPath[] =
@@ -212,7 +212,7 @@ InstalledPrograms::InstalledPrograms()
 InstalledPrograms::~InstalledPrograms() = default;
 
 void InstalledPrograms::Initialize(base::OnceClosure on_initialized_callback) {
-  Initialize(std::move(on_initialized_callback), base::MakeUnique<MsiUtil>());
+  Initialize(std::move(on_initialized_callback), std::make_unique<MsiUtil>());
 }
 
 bool InstalledPrograms::GetInstalledPrograms(

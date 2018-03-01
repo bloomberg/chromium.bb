@@ -177,7 +177,7 @@ bool ChromeTracingDelegate::IsProfileLoaded() {
 
 std::unique_ptr<base::DictionaryValue>
 ChromeTracingDelegate::GenerateMetadataDict() {
-  auto metadata_dict = base::MakeUnique<base::DictionaryValue>();
+  auto metadata_dict = std::make_unique<base::DictionaryValue>();
   std::vector<std::string> variations;
   variations::GetFieldTrialActiveGroupIdsAsStrings(base::StringPiece(),
                                                    &variations);

@@ -453,7 +453,7 @@ void FileSelectHelper::RunFileChooser(
   scoped_refptr<FileSelectHelper> file_select_helper(
       new FileSelectHelper(profile));
   file_select_helper->RunFileChooser(
-      render_frame_host, base::MakeUnique<content::FileChooserParams>(params));
+      render_frame_host, std::make_unique<content::FileChooserParams>(params));
 }
 
 // static

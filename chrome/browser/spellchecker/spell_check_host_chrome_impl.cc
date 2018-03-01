@@ -27,7 +27,7 @@ void SpellCheckHostChromeImpl::Create(
     spellcheck::mojom::SpellCheckHostRequest request,
     const service_manager::BindSourceInfo& source_info) {
   mojo::MakeStrongBinding(
-      base::MakeUnique<SpellCheckHostChromeImpl>(source_info.identity),
+      std::make_unique<SpellCheckHostChromeImpl>(source_info.identity),
       std::move(request));
 }
 

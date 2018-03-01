@@ -132,7 +132,7 @@ cryptauth::GcmDeviceInfo GetGcmDeviceInfo() {
 
 std::unique_ptr<cryptauth::CryptAuthClientFactory>
 CreateCryptAuthClientFactoryImpl(Profile* profile) {
-  return base::MakeUnique<cryptauth::CryptAuthClientFactoryImpl>(
+  return std::make_unique<cryptauth::CryptAuthClientFactoryImpl>(
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
       SigninManagerFactory::GetForProfile(profile)->GetAuthenticatedAccountId(),
       profile->GetRequestContext(), GetDeviceClassifierImpl());
@@ -141,7 +141,7 @@ CreateCryptAuthClientFactoryImpl(Profile* profile) {
 std::unique_ptr<cryptauth::SecureMessageDelegate>
 CreateSecureMessageDelegateImpl() {
 #if defined(OS_CHROMEOS)
-  return base::MakeUnique<chromeos::SecureMessageDelegateChromeOS>();
+  return std::make_unique<chromeos::SecureMessageDelegateChromeOS>();
 #else
   return nullptr;
 #endif
@@ -153,7 +153,7 @@ class CryptAuthEnrollerFactoryImpl
   explicit CryptAuthEnrollerFactoryImpl(Profile* profile) : profile_(profile) {}
 
   std::unique_ptr<cryptauth::CryptAuthEnroller> CreateInstance() override {
-    return base::MakeUnique<cryptauth::CryptAuthEnrollerImpl>(
+    return std::make_unique<cryptauth::CryptAuthEnrollerImpl>(
         CreateCryptAuthClientFactoryImpl(profile_),
         CreateSecureMessageDelegateImpl());
   }
@@ -168,20 +168,20 @@ class CryptAuthEnrollerFactoryImpl
 std::unique_ptr<ChromeCryptAuthService> ChromeCryptAuthService::Create(
     Profile* profile) {
   std::unique_ptr<cryptauth::CryptAuthGCMManager> gcm_manager =
-      base::MakeUnique<cryptauth::CryptAuthGCMManagerImpl>(
+      std::make_unique<cryptauth::CryptAuthGCMManagerImpl>(
           gcm::GCMProfileServiceFactory::GetForProfile(profile)->driver(),
           profile->GetPrefs());
 
   std::unique_ptr<cryptauth::CryptAuthDeviceManager> device_manager =
-      base::MakeUnique<cryptauth::CryptAuthDeviceManagerImpl>(
+      std::make_unique<cryptauth::CryptAuthDeviceManagerImpl>(
           base::DefaultClock::GetInstance(),
           CreateCryptAuthClientFactoryImpl(profile), gcm_manager.get(),
           profile->GetPrefs());
 
   std::unique_ptr<cryptauth::CryptAuthEnrollmentManager> enrollment_manager =
-      base::MakeUnique<cryptauth::CryptAuthEnrollmentManagerImpl>(
+      std::make_unique<cryptauth::CryptAuthEnrollmentManagerImpl>(
           base::DefaultClock::GetInstance(),
-          base::MakeUnique<CryptAuthEnrollerFactoryImpl>(profile),
+          std::make_unique<CryptAuthEnrollerFactoryImpl>(profile),
           CreateSecureMessageDelegateImpl(), GetGcmDeviceInfo(),
           gcm_manager.get(), profile->GetPrefs());
 

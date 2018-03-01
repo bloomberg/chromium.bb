@@ -76,7 +76,7 @@ TEST_F(CrOSComponentInstallerTest, CompatibilityOK) {
   base::Version version;
   base::FilePath path;
   std::unique_ptr<base::DictionaryValue> manifest =
-      base::MakeUnique<base::DictionaryValue>();
+      std::make_unique<base::DictionaryValue>();
   manifest->SetString("min_env_version", "2.1");
   policy.ComponentReady(version, path, std::move(manifest));
 }
@@ -88,7 +88,7 @@ TEST_F(CrOSComponentInstallerTest, CompatibilityMissingManifest) {
   base::Version version;
   base::FilePath path;
   std::unique_ptr<base::DictionaryValue> manifest =
-      base::MakeUnique<base::DictionaryValue>();
+      std::make_unique<base::DictionaryValue>();
   policy.ComponentReady(version, path, std::move(manifest));
 }
 

@@ -360,7 +360,7 @@ TEST_F(PluginInfoHostImplTest, GetPluginContentSetting) {
   sync_preferences::TestingPrefServiceSyncable* prefs =
       profile()->GetTestingPrefService();
   prefs->SetManagedPref(prefs::kManagedDefaultPluginsSetting,
-                        base::MakeUnique<base::Value>(CONTENT_SETTING_BLOCK));
+                        std::make_unique<base::Value>(CONTENT_SETTING_BLOCK));
 
   // All plugins should be blocked now.
   VerifyPluginContentSetting(host, "foo", CONTENT_SETTING_BLOCK, true, true);

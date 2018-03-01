@@ -196,7 +196,7 @@ class AppBannerManagerBrowserTest : public InProcessBrowserTest {
       Browser* browser) {
     content::WebContents* web_contents =
         browser->tab_strip_model()->GetActiveWebContents();
-    return base::MakeUnique<AppBannerManagerTest>(web_contents);
+    return std::make_unique<AppBannerManagerTest>(web_contents);
   }
 
   void RunBannerTest(Browser* browser,

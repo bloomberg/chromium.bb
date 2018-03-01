@@ -22,12 +22,12 @@ void ChromeBrowserMainExtraPartsResourceCoordinator::
     return;
 
   process_resource_coordinator_ =
-      base::MakeUnique<resource_coordinator::ProcessResourceCoordinator>(
+      std::make_unique<resource_coordinator::ProcessResourceCoordinator>(
           connection->GetConnector());
 
   process_resource_coordinator_->SetLaunchTime(base::Time::Now());
   process_resource_coordinator_->SetPID(base::Process::Current().Pid());
 
   browser_child_process_watcher_ =
-      base::MakeUnique<resource_coordinator::BrowserChildProcessWatcher>();
+      std::make_unique<resource_coordinator::BrowserChildProcessWatcher>();
 }

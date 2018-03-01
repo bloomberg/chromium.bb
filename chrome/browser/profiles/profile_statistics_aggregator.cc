@@ -63,13 +63,13 @@ void ProfileStatisticsAggregator::StartAggregator() {
   // Initiate bookmark counting.
   bookmarks::BookmarkModel* bookmark_model =
       BookmarkModelFactory::GetForBrowserContext(profile_);
-  AddCounter(base::MakeUnique<browsing_data::BookmarkCounter>(bookmark_model));
+  AddCounter(std::make_unique<browsing_data::BookmarkCounter>(bookmark_model));
 
   // Initiate history counting.
   history::HistoryService* history_service =
       HistoryServiceFactory::GetForProfile(profile_,
                                            ServiceAccessType::EXPLICIT_ACCESS);
-  AddCounter(base::MakeUnique<browsing_data::HistoryCounter>(
+  AddCounter(std::make_unique<browsing_data::HistoryCounter>(
       history_service,
       browsing_data::HistoryCounter::GetUpdatedWebHistoryServiceCallback(),
       /*sync_service=*/nullptr));
@@ -78,14 +78,14 @@ void ProfileStatisticsAggregator::StartAggregator() {
   scoped_refptr<password_manager::PasswordStore> password_store =
       PasswordStoreFactory::GetForProfile(
           profile_, ServiceAccessType::EXPLICIT_ACCESS);
-  AddCounter(base::MakeUnique<browsing_data::PasswordsCounter>(
+  AddCounter(std::make_unique<browsing_data::PasswordsCounter>(
       password_store, /*sync_service=*/nullptr));
 
   // Initiate autofill counting.
   scoped_refptr<autofill::AutofillWebDataService> autofill_service =
       WebDataServiceFactory::GetAutofillWebDataForProfile(
           profile_, ServiceAccessType::EXPLICIT_ACCESS);
-  AddCounter(base::MakeUnique<browsing_data::AutofillCounter>(
+  AddCounter(std::make_unique<browsing_data::AutofillCounter>(
       autofill_service, /*sync_service=*/nullptr));
 }
 

@@ -80,7 +80,7 @@ class MockPrivetHttpFactory : public PrivetHTTPAsynchronousFactory {
 
   std::unique_ptr<PrivetHTTPResolution> CreatePrivetHTTP(
       const std::string& name) override {
-    return base::MakeUnique<MockResolution>(name, request_context_.get());
+    return std::make_unique<MockResolution>(name, request_context_.get());
   }
 
  private:
@@ -256,7 +256,7 @@ class PrivetNotificationsNotificationTest : public testing::Test {
   void SetUp() override {
     testing::Test::SetUp();
 
-    profile_manager_ = base::MakeUnique<TestingProfileManager>(
+    profile_manager_ = std::make_unique<TestingProfileManager>(
         TestingBrowserProcess::GetGlobal());
     ASSERT_TRUE(profile_manager_->SetUp());
     profile_ = profile_manager_->CreateTestingProfile("test-user");
@@ -264,7 +264,7 @@ class PrivetNotificationsNotificationTest : public testing::Test {
         std::make_unique<NotificationDisplayServiceTester>(profile_);
 
     TestingBrowserProcess::GetGlobal()->SetNotificationUIManager(
-        base::MakeUnique<StubNotificationUIManager>());
+        std::make_unique<StubNotificationUIManager>());
   }
 
   void TearDown() override {

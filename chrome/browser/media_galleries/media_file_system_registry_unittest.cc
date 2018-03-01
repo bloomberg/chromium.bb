@@ -426,7 +426,7 @@ MockProfileSharedRenderProcessHostFactory::CreateRenderProcessHost(
   if (existing != rph_map_.end())
     return existing->second.get();
   rph_map_[browser_context] =
-      base::MakeUnique<content::MockRenderProcessHost>(browser_context);
+      std::make_unique<content::MockRenderProcessHost>(browser_context);
   return rph_map_[browser_context].get();
 }
 
@@ -610,7 +610,7 @@ int ProfileState::GetAndClearComparisonCount() {
 
 void MediaFileSystemRegistryTest::CreateProfileState(size_t profile_count) {
   for (size_t i = 0; i < profile_count; ++i) {
-    profile_states_.push_back(base::MakeUnique<ProfileState>(&rph_factory_));
+    profile_states_.push_back(std::make_unique<ProfileState>(&rph_factory_));
   }
 }
 

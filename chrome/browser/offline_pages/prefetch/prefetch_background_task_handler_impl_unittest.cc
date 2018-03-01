@@ -28,7 +28,7 @@ class PrefetchBackgroundTaskHandlerImplTest : public testing::Test {
   }
 
   std::unique_ptr<PrefetchBackgroundTaskHandlerImpl> CreateHandler() {
-    auto result = base::MakeUnique<PrefetchBackgroundTaskHandlerImpl>(
+    auto result = std::make_unique<PrefetchBackgroundTaskHandlerImpl>(
         profile_.GetPrefs());
     result->SetTickClockForTesting(clock_.get());
     return result;

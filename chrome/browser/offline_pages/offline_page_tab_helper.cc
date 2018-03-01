@@ -294,7 +294,7 @@ void OfflinePageTabHelper::GetPageByOfflineIdDone(
   if (offline_info_.offline_page && !offline_info_.is_trusted &&
       offline_info_.offline_page->offline_id == offline_page->offline_id) {
     offline_info_.offline_page =
-        base::MakeUnique<OfflinePageItem>(*offline_page);
+        std::make_unique<OfflinePageItem>(*offline_page);
   }
 }
 
@@ -306,7 +306,7 @@ void OfflinePageTabHelper::SetOfflinePage(
     bool is_trusted,
     bool is_offline_preview) {
   provisional_offline_info_.offline_page =
-      base::MakeUnique<OfflinePageItem>(offline_page);
+      std::make_unique<OfflinePageItem>(offline_page);
   provisional_offline_info_.offline_header = offline_header;
   provisional_offline_info_.is_trusted = is_trusted;
   provisional_offline_info_.is_showing_offline_preview = is_offline_preview;

@@ -208,7 +208,7 @@ void TtsExtensionEngine::Speak(Utterance* utterance,
   base::JSONWriter::Write(*args, &json);
 
   Profile* profile = Profile::FromBrowserContext(utterance->browser_context());
-  auto event = base::MakeUnique<extensions::Event>(
+  auto event = std::make_unique<extensions::Event>(
       extensions::events::TTS_ENGINE_ON_SPEAK, tts_engine_events::kOnSpeak,
       std::move(args), profile);
   EventRouter::Get(profile)
@@ -218,7 +218,7 @@ void TtsExtensionEngine::Speak(Utterance* utterance,
 void TtsExtensionEngine::Stop(Utterance* utterance) {
   std::unique_ptr<base::ListValue> args(new base::ListValue());
   Profile* profile = Profile::FromBrowserContext(utterance->browser_context());
-  auto event = base::MakeUnique<extensions::Event>(
+  auto event = std::make_unique<extensions::Event>(
       extensions::events::TTS_ENGINE_ON_STOP, tts_engine_events::kOnStop,
       std::move(args), profile);
   EventRouter::Get(profile)
@@ -228,7 +228,7 @@ void TtsExtensionEngine::Stop(Utterance* utterance) {
 void TtsExtensionEngine::Pause(Utterance* utterance) {
   std::unique_ptr<base::ListValue> args(new base::ListValue());
   Profile* profile = Profile::FromBrowserContext(utterance->browser_context());
-  auto event = base::MakeUnique<extensions::Event>(
+  auto event = std::make_unique<extensions::Event>(
       extensions::events::TTS_ENGINE_ON_PAUSE, tts_engine_events::kOnPause,
       std::move(args), profile);
   EventRouter* event_router = EventRouter::Get(profile);
@@ -240,7 +240,7 @@ void TtsExtensionEngine::Pause(Utterance* utterance) {
 void TtsExtensionEngine::Resume(Utterance* utterance) {
   std::unique_ptr<base::ListValue> args(new base::ListValue());
   Profile* profile = Profile::FromBrowserContext(utterance->browser_context());
-  auto event = base::MakeUnique<extensions::Event>(
+  auto event = std::make_unique<extensions::Event>(
       extensions::events::TTS_ENGINE_ON_RESUME, tts_engine_events::kOnResume,
       std::move(args), profile);
   EventRouter* event_router = EventRouter::Get(profile);

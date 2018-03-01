@@ -366,7 +366,7 @@ void SetupModuleDatabase(std::unique_ptr<ModuleWatcher>* module_watcher) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   ModuleDatabase::SetInstance(
-      base::MakeUnique<ModuleDatabase>(base::SequencedTaskRunnerHandle::Get()));
+      std::make_unique<ModuleDatabase>(base::SequencedTaskRunnerHandle::Get()));
   auto* module_database = ModuleDatabase::GetInstance();
 
   *module_watcher = ModuleWatcher::Create(base::BindRepeating(&OnModuleEvent));
@@ -549,7 +549,7 @@ void ChromeBrowserMainPartsWin::PostBrowserStart() {
     safe_browsing::PostCleanupSettingsResetter().ResetTaggedProfiles(
         g_browser_process->profile_manager()->GetLastOpenedProfiles(),
         base::BindOnce(&MaybePostSettingsResetPrompt),
-        base::MakeUnique<
+        std::make_unique<
             safe_browsing::PostCleanupSettingsResetter::Delegate>());
   } else {
     MaybePostSettingsResetPrompt();

@@ -93,7 +93,7 @@ ModuleInfoData::ModuleInfoData(ModuleInfoData&& module_data) noexcept = default;
 std::unique_ptr<ModuleInspectionResult> InspectModule(
     const StringMapping& env_variable_mapping,
     const ModuleInfoKey& module_key) {
-  auto inspection_result = base::MakeUnique<ModuleInspectionResult>();
+  auto inspection_result = std::make_unique<ModuleInspectionResult>();
 
   PopulateModuleInfoData(module_key, inspection_result.get());
   internal::NormalizeInspectionResult(inspection_result.get());

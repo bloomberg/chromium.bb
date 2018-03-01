@@ -403,7 +403,7 @@ class OpenSystemSettingsHelper {
   void AddRegistryKeyWatcher(const wchar_t* key_path) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-    auto reg_key = base::MakeUnique<base::win::RegKey>(HKEY_CURRENT_USER,
+    auto reg_key = std::make_unique<base::win::RegKey>(HKEY_CURRENT_USER,
                                                        key_path, KEY_NOTIFY);
 
     if (reg_key->Valid() &&

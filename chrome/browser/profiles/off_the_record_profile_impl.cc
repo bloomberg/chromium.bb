@@ -272,7 +272,7 @@ base::FilePath OffTheRecordProfileImpl::GetPath() const {
 std::unique_ptr<content::ZoomLevelDelegate>
 OffTheRecordProfileImpl::CreateZoomLevelDelegate(
     const base::FilePath& partition_path) {
-  return base::MakeUnique<ChromeZoomLevelOTRDelegate>(
+  return std::make_unique<ChromeZoomLevelOTRDelegate>(
       zoom::ZoomEventManager::GetForBrowserContext(this)->GetWeakPtr());
 }
 #endif  // !defined(OS_ANDROID)

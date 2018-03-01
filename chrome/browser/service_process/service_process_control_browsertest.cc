@@ -194,7 +194,7 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, LaunchAndReconnect) {
   ServiceProcessControl::GetInstance()->remote_interfaces().GetInterface(
       &cloud_print_proxy);
   cloud_print_proxy->EnableCloudPrintProxyWithRobot(
-      "", "", "", base::MakeUnique<base::DictionaryValue>());
+      "", "", "", std::make_unique<base::DictionaryValue>());
 
   ServiceProcessControl::GetInstance()->remote_interfaces().GetInterface(
       &cloud_print_proxy);

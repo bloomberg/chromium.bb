@@ -135,7 +135,7 @@ bool PrintViewManagerBase::PrintNow(content::RenderFrameHost* rfh) {
 
   SetPrintingRFH(rfh);
   int32_t id = rfh->GetRoutingID();
-  return PrintNowInternal(rfh, base::MakeUnique<PrintMsg_PrintPages>(id));
+  return PrintNowInternal(rfh, std::make_unique<PrintMsg_PrintPages>(id));
 }
 #endif
 
@@ -636,7 +636,7 @@ void PrintViewManagerBase::ReleasePrintJob() {
     return;
 
   if (rfh) {
-    auto msg = base::MakeUnique<PrintMsg_PrintingDone>(rfh->GetRoutingID(),
+    auto msg = std::make_unique<PrintMsg_PrintingDone>(rfh->GetRoutingID(),
                                                        printing_succeeded_);
     rfh->Send(msg.release());
   }

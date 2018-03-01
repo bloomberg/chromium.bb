@@ -267,7 +267,7 @@ PasswordStoreFactory::BuildServiceInstanceFor(
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   std::unique_ptr<password_manager::PasswordStoreSigninNotifier> notifier =
-      base::MakeUnique<password_manager::PasswordStoreSigninNotifierImpl>(
+      std::make_unique<password_manager::PasswordStoreSigninNotifierImpl>(
           profile);
   ps->SetPasswordStoreSigninNotifier(std::move(notifier));
 #endif

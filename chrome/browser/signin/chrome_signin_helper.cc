@@ -125,7 +125,7 @@ class DiceURLRequestUserData : public base::SupportsUserData::Data {
       const content::ResourceRequestInfo* info =
           content::ResourceRequestInfo::ForRequest(request);
       request->SetUserData(kDiceURLRequestUserDataKey,
-                           base::MakeUnique<DiceURLRequestUserData>(
+                           std::make_unique<DiceURLRequestUserData>(
                                info->GetWebContentsGetterForRequest()));
     }
   }
@@ -320,7 +320,7 @@ void ProcessDiceHeaderUIThread(
       DiceResponseHandler::GetForProfile(profile);
   dice_response_handler->ProcessDiceHeader(
       dice_params,
-      base::MakeUnique<ProcessDiceHeaderDelegateImpl>(
+      std::make_unique<ProcessDiceHeaderDelegateImpl>(
           web_contents, profile->GetPrefs(),
           SigninManagerFactory::GetForProfile(profile), is_sync_signin_tab,
           base::BindOnce(&CreateDiceTurnOnSyncHelper, base::Unretained(profile),

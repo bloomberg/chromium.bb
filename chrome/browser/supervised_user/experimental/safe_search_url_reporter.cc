@@ -82,7 +82,7 @@ std::unique_ptr<SafeSearchURLReporter> SafeSearchURLReporter::CreateWithProfile(
 
 void SafeSearchURLReporter::ReportUrl(const GURL& url,
                                       const SuccessCallback& callback) {
-  reports_.push_back(base::MakeUnique<Report>(url, callback, url_fetcher_id_));
+  reports_.push_back(std::make_unique<Report>(url, callback, url_fetcher_id_));
   StartFetching(reports_.back().get());
 }
 

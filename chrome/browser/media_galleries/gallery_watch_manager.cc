@@ -127,7 +127,7 @@ void GalleryWatchManager::FileWatchManager::AddFileWatch(
     return;
   }
 
-  auto watcher = base::MakeUnique<base::FilePathWatcher>();
+  auto watcher = std::make_unique<base::FilePathWatcher>();
   bool success = watcher->Watch(path,
                                 true /*recursive*/,
                                 base::Bind(&FileWatchManager::OnFilePathChanged,

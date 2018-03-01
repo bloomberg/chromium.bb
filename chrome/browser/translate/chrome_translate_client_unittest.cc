@@ -25,7 +25,7 @@
 
 std::unique_ptr<KeyedService> BuildFakeUserEventService(
     content::BrowserContext* context) {
-  return base::MakeUnique<syncer::FakeUserEventService>();
+  return std::make_unique<syncer::FakeUserEventService>();
 }
 
 metrics::TranslateEventProto BuildTranslateEventProto(
@@ -47,7 +47,7 @@ class ChromeTranslateClientTest : public ChromeRenderViewHostTestHarness {
         browser_sync::UserEventServiceFactory::GetInstance()
             ->SetTestingFactoryAndUse(browser_context(),
                                       &BuildFakeUserEventService));
-    scoped_feature_list_ = base::MakeUnique<base::test::ScopedFeatureList>();
+    scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
     scoped_feature_list_->InitWithFeatures(
         {switches::kSyncUserLanguageDetectionEvents,
          switches::kSyncUserTranslationEvents},

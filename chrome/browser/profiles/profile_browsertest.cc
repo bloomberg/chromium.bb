@@ -207,7 +207,7 @@ std::unique_ptr<net::test_server::HttpResponse> WaitForRequest(
                                    quit_closure);
 
   if (hung_response)
-    return base::MakeUnique<net::test_server::HungResponse>();
+    return std::make_unique<net::test_server::HungResponse>();
   return nullptr;
 }
 

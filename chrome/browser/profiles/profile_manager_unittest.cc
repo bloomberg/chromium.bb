@@ -668,7 +668,7 @@ TEST_F(ProfileManagerTest, AutoloadProfilesWithBackgroundApps) {
   ProfileAttributesStorage& storage =
       profile_manager->GetProfileAttributesStorage();
   local_state_.Get()->SetUserPref(prefs::kBackgroundModeEnabled,
-                                  base::MakeUnique<base::Value>(true));
+                                  std::make_unique<base::Value>(true));
 
   // Setting a pref which is not applicable to a system (i.e., Android in this
   // case) does not necessarily create it. Don't bother continuing with the
@@ -703,7 +703,7 @@ TEST_F(ProfileManagerTest, DoNotAutoloadProfilesIfBackgroundModeOff) {
   ProfileAttributesStorage& storage =
       profile_manager->GetProfileAttributesStorage();
   local_state_.Get()->SetUserPref(prefs::kBackgroundModeEnabled,
-                                  base::MakeUnique<base::Value>(false));
+                                  std::make_unique<base::Value>(false));
 
   EXPECT_EQ(0u, storage.GetNumberOfProfiles());
 

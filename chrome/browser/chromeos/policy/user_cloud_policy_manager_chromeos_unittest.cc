@@ -455,7 +455,7 @@ TEST_F(UserCloudPolicyManagerChromeOSTest, SynchronousLoadWithEmptyStore) {
   // session.
   fatal_error_expected_ = true;
   std::unique_ptr<MockCloudPolicyStore> store =
-      base::MakeUnique<MockCloudPolicyStore>();
+      std::make_unique<MockCloudPolicyStore>();
   // Tell the store it couldn't load data.
   store->NotifyStoreError();
   CreateManager(std::move(store), base::TimeDelta(),

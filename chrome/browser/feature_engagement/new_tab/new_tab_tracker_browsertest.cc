@@ -40,7 +40,7 @@ MATCHER_P(IsFeature, feature, "") {
 
 std::unique_ptr<KeyedService> BuildTestTrackerFactory(
     content::BrowserContext* context) {
-  return base::MakeUnique<testing::StrictMock<test::MockTracker>>();
+  return std::make_unique<testing::StrictMock<test::MockTracker>>();
 }
 
 class NewTabTrackerBrowserTest : public InProcessBrowserTest {

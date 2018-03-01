@@ -523,7 +523,7 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
     if (!merge_session_throttling_utils::AreAllSessionMergedAlready() &&
         request->url().SchemeIsHTTPOrHTTPS()) {
       throttles->push_back(
-          base::MakeUnique<MergeSessionResourceThrottle>(request));
+          std::make_unique<MergeSessionResourceThrottle>(request));
     }
   }
 #endif
@@ -584,7 +584,7 @@ void ChromeResourceDispatcherHostDelegate::DownloadStarting(
 
   // If it's from the web, we don't trust it, so we push the throttle on.
   if (is_content_initiated) {
-    throttles->push_back(base::MakeUnique<DownloadResourceThrottle>(
+    throttles->push_back(std::make_unique<DownloadResourceThrottle>(
         download_request_limiter_, info->GetWebContentsGetterForRequest(),
         request->url(), request->method()));
   }
@@ -599,7 +599,7 @@ void ChromeResourceDispatcherHostDelegate::DownloadStarting(
 #if defined(OS_ANDROID)
     // On Android, forward text/html downloads to OfflinePages backend.
     throttles->push_back(
-        base::MakeUnique<offline_pages::downloads::ResourceThrottle>(request));
+        std::make_unique<offline_pages::downloads::ResourceThrottle>(request));
 #endif
   }
 
@@ -608,7 +608,7 @@ void ChromeResourceDispatcherHostDelegate::DownloadStarting(
   // AppendStandardResourceThrottles so the download will not bypass
   // safebrowsing checks.
   if (is_content_initiated) {
-    throttles->push_back(base::MakeUnique<InterceptDownloadResourceThrottle>(
+    throttles->push_back(std::make_unique<InterceptDownloadResourceThrottle>(
         request, info->GetWebContentsGetterForRequest()));
   }
 #endif
@@ -705,7 +705,7 @@ void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(
     if (!base::FeatureList::IsEnabled(network::features::kNetworkService) &&
         content::IsResourceTypeFrame(info->GetResourceType())) {
       throttles->push_back(
-          base::MakeUnique<prerender::PrerenderResourceThrottle>(request));
+          std::make_unique<prerender::PrerenderResourceThrottle>(request));
     }
   }
 
@@ -933,7 +933,7 @@ void ChromeResourceDispatcherHostDelegate::RequestComplete(
     }
   }
 
-  auto load_timing_info = base::MakeUnique<net::LoadTimingInfo>();
+  auto load_timing_info = std::make_unique<net::LoadTimingInfo>();
   url_request->GetLoadTimingInfo(load_timing_info.get());
 
   BrowserThread::PostTask(

@@ -204,7 +204,7 @@ class TestURLRequestInterceptingJobFactory
         MaybeCreateJobWithProtocolHandler(scheme, request, network_delegate);
     if (job) {
       static_cast<OfflinePageRequestJob*>(job)->SetDelegateForTesting(
-          base::MakeUnique<OfflinePageRequestJobTestDelegate>(web_contents_,
+          std::make_unique<OfflinePageRequestJobTestDelegate>(web_contents_,
                                                               kTabId));
     }
     return job;
@@ -662,7 +662,7 @@ std::unique_ptr<net::URLRequest> OfflinePageRequestJobTest::CreateRequest(
     const GURL& url,
     const std::string& method,
     content::ResourceType resource_type) {
-  url_request_delegate_ = base::MakeUnique<TestURLRequestDelegate>(base::Bind(
+  url_request_delegate_ = std::make_unique<TestURLRequestDelegate>(base::Bind(
       &OfflinePageRequestJobTest::ReadCompletedOnIO, base::Unretained(this)));
 
   std::unique_ptr<net::URLRequest> request =

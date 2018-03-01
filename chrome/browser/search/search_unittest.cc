@@ -84,7 +84,7 @@ class SearchTest : public BrowserWithTestWindowTest {
     data.alternate_urls.push_back("http://foo.com/alt#quux={searchTerms}");
 
     TemplateURL* template_url =
-        template_url_service->Add(base::MakeUnique<TemplateURL>(data));
+        template_url_service->Add(std::make_unique<TemplateURL>(data));
     template_url_service->SetUserSelectedDefaultSearchProvider(template_url);
   }
 
@@ -428,7 +428,7 @@ TEST_F(SearchTest, SearchProviderWithPort) {
   data.alternate_urls.push_back("https://[::1]:1993/alt#quux={searchTerms}");
 
   TemplateURL* template_url =
-      template_url_service->Add(base::MakeUnique<TemplateURL>(data));
+      template_url_service->Add(std::make_unique<TemplateURL>(data));
   template_url_service->SetUserSelectedDefaultSearchProvider(template_url);
 
   EXPECT_TRUE(ShouldAssignURLToInstantRenderer(

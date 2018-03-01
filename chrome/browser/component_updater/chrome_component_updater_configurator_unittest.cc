@@ -39,7 +39,7 @@ class ChromeComponentUpdaterConfiguratorTest : public testing::Test {
 };
 
 void ChromeComponentUpdaterConfiguratorTest::SetUp() {
-  pref_service_ = base::MakeUnique<TestingPrefServiceSimple>();
+  pref_service_ = std::make_unique<TestingPrefServiceSimple>();
   RegisterPrefsForChromeComponentUpdaterConfigurator(pref_service_->registry());
 }
 
@@ -156,17 +156,17 @@ TEST_F(ChromeComponentUpdaterConfiguratorTest, TestEnabledComponentUpdates) {
 
   // Tests the component updates are disabled.
   pref_service()->SetManagedPref("component_updates.component_updates_enabled",
-                                 base::MakeUnique<base::Value>(false));
+                                 std::make_unique<base::Value>(false));
   EXPECT_FALSE(config->EnabledComponentUpdates());
 
   // Tests the component updates are enabled.
   pref_service()->SetManagedPref("component_updates.component_updates_enabled",
-                                 base::MakeUnique<base::Value>(true));
+                                 std::make_unique<base::Value>(true));
   EXPECT_TRUE(config->EnabledComponentUpdates());
 
   // Sanity check setting the preference back to |false| and then removing it.
   pref_service()->SetManagedPref("component_updates.component_updates_enabled",
-                                 base::MakeUnique<base::Value>(false));
+                                 std::make_unique<base::Value>(false));
   EXPECT_FALSE(config->EnabledComponentUpdates());
   pref_service()->RemoveManagedPref(
       "component_updates.component_updates_enabled");

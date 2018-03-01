@@ -157,7 +157,7 @@ canonical_cookie::CookieHashSet* CannedBrowsingDataCookieHelper::GetCookiesFor(
   if (entry)
     return entry.get();
 
-  entry = base::MakeUnique<canonical_cookie::CookieHashSet>();
+  entry = std::make_unique<canonical_cookie::CookieHashSet>();
   return entry.get();
 }
 

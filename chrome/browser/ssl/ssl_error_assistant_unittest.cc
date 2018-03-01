@@ -263,7 +263,7 @@ TEST_F(SSLErrorAssistantTest, DynamicInterstitialListComplexRegexMatch) {
   EXPECT_EQ(1u, ssl_info().public_key_hashes.size());
 
   auto config_proto =
-      base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
+      std::make_unique<chrome_browser_ssl::SSLErrorAssistantConfig>();
   config_proto->set_version_id(kLargeVersionId);
 
   // Add a dynamic interstitial that will mismatch.
@@ -354,7 +354,7 @@ TEST_F(SSLErrorAssistantTest, DynamicInterstitialListNoCommonName) {
   EXPECT_EQ(1u, ssl_info().public_key_hashes.size());
 
   auto config_proto =
-      base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
+      std::make_unique<chrome_browser_ssl::SSLErrorAssistantConfig>();
   config_proto->set_version_id(kLargeVersionId);
 
   // Add a dynamic interstitial that will mismatch.
@@ -399,7 +399,7 @@ TEST_F(SSLErrorAssistantTest, DynamicInterstitialListNoOrganizationRegex) {
   EXPECT_EQ(1u, ssl_info().public_key_hashes.size());
 
   auto config_proto =
-      base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
+      std::make_unique<chrome_browser_ssl::SSLErrorAssistantConfig>();
   config_proto->set_version_id(kLargeVersionId);
 
   // Add a dynamic interstitial that will mismatch.
@@ -444,7 +444,7 @@ TEST_F(SSLErrorAssistantTest, DynamicInterstitialListNoCertHashes) {
   EXPECT_EQ(1u, ssl_info().public_key_hashes.size());
 
   auto config_proto =
-      base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
+      std::make_unique<chrome_browser_ssl::SSLErrorAssistantConfig>();
   config_proto->set_version_id(kLargeVersionId);
 
   // Add a dynamic interstitial that will mismatch.
@@ -485,7 +485,7 @@ TEST_F(SSLErrorAssistantTest, DynamicInterstitialListMatchBlank) {
   EXPECT_EQ(1u, ssl_info().public_key_hashes.size());
 
   auto config_proto =
-      base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
+      std::make_unique<chrome_browser_ssl::SSLErrorAssistantConfig>();
   config_proto->set_version_id(kLargeVersionId);
 
   // Add a dynamic interstitial that will mismatch.
@@ -563,7 +563,7 @@ TEST_F(SSLErrorAssistantTest, DynamicInterstitialListCommonNameMismatch) {
   EXPECT_EQ(1u, ssl_info().public_key_hashes.size());
 
   auto config_proto =
-      base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
+      std::make_unique<chrome_browser_ssl::SSLErrorAssistantConfig>();
   config_proto->set_version_id(kLargeVersionId);
 
   chrome_browser_ssl::DynamicInterstitial* filter =
@@ -591,7 +591,7 @@ TEST_F(SSLErrorAssistantTest, DynamicInterstitialListOrganizationMismatch) {
   EXPECT_EQ(1u, ssl_info().public_key_hashes.size());
 
   auto config_proto =
-      base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
+      std::make_unique<chrome_browser_ssl::SSLErrorAssistantConfig>();
   config_proto->set_version_id(kLargeVersionId);
 
   chrome_browser_ssl::DynamicInterstitial* filter =

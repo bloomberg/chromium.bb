@@ -128,7 +128,7 @@ const uint32_t kDefaultRelTypes = PrerenderRelTypePrerender;
 
 base::SimpleTestTickClock* OverridePrerenderManagerTimeTicks(
     PrerenderManager* prerender_manager) {
-  auto tick_clock = base::MakeUnique<base::SimpleTestTickClock>();
+  auto tick_clock = std::make_unique<base::SimpleTestTickClock>();
   base::SimpleTestTickClock* tick_clock_ptr = tick_clock.get();
   prerender_manager->SetTickClockForTesting(std::move(tick_clock));
   return tick_clock_ptr;
@@ -188,7 +188,7 @@ class UnitTestPrerenderManager : public PrerenderManager {
   DummyPrerenderContents* CreateNextPrerenderContents(
       const GURL& url,
       FinalStatus expected_final_status) {
-    return SetNextPrerenderContents(base::MakeUnique<DummyPrerenderContents>(
+    return SetNextPrerenderContents(std::make_unique<DummyPrerenderContents>(
         this, url, ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN,
         expected_final_status));
   }
@@ -197,7 +197,7 @@ class UnitTestPrerenderManager : public PrerenderManager {
       const GURL& url,
       Origin origin,
       FinalStatus expected_final_status) {
-    return SetNextPrerenderContents(base::MakeUnique<DummyPrerenderContents>(
+    return SetNextPrerenderContents(std::make_unique<DummyPrerenderContents>(
         this, url, origin, expected_final_status));
   }
 
@@ -205,7 +205,7 @@ class UnitTestPrerenderManager : public PrerenderManager {
       const GURL& url,
       const std::vector<GURL>& alias_urls,
       FinalStatus expected_final_status) {
-    auto prerender_contents = base::MakeUnique<DummyPrerenderContents>(
+    auto prerender_contents = std::make_unique<DummyPrerenderContents>(
         this, url, ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN,
         expected_final_status);
     for (const GURL& alias : alias_urls)
@@ -417,7 +417,7 @@ class PrerenderTest : public testing::Test {
             ->AssociateFieldTrialParams(kTrialName, kTrialGroup, params));
 
     std::unique_ptr<base::FeatureList> feature_list =
-        base::MakeUnique<base::FeatureList>();
+        std::make_unique<base::FeatureList>();
     feature_list->RegisterFieldTrialOverride(
         kNoStatePrefetchFeature.name,
         base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial);

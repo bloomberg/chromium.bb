@@ -45,7 +45,7 @@ class TestOwner : public PrintJobWorkerOwner {
       PrintJobWorkerOwner* new_owner) override {
     // We're screwing up here since we're calling worker from the main thread.
     // That's fine for testing. It is actually simulating PrinterQuery behavior.
-    auto worker = base::MakeUnique<TestPrintJobWorker>(new_owner);
+    auto worker = std::make_unique<TestPrintJobWorker>(new_owner);
     EXPECT_TRUE(worker->Start());
     worker->printing_context()->UseDefaultSettings();
     settings_ = worker->printing_context()->settings();

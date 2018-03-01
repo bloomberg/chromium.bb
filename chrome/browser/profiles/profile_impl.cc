@@ -747,7 +747,7 @@ Profile::ProfileType ProfileImpl::GetProfileType() const {
 #if !defined(OS_ANDROID)
 std::unique_ptr<content::ZoomLevelDelegate>
 ProfileImpl::CreateZoomLevelDelegate(const base::FilePath& partition_path) {
-  return base::MakeUnique<ChromeZoomLevelPrefs>(
+  return std::make_unique<ChromeZoomLevelPrefs>(
       GetPrefs(), GetPath(), partition_path,
       zoom::ZoomEventManager::GetForBrowserContext(this)->GetWeakPtr());
 }
@@ -1370,6 +1370,6 @@ std::unique_ptr<service_manager::Service> ProfileImpl::CreateIdentityService() {
   SigninManagerBase* signin_manager = SigninManagerFactory::GetForProfile(this);
   ProfileOAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(this);
-  return base::MakeUnique<identity::IdentityService>(
+  return std::make_unique<identity::IdentityService>(
       account_tracker, signin_manager, token_service);
 }

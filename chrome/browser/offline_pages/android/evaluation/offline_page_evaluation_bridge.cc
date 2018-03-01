@@ -157,7 +157,7 @@ std::unique_ptr<KeyedService> GetTestingRequestCoordinator(
   std::unique_ptr<OfflinePagesUkmReporter> ukm_reporter(
       new OfflinePagesUkmReporter());
   std::unique_ptr<RequestCoordinator> request_coordinator =
-      base::MakeUnique<RequestCoordinator>(
+      std::make_unique<RequestCoordinator>(
           std::move(policy), std::move(offliner), std::move(queue),
           std::move(scheduler), network_quality_estimator,
           std::move(ukm_reporter));
@@ -167,7 +167,7 @@ std::unique_ptr<KeyedService> GetTestingRequestCoordinator(
 
   DownloadNotifyingObserver::CreateAndStartObserving(
       request_coordinator.get(),
-      base::MakeUnique<android::OfflinePageNotificationBridge>());
+      std::make_unique<android::OfflinePageNotificationBridge>());
 
   return std::move(request_coordinator);
 }

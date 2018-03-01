@@ -46,7 +46,7 @@ SubresourceFilterContentSettingsManager::
     SubresourceFilterContentSettingsManager(Profile* profile)
     : history_observer_(this),
       settings_map_(HostContentSettingsMapFactory::GetForProfile(profile)),
-      clock_(base::MakeUnique<base::DefaultClock>(base::DefaultClock())),
+      clock_(std::make_unique<base::DefaultClock>(base::DefaultClock())),
       should_use_smart_ui_(ShouldUseSmartUI()) {
   DCHECK(profile);
   DCHECK(settings_map_);
@@ -86,7 +86,7 @@ void SubresourceFilterContentSettingsManager::WhitelistSite(const GURL& url) {
 }
 
 void SubresourceFilterContentSettingsManager::OnDidShowUI(const GURL& url) {
-  auto dict = base::MakeUnique<base::DictionaryValue>();
+  auto dict = std::make_unique<base::DictionaryValue>();
   double now = clock_->Now().ToDoubleT();
   dict->SetDouble(kInfobarLastShownTimeKey, now);
   SetSiteMetadata(url, std::move(dict));
@@ -115,7 +115,7 @@ void SubresourceFilterContentSettingsManager::
   if (!is_activated) {
     SetSiteMetadata(url, nullptr);
   } else if (!GetSiteMetadata(url)) {
-    SetSiteMetadata(url, base::MakeUnique<base::DictionaryValue>());
+    SetSiteMetadata(url, std::make_unique<base::DictionaryValue>());
   }
 }
 

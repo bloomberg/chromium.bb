@@ -22,7 +22,7 @@ int kCctOriginObserverUserDataKey;
 void CctOriginObserver::AttachToOfflinePageModel(OfflinePageModel* model) {
   if (!IsOfflinePagesCTV2Enabled())
     return;
-  auto origin_observer = base::MakeUnique<CctOriginObserver>();
+  auto origin_observer = std::make_unique<CctOriginObserver>();
   model->AddObserver(origin_observer.get());
   model->SetUserData(&kCctOriginObserverUserDataKey,
                      std::move(origin_observer));

@@ -65,7 +65,7 @@ class MockHardFaultDeltasWindow
 
 void TestSwapThrashingMonitorDelegateWin::SetMockWindow() {
   std::unique_ptr<MockHardFaultDeltasWindow> mock_window =
-      base::MakeUnique<MockHardFaultDeltasWindow>();
+      std::make_unique<MockHardFaultDeltasWindow>();
   mock_window_ = mock_window.get();
   hard_fault_deltas_window_.reset(mock_window.release());
 }

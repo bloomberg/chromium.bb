@@ -148,7 +148,7 @@ class MockChromePasswordManagerClient : public ChromePasswordManagerClient {
     ON_CALL(*this, GetMainFrameCertStatus()).WillByDefault(testing::Return(0));
 #if defined(SAFE_BROWSING_DB_LOCAL)
     password_protection_service_ =
-        base::MakeUnique<MockPasswordProtectionService>();
+        std::make_unique<MockPasswordProtectionService>();
 #endif
   }
   ~MockChromePasswordManagerClient() override {}
@@ -403,10 +403,10 @@ TEST_F(ChromePasswordManagerClientTest,
   // preference.
   ChromePasswordManagerClient* client = GetClient();
   prefs()->SetUserPref(password_manager::prefs::kCredentialsEnableService,
-                       base::MakeUnique<base::Value>(true));
+                       std::make_unique<base::Value>(true));
   EXPECT_TRUE(client->IsSavingAndFillingEnabledForCurrentPage());
   prefs()->SetUserPref(password_manager::prefs::kCredentialsEnableService,
-                       base::MakeUnique<base::Value>(false));
+                       std::make_unique<base::Value>(false));
   EXPECT_FALSE(client->IsSavingAndFillingEnabledForCurrentPage());
 }
 
@@ -425,7 +425,7 @@ TEST_F(ChromePasswordManagerClientTest, SavingAndFillingEnabledConditionsTest) {
   // Functionality disabled if there are SSL errors and the manager itself is
   // disabled.
   prefs()->SetUserPref(password_manager::prefs::kCredentialsEnableService,
-                       base::MakeUnique<base::Value>(false));
+                       std::make_unique<base::Value>(false));
   EXPECT_FALSE(client->IsSavingAndFillingEnabledForCurrentPage());
   EXPECT_FALSE(client->IsFillingEnabledForCurrentPage());
 
@@ -433,7 +433,7 @@ TEST_F(ChromePasswordManagerClientTest, SavingAndFillingEnabledConditionsTest) {
   // is disabled.
   EXPECT_CALL(*client, GetMainFrameCertStatus()).WillRepeatedly(Return(0));
   prefs()->SetUserPref(password_manager::prefs::kCredentialsEnableService,
-                       base::MakeUnique<base::Value>(false));
+                       std::make_unique<base::Value>(false));
   EXPECT_FALSE(client->IsSavingAndFillingEnabledForCurrentPage());
   EXPECT_TRUE(client->IsFillingEnabledForCurrentPage());
 
@@ -441,7 +441,7 @@ TEST_F(ChromePasswordManagerClientTest, SavingAndFillingEnabledConditionsTest) {
   // enabled.
   EXPECT_CALL(*client, GetMainFrameCertStatus()).WillRepeatedly(Return(0));
   prefs()->SetUserPref(password_manager::prefs::kCredentialsEnableService,
-                       base::MakeUnique<base::Value>(true));
+                       std::make_unique<base::Value>(true));
   EXPECT_TRUE(client->IsSavingAndFillingEnabledForCurrentPage());
   EXPECT_TRUE(client->IsFillingEnabledForCurrentPage());
 
@@ -453,7 +453,7 @@ TEST_F(ChromePasswordManagerClientTest, SavingAndFillingEnabledConditionsTest) {
   // Functionality disabled in Incognito mode also when manager itself is
   // enabled.
   prefs()->SetUserPref(password_manager::prefs::kCredentialsEnableService,
-                       base::MakeUnique<base::Value>(true));
+                       std::make_unique<base::Value>(true));
   EXPECT_FALSE(client->IsSavingAndFillingEnabledForCurrentPage());
   EXPECT_TRUE(client->IsFillingEnabledForCurrentPage());
   profile()->ForceIncognito(false);

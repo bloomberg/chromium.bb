@@ -140,7 +140,7 @@ void TtsExtensionEventHandler::OnTtsEvent(Utterance* utterance,
   std::unique_ptr<base::ListValue> arguments(new base::ListValue());
   arguments->Append(std::move(details));
 
-  auto event = base::MakeUnique<extensions::Event>(
+  auto event = std::make_unique<extensions::Event>(
       ::extensions::events::TTS_ON_EVENT, ::events::kOnEvent,
       std::move(arguments), utterance->browser_context());
   event->event_url = utterance->src_url();
@@ -310,7 +310,7 @@ ExtensionFunction::ResponseAction TtsResumeFunction::Run() {
 }
 
 ExtensionFunction::ResponseAction TtsIsSpeakingFunction::Run() {
-  return RespondNow(OneArgument(base::MakeUnique<base::Value>(
+  return RespondNow(OneArgument(std::make_unique<base::Value>(
       TtsController::GetInstance()->IsSpeaking())));
 }
 
@@ -318,7 +318,7 @@ ExtensionFunction::ResponseAction TtsGetVoicesFunction::Run() {
   std::vector<VoiceData> voices;
   TtsController::GetInstance()->GetVoices(browser_context(), &voices);
 
-  auto result_voices = base::MakeUnique<base::ListValue>();
+  auto result_voices = std::make_unique<base::ListValue>();
   for (size_t i = 0; i < voices.size(); ++i) {
     const VoiceData& voice = voices[i];
     std::unique_ptr<base::DictionaryValue> result_voice(
@@ -334,7 +334,7 @@ ExtensionFunction::ResponseAction TtsGetVoicesFunction::Run() {
     if (!voice.extension_id.empty())
       result_voice->SetString(constants::kExtensionIdKey, voice.extension_id);
 
-    auto event_types = base::MakeUnique<base::ListValue>();
+    auto event_types = std::make_unique<base::ListValue>();
     for (std::set<TtsEventType>::iterator iter = voice.events.begin();
          iter != voice.events.end(); ++iter) {
       const char* event_name_constant = TtsEventTypeToString(*iter);

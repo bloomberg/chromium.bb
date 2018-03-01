@@ -1158,7 +1158,7 @@ class ChromeBrowsingDataRemoverDelegateTest : public testing::Test {
     SearchPermissionsService* service =
         SearchPermissionsService::Factory::GetForBrowserContext(profile_.get());
     std::unique_ptr<TestSearchEngineDelegate> delegate =
-        base::MakeUnique<TestSearchEngineDelegate>();
+        std::make_unique<TestSearchEngineDelegate>();
     TestSearchEngineDelegate* delegate_ptr = delegate.get();
     service->SetSearchEngineDelegateForTest(std::move(delegate));
     delegate_ptr->UpdateDSEOrigin();
@@ -1918,16 +1918,16 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
       HostContentSettingsMapFactory::GetForProfile(GetProfile());
   host_content_settings_map->SetWebsiteSettingDefaultScope(
       kOrigin1, GURL(), CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, std::string(),
-      base::MakeUnique<base::DictionaryValue>());
+      std::make_unique<base::DictionaryValue>());
   host_content_settings_map->SetWebsiteSettingDefaultScope(
       kOrigin2, GURL(), CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, std::string(),
-      base::MakeUnique<base::DictionaryValue>());
+      std::make_unique<base::DictionaryValue>());
   host_content_settings_map->SetWebsiteSettingDefaultScope(
       kOrigin3, GURL(), CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, std::string(),
-      base::MakeUnique<base::DictionaryValue>());
+      std::make_unique<base::DictionaryValue>());
   host_content_settings_map->SetWebsiteSettingDefaultScope(
       kOrigin4, GURL(), CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, std::string(),
-      base::MakeUnique<base::DictionaryValue>());
+      std::make_unique<base::DictionaryValue>());
 
   // Clear all except for origin1 and origin3.
   std::unique_ptr<BrowsingDataFilterBuilder> filter(
@@ -2057,7 +2057,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveSelectedClientHints) {
       HostContentSettingsMapFactory::GetForProfile(GetProfile());
 
   std::unique_ptr<base::ListValue> expiration_times_list =
-      base::MakeUnique<base::ListValue>();
+      std::make_unique<base::ListValue>();
   expiration_times_list->AppendInteger(0);
   expiration_times_list->AppendInteger(2);
 
@@ -2116,7 +2116,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveAllClientHints) {
       HostContentSettingsMapFactory::GetForProfile(GetProfile());
 
   std::unique_ptr<base::ListValue> expiration_times_list =
-      base::MakeUnique<base::ListValue>();
+      std::make_unique<base::ListValue>();
   expiration_times_list->AppendInteger(0);
   expiration_times_list->AppendInteger(2);
 
@@ -2944,7 +2944,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, AllTypesAreGettingDeleted) {
     // Create an exception.
     map->SetWebsiteSettingDefaultScope(
         url, url, info->type(), std::string(),
-        base::MakeUnique<base::Value>(some_value.Clone()));
+        std::make_unique<base::Value>(some_value.Clone()));
 
     // Check that the exception was created.
     std::unique_ptr<base::Value> value =

@@ -808,7 +808,7 @@ void ThemeService::OnExtensionServiceReady() {
   }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  theme_observer_ = base::MakeUnique<ThemeObserver>(this);
+  theme_observer_ = std::make_unique<ThemeObserver>(this);
 #endif
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(

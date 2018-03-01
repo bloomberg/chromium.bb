@@ -26,7 +26,7 @@ TEST(FontPrefChangeNotifier, Registrars) {
   FontPrefChangeNotifier::Registrar reg0;
 
   std::unique_ptr<TestingPrefServiceSimple> service =
-      base::MakeUnique<TestingPrefServiceSimple>();
+      std::make_unique<TestingPrefServiceSimple>();
   PrefRegistrySimple* pref_registry = service->registry();
 
   std::string font1 = prefix + "font1";
@@ -37,7 +37,7 @@ TEST(FontPrefChangeNotifier, Registrars) {
   pref_registry->RegisterStringPref(font3, std::string());
 
   std::unique_ptr<FontPrefChangeNotifier> notifier =
-      base::MakeUnique<FontPrefChangeNotifier>(service.get());
+      std::make_unique<FontPrefChangeNotifier>(service.get());
   reg0.Register(notifier.get(),
                 base::BindRepeating(&AppendString, base::Unretained(&fonts0)));
 

@@ -196,7 +196,7 @@ TEST_F(ChromePluginServiceFilterTest, ManagedSetting) {
   sync_preferences::TestingPrefServiceSyncable* prefs =
       profile()->GetTestingPrefService();
   prefs->SetManagedPref(prefs::kManagedDefaultPluginsSetting,
-                        base::MakeUnique<base::Value>(CONTENT_SETTING_ASK));
+                        std::make_unique<base::Value>(CONTENT_SETTING_ASK));
 
   GURL url("http://www.google.com");
   url::Origin main_frame_origin = url::Origin::Create(url);

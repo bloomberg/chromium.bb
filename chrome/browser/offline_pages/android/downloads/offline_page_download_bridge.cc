@@ -348,7 +348,7 @@ static jlong JNI_OfflinePageDownloadBridge_Init(
     DCHECK(aggregator);
     adapter = new DownloadUIAdapter(
         aggregator, offline_page_model, request_coordinator,
-        base::MakeUnique<DownloadUIAdapterDelegate>(offline_page_model));
+        std::make_unique<DownloadUIAdapterDelegate>(offline_page_model));
     DownloadUIAdapter::AttachToOfflinePageModel(base::WrapUnique(adapter),
                                                 offline_page_model);
   }

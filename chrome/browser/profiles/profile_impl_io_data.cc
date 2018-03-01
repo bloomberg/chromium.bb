@@ -178,7 +178,7 @@ void ProfileImplIOData::Handle::Init(
   if (io_data_->lazy_params_->domain_reliability_monitor)
     io_data_->lazy_params_->domain_reliability_monitor->MoveToNetworkThread();
 
-  io_data_->set_previews_io_data(base::MakeUnique<previews::PreviewsIOData>(
+  io_data_->set_previews_io_data(std::make_unique<previews::PreviewsIOData>(
       BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)));
   PreviewsServiceFactory::GetForProfile(profile_)->Initialize(
@@ -452,7 +452,7 @@ void ProfileImplIOData::InitializeInternal(
             cookie_background_task_runner,
             lazy_params_->special_storage_policy.get());
     std::unique_ptr<net::ChannelIDService> channel_id_service(
-        base::MakeUnique<net::ChannelIDService>(
+        std::make_unique<net::ChannelIDService>(
             new net::DefaultChannelIDStore(channel_id_db.get())));
 
     // Set up cookie store.
@@ -479,7 +479,7 @@ void ProfileImplIOData::InitializeInternal(
   // Install the Offline Page Interceptor.
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
   request_interceptors.push_back(
-      base::MakeUnique<offline_pages::OfflinePageRequestInterceptor>(
+      std::make_unique<offline_pages::OfflinePageRequestInterceptor>(
           previews_io_data()));
 #endif
 

@@ -61,7 +61,7 @@ PDFIFrameNavigationThrottle::MaybeCreateThrottleFor(
 
   // If ENABLE_PLUGINS is false, the PDF plugin is not available, so we should
   // always intercept PDF iframe navigations.
-  return base::MakeUnique<PDFIFrameNavigationThrottle>(handle);
+  return std::make_unique<PDFIFrameNavigationThrottle>(handle);
 }
 
 content::NavigationThrottle::ThrottleCheckResult

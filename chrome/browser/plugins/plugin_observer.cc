@@ -205,7 +205,7 @@ void PluginObserver::BlockedOutdatedPlugin(
   PluginInstaller* installer = NULL;
   std::unique_ptr<PluginMetadata> plugin;
   if (finder->FindPluginWithIdentifier(identifier, &installer, &plugin)) {
-    auto plugin_placeholder = base::MakeUnique<PluginPlaceholderHost>(
+    auto plugin_placeholder = std::make_unique<PluginPlaceholderHost>(
         this, plugin->name(), installer, std::move(plugin_renderer));
     plugin_placeholders_[plugin_placeholder.get()] =
         std::move(plugin_placeholder);
@@ -221,7 +221,7 @@ void PluginObserver::BlockedOutdatedPlugin(
 void PluginObserver::BlockedComponentUpdatedPlugin(
     chrome::mojom::PluginRendererPtr plugin_renderer,
     const std::string& identifier) {
-  auto component_observer = base::MakeUnique<ComponentObserver>(
+  auto component_observer = std::make_unique<ComponentObserver>(
       this, identifier, std::move(plugin_renderer));
   component_observers_[component_observer.get()] =
       std::move(component_observer);

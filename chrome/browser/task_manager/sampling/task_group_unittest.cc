@@ -57,7 +57,7 @@ class TaskGroupTest : public testing::Test {
   TaskGroupTest()
       : io_task_runner_(content::BrowserThread::GetTaskRunnerForThread(
             content::BrowserThread::IO)),
-        run_loop_(base::MakeUnique<base::RunLoop>()),
+        run_loop_(std::make_unique<base::RunLoop>()),
         task_group_(base::Process::Current().Handle(),
                     base::Process::Current().Pid(),
                     base::Bind(&TaskGroupTest::OnBackgroundCalculationsDone,

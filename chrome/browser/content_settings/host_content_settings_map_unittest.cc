@@ -122,7 +122,7 @@ class TesterForType {
 
   void SetPolicyDefault(ContentSetting setting) {
     prefs_->SetManagedPref(policy_default_setting_,
-                           base::MakeUnique<base::Value>(setting));
+                           std::make_unique<base::Value>(setting));
   }
 
   void AddUserException(std::string exception,
@@ -302,7 +302,7 @@ TEST_F(HostContentSettingsMapTest, GetWebsiteSettingsForOneType) {
   const double expiration_time =
       (base::Time::Now() + base::TimeDelta::FromDays(1)).ToDoubleT();
   std::unique_ptr<base::ListValue> expiration_times_list =
-      base::MakeUnique<base::ListValue>();
+      std::make_unique<base::ListValue>();
   expiration_times_list->AppendInteger(42 /* client hint  value */);
   auto expiration_times_dictionary = std::make_unique<base::DictionaryValue>();
   expiration_times_dictionary->SetList("client_hints",
@@ -310,7 +310,7 @@ TEST_F(HostContentSettingsMapTest, GetWebsiteSettingsForOneType) {
   expiration_times_dictionary->SetDouble("expiration_time", expiration_time);
   host_content_settings_map->SetWebsiteSettingDefaultScope(
       hosts[0], GURL(), CONTENT_SETTINGS_TYPE_CLIENT_HINTS, std::string(),
-      base::MakeUnique<base::Value>(expiration_times_dictionary->Clone()));
+      std::make_unique<base::Value>(expiration_times_dictionary->Clone()));
 
   // Reading the settings should now return one setting.
   host_content_settings_map->GetSettingsForOneType(
@@ -329,7 +329,7 @@ TEST_F(HostContentSettingsMapTest, GetWebsiteSettingsForOneType) {
   // Add setting for hosts[1].
   host_content_settings_map->SetWebsiteSettingDefaultScope(
       hosts[1], GURL(), CONTENT_SETTINGS_TYPE_CLIENT_HINTS, std::string(),
-      base::MakeUnique<base::Value>(expiration_times_dictionary->Clone()));
+      std::make_unique<base::Value>(expiration_times_dictionary->Clone()));
 
   // Reading the settings should now return two settings.
   host_content_settings_map->GetSettingsForOneType(
@@ -348,7 +348,7 @@ TEST_F(HostContentSettingsMapTest, GetWebsiteSettingsForOneType) {
   // Add settings again for hosts[0].
   host_content_settings_map->SetWebsiteSettingDefaultScope(
       hosts[0], GURL(), CONTENT_SETTINGS_TYPE_CLIENT_HINTS, std::string(),
-      base::MakeUnique<base::Value>(expiration_times_dictionary->Clone()));
+      std::make_unique<base::Value>(expiration_times_dictionary->Clone()));
 
   // Reading the settings should still return two settings.
   host_content_settings_map->GetSettingsForOneType(
@@ -1090,7 +1090,7 @@ TEST_F(HostContentSettingsMapTest, GetUserModifiableContentSetting) {
   // Arbitrarily using cookies as content type to test.
   profile.GetTestingPrefService()->SetManagedPref(
       prefs::kManagedDefaultCookiesSetting,
-      base::MakeUnique<base::Value>(CONTENT_SETTING_BLOCK));
+      std::make_unique<base::Value>(CONTENT_SETTING_BLOCK));
 
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(&profile);
@@ -1118,7 +1118,7 @@ TEST_F(HostContentSettingsMapTest, CanonicalizeExceptionsUnicodeOnly) {
     base::DictionaryValue* all_settings_dictionary = update.Get();
     ASSERT_TRUE(NULL != all_settings_dictionary);
 
-    auto dummy_payload = base::MakeUnique<base::DictionaryValue>();
+    auto dummy_payload = std::make_unique<base::DictionaryValue>();
     dummy_payload->SetInteger("setting", CONTENT_SETTING_ALLOW);
     all_settings_dictionary->SetWithoutPathExpansion("[*.]\xC4\x87ira.com,*",
                                                      std::move(dummy_payload));
@@ -1177,7 +1177,7 @@ TEST_F(HostContentSettingsMapTest, ManagedDefaultContentSetting) {
 
   // Set managed-default-content-setting through the coresponding preferences.
   prefs->SetManagedPref(prefs::kManagedDefaultJavaScriptSetting,
-                        base::MakeUnique<base::Value>(CONTENT_SETTING_BLOCK));
+                        std::make_unique<base::Value>(CONTENT_SETTING_BLOCK));
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             host_content_settings_map->GetDefaultContentSetting(
                 CONTENT_SETTINGS_TYPE_JAVASCRIPT, NULL));
@@ -1191,7 +1191,7 @@ TEST_F(HostContentSettingsMapTest, ManagedDefaultContentSetting) {
 #if BUILDFLAG(ENABLE_PLUGINS)
   // Set preference to manage the default-content-setting for Plugins.
   prefs->SetManagedPref(prefs::kManagedDefaultPluginsSetting,
-                        base::MakeUnique<base::Value>(CONTENT_SETTING_BLOCK));
+                        std::make_unique<base::Value>(CONTENT_SETTING_BLOCK));
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             host_content_settings_map->GetDefaultContentSetting(
                 CONTENT_SETTINGS_TYPE_PLUGINS, NULL));
@@ -1208,7 +1208,7 @@ TEST_F(HostContentSettingsMapTest, ManagedDefaultContentSetting) {
 
   // Set managed-default-content-setting through the coresponding preferences.
   prefs->SetManagedPref(prefs::kManagedDefaultAdsSetting,
-                        base::MakeUnique<base::Value>(CONTENT_SETTING_ALLOW));
+                        std::make_unique<base::Value>(CONTENT_SETTING_ALLOW));
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetDefaultContentSetting(
                 CONTENT_SETTINGS_TYPE_ADS, NULL));
@@ -1244,7 +1244,7 @@ TEST_F(HostContentSettingsMapTest,
 
   // Set managed-default-content-setting for content-settings-type JavaScript.
   prefs->SetManagedPref(prefs::kManagedDefaultJavaScriptSetting,
-                        base::MakeUnique<base::Value>(CONTENT_SETTING_ALLOW));
+                        std::make_unique<base::Value>(CONTENT_SETTING_ALLOW));
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetContentSetting(
                 host, host, CONTENT_SETTINGS_TYPE_JAVASCRIPT, std::string()));
@@ -1281,7 +1281,7 @@ TEST_F(HostContentSettingsMapTest,
 
   // Set managed-default-content-settings-preferences.
   prefs->SetManagedPref(prefs::kManagedDefaultJavaScriptSetting,
-                        base::MakeUnique<base::Value>(CONTENT_SETTING_BLOCK));
+                        std::make_unique<base::Value>(CONTENT_SETTING_BLOCK));
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             host_content_settings_map->GetContentSetting(
                 host, host, CONTENT_SETTINGS_TYPE_JAVASCRIPT, std::string()));
@@ -1311,7 +1311,7 @@ TEST_F(HostContentSettingsMapTest, OverwrittenDefaultContentSetting) {
 
   // Set preference to manage the default-content-setting for Cookies.
   prefs->SetManagedPref(prefs::kManagedDefaultCookiesSetting,
-                        base::MakeUnique<base::Value>(CONTENT_SETTING_ALLOW));
+                        std::make_unique<base::Value>(CONTENT_SETTING_ALLOW));
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetDefaultContentSetting(
                 CONTENT_SETTINGS_TYPE_COOKIES, NULL));
@@ -1334,7 +1334,7 @@ TEST_F(HostContentSettingsMapTest, SettingDefaultContentSettingsWhenManaged) {
       profile.GetTestingPrefService();
 
   prefs->SetManagedPref(prefs::kManagedDefaultCookiesSetting,
-                        base::MakeUnique<base::Value>(CONTENT_SETTING_ALLOW));
+                        std::make_unique<base::Value>(CONTENT_SETTING_ALLOW));
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetDefaultContentSetting(
                 CONTENT_SETTINGS_TYPE_COOKIES, NULL));
@@ -1674,7 +1674,7 @@ TEST_F(HostContentSettingsMapTest, LastModifiedMultipleModifiableProviders) {
       ContentSettingsPattern::FromURLNoWildcard(url);
 
   base::Time t1 = base::Time::Now();
-  auto test_clock = base::MakeUnique<base::SimpleTestClock>();
+  auto test_clock = std::make_unique<base::SimpleTestClock>();
   test_clock->SetNow(t1);
 
   base::SimpleTestClock* clock = test_clock.get();
@@ -1683,7 +1683,7 @@ TEST_F(HostContentSettingsMapTest, LastModifiedMultipleModifiableProviders) {
 
   // Register a provider which reports a modification time of t1.
   std::unique_ptr<MockUserModifiableProvider> provider =
-      base::MakeUnique<MockUserModifiableProvider>();
+      std::make_unique<MockUserModifiableProvider>();
   EXPECT_CALL(*provider, GetWebsiteSettingLastModified(
                              _, _, CONTENT_SETTINGS_TYPE_NOTIFICATIONS, _))
       .WillOnce(Return(t1));
@@ -1693,7 +1693,7 @@ TEST_F(HostContentSettingsMapTest, LastModifiedMultipleModifiableProviders) {
 
   // Register another provider which reports a modification time of t2.
   std::unique_ptr<MockUserModifiableProvider> other_provider =
-      base::MakeUnique<MockUserModifiableProvider>();
+      std::make_unique<MockUserModifiableProvider>();
   EXPECT_CALL(*other_provider,
               GetWebsiteSettingLastModified(
                   _, _, CONTENT_SETTINGS_TYPE_NOTIFICATIONS, _))

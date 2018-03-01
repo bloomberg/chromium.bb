@@ -39,9 +39,9 @@ FallbackTaskProvider::FallbackTaskProvider(
     std::unique_ptr<TaskProvider> primary_subprovider,
     std::unique_ptr<TaskProvider> secondary_subprovider)
     : sources_{
-          base::MakeUnique<SubproviderSource>(this,
+          std::make_unique<SubproviderSource>(this,
                                               std::move(primary_subprovider)),
-          base::MakeUnique<SubproviderSource>(
+          std::make_unique<SubproviderSource>(
               this,
               std::move(secondary_subprovider))} {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);

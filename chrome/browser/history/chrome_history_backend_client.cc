@@ -88,7 +88,7 @@ void ChromeHistoryBackendClient::OnHistoryBackendInitialized(
   if (thumbnail_database) {
     history_backend->SetUserData(
         history::AndroidProviderBackend::GetUserDataKey(),
-        base::MakeUnique<history::AndroidProviderBackend>(
+        std::make_unique<history::AndroidProviderBackend>(
             history_dir.Append(kAndroidCacheFilename), history_database,
             thumbnail_database, this, history_backend));
   }

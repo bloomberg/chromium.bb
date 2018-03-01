@@ -233,7 +233,7 @@ void PwgRasterConverterImpl::Start(base::RefCountedMemory* data,
 
 // static
 std::unique_ptr<PwgRasterConverter> PwgRasterConverter::CreateDefault() {
-  return base::MakeUnique<PwgRasterConverterImpl>();
+  return std::make_unique<PwgRasterConverterImpl>();
 }
 
 // static

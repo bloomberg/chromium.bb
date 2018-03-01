@@ -440,7 +440,7 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   if (auto* loading_predictor =
           predictors::LoadingPredictorFactory::GetForProfile(profile)) {
     loading_predictor_observer_ =
-        base::MakeUnique<chrome_browser_net::LoadingPredictorObserver>(
+        std::make_unique<chrome_browser_net::LoadingPredictorObserver>(
             loading_predictor);
   }
 
@@ -989,7 +989,7 @@ std::unique_ptr<net::ClientCertStore> ProfileIOData::CreateClientCertStore() {
   return std::unique_ptr<net::ClientCertStore>(
       new chromeos::ClientCertStoreChromeOS(
           certificate_provider_ ? certificate_provider_->Copy() : nullptr,
-          base::MakeUnique<chromeos::ClientCertFilterChromeOS>(
+          std::make_unique<chromeos::ClientCertFilterChromeOS>(
               use_system_key_slot, username_hash_),
           base::Bind(&CreateCryptoModuleBlockingPasswordDelegate,
                      kCryptoModulePasswordClientAuth)));
@@ -1062,7 +1062,7 @@ void ProfileIOData::Init(
 
   // Create the main request context.
   std::unique_ptr<network::URLRequestContextBuilderMojo> builder =
-      base::MakeUnique<network::URLRequestContextBuilderMojo>();
+      std::make_unique<network::URLRequestContextBuilderMojo>();
 
   builder->set_shared_http_user_agent_settings(
       chrome_http_user_agent_settings_.get());
@@ -1162,8 +1162,8 @@ void ProfileIOData::Init(
       profile_params_->policy_cert_verifier->InitializeOnIOThread(verify_proc);
       cert_verifier = std::move(profile_params_->policy_cert_verifier);
     } else {
-      cert_verifier = base::MakeUnique<net::CachingCertVerifier>(
-          base::MakeUnique<net::MultiThreadedCertVerifier>(verify_proc.get()));
+      cert_verifier = std::make_unique<net::CachingCertVerifier>(
+          std::make_unique<net::MultiThreadedCertVerifier>(verify_proc.get()));
     }
 #else
     cert_verifier = std::make_unique<net::CachingCertVerifier>(
@@ -1306,7 +1306,7 @@ ProfileIOData::SetUpJobFactoryDefaults(
   // ProfileIOData::IsHandledProtocol().
   bool set_protocol = job_factory->SetProtocolHandler(
       url::kFileScheme,
-      base::MakeUnique<net::FileProtocolHandler>(
+      std::make_unique<net::FileProtocolHandler>(
           base::CreateTaskRunnerWithTraits(
               {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
                base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})));
@@ -1323,13 +1323,13 @@ ProfileIOData::SetUpJobFactoryDefaults(
   DCHECK(set_protocol);
 #endif
   set_protocol = job_factory->SetProtocolHandler(
-      url::kDataScheme, base::MakeUnique<net::DataProtocolHandler>());
+      url::kDataScheme, std::make_unique<net::DataProtocolHandler>());
   DCHECK(set_protocol);
 #if defined(OS_CHROMEOS)
   if (profile_params_) {
     set_protocol = job_factory->SetProtocolHandler(
         content::kExternalFileScheme,
-        base::MakeUnique<chromeos::ExternalFileProtocolHandler>(
+        std::make_unique<chromeos::ExternalFileProtocolHandler>(
             profile_params_->profile));
     DCHECK(set_protocol);
   }
@@ -1344,7 +1344,7 @@ ProfileIOData::SetUpJobFactoryDefaults(
 
   job_factory->SetProtocolHandler(
       url::kAboutScheme,
-      base::MakeUnique<about_handler::AboutProtocolHandler>());
+      std::make_unique<about_handler::AboutProtocolHandler>());
 
 #if !BUILDFLAG(DISABLE_FTP_SUPPORT)
   job_factory->SetProtocolHandler(
@@ -1352,7 +1352,7 @@ ProfileIOData::SetUpJobFactoryDefaults(
 #endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
 
 #if BUILDFLAG(DEBUG_DEVTOOLS)
-  request_interceptors.push_back(base::MakeUnique<DebugDevToolsInterceptor>());
+  request_interceptors.push_back(std::make_unique<DebugDevToolsInterceptor>());
 #endif
 
   // Set up interceptors in the reverse order.
@@ -1392,7 +1392,7 @@ void ProfileIOData::SetUpJobFactoryDefaultsForBuilder(
   if (profile_params_) {
     builder->SetProtocolHandler(
         content::kExternalFileScheme,
-        base::MakeUnique<chromeos::ExternalFileProtocolHandler>(
+        std::make_unique<chromeos::ExternalFileProtocolHandler>(
             profile_params_->profile));
   }
 #endif  // defined(OS_CHROMEOS)
@@ -1406,10 +1406,10 @@ void ProfileIOData::SetUpJobFactoryDefaultsForBuilder(
 
   builder->SetProtocolHandler(
       url::kAboutScheme,
-      base::MakeUnique<about_handler::AboutProtocolHandler>());
+      std::make_unique<about_handler::AboutProtocolHandler>());
 
 #if BUILDFLAG(DEBUG_DEVTOOLS)
-  request_interceptors.push_back(base::MakeUnique<DebugDevToolsInterceptor>());
+  request_interceptors.push_back(std::make_unique<DebugDevToolsInterceptor>());
 #endif
 
   builder->SetInterceptors(std::move(request_interceptors));
@@ -1472,7 +1472,7 @@ void ProfileIOData::DestroyResourceContext() {
 std::unique_ptr<net::HttpCache> ProfileIOData::CreateMainHttpFactory(
     net::HttpNetworkSession* session,
     std::unique_ptr<net::HttpCache::BackendFactory> main_backend) const {
-  return base::MakeUnique<net::HttpCache>(
+  return std::make_unique<net::HttpCache>(
       content::CreateDevToolsNetworkTransactionFactory(session),
       std::move(main_backend), true /* is_main_cache */);
 }
@@ -1482,7 +1482,7 @@ std::unique_ptr<net::HttpCache> ProfileIOData::CreateHttpFactory(
     std::unique_ptr<net::HttpCache::BackendFactory> backend) const {
   DCHECK(main_http_factory);
   net::HttpNetworkSession* shared_session = main_http_factory->GetSession();
-  return base::MakeUnique<net::HttpCache>(
+  return std::make_unique<net::HttpCache>(
       content::CreateDevToolsNetworkTransactionFactory(shared_session),
       std::move(backend), false /* is_main_cache */);
 }

@@ -255,17 +255,17 @@ void VrShellGl::InitializeGl(gfx::AcceleratedWidget window) {
   webvr_surface_texture_ = gl::SurfaceTexture::Create(webvr_texture_id_);
 
   content_surface_ =
-      base::MakeUnique<gl::ScopedJavaSurface>(content_surface_texture_.get());
+      std::make_unique<gl::ScopedJavaSurface>(content_surface_texture_.get());
   browser_->ContentSurfaceCreated(content_surface_->j_surface().obj(),
                                   content_surface_texture_.get());
-  content_overlay_surface_ = base::MakeUnique<gl::ScopedJavaSurface>(
+  content_overlay_surface_ = std::make_unique<gl::ScopedJavaSurface>(
       content_overlay_surface_texture_.get());
   browser_->ContentOverlaySurfaceCreated(
       content_overlay_surface_->j_surface().obj(),
       content_overlay_surface_texture_.get());
 
   ui_surface_ =
-      base::MakeUnique<gl::ScopedJavaSurface>(ui_surface_texture_.get());
+      std::make_unique<gl::ScopedJavaSurface>(ui_surface_texture_.get());
   browser_->DialogSurfaceCreated(ui_surface_->j_surface().obj(),
                                  ui_surface_texture_.get());
 

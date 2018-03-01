@@ -173,7 +173,7 @@ void RegisterRecentTabProviderIfEnabled(ContentSuggestionsService* service,
   offline_pages::DownloadUIAdapter* ui_adapter = offline_pages::
       RecentTabsUIAdapterDelegate::GetOrCreateRecentTabsUIAdapter(
           offline_page_model, request_coordinator);
-  auto provider = base::MakeUnique<RecentTabSuggestionsProvider>(
+  auto provider = std::make_unique<RecentTabSuggestionsProvider>(
       service, ui_adapter, profile->GetPrefs());
   service->RegisterProvider(std::move(provider));
 }
@@ -210,7 +210,7 @@ void RegisterDownloadsProviderIfEnabled(ContentSuggestionsService* service,
   DownloadHistory* download_history =
       download_core_service->GetDownloadHistory();
 
-  auto provider = base::MakeUnique<DownloadSuggestionsProvider>(
+  auto provider = std::make_unique<DownloadSuggestionsProvider>(
       service, offline_page_model, download_manager, download_history,
       profile->GetPrefs(), base::DefaultClock::GetInstance());
   service->RegisterProvider(std::move(provider));
@@ -228,7 +228,7 @@ void RegisterBookmarkProviderIfEnabled(ContentSuggestionsService* service,
   }
 
   auto provider =
-      base::MakeUnique<BookmarkSuggestionsProvider>(service, bookmark_model);
+      std::make_unique<BookmarkSuggestionsProvider>(service, bookmark_model);
   service->RegisterProvider(std::move(provider));
 }
 
@@ -243,7 +243,7 @@ void RegisterPhysicalWebPageProviderIfEnabled(
 
   PhysicalWebDataSource* physical_web_data_source =
       g_browser_process->GetPhysicalWebDataSource();
-  auto provider = base::MakeUnique<PhysicalWebPageSuggestionsProvider>(
+  auto provider = std::make_unique<PhysicalWebPageSuggestionsProvider>(
       service, physical_web_data_source, profile->GetPrefs());
   service->RegisterProvider(std::move(provider));
 }
@@ -288,7 +288,7 @@ MakeBreakingNewsGCMAppHandlerIfEnabled(
                                 : google_apis::GetNonStableAPIKey();
   }
 
-  auto subscription_manager = base::MakeUnique<SubscriptionManagerImpl>(
+  auto subscription_manager = std::make_unique<SubscriptionManagerImpl>(
       request_context, pref_service, variations_service, identity_manager,
       api_key, locale, GetPushUpdatesSubscriptionEndpoint(chrome::GetChannel()),
       GetPushUpdatesUnsubscriptionEndpoint(chrome::GetChannel()));
@@ -298,15 +298,15 @@ MakeBreakingNewsGCMAppHandlerIfEnabled(
   DCHECK(instance_id_profile_service);
   DCHECK(instance_id_profile_service->driver());
 
-  return base::MakeUnique<BreakingNewsGCMAppHandler>(
+  return std::make_unique<BreakingNewsGCMAppHandler>(
       gcm_driver, instance_id_profile_service->driver(), pref_service,
       std::move(subscription_manager),
       base::Bind(
           &data_decoder::SafeJsonParser::Parse,
           content::ServiceManagerConnection::GetForProcess()->GetConnector()),
       base::DefaultClock::GetInstance(),
-      /*token_validation_timer=*/base::MakeUnique<base::OneShotTimer>(),
-      /*forced_subscription_timer=*/base::MakeUnique<base::OneShotTimer>());
+      /*token_validation_timer=*/std::make_unique<base::OneShotTimer>(),
+      /*forced_subscription_timer=*/std::make_unique<base::OneShotTimer>());
 }
 
 #endif  // OS_ANDROID
@@ -367,10 +367,10 @@ void RegisterArticleProviderIfEnabled(ContentSuggestionsService* service,
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
   if (IsKeepingPrefetchedSuggestionsEnabled()) {
     prefetched_pages_tracker =
-        base::MakeUnique<PrefetchedPagesTrackerImpl>(offline_page_model);
+        std::make_unique<PrefetchedPagesTrackerImpl>(offline_page_model);
   }
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
-  auto suggestions_fetcher = base::MakeUnique<RemoteSuggestionsFetcherImpl>(
+  auto suggestions_fetcher = std::make_unique<RemoteSuggestionsFetcherImpl>(
       identity_manager, request_context, pref_service, language_histogram,
       base::Bind(
           &data_decoder::SafeJsonParser::Parse,
@@ -384,14 +384,14 @@ void RegisterArticleProviderIfEnabled(ContentSuggestionsService* service,
       g_browser_process->variations_service());
 #endif  //  OS_ANDROID
 
-  auto provider = base::MakeUnique<RemoteSuggestionsProviderImpl>(
+  auto provider = std::make_unique<RemoteSuggestionsProviderImpl>(
       service, pref_service, g_browser_process->GetApplicationLocale(),
       service->category_ranker(), service->remote_suggestions_scheduler(),
       std::move(suggestions_fetcher),
-      base::MakeUnique<ImageFetcherImpl>(base::MakeUnique<ImageDecoderImpl>(),
+      std::make_unique<ImageFetcherImpl>(base::MakeUnique<ImageDecoderImpl>(),
                                          request_context.get()),
-      base::MakeUnique<RemoteSuggestionsDatabase>(database_dir),
-      base::MakeUnique<RemoteSuggestionsStatusServiceImpl>(
+      std::make_unique<RemoteSuggestionsDatabase>(database_dir),
+      std::make_unique<RemoteSuggestionsStatusServiceImpl>(
           identity_manager->HasPrimaryAccount(), pref_service,
           additional_toggle_pref),
       std::move(prefetched_pages_tracker),
@@ -413,8 +413,8 @@ void RegisterForeignSessionsProviderIfEnabled(
   SyncService* sync_service =
       ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile);
   std::unique_ptr<TabDelegateSyncAdapter> sync_adapter =
-      base::MakeUnique<TabDelegateSyncAdapter>(sync_service);
-  auto provider = base::MakeUnique<ForeignSessionsSuggestionsProvider>(
+      std::make_unique<TabDelegateSyncAdapter>(sync_service);
+  auto provider = std::make_unique<ForeignSessionsSuggestionsProvider>(
       service, std::move(sync_adapter), profile->GetPrefs());
   service->RegisterProvider(std::move(provider));
 }
@@ -473,7 +473,7 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
   DCHECK(!profile->IsOffTheRecord());
   PrefService* pref_service = profile->GetPrefs();
 
-  auto user_classifier = base::MakeUnique<UserClassifier>(
+  auto user_classifier = std::make_unique<UserClassifier>(
       pref_service, base::DefaultClock::GetInstance());
   auto* user_classifier_raw = user_classifier.get();
 
@@ -484,7 +484,7 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
   OfflinePageModel* offline_page_model = nullptr;
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
 
-  auto debug_logger = base::MakeUnique<ntp_snippets::Logger>();
+  auto debug_logger = std::make_unique<ntp_snippets::Logger>();
   ntp_snippets::Logger* raw_debug_logger = debug_logger.get();
 
   // Create the RemoteSuggestionsScheduler.
@@ -492,7 +492,7 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
 #if defined(OS_ANDROID)
   persistent_scheduler = NTPSnippetsLauncher::Get();
 #endif  // OS_ANDROID
-  auto scheduler = base::MakeUnique<RemoteSuggestionsSchedulerImpl>(
+  auto scheduler = std::make_unique<RemoteSuggestionsSchedulerImpl>(
       persistent_scheduler, user_classifier_raw, pref_service,
       g_browser_process->local_state(), base::DefaultClock::GetInstance(),
       raw_debug_logger);

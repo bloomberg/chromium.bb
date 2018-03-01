@@ -36,7 +36,7 @@ ResourceCoordinatorWebContentsObserver::ResourceCoordinatorWebContentsObserver(
   }
 
   page_resource_coordinator_ =
-      base::MakeUnique<resource_coordinator::PageResourceCoordinator>(
+      std::make_unique<resource_coordinator::PageResourceCoordinator>(
           connector);
 
   // Make sure to set the visibility property when we create

@@ -458,7 +458,7 @@ void MTPDeviceDelegateImplLinux::MTPFileNode::EnsureChildExists(
     return;
 
   children_[name] =
-      base::MakeUnique<MTPFileNode>(id, name, this, file_id_to_node_map_);
+      std::make_unique<MTPFileNode>(id, name, this, file_id_to_node_map_);
 }
 
 void MTPDeviceDelegateImplLinux::MTPFileNode::ClearNonexistentChildren(

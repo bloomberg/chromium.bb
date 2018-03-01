@@ -14,5 +14,5 @@ BrowserProcessPlatformPart::~BrowserProcessPlatformPart() = default;
 void BrowserProcessPlatformPart::PlatformSpecificCommandLineProcessing(
     const base::CommandLine& command_line) {
   if (!did_run_updater_ && ShouldRecordActiveUse(command_line))
-    did_run_updater_ = base::MakeUnique<DidRunUpdater>();
+    did_run_updater_ = std::make_unique<DidRunUpdater>();
 }

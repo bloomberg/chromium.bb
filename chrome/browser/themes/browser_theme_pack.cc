@@ -590,7 +590,7 @@ void BrowserThemePack::BuildFromExtension(
   for (ImageCache::iterator it = pack->images_.begin();
        it != pack->images_.end(); ++it) {
     const gfx::ImageSkia source_image_skia = it->second.AsImageSkia();
-    auto source = base::MakeUnique<ThemeImageSource>(source_image_skia);
+    auto source = std::make_unique<ThemeImageSource>(source_image_skia);
     gfx::ImageSkia image_skia(std::move(source), source_image_skia.size());
     it->second = gfx::Image(image_skia);
   }
@@ -790,7 +790,7 @@ gfx::Image BrowserThemePack::GetImageNamed(int idr_id) {
       png_map[scale_factors_[i]] = memory;
   }
   if (!png_map.empty()) {
-    gfx::ImageSkia image_skia(base::MakeUnique<ThemeImagePngSource>(png_map),
+    gfx::ImageSkia image_skia(std::make_unique<ThemeImagePngSource>(png_map),
                               1.0f);
     gfx::Image ret = gfx::Image(image_skia);
     images_[prs_id] = ret;
@@ -1261,7 +1261,7 @@ void BrowserThemePack::CreateTabBackgroundImages(ImageCache* images) const {
       if (overlay_it != images->end())
         overlay = overlay_it->second.AsImageSkia();
 
-      auto source = base::MakeUnique<TabBackgroundImageSource>(
+      auto source = std::make_unique<TabBackgroundImageSource>(
           image_to_tint, overlay, hsl_shift, vertical_offset);
       temp_output[prs_id] =
           gfx::Image(gfx::ImageSkia(std::move(source), image_to_tint.size()));

@@ -73,7 +73,7 @@ class DownloadStatusUpdaterTest : public testing::Test {
     DCHECK_EQ(0U, managers_.size());
     for (int i = 0; i < manager_count; ++i) {
       managers_.push_back(
-          base::MakeUnique<StrictMock<content::MockDownloadManager>>());
+          std::make_unique<StrictMock<content::MockDownloadManager>>());
     }
   }
 
@@ -106,7 +106,7 @@ class DownloadStatusUpdaterTest : public testing::Test {
     std::vector<download::DownloadItem*> item_list;
     for (int i = 0; i < item_count; ++i) {
       std::unique_ptr<content::MockDownloadItem> item =
-          base::MakeUnique<StrictMock<content::MockDownloadItem>>();
+          std::make_unique<StrictMock<content::MockDownloadItem>>();
       download::DownloadItem::DownloadState state =
           i < in_progress_count ? download::DownloadItem::IN_PROGRESS
                                 : download::DownloadItem::CANCELLED;

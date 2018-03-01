@@ -77,12 +77,12 @@ class TestProcessManager : public extensions::ProcessManager {
 
 std::unique_ptr<KeyedService> CreateTestProcessManager(
     content::BrowserContext* context) {
-  return base::MakeUnique<TestProcessManager>(context);
+  return std::make_unique<TestProcessManager>(context);
 }
 
 std::unique_ptr<KeyedService> CreateScreenlockPrivateEventRouter(
     content::BrowserContext* context) {
-  return base::MakeUnique<extensions::ScreenlockPrivateEventRouter>(context);
+  return std::make_unique<extensions::ScreenlockPrivateEventRouter>(context);
 }
 
 // Observes extension registry for unload and load events (in that order) of an

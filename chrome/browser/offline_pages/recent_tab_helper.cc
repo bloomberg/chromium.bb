@@ -42,7 +42,7 @@ class DefaultRecentTabHelperDelegate
   // offline_pages::RecentTabHelper::Delegate
   std::unique_ptr<offline_pages::OfflinePageArchiver> CreatePageArchiver(
       content::WebContents* web_contents) override {
-    return base::MakeUnique<offline_pages::OfflinePageMHTMLArchiver>(
+    return std::make_unique<offline_pages::OfflinePageMHTMLArchiver>(
         web_contents);
   }
   bool GetTabId(content::WebContents* web_contents, int* tab_id) override {
@@ -122,7 +122,7 @@ void RecentTabHelper::ObserveAndDownloadCurrentPage(const ClientId& client_id,
   // that the call is from Downloads.
   DCHECK_EQ(kDownloadNamespace, client_id.name_space);
   auto new_downloads_snapshot_info =
-      base::MakeUnique<SnapshotProgressInfo>(client_id, request_id, origin);
+      std::make_unique<SnapshotProgressInfo>(client_id, request_id, origin);
 
   // If this tab helper is not enabled, immediately give the job back to
   // RequestCoordinator.
@@ -332,7 +332,7 @@ void RecentTabHelper::WebContentsWasHidden() {
   DVLOG(1) << "Starting last_n snapshot for: "
            << web_contents()->GetLastCommittedURL().spec();
   last_n_ongoing_snapshot_info_ =
-      base::MakeUnique<SnapshotProgressInfo>(GetRecentPagesClientId());
+      std::make_unique<SnapshotProgressInfo>(GetRecentPagesClientId());
   DCHECK(last_n_ongoing_snapshot_info_->IsForLastN());
   DCHECK(snapshots_enabled_);
   // Remove previously captured pages for this tab.
@@ -402,7 +402,7 @@ void RecentTabHelper::SaveSnapshotForDownloads(bool replace_latest) {
     // this page.
     DCHECK(downloads_latest_saved_snapshot_info_);
     DCHECK(!downloads_ongoing_snapshot_info_);
-    downloads_ongoing_snapshot_info_ = base::MakeUnique<SnapshotProgressInfo>(
+    downloads_ongoing_snapshot_info_ = std::make_unique<SnapshotProgressInfo>(
         downloads_latest_saved_snapshot_info_->client_id,
         downloads_latest_saved_snapshot_info_->request_id,
         downloads_latest_saved_snapshot_info_->origin);

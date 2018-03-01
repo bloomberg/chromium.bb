@@ -62,8 +62,8 @@ class TestMetricsCollector : public OfflineMetricsCollector {
 // This is used by KeyedServiceFactory::SetTestingFactoryAndUse.
 std::unique_ptr<KeyedService> BuildTestPrefetchService(
     content::BrowserContext*) {
-  auto taco = base::MakeUnique<PrefetchServiceTestTaco>();
-  taco->SetOfflineMetricsCollector(base::MakeUnique<TestMetricsCollector>());
+  auto taco = std::make_unique<PrefetchServiceTestTaco>();
+  taco->SetOfflineMetricsCollector(std::make_unique<TestMetricsCollector>());
   return taco->CreateAndReturnPrefetchService();
 }
 

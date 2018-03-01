@@ -62,7 +62,7 @@ PrefetchBackgroundTaskHandlerImpl::GetCurrentBackoff() const {
         *value, &kPrefetchBackoffPolicy, clock_, base::Time::Now());
   }
   if (!result)
-    return base::MakeUnique<net::BackoffEntry>(&kPrefetchBackoffPolicy, clock_);
+    return std::make_unique<net::BackoffEntry>(&kPrefetchBackoffPolicy, clock_);
   return result;
 }
 

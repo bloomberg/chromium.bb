@@ -22,7 +22,7 @@
 class TestSpellCheckHostChromeImpl {
  public:
   TestSpellCheckHostChromeImpl()
-      : spellcheck_(base::MakeUnique<SpellcheckService>(&testing_profile_)) {}
+      : spellcheck_(std::make_unique<SpellcheckService>(&testing_profile_)) {}
 
   SpellcheckCustomDictionary& GetCustomDictionary() const {
     EXPECT_NE(nullptr, spellcheck_.get());

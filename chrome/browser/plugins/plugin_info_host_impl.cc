@@ -432,7 +432,7 @@ void PluginInfoHostImpl::ComponentPluginLookupDone(
       output->status = chrome::mojom::PluginStatus::kRestartRequired;
     }
 #endif
-    plugin_metadata = base::MakeUnique<PluginMetadata>(
+    plugin_metadata = std::make_unique<PluginMetadata>(
         cus_plugin_info->id, cus_plugin_info->name, false, GURL(), GURL(),
         base::ASCIIToUTF16(cus_plugin_info->id), std::string());
   }

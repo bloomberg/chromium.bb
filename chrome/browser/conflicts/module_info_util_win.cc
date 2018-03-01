@@ -305,7 +305,7 @@ bool GetModuleImageSizeAndTimeDateStamp(const base::FilePath& path,
   // the file in a well-formed dll.
   constexpr size_t kPageSize = 4096;
 
-  // Note: base::MakeUnique() is explicitly avoided because it does value-
+  // Note: std::make_unique() is explicitly avoided because it does value-
   //       initialization on arrays, which is not needed in this case.
   auto buffer = std::unique_ptr<uint8_t[]>(new uint8_t[kPageSize]);
   int bytes_read =

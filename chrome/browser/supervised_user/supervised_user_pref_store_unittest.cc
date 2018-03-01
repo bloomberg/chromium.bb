@@ -60,7 +60,7 @@ void SupervisedUserPrefStoreFixture::OnPrefValueChanged(
     const std::string& key) {
   const base::Value* value = NULL;
   ASSERT_TRUE(pref_store_->GetValue(key, &value));
-  changed_prefs_.Set(key, base::MakeUnique<base::Value>(value->Clone()));
+  changed_prefs_.Set(key, std::make_unique<base::Value>(value->Clone()));
 }
 
 void SupervisedUserPrefStoreFixture::OnInitializationCompleted(bool succeeded) {

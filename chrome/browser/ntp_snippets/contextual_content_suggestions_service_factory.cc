@@ -93,7 +93,7 @@ ContextualContentSuggestionsServiceFactory::BuildServiceInstanceFor(
   scoped_refptr<net::URLRequestContextGetter> request_context =
       profile->GetRequestContext();
   auto contextual_suggestions_fetcher =
-      base::MakeUnique<ContextualSuggestionsFetcherImpl>(
+      std::make_unique<ContextualSuggestionsFetcherImpl>(
           identity_manager, request_context, pref_service,
           base::Bind(&data_decoder::SafeJsonParser::Parse,
                      content::ServiceManagerConnection::GetForProcess()
@@ -102,11 +102,11 @@ ContextualContentSuggestionsServiceFactory::BuildServiceInstanceFor(
       FILE_PATH_LITERAL("contextualSuggestionsDatabase");
   base::FilePath database_dir(profile->GetPath().Append(kDatabaseFolder));
   auto contextual_suggestions_database =
-      base::MakeUnique<RemoteSuggestionsDatabase>(database_dir);
+      std::make_unique<RemoteSuggestionsDatabase>(database_dir);
   auto cached_image_fetcher =
-      base::MakeUnique<ntp_snippets::CachedImageFetcher>(
-          base::MakeUnique<image_fetcher::ImageFetcherImpl>(
-              base::MakeUnique<suggestions::ImageDecoderImpl>(),
+      std::make_unique<ntp_snippets::CachedImageFetcher>(
+          std::make_unique<image_fetcher::ImageFetcherImpl>(
+              std::make_unique<suggestions::ImageDecoderImpl>(),
               request_context.get()),
           pref_service, contextual_suggestions_database.get());
   auto* service = new ContextualContentSuggestionsService(
