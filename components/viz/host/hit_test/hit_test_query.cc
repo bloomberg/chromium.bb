@@ -4,6 +4,7 @@
 
 #include "components/viz/host/hit_test/hit_test_query.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "services/viz/public/interfaces/hit_test/hit_test_region_list.mojom.h"
 #include "ui/gfx/geometry/point_conversions.h"
 
@@ -53,6 +54,8 @@ void HitTestQuery::SwitchActiveAggregatedHitTestRegionList(
 Target HitTestQuery::FindTargetForLocation(
     EventSource event_source,
     const gfx::PointF& location_in_root) const {
+  SCOPED_UMA_HISTOGRAM_TIMER("Event.VizHitTest.TargetTime");
+
   Target target;
   if (!active_hit_test_list_size_)
     return target;
@@ -66,6 +69,8 @@ gfx::PointF HitTestQuery::TransformLocationForTarget(
     EventSource event_source,
     const std::vector<FrameSinkId>& target_ancestors,
     const gfx::PointF& location_in_root) const {
+  SCOPED_UMA_HISTOGRAM_TIMER("Event.VizHitTest.TransformTime");
+
   if (!active_hit_test_list_size_)
     return location_in_root;
 
