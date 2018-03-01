@@ -267,9 +267,15 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, ShouldShowLocationBar) {
 // Check that the location bar is shown correctly for HTTP apps when they
 // navigate to a HTTPS page on the same origin.
 //
-// Disabled for being flaky: https://crbug.com/815240
-IN_PROC_BROWSER_TEST_P(HostedAppTest,
-                       DISABLED_ShouldShowLocationBarForHTTPApp) {
+// TODO(mgiuca): Disabled on Windows and macOS for being flaky:
+// https://crbug.com/814400
+#if defined(OS_WIN) || defined(OS_MACOSX)
+#define MAYBE_ShouldShowLocationBarForHTTPApp \
+  DISABLED_ShouldShowLocationBarForHTTPApp
+#else
+#define MAYBE_ShouldShowLocationBarForHTTPApp ShouldShowLocationBarForHTTPApp
+#endif
+IN_PROC_BROWSER_TEST_P(HostedAppTest, MAYBE_ShouldShowLocationBarForHTTPApp) {
   SetupApp("app");
 
   // Navigate to the app's launch page; the location bar should be visible, even
@@ -283,7 +289,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest,
       app_browser_, "https://www.example.com/blah", false);
 }
 
-// Disabled on Windows for being flaky: https://crbug.com/815246
+// TODO(mgiuca): Disabled on Windows for being flaky: https://crbug.com/815246
 #if defined(OS_WIN)
 #define MAYBE_ShouldShowLocationBarForHTTPSApp \
   DISABLED_ShouldShowLocationBarForHTTPSApp
