@@ -133,6 +133,9 @@ const char kDesktopWindow1080p[] = "desktop-window-1080p";
 // Enables input event handling by the window manager.
 const char kEnableInput[] = "enable-input";
 
+// Background color used when Chromium hasn't rendered anything yet.
+const char kCastAppBackgroundColor[] = "cast-app-background-color";
+
 }  // namespace switches
 
 namespace chromecast {
@@ -185,6 +188,26 @@ int GetSwitchValueNonNegativeInt(const std::string& switch_name,
     return default_value;
   }
   return value;
+}
+
+uint32_t GetSwitchValueColor(const std::string& switch_name,
+                             const uint32_t default_value) {
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+  if (!command_line->HasSwitch(switch_name)) {
+    return default_value;
+  }
+
+  uint32_t arg_value = 0;
+  if (!base::HexStringToUInt(
+          command_line->GetSwitchValueASCII(switch_name).substr(1),
+          &arg_value)) {
+    LOG(ERROR) << "Invalid value for " << switch_name << " ("
+               << command_line->GetSwitchValueASCII(switch_name)
+               << "), using default.";
+    return default_value;
+  }
+  return arg_value;
 }
 
 }  // namespace chromecast

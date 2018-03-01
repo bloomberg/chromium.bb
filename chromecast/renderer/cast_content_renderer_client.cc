@@ -57,14 +57,6 @@
 namespace chromecast {
 namespace shell {
 
-namespace {
-
-// Default background color to set for WebViews. WebColor is in ARGB format
-// though the comment of WebColor says it is in RGBA.
-const blink::WebColor kColorBlack = 0xFF000000;
-
-}  // namespace
-
 CastContentRendererClient::CastContentRendererClient()
     : supported_profiles_(new media::SupportedCodecProfileLevelsMemo()),
       app_media_capabilities_observer_binding_(this),
@@ -146,7 +138,8 @@ void CastContentRendererClient::RenderViewCreated(
   blink::WebView* webview = render_view->GetWebView();
   if (webview) {
     if (auto* web_frame_widget = render_view->GetWebFrameWidget())
-      web_frame_widget->SetBaseBackgroundColor(kColorBlack);
+      web_frame_widget->SetBaseBackgroundColor(chromecast::GetSwitchValueColor(
+          switches::kCastAppBackgroundColor, SK_ColorBLACK));
 
     // Disable application cache as Chromecast doesn't support off-line
     // application running.
