@@ -777,9 +777,6 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
     private SwipeMode computeInputMode(long time, float x, float y, float dx, float dy) {
         if (!mStacks[1].isDisplayable()) return SwipeMode.SEND_TO_STACK;
         int currentIndex = getTabStackIndex();
-        if (currentIndex != getViewportParameters().getStackIndexAt(x, y)) {
-            return SwipeMode.SWITCH_STACK;
-        }
         float relativeX = mLastOnDownX - (x + dx);
         float relativeY = mLastOnDownY - (y + dy);
         float distanceToDownSqr = dx * dx + dy * dy;
