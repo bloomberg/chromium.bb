@@ -7,6 +7,7 @@
   "pushMessaging": "https://developers.google.com/cloud-messaging/chrome/client",
   "gcm_tos": "https://developers.google.com/terms/",
   "gcm_server": "https://developers.google.com/cloud-messaging/server",
+  "getstarted_arc": "https://developer.android.com/chrome-os/intro.html",
   "google_wallet": "../webstore/payments-iap",
   "experimental_systemInfo_storage": "system_storage",
   "in_app_payments": "google_wallet",
@@ -26,5 +27,7 @@
   "app_codelab6_lifecycle": "app_codelab_intro",
   "app_codelab7_useridentification": "app_codelab_intro",
   "app_codelab8_webresources": "app_codelab_intro",
-  "app_codelab_10_publishing": "app_codelab_intro"
+  "app_codelab_10_publishing": "app_codelab_intro",
+  "arc_in_app_payments": "https://developer.android.com/chrome-os/intro.html",
+  "arc_playservices": "https://developer.android.com/chrome-os/intro.html"
 }
