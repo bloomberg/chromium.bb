@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/signin/sync_confirmation_ui.h"
 
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
@@ -119,6 +120,16 @@ void SyncConfirmationUI::AddStringResource(content::WebUIDataSource* source,
                                            const std::string& name,
                                            int ids) {
   source->AddLocalizedString(name, ids);
-  js_localized_string_to_ids_map_[base::UTF16ToUTF8(
-      l10n_util::GetStringUTF16(ids))] = ids;
+
+  // When the strings are passed to the HTML, the Unicode NBSP symbol (\u00A0)
+  // will be automatically replaced with "&nbsp;". This change must be mirrored
+  // in the string-to-ids map. Note that "\u00A0" is actually two characters,
+  // so we must use base::ReplaceSubstrings* rather than base::ReplaceChars.
+  // TODO(msramek): Find a more elegant solution.
+  std::string sanitized_string =
+      base::UTF16ToUTF8(l10n_util::GetStringUTF16(ids));
+  base::ReplaceSubstringsAfterOffset(&sanitized_string, 0, "\u00A0" /* NBSP */,
+                                     "&nbsp;");
+
+  js_localized_string_to_ids_map_[sanitized_string] = ids;
 }
