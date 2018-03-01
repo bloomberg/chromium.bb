@@ -532,7 +532,7 @@ if (!is_component_build) {
   }
 }
 
-static_library("headless_test_support") {
+static_library("headless_url_mocks") {
   testonly = true
 
   sources = [
@@ -540,6 +540,19 @@ static_library("headless_test_support") {
     "public/util/testing/fake_managed_dispatch_url_request_job.h",
     "public/util/testing/generic_url_request_mocks.cc",
     "public/util/testing/generic_url_request_mocks.h",
+  ]
+
+  public_deps = [
+    ":headless_renderer",
+    "//base",
+    "//net",
+  ]
+}
+
+static_library("headless_test_support") {
+  testonly = true
+
+  sources = [
     "public/util/testing/mock_devtools_agent_host.cc",
     "public/util/testing/mock_devtools_agent_host.h",
   ]
@@ -551,6 +564,7 @@ static_library("headless_test_support") {
   ]
 
   deps = [
+    ":headless_url_mocks",
     "//testing/gmock",
   ]
 }
