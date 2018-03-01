@@ -3741,10 +3741,10 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
     // Now fill in the gaps in the uncompressed header.
     if (have_tiles) {
       assert(tile_col_size_bytes >= 1 && tile_col_size_bytes <= 4);
-      aom_wb_write_literal(saved_wb, tile_col_size_bytes - 1, 2);
+      aom_wb_overwrite_literal(saved_wb, tile_col_size_bytes - 1, 2);
 
       assert(tile_size_bytes >= 1 && tile_size_bytes <= 4);
-      aom_wb_write_literal(saved_wb, tile_size_bytes - 1, 2);
+      aom_wb_overwrite_literal(saved_wb, tile_size_bytes - 1, 2);
     }
     return (uint32_t)total_size;
   }
