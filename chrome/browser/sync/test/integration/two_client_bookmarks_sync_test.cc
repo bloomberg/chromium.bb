@@ -874,15 +874,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, SC_ReverseTheOrderOf10BMs) {
   ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 }
 
-// flaky on Windows: http://crbug.com/412169
-#if defined(OS_WIN) || defined(OS_MACOSX)
-#define MAYBE_SC_MovingBMsFromBMBarToBMFolder \
-  DISABLED_SC_MovingBMsFromBMBarToBMFolder
-#else
-#define MAYBE_SC_MovingBMsFromBMBarToBMFolder SC_MovingBMsFromBMBarToBMFolder
-#endif
 IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
-                       MAYBE_SC_MovingBMsFromBMBarToBMFolder) {
+                       SC_MovingBMsFromBMBarToBMFolder) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllModelsMatchVerifier());
 
@@ -906,15 +899,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   }
 }
 
-// flaky on Windows and Mac: http://crbug.com/412169
-#if defined(OS_WIN) || defined(OS_MACOSX)
-#define MAYBE_SC_MovingBMsFromBMFoldToBMBar \
-  DISABLED_SC_MovingBMsFromBMFoldToBMBar
-#else
-#define MAYBE_SC_MovingBMsFromBMFoldToBMBar SC_MovingBMsFromBMFoldToBMBar
-#endif
 IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
-                       MAYBE_SC_MovingBMsFromBMFoldToBMBar) {
+                       SC_MovingBMsFromBMFoldToBMBar) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllModelsMatchVerifier());
 
