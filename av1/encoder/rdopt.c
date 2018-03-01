@@ -2392,12 +2392,8 @@ static INLINE int bsize_to_num_blk(BLOCK_SIZE bsize) {
 static int get_search_init_depth(int mi_width, int mi_height,
                                  const SPEED_FEATURES *sf) {
   if (sf->tx_size_search_method == USE_LARGESTALL) return MAX_VARTX_DEPTH;
-  int init_depth = (mi_height != mi_width) ? sf->tx_size_search_init_depth_rect
-                                           : sf->tx_size_search_init_depth_sqr;
-  // If either dimension is 128, search one level less.
-  if (mi_width == 32 || mi_height == 32)
-    init_depth = AOMMIN(init_depth + 1, MAX_TX_DEPTH);
-  return init_depth;
+  return (mi_height != mi_width) ? sf->tx_size_search_init_depth_rect
+                                 : sf->tx_size_search_init_depth_sqr;
 }
 
 static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
