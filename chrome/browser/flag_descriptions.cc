@@ -1518,10 +1518,11 @@ const char kTintGlCompositedContentDescription[] =
 
 const char kTopChromeMd[] = "UI Layout for the browser's top chrome";
 const char kTopChromeMdDescription[] =
-    R"*(Toggles between normal and touch (formerly "hybrid") layouts.)*";
+    R"*(Toggles between normal and touch/hybrid layouts.)*";
 const char kTopChromeMdMaterial[] = "Normal";
 const char kTopChromeMdMaterialAuto[] = "Auto";
-const char kTopChromeMdMaterialHybrid[] = "Touch";
+const char kTopChromeMdMaterialHybrid[] = "Hybrid";
+const char kTopChromeMdMaterialTouchOptimized[] = "Touch";
 
 const char kThreadedScrollingName[] = "Threaded scrolling";
 const char kThreadedScrollingDescription[] =
