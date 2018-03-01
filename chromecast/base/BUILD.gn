@@ -294,6 +294,7 @@ if (is_android) {
 
       # TODO(sanfin): Move these files to another target.
       "$java_src_dir/org/chromium/chromecast/base/CastSettingsManager.java",
+      "$java_src_dir/org/chromium/chromecast/base/CastSwitches.java",
       "$java_src_dir/org/chromium/chromecast/base/ChromecastConfigAndroid.java",
       "$java_src_dir/org/chromium/chromecast/base/DumpstateWriter.java",
       "$java_src_dir/org/chromium/chromecast/base/SystemTimeChangeNotifierAndroid.java",

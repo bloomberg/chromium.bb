@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromecast/base/cast_features.h"
+#include "chromecast/base/chromecast_switches.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/browser/cast_web_contents_manager.h"
@@ -267,8 +268,10 @@ void CastWebViewDefault::RenderViewCreated(
   content::RenderWidgetHostView* view =
       render_view_host->GetWidget()->GetView();
   if (view) {
-    view->SetBackgroundColor(transparent_ ? SK_ColorTRANSPARENT
-                                          : SK_ColorBLACK);
+    view->SetBackgroundColor(
+        transparent_ ? SK_ColorTRANSPARENT
+                     : chromecast::GetSwitchValueColor(
+                           switches::kCastAppBackgroundColor, SK_ColorBLACK));
   }
 }
 

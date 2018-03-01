@@ -17,6 +17,7 @@ import android.widget.FrameLayout;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.chromecast.base.CastSwitches;
 import org.chromium.chromecast.base.Controller;
 import org.chromium.chromecast.base.Unit;
 import org.chromium.components.content_view.ContentView;
@@ -76,6 +77,8 @@ class CastWebContentsSurfaceHelper {
         mHostActivity = hostActivity;
         mShowInFragment = showInFragment;
         mCastWebContentsLayout = castWebContentsLayout;
+        mCastWebContentsLayout.setBackgroundColor(CastSwitches.getSwitchValueColor(
+                CastSwitches.CAST_APP_BACKGROUND_COLOR, Color.BLACK));
         mHandler = new Handler();
         mAudioManager = CastAudioManager.getAudioManager(getActivity());
         mAudioManager.requestAudioFocusWhen(
@@ -178,9 +181,10 @@ class CastWebContentsSurfaceHelper {
             }
         };
         mContentViewRenderView.onNativeLibraryLoaded(mWindow);
-        // Setting the background color to black avoids rendering a white splash screen
+        // Setting the background color avoids rendering a white splash screen
         // before the players are loaded. See https://crbug/307113 for details.
-        mContentViewRenderView.setSurfaceViewBackgroundColor(Color.BLACK);
+        mContentViewRenderView.setSurfaceViewBackgroundColor(CastSwitches.getSwitchValueColor(
+                CastSwitches.CAST_APP_BACKGROUND_COLOR, Color.BLACK));
 
         mCastWebContentsLayout.addView(mContentViewRenderView,
                 new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
