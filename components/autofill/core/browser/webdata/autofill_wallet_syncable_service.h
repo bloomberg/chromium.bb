@@ -77,8 +77,30 @@ class AutofillWalletSyncableService
                            CopyRelevantMetadataFromDisk_KeepUseStats);
   FRIEND_TEST_ALL_PREFIXES(AutofillWalletSyncableServiceTest, NewWalletCard);
   FRIEND_TEST_ALL_PREFIXES(AutofillWalletSyncableServiceTest, EmptyNameOnCard);
+  FRIEND_TEST_ALL_PREFIXES(AutofillWalletSyncableServiceTest, ComputeCardsDiff);
+  FRIEND_TEST_ALL_PREFIXES(AutofillWalletSyncableServiceTest,
+                           ComputeAddressesDiff);
 
-  syncer::SyncMergeResult SetSyncData(const syncer::SyncDataList& data_list);
+  struct Diff {
+    int items_added = 0;
+    int items_removed = 0;
+
+    bool IsEmpty() const { return items_added == 0 && items_removed == 0; }
+  };
+
+  // Computes a "diff" (items added, items removed) of two vectors of items,
+  // which should be either CreditCard or AutofillProfile. This is used for two
+  // purposes:
+  // 1) Detecting if anything has changed, so that we don't write to disk in the
+  //    common case where nothing has changed.
+  // 2) Recording metrics on the number of added/removed items.
+  // This is exposed as a static method so that it can be tested.
+  template <class Item>
+  static Diff ComputeDiff(const std::vector<std::unique_ptr<Item>>& old_data,
+                          const std::vector<Item>& new_data);
+
+  syncer::SyncMergeResult SetSyncData(const syncer::SyncDataList& data_list,
+                                      bool is_initial_data);
 
   // Populates the wallet cards and addresses from the sync data and uses the
   // sync data to link the card to its billing address.

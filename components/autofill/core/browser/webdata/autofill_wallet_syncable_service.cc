@@ -11,6 +11,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -139,69 +140,58 @@ AutofillProfile ProfileFromSpecifics(
   return profile;
 }
 
-// This function handles conditionally updating the AutofillTable with either
-// a set of CreditCards or AutocompleteProfiles only when the existing data
-// doesn't match.
-//
-// It's passed the getter and setter function on the AutofillTable for the
-// corresponding data type, and expects the types to implement a Compare
-// function. Note that the guid can't be used here as a key since these are
-// generated locally and will be different each time, and the server ID can't
-// be used because it's empty for addresses (though it could be used for credit
-// cards if we wanted separate implementations).
-//
-// Returns true if anything changed. The previous number of items in the table
-// (for sync tracking) will be placed into *prev_item_count.
-template <class Data>
-bool SetDataIfChanged(
-    AutofillTable* table,
-    const std::vector<Data>& data,
-    bool (AutofillTable::*getter)(std::vector<std::unique_ptr<Data>>*) const,
-    void (AutofillTable::*setter)(const std::vector<Data>&),
-    size_t* prev_item_count) {
-  std::vector<std::unique_ptr<Data>> existing_data;
-  (table->*getter)(&existing_data);
-  *prev_item_count = existing_data.size();
+}  // namespace
 
-  // If the user has a large number of addresses, don't bother verifying
-  // anything changed and just rewrite the data.
-  const size_t kTooBigToCheckThreshold = 8;
+// static
+template <class Item>
+AutofillWalletSyncableService::Diff AutofillWalletSyncableService::ComputeDiff(
+    const std::vector<std::unique_ptr<Item>>& old_data,
+    const std::vector<Item>& new_data) {
+  // Build vectors of pointers, so that we can mutate (sort) them.
+  std::vector<const Item*> old_ptrs;
+  old_ptrs.reserve(old_data.size());
+  for (const std::unique_ptr<Item>& old_item : old_data)
+    old_ptrs.push_back(old_item.get());
+  std::vector<const Item*> new_ptrs;
+  new_ptrs.reserve(new_data.size());
+  for (const Item& new_item : new_data)
+    new_ptrs.push_back(&new_item);
 
-  bool difference_found;
-  if (existing_data.size() != data.size() ||
-      data.size() > kTooBigToCheckThreshold) {
-    difference_found = true;
-  } else {
-    difference_found = false;
+  // Sort our vectors.
+  auto compare = [](const Item* lhs, const Item* rhs) {
+    return lhs->Compare(*rhs) < 0;
+  };
+  std::sort(old_ptrs.begin(), old_ptrs.end(), compare);
+  std::sort(new_ptrs.begin(), new_ptrs.end(), compare);
 
-    // Implement brute-force searching. Address and card counts are typically
-    // small, and comparing them is relatively expensive (many string
-    // compares). A std::set only uses operator< requiring multiple calls to
-    // check equality, giving 8 compares for 2 elements and 16 for 3. For these
-    // set sizes, brute force O(n^2) is faster.
-    for (const auto& cur_existing : existing_data) {
-      bool found_match_for_cur_existing = false;
-      for (const Data& cur_new : data) {
-        if (cur_existing->Compare(cur_new) == 0) {
-          found_match_for_cur_existing = true;
-          break;
-        }
-      }
-      if (!found_match_for_cur_existing) {
-        difference_found = true;
-        break;
-      }
+  // Walk over both of them and count added/removed elements.
+  Diff result;
+  auto old_it = old_ptrs.begin();
+  auto new_it = new_ptrs.begin();
+  while (old_it != old_ptrs.end()) {
+    if (new_it == new_ptrs.end()) {
+      result.items_removed += std::distance(old_it, old_ptrs.end());
+      break;
+    }
+    int cmp = (*old_it)->Compare(**new_it);
+    if (cmp < 0) {
+      ++result.items_removed;
+      ++old_it;
+    } else if (cmp == 0) {
+      ++old_it;
+      ++new_it;
+    } else {
+      ++result.items_added;
+      ++new_it;
     }
   }
+  result.items_added += std::distance(new_it, new_ptrs.end());
 
-  if (difference_found) {
-    (table->*setter)(data);
-    return true;
-  }
-  return false;
+  DCHECK_EQ(old_data.size() + result.items_added - result.items_removed,
+            new_data.size());
+
+  return result;
 }
-
-}  // namespace
 
 AutofillWalletSyncableService::AutofillWalletSyncableService(
     AutofillWebDataBackend* webdata_backend,
@@ -217,7 +207,8 @@ syncer::SyncMergeResult AutofillWalletSyncableService::MergeDataAndStartSyncing(
     std::unique_ptr<syncer::SyncErrorFactory> sync_error_factory) {
   DCHECK(thread_checker_.CalledOnValidThread());
   sync_processor_ = std::move(sync_processor);
-  syncer::SyncMergeResult result = SetSyncData(initial_sync_data);
+  syncer::SyncMergeResult result =
+      SetSyncData(initial_sync_data, /*is_initial_data=*/true);
   if (webdata_backend_)
     webdata_backend_->NotifyThatSyncHasStarted(type);
   return result;
@@ -243,7 +234,8 @@ syncer::SyncError AutofillWalletSyncableService::ProcessSyncChanges(
   DCHECK(thread_checker_.CalledOnValidThread());
   // Don't bother handling incremental updates. Wallet data changes very rarely
   // and has few items. Instead, just get all the current data and save it.
-  SetSyncData(sync_processor_->GetAllSyncData(syncer::AUTOFILL_WALLET_DATA));
+  SetSyncData(sync_processor_->GetAllSyncData(syncer::AUTOFILL_WALLET_DATA),
+              /*is_initial_data=*/false);
   return syncer::SyncError();
 }
 
@@ -334,7 +326,8 @@ void AutofillWalletSyncableService::CopyRelevantMetadataFromDisk(
 }
 
 syncer::SyncMergeResult AutofillWalletSyncableService::SetSyncData(
-    const syncer::SyncDataList& data_list) {
+    const syncer::SyncDataList& data_list,
+    bool is_initial_data) {
   std::vector<CreditCard> wallet_cards;
   std::vector<AutofillProfile> wallet_addresses;
   PopulateWalletCardsAndAddresses(data_list, &wallet_cards, &wallet_addresses);
@@ -351,22 +344,42 @@ syncer::SyncMergeResult AutofillWalletSyncableService::SetSyncData(
   // to the database will require at least one DB page write and will schedule
   // a fsync. To avoid this I/O, it should be more efficient to do a read and
   // only do the writes if something changed.
-  size_t prev_card_count = 0;
-  size_t prev_address_count = 0;
-  bool changed_cards = SetDataIfChanged(
-      table, wallet_cards, &AutofillTable::GetServerCreditCards,
-      &AutofillTable::SetServerCreditCards, &prev_card_count);
-  bool changed_addresses = SetDataIfChanged(
-      table, wallet_addresses, &AutofillTable::GetServerProfiles,
-      &AutofillTable::SetServerProfiles, &prev_address_count);
+  std::vector<std::unique_ptr<CreditCard>> existing_cards;
+  table->GetServerCreditCards(&existing_cards);
+  Diff cards_diff = ComputeDiff(existing_cards, wallet_cards);
+  if (!cards_diff.IsEmpty())
+    table->SetServerCreditCards(wallet_cards);
+
+  std::vector<std::unique_ptr<AutofillProfile>> existing_addresses;
+  table->GetServerProfiles(&existing_addresses);
+  Diff addresses_diff = ComputeDiff(existing_addresses, wallet_addresses);
+  if (!addresses_diff.IsEmpty())
+    table->SetServerProfiles(wallet_addresses);
 
   syncer::SyncMergeResult merge_result(syncer::AUTOFILL_WALLET_DATA);
   merge_result.set_num_items_before_association(
-      static_cast<int>(prev_card_count + prev_address_count));
+      static_cast<int>(existing_cards.size() + existing_addresses.size()));
   merge_result.set_num_items_after_association(
       static_cast<int>(wallet_cards.size() + wallet_addresses.size()));
 
-  if (webdata_backend_ && (changed_cards || changed_addresses))
+  if (!is_initial_data) {
+    UMA_HISTOGRAM_COUNTS_100("Autofill.WalletCardsAdded",
+                             cards_diff.items_added);
+    UMA_HISTOGRAM_COUNTS_100("Autofill.WalletCardsRemoved",
+                             cards_diff.items_removed);
+    UMA_HISTOGRAM_COUNTS_100("Autofill.WalletCardsAddedOrRemoved",
+                             cards_diff.items_added + cards_diff.items_removed);
+
+    UMA_HISTOGRAM_COUNTS_100("Autofill.WalletAddressesAdded",
+                             addresses_diff.items_added);
+    UMA_HISTOGRAM_COUNTS_100("Autofill.WalletAddressesRemoved",
+                             addresses_diff.items_removed);
+    UMA_HISTOGRAM_COUNTS_100(
+        "Autofill.WalletAddressesAddedOrRemoved",
+        addresses_diff.items_added + addresses_diff.items_removed);
+  }
+
+  if (webdata_backend_ && (!cards_diff.IsEmpty() || !addresses_diff.IsEmpty()))
     webdata_backend_->NotifyOfMultipleAutofillChanges();
 
   return merge_result;
