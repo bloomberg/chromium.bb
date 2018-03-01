@@ -112,7 +112,7 @@ class ShareServiceTestImpl : public ShareServiceImpl {
 
     // Quit the test's run loop. It is the test's responsibility to call the
     // callback, to simulate the user's choice.
-    quit_run_loop_.Run();
+    std::move(quit_run_loop_).Run();
   }
 
   void OpenTargetURL(const GURL& target_url) override {
@@ -130,7 +130,7 @@ class ShareServiceTestImpl : public ShareServiceImpl {
 
   std::map<std::string, blink::mojom::EngagementLevel> engagement_map_;
   // Closure to quit the test's run loop.
-  base::Closure quit_run_loop_;
+  base::OnceClosure quit_run_loop_;
 
   // The last URL passed to OpenTargetURL.
   std::string last_used_target_url_;
@@ -190,14 +190,14 @@ TEST_F(ShareServiceImplUnittest, ShareCallbackParams) {
   // https://crbug.com/762388.
   share_service_helper()->AddShareTargetToPrefs("", kTargetName, kUrlTemplate);
 
-  base::Callback<void(blink::mojom::ShareError)> callback =
-      base::Bind(&DidShare, blink::mojom::ShareError::OK);
+  base::OnceCallback<void(blink::mojom::ShareError)> callback =
+      base::BindOnce(&DidShare, blink::mojom::ShareError::OK);
 
   base::RunLoop run_loop;
   share_service_helper()->set_run_loop(&run_loop);
 
   const GURL url(kUrlSpec);
-  share_service()->Share(kTitle, kText, url, callback);
+  share_service()->Share(kTitle, kText, url, std::move(callback));
 
   run_loop.Run();
 
@@ -222,14 +222,14 @@ TEST_F(ShareServiceImplUnittest, ShareCallbackParams) {
 // any targets.
 TEST_F(ShareServiceImplUnittest, ShareCancelNoTargets) {
   // Expect an error message in response.
-  base::Callback<void(blink::mojom::ShareError)> callback =
-      base::Bind(&DidShare, blink::mojom::ShareError::CANCELED);
+  base::OnceCallback<void(blink::mojom::ShareError)> callback =
+      base::BindOnce(&DidShare, blink::mojom::ShareError::CANCELED);
 
   base::RunLoop run_loop;
   share_service_helper()->set_run_loop(&run_loop);
 
   const GURL url(kUrlSpec);
-  share_service()->Share(kTitle, kText, url, callback);
+  share_service()->Share(kTitle, kText, url, std::move(callback));
 
   run_loop.Run();
 
@@ -249,14 +249,14 @@ TEST_F(ShareServiceImplUnittest, ShareCancelWithTargets) {
                                                 kUrlTemplate);
 
   // Expect an error message in response.
-  base::Callback<void(blink::mojom::ShareError)> callback =
-      base::Bind(&DidShare, blink::mojom::ShareError::CANCELED);
+  base::OnceCallback<void(blink::mojom::ShareError)> callback =
+      base::BindOnce(&DidShare, blink::mojom::ShareError::CANCELED);
 
   base::RunLoop run_loop;
   share_service_helper()->set_run_loop(&run_loop);
 
   const GURL url(kUrlSpec);
-  share_service()->Share(kTitle, kText, url, callback);
+  share_service()->Share(kTitle, kText, url, std::move(callback));
 
   run_loop.Run();
 
@@ -282,14 +282,14 @@ TEST_F(ShareServiceImplUnittest, ShareBrokenUrl) {
                                                 kBrokenUrlTemplate);
 
   // Expect an error message in response.
-  base::Callback<void(blink::mojom::ShareError)> callback =
-      base::Bind(&DidShare, blink::mojom::ShareError::INTERNAL_ERROR);
+  base::OnceCallback<void(blink::mojom::ShareError)> callback =
+      base::BindOnce(&DidShare, blink::mojom::ShareError::INTERNAL_ERROR);
 
   base::RunLoop run_loop;
   share_service_helper()->set_run_loop(&run_loop);
 
   const GURL url(kUrlSpec);
-  share_service()->Share(kTitle, kText, url, callback);
+  share_service()->Share(kTitle, kText, url, std::move(callback));
 
   run_loop.Run();
 
@@ -311,14 +311,14 @@ TEST_F(ShareServiceImplUnittest, ShareWithSomeInsufficientlyEngagedTargets) {
   share_service_helper()->AddShareTargetToPrefs(kManifestUrlLow, kTargetName,
                                                 kUrlTemplate);
 
-  base::Callback<void(blink::mojom::ShareError)> callback =
-      base::Bind(&DidShare, blink::mojom::ShareError::OK);
+  base::OnceCallback<void(blink::mojom::ShareError)> callback =
+      base::BindOnce(&DidShare, blink::mojom::ShareError::OK);
 
   base::RunLoop run_loop;
   share_service_helper()->set_run_loop(&run_loop);
 
   const GURL url(kUrlSpec);
-  share_service()->Share(kTitle, kText, url, callback);
+  share_service()->Share(kTitle, kText, url, std::move(callback));
 
   run_loop.Run();
 
@@ -351,9 +351,9 @@ TEST_F(ShareServiceImplUnittest, ShareServiceDeletion) {
   // destroyed before the picker is closed).
   // TODO(mgiuca): This probably should still complete the share, if not
   // cancelled, even if the underlying tab is closed.
-  base::Callback<void(blink::mojom::ShareError)> callback =
-      base::Bind([](blink::mojom::ShareError error) { FAIL(); });
-  share_service()->Share(kTitle, kText, url, callback);
+  base::OnceCallback<void(blink::mojom::ShareError)> callback =
+      base::BindOnce([](blink::mojom::ShareError error) { FAIL(); });
+  share_service()->Share(kTitle, kText, url, std::move(callback));
 
   run_loop.Run();
 
