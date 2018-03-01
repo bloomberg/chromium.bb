@@ -87,9 +87,12 @@ TEST(AffiliatedCloudPolicyInvalidatorTest, CreateUseDestroy) {
   std::unique_ptr<MockCloudPolicyClient> policy_client_owner(
       new MockCloudPolicyClient);
   MockCloudPolicyClient* policy_client = policy_client_owner.get();
-  EXPECT_CALL(*policy_client, SetupRegistration("token", "device-id"))
-      .WillOnce(WithArgs<1>(Invoke(policy_client,
-                                   &MockCloudPolicyClient::SetDMToken)));
+  EXPECT_CALL(
+      *policy_client,
+      SetupRegistration(PolicyBuilder::kFakeToken, PolicyBuilder::kFakeDeviceId,
+                        PolicyBuilder::GetUserAffiliationIds()))
+      .WillOnce(WithArgs<1>(
+          Invoke(policy_client, &MockCloudPolicyClient::SetDMToken)));
   core.Connect(std::move(policy_client_owner));
   Mock::VerifyAndClearExpectations(&policy_client);
   core.StartRefreshScheduler();

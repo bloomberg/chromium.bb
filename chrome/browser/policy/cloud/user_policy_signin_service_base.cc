@@ -56,7 +56,9 @@ void UserPolicySigninServiceBase::FetchPolicyForSignedInUser(
   std::unique_ptr<CloudPolicyClient> client =
       UserCloudPolicyManager::CreateCloudPolicyClient(
           device_management_service_, profile_request_context);
-  client->SetupRegistration(dm_token, client_id);
+  client->SetupRegistration(
+      dm_token, client_id,
+      std::vector<std::string>() /* user_affiliation_ids */);
   DCHECK(client->is_registered());
   // The user has just signed in, so the UserCloudPolicyManager should not yet
   // be initialized. This routine will initialize the UserCloudPolicyManager

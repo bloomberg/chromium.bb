@@ -196,8 +196,12 @@ void PreSigninPolicyFetcher::OnCachedPolicyValidated(
   }
 
   // Try to retrieve fresh policy.
+  std::vector<std::string> user_affiliation_ids(
+      policy_data_->user_affiliation_ids().begin(),
+      policy_data_->user_affiliation_ids().end());
   cloud_policy_client_->SetupRegistration(policy_data_->request_token(),
-                                          policy_data_->device_id());
+                                          policy_data_->device_id(),
+                                          user_affiliation_ids);
   cloud_policy_client_->AddPolicyTypeToFetch(
       dm_protocol::kChromeUserPolicyType,
       std::string() /* settings_entity_id */);

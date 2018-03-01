@@ -144,8 +144,11 @@ void CloudPolicyService::OnStoreLoaded(CloudPolicyStore* store) {
       !client_->is_registered()) {
     DVLOG(1) << "Setting up registration with request token: "
              << policy->request_token();
-    client_->SetupRegistration(policy->request_token(),
-                               policy->device_id());
+    std::vector<std::string> user_affiliation_ids(
+        policy->user_affiliation_ids().begin(),
+        policy->user_affiliation_ids().end());
+    client_->SetupRegistration(policy->request_token(), policy->device_id(),
+                               user_affiliation_ids);
   }
 
   if (refresh_state_ == REFRESH_POLICY_STORE)

@@ -121,7 +121,9 @@ class PreSigninPolicyFetcherTestBase : public testing::Test {
   // fetch call sequence.
   void ExpectFreshPolicyFetchOnClient(const std::string& dm_token,
                                       const std::string& client_id) {
-    EXPECT_CALL(*cloud_policy_client_, SetupRegistration(dm_token, client_id));
+    EXPECT_CALL(*cloud_policy_client_,
+                SetupRegistration(dm_token, client_id,
+                                  PolicyBuilder::GetUserAffiliationIds()));
     EXPECT_CALL(*cloud_policy_client_, FetchPolicy());
 
     expecting_fresh_policy_fetch_ = true;

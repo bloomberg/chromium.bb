@@ -75,9 +75,13 @@ TEST_F(CloudPolicyServiceTest, PolicyUpdateSuccess) {
   store_.policy_->set_device_id("fake client id");
   store_.policy_->set_timestamp(32);
   store_.policy_->set_public_key_version(17);
-  EXPECT_CALL(client_,
-              SetupRegistration(store_.policy_->request_token(),
-                                store_.policy_->device_id())).Times(1);
+  store_.policy_->add_user_affiliation_ids("id1");
+  std::vector<std::string> user_affiliation_ids = {
+      store_.policy_->user_affiliation_ids(0)};
+  EXPECT_CALL(client_, SetupRegistration(store_.policy_->request_token(),
+                                         store_.policy_->device_id(),
+                                         user_affiliation_ids))
+      .Times(1);
   store_.NotifyStoreLoaded();
   EXPECT_EQ(base::Time::FromJavaTime(32), client_.last_policy_timestamp_);
   EXPECT_TRUE(client_.public_key_version_valid_);

@@ -94,20 +94,23 @@ CloudPolicyClient::CloudPolicyClient(
     const std::string& machine_model,
     DeviceManagementService* service,
     scoped_refptr<net::URLRequestContextGetter> request_context,
-    SigningService* signing_service)
+    SigningService* signing_service,
+    DeviceDMTokenCallback device_dm_token_callback)
     : machine_id_(machine_id),
       machine_model_(machine_model),
-      service_(service),                  // Can be null for unit tests.
+      service_(service),  // Can be null for unit tests.
       signing_service_(signing_service),
+      device_dm_token_callback_(device_dm_token_callback),
       request_context_(request_context),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
 CloudPolicyClient::~CloudPolicyClient() {
 }
 
-void CloudPolicyClient::SetupRegistration(const std::string& dm_token,
-                                          const std::string& client_id) {
+void CloudPolicyClient::SetupRegistration(
+    const std::string& dm_token,
+    const std::string& client_id,
+    const std::vector<std::string>& user_affiliation_ids) {
   DCHECK(!dm_token.empty());
   DCHECK(!client_id.empty());
   DCHECK(!is_registered());
@@ -118,6 +121,9 @@ void CloudPolicyClient::SetupRegistration(const std::string& dm_token,
   app_install_report_request_job_ = nullptr;
   policy_fetch_request_job_.reset();
   responses_.clear();
+  if (device_dm_token_callback_) {
+    device_dm_token_ = device_dm_token_callback_.Run(user_affiliation_ids);
+  }
 
   NotifyRegistrationStateChanged();
 }
@@ -283,6 +289,8 @@ void CloudPolicyClient::FetchPolicy() {
 
     // These fields are included only in requests for chrome policy.
     if (IsChromePolicy(type_to_fetch.first)) {
+      if (!device_dm_token_.empty())
+        fetch_request->set_device_dm_token(device_dm_token_);
       if (!last_policy_timestamp_.is_null())
         fetch_request->set_timestamp(last_policy_timestamp_.ToJavaTime());
       if (!invalidation_payload_.empty()) {
@@ -650,6 +658,12 @@ void CloudPolicyClient::OnRegisterCompleted(
           response.register_response().enrollment_type());
     }
 
+    if (device_dm_token_callback_) {
+      std::vector<std::string> user_affiliation_ids(
+          response.register_response().user_affiliation_ids().begin(),
+          response.register_response().user_affiliation_ids().end());
+      device_dm_token_ = device_dm_token_callback_.Run(user_affiliation_ids);
+    }
     NotifyRegistrationStateChanged();
   } else {
     NotifyClientError();
@@ -738,6 +752,7 @@ void CloudPolicyClient::OnUnregisterCompleted(
     // Cancel all outstanding jobs.
     request_jobs_.clear();
     app_install_report_request_job_ = nullptr;
+    device_dm_token_.clear();
     NotifyRegistrationStateChanged();
   } else {
     NotifyClientError();

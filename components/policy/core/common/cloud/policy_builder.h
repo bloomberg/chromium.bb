@@ -125,6 +125,8 @@ class PolicyBuilder {
   static std::string GetPublicTestKeyAsString();
   static std::string GetPublicTestOtherKeyAsString();
 
+  static std::vector<std::string> GetUserAffiliationIds();
+
  private:
   enterprise_management::PolicyFetchResponse policy_;
   std::unique_ptr<enterprise_management::PolicyData> policy_data_;

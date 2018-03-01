@@ -206,7 +206,9 @@ class ComponentCloudPolicyTest : public ExtensionBrowserTest {
     EXPECT_CALL(observer, OnRegistrationStateChanged(_))
         .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
     client_->AddObserver(&observer);
-    client_->SetupRegistration(kDMToken, kDeviceID);
+    client_->SetupRegistration(
+        kDMToken, kDeviceID,
+        std::vector<std::string>() /* user_affiliation_ids */);
     run_loop.Run();
     Mock::VerifyAndClearExpectations(&observer);
     client_->RemoveObserver(&observer);
