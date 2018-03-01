@@ -67,6 +67,7 @@ public class WebViewChromiumAwInit {
     private WebStorageAdapter mWebStorage;
     private WebViewDatabaseAdapter mWebViewDatabase;
     private Object mServiceWorkerController;
+    private AwTracingController mAwTracingController;
 
     // Guards accees to the other members, and is notifyAll() signalled on the UI thread
     // when the chromium process has been started.
@@ -85,6 +86,16 @@ public class WebViewChromiumAwInit {
         // WebViewChromiumFactoryProvider ctor, so 'factory' is not properly initialized yet.
     }
 
+    AwTracingController getAwTracingController() {
+        synchronized (mLock) {
+            if (mAwTracingController == null) {
+                ensureChromiumStartedLocked(true);
+            }
+        }
+        return mAwTracingController;
+    }
+
+    // TODO: remove once glue layer is updated (crbug.com/808023)
     AwTracingController getTracingControllerOnUiThread() {
         synchronized (mLock) {
             ensureChromiumStartedLocked(true);
@@ -177,6 +188,7 @@ public class WebViewChromiumAwInit {
         mGeolocationPermissions = new GeolocationPermissionsAdapter(
                 mFactory, awBrowserContext.getGeolocationPermissions());
         mWebStorage = new WebStorageAdapter(mFactory, AwQuotaManagerBridge.getInstance());
+        mAwTracingController = awBrowserContext.getTracingController();
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
             mServiceWorkerController = new ServiceWorkerControllerAdapter(
                     awBrowserContext.getServiceWorkerController());
