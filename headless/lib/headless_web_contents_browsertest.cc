@@ -11,8 +11,10 @@
 #include "base/json/json_writer.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
+#include "components/viz/common/features.h"
 #include "components/viz/common/switches.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
@@ -1090,7 +1092,9 @@ class HeadlessWebContentsBeginFrameControlTest
     command_line->AppendSwitch(cc::switches::kDisableCheckerImaging);
     command_line->AppendSwitch(cc::switches::kDisableThreadedAnimation);
     command_line->AppendSwitch(switches::kDisableThreadedScrolling);
-    command_line->AppendSwitch(switches::kEnableSurfaceSynchronization);
+
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kEnableSurfaceSynchronization);
   }
 
   void OnCreateTargetResult(
@@ -1207,6 +1211,8 @@ class HeadlessWebContentsBeginFrameControlTest
             &HeadlessWebContentsBeginFrameControlTest::FinishAsynchronousTest,
             base::Unretained(this)));
   }
+
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   HeadlessBrowserContext* browser_context_ = nullptr;  // Not owned.
   HeadlessWebContentsImpl* web_contents_ = nullptr;    // Not owned.
