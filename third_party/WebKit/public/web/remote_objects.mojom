@@ -21,6 +21,7 @@ interface RemoteObject {
 
 union RemoteInvocationArgument {
   double number_value;
+  bool boolean_value;
 };
 
 enum RemoteInvocationError {

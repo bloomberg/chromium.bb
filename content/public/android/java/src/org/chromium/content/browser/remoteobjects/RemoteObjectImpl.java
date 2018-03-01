@@ -233,6 +233,25 @@ class RemoteObjectImpl implements RemoteObject {
                     assert !parameterType.isPrimitive();
                     return null;
                 }
+            case RemoteInvocationArgument.Tag.BooleanValue:
+                // See http://jdk6.java.net/plugin2/liveconnect/#JS_BOOLEAN_VALUES.
+                boolean booleanValue = argument.getBooleanValue();
+                if (parameterType == boolean.class) {
+                    return booleanValue;
+                } else if (parameterType.isPrimitive()) {
+                    // LIVECONNECT_COMPLIANCE: Existing behavior is to convert to 0 for all
+                    // non-boolean primitive types. Spec requires converting to 0 or 1.
+                    return getPrimitiveZero(parameterType);
+                } else if (parameterType == String.class) {
+                    return Boolean.toString(booleanValue);
+                } else if (parameterType.isArray()) {
+                    return null;
+                } else {
+                    // LIVECONNECT_COMPLIANCE: Existing behavior is to convert to NULL. Spec
+                    // requires handling java.lang.Boolean and java.lang.Object.
+                    assert !parameterType.isPrimitive();
+                    return null;
+                }
             default:
                 throw new RuntimeException("invalid wire argument type");
         }
@@ -287,5 +306,28 @@ class RemoteObjectImpl implements RemoteObject {
         // one decimal point).
         return String.format((Locale) null, "%.6g", doubleValue)
                 .replaceFirst("^(-?[0-9]+)(\\.0+)?((\\.[0-9]*[1-9])0*)?(e.*)?$", "$1$4$5");
+    }
+
+    private static Object getPrimitiveZero(Class<?> parameterType) {
+        assert parameterType.isPrimitive();
+        if (parameterType == boolean.class) {
+            return false;
+        } else if (parameterType == byte.class) {
+            return (byte) 0;
+        } else if (parameterType == char.class) {
+            return (char) 0;
+        } else if (parameterType == short.class) {
+            return (short) 0;
+        } else if (parameterType == int.class) {
+            return (int) 0;
+        } else if (parameterType == long.class) {
+            return (long) 0;
+        } else if (parameterType == float.class) {
+            return (float) 0;
+        } else if (parameterType == double.class) {
+            return (double) 0;
+        } else {
+            throw new RuntimeException("unexpected primitive type " + parameterType);
+        }
     }
 }
