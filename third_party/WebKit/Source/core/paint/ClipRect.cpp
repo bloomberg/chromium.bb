@@ -39,4 +39,8 @@ String ClipRect::ToString() const {
   return rect_.ToString() + (has_radius_ ? " hasRadius" : " noRadius");
 }
 
+std::ostream& operator<<(std::ostream& ostream, const ClipRect& rect) {
+  return ostream << rect.ToString();
+}
+
 }  // namespace blink
