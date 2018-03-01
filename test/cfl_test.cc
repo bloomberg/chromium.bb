@@ -15,7 +15,7 @@
 #include "test/util.h"
 #include "test/acm_random.h"
 
-using std::tr1::make_tuple;
+using ::testing::make_tuple;
 
 using libaom_test::ACMRandom;
 
@@ -40,13 +40,22 @@ typedef cfl_predict_hbd_fn (*get_predict_fn_hbd)(TX_SIZE tx_size);
 
 typedef cfl_subtract_average_fn (*sub_avg_fn)(TX_SIZE tx_size);
 
-typedef std::tr1::tuple<TX_SIZE, get_subsample_fn> subsample_param;
+typedef ::testing::tuple<TX_SIZE, get_subsample_fn> subsample_param;
 
-typedef std::tr1::tuple<TX_SIZE, get_predict_fn> predict_param;
+typedef ::testing::tuple<TX_SIZE, get_predict_fn> predict_param;
 
-typedef std::tr1::tuple<TX_SIZE, get_predict_fn_hbd> predict_param_hbd;
+typedef ::testing::tuple<TX_SIZE, get_predict_fn_hbd> predict_param_hbd;
 
-typedef std::tr1::tuple<TX_SIZE, sub_avg_fn> sub_avg_param;
+typedef ::testing::tuple<TX_SIZE, sub_avg_fn> sub_avg_param;
+
+template <typename A>
+static void assert_eq(const A *a, const A *b, int width, int height) {
+  for (int j = 0; j < height; j++) {
+    for (int i = 0; i < width; i++) {
+      ASSERT_EQ(a[j * CFL_BUF_LINE + i], b[j * CFL_BUF_LINE + i]);
+    }
+  }
+}
 
 static void assertFaster(int ref_elapsed_time, int elapsed_time) {
   EXPECT_GT(ref_elapsed_time, elapsed_time)
@@ -65,25 +74,40 @@ static void printSpeed(int ref_elapsed_time, int elapsed_time, int width,
             << std::endl;
 }
 
-class CFLSubAvgTest : public ::testing::TestWithParam<sub_avg_param> {
+template <typename F>
+class CFLTest
+    : public ::testing::TestWithParam< ::testing::tuple<TX_SIZE, F> > {
  public:
-  virtual ~CFLSubAvgTest() {}
-  virtual void SetUp() { sub_avg = GET_PARAM(1); }
+  virtual ~CFLTest() {}
+  virtual void SetUp() {
+    tx_size = ::testing::get<0>(this->GetParam());
+    width = tx_size_wide[tx_size];
+    height = tx_size_high[tx_size];
+    fun_under_test = ::testing::get<1>(this->GetParam());
+    rnd(ACMRandom::DeterministicSeed());
+  }
 
  protected:
-  int Width() const { return tx_size_wide[GET_PARAM(0)]; }
-  int Height() const { return tx_size_high[GET_PARAM(0)]; }
-  TX_SIZE Tx_size() const { return GET_PARAM(0); }
-  sub_avg_fn sub_avg;
-  int16_t data[CFL_BUF_SQUARE];
-  int16_t data_ref[CFL_BUF_SQUARE];
-  void init() {
-    const int width = Width();
-    const int height = Height();
-    ACMRandom rnd(ACMRandom::DeterministicSeed());
-    for (int j = 0; j < height; j++) {
-      for (int i = 0; i < width; i++) {
-        const int16_t d = rnd.Rand15Signed();
+  ACMRandom rnd;
+  F fun_under_test;
+  TX_SIZE tx_size;
+  int width;
+  int height;
+};
+
+template <typename F, typename I>
+class CFLTestWithData : public CFLTest<F> {
+ public:
+  virtual ~CFLTestWithData() {}
+
+ protected:
+  I data[CFL_BUF_SQUARE];
+  I data_ref[CFL_BUF_SQUARE];
+
+  void init(I (ACMRandom::*random)()) {
+    for (int j = 0; j < this->height; j++) {
+      for (int i = 0; i < this->width; i++) {
+        const I d = (this->rnd.*random)();
         data[j * CFL_BUF_LINE + i] = d;
         data_ref[j * CFL_BUF_LINE + i] = d;
       }
@@ -91,96 +115,23 @@ class CFLSubAvgTest : public ::testing::TestWithParam<sub_avg_param> {
   }
 };
 
-class CFLSubsampleTest : public ::testing::TestWithParam<subsample_param> {
+template <typename F, typename I>
+class CFLTestWithAlignedData : public CFLTest<F> {
  public:
-  virtual ~CFLSubsampleTest() {}
-  virtual void SetUp() { subsample = GET_PARAM(1); }
-
- protected:
-  int Width() const { return tx_size_wide[GET_PARAM(0)]; }
-  int Height() const { return tx_size_high[GET_PARAM(0)]; }
-  TX_SIZE Tx_size() const { return GET_PARAM(0); }
-  get_subsample_fn subsample;
-  uint8_t luma_pels[CFL_BUF_SQUARE];
-  uint8_t luma_pels_ref[CFL_BUF_SQUARE];
-  int16_t sub_luma_pels[CFL_BUF_SQUARE];
-  int16_t sub_luma_pels_ref[CFL_BUF_SQUARE];
-  void init(int width, int height) {
-    ACMRandom rnd(ACMRandom::DeterministicSeed());
-    for (int j = 0; j < height; j++) {
-      for (int i = 0; i < width; i++) {
-        const int val = rnd.Rand8();
-        luma_pels[j * CFL_BUF_LINE + i] = val;
-        luma_pels_ref[j * CFL_BUF_LINE + i] = val;
-      }
-    }
-  }
-};
-
-class CFLPredictTest : public ::testing::TestWithParam<predict_param> {
- public:
-  virtual ~CFLPredictTest() {}
+  virtual ~CFLTestWithAlignedData() {}
   virtual void SetUp() {
-    predict = GET_PARAM(1);
-    chroma_pels_ref = reinterpret_cast<uint8_t *>(
-        aom_memalign(32, sizeof(uint8_t) * CFL_BUF_SQUARE));
+    CFLTest<F>::SetUp();
+    chroma_pels_ref =
+        reinterpret_cast<I *>(aom_memalign(32, sizeof(I) * CFL_BUF_SQUARE));
+    chroma_pels =
+        reinterpret_cast<I *>(aom_memalign(32, sizeof(I) * CFL_BUF_SQUARE));
     sub_luma_pels_ref = reinterpret_cast<int16_t *>(
         aom_memalign(32, sizeof(int16_t) * CFL_BUF_SQUARE));
-    chroma_pels = reinterpret_cast<uint8_t *>(
-        aom_memalign(32, sizeof(uint8_t) * CFL_BUF_SQUARE));
     sub_luma_pels = reinterpret_cast<int16_t *>(
         aom_memalign(32, sizeof(int16_t) * CFL_BUF_SQUARE));
-  }
-
-  virtual void TearDown() {
-    aom_free(chroma_pels_ref);
-    aom_free(sub_luma_pels_ref);
-    aom_free(chroma_pels);
-    aom_free(sub_luma_pels);
-  }
-
- protected:
-  int Width() const { return tx_size_wide[GET_PARAM(0)]; }
-  int Height() const { return tx_size_high[GET_PARAM(0)]; }
-  TX_SIZE Tx_size() const { return GET_PARAM(0); }
-  uint8_t *chroma_pels_ref;
-  int16_t *sub_luma_pels_ref;
-  uint8_t *chroma_pels;
-  int16_t *sub_luma_pels;
-  get_predict_fn predict;
-  int alpha_q3;
-  uint8_t dc;
-  void init(int width, int height) {
-    ACMRandom rnd(ACMRandom::DeterministicSeed());
-    alpha_q3 = rnd(33) - 16;
-    dc = rnd.Rand8();
-    for (int j = 0; j < height; j++) {
-      for (int i = 0; i < width; i++) {
-        chroma_pels[j * CFL_BUF_LINE + i] = dc;
-        chroma_pels_ref[j * CFL_BUF_LINE + i] = dc;
-        sub_luma_pels_ref[j * CFL_BUF_LINE + i] =
-            sub_luma_pels[j * CFL_BUF_LINE + i] = rnd.Rand8() - 128;
-      }
-    }
-  }
-};
-
-class CFLPredictHBDTest : public ::testing::TestWithParam<predict_param_hbd> {
- public:
-  virtual ~CFLPredictHBDTest() {}
-  virtual void SetUp() {
-    predict = GET_PARAM(1);
-    chroma_pels_ref = reinterpret_cast<uint16_t *>(
-        aom_memalign(32, sizeof(uint16_t) * CFL_BUF_SQUARE));
-    sub_luma_pels_ref = reinterpret_cast<int16_t *>(
-        aom_memalign(32, sizeof(int16_t) * CFL_BUF_SQUARE));
-    chroma_pels = reinterpret_cast<uint16_t *>(
-        aom_memalign(32, sizeof(uint16_t) * CFL_BUF_SQUARE));
-    sub_luma_pels = reinterpret_cast<int16_t *>(
-        aom_memalign(32, sizeof(int16_t) * CFL_BUF_SQUARE));
-    memset(chroma_pels_ref, 0, sizeof(int16_t) * CFL_BUF_SQUARE);
+    memset(chroma_pels_ref, 0, sizeof(I) * CFL_BUF_SQUARE);
+    memset(chroma_pels, 0, sizeof(I) * CFL_BUF_SQUARE);
     memset(sub_luma_pels_ref, 0, sizeof(int16_t) * CFL_BUF_SQUARE);
-    memset(chroma_pels, 0, sizeof(int16_t) * CFL_BUF_SQUARE);
     memset(sub_luma_pels, 0, sizeof(int16_t) * CFL_BUF_SQUARE);
   }
 
@@ -192,64 +143,66 @@ class CFLPredictHBDTest : public ::testing::TestWithParam<predict_param_hbd> {
   }
 
  protected:
-  int Width() const { return tx_size_wide[GET_PARAM(0)]; }
-  int Height() const { return tx_size_high[GET_PARAM(0)]; }
-  TX_SIZE Tx_size() const { return GET_PARAM(0); }
-  uint16_t *chroma_pels_ref;
+  I *chroma_pels_ref;
+  I *chroma_pels;
   int16_t *sub_luma_pels_ref;
-  uint16_t *chroma_pels;
   int16_t *sub_luma_pels;
-  get_predict_fn_hbd predict;
-  int bd;
   int alpha_q3;
-  uint8_t dc;
-  void init(int width, int height) {
-    ACMRandom rnd(ACMRandom::DeterministicSeed());
-    bd = 12;
-    alpha_q3 = rnd(33) - 16;
-    dc = rnd(1 << bd);
-    for (int j = 0; j < height; j++) {
-      for (int i = 0; i < width; i++) {
+  I dc;
+  void init(int bd) {
+    alpha_q3 = this->rnd(33) - 16;
+    dc = this->rnd(1 << bd);
+    for (int j = 0; j < this->height; j++) {
+      for (int i = 0; i < this->width; i++) {
         chroma_pels[j * CFL_BUF_LINE + i] = dc;
         chroma_pels_ref[j * CFL_BUF_LINE + i] = dc;
-        int rand_val = rnd(1 << bd) - (1 << (bd - 1));
-        sub_luma_pels_ref[j * CFL_BUF_LINE + i] = rand_val;
-        sub_luma_pels[j * CFL_BUF_LINE + i] = rand_val;
+        sub_luma_pels_ref[j * CFL_BUF_LINE + i] =
+            sub_luma_pels[j * CFL_BUF_LINE + i] = this->rnd.Rand15Signed();
       }
     }
   }
 };
 
+class CFLSubAvgTest : public CFLTestWithData<sub_avg_fn, int16_t> {
+ public:
+  virtual ~CFLSubAvgTest() {}
+};
+
+class CFLSubsampleTest : public CFLTestWithData<get_subsample_fn, uint8_t> {
+ public:
+  virtual ~CFLSubsampleTest() {}
+};
+
+class CFLPredictTest : public CFLTestWithAlignedData<get_predict_fn, uint8_t> {
+ public:
+  virtual ~CFLPredictTest() {}
+};
+
+class CFLPredictHBDTest
+    : public CFLTestWithAlignedData<get_predict_fn_hbd, uint16_t> {
+ public:
+  virtual ~CFLPredictHBDTest() {}
+};
+
 TEST_P(CFLSubAvgTest, SubAvgTest) {
-  const TX_SIZE tx_size = Tx_size();
-  const int width = tx_size_wide[tx_size];
-  const int height = tx_size_high[tx_size];
   const cfl_subtract_average_fn ref_sub = get_subtract_average_fn_c(tx_size);
-  const cfl_subtract_average_fn sub = sub_avg(tx_size);
+  const cfl_subtract_average_fn sub = fun_under_test(tx_size);
   for (int it = 0; it < NUM_ITERATIONS; it++) {
-    init();
+    init(&ACMRandom::Rand15Signed);
     sub(data);
     ref_sub(data_ref);
-    for (int j = 0; j < height; j++) {
-      for (int i = 0; i < width; i++) {
-        ASSERT_EQ(data_ref[j * CFL_BUF_LINE + i], data[j * CFL_BUF_LINE + i]);
-      }
-    }
+    assert_eq<int16_t>(data, data_ref, width, height);
   }
 }
 
 TEST_P(CFLSubAvgTest, DISABLED_SubAvgSpeedTest) {
-  const int width = Width();
-  const int height = Height();
-  const TX_SIZE tx_size = Tx_size();
-
   const cfl_subtract_average_fn ref_sub = get_subtract_average_fn_c(tx_size);
-  const cfl_subtract_average_fn sub = sub_avg(tx_size);
+  const cfl_subtract_average_fn sub = fun_under_test(tx_size);
 
   aom_usec_timer ref_timer;
   aom_usec_timer timer;
 
-  init();
+  init(&ACMRandom::Rand15Signed);
   aom_usec_timer_start(&ref_timer);
   for (int k = 0; k < NUM_ITERATIONS_SPEED; k++) {
     ref_sub(data_ref);
@@ -269,46 +222,40 @@ TEST_P(CFLSubAvgTest, DISABLED_SubAvgSpeedTest) {
 }
 
 TEST_P(CFLSubsampleTest, SubsampleTest) {
-  const int width = Width();
-  const int height = Height();
-  const TX_SIZE tx_size = Tx_size();
+  int16_t sub_luma_pels[CFL_BUF_SQUARE];
+  int16_t sub_luma_pels_ref[CFL_BUF_SQUARE];
   const int sub_width = width >> 1;
   const int sub_height = height >> 1;
 
   for (int it = 0; it < NUM_ITERATIONS; it++) {
-    init(width, height);
-    subsample(tx_size)(luma_pels, CFL_BUF_LINE, sub_luma_pels);
-    cfl_get_luma_subsampling_420_lbd_c(tx_size)(luma_pels_ref, CFL_BUF_LINE,
+    init(&ACMRandom::Rand8);
+    fun_under_test(tx_size)(data, CFL_BUF_LINE, sub_luma_pels);
+    cfl_get_luma_subsampling_420_lbd_c(tx_size)(data_ref, CFL_BUF_LINE,
                                                 sub_luma_pels_ref);
-    for (int j = 0; j < sub_height; j++) {
-      for (int i = 0; i < sub_width; i++) {
-        ASSERT_EQ(sub_luma_pels_ref[j * CFL_BUF_LINE + i],
-                  sub_luma_pels[j * CFL_BUF_LINE + i]);
-      }
-    }
+    assert_eq<int16_t>(sub_luma_pels, sub_luma_pels_ref, sub_width, sub_height);
   }
 }
 
 TEST_P(CFLSubsampleTest, DISABLED_SubsampleSpeedTest) {
-  const int width = Width();
-  const int height = Height();
-  const TX_SIZE tx_size = Tx_size();
-
+  int16_t sub_luma_pels[CFL_BUF_SQUARE];
+  int16_t sub_luma_pels_ref[CFL_BUF_SQUARE];
+  cfl_subsample_lbd_fn subsample = fun_under_test(tx_size);
+  cfl_subsample_lbd_fn subsample_ref =
+      cfl_get_luma_subsampling_420_lbd_c(tx_size);
   aom_usec_timer ref_timer;
   aom_usec_timer timer;
 
-  init(width, height);
+  init(&ACMRandom::Rand8);
   aom_usec_timer_start(&ref_timer);
   for (int k = 0; k < NUM_ITERATIONS_SPEED; k++) {
-    cfl_get_luma_subsampling_420_lbd_c(tx_size)(luma_pels, CFL_BUF_LINE,
-                                                sub_luma_pels);
+    subsample_ref(data_ref, CFL_BUF_LINE, sub_luma_pels);
   }
   aom_usec_timer_mark(&ref_timer);
   int ref_elapsed_time = (int)aom_usec_timer_elapsed(&ref_timer);
 
   aom_usec_timer_start(&timer);
   for (int k = 0; k < NUM_ITERATIONS_SPEED; k++) {
-    subsample(tx_size)(luma_pels_ref, CFL_BUF_LINE, sub_luma_pels_ref);
+    subsample(data, CFL_BUF_LINE, sub_luma_pels_ref);
   }
   aom_usec_timer_mark(&timer);
   int elapsed_time = (int)aom_usec_timer_elapsed(&timer);
@@ -318,34 +265,22 @@ TEST_P(CFLSubsampleTest, DISABLED_SubsampleSpeedTest) {
 }
 
 TEST_P(CFLPredictTest, PredictTest) {
-  const int width = Width();
-  const int height = Height();
-  const TX_SIZE tx_size = Tx_size();
-
   for (int it = 0; it < NUM_ITERATIONS; it++) {
-    init(width, height);
-    predict(tx_size)(sub_luma_pels, chroma_pels, CFL_BUF_LINE, tx_size,
-                     alpha_q3);
+    init(8);
+    fun_under_test(tx_size)(sub_luma_pels, chroma_pels, CFL_BUF_LINE, tx_size,
+                            alpha_q3);
     get_predict_lbd_fn_c(tx_size)(sub_luma_pels_ref, chroma_pels_ref,
                                   CFL_BUF_LINE, tx_size, alpha_q3);
-    for (int j = 0; j < height; j++) {
-      for (int i = 0; i < width; i++) {
-        ASSERT_EQ(chroma_pels_ref[j * CFL_BUF_LINE + i],
-                  chroma_pels[j * CFL_BUF_LINE + i]);
-      }
-    }
+
+    assert_eq<uint8_t>(chroma_pels, chroma_pels_ref, width, height);
   }
 }
 
 TEST_P(CFLPredictTest, DISABLED_PredictSpeedTest) {
-  const int width = Width();
-  const int height = Height();
-  const TX_SIZE tx_size = Tx_size();
-
   aom_usec_timer ref_timer;
   aom_usec_timer timer;
 
-  init(width, height);
+  init(8);
   cfl_predict_lbd_fn predict_impl = get_predict_lbd_fn_c(tx_size);
   aom_usec_timer_start(&ref_timer);
 
@@ -356,7 +291,7 @@ TEST_P(CFLPredictTest, DISABLED_PredictSpeedTest) {
   aom_usec_timer_mark(&ref_timer);
   int ref_elapsed_time = (int)aom_usec_timer_elapsed(&ref_timer);
 
-  predict_impl = predict(tx_size);
+  predict_impl = fun_under_test(tx_size);
   aom_usec_timer_start(&timer);
   for (int k = 0; k < NUM_ITERATIONS_SPEED; k++) {
     predict_impl(sub_luma_pels, chroma_pels, CFL_BUF_LINE, tx_size, alpha_q3);
@@ -369,34 +304,23 @@ TEST_P(CFLPredictTest, DISABLED_PredictSpeedTest) {
 }
 
 TEST_P(CFLPredictHBDTest, PredictHBDTest) {
-  const int width = Width();
-  const int height = Height();
-  const TX_SIZE tx_size = Tx_size();
-
+  int bd = 12;
   for (int it = 0; it < NUM_ITERATIONS; it++) {
-    init(width, height);
-    predict(tx_size)(sub_luma_pels, chroma_pels, CFL_BUF_LINE, tx_size,
-                     alpha_q3, bd);
+    init(bd);
+    fun_under_test(tx_size)(sub_luma_pels, chroma_pels, CFL_BUF_LINE, tx_size,
+                            alpha_q3, bd);
     get_predict_hbd_fn_c(tx_size)(sub_luma_pels_ref, chroma_pels_ref,
                                   CFL_BUF_LINE, tx_size, alpha_q3, bd);
-    for (int j = 0; j < height; j++) {
-      for (int i = 0; i < width; i++) {
-        ASSERT_EQ(chroma_pels_ref[j * CFL_BUF_LINE + i],
-                  chroma_pels[j * CFL_BUF_LINE + i]);
-      }
-    }
+
+    assert_eq<uint16_t>(chroma_pels, chroma_pels_ref, width, height);
   }
 }
 
 TEST_P(CFLPredictHBDTest, DISABLED_PredictHBDSpeedTest) {
-  const int width = Width();
-  const int height = Height();
-  const TX_SIZE tx_size = Tx_size();
-
   aom_usec_timer ref_timer;
   aom_usec_timer timer;
-
-  init(width, height);
+  int bd = 12;
+  init(bd);
   cfl_predict_hbd_fn predict_impl = get_predict_hbd_fn_c(tx_size);
   aom_usec_timer_start(&ref_timer);
 
@@ -407,7 +331,7 @@ TEST_P(CFLPredictHBDTest, DISABLED_PredictHBDSpeedTest) {
   aom_usec_timer_mark(&ref_timer);
   int ref_elapsed_time = (int)aom_usec_timer_elapsed(&ref_timer);
 
-  predict_impl = predict(tx_size);
+  predict_impl = fun_under_test(tx_size);
   aom_usec_timer_start(&timer);
   for (int k = 0; k < NUM_ITERATIONS_SPEED; k++) {
     predict_impl(sub_luma_pels, chroma_pels, CFL_BUF_LINE, tx_size, alpha_q3,
