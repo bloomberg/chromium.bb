@@ -31,7 +31,6 @@ AppMenuIconController::Severity SeverityFromUpgradeLevel(
     case UpgradeDetector::UPGRADE_ANNOYANCE_ELEVATED:
       return AppMenuIconController::Severity::MEDIUM;
     case UpgradeDetector::UPGRADE_ANNOYANCE_HIGH:
-    case UpgradeDetector::UPGRADE_ANNOYANCE_SEVERE:
     case UpgradeDetector::UPGRADE_ANNOYANCE_CRITICAL:
       return AppMenuIconController::Severity::HIGH;
   }

@@ -327,7 +327,6 @@ void UpgradeDetectorImpl::InitializeThresholds() {
   const base::TimeDelta multiplier = is_testing
                                          ? base::TimeDelta::FromSeconds(10)
                                          : base::TimeDelta::FromDays(1);
-  severe_threshold_ = 14 * multiplier;
   high_threshold_ = 7 * multiplier;
   elevated_threshold_ = 4 * multiplier;
 
@@ -450,15 +449,13 @@ void UpgradeDetectorImpl::NotifyOnUpgradeWithTimePassed(
     }
   } else {
     // These if statements must be sorted (highest interval first).
-    if (time_passed >= severe_threshold_ || is_critical_or_outdated) {
-      set_upgrade_notification_stage(
-          is_critical_or_outdated ? UPGRADE_ANNOYANCE_CRITICAL :
-                                    UPGRADE_ANNOYANCE_SEVERE);
+    if (time_passed >= high_threshold_ || is_critical_or_outdated) {
+      set_upgrade_notification_stage(is_critical_or_outdated
+                                         ? UPGRADE_ANNOYANCE_CRITICAL
+                                         : UPGRADE_ANNOYANCE_HIGH);
 
       // We can't get any higher, baby.
       upgrade_notification_timer_.Stop();
-    } else if (time_passed >= high_threshold_) {
-      set_upgrade_notification_stage(UPGRADE_ANNOYANCE_HIGH);
     } else if (time_passed >= elevated_threshold_) {
       set_upgrade_notification_stage(UPGRADE_ANNOYANCE_ELEVATED);
     } else if (time_passed >= low_threshold_) {

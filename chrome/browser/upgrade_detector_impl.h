@@ -110,7 +110,6 @@ class UpgradeDetectorImpl : public UpgradeDetector,
 
   // The various deltas from detection time to the different annoyance levels;
   // lazy-initialized by InitializeThresholds.
-  base::TimeDelta severe_threshold_;
   base::TimeDelta high_threshold_;
   base::TimeDelta elevated_threshold_;
   base::TimeDelta low_threshold_;

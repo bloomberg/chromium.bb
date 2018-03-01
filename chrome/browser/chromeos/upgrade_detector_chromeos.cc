@@ -20,7 +20,6 @@ namespace {
 // be at. Once we reach the highest severity, the timer will stop.
 constexpr base::TimeDelta kNotifyCycleDelta = base::TimeDelta::FromMinutes(20);
 
-constexpr int kSevereDaysThreshold = 7;
 constexpr int kHighDaysThreshold = 4;
 constexpr int kElevatedDaysThreshold = 2;
 constexpr int kLowDaysThreshold = 0;
@@ -125,13 +124,11 @@ void UpgradeDetectorChromeos::NotifyOnUpgrade() {
   int64_t days_passed = delta.InDays();
 
   // These if statements must be sorted (highest interval first).
-  if (days_passed >= kSevereDaysThreshold) {
-    set_upgrade_notification_stage(UPGRADE_ANNOYANCE_SEVERE);
+  if (days_passed >= kHighDaysThreshold) {
+    set_upgrade_notification_stage(UPGRADE_ANNOYANCE_HIGH);
 
     // We can't get any higher, baby.
     upgrade_notification_timer_.Stop();
-  } else if (days_passed >= kHighDaysThreshold) {
-    set_upgrade_notification_stage(UPGRADE_ANNOYANCE_HIGH);
   } else if (days_passed >= kElevatedDaysThreshold) {
     set_upgrade_notification_stage(UPGRADE_ANNOYANCE_ELEVATED);
   } else if (days_passed >= kLowDaysThreshold) {
