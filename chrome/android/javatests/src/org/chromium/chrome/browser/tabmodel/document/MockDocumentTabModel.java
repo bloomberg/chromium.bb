@@ -160,12 +160,4 @@ public class MockDocumentTabModel implements DocumentTabModel {
 
     @Override
     public void openMostRecentlyClosedTab() {}
-
-    @Override
-    public void setIsPendingTabAdd(boolean isPendingTabAdd) {}
-
-    @Override
-    public boolean isPendingTabAdd() {
-        return false;
-    }
 }

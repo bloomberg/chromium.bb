@@ -213,13 +213,10 @@ public class SuggestionsNavigationDelegateImpl implements SuggestionsNavigationD
                 TabLaunchType.FROM_LONGPRESS_BACKGROUND, mHost.getActiveTab(),
                 /* incognito = */ false);
 
-        // If the bottom sheet NTP UI is showing, a toast is not necessary because the bottom sheet
-        // will be closed when the overview is hidden due to the new tab creation above.
         // If animations are disabled in the DeviceClassManager, a toast is already displayed for
         // all tabs opened in the background.
         // TODO(twellington): Replace this with an animation.
-        if (mActivity.getBottomSheet() != null && !mActivity.getBottomSheet().isShowingNewTab()
-                && DeviceClassManager.enableAnimations()) {
+        if (mActivity.getBottomSheet() != null && DeviceClassManager.enableAnimations()) {
             Toast.makeText(mActivity, R.string.open_in_new_tab_toast, Toast.LENGTH_SHORT).show();
         }
 

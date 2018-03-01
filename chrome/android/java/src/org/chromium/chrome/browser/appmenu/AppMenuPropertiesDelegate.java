@@ -94,9 +94,7 @@ public class AppMenuPropertiesDelegate {
             boolean hasTabs = mActivity.getCurrentTabModel().getCount() != 0;
             return hasTabs && !isOverview;
         } else {
-            boolean isBottomSheetNtpMenu = mActivity.getBottomSheet() != null
-                    && mActivity.getBottomSheet().isShowingNewTab();
-            return !isBottomSheetNtpMenu && !isOverview && mActivity.getActivityTab() != null;
+            return !isOverview && mActivity.getActivityTab() != null;
         }
     }
 

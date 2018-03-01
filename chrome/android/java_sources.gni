@@ -1407,7 +1407,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/widget/bottomsheet/BottomSheetNavigationItemView.java",
   "java/src/org/chromium/chrome/browser/widget/bottomsheet/BottomSheetNavigationMenuView.java",
   "java/src/org/chromium/chrome/browser/widget/bottomsheet/BottomSheetNavigationView.java",
-  "java/src/org/chromium/chrome/browser/widget/bottomsheet/BottomSheetNewTabController.java",
   "java/src/org/chromium/chrome/browser/widget/bottomsheet/BottomSheetObserver.java",
   "java/src/org/chromium/chrome/browser/widget/bottomsheet/BottomSheetPaddingUtils.java",
   "java/src/org/chromium/chrome/browser/widget/bottomsheet/ChromeHomeIphBubbleController.java",

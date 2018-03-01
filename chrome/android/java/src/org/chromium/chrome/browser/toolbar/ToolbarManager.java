@@ -306,12 +306,6 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
                 updateTabCount();
                 refreshSelectedTab();
             }
-
-            @Override
-            public void pendingTabAdd(boolean isPendingTabAdd) {
-                if (isPendingTabAdd) mPreselectedTabId = Tab.INVALID_TAB_ID;
-                refreshSelectedTab();
-            }
         };
 
         mTabObserver = new EmptyTabObserver() {

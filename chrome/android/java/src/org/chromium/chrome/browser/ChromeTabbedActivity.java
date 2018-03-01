@@ -992,16 +992,7 @@ public class ChromeTabbedActivity
                 return false;
             }
 
-            if (isInOverviewMode()) {
-                if (reuseOrCreateNewNtp()) {
-                    // Since reusing/creating a new NTP when using Chrome Home brings up the
-                    // bottom sheet, we need to record it in our metrics.
-                    bottomSheet.getBottomSheetMetrics().recordSheetOpenReason(
-                            StateChangeReason.STARTUP);
-                    return true;
-                }
-                return false;
-            }
+            if (isInOverviewMode()) return false;
 
             boolean hasTabs = getCurrentTabModel().getCount() > 0
                     || mTabModelSelectorImpl.getRestoredTabCount() > 0;
@@ -1130,15 +1121,9 @@ public class ChromeTabbedActivity
             }
 
             mIntentWithEffect = false;
-            boolean activeTabBeingRestored = false;
             if (getSavedInstanceState() == null && intent != null) {
                 if (!mIntentHandler.shouldIgnoreIntent(intent)) {
                     mIntentWithEffect = mIntentHandler.onNewIntent(intent);
-
-                    // Allow the active tab to be restored so that the correct tab is selected when
-                    // the bottom sheet NTP UI is closed.
-                    activeTabBeingRestored |= (getBottomSheet() != null
-                            && NewTabPage.isNTPUrl(IntentHandler.getUrlFromIntent(intent)));
                 }
 
                 if (isMainIntentFromLauncher(intent)) {
@@ -1163,7 +1148,7 @@ public class ChromeTabbedActivity
             // We always need to try to restore tabs. The set of tabs might be empty, but at least
             // it will trigger the notification that tab restore is complete which is needed by
             // other parts of Chrome such as sync.
-            activeTabBeingRestored |= !mIntentWithEffect;
+            boolean activeTabBeingRestored = !mIntentWithEffect;
 
             mMainIntentMetrics.setIgnoreEvents(true);
             mTabModelSelectorImpl.restoreTabs(activeTabBeingRestored);
@@ -1225,11 +1210,6 @@ public class ChromeTabbedActivity
         }
         if (mLayoutManager != null && mLayoutManager.overviewVisible()
                 && mIsAccessibilityEnabled != enabled) {
-            if (getBottomSheet() != null && getBottomSheet().isShowingNewTab()) {
-                // Close the bottom sheet immediately before hiding the overview since the
-                // BottomSheet NTP UI requires overview mode to be showing.
-                getBottomSheet().setSheetState(BottomSheet.SHEET_STATE_PEEK, false);
-            }
             mLayoutManager.hideOverview(false);
             if (getTabModelSelector().getCurrentModel().getCount() == 0) {
                 getCurrentTabCreator().launchNTP();
@@ -1261,31 +1241,16 @@ public class ChromeTabbedActivity
                     intent, IntentHandler.EXTRA_INVOKED_FROM_SHORTCUT, false);
 
             if (getBottomSheet() != null) {
-                // If the bottom sheet new tab UI is showing and the tab open type is not
-                // already OPEN_NEW_TAB or OPEN_NEW_INCOGNITO_TAB, set the open type so that a real
-                // new tab will be created and added to the appropriate model.
-                if (getBottomSheet().isShowingNewTab()
-                        && tabOpenType == TabOpenType.CLOBBER_CURRENT_TAB) {
-                    tabOpenType = mTabModelSelectorImpl.isIncognitoSelected()
-                            ? TabOpenType.OPEN_NEW_INCOGNITO_TAB
-                            : TabOpenType.OPEN_NEW_TAB;
-                }
-
-                if (!NewTabPage.isNTPUrl(url)) {
-                    // Either a url is being loaded in a new tab, a tab is being clobbered, or a tab
-                    // is being brought to the front. In all scenarios, the bottom sheet should be
-                    // closed. If a new tab is being created from a launcher shortcut, close the
-                    // panel without animation because the panel will be re-opened immediately. If
-                    // a tab is being brought to the front, this indicates the user is coming back
-                    // to Chrome through external means (e.g. homescreen shortcut, media
-                    // notification) and animating the sheet closing is extraneous.
-                    boolean animateSheetClose = !fromLauncherShortcut
-                            && (tabOpenType == TabOpenType.CLOBBER_CURRENT_TAB
-                                       || tabOpenType == TabOpenType.OPEN_NEW_TAB
-                                       || tabOpenType == TabOpenType.OPEN_NEW_INCOGNITO_TAB);
-                    getBottomSheet().setSheetState(BottomSheet.SHEET_STATE_PEEK, animateSheetClose,
-                            StateChangeReason.NAVIGATION);
-                }
+                // Either a url is being loaded in a new tab, a tab is being clobbered, or a tab
+                // is being brought to the front. In all scenarios, the bottom sheet should be
+                // closed. If a tab is being brought to the front, this indicates the user is coming
+                // back to Chrome through external means (e.g. homescreen shortcut, media
+                // notification) and animating the sheet closing is extraneous.
+                boolean animateSheetClose = tabOpenType == TabOpenType.CLOBBER_CURRENT_TAB
+                        || tabOpenType == TabOpenType.OPEN_NEW_TAB
+                        || tabOpenType == TabOpenType.OPEN_NEW_INCOGNITO_TAB;
+                getBottomSheet().setSheetState(BottomSheet.SHEET_STATE_PEEK, animateSheetClose,
+                        StateChangeReason.NAVIGATION);
             }
 
             TabModel tabModel = getCurrentTabModel();
@@ -1800,17 +1765,12 @@ public class ChromeTabbedActivity
                 RecordUserAction.record("MobileMenuAllBookmarks");
             }
         } else if (id == R.id.recent_tabs_menu_id) {
-            if (currentTab != null
-                    || (getBottomSheet() != null && getBottomSheet().isShowingNewTab())) {
+            if (currentTab != null) {
                 LoadUrlParams params = new LoadUrlParams(
                         UrlConstants.RECENT_TABS_URL, PageTransition.AUTO_BOOKMARK);
-                if (currentTab != null) {
-                    currentTab.loadUrl(params);
-                    if (currentTabIsNtp) {
-                        NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_RECENT_TABS_MANAGER);
-                    }
-                } else {
-                    getBottomSheet().loadUrl(params, getCurrentTabModel().isIncognito());
+                currentTab.loadUrl(params);
+                if (currentTabIsNtp) {
+                    NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_RECENT_TABS_MANAGER);
                 }
 
                 RecordUserAction.record("MobileMenuRecentTabs");

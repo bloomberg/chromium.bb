@@ -1916,11 +1916,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         final Tab currentTab = getActivityTab();
 
         if (id == R.id.help_id) {
-            String url = currentTab != null
-                    ? currentTab.getUrl()
-                    : getBottomSheet() != null && mBottomSheet.isShowingNewTab()
-                            ? UrlConstants.NTP_URL
-                            : "";
+            String url = currentTab != null ? currentTab.getUrl() : "";
             Profile profile = mTabModelSelector.isIncognitoSelected()
                     ? Profile.getLastUsedProfile().getOffTheRecordProfile()
                     : Profile.getLastUsedProfile().getOriginalProfile();
