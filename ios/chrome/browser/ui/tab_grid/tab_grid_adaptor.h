@@ -22,7 +22,8 @@
 @property(nonatomic, weak)
     id<ApplicationCommands, BrowserCommands, OmniboxFocuser, ToolbarCommands>
         adaptedDispatcher;
-@property(nonatomic, weak) TabGridMediator* mediator;
+// The mediator for the incognito grid.
+@property(nonatomic, weak) TabGridMediator* incognitoMediator;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TAB_GRID_TAB_GRID_ADAPTOR_H_

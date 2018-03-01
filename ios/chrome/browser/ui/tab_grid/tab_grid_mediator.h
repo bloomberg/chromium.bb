@@ -7,12 +7,24 @@
 
 #import <Foundation/Foundation.h>
 
+#import "ios/chrome/browser/ui/tab_grid/grid_commands.h"
+#import "ios/chrome/browser/ui/tab_grid/grid_image_data_source.h"
+
+@protocol GridConsumer;
 @class TabModel;
 
 // Mediates between model layer and tab grid UI layer.
-@interface TabGridMediator : NSObject
-@property(nonatomic, weak) TabModel* regularTabModel;
-@property(nonatomic, weak) TabModel* incognitoTabModel;
+@interface TabGridMediator : NSObject<GridCommands, GridImageDataSource>
+
+// The source tab model.
+@property(nonatomic, weak) TabModel* tabModel;
+
+// Initializer with |tabModel| as the source model. |consumer| is the receiver
+// of model layer updates.
+- (instancetype)initWithTabModel:(TabModel*)tabModel
+                        consumer:(id<GridConsumer>)consumer
+    NS_DESIGNATED_INITIALIZER;
+- (instancetype)init NS_UNAVAILABLE;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TAB_GRID_TAB_GRID_MEDIATOR_H_

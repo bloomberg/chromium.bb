@@ -21,7 +21,7 @@
 // Public properties
 @synthesize tabGridViewController = _tabGridViewController;
 @synthesize adaptedDispatcher = _adaptedDispatcher;
-@synthesize mediator = _mediator;
+@synthesize incognitoMediator = _incognitoMediator;
 
 #pragma mark - TabSwitcher
 
@@ -81,7 +81,7 @@
 }
 
 - (void)setOtrTabModel:(TabModel*)otrModel {
-  self.mediator.incognitoTabModel = otrModel;
+  self.incognitoMediator.tabModel = otrModel;
 }
 
 @end
