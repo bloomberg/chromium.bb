@@ -48,6 +48,12 @@ struct IsGarbageCollectedMixin {
   static const bool value = sizeof(CheckMarker<T>(nullptr)) == sizeof(YesType);
 };
 
+struct TraceDescriptor {
+  void* base_object_payload;
+  TraceCallback callback;
+  bool can_trace_eagerly;
+};
+
 // The GarbageCollectedMixin interface and helper macro
 // USING_GARBAGE_COLLECTED_MIXIN can be used to automatically define
 // TraceTrait/ObjectAliveTrait on non-leftmost deriving classes
@@ -72,8 +78,8 @@ struct IsGarbageCollectedMixin {
 class PLATFORM_EXPORT GarbageCollectedMixin {
  public:
   typedef int IsGarbageCollectedMixinMarker;
-  virtual void AdjustAndMark(MarkingVisitor*) const = 0;
   virtual void Trace(Visitor*) {}
+  virtual TraceDescriptor GetTraceDescriptor() const = 0;
   virtual HeapObjectHeader* GetHeapObjectHeader() const = 0;
   virtual void AdjustAndTraceMarkedWrapper(
       const ScriptWrappableVisitor*) const = 0;
@@ -81,20 +87,15 @@ class PLATFORM_EXPORT GarbageCollectedMixin {
 
 #define DEFINE_GARBAGE_COLLECTED_MIXIN_METHODS(TYPE)                          \
  public:                                                                      \
-  void AdjustAndMark(blink::MarkingVisitor* visitor) const override {         \
+  TraceDescriptor GetTraceDescriptor() const override {                       \
     typedef WTF::IsSubclassOfTemplate<typename std::remove_const<TYPE>::type, \
                                       blink::GarbageCollected>                \
         IsSubclassOfGarbageCollected;                                         \
     static_assert(                                                            \
         IsSubclassOfGarbageCollected::value,                                  \
         "only garbage collected objects can have garbage collected mixins");  \
-    if (TraceEagerlyTrait<TYPE>::value) {                                     \
-      if (visitor->EnsureMarked(static_cast<const TYPE*>(this)))              \
-        TraceTrait<TYPE>::Trace(visitor, const_cast<TYPE*>(this));            \
-      return;                                                                 \
-    }                                                                         \
-    visitor->Mark(static_cast<const TYPE*>(this),                             \
-                  &blink::TraceTrait<TYPE>::Trace);                           \
+    return {const_cast<TYPE*>(static_cast<const TYPE*>(this)),                \
+            TraceTrait<TYPE>::Trace, TraceEagerlyTrait<TYPE>::value};         \
   }                                                                           \
                                                                               \
   void AdjustAndTraceMarkedWrapper(const ScriptWrappableVisitor* visitor)     \
@@ -200,17 +201,20 @@ class GarbageCollectedMixinConstructorMarker
 //  class A : public GarbageCollectedMixin {};
 //  class B : public GarbageCollectedMixin {};
 //  class C : public A, public B {
-//    // C::AdjustAndMark is now ambiguous because there are two candidates:
-//    // A::AdjustAndMark and B::AdjustAndMark.  Ditto for other functions.
+//    // C::GetTraceDescriptor is now ambiguous because there are two
+//    candidates:
+//    // A::GetTraceDescriptor and B::GetTraceDescriptor.  Ditto for other
+//    functions.
 //
 //    MERGE_GARBAGE_COLLECTED_MIXINS();
-//    // The macro defines C::AdjustAndMark, etc. so that they are no longer
+//    // The macro defines C::GetTraceDescriptor, etc. so that they are no
+//    longer
 //    // ambiguous. USING_GARBAGE_COLLECTED_MIXIN(TYPE) overrides them later
 //    // and provides the implementations.
 //  };
 #define MERGE_GARBAGE_COLLECTED_MIXINS()                          \
  public:                                                          \
-  void AdjustAndMark(MarkingVisitor*) const override = 0;         \
+  TraceDescriptor GetTraceDescriptor() const override = 0;        \
   HeapObjectHeader* GetHeapObjectHeader() const override = 0;     \
   void AdjustAndTraceMarkedWrapper(const ScriptWrappableVisitor*) \
       const override = 0;                                         \
