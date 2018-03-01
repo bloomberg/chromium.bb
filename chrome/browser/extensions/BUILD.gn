@@ -497,6 +497,8 @@ static_library("extensions") {
     "chrome_process_manager_delegate.h",
     "chrome_url_request_util.cc",
     "chrome_url_request_util.h",
+    "chrome_zipfile_installer.cc",
+    "chrome_zipfile_installer.h",
     "clipboard_extension_helper_chromeos.cc",
     "clipboard_extension_helper_chromeos.h",
     "component_extensions_whitelist/whitelist.cc",
@@ -764,8 +766,6 @@ static_library("extensions") {
     "window_controller_list.cc",
     "window_controller_list.h",
     "window_controller_list_observer.h",
-    "zipfile_installer.cc",
-    "zipfile_installer.h",
   ]
 
   configs += [
