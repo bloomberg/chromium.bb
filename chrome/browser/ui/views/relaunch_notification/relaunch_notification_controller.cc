@@ -130,9 +130,6 @@ void RelaunchNotificationController::OnUpgradeRecommended() {
     case UpgradeDetector::UPGRADE_ANNOYANCE_HIGH:
       ShowRelaunchNotification(current_level);
       break;
-    case UpgradeDetector::UPGRADE_ANNOYANCE_SEVERE:
-      // Severe neither triggers new behavior, nor changes last_level_.
-      return;
     case UpgradeDetector::UPGRADE_ANNOYANCE_CRITICAL:
       // Critical notifications are handled by ToolbarView.
       // TODO(grt): Reconsider this when implementing the relaunch required

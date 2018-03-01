@@ -12,7 +12,6 @@ enum UpdateSeverity {
   LOW,
   ELEVATED,
   HIGH,
-  SEVERE,
   CRITICAL,
 };
 

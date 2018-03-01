@@ -146,8 +146,6 @@ TEST_F(RelaunchNotificationControllerTest, PolicyUnset) {
   fake_upgrade_detector().BroadcastLevelChange(
       UpgradeDetector::UPGRADE_ANNOYANCE_HIGH);
   fake_upgrade_detector().BroadcastLevelChange(
-      UpgradeDetector::UPGRADE_ANNOYANCE_SEVERE);
-  fake_upgrade_detector().BroadcastLevelChange(
       UpgradeDetector::UPGRADE_ANNOYANCE_NONE);
 }
 
@@ -200,11 +198,6 @@ TEST_F(RelaunchNotificationControllerTest, RecommendedByPolicy) {
   RunUntilIdle();
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
 
-  // Severe is ignored.
-  fake_upgrade_detector().BroadcastLevelChange(
-      UpgradeDetector::UPGRADE_ANNOYANCE_SEVERE);
-  ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
-
   // And closed if the level drops back to none.
   EXPECT_CALL(mock_controller_delegate, CloseRelaunchRecommendedBubble());
   fake_upgrade_detector().BroadcastLevelChange(
@@ -253,11 +246,6 @@ TEST_F(RelaunchNotificationControllerTest, RequiredByPolicy) {
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
   fake_upgrade_detector().BroadcastLevelChange(
       UpgradeDetector::UPGRADE_ANNOYANCE_HIGH);
-  ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
-
-  // Severe is ignored.
-  fake_upgrade_detector().BroadcastLevelChange(
-      UpgradeDetector::UPGRADE_ANNOYANCE_SEVERE);
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
 
   EXPECT_CALL(mock_controller_delegate, ShowRelaunchRequiredDialog());

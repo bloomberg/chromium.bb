@@ -43,7 +43,6 @@ SkColor IconColorForUpdateSeverity(mojom::UpdateSeverity severity,
     case mojom::UpdateSeverity::ELEVATED:
       return for_menu ? gfx::kGoogleYellow700 : gfx::kGoogleYellow300;
     case mojom::UpdateSeverity::HIGH:
-    case mojom::UpdateSeverity::SEVERE:
     case mojom::UpdateSeverity::CRITICAL:
       return for_menu ? gfx::kGoogleRed700 : gfx::kGoogleRed300;
     default:

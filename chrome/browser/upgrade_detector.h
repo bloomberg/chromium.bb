@@ -30,15 +30,15 @@ class UpgradeObserver;
 class UpgradeDetector {
  public:
   // The Homeland Security Upgrade Advisory System.
-  // These values are logged in a histogram and shouldn't be renumbered or
-  // removed.
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
   enum UpgradeNotificationAnnoyanceLevel {
-    UPGRADE_ANNOYANCE_NONE = 0,  // What? Me worry?
-    UPGRADE_ANNOYANCE_LOW,       // Green.
-    UPGRADE_ANNOYANCE_ELEVATED,  // Yellow.
-    UPGRADE_ANNOYANCE_HIGH,      // Red.
-    UPGRADE_ANNOYANCE_SEVERE,    // Orange.
-    UPGRADE_ANNOYANCE_CRITICAL,  // Red exclamation mark.
+    UPGRADE_ANNOYANCE_NONE = 0,      // What? Me worry?
+    UPGRADE_ANNOYANCE_LOW = 1,       // Green.
+    UPGRADE_ANNOYANCE_ELEVATED = 2,  // Yellow.
+    UPGRADE_ANNOYANCE_HIGH = 3,      // Red.
+    // UPGRADE_ANNOYANCE_SEVERE = 4,  // Removed in 2018-03 for lack of use.
+    UPGRADE_ANNOYANCE_CRITICAL = 5,  // Red exclamation mark.
     UPGRADE_ANNOYANCE_LAST = UPGRADE_ANNOYANCE_CRITICAL  // The last value
   };
 

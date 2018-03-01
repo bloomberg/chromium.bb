@@ -87,8 +87,6 @@ ash::mojom::UpdateSeverity GetUpdateSeverity(UpgradeDetector* detector) {
       return ash::mojom::UpdateSeverity::ELEVATED;
     case UpgradeDetector::UPGRADE_ANNOYANCE_HIGH:
       return ash::mojom::UpdateSeverity::HIGH;
-    case UpgradeDetector::UPGRADE_ANNOYANCE_SEVERE:
-      return ash::mojom::UpdateSeverity::SEVERE;
     case UpgradeDetector::UPGRADE_ANNOYANCE_CRITICAL:
       return ash::mojom::UpdateSeverity::CRITICAL;
   }
