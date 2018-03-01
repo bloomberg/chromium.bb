@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/views/location_bar/background_with_1_px_border.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
+#include "chrome/browser/ui/views/omnibox/omnibox_tab_switch_button.h"
 #include "chrome/browser/ui/views/omnibox/rounded_omnibox_results_frame.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
@@ -261,6 +262,10 @@ OmniboxResultView::OmniboxResultView(OmniboxPopupContentsView* model,
       omnibox::kKeywordSearchIcon, GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
       GetVectorIconColor()));
   keyword_icon_->SizeToPreferredSize();
+  if (OmniboxFieldTrial::InTabSwitchSuggestionWithButtonTrial()) {
+    tab_switch_button_.reset(new OmniboxTabSwitchButton(this));
+    tab_switch_button_->set_owned_by_client();
+  }
 }
 
 OmniboxResultView::~OmniboxResultView() {
@@ -294,6 +299,16 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
       AddChildView(keyword_icon_.get());
   } else if (keyword_icon_->parent()) {
     RemoveChildView(keyword_icon_.get());
+  }
+  if (tab_switch_button_) {
+    if (match.type == AutocompleteMatchType::TAB_SEARCH &&
+        !keyword_icon_->parent()) {
+      if (!tab_switch_button_->parent()) {
+        AddChildView(tab_switch_button_.get());
+      }
+    } else if (tab_switch_button_->parent()) {
+      RemoveChildView(tab_switch_button_.get());
+    }
   }
 
   Invalidate();
@@ -351,6 +366,10 @@ void OmniboxResultView::SetAnswerImage(const gfx::ImageSkia& image) {
   SchedulePaint();
 }
 
+void OmniboxResultView::OpenMatch(WindowOpenDisposition disposition) {
+  model_->OpenMatch(model_index_, disposition);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // OmniboxResultView, views::View overrides:
 
@@ -367,6 +386,15 @@ bool OmniboxResultView::OnMouseDragged(const ui::MouseEvent& event) {
     if (event.IsOnlyLeftMouseButton()) {
       if (GetState() != SELECTED)
         model_->SetSelectedLine(model_index_);
+      if (tab_switch_button_ && tab_switch_button_->parent()) {
+        gfx::Point point_in_child_coords(event.location());
+        View::ConvertPointToTarget(this, tab_switch_button_.get(),
+                                   &point_in_child_coords);
+        if (tab_switch_button_->HitTestPoint(point_in_child_coords)) {
+          SetMouseHandler(tab_switch_button_.get());
+          return false;
+        }
+      }
     } else {
       SetHovered(true);
     }
@@ -382,10 +410,9 @@ bool OmniboxResultView::OnMouseDragged(const ui::MouseEvent& event) {
 
 void OmniboxResultView::OnMouseReleased(const ui::MouseEvent& event) {
   if (event.IsOnlyMiddleMouseButton() || event.IsOnlyLeftMouseButton()) {
-    model_->OpenMatch(model_index_,
-                      event.IsOnlyLeftMouseButton()
-                          ? WindowOpenDisposition::CURRENT_TAB
-                          : WindowOpenDisposition::NEW_BACKGROUND_TAB);
+    OpenMatch(event.IsOnlyLeftMouseButton()
+                  ? WindowOpenDisposition::CURRENT_TAB
+                  : WindowOpenDisposition::NEW_BACKGROUND_TAB);
   }
 }
 
@@ -794,6 +821,15 @@ void OmniboxResultView::Layout() {
                                  height());
     keyword_icon_->SetPosition(
         gfx::Point(kw_x, (height() - keyword_icon_->height()) / 2));
+  }
+  if (tab_switch_button_ && match_.type == AutocompleteMatchType::TAB_SEARCH) {
+    const int ts_button_width = tab_switch_button_->GetPreferredSize().width();
+    const int ts_button_height = height();
+    tab_switch_button_->SetSize(gfx::Size(ts_button_width, ts_button_height));
+
+    const int ts_x = end_x - ts_button_width + horizontal_padding;
+    text_width = ts_x - text_x - horizontal_padding;
+    tab_switch_button_->SetPosition(gfx::Point(ts_x, 0));
   }
 
   text_bounds_.SetRect(text_x, 0, std::max(text_width, 0), height());

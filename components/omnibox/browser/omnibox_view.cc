@@ -17,6 +17,7 @@
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/omnibox_edit_controller.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/toolbar/toolbar_model.h"
 #include "extensions/common/constants.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -88,9 +89,15 @@ void OmniboxView::OpenMatch(const AutocompleteMatch& match,
     return;
   // Unless user requests navigation, change disposition for this match type
   // so downstream will switch tabs.
-  if (match.type == AutocompleteMatchType::TAB_SEARCH && !shift_key_down_ &&
-      disposition == WindowOpenDisposition::CURRENT_TAB)
-    disposition = WindowOpenDisposition::SWITCH_TO_TAB;
+  if (match.type == AutocompleteMatchType::TAB_SEARCH) {
+    // "with-button" option inverts default action.
+    bool invert = OmniboxFieldTrial::InTabSwitchSuggestionWithButtonTrial();
+    if (disposition == WindowOpenDisposition::CURRENT_TAB &&
+        // i.e. If shift is not pressed without button, or down with it,
+        // change it to switch tabs.
+        invert == shift_key_down_)
+      disposition = WindowOpenDisposition::SWITCH_TO_TAB;
+  }
   model_->OpenMatch(
       match, disposition, alternate_nav_url, pasted_text, selected_line);
 }

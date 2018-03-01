@@ -37,7 +37,8 @@ namespace omnibox {
 extern const base::Feature kOmniboxEntitySuggestions;
 extern const base::Feature kOmniboxRichEntitySuggestions;
 extern const base::Feature kOmniboxTailSuggestions;
-extern const base::Feature kOmniboxTabSwitchSuggestions;
+extern const char kOmniboxTabSwitchSuggestionsFlag[];
+extern const char kOmniboxTabSwitchWithButton[];
 extern const base::Feature kEnableClipboardProvider;
 extern const base::Feature kAndroidChromeHomePersonalizedSuggestions;
 extern const base::Feature kSearchProviderWarmUpOnFocus;
@@ -445,6 +446,16 @@ class OmniboxFieldTrial {
   // Returns the base relevance score for Physical Web omnibox suggestions when
   // the user has started typing in the omnibox.
   static int GetPhysicalWebAfterTypingBaseRelevance();
+
+  // ---------------------------------------------------------
+  // For tab switch suggestions related experiments.
+
+  // Returns whether the tab switch suggestion experiment is enabled.
+  static bool InTabSwitchSuggestionTrial();
+
+  // Returns whether the tab switch suggestion experiment using
+  // a button is selected.
+  static bool InTabSwitchSuggestionWithButtonTrial();
 
   // ---------------------------------------------------------
   // Clipboard URL suggestions:
