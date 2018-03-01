@@ -298,6 +298,16 @@ void WiredDisplayMediaRouteProvider::OnDisplayAdded(
 
 void WiredDisplayMediaRouteProvider::OnDisplayRemoved(
     const Display& old_display) {
+  const std::string sink_id =
+      WiredDisplayMediaRouteProvider::GetSinkIdForDisplay(old_display);
+  auto it = std::find_if(
+      presentations_.begin(), presentations_.end(),
+      [&sink_id](
+          const std::pair<const std::string, Presentation>& presentation) {
+        return presentation.second.route().media_sink_id() == sink_id;
+      });
+  if (it != presentations_.end())
+    it->second.receiver()->ExitFullscreen();
   NotifySinkObservers();
 }
 

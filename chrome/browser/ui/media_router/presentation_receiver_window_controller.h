@@ -54,6 +54,7 @@ class PresentationReceiverWindowController final
   void Start(const std::string& presentation_id,
              const GURL& start_url) override;
   void Terminate() override;
+  void ExitFullscreen() override;
 
   // PresentationReceiverWindowDelegate overrides.
   content::WebContents* web_contents() const final;

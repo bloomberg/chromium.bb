@@ -49,6 +49,7 @@ class MockPresentationReceiver : public WiredDisplayPresentationReceiver {
                void(const std::string& presentation_id, const GURL& start_url));
   void Terminate() override { TerminateInternal(); }
   MOCK_METHOD0(TerminateInternal, void());
+  MOCK_METHOD0(ExitFullscreen, void());
 
   void SetTerminationCallback(base::OnceClosure termination_callback) {
     termination_callback_ = std::move(termination_callback);
@@ -377,6 +378,23 @@ TEST_F(WiredDisplayMediaRouteProviderTest, SendMediaStatusUpdate) {
       }));
   receiver_creator_.receiver()->RunTitleChangeCallback(page_title);
   base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(WiredDisplayMediaRouteProviderTest, ExitFullscreenOnDisplayRemoved) {
+  MockCallback callback;
+  provider_->set_all_displays({secondary_display1_, primary_display_});
+  provider_pointer_->StartObservingMediaRoutes(kPresentationSource);
+  base::RunLoop().RunUntilIdle();
+
+  provider_pointer_->CreateRoute(
+      kPresentationSource, GetSinkId(secondary_display1_), "presentationId",
+      url::Origin::Create(GURL(kPresentationSource)), 0,
+      base::TimeDelta::FromSeconds(100), false,
+      base::BindOnce(&MockCallback::CreateRoute, base::Unretained(&callback)));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_CALL(*receiver_creator_.receiver(), ExitFullscreen());
+  provider_->OnDisplayRemoved(secondary_display1_);
 }
 
 }  // namespace media_router

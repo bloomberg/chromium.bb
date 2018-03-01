@@ -31,6 +31,9 @@ class PresentationReceiverWindow {
   // Returns true if the window is currently fullscreened.
   virtual bool IsWindowFullscreen() const = 0;
 
+  // Exits fullscreen and enters windowed mode.
+  virtual void ExitFullscreen() = 0;
+
   // Returns the current bounds of the window.
   virtual gfx::Rect GetWindowBounds() const = 0;
 
