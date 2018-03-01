@@ -10,6 +10,7 @@
 namespace blink {
 namespace scheduler {
 
+const char kTracingCategoryNameTopLevel[] = "toplevel";
 const char kTracingCategoryNameDefault[] = "renderer.scheduler";
 const char kTracingCategoryNameInfo[] =
     TRACE_DISABLED_BY_DEFAULT("renderer.scheduler");
@@ -27,10 +28,12 @@ const char kTracingCategoryNameVerboseSnapshots[] =
 namespace internal {
 
 void ValidateTracingCategory(const char* category) {
-  // Category must be a constant defined in tracing_helper.
-  // Unfortunately, static_assert won't work with templates because
+  // Category must be a constant defined in tracing helper because there's no
+  // portable way to use string literals as a template argument.
+  // Unfortunately, static_assert won't work with templates either because
   // inequality (!=) of linker symbols is undefined in compile-time.
-  DCHECK(category == kTracingCategoryNameDefault ||
+  DCHECK(category == kTracingCategoryNameTopLevel ||
+         category == kTracingCategoryNameDefault ||
          category == kTracingCategoryNameInfo ||
          category == kTracingCategoryNameDebug);
 }
@@ -45,6 +48,7 @@ bool AreVerboseSnapshotsEnabled() {
 }
 
 void WarmupTracingCategories() {
+  // No need to warm-up toplevel category here.
   TRACE_EVENT_WARMUP_CATEGORY(kTracingCategoryNameDefault);
   TRACE_EVENT_WARMUP_CATEGORY(kTracingCategoryNameInfo);
   TRACE_EVENT_WARMUP_CATEGORY(kTracingCategoryNameDebug);

@@ -676,7 +676,7 @@ class PLATFORM_EXPORT RendererSchedulerImpl
     TraceableState<v8::RAILMode, kTracingCategoryNameInfo>
         rail_mode_for_tracing;  // Don't use except for tracing.
     TraceableState<bool, kTracingCategoryNameDebug> renderer_hidden;
-    TraceableState<bool, kTracingCategoryNameDefault> renderer_backgrounded;
+    TraceableState<bool, kTracingCategoryNameTopLevel> renderer_backgrounded;
     TraceableState<bool, kTracingCategoryNameDefault>
         keep_active_fetch_or_worker;
     TraceableState<bool, kTracingCategoryNameInfo>
@@ -702,7 +702,7 @@ class PLATFORM_EXPORT RendererSchedulerImpl
         begin_frame_not_expected_soon;
     TraceableState<bool, kTracingCategoryNameDebug> in_idle_period_for_testing;
     TraceableState<bool, kTracingCategoryNameInfo> use_virtual_time;
-    TraceableState<bool, kTracingCategoryNameDefault> is_audio_playing;
+    TraceableState<bool, kTracingCategoryNameTopLevel> is_audio_playing;
     TraceableState<bool, kTracingCategoryNameDebug>
         compositor_will_send_main_frame_not_expected;
     TraceableState<bool, kTracingCategoryNameDebug> has_navigated;
@@ -714,7 +714,7 @@ class PLATFORM_EXPORT RendererSchedulerImpl
     RAILModeObserver* rail_mode_observer;                 // Not owned.
     WakeUpBudgetPool* wake_up_budget_pool;                // Not owned.
     RendererMetricsHelper metrics_helper;
-    TraceableState<RendererProcessType, kTracingCategoryNameDefault>
+    TraceableState<RendererProcessType, kTracingCategoryNameTopLevel>
         process_type;
     TraceableState<base::Optional<TaskDescriptionForTracing>,
                    kTracingCategoryNameInfo>
