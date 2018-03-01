@@ -53,14 +53,6 @@ void LayoutSVGResourceMarker::RemoveAllClientsFromCache(
                                     : kParentOnlyInvalidation);
 }
 
-void LayoutSVGResourceMarker::RemoveClientFromCache(
-    LayoutObject& client,
-    bool mark_for_invalidation) {
-  MarkClientForInvalidation(client, mark_for_invalidation
-                                        ? kBoundariesInvalidation
-                                        : kParentOnlyInvalidation);
-}
-
 FloatRect LayoutSVGResourceMarker::MarkerBoundaries(
     const AffineTransform& marker_transformation) const {
   FloatRect coordinates = LayoutSVGContainer::VisualRectInLocalSVGCoordinates();

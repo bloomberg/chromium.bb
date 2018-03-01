@@ -42,8 +42,7 @@ class LayoutSVGResourcePattern final : public LayoutSVGResourcePaintServer {
   const char* GetName() const override { return "LayoutSVGResourcePattern"; }
 
   void RemoveAllClientsFromCache(bool mark_for_invalidation = true) override;
-  void RemoveClientFromCache(LayoutObject&,
-                             bool mark_for_invalidation = true) override;
+  bool RemoveClientFromCache(LayoutObject&) override;
 
   SVGPaintServer PreparePaintServer(
       const LayoutObject&,

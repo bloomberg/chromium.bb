@@ -34,8 +34,6 @@ class LayoutSVGResourceClipper final : public LayoutSVGResourceContainer {
   const char* GetName() const override { return "LayoutSVGResourceClipper"; }
 
   void RemoveAllClientsFromCache(bool mark_for_invalidation = true) override;
-  void RemoveClientFromCache(LayoutObject&,
-                             bool mark_for_invalidation = true) override;
 
   FloatRect ResourceBoundingBox(const FloatRect& reference_box);
 

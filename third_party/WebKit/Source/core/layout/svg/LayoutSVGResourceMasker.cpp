@@ -43,14 +43,6 @@ void LayoutSVGResourceMasker::RemoveAllClientsFromCache(
                                     : kParentOnlyInvalidation);
 }
 
-void LayoutSVGResourceMasker::RemoveClientFromCache(
-    LayoutObject& client,
-    bool mark_for_invalidation) {
-  MarkClientForInvalidation(client, mark_for_invalidation
-                                        ? kBoundariesInvalidation
-                                        : kParentOnlyInvalidation);
-}
-
 sk_sp<const PaintRecord> LayoutSVGResourceMasker::CreatePaintRecord(
     AffineTransform& content_transformation,
     const FloatRect& target_bounding_box,

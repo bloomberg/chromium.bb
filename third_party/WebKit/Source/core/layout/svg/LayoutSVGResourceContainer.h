@@ -43,8 +43,9 @@ class LayoutSVGResourceContainer : public LayoutSVGHiddenContainer {
   ~LayoutSVGResourceContainer() override;
 
   virtual void RemoveAllClientsFromCache(bool mark_for_invalidation = true) = 0;
-  virtual void RemoveClientFromCache(LayoutObject&,
-                                     bool mark_for_invalidation = true) = 0;
+
+  // Remove any cached data for the |client|, and return true if so.
+  virtual bool RemoveClientFromCache(LayoutObject& client) { return false; }
 
   void UpdateLayout() override;
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) final;
@@ -75,9 +76,6 @@ class LayoutSVGResourceContainer : public LayoutSVGHiddenContainer {
       LayoutObject&,
       bool needs_layout = true);
 
-  void ClearInvalidationMask() { invalidation_mask_ = 0; }
-
- protected:
   // When adding modes, make sure we don't overflow m_invalidationMask below.
   enum InvalidationMode {
     kLayoutAndBoundariesInvalidation = 1 << 0,
@@ -85,11 +83,15 @@ class LayoutSVGResourceContainer : public LayoutSVGHiddenContainer {
     kPaintInvalidation = 1 << 2,
     kParentOnlyInvalidation = 1 << 3
   };
+  static void MarkClientForInvalidation(LayoutObject&,
+                                        unsigned invalidation_mask);
 
+  void ClearInvalidationMask() { invalidation_mask_ = 0; }
+
+ protected:
   // Used from the invalidateClient/invalidateClients methods from classes,
   // inheriting from us.
   void MarkAllClientsForInvalidation(InvalidationMode);
-  void MarkClientForInvalidation(LayoutObject&, InvalidationMode);
 
   void NotifyContentChanged();
   SVGElementProxySet* ElementProxySet();

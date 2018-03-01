@@ -39,13 +39,12 @@ void LayoutSVGResourceGradient::RemoveAllClientsFromCache(
       mark_for_invalidation ? kPaintInvalidation : kParentOnlyInvalidation);
 }
 
-void LayoutSVGResourceGradient::RemoveClientFromCache(
-    LayoutObject& client,
-    bool mark_for_invalidation) {
-  gradient_map_.erase(&client);
-  MarkClientForInvalidation(client, mark_for_invalidation
-                                        ? kPaintInvalidation
-                                        : kParentOnlyInvalidation);
+bool LayoutSVGResourceGradient::RemoveClientFromCache(LayoutObject& client) {
+  auto entry = gradient_map_.find(&client);
+  if (entry == gradient_map_.end())
+    return false;
+  gradient_map_.erase(entry);
+  return true;
 }
 
 SVGPaintServer LayoutSVGResourceGradient::PreparePaintServer(

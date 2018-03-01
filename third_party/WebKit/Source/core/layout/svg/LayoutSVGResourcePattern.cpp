@@ -59,13 +59,12 @@ void LayoutSVGResourcePattern::RemoveAllClientsFromCache(
       mark_for_invalidation ? kPaintInvalidation : kParentOnlyInvalidation);
 }
 
-void LayoutSVGResourcePattern::RemoveClientFromCache(
-    LayoutObject& client,
-    bool mark_for_invalidation) {
-  pattern_map_.erase(&client);
-  MarkClientForInvalidation(client, mark_for_invalidation
-                                        ? kPaintInvalidation
-                                        : kParentOnlyInvalidation);
+bool LayoutSVGResourcePattern::RemoveClientFromCache(LayoutObject& client) {
+  auto entry = pattern_map_.find(&client);
+  if (entry == pattern_map_.end())
+    return false;
+  pattern_map_.erase(entry);
+  return true;
 }
 
 PatternData* LayoutSVGResourcePattern::PatternForClient(
