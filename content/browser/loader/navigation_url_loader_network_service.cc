@@ -34,7 +34,7 @@
 #include "content/browser/web_package/signed_exchange_url_loader_factory_for_non_network_service.h"
 #include "content/browser/web_package/web_package_request_handler.h"
 #include "content/browser/webui/url_data_manager_backend.h"
-#include "content/browser/webui/web_ui_url_loader_factory.h"
+#include "content/browser/webui/web_ui_url_loader_factory_internal.h"
 #include "content/common/navigation_subresource_loader_params.h"
 #include "content/common/throttling_url_loader.h"
 #include "content/common/weak_wrapper_shared_url_loader_factory.h"
@@ -991,9 +991,9 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
   const auto& schemes = URLDataManagerBackend::GetWebUISchemes();
   std::string scheme = new_request->url.scheme();
   if (std::find(schemes.begin(), schemes.end(), scheme) != schemes.end()) {
-    factory_for_webui =
-        CreateWebUIURLLoader(frame_tree_node->current_frame_host(), scheme)
-            .PassInterface();
+    factory_for_webui = CreateWebUIURLLoaderBinding(
+                            frame_tree_node->current_frame_host(), scheme)
+                            .PassInterface();
   }
 
   network::mojom::URLLoaderFactoryPtrInfo proxied_factory_info;

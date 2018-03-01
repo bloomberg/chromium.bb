@@ -209,12 +209,14 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/vpn_service_proxy.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui_url_loader_factory.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/common/url_loader_throttle.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/common/web_preferences.h"
@@ -369,6 +371,7 @@
 #include "chrome/browser/apps/platform_app_navigation_redirector.h"
 #include "chrome/browser/extensions/bookmark_app_navigation_throttle.h"
 #include "chrome/browser/extensions/chrome_content_browser_client_extensions_part.h"
+#include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/speech/extension_api/tts_engine_extension_api.h"
 #include "chrome/services/media_gallery_util/public/mojom/constants.mojom.h"
 #include "chrome/services/removable_storage_writer/public/mojom/constants.mojom.h"
@@ -3776,7 +3779,48 @@ void ChromeContentBrowserClient::
       extensions::ExtensionSystem::Get(browser_context)->info_map());
   if (factory)
     factories->emplace(extensions::kExtensionScheme, std::move(factory));
-#endif
+
+  // This logic should match
+  // ChromeExtensionWebContentsObserver::RenderFrameCreated.
+  WebContents* web_contents = WebContents::FromRenderFrameHost(frame_host);
+  if (!web_contents) {
+    return;
+  }
+  extensions::ChromeExtensionWebContentsObserver* web_observer =
+      extensions::ChromeExtensionWebContentsObserver::FromWebContents(
+          web_contents);
+
+  const Extension* extension =
+      web_observer->GetExtensionFromFrame(frame_host, false);
+  if (!extension)
+    return;
+
+  // Support for chrome:// scheme if appropriate.
+  if ((extension->is_extension() || extension->is_platform_app()) &&
+      Manifest::IsComponentLocation(extension->location())) {
+    // Components of chrome that are implemented as extensions or platform apps
+    // are allowed to use chrome://resources/ and chrome://theme/ URLs.
+    base::flat_set<std::string> allowed_webui_hosts = {
+        content::kChromeUIResourcesHost, chrome::kChromeUIThemeHost};
+    factories->emplace(
+        content::kChromeUIScheme,
+        content::CreateWebUIURLLoader(frame_host, content::kChromeUIScheme,
+                                      std::move(allowed_webui_hosts)));
+  } else if (extension->is_extension() || extension->is_legacy_packaged_app() ||
+             (extension->is_platform_app() &&
+              Manifest::IsComponentLocation(extension->location()))) {
+    // Extensions, legacy packaged apps, and component platform apps are allowed
+    // to use chrome://favicon/ and chrome://extension-icon/ URLs. Hosted apps
+    // are not allowed because they are served via web servers (and are
+    // generally never given access to Chrome APIs).
+    base::flat_set<std::string> allowed_webui_hosts = {
+        chrome::kChromeUIExtensionIconHost, chrome::kChromeUIFaviconHost};
+    factories->emplace(
+        content::kChromeUIScheme,
+        content::CreateWebUIURLLoader(frame_host, content::kChromeUIScheme,
+                                      std::move(allowed_webui_hosts)));
+  }
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 }
 
 bool ChromeContentBrowserClient::WillCreateURLLoaderFactory(

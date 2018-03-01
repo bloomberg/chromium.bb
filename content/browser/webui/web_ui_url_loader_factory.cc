@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/webui/web_ui_url_loader_factory.h"
+#include "content/public/browser/web_ui_url_loader_factory.h"
 
 #include <map>
 
@@ -18,7 +18,6 @@
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/histogram_internals_url_loader.h"
-#include "content/browser/loader/global_routing_id.h"
 #include "content/browser/resource_context_impl.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/webui/network_error_url_loader.h"
@@ -216,10 +215,15 @@ void StartURLLoader(const network::ResourceRequest& request,
 class WebUIURLLoaderFactory : public network::mojom::URLLoaderFactory,
                               public WebContentsObserver {
  public:
-  WebUIURLLoaderFactory(RenderFrameHost* rfh, const std::string& scheme)
+  // |allowed_hosts| is an optional set of allowed host names. If empty then
+  // all hosts are allowed.
+  WebUIURLLoaderFactory(RenderFrameHost* rfh,
+                        const std::string& scheme,
+                        base::flat_set<std::string> allowed_hosts)
       : WebContentsObserver(WebContents::FromRenderFrameHost(rfh)),
         render_frame_host_(rfh),
-        scheme_(scheme) {}
+        scheme_(scheme),
+        allowed_hosts_(std::move(allowed_hosts)) {}
 
   ~WebUIURLLoaderFactory() override {}
 
@@ -241,8 +245,19 @@ class WebUIURLLoaderFactory : public network::mojom::URLLoaderFactory,
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     if (request.url.scheme() != scheme_) {
+      DVLOG(1) << "Bad scheme: " << request.url.scheme();
       ReceivedBadMessage(render_frame_host_->GetProcess(),
                          bad_message::WEBUI_BAD_SCHEME_ACCESS);
+      client->OnComplete(network::URLLoaderCompletionStatus(net::ERR_FAILED));
+      return;
+    }
+
+    if (!allowed_hosts_.empty() &&
+        (!request.url.has_host() ||
+         allowed_hosts_.find(request.url.host()) == allowed_hosts_.end())) {
+      DVLOG(1) << "Bad host: \"" << request.url.host() << '"';
+      ReceivedBadMessage(render_frame_host_->GetProcess(),
+                         bad_message::WEBUI_BAD_HOST_ACCESS);
       client->OnComplete(network::URLLoaderCompletionStatus(net::ERR_FAILED));
       return;
     }
@@ -303,6 +318,7 @@ class WebUIURLLoaderFactory : public network::mojom::URLLoaderFactory,
 
   RenderFrameHost* render_frame_host_;
   std::string scheme_;
+  const base::flat_set<std::string> allowed_hosts_;  // if empty all allowed.
   mojo::BindingSet<network::mojom::URLLoaderFactory> loader_factory_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUIURLLoaderFactory);
@@ -310,7 +326,19 @@ class WebUIURLLoaderFactory : public network::mojom::URLLoaderFactory,
 
 }  // namespace
 
-network::mojom::URLLoaderFactoryPtr CreateWebUIURLLoader(
+std::unique_ptr<network::mojom::URLLoaderFactory> CreateWebUIURLLoader(
+    RenderFrameHost* render_frame_host,
+    const std::string& scheme,
+    base::flat_set<std::string> allowed_hosts) {
+  // At present we have no use-case for a need to allow all hosts if
+  // constructing via this method. If this changes remove the DCHECK below and
+  // WebUIURLLoaderFactory will not filter.
+  DCHECK(!allowed_hosts.empty());
+  return std::make_unique<WebUIURLLoaderFactory>(render_frame_host, scheme,
+                                                 std::move(allowed_hosts));
+}
+
+network::mojom::URLLoaderFactoryPtr CreateWebUIURLLoaderBinding(
     RenderFrameHost* render_frame_host,
     const std::string& scheme) {
   GlobalFrameRoutingId routing_id(render_frame_host->GetRoutingID(),
@@ -319,7 +347,8 @@ network::mojom::URLLoaderFactoryPtr CreateWebUIURLLoader(
           g_web_ui_url_loader_factories.Get().end() ||
       g_web_ui_url_loader_factories.Get()[routing_id]->scheme() != scheme) {
     g_web_ui_url_loader_factories.Get()[routing_id] =
-        std::make_unique<WebUIURLLoaderFactory>(render_frame_host, scheme);
+        std::make_unique<WebUIURLLoaderFactory>(render_frame_host, scheme,
+                                                base::flat_set<std::string>());
   }
   return g_web_ui_url_loader_factories.Get()[routing_id]->CreateBinding();
 }
