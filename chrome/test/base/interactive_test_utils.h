@@ -5,8 +5,12 @@
 #ifndef CHROME_TEST_BASE_INTERACTIVE_TEST_UTILS_H_
 #define CHROME_TEST_BASE_INTERACTIVE_TEST_UTILS_H_
 
+#include "base/macros.h"
+#include "base/run_loop.h"
+#include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/test/test_utils.h"
 #include "ui/base/test/ui_controls.h"
 
 namespace gfx {
@@ -20,6 +24,31 @@ class View;
 #endif
 
 namespace ui_test_utils {
+
+// Use in browser interactive uitests to wait until a browser is set to active.
+// To use, create and call WaitForActivation().
+// TODO(warx): check if code base exists the requirement for deactivation sync,
+// this class can be modified to support that.
+class BrowserActivationWaiter : public BrowserListObserver {
+ public:
+  explicit BrowserActivationWaiter(const Browser* browser);
+  ~BrowserActivationWaiter() override;
+
+  // Runs a message loop until the |browser_| supplied to the constructor is
+  // activated, or returns immediately if |browser_| has already become active.
+  // Should only be called once.
+  void WaitForActivation();
+
+ private:
+  // BrowserListObserver:
+  void OnBrowserSetLastActive(Browser* browser) override;
+
+  const Browser* const browser_;
+  bool observed_;
+  base::RunLoop run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(BrowserActivationWaiter);
+};
 
 // Brings the native window for |browser| to the foreground and waits until the
 // browser is active.
