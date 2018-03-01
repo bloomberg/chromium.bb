@@ -181,7 +181,7 @@ class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
   String DebugName(const GraphicsLayer*) const override;
   DocumentLifecycle& Lifecycle() const;
 
-  void UpdatePotentialCompositingReasonsFromStyle(PaintLayer*);
+  void UpdatePotentialCompositingReasonsFromStyle(PaintLayer&);
 
   // Whether the layer could ever be composited.
   bool CanBeComposited(const PaintLayer*) const;

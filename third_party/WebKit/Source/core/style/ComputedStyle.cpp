@@ -827,6 +827,17 @@ void ComputedStyle::UpdatePropertySpecificDifferences(
   if (has_clip != other_has_clip ||
       (has_clip && Clip() != other.Clip()))
     diff.SetCSSClipChanged();
+
+  if (HasCurrentTransformAnimation() != other.HasCurrentTransformAnimation() ||
+      HasCurrentOpacityAnimation() != other.HasCurrentOpacityAnimation() ||
+      HasCurrentFilterAnimation() != other.HasCurrentFilterAnimation() ||
+      HasCurrentBackdropFilterAnimation() !=
+          other.HasCurrentBackdropFilterAnimation() ||
+      HasInlineTransform() != other.HasInlineTransform() ||
+      BackfaceVisibility() != other.BackfaceVisibility() ||
+      HasWillChangeCompositingHint() != other.HasWillChangeCompositingHint()) {
+    diff.SetCompositingReasonsChanged();
+  }
 }
 
 void ComputedStyle::AddPaintImage(StyleImage* image) {

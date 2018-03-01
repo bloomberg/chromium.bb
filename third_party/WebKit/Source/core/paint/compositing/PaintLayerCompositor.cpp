@@ -905,10 +905,10 @@ void PaintLayerCompositor::UpdateRootLayerPosition() {
 }
 
 void PaintLayerCompositor::UpdatePotentialCompositingReasonsFromStyle(
-    PaintLayer* layer) {
-  layer->SetPotentialCompositingReasonsFromStyle(
+    PaintLayer& layer) {
+  layer.SetPotentialCompositingReasonsFromStyle(
       compositing_reason_finder_.PotentialCompositingReasonsFromStyle(
-          layer->GetLayoutObject()));
+          layer.GetLayoutObject()));
 }
 
 bool PaintLayerCompositor::CanBeComposited(const PaintLayer* layer) const {

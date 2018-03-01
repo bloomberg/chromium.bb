@@ -108,6 +108,88 @@ TEST(ComputedStyleTest,
   EXPECT_TRUE(diff.TransformChanged());
 }
 
+TEST(ComputedStyleTest,
+     UpdatePropertySpecificDifferencesCompositingReasonsTransforom) {
+  scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
+  scoped_refptr<ComputedStyle> other = ComputedStyle::Clone(*style);
+
+  TransformOperations operations(true);
+  style->SetTransform(operations);
+  other->SetTransform(operations);
+
+  other->SetHasCurrentTransformAnimation(true);
+  StyleDifference diff;
+  style->UpdatePropertySpecificDifferences(*other, diff);
+  EXPECT_FALSE(diff.TransformChanged());
+  EXPECT_TRUE(diff.CompositingReasonsChanged());
+}
+
+TEST(ComputedStyleTest,
+     UpdatePropertySpecificDifferencesCompositingReasonsOpacity) {
+  scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
+  scoped_refptr<ComputedStyle> other = ComputedStyle::Clone(*style);
+
+  other->SetHasCurrentOpacityAnimation(true);
+  StyleDifference diff;
+  style->UpdatePropertySpecificDifferences(*other, diff);
+  EXPECT_TRUE(diff.CompositingReasonsChanged());
+}
+
+TEST(ComputedStyleTest,
+     UpdatePropertySpecificDifferencesCompositingReasonsFilter) {
+  scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
+  scoped_refptr<ComputedStyle> other = ComputedStyle::Clone(*style);
+
+  other->SetHasCurrentFilterAnimation(true);
+  StyleDifference diff;
+  style->UpdatePropertySpecificDifferences(*other, diff);
+  EXPECT_TRUE(diff.CompositingReasonsChanged());
+}
+
+TEST(ComputedStyleTest,
+     UpdatePropertySpecificDifferencesCompositingReasonsBackdropFilter) {
+  scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
+  scoped_refptr<ComputedStyle> other = ComputedStyle::Clone(*style);
+
+  other->SetHasCurrentBackdropFilterAnimation(true);
+  StyleDifference diff;
+  style->UpdatePropertySpecificDifferences(*other, diff);
+  EXPECT_TRUE(diff.CompositingReasonsChanged());
+}
+
+TEST(ComputedStyleTest,
+     UpdatePropertySpecificDifferencesCompositingReasonsInlineTransform) {
+  scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
+  scoped_refptr<ComputedStyle> other = ComputedStyle::Clone(*style);
+
+  other->SetHasInlineTransform(true);
+  StyleDifference diff;
+  style->UpdatePropertySpecificDifferences(*other, diff);
+  EXPECT_TRUE(diff.CompositingReasonsChanged());
+}
+
+TEST(ComputedStyleTest,
+     UpdatePropertySpecificDifferencesCompositingReasonsBackfaceVisibility) {
+  scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
+  scoped_refptr<ComputedStyle> other = ComputedStyle::Clone(*style);
+
+  other->SetBackfaceVisibility(EBackfaceVisibility::kHidden);
+  StyleDifference diff;
+  style->UpdatePropertySpecificDifferences(*other, diff);
+  EXPECT_TRUE(diff.CompositingReasonsChanged());
+}
+
+TEST(ComputedStyleTest,
+     UpdatePropertySpecificDifferencesCompositingReasonsWillChange) {
+  scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
+  scoped_refptr<ComputedStyle> other = ComputedStyle::Clone(*style);
+
+  other->SetBackfaceVisibility(EBackfaceVisibility::kHidden);
+  StyleDifference diff;
+  style->UpdatePropertySpecificDifferences(*other, diff);
+  EXPECT_TRUE(diff.CompositingReasonsChanged());
+}
+
 TEST(ComputedStyleTest, HasOutlineWithCurrentColor) {
   scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
   EXPECT_FALSE(style->HasOutline());
