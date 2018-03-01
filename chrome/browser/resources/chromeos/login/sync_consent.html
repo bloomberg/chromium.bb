@@ -41,7 +41,7 @@
     <link rel="stylesheet" href="oobe_dialog_parameters.css">
     <link rel="stylesheet" href="oobe_flex_layout.css">
     <oobe-dialog id="syncConsentOverviewDialog" role="dialog" has-buttons
-        aria-label="[[i18nDynamic(locale, 'syncConsentScreenTitle')]]"
+        aria-label$="[[i18nDynamic(locale, 'syncConsentScreenTitle')]]"
         hidden="[[isSectionHidden_(activeSection_,'overview')]]">
       <hd-iron-icon class="oobe-icon"
           icon1x="sync-consent-32:googleg" icon2x="sync-consent-64:googleg">
@@ -92,7 +92,7 @@
       </div>
     </oobe-dialog>
     <oobe-dialog id="syncConsentSettingsDialog" role="dialog" has-buttons
-        aria-label="[[i18nDynamic(locale, 'syncConsentSettingsDialogTitle')]]"
+        aria-label$="[[i18nDynamic(locale, 'syncConsentSettingsDialogTitle')]]"
         hidden="[[isSectionHidden_(activeSection_,'settings')]]">
       <hd-iron-icon class="oobe-icon"
           icon1x="sync-consent-32:googleg" icon2x="sync-consent-64:googleg">
