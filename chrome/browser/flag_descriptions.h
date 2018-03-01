@@ -1537,9 +1537,6 @@ extern const char kTabDetachingInFullscreenDescription[];
 extern const char kTabStripKeyboardFocusName[];
 extern const char kTabStripKeyboardFocusDescription[];
 
-extern const char kTranslateNewUxName[];
-extern const char kTranslateNewUxDescription[];
-
 // Non-Mac --------------------------------------------------------------------
 
 #else  // !defined(OS_MACOSX)

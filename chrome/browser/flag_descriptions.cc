@@ -2512,10 +2512,6 @@ const char kTabStripKeyboardFocusName[] = "Tab Strip Keyboard Focus";
 const char kTabStripKeyboardFocusDescription[] =
     "Enable keyboard focus for the tabs in the tab strip.";
 
-const char kTranslateNewUxName[] = "New Translate UX";
-const char kTranslateNewUxDescription[] =
-    "Enable the new Translate bubble UX is offered instead of the infobar.";
-
 #endif
 
 // Chrome OS -------------------------------------------------------------------

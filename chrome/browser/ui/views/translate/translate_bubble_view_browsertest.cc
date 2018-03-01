@@ -37,9 +37,6 @@ class TranslateBubbleViewBrowserTest : public InProcessBrowserTest {
 
   void SetUp() override {
 #if defined(OS_MACOSX)
-    // Enable the bubble on Mac (otherwise infobars are used).
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        ::switches::kEnableTranslateNewUX);
     // Enable toolkit-views bubbles on Mac (otherwise Cocoa bubbles are used).
     feature_list_.InitAndEnableFeature(features::kSecondaryUiMd);
 #endif
