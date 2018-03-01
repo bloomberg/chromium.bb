@@ -81,6 +81,12 @@ gfx::Vector3dF GetAngularVelocityFromPoses(gfx::Transform head_mat,
   return omega_vec;
 }
 
+void PostRotateZ(gfx::Transform* transform, float degrees) {
+  gfx::Transform rotate;
+  rotate.RotateAboutZAxis(degrees);
+  transform->ConcatTransform(rotate);
+}
+
 }  // namespace
 
 /* static */
@@ -134,6 +140,7 @@ void GvrDelegate::GetGvrPoseWithNeckModel(gvr::GvrApi* gvr_api,
 mojom::VRPosePtr GvrDelegate::GetVRPosePtrWithNeckModel(
     gvr::GvrApi* gvr_api,
     gfx::Transform* head_mat_out,
+    int rotate_degrees,
     int64_t prediction_time) {
   gvr::ClockTimePoint target_time = gvr::GvrApi::GetTimePointNow();
   target_time.monotonic_system_time_nanos += prediction_time;
@@ -147,6 +154,9 @@ mojom::VRPosePtr GvrDelegate::GetVRPosePtrWithNeckModel(
     head_mat_ptr = &head_mat;
   GvrMatToTransform(gvr_head_mat, head_mat_ptr);
 
+  if (rotate_degrees != 0)
+    PostRotateZ(head_mat_ptr, rotate_degrees);
+
   mojom::VRPosePtr pose = GvrDelegate::VRPosePtrFromGvrPose(*head_mat_ptr);
 
   // Get a second pose a bit later to calculate angular velocity.
@@ -155,6 +165,9 @@ mojom::VRPosePtr GvrDelegate::GetVRPosePtrWithNeckModel(
       gvr_api->GetHeadSpaceFromStartSpaceRotation(target_time);
   gfx::Transform head_mat_2;
   GvrMatToTransform(gvr_head_mat_2, &head_mat_2);
+
+  if (rotate_degrees != 0)
+    PostRotateZ(&head_mat_2, rotate_degrees);
 
   // Add headset angular velocity to the pose.
   pose->angularVelocity.emplace(3);
@@ -171,8 +184,9 @@ mojom::VRPosePtr GvrDelegate::GetVRPosePtrWithNeckModel(
 /* static */
 mojom::VRPosePtr GvrDelegate::GetVRPosePtrWithNeckModel(
     gvr::GvrApi* gvr_api,
-    gfx::Transform* head_mat_out) {
-  return GetVRPosePtrWithNeckModel(gvr_api, head_mat_out,
+    gfx::Transform* head_mat_out,
+    int rotate_degrees) {
+  return GetVRPosePtrWithNeckModel(gvr_api, head_mat_out, rotate_degrees,
                                    kPredictionTimeWithoutVsyncNanos);
 }
 

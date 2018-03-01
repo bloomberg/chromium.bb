@@ -38,6 +38,9 @@ class DEVICE_VR_EXPORT GvrDevice : public VRDeviceBase {
 
   void OnDIPScaleChanged(JNIEnv* env,
                          const base::android::JavaRef<jobject>& obj);
+  void OnRotationChanged(JNIEnv* env,
+                         const base::android::JavaRef<jobject>& obj,
+                         jint rotation_degrees);
 
   void Activate(mojom::VRDisplayEventReason reason,
                 base::Callback<void(bool)> on_handled);
@@ -59,6 +62,7 @@ class DEVICE_VR_EXPORT GvrDevice : public VRDeviceBase {
 
   base::android::ScopedJavaGlobalRef<jobject> non_presenting_context_;
   std::unique_ptr<gvr::GvrApi> gvr_api_;
+  int rotation_degrees_;
 
   base::WeakPtrFactory<GvrDevice> weak_ptr_factory_;
 

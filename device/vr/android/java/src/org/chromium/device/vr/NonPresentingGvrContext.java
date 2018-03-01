@@ -7,6 +7,7 @@ package org.chromium.device.vr;
 import android.content.Context;
 import android.os.StrictMode;
 import android.view.Display;
+import android.view.Surface;
 import android.view.WindowManager;
 
 import com.google.vr.cardboard.DisplaySynchronizer;
@@ -46,6 +47,7 @@ public class NonPresentingGvrContext implements DisplayAndroid.DisplayAndroidObs
         }
         mDisplayAndroid = DisplayAndroid.getNonMultiDisplay(context);
         mDisplayAndroid.addObserver(this);
+        onRotationChanged(mDisplayAndroid.getRotation());
     }
 
     @CalledByNative
@@ -69,16 +71,34 @@ public class NonPresentingGvrContext implements DisplayAndroid.DisplayAndroidObs
         mNativeGvrDevice = 0;
     }
 
+    private int rotationToDegrees(int rotation) {
+        switch (rotation) {
+            case Surface.ROTATION_0:
+                return 0;
+            case Surface.ROTATION_90:
+                return 90;
+            case Surface.ROTATION_180:
+                return 180;
+            case Surface.ROTATION_270:
+                return 270;
+        }
+        assert false;
+        return 0;
+    }
+
     @Override
-    public void onRotationChanged(int rotation) {}
+    public void onRotationChanged(int rotation) {
+        if (mNativeGvrDevice != 0) {
+            nativeOnRotationChanged(mNativeGvrDevice, rotationToDegrees(rotation));
+        }
+    }
 
     @Override
     public void onDIPScaleChanged(float dipScale) {
         mGvrApi.refreshDisplayMetrics();
-        if (mNativeGvrDevice != 0) {
-            nativeOnDIPScaleChanged(mNativeGvrDevice);
-        }
+        if (mNativeGvrDevice != 0) nativeOnDIPScaleChanged(mNativeGvrDevice);
     }
 
     private native void nativeOnDIPScaleChanged(long nativeGvrDevice);
+    private native void nativeOnRotationChanged(long nativeGvrDevice, int rotationDegrees);
 }
