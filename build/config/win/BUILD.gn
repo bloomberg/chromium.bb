@@ -62,8 +62,6 @@ config("compiler") {
     "/Zc:sizedDealloc-",
   ]
 
-  # Building with Clang on Windows is a work in progress and very
-  # experimental. See crbug.com/82385.
   if (is_clang) {
     cflags += [ "-fmsc-version=1911" ]
 
@@ -84,6 +82,14 @@ config("compiler") {
 
     # Clang runtime libraries, such as the sanitizer runtimes, live here.
     lib_dirs = [ "$clang_base_path/lib/clang/$clang_version/lib/windows" ]
+  }
+
+  if (use_lld) {
+    # /Brepro lets the compiler not write the mtime field in the .obj output.
+    # link.exe /incremental relies on this field to work correctly, but lld
+    # never looks at this timestamp, so it's safe to pass this flag with
+    # lld and get more deterministic compiler output in return.
+    cflags += [ "/Brepro" ]
   }
 
   # /PROFILE ensures that the PDB file contains FIXUP information (growing the
