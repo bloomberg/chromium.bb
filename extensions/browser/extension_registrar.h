@@ -111,8 +111,8 @@ class ExtensionRegistrar {
   // retains a reference to it, so it can be enabled later.
   void DisableExtension(const ExtensionId& extension_id, int disable_reasons);
 
-  // Reloads the specified extension by disabling it if it is enabled and
-  // requesting the Delegate load it again.
+  // Attempts to reload the specified extension by disabling it if it is enabled
+  // and requesting the Delegate load it again.
   // NOTE: Reloading an extension can invalidate |extension_id| and Extension
   // pointers for the given extension. Consider making a copy of |extension_id|
   // first and retrieving a new Extension pointer afterwards.

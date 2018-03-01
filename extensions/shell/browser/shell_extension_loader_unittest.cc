@@ -7,23 +7,36 @@
 #include <memory>
 #include <string>
 
+#include "apps/app_lifetime_monitor_factory.h"
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "components/crx_file/id_util.h"
+#include "components/keep_alive_registry/keep_alive_registry.h"
+#include "components/prefs/testing_pref_service.h"
+#include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_utils.h"
+#include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/disable_reason.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/browser/extensions_test.h"
 #include "extensions/browser/null_app_sorting.h"
 #include "extensions/browser/runtime_data.h"
+#include "extensions/browser/test_event_router.h"
 #include "extensions/browser/test_extensions_browser_client.h"
+#include "extensions/common/api/app_runtime.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_id.h"
 #include "extensions/common/extension_paths.h"
+#include "extensions/shell/browser/shell_app_delegate.h"
+#include "extensions/shell/browser/shell_app_window_client.h"
+#include "extensions/shell/browser/shell_native_app_window_aura.h"
+#include "extensions/shell/test/shell_test_base_aura.h"
+#include "extensions/test/test_extension_dir.h"
 
 namespace extensions {
+
+namespace OnLaunched = api::app_runtime::OnLaunched;
 
 namespace {
 
@@ -44,17 +57,54 @@ class TestExtensionSystem : public MockExtensionSystem {
   DISALLOW_COPY_AND_ASSIGN(TestExtensionSystem);
 };
 
+// An AppWindowClient for use without a DesktopController.
+class TestAppWindowClient : public ShellAppWindowClient {
+ public:
+  TestAppWindowClient() = default;
+  ~TestAppWindowClient() override = default;
+
+  // ShellAppWindowClient:
+  NativeAppWindow* CreateNativeAppWindow(
+      AppWindow* window,
+      AppWindow::CreateParams* params) override {
+    return new ShellNativeAppWindowAura(window, *params);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestAppWindowClient);
+};
+
 }  // namespace
 
-class ShellExtensionLoaderTest : public ExtensionsTest {
+class ShellExtensionLoaderTest : public ShellTestBaseAura {
  protected:
-  ShellExtensionLoaderTest()
-      : ExtensionsTest(std::make_unique<content::TestBrowserThreadBundle>()) {}
+  ShellExtensionLoaderTest() = default;
   ~ShellExtensionLoaderTest() override = default;
 
   void SetUp() override {
-    ExtensionsTest::SetUp();
+    // Register factory so it's created with the BrowserContext.
+    apps::AppLifetimeMonitorFactory::GetInstance();
+
+    ShellTestBaseAura::SetUp();
+    AppWindowClient::Set(&app_window_client_);
     extensions_browser_client()->set_extension_system_factory(&factory_);
+    user_prefs::UserPrefs::Set(browser_context(), &testing_pref_service_);
+    event_router_ = CreateAndUseTestEventRouter(browser_context());
+  }
+
+  void TearDown() override {
+    EXPECT_FALSE(KeepAliveRegistry::GetInstance()->IsKeepingAlive());
+    AppWindowClient::Set(nullptr);
+    ShellTestBaseAura::TearDown();
+  }
+
+  // Returns an initialized app window for the extension.
+  // The app window deletes itself when its native window is closed.
+  AppWindow* CreateAppWindow(const Extension* extension) {
+    AppWindow* app_window =
+        app_window_client_.CreateAppWindow(browser_context(), extension);
+    InitAppWindow(app_window);
+    return app_window;
   }
 
   // Returns the path to a test directory.
@@ -75,30 +125,111 @@ class ShellExtensionLoaderTest : public ExtensionsTest {
         ExtensionRegistry::EVERYTHING & ~ExtensionRegistry::ENABLED));
   }
 
-  // Verifies the extension is correctly created but disabled.
-  void ExpectDisabled(const Extension* extension) {
-    ASSERT_TRUE(extension);
-    EXPECT_EQ(Manifest::COMMAND_LINE, extension->location());
+  // Verifies the extension with the given ID is disabled.
+  void ExpectDisabled(const ExtensionId& extension_id) {
     ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context());
-    EXPECT_TRUE(registry->disabled_extensions().Contains(extension->id()));
+    EXPECT_TRUE(registry->disabled_extensions().Contains(extension_id));
     EXPECT_FALSE(registry->GetExtensionById(
-        extension->id(),
+        extension_id,
         ExtensionRegistry::EVERYTHING & ~ExtensionRegistry::DISABLED));
   }
 
+  TestEventRouter* event_router() { return event_router_; }
+
  private:
   MockExtensionSystemFactory<TestExtensionSystem> factory_;
+  TestingPrefServiceSimple testing_pref_service_;
+  TestAppWindowClient app_window_client_;
+
+  TestEventRouter* event_router_ = nullptr;  // Created in SetUp().
 
   DISALLOW_COPY_AND_ASSIGN(ShellExtensionLoaderTest);
 };
 
-// Tests loading an extension.
+// Tests loading and reloading an extension.
 TEST_F(ShellExtensionLoaderTest, Extension) {
   ShellExtensionLoader loader(browser_context());
 
   const Extension* extension =
       loader.LoadExtension(GetExtensionPath("extension"));
   ExpectEnabled(extension);
+
+  // Extensions shouldn't receive the onLaunched event.
+  EXPECT_EQ(0, event_router()->GetEventCount(OnLaunched::kEventName));
+
+  // No keep-alives are used for non-app extensions.
+  const ExtensionId extension_id = extension->id();
+  loader.ReloadExtension(extension->id());
+  ExpectDisabled(extension_id);
+  EXPECT_FALSE(KeepAliveRegistry::GetInstance()->IsKeepingAlive());
+
+  // Wait for load.
+  content::RunAllTasksUntilIdle();
+  extension = ExtensionRegistry::Get(browser_context())
+                  ->GetInstalledExtension(extension_id);
+  ExpectEnabled(extension);
+  EXPECT_FALSE(KeepAliveRegistry::GetInstance()->IsKeepingAlive());
+
+  // Not an app.
+  EXPECT_EQ(0, event_router()->GetEventCount(OnLaunched::kEventName));
+}
+
+// Tests loading and launching a platform app.
+TEST_F(ShellExtensionLoaderTest, AppLaunch) {
+  ShellExtensionLoader loader(browser_context());
+
+  const Extension* extension =
+      loader.LoadExtension(GetExtensionPath("platform_app"));
+  ExpectEnabled(extension);
+
+  // A keep-alive is waiting for the app to launch its first window.
+  // (Not strictly necessary in AppShell, because DesktopWindowControllerAura
+  // doesn't consider quitting until an already-open window is closed, but
+  // ShellExtensionLoader and ShellKeepAliveRequester don't make that
+  // assumption.)
+  EXPECT_TRUE(KeepAliveRegistry::GetInstance()->IsKeepingAlive());
+
+  {
+    // When AppShell launches the app window, the keep-alive is removed.
+    AppWindow* app_window = CreateAppWindow(extension);
+    EXPECT_FALSE(KeepAliveRegistry::GetInstance()->IsKeepingAlive());
+    app_window->GetBaseWindow()->Close();  // Deletes |app_window|.
+  }
+}
+
+// Tests loading, launching and reloading a platform app.
+TEST_F(ShellExtensionLoaderTest, AppLaunchAndReload) {
+  ShellExtensionLoader loader(browser_context());
+
+  const Extension* extension =
+      loader.LoadExtension(GetExtensionPath("platform_app"));
+  const ExtensionId extension_id = extension->id();
+  ExpectEnabled(extension);
+  EXPECT_TRUE(KeepAliveRegistry::GetInstance()->IsKeepingAlive());
+
+  CreateAppWindow(extension);
+  EXPECT_FALSE(KeepAliveRegistry::GetInstance()->IsKeepingAlive());
+
+  // Reload the app.
+  loader.ReloadExtension(extension->id());
+  ExpectDisabled(extension_id);
+  EXPECT_TRUE(KeepAliveRegistry::GetInstance()->IsKeepingAlive());
+
+  // Complete the reload. ShellExtensionLoader sends the onLaunched event.
+  content::RunAllTasksUntilIdle();
+  extension = ExtensionRegistry::Get(browser_context())
+                  ->GetInstalledExtension(extension_id);
+  ExpectEnabled(extension);
+  EXPECT_EQ(1, event_router()->GetEventCount(OnLaunched::kEventName));
+  EXPECT_TRUE(KeepAliveRegistry::GetInstance()->IsKeepingAlive());
+
+  {
+    // The keep-alive is destroyed when an app window is launched.
+    AppWindow* app_window = CreateAppWindow(extension);
+    EXPECT_FALSE(KeepAliveRegistry::GetInstance()->IsKeepingAlive());
+
+    app_window->GetBaseWindow()->Close();
+  }
 }
 
 // Tests with a non-existent directory.
@@ -108,6 +239,57 @@ TEST_F(ShellExtensionLoaderTest, NotFound) {
   const Extension* extension =
       loader.LoadExtension(GetExtensionPath("nonexistent"));
   ASSERT_FALSE(extension);
+  EXPECT_FALSE(KeepAliveRegistry::GetInstance()->IsKeepingAlive());
+}
+
+// Tests failing to reload an app.
+TEST_F(ShellExtensionLoaderTest, ReloadFailure) {
+  ShellExtensionLoader loader(browser_context());
+  ExtensionId extension_id;
+
+  // Create an extension in a temporary directory so we can delete it before
+  // trying to reload it.
+  {
+    TestExtensionDir extension_dir;
+    extension_dir.WriteManifest(
+        R"({
+             "name": "Test Platform App",
+             "version": "1",
+             "manifest_version": 2,
+              "app": {
+                "background": {
+                  "scripts": ["background.js"]
+                }
+              }
+           })");
+    extension_dir.WriteFile(FILE_PATH_LITERAL("background.js"), "");
+
+    const Extension* extension =
+        loader.LoadExtension(extension_dir.UnpackedPath());
+    ASSERT_TRUE(extension);
+    extension_id = extension->id();
+    ExpectEnabled(extension);
+    EXPECT_TRUE(KeepAliveRegistry::GetInstance()->IsKeepingAlive());
+
+    // Launch an app window.
+    CreateAppWindow(extension);
+    EXPECT_FALSE(KeepAliveRegistry::GetInstance()->IsKeepingAlive());
+
+    // Reload the app.
+    loader.ReloadExtension(extension->id());
+    EXPECT_TRUE(KeepAliveRegistry::GetInstance()->IsKeepingAlive());
+  }
+
+  // Wait for load (which will fail because the directory is missing).
+  content::RunAllTasksUntilIdle();
+
+  ExpectDisabled(extension_id);
+  EXPECT_FALSE(KeepAliveRegistry::GetInstance()->IsKeepingAlive());
+
+  // We can't reload an extension that is already disabled for reloading, so
+  // trying to reload this extension shouldn't result in a dangling keep-alive.
+  loader.ReloadExtension(extension_id);
+  EXPECT_FALSE(KeepAliveRegistry::GetInstance()->IsKeepingAlive());
 }
 
 // Tests that the extension is added as enabled even if is disabled in
@@ -138,7 +320,7 @@ TEST_F(ShellExtensionLoaderTest, LoadDisabledExtension) {
 
   ShellExtensionLoader loader(browser_context());
   const Extension* extension = loader.LoadExtension(extension_path);
-  ExpectDisabled(extension);
+  ExpectDisabled(extension->id());
 }
 
 }  // namespace extensions
