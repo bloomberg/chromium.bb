@@ -77,6 +77,7 @@ bool StructTraits<blink::mojom::blink::TransferableMessage::DataView,
   out->ports.ReserveInitialCapacity(ports.size());
   out->ports.AppendRange(std::make_move_iterator(ports.begin()),
                          std::make_move_iterator(ports.end()));
+  out->has_user_gesture = data.has_user_gesture();
 
   out->message->SetArrayBufferContentsArray(
       std::move(array_buffer_contents_array));

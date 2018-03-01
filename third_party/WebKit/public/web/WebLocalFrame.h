@@ -725,7 +725,8 @@ class WebLocalFrame : public WebFrame {
   // Dispatches a message event on the current DOMWindow in this WebFrame.
   virtual void DispatchMessageEventWithOriginCheck(
       const WebSecurityOrigin& intended_target_origin,
-      const WebDOMEvent&) = 0;
+      const WebDOMEvent&,
+      bool has_user_gesture) = 0;
 
   // Site engagement --------------------------------------------------------
 

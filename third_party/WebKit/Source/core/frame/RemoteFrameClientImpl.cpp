@@ -139,10 +139,21 @@ void RemoteFrameClientImpl::ForwardPostMessage(
     MessageEvent* event,
     scoped_refptr<const SecurityOrigin> target,
     LocalFrame* source_frame) const {
+  // Restrict the user gesture to be forwarded cross-process at most once. This
+  // helps avoid unbounded usage of the same user gesture by issuing multiple
+  // postMessages to OOPIFs from this process.  A complementary restriction on
+  // the receiver side prevents unbounded chaining of user gestures across
+  // processes.
+  bool has_user_gesture = UserGestureIndicator::ProcessingUserGesture() &&
+                          !UserGestureIndicator::WasForwardedCrossProcess();
+  if (has_user_gesture)
+    UserGestureIndicator::SetWasForwardedCrossProcess();
+
   if (web_frame_->Client()) {
     web_frame_->Client()->ForwardPostMessage(
         WebLocalFrameImpl::FromFrame(source_frame), web_frame_,
-        WebSecurityOrigin(std::move(target)), WebDOMMessageEvent(event));
+        WebSecurityOrigin(std::move(target)), WebDOMMessageEvent(event),
+        has_user_gesture);
   }
 }
 

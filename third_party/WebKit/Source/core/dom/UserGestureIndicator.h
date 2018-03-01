@@ -39,10 +39,13 @@ class CORE_EXPORT UserGestureToken : public RefCounted<UserGestureToken> {
   void SetTimeoutPolicy(TimeoutPolicy);
   void ResetTimestamp();
   bool HasTimedOut() const;
+  bool WasForwardedCrossProcess() const;
+  void SetWasForwardedCrossProcess();
 
   size_t consumable_gestures_;
   double timestamp_;
   TimeoutPolicy timeout_policy_;
+  bool was_forwarded_cross_process_;
   DISALLOW_COPY_AND_ASSIGN(UserGestureToken);
 };
 
@@ -69,6 +72,17 @@ class CORE_EXPORT UserGestureIndicator final {
   static UserGestureToken* CurrentTokenThreadSafe();
 
   static void SetTimeoutPolicy(UserGestureToken::TimeoutPolicy);
+
+  // Temporarily track whether a given user gesture has been forwarded to a
+  // cross-process subframe (e.g., via postMessage).  This prevents forwarding
+  // an unbounded number of gestures using OOPIFs.
+  //
+  // TODO(alexmos, mustaq): Remove this once either (1) browser process tracks
+  // and coordinates user gestures (see http://crbug.com/161068), or (2)
+  // UserActivation v2 ships and supports OOPIFs (see https://crbug.com/696617
+  // and https://crbug.com/780556).
+  static bool WasForwardedCrossProcess();
+  static void SetWasForwardedCrossProcess();
 
   explicit UserGestureIndicator(scoped_refptr<UserGestureToken>);
 

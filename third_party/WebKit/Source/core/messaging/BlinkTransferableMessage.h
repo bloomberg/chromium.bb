@@ -27,6 +27,8 @@ struct CORE_EXPORT BlinkTransferableMessage : BlinkCloneableMessage {
 
   Vector<MessagePortChannel> ports;
 
+  bool has_user_gesture = false;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(BlinkTransferableMessage);
 };

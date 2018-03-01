@@ -121,6 +121,9 @@ class ChromeSitePerProcessTest : public InProcessBrowserTest {
     CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir));
     embedded_test_server()->ServeFilesFromDirectory(test_data_dir);
 
+    // Add content/test/data for cross_site_iframe_factory.html
+    embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
+
     embedded_test_server()->StartAcceptingConnections();
   }
 
@@ -1085,3 +1088,298 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest, TwoFingerTapContextMenu) {
   menu_waiter.WaitForMenuOpenAndClose();
 }
 #endif  // defined(USE_AURA)
+
+// Check that cross-process postMessage preserves user gesture.  When a
+// subframe with a user gesture postMessages its parent, the parent should be
+// able to open a popup.  This test is in chrome/ so that it exercises the
+// popup blocker logic.
+IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
+                       CrossProcessPostMessagePreservesUserGesture) {
+  // Start on a page with an <iframe>.
+  GURL main_url(embedded_test_server()->GetURL("a.com", "/iframe.html"));
+  ui_test_utils::NavigateToURL(browser(), main_url);
+
+  // Navigate the iframe cross-site.
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  GURL frame_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  EXPECT_TRUE(NavigateIframeToURL(web_contents, "test", frame_url));
+
+  // Add a postMessage handler in the top frame.  The handler opens a new
+  // popup.
+  GURL popup_url(embedded_test_server()->GetURL("a.com", "/title2.html"));
+  EXPECT_TRUE(
+      ExecuteScript(web_contents,
+                    "window.addEventListener('message', function() {\n"
+                    "  window.w = window.open('" + popup_url.spec() + "');\n"
+                    "});"));
+
+  // Send a postMessage from the child frame to its parent.  Note that by
+  // default ExecuteScript runs with a user gesture, which should be
+  // transferred to the parent via postMessage. The parent should open the
+  // popup in its message handler, and the popup shouldn't be blocked.
+  content::WindowedNotificationObserver popup_observer(
+      chrome::NOTIFICATION_TAB_ADDED,
+      content::NotificationService::AllSources());
+  EXPECT_TRUE(ExecuteScript(ChildFrameAt(web_contents->GetMainFrame(), 0),
+                            "parent.postMessage('foo', '*')"));
+  popup_observer.Wait();
+  ASSERT_EQ(2, browser()->tab_strip_model()->count());
+
+  content::WebContents* popup =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(WaitForLoadStop(popup));
+  EXPECT_EQ(popup_url, popup->GetLastCommittedURL());
+  EXPECT_NE(popup, web_contents);
+
+  // Check that the window handle returned from window.open() was valid.
+  bool popup_handle_is_valid = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      web_contents, "window.domAutomationController.send(!!window.w)",
+      &popup_handle_is_valid));
+  EXPECT_TRUE(popup_handle_is_valid);
+}
+
+// Check that when a frame sends two cross-process postMessages while having a
+// user gesture, the recipient will only be able to create one popup.  This
+// test is in chrome/ so that it exercises the popup blocker logic.
+IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
+                       TwoPostMessagesWithSameUserGesture) {
+  // Start on a page with an <iframe>.
+  GURL main_url(embedded_test_server()->GetURL("a.com", "/iframe.html"));
+  ui_test_utils::NavigateToURL(browser(), main_url);
+
+  // Navigate the iframe cross-site.
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  GURL frame_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  EXPECT_TRUE(NavigateIframeToURL(web_contents, "test", frame_url));
+
+  // Add a postMessage handler in the iframe.  The handler opens a new popup
+  // for a URL constructed using postMessage event data.
+  GURL popup_url(embedded_test_server()->GetURL("popup.com", "/"));
+  content::RenderFrameHost* child =
+      ChildFrameAt(web_contents->GetMainFrame(), 0);
+  EXPECT_TRUE(ExecuteScript(
+      child,
+      "window.addEventListener('message', function(event) {\n"
+      "  window.w = window.open('" + popup_url.spec() + "' + event.data);\n"
+      "});"));
+
+  // Send two postMessages from parent frame to child frame as part of the same
+  // user gesture.  Ensure that only one popup can be opened.
+  content::WindowedNotificationObserver popup_observer(
+      chrome::NOTIFICATION_TAB_ADDED,
+      content::NotificationService::AllSources());
+  EXPECT_TRUE(ExecuteScript(web_contents,
+                            "frames[0].postMessage('title1.html', '*');\n"
+                            "frames[0].postMessage('title2.html', '*');\n"));
+  popup_observer.Wait();
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
+
+  content::WebContents* popup =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(WaitForLoadStop(popup));
+  EXPECT_EQ(embedded_test_server()->GetURL("popup.com", "/title1.html"),
+            popup->GetLastCommittedURL());
+  EXPECT_NE(popup, web_contents);
+
+  // Ensure that only one popup can be opened.  The second window.open() call
+  // should've failed and stored null into window.w.
+  bool popup_handle_is_valid = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      child, "window.domAutomationController.send(!!window.w)",
+      &popup_handle_is_valid));
+  EXPECT_FALSE(popup_handle_is_valid);
+}
+
+// Check that when a frame sends two postMessages to iframes on different sites
+// while having a user gesture, the two recipient processes will only be able
+// to create one popup. This test is in chrome/ so that it exercises the popup
+// blocker logic.
+IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
+                       TwoPostMessagesToDifferentSitesWithSameUserGesture) {
+  // Start on a page a.com with two iframes on b.com and c.com.
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b,c)"));
+  ui_test_utils::NavigateToURL(browser(), main_url);
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Add a postMessage handler in both iframes.  The handler opens a new popup
+  // for a URL constructed using postMessage event data.
+  GURL popup_url(embedded_test_server()->GetURL("popup.com", "/"));
+  content::RenderFrameHost* child1 =
+      ChildFrameAt(web_contents->GetMainFrame(), 0);
+  content::RenderFrameHost* child2 =
+      ChildFrameAt(web_contents->GetMainFrame(), 1);
+  const std::string script =
+      "window.addEventListener('message', function(event) {\n"
+      "  window.w = window.open('" + popup_url.spec() + "' + event.data);\n"
+      "});";
+  EXPECT_TRUE(ExecuteScript(child1, script));
+  EXPECT_TRUE(ExecuteScript(child2, script));
+
+  // Send two postMessages from parent frame to both child frames as part of
+  // the same user gesture.  Ensure that only one popup can be opened.  Note
+  // that between the two OOPIF processes, there is no ordering guarantee of
+  // which one will open the popup first.
+  content::WindowedNotificationObserver popup_observer(
+      chrome::NOTIFICATION_TAB_ADDED,
+      content::NotificationService::AllSources());
+  EXPECT_TRUE(ExecuteScript(web_contents,
+                            "frames[0].postMessage('title1.html', '*');\n"
+                            "frames[1].postMessage('title1.html', '*');\n"));
+  popup_observer.Wait();
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
+
+  content::WebContents* popup =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(WaitForLoadStop(popup));
+  EXPECT_EQ(embedded_test_server()->GetURL("popup.com", "/title1.html"),
+            popup->GetLastCommittedURL());
+  EXPECT_NE(popup, web_contents);
+
+  // Ensure that only one renderer process has a valid popup handle.
+  bool child1_handle_is_valid = false;
+  bool child2_handle_is_valid = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      child1, "window.domAutomationController.send(!!window.w)",
+      &child1_handle_is_valid));
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      child2, "window.domAutomationController.send(!!window.w)",
+      &child2_handle_is_valid));
+  EXPECT_TRUE(child1_handle_is_valid != child2_handle_is_valid)
+      << "child1_handle_is_valid = " << child1_handle_is_valid
+      << ", child2_handle_is_valid = " << child2_handle_is_valid;
+}
+
+// Check that when a frame sends a cross-process postMessage to a second frame
+// while having a user gesture, and then the second frame sends another
+// cross-process postMessage to a third frame, the second and third frames can
+// only create one popup between the two of them. This test is in chrome/ so
+// that it exercises the popup blocker logic.
+IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
+                       PostMessageSendsSecondPostMessageWithUserGesture) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b(c))"));
+  ui_test_utils::NavigateToURL(browser(), main_url);
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::RenderFrameHost* child =
+      ChildFrameAt(web_contents->GetMainFrame(), 0);
+  content::RenderFrameHost* grandchild = ChildFrameAt(child, 0);
+  ASSERT_TRUE(child->IsCrossProcessSubframe());
+  ASSERT_TRUE(grandchild->IsCrossProcessSubframe());
+  ASSERT_NE(child->GetProcess(), web_contents->GetMainFrame()->GetProcess());
+  ASSERT_NE(grandchild->GetProcess(), child->GetProcess());
+  ASSERT_NE(grandchild->GetProcess(),
+            web_contents->GetMainFrame()->GetProcess());
+
+  // Add a postMessage handler to middle frame to send another postMessage to
+  // bottom frame and then immediately attempt window.open().
+  GURL popup1_url(embedded_test_server()->GetURL("popup.com", "/title1.html"));
+  EXPECT_TRUE(ExecuteScript(
+      child,
+      "window.addEventListener('message', function() {\n"
+      "  frames[0].postMessage('foo', '*');\n"
+      "  window.w = window.open('" + popup1_url.spec() + "');\n"
+      "});\n"));
+
+  // Add a postMessage handler to bottom frame to attempt a window.open().
+  GURL popup2_url(embedded_test_server()->GetURL("popup.com", "/title2.html"));
+  EXPECT_TRUE(ExecuteScript(
+      grandchild,
+      "window.addEventListener('message', function() {\n"
+      "  window.w = window.open('" + popup2_url.spec() + "');\n"
+      "});\n"));
+
+  // Send a postMessage from top frame to middle frame as part of the same user
+  // gesture.  Ensure that only one popup can be opened.
+  content::WindowedNotificationObserver popup_observer(
+      chrome::NOTIFICATION_TAB_ADDED,
+      content::NotificationService::AllSources());
+  EXPECT_TRUE(
+      ExecuteScript(web_contents, "frames[0].postMessage('foo', '*');\n"));
+  popup_observer.Wait();
+
+  content::WebContents* popup =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(WaitForLoadStop(popup));
+  EXPECT_EQ(popup1_url, popup->GetLastCommittedURL());
+  EXPECT_NE(popup, web_contents);
+
+  // Ensure that only one popup can be opened.  The second window.open() in
+  // |grandchild| should've failed and stored null into window.w.
+  bool popup_handle_is_valid = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      grandchild, "window.domAutomationController.send(!!window.w)",
+      &popup_handle_is_valid));
+  EXPECT_FALSE(popup_handle_is_valid);
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
+}
+
+// Test that when a frame sends a cross-process postMessage and then
+// immediately performs a window.open(), and the message recipient also does a
+// window.open(), only one popup will be opened.
+//
+// TODO(alexmos, mustaq): This test will not work until either (1) browser
+// process starts tracking and coordinating user gestures (see
+// http://crbug.com/161068), or (2) UserActivation v2 ships and supports
+// OOPIFs (see https://crbug.com/696617 and https://crbug.com/780556).
+IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
+                       DISABLED_PostMessageSenderAndReceiverRaceToCreatePopup) {
+  // Start on a page with an <iframe>.
+  GURL main_url(embedded_test_server()->GetURL("a.com", "/iframe.html"));
+  ui_test_utils::NavigateToURL(browser(), main_url);
+
+  // Navigate the iframe cross-site.
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  GURL frame_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  EXPECT_TRUE(NavigateIframeToURL(web_contents, "test", frame_url));
+
+  // Add a postMessage handler in the iframe.  The handler opens a new popup
+  // for a URL constructed using postMessage event data.
+  content::RenderFrameHost* child =
+      ChildFrameAt(web_contents->GetMainFrame(), 0);
+  GURL popup_url(embedded_test_server()->GetURL("popup.com", "/title1.html"));
+  EXPECT_TRUE(ExecuteScript(
+      child,
+      "window.addEventListener('message', function() {\n"
+      "  window.w = window.open('" + popup_url.spec() + "');\n"
+      "});"));
+
+  // Send a postMessage from parent frame to child frame and then immediately
+  // consume the user gesture with window.open().
+  content::WindowedNotificationObserver popup_observer(
+      chrome::NOTIFICATION_TAB_ADDED,
+      content::NotificationService::AllSources());
+  EXPECT_TRUE(ExecuteScript(
+      web_contents,
+      "frames[0].postMessage('foo', '*');\n"
+      "window.w = window.open('" + popup_url.spec() + "');\n"));
+  popup_observer.Wait();
+
+  content::WebContents* popup =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(WaitForLoadStop(popup));
+  EXPECT_EQ(popup_url, popup->GetLastCommittedURL());
+  EXPECT_NE(popup, web_contents);
+
+  // Ensure that only one popup was opened, from either the parent or the child
+  // frame, but not both.
+  bool parent_popup_handle_is_valid = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      web_contents, "window.domAutomationController.send(!!window.w)",
+      &parent_popup_handle_is_valid));
+  bool child_popup_handle_is_valid = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      child, "window.domAutomationController.send(!!window.w)",
+      &child_popup_handle_is_valid));
+  EXPECT_NE(parent_popup_handle_is_valid, child_popup_handle_is_valid)
+      << " parent_popup_handle_is_valid=" << parent_popup_handle_is_valid
+      << " child_popup_handle_is_valid=" << child_popup_handle_is_valid;
+  ASSERT_EQ(2, browser()->tab_strip_model()->count());
+}

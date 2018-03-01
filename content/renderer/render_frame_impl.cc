@@ -2535,7 +2535,8 @@ void RenderFrameImpl::OnPostMessageEvent(
                                    source_frame, frame_->GetDocument());
   }
 
-  frame_->DispatchMessageEventWithOriginCheck(target_origin, msg_event);
+  frame_->DispatchMessageEventWithOriginCheck(
+      target_origin, msg_event, params.message->data.has_user_gesture);
 }
 
 void RenderFrameImpl::OnReload(bool bypass_cache) {

@@ -36,6 +36,10 @@ struct BLINK_COMMON_EXPORT
     return input.image_bitmap_contents_array;
   }
 
+  static bool has_user_gesture(blink::TransferableMessage& input) {
+    return input.has_user_gesture;
+  }
+
   static bool Read(blink::mojom::TransferableMessage::DataView data,
                    blink::TransferableMessage* out);
 };

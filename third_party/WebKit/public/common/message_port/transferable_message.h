@@ -33,6 +33,10 @@ struct BLINK_COMMON_EXPORT TransferableMessage : public CloneableMessage {
   // The contents of any ImageBitmaps being transfered as part of this message.
   std::vector<SkBitmap> image_bitmap_contents_array;
 
+  // Whether the recipient should have a user gesture when it processes this
+  // message.
+  bool has_user_gesture = false;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(TransferableMessage);
 };

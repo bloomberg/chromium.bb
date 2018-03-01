@@ -22,6 +22,7 @@ bool StructTraits<blink::mojom::TransferableMessage::DataView,
   }
 
   out->ports = blink::MessagePortChannel::CreateFromHandles(std::move(ports));
+  out->has_user_gesture = data.has_user_gesture();
   return true;
 }
 
