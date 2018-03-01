@@ -266,6 +266,14 @@ cr.define('cr.ui.Oobe', function() {
     },
 
     /**
+     * Updates "device in tablet mode" state when tablet mode is changed.
+     * @param {Boolean} isInTabletMode True when in tablet mode.
+     */
+    setTabletModeState: function(isInTabletMode) {
+      Oobe.getInstance().setTabletModeState_(isInTabletMode);
+    },
+
+    /**
      * Reloads localized strings for the eula page.
      * @param {!Object} data New dictionary with changed eula i18n values.
      */

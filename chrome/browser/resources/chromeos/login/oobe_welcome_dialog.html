@@ -17,9 +17,18 @@
       <div class="vertical-margin"></div>
       <div class="welcome-content flex layout vertical center">
         <h1 id="title">[[i18nDynamic(locale, 'networkScreenGreeting')]]</h1>
-        <img id="welcomeIllustration"
-            srcset="images/welcome_illustration_1x.png 1x,
-                    images/welcome_illustration_2x.png 2x">
+        <div class="welcome-illustration" hidden="[[isInTabletMode]]">
+          <img srcset="images/welcome_illustration_1x.png 1x,
+                       images/welcome_illustration_2x.png 2x">
+        </div>
+        <div class="welcome-illustration" hidden="[[!isInTabletMode]]">
+          <img hidden="[[!isInPortraitMode]]"
+              srcset="images/welcome_illustration_tablet_mode_portraight_1x.png 1x,
+                      images/welcome_illustration_tablet_mode_portraight_2x.png 2x">
+          <img hidden="[[isInPortraitMode]]"
+              srcset="images/welcome_illustration_tablet_mode_1x.png 1x,
+                      images/welcome_illustration_tablet_mode_2x.png 2x">
+        </div>
         <div hidden="[[!debuggingLinkVisible]]">
           <a href="#" on-tap="onDebuggingLinkClicked_">
             [[i18nDynamic(locale, 'debuggingFeaturesLink')]]

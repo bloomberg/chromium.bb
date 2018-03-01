@@ -785,6 +785,8 @@ cr.define('cr.ui.login', function() {
         if (screen.updateLocalizedContent)
           screen.updateLocalizedContent();
       }
+      var isInTabletMode = loadTimeData.getBoolean('isInTabletMode');
+      this.setTabletModeState_(isInTabletMode);
 
       var currentScreenId = this.screens_[this.currentStep_];
       var currentScreen = $(currentScreenId);
@@ -794,6 +796,18 @@ cr.define('cr.ui.login', function() {
       // so that strings are reloaded.
       // Will be reloaded if drowdown is actually shown.
       cr.ui.DropDown.refresh();
+    },
+
+    /**
+     * Updates "device in tablet mode" state when tablet mode is changed.
+     * @param {Boolean} isInTabletMode True when in tablet mode.
+     */
+    setTabletModeState_: function(isInTabletMode) {
+      for (var i = 0, screenId; screenId = this.screens_[i]; ++i) {
+        var screen = $(screenId);
+        if (screen.setTabletModeState)
+          screen.setTabletModeState(isInTabletMode);
+      }
     },
 
     /**
@@ -853,13 +867,11 @@ cr.define('cr.ui.login', function() {
      * @private
      */
     onWindowResize_: function() {
-      var currentScreenId = this.screens_[this.currentStep_];
-      var currentScreen = $(currentScreenId);
-      if (currentScreen)
-        currentScreen.onWindowResize();
-      // The account picker always needs to be notified of window size changes.
-      if (currentScreenId != SCREEN_ACCOUNT_PICKER && $(SCREEN_ACCOUNT_PICKER))
-        $(SCREEN_ACCOUNT_PICKER).onWindowResize();
+      for (var i = 0, screenId; screenId = this.screens_[i]; ++i) {
+        var screen = $(screenId);
+        if (screen.onWindowResize)
+          screen.onWindowResize();
+      }
     },
 
     /*
