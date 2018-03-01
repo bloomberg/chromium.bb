@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
@@ -155,7 +156,7 @@ void ShowUpdateChromeDialogViews(gfx::NativeWindow parent);
 #if defined(TOOLKIT_VIEWS)
 
 // Creates a toolkit-views based LoginHandler (e.g. HTTP-Auth dialog).
-LoginHandler* CreateLoginHandlerViews(
+scoped_refptr<LoginHandler> CreateLoginHandlerViews(
     net::AuthChallengeInfo* auth_info,
     content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
     const base::Callback<void(const base::Optional<net::AuthCredentials>&)>&

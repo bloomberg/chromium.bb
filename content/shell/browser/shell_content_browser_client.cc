@@ -23,6 +23,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
+#include "content/public/browser/resource_dispatcher_host_login_delegate.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_names.mojom.h"
@@ -349,7 +350,7 @@ void ShellContentBrowserClient::OpenURL(
                                       gfx::Size())->web_contents());
 }
 
-ResourceDispatcherHostLoginDelegate*
+scoped_refptr<ResourceDispatcherHostLoginDelegate>
 ShellContentBrowserClient::CreateLoginDelegate(
     net::AuthChallengeInfo* auth_info,
     content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
@@ -367,7 +368,8 @@ ShellContentBrowserClient::CreateLoginDelegate(
   // TODO: implement ShellLoginDialog for other platforms, drop this #if
   return nullptr;
 #else
-  return new ShellLoginDialog(auth_info, auth_required_callback);
+  return base::MakeRefCounted<ShellLoginDialog>(auth_info,
+                                                auth_required_callback);
 #endif
 }
 

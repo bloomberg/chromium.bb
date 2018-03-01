@@ -677,7 +677,8 @@ ContentBrowserClient::CreateClientCertStore(ResourceContext* resource_context) {
   return nullptr;
 }
 
-ResourceDispatcherHostLoginDelegate* ContentBrowserClient::CreateLoginDelegate(
+scoped_refptr<ResourceDispatcherHostLoginDelegate>
+ContentBrowserClient::CreateLoginDelegate(
     net::AuthChallengeInfo* auth_info,
     content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
     bool is_main_frame,

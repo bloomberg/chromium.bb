@@ -151,13 +151,14 @@ class LoginHandlerViews : public LoginHandler, public views::DialogDelegate {
 };
 
 namespace chrome {
-LoginHandler* CreateLoginHandlerViews(
+
+scoped_refptr<LoginHandler> CreateLoginHandlerViews(
     net::AuthChallengeInfo* auth_info,
     content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
     const base::Callback<void(const base::Optional<net::AuthCredentials>&)>&
         auth_required_callback) {
-  return new LoginHandlerViews(auth_info, web_contents_getter,
-                               auth_required_callback);
+  return base::MakeRefCounted<LoginHandlerViews>(auth_info, web_contents_getter,
+                                                 auth_required_callback);
 }
 
 }  // namespace chrome

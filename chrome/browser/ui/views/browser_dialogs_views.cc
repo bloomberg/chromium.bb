@@ -26,7 +26,7 @@
 // select at runtime whether to show a Cocoa dialog, or the toolkit-views dialog
 // provided by browser_dialogs.h.
 // static
-LoginHandler* LoginHandler::Create(
+scoped_refptr<LoginHandler> LoginHandler::Create(
     net::AuthChallengeInfo* auth_info,
     content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
     const base::Callback<void(const base::Optional<net::AuthCredentials>&)>&
