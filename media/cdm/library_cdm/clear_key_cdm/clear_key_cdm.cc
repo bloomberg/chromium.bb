@@ -505,6 +505,13 @@ void ClearKeyCdm::OnUpdateSuccess(uint32_t promise_id,
     expiration = 3153600000.0;  // 100 * 365 * 24 * 60 * 60;
 
     if (!has_set_renewal_timer_) {
+      // Make sure the CDM can get time and sleep if necessary.
+      constexpr auto kSleepDuration = base::TimeDelta::FromSeconds(1);
+      auto start_time = base::Time::Now();
+      base::PlatformThread::Sleep(kSleepDuration);
+      auto time_elapsed = base::Time::Now() - start_time;
+      CHECK_GE(time_elapsed, kSleepDuration);
+
       ScheduleNextRenewal();
       has_set_renewal_timer_ = true;
     }
