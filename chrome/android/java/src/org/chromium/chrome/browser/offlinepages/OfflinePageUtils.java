@@ -362,7 +362,7 @@ public class OfflinePageUtils {
         OfflinePageBridge offlinePageBridge = getInstance().getOfflinePageBridge(tab.getProfile());
 
         if (offlinePageBridge == null) {
-            Log.e(TAG, "Unable to perform sharing on current tab.");
+            Log.e(TAG, "Unable to share current tab as an offline page.");
             return false;
         }
 
@@ -370,9 +370,18 @@ public class OfflinePageUtils {
         // Bail if there is no offline page or sharing is not enabled.
         if (offlinePage == null || !OfflinePageBridge.isPageSharingEnabled()) return false;
 
+        // If we share a page with a content URI, it will not have a file path.
+        // We cannot share it without a file path, so return false. That will give other
+        // sharing methods a chance to run.
+        String offlinePath = offlinePage.getFilePath();
+        if (offlinePath.isEmpty()) {
+            Log.w(TAG, "Tried to share a page with no path.");
+            return false;
+        }
+
         final String tabTitle = tab.getTitle();
         final String tabUrl = tab.getUrl();
-        final File offlinePageFile = new File(offlinePage.getFilePath());
+        final File offlinePageFile = new File(offlinePath);
         AsyncTask<Void, Void, Uri> task = new AsyncTask<Void, Void, Uri>() {
             @Override
             protected Uri doInBackground(Void... v) {
