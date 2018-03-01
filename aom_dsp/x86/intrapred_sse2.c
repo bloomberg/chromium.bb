@@ -53,8 +53,7 @@ static INLINE void dc_store_32xh(const __m128i *row, int height, uint8_t *dst,
 
 static INLINE void dc_store_64xh(const __m128i *row, int height, uint8_t *dst,
                                  ptrdiff_t stride) {
-  int i;
-  for (i = 0; i < height; ++i) {
+  for (int i = 0; i < height; ++i) {
     _mm_store_si128((__m128i *)dst, *row);
     _mm_store_si128((__m128i *)(dst + 16), *row);
     _mm_store_si128((__m128i *)(dst + 32), *row);
@@ -91,6 +90,23 @@ static INLINE __m128i dc_sum_32(const uint8_t *ref) {
   x0 = _mm_sad_epu8(x0, zero);
   x1 = _mm_sad_epu8(x1, zero);
   x0 = _mm_add_epi16(x0, x1);
+  const __m128i high = _mm_unpackhi_epi64(x0, x0);
+  return _mm_add_epi16(x0, high);
+}
+
+static INLINE __m128i dc_sum_64(const uint8_t *ref) {
+  __m128i x0 = _mm_load_si128((__m128i const *)ref);
+  __m128i x1 = _mm_load_si128((__m128i const *)(ref + 16));
+  __m128i x2 = _mm_load_si128((__m128i const *)(ref + 32));
+  __m128i x3 = _mm_load_si128((__m128i const *)(ref + 48));
+  const __m128i zero = _mm_setzero_si128();
+  x0 = _mm_sad_epu8(x0, zero);
+  x1 = _mm_sad_epu8(x1, zero);
+  x2 = _mm_sad_epu8(x2, zero);
+  x3 = _mm_sad_epu8(x3, zero);
+  x0 = _mm_add_epi16(x0, x1);
+  x2 = _mm_add_epi16(x2, x3);
+  x0 = _mm_add_epi16(x0, x2);
   const __m128i high = _mm_unpackhi_epi64(x0, x0);
   return _mm_add_epi16(x0, high);
 }
@@ -343,6 +359,62 @@ void aom_dc_left_predictor_32x16_sse2(uint8_t *dst, ptrdiff_t stride,
   sum_left = _mm_shufflelo_epi16(sum_left, 0);
   const __m128i row = _mm_unpacklo_epi64(sum_left, sum_left);
   dc_store_32xh(&row, 16, dst, stride);
+}
+
+void aom_dc_left_predictor_32x64_sse2(uint8_t *dst, ptrdiff_t stride,
+                                      const uint8_t *above,
+                                      const uint8_t *left) {
+  (void)above;
+  __m128i sum_left = dc_sum_64(left);
+  const __m128i thirtytwo = _mm_set1_epi16((uint16_t)32);
+  sum_left = _mm_add_epi16(sum_left, thirtytwo);
+  sum_left = _mm_srai_epi16(sum_left, 6);
+  sum_left = _mm_unpacklo_epi8(sum_left, sum_left);
+  sum_left = _mm_shufflelo_epi16(sum_left, 0);
+  const __m128i row = _mm_unpacklo_epi64(sum_left, sum_left);
+  dc_store_32xh(&row, 64, dst, stride);
+}
+
+void aom_dc_left_predictor_64x64_sse2(uint8_t *dst, ptrdiff_t stride,
+                                      const uint8_t *above,
+                                      const uint8_t *left) {
+  (void)above;
+  __m128i sum_left = dc_sum_64(left);
+  const __m128i thirtytwo = _mm_set1_epi16((uint16_t)32);
+  sum_left = _mm_add_epi16(sum_left, thirtytwo);
+  sum_left = _mm_srai_epi16(sum_left, 6);
+  sum_left = _mm_unpacklo_epi8(sum_left, sum_left);
+  sum_left = _mm_shufflelo_epi16(sum_left, 0);
+  const __m128i row = _mm_unpacklo_epi64(sum_left, sum_left);
+  dc_store_64xh(&row, 64, dst, stride);
+}
+
+void aom_dc_left_predictor_64x32_sse2(uint8_t *dst, ptrdiff_t stride,
+                                      const uint8_t *above,
+                                      const uint8_t *left) {
+  (void)above;
+  __m128i sum_left = dc_sum_32(left);
+  const __m128i sixteen = _mm_set1_epi16((uint16_t)16);
+  sum_left = _mm_add_epi16(sum_left, sixteen);
+  sum_left = _mm_srai_epi16(sum_left, 5);
+  sum_left = _mm_unpacklo_epi8(sum_left, sum_left);
+  sum_left = _mm_shufflelo_epi16(sum_left, 0);
+  const __m128i row = _mm_unpacklo_epi64(sum_left, sum_left);
+  dc_store_64xh(&row, 32, dst, stride);
+}
+
+void aom_dc_left_predictor_64x16_sse2(uint8_t *dst, ptrdiff_t stride,
+                                      const uint8_t *above,
+                                      const uint8_t *left) {
+  (void)above;
+  __m128i sum_left = dc_sum_16(left);
+  const __m128i eight = _mm_set1_epi16((uint16_t)8);
+  sum_left = _mm_add_epi16(sum_left, eight);
+  sum_left = _mm_srai_epi16(sum_left, 4);
+  sum_left = _mm_unpacklo_epi8(sum_left, sum_left);
+  sum_left = _mm_shufflelo_epi16(sum_left, 0);
+  const __m128i row = _mm_unpacklo_epi64(sum_left, sum_left);
+  dc_store_64xh(&row, 16, dst, stride);
 }
 
 // -----------------------------------------------------------------------------

@@ -13,6 +13,19 @@
 
 #include "./aom_dsp_rtcd.h"
 
+static INLINE __m256i dc_sum_64(const uint8_t *ref) {
+  const __m256i x0 = _mm256_loadu_si256((const __m256i *)ref);
+  const __m256i x1 = _mm256_loadu_si256((const __m256i *)(ref + 32));
+  const __m256i zero = _mm256_setzero_si256();
+  __m256i y0 = _mm256_sad_epu8(x0, zero);
+  __m256i y1 = _mm256_sad_epu8(x1, zero);
+  y0 = _mm256_add_epi64(y0, y1);
+  __m256i u0 = _mm256_permute2x128_si256(y0, y0, 1);
+  y0 = _mm256_add_epi64(u0, y0);
+  u0 = _mm256_unpackhi_epi64(y0, y0);
+  return _mm256_add_epi16(y0, u0);
+}
+
 static INLINE __m256i dc_sum_32(const uint8_t *ref) {
   const __m256i x = _mm256_loadu_si256((const __m256i *)ref);
   const __m256i zero = _mm256_setzero_si256();
@@ -25,8 +38,7 @@ static INLINE __m256i dc_sum_32(const uint8_t *ref) {
 
 static INLINE void row_store_32xh(const __m256i *r, int height, uint8_t *dst,
                                   ptrdiff_t stride) {
-  int i;
-  for (i = 0; i < height; ++i) {
+  for (int i = 0; i < height; ++i) {
     _mm256_storeu_si256((__m256i *)dst, *r);
     dst += stride;
   }
@@ -34,8 +46,7 @@ static INLINE void row_store_32xh(const __m256i *r, int height, uint8_t *dst,
 
 static INLINE void row_store_64xh(const __m256i *r, int height, uint8_t *dst,
                                   ptrdiff_t stride) {
-  int i;
-  for (i = 0; i < height; ++i) {
+  for (int i = 0; i < height; ++i) {
     _mm256_storeu_si256((__m256i *)dst, *r);
     _mm256_storeu_si256((__m256i *)(dst + 32), *r);
     dst += stride;
@@ -210,6 +221,63 @@ void aom_dc_left_predictor_32x16_avx2(uint8_t *dst, ptrdiff_t stride,
   const __m128i r = _mm_shuffle_epi8(sum, zero);
   const __m256i row = _mm256_inserti128_si256(_mm256_castsi128_si256(r), r, 1);
   row_store_32xh(&row, 16, dst, stride);
+}
+
+void aom_dc_left_predictor_32x64_avx2(uint8_t *dst, ptrdiff_t stride,
+                                      const uint8_t *above,
+                                      const uint8_t *left) {
+  __m256i sum = dc_sum_64(left);
+  (void)above;
+
+  const __m256i thirtytwo = _mm256_set1_epi16(32);
+  sum = _mm256_add_epi16(sum, thirtytwo);
+  sum = _mm256_srai_epi16(sum, 6);
+  const __m256i zero = _mm256_setzero_si256();
+  __m256i row = _mm256_shuffle_epi8(sum, zero);
+  row_store_32xh(&row, 64, dst, stride);
+}
+
+void aom_dc_left_predictor_64x64_avx2(uint8_t *dst, ptrdiff_t stride,
+                                      const uint8_t *above,
+                                      const uint8_t *left) {
+  __m256i sum = dc_sum_64(left);
+  (void)above;
+
+  const __m256i thirtytwo = _mm256_set1_epi16(32);
+  sum = _mm256_add_epi16(sum, thirtytwo);
+  sum = _mm256_srai_epi16(sum, 6);
+  const __m256i zero = _mm256_setzero_si256();
+  __m256i row = _mm256_shuffle_epi8(sum, zero);
+  row_store_64xh(&row, 64, dst, stride);
+}
+
+void aom_dc_left_predictor_64x32_avx2(uint8_t *dst, ptrdiff_t stride,
+                                      const uint8_t *above,
+                                      const uint8_t *left) {
+  __m256i sum = dc_sum_32(left);
+  (void)above;
+
+  const __m256i sixteen = _mm256_set1_epi16(16);
+  sum = _mm256_add_epi16(sum, sixteen);
+  sum = _mm256_srai_epi16(sum, 5);
+  const __m256i zero = _mm256_setzero_si256();
+  __m256i row = _mm256_shuffle_epi8(sum, zero);
+  row_store_64xh(&row, 32, dst, stride);
+}
+
+void aom_dc_left_predictor_64x16_avx2(uint8_t *dst, ptrdiff_t stride,
+                                      const uint8_t *above,
+                                      const uint8_t *left) {
+  __m128i sum = dc_sum_16_sse2(left);
+  (void)above;
+
+  const __m128i eight = _mm_set1_epi16(8);
+  sum = _mm_add_epi16(sum, eight);
+  sum = _mm_srai_epi16(sum, 4);
+  const __m128i zero = _mm_setzero_si128();
+  const __m128i r = _mm_shuffle_epi8(sum, zero);
+  const __m256i row = _mm256_inserti128_si256(_mm256_castsi128_si256(r), r, 1);
+  row_store_64xh(&row, 16, dst, stride);
 }
 
 void aom_dc_128_predictor_32x16_avx2(uint8_t *dst, ptrdiff_t stride,
