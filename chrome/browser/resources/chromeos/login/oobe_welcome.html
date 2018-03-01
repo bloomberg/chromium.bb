@@ -92,7 +92,7 @@
     <link rel="stylesheet" href="oobe_dialog_parameters.css">
     <link rel="stylesheet" href="oobe_flex_layout.css">
     <oobe-welcome-dialog id="welcomeScreen" role="dialog"
-        aria-label="[[i18nDynamic(locale, 'networkScreenGreeting')]]"
+        aria-label$="[[i18nDynamic(locale, 'networkScreenGreeting')]]"
         current-language="[[currentLanguage]]"
         on-language-button-clicked="onWelcomeSelectLanguageButtonClicked_"
         on-accessibility-button-clicked="onWelcomeAccessibilityButtonClicked_"
@@ -104,7 +104,7 @@
         debugging-link-visible="[[debuggingLinkVisible]]">
     </oobe-welcome-dialog>
     <oobe-dialog id="languageScreen" role="dialog" hidden has-buttons
-        aria-label="[[i18nDynamic(locale, 'languageSectionTitle')]]">
+        aria-label$="[[i18nDynamic(locale, 'languageSectionTitle')]]">
       <hd-iron-icon class="oobe-icon"
           icon1x="oobe-welcome-32:language" icon2x="oobe-welcome-64:language">
       </hd-iron-icon>
@@ -148,7 +148,7 @@
       </div>
     </oobe-dialog>
     <oobe-dialog id="accessibilityScreen" role="dialog" hidden has-buttons
-        aria-label="[[i18nDynamic(locale, 'accessibilitySectionTitle')]]">
+        aria-label$="[[i18nDynamic(locale, 'accessibilitySectionTitle')]]">
       <hd-iron-icon class="oobe-icon"
           icon1x="oobe-welcome-32:accessibility"
           icon2x="oobe-welcome-64:accessibility">
@@ -239,7 +239,7 @@
       </div>
     </oobe-dialog>
     <oobe-dialog id="timezoneScreen" role="dialog" hidden has-buttons
-        aria-label="[[i18nDynamic(locale, 'timezoneSectionTitle')]]">
+        aria-label$="[[i18nDynamic(locale, 'timezoneSectionTitle')]]">
       <hd-iron-icon class="oobe-icon"
           icon1x="oobe-welcome-32:timezone" icon2x="oobe-welcome-64:timezone">
       </hd-iron-icon>
@@ -267,7 +267,7 @@
       </div>
     </oobe-dialog>
     <oobe-dialog id="oobeAdvancedOptionsScreen" role="dialog" hidden has-buttons
-        aria-label="[[i18nDynamic(locale, 'advancedOptionsSectionTitle')]]">
+        aria-label$="[[i18nDynamic(locale, 'advancedOptionsSectionTitle')]]">
       <hd-iron-icon class="oobe-icon"
           icon1x="oobe-welcome-32:settings" icon2x="oobe-welcome-64:settings">
       </hd-iron-icon>
@@ -312,7 +312,7 @@
       </div>
     </oobe-dialog>
     <oobe-dialog id="networkSelectionScreen" role="dialog" hidden has-buttons
-        aria-label="[[i18nDynamic(locale, 'networkSectionTitle')]]"
+        aria-label$="[[i18nDynamic(locale, 'networkSectionTitle')]]"
         on-show-dialog="onNetworkSelectionScreenShown_">
       <hd-iron-icon class="oobe-icon"
           icon1x="oobe-welcome-32:wifi" icon2x="oobe-welcome-64:wifi">
