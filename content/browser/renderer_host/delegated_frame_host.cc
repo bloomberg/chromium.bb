@@ -272,29 +272,20 @@ void DelegatedFrameHost::WasResized(
   pending_local_surface_id_ = new_pending_local_surface_id;
   pending_surface_dip_size_ = new_pending_dip_size;
 
-  if (enable_surface_synchronization_) {
-    if (!client_->DelegatedFrameHostIsVisible()) {
-      if (HasFallbackSurface()) {
-        client_->DelegatedFrameHostGetLayer()->SetFallbackSurfaceId(
-            viz::SurfaceId());
-      }
-      return;
+  if (enable_surface_synchronization_ &&
+      client_->DelegatedFrameHostIsVisible() &&
+      (!primary_surface_id ||
+       primary_surface_id->local_surface_id() != pending_local_surface_id_)) {
+    current_frame_size_in_dip_ = pending_surface_dip_size_;
+
+    viz::SurfaceId surface_id(frame_sink_id_, pending_local_surface_id_);
+    client_->DelegatedFrameHostGetLayer()->SetShowPrimarySurface(
+        surface_id, current_frame_size_in_dip_, GetGutterColor(),
+        deadline_policy);
+    if (compositor_ && !base::CommandLine::ForCurrentProcess()->HasSwitch(
+                           switches::kDisableResizeLock)) {
+      compositor_->OnChildResizing();
     }
-
-    if (!primary_surface_id ||
-        primary_surface_id->local_surface_id() != pending_local_surface_id_) {
-      current_frame_size_in_dip_ = pending_surface_dip_size_;
-
-      viz::SurfaceId surface_id(frame_sink_id_, pending_local_surface_id_);
-      client_->DelegatedFrameHostGetLayer()->SetShowPrimarySurface(
-          surface_id, current_frame_size_in_dip_, GetGutterColor(),
-          deadline_policy);
-      if (compositor_ && !base::CommandLine::ForCurrentProcess()->HasSwitch(
-                             switches::kDisableResizeLock)) {
-        compositor_->OnChildResizing();
-      }
-    }
-
     // Input throttling and guttering are handled differently when surface
     // synchronization is enabled so exit early here.
     return;
@@ -556,7 +547,7 @@ void DelegatedFrameHost::OnBeginFrame(const viz::BeginFrameArgs& args) {
 }
 
 void DelegatedFrameHost::EvictDelegatedFrame() {
-  if (!HasSavedFrame())
+  if (!HasFallbackSurface())
     return;
 
   std::vector<viz::SurfaceId> surface_ids = {
@@ -565,10 +556,8 @@ void DelegatedFrameHost::EvictDelegatedFrame() {
   GetHostFrameSinkManager()->EvictSurfaces(surface_ids);
 
   if (enable_surface_synchronization_) {
-    if (HasFallbackSurface()) {
-      client_->DelegatedFrameHostGetLayer()->SetFallbackSurfaceId(
-          viz::SurfaceId());
-    }
+    client_->DelegatedFrameHostGetLayer()->SetFallbackSurfaceId(
+        viz::SurfaceId());
   } else {
     client_->DelegatedFrameHostGetLayer()->SetShowSolidColorContent();
     resize_lock_.reset();
