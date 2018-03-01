@@ -110,19 +110,6 @@ void DumpError(const base::Location& location, const std::string& message) {
   DPLOG(ERROR) << location.ToString() << " " << message;
 }
 
-#if defined(OS_ANDROID)
-static bool IsDeviceUsableForTesting(
-    const VideoCaptureDeviceDescriptor& descriptor) {
-  // Android deprecated/legacy devices and Tango cameras capture on a single
-  // thread, which is occupied by the tests, so nothing gets actually delivered.
-  // TODO(mcasas): use those devices' test mode to deliver frames in a
-  // background thread, https://crbug.com/626857
-  return !VideoCaptureDeviceFactoryAndroid::IsLegacyOrDeprecatedDevice(
-             descriptor.device_id) &&
-         descriptor.capture_api != VideoCaptureApi::ANDROID_TANGO;
-};
-#endif
-
 enum VideoCaptureImplementationTweak {
   NONE,
 #if defined(OS_WIN)
@@ -349,7 +336,12 @@ class VideoCaptureDeviceTest
 
 #if defined(OS_ANDROID)
     for (const auto& descriptor : *device_descriptors_) {
-      if (IsDeviceUsableForTesting(descriptor)) {
+      // Android deprecated/legacy devices capture on a single thread, which is
+      // occupied by the tests, so nothing gets actually delivered.
+      // TODO(mcasas): use those devices' test mode to deliver frames in a
+      // background thread, https://crbug.com/626857
+      if (!VideoCaptureDeviceFactoryAndroid::IsLegacyOrDeprecatedDevice(
+              descriptor.device_id)) {
         DLOG(INFO) << "Using camera " << descriptor.GetNameAndModel();
         return std::make_unique<VideoCaptureDeviceDescriptor>(descriptor);
       }

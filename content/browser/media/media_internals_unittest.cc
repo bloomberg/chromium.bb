@@ -135,7 +135,6 @@ TEST_F(MediaInternalsVideoCaptureDeviceTest,
   api_to_string_map[VideoCaptureApi::ANDROID_API2_FULL] = "Camera API2 Full";
   api_to_string_map[VideoCaptureApi::ANDROID_API2_LIMITED] =
       "Camera API2 Limited";
-  api_to_string_map[VideoCaptureApi::ANDROID_TANGO] = "Tango API";
   EXPECT_EQ(static_cast<size_t>(VideoCaptureApi::UNKNOWN),
             api_to_string_map.size());
   for (const auto& map_entry : api_to_string_map) {
