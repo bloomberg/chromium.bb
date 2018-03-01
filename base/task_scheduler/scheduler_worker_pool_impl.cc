@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/atomicops.h"
+#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
@@ -740,6 +741,10 @@ bool SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::
 void SchedulerWorkerPoolImpl::WaitForWorkersIdleLockRequiredForTesting(
     size_t n) {
   lock_.AssertAcquired();
+
+  // Make sure workers do not cleanup while watching the idle count.
+  AutoReset<bool> ban_cleanups(&worker_cleanup_disallowed_for_testing_, true);
+
   while (idle_workers_stack_.Size() < n)
     idle_workers_stack_cv_for_testing_->Wait();
 }

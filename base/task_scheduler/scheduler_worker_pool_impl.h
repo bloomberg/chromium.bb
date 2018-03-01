@@ -107,7 +107,12 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   // TODO(fdoray): Remove this method. https://crbug.com/687264
   int GetMaxConcurrentNonBlockedTasksDeprecated() const;
 
-  // Waits until at least |n| workers are idle.
+  // Waits until at least |n| workers are idle. Note that while workers are
+  // disallowed from cleaning up during this call: tests using a custom
+  // |suggested_reclaim_time_| need to be careful to invoke this swiftly after
+  // unblocking the waited upon workers as: if a worker is already detached by
+  // the time this is invoked, it will never make it onto the idle stack and
+  // this call will hang.
   void WaitForWorkersIdleForTesting(size_t n);
 
   // Waits until all workers are idle.
