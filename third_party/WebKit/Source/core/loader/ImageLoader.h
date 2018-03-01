@@ -28,13 +28,11 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/CoreExport.h"
-#include "core/dom/ElementVisibilityObserver.h"
 #include "core/loader/resource/ImageResource.h"
 #include "core/loader/resource/ImageResourceContent.h"
 #include "core/loader/resource/ImageResourceObserver.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/HashSet.h"
-#include "platform/wtf/Time.h"
 #include "platform/wtf/text/AtomicString.h"
 #include "public/platform/TaskType.h"
 
@@ -166,8 +164,6 @@ class CORE_EXPORT ImageLoader : public GarbageCollectedFinalized<ImageLoader>,
 
   KURL ImageSourceToKURL(AtomicString) const;
 
-  void OnImageElementVisible(bool visible);
-
   // Used to determine whether to immediately initiate the load or to schedule a
   // microtask.
   bool ShouldLoadImmediately(const KURL&) const;
@@ -186,10 +182,6 @@ class CORE_EXPORT ImageLoader : public GarbageCollectedFinalized<ImageLoader>,
   Member<Element> element_;
   Member<ImageResourceContent> image_content_;
   Member<ImageResource> image_resource_for_image_document_;
-
-  Member<ElementVisibilityObserver> visibility_observer_;
-  // The time when the element is first visibile.
-  WTF::TimeTicks time_when_first_visible_;
 
   AtomicString failed_load_url_;
   base::WeakPtr<Task> pending_task_;  // owned by Microtask
