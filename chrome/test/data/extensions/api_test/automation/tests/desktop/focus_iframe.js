@@ -18,7 +18,8 @@ var allTests = [
         // Wait for the inner frame to load, then find the button inside it
         // and focus it.
         rootNode.addEventListener('loadComplete', function(event) {
-          if (event.target.url.indexOf('iframe_inner.html') >= 0) {
+          if (event.target.url &&
+              event.target.url.indexOf('iframe_inner.html') >= 0) {
             chrome.automation.getFocus(function(focus) {
               // Assert that the outer frame has focus.
               assertTrue(focus.url.indexOf('iframe_outer') >= 0);
