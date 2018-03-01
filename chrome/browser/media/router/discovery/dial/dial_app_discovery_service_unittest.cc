@@ -6,7 +6,6 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/test/mock_callback.h"
-#include "chrome/browser/media/router/discovery/dial/dial_app_info_fetcher.h"
 #include "chrome/browser/media/router/discovery/dial/parsed_dial_device_description.h"
 #include "chrome/browser/media/router/discovery/dial/safe_dial_app_info_parser.h"
 #include "chrome/browser/media/router/test/test_helper.h"
