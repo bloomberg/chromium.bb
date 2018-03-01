@@ -130,8 +130,8 @@ class ChildProcessLauncherHelper :
       int* launch_result);
 
   // Called right after the process has been launched, whether it was created
-  // yet or not.
-  // Platform specific.
+  // successfully or not. If the process launch is asynchronous, the process may
+  // not yet be created. Platform specific.
   void AfterLaunchOnLauncherThread(
       const ChildProcessLauncherHelper::Process& process,
       const base::LaunchOptions& options);

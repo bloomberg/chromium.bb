@@ -155,9 +155,9 @@ bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
         CHECK(false);
     }
 
-    int pipe = seatbelt_exec_client_->SendProfileAndGetFD();
+    int pipe = seatbelt_exec_client_->GetReadFD();
     if (pipe < 0) {
-      LOG(ERROR) << "Sending the seatbelt profile failed.";
+      LOG(ERROR) << "The file descriptor for the sandboxed child is invalid.";
       return false;
     }
 
@@ -206,6 +206,12 @@ ChildProcessLauncherHelper::LaunchProcessOnLauncherThread(
 void ChildProcessLauncherHelper::AfterLaunchOnLauncherThread(
     const ChildProcessLauncherHelper::Process& process,
     const base::LaunchOptions& options) {
+  // Send the sandbox profile after launch so that the child will exist and be
+  // waiting for the message on its side of the pipe.
+  if (process.process.IsValid() && seatbelt_exec_client_.get() != nullptr) {
+    seatbelt_exec_client_->SendProfile();
+  }
+
   MachBroker* broker = MachBroker::GetInstance();
   if (process.process.IsValid()) {
     broker->AddPlaceholderForPid(process.process.Pid(), child_process_id());
