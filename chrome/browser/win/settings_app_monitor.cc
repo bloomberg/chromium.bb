@@ -108,7 +108,7 @@ class SettingsAppMonitor::AutomationControllerDelegate
  public:
   AutomationControllerDelegate(
       scoped_refptr<base::SequencedTaskRunner> monitor_runner,
-      base::WeakPtr<SettingsAppMonitor> monitor);
+      const base::WeakPtr<SettingsAppMonitor> monitor);
   ~AutomationControllerDelegate() override;
 
   // AutomationController::Delegate:
@@ -123,7 +123,7 @@ class SettingsAppMonitor::AutomationControllerDelegate
 
  private:
   // The task runner on which the SettingsAppMonitor lives.
-  const scoped_refptr<base::SequencedTaskRunner> monitor_runner_;
+  scoped_refptr<base::SequencedTaskRunner> monitor_runner_;
 
   // Only used to post callbacks to |monitor_runner_|;
   const base::WeakPtr<SettingsAppMonitor> monitor_;
@@ -137,9 +137,9 @@ class SettingsAppMonitor::AutomationControllerDelegate
 
 SettingsAppMonitor::AutomationControllerDelegate::AutomationControllerDelegate(
     scoped_refptr<base::SequencedTaskRunner> monitor_runner,
-    base::WeakPtr<SettingsAppMonitor> monitor)
+    const base::WeakPtr<SettingsAppMonitor> monitor)
     : monitor_runner_(monitor_runner),
-      monitor_(std::move(monitor)),
+      monitor_(monitor),
       last_focused_element_(ElementType::UNKNOWN) {}
 
 SettingsAppMonitor::AutomationControllerDelegate::
