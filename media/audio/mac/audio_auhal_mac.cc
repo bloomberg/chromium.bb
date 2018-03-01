@@ -146,7 +146,7 @@ static void SetAudioChannelLayout(int channels,
 
   OSStatus result = AudioUnitSetProperty(
       audio_unit, kAudioUnitProperty_AudioChannelLayout, kAudioUnitScope_Input,
-      0, coreaudio_layout, layout_size);
+      AUElement::OUTPUT, coreaudio_layout, layout_size);
   if (result != noErr) {
     OSSTATUS_DLOG(ERROR, result)
         << "Failed to set audio channel layout. Using default layout.";

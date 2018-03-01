@@ -106,6 +106,15 @@ bool ProcessedLocalAudioSource::EnsureSourceIsStarted() {
     modified_device.input.set_effects(modified_device.input.effects() &
                                       ~media::AudioParameters::ECHO_CANCELLER);
     device_is_modified = true;
+  } else if (audio_processing_properties_
+                 .enable_experimental_hw_echo_cancellation &&
+             (device().input.effects() &
+              media::AudioParameters::EXPERIMENTAL_ECHO_CANCELLER)) {
+    // Set the ECHO_CANCELLER effect, since that is what controls what's
+    // actually being used. The EXPERIMENTAL_ flag only indicates availability.
+    modified_device.input.set_effects(modified_device.input.effects() |
+                                      media::AudioParameters::ECHO_CANCELLER);
+    device_is_modified = true;
   }
 
   // Disable noise suppression on the device if the properties explicitly

@@ -82,6 +82,12 @@ bool WebUserMediaRequest::ShouldDisableHardwareNoiseSuppression() const {
   return private_->ShouldDisableHardwareNoiseSuppression();
 }
 
+bool WebUserMediaRequest::ShouldEnableExperimentalHardwareEchoCancellation()
+    const {
+  DCHECK(!IsNull());
+  return private_->ShouldEnableExperimentalHardwareEchoCancellation();
+}
+
 WebSecurityOrigin WebUserMediaRequest::GetSecurityOrigin() const {
   DCHECK(!IsNull());
   if (!private_->GetExecutionContext())

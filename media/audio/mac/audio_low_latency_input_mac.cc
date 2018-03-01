@@ -3,13 +3,17 @@
 // found in the LICENSE file.
 #include "media/audio/mac/audio_low_latency_input_mac.h"
 
+#include <CoreAudio/AudioHardware.h>
 #include <CoreServices/CoreServices.h>
+#include <dlfcn.h>
+#include <mach-o/loader.h>
 #include <mach/mach.h>
 #include <string>
 
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"
+#include "base/mac/mac_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
@@ -17,9 +21,38 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "media/audio/mac/audio_manager_mac.h"
+#include "media/audio/mac/scoped_audio_unit.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_timestamp_helper.h"
 #include "media/base/data_buffer.h"
+
+namespace {
+extern "C" {
+// See:
+// https://trac.webkit.org/browser/webkit/trunk/Source/WebCore/PAL/pal/spi/cf/CoreAudioSPI.h?rev=228264
+OSStatus AudioDeviceDuck(AudioDeviceID inDevice,
+                         Float32 inDuckedLevel,
+                         const AudioTimeStamp* __nullable inStartTime,
+                         Float32 inRampDuration) __attribute__((weak_import));
+}
+
+void UpmixMonoToStereoInPlace(AudioBuffer* audio_buffer, int bytes_per_sample) {
+  constexpr int channels = 2;
+  const int total_bytes = audio_buffer->mDataByteSize;
+  const int frames = total_bytes / bytes_per_sample / channels;
+  char* byte_ptr = reinterpret_cast<char*>(audio_buffer->mData);
+  for (int i = frames - 1; i > 0; --i) {
+    int in_offset = (bytes_per_sample * i);
+    int out_offset = (channels * bytes_per_sample * i);
+    for (int b = 0; b != bytes_per_sample; ++b) {
+      const char byte = byte_ptr[in_offset + b];
+      byte_ptr[out_offset + bytes_per_sample + b] = byte;
+      byte_ptr[out_offset + bytes_per_sample * 2 + b] = byte;
+    }
+  }
+}
+
+}  // namespace
 
 namespace media {
 
@@ -68,6 +101,16 @@ static std::ostream& operator<<(std::ostream& os,
      << "interleaved       : "
      << (FormatIsInterleaved(format.mFormatFlags) ? "yes" : "no");
   return os;
+}
+
+static OSStatus OnGetPlayoutData(void* in_ref_con,
+                                 AudioUnitRenderActionFlags* flags,
+                                 const AudioTimeStamp* time_stamp,
+                                 UInt32 bus_number,
+                                 UInt32 num_frames,
+                                 AudioBufferList* io_data) {
+  *flags |= kAudioUnitRenderAction_OutputIsSilence;
+  return noErr;
 }
 
 static OSStatus GetInputDeviceStreamFormat(
@@ -137,7 +180,8 @@ AUAudioInputStream::AUAudioInputStream(
     AudioManagerMac* manager,
     const AudioParameters& input_params,
     AudioDeviceID audio_device_id,
-    const AudioManager::LogCallback& log_callback)
+    const AudioManager::LogCallback& log_callback,
+    VoiceProcessingMode voice_processing_mode)
     : manager_(manager),
       input_params_(input_params),
       number_of_frames_provided_(0),
@@ -155,6 +199,8 @@ AUAudioInputStream::AUAudioInputStream(
       buffer_size_was_changed_(false),
       audio_unit_render_has_worked_(false),
       noise_reduction_suppressed_(false),
+      use_voice_processing_(voice_processing_mode ==
+                            VoiceProcessingMode::ENABLED),
       last_sample_time_(0.0),
       last_number_of_frames_(0),
       total_lost_frames_(0),
@@ -163,6 +209,9 @@ AUAudioInputStream::AUAudioInputStream(
       log_callback_(log_callback) {
   DCHECK(manager_);
   CHECK(!log_callback_.Equals(AudioManager::LogCallback()));
+  if (use_voice_processing_) {
+    DCHECK(input_params.channels() == 1 || input_params.channels() == 2);
+  }
 
   // Set up the desired (output) format specified by the client.
   format_.mSampleRate = input_params.sample_rate();
@@ -222,10 +271,29 @@ bool AUAudioInputStream::Open() {
   }
 
   // The requested sample-rate must match the hardware sample-rate.
-  int sample_rate =
+  const int sample_rate =
       AudioManagerMac::HardwareSampleRateForDevice(input_device_id_);
   DCHECK_EQ(sample_rate, format_.mSampleRate);
 
+  const bool success =
+      use_voice_processing_ ? OpenVoiceProcessingAU() : OpenAUHAL();
+
+  if (!success)
+    return false;
+
+  // The hardware latency is fixed and will not change during the call.
+  hardware_latency_ = AudioManagerMac::GetHardwareLatency(
+      audio_unit_, input_device_id_, kAudioDevicePropertyScopeInput,
+      format_.mSampleRate);
+
+  // The master channel is 0, Left and right are channels 1 and 2.
+  // And the master channel is not counted in |number_of_channels_in_frame_|.
+  number_of_channels_in_frame_ = GetNumberOfChannelsFromStream();
+
+  return true;
+}
+
+bool AUAudioInputStream::OpenAUHAL() {
   // Start by obtaining an AudioOuputUnit using an AUHAL component description.
 
   // Description for the Audio Unit we want to use (AUHAL in this case).
@@ -252,13 +320,13 @@ bool AUAudioInputStream::Open() {
     return false;
   }
 
-  // Initialize the AUHAL before making any changes or using it. The audio unit
-  // will be initialized once more as last operation in this method but that is
-  // intentional. This approach is based on a comment in the CAPlayThrough
-  // example from Apple, which states that "AUHAL needs to be initialized
-  // *before* anything is done to it".
-  // TODO(henrika): remove this extra call if we are unable to see any positive
-  // effects of it in our UMA stats.
+  // Initialize the AUHAL before making any changes or using it. The audio
+  // unit will be initialized once more as last operation in this method but
+  // that is intentional. This approach is based on a comment in the
+  // CAPlayThrough example from Apple, which states that "AUHAL needs to be
+  // initialized *before* anything is done to it".
+  // TODO(henrika): remove this extra call if we are unable to see any
+  // positive effects of it in our UMA stats.
   result = AudioUnitInitialize(audio_unit_);
   if (result != noErr) {
     HandleError(result);
@@ -275,36 +343,41 @@ bool AUAudioInputStream::Open() {
   // of the AUHAL. Because the AUHAL can be used for both input and output,
   // we must also disable IO on the output scope.
 
-  UInt32 enableIO = 1;
+  // kAudioOutputUnitProperty_EnableIO is not a writable property of the
+  // voice processing unit (we'd get kAudioUnitErr_PropertyNotWritable returned
+  // back to us). IO is always enabled.
 
   // Enable input on the AUHAL.
-  result = AudioUnitSetProperty(audio_unit_, kAudioOutputUnitProperty_EnableIO,
-                                kAudioUnitScope_Input,
-                                1,          // input element 1
-                                &enableIO,  // enable
-                                sizeof(enableIO));
-  if (result != noErr) {
-    HandleError(result);
-    return false;
+  {
+    const UInt32 enableIO = 1;
+    result = AudioUnitSetProperty(
+        audio_unit_, kAudioOutputUnitProperty_EnableIO, kAudioUnitScope_Input,
+        AUElement::INPUT, &enableIO, sizeof(enableIO));
+    if (result != noErr) {
+      HandleError(result);
+      return false;
+    }
   }
 
   // Disable output on the AUHAL.
-  enableIO = 0;
-  result = AudioUnitSetProperty(audio_unit_, kAudioOutputUnitProperty_EnableIO,
-                                kAudioUnitScope_Output,
-                                0,          // output element 0
-                                &enableIO,  // disable
-                                sizeof(enableIO));
-  if (result != noErr) {
-    HandleError(result);
-    return false;
+  {
+    const UInt32 disableIO = 0;
+    result = AudioUnitSetProperty(
+        audio_unit_, kAudioOutputUnitProperty_EnableIO, kAudioUnitScope_Output,
+        AUElement::OUTPUT, &disableIO, sizeof(disableIO));
+    if (result != noErr) {
+      HandleError(result);
+      return false;
+    }
   }
 
   // Next, set the audio device to be the Audio Unit's current device.
   // Note that, devices can only be set to the AUHAL after enabling IO.
-  result = AudioUnitSetProperty(
-      audio_unit_, kAudioOutputUnitProperty_CurrentDevice,
-      kAudioUnitScope_Global, 0, &input_device_id_, sizeof(input_device_id_));
+  result =
+      AudioUnitSetProperty(audio_unit_, kAudioOutputUnitProperty_CurrentDevice,
+                           kAudioUnitScope_Global, AUElement::OUTPUT,
+                           &input_device_id_, sizeof(input_device_id_));
+
   if (result != noErr) {
     HandleError(result);
     return false;
@@ -317,7 +390,8 @@ bool AUAudioInputStream::Open() {
   callback.inputProcRefCon = this;
   result = AudioUnitSetProperty(
       audio_unit_, kAudioOutputUnitProperty_SetInputCallback,
-      kAudioUnitScope_Global, 0, &callback, sizeof(callback));
+      kAudioUnitScope_Global, AUElement::OUTPUT, &callback, sizeof(callback));
+
   if (result != noErr) {
     HandleError(result);
     return false;
@@ -365,7 +439,7 @@ bool AUAudioInputStream::Open() {
   UInt32 property_size = sizeof(buffer_frame_size);
   result = AudioUnitGetProperty(
       audio_unit_, kAudioDevicePropertyBufferFrameSize, kAudioUnitScope_Global,
-      0, &buffer_frame_size, &property_size);
+      AUElement::OUTPUT, &buffer_frame_size, &property_size);
   LOG_IF(WARNING, buffer_frame_size !=
                       static_cast<UInt32>(input_params_.frames_per_buffer()))
       << "AUHAL is using best match of IO buffer size: " << buffer_frame_size;
@@ -396,14 +470,171 @@ bool AUAudioInputStream::Open() {
     return false;
   }
 
-  // The hardware latency is fixed and will not change during the call.
-  hardware_latency_ = AudioManagerMac::GetHardwareLatency(
-      audio_unit_, input_device_id_, kAudioDevicePropertyScopeInput,
-      format_.mSampleRate);
+  return true;
+}
 
-  // The master channel is 0, Left and right are channels 1 and 2.
-  // And the master channel is not counted in |number_of_channels_in_frame_|.
-  number_of_channels_in_frame_ = GetNumberOfChannelsFromStream();
+bool AUAudioInputStream::OpenVoiceProcessingAU() {
+  // Start by obtaining an AudioOuputUnit using an AUHAL component description.
+
+  // Description for the Audio Unit we want to use (AUHAL in this case).
+  // The kAudioUnitSubType_HALOutput audio unit interfaces to any audio device.
+  // The user specifies which audio device to track. The audio unit can do
+  // input from the device as well as output to the device. Bus 0 is used for
+  // the output side, bus 1 is used to get audio input from the device.
+  AudioComponentDescription desc = {kAudioUnitType_Output,
+                                    kAudioUnitSubType_VoiceProcessingIO,
+                                    kAudioUnitManufacturer_Apple, 0, 0};
+
+  // Find a component that meets the description in |desc|.
+  AudioComponent comp = AudioComponentFindNext(nullptr, &desc);
+  DCHECK(comp);
+  if (!comp) {
+    HandleError(kAudioUnitErr_NoConnection);
+    return false;
+  }
+
+  // Get access to the service provided by the specified Audio Unit.
+  OSStatus result = AudioComponentInstanceNew(comp, &audio_unit_);
+  if (result) {
+    HandleError(result);
+    return false;
+  }
+
+  // Next, set the audio device to be the Audio Unit's current device.
+  result =
+      AudioUnitSetProperty(audio_unit_, kAudioOutputUnitProperty_CurrentDevice,
+                           kAudioUnitScope_Global, AUElement::INPUT,
+                           &input_device_id_, sizeof(input_device_id_));
+
+  if (result != noErr) {
+    HandleError(result);
+    return false;
+  }
+
+  // Register the input procedure for the AUHAL. This procedure will be called
+  // when the AUHAL has received new data from the input device.
+  AURenderCallbackStruct callback;
+  callback.inputProc = &DataIsAvailable;
+  callback.inputProcRefCon = this;
+
+  result = AudioUnitSetProperty(
+      audio_unit_, kAudioOutputUnitProperty_SetInputCallback,
+      kAudioUnitScope_Global, AUElement::INPUT, &callback, sizeof(callback));
+  if (result != noErr) {
+    HandleError(result);
+    return false;
+  }
+
+  callback.inputProc = OnGetPlayoutData;
+  callback.inputProcRefCon = this;
+  result = AudioUnitSetProperty(
+      audio_unit_, kAudioUnitProperty_SetRenderCallback, kAudioUnitScope_Input,
+      AUElement::OUTPUT, &callback, sizeof(callback));
+  if (result != noErr) {
+    HandleError(result);
+    return false;
+  }
+
+  // Get the stream format for the selected input device and ensure that the
+  // sample rate of the selected input device matches the desired (given at
+  // construction) sample rate. We should not rely on sample rate conversion
+  // in the AUHAL, only *simple* conversions, e.g., 32-bit float to 16-bit
+  // signed integer format.
+  AudioStreamBasicDescription input_device_format = {0};
+  GetInputDeviceStreamFormat(audio_unit_, &input_device_format);
+  if (input_device_format.mSampleRate != format_.mSampleRate) {
+    LOG(ERROR)
+        << "Input device's sample rate does not match the client's sample rate";
+    result = kAudioUnitErr_FormatNotSupported;
+    HandleError(result);
+    return false;
+  }
+
+  // Modify the IO buffer size if not already set correctly for the selected
+  // device. The status of other active audio input and output streams is
+  // involved in the final setting.
+  // TODO(henrika): we could make io_buffer_frame_size a member and add it to
+  // the UMA stats tied to the Media.Audio.InputStartupSuccessMac record.
+  size_t io_buffer_frame_size = 0;
+  if (!manager_->MaybeChangeBufferSize(
+          input_device_id_, audio_unit_, 1, input_params_.frames_per_buffer(),
+          &buffer_size_was_changed_, &io_buffer_frame_size)) {
+    result = kAudioUnitErr_FormatNotSupported;
+    HandleError(result);
+    return false;
+  }
+
+  // Store current I/O buffer frame size for UMA stats stored in combination
+  // with failing input callbacks.
+  DCHECK(!io_buffer_frame_size_);
+  io_buffer_frame_size_ = io_buffer_frame_size;
+
+  // If the requested number of frames is out of range, the closest valid buffer
+  // size will be set instead. Check the current setting and log a warning for a
+  // non perfect match. Any such mismatch will be compensated for in
+  // OnDataIsAvailable().
+  UInt32 buffer_frame_size = 0;
+  UInt32 property_size = sizeof(buffer_frame_size);
+  result = AudioUnitGetProperty(
+      audio_unit_, kAudioDevicePropertyBufferFrameSize, kAudioUnitScope_Global,
+      AUElement::OUTPUT, &buffer_frame_size, &property_size);
+  LOG_IF(WARNING, buffer_frame_size !=
+                      static_cast<UInt32>(input_params_.frames_per_buffer()))
+      << "AUHAL is using best match of IO buffer size: " << buffer_frame_size;
+
+  // The built-in device claims to be stereo. VPAU claims 5 channels (for me)
+  // but refuses to work in stereo. Just accept stero for now, use mono
+  // internally and upmix.
+  AudioStreamBasicDescription mono_format = format_;
+  if (format_.mChannelsPerFrame == 2) {
+    mono_format.mChannelsPerFrame = 1;
+    mono_format.mBytesPerPacket = mono_format.mBitsPerChannel / 8;
+    mono_format.mBytesPerFrame = mono_format.mBytesPerPacket;
+  }
+
+  // Set up the the desired (output) format.
+  // For obtaining input from a device, the device format is always expressed
+  // on the output scope of the AUHAL's Element 1.
+  result = AudioUnitSetProperty(audio_unit_, kAudioUnitProperty_StreamFormat,
+                                kAudioUnitScope_Output, AUElement::INPUT,
+                                &mono_format, sizeof(mono_format));
+  if (result != noErr) {
+    HandleError(result);
+    return false;
+  }
+
+  result = AudioUnitSetProperty(audio_unit_, kAudioUnitProperty_StreamFormat,
+                                kAudioUnitScope_Input, AUElement::OUTPUT,
+                                &mono_format, sizeof(mono_format));
+  if (result != noErr) {
+    HandleError(result);
+    return false;
+  }
+
+  // Finally, initialize the audio unit and ensure that it is ready to render.
+  // Allocates memory according to the maximum number of audio frames
+  // it can produce in response to a single render call.
+  result = AudioUnitInitialize(audio_unit_);
+  if (result != noErr) {
+    HandleError(result);
+    return false;
+  }
+
+  if (AudioDeviceDuck != nullptr) {
+    // Undo the ducking.
+    // Obtain the AudioDeviceID of the default output AudioDevice.
+    const AudioObjectPropertyAddress pa = {
+        kAudioHardwarePropertyDefaultOutputDevice,
+        kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMaster};
+    AudioDeviceID output_device = 0;
+    UInt32 size = sizeof(output_device);
+    OSStatus result = AudioObjectGetPropertyData(kAudioObjectSystemObject, &pa,
+                                                 0, 0, &size, &output_device);
+    if (result == noErr) {
+      // Ramp the volume back up over half a second.
+      AudioDeviceDuck(output_device, 1.0, nullptr, 0.5);
+    }
+  }
 
   return true;
 }
@@ -435,7 +666,10 @@ void AUAudioInputStream::Start(AudioInputCallback* callback) {
   sink_ = callback;
   last_success_time_ = base::TimeTicks::Now();
   audio_unit_render_has_worked_ = false;
-  if (!(input_params_.effects() & AudioParameters::NOISE_SUPPRESSION) &&
+
+  // Don't disable built-in noise suppression when using VPAU.
+  if (!use_voice_processing_ &&
+      !(input_params_.effects() & AudioParameters::NOISE_SUPPRESSION) &&
       manager_->DeviceSupportsAmbientNoiseReduction(input_device_id_)) {
     noise_reduction_suppressed_ =
         manager_->SuppressNoiseReduction(input_device_id_);
@@ -740,10 +974,30 @@ OSStatus AUAudioInputStream::OnDataIsAvailable(
   // Since it happens on the input bus, the |&audio_buffer_list_| parameter is
   // a reference to the preallocated audio buffer list that the audio unit
   // renders into.
-  TRACE_EVENT_BEGIN0("audio", "AudioUnitRender");
-  OSStatus result = AudioUnitRender(audio_unit_, flags, time_stamp, bus_number,
-                                    number_of_frames, &audio_buffer_list_);
-  TRACE_EVENT_END0("audio", "AudioUnitRender");
+  OSStatus result;
+  if (use_voice_processing_ && format_.mChannelsPerFrame != 1) {
+    // Use the first part of the output buffer for mono data...
+    AudioBufferList mono_buffer_list;
+    mono_buffer_list.mNumberBuffers = 1;
+    AudioBuffer* mono_buffer = mono_buffer_list.mBuffers;
+    mono_buffer->mNumberChannels = 1;
+    mono_buffer->mDataByteSize =
+        audio_buffer->mDataByteSize / audio_buffer->mNumberChannels;
+    mono_buffer->mData = audio_buffer->mData;
+
+    TRACE_EVENT_BEGIN0("audio", "AudioUnitRender");
+    result = AudioUnitRender(audio_unit_, flags, time_stamp, bus_number,
+                             number_of_frames, &mono_buffer_list);
+    TRACE_EVENT_END0("audio", "AudioUnitRender");
+    // ... then upmix it by copying it out to two channels.
+    UpmixMonoToStereoInPlace(audio_buffer, format_.mBitsPerChannel / 8);
+  } else {
+    TRACE_EVENT_BEGIN0("audio", "AudioUnitRender");
+    result = AudioUnitRender(audio_unit_, flags, time_stamp, bus_number,
+                             number_of_frames, &audio_buffer_list_);
+    TRACE_EVENT_END0("audio", "AudioUnitRender");
+  }
+
   if (result == noErr) {
     audio_unit_render_has_worked_ = true;
   }

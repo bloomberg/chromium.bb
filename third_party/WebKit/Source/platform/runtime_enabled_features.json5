@@ -385,6 +385,11 @@
       status: "experimental",
     },
     {
+      name: "ExperimentalHardwareEchoCancellation",
+      origin_trial_feature_name: "DisableHardwareNoiseSuppression",
+      status: "experimental",
+    },
+    {
       name: "ExperimentalV8Extras",
       status: "experimental",
     },

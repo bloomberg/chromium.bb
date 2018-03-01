@@ -154,7 +154,7 @@ class MediaStreamConstraintsUtilAudioTest
   AudioCaptureSettings SelectSettings() {
     blink::WebMediaConstraints constraints =
         constraint_factory_.CreateWebMediaConstraints();
-    return SelectSettingsAudioCapture(capabilities_, constraints, false);
+    return SelectSettingsAudioCapture(capabilities_, constraints, false, false);
   }
 
   // When googExperimentalEchoCancellation is not explicitly set, its default
@@ -1009,7 +1009,8 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, NoDevicesNoConstraints) {
 
   AudioDeviceCaptureCapabilities capabilities;
   auto result = SelectSettingsAudioCapture(
-      capabilities, constraint_factory_.CreateWebMediaConstraints(), false);
+      capabilities, constraint_factory_.CreateWebMediaConstraints(), false,
+      false);
   EXPECT_FALSE(result.HasValue());
   EXPECT_TRUE(std::string(result.failed_constraint_name()).empty());
 }
@@ -1022,7 +1023,8 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, NoDevicesWithConstraints) {
   AudioDeviceCaptureCapabilities capabilities;
   constraint_factory_.basic().sample_size.SetExact(16);
   auto result = SelectSettingsAudioCapture(
-      capabilities, constraint_factory_.CreateWebMediaConstraints(), false);
+      capabilities, constraint_factory_.CreateWebMediaConstraints(), false,
+      false);
   EXPECT_FALSE(result.HasValue());
   EXPECT_TRUE(std::string(result.failed_constraint_name()).empty());
 }
@@ -1260,7 +1262,8 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, UsedAndUnusedSources) {
 
     auto result = SelectSettingsAudioCapture(
         capabilities, constraint_factory_.CreateWebMediaConstraints(),
-        false /* should_disable_hardware_noise_suppression */);
+        false /* should_disable_hardware_noise_suppression */,
+        false /* should_enable_experimental_hw_echo_cancellation */);
     EXPECT_TRUE(result.HasValue());
     EXPECT_EQ(result.device_id(), kUnusedDeviceID);
     EXPECT_FALSE(
@@ -1272,7 +1275,8 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, UsedAndUnusedSources) {
     constraint_factory_.basic().echo_cancellation.SetExact(true);
     auto result = SelectSettingsAudioCapture(
         capabilities, constraint_factory_.CreateWebMediaConstraints(),
-        false /* should_disable_hardware_noise_suppression */);
+        false /* should_disable_hardware_noise_suppression */,
+        false /* should_enable_experimental_hw_echo_cancellation */);
     EXPECT_TRUE(result.HasValue());
     EXPECT_EQ(result.device_id(), processed_source->device().id);
     EXPECT_TRUE(
