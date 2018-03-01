@@ -277,10 +277,35 @@ void StyleEngine::ModifiedStyleSheetCandidateNode(Node& node) {
     SetNeedsActiveStyleUpdate(node.GetTreeScope());
 }
 
-void StyleEngine::MoreStyleSheetsChangedInScope(TreeScope& tree_scope) {
+void StyleEngine::MoreStyleSheetsWillChange(TreeScope& tree_scope,
+                                            StyleSheetList* old_sheets,
+                                            StyleSheetList* new_sheets) {
   if (GetDocument().IsDetached())
     return;
-  if (tree_scope.MoreStyleSheets().length() > 0) {
+
+  unsigned old_sheets_count = old_sheets ? old_sheets->length() : 0;
+  unsigned new_sheets_count = new_sheets ? new_sheets->length() : 0;
+
+  unsigned min_count = std::min(old_sheets_count, new_sheets_count);
+  unsigned index = 0;
+  while (index < min_count &&
+         old_sheets->item(index) == new_sheets->item(index)) {
+    index++;
+  }
+
+  if (old_sheets_count == new_sheets_count && index == old_sheets_count)
+    return;
+
+  for (unsigned i = index; i < old_sheets_count; ++i) {
+    ToCSSStyleSheet(old_sheets->item(i))
+        ->RemovedConstructedFromTreeScope(&tree_scope);
+  }
+  for (unsigned i = index; i < new_sheets_count; ++i) {
+    ToCSSStyleSheet(new_sheets->item(i))
+        ->AddedConstructedToTreeScope(&tree_scope);
+  }
+
+  if (new_sheets_count) {
     EnsureStyleSheetCollectionFor(tree_scope);
     if (tree_scope != document_)
       active_tree_scopes_.insert(&tree_scope);

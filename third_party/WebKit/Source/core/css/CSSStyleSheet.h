@@ -27,6 +27,7 @@
 #include "core/css/CSSRule.h"
 #include "core/css/MediaQueryEvaluator.h"
 #include "core/css/StyleSheet.h"
+#include "core/dom/TreeScope.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/text/TextEncoding.h"
@@ -126,6 +127,14 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
   void SetAllowRuleAccessFromOrigin(
       scoped_refptr<const SecurityOrigin> allowed_origin);
 
+  void AddedConstructedToTreeScope(TreeScope* tree_scope) {
+    constructed_tree_scopes_.insert(tree_scope);
+  }
+
+  void RemovedConstructedFromTreeScope(TreeScope* tree_scope) {
+    constructed_tree_scopes_.erase(tree_scope);
+  }
+
   class RuleMutationScope {
     STACK_ALLOCATED();
 
@@ -199,6 +208,7 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
 
   Member<Node> owner_node_;
   Member<CSSRule> owner_rule_;
+  HeapHashSet<Member<TreeScope>> constructed_tree_scopes_;
 
   TextPosition start_position_;
   Member<MediaList> media_cssom_wrapper_;
