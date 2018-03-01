@@ -2334,6 +2334,11 @@ void EventSender::SendCurrentTouchEvent(WebInputEvent::Type type,
       pointer_event.unique_touch_event_id = unique_touch_event_id;
       pointer_event.SetTimeStampSeconds(time_stamp);
       pointer_event.SetModifiers(touch_modifiers_);
+      pointer_event.button =
+          (pointer_event.GetType() == WebInputEvent::kPointerDown ||
+           pointer_event.GetType() == WebInputEvent::kPointerUp)
+              ? WebPointerProperties::Button::kLeft
+              : WebPointerProperties::Button::kNoButton;
 
       HandleInputEventOnViewOrPopup(pointer_event);
     }

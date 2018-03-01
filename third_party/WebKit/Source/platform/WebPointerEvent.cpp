@@ -50,6 +50,11 @@ WebPointerEvent::WebPointerEvent(const WebTouchEvent& touch_event,
   unique_touch_event_id = touch_event.unique_touch_event_id;
   // WebTouchPoint attributes
   rotation_angle = touch_point.rotation_angle;
+  // TODO(crbug.com/816504): Touch point button is not set at this point yet.
+  button = (GetType() == WebInputEvent::kPointerDown ||
+            GetType() == WebInputEvent::kPointerUp)
+               ? WebPointerProperties::Button::kLeft
+               : WebPointerProperties::Button::kNoButton;
 }
 
 WebPointerEvent::WebPointerEvent(WebInputEvent::Type type,
@@ -57,8 +62,8 @@ WebPointerEvent::WebPointerEvent(WebInputEvent::Type type,
     : WebInputEvent(sizeof(WebPointerEvent)),
       WebPointerProperties(mouse_event),
       hovering(true),
-      width(1),
-      height(1) {
+      width(std::numeric_limits<float>::quiet_NaN()),
+      height(std::numeric_limits<float>::quiet_NaN()) {
   DCHECK_GE(type, WebInputEvent::kPointerTypeFirst);
   DCHECK_LE(type, WebInputEvent::kPointerTypeLast);
   SetFrameScale(mouse_event.FrameScale());
@@ -80,8 +85,10 @@ WebPointerEvent WebPointerEvent::CreatePointerCausesUaActionEvent(
 
 WebPointerEvent WebPointerEvent::WebPointerEventInRootFrame() const {
   WebPointerEvent transformed_event = *this;
-  transformed_event.width /= frame_scale_;
-  transformed_event.height /= frame_scale_;
+  if (HasWidth())
+    transformed_event.width /= frame_scale_;
+  if (HasHeight())
+    transformed_event.height /= frame_scale_;
   transformed_event.movement_x /= frame_scale_;
   transformed_event.movement_y /= frame_scale_;
   transformed_event.position_in_widget_ =

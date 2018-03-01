@@ -658,7 +658,7 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
     frame_->Selection().SetCaretBlinkingSuspended(true);
 
   WebInputEventResult event_result = DispatchMousePointerEvent(
-      EventTypeNames::mousedown, mev.InnerNode(), mev.CanvasRegionId(),
+      WebInputEvent::kPointerDown, mev.InnerNode(), mev.CanvasRegionId(),
       mev.Event(), Vector<WebMouseEvent>());
 
   if (event_result == WebInputEventResult::kNotHandled && frame_->View()) {
@@ -822,7 +822,7 @@ WebInputEventResult EventHandler::HandleMouseMoveOrLeaveEvent(
   }
 
   if (frame_set_being_resized_) {
-    return DispatchMousePointerEvent(EventTypeNames::mousemove,
+    return DispatchMousePointerEvent(WebInputEvent::kPointerMove,
                                      frame_set_being_resized_.Get(), String(),
                                      mouse_event, coalesced_events);
   }
@@ -933,7 +933,7 @@ WebInputEventResult EventHandler::HandleMouseMoveOrLeaveEvent(
     return event_result;
 
   event_result = DispatchMousePointerEvent(
-      EventTypeNames::mousemove, mev.InnerNode(), mev.CanvasRegionId(),
+      WebInputEvent::kPointerMove, mev.InnerNode(), mev.CanvasRegionId(),
       mev.Event(), coalesced_events);
   if (event_result != WebInputEventResult::kNotHandled)
     return event_result;
@@ -977,7 +977,7 @@ WebInputEventResult EventHandler::HandleMouseReleaseEvent(
     mouse_event_manager_->InvalidateClick();
     last_scrollbar_under_mouse_->MouseUp(mouse_event);
     return DispatchMousePointerEvent(
-        EventTypeNames::mouseup, mouse_event_manager_->GetNodeUnderMouse(),
+        WebInputEvent::kPointerUp, mouse_event_manager_->GetNodeUnderMouse(),
         String(), mouse_event, Vector<WebMouseEvent>());
   }
 
@@ -1016,7 +1016,7 @@ WebInputEventResult EventHandler::HandleMouseReleaseEvent(
   }
 
   WebInputEventResult event_result = DispatchMousePointerEvent(
-      EventTypeNames::mouseup, mev.InnerNode(), mev.CanvasRegionId(),
+      WebInputEvent::kPointerUp, mev.InnerNode(), mev.CanvasRegionId(),
       mev.Event(), Vector<WebMouseEvent>());
 
   WebInputEventResult click_event_result =
@@ -1271,18 +1271,14 @@ void EventHandler::ElementRemoved(EventTarget* target) {
 }
 
 WebInputEventResult EventHandler::DispatchMousePointerEvent(
-    const AtomicString& mouse_event_type,
+    const WebInputEvent::Type event_type,
     Node* target_node,
     const String& canvas_region_id,
     const WebMouseEvent& mouse_event,
     const Vector<WebMouseEvent>& coalesced_events) {
-  DCHECK(mouse_event_type == EventTypeNames::mousedown ||
-         mouse_event_type == EventTypeNames::mousemove ||
-         mouse_event_type == EventTypeNames::mouseup);
-
   const auto& event_result = pointer_event_manager_->SendMousePointerEvent(
-      EffectiveMouseEventTargetNode(target_node), canvas_region_id,
-      mouse_event_type, mouse_event, coalesced_events);
+      EffectiveMouseEventTargetNode(target_node), canvas_region_id, event_type,
+      mouse_event, coalesced_events);
   return event_result;
 }
 

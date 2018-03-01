@@ -30,11 +30,6 @@ class CORE_EXPORT PointerEventFactory {
   PointerEventFactory();
   ~PointerEventFactory();
 
-  PointerEvent* Create(const AtomicString& mouse_event_name,
-                       const WebMouseEvent&,
-                       const Vector<WebMouseEvent>&,
-                       LocalDOMWindow*);
-
   PointerEvent* Create(const WebPointerEvent&,
                        const Vector<WebPointerEvent>&,
                        LocalDOMWindow*);
@@ -111,10 +106,7 @@ class CORE_EXPORT PointerEventFactory {
                             bool is_active_buttons,
                             bool hovering);
   bool IsPrimary(const int) const;
-  void SetIdTypeButtons(PointerEventInit&,
-                        const WebPointerProperties&,
-                        unsigned buttons,
-                        bool hovering);
+  void SetIdTypeButtons(PointerEventInit&, const WebPointerEvent&);
   void SetEventSpecificFields(PointerEventInit&, const AtomicString& type);
 
   // Creates pointerevents like boundary and capture events from another

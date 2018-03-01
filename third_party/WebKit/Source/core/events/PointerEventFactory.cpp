@@ -33,27 +33,6 @@ const char* PointerTypeNameForWebPointPointerType(
   }
 }
 
-const AtomicString& PointerEventNameForMouseEventName(
-    const AtomicString& mouse_event_name) {
-#define RETURN_CORRESPONDING_PE_NAME(eventSuffix)               \
-  if (mouse_event_name == EventTypeNames::mouse##eventSuffix) { \
-    return EventTypeNames::pointer##eventSuffix;                \
-  }
-
-  RETURN_CORRESPONDING_PE_NAME(down);
-  RETURN_CORRESPONDING_PE_NAME(enter);
-  RETURN_CORRESPONDING_PE_NAME(leave);
-  RETURN_CORRESPONDING_PE_NAME(move);
-  RETURN_CORRESPONDING_PE_NAME(out);
-  RETURN_CORRESPONDING_PE_NAME(over);
-  RETURN_CORRESPONDING_PE_NAME(up);
-
-#undef RETURN_CORRESPONDING_PE_NAME
-
-  NOTREACHED();
-  return g_empty_atom;
-}
-
 unsigned short ButtonToButtonsBitfield(WebPointerProperties::Button button) {
 #define CASE_BUTTON_TO_BUTTONS(enumLabel)       \
   case WebPointerProperties::Button::enumLabel: \
@@ -99,9 +78,9 @@ float GetPointerEventPressure(float force, int buttons) {
   return force;
 }
 
-void UpdateTouchPointerEventInit(const WebPointerEvent& web_pointer_event,
-                                 LocalDOMWindow* dom_window,
-                                 PointerEventInit* pointer_event_init) {
+void UpdateCommonPointerEventInit(const WebPointerEvent& web_pointer_event,
+                                  LocalDOMWindow* dom_window,
+                                  PointerEventInit* pointer_event_init) {
   // This function should not update attributes like pointerId, isPrimary,
   // and pointerType which is the same among the coalesced events and the
   // dispatched event.
@@ -109,34 +88,37 @@ void UpdateTouchPointerEventInit(const WebPointerEvent& web_pointer_event,
   WebPointerEvent web_pointer_event_in_root_frame =
       web_pointer_event.WebPointerEventInRootFrame();
 
+  FloatPoint client_point;
+  float scale_factor = 1.0f;
   if (dom_window && dom_window->GetFrame() && dom_window->GetFrame()->View()) {
     LocalFrame* frame = dom_window->GetFrame();
     FloatPoint page_point = frame->View()->RootFrameToContents(
         web_pointer_event_in_root_frame.PositionInWidget());
-    float scale_factor = 1.0f / frame->PageZoomFactor();
+    scale_factor = 1.0f / frame->PageZoomFactor();
     FloatPoint scroll_position(frame->View()->GetScrollOffset());
-    FloatPoint client_point = page_point.ScaledBy(scale_factor);
+    client_point = page_point.ScaledBy(scale_factor);
     client_point.MoveBy(scroll_position.ScaledBy(-scale_factor));
+  }
 
-    pointer_event_init->setClientX(client_point.X());
-    pointer_event_init->setClientY(client_point.Y());
-
-    if (web_pointer_event.GetType() == WebInputEvent::kPointerMove) {
-      pointer_event_init->setMovementX(
-          web_pointer_event_in_root_frame.movement_x);
-      pointer_event_init->setMovementY(
-          web_pointer_event_in_root_frame.movement_y);
-    }
-
+  pointer_event_init->setScreenX(web_pointer_event.PositionInScreen().x);
+  pointer_event_init->setScreenY(web_pointer_event.PositionInScreen().y);
+  pointer_event_init->setClientX(client_point.X());
+  pointer_event_init->setClientY(client_point.Y());
+  // TODO(nzolghadr): We need to scale movement attrinutes as well. But if we do
+  // that here and round it to the int again it causes inconsistencies between
+  // screenX/Y and cumulative movementX/Y.
+  pointer_event_init->setMovementX(web_pointer_event_in_root_frame.movement_x);
+  pointer_event_init->setMovementY(web_pointer_event_in_root_frame.movement_y);
+  // If width/height is unknown we let PointerEventInit set it to 1.
+  // See https://w3c.github.io/pointerevents/#dom-pointerevent-width
+  if (web_pointer_event_in_root_frame.HasWidth() &&
+      web_pointer_event_in_root_frame.HasHeight()) {
     FloatSize point_shape = FloatSize(web_pointer_event_in_root_frame.width,
                                       web_pointer_event_in_root_frame.height)
                                 .ScaledBy(scale_factor);
     pointer_event_init->setWidth(point_shape.Width());
     pointer_event_init->setHeight(point_shape.Height());
   }
-
-  pointer_event_init->setScreenX(web_pointer_event.PositionInScreen().x);
-  pointer_event_init->setScreenY(web_pointer_event.PositionInScreen().y);
   pointer_event_init->setPressure(GetPointerEventPressure(
       web_pointer_event.force, pointer_event_init->buttons()));
   pointer_event_init->setTiltX(web_pointer_event.tilt_x);
@@ -144,43 +126,6 @@ void UpdateTouchPointerEventInit(const WebPointerEvent& web_pointer_event,
   pointer_event_init->setTangentialPressure(
       web_pointer_event.tangential_pressure);
   pointer_event_init->setTwist(web_pointer_event.twist);
-}
-
-void UpdateMousePointerEventInit(const WebMouseEvent& mouse_event,
-                                 LocalDOMWindow* dom_window,
-                                 PointerEventInit* pointer_event_init) {
-  // This function should not update attributes like pointerId, isPrimary,
-  // and pointerType which is the same among the coalesced events and the
-  // dispatched event.
-
-  pointer_event_init->setScreenX(mouse_event.PositionInScreen().x);
-  pointer_event_init->setScreenY(mouse_event.PositionInScreen().y);
-
-  FloatPoint location_in_frame_zoomed;
-  if (dom_window && dom_window->GetFrame() && dom_window->GetFrame()->View()) {
-    LocalFrame* frame = dom_window->GetFrame();
-    LocalFrameView* frame_view = frame->View();
-    FloatPoint location_in_contents =
-        frame_view->RootFrameToContents(mouse_event.PositionInRootFrame());
-    location_in_frame_zoomed =
-        frame_view->ContentsToFrame(location_in_contents);
-    float scale_factor = 1 / frame->PageZoomFactor();
-    location_in_frame_zoomed.Scale(scale_factor, scale_factor);
-  }
-
-  pointer_event_init->setClientX(location_in_frame_zoomed.X());
-  pointer_event_init->setClientY(location_in_frame_zoomed.Y());
-
-  pointer_event_init->setPressure(GetPointerEventPressure(
-      mouse_event.force, pointer_event_init->buttons()));
-  pointer_event_init->setTiltX(mouse_event.tilt_x);
-  pointer_event_init->setTiltY(mouse_event.tilt_y);
-  pointer_event_init->setTangentialPressure(mouse_event.tangential_pressure);
-  pointer_event_init->setTwist(mouse_event.twist);
-
-  IntPoint movement = FlooredIntPoint(mouse_event.MovementInRootFrame());
-  pointer_event_init->setMovementX(movement.X());
-  pointer_event_init->setMovementY(movement.Y());
 }
 
 }  // namespace
@@ -192,11 +137,25 @@ const int PointerEventFactory::kMouseId = 1;
 
 void PointerEventFactory::SetIdTypeButtons(
     PointerEventInit& pointer_event_init,
-    const WebPointerProperties& pointer_properties,
-    unsigned buttons,
-    bool hovering) {
+    const WebPointerEvent& web_pointer_event) {
   WebPointerProperties::PointerType pointer_type =
-      pointer_properties.pointer_type;
+      web_pointer_event.pointer_type;
+  unsigned buttons;
+  if (web_pointer_event.hovering) {
+    buttons = MouseEvent::WebInputEventModifiersToButtons(
+        static_cast<WebInputEvent::Modifiers>(
+            web_pointer_event.GetModifiers()));
+  } else {
+    // TODO(crbug.com/816504): This is incorrect as we are assuming pointers
+    // that don't hover have no other buttons except left which represents
+    // touching the screen. This misconception comes from the touch devices and
+    // is not correct for stylus.
+    buttons = static_cast<unsigned>(
+        (web_pointer_event.GetType() == WebInputEvent::kPointerUp ||
+         web_pointer_event.GetType() == WebInputEvent::kPointerCancel)
+            ? WebPointerProperties::Buttons::kNoButton
+            : WebPointerProperties::Buttons::kLeft);
+  }
   // Tweak the |buttons| to reflect pen eraser mode only if the pen is in
   // active buttons state w/o even considering the eraser button.
   // TODO(mustaq): Fix when the spec starts supporting hovering erasers.
@@ -209,8 +168,9 @@ void PointerEventFactory::SetIdTypeButtons(
   }
   pointer_event_init.setButtons(buttons);
 
-  const IncomingId incoming_id(pointer_type, pointer_properties.id);
-  int pointer_id = AddIdAndActiveButtons(incoming_id, buttons != 0, hovering);
+  const IncomingId incoming_id(pointer_type, web_pointer_event.id);
+  int pointer_id = AddIdAndActiveButtons(incoming_id, buttons != 0,
+                                         web_pointer_event.hovering);
   pointer_event_init.setPointerId(pointer_id);
   pointer_event_init.setPointerType(
       PointerTypeNameForWebPointPointerType(pointer_type));
@@ -233,111 +193,44 @@ void PointerEventFactory::SetEventSpecificFields(
 }
 
 PointerEvent* PointerEventFactory::Create(
-    const AtomicString& mouse_event_name,
-    const WebMouseEvent& mouse_event,
-    const Vector<WebMouseEvent>& coalesced_mouse_events,
+    const WebPointerEvent& web_pointer_event,
+    const Vector<WebPointerEvent>& coalesced_events,
     LocalDOMWindow* view) {
-  DCHECK(mouse_event_name == EventTypeNames::mousemove ||
-         mouse_event_name == EventTypeNames::mousedown ||
-         mouse_event_name == EventTypeNames::mouseup);
+  const WebInputEvent::Type event_type = web_pointer_event.GetType();
+  DCHECK(event_type == WebInputEvent::kPointerDown ||
+         event_type == WebInputEvent::kPointerUp ||
+         event_type == WebInputEvent::kPointerMove ||
+         event_type == WebInputEvent::kPointerCancel);
 
-  AtomicString pointer_event_name =
-      PointerEventNameForMouseEventName(mouse_event_name);
-
-  unsigned buttons = MouseEvent::WebInputEventModifiersToButtons(
-      static_cast<WebInputEvent::Modifiers>(mouse_event.GetModifiers()));
   PointerEventInit pointer_event_init;
 
-  SetIdTypeButtons(pointer_event_init, mouse_event, buttons, true);
-  SetEventSpecificFields(pointer_event_init, pointer_event_name);
+  SetIdTypeButtons(pointer_event_init, web_pointer_event);
 
-  if (pointer_event_name == EventTypeNames::pointerdown ||
-      pointer_event_name == EventTypeNames::pointerup) {
-    WebPointerProperties::Button button = mouse_event.button;
+  AtomicString type = PointerEventNameForEventType(event_type);
+  // Make sure chorded buttons fire pointermove instead of pointerup/down.
+  if ((event_type == WebInputEvent::kPointerDown &&
+       (pointer_event_init.buttons() &
+        ~ButtonToButtonsBitfield(web_pointer_event.button)) != 0) ||
+      (event_type == WebInputEvent::kPointerUp &&
+       pointer_event_init.buttons() != 0))
+    type = EventTypeNames::pointermove;
+
+  if (event_type == WebInputEvent::kPointerDown ||
+      event_type == WebInputEvent::kPointerUp) {
+    WebPointerProperties::Button button = web_pointer_event.button;
     // TODO(mustaq): Fix when the spec starts supporting hovering erasers.
-    if (mouse_event.pointer_type ==
+    if (web_pointer_event.pointer_type ==
             WebPointerProperties::PointerType::kEraser &&
         button == WebPointerProperties::Button::kLeft)
       button = WebPointerProperties::Button::kEraser;
     pointer_event_init.setButton(static_cast<int>(button));
   } else {
-    DCHECK(pointer_event_name == EventTypeNames::pointermove);
     pointer_event_init.setButton(
         static_cast<int>(WebPointerProperties::Button::kNoButton));
   }
 
-  UIEventWithKeyState::SetFromWebInputEventModifiers(
-      pointer_event_init,
-      static_cast<WebInputEvent::Modifiers>(mouse_event.GetModifiers()));
-
-  // Make sure chorded buttons fire pointermove instead of pointerup/down.
-  if ((pointer_event_name == EventTypeNames::pointerdown &&
-       (buttons & ~ButtonToButtonsBitfield(mouse_event.button)) != 0) ||
-      (pointer_event_name == EventTypeNames::pointerup && buttons != 0))
-    pointer_event_name = EventTypeNames::pointermove;
-
   pointer_event_init.setView(view);
-
-  UpdateMousePointerEventInit(mouse_event, view, &pointer_event_init);
-
-  // Create coalesced events init structure only for pointermove.
-  if (pointer_event_name == EventTypeNames::pointermove) {
-    HeapVector<Member<PointerEvent>> coalesced_pointer_events;
-    for (const auto& coalesced_mouse_event : coalesced_mouse_events) {
-      // TODO(crbug.com/733774): Disabled the DCHECK on the id of mouse events
-      // because it failed on some versions of Mac OS.
-      // DCHECK_EQ(mouse_event.id, coalesced_mouse_event.id);
-
-      DCHECK_EQ(mouse_event.pointer_type, coalesced_mouse_event.pointer_type);
-      PointerEventInit coalesced_event_init = pointer_event_init;
-      coalesced_event_init.setCancelable(false);
-      coalesced_event_init.setBubbles(false);
-      UpdateMousePointerEventInit(coalesced_mouse_event, view,
-                                  &coalesced_event_init);
-      PointerEvent* event = PointerEvent::Create(
-          pointer_event_name, coalesced_event_init,
-          TimeTicksFromSeconds(coalesced_mouse_event.TimeStampSeconds()));
-      // Set the trusted flag for the coalesced events at the creation time
-      // as oppose to the normal events which is done at the dispatch time. This
-      // is because we don't want to go over all the coalesced events at every
-      // dispatch and add the implementation complexity while it has no sensible
-      // usecase at this time.
-      event->SetTrusted(true);
-      coalesced_pointer_events.push_back(event);
-    }
-    pointer_event_init.setCoalescedEvents(coalesced_pointer_events);
-  }
-
-  return PointerEvent::Create(
-      pointer_event_name, pointer_event_init,
-      TimeTicksFromSeconds(mouse_event.TimeStampSeconds()));
-}
-
-PointerEvent* PointerEventFactory::Create(
-    const WebPointerEvent& web_pointer_event,
-    const Vector<WebPointerEvent>& coalesced_events,
-    LocalDOMWindow* view) {
-  const WebInputEvent::Type event_type = web_pointer_event.GetType();
-  const AtomicString& type = PointerEventNameForEventType(event_type);
-
-  bool pointer_released_or_cancelled =
-      event_type == WebInputEvent::kPointerUp ||
-      event_type == WebInputEvent::kPointerCancel;
-  bool pointer_pressed_or_released =
-      event_type == WebInputEvent::kPointerDown ||
-      event_type == WebInputEvent::kPointerUp;
-
-  PointerEventInit pointer_event_init;
-
-  SetIdTypeButtons(pointer_event_init, web_pointer_event,
-                   pointer_released_or_cancelled ? 0 : 1,
-                   web_pointer_event.hovering);
-  pointer_event_init.setButton(static_cast<int>(
-      pointer_pressed_or_released ? WebPointerProperties::Button::kLeft
-                                  : WebPointerProperties::Button::kNoButton));
-
-  pointer_event_init.setView(view);
-  UpdateTouchPointerEventInit(web_pointer_event, view, &pointer_event_init);
+  UpdateCommonPointerEventInit(web_pointer_event, view, &pointer_event_init);
 
   UIEventWithKeyState::SetFromWebInputEventModifiers(
       pointer_event_init,
@@ -348,13 +241,17 @@ PointerEvent* PointerEventFactory::Create(
   if (type == EventTypeNames::pointermove) {
     HeapVector<Member<PointerEvent>> coalesced_pointer_events;
     for (const auto& coalesced_event : coalesced_events) {
+      // TODO(crbug.com/733774): Disabled the DCHECK on the id of the events
+      // because it failed on some versions of Mac OS.
+      // DCHECK_EQ(web_pointer_event.id, coalesced_event.id);
       DCHECK_EQ(web_pointer_event.GetType(), coalesced_event.GetType());
-      DCHECK_EQ(web_pointer_event.id, coalesced_event.id);
       DCHECK_EQ(web_pointer_event.pointer_type, coalesced_event.pointer_type);
+
       PointerEventInit coalesced_event_init = pointer_event_init;
       coalesced_event_init.setCancelable(false);
       coalesced_event_init.setBubbles(false);
-      UpdateTouchPointerEventInit(coalesced_event, view, &coalesced_event_init);
+      UpdateCommonPointerEventInit(coalesced_event, view,
+                                   &coalesced_event_init);
       PointerEvent* event = PointerEvent::Create(
           type, coalesced_event_init,
           TimeTicksFromSeconds(coalesced_event.TimeStampSeconds()));
