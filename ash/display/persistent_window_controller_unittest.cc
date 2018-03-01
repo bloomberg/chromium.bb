@@ -13,6 +13,7 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
+#include "base/test/histogram_tester.h"
 
 using session_manager::SessionState;
 
@@ -353,6 +354,44 @@ TEST_F(PersistentWindowControllerTest, ReconnectOnLockScreen) {
   GetSessionControllerClient()->SetSessionState(SessionState::ACTIVE);
   EXPECT_EQ(gfx::Rect(200, 0, 100, 200), w1->GetBoundsInScreen());
   EXPECT_EQ(gfx::Rect(501, 0, 200, 100), w2->GetBoundsInScreen());
+}
+
+TEST_F(PersistentWindowControllerTest, RecordNumOfWindowsRestored) {
+  UpdateDisplay("0+0-500x500,0+501-500x500");
+  aura::Window* w1 =
+      CreateTestWindowInShellWithBounds(gfx::Rect(200, 0, 100, 200));
+  aura::Window* w2 =
+      CreateTestWindowInShellWithBounds(gfx::Rect(501, 0, 200, 100));
+  EXPECT_EQ(gfx::Rect(200, 0, 100, 200), w1->GetBoundsInScreen());
+  EXPECT_EQ(gfx::Rect(501, 0, 200, 100), w2->GetBoundsInScreen());
+
+  const int64_t primary_id = WindowTreeHostManager::GetPrimaryDisplayId();
+  const int64_t secondary_id = display_manager()->GetSecondaryDisplay().id();
+
+  display::ManagedDisplayInfo primary_info =
+      display_manager()->GetDisplayInfo(primary_id);
+  display::ManagedDisplayInfo secondary_info =
+      display_manager()->GetDisplayInfo(secondary_id);
+
+  // Disconnects secondary display.
+  std::vector<display::ManagedDisplayInfo> display_info_list;
+  display_info_list.push_back(primary_info);
+  display_manager()->OnNativeDisplaysChanged(display_info_list);
+  EXPECT_EQ(gfx::Rect(200, 0, 100, 200), w1->GetBoundsInScreen());
+  EXPECT_EQ(gfx::Rect(1, 0, 200, 100), w2->GetBoundsInScreen());
+
+  base::HistogramTester histogram_tester;
+  histogram_tester.ExpectTotalCount(
+      PersistentWindowController::kNumOfWindowsRestoredHistogramName, 0);
+
+  // Reconnects secondary display.
+  display_info_list.push_back(secondary_info);
+  display_manager()->OnNativeDisplaysChanged(display_info_list);
+  EXPECT_EQ(gfx::Rect(200, 0, 100, 200), w1->GetBoundsInScreen());
+  EXPECT_EQ(gfx::Rect(501, 0, 200, 100), w2->GetBoundsInScreen());
+
+  histogram_tester.ExpectTotalCount(
+      PersistentWindowController::kNumOfWindowsRestoredHistogramName, 1);
 }
 
 }  // namespace ash
