@@ -178,6 +178,36 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
              scrollPosition:UICollectionViewScrollPositionNone];
 }
 
+- (void)selectItemAtIndex:(NSUInteger)selectedIndex {
+  self.selectedIndex = selectedIndex;
+  if (![self isViewVisible])
+    return;
+  [self.collectionView
+      selectItemAtIndexPath:CreateIndexPath(selectedIndex)
+                   animated:YES
+             scrollPosition:UICollectionViewScrollPositionNone];
+}
+
+- (void)replaceItemAtIndex:(NSUInteger)index withItem:(GridItem*)item {
+  self.items[index] = item;
+  if (![self isViewVisible])
+    return;
+  [self.collectionView reloadItemsAtIndexPaths:@[ CreateIndexPath(index) ]];
+}
+
+- (void)moveItemFromIndex:(NSUInteger)fromIndex
+                  toIndex:(NSUInteger)toIndex
+            selectedIndex:(NSUInteger)selectedIndex {
+  GridItem* item = self.items[fromIndex];
+  [self.items removeObjectAtIndex:fromIndex];
+  [self.items insertObject:item atIndex:toIndex];
+  self.selectedIndex = selectedIndex;
+  if (![self isViewVisible])
+    return;
+  [self.collectionView moveItemAtIndexPath:CreateIndexPath(fromIndex)
+                               toIndexPath:CreateIndexPath(toIndex)];
+}
+
 #pragma mark - Private
 
 // If the view is not visible, there is no need to update the collection view.

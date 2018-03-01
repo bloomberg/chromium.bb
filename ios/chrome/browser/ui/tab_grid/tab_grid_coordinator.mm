@@ -27,10 +27,12 @@
 // Container view controller for the BVC to live in; this class's view
 // controller will present this.
 @property(nonatomic, strong) BVCContainerViewController* bvcContainer;
-// Mediates between the model layer and the tab grid UI layer.
-@property(nonatomic, strong) TabGridMediator* mediator;
 // Transitioning delegate for the view controller.
 @property(nonatomic, strong) TabGridTransitionHandler* transitionHandler;
+// Mediator for regular Tabs.
+@property(nonatomic, strong) TabGridMediator* regularTabsMediator;
+// Mediator for incognito Tabs.
+@property(nonatomic, strong) TabGridMediator* incognitoTabsMediator;
 @end
 
 @implementation TabGridCoordinator
@@ -44,8 +46,9 @@
 @synthesize dispatcher = _dispatcher;
 @synthesize adaptor = _adaptor;
 @synthesize bvcContainer = _bvcContainer;
-@synthesize mediator = _mediator;
 @synthesize transitionHandler = _transitionHandler;
+@synthesize regularTabsMediator = _regularTabsMediator;
+@synthesize incognitoTabsMediator = _incognitoTabsMediator;
 
 - (instancetype)initWithWindow:(nullable UIWindow*)window
     applicationCommandEndpoint:
@@ -87,10 +90,6 @@
   self.adaptor.adaptedDispatcher =
       static_cast<id<ApplicationCommands, BrowserCommands, OmniboxFocuser,
                      ToolbarCommands>>(self.dispatcher);
-
-  self.mediator = [[TabGridMediator alloc] init];
-  self.mediator.regularTabModel = self.regularTabModel;
-  self.mediator.incognitoTabModel = self.incognitoTabModel;
 }
 
 - (void)stop {

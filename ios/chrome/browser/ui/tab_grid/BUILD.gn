@@ -19,11 +19,17 @@ source_set("tab_grid") {
   deps = [
     ":tab_grid_ui",
     "//base",
+    "//components/favicon/ios",
+    "//ios/chrome/browser/snapshots",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/main",
     "//ios/chrome/browser/ui/tab_switcher",
+    "//ios/chrome/browser/web",
+    "//ios/chrome/browser/web_state_list",
+    "//ios/web",
+    "//ui/gfx",
   ]
 }
 

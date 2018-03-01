@@ -31,6 +31,21 @@
 - (void)removeItemAtIndex:(NSUInteger)index
             selectedIndex:(NSUInteger)selectedIndex;
 
+// Tells the consumer to update the selected index to be |selectedIndex|. It's
+// an error to call this method with a |selectedIndex| value higher than the
+// maximum index of |items|.
+- (void)selectItemAtIndex:(NSUInteger)selectedIndex;
+
+// Tells the consumer to update the item at |index| with |item|.
+- (void)replaceItemAtIndex:(NSUInteger)index withItem:(GridItem*)item;
+
+// Tells the consumer to move the item at |fromIndex| to |toIndex| and update
+// the selected index to be |selectedIndex|. It's an error to call this method
+// with a |selectedIndex| value higher than the maximum index of |items|.
+- (void)moveItemFromIndex:(NSUInteger)fromIndex
+                  toIndex:(NSUInteger)toIndex
+            selectedIndex:(NSUInteger)selectedIndex;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TAB_GRID_GRID_CONSUMER_H_
