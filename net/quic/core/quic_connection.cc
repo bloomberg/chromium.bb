@@ -1645,6 +1645,8 @@ void QuicConnection::WriteQueuedPackets() {
     SendVersionNegotiationPacket();
   }
 
+  UMA_HISTOGRAM_COUNTS_1000("Net.QuicSession.NumQueuedPacketsBeforeWrite",
+                            queued_packets_.size());
   QueuedPacketList::iterator packet_iterator = queued_packets_.begin();
   while (packet_iterator != queued_packets_.end() &&
          WritePacket(&(*packet_iterator))) {
@@ -1774,6 +1776,10 @@ bool QuicConnection::WritePacket(SerializedPacket* packet) {
              << " after:" << sent_packet_manager_.GetLargestSentPacket();
     CloseConnection(QUIC_INTERNAL_ERROR, "Packet written out of order.",
                     ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
+
+    UMA_HISTOGRAM_COUNTS_1000("Net.QuicSession.NumQueuedPacketsAtOutOfOrder",
+                              queued_packets_.size());
+
     RecordInternalErrorLocation(QUIC_CONNECTION_4);
     return true;
   }
