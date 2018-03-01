@@ -123,10 +123,10 @@ class WebMediaPlayerMS::FrameDeliverer {
     base::TimeTicks render_time;
     if (frame->metadata()->GetTimeTicks(
             media::VideoFrameMetadata::REFERENCE_TIME, &render_time)) {
-      TRACE_EVENT1("webmediaplayerms", "FrameReady", "Ideal Render Instant",
+      TRACE_EVENT1("media", "FrameReady", "Ideal Render Instant",
                    render_time.ToInternalValue());
     } else {
-      TRACE_EVENT0("webmediaplayerms", "FrameReady");
+      TRACE_EVENT0("media", "FrameReady");
     }
 
     const bool is_opaque = media::IsOpaque(frame->format());
@@ -829,7 +829,7 @@ bool WebMediaPlayerMS::CopyVideoTextureToPlatformTexture(
     bool flip_y,
     int already_uploaded_id,
     VideoFrameUploadMetadata* out_metadata) {
-  TRACE_EVENT0("webmediaplayerms", "copyVideoTextureToPlatformTexture");
+  TRACE_EVENT0("media", "copyVideoTextureToPlatformTexture");
   DCHECK(thread_checker_.CalledOnValidThread());
 
   scoped_refptr<media::VideoFrame> video_frame =
@@ -864,7 +864,7 @@ bool WebMediaPlayerMS::TexImageImpl(TexImageFunctionID functionID,
                                     int zoffset,
                                     bool flip_y,
                                     bool premultiply_alpha) {
-  TRACE_EVENT0("webmediaplayerms", "texImageImpl");
+  TRACE_EVENT0("media", "texImageImpl");
   DCHECK(thread_checker_.CalledOnValidThread());
 
   const scoped_refptr<media::VideoFrame> video_frame =
