@@ -225,6 +225,7 @@ android_library("chrome_java") {
     "//components/sync/android:sync_java",
     "//components/url_formatter/android:url_formatter_java",
     "//components/variations/android:variations_java",
+    "//components/version_info/android:version_constants_java",
     "//components/web_contents_delegate_android:web_contents_delegate_android_java",
     "//components/web_restrictions:provider_java",
     "//content/public/android:content_java",
@@ -463,14 +464,9 @@ chrome_version_java_file = "$chrome_version_java_dir/org/chromium/chrome/browser
 process_version("chrome_version_java") {
   template_file = "java/ChromeVersionConstants.java.version"
   sources = [
-    "//chrome/VERSION",
     branding_file_path,
   ]
   output = chrome_version_java_file
-  extra_args = [
-    "-e",
-    "CHANNEL=str.upper('$android_channel')",
-  ]
 }
 
 zip("chrome_version_srcjar") {

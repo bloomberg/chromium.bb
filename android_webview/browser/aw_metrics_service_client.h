@@ -90,7 +90,6 @@ class AwMetricsServiceClient : public metrics::MetricsServiceClient,
   std::unique_ptr<metrics::MetricsService> metrics_service_;
   PrefService* pref_service_;
   net::URLRequestContextGetter* request_context_;
-  version_info::Channel channel_;
   bool consent_;    // = (user has consented) && !(app has opted out)
   bool in_sample_;  // Is this client enabled by sampling?
 
