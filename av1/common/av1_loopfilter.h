@@ -61,12 +61,12 @@ typedef struct {
   FilterMaskUV above_v[TX_SIZES];
 
   // Y plane vertical edge and horizontal edge filter level
-  uint8_t lfl_y_hor[MAX_MIB_SIZE / 2][MAX_MIB_SIZE / 2];
-  uint8_t lfl_y_ver[MAX_MIB_SIZE / 2][MAX_MIB_SIZE / 2];
+  uint8_t lfl_y_hor[MI_SIZE_64X64][MI_SIZE_64X64];
+  uint8_t lfl_y_ver[MI_SIZE_64X64][MI_SIZE_64X64];
 
   // UV plane vertical edge and horizontal edge shares the same level
-  uint8_t lfl_u[MAX_MIB_SIZE / 4][MAX_MIB_SIZE / 4];
-  uint8_t lfl_v[MAX_MIB_SIZE / 4][MAX_MIB_SIZE / 4];
+  uint8_t lfl_u[MI_SIZE_64X64 / 2][MI_SIZE_64X64 / 2];
+  uint8_t lfl_v[MI_SIZE_64X64 / 2][MI_SIZE_64X64 / 2];
 } LoopFilterMaskInfo;
 // TODO(chengchen): remove old version of bitmask construction code once
 // new bitmask is complete.
@@ -88,7 +88,7 @@ typedef struct {
 // superblock bitmask building.
 // Information includes:
 // ------------------------------------------------------------
-//                    MAX_MIB_SIZE
+//                    MI_SIZE_64X64
 // Y  tx_size above |--------------|
 // Y  tx_size left  |--------------|
 // UV tx_size above |--------------|
@@ -102,17 +102,17 @@ typedef struct {
 // skip             |--------------|
 // ------------------------------------------------------------
 typedef struct {
-  TX_SIZE tx_size_y_above[MAX_MIB_SIZE];
-  TX_SIZE tx_size_y_left[MAX_MIB_SIZE];
-  TX_SIZE tx_size_uv_above[MAX_MIB_SIZE];
-  TX_SIZE tx_size_uv_left[MAX_MIB_SIZE];
-  uint8_t y_level_above[MAX_MIB_SIZE];
-  uint8_t y_level_left[MAX_MIB_SIZE];
-  uint8_t u_level_above[MAX_MIB_SIZE];
-  uint8_t u_level_left[MAX_MIB_SIZE];
-  uint8_t v_level_above[MAX_MIB_SIZE];
-  uint8_t v_level_left[MAX_MIB_SIZE];
-  uint8_t skip[MAX_MIB_SIZE];
+  TX_SIZE tx_size_y_above[MI_SIZE_64X64];
+  TX_SIZE tx_size_y_left[MI_SIZE_64X64];
+  TX_SIZE tx_size_uv_above[MI_SIZE_64X64];
+  TX_SIZE tx_size_uv_left[MI_SIZE_64X64];
+  uint8_t y_level_above[MI_SIZE_64X64];
+  uint8_t y_level_left[MI_SIZE_64X64];
+  uint8_t u_level_above[MI_SIZE_64X64];
+  uint8_t u_level_left[MI_SIZE_64X64];
+  uint8_t v_level_above[MI_SIZE_64X64];
+  uint8_t v_level_left[MI_SIZE_64X64];
+  uint8_t skip[MI_SIZE_64X64];
 } LpfSuperblockInfo;
 #endif  // LOOP_FILTER_BITMASK
 
@@ -141,7 +141,7 @@ struct loopfilter {
   size_t lfm_num;
   int lfm_stride;
   LpfSuperblockInfo neighbor_sb_lpf_info;
-#endif
+#endif  // LOOP_FILTER_BITMASK
 };
 
 // Need to align this structure so when it is declared and
