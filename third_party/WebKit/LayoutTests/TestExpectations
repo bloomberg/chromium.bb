@@ -3515,3 +3515,4 @@ crbug.com/817167 http/tests/devtools/oopif/oopif-cookies-refresh.js [ Failure Ti
 # Sheriff 2018-03-01
 crbug.com/817668 compositing/scroll-with-inner-clip.html [ Failure Pass ]
 crbug.com/817668 virtual/disable-spv175/compositing/scroll-with-inner-clip.html [ Failure Pass ]
+crbug.com/817678 [ Win ] http/tests/devtools/console/console-group-similar.js [ Failure Pass ]
