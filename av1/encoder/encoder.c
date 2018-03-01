@@ -6291,14 +6291,28 @@ static int is_integer_mv(AV1_COMP *cpi, const YV12_BUFFER_CONFIG *cur_picture,
       p_cur += (y_pos * stride_cur + x_pos);
       p_ref += (y_pos * stride_ref + x_pos);
 
-      for (int tmpY = 0; tmpY < block_size && match; tmpY++) {
-        for (int tmpX = 0; tmpX < block_size && match; tmpX++) {
-          if (p_cur[tmpX] != p_ref[tmpX]) {
-            match = 0;
+      if (cur_picture->flags & YV12_FLAG_HIGHBITDEPTH) {
+        uint16_t *p16_cur = CONVERT_TO_SHORTPTR(p_cur);
+        uint16_t *p16_ref = CONVERT_TO_SHORTPTR(p_ref);
+        for (int tmpY = 0; tmpY < block_size && match; tmpY++) {
+          for (int tmpX = 0; tmpX < block_size && match; tmpX++) {
+            if (p16_cur[tmpX] != p16_ref[tmpX]) {
+              match = 0;
+            }
           }
+          p16_cur += stride_cur;
+          p16_ref += stride_ref;
         }
-        p_cur += stride_cur;
-        p_ref += stride_ref;
+      } else {
+        for (int tmpY = 0; tmpY < block_size && match; tmpY++) {
+          for (int tmpX = 0; tmpX < block_size && match; tmpX++) {
+            if (p_cur[tmpX] != p_ref[tmpX]) {
+              match = 0;
+            }
+          }
+          p_cur += stride_cur;
+          p_ref += stride_ref;
+        }
       }
 
       if (match) {
@@ -6315,10 +6329,14 @@ static int is_integer_mv(AV1_COMP *cpi, const YV12_BUFFER_CONFIG *cur_picture,
 
       av1_get_block_hash_value(
           cur_picture->y_buffer + y_pos * stride_cur + x_pos, stride_cur,
-          block_size, &hash_value_1, &hash_value_2);
-
-      if (av1_has_exact_match(last_hash_table, hash_value_1, hash_value_2)) {
-        M++;
+          block_size, &hash_value_1, &hash_value_2,
+          (cur_picture->flags & YV12_FLAG_HIGHBITDEPTH));
+      // Hashing does not work for highbitdepth currently.
+      // TODO(Roger): Make it work for highbitdepth.
+      if (av1_use_hash_me(&cpi->common)) {
+        if (av1_has_exact_match(last_hash_table, hash_value_1, hash_value_2)) {
+          M++;
+        }
       }
     }
   }
