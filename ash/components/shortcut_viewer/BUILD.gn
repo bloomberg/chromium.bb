@@ -31,6 +31,7 @@ source_set("ksv") {
     "//ash/components/strings",
     "//ash/public/cpp",
     "//cc/paint",
+    "//ui/accessibility",
     "//ui/aura",
     "//ui/chromeos/events",
     "//ui/chromeos/search_box",

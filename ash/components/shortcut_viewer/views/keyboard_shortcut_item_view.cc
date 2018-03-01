@@ -13,8 +13,10 @@
 #include "ash/components/shortcut_viewer/views/bubble_view.h"
 #include "base/i18n/rtl.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/styled_label.h"
@@ -110,6 +112,19 @@ KeyboardShortcutItemView::KeyboardShortcutItemView(
   constexpr int kVerticalPadding = 10;
   SetBorder(views::CreateEmptyBorder(
       gfx::Insets(kVerticalPadding, 0, kVerticalPadding, 0)));
+
+  // Use leaf list item role so that name is spoken by screen reader, but
+  // redundant child label text is not also spoken.
+  GetViewAccessibility().OverrideRole(ax::mojom::Role::kListItem);
+  GetViewAccessibility().OverrideIsLeaf();
+  accessible_name_ = GetStringForCategory(category_) +
+                     description_label_view_->text() +
+                     shortcut_label_view_->text();
+}
+
+void KeyboardShortcutItemView::GetAccessibleNodeData(
+    ui::AXNodeData* node_data) {
+  node_data->SetName(accessible_name_);
 }
 
 int KeyboardShortcutItemView::GetHeightForWidth(int w) const {
