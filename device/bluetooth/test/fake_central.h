@@ -36,6 +36,9 @@ class FakeCentral : public mojom::FakeCentral, public device::BluetoothAdapter {
       const std::string& name,
       const std::vector<device::BluetoothUUID>& known_service_uuids,
       SimulatePreconnectedPeripheralCallback callback) override;
+  void SimulateAdvertisementReceived(
+      mojom::ScanResultPtr scan_result_ptr,
+      SimulateAdvertisementReceivedCallback callback) override;
   void SetNextGATTConnectionResponse(
       const std::string& address,
       uint16_t code,

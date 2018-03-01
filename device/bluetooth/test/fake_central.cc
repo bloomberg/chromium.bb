@@ -44,6 +44,66 @@ void FakeCentral::SimulatePreconnectedPeripheral(
   std::move(callback).Run();
 }
 
+void FakeCentral::SimulateAdvertisementReceived(
+    mojom::ScanResultPtr scan_result_ptr,
+    SimulateAdvertisementReceivedCallback callback) {
+  // TODO(https://crbug.com/719826): Add a DCHECK to proceed only if a scan is
+  // currently in progress.
+  auto* fake_peripheral = GetFakePeripheral(scan_result_ptr->device_address);
+  const bool is_new_device = fake_peripheral == nullptr;
+  if (is_new_device) {
+    auto fake_peripheral_ptr =
+        std::make_unique<FakePeripheral>(this, scan_result_ptr->device_address);
+    fake_peripheral = fake_peripheral_ptr.get();
+    auto pair = devices_.emplace(scan_result_ptr->device_address,
+                                 std::move(fake_peripheral_ptr));
+    DCHECK(pair.second);
+  }
+
+  if (scan_result_ptr->scan_record->name) {
+    fake_peripheral->SetName(scan_result_ptr->scan_record->name.value());
+  }
+
+  device::BluetoothDevice::UUIDList uuids =
+      (scan_result_ptr->scan_record->uuids)
+          ? device::BluetoothDevice::UUIDList(
+                scan_result_ptr->scan_record->uuids.value().begin(),
+                scan_result_ptr->scan_record->uuids.value().end())
+          : device::BluetoothDevice::UUIDList();
+  // TODO(https://crbug.com/817603): Extract the service_data map from
+  // scan_result_ptr once the typemap for this field is added.
+  device::BluetoothDevice::ServiceDataMap service_data =
+      device::BluetoothDevice::ServiceDataMap();
+  device::BluetoothDevice::ManufacturerDataMap manufacturer_data =
+      (scan_result_ptr->scan_record->manufacturer_data)
+          ? device::BluetoothDevice::ManufacturerDataMap(
+                scan_result_ptr->scan_record->manufacturer_data.value().begin(),
+                scan_result_ptr->scan_record->manufacturer_data.value().end())
+          : device::BluetoothDevice::ManufacturerDataMap();
+
+  fake_peripheral->UpdateAdvertisementData(
+      scan_result_ptr->rssi, std::move(uuids), std::move(service_data),
+      std::move(manufacturer_data),
+      (scan_result_ptr->scan_record->tx_power->has_value)
+          ? &scan_result_ptr->scan_record->tx_power->value
+          : nullptr);
+
+  if (is_new_device) {
+    // Call DeviceAdded on observers because it is a newly detected peripheral.
+    for (auto& observer : observers_) {
+      observer.DeviceAdded(this, fake_peripheral);
+    }
+  } else {
+    // Call DeviceChanged on observers because it is a device that was detected
+    // before.
+    for (auto& observer : observers_) {
+      observer.DeviceChanged(this, fake_peripheral);
+    }
+  }
+
+  std::move(callback).Run();
+}
+
 void FakeCentral::SetNextGATTConnectionResponse(
     const std::string& address,
     uint16_t code,
