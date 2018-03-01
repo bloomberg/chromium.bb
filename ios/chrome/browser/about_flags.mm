@@ -37,6 +37,7 @@
 #include "components/security_state/core/features.h"
 #include "components/signin/core/browser/signin_switches.h"
 #include "components/strings/grit/components_strings.h"
+#include "ios/chrome/browser/browsing_data/browsing_data_features.h"
 #include "ios/chrome/browser/chrome_switches.h"
 #include "ios/chrome/browser/drag_and_drop/drag_and_drop_flag.h"
 #include "ios/chrome/browser/ios_chrome_flag_descriptions.h"
@@ -260,6 +261,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"feedback-kit-v2", flag_descriptions::kFeedbackKitV2Name,
      flag_descriptions::kFeedbackKitV2Description, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kFeedbackKitV2)},
+    {"new-clear-browsing-data-ui",
+     flag_descriptions::kNewClearBrowsingDataUIName,
+     flag_descriptions::kNewClearBrowsingDataUIDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kNewClearBrowsingDataUI)},
 };
 
 // Add all switches from experimental flags to |command_line|.

@@ -44,6 +44,10 @@ const char kContextMenuElementPostMessageDescription[] =
 const char kDragAndDropName[] = "Drag and Drop";
 const char kDragAndDropDescription[] = "Enable support for drag and drop.";
 
+const char kNewClearBrowsingDataUIName[] = "Clear Browsing Data UI";
+const char kNewClearBrowsingDataUIDescription[] =
+    "Enable new Clear Browsing Data UI.";
+
 const char kExternalSearchName[] = "External Search";
 const char kExternalSearchDescription[] = "Enable support for External Search.";
 

@@ -22,6 +22,7 @@
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/signin/core/browser/signin_switches.h"
 #include "components/variations/variations_associated_data.h"
+#include "ios/chrome/browser/browsing_data/browsing_data_features.h"
 #include "ios/chrome/browser/chrome_switches.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_feature.h"
 #include "ios/chrome/browser/ui/user_feedback_features.h"
@@ -106,6 +107,10 @@ bool MustClearApplicationGroupSandbox() {
   [[NSUserDefaults standardUserDefaults] setBool:NO
                                           forKey:kClearApplicationGroup];
   return value;
+}
+
+bool IsNewClearBrowsingDataUIEnabled() {
+  return base::FeatureList::IsEnabled(kNewClearBrowsingDataUI);
 }
 
 bool IsNewFeedbackKitEnabled() {

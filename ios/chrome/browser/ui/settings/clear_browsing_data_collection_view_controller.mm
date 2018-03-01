@@ -13,6 +13,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/scoped_observer.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/browser_sync/profile_sync_service.h"
@@ -29,7 +30,11 @@
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/browsing_data/browsing_data_counter_wrapper.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
+#include "ios/chrome/browser/browsing_data/browsing_data_remover.h"
+#include "ios/chrome/browser/browsing_data/browsing_data_remover_factory.h"
+#include "ios/chrome/browser/browsing_data/browsing_data_remover_observer.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/feature_engagement/tracker_factory.h"
@@ -79,6 +84,7 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierGoogleAccount,
   SectionIdentifierClearSyncAndSavedSiteData,
   SectionIdentifierSavedSiteData,
+  SectionIdentifierTimeRange,
 };
 
 typedef NS_ENUM(NSInteger, ItemType) {
@@ -97,10 +103,56 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 const int kMaxTimesHistoryNoticeShown = 1;
 
+using OnBrowsingDataRemovedBlock = void (^)(BrowsingDataRemoveMask mask);
+
+// BrowsingDataRemoverObserverWrapper observes a BrowsingDataRemover and
+// invokes a block when browsing data removal completes.
+class BrowsingDataRemoverObserverWrapper : public BrowsingDataRemoverObserver {
+ public:
+  explicit BrowsingDataRemoverObserverWrapper(
+      OnBrowsingDataRemovedBlock on_browsing_data_removed_block);
+  ~BrowsingDataRemoverObserverWrapper() override;
+
+  // BrowsingDataRemoverObserver implementation.
+  void OnBrowsingDataRemoved(BrowsingDataRemover* remover,
+                             BrowsingDataRemoveMask mask) override;
+
+ private:
+  OnBrowsingDataRemovedBlock on_browsing_data_removed_block_;
+
+  DISALLOW_COPY_AND_ASSIGN(BrowsingDataRemoverObserverWrapper);
+};
+
+BrowsingDataRemoverObserverWrapper::BrowsingDataRemoverObserverWrapper(
+    OnBrowsingDataRemovedBlock on_browsing_data_removed_block)
+    : on_browsing_data_removed_block_(on_browsing_data_removed_block) {
+  DCHECK(on_browsing_data_removed_block_);
+}
+
+BrowsingDataRemoverObserverWrapper::~BrowsingDataRemoverObserverWrapper() =
+    default;
+
+void BrowsingDataRemoverObserverWrapper::OnBrowsingDataRemoved(
+    BrowsingDataRemover* remover,
+    BrowsingDataRemoveMask mask) {
+  on_browsing_data_removed_block_(mask);
+}
+
 }  // namespace
 
 // Collection view item identifying a clear browsing data content view.
 @interface ClearDataItem : CollectionViewTextItem
+
+// Designated initializer.
+- (instancetype)initWithType:(NSInteger)type
+                     counter:
+                         (std::unique_ptr<BrowsingDataCounterWrapper>)counter
+    NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)initWithType:(NSInteger)type NS_UNAVAILABLE;
+
+// Restarts the counter (if defined).
+- (void)restartCounter;
 
 // Mask of the data to be cleared.
 @property(nonatomic, assign) BrowsingDataRemoveMask dataTypeMask;
@@ -108,12 +160,40 @@ const int kMaxTimesHistoryNoticeShown = 1;
 // Pref name associated with the item.
 @property(nonatomic, assign) const char* prefName;
 
+// Whether this item has a data volume counter associated.
+@property(nonatomic, readonly) BOOL hasCounter;
+
 @end
 
-@implementation ClearDataItem
+@implementation ClearDataItem {
+  // Wrapper around the data volume counter associated with the item. May be
+  // null if there is no counter or if the feature kNewClearBrowsingDataUI
+  // is disabled.
+  std::unique_ptr<BrowsingDataCounterWrapper> _counter;
+}
 
 @synthesize dataTypeMask = _dataTypeMask;
 @synthesize prefName = _prefName;
+
+- (instancetype)initWithType:(NSInteger)type
+                     counter:
+                         (std::unique_ptr<BrowsingDataCounterWrapper>)counter {
+  if ((self = [super initWithType:type])) {
+    _counter = std::move(counter);
+  }
+  return self;
+}
+
+- (void)restartCounter {
+  if (_counter)
+    _counter->RestartCounter();
+}
+
+#pragma mark - Properties
+
+- (BOOL)hasCounter {
+  return _counter != nullptr;
+}
 
 @end
 
@@ -122,6 +202,14 @@ const int kMaxTimesHistoryNoticeShown = 1;
   ios::ChromeBrowserState* _browserState;  // weak
 
   browsing_data::TimePeriod _timePeriod;
+
+  // Observer for browsing data removal events and associated ScopedObserver
+  // used to track registration with BrowsingDataRemover. They both may be
+  // null if the new Clear Browser Data UI is disabled.
+  std::unique_ptr<BrowsingDataRemoverObserver> observer_;
+  std::unique_ptr<
+      ScopedObserver<BrowsingDataRemover, BrowsingDataRemoverObserver>>
+      scoped_observer_;
 }
 
 @property(nonatomic, assign)
@@ -140,6 +228,9 @@ const int kMaxTimesHistoryNoticeShown = 1;
 // Returns the accessibility identifier for the cell corresponding to
 // |itemType|.
 - (NSString*)getAccessibilityIdentifierFromItemType:(NSInteger)itemType;
+
+// Restarts the counters for data types specified in the mask.
+- (void)restartCounters:(BrowsingDataRemoveMask)mask;
 
 @end
 
@@ -167,9 +258,33 @@ const int kMaxTimesHistoryNoticeShown = 1;
     self.collectionViewAccessibilityIdentifier =
         kClearBrowsingDataCollectionViewId;
 
+    if (experimental_flags::IsNewClearBrowsingDataUIEnabled()) {
+      constexpr int maxValue =
+          static_cast<int>(browsing_data::TimePeriod::TIME_PERIOD_LAST);
+      const int prefValue = browserState->GetPrefs()->GetInteger(
+          browsing_data::prefs::kDeleteTimePeriod);
+
+      if (0 <= prefValue && prefValue <= maxValue) {
+        _timePeriod = static_cast<browsing_data::TimePeriod>(prefValue);
+      }
+
+      __weak ClearBrowsingDataCollectionViewController* weakSelf = self;
+      observer_ = std::make_unique<BrowsingDataRemoverObserverWrapper>(
+          ^(BrowsingDataRemoveMask mask) {
+            [weakSelf restartCounters:mask];
+          });
+
+      scoped_observer_ = std::make_unique<
+          ScopedObserver<BrowsingDataRemover, BrowsingDataRemoverObserver>>(
+          observer_.get());
+      scoped_observer_->Add(
+          BrowsingDataRemoverFactory::GetForBrowserState(browserState));
+    }
+
     // TODO(crbug.com/764578): -loadModel should not be called from
     // initializer. A possible fix is to move this call to -viewDidLoad.
     [self loadModel];
+    [self restartCounters:BrowsingDataRemoveMask::REMOVE_ALL];
   }
   return self;
 }
@@ -210,6 +325,13 @@ const int kMaxTimesHistoryNoticeShown = 1;
 - (void)loadModel {
   [super loadModel];
   CollectionViewModel* model = self.collectionViewModel;
+
+  // Time range section.
+  if (experimental_flags::IsNewClearBrowsingDataUIEnabled()) {
+    [model addSectionWithIdentifier:SectionIdentifierTimeRange];
+    [model addItem:[self timeRangeItem]
+        toSectionWithIdentifier:SectionIdentifierTimeRange];
+  }
 
   // Data types section.
   [model addSectionWithIdentifier:SectionIdentifierDataTypes];
@@ -299,7 +421,20 @@ const int kMaxTimesHistoryNoticeShown = 1;
                                    mask:(BrowsingDataRemoveMask)mask
                                prefName:(const char*)prefName {
   PrefService* prefs = _browserState->GetPrefs();
-  ClearDataItem* clearDataItem = [[ClearDataItem alloc] initWithType:itemType];
+  std::unique_ptr<BrowsingDataCounterWrapper> counter;
+  if (experimental_flags::IsNewClearBrowsingDataUIEnabled()) {
+    __weak ClearBrowsingDataCollectionViewController* weakSelf = self;
+    counter = BrowsingDataCounterWrapper::CreateCounterWrapper(
+        prefName, _browserState, prefs,
+        base::BindBlockArc(^(
+            const browsing_data::BrowsingDataCounter::Result& result) {
+          [weakSelf updateCounter:itemType
+                       detailText:[weakSelf getCounterTextFromResult:result]];
+        }));
+  }
+
+  ClearDataItem* clearDataItem =
+      [[ClearDataItem alloc] initWithType:itemType counter:std::move(counter)];
   clearDataItem.text = l10n_util::GetNSString(titleMessageID);
   if (prefs->GetBoolean(prefName)) {
     clearDataItem.accessoryType = MDCCollectionViewCellAccessoryCheckmark;
@@ -309,7 +444,35 @@ const int kMaxTimesHistoryNoticeShown = 1;
   clearDataItem.accessibilityIdentifier =
       [self getAccessibilityIdentifierFromItemType:itemType];
 
+  // Because there is no counter for cookies, an explanatory text is displayed.
+  if (itemType == ItemTypeDataTypeCookiesSiteData &&
+      experimental_flags::IsNewClearBrowsingDataUIEnabled() &&
+      prefs->GetBoolean(browsing_data::prefs::kDeleteCookies)) {
+    clearDataItem.detailText = l10n_util::GetNSString(IDS_DEL_COOKIES_COUNTER);
+  }
+
   return clearDataItem;
+}
+
+- (void)updateCounter:(NSInteger)itemType detailText:(NSString*)detailText {
+  CollectionViewModel* model = self.collectionViewModel;
+  if (!model)
+    return;
+
+  NSIndexPath* indexPath =
+      [model indexPathForItemType:itemType
+                sectionIdentifier:SectionIdentifierDataTypes];
+
+  ClearDataItem* clearDataItem = base::mac::ObjCCastStrict<ClearDataItem>(
+      [model itemAtIndexPath:indexPath]);
+
+  // Do nothing if the text has not changed.
+  if ([detailText isEqualToString:clearDataItem.detailText])
+    return;
+
+  clearDataItem.detailText = detailText;
+  [self reconfigureCellsForItems:@[ clearDataItem ]];
+  [self.collectionView.collectionViewLayout invalidateLayout];
 }
 
 - (CollectionViewItem*)footerForGoogleAccountSectionItem {
@@ -421,9 +584,17 @@ const int kMaxTimesHistoryNoticeShown = 1;
       if (clearDataItem.accessoryType == MDCCollectionViewCellAccessoryNone) {
         clearDataItem.accessoryType = MDCCollectionViewCellAccessoryCheckmark;
         _browserState->GetPrefs()->SetBoolean(clearDataItem.prefName, true);
+        if (itemType == ItemTypeDataTypeCookiesSiteData &&
+            experimental_flags::IsNewClearBrowsingDataUIEnabled()) {
+          [self updateCounter:itemType
+                   detailText:l10n_util::GetNSString(IDS_DEL_COOKIES_COUNTER)];
+        }
       } else {
         clearDataItem.accessoryType = MDCCollectionViewCellAccessoryNone;
         _browserState->GetPrefs()->SetBoolean(clearDataItem.prefName, false);
+        if (experimental_flags::IsNewClearBrowsingDataUIEnabled()) {
+          [self updateCounter:itemType detailText:@""];
+        }
       }
       [self reconfigureCellsForItems:@[ clearDataItem ]];
       break;
@@ -616,43 +787,77 @@ const int kMaxTimesHistoryNoticeShown = 1;
   }
 }
 
+- (void)restartCounters:(BrowsingDataRemoveMask)mask {
+  CollectionViewModel* model = self.collectionViewModel;
+  if (!self.collectionViewModel)
+    return;
+
+  if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_HISTORY)) {
+    NSIndexPath* indexPath = [self.collectionViewModel
+        indexPathForItemType:ItemTypeDataTypeBrowsingHistory
+           sectionIdentifier:SectionIdentifierDataTypes];
+    ClearDataItem* historyItem = base::mac::ObjCCastStrict<ClearDataItem>(
+        [model itemAtIndexPath:indexPath]);
+    [historyItem restartCounter];
+  }
+
+  if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_PASSWORDS)) {
+    NSIndexPath* indexPath = [self.collectionViewModel
+        indexPathForItemType:ItemTypeDataTypeSavedPasswords
+           sectionIdentifier:SectionIdentifierDataTypes];
+    ClearDataItem* passwordsItem = base::mac::ObjCCastStrict<ClearDataItem>(
+        [model itemAtIndexPath:indexPath]);
+    [passwordsItem restartCounter];
+  }
+
+  if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_FORM_DATA)) {
+    NSIndexPath* indexPath = [self.collectionViewModel
+        indexPathForItemType:ItemTypeDataTypeAutofill
+           sectionIdentifier:SectionIdentifierDataTypes];
+    ClearDataItem* autofillItem = base::mac::ObjCCastStrict<ClearDataItem>(
+        [model itemAtIndexPath:indexPath]);
+    [autofillItem restartCounter];
+  }
+}
 - (NSString*)getCounterTextFromResult:
     (const browsing_data::BrowsingDataCounter::Result&)result {
-  std::string prefName = result.source()->GetPrefName();
   if (!result.Finished()) {
     // The counter is still counting.
     return l10n_util::GetNSString(IDS_CLEAR_BROWSING_DATA_CALCULATING);
   }
 
-  if (prefName == browsing_data::prefs::kDeleteCache) {
-    browsing_data::BrowsingDataCounter::ResultInt cacheSizeBytes =
-        static_cast<const browsing_data::BrowsingDataCounter::FinishedResult*>(
-            &result)
-            ->Value();
-
-    // Three cases: Nonzero result for the entire cache, nonzero result for
-    // a subset of cache (i.e. a finite time interval), and almost zero (less
-    // than 1 MB). There is no exact information that the cache is empty so that
-    // falls into the almost zero case, which is displayed as less than 1 MB.
-    // Because of this, the lowest unit that can be used is MB.
-    static const int kBytesInAMegabyte = 1 << 20;
-    if (cacheSizeBytes >= kBytesInAMegabyte) {
-      NSByteCountFormatter* formatter = [[NSByteCountFormatter alloc] init];
-      formatter.allowedUnits = NSByteCountFormatterUseAll &
-                               (~NSByteCountFormatterUseBytes) &
-                               (~NSByteCountFormatterUseKB);
-      formatter.countStyle = NSByteCountFormatterCountStyleMemory;
-      NSString* formattedSize = [formatter stringFromByteCount:cacheSizeBytes];
-      return (_timePeriod == browsing_data::TimePeriod::ALL_TIME)
-                 ? formattedSize
-                 : l10n_util::GetNSStringF(
-                       IDS_DEL_CACHE_COUNTER_UPPER_ESTIMATE,
-                       base::SysNSStringToUTF16(formattedSize));
-    }
-    return l10n_util::GetNSString(IDS_DEL_CACHE_COUNTER_ALMOST_EMPTY);
+  base::StringPiece prefName = result.source()->GetPrefName();
+  if (prefName != browsing_data::prefs::kDeleteCache) {
+    return base::SysUTF16ToNSString(
+        browsing_data::GetCounterTextFromResult(&result));
   }
-  return base::SysUTF16ToNSString(
-      browsing_data::GetCounterTextFromResult(&result));
+
+  browsing_data::BrowsingDataCounter::ResultInt cacheSizeBytes =
+      static_cast<const browsing_data::BrowsingDataCounter::FinishedResult*>(
+          &result)
+          ->Value();
+
+  // Three cases: Nonzero result for the entire cache, nonzero result for
+  // a subset of cache (i.e. a finite time interval), and almost zero (less
+  // than 1 MB). There is no exact information that the cache is empty so that
+  // falls into the almost zero case, which is displayed as less than 1 MB.
+  // Because of this, the lowest unit that can be used is MB.
+  static const int kBytesInAMegabyte = 1 << 20;
+  if (cacheSizeBytes >= kBytesInAMegabyte) {
+    NSByteCountFormatter* formatter = [[NSByteCountFormatter alloc] init];
+    formatter.allowedUnits = NSByteCountFormatterUseAll &
+                             (~NSByteCountFormatterUseBytes) &
+                             (~NSByteCountFormatterUseKB);
+    formatter.countStyle = NSByteCountFormatterCountStyleMemory;
+    NSString* formattedSize = [formatter stringFromByteCount:cacheSizeBytes];
+    return (_timePeriod == browsing_data::TimePeriod::ALL_TIME)
+               ? formattedSize
+               : l10n_util::GetNSStringF(
+                     IDS_DEL_CACHE_COUNTER_UPPER_ESTIMATE,
+                     base::SysNSStringToUTF16(formattedSize));
+  }
+
+  return l10n_util::GetNSString(IDS_DEL_CACHE_COUNTER_ALMOST_EMPTY);
 }
 
 #pragma mark MDCCollectionViewStylingDelegate

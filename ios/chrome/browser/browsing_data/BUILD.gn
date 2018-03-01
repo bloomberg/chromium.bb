@@ -2,6 +2,17 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+source_set("features") {
+  sources = [
+    "browsing_data_features.cc",
+    "browsing_data_features.h",
+  ]
+  deps = [
+    "//base",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
 source_set("browsing_data_remove_mask") {
   sources = [
     "browsing_data_remove_mask.h",
@@ -11,6 +22,8 @@ source_set("browsing_data_remove_mask") {
 
 source_set("browsing_data") {
   sources = [
+    "browsing_data_counter_wrapper.cc",
+    "browsing_data_counter_wrapper.h",
     "browsing_data_remover.cc",
     "browsing_data_remover.h",
     "browsing_data_remover_factory.h",
@@ -20,6 +33,7 @@ source_set("browsing_data") {
     "browsing_data_remover_observer.h",
   ]
   deps = [
+    ":counters",
     "//base",
     "//components/autofill/core/browser",
     "//components/browser_sync",
@@ -66,14 +80,31 @@ source_set("browsing_data") {
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
+source_set("counters") {
+  sources = [
+    "cache_counter.cc",
+    "cache_counter.h",
+  ]
+  deps = [
+    "//base",
+    "//components/browsing_data/core",
+    "//ios/chrome/browser/browser_state",
+    "//ios/web/public",
+    "//net",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "browsing_data_remover_impl_unittest.mm",
+    "cache_counter_unittest.cc",
   ]
   deps = [
     ":browsing_data",
+    ":counters",
     "//base",
     "//base/test:test_support",
     "//components/browsing_data/core",

@@ -37,6 +37,10 @@ extern const char kContextMenuElementPostMessageDescription[];
 extern const char kDragAndDropName[];
 extern const char kDragAndDropDescription[];
 
+// Title and description for the flag to enable new Clear Browsing Data UI.
+extern const char kNewClearBrowsingDataUIName[];
+extern const char kNewClearBrowsingDataUIDescription[];
+
 // Title and description for the flag to enable External Search.
 extern const char kExternalSearchName[];
 extern const char kExternalSearchDescription[];
