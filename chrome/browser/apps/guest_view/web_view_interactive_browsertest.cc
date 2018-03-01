@@ -1725,7 +1725,8 @@ IN_PROC_BROWSER_TEST_P(WebViewFocusInteractiveTest, MAYBE_FocusAndVisibility) {
 }
 
 IN_PROC_BROWSER_TEST_P(WebViewInteractiveTest, KeyboardFocusSimple) {
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_MACOSX)
+  // Flaky on MacOSX, crbug.com/817066.
   // Flaky timeouts on Linux. https://crbug.com/709202
   if (GetParam())
     return;
