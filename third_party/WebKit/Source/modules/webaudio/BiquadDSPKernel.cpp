@@ -75,8 +75,10 @@ void BiquadDSPKernel::UpdateCoefficients(int number_of_frames,
     double normalized_frequency = cutoff_frequency[k] / nyquist;
 
     // Offset frequency by detune.
-    if (detune[k])
-      normalized_frequency *= pow(2, detune[k] / 1200);
+    if (detune[k]) {
+      // Detune multiplies the frequency by 2^(detune[k] / 1200).
+      normalized_frequency *= exp2(detune[k] / 1200);
+    }
 
     // Configure the biquad with the new filter parameters for the appropriate
     // type of filter.
