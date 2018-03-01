@@ -3511,3 +3511,7 @@ crbug.com/816868 [ Mac Win ] external/wpt/css/css-text/white-space/textarea-pre-
 crbug.com/816914 [ Mac ] fast/canvas/canvas-drawImage-live-video.html [ Failure Pass ]
 crbug.com/816766 [ Mac ] fast/dom/Window/window-focus-self.html [ Failure Pass ]
 crbug.com/817167 http/tests/devtools/oopif/oopif-cookies-refresh.js [ Failure Timeout Pass ]
+
+# Sheriff 2018-03-01
+crbug.com/817668 compositing/scroll-with-inner-clip.html [ Failure Pass ]
+crbug.com/817668 virtual/disable-spv175/compositing/scroll-with-inner-clip.html [ Failure Pass ]
