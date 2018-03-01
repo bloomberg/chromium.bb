@@ -226,6 +226,10 @@ void VrMetricsHelper::RecordVoiceSearchStarted() {
   num_voice_search_started_++;
 }
 
+void VrMetricsHelper::RecordUrlRequestedByVoice(GURL url) {
+  url_requested_by_voice_ = url;
+}
+
 void VrMetricsHelper::SetVrMode(Mode new_mode) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_NE(new_mode, mode_);
@@ -477,6 +481,15 @@ void VrMetricsHelper::DidFinishNavigation(content::NavigationHandle* handle) {
         std::make_unique<SessionTracker<ukm::builders::XR_PageSession>>(
             std::make_unique<ukm::builders::XR_PageSession>(
                 ukm::GetSourceIdForWebContentsDocument(web_contents())));
+
+    // Check that the completed navigation is indeed the one that was requested
+    // by voice, in case that one was incomplete and another was begun. Check
+    // against the first entry for the navigation, as redirects might have
+    // changed what the URL looks like.
+    if (url_requested_by_voice_ == handle->GetRedirectChain().front()) {
+      page_session_tracker_->ukm_entry()->SetWasVoiceSearchNavigation(1);
+    }
+    url_requested_by_voice_ = GURL();
 
     if (mode_ == Mode::kWebXrVrPresentation) {
       presentation_session_tracker_ = std::make_unique<

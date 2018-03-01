@@ -968,10 +968,22 @@ bool VrShell::ShouldDisplayURL() const {
 
 void VrShell::OnVoiceResults(const base::string16& result) {
   JNIEnv* env = base::android::AttachCurrentThread();
+  GURL url;
+  bool input_was_url;
+  std::tie(url, input_was_url) =
+      autocomplete_controller_->GetUrlFromVoiceInput(result);
+
+  // TODO(http://crbug.com/817559): If the user is doing a voice search from the
+  // new tab page, no metrics data is recorded (including voice search started).
+  // Fix this.
+
+  // This should happen before the load to avoid concurency issues.
+  if (metrics_helper_ && input_was_url)
+    metrics_helper_->RecordUrlRequestedByVoice(url);
+
   Java_VrShellImpl_loadUrl(
       env, j_vr_shell_,
-      base::android::ConvertUTF8ToJavaString(
-          env, autocomplete_controller_->GetUrlFromVoiceInput(result).spec()));
+      base::android::ConvertUTF8ToJavaString(env, url.spec()));
 }
 
 void VrShell::OnAssetsLoaded(AssetsLoadStatus status,
