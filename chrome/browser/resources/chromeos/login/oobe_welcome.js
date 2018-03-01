@@ -142,6 +142,21 @@ Polymer({
   },
 
   /**
+   * Updates "device in tablet mode" state when tablet mode is changed.
+   * @param {Boolean} isInTabletMode True when in tablet mode.
+   */
+  setTabletModeState: function(isInTabletMode) {
+    this.$.welcomeScreen.isInTabletMode = isInTabletMode;
+  },
+
+  /**
+   * Window-resize event listener (delivered through the display_manager).
+   */
+  onWindowResize: function() {
+    this.$.welcomeScreen.onWindowResize();
+  },
+
+  /**
    * Hides all screens to help switching from one screen to another.
    * @private
    */

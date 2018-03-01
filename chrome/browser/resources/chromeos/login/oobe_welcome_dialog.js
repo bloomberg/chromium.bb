@@ -83,6 +83,16 @@
        * Controls displaying of "Enable debugging features" link.
        */
       debuggingLinkVisible: Boolean,
+
+      /**
+       * True when in tablet mode.
+       */
+      isInTabletMode: Boolean,
+
+      /**
+       * True when scree orientation is portraight.
+       */
+      isInPortraitMode: Boolean,
     },
 
     /**
@@ -137,6 +147,7 @@
     },
 
     focus: function() {
+      this.onWindowResize();
       var focusedElement = this.$[this.focusedElement_];
       if (focusedElement)
         focusedElement.focus();
@@ -157,6 +168,13 @@
      */
     formatMessage_: function(label, parameter) {
       return loadTimeData.getStringF(label, parameter);
+    },
+
+    /**
+     * Window-resize event listener (delivered through the display_manager).
+     */
+    onWindowResize: function() {
+      this.isInPortraitMode = window.innerHeight > window.innerWidth;
     },
   });
 }

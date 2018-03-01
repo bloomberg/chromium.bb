@@ -176,6 +176,21 @@ login.createScreen('NetworkScreen', 'connect', function() {
     },
 
     /**
+     * Updates "device in tablet mode" state when tablet mode is changed.
+     * @param {Boolean} isInTabletMode True when in tablet mode.
+     */
+    setTabletModeState: function(isInTabletMode) {
+      $('oobe-welcome-md').setTabletModeState(isInTabletMode);
+    },
+
+    /**
+     * Window-resize event listener (delivered through the display_manager).
+     */
+    onWindowResize: function() {
+      $('oobe-welcome-md').onWindowResize();
+    },
+
+    /**
      * This method takes care of switching to material-design OOBE.
      * @private
      */
