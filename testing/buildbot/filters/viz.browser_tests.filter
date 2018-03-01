@@ -1,6 +1,3 @@
-# FrameWatcher::WaitFrames Doesn't Work in Viz crbug.com/785013
--WebViewTests/WebViewFocusTest.TouchFocusesEmbedder/0
-
 # HostFrameSinkManager::CreateRootCompositorFrameSink Crash crbug.com/796575
 -AppWindowApiTest.OnBoundsChangedEvent
 -ForceMaximizeOnFirstRunTest.*TwoRuns
