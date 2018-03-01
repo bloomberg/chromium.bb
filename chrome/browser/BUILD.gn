@@ -1943,6 +1943,8 @@ jumbo_split_static_library("browser") {
       "android/cookies/cookies_fetcher.h",
       "android/crash/pure_java_exception_handler.cc",
       "android/crash/pure_java_exception_handler.h",
+      "android/customtabs/detached_resource_request.cc",
+      "android/customtabs/detached_resource_request.h",
       "android/customtabs/origin_verifier.cc",
       "android/customtabs/origin_verifier.h",
       "android/data_usage/data_use_matcher.cc",
