@@ -14,8 +14,8 @@
 #include "base/debug/alias.h"
 #include "base/debug/stack_trace.h"
 #include "base/no_destructor.h"
+#include "base/partition_alloc_buildflags.h"
 #include "base/rand_util.h"
-#include "base/sampling_heap_profiler/sampling_heap_profiler_buildflags.h"
 #include "build/build_config.h"
 
 namespace base {
