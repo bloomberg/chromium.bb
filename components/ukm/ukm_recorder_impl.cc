@@ -28,6 +28,12 @@ namespace ukm {
 
 namespace {
 
+// Note: kChromeUIScheme is defined in content, which this code can't
+// depend on - since it's used by iOS too. kExtensionScheme is defined
+// in extensions which also isn't always available here.
+const char kChromeUIScheme[] = "chrome";
+const char kExtensionScheme[] = "chrome-extension";
+
 const base::Feature kUkmSamplingRateFeature{"UkmSamplingRate",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -68,14 +74,10 @@ size_t GetMaxEntries() {
 
 // Returns whether |url| has one of the schemes supported for logging to UKM.
 // URLs with other schemes will not be logged.
-// Note: This currently excludes chrome-extension:// URLs as in order to log
-// them, UKM needs to take into account extension-sync consent, which is not
-// yet done.
 bool HasSupportedScheme(const GURL& url) {
-  // Note: kChromeUIScheme is defined in content, which this code can't
-  // depend on - since it's used by iOS too. So "chrome" is hardcoded here.
   return url.SchemeIsHTTPOrHTTPS() || url.SchemeIs(url::kFtpScheme) ||
-         url.SchemeIs(url::kAboutScheme) || url.SchemeIs("chrome");
+         url.SchemeIs(url::kAboutScheme) || url.SchemeIs(kChromeUIScheme) ||
+         url.SchemeIs(kExtensionScheme);
 }
 
 // True if we should record the initial_url field of the UKM Source proto.
@@ -91,6 +93,8 @@ enum class DroppedDataReason {
   NOT_WHITELISTED = 3,
   UNSUPPORTED_URL_SCHEME = 4,
   SAMPLED_OUT = 5,
+  EXTENSION_URLS_DISABLED = 6,
+  EXTENSION_NOT_SYNCED = 7,
   NUM_DROPPED_DATA_REASONS
 };
 
@@ -136,20 +140,27 @@ GURL SanitizeURL(const GURL& url) {
 UkmRecorderImpl::UkmRecorderImpl() : recording_enabled_(false) {}
 UkmRecorderImpl::~UkmRecorderImpl() = default;
 
-void UkmRecorderImpl::EnableRecording() {
-  DVLOG(1) << "UkmRecorderImpl::EnableRecording";
+void UkmRecorderImpl::EnableRecording(bool extensions) {
+  DVLOG(1) << "UkmRecorderImpl::EnableRecording, extensions=" << extensions;
   recording_enabled_ = true;
+  extensions_enabled_ = extensions;
 }
 
 void UkmRecorderImpl::DisableRecording() {
   DVLOG(1) << "UkmRecorderImpl::DisableRecording";
   recording_enabled_ = false;
+  extensions_enabled_ = false;
 }
 
 void UkmRecorderImpl::Purge() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   sources_.clear();
   entries_.clear();
+}
+
+void UkmRecorderImpl::SetIsWebstoreExtensionCallback(
+    const IsWebstoreExtensionCallback& callback) {
+  is_webstore_extension_callback_ = callback;
 }
 
 void UkmRecorderImpl::StoreRecordingsInReport(Report* report) {
@@ -268,6 +279,19 @@ void UkmRecorderImpl::UpdateSourceURL(SourceId source_id,
   if (!HasSupportedScheme(url)) {
     RecordDroppedSource(DroppedDataReason::UNSUPPORTED_URL_SCHEME);
     return;
+  }
+
+  // Extension URLs need to be specifically enabled and the extension synced.
+  if (url.SchemeIs(kExtensionScheme)) {
+    if (!extensions_enabled_) {
+      RecordDroppedSource(DroppedDataReason::EXTENSION_URLS_DISABLED);
+      return;
+    }
+    if (!is_webstore_extension_callback_ ||
+        !is_webstore_extension_callback_.Run(url.host_piece())) {
+      RecordDroppedSource(DroppedDataReason::EXTENSION_NOT_SYNCED);
+      return;
+    }
   }
 
   // Update the pre-existing source if there is any. This happens when the

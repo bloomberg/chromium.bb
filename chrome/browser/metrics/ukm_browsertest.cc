@@ -124,6 +124,10 @@ class UkmBrowserTest : public SyncTest {
     auto* service = ukm_service();
     return service ? service->recording_enabled_ : false;
   }
+  bool ukm_extensions_enabled() const {
+    auto* service = ukm_service();
+    return service ? service->extensions_enabled_ : false;
+  }
   uint64_t client_id() const {
     auto* service = ukm_service();
     DCHECK(service);
@@ -420,8 +424,8 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, ConsentAddedButNoSyncCheck) {
   CloseBrowserSynchronously(browser);
 }
 
-// Make sure that UKM is disabled when an open sync window disables it.
-IN_PROC_BROWSER_TEST_F(UkmBrowserTest, SingleDisableSyncCheck) {
+// Make sure that UKM is disabled when an open sync window disables history.
+IN_PROC_BROWSER_TEST_F(UkmBrowserTest, SingleDisableHistorySyncCheck) {
   MetricsConsentOverride metrics_consent(true);
 
   Profile* profile = ProfileManager::GetActiveUserProfile();
@@ -445,8 +449,8 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, SingleDisableSyncCheck) {
   CloseBrowserSynchronously(sync_browser);
 }
 
-// Make sure that UKM is disabled when any open sync window disables it.
-IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MultiDisableSyncCheck) {
+// Make sure that UKM is disabled when any open sync window disables history.
+IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MultiDisableHistorySyncCheck) {
   MetricsConsentOverride metrics_consent(true);
 
   Profile* profile1 = ProfileManager::GetActiveUserProfile();
@@ -473,6 +477,74 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MultiDisableSyncCheck) {
 
   harness2->EnableSyncForDatatype(syncer::TYPED_URLS);
   EXPECT_TRUE(ukm_enabled());
+  EXPECT_EQ(original_client_id, client_id());
+
+  harness2->service()->RequestStop(
+      browser_sync::ProfileSyncService::CLEAR_DATA);
+  harness1->service()->RequestStop(
+      browser_sync::ProfileSyncService::CLEAR_DATA);
+  CloseBrowserSynchronously(browser2);
+  CloseBrowserSynchronously(browser1);
+}
+
+// Make sure that extension URLs are disabled when an open sync window
+// disables it.
+IN_PROC_BROWSER_TEST_F(UkmBrowserTest, SingleDisableExtensionsSyncCheck) {
+  MetricsConsentOverride metrics_consent(true);
+
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  std::unique_ptr<ProfileSyncServiceHarness> harness =
+      EnableSyncForProfile(profile);
+
+  Browser* sync_browser = CreateBrowser(profile);
+  EXPECT_TRUE(ukm_enabled());
+  EXPECT_TRUE(ukm_extensions_enabled());
+  uint64_t original_client_id = client_id();
+  EXPECT_NE(0U, original_client_id);
+
+  harness->DisableSyncForDatatype(syncer::EXTENSIONS);
+  EXPECT_TRUE(ukm_enabled());
+  EXPECT_FALSE(ukm_extensions_enabled());
+
+  harness->EnableSyncForDatatype(syncer::EXTENSIONS);
+  EXPECT_TRUE(ukm_enabled());
+  EXPECT_TRUE(ukm_extensions_enabled());
+  // Client ID should not be reset.
+  EXPECT_EQ(original_client_id, client_id());
+
+  harness->service()->RequestStop(browser_sync::ProfileSyncService::CLEAR_DATA);
+  CloseBrowserSynchronously(sync_browser);
+}
+
+// Make sure that extension URLs are disabled when any open sync window
+// disables it.
+IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MultiDisableExtensionsSyncCheck) {
+  MetricsConsentOverride metrics_consent(true);
+
+  Profile* profile1 = ProfileManager::GetActiveUserProfile();
+  std::unique_ptr<ProfileSyncServiceHarness> harness1 =
+      EnableSyncForProfile(profile1);
+
+  Browser* browser1 = CreateBrowser(profile1);
+  EXPECT_TRUE(ukm_enabled());
+  uint64_t original_client_id = client_id();
+  EXPECT_NE(0U, original_client_id);
+
+  Profile* profile2 = CreateNonSyncProfile();
+  std::unique_ptr<ProfileSyncServiceHarness> harness2 =
+      EnableSyncForProfile(profile2);
+  Browser* browser2 = CreateBrowser(profile2);
+  EXPECT_TRUE(ukm_enabled());
+  EXPECT_TRUE(ukm_extensions_enabled());
+  EXPECT_EQ(original_client_id, client_id());
+
+  harness2->DisableSyncForDatatype(syncer::EXTENSIONS);
+  EXPECT_TRUE(ukm_enabled());
+  EXPECT_FALSE(ukm_extensions_enabled());
+
+  harness2->EnableSyncForDatatype(syncer::EXTENSIONS);
+  EXPECT_TRUE(ukm_enabled());
+  EXPECT_TRUE(ukm_extensions_enabled());
   EXPECT_EQ(original_client_id, client_id());
 
   harness2->service()->RequestStop(

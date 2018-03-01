@@ -13,6 +13,7 @@
 
 #include "base/callback.h"
 #include "base/containers/circular_deque.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
@@ -87,6 +88,7 @@ class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
   metrics::EnableMetricsDefault GetMetricsReportingDefaultState() override;
   bool IsUMACellularUploadLogicEnabled() override;
   bool IsHistorySyncEnabledOnAllProfiles() override;
+  bool IsExtensionSyncEnabledOnAllProfiles() override;
 
   // ukm::HistoryDeleteObserver:
   void OnHistoryDeleted() override;
@@ -107,6 +109,8 @@ class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
   static const char kBrowserMetricsName[];
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(ChromeMetricsServiceClientTest, IsWebstoreExtension);
+
   explicit ChromeMetricsServiceClient(
       metrics::MetricsStateManager* state_manager);
 
@@ -157,6 +161,9 @@ class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
   // any previous browser processes which generated a crash dump.
   void CountBrowserCrashDumpAttempts();
 #endif  // OS_WIN
+
+  // Check if an extension is installed via the Web Store.
+  static bool IsWebstoreExtension(base::StringPiece id);
 
   SEQUENCE_CHECKER(sequence_checker_);
 

@@ -122,6 +122,9 @@ class MetricsServiceClient {
   // Returns if history sync is enabled on all active profiles.
   virtual bool IsHistorySyncEnabledOnAllProfiles();
 
+  // Returns if extensions sync is enabled on all active profiles.
+  virtual bool IsExtensionSyncEnabledOnAllProfiles();
+
   // Sets the callback to run MetricsServiceManager::UpdateRunningServices.
   void SetUpdateRunningServicesCallback(const base::Closure& callback);
 

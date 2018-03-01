@@ -43773,6 +43773,8 @@ Full version information for the fingerprint enum values:
   <int value="3" label="Not whitelisted"/>
   <int value="4" label="Unsupported URL scheme"/>
   <int value="5" label="Sampled out"/>
+  <int value="6" label="Extension URLs disabled"/>
+  <int value="7" label="Extension not synced"/>
 </enum>
 
 <enum name="UmaCleanExitConsistency">

@@ -26,6 +26,7 @@
 #include "base/path_service.h"
 #include "base/rand_util.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_piece.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/task_scheduler/task_traits.h"
 #include "base/threading/platform_thread.h"
@@ -88,7 +89,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/histogram_fetcher.h"
 #include "content/public/browser/notification_service.h"
-#include "extensions/features/features.h"
 #include "ppapi/features/features.h"
 #include "printing/features/features.h"
 
@@ -109,6 +109,9 @@
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/metrics/extensions_metrics_provider.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/common/extension.h"
+#include "extensions/features/features.h"
 #endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -547,6 +550,8 @@ void ChromeMetricsServiceClient::Initialize() {
   if (IsMetricsReportingForceEnabled() ||
       base::FeatureList::IsEnabled(ukm::kUkmFeature)) {
     ukm_service_.reset(new ukm::UkmService(local_state, this));
+    ukm_service_->SetIsWebstoreExtensionCallback(
+        base::BindRepeating(&IsWebstoreExtension));
     RegisterUKMProviders();
   }
 }
@@ -915,6 +920,35 @@ void ChromeMetricsServiceClient::OnSyncPrefsChanged(bool must_purge) {
 }
 
 // static
+bool ChromeMetricsServiceClient::IsWebstoreExtension(base::StringPiece id) {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  // Only acceptable if at least one profile knows the extension and all
+  // profiles that know the extension say it was from the web-store.
+  bool matched = false;
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  DCHECK(profile_manager);
+  auto profiles = profile_manager->GetLoadedProfiles();
+  for (Profile* profile : profiles) {
+    DCHECK(profile);
+    extensions::ExtensionRegistry* registry =
+        extensions::ExtensionRegistry::Get(profile);
+    if (!registry)
+      continue;
+    const extensions::Extension* extension = registry->GetExtensionById(
+        id.as_string(), extensions::ExtensionRegistry::ENABLED);
+    if (!extension)
+      continue;
+    if (!extension->from_webstore())
+      return false;
+    matched = true;
+  }
+  return matched;
+#else
+  return false;
+#endif
+}
+
+// static
 metrics::FileMetricsProvider::FilterAction
 ChromeMetricsServiceClient::FilterBrowserMetricsFiles(
     const base::FilePath& path) {
@@ -941,4 +975,8 @@ void ChromeMetricsServiceClient::SetIsProcessRunningForTesting(
 
 bool ChromeMetricsServiceClient::IsHistorySyncEnabledOnAllProfiles() {
   return SyncDisableObserver::IsHistorySyncEnabledOnAllProfiles();
+}
+
+bool ChromeMetricsServiceClient::IsExtensionSyncEnabledOnAllProfiles() {
+  return SyncDisableObserver::IsExtensionSyncEnabledOnAllProfiles();
 }

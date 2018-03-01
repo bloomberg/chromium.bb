@@ -9,20 +9,24 @@
 namespace ukm {
 
 SyncDisableObserver::SyncDisableObserver()
-    : sync_observer_(this), all_profiles_enabled_(false) {}
+    : sync_observer_(this),
+      all_histories_enabled_(false),
+      all_extensions_enabled_(false) {}
 
 SyncDisableObserver::~SyncDisableObserver() {}
 
 // static
 SyncDisableObserver::SyncState SyncDisableObserver::GetSyncState(
     syncer::SyncService* sync_service) {
-  const bool initialized = sync_service->IsEngineInitialized();
-  return SyncDisableObserver::SyncState{
-      sync_service->GetPreferredDataTypes().Has(
-          syncer::HISTORY_DELETE_DIRECTIVES),
-      initialized,
-      initialized ? sync_service->IsUsingSecondaryPassphrase() : false,
-  };
+  SyncState state;
+  state.history_enabled = sync_service->GetPreferredDataTypes().Has(
+      syncer::HISTORY_DELETE_DIRECTIVES);
+  state.extensions_enabled =
+      sync_service->GetPreferredDataTypes().Has(syncer::EXTENSIONS);
+  state.initialized = sync_service->IsEngineInitialized();
+  state.passphrase_protected =
+      state.initialized && sync_service->IsUsingSecondaryPassphrase();
+  return state;
 }
 
 void SyncDisableObserver::ObserveServiceForSyncDisables(
@@ -33,20 +37,37 @@ void SyncDisableObserver::ObserveServiceForSyncDisables(
 }
 
 void SyncDisableObserver::UpdateAllProfileEnabled(bool must_purge) {
-  bool all_enabled = AreAllProfilesEnabled();
-  if (must_purge || (all_enabled != all_profiles_enabled_)) {
-    all_profiles_enabled_ = all_enabled;
+  bool all_enabled = CheckHistorySyncOnAllProfiles();
+  bool all_extensions_enabled =
+      all_enabled && CheckExtensionSyncOnAllProfiles();
+  // Any change in sync settings needs to call OnSyncPrefsChanged so that the
+  // new settings take effect.
+  if (must_purge || (all_enabled != all_histories_enabled_) ||
+      (all_extensions_enabled != all_extensions_enabled_)) {
+    all_histories_enabled_ = all_enabled;
+    all_extensions_enabled_ = all_extensions_enabled;
     OnSyncPrefsChanged(must_purge);
   }
 }
 
-bool SyncDisableObserver::AreAllProfilesEnabled() {
+bool SyncDisableObserver::CheckHistorySyncOnAllProfiles() {
   if (previous_states_.empty())
     return false;
   for (const auto& kv : previous_states_) {
     const SyncDisableObserver::SyncState& state = kv.second;
     if (!state.history_enabled || !state.initialized ||
         state.passphrase_protected)
+      return false;
+  }
+  return true;
+}
+
+bool SyncDisableObserver::CheckExtensionSyncOnAllProfiles() {
+  if (previous_states_.empty())
+    return false;
+  for (const auto& kv : previous_states_) {
+    const SyncDisableObserver::SyncState& state = kv.second;
+    if (!state.extensions_enabled)
       return false;
   }
   return true;
@@ -78,7 +99,11 @@ void SyncDisableObserver::OnSyncShutdown(syncer::SyncService* sync) {
 }
 
 bool SyncDisableObserver::IsHistorySyncEnabledOnAllProfiles() {
-  return all_profiles_enabled_;
+  return all_histories_enabled_;
+}
+
+bool SyncDisableObserver::IsExtensionSyncEnabledOnAllProfiles() {
+  return all_extensions_enabled_;
 }
 
 }  // namespace ukm

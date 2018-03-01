@@ -9,9 +9,11 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/hash.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_simple_task_runner.h"
@@ -55,6 +57,10 @@ class TestRecordingHelper {
 };
 
 namespace {
+
+bool TestIsWebstoreExtension(base::StringPiece id) {
+  return (id == "bhcnanendmgjjeghamaccjnochlnhcgj");
+}
 
 // TODO(rkaplow): consider making this a generic testing class in
 // components/variations.
@@ -169,7 +175,7 @@ TEST_F(UkmServiceTest, EnableDisableSchedule) {
   EXPECT_FALSE(task_runner_->HasPendingTask());
   service.Initialize();
   EXPECT_FALSE(task_runner_->HasPendingTask());
-  service.EnableRecording();
+  service.EnableRecording(/*extensions=*/false);
   service.EnableReporting();
   EXPECT_TRUE(task_runner_->HasPendingTask());
   service.DisableReporting();
@@ -183,7 +189,7 @@ TEST_F(UkmServiceTest, PersistAndPurge) {
   EXPECT_EQ(GetPersistedLogCount(), 0);
   service.Initialize();
   task_runner_->RunUntilIdle();
-  service.EnableRecording();
+  service.EnableRecording(/*extensions=*/false);
   service.EnableReporting();
 
   SourceId id = GetWhitelistedSourceId(0);
@@ -209,7 +215,7 @@ TEST_F(UkmServiceTest, SourceSerialization) {
   EXPECT_EQ(GetPersistedLogCount(), 0);
   service.Initialize();
   task_runner_->RunUntilIdle();
-  service.EnableRecording();
+  service.EnableRecording(/*extensions=*/false);
   service.EnableReporting();
 
   ukm::SourceId id = GetWhitelistedSourceId(0);
@@ -236,7 +242,7 @@ TEST_F(UkmServiceTest, EntryBuilderAndSerialization) {
   EXPECT_EQ(0, GetPersistedLogCount());
   service.Initialize();
   task_runner_->RunUntilIdle();
-  service.EnableRecording();
+  service.EnableRecording(/*extensions=*/false);
   service.EnableReporting();
 
   ukm::SourceId id = GetWhitelistedSourceId(0);
@@ -300,7 +306,7 @@ TEST_F(UkmServiceTest, AddEntryWithEmptyMetrics) {
   EXPECT_EQ(0, GetPersistedLogCount());
   service.Initialize();
   task_runner_->RunUntilIdle();
-  service.EnableRecording();
+  service.EnableRecording(/*extensions=*/false);
   service.EnableReporting();
 
   ukm::SourceId id = GetWhitelistedSourceId(0);
@@ -327,7 +333,7 @@ TEST_F(UkmServiceTest, MetricsProviderTest) {
   EXPECT_FALSE(provider->provide_system_profile_metrics_called());
 
   task_runner_->RunUntilIdle();
-  service.EnableRecording();
+  service.EnableRecording(/*extensions=*/false);
   service.EnableReporting();
 
   ukm::SourceId id = GetWhitelistedSourceId(0);
@@ -354,7 +360,7 @@ TEST_F(UkmServiceTest, LogsRotation) {
   EXPECT_EQ(GetPersistedLogCount(), 0);
   service.Initialize();
   task_runner_->RunUntilIdle();
-  service.EnableRecording();
+  service.EnableRecording(/*extensions=*/false);
   service.EnableReporting();
 
   EXPECT_EQ(0, service.report_count());
@@ -394,7 +400,7 @@ TEST_F(UkmServiceTest, LogsUploadedOnlyWhenHavingSourcesOrEntries) {
   EXPECT_EQ(GetPersistedLogCount(), 0);
   service.Initialize();
   task_runner_->RunUntilIdle();
-  service.EnableRecording();
+  service.EnableRecording(/*extensions=*/false);
   service.EnableReporting();
 
   EXPECT_TRUE(task_runner_->HasPendingTask());
@@ -455,7 +461,7 @@ TEST_F(UkmServiceTest, RecordInitialUrl) {
     EXPECT_EQ(GetPersistedLogCount(), 0);
     service.Initialize();
     task_runner_->RunUntilIdle();
-    service.EnableRecording();
+    service.EnableRecording(/*extensions=*/false);
     service.EnableReporting();
 
     ukm::SourceId id = GetWhitelistedSourceId(0);
@@ -494,7 +500,7 @@ TEST_F(UkmServiceTest, RestrictToWhitelistedSourceIds) {
     EXPECT_EQ(GetPersistedLogCount(), 0);
     service.Initialize();
     task_runner_->RunUntilIdle();
-    service.EnableRecording();
+    service.EnableRecording(/*extensions=*/false);
     service.EnableReporting();
 
     ukm::SourceId id1 = GetWhitelistedSourceId(0);
@@ -536,7 +542,7 @@ TEST_F(UkmServiceTest, RecordSessionId) {
   EXPECT_EQ(0, GetPersistedLogCount());
   service.Initialize();
   task_runner_->RunUntilIdle();
-  service.EnableRecording();
+  service.EnableRecording(/*extensions=*/false);
   service.EnableReporting();
 
   auto id = GetWhitelistedSourceId(0);
@@ -562,7 +568,7 @@ TEST_F(UkmServiceTest, SourceSize) {
   EXPECT_EQ(0, GetPersistedLogCount());
   service.Initialize();
   task_runner_->RunUntilIdle();
-  service.EnableRecording();
+  service.EnableRecording(/*extensions=*/false);
   service.EnableReporting();
 
   auto id = GetWhitelistedSourceId(0);
@@ -587,7 +593,7 @@ TEST_F(UkmServiceTest, PurgeMidUpload) {
   EXPECT_EQ(GetPersistedLogCount(), 0);
   service.Initialize();
   task_runner_->RunUntilIdle();
-  service.EnableRecording();
+  service.EnableRecording(/*extensions=*/false);
   service.EnableReporting();
   auto id = GetWhitelistedSourceId(0);
   recorder.UpdateSourceURL(id, GURL("https://google.com/foobar1"));
@@ -614,7 +620,7 @@ TEST_F(UkmServiceTest, WhitelistEntryTest) {
   EXPECT_EQ(0, GetPersistedLogCount());
   service.Initialize();
   task_runner_->RunUntilIdle();
-  service.EnableRecording();
+  service.EnableRecording(/*extensions=*/false);
   service.EnableReporting();
 
   auto id = GetWhitelistedSourceId(0);
@@ -660,7 +666,7 @@ TEST_F(UkmServiceTest, SourceURLLength) {
   EXPECT_EQ(0, GetPersistedLogCount());
   service.Initialize();
   task_runner_->RunUntilIdle();
-  service.EnableRecording();
+  service.EnableRecording(/*extensions=*/false);
   service.EnableReporting();
 
   auto id = GetWhitelistedSourceId(0);
@@ -695,7 +701,7 @@ TEST_F(UkmServiceTest, UnreferencedNonWhitelistedSources) {
     EXPECT_EQ(0, GetPersistedLogCount());
     service.Initialize();
     task_runner_->RunUntilIdle();
-    service.EnableRecording();
+    service.EnableRecording(/*extensions=*/false);
     service.EnableReporting();
 
     std::vector<SourceId> ids;
@@ -761,7 +767,7 @@ TEST_F(UkmServiceTest, UnreferencedNonWhitelistedSources) {
   }
 }
 
-TEST_F(UkmServiceTest, UnsupportedSchemes) {
+TEST_F(UkmServiceTest, SupportedSchemes) {
   struct {
     const char* url;
     bool expected_kept;
@@ -771,8 +777,67 @@ TEST_F(UkmServiceTest, UnsupportedSchemes) {
       {"ftp://google.ca/", true},
       {"about:blank", true},
       {"chrome://version/", true},
+      // chrome-extension are controlled by TestIsWebstoreExtension, above.
+      {"chrome-extension://bhcnanendmgjjeghamaccjnochlnhcgj/", true},
+      {"chrome-extension://abcdefghijklmnopqrstuvwxyzabcdef/", false},
       {"file:///tmp/", false},
-      {"chrome-extension://bhcnanendmgjjeghamaccjnochlnhcgj", false},
+      {"abc://google.ca/", false},
+      {"www.google.ca/", false},
+  };
+
+  base::FieldTrialList field_trial_list(nullptr /* entropy_provider */);
+  ScopedUkmFeatureParams params(base::FeatureList::OVERRIDE_ENABLE_FEATURE, {});
+  UkmService service(&prefs_, &client_);
+  TestRecordingHelper recorder(&service);
+  service.SetIsWebstoreExtensionCallback(
+      base::BindRepeating(&TestIsWebstoreExtension));
+
+  EXPECT_EQ(GetPersistedLogCount(), 0);
+  service.Initialize();
+  task_runner_->RunUntilIdle();
+  service.EnableRecording(/*extensions=*/true);
+  service.EnableReporting();
+
+  int64_t id_counter = 1;
+  int expected_kept_count = 0;
+  for (const auto& test : test_cases) {
+    auto source_id = GetWhitelistedSourceId(id_counter++);
+    recorder.UpdateSourceURL(source_id, GURL(test.url));
+    recorder.GetEntryBuilder(source_id, "FakeEntry");
+    if (test.expected_kept)
+      ++expected_kept_count;
+  }
+
+  service.Flush();
+  EXPECT_EQ(GetPersistedLogCount(), 1);
+  Report proto_report = GetPersistedReport();
+
+  EXPECT_EQ(expected_kept_count, proto_report.sources_size());
+  for (const auto& test : test_cases) {
+    bool found = false;
+    for (int i = 0; i < proto_report.sources_size(); ++i) {
+      if (proto_report.sources(i).url() == test.url) {
+        found = true;
+        break;
+      }
+    }
+    EXPECT_EQ(test.expected_kept, found) << test.url;
+  }
+}
+
+TEST_F(UkmServiceTest, SupportedSchemesNoExtensions) {
+  struct {
+    const char* url;
+    bool expected_kept;
+  } test_cases[] = {
+      {"http://google.ca/", true},
+      {"https://google.ca/", true},
+      {"ftp://google.ca/", true},
+      {"about:blank", true},
+      {"chrome://version/", true},
+      {"chrome-extension://bhcnanendmgjjeghamaccjnochlnhcgj/", false},
+      {"chrome-extension://abcdefghijklmnopqrstuvwxyzabcdef/", false},
+      {"file:///tmp/", false},
       {"abc://google.ca/", false},
       {"www.google.ca/", false},
   };
@@ -785,7 +850,7 @@ TEST_F(UkmServiceTest, UnsupportedSchemes) {
   EXPECT_EQ(GetPersistedLogCount(), 0);
   service.Initialize();
   task_runner_->RunUntilIdle();
-  service.EnableRecording();
+  service.EnableRecording(/*extensions=*/false);
   service.EnableReporting();
 
   int64_t id_counter = 1;
@@ -821,7 +886,7 @@ TEST_F(UkmServiceTest, SanitizeUrlAuthParams) {
   EXPECT_EQ(0, GetPersistedLogCount());
   service.Initialize();
   task_runner_->RunUntilIdle();
-  service.EnableRecording();
+  service.EnableRecording(/*extensions=*/false);
   service.EnableReporting();
 
   auto id = GetWhitelistedSourceId(0);
@@ -857,7 +922,7 @@ TEST_F(UkmServiceTest, SanitizeChromeUrlParams) {
     EXPECT_EQ(0, GetPersistedLogCount());
     service.Initialize();
     task_runner_->RunUntilIdle();
-    service.EnableRecording();
+    service.EnableRecording(/*extensions=*/false);
     service.EnableReporting();
 
     auto id = GetWhitelistedSourceId(0);
