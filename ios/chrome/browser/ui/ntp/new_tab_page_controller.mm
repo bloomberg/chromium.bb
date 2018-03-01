@@ -288,6 +288,8 @@ const CGFloat kToolbarHeight = 56;
     base::RecordAction(UserMetricsAction("MobileNTPSwitchToMostVisited"));
   } else if (selectedItem.identifier == ntp_home::RECENT_TABS_PANEL) {
     base::RecordAction(UserMetricsAction("MobileNTPSwitchToOpenTabs"));
+  } else if (selectedItem.identifier == ntp_home::BOOKMARKS_PANEL) {
+    base::RecordAction(UserMetricsAction("MobileNTPSwitchToBookmarks"));
   }
 }
 

@@ -257,15 +257,19 @@ const char kRateThisAppCommand[] = "ratethisapp";
     switch (mostVisitedItem.action) {
       case ContentSuggestionsMostVisitedActionBookmark:
         [self.dispatcher showBookmarksManager];
+        base::RecordAction(base::UserMetricsAction("MobileNTPShowBookmarks"));
         break;
       case ContentSuggestionsMostVisitedActionReadingList:
         [self.dispatcher showReadingList];
+        base::RecordAction(base::UserMetricsAction("MobileNTPShowReadingList"));
         break;
       case ContentSuggestionsMostVisitedActionRecentTabs:
         [self.dispatcher showRecentTabs];
+        base::RecordAction(base::UserMetricsAction("MobileNTPShowRecentTabs"));
         break;
       case ContentSuggestionsMostVisitedActionHistory:
         [self.dispatcher showHistory];
+        base::RecordAction(base::UserMetricsAction("MobileNTPShowHistory"));
         break;
     }
     return;
