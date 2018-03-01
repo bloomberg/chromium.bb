@@ -238,8 +238,8 @@ void LoginHandler::Observe(int type,
   // Ignore login notification events from other profiles.
   NavigationController* controller =
       content::Source<NavigationController>(source).ptr();
-  if (controller->GetBrowserContext() !=
-      requesting_contents->GetBrowserContext()) {
+  if (!controller || controller->GetBrowserContext() !=
+                         requesting_contents->GetBrowserContext()) {
     return;
   }
 
