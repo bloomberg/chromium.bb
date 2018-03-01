@@ -86,7 +86,7 @@
 #include "content/browser/websockets/websocket_manager.h"
 #include "content/browser/webui/url_data_manager_backend.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
-#include "content/browser/webui/web_ui_url_loader_factory.h"
+#include "content/browser/webui/web_ui_url_loader_factory_internal.h"
 #include "content/common/accessibility_messages.h"
 #include "content/common/associated_interface_provider_impl.h"
 #include "content/common/associated_interface_registry_impl.h"
@@ -3559,7 +3559,7 @@ void RenderFrameHostImpl::CommitNavigation(
       const auto& schemes = URLDataManagerBackend::GetWebUISchemes();
       if (std::find(schemes.begin(), schemes.end(), scheme) != schemes.end()) {
         network::mojom::URLLoaderFactoryPtr factory_for_webui =
-            CreateWebUIURLLoader(this, scheme);
+            CreateWebUIURLLoaderBinding(this, scheme);
         if (enabled_bindings_ & BINDINGS_POLICY_WEB_UI) {
           // If the renderer has webui bindings, then don't give it access to
           // network loader for security reasons.

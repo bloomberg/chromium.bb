@@ -2945,6 +2945,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="197" label="RWH_COPY_REQUEST_ATTEMPT"/>
   <int value="198" label="SYNC_COMPOSITOR_NO_FUTURE_FRAME"/>
   <int value="199" label="SYNC_COMPOSITOR_NO_BEGIN_FRAME"/>
+  <int value="200" label="WEBUI_BAD_HOST_ACCESS"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions">

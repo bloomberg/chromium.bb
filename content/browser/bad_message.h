@@ -224,6 +224,7 @@ enum BadMessageReason {
   RWH_COPY_REQUEST_ATTEMPT = 197,
   SYNC_COMPOSITOR_NO_FUTURE_FRAME = 198,
   SYNC_COMPOSITOR_NO_BEGIN_FRAME = 199,
+  WEBUI_BAD_HOST_ACCESS = 200,
 
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. RenderFrameHost becomes RFH) plus a unique description of the

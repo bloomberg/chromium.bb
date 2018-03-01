@@ -45,6 +45,8 @@ void ChromeExtensionWebContentsObserver::RenderFrameCreated(
   ReloadIfTerminated(render_frame_host);
   ExtensionWebContentsObserver::RenderFrameCreated(render_frame_host);
 
+  // This logic should match
+  // ChromeContentBrowserClient::RegisterNonNetworkSubresourceURLLoaderFactories.
   const Extension* extension = GetExtensionFromFrame(render_frame_host, false);
   if (!extension)
     return;
