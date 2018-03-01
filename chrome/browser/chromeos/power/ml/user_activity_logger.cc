@@ -229,13 +229,17 @@ void UserActivityLogger::ExtractFeatures(
   features_.set_recent_time_active_sec(
       activity_data.recent_time_active.InSeconds());
 
+  if (activity_data.time_since_last_key) {
+    features_.set_time_since_last_key_sec(
+        activity_data.time_since_last_key.value().InSeconds());
+  }
   if (activity_data.time_since_last_mouse) {
     features_.set_time_since_last_mouse_sec(
         activity_data.time_since_last_mouse.value().InSeconds());
   }
-  if (activity_data.time_since_last_key) {
-    features_.set_time_since_last_key_sec(
-        activity_data.time_since_last_key.value().InSeconds());
+  if (activity_data.time_since_last_touch) {
+    features_.set_time_since_last_touch_sec(
+        activity_data.time_since_last_touch.value().InSeconds());
   }
 
   features_.set_video_playing_time_sec(
@@ -245,6 +249,12 @@ void UserActivityLogger::ExtractFeatures(
     features_.set_time_since_video_ended_sec(
         activity_data.time_since_video_ended.value().InSeconds());
   }
+
+  features_.set_key_events_in_last_hour(activity_data.key_events_in_last_hour);
+  features_.set_mouse_events_in_last_hour(
+      activity_data.mouse_events_in_last_hour);
+  features_.set_touch_events_in_last_hour(
+      activity_data.touch_events_in_last_hour);
 
   // Set device mode.
   if (lid_state_ == chromeos::PowerManagerClient::LidState::CLOSED) {

@@ -54,11 +54,12 @@ class UserActivityLoggerDelegateUkmTest
     features->set_key_events_in_last_hour(20000);
     features->set_recent_time_active_sec(10);
     features->set_video_playing_time_sec(800);
-    features->set_time_since_video_ended_sec(400);
-    features->set_mouse_events_in_last_hour(89);
     features->set_on_to_dim_sec(100);
     features->set_dim_to_screen_off_sec(200);
     features->set_time_since_last_mouse_sec(100);
+    features->set_time_since_last_touch_sec(311);
+    features->set_time_since_video_ended_sec(400);
+    features->set_mouse_events_in_last_hour(89);
     features->set_touch_events_in_last_hour(1890);
   }
 
@@ -156,6 +157,7 @@ class UserActivityLoggerDelegateUkmTest
       {UserActivity::kSequenceIdName, 1},
       {UserActivity::kTimeSinceLastKeyName, base::nullopt},
       {UserActivity::kTimeSinceLastMouseName, 100},
+      {UserActivity::kTimeSinceLastTouchName, 311},
       {UserActivity::kTimeSinceLastVideoEndedName, 360},
       {UserActivity::kTouchEventsInLastHourName, 1000}};
 

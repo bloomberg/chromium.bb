@@ -30,6 +30,7 @@ namespace power {
 namespace ml {
 
 class BootClock;
+class RecentEventsCounter;
 
 // This is time since midnight in the local time zone and may move back or
 // forward when DST starts or stops.
@@ -47,12 +48,21 @@ class IdleEventNotifier : public PowerManagerClient::Observer,
   static constexpr base::TimeDelta kIdleDelay =
       base::TimeDelta::FromSeconds(30);
 
+  // Count number of key, mouse and touch events in the past hour.
+  static constexpr base::TimeDelta kUserInputEventsDuration =
+      base::TimeDelta::FromMinutes(60);
+
+  // Granularity of input events is per minute.
+  static constexpr int kNumUserInputEventsBuckets =
+      kUserInputEventsDuration / base::TimeDelta::FromMinutes(1);
+
   struct ActivityData {
     ActivityData();
 
     ActivityData(const ActivityData& input_data);
 
-    UserActivityEvent_Features_DayOfWeek last_activity_day;
+    UserActivityEvent_Features_DayOfWeek last_activity_day =
+        UserActivityEvent_Features_DayOfWeek_SUN;
 
     // Last activity time. This is the activity that triggers idle event.
     TimeOfDay last_activity_time_of_day;
@@ -66,16 +76,21 @@ class IdleEventNotifier : public PowerManagerClient::Observer,
     // Duration of activity up to the last activity.
     base::TimeDelta recent_time_active;
 
-    // Duration from the Last mouse/key to the time when idle event is
-    // generated.  It is unset if there is no mouse/key activity before the idle
-    // event.
-    base::Optional<base::TimeDelta> time_since_last_mouse;
+    // Duration from the last key/mouse/touch to the time when idle event is
+    // generated.  It is unset if there is no key/mouse/touch activity before
+    // the idle event.
     base::Optional<base::TimeDelta> time_since_last_key;
+    base::Optional<base::TimeDelta> time_since_last_mouse;
+    base::Optional<base::TimeDelta> time_since_last_touch;
     // How long recent video has been playing.
     base::TimeDelta video_playing_time;
     // Duration from when video ended. It is unset if video did not play
     // (|video_playing_time| = 0).
     base::Optional<base::TimeDelta> time_since_video_ended;
+
+    int key_events_in_last_hour = 0;
+    int mouse_events_in_last_hour = 0;
+    int touch_events_in_last_hour = 0;
   };
 
   class Observer {
@@ -124,6 +139,7 @@ class IdleEventNotifier : public PowerManagerClient::Observer,
     KEY,
     MOUSE,
     VIDEO,
+    TOUCH
   };
 
   struct ActivityDataInternal;
@@ -172,6 +188,10 @@ class IdleEventNotifier : public PowerManagerClient::Observer,
   // Whether video is playing.
   bool video_playing_ = false;
   mojo::Binding<viz::mojom::VideoDetectorObserver> binding_;
+
+  std::unique_ptr<RecentEventsCounter> key_counter_;
+  std::unique_ptr<RecentEventsCounter> mouse_counter_;
+  std::unique_ptr<RecentEventsCounter> touch_counter_;
 
   DISALLOW_COPY_AND_ASSIGN(IdleEventNotifier);
 };
