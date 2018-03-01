@@ -5,9 +5,6 @@
 # Fails to receive histogram updates http://crbug.com/786151
 -ScrollLatencyBrowserTest.*
 
-# Flaky timeout while waiting for scoll update http://crbug.com/786132
--WheelScrollLatchingBrowserTest.WheelScrollingRelatchWhenLatchedScrollerRemoved
-
 # Need to handle lost context. https://crbug.com/776050
 -WebRtcCaptureFromElementBrowserTest.CaptureFromCanvas2DHandlesContextLoss
 -WebRtcCaptureFromElementBrowserTest.CaptureFromOpaqueCanvas2DHandlesContextLoss
@@ -90,10 +87,6 @@
 -SitePerProcessFeaturePolicyBrowserTest.TestFeaturePolicyReplicationFromRemoteFrames
 -IsolatedOriginTest.ProcessLimit
 -SitePerProcessBrowserTest.RFPHDestruction
-
-# Tests failures related to surface sync. http://crbug.com/793302
--RenderWidgetInitialSizeTest.InitialSize
--RenderWidgetTest.OnResize
 
 # Flaky Result on Windows-7 http://crbug.com/883463
 -MainThreadEventQueueBrowserTest.MouseMove
