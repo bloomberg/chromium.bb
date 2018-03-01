@@ -8,9 +8,7 @@
 
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/sync/model/time.h"
@@ -68,9 +66,6 @@ struct LocalFaviconUpdateInfo {
 };
 
 namespace {
-
-// Maximum number of favicons to keep in memory (0 means no limit).
-const size_t kMaxFaviconsInMem = 0;
 
 // Maximum width/height resolution supported.
 const int kMaxFaviconResolution = 16;
@@ -404,7 +399,8 @@ syncer::SyncError FaviconCache::ProcessSyncChanges(
   return error;
 }
 
-void FaviconCache::OnPageFaviconUpdated(const GURL& page_url) {
+void FaviconCache::OnPageFaviconUpdated(const GURL& page_url,
+                                        base::Time mtime) {
   DCHECK(page_url.is_valid());
 
   // If a favicon load is already happening for this url, let it finish.
@@ -421,7 +417,7 @@ void FaviconCache::OnPageFaviconUpdated(const GURL& page_url) {
         icon_iter->second->bitmap_data[SIZE_16].bitmap_data.get()) {
       DVLOG(2) << "Using cached favicon url for " << page_url.spec()
                << ": " << icon_iter->second->favicon_url.spec();
-      UpdateFaviconVisitTime(icon_iter->second->favicon_url, base::Time::Now());
+      UpdateFaviconVisitTime(icon_iter->second->favicon_url, mtime);
       UpdateSyncState(icon_iter->second->favicon_url,
                       syncer::SyncChange::ACTION_INVALID,
                       syncer::SyncChange::ACTION_UPDATE);
@@ -443,7 +439,7 @@ void FaviconCache::OnPageFaviconUpdated(const GURL& page_url) {
       favicon_service_->GetFaviconForPageURL(
           page_url, SupportedFaviconTypes(), kMaxFaviconResolution,
           base::Bind(&FaviconCache::OnFaviconDataAvailable,
-                     weak_ptr_factory_.GetWeakPtr(), page_url),
+                     weak_ptr_factory_.GetWeakPtr(), page_url, mtime),
           &cancelable_task_tracker_);
   page_task_map_[page_url] = id;
 }
@@ -455,7 +451,7 @@ void FaviconCache::OnFaviconVisited(const GURL& page_url,
       synced_favicons_.find(favicon_url) == synced_favicons_.end()) {
     // TODO(zea): consider triggering a favicon load if we have some but not
     // all desired resolutions?
-    OnPageFaviconUpdated(page_url);
+    OnPageFaviconUpdated(page_url, base::Time::Now());
     return;
   }
 
@@ -506,60 +502,38 @@ bool FaviconCache::GetSyncedFaviconForPageURL(
   return GetSyncedFaviconForFaviconURL(iter->second, favicon_png);
 }
 
-void FaviconCache::OnReceivedSyncFavicon(const GURL& page_url,
-                                         const GURL& icon_url,
-                                         const std::string& icon_bytes,
-                                         int64_t visit_time_ms) {
-  if (!icon_url.is_valid() || !page_url.is_valid() || icon_url.SchemeIs("data"))
-    return;
-  DVLOG(1) << "Associating " << page_url.spec() << " with favicon at "
-           << icon_url.spec();
-  page_favicon_map_[page_url] = icon_url;
+void FaviconCache::UpdateMappingsFromForeignTab(const sync_pb::SessionTab& tab,
+                                                base::Time visit_time) {
+  for (const sync_pb::TabNavigation& navigation : tab.navigation()) {
+    const GURL page_url(navigation.virtual_url());
+    const GURL icon_url(navigation.favicon_url());
 
-  // If there is no actual image, it means there either is no synced
-  // favicon, or it's on its way (race condition).
-  // TODO(zea): potentially trigger a favicon web download here (delayed?).
-  if (icon_bytes.size() == 0)
-    return;
+    if (!icon_url.is_valid() || !page_url.is_valid() ||
+        icon_url.SchemeIs("data")) {
+      continue;
+    }
 
-  // Post a task to do the actual association because this method may have been
-  // called while in a transaction.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&FaviconCache::OnReceivedSyncFaviconImpl,
-                            weak_ptr_factory_.GetWeakPtr(), icon_url,
-                            icon_bytes, visit_time_ms));
+    DVLOG(1) << "Associating " << page_url << " with favicon at " << icon_url;
+    page_favicon_map_[page_url] = icon_url;
+
+    if (synced_favicons_.count(icon_url) != 0)
+      UpdateFaviconVisitTime(icon_url, visit_time);
+  }
 }
 
-void FaviconCache::OnReceivedSyncFaviconImpl(const GURL& icon_url,
-                                             const std::string& icon_bytes,
-                                             int64_t visit_time_ms) {
-  // If this favicon is already synced, do nothing else.
-  if (synced_favicons_.find(icon_url) != synced_favicons_.end())
-    return;
+size_t FaviconCache::NumFaviconsForTest() const {
+  return synced_favicons_.size();
+}
 
-  // Don't add any more favicons once we hit our in memory limit.
-  // TODO(zea): UMA this.
-  if (kMaxFaviconsInMem != 0 && synced_favicons_.size() > kMaxFaviconsInMem)
-    return;
+size_t FaviconCache::NumTasksForTest() const {
+  return page_task_map_.size();
+}
 
-  SyncedFaviconInfo* favicon_info = GetFaviconInfo(icon_url);
-  if (!favicon_info)
-    return;  // We reached the in-memory limit.
-  base::RefCountedString* temp_string = new base::RefCountedString();
-  temp_string->data() = icon_bytes;
-  favicon_info->bitmap_data[SIZE_16].bitmap_data = temp_string;
-  // We assume legacy favicons are 16x16.
-  favicon_info->bitmap_data[SIZE_16].pixel_size.set_width(16);
-  favicon_info->bitmap_data[SIZE_16].pixel_size.set_height(16);
-  bool added_tracking = !FaviconInfoHasTracking(*favicon_info);
-  UpdateFaviconVisitTime(icon_url,
-                         syncer::ProtoTimeToTime(visit_time_ms));
-
-  UpdateSyncState(icon_url,
-                  syncer::SyncChange::ACTION_ADD,
-                  (added_tracking ?
-                   syncer::SyncChange::ACTION_ADD :
-                   syncer::SyncChange::ACTION_UPDATE));
+base::Time FaviconCache::GetLastVisitTimeForTest(
+    const GURL& favicon_url) const {
+  FaviconMap::const_iterator iter = synced_favicons_.find(favicon_url);
+  DCHECK(iter != synced_favicons_.end());
+  return iter->second->last_visit_time;
 }
 
 bool FaviconCache::FaviconRecencyFunctor::operator()(
@@ -575,6 +549,7 @@ bool FaviconCache::FaviconRecencyFunctor::operator()(
 
 void FaviconCache::OnFaviconDataAvailable(
     const GURL& page_url,
+    base::Time mtime,
     const std::vector<favicon_base::FaviconRawBitmapResult>& bitmap_results) {
   PageTaskMap::iterator page_iter = page_task_map_.find(page_url);
   if (page_iter == page_task_map_.end())
@@ -588,7 +563,6 @@ void FaviconCache::OnFaviconDataAvailable(
     return;
   }
 
-  base::Time now = base::Time::Now();
   std::map<GURL, LocalFaviconUpdateInfo> favicon_updates;
   for (size_t i = 0; i < bitmap_results.size(); ++i) {
     const favicon_base::FaviconRawBitmapResult& bitmap_result =
@@ -620,7 +594,7 @@ void FaviconCache::OnFaviconDataAvailable(
     page_favicon_map_[page_url] = favicon_url;
 
     favicon_info->received_local_update = true;
-    UpdateFaviconVisitTime(favicon_url, now);
+    UpdateFaviconVisitTime(favicon_url, mtime);
 
     syncer::SyncChange::SyncChangeType image_change =
         syncer::SyncChange::ACTION_INVALID;
@@ -1010,14 +984,6 @@ void FaviconCache::DropPartialFavicon(FaviconMap::iterator favicon_iter,
     recent_favicons_.insert(favicon_iter->second);
     DCHECK(!FaviconInfoHasTracking(*favicon_iter->second));
   }
-}
-
-size_t FaviconCache::NumFaviconsForTest() const {
-  return synced_favicons_.size();
-}
-
-size_t FaviconCache::NumTasksForTest() const {
-  return page_task_map_.size();
 }
 
 void FaviconCache::OnURLsDeleted(history::HistoryService* history_service,

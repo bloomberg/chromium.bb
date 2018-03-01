@@ -11,17 +11,21 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
+#include "components/favicon/core/test/mock_favicon_service.h"
 #include "components/sync/model/sync_change_processor_wrapper_for_test.h"
 #include "components/sync/model/sync_error_factory_mock.h"
 #include "components/sync/model/time.h"
 #include "components/sync/protocol/favicon_image_specifics.pb.h"
 #include "components/sync/protocol/favicon_tracking_specifics.pb.h"
 #include "components/sync/protocol/sync.pb.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace sync_sessions {
 
 namespace {
+
+using testing::_;
 
 // Total number of favicons to use in sync test batches.
 const int kFaviconBatchSize = 10;
@@ -104,13 +108,13 @@ syncer::SyncError TestChangeProcessor::ProcessSyncChanges(
 
 // TestFaviconData ------------------------------------------------------------
 struct TestFaviconData {
-  TestFaviconData() : last_visit_time(0), is_bookmarked(false) {}
+  TestFaviconData() : is_bookmarked(false) {}
   GURL page_url;
   GURL icon_url;
   std::string image_16;
   std::string image_32;
   std::string image_64;
-  int64_t last_visit_time;
+  base::Time last_visit_time;
   bool is_bookmarked;
 };
 
@@ -122,7 +126,7 @@ TestFaviconData BuildFaviconData(int index) {
   // TODO(zea): enable this once the cache supports writing them.
   // data.image_32 = base::StringPrintf("32 %i", index);
   // data.image_64 = base::StringPrintf("64 %i", index);
-  data.last_visit_time = index;
+  data.last_visit_time = syncer::ProtoTimeToTime(index);
   return data;
 }
 
@@ -152,7 +156,8 @@ void FillTrackingSpecifics(
     const TestFaviconData& test_data,
     sync_pb::FaviconTrackingSpecifics* tracking_specifics) {
   tracking_specifics->set_favicon_url(test_data.icon_url.spec());
-  tracking_specifics->set_last_visit_time_ms(test_data.last_visit_time);
+  tracking_specifics->set_last_visit_time_ms(
+      syncer::TimeToProtoTime(test_data.last_visit_time));
   tracking_specifics->set_is_bookmarked(test_data.is_bookmarked);
 }
 
@@ -195,8 +200,10 @@ testing::AssertionResult CompareFaviconDataToSpecifics(
         specifics.favicon_tracking();
     if (tracking_specifics.favicon_url() != test_data.icon_url.spec())
       return testing::AssertionFailure() << "Tracking icon url doesn't match.";
-    if (tracking_specifics.last_visit_time_ms() != test_data.last_visit_time)
+    if (tracking_specifics.last_visit_time_ms() !=
+        syncer::TimeToProtoTime(test_data.last_visit_time)) {
       return testing::AssertionFailure() << "Visit time doesn't match.";
+    }
     if (tracking_specifics.is_bookmarked() != test_data.is_bookmarked)
       return testing::AssertionFailure() << "Bookmark status doesn't match.";
   }
@@ -279,18 +286,23 @@ class SyncFaviconCacheTest : public testing::Test {
   FaviconCache* cache() { return &cache_; }
   TestChangeProcessor* processor() { return sync_processor_.get(); }
 
-  // Finish an outstanding favicon load for the icon described in |test_data|.
-  void OnCustomFaviconDataAvailable(const TestFaviconData& test_data);
+  // Populates the local cache of favicons in FaviconService with the data
+  // described in |test_data|.
+  void PopulateFaviconService(const TestFaviconData& test_data);
 
   // Helper method to run the message loop after invoking
   // OnReceivedSyncFavicon, which posts an internal task.
-  void TriggerSyncFaviconReceived(const GURL& page_url,
-                                  const GURL& icon_url,
-                                  const std::string& icon_bytes,
-                                  int64_t last_visit_time_ms);
+  void TriggerSyncFaviconReceived(
+      const GURL& page_url,
+      const GURL& icon_url,
+      const std::string& icon_bytes,
+      base::Time last_visit_time = base::Time::Now());
+
+  void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
+  testing::NiceMock<favicon::MockFaviconService> mock_favicon_service_;
   FaviconCache cache_;
 
   // Our dummy ChangeProcessor used to inspect changes pushed to Sync.
@@ -302,7 +314,7 @@ class SyncFaviconCacheTest : public testing::Test {
 SyncFaviconCacheTest::SyncFaviconCacheTest()
     : scoped_task_environment_(
           base::test::ScopedTaskEnvironment::MainThreadType::UI),
-      cache_(nullptr, nullptr, kMaxSyncFavicons),
+      cache_(&mock_favicon_service_, nullptr, kMaxSyncFavicons),
       sync_processor_(new TestChangeProcessor),
       sync_processor_wrapper_(new syncer::SyncChangeProcessorWrapperForTest(
           sync_processor_.get())) {}
@@ -408,7 +420,7 @@ SyncFaviconCacheTest::CreateAndPassSyncErrorFactory() {
   return base::WrapUnique(new syncer::SyncErrorFactoryMock);
 }
 
-void SyncFaviconCacheTest::OnCustomFaviconDataAvailable(
+void SyncFaviconCacheTest::PopulateFaviconService(
     const TestFaviconData& test_data) {
   std::vector<favicon_base::FaviconRawBitmapResult> bitmap_results;
   if (!test_data.image_16.empty()) {
@@ -441,19 +453,43 @@ void SyncFaviconCacheTest::OnCustomFaviconDataAvailable(
     bitmap_result.bitmap_data = temp_string;
     bitmap_results.push_back(bitmap_result);
   }
-  cache()->OnFaviconDataAvailable(test_data.page_url, bitmap_results);
+
+  ON_CALL(mock_favicon_service_,
+          GetFaviconForPageURL(test_data.page_url, _, _, _, _))
+      .WillByDefault(favicon::PostReply<5>(bitmap_results));
 }
 
 void SyncFaviconCacheTest::TriggerSyncFaviconReceived(
     const GURL& page_url,
     const GURL& icon_url,
     const std::string& icon_bytes,
-    int64_t last_visit_time_ms) {
-  cache()->OnReceivedSyncFavicon(page_url,
-                                 icon_url,
-                                 icon_bytes,
-                                 last_visit_time_ms);
-  base::RunLoop().RunUntilIdle();
+    base::Time last_visit_time) {
+  if (!icon_bytes.empty()) {
+    scoped_refptr<base::RefCountedString> temp_string(
+        new base::RefCountedString());
+    temp_string->data() = icon_bytes;
+
+    std::vector<favicon_base::FaviconRawBitmapResult> result;
+    result.push_back(favicon_base::FaviconRawBitmapResult());
+    result.back().icon_url = icon_url;
+    result.back().bitmap_data = temp_string;
+    result.back().pixel_size = gfx::Size(16, 16);
+
+    ON_CALL(mock_favicon_service_, GetFaviconForPageURL(page_url, _, _, _, _))
+        .WillByDefault(favicon::PostReply<5>(result));
+
+    // Mimic the icon itself having been cached long time ago.
+    cache()->OnPageFaviconUpdated(page_url, base::Time::UnixEpoch());
+    // Wait until the FaviconService replies with the result above.
+    RunUntilIdle();
+  }
+
+  // Feed in the mapping.
+  sync_pb::SessionTab tab;
+  sync_pb::TabNavigation* navigation = tab.add_navigation();
+  navigation->set_virtual_url(page_url.spec());
+  navigation->set_favicon_url(icon_url.spec());
+  cache()->UpdateMappingsFromForeignTab(tab, last_visit_time);
 }
 
 // A freshly constructed cache should be empty.
@@ -465,10 +501,12 @@ TEST_F(SyncFaviconCacheTest, ReceiveSyncFavicon) {
   std::string page_url = "http://www.google.com";
   std::string fav_url = "http://www.google.com/favicon.ico";
   std::string bytes = "bytes";
+  const base::Time visit_time = base::Time::Now();
   EXPECT_EQ(0U, GetFaviconCount());
-  TriggerSyncFaviconReceived(GURL(page_url), GURL(fav_url), bytes, 0);
+  TriggerSyncFaviconReceived(GURL(page_url), GURL(fav_url), bytes, visit_time);
   EXPECT_EQ(1U, GetFaviconCount());
   EXPECT_TRUE(ExpectFaviconEquals(page_url, bytes));
+  EXPECT_EQ(visit_time, cache()->GetLastVisitTimeForTest(GURL(fav_url)));
 }
 
 TEST_F(SyncFaviconCacheTest, ReceiveEmptySyncFavicon) {
@@ -476,15 +514,12 @@ TEST_F(SyncFaviconCacheTest, ReceiveEmptySyncFavicon) {
   std::string fav_url = "http://www.google.com/favicon.ico";
   std::string bytes = "bytes";
   EXPECT_EQ(0U, GetFaviconCount());
-  TriggerSyncFaviconReceived(GURL(page_url),
-                             GURL(fav_url),
-                             std::string(),
-                             0);
+  TriggerSyncFaviconReceived(GURL(page_url), GURL(fav_url), std::string());
   EXPECT_EQ(0U, GetFaviconCount());
   EXPECT_FALSE(ExpectFaviconEquals(page_url, std::string()));
 
   // Then receive the actual favicon.
-  TriggerSyncFaviconReceived(GURL(page_url), GURL(fav_url), bytes, 0);
+  TriggerSyncFaviconReceived(GURL(page_url), GURL(fav_url), bytes);
   EXPECT_EQ(1U, GetFaviconCount());
   EXPECT_TRUE(ExpectFaviconEquals(page_url, bytes));
 }
@@ -495,13 +530,13 @@ TEST_F(SyncFaviconCacheTest, ReceiveUpdatedSyncFavicon) {
   std::string bytes = "bytes";
   std::string bytes2 = "bytes2";
   EXPECT_EQ(0U, GetFaviconCount());
-  TriggerSyncFaviconReceived(GURL(page_url), GURL(fav_url), bytes, 0);
+  TriggerSyncFaviconReceived(GURL(page_url), GURL(fav_url), bytes);
   EXPECT_EQ(1U, GetFaviconCount());
   EXPECT_TRUE(ExpectFaviconEquals(page_url, bytes));
 
   // The cache should not update existing favicons from tab sync favicons
   // (which can be reassociated several times).
-  TriggerSyncFaviconReceived(GURL(page_url), GURL(fav_url), bytes2, 0);
+  TriggerSyncFaviconReceived(GURL(page_url), GURL(fav_url), bytes2);
   EXPECT_EQ(1U, GetFaviconCount());
   EXPECT_TRUE(ExpectFaviconEquals(page_url, bytes));
   EXPECT_FALSE(ExpectFaviconEquals(page_url, bytes2));
@@ -513,12 +548,12 @@ TEST_F(SyncFaviconCacheTest, MultipleMappings) {
   std::string fav_url = "http://www.google.com/favicon.ico";
   std::string bytes = "bytes";
   EXPECT_EQ(0U, GetFaviconCount());
-  TriggerSyncFaviconReceived(GURL(page_url), GURL(fav_url), bytes, 0);
+  TriggerSyncFaviconReceived(GURL(page_url), GURL(fav_url), bytes);
   EXPECT_EQ(1U, GetFaviconCount());
   EXPECT_TRUE(ExpectFaviconEquals(page_url, bytes));
 
   // Map another page to the same favicon. They should share the same data.
-  TriggerSyncFaviconReceived(GURL(page2_url), GURL(fav_url), bytes, 0);
+  TriggerSyncFaviconReceived(GURL(page2_url), GURL(fav_url), bytes);
   EXPECT_EQ(1U, GetFaviconCount());
   EXPECT_TRUE(ExpectFaviconEquals(page2_url, bytes));
 }
@@ -560,10 +595,8 @@ TEST_F(SyncFaviconCacheTest, SyncExistingLocal) {
   std::vector<int> expected_icons;
   for (int i = 0; i < kFaviconBatchSize; ++i) {
     TestFaviconData favicon = BuildFaviconData(i);
-    TriggerSyncFaviconReceived(favicon.page_url,
-                               favicon.icon_url,
-                               favicon.image_16,
-                               i);
+    TriggerSyncFaviconReceived(favicon.page_url, favicon.icon_url,
+                               favicon.image_16, syncer::ProtoTimeToTime(i));
     expected_change_types.push_back(syncer::SyncChange::ACTION_ADD);
     expected_icons.push_back(i);
   }
@@ -660,10 +693,8 @@ TEST_F(SyncFaviconCacheTest, SyncMergesImages) {
   // First go through and add local 16p favicons.
   for (int i = 0; i < kFaviconBatchSize; ++i) {
     TestFaviconData favicon = BuildFaviconData(i);
-    TriggerSyncFaviconReceived(favicon.page_url,
-                               favicon.icon_url,
-                               favicon.image_16,
-                               i);
+    TriggerSyncFaviconReceived(favicon.page_url, favicon.icon_url,
+                               favicon.image_16, syncer::ProtoTimeToTime(i));
   }
 
   // Then go through and create the initial sync data, which does not have 16p
@@ -737,10 +768,8 @@ TEST_F(SyncFaviconCacheTest, SyncMergesTracking) {
   // First go through and add local 16p favicons.
   for (int i = 0; i < kFaviconBatchSize; ++i) {
     TestFaviconData favicon = BuildFaviconData(i);
-    TriggerSyncFaviconReceived(favicon.page_url,
-                               favicon.icon_url,
-                               favicon.image_16,
-                               i);
+    TriggerSyncFaviconReceived(favicon.page_url, favicon.icon_url,
+                               favicon.image_16, syncer::ProtoTimeToTime(i));
   }
 
   // Then go through and create the initial sync data, which for the first half
@@ -753,11 +782,11 @@ TEST_F(SyncFaviconCacheTest, SyncMergesTracking) {
     sync_pb::EntitySpecifics image_specifics, tracking_specifics;
     TestFaviconData test_data = BuildFaviconData(i);
     if (i < kFaviconBatchSize/2) {
-      test_data.last_visit_time = i-1;
+      test_data.last_visit_time = syncer::ProtoTimeToTime(i - 1);
       expected_icons.push_back(i);
       expected_change_types.push_back(syncer::SyncChange::ACTION_UPDATE);
     } else {
-      test_data.last_visit_time = i+1;
+      test_data.last_visit_time = syncer::ProtoTimeToTime(i + 1);
       expected_data.push_back(test_data);
     }
     FillImageSpecifics(test_data,
@@ -1073,10 +1102,9 @@ TEST_F(SyncFaviconCacheTest, ExpireOnMergeData) {
     expected_icons.push_back(i);
 
     TestFaviconData favicon = BuildFaviconData(i+kMaxSyncFavicons);
-    TriggerSyncFaviconReceived(favicon.page_url,
-                               favicon.icon_url,
+    TriggerSyncFaviconReceived(favicon.page_url, favicon.icon_url,
                                favicon.image_16,
-                               i+kMaxSyncFavicons);
+                               syncer::ProtoTimeToTime(i + kMaxSyncFavicons));
   }
 
   EXPECT_FALSE(VerifyLocalIcons(expected_icons));
@@ -1167,36 +1195,42 @@ TEST_F(SyncFaviconCacheTest, AddOnFaviconVisited) {
   std::vector<int> expected_icons;
 
   for (int i = 0; i < kFaviconBatchSize; ++i) {
+    PopulateFaviconService(BuildFaviconData(i));
     expected_icons.push_back(i);
     TestFaviconData test_data = BuildFaviconData(i);
     cache()->OnFaviconVisited(test_data.page_url, test_data.icon_url);
   }
 
   EXPECT_EQ(static_cast<size_t>(kFaviconBatchSize), GetTaskCount());
+  // Wait until the FaviconService replies with the results populated above.
+  RunUntilIdle();
+  EXPECT_EQ(0U, GetTaskCount());
+  syncer::SyncChangeList changes = processor()->GetAndResetChangeList();
+  ASSERT_EQ(2U * kFaviconBatchSize, changes.size());
 
   for (int i = 0; i < kFaviconBatchSize; ++i) {
     TestFaviconData test_data = BuildFaviconData(i);
-    OnCustomFaviconDataAvailable(test_data);
+    const syncer::SyncChange& change1 = changes[i * 2];
+    const syncer::SyncChange& change2 = changes[i * 2 + 1];
 
-    syncer::SyncChangeList changes = processor()->GetAndResetChangeList();
-    ASSERT_EQ(2U, changes.size());
-    EXPECT_EQ(syncer::SyncChange::ACTION_ADD, changes[0].change_type());
-    EXPECT_EQ(syncer::FAVICON_IMAGES, changes[0].sync_data().GetDataType());
-    EXPECT_TRUE(
-        CompareFaviconDataToSpecifics(test_data,
-                                      changes[0].sync_data().GetSpecifics()));
-    EXPECT_EQ(syncer::FAVICON_TRACKING, changes[1].sync_data().GetDataType());
+    EXPECT_EQ(syncer::SyncChange::ACTION_ADD, change1.change_type());
+    EXPECT_EQ(syncer::FAVICON_IMAGES, change1.sync_data().GetDataType());
+    EXPECT_TRUE(CompareFaviconDataToSpecifics(
+        test_data, change1.sync_data().GetSpecifics()));
+    EXPECT_EQ(syncer::FAVICON_TRACKING, change2.sync_data().GetDataType());
     // Just verify the favicon url for the tracking specifics and that the
     // timestamp is non-null.
-    EXPECT_EQ(syncer::SyncChange::ACTION_ADD, changes[1].change_type());
-    EXPECT_EQ(test_data.icon_url.spec(),
-              changes[1].sync_data().GetSpecifics().favicon_tracking().
-                  favicon_url());
-    EXPECT_NE(changes[1].sync_data().GetSpecifics().favicon_tracking().
-                  last_visit_time_ms(), 0);
+    EXPECT_EQ(syncer::SyncChange::ACTION_ADD, change2.change_type());
+    EXPECT_EQ(
+        test_data.icon_url.spec(),
+        change2.sync_data().GetSpecifics().favicon_tracking().favicon_url());
+    EXPECT_NE(change2.sync_data()
+                  .GetSpecifics()
+                  .favicon_tracking()
+                  .last_visit_time_ms(),
+              0);
   }
 
-  EXPECT_EQ(0U, GetTaskCount());
   EXPECT_EQ(static_cast<size_t>(kFaviconBatchSize), GetFaviconCount());
 }
 
@@ -1211,9 +1245,12 @@ TEST_F(SyncFaviconCacheTest, UpdateOnFaviconVisited) {
   for (int i = 0; i < kFaviconBatchSize; ++i) {
     expected_icons.push_back(i);
     TestFaviconData test_data = BuildFaviconData(i);
+    PopulateFaviconService(test_data);
     cache()->OnFaviconVisited(test_data.page_url, test_data.icon_url);
-    OnCustomFaviconDataAvailable(test_data);
   }
+
+  // Wait until the FaviconService replies with the results populated above.
+  RunUntilIdle();
   syncer::SyncChangeList changes = processor()->GetAndResetChangeList();
 
   // Visit the favicons again.
@@ -1221,6 +1258,8 @@ TEST_F(SyncFaviconCacheTest, UpdateOnFaviconVisited) {
   for (int i = 0; i < kFaviconBatchSize; ++i) {
     TestFaviconData test_data = BuildFaviconData(i);
     cache()->OnFaviconVisited(test_data.page_url, test_data.icon_url);
+    // Wait until the FaviconService replies with the results populated earlier.
+    RunUntilIdle();
 
     syncer::SyncChangeList changes = processor()->GetAndResetChangeList();
     ASSERT_EQ(1U, changes.size());
@@ -1247,9 +1286,12 @@ TEST_F(SyncFaviconCacheTest, ExpireOnFaviconVisited) {
   for (int i = 0; i < kMaxSyncFavicons; ++i) {
     expected_icons.push_back(i);
     TestFaviconData test_data = BuildFaviconData(i);
+    PopulateFaviconService(test_data);
     cache()->OnFaviconVisited(test_data.page_url, test_data.icon_url);
-    OnCustomFaviconDataAvailable(test_data);
   }
+
+  // Wait until the FaviconService replies with the results populated above.
+  RunUntilIdle();
   syncer::SyncChangeList changes = processor()->GetAndResetChangeList();
 
   // Visit some new favicons, triggering expirations of the old favicons.
@@ -1257,8 +1299,10 @@ TEST_F(SyncFaviconCacheTest, ExpireOnFaviconVisited) {
   for (int i = 0; i < kFaviconBatchSize; ++i) {
     TestFaviconData old_favicon = BuildFaviconData(i);
     TestFaviconData test_data = BuildFaviconData(i + kMaxSyncFavicons);
+    PopulateFaviconService(test_data);
     cache()->OnFaviconVisited(test_data.page_url, test_data.icon_url);
-    OnCustomFaviconDataAvailable(test_data);
+    // Wait until the FaviconService replies with the results populated above.
+    RunUntilIdle();
 
     syncer::SyncChangeList changes = processor()->GetAndResetChangeList();
     ASSERT_EQ(4U, changes.size());
@@ -1389,17 +1433,15 @@ TEST_F(SyncFaviconCacheTest, IgnoreDataScheme) {
 
   for (int i = 0; i < kFaviconBatchSize; ++i) {
     TestFaviconData test_data = BuildFaviconData(i);
+    test_data.icon_url = GURL("data:image/png;base64;blabla");
+    EXPECT_TRUE(test_data.icon_url.is_valid());
+    PopulateFaviconService(test_data);
     cache()->OnFaviconVisited(test_data.page_url, GURL());
   }
 
   EXPECT_EQ(static_cast<size_t>(kFaviconBatchSize), GetTaskCount());
-
-  for (int i = 0; i < kFaviconBatchSize; ++i) {
-    TestFaviconData test_data = BuildFaviconData(i);
-    test_data.icon_url = GURL("data:image/png;base64;blabla");
-    EXPECT_TRUE(test_data.icon_url.is_valid());
-    OnCustomFaviconDataAvailable(test_data);
-  }
+  // Wait until the FaviconService replies with the results populated above.
+  RunUntilIdle();
 
   EXPECT_EQ(0U, GetTaskCount());
   EXPECT_EQ(0U, GetFaviconCount());
@@ -1417,15 +1459,14 @@ TEST_F(SyncFaviconCacheTest, ReuseCachedIconUrl) {
   for (int i = 0; i < kFaviconBatchSize; ++i) {
     expected_icons.push_back(i);
     TestFaviconData test_data = BuildFaviconData(i);
+    PopulateFaviconService(test_data);
     cache()->OnFaviconVisited(test_data.page_url, test_data.icon_url);
   }
 
   EXPECT_EQ(static_cast<size_t>(kFaviconBatchSize), GetTaskCount());
+  // Wait until the FaviconService replies with the results populated above.
+  RunUntilIdle();
 
-  for (int i = 0; i < kFaviconBatchSize; ++i) {
-    TestFaviconData test_data = BuildFaviconData(i);
-    OnCustomFaviconDataAvailable(test_data);
-  }
   processor()->GetAndResetChangeList();
   EXPECT_EQ(0U, GetTaskCount());
   EXPECT_EQ(static_cast<size_t>(kFaviconBatchSize), GetFaviconCount());
@@ -1433,6 +1474,8 @@ TEST_F(SyncFaviconCacheTest, ReuseCachedIconUrl) {
   for (int i = 0; i < kFaviconBatchSize; ++i) {
     TestFaviconData test_data = BuildFaviconData(i);
     cache()->OnFaviconVisited(test_data.page_url, test_data.icon_url);
+    // Wait until the FaviconService replies with the results populated earlier.
+    RunUntilIdle();
     syncer::SyncChangeList changes = processor()->GetAndResetChangeList();
     ASSERT_EQ(1U, changes.size());
     // Just verify the favicon url for the tracking specifics and that the
@@ -1485,9 +1528,12 @@ TEST_F(SyncFaviconCacheTest, UpdatedOrphans) {
 
   for (int i = 0; i < kFaviconBatchSize/2; ++i) {
     TestFaviconData test_data = BuildFaviconData(i);
+    PopulateFaviconService(test_data);
     cache()->OnFaviconVisited(test_data.page_url, GURL());
     EXPECT_EQ(1U, GetTaskCount());
-    OnCustomFaviconDataAvailable(test_data);
+    // Wait until the FaviconService replies with the results populated above.
+    RunUntilIdle();
+    EXPECT_EQ(0U, GetTaskCount());
     syncer::SyncChangeList changes = processor()->GetAndResetChangeList();
 
     // Even favicons had image data, so should now receive new tracking data
@@ -1584,6 +1630,8 @@ TEST_F(SyncFaviconCacheTest, NullFaviconVisitTime) {
   for (int i = 0; i < kFaviconBatchSize; ++i) {
     TestFaviconData test_data = BuildFaviconData(i);
     cache()->OnFaviconVisited(test_data.page_url, test_data.icon_url);
+    // Wait until the FaviconService replies with the results populated earlier.
+    RunUntilIdle();
 
     syncer::SyncChangeList changes = processor()->GetAndResetChangeList();
     ASSERT_EQ(1U, changes.size());
@@ -1614,8 +1662,7 @@ TEST_F(SyncFaviconCacheTest, VisitFaviconClockSkew) {
     sync_pb::EntitySpecifics image_specifics, tracking_specifics;
     TestFaviconData test_data = BuildFaviconData(i);
     test_data.last_visit_time =
-        syncer::TimeToProtoTime(
-            base::Time::Now() + base::TimeDelta::FromMinutes(kClockSkew));
+        base::Time::Now() + base::TimeDelta::FromMinutes(kClockSkew);
     FillImageSpecifics(test_data,
                        image_specifics.mutable_favicon_image());
     initial_image_data.push_back(
@@ -1632,8 +1679,10 @@ TEST_F(SyncFaviconCacheTest, VisitFaviconClockSkew) {
   EXPECT_EQ(0U, GetTaskCount());
   for (int i = 0; i < kClockSkew; ++i) {
     TestFaviconData test_data = BuildFaviconData(i + kMaxSyncFavicons);
+    PopulateFaviconService(test_data);
     cache()->OnFaviconVisited(test_data.page_url, test_data.icon_url);
-    OnCustomFaviconDataAvailable(test_data);
+    // Wait until the FaviconService replies with the results populated above.
+    RunUntilIdle();
 
     // The changes will be an add followed by a delete for both the image and
     // tracking info.
