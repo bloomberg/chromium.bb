@@ -23,7 +23,12 @@
           "reason": "geometry"
         },
         {
-          "object": "LayoutBlockFlow DIV",
+          "object": "LayoutBlockFlow (positioned) DIV",
+          "rect": [8, 130, 100, 100],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV",
           "rect": [8, 130, 100, 100],
           "reason": "disappeared"
         }
@@ -32,12 +37,16 @@
   ],
   "objectPaintInvalidations": [
     {
+      "object": "LayoutBlockFlow (positioned) DIV id='outside'",
+      "reason": "geometry"
+    },
+    {
       "object": "LayoutBlockFlow (positioned) DIV",
       "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow DIV",
-      "reason": "disappeared"
+      "reason": "geometry"
     }
   ]
 }

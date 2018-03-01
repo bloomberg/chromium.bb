@@ -23,44 +23,14 @@
           "reason": "geometry"
         },
         {
-          "object": "LayoutSVGContainer use",
-          "rect": [27, 67, 364, 364],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutSVGPath path",
-          "rect": [27, 67, 364, 364],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutSVGRoot svg",
-          "rect": [27, 67, 364, 364],
-          "reason": "geometry"
+          "object": "LayoutSVGViewportContainer svg id='gamesBorder'",
+          "rect": [27, 67, 364, 366],
+          "reason": "paint property change"
         },
         {
           "object": "LayoutSVGViewportContainer svg id='gamesBorder'",
-          "rect": [27, 67, 364, 364],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutSVGContainer use",
-          "rect": [13, 205, 92, 91],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutSVGPath path",
-          "rect": [13, 205, 92, 91],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutSVGRoot svg",
-          "rect": [13, 205, 92, 91],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutSVGViewportContainer svg id='gamesBorder'",
-          "rect": [13, 205, 92, 91],
-          "reason": "geometry"
+          "rect": [13, 205, 92, 92],
+          "reason": "paint property change"
         }
       ]
     }
@@ -80,14 +50,6 @@
     },
     {
       "object": "LayoutSVGContainer use",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutSVGViewportContainer svg id='gamesBorder'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutSVGPath path",
       "reason": "geometry"
     }
   ]

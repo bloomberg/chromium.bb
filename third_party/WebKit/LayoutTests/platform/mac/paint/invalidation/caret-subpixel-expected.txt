@@ -24,8 +24,8 @@
         },
         {
           "object": "LayoutBlockFlow DIV",
-          "rect": [11, 11, 201, 13],
-          "reason": "subtree"
+          "rect": [210, 11, 2, 13],
+          "reason": "appeared"
         }
       ]
     }

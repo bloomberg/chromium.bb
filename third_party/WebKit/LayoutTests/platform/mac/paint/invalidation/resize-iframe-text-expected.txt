@@ -4,14 +4,7 @@
       "name": "LayoutView #document",
       "bounds": [500, 400],
       "drawsContent": false,
-      "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutView #document",
-          "rect": [0, 200, 500, 200],
-          "reason": "incremental"
-        }
-      ]
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "Scrolling Layer",
@@ -25,29 +18,19 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutIFrame (positioned) IFRAME",
+          "object": "Scrolling Contents Layer",
           "rect": [0, 200, 500, 200],
           "reason": "incremental"
         },
         {
-          "object": "LayoutView #document",
-          "rect": [0, 200, 500, 200],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutView #document",
-          "rect": [0, 200, 500, 200],
-          "reason": "background on scrolling contents layer"
-        },
-        {
-          "object": "LayoutBlockFlow H3",
-          "rect": [8, 300, 400, 22],
+          "object": "LayoutBlockFlow HTML",
+          "rect": [8, 299, 61, 23],
           "reason": "appeared"
         },
         {
           "object": "LayoutView #document",
           "rect": [485, 0, 15, 200],
-          "reason": "scroll control"
+          "reason": "disappeared"
         }
       ]
     }
@@ -55,7 +38,7 @@
   "objectPaintInvalidations": [
     {
       "object": "Scrolling Contents Layer",
-      "reason": "background on scrolling contents layer"
+      "reason": "incremental"
     },
     {
       "object": "LayoutView #document",
@@ -71,19 +54,7 @@
     },
     {
       "object": "LayoutView #document",
-      "reason": "incremental"
-    },
-    {
-      "object": "LayoutView #document",
       "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow H3",
-      "reason": "appeared"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "appeared"
     }
   ]
 }

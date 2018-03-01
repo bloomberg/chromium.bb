@@ -20,22 +20,12 @@
         {
           "object": "LayoutBlockFlow (positioned) UL id='submenu'",
           "rect": [48, 92, 40, 18],
-          "reason": "geometry"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutBlockFlow (positioned) UL id='submenu'",
-          "rect": [48, -158, 40, 18],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutListMarker (anonymous)",
           "rect": [71, 92, 7, 18],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutListMarker (anonymous)",
-          "rect": [71, -158, 7, 18],
-          "reason": "geometry"
+          "reason": "disappeared"
         }
       ]
     },

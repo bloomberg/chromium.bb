@@ -20,21 +20,27 @@
         {
           "object": "LayoutSVGRect rect",
           "rect": [10, 2, 46, 23],
-          "reason": "style change"
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [10, 2, 46, 23],
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGRect rect",
           "rect": [10, 32, 43, 18],
-          "reason": "full"
+          "reason": "disappeared"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [10, 32, 43, 18],
+          "reason": "disappeared"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutSVGInlineText #text",
-      "reason": "disappeared"
-    },
     {
       "object": "LayoutSVGRect rect",
       "reason": "style change"

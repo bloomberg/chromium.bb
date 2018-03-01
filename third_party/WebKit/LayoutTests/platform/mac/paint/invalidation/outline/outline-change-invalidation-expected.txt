@@ -18,9 +18,9 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow A id='link'",
+          "object": "LayoutBlockFlow HTML",
           "rect": [43, 79, 754, 28],
-          "reason": "style change"
+          "reason": "appeared"
         },
         {
           "object": "LayoutListMarker (anonymous)",

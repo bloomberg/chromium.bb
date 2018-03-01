@@ -18,11 +18,6 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutListItem LI",
-          "rect": [48, 94, 744, 104],
-          "reason": "geometry"
-        },
-        {
           "object": "LayoutImage IMG id='target'",
           "rect": [48, 94, 100, 100],
           "reason": "geometry"

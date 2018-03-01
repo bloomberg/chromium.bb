@@ -18,34 +18,34 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [8, 26, 784, 18],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'quote 2'",
           "rect": [15, 26, 49, 18],
-          "reason": "style change"
+          "reason": "appeared"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'quote 2'",
           "rect": [17, 26, 48, 18],
-          "reason": "style change"
+          "reason": "disappeared"
         },
         {
-          "object": "LayoutTextFragment (anonymous)",
+          "object": "InlineTextBox '\u003E'",
           "rect": [64, 26, 10, 18],
-          "reason": "style change"
+          "reason": "disappeared"
         },
         {
-          "object": "LayoutTextFragment (anonymous)",
+          "object": "InlineTextBox '\u003C'",
           "rect": [8, 26, 10, 18],
-          "reason": "style change"
+          "reason": "disappeared"
         },
         {
-          "object": "LayoutTextFragment (anonymous)",
+          "object": "InlineTextBox '}'",
           "rect": [63, 26, 8, 18],
-          "reason": "style change"
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox '{'",
+          "rect": [8, 26, 8, 18],
+          "reason": "appeared"
         }
       ]
     }

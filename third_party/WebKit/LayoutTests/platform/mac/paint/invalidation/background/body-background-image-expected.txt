@@ -4,14 +4,7 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "drawsContent": false,
-      "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutView #document",
-          "rect": [0, 0, 800, 600],
-          "reason": "style change"
-        }
-      ]
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "Scrolling Layer",
@@ -24,11 +17,6 @@
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
-        {
-          "object": "LayoutView #document",
-          "rect": [0, 0, 800, 600],
-          "reason": "style change"
-        },
         {
           "object": "LayoutBlockFlow BODY",
           "rect": [8, 240, 784, 284],

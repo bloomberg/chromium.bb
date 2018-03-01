@@ -18,12 +18,7 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (anonymous)",
-          "rect": [8, 108, 784, 104],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'This span should disappear.\n'",
           "rect": [112, 194, 181, 18],
           "reason": "disappeared"
         },
@@ -43,26 +38,19 @@
           "reason": "geometry"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox '\n'",
           "rect": [108, 194, 4, 18],
-          "reason": "geometry"
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "rect": [108, 194, 4, 18],
+          "reason": "disappeared"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutText #text",
-      "reason": "disappeared"
-    },
-    {
-      "object": "LayoutInline SPAN id='target'",
-      "reason": "disappeared"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "disappeared"
-    },
     {
       "object": "LayoutBlockFlow (anonymous)",
       "reason": "geometry"

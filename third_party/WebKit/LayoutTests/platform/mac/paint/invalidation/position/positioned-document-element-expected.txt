@@ -4,14 +4,7 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "drawsContent": false,
-      "backgroundColor": "#008000",
-      "paintInvalidations": [
-        {
-          "object": "LayoutView #document",
-          "rect": [0, 0, 800, 600],
-          "reason": "style change"
-        }
-      ]
+      "backgroundColor": "#008000"
     },
     {
       "name": "Scrolling Layer",
@@ -25,39 +18,19 @@
       "backgroundColor": "#008000",
       "paintInvalidations": [
         {
-          "object": "LayoutView #document",
+          "object": "Scrolling Contents Layer",
           "rect": [0, 0, 800, 600],
           "reason": "background on scrolling contents layer"
         },
         {
-          "object": "LayoutBlockFlow (positioned) HTML class='changed'",
-          "rect": [0, 0, 800, 50],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutBlockFlow P",
-          "rect": [8, 16, 784, 18],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) HTML class='changed'",
-          "rect": [100, 100, 451, 50],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutBlockFlow P",
+          "object": "InlineTextBox 'Tests that the entire viewport is painted with a floated html element.'",
           "rect": [108, 116, 435, 18],
-          "reason": "geometry"
+          "reason": "appeared"
         },
         {
-          "object": "LayoutText #text",
-          "rect": [108, 116, 435, 18],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'Tests that the entire viewport is painted with a floated html element.'",
           "rect": [8, 16, 435, 18],
-          "reason": "geometry"
+          "reason": "disappeared"
         }
       ]
     }

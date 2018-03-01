@@ -18,38 +18,13 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutView #document",
+          "object": "Scrolling Contents Layer",
           "rect": [0, 735, 785, 94],
-          "reason": "background on scrolling contents layer"
-        },
-        {
-          "object": "LayoutBlockFlow (relative positioned) DIV class='relative paddingTop'",
-          "rect": [8, 180, 769, 641],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutBlockFlow (relative positioned) DIV class='relative paddingTop'",
-          "rect": [8, 86, 769, 641],
-          "reason": "geometry"
+          "reason": "incremental"
         },
         {
           "object": "LayoutIFrame IFRAME id='iframe'",
           "rect": [8, 86, 732, 94],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [10, 88, 728, 90],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutView #document",
-          "rect": [10, 88, 728, 90],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutBlockFlow BODY",
-          "rect": [18, 96, 712, 74],
           "reason": "appeared"
         },
         {
@@ -68,11 +43,15 @@
   "objectPaintInvalidations": [
     {
       "object": "Scrolling Contents Layer",
-      "reason": "background on scrolling contents layer"
+      "reason": "incremental"
     },
     {
       "object": "LayoutIFrame IFRAME id='iframe'",
       "reason": "appeared"
+    },
+    {
+      "object": "LayoutBlockFlow (relative positioned) DIV class='relative'",
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow (relative positioned) DIV class='relative paddingTop'",

@@ -23,18 +23,69 @@
           "reason": "geometry"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox ' '",
           "rect": [39, 75, 123, 108],
           "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox ' '",
+          "rect": [39, 75, 123, 108],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox ' '",
+          "rect": [39, 75, 123, 108],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox ' '",
+          "rect": [39, 75, 123, 108],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox ' '",
+          "rect": [39, 75, 123, 108],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'hello world hello'",
+          "rect": [39, 75, 123, 108],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'hello world hello'",
+          "rect": [39, 75, 123, 108],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'hello world hello'",
+          "rect": [39, 75, 123, 108],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'world hello world'",
+          "rect": [39, 75, 123, 108],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'world hello world'",
+          "rect": [39, 75, 123, 108],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'world hello'",
+          "rect": [39, 75, 123, 108],
+          "reason": "disappeared"
+        },
+        {
+          "object": "Caret",
+          "rect": [39, 75, 1, 18],
+          "reason": "appeared"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutText #text",
-      "reason": "disappeared"
-    },
     {
       "object": "LayoutBlockFlow DIV id='test'",
       "reason": "geometry"

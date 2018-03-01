@@ -18,11 +18,6 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV class='em-units'",
-          "rect": [8, 8, 784, 146],
-          "reason": "geometry"
-        },
-        {
           "object": "LayoutBlockFlow DIV id='box4' class='box'",
           "rect": [344, 18, 302, 122],
           "reason": "style change"
@@ -38,9 +33,14 @@
           "reason": "style change"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox '\n'",
           "rect": [330, 136, 4, 18],
-          "reason": "geometry"
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "rect": [330, 136, 4, 18],
+          "reason": "disappeared"
         }
       ]
     }

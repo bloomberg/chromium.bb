@@ -18,23 +18,23 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutText #text",
-          "rect": [10, 68, 836, 190],
+          "object": "InlineTextBox 'Col 1'",
+          "rect": [533, 71, 267, 18],
           "reason": "style change"
         },
         {
-          "object": "LayoutText #text",
-          "rect": [10, 68, 836, 190],
+          "object": "InlineTextBox 'Col 1'",
+          "rect": [267, 71, 266, 18],
           "reason": "style change"
         },
         {
-          "object": "LayoutText #text",
-          "rect": [10, 68, 836, 190],
+          "object": "InlineTextBox 'Col 1'",
+          "rect": [10, 71, 257, 18],
           "reason": "style change"
         },
         {
-          "object": "LayoutText #text",
-          "rect": [10, 68, 836, 190],
+          "object": "InlineTextBox 'Col 1'",
+          "rect": [800, 71, 46, 18],
           "reason": "style change"
         }
       ]

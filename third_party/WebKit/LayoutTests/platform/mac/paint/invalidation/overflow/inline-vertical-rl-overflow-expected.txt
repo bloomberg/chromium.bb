@@ -18,8 +18,8 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutText #text",
-          "rect": [666, 33, 102, 250],
+          "object": "InlineTextBox 'A\u00A0\u00A0B'",
+          "rect": [667, 33, 101, 250],
           "reason": "style change"
         }
       ]

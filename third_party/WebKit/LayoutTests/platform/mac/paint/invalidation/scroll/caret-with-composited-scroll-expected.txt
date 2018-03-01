@@ -35,13 +35,18 @@
       "paintInvalidations": [
         {
           "object": "LayoutTextControl INPUT id='text'",
-          "rect": [-3, 997, 211, 25],
+          "rect": [0, 997, 205, 22],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutTextControl INPUT id='text'",
+          "rect": [0, 997, 205, 22],
           "reason": "subtree"
         },
         {
           "object": "LayoutBlockFlow DIV",
-          "rect": [3, 1003, 200, 13],
-          "reason": "subtree"
+          "rect": [3, 1003, 1, 13],
+          "reason": "appeared"
         }
       ],
       "transform": 1

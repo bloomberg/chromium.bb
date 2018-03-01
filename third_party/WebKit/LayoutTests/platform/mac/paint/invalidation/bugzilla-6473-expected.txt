@@ -18,11 +18,6 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV id='allcontent'",
-          "rect": [8, 130, 784, 50],
-          "reason": "style change"
-        },
-        {
           "object": "LayoutBlockFlow (relative positioned) P",
           "rect": [8, 146, 784, 18],
           "reason": "geometry"
@@ -33,14 +28,34 @@
           "reason": "geometry"
         },
         {
-          "object": "LayoutText #text",
-          "rect": [8, 146, 70, 18],
-          "reason": "geometry"
+          "object": "LayoutBlockFlow (relative positioned) P",
+          "rect": [8, 148, 784, 16],
+          "reason": "incremental"
         },
         {
-          "object": "LayoutText #text",
+          "object": "LayoutBlockFlow (relative positioned) P",
+          "rect": [8, 130, 784, 16],
+          "reason": "incremental"
+        },
+        {
+          "object": "InlineTextBox 'SUCCESS'",
+          "rect": [8, 146, 70, 18],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'SUCCESS'",
           "rect": [8, 130, 70, 18],
-          "reason": "geometry"
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) P",
+          "rect": [8, 148, 70, 16],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) P",
+          "rect": [8, 130, 70, 16],
+          "reason": "incremental"
         }
       ]
     }

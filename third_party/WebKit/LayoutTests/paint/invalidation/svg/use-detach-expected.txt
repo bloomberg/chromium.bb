@@ -19,17 +19,17 @@
       "paintInvalidations": [
         {
           "object": "LayoutSVGContainer g",
-          "rect": [207, 57, 50, 66],
+          "rect": [209, 57, 46, 66],
           "reason": "appeared"
         },
         {
           "object": "LayoutSVGContainer g",
-          "rect": [207, 57, 50, 66],
+          "rect": [209, 57, 46, 66],
           "reason": "appeared"
         },
         {
           "object": "LayoutSVGContainer g",
-          "rect": [207, 57, 50, 66],
+          "rect": [209, 57, 46, 66],
           "reason": "disappeared"
         }
       ]

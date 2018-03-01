@@ -23,29 +23,9 @@
           "reason": "geometry"
         },
         {
-          "object": "LayoutSVGRoot svg",
-          "rect": [9, 69, 400, 400],
-          "reason": "geometry"
-        },
-        {
           "object": "LayoutSVGContainer use",
           "rect": [209, 269, 200, 200],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutSVGRect rect id='targetRect'",
-          "rect": [209, 269, 200, 200],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutSVGContainer g id='targetUse'",
-          "rect": [9, 69, 200, 200],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutSVGContainer use",
-          "rect": [9, 69, 200, 200],
-          "reason": "geometry"
+          "reason": "paint property change"
         },
         {
           "object": "LayoutSVGRect rect id='targetRect1'",
@@ -53,14 +33,14 @@
           "reason": "geometry"
         },
         {
-          "object": "LayoutSVGContainer use",
-          "rect": [59, 269, 50, 200],
-          "reason": "geometry"
+          "object": "LayoutSVGRect rect id='targetRect1'",
+          "rect": [59, 69, 150, 200],
+          "reason": "incremental"
         },
         {
-          "object": "LayoutSVGRect rect id='targetRect'",
+          "object": "LayoutSVGContainer use",
           "rect": [59, 269, 50, 200],
-          "reason": "geometry"
+          "reason": "paint property change"
         }
       ]
     }
