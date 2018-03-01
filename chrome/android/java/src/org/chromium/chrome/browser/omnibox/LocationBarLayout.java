@@ -1157,9 +1157,7 @@ public class LocationBarLayout extends FrameLayout
         // now count as a new session.
         mHasStartedNewOmniboxEditSession = false;
         mNewOmniboxEditSessionTimestamp = -1;
-        if (mNativeInitialized && mUrlHasFocus
-                && (mToolbarDataProvider.hasTab()
-                           || (mBottomSheet != null && mBottomSheet.isShowingNewTab()))) {
+        if (mNativeInitialized && mUrlHasFocus && mToolbarDataProvider.hasTab()) {
             mAutocomplete.startZeroSuggest(mToolbarDataProvider.getProfile(),
                     mUrlBar.getTextWithAutocomplete(), mToolbarDataProvider.getCurrentUrl(),
                     mToolbarDataProvider.getTitle(), mUrlFocusedFromFakebox);
@@ -1200,17 +1198,13 @@ public class LocationBarLayout extends FrameLayout
                     boolean preventAutocomplete = !mUrlBar.shouldAutocomplete();
                     mRequestSuggestions = null;
 
-                    if (!mToolbarDataProvider.hasTab()
-                            && (mBottomSheet == null || !mBottomSheet.isShowingNewTab())) {
+                    if (!mToolbarDataProvider.hasTab()) {
                         // crbug.com/764749
                         Log.w(TAG, "onTextChangedForAutocomplete: no tab");
                         return;
                     }
 
                     Profile profile = mToolbarDataProvider.getProfile();
-                    String url = mToolbarDataProvider.hasTab()
-                            ? mToolbarDataProvider.getCurrentUrl()
-                            : UrlConstants.NTP_URL;
                     int cursorPosition = -1;
                     if (mUrlBar.getSelectionStart() == mUrlBar.getSelectionEnd()) {
                         // Conveniently, if there is no selection, those two functions return -1,
@@ -1218,8 +1212,9 @@ public class LocationBarLayout extends FrameLayout
                         // position.  Hence, there's no need to check for -1 here explicitly.
                         cursorPosition = mUrlBar.getSelectionStart();
                     }
-                    mAutocomplete.start(profile, url, textWithoutAutocomplete, cursorPosition,
-                            preventAutocomplete, mUrlFocusedFromFakebox);
+                    mAutocomplete.start(profile, mToolbarDataProvider.getCurrentUrl(),
+                            textWithoutAutocomplete, cursorPosition, preventAutocomplete,
+                            mUrlFocusedFromFakebox);
                 }
             };
             if (mNativeInitialized) {
@@ -1925,9 +1920,6 @@ public class LocationBarLayout extends FrameLayout
         if (mToolbarDataProvider.hasTab()) {
             mAutocomplete.start(mToolbarDataProvider.getProfile(),
                     mToolbarDataProvider.getCurrentUrl(), query, -1, false, false);
-        } else if (mBottomSheet != null) {
-            mAutocomplete.start(mToolbarDataProvider.getProfile(), UrlConstants.NTP_URL, query, -1,
-                    false, false);
         }
         post(new Runnable() {
             @Override
@@ -2159,8 +2151,7 @@ public class LocationBarLayout extends FrameLayout
         // If the URL is currently focused, do not replace the text they have entered with the URL.
         // Once they stop editing the URL, the current tab's URL will automatically be filled in.
         if (mUrlBar.hasFocus()) {
-            if ((mUrlFocusedWithoutAnimations && !NewTabPage.isNTPUrl(url))
-                    || (mBottomSheet != null && mBottomSheet.isShowingNewTab())) {
+            if (mUrlFocusedWithoutAnimations && !NewTabPage.isNTPUrl(url)) {
                 // If we did not run the focus animations, then the user has not typed any text.
                 // So, clear the focus and accept whatever URL the page is currently attempting to
                 // display. If the NTP is showing, the current page's URL should not be displayed.
@@ -2281,14 +2272,7 @@ public class LocationBarLayout extends FrameLayout
 
         // Loads the |url| in a new tab or the current ContentView and gives focus to the
         // ContentView.
-        if (mBottomSheet != null && mBottomSheet.isShowingNewTab()) {
-            LoadUrlParams loadUrlParams = new LoadUrlParams(url);
-            loadUrlParams.setTransitionType(transition | PageTransition.FROM_ADDRESS_BAR);
-            mBottomSheet.loadUrlInNewTab(loadUrlParams);
-            // At this point the currentTab might be invalid, but the only use of a tab below, in
-            // focusCurrentTab method, will get an updated value of current tab.
-            RecordUserAction.record("MobileOmniboxUse");
-        } else if (currentTab != null && !url.isEmpty()) {
+        if (currentTab != null && !url.isEmpty()) {
             LoadUrlParams loadUrlParams = new LoadUrlParams(url);
             loadUrlParams.setVerbatimHeaders(GeolocationHeader.getGeoHeader(url, currentTab));
             loadUrlParams.setTransitionType(transition | PageTransition.FROM_ADDRESS_BAR);

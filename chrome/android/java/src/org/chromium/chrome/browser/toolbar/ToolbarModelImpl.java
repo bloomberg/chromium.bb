@@ -14,7 +14,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.dom_distiller.DomDistillerServiceFactory;
 import org.chromium.chrome.browser.dom_distiller.DomDistillerTabUtils;
 import org.chromium.chrome.browser.locale.LocaleManager;
@@ -103,13 +102,8 @@ public class ToolbarModelImpl
     @Override
     public String getCurrentUrl() {
         // TODO(yusufo) : Consider using this for all calls from getTab() for accessing url.
-        if (!hasTab()) {
-            if (mBottomSheet != null && mBottomSheet.isShowingNewTab()) {
-                return UrlConstants.NTP_URL;
-            } else {
-                return "";
-            }
-        }
+        if (!hasTab()) return "";
+
         // Tab.getUrl() returns empty string if it does not have a URL.
         return getTab().getUrl().trim();
     }
@@ -240,8 +234,8 @@ public class ToolbarModelImpl
         boolean isShownInRegularNtp = ntp != null && ntp.isLocationBarShownInNTP()
                 && ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_SHOW_GOOGLE_G_IN_OMNIBOX);
 
-        boolean isShownInBottomSheet = mBottomSheet != null && !mBottomSheet.isShowingNewTab()
-                && mBottomSheet.isSheetOpen() && TextUtils.isEmpty(urlBarText)
+        boolean isShownInBottomSheet = mBottomSheet != null && mBottomSheet.isSheetOpen()
+                && TextUtils.isEmpty(urlBarText)
                 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT
                 && ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_CLEAR_URL_ON_OPEN)
                 && ChromeFeatureList.isEnabled(

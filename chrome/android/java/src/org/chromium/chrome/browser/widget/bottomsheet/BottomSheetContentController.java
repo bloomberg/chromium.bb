@@ -423,12 +423,7 @@ public class BottomSheetContentController
      * @param itemId The menu item id of the {@link BottomSheetContent} to show.
      */
     public void showContentAndOpenSheet(int itemId) {
-        if (mActivity.isInOverviewMode() && !mBottomSheet.isShowingNewTab()) {
-            // Open a new tab to show the content if currently in tab switcher and a new tab is
-            // not currently being displayed.
-            mShouldOpenSheetOnNextContentChange = true;
-            mBottomSheet.displayNewTabUi(mTabModelSelector.getCurrentModel().isIncognito(), itemId);
-        } else if (itemId != mSelectedItemId) {
+        if (itemId != mSelectedItemId) {
             mShouldOpenSheetOnNextContentChange = true;
             selectItem(itemId);
         } else if (mBottomSheet.getSheetState() != BottomSheet.SHEET_STATE_FULL) {

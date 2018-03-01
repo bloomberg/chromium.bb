@@ -1665,51 +1665,10 @@ public class BottomSheet
     // ---------------------------------------------------------------------------------------------
 
     /**
-     * @return The {@link BottomSheetNewTabController} used to present the new tab UI.
-     */
-    public BottomSheetNewTabController getNewTabController() {
-        return null;
-    }
-
-    /**
-     * @return Whether the {@link BottomSheetNewTabController} is showing the new tab UI. This
-     *         returns true if a normal or incognito new tab is showing.
-     */
-    public boolean isShowingNewTab() {
-        return false;
-    }
-
-    /**
-     * Tells {@link BottomSheetNewTabController} to display the new tab UI.
-     * @param isIncognito Whether to display the incognito new tab UI.
-     */
-    public void displayNewTabUi(boolean isIncognito) {
-        throw new RuntimeException("This functionality is not supported in the base sheet.");
-    }
-
-    /**
-     * Tells {@link BottomSheetNewTabController} to display the specified content in a new tab.
-     * @param isIncognito Whether to display the incognito new tab UI.
-     * @param actionId The action id of the bottom sheet content to be displayed.
-     */
-    public void displayNewTabUi(boolean isIncognito, int actionId) {
-        throw new RuntimeException("This functionality is not supported in the base sheet.");
-    }
-
-    /**
      * @return Whether or not the bottom sheet's toolbar is using the expand button.
      */
     public boolean isUsingExpandButton() {
         return false;
-    }
-
-    /**
-     * Load a non-native URL in a new tab. This should be used when the new tab UI controlled by
-     * {@link BottomSheetContentController} is showing.
-     * @param params The params describing the URL to be loaded.
-     */
-    public void loadUrlInNewTab(LoadUrlParams params) {
-        throw new RuntimeException("This functionality is not supported in the base sheet.");
     }
 
     /**
