@@ -156,6 +156,7 @@ void UkmRecorderImpl::Purge() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   sources_.clear();
   entries_.clear();
+  event_aggregations_.clear();
 }
 
 void UkmRecorderImpl::SetIsWebstoreExtensionCallback(
@@ -230,6 +231,7 @@ void UkmRecorderImpl::StoreRecordingsInReport(Report* report) {
                             unsent_sources.size());
   sources_.clear();
   entries_.clear();
+  event_aggregations_.clear();
 
   // Keep at most |max_kept_sources|, prioritizing most-recent entries (by
   // creation time).
