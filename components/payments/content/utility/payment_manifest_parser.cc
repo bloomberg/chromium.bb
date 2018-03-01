@@ -34,6 +34,10 @@ const char* const kServiceWorkerSrc = "src";
 const char* const kServiceWorkerScope = "scope";
 const char* const kServiceWorkerUseCache = "use_cache";
 const char* const kWebAppName = "name";
+const char* const kWebAppIcons = "icons";
+const char* const kWebAppIconSrc = "src";
+const char* const kWebAppIconSizes = "sizes";
+const char* const kWebAppIconType = "type";
 
 // Parses the "default_applications": ["https://some/url"] from |dict| into
 // |web_app_manifest_urls|. Returns 'false' for invalid data.
@@ -192,6 +196,10 @@ class JsonParserCallback
 };
 
 }  // namespace
+
+PaymentManifestParser::WebAppIcon::WebAppIcon() = default;
+
+PaymentManifestParser::WebAppIcon::~WebAppIcon() = default;
 
 PaymentManifestParser::PaymentManifestParser() : weak_factory_(this) {}
 
@@ -443,34 +451,65 @@ void PaymentManifestParser::OnWebAppParseInstallationInfo(
   // TODO(crbug.com/782270): Move this function into a static function for unit
   // test.
   if (value->FindKey({kServiceWorker}) == nullptr) {
-    return std::move(callback).Run(nullptr);
+    return std::move(callback).Run(nullptr, nullptr);
   }
 
   std::unique_ptr<WebAppInstallationInfo> sw =
       std::make_unique<WebAppInstallationInfo>();
-  auto* v = value->FindPath({kServiceWorker, kServiceWorkerSrc});
-  if (v == nullptr) {
+  auto* sw_path = value->FindPath({kServiceWorker, kServiceWorkerSrc});
+  if (sw_path == nullptr) {
     LOG(ERROR) << "Service Worker js src cannot be empty.";
-    return std::move(callback).Run(nullptr);
+    return std::move(callback).Run(nullptr, nullptr);
   }
-  sw->sw_js_url = v->GetString();
+  sw->sw_js_url = sw_path->GetString();
 
-  v = value->FindPath({kServiceWorker, kServiceWorkerScope});
-  if (v != nullptr) {
-    sw->sw_scope = v->GetString();
-  }
-
-  v = value->FindPath({kServiceWorker, kServiceWorkerUseCache});
-  if (v != nullptr) {
-    sw->sw_use_cache = v->GetBool();
+  sw_path = value->FindPath({kServiceWorker, kServiceWorkerScope});
+  if (sw_path != nullptr) {
+    sw->sw_scope = sw_path->GetString();
   }
 
-  v = value->FindKey({kWebAppName});
-  if (v != nullptr) {
-    sw->name = v->GetString();
+  sw_path = value->FindPath({kServiceWorker, kServiceWorkerUseCache});
+  if (sw_path != nullptr) {
+    sw->sw_use_cache = sw_path->GetBool();
   }
 
-  return std::move(callback).Run(std::move(sw));
+  auto* name_key = value->FindKey({kWebAppName});
+  if (name_key != nullptr) {
+    sw->name = name_key->GetString();
+  }
+
+  // Extract icons.
+  std::unique_ptr<std::vector<WebAppIcon>> icons;
+  auto* icons_key = value->FindKey({kWebAppIcons});
+  if (icons_key != nullptr) {
+    icons = std::make_unique<std::vector<WebAppIcon>>();
+    for (const auto& icon : icons_key->GetList()) {
+      if (!icon.is_dict())
+        continue;
+
+      WebAppIcon web_app_icon;
+      const base::Value* icon_src =
+          icon.FindKeyOfType(kWebAppIconSrc, base::Value::Type::STRING);
+      if (!icon_src || icon_src->GetString().empty())
+        continue;
+      web_app_icon.src = icon_src->GetString();
+
+      const base::Value* icon_sizes =
+          icon.FindKeyOfType(kWebAppIconSizes, base::Value::Type::STRING);
+      if (!icon_sizes || icon_sizes->GetString().empty())
+        continue;
+      web_app_icon.sizes = icon_sizes->GetString();
+
+      const base::Value* icon_type =
+          icon.FindKeyOfType(kWebAppIconType, base::Value::Type::STRING);
+      if (icon_type)
+        web_app_icon.type = icon_type->GetString();
+
+      icons->emplace_back(web_app_icon);
+    }
+  }
+
+  return std::move(callback).Run(std::move(sw), std::move(icons));
 }
 
 }  // namespace payments

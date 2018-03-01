@@ -78,9 +78,14 @@ ServiceWorkerPaymentInstrument::ServiceWorkerPaymentInstrument(
   DCHECK(frame_origin_.is_valid());
   DCHECK(spec_);
 
-  // Icon is not available in WebAppInstallationInfo for now, so create an empty
-  // icon image to avoid using invalid icon resource id.
-  icon_image_ = gfx::ImageSkia::CreateFrom1xBitmap(SkBitmap()).DeepCopy();
+  if (installable_web_app_info_->icon) {
+    icon_image_ =
+        gfx::ImageSkia::CreateFrom1xBitmap(*(installable_web_app_info_->icon))
+            .DeepCopy();
+  } else {
+    // Create an empty icon image to avoid using invalid icon resource id.
+    icon_image_ = gfx::ImageSkia::CreateFrom1xBitmap(SkBitmap()).DeepCopy();
+  }
 }
 
 ServiceWorkerPaymentInstrument::~ServiceWorkerPaymentInstrument() {

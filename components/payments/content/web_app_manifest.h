@@ -10,6 +10,8 @@
 #include <string>
 #include <vector>
 
+#include "third_party/skia/include/core/SkBitmap.h"
+
 namespace payments {
 
 struct WebAppManifestSection {
@@ -32,7 +34,7 @@ struct WebAppInstallationInfo {
   WebAppInstallationInfo();
   ~WebAppInstallationInfo();
 
-  // TODO(crbug.com/782270): Add icons.
+  std::unique_ptr<SkBitmap> icon;
   std::string name;
   std::string sw_js_url;
   std::string sw_scope;

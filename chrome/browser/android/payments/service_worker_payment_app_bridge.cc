@@ -107,7 +107,10 @@ void OnGotAllPaymentApps(
         env, ConvertUTF8ToJavaString(env, installable_app.second->name),
         ConvertUTF8ToJavaString(env, installable_app.second->sw_js_url),
         ConvertUTF8ToJavaString(env, installable_app.second->sw_scope),
-        installable_app.second->sw_use_cache, nullptr /* icon */,
+        installable_app.second->sw_use_cache,
+        installable_app.second->icon == nullptr
+            ? nullptr
+            : gfx::ConvertToJavaBitmap(installable_app.second->icon.get()),
         ConvertUTF8ToJavaString(env, installable_app.first.spec()),
         jweb_contents, jcallback);
   }

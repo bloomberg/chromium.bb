@@ -30,6 +30,7 @@ source_set("unit_tests") {
   deps = [
     ":utility",
     "//base",
+    "//skia",
     "//testing/gtest",
     "//url",
   ]
@@ -43,6 +44,7 @@ fuzzer_test("payment_method_manifest_fuzzer") {
     ":utility",
     "//base",
     "//base:i18n",
+    "//skia",
     "//url",
   ]
   dict = "payment_manifest_json.dict"
@@ -57,6 +59,7 @@ fuzzer_test("payment_web_app_manifest_fuzzer") {
     ":utility",
     "//base",
     "//components/payments/content:content_common",
+    "//skia",
   ]
   dict = "payment_manifest_json.dict"
   seed_corpus = "payment_web_app_manifest_fuzzer_corpus"

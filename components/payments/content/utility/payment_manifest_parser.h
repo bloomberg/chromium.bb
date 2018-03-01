@@ -73,6 +73,16 @@ namespace payments {
 // safe environment).
 class PaymentManifestParser {
  public:
+  // Web app icon info parsed from web app manifest.
+  struct WebAppIcon {
+    WebAppIcon();
+    ~WebAppIcon();
+
+    std::string src;
+    std::string sizes;
+    std::string type;
+  };
+
   // Called on successful parsing of a payment method manifest. Parse failure
   // results in empty vectors and "false".
   using PaymentMethodCallback = base::OnceCallback<
@@ -85,7 +95,8 @@ class PaymentManifestParser {
   // and serviceworker) in the web app manifest. Parse failure results in a
   // nullptr.
   using WebAppInstallationInfoCallback =
-      base::OnceCallback<void(std::unique_ptr<WebAppInstallationInfo>)>;
+      base::OnceCallback<void(std::unique_ptr<WebAppInstallationInfo>,
+                              std::unique_ptr<std::vector<WebAppIcon>>)>;
 
   PaymentManifestParser();
   ~PaymentManifestParser();

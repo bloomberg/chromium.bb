@@ -6,23 +6,34 @@
 
 #include <utility>
 
+#include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/manifest_icon_downloader.h"
+#include "content/public/browser/manifest_icon_selector.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/common/console_message_level.h"
+#include "content/public/common/manifest.h"
+#include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace payments {
 
 // TODO(crbug.com/782270): Use cache to accelerate crawling procedure.
 // TODO(crbug.com/782270): Add integration tests for this class.
 InstallablePaymentAppCrawler::InstallablePaymentAppCrawler(
+    content::WebContents* web_contents,
     PaymentManifestDownloader* downloader,
     PaymentManifestParser* parser,
     PaymentManifestWebDataService* cache)
-    : downloader_(downloader),
+    : WebContentsObserver(web_contents),
+      downloader_(downloader),
       parser_(parser),
       number_of_payment_method_manifest_to_download_(0),
       number_of_payment_method_manifest_to_parse_(0),
       number_of_web_app_manifest_to_download_(0),
       number_of_web_app_manifest_to_parse_(0),
+      number_of_web_app_icons_to_download_and_decode_(0),
       weak_ptr_factory_(this) {}
 
 InstallablePaymentAppCrawler::~InstallablePaymentAppCrawler() {}
@@ -131,42 +142,156 @@ void InstallablePaymentAppCrawler::OnPaymentWebAppManifestDownloaded(
 void InstallablePaymentAppCrawler::OnPaymentWebAppInstallationInfo(
     const GURL& method_manifest_url,
     const GURL& web_app_manifest_url,
-    std::unique_ptr<WebAppInstallationInfo> app_info) {
+    std::unique_ptr<WebAppInstallationInfo> app_info,
+    std::unique_ptr<std::vector<PaymentManifestParser::WebAppIcon>> icons) {
   number_of_web_app_manifest_to_parse_--;
 
-  if (app_info != nullptr) {
-    if (app_info->sw_js_url.empty() ||
-        !base::IsStringUTF8(app_info->sw_js_url)) {
-      FinishCrawlingPaymentAppsIfReady();
-      LOG(ERROR) << "The installable payment app's js url is not a non-empty "
-                    "UTF8 string.";
-      return;
+  if (CompleteAndStorePaymentWebAppInfoIfValid(
+          method_manifest_url, web_app_manifest_url, std::move(app_info))) {
+    // Only download and decode payment app's icon if it is valid and stored.
+    DownloadAndDecodeWebAppIcon(method_manifest_url, web_app_manifest_url,
+                                std::move(icons));
+  }
+
+  FinishCrawlingPaymentAppsIfReady();
+}
+
+bool InstallablePaymentAppCrawler::CompleteAndStorePaymentWebAppInfoIfValid(
+    const GURL& method_manifest_url,
+    const GURL& web_app_manifest_url,
+    std::unique_ptr<WebAppInstallationInfo> app_info) {
+  if (app_info == nullptr)
+    return false;
+
+  if (app_info->sw_js_url.empty() || !base::IsStringUTF8(app_info->sw_js_url)) {
+    WarnIfPossible(
+        "The installable payment app's js url is not a non-empty UTF8 string.");
+    return false;
+  }
+
+  // Check and complete relative url.
+  if (!GURL(app_info->sw_js_url).is_valid()) {
+    GURL absolute_url = web_app_manifest_url.Resolve(app_info->sw_js_url);
+    if (!absolute_url.is_valid()) {
+      WarnIfPossible(
+          "Failed to resolve the installable payment app's js url (" +
+          app_info->sw_js_url + ").");
+      return false;
+    }
+    app_info->sw_js_url = absolute_url.spec();
+  }
+
+  if (!GURL(app_info->sw_scope).is_valid()) {
+    GURL absolute_scope =
+        web_app_manifest_url.GetWithoutFilename().Resolve(app_info->sw_scope);
+    if (!absolute_scope.is_valid()) {
+      WarnIfPossible(
+          "Failed to resolve the installable payment app's registration "
+          "scope (" +
+          app_info->sw_scope + ").");
+      return false;
+    }
+    app_info->sw_scope = absolute_scope.spec();
+  }
+
+  // TODO(crbug.com/782270): Support multiple installable payment apps for a
+  // payment method.
+  if (installable_apps_.find(method_manifest_url) != installable_apps_.end())
+    return false;
+
+  installable_apps_[method_manifest_url] = std::move(app_info);
+
+  return true;
+}
+
+void InstallablePaymentAppCrawler::DownloadAndDecodeWebAppIcon(
+    const GURL& method_manifest_url,
+    const GURL& web_app_manifest_url,
+    std::unique_ptr<std::vector<PaymentManifestParser::WebAppIcon>> icons) {
+  if (icons == nullptr || icons->empty())
+    return;
+
+  std::vector<content::Manifest::Icon> manifest_icons;
+  for (const auto& icon : *icons) {
+    if (icon.src.empty() || !base::IsStringUTF8(icon.src)) {
+      WarnIfPossible(
+          "The installable payment app's icon src url is not a non-empty UTF8 "
+          "string.");
+      continue;
     }
 
-    // Check and complete relative url.
-    if (!GURL(app_info->sw_js_url).is_valid()) {
-      GURL absolute_url = web_app_manifest_url.Resolve(app_info->sw_js_url);
-      if (!absolute_url.is_valid()) {
-        LOG(ERROR) << "Failed to resolve the installable payment app's js url.";
-        FinishCrawlingPaymentAppsIfReady();
-        return;
+    GURL icon_src = GURL(icon.src);
+    if (!icon_src.is_valid()) {
+      icon_src = web_app_manifest_url.Resolve(icon.src);
+      if (!icon_src.is_valid()) {
+        WarnIfPossible(
+            "Failed to resolve the installable payment app's icon src url (" +
+            icon.src + ").");
+        continue;
       }
-      app_info->sw_js_url = absolute_url.spec();
     }
 
-    if (!GURL(app_info->sw_scope).is_valid()) {
-      GURL absolute_scope =
-          web_app_manifest_url.GetWithoutFilename().Resolve(app_info->sw_scope);
-      if (!absolute_scope.is_valid()) {
-        LOG(ERROR) << "Failed to resolve the installable payment app's "
-                      "registration scope.";
-        FinishCrawlingPaymentAppsIfReady();
-        return;
-      }
-      app_info->sw_scope = absolute_scope.spec();
-    }
+    content::Manifest::Icon manifest_icon;
+    manifest_icon.src = icon_src;
+    manifest_icon.type = base::UTF8ToUTF16(icon.type);
+    manifest_icon.purpose.emplace_back(content::Manifest::Icon::ANY);
+    // TODO(crbug.com/782270): Parse icon sizes.
+    manifest_icon.sizes.emplace_back(gfx::Size());
+    manifest_icons.emplace_back(manifest_icon);
+  }
 
-    installable_apps_[method_manifest_url] = std::move(app_info);
+  if (manifest_icons.empty())
+    return;
+
+  // TODO(crbug.com/782270): Choose appropriate icon size dynamically on
+  // different platforms. Here we choose a large ideal icon size to be big
+  // enough for all platforms. Note that we only scale down for this icon size
+  // but not scale up.
+  const int kPaymentAppIdealIconSize = 0xFFFF;
+  const int kPaymentAppMinimumIconSize = 0;
+  GURL best_icon_url = content::ManifestIconSelector::FindBestMatchingIcon(
+      manifest_icons, kPaymentAppIdealIconSize, kPaymentAppMinimumIconSize,
+      content::Manifest::Icon::ANY);
+  if (!best_icon_url.is_valid()) {
+    WarnIfPossible(
+        "No suitable icon found in the installabble payment app's manifest (" +
+        web_app_manifest_url.spec() + ").");
+    return;
+  }
+
+  // Stop if the web_contents is gone.
+  if (web_contents() == nullptr)
+    return;
+
+  number_of_web_app_icons_to_download_and_decode_++;
+  bool can_download_icon = content::ManifestIconDownloader::Download(
+      web_contents(), best_icon_url, kPaymentAppIdealIconSize,
+      kPaymentAppMinimumIconSize,
+      base::Bind(
+          &InstallablePaymentAppCrawler::OnPaymentWebAppIconDownloadAndDecoded,
+          weak_ptr_factory_.GetWeakPtr(), method_manifest_url,
+          web_app_manifest_url));
+  DCHECK(can_download_icon);
+}
+
+void InstallablePaymentAppCrawler::OnPaymentWebAppIconDownloadAndDecoded(
+    const GURL& method_manifest_url,
+    const GURL& web_app_manifest_url,
+    const SkBitmap& icon) {
+  number_of_web_app_icons_to_download_and_decode_--;
+  if (icon.drawsNothing()) {
+    WarnIfPossible(
+        "Failed to download or decode installable payment app's icon for web "
+        "app manifest " +
+        web_app_manifest_url.spec() + ".");
+  } else {
+    std::map<GURL, std::unique_ptr<WebAppInstallationInfo>>::iterator it =
+        installable_apps_.find(method_manifest_url);
+    DCHECK(it != installable_apps_.end());
+    DCHECK(url::IsSameOriginWith(GURL(it->second->sw_scope),
+                                 web_app_manifest_url));
+
+    it->second->icon = std::make_unique<SkBitmap>(icon);
   }
 
   FinishCrawlingPaymentAppsIfReady();
@@ -176,12 +301,22 @@ void InstallablePaymentAppCrawler::FinishCrawlingPaymentAppsIfReady() {
   if (number_of_payment_method_manifest_to_download_ != 0 ||
       number_of_payment_method_manifest_to_parse_ != 0 ||
       number_of_web_app_manifest_to_download_ != 0 ||
-      number_of_web_app_manifest_to_parse_ != 0) {
+      number_of_web_app_manifest_to_parse_ != 0 ||
+      number_of_web_app_icons_to_download_and_decode_ != 0) {
     return;
   }
 
   std::move(callback_).Run(std::move(installable_apps_));
   std::move(finished_using_resources_).Run();
+}
+
+void InstallablePaymentAppCrawler::WarnIfPossible(const std::string& message) {
+  if (web_contents()) {
+    web_contents()->GetMainFrame()->AddMessageToConsole(
+        content::ConsoleMessageLevel::CONSOLE_MESSAGE_LEVEL_WARNING, message);
+  } else {
+    LOG(WARNING) << message;
+  }
 }
 
 }  // namespace payments.
