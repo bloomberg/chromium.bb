@@ -20,6 +20,7 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/bind.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -55,9 +56,8 @@ base::string16 GetDisplaySize(int64_t display_id) {
   // to empty string if this happens on release build.
   const display::DisplayIdList id_list =
       display_manager->GetMirroringDestinationDisplayIdList();
-  const bool mirroring =
-      display_manager->IsInMirrorMode() &&
-      std::find(id_list.begin(), id_list.end(), display_id) != id_list.end();
+  const bool mirroring = display_manager->IsInMirrorMode() &&
+                         base::ContainsValue(id_list, display_id);
   DCHECK(!mirroring);
   if (mirroring)
     return base::string16();

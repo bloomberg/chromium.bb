@@ -33,6 +33,7 @@
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "ui/app_list/app_list_features.h"
 #include "ui/app_list/presenter/app_list.h"
 #include "ui/app_list/presenter/test/test_app_list_presenter.h"
@@ -1854,9 +1855,7 @@ TEST_F(ShelfLayoutManagerTest, AutohideShelfForAutohideWhenActiveWindow) {
   auto* shelf_window = shelf->GetWindow();
   aura::Window* container = shelf_window->GetRootWindow()->GetChildById(
       kShellWindowId_AlwaysOnTopContainer);
-  auto iter = std::find(container->children().begin(),
-                        container->children().end(), window_two);
-  EXPECT_NE(iter, container->children().end());
+  EXPECT_TRUE(base::ContainsValue(container->children(), window_two));
 
   widget_two->Maximize();
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());

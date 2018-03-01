@@ -31,6 +31,7 @@
 #include "ash/wm/window_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/test/histogram_tester.h"
 #include "ui/app_list/presenter/app_list.h"
 #include "ui/app_list/presenter/test/test_app_list_presenter.h"
@@ -714,9 +715,8 @@ TEST_F(SystemTrayTest, SystemTrayTestItems) {
 
   // Check items have been added.
   std::vector<SystemTrayItem*> items = tray->GetTrayItems();
-  ASSERT_TRUE(std::find(items.begin(), items.end(), test_item) != items.end());
-  ASSERT_TRUE(std::find(items.begin(), items.end(), detailed_item) !=
-              items.end());
+  ASSERT_TRUE(base::ContainsValue(items, test_item));
+  ASSERT_TRUE(base::ContainsValue(items, detailed_item));
 
   // Ensure the tray views are created.
   ASSERT_TRUE(test_item->tray_view() != NULL);

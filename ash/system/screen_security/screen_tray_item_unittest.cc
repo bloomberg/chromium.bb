@@ -12,6 +12,7 @@
 #include "ash/test/ash_test_base.h"
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
@@ -187,8 +188,7 @@ void TestSystemTrayInteraction(ScreenTrayItemTest* test) {
 
   std::vector<SystemTrayItem*> tray_items =
       AshTestBase::GetPrimarySystemTray()->GetTrayItems();
-  EXPECT_NE(std::find(tray_items.begin(), tray_items.end(), tray_item),
-            tray_items.end());
+  EXPECT_TRUE(base::ContainsValue(tray_items, tray_item));
 
   test->StartSession();
   EXPECT_TRUE(tray_item->tray_view()->visible());
