@@ -4,6 +4,7 @@
 
 #include "components/viz/service/hit_test/hit_test_aggregator.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "components/viz/common/hit_test/aggregated_hit_test_region.h"
 #include "components/viz/service/hit_test/hit_test_aggregator_delegate.h"
 #include "third_party/skia/include/core/SkMatrix44.h"
@@ -103,6 +104,8 @@ void HitTestAggregator::SwapHandles() {
 }
 
 void HitTestAggregator::AppendRoot(const SurfaceId& surface_id) {
+  SCOPED_UMA_HISTOGRAM_TIMER("Event.VizHitTest.AggregateTime");
+
   const mojom::HitTestRegionList* hit_test_region_list =
       hit_test_manager_->GetActiveHitTestRegionList(surface_id);
   if (!hit_test_region_list)
@@ -117,6 +120,7 @@ void HitTestAggregator::AppendRoot(const SurfaceId& surface_id) {
 
   DCHECK_GE(region_index, 1u);
   int32_t child_count = region_index - 1;
+  UMA_HISTOGRAM_COUNTS_1000("Event.VizHitTest.HitTestRegions", region_index);
   SetRegionAt(0, surface_id.frame_sink_id(), hit_test_region_list->flags,
               hit_test_region_list->bounds, hit_test_region_list->transform,
               child_count);
