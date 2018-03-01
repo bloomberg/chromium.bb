@@ -936,7 +936,6 @@ crbug.com/306730 external/wpt/css/css-text/i18n/css3-text-line-break-opclns-267.
 crbug.com/306730 external/wpt/css/css-text/i18n/css3-text-line-break-opclns-268.html [ Failure ]
 crbug.com/306730 external/wpt/css/css-text/i18n/css3-text-line-break-opclns-269.html [ Failure ]
 crbug.com/306730 external/wpt/css/css-text/line-break/line-break-normal-025.xht [ Failure ]
-crbug.com/306730 external/wpt/css/css-text/line-break/line-break-strict-018.xht [ Failure ]
 
 crbug.com/666657 external/wpt/css/css-text-decor/text-emphasis-color-001.xht [ Failure ]
 crbug.com/666657 external/wpt/css/css-text-decor/text-emphasis-position-above-left-001.xht [ Failure ]
