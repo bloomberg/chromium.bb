@@ -35,22 +35,6 @@ namespace ws {
 namespace test {
 namespace {
 
-const UserId kTestId1 = "2";
-const UserId kTestId2 = "21";
-
-ClientWindowId ClientWindowIdForFirstRoot(WindowTree* tree) {
-  if (tree->roots().empty())
-    return ClientWindowId();
-  return ClientWindowIdForWindow(tree, *tree->roots().begin());
-}
-
-WindowManagerState* GetWindowManagerStateForUser(Display* display,
-                                                 const UserId& user_id) {
-  WindowManagerDisplayRoot* display_root =
-      display->GetWindowManagerDisplayRootForUser(user_id);
-  return display_root ? display_root->window_manager_state() : nullptr;
-}
-
 // Returns the root ServerWindow for the specified Display.
 ServerWindow* GetRootOnDisplay(WindowTree* tree, Display* display) {
   for (const ServerWindow* root : tree->roots()) {
@@ -110,8 +94,6 @@ class DisplayTest : public testing::Test {
   // testing::Test:
   void SetUp() override {
     screen_manager_.Init(window_server()->display_manager());
-    window_server()->user_id_tracker()->AddUserId(kTestId1);
-    window_server()->user_id_tracker()->AddUserId(kTestId2);
   }
 
  private:
@@ -122,7 +104,7 @@ class DisplayTest : public testing::Test {
 };
 
 TEST_F(DisplayTest, CreateDisplay) {
-  AddWindowManager(window_server(), kTestId1);
+  AddWindowManager(window_server());
   const int64_t display_id =
       screen_manager().AddDisplay(MakeDisplay(0, 0, 1024, 768, 1.0f));
 
@@ -134,9 +116,7 @@ TEST_F(DisplayTest, CreateDisplay) {
   EXPECT_EQ("0,0 1024x768", display->root_window()->bounds().ToString());
 
   // Display should have a WM root window with the correct size too.
-  EXPECT_EQ(1u, display->num_window_manager_states());
-  WindowManagerDisplayRoot* root1 =
-      display->GetWindowManagerDisplayRootForUser(kTestId1);
+  WindowManagerDisplayRoot* root1 = display->window_manager_display_root();
   ASSERT_NE(nullptr, root1);
   ASSERT_NE(nullptr, root1->root());
   EXPECT_EQ("0,0 1024x768", root1->root()->bounds().ToString());
@@ -155,45 +135,15 @@ TEST_F(DisplayTest, CreateDisplayBeforeWM) {
   EXPECT_EQ("0,0 1024x768", display->root_window()->bounds().ToString());
 
   // There should be no WM state for display yet.
-  EXPECT_EQ(0u, display->num_window_manager_states());
-  EXPECT_EQ(nullptr, display->GetWindowManagerDisplayRootForUser(kTestId1));
+  EXPECT_EQ(nullptr, display->window_manager_display_root());
 
-  AddWindowManager(window_server(), kTestId1);
+  AddWindowManager(window_server());
 
   // After adding a WM display should have WM state and WM root for the display.
-  EXPECT_EQ(1u, display->num_window_manager_states());
-  WindowManagerDisplayRoot* root1 =
-      display->GetWindowManagerDisplayRootForUser(kTestId1);
+  WindowManagerDisplayRoot* root1 = display->window_manager_display_root();
   ASSERT_NE(nullptr, root1);
   ASSERT_NE(nullptr, root1->root());
   EXPECT_EQ("0,0 1024x768", root1->root()->bounds().ToString());
-}
-
-TEST_F(DisplayTest, CreateDisplayWithTwoWindowManagers) {
-  AddWindowManager(window_server(), kTestId1);
-  const int64_t display_id = screen_manager().AddDisplay();
-  Display* display = display_manager()->GetDisplayById(display_id);
-
-  // There should be only be one WM at this point.
-  ASSERT_EQ(1u, display->num_window_manager_states());
-  EXPECT_NE(nullptr, display->GetWindowManagerDisplayRootForUser(kTestId1));
-  EXPECT_EQ(nullptr, display->GetWindowManagerDisplayRootForUser(kTestId2));
-
-  AddWindowManager(window_server(), kTestId2);
-
-  // There should now be two WMs.
-  ASSERT_EQ(2u, display->num_window_manager_states());
-  WindowManagerDisplayRoot* root1 =
-      display->GetWindowManagerDisplayRootForUser(kTestId1);
-  ASSERT_NE(nullptr, root1);
-  WindowManagerDisplayRoot* root2 =
-      display->GetWindowManagerDisplayRootForUser(kTestId2);
-  ASSERT_NE(nullptr, root2);
-
-  // Verify the two WMs have different roots but with the same bounds.
-  EXPECT_NE(root1, root2);
-  EXPECT_NE(root1->root(), root2->root());
-  EXPECT_EQ(root1->root()->bounds(), root2->root()->bounds());
 }
 
 TEST_F(DisplayTest, CreateDisplayWithDeviceScaleFactor) {
@@ -223,149 +173,29 @@ TEST_F(DisplayTest, CreateDisplayWithDeviceScaleFactor) {
 }
 
 TEST_F(DisplayTest, Destruction) {
-  AddWindowManager(window_server(), kTestId1);
+  AddWindowManager(window_server());
 
   int64_t display_id = screen_manager().AddDisplay();
 
-  // Add a second WM.
-  AddWindowManager(window_server(), kTestId2);
   ASSERT_EQ(1u, display_manager()->displays().size());
-  Display* display = display_manager()->GetDisplayById(display_id);
-  ASSERT_EQ(2u, display->num_window_manager_states());
-  // There should be two trees, one for each windowmanager.
-  EXPECT_EQ(2u, window_server()->num_trees());
+  EXPECT_EQ(1u, window_server()->num_trees());
 
-  {
-    WindowManagerState* state = GetWindowManagerStateForUser(display, kTestId1);
-    // Destroy the tree associated with |state|. Should result in deleting
-    // |state|.
-    window_server()->DestroyTree(state->window_tree());
-    ASSERT_EQ(1u, display->num_window_manager_states());
-    EXPECT_FALSE(GetWindowManagerStateForUser(display, kTestId1));
-    EXPECT_EQ(1u, display_manager()->displays().size());
-    EXPECT_EQ(1u, window_server()->num_trees());
-  }
-
+  WindowManagerState* state = window_server()->GetWindowManagerState();
+  // Destroy the tree associated with |state|. Should result in deleting
+  // |state|.
+  window_server()->DestroyTree(state->window_tree());
+  EXPECT_EQ(1u, display_manager()->displays().size());
+  EXPECT_EQ(0u, window_server()->num_trees());
   EXPECT_FALSE(window_server_delegate()->got_on_no_more_displays());
   screen_manager().RemoveDisplay(display_id);
-  // There is still one tree left.
-  EXPECT_EQ(1u, window_server()->num_trees());
   EXPECT_TRUE(window_server_delegate()->got_on_no_more_displays());
-}
-
-TEST_F(DisplayTest, EventStateResetOnUserSwitch) {
-  const int64_t display_id = screen_manager().AddDisplay();
-
-  AddWindowManager(window_server(), kTestId1);
-  AddWindowManager(window_server(), kTestId2);
-
-  window_server()->user_id_tracker()->SetActiveUserId(kTestId1);
-
-  ASSERT_EQ(1u, display_manager()->displays().size());
-  Display* display = display_manager()->GetDisplayById(display_id);
-  WindowManagerState* active_wms =
-      display->GetActiveWindowManagerDisplayRoot()->window_manager_state();
-  ASSERT_TRUE(active_wms);
-  EXPECT_EQ(kTestId1, active_wms->user_id());
-
-  ui::PointerEvent pointer_event(ui::MouseEvent(
-      ui::ET_MOUSE_PRESSED, gfx::Point(20, 25), gfx::Point(20, 25),
-      base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
-  ignore_result(static_cast<PlatformDisplayDelegate*>(display)
-                    ->GetEventSink()
-                    ->OnEventFromSource(&pointer_event));
-
-  EXPECT_TRUE(EventDispatcherTestApi(active_wms->event_dispatcher())
-                  .AreAnyPointersDown());
-  EXPECT_EQ(gfx::PointF(20, 25),
-            active_wms->event_dispatcher()->mouse_pointer_last_location());
-
-  // Switch the user. Should trigger resetting state in old event dispatcher
-  // and update state in new event dispatcher.
-  window_server()->user_id_tracker()->SetActiveUserId(kTestId2);
-  EXPECT_NE(
-      active_wms,
-      display->GetActiveWindowManagerDisplayRoot()->window_manager_state());
-  EXPECT_FALSE(EventDispatcherTestApi(active_wms->event_dispatcher())
-                   .AreAnyPointersDown());
-  active_wms =
-      display->GetActiveWindowManagerDisplayRoot()->window_manager_state();
-  EXPECT_EQ(kTestId2, active_wms->user_id());
-  EXPECT_EQ(gfx::PointF(20, 25),
-            active_wms->event_dispatcher()->mouse_pointer_last_location());
-  EXPECT_FALSE(EventDispatcherTestApi(active_wms->event_dispatcher())
-                   .AreAnyPointersDown());
-}
-
-// Verifies capture fails when wm is inactive and succeeds when wm is active.
-TEST_F(DisplayTest, SetCaptureFromWindowManager) {
-  const int64_t display_id = screen_manager().AddDisplay();
-  AddWindowManager(window_server(), kTestId1);
-  AddWindowManager(window_server(), kTestId2);
-  window_server()->user_id_tracker()->SetActiveUserId(kTestId1);
-  ASSERT_EQ(1u, display_manager()->displays().size());
-  Display* display = display_manager()->GetDisplayById(display_id);
-  WindowManagerState* wms_for_id2 =
-      GetWindowManagerStateForUser(display, kTestId2);
-  ASSERT_TRUE(wms_for_id2);
-  EXPECT_FALSE(wms_for_id2->IsActive());
-
-  // Create a child of the root that we can set capture on.
-  WindowTree* tree = wms_for_id2->window_tree();
-  ClientWindowId child_window_id;
-  ASSERT_TRUE(NewWindowInTree(tree, &child_window_id));
-
-  WindowTreeTestApi(tree).EnableCapture();
-
-  // SetCapture() should fail for user id2 as it is inactive.
-  EXPECT_FALSE(tree->SetCapture(child_window_id));
-
-  // Make the second user active and verify capture works.
-  window_server()->user_id_tracker()->SetActiveUserId(kTestId2);
-  EXPECT_TRUE(wms_for_id2->IsActive());
-  EXPECT_TRUE(tree->SetCapture(child_window_id));
-}
-
-TEST_F(DisplayTest, FocusFailsForInactiveUser) {
-  const int64_t display_id = screen_manager().AddDisplay();
-  AddWindowManager(window_server(), kTestId1);
-  TestWindowTreeClient* window_tree_client1 =
-      window_server_delegate()->last_client();
-  ASSERT_TRUE(window_tree_client1);
-  AddWindowManager(window_server(), kTestId2);
-  window_server()->user_id_tracker()->SetActiveUserId(kTestId1);
-  ASSERT_EQ(1u, display_manager()->displays().size());
-  Display* display = display_manager()->GetDisplayById(display_id);
-  WindowManagerState* wms_for_id2 =
-      GetWindowManagerStateForUser(display, kTestId2);
-  wms_for_id2->window_tree()->AddActivationParent(
-      ClientWindowIdForFirstRoot(wms_for_id2->window_tree()));
-  ASSERT_TRUE(wms_for_id2);
-  EXPECT_FALSE(wms_for_id2->IsActive());
-  ClientWindowId child2_id;
-  NewWindowInTree(wms_for_id2->window_tree(), &child2_id);
-
-  // Focus should fail for windows in inactive window managers.
-  EXPECT_FALSE(wms_for_id2->window_tree()->SetFocus(child2_id));
-
-  // Focus should succeed for the active window manager.
-  WindowManagerState* wms_for_id1 =
-      GetWindowManagerStateForUser(display, kTestId1);
-  ASSERT_TRUE(wms_for_id1);
-  wms_for_id1->window_tree()->AddActivationParent(
-      ClientWindowIdForFirstRoot(wms_for_id1->window_tree()));
-  ClientWindowId child1_id;
-  NewWindowInTree(wms_for_id1->window_tree(), &child1_id);
-  EXPECT_TRUE(wms_for_id1->IsActive());
-  EXPECT_TRUE(wms_for_id1->window_tree()->SetFocus(child1_id));
 }
 
 // Verifies a single tree is used for multiple displays.
 TEST_F(DisplayTest, MultipleDisplays) {
   screen_manager().AddDisplay();
   screen_manager().AddDisplay();
-  AddWindowManager(window_server(), kTestId1);
-  window_server()->user_id_tracker()->SetActiveUserId(kTestId1);
+  AddWindowManager(window_server());
   ASSERT_EQ(1u, window_server_delegate()->bindings()->size());
   TestWindowTreeBinding* window_tree_binding =
       (*window_server_delegate()->bindings())[0];
@@ -379,21 +209,18 @@ TEST_F(DisplayTest, MultipleDisplays) {
   ASSERT_NE(root1, root2);
   Display* display1 = tree->GetDisplay(root1);
   WindowManagerState* display1_wms =
-      display1->GetWindowManagerDisplayRootForUser(kTestId1)
-          ->window_manager_state();
+      display1->window_manager_display_root()->window_manager_state();
   Display* display2 = tree->GetDisplay(root2);
   WindowManagerState* display2_wms =
-      display2->GetWindowManagerDisplayRootForUser(kTestId1)
-          ->window_manager_state();
+      display2->window_manager_display_root()->window_manager_state();
   EXPECT_EQ(display1_wms->window_tree(), display2_wms->window_tree());
 }
 
 // Assertions around destroying a secondary display.
 TEST_F(DisplayTest, DestroyingDisplayDoesntDelete) {
-  AddWindowManager(window_server(), kTestId1);
+  AddWindowManager(window_server());
   screen_manager().AddDisplay();
   const int64_t secondary_display_id = screen_manager().AddDisplay();
-  window_server()->user_id_tracker()->SetActiveUserId(kTestId1);
   ASSERT_EQ(1u, window_server_delegate()->bindings()->size());
   WindowTree* tree = (*window_server_delegate()->bindings())[0]->tree();
   ASSERT_EQ(2u, tree->roots().size());

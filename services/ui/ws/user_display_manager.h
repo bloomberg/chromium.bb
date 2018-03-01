@@ -11,7 +11,6 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "services/ui/public/interfaces/display_manager.mojom.h"
-#include "services/ui/ws/user_id.h"
 
 namespace display {
 class Display;
@@ -23,10 +22,10 @@ namespace ws {
 class UserDisplayManagerDelegate;
 
 // Provides per user display state.
+// TODO(sky): merge this with ui::ws::DisplayManager (and rename).
 class UserDisplayManager : public mojom::DisplayManager {
  public:
-  UserDisplayManager(UserDisplayManagerDelegate* delegate,
-                     const UserId& user_id);
+  UserDisplayManager(UserDisplayManagerDelegate* delegate);
   ~UserDisplayManager() override;
 
   void DisableAutomaticNotification();
@@ -71,8 +70,6 @@ class UserDisplayManager : public mojom::DisplayManager {
   void CallOnDisplaysChanged(mojom::DisplayManagerObserver* observer);
 
   UserDisplayManagerDelegate* delegate_;
-
-  const UserId user_id_;
 
   // Set to true the first time at least one Display has valid frame values.
   bool got_valid_frame_decorations_;

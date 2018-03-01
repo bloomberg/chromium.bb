@@ -204,9 +204,9 @@ bool EventDispatcherTestApi::IsObservingWindow(ServerWindow* window) {
 WindowTree* TestDisplayBinding::CreateWindowTree(ServerWindow* root) {
   const uint32_t embed_flags = 0;
   WindowTree* tree = window_server_->EmbedAtWindow(
-      root, service_manager::mojom::kRootUserID,
-      ui::mojom::WindowTreeClientPtr(), embed_flags,
+      root, ui::mojom::WindowTreeClientPtr(), embed_flags,
       base::WrapUnique(new WindowManagerAccessPolicy));
+  WindowTreeTestApi(tree).set_is_for_embedding(false);
   tree->ConfigureWindowManager(automatically_create_display_roots_);
   return tree;
 }
@@ -628,9 +628,9 @@ ServerWindow* WindowEventTargetingHelper::CreatePrimaryTree(
   embed_window->set_event_targeting_policy(
       mojom::EventTargetingPolicy::DESCENDANTS_ONLY);
   WindowTree* tree1 = window_server()->GetTreeWithRoot(embed_window);
+  WindowTreeTestApi(tree1).set_is_for_embedding(false);
   EXPECT_NE(nullptr, tree1);
   EXPECT_NE(tree1, wm_tree);
-  WindowTreeTestApi(tree1).set_user_id(wm_tree->user_id());
 
   embed_window->SetBounds(window_bounds, base::nullopt);
 
@@ -778,11 +778,9 @@ base::subtle::Atomic32 CursorLocationManagerTestApi::current_cursor_location() {
 // -----------------------------------------------------------------------------
 
 void AddWindowManager(WindowServer* window_server,
-                      const UserId& user_id,
                       bool automatically_create_display_roots) {
-  window_server->window_manager_window_tree_factory_set()
-      ->Add(user_id, nullptr)
-      ->CreateWindowTree(nullptr, nullptr, automatically_create_display_roots);
+  window_server->window_manager_window_tree_factory()->CreateWindowTree(
+      nullptr, nullptr, automatically_create_display_roots);
 }
 
 display::Display MakeDisplay(int origin_x,

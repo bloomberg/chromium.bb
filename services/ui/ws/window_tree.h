@@ -25,7 +25,6 @@
 #include "services/ui/ws/drag_source.h"
 #include "services/ui/ws/drag_target_connection.h"
 #include "services/ui/ws/ids.h"
-#include "services/ui/ws/user_id.h"
 #include "services/ui/ws/window_tree_binding.h"
 #include "services/viz/public/interfaces/compositing/surface_id.mojom.h"
 #include "ui/gfx/native_widget_types.h"
@@ -77,7 +76,7 @@ class WindowTree : public mojom::WindowTree,
                    public DragTargetConnection {
  public:
   WindowTree(WindowServer* window_server,
-             const UserId& user_id,
+             bool is_for_embedding,
              ServerWindow* root,
              std::unique_ptr<AccessPolicy> access_policy);
   ~WindowTree() override;
@@ -106,7 +105,7 @@ class WindowTree : public mojom::WindowTree,
     can_change_root_window_visibility_ = value;
   }
 
-  const UserId& user_id() const { return user_id_; }
+  bool is_for_embedding() const { return is_for_embedding_; }
 
   mojom::WindowTreeClient* client() { return binding_->client(); }
 
@@ -660,7 +659,8 @@ class WindowTree : public mojom::WindowTree,
 
   WindowServer* window_server_;
 
-  UserId user_id_;
+  // True if this WindowTree was created by way of Embed().
+  bool is_for_embedding_;
 
   // Id of this tree as assigned by WindowServer.
   const ClientSpecificId id_;

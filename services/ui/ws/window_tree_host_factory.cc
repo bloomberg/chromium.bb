@@ -12,9 +12,8 @@
 namespace ui {
 namespace ws {
 
-WindowTreeHostFactory::WindowTreeHostFactory(WindowServer* window_server,
-                                             const UserId& user_id)
-    : window_server_(window_server), user_id_(user_id) {}
+WindowTreeHostFactory::WindowTreeHostFactory(WindowServer* window_server)
+    : window_server_(window_server) {}
 
 WindowTreeHostFactory::~WindowTreeHostFactory() {}
 
@@ -28,9 +27,8 @@ void WindowTreeHostFactory::CreateWindowTreeHost(
     mojom::WindowTreeClientPtr tree_client) {
   Display* ws_display = new Display(window_server_);
 
-  std::unique_ptr<DisplayBindingImpl> display_binding(
-      new DisplayBindingImpl(std::move(host), ws_display, user_id_,
-                             std::move(tree_client), window_server_));
+  std::unique_ptr<DisplayBindingImpl> display_binding(new DisplayBindingImpl(
+      std::move(host), ws_display, std::move(tree_client), window_server_));
 
   // Provide an initial size for the WindowTreeHost.
   display::ViewportMetrics metrics;

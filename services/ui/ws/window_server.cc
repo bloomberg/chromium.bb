@@ -41,7 +41,7 @@ bool IsWindowConsideredWindowManagerRoot(const Display* display,
     return false;
 
   const WindowManagerDisplayRoot* display_root =
-      display->GetActiveWindowManagerDisplayRoot();
+      display->window_manager_display_root();
   return display_root && display_root->GetClientVisibleRoot() == window;
 }
 
@@ -135,11 +135,12 @@ struct WindowServer::CurrentDragLoopState {
 WindowServer::WindowServer(WindowServerDelegate* delegate, bool should_host_viz)
     : delegate_(delegate),
       next_client_id_(kWindowServerClientId + 1),
-      display_manager_(new DisplayManager(this, &user_id_tracker_)),
+      display_manager_(std::make_unique<DisplayManager>(this)),
       current_operation_(nullptr),
       in_destructor_(false),
       next_wm_change_id_(0),
-      window_manager_window_tree_factory_set_(this, &user_id_tracker_),
+      window_manager_window_tree_factory_(
+          std::make_unique<WindowManagerWindowTreeFactory>(this)),
       host_frame_sink_manager_(
           should_host_viz ? std::make_unique<viz::HostFrameSinkManager>()
                           : nullptr),
@@ -149,8 +150,7 @@ WindowServer::WindowServer(WindowServerDelegate* delegate, bool should_host_viz)
       display_creation_config_(DisplayCreationConfig::UNKNOWN) {
   if (host_frame_sink_manager_)
     host_frame_sink_manager_->WillAssignTemporaryReferencesExternally();
-  user_id_tracker_.AddObserver(this);
-  OnUserIdAdded(user_id_tracker_.active_id());
+  user_activity_monitor_ = std::make_unique<UserActivityMonitor>(nullptr);
 }
 
 WindowServer::~WindowServer() {
@@ -203,12 +203,12 @@ ClientSpecificId WindowServer::GetAndAdvanceNextClientId() {
 
 WindowTree* WindowServer::EmbedAtWindow(
     ServerWindow* root,
-    const UserId& user_id,
     mojom::WindowTreeClientPtr client,
     uint32_t flags,
     std::unique_ptr<AccessPolicy> access_policy) {
-  std::unique_ptr<WindowTree> tree_ptr(
-      new WindowTree(this, user_id, root, std::move(access_policy)));
+  const bool is_for_embedding = true;
+  std::unique_ptr<WindowTree> tree_ptr = std::make_unique<WindowTree>(
+      this, is_for_embedding, root, std::move(access_policy));
   WindowTree* tree = tree_ptr.get();
   if (flags & mojom::kEmbedFlagEmbedderInterceptsEvents)
     tree->set_embedder_intercepts_events();
@@ -243,15 +243,16 @@ void WindowServer::AddTree(std::unique_ptr<WindowTree> tree_impl_ptr,
 }
 
 WindowTree* WindowServer::CreateTreeForWindowManager(
-    const UserId& user_id,
     mojom::WindowTreeRequest window_tree_request,
     mojom::WindowTreeClientPtr window_tree_client,
     bool automatically_create_display_roots) {
   delegate_->OnWillCreateTreeForWindowManager(
       automatically_create_display_roots);
 
-  std::unique_ptr<WindowTree> window_tree(new WindowTree(
-      this, user_id, nullptr, base::WrapUnique(new WindowManagerAccessPolicy)));
+  const bool is_for_embedding = false;
+  std::unique_ptr<WindowTree> window_tree = std::make_unique<WindowTree>(
+      this, is_for_embedding, nullptr,
+      base::WrapUnique(new WindowManagerAccessPolicy));
   std::unique_ptr<WindowTreeBinding> window_tree_binding =
       delegate_->CreateWindowTreeBinding(
           WindowServerDelegate::BindingType::WINDOW_MANAGER, this,
@@ -280,7 +281,8 @@ void WindowServer::DestroyTree(WindowTree* tree) {
   for (auto& pair : tree_map_)
     pair.second->OnWindowDestroyingTreeImpl(tree);
 
-  window_manager_window_tree_factory_set_.DeleteFactoryAssociatedWithTree(tree);
+  if (window_manager_window_tree_factory_->window_tree() == tree)
+    window_manager_window_tree_factory_->OnTreeDestroyed();
 
   // Remove any requests from the client that resulted in a call to the window
   // manager and we haven't gotten a response back yet.
@@ -327,10 +329,13 @@ const WindowTree* WindowServer::GetTreeWithRoot(
   return nullptr;
 }
 
-UserActivityMonitor* WindowServer::GetUserActivityMonitorForUser(
-    const UserId& user_id) {
-  DCHECK_GT(activity_monitor_map_.count(user_id), 0u);
-  return activity_monitor_map_[user_id].get();
+void WindowServer::BindWindowManagerWindowTreeFactory(
+    mojo::InterfaceRequest<mojom::WindowManagerWindowTreeFactory> request) {
+  if (window_manager_window_tree_factory_->is_bound()) {
+    DVLOG(1) << "Can only have one WindowManagerWindowTreeFactory";
+    return;
+  }
+  window_manager_window_tree_factory_->Bind(std::move(request));
 }
 
 bool WindowServer::SetFocusedWindow(ServerWindow* window) {
@@ -367,17 +372,15 @@ ServerWindow* WindowServer::GetFocusedWindow() {
   return nullptr;
 }
 
-void WindowServer::SetHighContrastMode(const UserId& user, bool enabled) {
+void WindowServer::SetHighContrastMode(bool enabled) {
   // TODO(fsamuel): This doesn't really seem like it's a window server concept?
-  if (IsUserInHighContrastMode(user) == enabled)
+  if (high_contrast_mode_ == enabled)
     return;
-  high_contrast_mode_[user] = enabled;
+  high_contrast_mode_ = enabled;
 
-  if (user == user_id_tracker_.active_id()) {
-    // Propagate the change to all Displays so that FrameGenerators start
-    // requesting BeginFrames.
-    display_manager_->SetHighContrastMode(enabled);
-  }
+  // Propagate the change to all Displays so that FrameGenerators start
+  // requesting BeginFrames.
+  display_manager_->SetHighContrastMode(enabled);
 }
 
 uint32_t WindowServer::GenerateWindowManagerChangeId(
@@ -532,13 +535,12 @@ void WindowServer::ProcessWillChangeWindowCursor(ServerWindow* window,
 }
 
 void WindowServer::SendToPointerWatchers(const ui::Event& event,
-                                         const UserId& user_id,
                                          ServerWindow* target_window,
                                          WindowTree* ignore_tree,
                                          int64_t display_id) {
   for (auto& pair : tree_map_) {
     WindowTree* tree = pair.second.get();
-    if (tree->user_id() == user_id && tree != ignore_tree)
+    if (tree != ignore_tree)
       tree->SendToPointerWatcher(event, target_window, display_id);
   }
 }
@@ -645,10 +647,11 @@ void WindowServer::OnNoMoreDisplays() {
   delegate_->OnNoMoreDisplays();
 }
 
-WindowManagerState* WindowServer::GetWindowManagerStateForUser(
-    const UserId& user_id) {
-  return window_manager_window_tree_factory_set_.GetWindowManagerStateForUser(
-      user_id);
+WindowManagerState* WindowServer::GetWindowManagerState() {
+  return window_manager_window_tree_factory_->window_tree()
+             ? window_manager_window_tree_factory_->window_tree()
+                   ->window_manager_state()
+             : nullptr;
 }
 
 VizHostProxy* WindowServer::GetVizHostProxy() {
@@ -686,12 +689,9 @@ void WindowServer::OnFirstSurfaceActivation(
     window_tree->ProcessWindowSurfaceChanged(window, surface_info);
 }
 
-bool WindowServer::GetFrameDecorationsForUser(
-    const UserId& user_id,
+bool WindowServer::GetFrameDecorations(
     mojom::FrameDecorationValuesPtr* values) {
-  WindowManagerState* window_manager_state =
-      window_manager_window_tree_factory_set_.GetWindowManagerStateForUser(
-          user_id);
+  WindowManagerState* window_manager_state = GetWindowManagerState();
   if (!window_manager_state)
     return false;
   if (values && window_manager_state->got_frame_decoration_values())
@@ -757,11 +757,6 @@ void WindowServer::UpdateNativeCursorIfOver(ServerWindow* window) {
     return;
 
   event_dispatcher->UpdateNonClientAreaForCurrentWindow();
-}
-
-bool WindowServer::IsUserInHighContrastMode(const UserId& user) const {
-  const auto iter = high_contrast_mode_.find(user);
-  return (iter == high_contrast_mode_.end()) ? false : iter->second;
 }
 
 void WindowServer::HandleTemporaryReferenceForNewSurface(
@@ -1044,18 +1039,6 @@ void WindowServer::OnWindowModalTypeChanged(ServerWindow* window,
 
 void WindowServer::OnGpuServiceInitialized() {
   delegate_->StartDisplayInit();
-}
-
-void WindowServer::OnActiveUserIdChanged(const UserId& previously_active_id,
-                                         const UserId& active_id) {
-}
-
-void WindowServer::OnUserIdAdded(const UserId& id) {
-  activity_monitor_map_[id] = std::make_unique<UserActivityMonitor>(nullptr);
-}
-
-void WindowServer::OnUserIdRemoved(const UserId& id) {
-  activity_monitor_map_.erase(id);
 }
 
 }  // namespace ws

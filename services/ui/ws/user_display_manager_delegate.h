@@ -8,18 +8,15 @@
 #include <stdint.h>
 
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
-#include "services/ui/ws/user_id.h"
 
 namespace ui {
 namespace ws {
 
 class UserDisplayManagerDelegate {
  public:
-  // Gets the frame decorations for the specified user. Returns true if the
-  // decorations have been set, false otherwise. |values| may be null.
-  virtual bool GetFrameDecorationsForUser(
-      const UserId& user_id,
-      mojom::FrameDecorationValuesPtr* values) = 0;
+  // Gets the frame decorations. Returns true if the decorations have been set,
+  // false otherwise. |values| may be null.
+  virtual bool GetFrameDecorations(mojom::FrameDecorationValuesPtr* values) = 0;
 
   virtual int64_t GetInternalDisplayId() = 0;
 

@@ -54,9 +54,6 @@
         "input_device_controller": [
           "ui::mojom::InputDeviceController"
         ],
-        "user_access_manager": [
-          "ui::mojom::UserAccessManager"
-        ],
         "window_manager": [
           "discardable_memory::mojom::DiscardableSharedMemoryManager",
           "display::mojom::DisplayController",

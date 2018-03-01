@@ -14,10 +14,8 @@ namespace ui {
 namespace ws {
 
 WindowTreeFactory::WindowTreeFactory(WindowServer* window_server,
-                                     const UserId& user_id,
                                      const std::string& client_name)
     : window_server_(window_server),
-      user_id_(user_id),
       client_name_(client_name) {}
 
 WindowTreeFactory::~WindowTreeFactory() {}
@@ -25,8 +23,9 @@ WindowTreeFactory::~WindowTreeFactory() {}
 void WindowTreeFactory::CreateWindowTree(
     mojo::InterfaceRequest<mojom::WindowTree> tree_request,
     mojom::WindowTreeClientPtr client) {
+  const bool is_for_embedding = false;
   std::unique_ptr<ws::WindowTree> service(
-      new ws::WindowTree(window_server_, user_id_, nullptr,
+      new ws::WindowTree(window_server_, is_for_embedding, nullptr,
                          base::WrapUnique(new DefaultAccessPolicy)));
   std::unique_ptr<ws::DefaultWindowTreeBinding> binding(
       new ws::DefaultWindowTreeBinding(service.get(), window_server_,

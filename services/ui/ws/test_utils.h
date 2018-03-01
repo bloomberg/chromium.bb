@@ -31,9 +31,7 @@
 #include "services/ui/ws/platform_display_factory.h"
 #include "services/ui/ws/test_change_tracker.h"
 #include "services/ui/ws/user_activity_monitor.h"
-#include "services/ui/ws/user_id.h"
 #include "services/ui/ws/window_manager_state.h"
-#include "services/ui/ws/window_manager_window_tree_factory_set.h"
 #include "services/ui/ws/window_server_delegate.h"
 #include "services/ui/ws/window_tree.h"
 #include "services/ui/ws/window_tree_binding.h"
@@ -120,7 +118,7 @@ class WindowTreeTestApi {
   explicit WindowTreeTestApi(WindowTree* tree);
   ~WindowTreeTestApi();
 
-  void set_user_id(const UserId& user_id) { tree_->user_id_ = user_id; }
+  void set_is_for_embedding(bool value) { tree_->is_for_embedding_ = value; }
   void set_window_manager_internal(mojom::WindowManager* wm_internal) {
     tree_->window_manager_internal_ = wm_internal;
   }
@@ -855,10 +853,9 @@ class CursorLocationManagerTestApi {
 
 // -----------------------------------------------------------------------------
 
-// Adds a new WM to |window_server| for |user_id|. Creates
-// WindowManagerWindowTreeFactory and associated WindowTree for the WM.
+// Adds a WM to |window_server|. Creates WindowManagerWindowTreeFactory and
+// associated WindowTree for the WM.
 void AddWindowManager(WindowServer* window_server,
-                      const UserId& user_id,
                       bool automatically_create_display_roots = true);
 
 // Create a new Display object with specified origin, pixel size and device

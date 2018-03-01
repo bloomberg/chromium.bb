@@ -29,14 +29,12 @@
 #include "services/ui/public/interfaces/gpu.mojom.h"
 #include "services/ui/public/interfaces/ime/ime.mojom.h"
 #include "services/ui/public/interfaces/remote_event_dispatcher.mojom.h"
-#include "services/ui/public/interfaces/user_access_manager.mojom.h"
 #include "services/ui/public/interfaces/user_activity_monitor.mojom.h"
 #include "services/ui/public/interfaces/video_detector.mojom.h"
 #include "services/ui/public/interfaces/window_manager_window_tree_factory.mojom.h"
 #include "services/ui/public/interfaces/window_server_test.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/public/interfaces/window_tree_host_factory.mojom.h"
-#include "services/ui/ws/user_id.h"
 #include "services/ui/ws/window_server_delegate.h"
 
 #if defined(OS_CHROMEOS)
@@ -62,9 +60,15 @@ class ImageCursorsSet;
 class InputDeviceController;
 class PlatformEventSource;
 
+namespace clipboard {
+class ClipboardImpl;
+}
+
 namespace ws {
+class AccessibilityManager;
 class ThreadedImageCursorsFactory;
 class WindowServer;
+class WindowTreeHostFactory;
 }
 
 class Service : public service_manager::Service,
@@ -102,19 +106,10 @@ class Service : public service_manager::Service,
   // Holds InterfaceRequests received before the first WindowTreeHost Display
   // has been established.
   struct PendingRequest;
-  struct UserState;
-
-  using UserIdToUserState = std::map<ws::UserId, std::unique_ptr<UserState>>;
 
   // Attempts to initialize the resource bundle. Returns true if successful,
   // otherwise false if resources cannot be loaded.
   bool InitializeResources(service_manager::Connector* connector);
-
-  // Returns the user specific state for the user id of |remote_identity|.
-  // Service owns the return value.
-  // TODO(sky): if we allow removal of user ids then we need to close anything
-  // associated with the user (all incoming pipes...) on removal.
-  UserState* GetUserState(const service_manager::Identity& remote_identity);
 
   void AddUserIfNecessary(const service_manager::Identity& remote_identity);
 
@@ -149,8 +144,6 @@ class Service : public service_manager::Service,
   void BindIMERegistrarRequest(mojom::IMERegistrarRequest request);
 
   void BindIMEDriverRequest(mojom::IMEDriverRequest request);
-
-  void BindUserAccessManagerRequest(mojom::UserAccessManagerRequest request);
 
   void BindUserActivityMonitorRequest(
       mojom::UserActivityMonitorRequest request,
@@ -187,8 +180,6 @@ class Service : public service_manager::Service,
   std::unique_ptr<PlatformEventSource> event_source_;
   using PendingRequests = std::vector<std::unique_ptr<PendingRequest>>;
   PendingRequests pending_requests_;
-
-  UserIdToUserState user_id_to_user_state_;
 
   // Provides input-device information via Mojo IPC. Registers Mojo interfaces
   // and must outlive |registry_|.
@@ -233,6 +224,10 @@ class Service : public service_manager::Service,
   bool is_gpu_ready_ = false;
 
   bool in_destructor_ = false;
+
+  std::unique_ptr<clipboard::ClipboardImpl> clipboard_;
+  std::unique_ptr<ws::AccessibilityManager> accessibility_;
+  std::unique_ptr<ws::WindowTreeHostFactory> window_tree_host_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Service);
 };

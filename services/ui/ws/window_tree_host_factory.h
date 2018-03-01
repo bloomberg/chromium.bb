@@ -9,7 +9,6 @@
 
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/ui/public/interfaces/window_tree_host_factory.mojom.h"
-#include "services/ui/ws/user_id.h"
 
 namespace ui {
 namespace ws {
@@ -18,7 +17,7 @@ class WindowServer;
 
 class WindowTreeHostFactory : public mojom::WindowTreeHostFactory {
  public:
-  WindowTreeHostFactory(WindowServer* window_server, const UserId& user_id);
+  explicit WindowTreeHostFactory(WindowServer* window_server);
   ~WindowTreeHostFactory() override;
 
   void AddBinding(mojom::WindowTreeHostFactoryRequest request);
@@ -29,7 +28,6 @@ class WindowTreeHostFactory : public mojom::WindowTreeHostFactory {
                             mojom::WindowTreeClientPtr tree_client) override;
 
   WindowServer* window_server_;
-  const UserId user_id_;
   mojo::BindingSet<mojom::WindowTreeHostFactory> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeHostFactory);

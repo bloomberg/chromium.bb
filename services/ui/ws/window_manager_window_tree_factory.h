@@ -9,12 +9,11 @@
 
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/ui/public/interfaces/window_manager_window_tree_factory.mojom.h"
-#include "services/ui/ws/user_id.h"
 
 namespace ui {
 namespace ws {
 
-class WindowManagerWindowTreeFactorySet;
+class WindowManagerWindowTreeFactoryObserver;
 class WindowServer;
 class WindowTree;
 
@@ -22,15 +21,20 @@ class WindowTree;
 class WindowManagerWindowTreeFactory
     : public mojom::WindowManagerWindowTreeFactory {
  public:
-  WindowManagerWindowTreeFactory(
-      WindowManagerWindowTreeFactorySet* window_manager_window_tree_factory_set,
-      const UserId& user_id,
-      mojo::InterfaceRequest<mojom::WindowManagerWindowTreeFactory> request);
+  explicit WindowManagerWindowTreeFactory(WindowServer* window_server);
   ~WindowManagerWindowTreeFactory() override;
 
-  const UserId& user_id() const { return user_id_; }
-
   WindowTree* window_tree() { return window_tree_; }
+
+  bool is_bound() const { return binding_.is_bound(); }
+
+  void Bind(
+      mojo::InterfaceRequest<mojom::WindowManagerWindowTreeFactory> request);
+
+  void AddObserver(WindowManagerWindowTreeFactoryObserver* observer);
+  void RemoveObserver(WindowManagerWindowTreeFactoryObserver* observer);
+
+  void OnTreeDestroyed();
 
   // mojom::WindowManagerWindowTreeFactory:
   void CreateWindowTree(mojom::WindowTreeRequest window_tree_request,
@@ -38,20 +42,15 @@ class WindowManagerWindowTreeFactory
                         bool window_manager_creates_roots) override;
 
  private:
-  // Used by tests.
-  WindowManagerWindowTreeFactory(WindowManagerWindowTreeFactorySet* registry,
-                                 const UserId& user_id);
-
-  WindowServer* GetWindowServer();
-
   void SetWindowTree(WindowTree* window_tree);
 
-  WindowManagerWindowTreeFactorySet* window_manager_window_tree_factory_set_;
-  const UserId user_id_;
+  WindowServer* window_server_;
   mojo::Binding<mojom::WindowManagerWindowTreeFactory> binding_;
 
   // Owned by WindowServer.
   WindowTree* window_tree_ = nullptr;
+
+  base::ObserverList<WindowManagerWindowTreeFactoryObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManagerWindowTreeFactory);
 };

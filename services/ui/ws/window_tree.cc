@@ -125,11 +125,11 @@ struct WindowTree::DragMoveState {
 };
 
 WindowTree::WindowTree(WindowServer* window_server,
-                       const UserId& user_id,
+                       bool is_for_embedding,
                        ServerWindow* root,
                        std::unique_ptr<AccessPolicy> access_policy)
     : window_server_(window_server),
-      user_id_(user_id),
+      is_for_embedding_(is_for_embedding),
       id_(window_server_->GetAndAdvanceNextClientId()),
       access_policy_(std::move(access_policy)),
       event_ack_id_(0),
@@ -338,8 +338,7 @@ ServerWindow* WindowTree::ProcessSetDisplayRoot(
     // Create a display if the window manager is extending onto a new display.
     display = display_manager()->AddDisplayForWindowManager(
         is_primary_display, display_to_create, viewport_metrics);
-  } else if (!display->GetWindowManagerDisplayRootForUser(
-                 window_manager_state_->user_id())) {
+  } else if (!display->window_manager_display_root()) {
     // Init the root if the display already existed as a mirroring destination.
     display->InitWindowManagerDisplayRoots();
   }
@@ -349,8 +348,7 @@ ServerWindow* WindowTree::ProcessSetDisplayRoot(
 
   DCHECK(display);
   WindowManagerDisplayRoot* display_root =
-      display->GetWindowManagerDisplayRootForUser(
-          window_manager_state_->user_id());
+      display->window_manager_display_root();
   DCHECK(display_root);
   display_root->root()->RemoveAllChildren();
 
@@ -393,11 +391,9 @@ bool WindowTree::ProcessSwapDisplayRoots(int64_t display_id1,
   }
 
   WindowManagerDisplayRoot* display_root1 =
-      display1->GetWindowManagerDisplayRootForUser(
-          window_manager_state_->user_id());
+      display1->window_manager_display_root();
   WindowManagerDisplayRoot* display_root2 =
-      display2->GetWindowManagerDisplayRootForUser(
-          window_manager_state_->user_id());
+      display2->window_manager_display_root();
 
   if (!display_root1->GetClientVisibleRoot() ||
       !display_root2->GetClientVisibleRoot()) {
@@ -449,7 +445,6 @@ bool WindowTree::SetCapture(const ClientWindowId& client_window_id) {
       display_root ? display_root->window_manager_state()->capture_window()
                    : nullptr;
   if (window && window->IsDrawn() && display_root &&
-      display_root->window_manager_state()->IsActive() &&
       access_policy_->CanSetCapture(window) &&
       (!current_capture_window ||
        access_policy_->CanSetCapture(current_capture_window))) {
@@ -466,7 +461,6 @@ bool WindowTree::ReleaseCapture(const ClientWindowId& client_window_id) {
       display_root ? display_root->window_manager_state()->capture_window()
                    : nullptr;
   if (!window || !display_root ||
-      !display_root->window_manager_state()->IsActive() ||
       (current_capture_window &&
        !access_policy_->CanSetCapture(current_capture_window)) ||
       window != current_capture_window) {
@@ -574,8 +568,8 @@ bool WindowTree::SetModalType(const ClientWindowId& window_id,
     return false;
   }
 
-  if (user_id_ == InvalidUserId() && modal_type == MODAL_TYPE_SYSTEM) {
-    DVLOG(1) << "SetModalType failed (invalid user id)";
+  if (is_for_embedding_ && modal_type == MODAL_TYPE_SYSTEM) {
+    DVLOG(1) << "SetModalType failed (not allowed for embedded clients)";
     return false;
   }
 
@@ -702,10 +696,7 @@ bool WindowTree::Embed(const ClientWindowId& window_id,
   // embedder could effectively circumvent it by embedding itself.
   if (embedder_intercepts_events_)
     flags = mojom::kEmbedFlagEmbedderInterceptsEvents;
-  // When embedding we don't know the user id of where the TreeClient came
-  // from. Use an invalid id, which limits what the client is able to do.
-  window_server_->EmbedAtWindow(window, InvalidUserId(),
-                                std::move(window_tree_client), flags,
+  window_server_->EmbedAtWindow(window, std::move(window_tree_client), flags,
                                 base::WrapUnique(new DefaultAccessPolicy));
   client()->OnFrameSinkIdAllocated(ClientWindowIdToTransportId(window_id),
                                    window->frame_sink_id());
@@ -1501,8 +1492,7 @@ void WindowTree::DispatchInputEventImpl(ServerWindow* target,
       event_location.display_id);
   WindowManagerDisplayRoot* event_display_root = nullptr;
   if (display && window_manager_state_) {
-    event_display_root = display->GetWindowManagerDisplayRootForUser(
-        window_manager_state_->user_id());
+    event_display_root = display->window_manager_display_root();
   }
   ServerWindow* display_root_window =
       event_display_root ? event_display_root->GetClientVisibleRoot() : nullptr;
@@ -1593,9 +1583,8 @@ void WindowTree::NewTopLevelWindow(
                          : *(display_manager()->displays().begin());
   // TODO(sky): move checks to accesspolicy.
   WindowManagerDisplayRoot* display_root =
-      display && user_id_ != InvalidUserId()
-          ? display->GetWindowManagerDisplayRootForUser(user_id_)
-          : nullptr;
+      display && !is_for_embedding_ ? display->window_manager_display_root()
+                                    : nullptr;
   if (!display_root ||
       display_root->window_manager_state()->window_tree() == this ||
       !IsValidIdForNewWindow(client_window_id)) {
@@ -2262,9 +2251,8 @@ void WindowTree::GetWindowManagerClient(
 
 void WindowTree::GetCursorLocationMemory(
     const GetCursorLocationMemoryCallback& callback) {
-  callback.Run(display_manager()
-                   ->GetCursorLocationManager(user_id_)
-                   ->GetCursorLocationMemory());
+  callback.Run(
+      display_manager()->cursor_location_manager()->GetCursorLocationMemory());
 }
 
 void WindowTree::PerformDragDrop(
@@ -2714,8 +2702,7 @@ bool WindowTree::IsWindowCreatedByWindowManager(
 
 bool WindowTree::ShouldInterceptEventsForAccessPolicy(
     const ServerWindow* window) const {
-  // Indicates the tree was created as the result of an Embed().
-  if (user_id_.empty())
+  if (is_for_embedding_)
     return false;
 
   while (window) {

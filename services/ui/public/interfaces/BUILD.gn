@@ -22,7 +22,6 @@ mojom("interfaces") {
     "gpu.mojom",
     "mus_constants.mojom",
     "remote_event_dispatcher.mojom",
-    "user_access_manager.mojom",
     "user_activity_monitor.mojom",
     "video_detector.mojom",
     "window_manager.mojom",
