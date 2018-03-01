@@ -62,7 +62,7 @@ PageOverlay::~PageOverlay() {
 }
 
 void PageOverlay::Update() {
-  if (!frame_impl_->FrameWidget()->IsAcceleratedCompositingActive())
+  if (!frame_impl_->LocalRootFrameWidget()->IsAcceleratedCompositingActive())
     return;
 
   LocalFrame* frame = frame_impl_->GetFrame();
@@ -82,7 +82,8 @@ void PageOverlay::Update() {
       frame->GetPage()->GetVisualViewport().ContainerLayer()->AddChild(
           layer_.get());
     } else {
-      frame_impl_->FrameWidget()->RootGraphicsLayer()->AddChild(layer_.get());
+      frame_impl_->LocalRootFrameWidget()->RootGraphicsLayer()->AddChild(
+          layer_.get());
     }
 
     if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
