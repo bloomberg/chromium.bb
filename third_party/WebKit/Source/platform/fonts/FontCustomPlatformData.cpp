@@ -127,6 +127,22 @@ FontPlatformData FontCustomPlatformData::GetFontPlatformData(
                           italic && !base_typeface_->isItalic(), orientation);
 }
 
+SkString FontCustomPlatformData::FamilyNameForInspector() const {
+  SkTypeface::LocalizedStrings* font_family_iterator =
+      base_typeface_->createFamilyNameIterator();
+  SkTypeface::LocalizedString localized_string;
+  while (font_family_iterator->next(&localized_string)) {
+    // BCP 47 tags for English take precedent in font matching over other
+    // localizations: https://drafts.csswg.org/css-fonts/#descdef-src.
+    if (localized_string.fLanguage.equals("en") ||
+        localized_string.fLanguage.equals("en-US")) {
+      break;
+    }
+  }
+  font_family_iterator->unref();
+  return localized_string.fString;
+}
+
 scoped_refptr<FontCustomPlatformData> FontCustomPlatformData::Create(
     SharedBuffer* buffer,
     String& ots_parse_message) {

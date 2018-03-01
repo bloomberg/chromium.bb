@@ -69,6 +69,8 @@ class PLATFORM_EXPORT FontCustomPlatformData
       FontOrientation = FontOrientation::kHorizontal,
       const FontVariationSettings* = nullptr);
 
+  SkString FamilyNameForInspector() const;
+
   size_t DataSize() const { return data_size_; }
   static bool SupportsFormat(const String&);
 

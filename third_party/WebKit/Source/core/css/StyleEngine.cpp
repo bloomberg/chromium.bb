@@ -712,7 +712,7 @@ void StyleEngine::FontsNeedUpdate(FontSelector*) {
   GetDocument().SetNeedsStyleRecalc(
       kSubtreeStyleChange,
       StyleChangeReasonForTracing::Create(StyleChangeReason::kFonts));
-  probe::fontsUpdated(document_);
+  probe::fontsUpdated(document_, nullptr, String(), nullptr);
 }
 
 void StyleEngine::SetFontSelector(CSSFontSelector* font_selector) {

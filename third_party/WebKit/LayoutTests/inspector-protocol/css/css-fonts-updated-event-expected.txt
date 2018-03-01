@@ -1,3 +1,10 @@
-Verifies that CSS.fontsUpdated event is sent as the web font is loaded.
-SUCCESS: CSS.FontsUpdated event received.
+Verifies that CSS.fontsUpdated events are sent as the web font is loaded.
+Noto Mono
+normal
+normal
+normal
+normal
+U+0-10FFFE
+ಠ_ಠNoto Monoಠ_ಠ
+SUCCESS: CSS.FontsUpdated events received.
 
