@@ -412,6 +412,10 @@ mojo.MediaRouteProviderConfig.prototype.enable_dial_sink_query;
 mojo.MediaRouteProviderConfig.prototype.enable_cast_discovery;
 
 
+/** @type {boolean} */
+mojo.MediaRouteProviderConfig.prototype.enable_cast_sink_query;
+
+
 
 /** @constructor */
 mojo.RemotingStopReason = function() {};
