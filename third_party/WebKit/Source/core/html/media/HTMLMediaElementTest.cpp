@@ -32,6 +32,8 @@ class HTMLMediaElementTest : public ::testing::TestWithParam<MediaTestParam> {
     Media()->current_src_ = url;
   }
 
+  bool WasAutoplayInitiated() { return Media()->WasAutoplayInitiated(); }
+
  private:
   std::unique_ptr<DummyPageHolder> dummy_page_holder_;
   Persistent<HTMLMediaElement> media_;
@@ -138,6 +140,96 @@ TEST_P(HTMLMediaElementTest, preloadType) {
         << "preload type differs at index" << index;
     ++index;
   }
+}
+
+TEST_P(HTMLMediaElementTest, AutoplayInitiated_DocumentActivation_Low_Gesture) {
+  // Setup is the following:
+  // - Policy: DocumentUserActivation (aka. unified autoplay)
+  // - MEI: low;
+  // - Frame received user gesture.
+  RuntimeEnabledFeatures::SetMediaEngagementBypassAutoplayPoliciesEnabled(true);
+  Media()->GetDocument().GetSettings()->SetAutoplayPolicy(
+      AutoplayPolicy::Type::kDocumentUserActivationRequired);
+  Media()->GetDocument().SetHasHighMediaEngagement(false);
+  Frame::NotifyUserActivation(Media()->GetDocument().GetFrame());
+
+  Media()->Play();
+
+  EXPECT_FALSE(WasAutoplayInitiated());
+}
+
+TEST_P(HTMLMediaElementTest,
+       AutoplayInitiated_DocumentActivation_High_Gesture) {
+  // Setup is the following:
+  // - Policy: DocumentUserActivation (aka. unified autoplay)
+  // - MEI: high;
+  // - Frame received user gesture.
+  RuntimeEnabledFeatures::SetMediaEngagementBypassAutoplayPoliciesEnabled(true);
+  Media()->GetDocument().GetSettings()->SetAutoplayPolicy(
+      AutoplayPolicy::Type::kDocumentUserActivationRequired);
+  Media()->GetDocument().SetHasHighMediaEngagement(true);
+  Frame::NotifyUserActivation(Media()->GetDocument().GetFrame());
+
+  Media()->Play();
+
+  EXPECT_FALSE(WasAutoplayInitiated());
+}
+
+TEST_P(HTMLMediaElementTest,
+       AutoplayInitiated_DocumentActivation_High_NoGesture) {
+  // Setup is the following:
+  // - Policy: DocumentUserActivation (aka. unified autoplay)
+  // - MEI: high;
+  // - Frame did not receive user gesture.
+  RuntimeEnabledFeatures::SetMediaEngagementBypassAutoplayPoliciesEnabled(true);
+  Media()->GetDocument().GetSettings()->SetAutoplayPolicy(
+      AutoplayPolicy::Type::kDocumentUserActivationRequired);
+  Media()->GetDocument().SetHasHighMediaEngagement(true);
+
+  Media()->Play();
+
+  EXPECT_TRUE(WasAutoplayInitiated());
+}
+
+TEST_P(HTMLMediaElementTest, AutoplayInitiated_GestureRequired_Gesture) {
+  // Setup is the following:
+  // - Policy: user gesture is required.
+  // - Frame received a user gesture.
+  // - MEI doesn't matter as it's not used by the policy.
+  Media()->GetDocument().GetSettings()->SetAutoplayPolicy(
+      AutoplayPolicy::Type::kUserGestureRequired);
+  Frame::NotifyUserActivation(Media()->GetDocument().GetFrame());
+
+  Media()->Play();
+
+  EXPECT_FALSE(WasAutoplayInitiated());
+}
+
+TEST_P(HTMLMediaElementTest, AutoplayInitiated_NoGestureRequired_Gesture) {
+  // Setup is the following:
+  // - Policy: no user gesture is required.
+  // - Frame received a user gesture.
+  // - MEI doesn't matter as it's not used by the policy.
+  Media()->GetDocument().GetSettings()->SetAutoplayPolicy(
+      AutoplayPolicy::Type::kNoUserGestureRequired);
+  Frame::NotifyUserActivation(Media()->GetDocument().GetFrame());
+
+  Media()->Play();
+
+  EXPECT_FALSE(WasAutoplayInitiated());
+}
+
+TEST_P(HTMLMediaElementTest, AutoplayInitiated_NoGestureRequired_NoGesture) {
+  // Setup is the following:
+  // - Policy: no user gesture is required.
+  // - Frame did not receive a user gesture.
+  // - MEI doesn't matter as it's not used by the policy.
+  Media()->GetDocument().GetSettings()->SetAutoplayPolicy(
+      AutoplayPolicy::Type::kNoUserGestureRequired);
+
+  Media()->Play();
+
+  EXPECT_TRUE(WasAutoplayInitiated());
 }
 
 }  // namespace blink

@@ -130,6 +130,10 @@ class MEDIA_BLINK_EXPORT WatchTimeReporter : base::PowerObserver {
   void SetAudioDecoderName(const std::string& name);
   void SetVideoDecoderName(const std::string& name);
 
+  // Notifies the autoplay status of the playback. Must not be called multiple
+  // times with different values.
+  void SetAutoplayInitiated(bool autoplay_initiated);
+
   // Setup the reporting interval to be immediate to avoid spinning real time
   // within the unit test.
   void set_reporting_interval_for_testing() {

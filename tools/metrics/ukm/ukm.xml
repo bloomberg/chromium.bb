@@ -1171,6 +1171,14 @@ be describing additional metrics about the same event.
       etc). See WatchTimeRecorder::AudioDecoderName enum for expected values.
     </summary>
   </metric>
+  <metric name="AutoplayInitiated">
+    <summary>
+      Boolean value indicating whether the initial playback was initiated via
+      autoplay. Multilpe chunk records of the same player should have the same
+      value. Autoplay is defined as a playback starting before there was a user
+      activation on the page or without a user initiated same-domain navigation.
+    </summary>
+  </metric>
   <metric name="HasAudio">
     <summary>
       Boolean value indicating the presence of audio.

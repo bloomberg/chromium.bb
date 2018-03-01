@@ -156,6 +156,13 @@ class BLINK_PLATFORM_EXPORT WebMediaPlayerClient {
   // Rendering media into this color space may avoid some conversions.
   virtual gfx::ColorSpace TargetColorSpace() { return gfx::ColorSpace(); }
 
+  // Returns whether the media element was initiated via autoplay.
+  // In this context, autoplay means that it was initiated before any user
+  // activation was received on the page and before a user initiated same-domain
+  // navigation. In other words, with the unified autoplay policy applied, it
+  // should only return `true` when MEI allowed autoplay.
+  virtual bool WasAutoplayInitiated() { return false; }
+
  protected:
   ~WebMediaPlayerClient() = default;
 };

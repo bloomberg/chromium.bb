@@ -415,6 +415,7 @@ TEST_F(WatchTimeRecorderTest, TestFinalizeNoDuplication) {
     EXPECT_UKM(UkmEntry::kWatchTimeName, kWatchTime.InMilliseconds());
     EXPECT_UKM(UkmEntry::kAudioDecoderNameName, 0);
     EXPECT_UKM(UkmEntry::kVideoDecoderNameName, 0);
+    EXPECT_UKM(UkmEntry::kAutoplayInitiatedName, false);
     EXPECT_HAS_UKM(UkmEntry::kPlayerIDName);
 
     EXPECT_NO_UKM(UkmEntry::kMeanTimeBetweenRebuffersName);
@@ -475,6 +476,7 @@ TEST_F(WatchTimeRecorderTest, FinalizeWithoutWatchTime) {
                properties->natural_size.height());
     EXPECT_UKM(UkmEntry::kAudioDecoderNameName, 0);
     EXPECT_UKM(UkmEntry::kVideoDecoderNameName, 0);
+    EXPECT_UKM(UkmEntry::kAutoplayInitiatedName, false);
     EXPECT_HAS_UKM(UkmEntry::kPlayerIDName);
 
     EXPECT_NO_UKM(UkmEntry::kMeanTimeBetweenRebuffersName);
@@ -522,6 +524,7 @@ TEST_F(WatchTimeRecorderTest, BasicUkmAudioVideo) {
     EXPECT_HAS_UKM(UkmEntry::kPlayerIDName);
     EXPECT_UKM(UkmEntry::kAudioDecoderNameName, 0);
     EXPECT_UKM(UkmEntry::kVideoDecoderNameName, 0);
+    EXPECT_UKM(UkmEntry::kAutoplayInitiatedName, false);
 
     EXPECT_NO_UKM(UkmEntry::kMeanTimeBetweenRebuffersName);
     EXPECT_NO_UKM(UkmEntry::kWatchTime_ACName);
@@ -567,6 +570,8 @@ TEST_F(WatchTimeRecorderTest, BasicUkmAudioVideoWithExtras) {
   wtr_->SetAudioDecoderName(kAudioDecoderName);
   wtr_->SetVideoDecoderName(kVideoDecoderName);
 
+  wtr_->SetAutoplayInitiated(true);
+
   wtr_.reset();
   base::RunLoop().RunUntilIdle();
 
@@ -608,6 +613,7 @@ TEST_F(WatchTimeRecorderTest, BasicUkmAudioVideoWithExtras) {
                properties->natural_size.width());
     EXPECT_UKM(UkmEntry::kVideoNaturalHeightName,
                properties->natural_size.height());
+    EXPECT_UKM(UkmEntry::kAutoplayInitiatedName, true);
   }
 }
 
@@ -644,6 +650,7 @@ TEST_F(WatchTimeRecorderTest, BasicUkmAudioVideoBackground) {
     EXPECT_HAS_UKM(UkmEntry::kPlayerIDName);
     EXPECT_UKM(UkmEntry::kAudioDecoderNameName, 0);
     EXPECT_UKM(UkmEntry::kVideoDecoderNameName, 0);
+    EXPECT_UKM(UkmEntry::kAutoplayInitiatedName, false);
 
     EXPECT_NO_UKM(UkmEntry::kMeanTimeBetweenRebuffersName);
     EXPECT_NO_UKM(UkmEntry::kWatchTime_ACName);

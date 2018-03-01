@@ -4216,6 +4216,10 @@ gfx::ColorSpace HTMLMediaElement::TargetColorSpace() {
   return frame->GetPage()->GetChromeClient().GetScreenInfo().color_space;
 }
 
+bool HTMLMediaElement::WasAutoplayInitiated() {
+  return autoplay_policy_->WasAutoplayInitiated();
+}
+
 void HTMLMediaElement::CheckViewportIntersectionTimerFired(TimerBase*) {
   bool should_report_root_bounds = true;
   IntersectionGeometry geometry(nullptr, *this, Vector<Length>(),

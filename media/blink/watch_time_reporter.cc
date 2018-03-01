@@ -207,6 +207,12 @@ void WatchTimeReporter::SetVideoDecoderName(const std::string& name) {
     background_reporter_->SetVideoDecoderName(name);
 }
 
+void WatchTimeReporter::SetAutoplayInitiated(bool autoplay_initiated) {
+  recorder_->SetAutoplayInitiated(autoplay_initiated);
+  if (background_reporter_)
+    background_reporter_->SetAutoplayInitiated(autoplay_initiated);
+}
+
 void WatchTimeReporter::OnPowerStateChange(bool on_battery_power) {
   if (!reporting_timer_.IsRunning())
     return;

@@ -89,6 +89,13 @@ class AutoplayPolicy final : public GarbageCollected<AutoplayPolicy> {
   // method fails because of autoplay restrictions.
   String GetPlayErrorMessage() const;
 
+  // Returns whether the media element was initiated via autoplay.
+  // In this context, autoplay means that it was initiated before any user
+  // activation was received on the page and before a user initiated same-domain
+  // navigation. In other words, with the unified autoplay policy applied, it
+  // should only return `true` when MEI allowed autoplay.
+  bool WasAutoplayInitiated() const;
+
   virtual void Trace(blink::Visitor*);
 
  private:
@@ -135,6 +142,9 @@ class AutoplayPolicy final : public GarbageCollected<AutoplayPolicy> {
   // kDocumentUserActivationRequired. This is a helper method for readability.
   bool IsUsingDocumentUserActivationRequiredPolicy() const;
 
+  // Sets `autoplay_initiated_` if it wasn't already set.
+  void MaybeSetAutoplayInitiated();
+
   bool locked_pending_user_gesture_ : 1;
   bool locked_pending_user_gesture_if_cross_origin_experiment_enabled_ : 1;
 
@@ -142,6 +152,8 @@ class AutoplayPolicy final : public GarbageCollected<AutoplayPolicy> {
   Member<ElementVisibilityObserver> autoplay_visibility_observer_;
 
   Member<AutoplayUmaHelper> autoplay_uma_helper_;
+
+  Optional<bool> autoplay_initiated_;
 
   DISALLOW_COPY_AND_ASSIGN(AutoplayPolicy);
 };

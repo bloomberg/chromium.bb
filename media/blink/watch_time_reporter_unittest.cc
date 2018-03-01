@@ -185,6 +185,10 @@ class WatchTimeReporterTest
       parent_->OnSetVideoDecoderName(name);
     }
 
+    void SetAutoplayInitiated(bool value) override {
+      parent_->OnSetAutoplayInitiated(value);
+    }
+
    private:
     WatchTimeReporterTest* parent_;
 
@@ -536,6 +540,7 @@ class WatchTimeReporterTest
   MOCK_METHOD1(OnError, void(PipelineStatus));
   MOCK_METHOD1(OnSetAudioDecoderName, void(const std::string&));
   MOCK_METHOD1(OnSetVideoDecoderName, void(const std::string&));
+  MOCK_METHOD1(OnSetAutoplayInitiated, void(bool));
 
   const bool has_video_;
   const bool has_audio_;
@@ -690,6 +695,13 @@ TEST_P(WatchTimeReporterTest, WatchTimeReporterDecoderNames) {
     EXPECT_CALL(*this, OnSetVideoDecoderName(kVideoDecoderName)).Times(2);
     wtr_->SetVideoDecoderName(kVideoDecoderName);
   }
+}
+
+TEST_P(WatchTimeReporterTest, WatchTimeReporterAutoplayInitiated) {
+  Initialize(true, true, kSizeJustRight);
+
+  EXPECT_CALL(*this, OnSetAutoplayInitiated(true)).Times(2);
+  wtr_->SetAutoplayInitiated(true);
 }
 
 TEST_P(WatchTimeReporterTest, WatchTimeReporterShownHidden) {

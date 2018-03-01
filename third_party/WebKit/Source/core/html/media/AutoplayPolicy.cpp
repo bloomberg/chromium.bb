@@ -211,6 +211,9 @@ bool AutoplayPolicy::RequestAutoplayByAttribute() {
     return false;
   }
 
+  // If it's the first playback, track that it started because of autoplay.
+  MaybeSetAutoplayInitiated();
+
   if (IsGestureNeededForPlaybackIfCrossOriginExperimentEnabled()) {
     autoplay_uma_helper_->RecordCrossOriginAutoplayResult(
         CrossOriginAutoplayResult::kAutoplayBlocked);
@@ -251,6 +254,8 @@ Optional<ExceptionCode> AutoplayPolicy::RequestPlay() {
         CrossOriginAutoplayResult::kPlayedWithGesture);
     TryUnlockingUserGesture();
   }
+
+  MaybeSetAutoplayInitiated();
 
   return WTF::nullopt;
 }
@@ -308,6 +313,11 @@ String AutoplayPolicy::GetPlayErrorMessage() const {
              : kErrorAutoplayFuncMobile;
 }
 
+bool AutoplayPolicy::WasAutoplayInitiated() const {
+  DCHECK(autoplay_initiated_.has_value());
+  return *autoplay_initiated_;
+}
+
 bool AutoplayPolicy::IsGestureNeededForPlaybackIfPendingUserGestureIsLocked()
     const {
   if (element_->GetLoadType() == WebMediaPlayer::kLoadTypeMediaStream)
@@ -354,6 +364,24 @@ void AutoplayPolicy::OnVisibilityChangedForAutoplay(bool is_visible) {
 bool AutoplayPolicy::IsUsingDocumentUserActivationRequiredPolicy() const {
   return GetAutoplayPolicyForDocument(element_->GetDocument()) ==
          AutoplayPolicy::Type::kDocumentUserActivationRequired;
+}
+
+void AutoplayPolicy::MaybeSetAutoplayInitiated() {
+  if (autoplay_initiated_.has_value())
+    return;
+
+  autoplay_initiated_ = true;
+  for (Frame* frame = element_->GetDocument().GetFrame(); frame;
+       frame = frame->Tree().Parent()) {
+    if (frame->HasBeenActivated() ||
+        frame->HasReceivedUserGestureBeforeNavigation()) {
+      autoplay_initiated_ = false;
+      break;
+    }
+
+    if (!frame->IsFeatureEnabled(mojom::FeaturePolicyFeature::kAutoplay))
+      break;
+  }
 }
 
 bool AutoplayPolicy::IsGestureNeededForPlaybackIfCrossOriginExperimentEnabled()

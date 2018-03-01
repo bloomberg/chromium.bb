@@ -63,6 +63,13 @@ interface WatchTimeRecorder {
   SetAudioDecoderName(string name);
   SetVideoDecoderName(string name);
 
+  // Lazily sets the autoplay status of the player. Must not be called multiple
+  // times with different values.
+  //
+  // Note: this is using a setter because the status is only known when playback
+  // starts but the reporter is created before.
+  SetAutoplayInitiated(bool value);
+
   // Indicates that an underflow event has occurred while collecting watch time.
   // Used to report mean values for rebuffering metrics. As with watch time,
   // this is an absolute count and not relative since the last call.

@@ -299,6 +299,11 @@ void WatchTimeRecorder::SetVideoDecoderName(const std::string& name) {
   video_decoder_name_ = name;
 }
 
+void WatchTimeRecorder::SetAutoplayInitiated(bool value) {
+  DCHECK(!autoplay_initiated_.has_value() || value == autoplay_initiated_);
+  autoplay_initiated_ = value;
+}
+
 void WatchTimeRecorder::UpdateUnderflowCount(int32_t count) {
   underflow_count_ = count;
 }
@@ -404,7 +409,9 @@ void WatchTimeRecorder::RecordUkmPlaybackData() {
   builder.SetRebuffersCount(total_underflow_count_);
   builder.SetVideoNaturalWidth(properties_->natural_size.width());
   builder.SetVideoNaturalHeight(properties_->natural_size.height());
+  builder.SetAutoplayInitiated(autoplay_initiated_.value_or(false));
   builder.Record(ukm_recorder);
+
   aggregate_watch_time_info_.clear();
 }
 
