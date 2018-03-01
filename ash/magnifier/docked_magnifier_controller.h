@@ -141,6 +141,7 @@ class ASH_EXPORT DockedMagnifierController
   void OnEnabledPrefChanged();
   void OnScalePrefChanged();
   void OnFullscreenMagnifierEnabledPrefChanged();
+  void OnHighContrastEnabledPrefChanged();
 
   void Refresh();
 
