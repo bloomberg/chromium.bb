@@ -72,7 +72,7 @@ void CastServiceSimple::StartInternal() {
                                            nullptr,         /* extension */
                                            GURL() /* initial_url */);
   cast_web_view_->LoadUrl(startup_url_);
-  cast_web_view_->Show(window_manager_);
+  cast_web_view_->CreateWindow(window_manager_, true /* is_visible */);
 }
 
 void CastServiceSimple::StopInternal() {

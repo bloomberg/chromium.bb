@@ -60,8 +60,10 @@ void CastWebViewExtension::LoadUrl(GURL url) {
 
 void CastWebViewExtension::ClosePage(const base::TimeDelta& shutdown_delay) {}
 
-void CastWebViewExtension::Show(CastWindowManager* window_manager) {
-  window_->ShowWebContents(web_contents(), window_manager);
+void CastWebViewExtension::CreateWindow(CastWindowManager* window_manager,
+                                        bool is_visible) {
+  window_->CreateWindowForWebContents(web_contents(), window_manager,
+                                      is_visible);
   web_contents()->Focus();
 }
 
