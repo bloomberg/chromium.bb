@@ -860,4 +860,45 @@ TEST_F(ClientControlledShellSurfaceTest, SnapWindowInSplitViewModeTest) {
   EXPECT_TRUE(HasBackdrop());
 }
 
+// The shell surface in SystemModal container should not become target
+// at the edge.
+TEST_F(ClientControlledShellSurfaceTest, ClientIniatedResize) {
+  std::unique_ptr<Surface> surface(new Surface);
+  auto shell_surface =
+      exo_test_helper()->CreateClientControlledShellSurface(surface.get());
+  shell_surface->set_client_controlled_move_resize(false);
+
+  display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
+
+  gfx::Size window_size(100, 100);
+  std::unique_ptr<Buffer> desktop_buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(window_size)));
+  surface->Attach(desktop_buffer.get());
+  shell_surface->SetGeometry(gfx::Rect(window_size));
+  surface->Commit();
+
+  EXPECT_TRUE(shell_surface->GetWidget()->widget_delegate()->CanResize());
+  shell_surface->StartResize(HTTOP);
+
+  aura::Window* window = shell_surface->GetWidget()->GetNativeWindow();
+  // Client cannot start drag if mouse isn't pressed.
+  ash::wm::WindowState* window_state = ash::wm::GetWindowState(window);
+  ASSERT_FALSE(window_state->is_dragged());
+
+  // Client can start drag only when the mouse is pressed on the widget.
+  ui::test::EventGenerator& event_generator = GetEventGenerator();
+  event_generator.MoveMouseToCenterOf(window);
+  event_generator.PressLeftButton();
+  shell_surface->StartResize(HTTOP);
+  ASSERT_TRUE(window_state->is_dragged());
+  event_generator.ReleaseLeftButton();
+  ASSERT_FALSE(window_state->is_dragged());
+
+  // Press pressed outside of the window.
+  event_generator.MoveMouseTo(gfx::Point(200, 50));
+  event_generator.PressLeftButton();
+  shell_surface->StartResize(HTTOP);
+  ASSERT_FALSE(window_state->is_dragged());
+}
+
 }  // namespace exo

@@ -281,6 +281,61 @@ base::flat_set<DndAction> DataDeviceManagerDndActions(uint32_t value) {
   return actions;
 }
 
+uint32_t ResizeDirection(int component) {
+  switch (component) {
+    case HTCAPTION:
+      return ZCR_REMOTE_SURFACE_V1_RESIZE_DIRECTION_NONE;
+    case HTTOP:
+      return ZCR_REMOTE_SURFACE_V1_RESIZE_DIRECTION_TOP;
+    case HTTOPRIGHT:
+      return ZCR_REMOTE_SURFACE_V1_RESIZE_DIRECTION_TOPRIGHT;
+    case HTRIGHT:
+      return ZCR_REMOTE_SURFACE_V1_RESIZE_DIRECTION_RIGHT;
+    case HTBOTTOMRIGHT:
+      return ZCR_REMOTE_SURFACE_V1_RESIZE_DIRECTION_BOTTOMRIGHT;
+    case HTBOTTOM:
+      return ZCR_REMOTE_SURFACE_V1_RESIZE_DIRECTION_BOTTOM;
+    case HTBOTTOMLEFT:
+      return ZCR_REMOTE_SURFACE_V1_RESIZE_DIRECTION_BOTTOMLEFT;
+    case HTLEFT:
+      return ZCR_REMOTE_SURFACE_V1_RESIZE_DIRECTION_LEFT;
+    case HTTOPLEFT:
+      return ZCR_REMOTE_SURFACE_V1_RESIZE_DIRECTION_TOPLEFT;
+    default:
+      LOG(ERROR) << "Unknown component:" << component;
+      break;
+  }
+  NOTREACHED();
+  return ZCR_REMOTE_SURFACE_V1_RESIZE_DIRECTION_NONE;
+}
+
+int Component(uint32_t direction) {
+  switch (direction) {
+    case ZCR_REMOTE_SURFACE_V1_RESIZE_DIRECTION_NONE:
+      return HTNOWHERE;
+    case ZCR_REMOTE_SURFACE_V1_RESIZE_DIRECTION_TOP:
+      return HTTOP;
+    case ZCR_REMOTE_SURFACE_V1_RESIZE_DIRECTION_TOPRIGHT:
+      return HTTOPRIGHT;
+    case ZCR_REMOTE_SURFACE_V1_RESIZE_DIRECTION_RIGHT:
+      return HTRIGHT;
+    case ZCR_REMOTE_SURFACE_V1_RESIZE_DIRECTION_BOTTOMRIGHT:
+      return HTBOTTOMRIGHT;
+    case ZCR_REMOTE_SURFACE_V1_RESIZE_DIRECTION_BOTTOM:
+      return HTBOTTOM;
+    case ZCR_REMOTE_SURFACE_V1_RESIZE_DIRECTION_BOTTOMLEFT:
+      return HTBOTTOMLEFT;
+    case ZCR_REMOTE_SURFACE_V1_RESIZE_DIRECTION_LEFT:
+      return HTLEFT;
+    case ZCR_REMOTE_SURFACE_V1_RESIZE_DIRECTION_TOPLEFT:
+      return HTTOPLEFT;
+    default:
+      VLOG(2) << "Unknown direction:" << direction;
+      break;
+  }
+  return HTNOWHERE;
+}
+
 // A property key containing the surface resource that is associated with
 // window. If unset, no surface resource is associated with surface object.
 DEFINE_UI_CLASS_PROPERTY_KEY(wl_resource*, kSurfaceResourceKey, nullptr);
@@ -2071,9 +2126,10 @@ void remote_surface_set_window_type(wl_client* client,
   }
 }
 
-void remote_surface_resize(wl_client* client, wl_resource* resource) {
-  GetUserDataAs<ClientControlledShellSurface>(resource)
-      ->StartResize_DEPRECATED();
+void remote_surface_resize(wl_client* client,
+                           wl_resource* resource,
+                           uint32_t direction) {
+  // DEPRECATED
 }
 
 void remote_surface_set_resize_outset(wl_client* client,
@@ -2126,6 +2182,13 @@ void remote_surface_set_snapped_to_right(wl_client* client,
   GetUserDataAs<ClientControlledShellSurface>(resource)->SetSnappedToRight();
 }
 
+void remote_surface_start_resize(wl_client* client,
+                                 wl_resource* resource,
+                                 uint32_t direction) {
+  GetUserDataAs<ClientControlledShellSurface>(resource)->StartResize(
+      Component(direction));
+}
+
 const struct zcr_remote_surface_v1_interface remote_surface_implementation = {
     remote_surface_destroy,
     remote_surface_set_app_id,
@@ -2161,7 +2224,8 @@ const struct zcr_remote_surface_v1_interface remote_surface_implementation = {
     remote_surface_set_min_size,
     remote_surface_set_max_size,
     remote_surface_set_snapped_to_left,
-    remote_surface_set_snapped_to_right};
+    remote_surface_set_snapped_to_right,
+    remote_surface_start_resize};
 
 ////////////////////////////////////////////////////////////////////////////////
 // notification_surface_interface:
@@ -2457,34 +2521,6 @@ void HandleRemoteSurfaceBoundsChangedCallback(
   wl_client_flush(wl_resource_get_client(resource));
 }
 
-uint32_t ResizeDirection(int component) {
-  switch (component) {
-    case HTCAPTION:
-      return ZCR_REMOTE_SURFACE_V1_RESIZE_DIRECTION_NONE;
-    case HTTOP:
-      return ZCR_REMOTE_SURFACE_V1_RESIZE_DIRECTION_TOP;
-    case HTTOPRIGHT:
-      return ZCR_REMOTE_SURFACE_V1_RESIZE_DIRECTION_TOPRIGHT;
-    case HTRIGHT:
-      return ZCR_REMOTE_SURFACE_V1_RESIZE_DIRECTION_RIGHT;
-    case HTBOTTOMRIGHT:
-      return ZCR_REMOTE_SURFACE_V1_RESIZE_DIRECTION_BOTTOMRIGHT;
-    case HTBOTTOM:
-      return ZCR_REMOTE_SURFACE_V1_RESIZE_DIRECTION_BOTTOM;
-    case HTBOTTOMLEFT:
-      return ZCR_REMOTE_SURFACE_V1_RESIZE_DIRECTION_BOTTOMLEFT;
-    case HTLEFT:
-      return ZCR_REMOTE_SURFACE_V1_RESIZE_DIRECTION_LEFT;
-    case HTTOPLEFT:
-      return ZCR_REMOTE_SURFACE_V1_RESIZE_DIRECTION_TOPLEFT;
-    default:
-      LOG(ERROR) << "Unknown component:" << component;
-      break;
-  }
-  NOTREACHED();
-  return ZCR_REMOTE_SURFACE_V1_RESIZE_DIRECTION_NONE;
-}
-
 void HandleRemoteSurfaceDragStartedCallback(wl_resource* resource,
                                             int component) {
   zcr_remote_surface_v1_send_drag_started(resource, ResizeDirection(component));
@@ -2616,7 +2652,7 @@ const struct zcr_remote_shell_v1_interface remote_shell_implementation = {
     remote_shell_destroy, remote_shell_get_remote_surface,
     remote_shell_get_notification_surface};
 
-const uint32_t remote_shell_version = 11;
+const uint32_t remote_shell_version = 12;
 
 void bind_remote_shell(wl_client* client,
                        void* data,

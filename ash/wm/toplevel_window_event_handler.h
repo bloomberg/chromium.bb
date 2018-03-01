@@ -50,6 +50,10 @@ class ASH_EXPORT ToplevelWindowEventHandler : public ui::EventHandler,
       ::wm::WindowMoveSource move_source) override;
   void EndMoveLoop() override;
 
+  aura::Window* gesture_target() {
+    return wm_toplevel_window_event_handler_.gesture_target();
+  }
+
  private:
   // Callback from WmToplevelWindowEventHandler once the drag completes.
   void OnDragCompleted(
