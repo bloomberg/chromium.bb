@@ -26,6 +26,7 @@
 #ifndef ClipRect_h
 #define ClipRect_h
 
+#include "core/CoreExport.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/paint/FloatClipRect.h"
 #include "platform/wtf/Allocator.h"
@@ -90,6 +91,8 @@ inline ClipRect Intersection(const ClipRect& a, const ClipRect& b) {
   c.Intersect(b);
   return c;
 }
+
+CORE_EXPORT std::ostream& operator<<(std::ostream&, const ClipRect&);
 
 }  // namespace blink
 
