@@ -26,6 +26,16 @@ public class Both<A, B> {
         this.second = b;
     }
 
+    // Can be used as a method reference.
+    public A getFirst() {
+        return this.first;
+    }
+
+    // Can be used as a method reference.
+    public B getSecond() {
+        return this.second;
+    }
+
     @Override
     public String toString() {
         return new StringBuilder()

@@ -5,13 +5,10 @@
 package org.chromium.chromecast.shell;
 
 import android.app.Activity;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.content.LocalBroadcastManager;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -19,8 +16,11 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.chromecast.base.Both;
+import org.chromium.chromecast.base.Controller;
+import org.chromium.chromecast.base.Observable;
+import org.chromium.chromecast.base.ScopeFactories;
 import org.chromium.content_public.browser.WebContents;
 
 /**
@@ -36,18 +36,56 @@ public class CastWebContentsActivity extends Activity {
     private static final String TAG = "cr_CastWebActivity";
     private static final boolean DEBUG = true;
 
+    // Tracks the most recent Intent for the Activity.
+    private final Controller<Intent> mGotIntentState = new Controller<>();
+    // Set this to cause the Activity to finish.
+    private final Controller<String> mIsFinishingState = new Controller<>();
+
     private CastWebContentsSurfaceHelper mSurfaceHelper;
+
+    {
+        // Create an Observable that only supplies the Intent when not finishing.
+        Observable<Intent> hasIntentState =
+                mGotIntentState.and(Observable.not(mIsFinishingState)).transform(Both::getFirst);
+
+        // Register handler for web content stopped event while we have an Intent.
+        hasIntentState.watch(() -> {
+            IntentFilter filter = new IntentFilter();
+            filter.addAction(CastIntents.ACTION_ON_WEB_CONTENT_STOPPED);
+            return new LocalBroadcastReceiverScope(filter, (Intent intent) -> {
+                mIsFinishingState.set("Stopped by intent: " + intent.getAction());
+            });
+        });
+        // Handle each new Intent.
+        hasIntentState.watch(ScopeFactories.onEnter(this ::handleIntent));
+
+        mIsFinishingState.watch(ScopeFactories.onEnter((String reason) -> {
+            if (DEBUG) Log.d(TAG, "Finishing activity: " + reason);
+            finish();
+        }));
+
+        // If a new Intent arrives after finishing, start a new Activity instead of recycling this.
+        mGotIntentState.and(mIsFinishingState)
+                .transform(Both::getFirst)
+                .watch(ScopeFactories.onEnter((Intent intent) -> {
+                    Log.d(TAG,
+                            "Got intent while finishing current activity, so start new activity.");
+                    int flags = intent.getFlags();
+                    flags = flags & ~Intent.FLAG_ACTIVITY_SINGLE_TOP;
+                    intent.setFlags(flags);
+                    startActivity(intent);
+                }));
+    }
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         if (DEBUG) Log.d(TAG, "onCreate");
         super.onCreate(savedInstanceState);
 
-
         if (!CastBrowserHelper.initializeBrowser(getApplicationContext())) {
             Toast.makeText(this, R.string.browser_process_initialization_failed, Toast.LENGTH_SHORT)
                     .show();
-            finish();
+            mIsFinishingState.set("Failed to initialize browser");
         }
 
         // Set flags to both exit sleep mode when this activity starts and
@@ -62,24 +100,7 @@ public class CastWebContentsActivity extends Activity {
                 (FrameLayout) findViewById(R.id.web_contents_container),
                 false /* showInFragment */);
 
-        // Receiver to handle on web content stopped event
-        BroadcastReceiver stopEventReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                if (DEBUG) Log.d(TAG, "Intent action=" + intent.getAction());
-                getLocalBroadcastManager().unregisterReceiver(this);
-                finish();
-            }
-        };
-        IntentFilter stopReceiverFilter = new IntentFilter();
-        stopReceiverFilter.addAction(CastIntents.ACTION_ON_WEB_CONTENT_STOPPED);
-        getLocalBroadcastManager().registerReceiver(stopEventReceiver, stopReceiverFilter);
-
-        handleIntent(getIntent());
-    }
-
-    private LocalBroadcastManager getLocalBroadcastManager() {
-        return LocalBroadcastManager.getInstance(ContextUtils.getApplicationContext());
+        mGotIntentState.set(getIntent());
     }
 
     protected void handleIntent(Intent intent) {
@@ -115,21 +136,8 @@ public class CastWebContentsActivity extends Activity {
     @Override
     protected void onNewIntent(Intent intent) {
         if (DEBUG) Log.d(TAG, "onNewIntent");
-
-        // If we're currently finishing this activity, we should start a new activity to
-        // display the new app.
-        if (isFinishing()) {
-            Log.d(TAG, "Activity is finishing, starting new activity.");
-            int flags = intent.getFlags();
-            flags = flags & ~Intent.FLAG_ACTIVITY_SINGLE_TOP;
-            intent.setFlags(flags);
-            startActivity(intent);
-            return;
-        }
-
-        handleIntent(intent);
+        mGotIntentState.set(intent);
     }
-
 
     @Override
     protected void onStart() {
@@ -168,6 +176,7 @@ public class CastWebContentsActivity extends Activity {
         if (mSurfaceHelper != null) {
             mSurfaceHelper.onDestroy();
         }
+        mGotIntentState.reset();
         super.onDestroy();
     }
 
@@ -203,7 +212,7 @@ public class CastWebContentsActivity extends Activity {
 
                 // Stop key should end the entire session.
                 if (keyCode == KeyEvent.KEYCODE_MEDIA_STOP) {
-                    finish();
+                    mIsFinishingState.set("User pressed STOP key");
                 }
 
                 return true;
