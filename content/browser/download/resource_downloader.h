@@ -11,9 +11,10 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
-#include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace content {
+
+class SharedURLLoaderFactory;
 
 // Class for handing the download of a url.
 class ResourceDownloader : public UrlDownloadHandler,
@@ -24,7 +25,7 @@ class ResourceDownloader : public UrlDownloadHandler,
       base::WeakPtr<UrlDownloadHandler::Delegate> delegate,
       std::unique_ptr<download::DownloadUrlParameters> download_url_parameters,
       std::unique_ptr<network::ResourceRequest> request,
-      network::mojom::URLLoaderFactory* url_loader_factory,
+      scoped_refptr<SharedURLLoaderFactory> shared_url_loader_factory,
       const GURL& site_url,
       const GURL& tab_url,
       const GURL& tab_referrer_url,
@@ -64,7 +65,7 @@ class ResourceDownloader : public UrlDownloadHandler,
  private:
   // Helper method to start the network request.
   void Start(
-      network::mojom::URLLoaderFactory* url_loader_factory,
+      scoped_refptr<SharedURLLoaderFactory> shared_url_loader_factory,
       std::unique_ptr<download::DownloadUrlParameters> download_url_parameters,
       bool is_parallel_request);
 

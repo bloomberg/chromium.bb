@@ -47,6 +47,7 @@
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/throttling_url_loader.h"
+#include "content/common/wrapper_shared_url_loader_factory.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/download_item_utils.h"
@@ -203,23 +204,26 @@ DownloadManagerImpl::UniqueUrlDownloadHandlerPtr BeginResourceDownload(
     return nullptr;
   }
 
-  network::mojom::URLLoaderFactory* url_loader_factory =
-      url_loader_factory_getter->GetNetworkFactory();
+  scoped_refptr<SharedURLLoaderFactory> shared_url_loader_factory;
   if (params->url().SchemeIs(url::kBlobScheme)) {
-    network::mojom::URLLoaderFactoryPtr url_loader_factory_ptr;
+    network::mojom::URLLoaderFactoryPtrInfo url_loader_factory_ptr_info;
     storage::BlobURLLoaderFactory::Create(
         std::move(blob_data_handle), params->url(),
-        mojo::MakeRequest(&url_loader_factory_ptr));
-    url_loader_factory = url_loader_factory_ptr.get();
+        mojo::MakeRequest(&url_loader_factory_ptr_info));
+    shared_url_loader_factory =
+        base::MakeRefCounted<WrapperSharedURLLoaderFactory>(
+            std::move(url_loader_factory_ptr_info));
+  } else {
+    shared_url_loader_factory = url_loader_factory_getter->GetNetworkFactory();
   }
   // TODO(qinmin): Check the storage permission before creating the URLLoader.
   // This is already done for context menu download, but it is missing for
   // download service and download resumption.
   return DownloadManagerImpl::UniqueUrlDownloadHandlerPtr(
-      ResourceDownloader::BeginDownload(download_manager, std::move(params),
-                                        std::move(request), url_loader_factory,
-                                        site_url, tab_url, tab_referrer_url,
-                                        download_id, false)
+      ResourceDownloader::BeginDownload(
+          download_manager, std::move(params), std::move(request),
+          std::move(shared_url_loader_factory), site_url, tab_url,
+          tab_referrer_url, download_id, false)
           .release());
 }
 

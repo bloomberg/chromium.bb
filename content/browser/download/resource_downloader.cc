@@ -11,6 +11,7 @@
 #include "content/browser/download/download_utils.h"
 
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/shared_url_loader_factory.h"
 
 namespace network {
 struct ResourceResponseHead;
@@ -63,7 +64,7 @@ std::unique_ptr<ResourceDownloader> ResourceDownloader::BeginDownload(
     base::WeakPtr<UrlDownloadHandler::Delegate> delegate,
     std::unique_ptr<download::DownloadUrlParameters> params,
     std::unique_ptr<network::ResourceRequest> request,
-    network::mojom::URLLoaderFactory* url_loader_factory,
+    scoped_refptr<SharedURLLoaderFactory> shared_url_loader_factory,
     const GURL& site_url,
     const GURL& tab_url,
     const GURL& tab_referrer_url,
@@ -74,7 +75,8 @@ std::unique_ptr<ResourceDownloader> ResourceDownloader::BeginDownload(
       params->render_frame_host_routing_id(), site_url, tab_url,
       tab_referrer_url, download_id);
 
-  downloader->Start(url_loader_factory, std::move(params), is_parallel_request);
+  downloader->Start(std::move(shared_url_loader_factory), std::move(params),
+                    is_parallel_request);
   return downloader;
 }
 
@@ -121,7 +123,7 @@ ResourceDownloader::ResourceDownloader(
 ResourceDownloader::~ResourceDownloader() = default;
 
 void ResourceDownloader::Start(
-    network::mojom::URLLoaderFactory* url_loader_factory,
+    scoped_refptr<SharedURLLoaderFactory> shared_url_loader_factory,
     std::unique_ptr<download::DownloadUrlParameters> download_url_parameters,
     bool is_parallel_request) {
   callback_ = download_url_parameters->callback();
@@ -145,7 +147,7 @@ void ResourceDownloader::Start(
   // Set up the URLLoader
   network::mojom::URLLoaderRequest url_loader_request =
       mojo::MakeRequest(&url_loader_);
-  url_loader_factory->CreateLoaderAndStart(
+  shared_url_loader_factory->CreateLoaderAndStart(
       std::move(url_loader_request),
       0,  // routing_id
       0,  // request_id

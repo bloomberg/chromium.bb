@@ -21,7 +21,6 @@ void AppCacheUpdateJob::UpdateURLLoaderRequest::Start() {
   network::mojom::URLLoaderClientPtr client;
   client_binding_.Bind(mojo::MakeRequest(&client));
 
-  DCHECK(loader_factory_getter_->GetNetworkFactory());
   loader_factory_getter_->GetNetworkFactory()->CreateLoaderAndStart(
       mojo::MakeRequest(&url_loader_), -1, -1,
       network::mojom::kURLLoadOptionNone, request_, std::move(client),

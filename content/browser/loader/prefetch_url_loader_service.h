@@ -101,7 +101,6 @@ class CONTENT_EXPORT PrefetchURLLoaderService final
   ResourceContext* resource_context_ = nullptr;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 
-  network::mojom::URLLoaderFactoryPtr network_loader_factory_;
   mojo::BindingSet<network::mojom::URLLoaderFactory,
                    int /* frame_tree_node_id */>
       loader_factory_bindings_;

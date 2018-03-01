@@ -11,6 +11,7 @@
 #include "content/browser/download/resource_downloader.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/shared_url_loader_factory.h"
 #include "services/network/public/cpp/features.h"
 
 namespace content {
