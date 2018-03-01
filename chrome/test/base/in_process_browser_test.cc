@@ -449,8 +449,9 @@ void InProcessBrowserTest::PreRunTestOnMainThread() {
     if (browser_->window()->IsMaximized())
       browser_->window()->Restore();
 #endif
-    content::WaitForLoadStop(
-        browser_->tab_strip_model()->GetActiveWebContents());
+    auto* tab = browser_->tab_strip_model()->GetActiveWebContents();
+    content::WaitForLoadStop(tab);
+    SetInitialWebContents(tab);
   }
 
 #if !defined(OS_ANDROID)

@@ -106,6 +106,7 @@ void ContentBrowserTest::PreRunTestOnMainThread() {
   if (!switches::IsRunLayoutTestSwitchPresent()) {
     CHECK_EQ(Shell::windows().size(), 1u);
     shell_ = Shell::windows()[0];
+    SetInitialWebContents(shell_->web_contents());
   }
 
 #if defined(OS_MACOSX)

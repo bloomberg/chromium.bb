@@ -27,6 +27,7 @@
 #include "content/browser/tracing/tracing_controller_impl.h"
 #include "content/public/app/content_main.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/service_manager_connection.h"
@@ -99,6 +100,24 @@ void TraceStopTracingComplete(const base::Closure& quit,
   LOG(ERROR) << "Tracing written to: " << file_path.value();
   quit.Run();
 }
+
+// See SetInitialWebContents comment for more information.
+class InitialNavigationObserver : public WebContentsObserver {
+ public:
+  InitialNavigationObserver(WebContents* web_contents,
+                            base::OnceClosure callback)
+      : WebContentsObserver(web_contents), callback_(std::move(callback)) {}
+  // WebContentsObserver implementation:
+  void DidStartNavigation(NavigationHandle* navigation_handle) override {
+    if (callback_)
+      std::move(callback_).Run();
+  }
+
+ private:
+  base::OnceClosure callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(InitialNavigationObserver);
+};
 
 }  // namespace
 
@@ -333,7 +352,22 @@ void BrowserTestBase::ProxyRunTestOnMainThreadLoop() {
     base::MessageLoop::ScopedNestableTaskAllower allow(
         base::MessageLoop::current());
     PreRunTestOnMainThread();
+    std::unique_ptr<InitialNavigationObserver> initial_navigation_observer;
+    if (initial_web_contents_ &&
+        base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+      // Some tests may add host_resolver() rules in their SetUpOnMainThread
+      // method and navigate inside of it. This is a best effort to catch that
+      // and sync the host_resolver() rules to the network process in that case,
+      // to avoid navigations silently failing. This won't catch all cases, i.e.
+      // if the test creates a new window or tab and navigates that.
+      initial_navigation_observer = std::make_unique<InitialNavigationObserver>(
+          initial_web_contents_,
+          base::BindOnce(&BrowserTestBase::InitializeNetworkProcess,
+                         base::Unretained(this)));
+    }
+    initial_web_contents_ = nullptr;
     SetUpOnMainThread();
+    initial_navigation_observer.reset();
 
     // Tests would have added their host_resolver() rules by now, so copy them
     // to the network process if it's in use.
@@ -406,7 +440,16 @@ bool BrowserTestBase::UsingSoftwareGL() const {
          gl::GetGLImplementationName(gl::GetSoftwareGLImplementation());
 }
 
+void BrowserTestBase::SetInitialWebContents(WebContents* web_contents) {
+  DCHECK(!initial_web_contents_);
+  initial_web_contents_ = web_contents;
+}
+
 void BrowserTestBase::InitializeNetworkProcess() {
+  if (initialized_network_process_)
+    return;
+
+  initialized_network_process_ = true;
   const testing::TestInfo* const test_info =
       testing::UnitTest::GetInstance()->current_test_info();
   bool network_service =
@@ -449,6 +492,9 @@ void BrowserTestBase::InitializeNetworkProcess() {
   ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
       mojom::kNetworkServiceName, &network_service_test);
 
+  // Allow nested tasks so that the mojo reply is dispatched.
+  base::MessageLoop::ScopedNestableTaskAllower allow(
+      base::MessageLoop::current());
   // Send the DNS rules to network service process. Android needs the RunLoop
   // to dispatch a Java callback that makes network process to enter native
   // code.
