@@ -78,12 +78,6 @@ void AutocompleteController::OnResultChanged(bool default_match_changed) {
         match.contents, match.description, match.contents_class,
         match.description_class, match.type, match.destination_url,
         last_request_.text, match.inline_autocompletion));
-    if (match.swap_contents_and_description) {
-      auto& suggestion = suggestions->suggestions.back();
-      swap(suggestion.contents, suggestion.description);
-      swap(suggestion.contents_classifications,
-           suggestion.description_classifications);
-    }
     if (suggestions->suggestions.size() >= kMaxNumberOfSuggestions)
       break;
   }
