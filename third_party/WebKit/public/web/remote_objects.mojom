@@ -4,6 +4,8 @@
 
 module blink.mojom;
 
+import "mojo/public/mojom/base/string16.mojom";
+
 // These interfaces allow an object implemented outside the Blink renderer
 // process to be exposed to JavaScript via synchronous IPC.
 //
@@ -22,6 +24,7 @@ interface RemoteObject {
 union RemoteInvocationArgument {
   double number_value;
   bool boolean_value;
+  mojo_base.mojom.String16 string_value;
 };
 
 enum RemoteInvocationError {

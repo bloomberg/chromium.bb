@@ -9,6 +9,7 @@ import org.chromium.blink.mojom.RemoteInvocationError;
 import org.chromium.blink.mojom.RemoteInvocationResult;
 import org.chromium.blink.mojom.RemoteObject;
 import org.chromium.mojo.system.MojoException;
+import org.chromium.mojo_base.mojom.String16;
 
 import java.lang.annotation.Annotation;
 import java.lang.ref.WeakReference;
@@ -23,6 +24,9 @@ import java.util.TreeMap;
 
 /**
  * Exposes limited access to a Java object over a Mojo interface.
+ *
+ * For LiveConnect references, an archived version is available at:
+ * http://web.archive.org/web/20141022204935/http://jdk6.java.net/plugin2/liveconnect/
  */
 class RemoteObjectImpl implements RemoteObject {
     /**
@@ -252,6 +256,24 @@ class RemoteObjectImpl implements RemoteObject {
                     assert !parameterType.isPrimitive();
                     return null;
                 }
+            case RemoteInvocationArgument.Tag.StringValue:
+                // See http://jdk6.java.net/plugin2/liveconnect/#JS_STRING_VALUES.
+                if (parameterType == String.class) {
+                    return mojoStringToJavaString(argument.getStringValue());
+                } else if (parameterType.isPrimitive()) {
+                    // LIVECONNECT_COMPLIANCE: Existing behavior is to convert to 0. Spec
+                    // requires using valueOf() method of corresponding object type, or
+                    // converting to boolean based on whether the string is empty.
+                    return getPrimitiveZero(parameterType);
+                } else if (parameterType.isArray()) {
+                    // LIVECONNECT_COMPLIANCE: Existing behavior is to convert to NULL. Spec
+                    // requires raising a JavaScript exception.
+                    return null;
+                } else {
+                    // LIVECONNECT_COMPLIANCE: Existing behavior is to convert to NULL. Spec
+                    // requires handling java.lang.Object.
+                    return null;
+                }
             default:
                 throw new RuntimeException("invalid wire argument type");
         }
@@ -329,5 +351,14 @@ class RemoteObjectImpl implements RemoteObject {
         } else {
             throw new RuntimeException("unexpected primitive type " + parameterType);
         }
+    }
+
+    private static String mojoStringToJavaString(String16 mojoString) {
+        short[] data = mojoString.data;
+        char[] chars = new char[data.length];
+        for (int i = 0; i < chars.length; i++) {
+            chars[i] = (char) data[i];
+        }
+        return String.valueOf(chars);
     }
 }
