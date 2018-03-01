@@ -8,7 +8,6 @@
 #include "platform/bindings/ScriptWrappableVisitor.h"
 #include "platform/heap/GCInfo.h"
 #include "platform/heap/Heap.h"
-#include "platform/heap/MarkingVisitor.h"
 #include "platform/heap/StackFrameDepth.h"
 #include "platform/heap/Visitor.h"
 #include "platform/wtf/Allocator.h"
@@ -43,22 +42,6 @@ class WeakMember;
 template <typename T>
 class WeakPersistent;
 
-// "g++ -Os" reasonably considers the mark() eager-tracing specialization
-// as an inlinable method. Its optimization pipeline will however trigger
-// unconditional uses of that inlining inside trace() methods, i.e., without
-// consideration for resulting code size, so one for each use of
-// "visitor->trace(..)". This results in an unwanted amount of extra code
-// across all trace methods. Address the issue indirectly by turning off
-// inlining for the method. See crbug.com/681991 for further details.
-//
-// TODO(sof): revisit with later g++ versions, or when g++ is no
-// longer used for production builds.
-#if !defined(__clang__) && defined(__GNUC__)
-#define NOINLINE_GXX_ONLY NOINLINE
-#else
-#define NOINLINE_GXX_ONLY
-#endif
-
 template <typename T, bool = NeedsAdjustAndMark<T>::value>
 class AdjustAndMarkTrait;
 
@@ -67,39 +50,8 @@ class AdjustAndMarkTrait<T, false> {
   STATIC_ONLY(AdjustAndMarkTrait);
 
  public:
-  static NOINLINE_GXX_ONLY void Mark(MarkingVisitor* visitor, const T* t) {
-#if DCHECK_IS_ON()
-    AssertObjectHasGCInfo(const_cast<T*>(t), GCInfoTrait<T>::Index());
-#endif
-    // Default mark method of the trait just calls the two-argument mark
-    // method on the visitor. The second argument is the static trace method
-    // of the trait, which by default calls the instance method
-    // trace(Visitor*) on the object.
-    //
-    // If the trait allows it, invoke the trace callback right here on the
-    // not-yet-marked object.
-    if (TraceEagerlyTrait<T>::value) {
-      // Protect against too deep trace call chains, and the
-      // unbounded system stack usage they can bring about.
-      //
-      // Assert against deep stacks so as to flush them out,
-      // but test and appropriately handle them should they occur
-      // in release builds.
-      //
-      // If you hit this assert, it means that you're creating an object
-      // graph that causes too many recursions, which might cause a stack
-      // overflow. To break the recursions, you need to add
-      // WILL_NOT_BE_EAGERLY_TRACED_CLASS() to classes that hold pointers
-      // that lead to many recursions.
-      DCHECK(visitor->Heap().GetStackFrameDepth().IsAcceptableStackUse());
-      if (LIKELY(visitor->Heap().GetStackFrameDepth().IsSafeToRecurse())) {
-        if (visitor->EnsureMarked(t)) {
-          TraceTrait<T>::Trace(visitor, const_cast<T*>(t));
-        }
-        return;
-      }
-    }
-    visitor->Mark(const_cast<T*>(t), &TraceTrait<T>::Trace);
+  static TraceDescriptor GetTraceDescriptor(void* self) {
+    return {self, TraceTrait<T>::Trace, TraceEagerlyTrait<T>::value};
   }
 
   static HeapObjectHeader* GetHeapObjectHeader(const T* self) {
@@ -123,14 +75,13 @@ class AdjustAndMarkTrait<T, true> {
   STATIC_ONLY(AdjustAndMarkTrait);
 
  public:
-  static void Mark(MarkingVisitor* visitor, const T* self) {
-    if (!self)
-      return;
-    self->AdjustAndMark(visitor);
-  }
-
   static HeapObjectHeader* GetHeapObjectHeader(const T* self) {
     return self->GetHeapObjectHeader();
+  }
+
+  static TraceDescriptor GetTraceDescriptor(T* self) {
+    DCHECK(self);
+    return self->GetTraceDescriptor();
   }
 
   static void TraceMarkedWrapper(const ScriptWrappableVisitor* visitor,
@@ -238,16 +189,13 @@ class TraceTrait {
   STATIC_ONLY(TraceTrait);
 
  public:
-  static void Trace(Visitor*, void* self);
+  static TraceDescriptor GetTraceDescriptor(void* self) {
+    return AdjustAndMarkTrait<T>::GetTraceDescriptor(static_cast<T*>(self));
+  }
 
+  static void Trace(Visitor*, void* self);
   static void TraceMarkedWrapper(const ScriptWrappableVisitor*, const void*);
   static HeapObjectHeader* GetHeapObjectHeader(const void*);
-
-  static void Mark(Visitor* visitor, void* t) {
-    // TODO(mlippautz): Remove cast.
-    AdjustAndMarkTrait<T>::Mark(reinterpret_cast<MarkingVisitor*>(visitor),
-                                reinterpret_cast<T*>(t));
-  }
 
  private:
   static const T* ToWrapperTracingType(const void* t) {
@@ -284,6 +232,11 @@ struct TraceTrait<HeapVectorBacking<T, Traits>> {
   STATIC_ONLY(TraceTrait);
   using Backing = HeapVectorBacking<T, Traits>;
 
+  static TraceDescriptor GetTraceDescriptor(void* self) {
+    return {self, TraceTrait<Backing>::Trace,
+            TraceEagerlyTrait<Backing>::value};
+  }
+
   template <typename VisitorDispatcher>
   static void Trace(VisitorDispatcher visitor, void* self) {
     static_assert(!WTF::IsWeak<T>::value,
@@ -293,13 +246,6 @@ struct TraceTrait<HeapVectorBacking<T, Traits>> {
                                   HeapVectorBacking<T, Traits>,
                                   void>::Trace(visitor, self);
     }
-  }
-
-  static void Mark(Visitor* visitor, void* backing) {
-    // TODO(mlippautz): Remove cast.
-    AdjustAndMarkTrait<Backing>::Mark(
-        reinterpret_cast<MarkingVisitor*>(visitor),
-        reinterpret_cast<Backing*>(backing));
   }
 };
 
@@ -315,6 +261,11 @@ struct TraceTrait<HeapHashTableBacking<Table>> {
   using Backing = HeapHashTableBacking<Table>;
   using Traits = typename Table::ValueTraits;
 
+  static TraceDescriptor GetTraceDescriptor(void* self) {
+    return {self, TraceTrait<Backing>::Trace,
+            TraceEagerlyTrait<Backing>::value};
+  }
+
   template <typename VisitorDispatcher>
   static void Trace(VisitorDispatcher visitor, void* self) {
     if (WTF::IsTraceableInCollectionTrait<Traits>::value ||
@@ -322,13 +273,6 @@ struct TraceTrait<HeapHashTableBacking<Table>> {
       WTF::TraceInCollectionTrait<WTF::kNoWeakHandling, Backing, void>::Trace(
           visitor, self);
     }
-  }
-
-  static void Mark(Visitor* visitor, void* backing) {
-    // TODO(mlippautz): Remove cast.
-    AdjustAndMarkTrait<Backing>::Mark(
-        reinterpret_cast<MarkingVisitor*>(visitor),
-        reinterpret_cast<Backing*>(backing));
   }
 };
 

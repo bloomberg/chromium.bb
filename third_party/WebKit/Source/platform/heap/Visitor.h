@@ -109,7 +109,8 @@ class PLATFORM_EXPORT Visitor {
     if (!t)
       return;
     Visit(const_cast<void*>(reinterpret_cast<const void*>(t)),
-          TraceTrait<T>::Trace, TraceTrait<T>::Mark);
+          TraceTrait<T>::GetTraceDescriptor(
+              const_cast<void*>(reinterpret_cast<const void*>(t))));
   }
 
   // WeakMember version of the templated trace method. It doesn't keep
@@ -171,7 +172,7 @@ class PLATFORM_EXPORT Visitor {
   // Dynamic visitor interface.
 
   // Visits an object through a strong reference.
-  virtual void Visit(void*, TraceCallback, TraceCallback) = 0;
+  virtual void Visit(void*, TraceDescriptor) = 0;
 
   // Registers backing store pointers so that they can be moved and properly
   // updated.

@@ -64,10 +64,36 @@ class PLATFORM_EXPORT MarkingVisitor final : public Visitor {
 
   // Implementation of the visitor interface. See above for descriptions.
 
-  void Visit(void* object,
-             TraceCallback trace_callback,
-             TraceCallback mark_callback) final {
-    mark_callback(this, object);
+  void Visit(void* object, TraceDescriptor desc) final {
+    // Default mark method of the trait just calls the two-argument mark
+    // method on the visitor. The second argument is the static trace method
+    // of the trait, which by default calls the instance method
+    // trace(Visitor*) on the object.
+    //
+    // If the trait allows it, invoke the trace callback right here on the
+    // not-yet-marked object.
+    if (desc.can_trace_eagerly) {
+      // Protect against too deep trace call chains, and the
+      // unbounded system stack usage they can bring about.
+      //
+      // Assert against deep stacks so as to flush them out,
+      // but test and appropriately handle them should they occur
+      // in release builds.
+      //
+      // If you hit this assert, it means that you're creating an object
+      // graph that causes too many recursions, which might cause a stack
+      // overflow. To break the recursions, you need to add
+      // WILL_NOT_BE_EAGERLY_TRACED_CLASS() to classes that hold pointers
+      // that lead to many recursions.
+      DCHECK(Heap().GetStackFrameDepth().IsAcceptableStackUse());
+      if (LIKELY(Heap().GetStackFrameDepth().IsSafeToRecurse())) {
+        if (EnsureMarked(desc.base_object_payload)) {
+          desc.callback(this, desc.base_object_payload);
+        }
+        return;
+      }
+    }
+    Mark(desc.base_object_payload, desc.callback);
   }
 
   void RegisterBackingStoreReference(void* slot) final;

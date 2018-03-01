@@ -40,6 +40,7 @@
 #include "platform/heap/HeapLinkedStack.h"
 #include "platform/heap/HeapTerminatedArrayBuilder.h"
 #include "platform/heap/HeapTestUtilities.h"
+#include "platform/heap/MarkingVisitor.h"
 #include "platform/heap/SafePoint.h"
 #include "platform/heap/SelfKeepAlive.h"
 #include "platform/heap/StackFrameDepth.h"

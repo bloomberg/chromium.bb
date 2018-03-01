@@ -47,6 +47,7 @@
 #include "platform/heap/Heap.h"
 #include "platform/heap/HeapCompact.h"
 #include "platform/heap/HeapFlags.h"
+#include "platform/heap/MarkingVisitor.h"
 #include "platform/heap/PagePool.h"
 #include "platform/heap/SafePoint.h"
 #include "platform/heap/Visitor.h"
