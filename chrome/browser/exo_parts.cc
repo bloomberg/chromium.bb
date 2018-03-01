@@ -249,15 +249,15 @@ ExoParts::~ExoParts() {
 
 ExoParts::ExoParts() {
   arc_notification_surface_manager_ =
-      base::MakeUnique<arc::ArcNotificationSurfaceManagerImpl>();
+      std::make_unique<arc::ArcNotificationSurfaceManagerImpl>();
   DCHECK(!ash_util::IsRunningInMash());
-  wm_helper_ = base::MakeUnique<exo::WMHelper>();
+  wm_helper_ = std::make_unique<exo::WMHelper>();
   exo::WMHelper::SetInstance(wm_helper_.get());
   display_ =
-      base::MakeUnique<exo::Display>(arc_notification_surface_manager_.get(),
-                                     base::MakeUnique<ChromeFileHelper>());
+      std::make_unique<exo::Display>(arc_notification_surface_manager_.get(),
+                                     std::make_unique<ChromeFileHelper>());
   wayland_server_ = exo::wayland::Server::Create(display_.get());
   // Wayland server creation can fail if XDG_RUNTIME_DIR is not set correctly.
   if (wayland_server_)
-    wayland_watcher_ = base::MakeUnique<WaylandWatcher>(wayland_server_.get());
+    wayland_watcher_ = std::make_unique<WaylandWatcher>(wayland_server_.get());
 }

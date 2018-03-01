@@ -130,8 +130,8 @@ gboolean mock_secret_password_store_sync(const SecretSchema* schema,
     g_hash_table_insert(attributes, g_strdup(name), value);
   }
   va_end(ap);
-  global_mock_libsecret_items->push_back(base::MakeUnique<MockSecretItem>(
-      base::MakeUnique<MockSecretValue>(g_strdup(password)), attributes));
+  global_mock_libsecret_items->push_back(std::make_unique<MockSecretItem>(
+      std::make_unique<MockSecretValue>(g_strdup(password)), attributes));
   return true;
 }
 

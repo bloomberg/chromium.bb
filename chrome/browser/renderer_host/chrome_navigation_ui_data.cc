@@ -39,7 +39,7 @@ ChromeNavigationUIData::ChromeNavigationUIData(
   int tab_id;
   int window_id;
   std::tie(tab_id, window_id) = GetTabIdAndWindowId(web_contents);
-  extension_data_ = base::MakeUnique<extensions::ExtensionNavigationUIData>(
+  extension_data_ = std::make_unique<extensions::ExtensionNavigationUIData>(
       navigation_handle, tab_id, window_id);
 #endif
 
@@ -79,7 +79,7 @@ ChromeNavigationUIData::CreateForMainFrameNavigation(
 std::unique_ptr<content::NavigationUIData> ChromeNavigationUIData::Clone()
     const {
   std::unique_ptr<ChromeNavigationUIData> copy =
-      base::MakeUnique<ChromeNavigationUIData>();
+      std::make_unique<ChromeNavigationUIData>();
 
   copy->disposition_ = disposition_;
 

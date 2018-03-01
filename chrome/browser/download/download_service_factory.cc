@@ -60,21 +60,21 @@ DownloadServiceFactory::~DownloadServiceFactory() = default;
 
 KeyedService* DownloadServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  auto clients = base::MakeUnique<download::DownloadClientMap>();
+  auto clients = std::make_unique<download::DownloadClientMap>();
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
   // Offline prefetch doesn't support incognito.
   if (!context->IsOffTheRecord()) {
     clients->insert(std::make_pair(
         download::DownloadClient::OFFLINE_PAGE_PREFETCH,
-        base::MakeUnique<offline_pages::OfflinePrefetchDownloadClient>(
+        std::make_unique<offline_pages::OfflinePrefetchDownloadClient>(
             context)));
   }
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
 
   clients->insert(
       std::make_pair(download::DownloadClient::BACKGROUND_FETCH,
-                     base::MakeUnique<BackgroundFetchDownloadClient>(context)));
+                     std::make_unique<BackgroundFetchDownloadClient>(context)));
 
   // Build in memory download service for incognito profile.
   if (context->IsOffTheRecord() &&
@@ -106,9 +106,9 @@ KeyedService* DownloadServiceFactory::BuildServiceInstanceFor(
     std::unique_ptr<download::TaskScheduler> task_scheduler;
 #if defined(OS_ANDROID)
     task_scheduler =
-        base::MakeUnique<download::android::DownloadTaskScheduler>();
+        std::make_unique<download::android::DownloadTaskScheduler>();
 #else
-    task_scheduler = base::MakeUnique<DownloadTaskSchedulerImpl>(context);
+    task_scheduler = std::make_unique<DownloadTaskSchedulerImpl>(context);
 #endif
 
     return download::BuildDownloadService(context, std::move(clients),

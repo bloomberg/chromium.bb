@@ -31,7 +31,7 @@ class MockForceSigninVerifier : public ForceSigninVerifier {
 class ForceSigninVerifierTest : public ::testing::Test {
  public:
   void SetUp() override {
-    verifier_ = base::MakeUnique<MockForceSigninVerifier>(&profile_);
+    verifier_ = std::make_unique<MockForceSigninVerifier>(&profile_);
   }
 
   void TearDown() override { verifier_.reset(); }

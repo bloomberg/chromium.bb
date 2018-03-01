@@ -164,7 +164,7 @@ void CreateNSProgress(download::DownloadItem* download) {
 
   download->SetUserData(
       &kCrNSProgressUserDataKey,
-      base::MakeUnique<CrNSProgressUserData>(progress, destination_path));
+      std::make_unique<CrNSProgressUserData>(progress, destination_path));
 }
 
 void UpdateNSProgress(download::DownloadItem* download,

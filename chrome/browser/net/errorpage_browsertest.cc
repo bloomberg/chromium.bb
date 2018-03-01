@@ -1564,7 +1564,7 @@ class ErrorPageOfflineTest : public ErrorPageTest {
     if (enroll_) {
       // Set up fake install attributes.
       std::unique_ptr<chromeos::StubInstallAttributes> attributes =
-          base::MakeUnique<chromeos::StubInstallAttributes>();
+          std::make_unique<chromeos::StubInstallAttributes>();
       attributes->SetCloudManaged("example.com", "fake-id");
       policy::BrowserPolicyConnectorChromeOS::SetInstallAttributesForTesting(
           attributes.release());
@@ -1584,7 +1584,7 @@ class ErrorPageOfflineTest : public ErrorPageTest {
       policy_map.Set(
           policy::key::kAllowDinosaurEasterEgg, policy::POLICY_LEVEL_MANDATORY,
           policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-          base::MakeUnique<base::Value>(value_of_allow_dinosaur_easter_egg_),
+          std::make_unique<base::Value>(value_of_allow_dinosaur_easter_egg_),
           nullptr);
     }
     policy_provider_.UpdateChromePolicy(policy_map);

@@ -159,7 +159,7 @@ std::vector<OfflinePageItem> CreateDummyOfflinePages(
 }
 
 std::unique_ptr<FakeDownloadItem> CreateDummyAssetDownload(int id) {
-  std::unique_ptr<FakeDownloadItem> item = base::MakeUnique<FakeDownloadItem>();
+  std::unique_ptr<FakeDownloadItem> item = std::make_unique<FakeDownloadItem>();
   item->SetId(id);
   std::string id_string = base::IntToString(id);
   item->SetGuid("XYZ-100032-EFZBDF-13323-PXZ" + id_string);
@@ -259,7 +259,7 @@ class DownloadSuggestionsProviderTest : public testing::Test {
  public:
   DownloadSuggestionsProviderTest()
       : download_history_(&downloads_manager_for_history_,
-                          base::MakeUnique<DummyHistoryAdapter>()),
+                          std::make_unique<DummyHistoryAdapter>()),
         pref_service_(new TestingPrefServiceSimple()) {
     DownloadSuggestionsProvider::RegisterProfilePrefs(
         pref_service()->registry());
@@ -295,7 +295,7 @@ class DownloadSuggestionsProviderTest : public testing::Test {
 
     // TODO(crbug.com/681766): Extract DownloadHistory interface and move
     // implementation into DownloadHistoryImpl. Then mock it.
-    provider_ = base::MakeUnique<DownloadSuggestionsProvider>(
+    provider_ = std::make_unique<DownloadSuggestionsProvider>(
         &observer_, show_offline_pages ? &offline_pages_model_ : nullptr,
         show_assets ? &downloads_manager_ : nullptr, &download_history_,
         pref_service(), clock);

@@ -215,7 +215,7 @@ class ProcessMemoryMetricsEmitterTest : public ExtensionBrowserTest {
   void PreRunTestOnMainThread() override {
     InProcessBrowserTest::PreRunTestOnMainThread();
 
-    test_ukm_recorder_ = base::MakeUnique<ukm::TestAutoSetUkmRecorder>();
+    test_ukm_recorder_ = std::make_unique<ukm::TestAutoSetUkmRecorder>();
   }
 
  protected:
@@ -380,7 +380,7 @@ class ProcessMemoryMetricsEmitterTest : public ExtensionBrowserTest {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // Create an barebones extension with a background page for the given name.
   const Extension* CreateExtension(const std::string& name) {
-    auto dir = base::MakeUnique<TestExtensionDir>();
+    auto dir = std::make_unique<TestExtensionDir>();
     dir->WriteManifestWithSingleQuotes(
         base::StringPrintf("{"
                            "'name': '%s',"

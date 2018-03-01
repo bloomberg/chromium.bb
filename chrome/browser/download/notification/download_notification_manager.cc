@@ -39,7 +39,7 @@ void DownloadNotificationManager::OnNewDownloadReady(
 
   if (manager_for_profile_.find(profile) == manager_for_profile_.end()) {
     manager_for_profile_[profile] =
-        base::MakeUnique<DownloadNotificationManagerForProfile>(profile, this);
+        std::make_unique<DownloadNotificationManagerForProfile>(profile, this);
   }
 
   manager_for_profile_[profile]->OnNewDownloadReady(download);

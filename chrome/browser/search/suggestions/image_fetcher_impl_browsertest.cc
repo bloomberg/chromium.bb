@@ -76,7 +76,7 @@ class ImageFetcherImplBrowserTest : public InProcessBrowserTest {
 
   ImageFetcherImpl* CreateImageFetcher() {
     ImageFetcherImpl* fetcher =
-        new ImageFetcherImpl(base::MakeUnique<suggestions::ImageDecoderImpl>(),
+        new ImageFetcherImpl(std::make_unique<suggestions::ImageDecoderImpl>(),
                              browser()->profile()->GetRequestContext());
     fetcher->SetImageFetcherDelegate(&delegate_);
     return fetcher;

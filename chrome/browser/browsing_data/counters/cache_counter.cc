@@ -72,7 +72,7 @@ void CacheCounter::OnCacheSizeCalculated(bool is_upper_limit,
   is_upper_limit_ |= is_upper_limit;
   if (pending_sources_ == 0) {
     auto result =
-        base::MakeUnique<CacheResult>(this, calculated_size_, is_upper_limit_);
+        std::make_unique<CacheResult>(this, calculated_size_, is_upper_limit_);
     ReportResult(std::move(result));
   }
 }

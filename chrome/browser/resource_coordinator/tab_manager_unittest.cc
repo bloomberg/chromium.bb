@@ -185,11 +185,11 @@ class TabManagerTest : public ChromeRenderViewHostTestHarness {
     contents2_->WasHidden();
     contents3_->WasHidden();
 
-    throttle1_ = base::MakeUnique<NonResumingBackgroundTabNavigationThrottle>(
+    throttle1_ = std::make_unique<NonResumingBackgroundTabNavigationThrottle>(
         nav_handle1_.get());
-    throttle2_ = base::MakeUnique<NonResumingBackgroundTabNavigationThrottle>(
+    throttle2_ = std::make_unique<NonResumingBackgroundTabNavigationThrottle>(
         nav_handle2_.get());
-    throttle3_ = base::MakeUnique<NonResumingBackgroundTabNavigationThrottle>(
+    throttle3_ = std::make_unique<NonResumingBackgroundTabNavigationThrottle>(
         nav_handle3_.get());
   }
 

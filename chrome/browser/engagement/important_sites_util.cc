@@ -435,7 +435,7 @@ void ImportantSitesUtil::RecordBlacklistedAndIgnoredImportantSites(
               nullptr));
 
       if (!dict)
-        dict = base::MakeUnique<base::DictionaryValue>();
+        dict = std::make_unique<base::DictionaryValue>();
 
       RecordIgnore(dict.get());
 

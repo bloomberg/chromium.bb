@@ -75,14 +75,14 @@ std::unique_ptr<base::DictionaryValue> GetOriginAppBannerData(
     HostContentSettingsMap* settings,
     const GURL& origin_url) {
   if (!settings)
-    return base::MakeUnique<base::DictionaryValue>();
+    return std::make_unique<base::DictionaryValue>();
 
   std::unique_ptr<base::DictionaryValue> dict =
       base::DictionaryValue::From(settings->GetWebsiteSetting(
           origin_url, origin_url, CONTENT_SETTINGS_TYPE_APP_BANNER,
           std::string(), NULL));
   if (!dict)
-    return base::MakeUnique<base::DictionaryValue>();
+    return std::make_unique<base::DictionaryValue>();
 
   return dict;
 }

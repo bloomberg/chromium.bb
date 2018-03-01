@@ -24,7 +24,7 @@ base::DictionaryValue Serialize(
     base::DictionaryValue* root,
     const std::map<base::DictionaryValue*, std::vector<base::DictionaryValue*>>&
         children) {
-  auto children_list = base::MakeUnique<base::ListValue>();
+  auto children_list = std::make_unique<base::ListValue>();
   auto child_it = children.find(root);
   if (child_it != children.end()) {
     for (base::DictionaryValue* child : child_it->second) {

@@ -128,7 +128,7 @@ BackgroundSchedulerBridge::GetCurrentDeviceConditions() {
       static_cast<net::NetworkChangeNotifier::ConnectionType>(jnetwork);
 
   // Now return the current conditions to the caller.
-  device_conditions_ = base::MakeUnique<DeviceConditions>(
+  device_conditions_ = std::make_unique<DeviceConditions>(
       power, battery, network_connection_type);
   return *device_conditions_;
 }

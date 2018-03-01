@@ -52,7 +52,7 @@ class RestoreOnStartupPolicyHandlerTest : public testing::Test {
 
 TEST_F(RestoreOnStartupPolicyHandlerTest, CheckPolicySettings_FailsTypeCheck) {
   // Handler expects an int; pass it a bool.
-  SetPolicyValue(key::kRestoreOnStartup, base::MakeUnique<base::Value>(false));
+  SetPolicyValue(key::kRestoreOnStartup, std::make_unique<base::Value>(false));
   // Checking should fail and add an error to the error map.
   EXPECT_FALSE(CheckPolicySettings());
   ASSERT_EQ(1U, errors().size());
@@ -76,7 +76,7 @@ TEST_F(RestoreOnStartupPolicyHandlerTest, CheckPolicySettings_UnknownValue) {
                          SessionStartupPref::kPrefValueURLs +
                          SessionStartupPref::kPrefValueNewTab;
   SetPolicyValue(key::kRestoreOnStartup,
-                 base::MakeUnique<base::Value>(impossible_value));
+                 std::make_unique<base::Value>(impossible_value));
   // Checking should succeed but add an error to the error map.
   EXPECT_TRUE(CheckPolicySettings());
   ASSERT_EQ(1U, errors().size());
@@ -90,7 +90,7 @@ TEST_F(RestoreOnStartupPolicyHandlerTest, CheckPolicySettings_HomePage) {
   // Specify the HomePage value.
   SetPolicyValue(key::kRestoreOnStartup,
                  // kPrefValueHomePage, deprecated.
-                 base::MakeUnique<base::Value>(0));
+                 std::make_unique<base::Value>(0));
   // Checking should succeed but add an error to the error map.
   EXPECT_TRUE(CheckPolicySettings());
   ASSERT_EQ(1U, errors().size());
@@ -121,7 +121,7 @@ TEST_F(RestoreOnStartupPolicyHandlerTest, ApplyPolicySettings_NotHomePage) {
   // Specify anything except the HomePage value.
   int not_home_page = 1;  // kPrefValueHomePage + 1, deprecated.
   SetPolicyValue(key::kRestoreOnStartup,
-                 base::MakeUnique<base::Value>(not_home_page));
+                 std::make_unique<base::Value>(not_home_page));
   ApplyPolicySettings();
   // The resulting prefs should have the value we specified.
   int result;
@@ -169,7 +169,7 @@ TEST_F(RestoreOnStartupPolicyHandlerTest, ApplyPolicySettings_NoValue) {
 
 TEST_F(RestoreOnStartupPolicyHandlerTest, ApplyPolicySettings_WrongType) {
   // Handler expects an int; pass it a bool.
-  SetPolicyValue(key::kRestoreOnStartup, base::MakeUnique<base::Value>(false));
+  SetPolicyValue(key::kRestoreOnStartup, std::make_unique<base::Value>(false));
   // The resulting prefs should be empty.
   EXPECT_TRUE(prefs().empty());
 }

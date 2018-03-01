@@ -162,7 +162,7 @@ class PasswordStoreWinTest : public testing::Test {
 
   PasswordStoreWin* CreatePasswordStore() {
     return new PasswordStoreWin(
-        base::MakeUnique<LoginDatabase>(test_login_db_file_path()), wds_.get());
+        std::make_unique<LoginDatabase>(test_login_db_file_path()), wds_.get());
   }
 
   content::TestBrowserThreadBundle test_browser_thread_bundle_;

@@ -68,7 +68,7 @@ KeyedService* OneGoogleBarServiceFactory::BuildServiceInstanceFor(
       CookieSettingsFactory::GetForProfile(profile).get();
   return new OneGoogleBarService(
       cookie_service,
-      base::MakeUnique<OneGoogleBarFetcherImpl>(
+      std::make_unique<OneGoogleBarFetcherImpl>(
           profile->GetRequestContext(), google_url_tracker,
           g_browser_process->GetApplicationLocale(), override_api_url,
           AccountConsistencyModeManager::IsMirrorEnabledForProfile(profile) &&

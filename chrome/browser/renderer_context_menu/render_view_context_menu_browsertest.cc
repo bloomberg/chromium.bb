@@ -154,7 +154,7 @@ class ContextMenuBrowserTest : public InProcessBrowserTest {
     params.writing_direction_left_to_right = 0;
     params.writing_direction_right_to_left = 0;
 #endif
-    auto menu = base::MakeUnique<TestRenderViewContextMenu>(
+    auto menu = std::make_unique<TestRenderViewContextMenu>(
         web_contents->GetMainFrame(), params);
     menu->Init();
     return menu;
@@ -323,7 +323,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenEntryPresentForNormalURLs) {
 
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
                        OpenInAppAbsentForURLsInScopeWhenDesktopPWAsDisabled) {
-  auto feature_list = base::MakeUnique<base::test::ScopedFeatureList>();
+  auto feature_list = std::make_unique<base::test::ScopedFeatureList>();
   feature_list->InitAndEnableFeature(features::kDesktopPWAWindowing);
   InstallTestBookmarkApp(GURL(kAppUrl1));
   feature_list.reset();
@@ -911,7 +911,7 @@ class SearchByImageBrowserTest : public InProcessBrowserTest {
 
   void AttemptImageSearch() {
     // |menu_observer_| will cause the search-by-image menu item to be clicked.
-    menu_observer_ = base::MakeUnique<ContextMenuNotificationObserver>(
+    menu_observer_ = std::make_unique<ContextMenuNotificationObserver>(
         IDC_CONTENT_CONTEXT_SEARCHWEBFORIMAGE);
     RightClickImage();
   }
@@ -949,7 +949,7 @@ class SearchByImageBrowserTest : public InProcessBrowserTest {
     data.image_url = GetImageSearchURL().spec();
     data.image_url_post_params = kImageSearchPostParams;
 
-    TemplateURL* template_url = model->Add(base::MakeUnique<TemplateURL>(data));
+    TemplateURL* template_url = model->Add(std::make_unique<TemplateURL>(data));
     ASSERT_TRUE(template_url);
     model->SetUserSelectedDefaultSearchProvider(template_url);
   }
@@ -1080,7 +1080,7 @@ class LoadImageRequestInterceptor : public net::URLRequestInterceptor {
       return;
 
     requests_to_wait_for_ = requests_to_wait_for;
-    run_loop_ = base::MakeUnique<base::RunLoop>();
+    run_loop_ = std::make_unique<base::RunLoop>();
     run_loop_->Run();
     run_loop_.reset();
     requests_to_wait_for_ = -1;
@@ -1144,7 +1144,7 @@ class LoadImageBrowserTest : public InProcessBrowserTest {
   void AttemptLoadImage() {
     // Right-click where the image should be.
     // |menu_observer_| will cause the "Load image" menu item to be clicked.
-    menu_observer_ = base::MakeUnique<ContextMenuNotificationObserver>(
+    menu_observer_ = std::make_unique<ContextMenuNotificationObserver>(
         IDC_CONTENT_CONTEXT_LOAD_ORIGINAL_IMAGE);
     content::WebContents* tab =
         browser()->tab_strip_model()->GetActiveWebContents();

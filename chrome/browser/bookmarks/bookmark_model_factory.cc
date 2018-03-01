@@ -78,7 +78,7 @@ KeyedService* BookmarkModelFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
   BookmarkModel* bookmark_model =
-      new BookmarkModel(base::MakeUnique<ChromeBookmarkClient>(
+      new BookmarkModel(std::make_unique<ChromeBookmarkClient>(
           profile, ManagedBookmarkServiceFactory::GetForProfile(profile)));
   bookmark_model->Load(profile->GetPrefs(), profile->GetPath(),
                        StartupTaskRunnerServiceFactory::GetForProfile(profile)

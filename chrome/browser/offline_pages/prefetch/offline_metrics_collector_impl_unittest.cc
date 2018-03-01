@@ -33,7 +33,7 @@ class OfflineMetricsCollectorTest : public testing::Test {
   // This creates new collector whcih will read the initial values from Prefs.
   void Reload() {
     collector_ =
-        base::MakeUnique<OfflineMetricsCollectorImpl>(&prefs());
+        std::make_unique<OfflineMetricsCollectorImpl>(&prefs());
     collector_->SetClockForTesting(&test_clock());
   }
 

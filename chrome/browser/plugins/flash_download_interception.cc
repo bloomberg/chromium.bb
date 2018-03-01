@@ -165,6 +165,6 @@ FlashDownloadInterception::MaybeCreateThrottleFor(NavigationHandle* handle) {
     return nullptr;
   }
 
-  return base::MakeUnique<navigation_interception::InterceptNavigationThrottle>(
+  return std::make_unique<navigation_interception::InterceptNavigationThrottle>(
       handle, base::Bind(&InterceptNavigation, source_url));
 }

@@ -576,7 +576,7 @@ OfflinePageRequestJob* OfflinePageRequestJob::Create(
       return nullptr;
   } else {
     request->SetUserData(&kUserDataKey,
-                         base::MakeUnique<OfflinePageRequestInfo>());
+                         std::make_unique<OfflinePageRequestInfo>());
   }
 
   return new OfflinePageRequestJob(request, network_delegate, previews_decider);

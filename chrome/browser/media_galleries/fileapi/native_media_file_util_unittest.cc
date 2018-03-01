@@ -130,7 +130,7 @@ class NativeMediaFileUtilTest : public testing::Test {
     std::vector<std::unique_ptr<storage::FileSystemBackend>>
         additional_providers;
     additional_providers.push_back(
-        base::MakeUnique<MediaFileSystemBackend>(data_dir_.GetPath()));
+        std::make_unique<MediaFileSystemBackend>(data_dir_.GetPath()));
 
     file_system_context_ = new storage::FileSystemContext(
         content::BrowserThread::GetTaskRunnerForThread(

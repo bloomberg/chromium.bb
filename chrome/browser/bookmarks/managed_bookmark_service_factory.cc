@@ -30,7 +30,7 @@ std::string GetManagedBookmarksDomain(Profile* profile) {
 std::unique_ptr<KeyedService> BuildManagedBookmarkService(
     content::BrowserContext* context) {
   Profile* profile = Profile::FromBrowserContext(context);
-  return base::MakeUnique<bookmarks::ManagedBookmarkService>(
+  return std::make_unique<bookmarks::ManagedBookmarkService>(
       profile->GetPrefs(),
       base::Bind(&GetManagedBookmarksDomain, base::Unretained(profile)));
 }

@@ -79,7 +79,7 @@ bool PasswordUpdatePendingView::Close() {
 
 void PasswordUpdatePendingView::AddedToWidget() {
   auto title_view =
-      base::MakeUnique<views::StyledLabel>(base::string16(), this);
+      std::make_unique<views::StyledLabel>(base::string16(), this);
   title_view->SetTextContext(views::style::CONTEXT_DIALOG_TITLE);
   UpdateTitleText(title_view.get());
   GetBubbleFrameView()->SetTitleView(std::move(title_view));

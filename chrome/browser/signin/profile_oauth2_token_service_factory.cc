@@ -57,10 +57,10 @@ KeyedService* ProfileOAuth2TokenServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = static_cast<Profile*>(context);
 #if defined(OS_ANDROID)
-  auto delegate = base::MakeUnique<OAuth2TokenServiceDelegateAndroid>(
+  auto delegate = std::make_unique<OAuth2TokenServiceDelegateAndroid>(
       AccountTrackerServiceFactory::GetInstance()->GetForProfile(profile));
 #else
-  auto delegate = base::MakeUnique<MutableProfileOAuth2TokenServiceDelegate>(
+  auto delegate = std::make_unique<MutableProfileOAuth2TokenServiceDelegate>(
       ChromeSigninClientFactory::GetInstance()->GetForProfile(profile),
       SigninErrorControllerFactory::GetInstance()->GetForProfile(profile),
       AccountTrackerServiceFactory::GetInstance()->GetForProfile(profile));

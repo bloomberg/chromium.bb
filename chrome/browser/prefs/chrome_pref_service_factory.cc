@@ -360,7 +360,7 @@ std::unique_ptr<ProfilePrefStoreManager> CreateProfilePrefStoreManager(
              .GetRawDataResource(IDR_PREF_HASH_SEED_BIN)
              .as_string();
 #endif
-  return base::MakeUnique<ProfilePrefStoreManager>(profile_path, seed,
+  return std::make_unique<ProfilePrefStoreManager>(profile_path, seed,
                                                    legacy_device_id);
 }
 
@@ -468,7 +468,7 @@ std::unique_ptr<sync_preferences::PrefServiceSyncable> CreateProfilePrefs(
 
   prefs::mojom::ResetOnLoadObserverPtr reset_on_load_observer;
   mojo::MakeStrongBinding(
-      base::MakeUnique<ResetOnLoadObserverImpl>(profile_path),
+      std::make_unique<ResetOnLoadObserverImpl>(profile_path),
       mojo::MakeRequest(&reset_on_load_observer));
   sync_preferences::PrefServiceSyncableFactory factory;
   scoped_refptr<PersistentPrefStore> user_pref_store =

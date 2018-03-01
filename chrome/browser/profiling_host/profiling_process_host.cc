@@ -165,7 +165,7 @@ void UploadTraceToCrashServer(std::string file_contents,
   configs.SetKey("configs", std::move(rules_list));
 
   std::unique_ptr<base::DictionaryValue> metadata =
-      base::MakeUnique<base::DictionaryValue>();
+      std::make_unique<base::DictionaryValue>();
   metadata->SetKey("config", std::move(configs));
 
   TraceCrashServiceUploader* uploader = new TraceCrashServiceUploader(

@@ -12,7 +12,7 @@ namespace signin {
 
 std::unique_ptr<KeyedService> BuildTestSigninClient(
     content::BrowserContext* context) {
-  return base::MakeUnique<TestSigninClient>(
+  return std::make_unique<TestSigninClient>(
       static_cast<Profile*>(context)->GetPrefs());
 }
 

@@ -214,13 +214,13 @@ bool BackgroundLoaderOffliner::LoadAndSave(
   if (IsOfflinePagesRenovationsEnabled()) {
     // Lazily create PageRenovationLoader
     if (!page_renovation_loader_)
-      page_renovation_loader_ = base::MakeUnique<PageRenovationLoader>();
+      page_renovation_loader_ = std::make_unique<PageRenovationLoader>();
 
     // Set up PageRenovator for this offlining instance.
-    auto script_injector = base::MakeUnique<RenderFrameScriptInjector>(
+    auto script_injector = std::make_unique<RenderFrameScriptInjector>(
         loader_->web_contents()->GetMainFrame(),
         ISOLATED_WORLD_ID_CHROME_INTERNAL);
-    page_renovator_ = base::MakeUnique<PageRenovator>(
+    page_renovator_ = std::make_unique<PageRenovator>(
         page_renovation_loader_.get(), std::move(script_injector),
         request.url());
   }

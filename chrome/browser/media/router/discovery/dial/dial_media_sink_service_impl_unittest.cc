@@ -79,7 +79,7 @@ class DialMediaSinkServiceImplTest : public ::testing::Test {
     media_sink_service_->SetTimerForTest(base::WrapUnique(mock_timer_));
 
     auto mock_app_discovery_service =
-        base::MakeUnique<MockDialAppDiscoveryService>(base::BindRepeating(
+        std::make_unique<MockDialAppDiscoveryService>(base::BindRepeating(
             &DialMediaSinkServiceImpl::OnAppInfoParseCompleted,
             base::Unretained(media_sink_service_.get())));
     mock_app_discovery_service_ = mock_app_discovery_service.get();

@@ -168,7 +168,7 @@ void RPHReferenceManager::ReferenceFromWebContents(
     content::WebContents* contents) {
   RenderProcessHost* rph = contents->GetMainFrame()->GetProcess();
   if (!base::ContainsKey(observer_map_, rph)) {
-    observer_map_[rph] = base::MakeUnique<RPHObserver>(this, rph);
+    observer_map_[rph] = std::make_unique<RPHObserver>(this, rph);
   }
   observer_map_[rph]->AddWebContentsObserver(contents);
 }
@@ -211,7 +211,7 @@ void RPHReferenceManager::RPHObserver::AddWebContentsObserver(
     return;
 
   observed_web_contentses_[web_contents] =
-      base::MakeUnique<RPHWebContentsObserver>(manager_, web_contents);
+      std::make_unique<RPHWebContentsObserver>(manager_, web_contents);
 }
 
 void RPHReferenceManager::RPHObserver::RemoveWebContentsObserver(

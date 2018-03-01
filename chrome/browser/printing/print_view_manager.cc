@@ -96,7 +96,7 @@ bool PrintViewManager::PrintForSystemDialogNow(
   SetPrintingRFH(print_preview_rfh_);
   int32_t id = print_preview_rfh_->GetRoutingID();
   return PrintNowInternal(print_preview_rfh_,
-                          base::MakeUnique<PrintMsg_PrintForSystemDialog>(id));
+                          std::make_unique<PrintMsg_PrintForSystemDialog>(id));
 }
 
 bool PrintViewManager::BasicPrint(content::RenderFrameHost* rfh) {
@@ -122,7 +122,7 @@ bool PrintViewManager::PrintPreviewNow(content::RenderFrameHost* rfh,
   if (print_preview_state_ != NOT_PREVIEWING)
     return false;
 
-  auto message = base::MakeUnique<PrintMsg_InitiatePrintPreview>(
+  auto message = std::make_unique<PrintMsg_InitiatePrintPreview>(
       rfh->GetRoutingID(), has_selection);
   if (!PrintNowInternal(rfh, std::move(message)))
     return false;

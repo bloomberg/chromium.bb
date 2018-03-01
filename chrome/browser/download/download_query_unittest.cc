@@ -64,7 +64,7 @@ class DownloadQueryTest : public testing::Test {
 
   void CreateMocks(int count) {
     for (int i = 0; i < count; ++i) {
-      owned_mocks_.push_back(base::MakeUnique<content::MockDownloadItem>());
+      owned_mocks_.push_back(std::make_unique<content::MockDownloadItem>());
       mocks_.push_back(owned_mocks_.back().get());
       EXPECT_CALL(mock(mocks_.size() - 1), GetId()).WillRepeatedly(Return(
           mocks_.size() - 1));

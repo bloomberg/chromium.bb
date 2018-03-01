@@ -149,7 +149,7 @@ class ShareServiceImplUnittest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 
-    share_service_helper_ = base::MakeUnique<ShareServiceTestImpl>(
+    share_service_helper_ = std::make_unique<ShareServiceTestImpl>(
         mojo::MakeRequest(&share_service_));
 
     share_service_helper_->SetEngagementForTarget(

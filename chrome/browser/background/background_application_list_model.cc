@@ -184,7 +184,7 @@ void BackgroundApplicationListModel::AssociateApplicationData(
       return;
     }
     std::unique_ptr<Application> application_ptr =
-        base::MakeUnique<Application>(this, extension);
+        std::make_unique<Application>(this, extension);
     application = application_ptr.get();
     applications_[extension->id()] = std::move(application_ptr);
     application->RequestIcon(extension_misc::EXTENSION_ICON_BITTY);

@@ -25,7 +25,7 @@ using testing::Return;
 class DataReductionProxyChromeSettingsTest : public testing::Test {
  public:
   void SetUp() override {
-    drp_chrome_settings_ = base::MakeUnique<DataReductionProxyChromeSettings>();
+    drp_chrome_settings_ = std::make_unique<DataReductionProxyChromeSettings>();
     test_context_ =
         data_reduction_proxy::DataReductionProxyTestContext::Builder()
             .WithMockConfig()
@@ -33,7 +33,7 @@ class DataReductionProxyChromeSettingsTest : public testing::Test {
             .Build();
     config_ = test_context_->mock_config();
     drp_chrome_settings_->ResetConfigForTest(config_);
-    dict_ = base::MakeUnique<base::DictionaryValue>();
+    dict_ = std::make_unique<base::DictionaryValue>();
 
     PrefRegistrySimple* registry = test_context_->pref_service()->registry();
     registry->RegisterDictionaryPref(proxy_config::prefs::kProxy);

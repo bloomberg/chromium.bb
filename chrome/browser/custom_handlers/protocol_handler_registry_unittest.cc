@@ -115,7 +115,7 @@ void AssertWillHandle(
 std::unique_ptr<base::DictionaryValue> GetProtocolHandlerValue(
     const std::string& protocol,
     const std::string& url) {
-  auto value = base::MakeUnique<base::DictionaryValue>();
+  auto value = std::make_unique<base::DictionaryValue>();
   value->SetString("protocol", protocol);
   value->SetString("url", url);
   return value;

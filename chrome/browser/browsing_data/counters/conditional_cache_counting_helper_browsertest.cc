@@ -28,7 +28,7 @@ class ConditionalCacheCountingHelperBrowserTest : public InProcessBrowserTest {
         base::Bind(&ConditionalCacheCountingHelperBrowserTest::CountCallback,
                    base::Unretained(this));
 
-    cache_util_ = base::MakeUnique<content::CacheTestUtil>(
+    cache_util_ = std::make_unique<content::CacheTestUtil>(
         content::BrowserContext::GetDefaultStoragePartition(
             browser()->profile()));
   }

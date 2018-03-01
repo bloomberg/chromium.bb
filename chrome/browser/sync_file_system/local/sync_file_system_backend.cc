@@ -91,7 +91,7 @@ SyncFileSystemBackend::~SyncFileSystemBackend() {
 std::unique_ptr<SyncFileSystemBackend>
 SyncFileSystemBackend::CreateForTesting() {
   DCHECK(CalledOnUIThread());
-  auto backend = base::MakeUnique<SyncFileSystemBackend>(nullptr);
+  auto backend = std::make_unique<SyncFileSystemBackend>(nullptr);
   backend->skip_initialize_syncfs_service_for_testing_ = true;
   return backend;
 }

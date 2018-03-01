@@ -27,7 +27,7 @@
 
 InstantUnitTestBase::InstantUnitTestBase() {
   field_trial_list_.reset(new base::FieldTrialList(
-      base::MakeUnique<variations::SHA1EntropyProvider>("42")));
+      std::make_unique<variations::SHA1EntropyProvider>("42")));
 }
 
 InstantUnitTestBase::~InstantUnitTestBase() {
@@ -59,7 +59,7 @@ void InstantUnitTestBase::SetUserSelectedDefaultSearchProvider(
   data.alternate_urls.push_back(base_url + "alt#quux={searchTerms}");
 
   TemplateURL* template_url =
-      template_url_service_->Add(base::MakeUnique<TemplateURL>(data));
+      template_url_service_->Add(std::make_unique<TemplateURL>(data));
   template_url_service_->SetUserSelectedDefaultSearchProvider(template_url);
 }
 

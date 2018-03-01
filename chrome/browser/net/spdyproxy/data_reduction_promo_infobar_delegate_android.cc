@@ -21,7 +21,7 @@ void DataReductionPromoInfoBarDelegateAndroid::Create(
   infobar_service->AddInfoBar(
       DataReductionPromoInfoBarDelegateAndroid::CreateInfoBar(
           infobar_service,
-          base::MakeUnique<DataReductionPromoInfoBarDelegateAndroid>()));
+          std::make_unique<DataReductionPromoInfoBarDelegateAndroid>()));
 }
 
 DataReductionPromoInfoBarDelegateAndroid::

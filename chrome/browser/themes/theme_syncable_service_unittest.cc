@@ -136,7 +136,7 @@ scoped_refptr<extensions::Extension> MakeThemeExtension(
   base::DictionaryValue source;
   source.SetString(extensions::manifest_keys::kName, name);
   source.Set(extensions::manifest_keys::kTheme,
-             base::MakeUnique<base::DictionaryValue>());
+             std::make_unique<base::DictionaryValue>());
   source.SetString(extensions::manifest_keys::kUpdateURL, update_url);
   source.SetString(extensions::manifest_keys::kVersion, "0.0.0.0");
   string error;

@@ -128,7 +128,7 @@ IN_PROC_BROWSER_TEST_F(ChromeOsMirrorAccountConsistencyTest,
       SupervisedUserSettingsServiceFactory::GetForProfile(profile);
   supervised_user_settings_service->SetLocalSetting(
       supervised_users::kAccountConsistencyMirrorRequired,
-      base::MakeUnique<base::Value>(true));
+      std::make_unique<base::Value>(true));
   supervised_user_settings_service->SetActive(true);
 
   // Incognito is always disabled for child accounts.

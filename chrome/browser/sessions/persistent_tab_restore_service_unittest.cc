@@ -93,7 +93,7 @@ class PersistentTabRestoreServiceTest : public ChromeRenderViewHostTestHarness {
     live_tab_ = base::WrapUnique(new sessions::ContentLiveTab(web_contents()));
     time_factory_ = new PersistentTabRestoreTimeFactory();
     service_.reset(new sessions::PersistentTabRestoreService(
-        base::MakeUnique<ChromeTabRestoreServiceClient>(profile()),
+        std::make_unique<ChromeTabRestoreServiceClient>(profile()),
         time_factory_));
   }
 
@@ -133,7 +133,7 @@ class PersistentTabRestoreServiceTest : public ChromeRenderViewHostTestHarness {
     content::RunAllTasksUntilIdle();
     service_.reset();
     service_.reset(new sessions::PersistentTabRestoreService(
-        base::MakeUnique<ChromeTabRestoreServiceClient>(profile()),
+        std::make_unique<ChromeTabRestoreServiceClient>(profile()),
         time_factory_));
     SynchronousLoadTabsFromLastSession();
   }
@@ -809,7 +809,7 @@ TEST_F(PersistentTabRestoreServiceTest, PruneEntries) {
             base::StringPrintf("http://%d", static_cast<int>(i)),
             base::NumberToString(i));
 
-    auto tab = base::MakeUnique<Tab>();
+    auto tab = std::make_unique<Tab>();
     tab->navigations.push_back(navigation);
     tab->current_navigation_index = 0;
 
@@ -829,7 +829,7 @@ TEST_F(PersistentTabRestoreServiceTest, PruneEntries) {
   SerializedNavigationEntry navigation =
       SerializedNavigationEntryTestHelper::CreateNavigation(kRecentUrl,
                                                             "Most recent");
-  auto tab = base::MakeUnique<Tab>();
+  auto tab = std::make_unique<Tab>();
   tab->navigations.push_back(navigation);
   tab->current_navigation_index = 0;
   mutable_entries()->push_front(std::move(tab));
@@ -844,7 +844,7 @@ TEST_F(PersistentTabRestoreServiceTest, PruneEntries) {
   navigation = SerializedNavigationEntryTestHelper::CreateNavigation(
       chrome::kChromeUINewTabURL, "New tab");
 
-  tab = base::MakeUnique<Tab>();
+  tab = std::make_unique<Tab>();
   tab->navigations.push_back(navigation);
   tab->current_navigation_index = 0;
   mutable_entries()->push_front(std::move(tab));
@@ -857,7 +857,7 @@ TEST_F(PersistentTabRestoreServiceTest, PruneEntries) {
                                   .virtual_url());
 
   // Don't prune pinned NTPs.
-  tab = base::MakeUnique<Tab>();
+  tab = std::make_unique<Tab>();
   tab->pinned = true;
   tab->current_navigation_index = 0;
   tab->navigations.push_back(navigation);
@@ -873,7 +873,7 @@ TEST_F(PersistentTabRestoreServiceTest, PruneEntries) {
   // Don't prune NTPs that have multiple navigations.
   // (Erase the last NTP first.)
   mutable_entries()->erase(mutable_entries()->begin());
-  tab = base::MakeUnique<Tab>();
+  tab = std::make_unique<Tab>();
   tab->current_navigation_index = 1;
   tab->navigations.push_back(navigation);
   tab->navigations.push_back(navigation);

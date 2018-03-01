@@ -70,7 +70,7 @@ class PrefetchInstanceIDProxyTest : public testing::Test {
 
 void PrefetchInstanceIDProxyTest::SetUp() {
   scoped_feature_list_.InitAndEnableFeature(kPrefetchingOfflinePagesFeature);
-  proxy_ = base::MakeUnique<PrefetchInstanceIDProxy>(kAppIdForTest, &profile_);
+  proxy_ = std::make_unique<PrefetchInstanceIDProxy>(kAppIdForTest, &profile_);
   gcm_profile_service_ = static_cast<gcm::FakeGCMProfileService*>(
       gcm::GCMProfileServiceFactory::GetInstance()->SetTestingFactoryAndUse(
           &profile_, &gcm::FakeGCMProfileService::Build));

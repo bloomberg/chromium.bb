@@ -28,7 +28,7 @@ void BrowserChildProcessWatcher::BrowserChildProcessLaunchedAndConnected(
 
   if (data.process_type == content::PROCESS_TYPE_GPU) {
     gpu_process_resource_coordinator_ =
-        base::MakeUnique<resource_coordinator::ProcessResourceCoordinator>(
+        std::make_unique<resource_coordinator::ProcessResourceCoordinator>(
             content::ServiceManagerConnection::GetForProcess()->GetConnector());
 
     gpu_process_resource_coordinator_->SetLaunchTime(base::Time::Now());

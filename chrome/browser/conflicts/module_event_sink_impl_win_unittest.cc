@@ -29,11 +29,11 @@ const uint64_t kInvalidLoadAddress = 0xDEADBEEF;
 class ModuleEventSinkImplTest : public testing::Test {
  protected:
   ModuleEventSinkImplTest()
-      : module_database_(base::MakeUnique<ModuleDatabase>(
+      : module_database_(std::make_unique<ModuleDatabase>(
             base::SequencedTaskRunnerHandle::Get())) {}
 
   void CreateModuleSinkImpl() {
-    module_event_sink_impl_ = base::MakeUnique<ModuleEventSinkImpl>(
+    module_event_sink_impl_ = std::make_unique<ModuleEventSinkImpl>(
         ::GetCurrentProcess(), content::PROCESS_TYPE_BROWSER,
         module_database_.get());
   }

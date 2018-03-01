@@ -419,13 +419,13 @@ std::unique_ptr<GaiaAuthFetcher> ChromeSigninClient::CreateGaiaAuthFetcher(
     GaiaAuthConsumer* consumer,
     const std::string& source,
     net::URLRequestContextGetter* getter) {
-  return base::MakeUnique<GaiaAuthFetcher>(consumer, source, getter);
+  return std::make_unique<GaiaAuthFetcher>(consumer, source, getter);
 }
 
 void ChromeSigninClient::VerifySyncToken() {
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
   if (signin_util::IsForceSigninEnabled())
-    force_signin_verifier_ = base::MakeUnique<ForceSigninVerifier>(profile_);
+    force_signin_verifier_ = std::make_unique<ForceSigninVerifier>(profile_);
 #endif
 }
 

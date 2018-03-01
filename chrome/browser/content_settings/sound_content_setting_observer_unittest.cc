@@ -44,7 +44,7 @@ class SoundContentSettingObserverTest : public ChromeRenderViewHostTestHarness {
     ukm::InitializeSourceUrlRecorderForWebContents(web_contents());
     host_content_settings_map_ = HostContentSettingsMapFactory::GetForProfile(
         Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
-    test_ukm_recorder_ = base::MakeUnique<ukm::TestAutoSetUkmRecorder>();
+    test_ukm_recorder_ = std::make_unique<ukm::TestAutoSetUkmRecorder>();
 
     NavigateAndCommit(GURL(kURL1));
   }

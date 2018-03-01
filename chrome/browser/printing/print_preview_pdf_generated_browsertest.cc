@@ -214,7 +214,7 @@ class PrintPreviewObserver : public WebContentsObserver {
 
   // Saves the print preview settings to be sent to the print preview dialog.
   void SetPrintPreviewSettings(const PrintPreviewSettings& settings) {
-    settings_ = base::MakeUnique<PrintPreviewSettings>(settings);
+    settings_ = std::make_unique<PrintPreviewSettings>(settings);
   }
 
   // Returns the setting that could not be set in the preview dialog.
@@ -281,7 +281,7 @@ class PrintPreviewObserver : public WebContentsObserver {
     ASSERT_TRUE(ui->web_ui());
 
     ui->web_ui()->AddMessageHandler(
-        base::MakeUnique<UIDoneLoadingMessageHandler>(this));
+        std::make_unique<UIDoneLoadingMessageHandler>(this));
     ui->SendEnableManipulateSettingsForTest();
   }
 
@@ -456,7 +456,7 @@ class PrintPreviewPdfGeneratedBrowserTest : public InProcessBrowserTest {
         browser()->tab_strip_model()->GetActiveWebContents();
     ASSERT_TRUE(tab);
 
-    print_preview_observer_ = base::MakeUnique<PrintPreviewObserver>(
+    print_preview_observer_ = std::make_unique<PrintPreviewObserver>(
         browser(), tab, pdf_file_save_path_);
     chrome::DuplicateTab(browser());
 

@@ -149,7 +149,7 @@ class ProfilePrefStoreManagerTest : public testing::Test,
 
   void SetUp() override {
     mock_validation_delegate_record_ = new MockValidationDelegateRecord;
-    mock_validation_delegate_ = base::MakeUnique<MockValidationDelegate>(
+    mock_validation_delegate_ = std::make_unique<MockValidationDelegate>(
         mock_validation_delegate_record_);
 
     ProfilePrefStoreManager::RegisterProfilePrefs(profile_pref_registry_.get());
@@ -261,13 +261,13 @@ class ProfilePrefStoreManagerTest : public testing::Test,
     PrefStoreReadObserver read_observer(pref_store);
     PersistentPrefStore::PrefReadError error = read_observer.Read();
     EXPECT_EQ(PersistentPrefStore::PREF_READ_ERROR_NO_FILE, error);
-    pref_store->SetValue(kTrackedAtomic, base::MakeUnique<base::Value>(kFoobar),
+    pref_store->SetValue(kTrackedAtomic, std::make_unique<base::Value>(kFoobar),
                          WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
     pref_store->SetValue(kProtectedAtomic,
-                         base::MakeUnique<base::Value>(kHelloWorld),
+                         std::make_unique<base::Value>(kHelloWorld),
                          WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
     pref_store->SetValue(kUnprotectedPref,
-                         base::MakeUnique<base::Value>(kFoobar),
+                         std::make_unique<base::Value>(kFoobar),
                          WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
     pref_store->RemoveObserver(&registry_verifier_);
     base::RunLoop run_loop;
@@ -408,10 +408,10 @@ TEST_F(ProfilePrefStoreManagerTest, ProtectValues) {
 }
 
 TEST_F(ProfilePrefStoreManagerTest, InitializePrefsFromMasterPrefs) {
-  auto master_prefs = base::MakeUnique<base::DictionaryValue>();
-  master_prefs->Set(kTrackedAtomic, base::MakeUnique<base::Value>(kFoobar));
+  auto master_prefs = std::make_unique<base::DictionaryValue>();
+  master_prefs->Set(kTrackedAtomic, std::make_unique<base::Value>(kFoobar));
   master_prefs->Set(kProtectedAtomic,
-                    base::MakeUnique<base::Value>(kHelloWorld));
+                    std::make_unique<base::Value>(kHelloWorld));
   EXPECT_TRUE(manager_->InitializePrefsFromMasterPrefs(
       prefs::CloneTrackedConfiguration(configuration_), kReportingIdCount,
       std::move(master_prefs)));
@@ -567,7 +567,7 @@ TEST_F(ProfilePrefStoreManagerTest, ProtectedToUnprotected) {
   // Trigger the logic that migrates it back to the unprotected preferences
   // file.
   pref_store_->SetValue(kProtectedAtomic,
-                        base::MakeUnique<base::Value>(kGoodbyeWorld),
+                        std::make_unique<base::Value>(kGoodbyeWorld),
                         WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   LoadExistingPrefs();
   ExpectStringValueEquals(kProtectedAtomic, kGoodbyeWorld);

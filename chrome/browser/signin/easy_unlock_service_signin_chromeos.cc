@@ -483,7 +483,7 @@ void EasyUnlockServiceSignin::LoadCurrentUserDataIfNeeded() {
   const auto it = user_data_.find(account_id_);
   if (it == user_data_.end())
     user_data_.insert(
-        std::make_pair(account_id_, base::MakeUnique<UserData>()));
+        std::make_pair(account_id_, std::make_unique<UserData>()));
 
   UserData* data = user_data_[account_id_].get();
 

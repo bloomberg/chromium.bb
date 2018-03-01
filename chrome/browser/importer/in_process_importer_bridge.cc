@@ -105,7 +105,7 @@ std::unique_ptr<TemplateURL> CreateTemplateURL(const base::string16& url,
   // Otherwise, we use the shortcut.
   data.SetShortName(title.empty() ? keyword : title);
   data.SetURL(TemplateURLRef::DisplayURLToURLRef(url));
-  return base::MakeUnique<TemplateURL>(data);
+  return std::make_unique<TemplateURL>(data);
 }
 
 // Parses the OpenSearch XML files in |xml_files| and populates |search_engines|

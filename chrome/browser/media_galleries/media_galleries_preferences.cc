@@ -284,7 +284,7 @@ bool PopulateGalleryPrefInfoFromDictionary(
 
 std::unique_ptr<base::DictionaryValue> CreateGalleryPrefInfoDictionary(
     const MediaGalleryPrefInfo& gallery) {
-  auto dict = base::MakeUnique<base::DictionaryValue>();
+  auto dict = std::make_unique<base::DictionaryValue>();
   dict->SetString(kMediaGalleriesPrefIdKey,
                   base::NumberToString(gallery.pref_id));
   dict->SetString(kMediaGalleriesDeviceIdKey, gallery.device_id);

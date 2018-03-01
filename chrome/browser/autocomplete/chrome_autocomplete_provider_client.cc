@@ -163,7 +163,7 @@ std::unique_ptr<KeywordExtensionsDelegate>
 ChromeAutocompleteProviderClient::GetKeywordExtensionsDelegate(
     KeywordProvider* keyword_provider) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  return base::MakeUnique<KeywordExtensionsDelegateImpl>(profile_,
+  return std::make_unique<KeywordExtensionsDelegateImpl>(profile_,
                                                          keyword_provider);
 #else
   return nullptr;

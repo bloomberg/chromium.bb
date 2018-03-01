@@ -16,7 +16,7 @@
 
 std::unique_ptr<ntp_tiles::PopularSites>
 ChromePopularSitesFactory::NewForProfile(Profile* profile) {
-  return base::MakeUnique<ntp_tiles::PopularSitesImpl>(
+  return std::make_unique<ntp_tiles::PopularSitesImpl>(
       profile->GetPrefs(), TemplateURLServiceFactory::GetForProfile(profile),
       g_browser_process->variations_service(), profile->GetRequestContext(),
       base::Bind(

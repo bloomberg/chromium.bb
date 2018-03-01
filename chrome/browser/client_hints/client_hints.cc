@@ -77,7 +77,7 @@ GetAdditionalNavigationRequestClientHintsHeaders(
       client_hints_host_settings, &web_client_hints);
 
   std::unique_ptr<net::HttpRequestHeaders> additional_headers(
-      base::MakeUnique<net::HttpRequestHeaders>());
+      std::make_unique<net::HttpRequestHeaders>());
 
   // Currently, only "device-memory" client hint request header is added from
   // the browser process.

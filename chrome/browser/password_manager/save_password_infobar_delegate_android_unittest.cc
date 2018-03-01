@@ -115,7 +115,7 @@ PrefService* SavePasswordInfoBarDelegateTest::prefs() {
 std::unique_ptr<MockPasswordFormManager>
 SavePasswordInfoBarDelegateTest::CreateMockFormManager(
     scoped_refptr<PasswordFormMetricsRecorder> metrics_recorder) {
-  auto manager = base::MakeUnique<MockPasswordFormManager>(
+  auto manager = std::make_unique<MockPasswordFormManager>(
       &password_manager_, &client_, driver_.AsWeakPtr(), test_form(),
       &fetcher_);
   manager->Init(metrics_recorder);

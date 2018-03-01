@@ -91,7 +91,7 @@ void SessionStartupPref::SetStartupPref(PrefService* prefs,
     url_pref_list->Clear();
     for (size_t i = 0; i < pref.urls.size(); ++i) {
       url_pref_list->Set(static_cast<int>(i),
-                         base::MakeUnique<base::Value>(pref.urls[i].spec()));
+                         std::make_unique<base::Value>(pref.urls[i].spec()));
     }
   }
 }

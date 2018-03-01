@@ -248,7 +248,7 @@ void WebstoreInlineInstaller::WebContentsDestroyed() {
 }
 
 std::string WebstoreInlineInstaller::GetJsonPostData() {
-  auto redirect_chain = base::MakeUnique<base::ListValue>();
+  auto redirect_chain = std::make_unique<base::ListValue>();
 
   if (SafeBrowsingNavigationEventsEnabled()) {
     scoped_refptr<SafeBrowsingNavigationObserverManager>

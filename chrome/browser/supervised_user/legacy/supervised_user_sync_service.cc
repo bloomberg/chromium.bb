@@ -426,7 +426,7 @@ SyncMergeResult SupervisedUserSyncService::MergeDataAndStartSyncing(
     const ManagedUserSpecifics& supervised_user =
         sync_data.GetSpecifics().managed_user();
     std::unique_ptr<base::DictionaryValue> value =
-        base::MakeUnique<base::DictionaryValue>();
+        std::make_unique<base::DictionaryValue>();
     value->SetString(kName, supervised_user.name());
     value->SetBoolean(kAcknowledged, supervised_user.acknowledged());
     value->SetString(kMasterKey, supervised_user.master_key());
@@ -516,7 +516,7 @@ SyncError SupervisedUserSyncService::ProcessSyncChanges(
           NotifySupervisedUserAcknowledged(supervised_user.id());
 
         std::unique_ptr<base::DictionaryValue> value =
-            base::MakeUnique<base::DictionaryValue>();
+            std::make_unique<base::DictionaryValue>();
         value->SetString(kName, supervised_user.name());
         value->SetBoolean(kAcknowledged, supervised_user.acknowledged());
         value->SetString(kMasterKey, supervised_user.master_key());

@@ -265,7 +265,7 @@ BackgroundLoaderOfflinerTest::~BackgroundLoaderOfflinerTest() {}
 
 void BackgroundLoaderOfflinerTest::SetUp() {
   std::unique_ptr<TestLoadTerminationListener> listener =
-      base::MakeUnique<TestLoadTerminationListener>();
+      std::make_unique<TestLoadTerminationListener>();
   load_termination_listener_ = listener.get();
   model_ = new MockOfflinePageModel();
   policy_.reset(new OfflinerPolicy());

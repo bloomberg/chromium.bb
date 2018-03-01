@@ -30,7 +30,7 @@ class TestStatusTray : public StatusTray {
       StatusIconType type,
       const gfx::ImageSkia& image,
       const base::string16& tool_tip) override {
-    return base::MakeUnique<MockStatusIcon>();
+    return std::make_unique<MockStatusIcon>();
   }
 
   const StatusIcons& GetStatusIconsForTest() const { return status_icons(); }

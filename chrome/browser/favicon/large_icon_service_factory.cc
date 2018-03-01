@@ -51,8 +51,8 @@ KeyedService* LargeIconServiceFactory::BuildServiceInstanceFor(
                                            ServiceAccessType::EXPLICIT_ACCESS);
   return new favicon::LargeIconService(
       favicon_service,
-      base::MakeUnique<image_fetcher::ImageFetcherImpl>(
-          base::MakeUnique<suggestions::ImageDecoderImpl>(),
+      std::make_unique<image_fetcher::ImageFetcherImpl>(
+          std::make_unique<suggestions::ImageDecoderImpl>(),
           profile->GetRequestContext()));
 }
 

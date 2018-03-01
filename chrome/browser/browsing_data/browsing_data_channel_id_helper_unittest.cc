@@ -42,11 +42,11 @@ class BrowsingDataChannelIDHelperTest
     net::ChannelIDStore* channel_id_store =
         context->channel_id_service()->GetChannelIDStore();
     channel_id_store->SetChannelID(
-        base::MakeUnique<net::ChannelIDStore::ChannelID>(
+        std::make_unique<net::ChannelIDStore::ChannelID>(
             "https://www.google.com:443", base::Time(),
             crypto::ECPrivateKey::Create()));
     channel_id_store->SetChannelID(
-        base::MakeUnique<net::ChannelIDStore::ChannelID>(
+        std::make_unique<net::ChannelIDStore::ChannelID>(
             "https://www.youtube.com:443", base::Time(),
             crypto::ECPrivateKey::Create()));
   }

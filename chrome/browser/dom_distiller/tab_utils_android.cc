@@ -86,7 +86,7 @@ void JNI_DomDistillerTabUtils_SetInterceptNavigationDelegate(
   DCHECK(web_contents);
   navigation_interception::InterceptNavigationDelegate::Associate(
       web_contents,
-      base::MakeUnique<navigation_interception::InterceptNavigationDelegate>(
+      std::make_unique<navigation_interception::InterceptNavigationDelegate>(
           env, delegate));
 }
 

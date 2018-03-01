@@ -19,9 +19,9 @@
 class ChromeAutocompleteProviderClientTest : public testing::Test {
  public:
   void SetUp() override {
-    profile_ = base::MakeUnique<TestingProfile>();
+    profile_ = std::make_unique<TestingProfile>();
     client_ =
-        base::MakeUnique<ChromeAutocompleteProviderClient>(profile_.get());
+        std::make_unique<ChromeAutocompleteProviderClient>(profile_.get());
     storage_partition_.set_service_worker_context(&service_worker_context_);
     client_->set_storage_partition(&storage_partition_);
   }
@@ -30,7 +30,7 @@ class ChromeAutocompleteProviderClientTest : public testing::Test {
   // a one-way operation. Once a TEST_F calls this, all interactions with
   // |client_| will be off the record.
   void GoOffTheRecord() {
-    client_ = base::MakeUnique<ChromeAutocompleteProviderClient>(
+    client_ = std::make_unique<ChromeAutocompleteProviderClient>(
         profile_->GetOffTheRecordProfile());
   }
 

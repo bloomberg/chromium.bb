@@ -211,7 +211,7 @@ std::unique_ptr<KeyedService> CreateEasyUnlockServiceForTest(
   std::unique_ptr<EasyUnlockServiceRegular> service(
       new EasyUnlockServiceRegular(
           Profile::FromBrowserContext(context),
-          base::MakeUnique<MockEasyUnlockNotificationController>()));
+          std::make_unique<MockEasyUnlockNotificationController>()));
   service->Initialize(std::move(app_manager));
   return std::move(service);
 }
@@ -257,7 +257,7 @@ class EasyUnlockServiceTest : public testing::Test {
 
   void SetEasyUnlockAllowedPolicy(bool allowed) {
     profile_->GetTestingPrefService()->SetManagedPref(
-        prefs::kEasyUnlockAllowed, base::MakeUnique<base::Value>(allowed));
+        prefs::kEasyUnlockAllowed, std::make_unique<base::Value>(allowed));
   }
 
   void set_is_bluetooth_adapter_present(bool is_present) {

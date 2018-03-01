@@ -136,10 +136,10 @@ TEST_F(ProxyPolicyTest, OverridesCommandLineOptions) {
   policy.Set(key::kProxyMode, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
              POLICY_SOURCE_CLOUD, std::move(mode_name), nullptr);
   policy.Set(key::kProxyBypassList, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-             POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>("abc"),
+             POLICY_SOURCE_CLOUD, std::make_unique<base::Value>("abc"),
              nullptr);
   policy.Set(key::kProxyServer, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-             POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>("ghi"),
+             POLICY_SOURCE_CLOUD, std::make_unique<base::Value>("ghi"),
              nullptr);
   provider_.UpdateChromePolicy(policy);
 

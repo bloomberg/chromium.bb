@@ -37,7 +37,7 @@ static jboolean JNI_PrefetchBackgroundTask_StartPrefetchTask(
     return false;
 
   prefetch_service->GetPrefetchDispatcher()->BeginBackgroundTask(
-      base::MakeUnique<PrefetchBackgroundTaskAndroid>(env, jcaller,
+      std::make_unique<PrefetchBackgroundTaskAndroid>(env, jcaller,
                                                       prefetch_service));
   return true;
 }

@@ -238,7 +238,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
 
   if (has_incompatible_applications)
     AddSettingsPageUIHandler(
-        base::MakeUnique<IncompatibleApplicationsHandler>());
+        std::make_unique<IncompatibleApplicationsHandler>());
 #endif  // OS_WIN && defined(GOOGLE_CHROME_BUILD)
 
   bool password_protection_available = false;

@@ -368,7 +368,7 @@ void DevToolsFileHelper::AddUserConfirmedFileSystem(const std::string& type,
                               prefs::kDevToolsFileSystemPaths);
   base::DictionaryValue* file_systems_paths_value = update.Get();
   file_systems_paths_value->SetWithoutPathExpansion(
-      file_system_path, base::MakeUnique<base::Value>(type));
+      file_system_path, std::make_unique<base::Value>(type));
 }
 
 void DevToolsFileHelper::FailedToAddFileSystem(const std::string& error) {

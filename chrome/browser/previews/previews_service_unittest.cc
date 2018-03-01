@@ -65,9 +65,9 @@ class PreviewsServiceTest : public testing::Test {
       : field_trial_list_(nullptr), scoped_feature_list_() {}
 
   void SetUp() override {
-    io_data_ = base::MakeUnique<TestPreviewsIOData>();
+    io_data_ = std::make_unique<TestPreviewsIOData>();
 
-    service_ = base::MakeUnique<PreviewsService>();
+    service_ = std::make_unique<PreviewsService>();
     base::FilePath file_path;
     service_->Initialize(io_data_.get(),
                          nullptr /* optimization_guide_service */,
@@ -101,7 +101,7 @@ TEST_F(PreviewsServiceTest, TestOfflineFieldTrialNotSet) {
 
 TEST_F(PreviewsServiceTest, TestOfflineFeatureDisabled) {
   std::unique_ptr<base::FeatureList> feature_list =
-      base::MakeUnique<base::FeatureList>();
+      std::make_unique<base::FeatureList>();
 
   // The feature is explicitly enabled on the command-line.
   feature_list->InitializeFromCommandLine("", "OfflinePreviews");

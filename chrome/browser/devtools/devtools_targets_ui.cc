@@ -243,7 +243,7 @@ void AdbTargetsUIHandler::DeviceListChanged(
         kAdbDeviceIdFormat,
         device->serial().c_str());
     device_data->SetString(kTargetIdField, device_id);
-    auto browser_list = base::MakeUnique<base::ListValue>();
+    auto browser_list = std::make_unique<base::ListValue>();
 
     DevToolsAndroidBridge::RemoteBrowsers& browsers = device->browsers();
     for (DevToolsAndroidBridge::RemoteBrowsers::iterator bit =
@@ -263,7 +263,7 @@ void AdbTargetsUIHandler::DeviceListChanged(
       browser_data->SetString(kTargetIdField, browser_id);
       browser_data->SetString(kTargetSourceField, source_id());
 
-      auto page_list = base::MakeUnique<base::ListValue>();
+      auto page_list = std::make_unique<base::ListValue>();
       remote_browsers_[browser_id] = browser;
       for (const auto& page : browser->pages()) {
         scoped_refptr<DevToolsAgentHost> host = page->CreateTarget();
@@ -338,7 +338,7 @@ DevToolsTargetsUIHandler::GetBrowserAgentHost(const std::string& browser_id) {
 
 std::unique_ptr<base::DictionaryValue> DevToolsTargetsUIHandler::Serialize(
     DevToolsAgentHost* host) {
-  auto target_data = base::MakeUnique<base::DictionaryValue>();
+  auto target_data = std::make_unique<base::DictionaryValue>();
   target_data->SetString(kTargetSourceField, source_id_);
   target_data->SetString(kTargetIdField, host->GetId());
   target_data->SetString(kTargetTypeField, host->GetType());
@@ -382,14 +382,14 @@ void PortForwardingStatusSerializer::PortStatusChanged(
   base::DictionaryValue result;
   for (ForwardingStatus::const_iterator sit = status.begin();
       sit != status.end(); ++sit) {
-    auto port_status_dict = base::MakeUnique<base::DictionaryValue>();
+    auto port_status_dict = std::make_unique<base::DictionaryValue>();
     const PortStatusMap& port_status_map = sit->second;
     for (PortStatusMap::const_iterator it = port_status_map.begin();
          it != port_status_map.end(); ++it) {
       port_status_dict->SetInteger(base::IntToString(it->first), it->second);
     }
 
-    auto device_status_dict = base::MakeUnique<base::DictionaryValue>();
+    auto device_status_dict = std::make_unique<base::DictionaryValue>();
     device_status_dict->Set(kPortForwardingPorts, std::move(port_status_dict));
     device_status_dict->SetString(kPortForwardingBrowserId,
                                   sit->first->GetId());

@@ -305,7 +305,7 @@ class InstantNTPURLRewriteTest : public BrowserWithTestWindowTest {
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
     field_trial_list_.reset(new base::FieldTrialList(
-        base::MakeUnique<variations::SHA1EntropyProvider>("42")));
+        std::make_unique<variations::SHA1EntropyProvider>("42")));
   }
 
   void InstallTemplateURLWithNewTabPage(GURL new_tab_page_url) {
@@ -320,7 +320,7 @@ class InstantNTPURLRewriteTest : public BrowserWithTestWindowTest {
     data.SetURL("http://foo.com/url?bar={searchTerms}");
     data.new_tab_url = new_tab_page_url.spec();
     TemplateURL* template_url =
-        template_url_service->Add(base::MakeUnique<TemplateURL>(data));
+        template_url_service->Add(std::make_unique<TemplateURL>(data));
     template_url_service->SetUserSelectedDefaultSearchProvider(template_url);
   }
 

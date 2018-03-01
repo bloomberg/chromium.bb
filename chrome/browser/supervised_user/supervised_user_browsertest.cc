@@ -164,7 +164,7 @@ class SupervisedUserBlockModeTest : public SupervisedUserTest {
         SupervisedUserSettingsServiceFactory::GetForProfile(profile);
     supervised_user_settings_service->SetLocalSetting(
         supervised_users::kContentPackDefaultFilteringBehavior,
-        base::MakeUnique<base::Value>(SupervisedUserURLFilter::BLOCK));
+        std::make_unique<base::Value>(SupervisedUserURLFilter::BLOCK));
   }
 };
 
@@ -263,7 +263,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserTest, BlockNewTabAfterLoading) {
             browser()->profile());
     supervised_user_settings_service->SetLocalSetting(
         supervised_users::kContentPackDefaultFilteringBehavior,
-        base::MakeUnique<base::Value>(SupervisedUserURLFilter::BLOCK));
+        std::make_unique<base::Value>(SupervisedUserURLFilter::BLOCK));
 
     const SupervisedUserURLFilter* filter =
         supervised_user_service_->GetURLFilter();
@@ -312,7 +312,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserTest, DontShowInterstitialTwice) {
   InterstitialPageObserver interstitial_observer(tab, run_loop.QuitClosure());
   supervised_user_settings_service->SetLocalSetting(
       supervised_users::kContentPackDefaultFilteringBehavior,
-      base::MakeUnique<base::Value>(SupervisedUserURLFilter::BLOCK));
+      std::make_unique<base::Value>(SupervisedUserURLFilter::BLOCK));
 
   const SupervisedUserURLFilter* filter =
       supervised_user_service_->GetURLFilter();
@@ -425,7 +425,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserTest, GoBackOnDontProceed) {
   ASSERT_FALSE(ShownPageIsInterstitial(web_contents));
 
   // Set the host as blocked and wait for the interstitial to appear.
-  auto dict = base::MakeUnique<base::DictionaryValue>();
+  auto dict = std::make_unique<base::DictionaryValue>();
   dict->SetKey(test_url.host(), base::Value(false));
   SupervisedUserSettingsService* supervised_user_settings_service =
       SupervisedUserSettingsServiceFactory::GetForProfile(
@@ -468,7 +468,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserTest, ClosingBlockedTabDoesNotCrash) {
   ASSERT_FALSE(ShownPageIsInterstitial(web_contents));
 
   // Set the host as blocked and wait for the interstitial to appear.
-  auto dict = base::MakeUnique<base::DictionaryValue>();
+  auto dict = std::make_unique<base::DictionaryValue>();
   dict->SetKey(test_url.host(), base::Value(false));
   SupervisedUserSettingsService* supervised_user_settings_service =
       SupervisedUserSettingsServiceFactory::GetForProfile(browser()->profile());
@@ -505,7 +505,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserTest, BlockThenUnblock) {
   ASSERT_FALSE(ShownPageIsInterstitial(web_contents));
 
   // Set the host as blocked and wait for the interstitial to appear.
-  auto dict = base::MakeUnique<base::DictionaryValue>();
+  auto dict = std::make_unique<base::DictionaryValue>();
   dict->SetKey(test_url.host(), base::Value(false));
   SupervisedUserSettingsService* supervised_user_settings_service =
       SupervisedUserSettingsServiceFactory::GetForProfile(
@@ -523,7 +523,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserTest, BlockThenUnblock) {
   content::RunThisRunLoop(&run_loop);
   ASSERT_TRUE(ShownPageIsInterstitial(web_contents));
 
-  dict = base::MakeUnique<base::DictionaryValue>();
+  dict = std::make_unique<base::DictionaryValue>();
   dict->SetKey(test_url.host(), base::Value(true));
   supervised_user_settings_service->SetLocalSetting(
       supervised_users::kContentPackManualBehaviorHosts, std::move(dict));

@@ -346,7 +346,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   host_content_settings_map->SetWebsiteSettingDefaultScope(
       GURL("https://foo.com/"), GURL(), CONTENT_SETTINGS_TYPE_CLIENT_HINTS,
       std::string(),
-      base::MakeUnique<base::Value>(
+      std::make_unique<base::Value>(
           client_hints_settings.at(0).setting_value->Clone()));
 
   // Verify that client hints for the two hosts has been saved.

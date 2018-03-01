@@ -37,8 +37,8 @@ class EasyUnlockNotificationControllerStub
 std::unique_ptr<EasyUnlockNotificationController>
 EasyUnlockNotificationController::Create(Profile* profile) {
 #if defined(OS_CHROMEOS)
-  return base::MakeUnique<EasyUnlockNotificationControllerChromeOS>(profile);
+  return std::make_unique<EasyUnlockNotificationControllerChromeOS>(profile);
 #else
-  return base::MakeUnique<EasyUnlockNotificationControllerStub>();
+  return std::make_unique<EasyUnlockNotificationControllerStub>();
 #endif
 }

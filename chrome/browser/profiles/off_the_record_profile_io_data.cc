@@ -212,7 +212,7 @@ void OffTheRecordProfileIOData::InitializeInternal(
     content::URLRequestInterceptorScopedVector request_interceptors) const {
   // For incognito, we use a non-persistent channel ID store.
   std::unique_ptr<net::ChannelIDService> channel_id_service(
-      base::MakeUnique<net::ChannelIDService>(
+      std::make_unique<net::ChannelIDService>(
           new net::DefaultChannelIDStore(nullptr)));
 
   using content::CookieStoreConfig;

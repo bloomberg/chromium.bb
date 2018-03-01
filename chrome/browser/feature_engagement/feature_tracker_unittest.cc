@@ -51,7 +51,7 @@ class TestFeatureTracker : public FeatureTracker {
                        kTestObservedSessionTimeKey,
                        base::TimeDelta::FromMinutes(kTestTimeDeltaInMinutes)),
         pref_service_(
-            base::MakeUnique<sync_preferences::TestingPrefServiceSyncable>()) {
+            std::make_unique<sync_preferences::TestingPrefServiceSyncable>()) {
     SessionDurationUpdater::RegisterProfilePrefs(pref_service_->registry());
   }
 
@@ -84,11 +84,11 @@ class FeatureTrackerTest : public testing::Test {
   void SetUp() override {
     // Start the DesktopSessionDurationTracker to track active session time.
     metrics::DesktopSessionDurationTracker::Initialize();
-    testing_profile_manager_ = base::MakeUnique<TestingProfileManager>(
+    testing_profile_manager_ = std::make_unique<TestingProfileManager>(
         TestingBrowserProcess::GetGlobal());
     ASSERT_TRUE(testing_profile_manager_->SetUp());
     mock_feature_tracker_ =
-        base::MakeUnique<testing::StrictMock<MockTestFeatureTracker>>(
+        std::make_unique<testing::StrictMock<MockTestFeatureTracker>>(
             testing_profile_manager_->CreateTestingProfile(kTestProfileName));
   }
 
@@ -147,7 +147,7 @@ class FeatureTrackerParamsTest : public testing::Test {
   void SetUp() override {
     // Start the DesktopSessionDurationTracker to track active session time.
     metrics::DesktopSessionDurationTracker::Initialize();
-    testing_profile_manager_ = base::MakeUnique<TestingProfileManager>(
+    testing_profile_manager_ = std::make_unique<TestingProfileManager>(
         TestingBrowserProcess::GetGlobal());
     ASSERT_TRUE(testing_profile_manager_->SetUp());
 
@@ -157,7 +157,7 @@ class FeatureTrackerParamsTest : public testing::Test {
     trials_[kIPHNewTabFeature.name] = new_tab_trial;
 
     std::unique_ptr<base::FeatureList> feature_list =
-        base::MakeUnique<base::FeatureList>();
+        std::make_unique<base::FeatureList>();
     feature_list->RegisterFieldTrialOverride(
         kIPHNewTabFeature.name, base::FeatureList::OVERRIDE_ENABLE_FEATURE,
         new_tab_trial);
@@ -270,7 +270,7 @@ TEST_F(FeatureTrackerParamsTest, TestIsNewUser_DefaultTime) {
   SetFeatureParams(kIPHNewTabFeature, new_tab_params);
 
   std::unique_ptr<MockTestFeatureTracker> mock_feature_tracker =
-      base::MakeUnique<testing::StrictMock<MockTestFeatureTracker>>(
+      std::make_unique<testing::StrictMock<MockTestFeatureTracker>>(
           testing_profile_manager_->CreateTestingProfile(kTestProfileName));
 
   EXPECT_TRUE(mock_feature_tracker->IsNewUserWrapper());
@@ -288,7 +288,7 @@ TEST_F(FeatureTrackerParamsTest, TestIsNotNewUser_DefaultTime) {
   SetFeatureParams(kIPHNewTabFeature, new_tab_params);
 
   std::unique_ptr<MockTestFeatureTracker> mock_feature_tracker =
-      base::MakeUnique<testing::StrictMock<MockTestFeatureTracker>>(
+      std::make_unique<testing::StrictMock<MockTestFeatureTracker>>(
           testing_profile_manager_->CreateTestingProfile(kTestProfileName));
 
   EXPECT_FALSE(mock_feature_tracker->IsNewUserWrapper());
@@ -308,7 +308,7 @@ TEST_F(FeatureTrackerParamsTest, TestIsNewUser_CustomTime) {
   SetFeatureParams(kIPHNewTabFeature, new_tab_params);
 
   std::unique_ptr<MockTestFeatureTracker> mock_feature_tracker =
-      base::MakeUnique<testing::StrictMock<MockTestFeatureTracker>>(
+      std::make_unique<testing::StrictMock<MockTestFeatureTracker>>(
           testing_profile_manager_->CreateTestingProfile(kTestProfileName));
 
   EXPECT_TRUE(mock_feature_tracker->IsNewUserWrapper());
@@ -329,7 +329,7 @@ TEST_F(FeatureTrackerParamsTest, TestIsNotNewUser_CustomTime) {
   SetFeatureParams(kIPHNewTabFeature, new_tab_params);
 
   std::unique_ptr<MockTestFeatureTracker> mock_feature_tracker =
-      base::MakeUnique<testing::StrictMock<MockTestFeatureTracker>>(
+      std::make_unique<testing::StrictMock<MockTestFeatureTracker>>(
           testing_profile_manager_->CreateTestingProfile(kTestProfileName));
 
   EXPECT_FALSE(mock_feature_tracker->IsNewUserWrapper());

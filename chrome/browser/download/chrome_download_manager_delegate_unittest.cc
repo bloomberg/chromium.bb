@@ -266,7 +266,7 @@ void ChromeDownloadManagerDelegateTest::SetUp() {
 
   CHECK(profile());
   delegate_ =
-      base::MakeUnique<::testing::NiceMock<TestChromeDownloadManagerDelegate>>(
+      std::make_unique<::testing::NiceMock<TestChromeDownloadManagerDelegate>>(
           profile());
   delegate_->SetDownloadManager(download_manager_.get());
   pref_service_ = profile()->GetTestingPrefService();

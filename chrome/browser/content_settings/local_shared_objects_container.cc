@@ -237,5 +237,5 @@ LocalSharedObjectsContainer::CreateCookiesTreeModel() const {
       indexed_dbs_, file_systems_, nullptr, channel_ids_, service_workers_,
       shared_workers_, cache_storages_, nullptr, nullptr);
 
-  return base::MakeUnique<CookiesTreeModel>(container, nullptr);
+  return std::make_unique<CookiesTreeModel>(container, nullptr);
 }

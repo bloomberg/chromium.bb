@@ -67,7 +67,7 @@ BackgroundTabNavigationThrottle::MaybeCreateThrottleFor(
   if (!TabUIHelper::FromWebContents(web_contents))
     return nullptr;
 
-  return base::MakeUnique<BackgroundTabNavigationThrottle>(navigation_handle);
+  return std::make_unique<BackgroundTabNavigationThrottle>(navigation_handle);
 }
 
 const char* BackgroundTabNavigationThrottle::GetNameForLogging() {

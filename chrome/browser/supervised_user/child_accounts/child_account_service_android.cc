@@ -45,7 +45,7 @@ void ReauthenticateChildAccount(content::WebContents* web_contents,
 
   // Make a copy of the callback which can be passed as a pointer through
   // to Java.
-  auto callback_copy = base::MakeUnique<base::Callback<void(bool)>>(callback);
+  auto callback_copy = std::make_unique<base::Callback<void(bool)>>(callback);
 
   JNIEnv* env = AttachCurrentThread();
   Java_ChildAccountService_reauthenticateChildAccount(

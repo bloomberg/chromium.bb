@@ -244,7 +244,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterSettingsBrowserTest,
 
   ChromeSubresourceFilterClient* client =
       ChromeSubresourceFilterClient::FromWebContents(web_contents());
-  auto test_clock = base::MakeUnique<base::SimpleTestClock>();
+  auto test_clock = std::make_unique<base::SimpleTestClock>();
   base::SimpleTestClock* raw_clock = test_clock.get();
   settings_manager()->set_clock_for_testing(std::move(test_clock));
 

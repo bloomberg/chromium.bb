@@ -99,7 +99,7 @@ std::unique_ptr<MemoryKillsMonitor::Handle> MemoryKillsMonitor::Initialize() {
   // The MemoryKillsMonitor::Handle will notify the MemoryKillsMonitor
   // when it is destroyed so that the underlying thread can at a minimum not
   // do extra work during shutdown.
-  return base::MakeUnique<Handle>(g_memory_kills_monitor_instance.Pointer());
+  return std::make_unique<Handle>(g_memory_kills_monitor_instance.Pointer());
 }
 
 // static
@@ -183,7 +183,7 @@ void MemoryKillsMonitor::StartMonitoring() {
 
   base::SimpleThread::Options non_joinable_options;
   non_joinable_options.joinable = false;
-  non_joinable_worker_thread_ = base::MakeUnique<base::DelegateSimpleThread>(
+  non_joinable_worker_thread_ = std::make_unique<base::DelegateSimpleThread>(
       this, "memory_kills_monitor", non_joinable_options);
   non_joinable_worker_thread_->Start();
   monitoring_started_.Set();

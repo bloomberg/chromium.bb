@@ -583,7 +583,7 @@ ContentSuggestion DownloadSuggestionsProvider::ConvertOfflinePage(
   }
   suggestion.set_publish_date(GetOfflinePagePublishedTime(offline_page));
   suggestion.set_publisher_name(base::UTF8ToUTF16(offline_page.url.host()));
-  auto extra = base::MakeUnique<ntp_snippets::DownloadSuggestionExtra>();
+  auto extra = std::make_unique<ntp_snippets::DownloadSuggestionExtra>();
   extra->is_download_asset = false;
   extra->offline_page_id = offline_page.offline_id;
   suggestion.set_download_suggestion_extra(std::move(extra));
@@ -601,7 +601,7 @@ ContentSuggestion DownloadSuggestionsProvider::ConvertDownloadItem(
   suggestion.set_publish_date(GetAssetDownloadPublishedTime(download_item));
   suggestion.set_publisher_name(
       base::UTF8ToUTF16(download_item.GetURL().host()));
-  auto extra = base::MakeUnique<ntp_snippets::DownloadSuggestionExtra>();
+  auto extra = std::make_unique<ntp_snippets::DownloadSuggestionExtra>();
   extra->download_guid = download_item.GetGuid();
   extra->target_file_path = download_item.GetTargetFilePath();
   extra->mime_type = download_item.GetMimeType();

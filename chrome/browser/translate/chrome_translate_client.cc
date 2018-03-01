@@ -98,7 +98,7 @@ void LogTranslateEvent(const content::WebContents* const web_contents,
   if (entry == nullptr)
     return;
 
-  auto specifics = base::MakeUnique<sync_pb::UserEventSpecifics>();
+  auto specifics = std::make_unique<sync_pb::UserEventSpecifics>();
   // We only log the event we care about.
   const bool needs_logging = translate::ConstructTranslateEvent(
       entry->GetTimestamp().ToInternalValue(), translate_event,

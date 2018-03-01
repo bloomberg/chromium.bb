@@ -25,7 +25,7 @@ void BudgetServiceImpl::Create(blink::mojom::BudgetServiceRequest request,
                                content::RenderProcessHost* host,
                                const url::Origin& origin) {
   mojo::MakeStrongBinding(
-      base::MakeUnique<BudgetServiceImpl>(host->GetID(), origin),
+      std::make_unique<BudgetServiceImpl>(host->GetID(), origin),
       std::move(request));
 }
 

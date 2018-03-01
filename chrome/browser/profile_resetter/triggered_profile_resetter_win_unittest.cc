@@ -32,7 +32,7 @@ class TriggeredProfileResetterTest : public testing::Test {
 
     // Activate the triggered reset field trial for these tests.
     field_trial_list_.reset(new base::FieldTrialList(
-        base::MakeUnique<variations::SHA1EntropyProvider>("foo")));
+        std::make_unique<variations::SHA1EntropyProvider>("foo")));
     base::FieldTrial* trial = base::FieldTrialList::CreateFieldTrial(
         "TriggeredResetFieldTrial", "On");
     trial->group();

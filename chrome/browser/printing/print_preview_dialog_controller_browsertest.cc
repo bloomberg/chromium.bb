@@ -94,7 +94,7 @@ class PrintPreviewDialogClonedObserver : public WebContentsObserver {
   void DidCloneToNewWebContents(WebContents* old_web_contents,
                                 WebContents* new_web_contents) override {
     request_preview_dialog_observer_ =
-        base::MakeUnique<RequestPrintPreviewObserver>(new_web_contents);
+        std::make_unique<RequestPrintPreviewObserver>(new_web_contents);
   }
 
   std::unique_ptr<RequestPrintPreviewObserver> request_preview_dialog_observer_;
@@ -192,7 +192,7 @@ class PrintPreviewDialogControllerBrowserTest : public InProcessBrowserTest {
     // RequestPrintPreviewObserver to get messages first for the purposes of
     // this test.
     cloned_tab_observer_ =
-        base::MakeUnique<PrintPreviewDialogClonedObserver>(first_tab);
+        std::make_unique<PrintPreviewDialogClonedObserver>(first_tab);
     chrome::DuplicateTab(browser());
 
     initiator_ = browser()->tab_strip_model()->GetActiveWebContents();

@@ -205,9 +205,9 @@ void DataReductionProxyChromeSettings::InitDataReductionProxySettings(
 #endif
 
   std::unique_ptr<data_reduction_proxy::DataReductionProxyService> service =
-      base::MakeUnique<data_reduction_proxy::DataReductionProxyService>(
+      std::make_unique<data_reduction_proxy::DataReductionProxyService>(
           this, profile_prefs, request_context_getter, std::move(store),
-          base::MakeUnique<
+          std::make_unique<
               data_reduction_proxy::DataReductionProxyPingbackClientImpl>(
               request_context_getter, ui_task_runner),
           ui_task_runner, io_data->io_task_runner(), db_task_runner,

@@ -69,7 +69,7 @@ class ManagedBookmarkServiceTest : public testing::Test {
       const std::string& title,
       const std::string& url) {
     EXPECT_TRUE(GURL(url).is_valid());
-    auto dict = base::MakeUnique<base::DictionaryValue>();
+    auto dict = std::make_unique<base::DictionaryValue>();
     dict->SetString("name", title);
     dict->SetString("url", GURL(url).spec());
     return dict;
@@ -78,18 +78,18 @@ class ManagedBookmarkServiceTest : public testing::Test {
   static std::unique_ptr<base::DictionaryValue> CreateFolder(
       const std::string& title,
       std::unique_ptr<base::ListValue> children) {
-    auto dict = base::MakeUnique<base::DictionaryValue>();
+    auto dict = std::make_unique<base::DictionaryValue>();
     dict->SetString("name", title);
     dict->Set("children", std::move(children));
     return dict;
   }
 
   static std::unique_ptr<base::ListValue> CreateTestTree() {
-    auto folder = base::MakeUnique<base::ListValue>();
-    folder->Append(CreateFolder("Empty", base::MakeUnique<base::ListValue>()));
+    auto folder = std::make_unique<base::ListValue>();
+    folder->Append(CreateFolder("Empty", std::make_unique<base::ListValue>()));
     folder->Append(CreateBookmark("Youtube", "http://youtube.com/"));
 
-    auto list = base::MakeUnique<base::ListValue>();
+    auto list = std::make_unique<base::ListValue>();
     list->Append(CreateBookmark("Google", "http://google.com/"));
     list->Append(CreateFolder("Folder", std::move(folder)));
 

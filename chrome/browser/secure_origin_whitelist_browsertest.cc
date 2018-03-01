@@ -79,7 +79,7 @@ class SecureOriginWhitelistBrowsertest
     values.Set(policy::key::kUnsafelyTreatInsecureOriginAsSecure,
                policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                policy::POLICY_SOURCE_CLOUD,
-               base::MakeUnique<base::Value>(std::move(urls)), nullptr);
+               std::make_unique<base::Value>(std::move(urls)), nullptr);
     provider_.UpdateChromePolicy(values);
   }
 

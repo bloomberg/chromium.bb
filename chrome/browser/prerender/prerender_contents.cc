@@ -706,7 +706,7 @@ void PrerenderContents::CommitHistory(WebContents* tab) {
 std::unique_ptr<base::DictionaryValue> PrerenderContents::GetAsValue() const {
   if (!prerender_contents_)
     return nullptr;
-  auto dict_value = base::MakeUnique<base::DictionaryValue>();
+  auto dict_value = std::make_unique<base::DictionaryValue>();
   dict_value->SetString("url", prerender_url_.spec());
   base::TimeTicks current_time = base::TimeTicks::Now();
   base::TimeDelta duration = current_time - load_start_time_;

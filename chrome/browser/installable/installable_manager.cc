@@ -131,11 +131,11 @@ InstallableManager::IconProperty& InstallableManager::IconProperty::operator=(
 
 InstallableManager::InstallableManager(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      metrics_(base::MakeUnique<InstallableMetrics>()),
-      eligibility_(base::MakeUnique<EligiblityProperty>()),
-      manifest_(base::MakeUnique<ManifestProperty>()),
-      valid_manifest_(base::MakeUnique<ValidManifestProperty>()),
-      worker_(base::MakeUnique<ServiceWorkerProperty>()),
+      metrics_(std::make_unique<InstallableMetrics>()),
+      eligibility_(std::make_unique<EligiblityProperty>()),
+      manifest_(std::make_unique<ManifestProperty>()),
+      valid_manifest_(std::make_unique<ValidManifestProperty>()),
+      worker_(std::make_unique<ServiceWorkerProperty>()),
       service_worker_context_(nullptr),
       has_pwa_check_(false),
       weak_factory_(this) {
@@ -330,11 +330,11 @@ void InstallableManager::Reset() {
   task_queue_.Reset();
   has_pwa_check_ = false;
 
-  metrics_ = base::MakeUnique<InstallableMetrics>();
-  eligibility_ = base::MakeUnique<EligiblityProperty>();
-  manifest_ = base::MakeUnique<ManifestProperty>();
-  valid_manifest_ = base::MakeUnique<ValidManifestProperty>();
-  worker_ = base::MakeUnique<ServiceWorkerProperty>();
+  metrics_ = std::make_unique<InstallableMetrics>();
+  eligibility_ = std::make_unique<EligiblityProperty>();
+  manifest_ = std::make_unique<ManifestProperty>();
+  valid_manifest_ = std::make_unique<ValidManifestProperty>();
+  worker_ = std::make_unique<ServiceWorkerProperty>();
 
   OnResetData();
 }
@@ -387,7 +387,7 @@ void InstallableManager::WorkOnTask() {
     // don't cache a missing service worker error to ensure we always check
     // again.
     if (worker_error() == NO_MATCHING_SERVICE_WORKER)
-      worker_ = base::MakeUnique<ServiceWorkerProperty>();
+      worker_ = std::make_unique<ServiceWorkerProperty>();
 
     task_queue_.Next();
 

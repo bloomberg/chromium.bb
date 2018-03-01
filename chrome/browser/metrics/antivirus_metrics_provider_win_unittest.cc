@@ -59,7 +59,7 @@ class AntiVirusMetricsProviderTest : public ::testing::TestWithParam<bool> {
   AntiVirusMetricsProviderTest()
       : got_results_(false),
         expect_unhashed_value_(GetParam()),
-        provider_(base::MakeUnique<AntiVirusMetricsProvider>()),
+        provider_(std::make_unique<AntiVirusMetricsProvider>()),
         weak_ptr_factory_(this) {}
 
   void GetMetricsCallback() {

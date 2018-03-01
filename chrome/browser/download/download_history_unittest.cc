@@ -326,7 +326,7 @@ class DownloadHistoryTest : public testing::Test {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
     size_t index = items_.size();
-    items_.push_back(base::MakeUnique<StrictMockDownloadItem>());
+    items_.push_back(std::make_unique<StrictMockDownloadItem>());
 
     base::Time now = base::Time::Now();
 

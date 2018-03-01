@@ -470,11 +470,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   EXPECT_EQ("\"root-focused-input1\"",
             click_element_and_wait_for_message(main_frame_input_coords[0]));
   EXPECT_EQ(main_frame, web_contents->GetFocusedFrame());
-  auto frame_focused = base::MakeUnique<content::FrameFocusedObserver>(child1);
+  auto frame_focused = std::make_unique<content::FrameFocusedObserver>(child1);
   EXPECT_EQ("\"child1-focused-input1\"",
             click_element_and_wait_for_message(child1_input_coords[0]));
   frame_focused->Wait();
-  frame_focused = base::MakeUnique<content::FrameFocusedObserver>(main_frame);
+  frame_focused = std::make_unique<content::FrameFocusedObserver>(main_frame);
   EXPECT_EQ("\"root-focused-input1\"", press_tab_and_wait_for_message(true));
   frame_focused->Wait();
 
@@ -482,37 +482,37 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   EXPECT_EQ("\"root-focused-input2\"",
             click_element_and_wait_for_message(main_frame_input_coords[1]));
   EXPECT_EQ(main_frame, web_contents->GetFocusedFrame());
-  frame_focused = base::MakeUnique<content::FrameFocusedObserver>(child2);
+  frame_focused = std::make_unique<content::FrameFocusedObserver>(child2);
   EXPECT_EQ("\"child2-focused-input2\"",
             click_element_and_wait_for_message(child2_input_coords[1]));
   frame_focused->Wait();
-  frame_focused = base::MakeUnique<content::FrameFocusedObserver>(main_frame);
+  frame_focused = std::make_unique<content::FrameFocusedObserver>(main_frame);
   EXPECT_EQ("\"root-focused-input2\"", press_tab_and_wait_for_message(false));
   frame_focused->Wait();
 
   // Tab forward from child1 to child2.
-  frame_focused = base::MakeUnique<content::FrameFocusedObserver>(child2);
+  frame_focused = std::make_unique<content::FrameFocusedObserver>(child2);
   EXPECT_EQ("\"child2-focused-input1\"",
             click_element_and_wait_for_message(child2_input_coords[0]));
   frame_focused->Wait();
-  frame_focused = base::MakeUnique<content::FrameFocusedObserver>(child1);
+  frame_focused = std::make_unique<content::FrameFocusedObserver>(child1);
   EXPECT_EQ("\"child1-focused-input2\"",
             click_element_and_wait_for_message(child1_input_coords[1]));
   frame_focused->Wait();
-  frame_focused = base::MakeUnique<content::FrameFocusedObserver>(child2);
+  frame_focused = std::make_unique<content::FrameFocusedObserver>(child2);
   EXPECT_EQ("\"child2-focused-input1\"", press_tab_and_wait_for_message(false));
   frame_focused->Wait();
 
   // Tab backward from child2 to child1.
-  frame_focused = base::MakeUnique<content::FrameFocusedObserver>(child1);
+  frame_focused = std::make_unique<content::FrameFocusedObserver>(child1);
   EXPECT_EQ("\"child1-focused-input2\"",
             click_element_and_wait_for_message(child1_input_coords[1]));
   frame_focused->Wait();
-  frame_focused = base::MakeUnique<content::FrameFocusedObserver>(child2);
+  frame_focused = std::make_unique<content::FrameFocusedObserver>(child2);
   EXPECT_EQ("\"child2-focused-input1\"",
             click_element_and_wait_for_message(child2_input_coords[0]));
   frame_focused->Wait();
-  frame_focused = base::MakeUnique<content::FrameFocusedObserver>(child1);
+  frame_focused = std::make_unique<content::FrameFocusedObserver>(child1);
   EXPECT_EQ("\"child1-focused-input2\"", press_tab_and_wait_for_message(true));
   // EXPECT_EQ(child1, web_contents->GetFocusedFrame());
   frame_focused->Wait();

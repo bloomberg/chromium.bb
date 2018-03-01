@@ -175,7 +175,7 @@ void ChromeCommandLinePrefStore::ApplySSLSwitches() {
       command_line()->GetSwitchValueASCII(switches::kTLS13Variant) !=
           switches::kTLS13VariantDisabled) {
     SetValue(ssl_config::prefs::kSSLVersionMax,
-             base::MakeUnique<base::Value>(switches::kSSLVersionTLSv13),
+             std::make_unique<base::Value>(switches::kSSLVersionTLSv13),
              WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   }
 }
@@ -183,7 +183,7 @@ void ChromeCommandLinePrefStore::ApplySSLSwitches() {
 void ChromeCommandLinePrefStore::ApplyBackgroundModeSwitches() {
   if (command_line()->HasSwitch(switches::kDisableExtensions)) {
     SetValue(prefs::kBackgroundModeEnabled,
-             base::MakeUnique<base::Value>(false),
+             std::make_unique<base::Value>(false),
              WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   }
 }

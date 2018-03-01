@@ -127,7 +127,7 @@ void ChromePluginServiceFilter::RegisterResourceContext(Profile* profile,
                                                         const void* context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::AutoLock lock(lock_);
-  resource_context_map_[context] = base::MakeUnique<ContextInfo>(
+  resource_context_map_[context] = std::make_unique<ContextInfo>(
       PluginPrefs::GetForProfile(profile),
       HostContentSettingsMapFactory::GetForProfile(profile),
       FlashTemporaryPermissionTracker::Get(profile), profile);

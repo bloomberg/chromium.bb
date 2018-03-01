@@ -445,7 +445,7 @@ class AdbParser : public SimpleHttpServer::Parser,
       Send("FAIL", "device offline (x)");
     } else {
       mock_connection_ =
-          base::MakeUnique<MockAndroidConnection>(this, serial_, command);
+          std::make_unique<MockAndroidConnection>(this, serial_, command);
     }
   }
 

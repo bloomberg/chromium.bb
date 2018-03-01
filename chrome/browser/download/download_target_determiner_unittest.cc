@@ -342,7 +342,7 @@ DownloadTargetDeterminerTest::CreateActiveDownloadItem(
     int32_t id,
     const DownloadTestCase& test_case) {
   std::unique_ptr<content::MockDownloadItem> item =
-      base::MakeUnique<::testing::NiceMock<content::MockDownloadItem>>();
+      std::make_unique<::testing::NiceMock<content::MockDownloadItem>>();
   GURL download_url(test_case.url);
   std::vector<GURL> url_chain;
   url_chain.push_back(download_url);
@@ -520,7 +520,7 @@ void DownloadTargetDeterminerTest::VerifyDownloadTarget(
 
 void DownloadTargetDeterminerTest::SetUpFileTypePolicies() {
   std::unique_ptr<safe_browsing::DownloadFileTypeConfig> fake_file_type_config =
-      base::MakeUnique<safe_browsing::DownloadFileTypeConfig>();
+      std::make_unique<safe_browsing::DownloadFileTypeConfig>();
   auto* file_type = fake_file_type_config->mutable_default_file_type();
   file_type->set_uma_value(-1);
   auto* platform_settings = file_type->add_platform_settings();

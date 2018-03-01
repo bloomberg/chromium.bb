@@ -87,7 +87,7 @@ class RegisterAppTaskTest : public testing::Test {
     leveldb::Status status = leveldb_env::OpenDB(
         options, database_dir_.GetPath().AsUTF8Unsafe(), &db);
     EXPECT_TRUE(status.ok());
-    return base::MakeUnique<LevelDBWrapper>(std::move(db));
+    return std::make_unique<LevelDBWrapper>(std::move(db));
   }
 
   void SetUpInitialData(LevelDBWrapper* db) {

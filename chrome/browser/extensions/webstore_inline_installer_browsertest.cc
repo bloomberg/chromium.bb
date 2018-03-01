@@ -420,7 +420,7 @@ class WebstoreInlineInstallerRedirectTest
       cws_request_json_data_ = base::DictionaryValue::From(std::move(contents));
     } else {
       cws_request_proto_ =
-          base::MakeUnique<safe_browsing::ExtensionWebStoreInstallRequest>();
+          std::make_unique<safe_browsing::ExtensionWebStoreInstallRequest>();
       if (!cws_request_proto_->ParseFromString(request.content))
         cws_request_proto_.reset();
     }

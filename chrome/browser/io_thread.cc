@@ -489,7 +489,7 @@ void IOThread::Init() {
 #endif  // defined(OS_ANDROID)
 
   globals_->data_use_ascriber =
-      base::MakeUnique<data_use_measurement::ChromeDataUseAscriber>();
+      std::make_unique<data_use_measurement::ChromeDataUseAscriber>();
 
   globals_->data_use_aggregator =
       std::make_unique<data_usage::DataUseAggregator>(
@@ -524,7 +524,7 @@ void IOThread::Init() {
   // Pass ownership.
   globals_->network_quality_estimator =
       std::make_unique<net::NetworkQualityEstimator>(
-          base::MakeUnique<net::NetworkQualityEstimatorParams>(
+          std::make_unique<net::NetworkQualityEstimatorParams>(
               network_quality_estimator_params),
           net_log_);
   globals_->network_quality_observer = content::CreateNetworkQualityObserver(
@@ -767,7 +767,7 @@ void IOThread::SetUpProxyService(
     network::URLRequestContextBuilderMojo* builder) const {
 #if defined(OS_CHROMEOS)
   builder->SetDhcpFetcherFactory(
-      base::MakeUnique<chromeos::DhcpProxyScriptFetcherFactoryChromeos>());
+      std::make_unique<chromeos::DhcpProxyScriptFetcherFactoryChromeos>());
 #endif
 
   builder->set_pac_quick_check_enabled(WpadQuickCheckEnabled());
@@ -783,7 +783,7 @@ certificate_transparency::TreeStateTracker* IOThread::ct_tree_tracker() const {
 
 void IOThread::ConstructSystemRequestContext() {
   std::unique_ptr<network::URLRequestContextBuilderMojo> builder =
-      base::MakeUnique<network::URLRequestContextBuilderMojo>();
+      std::make_unique<network::URLRequestContextBuilderMojo>();
 
   builder->set_network_quality_estimator(
       globals_->network_quality_estimator.get());
@@ -810,8 +810,8 @@ void IOThread::ConstructSystemRequestContext() {
   std::unique_ptr<net::CertVerifier> cert_verifier;
 #if defined(OS_CHROMEOS)
   // Creates a CertVerifyProc that doesn't allow any profile-provided certs.
-  cert_verifier = base::MakeUnique<net::CachingCertVerifier>(
-      base::MakeUnique<net::MultiThreadedCertVerifier>(
+  cert_verifier = std::make_unique<net::CachingCertVerifier>(
+      std::make_unique<net::MultiThreadedCertVerifier>(
           base::MakeRefCounted<chromeos::CertVerifyProcChromeOS>()));
 #else
   cert_verifier = std::make_unique<net::CachingCertVerifier>(
@@ -829,7 +829,7 @@ void IOThread::ConstructSystemRequestContext() {
           network::switches::kIgnoreCertificateErrorsSPKIList));
 
   std::unique_ptr<net::MultiLogCTVerifier> ct_verifier =
-      base::MakeUnique<net::MultiLogCTVerifier>();
+      std::make_unique<net::MultiLogCTVerifier>();
   // Add built-in logs
   ct_verifier->AddLogs(globals_->ct_logs);
   builder->set_ct_verifier(std::move(ct_verifier));

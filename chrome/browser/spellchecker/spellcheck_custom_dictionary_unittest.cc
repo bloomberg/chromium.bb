@@ -58,7 +58,7 @@ syncer::SyncDataList GetAllSyncDataNoLimit(
 
 static std::unique_ptr<KeyedService> BuildSpellcheckService(
     content::BrowserContext* profile) {
-  return base::MakeUnique<SpellcheckService>(static_cast<Profile*>(profile));
+  return std::make_unique<SpellcheckService>(static_cast<Profile*>(profile));
 }
 
 class SpellcheckCustomDictionaryTest : public testing::Test {
@@ -902,7 +902,7 @@ TEST_F(SpellcheckCustomDictionaryTest, LoadDuplicatesAfterSync) {
   EXPECT_TRUE(custom_dictionary->IsSyncing());
 
   OnLoaded(*custom_dictionary,
-           base::MakeUnique<std::set<std::string>>(change.to_add()));
+           std::make_unique<std::set<std::string>>(change.to_add()));
   EXPECT_EQ(0, error_counter);
   EXPECT_TRUE(custom_dictionary->IsSyncing());
 

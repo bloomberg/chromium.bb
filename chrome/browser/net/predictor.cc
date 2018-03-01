@@ -644,7 +644,7 @@ void Predictor::FinalizeInitializationOnIOThread(
 
   profile_io_data_ = profile_io_data;
   if (kInitialDnsPrefetchListEnabled)
-    initial_observer_ = base::MakeUnique<InitialObserver>();
+    initial_observer_ = std::make_unique<InitialObserver>();
 
   net::URLRequestContext* context =
       url_request_context_getter_->GetURLRequestContext();
@@ -729,8 +729,8 @@ void Predictor::SaveStateForNextStartup() {
   if (!CanPreresolveAndPreconnect())
     return;
 
-  auto startup_list = base::MakeUnique<base::ListValue>();
-  auto referral_list = base::MakeUnique<base::ListValue>();
+  auto startup_list = std::make_unique<base::ListValue>();
+  auto referral_list = std::make_unique<base::ListValue>();
 
   // Get raw pointers to pass to the first task. Ownership of the unique_ptrs
   // will be passed to the reply task.

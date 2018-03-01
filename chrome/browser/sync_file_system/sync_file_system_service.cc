@@ -458,8 +458,8 @@ void SyncFileSystemService::Initialize(
   local_service_ = std::move(local_service);
   remote_service_ = std::move(remote_service);
 
-  auto local_syncer = base::MakeUnique<LocalSyncRunner>(kLocalSyncName, this);
-  auto remote_syncer = base::MakeUnique<RemoteSyncRunner>(
+  auto local_syncer = std::make_unique<LocalSyncRunner>(kLocalSyncName, this);
+  auto remote_syncer = std::make_unique<RemoteSyncRunner>(
       kRemoteSyncName, this, remote_service_.get());
 
   local_service_->AddChangeObserver(local_syncer.get());

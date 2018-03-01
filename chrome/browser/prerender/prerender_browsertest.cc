@@ -893,7 +893,7 @@ class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
   }
 
   base::SimpleTestTickClock* OverridePrerenderManagerTimeTicks() {
-    auto clock = base::MakeUnique<base::SimpleTestTickClock>();
+    auto clock = std::make_unique<base::SimpleTestTickClock>();
     auto* clock_ptr = clock.get();
     // The default zero time causes the prerender manager to do strange things.
     clock->Advance(base::TimeDelta::FromSeconds(1));

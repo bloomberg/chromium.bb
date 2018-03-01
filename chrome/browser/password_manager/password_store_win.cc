@@ -128,7 +128,7 @@ PasswordStoreWin::DBHandler::GetIE7Results(
                                        info.encrypted_data,
                                        &credentials)) {
       for (size_t i = 0; i < credentials.size(); ++i) {
-        auto matched_form = base::MakeUnique<PasswordForm>();
+        auto matched_form = std::make_unique<PasswordForm>();
         matched_form->username_value = credentials[i].username;
         matched_form->password_value = credentials[i].password;
         matched_form->signon_realm = form.signon_realm;

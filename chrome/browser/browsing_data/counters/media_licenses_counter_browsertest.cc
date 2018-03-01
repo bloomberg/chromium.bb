@@ -119,7 +119,7 @@ class MediaLicensesCounterTest : public InProcessBrowserTest {
     storage::AsyncFileUtil* file_util = filesystem_context->GetAsyncFileUtil(
         storage::kFileSystemTypePluginPrivate);
     std::unique_ptr<storage::FileSystemOperationContext> operation_context =
-        base::MakeUnique<storage::FileSystemOperationContext>(
+        std::make_unique<storage::FileSystemOperationContext>(
             filesystem_context);
     operation_context->set_allowed_bytes_growth(
         storage::QuotaManager::kNoLimit);

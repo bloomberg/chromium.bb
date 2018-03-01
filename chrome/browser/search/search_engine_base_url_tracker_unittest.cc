@@ -17,7 +17,7 @@ TEST_F(SearchEngineBaseURLTrackerTest, DispatchDefaultSearchProviderChanged) {
       callback;
   SearchEngineBaseURLTracker tracker(
       template_url_service_,
-      base::MakeUnique<UIThreadSearchTermsData>(profile()), callback.Get());
+      std::make_unique<UIThreadSearchTermsData>(profile()), callback.Get());
 
   // Changing the search provider should invoke the callback.
   EXPECT_CALL(
@@ -31,7 +31,7 @@ TEST_F(SearchEngineBaseURLTrackerTest, DispatchGoogleURLUpdated) {
       callback;
   SearchEngineBaseURLTracker tracker(
       template_url_service_,
-      base::MakeUnique<UIThreadSearchTermsData>(profile()), callback.Get());
+      std::make_unique<UIThreadSearchTermsData>(profile()), callback.Get());
 
   // While Google is the default search provider, changes to the Google base URL
   // should invoke the callback.
@@ -46,7 +46,7 @@ TEST_F(SearchEngineBaseURLTrackerTest,
       callback;
   SearchEngineBaseURLTracker tracker(
       template_url_service_,
-      base::MakeUnique<UIThreadSearchTermsData>(profile()), callback.Get());
+      std::make_unique<UIThreadSearchTermsData>(profile()), callback.Get());
 
   // Set up a non-Google default search provider.
   EXPECT_CALL(

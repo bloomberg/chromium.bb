@@ -39,7 +39,7 @@ ShareServiceImpl::~ShareServiceImpl() = default;
 // static
 void ShareServiceImpl::Create(
     blink::mojom::ShareServiceRequest request) {
-  mojo::MakeStrongBinding(base::MakeUnique<ShareServiceImpl>(),
+  mojo::MakeStrongBinding(std::make_unique<ShareServiceImpl>(),
                           std::move(request));
 }
 

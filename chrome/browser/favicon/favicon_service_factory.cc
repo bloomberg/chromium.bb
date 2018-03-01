@@ -21,7 +21,7 @@ namespace {
 std::unique_ptr<KeyedService> BuildFaviconService(
     content::BrowserContext* context) {
   Profile* profile = Profile::FromBrowserContext(context);
-  return base::MakeUnique<favicon::FaviconServiceImpl>(
+  return std::make_unique<favicon::FaviconServiceImpl>(
       base::WrapUnique(new ChromeFaviconClient(profile)),
       HistoryServiceFactory::GetForProfile(profile,
                                            ServiceAccessType::EXPLICIT_ACCESS));

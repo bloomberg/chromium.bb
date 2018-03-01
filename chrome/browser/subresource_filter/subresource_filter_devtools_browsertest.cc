@@ -49,7 +49,7 @@ class ScopedDevtoolsOpener {
     base::DictionaryValue ad_blocking_command;
     ad_blocking_command.SetInteger("id", 1);
     ad_blocking_command.SetString("method", "Page.setAdBlockingEnabled");
-    auto params = base::MakeUnique<base::DictionaryValue>();
+    auto params = std::make_unique<base::DictionaryValue>();
     params->SetBoolean("enabled", enabled);
     ad_blocking_command.SetDictionary("params", std::move(params));
     std::string json_string;

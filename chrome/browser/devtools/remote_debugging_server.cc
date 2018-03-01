@@ -114,7 +114,7 @@ RemoteDebuggingServer::RemoteDebuggingServer() {
 #endif
 
   content::DevToolsAgentHost::StartRemoteDebuggingServer(
-      base::MakeUnique<TCPServerSocketFactory>(port), output_dir,
+      std::make_unique<TCPServerSocketFactory>(port), output_dir,
       debug_frontend_dir);
 }
 

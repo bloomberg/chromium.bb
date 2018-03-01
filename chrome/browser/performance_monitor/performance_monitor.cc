@@ -129,7 +129,7 @@ void PerformanceMonitor::MarkProcessAsAlive(
   MetricsMap::iterator process_metrics_iter = metrics_map_.find(handle);
   if (process_metrics_iter == metrics_map_.end()) {
     // If we're not already watching the process, let's initialize it.
-    metrics_map_[handle] = base::MakeUnique<ProcessMetricsHistory>();
+    metrics_map_[handle] = std::make_unique<ProcessMetricsHistory>();
     metrics_map_[handle]->Initialize(process_data, current_update_sequence);
   } else {
     // If we are watching the process, touch it to keep it alive.
@@ -143,7 +143,7 @@ void PerformanceMonitor::GatherMetricsMapOnIOThread(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   auto process_data_list =
-      base::MakeUnique<std::vector<ProcessMetricsMetadata>>();
+      std::make_unique<std::vector<ProcessMetricsMetadata>>();
 
   // Find all child processes (does not include renderers), which has to be
   // done on the IO thread.

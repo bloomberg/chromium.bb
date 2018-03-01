@@ -51,7 +51,7 @@ std::unique_ptr<KeyedService> BuildGCMProfileService(
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner(
       base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
-  return base::MakeUnique<gcm::GCMProfileService>(
+  return std::make_unique<gcm::GCMProfileService>(
       profile->GetPrefs(), profile->GetPath(), profile->GetRequestContext(),
       chrome::GetChannel(),
       gcm::GetProductCategoryForSubtypes(profile->GetPrefs()),

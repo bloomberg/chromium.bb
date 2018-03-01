@@ -71,7 +71,7 @@ void ClientHintsObserver::PersistClientHints(
       HostContentSettingsMapFactory::GetForProfile(profile);
 
   std::unique_ptr<base::ListValue> expiration_times_list =
-      base::MakeUnique<base::ListValue>();
+      std::make_unique<base::ListValue>();
   expiration_times_list->Reserve(client_hints.size());
 
   // Use wall clock since the expiration time would be persisted across embedder

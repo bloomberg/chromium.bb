@@ -67,9 +67,9 @@ class OneGoogleBarServiceTest : public testing::Test {
 
     cookie_service_.Init(&fetcher_factory_);
 
-    auto fetcher = base::MakeUnique<FakeOneGoogleBarFetcher>();
+    auto fetcher = std::make_unique<FakeOneGoogleBarFetcher>();
     fetcher_ = fetcher.get();
-    service_ = base::MakeUnique<OneGoogleBarService>(&cookie_service_,
+    service_ = std::make_unique<OneGoogleBarService>(&cookie_service_,
                                                      std::move(fetcher));
   }
 

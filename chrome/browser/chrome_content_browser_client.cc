@@ -1101,7 +1101,7 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
   host->AddFilter(webrtc_logging_handler_host);
   host->SetUserData(
       WebRtcLoggingHandlerHost::kWebRtcLoggingHandlerHostKey,
-      base::MakeUnique<base::UserDataAdapter<WebRtcLoggingHandlerHost>>(
+      std::make_unique<base::UserDataAdapter<WebRtcLoggingHandlerHost>>(
           webrtc_logging_handler_host));
 
   // The audio manager outlives the host, so it's safe to hand a raw pointer to
@@ -1110,7 +1110,7 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
       new AudioDebugRecordingsHandler(profile);
   host->SetUserData(
       AudioDebugRecordingsHandler::kAudioDebugRecordingsHandlerKey,
-      base::MakeUnique<base::UserDataAdapter<AudioDebugRecordingsHandler>>(
+      std::make_unique<base::UserDataAdapter<AudioDebugRecordingsHandler>>(
           audio_debug_recordings_handler));
 
 #endif
@@ -2903,13 +2903,13 @@ void ChromeContentBrowserClient::GetAdditionalFileSystemBackends(
   storage::ExternalMountPoints* external_mount_points =
       content::BrowserContext::GetMountPoints(browser_context);
   DCHECK(external_mount_points);
-  auto backend = base::MakeUnique<chromeos::FileSystemBackend>(
-      base::MakeUnique<drive::FileSystemBackendDelegate>(),
-      base::MakeUnique<chromeos::file_system_provider::BackendDelegate>(),
-      base::MakeUnique<chromeos::MTPFileSystemBackendDelegate>(
+  auto backend = std::make_unique<chromeos::FileSystemBackend>(
+      std::make_unique<drive::FileSystemBackendDelegate>(),
+      std::make_unique<chromeos::file_system_provider::BackendDelegate>(),
+      std::make_unique<chromeos::MTPFileSystemBackendDelegate>(
           storage_partition_path),
-      base::MakeUnique<arc::ArcContentFileSystemBackendDelegate>(),
-      base::MakeUnique<arc::ArcDocumentsProviderBackendDelegate>(),
+      std::make_unique<arc::ArcContentFileSystemBackendDelegate>(),
+      std::make_unique<arc::ArcDocumentsProviderBackendDelegate>(),
       external_mount_points, storage::ExternalMountPoints::GetSystemInstance());
   backend->AddSystemMountPoints();
   DCHECK(backend->CanHandleType(storage::kFileSystemTypeExternal));
@@ -3446,7 +3446,7 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
               handle->GetWebContents());
       if (!prerender_contents) {
         auto url_to_arc_throttle =
-            base::MakeUnique<arc::ArcNavigationThrottle>(handle);
+            std::make_unique<arc::ArcNavigationThrottle>(handle);
         throttles.push_back(std::move(url_to_arc_throttle));
       }
     }
@@ -3455,7 +3455,7 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   throttles.push_back(
-      base::MakeUnique<extensions::ExtensionNavigationThrottle>(handle));
+      std::make_unique<extensions::ExtensionNavigationThrottle>(handle));
 #endif
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
@@ -3506,7 +3506,7 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
   if (tab_under_throttle)
     throttles.push_back(std::move(tab_under_throttle));
 
-  throttles.push_back(base::MakeUnique<PolicyBlacklistNavigationThrottle>(
+  throttles.push_back(std::make_unique<PolicyBlacklistNavigationThrottle>(
       handle, handle->GetWebContents()->GetBrowserContext()));
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -3540,7 +3540,7 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
 std::unique_ptr<content::NavigationUIData>
 ChromeContentBrowserClient::GetNavigationUIData(
     content::NavigationHandle* navigation_handle) {
-  return base::MakeUnique<ChromeNavigationUIData>(navigation_handle);
+  return std::make_unique<ChromeNavigationUIData>(navigation_handle);
 }
 
 content::DevToolsManagerDelegate*
@@ -3599,11 +3599,11 @@ void ChromeContentBrowserClient::OverridePageVisibilityState(
 }
 
 void ChromeContentBrowserClient::InitWebContextInterfaces() {
-  frame_interfaces_ = base::MakeUnique<service_manager::BinderRegistry>();
-  frame_interfaces_parameterized_ = base::MakeUnique<
+  frame_interfaces_ = std::make_unique<service_manager::BinderRegistry>();
+  frame_interfaces_parameterized_ = std::make_unique<
       service_manager::BinderRegistryWithArgs<content::RenderFrameHost*>>();
   worker_interfaces_parameterized_ =
-      base::MakeUnique<service_manager::BinderRegistryWithArgs<
+      std::make_unique<service_manager::BinderRegistryWithArgs<
           content::RenderProcessHost*, const url::Origin&>>();
 
   // Register mojo ContentTranslateDriver interface only for main frame.

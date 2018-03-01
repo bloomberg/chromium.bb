@@ -110,7 +110,7 @@ TabLoader::TabLoader(base::TimeTicks restore_started)
       restore_started_(restore_started) {
   stats_collector_ = new SessionRestoreStatsCollector(
       restore_started,
-      base::MakeUnique<
+      std::make_unique<
           SessionRestoreStatsCollector::UmaStatsReportingDelegate>());
   shared_tab_loader_ = this;
   this_retainer_ = this;

@@ -783,7 +783,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignSession) {
   // Set up the restore data -- one window with two tabs.
   std::vector<const sessions::SessionWindow*> session;
   sessions::SessionWindow window;
-  auto tab1 = base::MakeUnique<sessions::SessionTab>();
+  auto tab1 = std::make_unique<sessions::SessionTab>();
   {
     sync_pb::SessionTab sync_data;
     sync_data.set_tab_visual_index(0);
@@ -794,7 +794,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignSession) {
   }
   window.tabs.push_back(std::move(tab1));
 
-  auto tab2 = base::MakeUnique<sessions::SessionTab>();
+  auto tab2 = std::make_unique<sessions::SessionTab>();
   {
     sync_pb::SessionTab sync_data;
     sync_data.set_tab_visual_index(1);
@@ -807,7 +807,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignSession) {
 
   // Leave a third tab empty. Should have no effect on restored session, but
   // simulates partially complete foreign session data.
-  window.tabs.push_back(base::MakeUnique<sessions::SessionTab>());
+  window.tabs.push_back(std::make_unique<sessions::SessionTab>());
 
   session.push_back(static_cast<const sessions::SessionWindow*>(&window));
   ui_test_utils::BrowserAddedObserver window_observer;

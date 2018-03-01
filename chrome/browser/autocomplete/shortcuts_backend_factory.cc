@@ -93,13 +93,13 @@ scoped_refptr<ShortcutsBackend> ShortcutsBackendFactory::CreateShortcutsBackend(
     bool suppress_db) {
   scoped_refptr<ShortcutsBackend> backend(new ShortcutsBackend(
       TemplateURLServiceFactory::GetForProfile(profile),
-      base::MakeUnique<UIThreadSearchTermsData>(profile),
+      std::make_unique<UIThreadSearchTermsData>(profile),
       HistoryServiceFactory::GetForProfile(profile,
                                            ServiceAccessType::EXPLICIT_ACCESS),
       profile->GetPath().Append(kShortcutsDatabaseName), suppress_db));
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   auto extensions_manager =
-      base::MakeUnique<ShortcutsExtensionsManager>(profile);
+      std::make_unique<ShortcutsExtensionsManager>(profile);
   profile->SetUserData(kShortcutsExtensionsManagerKey,
                        std::move(extensions_manager));
 #endif

@@ -95,7 +95,7 @@ std::unique_ptr<net::test_server::HttpResponse> TestRequestHandler(
 
   quit_closure.Run();
 
-  auto response = base::MakeUnique<net::test_server::BasicHttpResponse>();
+  auto response = std::make_unique<net::test_server::BasicHttpResponse>();
   response->set_code(net::HTTP_OK);
   response->set_content("");
   response->set_content_type("text/plain");
@@ -131,10 +131,10 @@ IN_PROC_BROWSER_TEST_F(DomainReliabilityBrowserTest, Upload) {
   GURL error_url = test_server.GetURL("/close-socket");
   GURL upload_url = test_server.GetURL(kUploadPath);
 
-  auto config = base::MakeUnique<DomainReliabilityConfig>();
+  auto config = std::make_unique<DomainReliabilityConfig>();
   config->origin = test_server.base_url().GetOrigin();
   config->include_subdomains = false;
-  config->collectors.push_back(base::MakeUnique<GURL>(upload_url));
+  config->collectors.push_back(std::make_unique<GURL>(upload_url));
   config->success_sample_rate = 1.0;
   config->failure_sample_rate = 1.0;
   service->AddContextForTesting(std::move(config));
@@ -171,10 +171,10 @@ IN_PROC_BROWSER_TEST_F(DomainReliabilityBrowserTest, Upload) {
 IN_PROC_BROWSER_TEST_F(DomainReliabilityBrowserTest, UploadAtShutdown) {
   DomainReliabilityService* service = GetService();
 
-  auto config = base::MakeUnique<DomainReliabilityConfig>();
+  auto config = std::make_unique<DomainReliabilityConfig>();
   config->origin = GURL("https://localhost/");
   config->include_subdomains = false;
-  config->collectors.push_back(base::MakeUnique<GURL>(
+  config->collectors.push_back(std::make_unique<GURL>(
       net::URLRequestFailedJob::GetMockHttpsUrl(net::ERR_IO_PENDING)));
   config->success_sample_rate = 1.0;
   config->failure_sample_rate = 1.0;

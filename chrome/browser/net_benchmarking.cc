@@ -52,7 +52,7 @@ void NetBenchmarking::Create(Profile* profile,
                              net::URLRequestContextGetter* request_context,
                              chrome::mojom::NetBenchmarkingRequest request) {
   mojo::MakeStrongBinding(
-      base::MakeUnique<NetBenchmarking>(profile, request_context),
+      std::make_unique<NetBenchmarking>(profile, request_context),
       std::move(request));
 }
 

@@ -240,7 +240,7 @@ void SpellcheckService::LoadHunspellDictionaries() {
 
   for (const auto& dictionary : dictionaries) {
     hunspell_dictionaries_.push_back(
-        base::MakeUnique<SpellcheckHunspellDictionary>(
+        std::make_unique<SpellcheckHunspellDictionary>(
             dictionary,
             content::BrowserContext::GetDefaultStoragePartition(context_)
                 ->GetURLRequestContext(),

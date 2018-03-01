@@ -655,7 +655,7 @@ TEST_F(ExtensionWebRequestTest, AccessRequestBodyData) {
       {"B_content", FormBinaryValue("\uffff\uffff\uffff\uffff")},
       {"C", FormStringValue("test password")}};
   std::unique_ptr<base::Value> form_data =
-      base::MakeUnique<base::Value>(base::Value::Type::DICTIONARY);
+      std::make_unique<base::Value>(base::Value::Type::DICTIONARY);
   for (auto& pair : kFormDataPairs) {
     form_data->SetKey(pair.key, std::move(pair.value));
   }

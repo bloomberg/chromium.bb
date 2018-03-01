@@ -150,7 +150,7 @@ void OfflinePageUtilsTest::SetUp() {
   RunUntilIdle();
 
   NetworkQualityProviderStub::SetUserData(
-      &profile_, base::MakeUnique<NetworkQualityProviderStub>());
+      &profile_, std::make_unique<NetworkQualityProviderStub>());
   RequestCoordinatorFactory::GetInstance()->SetTestingFactoryAndUse(
       &profile_, BuildTestRequestCoordinator);
   RunUntilIdle();
@@ -394,7 +394,7 @@ TEST_F(OfflinePageUtilsTest, TestGetCachedOfflinePageSizeBetween) {
   // The clock will be at 03:00:00 after adding pages.
   OfflinePageModel* model =
       OfflinePageModelFactory::GetForBrowserContext(profile());
-  auto clock = base::MakeUnique<base::SimpleTestClock>();
+  auto clock = std::make_unique<base::SimpleTestClock>();
   base::SimpleTestClock* clock_ptr = clock.get();
   static_cast<OfflinePageModelTaskified*>(model)->SetClockForTesting(
       std::move(clock));
@@ -417,7 +417,7 @@ TEST_F(OfflinePageUtilsTest, TestGetCachedOfflinePageSizeNoPageInModel) {
   // Set a test clock.
   OfflinePageModel* model =
       OfflinePageModelFactory::GetForBrowserContext(profile());
-  auto clock = base::MakeUnique<base::SimpleTestClock>();
+  auto clock = std::make_unique<base::SimpleTestClock>();
   base::SimpleTestClock* clock_ptr = clock.get();
   static_cast<OfflinePageModelTaskified*>(model)->SetClockForTesting(
       std::move(clock));
@@ -441,7 +441,7 @@ TEST_F(OfflinePageUtilsTest, TestGetCachedOfflinePageSizeNoPageInRange) {
   // The clock will be at 03:00:00 after adding pages.
   OfflinePageModel* model =
       OfflinePageModelFactory::GetForBrowserContext(profile());
-  auto clock = base::MakeUnique<base::SimpleTestClock>();
+  auto clock = std::make_unique<base::SimpleTestClock>();
   base::SimpleTestClock* clock_ptr = clock.get();
   static_cast<OfflinePageModelTaskified*>(model)->SetClockForTesting(
       std::move(clock));
@@ -465,7 +465,7 @@ TEST_F(OfflinePageUtilsTest, TestGetCachedOfflinePageSizeAllPagesInRange) {
   // The clock will be at 03:00:00 after adding pages.
   OfflinePageModel* model =
       OfflinePageModelFactory::GetForBrowserContext(profile());
-  auto clock = base::MakeUnique<base::SimpleTestClock>();
+  auto clock = std::make_unique<base::SimpleTestClock>();
   base::SimpleTestClock* clock_ptr = clock.get();
   static_cast<OfflinePageModelTaskified*>(model)->SetClockForTesting(
       std::move(clock));
@@ -489,7 +489,7 @@ TEST_F(OfflinePageUtilsTest, TestGetCachedOfflinePageSizeAllPagesInvalidRange) {
   // The clock will be at 03:00:00 after adding pages.
   OfflinePageModel* model =
       OfflinePageModelFactory::GetForBrowserContext(profile());
-  auto clock = base::MakeUnique<base::SimpleTestClock>();
+  auto clock = std::make_unique<base::SimpleTestClock>();
   base::SimpleTestClock* clock_ptr = clock.get();
   static_cast<OfflinePageModelTaskified*>(model)->SetClockForTesting(
       std::move(clock));
@@ -514,7 +514,7 @@ TEST_F(OfflinePageUtilsTest, TestGetCachedOfflinePageSizeEdgeCase) {
   // The clock will be at 03:00:00 after adding pages.
   OfflinePageModel* model =
       OfflinePageModelFactory::GetForBrowserContext(profile());
-  auto clock = base::MakeUnique<base::SimpleTestClock>();
+  auto clock = std::make_unique<base::SimpleTestClock>();
   base::SimpleTestClock* clock_ptr = clock.get();
   static_cast<OfflinePageModelTaskified*>(model)->SetClockForTesting(
       std::move(clock));

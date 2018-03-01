@@ -86,9 +86,9 @@ void SubresourceFilterTestHarness::SetUp() {
   //    |AsyncDocumentSubresourceFilter| posts core initialization tasks on
   //    blocking task runner and this it is the current thread task runner.
   auto content_service =
-      base::MakeUnique<subresource_filter::ContentRulesetService>(
+      std::make_unique<subresource_filter::ContentRulesetService>(
           base::ThreadTaskRunnerHandle::Get());
-  auto ruleset_service = base::MakeUnique<subresource_filter::RulesetService>(
+  auto ruleset_service = std::make_unique<subresource_filter::RulesetService>(
       &pref_service_, base::ThreadTaskRunnerHandle::Get(),
       base::ThreadTaskRunnerHandle::Get(), content_service.get(),
       ruleset_service_dir_.GetPath());

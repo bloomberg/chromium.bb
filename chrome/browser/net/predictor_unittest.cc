@@ -97,7 +97,7 @@ static void AddToSerializedList(const GURL& motivation,
     motivation_list = new base::ListValue;
     motivation_list->AppendString(motivation.spec());
     // Provide empty subresource list.
-    motivation_list->Append(base::MakeUnique<base::ListValue>());
+    motivation_list->Append(std::make_unique<base::ListValue>());
 
     // ...and make it part of the serialized referral_list.
     referral_list->Append(base::WrapUnique(motivation_list));

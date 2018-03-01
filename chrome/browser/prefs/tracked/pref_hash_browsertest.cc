@@ -891,7 +891,7 @@ class PrefHashBrowserTestChangedSplitPref : public PrefHashBrowserTestBase {
 
     // Drop a fake extension (for the purpose of this test, dropped settings
     // don't need to be valid extension settings).
-    auto fake_extension = base::MakeUnique<base::DictionaryValue>();
+    auto fake_extension = std::make_unique<base::DictionaryValue>();
     fake_extension->SetString("name", "foo");
     extensions_dict->Set(std::string(32, 'a'), std::move(fake_extension));
   }

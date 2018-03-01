@@ -181,7 +181,7 @@ DiceResponseHandler::DiceTokenFetcher::DiceTokenFetcher(
   DCHECK(dice_response_handler_);
   if (signin::IsDicePrepareMigrationEnabled()) {
     account_reconcilor_lock_ =
-        base::MakeUnique<AccountReconcilor::Lock>(account_reconcilor);
+        std::make_unique<AccountReconcilor::Lock>(account_reconcilor);
   }
   gaia_auth_fetcher_ = signin_client->CreateGaiaAuthFetcher(
       this, GaiaConstants::kChromeSource,
@@ -332,7 +332,7 @@ void DiceResponseHandler::ProcessDiceSigninHeader(
       return;  // There is already a request in flight with the same parameters.
     }
   }
-  token_fetchers_.push_back(base::MakeUnique<DiceTokenFetcher>(
+  token_fetchers_.push_back(std::make_unique<DiceTokenFetcher>(
       gaia_id, email, authorization_code, signin_client_, account_reconcilor_,
       std::move(delegate), this));
 }

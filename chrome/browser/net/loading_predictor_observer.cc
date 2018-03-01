@@ -100,7 +100,7 @@ void LoadingPredictorObserver::OnRequestStarted(
   if (!LoadingDataCollector::ShouldRecordRequest(request, resource_type))
     return;
 
-  auto summary = base::MakeUnique<URLRequestSummary>();
+  auto summary = std::make_unique<URLRequestSummary>();
   summary->resource_url = request->original_url();
   summary->resource_type = resource_type;
 
@@ -132,7 +132,7 @@ void LoadingPredictorObserver::OnRequestRedirected(
   if (!LoadingDataCollector::ShouldRecordRedirect(request))
     return;
 
-  auto summary = base::MakeUnique<URLRequestSummary>();
+  auto summary = std::make_unique<URLRequestSummary>();
   if (!URLRequestSummary::SummarizeResponse(*request, summary.get())) {
     return;
   }
@@ -168,7 +168,7 @@ void LoadingPredictorObserver::OnResponseStarted(
 
   if (!LoadingDataCollector::ShouldRecordResponse(request))
     return;
-  auto summary = base::MakeUnique<URLRequestSummary>();
+  auto summary = std::make_unique<URLRequestSummary>();
   if (!URLRequestSummary::SummarizeResponse(*request, summary.get())) {
     return;
   }

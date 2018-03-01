@@ -23,7 +23,7 @@ namespace {
 class SiteSettingsCounterTest : public testing::Test {
  public:
   SiteSettingsCounterTest() {
-    profile_ = base::MakeUnique<TestingProfile>();
+    profile_ = std::make_unique<TestingProfile>();
     map_ = HostContentSettingsMapFactory::GetForProfile(profile());
 #if !defined(OS_ANDROID)
     zoom_map_ = content::HostZoomMap::GetDefaultForBrowserContext(profile());
@@ -129,7 +129,7 @@ TEST_F(SiteSettingsCounterTest, OnlyCountContentSettings) {
   map()->SetWebsiteSettingDefaultScope(
       GURL("http://maps.google.com"), GURL(),
       CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, std::string(),
-      base::MakeUnique<base::DictionaryValue>());
+      std::make_unique<base::DictionaryValue>());
 
   browsing_data::SiteSettingsCounter counter(map(), zoom_map());
   counter.Init(

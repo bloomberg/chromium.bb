@@ -34,7 +34,7 @@ class SubresourceFilterWebSocketBrowserTest
 
   void SetUpOnMainThread() override {
     SubresourceFilterBrowserTest::SetUpOnMainThread();
-    websocket_test_server_ = base::MakeUnique<net::SpawnedTestServer>(
+    websocket_test_server_ = std::make_unique<net::SpawnedTestServer>(
         net::SpawnedTestServer::TYPE_WS, net::GetWebSocketTestDataDirectory());
     ASSERT_TRUE(websocket_test_server_->Start());
   }

@@ -67,6 +67,6 @@ KeyedService* LogoServiceFactory::BuildServiceInstanceFor(
       profile->GetPath().Append(kCachedLogoDirectory),
       GaiaCookieManagerServiceFactory::GetForProfile(profile),
       TemplateURLServiceFactory::GetForProfile(profile),
-      base::MakeUnique<suggestions::ImageDecoderImpl>(),
+      std::make_unique<suggestions::ImageDecoderImpl>(),
       profile->GetRequestContext(), base::BindRepeating(&UseGrayLogo));
 }

@@ -192,12 +192,12 @@ class PreviewsInfoBarDelegateUnitTest
     network_time::NetworkTimeTracker::RegisterPrefs(registry);
 
     std::unique_ptr<TestPreviewsLogger> previews_logger =
-        base::MakeUnique<TestPreviewsLogger>();
+        std::make_unique<TestPreviewsLogger>();
     previews_logger_ = previews_logger.get();
-    previews_io_data_ = base::MakeUnique<previews::PreviewsIOData>(
+    previews_io_data_ = std::make_unique<previews::PreviewsIOData>(
         base::MessageLoop::current()->task_runner(),
         base::MessageLoop::current()->task_runner());
-    previews_ui_service_ = base::MakeUnique<previews::PreviewsUIService>(
+    previews_ui_service_ = std::make_unique<previews::PreviewsUIService>(
         previews_io_data_.get(), base::MessageLoop::current()->task_runner(),
         nullptr /* previews_opt_out_store */, nullptr /* previews_opt_guide */,
         base::Bind(&IsPreviewsEnabled), std::move(previews_logger));
@@ -278,7 +278,7 @@ class PreviewsInfoBarDelegateUnitTest
   TestPreviewsLogger* previews_logger() const { return previews_logger_; }
 
   void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override {
-    tracker->AddObserver(base::MakeUnique<TestOptOutObserver>(base::Bind(
+    tracker->AddObserver(std::make_unique<TestOptOutObserver>(base::Bind(
         &PreviewsInfoBarDelegateUnitTest::OptOut, base::Unretained(this))));
   }
 

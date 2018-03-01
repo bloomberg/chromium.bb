@@ -64,7 +64,7 @@ class ResourceCoordinatorRenderProcessMetricsHandler
 
 ResourceCoordinatorRenderProcessProbe::ResourceCoordinatorRenderProcessProbe()
     : metrics_handler_(
-          base::MakeUnique<ResourceCoordinatorRenderProcessMetricsHandler>()),
+          std::make_unique<ResourceCoordinatorRenderProcessMetricsHandler>()),
       interval_ms_(
           base::TimeDelta::FromSeconds(kDefaultMeasurementIntervalInSeconds)) {
   UpdateWithFieldTrialParams();

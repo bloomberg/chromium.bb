@@ -97,7 +97,7 @@ class MultipleProfileDeletionObserver
   }
 
   void Wait() {
-    keep_alive_ = base::MakeUnique<ScopedKeepAlive>(
+    keep_alive_ = std::make_unique<ScopedKeepAlive>(
         KeepAliveOrigin::PROFILE_HELPER, KeepAliveRestartOption::DISABLED);
     loop_.Run();
   }

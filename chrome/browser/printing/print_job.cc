@@ -260,7 +260,7 @@ void PrintJob::StartPdfToEmfConversion(
     bool print_text_with_gdi) {
   DCHECK(!pdf_conversion_state_);
   pdf_conversion_state_ =
-      base::MakeUnique<PdfConversionState>(page_size, content_area);
+      std::make_unique<PdfConversionState>(page_size, content_area);
   PdfRenderSettings render_settings(
       content_area, gfx::Point(0, 0), settings().dpi_size(),
       /*autorotate=*/true,
@@ -311,7 +311,7 @@ void PrintJob::StartPdfToTextConversion(
     const gfx::Size& page_size) {
   DCHECK(!pdf_conversion_state_);
   pdf_conversion_state_ =
-      base::MakeUnique<PdfConversionState>(gfx::Size(), gfx::Rect());
+      std::make_unique<PdfConversionState>(gfx::Size(), gfx::Rect());
   gfx::Rect page_area = gfx::Rect(0, 0, page_size.width(), page_size.height());
   PdfRenderSettings render_settings(
       page_area, gfx::Point(0, 0), settings().dpi_size(),
@@ -327,7 +327,7 @@ void PrintJob::StartPdfToPostScriptConversion(
     const gfx::Point& physical_offsets,
     bool ps_level2) {
   DCHECK(!pdf_conversion_state_);
-  pdf_conversion_state_ = base::MakeUnique<PdfConversionState>(
+  pdf_conversion_state_ = std::make_unique<PdfConversionState>(
       gfx::Size(), gfx::Rect());
   PdfRenderSettings render_settings(
       content_area, physical_offsets, settings().dpi_size(),

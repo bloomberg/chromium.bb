@@ -24,7 +24,7 @@ class TestObserver : public SessionDurationUpdater::Observer {
  public:
   TestObserver()
       : pref_service_(
-            base::MakeUnique<sync_preferences::TestingPrefServiceSyncable>()),
+            std::make_unique<sync_preferences::TestingPrefServiceSyncable>()),
         session_duration_updater_(pref_service_.get(),
                                   kTestObservedSessionTimeKey),
         session_duration_observer_(this) {
@@ -74,7 +74,7 @@ class SessionDurationUpdaterTest : public testing::Test {
     // Start the DesktopSessionDurationTracker to track active session time.
     metrics::DesktopSessionDurationTracker::Initialize();
 
-    test_observer_ = base::MakeUnique<TestObserver>();
+    test_observer_ = std::make_unique<TestObserver>();
     test_observer_->AddSessionDurationObserver();
   }
 

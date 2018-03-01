@@ -208,7 +208,7 @@ void RecentTabHelperTest::SetUp() {
   ChromeRenderViewHostTestHarness::SetUp();
 
   mocked_main_runner_ =
-      base::MakeUnique<base::ScopedMockTimeMessageLoopTaskRunner>();
+      std::make_unique<base::ScopedMockTimeMessageLoopTaskRunner>();
 
   // Sets up the factories for testing.
   OfflinePageModelFactory::GetInstance()->SetTestingFactoryAndUse(
@@ -328,7 +328,7 @@ TEST_F(RecentTabHelperTest, NoLastNCaptureIfTabHiddenTooEarlyInPageLoad) {
 TEST_F(RecentTabHelperTest, NoTabIdNoCapture) {
   // Create delegate that returns 'false' as TabId retrieval result.
   recent_tab_helper()->SetDelegate(
-      base::MakeUnique<TestDelegate>(this, kTabId, false));
+      std::make_unique<TestDelegate>(this, kTabId, false));
 
   NavigateAndCommit(kTestPageUrl);
   recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();

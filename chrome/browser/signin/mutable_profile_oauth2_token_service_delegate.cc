@@ -558,7 +558,7 @@ void MutableProfileOAuth2TokenServiceDelegate::RevokeCredentialsOnServer(
   // Keep track or all server revoke requests.  This way they can be deleted
   // before the token service is shutdown and won't outlive the profile.
   server_revokes_.push_back(
-      base::MakeUnique<RevokeServerRefreshToken>(this, refresh_token));
+      std::make_unique<RevokeServerRefreshToken>(this, refresh_token));
 }
 
 void MutableProfileOAuth2TokenServiceDelegate::CancelWebTokenFetch() {

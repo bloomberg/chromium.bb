@@ -305,7 +305,7 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
                       AdbMessage::kCommandOKAY,
                       std::string());
         local_sockets_[current_message_->arg0] =
-            base::MakeUnique<MockLocalSocket>(
+            std::make_unique<MockLocalSocket>(
                 base::Bind(&MockUsbDeviceHandle::WriteResponse,
                            base::Unretained(this), last_local_socket_,
                            current_message_->arg0),
@@ -563,7 +563,7 @@ class AndroidUsbCountTest : public AndroidUsbDiscoveryTest {
 class AndroidUsbTraitsTest : public AndroidUsbDiscoveryTest {
  protected:
   std::unique_ptr<MockUsbService> CreateMockService() override {
-    return base::MakeUnique<MockUsbServiceForCheckingTraits>();
+    return std::make_unique<MockUsbServiceForCheckingTraits>();
   }
 };
 

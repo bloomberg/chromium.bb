@@ -449,7 +449,7 @@ std::unique_ptr<WebContents> PrerenderManager::SwapInternal(
     // TODO(davidben): Honor the beforeunload event. http://crbug.com/304932
     WebContents* old_web_contents_ptr = old_web_contents.get();
     on_close_web_contents_deleters_.push_back(
-        base::MakeUnique<OnCloseWebContentsDeleter>(
+        std::make_unique<OnCloseWebContentsDeleter>(
             this, std::move(old_web_contents)));
     old_web_contents_ptr->DispatchBeforeUnload();
   } else {
@@ -684,7 +684,7 @@ bool PrerenderManager::HasRecentlyBeenNavigatedTo(Origin origin,
 std::unique_ptr<base::DictionaryValue> PrerenderManager::CopyAsValue() const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  auto dict_value = base::MakeUnique<base::DictionaryValue>();
+  auto dict_value = std::make_unique<base::DictionaryValue>();
   dict_value->Set("history", prerender_history_->CopyEntriesAsValue());
   dict_value->Set("active", GetActivePrerendersAsValue());
   dict_value->SetBoolean("enabled",
@@ -905,7 +905,7 @@ std::unique_ptr<PrerenderHandle> PrerenderManager::AddPrerender(
   if (IsNoStatePrefetch(origin))
     prerender_contents_ptr->SetPrerenderMode(PREFETCH_ONLY);
   active_prerenders_.push_back(
-      base::MakeUnique<PrerenderData>(this, std::move(prerender_contents),
+      std::make_unique<PrerenderData>(this, std::move(prerender_contents),
                                       GetExpiryTimeForNewPrerender(origin)));
   if (!prerender_contents_ptr->Init()) {
     DCHECK(active_prerenders_.end() ==
@@ -1160,7 +1160,7 @@ void PrerenderManager::AddToHistory(PrerenderContents* contents) {
 
 std::unique_ptr<base::ListValue> PrerenderManager::GetActivePrerendersAsValue()
     const {
-  auto list_value = base::MakeUnique<base::ListValue>();
+  auto list_value = std::make_unique<base::ListValue>();
   for (const auto& prerender : active_prerenders_) {
     auto prerender_value = prerender->contents()->GetAsValue();
     if (prerender_value)

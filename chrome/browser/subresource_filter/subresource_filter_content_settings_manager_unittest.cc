@@ -48,7 +48,7 @@ class SubresourceFilterContentSettingsManagerTest : public testing::Test {
         SubresourceFilterProfileContextFactory::GetForProfile(&testing_profile_)
             ->settings_manager();
     settings_manager_->set_should_use_smart_ui_for_testing(true);
-    auto test_clock = base::MakeUnique<base::SimpleTestClock>();
+    auto test_clock = std::make_unique<base::SimpleTestClock>();
     test_clock_ = test_clock.get();
     settings_manager_->set_clock_for_testing(std::move(test_clock));
     histogram_tester().ExpectTotalCount(kActionsHistogram, 0);

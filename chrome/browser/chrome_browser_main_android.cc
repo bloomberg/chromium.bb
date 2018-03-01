@@ -70,7 +70,7 @@ int ChromeBrowserMainPartsAndroid::PreCreateThreads() {
     base::FilePath crash_dump_dir;
     PathService::Get(chrome::DIR_CRASH_DUMPS, &crash_dump_dir);
     breakpad::CrashDumpObserver::GetInstance()->RegisterClient(
-        base::MakeUnique<breakpad::ChildProcessCrashObserver>(
+        std::make_unique<breakpad::ChildProcessCrashObserver>(
             crash_dump_dir, kAndroidMinidumpDescriptor));
   }
 

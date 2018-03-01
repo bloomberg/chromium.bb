@@ -203,7 +203,7 @@ void PasswordStoreMacTest::RemoveForm(const PasswordForm& form) {
 TEST_P(PasswordStoreMacTest, Sanity) {
   base::HistogramTester histogram_tester;
 
-  CreateAndInitPasswordStore(base::MakeUnique<password_manager::LoginDatabase>(
+  CreateAndInitPasswordStore(std::make_unique<password_manager::LoginDatabase>(
       test_login_db_file_path()));
   FinishAsyncProcessing();
   ClosePasswordStore();
@@ -220,7 +220,7 @@ TEST_P(PasswordStoreMacTest, StartAndStop) {
   // PasswordStore::ShutdownOnUIThread() immediately follows
   // PasswordStore::Init(). The message loop isn't running in between. Anyway,
   // PasswordStore should not collapse.
-  CreateAndInitPasswordStore(base::MakeUnique<password_manager::LoginDatabase>(
+  CreateAndInitPasswordStore(std::make_unique<password_manager::LoginDatabase>(
       test_login_db_file_path()));
   ClosePasswordStore();
 
@@ -235,7 +235,7 @@ TEST_P(PasswordStoreMacTest, OperationsOnABadDatabaseSilentlyFail) {
   // Verify that operations on a PasswordStore with a bad database cause no
   // explosions, but fail without side effect, return no data and trigger no
   // notifications.
-  CreateAndInitPasswordStore(base::MakeUnique<BadLoginDatabase>());
+  CreateAndInitPasswordStore(std::make_unique<BadLoginDatabase>());
   FinishAsyncProcessing();
   EXPECT_FALSE(login_db());
 
