@@ -393,9 +393,9 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
   }
   webState_->GetNavigationManager()->LoadURLWithParams(loadParams);
 
-  // Trigger the page to start loading.
-  // TODO(crbug.com/705819): Remove this call.
-  [tab view];
+  // LoadIfNecessary is needed because the view is not created (but needed) when
+  // loading the page. TODO(crbug.com/705819): Remove this call.
+  webState_->GetNavigationManager()->LoadIfNecessary();
 }
 
 - (void)destroyPreviewContents {
