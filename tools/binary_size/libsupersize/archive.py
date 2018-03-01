@@ -445,6 +445,10 @@ def _CalculatePadding(raw_symbols):
           'Input symbols must be sorted by section, then address.')
       seen_sections.append(symbol.section_name)
       continue
+    if symbol.full_name.startswith('Overhead: '):
+      # Overhead symbols are not actionable so should be padding-only.
+      symbol.padding = symbol.size
+      continue
     if (symbol.address <= 0 or prev_symbol.address <= 0 or
         symbol.IsPak() or prev_symbol.IsPak()):
       continue
@@ -798,9 +802,9 @@ def _ParseApkOtherSymbols(section_sizes, apk_path):
             models.SECTION_OTHER, zip_info.compress_size,
             full_name=zip_info.filename))
   overhead_size = os.path.getsize(apk_path) - zip_info_total
-  apk_symbols.append(models.Symbol(
-        models.SECTION_OTHER, overhead_size,
-        full_name='APK zip overhead'))
+  zip_overhead_symbol = models.Symbol(
+      models.SECTION_OTHER, overhead_size, full_name='Overhead: APK file')
+  apk_symbols.append(zip_overhead_symbol)
   prev = section_sizes.setdefault(models.SECTION_OTHER, 0)
   section_sizes[models.SECTION_OTHER] = prev + sum(s.size for s in apk_symbols)
   return apk_symbols
@@ -905,8 +909,7 @@ def CreateSectionSizesAndSymbols(
 
   if elf_path:
     elf_overhead_symbol = models.Symbol(
-        models.SECTION_OTHER, elf_overhead_size,
-        full_name='ELF file overhead')
+        models.SECTION_OTHER, elf_overhead_size, full_name='Overhead: ELF file')
     prev = section_sizes.setdefault(models.SECTION_OTHER, 0)
     section_sizes[models.SECTION_OTHER] = prev + elf_overhead_size
     raw_symbols.append(elf_overhead_symbol)

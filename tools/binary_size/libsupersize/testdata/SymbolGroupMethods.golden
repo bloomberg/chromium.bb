@@ -24,7 +24,7 @@ Index | Running Total | Section@Address | PSS | Path
 11)   1956976 (2.5%)  *@Group      789904          chrome::mojom::FieldTrialRecorderProxy [vtable] (count=1)
 12)   1957008 (2.5%)  *@Group      32              .Lswitch.table.45 (count=1)
 13)   1957016 (2.5%)  *@Group      8               kSystemClassPrefixes (count=1)
-14)  35941187 (46.2%) *@Group      33984171        ELF file overhead (count=1)
+14)  35941187 (46.2%) *@Group      33984171        Overhead: ELF file (count=1)
 15)  35941208 (46.2%) *@Group      21              string literal (count=3)
 16)  35941251 (46.2%) *@Group      43              ** merge strings (count=1)
 17)  37906596 (48.7%) *@Group      1965345         ** merge constants (count=1)
@@ -74,7 +74,7 @@ Index | Running Total | Section@Address | PSS | Path
 7)    1957008 (2.5%)  *@Group      789960          chrome (count=3)
 8)    1957040 (2.5%)  *@Group      32              .Lswitch.table.45 (count=1)
 9)    1957048 (2.5%)  *@Group      8               kSystemClassPrefixes (count=1)
-10)  35941219 (46.2%) *@Group      33984171        ELF file overhead (count=1)
+10)  35941219 (46.2%) *@Group      33984171        Overhead: ELF file (count=1)
 11)  35941240 (46.2%) *@Group      21              string literal (count=3)
 12)  35941283 (46.2%) *@Group      43              ** merge strings (count=1)
 13)  37906628 (48.7%) *@Group      1965345         ** merge constants (count=1)
@@ -121,7 +121,7 @@ Index | Running Total | Section@Address | PSS | Path
 7)    1956976 (2.5%)  *@Group      789928          chrome::mojom (count=2)
 8)    1957008 (2.5%)  *@Group      32              .Lswitch.table.45 (count=1)
 9)    1957016 (2.5%)  *@Group      8               kSystemClassPrefixes (count=1)
-10)  35941187 (46.2%) *@Group      33984171        ELF file overhead (count=1)
+10)  35941187 (46.2%) *@Group      33984171        Overhead: ELF file (count=1)
 11)  35941208 (46.2%) *@Group      21              string literal (count=3)
 12)  35941251 (46.2%) *@Group      43              ** merge strings (count=1)
 13)  37906596 (48.7%) *@Group      1965345         ** merge constants (count=1)
@@ -182,7 +182,7 @@ Index | Running Total | Section@Address | PSS | Path
 9)    1957048 (2.5%)  R@0x2cd84f0  8              third_party/gvr-android-sdk/libgvr_shim_static_arm.a/libport_android_jni.a_jni_utils.o
              kSystemClassPrefixes
 10)  35941219 (46.2%) o@0x0        33984171       {no path}
-             ELF file overhead
+             Overhead: ELF file
 11)  35941240 (46.2%) *@Group      21             {no path}
              string literal (count=3)
 12)  35941283 (46.2%) r@0x266e630  43             {no path}
