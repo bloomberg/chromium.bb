@@ -25,6 +25,8 @@
   await TestRunner.evaluateInPagePromise(`console.log({a: 1}, "a".repeat(${overMaxLength}), {b: 1})`);
   await TestRunner.evaluateInPagePromise(`console.log("a".repeat(${overMaxLength}), "https://chromium.org")`);
   await TestRunner.evaluateInPagePromise(`console.log("https://chromium.org", "a".repeat(${overMaxLength}))`);
+  await TestRunner.evaluateInPagePromise(`console.log(RegExp("a".repeat(${overMaxLength})))`);
+  await TestRunner.evaluateInPagePromise(`console.log(Symbol("a".repeat(${overMaxLength})))`);
 
   dumpMessageLengths();
 
