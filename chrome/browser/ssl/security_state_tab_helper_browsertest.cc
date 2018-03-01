@@ -41,10 +41,14 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/reload_type.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/security_style_explanation.h"
 #include "content/public/browser/security_style_explanations.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_delegate.h"
+#include "content/public/common/file_chooser_file_info.h"
+#include "content/public/common/file_chooser_params.h"
 #include "content/public/common/page_type.h"
 #include "content/public/common/referrer.h"
 #include "content/public/test/browser_test_utils.h"
@@ -136,6 +140,44 @@ void SimulatePasswordFieldShown(content::WebContents* contents) {
   SetInputEvents(entry, input_events);
   contents->DidChangeVisibleSecurityState();
 }
+
+// A delegate class that allows emulating selection of a file for an
+// INPUT TYPE=FILE form field.
+class FileChooserDelegate : public content::WebContentsDelegate {
+ public:
+  // Constructs a WebContentsDelegate that mocks a file dialog.
+  // The mocked file dialog will always reply that the user selected |file|.
+  explicit FileChooserDelegate(const base::FilePath& file)
+      : file_(file), file_chosen_(false) {}
+
+  // Whether the file dialog was shown.
+  bool file_chosen() const { return file_chosen_; }
+
+  // Copy of the params passed to RunFileChooser.
+  content::FileChooserParams params() const { return params_; }
+
+  // WebContentsDelegate:
+  void RunFileChooser(content::RenderFrameHost* render_frame_host,
+                      const content::FileChooserParams& params) override {
+    // Send the selected file to the renderer process.
+    content::FileChooserFileInfo file_info;
+    file_info.file_path = file_;
+    std::vector<content::FileChooserFileInfo> files;
+    files.push_back(file_info);
+    render_frame_host->FilesSelectedInChooser(files,
+                                              content::FileChooserParams::Open);
+
+    file_chosen_ = true;
+    params_ = params;
+  }
+
+ private:
+  base::FilePath file_;
+  bool file_chosen_;
+  content::FileChooserParams params_;
+
+  DISALLOW_COPY_AND_ASSIGN(FileChooserDelegate);
+};
 
 // A WebContentsObserver useful for testing the DidChangeVisibleSecurityState()
 // method: it keeps track of the latest security style and explanation that was
@@ -1428,6 +1470,62 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
   ASSERT_FALSE(security_info.field_edit_downgraded_security_level);
 }
 
+// Tests that the security level of a HTTP page is downgraded to
+// HTTP_SHOW_WARNING after editing a form field in the relevant configurations.
+IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
+                       SecurityLevelDowngradedAfterFileSelection) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      security_state::features::kMarkHttpAsFeature);
+
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  SecurityStateTabHelper* helper =
+      SecurityStateTabHelper::FromWebContents(contents);
+  ASSERT_TRUE(helper);
+
+  // Navigate to an HTTP page. Use a non-local hostname so that it is
+  // not considered secure.
+  ui_test_utils::NavigateToURL(
+      browser(),
+      GetURLWithNonLocalHostname(embedded_test_server(), "/file_input.html"));
+  security_state::SecurityInfo security_info;
+  helper->GetSecurityInfo(&security_info);
+  EXPECT_EQ(security_state::NONE, security_info.security_level);
+
+  // Prepare a file for the upload form.
+  base::FilePath file_path;
+  EXPECT_TRUE(PathService::Get(base::DIR_TEMP, &file_path));
+  file_path = file_path.AppendASCII("bar");
+
+  // Fill out the form to refer to the test file.
+  SecurityStyleTestObserver observer(contents);
+  std::unique_ptr<FileChooserDelegate> delegate(
+      new FileChooserDelegate(file_path));
+  contents->SetDelegate(delegate.get());
+  EXPECT_TRUE(
+      ExecuteScript(contents, "document.getElementById('fileinput').click();"));
+  EXPECT_TRUE(delegate->file_chosen());
+  observer.WaitForDidChangeVisibleSecurityState();
+
+  // Verify that the security state degrades as expected.
+  helper->GetSecurityInfo(&security_info);
+  EXPECT_EQ(security_state::HTTP_SHOW_WARNING, security_info.security_level);
+  EXPECT_TRUE(security_info.field_edit_downgraded_security_level);
+
+  content::NavigationEntry* entry = contents->GetController().GetVisibleEntry();
+  ASSERT_TRUE(entry);
+  EXPECT_TRUE(GetInputEvents(entry).insecure_field_edited);
+
+  // Verify that after a refresh, the HTTP_SHOW_WARNING state is cleared.
+  contents->GetController().Reload(content::ReloadType::NORMAL, false);
+  content::WaitForLoadStop(contents);
+  helper->GetSecurityInfo(&security_info);
+  EXPECT_EQ(security_state::NONE, security_info.security_level);
+  EXPECT_FALSE(security_info.field_edit_downgraded_security_level);
+}
+
 // A Browser subclass that keeps track of messages that have been
 // added to the console. Messages can be retrieved or cleared with
 // console_messages() and ClearConsoleMessages(). The user of this class
@@ -2503,6 +2601,52 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
   content::WaitForLoadStop(contents);
   helper->GetSecurityInfo(&security_info);
   EXPECT_EQ(security_state::HTTP_SHOW_WARNING, security_info.security_level);
+}
+
+IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
+                       MarkHttpAsWarningAndDangerousOnFileInputEdits) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      security_state::features::kMarkHttpAsFeature,
+      {{security_state::features::kMarkHttpAsFeatureParameterName,
+        security_state::features::
+            kMarkHttpAsParameterWarningAndDangerousOnFormEdits}});
+
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  SecurityStateTabHelper* helper =
+      SecurityStateTabHelper::FromWebContents(contents);
+  ASSERT_TRUE(helper);
+
+  // Navigate to an HTTP page. Use a non-local hostname so that it is
+  // not considered secure.
+  ui_test_utils::NavigateToURL(
+      browser(),
+      GetURLWithNonLocalHostname(embedded_test_server(), "/file_input.html"));
+
+  security_state::SecurityInfo security_info;
+  helper->GetSecurityInfo(&security_info);
+  EXPECT_EQ(security_state::HTTP_SHOW_WARNING, security_info.security_level);
+  SecurityStyleTestObserver observer(contents);
+
+  // Prepare a file for the upload form.
+  base::FilePath file_path;
+  EXPECT_TRUE(PathService::Get(base::DIR_TEMP, &file_path));
+  file_path = file_path.AppendASCII("bar");
+
+  // Fill out the form to refer to the test file.
+  std::unique_ptr<FileChooserDelegate> delegate(
+      new FileChooserDelegate(file_path));
+  contents->SetDelegate(delegate.get());
+  EXPECT_TRUE(
+      ExecuteScript(contents, "document.getElementById('fileinput').click();"));
+  EXPECT_TRUE(delegate->file_chosen());
+
+  observer.WaitForDidChangeVisibleSecurityState();
+
+  // Verify that the security state degrades as expected.
+  helper->GetSecurityInfo(&security_info);
+  EXPECT_EQ(security_state::DANGEROUS, security_info.security_level);
 }
 
 IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
