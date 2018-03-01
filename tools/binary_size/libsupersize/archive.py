@@ -45,10 +45,6 @@ from grit.format import data_pack
 # max: shared .text symbols = 0 bytes, file size = 11.10MiB (1235449 symbols).
 _MAX_SAME_NAME_ALIAS_COUNT = 40  # 50kb is basically negligable.
 
-# This is an estimate of pak translation compression ratio to make comparisons
-# between .size files reasonable. Otherwise this can differ every pak change.
-_PAK_COMPRESSION_RATIO = 0.33
-
 
 def _OpenMaybeGz(path):
   """Calls `gzip.open()` if |path| ends in ".gz", otherwise calls `open()`."""
@@ -680,7 +676,8 @@ def _ParseElfInfo(map_path, elf_path, tool_prefix, output_directory,
 
 
 def _ComputePakFileSymbols(
-    file_name, contents, res_info, symbols_by_id, compression_ratio=1):
+    file_name, contents, res_info, symbols_by_id, expected_size,
+    compression_ratio=1):
   id_map = {id(v): k
             for k, v in sorted(contents.resources.items(), reverse=True)}
   alias_map = {k: id_map[id(v)] for k, v in contents.resources.iteritems()
@@ -693,6 +690,7 @@ def _ComputePakFileSymbols(
   overhead = (12 + 6) * compression_ratio  # Header size plus extra offset
   symbols_by_id[file_name] = models.Symbol(
       section_name, overhead, full_name='{}: overhead'.format(file_name))
+  total = overhead
   for resource_id in sorted(contents.resources):
     if resource_id in alias_map:
       # 4 extra bytes of metadata (2 16-bit ints)
@@ -708,6 +706,10 @@ def _ComputePakFileSymbols(
             section_name, 0, address=resource_id, full_name=full_name)
     size *= compression_ratio
     symbols_by_id[resource_id].size += size
+    total += size
+  total = int(round(total))
+  assert expected_size == total, (
+      '{} bytes in pak file not accounted for'.format(expected_size - total))
 
 
 def _ParsePakInfoFile(pak_info_path):
@@ -813,23 +815,13 @@ def _FindPakSymbolsFromApk(apk_path, output_directory):
     pak_info_path = os.path.join(output_directory, 'size-info', apk_info_name)
     res_info = _ParsePakInfoFile(pak_info_path)
     symbols_by_id = {}
-    total_compressed_size = 0
-    total_uncompressed_size = 0
     for zip_info in pak_zip_infos:
       contents = data_pack.ReadDataPackFromString(z.read(zip_info))
-      compression_ratio = 1.0
-      if zip_info.compress_size < zip_info.file_size:
-        total_compressed_size += zip_info.compress_size
-        total_uncompressed_size += zip_info.file_size
-        compression_ratio = _PAK_COMPRESSION_RATIO
+      compression_ratio = float(zip_info.compress_size) / zip_info.file_size
       _ComputePakFileSymbols(
           os.path.relpath(zip_info.filename, output_directory), contents,
-          res_info, symbols_by_id, compression_ratio=compression_ratio)
-    actual_ratio = (
-        float(total_compressed_size) / total_uncompressed_size)
-    logging.info('Pak Compression Ratio: %f Actual: %f Diff: %.0f',
-        _PAK_COMPRESSION_RATIO, actual_ratio,
-        (_PAK_COMPRESSION_RATIO - actual_ratio) * total_uncompressed_size)
+          res_info, symbols_by_id, expected_size=zip_info.compress_size,
+          compression_ratio=compression_ratio)
   return symbols_by_id
 
 
@@ -842,7 +834,7 @@ def _FindPakSymbolsFromFiles(pak_files, pak_info_path, output_directory):
       contents = data_pack.ReadDataPackFromString(f.read())
       _ComputePakFileSymbols(
           os.path.relpath(pak_file_path, output_directory), contents, res_info,
-          symbols_by_id)
+          symbols_by_id, expected_size=os.path.getsize(pak_file_path))
   return symbols_by_id
 
 
