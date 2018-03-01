@@ -44,6 +44,7 @@ Refer to README.md for content description and update process.
  <item id="client_download_request" hash_code="125522256" type="0" content_hash_code="23897505" os_list="linux,windows" file_path="chrome/browser/safe_browsing/download_protection/check_client_download_request.cc"/>
  <item id="cloud_print" hash_code="111712433" type="2" content_hash_code="60926140" os_list="linux,windows" semantics_fields="1,5" policy_fields="-1,3,4" file_path="chrome/service/cloud_print/cloud_print_url_fetcher.cc"/>
  <item id="cloud_print_backend" hash_code="71578042" type="1" second_id="111712433" content_hash_code="85425333" os_list="linux,windows" semantics_fields="2,3,4" file_path="chrome/service/cloud_print/cloud_print_proxy_backend.cc"/>
+ <item id="cloud_print_credential_update" hash_code="137420486" type="0" content_hash_code="1179808" os_list="linux,windows" file_path="chrome/service/cloud_print/cloud_print_proxy_backend.cc"/>
  <item id="cloud_print_privet_register" hash_code="24978481" type="0" content_hash_code="131359002" os_list="linux,windows" file_path="chrome/browser/printing/cloud_print/gcd_api_flow_impl.cc"/>
  <item id="cloud_print_proxy" hash_code="50859288" type="1" second_id="111712433" content_hash_code="90868083" os_list="linux,windows" semantics_fields="2,3,4" file_path="chrome/service/cloud_print/cloud_print_proxy.cc"/>
  <item id="cloud_print_search" hash_code="132055347" type="0" content_hash_code="123783474" os_list="linux,windows" file_path="chrome/browser/printing/cloud_print/gcd_api_flow_impl.cc"/>
