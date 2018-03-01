@@ -49,6 +49,8 @@ class TestEventGeneratorDelegate
 class TestSideSwipeGestureHandler
     : public CastSideSwipeGestureHandlerInterface {
  public:
+  ~TestSideSwipeGestureHandler() override = default;
+
   void OnSideSwipeBegin(CastSideSwipeOrigin swipe_origin,
                         ui::GestureEvent* gesture_event) override {
     if (handle_swipe_) {
@@ -85,6 +87,8 @@ class TestSideSwipeGestureHandler
 
 class CastSystemGestureEventHandlerTest : public aura::test::AuraTestBase {
  public:
+  ~CastSystemGestureEventHandlerTest() override = default;
+
   void SetUp() override {
     aura::test::AuraTestBase::SetUp();
 
@@ -99,10 +103,12 @@ class CastSystemGestureEventHandlerTest : public aura::test::AuraTestBase {
   }
 
   void TearDown() override {
-    aura::test::AuraTestBase::TearDown();
-
     gesture_event_handler_->RemoveSideSwipeGestureHandler(
         gesture_handler_.get());
+    gesture_event_handler_.reset();
+    gesture_handler_.reset();
+
+    aura::test::AuraTestBase::TearDown();
   }
 
   ui::test::EventGenerator& GetEventGenerator() {
