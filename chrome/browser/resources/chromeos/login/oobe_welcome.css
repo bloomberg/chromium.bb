@@ -73,7 +73,15 @@
 #oobeAdvancedOptionsScreen .advanced-options-entry {
   border-top: var(--oobe-dialog-list-item-border);
   height: 56px;
-  padding: 0 10px;
+  padding: 0 4px;
+}
+
+#oobeAdvancedOptionsScreen .advanced-options-entry button {
+  background: unset;
+  border: unset;
+  font: unset;
+  padding: 6px;
+  text-align: unset;
 }
 
 #oobeAdvancedOptionsScreen .advanced-options-entry:last-of-type {
