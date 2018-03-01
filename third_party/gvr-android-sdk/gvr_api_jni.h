@@ -705,6 +705,101 @@ Java_com_google_vr_ndk_base_GvrApi_nativeUsingVrDisplayService(
     jobject jcaller,
     jlong nativeGvrContext);
 
+JNI_GENERATOR_EXPORT jlong
+Java_com_google_vr_ndk_base_GvrApi_nativeCreateEvent(JNIEnv* env, jclass clazz);
+
+JNI_GENERATOR_EXPORT jlong
+Java_com_google_vr_ndk_base_GvrApi_nativeCreateValue(JNIEnv* env, jclass clazz);
+
+JNI_GENERATOR_EXPORT void Java_com_google_vr_ndk_base_GvrApi_nativeDestroyEvent(
+    JNIEnv* env,
+    jclass clazz,
+    jlong native_object);
+
+JNI_GENERATOR_EXPORT void Java_com_google_vr_ndk_base_GvrApi_nativeDestroyValue(
+    JNIEnv* env,
+    jclass clazz,
+    jlong native_object);
+
+JNI_GENERATOR_EXPORT jlong
+Java_com_google_vr_ndk_base_GvrApi_nativeGetCurrentProperties(
+    JNIEnv* env,
+    jobject object,
+    jlong native_object);
+
+JNI_GENERATOR_EXPORT jlong
+Java_com_google_vr_ndk_base_GvrApi_nativeGetEventFlags(JNIEnv* env,
+                                                       jclass clazz,
+                                                       jlong native_object);
+
+JNI_GENERATOR_EXPORT jlong
+Java_com_google_vr_ndk_base_GvrApi_nativeGetEventTimestamp(JNIEnv* env,
+                                                           jclass clazz,
+                                                           jlong native_object);
+
+JNI_GENERATOR_EXPORT jint
+Java_com_google_vr_ndk_base_GvrApi_nativeGetEventType(JNIEnv* env,
+                                                      jclass clazz,
+                                                      jlong native_object);
+
+JNI_GENERATOR_EXPORT jboolean
+Java_com_google_vr_ndk_base_GvrApi_nativeGetProperty(JNIEnv* env,
+                                                     jclass clazz,
+                                                     jlong native_properties,
+                                                     jint property_key,
+                                                     jlong native_value);
+
+JNI_GENERATOR_EXPORT jlong
+Java_com_google_vr_ndk_base_GvrApi_nativeGetRecenterEventFlags(
+    JNIEnv* env,
+    jclass clazz,
+    jlong native_object);
+
+JNI_GENERATOR_EXPORT void
+Java_com_google_vr_ndk_base_GvrApi_nativeGetRecenterEventStartSpaceFromTrackingSpaceTransform(
+    JNIEnv* env,
+    jclass clazz,
+    jlong native_object,
+    jfloatArray rotation_out_array);
+
+JNI_GENERATOR_EXPORT jint
+Java_com_google_vr_ndk_base_GvrApi_nativeGetRecenterEventType(
+    JNIEnv* env,
+    jclass clazz,
+    jlong native_object);
+
+JNI_GENERATOR_EXPORT jboolean
+Java_com_google_vr_ndk_base_GvrApi_nativePollEvent(JNIEnv* env,
+                                                   jobject object,
+                                                   jlong native_object,
+                                                   jlong event_out);
+
+JNI_GENERATOR_EXPORT jlong
+Java_com_google_vr_ndk_base_GvrApi_nativeValueAsFlags(JNIEnv* env,
+                                                      jclass clazz,
+                                                      jlong native_object);
+
+JNI_GENERATOR_EXPORT jfloat
+Java_com_google_vr_ndk_base_GvrApi_nativeValueAsFloat(JNIEnv* env,
+                                                      jclass clazz,
+                                                      jlong native_object);
+
+JNI_GENERATOR_EXPORT jint
+Java_com_google_vr_ndk_base_GvrApi_nativeValueAsInt(JNIEnv* env,
+                                                    jclass clazz,
+                                                    jlong native_object);
+
+JNI_GENERATOR_EXPORT void Java_com_google_vr_ndk_base_GvrApi_nativeValueAsMat4f(
+    JNIEnv* env,
+    jclass clazz,
+    jlong native_object,
+    jfloatArray mat4_out_array);
+
+JNI_GENERATOR_EXPORT jlong
+Java_com_google_vr_ndk_base_GvrApi_nativeValueGetFlags(JNIEnv* env,
+                                                       jclass clazz,
+                                                       jlong native_object);
+
 // Step 3: RegisterNatives.
 
 static const JNINativeMethod kMethodsGvrApi[] = {
@@ -1496,6 +1591,135 @@ static const JNINativeMethod kMethodsGvrApi[] = {
      "Z",
      reinterpret_cast<void*>(
          Java_com_google_vr_ndk_base_GvrApi_nativeUsingVrDisplayService)},
+    {"nativeCreateEvent",
+     "("
+     ")"
+     "J",
+     reinterpret_cast<void*>(
+         Java_com_google_vr_ndk_base_GvrApi_nativeCreateEvent)},
+    {"nativeCreateValue",
+     "("
+     ")"
+     "J",
+     reinterpret_cast<void*>(
+         Java_com_google_vr_ndk_base_GvrApi_nativeCreateValue)},
+    {"nativeDestroyEvent",
+     "("
+     "J"
+     ")"
+     "V",
+     reinterpret_cast<void*>(
+         Java_com_google_vr_ndk_base_GvrApi_nativeDestroyEvent)},
+    {"nativeDestroyValue",
+     "("
+     "J"
+     ")"
+     "V",
+     reinterpret_cast<void*>(
+         Java_com_google_vr_ndk_base_GvrApi_nativeDestroyValue)},
+    {"nativeGetCurrentProperties",
+     "("
+     "J"
+     ")"
+     "J",
+     reinterpret_cast<void*>(
+         Java_com_google_vr_ndk_base_GvrApi_nativeGetCurrentProperties)},
+    {"nativeGetEventFlags",
+     "("
+     "J"
+     ")"
+     "J",
+     reinterpret_cast<void*>(
+         Java_com_google_vr_ndk_base_GvrApi_nativeGetEventFlags)},
+    {"nativeGetEventTimestamp",
+     "("
+     "J"
+     ")"
+     "J",
+     reinterpret_cast<void*>(
+         Java_com_google_vr_ndk_base_GvrApi_nativeGetEventTimestamp)},
+    {"nativeGetEventType",
+     "("
+     "J"
+     ")"
+     "I",
+     reinterpret_cast<void*>(
+         Java_com_google_vr_ndk_base_GvrApi_nativeGetEventType)},
+    {"nativeGetProperty",
+     "("
+     "J"
+     "I"
+     "J"
+     ")"
+     "Z",
+     reinterpret_cast<void*>(
+         Java_com_google_vr_ndk_base_GvrApi_nativeGetProperty)},
+    {"nativeGetRecenterEventFlags",
+     "("
+     "J"
+     ")"
+     "J",
+     reinterpret_cast<void*>(
+         Java_com_google_vr_ndk_base_GvrApi_nativeGetRecenterEventFlags)},
+    {"nativeGetRecenterEventStartSpaceFromTrackingSpaceTransform",
+     "("
+     "J"
+     "[F"
+     ")"
+     "V",
+     reinterpret_cast<void*>(
+         Java_com_google_vr_ndk_base_GvrApi_nativeGetRecenterEventStartSpaceFromTrackingSpaceTransform)},
+    {"nativeGetRecenterEventType",
+     "("
+     "J"
+     ")"
+     "I",
+     reinterpret_cast<void*>(
+         Java_com_google_vr_ndk_base_GvrApi_nativeGetRecenterEventType)},
+    {"nativePollEvent",
+     "("
+     "J"
+     "J"
+     ")"
+     "Z",
+     reinterpret_cast<void*>(
+         Java_com_google_vr_ndk_base_GvrApi_nativePollEvent)},
+    {"nativeValueAsFlags",
+     "("
+     "J"
+     ")"
+     "J",
+     reinterpret_cast<void*>(
+         Java_com_google_vr_ndk_base_GvrApi_nativeValueAsFlags)},
+    {"nativeValueAsFloat",
+     "("
+     "J"
+     ")"
+     "F",
+     reinterpret_cast<void*>(
+         Java_com_google_vr_ndk_base_GvrApi_nativeValueAsFloat)},
+    {"nativeValueAsInt",
+     "("
+     "J"
+     ")"
+     "I",
+     reinterpret_cast<void*>(
+         Java_com_google_vr_ndk_base_GvrApi_nativeValueAsInt)},
+    {"nativeValueAsMat4f",
+     "("
+     "J"
+     "[F"
+     ")"
+     "V",
+     reinterpret_cast<void*>(
+         Java_com_google_vr_ndk_base_GvrApi_nativeValueAsMat4f)},
+    {"nativeValueGetFlags",
+     "("
+     "J"
+     ")"
+     "J",
+     reinterpret_cast<void*>(
+         Java_com_google_vr_ndk_base_GvrApi_nativeValueGetFlags)},
 };
 
 static bool RegisterNativesImpl(JNIEnv* env) {

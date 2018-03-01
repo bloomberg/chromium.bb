@@ -1,17 +1,17 @@
-Name: Google VR SDK
+Name: GVR Android SDK
 Short Name: gvr
 URL: https://github.com/googlevr/gvr-android-sdk
-Version: 1.101.0
-Date: 13 November 2017
-Revision: 6aef4ab34276aac81ee38f1cb1d034de7fc4a4eb
+Version: 1.130.0
+Date: 1 March 2018
+Revision: 233e7fe922a543e0bc55382d64cacd047307d0e7
 License: Apache 2.0
 License File: LICENSE
 Security Critical: yes
 
 Description:
-The Google VR SDK for Android supports both Daydream and Cardboard, including a
-simple API used for creating apps inserted into Cardboard viewers, and the more
-complex API for supporting Daydream-ready phones and the Daydream controller.
+The GVR Android SDK supports both Daydream and Cardboard, including a simple API
+used for creating apps inserted into Cardboard viewers, and the more complex API
+for supporting Daydream-ready phones and the Daydream controller.
 
 Local Modifications:
 Due to binary size concern, we have decided to use a static shim library instead
