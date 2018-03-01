@@ -253,16 +253,34 @@ bool ExtensionApiTest::ExtensionSubtestsAreSkipped() {
 
 bool ExtensionApiTest::RunExtensionSubtest(const std::string& extension_name,
                                            const std::string& page_url) {
-  return RunExtensionSubtest(extension_name, page_url, kFlagEnableFileAccess);
+  return RunExtensionSubtestWithArgAndFlags(extension_name, page_url, nullptr,
+                                            kFlagEnableFileAccess);
 }
 
 bool ExtensionApiTest::RunExtensionSubtest(const std::string& extension_name,
                                            const std::string& page_url,
                                            int flags) {
+  return RunExtensionSubtestWithArgAndFlags(extension_name, page_url, nullptr,
+                                            flags);
+}
+
+bool ExtensionApiTest::RunExtensionSubtestWithArg(
+    const std::string& extension_name,
+    const std::string& page_url,
+    const char* custom_arg) {
+  return RunExtensionSubtestWithArgAndFlags(extension_name, page_url,
+                                            custom_arg, kFlagEnableFileAccess);
+}
+
+bool ExtensionApiTest::RunExtensionSubtestWithArgAndFlags(
+    const std::string& extension_name,
+    const std::string& page_url,
+    const char* custom_arg,
+    int flags) {
   DCHECK(!page_url.empty()) << "Argument page_url is required.";
   if (ExtensionSubtestsAreSkipped())
     return true;
-  return RunExtensionTestImpl(extension_name, page_url, NULL, flags);
+  return RunExtensionTestImpl(extension_name, page_url, custom_arg, flags);
 }
 
 bool ExtensionApiTest::RunPageTest(const std::string& page_url) {

@@ -47,6 +47,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_type.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/url_loader_interceptor.h"
 #include "extensions/browser/api/web_request/web_request_api.h"
 #include "extensions/browser/blocked_action_type.h"
 #include "extensions/browser/extension_system.h"
@@ -69,6 +70,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_interceptor.h"
+#include "services/network/public/cpp/features.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 
 #if defined(OS_CHROMEOS)
@@ -283,22 +285,33 @@ class DevToolsFrontendInWebRequestApiTest : public ExtensionApiTest {
     host_resolver()->AddRule("*", "127.0.0.1");
 
     int port = embedded_test_server()->port();
-    base::RunLoop run_loop;
-    content::BrowserThread::PostTaskAndReply(
-        content::BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&SetUpDevToolsFrontendInterceptorOnIO, port,
-                       test_root_dir_),
-        run_loop.QuitClosure());
-    run_loop.Run();
+
+    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+      url_loader_interceptor_ = std::make_unique<content::URLLoaderInterceptor>(
+          base::BindRepeating(&DevToolsFrontendInWebRequestApiTest::OnIntercept,
+                              base::Unretained(this), port));
+    } else {
+      base::RunLoop run_loop;
+      content::BrowserThread::PostTaskAndReply(
+          content::BrowserThread::IO, FROM_HERE,
+          base::BindOnce(&SetUpDevToolsFrontendInterceptorOnIO, port,
+                         test_root_dir_),
+          run_loop.QuitClosure());
+      run_loop.Run();
+    }
   }
 
   void TearDownOnMainThread() override {
-    base::RunLoop run_loop;
-    content::BrowserThread::PostTaskAndReply(
-        content::BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&TearDownDevToolsFrontendInterceptorOnIO),
-        run_loop.QuitClosure());
-    run_loop.Run();
+    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+      url_loader_interceptor_.reset();
+    } else {
+      base::RunLoop run_loop;
+      content::BrowserThread::PostTaskAndReply(
+          content::BrowserThread::IO, FROM_HERE,
+          base::BindOnce(&TearDownDevToolsFrontendInterceptorOnIO),
+          run_loop.QuitClosure());
+      run_loop.Run();
+    }
     ExtensionApiTest::TearDownOnMainThread();
   }
 
@@ -317,7 +330,49 @@ class DevToolsFrontendInWebRequestApiTest : public ExtensionApiTest {
   }
 
  private:
+  bool OnIntercept(int test_server_port,
+                   content::URLLoaderInterceptor::RequestParams* params) {
+    // See comments in DevToolsFrontendInterceptor above. The devtools remote
+    // frontend URLs are hardcoded into Chrome and are requested by some of the
+    // tests here to exercise their behavior with respect to WebRequest.
+    //
+    // We treat any URL request not targeting the test server as targeting the
+    // remote frontend, and we intercept them to fulfill from test data rather
+    // than hitting the network.
+    if (params->url_request.url.EffectiveIntPort() == test_server_port)
+      return false;
+
+    std::string status_line;
+    std::string contents;
+    GetFileContents(
+        test_root_dir_.AppendASCII(params->url_request.url.path().substr(1)),
+        &status_line, &contents);
+    content::URLLoaderInterceptor::WriteResponse(status_line, contents,
+                                                 params->client.get());
+    return true;
+  }
+
+  static void GetFileContents(const base::FilePath& path,
+                              std::string* status_line,
+                              std::string* contents) {
+    base::ScopedAllowBlockingForTesting allow_io;
+    if (!base::ReadFileToString(path, contents)) {
+      *status_line = "HTTP/1.0 404 Not Found\n\n";
+      return;
+    }
+
+    std::string content_type;
+    if (path.Extension() == FILE_PATH_LITERAL(".html"))
+      content_type = "Content-type: text/html\n";
+    else if (path.Extension() == FILE_PATH_LITERAL(".js"))
+      content_type = "Content-type: application/javascript\n";
+
+    *status_line =
+        base::StringPrintf("HTTP/1.0 200 OK\n%s\n", content_type.c_str());
+  }
+
   base::FilePath test_root_dir_;
+  std::unique_ptr<content::URLLoaderInterceptor> url_loader_interceptor_;
 };
 
 IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestApi) {
@@ -1297,7 +1352,21 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, MinimumAccessInitiator) {
 
 // Ensure that devtools frontend requests are hidden from the webRequest API.
 IN_PROC_BROWSER_TEST_F(DevToolsFrontendInWebRequestApiTest, HiddenRequests) {
-  ASSERT_TRUE(RunExtensionSubtest("webrequest", "test_devtools.html"))
+  // Test expectations differ with the Network Service because of the way
+  // request interception is done for the test. In the legacy networking path a
+  // URLRequestMockHTTPJob is used, which does not generate
+  // |onBeforeHeadersSent| events. With the Network Service enabled, requests
+  // issued to HTTP URLs by these tests look like real HTTP requests and
+  // therefore do generate |onBeforeHeadersSent| events.
+  //
+  // These tests adjust their expectations accordingly based on whether or not
+  // the Network Service is enabled.
+  const char* network_service_arg =
+      base::FeatureList::IsEnabled(network::features::kNetworkService)
+          ? "NetworkServiceEnabled"
+          : "NetworkServiceDisabled";
+  ASSERT_TRUE(RunExtensionSubtestWithArg("webrequest", "test_devtools.html",
+                                         network_service_arg))
       << message_;
 }
 
