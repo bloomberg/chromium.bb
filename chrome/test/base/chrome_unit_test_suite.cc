@@ -10,6 +10,7 @@
 #include "base/path_service.h"
 #include "base/process/process_handle.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
@@ -65,6 +66,10 @@ class ChromeUnitTestSuiteInitializer : public testing::EmptyTestEventListener {
     content::SetUtilityClientForTesting(utility_content_client_.get());
 
     TestingBrowserProcess::CreateInstance();
+
+    // Force TabManager creation before the first tab is created. In production,
+    // that happens in ChromeBrowserMainParts::PreBrowserStart().
+    g_browser_process->GetTabManager();
   }
 
   void OnTestEnd(const testing::TestInfo& test_info) override {

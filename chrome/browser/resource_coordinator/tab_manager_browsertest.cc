@@ -42,9 +42,17 @@ using content::OpenURLParams;
 
 namespace resource_coordinator {
 
+namespace {
+
+constexpr base::TimeDelta kShortDelay = base::TimeDelta::FromSeconds(1);
+
 class TabManagerTest : public InProcessBrowserTest {
  public:
-  TabManagerTest() : scoped_set_tick_clock_for_testing_(&test_clock_) {}
+  TabManagerTest() : scoped_set_tick_clock_for_testing_(&test_clock_) {
+    // Start with a non-null TimeTicks, as there is no discard protection for
+    // a tab with a null focused timestamp.
+    test_clock_.Advance(kShortDelay);
+  }
 
   void OpenTwoTabs(const GURL& first_url, const GURL& second_url) {
     // Open two tabs. Wait for both of them to load.
@@ -86,11 +94,15 @@ bool ObserveNavEntryCommitted(const GURL& expected_url,
              ->entry->GetURL() == expected_url;
 }
 
+}  // namespace
+
 IN_PROC_BROWSER_TEST_F(TabManagerTest, TabManagerBasics) {
   using content::WindowedNotificationObserver;
   TabManager* tab_manager = g_browser_process->GetTabManager();
 
   // Get three tabs open.
+
+  test_clock_.Advance(kShortDelay);
   WindowedNotificationObserver load1(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::NotificationService::AllSources());
@@ -100,6 +112,7 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, TabManagerBasics) {
   browser()->OpenURL(open1);
   load1.Wait();
 
+  test_clock_.Advance(kShortDelay);
   WindowedNotificationObserver load2(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::NotificationService::AllSources());
@@ -109,6 +122,7 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, TabManagerBasics) {
   browser()->OpenURL(open2);
   load2.Wait();
 
+  test_clock_.Advance(kShortDelay);
   WindowedNotificationObserver load3(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::NotificationService::AllSources());
@@ -170,9 +184,11 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, TabManagerBasics) {
 
   // Kill the third tab after making second tab active.
   tsm->ActivateTabAt(1, true);
+
   EXPECT_EQ(1, tsm->active_index());
   EXPECT_FALSE(tab_manager->IsTabDiscarded(tsm->GetWebContentsAt(1)));
-  tab_manager->DiscardWebContentsAt(2, tsm, DiscardReason::kProactive);
+  FastForwardAfterDiscardProtectionTime();
+  tab_manager->DiscardTabImpl(DiscardReason::kProactive);
   EXPECT_TRUE(tab_manager->IsTabDiscarded(tsm->GetWebContentsAt(2)));
 
   // Force creation of the FindBarController.

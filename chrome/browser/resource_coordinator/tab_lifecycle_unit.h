@@ -73,8 +73,10 @@ class TabLifecycleUnitSource::TabLifecycleUnit
   TabLifecycleUnitExternal* AsTabLifecycleUnitExternal() override;
   base::string16 GetTitle() const override;
   std::string GetIconURL() const override;
+  base::ProcessHandle GetProcessHandle() const override;
   SortKey GetSortKey() const override;
   int GetEstimatedMemoryFreedOnDiscardKB() const override;
+  bool CanPurge() const override;
   bool CanDiscard(DiscardReason reason) const override;
   bool Discard(DiscardReason discard_reason) override;
 
