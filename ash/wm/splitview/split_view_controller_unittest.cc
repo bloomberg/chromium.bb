@@ -839,9 +839,9 @@ TEST_F(SplitViewControllerTest, RotationTest) {
       split_view_divider()->GetDividerBoundsInScreen(false /* is_dragging */);
 
   // Test that |window1|, divider, |window2| are now aligned vertically.
-  // |window2| is on the top, then the divider, and then |window1|.
-  EXPECT_EQ(bounds_divider.y(), bounds_window2.y() + bounds_window2.height());
-  EXPECT_EQ(bounds_window1.y(), bounds_divider.y() + bounds_divider.height());
+  // |window1| is on the top, then the divider, and then |window2|.
+  EXPECT_EQ(bounds_divider.y(), bounds_window1.y() + bounds_window1.height());
+  EXPECT_EQ(bounds_window2.y(), bounds_divider.y() + bounds_divider.height());
   EXPECT_EQ(bounds_window1.width(), bounds_divider.width());
   EXPECT_EQ(bounds_window1.width(), bounds_window2.width());
 
@@ -874,9 +874,9 @@ TEST_F(SplitViewControllerTest, RotationTest) {
       split_view_divider()->GetDividerBoundsInScreen(false /* is_dragging */);
 
   // Test that |window1|, divider, |window2| are now aligned vertically.
-  // |window1| is on the top, then the divider, and then |window2|.
-  EXPECT_EQ(bounds_divider.y(), bounds_window1.y() + bounds_window1.height());
-  EXPECT_EQ(bounds_window2.y(), bounds_divider.y() + bounds_divider.height());
+  // |window2| is on the top, then the divider, and then |window1|.
+  EXPECT_EQ(bounds_divider.y(), bounds_window2.y() + bounds_window2.height());
+  EXPECT_EQ(bounds_window1.y(), bounds_divider.y() + bounds_divider.height());
   EXPECT_EQ(bounds_window1.width(), bounds_divider.width());
   EXPECT_EQ(bounds_window1.width(), bounds_window2.width());
 
@@ -984,8 +984,7 @@ TEST_F(SplitViewControllerTest, ResizingSnappedWindowWithMinimumSizeTest) {
   delegate1->set_minimum_size(
       gfx::Size(display_bounds.width(), display_bounds.height() * 0.4f));
   EXPECT_TRUE(split_view_controller()->CanSnap(window1.get()));
-  split_view_controller()->SnapWindow(window1.get(),
-                                      SplitViewController::RIGHT);
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
   divider_bounds = split_view_divider()->GetDividerBoundsInScreen(false);
   split_view_controller()->StartResize(divider_bounds.CenterPoint());
   resize_point.SetPoint(0, display_bounds.height() * 0.33f);
@@ -993,7 +992,7 @@ TEST_F(SplitViewControllerTest, ResizingSnappedWindowWithMinimumSizeTest) {
 
   snapped_window_bounds =
       split_view_controller()->GetSnappedWindowBoundsInScreen(
-          window1.get(), SplitViewController::RIGHT);
+          window1.get(), SplitViewController::LEFT);
   EXPECT_LT(snapped_window_bounds.y(), display_bounds.y());
   EXPECT_EQ(snapped_window_bounds.height(),
             window1->delegate()->GetMinimumSize().height());
@@ -1037,7 +1036,8 @@ TEST_F(SplitViewControllerTest, ResizingSnappedWindowWithMinimumSizeTest) {
   delegate1->set_minimum_size(
       gfx::Size(display_bounds.width(), display_bounds.height() * 0.4f));
   EXPECT_TRUE(split_view_controller()->CanSnap(window1.get()));
-  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(window1.get(),
+                                      SplitViewController::RIGHT);
 
   divider_bounds = split_view_divider()->GetDividerBoundsInScreen(false);
   split_view_controller()->StartResize(divider_bounds.CenterPoint());
@@ -1046,7 +1046,7 @@ TEST_F(SplitViewControllerTest, ResizingSnappedWindowWithMinimumSizeTest) {
 
   snapped_window_bounds =
       split_view_controller()->GetSnappedWindowBoundsInScreen(
-          window1.get(), SplitViewController::LEFT);
+          window1.get(), SplitViewController::RIGHT);
   EXPECT_LT(snapped_window_bounds.y(), display_bounds.y());
   EXPECT_EQ(snapped_window_bounds.height(),
             window1->delegate()->GetMinimumSize().height());

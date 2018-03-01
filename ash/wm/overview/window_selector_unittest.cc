@@ -3194,6 +3194,12 @@ TEST_F(SplitViewWindowSelectorTest, SplitViewRotationTest) {
   EXPECT_EQ(split_view_controller()->state(),
             SplitViewController::BOTH_SNAPPED);
   EXPECT_EQ(split_view_controller()->right_window(), window2.get());
+
+  // Test that |left_window_| was snapped to left after rotated 0 degree.
+  gfx::Rect left_window_bounds =
+      split_view_controller()->left_window()->GetBoundsInScreen();
+  EXPECT_EQ(left_window_bounds.x(), work_area_rect.x());
+  EXPECT_EQ(left_window_bounds.y(), work_area_rect.y());
   EndSplitView();
 
   // Rotate the screen by 270 degree.
@@ -3203,14 +3209,14 @@ TEST_F(SplitViewWindowSelectorTest, SplitViewRotationTest) {
             blink::kWebScreenOrientationLockPortraitPrimary);
   ToggleOverview();
 
-  // Test that dragging |window1| to the top of the screen snaps it to right.
+  // Test that dragging |window1| to the top of the screen snaps it to left.
   selector_item1 = GetWindowItemForWindow(grid_index, window1.get());
   DragWindowTo(selector_item1, gfx::Point(0, 0));
   EXPECT_EQ(split_view_controller()->state(),
-            SplitViewController::RIGHT_SNAPPED);
-  EXPECT_EQ(split_view_controller()->right_window(), window1.get());
+            SplitViewController::LEFT_SNAPPED);
+  EXPECT_EQ(split_view_controller()->left_window(), window1.get());
 
-  // Test that dragging |window2| to the bottom of the screen snaps it to left.
+  // Test that dragging |window2| to the bottom of the screen snaps it to right.
   selector_item2 = GetWindowItemForWindow(grid_index, window2.get());
   work_area_rect =
       split_view_controller()->GetDisplayWorkAreaBoundsInScreen(window2.get());
@@ -3218,7 +3224,13 @@ TEST_F(SplitViewWindowSelectorTest, SplitViewRotationTest) {
   DragWindowTo(selector_item2, end_location2, SelectorItemLocation::ORIGIN);
   EXPECT_EQ(split_view_controller()->state(),
             SplitViewController::BOTH_SNAPPED);
-  EXPECT_EQ(split_view_controller()->left_window(), window2.get());
+  EXPECT_EQ(split_view_controller()->right_window(), window2.get());
+
+  // Test that |left_window_| was snapped to top after rotated 270 degree.
+  left_window_bounds =
+      split_view_controller()->left_window()->GetBoundsInScreen();
+  EXPECT_EQ(left_window_bounds.x(), work_area_rect.x());
+  EXPECT_EQ(left_window_bounds.y(), work_area_rect.y());
   EndSplitView();
 
   // Rotate the screen by 180 degree.
@@ -3244,6 +3256,12 @@ TEST_F(SplitViewWindowSelectorTest, SplitViewRotationTest) {
   EXPECT_EQ(split_view_controller()->state(),
             SplitViewController::BOTH_SNAPPED);
   EXPECT_EQ(split_view_controller()->left_window(), window2.get());
+
+  // Test that |right_window_| was snapped to left after rotated 180 degree.
+  gfx::Rect right_window_bounds =
+      split_view_controller()->right_window()->GetBoundsInScreen();
+  EXPECT_EQ(right_window_bounds.x(), work_area_rect.x());
+  EXPECT_EQ(right_window_bounds.y(), work_area_rect.y());
   EndSplitView();
 
   // Rotate the screen by 90 degree.
@@ -3253,14 +3271,14 @@ TEST_F(SplitViewWindowSelectorTest, SplitViewRotationTest) {
             blink::kWebScreenOrientationLockPortraitSecondary);
   ToggleOverview();
 
-  // Test that dragging |window1| to the top of the screen snaps it to left.
+  // Test that dragging |window1| to the top of the screen snaps it to right.
   selector_item1 = GetWindowItemForWindow(grid_index, window1.get());
   DragWindowTo(selector_item1, gfx::Point(0, 0));
   EXPECT_EQ(split_view_controller()->state(),
-            SplitViewController::LEFT_SNAPPED);
-  EXPECT_EQ(split_view_controller()->left_window(), window1.get());
+            SplitViewController::RIGHT_SNAPPED);
+  EXPECT_EQ(split_view_controller()->right_window(), window1.get());
 
-  // Test that dragging |window2| to the bottom of the screen snaps it to right.
+  // Test that dragging |window2| to the bottom of the screen snaps it to left.
   selector_item2 = GetWindowItemForWindow(grid_index, window2.get());
   work_area_rect =
       split_view_controller()->GetDisplayWorkAreaBoundsInScreen(window2.get());
@@ -3268,7 +3286,13 @@ TEST_F(SplitViewWindowSelectorTest, SplitViewRotationTest) {
   DragWindowTo(selector_item2, end_location2);
   EXPECT_EQ(split_view_controller()->state(),
             SplitViewController::BOTH_SNAPPED);
-  EXPECT_EQ(split_view_controller()->right_window(), window2.get());
+  EXPECT_EQ(split_view_controller()->left_window(), window2.get());
+
+  // Test that |right_window_| was snapped to top after rotated 90 degree.
+  right_window_bounds =
+      split_view_controller()->right_window()->GetBoundsInScreen();
+  EXPECT_EQ(right_window_bounds.x(), work_area_rect.x());
+  EXPECT_EQ(right_window_bounds.y(), work_area_rect.y());
   EndSplitView();
 }
 

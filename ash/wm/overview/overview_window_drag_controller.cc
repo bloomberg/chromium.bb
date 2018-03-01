@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "ash/display/screen_orientation_controller_chromeos.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/wm/overview/scoped_transform_overview_window.h"
@@ -20,18 +19,6 @@
 #include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
-
-namespace {
-
-// Returns true if |screen_orientation| is a primary orientation.
-bool IsPrimaryScreenOrientation(
-    blink::WebScreenOrientationLockType screen_orientation) {
-  return screen_orientation ==
-             blink::kWebScreenOrientationLockLandscapePrimary ||
-         screen_orientation == blink::kWebScreenOrientationLockPortraitPrimary;
-}
-
-}  // namespace
 
 OverviewWindowDragController::OverviewWindowDragController(
     WindowSelector* window_selector)
@@ -225,8 +212,8 @@ bool OverviewWindowDragController::ShouldUpdateOverlayOrSnap(
   // SplitViewController::LEFT is not physically on the left/top.
   const int threshold =
       OverviewWindowDragController::kMinimumDragOffsetAlreadyInSnapRegionDp;
-  const bool inverted = !SplitViewController::IsLeftWindowOnTopOrLeftOfScreen(
-      Shell::Get()->screen_orientation_controller()->GetCurrentOrientation());
+  const bool inverted =
+      !split_view_controller_->IsCurrentScreenOrientationPrimary();
   const bool on_the_left_or_top =
       (!inverted && snap_position == SplitViewController::LEFT) ||
       (inverted && snap_position == SplitViewController::RIGHT);
@@ -242,9 +229,7 @@ SplitViewController::SnapPosition OverviewWindowDragController::GetSnapPosition(
       screen_util::GetDisplayWorkAreaBoundsInParent(item_->GetWindow()));
   ::wm::ConvertRectToScreen(item_->GetWindow()->GetRootWindow(), &area);
 
-  blink::WebScreenOrientationLockType screen_orientation =
-      Shell::Get()->screen_orientation_controller()->GetCurrentOrientation();
-  switch (screen_orientation) {
+  switch (split_view_controller_->screen_orientation()) {
     case blink::kWebScreenOrientationLockLandscapePrimary:
     case blink::kWebScreenOrientationLockLandscapeSecondary: {
       // The window can be snapped if it reaches close enough to the screen
@@ -255,12 +240,12 @@ SplitViewController::SnapPosition OverviewWindowDragController::GetSnapPosition(
           kHighlightScreenEdgePaddingDp;
       area.Inset(screen_edge_inset_for_drag, 0);
       if (location_in_screen.x() <= area.x()) {
-        return IsPrimaryScreenOrientation(screen_orientation)
+        return split_view_controller_->IsCurrentScreenOrientationPrimary()
                    ? SplitViewController::LEFT
                    : SplitViewController::RIGHT;
       }
       if (location_in_screen.x() >= area.right() - 1) {
-        return IsPrimaryScreenOrientation(screen_orientation)
+        return split_view_controller_->IsCurrentScreenOrientationPrimary()
                    ? SplitViewController::RIGHT
                    : SplitViewController::LEFT;
       }
@@ -273,14 +258,14 @@ SplitViewController::SnapPosition OverviewWindowDragController::GetSnapPosition(
           kHighlightScreenEdgePaddingDp;
       area.Inset(0, screen_edge_inset_for_drag);
       if (location_in_screen.y() <= area.y()) {
-        return IsPrimaryScreenOrientation(screen_orientation)
-                   ? SplitViewController::RIGHT
-                   : SplitViewController::LEFT;
-      }
-      if (location_in_screen.y() >= area.bottom() - 1) {
-        return IsPrimaryScreenOrientation(screen_orientation)
+        return split_view_controller_->IsCurrentScreenOrientationPrimary()
                    ? SplitViewController::LEFT
                    : SplitViewController::RIGHT;
+      }
+      if (location_in_screen.y() >= area.bottom() - 1) {
+        return split_view_controller_->IsCurrentScreenOrientationPrimary()
+                   ? SplitViewController::RIGHT
+                   : SplitViewController::LEFT;
       }
       return SplitViewController::NONE;
     }
