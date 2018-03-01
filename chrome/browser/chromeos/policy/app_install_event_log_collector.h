@@ -9,7 +9,10 @@
 #include <set>
 #include <string>
 
+#include "base/logging.h"
 #include "base/macros.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chromeos/dbus/power_manager_client.h"
 
 class Profile;
 
@@ -19,7 +22,8 @@ class AppInstallReportLogEvent;
 namespace policy {
 
 // Listens for and logs events related to app push-installs.
-class AppInstallEventLogCollector {
+class AppInstallEventLogCollector
+    : public chromeos::PowerManagerClient::Observer {
  public:
   // The delegate that events are forwarded to for inclusion in the log.
   class Delegate {
@@ -45,13 +49,25 @@ class AppInstallEventLogCollector {
   AppInstallEventLogCollector(Delegate* delegate,
                               Profile* profile,
                               const std::set<std::string>& pending_packages);
-  ~AppInstallEventLogCollector();
+  ~AppInstallEventLogCollector() override;
 
   // Called whenever the list of pending app-install requests changes.
   void OnPendingPackagesChanged(const std::set<std::string>& added,
                                 const std::set<std::string>& removed);
 
+  // Called in case of login and pending apps.
+  void AddLoginEvent();
+  // Called in case of logout and pending apps.
+  void AddLogoutEvent();
+
+  // chromeos::PowerManagerClient::Observer:
+  void SuspendImminent(power_manager::SuspendImminent::Reason reason) override;
+  void SuspendDone(const base::TimeDelta& sleep_duration) override;
+
  private:
+  Delegate* const delegate_;
+  Profile* const profile_;
+
   DISALLOW_COPY_AND_ASSIGN(AppInstallEventLogCollector);
 };
 

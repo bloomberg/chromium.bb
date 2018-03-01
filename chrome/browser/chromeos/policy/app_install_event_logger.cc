@@ -129,6 +129,9 @@ AppInstallEventLogger::AppInstallEventLogger(Delegate* delegate,
 }
 
 AppInstallEventLogger::~AppInstallEventLogger() {
+  if (log_collector_) {
+    log_collector_->AddLogoutEvent();
+  }
   if (observing_) {
     arc::ArcPolicyBridge::GetForBrowserContext(profile_)->RemoveObserver(this);
     policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile_)
@@ -284,6 +287,7 @@ void AppInstallEventLogger::EvaluatePolicy(const policy::PolicyMap& policy,
   if (!current_pending.empty()) {
     if (initial) {
       UpdateCollector(current_pending /* added */, {} /* removed */);
+      log_collector_->AddLoginEvent();
     } else {
       UpdateCollector(added, removed);
     }
