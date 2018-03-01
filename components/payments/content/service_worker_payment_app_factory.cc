@@ -111,6 +111,9 @@ class SelfDeletingServiceWorkerPaymentAppFactory {
     cache_ = cache;
     verifier_ = std::make_unique<ManifestVerifier>(
         web_contents, downloader_.get(), parser_.get(), cache_.get());
+    // Construct crawler in constructor to allow it observe the web_contents.
+    crawler_ = std::make_unique<InstallablePaymentAppCrawler>(
+        web_contents, downloader_.get(), parser_.get(), cache_.get());
 
     // Method data cannot be copied and is passed in as a const-ref, which
     // cannot be moved, so make a manual copy for using below.
@@ -164,8 +167,6 @@ class SelfDeletingServiceWorkerPaymentAppFactory {
     if (apps.empty()) {
       // Crawls installable web payment apps if no web payment apps have been
       // installed.
-      crawler_ = std::make_unique<InstallablePaymentAppCrawler>(
-          downloader_.get(), parser_.get(), cache_.get());
       is_payment_app_crawler_finished_using_resources_ = false;
       crawler_->Start(
           requested_method_data_,
@@ -177,6 +178,9 @@ class SelfDeletingServiceWorkerPaymentAppFactory {
                          base::Unretained(this)));
       return;
     }
+
+    // Release crawler_ since it will not be used from now on.
+    crawler_.reset();
 
     std::move(callback_).Run(
         std::move(apps),

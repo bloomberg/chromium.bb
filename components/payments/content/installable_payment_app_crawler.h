@@ -18,16 +18,21 @@
 #include "components/payments/content/utility/payment_manifest_parser.h"
 #include "components/payments/content/web_app_manifest.h"
 #include "components/payments/core/payment_manifest_downloader.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "third_party/WebKit/public/platform/modules/payments/payment_request.mojom.h"
 
 class GURL;
+
+namespace content {
+class WebContents;
+}
 
 namespace payments {
 
 // Crawls installable web payment apps. First, fetches and parses the payment
 // method manifests to get 'default_applications' manifest urls. Then, fetches
 // and parses the web app manifests to get the installable payment apps' info.
-class InstallablePaymentAppCrawler {
+class InstallablePaymentAppCrawler : public content::WebContentsObserver {
  public:
   using FinishedCrawlingCallback = base::OnceCallback<void(
       std::map<GURL, std::unique_ptr<WebAppInstallationInfo>>)>;
@@ -35,10 +40,11 @@ class InstallablePaymentAppCrawler {
   // The owner of InstallablePaymentAppCrawler owns |downloader|, |parser| and
   // |cache|. They should live until |finished_using_resources| parameter to
   // Start() method is called.
-  InstallablePaymentAppCrawler(PaymentManifestDownloader* downloader,
+  InstallablePaymentAppCrawler(content::WebContents* web_contents,
+                               PaymentManifestDownloader* downloader,
                                PaymentManifestParser* parser,
                                PaymentManifestWebDataService* cache);
-  ~InstallablePaymentAppCrawler();
+  ~InstallablePaymentAppCrawler() override;
 
   // Starts the crawling process. All the url based payment methods in
   // |request_method_data| will be crawled. A list of installable payment apps'
@@ -64,8 +70,22 @@ class InstallablePaymentAppCrawler {
   void OnPaymentWebAppInstallationInfo(
       const GURL& method_manifest_url,
       const GURL& web_app_manifest_url,
+      std::unique_ptr<WebAppInstallationInfo> app_info,
+      std::unique_ptr<std::vector<PaymentManifestParser::WebAppIcon>> icons);
+  bool CompleteAndStorePaymentWebAppInfoIfValid(
+      const GURL& method_manifest_url,
+      const GURL& web_app_manifest_url,
       std::unique_ptr<WebAppInstallationInfo> app_info);
+  void DownloadAndDecodeWebAppIcon(
+      const GURL& method_manifest_url,
+      const GURL& web_app_manifest_url,
+      std::unique_ptr<std::vector<PaymentManifestParser::WebAppIcon>> icons);
+  void OnPaymentWebAppIconDownloadAndDecoded(const GURL& method_manifest_url,
+                                             const GURL& web_app_manifest_url,
+                                             const SkBitmap& icon);
   void FinishCrawlingPaymentAppsIfReady();
+
+  void WarnIfPossible(const std::string& message);
 
   PaymentManifestDownloader* downloader_;
   PaymentManifestParser* parser_;
@@ -76,6 +96,7 @@ class InstallablePaymentAppCrawler {
   size_t number_of_payment_method_manifest_to_parse_;
   size_t number_of_web_app_manifest_to_download_;
   size_t number_of_web_app_manifest_to_parse_;
+  size_t number_of_web_app_icons_to_download_and_decode_;
   std::set<GURL> downloaded_web_app_manifests_;
   std::map<GURL, std::unique_ptr<WebAppInstallationInfo>> installable_apps_;
 

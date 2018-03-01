@@ -49,6 +49,10 @@ static_library("content_common") {
     "web_app_manifest.cc",
     "web_app_manifest.h",
   ]
+
+  deps = [
+    "//skia",
+  ]
 }
 
 static_library("utils") {
