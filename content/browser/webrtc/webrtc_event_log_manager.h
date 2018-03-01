@@ -278,13 +278,13 @@ class CONTENT_EXPORT WebRtcEventLogManager final
   void StartRemoteLoggingInternal(PeerConnectionKey key,
                                   const base::FilePath& browser_context_dir,
                                   size_t max_file_size_bytes,
-                                  const std::string metadata,
+                                  const std::string& metadata,
                                   base::OnceCallback<void(bool)> reply);
 
   void OnWebRtcEventLogWriteInternal(
       PeerConnectionKey key,
       bool remote_logging_allowed,
-      const std::string message,
+      const std::string& message,
       base::OnceCallback<void(std::pair<bool, bool>)> reply);
 
   void RenderProcessExitedInternal(int render_process_id);
