@@ -55,7 +55,10 @@ INSTANTIATE_TYPED_TEST_CASE_P(InactiveCookieStoreIOS,
                               CookieStoreTest,
                               InactiveCookieStoreIOSTestTraits);
 INSTANTIATE_TYPED_TEST_CASE_P(InactiveCookieStoreIOS,
-                              CookieStoreChangeTest,
+                              CookieStoreChangeGlobalTest,
+                              InactiveCookieStoreIOSTestTraits);
+INSTANTIATE_TYPED_TEST_CASE_P(InactiveCookieStoreIOS,
+                              CookieStoreChangeNamedTest,
                               InactiveCookieStoreIOSTestTraits);
 
 namespace {
