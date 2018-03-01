@@ -30,8 +30,11 @@
 
 #include "core/inspector/InspectorMemoryAgent.h"
 
+#include <cstdio>
+
 #include "base/debug/stack_trace.h"
 #include "base/sampling_heap_profiler/sampling_heap_profiler.h"
+#include "build/build_config.h"
 #include "core/frame/LocalFrameClient.h"
 #include "core/inspector/InspectedFrames.h"
 #include "platform/InstanceCounters.h"
@@ -176,6 +179,7 @@ InspectorMemoryAgent::GetSamplingProfileById(uint32_t id) {
 
 std::vector<std::string> InspectorMemoryAgent::Symbolize(
     const std::vector<void*>& addresses) {
+#if defined(OS_LINUX)
   // TODO(alph): Move symbolization to the client.
   std::vector<void*> addresses_to_symbolize;
   for (void* address : addresses) {
@@ -204,6 +208,15 @@ std::vector<std::string> InspectorMemoryAgent::Symbolize(
     result.push_back(symbols_cache_.at(address));
 
   return result;
+#else
+  std::vector<std::string> result;
+  for (void* address : addresses) {
+    char buffer[20];
+    std::snprintf(buffer, sizeof(buffer), "%p", address);
+    result.push_back(buffer);
+  }
+  return result;
+#endif
 }
 
 }  // namespace blink
