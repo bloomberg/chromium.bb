@@ -2355,6 +2355,7 @@
                         "UIVerticalMargin": "8"
                     },
                     "enable_features": [
+                        "OmniboxBreakWordsAtUnderscores",
                         "OmniboxUIExperimentShowSuggestionFavicons",
                         "OmniboxUIExperimentSwapTitleAndUrl",
                         "OmniboxUIExperimentVerticalMargin"
