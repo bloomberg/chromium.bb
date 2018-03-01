@@ -180,8 +180,7 @@ TEST_F(GeneratePageBundleReconcileTaskTest, NoUpdateForOtherStates) {
   const int attempts_count =
       GeneratePageBundleReconcileTask::kMaxGenerateBundleAttempts;
   std::vector<PrefetchItemState> all_other_states =
-      PrefetchTaskTestBase::GetAllStatesExcept(
-          PrefetchItemState::SENT_GENERATE_PAGE_BUNDLE);
+      GetAllStatesExcept({PrefetchItemState::SENT_GENERATE_PAGE_BUNDLE});
   for (const auto& state : all_other_states)
     items.insert(InsertItem(state, attempts_count));
 
