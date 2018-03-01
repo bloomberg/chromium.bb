@@ -124,6 +124,18 @@ class BASE_EXPORT Timer {
                      TimeDelta delay,
                      const base::Closure& user_task);
 
+  // Start the timer to run at the given |delay| from now. If the timer is
+  // already running, it will be replaced to call a task formed from
+  // |reviewer->*method|.
+  template <class Receiver>
+  void Start(const Location& posted_from,
+             TimeDelta delay,
+             Receiver* receiver,
+             void (Receiver::*method)()) {
+    Timer::Start(posted_from, delay,
+                 base::Bind(method, base::Unretained(receiver)));
+  }
+
   // Call this method to stop and cancel the timer.  It is a no-op if the timer
   // is not running.
   virtual void Stop();
@@ -226,50 +238,21 @@ class BASE_EXPORT Timer {
 };
 
 //-----------------------------------------------------------------------------
-// This class is an implementation detail of OneShotTimer and RepeatingTimer.
-// Please do not use this class directly.
-class BaseTimerMethodPointer : public Timer {
- public:
-  // This is here to work around the fact that Timer::Start is "hidden" by the
-  // Start definition below, rather than being overloaded.
-  // TODO(tim): We should remove uses of BaseTimerMethodPointer::Start below
-  // and convert callers to use the base::Closure version in Timer::Start,
-  // see bug 148832.
-  using Timer::Start;
-
-  enum RepeatMode { ONE_SHOT, REPEATING };
-  BaseTimerMethodPointer(RepeatMode mode, TickClock* tick_clock)
-      : Timer(mode == REPEATING, mode == REPEATING, tick_clock) {}
-
-  // Start the timer to run at the given |delay| from now. If the timer is
-  // already running, it will be replaced to call a task formed from
-  // |reviewer->*method|.
-  template <class Receiver>
-  void Start(const Location& posted_from,
-             TimeDelta delay,
-             Receiver* receiver,
-             void (Receiver::*method)()) {
-    Timer::Start(posted_from, delay,
-                 base::Bind(method, base::Unretained(receiver)));
-  }
-};
-
-//-----------------------------------------------------------------------------
 // A simple, one-shot timer.  See usage notes at the top of the file.
-class OneShotTimer : public BaseTimerMethodPointer {
+class OneShotTimer : public Timer {
  public:
   OneShotTimer() : OneShotTimer(nullptr) {}
   explicit OneShotTimer(TickClock* tick_clock)
-      : BaseTimerMethodPointer(ONE_SHOT, tick_clock) {}
+      : Timer(false, false, tick_clock) {}
 };
 
 //-----------------------------------------------------------------------------
 // A simple, repeating timer.  See usage notes at the top of the file.
-class RepeatingTimer : public BaseTimerMethodPointer {
+class RepeatingTimer : public Timer {
  public:
   RepeatingTimer() : RepeatingTimer(nullptr) {}
   explicit RepeatingTimer(TickClock* tick_clock)
-      : BaseTimerMethodPointer(REPEATING, tick_clock) {}
+      : Timer(true, true, tick_clock) {}
 };
 
 //-----------------------------------------------------------------------------
