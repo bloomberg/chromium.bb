@@ -32,7 +32,6 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
@@ -574,38 +573,6 @@ void WaitForHistoryToLoad(history::HistoryService* history_service) {
     scoped_observer.Add(history_service);
     runner->Run();
   }
-}
-
-BrowserActivationWaiter::BrowserActivationWaiter(const Browser* browser)
-    : browser_(browser), observed_(false) {
-  // When the active browser closes, the next "last active browser" in the
-  // BrowserList might not be immediately activated. So we need to wait for the
-  // "last active browser" to actually be active.
-  if (chrome::FindLastActive() == browser_ && browser_->window()->IsActive()) {
-    observed_ = true;
-    return;
-  }
-  BrowserList::AddObserver(this);
-}
-
-BrowserActivationWaiter::~BrowserActivationWaiter() {}
-
-void BrowserActivationWaiter::WaitForActivation() {
-  if (observed_)
-    return;
-  message_loop_runner_ = new content::MessageLoopRunner;
-  message_loop_runner_->Run();
-}
-
-void BrowserActivationWaiter::OnBrowserSetLastActive(Browser* browser) {
-  if (browser != browser_)
-    return;
-
-  ASSERT_TRUE(browser->window()->IsActive());
-  observed_ = true;
-  BrowserList::RemoveObserver(this);
-  if (message_loop_runner_.get() && message_loop_runner_->loop_running())
-    message_loop_runner_->Quit();
 }
 
 }  // namespace ui_test_utils

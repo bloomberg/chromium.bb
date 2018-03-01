@@ -5,9 +5,13 @@
 #include "chrome/test/base/interactive_test_utils.h"
 
 #include "base/logging.h"
+#include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 namespace ui_test_utils {
@@ -24,6 +28,40 @@ bool GetNativeWindow(const Browser* browser, gfx::NativeWindow* native_window) {
 }
 
 }  // namespace
+
+BrowserActivationWaiter::BrowserActivationWaiter(const Browser* browser)
+    : browser_(browser), observed_(false) {
+  // When the active browser closes, the next "last active browser" in the
+  // BrowserList might not be immediately activated. So we need to wait for the
+  // "last active browser" to actually be active.
+  if (chrome::FindLastActive() == browser_ && browser_->window()->IsActive()) {
+    observed_ = true;
+    return;
+  }
+  BrowserList::AddObserver(this);
+}
+
+BrowserActivationWaiter::~BrowserActivationWaiter() {}
+
+void BrowserActivationWaiter::WaitForActivation() {
+  if (observed_)
+    return;
+  DCHECK(!run_loop_.running()) << "WaitForActivation() can be called at most "
+                                  "once. Construct a new "
+                                  "BrowserActivationWaiter instead.";
+  run_loop_.Run();
+}
+
+void BrowserActivationWaiter::OnBrowserSetLastActive(Browser* browser) {
+  if (browser != browser_)
+    return;
+
+  ASSERT_TRUE(browser->window()->IsActive());
+  observed_ = true;
+  BrowserList::RemoveObserver(this);
+  if (run_loop_.running())
+    run_loop_.Quit();
+}
 
 bool BringBrowserWindowToFront(const Browser* browser) {
   gfx::NativeWindow window = NULL;
