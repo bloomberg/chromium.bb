@@ -197,7 +197,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
 
   // FIXME: ScrollBehaviorSmooth is currently unsupported in VisualViewport.
   // crbug.com/434497
-  void scrollBy(double x, double y, ScrollBehavior = kScrollBehaviorAuto) const;
+  void scrollBy(double x, double y) const;
   void scrollBy(const ScrollToOptions&) const;
   void scrollTo(double x, double y) const;
   void scrollTo(const ScrollToOptions&) const;

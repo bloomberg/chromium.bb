@@ -58,10 +58,10 @@ class CORE_EXPORT SnapCoordinator final
   void PerformSnapping(const LayoutBox& snap_container,
                        bool did_scroll_x,
                        bool did_scroll_y);
-  bool GetSnapPosition(const LayoutBox& snap_container,
-                       bool did_scroll_x,
-                       bool did_scroll_y,
-                       FloatPoint* snap_position);
+  FloatPoint GetSnapPositionForPoint(const LayoutBox& snap_container,
+                                     const FloatPoint& natural_position,
+                                     bool did_scroll_x,
+                                     bool did_scroll_y);
 
 #ifndef NDEBUG
   void ShowSnapAreaMap();
