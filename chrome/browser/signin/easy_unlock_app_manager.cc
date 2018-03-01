@@ -9,7 +9,6 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/sys_info.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/screenlock_private/screenlock_private_api.h"
 #include "chrome/browser/extensions/component_loader.h"
@@ -23,6 +22,10 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/one_shot_event.h"
+
+#if defined(OS_CHROMEOS)
+#include "base/sys_info.h"
+#endif
 
 namespace {
 
@@ -98,12 +101,14 @@ void EasyUnlockAppManagerImpl::LoadApp() {
   if (!extension_service)
     return;
 
+#if defined(OS_CHROMEOS)
   // TODO(xiyuan): Remove this when the app is bundled with chrome.
   if (!base::SysInfo::IsRunningOnChromeOS() &&
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
           proximity_auth::switches::kForceLoadEasyUnlockAppInTests)) {
     return;
   }
+#endif
 
   if (app_path_.empty())
     return;
@@ -179,11 +184,15 @@ bool EasyUnlockAppManagerImpl::SendAuthAttemptEvent() {
     return false;
 
   // TODO(tbarzic): Restrict this to EasyUnlock app.
+#if defined(OS_CHROMEOS)
   extensions::ScreenlockPrivateEventRouter* screenlock_router =
       extensions::ScreenlockPrivateEventRouter::GetFactoryInstance()->Get(
           extension_service->profile());
   return screenlock_router->OnAuthAttempted(
       proximity_auth::mojom::AuthType::USER_CLICK, std::string());
+#else
+  return false;
+#endif  // defined(OS_CHROMEOS)
 }
 
 }  // namespace

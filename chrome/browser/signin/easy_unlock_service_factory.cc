@@ -108,10 +108,8 @@ KeyedService* EasyUnlockServiceFactory::BuildServiceInstanceFor(
                                       ? GetEasyUnlockAppPath()
                                       : app_path_for_testing_;
 
-#if defined(OS_CHROMEOS)
   service->Initialize(EasyUnlockAppManager::Create(
       extensions::ExtensionSystem::Get(context), manifest_id, app_path));
-#endif
   return service;
 }
 

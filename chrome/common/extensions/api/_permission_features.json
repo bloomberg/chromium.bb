@@ -267,8 +267,7 @@
   "easyUnlockPrivate": {
     "channel": "stable",
     "extension_types": ["platform_app"],
-    "location": "component",
-    "platforms": ["chromeos"]
+    "location": "component"
   },
   "embeddedExtensionOptions": {
     "channel": "trunk",
