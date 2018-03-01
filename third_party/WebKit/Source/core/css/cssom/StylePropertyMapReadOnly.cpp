@@ -51,12 +51,6 @@ class StylePropertyMapIterationSource final
   const HeapVector<StylePropertyMapReadOnly::StylePropertyMapEntry> values_;
 };
 
-bool ComparePropertyNames(const String& a, const String& b) {
-  if (a.StartsWith("--") == b.StartsWith("--"))
-    return WTF::CodePointCompareLessThan(a, b);
-  return b.StartsWith("--");
-}
-
 }  // namespace
 
 CSSStyleValue* StylePropertyMapReadOnly::get(const String& property_name,
@@ -132,9 +126,6 @@ StylePropertyMapReadOnly::StartIteration(ScriptState*, ExceptionState&) {
     result.emplace_back(property_name, std::move(values));
   });
 
-  std::sort(result.begin(), result.end(), [](const auto& a, const auto& b) {
-    return ComparePropertyNames(a.first, b.first);
-  });
   return new StylePropertyMapIterationSource(result);
 }
 

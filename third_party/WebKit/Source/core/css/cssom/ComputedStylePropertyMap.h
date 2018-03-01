@@ -34,6 +34,11 @@ class CORE_EXPORT ComputedStylePropertyMap : public StylePropertyMapReadOnly {
 
   unsigned int size() override;
 
+  // ComputedStylePropertyMap needs to be sorted. This puts CSS properties
+  // first, then prefixed properties, then custom properties. Everything is
+  // sorted by code point within each category.
+  static bool ComparePropertyNames(const String&, const String&);
+
  protected:
   ComputedStylePropertyMap(Node* node, const String& pseudo_element = String())
       : StylePropertyMapReadOnly(),
