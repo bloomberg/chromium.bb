@@ -6,6 +6,34 @@
 
 namespace net {
 
+const char* CookieChangeCauseToString(CookieChangeCause cause) {
+  const char* cause_string = "INVALID";
+  switch (cause) {
+    case CookieChangeCause::INSERTED:
+      cause_string = "inserted";
+      break;
+    case CookieChangeCause::EXPLICIT:
+      cause_string = "explicit";
+      break;
+    case CookieChangeCause::UNKNOWN_DELETION:
+      cause_string = "unknown";
+      break;
+    case CookieChangeCause::OVERWRITE:
+      cause_string = "overwrite";
+      break;
+    case CookieChangeCause::EXPIRED:
+      cause_string = "expired";
+      break;
+    case CookieChangeCause::EVICTED:
+      cause_string = "evicted";
+      break;
+    case CookieChangeCause::EXPIRED_OVERWRITE:
+      cause_string = "expired_overwrite";
+      break;
+  }
+  return cause_string;
+}
+
 bool CookieChangeCauseIsDeletion(CookieChangeCause cause) {
   return cause != CookieChangeCause::INSERTED;
 }

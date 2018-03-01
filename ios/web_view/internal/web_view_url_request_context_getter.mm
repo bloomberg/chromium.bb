@@ -79,7 +79,8 @@ net::URLRequestContext* WebViewURLRequestContextGetter::GetURLRequestContext() {
                 {base::MayBlock(), base::TaskPriority::BACKGROUND}),
             true, nullptr);
     std::unique_ptr<net::CookieStoreIOS> cookie_store(
-        new net::CookieStoreIOSPersistent(persistent_store.get()));
+        new net::CookieStoreIOSPersistent(persistent_store.get(),
+                                          url_request_context_->net_log()));
     storage_->set_cookie_store(std::move(cookie_store));
 
     std::string user_agent =

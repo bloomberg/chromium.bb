@@ -473,7 +473,7 @@ void ProfileImplIOData::InitializeInternal(
     cookie_config.channel_id_service = channel_id_service.get();
     cookie_config.background_task_runner = cookie_background_task_runner;
     std::unique_ptr<net::CookieStore> cookie_store(
-        content::CreateCookieStore(cookie_config));
+        content::CreateCookieStore(cookie_config, io_thread->net_log()));
 
     cookie_store->SetChannelIDServiceID(channel_id_service->GetUniqueID());
 
@@ -533,7 +533,8 @@ void ProfileImplIOData::
   // Enable cookies for chrome-extension URLs.
   cookie_config.cookieable_schemes.push_back(extensions::kExtensionScheme);
   cookie_config.channel_id_service = extensions_context->channel_id_service();
-  extensions_cookie_store_ = content::CreateCookieStore(cookie_config);
+  extensions_cookie_store_ = content::CreateCookieStore(
+      cookie_config, profile_params->io_thread->net_log());
   extensions_context->set_cookie_store(extensions_cookie_store_.get());
 }
 
@@ -593,7 +594,8 @@ net::URLRequestContext* ProfileImplIOData::InitializeAppRequestContext(
           new net::DefaultChannelIDStore(channel_id_db.get())));
   cookie_config.channel_id_service = channel_id_service.get();
   cookie_config.background_task_runner = cookie_background_task_runner;
-  cookie_store = content::CreateCookieStore(cookie_config);
+  cookie_store =
+      content::CreateCookieStore(cookie_config, main_context->net_log());
   cookie_store->SetChannelIDServiceID(channel_id_service->GetUniqueID());
 
   // Build a new HttpNetworkSession that uses the new ChannelIDService.

@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "net/cookies/cookie_monster.h"
+#include "net/log/net_log_with_source.h"
 
 namespace base {
 class FilePath;
@@ -47,15 +48,9 @@ class SQLitePersistentCookieStore
   // Deletes the cookies whose origins match those given in |cookies|.
   void DeleteAllInList(const std::list<CookieOrigin>& cookies);
 
-  // Closes the database backend and fires |callback| on the worker
-  // thread. After Close() is called, further calls to the
-  // PersistentCookieStore methods will do nothing, with Load() and
-  // LoadCookiesForKey() additionally calling their callback methods
-  // with an empty vector of CanonicalCookies.
-  void Close(const base::Closure& callback);
-
   // CookieMonster::PersistentCookieStore:
-  void Load(const LoadedCallback& loaded_callback) override;
+  void Load(const LoadedCallback& loaded_callback,
+            const NetLogWithSource& /* net_log */) override;
   void LoadCookiesForKey(const std::string& key,
                          const LoadedCallback& callback) override;
   void AddCookie(const CanonicalCookie& cc) override;
@@ -64,13 +59,22 @@ class SQLitePersistentCookieStore
   void SetForceKeepSessionState() override;
   void SetBeforeFlushCallback(base::RepeatingClosure callback) override;
   void Flush(base::OnceClosure callback) override;
+  void Close() override;
 
  private:
   ~SQLitePersistentCookieStore() override;
+  void CompleteLoad(const LoadedCallback& callback,
+                    std::vector<std::unique_ptr<CanonicalCookie>> cookie_list);
+  void CompleteKeyedLoad(
+      const std::string& key,
+      const LoadedCallback& callback,
+      std::vector<std::unique_ptr<CanonicalCookie>> cookie_list);
 
   class Backend;
 
   scoped_refptr<Backend> backend_;
+
+  NetLogWithSource net_log_;
 
   DISALLOW_COPY_AND_ASSIGN(SQLitePersistentCookieStore);
 };

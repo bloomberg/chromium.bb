@@ -32,6 +32,7 @@
 #import "net/base/mac/url_conversions.h"
 #include "net/cookies/cookie_util.h"
 #include "net/cookies/parsed_cookie.h"
+#include "net/log/net_log.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -245,13 +246,16 @@ CookieStoreIOS::CookieChangeDispatcherIOS::AddCallbackForAllChanges(
 #pragma mark CookieStoreIOS
 
 CookieStoreIOS::CookieStoreIOS(
-    std::unique_ptr<SystemCookieStore> system_cookie_store)
+    std::unique_ptr<SystemCookieStore> system_cookie_store,
+    NetLog* log)
     : CookieStoreIOS(/*persistent_store=*/nullptr,
-                     std::move(system_cookie_store)) {}
+                     std::move(system_cookie_store),
+                     log) {}
 
-CookieStoreIOS::CookieStoreIOS(NSHTTPCookieStorage* ns_cookie_store)
-    : CookieStoreIOS(
-          std::make_unique<NSHTTPSystemCookieStore>(ns_cookie_store)) {}
+CookieStoreIOS::CookieStoreIOS(NSHTTPCookieStorage* ns_cookie_store,
+                               NetLog* log)
+    : CookieStoreIOS(std::make_unique<NSHTTPSystemCookieStore>(ns_cookie_store),
+                     log) {}
 
 CookieStoreIOS::~CookieStoreIOS() {
   NotificationTrampoline::GetInstance()->RemoveObserver(this);
@@ -505,8 +509,9 @@ void CookieStoreIOS::FlushStore(base::OnceClosure closure) {
 
 CookieStoreIOS::CookieStoreIOS(
     net::CookieMonster::PersistentCookieStore* persistent_store,
-    std::unique_ptr<SystemCookieStore> system_store)
-    : cookie_monster_(new net::CookieMonster(persistent_store)),
+    std::unique_ptr<SystemCookieStore> system_store,
+    NetLog* log)
+    : cookie_monster_(new net::CookieMonster(persistent_store, log)),
       system_store_(std::move(system_store)),
       metrics_enabled_(false),
       cookie_cache_(new CookieCache()),

@@ -50,7 +50,8 @@ class QuotaPolicyCookieStoreTest : public testing::Test {
   void Load(CanonicalCookieVector* cookies) {
     EXPECT_FALSE(loaded_event_.IsSignaled());
     store_->Load(base::Bind(&QuotaPolicyCookieStoreTest::OnLoaded,
-                            base::Unretained(this)));
+                            base::Unretained(this)),
+                 net::NetLogWithSource());
     loaded_event_.Wait();
     cookies->swap(cookies_);
   }
@@ -91,6 +92,11 @@ class QuotaPolicyCookieStoreTest : public testing::Test {
                                            creation, base::Time(), false, false,
                                            net::CookieSameSite::DEFAULT_MODE,
                                            net::COOKIE_PRIORITY_DEFAULT));
+  }
+
+  void CloseStore() {
+    store_->Close();
+    base::TaskScheduler::GetInstance()->FlushForTesting();
   }
 
   void DestroyStore() {
@@ -195,6 +201,53 @@ TEST_F(QuotaPolicyCookieStoreTest, TestPolicy) {
 
   // Now close the store, and "nonpersistent.com" should be deleted according to
   // policy.
+  DestroyStore();
+  cookies.clear();
+  CreateAndLoad(nullptr, &cookies);
+
+  EXPECT_EQ(2U, cookies.size());
+  for (const auto& cookie : cookies) {
+    EXPECT_NE("nonpersistent.com", cookie->Domain());
+  }
+  cookies.clear();
+}
+
+// Test if data is stored as expected in the QuotaPolicy database when
+// the store is flushed with Close() instead of destruction.
+TEST_F(QuotaPolicyCookieStoreTest, TestPolicy_Close) {
+  CanonicalCookieVector cookies;
+  CreateAndLoad(nullptr, &cookies);
+  ASSERT_EQ(0U, cookies.size());
+
+  base::Time t = base::Time::Now();
+  AddCookie("A", "B", "foo.com", "/", t);
+  t += base::TimeDelta::FromMicroseconds(10);
+  AddCookie("A", "B", "persistent.com", "/", t);
+  t += base::TimeDelta::FromMicroseconds(10);
+  AddCookie("A", "B", "nonpersistent.com", "/", t);
+
+  // Replace the store, which forces the current store to flush data to
+  // disk. Then, after reloading the store, confirm that the data was flushed by
+  // making sure it loads successfully.  This ensures that all pending commits
+  // are made to the store before allowing it to be closed.
+  DestroyStore();
+  // Specify storage policy that makes "nonpersistent.com" session only.
+  scoped_refptr<content::MockSpecialStoragePolicy> storage_policy =
+      new content::MockSpecialStoragePolicy();
+  storage_policy->AddSessionOnly(
+      net::cookie_util::CookieOriginToURL("nonpersistent.com", false));
+
+  // Reload and test for persistence.
+  cookies.clear();
+  CreateAndLoad(storage_policy.get(), &cookies);
+  EXPECT_EQ(3U, cookies.size());
+
+  t += base::TimeDelta::FromMicroseconds(10);
+  AddCookie("A", "B", "nonpersistent.com", "/second", t);
+
+  // Now close the store, and "nonpersistent.com" should be deleted according to
+  // policy.
+  CloseStore();
   DestroyStore();
   cookies.clear();
   CreateAndLoad(nullptr, &cookies);
