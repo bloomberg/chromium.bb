@@ -204,6 +204,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiCaptureTest, CaptureVisibleDisabled) {
                                   "test_disabled.html")) << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionApiCaptureTest, CaptureNullWindow) {
+  ASSERT_TRUE(RunExtensionTest("tabs/capture_visible_tab_null_window"))
+      << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, TabsOnCreated) {
   ASSERT_TRUE(RunExtensionTest("tabs/on_created")) << message_;
 }

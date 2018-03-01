@@ -23,15 +23,18 @@ namespace extensions {
 
 using api::extension_types::ImageDetails;
 
-bool WebContentsCaptureClient::CaptureAsync(
+WebContentsCaptureClient::CaptureResult WebContentsCaptureClient::CaptureAsync(
     WebContents* web_contents,
     const ImageDetails* image_details,
     base::OnceCallback<void(const SkBitmap&)> callback) {
-  if (!web_contents)
-    return false;
+  // TODO(crbug/419878): Account for fullscreen render widget?
+  RenderWidgetHostView* const view =
+      web_contents ? web_contents->GetRenderWidgetHostView() : nullptr;
+  if (!view)
+    return FAILURE_REASON_VIEW_INVISIBLE;
 
   if (!IsScreenshotEnabled())
-    return false;
+    return FAILURE_REASON_SCREEN_SHOTS_DISABLED;
 
   // The default format and quality setting used when encoding jpegs.
   const api::extension_types::ImageFormat kDefaultFormat =
@@ -48,16 +51,10 @@ bool WebContentsCaptureClient::CaptureAsync(
       image_quality_ = *image_details->quality;
   }
 
-  // TODO(crbug/419878): Account for fullscreen render widget?
-  RenderWidgetHostView* const view = web_contents->GetRenderWidgetHostView();
-  if (!view) {
-    OnCaptureFailure(FAILURE_REASON_VIEW_INVISIBLE);
-    return false;
-  }
   view->CopyFromSurface(gfx::Rect(),  // Copy entire surface area.
                         gfx::Size(),  // Result contains device-level detail.
                         std::move(callback));
-  return true;
+  return OK;
 }
 
 void WebContentsCaptureClient::CopyFromSurfaceComplete(const SkBitmap& bitmap) {
