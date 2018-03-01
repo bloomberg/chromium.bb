@@ -88,7 +88,7 @@ std::unique_ptr<base::Value> Visibility::AsValue() const {
   auto res = std::make_unique<base::ListValue>();
   for (const auto& pattern : patterns_)
     res->AppendString(pattern.Describe());
-  return res;
+  return std::move(res);
 }
 
 // static
