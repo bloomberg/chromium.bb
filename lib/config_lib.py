@@ -668,6 +668,9 @@ def DefaultSettings():
       # and is usually correlated with tryjob build configs.
       debug=False,
 
+      # If True, use the debug instance of CIDB instead of prod.
+      debug_cidb=False,
+
       # Timeout for the build as a whole (in seconds).
       build_timeout=(4 * 60 + 30) * 60,
 

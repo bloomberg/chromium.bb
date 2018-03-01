@@ -780,7 +780,7 @@ def _GetRunEnvironment(options, build_config):
   # --buildbot runs should use the production services, unless the --debug flag
   # is also present.
   if options.buildbot:
-    if options.debug:
+    if options.debug or build_config['debug_cidb']:
       return _ENVIRONMENT_DEBUG
     else:
       return _ENVIRONMENT_PROD
@@ -788,7 +788,7 @@ def _GetRunEnvironment(options, build_config):
   # --remote-trybot runs should use the debug services, with the exception of
   # pre-cq builds, which should use the production services.
   if options.remote_trybot:
-    if build_config['pre_cq']:
+    if build_config['pre_cq'] and not build_config['debug_cidb']:
       return _ENVIRONMENT_PROD
     else:
       return _ENVIRONMENT_DEBUG

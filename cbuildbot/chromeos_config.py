@@ -4074,6 +4074,9 @@ def TryjobMirrors(site_config):
     site_config: config_lib.SiteConfig to be modified by adding templates
                  and configs.
   """
+  # Tryjobs which are unsafe to talk to Prod CIDB.
+  cidb_unsafe = frozenset(['pre-cq-launcher'])
+
   tryjob_configs = {}
 
   for build_name, config in site_config.iteritems():
@@ -4116,6 +4119,9 @@ def TryjobMirrors(site_config):
     if tryjob_config.vm_tests_override is not None:
       tryjob_config.apply(vm_tests=tryjob_config.vm_tests_override,
                           vm_tests_override=None)
+
+    if build_name in cidb_unsafe or tryjob_config.master:
+      tryjob_config.apply(debug_cidb=True)
 
     # Save off the new config so we can insert into site_config.
     tryjob_configs[tryjob_name] = tryjob_config

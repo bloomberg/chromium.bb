@@ -41,6 +41,7 @@
         "create_delta_sysroot": false,
         "critical_for_chrome": false,
         "debug": false,
+        "debug_cidb": false,
         "debug_symbols": true,
         "description": null,
         "dev_installer_prebuilts": false,
@@ -35641,6 +35642,7 @@
         "buildslave_type": "baremetal",
         "chrome_sdk": false,
         "debug": true,
+        "debug_cidb": true,
         "display_label": "tryjob",
         "health_alert_recipients": [
             "chromeos-infra-eng@grotations.appspotmail.com",
@@ -35697,6 +35699,7 @@
         "boards": [],
         "buildslave_type": "gce_wimpy",
         "debug": true,
+        "debug_cidb": true,
         "display_label": "tryjob",
         "hw_tests": [
             "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
@@ -35741,6 +35744,7 @@
         "boards": [],
         "buildslave_type": "gce_wimpy",
         "debug": true,
+        "debug_cidb": true,
         "display_label": "tryjob",
         "hw_tests": [
             "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
@@ -35888,6 +35892,7 @@
         "buildslave_type": "gce_wimpy",
         "chroot_replace": true,
         "debug": true,
+        "debug_cidb": true,
         "description": "Commit Queue master (all others are slaves)",
         "display_label": "tryjob",
         "hw_tests": [
@@ -36168,6 +36173,7 @@
         "buildslave_type": "baremetal",
         "chrome_sdk": false,
         "debug": true,
+        "debug_cidb": true,
         "display_label": "tryjob",
         "hw_tests": [
             "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
@@ -36350,6 +36356,7 @@
         "afdo_use": false,
         "boards": [],
         "debug": true,
+        "debug_cidb": true,
         "description": "Toolchain master (all others are slaves).",
         "display_label": "tryjob",
         "health_alert_recipients": [
@@ -47381,6 +47388,7 @@
         "chrome_sdk": true,
         "chrome_sdk_build_chrome": false,
         "debug": true,
+        "debug_cidb": true,
         "description": "Launcher for Pre-CQ builders",
         "display_label": "tryjob",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
@@ -49134,6 +49142,7 @@
             "reef"
         ],
         "debug": true,
+        "debug_cidb": true,
         "display_label": "tryjob",
         "hw_tests_override": null,
         "push_overlays": null,
@@ -51708,6 +51717,7 @@
         ],
         "chrome_rev": "stable_release",
         "debug": true,
+        "debug_cidb": true,
         "display_label": "tryjob",
         "hw_tests_override": null,
         "prebuilts": "private",
