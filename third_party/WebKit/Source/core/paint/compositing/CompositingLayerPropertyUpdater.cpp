@@ -33,11 +33,21 @@ void CompositingLayerPropertyUpdater::Update(const LayoutObject& object) {
   IntPoint snapped_paint_offset = RoundedIntPoint(layout_snapped_paint_offset);
   DCHECK(layout_snapped_paint_offset == snapped_paint_offset);
 
+  Optional<PropertyTreeState> container_layer_state;
   auto SetContainerLayerState =
-      [&fragment_data, &snapped_paint_offset](GraphicsLayer* graphics_layer) {
+      [&fragment_data, &snapped_paint_offset,
+       &container_layer_state](GraphicsLayer* graphics_layer) {
         if (graphics_layer) {
+          if (!container_layer_state) {
+            container_layer_state = fragment_data.LocalBorderBoxProperties();
+            if (const auto* properties = fragment_data.PaintProperties()) {
+              // CSS clip should be applied within the layer.
+              if (const auto* css_clip = properties->CssClip())
+                container_layer_state->SetClip(css_clip->Parent());
+            }
+          }
           graphics_layer->SetLayerState(
-              fragment_data.LocalBorderBoxProperties(),
+              *container_layer_state,
               snapped_paint_offset + graphics_layer->OffsetFromLayoutObject());
         }
       };
