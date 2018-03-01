@@ -109,6 +109,11 @@ URLRequestMockDataJob::URLRequestMockDataJob(URLRequest* request,
   }
 }
 
+void URLRequestMockDataJob::OverrideResponseHeaders(
+    const std::string& headers) {
+  headers_ = headers;
+}
+
 void URLRequestMockDataJob::Start() {
   // Start reading asynchronously so that all error reporting and data
   // callbacks happen as they would for network requests.
@@ -144,11 +149,15 @@ void URLRequestMockDataJob::GetResponseInfo(HttpResponseInfo* info) {
 void URLRequestMockDataJob::GetResponseInfoConst(HttpResponseInfo* info) const {
   // Send back mock headers.
   std::string raw_headers;
-  raw_headers.append(
-      "HTTP/1.1 200 OK\n"
-      "Content-type: text/plain\n");
-  raw_headers.append(base::StringPrintf("Content-Length: %1d\n",
-                                        static_cast<int>(data_.length())));
+  if (headers_.has_value()) {
+    raw_headers = headers_.value();
+  } else {
+    raw_headers.append(
+        "HTTP/1.1 200 OK\n"
+        "Content-type: text/plain\n");
+    raw_headers.append(base::StringPrintf("Content-Length: %1d\n",
+                                          static_cast<int>(data_.length())));
+  }
   info->headers = new HttpResponseHeaders(HttpUtil::AssembleRawHeaders(
       raw_headers.c_str(), static_cast<int>(raw_headers.length())));
 }

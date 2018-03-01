@@ -71,7 +71,7 @@ class URLLoaderInterceptor {
   // forward the request to the original URLLoaderFactory.
   using InterceptCallback = base::Callback<bool(RequestParams* params)>;
 
-  URLLoaderInterceptor(const InterceptCallback& callback);
+  explicit URLLoaderInterceptor(const InterceptCallback& callback);
   ~URLLoaderInterceptor();
 
   // Helper methods for use when intercepting.

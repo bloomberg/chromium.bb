@@ -9,7 +9,7 @@
 
   session.evaluate(`fetch("${url}?fetch=1")`);
   const fetchResponse = (await dp.Network.onceResponseReceived()).params.response;
-  testRunner.log(`Link header of fetch of ${fetchResponse.url}: ${fetchResponse.headers['Link']}`);
+  testRunner.log(`Pragma header of fetch of ${fetchResponse.url}: ${fetchResponse.headers['Pragma']}`);
   await dp.Network.onceLoadingFinished();
 
   session.evaluate(`
@@ -18,6 +18,6 @@
     document.body.appendChild(f);
   `);
   const navigationResponse = (await dp.Network.onceResponseReceived()).params.response;
-  testRunner.log(`Link header of navigation to ${navigationResponse.url}: ${navigationResponse.headers['Link']}`);
+  testRunner.log(`Pragma header of navigation to ${navigationResponse.url}: ${navigationResponse.headers['Pragma']}`);
   testRunner.completeTest();
 })

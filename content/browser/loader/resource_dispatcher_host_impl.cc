@@ -1443,6 +1443,15 @@ ResourceDispatcherHostImpl::AddStandardHandlers(
   plugin_service = PluginService::GetInstance();
 #endif
 
+  if (!IsResourceTypeFrame(resource_type)) {
+    // Add a handler to block cross-site documents from the renderer process.
+    bool is_nocors_plugin_request =
+        resource_type == RESOURCE_TYPE_PLUGIN_RESOURCE &&
+        fetch_request_mode == network::mojom::FetchRequestMode::kNoCORS;
+    handler.reset(new CrossSiteDocumentResourceHandler(
+        std::move(handler), request, is_nocors_plugin_request));
+  }
+
   // Insert a buffered event handler to sniff the mime type.
   // Note: all ResourceHandler following the MimeSniffingResourceHandler
   // should expect OnWillRead to be called *before* OnResponseStarted as
@@ -1454,17 +1463,6 @@ ResourceDispatcherHostImpl::AddStandardHandlers(
   // Add the pre mime sniffing throttles.
   handler.reset(new ThrottlingResourceHandler(
       std::move(handler), request, std::move(pre_mime_sniffing_throttles)));
-
-  if (!IsResourceTypeFrame(resource_type)) {
-    // Add a handler to block cross-site documents from the renderer process.
-    // This should be pre mime-sniffing, since it affects whether the response
-    // will be read, and since it looks at the original mime type.
-    bool is_nocors_plugin_request =
-        resource_type == RESOURCE_TYPE_PLUGIN_RESOURCE &&
-        fetch_request_mode == network::mojom::FetchRequestMode::kNoCORS;
-    handler.reset(new CrossSiteDocumentResourceHandler(
-        std::move(handler), request, is_nocors_plugin_request));
-  }
 
   return handler;
 }
