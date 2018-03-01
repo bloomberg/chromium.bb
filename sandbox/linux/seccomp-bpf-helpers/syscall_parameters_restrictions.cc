@@ -334,7 +334,8 @@ ResultExpr RestrictPrlimit64(pid_t target_pid) {
 
 ResultExpr RestrictGetrusage() {
   const Arg<int> who(0);
-  return If(who == RUSAGE_SELF, Allow()).Else(CrashSIGSYS());
+  return If(AnyOf(who == RUSAGE_SELF, who == RUSAGE_THREAD), Allow())
+         .Else(CrashSIGSYS());
 }
 #endif  // !defined(OS_NACL_NONSFI)
 
