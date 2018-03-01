@@ -22,6 +22,10 @@
 // Factory used to create the buttons.
 @property(nonatomic, strong) ToolbarButtonFactory* buttonFactory;
 
+// Content view in which the view that might have vibrancy effect should be
+// added.
+@property(nonatomic, strong) UIView* contentView;
+
 // Container for the location bar, redefined as readwrite.
 @property(nonatomic, strong, readwrite) UIView* locationBarContainer;
 // The height of the container for the location bar, redefined as readwrite.
@@ -103,6 +107,7 @@
 @synthesize focusedConstraints = _focusedConstraints;
 @synthesize unfocusedConstraints = _unfocusedConstraints;
 @synthesize blur = _blur;
+@synthesize contentView = _contentView;
 
 #pragma mark - Public
 
@@ -145,7 +150,23 @@
 - (void)setUpBlurredBackground {
   UIBlurEffect* blurEffect = self.buttonFactory.toolbarConfiguration.blurEffect;
   self.blur = [[UIVisualEffectView alloc] initWithEffect:blurEffect];
+  self.blur.contentView.backgroundColor =
+      self.buttonFactory.toolbarConfiguration.blurEffectBackgroundColor;
+
+  self.contentView = self;
+
+  if (UIVisualEffect* vibrancy = [self.buttonFactory.toolbarConfiguration
+          vibrancyEffectForBlurEffect:blurEffect]) {
+    UIVisualEffectView* vibrancyView =
+        [[UIVisualEffectView alloc] initWithEffect:vibrancy];
+    self.contentView = vibrancyView.contentView;
+    [self.blur.contentView addSubview:vibrancyView];
+    vibrancyView.translatesAutoresizingMaskIntoConstraints = NO;
+    AddSameConstraints(self.blur, vibrancyView);
+  }
+
   [self addSubview:self.blur];
+
   self.blur.translatesAutoresizingMaskIntoConstraints = NO;
   AddSameConstraints(self.blur, self);
 }
@@ -154,7 +175,7 @@
 - (void)setUpCancelButton {
   self.cancelButton = [self.buttonFactory cancelButton];
   self.cancelButton.translatesAutoresizingMaskIntoConstraints = NO;
-  [self addSubview:self.cancelButton];
+  [self.contentView addSubview:self.cancelButton];
 }
 
 // Sets the location bar container and its view if present.
@@ -169,6 +190,8 @@
       setContentHuggingPriority:UILayoutPriorityDefaultLow
                         forAxis:UILayoutConstraintAxisHorizontal];
   self.locationBarContainer.translatesAutoresizingMaskIntoConstraints = NO;
+
+  // The location bar shouldn't have vibrancy.
   [self addSubview:self.locationBarContainer];
 
   if (self.locationBarView) {
@@ -193,7 +216,7 @@
       initWithArrangedSubviews:self.leadingStackViewButtons];
   self.leadingStackView.translatesAutoresizingMaskIntoConstraints = NO;
   self.leadingStackView.spacing = kAdaptiveToolbarStackViewSpacing;
-  [self addSubview:self.leadingStackView];
+  [self.contentView addSubview:self.leadingStackView];
 }
 
 // Sets the trailing stack view.
@@ -211,7 +234,7 @@
       initWithArrangedSubviews:self.trailingStackViewButtons];
   self.trailingStackView.translatesAutoresizingMaskIntoConstraints = NO;
   self.trailingStackView.spacing = kAdaptiveToolbarStackViewSpacing;
-  [self addSubview:self.trailingStackView];
+  [self.contentView addSubview:self.trailingStackView];
 }
 
 // Sets the progress bar up.

@@ -28,9 +28,19 @@
 - (UIBlurEffect*)blurEffect {
   switch (self.style) {
     case NORMAL:
-      return [UIBlurEffect effectWithStyle:UIBlurEffectStyleProminent];
+      return [UIBlurEffect effectWithStyle:UIBlurEffectStyleLight];
     case INCOGNITO:
       return [UIBlurEffect effectWithStyle:UIBlurEffectStyleDark];
+  }
+}
+
+- (UIColor*)blurEffectBackgroundColor {
+  switch (self.style) {
+    case NORMAL:
+      return [UIColor colorWithWhite:kBlurBackgroundGrayscaleComponent
+                               alpha:kBlurBackgroundAlpha];
+    case INCOGNITO:
+      return nil;
   }
 }
 
@@ -92,7 +102,7 @@
     case NORMAL:
       return [UIColor colorWithWhite:0 alpha:kToolbarButtonTintColorAlpha];
     case INCOGNITO:
-      return [UIColor colorWithWhite:1 alpha:1];
+      return [UIColor whiteColor];
   }
 }
 
@@ -124,6 +134,18 @@
       return [UIColor colorWithWhite:1
                                alpha:kAdaptiveLocationBarBackgroundAlpha *
                                      visibilityFactor];
+  }
+}
+
+- (UIVisualEffect*)vibrancyEffectForBlurEffect:(UIBlurEffect*)blurEffect {
+  if (!blurEffect)
+    return nil;
+
+  switch (self.style) {
+    case NORMAL:
+      return [UIVibrancyEffect effectForBlurEffect:blurEffect];
+    case INCOGNITO:
+      return nil;
   }
 }
 

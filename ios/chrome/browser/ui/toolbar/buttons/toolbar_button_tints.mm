@@ -5,6 +5,7 @@
 #include "ios/chrome/browser/ui/toolbar/buttons/toolbar_button_tints.h"
 
 #include "base/logging.h"
+#import "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -18,13 +19,21 @@ const int kLightModeNormalColor = 0x5A5A5A;
 const int kIncognitoModeNormalColor = 0xFFFFFF;
 const int kDarkModeNormalColor = 0xFFFFFF;
 const int kPressedColor = 0x4285F4;
+const CGFloat kPressedAlphaLight = 0.10;
+const CGFloat kPressedAlphaDark = 0.21;
 
 UIColor* NormalButtonTint(ToolbarControllerStyle style) {
   switch (style) {
     case ToolbarControllerStyleLightMode:
-      return UIColorFromRGB(kLightModeNormalColor);
+      if (IsUIRefreshPhase1Enabled())
+        return [UIColor colorWithWhite:0 alpha:kToolbarButtonTintColorAlpha];
+      else
+        return UIColorFromRGB(kLightModeNormalColor);
     case ToolbarControllerStyleIncognitoMode:
-      return UIColorFromRGB(kIncognitoModeNormalColor);
+      if (IsUIRefreshPhase1Enabled())
+        return [UIColor whiteColor];
+      else
+        return UIColorFromRGB(kIncognitoModeNormalColor);
     case ToolbarControllerStyleDarkMode:
       return UIColorFromRGB(kDarkModeNormalColor);
     case ToolbarControllerStyleMaxStyles:
@@ -34,8 +43,17 @@ UIColor* NormalButtonTint(ToolbarControllerStyle style) {
 }
 
 UIColor* HighlighButtonTint(ToolbarControllerStyle style) {
-  return UIColorFromRGB(kPressedColor);
-  DCHECK_NE(ToolbarControllerStyleMaxStyles, style);
+  if (!IsUIRefreshPhase1Enabled())
+    return UIColorFromRGB(kPressedColor);
+
+  if (style == ToolbarControllerStyleLightMode) {
+    return [UIColor colorWithWhite:0 alpha:kPressedAlphaLight];
+  } else if (style == ToolbarControllerStyleIncognitoMode ||
+             style == ToolbarControllerStyleDarkMode) {
+    return [UIColor colorWithWhite:1 alpha:kPressedAlphaDark];
+  }
+  NOTREACHED();
+  return nil;
 }
 
 }  // namespace toolbar

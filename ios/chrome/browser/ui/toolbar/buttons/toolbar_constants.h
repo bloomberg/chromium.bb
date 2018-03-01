@@ -60,6 +60,10 @@ extern const CGFloat kForwardButtonImageInset;
 extern const CGFloat kLeadingLocationBarButtonImageInset;
 extern const CGFloat kCancelButtonHorizontalInset;
 
+// Background color of the blur view.
+extern const CGFloat kBlurBackgroundGrayscaleComponent;
+extern const CGFloat kBlurBackgroundAlpha;
+
 // Alpha for the tint color of the buttons.
 extern const CGFloat kToolbarButtonTintColorAlpha;
 
