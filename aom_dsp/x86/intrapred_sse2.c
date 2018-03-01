@@ -277,6 +277,62 @@ void aom_dc_top_predictor_32x16_sse2(uint8_t *dst, ptrdiff_t stride,
   dc_store_32xh(&row, 16, dst, stride);
 }
 
+void aom_dc_top_predictor_32x64_sse2(uint8_t *dst, ptrdiff_t stride,
+                                     const uint8_t *above,
+                                     const uint8_t *left) {
+  (void)left;
+  __m128i sum_above = dc_sum_32(above);
+  const __m128i sixteen = _mm_set1_epi16((uint16_t)16);
+  sum_above = _mm_add_epi16(sum_above, sixteen);
+  sum_above = _mm_srai_epi16(sum_above, 5);
+  sum_above = _mm_unpacklo_epi8(sum_above, sum_above);
+  sum_above = _mm_shufflelo_epi16(sum_above, 0);
+  const __m128i row = _mm_unpacklo_epi64(sum_above, sum_above);
+  dc_store_32xh(&row, 64, dst, stride);
+}
+
+void aom_dc_top_predictor_64x64_sse2(uint8_t *dst, ptrdiff_t stride,
+                                     const uint8_t *above,
+                                     const uint8_t *left) {
+  (void)left;
+  __m128i sum_above = dc_sum_64(above);
+  const __m128i thirtytwo = _mm_set1_epi16((uint16_t)32);
+  sum_above = _mm_add_epi16(sum_above, thirtytwo);
+  sum_above = _mm_srai_epi16(sum_above, 6);
+  sum_above = _mm_unpacklo_epi8(sum_above, sum_above);
+  sum_above = _mm_shufflelo_epi16(sum_above, 0);
+  const __m128i row = _mm_unpacklo_epi64(sum_above, sum_above);
+  dc_store_64xh(&row, 64, dst, stride);
+}
+
+void aom_dc_top_predictor_64x32_sse2(uint8_t *dst, ptrdiff_t stride,
+                                     const uint8_t *above,
+                                     const uint8_t *left) {
+  (void)left;
+  __m128i sum_above = dc_sum_64(above);
+  const __m128i thirtytwo = _mm_set1_epi16((uint16_t)32);
+  sum_above = _mm_add_epi16(sum_above, thirtytwo);
+  sum_above = _mm_srai_epi16(sum_above, 6);
+  sum_above = _mm_unpacklo_epi8(sum_above, sum_above);
+  sum_above = _mm_shufflelo_epi16(sum_above, 0);
+  const __m128i row = _mm_unpacklo_epi64(sum_above, sum_above);
+  dc_store_64xh(&row, 32, dst, stride);
+}
+
+void aom_dc_top_predictor_64x16_sse2(uint8_t *dst, ptrdiff_t stride,
+                                     const uint8_t *above,
+                                     const uint8_t *left) {
+  (void)left;
+  __m128i sum_above = dc_sum_64(above);
+  const __m128i thirtytwo = _mm_set1_epi16((uint16_t)32);
+  sum_above = _mm_add_epi16(sum_above, thirtytwo);
+  sum_above = _mm_srai_epi16(sum_above, 6);
+  sum_above = _mm_unpacklo_epi8(sum_above, sum_above);
+  sum_above = _mm_shufflelo_epi16(sum_above, 0);
+  const __m128i row = _mm_unpacklo_epi64(sum_above, sum_above);
+  dc_store_64xh(&row, 16, dst, stride);
+}
+
 // -----------------------------------------------------------------------------
 // DC_LEFT
 

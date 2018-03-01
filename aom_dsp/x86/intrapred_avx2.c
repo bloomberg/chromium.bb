@@ -208,6 +208,62 @@ void aom_dc_top_predictor_32x16_avx2(uint8_t *dst, ptrdiff_t stride,
   row_store_32xh(&row, 16, dst, stride);
 }
 
+void aom_dc_top_predictor_32x64_avx2(uint8_t *dst, ptrdiff_t stride,
+                                     const uint8_t *above,
+                                     const uint8_t *left) {
+  __m256i sum = dc_sum_32(above);
+  (void)left;
+
+  const __m256i sixteen = _mm256_set1_epi16(16);
+  sum = _mm256_add_epi16(sum, sixteen);
+  sum = _mm256_srai_epi16(sum, 5);
+  const __m256i zero = _mm256_setzero_si256();
+  __m256i row = _mm256_shuffle_epi8(sum, zero);
+  row_store_32xh(&row, 64, dst, stride);
+}
+
+void aom_dc_top_predictor_64x64_avx2(uint8_t *dst, ptrdiff_t stride,
+                                     const uint8_t *above,
+                                     const uint8_t *left) {
+  __m256i sum = dc_sum_64(above);
+  (void)left;
+
+  const __m256i thirtytwo = _mm256_set1_epi16(32);
+  sum = _mm256_add_epi16(sum, thirtytwo);
+  sum = _mm256_srai_epi16(sum, 6);
+  const __m256i zero = _mm256_setzero_si256();
+  __m256i row = _mm256_shuffle_epi8(sum, zero);
+  row_store_64xh(&row, 64, dst, stride);
+}
+
+void aom_dc_top_predictor_64x32_avx2(uint8_t *dst, ptrdiff_t stride,
+                                     const uint8_t *above,
+                                     const uint8_t *left) {
+  __m256i sum = dc_sum_64(above);
+  (void)left;
+
+  const __m256i thirtytwo = _mm256_set1_epi16(32);
+  sum = _mm256_add_epi16(sum, thirtytwo);
+  sum = _mm256_srai_epi16(sum, 6);
+  const __m256i zero = _mm256_setzero_si256();
+  __m256i row = _mm256_shuffle_epi8(sum, zero);
+  row_store_64xh(&row, 32, dst, stride);
+}
+
+void aom_dc_top_predictor_64x16_avx2(uint8_t *dst, ptrdiff_t stride,
+                                     const uint8_t *above,
+                                     const uint8_t *left) {
+  __m256i sum = dc_sum_64(above);
+  (void)left;
+
+  const __m256i thirtytwo = _mm256_set1_epi16(32);
+  sum = _mm256_add_epi16(sum, thirtytwo);
+  sum = _mm256_srai_epi16(sum, 6);
+  const __m256i zero = _mm256_setzero_si256();
+  __m256i row = _mm256_shuffle_epi8(sum, zero);
+  row_store_64xh(&row, 16, dst, stride);
+}
+
 void aom_dc_left_predictor_32x16_avx2(uint8_t *dst, ptrdiff_t stride,
                                       const uint8_t *above,
                                       const uint8_t *left) {

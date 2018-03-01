@@ -687,7 +687,8 @@ INTRA_PRED_TEST(SSE2_2, TX_32X16, aom_dc_predictor_32x16_sse2,
                 aom_dc_top_predictor_32x16_sse2,
                 aom_dc_128_predictor_32x16_sse2, aom_v_predictor_32x16_sse2,
                 aom_h_predictor_32x16_sse2, NULL, NULL, NULL, NULL)
-INTRA_PRED_TEST(SSE2_3, TX_32X64, NULL, aom_dc_left_predictor_32x64_sse2, NULL,
+INTRA_PRED_TEST(SSE2_3, TX_32X64, NULL, aom_dc_left_predictor_32x64_sse2,
+                aom_dc_top_predictor_32x64_sse2,
                 aom_dc_128_predictor_32x64_sse2, NULL, NULL, NULL, NULL, NULL,
                 NULL)
 #endif  // HAVE_SSE2
@@ -715,7 +716,8 @@ INTRA_PRED_TEST(AVX2_2, TX_32X16, aom_dc_predictor_32x16_avx2,
                 aom_dc_top_predictor_32x16_avx2,
                 aom_dc_128_predictor_32x16_avx2, aom_v_predictor_32x16_avx2,
                 NULL, aom_paeth_predictor_32x16_avx2, NULL, NULL, NULL)
-INTRA_PRED_TEST(AVX2_3, TX_32X64, NULL, aom_dc_left_predictor_32x64_avx2, NULL,
+INTRA_PRED_TEST(AVX2_3, TX_32X64, NULL, aom_dc_left_predictor_32x64_avx2,
+                aom_dc_top_predictor_32x64_avx2,
                 aom_dc_128_predictor_32x64_avx2, NULL, NULL,
                 aom_paeth_predictor_32x64_avx2, NULL, NULL, NULL)
 #endif  // HAVE_AVX2
@@ -760,13 +762,16 @@ INTRA_PRED_TEST(C_3, TX_64X16, aom_dc_predictor_64x16_c,
                 aom_smooth_h_predictor_64x16_c)
 
 #if HAVE_SSE2
-INTRA_PRED_TEST(SSE2_4, TX_64X64, NULL, aom_dc_left_predictor_64x64_sse2, NULL,
+INTRA_PRED_TEST(SSE2_4, TX_64X64, NULL, aom_dc_left_predictor_64x64_sse2,
+                aom_dc_top_predictor_64x64_sse2,
                 aom_dc_128_predictor_64x64_sse2, NULL, NULL, NULL, NULL, NULL,
                 NULL)
-INTRA_PRED_TEST(SSE2_5, TX_64X32, NULL, aom_dc_left_predictor_64x32_sse2, NULL,
+INTRA_PRED_TEST(SSE2_5, TX_64X32, NULL, aom_dc_left_predictor_64x32_sse2,
+                aom_dc_top_predictor_64x32_sse2,
                 aom_dc_128_predictor_64x32_sse2, NULL, NULL, NULL, NULL, NULL,
                 NULL)
-INTRA_PRED_TEST(SSE2_6, TX_64X16, NULL, aom_dc_left_predictor_64x16_sse2, NULL,
+INTRA_PRED_TEST(SSE2_6, TX_64X16, NULL, aom_dc_left_predictor_64x16_sse2,
+                aom_dc_top_predictor_64x16_sse2,
                 aom_dc_128_predictor_64x16_sse2, NULL, NULL, NULL, NULL, NULL,
                 NULL)
 #endif
@@ -781,13 +786,16 @@ INTRA_PRED_TEST(SSSE3_6, TX_64X16, NULL, NULL, NULL, NULL, NULL, NULL,
 #endif
 
 #if HAVE_AVX2
-INTRA_PRED_TEST(AVX2_4, TX_64X64, NULL, aom_dc_left_predictor_64x64_avx2, NULL,
+INTRA_PRED_TEST(AVX2_4, TX_64X64, NULL, aom_dc_left_predictor_64x64_avx2,
+                aom_dc_top_predictor_64x64_avx2,
                 aom_dc_128_predictor_64x64_avx2, NULL, NULL,
                 aom_paeth_predictor_64x64_avx2, NULL, NULL, NULL)
-INTRA_PRED_TEST(AVX2_5, TX_64X32, NULL, aom_dc_left_predictor_64x32_avx2, NULL,
+INTRA_PRED_TEST(AVX2_5, TX_64X32, NULL, aom_dc_left_predictor_64x32_avx2,
+                aom_dc_top_predictor_64x32_avx2,
                 aom_dc_128_predictor_64x32_avx2, NULL, NULL,
                 aom_paeth_predictor_64x32_avx2, NULL, NULL, NULL)
-INTRA_PRED_TEST(AVX2_6, TX_64X16, NULL, aom_dc_left_predictor_64x16_avx2, NULL,
+INTRA_PRED_TEST(AVX2_6, TX_64X16, NULL, aom_dc_left_predictor_64x16_avx2,
+                aom_dc_top_predictor_64x16_avx2,
                 aom_dc_128_predictor_64x16_avx2, NULL, NULL,
                 aom_paeth_predictor_64x16_avx2, NULL, NULL, NULL)
 #endif
