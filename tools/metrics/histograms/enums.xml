@@ -44311,6 +44311,7 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="136117054" label="supervised_user_refresh_token_fetcher"/>
   <int value="136498680" label="cryptauth_get_my_devices"/>
   <int value="137116619" label="translate_url_fetcher"/>
+  <int value="137420486" label="cloud_print_credential_update"/>
   <int value="137457845" label="web_history_counter"/>
 </enum>
 

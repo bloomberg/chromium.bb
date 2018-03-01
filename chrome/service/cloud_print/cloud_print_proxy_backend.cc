@@ -38,6 +38,35 @@
 
 namespace cloud_print {
 
+namespace {
+
+constexpr net::NetworkTrafficAnnotationTag
+    kCloudPrintCredentialUpdateTrafficAnnotation =
+        net::DefineNetworkTrafficAnnotation("cloud_print_credential_update",
+                                            R"(
+    semantics {
+      sender: "Cloud Print Proxy Backend"
+      description:
+        "Refreshes the access token for fetching print jobs for Cloud Print."
+      trigger:
+        "Aging of the current access token, current value is 5 minutes."
+      data:
+        "OAuth2 refresh token."
+      destination: GOOGLE_OWNED_SERVICE
+    }
+    policy {
+      cookies_allowed: NO
+      setting: "This feature cannot be disabled by settings."
+      chrome_policy {
+        CloudPrintProxyEnabled {
+          CloudPrintProxyEnabled: False
+        }
+      }
+    }
+)");
+
+}  // namespace
+
 // The real guts of CloudPrintProxyBackend, to keep the public client API clean.
 class CloudPrintProxyBackend::Core
     : public base::RefCountedThreadSafe<CloudPrintProxyBackend::Core>,
@@ -331,9 +360,9 @@ void CloudPrintProxyBackend::Core::OnAuthenticationComplete(
     // If we are refreshing a token, update the XMPP token too.
     DCHECK(push_client_.get());
 
-    // TODO(https://crbug.com/656607): Add proper annotation here.
-    push_client_->UpdateCredentials(robot_email, access_token,
-                                    NO_TRAFFIC_ANNOTATION_BUG_656607);
+    push_client_->UpdateCredentials(
+        robot_email, access_token,
+        kCloudPrintCredentialUpdateTrafficAnnotation);
   }
   // Start cloud print connector if needed.
   if (!connector_->IsRunning()) {
@@ -390,10 +419,8 @@ void CloudPrintProxyBackend::Core::InitNotifications(
   subscription.from = kCloudPrintPushNotificationsSource;
   push_client_->UpdateSubscriptions(
       notifier::SubscriptionList(1, subscription));
-
-  // TODO(https://crbug.com/656607): Add proper annotation here.
   push_client_->UpdateCredentials(robot_email, access_token,
-                                  NO_TRAFFIC_ANNOTATION_BUG_656607);
+                                  kCloudPrintCredentialUpdateTrafficAnnotation);
 }
 
 void CloudPrintProxyBackend::Core::DoShutdown() {
