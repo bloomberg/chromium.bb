@@ -222,6 +222,38 @@ function expectMockedTabNavigationEvents(url) {
           }
         },
         {
+          label: 'onBeforeSendHeaders-1',
+          event: 'onBeforeSendHeaders',
+          details: {
+            type: 'main_frame',
+            url,
+            initiator: getServerDomain(initiators.BROWSER_INITIATED),
+            requiredNetworkServiceState: "enabled"
+          }
+        },
+        {
+          label: 'onSendHeaders-1',
+          event: 'onSendHeaders',
+          details: {
+            type: 'main_frame',
+            url,
+            initiator: getServerDomain(initiators.BROWSER_INITIATED),
+            requiredNetworkServiceState: "enabled"
+          }
+        },
+        {
+          label: 'onHeadersReceived-1',
+          event: 'onHeadersReceived',
+          details: {
+            type: 'main_frame',
+            url,
+            statusCode: 200,
+            statusLine: 'HTTP/1.0 200 OK',
+            initiator: getServerDomain(initiators.BROWSER_INITIATED),
+            requiredNetworkServiceState: "enabled"
+          }
+        },
+        {
           label: 'onResponseStarted-1',
           event: 'onResponseStarted',
           details: {
@@ -255,6 +287,38 @@ function expectMockedTabNavigationEvents(url) {
             // Cannot use getServerDomain(initiators.WEB_INITIATED) because it
             // always adds a port, while this request does not have any ports.
             initiator: frontendOrigin
+          }
+        },
+        {
+          label: 'onBeforeSendHeaders-2',
+          event: 'onBeforeSendHeaders',
+          details: {
+            type: 'script',
+            url: scriptUrl,
+            initiator: frontendOrigin,
+            requiredNetworkServiceState: "enabled"
+          }
+        },
+        {
+          label: 'onSendHeaders-2',
+          event: 'onSendHeaders',
+          details: {
+            type: 'script',
+            url: scriptUrl,
+            initiator: frontendOrigin,
+            requiredNetworkServiceState: "enabled"
+          }
+        },
+        {
+          label: 'onHeadersReceived-2',
+          event: 'onHeadersReceived',
+          details: {
+            type: 'script',
+            url: scriptUrl,
+            statusCode: 200,
+            statusLine: 'HTTP/1.0 200 OK',
+            initiator: frontendOrigin,
+            requiredNetworkServiceState: "enabled"
           }
         },
         {

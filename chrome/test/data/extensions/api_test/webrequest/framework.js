@@ -8,6 +8,7 @@ var expectedEventData;
 var capturedEventData;
 var capturedUnexpectedData;
 var expectedEventOrder;
+var networkServiceState = "unknown";
 var tabId;
 var tabIdMap;
 var frameIdMap;
@@ -58,14 +59,22 @@ function runTestsForTab(tests, tab) {
 
 // Creates an "about:blank" tab and runs |tests| with this tab as default.
 function runTests(tests) {
-  var waitForAboutBlank = function(_, info, tab) {
-    if (info.status == "complete" && tab.url == "about:blank") {
-      chrome.tabs.onUpdated.removeListener(waitForAboutBlank);
-      runTestsForTab(tests, tab);
-    }
-  };
-  chrome.tabs.onUpdated.addListener(waitForAboutBlank);
-  chrome.tabs.create({url: "about:blank"});
+  chrome.test.getConfig(function(config) {
+    var waitForAboutBlank = function(_, info, tab) {
+      if (info.status == "complete" && tab.url == "about:blank") {
+        chrome.tabs.onUpdated.removeListener(waitForAboutBlank);
+        runTestsForTab(tests, tab);
+      }
+    };
+
+    if (config.customArg === "NetworkServiceEnabled")
+      networkServiceState = "enabled";
+    else if (config.customArg === "NetworkServiceDisabled")
+      networkServiceState = "disabled";
+
+    chrome.tabs.onUpdated.addListener(waitForAboutBlank);
+    chrome.tabs.create({url: "about:blank"});
+  });
 }
 
 // Returns an URL from the test server, fixing up the port. Must be called
@@ -140,6 +149,24 @@ function expect(data, order, filter, extraInfoSpec) {
   capturedEventData = [];
   capturedUnexpectedData = [];
   expectedEventOrder = order || [];
+
+  expectedEventData = expectedEventData.filter(function(event) {
+    if (!event.details.requiredNetworkServiceState)
+      return true;
+
+    if (networkServiceState == "unknown") {
+      chrome.test.fail("Test expectations specify a Network Service " +
+          "requirement, but the Network Service was neither explicitly set " +
+          "as enabled or disabled by the test runner. This test should be " +
+          "run with the custom argument NetworkServiceEnabled or " +
+          "NetworkServiceDisabled.");
+    }
+
+    var requiredState = event.details.requiredNetworkServiceState;
+    delete event.details.requiredNetworkServiceState;
+    return networkServiceState === requiredState;
+  });
+
   if (expectedEventData.length > 0) {
     eventsCaptured = chrome.test.callbackAdded();
   }

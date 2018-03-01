@@ -11,6 +11,7 @@
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/public/browser/browser_thread.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "net/http/http_util.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
@@ -29,9 +30,20 @@ class URLLoaderInterceptor::Interceptor
               const OriginalFactoryGetter& original_factory_getter)
       : parent_(parent),
         process_id_getter_(process_id_getter),
-        original_factory_getter_(original_factory_getter) {}
+        original_factory_getter_(original_factory_getter) {
+    bindings_.set_connection_error_handler(base::BindRepeating(
+        &Interceptor::OnConnectionError, base::Unretained(this)));
+  }
 
   ~Interceptor() override {}
+
+  void BindRequest(network::mojom::URLLoaderFactoryRequest request) {
+    bindings_.AddBinding(this, std::move(request));
+  }
+
+  void SetConnectionErrorHandler(base::OnceClosure handler) {
+    error_handler_ = std::move(handler);
+  }
 
  private:
   // network::mojom::URLLoaderFactory implementation:
@@ -78,12 +90,19 @@ class URLLoaderInterceptor::Interceptor
   }
 
   void Clone(network::mojom::URLLoaderFactoryRequest request) override {
-    NOTREACHED();
+    BindRequest(std::move(request));
+  }
+
+  void OnConnectionError() {
+    if (bindings_.empty() && error_handler_)
+      std::move(error_handler_).Run();
   }
 
   URLLoaderInterceptor* parent_;
   ProcessIdGetter process_id_getter_;
   OriginalFactoryGetter original_factory_getter_;
+  mojo::BindingSet<network::mojom::URLLoaderFactory> bindings_;
+  base::OnceClosure error_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(Interceptor);
 };
@@ -128,8 +147,9 @@ class URLLoaderInterceptor::BrowserProcessWrapper {
             base::BindRepeating([]() { return 0; }),
             base::BindRepeating(&BrowserProcessWrapper::GetOriginalFactory,
                                 base::Unretained(this))),
-        binding_(&interceptor_, std::move(factory_request)),
-        original_factory_(std::move(original_factory)) {}
+        original_factory_(std::move(original_factory)) {
+    interceptor_.BindRequest(std::move(factory_request));
+  }
 
   ~BrowserProcessWrapper() {}
 
@@ -139,7 +159,6 @@ class URLLoaderInterceptor::BrowserProcessWrapper {
   }
 
   Interceptor interceptor_;
-  mojo::Binding<network::mojom::URLLoaderFactory> binding_;
   network::mojom::URLLoaderFactoryPtr original_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserProcessWrapper);
@@ -159,9 +178,9 @@ class URLLoaderInterceptor::SubresourceWrapper {
                                 process_id),
             base::BindRepeating(&SubresourceWrapper::GetOriginalFactory,
                                 base::Unretained(this))),
-        binding_(&interceptor_, std::move(factory_request)),
         original_factory_(std::move(original_factory)) {
-    binding_.set_connection_error_handler(
+    interceptor_.BindRequest(std::move(factory_request));
+    interceptor_.SetConnectionErrorHandler(
         base::BindOnce(&URLLoaderInterceptor::SubresourceWrapperBindingError,
                        base::Unretained(parent), this));
   }
@@ -174,7 +193,6 @@ class URLLoaderInterceptor::SubresourceWrapper {
   }
 
   Interceptor interceptor_;
-  mojo::Binding<network::mojom::URLLoaderFactory> binding_;
   network::mojom::URLLoaderFactoryPtr original_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SubresourceWrapper);
