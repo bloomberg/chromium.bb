@@ -1,0 +1,7 @@
+This is a testharness.js-based test.
+PASS Setting a shorthand with an invalid CSSStyleValue on css rule throws TypeError
+PASS Setting a shorthand with an invalid String on css rule throws TypeError
+PASS Setting a shorthand with a CSSStyleValue updates css rule
+FAIL Setting a shorthand with a string updates css rule Failed to execute 'set' on 'StylePropertyMap': Parsing shorthands is not supported yet
+Harness: the test ran to completion.
+

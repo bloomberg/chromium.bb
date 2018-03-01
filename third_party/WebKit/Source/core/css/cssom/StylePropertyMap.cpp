@@ -5,9 +5,11 @@
 #include "core/css/cssom/StylePropertyMap.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "core/StylePropertyShorthand.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/cssom/CSSOMTypes.h"
 #include "core/css/cssom/CSSStyleValue.h"
+#include "core/css/cssom/CSSUnsupportedShorthandValue.h"
 #include "core/css/cssom/StyleValueFactory.h"
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/properties/CSSProperty.h"
@@ -118,13 +120,30 @@ void StylePropertyMap::set(const ExecutionContext* execution_context,
                            const HeapVector<CSSStyleValueOrString>& values,
                            ExceptionState& exception_state) {
   const CSSPropertyID property_id = cssPropertyID(property_name);
-
   if (property_id == CSSPropertyInvalid) {
     exception_state.ThrowTypeError("Invalid propertyName: " + property_name);
     return;
   }
 
+  DCHECK(isValidCSSPropertyID(property_id));
   const CSSProperty& property = CSSProperty::Get(property_id);
+  if (property.IsShorthand()) {
+    if (values.size() != 1) {
+      exception_state.ThrowTypeError("Invalid type for property");
+      return;
+    }
+
+    if (values[0].IsString()) {
+      exception_state.ThrowTypeError("Parsing shorthands is not supported yet");
+      return;
+    }
+    if (values[0].IsCSSStyleValue() &&
+        !SetShorthandProperty(property, *values[0].GetAsCSSStyleValue())) {
+      exception_state.ThrowTypeError("Invalid type for property");
+      return;
+    }
+    return;
+  }
 
   const CSSValue* result = nullptr;
   if (property.IsRepeated())
@@ -209,6 +228,27 @@ void StylePropertyMap::remove(const String& property_name,
 
 void StylePropertyMap::clear() {
   RemoveAllProperties();
+}
+
+bool StylePropertyMap::SetShorthandProperty(const CSSProperty& property,
+                                            const CSSStyleValue& value) {
+  if (value.GetType() != CSSStyleValue::kShorthandType)
+    return false;
+
+  const auto& shorthand_value = ToCSSUnsupportedShorthandValue(value);
+  if (shorthand_value.GetProperty() != property.PropertyID())
+    return false;
+
+  const StylePropertyShorthand& shorthand =
+      shorthandForProperty(property.PropertyID());
+  for (size_t i = 0; i < shorthand.length(); i++) {
+    if (shorthand_value.LonghandValues()[i]) {
+      SetProperty(shorthand.properties()[i]->PropertyID(),
+                  *shorthand_value.LonghandValues()[i]);
+    }
+  }
+
+  return true;
 }
 
 }  // namespace blink
