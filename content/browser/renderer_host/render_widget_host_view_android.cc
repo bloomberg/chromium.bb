@@ -873,6 +873,23 @@ void RenderWidgetHostViewAndroid::DidReceiveCompositorFrameAck() {
   RunAckCallbacks();
 }
 
+void RenderWidgetHostViewAndroid::DidPresentCompositorFrame(
+    uint32_t presentation_token,
+    base::TimeTicks time,
+    base::TimeDelta refresh,
+    uint32_t flags) {
+  DCHECK(using_browser_compositor_);
+  renderer_compositor_frame_sink_->DidPresentCompositorFrame(
+      presentation_token, time, refresh, flags);
+}
+
+void RenderWidgetHostViewAndroid::DidDiscardCompositorFrame(
+    uint32_t presentation_token) {
+  DCHECK(using_browser_compositor_);
+  renderer_compositor_frame_sink_->DidDiscardCompositorFrame(
+      presentation_token);
+}
+
 void RenderWidgetHostViewAndroid::ReclaimResources(
     const std::vector<viz::ReturnedResource>& resources) {
   if (resources.empty())
