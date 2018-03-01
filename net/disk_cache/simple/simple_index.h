@@ -192,6 +192,8 @@ class NET_EXPORT_PRIVATE SimpleIndex
   // Returns the estimate of dynamically allocated memory in bytes.
   size_t EstimateMemoryUsage() const;
 
+  void SetLastUsedTimeForTest(uint64_t entry_hash, const base::Time last_used);
+
  private:
   friend class SimpleIndexTest;
   FRIEND_TEST_ALL_PREFIXES(SimpleIndexTest, IndexSizeCorrectOnMerge);

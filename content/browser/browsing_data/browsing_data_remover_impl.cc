@@ -26,6 +26,7 @@
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/storage_partition.h"
+#include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/cookie_store.h"
 #include "net/http/http_network_session.h"
@@ -36,6 +37,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ppapi/features/features.h"
+#include "services/network/public/cpp/features.h"
 #include "storage/browser/quota/special_storage_policy.h"
 #include "url/origin.h"
 
@@ -44,6 +46,19 @@ using base::UserMetricsAction;
 namespace content {
 
 namespace {
+
+base::OnceClosure RunsOrPostOnCurrentTaskRunner(base::OnceClosure closure) {
+  return base::BindOnce(
+      [](base::OnceClosure closure,
+         scoped_refptr<base::TaskRunner> task_runner) {
+        if (base::ThreadTaskRunnerHandle::Get() == task_runner) {
+          std::move(closure).Run();
+          return;
+        }
+        task_runner->PostTask(FROM_HERE, std::move(closure));
+      },
+      std::move(closure), base::ThreadTaskRunnerHandle::Get());
+}
 
 // Returns whether |origin| matches |origin_type_mask| given the special
 // storage |policy|; and if |predicate| is not null, then also whether
@@ -446,18 +461,32 @@ void BrowsingDataRemoverImpl::RemoveImpl(
   if (remove_mask & DATA_TYPE_CACHE) {
     base::RecordAction(UserMetricsAction("ClearBrowsingData_Cache"));
 
+    network::mojom::NetworkContext* network_context =
+        storage_partition->GetNetworkContext();
+
     // TODO(msramek): Clear the cache of all renderers.
 
+    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+      // The clearing of the HTTP cache happens in the network service process
+      // when enabled.
+      network_context->ClearHttpCache(
+          delete_begin, delete_end, filter_builder.BuildClearCacheUrlFilter(),
+          CreatePendingTaskCompletionClosureForMojo());
+    }
+
+    // In the network service case, the call below will only clear the media
+    // cache.
+    // TODO(crbug.com/813882): implement retry on network service.
     storage_partition->ClearHttpAndMediaCaches(
         delete_begin, delete_end,
         filter_builder.IsEmptyBlacklist() ? base::Callback<bool(const GURL&)>()
                                           : filter,
-        CreatePendingTaskCompletionClosure());
+        CreatePendingTaskCompletionClosureForMojo());
 
     // When clearing cache, wipe accumulated network related data
     // (TransportSecurityState and HttpServerPropertiesManager data).
-    storage_partition->GetNetworkContext()->ClearNetworkingHistorySince(
-        delete_begin, CreatePendingTaskCompletionClosure());
+    network_context->ClearNetworkingHistorySince(
+        delete_begin, CreatePendingTaskCompletionClosureForMojo());
 
     // Tell the shader disk cache to clear.
     base::RecordAction(UserMetricsAction("ClearBrowsingData_ShaderCache"));
@@ -603,6 +632,14 @@ BrowsingDataRemoverImpl::CreatePendingTaskCompletionClosure() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   num_pending_tasks_++;
   return base::BindOnce(&BrowsingDataRemoverImpl::OnTaskComplete, GetWeakPtr());
+}
+
+base::OnceClosure
+BrowsingDataRemoverImpl::CreatePendingTaskCompletionClosureForMojo() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return RunsOrPostOnCurrentTaskRunner(mojo::WrapCallbackWithDropHandler(
+      CreatePendingTaskCompletionClosure(),
+      base::BindOnce(&BrowsingDataRemoverImpl::OnTaskComplete, GetWeakPtr())));
 }
 
 base::WeakPtr<BrowsingDataRemoverImpl> BrowsingDataRemoverImpl::GetWeakPtr() {

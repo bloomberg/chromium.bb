@@ -193,6 +193,7 @@ class NET_EXPORT_PRIVATE EntryImpl
   bool CouldBeSparse() const override;
   void CancelSparseIO() override;
   int ReadyForSparseIO(const CompletionCallback& callback) override;
+  void SetLastUsedTimeForTest(base::Time time) override;
 
  private:
   enum {

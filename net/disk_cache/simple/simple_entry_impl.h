@@ -132,6 +132,7 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
   bool CouldBeSparse() const override;
   void CancelSparseIO() override;
   int ReadyForSparseIO(const CompletionCallback& callback) override;
+  void SetLastUsedTimeForTest(base::Time time) override;
 
   // Returns the estimate of dynamically allocated memory in bytes.
   size_t EstimateMemoryUsage() const;

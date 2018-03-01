@@ -150,7 +150,7 @@ void ControlMessageProxy::FlushForTesting() {
 
   auto input_ptr = interface_control::RunInput::New();
   input_ptr->set_flush_for_testing(interface_control::FlushForTesting::New());
-  base::RunLoop run_loop;
+  base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
   run_loop_quit_closure_ = run_loop.QuitClosure();
   SendRunMessage(
       receiver_, std::move(input_ptr),

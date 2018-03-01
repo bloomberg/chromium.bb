@@ -13,6 +13,7 @@
 
 #include "base/callback_forward.h"
 #include "content/common/content_export.h"
+#include "services/network/public/mojom/network_service.mojom.h"
 
 class GURL;
 
@@ -68,6 +69,11 @@ class CONTENT_EXPORT BrowsingDataFilterBuilder {
   // or aren't in the blacklist.
   virtual base::RepeatingCallback<bool(const GURL&)>
       BuildGeneralFilter() const = 0;
+
+  // Builds a filter that can be used with the network service, more precisely
+  // with NetworkContext.ClearHttpCache().
+  virtual network::mojom::ClearCacheUrlFilterPtr BuildClearCacheUrlFilter()
+      const = 0;
 
   // Builds a filter that matches cookies whose sources are in the whitelist,
   // or aren't in the blacklist.

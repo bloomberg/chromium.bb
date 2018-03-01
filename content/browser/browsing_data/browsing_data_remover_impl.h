@@ -152,6 +152,11 @@ class CONTENT_EXPORT BrowsingDataRemoverImpl
   // created by this method have been invoked.
   base::OnceClosure CreatePendingTaskCompletionClosure();
 
+  // Same as CreatePendingTaskCompletionClosure() but guarantees that
+  // OnTaskComplete() is called if the task is dropped. That can typically
+  // happen when the connection is closed while an interface call is made.
+  base::OnceClosure CreatePendingTaskCompletionClosureForMojo();
+
   // Like GetWeakPtr(), but returns a weak pointer to BrowsingDataRemoverImpl
   // for internal purposes.
   base::WeakPtr<BrowsingDataRemoverImpl> GetWeakPtr();

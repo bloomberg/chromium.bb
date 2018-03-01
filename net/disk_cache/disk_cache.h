@@ -382,6 +382,11 @@ class NET_EXPORT Entry {
   // Note: This method is deprecated.
   virtual int ReadyForSparseIO(const CompletionCallback& callback) = 0;
 
+  // Used in tests to set the last used time. Note that backend might have
+  // limited precision. Also note that this call may modify the last modified
+  // time.
+  virtual void SetLastUsedTimeForTest(base::Time time) = 0;
+
  protected:
   virtual ~Entry() {}
 };

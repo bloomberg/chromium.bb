@@ -599,6 +599,13 @@ int SimpleEntryImpl::ReadyForSparseIO(const CompletionCallback& callback) {
   return net::OK;
 }
 
+void SimpleEntryImpl::SetLastUsedTimeForTest(base::Time time) {
+  // Note that we do not update |last_used_| here as it gets overwritten
+  // by UpdateDataFromEntryStat with the current time. It would be more involved
+  // to make that value stick and is not needed by the current tests.
+  backend_->index()->SetLastUsedTimeForTest(entry_hash_, time);
+}
+
 size_t SimpleEntryImpl::EstimateMemoryUsage() const {
   // TODO(xunjieli): crbug.com/669108. It'd be nice to have the rest of |entry|
   // measured, but the ownership of SimpleSynchronousEntry isn't straightforward

@@ -272,6 +272,10 @@ int MemEntryImpl::ReadyForSparseIO(const CompletionCallback& callback) {
   return net::OK;
 }
 
+void MemEntryImpl::SetLastUsedTimeForTest(base::Time time) {
+  last_used_ = time;
+}
+
 size_t MemEntryImpl::EstimateMemoryUsage() const {
   // Subtlety: the entries in children_ are not double counted, as the entry
   // pointers won't be followed by EstimateMemoryUsage.

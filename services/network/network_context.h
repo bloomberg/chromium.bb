@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/component_export.h"
@@ -17,6 +18,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "services/network/cookie_manager.h"
+#include "services/network/http_cache_data_remover.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/udp_socket.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -102,6 +104,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void ClearNetworkingHistorySince(
       base::Time time,
       base::OnceClosure completion_callback) override;
+  void ClearHttpCache(base::Time start_time,
+                      base::Time end_time,
+                      mojom::ClearCacheUrlFilterPtr filter,
+                      ClearHttpCacheCallback callback) override;
   void SetNetworkConditions(const std::string& profile_id,
                             mojom::NetworkConditionsPtr conditions) override;
   void CreateUDPSocket(mojom::UDPSocketRequest request,
@@ -132,6 +138,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   // Constructor only used in tests.
   explicit NetworkContext(mojom::NetworkContextParamsPtr params);
 
+  // Invoked when the HTTP cache was cleared. Invokes |callback|.
+  void OnHttpCacheCleared(ClearHttpCacheCallback callback,
+                          HttpCacheDataRemover* remover);
+
   // On connection errors the NetworkContext destroys itself.
   void OnConnectionError();
 
@@ -160,6 +170,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   std::unique_ptr<CookieManager> cookie_manager_;
 
   std::unique_ptr<UDPSocketFactory> udp_socket_factory_;
+
+  std::vector<std::unique_ptr<HttpCacheDataRemover>> http_cache_data_removers_;
 
   int current_resource_scheduler_client_id_ = 0;
 
