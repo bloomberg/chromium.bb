@@ -167,11 +167,14 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
                                  const std::string& cookie_line,
                                  base::Time creation_time) {
     DCHECK(cm);
+    DCHECK(!creation_time.is_null());
     ResultSavingCookieCallback<bool> callback;
-    cm->SetCookieWithCreationTimeForTesting(
-        url, cookie_line, creation_time,
-        base::Bind(&ResultSavingCookieCallback<bool>::Run,
-                   base::Unretained(&callback)));
+    cm->SetCanonicalCookieAsync(
+        CanonicalCookie::Create(url, cookie_line, creation_time,
+                                CookieOptions()),
+        url.SchemeIsCryptographic(), /* modify_httponly = */ false,
+        base::BindOnce(&ResultSavingCookieCallback<bool>::Run,
+                       base::Unretained(&callback)));
     callback.WaitUntilDone();
     return callback.result();
   }

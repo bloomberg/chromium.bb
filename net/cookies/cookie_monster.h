@@ -205,11 +205,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
 
   bool IsEphemeral() override;
 
-  void SetCookieWithCreationTimeForTesting(const GURL& url,
-                                           const std::string& cookie_line,
-                                           const base::Time& creation_time,
-                                           SetCookiesCallback callback);
-
  private:
   CookieMonster(PersistentCookieStore* store,
                 ChannelIDService* channel_id_service,
@@ -483,15 +478,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
   CookieMap::iterator InternalInsertCookie(const std::string& key,
                                            std::unique_ptr<CanonicalCookie> cc,
                                            bool sync_to_store);
-
-  // Helper function that sets cookies with more control.
-  // Not exposed as we don't want callers to have the ability
-  // to specify (potentially duplicate) creation times.
-  void SetCookieWithCreationTimeAndOptions(const GURL& url,
-                                           const std::string& cookie_line,
-                                           const base::Time& creation_time,
-                                           const CookieOptions& options,
-                                           SetCookiesCallback callback);
 
   // Sets all cookies from |list| after deleting any equivalent cookie.
   // For data gathering purposes, this routine is treated as if it is
