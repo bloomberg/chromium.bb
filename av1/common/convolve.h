@@ -111,7 +111,7 @@ static INLINE ConvolveParams get_conv_params_no_round(int ref, int do_average,
   if (bd < 12) assert(intbufrange <= 16);
   if (intbufrange > 16) {
     conv_params.round_0 += intbufrange - 16;
-    conv_params.round_1 -= intbufrange - 16;
+    if (!is_compound) conv_params.round_1 -= intbufrange - 16;
   }
 #else
   (void)bd;
