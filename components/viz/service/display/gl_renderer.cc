@@ -618,6 +618,12 @@ static sk_sp<SkImage> ApplyImageFilter(
   return image;
 }
 
+static gfx::RectF CenteredRect(const gfx::Rect& tile_rect) {
+  return gfx::RectF(
+      gfx::PointF(-0.5f * tile_rect.width(), -0.5f * tile_rect.height()),
+      gfx::SizeF(tile_rect.size()));
+}
+
 bool GLRenderer::CanApplyBlendModeUsingBlendFunc(SkBlendMode blend_mode) {
   return use_blend_equation_advanced_ || blend_mode == SkBlendMode::kSrcOver ||
          blend_mode == SkBlendMode::kDstIn ||
@@ -1811,22 +1817,7 @@ void GLRenderer::DrawSolidColorQuad(const SolidColorDrawQuad* quad,
   // Antialising requires a normalized quad, but this could lead to floating
   // point precision errors, so only normalize when antialising is on.
   if (use_aa) {
-    // Normalize to tile_rect.
-    local_quad.Scale(1.0f / tile_rect.width(), 1.0f / tile_rect.height());
-
-    SetShaderQuadF(local_quad);
-
-    // The transform and vertex data are used to figure out the extents that the
-    // un-antialiased quad should have and which vertex this is and the float
-    // quad passed in via uniform is the actual geometry that gets used to draw
-    // it. This is why this centered rect is used and not the original
-    // quad_rect.
-    gfx::RectF centered_rect(
-        gfx::PointF(-0.5f * tile_rect.width(), -0.5f * tile_rect.height()),
-        gfx::SizeF(tile_rect.size()));
-    DrawQuadGeometry(current_frame()->projection_matrix,
-                     quad->shared_quad_state->quad_to_target_transform,
-                     centered_rect);
+    DrawQuadGeometryWithAA(quad, &local_quad, tile_rect);
   } else {
     PrepareGeometry(SHARED_BINDING);
     SetShaderQuadF(local_quad);
@@ -1973,23 +1964,10 @@ void GLRenderer::DrawContentQuadAA(const ContentDrawQuadBase* quad,
 
   // Blending is required for antialiasing.
   SetBlendEnabled(true);
-
-  // Normalize to tile_rect.
-  local_quad.Scale(1.0f / tile_rect.width(), 1.0f / tile_rect.height());
-
   SetShaderOpacity(quad);
-  SetShaderQuadF(local_quad);
 
-  // The transform and vertex data are used to figure out the extents that the
-  // un-antialiased quad should have and which vertex this is and the float
-  // quad passed in via uniform is the actual geometry that gets used to draw
-  // it. This is why this centered rect is used and not the original quad_rect.
-  gfx::RectF centered_rect(
-      gfx::PointF(-0.5f * tile_rect.width(), -0.5f * tile_rect.height()),
-      gfx::SizeF(tile_rect.size()));
-  DrawQuadGeometry(current_frame()->projection_matrix,
-                   quad->shared_quad_state->quad_to_target_transform,
-                   centered_rect);
+  // Draw the quad with antialiasing.
+  DrawQuadGeometryWithAA(quad, &local_quad, tile_rect);
 }
 
 void GLRenderer::DrawContentQuadNoAA(const ContentDrawQuadBase* quad,
@@ -2717,6 +2695,24 @@ void GLRenderer::DrawQuadGeometry(const gfx::Transform& projection_matrix,
 
   gl_->DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, nullptr);
   num_triangles_drawn_ += 2;
+}
+
+void GLRenderer::DrawQuadGeometryWithAA(const DrawQuad* quad,
+                                        gfx::QuadF* local_quad,
+                                        const gfx::Rect& tile_rect) {
+  DCHECK(local_quad);
+  // Normalize to tile_rect.
+  local_quad->Scale(1.0f / tile_rect.width(), 1.0f / tile_rect.height());
+
+  SetShaderQuadF(*local_quad);
+
+  // The transform and vertex data are used to figure out the extents that the
+  // un-antialiased quad should have and which vertex this is and the float
+  // quad passed in via uniform is the actual geometry that gets used to draw
+  // it. This is why this centered rect is used and not the original quad_rect.
+  DrawQuadGeometry(current_frame()->projection_matrix,
+                   quad->shared_quad_state->quad_to_target_transform,
+                   CenteredRect(tile_rect));
 }
 
 void GLRenderer::SwapBuffers(std::vector<ui::LatencyInfo> latency_info) {
