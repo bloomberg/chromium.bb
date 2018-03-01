@@ -1006,7 +1006,8 @@
         "disable_timestamp_queries"
       ],
       "disabled_extensions": [
-        "GL_EXT_disjoint_timer_query"
+        "GL_EXT_disjoint_timer_query",
+        "GL_EXT_disjoint_timer_query_webgl2"
       ]
     },
     {
@@ -1018,7 +1019,8 @@
       },
       "gl_renderer": "Adreno \\(TM\\) 4.*",
       "disabled_extensions": [
-        "GL_EXT_disjoint_timer_query"
+        "GL_EXT_disjoint_timer_query",
+        "GL_EXT_disjoint_timer_query_webgl2"
       ]
     },
     {
@@ -2549,10 +2551,10 @@
         "type": "android",
         "version": {
           "op": "<",
-          "value": "9.0"
+          "value": "8.1"
         }
       },
-      "gl_renderer": "Adreno \\(TM\\) (3.*|5[34]0)",
+      "gl_renderer": "Adreno \\(TM\\) [345].*",
       "disabled_extensions": [
         "GL_EXT_disjoint_timer_query",
         "GL_EXT_disjoint_timer_query_webgl2"
