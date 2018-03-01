@@ -72,6 +72,9 @@ void TaskTracingInfo::AppendAsTraceFormat(std::string* out) const {
 constexpr char kQueueFunctionName[] = "TaskScheduler PostTask";
 constexpr char kRunFunctionName[] = "TaskScheduler RunTask";
 
+constexpr char kTaskSchedulerFlowTracingCategory[] =
+    TRACE_DISABLED_BY_DEFAULT("task_scheduler.flow");
+
 HistogramBase* GetTaskLatencyHistogram(StringPiece histogram_label,
                                        StringPiece task_type_suffix) {
   DCHECK(!histogram_label.empty());
@@ -293,7 +296,14 @@ bool TaskTracker::WillPostTask(const Task& task) {
   if (task.delayed_run_time.is_null())
     subtle::NoBarrier_AtomicIncrement(&num_incomplete_undelayed_tasks_, 1);
 
-  task_annotator_.DidQueueTask(kQueueFunctionName, task);
+  {
+    TRACE_EVENT_WITH_FLOW0(
+        kTaskSchedulerFlowTracingCategory, kQueueFunctionName,
+        TRACE_ID_MANGLE(task_annotator_.GetTaskTraceID(task)),
+        TRACE_EVENT_FLAG_FLOW_OUT);
+  }
+
+  task_annotator_.DidQueueTask(nullptr, task);
 
   return true;
 }
@@ -438,7 +448,16 @@ void TaskTracker::RunOrSkipTask(Task task,
                    std::make_unique<TaskTracingInfo>(
                        task.traits, execution_mode, sequence_token));
 
-      task_annotator_.RunTask(kQueueFunctionName, &task);
+      {
+        // Put this in its own scope so it preceeds rather than overlaps with
+        // RunTask() in the trace view.
+        TRACE_EVENT_WITH_FLOW0(
+            kTaskSchedulerFlowTracingCategory, kQueueFunctionName,
+            TRACE_ID_MANGLE(task_annotator_.GetTaskTraceID(task)),
+            TRACE_EVENT_FLAG_FLOW_IN);
+      }
+
+      task_annotator_.RunTask(nullptr, &task);
     }
 
     // Make sure the arguments bound to the callback are deleted within the

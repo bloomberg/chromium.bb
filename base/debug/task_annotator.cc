@@ -20,18 +20,24 @@ TaskAnnotator::~TaskAnnotator() = default;
 
 void TaskAnnotator::DidQueueTask(const char* queue_function,
                                  const PendingTask& pending_task) {
-  TRACE_EVENT_WITH_FLOW0(
-      TRACE_DISABLED_BY_DEFAULT("toplevel.flow"), queue_function,
-      TRACE_ID_MANGLE(GetTaskTraceID(pending_task)), TRACE_EVENT_FLAG_FLOW_OUT);
+  if (queue_function) {
+    TRACE_EVENT_WITH_FLOW0(TRACE_DISABLED_BY_DEFAULT("toplevel.flow"),
+                           queue_function,
+                           TRACE_ID_MANGLE(GetTaskTraceID(pending_task)),
+                           TRACE_EVENT_FLAG_FLOW_OUT);
+  }
 }
 
 void TaskAnnotator::RunTask(const char* queue_function,
                             PendingTask* pending_task) {
   ScopedTaskRunActivity task_activity(*pending_task);
 
-  TRACE_EVENT_WITH_FLOW0(
-      TRACE_DISABLED_BY_DEFAULT("toplevel.flow"), queue_function,
-      TRACE_ID_MANGLE(GetTaskTraceID(*pending_task)), TRACE_EVENT_FLAG_FLOW_IN);
+  if (queue_function) {
+    TRACE_EVENT_WITH_FLOW0(TRACE_DISABLED_BY_DEFAULT("toplevel.flow"),
+                           queue_function,
+                           TRACE_ID_MANGLE(GetTaskTraceID(*pending_task)),
+                           TRACE_EVENT_FLAG_FLOW_IN);
+  }
 
   // Before running the task, store the task backtrace with the chain of
   // PostTasks that resulted in this call and deliberately alias it to ensure

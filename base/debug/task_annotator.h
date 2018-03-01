@@ -22,7 +22,9 @@ class BASE_EXPORT TaskAnnotator {
   ~TaskAnnotator();
 
   // Called to indicate that a task has been queued to run in the future.
-  // |queue_function| is used as the trace flow event name.
+  // |queue_function| is used as the trace flow event name. |queue_function| can
+  // be null if the caller doesn't want trace flow events logged to
+  // toplevel.flow.
   void DidQueueTask(const char* queue_function,
                     const PendingTask& pending_task);
 
@@ -30,12 +32,14 @@ class BASE_EXPORT TaskAnnotator {
   // passed into |DidQueueTask| for this task.
   void RunTask(const char* queue_function, PendingTask* pending_task);
 
- private:
   // Creates a process-wide unique ID to represent this task in trace events.
   // This will be mangled with a Process ID hash to reduce the likelyhood of
-  // colliding with TaskAnnotator pointers on other processes.
+  // colliding with TaskAnnotator pointers on other processes. Callers may use
+  // this when generating their own flow events (i.e. when passing
+  // |queue_function == nullptr| in above methods).
   uint64_t GetTaskTraceID(const PendingTask& task) const;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(TaskAnnotator);
 };
 
