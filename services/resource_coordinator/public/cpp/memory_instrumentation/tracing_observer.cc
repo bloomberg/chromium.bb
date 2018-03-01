@@ -30,10 +30,6 @@ bool IsMemoryInfraTracingEnabled() {
 
 void OsDumpAsValueInto(TracedValue* value, const mojom::OSMemDump& os_dump) {
   value->SetString(
-      "resident_set_bytes",
-      base::StringPrintf(
-          "%" PRIx64, static_cast<uint64_t>(os_dump.resident_set_kb) * 1024));
-  value->SetString(
       "private_footprint_bytes",
       base::StringPrintf(
           "%" PRIx64,
