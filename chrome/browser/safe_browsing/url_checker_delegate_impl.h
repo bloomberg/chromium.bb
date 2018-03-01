@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "components/safe_browsing/browser/url_checker_delegate.h"
 
+class ProfileIOData;
 namespace safe_browsing {
 
 class SafeBrowsingUIManager;
@@ -17,7 +18,8 @@ class UrlCheckerDelegateImpl : public UrlCheckerDelegate {
  public:
   UrlCheckerDelegateImpl(
       scoped_refptr<SafeBrowsingDatabaseManager> database_manager,
-      scoped_refptr<SafeBrowsingUIManager> ui_manager);
+      scoped_refptr<SafeBrowsingUIManager> ui_manager,
+      const ProfileIOData* io_data);
 
  private:
   ~UrlCheckerDelegateImpl() override;
@@ -47,6 +49,7 @@ class UrlCheckerDelegateImpl : public UrlCheckerDelegate {
   scoped_refptr<SafeBrowsingDatabaseManager> database_manager_;
   scoped_refptr<SafeBrowsingUIManager> ui_manager_;
   SBThreatTypeSet threat_types_;
+  const ProfileIOData* profile_io_data_;
 
   DISALLOW_COPY_AND_ASSIGN(UrlCheckerDelegateImpl);
 };

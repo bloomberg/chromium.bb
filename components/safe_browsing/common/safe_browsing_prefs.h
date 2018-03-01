@@ -9,9 +9,11 @@
 
 #include "base/feature_list.h"
 #include "base/values.h"
+#include "components/prefs/pref_member.h"
 
 class PrefRegistrySimple;
 class PrefService;
+class GURL;
 
 namespace prefs {
 // Boolean that is true when SafeBrowsing is enabled.
@@ -217,6 +219,35 @@ void GetSafeBrowsingWhitelistDomainsPref(
 void CanonicalizeDomainList(
     const base::ListValue& raw_domain_list,
     std::vector<std::string>* out_canonicalized_domain_list);
+
+// Helper function to determine if |url| matches Safe Browsing whitelist domains
+// (a.k. a prefs::kSafeBrowsingWhitelistDomains).
+// Called on IO thread.
+bool IsURLWhitelistedByPolicy(const GURL& url,
+                              StringListPrefMember* pref_member);
+
+// Helper function to determine if |url| matches Safe Browsing whitelist domains
+// (a.k. a prefs::kSafeBrowsingWhitelistDomains).
+// Called on UI thread.
+bool IsURLWhitelistedByPolicy(const GURL& url, const PrefService& pref);
+
+// Helper function to get the pref value of password protection login URLs.
+void GetPasswordProtectionLoginURLsPref(const PrefService& prefs,
+                                        std::vector<GURL>* out_login_url_list);
+
+// Helper function that returns true if |url| matches any password protection
+// login URLs. Returns false otherwise.
+bool MatchesPasswordProtectionLoginURL(const GURL& url,
+                                       const PrefService& prefs);
+
+// Helper function to get the pref value of password protection change password
+// URL.
+GURL GetPasswordProtectionChangePasswordURLPref(const PrefService& prefs);
+
+// Helper function that returns true if |url| matches password protection
+// change password URL. Returns false otherwise.
+bool MatchesPasswordProtectionChangePasswordURL(const GURL& url,
+                                                const PrefService& prefs);
 
 }  // namespace safe_browsing
 

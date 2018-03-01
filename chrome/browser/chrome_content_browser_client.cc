@@ -4047,7 +4047,7 @@ ChromeContentBrowserClient::GetSafeBrowsingUrlCheckerDelegate(
     safe_browsing_url_checker_delegate_ =
         new safe_browsing::UrlCheckerDelegateImpl(
             safe_browsing_service_->database_manager(),
-            safe_browsing_service_->ui_manager());
+            safe_browsing_service_->ui_manager(), io_data);
   }
 
   return safe_browsing_url_checker_delegate_.get();

@@ -19,13 +19,16 @@ namespace safe_browsing {
 class SafeBrowsingService;
 }
 
+class ProfileIOData;
+
 // Contructs a resource throttle for SafeBrowsing.
 // It could return nullptr if URL checking is not supported on this
 // build+device.
 content::ResourceThrottle* MaybeCreateSafeBrowsingResourceThrottle(
     net::URLRequest* request,
     content::ResourceType resource_type,
-    safe_browsing::SafeBrowsingService* sb_service);
+    safe_browsing::SafeBrowsingService* sb_service,
+    ProfileIOData* io_data);
 
 // SafeBrowsingParallelResourceThrottle uses a Chrome-specific
 // safe_browsing::UrlCheckerDelegate implementation with its base class
@@ -36,12 +39,14 @@ class SafeBrowsingParallelResourceThrottle
   friend content::ResourceThrottle* MaybeCreateSafeBrowsingResourceThrottle(
       net::URLRequest* request,
       content::ResourceType resource_type,
-      safe_browsing::SafeBrowsingService* sb_service);
+      safe_browsing::SafeBrowsingService* sb_service,
+      ProfileIOData* io_data);
 
   SafeBrowsingParallelResourceThrottle(
       const net::URLRequest* request,
       content::ResourceType resource_type,
-      safe_browsing::SafeBrowsingService* sb_service);
+      safe_browsing::SafeBrowsingService* sb_service,
+      ProfileIOData* io_data);
 
   ~SafeBrowsingParallelResourceThrottle() override;
 

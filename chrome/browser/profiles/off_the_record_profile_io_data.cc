@@ -166,6 +166,10 @@ void OffTheRecordProfileIOData::Handle::LazyInitialize() const {
       profile_->GetPrefs());
   io_data_->safe_browsing_enabled()->MoveToThread(
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
+  io_data_->safe_browsing_whitelist_domains()->Init(
+      prefs::kSafeBrowsingWhitelistDomains, profile_->GetPrefs());
+  io_data_->safe_browsing_whitelist_domains()->MoveToThread(
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
 #if BUILDFLAG(ENABLE_PLUGINS)
   io_data_->always_open_pdf_externally()->Init(
       prefs::kPluginsAlwaysOpenPdfExternally, profile_->GetPrefs());

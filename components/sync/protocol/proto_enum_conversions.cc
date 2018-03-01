@@ -398,7 +398,7 @@ const char* ProtoEnumToString(
         LookupResult lookup_result) {
   ASSERT_ENUM_BOUNDS(
       sync_pb::UserEventSpecifics::GaiaPasswordReuse::PasswordReuseLookup,
-      LookupResult, UNSPECIFIED, URL_UNSUPPORTED);
+      LookupResult, UNSPECIFIED, ENTERPRISE_WHITELIST_HIT);
   switch (lookup_result) {
     ENUM_CASE(
         sync_pb::UserEventSpecifics::GaiaPasswordReuse::PasswordReuseLookup,
@@ -418,6 +418,9 @@ const char* ProtoEnumToString(
     ENUM_CASE(
         sync_pb::UserEventSpecifics::GaiaPasswordReuse::PasswordReuseLookup,
         URL_UNSUPPORTED);
+    ENUM_CASE(
+        sync_pb::UserEventSpecifics::GaiaPasswordReuse::PasswordReuseLookup,
+        ENTERPRISE_WHITELIST_HIT);
   }
   NOTREACHED();
   return "";

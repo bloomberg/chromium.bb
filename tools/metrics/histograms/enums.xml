@@ -34471,6 +34471,9 @@ Called by update_net_trust_anchors.py.-->
   <int value="12" label="Disabled due to feature disabled"/>
   <int value="13" label="Disabled due to user population"/>
   <int value="14" label="URL not valid for reputation computing"/>
+  <int value="15" label="URL matched enterprise whitelist"/>
+  <int value="16" label="URL matched enterprise change password URL"/>
+  <int value="17" label="URL matched enterprise login URL"/>
 </enum>
 
 <enum name="PasswordProtectionSyncAccountType">

@@ -32,10 +32,12 @@ static_library("safe_browsing_prefs") {
     "safe_browsing_prefs.cc",
     "safe_browsing_prefs.h",
   ]
+
   deps = [
     "//base:base",
     "//components/pref_registry:pref_registry",
     "//components/prefs",
+    "//content/public/browser:browser",
     "//net:net",
   ]
 }
@@ -51,6 +53,7 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//components/prefs:test_support",
     "//testing/gtest",
+    "//url:url",
   ]
 }
 

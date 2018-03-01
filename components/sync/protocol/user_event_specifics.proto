@@ -153,6 +153,9 @@ message UserEventSpecifics {
         // We won't be able to compute reputation for the URL e.g. local IP
         // address, localhost, not-yet-assigned by ICANN gTLD, etc.
         URL_UNSUPPORTED = 5;
+        // URL did match enterprise whitelist.
+        // No further action required related to this re-use event.
+        ENTERPRISE_WHITELIST_HIT = 6;
       }
       optional LookupResult lookup_result = 1;
 

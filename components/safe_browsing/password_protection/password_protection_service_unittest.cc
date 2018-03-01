@@ -151,6 +151,11 @@ class TestPasswordProtectionService : public PasswordProtectionService {
     return password_protection_trigger_;
   }
 
+  bool IsURLWhitelistedForPasswordEntry(const GURL& url,
+                                        RequestOutcome* reason) const override {
+    return false;
+  }
+
   MOCK_METHOD3(FillReferrerChain,
                void(const GURL&, int, LoginReputationClientRequest::Frame*));
   MOCK_METHOD1(MaybeLogPasswordReuseDetectedEvent, void(content::WebContents*));
@@ -163,8 +168,6 @@ class TestPasswordProtectionService : public PasswordProtectionService {
   MOCK_METHOD1(UserClickedThroughSBInterstitial, bool(content::WebContents*));
   MOCK_METHOD2(RemoveUnhandledSyncPasswordReuseOnURLsDeleted,
                void(bool, const history::URLRows&));
-  MOCK_CONST_METHOD1(GetPasswordProtectionLoginURLsPref,
-                     void(std::vector<GURL>*));
 
  private:
   bool is_extended_reporting_;

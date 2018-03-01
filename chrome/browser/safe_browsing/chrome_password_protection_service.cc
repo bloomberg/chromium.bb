@@ -47,6 +47,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "url/gurl.h"
 #include "url/url_util.h"
 
 using content::BrowserThread;
@@ -553,6 +554,12 @@ void ChromePasswordProtectionService::MaybeLogPasswordReuseLookupEvent(
       LogPasswordReuseLookupResult(web_contents,
                                    PasswordReuseLookup::URL_UNSUPPORTED);
       break;
+    case PasswordProtectionService::MATCHED_ENTERPRISE_WHITELIST:
+    case PasswordProtectionService::MATCHED_ENTERPRISE_LOGIN_URL:
+    case PasswordProtectionService::MATCHED_ENTERPRISE_CHANGE_PASSWORD_URL:
+      LogPasswordReuseLookupResult(
+          web_contents, PasswordReuseLookup::ENTERPRISE_WHITELIST_HIT);
+      break;
     case PasswordProtectionService::CANCELED:
     case PasswordProtectionService::TIMEDOUT:
     case PasswordProtectionService::DISABLED_DUE_TO_INCOGNITO:
@@ -683,15 +690,10 @@ AccountInfo ChromePasswordProtectionService::GetAccountInfo() const {
 GURL ChromePasswordProtectionService::GetChangePasswordURL() const {
   // If change password URL is specified in preferences, returns the
   // corresponding pref value.
-  if (profile_->GetPrefs()->HasPrefPath(
-          prefs::kPasswordProtectionChangePasswordURL)) {
-    GURL change_password_url_from_pref(profile_->GetPrefs()->GetString(
-        prefs::kPasswordProtectionChangePasswordURL));
-    // Skip invalid or non-http/https URL.
-    if (change_password_url_from_pref.is_valid() &&
-        change_password_url_from_pref.SchemeIsHTTPOrHTTPS()) {
-      return change_password_url_from_pref;
-    }
+  GURL enterprise_change_password_url =
+      GetPasswordProtectionChangePasswordURLPref(*profile_->GetPrefs());
+  if (!enterprise_change_password_url.is_empty()) {
+    return enterprise_change_password_url;
   }
 
   // Otherwise, computes the default GAIA change password URL.
@@ -843,18 +845,32 @@ ChromePasswordProtectionService::GetPasswordProtectionTriggerPref(
                            : PHISHING_REUSE;
 }
 
-void ChromePasswordProtectionService::GetPasswordProtectionLoginURLsPref(
-    std::vector<GURL>* out_login_url_list) const {
-  const base::ListValue* pref_value =
-      profile_->GetPrefs()->GetList(prefs::kPasswordProtectionLoginURLs);
-  out_login_url_list->clear();
-  for (auto it = pref_value->GetList().begin();
-       it != pref_value->GetList().end(); it++) {
-    GURL login_url(it->GetString());
-    // Skip invalid or none-http/https login URLs.
-    if (login_url.is_valid() && login_url.SchemeIsHTTPOrHTTPS())
-      out_login_url_list->push_back(login_url);
+bool ChromePasswordProtectionService::IsURLWhitelistedForPasswordEntry(
+    const GURL& url,
+    RequestOutcome* reason) const {
+  if (!profile_)
+    return false;
+
+  PrefService* prefs = profile_->GetPrefs();
+  if (IsURLWhitelistedByPolicy(url, *prefs)) {
+    *reason = MATCHED_ENTERPRISE_WHITELIST;
+    return true;
   }
+
+  // Checks if |url| matches the change password url configured in enterprise
+  // policy.
+  if (MatchesPasswordProtectionChangePasswordURL(url, *prefs)) {
+    *reason = MATCHED_ENTERPRISE_CHANGE_PASSWORD_URL;
+    return true;
+  }
+
+  // Checks if |url| matches any login url configured in enterprise policy.
+  if (MatchesPasswordProtectionLoginURL(url, *prefs)) {
+    *reason = MATCHED_ENTERPRISE_LOGIN_URL;
+    return true;
+  }
+
+  return false;
 }
 
 }  // namespace safe_browsing

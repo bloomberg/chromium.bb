@@ -420,6 +420,7 @@ bool PasswordProtectionService::CanSendPing(
     bool matches_sync_password) {
   RequestOutcome request_outcome = URL_NOT_VALID_FOR_REPUTATION_COMPUTING;
   if (IsPingingEnabled(trigger_type, &request_outcome) &&
+      !IsURLWhitelistedForPasswordEntry(main_frame_url, &request_outcome) &&
       CanGetReputationOfURL(main_frame_url)) {
     return true;
   }

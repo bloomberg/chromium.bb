@@ -10,7 +10,9 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/browser_thread.h"
 #include "net/base/url_util.h"
+#include "url/gurl.h"
 #include "url/url_canon.h"
 
 namespace {
@@ -135,6 +137,23 @@ void RecordExtendedReportingPrefChanged(
     }
   }
 }
+
+// A helper function to return a GURL containing just the scheme, host, port,
+// and path from a URL. Equivalent to clearing any username, password, query,
+// and ref. Return empty URL if |url| is not valid.
+GURL GetSimplifiedURL(const GURL& url) {
+  if (!url.is_valid() || !url.IsStandard())
+    return GURL();
+
+  url::Replacements<char> replacements;
+  replacements.ClearUsername();
+  replacements.ClearPassword();
+  replacements.ClearQuery();
+  replacements.ClearRef();
+
+  return url.ReplaceComponents(replacements);
+}
+
 }  // namespace
 
 namespace prefs {
@@ -498,6 +517,87 @@ void CanonicalizeDomainList(
     if (!canonical_host.empty())
       out_canonicalized_domain_list->push_back(canonical_host);
   }
+}
+
+bool IsURLWhitelistedByPolicy(const GURL& url,
+                              StringListPrefMember* pref_member) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  std::vector<std::string> sb_whitelist_domains = pref_member->GetValue();
+  return std::find_if(sb_whitelist_domains.begin(), sb_whitelist_domains.end(),
+                      [&url](const std::string& domain) {
+                        return url.DomainIs(domain);
+                      }) != sb_whitelist_domains.end();
+}
+
+bool IsURLWhitelistedByPolicy(const GURL& url, const PrefService& pref) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (!pref.HasPrefPath(prefs::kSafeBrowsingWhitelistDomains))
+    return false;
+  const base::ListValue* whitelist =
+      pref.GetList(prefs::kSafeBrowsingWhitelistDomains);
+  for (const base::Value& value : whitelist->GetList()) {
+    if (url.DomainIs(value.GetString()))
+      return true;
+  }
+  return false;
+}
+
+void GetPasswordProtectionLoginURLsPref(const PrefService& prefs,
+                                        std::vector<GURL>* out_login_url_list) {
+  const base::ListValue* pref_value =
+      prefs.GetList(prefs::kPasswordProtectionLoginURLs);
+  out_login_url_list->clear();
+  for (const base::Value& value : pref_value->GetList()) {
+    GURL login_url(value.GetString());
+    // Skip invalid or none-http/https login URLs.
+    if (login_url.is_valid() && login_url.SchemeIsHTTPOrHTTPS())
+      out_login_url_list->push_back(login_url);
+  }
+}
+
+bool MatchesPasswordProtectionLoginURL(const GURL& url,
+                                       const PrefService& prefs) {
+  if (!url.is_valid())
+    return false;
+
+  std::vector<GURL> login_urls;
+  GetPasswordProtectionLoginURLsPref(prefs, &login_urls);
+  if (login_urls.empty())
+    return false;
+
+  GURL simple_url = GetSimplifiedURL(url);
+  for (const GURL& login_url : login_urls) {
+    if (GetSimplifiedURL(login_url) == simple_url) {
+      return true;
+    }
+  }
+  return false;
+}
+
+GURL GetPasswordProtectionChangePasswordURLPref(const PrefService& prefs) {
+  if (!prefs.HasPrefPath(prefs::kPasswordProtectionChangePasswordURL))
+    return GURL();
+  GURL change_password_url_from_pref(
+      prefs.GetString(prefs::kPasswordProtectionChangePasswordURL));
+  // Skip invalid or non-http/https URL.
+  if (change_password_url_from_pref.is_valid() &&
+      change_password_url_from_pref.SchemeIsHTTPOrHTTPS()) {
+    return change_password_url_from_pref;
+  }
+
+  return GURL();
+}
+
+bool MatchesPasswordProtectionChangePasswordURL(const GURL& url,
+                                                const PrefService& prefs) {
+  if (!url.is_valid())
+    return false;
+
+  GURL change_password_url = GetPasswordProtectionChangePasswordURLPref(prefs);
+  if (change_password_url.is_empty())
+    return false;
+
+  return GetSimplifiedURL(change_password_url) == GetSimplifiedURL(url);
 }
 
 }  // namespace safe_browsing
