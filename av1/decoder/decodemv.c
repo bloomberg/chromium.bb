@@ -388,6 +388,13 @@ static void copy_segment_id(const AV1_COMMON *cm,
                            : 0;
 }
 
+static int get_predicted_segment_id(AV1_COMMON *const cm, int mi_offset,
+                                    int x_mis, int y_mis) {
+  return cm->last_frame_seg_map ? dec_get_segment_id(cm, cm->last_frame_seg_map,
+                                                     mi_offset, x_mis, y_mis)
+                                : 0;
+}
+
 static int read_inter_segment_id(AV1_COMMON *const cm, MACROBLOCKD *const xd,
                                  int mi_row, int mi_col, int preskip,
                                  aom_reader *r) {
@@ -396,7 +403,7 @@ static int read_inter_segment_id(AV1_COMMON *const cm, MACROBLOCKD *const xd,
   struct segmentation_probs *const segp = &ec_ctx->seg;
 
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
-  int predicted_segment_id, segment_id;
+  int segment_id;
   const int mi_offset = mi_row * cm->mi_cols + mi_col;
   const int bw = mi_size_wide[mbmi->sb_type];
   const int bh = mi_size_high[mbmi->sb_type];
@@ -407,15 +414,10 @@ static int read_inter_segment_id(AV1_COMMON *const cm, MACROBLOCKD *const xd,
 
   if (!seg->enabled) return 0;  // Default for disabled segmentation
 
-  predicted_segment_id = cm->last_frame_seg_map
-                             ? dec_get_segment_id(cm, cm->last_frame_seg_map,
-                                                  mi_offset, x_mis, y_mis)
-                             : 0;
-
   if (!seg->update_map) {
     copy_segment_id(cm, cm->last_frame_seg_map, cm->current_frame_seg_map,
                     mi_offset, x_mis, y_mis);
-    return predicted_segment_id;
+    return get_predicted_segment_id(cm, mi_offset, x_mis, y_mis);
   }
 
 #if CONFIG_SPATIAL_SEGMENTATION
@@ -439,7 +441,7 @@ static int read_inter_segment_id(AV1_COMMON *const cm, MACROBLOCKD *const xd,
     aom_cdf_prob *pred_cdf = segp->pred_cdf[ctx];
     mbmi->seg_id_predicted = aom_read_symbol(r, pred_cdf, 2, ACCT_STR);
     if (mbmi->seg_id_predicted) {
-      segment_id = predicted_segment_id;
+      segment_id = get_predicted_segment_id(cm, mi_offset, x_mis, y_mis);
     } else {
 #if CONFIG_SPATIAL_SEGMENTATION
       segment_id = read_segment_id(cm, xd, mi_row, mi_col, r, 0);
