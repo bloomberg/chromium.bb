@@ -1116,7 +1116,14 @@ void ChunkDemuxer::MarkEndOfStream(PipelineStatus status) {
 void ChunkDemuxer::UnmarkEndOfStream() {
   DVLOG(1) << "UnmarkEndOfStream()";
   base::AutoLock auto_lock(lock_);
-  DCHECK_EQ(state_, ENDED);
+  DCHECK(state_ == ENDED || state_ == SHUTDOWN || state_ == PARSE_ERROR)
+      << state_;
+
+  // At least ReportError_Locked()'s error reporting to Blink hops threads, so
+  // SourceBuffer may not be aware of media element error on another operation
+  // that might race to this point.
+  if (state_ == PARSE_ERROR || state_ == SHUTDOWN)
+    return;
 
   ChangeState_Locked(INITIALIZED);
 
