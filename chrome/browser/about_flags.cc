@@ -3780,6 +3780,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chrome::android::kQueryInOmnibox)},
 #endif  // OS_ANDROID
 
+    {"enable-viz-hit-test-draw-quad",
+     flag_descriptions::kVizHitTestDrawQuadName,
+     flag_descriptions::kVizHitTestDrawQuadDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kEnableVizHitTestDrawQuad)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

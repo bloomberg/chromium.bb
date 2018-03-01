@@ -525,6 +525,11 @@ const char kVizDisplayCompositorDescription[] =
     "If enabled, the display compositor runs as part of the viz service in the"
     "GPU process.";
 
+const char kVizHitTestDrawQuadName[] = "Viz Hit-test Draw-quad version";
+const char kVizHitTestDrawQuadDescription[] =
+    "If enabled, event targeting uses the new viz-assisted hit-testing logic, "
+    "with hit-test data computed from the CompositorFrame.";
+
 const char kEnableOutOfProcessHeapProfilingName[] =
     "Out of process heap profiling start mode.";
 const char kEnableOutOfProcessHeapProfilingDescription[] =

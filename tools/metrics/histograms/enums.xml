@@ -26872,6 +26872,7 @@ from previous Chrome versions.
   <int value="1105439588" label="enable-swipe-selection"/>
   <int value="1107543566" label="enable-one-copy"/>
   <int value="1108663108" label="disable-device-discovery-notifications"/>
+  <int value="1112885300" label="VizHitTestDrawQuad:disabled"/>
   <int value="1113365156" label="tab-management-experiment-type-chive"/>
   <int value="1114629582" label="enable-floating-virtual-keyboard"/>
   <int value="1115476442" label="PolicyTool:disabled"/>
@@ -27021,6 +27022,7 @@ from previous Chrome versions.
   <int value="1441897340" label="AndroidSpellCheckerNonLowEnd:enabled"/>
   <int value="1442798825" label="enable-quic"/>
   <int value="1442830837" label="MemoryAblation:disabled"/>
+  <int value="1444320426" label="VizHitTestDrawQuad:enabled"/>
   <int value="1449729378"
       label="AutofillUseNewSettingsNameInDropdown:disabled"/>
   <int value="1452546183" label="PwaPersistentNotification:enabled"/>
