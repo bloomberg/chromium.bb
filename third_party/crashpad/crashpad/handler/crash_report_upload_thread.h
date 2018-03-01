@@ -22,7 +22,6 @@
 #include "client/crash_report_database.h"
 #include "util/misc/uuid.h"
 #include "util/stdlib/thread_safe_vector.h"
-#include "util/thread/stoppable.h"
 #include "util/thread/worker_thread.h"
 
 namespace crashpad {
@@ -40,8 +39,7 @@ namespace crashpad {
 //! It also catches reports that are added without a ReportPending() signal
 //! being caught. This may happen if crash reports are added to the database by
 //! other processes.
-class CrashReportUploadThread : public WorkerThread::Delegate,
-                                public Stoppable {
+class CrashReportUploadThread : public WorkerThread::Delegate {
  public:
    //! \brief Options to be passed to the CrashReportUploadThread constructor.
    struct Options {
@@ -72,22 +70,11 @@ class CrashReportUploadThread : public WorkerThread::Delegate,
                           const Options& options);
   ~CrashReportUploadThread();
 
-  //! \brief Informs the upload thread that a new pending report has been added
-  //!     to the database.
-  //!
-  //! \param[in] report_uuid The unique identifier of the newly added pending
-  //!     report.
-  //!
-  //! This method may be called from any thread.
-  void ReportPending(const UUID& report_uuid);
-
-  // Stoppable:
-
   //! \brief Starts a dedicated upload thread, which executes ThreadMain().
   //!
   //! This method may only be be called on a newly-constructed object or after
   //! a call to Stop().
-  void Start() override;
+  void Start();
 
   //! \brief Stops the upload thread.
   //!
@@ -101,7 +88,16 @@ class CrashReportUploadThread : public WorkerThread::Delegate,
   //!
   //! This method may be called from any thread other than the upload thread.
   //! It is expected to only be called from the same thread that called Start().
-  void Stop() override;
+  void Stop();
+
+  //! \brief Informs the upload thread that a new pending report has been added
+  //!     to the database.
+  //!
+  //! \param[in] report_uuid The unique identifier of the newly added pending
+  //!     report.
+  //!
+  //! This method may be called from any thread.
+  void ReportPending(const UUID& report_uuid);
 
  private:
   //! \brief The result code from UploadReport().
@@ -152,14 +148,14 @@ class CrashReportUploadThread : public WorkerThread::Delegate,
   //! \param[in] report The report to upload. The caller is responsible for
   //!     calling CrashReportDatabase::GetReportForUploading() before calling
   //!     this method, and for calling
-  //!     CrashReportDatabase::RecordUploadComplete() after calling this method.
+  //!     CrashReportDatabase::RecordUploadAttempt() after calling this method.
   //! \param[out] response_body If the upload attempt is successful, this will
   //!     be set to the response body sent by the server. Breakpad-type servers
   //!     provide the crash ID assigned by the server in the response body.
   //!
   //! \return A member of UploadResult indicating the result of the upload
   //!    attempt.
-  UploadResult UploadReport(const CrashReportDatabase::UploadReport* report,
+  UploadResult UploadReport(const CrashReportDatabase::Report* report,
                             std::string* response_body);
 
   // WorkerThread::Delegate:

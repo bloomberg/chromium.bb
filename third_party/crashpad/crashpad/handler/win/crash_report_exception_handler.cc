@@ -15,7 +15,6 @@
 #include "handler/win/crash_report_exception_handler.h"
 
 #include <type_traits>
-#include <utility>
 
 #include "client/crash_report_database.h"
 #include "client/settings.h"
@@ -60,6 +59,7 @@ unsigned int CrashReportExceptionHandler::ExceptionHandlerServerException(
                                    ProcessSuspensionState::kSuspended,
                                    exception_information_address,
                                    debug_critical_section_address)) {
+    LOG(WARNING) << "ProcessSnapshotWin::Initialize failed";
     Metrics::ExceptionCaptureResult(Metrics::CaptureResult::kSnapshotFailed);
     return kTerminationCodeSnapshotFailed;
   }
@@ -90,7 +90,7 @@ unsigned int CrashReportExceptionHandler::ExceptionHandlerServerException(
     process_snapshot.SetClientID(client_id);
     process_snapshot.SetAnnotationsSimpleMap(*process_annotations_);
 
-    std::unique_ptr<CrashReportDatabase::NewReport> new_report;
+    CrashReportDatabase::NewReport* new_report;
     CrashReportDatabase::OperationStatus database_status =
         database_->PrepareNewCrashReport(&new_report);
     if (database_status != CrashReportDatabase::kNoError) {
@@ -100,23 +100,29 @@ unsigned int CrashReportExceptionHandler::ExceptionHandlerServerException(
       return termination_code;
     }
 
-    process_snapshot.SetReportID(new_report->ReportID());
+    process_snapshot.SetReportID(new_report->uuid);
+
+    CrashReportDatabase::CallErrorWritingCrashReport
+        call_error_writing_crash_report(database_, new_report);
+
+    WeakFileHandleFileWriter file_writer(new_report->handle);
 
     MinidumpFileWriter minidump;
     minidump.InitializeFromSnapshot(&process_snapshot);
     AddUserExtensionStreams(
         user_stream_data_sources_, &process_snapshot, &minidump);
 
-    if (!minidump.WriteEverything(new_report->Writer())) {
+    if (!minidump.WriteEverything(&file_writer)) {
       LOG(ERROR) << "WriteEverything failed";
       Metrics::ExceptionCaptureResult(
           Metrics::CaptureResult::kMinidumpWriteFailed);
       return termination_code;
     }
 
+    call_error_writing_crash_report.Disarm();
+
     UUID uuid;
-    database_status =
-        database_->FinishedWritingCrashReport(std::move(new_report), &uuid);
+    database_status = database_->FinishedWritingCrashReport(new_report, &uuid);
     if (database_status != CrashReportDatabase::kNoError) {
       LOG(ERROR) << "FinishedWritingCrashReport failed";
       Metrics::ExceptionCaptureResult(
@@ -124,12 +130,7 @@ unsigned int CrashReportExceptionHandler::ExceptionHandlerServerException(
       return termination_code;
     }
 
-    if (upload_thread_) {
-      upload_thread_->ReportPending(uuid);
-    } else {
-      database_->SkipReportUpload(
-          uuid, Metrics::CrashSkippedReason::kUploadsDisabled);
-    }
+    upload_thread_->ReportPending(uuid);
   }
 
   Metrics::ExceptionCaptureResult(Metrics::CaptureResult::kSuccess);

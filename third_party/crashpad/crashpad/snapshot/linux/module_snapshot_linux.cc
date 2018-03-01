@@ -12,52 +12,46 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "snapshot/elf/module_snapshot_elf.h"
+#include "snapshot/linux/module_snapshot_linux.h"
 
 #include <algorithm>
 
 #include "base/files/file_path.h"
 #include "snapshot/crashpad_types/image_annotation_reader.h"
-#include "util/misc/elf_note_types.h"
 
 namespace crashpad {
 namespace internal {
 
-ModuleSnapshotElf::ModuleSnapshotElf(const std::string& name,
-                                     ElfImageReader* elf_reader,
-                                     ModuleSnapshot::ModuleType type)
+ModuleSnapshotLinux::ModuleSnapshotLinux()
     : ModuleSnapshot(),
-      name_(name),
-      elf_reader_(elf_reader),
+      name_(),
+      elf_reader_(nullptr),
       crashpad_info_(),
-      type_(type),
+      type_(kModuleTypeUnknown),
       initialized_() {}
 
-ModuleSnapshotElf::~ModuleSnapshotElf() = default;
+ModuleSnapshotLinux::~ModuleSnapshotLinux() = default;
 
-bool ModuleSnapshotElf::Initialize() {
+bool ModuleSnapshotLinux::Initialize(
+    const ProcessReader::Module& process_reader_module) {
   INITIALIZATION_STATE_SET_INITIALIZING(initialized_);
 
-  if (!elf_reader_) {
+  if (!process_reader_module.elf_reader) {
     LOG(ERROR) << "no elf reader";
     return false;
   }
 
-  // The data payload is only sizeof(VMAddress) in the note, but add a bit to
-  // account for the name, header, and padding.
-  constexpr ssize_t kMaxNoteSize = 256;
-  std::unique_ptr<ElfImageReader::NoteReader> notes =
-      elf_reader_->NotesWithNameAndType(CRASHPAD_ELF_NOTE_NAME,
-                                        CRASHPAD_ELF_NOTE_TYPE_CRASHPAD_INFO,
-                                        kMaxNoteSize);
-  std::string desc;
-  VMAddress info_address;
-  if (notes->NextNote(nullptr, nullptr, &desc) ==
-      ElfImageReader::NoteReader::Result::kSuccess) {
-    info_address = *reinterpret_cast<VMAddress*>(&desc[0]);
+  name_ = process_reader_module.name;
+  elf_reader_ = process_reader_module.elf_reader;
+  type_ = process_reader_module.type;
 
+  VMAddress info_address;
+  VMSize info_size;
+  if (elf_reader_->GetDynamicSymbol(
+          "g_crashpad_info", &info_address, &info_size)) {
     ProcessMemoryRange range;
-    if (range.Initialize(*elf_reader_->Memory())) {
+    if (range.Initialize(*elf_reader_->Memory()) &&
+        range.RestrictRange(info_address, info_size)) {
       auto info = std::make_unique<CrashpadInfoReader>();
       if (info->Initialize(&range, info_address)) {
         crashpad_info_ = std::move(info);
@@ -69,7 +63,8 @@ bool ModuleSnapshotElf::Initialize() {
   return true;
 }
 
-bool ModuleSnapshotElf::GetCrashpadOptions(CrashpadInfoClientOptions* options) {
+bool ModuleSnapshotLinux::GetCrashpadOptions(
+    CrashpadInfoClientOptions* options) {
   INITIALIZATION_STATE_DCHECK_VALID(initialized_);
 
   if (!crashpad_info_) {
@@ -87,38 +82,27 @@ bool ModuleSnapshotElf::GetCrashpadOptions(CrashpadInfoClientOptions* options) {
   return true;
 }
 
-std::string ModuleSnapshotElf::Name() const {
+std::string ModuleSnapshotLinux::Name() const {
   INITIALIZATION_STATE_DCHECK_VALID(initialized_);
   return name_;
 }
 
-uint64_t ModuleSnapshotElf::Address() const {
+uint64_t ModuleSnapshotLinux::Address() const {
   INITIALIZATION_STATE_DCHECK_VALID(initialized_);
   return elf_reader_->Address();
 }
 
-uint64_t ModuleSnapshotElf::Size() const {
+uint64_t ModuleSnapshotLinux::Size() const {
   INITIALIZATION_STATE_DCHECK_VALID(initialized_);
   return elf_reader_->Size();
 }
 
-time_t ModuleSnapshotElf::Timestamp() const {
+time_t ModuleSnapshotLinux::Timestamp() const {
   INITIALIZATION_STATE_DCHECK_VALID(initialized_);
   return 0;
 }
 
-void ModuleSnapshotElf::FileVersion(uint16_t* version_0,
-                                    uint16_t* version_1,
-                                    uint16_t* version_2,
-                                    uint16_t* version_3) const {
-  INITIALIZATION_STATE_DCHECK_VALID(initialized_);
-  *version_0 = 0;
-  *version_1 = 0;
-  *version_2 = 0;
-  *version_3 = 0;
-}
-
-void ModuleSnapshotElf::SourceVersion(uint16_t* version_0,
+void ModuleSnapshotLinux::FileVersion(uint16_t* version_0,
                                       uint16_t* version_1,
                                       uint16_t* version_2,
                                       uint16_t* version_3) const {
@@ -129,12 +113,24 @@ void ModuleSnapshotElf::SourceVersion(uint16_t* version_0,
   *version_3 = 0;
 }
 
-ModuleSnapshot::ModuleType ModuleSnapshotElf::GetModuleType() const {
+void ModuleSnapshotLinux::SourceVersion(uint16_t* version_0,
+                                        uint16_t* version_1,
+                                        uint16_t* version_2,
+                                        uint16_t* version_3) const {
+  INITIALIZATION_STATE_DCHECK_VALID(initialized_);
+  *version_0 = 0;
+  *version_1 = 0;
+  *version_2 = 0;
+  *version_3 = 0;
+}
+
+ModuleSnapshot::ModuleType ModuleSnapshotLinux::GetModuleType() const {
   INITIALIZATION_STATE_DCHECK_VALID(initialized_);
   return type_;
 }
 
-void ModuleSnapshotElf::UUIDAndAge(crashpad::UUID* uuid, uint32_t* age) const {
+void ModuleSnapshotLinux::UUIDAndAge(crashpad::UUID* uuid,
+                                     uint32_t* age) const {
   INITIALIZATION_STATE_DCHECK_VALID(initialized_);
   *age = 0;
 
@@ -146,17 +142,17 @@ void ModuleSnapshotElf::UUIDAndAge(crashpad::UUID* uuid, uint32_t* age) const {
   uuid->InitializeFromBytes(reinterpret_cast<const uint8_t*>(&desc[0]));
 }
 
-std::string ModuleSnapshotElf::DebugFileName() const {
+std::string ModuleSnapshotLinux::DebugFileName() const {
   INITIALIZATION_STATE_DCHECK_VALID(initialized_);
   return base::FilePath(Name()).BaseName().value();
 }
 
-std::vector<std::string> ModuleSnapshotElf::AnnotationsVector() const {
+std::vector<std::string> ModuleSnapshotLinux::AnnotationsVector() const {
   INITIALIZATION_STATE_DCHECK_VALID(initialized_);
   return std::vector<std::string>();
 }
 
-std::map<std::string, std::string> ModuleSnapshotElf::AnnotationsSimpleMap()
+std::map<std::string, std::string> ModuleSnapshotLinux::AnnotationsSimpleMap()
     const {
   INITIALIZATION_STATE_DCHECK_VALID(initialized_);
   std::map<std::string, std::string> annotations;
@@ -167,7 +163,7 @@ std::map<std::string, std::string> ModuleSnapshotElf::AnnotationsSimpleMap()
   return annotations;
 }
 
-std::vector<AnnotationSnapshot> ModuleSnapshotElf::AnnotationObjects() const {
+std::vector<AnnotationSnapshot> ModuleSnapshotLinux::AnnotationObjects() const {
   INITIALIZATION_STATE_DCHECK_VALID(initialized_);
   std::vector<AnnotationSnapshot> annotations;
   if (crashpad_info_ && crashpad_info_->AnnotationsList()) {
@@ -177,13 +173,14 @@ std::vector<AnnotationSnapshot> ModuleSnapshotElf::AnnotationObjects() const {
   return annotations;
 }
 
-std::set<CheckedRange<uint64_t>> ModuleSnapshotElf::ExtraMemoryRanges() const {
+std::set<CheckedRange<uint64_t>> ModuleSnapshotLinux::ExtraMemoryRanges()
+    const {
   INITIALIZATION_STATE_DCHECK_VALID(initialized_);
   return std::set<CheckedRange<uint64_t>>();
 }
 
 std::vector<const UserMinidumpStream*>
-ModuleSnapshotElf::CustomMinidumpStreams() const {
+ModuleSnapshotLinux::CustomMinidumpStreams() const {
   return std::vector<const UserMinidumpStream*>();
 }
 
