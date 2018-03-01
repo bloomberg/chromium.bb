@@ -1868,6 +1868,10 @@ enum WebFeature {
   kV8LockManager_Request_Method = 2375,
   kV8LockManager_Query_Method = 2376,
   kUserMediaEnableExperimentalHardwareEchoCancellation = 2377,
+  kV8RTCDTMFSender_Track_AttributeGetter = 2378,
+  kV8RTCDTMFSender_Duration_AttributeGetter = 2379,
+  kV8RTCDTMFSender_InterToneGap_AttributeGetter = 2380,
+  kV8RTCRtpSender_Dtmf_AttributeGetter = 2381,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
