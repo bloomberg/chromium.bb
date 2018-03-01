@@ -890,13 +890,11 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
   RunAriaTest(FILE_PATH_LITERAL("aria-empty-string.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
-    DISABLED_AccessibilityAriaValueMin) {
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaValueMin) {
   RunAriaTest(FILE_PATH_LITERAL("aria-valuemin.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
-    DISABLED_AccessibilityAriaValueMax) {
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaValueMax) {
   RunAriaTest(FILE_PATH_LITERAL("aria-valuemax.html"));
 }
 
