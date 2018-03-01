@@ -513,8 +513,6 @@ TEST_F(TaskSchedulerWorkerPoolCheckTlsReuse, CheckCleanupWorkers) {
   PlatformThread::Sleep(kReclaimTimeForCleanupTests +
                         kExtraTimeToWaitForCleanup);
 
-  worker_pool_->DisallowWorkerCleanupForTesting();
-
   // Saturate and count the worker threads that do not have the magic TLS value.
   // If the value is not there, that means we're at a new worker.
   std::vector<std::unique_ptr<WaitableEvent>> count_waiters;
@@ -681,7 +679,6 @@ TEST_F(TaskSchedulerWorkerPoolHistogramTest,
 
   workers_continue.Signal();
   worker_pool_->WaitForAllWorkersIdleForTesting();
-  worker_pool_->DisallowWorkerCleanupForTesting();
 }
 
 TEST_F(TaskSchedulerWorkerPoolHistogramTest, NumTasksBeforeCleanup) {
@@ -773,10 +770,9 @@ TEST_F(TaskSchedulerWorkerPoolHistogramTest, NumTasksBeforeCleanup) {
   top_idle_thread_continue.Signal();
   // Allow the thread processing the |histogrammed_thread_task_runner| work to
   // cleanup.
+  worker_pool_->WaitForAllWorkersIdleForTesting();
   PlatformThread::Sleep(kReclaimTimeForCleanupTests +
                         kExtraTimeToWaitForCleanup);
-  worker_pool_->WaitForAllWorkersIdleForTesting();
-  worker_pool_->DisallowWorkerCleanupForTesting();
 
   // Verify that counts were recorded to the histogram as expected.
   const auto* histogram = worker_pool_->num_tasks_before_detach_histogram();
@@ -859,7 +855,6 @@ TEST(TaskSchedulerWorkerPoolStandbyPolicyTest, VerifyStandbyThread) {
                         kExtraTimeToWaitForCleanup);
   EXPECT_EQ(1U, worker_pool->NumberOfWorkersForTesting());
 
-  worker_pool->DisallowWorkerCleanupForTesting();
   worker_pool->JoinForTesting();
 }
 
@@ -1428,7 +1423,6 @@ TEST(TaskSchedulerWorkerPoolOverWorkerCapacityTest, VerifyCleanup) {
 
   thread_continue.Signal();
 
-  worker_pool.DisallowWorkerCleanupForTesting();
   worker_pool.JoinForTesting();
 }
 
@@ -1602,7 +1596,6 @@ TEST(TaskSchedulerWorkerPoolTest, MAYBE_RacyCleanup) {
   // being idle.
   PlatformThread::Sleep(kReclaimTimeForRacyCleanupTest);
 
-  worker_pool.DisallowWorkerCleanupForTesting();
   worker_pool.JoinForTesting();
 
   // Unwinding this test will be racy if worker cleanup can race with
