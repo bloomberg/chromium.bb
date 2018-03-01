@@ -2954,6 +2954,12 @@ be describing additional metrics about the same event.
       Deprecated.
     </summary>
   </metric>
+  <metric name="WasVoiceSearchNavigation">
+    <summary>
+      A boolean that is set to 1 if this page was specifically requested and
+      recognized by a voice search.
+    </summary>
+  </metric>
 </event>
 
 <event name="XR.WebXR.PresentationSession">

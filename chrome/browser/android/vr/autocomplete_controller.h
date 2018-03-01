@@ -33,11 +33,11 @@ class AutocompleteController : public AutocompleteControllerDelegate {
   void Stop();
 
   // If |input| can be classified as URL, this function returns a GURL
-  // representation of that URL. Otherwise, it returns a GURL which navigates
-  // to the default search engine with |input| as query.
+  // representation of that URL and true. Otherwise, it returns a GURL which
+  // navigates to the default search engine with |input| as query and false.
   // This function runs independently of any currently-running autocomplete
   // session.
-  GURL GetUrlFromVoiceInput(const base::string16& input);
+  std::tuple<GURL, bool> GetUrlFromVoiceInput(const base::string16& input);
 
  private:
   void OnResultChanged(bool default_match_changed) override;

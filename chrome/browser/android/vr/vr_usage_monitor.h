@@ -12,6 +12,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
+#include "url/gurl.h"
 
 namespace vr {
 
@@ -105,6 +106,7 @@ class VrMetricsHelper : public content::WebContentsObserver {
   void SetWebVREnabled(bool is_webvr_presenting);
   void SetVRActive(bool is_vr_enabled);
   void RecordVoiceSearchStarted();
+  void RecordUrlRequestedByVoice(GURL url);
 
  private:
   // WebContentObserver
@@ -139,6 +141,8 @@ class VrMetricsHelper : public content::WebContentsObserver {
   bool is_webvr_ = false;
   bool is_vr_enabled_ = false;
   bool started_with_autopresentation_ = false;
+
+  GURL url_requested_by_voice_;
 
   int num_videos_playing_ = 0;
   int num_session_navigation_ = 0;

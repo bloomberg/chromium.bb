@@ -53,7 +53,8 @@ void AutocompleteController::Stop() {
   suggestion_callback_.Run(std::make_unique<OmniboxSuggestions>());
 }
 
-GURL AutocompleteController::GetUrlFromVoiceInput(const base::string16& input) {
+std::tuple<GURL, bool> AutocompleteController::GetUrlFromVoiceInput(
+    const base::string16& input) {
   AutocompleteMatch match;
   base::string16 culled_input;
   base::RemoveChars(input, base::ASCIIToUTF16(" "), &culled_input);
@@ -63,10 +64,11 @@ GURL AutocompleteController::GetUrlFromVoiceInput(const base::string16& input) {
       (match.type == AutocompleteMatchType::URL_WHAT_YOU_TYPED ||
        match.type == AutocompleteMatchType::HISTORY_URL ||
        match.type == AutocompleteMatchType::NAVSUGGEST)) {
-    return match.destination_url;
+    return {match.destination_url, true};
   }
-  return GURL(GetDefaultSearchURLForSearchTerms(
-      client_->GetTemplateURLService(), input));
+  return {GURL(GetDefaultSearchURLForSearchTerms(
+              client_->GetTemplateURLService(), input)),
+          false};
 }
 
 void AutocompleteController::OnResultChanged(bool default_match_changed) {
