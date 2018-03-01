@@ -160,12 +160,11 @@ bool ScrollManager::CanScroll(const ScrollState& scroll_state,
 
   if (IsViewportScrollingElement(current_element) ||
       current_element == *(frame_->GetDocument()->documentElement())) {
-    if (!frame_->Tree().Parent() || frame_->Tree().Parent()->IsLocalFrame())
+    if (frame_->IsMainFrame())
       return true;
 
-    // For oopif the viewport is added to scroll chain only if it can actually
-    // consume some delta hints.
-    DCHECK(frame_->Tree().Parent()->IsRemoteFrame());
+    // For subframes, the viewport is added to the scroll chain only if it can
+    // actually consume some delta hints.
     scrollable_area =
         frame_->View() ? frame_->View()->GetScrollableArea() : nullptr;
   }
@@ -345,8 +344,8 @@ WebInputEventResult ScrollManager::HandleGestureScrollBegin(
       !scroll_gesture_handling_node_->GetLayoutObject())
     return WebInputEventResult::kNotHandled;
 
-  PassScrollGestureEvent(gesture_event,
-                         scroll_gesture_handling_node_->GetLayoutObject());
+  WebInputEventResult child_result = PassScrollGestureEvent(
+      gesture_event, scroll_gesture_handling_node_->GetLayoutObject());
 
   RecordScrollRelatedMetrics(gesture_event.source_device);
 
@@ -367,8 +366,12 @@ WebInputEventResult ScrollManager::HandleGestureScrollBegin(
   ScrollState* scroll_state = ScrollState::Create(std::move(scroll_state_data));
   RecomputeScrollChain(*scroll_gesture_handling_node_.Get(), *scroll_state,
                        current_scroll_chain_);
-  if (current_scroll_chain_.empty())
-    return WebInputEventResult::kNotHandled;
+
+  if (current_scroll_chain_.empty()) {
+    // If a child has a non-empty scroll chain, we need to consider that instead
+    // of simply returning WebInputEventResult::kNotHandled.
+    return child_result;
+  }
 
   NotifyScrollPhaseBeginForCustomizedScroll(*scroll_state);
 
