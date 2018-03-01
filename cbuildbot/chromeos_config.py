@@ -2509,6 +2509,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'octavius', # contact:dpjacques@
       'romer', # contact:michaelho@
       'tatl', # Still volatile - contact:smbarber@ - crbug.com/705598
+      'terra', # contact:yunlian@ (Testing thinlto)
       'wooten', # contact:icoolidge@
   ])
 
@@ -3237,6 +3238,7 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       'hana',
       'nyan_big',
       'scarlet',
+      'terra',
   ])
 
   _chromte_pfq_tryjob_boards = (
@@ -3701,9 +3703,14 @@ def ApplyCustomOverrides(site_config, ge_build_config):
           'vm_tests':[],
       },
 
+      'terra-paladin': {
+          'useflags': append_useflags(['thinlto']),
+      },
+
       'terra-release': {
           'useflags': append_useflags(['thinlto']),
       },
+
       'caroline-release': {
           'useflags': append_useflags(['thinlto']),
       },
@@ -3738,6 +3745,10 @@ def ApplyCustomOverrides(site_config, ge_build_config):
 
       'peach_pit-chrome-pfq': {
           'hw_tests': hw_test_list.SharedPoolPFQ(),
+      },
+
+      'terra-chrome-pfq': {
+          'useflags': append_useflags(['thinlto'])
       },
 
       'tricky-chrome-pfq': {

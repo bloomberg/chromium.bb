@@ -34763,6 +34763,7 @@
             "peppy-chrome-pfq",
             "reef-chrome-pfq",
             "scarlet-chrome-pfq",
+            "terra-chrome-pfq",
             "tricky-chrome-pfq",
             "veyron_jerry-chromium-pfq",
             "veyron_minnie-chrome-pfq",
@@ -34810,6 +34811,7 @@
             "peppy-chrome-pfq",
             "reef-chrome-pfq",
             "scarlet-chrome-pfq",
+            "terra-chrome-pfq",
             "tricky-chrome-pfq",
             "veyron_jerry-chromium-pfq",
             "veyron_minnie-chrome-pfq",
@@ -34993,6 +34995,7 @@
             "sentry-paladin",
             "stout-paladin",
             "tatl-paladin",
+            "terra-paladin",
             "tidus-paladin",
             "tricky-paladin",
             "veyron_jaq-paladin",
@@ -35111,6 +35114,7 @@
             "sentry-paladin",
             "stout-paladin",
             "tatl-paladin",
+            "terra-paladin",
             "tidus-paladin",
             "tricky-paladin",
             "veyron_jaq-paladin",
@@ -56771,11 +56775,16 @@
     },
     "terra-chrome-pfq": {
         "_template": "chrome_pfq",
+        "active_waterfall": "chromeos",
         "boards": [
             "terra"
         ],
         "important": false,
         "manifest": "official.xml",
+        "useflags": [
+            "chrome_internal",
+            "thinlto"
+        ],
         "vm_tests": []
     },
     "terra-chrome-pfq-tryjob": {
@@ -56797,6 +56806,10 @@
         "important": false,
         "manifest": "official.xml",
         "uprev": true,
+        "useflags": [
+            "chrome_internal",
+            "thinlto"
+        ],
         "vm_tests": []
     },
     "terra-chromium-pfq": {
@@ -56942,6 +56955,7 @@
     },
     "terra-paladin": {
         "_template": "paladin",
+        "active_waterfall": "chromeos",
         "boards": [
             "terra"
         ],
@@ -56953,7 +56967,8 @@
         "overlays": "both",
         "prebuilts": "private",
         "useflags": [
-            "chrome_internal"
+            "chrome_internal",
+            "thinlto"
         ],
         "vm_tests": [],
         "vm_tests_override": null
@@ -56982,7 +56997,8 @@
         "overlays": "both",
         "prebuilts": "private",
         "useflags": [
-            "chrome_internal"
+            "chrome_internal",
+            "thinlto"
         ],
         "vm_tests": [],
         "vm_tests_override": null
