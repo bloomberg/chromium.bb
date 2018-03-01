@@ -119,8 +119,7 @@ ClassOptionality ToOperandClassAndOptionality(const std::string& operandKind, co
         else if (quantifier == "?")
             return {OperandLiteralString, true};
         else {
-            assert(0 && "this case should not exist");
-            return {OperandNone, false};
+            return {OperandVariableLiteralStrings, false};
         }
     } else if (operandKind == "PairLiteralIntegerIdRef") {
         // Used by OpSwitch in the grammar
