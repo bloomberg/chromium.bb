@@ -146,7 +146,7 @@ typedef struct frame_contexts {
   aom_cdf_prob intrabc_cdf[CDF_SIZE(2)];
   int initialized;
   struct segmentation_probs seg;
-  aom_cdf_prob filter_intra_cdfs[TX_SIZES_ALL][CDF_SIZE(2)];
+  aom_cdf_prob filter_intra_cdfs[BLOCK_SIZES_ALL][CDF_SIZE(2)];
   aom_cdf_prob filter_intra_mode_cdf[CDF_SIZE(FILTER_INTRA_MODES)];
   aom_cdf_prob switchable_restore_cdf[CDF_SIZE(RESTORE_SWITCHABLE_TYPES)];
   aom_cdf_prob wiener_restore_cdf[CDF_SIZE(2)];
@@ -264,7 +264,7 @@ typedef struct FRAME_COUNTS {
                            [TX_TYPES];
 #endif  // CONFIG_ENTROPY_STATS
   unsigned int filter_intra_mode[FILTER_INTRA_MODES];
-  unsigned int filter_intra_tx[TX_SIZES_ALL][2];
+  unsigned int filter_intra[BLOCK_SIZES_ALL][2];
 } FRAME_COUNTS;
 
 extern const aom_cdf_prob default_kf_y_mode_cdf[KF_MODE_CONTEXTS]

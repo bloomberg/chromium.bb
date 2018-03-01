@@ -760,25 +760,24 @@ static void sum_intra_stats(FRAME_COUNTS *counts, MACROBLOCKD *xd,
       update_cdf(fc->y_mode_cdf[size_group_lookup[bsize]], y_mode, INTRA_MODES);
   }
 
-  if (mbmi->mode == DC_PRED && mbmi->palette_mode_info.palette_size[0] == 0 &&
-      av1_filter_intra_allowed_txsize(mbmi->tx_size)) {
+  if (av1_filter_intra_allowed(mbmi)) {
     const int use_filter_intra_mode =
         mbmi->filter_intra_mode_info.use_filter_intra;
 #if CONFIG_ENTROPY_STATS
-    ++counts->filter_intra_tx[mbmi->tx_size][use_filter_intra_mode];
+    ++counts->filter_intra[mbmi->sb_type][use_filter_intra_mode];
     if (use_filter_intra_mode) {
       ++counts
             ->filter_intra_mode[mbmi->filter_intra_mode_info.filter_intra_mode];
     }
 #endif  // CONFIG_ENTROPY_STATS
     if (allow_update_cdf) {
+      update_cdf(fc->filter_intra_cdfs[mbmi->sb_type], use_filter_intra_mode,
+                 2);
       if (use_filter_intra_mode) {
         update_cdf(fc->filter_intra_mode_cdf,
                    mbmi->filter_intra_mode_info.filter_intra_mode,
                    FILTER_INTRA_MODES);
       }
-      update_cdf(fc->filter_intra_cdfs[mbmi->tx_size], use_filter_intra_mode,
-                 2);
     }
   }
   if (av1_is_directional_mode(mbmi->mode) && av1_use_angle_delta(bsize)) {

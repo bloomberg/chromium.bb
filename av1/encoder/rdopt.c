@@ -2141,22 +2141,6 @@ static void dist_8x8_sub8x8_txfm_rd(const AV1_COMP *const cpi, MACROBLOCK *x,
 }
 #endif  // CONFIG_DIST_8X8
 
-static int skip_invalid_tx_size_for_filter_intra(const MB_MODE_INFO *mbmi,
-                                                 int plane,
-                                                 RD_STATS *rd_stats) {
-  if (plane == 0 && !is_inter_block(mbmi) &&
-      mbmi->filter_intra_mode_info.use_filter_intra &&
-      !av1_filter_intra_allowed_txsize(mbmi->tx_size)) {
-    rd_stats->rate = INT_MAX;
-    rd_stats->dist = INT64_MAX;
-    rd_stats->skip = 0;
-    rd_stats->sse = INT64_MAX;
-    return 1;
-  } else {
-    return 0;
-  }
-}
-
 static void txfm_rd_in_plane(MACROBLOCK *x, const AV1_COMP *cpi,
                              RD_STATS *rd_stats, int64_t ref_best_rd, int plane,
                              BLOCK_SIZE bsize, TX_SIZE tx_size,
@@ -2172,11 +2156,6 @@ static void txfm_rd_in_plane(MACROBLOCK *x, const AV1_COMP *cpi,
   av1_init_rd_stats(&args.rd_stats);
 
   if (plane == 0) xd->mi[0]->mbmi.tx_size = tx_size;
-
-  if (skip_invalid_tx_size_for_filter_intra(&xd->mi[0]->mbmi, plane,
-                                            rd_stats)) {
-    return;
-  }
 
   av1_get_entropy_contexts(bsize, tx_size, pd, args.t_above, args.t_left);
 
@@ -2271,9 +2250,6 @@ static int64_t txfm_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
   s1 = x->skip_cost[skip_ctx][1];
 
   mbmi->tx_size = tx_size;
-  if (skip_invalid_tx_size_for_filter_intra(mbmi, AOM_PLANE_Y, rd_stats)) {
-    return INT64_MAX;
-  }
   txfm_rd_in_plane(x, cpi, rd_stats, ref_best_rd, AOM_PLANE_Y, bs, tx_size,
                    cpi->sf.use_fast_coef_costing);
   if (rd_stats->rate == INT_MAX) return INT64_MAX;
@@ -2353,9 +2329,6 @@ static void choose_largest_tx_size(const AV1_COMP *const cpi, MACROBLOCK *x,
   const TxSetType tx_set_type =
       get_ext_tx_set_type(mbmi->tx_size, bs, is_inter, cm->reduced_tx_set_used);
   prune_tx(cpi, bs, x, xd, tx_set_type, 0);
-  if (skip_invalid_tx_size_for_filter_intra(mbmi, AOM_PLANE_Y, rd_stats)) {
-    return;
-  }
   txfm_rd_in_plane(x, cpi, rd_stats, ref_best_rd, AOM_PLANE_Y, bs,
                    mbmi->tx_size, cpi->sf.use_fast_coef_costing);
   // Reset the pruning flags.
@@ -2369,9 +2342,6 @@ static void choose_smallest_tx_size(const AV1_COMP *const cpi, MACROBLOCK *x,
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
 
   mbmi->tx_size = TX_4X4;
-  if (skip_invalid_tx_size_for_filter_intra(mbmi, AOM_PLANE_Y, rd_stats)) {
-    return;
-  }
   txfm_rd_in_plane(x, cpi, rd_stats, ref_best_rd, 0, bs, mbmi->tx_size,
                    cpi->sf.use_fast_coef_costing);
 }
@@ -2525,7 +2495,7 @@ static int intra_mode_info_cost_y(const AV1_COMP *cpi, const MACROBLOCK *x,
     }
   }
   if (av1_filter_intra_allowed(mbmi)) {
-    total_rate += x->filter_intra_cost[mbmi->tx_size][use_filter_intra];
+    total_rate += x->filter_intra_cost[mbmi->sb_type][use_filter_intra];
     if (use_filter_intra) {
       total_rate += x->filter_intra_mode_cost[mbmi->filter_intra_mode_info
                                                   .filter_intra_mode];
@@ -2614,10 +2584,6 @@ static int64_t intra_model_yrd(const AV1_COMP *const cpi, MACROBLOCK *const x,
   int row, col;
   int64_t temp_sse, this_rd;
   TX_SIZE tx_size = tx_size_from_tx_mode(bsize, cm->tx_mode);
-  if (mbmi->filter_intra_mode_info.use_filter_intra) {
-    tx_size = av1_max_tx_size_for_filter_intra(bsize, cm->tx_mode);
-    if (!av1_filter_intra_allowed_txsize(tx_size)) return INT64_MAX;
-  }
   const int stepr = tx_size_high_unit[tx_size];
   const int stepc = tx_size_wide_unit[tx_size];
   const int max_blocks_wide = max_block_wide(xd, bsize, 0);
@@ -2637,13 +2603,13 @@ static int64_t intra_model_yrd(const AV1_COMP *const cpi, MACROBLOCK *const x,
         x->angle_delta_cost[mbmi->mode - V_PRED]
                            [MAX_ANGLE_DELTA + mbmi->angle_delta[PLANE_TYPE_Y]];
   }
-  if (mbmi->mode == DC_PRED && av1_filter_intra_allowed_txsize(mbmi->tx_size)) {
+  if (mbmi->mode == DC_PRED && av1_filter_intra_allowed_bsize(mbmi->sb_type)) {
     if (mbmi->filter_intra_mode_info.use_filter_intra) {
       const int mode = mbmi->filter_intra_mode_info.filter_intra_mode;
-      mode_cost += x->filter_intra_cost[mbmi->tx_size][1] +
+      mode_cost += x->filter_intra_cost[mbmi->sb_type][1] +
                    x->filter_intra_mode_cost[mode];
     } else {
-      mode_cost += x->filter_intra_cost[mbmi->tx_size][0];
+      mode_cost += x->filter_intra_cost[mbmi->sb_type][0];
     }
   }
   this_rd =
@@ -3337,7 +3303,7 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
                               ctx->blk_skip[0]);
   }
 
-  if (beat_best_rd) {
+  if (beat_best_rd && av1_filter_intra_allowed_bsize(bsize)) {
     if (rd_pick_filter_intra_sby(cpi, x, rate, rate_tokenonly, distortion,
                                  skippable, bsize, bmode_costs[DC_PRED],
                                  &best_rd, &best_model_rd, ctx)) {
@@ -9021,7 +8987,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
       memcpy(best_blk_skip, x->blk_skip[0],
              sizeof(best_blk_skip[0]) * ctx->num_4x4_blk);
 
-      if (mbmi->mode == DC_PRED) {
+      if (mbmi->mode == DC_PRED && av1_filter_intra_allowed_bsize(bsize)) {
         RD_STATS rd_stats_y_fi;
         int filter_intra_selected_flag = 0;
         TX_SIZE best_tx_size = mbmi->tx_size;
@@ -9030,10 +8996,9 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
                sizeof(*best_txk_type) * TXK_TYPE_BUF_LEN);
         FILTER_INTRA_MODE best_fi_mode = FILTER_DC_PRED;
         int64_t best_rd_tmp = INT64_MAX;
-        if (rate_y != INT_MAX &&
-            av1_filter_intra_allowed_txsize(best_tx_size)) {
+        if (rate_y != INT_MAX && av1_filter_intra_allowed_bsize(bsize)) {
           best_rd_tmp = RDCOST(x->rdmult,
-                               rate_y + x->filter_intra_cost[mbmi->tx_size][0] +
+                               rate_y + x->filter_intra_cost[bsize][0] +
                                    intra_mode_cost[mbmi->mode],
                                distortion_y);
         }

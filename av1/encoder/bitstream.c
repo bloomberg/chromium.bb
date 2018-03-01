@@ -622,7 +622,7 @@ static void write_filter_intra_mode_info(const MACROBLOCKD *xd,
                                          aom_writer *w) {
   if (av1_filter_intra_allowed(mbmi)) {
     aom_write_symbol(w, mbmi->filter_intra_mode_info.use_filter_intra,
-                     xd->tile_ctx->filter_intra_cdfs[mbmi->tx_size], 2);
+                     xd->tile_ctx->filter_intra_cdfs[mbmi->sb_type], 2);
     if (mbmi->filter_intra_mode_info.use_filter_intra) {
       const FILTER_INTRA_MODE mode =
           mbmi->filter_intra_mode_info.filter_intra_mode;
@@ -1087,6 +1087,8 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
 
     if (av1_allow_palette(cm->allow_screen_content_tools, bsize))
       write_palette_mode_info(cm, xd, mi, mi_row, mi_col, w);
+
+    write_filter_intra_mode_info(xd, mbmi, w);
   } else {
     int16_t mode_ctx;
 
@@ -1377,6 +1379,8 @@ static void write_mb_modes_kf(AV1_COMP *cpi, MACROBLOCKD *xd,
 
   if (av1_allow_palette(cm->allow_screen_content_tools, bsize))
     write_palette_mode_info(cm, xd, mi, mi_row, mi_col, w);
+
+  write_filter_intra_mode_info(xd, mbmi, w);
 }
 
 #if CONFIG_RD_DEBUG
@@ -1688,8 +1692,6 @@ static void write_modes_b(AV1_COMP *cpi, const TileInfo *const tile,
     set_txfm_ctxs(mbmi->tx_size, xd->n8_w, xd->n8_h,
                   skip && is_inter_block(mbmi), xd);
   }
-
-  if (!is_inter_tx) write_filter_intra_mode_info(xd, mbmi, w);
 
   write_tokens_b(cpi, tile, w, tok, tok_end, mi_row, mi_col);
 }

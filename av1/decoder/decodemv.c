@@ -629,6 +629,24 @@ static int read_angle_delta(aom_reader *r, aom_cdf_prob *cdf) {
   return sym - MAX_ANGLE_DELTA;
 }
 
+static void read_filter_intra_mode_info(MACROBLOCKD *const xd, aom_reader *r) {
+  MODE_INFO *const mi = xd->mi[0];
+  MB_MODE_INFO *const mbmi = &mi->mbmi;
+  FILTER_INTRA_MODE_INFO *filter_intra_mode_info =
+      &mbmi->filter_intra_mode_info;
+
+  if (av1_filter_intra_allowed(mbmi)) {
+    filter_intra_mode_info->use_filter_intra = aom_read_symbol(
+        r, xd->tile_ctx->filter_intra_cdfs[mbmi->sb_type], 2, ACCT_STR);
+    if (filter_intra_mode_info->use_filter_intra) {
+      filter_intra_mode_info->filter_intra_mode = aom_read_symbol(
+          r, xd->tile_ctx->filter_intra_mode_cdf, FILTER_INTRA_MODES, ACCT_STR);
+    }
+  } else {
+    filter_intra_mode_info->use_filter_intra = 0;
+  }
+}
+
 void av1_read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd, int blk_row,
                       int blk_col, int plane, TX_SIZE tx_size, aom_reader *r) {
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
@@ -862,6 +880,8 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
 
   if (av1_allow_palette(cm->allow_screen_content_tools, bsize))
     read_palette_mode_info(cm, xd, mi_row, mi_col, r);
+
+  read_filter_intra_mode_info(xd, r);
 }
 
 static int read_mv_component(aom_reader *r, nmv_component *mvcomp,
@@ -1140,7 +1160,8 @@ static void read_intra_block_mode_info(AV1_COMMON *const cm, const int mi_row,
   mbmi->palette_mode_info.palette_size[1] = 0;
   if (av1_allow_palette(cm->allow_screen_content_tools, bsize))
     read_palette_mode_info(cm, xd, mi_row, mi_col, r);
-  mbmi->filter_intra_mode_info.use_filter_intra = 0;
+
+  read_filter_intra_mode_info(xd, r);
 }
 
 static INLINE int is_mv_valid(const MV *mv) {

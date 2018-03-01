@@ -503,11 +503,11 @@ int main(int argc, const char **argv) {
       "static const aom_cdf_prob "
       "default_filter_intra_mode_cdf[CDF_SIZE(FILTER_INTRA_MODES)]");
 
-  cts_each_dim[0] = TX_SIZES_ALL;
+  cts_each_dim[0] = BLOCK_SIZES_ALL;
   cts_each_dim[1] = 2;
-  optimize_cdf_table(&fc.filter_intra_tx[0][0], probsfile, 2, cts_each_dim,
+  optimize_cdf_table(&fc.filter_intra[0][0], probsfile, 2, cts_each_dim,
                      "static const aom_cdf_prob "
-                     "default_filter_intra_cdfs[TX_SIZES_ALL][CDF_SIZE(2)]");
+                     "default_filter_intra_cdfs[BLOCK_SIZES_ALL][CDF_SIZE(2)]");
 
   cts_each_dim[0] = TX_SIZES;
   cts_each_dim[1] = TXB_SKIP_CONTEXTS;

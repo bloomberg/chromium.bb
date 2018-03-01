@@ -761,32 +761,16 @@ static const uint8_t mode_to_angle_map[] = {
   0, 90, 180, 45, 135, 113, 157, 203, 67, 0, 0, 0, 0,
 };
 
-static INLINE int av1_filter_intra_allowed_txsize(TX_SIZE tx) {
-  if (tx == TX_INVALID) return 0;
+static INLINE int av1_filter_intra_allowed_bsize(BLOCK_SIZE bs) {
+  if (bs == BLOCK_INVALID) return 0;
 
-  return tx_size_wide[tx] <= 32 && tx_size_high[tx] <= 32;
-}
-
-static INLINE TX_SIZE av1_max_tx_size_for_filter_intra(BLOCK_SIZE bsize,
-                                                       TX_MODE tx_mode) {
-  const TX_SIZE max_tx_size = tx_size_from_tx_mode(bsize, tx_mode);
-
-  if (tx_mode != TX_MODE_SELECT) return max_tx_size;
-
-  int depth = 0;
-  TX_SIZE tx_size = max_tx_size;
-  while (depth < MAX_TX_DEPTH && tx_size != TX_4X4) {
-    if (av1_filter_intra_allowed_txsize(tx_size)) return tx_size;
-    depth++;
-    tx_size = sub_tx_size_map[0][tx_size];
-  }
-  return TX_INVALID;
+  return block_size_wide[bs] <= 32 && block_size_high[bs] <= 32;
 }
 
 static INLINE int av1_filter_intra_allowed(const MB_MODE_INFO *mbmi) {
   return mbmi->mode == DC_PRED &&
          mbmi->palette_mode_info.palette_size[0] == 0 &&
-         av1_filter_intra_allowed_txsize(mbmi->tx_size);
+         av1_filter_intra_allowed_bsize(mbmi->sb_type);
 }
 
 // Converts block_index for given transform size to index of the block in raster

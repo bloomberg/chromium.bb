@@ -610,15 +610,16 @@ static const aom_cdf_prob
 static const aom_cdf_prob default_filter_intra_mode_cdf[CDF_SIZE(
     FILTER_INTRA_MODES)] = { AOM_CDF5(14259, 17304, 20463, 29377) };
 
-static const aom_cdf_prob default_filter_intra_cdfs[TX_SIZES_ALL][CDF_SIZE(2)] =
-    {
-      { AOM_CDF2(10985) }, { AOM_CDF2(10985) }, { AOM_CDF2(16645) },
-      { AOM_CDF2(27378) }, { AOM_CDF2(30378) }, { AOM_CDF2(10985) },
-      { AOM_CDF2(10985) }, { AOM_CDF2(15723) }, { AOM_CDF2(12373) },
-      { AOM_CDF2(27199) }, { AOM_CDF2(24217) }, { AOM_CDF2(27378) },
-      { AOM_CDF2(27378) }, { AOM_CDF2(16767) }, { AOM_CDF2(16767) },
-      { AOM_CDF2(27767) }, { AOM_CDF2(27767) }, { AOM_CDF2(27378) },
-      { AOM_CDF2(27378) },
+static const aom_cdf_prob
+    default_filter_intra_cdfs[BLOCK_SIZES_ALL][CDF_SIZE(2)] = {
+      { AOM_CDF2(10985) }, { AOM_CDF2(10985) }, { AOM_CDF2(10985) },
+      { AOM_CDF2(10985) }, { AOM_CDF2(15723) }, { AOM_CDF2(15723) },
+      { AOM_CDF2(16645) }, { AOM_CDF2(16645) }, { AOM_CDF2(16645) },
+      { AOM_CDF2(27378) }, { AOM_CDF2(30378) }, { AOM_CDF2(30378) },
+      { AOM_CDF2(30378) }, { AOM_CDF2(30378) }, { AOM_CDF2(30378) },
+      { AOM_CDF2(30378) }, { AOM_CDF2(10985) }, { AOM_CDF2(10985) },
+      { AOM_CDF2(15723) }, { AOM_CDF2(15723) }, { AOM_CDF2(30378) },
+      { AOM_CDF2(30378) }, { AOM_CDF2(30378) }, { AOM_CDF2(30378) },
     };
 
 // FIXME(someone) need real defaults here

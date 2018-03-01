@@ -593,22 +593,6 @@ static TX_SIZE read_tx_size(AV1_COMMON *cm, MACROBLOCKD *xd, int is_inter,
   }
 }
 
-static void read_filter_intra_mode_info(MACROBLOCKD *const xd, aom_reader *r) {
-  MODE_INFO *const mi = xd->mi[0];
-  MB_MODE_INFO *const mbmi = &mi->mbmi;
-  FILTER_INTRA_MODE_INFO *filter_intra_mode_info =
-      &mbmi->filter_intra_mode_info;
-
-  if (av1_filter_intra_allowed(mbmi)) {
-    filter_intra_mode_info->use_filter_intra = aom_read_symbol(
-        r, xd->tile_ctx->filter_intra_cdfs[mbmi->tx_size], 2, ACCT_STR);
-    if (filter_intra_mode_info->use_filter_intra) {
-      filter_intra_mode_info->filter_intra_mode = aom_read_symbol(
-          r, xd->tile_ctx->filter_intra_mode_cdf, FILTER_INTRA_MODES, ACCT_STR);
-    }
-  }
-}
-
 static void decode_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
                          int mi_row, int mi_col, aom_reader *r,
                          PARTITION_TYPE partition, BLOCK_SIZE bsize) {
@@ -643,8 +627,6 @@ static void decode_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
     set_txfm_ctxs(mbmi->tx_size, xd->n8_w, xd->n8_h,
                   mbmi->skip && is_inter_block(mbmi), xd);
   }
-
-  if (!inter_block_tx) read_filter_intra_mode_info(xd, r);
 
   decode_token_and_recon_block(pbi, xd, mi_row, mi_col, r, bsize);
 }
