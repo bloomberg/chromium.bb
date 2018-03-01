@@ -3399,7 +3399,6 @@ crbug.com/417782 http/tests/devtools/tracing/timeline-paint/timeline-paint-with-
 crbug.com/417782 http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations.js [ Timeout ]
 crbug.com/417782 http/tests/devtools/tracing/timeline-paint/timeline-paint-with-style-recalc-invalidations.js [ Timeout ]
 crbug.com/417782 http/tests/devtools/tracing/timeline-paint/timeline-paint.js [ Failure ]
-crbug.com/417782 inspector-protocol/css/css-get-background-colors.js [ Failure ]
 crbug.com/417782 paint/invalidation/window-resize/window-resize-vertical-writing-mode.html [ Crash ]
 crbug.com/417782 virtual/disable-spv175/paint/invalidation/window-resize/window-resize-vertical-writing-mode.html [ Skip ]
 crbug.com/417782 [ Linux ] virtual/android/fullscreen/compositor-touch-hit-rects-fullscreen-video-controls.html [ Failure ]

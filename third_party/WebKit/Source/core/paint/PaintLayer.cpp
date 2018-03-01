@@ -2020,10 +2020,10 @@ PaintLayer* PaintLayer::HitTestLayer(
   if (applied_transform) {
     AppendSingleFragmentIgnoringPagination(
         layer_fragments, root_layer, hit_test_rect,
-        kExcludeOverlayScrollbarSizeForHitTesting);
+        kExcludeOverlayScrollbarSizeForHitTesting, clip_behavior);
   } else {
     CollectFragments(layer_fragments, root_layer, hit_test_rect,
-                     kExcludeOverlayScrollbarSizeForHitTesting);
+                     kExcludeOverlayScrollbarSizeForHitTesting, clip_behavior);
   }
 
   if (scrollable_area_ && scrollable_area_->HitTestResizerInFragments(

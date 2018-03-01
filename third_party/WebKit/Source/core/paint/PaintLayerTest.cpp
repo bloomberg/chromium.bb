@@ -1219,4 +1219,14 @@ TEST_P(PaintLayerTest, ReferenceClipPathWithPageZoom) {
   EXPECT_EQ(body, GetDocument().ElementFromPoint(60, 151));
 }
 
+TEST_P(PaintLayerTest, HitTestWithIgnoreClipping) {
+  SetBodyInnerHTML("<div id='hit' style='width: 90px; height: 9000px;'></div>");
+
+  HitTestRequest request(HitTestRequest::kIgnoreClipping);
+  // (10, 900) is outside the viewport clip of 800x600.
+  HitTestResult result(request, IntPoint(10, 900));
+  GetDocument().GetLayoutView()->HitTest(result);
+  EXPECT_EQ(GetDocument().getElementById("hit"), result.InnerNode());
+}
+
 }  // namespace blink
