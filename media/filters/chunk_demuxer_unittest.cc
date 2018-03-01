@@ -4912,6 +4912,50 @@ TEST_P(ChunkDemuxerTest, Mp4Vp9CodecSupport) {
   EXPECT_EQ(AddId("source_id", "video/mp4", "vp09.00.10.08"), expected);
 }
 
+TEST_P(ChunkDemuxerTest, UnmarkEOSRetainsParseErrorState_BeforeInit) {
+  InSequence s;
+  // Trigger a (fatal) parse error prior to successfully reaching source init.
+  EXPECT_CALL(*this, DemuxerOpened());
+  EXPECT_MEDIA_LOG(StreamParsingFailed());
+  demuxer_->Initialize(
+      &host_, CreateInitDoneCB(kNoTimestamp, CHUNK_DEMUXER_ERROR_APPEND_FAILED),
+      true);
+
+  ASSERT_EQ(AddId(kSourceId, HAS_AUDIO | HAS_VIDEO), ChunkDemuxer::kOk);
+  AppendGarbage();
+
+  // Simulate SourceBuffer Append Error algorithm.
+  demuxer_->ResetParserState(kSourceId, append_window_start_for_next_append_,
+                             append_window_end_for_next_append_,
+                             &timestamp_offset_map_[kSourceId]);
+  demuxer_->MarkEndOfStream(CHUNK_DEMUXER_ERROR_EOS_STATUS_DECODE_ERROR);
+
+  // UnmarkEndOfStream and verify that attempted append of an initialization
+  // segment still fails.
+  demuxer_->UnmarkEndOfStream();
+  ASSERT_FALSE(AppendInitSegment(HAS_AUDIO | HAS_VIDEO));
+}
+
+TEST_P(ChunkDemuxerTest, UnmarkEOSRetainsParseErrorState_AfterInit) {
+  InSequence s;
+  // Trigger a (fatal) parse error after successfully reaching source init.
+  InitDemuxer(HAS_AUDIO | HAS_VIDEO);
+  EXPECT_MEDIA_LOG(StreamParsingFailed());
+  EXPECT_CALL(host_, OnDemuxerError(CHUNK_DEMUXER_ERROR_APPEND_FAILED));
+  AppendGarbage();
+
+  // Simulate SourceBuffer Append Error algorithm.
+  demuxer_->ResetParserState(kSourceId, append_window_start_for_next_append_,
+                             append_window_end_for_next_append_,
+                             &timestamp_offset_map_[kSourceId]);
+  demuxer_->MarkEndOfStream(CHUNK_DEMUXER_ERROR_EOS_STATUS_DECODE_ERROR);
+
+  // UnmarkEndOfStream and verify that attempted append of another
+  // initialization segment still fails.
+  demuxer_->UnmarkEndOfStream();
+  ASSERT_FALSE(AppendInitSegment(HAS_AUDIO | HAS_VIDEO));
+}
+
 // TODO(servolk): Add a unit test with multiple audio/video tracks using the
 // same codec type in a single SourceBufferState, when WebM parser supports
 // multiple tracks. crbug.com/646900
