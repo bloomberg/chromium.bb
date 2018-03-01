@@ -3,10 +3,5 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-BINARY=$1
-shift
-
-BINARY_NAME=$(basename $BINARY)
-BINARY_PATH=$(realpath $(dirname $BINARY))
-
-docker run --rm --shm-size=2g --privileged --cap-add=all -ti -e HOST_UID=$UID -v $BINARY_PATH:/chrome trusty-chromium /chrome/$BINARY_NAME "$@"
+CHROMIUM_SRC_DIR=$(realpath $(dirname $(dirname $(dirname $(dirname "${BASH_SOURCE[0]}")))))
+docker run --rm --shm-size=2g --privileged --cap-add=all -ti --workdir "$CHROMIUM_SRC_DIR" -e HOST_UID=$UID -v "$CHROMIUM_SRC_DIR:$CHROMIUM_SRC_DIR" trusty-chromium "$@"
