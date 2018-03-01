@@ -397,6 +397,7 @@ public class ContextualSearchSelectionController {
             tapHeuristics.logRankerTapSuppression(rankerLogger);
             mHandler.logNonHeuristicFeatures(rankerLogger);
             tapPrediction = rankerLogger.runPredictionForTapSuppression();
+            ContextualSearchUma.logRankerPrediction(tapPrediction);
         }
 
         // Make the suppression decision and act upon it.
