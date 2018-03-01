@@ -784,6 +784,63 @@ TEST_P(SimpleURLLoaderTest, UploadLongStringWithRedirect) {
   EXPECT_EQ(1, num_redirects);
 }
 
+TEST_P(SimpleURLLoaderTest, OnResponseStartedCallback) {
+  GURL url = test_server_.GetURL("/set-header?foo: bar");
+  std::unique_ptr<network::ResourceRequest> resource_request =
+      std::make_unique<network::ResourceRequest>();
+  resource_request->url = test_server_.GetURL("/server-redirect?" + url.spec());
+  std::unique_ptr<SimpleLoaderTestHelper> test_helper =
+      CreateHelper(std::move(resource_request));
+
+  base::RunLoop run_loop;
+  GURL actual_url;
+  std::string foo_header_value;
+  test_helper->simple_url_loader()->SetOnResponseStartedCallback(
+      base::BindRepeating(
+          [](GURL* out_final_url, std::string* foo_header_value,
+             base::OnceClosure quit_closure, const GURL& final_url,
+             const ResourceResponseHead& response_head) {
+            *out_final_url = final_url;
+            if (response_head.headers) {
+              response_head.headers->EnumerateHeader(/*iter=*/nullptr, "foo",
+                                                     foo_header_value);
+            }
+            std::move(quit_closure).Run();
+          },
+          &actual_url, &foo_header_value, run_loop.QuitClosure()));
+  test_helper->StartSimpleLoaderAndWait(url_loader_factory_.get());
+  run_loop.Run();
+
+  EXPECT_EQ(url, actual_url);
+  EXPECT_EQ("bar", foo_header_value);
+}
+
+TEST_P(SimpleURLLoaderTest, DeleteInOnResponseStartedCallback) {
+  std::unique_ptr<SimpleLoaderTestHelper> test_helper =
+      CreateHelperForURL(test_server_.GetURL("/echo"));
+
+  SimpleLoaderTestHelper* unowned_test_helper = test_helper.get();
+  base::RunLoop run_loop;
+  unowned_test_helper->simple_url_loader()->SetOnResponseStartedCallback(
+      base::BindRepeating(
+          [](std::unique_ptr<SimpleLoaderTestHelper> test_helper,
+             base::OnceClosure quit_closure, const GURL& final_url,
+             const ResourceResponseHead& response_head) {
+            // Delete the SimpleURLLoader.
+            test_helper.reset();
+            // Access the parameters to trigger a memory error if they have been
+            // deleted. (ASAN build should catch it)
+            EXPECT_FALSE(response_head.request_start.is_null());
+            EXPECT_TRUE(final_url.is_valid());
+            std::move(quit_closure).Run();
+          },
+          base::Passed(std::move(test_helper)), run_loop.QuitClosure()));
+
+  unowned_test_helper->StartSimpleLoader(url_loader_factory_.get());
+
+  run_loop.Run();
+}
+
 // Check the case where a URLLoaderFactory with a closed Mojo pipe was passed
 // in.
 TEST_P(SimpleURLLoaderTest, DisconnectedURLLoader) {

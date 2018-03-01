@@ -202,6 +202,8 @@ class SimpleURLLoaderImpl : public SimpleURLLoader,
       SimpleURLLoaderStreamConsumer* stream_consumer) override;
   void SetOnRedirectCallback(
       const OnRedirectCallback& on_redirect_callback) override;
+  void SetOnResponseStartedCallback(
+      const OnResponseStartedCallback& on_response_started_callback) override;
   void SetAllowPartialResults(bool allow_partial_results) override;
   void SetAllowHttpErrorResults(bool allow_http_error_results) override;
   void AttachStringForUpload(const std::string& upload_data,
@@ -305,6 +307,7 @@ class SimpleURLLoaderImpl : public SimpleURLLoader,
   void MaybeComplete();
 
   OnRedirectCallback on_redirect_callback_;
+  OnResponseStartedCallback on_response_started_callback_;
   bool allow_partial_results_ = false;
   bool allow_http_error_results_ = false;
 
@@ -1089,6 +1092,11 @@ void SimpleURLLoaderImpl::SetOnRedirectCallback(
   on_redirect_callback_ = on_redirect_callback;
 }
 
+void SimpleURLLoaderImpl::SetOnResponseStartedCallback(
+    const OnResponseStartedCallback& on_response_started_callback) {
+  on_response_started_callback_ = on_response_started_callback;
+}
+
 void SimpleURLLoaderImpl::SetAllowPartialResults(bool allow_partial_results) {
   // Check if a request has not yet been started.
   DCHECK(!body_handler_);
@@ -1317,6 +1325,18 @@ void SimpleURLLoaderImpl::OnReceiveResponse(
       (retry_mode_ & RETRY_ON_5XX)) {
     Retry();
     return;
+  }
+
+  if (on_response_started_callback_) {
+    base::WeakPtr<SimpleURLLoaderImpl> weak_this =
+        weak_ptr_factory_.GetWeakPtr();
+    // Copy |final_url_| to a stack allocated GURL so it remains valid even if
+    // the callback deletes |this|.
+    GURL final_url = final_url_;
+    on_response_started_callback_.Run(final_url, response_head);
+    // If deleted by the callback, bail now.
+    if (!weak_this)
+      return;
   }
 
   request_state_->response_info =

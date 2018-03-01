@@ -96,6 +96,12 @@ class COMPONENT_EXPORT(NETWORK_CPP) SimpleURLLoader {
       base::RepeatingCallback<void(const net::RedirectInfo& redirect_info,
                                    const ResourceResponseHead& response_head)>;
 
+  // Callback used when a redirect is being followed. It is safe to delete the
+  // SimpleURLLoader during the callback.
+  using OnResponseStartedCallback =
+      base::RepeatingCallback<void(const GURL& final_url,
+                                   const ResourceResponseHead& response_head)>;
+
   // Creates a SimpleURLLoader for |resource_request|. The request can be
   // started by calling any one of the Download methods once. The loader may not
   // be reused.
@@ -173,6 +179,12 @@ class COMPONENT_EXPORT(NETWORK_CPP) SimpleURLLoader {
   // SimpleURLLoader.
   virtual void SetOnRedirectCallback(
       const OnRedirectCallback& on_redirect_callback) = 0;
+
+  // Sets callback to be invoked when the response has started. May be called
+  // multiple times if retries are enabled.
+  // Callback may delete the SimpleURLLoader.
+  virtual void SetOnResponseStartedCallback(
+      const OnResponseStartedCallback& on_response_started_callback) = 0;
 
   // Sets whether partially received results are allowed. Defaults to false.
   // When true, if an error is received after reading the body starts or the max
