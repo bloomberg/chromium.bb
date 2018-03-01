@@ -8,6 +8,9 @@ AM_CPPFLAGS =					\
 
 lou_checkyaml_CPPFLAGS = $(AM_CPPFLAGS) $(YAML_CFLAGS)
 
+# ignore warnings for lou_compare
+lou_compare_CPPFLAGS = $(AM_CPPFLAGS) -w
+
 LDADD =							\
 	$(top_builddir)/liblouis/liblouis.la		\
 	$(top_builddir)/tools/gnulib/libgnutools.la	\
