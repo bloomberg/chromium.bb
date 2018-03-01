@@ -229,6 +229,12 @@ class MockApp : public CComObjectRootEx<CComSingleThreadModel>, public IAppWeb {
   MOCK_METHOD0_WITH_CALLTYPE(STDMETHODCALLTYPE,
                              uninstall,
                              HRESULT());
+  MOCK_METHOD1_WITH_CALLTYPE(STDMETHODCALLTYPE,
+                             get_serverInstallDataIndex,
+                             HRESULT(BSTR *));
+  MOCK_METHOD1_WITH_CALLTYPE(STDMETHODCALLTYPE,
+                             put_serverInstallDataIndex,
+                             HRESULT(BSTR));
 
   // IDispatch:
   MOCK_METHOD1_WITH_CALLTYPE(STDMETHODCALLTYPE,
