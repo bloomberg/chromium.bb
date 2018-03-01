@@ -18,18 +18,8 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV id='details-content'",
-          "rect": [8, 68, 784, 19],
-          "reason": "appeared"
-        },
-        {
           "object": "LayoutTextControl INPUT",
           "rect": [8, 68, 131, 19],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [11, 71, 125, 13],
           "reason": "appeared"
         },
         {

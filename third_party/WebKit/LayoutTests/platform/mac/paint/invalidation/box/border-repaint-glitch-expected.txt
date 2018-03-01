@@ -19,13 +19,13 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow DIV",
-          "rect": [19, 401, 200, 24],
-          "reason": "incremental"
+          "rect": [19, 337, 200, 88],
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV",
-          "rect": [19, 241, 200, 24],
-          "reason": "incremental"
+          "rect": [19, 177, 200, 88],
+          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV id='b'",
@@ -43,7 +43,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow DIV",
-      "reason": "incremental"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow DIV id='a'",
@@ -51,7 +51,7 @@
     },
     {
       "object": "LayoutBlockFlow DIV",
-      "reason": "incremental"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow DIV id='b'",

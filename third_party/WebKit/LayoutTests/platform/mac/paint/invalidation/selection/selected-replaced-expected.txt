@@ -18,11 +18,6 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (anonymous)",
-          "rect": [8, 68, 784, 236],
-          "reason": "geometry"
-        },
-        {
           "object": "LayoutImage (relative positioned) IMG id='test' class='moved'",
           "rect": [8, 148, 214, 232],
           "reason": "geometry"

@@ -18,19 +18,24 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV id='dv'",
-          "rect": [8, 70, 80, 36],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'Lorem ipsu'",
           "rect": [8, 70, 74, 18],
-          "reason": "full"
+          "reason": "appeared"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox ' '",
           "rect": [8, 70, 47, 36],
-          "reason": "full"
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'Lorem'",
+          "rect": [8, 70, 47, 36],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'ipsum'",
+          "rect": [8, 70, 47, 36],
+          "reason": "disappeared"
         }
       ]
     }

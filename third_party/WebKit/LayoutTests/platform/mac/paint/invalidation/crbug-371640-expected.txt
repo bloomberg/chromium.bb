@@ -18,14 +18,14 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
+          "object": "LayoutBlockFlow (relative positioned) (floating) DIV id='to_remove_inner' class='inner'",
+          "rect": [348, 84, 100, 100],
+          "reason": "disappeared"
+        },
+        {
           "object": "LayoutBlockFlow DIV id='keep' class='item'",
           "rect": [348, 84, 100, 100],
           "reason": "geometry"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='to_remove' class='item'",
-          "rect": [348, 84, 100, 100],
-          "reason": "disappeared"
         },
         {
           "object": "LayoutBlockFlow DIV id='keep' class='item'",
@@ -33,17 +33,17 @@
           "reason": "geometry"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox '\u00A0'",
           "rect": [348, 84, 4, 18],
           "reason": "geometry"
         },
         {
-          "object": "LayoutText #text",
+          "object": "LayoutBlockFlow (relative positioned) (floating) DIV id='to_remove_inner' class='inner'",
           "rect": [348, 84, 4, 18],
           "reason": "disappeared"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox '\u00A0'",
           "rect": [88, 84, 4, 18],
           "reason": "geometry"
         }
@@ -52,20 +52,8 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutText #text",
-      "reason": "disappeared"
-    },
-    {
-      "object": "LayoutBlockFlow DIV id='to_remove' class='item'",
-      "reason": "disappeared"
-    },
-    {
-      "object": "LayoutBlockFlow (relative positioned) (floating) DIV id='to_remove_inner' class='inner'",
-      "reason": "disappeared"
-    },
-    {
-      "object": "LayoutBlockFlow (floating) DIV id='node' class='outer'",
-      "reason": "disappeared"
+      "object": "LayoutBlockFlow (floating) DIV id='container'",
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow (floating) DIV id='keep_outer' class='outer'",

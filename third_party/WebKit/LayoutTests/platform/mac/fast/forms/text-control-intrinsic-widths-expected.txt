@@ -357,29 +357,29 @@ cols=1000 clientWidth=7019
 Webdings
 input
 size=1 clientWidth=11
-size=2 clientWidth=17
-size=3 clientWidth=23
-size=4 clientWidth=29
-size=5 clientWidth=35
-size=10 clientWidth=65
-size=20 clientWidth=125
-size=50 clientWidth=305
-size=100 clientWidth=605
-size=500 clientWidth=3005
-size=1000 clientWidth=6005
+size=2 clientWidth=22
+size=3 clientWidth=33
+size=4 clientWidth=44
+size=5 clientWidth=55
+size=10 clientWidth=110
+size=20 clientWidth=220
+size=50 clientWidth=550
+size=100 clientWidth=1100
+size=500 clientWidth=5500
+size=1000 clientWidth=11000
 
 textarea
-cols=1 clientWidth=25
-cols=2 clientWidth=31
-cols=3 clientWidth=37
-cols=4 clientWidth=43
-cols=5 clientWidth=49
-cols=10 clientWidth=79
-cols=20 clientWidth=139
-cols=50 clientWidth=319
-cols=100 clientWidth=619
-cols=500 clientWidth=3019
-cols=1000 clientWidth=6019
+cols=1 clientWidth=30
+cols=2 clientWidth=41
+cols=3 clientWidth=52
+cols=4 clientWidth=63
+cols=5 clientWidth=74
+cols=10 clientWidth=129
+cols=20 clientWidth=239
+cols=50 clientWidth=569
+cols=100 clientWidth=1119
+cols=500 clientWidth=5519
+cols=1000 clientWidth=11019
 
 PASS successfullyParsed is true
 

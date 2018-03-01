@@ -23,14 +23,29 @@
           "reason": "style change"
         },
         {
-          "object": "LayoutBlockFlow P",
-          "rect": [138, 116, 654, 90],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean laoreet dolor id urna eleifend aliquet.'",
           "rect": [138, 116, 652, 90],
-          "reason": "geometry"
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'Nulla vel dolor ipsum. Aliquam ut turpis nisl, in vulputate sapien. Cum sociis natoque penatibus et'",
+          "rect": [138, 116, 652, 90],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'Sed volutpat, tellus vel varius vestibulum, purus quam mollis sapien, in condimentum leo neque sed'",
+          "rect": [138, 116, 652, 90],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'magnis dis parturient montes, nascetur ridiculus mus. Sed congue magna vitae dolor feugiat vehicula.'",
+          "rect": [138, 116, 652, 90],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'nulla. Nunc quis porta elit. Pellentesque erat lectus, ultricies a lobortis id, faucibus id quam.'",
+          "rect": [138, 116, 652, 90],
+          "reason": "appeared"
         },
         {
           "object": "LayoutBlockFlow DIV id='content'",
@@ -43,34 +58,69 @@
           "reason": "style change"
         },
         {
-          "object": "LayoutBlockFlow P",
-          "rect": [148, 116, 644, 108],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutBlockFlow P",
-          "rect": [148, 116, 644, 108],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean laoreet dolor id urna eleifend'",
           "rect": [148, 116, 632, 108],
-          "reason": "geometry"
+          "reason": "appeared"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean laoreet dolor id urna eleifend'",
           "rect": [148, 116, 632, 108],
-          "reason": "geometry"
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'aliquet. Nulla vel dolor ipsum. Aliquam ut turpis nisl, in vulputate sapien. Cum sociis natoque'",
+          "rect": [148, 116, 632, 108],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'aliquet. Nulla vel dolor ipsum. Aliquam ut turpis nisl, in vulputate sapien. Cum sociis natoque'",
+          "rect": [148, 116, 632, 108],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'condimentum leo neque sed nulla. Nunc quis porta elit. Pellentesque erat lectus, ultricies a lobortis'",
+          "rect": [148, 116, 632, 108],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'condimentum leo neque sed nulla. Nunc quis porta elit. Pellentesque erat lectus, ultricies a lobortis'",
+          "rect": [148, 116, 632, 108],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'feugiat vehicula. Sed volutpat, tellus vel varius vestibulum, purus quam mollis sapien, in'",
+          "rect": [148, 116, 632, 108],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'feugiat vehicula. Sed volutpat, tellus vel varius vestibulum, purus quam mollis sapien, in'",
+          "rect": [148, 116, 632, 108],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'id, faucibus id quam.'",
+          "rect": [148, 116, 632, 108],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'id, faucibus id quam.'",
+          "rect": [148, 116, 632, 108],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'penatibus et magnis dis parturient montes, nascetur ridiculus mus. Sed congue magna vitae dolor'",
+          "rect": [148, 116, 632, 108],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'penatibus et magnis dis parturient montes, nascetur ridiculus mus. Sed congue magna vitae dolor'",
+          "rect": [148, 116, 632, 108],
+          "reason": "disappeared"
         },
         {
           "object": "LayoutBlockFlow DIV id='content'",
           "rect": [400, 116, 392, 162],
           "reason": "style change"
-        },
-        {
-          "object": "LayoutBlockFlow P",
-          "rect": [400, 116, 392, 162],
-          "reason": "geometry"
         },
         {
           "object": "LayoutBlockFlow DIV id='left'",
@@ -78,9 +128,49 @@
           "reason": "incremental"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'Aenean laoreet dolor id urna eleifend aliquet. Nulla vel dolor'",
           "rect": [400, 116, 391, 162],
-          "reason": "geometry"
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.'",
+          "rect": [400, 116, 391, 162],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'a lobortis id, faucibus id quam.'",
+          "rect": [400, 116, 391, 162],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'feugiat vehicula. Sed volutpat, tellus vel varius vestibulum,'",
+          "rect": [400, 116, 391, 162],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'ipsum. Aliquam ut turpis nisl, in vulputate sapien. Cum'",
+          "rect": [400, 116, 391, 162],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'nascetur ridiculus mus. Sed congue magna vitae dolor'",
+          "rect": [400, 116, 391, 162],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'nulla. Nunc quis porta elit. Pellentesque erat lectus, ultricies'",
+          "rect": [400, 116, 391, 162],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'purus quam mollis sapien, in condimentum leo neque sed'",
+          "rect": [400, 116, 391, 162],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'sociis natoque penatibus et magnis dis parturient montes,'",
+          "rect": [400, 116, 391, 162],
+          "reason": "disappeared"
         },
         {
           "object": "LayoutBlockFlow DIV id='left'",
@@ -89,13 +179,8 @@
         },
         {
           "object": "LayoutBlockFlow DIV id='left'",
-          "rect": [8, 206, 140, 18],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='left'",
-          "rect": [138, 116, 10, 108],
-          "reason": "incremental"
+          "rect": [8, 116, 140, 108],
+          "reason": "geometry"
         }
       ]
     }
@@ -147,7 +232,7 @@
     },
     {
       "object": "LayoutBlockFlow DIV id='left'",
-      "reason": "incremental"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow DIV id='content'",

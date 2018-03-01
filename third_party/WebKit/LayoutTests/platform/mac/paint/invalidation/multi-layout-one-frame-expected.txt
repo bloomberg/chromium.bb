@@ -18,24 +18,24 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [146, 11, 125, 13],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [11, 11, 125, 13],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'PASSED'",
           "rect": [146, 11, 43, 13],
-          "reason": "full"
+          "reason": "appeared"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'PASSED'",
           "rect": [11, 11, 43, 13],
-          "reason": "full"
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'FAILED'",
+          "rect": [146, 11, 38, 13],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'FAILED'",
+          "rect": [11, 11, 38, 13],
+          "reason": "disappeared"
         }
       ]
     }

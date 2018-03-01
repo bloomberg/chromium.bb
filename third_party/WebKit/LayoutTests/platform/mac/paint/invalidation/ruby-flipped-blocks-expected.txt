@@ -18,33 +18,28 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [8, 8, 30, 40],
-          "reason": "geometry"
+          "object": "InlineTextBox 'b'",
+          "rect": [8, 28, 21, 20],
+          "reason": "appeared"
         },
         {
-          "object": "LayoutText #text",
-          "rect": [7, 28, 22, 20],
-          "reason": "style change"
+          "object": "InlineTextBox 'b'",
+          "rect": [8, 28, 21, 20],
+          "reason": "disappeared"
         },
         {
-          "object": "LayoutText #text",
-          "rect": [7, 8, 22, 20],
-          "reason": "geometry"
+          "object": "InlineTextBox 'a'",
+          "rect": [8, 8, 21, 20],
+          "reason": "appeared"
         },
         {
-          "object": "LayoutRubyBase (anonymous)",
-          "rect": [8, 28, 20, 20],
-          "reason": "style change"
+          "object": "InlineTextBox 'a'",
+          "rect": [8, 8, 21, 20],
+          "reason": "disappeared"
         },
         {
-          "object": "LayoutRubyRun (anonymous)",
-          "rect": [8, 28, 20, 20],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [27, 33, 12, 10],
+          "object": "InlineTextBox 'c'",
+          "rect": [28, 33, 11, 10],
           "reason": "style change"
         }
       ]

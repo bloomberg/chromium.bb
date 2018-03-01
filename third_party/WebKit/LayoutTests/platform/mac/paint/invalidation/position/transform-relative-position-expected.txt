@@ -20,15 +20,14 @@
         {
           "object": "LayoutBlockFlow (relative positioned) DIV id='box' class='rotated'",
           "rect": [66, 108, 286, 286],
-          "reason": "subtree"
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV id='box'",
+          "rect": [108, 150, 202, 202],
+          "reason": "paint property change"
         }
       ]
-    }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow (relative positioned) DIV id='box' class='rotated'",
-      "reason": "subtree"
     }
   ]
 }

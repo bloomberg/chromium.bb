@@ -18,34 +18,29 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (anonymous)",
-          "rect": [18, 148, 200, 18],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutBlockFlow (anonymous)",
-          "rect": [18, 110, 200, 18],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutInline SPAN id='outer'",
+          "object": "LayoutBlockFlow (positioned) DIV id='container'",
           "rect": [16, 108, 88, 60],
-          "reason": "style change"
+          "reason": "appeared"
         },
         {
-          "object": "LayoutInline SPAN id='outer'",
-          "rect": [16, 146, 88, 22],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'CONTENTS'",
           "rect": [18, 148, 84, 18],
-          "reason": "geometry"
+          "reason": "appeared"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'CONTENTS'",
+          "rect": [18, 148, 84, 18],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'CONTENTS'",
           "rect": [18, 110, 84, 18],
-          "reason": "geometry"
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'CONTENTS'",
+          "rect": [18, 110, 84, 18],
+          "reason": "disappeared"
         }
       ]
     }

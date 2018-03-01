@@ -28,12 +28,12 @@
           "reason": "geometry"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'Target'",
           "rect": [100, 200, 41, 18],
           "reason": "geometry"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'Target'",
           "rect": [100, 100, 41, 18],
           "reason": "geometry"
         }
@@ -41,6 +41,10 @@
     }
   ],
   "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='great-grandparent'",
+      "reason": "geometry"
+    },
     {
       "object": "LayoutBlockFlow (positioned) DIV",
       "reason": "geometry"

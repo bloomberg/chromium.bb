@@ -18,19 +18,14 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutTableCell TD",
-          "rect": [2, 102, 102, 200],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'MIDDLE'",
           "rect": [3, 193, 63, 18],
-          "reason": "geometry"
+          "reason": "appeared"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'MIDDLE'",
           "rect": [3, 143, 63, 18],
-          "reason": "geometry"
+          "reason": "disappeared"
         }
       ]
     }

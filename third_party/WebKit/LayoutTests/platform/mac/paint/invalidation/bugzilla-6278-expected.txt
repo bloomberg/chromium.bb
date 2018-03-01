@@ -28,9 +28,44 @@
           "reason": "geometry"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'Curabitur pretium, quam quis semper'",
           "rect": [10, 132, 276, 144],
-          "reason": "geometry"
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'fringilla orci nibh sed neque. Quisque eu'",
+          "rect": [10, 132, 276, 144],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'malesuada, est libero feugiat libero, vel'",
+          "rect": [10, 132, 276, 144],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'nec ullamcorper lacus ante vulputate pede.'",
+          "rect": [10, 132, 276, 144],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'nulla non nisi molestie accumsan. Etiam'",
+          "rect": [10, 132, 276, 144],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'posuere vehicula, augue nibh molestie nisl,'",
+          "rect": [10, 132, 276, 144],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'sed, sapien. Phasellus vehicula, sem at'",
+          "rect": [10, 132, 276, 144],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'tellus urna, laoreet ac, laoreet non, suscipit'",
+          "rect": [10, 132, 276, 144],
+          "reason": "disappeared"
         },
         {
           "object": "LayoutBlockFlow DIV",
@@ -48,14 +83,54 @@
           "reason": "incremental"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'Curabitur pretium, quam quis semper'",
           "rect": [10, 132, 240, 180],
-          "reason": "geometry"
+          "reason": "appeared"
         },
         {
-          "object": "LayoutTableCell TD id='target'",
-          "rect": [254, 132, 52, 235],
-          "reason": "geometry"
+          "object": "InlineTextBox 'Phasellus vehicula, sem at posuere'",
+          "rect": [10, 132, 240, 180],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'Quisque eu nulla non nisi molestie'",
+          "rect": [10, 132, 240, 180],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'ac, laoreet non, suscipit sed, sapien.'",
+          "rect": [10, 132, 240, 180],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'accumsan. Etiam tellus urna, laoreet'",
+          "rect": [10, 132, 240, 180],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'malesuada, est libero feugiat libero,'",
+          "rect": [10, 132, 240, 180],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'nec ullamcorper lacus ante vulputate'",
+          "rect": [10, 132, 240, 180],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'pede.'",
+          "rect": [10, 132, 240, 180],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'vehicula, augue nibh molestie nisl,'",
+          "rect": [10, 132, 240, 180],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'vel fringilla orci nibh sed neque.'",
+          "rect": [10, 132, 240, 180],
+          "reason": "appeared"
         },
         {
           "object": "LayoutTableCell TD id='col1'",

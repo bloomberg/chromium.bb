@@ -18,19 +18,94 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox ' was in a furious passion, and went\n'",
+          "rect": [14, 422, 355, 54],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox ' was in a furious passion, and went\n'",
+          "rect": [14, 422, 355, 54],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'about, and shouting \u2018Off with his head!\u2019 or \u2018Off with'",
           "rect": [14, 422, 355, 54],
           "reason": "geometry"
         },
         {
-          "object": "LayoutText #text",
-          "rect": [14, 404, 355, 36],
-          "reason": "style change"
+          "object": "InlineTextBox 'her head!\u2019 about once in a minute.\n'",
+          "rect": [14, 422, 355, 54],
+          "reason": "geometry"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'stamping'",
+          "rect": [14, 422, 355, 54],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'stamping'",
+          "rect": [14, 422, 355, 54],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'Queen'",
+          "rect": [14, 404, 355, 36],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'Queen'",
+          "rect": [14, 404, 355, 36],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'the'",
+          "rect": [14, 404, 355, 36],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'the'",
+          "rect": [14, 404, 355, 36],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'a very short time '",
           "rect": [65, 386, 304, 36],
-          "reason": "geometry"
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'a very short time '",
+          "rect": [65, 386, 304, 36],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'for the hedgehogs; and in\n'",
+          "rect": [65, 386, 304, 36],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'for the hedgehogs; and in\n'",
+          "rect": [65, 386, 304, 36],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'for turns,\n'",
+          "rect": [65, 386, 304, 36],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'for turns,\n'",
+          "rect": [65, 386, 304, 36],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'quarrelling all the while, and fighting'",
+          "rect": [65, 386, 304, 36],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'quarrelling all the while, and fighting'",
+          "rect": [65, 386, 304, 36],
+          "reason": "disappeared"
         }
       ]
     }

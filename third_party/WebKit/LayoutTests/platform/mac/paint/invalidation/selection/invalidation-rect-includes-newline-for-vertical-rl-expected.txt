@@ -18,7 +18,12 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'xx'",
+          "rect": [6, 8, 34, 48],
+          "reason": "geometry"
+        },
+        {
+          "object": "InlineTextBox 'y'",
           "rect": [6, 8, 34, 48],
           "reason": "geometry"
         }

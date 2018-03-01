@@ -18,22 +18,12 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (floating) SPAN",
-          "rect": [305, 35, 296, 18],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutText #text",
+          "object": "LayoutBlockFlow HTML",
           "rect": [305, 35, 296, 18],
           "reason": "appeared"
         },
         {
           "object": "LayoutBlockFlow (positioned) SPAN",
-          "rect": [153, 35, 296, 18],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutText #text",
           "rect": [153, 35, 296, 18],
           "reason": "appeared"
         }

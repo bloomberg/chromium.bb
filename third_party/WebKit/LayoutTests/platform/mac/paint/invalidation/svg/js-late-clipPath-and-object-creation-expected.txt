@@ -19,32 +19,17 @@
       "paintInvalidations": [
         {
           "object": "LayoutSVGContainer g id='content'",
-          "rect": [16, 39, 784, 174],
-          "reason": "geometry"
+          "rect": [16, 37, 784, 178],
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGContainer g id='content'",
-          "rect": [16, 39, 784, 174],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [16, 39, 784, 174],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [16, 39, 784, 174],
-          "reason": "appeared"
+          "rect": [16, 37, 784, 178],
+          "reason": "disappeared"
         },
         {
           "object": "LayoutSVGText text",
-          "rect": [16, 39, 784, 174],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutSVGText text",
-          "rect": [16, 39, 784, 174],
+          "rect": [16, 37, 318, 178],
           "reason": "appeared"
         }
       ]
