@@ -139,7 +139,6 @@ class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
 
   GraphicsLayer* ContainerLayer() const { return container_layer_.get(); }
   GraphicsLayer* FrameScrollLayer() const { return scroll_layer_.get(); }
-  GraphicsLayer* RootContentLayer() const { return root_content_layer_.get(); }
   GraphicsLayer* LayerForHorizontalScrollbar() const {
     return layer_for_horizontal_scrollbar_.get();
   }
@@ -153,6 +152,11 @@ class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
   // In root layer scrolling mode, returns the LayoutView's main GraphicsLayer.
   // In non-RLS mode, returns the outermost PaintLayerCompositor layer.
   GraphicsLayer* RootGraphicsLayer() const;
+
+  // Returns the GraphicsLayer we should start painting from. This can differ
+  // from above in some cases, e.g.  when the RootGraphicsLayer is detached and
+  // swapped out for an overlay video layer.
+  GraphicsLayer* PaintRootGraphicsLayer() const;
 
   // In root layer scrolling mode, this is the LayoutView's scroll layer.
   // In non-RLS mode, this is the same as frameScrollLayer().

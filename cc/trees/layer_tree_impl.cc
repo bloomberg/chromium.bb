@@ -214,7 +214,7 @@ void LayerTreeImpl::UpdateScrollbarGeometries() {
     bool is_viewport_scrollbar = scroll_node->scrolls_inner_viewport ||
                                  scroll_node->scrolls_outer_viewport;
     if (is_viewport_scrollbar) {
-      if (scroll_node->scrolls_inner_viewport) {
+      if (scroll_node->scrolls_inner_viewport && OuterViewportScrollLayer()) {
         // Add offset and bounds contribution of outer viewport.
         current_offset += OuterViewportScrollLayer()->CurrentScrollOffset();
         gfx::SizeF outer_viewport_bounds(scroll_tree.container_bounds(

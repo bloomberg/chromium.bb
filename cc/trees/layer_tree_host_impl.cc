@@ -4254,11 +4254,26 @@ void LayerTreeHostImpl::UnregisterScrollbarAnimationController(
 ScrollbarAnimationController*
 LayerTreeHostImpl::ScrollbarAnimationControllerForElementId(
     ElementId scroll_element_id) const {
-  // The viewport layers have only one set of scrollbars and their controller
-  // is registered with the outer viewport.
-  if (InnerViewportScrollLayer() && OuterViewportScrollLayer() &&
-      scroll_element_id == InnerViewportScrollLayer()->element_id())
-    scroll_element_id = OuterViewportScrollLayer()->element_id();
+  // The viewport layers have only one set of scrollbars. On Android, these are
+  // registered with the inner viewport, otherwise they're registered with the
+  // outer viewport. If a controller for one exists, the other shouldn't.
+  if (InnerViewportScrollLayer() && OuterViewportScrollLayer()) {
+    if (scroll_element_id == InnerViewportScrollLayer()->element_id() ||
+        scroll_element_id == OuterViewportScrollLayer()->element_id()) {
+      auto itr = scrollbar_animation_controllers_.find(
+          InnerViewportScrollLayer()->element_id());
+      if (itr != scrollbar_animation_controllers_.end())
+        return itr->second.get();
+
+      itr = scrollbar_animation_controllers_.find(
+          OuterViewportScrollLayer()->element_id());
+      if (itr != scrollbar_animation_controllers_.end())
+        return itr->second.get();
+
+      return nullptr;
+    }
+  }
+
   auto i = scrollbar_animation_controllers_.find(scroll_element_id);
   if (i == scrollbar_animation_controllers_.end())
     return nullptr;

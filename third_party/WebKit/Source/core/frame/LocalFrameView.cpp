@@ -3404,7 +3404,7 @@ void LocalFrameView::PaintTree() {
     // frame view of a page overlay. The page overlay is in the layer tree of
     // the host page and will be painted during painting of the host page.
     if (GraphicsLayer* root_graphics_layer =
-            layout_view->Compositor()->RootGraphicsLayer())
+            layout_view->Compositor()->PaintRootGraphicsLayer())
       root_graphics_layer->PaintRecursively();
 
     // TODO(sataya.m):Main frame doesn't create RootFrameViewport in some

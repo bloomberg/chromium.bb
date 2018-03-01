@@ -314,7 +314,11 @@ void PaintLayerCompositor::AssertNoUnresolvedDirtyBits() {
 
 void PaintLayerCompositor::ApplyOverlayFullscreenVideoAdjustmentIfNeeded() {
   in_overlay_fullscreen_video_ = false;
-  if (!root_content_layer_)
+  GraphicsLayer* content_parent =
+      RuntimeEnabledFeatures::RootLayerScrollingEnabled()
+          ? ParentForContentLayers()
+          : root_content_layer_.get();
+  if (!content_parent)
     return;
 
   bool is_local_root = layout_view_.GetFrame()->IsLocalRoot();
@@ -344,8 +348,12 @@ void PaintLayerCompositor::ApplyOverlayFullscreenVideoAdjustmentIfNeeded() {
   if (!is_local_root)
     return;
 
-  root_content_layer_->RemoveAllChildren();
-  overflow_controls_host_layer_->AddChild(video_layer);
+  content_parent->RemoveAllChildren();
+  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled())
+    content_parent->AddChild(video_layer);
+  else
+    overflow_controls_host_layer_->AddChild(video_layer);
+
   if (GraphicsLayer* background_layer = FixedRootBackgroundLayer())
     background_layer->RemoveFromParent();
   in_overlay_fullscreen_video_ = true;
@@ -858,6 +866,15 @@ GraphicsLayer* PaintLayerCompositor::RootGraphicsLayer() const {
   if (CompositedLayerMapping* clm = RootLayer()->GetCompositedLayerMapping())
     return clm->ChildForSuperlayers();
   return nullptr;
+}
+
+GraphicsLayer* PaintLayerCompositor::PaintRootGraphicsLayer() const {
+  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled() &&
+      ParentForContentLayers() && ParentForContentLayers()->Children().size()) {
+    DCHECK_EQ(ParentForContentLayers()->Children().size(), 1U);
+    return ParentForContentLayers()->Children()[0];
+  }
+  return RootGraphicsLayer();
 }
 
 GraphicsLayer* PaintLayerCompositor::ScrollLayer() const {

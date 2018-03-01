@@ -3546,11 +3546,6 @@ void WebViewImpl::RegisterViewportLayersWithCompositor() {
 
   VisualViewport& visual_viewport = GetPage()->GetVisualViewport();
 
-  // TODO(bokan): This was moved here from when registerViewportLayers was a
-  // part of VisualViewport and maybe doesn't belong here. See comment inside
-  // the mehtod.
-  visual_viewport.SetScrollLayerOnScrollbars(layout_viewport_scroll_web_layer);
-
   WebLayerTreeView::ViewportLayers viewport_layers;
   viewport_layers.overscroll_elasticity =
       visual_viewport.OverscrollElasticityLayer()->PlatformLayer();
