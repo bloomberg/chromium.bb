@@ -644,7 +644,6 @@ void MediaStreamManager::CancelRequest(int render_process_id,
       return;
     }
   }
-  NOTREACHED();
 }
 
 void MediaStreamManager::CancelRequest(const std::string& label) {
