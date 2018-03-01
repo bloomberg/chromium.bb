@@ -5865,6 +5865,14 @@ fuzzer_test("net_parse_proxy_bypass_rules_fuzzer") {
   sources = [
     "proxy_resolution/parse_proxy_bypass_rules_fuzzer.cc",
   ]
+
+  libfuzzer_options = [
+    # The proxy bypass rules aren't very complicated, so this is more than
+    # enough to explore the grammar. Allowing the length to become too large
+    # can result in test timeouts (https://crbug.com/813619).
+    "max_len=512",
+  ]
+
   deps = [
     ":net_fuzzer_test_support",
     "//net",
