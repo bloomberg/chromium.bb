@@ -1383,6 +1383,9 @@ Controller.prototype.handlePointerEventForSoftKey_ = function(softKey, e) {
           this.changeState_(key.toState, false, false);
         } else if (key.toState == StateType.CAPSLOCK) {
           this.changeState_(key.toState, isStateEnabled, true, true);
+          // Update the CAPSLOCK state of the system by sending a dummy key.
+          this.adapter_.sendKeyDownEvent(
+            KeyCodes.SHIFT, KeyCodes.SHIFT_LEFT, goog.events.KeyCodes.SHIFT);
         } else if (this.model_.stateManager.isKeyDown(key.toState)) {
           this.changeState_(key.toState, isStateEnabled, false);
         }
