@@ -10,6 +10,7 @@
 
 #import "remoting/ios/display/gl_display_handler.h"
 
+#include "remoting/client/feedback_data.h"
 #include "remoting/protocol/connection_to_host.h"
 
 namespace remoting {
@@ -73,6 +74,10 @@ extern NSString* const kHostSessionPin;
 - (void)handleExtensionMessageOfType:(NSString*)type message:(NSString*)message;
 
 - (void)setHostResolution:(CGSize)dipsResolution scale:(int)scale;
+
+// Creates a feedback data and returns it to the callback.
+- (void)createFeedbackDataWithCallback:
+    (void (^)(const remoting::FeedbackData&))callback;
 
 // The display handler tied to the remoting client used to display the host.
 @property(nonatomic, strong) GlDisplayHandler* displayHandler;

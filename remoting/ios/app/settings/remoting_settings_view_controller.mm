@@ -21,7 +21,6 @@
 #include "ui/base/l10n/l10n_util.h"
 
 static NSString* const kReusableIdentifierItem = @"remotingSettingsVCItem";
-static NSString* const kFeedbackContext = @"InSessionFeedbackContext";
 
 static const CGFloat kSectionSeparatorHeight = 1.f;
 
@@ -345,9 +344,7 @@ static const CGFloat kSectionSeparatorHeight = 1.f;
     // Dismiss self so that it can capture the screenshot of HostView.
     [weakSelf dismissViewControllerAnimated:YES
                                  completion:^{
-                                   [AppDelegate.instance
-                                       presentFeedbackFlowWithContext:
-                                           kFeedbackContext];
+                                   [weakSelf.delegate sendFeedback];
                                  }];
   };
 

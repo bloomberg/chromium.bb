@@ -17,6 +17,12 @@ static HelpAndFeedback* g_helpAndFeedback;
 #pragma mark - Public
 
 - (void)presentFeedbackFlowWithContext:(NSString*)context {
+  [self presentFeedbackFlowWithContext:context
+                          feedbackData:remoting::FeedbackData()];
+}
+
+- (void)presentFeedbackFlowWithContext:(NSString*)context
+                          feedbackData:(const remoting::FeedbackData&)data {
   NOTIMPLEMENTED() << "This should be implemented by a subclass.";
 }
 
