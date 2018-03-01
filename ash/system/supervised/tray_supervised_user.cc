@@ -100,6 +100,11 @@ void TraySupervisedUser::OnUserSessionUpdated(const AccountId& account_id) {
 }
 
 void TraySupervisedUser::CreateOrUpdateNotification() {
+  // No notification for the child user.
+  if (Shell::Get()->session_controller()->IsUserChild())
+    return;
+
+  // Regular supervised user.
   std::unique_ptr<Notification> notification =
       Notification::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId,
