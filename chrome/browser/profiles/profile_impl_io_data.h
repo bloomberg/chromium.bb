@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/net/chrome_url_request_context_getter.h"
+#include "chrome/browser/net/reporting_permissions_checker.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "components/prefs/pref_store.h"
 
@@ -132,6 +133,7 @@ class ProfileImplIOData : public ProfileIOData {
     scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy;
     std::unique_ptr<domain_reliability::DomainReliabilityMonitor>
         domain_reliability_monitor;
+    std::unique_ptr<ReportingPermissionsChecker> reporting_permissions_checker;
   };
 
   ProfileImplIOData();

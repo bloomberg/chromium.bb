@@ -161,6 +161,8 @@ void ProfileImplIOData::Handle::Init(
   lazy_params->special_storage_policy = special_storage_policy;
   lazy_params->domain_reliability_monitor =
       std::move(domain_reliability_monitor);
+  lazy_params->reporting_permissions_checker =
+      std::make_unique<ReportingPermissionsChecker>(profile_);
 
   io_data_->lazy_params_.reset(lazy_params);
 
@@ -411,6 +413,11 @@ ProfileImplIOData::ConfigureNetworkDelegate(
   if (lazy_params_->domain_reliability_monitor) {
     chrome_network_delegate->set_domain_reliability_monitor(
         std::move(lazy_params_->domain_reliability_monitor));
+  }
+
+  if (lazy_params_->reporting_permissions_checker) {
+    chrome_network_delegate->set_reporting_permissions_checker(
+        std::move(lazy_params_->reporting_permissions_checker));
   }
 
   return data_reduction_proxy_io_data()->CreateNetworkDelegate(

@@ -17,6 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/net/reporting_permissions_checker.h"
 #include "chrome/browser/net/safe_search_util.h"
 #include "components/domain_reliability/monitor.h"
 #include "components/prefs/pref_member.h"
@@ -108,6 +109,16 @@ class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
 
   domain_reliability::DomainReliabilityMonitor* domain_reliability_monitor() {
     return domain_reliability_monitor_.get();
+  }
+
+  void set_reporting_permissions_checker(
+      std::unique_ptr<ReportingPermissionsChecker>
+          reporting_permissions_checker) {
+    reporting_permissions_checker_ = std::move(reporting_permissions_checker);
+  }
+
+  ReportingPermissionsChecker* reporting_permissions_checker() {
+    return reporting_permissions_checker_.get();
   }
 
   void set_data_use_aggregator(
@@ -220,6 +231,7 @@ class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
   // Weak, owned by our owner.
   std::unique_ptr<domain_reliability::DomainReliabilityMonitor>
       domain_reliability_monitor_;
+  std::unique_ptr<ReportingPermissionsChecker> reporting_permissions_checker_;
 
   bool experimental_web_platform_features_enabled_;
 
