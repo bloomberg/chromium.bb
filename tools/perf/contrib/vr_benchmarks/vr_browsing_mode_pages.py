@@ -10,9 +10,9 @@ from contrib.vr_benchmarks.vr_sample_page import VrSamplePage
 class Simple2dStillPage(VrSamplePage):
   """A simple 2D page without user interactions."""
 
-  def __init__(self, page_set):
+  def __init__(self, page_set, sample_page='index'):
     super(Simple2dStillPage, self).__init__(
-         sample_page='index', page_set=page_set)
+         sample_page=sample_page, page_set=page_set)
 
   def RunPageInteractions(self, action_runner):
 
