@@ -175,10 +175,10 @@ class MockTask : public VirtualTimeController::RepeatingTask {
   bool interval_elapsed_ = false;
 };
 
-class MockDeferrer : public VirtualTimeController::StartDeferrer {
+class MockDeferrer : public VirtualTimeController::ResumeDeferrer {
  public:
   // GMock doesn't support move only types
-  void DeferStart(base::OnceCallback<void()> continue_callback) override {
+  void DeferResume(base::OnceCallback<void()> continue_callback) override {
     continue_callback_ = std::move(continue_callback);
   }
 
@@ -421,17 +421,19 @@ TEST_F(VirtualTimeControllerTest, StartPolicy) {
   GrantVirtualTimeBudget(2000);
 }
 
-TEST_F(VirtualTimeControllerTest, DeferStart) {
+TEST_F(VirtualTimeControllerTest, DeferStartAndResume) {
   MockDeferrer deferrer;
-  controller_->SetStartDeferrer(&deferrer);
+  controller_->SetResumeDeferrer(&deferrer);
 
   MockTask task1(MockTask::StartPolicy::START_IMMEDIATELY, 0);
   controller_->ScheduleRepeatingTask(&task1,
                                      base::TimeDelta::FromMilliseconds(1000));
+  EXPECT_FALSE(deferrer.continue_callback_);
 
-  // Shouldn't see the devtools command until the deferrer's call back has run.
+  // Shouldn't see the devtools command until the deferrer's callback has run.
   EXPECT_CALL(*mock_host_, DispatchProtocolMessage(&client_, _)).Times(0);
   GrantVirtualTimeBudget(2000);
+  EXPECT_TRUE(deferrer.continue_callback_);
 
   Mock::VerifyAndClearExpectations(mock_host_.get());
 
@@ -439,6 +441,35 @@ TEST_F(VirtualTimeControllerTest, DeferStart) {
               DispatchProtocolMessage(
                   &client_,
                   "{\"id\":0,\"method\":\"Emulation.setVirtualTimePolicy\","
+                  "\"params\":{\"budget\":1000.0,"
+                  "\"maxVirtualTimeTaskStarvationCount\":0,\"policy\":"
+                  "\"pauseIfNetworkFetchesPending\","
+                  "\"waitForNavigation\":false}}"))
+      .WillOnce(Return(true));
+
+  std::move(deferrer.continue_callback_).Run();
+
+  client_.DispatchProtocolMessage(
+      mock_host_.get(), "{\"id\":0,\"result\":{\"virtualTimeBase\":1.0}}");
+  EXPECT_FALSE(deferrer.continue_callback_);
+
+  task1.ExpectCallOnceWithOffsetAndReturn(
+      base::TimeDelta::FromMilliseconds(1000),
+      MockTask::ContinuePolicy::NOT_REQUIRED);
+
+  // Even after executing task1, virtual time shouldn't resume until the
+  // deferrer's callback has run.
+  EXPECT_CALL(*mock_host_, DispatchProtocolMessage(&client_, _)).Times(0);
+
+  SendVirtualTimeBudgetExpiredEvent();
+  EXPECT_TRUE(deferrer.continue_callback_);
+
+  Mock::VerifyAndClearExpectations(mock_host_.get());
+
+  EXPECT_CALL(*mock_host_,
+              DispatchProtocolMessage(
+                  &client_,
+                  "{\"id\":2,\"method\":\"Emulation.setVirtualTimePolicy\","
                   "\"params\":{\"budget\":1000.0,"
                   "\"maxVirtualTimeTaskStarvationCount\":0,\"policy\":"
                   "\"pauseIfNetworkFetchesPending\","

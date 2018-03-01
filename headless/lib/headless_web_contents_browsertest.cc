@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
+#include "cc/base/switches.h"
 #include "components/viz/common/switches.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
@@ -1083,8 +1084,13 @@ class HeadlessWebContentsBeginFrameControlTest
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     HeadlessBrowserTest::SetUpCommandLine(command_line);
+    // See bit.ly/headless-rendering for why we use these flags.
     command_line->AppendSwitch(switches::kRunAllCompositorStagesBeforeDraw);
     command_line->AppendSwitch(switches::kDisableNewContentRenderingTimeout);
+    command_line->AppendSwitch(cc::switches::kDisableCheckerImaging);
+    command_line->AppendSwitch(cc::switches::kDisableThreadedAnimation);
+    command_line->AppendSwitch(switches::kDisableThreadedScrolling);
+    command_line->AppendSwitch(switches::kEnableSurfaceSynchronization);
   }
 
   void OnCreateTargetResult(
@@ -1140,28 +1146,24 @@ class HeadlessWebContentsBeginFrameControlTest
         "HeadlessWebContentsBeginFrameControlTest::OnNeedsBeginFramesChanged",
         "needs_begin_frames", params.GetNeedsBeginFrames());
     needs_begin_frames_ = params.GetNeedsBeginFrames();
-    if (needs_begin_frames_ && !frame_in_flight_ && page_ready_)
+    // With full-pipeline mode and surface sync, the needs_begin_frame signal
+    // should become and then always stay true.
+    EXPECT_TRUE(needs_begin_frames_);
+    EXPECT_FALSE(frame_in_flight_);
+    if (page_ready_)
       OnNeedsBeginFrame();
   }
 
-  void OnMainFrameReadyForScreenshots(
-      const headless_experimental::MainFrameReadyForScreenshotsParams& params)
-      override {
-    TRACE_EVENT0("headless",
-                 "HeadlessWebContentsBeginFrameControlTest::"
-                 "OnMainFrameReadyForScreenshots");
-    main_frame_ready_ = true;
-  }
-
   void BeginFrame(bool screenshot) {
-    if (!needs_begin_frames_ && !screenshot)
-      return;
+    // With full-pipeline mode and surface sync, the needs_begin_frame signal
+    // should always be true.
+    EXPECT_TRUE(needs_begin_frames_);
 
     frame_in_flight_ = true;
+    num_begin_frames_++;
 
     auto builder = headless_experimental::BeginFrameParams::Builder();
     if (screenshot) {
-      DCHECK(main_frame_ready_);
       builder.SetScreenshot(
           headless_experimental::ScreenshotParams::Builder().Build());
     }
@@ -1212,7 +1214,7 @@ class HeadlessWebContentsBeginFrameControlTest
   bool page_ready_ = false;
   bool needs_begin_frames_ = false;
   bool frame_in_flight_ = false;
-  bool main_frame_ready_ = false;
+  int num_begin_frames_ = 0;
   std::unique_ptr<HeadlessDevToolsClient> browser_devtools_client_;
   std::unique_ptr<HeadlessDevToolsClient> devtools_client_;
 };
@@ -1228,15 +1230,21 @@ class HeadlessWebContentsBeginFrameControlBasicTest
     return "/blue_page.html";
   }
 
-  void OnNeedsBeginFrame() override { BeginFrame(false); }
+  void OnNeedsBeginFrame() override {
+    // Try to capture a screenshot in first frame. This should fail because the
+    // surface doesn't exist yet.
+    BeginFrame(true);
+  }
 
   void OnFrameFinished(std::unique_ptr<headless_experimental::BeginFrameResult>
                            result) override {
-    if (!sent_screenshot_request_) {
-      // Once the main frame is ready, capture a screenshot.
-      sent_screenshot_request_ = main_frame_ready_;
-      BeginFrame(sent_screenshot_request_);
-    } else {
+    if (num_begin_frames_ == 1) {
+      // First BeginFrame should have caused damage.
+      EXPECT_TRUE(result->GetHasDamage());
+      // But the screenshot should have failed (see above).
+      EXPECT_FALSE(result->HasScreenshotData());
+    } else if (num_begin_frames_ == 2) {
+      // Expect a valid screenshot in second BeginFrame.
       EXPECT_TRUE(result->GetHasDamage());
       EXPECT_TRUE(result->HasScreenshotData());
       if (result->HasScreenshotData()) {
@@ -1251,14 +1259,22 @@ class HeadlessWebContentsBeginFrameControlBasicTest
         SkColor actual_color = result_bitmap.getColor(100, 100);
         EXPECT_EQ(expected_color, actual_color);
       }
+    } else {
+      DCHECK_EQ(3, num_begin_frames_);
+      // Can't guarantee that the last BeginFrame didn't have damage, but it
+      // should not have a screenshot.
+      EXPECT_FALSE(result->HasScreenshotData());
+    }
 
+    if (num_begin_frames_ < 3) {
+      // Capture a screenshot in second but not third BeginFrame.
+      BeginFrame(num_begin_frames_ == 1);
+    } else {
       // Post completion to avoid deleting the WebContents on the same callstack
       // as frame finished callback.
       PostFinishAsynchronousTest();
     }
   }
-
-  bool sent_screenshot_request_ = false;
 };
 
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessWebContentsBeginFrameControlBasicTest);
@@ -1274,48 +1290,9 @@ class HeadlessWebContentsBeginFrameControlViewportTest
     return "/blue_box.html";
   }
 
-  void OnNeedsBeginFrame() override { BeginFrame(false); }
-
-  void OnFrameFinished(std::unique_ptr<headless_experimental::BeginFrameResult>
-                           result) override {
-    if (!sent_screenshot_request_) {
-      // Once the main frame is ready, set the view size and position and then
-      // capture a screenshot.
-      if (main_frame_ready_) {
-        SetUpViewport();
-        return;
-      }
-
-      BeginFrame(false);
-    } else {
-      EXPECT_TRUE(result->GetHasDamage());
-      EXPECT_TRUE(result->HasScreenshotData());
-      if (result->HasScreenshotData()) {
-        std::string base64 = result->GetScreenshotData();
-        EXPECT_LT(0u, base64.length());
-        SkBitmap result_bitmap;
-        EXPECT_TRUE(DecodePNG(base64, &result_bitmap));
-
-        EXPECT_EQ(200, result_bitmap.width());
-        EXPECT_EQ(200, result_bitmap.height());
-        SkColor expected_color = SkColorSetRGB(0x00, 0x00, 0xff);
-
-        SkColor actual_color = result_bitmap.getColor(100, 100);
-        EXPECT_EQ(expected_color, actual_color);
-        actual_color = result_bitmap.getColor(0, 0);
-        EXPECT_EQ(expected_color, actual_color);
-        actual_color = result_bitmap.getColor(0, 199);
-        EXPECT_EQ(expected_color, actual_color);
-        actual_color = result_bitmap.getColor(199, 0);
-        EXPECT_EQ(expected_color, actual_color);
-        actual_color = result_bitmap.getColor(199, 199);
-        EXPECT_EQ(expected_color, actual_color);
-      }
-
-      // Post completion to avoid deleting the WebContents on the same callstack
-      // as frame finished callback.
-      PostFinishAsynchronousTest();
-    }
+  void OnNeedsBeginFrame() override {
+    // Send a first BeginFrame to initialize the surface.
+    BeginFrame(false);
   }
 
   void SetUpViewport() {
@@ -1332,7 +1309,7 @@ class HeadlessWebContentsBeginFrameControlViewportTest
                                  .SetY(200)
                                  .SetWidth(100)
                                  .SetHeight(100)
-                                 .SetScale(2)
+                                 .SetScale(3)
                                  .Build())
                 .Build(),
             base::Bind(&HeadlessWebContentsBeginFrameControlViewportTest::
@@ -1343,12 +1320,61 @@ class HeadlessWebContentsBeginFrameControlViewportTest
   void SetDeviceMetricsOverrideDone(
       std::unique_ptr<emulation::SetDeviceMetricsOverrideResult> result) {
     EXPECT_TRUE(result);
-    // Take a screenshot.
-    sent_screenshot_request_ = true;
-    BeginFrame(true);
+    // TODO(crbug.com/817364): Due to recent changes in CopyOutputRequests, it
+    // is not possible to take a screenshot directly after resize as it would be
+    // taken from the old surface. Thus, we have to send an intermediate
+    // BeginFrame here, which will replace the surface first. Replace this with
+    // a screenshotting BeginFrame and remove the need for the third BeginFrame
+    // once above problem is resolved.
+    BeginFrame(false);
   }
 
-  bool sent_screenshot_request_ = false;
+  void OnFrameFinished(std::unique_ptr<headless_experimental::BeginFrameResult>
+                           result) override {
+    if (num_begin_frames_ == 1) {
+      EXPECT_TRUE(result->GetHasDamage());
+      EXPECT_FALSE(result->HasScreenshotData());
+      SetUpViewport();
+      return;
+    } else if (num_begin_frames_ == 2) {
+      EXPECT_TRUE(result->GetHasDamage());
+      EXPECT_FALSE(result->HasScreenshotData());
+      // Capture screenshot in third BeginFrame.
+      BeginFrame(true);
+      return;
+    }
+
+    DCHECK_EQ(3, num_begin_frames_);
+    // Second BeginFrame should have a screenshot of the configured viewport and
+    // of the correct size.
+    EXPECT_TRUE(result->GetHasDamage());
+    EXPECT_TRUE(result->HasScreenshotData());
+    if (result->HasScreenshotData()) {
+      std::string base64 = result->GetScreenshotData();
+      EXPECT_LT(0u, base64.length());
+      SkBitmap result_bitmap;
+      EXPECT_TRUE(DecodePNG(base64, &result_bitmap));
+
+      EXPECT_EQ(300, result_bitmap.width());
+      EXPECT_EQ(300, result_bitmap.height());
+      SkColor expected_color = SkColorSetRGB(0x00, 0x00, 0xff);
+
+      SkColor actual_color = result_bitmap.getColor(100, 100);
+      EXPECT_EQ(expected_color, actual_color);
+      actual_color = result_bitmap.getColor(0, 0);
+      EXPECT_EQ(expected_color, actual_color);
+      actual_color = result_bitmap.getColor(0, 299);
+      EXPECT_EQ(expected_color, actual_color);
+      actual_color = result_bitmap.getColor(299, 0);
+      EXPECT_EQ(expected_color, actual_color);
+      actual_color = result_bitmap.getColor(299, 299);
+      EXPECT_EQ(expected_color, actual_color);
+    }
+
+    // Post completion to avoid deleting the WebContents on the same callstack
+    // as frame finished callback.
+    PostFinishAsynchronousTest();
+  }
 };
 
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(

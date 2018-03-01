@@ -54,8 +54,8 @@ void VirtualTimeController::StartVirtualTime() {
   virtual_time_started_ = true;
   should_send_start_notification_ = true;
 
-  if (start_deferrer_) {
-    start_deferrer_->DeferStart(base::BindOnce(
+  if (resume_deferrer_) {
+    resume_deferrer_->DeferResume(base::BindOnce(
         &VirtualTimeController::SetVirtualTimePolicy,
         weak_ptr_factory_.GetWeakPtr(), next_budget, wait_for_navigation));
   } else {
@@ -128,7 +128,14 @@ void VirtualTimeController::NotifyTasksAndAdvance() {
   }
 
   DCHECK(!next_budget.is_zero());
-  SetVirtualTimePolicy(next_budget, false /* wait_for_navigation */);
+  if (resume_deferrer_) {
+    resume_deferrer_->DeferResume(
+        base::BindOnce(&VirtualTimeController::SetVirtualTimePolicy,
+                       weak_ptr_factory_.GetWeakPtr(), next_budget,
+                       false /* wait_for_navigation */));
+  } else {
+    SetVirtualTimePolicy(next_budget, false /* wait_for_navigation */);
+  }
 }
 
 void VirtualTimeController::TaskReadyToAdvance(
@@ -213,8 +220,8 @@ base::TimeDelta VirtualTimeController::GetCurrentVirtualTimeOffset() const {
   return total_elapsed_time_offset_;
 }
 
-void VirtualTimeController::SetStartDeferrer(StartDeferrer* start_deferrer) {
-  start_deferrer_ = start_deferrer;
+void VirtualTimeController::SetResumeDeferrer(ResumeDeferrer* resume_deferrer) {
+  resume_deferrer_ = resume_deferrer;
 }
 
 }  // namespace headless

@@ -1595,6 +1595,11 @@ bool SurfaceHitTestReadyNotifier::ContainsSurfaceId(
 
 RenderFrameMetadataProvider* RenderFrameMetadataProviderFromWebContents(
     WebContents* web_contents) {
+  DCHECK(web_contents);
+  DCHECK(web_contents->GetRenderViewHost());
+  DCHECK(
+      RenderWidgetHostImpl::From(web_contents->GetRenderViewHost()->GetWidget())
+          ->render_frame_metadata_provider());
   return RenderWidgetHostImpl::From(
              web_contents->GetRenderViewHost()->GetWidget())
       ->render_frame_metadata_provider();
@@ -1908,6 +1913,7 @@ void RenderFrameSubmissionObserver::OnRenderFrameMetadataChanged() {
 }
 
 void RenderFrameSubmissionObserver::OnRenderFrameSubmission() {
+  render_frame_count_++;
   if (break_on_any_frame_)
     Quit();
 }

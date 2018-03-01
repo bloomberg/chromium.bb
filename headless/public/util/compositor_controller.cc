@@ -21,8 +21,7 @@ namespace headless {
 // intervals.
 class CompositorController::AnimationBeginFrameTask
     : public VirtualTimeController::RepeatingTask,
-      public VirtualTimeController::Observer,
-      public VirtualTimeController::StartDeferrer {
+      public VirtualTimeController::ResumeDeferrer {
  public:
   explicit AnimationBeginFrameTask(CompositorController* compositor_controller)
       : RepeatingTask(StartPolicy::START_IMMEDIATELY, -1),
@@ -33,54 +32,30 @@ class CompositorController::AnimationBeginFrameTask
   void IntervalElapsed(
       base::TimeDelta virtual_time_offset,
       base::OnceCallback<void(ContinuePolicy)> continue_callback) override {
-    interval_continue_callback_ = std::move(continue_callback);
-
-    // Post a cancellable task that will issue a BeginFrame. This way, we can
-    // cancel sending an animation-only BeginFrame if another virtual time task
-    // sends a screenshotting BeginFrame first, or if the budget was exhausted.
-    // TODO(eseckler): This won't capture screenshot requests sent
-    // asynchronously.
-    begin_frame_task_.Reset(
-        base::Bind(&AnimationBeginFrameTask::IssueAnimationBeginFrame,
-                   weak_ptr_factory_.GetWeakPtr()));
-    compositor_controller_->task_runner_->PostTask(
-        FROM_HERE, begin_frame_task_.callback());
+    needs_begin_frame_on_virtual_time_resume_ = true;
+    std::move(continue_callback).Run(ContinuePolicy::NOT_REQUIRED);
   }
 
-  // VirtualTimeController::StartDeferrer implementation:
-  void DeferStart(base::OnceClosure continue_callback) override {
-    // Run a BeginFrame if we cancelled it because the budged expired previously
-    // and no other BeginFrame was sent while virtual time was paused.
+  // VirtualTimeController::ResumeDeferrer implementation:
+  void DeferResume(base::OnceClosure continue_callback) override {
+    // Run a BeginFrame if we scheduled one in the last interval and no other
+    // BeginFrame was sent while virtual time was paused.
     if (needs_begin_frame_on_virtual_time_resume_) {
-      start_continue_callback_ = std::move(continue_callback);
+      continue_callback_ = std::move(continue_callback);
       IssueAnimationBeginFrame();
       return;
     }
     std::move(continue_callback).Run();
   }
 
-  // VirtualTimeController::Observer implementation:
-  void VirtualTimeStarted(base::TimeDelta virtual_time_offset) override {}
-
-  void VirtualTimeStopped(base::TimeDelta virtual_time_offset) override {
-    // Wait until a new budget was requested before sending another animation
-    // BeginFrame, as it's likely that we will send a screenshotting BeginFrame.
-    if (!begin_frame_task_.IsCancelled()) {
-      begin_frame_task_.Cancel();
-      needs_begin_frame_on_virtual_time_resume_ = true;
-      BeginFrameComplete(nullptr);
-    }
-  }
-
   void CompositorControllerIssuingScreenshotBeginFrame() {
+    TRACE_EVENT0("headless",
+                 "CompositorController::AnimationBeginFrameTask::"
+                 "CompositorControllerIssuingScreenshotBeginFrame");
     // The screenshotting BeginFrame will replace our animation-only BeginFrame.
     // We cancel any pending animation BeginFrame to avoid sending two
     // BeginFrames within the same virtual time pause.
     needs_begin_frame_on_virtual_time_resume_ = false;
-    if (!begin_frame_task_.IsCancelled()) {
-      begin_frame_task_.Cancel();
-      BeginFrameComplete(nullptr);
-    }
   }
 
  private:
@@ -88,34 +63,35 @@ class CompositorController::AnimationBeginFrameTask
     TRACE_EVENT0("headless",
                  "CompositorController::AnimationBeginFrameTask::"
                  "IssueAnimationBeginFrame");
-    begin_frame_task_.Cancel();
     needs_begin_frame_on_virtual_time_resume_ = false;
-    // No need for PostBeginFrame, since the begin_frame_task_ has already been
-    // posted above.
-    compositor_controller_->BeginFrame(
+
+    bool update_display =
+        compositor_controller_->update_display_for_animations_;
+    // Display needs to be updated for first BeginFrame. Otherwise, the
+    // RenderWidget's surface may not be created and the root surface may block
+    // waiting for it forever.
+    update_display |= compositor_controller_->last_begin_frame_time_ ==
+                      base::Time::UnixEpoch();
+
+    compositor_controller_->PostBeginFrame(
         base::Bind(&AnimationBeginFrameTask::BeginFrameComplete,
                    weak_ptr_factory_.GetWeakPtr()),
-        !compositor_controller_->update_display_for_animations_);
+        !update_display);
   }
 
   void BeginFrameComplete(std::unique_ptr<BeginFrameResult>) {
     TRACE_EVENT0(
         "headless",
         "CompositorController::AnimationBeginFrameTask::BeginFrameComplete");
-    DCHECK(interval_continue_callback_ || start_continue_callback_);
-    if (interval_continue_callback_)
-      std::move(interval_continue_callback_).Run(ContinuePolicy::NOT_REQUIRED);
-
-    if (start_continue_callback_)
-      std::move(start_continue_callback_).Run();
+    DCHECK(continue_callback_);
+    std::move(continue_callback_).Run();
   }
 
   CompositorController* compositor_controller_;  // NOT OWNED
-  bool needs_begin_frame_on_virtual_time_resume_ = false;
+  bool needs_begin_frame_on_virtual_time_resume_ = true;
   base::CancelableClosure begin_frame_task_;
 
-  base::OnceCallback<void(ContinuePolicy)> interval_continue_callback_;
-  base::OnceClosure start_continue_callback_;
+  base::OnceClosure continue_callback_;
   base::WeakPtrFactory<AnimationBeginFrameTask> weak_ptr_factory_;
 };
 
@@ -124,15 +100,12 @@ CompositorController::CompositorController(
     HeadlessDevToolsClient* devtools_client,
     VirtualTimeController* virtual_time_controller,
     base::TimeDelta animation_begin_frame_interval,
-    base::TimeDelta wait_for_compositor_ready_begin_frame_delay,
     bool update_display_for_animations)
     : task_runner_(std::move(task_runner)),
       devtools_client_(devtools_client),
       virtual_time_controller_(virtual_time_controller),
       animation_task_(std::make_unique<AnimationBeginFrameTask>(this)),
       animation_begin_frame_interval_(animation_begin_frame_interval),
-      wait_for_compositor_ready_begin_frame_delay_(
-          wait_for_compositor_ready_begin_frame_delay),
       update_display_for_animations_(update_display_for_animations),
       weak_ptr_factory_(this) {
   devtools_client_->GetHeadlessExperimental()->GetExperimental()->AddObserver(
@@ -144,14 +117,12 @@ CompositorController::CompositorController(
       headless_experimental::EnableParams::Builder().Build());
   virtual_time_controller_->ScheduleRepeatingTask(
       animation_task_.get(), animation_begin_frame_interval_);
-  virtual_time_controller_->AddObserver(animation_task_.get());
-  virtual_time_controller_->SetStartDeferrer(animation_task_.get());
+  virtual_time_controller_->SetResumeDeferrer(animation_task_.get());
 }
 
 CompositorController::~CompositorController() {
-  virtual_time_controller_->RemoveObserver(animation_task_.get());
   virtual_time_controller_->CancelRepeatingTask(animation_task_.get());
-  virtual_time_controller_->SetStartDeferrer(nullptr);
+  virtual_time_controller_->SetResumeDeferrer(nullptr);
   devtools_client_->GetHeadlessExperimental()
       ->GetExperimental()
       ->RemoveObserver(this);
@@ -202,8 +173,6 @@ void CompositorController::BeginFrame(
 
     params_builder.SetNoDisplayUpdates(no_display_updates);
 
-    // TODO(eseckler): Set time fields. This requires obtaining the absolute
-    // virtual time stamp.
     if (screenshot)
       params_builder.SetScreenshot(std::move(screenshot));
 
@@ -232,111 +201,6 @@ void CompositorController::BeginFrameComplete(
 void CompositorController::OnNeedsBeginFramesChanged(
     const NeedsBeginFramesChangedParams& params) {
   needs_begin_frames_ = params.GetNeedsBeginFrames();
-
-  // If needs_begin_frames_ became true again and we're waiting for the
-  // compositor or a main frame update, continue posting BeginFrames - provided
-  // there's none outstanding.
-  if (compositor_ready_callback_ && needs_begin_frames_ &&
-      !begin_frame_complete_callback_ &&
-      wait_for_compositor_ready_begin_frame_task_.IsCancelled()) {
-    PostBeginFrame(base::Bind(
-        &CompositorController::WaitForCompositorReadyBeginFrameComplete,
-        weak_ptr_factory_.GetWeakPtr()));
-  } else if (main_frame_content_updated_callback_ && needs_begin_frames_ &&
-             !begin_frame_complete_callback_) {
-    PostWaitForMainFrameContentUpdateBeginFrame();
-  }
-}
-
-void CompositorController::OnMainFrameReadyForScreenshots(
-    const MainFrameReadyForScreenshotsParams& params) {
-  TRACE_EVENT0("headless",
-               "CompositorController::OnMainFrameReadyForScreenshots");
-  main_frame_ready_ = true;
-
-  // If a WaitForCompositorReadyBeginFrame is still scheduled, skip it.
-  if (!wait_for_compositor_ready_begin_frame_task_.IsCancelled()) {
-    wait_for_compositor_ready_begin_frame_task_.Cancel();
-    auto callback = compositor_ready_callback_;
-    compositor_ready_callback_.Reset();
-    callback.Run();
-  }
-}
-
-void CompositorController::WaitForCompositorReady(
-    const base::Closure& compositor_ready_callback) {
-  // We need to wait for the mainFrameReadyForScreenshots event, which will be
-  // issued once the renderer has submitted its first CompositorFrame in
-  // response to a BeginFrame. At that point, we know that the renderer
-  // compositor has initialized. We do this by issuing BeginFrames until we
-  // receive the event. To avoid bogging down the system with a flood of
-  // BeginFrames, we add a short delay between them.
-  // TODO(eseckler): Investigate if we can remove the need for these initial
-  // BeginFrames and the mainFrameReadyForScreenshots event, by making the
-  // compositor wait for the renderer in the very first BeginFrame, even if it
-  // isn't yet present in the surface hierarchy. Maybe surface synchronization
-  // can help here?
-  DCHECK(!begin_frame_complete_callback_);
-  DCHECK(!compositor_ready_callback_);
-
-  if (main_frame_ready_) {
-    compositor_ready_callback.Run();
-    return;
-  }
-
-  compositor_ready_callback_ = compositor_ready_callback;
-  if (needs_begin_frames_) {
-    // Post BeginFrames with a delay until the main frame becomes ready.
-    PostWaitForCompositorReadyBeginFrameTask();
-  }
-}
-
-void CompositorController::PostWaitForCompositorReadyBeginFrameTask() {
-  TRACE_EVENT0(
-      "headless",
-      "CompositorController::PostWaitForCompositorReadyBeginFrameTask");
-  wait_for_compositor_ready_begin_frame_task_.Reset(
-      base::Bind(&CompositorController::IssueWaitForCompositorReadyBeginFrame,
-                 weak_ptr_factory_.GetWeakPtr()));
-
-  // We may receive the mainFrameReadyForScreenshots event before this task
-  // is run. In that case, we cancel it in OnMainFrameReadyForScreenshots to
-  // avoid another unnecessary BeginFrame.
-  task_runner_->PostDelayedTask(
-      FROM_HERE, wait_for_compositor_ready_begin_frame_task_.callback(),
-      wait_for_compositor_ready_begin_frame_delay_);
-}
-
-void CompositorController::IssueWaitForCompositorReadyBeginFrame() {
-  TRACE_EVENT0("headless",
-               "CompositorController::IssueWaitForCompositorReadyBeginFrame");
-  // No need for PostBeginFrame, since
-  // wait_for_compositor_ready_begin_frame_task_ has already been posted.
-  wait_for_compositor_ready_begin_frame_task_.Cancel();
-  BeginFrame(base::Bind(
-      &CompositorController::WaitForCompositorReadyBeginFrameComplete,
-      weak_ptr_factory_.GetWeakPtr()));
-}
-
-void CompositorController::WaitForCompositorReadyBeginFrameComplete(
-    std::unique_ptr<BeginFrameResult>) {
-  TRACE_EVENT0(
-      "headless",
-      "CompositorController::WaitForCompositorReadyBeginFrameComplete");
-  DCHECK(compositor_ready_callback_);
-
-  if (main_frame_ready_) {
-    auto callback = compositor_ready_callback_;
-    compositor_ready_callback_.Reset();
-    callback.Run();
-    return;
-  }
-
-  // Continue posting more BeginFrames with a delay until the main frame
-  // becomes ready. If needs_begin_frames_ is false, it will eventually turn
-  // true again once the renderer's compositor has started up.
-  if (needs_begin_frames_)
-    PostWaitForCompositorReadyBeginFrameTask();
 }
 
 void CompositorController::WaitUntilIdle(const base::Closure& idle_callback) {
@@ -353,53 +217,6 @@ void CompositorController::WaitUntilIdle(const base::Closure& idle_callback) {
   idle_callback_ = idle_callback;
 }
 
-void CompositorController::WaitForMainFrameContentUpdate(
-    const base::Closure& main_frame_content_updated_callback) {
-  TRACE_EVENT0("headless",
-               "CompositorController::WaitForMainFrameContentUpdate");
-  DCHECK(!begin_frame_complete_callback_);
-  DCHECK(!main_frame_content_updated_callback_);
-  main_frame_content_updated_callback_ = main_frame_content_updated_callback;
-
-  // Post BeginFrames until we see a main frame update.
-  if (needs_begin_frames_)
-    PostWaitForMainFrameContentUpdateBeginFrame();
-}
-
-void CompositorController::PostWaitForMainFrameContentUpdateBeginFrame() {
-  TRACE_EVENT0(
-      "headless",
-      "CompositorController::PostWaitForMainFrameContentUpdateBeginFrame");
-  DCHECK(main_frame_content_updated_callback_);
-  PostBeginFrame(base::Bind(
-      &CompositorController::WaitForMainFrameContentUpdateBeginFrameComplete,
-      weak_ptr_factory_.GetWeakPtr()));
-}
-
-void CompositorController::WaitForMainFrameContentUpdateBeginFrameComplete(
-    std::unique_ptr<BeginFrameResult> result) {
-  if (!result)
-    return;
-
-  TRACE_EVENT1(
-      "headless",
-      "CompositorController::WaitForMainFrameContentUpdateBeginFrameComplete",
-      "main_frame_content_updated", result->GetMainFrameContentUpdated());
-  DCHECK(!begin_frame_complete_callback_);
-  DCHECK(main_frame_content_updated_callback_);
-
-  if (result->GetMainFrameContentUpdated()) {
-    auto callback = main_frame_content_updated_callback_;
-    main_frame_content_updated_callback_.Reset();
-    callback.Run();
-    return;
-  }
-
-  // Continue posting BeginFrames until we see a main frame update.
-  if (needs_begin_frames_)
-    PostWaitForMainFrameContentUpdateBeginFrame();
-}
-
 void CompositorController::CaptureScreenshot(
     ScreenshotParamsFormat format,
     int quality,
@@ -408,7 +225,6 @@ void CompositorController::CaptureScreenshot(
   TRACE_EVENT0("headless", "CompositorController::CaptureScreenshot");
   DCHECK(!begin_frame_complete_callback_);
   DCHECK(!screenshot_captured_callback_);
-  DCHECK(main_frame_ready_);
 
   screenshot_captured_callback_ = screenshot_captured_callback;
 
