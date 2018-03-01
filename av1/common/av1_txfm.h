@@ -120,9 +120,11 @@ static INLINE int32_t round_shift(int32_t value, int bit) {
 
 static INLINE int32_t half_btf(int32_t w0, int32_t in0, int32_t w1, int32_t in1,
                                int bit) {
-  int32_t result_32 = (int32_t)clamp64((int64_t)w0 * in0 + (int64_t)w1 * in1,
-                                       (int64_t)INT32_MIN, (int64_t)INT32_MAX);
-  return round_shift(result_32, bit);
+  int64_t result_64 = (int64_t)(w0 * in0) + (int64_t)(w1 * in1);
+#if CONFIG_COEFFICIENT_RANGE_CHECKING
+  assert(result_64 >= INT32_MIN && result_64 <= INT32_MAX);
+#endif
+  return round_shift((int32_t)result_64, bit);
 }
 
 typedef void (*TxfmFunc)(const int32_t *input, int32_t *output, int8_t cos_bit,
