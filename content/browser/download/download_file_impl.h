@@ -22,12 +22,12 @@
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "components/download/public/common/base_file.h"
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/download_save_info.h"
 #include "components/download/public/common/download_stream.mojom.h"
 #include "components/download/public/common/rate_estimator.h"
 #include "content/browser/byte_stream.h"
-#include "content/browser/download/base_file.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 
@@ -311,7 +311,7 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
   void DebugStates() const;
 
   // The base file instance.
-  BaseFile file_;
+  download::BaseFile file_;
 
   // DownloadSaveInfo provided during construction. Since the DownloadFileImpl
   // can be created on any thread, this holds the save_info_ until it can be

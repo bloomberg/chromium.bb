@@ -10,8 +10,12 @@ source_set("internal") {
   ]
 
   sources = [
+    "base_file.cc",
+    "base_file_posix.cc",
+    "base_file_win.cc",
     "download_create_info.cc",
     "download_interrupt_reasons_impl.cc",
+    "download_interrupt_reasons_utils.cc",
     "download_stats.cc",
     "download_task_runner.cc",
     "download_ukm_helper.cc",
@@ -21,6 +25,7 @@ source_set("internal") {
 
   deps = [
     "//base",
+    "//components/download/quarantine",
     "//net",
     "//services/metrics/public/cpp:ukm_builders",
   ]
@@ -30,6 +35,8 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
+    "base_file_unittest.cc",
+    "base_file_win_unittest.cc",
     "download_stats_unittest.cc",
     "download_ukm_helper_unittest.cc",
     "rate_estimator_unittest.cc",
@@ -39,6 +46,8 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//components/download/public/common:public",
     "//components/ukm:test_support",
+    "//crypto",
+    "//net",
     "//services/metrics/public/cpp:ukm_builders",
     "//testing/gmock",
     "//testing/gtest",
