@@ -18,7 +18,8 @@ var allTests = [
         // Wait for the inner frame to load, then find the button inside it
         // and do a hit test on it.
         rootNode.addEventListener(EventType.LOAD_COMPLETE, function(event) {
-          if (event.target.url.indexOf('iframe_inner.html') >= 0) {
+          if (event.target.url &&
+              event.target.url.indexOf('iframe_inner.html') >= 0) {
             // Find the inner button.
             var innerButton = event.target.find(
                 { attributes: { name: 'Inner' } });
