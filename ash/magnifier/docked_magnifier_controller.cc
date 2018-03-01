@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "ash/host/ash_window_tree_host.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
@@ -341,6 +342,11 @@ void DockedMagnifierController::OnDisplayConfigurationChanged() {
         SeparatorBoundsFromViewportBounds(viewport_bounds));
     SetViewportHeightInWorkArea(current_source_root_window_,
                                 separator_layer_->bounds().bottom());
+
+    // Resolution changes, screen rotation, etc. can reset the host to confine
+    // the mouse cursor inside the root window. We want to make sure the cursor
+    // is confined properly outside the viewport.
+    ConfineMouseCursorOutsideViewport();
   }
 
   // A change in display configuration, such as resolution, rotation, ... etc.
@@ -408,6 +414,11 @@ void DockedMagnifierController::SwitchCurrentSourceRootWindowIfNeeded(
         GetInputMethodForWindow(old_root_window);
     if (old_input_method)
       old_input_method->RemoveObserver(this);
+
+    // Reset mouse cursor confinement to default.
+    RootWindowController::ForWindow(old_root_window)
+        ->ash_host()
+        ->ConfineCursorToRootWindow();
   }
 
   // A change in the current root window means we must clear the existing
@@ -585,6 +596,9 @@ void DockedMagnifierController::CreateMagnifierViewport() {
   //    screen.
   SetViewportHeightInWorkArea(current_source_root_window_,
                               separator_layer_->bounds().bottom());
+
+  // 6- Confine the mouse cursor within the remaining part of the display.
+  ConfineMouseCursorOutsideViewport();
 }
 
 void DockedMagnifierController::MaybeCachePointOfInterestMinimumHeight(
@@ -673,6 +687,19 @@ void DockedMagnifierController::MaybeCachePointOfInterestMinimumHeight(
   host->GetInverseRootTransform().TransformVector(&minimum_height_vector);
   minimum_point_of_interest_height_ = minimum_height_vector.Length();
   is_minimum_point_of_interest_height_valid_ = true;
+}
+
+void DockedMagnifierController::ConfineMouseCursorOutsideViewport() {
+  DCHECK(current_source_root_window_);
+
+  gfx::Rect confine_bounds =
+      current_source_root_window_->GetBoundsInRootWindow();
+  const int docked_height = separator_layer_->bounds().bottom();
+  confine_bounds.Offset(0, docked_height);
+  confine_bounds.set_height(confine_bounds.height() - docked_height);
+  RootWindowController::ForWindow(current_source_root_window_)
+      ->ash_host()
+      ->ConfineCursorToBoundsInRoot(confine_bounds);
 }
 
 }  // namespace ash
