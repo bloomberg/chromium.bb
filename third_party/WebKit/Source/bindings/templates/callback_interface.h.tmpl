@@ -44,6 +44,46 @@ class {{exported}}{{v8_class}} final : public CallbackInterfaceBase {
       : CallbackInterfaceBase(callback_object, {{single_operation_enum_value}}) {}
 };
 
+template <>
+class {{exported|replace('_EXPORT', '_TEMPLATE_CLASS_EXPORT')}}V8PersistentCallbackInterface<{{v8_class}}> final : public V8PersistentCallbackInterfaceBase {
+  using V8CallbackInterface = {{v8_class}};
+
+ public:
+  ~V8PersistentCallbackInterface() override = default;
+
+{% for method in methods %}
+  {{exported|replace('_EXPORT', '_EXTERN_TEMPLATE_EXPORT')|trim}}
+  v8::Maybe<{{method.cpp_type}}> {{method.name}}({{method.argument_declarations | join(', ')}}) WARN_UNUSED_RESULT;
+{% endfor %}
+{% if methods|length == 1 and methods[0].idl_type == 'void' %}
+  {{exported|replace('_EXPORT', '_EXTERN_TEMPLATE_EXPORT')|trim}}
+  void InvokeAndReportException({{methods[0].argument_declarations | join(', ')}});
+{% endif %}
+
+ private:
+  explicit V8PersistentCallbackInterface(V8CallbackInterface* callback_interface)
+      : V8PersistentCallbackInterfaceBase(callback_interface) {}
+
+  V8CallbackInterface* Proxy() {
+    return As<V8CallbackInterface>();
+  }
+
+  template <typename V8CallbackInterface>
+  friend V8PersistentCallbackInterface<V8CallbackInterface>*
+  ToV8PersistentCallbackInterface(V8CallbackInterface*);
+};
+
+// {{v8_class}} is designed to be used with wrapper-tracing.
+// As blink::Persistent does not perform wrapper-tracing, use of
+// |WrapPersistent| for callback interfaces is likely (if not always) misuse.
+// Thus, this code prohibits such a use case. The call sites should explicitly
+// use WrapPersistent(V8PersistentCallbackInterface<T>*).
+#if 0
+// TODO(yukishiino): Enable this deletion once CallbackInterfaceBase transitions
+// to wrapper-tracing.
+Persistent<{{v8_class}}> WrapPersistent({{v8_class}}*) = delete;
+#endif
+
 }  // namespace blink
 
 #endif  // {{v8_class}}_h

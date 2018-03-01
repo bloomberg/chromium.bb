@@ -182,6 +182,31 @@ void {{v8_class}}::InvokeAndReportException({{methods[0].argument_declarations |
 }
 {% endif %}
 
+{% for method in methods %}
+{{exported|replace('_EXPORT', '_EXTERN_TEMPLATE_EXPORT')|trim}}
+v8::Maybe<{{method.cpp_type}}> V8PersistentCallbackInterface<{{v8_class}}>::{{method.name}}({{method.argument_declarations | join(', ')}}) {
+  return Proxy()->{{method.name}}(
+      {{
+         (['callback_this_value'] +
+          (method.arguments|map(attribute='name')|list)
+         )|join(', ')
+      }});
+}
+
+{% endfor %}
+
+{% if methods|length == 1 and methods[0].idl_type == 'void' %}
+{{exported|replace('_EXPORT', '_EXTERN_TEMPLATE_EXPORT')|trim}}
+void V8PersistentCallbackInterface<{{v8_class}}>::InvokeAndReportException({{methods[0].argument_declarations | join(', ')}}) {
+  Proxy()->InvokeAndReportException(
+      {{
+         (['callback_this_value'] +
+          (methods[0].arguments|map(attribute='name')|list)
+         )|join(', ')
+      }});
+}
+{% endif %}
+
 }  // namespace blink
 
 {% endfilter %}{# format_blink_cpp_source_code #}
