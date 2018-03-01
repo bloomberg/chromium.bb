@@ -131,6 +131,11 @@ void ScrollbarAnimationController::PostDelayedAnimation(
 bool ScrollbarAnimationController::Animate(base::TimeTicks now) {
   bool animated = false;
 
+  for (ScrollbarLayerImplBase* scrollbar : Scrollbars()) {
+    if (!scrollbar->CanScrollOrientation())
+      scrollbar->SetOverlayScrollbarLayerOpacityAnimated(0);
+  }
+
   if (is_animating_) {
     DCHECK(animation_change_ != NONE);
     if (last_awaken_time_.is_null())

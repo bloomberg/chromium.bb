@@ -421,13 +421,13 @@ void VisualViewport::InitializeScrollbars() {
     if (!overlay_scrollbar_vertical_->Parent())
       inner_viewport_container_layer_->AddChild(
           overlay_scrollbar_vertical_.get());
+
+    SetupScrollbar(WebScrollbar::kHorizontal);
+    SetupScrollbar(WebScrollbar::kVertical);
   } else {
     overlay_scrollbar_horizontal_->RemoveFromParent();
     overlay_scrollbar_vertical_->RemoveFromParent();
   }
-
-  SetupScrollbar(WebScrollbar::kHorizontal);
-  SetupScrollbar(WebScrollbar::kVertical);
 
   // Ensure existing LocalFrameView scrollbars are removed if the visual
   // viewport scrollbars are now supplied, or created if the visual viewport no
@@ -471,6 +471,8 @@ void VisualViewport::SetupScrollbar(WebScrollbar::Orientation orientation) {
     scrollbar_graphics_layer->SetContentsToPlatformLayer(
         web_scrollbar_layer->Layer());
     scrollbar_graphics_layer->SetDrawsContent(false);
+    web_scrollbar_layer->SetScrollLayer(
+        inner_viewport_scroll_layer_->PlatformLayer());
   }
 
   int x_position = is_horizontal
@@ -493,14 +495,6 @@ void VisualViewport::SetupScrollbar(WebScrollbar::Orientation orientation) {
   scrollbar_graphics_layer->SetPosition(IntPoint(x_position, y_position));
   scrollbar_graphics_layer->SetSize(FloatSize(width, height));
   scrollbar_graphics_layer->SetContentsRect(IntRect(0, 0, width, height));
-}
-
-void VisualViewport::SetScrollLayerOnScrollbars(WebLayer* scroll_layer) const {
-  // TODO(bokan): This is currently done while registering viewport layers
-  // with the compositor but could it actually be done earlier, like in
-  // setupScrollbars? Then we wouldn't need this method.
-  web_overlay_scrollbar_horizontal_->SetScrollLayer(scroll_layer);
-  web_overlay_scrollbar_vertical_->SetScrollLayer(scroll_layer);
 }
 
 bool VisualViewport::VisualViewportSuppliesScrollbars() const {
