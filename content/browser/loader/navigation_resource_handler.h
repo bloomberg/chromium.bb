@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/time/time.h"
 #include "content/browser/loader/layered_resource_handler.h"
 #include "content/public/browser/stream_handle.h"
 
@@ -46,6 +47,8 @@ class NavigationResourceHandler : public LayeredResourceHandler {
   void OnResponseStarted(
       network::ResourceResponse* response,
       std::unique_ptr<ResourceController> controller) override;
+  void OnReadCompleted(int bytes_read,
+                       std::unique_ptr<ResourceController> controller) override;
   void OnResponseCompleted(
       const net::URLRequestStatus& status,
       std::unique_ptr<ResourceController> controller) override;
@@ -60,6 +63,11 @@ class NavigationResourceHandler : public LayeredResourceHandler {
   // checks to execute.
   scoped_refptr<network::ResourceResponse> response_;
   std::unique_ptr<net::RedirectInfo> redirect_info_;
+
+  // Used for UMA histograms.
+  bool has_completed_one_read_ = false;
+  base::TimeTicks time_response_started_;
+  base::TimeTicks time_proceed_with_response_;
 
   // NavigationResourceHandler has joint ownership of the
   // NavigationURLLoaderImplCore with the NavigationURLLoaderImpl.

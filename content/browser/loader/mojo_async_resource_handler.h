@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "content/browser/loader/resource_handler.h"
 #include "content/common/content_export.h"
 #include "content/public/common/resource_type.h"
@@ -149,9 +150,12 @@ class CONTENT_EXPORT MojoAsyncResourceHandler
   bool did_defer_on_writing_ = false;
   bool did_defer_on_redirect_ = false;
   bool did_defer_on_response_started_ = false;
-  base::TimeTicks response_started_ticks_;
   int64_t reported_total_received_bytes_ = 0;
   int64_t total_written_bytes_ = 0;
+
+  // Used for UMA histograms.
+  base::TimeTicks time_response_started_;
+  base::TimeTicks time_proceed_with_response_;
 
   // Pointer to parent's information about the read buffer. Only non-null while
   // OnWillRead is deferred.
