@@ -110,10 +110,12 @@ cr.define('settings_sync_account_control', function() {
       sync_test_util.simulateStoredAccounts([
         {
           fullName: 'fooName',
+          givenName: 'foo',
           email: 'foo@foo.com',
         },
         {
           fullName: 'barName',
+          givenName: 'bar',
           email: 'bar@bar.com',
         },
       ]);
@@ -142,8 +144,8 @@ cr.define('settings_sync_account_control', function() {
       // correct account when clicked.
       assertVisible(syncButton, true);
       assertVisible(testElement.$$('#avatar-row .secondary-button'), false);
-      assertTrue(syncButton.textContent.includes('fooName'));
-      assertFalse(syncButton.textContent.includes('barName'));
+      assertTrue(syncButton.textContent.includes('foo'));
+      assertFalse(syncButton.textContent.includes('bar'));
       syncButton.click();
       Polymer.dom.flush();
 
@@ -168,8 +170,8 @@ cr.define('settings_sync_account_control', function() {
             assertTrue(userInfo.textContent.includes('barName'));
             assertTrue(userInfo.textContent.includes('bar@bar.com'));
             assertVisible(syncButton, true);
-            assertTrue(syncButton.textContent.includes('barName'));
-            assertFalse(syncButton.textContent.includes('fooName'));
+            assertTrue(syncButton.textContent.includes('bar'));
+            assertFalse(syncButton.textContent.includes('foo'));
 
             browserProxy.resetResolver('startSyncingWithEmail');
             syncButton.click();
@@ -192,10 +194,12 @@ cr.define('settings_sync_account_control', function() {
       sync_test_util.simulateStoredAccounts([
         {
           fullName: 'fooName',
+          givenName: 'foo',
           email: 'foo@foo.com',
         },
         {
           fullName: 'barName',
+          givenName: 'bar',
           email: 'bar@bar.com',
         },
       ]);

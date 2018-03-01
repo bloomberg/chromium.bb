@@ -473,6 +473,7 @@ std::unique_ptr<base::ListValue> PeopleHandler::GetStoredAccountsList() {
     base::Value& acc = accounts_list->GetList().back();
     acc.SetKey("email", base::Value(account.email));
     acc.SetKey("fullName", base::Value(account.full_name));
+    acc.SetKey("givenName", base::Value(account.given_name));
     const gfx::Image& account_image =
         account_tracker->GetAccountImage(account.account_id);
     if (!account_image.IsEmpty()) {

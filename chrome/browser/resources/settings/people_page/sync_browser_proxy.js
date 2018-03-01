@@ -11,6 +11,7 @@ cr.exportPath('settings');
 
 /**
  * @typedef {{fullName: (string|undefined),
+ *            givenName: (string|undefined),
  *            email: string,
  *            avatarImage: (string|undefined)}}
  * @see chrome/browser/ui/webui/settings/people_handler.cc
