@@ -1833,9 +1833,10 @@ void av1_build_intra_predictors_for_interintra(const AV1_COMMON *cm,
   xd->mi[0]->mbmi.filter_intra_mode_info.use_filter_intra = 0;
   xd->mi[0]->mbmi.use_intrabc = 0;
 
-  av1_predict_intra_block(
-      cm, xd, pd->width, pd->height, get_max_rect_tx_size(plane_bsize), mode,
-      ctx->plane[plane], ctx->stride[plane], dst, dst_stride, 0, 0, plane);
+  av1_predict_intra_block(cm, xd, pd->width, pd->height,
+                          get_max_rect_tx_size(plane_bsize), mode, 0, 0,
+                          FILTER_INTRA_MODES, ctx->plane[plane],
+                          ctx->stride[plane], dst, dst_stride, 0, 0, plane);
 }
 
 void av1_combine_interintra(MACROBLOCKD *xd, BLOCK_SIZE bsize, int plane,
