@@ -2262,7 +2262,9 @@ typedef struct AV1_DEBLOCKING_PARAMETERS {
   const uint8_t *hev_thr;
 } AV1_DEBLOCKING_PARAMETERS;
 
-static void set_lpf_parameters(
+// Return TX_SIZE from av1_get_transform_size(), so it is plane and direction
+// awared
+static TX_SIZE set_lpf_parameters(
     AV1_DEBLOCKING_PARAMETERS *const params, const ptrdiff_t mode_step,
     const AV1_COMMON *const cm, const EDGE_DIR edge_dir, const uint32_t x,
     const uint32_t y, const int plane,
@@ -2274,7 +2276,8 @@ static void set_lpf_parameters(
   const uint32_t width = plane_ptr->dst.width;
   const uint32_t height = plane_ptr->dst.height;
   if ((width <= x) || (height <= y)) {
-    return;
+    // just return the smallest transform unit size
+    return TX_4X4;
   }
 
   const uint32_t scale_horz = plane_ptr->subsampling_x;
@@ -2287,15 +2290,15 @@ static void set_lpf_parameters(
   const int mi_col = scale_horz | ((x << scale_horz) >> MI_SIZE_LOG2);
   MODE_INFO **mi = cm->mi_grid_visible + mi_row * cm->mi_stride + mi_col;
   const MB_MODE_INFO *mbmi = &mi[0]->mbmi;
+  const TX_SIZE ts =
+      av1_get_transform_size(mi[0], edge_dir, mi_row, mi_col, plane, plane_ptr);
 
   {
-    const TX_SIZE ts = av1_get_transform_size(mi[0], edge_dir, mi_row, mi_col,
-                                              plane, plane_ptr);
     const uint32_t coord = (VERT_EDGE == edge_dir) ? (x) : (y);
     const int32_t tu_edge =
         (coord & av1_transform_masks[edge_dir][ts]) ? (0) : (1);
 
-    if (!tu_edge) return;
+    if (!tu_edge) return ts;
 
     // prepare outer edge parameters. deblock the edge if it's an edge of a TU
     {
@@ -2384,13 +2387,14 @@ static void set_lpf_parameters(
       }
     }
   }
+
+  return ts;
 }
 
 static void av1_filter_block_plane_vert(
     const AV1_COMMON *const cm, const int plane,
     const MACROBLOCKD_PLANE *const plane_ptr, const uint32_t mi_row,
     const uint32_t mi_col) {
-  const int col_step = MI_SIZE >> MI_SIZE_LOG2;
   const int row_step = MI_SIZE >> MI_SIZE_LOG2;
   const uint32_t scale_horz = plane_ptr->subsampling_x;
   const uint32_t scale_vert = plane_ptr->subsampling_y;
@@ -2400,18 +2404,20 @@ static void av1_filter_block_plane_vert(
   const int x_range = (MAX_MIB_SIZE >> scale_horz);
   for (int y = 0; y < y_range; y += row_step) {
     uint8_t *p = dst_ptr + y * MI_SIZE * dst_stride;
-    for (int x = 0; x < x_range; x += col_step) {
+    for (int x = 0; x < x_range;) {
       // inner loop always filter vertical edges in a MI block. If MI size
       // is 8x8, it will filter the vertical edge aligned with a 8x8 block.
       // If 4x4 trasnform is used, it will then filter the internal edge
       //  aligned with a 4x4 block
       const uint32_t curr_x = ((mi_col * MI_SIZE) >> scale_horz) + x * MI_SIZE;
       const uint32_t curr_y = ((mi_row * MI_SIZE) >> scale_vert) + y * MI_SIZE;
+      uint32_t advance_units;
+      TX_SIZE tx_size;
       AV1_DEBLOCKING_PARAMETERS params;
       memset(&params, 0, sizeof(params));
 
-      set_lpf_parameters(&params, ((ptrdiff_t)1 << scale_horz), cm, VERT_EDGE,
-                         curr_x, curr_y, plane, plane_ptr);
+      tx_size = set_lpf_parameters(&params, ((ptrdiff_t)1 << scale_horz), cm,
+                                   VERT_EDGE, curr_x, curr_y, plane, plane_ptr);
 
       switch (params.filter_length) {
         // apply 4-tap filtering
@@ -2458,7 +2464,9 @@ static void av1_filter_block_plane_vert(
         default: break;
       }
       // advance the destination pointer
-      p += MI_SIZE;
+      advance_units = tx_size_wide_unit[tx_size];
+      x += advance_units;
+      p += advance_units * MI_SIZE;
     }
   }
 }
@@ -2468,27 +2476,28 @@ static void av1_filter_block_plane_horz(
     const MACROBLOCKD_PLANE *const plane_ptr, const uint32_t mi_row,
     const uint32_t mi_col) {
   const int col_step = MI_SIZE >> MI_SIZE_LOG2;
-  const int row_step = MI_SIZE >> MI_SIZE_LOG2;
   const uint32_t scale_horz = plane_ptr->subsampling_x;
   const uint32_t scale_vert = plane_ptr->subsampling_y;
   uint8_t *const dst_ptr = plane_ptr->dst.buf;
   const int dst_stride = plane_ptr->dst.stride;
   const int y_range = (MAX_MIB_SIZE >> scale_vert);
   const int x_range = (MAX_MIB_SIZE >> scale_horz);
-  for (int y = 0; y < y_range; y += row_step) {
-    uint8_t *p = dst_ptr + y * MI_SIZE * dst_stride;
-    for (int x = 0; x < x_range; x += col_step) {
+  for (int x = 0; x < x_range; x += col_step) {
+    uint8_t *p = dst_ptr + x * MI_SIZE;
+    for (int y = 0; y < y_range;) {
       // inner loop always filter vertical edges in a MI block. If MI size
       // is 8x8, it will first filter the vertical edge aligned with a 8x8
       // block. If 4x4 trasnform is used, it will then filter the internal
       // edge aligned with a 4x4 block
       const uint32_t curr_x = ((mi_col * MI_SIZE) >> scale_horz) + x * MI_SIZE;
       const uint32_t curr_y = ((mi_row * MI_SIZE) >> scale_vert) + y * MI_SIZE;
+      uint32_t advance_units;
+      TX_SIZE tx_size;
       AV1_DEBLOCKING_PARAMETERS params;
       memset(&params, 0, sizeof(params));
 
-      set_lpf_parameters(&params, (cm->mi_stride << scale_vert), cm, HORZ_EDGE,
-                         curr_x, curr_y, plane, plane_ptr);
+      tx_size = set_lpf_parameters(&params, (cm->mi_stride << scale_vert), cm,
+                                   HORZ_EDGE, curr_x, curr_y, plane, plane_ptr);
 
       switch (params.filter_length) {
         // apply 4-tap filtering
@@ -2535,8 +2544,11 @@ static void av1_filter_block_plane_horz(
         // no filtering
         default: break;
       }
+
       // advance the destination pointer
-      p += MI_SIZE;
+      advance_units = tx_size_high_unit[tx_size];
+      y += advance_units;
+      p += advance_units * dst_stride * MI_SIZE;
     }
   }
 }
