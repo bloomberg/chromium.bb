@@ -83,6 +83,9 @@ class BLINK_EXPORT WebUserMediaRequest {
   // enabled. Will be removed at end of trial. See: http://crbug.com/789152.
   bool ShouldDisableHardwareNoiseSuppression() const;
 
+  // TODO(ossu): Explain this and link to bug.
+  bool ShouldEnableExperimentalHardwareEchoCancellation() const;
+
   WebSecurityOrigin GetSecurityOrigin() const;
   WebDocument OwnerDocument() const;
 

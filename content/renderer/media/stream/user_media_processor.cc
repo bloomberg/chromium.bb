@@ -457,7 +457,8 @@ void UserMediaProcessor::SelectAudioSettings(
   DCHECK(current_request_info_->stream_controls()->audio.requested);
   auto settings = SelectSettingsAudioCapture(
       capabilities, web_request.AudioConstraints(),
-      web_request.ShouldDisableHardwareNoiseSuppression());
+      web_request.ShouldDisableHardwareNoiseSuppression(),
+      web_request.ShouldEnableExperimentalHardwareEchoCancellation());
   if (!settings.HasValue()) {
     blink::WebString failed_constraint_name =
         blink::WebString::FromASCII(settings.failed_constraint_name());

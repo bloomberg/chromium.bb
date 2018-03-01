@@ -61,12 +61,15 @@ class AudioManagerMac;
 class MEDIA_EXPORT AUAudioInputStream
     : public AgcAudioStream<AudioInputStream> {
  public:
+  enum class VoiceProcessingMode { DISABLED = 0, ENABLED = 1 };
+
   // The ctor takes all the usual parameters, plus |manager| which is the
   // the audio manager who is creating this object.
   AUAudioInputStream(AudioManagerMac* manager,
                      const AudioParameters& input_params,
                      AudioDeviceID audio_device_id,
-                     const AudioManager::LogCallback& log_callback);
+                     const AudioManager::LogCallback& log_callback,
+                     VoiceProcessingMode voice_processing_mode);
   // The dtor is typically called by the AudioManager only and it is usually
   // triggered by calling AudioInputStream::Close().
   ~AUAudioInputStream() override;
@@ -93,8 +96,12 @@ class MEDIA_EXPORT AUAudioInputStream
   size_t requested_buffer_size() const {
     return input_params_.frames_per_buffer();
   }
+  AudioUnit audio_unit() const { return audio_unit_; }
 
  private:
+  bool OpenAUHAL();
+  bool OpenVoiceProcessingAU();
+
   // Callback functions called on a real-time priority I/O thread from the audio
   // unit. These methods are called when recorded audio is available.
   static OSStatus DataIsAvailable(void* context,
@@ -237,6 +244,11 @@ class MEDIA_EXPORT AUAudioInputStream
   // Set to true when we've successfully called SuppressNoiseReduction to
   // disable ambient noise reduction.
   bool noise_reduction_suppressed_;
+
+  // Controls whether or not we use the kAudioUnitSubType_VoiceProcessingIO
+  // voice processing component that provides echo cancellation, ducking
+  // and gain control on Sierra and later.
+  const bool use_voice_processing_;
 
   // Stores the timestamp of the previous audio buffer provided by the OS.
   // We use this in combination with |last_number_of_frames_| to detect when

@@ -177,10 +177,18 @@ bool SelectEnableSwEchoCancellation(
     base::Optional<bool> echo_cancellation,
     base::Optional<bool> goog_echo_cancellation,
     const media::AudioParameters& audio_parameters,
-    bool default_audio_processing_value) {
+    bool default_audio_processing_value,
+    bool should_enable_experimental_hw_echo_cancellation) {
   // If there is hardware echo cancellation, return false.
+  const bool has_hw_echo_canceller =
+      (audio_parameters.effects() & media::AudioParameters::ECHO_CANCELLER);
+  const bool has_experimental_hw_echo_canceller =
+      (audio_parameters.effects() &
+       media::AudioParameters::EXPERIMENTAL_ECHO_CANCELLER);
   if (audio_parameters.IsValid() &&
-      (audio_parameters.effects() & media::AudioParameters::ECHO_CANCELLER))
+      (has_hw_echo_canceller ||
+       (has_experimental_hw_echo_canceller &&
+        should_enable_experimental_hw_echo_cancellation)))
     return false;
   DCHECK(echo_cancellation && goog_echo_cancellation
              ? *echo_cancellation == *goog_echo_cancellation
@@ -356,7 +364,8 @@ class SingleDeviceCandidateSet {
       const blink::WebMediaTrackConstraintSet& basic_constraint_set,
       const std::string& default_device_id,
       const std::string& media_stream_source,
-      bool should_disable_hardware_noise_suppression) const {
+      bool should_disable_hardware_noise_suppression,
+      bool should_enable_experimental_hw_echo_cancellation) const {
     std::string device_id = SelectString(
         device_id_set_, basic_constraint_set.device_id, default_device_id);
     bool hotword_enabled =
@@ -375,7 +384,8 @@ class SingleDeviceCandidateSet {
     AudioProcessingProperties audio_processing_properties =
         SelectAudioProcessingProperties(
             basic_constraint_set, is_device_capture,
-            should_disable_hardware_noise_suppression);
+            should_disable_hardware_noise_suppression,
+            should_enable_experimental_hw_echo_cancellation);
 
     return AudioCaptureSettings(
         std::move(device_id), parameters_, hotword_enabled, disable_local_echo,
@@ -389,7 +399,8 @@ class SingleDeviceCandidateSet {
   AudioProcessingProperties SelectAudioProcessingProperties(
       const blink::WebMediaTrackConstraintSet& basic_constraint_set,
       bool is_device_capture,
-      bool should_disable_hardware_noise_suppression) const {
+      bool should_disable_hardware_noise_suppression,
+      bool should_enable_experimental_hw_echo_cancellation) const {
     DCHECK(!IsEmpty());
     base::Optional<bool> echo_cancellation = SelectOptionalBool(
         bool_sets_[ECHO_CANCELLATION], basic_constraint_set.echo_cancellation);
@@ -404,12 +415,16 @@ class SingleDeviceCandidateSet {
                            basic_constraint_set.goog_echo_cancellation);
 
     AudioProcessingProperties properties;
-    properties.enable_sw_echo_cancellation = SelectEnableSwEchoCancellation(
-        echo_cancellation, goog_echo_cancellation, parameters_,
-        default_audio_processing_value);
     properties.disable_hw_echo_cancellation =
         (echo_cancellation && !*echo_cancellation) ||
         (goog_echo_cancellation && !*goog_echo_cancellation);
+    properties.enable_experimental_hw_echo_cancellation =
+        should_enable_experimental_hw_echo_cancellation &&
+        !properties.disable_hw_echo_cancellation;
+    properties.enable_sw_echo_cancellation = SelectEnableSwEchoCancellation(
+        echo_cancellation, goog_echo_cancellation, parameters_,
+        default_audio_processing_value,
+        properties.enable_experimental_hw_echo_cancellation);
     properties.disable_hw_noise_suppression =
         should_disable_hardware_noise_suppression &&
         !properties.disable_hw_echo_cancellation;
@@ -526,13 +541,15 @@ class AudioCaptureCandidates {
       const blink::WebMediaTrackConstraintSet& basic_constraint_set,
       const std::string& default_device_id,
       const std::string& media_stream_source,
-      bool should_disable_hardware_noise_suppression) const {
+      bool should_disable_hardware_noise_suppression,
+      bool should_enable_experimental_hw_echo_cancellation) const {
     const SingleDeviceCandidateSet* device_candidate_set =
         SelectBestDevice(basic_constraint_set, default_device_id);
     DCHECK(!device_candidate_set->IsEmpty());
     return device_candidate_set->SelectBestSettings(
         basic_constraint_set, default_device_id, media_stream_source,
-        should_disable_hardware_noise_suppression);
+        should_disable_hardware_noise_suppression,
+        should_enable_experimental_hw_echo_cancellation);
   }
 
  private:
@@ -593,7 +610,8 @@ const media::AudioParameters& AudioDeviceCaptureCapability::Parameters() const {
 AudioCaptureSettings SelectSettingsAudioCapture(
     const AudioDeviceCaptureCapabilities& capabilities,
     const blink::WebMediaConstraints& constraints,
-    bool should_disable_hardware_noise_suppression) {
+    bool should_disable_hardware_noise_suppression,
+    bool should_enable_experimental_hw_echo_cancellation) {
   std::string media_stream_source = GetMediaStreamSource(constraints);
   bool is_device_capture = media_stream_source.empty();
   if (capabilities.empty())
@@ -617,7 +635,8 @@ AudioCaptureSettings SelectSettingsAudioCapture(
 
   return candidates.SelectBestSettings(
       constraints.Basic(), default_device_id, media_stream_source,
-      should_disable_hardware_noise_suppression);
+      should_disable_hardware_noise_suppression,
+      should_enable_experimental_hw_echo_cancellation);
 }
 
 AudioCaptureSettings CONTENT_EXPORT
@@ -657,8 +676,9 @@ SelectSettingsAudioCapture(MediaStreamAudioSource* source,
       !(source->device().input.effects() &
         media::AudioParameters::NOISE_SUPPRESSION);
 
-  return SelectSettingsAudioCapture(capabilities, constraints,
-                                    should_disable_hardware_noise_suppression);
+  return SelectSettingsAudioCapture(
+      capabilities, constraints, should_disable_hardware_noise_suppression,
+      /* should_enable_experimental_hw_echo_cancellation */ false);
 }
 
 }  // namespace content

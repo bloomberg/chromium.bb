@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/mac/mac_logging.h"
+#include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/macros.h"
 #include "base/memory/free_deleter.h"
@@ -40,6 +41,10 @@ static const int kMaxOutputStreams = 50;
 
 // Default sample-rate on most Apple hardware.
 static const int kFallbackSampleRate = 44100;
+
+static bool GetDeviceChannels(AudioUnit audio_unit,
+                              AUElement element,
+                              int* channels);
 
 // Helper method to construct AudioObjectPropertyAddress structure given
 // property selector and scope. The property element is always set to
@@ -165,6 +170,17 @@ static void GetAudioDeviceInfo(bool is_input,
                                             NULL,
                                             &size);
     if (result || !size)
+      continue;
+
+    // Ignore aggregate devices that get created when we use
+    // kAudioUnitSubType_VoiceProcessingIO.
+    property_address.mSelector = kAudioDevicePropertyTransportType;
+    property_address.mScope = kAudioObjectPropertyScopeGlobal;
+    UInt32 transport_type = 0;
+    size = sizeof(transport_type);
+    result = AudioObjectGetPropertyData(device_ids[i], &property_address, 0,
+                                        NULL, &size, &transport_type);
+    if (result == noErr && transport_type == kAudioDeviceTransportTypeAggregate)
       continue;
 
     // Get device UID.
@@ -408,6 +424,12 @@ static bool GetDeviceChannels(AudioDeviceID device,
   if (!au.is_valid())
     return false;
 
+  return GetDeviceChannels(au.audio_unit(), element, channels);
+}
+
+static bool GetDeviceChannels(AudioUnit audio_unit,
+                              AUElement element,
+                              int* channels) {
   // Attempt to retrieve the channel layout from the AudioUnit.
   //
   // Note: We don't use kAudioDevicePropertyPreferredChannelLayout on the device
@@ -415,21 +437,20 @@ static bool GetDeviceChannels(AudioDeviceID device,
   UInt32 size;
   Boolean writable;
   OSStatus result = AudioUnitGetPropertyInfo(
-      au.audio_unit(), kAudioUnitProperty_AudioChannelLayout,
-      kAudioUnitScope_Output, element, &size, &writable);
+      audio_unit, kAudioUnitProperty_AudioChannelLayout, kAudioUnitScope_Output,
+      element, &size, &writable);
   if (result != noErr) {
     OSSTATUS_DLOG(ERROR, result)
         << "Failed to get property info for AudioUnit channel layout.";
-    return false;
   }
 
   std::unique_ptr<uint8_t[]> layout_storage(new uint8_t[size]);
   AudioChannelLayout* layout =
       reinterpret_cast<AudioChannelLayout*>(layout_storage.get());
 
-  result = AudioUnitGetProperty(au.audio_unit(),
-                                kAudioUnitProperty_AudioChannelLayout,
-                                kAudioUnitScope_Output, element, layout, &size);
+  result =
+      AudioUnitGetProperty(audio_unit, kAudioUnitProperty_AudioChannelLayout,
+                           kAudioUnitScope_Output, element, layout, &size);
   if (result != noErr) {
     OSSTATUS_LOG(ERROR, result) << "Failed to get AudioUnit channel layout.";
     return false;
@@ -699,6 +720,13 @@ AudioParameters AudioManagerMac::GetInputStreamParameters(
     params.set_effects(AudioParameters::NOISE_SUPPRESSION);
   }
 
+  if (base::mac::IsAtLeastOS10_12() &&
+      (params.channel_layout() == CHANNEL_LAYOUT_MONO ||
+       params.channel_layout() == CHANNEL_LAYOUT_STEREO)) {
+    params.set_effects(params.effects() |
+                       AudioParameters::EXPERIMENTAL_ECHO_CANCELLER);
+  }
+
   return params;
 }
 
@@ -729,7 +757,7 @@ std::string AudioManagerMac::GetAssociatedOutputDeviceID(
 
   std::vector<std::string> associated_devices;
   for (int i = 0; i < device_count; ++i) {
-    // Get the number of  output channels of the device.
+    // Get the number of output channels of the device.
     pa.mSelector = kAudioDevicePropertyStreams;
     size = 0;
     result = AudioObjectGetPropertyDataSize(devices.get()[i],
@@ -894,13 +922,19 @@ AudioInputStream* AudioManagerMac::MakeLowLatencyInputStream(
   // Gets the AudioDeviceID that refers to the AudioInputDevice with the device
   // unique id. This AudioDeviceID is used to set the device for Audio Unit.
   AudioDeviceID audio_device_id = GetAudioDeviceIdByUId(true, device_id);
-  AUAudioInputStream* stream = NULL;
-  if (audio_device_id != kAudioObjectUnknown) {
-    stream =
-        new AUAudioInputStream(this, params, audio_device_id, log_callback);
-    low_latency_input_streams_.push_back(stream);
+  if (audio_device_id == kAudioObjectUnknown) {
+    return nullptr;
   }
 
+  using VoiceProcessingMode = AUAudioInputStream::VoiceProcessingMode;
+  VoiceProcessingMode voice_processing_mode =
+      (params.effects() & AudioParameters::ECHO_CANCELLER)
+          ? VoiceProcessingMode::ENABLED
+          : VoiceProcessingMode::DISABLED;
+
+  auto* stream = new AUAudioInputStream(this, params, audio_device_id,
+                                        log_callback, voice_processing_mode);
+  low_latency_input_streams_.push_back(stream);
   return stream;
 }
 
