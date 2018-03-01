@@ -20,6 +20,7 @@ namespace scheduler {
 // DISCLAIMER
 // Using these constants in TRACE_EVENTs is discouraged nor should you pass any
 // non-literal string as a category, unless familiar with tracing internals.
+PLATFORM_EXPORT extern const char kTracingCategoryNameTopLevel[];
 PLATFORM_EXPORT extern const char kTracingCategoryNameDefault[];
 PLATFORM_EXPORT extern const char kTracingCategoryNameInfo[];
 PLATFORM_EXPORT extern const char kTracingCategoryNameDebug[];

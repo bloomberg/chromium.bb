@@ -75,9 +75,9 @@ base::TimeDelta GetWakeUpDuration() {
 
 const char* BackgroundStateToString(bool is_backgrounded) {
   if (is_backgrounded) {
-    return "backgrounded";
+    return "renderer_backgrounded";
   } else {
-    return "foregrounded";
+    return "renderer_visible";
   }
 }
 
@@ -93,7 +93,7 @@ const char* AudioPlayingStateToString(bool is_audio_playing) {
   if (is_audio_playing) {
     return "playing";
   } else {
-    return "muted";
+    return "silent";
   }
 }
 
@@ -398,12 +398,12 @@ RendererSchedulerImpl::MainThreadOnly::MainThreadOnly(
                       &renderer_scheduler_impl->tracing_controller_,
                       HiddenStateToString),
       renderer_backgrounded(kLaunchingProcessIsBackgrounded,
-                            "RendererScheduler.Backgrounded",
+                            "RendererVisibility",
                             renderer_scheduler_impl,
                             &renderer_scheduler_impl->tracing_controller_,
                             BackgroundStateToString),
       keep_active_fetch_or_worker(false,
-                                  "RendererScheduler.RendererKeepAactive",
+                                  "RendererScheduler.KeepRendererActive",
                                   renderer_scheduler_impl,
                                   &renderer_scheduler_impl->tracing_controller_,
                                   YesNoStateToString),
@@ -486,7 +486,7 @@ RendererSchedulerImpl::MainThreadOnly::MainThreadOnly(
                        &renderer_scheduler_impl->tracing_controller_,
                        YesNoStateToString),
       is_audio_playing(false,
-                       "RendererScheduler.AudioPlaying",
+                       "RendererAudioState",
                        renderer_scheduler_impl,
                        &renderer_scheduler_impl->tracing_controller_,
                        AudioPlayingStateToString),
@@ -511,7 +511,7 @@ RendererSchedulerImpl::MainThreadOnly::MainThreadOnly(
       wake_up_budget_pool(nullptr),
       metrics_helper(renderer_scheduler_impl, now, renderer_backgrounded),
       process_type(RendererProcessType::kRenderer,
-                   "RendererScheduler.ProcessType",
+                   "RendererProcessType",
                    renderer_scheduler_impl,
                    &renderer_scheduler_impl->tracing_controller_,
                    RendererProcessTypeToString),
@@ -946,8 +946,6 @@ void RendererSchedulerImpl::SetRendererBackgrounded(bool backgrounded) {
 }
 
 void RendererSchedulerImpl::SetSchedulerKeepActive(bool keep_active) {
-  if (main_thread_only().keep_active_fetch_or_worker == keep_active)
-    return;
   main_thread_only().keep_active_fetch_or_worker = keep_active;
   UpdatePolicy();
 }
