@@ -74,6 +74,12 @@
              completion:(ProceduralBlock)completion {
   DCHECK(tabSwitcher);
 
+  // Before any child view controller would be added, remove the launch screen.
+  if (self.launchScreen) {
+    [self.launchScreen removeFromSuperview];
+    self.launchScreen = nil;
+  }
+
   // Don't remove and re-add the tabSwitcher if it hasn't changed.
   if (self.tabSwitcher != tabSwitcher) {
     // Remove any existing tab switchers first.
