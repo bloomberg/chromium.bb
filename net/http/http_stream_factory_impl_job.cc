@@ -35,6 +35,7 @@
 #include "net/http/http_server_properties.h"
 #include "net/http/http_stream_factory.h"
 #include "net/http/http_stream_factory_impl_request.h"
+#include "net/http/proxy_fallback.h"
 #include "net/log/net_log_capture_mode.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source.h"
@@ -1364,43 +1365,9 @@ void HttpStreamFactoryImpl::Job::InitSSLConfig(SSLConfig* ssl_config,
 }
 
 int HttpStreamFactoryImpl::Job::ReconsiderProxyAfterError(int error) {
-  switch (error) {
-    case ERR_PROXY_CONNECTION_FAILED:
-    case ERR_NAME_NOT_RESOLVED:
-    case ERR_INTERNET_DISCONNECTED:
-    case ERR_ADDRESS_UNREACHABLE:
-    case ERR_CONNECTION_CLOSED:
-    case ERR_CONNECTION_TIMED_OUT:
-    case ERR_CONNECTION_RESET:
-    case ERR_CONNECTION_REFUSED:
-    case ERR_CONNECTION_ABORTED:
-    case ERR_TIMED_OUT:
-    case ERR_TUNNEL_CONNECTION_FAILED:
-    case ERR_SOCKS_CONNECTION_FAILED:
-    // ERR_PROXY_CERTIFICATE_INVALID can happen in the case of trying to talk to
-    // a proxy using SSL, and ending up talking to a captive portal that
-    // supports SSL instead.
-    case ERR_PROXY_CERTIFICATE_INVALID:
-    case ERR_QUIC_PROTOCOL_ERROR:
-    case ERR_QUIC_HANDSHAKE_FAILED:
-    case ERR_MSG_TOO_BIG:
-    // ERR_SSL_PROTOCOL_ERROR can happen when trying to talk SSL to a non-SSL
-    // server (like a captive portal).
-    case ERR_SSL_PROTOCOL_ERROR:
-      break;
-    case ERR_SOCKS_CONNECTION_HOST_UNREACHABLE:
-      // Remap the SOCKS-specific "host unreachable" error to a more
-      // generic error code (this way consumers like the link doctor
-      // know to substitute their error page).
-      //
-      // Note that if the host resolving was done by the SOCKS5 proxy, we can't
-      // differentiate between a proxy-side "host not found" versus a proxy-side
-      // "address unreachable" error, and will report both of these failures as
-      // ERR_ADDRESS_UNREACHABLE.
-      return ERR_ADDRESS_UNREACHABLE;
-    default:
-      return error;
-  }
+  // Check if the error was a proxy failure.
+  if (!CanFalloverToNextProxy(&error))
+    return error;
 
   // Alternative proxy server job should not use fallback proxies, and instead
   // return. This would resume the main job (if possible) which may try the

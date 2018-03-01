@@ -590,8 +590,8 @@ const int kProxyTestMockErrors[] = {
     net::ERR_CONNECTION_RESET,        net::ERR_CONNECTION_REFUSED,
     net::ERR_CONNECTION_ABORTED,      net::ERR_TUNNEL_CONNECTION_FAILED,
     net::ERR_SOCKS_CONNECTION_FAILED, net::ERR_TIMED_OUT,
-    // Errors that should be retried but are currently not.
-    // net::ERR_CONNECTION_TIMED_OUT,
+    // TODO(crbug.com/817052): Errors that should be retried but aren't:
+    // net::ERR_CONNECTION_TIMED_OUT
     // net::ERR_PROXY_CERTIFICATE_INVALID,
     // net::ERR_QUIC_PROTOCOL_ERROR,
     // net::ERR_QUIC_HANDSHAKE_FAILED,

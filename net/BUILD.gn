@@ -890,6 +890,8 @@ component("net") {
       "http/proxy_client_socket.h",
       "http/proxy_connect_redirect_http_stream.cc",
       "http/proxy_connect_redirect_http_stream.h",
+      "http/proxy_fallback.cc",
+      "http/proxy_fallback.h",
       "http/transport_security_persister.cc",
       "http/transport_security_persister.h",
       "http/url_security_manager.cc",

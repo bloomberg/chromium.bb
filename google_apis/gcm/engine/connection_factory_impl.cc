@@ -18,6 +18,7 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_request_headers.h"
+#include "net/http/proxy_fallback.h"
 #include "net/log/net_log_source_type.h"
 #include "net/proxy_resolution/proxy_info.h"
 #include "net/socket/client_socket_handle.h"
@@ -534,47 +535,10 @@ int ConnectionFactoryImpl::ReconsiderProxyAfterError(int error) {
   DCHECK(!proxy_resolve_request_);
   DCHECK_NE(error, net::OK);
   DCHECK_NE(error, net::ERR_IO_PENDING);
-  // A failure to resolve the hostname or any error related to establishing a
-  // TCP connection could be grounds for trying a new proxy configuration.
-  //
-  // Why do this when a hostname cannot be resolved?  Some URLs only make sense
-  // to proxy servers.  The hostname in those URLs might fail to resolve if we
-  // are still using a non-proxy config.  We need to check if a proxy config
-  // now exists that corresponds to a proxy server that could load the URL.
-  //
-  switch (error) {
-    case net::ERR_PROXY_CONNECTION_FAILED:
-    case net::ERR_NAME_NOT_RESOLVED:
-    case net::ERR_INTERNET_DISCONNECTED:
-    case net::ERR_ADDRESS_UNREACHABLE:
-    case net::ERR_CONNECTION_CLOSED:
-    case net::ERR_CONNECTION_TIMED_OUT:
-    case net::ERR_CONNECTION_RESET:
-    case net::ERR_CONNECTION_REFUSED:
-    case net::ERR_CONNECTION_ABORTED:
-    case net::ERR_TIMED_OUT:
-    case net::ERR_TUNNEL_CONNECTION_FAILED:
-    case net::ERR_SOCKS_CONNECTION_FAILED:
-    // This can happen in the case of trying to talk to a proxy using SSL, and
-    // ending up talking to a captive portal that supports SSL instead.
-    case net::ERR_PROXY_CERTIFICATE_INVALID:
-    // This can happen when trying to talk SSL to a non-SSL server (Like a
-    // captive portal).
-    case net::ERR_SSL_PROTOCOL_ERROR:
-      break;
-    case net::ERR_SOCKS_CONNECTION_HOST_UNREACHABLE:
-      // Remap the SOCKS-specific "host unreachable" error to a more
-      // generic error code (this way consumers like the link doctor
-      // know to substitute their error page).
-      //
-      // Note that if the host resolving was done by the SOCKS5 proxy, we can't
-      // differentiate between a proxy-side "host not found" versus a proxy-side
-      // "address unreachable" error, and will report both of these failures as
-      // ERR_ADDRESS_UNREACHABLE.
-      return net::ERR_ADDRESS_UNREACHABLE;
-    default:
-      return error;
-  }
+
+  // Check if the error was a proxy failure.
+  if (!net::CanFalloverToNextProxy(&error))
+    return error;
 
   net::SSLConfig ssl_config;
   gcm_network_session_->ssl_config_service()->GetSSLConfig(&ssl_config);
