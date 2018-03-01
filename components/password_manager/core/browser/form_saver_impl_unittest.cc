@@ -91,11 +91,18 @@ TEST_F(FormSaverImplTest, PermanentlyBlacklist) {
 
   observed.blacklisted_by_user = false;
   observed.preferred = true;
+  observed.username_value = ASCIIToUTF16("user1");
+  observed.password_value = ASCIIToUTF16("12345");
+  observed.other_possible_usernames = {
+      {ASCIIToUTF16("user2"), ASCIIToUTF16("field")}};
 
   EXPECT_CALL(*mock_store_, AddLogin(_)).WillOnce(SaveArg<0>(&saved));
   form_saver_.PermanentlyBlacklist(&observed);
   EXPECT_TRUE(saved.blacklisted_by_user);
   EXPECT_FALSE(saved.preferred);
+  EXPECT_EQ(base::string16(), saved.username_value);
+  EXPECT_EQ(base::string16(), saved.password_value);
+  EXPECT_TRUE(saved.other_possible_usernames.empty());
 }
 
 // Check that saving the pending form as new adds the credential to the store
