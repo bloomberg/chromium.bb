@@ -111,6 +111,9 @@ SyncQueryCollection::SyncQueryCollection(gpu::gles2::GLES2Interface* gl)
     : gl_(gl) {}
 
 SyncQueryCollection::~SyncQueryCollection() = default;
+SyncQueryCollection::SyncQueryCollection(SyncQueryCollection&&) = default;
+SyncQueryCollection& SyncQueryCollection::operator=(SyncQueryCollection&&) =
+    default;
 
 scoped_refptr<ResourceFence> SyncQueryCollection::StartNewFrame() {
   // Block until oldest sync query has passed if the number of pending queries

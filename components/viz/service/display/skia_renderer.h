@@ -129,8 +129,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   SkCanvas* current_canvas_ = nullptr;
   SkPaint current_paint_;
 
-  bool use_sync_query_ = false;
-  SyncQueryCollection sync_queries_;
+  base::Optional<SyncQueryCollection> sync_queries_;
   bool use_swap_with_bounds_ = false;
 
   gfx::Rect swap_buffer_rect_;

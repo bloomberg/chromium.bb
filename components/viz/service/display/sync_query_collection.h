@@ -23,6 +23,8 @@ class ResourceFence;
 class SyncQueryCollection {
  public:
   explicit SyncQueryCollection(gpu::gles2::GLES2Interface* gl);
+  SyncQueryCollection(SyncQueryCollection&&);
+  SyncQueryCollection& operator=(SyncQueryCollection&&);
   ~SyncQueryCollection();
   scoped_refptr<ResourceFence> StartNewFrame();
   void EndCurrentFrame();
