@@ -23,6 +23,8 @@
 - (void)sendCtrAltDel;
 // Sends the key Print Screen to the host.
 - (void)sendPrintScreen;
+// Sends feedback to the developers.
+- (void)sendFeedback;
 
 @end
 

@@ -48,6 +48,18 @@ static std::string GetCurrentUserId() {
       RemotingService.instance.authentication.user.userId);
 }
 
+// Block doesn't work with rvalue passing. This function helps exposing the data
+// to the block.
+static void ResolveFeedbackDataCallback(
+    void (^callback)(const remoting::FeedbackData&),
+    std::unique_ptr<remoting::FeedbackData> data) {
+  DCHECK(remoting::ChromotingClientRuntime::GetInstance()
+             ->ui_task_runner()
+             ->BelongsToCurrentThread());
+  remoting::FeedbackData* raw_data = data.get();
+  callback(*raw_data);
+}
+
 @interface RemotingClient () {
   remoting::ChromotingClientRuntime* _runtime;
   std::unique_ptr<remoting::RemotingClientSessonDelegate> _sessonDelegate;
@@ -352,6 +364,18 @@ static std::string GetCurrentUserId() {
 - (void)setHostResolution:(CGSize)dipsResolution scale:(int)scale {
   _session->SendClientResolution(dipsResolution.width, dipsResolution.height,
                                  scale);
+}
+
+- (void)createFeedbackDataWithCallback:
+    (void (^)(const remoting::FeedbackData&))callback {
+  if (!_session) {
+    // Session has never been connected. Returns an empty data.
+    callback(remoting::FeedbackData());
+    return;
+  }
+
+  _session->GetFeedbackData(
+      base::BindOnce(&ResolveFeedbackDataCallback, callback));
 }
 
 #pragma mark - GlDisplayHandlerDelegate

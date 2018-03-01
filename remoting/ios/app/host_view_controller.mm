@@ -11,6 +11,7 @@
 #include <memory>
 
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
+#import "remoting/ios/app/help_and_feedback.h"
 #import "remoting/ios/app/remoting_theme.h"
 #import "remoting/ios/app/settings/remoting_settings_view_controller.h"
 #import "remoting/ios/app/view_utils.h"
@@ -33,6 +34,8 @@
 static const CGFloat kFabInset = 15.f;
 static const CGFloat kKeyboardAnimationTime = 0.3;
 static const CGFloat kMoveFABAnimationTime = 0.3;
+
+static NSString* const kFeedbackContext = @"InSessionFeedbackContext";
 
 @interface HostViewController ()<ClientKeyboardDelegate,
                                  ClientGesturesDelegate,
@@ -368,6 +371,14 @@ static const CGFloat kMoveFABAnimationTime = 0.3;
 
 - (void)moveFAB {
   [self setFabIsRight:!_fabIsRight shouldLayout:YES];
+}
+
+- (void)sendFeedback {
+  [_client createFeedbackDataWithCallback:^(
+               const remoting::FeedbackData& data) {
+    [HelpAndFeedback.instance presentFeedbackFlowWithContext:kFeedbackContext
+                                                feedbackData:data];
+  }];
 }
 
 #pragma mark - Private

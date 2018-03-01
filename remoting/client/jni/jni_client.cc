@@ -281,11 +281,9 @@ void JniClient::OnThirdPartyTokenFetched(
     const base::android::JavaParamRef<jobject>& caller,
     const JavaParamRef<jstring>& token,
     const JavaParamRef<jstring>& shared_secret) {
-  runtime_->network_task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&ChromotingSession::HandleOnThirdPartyTokenFetched,
-                 session_->GetWeakPtr(), ConvertJavaStringToUTF8(env, token),
-                 ConvertJavaStringToUTF8(env, shared_secret)));
+  session_->HandleOnThirdPartyTokenFetched(
+      ConvertJavaStringToUTF8(env, token),
+      ConvertJavaStringToUTF8(env, shared_secret));
 }
 
 void JniClient::SendExtensionMessage(
