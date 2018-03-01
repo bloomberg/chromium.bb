@@ -186,8 +186,17 @@ TEST_F(StaleEntryFinalizerTaskTest, HandlesStalesInAllStatesCorrectly) {
   // We want a longer time than the pipeline normally takes, but shorter
   // than the point at which we report items as too old.
   const int many_hours = -6 * 24;
-  for (PrefetchItemState state : kOrderedPrefetchItemStates)
-    CreateAndInsertItem(state, many_hours);
+  CreateAndInsertItem(PrefetchItemState::NEW_REQUEST, many_hours);
+  CreateAndInsertItem(PrefetchItemState::SENT_GENERATE_PAGE_BUNDLE, many_hours);
+  CreateAndInsertItem(PrefetchItemState::AWAITING_GCM, many_hours);
+  CreateAndInsertItem(PrefetchItemState::RECEIVED_GCM, many_hours);
+  CreateAndInsertItem(PrefetchItemState::SENT_GET_OPERATION, many_hours);
+  CreateAndInsertItem(PrefetchItemState::RECEIVED_BUNDLE, many_hours);
+  CreateAndInsertItem(PrefetchItemState::DOWNLOADING, many_hours);
+  CreateAndInsertItem(PrefetchItemState::DOWNLOADED, many_hours);
+  CreateAndInsertItem(PrefetchItemState::IMPORTING, many_hours);
+  CreateAndInsertItem(PrefetchItemState::FINISHED, many_hours);
+  CreateAndInsertItem(PrefetchItemState::ZOMBIE, many_hours);
   EXPECT_EQ(11, store_util()->CountPrefetchItems());
 
   // Execute the expiration task.
@@ -209,8 +218,6 @@ TEST_F(StaleEntryFinalizerTaskTest, HandlesStalesInAllStatesCorrectly) {
   EXPECT_EQ(1U, Filter(post_items, PrefetchItemState::ZOMBIE).size());
 }
 
-// Items in states AWAITING_GCM and ZOMBIE should cause the task to finish with
-// a NO_MORE_WORK result.
 TEST_F(StaleEntryFinalizerTaskTest, NoWorkInQueue) {
   CreateAndInsertItem(PrefetchItemState::AWAITING_GCM, 0);
   CreateAndInsertItem(PrefetchItemState::ZOMBIE, 0);
@@ -222,11 +229,17 @@ TEST_F(StaleEntryFinalizerTaskTest, NoWorkInQueue) {
   EXPECT_EQ(0, dispatcher()->task_schedule_count);
 }
 
-// Items in any state but AWAITING_GCM and ZOMBIE should cause the task to
-// finish with a MORE_WORK_NEEDED result.
 TEST_F(StaleEntryFinalizerTaskTest, WorkInQueue) {
-  std::vector<PrefetchItemState> work_states = GetAllStatesExcept(
-      {PrefetchItemState::AWAITING_GCM, PrefetchItemState::ZOMBIE});
+  std::vector<PrefetchItemState> work_states = {
+      PrefetchItemState::NEW_REQUEST,
+      PrefetchItemState::SENT_GENERATE_PAGE_BUNDLE,
+      PrefetchItemState::RECEIVED_GCM,
+      PrefetchItemState::SENT_GET_OPERATION,
+      PrefetchItemState::RECEIVED_BUNDLE,
+      PrefetchItemState::DOWNLOADING,
+      PrefetchItemState::DOWNLOADED,
+      PrefetchItemState::IMPORTING,
+      PrefetchItemState::FINISHED};
 
   for (auto& state : work_states) {
     store_util()->DeleteStore();
@@ -242,6 +255,7 @@ TEST_F(StaleEntryFinalizerTaskTest, WorkInQueue) {
     task.Run();
     RunUntilIdle();
     EXPECT_EQ(Result::MORE_WORK_NEEDED, task.final_status());
+
     EXPECT_EQ(1, dispatcher()->task_schedule_count);
   }
 }
@@ -344,8 +358,17 @@ TEST_F(StaleEntryFinalizerTaskTest,
        HandleClockChangeBackwardsInAllStatesCorrectly) {
   // Insert "future" items for every state.
   const int many_hours = 7 * 24;
-  for (PrefetchItemState state : kOrderedPrefetchItemStates)
-    CreateAndInsertItem(state, many_hours);
+  CreateAndInsertItem(PrefetchItemState::NEW_REQUEST, many_hours);
+  CreateAndInsertItem(PrefetchItemState::SENT_GENERATE_PAGE_BUNDLE, many_hours);
+  CreateAndInsertItem(PrefetchItemState::AWAITING_GCM, many_hours);
+  CreateAndInsertItem(PrefetchItemState::RECEIVED_GCM, many_hours);
+  CreateAndInsertItem(PrefetchItemState::SENT_GET_OPERATION, many_hours);
+  CreateAndInsertItem(PrefetchItemState::RECEIVED_BUNDLE, many_hours);
+  CreateAndInsertItem(PrefetchItemState::DOWNLOADING, many_hours);
+  CreateAndInsertItem(PrefetchItemState::DOWNLOADED, many_hours);
+  CreateAndInsertItem(PrefetchItemState::IMPORTING, many_hours);
+  CreateAndInsertItem(PrefetchItemState::FINISHED, many_hours);
+  CreateAndInsertItem(PrefetchItemState::ZOMBIE, many_hours);
   EXPECT_EQ(11, store_util()->CountPrefetchItems());
 
   // Execute the expiration task.

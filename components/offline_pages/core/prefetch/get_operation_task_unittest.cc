@@ -67,9 +67,14 @@ TEST_F(GetOperationTaskTest, NormalOperationTask) {
 
 TEST_F(GetOperationTaskTest, NotMatchingEntries) {
   base::MockCallback<PrefetchRequestFinishedCallback> callback;
-  // List all states that are not affected by the GetOperationTask.
-  std::vector<PrefetchItemState> states = GetAllStatesExcept(
-      {PrefetchItemState::SENT_GET_OPERATION, PrefetchItemState::RECEIVED_GCM});
+  std::vector<PrefetchItemState> states = {
+      PrefetchItemState::NEW_REQUEST,
+      PrefetchItemState::SENT_GENERATE_PAGE_BUNDLE,
+      PrefetchItemState::AWAITING_GCM,
+      PrefetchItemState::RECEIVED_BUNDLE,
+      PrefetchItemState::DOWNLOADING,
+      PrefetchItemState::FINISHED,
+      PrefetchItemState::ZOMBIE};
   std::vector<int64_t> entries;
   for (auto& state : states) {
     entries.push_back(

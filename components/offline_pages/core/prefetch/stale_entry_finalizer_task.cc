@@ -41,13 +41,7 @@ const base::TimeDelta FreshnessPeriodForState(PrefetchItemState state) {
     case PrefetchItemState::DOWNLOADING:
     case PrefetchItemState::IMPORTING:
       return kPrefetchDownloadLifetime;
-    // The following states do not expire based on per bucket freshness so they
-    // are not expected to be passed into this function.
-    case PrefetchItemState::SENT_GENERATE_PAGE_BUNDLE:
-    case PrefetchItemState::SENT_GET_OPERATION:
-    case PrefetchItemState::DOWNLOADED:
-    case PrefetchItemState::FINISHED:
-    case PrefetchItemState::ZOMBIE:
+    default:
       NOTREACHED();
   }
   return base::TimeDelta::FromDays(1);
@@ -55,7 +49,6 @@ const base::TimeDelta FreshnessPeriodForState(PrefetchItemState state) {
 
 PrefetchItemErrorCode ErrorCodeForState(PrefetchItemState state) {
   switch (state) {
-    // Valid values.
     case PrefetchItemState::NEW_REQUEST:
       return PrefetchItemErrorCode::STALE_AT_NEW_REQUEST;
     case PrefetchItemState::AWAITING_GCM:
@@ -68,13 +61,7 @@ PrefetchItemErrorCode ErrorCodeForState(PrefetchItemState state) {
       return PrefetchItemErrorCode::STALE_AT_DOWNLOADING;
     case PrefetchItemState::IMPORTING:
       return PrefetchItemErrorCode::STALE_AT_IMPORTING;
-    // The following states do not expire based on per bucket freshness so they
-    // are not expected to be passed into this function.
-    case PrefetchItemState::SENT_GENERATE_PAGE_BUNDLE:
-    case PrefetchItemState::SENT_GET_OPERATION:
-    case PrefetchItemState::DOWNLOADED:
-    case PrefetchItemState::FINISHED:
-    case PrefetchItemState::ZOMBIE:
+    default:
       NOTREACHED();
   }
   return PrefetchItemErrorCode::STALE_AT_UNKNOWN;
@@ -160,8 +147,6 @@ Result FinalizeStaleEntriesSync(StaleEntryFinalizerTask::NowGetter now_getter,
   if (!transaction.Begin())
     return Result::NO_MORE_WORK;
 
-  // Only the following states are supposed to expire based on per bucket
-  // freshness.
   static constexpr std::array<PrefetchItemState, 6> expirable_states = {{
       // Bucket 1.
       PrefetchItemState::NEW_REQUEST,

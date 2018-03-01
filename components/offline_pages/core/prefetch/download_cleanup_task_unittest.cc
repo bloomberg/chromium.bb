@@ -124,7 +124,7 @@ TEST_F(DownloadCleanupTaskTest, SkipForOngoingDownloadWithMaxAttempts) {
 TEST_F(DownloadCleanupTaskTest, NoUpdateForOtherStates) {
   std::set<PrefetchItem> items;
   std::vector<PrefetchItemState> all_other_states =
-      GetAllStatesExcept({PrefetchItemState::DOWNLOADING});
+      PrefetchTaskTestBase::GetAllStatesExcept(PrefetchItemState::DOWNLOADING);
   for (const auto& state : all_other_states) {
     PrefetchItem item = item_generator()->CreateItem(state);
     item.download_initiation_attempts =

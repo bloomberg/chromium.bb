@@ -25,39 +25,14 @@ class Task;
 // Base class for testing prefetch requests with simulated responses.
 class PrefetchTaskTestBase : public TaskTestBase {
  public:
-  // Lists all existing prefetch item states in their natural pipeline
-  // progression order.
-  static constexpr std::array<PrefetchItemState, 11>
-      kOrderedPrefetchItemStates = {
-          PrefetchItemState::NEW_REQUEST,
-          PrefetchItemState::SENT_GENERATE_PAGE_BUNDLE,
-          PrefetchItemState::AWAITING_GCM,
-          PrefetchItemState::RECEIVED_GCM,
-          PrefetchItemState::SENT_GET_OPERATION,
-          PrefetchItemState::RECEIVED_BUNDLE,
-          PrefetchItemState::DOWNLOADING,
-          PrefetchItemState::DOWNLOADED,
-          PrefetchItemState::IMPORTING,
-          PrefetchItemState::FINISHED,
-          PrefetchItemState::ZOMBIE};
+  static std::vector<PrefetchItemState> GetAllStatesExcept(
+      PrefetchItemState state_to_exclude);
 
   PrefetchTaskTestBase();
   ~PrefetchTaskTestBase() override;
 
   void SetUp() override;
   void TearDown() override;
-
-  // Returns all PrefetchItemState values in a vector, filtering our the ones
-  // listed in |states_to_exclude|. The returned list is based off
-  // |kOrderedPrefetchItemStates| and its order of states is maintained.
-  std::vector<PrefetchItemState> GetAllStatesExcept(
-      std::set<PrefetchItemState> states_to_exclude);
-
-  int64_t InsertPrefetchItemInStateWithOperation(std::string operation_name,
-                                                 PrefetchItemState state);
-
-  std::set<PrefetchItem> FilterByState(const std::set<PrefetchItem>& items,
-                                       PrefetchItemState state) const;
 
   TestPrefetchNetworkRequestFactory* prefetch_request_factory() {
     return &prefetch_request_factory_;
@@ -72,6 +47,12 @@ class PrefetchTaskTestBase : public TaskTestBase {
   PrefetchStoreTestUtil* store_util() { return &store_test_util_; }
 
   MockPrefetchItemGenerator* item_generator() { return &item_generator_; }
+
+  int64_t InsertPrefetchItemInStateWithOperation(std::string operation_name,
+                                                 PrefetchItemState state);
+
+  std::set<PrefetchItem> FilterByState(const std::set<PrefetchItem>& items,
+                                       PrefetchItemState state) const;
 
  private:
   net::TestURLFetcherFactory url_fetcher_factory_;
