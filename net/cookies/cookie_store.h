@@ -14,7 +14,6 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/callback_list.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
 #include "net/cookies/canonical_cookie.h"
@@ -24,56 +23,24 @@ class GURL;
 
 namespace net {
 
+class CookieChangeDispatcher;
+
 // An interface for storing and retrieving cookies. Implementations are not
 // thread safe, as with most other net classes. All methods must be invoked on
-// the network thread, and all callbacks will be calle there.
+// the network thread, and all callbacks will be called there.
 //
 // All async functions may either invoke the callback asynchronously, or they
 // may be invoked immediately (prior to return of the asynchronous function).
 // Destroying the CookieStore will cancel pending async callbacks.
 class NET_EXPORT CookieStore {
  public:
-  // The publicly relevant reasons a cookie might be changed.
-  enum class ChangeCause {
-    // The cookie was inserted.
-    INSERTED,
-    // The cookie was changed directly by a consumer's action.
-    EXPLICIT,
-    // The cookie was deleted, but no more details are known.
-    UNKNOWN_DELETION,
-    // The cookie was automatically removed due to an insert operation that
-    // overwrote it.
-    OVERWRITE,
-    // The cookie was automatically removed as it expired.
-    EXPIRED,
-    // The cookie was automatically evicted during garbage collection.
-    EVICTED,
-    // The cookie was overwritten with an already-expired expiration date.
-    EXPIRED_OVERWRITE
-  };
-
-  // Returns whether |cause| is one that could be a reason for deleting a
-  // cookie. This function assumes that ChangeCause::EXPLICIT is a reason for
-  // deletion.
-  static bool ChangeCauseIsDeletion(ChangeCause cause);
-
   // Callback definitions.
   typedef base::OnceCallback<void(const CookieList& cookies)>
       GetCookieListCallback;
   typedef base::OnceCallback<void(bool success)> SetCookiesCallback;
   typedef base::OnceCallback<void(uint32_t num_deleted)> DeleteCallback;
 
-  typedef base::Callback<void(const CanonicalCookie& cookie, ChangeCause cause)>
-      CookieChangedCallback;
-  typedef base::CallbackList<void(const CanonicalCookie& cookie,
-                                  ChangeCause cause)>
-      CookieChangedCallbackList;
   typedef base::Callback<bool(const CanonicalCookie& cookie)> CookiePredicate;
-
-  class CookieChangedSubscription {
-   public:
-    virtual ~CookieChangedSubscription(){};
-  };
 
   virtual ~CookieStore();
 
@@ -169,37 +136,8 @@ class NET_EXPORT CookieStore {
   // Otherwise, does nothing.
   virtual void SetForceKeepSessionState();
 
-  // Add a callback to be notified when the set of cookies named |name| that
-  // would be sent for a request to |url| changes. The returned handle is
-  // guaranteed not to hold a hard reference to the CookieStore object.
-  //
-  // |callback| will be called when a cookie is added or removed. |callback| is
-  // passed the respective |cookie| which was added to or removed from the
-  // cookies and a boolean indicating if the cookies was removed or not.
-  // |callback| is guaranteed not to be called after the return handled is
-  // destroyed.
-  //
-  // Note that |callback| is called twice when a cookie is updated: once for
-  // the removal of the existing cookie and once for the adding the new cookie.
-  //
-  // Note that this method consumes memory and CPU per (url, name) pair ever
-  // registered that are still consumed even after all subscriptions for that
-  // (url, name) pair are removed. If this method ever needs to support an
-  // unbounded amount of such pairs, this contract needs to change and
-  // implementors need to be improved to not behave this way.
-  //
-  // The callback must not synchronously modify another cookie.
-  virtual std::unique_ptr<CookieChangedSubscription> AddCallbackForCookie(
-      const GURL& url,
-      const std::string& name,
-      const CookieChangedCallback& callback) = 0;
-
-  // Add a callback to be notified on all cookie changes (with a few
-  // bookkeeping exceptions; see kChangeCauseMapping in
-  // cookie_monster.cc).  See the comment on AddCallbackForCookie for details
-  // on callback behavior.
-  virtual std::unique_ptr<CookieChangedSubscription> AddCallbackForAllChanges(
-      const CookieChangedCallback& callback) = 0;
+  // The interface used to observe changes to this CookieStore's contents.
+  virtual CookieChangeDispatcher& GetChangeDispatcher() = 0;
 
   // Returns true if this cookie store is ephemeral, and false if it is backed
   // by some sort of persistence layer.

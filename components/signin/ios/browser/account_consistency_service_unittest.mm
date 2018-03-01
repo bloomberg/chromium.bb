@@ -90,14 +90,14 @@ class MockAccountReconcilor : public AccountReconcilor {
   MOCK_METHOD1(OnReceivedManageAccountsResponse, void(signin::GAIAServiceType));
 };
 
-// Mock GaiaCookieManagerService to catch call to ForceOnCookieChangedProcessing
+// Mock GaiaCookieManagerService to catch call to ForceOnCookieChangeProcessing
 class MockGaiaCookieManagerService : public GaiaCookieManagerService {
  public:
   MockGaiaCookieManagerService()
       : GaiaCookieManagerService(nullptr,
                                  GaiaConstants::kChromeSource,
                                  nullptr) {}
-  MOCK_METHOD0(ForceOnCookieChangedProcessing, void());
+  MOCK_METHOD0(ForceOnCookieChangeProcessing, void());
 };
 
 // TestWebState that allows control over its policy decider.
@@ -446,7 +446,7 @@ TEST_F(AccountConsistencyServiceTest, DomainsClearedOnBrowsingDataRemoved) {
       prefs_.GetDictionary(AccountConsistencyService::kDomainsWithCookiePref);
   EXPECT_EQ(2u, dict->size());
 
-  EXPECT_CALL(*gaia_cookie_manager_service_, ForceOnCookieChangedProcessing())
+  EXPECT_CALL(*gaia_cookie_manager_service_, ForceOnCookieChangeProcessing())
       .Times(1);
   account_consistency_service_->OnBrowsingDataRemoved();
   dict =
@@ -463,7 +463,7 @@ TEST_F(AccountConsistencyServiceTest, DomainsClearedOnBrowsingDataRemoved2) {
 
   AddPageLoadedExpectation(kGoogleUrl, false /* continue_navigation */);
   SimulateGaiaCookieManagerServiceLogout(false);
-  EXPECT_CALL(*gaia_cookie_manager_service_, ForceOnCookieChangedProcessing())
+  EXPECT_CALL(*gaia_cookie_manager_service_, ForceOnCookieChangeProcessing())
       .Times(1);
   account_consistency_service_->OnBrowsingDataRemoved();
   EXPECT_TRUE(remove_cookie_callback_called_);

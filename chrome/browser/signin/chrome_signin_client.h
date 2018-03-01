@@ -7,12 +7,14 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "google_apis/gaia/oauth2_token_service.h"
+#include "net/cookies/cookie_change_dispatcher.h"
 #include "services/network/public/mojom/network_change_manager.mojom.h"
 
 #if !defined(OS_CHROMEOS)
@@ -67,10 +69,10 @@ class ChromeSigninClient
   // <Build Info> <OS> <Version number> (<Last change>)<channel or "-devel">
   // If version information is unavailable, returns "invalid."
   std::string GetProductVersion() override;
-  std::unique_ptr<CookieChangedSubscription> AddCookieChangedCallback(
+  std::unique_ptr<CookieChangeSubscription> AddCookieChangeCallback(
       const GURL& url,
       const std::string& name,
-      const net::CookieStore::CookieChangedCallback& callback) override;
+      net::CookieChangeCallback callback) override;
   void OnSignedIn(const std::string& account_id,
                   const std::string& gaia_id,
                   const std::string& username,

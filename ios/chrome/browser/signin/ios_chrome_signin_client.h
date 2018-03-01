@@ -13,6 +13,7 @@
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/ios/browser/wait_for_network_callback_helper.h"
+#include "net/cookies/cookie_change_dispatcher.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace ios {
@@ -59,10 +60,10 @@ class IOSChromeSigninClient : public SigninClient,
       content_settings::Observer* observer) override;
   void RemoveContentSettingsObserver(
       content_settings::Observer* observer) override;
-  std::unique_ptr<CookieChangedSubscription> AddCookieChangedCallback(
+  std::unique_ptr<CookieChangeSubscription> AddCookieChangeCallback(
       const GURL& url,
       const std::string& name,
-      const net::CookieStore::CookieChangedCallback& callback) override;
+      net::CookieChangeCallback callback) override;
   void DelayNetworkCall(const base::Closure& callback) override;
 
   // SigninErrorController::Observer implementation.

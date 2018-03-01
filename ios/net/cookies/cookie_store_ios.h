@@ -21,6 +21,7 @@
 #include "base/time/time.h"
 #include "ios/net/cookies/cookie_cache.h"
 #import "ios/net/cookies/system_cookie_store.h"
+#include "net/cookies/cookie_change_dispatcher.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_store.h"
 #include "url/gurl.h"
@@ -37,6 +38,8 @@ class CookieNotificationObserver {
   // |NSHTTPCookieStorge sharedHTTPCookieStorage|.
   virtual void OnSystemCookiesChanged() = 0;
 };
+
+class CookieStoreIOS;
 
 // The CookieStoreIOS is an implementation of CookieStore relying on
 // NSHTTPCookieStorage, ensuring that the cookies are consistent between the
@@ -75,7 +78,7 @@ class CookieStoreIOS : public net::CookieStore,
   // Only one cookie store may enable metrics.
   void SetMetricsEnabled();
 
-  // Inherited CookieStore methods.
+  // Implementation of the net::CookieStore interface.
   void SetCookieWithOptionsAsync(const GURL& url,
                                  const std::string& cookie_line,
                                  const net::CookieOptions& options,
@@ -103,15 +106,7 @@ class CookieStoreIOS : public net::CookieStore,
       DeleteCallback callback) override;
   void DeleteSessionCookiesAsync(DeleteCallback callback) override;
   void FlushStore(base::OnceClosure callback) override;
-
-  std::unique_ptr<CookieChangedSubscription> AddCallbackForCookie(
-      const GURL& url,
-      const std::string& name,
-      const CookieChangedCallback& callback) override;
-
-  std::unique_ptr<CookieChangedSubscription> AddCallbackForAllChanges(
-      const CookieChangedCallback& callback) override;
-
+  CookieChangeDispatcher& GetChangeDispatcher() override;
   bool IsEphemeral() override;
 
  protected:
@@ -134,10 +129,42 @@ class CookieStoreIOS : public net::CookieStore,
   THREAD_CHECKER(thread_checker_);
 
  private:
+  using CookieChangeCallbackList =
+      base::CallbackList<void(const CanonicalCookie& cookie,
+                              CookieChangeCause cause)>;
+
   // Cookie filter for DeleteCookiesWithFilter().
   // Takes a cookie and a creation time and returns true the cookie must be
   // deleted.
   typedef base::Callback<bool(NSHTTPCookie*, base::Time)> CookieFilterFunction;
+
+  // CookieChangeDispatcher implementation that proxies into IOSCookieStore.
+  class CookieChangeDispatcherIOS : public CookieChangeDispatcher {
+   public:
+    explicit CookieChangeDispatcherIOS(CookieStoreIOS* cookie_store);
+    ~CookieChangeDispatcherIOS() override;
+
+    // net::CookieChangeDispatcher
+    std::unique_ptr<CookieChangeSubscription> AddCallbackForCookie(
+        const GURL& url,
+        const std::string& name,
+        CookieChangeCallback callback) override WARN_UNUSED_RESULT;
+    std::unique_ptr<CookieChangeSubscription> AddCallbackForAllChanges(
+        CookieChangeCallback callback) override WARN_UNUSED_RESULT;
+
+   private:
+    // Instances of this class are always members of CookieStoreIOS, so
+    // |cookie_store| is guaranteed to outlive this instance.
+    CookieStoreIOS* const cookie_store_;
+
+    DISALLOW_COPY_AND_ASSIGN(CookieChangeDispatcherIOS);
+  };
+
+  // Interface only used by CookieChangeDispatcherIOS.
+  std::unique_ptr<CookieChangeSubscription> AddCallbackForCookie(
+      const GURL& url,
+      const std::string& name,
+      CookieChangeCallback callback) WARN_UNUSED_RESULT;
 
   // Returns true if the system cookie store policy is
   // |NSHTTPCookieAcceptPolicyAlways|.
@@ -192,7 +219,7 @@ class CookieStoreIOS : public net::CookieStore,
   void RunCallbacksForCookies(const GURL& url,
                               const std::string& name,
                               const std::vector<net::CanonicalCookie>& cookies,
-                              net::CookieStore::ChangeCause cause);
+                              net::CookieChangeCause cause);
 
   // Called by this CookieStoreIOS' internal CookieMonster instance when
   // GetAllCookiesForURLAsync() completes. Updates the cookie cache and runs
@@ -241,8 +268,10 @@ class CookieStoreIOS : public net::CookieStore,
 
   // Callbacks for cookie changes installed by AddCallbackForCookie.
   std::map<std::pair<GURL, std::string>,
-           std::unique_ptr<CookieChangedCallbackList>>
+           std::unique_ptr<CookieChangeCallbackList>>
       hook_map_;
+
+  CookieChangeDispatcherIOS change_dispatcher_;
 
   base::WeakPtrFactory<CookieStoreIOS> weak_factory_;
 

@@ -10,6 +10,8 @@
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "net/cookies/cookie_store.h"
+#include "url/gurl.h"
 
 using net::registry_controlled_domains::GetDomainAndRegistry;
 using net::registry_controlled_domains::GetRegistryLength;
@@ -32,6 +34,26 @@ std::string GetRegistry(const GURL& url) {
 namespace net {
 
 const int kDelayedTime = 0;
+
+DelayedCookieMonsterChangeDispatcher::DelayedCookieMonsterChangeDispatcher() =
+    default;
+DelayedCookieMonsterChangeDispatcher::~DelayedCookieMonsterChangeDispatcher() =
+    default;
+
+std::unique_ptr<CookieChangeSubscription>
+DelayedCookieMonsterChangeDispatcher::AddCallbackForCookie(
+    const GURL& url,
+    const std::string& name,
+    CookieChangeCallback callback) {
+  ADD_FAILURE();
+  return nullptr;
+}
+std::unique_ptr<CookieChangeSubscription>
+DelayedCookieMonsterChangeDispatcher::AddCallbackForAllChanges(
+    CookieChangeCallback callback) {
+  ADD_FAILURE();
+  return nullptr;
+}
 
 DelayedCookieMonster::DelayedCookieMonster()
     : cookie_monster_(new CookieMonster(nullptr, nullptr)),
@@ -169,20 +191,8 @@ void DelayedCookieMonster::FlushStore(base::OnceClosure callback) {
   ADD_FAILURE();
 }
 
-std::unique_ptr<CookieStore::CookieChangedSubscription>
-DelayedCookieMonster::AddCallbackForCookie(
-    const GURL& url,
-    const std::string& name,
-    const CookieChangedCallback& callback) {
-  ADD_FAILURE();
-  return std::unique_ptr<CookieStore::CookieChangedSubscription>();
-}
-
-std::unique_ptr<CookieStore::CookieChangedSubscription>
-DelayedCookieMonster::AddCallbackForAllChanges(
-    const CookieChangedCallback& callback) {
-  ADD_FAILURE();
-  return std::unique_ptr<CookieStore::CookieChangedSubscription>();
+CookieChangeDispatcher& DelayedCookieMonster::GetChangeDispatcher() {
+  return change_dispatcher_;
 }
 
 bool DelayedCookieMonster::IsEphemeral() {

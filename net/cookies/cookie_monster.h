@@ -28,6 +28,7 @@
 #include "net/base/net_export.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_constants.h"
+#include "net/cookies/cookie_monster_change_dispatcher.h"
 #include "net/cookies/cookie_store.h"
 #include "url/gurl.h"
 
@@ -38,6 +39,7 @@ class HistogramBase;
 namespace net {
 
 class ChannelIDService;
+class CookieChangeDispatcher;
 
 // The cookie monster is the system for storing and retrieving cookies. It has
 // an in-memory list of all cookies, and synchronizes non-session cookies to an
@@ -181,6 +183,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
   void DeleteSessionCookiesAsync(DeleteCallback) override;
   void FlushStore(base::OnceClosure callback) override;
   void SetForceKeepSessionState() override;
+  CookieChangeDispatcher& GetChangeDispatcher() override;
 
   // Resets the list of cookieable schemes to the supplied schemes. Does
   // nothing if called after first use of the instance (i.e. after the
@@ -199,14 +202,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // The default list of schemes the cookie monster can handle.
   static const char* const kDefaultCookieableSchemes[];
   static const int kDefaultCookieableSchemesCount;
-
-  std::unique_ptr<CookieChangedSubscription> AddCallbackForCookie(
-      const GURL& url,
-      const std::string& name,
-      const CookieChangedCallback& callback) override;
-
-  std::unique_ptr<CookieChangedSubscription> AddCallbackForAllChanges(
-      const CookieChangedCallback& callback) override;
 
   bool IsEphemeral() override;
 
@@ -250,8 +245,8 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // and to provide a public cause for onCookieChange notifications.
   //
   // If you add or remove causes from this list, please be sure to also update
-  // the CookieStore::ChangeCause mapping inside ChangeCauseMapping. New items
-  // (if necessary) should be added at the end of the list, just before
+  // the CookieChangeCause mapping inside ChangeCauseMapping. New items (if
+  // necessary) should be added at the end of the list, just before
   // DELETE_COOKIE_LAST_ENTRY.
   enum DeletionCause {
     DELETE_COOKIE_EXPLICIT = 0,
@@ -507,9 +502,8 @@ class NET_EXPORT CookieMonster : public CookieStore {
                                       const base::Time& current_time);
 
   // |deletion_cause| argument is used for collecting statistics and choosing
-  // the correct CookieStore::ChangeCause for OnCookieChanged
-  // notifications.  Guarantee: All iterators to cookies_ except to the
-  // deleted entry remain valid.
+  // the correct CookieChangeCause for OnCookieChange notifications. Guarantee:
+  // All iterators to cookies_, except for the deleted entry, remain valid.
   void InternalDeleteCookie(CookieMap::iterator it,
                             bool sync_to_store,
                             DeletionCause deletion_cause);
@@ -593,13 +587,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // given URL are loaded.
   void DoCookieCallbackForURL(base::OnceClosure callback, const GURL& url);
 
-  // Run all cookie changed callbacks that are monitoring |cookie|.
-  // |notify_global_hooks| is true if the function should run the
-  // global hooks in addition to the per-cookie hooks.
-  void RunCookieChangedCallbacks(const CanonicalCookie& cookie,
-                                 bool notify_global_hooks,
-                                 CookieStore::ChangeCause cause);
-
   // Histogram variables; see CookieMonster::InitializeHistograms() in
   // cookie_monster.cc for details.
   base::HistogramBase* histogram_expiration_duration_minutes_;
@@ -610,6 +597,8 @@ class NET_EXPORT CookieMonster : public CookieStore {
   base::HistogramBase* histogram_time_blocked_on_load_;
 
   CookieMap cookies_;
+
+  CookieMonsterChangeDispatcher change_dispatcher_;
 
   // Indicates whether the cookie store has been initialized.
   bool initialized_;
@@ -671,12 +660,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
   base::Time last_statistic_record_time_;
 
   bool persist_session_cookies_;
-
-  using CookieChangedHookMap =
-      std::map<std::pair<GURL, std::string>,
-               std::unique_ptr<CookieChangedCallbackList>>;
-  CookieChangedHookMap hook_map_;
-  std::unique_ptr<CookieChangedCallbackList> global_hook_map_;
 
   base::ThreadChecker thread_checker_;
 

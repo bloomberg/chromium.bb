@@ -12,10 +12,6 @@ namespace net {
 
 CookieStore::~CookieStore() = default;
 
-bool CookieStore::ChangeCauseIsDeletion(CookieStore::ChangeCause cause) {
-  return cause != CookieStore::ChangeCause::INSERTED;
-}
-
 void CookieStore::DeleteAllAsync(DeleteCallback callback) {
   DeleteAllCreatedBetweenAsync(base::Time(), base::Time::Max(),
                                std::move(callback));

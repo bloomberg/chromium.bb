@@ -23,6 +23,9 @@ namespace android_webview {
 // Gets the TaskRunner that the CookieStore must be called on.
 scoped_refptr<base::SingleThreadTaskRunner> GetCookieStoreTaskRunner();
 
+// Posts |task| to the thread that the global CookieStore lives on.
+void PostTaskToCookieStoreTaskRunner(base::OnceClosure task);
+
 // Gets a pointer to the CookieStore managed by the CookieManager.
 // The CookieStore is never deleted. May only be called on the
 // CookieStore's TaskRunner.

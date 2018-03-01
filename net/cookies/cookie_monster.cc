@@ -61,6 +61,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_monster_change_dispatcher.h"
 #include "net/cookies/cookie_util.h"
 #include "net/cookies/parsed_cookie.h"
 #include "net/ssl/channel_id_service.h"
@@ -140,47 +141,6 @@ const size_t CookieMonster::kDomainCookiesQuotaHigh =
 const int CookieMonster::kSafeFromGlobalPurgeDays = 30;
 
 namespace {
-
-// This class owns the CookieStore::CookieChangedCallbackList::Subscription,
-// thus guaranteeing destruction when it is destroyed.  In addition, it
-// wraps the callback for a particular subscription, guaranteeing that it
-// won't be run even if a PostTask completes after the subscription has
-// been destroyed.
-class CookieMonsterCookieChangedSubscription
-    : public CookieStore::CookieChangedSubscription {
- public:
-  CookieMonsterCookieChangedSubscription(
-      const CookieStore::CookieChangedCallback& callback)
-      : callback_(callback), weak_ptr_factory_(this) {}
-  ~CookieMonsterCookieChangedSubscription() override = default;
-
-  void SetCallbackSubscription(
-      std::unique_ptr<CookieStore::CookieChangedCallbackList::Subscription>
-          subscription) {
-    subscription_ = std::move(subscription);
-  }
-
-  // The returned callback runs the callback passed to the constructor
-  // directly as long as this object hasn't been destroyed.
-  CookieStore::CookieChangedCallback WeakCallback() {
-    return base::Bind(&CookieMonsterCookieChangedSubscription::RunCallback,
-                      weak_ptr_factory_.GetWeakPtr());
-  }
-
- private:
-  void RunCallback(const CanonicalCookie& cookie,
-                   CookieStore::ChangeCause cause) {
-    callback_.Run(cookie, cause);
-  }
-
-  const CookieStore::CookieChangedCallback callback_;
-  std::unique_ptr<CookieStore::CookieChangedCallbackList::Subscription>
-      subscription_;
-  base::WeakPtrFactory<CookieMonsterCookieChangedSubscription>
-      weak_ptr_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(CookieMonsterCookieChangedSubscription);
-};
 
 bool ContainsControlCharacter(const std::string& s) {
   for (std::string::const_iterator i = s.begin(); i != s.end(); ++i) {
@@ -308,49 +268,42 @@ CookieMonster::CookieItVector::iterator LowerBoundAccessDate(
                           LowerBoundAccessDateComparator);
 }
 
-// Mapping between DeletionCause and CookieStore::ChangeCause; the
+// Mapping between DeletionCause and CookieChangeCause; the
 // mapping also provides a boolean that specifies whether or not an
-// OnCookieChanged notification ought to be generated.
+// OnCookieChange notification ought to be generated.
 typedef struct ChangeCausePair_struct {
-  CookieStore::ChangeCause cause;
+  CookieChangeCause cause;
   bool notify;
 } ChangeCausePair;
 const ChangeCausePair kChangeCauseMapping[] = {
     // DELETE_COOKIE_EXPLICIT
-    {CookieStore::ChangeCause::EXPLICIT, true},
+    {CookieChangeCause::EXPLICIT, true},
     // DELETE_COOKIE_OVERWRITE
-    {CookieStore::ChangeCause::OVERWRITE, true},
+    {CookieChangeCause::OVERWRITE, true},
     // DELETE_COOKIE_EXPIRED
-    {CookieStore::ChangeCause::EXPIRED, true},
+    {CookieChangeCause::EXPIRED, true},
     // DELETE_COOKIE_EVICTED
-    {CookieStore::ChangeCause::EVICTED, true},
+    {CookieChangeCause::EVICTED, true},
     // DELETE_COOKIE_DUPLICATE_IN_BACKING_STORE
-    {CookieStore::ChangeCause::EXPLICIT, false},
+    {CookieChangeCause::EXPLICIT, false},
     // DELETE_COOKIE_DONT_RECORD
-    {CookieStore::ChangeCause::EXPLICIT, false},
+    {CookieChangeCause::EXPLICIT, false},
     // DELETE_COOKIE_EVICTED_DOMAIN
-    {CookieStore::ChangeCause::EVICTED, true},
+    {CookieChangeCause::EVICTED, true},
     // DELETE_COOKIE_EVICTED_GLOBAL
-    {CookieStore::ChangeCause::EVICTED, true},
+    {CookieChangeCause::EVICTED, true},
     // DELETE_COOKIE_EVICTED_DOMAIN_PRE_SAFE
-    {CookieStore::ChangeCause::EVICTED, true},
+    {CookieChangeCause::EVICTED, true},
     // DELETE_COOKIE_EVICTED_DOMAIN_POST_SAFE
-    {CookieStore::ChangeCause::EVICTED, true},
+    {CookieChangeCause::EVICTED, true},
     // DELETE_COOKIE_EXPIRED_OVERWRITE
-    {CookieStore::ChangeCause::EXPIRED_OVERWRITE, true},
+    {CookieChangeCause::EXPIRED_OVERWRITE, true},
     // DELETE_COOKIE_CONTROL_CHAR
-    {CookieStore::ChangeCause::EVICTED, true},
+    {CookieChangeCause::EVICTED, true},
     // DELETE_COOKIE_NON_SECURE
-    {CookieStore::ChangeCause::EVICTED, true},
+    {CookieChangeCause::EVICTED, true},
     // DELETE_COOKIE_LAST_ENTRY
-    {CookieStore::ChangeCause::EXPLICIT, false}};
-
-void RunAsync(scoped_refptr<base::TaskRunner> proxy,
-              const CookieStore::CookieChangedCallback& callback,
-              const CanonicalCookie& cookie,
-              CookieStore::ChangeCause cause) {
-  proxy->PostTask(FROM_HERE, base::Bind(callback, cookie, cause));
-}
+    {CookieChangeCause::EXPLICIT, false}};
 
 bool IsCookieEligibleForEviction(CookiePriority current_priority_level,
                                  bool protect_secure_cookies,
@@ -406,7 +359,6 @@ CookieMonster::CookieMonster(PersistentCookieStore* store,
       channel_id_service_(channel_id_service),
       last_statistic_record_time_(base::Time::Now()),
       persist_session_cookies_(false),
-      global_hook_map_(std::make_unique<CookieChangedCallbackList>()),
       weak_ptr_factory_(this) {
   InitializeHistograms();
   cookieable_schemes_.insert(
@@ -605,33 +557,8 @@ const char* const CookieMonster::kDefaultCookieableSchemes[] = {"http", "https",
 const int CookieMonster::kDefaultCookieableSchemesCount =
     arraysize(kDefaultCookieableSchemes);
 
-std::unique_ptr<CookieStore::CookieChangedSubscription>
-CookieMonster::AddCallbackForCookie(const GURL& gurl,
-                                    const std::string& name,
-                                    const CookieChangedCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  std::pair<GURL, std::string> key(gurl, name);
-  if (hook_map_.count(key) == 0)
-    hook_map_[key] = std::make_unique<CookieChangedCallbackList>();
-
-  std::unique_ptr<CookieMonsterCookieChangedSubscription> sub(
-      std::make_unique<CookieMonsterCookieChangedSubscription>(callback));
-  sub->SetCallbackSubscription(hook_map_[key]->Add(base::Bind(
-      &RunAsync, base::ThreadTaskRunnerHandle::Get(), sub->WeakCallback())));
-
-  return std::move(sub);
-}
-
-std::unique_ptr<CookieStore::CookieChangedSubscription>
-CookieMonster::AddCallbackForAllChanges(const CookieChangedCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  std::unique_ptr<CookieMonsterCookieChangedSubscription> sub(
-      std::make_unique<CookieMonsterCookieChangedSubscription>(callback));
-  sub->SetCallbackSubscription(global_hook_map_->Add(base::Bind(
-      &RunAsync, base::ThreadTaskRunnerHandle::Get(), sub->WeakCallback())));
-  return std::move(sub);
+CookieChangeDispatcher& CookieMonster::GetChangeDispatcher() {
+  return change_dispatcher_;
 }
 
 bool CookieMonster::IsEphemeral() {
@@ -1261,7 +1188,7 @@ CookieMonster::CookieMap::iterator CookieMonster::InternalInsertCookie(
   type_sample |= cc_ptr->IsSecure() ? 1 << COOKIE_TYPE_SECURE : 0;
   histogram_cookie_type_->Add(type_sample);
 
-  RunCookieChangedCallbacks(*cc_ptr, true, CookieStore::ChangeCause::INSERTED);
+  change_dispatcher_.DispatchChange(*cc_ptr, CookieChangeCause::INSERTED, true);
 
   return inserted;
 }
@@ -1453,7 +1380,7 @@ void CookieMonster::InternalDeleteCookie(CookieMap::iterator it,
       sync_to_store)
     store_->DeleteCookie(*cc);
   ChangeCausePair mapping = kChangeCauseMapping[deletion_cause];
-  RunCookieChangedCallbacks(*cc, mapping.notify, mapping.cause);
+  change_dispatcher_.DispatchChange(*cc, mapping.cause, mapping.notify);
   cookies_.erase(it);
 }
 
@@ -1925,32 +1852,6 @@ void CookieMonster::DoCookieCallbackForURL(base::OnceClosure callback,
   }
 
   std::move(callback).Run();
-}
-
-void CookieMonster::RunCookieChangedCallbacks(const CanonicalCookie& cookie,
-                                              bool notify_global_hooks,
-                                              ChangeCause cause) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  CookieOptions opts;
-  opts.set_include_httponly();
-  opts.set_same_site_cookie_mode(
-      CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX);
-  // Note that the callbacks in hook_map_ are wrapped with RunAsync(), so they
-  // are guaranteed to not take long - they just post a RunAsync task back to
-  // the appropriate thread's message loop and return.
-  // TODO(mmenke): Consider running these synchronously?
-  for (CookieChangedHookMap::iterator it = hook_map_.begin();
-       it != hook_map_.end(); ++it) {
-    std::pair<GURL, std::string> key = it->first;
-    if (cookie.IncludeForRequestURL(key.first, opts) &&
-        cookie.Name() == key.second) {
-      it->second->Notify(cookie, cause);
-    }
-  }
-
-  if (notify_global_hooks)
-    global_hook_map_->Notify(cookie, cause);
 }
 
 }  // namespace net
