@@ -94,9 +94,6 @@ var IS_IOS = /iPad|iPhone|iPod/.test(window.navigator.platform);
 var IS_MOBILE = /Android/.test(window.navigator.userAgent) || IS_IOS;
 
 /** @const */
-var IS_TOUCH_ENABLED = 'ontouchstart' in window;
-
-/** @const */
 var ARCADE_MODE_URL = 'chrome://dino/';
 
 /**
@@ -382,10 +379,6 @@ Runner.prototype = {
 
     this.outerContainerEl.appendChild(this.containerEl);
 
-    if (IS_MOBILE) {
-      this.createTouchController();
-    }
-
     this.startListening();
     this.update();
 
@@ -399,6 +392,8 @@ Runner.prototype = {
   createTouchController: function() {
     this.touchController = document.createElement('div');
     this.touchController.className = Runner.classes.TOUCH_CONTROLLER;
+    this.touchController.addEventListener(Runner.events.TOUCHSTART, this);
+    this.touchController.addEventListener(Runner.events.TOUCHEND, this);
   },
 
   /**
@@ -635,12 +630,8 @@ Runner.prototype = {
     document.addEventListener(Runner.events.KEYDOWN, this);
     document.addEventListener(Runner.events.KEYUP, this);
 
-    if (this.touchController) {
-      // Touch devices.
-      this.touchController.addEventListener(Runner.events.TOUCHSTART, this);
-      this.touchController.addEventListener(Runner.events.TOUCHEND, this);
-      this.containerEl.addEventListener(Runner.events.TOUCHSTART, this);
-    }
+    // Touch / pointer.
+    this.containerEl.addEventListener(Runner.events.TOUCHSTART, this);
     document.addEventListener(Runner.events.POINTERDOWN, this);
     document.addEventListener(Runner.events.POINTERUP, this);
   },
@@ -655,8 +646,9 @@ Runner.prototype = {
     if (this.touchController) {
       this.touchController.removeEventListener(Runner.events.TOUCHSTART, this);
       this.touchController.removeEventListener(Runner.events.TOUCHEND, this);
-      this.containerEl.removeEventListener(Runner.events.TOUCHSTART, this);
     }
+
+    this.containerEl.removeEventListener(Runner.events.TOUCHSTART, this);
     document.removeEventListener(Runner.events.POINTERDOWN, this);
     document.removeEventListener(Runner.events.POINTERUP, this);
   },
@@ -677,6 +669,10 @@ Runner.prototype = {
         e.preventDefault();
         // Starting the game for the first time.
         if (!this.playing) {
+          // Started by touch so create a touch controller.
+          if (!this.touchController && e.type == Runner.events.TOUCHSTART) {
+            this.createTouchController();
+          }
           this.loadSounds();
           this.playing = true;
           this.update();
