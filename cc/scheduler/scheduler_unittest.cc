@@ -447,7 +447,7 @@ class SchedulerTest : public testing::Test {
   // As this function contains EXPECT macros, to allow debugging it should be
   // called inside EXPECT_SCOPED like so;
   //   EXPECT_SCOPED(client.AdvanceFrame());
-  void AdvanceFrame() {
+  void AdvanceFrame(bool animate_only = false) {
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler.frames"),
                  "FakeSchedulerClient::AdvanceFrame");
 
@@ -456,13 +456,13 @@ class SchedulerTest : public testing::Test {
     if (scheduler_->begin_frame_source() ==
         fake_external_begin_frame_source_.get()) {
       EXPECT_TRUE(scheduler_->begin_frames_expected());
-      SendNextBeginFrame();
+      SendNextBeginFrame(animate_only);
     } else {
       task_runner_->RunTasksWhile(client_->FrameHasNotAdvancedCallback());
     }
   }
 
-  viz::BeginFrameArgs SendNextBeginFrame() {
+  viz::BeginFrameArgs SendNextBeginFrame(bool animate_only = false) {
     DCHECK_EQ(scheduler_->begin_frame_source(),
               fake_external_begin_frame_source_.get());
     // Creep the time forward so that any viz::BeginFrameArgs is not equal to
@@ -471,6 +471,7 @@ class SchedulerTest : public testing::Test {
     viz::BeginFrameArgs args =
         fake_external_begin_frame_source_->CreateBeginFrameArgs(
             BEGINFRAME_FROM_HERE, now_src());
+    args.animate_only = animate_only;
     fake_external_begin_frame_source_->TestOnBeginFrame(args);
     return args;
   }
@@ -4006,6 +4007,29 @@ TEST_F(SchedulerTest, DontSkipMainFrameAfterClearingHistory) {
   client_->Reset();
   scheduler_->ClearHistoryOnNavigation();
   EXPECT_ACTIONS("ScheduledActionSendBeginMainFrame");
+}
+
+TEST_F(SchedulerTest, NoInvalidationForAnimateOnlyFrames) {
+  SetUpScheduler(EXTERNAL_BFS);
+  fake_compositor_timing_history_->SetAllEstimatesTo(kFastDuration);
+  client_->Reset();
+  scheduler_->SetNeedsImplSideInvalidation(true);
+
+  bool animate_only = true;
+  EXPECT_SCOPED(AdvanceFrame(animate_only));
+  EXPECT_ACTIONS("AddObserver(this)", "WillBeginImplFrame");
+  client_->Reset();
+  task_runner_->RunTasksWhile(client_->InsideBeginImplFrame(true));
+  EXPECT_ACTIONS();
+
+  // Now send a frame which requires full updates.
+  animate_only = false;
+  EXPECT_SCOPED(AdvanceFrame(animate_only));
+  EXPECT_ACTIONS("WillBeginImplFrame",
+                 "ScheduledActionPerformImplSideInvalidation");
+  client_->Reset();
+  task_runner_->RunTasksWhile(client_->InsideBeginImplFrame(true));
+  EXPECT_ACTIONS();
 }
 
 }  // namespace
