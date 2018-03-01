@@ -579,7 +579,7 @@
     {
       name: "MediaCapabilities",
       origin_trial_feature_name: "MediaCapabilities",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "MediaCapture",
