@@ -21,4 +21,15 @@ CallbackInterfaceBase::CallbackInterfaceBase(
   incumbent_script_state_ = ScriptState::From(isolate->GetIncumbentContext());
 }
 
+V8PersistentCallbackInterfaceBase::V8PersistentCallbackInterfaceBase(
+    CallbackInterfaceBase* callback_interface)
+    : callback_interface_(callback_interface) {
+  v8_object_.Reset(callback_interface_->GetIsolate(),
+                   callback_interface_->callback_object_.Get());
+}
+
+void V8PersistentCallbackInterfaceBase::Trace(blink::Visitor* visitor) {
+  visitor->Trace(callback_interface_);
+}
+
 }  // namespace blink
