@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/synchronization/lock.h"
@@ -63,7 +64,7 @@ class LoginHandler : public content::ResourceDispatcherHostLoginDelegate,
 
   // Builds the platform specific LoginHandler. Used from within
   // CreateLoginPrompt() which creates tasks.
-  static LoginHandler* Create(
+  static scoped_refptr<LoginHandler> Create(
       net::AuthChallengeInfo* auth_info,
       content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
       const base::Callback<void(const base::Optional<net::AuthCredentials>&)>&
@@ -144,7 +145,7 @@ class LoginHandler : public content::ResourceDispatcherHostLoginDelegate,
   virtual void CloseDialog() = 0;
 
  private:
-  friend LoginHandler* CreateLoginPrompt(
+  friend scoped_refptr<LoginHandler> CreateLoginPrompt(
       net::AuthChallengeInfo* auth_info,
       content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
       bool is_main_frame,
@@ -309,7 +310,7 @@ class AuthSuppliedLoginNotificationDetails : public LoginNotificationDetails {
 // which can be used to set or cancel authentication programmatically.  The
 // caller must invoke OnRequestCancelled() on this LoginHandler before
 // destroying the net::URLRequest.
-LoginHandler* CreateLoginPrompt(
+scoped_refptr<LoginHandler> CreateLoginPrompt(
     net::AuthChallengeInfo* auth_info,
     content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
     bool is_main_frame,

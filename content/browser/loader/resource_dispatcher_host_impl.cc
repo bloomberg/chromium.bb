@@ -556,7 +556,7 @@ ResourceDispatcherHostImpl::MaybeInterceptAsStream(
   return std::move(handler);
 }
 
-ResourceDispatcherHostLoginDelegate*
+scoped_refptr<ResourceDispatcherHostLoginDelegate>
 ResourceDispatcherHostImpl::CreateLoginDelegate(
     ResourceLoader* loader,
     net::AuthChallengeInfo* auth_info) {
@@ -572,7 +572,7 @@ ResourceDispatcherHostImpl::CreateLoginDelegate(
 
   GURL url = request->url();
 
-  ResourceDispatcherHostLoginDelegate* login_delegate =
+  scoped_refptr<ResourceDispatcherHostLoginDelegate> login_delegate =
       GetContentClient()->browser()->CreateLoginDelegate(
           auth_info, resource_request_info->GetWebContentsGetterForRequest(),
           is_main_frame, url, resource_request_info->first_auth_attempt(),

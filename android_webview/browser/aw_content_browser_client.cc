@@ -677,7 +677,7 @@ bool AwContentBrowserClient::ShouldCreateTaskScheduler() {
   return g_should_create_task_scheduler;
 }
 
-content::ResourceDispatcherHostLoginDelegate*
+scoped_refptr<content::ResourceDispatcherHostLoginDelegate>
 AwContentBrowserClient::CreateLoginDelegate(
     net::AuthChallengeInfo* auth_info,
     content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
@@ -686,8 +686,9 @@ AwContentBrowserClient::CreateLoginDelegate(
     bool first_auth_attempt,
     const base::Callback<void(const base::Optional<net::AuthCredentials>&)>&
         auth_required_callback) {
-  return new AwLoginDelegate(auth_info, web_contents_getter, first_auth_attempt,
-                             auth_required_callback);
+  return base::MakeRefCounted<AwLoginDelegate>(auth_info, web_contents_getter,
+                                               first_auth_attempt,
+                                               auth_required_callback);
 }
 
 // static

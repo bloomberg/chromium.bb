@@ -3954,7 +3954,7 @@ ChromeContentBrowserClient::CreateClientCertStore(
       ->CreateClientCertStore();
 }
 
-content::ResourceDispatcherHostLoginDelegate*
+scoped_refptr<content::ResourceDispatcherHostLoginDelegate>
 ChromeContentBrowserClient::CreateLoginDelegate(
     net::AuthChallengeInfo* auth_info,
     content::ResourceRequestInfo::WebContentsGetter web_contents_getter,

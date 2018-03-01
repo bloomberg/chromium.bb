@@ -1105,7 +1105,8 @@ class CONTENT_EXPORT ContentBrowserClient {
   // is base::nullopt if the request should be cancelled; otherwise
   // the credentials will be used to respond to the auth challenge. This
   // callback should be called on the IO thread task runner.
-  virtual ResourceDispatcherHostLoginDelegate* CreateLoginDelegate(
+  virtual scoped_refptr<ResourceDispatcherHostLoginDelegate>
+  CreateLoginDelegate(
       net::AuthChallengeInfo* auth_info,
       content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
       bool is_main_frame,

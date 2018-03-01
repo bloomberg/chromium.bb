@@ -418,7 +418,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       base::OnceCallback<void(bool)> callback) override;
   std::unique_ptr<net::ClientCertStore> CreateClientCertStore(
       content::ResourceContext* resource_context) override;
-  content::ResourceDispatcherHostLoginDelegate* CreateLoginDelegate(
+  scoped_refptr<content::ResourceDispatcherHostLoginDelegate>
+  CreateLoginDelegate(
       net::AuthChallengeInfo* auth_info,
       content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
       bool is_main_frame,

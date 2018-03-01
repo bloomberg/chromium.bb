@@ -642,15 +642,15 @@ void LoginHandler::LoginDialogCallback(const GURL& request_url,
 
 // ----------------------------------------------------------------------------
 // Public API
-LoginHandler* CreateLoginPrompt(
+scoped_refptr<LoginHandler> CreateLoginPrompt(
     net::AuthChallengeInfo* auth_info,
     content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
     bool is_main_frame,
     const GURL& url,
     const base::Callback<void(const base::Optional<net::AuthCredentials>&)>&
         auth_required_callback) {
-  LoginHandler* handler = LoginHandler::Create(auth_info, web_contents_getter,
-                                               auth_required_callback);
+  scoped_refptr<LoginHandler> handler = LoginHandler::Create(
+      auth_info, web_contents_getter, auth_required_callback);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&LoginHandler::LoginDialogCallback, url,

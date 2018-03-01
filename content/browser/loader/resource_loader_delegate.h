@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_LOADER_RESOURCE_LOADER_DELEGATE_H_
 #define CONTENT_BROWSER_LOADER_RESOURCE_LOADER_DELEGATE_H_
 
+#include "base/memory/scoped_refptr.h"
 #include "content/common/content_export.h"
 
 class GURL;
@@ -23,9 +24,9 @@ class ResourceLoader;
 
 class CONTENT_EXPORT ResourceLoaderDelegate {
  public:
-  virtual ResourceDispatcherHostLoginDelegate* CreateLoginDelegate(
-      ResourceLoader* loader,
-      net::AuthChallengeInfo* auth_info) = 0;
+  virtual scoped_refptr<ResourceDispatcherHostLoginDelegate>
+  CreateLoginDelegate(ResourceLoader* loader,
+                      net::AuthChallengeInfo* auth_info) = 0;
 
   virtual bool HandleExternalProtocol(ResourceLoader* loader,
                                       const GURL& url) = 0;
