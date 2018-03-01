@@ -215,10 +215,13 @@ class TabsCaptureVisibleTabFunction
   content::WebContents* GetWebContentsForID(int window_id);
 
   // extensions::WebContentsCaptureClient:
-  bool IsScreenshotEnabled() override;
+  bool IsScreenshotEnabled() const override;
   bool ClientAllowsTransparency() override;
   void OnCaptureSuccess(const SkBitmap& bitmap) override;
-  void OnCaptureFailure(FailureReason reason) override;
+  void OnCaptureFailure(CaptureResult result) override;
+
+ private:
+  void SetErrorMessage(CaptureResult result);
 
   DECLARE_EXTENSION_FUNCTION("tabs.captureVisibleTab", TABS_CAPTUREVISIBLETAB)
 };

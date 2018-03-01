@@ -1715,10 +1715,9 @@ bool TabsCaptureVisibleTabFunction::HasPermission() {
   return true;
 }
 
-bool TabsCaptureVisibleTabFunction::IsScreenshotEnabled() {
+bool TabsCaptureVisibleTabFunction::IsScreenshotEnabled() const {
   PrefService* service = chrome_details_.GetProfile()->GetPrefs();
   if (service->GetBoolean(prefs::kDisableScreenshots)) {
-    error_ = keys::kScreenshotsDisabled;
     return false;
   }
   return true;
@@ -1763,10 +1762,14 @@ bool TabsCaptureVisibleTabFunction::RunAsync() {
 
   WebContents* contents = GetWebContentsForID(context_id);
 
-  return CaptureAsync(
+  const CaptureResult capture_result = CaptureAsync(
       contents, image_details.get(),
       base::BindOnce(&TabsCaptureVisibleTabFunction::CopyFromSurfaceComplete,
                      this));
+  if (capture_result == OK)
+    return true;
+  SetErrorMessage(capture_result);
+  return false;
 }
 
 void TabsCaptureVisibleTabFunction::OnCaptureSuccess(const SkBitmap& bitmap) {
@@ -1780,9 +1783,14 @@ void TabsCaptureVisibleTabFunction::OnCaptureSuccess(const SkBitmap& bitmap) {
   SendResponse(true);
 }
 
-void TabsCaptureVisibleTabFunction::OnCaptureFailure(FailureReason reason) {
+void TabsCaptureVisibleTabFunction::OnCaptureFailure(CaptureResult result) {
+  SetErrorMessage(result);
+  SendResponse(false);
+}
+
+void TabsCaptureVisibleTabFunction::SetErrorMessage(CaptureResult result) {
   const char* reason_description = "internal error";
-  switch (reason) {
+  switch (result) {
     case FAILURE_REASON_READBACK_FAILED:
       reason_description = "image readback failed";
       break;
@@ -1792,10 +1800,16 @@ void TabsCaptureVisibleTabFunction::OnCaptureFailure(FailureReason reason) {
     case FAILURE_REASON_VIEW_INVISIBLE:
       reason_description = "view is invisible";
       break;
+    case FAILURE_REASON_SCREEN_SHOTS_DISABLED:
+      error_ = keys::kScreenshotsDisabled;
+      return;
+    case OK:
+      NOTREACHED()
+          << "SetErrorMessage should not be called with a successful result";
+      return;
   }
   error_ = ErrorUtils::FormatErrorMessage("Failed to capture tab: *",
                                           reason_description);
-  SendResponse(false);
 }
 
 void TabsCaptureVisibleTabFunction::RegisterProfilePrefs(

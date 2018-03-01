@@ -64,10 +64,12 @@ class WebViewInternalCaptureVisibleRegionFunction
   bool RunAsyncSafe(WebViewGuest* guest) override;
 
   // extensions::WebContentsCaptureClient:
-  bool IsScreenshotEnabled() override;
+  bool IsScreenshotEnabled() const override;
   bool ClientAllowsTransparency() override;
   void OnCaptureSuccess(const SkBitmap& bitmap) override;
-  void OnCaptureFailure(FailureReason reason) override;
+  void OnCaptureFailure(CaptureResult result) override;
+
+  void SetErrorMessage(CaptureResult result);
 
   bool is_guest_transparent_;
 

@@ -315,13 +315,17 @@ bool WebViewInternalCaptureVisibleRegionFunction::RunAsyncSafe(
   }
 
   is_guest_transparent_ = guest->allow_transparency();
-  return CaptureAsync(
+  const CaptureResult capture_result = CaptureAsync(
       guest->web_contents(), image_details.get(),
       base::BindOnce(
           &WebViewInternalCaptureVisibleRegionFunction::CopyFromSurfaceComplete,
           this));
+  if (capture_result == OK)
+    return true;
+  SetErrorMessage(capture_result);
+  return false;
 }
-bool WebViewInternalCaptureVisibleRegionFunction::IsScreenshotEnabled() {
+bool WebViewInternalCaptureVisibleRegionFunction::IsScreenshotEnabled() const {
   // TODO(wjmaclean): Is it ok to always return true here?
   return true;
 }
@@ -343,9 +347,15 @@ void WebViewInternalCaptureVisibleRegionFunction::OnCaptureSuccess(
 }
 
 void WebViewInternalCaptureVisibleRegionFunction::OnCaptureFailure(
-    FailureReason reason) {
+    CaptureResult result) {
+  SetErrorMessage(result);
+  SendResponse(false);
+}
+
+void WebViewInternalCaptureVisibleRegionFunction::SetErrorMessage(
+    CaptureResult result) {
   const char* reason_description = "internal error";
-  switch (reason) {
+  switch (result) {
     case FAILURE_REASON_READBACK_FAILED:
       reason_description = "image readback failed";
       break;
@@ -355,10 +365,17 @@ void WebViewInternalCaptureVisibleRegionFunction::OnCaptureFailure(
     case FAILURE_REASON_VIEW_INVISIBLE:
       reason_description = "view is invisible";
       break;
+    case FAILURE_REASON_SCREEN_SHOTS_DISABLED:
+      NOTREACHED() << "WebViewInternalCaptureVisibleRegionFunction always have "
+                      "screenshots enabled";
+      break;
+    case OK:
+      NOTREACHED()
+          << "SetErrorMessage should not be called with a successful result";
+      return;
   }
   error_ = ErrorUtils::FormatErrorMessage("Failed to capture webview: *",
                                           reason_description);
-  SendResponse(false);
 }
 
 ExtensionFunction::ResponseAction WebViewInternalNavigateFunction::Run() {

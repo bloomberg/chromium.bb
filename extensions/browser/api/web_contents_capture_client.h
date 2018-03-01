@@ -26,19 +26,22 @@ class WebContentsCaptureClient {
  protected:
   virtual ~WebContentsCaptureClient() {}
 
-  virtual bool IsScreenshotEnabled() = 0;
+  virtual bool IsScreenshotEnabled() const = 0;
   virtual bool ClientAllowsTransparency() = 0;
 
-  enum FailureReason {
+  enum CaptureResult {
+    OK,
     FAILURE_REASON_READBACK_FAILED,
     FAILURE_REASON_ENCODING_FAILED,
-    FAILURE_REASON_VIEW_INVISIBLE
+    FAILURE_REASON_SCREEN_SHOTS_DISABLED,
+    FAILURE_REASON_VIEW_INVISIBLE,
   };
-  bool CaptureAsync(content::WebContents* web_contents,
-                    const api::extension_types::ImageDetails* image_detail,
-                    base::OnceCallback<void(const SkBitmap&)> callback);
+  CaptureResult CaptureAsync(
+      content::WebContents* web_contents,
+      const api::extension_types::ImageDetails* image_detail,
+      base::OnceCallback<void(const SkBitmap&)> callback);
   bool EncodeBitmap(const SkBitmap& bitmap, std::string* base64_result);
-  virtual void OnCaptureFailure(FailureReason reason) = 0;
+  virtual void OnCaptureFailure(CaptureResult result) = 0;
   virtual void OnCaptureSuccess(const SkBitmap& bitmap) = 0;
   void CopyFromSurfaceComplete(const SkBitmap& bitmap);
 
