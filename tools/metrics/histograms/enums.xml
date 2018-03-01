@@ -17900,6 +17900,10 @@ Called by update_net_error_codes.py.-->
   <int value="2376" label="V8LockManager_Query_Method"/>
   <int value="2377"
       label="UserMediaEnableExperimentalHardwareEchoCancellation"/>
+  <int value="2378" label="V8RTCDTMFSender_Track_AttributeGetter"/>
+  <int value="2379" label="V8RTCDTMFSender_Duration_AttributeGetter"/>
+  <int value="2380" label="V8RTCDTMFSender_InterToneGap_AttributeGetter"/>
+  <int value="2381" label="V8RTCRtpSender_Dtmf_AttributeGetter"/>
 </enum>
 
 <enum name="FeedbackSource">
