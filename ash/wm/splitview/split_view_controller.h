@@ -50,7 +50,7 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
   // "LEFT" and "RIGHT" but it doesn't literally mean left side of the screen or
   // right side of the screen. For example, if the screen orientation is
   // "portait primary", snapping a window to LEFT means snapping it to the
-  // bottom of the screen.
+  // top of the screen.
   enum SnapPosition { NONE, LEFT, RIGHT };
 
   class Observer {
@@ -71,11 +71,6 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
   // mode is only supported in tablet mode.
   static bool ShouldAllowSplitView();
 
-  // Returns true if |left_window_| should be placed on the left or top side of
-  // the screen.
-  static bool IsLeftWindowOnTopOrLeftOfScreen(
-      blink::WebScreenOrientationLockType screen_orientation);
-
   // Binds the mojom::SplitViewController interface to this object.
   void BindRequest(mojom::SplitViewControllerRequest request);
 
@@ -85,7 +80,12 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
   // Returns true if split view mode is active.
   bool IsSplitViewModeActive() const;
 
+  // Returns true if |screen_orientation_| is a landscape orientation.
   bool IsCurrentScreenOrientationLandscape() const;
+
+  // Returns true if |screen_orientation_| is a primary orientation. Note,
+  // |left_window_| should be placed on the left or top side if the screen is
+  // primary orientation.
   bool IsCurrentScreenOrientationPrimary() const;
 
   // Snaps window to left/right.

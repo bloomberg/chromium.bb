@@ -67,12 +67,12 @@ gfx::Transform ComputeRotateAroundCenterTransform(const gfx::Rect& bounds,
 // and RIGHT_SNAPPED which do not always correspond to the physical left and
 // right of the screen. See split_view_controller.h for more details.
 bool IsPhantomOnLeftTopOfScreen(IndicatorState indicator_state) {
-  const blink::WebScreenOrientationLockType orientation =
-      Shell::Get()->split_view_controller()->screen_orientation();
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
   return (indicator_state == IndicatorState::kPhantomLeft &&
-          SplitViewController::IsLeftWindowOnTopOrLeftOfScreen(orientation)) ||
+          split_view_controller->IsCurrentScreenOrientationPrimary()) ||
          (indicator_state == IndicatorState::kPhantomRight &&
-          !SplitViewController::IsLeftWindowOnTopOrLeftOfScreen(orientation));
+          !split_view_controller->IsCurrentScreenOrientationPrimary());
 }
 
 }  // namespace
