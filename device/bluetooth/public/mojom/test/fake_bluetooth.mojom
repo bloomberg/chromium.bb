@@ -38,6 +38,37 @@ enum CentralState {
   POWERED_OFF,
 };
 
+// Stores the external appearance description of the device.
+struct Appearance {
+  bool has_value;
+  int8 value;
+};
+
+// Stores the transmission power of a broadcasting device.
+struct Power {
+  bool has_value;
+  int8 value;
+};
+
+// Stores the byte data of the advertisement packet sent by a Bluetooth device.
+struct ScanRecord {
+  string? name;
+  array<UUID>? uuids;
+  Appearance appearance;
+  Power tx_power;
+
+  map<uint8, array<uint8>>? manufacturer_data;
+  // TODO(https://crbug.com/817603): Add the service_data field once a typemap
+  // for this field and device::BluetoothDevice::ServiceDataMap exists.
+};
+
+// Stores the advertisement packet information that is sent by a Bluetooth device.
+struct ScanResult {
+  string device_address;
+  int8 rssi;
+  ScanRecord scan_record;
+};
+
 // FakeBluetooth allows clients to control the global Bluetooth state.
 interface FakeBluetooth {
   // Set it to indicate whether the platform supports BLE. For example, Windows
@@ -108,6 +139,11 @@ interface FakeCentral {
   SimulatePreconnectedPeripheral(string address,
                                  string name,
                                  array<UUID> known_service_uuids) => ();
+
+  // Simulates an advertisement packet described in |result| being received by the
+  // central. If the central is currently scanning, the detected device will be
+  // added to the list of detected devices. Otherwise, the call will DCHECK.
+  SimulateAdvertisementReceived(ScanResult result) => ();
 
   // Sets the next GATT Connection request response for peripheral with
   // |address| to |code|. |code| could be an HCI Error Code from
