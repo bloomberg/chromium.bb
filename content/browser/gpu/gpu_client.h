@@ -27,13 +27,12 @@ class GpuClient : public ui::mojom::Gpu {
                              const gpu::GPUInfo& gpu_info,
                              const gpu::GpuFeatureInfo& gpu_feature_info,
                              GpuProcessHost::EstablishChannelStatus status);
-  void OnCreateGpuMemoryBuffer(const CreateGpuMemoryBufferCallback& callback,
+  void OnCreateGpuMemoryBuffer(CreateGpuMemoryBufferCallback callback,
                                const gfx::GpuMemoryBufferHandle& handle);
   void ClearCallback();
 
   // ui::mojom::Gpu overrides:
-  void EstablishGpuChannel(
-      const EstablishGpuChannelCallback& callback) override;
+  void EstablishGpuChannel(EstablishGpuChannelCallback callback) override;
   void CreateJpegDecodeAccelerator(
       media::mojom::JpegDecodeAcceleratorRequest jda_request) override;
   void CreateVideoEncodeAcceleratorProvider(
@@ -44,7 +43,7 @@ class GpuClient : public ui::mojom::Gpu {
       const gfx::Size& size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage,
-      const ui::mojom::Gpu::CreateGpuMemoryBufferCallback& callback) override;
+      ui::mojom::Gpu::CreateGpuMemoryBufferCallback callback) override;
   void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                               const gpu::SyncToken& sync_token) override;
 

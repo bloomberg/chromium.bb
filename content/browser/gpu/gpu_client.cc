@@ -61,13 +61,13 @@ void GpuClient::OnEstablishGpuChannel(
 
   if (status == GpuProcessHost::EstablishChannelStatus::GPU_HOST_INVALID) {
     // GPU process may have crashed or been killed. Try again.
-    EstablishGpuChannel(callback);
+    EstablishGpuChannel(std::move(callback));
     return;
   }
   if (callback) {
     // A request is waiting.
-    callback.Run(render_process_id_, std::move(channel_handle), gpu_info,
-                 gpu_feature_info);
+    std::move(callback).Run(render_process_id_, std::move(channel_handle),
+                            gpu_info, gpu_feature_info);
     return;
   }
   if (status == GpuProcessHost::EstablishChannelStatus::SUCCESS) {
@@ -80,22 +80,21 @@ void GpuClient::OnEstablishGpuChannel(
 }
 
 void GpuClient::OnCreateGpuMemoryBuffer(
-    const CreateGpuMemoryBufferCallback& callback,
+    CreateGpuMemoryBufferCallback callback,
     const gfx::GpuMemoryBufferHandle& handle) {
-  callback.Run(handle);
+  std::move(callback).Run(handle);
 }
 
 void GpuClient::ClearCallback() {
   if (!callback_)
     return;
   EstablishGpuChannelCallback callback = std::move(callback_);
-  callback.Run(render_process_id_, mojo::ScopedMessagePipeHandle(),
-               gpu::GPUInfo(), gpu::GpuFeatureInfo());
+  std::move(callback).Run(render_process_id_, mojo::ScopedMessagePipeHandle(),
+                          gpu::GPUInfo(), gpu::GpuFeatureInfo());
   DCHECK(!callback_);
 }
 
-void GpuClient::EstablishGpuChannel(
-    const EstablishGpuChannelCallback& callback) {
+void GpuClient::EstablishGpuChannel(EstablishGpuChannelCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // At most one channel should be requested. So clear previous request first.
   ClearCallback();
@@ -105,8 +104,8 @@ void GpuClient::EstablishGpuChannel(
     //   2) if callback is empty, it's PreEstablishGpyChannel() being called
     //      more than once, no need to do anything.
     if (callback) {
-      callback.Run(render_process_id_, std::move(channel_handle_), gpu_info_,
-                   gpu_feature_info_);
+      std::move(callback).Run(render_process_id_, std::move(channel_handle_),
+                              gpu_info_, gpu_feature_info_);
       DCHECK(!channel_handle_.is_valid());
     }
     return;
@@ -114,12 +113,13 @@ void GpuClient::EstablishGpuChannel(
   GpuProcessHost* host = GpuProcessHost::Get();
   if (!host) {
     if (callback) {
-      callback.Run(render_process_id_, mojo::ScopedMessagePipeHandle(),
-                   gpu::GPUInfo(), gpu::GpuFeatureInfo());
+      std::move(callback).Run(render_process_id_,
+                              mojo::ScopedMessagePipeHandle(), gpu::GPUInfo(),
+                              gpu::GpuFeatureInfo());
     }
     return;
   }
-  callback_ = callback;
+  callback_ = std::move(callback);
   if (gpu_channel_requested_)
     return;
   gpu_channel_requested_ = true;
@@ -156,21 +156,21 @@ void GpuClient::CreateGpuMemoryBuffer(
     const gfx::Size& size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
-    const ui::mojom::Gpu::CreateGpuMemoryBufferCallback& callback) {
+    ui::mojom::Gpu::CreateGpuMemoryBufferCallback callback) {
   DCHECK(BrowserGpuMemoryBufferManager::current());
 
   base::CheckedNumeric<int> bytes = size.width();
   bytes *= size.height();
   if (!bytes.IsValid()) {
-    OnCreateGpuMemoryBuffer(callback, gfx::GpuMemoryBufferHandle());
+    OnCreateGpuMemoryBuffer(std::move(callback), gfx::GpuMemoryBufferHandle());
     return;
   }
 
   BrowserGpuMemoryBufferManager::current()
       ->AllocateGpuMemoryBufferForChildProcess(
           id, size, format, usage, render_process_id_,
-          base::Bind(&GpuClient::OnCreateGpuMemoryBuffer,
-                     weak_factory_.GetWeakPtr(), callback));
+          base::BindOnce(&GpuClient::OnCreateGpuMemoryBuffer,
+                         weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void GpuClient::DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,

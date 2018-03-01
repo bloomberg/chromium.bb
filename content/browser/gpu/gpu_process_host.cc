@@ -864,11 +864,11 @@ void GpuProcessHost::CreateGpuMemoryBuffer(
     gfx::BufferUsage usage,
     int client_id,
     gpu::SurfaceHandle surface_handle,
-    const CreateGpuMemoryBufferCallback& callback) {
+    CreateGpuMemoryBufferCallback callback) {
   TRACE_EVENT0("gpu", "GpuProcessHost::CreateGpuMemoryBuffer");
 
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  create_gpu_memory_buffer_requests_.push(callback);
+  create_gpu_memory_buffer_requests_.push(std::move(callback));
   gpu_service_ptr_->CreateGpuMemoryBuffer(
       id, size, format, usage, client_id, surface_handle,
       base::BindOnce(&GpuProcessHost::OnGpuMemoryBufferCreated,
@@ -960,9 +960,9 @@ void GpuProcessHost::OnGpuMemoryBufferCreated(
   TRACE_EVENT0("gpu", "GpuProcessHost::OnGpuMemoryBufferCreated");
 
   DCHECK(!create_gpu_memory_buffer_requests_.empty());
-  auto callback = create_gpu_memory_buffer_requests_.front();
+  auto callback = std::move(create_gpu_memory_buffer_requests_.front());
   create_gpu_memory_buffer_requests_.pop();
-  callback.Run(handle, BufferCreationStatus::SUCCESS);
+  std::move(callback).Run(handle, BufferCreationStatus::SUCCESS);
 }
 
 #if defined(OS_ANDROID)
@@ -1277,10 +1277,10 @@ void GpuProcessHost::SendOutstandingReplies(
   }
 
   while (!create_gpu_memory_buffer_requests_.empty()) {
-    auto callback = create_gpu_memory_buffer_requests_.front();
+    auto callback = std::move(create_gpu_memory_buffer_requests_.front());
     create_gpu_memory_buffer_requests_.pop();
-    callback.Run(gfx::GpuMemoryBufferHandle(),
-                 BufferCreationStatus::GPU_HOST_INVALID);
+    std::move(callback).Run(gfx::GpuMemoryBufferHandle(),
+                            BufferCreationStatus::GPU_HOST_INVALID);
   }
 
   if (!send_destroying_video_surface_done_cb_.is_null())

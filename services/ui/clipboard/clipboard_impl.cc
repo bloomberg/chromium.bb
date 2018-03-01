@@ -65,39 +65,36 @@ void ClipboardImpl::AddBinding(mojom::ClipboardRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
-void ClipboardImpl::GetSequenceNumber(
-    Clipboard::Type clipboard_type,
-    const GetSequenceNumberCallback& callback) {
-  callback.Run(
+void ClipboardImpl::GetSequenceNumber(Clipboard::Type clipboard_type,
+                                      GetSequenceNumberCallback callback) {
+  std::move(callback).Run(
       clipboard_state_[static_cast<int>(clipboard_type)]->sequence_number());
 }
 
 void ClipboardImpl::GetAvailableMimeTypes(
     Clipboard::Type clipboard_type,
-    const GetAvailableMimeTypesCallback& callback) {
+    GetAvailableMimeTypesCallback callback) {
   int clipboard_num = static_cast<int>(clipboard_type);
-  callback.Run(clipboard_state_[clipboard_num]->sequence_number(),
-               clipboard_state_[clipboard_num]->GetMimeTypes());
+  std::move(callback).Run(clipboard_state_[clipboard_num]->sequence_number(),
+                          clipboard_state_[clipboard_num]->GetMimeTypes());
 }
 
-void ClipboardImpl::ReadClipboardData(
-    Clipboard::Type clipboard_type,
-    const std::string& mime_type,
-    const ReadClipboardDataCallback& callback) {
+void ClipboardImpl::ReadClipboardData(Clipboard::Type clipboard_type,
+                                      const std::string& mime_type,
+                                      ReadClipboardDataCallback callback) {
   int clipboard_num = static_cast<int>(clipboard_type);
   base::Optional<std::vector<uint8_t>> mime_data;
   uint64_t sequence = clipboard_state_[clipboard_num]->sequence_number();
   clipboard_state_[clipboard_num]->GetData(mime_type, &mime_data);
-  callback.Run(sequence, std::move(mime_data));
+  std::move(callback).Run(sequence, std::move(mime_data));
 }
 
-void ClipboardImpl::WriteClipboardData(
-    Clipboard::Type clipboard_type,
-    const base::Optional<DataMap>& data,
-    const WriteClipboardDataCallback& callback) {
+void ClipboardImpl::WriteClipboardData(Clipboard::Type clipboard_type,
+                                       const base::Optional<DataMap>& data,
+                                       WriteClipboardDataCallback callback) {
   int clipboard_num = static_cast<int>(clipboard_type);
   clipboard_state_[clipboard_num]->SetData(data);
-  callback.Run(clipboard_state_[clipboard_num]->sequence_number());
+  std::move(callback).Run(clipboard_state_[clipboard_num]->sequence_number());
 }
 
 }  // namespace clipboard

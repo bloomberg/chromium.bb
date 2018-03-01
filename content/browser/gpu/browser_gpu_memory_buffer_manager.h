@@ -29,7 +29,7 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
       public base::trace_event::MemoryDumpProvider {
  public:
   using CreateCallback =
-      base::Callback<void(const gfx::GpuMemoryBufferHandle& handle)>;
+      base::OnceCallback<void(const gfx::GpuMemoryBufferHandle& handle)>;
   using AllocationCallback = CreateCallback;
 
   BrowserGpuMemoryBufferManager(int gpu_client_id,
@@ -51,13 +51,12 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
-  void AllocateGpuMemoryBufferForChildProcess(
-      gfx::GpuMemoryBufferId id,
-      const gfx::Size& size,
-      gfx::BufferFormat format,
-      gfx::BufferUsage usage,
-      int child_client_id,
-      const AllocationCallback& callback);
+  void AllocateGpuMemoryBufferForChildProcess(gfx::GpuMemoryBufferId id,
+                                              const gfx::Size& size,
+                                              gfx::BufferFormat format,
+                                              gfx::BufferUsage usage,
+                                              int child_client_id,
+                                              AllocationCallback callback);
   void ChildProcessDeletedGpuMemoryBuffer(
       gfx::GpuMemoryBufferId id,
       int child_client_id,
@@ -106,12 +105,12 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
                                  gfx::BufferUsage usage,
                                  gpu::SurfaceHandle surface_handle,
                                  int client_id,
-                                 const CreateCallback& callback);
+                                 CreateCallback callback);
   void GpuMemoryBufferCreatedOnIO(gfx::GpuMemoryBufferId id,
                                   gpu::SurfaceHandle surface_handle,
                                   int client_id,
                                   int gpu_host_id,
-                                  const CreateCallback& callback,
+                                  CreateCallback callback,
                                   const gfx::GpuMemoryBufferHandle& handle,
                                   GpuProcessHost::BufferCreationStatus status);
   void DestroyGpuMemoryBufferOnIO(gfx::GpuMemoryBufferId id,
