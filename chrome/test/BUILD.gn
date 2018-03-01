@@ -3129,6 +3129,8 @@ test("unit_tests") {
       "../browser/notifications/chrome_ash_message_center_client_unittest.cc",
       "../browser/renderer_context_menu/mock_render_view_context_menu.cc",
       "../browser/renderer_context_menu/mock_render_view_context_menu.h",
+      "../browser/signin/easy_unlock_app_manager_unittest.cc",
+      "../browser/signin/easy_unlock_auth_attempt_unittest.cc",
       "../browser/signin/signin_error_notifier_ash_unittest.cc",
       "../browser/sync/sync_error_notifier_ash_unittest.cc",
       "../browser/ui/ash/accessibility/accessibility_controller_client_unittest.cc",
@@ -3248,7 +3250,6 @@ test("unit_tests") {
       "../browser/extensions/api/developer_private/extension_info_generator_unittest.cc",
       "../browser/extensions/api/device_permissions_manager_unittest.cc",
       "../browser/extensions/api/downloads/downloads_api_unittest.cc",
-      "../browser/extensions/api/easy_unlock_private/easy_unlock_private_api_chromeos_unittest.cc",
       "../browser/extensions/api/extension_action/browser_action_unittest.cc",
       "../browser/extensions/api/extension_action/extension_action_prefs_unittest.cc",
       "../browser/extensions/api/file_system/file_system_api_unittest.cc",
@@ -3384,7 +3385,6 @@ test("unit_tests") {
       "../browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_test_utils.cc",
       "../browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_test_utils.h",
       "../browser/safe_search_api/safe_search_url_checker_unittest.cc",
-      "../browser/signin/easy_unlock_auth_attempt_unittest.cc",
       "../browser/signin/easy_unlock_notification_controller_chromeos_unittest.cc",
       "../browser/signin/easy_unlock_screenlock_state_handler_unittest.cc",
       "../browser/signin/easy_unlock_service_unittest_chromeos.cc",
@@ -3533,8 +3533,8 @@ test("unit_tests") {
     }
     if (is_chromeos) {
       sources += [
+        "../browser/extensions/api/easy_unlock_private/easy_unlock_private_api_chromeos_unittest.cc",
         "../browser/extensions/api/file_system/consent_provider_unittest.cc",
-        "../browser/signin/easy_unlock_app_manager_unittest.cc",
       ]
     } else {
       sources += [

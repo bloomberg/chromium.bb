@@ -9,14 +9,11 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_key_manager.h"
 #include "chrome/browser/signin/easy_unlock_app_manager.h"
 #include "components/proximity_auth/screenlock_bridge.h"
 #include "components/proximity_auth/switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_key_manager.h"
-#endif
 
 namespace {
 
@@ -24,12 +21,10 @@ namespace {
 const char kTestUser1[] = "user1";
 const char kTestUser2[] = "user2";
 
-#if defined(OS_CHROMEOS)
 const unsigned char kSecret[] = {
     0x7c, 0x85, 0x82, 0x7d, 0x00, 0x1f, 0x6a, 0x29, 0x2f, 0xc4, 0xb5, 0x60,
     0x08, 0x9b, 0xb0, 0x5b
 };
-#endif
 
 const unsigned char kSessionKey[] = {
     0xc3, 0xd9, 0x83, 0x16, 0x52, 0xde, 0x99, 0xd7, 0x4e, 0x60, 0xf9, 0xec,
@@ -42,12 +37,10 @@ const unsigned char kWrappedSecret[] = {
     0xfc, 0x40, 0x1f, 0xeb, 0x75, 0x64, 0x52, 0xd8
 };
 
-#if defined(OS_CHROMEOS)
 std::string GetSecret() {
   return std::string(reinterpret_cast<const char*>(kSecret),
                      arraysize(kSecret));
 }
-#endif
 
 std::string GetWrappedSecret() {
   return std::string(reinterpret_cast<const char*>(kWrappedSecret),
@@ -186,7 +179,6 @@ class TestLockHandler : public proximity_auth::ScreenlockBridge::LockHandler {
   void AttemptEasySignin(const AccountId& account_id,
                          const std::string& secret,
                          const std::string& key_label) override {
-#if defined(OS_CHROMEOS)
     ASSERT_TRUE(account_id_ == account_id)
         << "account_id_=" << account_id_.Serialize()
         << " != " << account_id.Serialize();
@@ -199,9 +191,6 @@ class TestLockHandler : public proximity_auth::ScreenlockBridge::LockHandler {
       ASSERT_EQ(chromeos::EasyUnlockKeyManager::GetKeyLabel(0u), key_label);
       state_ = STATE_SIGNIN_DONE;
     }
-#else  // if !defined(OS_CHROMEOS)
-    ADD_FAILURE() << "Should not be reached.";
-#endif
   }
 
  private:
@@ -372,7 +361,6 @@ TEST_F(EasyUnlockAuthAttemptUnlockTest, FinalizeUnlockCalledForWrongUser) {
   ASSERT_EQ(TestLockHandler::STATE_UNLOCK_DONE, lock_handler_->state());
 }
 
-#if defined(OS_CHROMEOS)
 class EasyUnlockAuthAttemptSigninTest : public testing::Test {
  public:
   EasyUnlockAuthAttemptSigninTest() {}
@@ -578,6 +566,5 @@ TEST_F(EasyUnlockAuthAttemptSigninTest, FinalizeSigninCalledForWrongUser) {
 
   EXPECT_EQ(TestLockHandler::STATE_SIGNIN_DONE, lock_handler_->state());
 }
-#endif  // defined(OS_CHROMEOS)
 
 }  // namespace
