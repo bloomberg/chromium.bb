@@ -57,10 +57,6 @@ bool ReadOrWrite(int fd,
     ssize_t transacted_bytes =
         HANDLE_EINTR(Traits::Operate(fd, buffer + offset, bytes_to_transact));
     if (transacted_bytes < 0) {
-      if (errno == EAGAIN) {
-        sched_yield();
-        continue;
-      }
       logging::PError("%s failed", Traits::kNameString);
       return false;
     }
@@ -76,21 +72,13 @@ bool ReadOrWrite(int fd,
 SeatbeltExecClient::SeatbeltExecClient() {
   if (pipe(pipe_) != 0)
     logging::PFatal("SeatbeltExecClient: pipe failed");
-
-  int pipe_flags = fcntl(pipe_[1], F_GETFL);
-  if (pipe_flags == -1)
-    logging::PFatal("SeatbeltExecClient: fctnl(F_GETFL) failed");
-
-  if (fcntl(pipe_[1], F_SETFL, pipe_flags | O_NONBLOCK) == -1)
-    logging::PFatal("SeatbeltExecClient: fcntl(F_SETFL) failed");
 }
 
 SeatbeltExecClient::~SeatbeltExecClient() {
+  if (pipe_[0] != -1)
+    IGNORE_EINTR(close(pipe_[0]));
   if (pipe_[1] != -1)
     IGNORE_EINTR(close(pipe_[1]));
-  // If pipe() fails, PCHECK() will be hit in the constructor, so this file
-  // descriptor should always be closed if the proess is alive at this point.
-  IGNORE_EINTR(close(pipe_[0]));
 }
 
 bool SeatbeltExecClient::SetBooleanParameter(const std::string& key,
@@ -110,26 +98,30 @@ void SeatbeltExecClient::SetProfile(const std::string& policy) {
   policy_.set_profile(policy);
 }
 
-int SeatbeltExecClient::SendProfileAndGetFD() {
+int SeatbeltExecClient::GetReadFD() {
+  return pipe_[0];
+}
+
+bool SeatbeltExecClient::SendProfile() {
+  IGNORE_EINTR(close(pipe_[0]));
+  pipe_[0] = -1;
+
   std::string serialized_protobuf;
   if (!policy_.SerializeToString(&serialized_protobuf)) {
     logging::Error("SeatbeltExecClient: Serializing the profile failed.");
-    return -1;
+    return false;
   }
 
   if (!WriteString(serialized_protobuf)) {
     logging::Error(
         "SeatbeltExecClient: Writing the serialized profile failed.");
-    return -1;
+    return false;
   }
 
   IGNORE_EINTR(close(pipe_[1]));
   pipe_[1] = -1;
 
-  if (pipe_[0] < 0)
-    logging::Error("SeatbeltExecClient: The pipe returned an invalid fd.");
-
-  return pipe_[0];
+  return true;
 }
 
 bool SeatbeltExecClient::WriteString(const std::string& str) {

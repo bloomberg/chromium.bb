@@ -36,9 +36,14 @@ class SEATBELT_EXPORT SeatbeltExecClient {
   // Set the actual sandbox profile, using the scheme-like SBPL.
   void SetProfile(const std::string& policy);
 
-  // Sends the policy to the SeatbeltExecServer and returns the communication
-  // FD. The FD should be mapped into the sandboxed child process.
-  int SendProfileAndGetFD();
+  // This returns the FD used for reading the sandbox profile in the child
+  // process. The FD should be mapped into the sandboxed child process.
+  // This must be called before SendProfile() or the returned FD will be -1.
+  // Callers should check that the returned FD is valid.
+  int GetReadFD();
+
+  // Sends the policy to the SeatbeltExecServer and returns success or failure.
+  bool SendProfile();
 
   // Returns the underlying protobuf for testing purposes.
   const mac::SandboxPolicy& GetPolicyForTesting() { return policy_; }
