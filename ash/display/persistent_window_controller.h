@@ -20,6 +20,10 @@ class ASH_EXPORT PersistentWindowController
       public SessionObserver,
       public WindowTreeHostManager::Observer {
  public:
+  // Public so it can be used by unit tests.
+  constexpr static char kNumOfWindowsRestoredHistogramName[] =
+      "Ash.PersistentWindow.NumOfWindowsRestored";
+
   PersistentWindowController();
   ~PersistentWindowController() override;
 

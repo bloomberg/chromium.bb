@@ -11,6 +11,7 @@
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_state.h"
 #include "base/command_line.h"
+#include "base/metrics/histogram_macros.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 
@@ -49,6 +50,7 @@ void MaybeRestorePersistentWindowBounds() {
     return;
 
   display::Screen* screen = display::Screen::GetScreen();
+  int window_restored_count = 0;
   for (auto* window : GetWindowList()) {
     wm::WindowState* window_state = wm::GetWindowState(window);
     if (!window_state->persistent_window_info())
@@ -80,10 +82,20 @@ void MaybeRestorePersistentWindowBounds() {
     window->SetBoundsInScreen(persistent_window_bounds, display);
     // Reset persistent window info everytime the window bounds have restored.
     window_state->ResetPersistentWindowInfo();
+
+    ++window_restored_count;
+  }
+
+  if (window_restored_count != 0) {
+    UMA_HISTOGRAM_COUNTS_100(
+        PersistentWindowController::kNumOfWindowsRestoredHistogramName,
+        window_restored_count);
   }
 }
 
 }  // namespace
+
+constexpr char PersistentWindowController::kNumOfWindowsRestoredHistogramName[];
 
 PersistentWindowController::PersistentWindowController() {
   display::Screen::GetScreen()->AddObserver(this);
