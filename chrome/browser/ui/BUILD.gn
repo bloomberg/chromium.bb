@@ -3547,6 +3547,8 @@ split_static_library("ui") {
         "app_list/crostini/crostini_app_item.h",
         "app_list/crostini/crostini_app_model_builder.cc",
         "app_list/crostini/crostini_app_model_builder.h",
+        "app_list/crostini/crostini_installer_view.cc",
+        "app_list/crostini/crostini_installer_view.h",
         "app_list/crostini/crostini_util.cc",
         "app_list/crostini/crostini_util.h",
         "app_list/search/arc_app_result.cc",

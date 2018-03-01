@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/app_list/crostini/crostini_app_item.h"
 
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
+#include "chrome/browser/ui/app_list/crostini/crostini_installer_view.h"
 #include "ui/gfx/image/image_skia.h"
 
 // static
@@ -33,14 +34,12 @@ const char* CrostiniAppItem::GetItemType() const {
 }
 
 void CrostiniAppItem::Activate(int event_flags) {
-  // TODO(813699): launch the app, launching the Crostini install flow if
-  // needed e.g. like chrome/browser/ui/app_list/arc/arc_app_utils.cc
+  // TODO(813699): launch the app if needed e.g. like
+  // chrome/browser/ui/app_list/arc/arc_app_utils.cc
   // if (!crostini::LaunchApp(profile(), id(), event_flags,
   //                    GetController()->GetAppListDisplayId())) {
-  //  return;
-  //}
+  //   return;
+  // }
 
-  // Manually close app_list view because focus is not changed on Crostini app
-  // start, and current view remains active.
-  GetController()->DismissView();
+  CrostiniInstallerView::Show(this);
 }
