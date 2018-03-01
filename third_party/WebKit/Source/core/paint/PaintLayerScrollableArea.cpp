@@ -761,7 +761,13 @@ bool PaintLayerScrollableArea::ScrollbarsCanBeActive() const {
 }
 
 IntRect PaintLayerScrollableArea::ScrollableAreaBoundingBox() const {
-  return GetLayoutBox()->AbsoluteBoundingBoxRect(kTraverseDocumentBoundaries);
+  if (LocalFrame* frame = GetLayoutBox()->GetFrame()) {
+    if (LocalFrameView* local_root = frame->LocalFrameRoot().View()) {
+      return local_root->RootFrameToDocument(frame->View()->AbsoluteToRootFrame(
+          GetLayoutBox()->AbsoluteBoundingBoxRect(0)));
+    }
+  }
+  return IntRect();
 }
 
 void PaintLayerScrollableArea::RegisterForAnimation() {

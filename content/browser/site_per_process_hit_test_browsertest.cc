@@ -407,6 +407,29 @@ bool ConvertJSONToPoint(const std::string& str, gfx::PointF* point) {
   point->set_y(y);
   return true;
 }
+
+bool ConvertJSONToRect(const std::string& str, gfx::Rect* rect) {
+  std::unique_ptr<base::Value> value = base::JSONReader::Read(str);
+  if (!value)
+    return false;
+  base::DictionaryValue* root;
+  if (!value->GetAsDictionary(&root))
+    return false;
+  int x, y, width, height;
+  if (!root->GetInteger("x", &x))
+    return false;
+  if (!root->GetInteger("y", &y))
+    return false;
+  if (!root->GetInteger("width", &width))
+    return false;
+  if (!root->GetInteger("height", &height))
+    return false;
+  rect->set_x(x);
+  rect->set_y(y);
+  rect->set_width(width);
+  rect->set_height(height);
+  return true;
+}
 #endif  // defined(USE_AURA)
 
 }  // namespace
@@ -620,6 +643,189 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessInternalsHitTestBrowserTest,
       "document.getElementById('scrollable_div').scrollTop);",
       &div_scroll_top));
   EXPECT_NE(div_scroll_top_start, div_scroll_top);
+}
+
+IN_PROC_BROWSER_TEST_P(SitePerProcessInternalsHitTestBrowserTest,
+                       NestedLocalNonFastScrollableDivCoordsAreLocal) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  ASSERT_EQ(1U, root->child_count());
+
+  FrameTreeNode* parent_iframe_node = root->child_at(0);
+
+  GURL site_url(embedded_test_server()->GetURL(
+      "b.com", "/tall_page_with_local_iframe.html"));
+  NavigateFrameToURL(parent_iframe_node, site_url);
+
+  FrameTreeNode* nested_iframe_node = parent_iframe_node->child_at(0);
+  WaitForChildFrameSurfaceReady(nested_iframe_node->current_frame_host());
+
+  EXPECT_EQ(
+      " Site A ------------ proxies for B\n"
+      "   +--Site B ------- proxies for A\n"
+      "        +--Site B -- proxies for A\n"
+      "Where A = http://a.com/\n"
+      "      B = http://b.com/",
+      DepictFrameTree(root));
+
+  const char* get_element_location_script_fmt =
+      "var rect = "
+      "document.getElementById('%s').getBoundingClientRect();\n"
+      "var point = {\n"
+      "  x: rect.left,\n"
+      "  y: rect.top\n"
+      "};\n"
+      "window.domAutomationController.send(JSON.stringify(point));";
+
+  // Since the nested local b-frame shares the RenderWidgetHostViewChildFrame
+  // with the parent frame, we need to query element offsets in both documents
+  // before converting to root space coordinates for the wheel event.
+  std::string str;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      nested_iframe_node->current_frame_host(),
+      base::StringPrintf(get_element_location_script_fmt, "scrollable_div"),
+      &str));
+  gfx::PointF nested_point_f;
+  ConvertJSONToPoint(str, &nested_point_f);
+
+  int num_non_fast_region_rects;
+  EXPECT_TRUE(ExecuteScriptAndExtractInt(
+      parent_iframe_node->current_frame_host(),
+      "window.internals.markGestureScrollRegionDirty(document);\n"
+      "window.internals.forceCompositingUpdate(document);\n"
+      "var rects = window.internals.nonFastScrollableRects(document);\n"
+      "window.domAutomationController.send(rects.length);",
+      &num_non_fast_region_rects));
+  EXPECT_EQ(1, num_non_fast_region_rects);
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      parent_iframe_node->current_frame_host(),
+      "var rect = {\n"
+      "  x: rects[0].left,\n"
+      "  y: rects[0].top,\n"
+      "  width: rects[0].width,\n"
+      "  height: rects[0].height\n"
+      "};\n"
+      "window.domAutomationController.send(JSON.stringify(rect));",
+      &str));
+  gfx::Rect non_fast_scrollable_rect_before_scroll;
+  ConvertJSONToRect(str, &non_fast_scrollable_rect_before_scroll);
+
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      parent_iframe_node->current_frame_host(),
+      base::StringPrintf(get_element_location_script_fmt, "nested_frame"),
+      &str));
+  gfx::PointF parent_offset_f;
+  ConvertJSONToPoint(str, &parent_offset_f);
+
+  // Compute location for wheel event to scroll the parent with respect to the
+  // mainframe.
+  gfx::PointF point_f(parent_offset_f.x() + 1.f, parent_offset_f.y() + 1.f);
+
+  RenderWidgetHostViewChildFrame* rwhv_parent =
+      static_cast<RenderWidgetHostViewChildFrame*>(
+          parent_iframe_node->current_frame_host()
+              ->GetRenderWidgetHost()
+              ->GetView());
+  point_f = rwhv_parent->TransformPointToRootCoordSpaceF(point_f);
+
+  RenderWidgetHostViewAura* rwhv_root = static_cast<RenderWidgetHostViewAura*>(
+      root->current_frame_host()->GetRenderWidgetHost()->GetView());
+
+  gfx::PointF nested_in_parent;
+  rwhv_root->TransformPointToCoordSpaceForView(
+      point_f,
+      parent_iframe_node->current_frame_host()
+          ->GetRenderWidgetHost()
+          ->GetView(),
+      &nested_in_parent);
+
+  // Get original scroll position.
+  int div_scroll_top_start;
+  EXPECT_TRUE(
+      ExecuteScriptAndExtractInt(parent_iframe_node->current_frame_host(),
+                                 "window.domAutomationController.send("
+                                 "document.body.scrollTop);",
+                                 &div_scroll_top_start));
+  EXPECT_EQ(0, div_scroll_top_start);
+
+  // Wait until renderer's compositor thread is synced. Otherwise the event
+  // handler won't be installed when the event arrives.
+  MainThreadFrameObserver observer(rwhv_root->GetRenderWidgetHost());
+  observer.Wait();
+  {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(),
+        // tiny_timeout() is too small to run without flakes, but
+        // action_timeout() is 100 times bigger, which is overkill. We use a
+        // custom delay here to achieve a balance.
+        base::TimeDelta::FromMilliseconds(1000));
+    run_loop.Run();
+  }
+
+  // Send a wheel to scroll the parent containing the div.
+  gfx::Point location(point_f.x(), point_f.y());
+  ui::ScrollEvent scroll_event(ui::ET_SCROLL, location, ui::EventTimeForNow(),
+                               0, 0, -ui::MouseWheelEvent::kWheelDelta, 0,
+                               ui::MouseWheelEvent::kWheelDelta,
+                               2);  // This must be '2' or it gets silently
+                                    // dropped.
+  UpdateEventRootLocation(&scroll_event, rwhv_root);
+  rwhv_root->OnScrollEvent(&scroll_event);
+
+  InputEventAckWaiter ack_observer(
+      parent_iframe_node->current_frame_host()->GetRenderWidgetHost(),
+      blink::WebInputEvent::kGestureScrollUpdate);
+  ack_observer.Wait();
+
+  // Check compositor layers.
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      nested_iframe_node->current_frame_host(),
+      "window.domAutomationController.send("
+      "window.internals.layerTreeAsText(document));",
+      &str));
+  // We expect the nested OOPIF to not have any compositor layers.
+  EXPECT_EQ(std::string(), str);
+
+  // Verify the div scrolled.
+  int div_scroll_top = div_scroll_top_start;
+  EXPECT_TRUE(
+      ExecuteScriptAndExtractInt(parent_iframe_node->current_frame_host(),
+                                 "window.domAutomationController.send("
+                                 "document.body.scrollTop);",
+                                 &div_scroll_top));
+  EXPECT_NE(div_scroll_top_start, div_scroll_top);
+
+  // Verify the non-fast scrollable region rect is the same, even though the
+  // parent scroll isn't.
+  EXPECT_TRUE(ExecuteScriptAndExtractInt(
+      parent_iframe_node->current_frame_host(),
+      "window.internals.markGestureScrollRegionDirty(document);\n"
+      "window.internals.forceCompositingUpdate(document);\n"
+      "var rects = window.internals.nonFastScrollableRects(document);\n"
+      "window.domAutomationController.send(rects.length);",
+      &num_non_fast_region_rects));
+  EXPECT_EQ(1, num_non_fast_region_rects);
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      parent_iframe_node->current_frame_host(),
+      "var rect = {\n"
+      "  x: rects[0].left,\n"
+      "  y: rects[0].top,\n"
+      "  width: rects[0].width,\n"
+      "  height: rects[0].height\n"
+      "};\n"
+      "window.domAutomationController.send(JSON.stringify(rect));",
+      &str));
+  gfx::Rect non_fast_scrollable_rect_after_scroll;
+  ConvertJSONToRect(str, &non_fast_scrollable_rect_after_scroll);
+  EXPECT_EQ(non_fast_scrollable_rect_before_scroll,
+            non_fast_scrollable_rect_after_scroll);
 }
 #endif  // defined(USE_AURA)
 

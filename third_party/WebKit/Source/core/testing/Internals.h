@@ -350,6 +350,7 @@ class Internals final : public ScriptWrappable {
 
   String scrollingStateTreeAsText(Document*) const;
   String mainThreadScrollingReasons(Document*, ExceptionState&) const;
+  void markGestureScrollRegionDirty(Document*, ExceptionState&) const;
   DOMRectList* nonFastScrollableRects(Document*, ExceptionState&) const;
 
   void evictAllResources() const;
