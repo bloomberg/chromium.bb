@@ -141,8 +141,6 @@ class UserMediaProcessor::RequestInfo
   // successfully started, or a source has failed to start.
   void CallbackOnTracksStarted(const ResourcesReady& callback);
 
-  bool HasPendingSources() const;
-
   // Called when a local audio source has finished (or failed) initializing.
   void OnAudioSourceStarted(MediaStreamSource* source,
                             MediaStreamRequestResult result,
@@ -329,10 +327,6 @@ void UserMediaProcessor::RequestInfo::CheckAllTracksStarted() {
     ready_callback_.Run(this, request_result_, request_result_name_);
     // NOTE: |this| might now be deleted.
   }
-}
-
-bool UserMediaProcessor::RequestInfo::HasPendingSources() const {
-  return !sources_waiting_for_callback_.empty();
 }
 
 void UserMediaProcessor::RequestInfo::OnAudioSourceStarted(
@@ -1215,22 +1209,22 @@ bool UserMediaProcessor::DeleteWebRequest(
 
 void UserMediaProcessor::StopAllProcessing() {
   if (current_request_info_) {
-    // If the request is not generated, it means that a request has been sent to
-    // the MediaStreamDispatcherHost to generate a stream but
-    // MediaStreamDispatcherHost has not yet responded and we need to cancel the
-    // request.
-    if (current_request_info_->state() == RequestInfo::State::GENERATED) {
-      DCHECK(current_request_info_->HasPendingSources());
-      LogUserMediaRequestWithNoResult(
-          MEDIA_STREAM_REQUEST_PENDING_MEDIA_TRACKS);
-    } else {
-      DCHECK(!current_request_info_->HasPendingSources());
-      if (current_request_info_->state() ==
-          RequestInfo::State::SENT_FOR_GENERATION) {
+    switch (current_request_info_->state()) {
+      case RequestInfo::State::SENT_FOR_GENERATION:
+        // Let the browser process know that the previously sent request must be
+        // canceled.
         GetMediaStreamDispatcherHost()->CancelRequest(
             current_request_info_->request_id());
-      }
-      LogUserMediaRequestWithNoResult(MEDIA_STREAM_REQUEST_NOT_GENERATED);
+        FALLTHROUGH;
+
+      case RequestInfo::State::NOT_SENT_FOR_GENERATION:
+        LogUserMediaRequestWithNoResult(MEDIA_STREAM_REQUEST_NOT_GENERATED);
+        break;
+
+      case RequestInfo::State::GENERATED:
+        LogUserMediaRequestWithNoResult(
+            MEDIA_STREAM_REQUEST_PENDING_MEDIA_TRACKS);
+        break;
     }
     current_request_info_.reset();
   }
