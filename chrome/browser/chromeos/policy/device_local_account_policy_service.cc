@@ -52,6 +52,13 @@ namespace policy {
 
 namespace {
 
+// Device local accounts are always affiliated.
+std::string GetDeviceDMToken(
+    chromeos::DeviceSettingsService* device_settings_service,
+    const std::vector<std::string>& user_affiliation_ids) {
+  return device_settings_service->policy_data()->request_token();
+}
+
 // Creates and initializes a cloud policy client. Returns nullptr if the device
 // doesn't have credentials in device settings (i.e. is not
 // enterprise-enrolled).
@@ -71,9 +78,13 @@ std::unique_ptr<CloudPolicyClient> CreateClient(
       std::make_unique<CloudPolicyClient>(
           std::string() /* machine_id */, std::string() /* machine_model */,
           device_management_service, system_request_context,
-          nullptr /* signing_service */);
+          nullptr /* signing_service */,
+          base::BindRepeating(&GetDeviceDMToken, device_settings_service));
+  std::vector<std::string> user_affiliation_ids(
+      policy_data->user_affiliation_ids().begin(),
+      policy_data->user_affiliation_ids().end());
   client->SetupRegistration(policy_data->request_token(),
-                            policy_data->device_id());
+                            policy_data->device_id(), user_affiliation_ids);
   return client;
 }
 

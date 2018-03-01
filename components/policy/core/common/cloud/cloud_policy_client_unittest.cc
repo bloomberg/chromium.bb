@@ -44,6 +44,7 @@ const char kMachineID[] = "fake-machine-id";
 const char kMachineModel[] = "fake-machine-model";
 const char kOAuthToken[] = "fake-oauth-token";
 const char kDMToken[] = "fake-dm-token";
+const char kDeviceDMToken[] = "fake-device-dm-token";
 const char kMachineCertificate[] = "fake-machine-certificate";
 const char kEnrollmentCertificate[] = "fake-enrollment-certificate";
 const char kRequisition[] = "fake-requisition";
@@ -91,6 +92,14 @@ class MockAvailableLicensesObserver {
                void(bool, const CloudPolicyClient::LicenseMap&));
 };
 
+class MockDeviceDMTokenCallbackObserver {
+ public:
+  MockDeviceDMTokenCallbackObserver() {}
+
+  MOCK_METHOD1(OnDeviceDMTokenRequested,
+               std::string(const std::vector<std::string>&));
+};
+
 }  // namespace
 
 class CloudPolicyClientTest : public testing::Test {
@@ -132,6 +141,7 @@ class CloudPolicyClientTest : public testing::Test {
     policy_fetch_request->set_policy_type(dm_protocol::kChromeUserPolicyType);
     policy_fetch_request->set_signature_type(em::PolicyFetchRequest::SHA1_RSA);
     policy_fetch_request->set_verification_key_hash(kPolicyVerificationKeyHash);
+    policy_fetch_request->set_device_dm_token(kDeviceDMToken);
     policy_response_.mutable_policy_response()->add_response()->set_policy_data(
         CreatePolicyData("fake-policy-data"));
 
@@ -221,7 +231,10 @@ class CloudPolicyClientTest : public testing::Test {
 
   void Register() {
     EXPECT_CALL(observer_, OnRegistrationStateChanged(_));
-    client_->SetupRegistration(kDMToken, client_id_);
+    EXPECT_CALL(device_dmtoken_callback_observer_, OnDeviceDMTokenRequested(_))
+        .WillOnce(Return(kDeviceDMToken));
+    client_->SetupRegistration(kDMToken, client_id_,
+                               std::vector<std::string>());
   }
 
   void CreateClient() {
@@ -230,9 +243,12 @@ class CloudPolicyClientTest : public testing::Test {
 
     request_context_ =
         new net::TestURLRequestContextGetter(loop_.task_runner());
-    client_ = std::make_unique<CloudPolicyClient>(kMachineID, kMachineModel,
-                                                  &service_, request_context_,
-                                                  &fake_signing_service_);
+    client_ = std::make_unique<CloudPolicyClient>(
+        kMachineID, kMachineModel, &service_, request_context_,
+        &fake_signing_service_,
+        base::BindRepeating(
+            &MockDeviceDMTokenCallbackObserver::OnDeviceDMTokenRequested,
+            base::Unretained(&device_dmtoken_callback_observer_)));
     client_->AddPolicyTypeToFetch(policy_type_, std::string());
     client_->AddObserver(&observer_);
   }
@@ -250,6 +266,8 @@ class CloudPolicyClientTest : public testing::Test {
   }
 
   void ExpectCertBasedRegistration() {
+    EXPECT_CALL(device_dmtoken_callback_observer_, OnDeviceDMTokenRequested(_))
+        .WillOnce(Return(kDeviceDMToken));
     EXPECT_CALL(service_, CreateJob(
         DeviceManagementRequestJob::TYPE_CERT_BASED_REGISTRATION,
         request_context_))
@@ -432,6 +450,8 @@ class CloudPolicyClientTest : public testing::Test {
   StrictMock<MockCloudPolicyClientObserver> observer_;
   StrictMock<MockStatusCallbackObserver> callback_observer_;
   StrictMock<MockAvailableLicensesObserver> license_callback_observer_;
+  StrictMock<MockDeviceDMTokenCallbackObserver>
+      device_dmtoken_callback_observer_;
   FakeSigningService fake_signing_service_;
   std::unique_ptr<CloudPolicyClient> client_;
   // Pointer to the client's request context.
@@ -448,7 +468,9 @@ TEST_F(CloudPolicyClientTest, Init) {
 TEST_F(CloudPolicyClientTest, SetupRegistrationAndPolicyFetch) {
   EXPECT_CALL(service_, CreateJob(_, _)).Times(0);
   EXPECT_CALL(observer_, OnRegistrationStateChanged(_));
-  client_->SetupRegistration(kDMToken, client_id_);
+  EXPECT_CALL(device_dmtoken_callback_observer_, OnDeviceDMTokenRequested(_))
+      .WillOnce(Return(kDeviceDMToken));
+  client_->SetupRegistration(kDMToken, client_id_, std::vector<std::string>());
   EXPECT_TRUE(client_->is_registered());
   EXPECT_FALSE(client_->GetPolicyFor(policy_type_, std::string()));
 
@@ -462,6 +484,8 @@ TEST_F(CloudPolicyClientTest, SetupRegistrationAndPolicyFetch) {
 TEST_F(CloudPolicyClientTest, RegistrationAndPolicyFetch) {
   ExpectRegistration(kOAuthToken);
   EXPECT_CALL(observer_, OnRegistrationStateChanged(_));
+  EXPECT_CALL(device_dmtoken_callback_observer_, OnDeviceDMTokenRequested(_))
+      .WillOnce(Return(kDeviceDMToken));
   client_->Register(em::DeviceRegisterRequest::USER,
                     em::DeviceRegisterRequest::FLAVOR_USER_REGISTRATION,
                     em::DeviceRegisterRequest::LIFETIME_INDEFINITE,
@@ -522,6 +546,8 @@ TEST_F(CloudPolicyClientTest, RegistrationParametersPassedThrough) {
       em::DeviceRegisterRequest::FLAVOR_ENROLLMENT_MANUAL);
   ExpectRegistration(kOAuthToken);
   EXPECT_CALL(observer_, OnRegistrationStateChanged(_));
+  EXPECT_CALL(device_dmtoken_callback_observer_, OnDeviceDMTokenRequested(_))
+      .WillOnce(Return(kDeviceDMToken));
   client_->Register(em::DeviceRegisterRequest::USER,
                     em::DeviceRegisterRequest::FLAVOR_ENROLLMENT_MANUAL,
                     em::DeviceRegisterRequest::LIFETIME_INDEFINITE,

@@ -4,12 +4,42 @@
 
 #include "chrome/browser/chromeos/login/users/affiliation.h"
 
+#include "base/callback.h"
 #include "base/command_line.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
+#include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "components/policy/core/common/policy_switches.h"
+#include "components/policy/proto/device_management_backend.pb.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
 namespace chromeos {
+
+namespace {
+
+std::string GetDeviceDMTokenIfAffiliated(
+    const AccountId& account_id,
+    const std::vector<std::string>& user_affiliation_ids) {
+  const AffiliationIDSet set_of_user_affiliation_ids(
+      user_affiliation_ids.begin(), user_affiliation_ids.end());
+  const policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  DCHECK(connector);
+  const bool is_affiliated = IsUserAffiliated(
+      set_of_user_affiliation_ids, connector->GetDeviceAffiliationIDs(),
+      account_id.GetUserEmail());
+  if (is_affiliated) {
+    const enterprise_management::PolicyData* policy_data =
+        DeviceSettingsService::Get()->policy_data();
+    CHECK(policy_data);
+    return policy_data->request_token();
+  }
+  return std::string();
+}
+
+}  // namespace
 
 bool HaveCommonElement(const std::set<std::string>& set1,
                        const std::set<std::string>& set2) {
@@ -55,6 +85,11 @@ bool IsUserAffiliated(const AffiliationIDSet& user_affiliation_ids,
   }
 
   return false;
+}
+
+base::RepeatingCallback<std::string(const std::vector<std::string>&)>
+GetDeviceDMTokenForUserPolicyGetter(const AccountId& account_id) {
+  return base::BindRepeating(&GetDeviceDMTokenIfAffiliated, account_id);
 }
 
 }  // namespace chromeos

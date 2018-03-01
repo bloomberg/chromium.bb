@@ -7,6 +7,11 @@
 
 #include <set>
 #include <string>
+#include <vector>
+
+#include "base/callback_forward.h"
+
+class AccountId;
 
 namespace chromeos {
 
@@ -26,6 +31,11 @@ bool HaveCommonElement(const std::set<std::string>& set1,
 bool IsUserAffiliated(const AffiliationIDSet& user_affiliation_ids,
                       const AffiliationIDSet& device_affiliation_ids,
                       const std::string& email);
+
+// Returns a callback to retrieve device DMToken if the user with
+// given |account_id| is affiliated on the device.
+base::RepeatingCallback<std::string(const std::vector<std::string>&)>
+GetDeviceDMTokenForUserPolicyGetter(const AccountId& account_id);
 
 }  // namespace chromeos
 

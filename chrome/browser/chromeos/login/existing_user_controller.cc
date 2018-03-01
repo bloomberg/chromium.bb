@@ -40,6 +40,7 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chrome/browser/chromeos/login/user_flow.h"
+#include "chrome/browser/chromeos/login/users/affiliation.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -1072,7 +1073,9 @@ void ExistingUserController::OnOldEncryptionDetected(
   auto cloud_policy_client = std::make_unique<policy::CloudPolicyClient>(
       std::string() /* machine_id */, std::string() /* machine_model */,
       device_management_service, signin_profile_context,
-      nullptr /* signing_service */);
+      nullptr /* signing_service */,
+      chromeos::GetDeviceDMTokenForUserPolicyGetter(
+          user_context.GetAccountId()));
   pre_signin_policy_fetcher_ = std::make_unique<policy::PreSigninPolicyFetcher>(
       DBusThreadManager::Get()->GetCryptohomeClient(),
       DBusThreadManager::Get()->GetSessionManagerClient(),

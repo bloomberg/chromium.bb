@@ -232,7 +232,7 @@ TEST_F(CloudPolicyManagerTest, InitAndShutdown) {
   EXPECT_TRUE(manager_->IsInitializationComplete(POLICY_DOMAIN_CHROME));
 
   MockCloudPolicyClient* client = new MockCloudPolicyClient();
-  EXPECT_CALL(*client, SetupRegistration(_, _));
+  EXPECT_CALL(*client, SetupRegistration(_, _, _));
   manager_->core()->Connect(std::unique_ptr<CloudPolicyClient>(client));
   Mock::VerifyAndClearExpectations(client);
   EXPECT_TRUE(manager_->client());
@@ -308,7 +308,7 @@ TEST_F(CloudPolicyManagerTest, RefreshSuccessful) {
   // Simulate a store load.
   store_.policy_.reset(new em::PolicyData(policy_.policy_data()));
   EXPECT_CALL(observer_, OnUpdatePolicy(manager_.get()));
-  EXPECT_CALL(*client, SetupRegistration(_, _));
+  EXPECT_CALL(*client, SetupRegistration(_, _, _));
   store_.NotifyStoreLoaded();
   Mock::VerifyAndClearExpectations(client);
   Mock::VerifyAndClearExpectations(&observer_);

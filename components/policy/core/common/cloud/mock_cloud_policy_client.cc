@@ -18,7 +18,8 @@ MockCloudPolicyClient::MockCloudPolicyClient()
                         std::string(), /* machine_model */
                         nullptr,       /* service */
                         nullptr,       /* request_context */
-                        nullptr /* signing_service */) {}
+                        nullptr /* signing_service */,
+                        CloudPolicyClient::DeviceDMTokenCallback()) {}
 
 MockCloudPolicyClient::~MockCloudPolicyClient() {}
 

@@ -289,10 +289,12 @@ std::unique_ptr<CloudPolicyClient> DeviceCloudPolicyInitializer::CreateClient(
   std::string machine_model;
   statistics_provider_->GetMachineStatistic(chromeos::system::kHardwareClassKey,
                                             &machine_model);
+  // DeviceDMToken callback is empty here because for device policies this
+  // DMToken is already provided in the policy fetch requests.
   return std::make_unique<CloudPolicyClient>(
       statistics_provider_->GetEnterpriseMachineID(), machine_model,
       device_management_service, g_browser_process->system_request_context(),
-      signing_service_.get());
+      signing_service_.get(), CloudPolicyClient::DeviceDMTokenCallback());
 }
 
 void DeviceCloudPolicyInitializer::TryToCreateClient() {

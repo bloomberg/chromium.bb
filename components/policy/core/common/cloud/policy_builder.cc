@@ -133,6 +133,9 @@ const uint8_t kNewSigningKeySignature[] = {
     0xDD, 0x6F, 0x80, 0xC3,
 };
 
+const char user_affiliation_id1[] = "id1";
+const char user_affiliation_id2[] = "id2";
+
 std::vector<uint8_t> ExportPublicKey(const crypto::RSAPrivateKey& key) {
   std::vector<uint8_t> public_key;
   CHECK(key.ExportPublicKey(&public_key));
@@ -183,6 +186,8 @@ PolicyBuilder::PolicyBuilder() {
   policy_data_->set_device_id(kFakeDeviceId);
   policy_data_->set_state(em::PolicyData::ACTIVE);
   policy_data_->set_service_account_identity(kFakeServiceAccountIdentity);
+  policy_data_->add_user_affiliation_ids(user_affiliation_id1);
+  policy_data_->add_user_affiliation_ids(user_affiliation_id2);
 }
 
 PolicyBuilder::~PolicyBuilder() {}
@@ -351,6 +356,11 @@ std::string PolicyBuilder::GetPublicTestKeyAsString() {
 // static
 std::string PolicyBuilder::GetPublicTestOtherKeyAsString() {
   return ConvertPublicKeyToString(GetPublicTestOtherKey());
+}
+
+// static
+std::vector<std::string> PolicyBuilder::GetUserAffiliationIds() {
+  return {user_affiliation_id1, user_affiliation_id2};
 }
 
 template<>
