@@ -23,7 +23,6 @@
 #include "components/history/core/browser/history_model_worker.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/typed_url_sync_bridge.h"
-#include "components/history/core/browser/typed_url_syncable_service.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/password_store.h"
@@ -301,13 +300,6 @@ IOSChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
               browser_state_, ServiceAccessType::EXPLICIT_ACCESS);
       return history ? history->AsWeakPtr()
                      : base::WeakPtr<history::HistoryService>();
-    }
-    case syncer::TYPED_URLS: {
-      history::HistoryService* history =
-          ios::HistoryServiceFactory::GetForBrowserState(
-              browser_state_, ServiceAccessType::EXPLICIT_ACCESS);
-      return history ? history->GetTypedUrlSyncableService()->AsWeakPtr()
-                     : base::WeakPtr<syncer::SyncableService>();
     }
     case syncer::FAVICON_IMAGES:
     case syncer::FAVICON_TRACKING: {

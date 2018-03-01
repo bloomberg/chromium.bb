@@ -54,7 +54,6 @@ class HistoryDatabase;
 struct HistoryDatabaseParams;
 class HistoryDBTask;
 class InMemoryHistoryBackend;
-class TypedUrlSyncableService;
 class HistoryBackendHelper;
 class URLDatabase;
 
@@ -410,10 +409,6 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   virtual bool GetURL(const GURL& url, URLRow* url_row);
 
   bool GetURLByID(URLID url_id, URLRow* url_row);
-
-  // Returns the syncable service for syncing typed urls. The returned service
-  // is owned by |this| object.
-  virtual TypedUrlSyncableService* GetTypedUrlSyncableService() const;
 
   // Returns the sync bridge for syncing typed urls. The returned service
   // is owned by |this| object.
@@ -936,11 +931,9 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // List of observers
   base::ObserverList<HistoryBackendObserver> observers_;
 
-  // Used to manage syncing of the typed urls datatype. They will be null before
-  // Init is called, and only one will be instantiated after Init is called
-  // depending on switches::kSyncUSSTypedURL. Defined after observers_ because
+  // Used to manage syncing of the typed urls datatype. It will be null before
+  // HistoryBackend::Init is called. Defined after observers_ because
   // it unregisters itself as observer during destruction.
-  std::unique_ptr<TypedUrlSyncableService> typed_url_syncable_service_;
   std::unique_ptr<TypedURLSyncBridge> typed_url_sync_bridge_;
 
   DISALLOW_COPY_AND_ASSIGN(HistoryBackend);

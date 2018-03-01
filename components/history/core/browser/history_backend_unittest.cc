@@ -3863,6 +3863,7 @@ TEST_F(HistoryBackendTest, DeleteFTSIndexDatabases) {
 // Tests that calling DatabaseErrorCallback doesn't cause crash. (Regression
 // test for https://crbug.com/796138)
 TEST_F(HistoryBackendTest, DatabaseError) {
+  backend_->SetTypedURLSyncBridgeForTest(nullptr);
   EXPECT_EQ(nullptr, backend_->GetTypedURLSyncBridge());
   backend_->DatabaseErrorCallback(SQLITE_CORRUPT, nullptr);
   // Run loop to let any posted callbacks run before TearDown().

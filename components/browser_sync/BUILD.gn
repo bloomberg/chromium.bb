@@ -53,7 +53,6 @@ source_set("unit_tests") {
     "profile_sync_service_autofill_unittest.cc",
     "profile_sync_service_bookmark_unittest.cc",
     "profile_sync_service_startup_unittest.cc",
-    "profile_sync_service_typed_url_unittest.cc",
     "profile_sync_service_unittest.cc",
   ]
 

@@ -16,7 +16,6 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
-#include "base/feature_list.h"
 #include "base/files/file_enumerator.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
@@ -40,9 +39,7 @@
 #include "components/history/core/browser/in_memory_history_backend.h"
 #include "components/history/core/browser/keyword_search_term.h"
 #include "components/history/core/browser/page_usage_data.h"
-#include "components/history/core/browser/typed_url_syncable_service.h"
 #include "components/history/core/browser/url_utils.h"
-#include "components/sync/driver/sync_driver_switches.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "sql/error_delegate_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -218,15 +215,12 @@ void HistoryBackend::Init(
   if (!force_fail)
     InitImpl(history_database_params);
   delegate_->DBLoaded();
-  if (base::FeatureList::IsEnabled(switches::kSyncUSSTypedURL)) {
-    typed_url_sync_bridge_ = std::make_unique<TypedURLSyncBridge>(
-        this, db_.get(), base::BindRepeating(&ModelTypeChangeProcessor::Create,
-                                             base::RepeatingClosure()));
-    typed_url_sync_bridge_->Init();
-  } else {
-    typed_url_syncable_service_ =
-        std::make_unique<TypedUrlSyncableService>(this);
-  }
+
+  typed_url_sync_bridge_ = std::make_unique<TypedURLSyncBridge>(
+      this, db_.get(),
+      base::BindRepeating(&ModelTypeChangeProcessor::Create,
+                          base::RepeatingClosure()));
+  typed_url_sync_bridge_->Init();
 
   memory_pressure_listener_.reset(new base::MemoryPressureListener(
       base::Bind(&HistoryBackend::OnMemoryPressure, base::Unretained(this))));
@@ -1085,10 +1079,6 @@ void HistoryBackend::QueryURL(const GURL& url,
   // Optionally query the visits.
   if (result->success && want_visits)
     db_->GetVisitsForURL(result->row.id(), &result->visits);
-}
-
-TypedUrlSyncableService* HistoryBackend::GetTypedUrlSyncableService() const {
-  return typed_url_syncable_service_.get();
 }
 
 TypedURLSyncBridge* HistoryBackend::GetTypedURLSyncBridge() const {
