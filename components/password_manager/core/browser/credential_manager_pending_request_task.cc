@@ -157,6 +157,11 @@ void CredentialManagerPendingRequestTask::ProcessForms(
     delegate_->SendCredential(send_callback_, CredentialInfo());
     return;
   }
+  // Get rid of the blacklisted credentials.
+  base::EraseIf(results,
+                [](const std::unique_ptr<autofill::PasswordForm>& form) {
+                  return form->blacklisted_by_user;
+                });
 
   std::vector<std::unique_ptr<autofill::PasswordForm>> local_results;
   std::vector<std::unique_ptr<autofill::PasswordForm>> psl_results;
