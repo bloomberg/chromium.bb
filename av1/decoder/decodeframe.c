@@ -180,13 +180,16 @@ static void decode_reconstruct_tx(AV1_COMMON *cm, MACROBLOCKD *const xd,
     // tx_type will be read out in av1_read_coeffs_txb_facade
     const TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, blk_row, blk_col,
                                             tx_size, cm->reduced_tx_set_used);
-
 #if TXCOEFF_TIMER
     aom_usec_timer_mark(&timer);
     const int64_t elapsed_time = aom_usec_timer_elapsed(&timer);
     cm->txcoeff_timer += elapsed_time;
     ++cm->txb_count;
 #endif
+
+    if (plane == 0)
+      update_txk_array(mbmi->txk_type, mbmi->sb_type, blk_row, blk_col, tx_size,
+                       tx_type);
 
     uint8_t *dst =
         &pd->dst

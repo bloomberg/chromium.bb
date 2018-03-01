@@ -857,6 +857,31 @@ static INLINE int av1_get_txk_type_index(BLOCK_SIZE bsize, int blk_row,
   return index;
 }
 
+static INLINE void update_txk_array(TX_TYPE *txk_type, BLOCK_SIZE bsize,
+                                    int blk_row, int blk_col, TX_SIZE tx_size,
+                                    TX_TYPE tx_type) {
+  const int txk_type_idx = av1_get_txk_type_index(bsize, blk_row, blk_col);
+  txk_type[txk_type_idx] = tx_type;
+
+  const int txw = tx_size_wide_unit[tx_size];
+  const int txh = tx_size_high_unit[tx_size];
+  // The 16x16 unit is due to the constraint from tx_64x64 which sets the
+  // maximum tx size for chroma as 32x32. Coupled with 4x1 transform block
+  // size, the constraint takes effect in 32x16 / 16x32 size too. To solve
+  // the intricacy, cover all the 16x16 units inside a 64 level transform.
+  if (txw == tx_size_wide_unit[TX_64X64] ||
+      txh == tx_size_high_unit[TX_64X64]) {
+    const int tx_unit = tx_size_wide_unit[TX_16X16];
+    for (int idy = 0; idy < txh; idy += tx_unit) {
+      for (int idx = 0; idx < txw; idx += tx_unit) {
+        const int this_index =
+            av1_get_txk_type_index(bsize, blk_row + idy, blk_col + idx);
+        txk_type[this_index] = tx_type;
+      }
+    }
+  }
+}
+
 static INLINE TX_TYPE av1_get_tx_type(PLANE_TYPE plane_type,
                                       const MACROBLOCKD *xd, int blk_row,
                                       int blk_col, TX_SIZE tx_size,
