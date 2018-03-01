@@ -694,31 +694,50 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="Accel_Move_Window_To_Above_Display">
+<action name="Accel_Move_Active_Window_Between_Displays">
   <owner>warx@chromium.org</owner>
   <description>
-    User presses accelerator trying to move active window to above display.
+    User presses accelerator to move active window between displays.
+  </description>
+</action>
+
+<action name="Accel_Move_Window_To_Above_Display">
+  <obsolete>
+    Replaced with Accel_Move_Active_Window_Between_Displays in March 2018.
+  </obsolete>
+  <owner>warx@chromium.org</owner>
+  <description>
+    User presses accelerator to move active window to above display.
   </description>
 </action>
 
 <action name="Accel_Move_Window_To_Below_Display">
+  <obsolete>
+    Replaced with Accel_Move_Active_Window_Between_Displays in March 2018.
+  </obsolete>
   <owner>warx@chromium.org</owner>
   <description>
-    User presses accelerator trying to move active window to below display.
+    User presses accelerator to move active window to below display.
   </description>
 </action>
 
 <action name="Accel_Move_Window_To_Left_Display">
+  <obsolete>
+    Replaced with Accel_Move_Active_Window_Between_Displays in March 2018.
+  </obsolete>
   <owner>warx@chromium.org</owner>
   <description>
-    User presses accelerator trying to move active window to left display.
+    User presses accelerator to move active window to left display.
   </description>
 </action>
 
 <action name="Accel_Move_Window_To_Right_Display">
+  <obsolete>
+    Replaced with Accel_Move_Active_Window_Between_Displays in March 2018.
+  </obsolete>
   <owner>warx@chromium.org</owner>
   <description>
-    User presses accelerator trying to move active window to right display.
+    User presses accelerator to move active window to right display.
   </description>
 </action>
 

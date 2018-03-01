@@ -524,17 +524,8 @@
   <message name="IDS_KSV_DESCRIPTION_FOCUS_PREVIOUS_PANE" desc="Description of the command in keyboard shortcut viewer.">
     Previous pane
   </message>
-  <message name="IDS_KSV_DESCRIPTION_MOVE_WINDOW_TO_ABOVE_DISPLAY" desc="Description of the command in keyboard shortcut viewer.">
-    Move window to external display above main display
-  </message>
-  <message name="IDS_KSV_DESCRIPTION_MOVE_WINDOW_TO_BELOW_DISPLAY" desc="Description of the command in keyboard shortcut viewer.">
-    Move window to external display below main display
-  </message>
-  <message name="IDS_KSV_DESCRIPTION_MOVE_WINDOW_TO_LEFT_DISPLAY" desc="Description of the command in keyboard shortcut viewer.">
-    Move window to external display to the left of main display
-  </message>
-  <message name="IDS_KSV_DESCRIPTION_MOVE_WINDOW_TO_RIGHT_DISPLAY" desc="Description of the command in keyboard shortcut viewer.">
-    Move window to external display to the right of main display
+  <message name="IDS_KSV_DESCRIPTION_MOVE_ACTIVE_WINDOW_BETWEEN_DISPLAYS" desc="Description of the command in keyboard shortcut viewer.">
+    Move active window between displays
   </message>
 
 </grit-part>

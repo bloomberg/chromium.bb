@@ -276,25 +276,6 @@ void HandleMediaPrevTrack() {
   Shell::Get()->media_controller()->HandleMediaPrevTrack();
 }
 
-void HandleMoveWindowBetweenDisplays(AcceleratorAction action) {
-  DisplayMoveWindowDirection direction;
-  if (action == MOVE_WINDOW_TO_ABOVE_DISPLAY) {
-    base::RecordAction(UserMetricsAction("Accel_Move_Window_To_Above_Display"));
-    direction = DisplayMoveWindowDirection::kAbove;
-  } else if (action == MOVE_WINDOW_TO_BELOW_DISPLAY) {
-    base::RecordAction(UserMetricsAction("Accel_Move_Window_To_Below_Display"));
-    direction = DisplayMoveWindowDirection::kBelow;
-  } else if (action == MOVE_WINDOW_TO_LEFT_DISPLAY) {
-    base::RecordAction(UserMetricsAction("Accel_Move_Window_To_Left_Display"));
-    direction = DisplayMoveWindowDirection::kLeft;
-  } else {
-    DCHECK(action == MOVE_WINDOW_TO_RIGHT_DISPLAY);
-    base::RecordAction(UserMetricsAction("Accel_Move_Window_To_Right_Display"));
-    direction = DisplayMoveWindowDirection::kRight;
-  }
-  HandleMoveActiveWindowToDisplay(direction);
-}
-
 void HandleToggleMirrorMode() {
   base::RecordAction(UserMetricsAction("Accel_Toggle_Mirror_Mode"));
   bool mirror = !Shell::Get()->display_manager()->IsInMirrorMode();
@@ -1188,11 +1169,9 @@ bool AcceleratorController::CanPerformAction(
     case MAGNIFIER_ZOOM_IN:
     case MAGNIFIER_ZOOM_OUT:
       return CanHandleActiveMagnifierZoom();
-    case MOVE_WINDOW_TO_ABOVE_DISPLAY:
-    case MOVE_WINDOW_TO_BELOW_DISPLAY:
-    case MOVE_WINDOW_TO_LEFT_DISPLAY:
-    case MOVE_WINDOW_TO_RIGHT_DISPLAY:
-      return CanHandleMoveActiveWindowBetweenDisplays();
+    case MOVE_ACTIVE_WINDOW_BETWEEN_DISPLAYS:
+      return display_move_window_util::
+          CanHandleMoveActiveWindowBetweenDisplays();
     case NEW_INCOGNITO_WINDOW:
       return CanHandleNewIncognitoWindow();
     case NEXT_IME:
@@ -1433,11 +1412,8 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
     case MEDIA_PREV_TRACK:
       HandleMediaPrevTrack();
       break;
-    case MOVE_WINDOW_TO_ABOVE_DISPLAY:
-    case MOVE_WINDOW_TO_BELOW_DISPLAY:
-    case MOVE_WINDOW_TO_LEFT_DISPLAY:
-    case MOVE_WINDOW_TO_RIGHT_DISPLAY:
-      HandleMoveWindowBetweenDisplays(action);
+    case MOVE_ACTIVE_WINDOW_BETWEEN_DISPLAYS:
+      display_move_window_util::HandleMoveActiveWindowBetweenDisplays();
       break;
     case NEW_INCOGNITO_WINDOW:
       HandleNewIncognitoWindow();

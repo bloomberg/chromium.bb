@@ -1116,31 +1116,10 @@ const std::vector<KeyboardShortcutItem>& GetKeyboardShortcutItemList() {
 
       {// |categories|
        {ShortcutCategory::kTabAndWindow},
-       IDS_KSV_DESCRIPTION_MOVE_WINDOW_TO_ABOVE_DISPLAY,
+       IDS_KSV_DESCRIPTION_MOVE_ACTIVE_WINDOW_BETWEEN_DISPLAYS,
        IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY,
        // |accelerator_ids|
-       {{ui::VKEY_UP, ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN}}},
-
-      {// |categories|
-       {ShortcutCategory::kTabAndWindow},
-       IDS_KSV_DESCRIPTION_MOVE_WINDOW_TO_BELOW_DISPLAY,
-       IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY,
-       // |accelerator_ids|
-       {{ui::VKEY_DOWN, ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN}}},
-
-      {// |categories|
-       {ShortcutCategory::kTabAndWindow},
-       IDS_KSV_DESCRIPTION_MOVE_WINDOW_TO_LEFT_DISPLAY,
-       IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY,
-       // |accelerator_ids|
-       {{ui::VKEY_LEFT, ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN}}},
-
-      {// |categories|
-       {ShortcutCategory::kTabAndWindow},
-       IDS_KSV_DESCRIPTION_MOVE_WINDOW_TO_RIGHT_DISPLAY,
-       IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY,
-       // |accelerator_ids|
-       {{ui::VKEY_RIGHT, ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN}}},
+       {{ui::VKEY_M, ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN}}},
   });
 
   static bool is_initialized = false;

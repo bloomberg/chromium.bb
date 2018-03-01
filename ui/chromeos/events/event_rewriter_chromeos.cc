@@ -889,26 +889,6 @@ void EventRewriterChromeOS::RewriteExtendedKeys(const ui::KeyEvent& key_event,
          key_event.type() == ui::ET_KEY_RELEASED);
   MutableKeyState incoming = *state;
 
-  if ((incoming.flags &
-       (ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN)) ==
-      (ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN)) {
-    // Search + Alt + Arrow keys are used to move window between displays, do
-    // not do remappings on these.
-    static const KeyboardRemapping::Condition kUseExistingKeys[] = {
-        {// Alt+Left
-         ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN, ui::VKEY_LEFT},
-        {// Alt+Right
-         ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN, ui::VKEY_RIGHT},
-        {// Alt+Up
-         ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN, ui::VKEY_UP},
-        {// Alt+Down
-         ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN, ui::VKEY_DOWN}};
-    for (const auto& condition : kUseExistingKeys) {
-      if (MatchKeyboardRemapping(*state, condition))
-        return;
-    }
-  }
-
   if ((incoming.flags & (ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN)) ==
       (ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN)) {
     // Allow Search to avoid rewriting extended keys.
