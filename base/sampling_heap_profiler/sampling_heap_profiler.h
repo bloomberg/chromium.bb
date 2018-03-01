@@ -30,14 +30,14 @@ class BASE_EXPORT SamplingHeapProfiler {
     Sample(const Sample&);
     ~Sample();
 
-    size_t size;
-    size_t count;
+    size_t size;   // Allocation size.
+    size_t total;  // Total size attributed to the sample.
     std::vector<void*> stack;
 
    private:
     friend class SamplingHeapProfiler;
 
-    Sample(size_t, size_t count, uint32_t ordinal);
+    Sample(size_t, size_t total, uint32_t ordinal);
 
     uint32_t ordinal;
   };
@@ -45,7 +45,7 @@ class BASE_EXPORT SamplingHeapProfiler {
   class SamplesObserver {
    public:
     virtual ~SamplesObserver() = default;
-    virtual void SampleAdded(uint32_t id, size_t size, size_t count) = 0;
+    virtual void SampleAdded(uint32_t id, size_t size, size_t total) = 0;
     virtual void SampleRemoved(uint32_t id) = 0;
   };
 

@@ -25,8 +25,8 @@ class SamplesCollector : public SamplingHeapProfiler::SamplesObserver {
  public:
   explicit SamplesCollector(size_t watch_size) : watch_size_(watch_size) {}
 
-  void SampleAdded(uint32_t id, size_t size, size_t count) override {
-    if (sample_added || size != watch_size_ || !count)
+  void SampleAdded(uint32_t id, size_t size, size_t) override {
+    if (sample_added || size != watch_size_)
       return;
     sample_id_ = id;
     sample_added = true;
@@ -107,7 +107,7 @@ void CheckAllocationPattern(void (*allocate_callback)()) {
     profiler->Stop();
     std::map<size_t, size_t> buckets;
     for (auto& sample : samples) {
-      buckets[sample.size] += sample.size * sample.count;
+      buckets[sample.size] += sample.total;
     }
     for (auto& it : buckets) {
       if (it.first == 400 || it.first == 700 || it.first == 20480)

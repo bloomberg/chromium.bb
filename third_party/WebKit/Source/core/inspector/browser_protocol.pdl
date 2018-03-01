@@ -3218,8 +3218,8 @@ experimental domain Memory
     properties
       # Size of the sampled allocation.
       number size
-      # Number of sampled allocations of that size.
-      number count
+      # Total bytes attributed to this sample.
+      number total
       # Execution stack at the point of allocation.
       array of string stack
 

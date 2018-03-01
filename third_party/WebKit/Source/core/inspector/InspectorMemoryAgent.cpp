@@ -151,7 +151,7 @@ InspectorMemoryAgent::GetSamplingProfileById(uint32_t id) {
       stack->addItem(it2.c_str());
     samples->addItem(protocol::Memory::SamplingProfileNode::create()
                          .setSize(it.size)
-                         .setCount(it.count)
+                         .setTotal(it.total)
                          .setStack(std::move(stack))
                          .build());
   }
@@ -167,7 +167,7 @@ InspectorMemoryAgent::GetSamplingProfileById(uint32_t id) {
     stack->addItem("<V8 Heap>");
     samples->addItem(protocol::Memory::SamplingProfileNode::create()
                          .setSize(total_bytes)
-                         .setCount(1)
+                         .setTotal(total_bytes)
                          .setStack(std::move(stack))
                          .build());
   }
