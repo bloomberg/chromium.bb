@@ -12,7 +12,7 @@
 #include "core/css/CSSVariableReferenceValue.h"
 #include "core/css/cssom/CSSStyleValue.h"
 #include "core/css/cssom/CSSUnparsedValue.h"
-#include "core/css/cssom/CSSUnsupportedShorthandValue.h"
+#include "core/css/cssom/CSSUnsupportedStyleValue.h"
 #include "core/css/cssom/StyleValueFactory.h"
 #include "core/css/properties/CSSProperty.h"
 
@@ -141,18 +141,10 @@ StylePropertyMapReadOnly::StartIteration(ScriptState*, ExceptionState&) {
 CSSStyleValue* StylePropertyMapReadOnly::GetShorthandProperty(
     const CSSProperty& property) {
   DCHECK(property.IsShorthand());
-  auto* result = CSSUnsupportedShorthandValue::Create(property.PropertyID());
-  const StylePropertyShorthand& shorthand =
-      shorthandForProperty(property.PropertyID());
-  for (size_t i = 0; i < shorthand.length(); i++) {
-    const CSSValue* longhand_value =
-        GetProperty(shorthand.properties()[i]->PropertyID());
-    if (!longhand_value)
-      return nullptr;
-
-    result->Append(longhand_value);
-  }
-  return result;
+  const auto serialization = SerializationForShorthand(property);
+  if (serialization.IsEmpty())
+    return nullptr;
+  return CSSUnsupportedStyleValue::Create(property.PropertyID(), serialization);
 }
 
 }  // namespace blink

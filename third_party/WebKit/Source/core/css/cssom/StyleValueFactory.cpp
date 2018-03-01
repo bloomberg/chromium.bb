@@ -4,6 +4,7 @@
 
 #include "core/css/cssom/StyleValueFactory.h"
 
+#include "core/StylePropertyShorthand.h"
 #include "core/css/CSSCustomPropertyDeclaration.h"
 #include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSImageValue.h"
@@ -119,31 +120,6 @@ CSSStyleValueVector UnsupportedCSSValue(CSSPropertyID property_id,
   return style_value_vector;
 }
 
-const CSSValue* ParseProperty(CSSPropertyID property_id,
-                              const String& css_text,
-                              const CSSParserContext* context) {
-  CSSTokenizer tokenizer(css_text);
-  const auto tokens = tokenizer.TokenizeToEOF();
-  const CSSParserTokenRange range(tokens);
-
-  if (property_id != CSSPropertyVariable) {
-    if (const CSSValue* value =
-            CSSPropertyParser::ParseSingleValue(property_id, range, context)) {
-      return value;
-    }
-  }
-
-  if (property_id == CSSPropertyVariable ||
-      CSSVariableParser::ContainsValidVariableReferences(range)) {
-    return CSSVariableReferenceValue::Create(
-        CSSVariableData::Create(range, false /* is_animation_tainted */,
-                                false /* needs variable resolution */),
-        *context);
-  }
-
-  return nullptr;
-}
-
 }  // namespace
 
 CSSStyleValueVector StyleValueFactory::FromString(
@@ -151,16 +127,41 @@ CSSStyleValueVector StyleValueFactory::FromString(
     const String& css_text,
     const CSSParserContext* parser_context) {
   DCHECK_NE(property_id, CSSPropertyInvalid);
-  DCHECK(!CSSProperty::Get(property_id).IsShorthand());
+  CSSTokenizer tokenizer(css_text);
+  const auto tokens = tokenizer.TokenizeToEOF();
+  const CSSParserTokenRange range(tokens);
 
-  const CSSValue* value = ParseProperty(property_id, css_text, parser_context);
-  if (!value)
-    return CSSStyleValueVector();
+  HeapVector<CSSPropertyValue, 256> parsed_properties;
+  if (property_id != CSSPropertyVariable &&
+      CSSPropertyParser::ParseValue(property_id, false, range, parser_context,
+                                    parsed_properties,
+                                    StyleRule::RuleType::kStyle)) {
+    if (parsed_properties.size() == 1) {
+      const auto result = StyleValueFactory::CssValueToStyleValueVector(
+          parsed_properties[0].Id(), *parsed_properties[0].Value());
+      // TODO(801935): Handle list-valued properties.
+      if (result.size() == 1U)
+        result[0]->SetCSSText(css_text);
+      return result;
+    }
 
-  CSSStyleValueVector style_value_vector =
-      StyleValueFactory::CssValueToStyleValueVector(property_id, *value);
-  DCHECK(!style_value_vector.IsEmpty());
-  return style_value_vector;
+    // Shorthands are not yet supported.
+    CSSStyleValueVector result;
+    result.push_back(CSSUnsupportedStyleValue::Create(property_id, css_text));
+    return result;
+  }
+
+  if (property_id == CSSPropertyVariable ||
+      CSSVariableParser::ContainsValidVariableReferences(range)) {
+    const auto variable_data =
+        CSSVariableData::Create(range, false /* is_animation_tainted */,
+                                false /* needs variable resolution */);
+    CSSStyleValueVector values;
+    values.push_back(CSSUnparsedValue::FromCSSValue(*variable_data));
+    return values;
+  }
+
+  return CSSStyleValueVector();
 }
 
 CSSStyleValue* StyleValueFactory::CssValueToStyleValue(

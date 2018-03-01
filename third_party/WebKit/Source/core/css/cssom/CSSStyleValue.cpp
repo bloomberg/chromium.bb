@@ -28,12 +28,6 @@ CSSStyleValueVector ParseCSSStyleValue(
     return CSSStyleValueVector();
   }
 
-  if (CSSProperty::Get(property_id).IsShorthand()) {
-    exception_state.ThrowTypeError(
-        "Parsing shorthand properties is not supported");
-    return CSSStyleValueVector();
-  }
-
   const auto style_values = StyleValueFactory::FromString(
       property_id, value, CSSParserContext::Create(*execution_context));
   if (style_values.IsEmpty()) {

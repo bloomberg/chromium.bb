@@ -38,10 +38,15 @@ class CORE_EXPORT DeclaredStylePropertyMap final : public StylePropertyMap {
   const CSSValue* GetCustomProperty(AtomicString) override;
   void ForEachProperty(const IterationCallback&) override;
   void SetProperty(CSSPropertyID, const CSSValue&) override;
+  bool SetShorthandProperty(CSSPropertyID,
+                            const String&,
+                            SecureContextMode) override;
   void SetCustomProperty(const AtomicString&, const CSSValue&) override;
   void RemoveProperty(CSSPropertyID) override;
   void RemoveCustomProperty(const AtomicString&) override;
   void RemoveAllProperties() final;
+
+  String SerializationForShorthand(const CSSProperty&) final;
 
  private:
   StyleRule* GetStyleRule() const;

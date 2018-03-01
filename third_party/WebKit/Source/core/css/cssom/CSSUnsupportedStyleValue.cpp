@@ -9,8 +9,4 @@
 
 namespace blink {
 
-const CSSValue* CSSUnsupportedStyleValue::ToCSSValue() const {
-  return css_value_.Get();
-}
-
 }  // namespace blink

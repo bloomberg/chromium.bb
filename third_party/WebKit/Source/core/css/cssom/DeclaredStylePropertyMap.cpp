@@ -9,6 +9,7 @@
 #include "core/css/CSSStyleRule.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/CSSVariableReferenceValue.h"
+#include "core/css/StylePropertySerializer.h"
 #include "core/css/StyleRule.h"
 
 namespace blink {
@@ -42,6 +43,17 @@ void DeclaredStylePropertyMap::SetProperty(CSSPropertyID property_id,
     return;
   CSSStyleSheet::RuleMutationScope mutation_scope(owner_rule_);
   GetStyleRule()->MutableProperties().SetProperty(property_id, value);
+}
+
+bool DeclaredStylePropertyMap::SetShorthandProperty(
+    CSSPropertyID property_id,
+    const String& value,
+    SecureContextMode secure_context_mode) {
+  DCHECK(CSSProperty::Get(property_id).IsShorthand());
+  CSSStyleSheet::RuleMutationScope mutation_scope(owner_rule_);
+  const auto result = GetStyleRule()->MutableProperties().SetProperty(
+      property_id, value, false /* important */, secure_context_mode);
+  return result.did_parse;
 }
 
 void DeclaredStylePropertyMap::SetCustomProperty(
@@ -104,6 +116,17 @@ StyleRule* DeclaredStylePropertyMap::GetStyleRule() const {
   if (!owner_rule_)
     return nullptr;
   return owner_rule_->GetStyleRule();
+}
+
+String DeclaredStylePropertyMap::SerializationForShorthand(
+    const CSSProperty& property) {
+  DCHECK(property.IsShorthand());
+  if (StyleRule* style_rule = GetStyleRule()) {
+    return StylePropertySerializer(style_rule->Properties())
+        .GetPropertyValue(property.PropertyID());
+  }
+
+  return "";
 }
 
 }  // namespace blink

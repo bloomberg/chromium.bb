@@ -9,8 +9,8 @@
 #include "core/css/CSSValueList.h"
 #include "core/css/cssom/CSSOMTypes.h"
 #include "core/css/cssom/CSSStyleValue.h"
-#include "core/css/cssom/CSSUnsupportedShorthandValue.h"
 #include "core/css/cssom/StyleValueFactory.h"
+#include "core/css/parser/CSSParser.h"
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/properties/CSSProperty.h"
 
@@ -34,11 +34,19 @@ CSSValueList* CssValueListForPropertyID(CSSPropertyID property_id) {
   }
 }
 
-const CSSValue* StyleValueToCSSValue(const CSSProperty& property,
-                                     const CSSStyleValue& style_value) {
+const CSSValue* StyleValueToCSSValue(
+    const CSSProperty& property,
+    const CSSStyleValue& style_value,
+    const ExecutionContext& execution_context) {
   const CSSPropertyID property_id = property.PropertyID();
   if (!CSSOMTypes::PropertyCanTake(property_id, style_value))
     return nullptr;
+
+  if (style_value.GetType() == CSSStyleValue::kUnknownType) {
+    return CSSParser::ParseSingleValue(
+        property.PropertyID(), style_value.toString(),
+        CSSParserContext::Create(execution_context));
+  }
   return style_value.ToCSSValueWithProperty(property_id);
 }
 
@@ -52,7 +60,8 @@ const CSSValue* CoerceStyleValueOrString(
     if (!value.GetAsCSSStyleValue())
       return nullptr;
 
-    return StyleValueToCSSValue(property, *value.GetAsCSSStyleValue());
+    return StyleValueToCSSValue(property, *value.GetAsCSSStyleValue(),
+                                execution_context);
   } else {
     DCHECK(value.IsString());
     const auto values = StyleValueFactory::FromString(
@@ -61,7 +70,7 @@ const CSSValue* CoerceStyleValueOrString(
     if (values.size() != 1U)
       return nullptr;
 
-    return StyleValueToCSSValue(property, *values[0]);
+    return StyleValueToCSSValue(property, *values[0], execution_context);
   }
 }
 
@@ -81,8 +90,8 @@ const CSSValue* CoerceStyleValuesOrStrings(
       if (!value.GetAsCSSStyleValue())
         return nullptr;
 
-      css_values.push_back(
-          StyleValueToCSSValue(property, *value.GetAsCSSStyleValue()));
+      css_values.push_back(StyleValueToCSSValue(
+          property, *value.GetAsCSSStyleValue(), execution_context));
     } else {
       DCHECK(value.IsString());
       if (!parser_context)
@@ -95,7 +104,8 @@ const CSSValue* CoerceStyleValuesOrStrings(
 
       for (const auto& subvalue : subvalues) {
         DCHECK(subvalue);
-        css_values.push_back(StyleValueToCSSValue(property, *subvalue));
+        css_values.push_back(
+            StyleValueToCSSValue(property, *subvalue, execution_context));
       }
     }
   }
@@ -133,15 +143,17 @@ void StylePropertyMap::set(const ExecutionContext* execution_context,
       return;
     }
 
-    if (values[0].IsString()) {
-      exception_state.ThrowTypeError("Parsing shorthands is not supported yet");
-      return;
-    }
-    if (values[0].IsCSSStyleValue() &&
-        !SetShorthandProperty(property, *values[0].GetAsCSSStyleValue())) {
+    String css_text;
+    if (values[0].IsCSSStyleValue() && values[0].GetAsCSSStyleValue())
+      css_text = values[0].GetAsCSSStyleValue()->toString();
+    else
+      css_text = values[0].GetAsString();
+
+    if (css_text.IsEmpty() ||
+        !SetShorthandProperty(property.PropertyID(), css_text,
+                              execution_context->GetSecureContextMode()))
       exception_state.ThrowTypeError("Invalid type for property");
-      return;
-    }
+
     return;
   }
 
@@ -228,27 +240,6 @@ void StylePropertyMap::remove(const String& property_name,
 
 void StylePropertyMap::clear() {
   RemoveAllProperties();
-}
-
-bool StylePropertyMap::SetShorthandProperty(const CSSProperty& property,
-                                            const CSSStyleValue& value) {
-  if (value.GetType() != CSSStyleValue::kShorthandType)
-    return false;
-
-  const auto& shorthand_value = ToCSSUnsupportedShorthandValue(value);
-  if (shorthand_value.GetProperty() != property.PropertyID())
-    return false;
-
-  const StylePropertyShorthand& shorthand =
-      shorthandForProperty(property.PropertyID());
-  for (size_t i = 0; i < shorthand.length(); i++) {
-    if (shorthand_value.LonghandValues()[i]) {
-      SetProperty(shorthand.properties()[i]->PropertyID(),
-                  *shorthand_value.LonghandValues()[i]);
-    }
-  }
-
-  return true;
 }
 
 }  // namespace blink

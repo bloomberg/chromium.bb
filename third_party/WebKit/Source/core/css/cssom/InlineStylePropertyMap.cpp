@@ -7,6 +7,7 @@
 #include "core/css/CSSCustomPropertyDeclaration.h"
 #include "core/css/CSSPropertyValueSet.h"
 #include "core/css/CSSVariableReferenceValue.h"
+#include "core/css/StylePropertySerializer.h"
 
 namespace blink {
 
@@ -31,6 +32,16 @@ const CSSValue* InlineStylePropertyMap::GetCustomProperty(
 void InlineStylePropertyMap::SetProperty(CSSPropertyID property_id,
                                          const CSSValue& value) {
   owner_element_->SetInlineStyleProperty(property_id, value);
+}
+
+bool InlineStylePropertyMap::SetShorthandProperty(
+    CSSPropertyID property_id,
+    const String& value,
+    SecureContextMode secure_context_mode) {
+  DCHECK(CSSProperty::Get(property_id).IsShorthand());
+  const auto result = owner_element_->EnsureMutableInlineStyle().SetProperty(
+      property_id, value, false /* important */, secure_context_mode);
+  return result.did_parse;
 }
 
 void InlineStylePropertyMap::SetCustomProperty(
@@ -72,6 +83,18 @@ void InlineStylePropertyMap::ForEachProperty(
                property_reference.Value());
     }
   }
+}
+
+String InlineStylePropertyMap::SerializationForShorthand(
+    const CSSProperty& property) {
+  DCHECK(property.IsShorthand());
+  if (const CSSPropertyValueSet* inline_style = owner_element_->InlineStyle()) {
+    return StylePropertySerializer(*inline_style)
+        .GetPropertyValue(property.PropertyID());
+  }
+
+  NOTREACHED();
+  return "";
 }
 
 }  // namespace blink

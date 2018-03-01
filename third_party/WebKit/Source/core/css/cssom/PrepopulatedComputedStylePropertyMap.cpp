@@ -102,6 +102,13 @@ void PrepopulatedComputedStylePropertyMap::ForEachProperty(
   }
 }
 
+String PrepopulatedComputedStylePropertyMap::SerializationForShorthand(
+    const CSSProperty&) {
+  // TODO(816722): Shorthands not yet supported for this style map.
+  NOTREACHED();
+  return "";
+}
+
 void PrepopulatedComputedStylePropertyMap::Trace(blink::Visitor* visitor) {
   visitor->Trace(styled_node_);
   visitor->Trace(native_values_);
