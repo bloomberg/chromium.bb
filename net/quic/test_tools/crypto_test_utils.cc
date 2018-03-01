@@ -301,8 +301,7 @@ class FullChloGenerator {
 
   std::unique_ptr<ValidateClientHelloCallback>
   GetValidateClientHelloCallback() {
-    return std::unique_ptr<ValidateClientHelloCallback>(
-        new ValidateClientHelloCallback(this));
+    return QuicMakeUnique<ValidateClientHelloCallback>(this);
   }
 
  private:
@@ -338,8 +337,7 @@ class FullChloGenerator {
   };
 
   std::unique_ptr<ProcessClientHelloCallback> GetProcessClientHelloCallback() {
-    return std::unique_ptr<ProcessClientHelloCallback>(
-        new ProcessClientHelloCallback(this));
+    return QuicMakeUnique<ProcessClientHelloCallback>(this);
   }
 
   void ProcessClientHelloDone(std::unique_ptr<CryptoHandshakeMessage> rej) {

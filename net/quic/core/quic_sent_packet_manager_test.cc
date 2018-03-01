@@ -357,7 +357,12 @@ TEST_P(QuicSentPacketManagerTest, RetransmitThenAck) {
   QuicAckFrame ack_frame = InitAckFrame({{2, 3}});
 
   ExpectAck(2);
-  manager_.OnIncomingAck(ack_frame, clock_.Now());
+  if (GetQuicReloadableFlag(quic_use_incremental_ack_processing)) {
+    manager_.OnAckFrameStart(2, QuicTime::Delta::Infinite());
+    manager_.OnAckRange(2, 3, /*last_range=*/true, clock_.Now());
+  } else {
+    manager_.OnIncomingAck(ack_frame, clock_.Now());
+  }
   if (manager_.session_decides_what_to_write()) {
     EXPECT_CALL(notifier_, IsFrameOutstanding(_)).WillRepeatedly(Return(false));
   }
@@ -386,7 +391,12 @@ TEST_P(QuicSentPacketManagerTest, RetransmitThenAckBeforeSend) {
   // Ack 1.
   QuicAckFrame ack_frame = InitAckFrame(1);
   ExpectAck(1);
-  manager_.OnIncomingAck(ack_frame, clock_.Now());
+  if (GetQuicReloadableFlag(quic_use_incremental_ack_processing)) {
+    manager_.OnAckFrameStart(1, QuicTime::Delta::Infinite());
+    manager_.OnAckRange(1, 2, /*last_range=*/true, clock_.Now());
+  } else {
+    manager_.OnIncomingAck(ack_frame, clock_.Now());
+  }
 
   // There should no longer be a pending retransmission.
   EXPECT_FALSE(manager_.HasPendingRetransmissions());
@@ -438,7 +448,12 @@ TEST_P(QuicSentPacketManagerTest, RetransmitThenAckPrevious) {
   // Ack 1 but not 2.
   ExpectAck(1);
   QuicAckFrame ack_frame = InitAckFrame(1);
-  manager_.OnIncomingAck(ack_frame, clock_.ApproximateNow());
+  if (GetQuicReloadableFlag(quic_use_incremental_ack_processing)) {
+    manager_.OnAckFrameStart(1, QuicTime::Delta::Infinite());
+    manager_.OnAckRange(1, 2, /*last_range=*/true, clock_.ApproximateNow());
+  } else {
+    manager_.OnIncomingAck(ack_frame, clock_.ApproximateNow());
+  }
   if (manager_.session_decides_what_to_write()) {
     EXPECT_CALL(notifier_, IsFrameOutstanding(_)).WillRepeatedly(Return(false));
   }
@@ -452,7 +467,12 @@ TEST_P(QuicSentPacketManagerTest, RetransmitThenAckPrevious) {
     EXPECT_CALL(notifier_, OnFrameAcked(_, _)).WillOnce(Return(false));
     ExpectAck(2);
     QuicAckFrame ack_frame2 = InitAckFrame(2);
-    manager_.OnIncomingAck(ack_frame2, clock_.ApproximateNow());
+    if (GetQuicReloadableFlag(quic_use_incremental_ack_processing)) {
+      manager_.OnAckFrameStart(2, QuicTime::Delta::Infinite());
+      manager_.OnAckRange(1, 3, /*last_range=*/true, clock_.ApproximateNow());
+    } else {
+      manager_.OnIncomingAck(ack_frame2, clock_.ApproximateNow());
+    }
   }
 
   EXPECT_EQ(1u, stats_.packets_spuriously_retransmitted);
@@ -467,7 +487,12 @@ TEST_P(QuicSentPacketManagerTest, RetransmitThenAckPreviousThenNackRetransmit) {
   // First, ACK packet 1 which makes packet 2 non-retransmittable.
   ExpectAck(1);
   QuicAckFrame ack_frame = InitAckFrame(1);
-  manager_.OnIncomingAck(ack_frame, clock_.ApproximateNow());
+  if (GetQuicReloadableFlag(quic_use_incremental_ack_processing)) {
+    manager_.OnAckFrameStart(1, QuicTime::Delta::Infinite());
+    manager_.OnAckRange(1, 2, /*last_range=*/true, clock_.ApproximateNow());
+  } else {
+    manager_.OnIncomingAck(ack_frame, clock_.ApproximateNow());
+  }
 
   SendDataPacket(3);
   SendDataPacket(4);
@@ -478,11 +503,23 @@ TEST_P(QuicSentPacketManagerTest, RetransmitThenAckPreviousThenNackRetransmit) {
   ack_frame = InitAckFrame({{1, 2}, {3, 4}});
 
   ExpectAck(3);
-  manager_.OnIncomingAck(ack_frame, clock_.ApproximateNow());
+  if (GetQuicReloadableFlag(quic_use_incremental_ack_processing)) {
+    manager_.OnAckFrameStart(3, QuicTime::Delta::Infinite());
+    manager_.OnAckRange(3, 4, /*last_range=*/false, clock_.ApproximateNow());
+    manager_.OnAckRange(1, 2, /*last_range=*/true, clock_.ApproximateNow());
+  } else {
+    manager_.OnIncomingAck(ack_frame, clock_.ApproximateNow());
+  }
 
   ack_frame = InitAckFrame({{1, 2}, {3, 5}});
   ExpectAck(4);
-  manager_.OnIncomingAck(ack_frame, clock_.ApproximateNow());
+  if (GetQuicReloadableFlag(quic_use_incremental_ack_processing)) {
+    manager_.OnAckFrameStart(4, QuicTime::Delta::Infinite());
+    manager_.OnAckRange(3, 5, /*last_range=*/false, clock_.ApproximateNow());
+    manager_.OnAckRange(1, 2, /*last_range=*/true, clock_.ApproximateNow());
+  } else {
+    manager_.OnIncomingAck(ack_frame, clock_.ApproximateNow());
+  }
 
   ack_frame = InitAckFrame({{1, 2}, {3, 6}});
   ExpectAckAndLoss(true, 5, 2);
@@ -490,7 +527,13 @@ TEST_P(QuicSentPacketManagerTest, RetransmitThenAckPreviousThenNackRetransmit) {
     // Frames in all packets are acked.
     EXPECT_CALL(notifier_, IsFrameOutstanding(_)).WillRepeatedly(Return(false));
   }
-  manager_.OnIncomingAck(ack_frame, clock_.ApproximateNow());
+  if (GetQuicReloadableFlag(quic_use_incremental_ack_processing)) {
+    manager_.OnAckFrameStart(5, QuicTime::Delta::Infinite());
+    manager_.OnAckRange(3, 6, /*last_range=*/false, clock_.ApproximateNow());
+    manager_.OnAckRange(1, 2, /*last_range=*/true, clock_.ApproximateNow());
+  } else {
+    manager_.OnIncomingAck(ack_frame, clock_.ApproximateNow());
+  }
 
   // No packets remain unacked.
   VerifyUnackedPackets(nullptr, 0);
@@ -519,7 +562,12 @@ TEST_P(QuicSentPacketManagerTest,
   QuicAckFrame ack_frame = InitAckFrame(1);
   ExpectUpdatedRtt(1);
   EXPECT_CALL(*send_algorithm_, RevertRetransmissionTimeout());
-  manager_.OnIncomingAck(ack_frame, clock_.ApproximateNow());
+  if (GetQuicReloadableFlag(quic_use_incremental_ack_processing)) {
+    manager_.OnAckFrameStart(1, QuicTime::Delta::Infinite());
+    manager_.OnAckRange(1, 2, /*last_range=*/true, clock_.ApproximateNow());
+  } else {
+    manager_.OnIncomingAck(ack_frame, clock_.ApproximateNow());
+  }
 
   // Since 2 was marked for retransmit, when 1 is acked, 2 is kept for RTT.
   QuicPacketNumber unacked[] = {2};
@@ -554,7 +602,12 @@ TEST_P(QuicSentPacketManagerTest, RetransmitTwiceThenAckFirst) {
   // Ack 1 but not 2 or 3.
   ExpectAck(1);
   QuicAckFrame ack_frame = InitAckFrame(1);
-  manager_.OnIncomingAck(ack_frame, clock_.ApproximateNow());
+  if (GetQuicReloadableFlag(quic_use_incremental_ack_processing)) {
+    manager_.OnAckFrameStart(1, QuicTime::Delta::Infinite());
+    manager_.OnAckRange(1, 2, /*last_range=*/true, clock_.ApproximateNow());
+  } else {
+    manager_.OnIncomingAck(ack_frame, clock_.ApproximateNow());
+  }
   if (manager_.session_decides_what_to_write()) {
     // Frames in packets 2 and 3 are acked.
     EXPECT_CALL(notifier_, IsFrameOutstanding(_))
@@ -579,7 +632,13 @@ TEST_P(QuicSentPacketManagerTest, RetransmitTwiceThenAckFirst) {
   ack_frame = InitAckFrame({{1, 2}, {3, 5}});
   QuicPacketNumber acked[] = {3, 4};
   ExpectAcksAndLosses(true, acked, QUIC_ARRAYSIZE(acked), nullptr, 0);
-  manager_.OnIncomingAck(ack_frame, clock_.ApproximateNow());
+  if (GetQuicReloadableFlag(quic_use_incremental_ack_processing)) {
+    manager_.OnAckFrameStart(4, QuicTime::Delta::Infinite());
+    manager_.OnAckRange(3, 5, /*last_range=*/false, clock_.ApproximateNow());
+    manager_.OnAckRange(1, 2, /*last_range=*/true, clock_.ApproximateNow());
+  } else {
+    manager_.OnIncomingAck(ack_frame, clock_.ApproximateNow());
+  }
 
   QuicPacketNumber unacked2[] = {2};
   VerifyUnackedPackets(unacked2, QUIC_ARRAYSIZE(unacked2));
@@ -593,7 +652,13 @@ TEST_P(QuicSentPacketManagerTest, RetransmitTwiceThenAckFirst) {
     // Frames in all packetss are acked.
     EXPECT_CALL(notifier_, IsFrameOutstanding(_)).WillRepeatedly(Return(false));
   }
-  manager_.OnIncomingAck(ack_frame, clock_.ApproximateNow());
+  if (GetQuicReloadableFlag(quic_use_incremental_ack_processing)) {
+    manager_.OnAckFrameStart(5, QuicTime::Delta::Infinite());
+    manager_.OnAckRange(3, 6, /*last_range=*/false, clock_.ApproximateNow());
+    manager_.OnAckRange(1, 2, /*last_range=*/true, clock_.ApproximateNow());
+  } else {
+    manager_.OnIncomingAck(ack_frame, clock_.ApproximateNow());
+  }
 
   VerifyUnackedPackets(nullptr, 0);
   EXPECT_FALSE(QuicSentPacketManagerPeer::HasPendingPackets(&manager_));
@@ -619,7 +684,12 @@ TEST_P(QuicSentPacketManagerTest, AckOriginalTransmission) {
     QuicAckFrame ack_frame = InitAckFrame(1);
     ExpectAck(1);
     EXPECT_CALL(*loss_algorithm, DetectLosses(_, _, _, _, _));
-    manager_.OnIncomingAck(ack_frame, clock_.Now());
+    if (GetQuicReloadableFlag(quic_use_incremental_ack_processing)) {
+      manager_.OnAckFrameStart(1, QuicTime::Delta::Infinite());
+      manager_.OnAckRange(1, 2, /*last_range=*/true, clock_.Now());
+    } else {
+      manager_.OnIncomingAck(ack_frame, clock_.Now());
+    }
   }
 
   SendDataPacket(3);
@@ -629,7 +699,13 @@ TEST_P(QuicSentPacketManagerTest, AckOriginalTransmission) {
     QuicAckFrame ack_frame = InitAckFrame({{1, 2}, {4, 5}});
     ExpectAck(4);
     EXPECT_CALL(*loss_algorithm, DetectLosses(_, _, _, _, _));
-    manager_.OnIncomingAck(ack_frame, clock_.Now());
+    if (GetQuicReloadableFlag(quic_use_incremental_ack_processing)) {
+      manager_.OnAckFrameStart(4, QuicTime::Delta::Infinite());
+      manager_.OnAckRange(4, 5, /*last_range=*/false, clock_.Now());
+      manager_.OnAckRange(1, 2, /*last_range=*/true, clock_.Now());
+    } else {
+      manager_.OnIncomingAck(ack_frame, clock_.Now());
+    }
     RetransmitAndSendPacket(3, 5, LOSS_RETRANSMISSION);
   }
 
@@ -638,7 +714,13 @@ TEST_P(QuicSentPacketManagerTest, AckOriginalTransmission) {
     QuicAckFrame ack_frame = InitAckFrame({{1, 2}, {3, 5}});
     EXPECT_CALL(*loss_algorithm, DetectLosses(_, _, _, _, _));
     EXPECT_CALL(*loss_algorithm, SpuriousRetransmitDetected(_, _, _, 5));
-    manager_.OnIncomingAck(ack_frame, clock_.Now());
+    if (GetQuicReloadableFlag(quic_use_incremental_ack_processing)) {
+      manager_.OnAckFrameStart(4, QuicTime::Delta::Infinite());
+      manager_.OnAckRange(3, 5, /*last_range=*/false, clock_.Now());
+      manager_.OnAckRange(1, 2, /*last_range=*/true, clock_.Now());
+    } else {
+      manager_.OnIncomingAck(ack_frame, clock_.Now());
+    }
     if (manager_.session_decides_what_to_write()) {
       // Ack 3 will not cause 5 be considered as a spurious retransmission. Ack
       // 5 will cause 5 be considered as a spurious retransmission as no new
@@ -647,7 +729,13 @@ TEST_P(QuicSentPacketManagerTest, AckOriginalTransmission) {
       EXPECT_CALL(*loss_algorithm, DetectLosses(_, _, _, _, _));
       EXPECT_CALL(notifier_, OnFrameAcked(_, _)).WillOnce(Return(false));
       QuicAckFrame ack_frame2 = InitAckFrame({{1, 2}, {3, 6}});
-      manager_.OnIncomingAck(ack_frame2, clock_.Now());
+      if (GetQuicReloadableFlag(quic_use_incremental_ack_processing)) {
+        manager_.OnAckFrameStart(5, QuicTime::Delta::Infinite());
+        manager_.OnAckRange(3, 6, /*last_range=*/false, clock_.Now());
+        manager_.OnAckRange(1, 2, /*last_range=*/true, clock_.Now());
+      } else {
+        manager_.OnIncomingAck(ack_frame2, clock_.Now());
+      }
     }
   }
 }
@@ -671,7 +759,12 @@ TEST_P(QuicSentPacketManagerTest, AckAckAndUpdateRtt) {
   ack_frame.ack_delay_time = QuicTime::Delta::FromMilliseconds(5);
 
   ExpectAck(1);
-  manager_.OnIncomingAck(ack_frame, clock_.Now());
+  if (GetQuicReloadableFlag(quic_use_incremental_ack_processing)) {
+    manager_.OnAckFrameStart(2, QuicTime::Delta::FromMilliseconds(5));
+    manager_.OnAckRange(1, 3, /*last_range=*/true, clock_.Now());
+  } else {
+    manager_.OnIncomingAck(ack_frame, clock_.Now());
+  }
   EXPECT_EQ(1u, manager_.largest_packet_peer_knows_is_acked());
 
   SendAckPacket(3, 3);
@@ -679,7 +772,12 @@ TEST_P(QuicSentPacketManagerTest, AckAckAndUpdateRtt) {
   // Now ack the ack and expect only an RTT update.
   ack_frame = InitAckFrame(3);
   ExpectUpdatedRtt(3);
-  manager_.OnIncomingAck(ack_frame, clock_.Now());
+  if (GetQuicReloadableFlag(quic_use_incremental_ack_processing)) {
+    manager_.OnAckFrameStart(3, QuicTime::Delta::Infinite());
+    manager_.OnAckRange(1, 4, /*last_range=*/true, clock_.Now());
+  } else {
+    manager_.OnIncomingAck(ack_frame, clock_.Now());
+  }
   EXPECT_EQ(3u, manager_.largest_packet_peer_knows_is_acked());
 }
 
@@ -691,7 +789,12 @@ TEST_P(QuicSentPacketManagerTest, Rtt) {
 
   ExpectAck(packet_number);
   QuicAckFrame ack_frame = InitAckFrame(packet_number);
-  manager_.OnIncomingAck(ack_frame, clock_.Now());
+  if (GetQuicReloadableFlag(quic_use_incremental_ack_processing)) {
+    manager_.OnAckFrameStart(1, QuicTime::Delta::Infinite());
+    manager_.OnAckRange(1, 2, /*last_range=*/true, clock_.Now());
+  } else {
+    manager_.OnIncomingAck(ack_frame, clock_.Now());
+  }
   EXPECT_EQ(expected_rtt, manager_.GetRttStats()->latest_rtt());
 }
 
@@ -707,7 +810,12 @@ TEST_P(QuicSentPacketManagerTest, RttWithInvalidDelta) {
   ExpectAck(packet_number);
   QuicAckFrame ack_frame = InitAckFrame(packet_number);
   ack_frame.ack_delay_time = QuicTime::Delta::FromMilliseconds(11);
-  manager_.OnIncomingAck(ack_frame, clock_.Now());
+  if (GetQuicReloadableFlag(quic_use_incremental_ack_processing)) {
+    manager_.OnAckFrameStart(1, QuicTime::Delta::FromMilliseconds(11));
+    manager_.OnAckRange(1, 2, /*last_range=*/true, clock_.Now());
+  } else {
+    manager_.OnIncomingAck(ack_frame, clock_.Now());
+  }
   EXPECT_EQ(expected_rtt, manager_.GetRttStats()->latest_rtt());
 }
 
@@ -722,7 +830,12 @@ TEST_P(QuicSentPacketManagerTest, RttWithInfiniteDelta) {
   ExpectAck(packet_number);
   QuicAckFrame ack_frame = InitAckFrame(packet_number);
   ack_frame.ack_delay_time = QuicTime::Delta::Infinite();
-  manager_.OnIncomingAck(ack_frame, clock_.Now());
+  if (GetQuicReloadableFlag(quic_use_incremental_ack_processing)) {
+    manager_.OnAckFrameStart(1, QuicTime::Delta::Infinite());
+    manager_.OnAckRange(1, 2, /*last_range=*/true, clock_.Now());
+  } else {
+    manager_.OnIncomingAck(ack_frame, clock_.Now());
+  }
   EXPECT_EQ(expected_rtt, manager_.GetRttStats()->latest_rtt());
 }
 
@@ -737,7 +850,12 @@ TEST_P(QuicSentPacketManagerTest, RttZeroDelta) {
   ExpectAck(packet_number);
   QuicAckFrame ack_frame = InitAckFrame(packet_number);
   ack_frame.ack_delay_time = QuicTime::Delta::Zero();
-  manager_.OnIncomingAck(ack_frame, clock_.Now());
+  if (GetQuicReloadableFlag(quic_use_incremental_ack_processing)) {
+    manager_.OnAckFrameStart(1, QuicTime::Delta::Zero());
+    manager_.OnAckRange(1, 2, /*last_range=*/true, clock_.Now());
+  } else {
+    manager_.OnIncomingAck(ack_frame, clock_.Now());
+  }
   EXPECT_EQ(expected_rtt, manager_.GetRttStats()->latest_rtt());
 }
 
@@ -786,7 +904,12 @@ TEST_P(QuicSentPacketManagerTest, TailLossProbeTimeout) {
   ExpectAck(3);
 
   QuicAckFrame ack_frame = InitAckFrame({{3, 4}});
-  manager_.OnIncomingAck(ack_frame, clock_.ApproximateNow());
+  if (GetQuicReloadableFlag(quic_use_incremental_ack_processing)) {
+    manager_.OnAckFrameStart(3, QuicTime::Delta::Infinite());
+    manager_.OnAckRange(3, 4, /*last_range=*/true, clock_.ApproximateNow());
+  } else {
+    manager_.OnIncomingAck(ack_frame, clock_.ApproximateNow());
+  }
 
   EXPECT_TRUE(QuicSentPacketManagerPeer::HasPendingPackets(&manager_));
 
@@ -802,7 +925,12 @@ TEST_P(QuicSentPacketManagerTest, TailLossProbeTimeout) {
     // Frames in all packets are acked.
     EXPECT_CALL(notifier_, IsFrameOutstanding(_)).WillRepeatedly(Return(false));
   }
-  manager_.OnIncomingAck(ack_frame, clock_.ApproximateNow());
+  if (GetQuicReloadableFlag(quic_use_incremental_ack_processing)) {
+    manager_.OnAckFrameStart(5, QuicTime::Delta::Infinite());
+    manager_.OnAckRange(3, 6, /*last_range=*/true, clock_.ApproximateNow());
+  } else {
+    manager_.OnIncomingAck(ack_frame, clock_.ApproximateNow());
+  }
 
   EXPECT_FALSE(manager_.HasPendingRetransmissions());
   EXPECT_FALSE(QuicSentPacketManagerPeer::HasPendingPackets(&manager_));
@@ -910,7 +1038,12 @@ TEST_P(QuicSentPacketManagerTest, TailLossProbeThenRTO) {
     // Packets 1, 2 and [4, 102] are lost.
     EXPECT_CALL(notifier_, OnFrameLost(_)).Times(101);
   }
-  manager_.OnIncomingAck(ack_frame, clock_.ApproximateNow());
+  if (GetQuicReloadableFlag(quic_use_incremental_ack_processing)) {
+    manager_.OnAckFrameStart(103, QuicTime::Delta::Infinite());
+    manager_.OnAckRange(103, 104, /*last_range=*/true, clock_.ApproximateNow());
+  } else {
+    manager_.OnIncomingAck(ack_frame, clock_.ApproximateNow());
+  }
   // All packets before 103 should be lost.
   if (manager_.session_decides_what_to_write()) {
     // Packet 104 is still in flight.
@@ -973,7 +1106,13 @@ TEST_P(QuicSentPacketManagerTest, CryptoHandshakeTimeout) {
     EXPECT_CALL(notifier_, HasPendingCryptoData())
         .WillRepeatedly(Return(false));
   }
-  manager_.OnIncomingAck(ack_frame, clock_.ApproximateNow());
+  if (GetQuicReloadableFlag(quic_use_incremental_ack_processing)) {
+    manager_.OnAckFrameStart(9, QuicTime::Delta::Infinite());
+    manager_.OnAckRange(8, 10, /*last_range=*/false, clock_.ApproximateNow());
+    manager_.OnAckRange(3, 6, /*last_range=*/true, clock_.ApproximateNow());
+  } else {
+    manager_.OnIncomingAck(ack_frame, clock_.ApproximateNow());
+  }
 
   EXPECT_FALSE(QuicSentPacketManagerPeer::HasUnackedCryptoPackets(&manager_));
 }
@@ -1040,7 +1179,12 @@ TEST_P(QuicSentPacketManagerTest, CryptoHandshakeTimeoutVersionNegotiation) {
   QuicPacketNumber acked[] = {8, 9};
   ExpectAcksAndLosses(true, acked, QUIC_ARRAYSIZE(acked), nullptr, 0);
   QuicAckFrame ack_frame = InitAckFrame({{8, 10}});
-  manager_.OnIncomingAck(ack_frame, clock_.ApproximateNow());
+  if (GetQuicReloadableFlag(quic_use_incremental_ack_processing)) {
+    manager_.OnAckFrameStart(9, QuicTime::Delta::Infinite());
+    manager_.OnAckRange(8, 10, /*last_range=*/true, clock_.ApproximateNow());
+  } else {
+    manager_.OnIncomingAck(ack_frame, clock_.ApproximateNow());
+  }
   if (manager_.session_decides_what_to_write()) {
     EXPECT_CALL(notifier_, HasPendingCryptoData())
         .WillRepeatedly(Return(false));
@@ -1082,7 +1226,12 @@ TEST_P(QuicSentPacketManagerTest, CryptoHandshakeSpuriousRetransmission) {
         .WillRepeatedly(Return(false));
     EXPECT_CALL(notifier_, IsFrameOutstanding(_)).WillRepeatedly(Return(false));
   }
-  manager_.OnIncomingAck(ack_frame, clock_.ApproximateNow());
+  if (GetQuicReloadableFlag(quic_use_incremental_ack_processing)) {
+    manager_.OnAckFrameStart(2, QuicTime::Delta::Infinite());
+    manager_.OnAckRange(2, 3, /*last_range=*/true, clock_.ApproximateNow());
+  } else {
+    manager_.OnIncomingAck(ack_frame, clock_.ApproximateNow());
+  }
 
   EXPECT_FALSE(QuicSentPacketManagerPeer::HasUnackedCryptoPackets(&manager_));
   QuicPacketNumber unacked[] = {3};
@@ -1199,7 +1348,12 @@ TEST_P(QuicSentPacketManagerTest,
   // Ensure both packets get discarded when packet 2 is acked.
   QuicAckFrame ack_frame = InitAckFrame({{3, 4}});
   ExpectUpdatedRtt(3);
-  manager_.OnIncomingAck(ack_frame, clock_.Now());
+  if (GetQuicReloadableFlag(quic_use_incremental_ack_processing)) {
+    manager_.OnAckFrameStart(3, QuicTime::Delta::Infinite());
+    manager_.OnAckRange(3, 4, /*last_range=*/true, clock_.Now());
+  } else {
+    manager_.OnIncomingAck(ack_frame, clock_.Now());
+  }
   VerifyUnackedPackets(nullptr, 0);
   VerifyRetransmittablePackets(nullptr, 0);
 }
@@ -1266,7 +1420,12 @@ TEST_P(QuicSentPacketManagerTest, RetransmissionTimeout) {
     // retransmittable frames as packet 102 is acked.
     EXPECT_CALL(notifier_, OnFrameLost(_)).Times(98);
   }
-  manager_.OnIncomingAck(ack_frame, clock_.Now());
+  if (GetQuicReloadableFlag(quic_use_incremental_ack_processing)) {
+    manager_.OnAckFrameStart(102, QuicTime::Delta::Zero());
+    manager_.OnAckRange(102, 103, /*last_range=*/true, clock_.Now());
+  } else {
+    manager_.OnIncomingAck(ack_frame, clock_.Now());
+  }
 }
 
 TEST_P(QuicSentPacketManagerTest, NewRetransmissionTimeout) {
@@ -1336,7 +1495,12 @@ TEST_P(QuicSentPacketManagerTest, NewRetransmissionTimeout) {
     // retransmittable frames as packet 102 is acked.
     EXPECT_CALL(notifier_, OnFrameLost(_)).Times(98);
   }
-  manager_.OnIncomingAck(ack_frame, clock_.Now());
+  if (GetQuicReloadableFlag(quic_use_incremental_ack_processing)) {
+    manager_.OnAckFrameStart(102, QuicTime::Delta::Zero());
+    manager_.OnAckRange(102, 103, /*last_range=*/true, clock_.Now());
+  } else {
+    manager_.OnIncomingAck(ack_frame, clock_.Now());
+  }
 }
 
 TEST_P(QuicSentPacketManagerTest, TwoRetransmissionTimeoutsAckSecond) {
@@ -1384,7 +1548,12 @@ TEST_P(QuicSentPacketManagerTest, TwoRetransmissionTimeoutsAckSecond) {
   QuicAckFrame ack_frame = InitAckFrame({{2, 3}});
   ack_frame.ack_delay_time = QuicTime::Delta::Zero();
   ExpectAck(2);
-  manager_.OnIncomingAck(ack_frame, clock_.ApproximateNow());
+  if (GetQuicReloadableFlag(quic_use_incremental_ack_processing)) {
+    manager_.OnAckFrameStart(2, QuicTime::Delta::Zero());
+    manager_.OnAckRange(2, 3, /*last_range=*/true, clock_.ApproximateNow());
+  } else {
+    manager_.OnIncomingAck(ack_frame, clock_.ApproximateNow());
+  }
 
   // The original packet and newest should be outstanding.
   EXPECT_EQ(2 * kDefaultLength,
@@ -1436,7 +1605,12 @@ TEST_P(QuicSentPacketManagerTest, TwoRetransmissionTimeoutsAckFirst) {
   QuicAckFrame ack_frame = InitAckFrame({{3, 4}});
   ack_frame.ack_delay_time = QuicTime::Delta::Zero();
   ExpectAck(3);
-  manager_.OnIncomingAck(ack_frame, clock_.ApproximateNow());
+  if (GetQuicReloadableFlag(quic_use_incremental_ack_processing)) {
+    manager_.OnAckFrameStart(3, QuicTime::Delta::Zero());
+    manager_.OnAckRange(3, 4, /*last_range=*/true, clock_.ApproximateNow());
+  } else {
+    manager_.OnIncomingAck(ack_frame, clock_.ApproximateNow());
+  }
 
   // The first two packets should still be outstanding.
   EXPECT_EQ(2 * kDefaultLength,
@@ -1637,7 +1811,12 @@ TEST_P(QuicSentPacketManagerTest, GetTransmissionTimeSpuriousRTO) {
   // original value and OnRetransmissionTimeout is not called or reverted.
   QuicAckFrame ack_frame = InitAckFrame({{2, 3}});
   ExpectAck(2);
-  manager_.OnIncomingAck(ack_frame, clock_.ApproximateNow());
+  if (GetQuicReloadableFlag(quic_use_incremental_ack_processing)) {
+    manager_.OnAckFrameStart(2, QuicTime::Delta::Infinite());
+    manager_.OnAckRange(2, 3, /*last_range=*/true, clock_.ApproximateNow());
+  } else {
+    manager_.OnIncomingAck(ack_frame, clock_.ApproximateNow());
+  }
   EXPECT_FALSE(manager_.HasPendingRetransmissions());
   EXPECT_EQ(5 * kDefaultLength,
             QuicSentPacketManagerPeer::GetBytesInFlight(&manager_));
@@ -1762,7 +1941,12 @@ TEST_P(QuicSentPacketManagerTest, GetLossDelay) {
   ExpectAck(2);
   EXPECT_CALL(*loss_algorithm, DetectLosses(_, _, _, _, _));
   QuicAckFrame ack_frame = InitAckFrame({{2, 3}});
-  manager_.OnIncomingAck(ack_frame, clock_.Now());
+  if (GetQuicReloadableFlag(quic_use_incremental_ack_processing)) {
+    manager_.OnAckFrameStart(2, QuicTime::Delta::Infinite());
+    manager_.OnAckRange(2, 3, /*last_range=*/true, clock_.Now());
+  } else {
+    manager_.OnIncomingAck(ack_frame, clock_.Now());
+  }
 
   QuicTime timeout(clock_.Now() + QuicTime::Delta::FromMilliseconds(10));
   EXPECT_CALL(*loss_algorithm, GetLossTimeout())
@@ -2270,7 +2454,12 @@ TEST_P(QuicSentPacketManagerTest, PathMtuIncreased) {
   EXPECT_CALL(*network_change_visitor_,
               OnPathMtuIncreased(kDefaultLength + 100));
   QuicAckFrame ack_frame = InitAckFrame(1);
-  manager_.OnIncomingAck(ack_frame, clock_.Now());
+  if (GetQuicReloadableFlag(quic_use_incremental_ack_processing)) {
+    manager_.OnAckFrameStart(1, QuicTime::Delta::Infinite());
+    manager_.OnAckRange(1, 2, /*last_range=*/true, clock_.Now());
+  } else {
+    manager_.OnIncomingAck(ack_frame, clock_.Now());
+  }
 }
 
 }  // namespace

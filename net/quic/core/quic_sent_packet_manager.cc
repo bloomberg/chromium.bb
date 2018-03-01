@@ -1033,6 +1033,25 @@ void QuicSentPacketManager::OnConnectionMigration(AddressChangeType type) {
   send_algorithm_->OnConnectionMigration();
 }
 
+void QuicSentPacketManager::OnAckFrameStart(QuicPacketNumber largest_acked,
+                                            QuicTime::Delta ack_delay_time) {
+  last_ack_frame_.largest_acked = largest_acked;
+  last_ack_frame_.ack_delay_time = ack_delay_time;
+}
+
+void QuicSentPacketManager::OnAckRange(QuicPacketNumber start,
+                                       QuicPacketNumber end,
+                                       bool last_range,
+                                       QuicTime ack_receive_time) {
+  last_ack_frame_.packets.AddRange(start, end);
+  if (!last_range) {
+    return;
+  }
+  OnIncomingAck(last_ack_frame_, ack_receive_time);
+  // Clear last_ack_frame_.
+  last_ack_frame_.Clear();
+}
+
 void QuicSentPacketManager::SetDebugDelegate(DebugDelegate* debug_delegate) {
   debug_delegate_ = debug_delegate;
 }

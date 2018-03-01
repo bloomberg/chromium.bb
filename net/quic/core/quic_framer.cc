@@ -181,7 +181,12 @@ QuicFramer::QuicFramer(const ParsedQuicVersionVector& supported_versions,
       validate_flags_(true),
       creation_time_(creation_time),
       last_timestamp_(QuicTime::Delta::Zero()),
-      data_producer_(nullptr) {
+      data_producer_(nullptr),
+      use_incremental_ack_processing_(
+          GetQuicReloadableFlag(quic_use_incremental_ack_processing)) {
+  if (use_incremental_ack_processing_) {
+    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_use_incremental_ack_processing);
+  }
   DCHECK(!supported_versions.empty());
   version_ = supported_versions_[0];
   decrypter_ = QuicMakeUnique<NullDecrypter>(perspective);
@@ -1085,11 +1090,13 @@ bool QuicFramer::ProcessFrameData(QuicDataReader* reader,
           (version_.transport_version >= QUIC_VERSION_41 &&
            ((frame_type & kQuicFrameTypeSpecialMask) ==
             kQuicFrameTypeAckMask))) {
+        // TODO(fayang): Remove frame when deprecating
+        // quic_reloadable_flag_quic_use_incremental_ack_processing.
         QuicAckFrame frame;
         if (!ProcessAckFrame(reader, frame_type, &frame)) {
           return RaiseError(QUIC_INVALID_ACK_DATA);
         }
-        if (!visitor_->OnAckFrame(frame)) {
+        if (!use_incremental_ack_processing_ && !visitor_->OnAckFrame(frame)) {
           QUIC_DVLOG(1) << ENDPOINT
                         << "Visitor asked to stop further processing.";
           // Returning true since there was no parsing error.
@@ -1438,11 +1445,26 @@ bool QuicFramer::ProcessAckFrame(QuicDataReader* reader,
     return false;
   }
 
-  if (ack_delay_time_us == kUFloat16MaxValue) {
-    ack_frame->ack_delay_time = QuicTime::Delta::Infinite();
-  } else {
-    ack_frame->ack_delay_time =
-        QuicTime::Delta::FromMicroseconds(ack_delay_time_us);
+  if (!use_incremental_ack_processing_) {
+    if (ack_delay_time_us == kUFloat16MaxValue) {
+      ack_frame->ack_delay_time = QuicTime::Delta::Infinite();
+    } else {
+      ack_frame->ack_delay_time =
+          QuicTime::Delta::FromMicroseconds(ack_delay_time_us);
+    }
+  }
+
+  if (use_incremental_ack_processing_ &&
+      !visitor_->OnAckFrameStart(
+          largest_acked,
+          ack_delay_time_us == kUFloat16MaxValue
+              ? QuicTime::Delta::Infinite()
+              : QuicTime::Delta::FromMicroseconds(ack_delay_time_us))) {
+    // The visitor suppresses further processing of the packet. Although this is
+    // not a parsing error, returns false as this is in middle of processing an
+    // ack frame,
+    set_detailed_error("Visitor suppresses further processing of ack frame.");
+    return false;
   }
 
   if (has_ack_blocks) {
@@ -1481,8 +1503,19 @@ bool QuicFramer::ProcessAckFrame(QuicDataReader* reader,
   }
 
   QuicPacketNumber first_received = largest_acked + 1 - first_block_length;
-  ack_frame->largest_acked = largest_acked;
-  ack_frame->packets.AddRange(first_received, largest_acked + 1);
+  if (use_incremental_ack_processing_) {
+    if (!visitor_->OnAckRange(first_received, largest_acked + 1,
+                              /*last_range=*/!has_ack_blocks)) {
+      // The visitor suppresses further processing of the packet. Although
+      // this is not a parsing error, returns false as this is in middle
+      // of processing an ack frame,
+      set_detailed_error("Visitor suppresses further processing of ack frame.");
+      return false;
+    }
+  } else {
+    ack_frame->largest_acked = largest_acked;
+    ack_frame->packets.AddRange(first_received, largest_acked + 1);
+  }
 
   if (num_ack_blocks > 0) {
     for (size_t i = 0; i < num_ack_blocks; ++i) {
@@ -1506,8 +1539,21 @@ bool QuicFramer::ProcessAckFrame(QuicDataReader* reader,
 
       first_received -= (gap + current_block_length);
       if (current_block_length > 0) {
-        ack_frame->packets.AddRange(first_received,
-                                    first_received + current_block_length);
+        if (use_incremental_ack_processing_) {
+          if (!visitor_->OnAckRange(first_received,
+                                    first_received + current_block_length,
+                                    /*last_range=*/i == num_ack_blocks - 1)) {
+            // The visitor suppresses further processing of the packet. Although
+            // this is not a parsing error, returns false as this is in middle
+            // of processing an ack frame,
+            set_detailed_error(
+                "Visitor suppresses further processing of ack frame.");
+            return false;
+          }
+        } else {
+          ack_frame->packets.AddRange(first_received,
+                                      first_received + current_block_length);
+        }
       }
     }
   }
@@ -1979,6 +2025,7 @@ bool QuicFramer::DecryptPayload(QuicDataReader* encrypted_reader,
 }
 
 size_t QuicFramer::GetAckFrameTimeStampSize(const QuicAckFrame& ack) {
+  DCHECK(!use_incremental_ack_processing_);
   if (ack.received_packet_times.empty()) {
     return 0;
   }
@@ -2008,7 +2055,9 @@ size_t QuicFramer::GetAckFrameSize(
   }
 
   // Include timestamps.
-  ack_size += GetAckFrameTimeStampSize(ack);
+  if (!use_incremental_ack_processing_) {
+    ack_size += GetAckFrameTimeStampSize(ack);
+  }
 
   return ack_size;
 }
@@ -2455,19 +2504,21 @@ bool QuicFramer::AppendAckFrameAndTypeByte(const QuicAckFrame& frame,
     }
     DCHECK_EQ(num_ack_blocks, num_ack_blocks_written);
   }
-
   // Timestamps.
   // If we don't have enough available space to append all the timestamps, don't
   // append any of them.
-  if (writer->capacity() - writer->length() >=
-      GetAckFrameTimeStampSize(frame)) {
+  if (!use_incremental_ack_processing_ &&
+      writer->capacity() - writer->length() >=
+          GetAckFrameTimeStampSize(frame)) {
     if (!AppendTimestampsToAckFrame(frame, num_timestamps_offset, writer)) {
       return false;
     }
   } else {
-    uint8_t num_received_packets = 0;
-    if (!writer->WriteBytes(&num_received_packets, 1)) {
-      return false;
+    if (transport_version() != QUIC_VERSION_41) {
+      uint8_t num_received_packets = 0;
+      if (!writer->WriteBytes(&num_received_packets, 1)) {
+        return false;
+      }
     }
   }
 

@@ -133,14 +133,14 @@ class TestDispatcher : public QuicDispatcher {
 
   MOCK_METHOD3(CreateQuicSession,
                QuicServerSessionBase*(QuicConnectionId connection_id,
-                                      const QuicSocketAddress& client_address,
+                                      const QuicSocketAddress& peer_address,
                                       QuicStringPiece alpn));
 
   MOCK_METHOD1(ShouldCreateOrBufferPacketForConnection,
                bool(QuicConnectionId connection_id));
 
-  using QuicDispatcher::current_client_address;
-  using QuicDispatcher::current_server_address;
+  using QuicDispatcher::current_peer_address;
+  using QuicDispatcher::current_self_address;
 };
 
 // A Connection class which unregisters the session from the dispatcher when
@@ -218,41 +218,41 @@ class QuicDispatcherTest : public QuicTest {
   // Process a packet with an 8 byte connection id,
   // 6 byte packet number, default path id, and packet number 1,
   // using the first supported version.
-  void ProcessPacket(QuicSocketAddress client_address,
+  void ProcessPacket(QuicSocketAddress peer_address,
                      QuicConnectionId connection_id,
                      bool has_version_flag,
                      const QuicString& data) {
-    ProcessPacket(client_address, connection_id, has_version_flag, data,
+    ProcessPacket(peer_address, connection_id, has_version_flag, data,
                   PACKET_8BYTE_CONNECTION_ID, PACKET_6BYTE_PACKET_NUMBER);
   }
 
   // Process a packet with a default path id, and packet number 1,
   // using the first supported version.
-  void ProcessPacket(QuicSocketAddress client_address,
+  void ProcessPacket(QuicSocketAddress peer_address,
                      QuicConnectionId connection_id,
                      bool has_version_flag,
                      const QuicString& data,
                      QuicConnectionIdLength connection_id_length,
                      QuicPacketNumberLength packet_number_length) {
-    ProcessPacket(client_address, connection_id, has_version_flag, data,
+    ProcessPacket(peer_address, connection_id, has_version_flag, data,
                   connection_id_length, packet_number_length, 1);
   }
 
   // Process a packet using the first supported version.
-  void ProcessPacket(QuicSocketAddress client_address,
+  void ProcessPacket(QuicSocketAddress peer_address,
                      QuicConnectionId connection_id,
                      bool has_version_flag,
                      const QuicString& data,
                      QuicConnectionIdLength connection_id_length,
                      QuicPacketNumberLength packet_number_length,
                      QuicPacketNumber packet_number) {
-    ProcessPacket(client_address, connection_id, has_version_flag,
+    ProcessPacket(peer_address, connection_id, has_version_flag,
                   CurrentSupportedVersions().front(), data,
                   connection_id_length, packet_number_length, packet_number);
   }
 
   // Processes a packet.
-  void ProcessPacket(QuicSocketAddress client_address,
+  void ProcessPacket(QuicSocketAddress peer_address,
                      QuicConnectionId connection_id,
                      bool has_version_flag,
                      ParsedQuicVersion version,
@@ -277,8 +277,7 @@ class QuicDispatcherTest : public QuicTest {
       data_connection_map_[connection_id].push_back(
           QuicString(packet->data(), packet->length()));
     }
-    dispatcher_->ProcessPacket(server_address_, client_address,
-                               *received_packet);
+    dispatcher_->ProcessPacket(server_address_, peer_address, *received_packet);
   }
 
   void ValidatePacket(QuicConnectionId conn_id,
@@ -293,7 +292,7 @@ class QuicDispatcherTest : public QuicTest {
       QuicDispatcher* dispatcher,
       const QuicConfig& config,
       QuicConnectionId connection_id,
-      const QuicSocketAddress& client_address,
+      const QuicSocketAddress& peer_address,
       MockQuicConnectionHelper* helper,
       MockAlarmFactory* alarm_factory,
       const QuicCryptoServerConfig* crypto_config,
@@ -370,8 +369,8 @@ TEST_F(QuicDispatcherTest, TlsClientHelloCreatesSession) {
                         CurrentSupportedVersions().front().transport_version),
       SerializeCHLO(), PACKET_8BYTE_CONNECTION_ID, PACKET_6BYTE_PACKET_NUMBER,
       1);
-  EXPECT_EQ(client_address, dispatcher_->current_client_address());
-  EXPECT_EQ(server_address_, dispatcher_->current_server_address());
+  EXPECT_EQ(client_address, dispatcher_->current_peer_address());
+  EXPECT_EQ(server_address_, dispatcher_->current_self_address());
 }
 
 TEST_F(QuicDispatcherTest, ProcessPackets) {
@@ -391,8 +390,8 @@ TEST_F(QuicDispatcherTest, ProcessPackets) {
       })));
   EXPECT_CALL(*dispatcher_, ShouldCreateOrBufferPacketForConnection(1));
   ProcessPacket(client_address, 1, true, SerializeCHLO());
-  EXPECT_EQ(client_address, dispatcher_->current_client_address());
-  EXPECT_EQ(server_address_, dispatcher_->current_server_address());
+  EXPECT_EQ(client_address, dispatcher_->current_peer_address());
+  EXPECT_EQ(server_address_, dispatcher_->current_self_address());
 
   EXPECT_CALL(*dispatcher_,
               CreateQuicSession(2, client_address, QuicStringPiece("hq")))
@@ -563,8 +562,8 @@ TEST_F(QuicDispatcherTest, OKSeqNoPacketProcessed) {
   ProcessPacket(client_address, connection_id, true, SerializeCHLO(),
                 PACKET_8BYTE_CONNECTION_ID, PACKET_6BYTE_PACKET_NUMBER,
                 QuicDispatcher::kMaxReasonableInitialPacketNumber);
-  EXPECT_EQ(client_address, dispatcher_->current_client_address());
-  EXPECT_EQ(server_address_, dispatcher_->current_server_address());
+  EXPECT_EQ(client_address, dispatcher_->current_peer_address());
+  EXPECT_EQ(server_address_, dispatcher_->current_self_address());
 }
 
 TEST_F(QuicDispatcherTest, TooBigSeqNoPacketToTimeWaitListManager) {
@@ -600,7 +599,7 @@ TEST_F(QuicDispatcherTest, SupportedTransportVersionsChangeInFlight) {
   SetQuicReloadableFlag(quic_disable_version_37, false);
   SetQuicReloadableFlag(quic_disable_version_38, false);
   SetQuicReloadableFlag(quic_disable_version_41, false);
-  SetQuicReloadableFlag(quic_enable_version_42, true);
+  SetQuicReloadableFlag(quic_enable_version_42_2, true);
   SetQuicReloadableFlag(quic_enable_version_43, true);
   SetQuicFlag(&FLAGS_quic_enable_version_99, true);
   QuicSocketAddress client_address(QuicIpAddress::Loopback4(), 1);
@@ -688,7 +687,7 @@ TEST_F(QuicDispatcherTest, SupportedTransportVersionsChangeInFlight) {
                 PACKET_6BYTE_PACKET_NUMBER, 1);
 
   // Turn off version 42.
-  SetQuicReloadableFlag(quic_enable_version_42, false);
+  SetQuicReloadableFlag(quic_enable_version_42_2, false);
   ++connection_id;
   EXPECT_CALL(*dispatcher_, CreateQuicSession(connection_id, client_address,
                                               QuicStringPiece("hq")))
@@ -699,7 +698,7 @@ TEST_F(QuicDispatcherTest, SupportedTransportVersionsChangeInFlight) {
                 PACKET_6BYTE_PACKET_NUMBER, 1);
 
   // Turn on version 42.
-  SetQuicReloadableFlag(quic_enable_version_42, true);
+  SetQuicReloadableFlag(quic_enable_version_42_2, true);
   ++connection_id;
   EXPECT_CALL(*dispatcher_, CreateQuicSession(connection_id, client_address,
                                               QuicStringPiece("hq")))

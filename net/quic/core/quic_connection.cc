@@ -172,7 +172,7 @@ class MtuDiscoveryAlarmDelegate : public QuicAlarm::Delegate {
 
 QuicConnection::QuicConnection(
     QuicConnectionId connection_id,
-    QuicSocketAddress address,
+    QuicSocketAddress initial_peer_address,
     QuicConnectionHelperInterface* helper,
     QuicAlarmFactory* alarm_factory,
     QuicPacketWriter* writer,
@@ -193,7 +193,7 @@ QuicConnection::QuicConnection(
       clock_(helper->GetClock()),
       random_generator_(helper->GetRandomGenerator()),
       connection_id_(connection_id),
-      peer_address_(address),
+      peer_address_(initial_peer_address),
       active_peer_migration_type_(NO_CHANGE),
       highest_packet_sent_before_peer_migration_(0),
       last_packet_decrypted_(false),
@@ -746,6 +746,7 @@ bool QuicConnection::OnStreamFrame(const QuicStreamFrame& frame) {
 
 bool QuicConnection::OnAckFrame(const QuicAckFrame& incoming_ack) {
   DCHECK(connected_);
+  DCHECK(!framer_.use_incremental_ack_processing());
 
   // Since an ack frame was received, this is not a connectivity probe.
   // A probe only contains a PING and full padding.
@@ -774,26 +775,92 @@ bool QuicConnection::OnAckFrame(const QuicAckFrame& incoming_ack) {
   largest_seen_packet_with_ack_ = last_header_.packet_number;
   sent_packet_manager_.OnIncomingAck(incoming_ack,
                                      time_of_last_received_packet_);
-  if (no_stop_waiting_frames_) {
-    received_packet_manager_.DontWaitForPacketsBefore(
-        sent_packet_manager_.largest_packet_peer_knows_is_acked());
-  }
-  // Always reset the retransmission alarm when an ack comes in, since we now
-  // have a better estimate of the current rtt than when it was set.
-  SetRetransmissionAlarm();
-
   // If the incoming ack's packets set expresses missing packets: peer is still
   // waiting for a packet lower than a packet that we are no longer planning to
   // send.
   // If the incoming ack's packets set expresses received packets: peer is still
   // acking packets which we never care about.
   // Send an ack to raise the high water mark.
-  if (!incoming_ack.packets.Empty() &&
-      GetLeastUnacked() > incoming_ack.packets.Min()) {
-    ++stop_waiting_count_;
-  } else {
-    stop_waiting_count_ = 0;
+  PostProcessAfterAckFrame(!incoming_ack.packets.Empty() &&
+                           GetLeastUnacked() > incoming_ack.packets.Min());
+
+  return connected_;
+}
+
+bool QuicConnection::OnAckFrameStart(QuicPacketNumber largest_acked,
+                                     QuicTime::Delta ack_delay_time) {
+  DCHECK(connected_);
+  DCHECK(framer_.use_incremental_ack_processing());
+
+  // Since an ack frame was received, this is not a connectivity probe.
+  // A probe only contains a PING and full padding.
+  UpdatePacketContent(NOT_PADDED_PING);
+
+  QUIC_DVLOG(1) << ENDPOINT
+                << "OnAckFrameStart, largest_acked: " << largest_acked;
+
+  if (last_header_.packet_number <= largest_seen_packet_with_ack_) {
+    QUIC_DLOG(INFO) << ENDPOINT << "Received an old ack frame: ignoring";
+    return true;
   }
+
+  if (largest_acked > packet_generator_.packet_number()) {
+    QUIC_DLOG(WARNING) << ENDPOINT
+                       << "Peer's observed unsent packet:" << largest_acked
+                       << " vs " << packet_generator_.packet_number();
+    // We got an error for data we have not sent.
+    CloseConnection(QUIC_INVALID_ACK_DATA, "Largest observed too high.",
+                    ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
+    return false;
+  }
+
+  if (largest_acked < sent_packet_manager_.GetLargestObserved()) {
+    QUIC_LOG(INFO) << ENDPOINT << "Peer's largest_observed packet decreased:"
+                   << largest_acked << " vs "
+                   << sent_packet_manager_.GetLargestObserved()
+                   << " packet_number:" << last_header_.packet_number
+                   << " largest seen with ack:" << largest_seen_packet_with_ack_
+                   << " connection_id: " << connection_id_;
+    // A new ack has a diminished largest_observed value.
+    // If this was an old packet, we wouldn't even have checked.
+    CloseConnection(QUIC_INVALID_ACK_DATA, "Largest observed too low.",
+                    ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
+    return false;
+  }
+
+  sent_packet_manager_.OnAckFrameStart(largest_acked, ack_delay_time);
+  return true;
+}
+
+bool QuicConnection::OnAckRange(QuicPacketNumber start,
+                                QuicPacketNumber end,
+                                bool last_range) {
+  DCHECK(connected_);
+  DCHECK(framer_.use_incremental_ack_processing());
+  QUIC_DVLOG(1) << ENDPOINT << "OnAckRange: [" << start << ", " << end
+                << "), last_range: " << last_range;
+
+  if (last_header_.packet_number <= largest_seen_packet_with_ack_) {
+    QUIC_DLOG(INFO) << ENDPOINT << "Received an old ack frame: ignoring";
+    return true;
+  }
+
+  sent_packet_manager_.OnAckRange(start, end, last_range,
+                                  time_of_last_received_packet_);
+  if (!last_range) {
+    return true;
+  }
+  if (send_alarm_->IsSet()) {
+    send_alarm_->Cancel();
+  }
+  largest_seen_packet_with_ack_ = last_header_.packet_number;
+  // If the incoming ack's packets set expresses missing packets: peer is still
+  // waiting for a packet lower than a packet that we are no longer planning to
+  // send.
+  // If the incoming ack's packets set expresses received packets: peer is still
+  // acking packets which we never care about.
+  // Send an ack to raise the high water mark.
+  PostProcessAfterAckFrame(GetLeastUnacked() > start);
 
   return connected_;
 }
@@ -1363,7 +1430,7 @@ void QuicConnection::ProcessUdpPacket(const QuicSocketAddress& self_address,
 
   // Ensure the time coming from the packet reader is within a minute of now.
   if (std::abs((packet.receipt_time() - clock_->ApproximateNow()).ToSeconds()) >
-      60) {
+      2 * 60) {
     QUIC_BUG << "Packet receipt time:"
              << packet.receipt_time().ToDebuggingValue()
              << " too far from current time:"
@@ -2816,6 +2883,22 @@ void QuicConnection::MaybeEnableSessionDecidesWhatToWrite() {
       enable_session_decides_what_to_write);
   packet_generator_.SetCanSetTransmissionType(
       enable_session_decides_what_to_write);
+}
+
+void QuicConnection::PostProcessAfterAckFrame(bool send_stop_waiting) {
+  if (no_stop_waiting_frames_) {
+    received_packet_manager_.DontWaitForPacketsBefore(
+        sent_packet_manager_.largest_packet_peer_knows_is_acked());
+  }
+  // Always reset the retransmission alarm when an ack comes in, since we now
+  // have a better estimate of the current rtt than when it was set.
+  SetRetransmissionAlarm();
+
+  if (send_stop_waiting) {
+    ++stop_waiting_count_;
+  } else {
+    stop_waiting_count_ = 0;
+  }
 }
 
 void QuicConnection::SetSessionNotifier(

@@ -164,9 +164,13 @@ TEST_F(PriorityWriteSchedulerTest, UpdateStreamPrecedence) {
   // first by PopNextReadyStream() since it has higher priority.
   scheduler_.RegisterStream(4, SpdyStreamPrecedence(1));
   scheduler_.MarkStreamReady(3, false);  // priority 2
+  EXPECT_TRUE(scheduler_.IsStreamReady(3));
   scheduler_.MarkStreamReady(4, false);  // priority 1
+  EXPECT_TRUE(scheduler_.IsStreamReady(4));
   EXPECT_EQ(4u, scheduler_.PopNextReadyStream());
+  EXPECT_FALSE(scheduler_.IsStreamReady(4));
   EXPECT_EQ(3u, scheduler_.PopNextReadyStream());
+  EXPECT_FALSE(scheduler_.IsStreamReady(3));
 
   // Verify that lowering priority of stream 4 causes it to be returned later
   // by PopNextReadyStream().

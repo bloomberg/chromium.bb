@@ -129,5 +129,11 @@ QuicStream* QuicSessionPeer::GetStream(QuicSession* session, QuicStreamId id) {
   return session->GetStream(id);
 }
 
+// static
+bool QuicSessionPeer::IsStreamWriteBlocked(QuicSession* session,
+                                           QuicStreamId id) {
+  return session->write_blocked_streams_.IsStreamBlocked(id);
+}
+
 }  // namespace test
 }  // namespace net

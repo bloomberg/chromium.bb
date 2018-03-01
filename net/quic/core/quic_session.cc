@@ -271,6 +271,19 @@ bool QuicSession::CheckStreamNotBusyLooping(QuicStream* stream,
   return true;
 }
 
+bool QuicSession::CheckStreamWriteBlocked(QuicStream* stream) const {
+  if (!stream->write_side_closed() && stream->HasBufferedData() &&
+      !stream->flow_controller()->IsBlocked() &&
+      !write_blocked_streams_.IsStreamBlocked(stream->id())) {
+    QUIC_DLOG(ERROR) << "stream " << stream->id() << " has buffered "
+                     << stream->BufferedDataBytes()
+                     << " bytes, and is not flow control blocked, "
+                        "but it is not in the write block list.";
+    return false;
+  }
+  return true;
+}
+
 void QuicSession::OnCanWrite() {
   if (!RetransmitLostData()) {
     // Cannot finish retransmitting lost data, connection is write blocked.
@@ -333,6 +346,7 @@ void QuicSession::OnCanWrite() {
       QUIC_DVLOG(1) << "stream " << stream->id() << " bytes_written "
                     << previous_bytes_written << " fin " << previous_fin_sent;
       stream->OnCanWrite();
+      DCHECK(CheckStreamWriteBlocked(stream));
       DCHECK(CheckStreamNotBusyLooping(stream, previous_bytes_written,
                                        previous_fin_sent));
     }
@@ -1158,6 +1172,7 @@ bool QuicSession::RetransmitLostData() {
     // Retransmit crypto data first.
     QuicStream* crypto_stream = GetStream(kCryptoStreamId);
     crypto_stream->OnCanWrite();
+    DCHECK(CheckStreamWriteBlocked(crypto_stream));
     if (crypto_stream->HasPendingRetransmission()) {
       // Connection is write blocked.
       return false;
@@ -1183,6 +1198,7 @@ bool QuicSession::RetransmitLostData() {
     if (stream != nullptr) {
       SetTransmissionType(LOSS_RETRANSMISSION);
       stream->OnCanWrite();
+      DCHECK(CheckStreamWriteBlocked(stream));
       if (stream->HasPendingRetransmission()) {
         // Connection is write blocked.
         break;

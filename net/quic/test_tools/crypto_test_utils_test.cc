@@ -7,6 +7,7 @@
 #include "net/quic/core/crypto/crypto_server_config_protobuf.h"
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/core/tls_server_handshaker.h"
+#include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/platform/api/quic_test.h"
 #include "net/quic/platform/api/quic_text_utils.h"
 #include "net/quic/test_tools/mock_clock.h"
@@ -50,8 +51,7 @@ class ShloVerifier {
 
   std::unique_ptr<ValidateClientHelloCallback>
   GetValidateClientHelloCallback() {
-    return std::unique_ptr<ValidateClientHelloCallback>(
-        new ValidateClientHelloCallback(this));
+    return QuicMakeUnique<ValidateClientHelloCallback>(this);
   }
 
  private:
@@ -87,8 +87,7 @@ class ShloVerifier {
   };
 
   std::unique_ptr<ProcessClientHelloCallback> GetProcessClientHelloCallback() {
-    return std::unique_ptr<ProcessClientHelloCallback>(
-        new ProcessClientHelloCallback(this));
+    return QuicMakeUnique<ProcessClientHelloCallback>(this);
   }
 
   void ProcessClientHelloDone(std::unique_ptr<CryptoHandshakeMessage> message) {

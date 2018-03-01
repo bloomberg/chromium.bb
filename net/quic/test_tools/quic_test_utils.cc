@@ -188,6 +188,17 @@ bool NoOpFramerVisitor::OnAckFrame(const QuicAckFrame& frame) {
   return true;
 }
 
+bool NoOpFramerVisitor::OnAckFrameStart(QuicPacketNumber largest_acked,
+                                        QuicTime::Delta ack_delay_time) {
+  return true;
+}
+
+bool NoOpFramerVisitor::OnAckRange(QuicPacketNumber start,
+                                   QuicPacketNumber end,
+                                   bool last_range) {
+  return true;
+}
+
 bool NoOpFramerVisitor::OnStopWaitingFrame(const QuicStopWaitingFrame& frame) {
   return true;
 }
@@ -364,7 +375,7 @@ void PacketSavingConnection::SendOrQueuePacket(SerializedPacket* packet) {
 
 MockQuicSession::MockQuicSession(QuicConnection* connection)
     : QuicSession(connection, nullptr, DefaultQuicConfig()) {
-  crypto_stream_.reset(new MockQuicCryptoStream(this));
+  crypto_stream_ = QuicMakeUnique<MockQuicCryptoStream>(this);
   Initialize();
   ON_CALL(*this, WritevData(_, _, _, _, _))
       .WillByDefault(testing::Return(QuicConsumedData(0, false)));
@@ -422,7 +433,7 @@ CryptoMessageParser* MockQuicCryptoStream::crypto_message_parser() {
 
 MockQuicSpdySession::MockQuicSpdySession(QuicConnection* connection)
     : QuicSpdySession(connection, nullptr, DefaultQuicConfig()) {
-  crypto_stream_.reset(new MockQuicCryptoStream(this));
+  crypto_stream_ = QuicMakeUnique<MockQuicCryptoStream>(this);
   Initialize();
   ON_CALL(*this, WritevData(_, _, _, _, _))
       .WillByDefault(testing::Return(QuicConsumedData(0, false)));
@@ -500,9 +511,9 @@ TestQuicSpdyClientSession::TestQuicSpdyClientSession(
     const QuicServerId& server_id,
     QuicCryptoClientConfig* crypto_config)
     : QuicSpdyClientSessionBase(connection, &push_promise_index_, config) {
-  crypto_stream_.reset(new QuicCryptoClientStream(
+  crypto_stream_ = QuicMakeUnique<QuicCryptoClientStream>(
       server_id, this, crypto_test_utils::ProofVerifyContextForTesting(),
-      crypto_config, this));
+      crypto_config, this);
   Initialize();
 }
 

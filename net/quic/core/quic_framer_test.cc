@@ -198,6 +198,24 @@ class TestQuicVisitor : public QuicFramerVisitorInterface {
     return true;
   }
 
+  bool OnAckFrameStart(QuicPacketNumber largest_acked,
+                       QuicTime::Delta ack_delay_time) override {
+    ++frame_count_;
+    QuicAckFrame ack_frame;
+    ack_frame.largest_acked = largest_acked;
+    ack_frame.ack_delay_time = ack_delay_time;
+    ack_frames_.push_back(QuicMakeUnique<QuicAckFrame>(ack_frame));
+    return true;
+  }
+
+  bool OnAckRange(QuicPacketNumber start,
+                  QuicPacketNumber end,
+                  bool /*last_range*/) override {
+    DCHECK(!ack_frames_.empty());
+    ack_frames_[ack_frames_.size() - 1]->packets.AddRange(start, end);
+    return true;
+  }
+
   bool OnStopWaitingFrame(const QuicStopWaitingFrame& frame) override {
     ++frame_count_;
     stop_waiting_frames_.push_back(QuicMakeUnique<QuicStopWaitingFrame>(frame));
@@ -2340,7 +2358,11 @@ TEST_P(QuicFramerTest, AckFrameFirstAckBlockLengthZero) {
                               !kIncludeDiversificationNonce));
 
   EXPECT_EQ(0u, visitor_.stream_frames_.size());
-  ASSERT_EQ(0u, visitor_.ack_frames_.size());
+  if (framer_.use_incremental_ack_processing()) {
+    ASSERT_EQ(1u, visitor_.ack_frames_.size());
+  } else {
+    ASSERT_EQ(0u, visitor_.ack_frames_.size());
+  }
 
   CheckFramingBoundaries(fragments, QUIC_INVALID_ACK_DATA);
 }
@@ -3907,7 +3929,7 @@ TEST_P(QuicFramerTest, BuildStreamFramePacketWithVersionFlag) {
       // connection_id
       0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
       // version tag
-      'Q', '0',  GetQuicVersionDigitTens(), GetQuicVersionDigitOnes(),
+      'Q', '0', GetQuicVersionDigitTens(), GetQuicVersionDigitOnes(),
       // packet number
       0xBC, 0x9A, 0x78, 0x56, 0x34, 0x12,
 
@@ -3927,7 +3949,7 @@ TEST_P(QuicFramerTest, BuildStreamFramePacketWithVersionFlag) {
       // connection_id
       0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
       // version tag
-      'Q', '0',  GetQuicVersionDigitTens(), GetQuicVersionDigitOnes(),
+      'Q', '0', GetQuicVersionDigitTens(), GetQuicVersionDigitOnes(),
       // packet number
       0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC,
 
@@ -3947,7 +3969,7 @@ TEST_P(QuicFramerTest, BuildStreamFramePacketWithVersionFlag) {
       // connection_id
       0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
       // version tag
-      'Q', '0',  GetQuicVersionDigitTens(), GetQuicVersionDigitOnes(),
+      'Q', '0', GetQuicVersionDigitTens(), GetQuicVersionDigitOnes(),
       // packet number
       0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC,
 
@@ -3985,7 +4007,7 @@ TEST_P(QuicFramerTest, BuildVersionNegotiationPacket) {
       // connection_id
       0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
       // version tag
-      'Q', '0',  GetQuicVersionDigitTens(), GetQuicVersionDigitOnes(),
+      'Q', '0', GetQuicVersionDigitTens(), GetQuicVersionDigitOnes(),
   };
   // clang-format on
 

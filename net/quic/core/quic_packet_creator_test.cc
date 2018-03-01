@@ -262,7 +262,14 @@ TEST_P(QuicPacketCreatorTest, SerializeFrames) {
       EXPECT_CALL(framer_visitor_, OnUnauthenticatedHeader(_));
       EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_));
       EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
-      EXPECT_CALL(framer_visitor_, OnAckFrame(_));
+      if (client_framer_.use_incremental_ack_processing()) {
+        EXPECT_CALL(framer_visitor_, OnAckFrameStart(_, _))
+            .WillOnce(Return(true));
+        EXPECT_CALL(framer_visitor_, OnAckRange(1, 1, true))
+            .WillOnce(Return(true));
+      } else {
+        EXPECT_CALL(framer_visitor_, OnAckFrame(_));
+      }
       EXPECT_CALL(framer_visitor_, OnStreamFrame(_));
       EXPECT_CALL(framer_visitor_, OnStreamFrame(_));
       EXPECT_CALL(framer_visitor_, OnPacketComplete());
