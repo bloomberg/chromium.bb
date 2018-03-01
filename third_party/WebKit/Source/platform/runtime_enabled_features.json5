@@ -556,10 +556,6 @@
       status: "stable",
     },
     {
-      name: "LocksAPI",
-      status: "experimental",
-    },
-    {
       name: "LongTaskObserver",
       status: "stable",
     },
@@ -1174,6 +1170,11 @@
     },
     {
       name: "WebGLImageChromium",
+    },
+    {
+      name: "WebLocksAPI",
+      origin_trial_feature_name: "WebLocksAPI",
+      status: "experimental",
     },
     {
       name: "WebNFC",
