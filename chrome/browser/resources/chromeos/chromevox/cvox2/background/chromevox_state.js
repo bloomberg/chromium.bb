@@ -13,6 +13,7 @@ goog.provide('ChromeVoxStateObserver');
 
 goog.require('cursors.Cursor');
 goog.require('cursors.Range');
+goog.require('cvox.BrailleKeyEvent');
 
 /**
  * An interface implemented by objects that want to observe ChromeVox state
@@ -71,7 +72,27 @@ ChromeVoxState.prototype = {
   /**
    * @param {cursors.Range} newRange The new range.
    */
-  setCurrentRange: goog.abstractMethod
+  setCurrentRange: goog.abstractMethod,
+  /**
+   * Navigate to the given range - it both sets the range and outputs it.
+   * @param {!cursors.Range} range The new range.
+   * @param {boolean=} opt_focus Focus the range; defaults to true.
+   * @param {Object=} opt_speechProps Speech properties.
+   */
+  navigateToRange: goog.abstractMethod,
+
+  /**
+   * Save the current ChromeVox range.
+   */
+  markCurrentRange: goog.abstractMethod,
+
+  /**
+   * Handles a braille command.
+   * @param {!cvox.BrailleKeyEvent} evt
+   * @param {!cvox.NavBraille} content
+   * @return {boolean} True if evt was processed.
+   */
+  onBrailleKeyEvent: goog.abstractMethod
 };
 
 /** @type {!Array<ChromeVoxStateObserver>} */

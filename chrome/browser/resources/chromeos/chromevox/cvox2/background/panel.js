@@ -8,7 +8,7 @@
 
 goog.provide('Panel');
 
-goog.require('BrailleCommandHandler');
+goog.require('BrailleCommandData');
 goog.require('ISearchUI');
 goog.require('Msgs');
 goog.require('PanelCommand');
@@ -392,8 +392,7 @@ Panel.onOpenMenus = function(opt_event, opt_activateMenuTitle) {
     if (binding.title && menu) {
       menu.addMenuItem(
           binding.title, binding.keySeq,
-          BrailleCommandHandler.getDotShortcut(binding.command, true),
-          function() {
+          BrailleCommandData.getDotShortcut(binding.command, true), function() {
             var CommandHandler =
                 chrome.extension.getBackgroundPage()['CommandHandler'];
             CommandHandler['onCommand'](binding.command);
