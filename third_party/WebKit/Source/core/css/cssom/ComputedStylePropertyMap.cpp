@@ -137,9 +137,14 @@ const CSSValue* ComputedTransformComponent(const TransformOperation& operation,
       }
       return result;
     }
+    case TransformOperation::kInterpolated:
+      // TODO(816803): The computed value in this case is not fully spec'd
+      // See https://github.com/w3c/css-houdini-drafts/issues/425
+      return CSSIdentifierValue::Create(CSSValueNone);
     default:
+      // The remaining operations are unsupported.
       NOTREACHED();
-      return nullptr;
+      return CSSIdentifierValue::Create(CSSValueNone);
   }
 }
 
