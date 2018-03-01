@@ -641,6 +641,8 @@ void WebMediaPlayerImpl::Play() {
   if (observer_)
     observer_->OnPlaying();
 
+  watch_time_reporter_->SetAutoplayInitiated(client_->WasAutoplayInitiated());
+
   // If we're seeking we'll trigger the watch time reporter upon seek completed;
   // we don't want to start it here since the seek time is unstable. E.g., when
   // playing content with a positive start time we would have a zero seek time.

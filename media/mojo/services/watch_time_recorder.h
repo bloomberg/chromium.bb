@@ -36,6 +36,7 @@ class MEDIA_MOJO_EXPORT WatchTimeRecorder : public mojom::WatchTimeRecorder {
   void OnError(PipelineStatus status) override;
   void SetAudioDecoderName(const std::string& name) override;
   void SetVideoDecoderName(const std::string& name) override;
+  void SetAutoplayInitiated(bool value) override;
 
   void UpdateUnderflowCount(int32_t count) override;
 
@@ -90,6 +91,8 @@ class MEDIA_MOJO_EXPORT WatchTimeRecorder : public mojom::WatchTimeRecorder {
   // base::PersistentHash().
   std::string audio_decoder_name_;
   std::string video_decoder_name_;
+
+  base::Optional<bool> autoplay_initiated_;
 
   DISALLOW_COPY_AND_ASSIGN(WatchTimeRecorder);
 };
