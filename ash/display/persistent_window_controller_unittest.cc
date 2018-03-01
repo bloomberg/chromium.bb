@@ -296,7 +296,7 @@ TEST_F(PersistentWindowControllerTest, WindowMovedByAccel) {
   // window info. It should be able to save persistent window info again on next
   // display change.
   wm::ActivateWindow(w2);
-  HandleMoveActiveWindowToDisplay(DisplayMoveWindowDirection::kLeft);
+  display_move_window_util::HandleMoveActiveWindowBetweenDisplays();
   EXPECT_EQ(gfx::Rect(200, 0, 100, 200), w1->GetBoundsInScreen());
   EXPECT_EQ(gfx::Rect(1, 0, 200, 100), w2->GetBoundsInScreen());
 

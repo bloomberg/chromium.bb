@@ -9,15 +9,15 @@
 
 namespace ash {
 
-enum class DisplayMoveWindowDirection { kAbove, kBelow, kLeft, kRight };
+namespace display_move_window_util {
 
-// Returns true if active window can be moved between displays by accelerators.
+// Returns true if active window can be moved between displays by accelerator.
 ASH_EXPORT bool CanHandleMoveActiveWindowBetweenDisplays();
 
-// Handles moving current active window from its display to another display
-// specified by |Direction|.
-ASH_EXPORT void HandleMoveActiveWindowToDisplay(
-    DisplayMoveWindowDirection direction);
+// Handles moving current active window from its display to another display.
+ASH_EXPORT void HandleMoveActiveWindowBetweenDisplays();
+
+}  // namespace display_move_window_util
 
 }  // namespace ash
 

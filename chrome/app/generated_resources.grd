@@ -10207,17 +10207,8 @@ For more information, visit our <ph name="BEGIN_LINK">&lt;a target="_blank" href
         <message name="IDS_A11Y_ALERT_SCREEN_ON" desc="Alert sent to the accessibility api when screen is turned on.">
           screen on
         </message>
-        <message name="IDS_A11Y_ALERT_WINDOW_MOVED_TO_ABOVE_DISPLAY" desc="Alert sent to the accessibility api when active window is moved to above display.">
-          Active window moved to above display
-        </message>
-        <message name="IDS_A11Y_ALERT_WINDOW_MOVED_TO_BELOW_DISPLAY" desc="Alert sent to the accessibility api when active window is moved to below display.">
-          Active window moved to below display
-        </message>
-        <message name="IDS_A11Y_ALERT_WINDOW_MOVED_TO_LEFT_DISPLAY" desc="Alert sent to the accessibility api when active window is moved to left display.">
-          Active window moved to left display
-        </message>
-        <message name="IDS_A11Y_ALERT_WINDOW_MOVED_TO_RIGHT_DISPLAY" desc="Alert sent to the accessibility api when active window is moved to right display.">
-          Active window moved to right display
+        <message name="IDS_A11Y_ALERT_WINDOW_MOVED_TO_ANOTHER_DISPLAY" desc="Alert sent to the accessibility api when active window is moved to above display.">
+          Active window moved to another display.
         </message>
         <message name="IDS_A11Y_ALERT_WINDOW_NEEDED" desc="Alert sent to the accessibility api when the user attempts a keyboard command that requires a window to work.">
           Command unavailable. Press control-N to open a new window.

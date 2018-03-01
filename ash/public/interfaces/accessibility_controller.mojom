@@ -25,11 +25,8 @@ enum AccessibilityAlert {
   // When screen is turned off by tablet power button.
   SCREEN_OFF,
 
-  // When window moved to above/below/left/right display by accelerators.
-  WINDOW_MOVED_TO_ABOVE_DISPLAY,
-  WINDOW_MOVED_TO_BELOW_DISPLAY,
-  WINDOW_MOVED_TO_LEFT_DISPLAY,
-  WINDOW_MOVED_TO_RIGHT_DISPLAY,
+  // When window moved to another display by accelerators.
+  WINDOW_MOVED_TO_ANOTHER_DISPLAY,
 
   // When the user attempts a keyboard command that requires a window to work,
   // and none is available.
