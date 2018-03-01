@@ -611,7 +611,7 @@ int HttpProxyClientSocketWrapper::DoSpdyProxyCreateStream() {
   // TODO(https://crbug.com/656607): Add proper annotation here.
   return spdy_stream_request_.StartRequest(
       SPDY_BIDIRECTIONAL_STREAM, spdy_session,
-      GURL("https://" + endpoint_.ToString()), priority_,
+      GURL("https://" + endpoint_.ToString()), priority_, initial_socket_tag_,
       spdy_session->net_log(),
       base::Bind(&HttpProxyClientSocketWrapper::OnIOComplete,
                  base::Unretained(this)),

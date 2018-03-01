@@ -95,7 +95,7 @@ int SpdyHttpStream::InitializeStream(const HttpRequestInfo* request_info,
   // TODO(https://crbug.com/656607): Add proper annotation here.
   int rv = stream_request_.StartRequest(
       SPDY_REQUEST_RESPONSE_STREAM, spdy_session_, request_info_->url, priority,
-      stream_net_log,
+      request_info_->socket_tag, stream_net_log,
       base::BindOnce(&SpdyHttpStream::OnStreamCreated,
                      weak_factory_.GetWeakPtr(), std::move(callback)),
       NO_TRAFFIC_ANNOTATION_BUG_656607);

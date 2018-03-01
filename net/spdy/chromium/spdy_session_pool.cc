@@ -192,10 +192,9 @@ base::WeakPtr<SpdySession> SpdySessionPool::FindAvailableSession(
       const SpdySessionKey& alias_key = alias_it->second;
 
       // We can reuse this session only if the proxy and privacy
-      // settings and socket tag match.
+      // settings match.
       if (!(alias_key.proxy_server() == key.proxy_server()) ||
-          !(alias_key.privacy_mode() == key.privacy_mode()) ||
-          !(alias_key.socket_tag() == key.socket_tag())) {
+          !(alias_key.privacy_mode() == key.privacy_mode())) {
         continue;
       }
 
@@ -223,6 +222,48 @@ base::WeakPtr<SpdySession> SpdySessionPool::FindAvailableSession(
         continue;
       }
 
+      bool adding_pooled_alias = true;
+
+      // If socket tags differ, see if session's socket tag can be changed.
+      if (alias_key.socket_tag() != key.socket_tag()) {
+        SpdySessionKey old_key = available_session->spdy_session_key();
+
+        if (!available_session->ChangeSocketTag(key.socket_tag()))
+          continue;
+
+        const SpdySessionKey& new_key = available_session->spdy_session_key();
+
+        // This isn't a pooled alias, it's the actual session.
+        adding_pooled_alias = false;
+
+        // Remap main session key.
+        UnmapKey(old_key);
+        MapKeyToAvailableSession(new_key, available_session);
+
+        // Remap alias.
+        aliases_.insert(AliasMap::value_type(alias_it->first, new_key));
+        aliases_.erase(alias_it);
+
+        // Remap pooled session keys.
+        const auto& aliases = available_session->pooled_aliases();
+        for (auto it = aliases.begin(); it != aliases.end();) {
+          // Ignore aliases this loop is inserting.
+          if (it->socket_tag() == key.socket_tag()) {
+            ++it;
+            continue;
+          }
+          UnmapKey(*it);
+          SpdySessionKey new_pool_alias_key =
+              SpdySessionKey(it->host_port_pair(), it->proxy_server(),
+                             it->privacy_mode(), key.socket_tag());
+          MapKeyToAvailableSession(new_pool_alias_key, available_session);
+          auto old_it = it;
+          ++it;
+          available_session->RemovePooledAlias(*old_it);
+          available_session->AddPooledAlias(new_pool_alias_key);
+        }
+      }
+
       UMA_HISTOGRAM_ENUMERATION("Net.SpdyIPPoolDomainMatch", 1, 2);
       UMA_HISTOGRAM_ENUMERATION("Net.SpdySessionGet",
                                 FOUND_EXISTING_FROM_IP_POOL,
@@ -231,9 +272,11 @@ base::WeakPtr<SpdySession> SpdySessionPool::FindAvailableSession(
           NetLogEventType::
               HTTP2_SESSION_POOL_FOUND_EXISTING_SESSION_FROM_IP_POOL,
           available_session->net_log().source().ToEventParametersCallback());
-      // Add this session to the map so that we can find it next time.
-      MapKeyToAvailableSession(key, available_session);
-      available_session->AddPooledAlias(key);
+      if (adding_pooled_alias) {
+        // Add this session to the map so that we can find it next time.
+        MapKeyToAvailableSession(key, available_session);
+        available_session->AddPooledAlias(key);
+      }
       return available_session;
     }
   }

@@ -182,6 +182,7 @@ class NET_EXPORT_PRIVATE SpdyStreamRequest {
                    const base::WeakPtr<SpdySession>& session,
                    const GURL& url,
                    RequestPriority priority,
+                   const SocketTag& socket_tag,
                    const NetLogWithSource& net_log,
                    CompletionOnceCallback callback,
                    const NetworkTrafficAnnotationTag& traffic_annotation);
@@ -228,6 +229,7 @@ class NET_EXPORT_PRIVATE SpdyStreamRequest {
   base::WeakPtr<SpdyStream> stream_;
   GURL url_;
   RequestPriority priority_;
+  SocketTag socket_tag_;
   NetLogWithSource net_log_;
   CompletionOnceCallback callback_;
   MutableNetworkTrafficAnnotationTag traffic_annotation_;
@@ -458,7 +460,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   bool GetLoadTimingInfo(SpdyStreamId stream_id,
                          LoadTimingInfo* load_timing_info) const;
 
-  // Returns true if session is not currently active
+  // Returns true if session is currently active.
   bool is_active() const {
     return !active_streams_.empty() || !created_streams_.empty();
   }
@@ -511,6 +513,9 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // includes the size attributed to the underlying socket.
   size_t DumpMemoryStats(StreamSocket::SocketMemoryStats* stats,
                          bool* is_session_active) const;
+
+  // Change this session's socket tag to |new_tag|. Returns true on success.
+  bool ChangeSocketTag(const SocketTag& new_tag);
 
  private:
   friend class test::SpdyStreamTest;
@@ -875,7 +880,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   bool in_io_loop_;
 
   // The key used to identify this session.
-  const SpdySessionKey spdy_session_key_;
+  SpdySessionKey spdy_session_key_;
 
   // Set set of SpdySessionKeys for which this session has serviced
   // requests.

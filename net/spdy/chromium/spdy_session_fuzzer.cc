@@ -131,7 +131,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   int rv = stream_request.StartRequest(
       net::SPDY_REQUEST_RESPONSE_STREAM, spdy_session,
       GURL("http://www.example.invalid/"), net::DEFAULT_PRIORITY,
-      bound_test_net_log.bound(), wait_for_start.callback(),
+      net::SocketTag(), bound_test_net_log.bound(), wait_for_start.callback(),
       TRAFFIC_ANNOTATION_FOR_TESTS);
 
   if (rv == net::ERR_IO_PENDING) {

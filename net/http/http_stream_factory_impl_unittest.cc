@@ -2225,7 +2225,6 @@ TEST_F(HttpStreamFactoryTest, RequestBidirectionalStreamImpl) {
   ssl_socket_data.next_proto = kProtoHTTP2;
   session_deps.socket_factory->AddSSLSocketDataProvider(&ssl_socket_data);
 
-  HostPortPair host_port_pair("www.google.com", 443);
   std::unique_ptr<HttpNetworkSession> session(
       SpdySessionDependencies::SpdyCreateSession(&session_deps));
 
@@ -2608,7 +2607,6 @@ TEST_F(HttpStreamFactoryTest, RequestBidirectionalStreamImplFailure) {
   ssl_socket_data.next_proto = kProtoHTTP11;
   session_deps.socket_factory->AddSSLSocketDataProvider(&ssl_socket_data);
 
-  HostPortPair host_port_pair("www.google.com", 443);
   std::unique_ptr<HttpNetworkSession> session(
       SpdySessionDependencies::SpdyCreateSession(&session_deps));
 
@@ -2661,13 +2659,16 @@ TEST_F(HttpStreamFactoryTest, Tag) {
   socket_data2.set_connect_data(MockConnect(ASYNC, OK));
   session_deps.socket_factory->AddSocketDataProvider(&socket_data2);
   SSLSocketDataProvider ssl_socket_data(ASYNC, OK);
+  ssl_socket_data.ssl_info.cert =
+      ImportCertFromFile(GetTestCertsDirectory(), "wildcard.pem");
   ssl_socket_data.next_proto = kProtoHTTP2;
   session_deps.socket_factory->AddSSLSocketDataProvider(&ssl_socket_data);
   SSLSocketDataProvider ssl_socket_data2(ASYNC, OK);
+  ssl_socket_data2.ssl_info.cert =
+      ImportCertFromFile(GetTestCertsDirectory(), "wildcard.pem");
   ssl_socket_data2.next_proto = kProtoHTTP2;
   session_deps.socket_factory->AddSSLSocketDataProvider(&ssl_socket_data2);
 
-  HostPortPair host_port_pair("example.org", 443);
   std::unique_ptr<HttpNetworkSession> session(
       SpdySessionDependencies::SpdyCreateSession(&session_deps));
 
@@ -2895,6 +2896,201 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest, Tag) {
   EXPECT_EQ(kProtoQUIC, request3->negotiated_protocol());
   EXPECT_EQ(2, GetQuicSessionCount(session()));
 }
+
+TEST_F(HttpStreamFactoryTest, ChangeSocketTag) {
+  SpdySessionDependencies session_deps;
+  MockTaggingClientSocketFactory* socket_factory =
+      new MockTaggingClientSocketFactory();
+  session_deps.socket_factory.reset(socket_factory);
+
+  // Prepare for two HTTPS connects.
+  MockRead mock_read(SYNCHRONOUS, ERR_IO_PENDING);
+  SequencedSocketData socket_data(&mock_read, 1, nullptr, 0);
+  socket_data.set_connect_data(MockConnect(ASYNC, OK));
+  session_deps.socket_factory->AddSocketDataProvider(&socket_data);
+  MockRead mock_read2(SYNCHRONOUS, ERR_IO_PENDING);
+  SequencedSocketData socket_data2(&mock_read2, 1, nullptr, 0);
+  socket_data2.set_connect_data(MockConnect(ASYNC, OK));
+  session_deps.socket_factory->AddSocketDataProvider(&socket_data2);
+  SSLSocketDataProvider ssl_socket_data(ASYNC, OK);
+  // Use cert for *.example.org
+  ssl_socket_data.ssl_info.cert =
+      ImportCertFromFile(GetTestCertsDirectory(), "wildcard.pem");
+  ssl_socket_data.next_proto = kProtoHTTP2;
+  session_deps.socket_factory->AddSSLSocketDataProvider(&ssl_socket_data);
+  SSLSocketDataProvider ssl_socket_data2(ASYNC, OK);
+  // Use cert for *.example.org
+  ssl_socket_data2.ssl_info.cert =
+      ImportCertFromFile(GetTestCertsDirectory(), "wildcard.pem");
+  ssl_socket_data2.next_proto = kProtoHTTP2;
+  session_deps.socket_factory->AddSSLSocketDataProvider(&ssl_socket_data2);
+
+  std::unique_ptr<HttpNetworkSession> session(
+      SpdySessionDependencies::SpdyCreateSession(&session_deps));
+
+  // Prepare two different tags and corresponding HttpRequestInfos.
+  SocketTag tag1(SocketTag::UNSET_UID, 0x12345678);
+  HttpRequestInfo request_info1;
+  request_info1.method = "GET";
+  request_info1.url = GURL("https://www.example.org");
+  request_info1.load_flags = 0;
+  request_info1.socket_tag = tag1;
+
+  SocketTag tag2(getuid(), 0x87654321);
+  HttpRequestInfo request_info2 = request_info1;
+  request_info2.socket_tag = tag2;
+
+  // Prepare another HttpRequestInfo with tag1 and a different host name.
+  HttpRequestInfo request_info3 = request_info1;
+  request_info3.url = GURL("https://foo.example.org");
+
+  // Verify one stream with one tag results in one session, group and socket.
+  SSLConfig ssl_config;
+  StreamRequestWaiter waiter1;
+  std::unique_ptr<HttpStreamRequest> request1(
+      session->http_stream_factory()->RequestStream(
+          request_info1, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter1,
+          /* enable_ip_based_pooling = */ true,
+          /* enable_alternative_services = */ true, NetLogWithSource()));
+  waiter1.WaitForStream();
+  EXPECT_TRUE(waiter1.stream_done());
+  EXPECT_FALSE(waiter1.websocket_stream());
+  ASSERT_TRUE(waiter1.stream());
+
+  EXPECT_EQ(1, GetSpdySessionCount(session.get()));
+  EXPECT_EQ(1, GetSocketPoolGroupCount(session->GetTransportSocketPool(
+                   HttpNetworkSession::NORMAL_SOCKET_POOL)));
+  EXPECT_EQ(1, GetSocketPoolGroupCount(session->GetSSLSocketPool(
+                   HttpNetworkSession::NORMAL_SOCKET_POOL)));
+  EXPECT_EQ(0, GetSocketPoolGroupCount(session->GetTransportSocketPool(
+                   HttpNetworkSession::WEBSOCKET_SOCKET_POOL)));
+  EXPECT_EQ(0, GetSocketPoolGroupCount(session->GetSSLSocketPool(
+                   HttpNetworkSession::WEBSOCKET_SOCKET_POOL)));
+  EXPECT_EQ(1, GetHandedOutSocketCount(session->GetTransportSocketPool(
+                   HttpNetworkSession::NORMAL_SOCKET_POOL)));
+  EXPECT_EQ(1, GetHandedOutSocketCount(session->GetSSLSocketPool(
+                   HttpNetworkSession::NORMAL_SOCKET_POOL)));
+  // Verify socket tagged appropriately.
+  MockTaggingStreamSocket* socket = socket_factory->GetLastProducedTCPSocket();
+  EXPECT_TRUE(tag1 == socket->tag());
+  EXPECT_TRUE(socket->tagged_before_connected());
+
+  // Verify the socket tag on the first session can be changed.
+  StreamRequestWaiter waiter2;
+  std::unique_ptr<HttpStreamRequest> request2(
+      session->http_stream_factory()->RequestStream(
+          request_info2, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter2,
+          /* enable_ip_based_pooling = */ true,
+          /* enable_alternative_services = */ true, NetLogWithSource()));
+  waiter2.WaitForStream();
+  EXPECT_TRUE(waiter2.stream_done());
+  EXPECT_FALSE(waiter2.websocket_stream());
+  ASSERT_TRUE(waiter2.stream());
+  // Verify still have just one session.
+  EXPECT_EQ(1, GetSpdySessionCount(session.get()));
+  EXPECT_EQ(1, GetSocketPoolGroupCount(session->GetTransportSocketPool(
+                   HttpNetworkSession::NORMAL_SOCKET_POOL)));
+  EXPECT_EQ(1, GetSocketPoolGroupCount(session->GetSSLSocketPool(
+                   HttpNetworkSession::NORMAL_SOCKET_POOL)));
+  EXPECT_EQ(0, GetSocketPoolGroupCount(session->GetTransportSocketPool(
+                   HttpNetworkSession::WEBSOCKET_SOCKET_POOL)));
+  EXPECT_EQ(0, GetSocketPoolGroupCount(session->GetSSLSocketPool(
+                   HttpNetworkSession::WEBSOCKET_SOCKET_POOL)));
+  EXPECT_EQ(1, GetHandedOutSocketCount(session->GetTransportSocketPool(
+                   HttpNetworkSession::NORMAL_SOCKET_POOL)));
+  EXPECT_EQ(1, GetHandedOutSocketCount(session->GetSSLSocketPool(
+                   HttpNetworkSession::NORMAL_SOCKET_POOL)));
+  // Verify no new sockets created.
+  EXPECT_EQ(socket, socket_factory->GetLastProducedTCPSocket());
+  // Verify socket tag changed.
+  EXPECT_TRUE(tag2 == socket->tag());
+  EXPECT_FALSE(socket->tagged_before_connected());
+
+  // Verify attempting to use the first stream fails because the session's
+  // socket tag has since changed.
+  TestCompletionCallback callback1;
+  EXPECT_EQ(ERR_FAILED,
+            waiter1.stream()->InitializeStream(
+                &request_info1, /* can_send_early = */ false, DEFAULT_PRIORITY,
+                NetLogWithSource(), callback1.callback()));
+
+  // Verify the socket tag can be changed, this time using an IP alias
+  // (different host, same IP).
+  StreamRequestWaiter waiter3;
+  std::unique_ptr<HttpStreamRequest> request3(
+      session->http_stream_factory()->RequestStream(
+          request_info3, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter3,
+          /* enable_ip_based_pooling = */ true,
+          /* enable_alternative_services = */ true, NetLogWithSource()));
+  waiter3.WaitForStream();
+  EXPECT_TRUE(waiter3.stream_done());
+  EXPECT_FALSE(waiter3.websocket_stream());
+  ASSERT_TRUE(waiter3.stream());
+  // Verify still have just one session.
+  EXPECT_EQ(1, GetSpdySessionCount(session.get()));
+  EXPECT_EQ(1, GetSocketPoolGroupCount(session->GetTransportSocketPool(
+                   HttpNetworkSession::NORMAL_SOCKET_POOL)));
+  EXPECT_EQ(1, GetSocketPoolGroupCount(session->GetSSLSocketPool(
+                   HttpNetworkSession::NORMAL_SOCKET_POOL)));
+  EXPECT_EQ(0, GetSocketPoolGroupCount(session->GetTransportSocketPool(
+                   HttpNetworkSession::WEBSOCKET_SOCKET_POOL)));
+  EXPECT_EQ(0, GetSocketPoolGroupCount(session->GetSSLSocketPool(
+                   HttpNetworkSession::WEBSOCKET_SOCKET_POOL)));
+  EXPECT_EQ(1, GetHandedOutSocketCount(session->GetTransportSocketPool(
+                   HttpNetworkSession::NORMAL_SOCKET_POOL)));
+  EXPECT_EQ(1, GetHandedOutSocketCount(session->GetSSLSocketPool(
+                   HttpNetworkSession::NORMAL_SOCKET_POOL)));
+  // Verify no new sockets created.
+  EXPECT_EQ(socket, socket_factory->GetLastProducedTCPSocket());
+  // Verify socket tag changed.
+  EXPECT_TRUE(tag1 == socket->tag());
+  EXPECT_FALSE(socket->tagged_before_connected());
+
+  // Initialize the third stream, thus marking the session active, so it cannot
+  // have its socket tag changed.
+  TestCompletionCallback callback3;
+  EXPECT_EQ(OK,
+            waiter3.stream()->InitializeStream(
+                &request_info3, /* can_send_early = */ false, DEFAULT_PRIORITY,
+                NetLogWithSource(), callback3.callback()));
+
+  // Verify a new session is created when a request with a different tag is
+  // started.
+  StreamRequestWaiter waiter4;
+  std::unique_ptr<HttpStreamRequest> request4(
+      session->http_stream_factory()->RequestStream(
+          request_info2, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter4,
+          /* enable_ip_based_pooling = */ true,
+          /* enable_alternative_services = */ true, NetLogWithSource()));
+  waiter4.WaitForStream();
+  EXPECT_TRUE(waiter4.stream_done());
+  EXPECT_FALSE(waiter4.websocket_stream());
+  ASSERT_TRUE(waiter4.stream());
+  // Verify we now have two sessions.
+  EXPECT_EQ(2, GetSpdySessionCount(session.get()));
+  EXPECT_EQ(1, GetSocketPoolGroupCount(session->GetTransportSocketPool(
+                   HttpNetworkSession::NORMAL_SOCKET_POOL)));
+  EXPECT_EQ(1, GetSocketPoolGroupCount(session->GetSSLSocketPool(
+                   HttpNetworkSession::NORMAL_SOCKET_POOL)));
+  EXPECT_EQ(0, GetSocketPoolGroupCount(session->GetTransportSocketPool(
+                   HttpNetworkSession::WEBSOCKET_SOCKET_POOL)));
+  EXPECT_EQ(0, GetSocketPoolGroupCount(session->GetSSLSocketPool(
+                   HttpNetworkSession::WEBSOCKET_SOCKET_POOL)));
+  EXPECT_EQ(2, GetHandedOutSocketCount(session->GetTransportSocketPool(
+                   HttpNetworkSession::NORMAL_SOCKET_POOL)));
+  EXPECT_EQ(2, GetHandedOutSocketCount(session->GetSSLSocketPool(
+                   HttpNetworkSession::NORMAL_SOCKET_POOL)));
+  // Verify a new socket was created.
+  MockTaggingStreamSocket* socket2 = socket_factory->GetLastProducedTCPSocket();
+  EXPECT_NE(socket, socket2);
+  // Verify tag set appropriately.
+  EXPECT_TRUE(tag2 == socket2->tag());
+  EXPECT_TRUE(socket2->tagged_before_connected());
+  // Verify tag on original socket is unchanged.
+  EXPECT_TRUE(tag1 == socket->tag());
+
+  waiter3.stream()->Close(/* not_reusable = */ true);
+}
 #endif
 
 // Test that when creating a stream all sessions that alias an IP are tried,
@@ -2925,7 +3121,6 @@ TEST_F(HttpStreamFactoryTest, MultiIPAliases) {
   ssl_socket_data2.next_proto = kProtoHTTP2;
   session_deps.socket_factory->AddSSLSocketDataProvider(&ssl_socket_data2);
 
-  HostPortPair host_port_pair("example.org", 443);
   std::unique_ptr<HttpNetworkSession> session(
       SpdySessionDependencies::SpdyCreateSession(&session_deps));
 
