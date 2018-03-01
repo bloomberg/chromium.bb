@@ -9,14 +9,15 @@
 #include "net/spdy/core/spdy_bug_tracker.h"
 #include "net/spdy/platform/api/spdy_flags.h"
 #include "net/spdy/platform/api/spdy_ptr_util.h"
+#include "net/spdy/platform/api/spdy_string_utils.h"
 
 namespace net {
 
 const char* const kHttp2ConnectionHeaderPrefix =
     "PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n";
 
-std::ostream& operator<<(std::ostream& out, SpdySettingsIds id) {
-  return out << static_cast<uint16_t>(id);
+std::ostream& operator<<(std::ostream& out, SpdyKnownSettingsId id) {
+  return out << static_cast<SpdySettingsId>(id);
 }
 
 std::ostream& operator<<(std::ostream& out, SpdyFrameType frame_type) {
@@ -131,17 +132,18 @@ const char* FrameTypeToString(SpdyFrameType frame_type) {
   return "UNKNOWN_FRAME_TYPE";
 }
 
-bool ParseSettingsId(uint16_t wire_setting_id, SpdySettingsIds* setting_id) {
+bool ParseSettingsId(SpdySettingsId wire_setting_id,
+                     SpdyKnownSettingsId* setting_id) {
   if (wire_setting_id != SETTINGS_EXPERIMENT_SCHEDULER &&
       (wire_setting_id < SETTINGS_MIN || wire_setting_id > SETTINGS_MAX)) {
     return false;
   }
 
-  *setting_id = static_cast<SpdySettingsIds>(wire_setting_id);
+  *setting_id = static_cast<SpdyKnownSettingsId>(wire_setting_id);
   if (GetSpdyReloadableFlag(http2_check_settings_id_007)) {
     // This switch ensures that the casted value is valid. The default case is
     // explicitly omitted to have compile-time guarantees that new additions to
-    // |SpdySettingsIds| must also be handled here.
+    // |SpdyKnownSettingsId| must also be handled here.
     switch (*setting_id) {
       case SETTINGS_HEADER_TABLE_SIZE:
       case SETTINGS_ENABLE_PUSH:
@@ -160,36 +162,34 @@ bool ParseSettingsId(uint16_t wire_setting_id, SpdySettingsIds* setting_id) {
   }
 }
 
-bool SettingsIdToString(SpdySettingsIds id, const char** settings_id_string) {
-  switch (id) {
-    case SETTINGS_HEADER_TABLE_SIZE:
-      *settings_id_string = "SETTINGS_HEADER_TABLE_SIZE";
-      return true;
-    case SETTINGS_ENABLE_PUSH:
-      *settings_id_string = "SETTINGS_ENABLE_PUSH";
-      return true;
-    case SETTINGS_MAX_CONCURRENT_STREAMS:
-      *settings_id_string = "SETTINGS_MAX_CONCURRENT_STREAMS";
-      return true;
-    case SETTINGS_INITIAL_WINDOW_SIZE:
-      *settings_id_string = "SETTINGS_INITIAL_WINDOW_SIZE";
-      return true;
-    case SETTINGS_MAX_FRAME_SIZE:
-      *settings_id_string = "SETTINGS_MAX_FRAME_SIZE";
-      return true;
-    case SETTINGS_MAX_HEADER_LIST_SIZE:
-      *settings_id_string = "SETTINGS_MAX_HEADER_LIST_SIZE";
-      return true;
-    case SETTINGS_ENABLE_CONNECT_PROTOCOL:
-      *settings_id_string = "SETTINGS_ENABLE_CONNECT_PROTOCOL";
-      return true;
-    case SETTINGS_EXPERIMENT_SCHEDULER:
-      *settings_id_string = "SETTINGS_EXPERIMENT_SCHEDULER";
-      return true;
+SpdyString SettingsIdToString(SpdySettingsId id) {
+  SpdyKnownSettingsId known_id;
+  if (!ParseSettingsId(id, &known_id)) {
+    return SpdyStrCat("SETTINGS_UNKNOWN_",
+                      SpdyHexEncodeUInt32AndTrim(uint32_t{id}));
   }
 
-  *settings_id_string = "SETTINGS_UNKNOWN";
-  return false;
+  switch (known_id) {
+    case SETTINGS_HEADER_TABLE_SIZE:
+      return "SETTINGS_HEADER_TABLE_SIZE";
+    case SETTINGS_ENABLE_PUSH:
+      return "SETTINGS_ENABLE_PUSH";
+    case SETTINGS_MAX_CONCURRENT_STREAMS:
+      return "SETTINGS_MAX_CONCURRENT_STREAMS";
+    case SETTINGS_INITIAL_WINDOW_SIZE:
+      return "SETTINGS_INITIAL_WINDOW_SIZE";
+    case SETTINGS_MAX_FRAME_SIZE:
+      return "SETTINGS_MAX_FRAME_SIZE";
+    case SETTINGS_MAX_HEADER_LIST_SIZE:
+      return "SETTINGS_MAX_HEADER_LIST_SIZE";
+    case SETTINGS_ENABLE_CONNECT_PROTOCOL:
+      return "SETTINGS_ENABLE_CONNECT_PROTOCOL";
+    case SETTINGS_EXPERIMENT_SCHEDULER:
+      return "SETTINGS_EXPERIMENT_SCHEDULER";
+  }
+
+  return SpdyStrCat("SETTINGS_UNKNOWN_",
+                    SpdyHexEncodeUInt32AndTrim(uint32_t{id}));
 }
 
 SpdyErrorCode ParseErrorCode(uint32_t wire_error_code) {

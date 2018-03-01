@@ -473,8 +473,8 @@ void Http2DecoderAdapter::OnSettingsStart(const Http2FrameHeader& header) {
 
 void Http2DecoderAdapter::OnSetting(const Http2SettingFields& setting_fields) {
   DVLOG(1) << "OnSetting: " << setting_fields;
-  const uint16_t parameter = static_cast<uint16_t>(setting_fields.parameter);
-  SpdySettingsIds setting_id;
+  const auto parameter = static_cast<SpdySettingsId>(setting_fields.parameter);
+  SpdyKnownSettingsId setting_id;
   if (!ParseSettingsId(parameter, &setting_id)) {
     if (extension_ == nullptr) {
       DVLOG(1) << "Ignoring unknown setting id: " << setting_fields;

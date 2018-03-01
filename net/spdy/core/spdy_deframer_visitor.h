@@ -86,7 +86,7 @@ namespace net {
 namespace test {
 
 // Non-lossy representation of a SETTINGS frame payload.
-typedef std::vector<std::pair<SpdySettingsIds, uint32_t>> SettingVector;
+typedef std::vector<std::pair<SpdyKnownSettingsId, uint32_t>> SettingVector;
 
 // StringPairVector is used to record information lost by SpdyHeaderBlock, in
 // particular the order of each header entry, though it doesn't expose the

@@ -52,6 +52,7 @@
 #include "net/spdy/core/spdy_frame_builder.h"
 #include "net/spdy/core/spdy_protocol.h"
 #include "net/spdy/platform/api/spdy_estimate_memory_usage.h"
+#include "net/spdy/platform/api/spdy_string.h"
 #include "net/spdy/platform/api/spdy_string_utils.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
@@ -132,12 +133,12 @@ enum PushedStreamVaryResponseHeaderValues ParseVaryInPushedResponse(
   SpdyHeaderBlock::iterator it = headers.find(kVary);
   if (it == headers.end())
     return kNoVaryHeader;
-  base::StringPiece value(it->second);
+  SpdyStringPiece value(it->second);
   if (value.empty())
     return kVaryIsEmpty;
   if (value == kStar)
     return kVaryIsStar;
-  std::string lowercase_value = ToLowerASCII(value);
+  SpdyString lowercase_value = ToLowerASCII(value);
   if (lowercase_value == kAcceptEncoding)
     return kVaryIsAcceptEncoding;
   // Both comma and newline delimiters occur in the wild.
@@ -151,7 +152,7 @@ enum PushedStreamVaryResponseHeaderValues ParseVaryInPushedResponse(
   return kVaryHasNoAcceptEncoding;
 }
 
-bool IsSpdySettingAtDefaultInitialValue(SpdySettingsIds setting_id,
+bool IsSpdySettingAtDefaultInitialValue(SpdyKnownSettingsId setting_id,
                                         uint32_t value) {
   switch (setting_id) {
     case SETTINGS_HEADER_TABLE_SIZE:
@@ -251,25 +252,22 @@ std::unique_ptr<base::Value> NetLogSpdySendSettingsCallback(
   auto settings_list = std::make_unique<base::ListValue>();
   for (SettingsMap::const_iterator it = settings->begin();
        it != settings->end(); ++it) {
-    const SpdySettingsIds id = it->first;
+    const SpdyKnownSettingsId id = it->first;
     const uint32_t value = it->second;
-    const char* settings_string;
-    SettingsIdToString(id, &settings_string);
-    settings_list->AppendString(
-        SpdyStringPrintf("[id:%u (%s) value:%u]", id, settings_string, value));
+    settings_list->AppendString(SpdyStringPrintf(
+        "[id:%u (%s) value:%u]", id, SettingsIdToString(id).c_str(), value));
   }
   dict->Set("settings", std::move(settings_list));
   return std::move(dict);
 }
 
 std::unique_ptr<base::Value> NetLogSpdyRecvSettingCallback(
-    SpdySettingsIds id,
+    SpdyKnownSettingsId id,
     uint32_t value,
     NetLogCaptureMode /* capture_mode */) {
   auto dict = std::make_unique<base::DictionaryValue>();
-  const char* settings_string;
-  SettingsIdToString(id, &settings_string);
-  dict->SetString("id", SpdyStringPrintf("%u (%s)", id, settings_string));
+  dict->SetString(
+      "id", SpdyStringPrintf("%u (%s)", id, SettingsIdToString(id).c_str()));
   dict->SetInteger("value", value);
   return std::move(dict);
 }
@@ -2903,7 +2901,7 @@ void SpdySession::OnSettingsAck() {
     net_log_.AddEvent(NetLogEventType::HTTP2_SESSION_RECV_SETTINGS_ACK);
 }
 
-void SpdySession::OnSetting(SpdySettingsIds id, uint32_t value) {
+void SpdySession::OnSetting(SpdyKnownSettingsId id, uint32_t value) {
   CHECK(in_io_loop_);
 
   HandleSetting(id, value);

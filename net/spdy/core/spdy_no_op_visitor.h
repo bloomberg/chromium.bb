@@ -39,7 +39,7 @@ class SpdyNoOpVisitor : public SpdyFramerVisitorInterface,
   void OnStreamEnd(SpdyStreamId stream_id) override {}
   void OnStreamPadding(SpdyStreamId stream_id, size_t len) override {}
   void OnRstStream(SpdyStreamId stream_id, SpdyErrorCode error_code) override {}
-  void OnSetting(SpdySettingsIds id, uint32_t value) override {}
+  void OnSetting(SpdyKnownSettingsId id, uint32_t value) override {}
   void OnPing(SpdyPingId unique_id, bool is_ack) override {}
   void OnSettingsEnd() override {}
   void OnSettingsAck() override {}

@@ -527,8 +527,8 @@ TEST_F(NetworkSessionConfiguratorTest, Http2SettingsFromFieldTrialParams) {
   ParseFieldTrials();
 
   net::SettingsMap expected_settings;
-  expected_settings[static_cast<net::SpdySettingsIds>(7)] = 1234;
-  expected_settings[static_cast<net::SpdySettingsIds>(25)] = 5678;
+  expected_settings[static_cast<net::SpdyKnownSettingsId>(7)] = 1234;
+  expected_settings[static_cast<net::SpdyKnownSettingsId>(25)] = 5678;
   EXPECT_EQ(expected_settings, params_.http2_settings);
 }
 

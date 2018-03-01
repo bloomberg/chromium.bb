@@ -782,7 +782,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   void OnStreamPadding(SpdyStreamId stream_id, size_t len) override;
   void OnSettings() override;
   void OnSettingsAck() override;
-  void OnSetting(SpdySettingsIds id, uint32_t value) override;
+  void OnSetting(SpdyKnownSettingsId id, uint32_t value) override;
   void OnSettingsEnd() override {}
   void OnWindowUpdate(SpdyStreamId stream_id, int delta_window_size) override;
   void OnPushPromise(SpdyStreamId stream_id,
