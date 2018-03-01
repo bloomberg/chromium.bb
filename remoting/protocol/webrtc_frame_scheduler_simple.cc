@@ -272,6 +272,11 @@ void WebrtcFrameSchedulerSimple::ScheduleNextFrame() {
         kTargetFrameInterval -
         estimated_next_frame_cost;
     target_capture_time = std::max(target_capture_time, ideal_capture_time);
+
+    // Ensure that the capture rate is capped by kTargetFrameInterval, to avoid
+    // excessive CPU usage by the capturer.
+    target_capture_time = std::max(
+        target_capture_time, last_capture_started_time_ + kTargetFrameInterval);
   }
 
   target_capture_time = std::max(target_capture_time, now);
