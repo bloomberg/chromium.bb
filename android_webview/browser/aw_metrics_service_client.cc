@@ -29,7 +29,7 @@
 #include "components/metrics/url_constants.h"
 #include "components/metrics/version_utils.h"
 #include "components/prefs/pref_service.h"
-#include "components/version_info/channel_android.h"
+#include "components/version_info/android/channel_getter.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -55,15 +55,6 @@ void StoreClientInfo(const metrics::ClientInfo& client_info) {}
 std::unique_ptr<metrics::ClientInfo> LoadClientInfo() {
   std::unique_ptr<metrics::ClientInfo> client_info;
   return client_info;
-}
-
-version_info::Channel GetChannelFromPackageName() {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  std::string package_name = base::android::ConvertJavaStringToUTF8(
-      env, Java_AwMetricsServiceClient_getWebViewPackageName(env));
-  // We can't determine the channel for stand-alone WebView, since it has the
-  // same package name across channels. It will always be "unknown".
-  return version_info::ChannelFromPackageName(package_name.c_str());
 }
 
 // WebView Metrics are sampled based on GUID value.
@@ -142,7 +133,6 @@ void AwMetricsServiceClient::Initialize(
   DCHECK(request_context_ == nullptr);
   pref_service_ = pref_service;
   request_context_ = request_context;
-  channel_ = GetChannelFromPackageName();
 
   // If variations are enabled for WebView the GUID will already have been read
   // at startup
@@ -240,7 +230,7 @@ bool AwMetricsServiceClient::GetBrand(std::string* brand_code) {
 }
 
 metrics::SystemProfileProto::Channel AwMetricsServiceClient::GetChannel() {
-  return metrics::AsProtobufChannel(channel_);
+  return metrics::AsProtobufChannel(version_info::GetChannel());
 }
 
 std::string AwMetricsServiceClient::GetVersionString() {
@@ -275,7 +265,6 @@ base::TimeDelta AwMetricsServiceClient::GetStandardUploadInterval() {
 AwMetricsServiceClient::AwMetricsServiceClient()
     : pref_service_(nullptr),
       request_context_(nullptr),
-      channel_(version_info::Channel::UNKNOWN),
       consent_(false),
       in_sample_(false) {}
 

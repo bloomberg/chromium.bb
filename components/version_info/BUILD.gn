@@ -47,8 +47,6 @@ static_library("version_string") {
 source_set("channel") {
   sources = [
     "channel.h",
-    "channel_android.cc",
-    "channel_android.h",
   ]
 }
 
