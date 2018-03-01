@@ -33,7 +33,6 @@
 #include "core/dom/IncrementLoadEventDelayCount.h"
 #include "core/dom/events/Event.h"
 #include "core/frame/LocalFrame.h"
-#include "core/frame/LocalFrameClient.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/CrossOriginAttribute.h"
@@ -44,11 +43,9 @@
 #include "core/layout/svg/LayoutSVGImage.h"
 #include "core/probe/CoreProbes.h"
 #include "core/svg/graphics/SVGImage.h"
-#include "platform/Histogram.h"
 #include "platform/bindings/Microtask.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/bindings/V8PerIsolateData.h"
-#include "platform/heap/Persistent.h"
 #include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/MemoryCache.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
@@ -57,46 +54,10 @@
 #include "platform/weborigin/SecurityPolicy.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebClientHintsType.h"
-#include "public/platform/WebEffectiveConnectionType.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 
 namespace blink {
-
-static void RecordImageVisibleLoadTimeHistogram(
-    WTF::TimeTicks visible_time,
-    WebEffectiveConnectionType connection_type) {
-  WTF::TimeDelta visible_load_time = visible_time.is_null()
-                                         ? WTF::TimeDelta::FromSeconds(0)
-                                         : CurrentTimeTicks() - visible_time;
-
-  DEFINE_STATIC_LOCAL(CustomCountHistogram, visible_load_time_slow_2g_histogram,
-                      ("Blink.VisibleLoadTime.Image.2GSlow", 1, 10000000, 50));
-  DEFINE_STATIC_LOCAL(CustomCountHistogram, visible_load_time_2g_histogram,
-                      ("Blink.VisibleLoadTime.Image.2G", 1, 10000000, 50));
-  DEFINE_STATIC_LOCAL(CustomCountHistogram, visible_load_time_3g_histogram,
-                      ("Blink.VisibleLoadTime.Image.3G", 1, 10000000, 50));
-  DEFINE_STATIC_LOCAL(CustomCountHistogram, visible_load_time_4g_histogram,
-                      ("Blink.VisibleLoadTime.Image.4G", 1, 10000000, 50));
-
-  switch (connection_type) {
-    case WebEffectiveConnectionType::kTypeSlow2G:
-      visible_load_time_slow_2g_histogram.Count(
-          visible_load_time.InMilliseconds());
-      break;
-    case WebEffectiveConnectionType::kType2G:
-      visible_load_time_2g_histogram.Count(visible_load_time.InMilliseconds());
-      break;
-    case WebEffectiveConnectionType::kType3G:
-      visible_load_time_3g_histogram.Count(visible_load_time.InMilliseconds());
-      break;
-    case WebEffectiveConnectionType::kType4G:
-      visible_load_time_4g_histogram.Count(visible_load_time.InMilliseconds());
-      break;
-    default:
-      break;
-  }
-}
 
 static ImageLoader::BypassMainWorldBehavior ShouldBypassMainWorldCSP(
     ImageLoader* loader) {
@@ -184,12 +145,6 @@ ImageLoader::ImageLoader(Element* element)
       image_complete_(true),
       loading_image_document_(false),
       suppress_error_events_(false) {
-  if (GetElement()->GetExecutionContext()) {
-    visibility_observer_ = new ElementVisibilityObserver(
-        element, WTF::BindRepeating(&ImageLoader::OnImageElementVisible,
-                                    WrapWeakPersistent(this)));
-    visibility_observer_->Start();
-  }
   RESOURCE_LOADING_DVLOG(1) << "new ImageLoader " << this;
 }
 
@@ -284,7 +239,6 @@ void ImageLoader::Trace(blink::Visitor* visitor) {
   visitor->Trace(image_resource_for_image_document_);
   visitor->Trace(element_);
   visitor->Trace(decode_requests_);
-  visitor->Trace(visibility_observer_);
 }
 
 void ImageLoader::SetImageForTest(ImageResourceContent* new_image) {
@@ -699,15 +653,6 @@ void ImageLoader::ImageNotifyFinished(ImageResourceContent* resource) {
 
   DispatchDecodeRequestsIfComplete();
 
-  if (element_->GetDocument().GetFrame() &&
-      element_->GetDocument().GetFrame()->Client()) {
-    RecordImageVisibleLoadTimeHistogram(time_when_first_visible_,
-                                        element_->GetDocument()
-                                            .GetFrame()
-                                            ->Client()
-                                            ->GetEffectiveConnectionType());
-  }
-
   if (loading_image_document_) {
     CHECK(!pending_load_event_.IsActive());
     return;
@@ -849,15 +794,6 @@ void ImageLoader::ElementDidMoveToNewDocument() {
   }
   ClearFailedLoadURL();
   ClearImage();
-}
-
-void ImageLoader::OnImageElementVisible(bool visible) {
-  if (visible) {
-    DCHECK(time_when_first_visible_.is_null());
-    time_when_first_visible_ = CurrentTimeTicks();
-    visibility_observer_->Stop();
-    visibility_observer_.Clear();
-  }
 }
 
 // Indicates the next available id that we can use to uniquely identify a decode
