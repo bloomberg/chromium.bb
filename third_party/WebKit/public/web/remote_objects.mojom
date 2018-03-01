@@ -21,10 +21,16 @@ interface RemoteObject {
       => (RemoteInvocationResult result);
 };
 
+enum SingletonJavaScriptValue {
+  kNull,
+  kUndefined,
+};
+
 union RemoteInvocationArgument {
   double number_value;
   bool boolean_value;
   mojo_base.mojom.String16 string_value;
+  SingletonJavaScriptValue singleton_value;
 };
 
 enum RemoteInvocationError {
