@@ -39,6 +39,8 @@ class CONTENT_EXPORT BluetoothDeviceChooserController final {
   typedef base::Callback<void(blink::mojom::WebBluetoothResult result)>
       ErrorCallback;
 
+  enum class TestScanDurationSetting { IMMEDIATE_TIMEOUT, NEVER_TIMEOUT };
+
   // |web_bluetooth_service_| service that owns this class.
   // |render_frame_host| should be the RenderFrameHost that owns the
   // |web_bluetooth_service_|.
@@ -83,9 +85,14 @@ class CONTENT_EXPORT BluetoothDeviceChooserController final {
   // present in a received radio signal.
   static int CalculateSignalStrengthLevel(int8_t rssi);
 
-  // After this method is called any new instance of
-  // BluetoothDeviceChooserController will have a scan duration of 0.
-  static void SetTestScanDurationForTesting();
+  // After this method is called, any new instance of
+  // BluetoothDeviceChooserController will have a scan duration determined by
+  // the |setting| enum. The possible enumerations are described below:
+  //   IMMEDIATE_TIMEOUT: Sets the scan duration to 0 seconds.
+  //   NEVER_TIMEOUT:     Sets the scan duration to INT_MAX seconds.
+  static void SetTestScanDurationForTesting(
+      TestScanDurationSetting setting =
+          TestScanDurationSetting::IMMEDIATE_TIMEOUT);
 
  private:
   // Populates the chooser with the GATT connected devices.
@@ -115,8 +122,9 @@ class CONTENT_EXPORT BluetoothDeviceChooserController final {
   // Helper function to asynchronously run error_callback_.
   void PostErrorCallback(blink::mojom::WebBluetoothResult result);
 
-  // If true all new instances of this class will have a scan duration of 0.
-  static bool use_test_scan_duration_;
+  // Stores the scan duration to use for the discovery session timer.
+  // The default value is 60 seconds.
+  static int64_t scan_duration_;
 
   // The adapter used to get existing devices and start a discovery session.
   device::BluetoothAdapter* adapter_;
