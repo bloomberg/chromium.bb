@@ -59,8 +59,8 @@ void InertEffect::Sample(Vector<scoped_refptr<Interpolation>>& result) const {
 
   double iteration = CurrentIteration();
   DCHECK_GE(iteration, 0);
-  model_->Sample(clampTo<int>(iteration, 0), Progress(), IterationDuration(),
-                 result);
+  model_->Sample(clampTo<int>(iteration, 0), Progress().value(),
+                 IterationDuration(), result);
 }
 
 double InertEffect::CalculateTimeToEffectChange(bool, double, double) const {
