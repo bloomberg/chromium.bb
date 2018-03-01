@@ -915,6 +915,9 @@ class TestNavigationManager : public WebContentsObserver {
   // only in between DidStartNavigation(...) and DidFinishNavigation(...).
   NavigationHandle* GetNavigationHandle();
 
+  // Whether the navigation successfully committed.
+  bool was_successful() const { return was_successful_; }
+
  protected:
   // Derived classes can override if they want to filter out navigations. This
   // is called from DidStartNavigation.
@@ -955,6 +958,7 @@ class TestNavigationManager : public WebContentsObserver {
   NavigationState current_state_;
   NavigationState desired_state_;
   scoped_refptr<MessageLoopRunner> loop_runner_;
+  bool was_successful_ = false;
 
   base::WeakPtrFactory<TestNavigationManager> weak_factory_;
 
