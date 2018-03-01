@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <string>
+#include <unordered_set>
 #include <utility>
 
 #include "base/bind.h"
@@ -15,6 +16,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/string_util.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/loader/detachable_resource_handler.h"
@@ -65,6 +67,60 @@ CrossSiteDocumentClassifier::Result SniffForHtmlXmlOrJson(
   if (result != CrossSiteDocumentClassifier::kYes)
     result = std::max(CrossSiteDocumentClassifier::SniffForJSON(data), result);
   return result;
+}
+
+// Headers from
+// https://fetch.spec.whatwg.org/#cors-safelisted-response-header-name.
+//
+// Note that XSDB doesn't block responses allowed through CORS - this means
+// that the list of allowed headers below doesn't have to consider header
+// names listed in the Access-Control-Expose-Headers header.
+const char* const kCorsSafelistedHeaders[] = {
+    "cache-control", "content-language", "content-type",
+    "expires",       "last-modified",    "pragma",
+};
+
+// Removes headers that should be blocked in cross-origin case.
+// See https://fetch.spec.whatwg.org/#cors-safelisted-response-header-name.
+void SanitizeResponseHeaders(
+    const scoped_refptr<net::HttpResponseHeaders>& headers) {
+  DCHECK(headers);
+  std::unordered_set<std::string> names_of_headers_to_remove;
+
+  size_t it = 0;
+  std::string name;
+  std::string value;
+  while (headers->EnumerateHeaderLines(&it, &name, &value)) {
+    // Don't remove CORS headers - doing so would lead to incorrect error
+    // messages for CORS-blocked responses (e.g. Blink would say "[...] No
+    // 'Access-Control-Allow-Origin' header is present [...]" instead of saying
+    // something like "[...] Access-Control-Allow-Origin' header has a value
+    // 'http://www2.localhost:8000' that is not equal to the supplied origin
+    // [...]").
+    if (base::StartsWith(name, "Access-Control-",
+                         base::CompareCase::INSENSITIVE_ASCII)) {
+      continue;
+    }
+
+    // Remove all other headers (but note the final exclusion below).
+    names_of_headers_to_remove.insert(base::ToLowerASCII(name));
+  }
+
+  // Exclude from removals headers from
+  // https://fetch.spec.whatwg.org/#cors-safelisted-response-header-name.
+  for (const char* header : kCorsSafelistedHeaders)
+    names_of_headers_to_remove.erase(header);
+
+  headers->RemoveHeaders(names_of_headers_to_remove);
+}
+
+// Sanitizes/strips metadata of a response we decided to block.
+void SanitizeResourceResponse(
+    const scoped_refptr<network::ResourceResponse>& response) {
+  DCHECK(response);
+  response->head.content_length = 0;
+  if (response->head.headers)
+    SanitizeResponseHeaders(response->head.headers);
 }
 
 }  // namespace
@@ -249,17 +305,37 @@ void CrossSiteDocumentResourceHandler::OnResponseStarted(
       CrossSiteDocumentResourceHandler::Action::kResponseStarted);
 
   should_block_based_on_headers_ = ShouldBlockBasedOnHeaders(response);
-  next_handler_->OnResponseStarted(response, std::move(controller));
+
+  // If blocking is possible, postpone forwarding |response| to the
+  // |next_handler_|, until we have made the allow-vs-block decision
+  // (which might need more time depending on |needs_sniffing_|).
+  if (should_block_based_on_headers_) {
+    pending_response_start_ = response;
+    controller->Resume();
+  } else {
+    next_handler_->OnResponseStarted(response, std::move(controller));
+  }
 }
 
 void CrossSiteDocumentResourceHandler::OnWillRead(
     scoped_refptr<net::IOBuffer>* buf,
     int* buf_size,
     std::unique_ptr<ResourceController> controller) {
-  DCHECK(has_response_started_);
+  // For allowed responses, the data is directly streamed to the next handler.
+  // Note that OnWillRead may be called before OnResponseStarted (because the
+  // MimeSniffingResourceHandler upstream changes the order of the calls) - this
+  // means that |has_response_started_| has to be explicitly checked below.
+  if (has_response_started_ &&
+      (!should_block_based_on_headers_ || allow_based_on_sniffing_)) {
+    DCHECK(!local_buffer_);
+    next_handler_->OnWillRead(buf, buf_size, std::move(controller));
+    return;
+  }
 
+  // If |local_buffer_| exists, continue buffering data into the end of it.
   if (local_buffer_) {
-    // If |local_buffer_| exists, continue buffering data into the end of it.
+    // Check that we still have room for more local bufferring.
+    DCHECK_GT(next_handler_buffer_size_, local_buffer_bytes_read_);
     *buf = new LocalIoBufferWithOffset(local_buffer_.get(),
                                        local_buffer_bytes_read_);
     *buf_size = next_handler_buffer_size_ - local_buffer_bytes_read_;
@@ -284,30 +360,28 @@ void CrossSiteDocumentResourceHandler::OnWillRead(
     return;
   }
 
-  // If we intended to block the response and haven't yet decided to allow it
-  // due to sniffing, we will read some of the data to a local buffer to sniff
-  // it.  Since the downstream handler may defer during the OnWillRead call
-  // below, the values of |buf| and |buf_size| may not be available right away.
-  // Instead, create an OnWillReadController to start the sniffing after the
+  // If we haven't yet decided to allow or block the response, we should read
+  // the data into a local buffer 1) to temporarily prevent the data from
+  // reaching the renderer and 2) to potentially sniff the data to confirm the
+  // content type.
+  //
+  // Since the downstream handler may defer during the OnWillRead call below,
+  // the values of |buf| and |buf_size| may not be available right away.
+  // Instead, create a Controller that will start the sniffing after the
   // downstream handler has called Resume on it.
-  if (should_block_based_on_headers_ && !allow_based_on_sniffing_) {
-    HoldController(std::move(controller));
-    controller = std::make_unique<Controller>(
-        this, false /* post_task */,
-        base::BindOnce(&CrossSiteDocumentResourceHandler::ResumeOnWillRead,
-                       weak_this_.GetWeakPtr(), buf, buf_size));
-  }
-
-  // Have the downstream handler(s) allocate the real buffer to use.
+  HoldController(std::move(controller));
+  controller = std::make_unique<Controller>(
+      this, false /* post_task */,
+      base::BindOnce(&CrossSiteDocumentResourceHandler::ResumeOnWillRead,
+                     weak_this_.GetWeakPtr(), buf, buf_size));
   next_handler_->OnWillRead(buf, buf_size, std::move(controller));
 }
 
 void CrossSiteDocumentResourceHandler::ResumeOnWillRead(
     scoped_refptr<net::IOBuffer>* buf,
     int* buf_size) {
-  // We should only get here in cases that we intend to sniff the data, after
-  // downstream handler finishes its work from OnWillRead.
-  DCHECK(should_block_based_on_headers_);
+  // We should only get here if we haven't yet made a block-vs-allow decision
+  // (we get here after downstream handler finishes its work from OnWillRead).
   DCHECK(!allow_based_on_sniffing_);
   DCHECK(!blocked_read_completed_);
 
@@ -318,14 +392,13 @@ void CrossSiteDocumentResourceHandler::ResumeOnWillRead(
   // This is only done when we suspect the response should be blocked.
   //
   // Make it as big as the downstream handler's buffer to make it easy to copy
-  // over in one operation.  This will be large, since the MIME sniffing handler
-  // is downstream.
-  DCHECK_GE(*buf_size, net::kMaxBytesToSniff);
+  // over in one operation.
+  DCHECK_GE(*buf_size, net::kMaxBytesToSniff * 2);
   local_buffer_ =
       base::MakeRefCounted<net::IOBuffer>(static_cast<size_t>(*buf_size));
 
   // Store the next handler's buffer but don't read into it while sniffing,
-  // since we probably won't want to send the data to the renderer process.
+  // since we possibly won't want to send the data to the renderer process.
   next_handler_buffer_ = *buf;
   next_handler_buffer_size_ = *buf_size;
   *buf = local_buffer_;
@@ -339,150 +412,222 @@ void CrossSiteDocumentResourceHandler::OnReadCompleted(
   DCHECK(has_response_started_);
   DCHECK(!blocked_read_completed_);
 
+  if (!should_block_based_on_headers_) {
+    // CrossSiteDocumentResourceHandler always intercepts the buffer allocated
+    // by the first call to |next_handler_|'s OnWillRead and passes the
+    // |local_buffer_| upstream.  If we decide not to block based on headers,
+    // then the data needs to be passed into the |next_handler_|.
+    if (local_buffer_) {
+      DCHECK_EQ(0, local_buffer_bytes_read_);
+      local_buffer_bytes_read_ = bytes_read;
+      StopLocalBuffering(true /* = copy_data_to_next_handler */);
+    }
+
+    next_handler_->OnReadCompleted(bytes_read, std::move(controller));
+    return;
+  }
+
+  if (allow_based_on_sniffing_) {
+    // If CrossSiteDocumentResourceHandler decided to allow the response based
+    // on sniffing, then StopLocalBuffering was already called below by the
+    // previous execution of CrossSiteDocumentResourceHandler::OnReadCompleted.
+    // From there onward, we just need to foward all the calls to the
+    // |next_handler_|.
+    DCHECK(!local_buffer_);
+    next_handler_->OnReadCompleted(bytes_read, std::move(controller));
+    return;
+  }
+
   // If we intended to block the response and haven't sniffed yet, try to
   // confirm that we should block it.  If sniffing is needed, look at the local
   // buffer and either report that zero bytes were read (to indicate the
   // response is empty and complete), or copy the sniffed data to the next
   // handler's buffer and resume the response without blocking.
-  if (should_block_based_on_headers_ && !allow_based_on_sniffing_) {
-    bool found_parser_breaker = false;
-    auto confirmed_blockable = CrossSiteDocumentClassifier::kNo;
-    if (!needs_sniffing_) {
-      // If sniffing is impossible (e.g., because this is a range request), or
-      // if sniffing is disabled due to a nosniff header AND the server returned
-      // a protected mime type, then we have enough information to block
-      // immediately.
-      confirmed_blockable = CrossSiteDocumentClassifier::kYes;
-    } else if (bytes_read == 0) {
-      // We haven't blocked the response yet (because previous reads yielded a
-      // kMaybe result), and there is no more data. Allow the response.
-      confirmed_blockable = CrossSiteDocumentClassifier::kNo;
-    } else {
-      // Sniff the data to see if it likely matches the MIME type that caused us
-      // to decide to block it.  If it doesn't match, it may be JavaScript,
-      // JSONP, or another allowable data type and we should let it through.
-      // Record how many bytes were read to see how often it's too small.  (This
-      // will typically be under 100,000.)
-      local_buffer_bytes_read_ += bytes_read;
-      DCHECK_LE(local_buffer_bytes_read_, next_handler_buffer_size_);
+  bool found_parser_breaker = false;
+  auto confirmed_blockable = CrossSiteDocumentClassifier::kNo;
+  if (!needs_sniffing_) {
+    // If sniffing is impossible (e.g., because this is a range request), or
+    // if sniffing is disabled due to a nosniff header AND the server returned
+    // a protected mime type, then we have enough information to block
+    // immediately.
+    confirmed_blockable = CrossSiteDocumentClassifier::kYes;
+  } else if (bytes_read == 0) {
+    // We haven't blocked the response yet (because previous reads yielded a
+    // kMaybe result), and there is no more data. Allow the response.
+    confirmed_blockable = CrossSiteDocumentClassifier::kNo;
+  } else {
+    // Sniff the data to see if it likely matches the MIME type that caused us
+    // to decide to block it.  If it doesn't match, it may be JavaScript,
+    // JSONP, or another allowable data type and we should let it through.
+    // Record how many bytes were read to see how often it's too small.  (This
+    // will typically be under 100,000.)
+    local_buffer_bytes_read_ += bytes_read;
+    DCHECK_LE(local_buffer_bytes_read_, next_handler_buffer_size_);
 
-      // To ensure determinism with respect to network packet ordering and
-      // sizing, never examine more than kMaxBytesToSniff bytes, even if more
-      // are available.
-      size_t bytes_to_sniff =
-          std::min(local_buffer_bytes_read_, net::kMaxBytesToSniff);
-      base::StringPiece data(local_buffer_->data(), bytes_to_sniff);
+    // To ensure determinism with respect to network packet ordering and
+    // sizing, never examine more than kMaxBytesToSniff bytes, even if more
+    // are available.
+    size_t bytes_to_sniff =
+        std::min(local_buffer_bytes_read_, net::kMaxBytesToSniff);
+    base::StringPiece data(local_buffer_->data(), bytes_to_sniff);
 
-      // If the server returned a protected mime type, sniff the response to
-      // confirm it.
-      if (canonical_mime_type_ == CROSS_SITE_DOCUMENT_MIME_TYPE_HTML) {
-        confirmed_blockable = CrossSiteDocumentClassifier::SniffForHTML(data);
-      } else if (canonical_mime_type_ == CROSS_SITE_DOCUMENT_MIME_TYPE_XML) {
-        confirmed_blockable = CrossSiteDocumentClassifier::SniffForXML(data);
-      } else if (canonical_mime_type_ == CROSS_SITE_DOCUMENT_MIME_TYPE_JSON) {
-        confirmed_blockable = CrossSiteDocumentClassifier::SniffForJSON(data);
-      } else if (canonical_mime_type_ == CROSS_SITE_DOCUMENT_MIME_TYPE_PLAIN) {
-        // For responses labeled as plain text, only block them if the data
-        // sniffs as one of the formats we would block in the first place.
-        confirmed_blockable = SniffForHtmlXmlOrJson(data);
-      }
-
-      // Additionally, on all mime types (including _OTHERS), look for
-      // Javascript parser breakers. These are affirmative patterns that
-      // indicate this resource should only be consumed by XHR/fetch (and we've
-      // already verified that this response isn't a permissable cross-origin
-      // XHR/fetch).
-      if (confirmed_blockable != CrossSiteDocumentClassifier::kYes &&
-          non_stylesheet_mime_type_ /* see https://crbug.com/809259 */) {
-        auto result =
-            CrossSiteDocumentClassifier::SniffForFetchOnlyResource(data);
-        found_parser_breaker = (result == CrossSiteDocumentClassifier::kYes);
-        confirmed_blockable = std::max(confirmed_blockable, result);
-      }
-
-      // If sniffing didn't yield a conclusive response, and we haven't read too
-      // many bytes yet, buffer up some more data.
-      if (confirmed_blockable == CrossSiteDocumentClassifier::kMaybe &&
-          local_buffer_bytes_read_ < net::kMaxBytesToSniff &&
-          local_buffer_bytes_read_ < next_handler_buffer_size_) {
-        controller->Resume();
-        return;
-      }
+    // If the server returned a protected mime type, sniff the response to
+    // confirm it.
+    if (canonical_mime_type_ == CROSS_SITE_DOCUMENT_MIME_TYPE_HTML) {
+      confirmed_blockable = CrossSiteDocumentClassifier::SniffForHTML(data);
+    } else if (canonical_mime_type_ == CROSS_SITE_DOCUMENT_MIME_TYPE_XML) {
+      confirmed_blockable = CrossSiteDocumentClassifier::SniffForXML(data);
+    } else if (canonical_mime_type_ == CROSS_SITE_DOCUMENT_MIME_TYPE_JSON) {
+      confirmed_blockable = CrossSiteDocumentClassifier::SniffForJSON(data);
+    } else if (canonical_mime_type_ == CROSS_SITE_DOCUMENT_MIME_TYPE_PLAIN) {
+      // For responses labeled as plain text, only block them if the data
+      // sniffs as one of the formats we would block in the first place.
+      confirmed_blockable = SniffForHtmlXmlOrJson(data);
     }
 
-    if (needs_sniffing_) {
-      UMA_HISTOGRAM_COUNTS("SiteIsolation.XSD.Browser.BytesReadForSniffing",
-                           local_buffer_bytes_read_);
+    // Additionally, on all mime types (including _OTHERS), look for
+    // Javascript parser breakers. These are affirmative patterns that
+    // indicate this resource should only be consumed by XHR/fetch (and we've
+    // already verified that this response isn't a permissable cross-origin
+    // XHR/fetch).
+    if (confirmed_blockable != CrossSiteDocumentClassifier::kYes &&
+        non_stylesheet_mime_type_ /* see https://crbug.com/809259 */) {
+      auto result =
+          CrossSiteDocumentClassifier::SniffForFetchOnlyResource(data);
+      found_parser_breaker = (result == CrossSiteDocumentClassifier::kYes);
+      confirmed_blockable = std::max(confirmed_blockable, result);
     }
 
-    if (confirmed_blockable == CrossSiteDocumentClassifier::kYes) {
-      // Block the response and throw away the data.  Report zero bytes read.
-      bytes_read = 0;
-      blocked_read_completed_ = true;
-      ResourceRequestInfoImpl* info = GetRequestInfo();
-      info->set_blocked_cross_site_document(true);
-
-      // Log the blocking event.  Inline the Serialize call to avoid it when
-      // tracing is disabled.
-      TRACE_EVENT2("navigation",
-                   "CrossSiteDocumentResourceHandler::ShouldBlockResponse",
-                   "initiator",
-                   request()->initiator().has_value()
-                       ? request()->initiator().value().Serialize()
-                       : "null",
-                   "url", request()->url().spec());
-
-      LogBlockedResponse(GetRequestInfo(), needs_sniffing_,
-                         found_parser_breaker, canonical_mime_type_,
-                         http_response_code_, content_length_);
-    } else {
-      // Choose not block this response. Pass the contents of |local_buffer_|
-      // onto the next handler. Note that the size of the two buffers is the
-      // same (see OnWillRead).
-      DCHECK_LE(local_buffer_bytes_read_, next_handler_buffer_size_);
-      memcpy(next_handler_buffer_->data(), local_buffer_->data(),
-             local_buffer_bytes_read_);
-      allow_based_on_sniffing_ = true;
-
-      if (bytes_read == 0 && local_buffer_bytes_read_ != 0) {
-        // |bytes_read == 0| indicates the end-of-stream. In this case, we need
-        // to synthesize an additional OnWillRead() and OnReadCompleted(0) on
-        // |next_handler_|, so that |next_handler_| sees both the full response
-        // and the end-of-stream marker. The resulting operations are as
-        // follows:
-        //
-        //  1. next_handler_->OnReadCompleted(bytes_read = contentLength)
-        //  2. next_handler_->OnWillRead()  [via PostTask]
-        //  3. next_handler_->OnReadCompleted(bytes_read = 0) [via PostTask]
-        //  4. controller->Resume()
-        HoldController(std::move(controller));
-        controller = std::make_unique<Controller>(
-            this, true /* post_task */,
-            base::BindOnce(
-                &ResourceHandler::OnWillRead, weak_next_handler_.GetWeakPtr(),
-                &next_handler_buffer_, &next_handler_buffer_size_,
-                std::make_unique<Controller>(
-                    this, true /* post_task */,
-                    base::BindOnce(
-                        &ResourceHandler::OnReadCompleted,
-                        weak_next_handler_.GetWeakPtr(), 0 /* bytes_read */,
-                        std::make_unique<Controller>(
-                            this, false /* post_task */,
-                            base::BindOnce(
-                                &CrossSiteDocumentResourceHandler::Resume,
-                                weak_this_.GetWeakPtr()))))));
-      }
-      bytes_read = local_buffer_bytes_read_;
+    // If sniffing didn't yield a conclusive response, and we haven't read too
+    // many bytes yet, buffer up some more data.
+    if (confirmed_blockable == CrossSiteDocumentClassifier::kMaybe &&
+        local_buffer_bytes_read_ < net::kMaxBytesToSniff &&
+        local_buffer_bytes_read_ < next_handler_buffer_size_) {
+      controller->Resume();
+      return;
     }
-
-    // Clean up, whether we'll cancel or proceed from here.
-    local_buffer_ = nullptr;
-    local_buffer_bytes_read_ = 0;
-    next_handler_buffer_ = nullptr;
-    next_handler_buffer_size_ = 0;
   }
 
-  next_handler_->OnReadCompleted(bytes_read, std::move(controller));
+  if (needs_sniffing_) {
+    UMA_HISTOGRAM_COUNTS("SiteIsolation.XSD.Browser.BytesReadForSniffing",
+                         local_buffer_bytes_read_);
+  }
+
+  // At this point we have already made a block-vs-allow decision and we know
+  // that we can wake the |next_handler_| and let it catch-up with our
+  // processing of the response.  The first step will always be calling
+  // |next_handler_->OnResponseStarted(...)|, but we need to figure out what
+  // other steps need to happen, before we can resume the real response
+  // upstream.  These steps will be gathered into |controller|.
+  // The last step will always be calling
+  // CrossSiteDocumentResourceHandler::Resume.
+  HoldController(std::move(controller));
+  controller = std::make_unique<Controller>(
+      this, false /* post_task */,
+      base::BindOnce(&CrossSiteDocumentResourceHandler::Resume,
+                     weak_this_.GetWeakPtr()));
+
+  if (confirmed_blockable == CrossSiteDocumentClassifier::kYes) {
+    // Log the blocking event.  Inline the Serialize call to avoid it when
+    // tracing is disabled.
+    TRACE_EVENT2("navigation",
+                 "CrossSiteDocumentResourceHandler::ShouldBlockResponse",
+                 "initiator",
+                 request()->initiator().has_value()
+                     ? request()->initiator().value().Serialize()
+                     : "null",
+                 "url", request()->url().spec());
+
+    LogBlockedResponse(GetRequestInfo(), needs_sniffing_, found_parser_breaker,
+                       canonical_mime_type_, http_response_code_,
+                       content_length_);
+
+    // Block the response and throw away the data.  Report zero bytes read.
+    blocked_read_completed_ = true;
+    ResourceRequestInfoImpl* info = GetRequestInfo();
+    info->set_blocked_cross_site_document(true);
+    SanitizeResourceResponse(pending_response_start_);
+
+    // Pass an empty/blocked body onto the next handler.  size of the two
+    // buffers is the same (see OnWillRead).  After the next statement,
+    // |controller| will store a sequence of steps like this:
+    //  - next_handler_->OnReadCompleted(bytes_read = 0)
+    //  - ... steps from the old |controller| (typically this->Resume()) ...
+    controller = std::make_unique<Controller>(
+        this, true /* post_task */,
+        base::BindOnce(&ResourceHandler::OnReadCompleted,
+                       weak_next_handler_.GetWeakPtr(), 0 /* bytes_read */,
+                       std::move(controller)));
+    StopLocalBuffering(false /* = copy_data_to_next_handler*/);
+  } else {
+    // Choose not block this response.
+    allow_based_on_sniffing_ = true;
+
+    if (bytes_read == 0 && local_buffer_bytes_read_ != 0) {
+      // |bytes_read == 0| indicates the end-of-stream. In this case, we need
+      // to synthesize an additional OnWillRead() and OnReadCompleted(0) on
+      // |next_handler_|, so that |next_handler_| sees both the full response
+      // and the end-of-stream marker.  After the next statement, |controller|
+      // will store a sequence of steps like this:
+      //  - next_handler_->OnWillRead(...)
+      //  - next_handler_->OnReadCompleted(bytes_read = 0)
+      //  - ... steps from the old |controller| (typically this->Resume()) ...
+      //
+      // Note that if |weak_next_handler_| is alive, then |this| should also be
+      // alive and therefore it is safe to dereference |&next_handler_buffer_|
+      // and |&next_handler_buffer_size_|.
+      controller = std::make_unique<Controller>(
+          this, false /* post_task */,
+          base::BindOnce(
+              &ResourceHandler::OnWillRead, weak_next_handler_.GetWeakPtr(),
+              &next_handler_buffer_, &next_handler_buffer_size_,
+              std::make_unique<Controller>(
+                  this, true /* post_task */,
+                  base::BindOnce(&ResourceHandler::OnReadCompleted,
+                                 weak_next_handler_.GetWeakPtr(),
+                                 0 /* bytes_read */, std::move(controller)))));
+    }
+
+    // Pass the contents of |local_buffer_| onto the next handler.  Afterwards,
+    // |controller| will store a sequence of steps like this:
+    //  - next_handler_->OnReadCompleted(local_buffer_bytes_read_)
+    //  - ... steps from the old |controller| ...
+    controller = std::make_unique<Controller>(
+        this, true /* post_task */,
+        base::BindOnce(&ResourceHandler::OnReadCompleted,
+                       weak_next_handler_.GetWeakPtr(),
+                       local_buffer_bytes_read_, std::move(controller)));
+    StopLocalBuffering(true /* = copy_data_to_next_handler*/);
+  }
+
+  // In both the blocked and allowed cases, we need to resume by notifying the
+  // downstream handler about the response start.
+  DCHECK(pending_response_start_);
+  next_handler_->OnResponseStarted(pending_response_start_.get(),
+                                   std::move(controller));
+  pending_response_start_ = nullptr;
+}
+
+void CrossSiteDocumentResourceHandler::StopLocalBuffering(
+    bool copy_data_to_next_handler) {
+  DCHECK(has_response_started_);
+  DCHECK(!should_block_based_on_headers_ || allow_based_on_sniffing_ ||
+         blocked_read_completed_);
+  DCHECK(local_buffer_);
+  DCHECK(next_handler_buffer_);
+
+  if (copy_data_to_next_handler) {
+    // Pass the contents of |local_buffer_| onto the next handler. Note that the
+    // size of the two buffers is the same (see OnWillRead).
+    DCHECK_LE(local_buffer_bytes_read_, next_handler_buffer_size_);
+    memcpy(next_handler_buffer_->data(), local_buffer_->data(),
+           local_buffer_bytes_read_);
+  }
+
+  local_buffer_ = nullptr;
+  local_buffer_bytes_read_ = 0;
+  next_handler_buffer_ = nullptr;
+  next_handler_buffer_size_ = 0;
 }
 
 void CrossSiteDocumentResourceHandler::OnResponseCompleted(
@@ -535,14 +680,21 @@ bool CrossSiteDocumentResourceHandler::ShouldBlockBasedOnHeaders(
       return false;
   }
 
-  // Look up MIME type.  Even if it doesn't claim to be a blockable type (i.e.,
-  // HTML, XML, JSON, or plain text), it may still fail the checks during the
-  // SniffForFetchOnlyResource() phase.
+  // CORB should look directly at the Content-Type header if one has been
+  // received from the network.  Ignoring |response->head.mime_type| helps avoid
+  // breaking legitimate websites (which might happen more often when blocking
+  // would be based on the mime type sniffed by MimeSniffingResourceHandler).
   //
   // TODO(nick): What if the mime type is omitted? Should that be treated the
   // same as text/plain? https://crbug.com/795971
-  canonical_mime_type_ = CrossSiteDocumentClassifier::GetCanonicalMimeType(
-      response->head.mime_type);
+  std::string mime_type;
+  if (response->head.headers)
+    response->head.headers->GetMimeType(&mime_type);
+  // Canonicalize the MIME type.  Note that even if it doesn't claim to be a
+  // blockable type (i.e., HTML, XML, JSON, or plain text), it may still fail
+  // the checks during the SniffForFetchOnlyResource() phase.
+  canonical_mime_type_ =
+      CrossSiteDocumentClassifier::GetCanonicalMimeType(mime_type);
 
   // Treat a missing initiator as an empty origin to be safe, though we don't
   // expect this to happen.  Unfortunately, this requires a copy.
@@ -655,6 +807,14 @@ bool CrossSiteDocumentResourceHandler::ShouldBlockBasedOnHeaders(
       !base::LowerCaseEqualsASCII(response->head.mime_type, "text/css");
 
   return true;
+}
+
+// static
+std::vector<std::string>
+CrossSiteDocumentResourceHandler::GetCorsSafelistedHeadersForTesting() {
+  return std::vector<std::string>(
+      kCorsSafelistedHeaders,
+      kCorsSafelistedHeaders + arraysize(kCorsSafelistedHeaders));
 }
 
 }  // namespace content

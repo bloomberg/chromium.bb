@@ -1161,8 +1161,16 @@ net::URLRequestJob* LinkDoctorInterceptor::MaybeInterceptRequest(
   contents.replace(contents.find(placeholder), placeholder.length(),
                    link_doctor_url.spec());
 
-  return new net::URLRequestMockDataJob(request, network_delegate, contents, 1,
-                                        false);
+  auto* mock_job = new net::URLRequestMockDataJob(request, network_delegate,
+                                                  contents, 1, false);
+  base::FilePath headers_path(
+      file_path.AddExtension(FILE_PATH_LITERAL("mock-http-headers")));
+  if (base::PathExists(headers_path)) {
+    std::string mocked_headers_contents;
+    if (base::ReadFileToString(headers_path, &mocked_headers_contents))
+      mock_job->OverrideResponseHeaders(mocked_headers_contents);
+  }
+  return mock_job;
 }
 
 class ErrorPageAutoReloadTest : public InProcessBrowserTest {

@@ -13,9 +13,6 @@ function createHtmlNoSniffResponse() {
                       { status: 200, headers: headers });
 }
 
-var previousResponse = undefined;
-var previousUrl = undefined;
-
 self.addEventListener('fetch', function(event) {
   // This handles response to the request issued in the
   // CrossSiteDocumentBlockingServiceWorkerTest.NoNetwork test.
@@ -24,29 +21,14 @@ self.addEventListener('fetch', function(event) {
     return;
   }
 
-  // This handles response to the first request in the
-  // CrossSiteDocumentBlockingServiceWorkerTest.NetworkAndOpaqueResponse test.
-  if (event.request.url.endsWith('nosniff.html') &&
-      (previousUrl != event.request.url || !previousResponse)) {
-    event.respondWith(new Promise(function(resolve, reject) {
-        fetch(event.request)
-            .then(function(response) {
-                previousResponse = response;
-                previousUrl = event.request.url;
-
-                reject('Expected error from service worker');
-            })
-            .catch(function(error) {
-                reject('Unexpected error: ' + error);
-            });
-    }));
-    return;
-  }
-
-  // This handles response to the second request in the
-  // CrossSiteDocumentBlockingServiceWorkerTest.NetworkAndOpaqueResponse test.
-  if (previousUrl == event.request.url && previousResponse) {
-    event.respondWith(previousResponse.clone());
+  // This handles response to the request issued in the
+  // CrossSiteDocumentBlockingServiceWorkerTest.NetworkToServiceWorkerResponse
+  // test.
+  if (event.request.url.endsWith('nosniff.txt')) {
+    event.respondWith(
+        fetch(event.request).then(
+            response => Promise.reject('Expected error from service worker'),
+            error => Promise.reject('Unexpected error: ' + error)));
     return;
   }
 
