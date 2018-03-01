@@ -21,6 +21,6 @@ blink_core_sources("messaging") {
   ]
 
   public_deps = [
-    "//third_party/WebKit/common:mojo_bindings_blink",
+    "//third_party/WebKit/public/mojom:mojom_blink",
   ]
 }

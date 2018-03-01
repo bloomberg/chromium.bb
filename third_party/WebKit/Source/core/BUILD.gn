@@ -219,7 +219,7 @@ component("core") {
     "//third_party/WebKit/Source/core/workers",
     "//third_party/WebKit/Source/core/xml",
     "//third_party/WebKit/Source/core/xmlhttprequest",
-    "//third_party/WebKit/common:blink_common",
+    "//third_party/WebKit/public/common",
   ]
 
   if (is_win && is_debug && is_component_build && current_cpu == "x64") {

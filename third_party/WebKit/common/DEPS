@@ -13,8 +13,8 @@ include_rules = [
     "+skia/public/interfaces/bitmap_skbitmap_struct_traits.h",
     "+testing/gmock/include/gmock",
     "+testing/gtest/include/gtest",
+    "+third_party/WebKit/common",
     "+third_party/WebKit/public/common",
     "+third_party/WebKit/public/mojom",
-    "+third_party/WebKit/common",
     "+url",
 ]

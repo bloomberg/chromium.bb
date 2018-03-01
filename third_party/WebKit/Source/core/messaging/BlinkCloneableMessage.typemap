@@ -9,7 +9,7 @@ traits_headers = [ "//third_party/WebKit/Source/core/messaging/BlinkCloneableMes
 
 deps = [
   "//mojo/public/cpp/bindings",
-  "//third_party/WebKit/common:blink_common",
+  "//third_party/WebKit/public/common",
 ]
 type_mappings =
     [ "blink.mojom.CloneableMessage=::blink::BlinkCloneableMessage[move_only]" ]

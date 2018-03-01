@@ -114,6 +114,9 @@ source_set("test_headers") {
 
 # Depend on this target to use public blink API headers for things like enums
 # and public structures without actually linking against any Blink libraries.
+#
+# See public/common/BUILD.gn for the headers that can be referenced both from
+# the browser- and renderer-side components.
 source_set("blink_headers") {
   sources = [
     "platform/BlameContext.h",
@@ -615,7 +618,7 @@ source_set("blink_headers") {
     "//net",
     "//services/service_manager/public/cpp",
     "//skia",
-    "//third_party/WebKit/common:blink_common",
+    "//third_party/WebKit/public/common",
     "//url",
   ]
 
@@ -724,6 +727,7 @@ repack("scaled_resources_200_percent") {
   ]
 }
 
+# TODO: Move these into WebKit/public/mojom.
 mojom("mojo_bindings") {
   visibility = [
     "//content/*",
@@ -790,14 +794,14 @@ mojom("mojo_bindings") {
     "//services/network/public/mojom",
     "//services/service_manager/public/mojom",
     "//skia/public/interfaces",
-    "//third_party/WebKit/common:mojo_platform_bindings",
+    "//third_party/WebKit/public/mojom:mojom_platform",
     "//ui/gfx/geometry/mojo",
     "//url/mojom:url_mojom_gurl",
     "//url/mojom:url_mojom_origin",
   ]
 
-  overridden_deps = [ "//third_party/WebKit/common:mojo_platform_bindings" ]
-  component_deps = [ "//third_party/WebKit/common:blink_common" ]
+  overridden_deps = [ "//third_party/WebKit/public/mojom:mojom_platform" ]
+  component_deps = [ "//third_party/WebKit/public/common" ]
 
   component_output_prefix = "blink_mojo_bindings"
 
@@ -900,12 +904,12 @@ mojom("core_mojo_bindings") {
     "platform/modules/broadcastchannel/broadcast_channel.mojom",
   ]
   public_deps = [
-    "//third_party/WebKit/common:mojo_bindings",
+    "//third_party/WebKit/public/mojom",
     "//url/mojom:url_mojom_origin",
   ]
 
-  overridden_deps = [ "//third_party/WebKit/common:mojo_bindings" ]
-  component_deps = [ "//third_party/WebKit/common:blink_common" ]
+  overridden_deps = [ "//third_party/WebKit/public/mojom" ]
+  component_deps = [ "//third_party/WebKit/public/common" ]
 
   component_output_prefix = "blink_core_mojo_bindings"
 

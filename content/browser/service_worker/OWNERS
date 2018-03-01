@@ -5,7 +5,7 @@
 #   //content/browser/resources/service_worker/
 #   //content/common/service_worker/
 #   //content/renderer/service_worker/
-#   //third_party/WebKit/common/service_worker/
+#   //third_party/WebKit/public/mojom/service_worker/
 #   //third_party/WebKit/public/web/modules/serviceworker/
 #   //third_party/WebKit/public/platform/modules/serviceworker/
 #   //third_party/WebKit/LayoutTests/external/wpt/service-workers/
