@@ -349,6 +349,8 @@ jumbo_source_set("browser_sources") {
     "warning_set.h",
     "web_ui_user_script_loader.cc",
     "web_ui_user_script_loader.h",
+    "zipfile_installer.cc",
+    "zipfile_installer.h",
   ]
 
   deps = [

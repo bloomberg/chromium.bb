@@ -384,6 +384,9 @@
       <message name="IDS_UTILITY_PROCESS_MANIFEST_PARSER_NAME" desc="The name of the utility process used for parsing extension manifests.">
         Extension Manifest Parser
       </message>
+      <message name="IDS_UTILITY_PROCESS_ZIP_FILE_INSTALLER_NAME" desc="The name of the utility process used for unpacking zip files.">
+        Zip File Installer
+      </message>
     </messages>
   </release>
 </grit>

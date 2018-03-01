@@ -2,19 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/zipfile_installer.h"
+#include "extensions/browser/zipfile_installer.h"
 
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/task_scheduler/post_task.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/load_error_reporter.h"
-#include "chrome/browser/extensions/unpacked_installer.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/grit/generated_resources.h"
-#include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/common/extension_unpacker.mojom.h"
+#include "extensions/strings/grit/extensions_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
@@ -47,13 +42,13 @@ namespace extensions {
 
 // static
 scoped_refptr<ZipFileInstaller> ZipFileInstaller::Create(
-    ExtensionService* service) {
-  DCHECK(service);
-  return base::WrapRefCounted(new ZipFileInstaller(service));
+    DoneCallback done_callback) {
+  DCHECK(done_callback);
+  return base::WrapRefCounted(new ZipFileInstaller(std::move(done_callback)));
 }
 
 void ZipFileInstaller::LoadFromZipFile(const base::FilePath& zip_file) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!zip_file.empty());
 
   zip_file_ = zip_file;
@@ -64,14 +59,14 @@ void ZipFileInstaller::LoadFromZipFile(const base::FilePath& zip_file) {
       base::BindOnce(&ZipFileInstaller::Unzip, this));
 }
 
-ZipFileInstaller::ZipFileInstaller(ExtensionService* service)
-    : be_noisy_on_failure_(true),
-      extension_service_weak_(service->AsWeakPtr()) {}
+ZipFileInstaller::ZipFileInstaller(DoneCallback done_callback)
+    : done_callback_(std::move(done_callback)) {}
 
 ZipFileInstaller::~ZipFileInstaller() = default;
 
 void ZipFileInstaller::Unzip(base::Optional<base::FilePath> unzip_dir) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (!unzip_dir) {
     ReportFailure(std::string(kExtensionHandlerTempDirError));
     return;
@@ -90,12 +85,12 @@ void ZipFileInstaller::Unzip(base::Optional<base::FilePath> unzip_dir) {
 
   utility_process_mojo_client_->service()->Unzip(
       zip_file_, *unzip_dir,
-      base::Bind(&ZipFileInstaller::UnzipDone, this, *unzip_dir));
+      base::BindOnce(&ZipFileInstaller::UnzipDone, this, *unzip_dir));
 }
 
 void ZipFileInstaller::UnzipDone(const base::FilePath& unzip_dir,
                                  bool success) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   utility_process_mojo_client_.reset();
 
@@ -104,18 +99,13 @@ void ZipFileInstaller::UnzipDone(const base::FilePath& unzip_dir,
     return;
   }
 
-  if (extension_service_weak_)
-    UnpackedInstaller::Create(extension_service_weak_.get())->Load(unzip_dir);
+  std::move(done_callback_).Run(zip_file_, unzip_dir, std::string());
 }
 
 void ZipFileInstaller::ReportFailure(const std::string& error) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (extension_service_weak_) {
-    LoadErrorReporter::GetInstance()->ReportLoadError(
-        zip_file_, error, extension_service_weak_->profile(),
-        be_noisy_on_failure_);
-  }
+  std::move(done_callback_).Run(zip_file_, base::FilePath(), error);
 }
 
 }  // namespace extensions
