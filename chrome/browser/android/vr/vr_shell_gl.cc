@@ -458,12 +458,6 @@ void VrShellGl::OnSwapContents(int new_content_id) {
   ui_->OnSwapContents(new_content_id);
 }
 
-void VrShellGl::OnAssetsLoaded(AssetsLoadStatus status,
-                               std::unique_ptr<Assets> assets,
-                               const base::Version& component_version) {
-  ui_->OnAssetsLoaded(status, std::move(assets), component_version);
-}
-
 void VrShellGl::EnableAlertDialog(ContentInputForwarder* input_forwarder,
                                   int width,
                                   int height) {

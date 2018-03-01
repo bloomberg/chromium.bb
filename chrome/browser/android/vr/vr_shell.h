@@ -223,7 +223,9 @@ class VrShell : device::GvrGamepadDataProvider,
 
   void OnVoiceResults(const base::string16& result) override;
 
+  void LoadAssets();
   void OnAssetsLoaded(AssetsLoadStatus status,
+                      std::unique_ptr<Assets> assets,
                       const base::Version& component_version);
 
   void AcceptDoffPromptForTesting(
@@ -246,6 +248,7 @@ class VrShell : device::GvrGamepadDataProvider,
   content::WebContents* GetNonNativePageWebContents() const;
 
   void OnAssetsComponentReady();
+  void OnAssetsComponentWaitTimeout();
 
   bool vr_shell_enabled_;
 
@@ -311,6 +314,8 @@ class VrShell : device::GvrGamepadDataProvider,
   gl::SurfaceTexture* content_surface_texture_ = nullptr;
   gl::SurfaceTexture* overlay_surface_texture_ = nullptr;
   gl::SurfaceTexture* ui_surface_texture_ = nullptr;
+
+  base::Timer waiting_for_assets_component_timer_;
 
   base::WeakPtrFactory<VrShell> weak_ptr_factory_;
 

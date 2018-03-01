@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/vr/browser_ui_interface.h"
+#include "chrome/browser/vr/model/assets.h"
 #include "chrome/browser/vr/model/omnibox_suggestions.h"
 #include "chrome/browser/vr/model/toolbar_state.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -38,6 +39,10 @@ class MockBrowserUiInterface : public BrowserUiInterface {
   MOCK_METHOD1(OnSpeechRecognitionStateChanged, void(int new_state));
   void SetOmniboxSuggestions(std::unique_ptr<OmniboxSuggestions> suggestions) {}
   MOCK_METHOD0(OnAssetsComponentReady, void());
+  void OnAssetsLoaded(AssetsLoadStatus status,
+                      std::unique_ptr<Assets> assets,
+                      const base::Version& component_version) {}
+  MOCK_METHOD0(OnAssetsUnavailable, void());
 
   MOCK_METHOD1(ShowSoftInput, void(bool));
   MOCK_METHOD4(UpdateWebInputIndices, void(int, int, int, int));

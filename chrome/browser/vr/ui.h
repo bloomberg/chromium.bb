@@ -40,6 +40,7 @@ struct UiInitialState {
   bool browsing_disabled = false;
   bool has_or_can_request_audio_permission = true;
   bool skips_redraw_when_not_dirty = false;
+  // TODO(tiborg): Remove this flag.
   bool assets_available = false;
   bool supports_selection = true;
 };
@@ -95,7 +96,8 @@ class Ui : public BrowserUiInterface, public KeyboardUiInterface {
   void OnAssetsComponentReady() override;
   void OnAssetsLoaded(AssetsLoadStatus status,
                       std::unique_ptr<Assets> assets,
-                      const base::Version& component_version);
+                      const base::Version& component_version) override;
+  void OnAssetsUnavailable() override;
 
   void OnAssetsLoading();
   // TODO(ymalik): We expose this to stop sending VSync to the WebVR page until

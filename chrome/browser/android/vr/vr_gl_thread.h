@@ -110,6 +110,10 @@ class VrGLThread : public base::android::JavaHandlerThread,
   void SetOmniboxSuggestions(
       std::unique_ptr<OmniboxSuggestions> result) override;
   void OnAssetsComponentReady() override;
+  void OnAssetsLoaded(AssetsLoadStatus status,
+                      std::unique_ptr<Assets> assets,
+                      const base::Version& component_version) override;
+  void OnAssetsUnavailable() override;
   void ShowSoftInput(bool show) override;
   void UpdateWebInputIndices(int selection_start,
                              int selection_end,
@@ -123,10 +127,6 @@ class VrGLThread : public base::android::JavaHandlerThread,
  private:
   bool OnMainThread() const;
   bool OnGlThread() const;
-
-  void OnAssetsLoaded(AssetsLoadStatus status,
-                      std::unique_ptr<Assets> assets,
-                      const base::Version& component_version);
 
   // Created on GL thread.
   std::unique_ptr<VrShellGl> vr_shell_gl_;

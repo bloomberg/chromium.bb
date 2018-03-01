@@ -624,9 +624,7 @@ void UiSceneCreator::Create2dBrowsingSubtreeRoots() {
   element->AddBinding(std::make_unique<Binding<bool>>(
       VR_BIND_LAMBDA(
           [](Model* m) {
-            bool ready = !m->background_available ||
-                         (m->background_available && m->background_loaded);
-            return m->browsing_enabled() && ready;
+            return m->browsing_enabled() && !m->waiting_for_background;
           },
           base::Unretained(model_)),
       VR_BIND_LAMBDA([](UiElement* e, const bool& v) { e->SetVisible(v); },

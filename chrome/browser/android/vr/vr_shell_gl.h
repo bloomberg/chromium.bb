@@ -18,7 +18,6 @@
 #include "chrome/browser/android/vr/android_vsync_helper.h"
 #include "chrome/browser/android/vr/vr_controller.h"
 #include "chrome/browser/android/vr/vr_dialog.h"
-#include "chrome/browser/vr/assets_load_status.h"
 #include "chrome/browser/vr/content_input_delegate.h"
 #include "chrome/browser/vr/fps_meter.h"
 #include "chrome/browser/vr/model/controller_model.h"
@@ -33,10 +32,6 @@
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/native_widget_types.h"
-
-namespace base {
-class Version;
-}  // namespace base
 
 namespace gl {
 class GLContext;
@@ -60,7 +55,6 @@ class SlidingTimeDeltaAverage;
 class Ui;
 class VrController;
 class VrShell;
-struct Assets;
 
 struct WebVrBounds {
   WebVrBounds(const gfx::RectF& left,
@@ -118,10 +112,6 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   void set_is_exiting(bool exiting) { is_exiting_ = exiting; }
 
   void OnSwapContents(int new_content_id);
-
-  void OnAssetsLoaded(AssetsLoadStatus status,
-                      std::unique_ptr<Assets> assets,
-                      const base::Version& component_version);
 
   void EnableAlertDialog(ContentInputForwarder* input_forwarder,
                          int width,
