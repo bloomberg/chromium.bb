@@ -1286,9 +1286,12 @@ public class VrShellDelegate
         if (DEBUG_LOGS) Log.e(TAG, "canceling startup animation");
         mCancellingEntryAnimation = true;
         Bundle options = ActivityOptions.makeCustomAnimation(mActivity, 0, 0).toBundle();
-        mActivity.startActivity(mVrDaydreamApi.setupVrIntent(
-                                        new Intent(mActivity, VrCancelAnimationActivity.class)),
-                options);
+        Intent intent = mVrDaydreamApi.setupVrIntent(
+                new Intent(mActivity, VrCancelAnimationActivity.class));
+        // We don't want this to run in a new task stack, or we may end up resuming the wrong
+        // Activity when the VrCancelAnimationActivity finishes.
+        intent.setFlags(intent.getFlags() & ~Intent.FLAG_ACTIVITY_NEW_TASK);
+        mActivity.startActivity(intent, options);
         mNeedsAnimationCancel = false;
         return true;
     }
