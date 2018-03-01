@@ -109,6 +109,20 @@ class PixelExpectations(GpuTestExpectations):
     self.Fail('Pixel_DirectComposition_Video_VP9', ['win', 'intel'],
         bug=602688)
 
+    # Prepare for Skia's Delta Anti-Aliasing golden images rebaseline
+    self.Fail('Pixel_OffscreenCanvasAccelerated2D',
+              ['mac', 'linux', 'win', 'android', 'chromeos'], bug=817110)
+    self.Fail('Pixel_OffscreenCanvasAccelerated2DWorker',
+              ['mac', 'linux', 'win', 'android', 'chromeos'], bug=817110)
+    self.Fail('Pixel_OffscreenCanvasUnaccelerated2D',
+              ['mac', 'linux', 'win', 'android', 'chromeos'], bug=817110)
+    self.Fail('Pixel_OffscreenCanvasUnaccelerated2DGPUCompositing',
+              ['mac', 'linux', 'win', 'android', 'chromeos'], bug=817110)
+    self.Fail('Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorker',
+              ['mac', 'linux', 'win', 'android', 'chromeos'], bug=817110)
+    self.Fail('Pixel_OffscreenCanvasUnaccelerated2DWorker',
+              ['mac', 'linux', 'win', 'android', 'chromeos'], bug=817110)
+
     # TODO(zmo): temporarily suppress these two tests until new
     # reference images with new names are generated.
     self.Fail('Pixel_Canvas2DRedBox_NoGpuProcess',

@@ -199,10 +199,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #define SK_DISABLE_RENDER_TARGET_SORTING
 #endif
 
-#ifndef SK_SUPPORT_LEGACY_DELTA_AA
-#define SK_SUPPORT_LEGACY_DELTA_AA
-#endif
-
 #ifndef SK_SUPPORT_LEGACY_TILED_BITMAPS
 #define SK_SUPPORT_LEGACY_TILED_BITMAPS
 #endif

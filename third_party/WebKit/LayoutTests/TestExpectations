@@ -3314,6 +3314,11 @@ crbug.com/801341 [ Win ] http/tests/misc/webtiming-resolution.html [ Failure Pas
 crbug.com/797138 external/wpt/credential-management/federatedcredential-framed-get.sub.https.html [ Crash ]
 crbug.com/797138 external/wpt/credential-management/passwordcredential-framed-get.sub.https.html [ Crash ]
 
+# Different paths may have different anti-aliasing pixels 2018-02-21
+skbug.com/7641 external/wpt/css/css-paint-api/paint2d-paths.https.html [ Failure Pass ]
+skbug.com/7641 fast/multicol/border-radius-clipped-layer.html [ Failure Pass ]
+skbug.com/7641 virtual/disable-spv175/fast/multicol/border-radius-clipped-layer.html [ Failure Pass ]
+
 # Sheriff failures 2018-01-02
 crbug.com/798592 [ Win7 ] virtual/threaded/http/tests/devtools/tracing/timeline-style/timeline-recalculate-styles.js [ Pass Failure ]
 
