@@ -647,6 +647,8 @@ void RenderWidget::SetLocalSurfaceIdForAutoResize(
     const content::ScreenInfo& screen_info,
     uint32_t content_source_id,
     const viz::LocalSurfaceId& local_surface_id) {
+  DCHECK(!size_.IsEmpty());
+
   bool screen_info_changed = screen_info_ != screen_info;
 
   screen_info_ = screen_info;
@@ -870,6 +872,8 @@ void RenderWidget::OnEnableDeviceEmulation(
     resize_params.screen_info = screen_info_;
     resize_params.new_size = size_;
     resize_params.physical_backing_size = physical_backing_size_;
+    resize_params.local_surface_id = local_surface_id_;
+    resize_params.content_source_id = current_content_source_id_;
     resize_params.visible_viewport_size = visible_viewport_size_;
     resize_params.is_fullscreen_granted = is_fullscreen_granted_;
     resize_params.display_mode = display_mode_;
@@ -1409,7 +1413,7 @@ void RenderWidget::Resize(const ResizeParams& params) {
   // |current_content_source_id_|, then the given LocalSurfaceId was generated
   // before the navigation. Continue with the resize but don't use the
   // LocalSurfaceId until the right one comes.
-  viz::LocalSurfaceId new_local_surface_id = local_surface_id_;
+  viz::LocalSurfaceId new_local_surface_id;
   if (params.local_surface_id &&
       params.content_source_id == current_content_source_id_) {
     new_local_surface_id = *params.local_surface_id;
@@ -1424,7 +1428,8 @@ void RenderWidget::Resize(const ResizeParams& params) {
     // it receives a valid surface ID. This is a no-op if surface
     // synchronization is disabled.
     DCHECK(!compositor_->IsSurfaceSynchronizationEnabled() ||
-           !params.needs_resize_ack || params.local_surface_id->is_valid());
+           !params.needs_resize_ack || !params.local_surface_id ||
+           params.local_surface_id->is_valid());
     compositor_->SetBrowserControlsHeight(
         params.top_controls_height, params.bottom_controls_height,
         params.browser_controls_shrink_blink_size);
