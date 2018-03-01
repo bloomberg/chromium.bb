@@ -16,6 +16,8 @@
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/window_properties.h"
 #include "base/i18n/string_search.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/base/default_style.h"
@@ -95,6 +97,9 @@ views::Widget* KeyboardShortcutView::Show(gfx::NativeWindow context) {
     // it.
     g_ksv_view->GetWidget()->Activate();
   } else {
+    base::RecordAction(
+        base::UserMetricsAction("KeyboardShortcutViewer.CreateWindow"));
+
     constexpr gfx::Size kKSVWindowSize(768, 512);
     gfx::Rect window_bounds(kKSVWindowSize);
     if (context) {
@@ -348,7 +353,10 @@ void KeyboardShortcutView::ActiveChanged(
   sender->ShowBackOrGoogleIcon(is_active);
   search_results_container_->SetVisible(is_active);
   tabbed_pane_->SetVisible(!is_active);
-  if (!is_active) {
+  if (is_active) {
+    base::RecordAction(
+        base::UserMetricsAction("KeyboardShortcutViewer.Search"));
+  } else {
     search_results_container_->RemoveAllChildViews(true);
     RequestFocusForActiveTab();
   }

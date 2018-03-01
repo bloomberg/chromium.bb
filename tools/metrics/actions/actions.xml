@@ -8263,6 +8263,20 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="KeyboardShortcutViewer.CreateWindow">
+  <owner>wutao@chromium.org</owner>
+  <description>
+    Records when the user creates a new window of Keyboard Shortcut Viewer.
+  </description>
+</action>
+
+<action name="KeyboardShortcutViewer.Search">
+  <owner>wutao@chromium.org</owner>
+  <description>
+    Records when the user enters search mode in Keyboard Shortcut Viewer.
+  </description>
+</action>
+
 <action name="KeywordEditor_AddKeyword">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
