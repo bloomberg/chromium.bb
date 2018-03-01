@@ -31,6 +31,7 @@ void AssistantManagerServiceImpl::Start(const std::string& access_token) {
   assistant_manager_internal_->SetOptions(*internal_options, [](bool success) {
     DVLOG(2) << "set options: " << success;
   });
+  assistant_manager_internal_->SetDisplayConnection(&display_connection_);
 
   // By default AssistantManager will not start listening for its hotword until
   // we explicitly set EnableListening() to |true|.
