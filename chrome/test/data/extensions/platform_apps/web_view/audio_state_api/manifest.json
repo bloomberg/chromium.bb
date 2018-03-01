@@ -1,5 +1,6 @@
 {
   "name": "<webview> audio state api tests.",
+  "manifest_version": 2,
   "version": "1",
   "permissions": [
     "webview"

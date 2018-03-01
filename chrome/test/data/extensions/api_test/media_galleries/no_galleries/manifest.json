@@ -1,5 +1,6 @@
 {
   "name": "chrome.mediaGalleries.no_galleries",
+  "manifest_version": 2,
   "version": "0.1",
   "description": "Test that without the allGalleries permission, no galleries are present.",
   "app": {

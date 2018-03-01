@@ -1,5 +1,6 @@
 {
   "name": "Platform App Test: local iframes are allowed",
+  "manifest_version": 2,
   "version": "1",
   "app": {
     "background": {

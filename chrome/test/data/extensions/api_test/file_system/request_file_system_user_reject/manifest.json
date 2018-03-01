@@ -1,5 +1,6 @@
 {
   "name": "chrome.fileSystem.requestFileSystem user consent rejection test",
+  "manifest_version": 2,
   "version": "0.1",
   "description": "Test for requesting a file system via chrome.fileSystem.requestFileSystem with a rejection user consent.",
   "app": {

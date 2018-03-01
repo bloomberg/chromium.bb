@@ -1,5 +1,6 @@
 {
   "name": "Platform App Test: outer bounds platform app",
+  "manifest_version": 2,
   "version": "1",
   "app": {
     "background": {

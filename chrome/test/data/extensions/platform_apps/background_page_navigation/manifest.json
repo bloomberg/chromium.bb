@@ -1,5 +1,6 @@
 {
   "name": "Platform App Test: window.open() to local resource is disallowed",
+  "manifest_version": 2,
   "version": "1",
   "app": {
     "background": {

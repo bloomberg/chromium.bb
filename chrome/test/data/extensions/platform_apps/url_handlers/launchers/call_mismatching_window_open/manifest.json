@@ -1,5 +1,6 @@
 {
   "name": "Launcher: mismatching blank link",
+  "manifest_version": 2,
   "version": "1",
   "app": {
     "background": {

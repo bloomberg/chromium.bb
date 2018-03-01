@@ -1,5 +1,6 @@
 {
   "name": "<webview> disabled prerenderer test",
+  "manifest_version": 2,
   "version": "1",
   "permissions": [
     "webview"

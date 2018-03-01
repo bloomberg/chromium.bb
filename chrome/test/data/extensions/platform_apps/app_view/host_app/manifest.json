@@ -1,5 +1,6 @@
 {
   "name": "Platform API Test: Host Application",
+  "manifest_version": 2,
   "version": "1.0",
   "app": {
     "background": {
