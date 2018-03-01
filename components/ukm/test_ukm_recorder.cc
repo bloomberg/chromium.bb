@@ -60,7 +60,7 @@ std::vector<int64_t> GetValuesForMetric(const mojom::UkmEntry* entry,
 }  // namespace
 
 TestUkmRecorder::TestUkmRecorder() {
-  EnableRecording();
+  EnableRecording(/*extensions=*/true);
 }
 
 TestUkmRecorder::~TestUkmRecorder() {

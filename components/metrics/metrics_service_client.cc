@@ -40,6 +40,10 @@ bool MetricsServiceClient::IsHistorySyncEnabledOnAllProfiles() {
   return false;
 }
 
+bool MetricsServiceClient::IsExtensionSyncEnabledOnAllProfiles() {
+  return false;
+}
+
 void MetricsServiceClient::SetUpdateRunningServicesCallback(
     const base::Closure& callback) {
   update_running_services_ = callback;

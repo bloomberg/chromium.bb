@@ -28,6 +28,9 @@ class SyncDisableObserver : public syncer::SyncServiceObserver {
   // Returns if history sync is enabled on all active profiles.
   virtual bool IsHistorySyncEnabledOnAllProfiles();
 
+  // Returns if history sync is enabled on all active profiles.
+  virtual bool IsExtensionSyncEnabledOnAllProfiles();
+
  protected:
   // Called after state changes and some profile has sync disabled.
   // If |must_purge| is true, sync was disabled for some profile, and
@@ -42,9 +45,13 @@ class SyncDisableObserver : public syncer::SyncServiceObserver {
   // Recomputes all_profiles_enabled_ state from previous_states_;
   void UpdateAllProfileEnabled(bool must_purge);
 
-  // Returns true iff all profiles are enabled in previous_states_.
+  // Returns true iff all profile histories are enabled in previous_states_.
   // If there are no profiles being observed, this returns false.
-  bool AreAllProfilesEnabled();
+  bool CheckHistorySyncOnAllProfiles();
+
+  // Returns true iff all profile extensions are enabled in previous_states_.
+  // If there are no profiles being observed, this returns false.
+  bool CheckExtensionSyncOnAllProfiles();
 
   // Tracks observed history services, for cleanup.
   ScopedObserver<syncer::SyncService, syncer::SyncServiceObserver>
@@ -53,12 +60,14 @@ class SyncDisableObserver : public syncer::SyncServiceObserver {
   // State data about sync services that we need to remember.
   struct SyncState {
     // If the user has history sync enabled.
-    bool history_enabled;
+    bool history_enabled = false;
+    // If the user has extension sync enabled.
+    bool extensions_enabled = false;
     // Whether the sync service has been initialized.
-    bool initialized;
+    bool initialized = false;
     // Whether user data is hidden by a secondary passphrase.
     // This is not valid if the state is not initialized.
-    bool passphrase_protected;
+    bool passphrase_protected = false;
   };
 
   // Gets the current state of a SyncService.
@@ -67,8 +76,13 @@ class SyncDisableObserver : public syncer::SyncServiceObserver {
   // The list of services that had sync enabled when we last checked.
   std::map<syncer::SyncService*, SyncState> previous_states_;
 
-  // Tracks if sync was enabled on all profiles after the last state change.
-  bool all_profiles_enabled_;
+  // Tracks if history sync was enabled on all profiles after the last state
+  // change.
+  bool all_histories_enabled_;
+
+  // Tracks if extension sync was enabled on all profiles after the last state
+  // change.
+  bool all_extensions_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncDisableObserver);
 };
