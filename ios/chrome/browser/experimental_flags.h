@@ -48,6 +48,9 @@ bool IsMemoryDebuggingEnabled();
 // Whether startup crash is enabled.
 bool IsStartupCrashEnabled();
 
+// Whether the new Clear Browsing Data UI is enabled.
+bool IsNewClearBrowsingDataUIEnabled();
+
 // Whether a new version of FeedbackKit is the preferred feedback UI provider.
 bool IsNewFeedbackKitEnabled();
 
