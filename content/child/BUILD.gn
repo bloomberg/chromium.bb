@@ -116,6 +116,7 @@ target(link_target_type, "child") {
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
     "//services/service_manager/runner/common",
+    "//services/tracing/public/cpp",
     "//skia",
     "//storage/common",
     "//third_party/WebKit/public:blink_headers",

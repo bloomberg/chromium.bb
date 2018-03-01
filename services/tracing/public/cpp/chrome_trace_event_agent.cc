@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/resource_coordinator/public/cpp/tracing/chrome_trace_event_agent.h"
+#include "services/tracing/public/cpp/chrome_trace_event_agent.h"
 
 #include <string>
 #include <utility>
@@ -16,8 +16,8 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_log.h"
 #include "base/values.h"
-#include "services/resource_coordinator/public/mojom/service_constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/tracing/public/mojom/constants.mojom.h"
 
 namespace {
 

@@ -192,6 +192,7 @@ service_manifest("packaged_services_manifest") {
     "//services/network:manifest",
     "//services/resource_coordinator:manifest",
     "//services/shape_detection:manifest",
+    "//services/tracing:manifest",
     "//services/video_capture:manifest",
     "//services/viz:manifest",
   ]

@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/resource_coordinator/tracing/recorder.h"
+#include "services/tracing/recorder.h"
+
+#include <utility>
 
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
-#include "services/resource_coordinator/public/mojom/tracing/tracing.mojom.h"
+#include "services/tracing/public/mojom/tracing.mojom.h"
 
 namespace tracing {
 

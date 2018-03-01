@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/resource_coordinator/tracing/coordinator.h"
+#include "services/tracing/coordinator.h"
 
 #include <algorithm>
 #include <string>
@@ -26,11 +26,12 @@
 #include "base/trace_event/trace_config.h"
 #include "base/trace_event/trace_event.h"
 #include "mojo/common/data_pipe_utils.h"
-#include "services/resource_coordinator/public/mojom/tracing/tracing.mojom.h"
-#include "services/resource_coordinator/public/mojom/tracing/tracing_constants.mojom.h"
-#include "services/resource_coordinator/tracing/agent_registry.h"
-#include "services/resource_coordinator/tracing/recorder.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
+#include "services/service_manager/public/cpp/service_context_ref.h"
+#include "services/tracing/agent_registry.h"
+#include "services/tracing/public/mojom/constants.mojom.h"
+#include "services/tracing/public/mojom/tracing.mojom.h"
+#include "services/tracing/recorder.h"
 
 namespace {
 
@@ -270,10 +271,12 @@ Coordinator* Coordinator::GetInstance() {
   return g_coordinator;
 }
 
-Coordinator::Coordinator()
+Coordinator::Coordinator(
+    service_manager::ServiceContextRefFactory* service_ref_factory)
     : binding_(this),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       agent_registry_(AgentRegistry::GetInstance()),
+      service_ref_(service_ref_factory->CreateRef()),
       weak_ptr_factory_(this) {
   DCHECK(!g_coordinator);
   DCHECK(agent_registry_);

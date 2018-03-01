@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_TRACING_BASE_AGENT_H_
-#define SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_TRACING_BASE_AGENT_H_
+#ifndef SERVICES_TRACING_PUBLIC_CPP_BASE_AGENT_H_
+#define SERVICES_TRACING_PUBLIC_CPP_BASE_AGENT_H_
 
 #include <string>
 
+#include "base/component_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/resource_coordinator/public/cpp/resource_coordinator_export.h"
-#include "services/resource_coordinator/public/mojom/tracing/tracing.mojom.h"
+#include "services/tracing/public/mojom/tracing.mojom.h"
 
 namespace service_manager {
 class Connector;
@@ -20,8 +20,7 @@ class Connector;
 // override methods that actually do something, in most cases only StartTracing
 // and StopAndFlush.
 namespace tracing {
-class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT BaseAgent
-    : public mojom::Agent {
+class COMPONENT_EXPORT(TRACING_CPP) BaseAgent : public mojom::Agent {
  protected:
   BaseAgent(service_manager::Connector* connector,
             const std::string& label,
@@ -49,4 +48,4 @@ class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT BaseAgent
 
 }  // namespace tracing
 
-#endif  // SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_TRACING_BASE_AGENT_H_
+#endif  // SERVICES_TRACING_PUBLIC_CPP_BASE_AGENT_H_

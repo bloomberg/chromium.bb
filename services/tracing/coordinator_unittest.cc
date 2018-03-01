@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/resource_coordinator/tracing/coordinator.h"
+#include "services/tracing/coordinator.h"
 
 #include <algorithm>
 #include <memory>
@@ -16,8 +16,9 @@
 #include "base/test/scoped_task_environment.h"
 #include "mojo/common/data_pipe_drainer.h"
 #include "mojo/public/cpp/system/data_pipe.h"
-#include "services/resource_coordinator/public/mojom/tracing/tracing.mojom.h"
-#include "services/resource_coordinator/tracing/test_util.h"
+#include "services/service_manager/public/cpp/service_context_ref.h"
+#include "services/tracing/public/mojom/tracing.mojom.h"
+#include "services/tracing/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace tracing {
@@ -25,10 +26,12 @@ namespace tracing {
 class CoordinatorTest : public testing::Test,
                         public mojo::common::DataPipeDrainer::Client {
  public:
+  CoordinatorTest() : service_ref_factory_(base::DoNothing()) {}
+
   // testing::Test
   void SetUp() override {
-    agent_registry_.reset(new AgentRegistry());
-    coordinator_.reset(new Coordinator());
+    agent_registry_.reset(new AgentRegistry(&service_ref_factory_));
+    coordinator_.reset(new Coordinator(&service_ref_factory_));
     output_ = "";
   }
 
@@ -160,6 +163,7 @@ class CoordinatorTest : public testing::Test,
   std::unique_ptr<mojo::common::DataPipeDrainer> drainer_;
   base::RepeatingClosure quit_closure_;
   std::string output_;
+  service_manager::ServiceContextRefFactory service_ref_factory_;
 };
 
 TEST_F(CoordinatorTest, StartTracingSimple) {

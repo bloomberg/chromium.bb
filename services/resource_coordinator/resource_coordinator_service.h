@@ -15,8 +15,6 @@
 #include "services/resource_coordinator/coordination_unit/coordination_unit_introspector_impl.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_manager.h"
 #include "services/resource_coordinator/memory_instrumentation/coordinator_impl.h"
-#include "services/resource_coordinator/tracing/agent_registry.h"
-#include "services/resource_coordinator/tracing/coordinator.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
@@ -50,14 +48,12 @@ class ResourceCoordinatorService : public service_manager::Service {
   service_manager::BinderRegistryWithArgs<
       const service_manager::BindSourceInfo&>
       registry_;
-  std::unique_ptr<service_manager::ServiceContextRefFactory> ref_factory_;
   CoordinationUnitManager coordination_unit_manager_;
   CoordinationUnitIntrospectorImpl introspector_;
   std::unique_ptr<ukm::MojoUkmRecorder> ukm_recorder_;
   std::unique_ptr<memory_instrumentation::CoordinatorImpl>
       memory_instrumentation_coordinator_;
-  std::unique_ptr<tracing::AgentRegistry> tracing_agent_registry_;
-  std::unique_ptr<tracing::Coordinator> tracing_coordinator_;
+  std::unique_ptr<service_manager::ServiceContextRefFactory> ref_factory_;
 
   // WeakPtrFactory members should always come last so WeakPtrs are destructed
   // before other members.

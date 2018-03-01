@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_TRACING_CHROME_TRACE_EVENT_AGENT_H_
-#define SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_TRACING_CHROME_TRACE_EVENT_AGENT_H_
+#ifndef SERVICES_TRACING_PUBLIC_CPP_CHROME_TRACE_EVENT_AGENT_H_
+#define SERVICES_TRACING_PUBLIC_CPP_CHROME_TRACE_EVENT_AGENT_H_
 
 #include <memory>
 #include <string>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/threading/thread_checker.h"
 #include "base/values.h"
-#include "services/resource_coordinator/public/cpp/resource_coordinator_export.h"
-#include "services/resource_coordinator/public/cpp/tracing/base_agent.h"
-#include "services/resource_coordinator/public/mojom/tracing/tracing.mojom.h"
+#include "services/tracing/public/cpp/base_agent.h"
+#include "services/tracing/public/mojom/tracing.mojom.h"
 
 namespace base {
 class TimeTicks;
@@ -27,8 +27,7 @@ class Connector;
 
 namespace tracing {
 
-class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT ChromeTraceEventAgent
-    : public BaseAgent {
+class COMPONENT_EXPORT(TRACING_CPP) ChromeTraceEventAgent : public BaseAgent {
  public:
   using MetadataGeneratorFunction =
       base::RepeatingCallback<std::unique_ptr<base::DictionaryValue>()>;
@@ -68,4 +67,4 @@ class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT ChromeTraceEventAgent
 };
 
 }  // namespace tracing
-#endif  // SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_TRACING_CHROME_TRACE_EVENT_AGENT_H_
+#endif  // SERVICES_TRACING_PUBLIC_CPP_CHROME_TRACE_EVENT_AGENT_H_

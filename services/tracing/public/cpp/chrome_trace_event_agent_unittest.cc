@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/resource_coordinator/public/cpp/tracing/chrome_trace_event_agent.h"
+#include "services/tracing/public/cpp/chrome_trace_event_agent.h"
+
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback_forward.h"
@@ -14,7 +16,7 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_log.h"
 #include "base/values.h"
-#include "services/resource_coordinator/public/mojom/tracing/tracing.mojom.h"
+#include "services/tracing/public/mojom/tracing.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace tracing {
@@ -26,7 +28,7 @@ const char kTestMetadataKey[] = "ChromeTraceEventAgentTestMetadata";
 
 class MockRecorder : public mojom::Recorder {
  public:
-  MockRecorder(mojom::RecorderRequest request)
+  explicit MockRecorder(mojom::RecorderRequest request)
       : binding_(this, std::move(request)) {
     binding_.set_connection_error_handler(base::BindRepeating(
         &MockRecorder::OnConnectionError, base::Unretained(this)));

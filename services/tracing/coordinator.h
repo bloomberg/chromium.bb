@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_RESOURCE_COORDINATOR_TRACING_COORDINATOR_H_
-#define SERVICES_RESOURCE_COORDINATOR_TRACING_COORDINATOR_H_
+#ifndef SERVICES_TRACING_COORDINATOR_H_
+#define SERVICES_TRACING_COORDINATOR_H_
 
 #include <map>
 #include <memory>
@@ -16,9 +16,9 @@
 #include "base/single_thread_task_runner.h"
 #include "base/values.h"
 #include "mojo/public/cpp/system/data_pipe.h"
-#include "services/resource_coordinator/public/mojom/tracing/tracing.mojom.h"
-#include "services/resource_coordinator/tracing/agent_registry.h"
-#include "services/resource_coordinator/tracing/recorder.h"
+#include "services/tracing/agent_registry.h"
+#include "services/tracing/public/mojom/tracing.mojom.h"
+#include "services/tracing/recorder.h"
 
 namespace base {
 class TimeTicks;
@@ -42,7 +42,8 @@ class Coordinator : public mojom::Coordinator {
  public:
   static Coordinator* GetInstance();
 
-  Coordinator();
+  explicit Coordinator(
+      service_manager::ServiceContextRefFactory* service_ref_factory);
 
   void BindCoordinatorRequest(
       mojom::CoordinatorRequest request,
@@ -107,6 +108,7 @@ class Coordinator : public mojom::Coordinator {
   // For getting categories.
   std::set<std::string> category_set_;
   GetCategoriesCallback get_categories_callback_;
+  std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
 
   base::WeakPtrFactory<Coordinator> weak_ptr_factory_;
 
@@ -114,4 +116,4 @@ class Coordinator : public mojom::Coordinator {
 };
 
 }  // namespace tracing
-#endif  // SERVICES_RESOURCE_COORDINATOR_TRACING_COORDINATOR_H_
+#endif  // SERVICES_TRACING_COORDINATOR_H_

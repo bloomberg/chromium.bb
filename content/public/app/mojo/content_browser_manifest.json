@@ -98,8 +98,12 @@
           "url_loader"
         ],
         "patch_service": [ "patch_file" ],
-        "ui": [ "arc_manager", "display_output_protection", "video_detector" ],
-        "unzip_service": [ "unzip_file" ],
+        "resource_coordinator": [
+          "coordination_unit",
+          "coordination_unit_introspector",
+          "service_callbacks",
+          "page_signal"
+        ],
         "service_manager": [
           "service_manager:client_process",
           "service_manager:instance_name",
@@ -111,13 +115,11 @@
           "face_detection",
           "text_detection"
         ],
-        "resource_coordinator": [
-          "coordination_unit",
-          "coordination_unit_introspector",
-          "service_callbacks",
-          "page_signal",
+        "tracing": [
           "tracing"
         ],
+        "ui": [ "arc_manager", "display_output_protection", "video_detector" ],
+        "unzip_service": [ "unzip_file" ],
         "video_capture": [ "capture", "tests" ]
       }
     },

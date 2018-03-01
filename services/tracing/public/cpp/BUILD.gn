@@ -1,0 +1,22 @@
+# Copyright 2018 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+component("cpp") {
+  sources = [
+    "base_agent.cc",
+    "base_agent.h",
+    "chrome_trace_event_agent.cc",
+    "chrome_trace_event_agent.h",
+  ]
+
+  defines = [ "IS_TRACING_CPP_IMPL" ]
+  output_name = "tracing_cpp"
+
+  public_deps = [
+    "//base",
+    "//mojo/public/cpp/bindings",
+    "//services/service_manager/public/cpp",
+    "//services/tracing/public/mojom",
+  ]
+}

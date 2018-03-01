@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_RESOURCE_COORDINATOR_TRACING_RECORDER_H_
-#define SERVICES_RESOURCE_COORDINATOR_TRACING_RECORDER_H_
+#ifndef SERVICES_TRACING_RECORDER_H_
+#define SERVICES_TRACING_RECORDER_H_
+
+#include <memory>
+#include <string>
 
 #include "base/callback_forward.h"
 #include "base/logging.h"
@@ -12,7 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/resource_coordinator/public/mojom/tracing/tracing.mojom.h"
+#include "services/tracing/public/mojom/tracing.mojom.h"
 
 namespace tracing {
 
@@ -34,13 +37,9 @@ class Recorder : public mojom::Recorder {
            const base::RepeatingClosure& on_data_change_callback);
   ~Recorder() override;
 
-  const std::string& data() const {
-    return data_;
-  }
+  const std::string& data() const { return data_; }
 
-  void clear_data() {
-    data_.clear();
-  }
+  void clear_data() { data_.clear(); }
 
   const base::DictionaryValue& metadata() const { return metadata_; }
   bool is_recording() const { return is_recording_; }
@@ -68,4 +67,4 @@ class Recorder : public mojom::Recorder {
 };
 
 }  // namespace tracing
-#endif  // SERVICES_RESOURCE_COORDINATOR_TRACING_RECORDER_H_
+#endif  // SERVICES_TRACING_RECORDER_H_

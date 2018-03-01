@@ -33,9 +33,9 @@
 #include "gpu/config/gpu_info.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/network_change_notifier.h"
-#include "services/resource_coordinator/public/cpp/tracing/chrome_trace_event_agent.h"
-#include "services/resource_coordinator/public/mojom/service_constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/tracing/public/cpp/chrome_trace_event_agent.h"
+#include "services/tracing/public/mojom/constants.mojom.h"
 #include "v8/include/v8-version-string.h"
 
 #if (defined(OS_POSIX) && defined(USE_UDEV)) || defined(OS_WIN) || \
@@ -131,8 +131,7 @@ TracingControllerImpl::~TracingControllerImpl() = default;
 void TracingControllerImpl::AddAgents() {
   auto* connector =
       content::ServiceManagerConnection::GetForProcess()->GetConnector();
-  connector->BindInterface(resource_coordinator::mojom::kServiceName,
-                           &coordinator_);
+  connector->BindInterface(tracing::mojom::kServiceName, &coordinator_);
 
 // Register tracing agents.
 #if defined(ENABLE_POWER_TRACING)

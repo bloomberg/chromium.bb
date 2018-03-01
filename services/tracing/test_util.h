@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_RESOURCE_COORDINATOR_TRACING_TEST_UTIL_H_
-#define SERVICES_RESOURCE_COORDINATOR_TRACING_TEST_UTIL_H_
+#ifndef SERVICES_TRACING_TEST_UTIL_H_
+#define SERVICES_TRACING_TEST_UTIL_H_
 
 #include <string>
 #include <vector>
@@ -11,7 +11,7 @@
 #include "base/trace_event/trace_log.h"
 #include "base/values.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/resource_coordinator/public/mojom/tracing/tracing.mojom.h"
+#include "services/tracing/public/mojom/tracing.mojom.h"
 
 namespace base {
 class TimeTicks;
@@ -52,4 +52,4 @@ class MockAgent : public mojom::Agent {
 
 }  // namespace tracing
 
-#endif  // SERVICES_RESOURCE_COORDINATOR_TRACING_TEST_UTIL_H_
+#endif  // SERVICES_TRACING_TEST_UTIL_H_

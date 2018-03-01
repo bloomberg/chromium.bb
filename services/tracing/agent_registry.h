@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_RESOURCE_COORDINATOR_TRACING_AGENT_REGISTRY_H_
-#define SERVICES_RESOURCE_COORDINATOR_TRACING_AGENT_REGISTRY_H_
+#ifndef SERVICES_TRACING_AGENT_REGISTRY_H_
+#define SERVICES_TRACING_AGENT_REGISTRY_H_
 
 #include <map>
 #include <memory>
@@ -14,11 +14,13 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/resource_coordinator/public/mojom/tracing/tracing.mojom.h"
 #include "services/service_manager/public/cpp/identity.h"
+#include "services/tracing/public/mojom/tracing.mojom.h"
 
 namespace service_manager {
 struct BindSourceInfo;
+class ServiceContextRef;
+class ServiceContextRefFactory;
 }  // namespace service_manager
 
 namespace tracing {
@@ -27,7 +29,8 @@ class AgentRegistry : public mojom::AgentRegistry {
  public:
   class AgentEntry : public base::SupportsWeakPtr<AgentEntry> {
    public:
-    AgentEntry(size_t id,
+    AgentEntry(std::unique_ptr<service_manager::ServiceContextRef> service_ref,
+               size_t id,
                AgentRegistry* agent_registry,
                mojom::AgentPtr agent,
                const std::string& label,
@@ -63,6 +66,7 @@ class AgentRegistry : public mojom::AgentRegistry {
     const bool supports_explicit_clock_sync_;
     std::map<const void*, base::OnceClosure> closures_;
     bool is_tracing_;
+    std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
 
     DISALLOW_COPY_AND_ASSIGN(AgentEntry);
   };
@@ -73,7 +77,8 @@ class AgentRegistry : public mojom::AgentRegistry {
 
   static AgentRegistry* GetInstance();
 
-  AgentRegistry();
+  explicit AgentRegistry(
+      service_manager::ServiceContextRefFactory* service_ref_factory);
 
   void BindAgentRegistryRequest(
       mojom::AgentRegistryRequest request,
@@ -110,6 +115,7 @@ class AgentRegistry : public mojom::AgentRegistry {
   size_t next_agent_id_ = 0;
   std::map<size_t, std::unique_ptr<AgentEntry>> agents_;
   AgentInitializationCallback agent_initialization_callback_;
+  service_manager::ServiceContextRefFactory* service_ref_factory_;
 
   THREAD_CHECKER(thread_checker_);
 
@@ -118,4 +124,4 @@ class AgentRegistry : public mojom::AgentRegistry {
 
 }  // namespace tracing
 
-#endif  // SERVICES_RESOURCE_COORDINATOR_TRACING_AGENT_REGISTRY_H_
+#endif  // SERVICES_TRACING_AGENT_REGISTRY_H_
