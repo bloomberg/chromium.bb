@@ -20,10 +20,20 @@ typedef NS_ENUM(NSUInteger, TabGridPage) {
   TabGridPageRemoteTabs = 2,
 };
 
+// Delegate protocol for an object that can handle presenting ("opening") tabs
+// from the tab grid.
+@protocol TabPresentationDelegate<NSObject>
+// Show the active tab, presented on top of the tab grid.
+- (void)showActiveTab;
+@end
+
 // View controller representing a tab switcher.  The tab switcher has an
 // incognito tab grid, regular tab grid, and remote tabs.
 @interface TabGridViewController
     : UIViewController<TabGridTransitionStateProvider>
+
+// Delegate for this view controller to handle presenting tab UI.
+@property(nonatomic, weak) id<TabPresentationDelegate> tabPresentationDelegate;
 
 // Consumers send updates from the model layer to the UI layer.
 @property(nonatomic, readonly) id<GridConsumer> regularTabsConsumer;

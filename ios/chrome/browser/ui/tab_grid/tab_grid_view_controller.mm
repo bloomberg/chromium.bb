@@ -32,6 +32,7 @@
 
 @implementation TabGridViewController
 // Public properties.
+@synthesize tabPresentationDelegate = _tabPresentationDelegate;
 @synthesize regularTabsDelegate = _regularTabsDelegate;
 @synthesize incognitoTabsDelegate = _incognitoTabsDelegate;
 @synthesize regularTabsImageDataSource = _regularTabsImageDataSource;
@@ -355,7 +356,7 @@
 #pragma mark - Button actions
 
 - (void)doneButtonTapped:(id)sender {
-  // TODO(crbug.com/804503) : Placeholder alerts.
+  [self.tabPresentationDelegate showActiveTab];
 }
 
 - (void)closeAllButtonTapped:(id)sender {

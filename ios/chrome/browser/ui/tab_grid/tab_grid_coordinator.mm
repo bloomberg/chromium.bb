@@ -18,7 +18,9 @@
 #error "This file requires ARC support."
 #endif
 
-@interface TabGridCoordinator ()
+@interface TabGridCoordinator ()<TabPresentationDelegate>
+// Superclass property specialized for the class that this coordinator uses.
+@property(nonatomic, weak) TabGridViewController* mainViewController;
 // Commad dispatcher used while this coordinator's view controller is active.
 // (for compatibility with the TabSwitcher protocol).
 @property(nonatomic, strong) CommandDispatcher* dispatcher;
@@ -83,6 +85,7 @@
   self.transitionHandler = [[TabGridTransitionHandler alloc] init];
   self.transitionHandler.provider = mainViewController;
   mainViewController.transitioningDelegate = self.transitionHandler;
+  mainViewController.tabPresentationDelegate = self;
   _mainViewController = mainViewController;
   self.window.rootViewController = self.mainViewController;
   self.adaptor = [[TabGridAdaptor alloc] init];
@@ -168,6 +171,23 @@
   [self.mainViewController presentViewController:self.bvcContainer
                                         animated:animated
                                       completion:extendedCompletion];
+}
+
+#pragma mark - TabPresentationDelegate
+
+- (void)showActiveTab {
+  // Figure out which tab model is the active one. If the view controller is
+  // showing the incognito panel, and there's more than one incognito tab, then
+  // the incognito model is active. Otherwise the regular model is active.
+  TabModel* activeTabModel = self.regularTabModel;
+  if (self.mainViewController.currentPage == TabGridPageIncognitoTabs &&
+      self.incognitoTabModel.count > 0) {
+    activeTabModel = self.incognitoTabModel;
+  }
+  // Trigger the transition through the TabSwitcher delegate. This will in turn
+  // call back into this coordinator via the ViewControllerSwapping protocol.
+  [self.tabSwitcher.delegate tabSwitcher:self.tabSwitcher
+             shouldFinishWithActiveModel:activeTabModel];
 }
 
 #pragma mark - BrowserCommands
