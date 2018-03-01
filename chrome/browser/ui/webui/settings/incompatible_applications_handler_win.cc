@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "chrome/browser/conflicts/problematic_programs_updater_win.h"
+#include "chrome/browser/conflicts/uninstall_application_win.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -63,8 +64,9 @@ void IncompatibleApplicationsHandler::HandleStartProgramUninstallation(
     const base::ListValue* args) {
   CHECK_EQ(1u, args->GetList().size());
 
-  // TODO(pmonette): Open the Apps & Settings page with the program name
-  // highlighted.
+  // Open the Apps & Settings page with the program name highlighted.
+  uninstall_application::LaunchUninstallFlow(
+      base::UTF8ToUTF16(args->GetList()[0].GetString()));
 }
 
 void IncompatibleApplicationsHandler::HandleGetSubtitlePluralString(
