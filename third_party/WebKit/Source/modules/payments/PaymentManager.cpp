@@ -52,7 +52,7 @@ PaymentManager::PaymentManager(ServiceWorkerRegistration* registration)
 
   manager_.set_connection_error_handler(WTF::Bind(
       &PaymentManager::OnServiceConnectionError, WrapWeakPersistent(this)));
-  manager_->Init(registration_->GetExecutionContext()->Url().GetString(),
+  manager_->Init(registration_->GetExecutionContext()->Url(),
                  registration_->scope());
 }
 
