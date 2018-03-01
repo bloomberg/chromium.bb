@@ -343,7 +343,7 @@ bool Editor::DispatchClipboardEvent(const AtomicString& event_type,
                                ? DataObject::Create()
                                : DataObject::CreateFromPasteboard(paste_mode));
 
-  Event* evt = ClipboardEvent::Create(event_type, true, true, data_transfer);
+  Event* evt = ClipboardEvent::Create(event_type, data_transfer);
   target->DispatchEvent(evt);
   bool no_default_processing = evt->defaultPrevented();
   if (no_default_processing && policy == kDataTransferWritable)
