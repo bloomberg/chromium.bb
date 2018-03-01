@@ -985,6 +985,8 @@ jumbo_source_set("browser") {
     "loader/mime_sniffing_resource_handler.h",
     "loader/mojo_async_resource_handler.cc",
     "loader/mojo_async_resource_handler.h",
+    "loader/navigation_metrics.cc",
+    "loader/navigation_metrics.h",
     "loader/navigation_resource_handler.cc",
     "loader/navigation_resource_handler.h",
     "loader/navigation_url_loader.cc",

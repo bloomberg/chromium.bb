@@ -15,6 +15,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "content/browser/loader/downloaded_temp_file_impl.h"
+#include "content/browser/loader/navigation_metrics.h"
 #include "content/browser/loader/resource_controller.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
@@ -168,6 +169,7 @@ void MojoAsyncResourceHandler::OnResponseStarted(
     network::ResourceResponse* response,
     std::unique_ptr<ResourceController> controller) {
   DCHECK(!has_controller());
+  time_response_started_ = base::TimeTicks::Now();
 
   if (upload_progress_tracker_) {
     upload_progress_tracker_->OnUploadCompleted();
@@ -179,7 +181,7 @@ void MojoAsyncResourceHandler::OnResponseStarted(
   reported_total_received_bytes_ = response->head.encoded_data_length;
 
   response->head.request_start = request()->creation_time();
-  response->head.response_start = base::TimeTicks::Now();
+  response->head.response_start = time_response_started_;
   sent_received_response_message_ = true;
 
   network::mojom::DownloadedTempFilePtr downloaded_file_ptr;
@@ -331,6 +333,13 @@ void MojoAsyncResourceHandler::OnReadCompleted(
   }
 
   if (response_body_consumer_handle_.is_valid()) {
+    if (url_loader_options_ &
+        network::mojom::kURLLoadOptionPauseOnResponseStarted) {
+      base::TimeTicks time_first_read_completed = base::TimeTicks::Now();
+      RecordNavigationResourceHandlerMetrics(time_response_started_,
+                                             time_proceed_with_response_,
+                                             time_first_read_completed);
+    }
     // Send the data pipe on the first OnReadCompleted call.
     url_loader_client_->OnStartLoadingResponseBody(
         std::move(response_body_consumer_handle_));
@@ -390,6 +399,9 @@ void MojoAsyncResourceHandler::FollowRedirect() {
 
 void MojoAsyncResourceHandler::ProceedWithResponse() {
   DCHECK(did_defer_on_response_started_);
+
+  time_proceed_with_response_ = base::TimeTicks::Now();
+
   request()->LogUnblocked();
   Resume();
 }

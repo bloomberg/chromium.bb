@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/optional.h"
+#include "content/browser/loader/navigation_metrics.h"
 #include "content/browser/loader/navigation_url_loader_impl_core.h"
 #include "content/browser/loader/resource_controller.h"
 #include "content/browser/loader/resource_loader.h"
@@ -73,6 +74,9 @@ void NavigationResourceHandler::FollowRedirect() {
 void NavigationResourceHandler::ProceedWithResponse() {
   DCHECK(response_);
   DCHECK(has_controller());
+
+  time_proceed_with_response_ = base::TimeTicks::Now();
+
   // Detach from the loader; at this point, the request is now owned by the
   // StreamHandle sent in OnResponseStarted.
   DetachFromCore();
@@ -105,6 +109,8 @@ void NavigationResourceHandler::OnResponseStarted(
     std::unique_ptr<ResourceController> controller) {
   DCHECK(!has_controller());
 
+  time_response_started_ = base::TimeTicks::Now();
+
   // The UI thread already cancelled the navigation. Do not proceed.
   if (!core_) {
     controller->Cancel();
@@ -132,6 +138,19 @@ void NavigationResourceHandler::OnResponseStarted(
                                info->is_stream());
   HoldController(std::move(controller));
   response_ = response;
+}
+
+void NavigationResourceHandler::OnReadCompleted(
+    int bytes_read,
+    std::unique_ptr<ResourceController> controller) {
+  if (!has_completed_one_read_) {
+    has_completed_one_read_ = true;
+    base::TimeTicks time_first_read_completed = base::TimeTicks::Now();
+    RecordNavigationResourceHandlerMetrics(time_response_started_,
+                                           time_proceed_with_response_,
+                                           time_first_read_completed);
+  }
+  next_handler_->OnReadCompleted(bytes_read, std::move(controller));
 }
 
 void NavigationResourceHandler::OnResponseCompleted(
