@@ -25,8 +25,6 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/rappor/public/rappor_parameters.h"
-#include "components/rappor/test_rappor_service.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "components/ukm/ukm_source.h"
@@ -605,14 +603,11 @@ TEST_P(BlockTabUnderIncognitoTest, DisableFeature_LogsDidTabUnder) {
   histogram_tester()->ExpectTotalCount(GetActionHistogram(), 3);
 }
 
-TEST_F(BlockTabUnderTest, LogsRapporAndUkm) {
+TEST_F(BlockTabUnderTest, LogsUkm) {
   using UkmEntry = ukm::builders::AbusiveExperienceHeuristic;
 
   ukm::InitializeSourceUrlRecorderForWebContents(web_contents());
   ukm::TestAutoSetUkmRecorder test_ukm_recorder;
-  rappor::TestRapporServiceImpl test_rappor_service;
-  TestingBrowserProcess::GetGlobal()->SetRapporServiceImpl(
-      &test_rappor_service);
 
   const GURL first_url("https://first.test/");
   EXPECT_TRUE(NavigateAndCommitWithoutGesture(first_url));
@@ -620,13 +615,6 @@ TEST_F(BlockTabUnderTest, LogsRapporAndUkm) {
   raw_clock()->Advance(base::TimeDelta::FromMilliseconds(15));
   const GURL blocked_url("https://example.test/");
   EXPECT_FALSE(NavigateAndCommitWithoutGesture(blocked_url));
-
-  std::string sample;
-  rappor::RapporType type;
-  EXPECT_TRUE(test_rappor_service.GetRecordedSampleForMetric(
-      "Tab.TabUnder.Opener", &sample, &type));
-  EXPECT_EQ(first_url.host(), sample);
-  EXPECT_EQ(rappor::UMA_RAPPOR_TYPE, type);
 
   auto entries = test_ukm_recorder.GetEntriesByName(UkmEntry::kEntryName);
   EXPECT_EQ(1u, entries.size());
