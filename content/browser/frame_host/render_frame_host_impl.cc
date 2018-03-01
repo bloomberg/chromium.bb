@@ -2266,10 +2266,14 @@ void RenderFrameHostImpl::DidSetFramePolicyHeaders(
     const blink::ParsedFeaturePolicy& parsed_header) {
   if (!is_active())
     return;
-  frame_tree_node()->SetFeaturePolicyHeader(parsed_header);
+  // Rebuild the feature policy for this frame.
   ResetFeaturePolicy();
   feature_policy_->SetHeaderPolicy(parsed_header);
-  frame_tree_node()->UpdateActiveSandboxFlags(sandbox_flags);
+
+  // Update the feature policy and sandbox flags in the frame tree. This will
+  // send any updates to proxies if necessary.
+  frame_tree_node()->UpdateFramePolicyHeaders(sandbox_flags, parsed_header);
+
   // Save a copy of the now-active sandbox flags on this RFHI.
   active_sandbox_flags_ = frame_tree_node()->active_sandbox_flags();
 }

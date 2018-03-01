@@ -274,11 +274,9 @@ void FrameTreeNode::ResetForNavigation() {
   replication_state_.accumulated_csp_headers.clear();
   render_manager_.OnDidResetContentSecurityPolicy();
 
-  // Clear the declared feature policy for the frame.
-  replication_state_.feature_policy_header.clear();
-
-  // Clear any CSP-set sandbox flags in the frame.
-  UpdateActiveSandboxFlags(blink::WebSandboxFlags::kNone);
+  // Clear any CSP-set sandbox flags, and the declared feature policy for the
+  // frame.
+  UpdateFramePolicyHeaders(blink::WebSandboxFlags::kNone, {});
 }
 
 void FrameTreeNode::SetOpener(FrameTreeNode* opener) {
@@ -368,11 +366,6 @@ void FrameTreeNode::SetFrameName(const std::string& name,
   replication_state_.unique_name = unique_name;
 }
 
-void FrameTreeNode::SetFeaturePolicyHeader(
-    const blink::ParsedFeaturePolicy& parsed_header) {
-  replication_state_.feature_policy_header = parsed_header;
-}
-
 void FrameTreeNode::AddContentSecurityPolicies(
     const std::vector<ContentSecurityPolicyHeader>& headers) {
   replication_state_.accumulated_csp_headers.insert(
@@ -459,7 +452,8 @@ bool FrameTreeNode::CommitPendingFramePolicy() {
   if (did_change_container_policy)
     replication_state_.frame_policy.container_policy =
         pending_frame_policy_.container_policy;
-  UpdateActiveSandboxFlags(pending_frame_policy_.sandbox_flags);
+  UpdateFramePolicyHeaders(pending_frame_policy_.sandbox_flags,
+                           replication_state_.feature_policy_header);
   return did_change_flags || did_change_container_policy;
 }
 
@@ -673,17 +667,25 @@ FrameTreeNode* FrameTreeNode::GetSibling(int relative_offset) const {
   return nullptr;
 }
 
-void FrameTreeNode::UpdateActiveSandboxFlags(
-    blink::WebSandboxFlags sandbox_flags) {
+void FrameTreeNode::UpdateFramePolicyHeaders(
+    blink::WebSandboxFlags sandbox_flags,
+    const blink::ParsedFeaturePolicy& parsed_header) {
+  bool changed = false;
+  if (replication_state_.feature_policy_header != parsed_header) {
+    replication_state_.feature_policy_header = parsed_header;
+    changed = true;
+  }
   // TODO(iclelland): Kill the renderer if sandbox flags is not a subset of the
   // currently effective sandbox flags from the frame. https://crbug.com/740556
-  blink::WebSandboxFlags original_flags =
-      replication_state_.active_sandbox_flags;
-  replication_state_.active_sandbox_flags =
+  blink::WebSandboxFlags updated_flags =
       sandbox_flags | effective_frame_policy().sandbox_flags;
-  // Notify any proxies if the flags have been changed.
-  if (replication_state_.active_sandbox_flags != original_flags)
-    render_manager()->OnDidSetActiveSandboxFlags();
+  if (replication_state_.active_sandbox_flags != updated_flags) {
+    replication_state_.active_sandbox_flags = updated_flags;
+    changed = true;
+  }
+  // Notify any proxies if the policies have been changed.
+  if (changed)
+    render_manager()->OnDidSetFramePolicyHeaders();
 }
 
 }  // namespace content

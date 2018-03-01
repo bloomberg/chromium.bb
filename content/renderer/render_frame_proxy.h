@@ -225,7 +225,9 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   void OnViewChanged(const FrameMsg_ViewChanged_Params& params);
   void OnDidStopLoading();
   void OnDidUpdateFramePolicy(const blink::FramePolicy& frame_policy);
-  void OnDidSetActiveSandboxFlags(blink::WebSandboxFlags active_sandbox_flags);
+  void OnDidSetFramePolicyHeaders(
+      blink::WebSandboxFlags active_sandbox_flags,
+      blink::ParsedFeaturePolicy parsed_feature_policy);
   void OnForwardResourceTimingToParent(
       const ResourceTimingInfo& resource_timing);
   void OnDispatchLoad();

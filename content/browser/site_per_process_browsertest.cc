@@ -603,6 +603,21 @@ class SitePerProcessIgnoreCertErrorsBrowserTest
   }
 };
 
+// SitePerProcessFeaturePolicyJavaScriptBrowserTest
+
+class SitePerProcessFeaturePolicyJavaScriptBrowserTest
+    : public SitePerProcessBrowserTest {
+ public:
+  SitePerProcessFeaturePolicyJavaScriptBrowserTest() = default;
+
+  // Enable the feature policy JavaScript interface
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    SitePerProcessBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitchASCII("enable-blink-features",
+                                    "FeaturePolicyJavaScriptInterface");
+  }
+};
+
 // SitePerProcessAutoplayBrowserTest
 
 class SitePerProcessAutoplayBrowserTest : public SitePerProcessBrowserTest {
@@ -8161,6 +8176,69 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       CreateFPHeaderMatchesAll(
           blink::mojom::FeaturePolicyFeature::kGeolocation),
       root->child_at(0)->current_replication_state().feature_policy_header);
+}
+
+// Test that the replicated feature policy header is correct in remote proxies
+// after the local frame has navigated.
+IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyJavaScriptBrowserTest,
+                       TestFeaturePolicyReplicationToProxyOnNavigation) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/frame_tree/page_with_two_frames.html"));
+  GURL first_nav_url(
+      embedded_test_server()->GetURL("a.com", "/feature-policy3.html"));
+  GURL second_nav_url(
+      embedded_test_server()->GetURL("a.com", "/feature-policy4.html"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  EXPECT_TRUE(root->current_replication_state().feature_policy_header.empty());
+  EXPECT_EQ(2UL, root->child_count());
+  EXPECT_TRUE(root->child_at(1)
+                  ->current_replication_state()
+                  .feature_policy_header.empty());
+
+  // Navigate the iframe to a page with a policy, and a nested cross-site iframe
+  // (to the same site as a root->child_at(1) so that the render process already
+  // exists.)
+  NavigateFrameToURL(root->child_at(1), first_nav_url);
+  EXPECT_EQ(
+      CreateFPHeaderMatchesAll(
+          blink::mojom::FeaturePolicyFeature::kGeolocation),
+      root->child_at(1)->current_replication_state().feature_policy_header);
+
+  EXPECT_EQ(1UL, root->child_at(1)->child_count());
+
+  // Ask the deepest iframe to report the enabled state of the geolocation
+  // feature. If its parent frame's policy was replicated correctly to the
+  // proxy, then this will be enabled. Otherwise, it will be disabled, as
+  // geolocation is disabled by default in cross-origin frames.
+  bool success = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      root->child_at(1)->child_at(0),
+      "window.domAutomationController.send("
+      "document.policy.allowsFeature('geolocation'));",
+      &success));
+  EXPECT_TRUE(success);
+
+  // Now navigate the iframe to a page with no policy, and the same nested
+  // cross-site iframe. The policy should be cleared in the proxy.
+  NavigateFrameToURL(root->child_at(1), second_nav_url);
+  EXPECT_TRUE(root->child_at(1)
+                  ->current_replication_state()
+                  .feature_policy_header.empty());
+  EXPECT_EQ(1UL, root->child_at(1)->child_count());
+
+  // Ask the deepest iframe to report the enabled state of the geolocation
+  // feature. If its parent frame's policy was replicated correctly to the
+  // proxy, then this will now be disabled.
+  success = true;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      root->child_at(1)->child_at(0),
+      "window.domAutomationController.send("
+      "document.policy.allowsFeature('geolocation'));",
+      &success));
+  EXPECT_FALSE(success);
 }
 
 // Ensure that an iframe that navigates cross-site doesn't use the same process
