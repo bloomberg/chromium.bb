@@ -46,6 +46,13 @@ std::ostream& operator<<(std::ostream& os, const QuicAckFrame& ack_frame) {
   return os;
 }
 
+void QuicAckFrame::Clear() {
+  largest_acked = 0;
+  ack_delay_time = QuicTime::Delta::Infinite();
+  received_packet_times.clear();
+  packets.Clear();
+}
+
 PacketNumberQueue::PacketNumberQueue() {}
 PacketNumberQueue::PacketNumberQueue(const PacketNumberQueue& other) = default;
 PacketNumberQueue::PacketNumberQueue(PacketNumberQueue&& other) = default;
@@ -162,7 +169,8 @@ void PacketNumberQueue::AddRange(QuicPacketNumber lower,
   } else {
     // Ranges must be above or below all existing ranges.
     QUIC_BUG << "AddRange only supports adding packets above or below the "
-             << "current min:" << Min() << " and max:" << Max();
+             << "current min:" << Min() << " and max:" << Max()
+             << ", but adding [" << lower << "," << higher << ")";
   }
 }
 
@@ -194,6 +202,10 @@ void PacketNumberQueue::RemoveSmallestInterval() {
       << (Empty() ? "No intervals to remove."
                   : "Can't remove the last interval.");
   packet_number_deque_.pop_front();
+}
+
+void PacketNumberQueue::Clear() {
+  packet_number_deque_.clear();
 }
 
 bool PacketNumberQueue::Contains(QuicPacketNumber packet_number) const {

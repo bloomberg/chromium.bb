@@ -59,8 +59,8 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
 
   // Process the incoming packet by creating a new session, passing it to
   // an existing session, or passing it to the time wait list.
-  void ProcessPacket(const QuicSocketAddress& server_address,
-                     const QuicSocketAddress& client_address,
+  void ProcessPacket(const QuicSocketAddress& self_address,
+                     const QuicSocketAddress& peer_address,
                      const QuicReceivedPacket& packet) override;
 
   // Called when the socket becomes writable to allow queued writes to happen.
@@ -136,6 +136,11 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
   bool OnPacketHeader(const QuicPacketHeader& header) override;
   bool OnStreamFrame(const QuicStreamFrame& frame) override;
   bool OnAckFrame(const QuicAckFrame& frame) override;
+  bool OnAckFrameStart(QuicPacketNumber largest_acked,
+                       QuicTime::Delta ack_delay_time) override;
+  bool OnAckRange(QuicPacketNumber start,
+                  QuicPacketNumber end,
+                  bool last_range) override;
   bool OnStopWaitingFrame(const QuicStopWaitingFrame& frame) override;
   bool OnPaddingFrame(const QuicPaddingFrame& frame) override;
   bool OnPingFrame(const QuicPingFrame& frame) override;
@@ -158,10 +163,9 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
   virtual bool HasChlosBuffered() const;
 
  protected:
-  virtual QuicSession* CreateQuicSession(
-      QuicConnectionId connection_id,
-      const QuicSocketAddress& client_address,
-      QuicStringPiece alpn) = 0;
+  virtual QuicSession* CreateQuicSession(QuicConnectionId connection_id,
+                                         const QuicSocketAddress& peer_address,
+                                         QuicStringPiece alpn) = 0;
 
   // Called when a connection is rejected statelessly.
   virtual void OnConnectionRejectedStatelessly();
@@ -222,11 +226,11 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
   const ParsedQuicVersionVector& GetSupportedVersions();
 
   QuicConnectionId current_connection_id() { return current_connection_id_; }
-  const QuicSocketAddress& current_server_address() {
-    return current_server_address_;
+  const QuicSocketAddress& current_self_address() {
+    return current_self_address_;
   }
-  const QuicSocketAddress& current_client_address() {
-    return current_client_address_;
+  const QuicSocketAddress& current_peer_address() {
+    return current_peer_address_;
   }
   const QuicReceivedPacket& current_packet() { return *current_packet_; }
 
@@ -325,8 +329,8 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
   // version of the packet which initiated the stateless reject.
   void OnStatelessRejectorProcessDone(
       std::unique_ptr<StatelessRejector> rejector,
-      const QuicSocketAddress& current_client_address,
-      const QuicSocketAddress& current_server_address,
+      const QuicSocketAddress& current_peer_address,
+      const QuicSocketAddress& current_self_address,
       std::unique_ptr<QuicReceivedPacket> current_packet,
       ParsedQuicVersion first_version);
 
@@ -384,8 +388,8 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
   QuicConnectionIdSet temporarily_buffered_connections_;
 
   // Information about the packet currently being handled.
-  QuicSocketAddress current_client_address_;
-  QuicSocketAddress current_server_address_;
+  QuicSocketAddress current_peer_address_;
+  QuicSocketAddress current_self_address_;
   const QuicReceivedPacket* current_packet_;
   // If |current_packet_| is a CHLO packet, the extracted alpn.
   QuicString current_alpn_;

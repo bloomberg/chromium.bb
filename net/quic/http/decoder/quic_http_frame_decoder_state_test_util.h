@@ -14,13 +14,6 @@ namespace test {
 
 class QuicHttpFrameDecoderStatePeer {
  public:
-  // Randomizes (i.e. corrupts) the fields of the QuicHttpFrameDecoderState.
-  // QuicHttpPayloadDecoderBaseTest::StartDecoding calls this before passing the
-  // first decode buffer to the payload decoder, which increases the likelihood
-  // of detecting any use of prior states of the decoder on the decoding of
-  // future payloads.
-  static void Randomize(QuicHttpFrameDecoderState* p, QuicTestRandomBase* rng);
-
   // Inject a frame header into the QuicHttpFrameDecoderState.
   // QuicHttpPayloadDecoderBaseTest::StartDecoding calls this just after calling
   // Randomize (above), to simulate a full frame decoder having just finished

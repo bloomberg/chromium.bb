@@ -109,12 +109,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_43, false)
 // Enables 3 new connection options to make PROBE_RTT more aggressive
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_less_probe_rtt, false)
 
-// If true, calculate stream sequencer buffer block count in a way that
-// guaranteed to be 2048.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_fix_sequencer_buffer_block_count2,
-          true)
-
 // If true, limit quic stream length to be below 2^62.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_stream_too_long, false)
 
@@ -124,7 +118,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_one_tlp, false)
 
 // If true, QuicStreamSendBuffer keeps track of the slice which next write
 // should get data from if writing new data.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_write_index, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_write_index, true)
 
 // If true, when WINDOW_UPDATE is received, add stream to session's write
 // blocked list and let session unblock it later.
@@ -157,10 +151,8 @@ QUIC_FLAG(
 // If true, enable QUIC v99.
 QUIC_FLAG(bool, FLAGS_quic_enable_version_99, false)
 
-// If both this flag and
-// quic_reloadable_flag_quic_allow_receiving_overlapping_data are
-// true, enable QUIC version 42.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_42, false)
+// If true, enable QUIC version 42.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_42_2, false)
 
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_37, false)
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_38, false)
@@ -181,3 +173,8 @@ QUIC_FLAG(bool,
 // When true, enable connection options to have no min TLP and RTO,
 // and also allow IETF style TLP.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_max_ack_delay2, false)
+
+// If true, framer will process and report ack frame incrementally.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_use_incremental_ack_processing,
+          false)

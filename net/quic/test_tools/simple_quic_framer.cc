@@ -68,6 +68,23 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
     return true;
   }
 
+  bool OnAckFrameStart(QuicPacketNumber largest_acked,
+                       QuicTime::Delta ack_delay_time) override {
+    QuicAckFrame ack_frame;
+    ack_frame.largest_acked = largest_acked;
+    ack_frame.ack_delay_time = ack_delay_time;
+    ack_frames_.push_back(ack_frame);
+    return true;
+  }
+
+  bool OnAckRange(QuicPacketNumber start,
+                  QuicPacketNumber end,
+                  bool /*last_range*/) override {
+    DCHECK(!ack_frames_.empty());
+    ack_frames_[ack_frames_.size() - 1].packets.AddRange(start, end);
+    return true;
+  }
+
   bool OnStopWaitingFrame(const QuicStopWaitingFrame& frame) override {
     stop_waiting_frames_.push_back(frame);
     return true;

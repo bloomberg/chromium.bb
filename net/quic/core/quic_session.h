@@ -447,6 +447,11 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
                                  uint64_t previous_bytes_written,
                                  bool previous_fin_sent);
 
+  // Debug helper for OnCanWrite. Check that after QuicStream::OnCanWrite(),
+  // if stream has buffered data and is not stream level flow control blocked,
+  // it has to be in the write blocked list.
+  bool CheckStreamWriteBlocked(QuicStream* stream) const;
+
   // Called in OnConfigNegotiated for Finch trials to measure performance of
   // starting with larger flow control receive windows.
   void AdjustInitialFlowControlWindows(size_t stream_window);

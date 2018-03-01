@@ -161,13 +161,11 @@ QuicTestServer::QuicTestServer(
 QuicDispatcher* QuicTestServer::CreateQuicDispatcher() {
   return new QuicTestDispatcher(
       config(), &crypto_config(), version_manager(),
-      std::unique_ptr<QuicEpollConnectionHelper>(new QuicEpollConnectionHelper(
-          epoll_server(), QuicAllocator::BUFFER_POOL)),
+      QuicMakeUnique<QuicEpollConnectionHelper>(epoll_server(),
+                                                QuicAllocator::BUFFER_POOL),
       std::unique_ptr<QuicCryptoServerStream::Helper>(
           new QuicSimpleCryptoServerStreamHelper(QuicRandom::GetInstance())),
-      std::unique_ptr<QuicEpollAlarmFactory>(
-          new QuicEpollAlarmFactory(epoll_server())),
-      response_cache());
+      QuicMakeUnique<QuicEpollAlarmFactory>(epoll_server()), response_cache());
 }
 
 void QuicTestServer::SetSessionFactory(SessionFactory* factory) {

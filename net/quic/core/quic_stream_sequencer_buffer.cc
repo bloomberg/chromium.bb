@@ -17,15 +17,9 @@ namespace net {
 namespace {
 
 size_t CalculateBlockCount(size_t max_capacity_bytes) {
-  if (GetQuicReloadableFlag(quic_fix_sequencer_buffer_block_count2)) {
-    QUIC_FLAG_COUNT(
-        quic_reloadable_flag_quic_fix_sequencer_buffer_block_count2);
     return (max_capacity_bytes + QuicStreamSequencerBuffer::kBlockSizeBytes -
             1) /
            QuicStreamSequencerBuffer::kBlockSizeBytes;
-  }
-  return ceil(static_cast<double>(max_capacity_bytes) /
-              QuicStreamSequencerBuffer::kBlockSizeBytes);
 }
 
 // Upper limit of how many gaps allowed in buffer, which ensures a reasonable

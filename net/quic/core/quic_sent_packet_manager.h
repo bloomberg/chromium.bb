@@ -216,6 +216,16 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   // Called when peer address changes and the connection migrates.
   void OnConnectionMigration(AddressChangeType type);
 
+  // Called when an ack frame is initially parsed.
+  void OnAckFrameStart(QuicPacketNumber largest_acked,
+                       QuicTime::Delta ack_delay_time);
+
+  // Called when ack range [start, end) is received.
+  void OnAckRange(QuicPacketNumber start,
+                  QuicPacketNumber end,
+                  bool last_range,
+                  QuicTime ack_receive_time);
+
   // Called to enable/disable letting session decide what to write.
   void SetSessionDecideWhatToWrite(bool session_decides_what_to_write);
 
@@ -445,6 +455,9 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   // The maximum amount of time to wait before sending an acknowledgement.
   // The recovery code assumes the delayed ack time is the same on both sides.
   QuicTime::Delta delayed_ack_time_;
+
+  // Latest received ack frame.
+  QuicAckFrame last_ack_frame_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicSentPacketManager);
 };

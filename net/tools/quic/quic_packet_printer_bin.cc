@@ -109,6 +109,18 @@ class QuicPacketPrinter : public QuicFramerVisitorInterface {
     std::cerr << "OnAckFrame: " << frame;
     return true;
   }
+  bool OnAckFrameStart(QuicPacketNumber largest_acked,
+                       QuicTime::Delta /*ack_delay_time*/) override {
+    std::cerr << "OnAckFrameStart, largest_acked: " << largest_acked;
+    return true;
+  }
+  bool OnAckRange(QuicPacketNumber start,
+                  QuicPacketNumber end,
+                  bool last_range) override {
+    std::cerr << "OnAckRange: [" << start << ", " << end
+              << "),  last_range: " << last_range;
+    return true;
+  }
   bool OnStopWaitingFrame(const QuicStopWaitingFrame& frame) override {
     std::cerr << "OnStopWaitingFrame: " << frame;
     return true;

@@ -991,7 +991,7 @@ TEST_F(BbrSenderTest, SimpleTransferLRTTStartupSmallBuffer) {
       QuicTime::Delta::FromSeconds(5));
   ASSERT_TRUE(simulator_result);
   EXPECT_EQ(BbrSender::DRAIN, sender_->ExportDebugState().mode);
-  EXPECT_EQ(2u, sender_->ExportDebugState().round_trip_count - max_bw_round);
+  EXPECT_GE(2u, sender_->ExportDebugState().round_trip_count - max_bw_round);
   EXPECT_EQ(1u, sender_->ExportDebugState().rounds_without_bandwidth_gain);
   EXPECT_NE(0u, bbr_sender_.connection()->GetStats().packets_lost);
   EXPECT_FALSE(sender_->ExportDebugState().last_sample_is_app_limited);

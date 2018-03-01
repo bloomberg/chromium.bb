@@ -113,6 +113,15 @@ class QUIC_EXPORT_PRIVATE QuicFramerVisitorInterface {
   // the framer will stop parsing the current packet.
   virtual bool OnAckFrame(const QuicAckFrame& frame) = 0;
 
+  // Called when largest acked of an AckFrame has been parsed.
+  virtual bool OnAckFrameStart(QuicPacketNumber largest_acked,
+                               QuicTime::Delta ack_delay_time) = 0;
+
+  // Called when ack range [start, end) of an AckFrame has been parsed.
+  virtual bool OnAckRange(QuicPacketNumber start,
+                          QuicPacketNumber end,
+                          bool last_range) = 0;
+
   // Called when a StopWaitingFrame has been parsed.
   virtual bool OnStopWaitingFrame(const QuicStopWaitingFrame& frame) = 0;
 
@@ -187,6 +196,10 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   }
 
   QuicErrorCode error() const { return error_; }
+
+  bool use_incremental_ack_processing() const {
+    return use_incremental_ack_processing_;
+  }
 
   // Pass a UDP packet into the framer for parsing.
   // Return true if the packet was processed succesfully. |packet| must be a
@@ -598,6 +611,9 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   // If not null, framer asks data_producer_ to write stream frame data. Not
   // owned. TODO(fayang): Consider add data producer to framer's constructor.
   QuicStreamFrameDataProducer* data_producer_;
+
+  // Latched value of quic_reloadable_flag_quic_use_incremental_ack_processing.
+  const bool use_incremental_ack_processing_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicFramer);
 };

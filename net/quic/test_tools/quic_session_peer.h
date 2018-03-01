@@ -54,6 +54,7 @@ class QuicSessionPeer {
   static bool IsStreamUncreated(QuicSession* session, QuicStreamId id);
 
   static QuicStream* GetStream(QuicSession* session, QuicStreamId id);
+  static bool IsStreamWriteBlocked(QuicSession* session, QuicStreamId id);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicSessionPeer);

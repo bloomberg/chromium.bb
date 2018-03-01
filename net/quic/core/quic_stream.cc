@@ -263,7 +263,13 @@ void QuicStream::WriteOrBufferData(
 
 void QuicStream::OnCanWrite() {
   if (HasPendingRetransmission()) {
+    const bool session_unblocks_stream = session_->session_unblocks_stream();
     WritePendingRetransmission();
+    if (session_unblocks_stream) {
+      // Exit early to allow other streams to write pending retransmissions if
+      // any.
+      return;
+    }
     if (HasPendingRetransmission()) {
       // Stream did not finish retransmission, session will unblock this stream
       // later.
@@ -572,7 +578,12 @@ void QuicStream::AddBytesConsumed(QuicByteCount bytes) {
 
 void QuicStream::UpdateSendWindowOffset(QuicStreamOffset new_window) {
   if (flow_controller_.UpdateSendWindowOffset(new_window)) {
-    OnCanWrite();
+    if (session_->session_unblocks_stream()) {
+      // Let session unblock this stream.
+      session_->MarkConnectionLevelWriteBlocked(id_);
+    } else {
+      OnCanWrite();
+    }
   }
 }
 

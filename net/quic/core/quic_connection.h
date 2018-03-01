@@ -318,11 +318,12 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   enum AckMode { TCP_ACKING, ACK_DECIMATION, ACK_DECIMATION_WITH_REORDERING };
 
-  // Constructs a new QuicConnection for |connection_id| and |address| using
-  // |writer| to write packets. |owns_writer| specifies whether the connection
-  // takes ownership of |writer|. |helper| must outlive this connection.
+  // Constructs a new QuicConnection for |connection_id| and
+  // |initial_peer_address| using |writer| to write packets. |owns_writer|
+  // specifies whether the connection takes ownership of |writer|. |helper| must
+  // outlive this connection.
   QuicConnection(QuicConnectionId connection_id,
-                 QuicSocketAddress address,
+                 QuicSocketAddress initial_peer_address,
                  QuicConnectionHelperInterface* helper,
                  QuicAlarmFactory* alarm_factory,
                  QuicPacketWriter* writer,
@@ -469,6 +470,11 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   bool OnPacketHeader(const QuicPacketHeader& header) override;
   bool OnStreamFrame(const QuicStreamFrame& frame) override;
   bool OnAckFrame(const QuicAckFrame& frame) override;
+  bool OnAckFrameStart(QuicPacketNumber largest_acked,
+                       QuicTime::Delta ack_delay_time) override;
+  bool OnAckRange(QuicPacketNumber start,
+                  QuicPacketNumber end,
+                  bool last_range) override;
   bool OnStopWaitingFrame(const QuicStopWaitingFrame& frame) override;
   bool OnPaddingFrame(const QuicPaddingFrame& frame) override;
   bool OnPingFrame(const QuicPingFrame& frame) override;
@@ -922,6 +928,10 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   // Enables session decide what to write based on version and flags.
   void MaybeEnableSessionDecidesWhatToWrite();
+
+  // Called when last received ack frame has been processed.
+  // |send_stop_waiting| indicates whether a stop waiting needs to be sent.
+  void PostProcessAfterAckFrame(bool send_stop_waiting);
 
   QuicFramer framer_;
 

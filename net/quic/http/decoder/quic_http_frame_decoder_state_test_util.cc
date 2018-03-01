@@ -14,16 +14,6 @@ namespace net {
 namespace test {
 
 // static
-void QuicHttpFrameDecoderStatePeer::Randomize(QuicHttpFrameDecoderState* p,
-                                              QuicTestRandomBase* rng) {
-  VLOG(1) << "QuicHttpFrameDecoderStatePeer::Randomize";
-  ::net::test::Randomize(&p->frame_header_, rng);
-  p->remaining_payload_ = rng->Rand32();
-  p->remaining_padding_ = rng->Rand32();
-  QuicHttpStructureDecoderPeer::Randomize(&p->structure_decoder_, rng);
-}
-
-// static
 void QuicHttpFrameDecoderStatePeer::set_frame_header(
     const QuicHttpFrameHeader& header,
     QuicHttpFrameDecoderState* p) {
