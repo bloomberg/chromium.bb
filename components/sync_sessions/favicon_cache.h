@@ -29,6 +29,7 @@
 #include "components/sync/model/sync_change.h"
 #include "components/sync/model/sync_error_factory.h"
 #include "components/sync/model/syncable_service.h"
+#include "components/sync/protocol/session_specifics.pb.h"
 #include "url/gurl.h"
 
 namespace chrome {
@@ -92,26 +93,26 @@ class FaviconCache : public syncer::SyncableService,
       scoped_refptr<base::RefCountedMemory>* favicon_png) const;
 
   // Load the favicon for |page_url|. Will create a new sync node or update
-  // an existing one as necessary, and set the last visit time to the current
-  // time. Only those favicon types defined in SupportedFaviconTypes will be
-  // synced.
-  void OnPageFaviconUpdated(const GURL& page_url);
+  // an existing one as necessary, and update the last visit time with |mtime|,
+  // Only those favicon types defined in SupportedFaviconTypes will be synced.
+  void OnPageFaviconUpdated(const GURL& page_url, base::Time mtime);
 
   // Update the visit count for the favicon associated with |favicon_url|.
   // If no favicon exists associated with |favicon_url|, triggers a load
   // for the favicon associated with |page_url|.
   void OnFaviconVisited(const GURL& page_url, const GURL& favicon_url);
 
-  // Consume Session sync favicon data. Will not overwrite existing favicons.
-  // If |icon_bytes| is empty, only updates the page->favicon url mapping.
-  // Safe to call within a transaction.
-  void OnReceivedSyncFavicon(const GURL& page_url,
-                             const GURL& icon_url,
-                             const std::string& icon_bytes,
-                             int64_t visit_time_ms);
+  // Consume Session sync favicon data to update the in-memory page->favicon url
+  // mappings and visit times.
+  void UpdateMappingsFromForeignTab(const sync_pb::SessionTab& tab,
+                                    base::Time visit_time);
+
+  // For testing only.
+  size_t NumFaviconsForTest() const;
+  size_t NumTasksForTest() const;
+  base::Time GetLastVisitTimeForTest(const GURL& favicon_url) const;
 
  private:
-  friend class SyncFaviconCacheTest;
   FRIEND_TEST_ALL_PREFIXES(SyncFaviconCacheTest, HistoryFullClear);
   FRIEND_TEST_ALL_PREFIXES(SyncFaviconCacheTest, HistorySubsetClear);
 
@@ -131,16 +132,11 @@ class FaviconCache : public syncer::SyncableService,
   // Map of page url to favicon url.
   using PageFaviconMap = std::map<GURL, GURL>;
 
-  // Helper method to perform OnReceivedSyncFavicon work without worrying about
-  // whether caller holds a sync transaction.
-  void OnReceivedSyncFaviconImpl(const GURL& icon_url,
-                                 const std::string& icon_bytes,
-                                 int64_t visit_time_ms);
-
   // Callback method to store a tab's favicon into its sync node once it becomes
   // available. Does nothing if no favicon data was available.
   void OnFaviconDataAvailable(
       const GURL& page_url,
+      base::Time mtime,
       const std::vector<favicon_base::FaviconRawBitmapResult>& bitmap_result);
 
   // Helper method to update the sync state of the favicon at |icon_url|. If
@@ -202,10 +198,6 @@ class FaviconCache : public syncer::SyncableService,
   // Only drops the data associated with |type| of |favicon_iter|.
   void DropPartialFavicon(FaviconMap::iterator favicon_iter,
                           syncer::ModelType type);
-
-  // For testing only.
-  size_t NumFaviconsForTest() const;
-  size_t NumTasksForTest() const;
 
   // history::HistoryServiceObserver:
   void OnURLsDeleted(history::HistoryService* history_service,

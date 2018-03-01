@@ -595,7 +595,7 @@ void SessionsSyncManager::OnFaviconsChanged(const std::set<GURL>& page_urls,
                                             const GURL& /* icon_url */) {
   for (const GURL& page_url : page_urls) {
     if (page_url.is_valid())
-      favicon_cache_.OnPageFaviconUpdated(page_url);
+      favicon_cache_.OnPageFaviconUpdated(page_url, base::Time::Now());
   }
 }
 
@@ -709,7 +709,7 @@ syncer::SyncError SessionsSyncManager::ProcessSyncChanges(
         // If a favicon or favicon urls are present, load the URLs and visit
         // times into the in-memory favicon cache.
         if (session.has_tab()) {
-          RefreshFaviconVisitTimesFromForeignTab(session.tab(), mtime);
+          favicon_cache_.UpdateMappingsFromForeignTab(session.tab(), mtime);
         }
         break;
       default:
@@ -766,8 +766,8 @@ bool SessionsSyncManager::InitFromSyncModel(
         // If a favicon or favicon urls are present, load the URLs and visit
         // times into the in-memory favicon cache.
         if (specifics.has_tab()) {
-          RefreshFaviconVisitTimesFromForeignTab(specifics.tab(),
-                                                 remote.GetModifiedTime());
+          favicon_cache_.UpdateMappingsFromForeignTab(specifics.tab(),
+                                                      remote.GetModifiedTime());
         }
       } else {
         // In the past, like years ago, we believe that some session data was
@@ -890,22 +890,6 @@ void SessionsSyncManager::InitializeCurrentMachineTag(
     current_machine_tag_ = BuildMachineTag(cache_guid);
     DVLOG(1) << "Creating session sync guid: " << current_machine_tag_;
     sync_prefs_->SetSyncSessionsGUID(current_machine_tag_);
-  }
-}
-
-void SessionsSyncManager::RefreshFaviconVisitTimesFromForeignTab(
-    const sync_pb::SessionTab& tab,
-    const base::Time& modification_time) {
-  // First go through and iterate over all the navigations, checking if any
-  // have valid favicon urls.
-  for (int i = 0; i < tab.navigation_size(); ++i) {
-    if (!tab.navigation(i).favicon_url().empty()) {
-      const std::string& page_url = tab.navigation(i).virtual_url();
-      const std::string& favicon_url = tab.navigation(i).favicon_url();
-      favicon_cache_.OnReceivedSyncFavicon(
-          GURL(page_url), GURL(favicon_url), std::string(),
-          syncer::TimeToProtoTime(modification_time));
-    }
   }
 }
 

@@ -140,12 +140,6 @@ class SessionsSyncManager : public syncer::SyncableService,
   // this node could not be deleted.
   syncer::SyncChange TombstoneTab(const sync_pb::SessionSpecifics& tab);
 
-  // Helper method to load the favicon data from the tab specifics. If the
-  // favicon is valid, stores the favicon data into the favicon cache.
-  void RefreshFaviconVisitTimesFromForeignTab(
-      const sync_pb::SessionTab& tab,
-      const base::Time& modification_time);
-
   // Removes a foreign session from our internal bookkeeping.
   // Returns true if the session was found and deleted, false if no data was
   // found for that session.  This will *NOT* trigger sync deletions. See
