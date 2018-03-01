@@ -51,7 +51,7 @@ class ASH_EXPORT TraySessionLengthLimit : public SystemTrayItem,
   void UpdateTrayBubbleView() const;
 
   // These require that the state has been updated before.
-  base::string16 ComposeNotificationMessage() const;
+  base::string16 ComposeNotificationTitle() const;
   base::string16 ComposeTrayBubbleMessage() const;
 
   base::TimeDelta remaining_session_time_;
