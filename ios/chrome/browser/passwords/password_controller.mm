@@ -64,6 +64,9 @@ using password_manager::PasswordManager;
 using password_manager::PasswordManagerClient;
 using password_manager::PasswordManagerDriver;
 
+typedef void (^PasswordSuggestionsAvailableCompletion)(
+    const AccountSelectFillData*);
+
 namespace {
 // Types of password infobars to display.
 enum class PasswordInfoBarType { SAVE, UPDATE };
@@ -300,6 +303,10 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
   // store.
   BOOL sentRequestToStore_;
 
+  // The completion to inform FormSuggestionController that suggestions are
+  // available for a given form and field.
+  PasswordSuggestionsAvailableCompletion suggestionsAvailableCompletion_;
+
   // User credential waiting to be displayed in autosign-in snackbar, once tab
   // becomes active.
   std::unique_ptr<autofill::PasswordForm> pendingAutoSigninPasswordForm_;
@@ -450,6 +457,7 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
   // Clear per-page state.
   fillData_.Reset();
   sentRequestToStore_ = NO;
+  suggestionsAvailableCompletion_ = nil;
 
   // Retrieve the identity of the page. In case the page might be malicous,
   // returns early.
@@ -690,14 +698,34 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
     completion(NO);
     return;
   }
-  if (!sentRequestToStore_ && [type isEqual:@"focus"])
-    [self findPasswordFormsAndSendThemToPasswordStore];
+
+  bool should_send_request_to_store =
+      !sentRequestToStore_ && [type isEqual:@"focus"];
 
   if ([fieldType isEqual:@"password"]) {
-    // Always dispay "Show all" on the password field.
+    if (should_send_request_to_store)
+      [self findPasswordFormsAndSendThemToPasswordStore];
+    // Always display "Show all" on the password field.
     completion(YES);
     return;
   }
+
+  if (should_send_request_to_store) {
+    // Save the completion and go look for suggestions.
+    suggestionsAvailableCompletion_ =
+        [^(const AccountSelectFillData* fill_data) {
+          if (!fill_data)
+            completion(NO);
+          else {
+            completion(fill_data->IsSuggestionsAvailable(
+                base::SysNSStringToUTF16(formName),
+                base::SysNSStringToUTF16(fieldName)));
+          }
+        } copy];
+    [self findPasswordFormsAndSendThemToPasswordStore];
+    return;
+  }
+
   completion(!fillData_.Empty() && fillData_.IsSuggestionsAvailable(
                                        base::SysNSStringToUTF16(formName),
                                        base::SysNSStringToUTF16(fieldName)));
@@ -941,6 +969,11 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
        completionHandler:(void (^)(BOOL))completionHandler {
   fillData_.Add(formData);
 
+  if (suggestionsAvailableCompletion_) {
+    suggestionsAvailableCompletion_(&fillData_);
+    suggestionsAvailableCompletion_ = nil;
+  }
+
   // Don't fill immediately if waiting for the user to type a username.
   if (formData.wait_for_username) {
     if (completionHandler)
@@ -952,6 +985,12 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
             withUsername:formData.username_field.value
                 password:formData.password_field.value
        completionHandler:completionHandler];
+}
+
+- (void)onNoSavedCredentials {
+  if (suggestionsAvailableCompletion_)
+    suggestionsAvailableCompletion_(nullptr);
+  suggestionsAvailableCompletion_ = nil;
 }
 
 - (void)fillPasswordFormWithFillData:(const password_manager::FillData&)fillData
