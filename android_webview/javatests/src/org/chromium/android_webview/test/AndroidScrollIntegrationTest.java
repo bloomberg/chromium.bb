@@ -475,8 +475,8 @@ public class AndroidScrollIntegrationTest {
         final int maxScrollXPix = 101;
         final int maxScrollYPix = 211;
         // Make sure we can't hit these values simply as a result of scrolling.
-        assert (maxScrollXPix % dragStepSize) != 0;
-        assert (maxScrollYPix % dragStepSize) != 0;
+        Assert.assertNotEquals(0, maxScrollXPix % dragStepSize);
+        Assert.assertNotEquals(0, maxScrollYPix % dragStepSize);
         double maxScrollXCss = maxScrollXPix / deviceDIPScale;
         double maxScrollYCss = maxScrollYPix / deviceDIPScale;
         if (!UseZoomForDSFPolicy.isUseZoomForDSFEnabled()) {

@@ -31,8 +31,6 @@ ERRORPRONE_WARNINGS_TO_TURN_OFF = [
   'TypeParameterUnusedInFormals',
   # TODO(crbug.com/802075): Follow steps in bug.
   'ReferenceEquality',
-  # TODO(crbug.com/803482): Follow steps in bug.
-  'UseCorrectAssertInTests',
   # TODO(crbug.com/803484): Follow steps in bug.
   'CatchFail',
   # TODO(crbug.com/803485): Follow steps in bug.
@@ -103,6 +101,7 @@ ERRORPRONE_WARNINGS_TO_ERROR = [
   'MissingOverride',
   'ParameterName',
   'StaticQualifiedUsingExpression',
+  'UseCorrectAssertInTests',
 ]
 
 
