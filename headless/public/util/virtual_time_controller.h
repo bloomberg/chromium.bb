@@ -71,13 +71,15 @@ class HEADLESS_EXPORT VirtualTimeController
     const int priority_;
   };
 
-  // An API used by the CompositorController to defer the start of virtual time
-  // until it's ready.
-  class StartDeferrer {
+  // An API used by the CompositorController to defer the start and resumption
+  // of virtual time until it's ready.
+  class ResumeDeferrer {
    public:
-    virtual ~StartDeferrer() {}
+    virtual ~ResumeDeferrer() {}
 
-    virtual void DeferStart(base::OnceClosure ready_callback) = 0;
+    // Called before virtual time progression resumes after it was stopped or
+    // paused to execute repeating tasks.
+    virtual void DeferResume(base::OnceClosure ready_callback) = 0;
   };
 
   class Observer {
@@ -120,7 +122,7 @@ class HEADLESS_EXPORT VirtualTimeController
     return GetVirtualTimeBase() + GetCurrentVirtualTimeOffset();
   }
 
-  virtual void SetStartDeferrer(StartDeferrer* start_deferrer);
+  virtual void SetResumeDeferrer(ResumeDeferrer* resume_deferrer);
 
  private:
   struct TaskEntry {
@@ -149,7 +151,7 @@ class HEADLESS_EXPORT VirtualTimeController
       std::unique_ptr<emulation::SetVirtualTimePolicyResult>);
 
   HeadlessDevToolsClient* const devtools_client_;  // NOT OWNED
-  StartDeferrer* start_deferrer_ = nullptr;        // NOT OWNED
+  ResumeDeferrer* resume_deferrer_ = nullptr;      // NOT OWNED
   const int max_task_starvation_count_;
 
   base::TimeDelta total_elapsed_time_offset_;

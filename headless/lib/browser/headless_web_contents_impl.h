@@ -93,7 +93,6 @@ class HEADLESS_EXPORT HeadlessWebContentsImpl
   void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
   void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
   void RenderViewReady() override;
-  void DidReceiveCompositorFrame() override;
   void OnInterfaceRequestFromFrame(
       content::RenderFrameHost* render_frame_host,
       const std::string& interface_name,
@@ -145,7 +144,6 @@ class HEADLESS_EXPORT HeadlessWebContentsImpl
 
   using FrameFinishedCallback =
       base::Callback<void(bool /* has_damage */,
-                          bool /* main_frame_content_updated */,
                           std::unique_ptr<SkBitmap>)>;
   void BeginFrame(const base::TimeTicks& frame_timeticks,
                   const base::TimeTicks& deadline,
@@ -181,7 +179,6 @@ class HEADLESS_EXPORT HeadlessWebContentsImpl
       begin_frame_events_enabled_clients_;
   bool needs_external_begin_frames_ = false;
   std::list<std::unique_ptr<PendingFrame>> pending_frames_;
-  bool first_compositor_frame_received_ = false;
 
   class Delegate;
   std::unique_ptr<Delegate> web_contents_delegate_;

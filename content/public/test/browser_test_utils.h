@@ -711,6 +711,9 @@ class RenderFrameSubmissionObserver
 
   const cc::RenderFrameMetadata& LastRenderFrameMetadata() const;
 
+  // Returns the number of frames submitted since the observer's creation.
+  int render_frame_count() const { return render_frame_count_; }
+
  private:
   // Exits |run_loop_| unblocking the UI thread. Execution will resume in Wait.
   void Quit();
@@ -729,6 +732,7 @@ class RenderFrameSubmissionObserver
 
   RenderFrameMetadataProvider* render_frame_metadata_provider_ = nullptr;
   std::unique_ptr<base::RunLoop> run_loop_;
+  int render_frame_count_ = 0;
 };
 
 // This class is intended to synchronize the renderer main thread, renderer impl

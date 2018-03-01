@@ -232,7 +232,7 @@ struct HeadlessWebContentsImpl::PendingFrame {
   bool MaybeRunCallback() {
     if (wait_for_copy_result || !display_did_finish_frame)
       return false;
-    callback.Run(has_damage, main_frame_content_updated, std::move(bitmap));
+    callback.Run(has_damage, std::move(bitmap));
     return true;
   }
 
@@ -240,7 +240,6 @@ struct HeadlessWebContentsImpl::PendingFrame {
   bool wait_for_copy_result = false;
   bool display_did_finish_frame = false;
   bool has_damage = false;
-  bool main_frame_content_updated = false;
   std::unique_ptr<SkBitmap> bitmap;
   FrameFinishedCallback callback;
 
@@ -612,37 +611,6 @@ void HeadlessWebContentsImpl::SendNeedsBeginFramesEvent(
   std::string json_result;
   CHECK(base::JSONWriter::Write(event, &json_result));
   client->DispatchProtocolMessage(agent_host_.get(), json_result);
-}
-
-void HeadlessWebContentsImpl::DidReceiveCompositorFrame() {
-  TRACE_EVENT0("headless",
-               "HeadlessWebContentsImpl::DidReceiveCompositorFrame");
-  DCHECK(agent_host_);
-
-  if (!first_compositor_frame_received_) {
-    first_compositor_frame_received_ = true;
-
-    // Send an event to the devtools clients.
-    base::DictionaryValue event;
-    event.SetString("method",
-                    "HeadlessExperimental.mainFrameReadyForScreenshots");
-    event.Set("params", std::make_unique<base::DictionaryValue>());
-
-    std::string json_result;
-    CHECK(base::JSONWriter::Write(event, &json_result));
-    for (content::DevToolsAgentHostClient* client :
-         begin_frame_events_enabled_clients_) {
-      client->DispatchProtocolMessage(agent_host_.get(), json_result);
-    }
-  }
-
-  // Set main_frame_content_updated on pending frames that the display hasn't
-  // completed yet. Pending frames that it did complete won't incorporate this
-  // CompositorFrame. In practice, this should only be a single PendingFrame.
-  for (const std::unique_ptr<PendingFrame>& pending_frame : pending_frames_) {
-    if (!pending_frame->display_did_finish_frame)
-      pending_frame->main_frame_content_updated = true;
-  }
 }
 
 void HeadlessWebContentsImpl::PendingFrameReadbackComplete(

@@ -14,6 +14,8 @@
 #include "components/viz/common/switches.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/browser_test_utils.h"
+#include "headless/lib/browser/headless_web_contents_impl.h"
 #include "headless/public/devtools/domains/runtime.h"
 #include "headless/public/headless_browser.h"
 #include "headless/public/headless_devtools_client.h"
@@ -33,8 +35,6 @@ namespace {
 
 static constexpr base::TimeDelta kAnimationFrameInterval =
     base::TimeDelta::FromMilliseconds(16);
-static constexpr base::TimeDelta kWaitForCompositorReadyFrameDelay =
-    base::TimeDelta::FromMilliseconds(20);
 
 class BeginFrameCounter : HeadlessDevToolsClient::RawProtocolListener {
  public:
@@ -53,24 +53,18 @@ class BeginFrameCounter : HeadlessDevToolsClient::RawProtocolListener {
 
     const base::DictionaryValue* result_dict;
     if (parsed_message.GetDictionary("result", &result_dict)) {
-      bool main_frame_content_updated;
-      if (result_dict->GetBoolean("mainFrameContentUpdated",
-                                  &main_frame_content_updated)) {
+      bool has_damage;
+      if (result_dict->GetBoolean("hasDamage", &has_damage))
         ++begin_frame_count_;
-        if (main_frame_content_updated)
-          ++main_frame_update_count_;
-      }
     }
     return false;
   }
 
   int begin_frame_count() const { return begin_frame_count_; }
-  int main_frame_update_count() const { return main_frame_update_count_; }
 
  private:
   HeadlessDevToolsClient* client_;  // NOT OWNED.
   int begin_frame_count_ = 0;
-  int main_frame_update_count_ = 0;
 };
 
 bool DecodePNG(std::string png_data, SkBitmap* bitmap) {
@@ -85,87 +79,16 @@ class CompositorControllerBrowserTest
     : public HeadlessAsyncDevTooledBrowserTest,
       public ::testing::WithParamInterface<bool> {
  public:
-  void SetUp() override {
-    EnablePixelOutput();
-    if (GetParam()) {
-      UseSoftwareCompositing();
-      SetUpWithoutGPU();
-    } else {
-      HeadlessAsyncDevTooledBrowserTest::SetUp();
-    }
-  }
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    HeadlessAsyncDevTooledBrowserTest::SetUpCommandLine(command_line);
-    // See bit.ly/headless-rendering for why we use these flags.
-    command_line->AppendSwitch(switches::kRunAllCompositorStagesBeforeDraw);
-    command_line->AppendSwitch(switches::kDisableNewContentRenderingTimeout);
-    command_line->AppendSwitch(cc::switches::kDisableCheckerImaging);
-    command_line->AppendSwitch(cc::switches::kDisableThreadedAnimation);
-    command_line->AppendSwitch(switches::kDisableThreadedScrolling);
-  }
-
-  bool GetEnableBeginFrameControl() override { return true; }
-
-  void RunDevTooledTest() override {
-    begin_frame_counter_ =
-        base::MakeUnique<BeginFrameCounter>(devtools_client_.get());
-    virtual_time_controller_ =
-        std::make_unique<VirtualTimeController>(devtools_client_.get());
-    const bool update_display_for_animations = false;
-    compositor_controller_ = base::MakeUnique<CompositorController>(
-        browser()->BrowserMainThread(), devtools_client_.get(),
-        virtual_time_controller_.get(), kAnimationFrameInterval,
-        kWaitForCompositorReadyFrameDelay, update_display_for_animations);
-
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE,
-        base::BindOnce(&CompositorControllerBrowserTest::WaitForReady,
-                       base::Unretained(this)),
-        base::TimeDelta::FromSeconds(1));
-  }
-
-  void WaitForReady() {
-    compositor_controller_->WaitForCompositorReady(
-        base::BindRepeating(&CompositorControllerBrowserTest::OnCompositorReady,
-                            base::Unretained(this)));
-  }
-
-  virtual void OnCompositorReadyExpectations() {
-    // The renderer's first CompositorFrame may or may not have been included in
-    // a BeginFrame result.
-    main_frame_update_count_after_ready_ =
-        begin_frame_counter_->main_frame_update_count();
-    EXPECT_GE(1, main_frame_update_count_after_ready_);
-  }
-
-  void OnCompositorReady() {
-    OnCompositorReadyExpectations();
-
-    // Request animation frames in the main frame. Each frame changes the body
-    // background color.
-    devtools_client_->GetRuntime()->Evaluate(
-        "window.rafCount = 0;"
-        "function onRaf(timestamp) {"
-        "  window.rafCount++;"
-        "  document.body.style.backgroundColor = '#' + window.rafCount * 100;"
-        "  window.requestAnimationFrame(onRaf);"
-        "};"
-        "window.requestAnimationFrame(onRaf);",
-        base::BindRepeating(&CompositorControllerBrowserTest::OnRafReady,
-                            base::Unretained(this)));
-  }
-
   class AdditionalVirtualTimeBudget
       : public VirtualTimeController::RepeatingTask,
         public VirtualTimeController::Observer {
    public:
     AdditionalVirtualTimeBudget(VirtualTimeController* virtual_time_controller,
-                                CompositorControllerBrowserTest* test,
-                                base::TimeDelta budget)
+                                base::TimeDelta budget,
+                                base::OnceClosure budget_expired_callback)
         : RepeatingTask(StartPolicy::START_IMMEDIATELY, 0),
           virtual_time_controller_(virtual_time_controller),
-          test_(test) {
+          budget_expired_callback_(std::move(budget_expired_callback)) {
       virtual_time_controller_->ScheduleRepeatingTask(this, budget);
       virtual_time_controller_->AddObserver(this);
       virtual_time_controller_->StartVirtualTime();
@@ -187,30 +110,105 @@ class CompositorControllerBrowserTest
     void VirtualTimeStarted(base::TimeDelta virtual_time_offset) override {}
 
     void VirtualTimeStopped(base::TimeDelta virtual_time_offset) override {
-      test_->OnVirtualTimeBudgetExpired();
+      std::move(budget_expired_callback_).Run();
       delete this;
     }
 
    private:
     headless::VirtualTimeController* const virtual_time_controller_;
-    CompositorControllerBrowserTest* test_;
+    base::OnceClosure budget_expired_callback_;
   };
+
+  void SetUp() override {
+    EnablePixelOutput();
+    if (GetParam()) {
+      UseSoftwareCompositing();
+      SetUpWithoutGPU();
+    } else {
+      HeadlessAsyncDevTooledBrowserTest::SetUp();
+    }
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    HeadlessAsyncDevTooledBrowserTest::SetUpCommandLine(command_line);
+    // See bit.ly/headless-rendering for why we use these flags.
+    command_line->AppendSwitch(switches::kRunAllCompositorStagesBeforeDraw);
+    command_line->AppendSwitch(switches::kDisableNewContentRenderingTimeout);
+    command_line->AppendSwitch(cc::switches::kDisableCheckerImaging);
+    command_line->AppendSwitch(cc::switches::kDisableThreadedAnimation);
+    command_line->AppendSwitch(switches::kDisableThreadedScrolling);
+    command_line->AppendSwitch(switches::kEnableSurfaceSynchronization);
+  }
+
+  bool GetEnableBeginFrameControl() override { return true; }
+
+  void RunDevTooledTest() override {
+    virtual_time_controller_ =
+        std::make_unique<VirtualTimeController>(devtools_client_.get());
+    const bool update_display_for_animations = false;
+    compositor_controller_ = base::MakeUnique<CompositorController>(
+        browser()->BrowserMainThread(), devtools_client_.get(),
+        virtual_time_controller_.get(), kAnimationFrameInterval,
+        update_display_for_animations);
+
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&CompositorControllerBrowserTest::RunFirstBeginFrame,
+                       base::Unretained(this)),
+        base::TimeDelta::FromSeconds(1));
+  }
+
+  void RunFirstBeginFrame() {
+    begin_frame_counter_ =
+        base::MakeUnique<BeginFrameCounter>(devtools_client_.get());
+    render_frame_submission_observer_ =
+        std::make_unique<content::RenderFrameSubmissionObserver>(
+            HeadlessWebContentsImpl::From(web_contents_)->web_contents());
+    // AdditionalVirtualTimeBudget will self delete.
+    new AdditionalVirtualTimeBudget(
+        virtual_time_controller_.get(), kAnimationFrameInterval,
+        base::BindOnce(
+            &CompositorControllerBrowserTest::OnFirstBeginFrameComplete,
+            base::Unretained(this)));
+  }
+
+  void OnFirstBeginFrameComplete() {
+    // With surface sync enabled, we should have waited for the renderer's
+    // CompositorFrame in the first BeginFrame.
+    EXPECT_EQ(1, begin_frame_counter_->begin_frame_count());
+    EXPECT_EQ(1, render_frame_submission_observer_->render_frame_count());
+
+    // Request animation frames in the main frame. Each frame changes the body
+    // background color.
+    devtools_client_->GetRuntime()->Evaluate(
+        "window.rafCount = 0;"
+        "function onRaf(timestamp) {"
+        "  window.rafCount++;"
+        "  document.body.style.backgroundColor = '#' + window.rafCount * 100;"
+        "  window.requestAnimationFrame(onRaf);"
+        "};"
+        "window.requestAnimationFrame(onRaf);",
+        base::BindRepeating(&CompositorControllerBrowserTest::OnRafReady,
+                            base::Unretained(this)));
+  }
 
   void OnRafReady(std::unique_ptr<runtime::EvaluateResult> result) {
     EXPECT_NE(nullptr, result);
     EXPECT_FALSE(result->HasExceptionDetails());
 
     // AdditionalVirtualTimeBudget will self delete.
-    new AdditionalVirtualTimeBudget(virtual_time_controller_.get(), this,
-                                    kNumFrames * kAnimationFrameInterval);
+    new AdditionalVirtualTimeBudget(
+        virtual_time_controller_.get(), kNumFrames * kAnimationFrameInterval,
+        base::BindOnce(&CompositorControllerBrowserTest::OnRafBudgetExpired,
+                       base::Unretained(this)));
   }
 
-  void OnVirtualTimeBudgetExpired() {
+  void OnRafBudgetExpired() {
+    EXPECT_EQ(1 + kNumFrames, begin_frame_counter_->begin_frame_count());
     // Even though the rAF made a change to the frame's background color, no
     // further CompositorFrames should have been produced for animations,
     // because update_display_for_animations is false.
-    EXPECT_EQ(main_frame_update_count_after_ready_,
-              begin_frame_counter_->main_frame_update_count());
+    EXPECT_EQ(1, render_frame_submission_observer_->render_frame_count());
 
     // Get animation frame count.
     devtools_client_->GetRuntime()->Evaluate(
@@ -232,6 +230,9 @@ class CompositorControllerBrowserTest
   }
 
   void OnScreenshot(const std::string& screenshot_data) {
+    // Screenshot should have incurred a new CompositorFrame.
+    EXPECT_EQ(2, render_frame_submission_observer_->render_frame_count());
+
     EXPECT_LT(0U, screenshot_data.length());
 
     if (screenshot_data.length()) {
@@ -246,16 +247,19 @@ class CompositorControllerBrowserTest
       EXPECT_EQ(expected_color, actual_color);
     }
 
+    render_frame_submission_observer_.reset();
     FinishAsynchronousTest();
   }
 
  protected:
   static constexpr int kNumFrames = 3;
 
-  std::unique_ptr<BeginFrameCounter> begin_frame_counter_;
   std::unique_ptr<VirtualTimeController> virtual_time_controller_;
   std::unique_ptr<CompositorController> compositor_controller_;
-  int main_frame_update_count_after_ready_ = 0;
+
+  std::unique_ptr<BeginFrameCounter> begin_frame_counter_;
+  std::unique_ptr<content::RenderFrameSubmissionObserver>
+      render_frame_submission_observer_;
 };
 
 /* static */
@@ -266,30 +270,6 @@ HEADLESS_ASYNC_DEVTOOLED_TEST_P(CompositorControllerBrowserTest);
 // Instantiate test case for both software and gpu compositing modes.
 INSTANTIATE_TEST_CASE_P(CompositorControllerBrowserTests,
                         CompositorControllerBrowserTest,
-                        ::testing::Bool());
-
-class CompositorControllerSurfaceSyncBrowserTest
-    : public CompositorControllerBrowserTest {
- public:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    CompositorControllerBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnableSurfaceSynchronization);
-  }
-
-  void OnCompositorReadyExpectations() override {
-    CompositorControllerBrowserTest::OnCompositorReadyExpectations();
-    // With surface sync enabled, we should have waited for the renderer's
-    // CompositorFrame in the first BeginFrame.
-    EXPECT_EQ(1, begin_frame_counter_->begin_frame_count());
-    EXPECT_EQ(1, begin_frame_counter_->main_frame_update_count());
-  }
-};
-
-HEADLESS_ASYNC_DEVTOOLED_TEST_P(CompositorControllerSurfaceSyncBrowserTest);
-
-// Instantiate test case for both software and gpu compositing modes.
-INSTANTIATE_TEST_CASE_P(CompositorControllerSurfaceSyncBrowserTests,
-                        CompositorControllerSurfaceSyncBrowserTest,
                         ::testing::Bool());
 
 #endif  // !defined(OS_MACOSX)

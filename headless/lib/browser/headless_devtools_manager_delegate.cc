@@ -155,11 +155,9 @@ void OnBeginFrameFinished(
     ImageEncoding encoding,
     int quality,
     bool has_damage,
-    bool main_frame_content_updated,
     std::unique_ptr<SkBitmap> bitmap) {
   auto result = std::make_unique<base::DictionaryValue>();
   result->SetBoolean("hasDamage", has_damage);
-  result->SetBoolean("mainFrameContentUpdated", main_frame_content_updated);
 
   if (bitmap && !bitmap->drawsNothing()) {
     result->SetString("screenshotData",
@@ -866,6 +864,13 @@ void HeadlessDevToolsManagerDelegate::BeginFrame(
         command_id, kErrorServerError,
         "Command is only supported if BeginFrameControl is enabled."));
     return;
+  }
+
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ::switches::kRunAllCompositorStagesBeforeDraw)) {
+    LOG(WARNING) << "BeginFrameControl commands are designed to be used with "
+                    "--run-all-compositor-stages-before-draw, see "
+                    "https://goo.gl/3zHXhB for more info.";
   }
 
   base::Time frame_time;
