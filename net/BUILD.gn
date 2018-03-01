@@ -2895,22 +2895,6 @@ if (!is_ios && !is_android) {
     ]
   }
 
-  executable("get_server_time") {
-    testonly = true
-    sources = [
-      "tools/get_server_time/get_server_time.cc",
-    ]
-
-    deps = [
-      ":net",
-      "//base",
-      "//base:i18n",
-      "//build/config:exe_and_shlib_deps",
-      "//build/win:default_exe_manifest",
-      "//url",
-    ]
-  }
-
   executable("hpack_example_generator") {
     testonly = true
     sources = [
