@@ -4,6 +4,8 @@
 
 #include "content/browser/site_per_process_browsertest.h"
 
+#include <tuple>
+
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/json/json_reader.h"
@@ -435,7 +437,7 @@ bool ConvertJSONToRect(const std::string& str, gfx::Rect* rect) {
 }  // namespace
 
 class SitePerProcessHitTestBrowserTest
-    : public testing::WithParamInterface<bool>,
+    : public testing::WithParamInterface<std::tuple<bool, float>>,
       public SitePerProcessBrowserTest {
  public:
   SitePerProcessHitTestBrowserTest() {}
@@ -443,7 +445,7 @@ class SitePerProcessHitTestBrowserTest
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     SitePerProcessBrowserTest::SetUpCommandLine(command_line);
-    if (GetParam()) {
+    if (std::get<0>(GetParam())) {
       feature_list_.InitAndEnableFeature(features::kEnableVizHitTestDrawQuad);
     }
   }
@@ -506,6 +508,9 @@ class SitePerProcessInternalsHitTestBrowserTest
     // Needed to guarantee the scrollable div we're testing with is not given
     // its own compositing layer.
     command_line->AppendSwitch(switches::kDisablePreferCompositingToLCDText);
+    command_line->AppendSwitchASCII(
+        switches::kForceDeviceScaleFactor,
+        base::StringPrintf("%f", std::get<1>(GetParam())));
   }
 };
 
@@ -588,13 +593,13 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessInternalsHitTestBrowserTest,
       &nested_in_parent);
 
   // Get original scroll position.
-  int div_scroll_top_start;
-  EXPECT_TRUE(ExecuteScriptAndExtractInt(
+  double div_scroll_top_start;
+  EXPECT_TRUE(ExecuteScriptAndExtractDouble(
       nested_iframe_node->current_frame_host(),
       "window.domAutomationController.send("
       "document.getElementById('scrollable_div').scrollTop);",
       &div_scroll_top_start));
-  EXPECT_EQ(0, div_scroll_top_start);
+  EXPECT_EQ(0.0, div_scroll_top_start);
 
   // Wait until renderer's compositor thread is synced. Otherwise the event
   // handler won't be installed when the event arrives.
@@ -636,8 +641,8 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessInternalsHitTestBrowserTest,
   EXPECT_EQ(std::string(), str);
 
   // Verify the div scrolled.
-  int div_scroll_top = div_scroll_top_start;
-  EXPECT_TRUE(ExecuteScriptAndExtractInt(
+  double div_scroll_top = div_scroll_top_start;
+  EXPECT_TRUE(ExecuteScriptAndExtractDouble(
       nested_iframe_node->current_frame_host(),
       "window.domAutomationController.send("
       "document.getElementById('scrollable_div').scrollTop);",
@@ -746,13 +751,13 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessInternalsHitTestBrowserTest,
       &nested_in_parent);
 
   // Get original scroll position.
-  int div_scroll_top_start;
+  double div_scroll_top_start;
   EXPECT_TRUE(
-      ExecuteScriptAndExtractInt(parent_iframe_node->current_frame_host(),
-                                 "window.domAutomationController.send("
-                                 "document.body.scrollTop);",
-                                 &div_scroll_top_start));
-  EXPECT_EQ(0, div_scroll_top_start);
+      ExecuteScriptAndExtractDouble(parent_iframe_node->current_frame_host(),
+                                    "window.domAutomationController.send("
+                                    "document.body.scrollTop);",
+                                    &div_scroll_top_start));
+  EXPECT_EQ(0.0, div_scroll_top_start);
 
   // Wait until renderer's compositor thread is synced. Otherwise the event
   // handler won't be installed when the event arrives.
@@ -794,12 +799,12 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessInternalsHitTestBrowserTest,
   EXPECT_EQ(std::string(), str);
 
   // Verify the div scrolled.
-  int div_scroll_top = div_scroll_top_start;
+  double div_scroll_top = div_scroll_top_start;
   EXPECT_TRUE(
-      ExecuteScriptAndExtractInt(parent_iframe_node->current_frame_host(),
-                                 "window.domAutomationController.send("
-                                 "document.body.scrollTop);",
-                                 &div_scroll_top));
+      ExecuteScriptAndExtractDouble(parent_iframe_node->current_frame_host(),
+                                    "window.domAutomationController.send("
+                                    "document.body.scrollTop);",
+                                    &div_scroll_top));
   EXPECT_NE(div_scroll_top_start, div_scroll_top);
 
   // Verify the non-fast scrollable region rect is the same, even though the
@@ -3476,25 +3481,39 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest, HitTestNestedFrames) {
   }
 }
 
+static const float kOneScale[] = {1.f};
+
 INSTANTIATE_TEST_CASE_P(/* no prefix */,
                         SitePerProcessHitTestBrowserTest,
-                        testing::Bool());
+                        testing::Combine(testing::Bool(),
+                                         testing::ValuesIn(kOneScale)));
+// TODO(wjmaclean): Since the next two test fixtures only differ in DSF
+// values, should we combine them into one using kMultiScale? This
+// approach would make it more difficult to disable individual scales on
+// particular platforms.
 INSTANTIATE_TEST_CASE_P(/* no prefix */,
                         SitePerProcessHighDPIHitTestBrowserTest,
-                        testing::Bool());
+                        testing::Combine(testing::Bool(),
+                                         testing::ValuesIn(kOneScale)));
 INSTANTIATE_TEST_CASE_P(/* no prefix */,
                         SitePerProcessNonIntegerScaleFactorHitTestBrowserTest,
-                        testing::Bool());
+                        testing::Combine(testing::Bool(),
+                                         testing::ValuesIn(kOneScale)));
 #if defined(USE_AURA)
+static const float kMultiScale[] = {1.f, 1.5f, 2.f};
+
 INSTANTIATE_TEST_CASE_P(/* no prefix */,
                         SitePerProcessInternalsHitTestBrowserTest,
-                        testing::Bool());
+                        testing::Combine(testing::Bool(),
+                                         testing::ValuesIn(kMultiScale)));
 INSTANTIATE_TEST_CASE_P(/* no prefix */,
                         SitePerProcessMouseWheelHitTestBrowserTest,
-                        testing::Bool());
+                        testing::Combine(testing::Bool(),
+                                         testing::ValuesIn(kOneScale)));
 INSTANTIATE_TEST_CASE_P(/* no prefix */,
                         SitePerProcessGestureHitTestBrowserTest,
-                        testing::Bool());
+                        testing::Combine(testing::Bool(),
+                                         testing::ValuesIn(kOneScale)));
 #endif
 
 }  // namespace content
