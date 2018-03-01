@@ -238,9 +238,44 @@ void PeerConnectionDependencyFactory::InitializeSignalingThread(
   jingle_glue::JingleThreadWrapper::current()->set_send_allowed(true);
   signaling_thread_ = jingle_glue::JingleThreadWrapper::current();
 
-  // TODO(https://crbug.com/656607): Add proper annotation here.
-  socket_factory_.reset(new IpcPacketSocketFactory(
-      p2p_socket_dispatcher_.get(), NO_TRAFFIC_ANNOTATION_BUG_656607));
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("webrtc_peer_connection", R"(
+        semantics {
+          sender: "WebRTC"
+          description:
+            "WebRTC is an API that provides web applications with Real Time "
+            "Communication (RTC) capabilities. It is used to establish a "
+            "secure session with a remote peer, transmitting and receiving "
+            "audio, video and potentially other data."
+          trigger:
+            "Application creates an RTCPeerConnection and connects it to a "
+            "remote peer by exchanging an SDP offer and answer."
+          data:
+            "Media encrypted using DTLS-SRTP, and protocol-level messages for "
+            "the various subprotocols employed by WebRTC (including ICE, DTLS, "
+            "RTCP, etc.). Note that ICE connectivity checks may leak the "
+            "user's IP address(es), subject to the restrictions/guidance in "
+            "https://datatracker.ietf.org/doc/draft-ietf-rtcweb-ip-handling."
+          destination: OTHER
+          destination_other:
+            "A destination determined by the web application that created the "
+            "connection."
+        }
+        policy {
+          cookies_allowed: NO
+          setting:
+            "This feature cannot be disabled in settings, but it won't be used "
+            "unless the application creates an RTCPeerConnection. Media can "
+            "only be captured with user's consent, but data may be sent "
+            "withouth that."
+          policy_exception_justification:
+            "Not implemented. 'WebRtcUdpPortRange' policy can limit the range "
+            "of ports used by WebRTC, but there is no policy to generally "
+            "block it."
+        }
+    )");
+  socket_factory_.reset(new IpcPacketSocketFactory(p2p_socket_dispatcher_.get(),
+                                                   traffic_annotation));
 
   std::unique_ptr<cricket::WebRtcVideoDecoderFactory> decoder_factory;
   std::unique_ptr<cricket::WebRtcVideoEncoderFactory> encoder_factory;
