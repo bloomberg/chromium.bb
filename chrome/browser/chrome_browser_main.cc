@@ -24,7 +24,6 @@
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
@@ -44,7 +43,7 @@
 #include "base/sys_info.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/platform_thread.h"
-#include "base/threading/sequence_local_storage_slot.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
@@ -138,6 +137,7 @@
 #include "components/language/content/browser/geo_language_provider.h"
 #include "components/language_usage_metrics/language_usage_metrics.h"
 #include "components/metrics/call_stack_profile_metrics_provider.h"
+#include "components/metrics/call_stack_profile_params.h"
 #include "components/metrics/expired_histograms_checker.h"
 #include "components/metrics/metrics_reporting_default_state.h"
 #include "components/metrics/metrics_service.h"
@@ -312,12 +312,6 @@
 using content::BrowserThread;
 
 namespace {
-
-// The profiler object is stored in a SequenceLocalStorageSlot on the IO thread
-// so that it will be destroyed when the IO thread stops.
-base::LazyInstance<base::SequenceLocalStorageSlot<
-    std::unique_ptr<base::StackSamplingProfiler>>>::Leaky
-    io_thread_sampling_profiler = LAZY_INSTANCE_INITIALIZER;
 
 // This function provides some ways to test crash and assertion handling
 // behavior of the program.
@@ -620,23 +614,6 @@ bool ProcessSingletonNotificationCallback(
 }
 #endif  // !defined(OS_ANDROID)
 
-// Starts to profile the IO thread.
-void StartIOThreadProfiling() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  StackSamplingConfiguration* config = StackSamplingConfiguration::Get();
-  if (config->IsProfilerEnabledForCurrentProcess()) {
-    auto profiler = std::make_unique<base::StackSamplingProfiler>(
-        base::PlatformThread::CurrentId(),
-        config->GetSamplingParamsForCurrentProcess(),
-        metrics::CallStackProfileMetricsProvider::
-            GetProfilerCallbackForBrowserProcessIOThreadStartup());
-
-    profiler->Start();
-    io_thread_sampling_profiler.Get().Set(std::move(profiler));
-  }
-}
-
 class ScopedMainMessageLoopRunEvent {
  public:
   ScopedMainMessageLoopRunEvent() {
@@ -870,17 +847,10 @@ ChromeBrowserMainParts::ChromeBrowserMainParts(
       result_code_(content::RESULT_CODE_NORMAL_EXIT),
       startup_watcher_(new StartupTimeBomb()),
       shutdown_watcher_(new ShutdownWatcherHelper()),
-      ui_thread_sampling_profiler_(
-          base::PlatformThread::CurrentId(),
-          StackSamplingConfiguration::Get()
-              ->GetSamplingParamsForCurrentProcess(),
-          metrics::CallStackProfileMetricsProvider::
-              GetProfilerCallbackForBrowserProcessUIThreadStartup()),
+      ui_thread_profiler_(ThreadProfiler::CreateAndStartOnMainThread(
+          metrics::CallStackProfileParams::UI_THREAD)),
       profile_(NULL),
       run_message_loop_(true) {
-  if (StackSamplingConfiguration::Get()->IsProfilerEnabledForCurrentProcess())
-    ui_thread_sampling_profiler_.Start();
-
   // If we're running tests (ui_task is non-null).
   if (parameters.ui_task)
     browser_defaults::enable_help_app = false;
@@ -1132,6 +1102,9 @@ void ChromeBrowserMainParts::PreMainMessageLoopStart() {
 
 void ChromeBrowserMainParts::PostMainMessageLoopStart() {
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::PostMainMessageLoopStart");
+
+  ui_thread_profiler_->SetMainThreadTaskRunner(
+      base::ThreadTaskRunnerHandle::Get());
 
   // device_event_log must be initialized after the message loop. Calls to
   // {DEVICE}_LOG prior to here will only be logged with VLOG. Some
@@ -1437,8 +1410,10 @@ void ChromeBrowserMainParts::PostCreateThreads() {
   // BrowserMainLoop::InitializeMainThread(). PostCreateThreads is preferred to
   // BrowserThreadsStarted as it matches the PreCreateThreads and CreateThreads
   // stages.
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::BindOnce(&StartIOThreadProfiling));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&ThreadProfiler::StartOnChildThread,
+                     metrics::CallStackProfileParams::IO_THREAD));
 }
 
 void ChromeBrowserMainParts::ServiceManagerConnectionStarted(
