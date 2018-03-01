@@ -108,11 +108,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
   ASSERT_TRUE(IsEncryptionComplete(1));
 }
 
-// This test is flaky on several platforms:
-//    http://crbug.com/420979
-//    http://crbug.com/421167
 IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
-                       DISABLED_SingleClientEnabledEncryptionAndChanged) {
+                       SingleClientEnabledEncryptionAndChanged) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(CheckInitialState(0));
