@@ -183,7 +183,15 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
 // Tests that selecting "Open Image in New Tab" from the context menu properly
 // opens the image in a new background tab. (With the
 // kContextMenuElementPostMessage feature disabled.)
-- (void)testOpenImageInNewTabFromContextMenu {
+// TODO(crbug.com/817810): Enable this test.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_testOpenImageInNewTabFromContextMenu \
+  testOpenImageInNewTabFromContextMenu
+#else
+#define MAYBE_testOpenImageInNewTabFromContextMenu \
+  FLAKY_testOpenImageInNewTabFromContextMenu
+#endif
+- (void)MAYBE_testOpenImageInNewTabFromContextMenu {
   base::test::ScopedFeatureList scopedFeatureList;
   scopedFeatureList.InitAndDisableFeature(
       web::features::kContextMenuElementPostMessage);
@@ -206,7 +214,13 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
 
 // Tests "Open in New Tab" on context menu. (With the
 // kContextMenuElementPostMessage feature disabled.)
-- (void)testContextMenuOpenInNewTab {
+// TODO(crbug.com/817810): Enable this test.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_testContextMenuOpenInNewTab testContextMenuOpenInNewTab
+#else
+#define MAYBE_testContextMenuOpenInNewTab FLAKY_testContextMenuOpenInNewTab
+#endif
+- (void)MAYBE_testContextMenuOpenInNewTab {
   base::test::ScopedFeatureList scopedFeatureList;
   scopedFeatureList.InitAndDisableFeature(
       web::features::kContextMenuElementPostMessage);
@@ -229,7 +243,14 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
 
 // Tests that the context menu is displayed for an image url. (With the
 // kContextMenuElementPostMessage feature disabled.)
-- (void)testContextMenuDisplayedOnImage {
+// TODO(crbug.com/817810): Enable this test.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_testContextMenuDisplayedOnImage testContextMenuDisplayedOnImage
+#else
+#define MAYBE_testContextMenuDisplayedOnImage \
+  FLAKY_testContextMenuDisplayedOnImage
+#endif
+- (void)MAYBE_testContextMenuDisplayedOnImage {
   base::test::ScopedFeatureList scopedFeatureList;
   scopedFeatureList.InitAndDisableFeature(
       web::features::kContextMenuElementPostMessage);
@@ -284,7 +305,15 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
 // Tests that selecting "Open Image in New Tab" from the context menu properly
 // opens the image in a new background tab. (With the
 // kContextMenuElementPostMessage feature enabled.)
-- (void)testOpenImageInNewTabFromContextMenuPostMessage {
+// TODO(crbug.com/817810): Enable this test.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_testOpenImageInNewTabFromContextMenuPostMessage \
+  testOpenImageInNewTabFromContextMenuPostMessage
+#else
+#define MAYBE_testOpenImageInNewTabFromContextMenuPostMessage \
+  FLAKY_testOpenImageInNewTabFromContextMenuPostMessage
+#endif
+- (void)MAYBE_testOpenImageInNewTabFromContextMenuPostMessage {
   base::test::ScopedFeatureList scopedFeatureList;
   scopedFeatureList.InitAndEnableFeature(
       web::features::kContextMenuElementPostMessage);
@@ -307,7 +336,15 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
 
 // Tests "Open in New Tab" on context menu. (With the
 // kContextMenuElementPostMessage feature enabled.)
-- (void)testContextMenuOpenInNewTabPostMessage {
+// TODO(crbug.com/817810): Enable this test.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_testContextMenuOpenInNewTabPostMessage \
+  testContextMenuOpenInNewTabPostMessage
+#else
+#define MAYBE_testContextMenuOpenInNewTabPostMessage \
+  FLAKY_testContextMenuOpenInNewTabPostMessage
+#endif
+- (void)MAYBE_testContextMenuOpenInNewTabPostMessage {
   base::test::ScopedFeatureList scopedFeatureList;
   scopedFeatureList.InitAndEnableFeature(
       web::features::kContextMenuElementPostMessage);
@@ -330,7 +367,15 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
 
 // Tests that the context menu is displayed for an image url. (With the
 // kContextMenuElementPostMessage feature enabled.)
-- (void)testContextMenuDisplayedOnImagePostMessage {
+// TODO(crbug.com/817810): Enable this test.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_testContextMenuDisplayedOnImagePostMessage \
+  testContextMenuDisplayedOnImagePostMessage
+#else
+#define MAYBE_testContextMenuDisplayedOnImagePostMessage \
+  FLAKY_testContextMenuDisplayedOnImagePostMessage
+#endif
+- (void)MAYBE_testContextMenuDisplayedOnImagePostMessage {
   base::test::ScopedFeatureList scopedFeatureList;
   scopedFeatureList.InitAndEnableFeature(
       web::features::kContextMenuElementPostMessage);
