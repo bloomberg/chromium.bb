@@ -154,16 +154,6 @@ void TemplateURLFetcher::RequestDelegate::OnURLFetchComplete(
     return;
   }
 
-  if (keyword_.empty()) {
-    // Use the parser-generated new keyword from the URL in the OSDD for the
-    // non-autodetected case.  The existing |keyword_| was generated from the
-    // URL that hosted the OSDD, which results in the wrong keyword when the
-    // OSDD was located on a third-party site that has nothing in common with
-    // search engine described by OSDD.
-    keyword_ = template_url_->keyword();
-    DCHECK(!keyword_.empty());
-  }
-
   // Wait for the model to be loaded before adding the provider.
   if (!fetcher_->template_url_service_->loaded())
     return;
