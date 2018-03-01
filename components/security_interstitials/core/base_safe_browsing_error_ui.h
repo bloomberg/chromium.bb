@@ -31,6 +31,7 @@ class BaseSafeBrowsingErrorUI {
                           bool is_off_the_record,
                           bool is_extended_reporting_enabled,
                           bool is_scout_reporting_enabled,
+                          bool is_extended_reporting_policy_managed,
                           bool is_proceed_anyway_disabled,
                           bool should_open_links_in_new_tab,
                           bool always_show_back_to_safety,
@@ -58,6 +59,10 @@ class BaseSafeBrowsingErrorUI {
     // reporting, just the level of reporting that's available to the user. Use
     // |is_extended_reporting_enabled| to see if the user is opted-in.
     bool is_scout_reporting_enabled;
+
+    // Whether the SBER pref is being managed by enterprise policy, meaning the
+    // user is unable to change the pref.
+    bool is_extended_reporting_policy_managed;
 
     // Indicates if kSafeBrowsingProceedAnywayDisabled preference is set.
     bool is_proceed_anyway_disabled;
@@ -108,6 +113,10 @@ class BaseSafeBrowsingErrorUI {
     return display_options_.is_scout_reporting_enabled;
   }
 
+  bool is_extended_reporting_policy_managed() const {
+    return display_options_.is_extended_reporting_policy_managed;
+  }
+
   bool is_proceed_anyway_disabled() const {
     return display_options_.is_proceed_anyway_disabled;
   }
@@ -128,11 +137,14 @@ class BaseSafeBrowsingErrorUI {
     return display_options_;
   }
 
-  // Checks if we should even show the extended reporting option. We don't show
-  // it in incognito mode or if kSafeBrowsingExtendedReportingOptInAllowed
-  // preference is disabled.
+  // Checks if we should even show the extended reporting option.
+  // We don't show it:
+  // - in incognito mode
+  // - if kSafeBrowsingExtendedReportingOptInAllowed preference is disabled.
+  // - if kSafeBrowsingExtendedReporting is managed by enterprise policy.
   bool CanShowExtendedReportingOption() {
-    return !is_off_the_record() && is_extended_reporting_opt_in_allowed();
+    return !is_off_the_record() && is_extended_reporting_opt_in_allowed() &&
+           !is_extended_reporting_policy_managed();
   }
 
   SBInterstitialReason interstitial_reason() const {

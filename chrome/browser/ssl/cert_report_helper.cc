@@ -192,11 +192,14 @@ bool CertReportHelper::ShouldShowCertificateReporterCheckbox() {
   // and the window is not incognito and the feature is not disabled by policy.
   const bool in_incognito =
       web_contents_->GetBrowserContext()->IsOffTheRecord();
+  const PrefService* pref_service = GetProfile(web_contents_)->GetPrefs();
+  bool can_show_checkbox =
+      safe_browsing::IsExtendedReportingOptInAllowed(*pref_service) &&
+      !safe_browsing::IsExtendedReportingPolicyManaged(*pref_service);
+
   return base::FieldTrialList::FindFullName(kFinchExperimentName) ==
              kFinchGroupShowPossiblySend &&
-         !in_incognito &&
-         safe_browsing::IsExtendedReportingOptInAllowed(
-             *GetProfile(web_contents_)->GetPrefs());
+         !in_incognito && can_show_checkbox;
 }
 
 bool CertReportHelper::ShouldReportCertificateError() {

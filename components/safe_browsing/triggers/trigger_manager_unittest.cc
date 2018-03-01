@@ -82,6 +82,10 @@ class TriggerManagerTest : public ::testing::Test {
     pref_service_.SetBoolean(pref, value);
   }
 
+  void SetManagedPref(const std::string& pref, bool value) {
+    pref_service_.SetManagedPref(pref, std::make_unique<base::Value>(value));
+  }
+
   bool GetPref(const std::string& pref) {
     return pref_service_.GetBoolean(pref);
   }
@@ -338,6 +342,20 @@ TEST_F(TriggerManagerTest, NoCollectionWhenOutOfQuota) {
   EXPECT_FALSE(
       StartCollectingThreatDetails(TriggerType::AD_SAMPLE, web_contents));
   EXPECT_EQ(nullptr, data_collectors_map().at(web_contents).threat_details);
+}
+
+TEST_F(TriggerManagerTest, NoCollectionWhenSBERDisabledByPolicy) {
+  // Confirm that disabling SBER through an enterprise policy does disable
+  // triggers.
+  content::WebContents* web_contents = CreateWebContents();
+
+  SetManagedPref(prefs::kSafeBrowsingScoutReportingEnabled, false);
+  EXPECT_FALSE(
+      StartCollectingThreatDetails(TriggerType::AD_SAMPLE, web_contents));
+  EXPECT_TRUE(data_collectors_map().empty());
+  EXPECT_FALSE(FinishCollectingThreatDetails(TriggerType::AD_SAMPLE,
+                                             web_contents, false));
+  EXPECT_TRUE(data_collectors_map().empty());
 }
 
 TEST_F(TriggerManagerTest, AdSamplerTrigger) {

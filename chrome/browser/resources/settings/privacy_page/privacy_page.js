@@ -338,16 +338,21 @@ Polymer({
   // </if>
 
   /**
-   * @param {boolean} enabled Whether reporting is enabled or not.
+   * @param {!SberPrefState} sberPrefState SBER enabled and managed state.
    * @private
    */
-  setSafeBrowsingExtendedReporting_: function(enabled) {
+  setSafeBrowsingExtendedReporting_: function(sberPrefState) {
     // Ignore the next change because it will happen when we set the pref.
-    this.safeBrowsingExtendedReportingPref_ = {
+    const pref = {
       key: '',
       type: chrome.settingsPrivate.PrefType.BOOLEAN,
-      value: enabled,
+      value: sberPrefState.enabled,
     };
+    if (sberPrefState.managed) {
+      pref.enforcement = chrome.settingsPrivate.Enforcement.ENFORCED;
+      pref.controlledBy = chrome.settingsPrivate.ControlledBy.USER_POLICY;
+    }
+    this.safeBrowsingExtendedReportingPref_ = pref;
   },
 
   /**

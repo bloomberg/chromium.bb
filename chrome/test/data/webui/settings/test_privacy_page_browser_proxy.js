@@ -18,6 +18,12 @@ class TestPrivacyPageBrowserProxy extends TestBrowserProxy {
       enabled: true,
       managed: true,
     };
+
+    /** @type {!SberPrefState} */
+    this.sberPrefState = {
+      enabled: true,
+      managed: true,
+    };
   }
 
   /** @override */
@@ -39,7 +45,7 @@ class TestPrivacyPageBrowserProxy extends TestBrowserProxy {
   /** @override */
   getSafeBrowsingExtendedReporting() {
     this.methodCalled('getSafeBrowsingExtendedReporting');
-    return Promise.resolve(true);
+    return Promise.resolve(this.sberPrefState);
   }
 
   /** @override */

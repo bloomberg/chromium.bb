@@ -395,20 +395,35 @@ cr.define('settings_privacy_page', function() {
             'getSafeBrowsingExtendedReporting').then(function() {
           Polymer.dom.flush();
 
-          // Control starts checked by default
+          // Control starts checked and managed by default.
+          assertTrue(testBrowserProxy.sberPrefState.enabled);
+          assertTrue(testBrowserProxy.sberPrefState.managed);
+
           const control = page.$$('#safeBrowsingExtendedReportingControl');
           assertEquals(true, control.checked);
+          assertEquals(true, !!control.pref.controlledBy);
 
-          // Notification from browser can uncheck the box
+          // Change the managed and checked states
+          const changedPrefState = {
+            enabled: false,
+            managed: false,
+          };
+          // Notification from browser can uncheck the box and make it not
+          // managed.
           cr.webUIListenerCallback('safe-browsing-extended-reporting-change',
-                                   false);
+                                   changedPrefState);
           Polymer.dom.flush();
           assertEquals(false, control.checked);
+          assertEquals(false, !!control.pref.controlledBy);
 
           // Tapping on the box will check it again.
           MockInteractions.tap(control);
-          return testBrowserProxy.whenCalled('getSafeBrowsingExtendedReporting',
-                                             true);
+
+          return testBrowserProxy.whenCalled(
+            'setSafeBrowsingExtendedReportingEnabled');
+        })
+        .then(function(enabled) {
+          assertTrue(enabled);
         });
       });
     });
