@@ -80,8 +80,8 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
     SUCCESS,
   };
   using CreateGpuMemoryBufferCallback =
-      base::Callback<void(const gfx::GpuMemoryBufferHandle& handle,
-                          BufferCreationStatus status)>;
+      base::OnceCallback<void(const gfx::GpuMemoryBufferHandle& handle,
+                              BufferCreationStatus status)>;
 
   using RequestGPUInfoCallback = base::Callback<void(const gpu::GPUInfo&)>;
   using RequestHDRStatusCallback = base::Callback<void(bool)>;
@@ -138,7 +138,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
                              gfx::BufferUsage usage,
                              int client_id,
                              gpu::SurfaceHandle surface_handle,
-                             const CreateGpuMemoryBufferCallback& callback);
+                             CreateGpuMemoryBufferCallback callback);
 
   // Tells the GPU process to destroy GPU memory buffer.
   void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,

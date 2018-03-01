@@ -34,20 +34,18 @@ class ClipboardImpl : public mojom::Clipboard {
   void AddBinding(mojom::ClipboardRequest request);
 
   // mojom::Clipboard implementation.
-  void GetSequenceNumber(
-      mojom::Clipboard::Type clipboard_type,
-      const GetSequenceNumberCallback& callback) override;
-  void GetAvailableMimeTypes(
-      mojom::Clipboard::Type clipboard_types,
-      const GetAvailableMimeTypesCallback& callback) override;
+  void GetSequenceNumber(mojom::Clipboard::Type clipboard_type,
+                         GetSequenceNumberCallback callback) override;
+  void GetAvailableMimeTypes(mojom::Clipboard::Type clipboard_types,
+                             GetAvailableMimeTypesCallback callback) override;
   void ReadClipboardData(mojom::Clipboard::Type clipboard_type,
                          const std::string& mime_type,
-                         const ReadClipboardDataCallback& callback) override;
+                         ReadClipboardDataCallback callback) override;
   void WriteClipboardData(
       mojom::Clipboard::Type clipboard_type,
       const base::Optional<
           std::unordered_map<std::string, std::vector<uint8_t>>>& data,
-      const WriteClipboardDataCallback& callback) override;
+      WriteClipboardDataCallback callback) override;
 
  private:
   // Internal struct which stores the current state of the clipboard.

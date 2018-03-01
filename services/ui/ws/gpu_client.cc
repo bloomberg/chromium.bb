@@ -7,15 +7,6 @@
 #include "components/viz/host/server_gpu_memory_buffer_manager.h"
 #include "services/viz/privileged/interfaces/gl/gpu_service.mojom.h"
 
-namespace {
-
-void RunCallback(const ui::mojom::Gpu::CreateGpuMemoryBufferCallback& callback,
-                 const gfx::GpuMemoryBufferHandle& handle) {
-  callback.Run(handle);
-}
-
-}  // namespace
-
 namespace ui {
 namespace ws {
 
@@ -38,8 +29,9 @@ GpuClient::GpuClient(
 GpuClient::~GpuClient() {
   gpu_memory_buffer_manager_->DestroyAllGpuMemoryBufferForClient(client_id_);
   if (!establish_callback_.is_null()) {
-    establish_callback_.Run(client_id_, mojo::ScopedMessagePipeHandle(),
-                            gpu::GPUInfo(), gpu::GpuFeatureInfo());
+    std::move(establish_callback_)
+        .Run(client_id_, mojo::ScopedMessagePipeHandle(), gpu::GPUInfo(),
+             gpu::GpuFeatureInfo());
   }
 }
 
@@ -51,17 +43,17 @@ void GpuClient::OnGpuChannelEstablished(
 }
 
 // mojom::Gpu overrides:
-void GpuClient::EstablishGpuChannel(
-    const EstablishGpuChannelCallback& callback) {
+void GpuClient::EstablishGpuChannel(EstablishGpuChannelCallback callback) {
   // TODO(sad): crbug.com/617415 figure out how to generate a meaningful
   // tracing id.
   const uint64_t client_tracing_id = 0;
   constexpr bool is_gpu_host = false;
   if (!establish_callback_.is_null()) {
-    establish_callback_.Run(client_id_, mojo::ScopedMessagePipeHandle(),
-                            gpu::GPUInfo(), gpu::GpuFeatureInfo());
+    std::move(establish_callback_)
+        .Run(client_id_, mojo::ScopedMessagePipeHandle(), gpu::GPUInfo(),
+             gpu::GpuFeatureInfo());
   }
-  establish_callback_ = callback;
+  establish_callback_ = std::move(callback);
   gpu_service_->EstablishGpuChannel(
       client_id_, client_tracing_id, is_gpu_host,
       base::Bind(&GpuClient::OnGpuChannelEstablished,
@@ -83,10 +75,10 @@ void GpuClient::CreateGpuMemoryBuffer(
     const gfx::Size& size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
-    const mojom::Gpu::CreateGpuMemoryBufferCallback& callback) {
+    mojom::Gpu::CreateGpuMemoryBufferCallback callback) {
   gpu_memory_buffer_manager_->AllocateGpuMemoryBuffer(
       id, client_id_, size, format, usage, gpu::kNullSurfaceHandle,
-      base::BindOnce(&RunCallback, callback));
+      std::move(callback));
 }
 
 void GpuClient::DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,

@@ -105,13 +105,13 @@ void BrowserGpuMemoryBufferManager::AllocateGpuMemoryBufferForChildProcess(
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
     int child_client_id,
-    const AllocationCallback& callback) {
+    AllocationCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Use service side allocation for native configurations.
   if (IsNativeGpuMemoryBufferConfiguration(format, usage)) {
     CreateGpuMemoryBufferOnIO(id, size, format, usage, gpu::kNullSurfaceHandle,
-                              child_client_id, callback);
+                              child_client_id, std::move(callback));
     return;
   }
 
@@ -119,7 +119,7 @@ void BrowserGpuMemoryBufferManager::AllocateGpuMemoryBufferForChildProcess(
   if (!gpu::GpuMemoryBufferImplSharedMemory::IsUsageSupported(usage) ||
       !gpu::GpuMemoryBufferImplSharedMemory::IsSizeValidForFormat(size,
                                                                   format)) {
-    callback.Run(gfx::GpuMemoryBufferHandle());
+    std::move(callback).Run(gfx::GpuMemoryBufferHandle());
     return;
   }
 
@@ -131,14 +131,14 @@ void BrowserGpuMemoryBufferManager::AllocateGpuMemoryBufferForChildProcess(
   if (!insert_result.second) {
     DLOG(ERROR) << "Child process attempted to allocate a GpuMemoryBuffer with "
                    "an existing ID.";
-    callback.Run(gfx::GpuMemoryBufferHandle());
+    std::move(callback).Run(gfx::GpuMemoryBufferHandle());
     return;
   }
 
   auto handle = gpu::GpuMemoryBufferImplSharedMemory::CreateGpuMemoryBuffer(
       id, size, format, usage);
   buffers.find(id)->second.shared_memory_guid = handle.handle.GetGUID();
-  callback.Run(handle);
+  std::move(callback).Run(handle);
 }
 
 void BrowserGpuMemoryBufferManager::SetDestructionSyncToken(
@@ -335,7 +335,7 @@ void BrowserGpuMemoryBufferManager::CreateGpuMemoryBufferOnIO(
     gfx::BufferUsage usage,
     gpu::SurfaceHandle surface_handle,
     int client_id,
-    const CreateCallback& callback) {
+    CreateCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BufferMap& buffers = clients_[client_id];
 
@@ -347,23 +347,23 @@ void BrowserGpuMemoryBufferManager::CreateGpuMemoryBufferOnIO(
   if (!insert_result.second) {
     DLOG(ERROR) << "Child process attempted to create a GpuMemoryBuffer with "
                    "an existing ID.";
-    callback.Run(gfx::GpuMemoryBufferHandle());
+    std::move(callback).Run(gfx::GpuMemoryBufferHandle());
     return;
   }
 
   GpuProcessHost* host = GpuProcessHost::Get();
   if (!host) {
     DLOG(ERROR) << "Cannot allocate GpuMemoryBuffer with no GpuProcessHost.";
-    callback.Run(gfx::GpuMemoryBufferHandle());
+    std::move(callback).Run(gfx::GpuMemoryBufferHandle());
     return;
   }
   // Note: Unretained is safe as IO thread is stopped before manager is
   // destroyed.
   host->CreateGpuMemoryBuffer(
       id, size, format, usage, client_id, surface_handle,
-      base::Bind(&BrowserGpuMemoryBufferManager::GpuMemoryBufferCreatedOnIO,
-                 base::Unretained(this), id, surface_handle, client_id,
-                 host->host_id(), callback));
+      base::BindOnce(&BrowserGpuMemoryBufferManager::GpuMemoryBufferCreatedOnIO,
+                     base::Unretained(this), id, surface_handle, client_id,
+                     host->host_id(), std::move(callback)));
 }
 
 void BrowserGpuMemoryBufferManager::GpuMemoryBufferCreatedOnIO(
@@ -371,7 +371,7 @@ void BrowserGpuMemoryBufferManager::GpuMemoryBufferCreatedOnIO(
     gpu::SurfaceHandle surface_handle,
     int client_id,
     int gpu_host_id,
-    const CreateCallback& callback,
+    CreateCallback callback,
     const gfx::GpuMemoryBufferHandle& handle,
     GpuProcessHost::BufferCreationStatus status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -385,7 +385,7 @@ void BrowserGpuMemoryBufferManager::GpuMemoryBufferCreatedOnIO(
       if (host)
         host->DestroyGpuMemoryBuffer(handle.id, client_id, gpu::SyncToken());
     }
-    callback.Run(gfx::GpuMemoryBufferHandle());
+    std::move(callback).Run(gfx::GpuMemoryBufferHandle());
     return;
   }
 
@@ -411,12 +411,12 @@ void BrowserGpuMemoryBufferManager::GpuMemoryBufferCreatedOnIO(
       // Remove the buffer entry and call CreateGpuMemoryBufferOnIO again.
       buffers.erase(buffer_it);
       CreateGpuMemoryBufferOnIO(id, size, format, usage, surface_handle,
-                                client_id, callback);
+                                client_id, std::move(callback));
     } else {
       // Remove the buffer entry and run the allocation callback with an empty
       // handle to indicate failure.
       buffers.erase(buffer_it);
-      callback.Run(gfx::GpuMemoryBufferHandle());
+      std::move(callback).Run(gfx::GpuMemoryBufferHandle());
     }
     return;
   }
@@ -427,7 +427,7 @@ void BrowserGpuMemoryBufferManager::GpuMemoryBufferCreatedOnIO(
   buffer_it->second.gpu_host_id = gpu_host_id;
   buffer_it->second.shared_memory_guid = handle.handle.GetGUID();
 
-  callback.Run(handle);
+  std::move(callback).Run(handle);
 }
 
 void BrowserGpuMemoryBufferManager::DestroyGpuMemoryBufferOnIO(
