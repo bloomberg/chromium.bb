@@ -620,6 +620,7 @@ int SpdyStreamRequest::StartRequest(
     const base::WeakPtr<SpdySession>& session,
     const GURL& url,
     RequestPriority priority,
+    const SocketTag& socket_tag,
     const NetLogWithSource& net_log,
     CompletionOnceCallback callback,
     const NetworkTrafficAnnotationTag& traffic_annotation) {
@@ -632,6 +633,7 @@ int SpdyStreamRequest::StartRequest(
   session_ = session;
   url_ = url;
   priority_ = priority;
+  socket_tag_ = socket_tag;
   net_log_ = net_log;
   callback_ = std::move(callback);
   traffic_annotation_ = MutableNetworkTrafficAnnotationTag(traffic_annotation);
@@ -693,6 +695,7 @@ void SpdyStreamRequest::Reset() {
   stream_.reset();
   url_ = GURL();
   priority_ = MINIMUM_PRIORITY;
+  socket_tag_ = SocketTag();
   net_log_ = NetLogWithSource();
   callback_.Reset();
   traffic_annotation_.reset();
@@ -1449,6 +1452,25 @@ size_t SpdySession::DumpMemoryStats(StreamSocket::SocketMemoryStats* stats,
          SpdyEstimateMemoryUsage(priority_dependency_state_);
 }
 
+bool SpdySession::ChangeSocketTag(const SocketTag& new_tag) {
+  if (!IsAvailable() || !connection_->socket())
+    return false;
+
+  // Changing the tag on the underlying socket will affect all streams,
+  // so only allow changing the tag when there are no active streams.
+  if (is_active())
+    return false;
+
+  connection_->socket()->ApplySocketTag(new_tag);
+
+  SpdySessionKey new_key(spdy_session_key_.host_port_pair(),
+                         spdy_session_key_.proxy_server(),
+                         spdy_session_key_.privacy_mode(), new_tag);
+  spdy_session_key_ = new_key;
+
+  return true;
+}
+
 // {,Try}CreateStream() can be called with |in_io_loop_| set if a stream is
 // being created in response to another being closed due to received data.
 
@@ -1462,6 +1484,10 @@ int SpdySession::TryCreateStream(
 
   if (availability_state_ == STATE_DRAINING)
     return ERR_CONNECTION_CLOSED;
+
+  // Fail if ChangeSocketTag() has been called.
+  if (request->socket_tag_ != spdy_session_key_.socket_tag())
+    return ERR_FAILED;
 
   if ((active_streams_.size() + created_streams_.size() - num_pushed_streams_ <
        max_concurrent_streams_)) {
