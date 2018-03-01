@@ -164,13 +164,17 @@ void UserActivityLoggerDelegateUkm::LogActivity(
     user_activity.SetLastUserActivityTime(
         std::floor(event.features().last_user_activity_time_sec() / 3600));
   }
+  if (event.features().has_time_since_last_key_sec()) {
+    user_activity.SetTimeSinceLastKey(
+        event.features().time_since_last_key_sec());
+  }
   if (event.features().has_time_since_last_mouse_sec()) {
     user_activity.SetTimeSinceLastMouse(
         event.features().time_since_last_mouse_sec());
   }
-  if (event.features().has_time_since_last_key_sec()) {
-    user_activity.SetTimeSinceLastKey(
-        event.features().time_since_last_key_sec());
+  if (event.features().has_time_since_last_touch_sec()) {
+    user_activity.SetTimeSinceLastTouch(
+        event.features().time_since_last_touch_sec());
   }
 
   if (event.features().has_on_battery()) {

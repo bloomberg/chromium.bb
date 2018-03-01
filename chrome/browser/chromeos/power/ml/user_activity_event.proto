@@ -85,6 +85,7 @@ message UserActivityEvent {
     // on what the last activity is.
     optional int32 time_since_last_mouse_sec = 6;
     optional int32 time_since_last_key_sec = 7;
+    optional int32 time_since_last_touch_sec = 21;
 
     // Duration of activity (user or video) up to last_activity_time_sec. If
     // activity starts at time t1, then recent_time_active_sec =
@@ -142,7 +143,7 @@ message UserActivityEvent {
     optional int32 key_events_in_last_hour = 18;
     optional int32 mouse_events_in_last_hour = 19;
     optional int32 touch_events_in_last_hour = 20;
-  }  // next id = 21
+  }  // next id = 22
 
   optional ModelParams params = 1;
   optional Event event = 2;

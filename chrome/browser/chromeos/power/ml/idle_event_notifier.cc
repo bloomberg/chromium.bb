@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/time/default_clock.h"
 #include "chrome/browser/chromeos/power/ml/real_boot_clock.h"
+#include "chrome/browser/chromeos/power/ml/recent_events_counter.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
 #include "chromeos/dbus/power_manager/suspend.pb.h"
@@ -20,6 +21,8 @@ namespace ml {
 using TimeSinceBoot = base::TimeDelta;
 
 constexpr base::TimeDelta IdleEventNotifier::kIdleDelay;
+constexpr base::TimeDelta IdleEventNotifier::kUserInputEventsDuration;
+constexpr int IdleEventNotifier::kNumUserInputEventsBuckets;
 
 struct IdleEventNotifier::ActivityDataInternal {
   // Use base::Time here because we later need to convert them to local time
@@ -30,22 +33,28 @@ struct IdleEventNotifier::ActivityDataInternal {
 
   TimeSinceBoot last_activity_since_boot;
   base::Optional<TimeSinceBoot> earliest_activity_since_boot;
-  base::Optional<TimeSinceBoot> last_mouse_since_boot;
   base::Optional<TimeSinceBoot> last_key_since_boot;
+  base::Optional<TimeSinceBoot> last_mouse_since_boot;
+  base::Optional<TimeSinceBoot> last_touch_since_boot;
   base::Optional<TimeSinceBoot> video_start_time;
   base::Optional<TimeSinceBoot> video_end_time;
 };
 
-IdleEventNotifier::ActivityData::ActivityData()
-    : last_activity_day(UserActivityEvent_Features_DayOfWeek_SUN) {}
+IdleEventNotifier::ActivityData::ActivityData() {}
 
 IdleEventNotifier::ActivityData::ActivityData(const ActivityData& input_data) {
   last_activity_day = input_data.last_activity_day;
   last_activity_time_of_day = input_data.last_activity_time_of_day;
   last_user_activity_time_of_day = input_data.last_user_activity_time_of_day;
   recent_time_active = input_data.recent_time_active;
-  time_since_last_mouse = input_data.time_since_last_mouse;
   time_since_last_key = input_data.time_since_last_key;
+  time_since_last_mouse = input_data.time_since_last_mouse;
+  time_since_last_touch = input_data.time_since_last_touch;
+  video_playing_time = input_data.video_playing_time;
+  time_since_video_ended = input_data.time_since_video_ended;
+  key_events_in_last_hour = input_data.key_events_in_last_hour;
+  mouse_events_in_last_hour = input_data.mouse_events_in_last_hour;
+  touch_events_in_last_hour = input_data.touch_events_in_last_hour;
 }
 
 IdleEventNotifier::IdleEventNotifier(
@@ -57,7 +66,16 @@ IdleEventNotifier::IdleEventNotifier(
       power_manager_client_observer_(this),
       user_activity_observer_(this),
       internal_data_(std::make_unique<ActivityDataInternal>()),
-      binding_(this, std::move(request)) {
+      binding_(this, std::move(request)),
+      key_counter_(
+          std::make_unique<RecentEventsCounter>(kUserInputEventsDuration,
+                                                kNumUserInputEventsBuckets)),
+      mouse_counter_(
+          std::make_unique<RecentEventsCounter>(kUserInputEventsDuration,
+                                                kNumUserInputEventsBuckets)),
+      touch_counter_(
+          std::make_unique<RecentEventsCounter>(kUserInputEventsDuration,
+                                                kNumUserInputEventsBuckets)) {
   DCHECK(power_manager_client);
   power_manager_client_observer_.Add(power_manager_client);
   DCHECK(detector);
@@ -145,8 +163,10 @@ void IdleEventNotifier::OnUserActivity(const ui::Event* event) {
   ActivityType type = ActivityType::USER_OTHER;
   if (event->IsKeyEvent()) {
     type = ActivityType::KEY;
-  } else if (event->IsMouseEvent() || event->IsTouchEvent()) {
+  } else if (event->IsMouseEvent()) {
     type = ActivityType::MOUSE;
+  } else if (event->IsTouchEvent()) {
+    type = ActivityType::TOUCH;
   }
   UpdateActivityData(type);
   ResetIdleDelayTimer();
@@ -199,14 +219,19 @@ IdleEventNotifier::ActivityData IdleEventNotifier::ConvertActivityData(
     data.recent_time_active = base::TimeDelta();
   }
 
+  if (internal_data.last_key_since_boot) {
+    data.time_since_last_key =
+        time_since_boot - internal_data.last_key_since_boot.value();
+  }
+
   if (internal_data.last_mouse_since_boot) {
     data.time_since_last_mouse =
         time_since_boot - internal_data.last_mouse_since_boot.value();
   }
 
-  if (internal_data.last_key_since_boot) {
-    data.time_since_last_key =
-        time_since_boot - internal_data.last_key_since_boot.value();
+  if (internal_data.last_touch_since_boot) {
+    data.time_since_last_touch =
+        time_since_boot - internal_data.last_touch_since_boot.value();
   }
 
   if (internal_data_->video_start_time && internal_data_->video_end_time) {
@@ -216,6 +241,11 @@ IdleEventNotifier::ActivityData IdleEventNotifier::ConvertActivityData(
     data.time_since_video_ended =
         time_since_boot - internal_data_->video_end_time.value();
   }
+
+  data.key_events_in_last_hour = key_counter_->GetTotal(time_since_boot);
+  data.mouse_events_in_last_hour = mouse_counter_->GetTotal(time_since_boot);
+  data.touch_events_in_last_hour = touch_counter_->GetTotal(time_since_boot);
+
   return data;
 }
 
@@ -275,9 +305,15 @@ void IdleEventNotifier::UpdateActivityData(ActivityType type) {
   switch (type) {
     case ActivityType::KEY:
       internal_data_->last_key_since_boot = time_since_boot;
+      key_counter_->Log(time_since_boot);
       break;
     case ActivityType::MOUSE:
       internal_data_->last_mouse_since_boot = time_since_boot;
+      mouse_counter_->Log(time_since_boot);
+      break;
+    case ActivityType::TOUCH:
+      internal_data_->last_touch_since_boot = time_since_boot;
+      touch_counter_->Log(time_since_boot);
       break;
     default:
       // We don't track other activity types.

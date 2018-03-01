@@ -31,10 +31,14 @@ bool operator==(const IdleEventNotifier::ActivityData& x,
          x.last_activity_time_of_day == y.last_activity_time_of_day &&
          x.last_user_activity_time_of_day == y.last_user_activity_time_of_day &&
          x.recent_time_active == y.recent_time_active &&
-         x.time_since_last_mouse == y.time_since_last_mouse &&
          x.time_since_last_key == y.time_since_last_key &&
+         x.time_since_last_mouse == y.time_since_last_mouse &&
+         x.time_since_last_touch == y.time_since_last_touch &&
          x.video_playing_time == y.video_playing_time &&
-         x.time_since_video_ended == y.time_since_video_ended;
+         x.time_since_video_ended == y.time_since_video_ended &&
+         x.key_events_in_last_hour == y.key_events_in_last_hour &&
+         x.mouse_events_in_last_hour == y.mouse_events_in_last_hour &&
+         x.touch_events_in_last_hour == y.touch_events_in_last_hour;
 }
 
 base::TimeDelta GetTimeSinceMidnight(base::Time time) {
@@ -281,6 +285,7 @@ TEST_F(IdleEventNotifierTest, UserActivityKey) {
   data.last_user_activity_time_of_day = time_of_day;
   data.recent_time_active = base::TimeDelta();
   data.time_since_last_key = IdleEventNotifier::kIdleDelay;
+  data.key_events_in_last_hour = 1;
   FastForwardAndCheckResults(1, data);
 }
 
@@ -297,6 +302,7 @@ TEST_F(IdleEventNotifierTest, UserActivityMouse) {
   data.last_user_activity_time_of_day = time_of_day;
   data.recent_time_active = base::TimeDelta();
   data.time_since_last_mouse = IdleEventNotifier::kIdleDelay;
+  data.mouse_events_in_last_hour = 1;
   FastForwardAndCheckResults(1, data);
 }
 
@@ -336,6 +342,8 @@ TEST_F(IdleEventNotifierTest, TwoQuickUserActivities) {
   data.recent_time_active = now_2 - now_1;
   data.time_since_last_key = IdleEventNotifier::kIdleDelay;
   data.time_since_last_mouse = IdleEventNotifier::kIdleDelay + (now_2 - now_1);
+  data.key_events_in_last_hour = 1;
+  data.mouse_events_in_last_hour = 1;
   FastForwardAndCheckResults(1, data);
 }
 
@@ -386,6 +394,7 @@ TEST_F(IdleEventNotifierTest, ActivityAfterVideoStarts) {
   data.time_since_last_mouse = IdleEventNotifier::kIdleDelay + now_3 - now_2;
   data.video_playing_time = now_3 - now_1;
   data.time_since_video_ended = IdleEventNotifier::kIdleDelay;
+  data.mouse_events_in_last_hour = 1;
   FastForwardAndCheckResults(1, data);
 }
 
@@ -408,6 +417,8 @@ TEST_F(IdleEventNotifierTest, IdleEventFieldReset) {
   data_1.recent_time_active = now_2 - now_1;
   data_1.time_since_last_key = IdleEventNotifier::kIdleDelay + now_2 - now_1;
   data_1.time_since_last_mouse = IdleEventNotifier::kIdleDelay;
+  data_1.key_events_in_last_hour = 1;
+  data_1.mouse_events_in_last_hour = 1;
   FastForwardAndCheckResults(1, data_1);
 
   idle_event_notifier_->PowerChanged(ac_power_);
@@ -421,6 +432,8 @@ TEST_F(IdleEventNotifierTest, IdleEventFieldReset) {
   data_2.recent_time_active = base::TimeDelta();
   data_2.time_since_last_key = IdleEventNotifier::kIdleDelay + now_3 - now_1;
   data_2.time_since_last_mouse = IdleEventNotifier::kIdleDelay + now_3 - now_2;
+  data_2.key_events_in_last_hour = 1;
+  data_2.mouse_events_in_last_hour = 1;
   FastForwardAndCheckResults(2, data_2);
 }
 
@@ -452,6 +465,7 @@ TEST_F(IdleEventNotifierTest, TwoConsecutiveVideoPlaying) {
   data.last_user_activity_time_of_day = GetTimeSinceMidnight(now_3);
   data.recent_time_active = now_3 - now_1;
   data.time_since_last_mouse = IdleEventNotifier::kIdleDelay;
+  data.mouse_events_in_last_hour = 1;
   data.video_playing_time = now_2 - now_1;
   data.time_since_video_ended = IdleEventNotifier::kIdleDelay + now_3 - now_2;
   FastForwardAndCheckResults(1, data);
@@ -487,6 +501,7 @@ TEST_F(IdleEventNotifierTest, TwoVideoPlayingFarApartOneIdleEvent) {
   data.last_user_activity_time_of_day = GetTimeSinceMidnight(now_2);
   data.recent_time_active = now_3 - now_1;
   data.time_since_last_mouse = IdleEventNotifier::kIdleDelay + now_3 - now_2;
+  data.mouse_events_in_last_hour = 2;
   data.video_playing_time = now_3 - now_2;
   data.time_since_video_ended = IdleEventNotifier::kIdleDelay;
   FastForwardAndCheckResults(1, data);
@@ -574,6 +589,140 @@ TEST_F(IdleEventNotifierTest, VideoPlayingPausedByLongSuspend) {
   data.video_playing_time = now_2 - now_1;
   data.time_since_video_ended = IdleEventNotifier::kIdleDelay;
   FastForwardAndCheckResults(1, data);
+}
+
+TEST_F(IdleEventNotifierTest, UserInputEventsOneIdleEvent) {
+  ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
+  ui::MouseEvent mouse_event(ui::ET_MOUSE_EXITED, gfx::Point(0, 0),
+                             gfx::Point(0, 0), base::TimeTicks(), 0, 0);
+  ui::TouchEvent touch_event(
+      ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), base::TimeTicks::UnixEpoch(),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+
+  base::Time first_activity_time = task_runner_->Now();
+  // This key event will be too old to be counted.
+  idle_event_notifier_->OnUserActivity(&key_event);
+
+  task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(10));
+  base::Time video_start_time = task_runner_->Now();
+  // Keep playing video so we won't run into an idle event.
+  idle_event_notifier_->OnVideoActivityStarted();
+
+  task_runner_->FastForwardBy(base::TimeDelta::FromMinutes(11));
+  base::Time last_key_time = task_runner_->Now();
+  idle_event_notifier_->OnUserActivity(&key_event);
+
+  task_runner_->FastForwardBy(base::TimeDelta::FromMinutes(11));
+  idle_event_notifier_->OnUserActivity(&mouse_event);
+
+  task_runner_->FastForwardBy(base::TimeDelta::FromMinutes(11));
+  idle_event_notifier_->OnUserActivity(&touch_event);
+
+  task_runner_->FastForwardBy(base::TimeDelta::FromMinutes(11));
+  idle_event_notifier_->OnUserActivity(&touch_event);
+
+  task_runner_->FastForwardBy(base::TimeDelta::FromMinutes(11));
+  base::Time last_touch_time = task_runner_->Now();
+  idle_event_notifier_->OnUserActivity(&touch_event);
+
+  task_runner_->FastForwardBy(base::TimeDelta::FromMinutes(11));
+  base::Time last_mouse_time = task_runner_->Now();
+  idle_event_notifier_->OnUserActivity(&mouse_event);
+
+  task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(10));
+  base::Time video_end_time = task_runner_->Now();
+  idle_event_notifier_->OnVideoActivityEnded();
+
+  IdleEventNotifier::ActivityData data;
+  data.last_activity_day = GetDayOfWeek(video_end_time);
+  data.last_activity_time_of_day = GetTimeSinceMidnight(video_end_time);
+  data.last_user_activity_time_of_day = GetTimeSinceMidnight(last_mouse_time);
+  data.recent_time_active = video_end_time - first_activity_time;
+  data.video_playing_time = video_end_time - video_start_time;
+  data.time_since_video_ended = IdleEventNotifier::kIdleDelay;
+  data.time_since_last_key =
+      IdleEventNotifier::kIdleDelay + video_end_time - last_key_time;
+  data.time_since_last_mouse =
+      IdleEventNotifier::kIdleDelay + video_end_time - last_mouse_time;
+  data.time_since_last_touch =
+      IdleEventNotifier::kIdleDelay + video_end_time - last_touch_time;
+
+  data.key_events_in_last_hour = 1;
+  data.mouse_events_in_last_hour = 2;
+  data.touch_events_in_last_hour = 3;
+
+  FastForwardAndCheckResults(1, data);
+}
+
+TEST_F(IdleEventNotifierTest, UserInputEventsTwoIdleEvents) {
+  ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
+  ui::MouseEvent mouse_event(ui::ET_MOUSE_EXITED, gfx::Point(0, 0),
+                             gfx::Point(0, 0), base::TimeTicks(), 0, 0);
+  ui::TouchEvent touch_event(
+      ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), base::TimeTicks::UnixEpoch(),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+
+  base::Time now_1 = task_runner_->Now();
+  idle_event_notifier_->OnUserActivity(&key_event);
+
+  IdleEventNotifier::ActivityData data_1;
+  data_1.last_activity_day = GetDayOfWeek(now_1);
+  data_1.last_activity_time_of_day = GetTimeSinceMidnight(now_1);
+  data_1.last_user_activity_time_of_day = GetTimeSinceMidnight(now_1);
+  data_1.recent_time_active = base::TimeDelta();
+  data_1.time_since_last_key = IdleEventNotifier::kIdleDelay;
+  data_1.key_events_in_last_hour = 1;
+  FastForwardAndCheckResults(1, data_1);
+
+  task_runner_->FastForwardBy(base::TimeDelta::FromMinutes(11));
+  base::Time last_key_time = task_runner_->Now();
+  idle_event_notifier_->OnUserActivity(&key_event);
+
+  task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(10));
+  base::Time video_start_time = task_runner_->Now();
+  // Keep playing video so we won't run into an idle event.
+  idle_event_notifier_->OnVideoActivityStarted();
+
+  task_runner_->FastForwardBy(base::TimeDelta::FromMinutes(11));
+  idle_event_notifier_->OnUserActivity(&mouse_event);
+
+  task_runner_->FastForwardBy(base::TimeDelta::FromMinutes(11));
+  idle_event_notifier_->OnUserActivity(&touch_event);
+
+  task_runner_->FastForwardBy(base::TimeDelta::FromMinutes(11));
+  idle_event_notifier_->OnUserActivity(&touch_event);
+
+  task_runner_->FastForwardBy(base::TimeDelta::FromMinutes(11));
+  base::Time last_touch_time = task_runner_->Now();
+  idle_event_notifier_->OnUserActivity(&touch_event);
+
+  task_runner_->FastForwardBy(base::TimeDelta::FromMinutes(11));
+  base::Time last_mouse_time = task_runner_->Now();
+  idle_event_notifier_->OnUserActivity(&mouse_event);
+
+  task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(10));
+  base::Time video_end_time = task_runner_->Now();
+  idle_event_notifier_->OnVideoActivityEnded();
+
+  IdleEventNotifier::ActivityData data_2;
+  data_2.last_activity_day = GetDayOfWeek(video_end_time);
+  data_2.last_activity_time_of_day = GetTimeSinceMidnight(video_end_time);
+  data_2.last_user_activity_time_of_day = GetTimeSinceMidnight(last_mouse_time);
+  data_2.recent_time_active = video_end_time - last_key_time;
+  data_2.video_playing_time = video_end_time - video_start_time;
+  data_2.time_since_video_ended = IdleEventNotifier::kIdleDelay;
+  data_2.time_since_last_key =
+      IdleEventNotifier::kIdleDelay + video_end_time - last_key_time;
+  data_2.time_since_last_mouse =
+      IdleEventNotifier::kIdleDelay + video_end_time - last_mouse_time;
+  data_2.time_since_last_touch =
+      IdleEventNotifier::kIdleDelay + video_end_time - last_touch_time;
+
+  data_2.key_events_in_last_hour = 1;
+  data_2.mouse_events_in_last_hour = 2;
+  data_2.touch_events_in_last_hour = 3;
+
+  FastForwardAndCheckResults(2, data_2);
 }
 
 }  // namespace ml

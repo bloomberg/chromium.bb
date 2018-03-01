@@ -2639,7 +2639,10 @@ be describing additional metrics about the same event.
   </metric>
   <metric name="KeyEventsInLastHour">
     <summary>
-      Number of key events in the past hour.
+      The number of key events reported as user activity in the last hour. This
+      is bucketized so that it is recorded precisely when it is in [0, 99],
+      rounded to nearest 100 when it is in [100, 999] and rounded to nearest
+      1000 when it is in [1000, 9999]. It is capped at 10000.
     </summary>
   </metric>
   <metric name="LastActivityDay">
@@ -2660,7 +2663,10 @@ be describing additional metrics about the same event.
   </metric>
   <metric name="MouseEventsInLastHour">
     <summary>
-      Number of mouse events in the past hour.
+      The number of mouse events reported as user activity in the last hour.
+      This is bucketized so that it is recorded precisely when it is in [0, 99],
+      rounded to nearest 100 when it is in [100, 999] and rounded to nearest
+      1000 when it is in [1000, 9999]. It is capped at 10000.
     </summary>
   </metric>
   <metric name="OnBattery">
@@ -2703,7 +2709,12 @@ be describing additional metrics about the same event.
   </metric>
   <metric name="TimeSinceLastMouse">
     <summary>
-      Time from last mouse or touch event in seconds.
+      Time from last mouse event in seconds.
+    </summary>
+  </metric>
+  <metric name="TimeSinceLastTouch">
+    <summary>
+      Time from last touch event in seconds.
     </summary>
   </metric>
   <metric name="TimeSinceLastVideoEnded">
@@ -2713,7 +2724,10 @@ be describing additional metrics about the same event.
   </metric>
   <metric name="TouchEventsInLastHour">
     <summary>
-      Number of touch events in the past hour.
+      The number of touch events reported as user activity in the last hour.
+      This is bucketized so that it is recorded precisely when it is in [0, 99],
+      rounded to nearest 100 when it is in [100, 999] and rounded to nearest
+      1000 when it is in [1000, 9999]. It is capped at 10000.
     </summary>
   </metric>
 </event>
