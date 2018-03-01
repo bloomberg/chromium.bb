@@ -487,16 +487,10 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
 }
 
 - (CollectionViewItem*)savePasswordsDetailItem {
-  BOOL savePasswordsEnabled = _browserState->GetPrefs()->GetBoolean(
-      password_manager::prefs::kCredentialsEnableService);
-  NSString* passwordsDetail = savePasswordsEnabled
-                                  ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
-                                  : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
-
   _savePasswordsDetailItem =
       [self detailItemWithType:ItemTypeSavedPasswords
                           text:l10n_util::GetNSString(IDS_IOS_PASSWORDS)
-                    detailText:passwordsDetail];
+                    detailText:nil];
 
   return _savePasswordsDetailItem;
 }
