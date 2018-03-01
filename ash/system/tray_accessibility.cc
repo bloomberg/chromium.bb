@@ -256,7 +256,7 @@ void AccessibilityDetailedView::AppendAccessibilityList() {
 
   screen_magnifier_enabled_ = delegate->IsMagnifierEnabled();
   screen_magnifier_view_ = AddScrollListCheckableItem(
-      kSystemMenuAccessibilityScreenMagnifierIcon,
+      kSystemMenuAccessibilityFullscreenMagnifierIcon,
       l10n_util::GetStringUTF16(
           IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SCREEN_MAGNIFIER),
       screen_magnifier_enabled_);
@@ -265,7 +265,7 @@ void AccessibilityDetailedView::AppendAccessibilityList() {
     docked_magnifier_enabled_ =
         Shell::Get()->docked_magnifier_controller()->GetEnabled();
     docked_magnifier_view_ = AddScrollListCheckableItem(
-        kSystemMenuAccessibilityScreenMagnifierIcon,
+        kSystemMenuAccessibilityDockedMagnifierIcon,
         l10n_util::GetStringUTF16(
             IDS_ASH_STATUS_TRAY_ACCESSIBILITY_DOCKED_MAGNIFIER),
         docked_magnifier_enabled_);
