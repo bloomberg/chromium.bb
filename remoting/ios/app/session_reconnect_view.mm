@@ -15,10 +15,12 @@
 #include "ui/base/l10n/l10n_util.h"
 
 static const CGFloat kPadding = 20.f;
+static UIFont* const kErrorFont = [UIFont systemFontOfSize:13.f];
 
 @interface SessionReconnectView () {
   MDCFloatingButton* _reconnectButton;
   UILabel* _errorLabel;
+  UILabel* _reportThisLabel;
 }
 @end
 
@@ -50,46 +52,66 @@ static const CGFloat kPadding = 20.f;
     [self addSubview:_reconnectButton];
 
     _errorLabel = [[UILabel alloc] init];
-    _errorLabel.textColor = RemotingTheme.hostErrorColor;
-    _errorLabel.font = [UIFont systemFontOfSize:13.f];
+    _errorLabel.textColor = RemotingTheme.connectionViewForegroundColor;
+    _errorLabel.font = kErrorFont;
     _errorLabel.numberOfLines = 0;
     _errorLabel.lineBreakMode = NSLineBreakByWordWrapping;
     _errorLabel.translatesAutoresizingMaskIntoConstraints = NO;
     [self addSubview:_errorLabel];
 
-    [self initializeLayoutConstraintsWithViews:NSDictionaryOfVariableBindings(
-                                                   _reconnectButton,
-                                                   _errorLabel)];
+    _reportThisLabel = [[UILabel alloc] init];
+    _reportThisLabel.accessibilityTraits = UIAccessibilityTraitLink;
+    _reportThisLabel.text = l10n_util::GetNSString(IDS_REPORT_THIS);
+    _reportThisLabel.textColor = RemotingTheme.hostErrorColor;
+    _reportThisLabel.font = kErrorFont;
+    _reportThisLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    [self addSubview:_reportThisLabel];
+
+    UITapGestureRecognizer* tapReportRecognizer =
+        [[UITapGestureRecognizer alloc] init];
+    tapReportRecognizer.numberOfTapsRequired = 1;
+    tapReportRecognizer.numberOfTouchesRequired = 1;
+    [tapReportRecognizer addTarget:self action:@selector(didTapReport:)];
+    _reportThisLabel.userInteractionEnabled = YES;
+    [_reportThisLabel addGestureRecognizer:tapReportRecognizer];
+
+    [self setupLayoutConstraints];
   }
   return self;
 }
 
-- (void)initializeLayoutConstraintsWithViews:(NSDictionary*)views {
-  //  NSMutableArray* layoutConstraints = [NSMutableArray array];
-  // Metrics to use in visual format strings.
-  NSDictionary* layoutMetrics = @{
-    @"padding" : @(kPadding),
-  };
+- (void)setupLayoutConstraints {
+  UILayoutGuide* errorTextLayoutGuide = [[UILayoutGuide alloc] init];
+  [self addLayoutGuide:errorTextLayoutGuide];
 
-  [self
-      addConstraints:[NSLayoutConstraint
-                         constraintsWithVisualFormat:
-                             @"H:|-[_errorLabel]-(padding)-[_reconnectButton]-|"
-                                             options:0
-                                             metrics:layoutMetrics
-                                               views:views]];
-  [self addConstraints:[NSLayoutConstraint
-                           constraintsWithVisualFormat:@"V:|-[_errorLabel]"
-                                               options:0
-                                               metrics:layoutMetrics
-                                                 views:views]];
-  [self addConstraints:[NSLayoutConstraint
-                           constraintsWithVisualFormat:@"V:|-[_reconnectButton]"
-                                               options:0
-                                               metrics:layoutMetrics
-                                                 views:views]];
+  [NSLayoutConstraint activateConstraints:@[
+    [errorTextLayoutGuide.centerYAnchor
+        constraintEqualToAnchor:self.centerYAnchor],
+    [errorTextLayoutGuide.leadingAnchor
+        constraintEqualToAnchor:self.leadingAnchor],
 
-  [self setNeedsUpdateConstraints];
+    [_errorLabel.topAnchor
+        constraintEqualToAnchor:errorTextLayoutGuide.topAnchor],
+    [_errorLabel.leadingAnchor
+        constraintEqualToAnchor:errorTextLayoutGuide.leadingAnchor],
+    [_errorLabel.trailingAnchor
+        constraintEqualToAnchor:errorTextLayoutGuide.trailingAnchor],
+
+    [_reportThisLabel.topAnchor
+        constraintEqualToAnchor:_errorLabel.bottomAnchor],
+    [_reportThisLabel.leadingAnchor
+        constraintEqualToAnchor:errorTextLayoutGuide.leadingAnchor],
+    [_reportThisLabel.bottomAnchor
+        constraintEqualToAnchor:errorTextLayoutGuide.bottomAnchor],
+    // _reportThisLabel's width should freely expand for its content.
+
+    [_reconnectButton.centerYAnchor constraintEqualToAnchor:self.centerYAnchor],
+    [_reconnectButton.leadingAnchor
+        constraintEqualToAnchor:errorTextLayoutGuide.trailingAnchor
+                       constant:kPadding],
+    [_reconnectButton.trailingAnchor
+        constraintEqualToAnchor:self.trailingAnchor],
+  ]];
 }
 
 #pragma mark - Properties
@@ -112,6 +134,12 @@ static const CGFloat kPadding = 20.f;
 - (void)didTapReconnect:(id)sender {
   if ([_delegate respondsToSelector:@selector(didTapReconnect)]) {
     [_delegate didTapReconnect];
+  }
+}
+
+- (void)didTapReport:(UITapGestureRecognizer*)sender {
+  if (sender.state == UIGestureRecognizerStateEnded) {
+    [self.delegate didTapReport];
   }
 }
 
