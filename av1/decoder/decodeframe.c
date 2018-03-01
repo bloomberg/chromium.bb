@@ -1113,6 +1113,7 @@ static void loop_restoration_read_sb_coeffs(const AV1_COMMON *const cm,
 }
 
 static void setup_loopfilter(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
+  assert(!cm->all_lossless);
   const int num_planes = av1_num_planes(cm);
   if (cm->allow_intrabc && NO_FILTER_FOR_IBC) return;
   struct loopfilter *lf = &cm->lf;
@@ -1562,6 +1563,8 @@ static void read_tile_info(AV1Decoder *const pbi,
         cm->rst_info[0].frame_restoration_type == RESTORE_NONE &&
         cm->rst_info[1].frame_restoration_type == RESTORE_NONE &&
         cm->rst_info[2].frame_restoration_type == RESTORE_NONE;
+    assert(
+        IMPLIES(cm->all_lossless, no_loopfilter && no_cdef && no_restoration));
     cm->single_tile_decoding = no_loopfilter && no_cdef && no_restoration;
     // Read the tile width/height
     if (cm->seq_params.sb_size == BLOCK_128X128) {
@@ -3115,7 +3118,6 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   read_tile_info(pbi, rb);
 #endif
 
-  setup_loopfilter(cm, rb);
   setup_quantization(cm, rb);
   xd->bd = (int)cm->bit_depth;
 
@@ -3184,12 +3186,14 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   cm->all_lossless = all_lossless(cm, xd);
   setup_segmentation_dequant(cm);
   if (cm->all_lossless) {
+    assert(cm->lf.filter_level[0] == 0 && cm->lf.filter_level[1] == 0);
     assert(cm->cdef_bits == 0 && cm->cdef_strengths[0] == 0 &&
            cm->cdef_uv_strengths[0] == 0);
     assert(cm->rst_info[0].frame_restoration_type == RESTORE_NONE &&
            cm->rst_info[1].frame_restoration_type == RESTORE_NONE &&
            cm->rst_info[2].frame_restoration_type == RESTORE_NONE);
   } else {
+    setup_loopfilter(cm, rb);
     setup_cdef(cm, rb);
     decode_restoration_mode(cm, rb);
   }

@@ -2108,6 +2108,7 @@ static void loop_restoration_write_sb_coeffs(const AV1_COMMON *const cm,
 }
 
 static void encode_loopfilter(AV1_COMMON *cm, struct aom_write_bit_buffer *wb) {
+  assert(!cm->all_lossless);
   if (cm->allow_intrabc && NO_FILTER_FOR_IBC) return;
   const int num_planes = av1_num_planes(cm);
   int i;
@@ -3299,7 +3300,6 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
   (void)saved_wb;
   write_tile_info(cm, wb);
 #endif
-  encode_loopfilter(cm, wb);
   encode_quantization(cm, wb);
   encode_segmentation(cm, xd, wb);
   {
@@ -3342,6 +3342,7 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
     }
   }
   if (!cm->all_lossless) {
+    encode_loopfilter(cm, wb);
     encode_cdef(cm, wb);
     encode_restoration_mode(cm, wb);
   }

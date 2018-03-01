@@ -190,6 +190,7 @@ void av1_free_restoration_buffers(AV1_COMMON *cm) {
 #if LOOP_FILTER_BITMASK
 static int alloc_loop_filter(AV1_COMMON *cm) {
   aom_free(cm->lf.lfm);
+  if (cm->all_lossless) return 0;
   // Each lfm holds bit masks for all the 4x4 blocks in a max
   // 64x64 (128x128 for ext_partitions) region.  The stride
   // and rows are rounded up / truncated to a multiple of 16
