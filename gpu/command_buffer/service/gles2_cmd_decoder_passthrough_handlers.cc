@@ -1749,9 +1749,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleScheduleOverlayPlaneCHROMIUM(
   GLint bounds_width = static_cast<GLint>(c.bounds_width);
   GLint bounds_height = static_cast<GLint>(c.bounds_height);
   GLfloat uv_x = static_cast<GLfloat>(c.uv_x);
-  GLfloat uv_y = static_cast<GLfloat>(c.uv_x);
-  GLfloat uv_width = static_cast<GLfloat>(c.uv_x);
-  GLfloat uv_height = static_cast<GLfloat>(c.uv_x);
+  GLfloat uv_y = static_cast<GLfloat>(c.uv_y);
+  GLfloat uv_width = static_cast<GLfloat>(c.uv_width);
+  GLfloat uv_height = static_cast<GLfloat>(c.uv_height);
 
   return DoScheduleOverlayPlaneCHROMIUM(
       plane_z_order, plane_transform, overlay_texture_id, bounds_x, bounds_y,
