@@ -5,11 +5,17 @@
 #include "chrome/browser/permissions/attestation_permission_request.h"
 
 #include "base/callback.h"
-#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/permissions/permission_request.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/vector_icon_types.h"
 #include "url/origin.h"
+
+static const gfx::VectorIcon kEmptyIcon = {
+    // While the length of the path-elements array can be zero, the pointer
+    // cannot be nullptr.
+    reinterpret_cast<const gfx::PathElement*>("Empty"), 0, nullptr, 0u, "Empty",
+};
 
 // AttestationPermissionRequest is a delegate class that provides information
 // and callbacks to the PermissionRequestManager.
@@ -25,9 +31,7 @@ class AttestationPermissionRequest : public PermissionRequest {
                                base::OnceCallback<void(bool)> callback)
       : origin_(origin), callback_(std::move(callback)) {}
 
-  PermissionRequest::IconId GetIconId() const override {
-    return kUsbSecurityKeyIcon;
-  }
+  PermissionRequest::IconId GetIconId() const override { return kEmptyIcon; }
 
   base::string16 GetMessageTextFragment() const override {
     return l10n_util::GetStringUTF16(
