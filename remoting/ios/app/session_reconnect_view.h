@@ -10,8 +10,10 @@
 @protocol SessionReconnectViewDelegate<NSObject>
 
 // Notifies the delegate that the user tapped the reconnect button.
-@optional
 - (void)didTapReconnect;
+
+// Notifies the delegate that the user tapped the report this button.
+- (void)didTapReport;
 
 @end
 

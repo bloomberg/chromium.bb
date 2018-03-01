@@ -13,6 +13,7 @@
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
 #import "ios/third_party/material_components_ios/src/components/NavigationBar/src/MaterialNavigationBar.h"
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
+#import "remoting/ios/app/help_and_feedback.h"
 #import "remoting/ios/app/host_view_controller.h"
 #import "remoting/ios/app/pin_entry_view.h"
 #import "remoting/ios/app/remoting_theme.h"
@@ -45,6 +46,9 @@ static const CGFloat kMargin = 20.f;
 static const CGFloat kBarHeight = 58.f;
 
 static const CGFloat kKeyboardAnimationTime = 0.3;
+
+static NSString* const kConnectionErrorFeedbackContext =
+    @"ConnectionErrorFeedbackContext";
 
 @interface ClientConnectionViewController ()<PinEntryDelegate,
                                              SessionReconnectViewDelegate> {
@@ -382,6 +386,15 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
 
 - (void)didTapReconnect {
   [self attemptConnectionToHost];
+}
+
+- (void)didTapReport {
+  [_client createFeedbackDataWithCallback:^(
+               const remoting::FeedbackData& feedbackData) {
+    [HelpAndFeedback.instance
+        presentFeedbackFlowWithContext:kConnectionErrorFeedbackContext
+                          feedbackData:feedbackData];
+  }];
 }
 
 #pragma mark - Private
