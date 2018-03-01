@@ -167,6 +167,17 @@ unsigned int ComputedStylePropertyMap::size() {
          (variables ? variables->size() : 0);
 }
 
+bool ComputedStylePropertyMap::ComparePropertyNames(const String& a,
+                                                    const String& b) {
+  if (a.StartsWith("--"))
+    return b.StartsWith("--") && WTF::CodePointCompareLessThan(a, b);
+  if (a.StartsWith("-")) {
+    return b.StartsWith("--") ||
+           (b.StartsWith("-") && WTF::CodePointCompareLessThan(a, b));
+  }
+  return b.StartsWith("-") || WTF::CodePointCompareLessThan(a, b);
+}
+
 Node* ComputedStylePropertyMap::StyledNode() const {
   DCHECK(node_);
   if (!pseudo_id_)
@@ -235,6 +246,9 @@ void ComputedStylePropertyMap::ForEachProperty(
   if (!style)
     return;
 
+  // Have to sort by all properties by code point, so we have to store
+  // them in a buffer first.
+  HeapVector<std::pair<AtomicString, Member<const CSSValue>>> values;
   for (const CSSProperty* property :
        CSSComputedStyleDeclaration::ComputableProperties()) {
     DCHECK(property);
@@ -242,18 +256,26 @@ void ComputedStylePropertyMap::ForEachProperty(
     const CSSValue* value = property->CSSValueFromComputedStyle(
         *style, nullptr /* layout_object */, StyledNode(), false);
     if (value)
-      callback(property->GetPropertyName(), *value);
+      values.emplace_back(property->GetPropertyNameAtomicString(), value);
   }
 
   const auto& variables = ComputedStyleCSSValueMapping::GetVariables(*style);
   if (variables) {
     for (const auto& name_value : *variables) {
       if (name_value.value) {
-        callback(name_value.key, *CSSCustomPropertyDeclaration::Create(
-                                     name_value.key, name_value.value));
+        values.emplace_back(name_value.key,
+                            CSSCustomPropertyDeclaration::Create(
+                                name_value.key, name_value.value));
       }
     }
   }
+
+  std::sort(values.begin(), values.end(), [](const auto& a, const auto& b) {
+    return ComparePropertyNames(a.first, b.first);
+  });
+
+  for (const auto& value : values)
+    callback(value.first, *value.second);
 }
 
 String ComputedStylePropertyMap::SerializationForShorthand(

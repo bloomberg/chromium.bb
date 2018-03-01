@@ -8,6 +8,7 @@
 #include "core/css/CSSVariableData.h"
 #include "core/css/ComputedStyleCSSValueMapping.h"
 #include "core/css/cssom/CSSUnparsedValue.h"
+#include "core/css/cssom/ComputedStylePropertyMap.h"
 #include "core/dom/Document.h"
 #include "core/style/ComputedStyle.h"
 
@@ -90,16 +91,27 @@ const CSSValue* PrepopulatedComputedStylePropertyMap::GetCustomProperty(
 
 void PrepopulatedComputedStylePropertyMap::ForEachProperty(
     const IterationCallback& callback) {
+  // Have to sort by all properties by code point, so we have to store
+  // them in a buffer first.
+  HeapVector<std::pair<AtomicString, Member<const CSSValue>>> values;
+
   for (const auto& entry : native_values_) {
     DCHECK(entry.value);
-    callback(CSSProperty::Get(entry.key).GetPropertyNameAtomicString(),
-             *entry.value);
+    values.emplace_back(
+        CSSProperty::Get(entry.key).GetPropertyNameAtomicString(), entry.value);
   }
 
   for (const auto& entry : custom_values_) {
     DCHECK(entry.value);
-    callback(entry.key, *entry.value);
+    values.emplace_back(entry.key, entry.value);
   }
+
+  std::sort(values.begin(), values.end(), [](const auto& a, const auto& b) {
+    return ComputedStylePropertyMap::ComparePropertyNames(a.first, b.first);
+  });
+
+  for (const auto& value : values)
+    callback(value.first, *value.second);
 }
 
 String PrepopulatedComputedStylePropertyMap::SerializationForShorthand(
