@@ -855,6 +855,10 @@ if (is_win) {
       "breakpad/src/tools/windows/dump_syms/dump_syms.cc",
     ]
 
+    deps = [
+      "//build/config:exe_and_shlib_deps",
+    ]
+
     lib_dirs = []
     if (target_cpu == "x64") {
       lib_dirs += [ "$visual_studio_path/DIA SDK/lib/amd64" ]
