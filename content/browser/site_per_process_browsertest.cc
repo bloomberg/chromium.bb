@@ -1534,6 +1534,83 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   scroll_observer.Wait();
 }
 
+class SitePerProcessDisableThreadedScrollingBrowserTest
+    : public SitePerProcessBrowserTest {
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    SitePerProcessBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kDisableThreadedScrolling);
+  }
+};
+
+// Ensure that the scrollability of a local subframe in an OOPIF is considered
+// when acknowledging GestureScrollBegin events sent to OOPIFs.
+// TODO(mcnee): Figure out why DisableThreadedScrolling is necessary here.
+IN_PROC_BROWSER_TEST_F(SitePerProcessDisableThreadedScrollingBrowserTest,
+                       ScrollLocalSubframeInOOPIF) {
+  ui::GestureConfiguration::GetInstance()->set_scroll_debounce_interval_in_ms(
+      0);
+
+  // This must be tall enough such that the outer iframe is not scrollable.
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/frame_tree/page_with_tall_positioned_frame.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  ASSERT_EQ(1U, root->child_count());
+
+  FrameTreeNode* parent_iframe_node = root->child_at(0);
+  GURL outer_frame_url(embedded_test_server()->GetURL(
+      "baz.com", "/frame_tree/page_with_positioned_frame.html"));
+  NavigateFrameToURL(parent_iframe_node, outer_frame_url);
+
+  // This must be tall enough such that the inner iframe is scrollable.
+  FrameTreeNode* nested_iframe_node = parent_iframe_node->child_at(0);
+  GURL inner_frame_url(
+      embedded_test_server()->GetURL("baz.com", "/tall_page.html"));
+  NavigateFrameToURL(nested_iframe_node, inner_frame_url);
+
+  ASSERT_EQ(
+      " Site A ------------ proxies for B\n"
+      "   +--Site B ------- proxies for A\n"
+      "        +--Site B -- proxies for A\n"
+      "Where A = http://a.com/\n"
+      "      B = http://baz.com/",
+      DepictFrameTree(root));
+
+  RenderWidgetHostViewBase* rwhv_child = static_cast<RenderWidgetHostViewBase*>(
+      nested_iframe_node->current_frame_host()
+          ->GetRenderWidgetHost()
+          ->GetView());
+
+  WaitForChildFrameSurfaceReady(parent_iframe_node->current_frame_host());
+
+  // When we scroll the inner frame, we should have the GSB be consumed.
+  // The outer iframe not being scrollable should not cause the GSB to go
+  // unconsumed.
+  InputEventAckWaiter ack_observer(
+      parent_iframe_node->current_frame_host()->GetRenderWidgetHost(),
+      base::BindRepeating([](content::InputEventAckSource,
+                             content::InputEventAckState state,
+                             const blink::WebInputEvent& event) {
+        return event.GetType() == blink::WebGestureEvent::kGestureScrollBegin &&
+               state == content::INPUT_EVENT_ACK_STATE_CONSUMED;
+      }));
+
+  // Now scroll the inner frame downward,
+  blink::WebMouseWheelEvent scroll_event(
+      blink::WebInputEvent::kMouseWheel, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  scroll_event.SetPositionInWidget(90, 110);
+  scroll_event.delta_x = 0.0f;
+  scroll_event.delta_y = -50.0f;
+  scroll_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
+  scroll_event.has_precise_scrolling_deltas = true;
+  rwhv_child->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
+  ack_observer.Wait();
+}
+
 // This test verifies that scrolling an element to view works across OOPIFs.
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollElementIntoView) {
   GURL url_domain_a(
