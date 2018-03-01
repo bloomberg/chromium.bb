@@ -20,6 +20,10 @@
 class FastShowPickler;
 class ChromeAppListModelUpdater;
 
+namespace ash {
+class AppListControllerImpl;
+}  // namespace ash
+
 namespace app_list {
 
 class AppListItemList;
@@ -95,6 +99,7 @@ class APP_LIST_MODEL_EXPORT AppListItem {
   friend class ::ChromeAppListModelUpdater;
 
   friend class ::FastShowPickler;
+  friend class ash::AppListControllerImpl;
   friend class AppListItemList;
   friend class AppListItemListTest;
   friend class AppListModel;

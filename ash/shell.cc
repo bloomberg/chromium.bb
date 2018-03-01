@@ -16,6 +16,7 @@
 #include "ash/accelerators/spoken_feedback_toggler.h"
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/accessibility_delegate.h"
+#include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/app_list_delegate_impl.h"
 #include "ash/ash_constants.h"
 #include "ash/autoclick/autoclick_controller.h"
@@ -974,6 +975,7 @@ void Shell::Init(ui::ContextFactory* context_factory,
   }
 
   accelerator_controller_ = shell_port_->CreateAcceleratorController();
+  app_list_controller_ = std::make_unique<AppListControllerImpl>();
   tablet_mode_controller_ = std::make_unique<TabletModeController>();
   shelf_controller_ = std::make_unique<ShelfController>();
 

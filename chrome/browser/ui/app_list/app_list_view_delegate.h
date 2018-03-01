@@ -28,6 +28,8 @@
 #include "ui/app_list/app_list_view_delegate_observer.h"
 #include "ui/app_list/views/app_list_view.h"
 
+class AppListClientImpl;
+
 namespace app_list {
 class SearchController;
 class SearchResourceManager;
@@ -84,6 +86,10 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   void OnTemplateURLServiceChanged() override;
 
  private:
+  // TODO(hejq): We'll merge AppListClientImpl and AppListViewDelegate, but not
+  //             now, since that'll change all interface calls.
+  friend AppListClientImpl;
+
   // Callback for ash::mojom::GetWallpaperColors.
   void OnGetWallpaperColorsCallback(const std::vector<SkColor>& colors);
 
