@@ -439,8 +439,7 @@
         "args": [
           "-v",
           "--xvfb",
-          "--browser=reference",
-          "--testing=True"
+          "--browser=release"
         ],
         "isolate_name": "performance_test_suite",
         "merge": {
@@ -467,7 +466,8 @@
           "hard_timeout": 10800,
           "ignore_task_failure": false,
           "io_timeout": 3600,
-          "shards": 2
+          "shards": 2,
+          "upload_test_results": true
         },
         "trigger_script": {
           "args": [
