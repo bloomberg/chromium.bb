@@ -233,6 +233,33 @@ double GetPageScaleFactor(Shell* shell) {
       .page_scale_factor;
 }
 
+// Helper function to retrieve the bounding client rect of the element
+// identified by |sel| inside |rfh|.
+gfx::Rect GetBoundingClientRect(RenderFrameHostImpl* rfh,
+                                const std::string& sel) {
+  std::string result;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      rfh,
+      base::StringPrintf(
+          "{"
+          "  let rect = document.querySelector('%s').getBoundingClientRect();"
+          "  let msg = `${rect.x},${rect.y},${rect.width},${rect.height}`;"
+          "  window.domAutomationController.send(msg);"
+          "}",
+          sel.c_str()),
+      &result));
+  std::vector<std::string> tokens = base::SplitString(
+      result, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  EXPECT_EQ(4U, tokens.size());
+  double x = 0.0, y = 0.0, width = 0.0, height = 0.0;
+  EXPECT_TRUE(base::StringToDouble(tokens[0], &x));
+  EXPECT_TRUE(base::StringToDouble(tokens[1], &y));
+  EXPECT_TRUE(base::StringToDouble(tokens[2], &width));
+  EXPECT_TRUE(base::StringToDouble(tokens[3], &height));
+  return {static_cast<int>(x), static_cast<int>(y), static_cast<int>(width),
+          static_cast<int>(height)};
+}
+
 class RedirectNotificationObserver : public NotificationObserver {
  public:
   // Register to listen for notifications of the given type from either a
@@ -1626,61 +1653,123 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDisableThreadedScrollingBrowserTest,
   ack_observer.Wait();
 }
 
-// This test verifies that scrolling an element to view works across OOPIFs.
+// This test verifies that scrolling an element to view works across OOPIFs. The
+// testing methodology is based on measuring bounding client rect position of
+// nested <iframe>'s after the inner-most frame scrolls into view. The
+// measurements are for two identical pages where one page does not have any
+// OOPIFs while the other has some nested OOPIFs.
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollElementIntoView) {
-  GURL url_domain_a(
+  const GURL url_a(
       embedded_test_server()->GetURL("a.com", "/iframe_out_of_view.html"));
-  EXPECT_TRUE(NavigateToURL(shell(), url_domain_a));
-  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
-
-  GURL url_domain_b(
+  const GURL url_b(
       embedded_test_server()->GetURL("b.com", "/iframe_out_of_view.html"));
-  NavigateFrameToURL(root->child_at(0), url_domain_b);
+  const GURL url_c(
+      embedded_test_server()->GetURL("c.com", "/iframe_out_of_view.html"));
 
-  GURL url_domain_c(embedded_test_server()->GetURL("c.com", "/title1.html"));
-  NavigateFrameToURL(root->child_at(0)->child_at(0), url_domain_c);
+  // Script which runs and returns with a |kRendererMsgLoaded| when load handler
+  // is called. This is a good point to read bounding client rect values as
+  // basic layout has already been completed.
+  const std::string kWaitForFrameLoadScript = "notifyWhenLoaded();";
+  const std::string kRendererMsgLoaded = "LOADED";
+  // Number of <iframe>'s which will not be empty. The actual frame tree has two
+  // more nodes one for root and one for the inner-most empty <iframe>.
+  const size_t kNonEmptyIframesCount = 5;
+  // Sent in 'load' handlers.
+  const std::string kIframeSelector = "iframe";
+  const int kRectDimensionErrorTolerance = 0;
+  const int kInfinity = 1000000;
+  const gfx::Rect kPositiveXYPlane(0, 0, kInfinity, kInfinity);
+  const std::string kScrollIntoViewScript =
+      "document.body.scrollIntoView({'behavior' : 'instant'});";
+  std::string msg_from_renderer;
 
-  RenderFrameHostImpl* main_frame = root->current_frame_host();
-  RenderFrameHostImpl* child_frame_b = root->child_at(0)->current_frame_host();
-  RenderFrameHostImpl* child_frame_c =
-      root->child_at(0)->child_at(0)->current_frame_host();
-  RenderWidgetHostView *main_frame_rwhv = main_frame->GetView(),
-                       *child_frame_b_rwhv = child_frame_b->GetView(),
-                       *child_frame_c_rwhv = child_frame_c->GetView();
-
-  // Wait until <iframe> 'b' is not visible (in main frame).
-  while (main_frame_rwhv->GetViewBounds().Intersects(
-      child_frame_b_rwhv->GetViewBounds())) {
-    base::RunLoop run_loop;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
-    run_loop.Run();
+  // First, recursively set the |scrollTop| and |scrollLeft| of |document.body|
+  // to its maximum and then navigate the <iframe> to |url_a|. The page will be
+  // structured as a(a(a(a(a(a(a)))))) where the inner-most <iframe> is empty.
+  ASSERT_TRUE(NavigateToURL(shell(), url_a));
+  FrameTreeNode* node = web_contents()->GetFrameTree()->root();
+  ASSERT_TRUE(ExecuteScriptAndExtractString(node, kWaitForFrameLoadScript,
+                                            &msg_from_renderer));
+  ASSERT_EQ(kRendererMsgLoaded, msg_from_renderer);
+  std::vector<gfx::Rect> reference_page_bounds_before_scroll = {
+      GetBoundingClientRect(node->current_frame_host(), kIframeSelector)};
+  node = node->child_at(0);
+  for (size_t index = 0; index < kNonEmptyIframesCount; ++index) {
+    NavigateFrameToURL(node, url_a);
+    ASSERT_TRUE(ExecuteScriptAndExtractString(node, kWaitForFrameLoadScript,
+                                              &msg_from_renderer));
+    ASSERT_EQ(kRendererMsgLoaded, msg_from_renderer);
+    // Store |document.querySelector('iframe').getBoundingClientRect()|.
+    reference_page_bounds_before_scroll.push_back(
+        GetBoundingClientRect(node->current_frame_host(), kIframeSelector));
+    node = node->child_at(0);
+  }
+  // Sanity-check: If the page is setup properly then all the <iframe>s should
+  // be out of view and their bounding rect should not intersect with the
+  // positive XY plane.
+  for (const auto& rect : reference_page_bounds_before_scroll)
+    ASSERT_FALSE(rect.Intersects(kPositiveXYPlane));
+  // Now scroll the inner-most frame into view.
+  ASSERT_TRUE(ExecuteScript(node, kScrollIntoViewScript));
+  // Store current client bounds origins to later compare against those from the
+  // page which contains OOPIFs.
+  node = web_contents()->GetFrameTree()->root();
+  std::vector<gfx::Rect> reference_page_bounds_after_scroll = {
+      GetBoundingClientRect(node->current_frame_host(), kIframeSelector)};
+  node = node->child_at(0);
+  for (size_t index = 0; index < kNonEmptyIframesCount; ++index) {
+    reference_page_bounds_after_scroll.push_back(
+        GetBoundingClientRect(node->current_frame_host(), kIframeSelector));
+    node = node->child_at(0);
   }
 
-  // Sanity check: <iframe> 'c' should not be visible either.
-  EXPECT_FALSE(main_frame_rwhv->GetViewBounds().Intersects(
-      child_frame_c_rwhv->GetViewBounds()));
-
-  // Scroll the inner most frame's body into view.
-  EXPECT_TRUE(ExecuteScript(child_frame_c, "document.body.scrollIntoView();"));
-
-  // Wait until <iframe> 'c' is in view bounds of parent frame and therefore
-  // visible.
-  while (!main_frame_rwhv->GetViewBounds().Intersects(
-      child_frame_c_rwhv->GetViewBounds())) {
-    base::RunLoop run_loop;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
-    run_loop.Run();
+  // Repeat the same process for the page containing OOPIFs. The page is
+  // structured as b(b(a(c(a(a(a)))))) where the inner-most <iframe> is empty.
+  ASSERT_TRUE(NavigateToURL(shell(), url_b));
+  node = web_contents()->GetFrameTree()->root();
+  ASSERT_TRUE(ExecuteScriptAndExtractString(node, kWaitForFrameLoadScript,
+                                            &msg_from_renderer));
+  ASSERT_EQ(kRendererMsgLoaded, msg_from_renderer);
+  std::vector<gfx::Rect> test_page_bounds_before_scroll = {
+      GetBoundingClientRect(node->current_frame_host(), kIframeSelector)};
+  const GURL iframe_urls[] = {url_b, url_a, url_c, url_a, url_a};
+  node = node->child_at(0);
+  for (size_t index = 0; index < kNonEmptyIframesCount; ++index) {
+    NavigateFrameToURL(node, iframe_urls[index]);
+    ASSERT_TRUE(ExecuteScriptAndExtractString(node, kWaitForFrameLoadScript,
+                                              &msg_from_renderer));
+    ASSERT_EQ(kRendererMsgLoaded, msg_from_renderer);
+    test_page_bounds_before_scroll.push_back(
+        GetBoundingClientRect(node->current_frame_host(), kIframeSelector));
+    node = node->child_at(0);
   }
-
-  // Sanity check: <iframe> 'b' should also be visible inside parent frame.
-  EXPECT_TRUE(main_frame_rwhv->GetViewBounds().Intersects(
-      child_frame_b_rwhv->GetViewBounds()));
-
-  // Sanity check: <iframe> 'c' should be visible inside <iframe> 'b'.
-  EXPECT_TRUE(child_frame_b_rwhv->GetViewBounds().Intersects(
-      child_frame_c_rwhv->GetViewBounds()));
+  // Sanity-check: The bounds should match those from non-OOPIF page.
+  for (size_t index = 0; index < kNonEmptyIframesCount; ++index) {
+    ASSERT_TRUE(test_page_bounds_before_scroll[index].ApproximatelyEqual(
+        reference_page_bounds_before_scroll[index],
+        kRectDimensionErrorTolerance));
+  }
+  // Scroll the inner most OOPIF.
+  ASSERT_TRUE(ExecuteScript(node, kScrollIntoViewScript));
+  // Now traverse the chain bottom to top and verify the bounds match for each
+  // <iframe>.
+  int index = kNonEmptyIframesCount;
+  RenderFrameHostImpl* current_rfh = node->current_frame_host()->GetParent();
+  while (current_rfh) {
+    gfx::Rect current_bounds =
+        GetBoundingClientRect(current_rfh, kIframeSelector);
+    gfx::Rect reference_bounds = reference_page_bounds_after_scroll[index];
+    if (current_bounds.ApproximatelyEqual(reference_bounds,
+                                          kRectDimensionErrorTolerance)) {
+      current_rfh = current_rfh->GetParent();
+      --index;
+    } else {
+      base::RunLoop run_loop;
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+          FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+      run_loop.Run();
+    }
+  }
 }
 
 // This test verifies that Scrolling a focused editable element into view works
@@ -1729,22 +1818,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // Verify that the bounding box of the <input> is visible inside the main
   // frame.
-  ASSERT_TRUE(ExecuteScriptAndExtractString(
-      child_frame,
-      " var rect = document.querySelector('input').getBoundingClientRect();"
-      "domAutomationController.send(rect.x + ',' + rect.y + ','"
-      "+ rect.width + ',' + rect.height);",
-      &result));
-  std::vector<std::string> tokens = base::SplitString(
-      result, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  ASSERT_EQ(4U, tokens.size());
-  double x, y, width, height;
-  ASSERT_TRUE(base::StringToDouble(tokens[0], &x));
-  ASSERT_TRUE(base::StringToDouble(tokens[1], &y));
-  ASSERT_TRUE(base::StringToDouble(tokens[2], &width));
-  ASSERT_TRUE(base::StringToDouble(tokens[3], &height));
-  gfx::Rect test_rect(static_cast<int>(x), static_cast<int>(y),
-                      static_cast<int>(width), static_cast<int>(height));
+  gfx::Rect test_rect = GetBoundingClientRect(child_frame, "input");
   test_rect += child_frame->GetView()->GetViewBounds().OffsetFromOrigin();
   EXPECT_TRUE(main_frame->GetView()->GetViewBounds().Intersects(test_rect));
 }

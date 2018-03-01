@@ -4734,17 +4734,7 @@ void LocalFrameView::ScrollRectToVisibleInRemoteParent(
     const WebScrollIntoViewParams& params) {
   DCHECK(GetFrame().IsLocalRoot() && !GetFrame().IsMainFrame() &&
          safe_to_propagate_scroll_to_parent_);
-  // Find the coordinates of the |rect_to_scroll| after removing all transforms
-  // on this LayoutObject. |new_rect| will be in the coordinate space of this
-  // frame; which is a local root. In the parent frame process, a similar
-  // transformation will convert the absolute coordinates in here to the space
-  // of the parent frame. The combination of the two transforms should act as a
-  // call to LocalToAncestorQuad when frame and its parent are in the same
-  // process (which is done in LayoutBox::ScrollRectIntoVisibleRecusive).
-  LayoutRect new_rect = EnclosingLayoutRect(
-      GetLayoutView()
-          ->LocalToAbsoluteQuad(FloatRect(rect_to_scroll), 0)
-          .BoundingBox());
+  LayoutRect new_rect = AbsoluteToRootFrame(rect_to_scroll);
   GetFrame().Client()->ScrollRectToVisibleInParentFrame(
       WebRect(new_rect.X().ToInt(), new_rect.Y().ToInt(),
               new_rect.Width().ToInt(), new_rect.Height().ToInt()),

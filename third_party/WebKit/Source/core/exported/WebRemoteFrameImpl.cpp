@@ -347,17 +347,12 @@ void WebRemoteFrameImpl::ScrollRectToVisible(
   }
 
   // Schedule the scroll.
-  auto* scroll_sequencer =
-      owner_element->GetDocument().GetPage()->GetSmoothScrollSequencer();
-  scroll_sequencer->AbortAnimations();
   LayoutRect new_rect_to_scroll = EnclosingLayoutRect(
       owner_object
           ->LocalToAncestorQuad(FloatRect(rect_to_scroll), owner_object->View(),
                                 kUseTransforms | kTraverseDocumentBoundaries)
           .BoundingBox());
-  owner_object->EnclosingBox()->ScrollRectToVisibleRecursive(
-      LayoutRect(new_rect_to_scroll), params);
-  scroll_sequencer->RunQueuedAnimations();
+  owner_object->ScrollRectToVisible(new_rect_to_scroll, params);
 }
 
 void WebRemoteFrameImpl::IntrinsicSizingInfoChanged(

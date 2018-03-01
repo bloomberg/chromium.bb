@@ -1,23 +1,48 @@
+<!DOCTYPE html>
 <html>
 <head>
  <meta name='viewport' content='width=device-width, minimum-scale=1'>
 </head>
 <body>
-<style>
+  <style>
   body {
     width: 100%;
     height: 100%;
+    margin: 0;
   }
-</style>
-<iframe>
-</iframe>
-<script>
-  window.addEventListener('load', function() {
-    var rect = document.body.getBoundingClientRect();
-    var iframe = document.querySelector('iframe');
-    iframe.style.marginTop = (10 * rect.height | 0)  + 'px';
-    iframe.style.marginLeft = (10 * rect.width  | 0) + 'px';
+
+  iframe {
+    width: 400px;
+    height: 400px;
+    margin: 300%;
+    border: 0;
+    padding: 0;
+    overflow: scroll;
+  }
+  </style>
+  <p> Single &lt;iframe&gt; which is positioned out of view. </p>
+  <iframe>
+  </iframe>
+  <p> Iframe should be positioned way above </p>
+  <script>
+  window.loaded = false;
+  window.notifyBrowser = false;
+  const kInfinity = 1000000;
+
+  window.addEventListener('load', () => {
+    document.scrollingElement.scrollTop = kInfinity;
+    document.scrollingElement.scrollLeft = kInfinity;
+    window.loaded = true;
+    if (window.notifyBrowser)
+      notifyWhenLoaded();
   });
-</script>
+
+  function notifyWhenLoaded() {
+    if (loaded)
+      window.domAutomationController.send('LOADED');
+    else
+      window.notifyBrowser = true;
+  }
+  </script>
 </body>
 </html>
