@@ -5,6 +5,7 @@
 #include "core/fetch/Request.h"
 
 #include "bindings/core/v8/Dictionary.h"
+#include "core/dom/AbortSignal.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/fetch/BodyStreamBuffer.h"
 #include "core/fetch/FetchManager.h"
@@ -12,6 +13,7 @@
 #include "core/fileapi/PublicURLManager.h"
 #include "core/loader/ThreadableLoader.h"
 #include "platform/bindings/V8PrivateProperty.h"
+#include "platform/heap/Persistent.h"
 #include "platform/loader/cors/CORS.h"
 #include "platform/loader/fetch/FetchUtils.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
@@ -21,6 +23,7 @@
 #include "platform/runtime_enabled_features.h"
 #include "platform/weborigin/OriginAccessEntry.h"
 #include "platform/weborigin/Referrer.h"
+#include "platform/wtf/Functional.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
 
@@ -80,8 +83,12 @@ Request* Request::CreateRequestWithRequestOrString(
   // "Let |request| be |input|'s request, if |input| is a Request object,
   // and a new request otherwise."
 
+  auto* execution_context = ExecutionContext::From(script_state);
   scoped_refptr<const SecurityOrigin> origin =
-      ExecutionContext::From(script_state)->GetSecurityOrigin();
+      execution_context->GetSecurityOrigin();
+
+  // "Let |signal| be null."
+  AbortSignal* signal = nullptr;
 
   // TODO(yhirano): Implement the following steps:
   // - "Let |window| be client."
@@ -106,12 +113,17 @@ Request* Request::CreateRequestWithRequestOrString(
       script_state,
       input_request ? input_request->GetRequest() : FetchRequestData::Create());
 
+  if (input_request) {
+    // "Set |signal| to input’s signal."
+    signal = input_request->signal_;
+  }
+
   // We don't use fallback values. We set these flags directly in below.
   // - "Let |fallbackMode| be null."
   // - "Let |fallbackCredentials| be null."
 
   // "Let |baseURL| be entry settings object's API base URL."
-  const KURL base_url = ExecutionContext::From(script_state)->BaseURL();
+  const KURL base_url = execution_context->BaseURL();
 
   // "If |input| is a string, run these substeps:"
   if (!input_request) {
@@ -328,6 +340,13 @@ Request* Request::CreateRequestWithRequestOrString(
     request->SetMethod(
         FetchUtils::NormalizeMethod(AtomicString(init.Method())));
   }
+
+  // "If |init|'s signal member is present, then set |signal| to it."
+  auto init_signal = init.Signal();
+  if (init_signal.has_value()) {
+    signal = init_signal.value();
+  }
+
   // "Let |r| be a new Request object associated with |request| and a new
   // Headers object whose guard is "request"."
   Request* r = Request::Create(script_state, request);
@@ -355,6 +374,18 @@ Request* Request::CreateRequestWithRequestOrString(
     }
     // "Set |r|'s Headers object's guard to "request-no-cors"."
     r->getHeaders()->SetGuard(Headers::kRequestNoCORSGuard);
+  }
+  // "If |signal| is not null, then add the following abort steps to signal:
+  //   1. Signal abort on r’s signal."
+  // TODO(ricea): Use the new "followingSignal ... is made to follow" algorithm
+  // that has been added to the DOM standard.
+  if (signal) {
+    if (signal->aborted()) {
+      r->signal_->SignalAbort();
+    } else {
+      signal->AddAlgorithm(WTF::Bind(&AbortSignal::SignalAbort,
+                                     WrapWeakPersistent(r->signal_.Get())));
+    }
   }
   // "Fill |r|'s Headers object with |headers|. Rethrow any exceptions."
   if (!init.GetHeaders().IsNull()) {
@@ -391,7 +422,7 @@ Request* Request::CreateRequestWithRequestOrString(
     //   `Content-Type`/|Content-Type| to |r|'s Headers object. Rethrow any
     //   exception."
     temporary_body =
-        new BodyStreamBuffer(script_state, std::move(init.GetBody()));
+        new BodyStreamBuffer(script_state, std::move(init.GetBody()), nullptr);
     if (!init.ContentType().IsEmpty() &&
         !r->getHeaders()->has(HTTPNames::Content_Type, exception_state)) {
       r->getHeaders()->append(HTTPNames::Content_Type, init.ContentType(),
@@ -415,8 +446,8 @@ Request* Request::CreateRequestWithRequestOrString(
   // non-null, run these substeps:"
   if (input_request && input_request->BodyBuffer()) {
     // "Let |dummyStream| be an empty ReadableStream object."
-    auto* dummy_stream =
-        new BodyStreamBuffer(script_state, BytesConsumer::CreateClosed());
+    auto* dummy_stream = new BodyStreamBuffer(
+        script_state, BytesConsumer::CreateClosed(), nullptr);
     // "Set |input|'s request's body to a new body whose stream is
     // |dummyStream|."
     input_request->request_->SetBuffer(dummy_stream);
@@ -503,15 +534,20 @@ bool Request::ParseCredentialsMode(
 
 Request::Request(ScriptState* script_state,
                  FetchRequestData* request,
-                 Headers* headers)
+                 Headers* headers,
+                 AbortSignal* signal)
     : Body(ExecutionContext::From(script_state)),
       request_(request),
-      headers_(headers) {
+      headers_(headers),
+      signal_(signal) {
   RefreshBody(script_state);
 }
 
 Request::Request(ScriptState* script_state, FetchRequestData* request)
-    : Request(script_state, request, Headers::Create(request->HeaderList())) {
+    : Request(script_state,
+              request,
+              Headers::Create(request->HeaderList()),
+              new AbortSignal(ExecutionContext::From(script_state))) {
   headers_->SetGuard(Headers::kRequestGuard);
 }
 
@@ -709,7 +745,14 @@ Request* Request::clone(ScriptState* script_state,
   RefreshBody(script_state);
   Headers* headers = Headers::Create(request->HeaderList());
   headers->SetGuard(headers_->GetGuard());
-  return new Request(script_state, request, headers);
+  auto* signal = new AbortSignal(ExecutionContext::From(script_state));
+  if (signal_->aborted()) {
+    signal->SignalAbort();
+  } else {
+    signal_->AddAlgorithm(
+        WTF::Bind(&AbortSignal::SignalAbort, WrapWeakPersistent(signal)));
+  }
+  return new Request(script_state, request, headers, signal);
 }
 
 FetchRequestData* Request::PassRequestData(ScriptState* script_state) {
@@ -785,6 +828,7 @@ void Request::Trace(blink::Visitor* visitor) {
   Body::Trace(visitor);
   visitor->Trace(request_);
   visitor->Trace(headers_);
+  visitor->Trace(signal_);
 }
 
 }  // namespace blink

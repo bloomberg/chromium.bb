@@ -419,6 +419,10 @@
       status: "stable",
     },
     {
+      name: "FetchRequestSignal",
+      status: "stable",
+    },
+    {
       name: "FileSystem",
       status: "stable",
     },

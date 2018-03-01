@@ -57,8 +57,8 @@ class GlobalFetchImpl final
       return ScriptPromise();
 
     probe::willSendXMLHttpOrFetchNetworkRequest(execution_context, r->url());
-    return fetch_manager_->Fetch(script_state,
-                                 r->PassRequestData(script_state));
+    return fetch_manager_->Fetch(script_state, r->PassRequestData(script_state),
+                                 r->signal());
   }
 
   virtual void Trace(blink::Visitor* visitor) {

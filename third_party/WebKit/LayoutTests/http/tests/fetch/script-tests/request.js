@@ -619,10 +619,10 @@ test(() => {
     new Request('/', {get integrity() { throw e; }})}, 'integrity');
   assert_throws(e, () => {
     new Request('/', {get keepalive() { throw e; }})}, 'keepalive');
+  assert_throws(e, () => {
+    new Request('/', {get signal() { throw e; }})}, 'signal');
 
   // Not implemented
-  // assert_throws(e, () => {
-  //  new Request('/', {get signal() { throw e; }})}, 'signal');
   // assert_throws(e, () => {
   //  new Request('/', {get window() { throw e; }})}, 'window');
 }, 'Getter exceptions should not be silently ignored');

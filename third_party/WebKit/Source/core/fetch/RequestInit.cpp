@@ -8,6 +8,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/IDLTypes.h"
 #include "bindings/core/v8/NativeValueTraitsImpl.h"
+#include "bindings/core/v8/V8AbortSignal.h"
 #include "bindings/core/v8/V8ArrayBuffer.h"
 #include "bindings/core/v8/V8ArrayBufferView.h"
 #include "bindings/core/v8/V8Blob.h"
@@ -111,6 +112,15 @@ RequestInit::RequestInit(ExecutionContext* context,
       return;
   }
 
+  WTF::Optional<v8::Local<v8::Value>> v8_signal;
+  if (RuntimeEnabledFeatures::FetchRequestSignalEnabled()) {
+    // In order to distinguish between undefined and null, split the steps of
+    // looking it up in the dictionary and converting to the native type.
+    v8_signal = h.Get<IDLPassThrough>("signal");
+    if (exception_state.HadException())
+      return;
+  }
+
   auto v8_body = h.Get<IDLPassThrough>("body");
   if (exception_state.HadException())
     return;
@@ -141,11 +151,28 @@ RequestInit::RequestInit(ExecutionContext* context,
       return;
   }
 
+  if (v8_signal.has_value()) {
+    if ((*v8_signal)->IsNull()) {
+      // Override any existing value.
+      signal_.emplace(nullptr);
+    } else {
+      signal_.emplace(NativeValueTraits<AbortSignal>::NativeValue(
+          isolate, *v8_signal, exception_state));
+    }
+    if (exception_state.HadException())
+      return;
+  }
+
   if (v8_body.has_value()) {
     SetUpBody(context, isolate, *v8_body, exception_state);
     if (exception_state.HadException())
       return;
   }
+}
+
+WTF::Optional<AbortSignal*> RequestInit::Signal() const {
+  return signal_.has_value() ? WTF::make_optional(signal_.value().Get())
+                             : WTF::nullopt;
 }
 
 void RequestInit::SetUpReferrer(

@@ -7,6 +7,9 @@
 #include <memory>
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
+#include "core/dom/AbortSignal.h"
+#include "core/dom/DOMException.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/fetch/Body.h"
 #include "core/fetch/BodyStreamBuffer.h"
@@ -30,6 +33,7 @@
 #include "platform/bindings/ScriptState.h"
 #include "platform/bindings/V8ThrowException.h"
 #include "platform/exported/WrappedResourceResponse.h"
+#include "platform/heap/Persistent.h"
 #include "platform/loader/SubresourceIntegrity.h"
 #include "platform/loader/cors/CORS.h"
 #include "platform/loader/fetch/FetchUtils.h"
@@ -43,6 +47,8 @@
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/SecurityPolicy.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/Functional.h"
 #include "platform/wtf/HashSet.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/WTFString.h"
@@ -159,9 +165,10 @@ class FetchManager::Loader final
                         FetchManager* fetch_manager,
                         ScriptPromiseResolver* resolver,
                         FetchRequestData* request,
-                        bool is_isolated_world) {
+                        bool is_isolated_world,
+                        AbortSignal* signal) {
     return new Loader(execution_context, fetch_manager, resolver, request,
-                      is_isolated_world);
+                      is_isolated_world, signal);
   }
 
   ~Loader() override;
@@ -177,6 +184,7 @@ class FetchManager::Loader final
 
   void Start();
   void Dispose();
+  void Abort();
 
   class SRIVerifier final : public GarbageCollectedFinalized<SRIVerifier>,
                             public WebDataConsumerHandle::Client {
@@ -283,7 +291,8 @@ class FetchManager::Loader final
          FetchManager*,
          ScriptPromiseResolver*,
          FetchRequestData*,
-         bool is_isolated_world);
+         bool is_isolated_world,
+         AbortSignal*);
 
   void PerformSchemeFetch();
   void PerformNetworkError(const String& message);
@@ -305,6 +314,7 @@ class FetchManager::Loader final
   Member<SRIVerifier> integrity_verifier_;
   bool did_finish_loading_;
   bool is_isolated_world_;
+  Member<AbortSignal> signal_;
   Vector<KURL> url_list_;
   Member<ExecutionContext> execution_context_;
 };
@@ -313,7 +323,8 @@ FetchManager::Loader::Loader(ExecutionContext* execution_context,
                              FetchManager* fetch_manager,
                              ScriptPromiseResolver* resolver,
                              FetchRequestData* request,
-                             bool is_isolated_world)
+                             bool is_isolated_world,
+                             AbortSignal* signal)
     : fetch_manager_(fetch_manager),
       resolver_(resolver),
       request_(request),
@@ -323,6 +334,7 @@ FetchManager::Loader::Loader(ExecutionContext* execution_context,
       integrity_verifier_(nullptr),
       did_finish_loading_(false),
       is_isolated_world_(is_isolated_world),
+      signal_(signal),
       execution_context_(execution_context) {
   url_list_.push_back(request->Url());
 }
@@ -337,6 +349,7 @@ void FetchManager::Loader::Trace(blink::Visitor* visitor) {
   visitor->Trace(request_);
   visitor->Trace(loader_);
   visitor->Trace(integrity_verifier_);
+  visitor->Trace(signal_);
   visitor->Trace(execution_context_);
 }
 
@@ -433,11 +446,12 @@ void FetchManager::Loader::DidReceiveResponse(
     response_data = FetchResponseData::CreateWithBuffer(new BodyStreamBuffer(
         script_state,
         new BytesConsumerForDataConsumerHandle(
-            ExecutionContext::From(script_state), std::move(handle))));
+            ExecutionContext::From(script_state), std::move(handle)),
+        signal_));
   } else {
     sri_consumer = new SRIBytesConsumer();
     response_data = FetchResponseData::CreateWithBuffer(
-        new BodyStreamBuffer(script_state, sri_consumer));
+        new BodyStreamBuffer(script_state, sri_consumer, signal_));
   }
   response_data->SetStatus(response.HttpStatusCode());
   response_data->SetStatusMessage(response.HttpStatusText());
@@ -655,6 +669,22 @@ void FetchManager::Loader::Dispose() {
   execution_context_ = nullptr;
 }
 
+void FetchManager::Loader::Abort() {
+  if (resolver_) {
+    resolver_->Reject(DOMException::Create(kAbortError));
+    resolver_.Clear();
+  }
+  if (loader_) {
+    // Prevent re-entrancy.
+    auto loader = loader_;
+    loader_ = nullptr;
+    loader->Cancel();
+  }
+  // TODO(ricea): Maybe a more specific probe is needed?
+  probe::didFailFetch(execution_context_, this);
+  NotifyFinished();
+}
+
 void FetchManager::Loader::PerformSchemeFetch() {
   // "To perform a scheme fetch using |request|, switch on |request|'s url's
   // scheme, and run the associated steps:"
@@ -853,16 +883,25 @@ FetchManager::FetchManager(ExecutionContext* execution_context)
     : ContextLifecycleObserver(execution_context) {}
 
 ScriptPromise FetchManager::Fetch(ScriptState* script_state,
-                                  FetchRequestData* request) {
+                                  FetchRequestData* request,
+                                  AbortSignal* signal) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
+
+  DCHECK(signal);
+  if (signal->aborted()) {
+    resolver->Reject(DOMException::Create(kAbortError));
+    return promise;
+  }
 
   request->SetContext(WebURLRequest::kRequestContextFetch);
 
   Loader* loader =
       Loader::Create(GetExecutionContext(), this, resolver, request,
-                     script_state->World().IsIsolatedWorld());
+                     script_state->World().IsIsolatedWorld(), signal);
   loaders_.insert(loader);
+  signal->AddAlgorithm(WTF::Bind(&Loader::Abort, WrapWeakPersistent(loader)));
+  // TODO(ricea): Reject the Response body with AbortError, not TypeError.
   loader->Start();
   return promise;
 }
