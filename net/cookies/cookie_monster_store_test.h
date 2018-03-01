@@ -88,7 +88,8 @@ class MockPersistentCookieStore : public CookieMonster::PersistentCookieStore {
 
   const CommandList& commands() const { return commands_; }
 
-  void Load(const LoadedCallback& loaded_callback) override;
+  void Load(const LoadedCallback& loaded_callback,
+            const NetLogWithSource& /* net_log */) override;
 
   void LoadCookiesForKey(const std::string& key,
                          const LoadedCallback& loaded_callback) override;
@@ -102,6 +103,8 @@ class MockPersistentCookieStore : public CookieMonster::PersistentCookieStore {
   void SetBeforeFlushCallback(base::RepeatingClosure callback) override;
 
   void Flush(base::OnceClosure callback) override;
+
+  void Close() override;
 
   void SetForceKeepSessionState() override;
 
@@ -142,7 +145,8 @@ class MockSimplePersistentCookieStore
  public:
   MockSimplePersistentCookieStore();
 
-  void Load(const LoadedCallback& loaded_callback) override;
+  void Load(const LoadedCallback& loaded_callback,
+            const NetLogWithSource& /* net_log */) override;
 
   void LoadCookiesForKey(const std::string& key,
                          const LoadedCallback& loaded_callback) override;
@@ -156,6 +160,8 @@ class MockSimplePersistentCookieStore
   void SetBeforeFlushCallback(base::RepeatingClosure callback) override;
 
   void Flush(base::OnceClosure callback) override;
+
+  void Close() override;
 
   void SetForceKeepSessionState() override;
 

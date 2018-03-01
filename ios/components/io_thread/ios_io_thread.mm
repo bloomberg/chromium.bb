@@ -330,7 +330,8 @@ void IOSIOThread::Init() {
   CreateDefaultAuthHandlerFactory();
   globals_->http_server_properties.reset(new net::HttpServerPropertiesImpl());
   // In-memory cookie store.
-  globals_->system_cookie_store.reset(new net::CookieMonster(nullptr));
+  globals_->system_cookie_store.reset(
+      new net::CookieMonster(nullptr, net_log_));
   // In-memory channel ID store.
   globals_->system_channel_id_service.reset(
       new net::ChannelIDService(new net::DefaultChannelIDStore(nullptr)));

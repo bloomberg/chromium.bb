@@ -128,7 +128,7 @@ HeadlessURLRequestContextGetter::GetURLRequestContext() {
         cookie_config.crypto_delegate =
             cookie_config::GetCookieCryptoDelegate();
         std::unique_ptr<net::CookieStore> cookie_store =
-            CreateCookieStore(cookie_config);
+            CreateCookieStore(cookie_config, net_log_);
         std::unique_ptr<net::ChannelIDService> channel_id_service =
             std::make_unique<net::ChannelIDService>(
                 new net::DefaultChannelIDStore(nullptr));

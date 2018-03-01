@@ -62,8 +62,10 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_monster_change_dispatcher.h"
+#include "net/cookies/cookie_monster_netlog_params.h"
 #include "net/cookies/cookie_util.h"
 #include "net/cookies/parsed_cookie.h"
+#include "net/log/net_log.h"
 #include "net/ssl/channel_id_service.h"
 #include "url/origin.h"
 
@@ -330,30 +332,36 @@ size_t CountCookiesForPossibleDeletion(
 
 }  // namespace
 
-CookieMonster::CookieMonster(PersistentCookieStore* store)
+CookieMonster::CookieMonster(PersistentCookieStore* store, NetLog* log)
     : CookieMonster(
           store,
           nullptr,
+          log,
           base::TimeDelta::FromSeconds(kDefaultAccessUpdateThresholdSeconds)) {}
-
-CookieMonster::CookieMonster(PersistentCookieStore* store,
-                             ChannelIDService* channel_id_service)
-    : CookieMonster(
-          store,
-          channel_id_service,
-          base::TimeDelta::FromSeconds(kDefaultAccessUpdateThresholdSeconds)) {}
-
-CookieMonster::CookieMonster(PersistentCookieStore* store,
-                             base::TimeDelta last_access_threshold)
-    : CookieMonster(store, nullptr, last_access_threshold) {}
 
 CookieMonster::CookieMonster(PersistentCookieStore* store,
                              ChannelIDService* channel_id_service,
+                             NetLog* log)
+    : CookieMonster(
+          store,
+          channel_id_service,
+          log,
+          base::TimeDelta::FromSeconds(kDefaultAccessUpdateThresholdSeconds)) {}
+
+CookieMonster::CookieMonster(PersistentCookieStore* store,
+                             NetLog* log,
+                             base::TimeDelta last_access_threshold)
+    : CookieMonster(store, nullptr, log, last_access_threshold) {}
+
+CookieMonster::CookieMonster(PersistentCookieStore* store,
+                             ChannelIDService* channel_id_service,
+                             NetLog* log,
                              base::TimeDelta last_access_threshold)
     : initialized_(false),
       started_fetching_all_cookies_(false),
       finished_fetching_all_cookies_(false),
       seen_global_task_(false),
+      net_log_(NetLogWithSource::Make(log, NetLogSourceType::COOKIE_STORE)),
       store_(store),
       last_access_threshold_(last_access_threshold),
       channel_id_service_(channel_id_service),
@@ -375,6 +383,10 @@ CookieMonster::CookieMonster(PersistentCookieStore* store,
         base::Bind(&ChannelIDStore::Flush,
                    base::Unretained(channel_id_service_->GetChannelIDStore())));
   }
+  net_log_.BeginEvent(
+      NetLogEventType::COOKIE_STORE_ALIVE,
+      base::BindRepeating(&NetLogCookieMonsterConstructorCallback,
+                          store != nullptr, channel_id_service != nullptr));
 }
 
 // Asynchronous CookieMonster API
@@ -543,6 +555,9 @@ void CookieMonster::SetCookieableSchemes(
 void CookieMonster::SetPersistSessionCookies(bool persist_session_cookies) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!initialized_);
+  net_log_.AddEvent(
+      NetLogEventType::COOKIE_STORE_SESSION_PERSISTENCE,
+      NetLog::BoolCallback("persistence", persist_session_cookies));
   persist_session_cookies_ = persist_session_cookies;
 }
 
@@ -571,6 +586,13 @@ CookieMonster::~CookieMonster() {
   if (channel_id_service_ && store_) {
     store_->SetBeforeFlushCallback(base::Closure());
   }
+
+  // Trigger shutdown processing on the persistent store while
+  // it still has access to the cookie NetLogWithSource.
+  if (store_)
+    store_->Close();
+
+  net_log_.EndEvent(NetLogEventType::COOKIE_STORE_ALIVE);
 
   // TODO(mmenke): Does it really make sense to run
   // CookieChanged callbacks when the CookieStore is destroyed?
@@ -821,7 +843,8 @@ void CookieMonster::FetchAllCookies() {
   // We bind in the current time so that we can report the wall-clock time for
   // loading cookies.
   store_->Load(base::Bind(&CookieMonster::OnLoaded,
-                          weak_ptr_factory_.GetWeakPtr(), TimeTicks::Now()));
+                          weak_ptr_factory_.GetWeakPtr(), TimeTicks::Now()),
+               net_log_);
 }
 
 void CookieMonster::OnLoaded(
@@ -1122,6 +1145,10 @@ bool CookieMonster::DeleteAnyEquivalentCookie(
       skipped_secure_cookie = true;
       histogram_cookie_delete_equivalent_->Add(
           COOKIE_DELETE_EQUIVALENT_SKIPPING_SECURE);
+      net_log_.AddEvent(
+          NetLogEventType::COOKIE_STORE_COOKIE_REJECTED_SECURE,
+          base::BindRepeating(&NetLogCookieMonsterCookieRejectedSecure, cc,
+                              &ecc));
       // If the cookie is equivalent to the new cookie and wouldn't have been
       // skipped for being HTTP-only, record that it is a skipped secure cookie
       // that would have been deleted otherwise.
@@ -1142,6 +1169,10 @@ bool CookieMonster::DeleteAnyEquivalentCookie(
           << "Duplicate equivalent cookies found, cookie store is corrupted.";
       if (skip_httponly && cc->IsHttpOnly()) {
         skipped_httponly = true;
+        net_log_.AddEvent(
+            NetLogEventType::COOKIE_STORE_COOKIE_REJECTED_HTTPONLY,
+            base::BindRepeating(&NetLogCookieMonsterCookieRejectedHttponly, cc,
+                                &ecc));
       } else {
         histogram_cookie_delete_equivalent_->Add(
             COOKIE_DELETE_EQUIVALENT_FOUND);
@@ -1166,6 +1197,10 @@ CookieMonster::CookieMap::iterator CookieMonster::InternalInsertCookie(
     bool sync_to_store) {
   DCHECK(thread_checker_.CalledOnValidThread());
   CanonicalCookie* cc_ptr = cc.get();
+
+  net_log_.AddEvent(NetLogEventType::COOKIE_STORE_COOKIE_ADDED,
+                    base::BindRepeating(&NetLogCookieMonsterCookieAdded,
+                                        cc.get(), sync_to_store));
 
   if ((cc_ptr->IsPersistent() || persist_session_cookies_) && store_.get() &&
       sync_to_store)
@@ -1341,10 +1376,16 @@ void CookieMonster::InternalDeleteCookie(CookieMap::iterator it,
                         << ", cause:" << deletion_cause
                         << ", cc: " << cc->DebugString();
 
+  ChangeCausePair mapping = kChangeCauseMapping[deletion_cause];
+  if (deletion_cause != DELETE_COOKIE_DONT_RECORD) {
+    net_log_.AddEvent(NetLogEventType::COOKIE_STORE_COOKIE_DELETED,
+                      base::BindRepeating(&NetLogCookieMonsterCookieDeleted, cc,
+                                          mapping.cause, sync_to_store));
+  }
+
   if ((cc->IsPersistent() || persist_session_cookies_) && store_.get() &&
       sync_to_store)
     store_->DeleteCookie(*cc);
-  ChangeCausePair mapping = kChangeCauseMapping[deletion_cause];
   change_dispatcher_.DispatchChange(*cc, mapping.cause, mapping.notify);
   cookies_.erase(it);
 }

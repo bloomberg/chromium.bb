@@ -108,8 +108,9 @@ class SQLitePersistentCookieStoreTest : public testing::Test {
 
   void Load(CanonicalCookieVector* cookies) {
     EXPECT_FALSE(loaded_event_.IsSignaled());
-    store_->Load(base::Bind(&SQLitePersistentCookieStoreTest::OnLoaded,
-                            base::Unretained(this)));
+    store_->Load(base::BindRepeating(&SQLitePersistentCookieStoreTest::OnLoaded,
+                                     base::Unretained(this)),
+                 NetLogWithSource());
     loaded_event_.Wait();
     cookies->swap(cookies_);
   }
@@ -310,7 +311,8 @@ TEST_F(SQLitePersistentCookieStoreTest, TestSessionCookiesDeletedOnStartup) {
       FROM_HERE, base::Bind(&SQLitePersistentCookieStoreTest::WaitOnDBEvent,
                             base::Unretained(this)));
   store_->Load(base::Bind(&SQLitePersistentCookieStoreTest::OnLoaded,
-                          base::Unretained(this)));
+                          base::Unretained(this)),
+               NetLogWithSource());
   t += base::TimeDelta::FromMicroseconds(10);
   AddCookieWithExpiration("A", "B", "c.com", "/", t, base::Time());
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
@@ -338,7 +340,8 @@ TEST_F(SQLitePersistentCookieStoreTest, TestSessionCookiesDeletedOnStartup) {
       temp_dir_.GetPath().Append(kCookieFilename), client_task_runner_,
       background_task_runner_, true, nullptr);
   store_->Load(base::Bind(&SQLitePersistentCookieStoreTest::OnLoaded,
-                          base::Unretained(this)));
+                          base::Unretained(this)),
+               NetLogWithSource());
   loaded_event_.Wait();
   ASSERT_EQ(4u, cookies_.size());
   cookies_.clear();
@@ -375,7 +378,8 @@ TEST_F(SQLitePersistentCookieStoreTest, TestLoadCookiesForKey) {
       FROM_HERE, base::Bind(&SQLitePersistentCookieStoreTest::WaitOnDBEvent,
                             base::Unretained(this)));
   store_->Load(base::Bind(&SQLitePersistentCookieStoreTest::OnLoaded,
-                          base::Unretained(this)));
+                          base::Unretained(this)),
+               NetLogWithSource());
   base::RunLoop run_loop;
   store_->LoadCookiesForKey(
       "aaa.com", base::Bind(&SQLitePersistentCookieStoreTest::OnKeyLoaded,
@@ -882,12 +886,14 @@ TEST_F(SQLitePersistentCookieStoreTest, EmptyLoadAfterClose) {
 
   // Create the cookie store, but immediately close it.
   Create(false, false);
-  store_->Close(base::Closure());
+  store_->Close();
 
   // Expect any attempt to call Load() to synchronously respond with an empty
   // vector of cookies after we've Close()d the database.
   bool was_called_with_no_cookies = false;
-  store_->Load(base::Bind(WasCalledWithNoCookies, &was_called_with_no_cookies));
+  store_->Load(
+      base::BindRepeating(WasCalledWithNoCookies, &was_called_with_no_cookies),
+      NetLogWithSource());
   EXPECT_TRUE(was_called_with_no_cookies);
 
   // Same with trying to load a specific cookie.

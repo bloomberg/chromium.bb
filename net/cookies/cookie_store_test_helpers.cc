@@ -56,7 +56,7 @@ DelayedCookieMonsterChangeDispatcher::AddCallbackForAllChanges(
 }
 
 DelayedCookieMonster::DelayedCookieMonster()
-    : cookie_monster_(new CookieMonster(nullptr, nullptr)),
+    : cookie_monster_(new CookieMonster(nullptr, nullptr, nullptr)),
       did_run_(false),
       result_(false) {}
 

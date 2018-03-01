@@ -17,6 +17,7 @@
 #include "content/common/content_export.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/extras/sqlite/sqlite_persistent_cookie_store.h"
+#include "net/log/net_log_with_source.h"
 
 namespace net {
 class CanonicalCookie;
@@ -42,7 +43,8 @@ class CONTENT_EXPORT QuotaPolicyCookieStore
       storage::SpecialStoragePolicy* special_storage_policy);
 
   // net::CookieMonster::PersistentCookieStore:
-  void Load(const LoadedCallback& loaded_callback) override;
+  void Load(const LoadedCallback& loaded_callback,
+            const net::NetLogWithSource& net_log) override;
   void LoadCookiesForKey(const std::string& key,
                          const LoadedCallback& callback) override;
   void AddCookie(const net::CanonicalCookie& cc) override;
@@ -51,6 +53,7 @@ class CONTENT_EXPORT QuotaPolicyCookieStore
   void SetForceKeepSessionState() override;
   void SetBeforeFlushCallback(base::RepeatingClosure callback) override;
   void Flush(base::OnceClosure callback) override;
+  void Close() override;
 
  private:
   typedef std::map<net::SQLitePersistentCookieStore::CookieOrigin, size_t>
@@ -69,6 +72,8 @@ class CONTENT_EXPORT QuotaPolicyCookieStore
 
   scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;
   scoped_refptr<net::SQLitePersistentCookieStore> persistent_store_;
+
+  net::NetLogWithSource net_log_;
 
   DISALLOW_COPY_AND_ASSIGN(QuotaPolicyCookieStore);
 };

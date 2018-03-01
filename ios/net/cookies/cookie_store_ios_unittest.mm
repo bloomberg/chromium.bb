@@ -32,7 +32,7 @@ namespace net {
 class TestingCookieStoreIOS : public CookieStoreIOS {
  public:
   TestingCookieStoreIOS(std::unique_ptr<SystemCookieStore> system_store)
-      : CookieStoreIOS(std::move(system_store)),
+      : CookieStoreIOS(std::move(system_store), nullptr),
         scoped_cookie_store_ios_client_(
             std::make_unique<TestCookieStoreIOSClient>()) {}
 
@@ -121,7 +121,8 @@ class CookieStoreIOSTest : public PlatformTest {
     // object is owned  by store_, this will work as we will not use
     // |system_store_| after |store_| is deleted.
     system_store_ = system_store.get();
-    store_ = std::make_unique<net::CookieStoreIOS>(std::move(system_store));
+    store_ =
+        std::make_unique<net::CookieStoreIOS>(std::move(system_store), nullptr);
     cookie_change_subscription_ =
         store_->GetChangeDispatcher().AddCallbackForCookie(
             kTestCookieURLFooBar, "abc",
@@ -244,7 +245,7 @@ TEST_F(CookieStoreIOSTest, GetAllCookiesForURLAsync) {
       std::make_unique<TestCookieStoreIOSClient>());
   ClearCookies();
   std::unique_ptr<CookieStoreIOS> cookie_store(std::make_unique<CookieStoreIOS>(
-      std::make_unique<NSHTTPSystemCookieStore>()));
+      std::make_unique<NSHTTPSystemCookieStore>(), nullptr));
 
   // Add a cookie.
   net::CookieOptions options;
