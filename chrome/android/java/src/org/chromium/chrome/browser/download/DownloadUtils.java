@@ -849,6 +849,17 @@ public class DownloadUtils {
                 context.getResources(), R.color.white_mode_tint);
     }
 
+    /**
+     * Return if a download item is already viewed by the user. Will return false if the last
+     * access time is not available.
+     * @param item The download item.
+     * @return true if the item is viewed by the user.
+     */
+    public static boolean isDownloadViewed(DownloadItem item) {
+        if (item == null || item.getDownloadInfo() == null) return false;
+        return item.getDownloadInfo().getLastAccessTime() != 0;
+    }
+
     private static boolean isMimeTypeVideo(String mimeType) {
         if (TextUtils.isEmpty(mimeType)) return false;
 
