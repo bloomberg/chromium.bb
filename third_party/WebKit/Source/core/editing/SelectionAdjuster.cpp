@@ -36,6 +36,31 @@
 
 namespace blink {
 
+template <typename Strategy>
+static SelectionTemplate<Strategy> ComputeAdjustedSelection(
+    const SelectionTemplate<Strategy> selection,
+    const EphemeralRangeTemplate<Strategy>& range) {
+  if (selection.ComputeRange() == range) {
+    // To pass "editing/deleting/delete_after_block_image.html", we need to
+    // return original selection.
+    return selection;
+  }
+  if (range.StartPosition().CompareTo(range.EndPosition()) == 0) {
+    return typename SelectionTemplate<Strategy>::Builder()
+        .Collapse(selection.IsBaseFirst() ? range.StartPosition()
+                                          : range.EndPosition())
+        .Build();
+  }
+  if (selection.IsBaseFirst()) {
+    return typename SelectionTemplate<Strategy>::Builder()
+        .SetAsForwardSelection(range)
+        .Build();
+  }
+  return typename SelectionTemplate<Strategy>::Builder()
+      .SetAsBackwardSelection(range)
+      .Build();
+}
+
 class GranularityAdjuster final {
   STATIC_ONLY(GranularityAdjuster);
 
@@ -236,10 +261,7 @@ class GranularityAdjuster final {
 
     const EphemeralRangeTemplate<Strategy> expanded_range(expanded_start,
                                                           expanded_end);
-    typename SelectionTemplate<Strategy>::Builder builder;
-    return canonicalized_selection.IsBaseFirst()
-               ? builder.SetAsForwardSelection(expanded_range).Build()
-               : builder.SetAsBackwardSelection(expanded_range).Build();
+    return ComputeAdjustedSelection(canonicalized_selection, expanded_range);
   }
 
  private:
@@ -304,10 +326,7 @@ class ShadowBoundaryAdjuster final {
                   AdjustSelectionStartToAvoidCrossingShadowBoundaries(
                       expanded_range),
                   expanded_range.EndPosition());
-    typename SelectionTemplate<Strategy>::Builder builder;
-    return selection.IsBaseFirst()
-               ? builder.SetAsForwardSelection(shadow_adjusted_range).Build()
-               : builder.SetAsBackwardSelection(shadow_adjusted_range).Build();
+    return ComputeAdjustedSelection(selection, shadow_adjusted_range);
   }
 
  private:
@@ -510,12 +529,8 @@ class EditingBoundaryAdjuster final {
     const EphemeralRangeTemplate<Strategy> editing_adjusted_range =
         AdjustSelectionToAvoidCrossingEditingBoundaries(
             shadow_adjusted_range, shadow_adjusted_selection.Base());
-    typename SelectionTemplate<Strategy>::Builder builder;
-    if (editing_adjusted_range.IsCollapsed())
-      return builder.Collapse(editing_adjusted_range.StartPosition()).Build();
-    return shadow_adjusted_selection.IsBaseFirst()
-               ? builder.SetAsForwardSelection(editing_adjusted_range).Build()
-               : builder.SetAsBackwardSelection(editing_adjusted_range).Build();
+    return ComputeAdjustedSelection(shadow_adjusted_selection,
+                                    editing_adjusted_range);
   }
 
  private:
