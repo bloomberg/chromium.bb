@@ -160,10 +160,6 @@ inline float FloatPoint3D::DistanceTo(const FloatPoint3D& a) const {
 PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const FloatPoint3D&);
 TextStream& operator<<(TextStream&, const FloatPoint3D&);
 
-// Redeclared here to avoid ODR issues.
-// See platform/testing/GeometryPrinters.h.
-void PrintTo(const FloatPoint3D&, std::ostream*);
-
 }  // namespace blink
 
 #endif  // FloatPoint3D_h

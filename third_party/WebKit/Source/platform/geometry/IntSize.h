@@ -155,10 +155,6 @@ inline bool operator!=(const IntSize& a, const IntSize& b) {
 
 PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const IntSize&);
 
-// Redeclared here to avoid ODR issues.
-// See platform/testing/GeometryPrinters.h.
-void PrintTo(const IntSize&, std::ostream*);
-
 }  // namespace blink
 
 #endif  // IntSize_h

@@ -196,9 +196,7 @@ class PLATFORM_EXPORT AffineTransform {
   Transform transform_;
 };
 
-// Redeclared here to avoid ODR issues.
-// See platform/testing/TransformPrinters.h.
-void PrintTo(const AffineTransform&, std::ostream*);
+PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const AffineTransform&);
 
 }  // namespace blink
 

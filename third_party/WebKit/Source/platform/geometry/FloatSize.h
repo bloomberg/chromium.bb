@@ -195,10 +195,6 @@ inline IntPoint FlooredIntPoint(const FloatSize& p) {
 
 PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const FloatSize&);
 
-// Redeclared here to avoid ODR issues.
-// See platform/testing/GeometryPrinters.h.
-void PrintTo(const FloatSize&, std::ostream*);
-
 }  // namespace blink
 
 // Allows this class to be stored in a HeapVector.

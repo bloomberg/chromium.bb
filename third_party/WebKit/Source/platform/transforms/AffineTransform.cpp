@@ -403,4 +403,9 @@ String AffineTransform::ToString(bool as_matrix) const {
       decomposition.remainder_d);
 }
 
+std::ostream& operator<<(std::ostream& ostream,
+                         const AffineTransform& transform) {
+  return ostream << transform.ToString();
+}
+
 }  // namespace blink

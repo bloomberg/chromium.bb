@@ -155,7 +155,9 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
         user_scrollable_vertical_(user_scrollable_vertical),
         main_thread_scrolling_reasons_(main_thread_scrolling_reasons),
         compositor_element_id_(compositor_element_id) {
+#if DCHECK_IS_ON()
     DCHECK(ElementIdNamespaceIsForScrolling());
+#endif
   }
 
   bool ElementIdNamespaceIsForScrolling() const {
@@ -173,10 +175,6 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
   // the associated TransformPaintPropertyNode used for scroll offset.
   CompositorElementId compositor_element_id_;
 };
-
-// Redeclared here to avoid ODR issues.
-// See platform/testing/PaintPrinters.h.
-void PrintTo(const ScrollPaintPropertyNode&, std::ostream*);
 
 }  // namespace blink
 

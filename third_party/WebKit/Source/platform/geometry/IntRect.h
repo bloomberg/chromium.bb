@@ -225,10 +225,6 @@ inline bool operator!=(const IntRect& a, const IntRect& b) {
 
 PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const IntRect&);
 
-// Redeclared here to avoid ODR issues.
-// See platform/testing/GeometryPrinters.h.
-void PrintTo(const IntRect&, std::ostream*);
-
 }  // namespace blink
 
 WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(blink::IntRect);

@@ -196,10 +196,6 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
   FloatPoint paint_offset_;
 };
 
-// Redeclared here to avoid ODR issues.
-// See platform/testing/PaintPrinters.h.
-void PrintTo(const EffectPaintPropertyNode&, std::ostream*);
-
 }  // namespace blink
 
 #endif  // EffectPaintPropertyNode_h

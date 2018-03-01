@@ -200,10 +200,6 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
   mutable std::unique_ptr<GeometryMapperTransformCache> transform_cache_;
 };
 
-// Redeclared here to avoid ODR issues.
-// See platform/testing/PaintPrinters.h.
-void PrintTo(const TransformPaintPropertyNode&, std::ostream*);
-
 }  // namespace blink
 
 #endif  // TransformPaintPropertyNode_h

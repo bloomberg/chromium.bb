@@ -112,8 +112,7 @@ inline bool operator!=(const ResourceError& a, const ResourceError& b) {
   return !(a == b);
 }
 
-// Pretty printer for gtest. Declared here to avoid ODR violations.
-std::ostream& operator<<(std::ostream&, const ResourceError&);
+PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const ResourceError&);
 
 }  // namespace blink
 

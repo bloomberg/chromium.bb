@@ -106,9 +106,8 @@ class DrawsRectanglesMatcher
               EnclosingIntRect(expect_rect_with_color.rect) ||
           actual_rect_with_color.color != expect_rect_with_color.color) {
         if (listener->IsInterested()) {
-          *listener << "at index " << index << " which draws ";
-          PrintTo(actual_rect_with_color.rect, listener->stream());
-          *listener << " with color "
+          *listener << "at index " << index << " which draws "
+                    << actual_rect_with_color.rect << " with color "
                     << actual_rect_with_color.color.Serialized().Ascii().data()
                     << "\n";
         }
@@ -123,9 +122,8 @@ class DrawsRectanglesMatcher
     *os << "\n";
     for (unsigned index = 0; index < rects_with_color_.size(); index++) {
       const auto& rect_with_color = rects_with_color_[index];
-      *os << "at index " << index << " rect draws ";
-      PrintTo(rect_with_color.rect, os);
-      *os << " with color " << rect_with_color.color.Serialized().Ascii().data()
+      *os << "at index " << index << " rect draws " << rect_with_color.rect
+          << " with color " << rect_with_color.color.Serialized().Ascii().data()
           << "\n";
     }
   }
