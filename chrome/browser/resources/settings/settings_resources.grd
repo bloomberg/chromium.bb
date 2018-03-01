@@ -1280,11 +1280,6 @@
                    type="chrome_html"
                    preprocess="true"
                    allowexternalscript="true" />
-        <structure name="IDR_SETTINGS_PEOPLE_PIN_KEYBOARD_HTML"
-                   file="people_page/pin_keyboard.html"
-                   type="chrome_html"
-                   preprocess="true"
-                   allowexternalscript="true"/>
         <structure name="IDR_SETTINGS_PEOPLE_LOCK_SCREEN_JS"
                    file="people_page/lock_screen.js"
                    type="chrome_html" />
@@ -1341,10 +1336,6 @@
         <structure name="IDR_SETTINGS_PEOPLE_FINGERPRINT_BROWSER_PROXY_HTML"
                    file="people_page/fingerprint_browser_proxy.html"
                    type="chrome_html" />
-        <structure name="IDR_SETTINGS_KEYBOARD_PIN_JS"
-                   file="people_page/pin_keyboard.js"
-                   type="chrome_html"
-                   preprocess="true" />
         <structure name="IDR_SETTINGS_USERS_PAGE_ADD_USER_DIALOG_JS"
                    file="people_page/users_add_user_dialog.js"
                    type="chrome_html" />
