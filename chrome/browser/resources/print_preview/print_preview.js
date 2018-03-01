@@ -1019,13 +1019,14 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * Called when native layer receives invalid settings for a print request.
+     * Called when native layer receives invalid settings for a preview request.
      * @private
      */
     onSettingsInvalid_: function() {
       this.uiState_ = PrintPreviewUiState_.ERROR;
       this.isPreviewGenerationInProgress_ = false;
       this.printHeader_.isPrintButtonEnabled = false;
+      this.updateLinks_();
     },
 
     /**
@@ -1036,7 +1037,16 @@ cr.define('print_preview', function() {
      */
     onTicketChange_: function() {
       this.printHeader_.onTicketChange();
-      const disable = !this.printHeader_.isPrintButtonEnabled;
+      this.updateLinks_();
+    },
+
+    /**
+     * Called to update the state of the system dialog and open in preview
+     * links to reflect invalid print tickets or printers.
+     */
+    updateLinks_: function() {
+      const disable = !this.printTicketStore_.isTicketValid() ||
+          this.uiState_ == print_preview.PrintPreviewUiState_.ERROR;
       if (cr.isWindows && $('system-dialog-link'))
         $('system-dialog-link').disabled = disable;
       if ($('open-pdf-in-preview-link'))
@@ -1311,8 +1321,10 @@ cr.define('print_preview', function() {
       }
       // Reset if we had a bad settings fetch since the user selected a new
       // printer.
-      if (this.uiState_ == PrintPreviewUiState_.ERROR)
+      if (this.uiState_ == PrintPreviewUiState_.ERROR) {
         this.uiState_ = PrintPreviewUiState_.READY;
+        this.updateLinks_();
+      }
       if (this.destinationStore_.selectedDestination &&
           this.isInKioskAutoPrintMode_) {
         this.onPrintButtonClick_();
