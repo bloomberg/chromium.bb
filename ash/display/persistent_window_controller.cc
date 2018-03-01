@@ -38,7 +38,6 @@ bool ShouldProcessWindowList() {
   if (Shell::Get()->session_controller()->IsUserSessionBlocked())
     return false;
 
-  // TODO(warx): Decide on the correct behavior involving mixed mirror mode.
   if (GetDisplayManager()->IsInMirrorMode())
     return false;
 
