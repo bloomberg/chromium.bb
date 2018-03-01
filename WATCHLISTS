@@ -249,7 +249,9 @@
                   '|third_party/WebKit/public/web/.*Drag',
     },
     'blink_common': {
-      'filepath': 'third_party/WebKit/common',
+      'filepath': 'third_party/WebKit/common'
+                  '|third_party/WebKit/public/common' \
+                  '|third_party/WebKit/public/mojom',
     },
     'blink_controller': {
       'filepath': 'third_party/WebKit/Source/controller',
@@ -1722,7 +1724,8 @@
                        'junov@chromium.org'],
     'blink_client_hints': ['yoav@yoav.ws'],
     'blink_clipboard': ['dcheng@chromium.org'],
-    'blink_common': ['jbroman+watch@chromium.org'],
+    'blink_common': ['jbroman+watch@chromium.org',
+                     'kinuko+watch@chromium.org'],
     'blink_controller': ['haraken@chromium.org'],
     'blink_css': ['alexis.menard@intel.com',
                   'apavlov+blink@chromium.org',
