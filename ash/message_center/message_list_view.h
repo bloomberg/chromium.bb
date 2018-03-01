@@ -88,6 +88,7 @@ class ASH_EXPORT MessageListView : public views::View,
 
   bool IsValidChild(const views::View* child) const;
   void DoUpdateIfPossible();
+  void ExpandTopNotification();
 
   // Animates all notifications to align with the top of the last closed
   // notification.

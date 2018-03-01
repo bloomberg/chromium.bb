@@ -410,6 +410,8 @@ void MessageListView::DoUpdateIfPossible() {
     return;
   }
 
+  ExpandTopNotification();
+
   AnimateNotifications();
 
   // Should calculate and set new size after calling AnimateNotifications()
@@ -422,6 +424,27 @@ void MessageListView::DoUpdateIfPossible() {
 
   if (!animator_.IsAnimating() && GetWidget())
     GetWidget()->SynthesizeMouseMoveEvent();
+}
+
+void MessageListView::ExpandTopNotification() {
+  bool is_top = true;
+  for (int i = 0; i < child_count(); ++i) {
+    MessageView* view = static_cast<MessageView*>(child_at(i));
+    if (!IsValidChild(view))
+      continue;
+
+    if (is_top) {
+      // Expands the notification at top if its expand status is never manually
+      // changed.
+      if (!view->IsManuallyExpandedOrCollapsed() && !view->IsExpanded())
+        view->SetExpanded(true);
+      is_top = false;
+    } else {
+      // Other notifications should be collapsed.
+      if (!view->IsManuallyExpandedOrCollapsed() && view->IsExpanded())
+        view->SetExpanded(false);
+    }
+  }
 }
 
 std::vector<int> MessageListView::ComputeRepositionOffsets(
