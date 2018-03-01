@@ -469,6 +469,13 @@ class ShellUtil {
                                 const base::FilePath& chrome_exe,
                                 bool elevate_if_not_admin);
 
+#if defined(GOOGLE_CHROME_BUILD)
+  // Opens the Apps & Features page in the Windows settings.
+  //
+  // This function DCHECKS that it is only called on Windows 10 or higher.
+  static bool LaunchUninstallAppsSettings();
+#endif
+
   // Windows 8: Shows and waits for the "How do you want to open webpages?"
   // dialog if Chrome is not already the default HTTP/HTTPS handler. Also does
   // XP-era registrations if Chrome is chosen or was already the default. Do
