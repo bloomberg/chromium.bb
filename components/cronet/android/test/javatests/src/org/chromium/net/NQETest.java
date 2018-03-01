@@ -168,7 +168,7 @@ public class NQETest {
     public void testQuicDisabled() throws Exception {
         ExperimentalCronetEngine.Builder cronetEngineBuilder =
                 new ExperimentalCronetEngine.Builder(getContext());
-        assert RttThroughputValues.INVALID_RTT_THROUGHPUT < 0;
+        assertTrue(RttThroughputValues.INVALID_RTT_THROUGHPUT < 0);
         Executor listenersExecutor = Executors.newSingleThreadExecutor(new ExecutorThreadFactory());
         TestNetworkQualityRttListener rttListener =
                 new TestNetworkQualityRttListener(listenersExecutor);
@@ -275,7 +275,7 @@ public class NQETest {
         for (int i = 0; i <= 1; ++i) {
             ExperimentalCronetEngine.Builder cronetEngineBuilder =
                     new ExperimentalCronetEngine.Builder(getContext());
-            assert RttThroughputValues.INVALID_RTT_THROUGHPUT < 0;
+            assertTrue(RttThroughputValues.INVALID_RTT_THROUGHPUT < 0);
             Executor listenersExecutor =
                     Executors.newSingleThreadExecutor(new ExecutorThreadFactory());
             TestNetworkQualityRttListener rttListener =

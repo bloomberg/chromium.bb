@@ -215,7 +215,7 @@ public class PaymentManifestVerifierTest {
                                     new URI[] {new URI("https://alicepay.com/app.json")},
                                     new URI[0], false);
                         } catch (URISyntaxException e) {
-                            assert false;
+                            Assert.assertTrue(false);
                         }
                     }
 
@@ -268,7 +268,7 @@ public class PaymentManifestVerifierTest {
                                     new URI("https://bobpay.com/app.json")},
                             new URI[0], false);
                 } catch (URISyntaxException e) {
-                    assert false;
+                    Assert.assertTrue(false);
                 }
             }
 
@@ -321,7 +321,7 @@ public class PaymentManifestVerifierTest {
                                     new URI("https://bobpay.com/app.json")},
                             new URI[0], false);
                 } catch (URISyntaxException e) {
-                    assert false;
+                    Assert.assertTrue(false);
                 }
             }
 
