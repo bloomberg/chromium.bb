@@ -66,6 +66,7 @@ static const char* g_ui_element_name_strings[] = {
     "k2dBrowsingVisibiltyControlForVoice",
     "k2dBrowsingVisibiltyControlForSiteInfoPrompt",
     "k2dBrowsingOpacityControlForAudioPermissionPrompt",
+    "k2dBrowsingOpacityControlForNativeDialogPrompt",
     "kIndicatorLayout",
     "kAudioCaptureIndicator",
     "kVideoCaptureIndicator",

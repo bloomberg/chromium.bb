@@ -65,6 +65,7 @@ enum UiElementName {
   k2dBrowsingVisibiltyControlForVoice,
   k2dBrowsingVisibiltyControlForSiteInfoPrompt,
   k2dBrowsingOpacityControlForAudioPermissionPrompt,
+  k2dBrowsingOpacityControlForNativeDialogPrompt,
   kIndicatorLayout,
   kAudioCaptureIndicator,
   kVideoCaptureIndicator,

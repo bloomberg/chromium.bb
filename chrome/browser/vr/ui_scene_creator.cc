@@ -583,9 +583,10 @@ void UiSceneCreator::CreateHostedUi() {
   hosted_ui->SetSize(kContentWidth * kHostedUiWidthRatio,
                      kContentHeight * kHostedUiHeightRatio);
   hosted_ui->SetVisible(false);
+  hosted_ui->set_opacity_when_visible(1.0);
   hosted_ui->set_requires_layout(false);
   hosted_ui->set_corner_radius(kContentCornerRadius);
-  hosted_ui->SetTransitionedProperties({BOUNDS});
+  hosted_ui->SetTransitionedProperties({OPACITY});
   hosted_ui->SetTranslate(0, 0, kHostedUiDepthOffset);
 
   hosted_ui->AddBinding(VR_BIND_FUNC(ContentInputDelegatePtr, Model, model_,
@@ -605,7 +606,6 @@ void UiSceneCreator::CreateHostedUi() {
             dialog->set_hit_testable(enabled);
           },
           base::Unretained(hosted_ui.get()))));
-
   hosted_ui->AddBinding(std::make_unique<Binding<float>>(
       base::BindRepeating([](Model* m) { return m->native_ui.size_ratio; },
                           base::Unretained(model_)),
@@ -673,13 +673,22 @@ void UiSceneCreator::Create2dBrowsingSubtreeRoots() {
   scene_->AddUiElement(k2dBrowsingVisibiltyControlForSiteInfoPrompt,
                        std::move(element));
 
+  element = Create<UiElement>(k2dBrowsingOpacityControlForNativeDialogPrompt,
+                              kPhaseNone);
+  element->SetTransitionedProperties({OPACITY});
+  element->AddBinding(VR_BIND(
+      bool, Model, model_, !model->native_ui.hosted_ui_enabled, UiElement,
+      element.get(), view->SetOpacity(value ? 1.0 : kModalPromptFadeOpacity)));
+  scene_->AddUiElement(k2dBrowsingOpacityControlForAudioPermissionPrompt,
+                       std::move(element));
+
   element = Create<UiElement>(k2dBrowsingForeground, kPhaseNone);
   element->SetTransitionedProperties({OPACITY});
   element->SetTransitionDuration(base::TimeDelta::FromMilliseconds(
       kSpeechRecognitionOpacityAnimationDurationMs));
   VR_BIND_VISIBILITY(element, model->default_browsing_enabled() ||
                                   model->fullscreen_enabled());
-  scene_->AddUiElement(k2dBrowsingOpacityControlForAudioPermissionPrompt,
+  scene_->AddUiElement(k2dBrowsingOpacityControlForNativeDialogPrompt,
                        std::move(element));
 
   element = Create<UiElement>(k2dBrowsingContentGroup, kPhaseNone);
