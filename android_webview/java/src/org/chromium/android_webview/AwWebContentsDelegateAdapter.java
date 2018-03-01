@@ -333,6 +333,8 @@ class AwWebContentsDelegateAdapter extends AwWebContentsDelegate {
         final int mRenderId;
         final int mModeFlags;
         final String[] mFilePaths;
+
+        // The task doesn't run long, so we don't gain anything from a weak ref.
         @SuppressLint("StaticFieldLeak")
         final Context mContext;
 
