@@ -44,6 +44,7 @@ class ArcNotificationItemImpl : public ArcNotificationItem {
   void DecrementWindowRefCount() override;
   const gfx::ImageSkia& GetSnapshot() const override;
   mojom::ArcNotificationExpandState GetExpandState() const override;
+  bool IsManuallyExpandedOrCollapsed() const override;
   mojom::ArcNotificationShownContents GetShownContents() const override;
   gfx::Rect GetSwipeInputRect() const override;
   const std::string& GetNotificationKey() const override;
@@ -84,6 +85,8 @@ class ArcNotificationItemImpl : public ArcNotificationItem {
   //   (1) the notification is being removed
   //   (2) the removing is initiated by manager
   bool being_removed_by_manager_ = false;
+
+  bool manually_expanded_or_collapsed_ = false;
 
   base::ThreadChecker thread_checker_;
   base::WeakPtrFactory<ArcNotificationItemImpl> weak_ptr_factory_;

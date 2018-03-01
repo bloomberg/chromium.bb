@@ -134,6 +134,12 @@ void ArcNotificationView::SetExpanded(bool expanded) {
   }
 }
 
+bool ArcNotificationView::IsManuallyExpandedOrCollapsed() const {
+  if (item_)
+    return item_->IsManuallyExpandedOrCollapsed();
+  return false;
+}
+
 void ArcNotificationView::OnContainerAnimationStarted() {
   if (contents_view_delegate_)
     contents_view_delegate_->OnContainerAnimationStarted();

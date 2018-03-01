@@ -104,6 +104,14 @@ void ArcNotificationItemImpl::OnUpdatedFromAndroid(
       new ArcNotificationDelegate(weak_ptr_factory_.GetWeakPtr()));
   notification->set_timestamp(base::Time::FromJavaTime(data->time));
 
+  if (expand_state_ != mojom::ArcNotificationExpandState::FIXED_SIZE &&
+      data->expand_state != mojom::ArcNotificationExpandState::FIXED_SIZE &&
+      expand_state_ != data->expand_state) {
+    // Assuming changing the expand status on Android-side is manually tiggered
+    // by user.
+    manually_expanded_or_collapsed_ = true;
+  }
+
   expand_state_ = data->expand_state;
   shown_contents_ = data->shown_contents;
   swipe_input_rect_ =
@@ -156,6 +164,18 @@ bool ArcNotificationItemImpl::IsOpeningSettingsSupported() const {
 }
 
 void ArcNotificationItemImpl::ToggleExpansion() {
+  switch (expand_state_) {
+    case mojom::ArcNotificationExpandState::EXPANDED:
+      expand_state_ = mojom::ArcNotificationExpandState::COLLAPSED;
+      break;
+    case mojom::ArcNotificationExpandState::COLLAPSED:
+      expand_state_ = mojom::ArcNotificationExpandState::EXPANDED;
+      break;
+    case mojom::ArcNotificationExpandState::FIXED_SIZE:
+      // Do not change the state.
+      break;
+  }
+
   manager_->SendNotificationToggleExpansionOnChrome(notification_key_);
 }
 
@@ -191,6 +211,10 @@ const gfx::ImageSkia& ArcNotificationItemImpl::GetSnapshot() const {
 mojom::ArcNotificationExpandState ArcNotificationItemImpl::GetExpandState()
     const {
   return expand_state_;
+}
+
+bool ArcNotificationItemImpl::IsManuallyExpandedOrCollapsed() const {
+  return manually_expanded_or_collapsed_;
 }
 
 mojom::ArcNotificationShownContents ArcNotificationItemImpl::GetShownContents()

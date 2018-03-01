@@ -72,6 +72,8 @@ class ArcNotificationContentView
   void UpdateAccessibleName();
   void SetExpanded(bool expanded);
   bool IsExpanded() const;
+  void SetManuallyExpandedOrCollapsed(bool value);
+  bool IsManuallyExpandedOrCollapsed() const;
   void OnContainerAnimationStarted();
   void OnContainerAnimationEnded();
 

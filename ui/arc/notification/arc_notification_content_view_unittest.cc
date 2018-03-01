@@ -113,6 +113,7 @@ class MockArcNotificationItem : public ArcNotificationItem {
     return base::EmptyString16();
   };
   void OnUpdatedFromAndroid(mojom::ArcNotificationDataPtr data) override {}
+  bool IsManuallyExpandedOrCollapsed() const override { return false; }
 
  private:
   std::string notification_key_;
