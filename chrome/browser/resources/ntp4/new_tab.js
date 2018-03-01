@@ -284,7 +284,8 @@ cr.define('ntp', function() {
 
       var headerContainer = $('login-status-header-container');
       headerContainer.classList.toggle('login-status-icon', !!iconURL);
-      headerContainer.style.backgroundImage = iconURL ? url(iconURL) : 'none';
+      headerContainer.style.backgroundImage =
+          iconURL ? getUrlForCss(iconURL) : 'none';
     }
 
     if (shouldShowLoginBubble) {

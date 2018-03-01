@@ -465,7 +465,7 @@ cr.define('cr.ui', function() {
       return getComputedStyle(this.labelElement).backgroundImage.slice(4, -1);
     },
     set icon(icon) {
-      return this.labelElement.style.backgroundImage = url(icon);
+      return this.labelElement.style.backgroundImage = getUrlForCss(icon);
     },
 
     /**
