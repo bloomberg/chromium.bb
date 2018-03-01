@@ -1320,12 +1320,9 @@ static void build_intra_predictors_high(const MACROBLOCKD *xd,
                                         const uint8_t *ref8, int ref_stride,
                                         uint8_t *dst8, int dst_stride,
                                         PREDICTION_MODE mode, TX_SIZE tx_size,
-#if CONFIG_INTRA_EDGE2
-                                        int disable_edge_filter,
-#endif  // CONFIG_INTRA_EDGE2
-                                        int n_top_px, int n_topright_px,
-                                        int n_left_px, int n_bottomleft_px,
-                                        int plane) {
+                                        int disable_edge_filter, int n_top_px,
+                                        int n_topright_px, int n_left_px,
+                                        int n_bottomleft_px, int plane) {
   int i;
   uint16_t *dst = CONVERT_TO_SHORTPTR(dst8);
   uint16_t *ref = CONVERT_TO_SHORTPTR(ref8);
@@ -1460,9 +1457,7 @@ static void build_intra_predictors_high(const MACROBLOCKD *xd,
   if (is_dr_mode) {
     int upsample_above = 0;
     int upsample_left = 0;
-#if CONFIG_INTRA_EDGE2
     if (!disable_edge_filter) {
-#endif  // CONFIG_INTRA_EDGE2
       const int need_right = p_angle < 90;
       const int need_bottom = p_angle > 180;
       const int filt_type = get_filt_type(xd, plane);
@@ -1498,9 +1493,7 @@ static void build_intra_predictors_high(const MACROBLOCKD *xd,
         const int n_px = txhpx + (need_bottom ? txwpx : 0);
         av1_upsample_intra_edge_high(left_col, n_px, xd->bd);
       }
-#if CONFIG_INTRA_EDGE2
     }
-#endif  // CONFIG_INTRA_EDGE2
     highbd_dr_predictor(dst, dst_stride, tx_size, above_row, left_col,
                         upsample_above, upsample_left, p_angle, xd->bd);
     return;
@@ -1518,12 +1511,9 @@ static void build_intra_predictors_high(const MACROBLOCKD *xd,
 static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
                                    int ref_stride, uint8_t *dst, int dst_stride,
                                    PREDICTION_MODE mode, TX_SIZE tx_size,
-#if CONFIG_INTRA_EDGE2
-                                   int disable_edge_filter,
-#endif  // CONFIG_INTRA_EDGE2
-                                   int n_top_px, int n_topright_px,
-                                   int n_left_px, int n_bottomleft_px,
-                                   int plane) {
+                                   int disable_edge_filter, int n_top_px,
+                                   int n_topright_px, int n_left_px,
+                                   int n_bottomleft_px, int plane) {
   int i;
   const uint8_t *above_ref = ref - ref_stride;
   const uint8_t *left_ref = ref - 1;
@@ -1654,9 +1644,7 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
   if (is_dr_mode) {
     int upsample_above = 0;
     int upsample_left = 0;
-#if CONFIG_INTRA_EDGE2
     if (!disable_edge_filter) {
-#endif  // CONFIG_INTRA_EDGE2
       const int need_right = p_angle < 90;
       const int need_bottom = p_angle > 180;
       const int filt_type = get_filt_type(xd, plane);
@@ -1692,9 +1680,7 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
         const int n_px = txhpx + (need_bottom ? txwpx : 0);
         av1_upsample_intra_edge(left_col, n_px);
       }
-#if CONFIG_INTRA_EDGE2
     }
-#endif  // CONFIG_INTRA_EDGE2
     dr_predictor(dst, dst_stride, tx_size, above_row, left_col, upsample_above,
                  upsample_left, p_angle);
     return;
@@ -1786,16 +1772,11 @@ void av1_predict_intra_block(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     return;
   }
 
-#if CONFIG_INTRA_EDGE2
   const int disable_edge_filter = cm->disable_intra_edge_filter;
-#endif  // CONFIG_INTRA_EDGE2
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
     build_intra_predictors_high(
         xd, ref, ref_stride, dst, dst_stride, mode, tx_size,
-#if CONFIG_INTRA_EDGE2
-        disable_edge_filter,
-#endif  // CONFIG_INTRA_EDGE2
-        have_top ? AOMMIN(txwpx, xr + txwpx) : 0,
+        disable_edge_filter, have_top ? AOMMIN(txwpx, xr + txwpx) : 0,
         have_top_right ? AOMMIN(txwpx, xr) : 0,
         have_left ? AOMMIN(txhpx, yd + txhpx) : 0,
         have_bottom_left ? AOMMIN(txhpx, yd) : 0, plane);
@@ -1803,9 +1784,7 @@ void av1_predict_intra_block(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   }
 
   build_intra_predictors(xd, ref, ref_stride, dst, dst_stride, mode, tx_size,
-#if CONFIG_INTRA_EDGE2
                          disable_edge_filter,
-#endif  // CONFIG_INTRA_EDGE2
                          have_top ? AOMMIN(txwpx, xr + txwpx) : 0,
                          have_top_right ? AOMMIN(txwpx, xr) : 0,
                          have_left ? AOMMIN(txhpx, yd + txhpx) : 0,

@@ -3098,9 +3098,7 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
   aom_wb_write_bit(wb, cm->show_frame);
   aom_wb_write_bit(wb, cm->error_resilient_mode);
 
-#if CONFIG_INTRA_EDGE2
   aom_wb_write_bit(wb, cm->disable_intra_edge_filter);
-#endif  // CONFIG_INTRA_EDGE2
 
 #if CONFIG_CDF_UPDATE_MODE
   aom_wb_write_bit(wb, cm->disable_cdf_update);
