@@ -94,6 +94,7 @@ void CloseSdk() {
 #undef CALL
 
   sdk_handle = nullptr;
+  keyboard_api = nullptr;
 }
 
 bool LoadSdk(void* closure, gvr_keyboard_callback callback) {
