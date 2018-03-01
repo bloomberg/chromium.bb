@@ -502,6 +502,26 @@ void InputMethodManagerImpl::StateImpl::ChangeInputMethod(
   manager_->RecordInputMethodUsage(current_input_method.id());
 }
 
+void InputMethodManagerImpl::StateImpl::ChangeInputMethodToJpKeyboard() {
+  ChangeInputMethod(
+      extension_ime_util::GetInputMethodIDByEngineID("xkb:jp::jpn"), true);
+}
+
+void InputMethodManagerImpl::StateImpl::ChangeInputMethodToJpIme() {
+  ChangeInputMethod(
+      extension_ime_util::GetInputMethodIDByEngineID("nacl_mozc_jp"), true);
+}
+
+void InputMethodManagerImpl::StateImpl::ToggleInputMethodForJpIme() {
+  std::string jp_ime_id =
+      extension_ime_util::GetInputMethodIDByEngineID("nacl_mozc_jp");
+  ChangeInputMethod(
+      GetCurrentInputMethod().id() == jp_ime_id
+          ? extension_ime_util::GetInputMethodIDByEngineID("xkb:jp::jpn")
+          : jp_ime_id,
+      true);
+}
+
 bool InputMethodManagerImpl::StateImpl::MethodAwaitsExtensionLoad(
     const std::string& input_method_id) const {
   // For 3rd party IME, when the user just logged in, SetEnabledExtensionImes

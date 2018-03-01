@@ -15,12 +15,6 @@ const int kDebugModifier =
 const AcceleratorData kAcceleratorData[] = {
     {true, ui::VKEY_SPACE, ui::EF_CONTROL_DOWN, PREVIOUS_IME},
     {false, ui::VKEY_SPACE, ui::EF_CONTROL_DOWN, PREVIOUS_IME},
-    // Shortcuts for Japanese IME.
-    {true, ui::VKEY_CONVERT, ui::EF_NONE, SWITCH_IME},
-    {true, ui::VKEY_NONCONVERT, ui::EF_NONE, SWITCH_IME},
-    {true, ui::VKEY_DBE_SBCSCHAR, ui::EF_NONE, SWITCH_IME},
-    {true, ui::VKEY_DBE_DBCSCHAR, ui::EF_NONE, SWITCH_IME},
-
     {true, ui::VKEY_TAB, ui::EF_ALT_DOWN, CYCLE_FORWARD_MRU},
     {true, ui::VKEY_TAB, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
      CYCLE_BACKWARD_MRU},
@@ -337,7 +331,6 @@ const AcceleratorAction kActionsAllowedAtLoginOrLockScreen[] = {
     SCALE_UI_RESET,
     SCALE_UI_UP,
     SHOW_IME_MENU_BUBBLE,
-    SWITCH_IME,  // Switch to another IME depending on the accelerator.
     TAKE_PARTIAL_SCREENSHOT,
     TAKE_SCREENSHOT,
     TAKE_WINDOW_SCREENSHOT,
@@ -398,7 +391,6 @@ const AcceleratorAction kActionsAllowedAtModalWindow[] = {
     SHOW_KEYBOARD_OVERLAY,
     SUSPEND,
     SWAP_PRIMARY_DISPLAY,
-    SWITCH_IME,
     TAKE_PARTIAL_SCREENSHOT,
     TAKE_SCREENSHOT,
     TAKE_WINDOW_SCREENSHOT,
@@ -461,7 +453,6 @@ const AcceleratorAction kActionsAllowedInAppModeOrPinnedMode[] = {
     SCALE_UI_RESET,
     SCALE_UI_UP,
     SWAP_PRIMARY_DISPLAY,
-    SWITCH_IME,  // Switch to another IME depending on the accelerator.
     TOGGLE_CAPS_LOCK,
     TOGGLE_DICTATION,
     TOGGLE_HIGH_CONTRAST,
@@ -521,7 +512,6 @@ const AcceleratorAction kActionsKeepingMenuOpen[] = {
     NEXT_IME,
     PREVIOUS_IME,
     PRINT_UI_HIERARCHIES,
-    SWITCH_IME,
     TAKE_PARTIAL_SCREENSHOT,
     TAKE_SCREENSHOT,
     TAKE_WINDOW_SCREENSHOT,

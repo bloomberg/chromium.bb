@@ -144,6 +144,11 @@ class UI_BASE_IME_EXPORT InputMethodManager {
     virtual void ChangeInputMethod(const std::string& input_method_id,
                                    bool show_message) = 0;
 
+    // Switching the input methods for JP106 language input keys.
+    virtual void ChangeInputMethodToJpKeyboard() = 0;
+    virtual void ChangeInputMethodToJpIme() = 0;
+    virtual void ToggleInputMethodForJpIme() = 0;
+
     // Adds one entry to the list of active input method IDs, and then starts or
     // stops the system input method framework as needed.
     virtual bool EnableInputMethod(
