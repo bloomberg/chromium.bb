@@ -344,6 +344,12 @@
       status: "experimental",
     },
     {
+      name: "DisablePaintChunksToCcLayer",
+    },
+    {
+      name: "DisableRasterInvalidation",
+    },
+    {
       name: "DisplayNoneIFrameCreatesNoLayoutObject",
       status: "stable",
     },

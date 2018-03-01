@@ -485,6 +485,8 @@ void PaintChunksToCcLayer::ConvertInto(
     const gfx::Vector2dF& layer_offset,
     const DisplayItemList& display_items,
     cc::DisplayItemList& cc_list) {
+  if (RuntimeEnabledFeatures::DisablePaintChunksToCcLayerEnabled())
+    return;
   ConversionContext(layer_state, layer_offset, cc_list)
       .Convert(paint_chunks, display_items);
 }

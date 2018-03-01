@@ -294,6 +294,9 @@ void CompositedLayerRasterInvalidator::Generate(
     const Vector<const PaintChunk*>& paint_chunks,
     const PropertyTreeState& layer_state,
     const DisplayItemClient* layer_display_item_client) {
+  if (RuntimeEnabledFeatures::DisableRasterInvalidationEnabled())
+    return;
+
   if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled())
     EnsureTracking();
 
