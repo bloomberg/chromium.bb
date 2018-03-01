@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "snapshot/linux/process_reader_linux.h"
+#include "snapshot/linux/process_reader.h"
 
 #include <elf.h>
 #include <errno.h>
@@ -46,7 +46,7 @@ bool ShouldMergeStackMappings(const MemoryMap::Mapping& stack_mapping,
 
 }  // namespace
 
-ProcessReaderLinux::Thread::Thread()
+ProcessReader::Thread::Thread()
     : thread_info(),
       stack_region_address(0),
       stack_region_size(0),
@@ -54,10 +54,9 @@ ProcessReaderLinux::Thread::Thread()
       static_priority(-1),
       nice_value(-1) {}
 
-ProcessReaderLinux::Thread::~Thread() {}
+ProcessReader::Thread::~Thread() {}
 
-bool ProcessReaderLinux::Thread::InitializePtrace(
-    PtraceConnection* connection) {
+bool ProcessReader::Thread::InitializePtrace(PtraceConnection* connection) {
   if (!connection->GetThreadInfo(tid, &thread_info)) {
     return false;
   }
@@ -90,7 +89,7 @@ bool ProcessReaderLinux::Thread::InitializePtrace(
   return true;
 }
 
-void ProcessReaderLinux::Thread::InitializeStack(ProcessReaderLinux* reader) {
+void ProcessReader::Thread::InitializeStack(ProcessReader* reader) {
   LinuxVMAddress stack_pointer;
 #if defined(ARCH_CPU_X86_FAMILY)
   stack_pointer = reader->Is64Bit() ? thread_info.thread_context.t64.rsp
@@ -170,12 +169,12 @@ void ProcessReaderLinux::Thread::InitializeStack(ProcessReaderLinux* reader) {
   }
 }
 
-ProcessReaderLinux::Module::Module()
+ProcessReader::Module::Module()
     : name(), elf_reader(nullptr), type(ModuleSnapshot::kModuleTypeUnknown) {}
 
-ProcessReaderLinux::Module::~Module() = default;
+ProcessReader::Module::~Module() = default;
 
-ProcessReaderLinux::ProcessReaderLinux()
+ProcessReader::ProcessReader()
     : connection_(),
       process_info_(),
       memory_map_(),
@@ -188,9 +187,9 @@ ProcessReaderLinux::ProcessReaderLinux()
       initialized_modules_(false),
       initialized_() {}
 
-ProcessReaderLinux::~ProcessReaderLinux() {}
+ProcessReader::~ProcessReader() {}
 
-bool ProcessReaderLinux::Initialize(PtraceConnection* connection) {
+bool ProcessReader::Initialize(PtraceConnection* connection) {
   INITIALIZATION_STATE_SET_INITIALIZING(initialized_);
   DCHECK(connection);
   connection_ = connection;
@@ -214,13 +213,12 @@ bool ProcessReaderLinux::Initialize(PtraceConnection* connection) {
   return true;
 }
 
-bool ProcessReaderLinux::StartTime(timeval* start_time) const {
+bool ProcessReader::StartTime(timeval* start_time) const {
   INITIALIZATION_STATE_DCHECK_VALID(initialized_);
   return process_info_.StartTime(start_time);
 }
 
-bool ProcessReaderLinux::CPUTimes(timeval* user_time,
-                                  timeval* system_time) const {
+bool ProcessReader::CPUTimes(timeval* user_time, timeval* system_time) const {
   INITIALIZATION_STATE_DCHECK_VALID(initialized_);
   timerclear(user_time);
   timerclear(system_time);
@@ -255,7 +253,7 @@ bool ProcessReaderLinux::CPUTimes(timeval* user_time,
   return true;
 }
 
-const std::vector<ProcessReaderLinux::Thread>& ProcessReaderLinux::Threads() {
+const std::vector<ProcessReader::Thread>& ProcessReader::Threads() {
   INITIALIZATION_STATE_DCHECK_VALID(initialized_);
   if (!initialized_threads_) {
     InitializeThreads();
@@ -263,7 +261,7 @@ const std::vector<ProcessReaderLinux::Thread>& ProcessReaderLinux::Threads() {
   return threads_;
 }
 
-const std::vector<ProcessReaderLinux::Module>& ProcessReaderLinux::Modules() {
+const std::vector<ProcessReader::Module>& ProcessReader::Modules() {
   INITIALIZATION_STATE_DCHECK_VALID(initialized_);
   if (!initialized_modules_) {
     InitializeModules();
@@ -271,7 +269,7 @@ const std::vector<ProcessReaderLinux::Module>& ProcessReaderLinux::Modules() {
   return modules_;
 }
 
-void ProcessReaderLinux::InitializeThreads() {
+void ProcessReader::InitializeThreads() {
   DCHECK(threads_.empty());
 
   pid_t pid = ProcessID();
@@ -328,7 +326,7 @@ void ProcessReaderLinux::InitializeThreads() {
   DCHECK(main_thread_found);
 }
 
-void ProcessReaderLinux::InitializeModules() {
+void ProcessReader::InitializeModules() {
   INITIALIZATION_STATE_DCHECK_VALID(initialized_);
 
   AuxiliaryVector aux;

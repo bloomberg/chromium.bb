@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "snapshot/mac/process_reader_mac.h"
+#include "snapshot/mac/process_reader.h"
 
 #include <AvailabilityMacros.h>
-#include <mach-o/loader.h>
 #include <mach/mach_vm.h>
+#include <mach-o/loader.h>
 
 #include <algorithm>
 #include <utility>
@@ -71,7 +71,7 @@ kern_return_t MachVMRegionRecurseDeepest(task_t task,
 
 namespace crashpad {
 
-ProcessReaderMac::Thread::Thread()
+ProcessReader::Thread::Thread()
     : thread_context(),
       float_context(),
       debug_context(),
@@ -81,13 +81,16 @@ ProcessReaderMac::Thread::Thread()
       thread_specific_data_address(0),
       port(THREAD_NULL),
       suspend_count(0),
-      priority(0) {}
+      priority(0) {
+}
 
-ProcessReaderMac::Module::Module() : name(), reader(nullptr), timestamp(0) {}
+ProcessReader::Module::Module() : name(), reader(nullptr), timestamp(0) {
+}
 
-ProcessReaderMac::Module::~Module() {}
+ProcessReader::Module::~Module() {
+}
 
-ProcessReaderMac::ProcessReaderMac()
+ProcessReader::ProcessReader()
     : process_info_(),
       threads_(),
       modules_(),
@@ -97,16 +100,17 @@ ProcessReaderMac::ProcessReaderMac()
       initialized_(),
       is_64_bit_(false),
       initialized_threads_(false),
-      initialized_modules_(false) {}
+      initialized_modules_(false) {
+}
 
-ProcessReaderMac::~ProcessReaderMac() {
+ProcessReader::~ProcessReader() {
   for (const Thread& thread : threads_) {
     kern_return_t kr = mach_port_deallocate(mach_task_self(), thread.port);
     MACH_LOG_IF(ERROR, kr != KERN_SUCCESS, kr) << "mach_port_deallocate";
   }
 }
 
-bool ProcessReaderMac::Initialize(task_t task) {
+bool ProcessReader::Initialize(task_t task) {
   INITIALIZATION_STATE_SET_INITIALIZING(initialized_);
 
   if (!process_info_.InitializeWithTask(task)) {
@@ -122,13 +126,12 @@ bool ProcessReaderMac::Initialize(task_t task) {
   return true;
 }
 
-void ProcessReaderMac::StartTime(timeval* start_time) const {
+void ProcessReader::StartTime(timeval* start_time) const {
   bool rv = process_info_.StartTime(start_time);
   DCHECK(rv);
 }
 
-bool ProcessReaderMac::CPUTimes(timeval* user_time,
-                                timeval* system_time) const {
+bool ProcessReader::CPUTimes(timeval* user_time, timeval* system_time) const {
   INITIALIZATION_STATE_DCHECK_VALID(initialized_);
 
   // Calculate user and system time the same way the kernel does for
@@ -174,7 +177,7 @@ bool ProcessReaderMac::CPUTimes(timeval* user_time,
   return true;
 }
 
-const std::vector<ProcessReaderMac::Thread>& ProcessReaderMac::Threads() {
+const std::vector<ProcessReader::Thread>& ProcessReader::Threads() {
   INITIALIZATION_STATE_DCHECK_VALID(initialized_);
 
   if (!initialized_threads_) {
@@ -184,7 +187,7 @@ const std::vector<ProcessReaderMac::Thread>& ProcessReaderMac::Threads() {
   return threads_;
 }
 
-const std::vector<ProcessReaderMac::Module>& ProcessReaderMac::Modules() {
+const std::vector<ProcessReader::Module>& ProcessReader::Modules() {
   INITIALIZATION_STATE_DCHECK_VALID(initialized_);
 
   if (!initialized_modules_) {
@@ -194,7 +197,7 @@ const std::vector<ProcessReaderMac::Module>& ProcessReaderMac::Modules() {
   return modules_;
 }
 
-mach_vm_address_t ProcessReaderMac::DyldAllImageInfo(
+mach_vm_address_t ProcessReader::DyldAllImageInfo(
     mach_vm_size_t* all_image_info_size) {
   INITIALIZATION_STATE_DCHECK_VALID(initialized_);
 
@@ -207,9 +210,9 @@ mach_vm_address_t ProcessReaderMac::DyldAllImageInfo(
     return 0;
   }
 
-// TODO(mark): Deal with statically linked executables which don’t use dyld.
-// This may look for the module that matches the executable path in the same
-// data set that vmmap uses.
+  // TODO(mark): Deal with statically linked executables which don’t use dyld.
+  // This may look for the module that matches the executable path in the same
+  // data set that vmmap uses.
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
   // The task_dyld_info_data_t struct grew in 10.7, adding the format field.
@@ -234,7 +237,7 @@ mach_vm_address_t ProcessReaderMac::DyldAllImageInfo(
   return dyld_info.all_image_info_addr;
 }
 
-void ProcessReaderMac::InitializeThreads() {
+void ProcessReader::InitializeThreads() {
   DCHECK(!initialized_threads_);
   DCHECK(threads_.empty());
 
@@ -375,7 +378,7 @@ void ProcessReaderMac::InitializeThreads() {
   threads_need_owners.Disarm();
 }
 
-void ProcessReaderMac::InitializeModules() {
+void ProcessReader::InitializeModules() {
   DCHECK(!initialized_modules_);
   DCHECK(modules_.empty());
 
@@ -462,8 +465,8 @@ void ProcessReaderMac::InitializeModules() {
         image_info.imageLoadAddress == all_image_infos.dyldImageLoadAddress) {
       found_dyld = true;
       LOG(WARNING) << base::StringPrintf(
-          "found dylinker (%s) in dyld_all_image_infos::infoArray",
-          module.name.c_str());
+            "found dylinker (%s) in dyld_all_image_infos::infoArray",
+            module.name.c_str());
 
       LOG_IF(WARNING, file_type != MH_DYLINKER)
           << base::StringPrintf("dylinker (%s) has unexpected Mach-O type %d",
@@ -560,7 +563,7 @@ void ProcessReaderMac::InitializeModules() {
   }
 }
 
-mach_vm_address_t ProcessReaderMac::CalculateStackRegion(
+mach_vm_address_t ProcessReader::CalculateStackRegion(
     mach_vm_address_t stack_pointer,
     mach_vm_size_t* stack_region_size) {
   INITIALIZATION_STATE_DCHECK_VALID(initialized_);
@@ -672,10 +675,10 @@ mach_vm_address_t ProcessReaderMac::CalculateStackRegion(
   return region_base;
 }
 
-void ProcessReaderMac::LocateRedZone(mach_vm_address_t* const start_address,
-                                     mach_vm_address_t* const region_base,
-                                     mach_vm_address_t* const region_size,
-                                     const unsigned int user_tag) {
+void ProcessReader::LocateRedZone(mach_vm_address_t* const start_address,
+                                  mach_vm_address_t* const region_base,
+                                  mach_vm_address_t* const region_size,
+                                  const unsigned int user_tag) {
 #if defined(ARCH_CPU_X86_FAMILY)
   if (Is64Bit()) {
     // x86_64 has a red zone. See AMD64 ABI 0.99.8,

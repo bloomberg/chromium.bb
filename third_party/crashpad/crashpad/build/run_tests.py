@@ -70,11 +70,10 @@ def _BinaryDirTargetOS(binary_dir):
 
   if gn_path:
     # Look for a GN “target_os”.
-    popen = subprocess.Popen([gn_path, '--root=' + CRASHPAD_DIR,
-                              'args', binary_dir,
-                              '--list=target_os', '--short'],
-                              shell=IS_WINDOWS_HOST,
-                              stdout=subprocess.PIPE, stderr=open(os.devnull))
+    popen = subprocess.Popen(
+        [gn_path, 'args', binary_dir, '--list=target_os', '--short'],
+        shell=IS_WINDOWS_HOST, stdout=subprocess.PIPE, stderr=open(os.devnull),
+        cwd=CRASHPAD_DIR)
     value = popen.communicate()[0]
     if popen.returncode == 0:
       match = re.match('target_os = "(.*)"$', value.decode('utf-8'))
@@ -311,18 +310,13 @@ def _GetFuchsiaSDKRoot():
 
 def _GenerateFuchsiaRuntimeDepsFiles(binary_dir, tests):
   """Ensures a <binary_dir>/<test>.runtime_deps file exists for each test."""
-  targets_file = os.path.join(binary_dir, 'targets.txt')
+  targets_file = os.path.abspath(os.path.join(binary_dir, 'targets.txt'))
   with open(targets_file, 'wb') as f:
     f.write('//:' + '\n//:'.join(tests) + '\n')
   gn_path = _FindGNFromBinaryDir(binary_dir)
   subprocess.check_call(
-      [gn_path,  '--root=' + CRASHPAD_DIR, 'gen', binary_dir,
-       '--runtime-deps-list-file=' + targets_file])
-
-  # Run again so that --runtime-deps-list-file isn't in the regen rule. See
-  # https://crbug.com/814816.
-  subprocess.check_call(
-      [gn_path,  '--root=' + CRASHPAD_DIR, 'gen', binary_dir])
+      [gn_path, 'gen', binary_dir, '--runtime-deps-list-file=' + targets_file],
+      cwd=CRASHPAD_DIR)
 
 
 def _HandleOutputFromFuchsiaLogListener(process, done_message):
@@ -379,8 +373,7 @@ def _RunOnFuchsiaTarget(binary_dir, test, device_name, extra_command_line):
     staging_root = test_root + '/pkg'
 
     # Make a staging directory tree on the target.
-    directories_to_create = [tmp_root,
-                             '%s/bin' % staging_root,
+    directories_to_create = [tmp_root, '%s/bin' % staging_root,
                              '%s/assets' % staging_root]
     netruncmd(['mkdir', '-p'] + directories_to_create)
 
@@ -403,8 +396,7 @@ def _RunOnFuchsiaTarget(binary_dir, test, device_name, extra_command_line):
           target_path = os.path.join(
               staging_root, 'bin', local_path[len(binary_dir)+1:])
       else:
-        relative_path = os.path.relpath(local_path, CRASHPAD_DIR)
-        target_path = os.path.join(staging_root, 'assets', relative_path)
+        target_path = os.path.join(staging_root, 'assets', local_path)
       netcp_path = os.path.join(sdk_root, 'tools', 'netcp')
       subprocess.check_call([netcp_path, local_path,
                              device_name + ':' + target_path],
