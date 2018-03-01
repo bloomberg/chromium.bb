@@ -411,7 +411,8 @@ class TouchEventHandler : public ui::EventHandler {
   DISALLOW_COPY_AND_ASSIGN(TouchEventHandler);
 };
 
-TEST_F(WidgetTestInteractive, TouchNoActivateWindow) {
+// TODO(dtapuska): Disabled due to it being flaky crbug.com/817531
+TEST_F(WidgetTestInteractive, DISABLED_TouchNoActivateWindow) {
   // ui_controls::SendTouchEvents which uses InjectTouchInput API only works
   // on Windows 8 and up.
   if (base::win::GetVersion() <= base::win::VERSION_WIN7)
