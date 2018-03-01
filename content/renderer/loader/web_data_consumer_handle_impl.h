@@ -24,7 +24,9 @@ class CONTENT_EXPORT WebDataConsumerHandleImpl final
  public:
   class CONTENT_EXPORT ReaderImpl final : public Reader {
    public:
-    ReaderImpl(scoped_refptr<Context> context, Client* client);
+    ReaderImpl(scoped_refptr<Context> context,
+               Client* client,
+               scoped_refptr<base::SingleThreadTaskRunner> task_runner);
     ~ReaderImpl() override;
     Result Read(void* data,
                 size_t size,
@@ -46,7 +48,9 @@ class CONTENT_EXPORT WebDataConsumerHandleImpl final
 
     DISALLOW_COPY_AND_ASSIGN(ReaderImpl);
   };
-  std::unique_ptr<Reader> ObtainReader(Client* client) override;
+  std::unique_ptr<Reader> ObtainReader(
+      Client* client,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
 
   explicit WebDataConsumerHandleImpl(Handle handle);
   ~WebDataConsumerHandleImpl() override;

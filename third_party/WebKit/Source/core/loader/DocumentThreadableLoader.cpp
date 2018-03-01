@@ -110,9 +110,11 @@ class EmptyDataHandle final : public WebDataConsumerHandle {
  private:
   class EmptyDataReader final : public WebDataConsumerHandle::Reader {
    public:
-    explicit EmptyDataReader(WebDataConsumerHandle::Client* client)
+    explicit EmptyDataReader(
+        WebDataConsumerHandle::Client* client,
+        scoped_refptr<base::SingleThreadTaskRunner> task_runner)
         : factory_(this) {
-      Platform::Current()->CurrentThread()->GetTaskRunner()->PostTask(
+      task_runner->PostTask(
           FROM_HERE, WTF::Bind(&EmptyDataReader::Notify, factory_.GetWeakPtr(),
                                WTF::Unretained(client)));
     }
@@ -134,8 +136,10 @@ class EmptyDataHandle final : public WebDataConsumerHandle {
     base::WeakPtrFactory<EmptyDataReader> factory_;
   };
 
-  std::unique_ptr<Reader> ObtainReader(Client* client) override {
-    return std::make_unique<EmptyDataReader>(client);
+  std::unique_ptr<Reader> ObtainReader(
+      Client* client,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override {
+    return std::make_unique<EmptyDataReader>(client, std::move(task_runner));
   }
   const char* DebugName() const override { return "EmptyDataHandle"; }
 };

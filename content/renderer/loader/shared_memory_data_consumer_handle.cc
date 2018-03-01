@@ -455,7 +455,9 @@ SharedMemoryDataConsumerHandle::~SharedMemoryDataConsumerHandle() {
 }
 
 std::unique_ptr<blink::WebDataConsumerHandle::Reader>
-SharedMemoryDataConsumerHandle::ObtainReader(Client* client) {
+SharedMemoryDataConsumerHandle::ObtainReader(
+    Client* client,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   return base::WrapUnique(new ReaderImpl(context_, client));
 }
 

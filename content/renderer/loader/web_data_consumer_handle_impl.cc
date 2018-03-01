@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/single_thread_task_runner.h"
 #include "mojo/public/c/system/types.h"
 
 namespace content {
@@ -36,9 +37,12 @@ class WebDataConsumerHandleImpl::Context
 
 WebDataConsumerHandleImpl::ReaderImpl::ReaderImpl(
     scoped_refptr<Context> context,
-    Client* client)
+    Client* client,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : context_(context),
-      handle_watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL),
+      handle_watcher_(FROM_HERE,
+                      mojo::SimpleWatcher::ArmingPolicy::MANUAL,
+                      std::move(task_runner)),
       client_(client) {
   if (client_)
     StartWatching();
@@ -147,8 +151,11 @@ WebDataConsumerHandleImpl::~WebDataConsumerHandleImpl() {
 }
 
 std::unique_ptr<blink::WebDataConsumerHandle::Reader>
-WebDataConsumerHandleImpl::ObtainReader(Client* client) {
-  return base::WrapUnique(new ReaderImpl(context_, client));
+WebDataConsumerHandleImpl::ObtainReader(
+    Client* client,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  return base::WrapUnique(
+      new ReaderImpl(context_, client, std::move(task_runner)));
 }
 
 const char* WebDataConsumerHandleImpl::DebugName() const {

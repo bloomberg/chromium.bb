@@ -23,6 +23,7 @@
 #include "platform/wtf/text/StringBuilder.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebDataConsumerHandle.h"
+#include "public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "v8/include/v8.h"
@@ -226,7 +227,9 @@ class DataConsumerHandleTestUtil {
       DataConsumerHandle(const String& name, scoped_refptr<Context> context)
           : name_(name.IsolatedCopy()), context_(std::move(context)) {}
 
-      std::unique_ptr<Reader> ObtainReader(Client*) override {
+      std::unique_ptr<Reader> ObtainReader(
+          Client*,
+          scoped_refptr<base::SingleThreadTaskRunner> task_runner) override {
         return std::make_unique<ReaderImpl>(name_, context_);
       }
       const char* DebugName() const override {
@@ -286,7 +289,10 @@ class DataConsumerHandleTestUtil {
 
    private:
     ThreadingHandleNotificationTest() = default;
-    void ObtainReader() { reader_ = handle_->ObtainReader(this); }
+    void ObtainReader() {
+      reader_ = handle_->ObtainReader(
+          this, scheduler::GetSingleThreadTaskRunnerForTesting());
+    }
     void DidGetReadable() override {
       PostTaskToReadingThread(
           FROM_HERE, CrossThreadBind(&Self::ResetReader, WrapRefCounted(this)));
@@ -317,7 +323,8 @@ class DataConsumerHandleTestUtil {
    private:
     ThreadingHandleNoNotificationTest() = default;
     void ObtainReader() {
-      reader_ = handle_->ObtainReader(this);
+      reader_ = handle_->ObtainReader(
+          this, scheduler::GetSingleThreadTaskRunnerForTesting());
       reader_ = nullptr;
       PostTaskToReadingThread(
           FROM_HERE, CrossThreadBind(&Self::SignalDone, WrapRefCounted(this)));
@@ -403,7 +410,9 @@ class DataConsumerHandleTestUtil {
     };
 
     Context* GetContext() { return context_.get(); }
-    std::unique_ptr<Reader> ObtainReader(Client*) override;
+    std::unique_ptr<Reader> ObtainReader(
+        Client*,
+        scoped_refptr<base::SingleThreadTaskRunner>) override;
 
    private:
     class ReaderImpl;
