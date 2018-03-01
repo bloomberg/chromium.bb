@@ -696,8 +696,21 @@ void CookieMonster::SetCookieWithOptions(const GURL& url,
     return;
   }
 
-  SetCookieWithCreationTimeAndOptions(url, cookie_line, Time(), options,
-                                      std::move(callback));
+  VLOG(kVlogSetCookies) << "SetCookie() line: " << cookie_line;
+
+  Time creation_time = CurrentTime();
+  last_time_seen_ = creation_time;
+
+  std::unique_ptr<CanonicalCookie> cc(
+      CanonicalCookie::Create(url, cookie_line, creation_time, options));
+
+  if (!cc.get()) {
+    VLOG(kVlogSetCookies) << "WARNING: Failed to allocate CanonicalCookie";
+    MaybeRunCookieCallback(std::move(callback), false);
+    return;
+  }
+  SetCanonicalCookie(std::move(cc), url.SchemeIsCryptographic(),
+                     !options.exclude_httponly(), std::move(callback));
 }
 
 void CookieMonster::DeleteCookie(const GURL& url,
@@ -762,26 +775,6 @@ void CookieMonster::DeleteCanonicalCookie(const CanonicalCookie& cookie,
       base::BindOnce(&MayeRunDeleteCallback, weak_ptr_factory_.GetWeakPtr(),
                      callback ? base::BindOnce(std::move(callback), result)
                               : base::OnceClosure()));
-}
-
-void CookieMonster::SetCookieWithCreationTimeForTesting(
-    const GURL& url,
-    const std::string& cookie_line,
-    const base::Time& creation_time,
-    SetCookiesCallback callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!store_.get()) << "This method is only to be used by unit-tests.";
-
-  if (!HasCookieableScheme(url)) {
-    MaybeRunCookieCallback(std::move(callback), false);
-    return;
-  }
-
-  MarkCookieStoreAsInitialized();
-  FetchAllCookiesIfNecessary();
-
-  return SetCookieWithCreationTimeAndOptions(
-      url, cookie_line, creation_time, CookieOptions(), std::move(callback));
 }
 
 void CookieMonster::DeleteSessionCookies(DeleteCallback callback) {
@@ -1191,34 +1184,6 @@ CookieMonster::CookieMap::iterator CookieMonster::InternalInsertCookie(
   change_dispatcher_.DispatchChange(*cc_ptr, CookieChangeCause::INSERTED, true);
 
   return inserted;
-}
-
-void CookieMonster::SetCookieWithCreationTimeAndOptions(
-    const GURL& url,
-    const std::string& cookie_line,
-    const Time& creation_time_or_null,
-    const CookieOptions& options,
-    SetCookiesCallback callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  VLOG(kVlogSetCookies) << "SetCookie() line: " << cookie_line;
-
-  Time creation_time = creation_time_or_null;
-  if (creation_time.is_null()) {
-    creation_time = CurrentTime();
-    last_time_seen_ = creation_time;
-  }
-
-  std::unique_ptr<CanonicalCookie> cc(
-      CanonicalCookie::Create(url, cookie_line, creation_time, options));
-
-  if (!cc.get()) {
-    VLOG(kVlogSetCookies) << "WARNING: Failed to allocate CanonicalCookie";
-    MaybeRunCookieCallback(std::move(callback), false);
-    return;
-  }
-  SetCanonicalCookie(std::move(cc), url.SchemeIsCryptographic(),
-                     !options.exclude_httponly(), std::move(callback));
 }
 
 void CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
