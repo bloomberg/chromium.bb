@@ -3361,18 +3361,10 @@ crbug.com/807110 external/wpt/media-source/mediasource-sourcebuffer-mode-timesta
 
 crbug.com/417782 [ Android ] fast/scrolling/scrollable-area-overflow-auto-display-none.html [ Failure Pass ]
 crbug.com/417782 [ Android ] fast/scrolling/scrollable-area-overflow-not-set.html [ Failure Crash Pass ]
-crbug.com/417782 http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations-on-deleted-node.js [ Timeout ]
-crbug.com/417782 http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations.js [ Timeout ]
-crbug.com/417782 http/tests/devtools/tracing/timeline-paint/timeline-paint-with-style-recalc-invalidations.js [ Timeout ]
-crbug.com/417782 http/tests/devtools/tracing/timeline-paint/timeline-paint.js [ Failure ]
 crbug.com/417782 paint/invalidation/window-resize/window-resize-vertical-writing-mode.html [ Crash ]
 crbug.com/417782 virtual/disable-spv175/paint/invalidation/window-resize/window-resize-vertical-writing-mode.html [ Skip ]
 crbug.com/417782 [ Linux ] virtual/android/fullscreen/compositor-touch-hit-rects-fullscreen-video-controls.html [ Failure ]
 crbug.com/417782 virtual/scroll_customization/fast/events/touch/compositor-touch-hit-rects-iframes.html [ Failure ]
-crbug.com/417782 virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations-on-deleted-node.js [ Timeout ]
-crbug.com/417782 virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations.js [ Timeout ]
-crbug.com/417782 virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint-with-style-recalc-invalidations.js [ Timeout ]
-crbug.com/417782 virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint.js [ Failure ]
 
 # End of Root Layer Scrolling expectations
 ################################################################################
