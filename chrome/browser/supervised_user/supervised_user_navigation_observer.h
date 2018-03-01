@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "chrome/browser/supervised_user/supervised_user_navigation_throttle.h"
 #include "chrome/browser/supervised_user/supervised_user_service_observer.h"
 #include "chrome/browser/supervised_user/supervised_user_url_filter.h"
 #include "chrome/browser/supervised_user/supervised_users.h"
@@ -17,6 +18,7 @@
 #include "content/public/browser/web_contents_user_data.h"
 
 class SupervisedUserService;
+class SupervisedUserInterstitial;
 
 namespace content {
 class NavigationHandle;
@@ -40,7 +42,8 @@ class SupervisedUserNavigationObserver
       content::WebContents* web_contents,
       const GURL& url,
       supervised_user_error_page::FilteringBehaviorReason reason,
-      const base::Callback<void(bool)>& callback);
+      const base::Callback<
+          void(SupervisedUserNavigationThrottle::CallbackActions)>& callback);
 
   // WebContentsObserver implementation.
   void DidFinishNavigation(
@@ -57,7 +60,8 @@ class SupervisedUserNavigationObserver
   void OnRequestBlockedInternal(
       const GURL& url,
       supervised_user_error_page::FilteringBehaviorReason reason,
-      const base::Callback<void(bool)>& callback);
+      const base::Callback<
+          void(SupervisedUserNavigationThrottle::CallbackActions)>& callback);
 
   void URLFilterCheckCallback(
       const GURL& url,
@@ -69,10 +73,13 @@ class SupervisedUserNavigationObserver
       const GURL& url,
       supervised_user_error_page::FilteringBehaviorReason reason,
       bool initial_page_load,
-      const base::Callback<void(bool)>& callback);
+      const base::Callback<
+          void(SupervisedUserNavigationThrottle::CallbackActions)>& callback);
 
-  void OnInterstitialResult(const base::Callback<void(bool)>& callback,
-                            bool result);
+  void OnInterstitialResult(
+      const base::Callback<
+          void(SupervisedUserNavigationThrottle::CallbackActions)>& callback,
+      bool result);
 
   // Owned by SupervisedUserService.
   const SupervisedUserURLFilter* url_filter_;
@@ -84,6 +91,8 @@ class SupervisedUserNavigationObserver
 
   std::vector<std::unique_ptr<const sessions::SerializedNavigationEntry>>
       blocked_navigations_;
+
+  std::unique_ptr<SupervisedUserInterstitial> interstitial_;
 
   base::WeakPtrFactory<SupervisedUserNavigationObserver> weak_ptr_factory_;
 

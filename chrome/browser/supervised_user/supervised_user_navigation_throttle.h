@@ -17,6 +17,12 @@
 
 class SupervisedUserNavigationThrottle : public content::NavigationThrottle {
  public:
+  enum CallbackActions {
+    kContinueNavigation = 0,
+    kCancelNavigation,
+    kCancelWithInterstitial
+  };
+
   // Returns a new throttle for the given navigation, or nullptr if no
   // throttling is required.
   static std::unique_ptr<SupervisedUserNavigationThrottle>
@@ -50,10 +56,11 @@ class SupervisedUserNavigationThrottle : public content::NavigationThrottle {
                    supervised_user_error_page::FilteringBehaviorReason reason,
                    bool uncertain);
 
-  void OnInterstitialResult(bool continue_request);
+  void OnInterstitialResult(CallbackActions continue_request);
 
   const SupervisedUserURLFilter* url_filter_;
   bool deferred_;
+  supervised_user_error_page::FilteringBehaviorReason reason_;
   SupervisedUserURLFilter::FilteringBehavior behavior_;
   base::WeakPtrFactory<SupervisedUserNavigationThrottle> weak_ptr_factory_;
 

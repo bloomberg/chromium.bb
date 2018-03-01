@@ -5,6 +5,7 @@
 #include "chrome/browser/supervised_user/supervised_user_navigation_throttle.h"
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_url_filter.h"
+#include "chrome/common/chrome_features.h"
 #include "content/public/browser/navigation_handle.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
@@ -183,7 +185,6 @@ void SupervisedUserNavigationThrottle::ShowInterstitialAsync(
   // May not yet have been set when ShowInterstitial was called, but should have
   // been set by the time this is invoked.
   DCHECK(deferred_);
-
   SupervisedUserNavigationObserver::OnRequestBlocked(
       navigation_handle()->GetWebContents(), navigation_handle()->GetURL(),
       reason,
@@ -215,6 +216,8 @@ void SupervisedUserNavigationThrottle::OnCheckDone(
   if (!deferred_)
     behavior_ = behavior;
 
+  reason_ = reason;
+
   ui::PageTransition transition = navigation_handle()->GetPageTransition();
 
   RecordFilterResultEvent(false, behavior, reason, uncertain, transition);
@@ -234,9 +237,28 @@ void SupervisedUserNavigationThrottle::OnCheckDone(
 }
 
 void SupervisedUserNavigationThrottle::OnInterstitialResult(
-    bool continue_request) {
-  if (continue_request)
-    Resume();
-  else
-    CancelDeferredNavigation(CANCEL);
+    CallbackActions action) {
+  switch (action) {
+    case kContinueNavigation: {
+      Resume();
+      break;
+    }
+    case kCancelNavigation: {
+      CancelDeferredNavigation(CANCEL);
+      break;
+    }
+    case kCancelWithInterstitial: {
+      DCHECK(base::FeatureList::IsEnabled(
+          features::kSupervisedUserCommittedInterstitials));
+      std::string interstitial_html =
+          SupervisedUserInterstitial::GetHTMLContents(
+              Profile::FromBrowserContext(
+                  navigation_handle()->GetWebContents()->GetBrowserContext()),
+              reason_);
+      // If committed interstitials are enabled, include the HTML content in the
+      // ThrottleCheckResult.
+      CancelDeferredNavigation(content::NavigationThrottle::ThrottleCheckResult(
+          CANCEL, net::ERR_BLOCKED_BY_CLIENT, interstitial_html));
+    }
+  }
 }

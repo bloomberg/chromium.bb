@@ -302,6 +302,8 @@ extern const base::Feature kSoundContentSetting;
 
 extern const base::Feature kSupervisedUserCreation;
 
+extern const base::Feature kSupervisedUserCommittedInterstitials;
+
 #if defined(OS_CHROMEOS)
 extern const base::Feature kSysInternals;
 #endif
