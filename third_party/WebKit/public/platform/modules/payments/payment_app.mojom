@@ -39,7 +39,10 @@ struct PaymentInstrument {
 // by payment_manager.cc and runs in browser side.
 interface PaymentManager {
   // |context_url| is the url of the web page creating this interface.
-  Init(string context_url, string service_worker_scope);
+  // |service_worker_scope| is passed as string since it is from
+  // ServiceWorkerRegistration and the interface is used for
+  // ServiceWorkerRegistration.idl
+  Init(url.mojom.Url context_url, string service_worker_scope);
   DeletePaymentInstrument(string instrument_key)
       => (PaymentHandlerStatus status);
   GetPaymentInstrument(string instrument_key)
