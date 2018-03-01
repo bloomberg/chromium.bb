@@ -5,9 +5,12 @@
 #include <memory>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
+#include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
@@ -17,6 +20,7 @@
 #include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -41,7 +45,9 @@ static const char* kIframeHost2 = "www.iframe2.com";
 
 }  // namespace
 
-class SupervisedUserNavigationThrottleTest : public InProcessBrowserTest {
+class SupervisedUserNavigationThrottleTest
+    : public InProcessBrowserTest,
+      public testing::WithParamInterface<bool> {
  protected:
   SupervisedUserNavigationThrottleTest() {}
   ~SupervisedUserNavigationThrottleTest() override {}
@@ -56,12 +62,44 @@ class SupervisedUserNavigationThrottleTest : public InProcessBrowserTest {
         supervised_users::kContentPackManualBehaviorHosts, std::move(dict));
   }
 
+  bool AreCommittedInterstitialsEnabled();
+
+  bool IsInterstitialBeingShown(Browser* browser);
+
  private:
   void SetUpOnMainThread() override;
   void SetUpCommandLine(base::CommandLine* command_line) override;
+
+  base::test::ScopedFeatureList feature_list;
 };
 
+bool SupervisedUserNavigationThrottleTest::AreCommittedInterstitialsEnabled() {
+  return base::FeatureList::IsEnabled(
+      features::kSupervisedUserCommittedInterstitials);
+}
+
+bool SupervisedUserNavigationThrottleTest::IsInterstitialBeingShown(
+    Browser* browser) {
+  WebContents* tab = browser->tab_strip_model()->GetActiveWebContents();
+  if (AreCommittedInterstitialsEnabled()) {
+    base::string16 title;
+    ui_test_utils::GetCurrentTabTitle(browser, &title);
+    return tab->GetController().GetActiveEntry()->GetPageType() ==
+               content::PAGE_TYPE_ERROR &&
+           title == base::ASCIIToUTF16("Site blocked");
+  }
+  return tab->ShowingInterstitialPage();
+}
+
 void SupervisedUserNavigationThrottleTest::SetUpOnMainThread() {
+  if (GetParam()) {
+    feature_list.InitAndEnableFeature(
+        features::kSupervisedUserCommittedInterstitials);
+  } else {
+    feature_list.InitAndDisableFeature(
+        features::kSupervisedUserCommittedInterstitials);
+  }
+
   // Resolve everything to localhost.
   host_resolver()->AddIPLiteralRule("*", "127.0.0.1", "localhost");
 
@@ -73,9 +111,13 @@ void SupervisedUserNavigationThrottleTest::SetUpCommandLine(
   command_line->AppendSwitchASCII(switches::kSupervisedUserId, "asdf");
 }
 
+INSTANTIATE_TEST_CASE_P(,
+                        SupervisedUserNavigationThrottleTest,
+                        ::testing::Values(false, true));
+
 // Tests that navigating to a blocked page simply fails if there is no
 // SupervisedUserNavigationObserver.
-IN_PROC_BROWSER_TEST_F(SupervisedUserNavigationThrottleTest,
+IN_PROC_BROWSER_TEST_P(SupervisedUserNavigationThrottleTest,
                        NoNavigationObserverBlock) {
   Profile* profile = browser()->profile();
   SupervisedUserSettingsService* supervised_user_settings_service =
@@ -98,24 +140,22 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserNavigationThrottleTest,
   EXPECT_FALSE(observer.last_navigation_succeeded());
 }
 
-IN_PROC_BROWSER_TEST_F(SupervisedUserNavigationThrottleTest,
+IN_PROC_BROWSER_TEST_P(SupervisedUserNavigationThrottleTest,
                        BlockMainFrameWithInterstitial) {
   BlockHost(kExampleHost2);
-
-  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
 
   GURL allowed_url = embedded_test_server()->GetURL(
       kExampleHost, "/supervised_user/simple.html");
   ui_test_utils::NavigateToURL(browser(), allowed_url);
-  EXPECT_FALSE(tab->ShowingInterstitialPage());
+  EXPECT_FALSE(IsInterstitialBeingShown(browser()));
 
   GURL blocked_url = embedded_test_server()->GetURL(
       kExampleHost2, "/supervised_user/simple.html");
   ui_test_utils::NavigateToURL(browser(), blocked_url);
-  EXPECT_TRUE(tab->ShowingInterstitialPage());
+  EXPECT_TRUE(IsInterstitialBeingShown(browser()));
 }
 
-IN_PROC_BROWSER_TEST_F(SupervisedUserNavigationThrottleTest,
+IN_PROC_BROWSER_TEST_P(SupervisedUserNavigationThrottleTest,
                        DontBlockSubFrame) {
   BlockHost(kExampleHost2);
   BlockHost(kIframeHost2);
@@ -125,7 +165,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserNavigationThrottleTest,
   GURL allowed_url_with_iframes = embedded_test_server()->GetURL(
       kExampleHost, "/supervised_user/with_iframes.html");
   ui_test_utils::NavigateToURL(browser(), allowed_url_with_iframes);
-  EXPECT_FALSE(tab->ShowingInterstitialPage());
+  EXPECT_FALSE(IsInterstitialBeingShown(browser()));
 
   // Both iframes (from allowed host iframe1.com as well as from blocked host
   // iframe2.com) should be loaded normally, since we don't filter iframes
@@ -149,16 +189,18 @@ class SupervisedUserNavigationThrottleNotSupervisedTest
   void SetUpCommandLine(base::CommandLine* command_line) override {}
 };
 
-IN_PROC_BROWSER_TEST_F(SupervisedUserNavigationThrottleNotSupervisedTest,
+INSTANTIATE_TEST_CASE_P(,
+                        SupervisedUserNavigationThrottleNotSupervisedTest,
+                        ::testing::Values(false, true));
+
+IN_PROC_BROWSER_TEST_P(SupervisedUserNavigationThrottleNotSupervisedTest,
                        DontBlock) {
   BlockHost(kExampleHost);
-
-  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
 
   GURL blocked_url = embedded_test_server()->GetURL(
       kExampleHost, "/supervised_user/simple.html");
   ui_test_utils::NavigateToURL(browser(), blocked_url);
   // Even though the URL is marked as blocked, the load should go through, since
   // the user isn't supervised.
-  EXPECT_FALSE(tab->ShowingInterstitialPage());
+  EXPECT_FALSE(IsInterstitialBeingShown(browser()));
 }

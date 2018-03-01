@@ -567,6 +567,11 @@ const base::Feature kSoundContentSetting{"SoundContentSetting",
 const base::Feature kSupervisedUserCreation{"SupervisedUserCreation",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables or disabled committed interstitials for Supervised User
+// interstitials.
+const base::Feature kSupervisedUserCommittedInterstitials{
+    "SupervisedUserCommittedInterstitials", base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if defined(OS_CHROMEOS)
 // Enables or disables chrome://sys-internals.
 const base::Feature kSysInternals{"SysInternals",

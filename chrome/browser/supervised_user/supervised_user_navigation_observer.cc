@@ -6,13 +6,16 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/supervised_user/supervised_user_interstitial.h"
+#include "chrome/browser/supervised_user/supervised_user_navigation_throttle.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/tab_contents/tab_util.h"
+#include "chrome/common/chrome_features.h"
 #include "components/history/content/browser/history_context_helper.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_types.h"
@@ -45,13 +48,15 @@ void SupervisedUserNavigationObserver::OnRequestBlocked(
     content::WebContents* web_contents,
     const GURL& url,
     supervised_user_error_page::FilteringBehaviorReason reason,
-    const base::Callback<void(bool)>& callback) {
+    const base::Callback<
+        void(SupervisedUserNavigationThrottle::CallbackActions)>& callback) {
   SupervisedUserNavigationObserver* navigation_observer =
       SupervisedUserNavigationObserver::FromWebContents(web_contents);
 
   // Cancel the navigation if there is no navigation observer.
   if (!navigation_observer) {
-    callback.Run(false);
+    callback.Run(
+        SupervisedUserNavigationThrottle::CallbackActions::kCancelNavigation);
     return;
   }
 
@@ -86,7 +91,8 @@ void SupervisedUserNavigationObserver::OnURLFilterChanged() {
 void SupervisedUserNavigationObserver::OnRequestBlockedInternal(
     const GURL& url,
     supervised_user_error_page::FilteringBehaviorReason reason,
-    const base::Callback<void(bool)>& callback) {
+    const base::Callback<
+        void(SupervisedUserNavigationThrottle::CallbackActions)>& callback) {
   // TODO(bauerb): Use SaneTime when available.
   base::Time timestamp = base::Time::Now();
   // Create a history entry for the attempt and mark it as such.  This history
@@ -136,9 +142,15 @@ void SupervisedUserNavigationObserver::URLFilterCheckCallback(
 
   if (!is_showing_interstitial_ &&
       behavior == SupervisedUserURLFilter::FilteringBehavior::BLOCK) {
+    // TODO(carlosil): Handle this case for committed interstitials. For this we
+    // will check if the current page is an error page since
+    // is_showing_interstitial_ does not get reset when navigating through the
+    // back button.
     const bool initial_page_load = false;
-    MaybeShowInterstitial(url, reason, initial_page_load,
-                          base::Callback<void(bool)>());
+    MaybeShowInterstitial(
+        url, reason, initial_page_load,
+        base::Callback<void(
+            SupervisedUserNavigationThrottle::CallbackActions)>());
   }
 }
 
@@ -146,19 +158,35 @@ void SupervisedUserNavigationObserver::MaybeShowInterstitial(
     const GURL& url,
     supervised_user_error_page::FilteringBehaviorReason reason,
     bool initial_page_load,
-    const base::Callback<void(bool)>& callback) {
+    const base::Callback<
+        void(SupervisedUserNavigationThrottle::CallbackActions)>& callback) {
   is_showing_interstitial_ = true;
   base::Callback<void(bool)> wrapped_callback =
       base::Bind(&SupervisedUserNavigationObserver::OnInterstitialResult,
                  weak_ptr_factory_.GetWeakPtr(), callback);
+  if (base::FeatureList::IsEnabled(
+          features::kSupervisedUserCommittedInterstitials)) {
+    interstitial_ = SupervisedUserInterstitial::Create(
+        web_contents(), url, reason, initial_page_load, wrapped_callback);
+    callback.Run(SupervisedUserNavigationThrottle::CallbackActions::
+                     kCancelWithInterstitial);
+    return;
+  }
   SupervisedUserInterstitial::Show(web_contents(), url, reason,
                                    initial_page_load, wrapped_callback);
 }
 
 void SupervisedUserNavigationObserver::OnInterstitialResult(
-    const base::Callback<void(bool)>& callback,
+    const base::Callback<
+        void(SupervisedUserNavigationThrottle::CallbackActions)>& callback,
     bool result) {
   is_showing_interstitial_ = false;
-  if (callback)
-    callback.Run(result);
+  // If committed interstitials are enabled, there is no navigation to cancel or
+  // defer at this point, so just clear the is_showing_interstitial variable.
+  if (callback && !base::FeatureList::IsEnabled(
+                      features::kSupervisedUserCommittedInterstitials))
+    callback.Run(result ? SupervisedUserNavigationThrottle::CallbackActions::
+                              kContinueNavigation
+                        : SupervisedUserNavigationThrottle::CallbackActions::
+                              kCancelNavigation);
 }
