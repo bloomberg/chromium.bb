@@ -381,6 +381,14 @@ static void ParseOldStyleNames(
     } else if (constraint.name_.Equals(kUseRtpMux)) {
       result.goog_use_rtp_mux.SetExact(ToBoolean(constraint.value_));
     } else if (constraint.name_.Equals(kEnableDtlsSrtp)) {
+      bool value = ToBoolean(constraint.value_);
+      if (value) {
+        UseCounter::Count(context,
+                          WebFeature::kRTCConstraintEnableDtlsSrtpTrue);
+      } else {
+        UseCounter::Count(context,
+                          WebFeature::kRTCConstraintEnableDtlsSrtpFalse);
+      }
       result.enable_dtls_srtp.SetExact(ToBoolean(constraint.value_));
     } else if (constraint.name_.Equals(kEnableRtpDataChannels)) {
       result.enable_rtp_data_channels.SetExact(ToBoolean(constraint.value_));
