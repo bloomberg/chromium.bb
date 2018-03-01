@@ -2948,12 +2948,12 @@ void PaintLayer::UpdateClipPath(const ComputedStyle* old_style,
 }
 
 bool PaintLayer::AttemptDirectCompositingUpdate(
-    StyleDifference diff,
+    const StyleDifference& diff,
     const ComputedStyle* old_style) {
   CompositingReasons old_potential_compositing_reasons_from_style =
       PotentialCompositingReasonsFromStyle();
-  if (Compositor())
-    Compositor()->UpdatePotentialCompositingReasonsFromStyle(this);
+  if (Compositor() && diff.HasDifference())
+    Compositor()->UpdatePotentialCompositingReasonsFromStyle(*this);
 
   // This function implements an optimization for transforms and opacity.
   // A common pattern is for a touchmove handler to update the transform

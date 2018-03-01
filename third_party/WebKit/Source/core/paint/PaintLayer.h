@@ -1148,7 +1148,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   void MarkAncestorChainForDescendantDependentFlagsUpdate();
 
-  bool AttemptDirectCompositingUpdate(StyleDifference,
+  bool AttemptDirectCompositingUpdate(const StyleDifference&,
                                       const ComputedStyle* old_style);
   void UpdateTransform(const ComputedStyle* old_style,
                        const ComputedStyle& new_style);
