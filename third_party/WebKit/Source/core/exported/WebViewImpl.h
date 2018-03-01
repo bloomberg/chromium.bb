@@ -518,7 +518,6 @@ class CORE_EXPORT WebViewImpl final
   void UpdateLayerTreeViewport();
   void UpdateLayerTreeBackgroundColor();
   void UpdateDeviceEmulationTransform();
-  void UpdateLayerTreeDeviceScaleFactor();
 
   // Helper function: Widens the width of |source| by the specified margins
   // while keeping it smaller than page width.

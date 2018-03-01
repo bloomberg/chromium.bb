@@ -81,14 +81,6 @@ WebSize WebLayerTreeViewImplForTesting::GetViewportSize() const {
                  layer_tree_host_->device_viewport_size().height());
 }
 
-void WebLayerTreeViewImplForTesting::SetDeviceScaleFactor(
-    float device_scale_factor) {
-  // TODO(ccameron): This likely causes surface invariant violations.
-  layer_tree_host_->SetViewportSizeAndScale(
-      layer_tree_host_->device_viewport_size(), device_scale_factor,
-      layer_tree_host_->local_surface_id());
-}
-
 void WebLayerTreeViewImplForTesting::SetBackgroundColor(WebColor color) {
   layer_tree_host_->set_background_color(color);
 }

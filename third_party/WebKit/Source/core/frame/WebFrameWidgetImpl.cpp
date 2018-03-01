@@ -327,14 +327,6 @@ void WebFrameWidgetImpl::UpdateLayerTreeBackgroundColor() {
   layer_tree_view_->SetBackgroundColor(color);
 }
 
-void WebFrameWidgetImpl::UpdateLayerTreeDeviceScaleFactor() {
-  DCHECK(GetPage());
-  DCHECK(layer_tree_view_);
-
-  float device_scale_factor = GetPage()->DeviceScaleFactorDeprecated();
-  layer_tree_view_->SetDeviceScaleFactor(device_scale_factor);
-}
-
 void WebFrameWidgetImpl::SetBackgroundColorOverride(WebColor color) {
   background_color_override_enabled_ = true;
   background_color_override_ = color;
@@ -1045,7 +1037,6 @@ void WebFrameWidgetImpl::SetIsAcceleratedCompositingActive(bool active) {
     layer_tree_view_->SetRootLayer(*root_layer_);
 
     layer_tree_view_->SetVisible(GetPage()->IsPageVisible());
-    UpdateLayerTreeDeviceScaleFactor();
     UpdateLayerTreeBackgroundColor();
     UpdateLayerTreeViewport();
     is_accelerated_compositing_active_ = true;

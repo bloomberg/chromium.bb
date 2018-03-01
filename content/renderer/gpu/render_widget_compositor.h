@@ -120,7 +120,6 @@ class CONTENT_EXPORT RenderWidgetCompositor
       const base::Callback<void(std::unique_ptr<base::Value>)>& callback);
   bool SendMessageToMicroBenchmark(int id, std::unique_ptr<base::Value> value);
   void SetFrameSinkId(const viz::FrameSinkId& frame_sink_id);
-  void SetPaintedDeviceScaleFactor(float device_scale);
   void SetRasterColorSpace(const gfx::ColorSpace& color_space);
   void SetIsForOopif(bool is_for_oopif);
   void SetContentSourceId(uint32_t source_id);
@@ -137,7 +136,6 @@ class CONTENT_EXPORT RenderWidgetCompositor
   blink::WebSize GetViewportSize() const override;
   virtual blink::WebFloatPoint adjustEventPointForPinchZoom(
       const blink::WebFloatPoint& point) const;
-  void SetDeviceScaleFactor(float device_scale) override;
   void SetBackgroundColor(blink::WebColor color) override;
   void SetVisible(bool visible) override;
   void SetPageScaleFactorAndLimits(float page_scale_factor,

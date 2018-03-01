@@ -86,8 +86,6 @@ class WebLayerTreeView {
   // Viewport size is given in physical pixels.
   virtual WebSize GetViewportSize() const { return WebSize(); }
 
-  virtual void SetDeviceScaleFactor(float) {}
-
   // Sets the background color for the viewport.
   virtual void SetBackgroundColor(WebColor) {}
 
