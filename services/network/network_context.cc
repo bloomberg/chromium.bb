@@ -443,6 +443,34 @@ void NetworkContext::ClearNetworkingHistorySince(
       std::move(completion_callback));
 }
 
+void NetworkContext::ClearHttpCache(base::Time start_time,
+                                    base::Time end_time,
+                                    mojom::ClearCacheUrlFilterPtr filter,
+                                    ClearHttpCacheCallback callback) {
+  // It's safe to use Unretained below as the HttpCacheDataRemover is owner by
+  // |this| and guarantees it won't call its callback if deleted.
+  http_cache_data_removers_.push_back(HttpCacheDataRemover::CreateAndStart(
+      url_request_context_getter_->GetURLRequestContext(), std::move(filter),
+      start_time, end_time,
+      base::BindOnce(&NetworkContext::OnHttpCacheCleared,
+                     base::Unretained(this), std::move(callback))));
+}
+
+void NetworkContext::OnHttpCacheCleared(ClearHttpCacheCallback callback,
+                                        HttpCacheDataRemover* remover) {
+  bool removed = false;
+  for (auto iter = http_cache_data_removers_.begin();
+       iter != http_cache_data_removers_.end(); ++iter) {
+    if (iter->get() == remover) {
+      removed = true;
+      http_cache_data_removers_.erase(iter);
+      break;
+    }
+  }
+  DCHECK(removed);
+  std::move(callback).Run();
+}
+
 void NetworkContext::SetNetworkConditions(
     const std::string& profile_id,
     mojom::NetworkConditionsPtr conditions) {

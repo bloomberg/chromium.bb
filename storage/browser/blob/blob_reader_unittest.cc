@@ -154,6 +154,7 @@ class DelayedReadEntry : public disk_cache::Entry {
   int ReadyForSparseIO(const CompletionCallback& callback) override {
     return entry_->ReadyForSparseIO(callback);
   }
+  void SetLastUsedTimeForTest(base::Time time) override { NOTREACHED(); }
 
  private:
   disk_cache::ScopedEntryPtr entry_;

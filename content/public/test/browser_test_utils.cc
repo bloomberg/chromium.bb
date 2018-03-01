@@ -2445,7 +2445,7 @@ void SimulateNetworkServiceCrash() {
   ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
       mojom::kNetworkServiceName, &network_service_test);
 
-  base::RunLoop run_loop;
+  base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
   network_service_test.set_connection_error_handler(run_loop.QuitClosure());
 
   network_service_test->SimulateCrash();

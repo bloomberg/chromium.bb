@@ -160,6 +160,20 @@ BrowsingDataFilterBuilderImpl::BuildGeneralFilter() const {
   return base::BindRepeating(&MatchesURL, origins_, domains_, mode_);
 }
 
+network::mojom::ClearCacheUrlFilterPtr
+BrowsingDataFilterBuilderImpl::BuildClearCacheUrlFilter() const {
+  network::mojom::ClearCacheUrlFilterPtr filter =
+      network::mojom::ClearCacheUrlFilter::New();
+  filter->type = (mode_ == Mode::WHITELIST)
+                     ? network::mojom::ClearCacheUrlFilter::Type::DELETE_MATCHES
+                     : network::mojom::ClearCacheUrlFilter::Type::KEEP_MATCHES;
+  filter->origins.insert(filter->origins.begin(), origins_.begin(),
+                         origins_.end());
+  filter->domains.insert(filter->domains.begin(), domains_.begin(),
+                         domains_.end());
+  return filter;
+}
+
 base::RepeatingCallback<bool(const net::CanonicalCookie& cookie)>
 BrowsingDataFilterBuilderImpl::BuildCookieFilter() const {
   DCHECK(origins_.empty()) <<

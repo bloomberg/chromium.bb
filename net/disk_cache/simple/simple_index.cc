@@ -278,6 +278,13 @@ size_t SimpleIndex::EstimateMemoryUsage() const {
          base::trace_event::EstimateMemoryUsage(removed_entries_);
 }
 
+void SimpleIndex::SetLastUsedTimeForTest(uint64_t entry_hash,
+                                         const base::Time last_used) {
+  EntrySet::iterator it = entries_set_.find(entry_hash);
+  DCHECK(it != entries_set_.end());
+  it->second.SetLastUsedTime(last_used);
+}
+
 void SimpleIndex::Insert(uint64_t entry_hash) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   // Upon insert we don't know yet the size of the entry.

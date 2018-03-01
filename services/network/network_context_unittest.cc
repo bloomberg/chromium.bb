@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -534,6 +535,97 @@ TEST_F(NetworkContextTest, ClearHttpServerPropertiesInMemory) {
   EXPECT_FALSE(network_context->GetURLRequestContext()
                    ->http_server_properties()
                    ->GetSupportsSpdy(kSchemeHostPort));
+}
+
+// Validates that clearing the HTTP cache when no cache exists does complete.
+TEST_F(NetworkContextTest, ClearHttpCacheWithNoCache) {
+  mojom::NetworkContextParamsPtr context_params = CreateContextParams();
+  context_params->http_cache_enabled = false;
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(std::move(context_params));
+  net::HttpCache* cache = network_context->GetURLRequestContext()
+                              ->http_transaction_factory()
+                              ->GetCache();
+  ASSERT_EQ(nullptr, cache);
+  base::RunLoop run_loop;
+  network_context->ClearHttpCache(base::Time(), base::Time(),
+                                  /*filter=*/nullptr,
+                                  base::BindOnce(run_loop.QuitClosure()));
+  run_loop.Run();
+}
+
+TEST_F(NetworkContextTest, ClearHttpCache) {
+  mojom::NetworkContextParamsPtr context_params = CreateContextParams();
+  context_params->http_cache_enabled = true;
+
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  context_params->http_cache_path = temp_dir.GetPath();
+
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(std::move(context_params));
+  net::HttpCache* cache = network_context->GetURLRequestContext()
+                              ->http_transaction_factory()
+                              ->GetCache();
+
+  std::vector<std::string> entry_urls = {
+      "http://www.google.com",    "https://www.google.com",
+      "http://www.wikipedia.com", "https://www.wikipedia.com",
+      "http://localhost:1234",    "https://localhost:1234",
+  };
+  ASSERT_TRUE(cache);
+  disk_cache::Backend* backend = nullptr;
+  net::TestCompletionCallback callback;
+  int rv = cache->GetBackend(&backend, callback.callback());
+  EXPECT_EQ(net::OK, callback.GetResult(rv));
+  ASSERT_TRUE(backend);
+
+  for (const auto& url : entry_urls) {
+    disk_cache::Entry* entry = nullptr;
+    base::RunLoop run_loop;
+    if (backend->CreateEntry(
+            url, &entry,
+            base::Bind([](base::OnceClosure quit_loop,
+                          int rv) { std::move(quit_loop).Run(); },
+                       run_loop.QuitClosure())) == net::ERR_IO_PENDING) {
+      run_loop.Run();
+    }
+    entry->Close();
+  }
+  EXPECT_EQ(entry_urls.size(), static_cast<size_t>(backend->GetEntryCount()));
+  base::RunLoop run_loop;
+  network_context->ClearHttpCache(base::Time(), base::Time(),
+                                  /*filter=*/nullptr,
+                                  base::BindOnce(run_loop.QuitClosure()));
+  run_loop.Run();
+  EXPECT_EQ(0U, static_cast<size_t>(backend->GetEntryCount()));
+}
+
+// Checks that when multiple calls are made to clear the HTTP cache, all
+// callbacks are invoked.
+TEST_F(NetworkContextTest, MultipleClearHttpCacheCalls) {
+  constexpr int kNumberOfClearCalls = 10;
+
+  mojom::NetworkContextParamsPtr context_params = CreateContextParams();
+  context_params->http_cache_enabled = true;
+
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  context_params->http_cache_path = temp_dir.GetPath();
+
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(std::move(context_params));
+
+  base::RunLoop run_loop;
+  base::RepeatingClosure barrier_closure = base::BarrierClosure(
+      /*num_closures=*/kNumberOfClearCalls, run_loop.QuitClosure());
+  for (int i = 0; i < kNumberOfClearCalls; i++) {
+    network_context->ClearHttpCache(base::Time(), base::Time(),
+                                    /*filter=*/nullptr,
+                                    base::BindOnce(barrier_closure));
+  }
+  run_loop.Run();
+  // If all the callbacks were invoked, we should terminate.
 }
 
 void SetCookieCallback(base::RunLoop* run_loop, bool* result_out, bool result) {

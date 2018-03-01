@@ -13,6 +13,7 @@ import "url_loader_factory.mojom";
 import "restricted_cookie_manager.mojom";
 import "mojo/common/file_path.mojom";
 import "mojo/common/time.mojom";
+import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
 import "services/network/public/mojom/udp_socket.mojom";
 import "services/proxy_resolver/public/mojom/proxy_resolver.mojom";
@@ -121,6 +122,24 @@ struct NetworkConditions {
   double upload_throughput;
 };
 
+// Used in NetworkContext.ClearHttpCache() to specify the resources to
+// keep/delete based on their URLs.
+struct ClearCacheUrlFilter {
+  enum Type {DELETE_MATCHES, KEEP_MATCHES};
+
+  Type type;
+
+  // A list of registrable domains (e.g. google.com), internal hostnames
+  // (e.g. localhost), or IP addresses (e.g. 127.0.0.1). Other domains, such as
+  // third and lower level domains (e.g. www.google.com) are not accepted.
+  // Formally, it must hold that GetDomainAndRegistry(|domain|, _) is |domain|
+  // itself or an empty string.
+  array<string> domains;
+
+  // List of URL origins.
+  array<url.mojom.Origin> origins;
+};
+
 // Represents a distinct context for making network requests, with its own
 // storage (e.g. cookies and cache).
 interface NetworkContext {
@@ -146,6 +165,13 @@ interface NetworkContext {
   //
   // The callback will be invoked once the data has been deleted.
   ClearNetworkingHistorySince(mojo.common.mojom.Time start_time) => ();
+
+  // Clears content from the HTTP cache. A specific range of time can be
+  // specified with |start_time| and |end_time|. This supports unbounded deletes
+  // in either direction by using null Time values for either argument.
+  ClearHttpCache(mojo.common.mojom.Time start_time,
+                 mojo.common.mojom.Time end_time,
+                 ClearCacheUrlFilter? filter) => ();
 
   // Configures network conditions for the specified throttling profile.
   // The throttling will be applied only to requests that have

@@ -73,6 +73,7 @@ class MockDiskEntry : public disk_cache::Entry,
   bool CouldBeSparse() const override;
   void CancelSparseIO() override;
   int ReadyForSparseIO(const CompletionCallback& completion_callback) override;
+  void SetLastUsedTimeForTest(base::Time time) override;
 
   uint8_t in_memory_data() const { return in_memory_data_; }
   void set_in_memory_data(uint8_t val) { in_memory_data_ = val; }

@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/browsing_data/counters/cache_counter.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -34,14 +36,20 @@
 #include "content/public/browser/browsing_data_filter_builder.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/download_manager.h"
+#include "content/public/browser/network_service_instance.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/browsing_data_remover_test_util.h"
 #include "content/public/test/download_test_observer.h"
+#include "content/public/test/simple_url_loader_test_helper.h"
 #include "media/mojo/services/video_decode_perf_history.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
@@ -110,22 +118,6 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
     observer->WaitForFinished();
 
     VerifyDownloadCount(1u);
-  }
-
-  browsing_data::BrowsingDataCounter::ResultInt GetCacheSize() {
-    base::RunLoop run_loop;
-    browsing_data::BrowsingDataCounter::ResultInt size;
-
-    Profile* profile = browser()->profile();
-    CacheCounter counter(profile);
-    counter.Init(profile->GetPrefs(),
-                 browsing_data::ClearBrowsingDataTab::ADVANCED,
-                 base::Bind(&BrowsingDataRemoverBrowserTest::OnCacheSizeResult,
-                            base::Unretained(this), base::Unretained(&run_loop),
-                            base::Unretained(&size)));
-    counter.Restart();
-    run_loop.Run();
-    return size;
   }
 
   void RemoveAndWait(int remove_mask) {
@@ -216,6 +208,12 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
     *out_is_smooth = is_smooth;
     *out_is_power_efficient = is_power_efficient;
     run_loop->QuitWhenIdle();
+  }
+
+  network::mojom::NetworkContext* network_context() const {
+    return content::BrowserContext::GetDefaultStoragePartition(
+               browser()->profile())
+        ->GetNetworkContext();
   }
 
  private:
@@ -352,23 +350,28 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, Database) {
   RunScriptAndCheckResult("getRecords()", "text2");
 }
 
-// Verify that cache deleting cache finishes successfully. Complete deletion
-// of cache should leave it empty, and partial deletion should leave nonzero
+// Verifies that cache deletion finishes successfully. Completes deletion of
+// cache should leave it empty, and partial deletion should leave nonzero
 // amount of data. Note that this tests the integration of BrowsingDataRemover
 // with ConditionalCacheDeletionHelper. Whether ConditionalCacheDeletionHelper
 // actually deletes the correct entries is tested
 // in ConditionalCacheDeletionHelperBrowsertest.
+// TODO(crbug.com/817417): check the cache size instead of stopping the server
+// and loading the request again.
 IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, Cache) {
   // Load several resources.
-  GURL url1 = embedded_test_server()->GetURL("/simple.html");
-  GURL url2 = embedded_test_server()->GetURL(kExampleHost, "/simple.html");
+  GURL url1 = embedded_test_server()->GetURL("/cachetime");
+  GURL url2 = embedded_test_server()->GetURL(kExampleHost, "/cachetime");
   ASSERT_FALSE(url::IsSameOriginWith(url1, url2));
-  ui_test_utils::NavigateToURL(browser(), url1);
-  ui_test_utils::NavigateToURL(browser(), url2);
 
-  // The cache is nonempty, because we created entries by visiting websites.
-  browsing_data::BrowsingDataCounter::ResultInt original_size = GetCacheSize();
-  EXPECT_GT(original_size, 0);
+  EXPECT_EQ(net::OK, content::LoadBasicRequest(network_context(), url1));
+  EXPECT_EQ(net::OK, content::LoadBasicRequest(network_context(), url2));
+
+  // Check that the cache has been populated by revisiting these pages with the
+  // server stopped.
+  ASSERT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
+  EXPECT_EQ(net::OK, content::LoadBasicRequest(network_context(), url1));
+  EXPECT_EQ(net::OK, content::LoadBasicRequest(network_context(), url2));
 
   // Partially delete cache data. Delete data for localhost, which is the origin
   // of |url1|, but not for |kExampleHost|, which is the origin of |url2|.
@@ -379,8 +382,8 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, Cache) {
                           std::move(filter_builder));
 
   // After the partial deletion, the cache should be smaller but still nonempty.
-  browsing_data::BrowsingDataCounter::ResultInt new_size = GetCacheSize();
-  EXPECT_LT(new_size, original_size);
+  EXPECT_NE(net::OK, content::LoadBasicRequest(network_context(), url1));
+  EXPECT_EQ(net::OK, content::LoadBasicRequest(network_context(), url2));
 
   // Another partial deletion with the same filter should have no effect.
   filter_builder =
@@ -388,13 +391,37 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, Cache) {
   filter_builder->AddOrigin(url::Origin::Create(url1));
   RemoveWithFilterAndWait(content::BrowsingDataRemover::DATA_TYPE_CACHE,
                           std::move(filter_builder));
-  EXPECT_EQ(new_size, GetCacheSize());
+  EXPECT_NE(net::OK, content::LoadBasicRequest(network_context(), url1));
+  EXPECT_EQ(net::OK, content::LoadBasicRequest(network_context(), url2));
 
   // Delete the remaining data.
   RemoveAndWait(content::BrowsingDataRemover::DATA_TYPE_CACHE);
 
-  // The cache is empty.
-  EXPECT_EQ(0, GetCacheSize());
+  // The cache should be empty.
+  EXPECT_NE(net::OK, content::LoadBasicRequest(network_context(), url1));
+  EXPECT_NE(net::OK, content::LoadBasicRequest(network_context(), url2));
+}
+
+// Crashes the network service while clearing the HTTP cache to make sure the
+// clear operation does complete.
+// Note that there is a race between crashing the network service and clearing
+// the cache, so the test might flakily fail if the tested behavior does not
+// work.
+// TODO(crbug.com/813882): test retry behavior by validating the cache is empty
+// after the crash.
+IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
+                       ClearCacheAndNetworkServiceCrashes) {
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;
+
+  // Clear the cached data with a task posted to crash the network service.
+  // The task should be run while waiting for the cache clearing operation to
+  // complete, hopefully it happens before the cache has been cleared.
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce([]() { content::SimulateNetworkServiceCrash(); }));
+
+  RemoveAndWait(content::BrowsingDataRemover::DATA_TYPE_CACHE);
 }
 
 IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,

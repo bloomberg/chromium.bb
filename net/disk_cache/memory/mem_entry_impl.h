@@ -133,6 +133,7 @@ class NET_EXPORT_PRIVATE MemEntryImpl final
   bool CouldBeSparse() const override;
   void CancelSparseIO() override {}
   int ReadyForSparseIO(const CompletionCallback& callback) override;
+  void SetLastUsedTimeForTest(base::Time time) override;
   size_t EstimateMemoryUsage() const;
 
  private:

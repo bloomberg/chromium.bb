@@ -925,6 +925,10 @@ int EntryImpl::ReadyForSparseIO(const CompletionCallback& callback) {
   return net::ERR_IO_PENDING;
 }
 
+void EntryImpl::SetLastUsedTimeForTest(base::Time time) {
+  SetTimes(time, time);
+}
+
 // When an entry is deleted from the cache, we clean up all the data associated
 // with it for two reasons: to simplify the reuse of the block (we know that any
 // unused block is filled with zeros), and to simplify the handling of write /

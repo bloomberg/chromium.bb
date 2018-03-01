@@ -8,7 +8,6 @@
 -BackgroundXhrTest.HttpAuth
 -BackgroundXhrTest.TlsClientAuth
 -BrowserTest.InterstitialCancelsGuestViewDialogs
--BrowsingDataRemoverBrowserTest.Cache
 -BrowsingDataRemoverBrowserTest.CookieDeletion
 -ChromeSecurityExploitBrowserTest.CreateFilesystemURLInExtensionOrigin
 -ChromeSitePerProcessTest.LaunchExternalProtocolFromSubframe

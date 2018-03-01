@@ -79,6 +79,7 @@ mojom("mojom") {
     "//mojo/common:common_custom_types",
     "//services/proxy_resolver/public/mojom",
     "//url/mojom:url_mojom_gurl",
+    "//url/mojom:url_mojom_origin",
   ]
 
   # TODO(crbug/598073): When moving the service implementation to

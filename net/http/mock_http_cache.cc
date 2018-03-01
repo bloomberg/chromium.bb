@@ -325,6 +325,10 @@ int MockDiskEntry::ReadyForSparseIO(const CompletionCallback& callback) {
   return ERR_IO_PENDING;
 }
 
+void MockDiskEntry::SetLastUsedTimeForTest(base::Time time) {
+  NOTREACHED();
+}
+
 // If |value| is true, don't deliver any completion callbacks until called
 // again with |value| set to false.  Caution: remember to enable callbacks
 // again or all subsequent tests will fail.

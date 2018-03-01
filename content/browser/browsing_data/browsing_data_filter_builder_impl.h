@@ -24,6 +24,8 @@ class CONTENT_EXPORT BrowsingDataFilterBuilderImpl
   bool IsEmptyBlacklist() const override;
   base::RepeatingCallback<bool(const GURL&)>
       BuildGeneralFilter() const override;
+  network::mojom::ClearCacheUrlFilterPtr BuildClearCacheUrlFilter()
+      const override;
   base::RepeatingCallback<bool(const net::CanonicalCookie& pattern)>
       BuildCookieFilter() const override;
   base::RepeatingCallback<bool(const std::string& server_id)>
