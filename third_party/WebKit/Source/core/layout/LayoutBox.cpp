@@ -652,21 +652,21 @@ static bool IsDisallowedAutoscroll(HTMLFrameOwnerElement* owner_element,
 }
 
 void LayoutBox::ScrollRectToVisibleRecursive(
-    const LayoutRect& rect,
+    const LayoutRect& absolute_rect,
     const WebScrollIntoViewParams& params) {
   DCHECK(params.GetScrollType() == kProgrammaticScroll ||
          params.GetScrollType() == kUserScroll);
   // Presumably the same issue as in setScrollTop. See crbug.com/343132.
   DisableCompositingQueryAsserts disabler;
 
-  LayoutRect rect_to_scroll = rect;
-  if (rect_to_scroll.Width() <= 0)
-    rect_to_scroll.SetWidth(LayoutUnit(1));
-  if (rect_to_scroll.Height() <= 0)
-    rect_to_scroll.SetHeight(LayoutUnit(1));
+  LayoutRect absolute_rect_to_scroll = absolute_rect;
+  if (absolute_rect_to_scroll.Width() <= 0)
+    absolute_rect_to_scroll.SetWidth(LayoutUnit(1));
+  if (absolute_rect_to_scroll.Height() <= 0)
+    absolute_rect_to_scroll.SetHeight(LayoutUnit(1));
 
   LayoutBox* parent_box = nullptr;
-  LayoutRect new_rect = rect_to_scroll;
+  LayoutRect parent_absolute_rect = absolute_rect_to_scroll;
 
   bool restricted_by_line_clamp = false;
   if (ContainingBlock()) {
@@ -681,7 +681,8 @@ void LayoutBox::ScrollRectToVisibleRecursive(
     // hidden by the slider in Safari RSS.
     // TODO(eae): We probably don't need this any more as we don't share any
     //            code with the Safari RSS reeder.
-    new_rect = GetScrollableArea()->ScrollIntoView(rect_to_scroll, params);
+    parent_absolute_rect =
+        GetScrollableArea()->ScrollIntoView(absolute_rect_to_scroll, params);
   } else if (!parent_box && CanBeProgramaticallyScrolled()) {
     if (LocalFrameView* frame_view = GetFrameView()) {
       HTMLFrameOwnerElement* owner_element = GetDocument().LocalOwner();
@@ -691,26 +692,27 @@ void LayoutBox::ScrollRectToVisibleRecursive(
           // viewport content coordinates.
           if (IsLayoutView() && GetFrame()->IsMainFrame() &&
               RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-            rect_to_scroll.Move(
+            absolute_rect_to_scroll.Move(
                 LayoutSize(GetScrollableArea()->GetScrollOffset()));
           }
-          rect_to_scroll = frame_view->GetScrollableArea()->ScrollIntoView(
-              rect_to_scroll, params);
+          absolute_rect_to_scroll =
+              frame_view->GetScrollableArea()->ScrollIntoView(
+                  absolute_rect_to_scroll, params);
         } else {
-          rect_to_scroll =
+          absolute_rect_to_scroll =
               frame_view->LayoutViewportScrollableArea()->ScrollIntoView(
-                  rect_to_scroll, params);
+                  absolute_rect_to_scroll, params);
         }
         if (params.is_for_scroll_sequence)
-          rect_to_scroll.Move(PendingOffsetToScroll());
+          absolute_rect_to_scroll.Move(PendingOffsetToScroll());
         if (owner_element && owner_element->GetLayoutObject()) {
           if (frame_view->SafeToPropagateScrollToParent()) {
             parent_box = owner_element->GetLayoutObject()->EnclosingBox();
             LayoutView* parent_view = owner_element->GetLayoutObject()->View();
-            new_rect = EnclosingLayoutRect(
+            parent_absolute_rect = EnclosingLayoutRect(
                 View()
                     ->LocalToAncestorQuad(
-                        FloatRect(rect_to_scroll), parent_view,
+                        FloatRect(absolute_rect_to_scroll), parent_view,
                         kUseTransforms | kTraverseDocumentBoundaries)
                     .BoundingBox());
           } else {
@@ -734,11 +736,12 @@ void LayoutBox::ScrollRectToVisibleRecursive(
   }
 
   if (parent_box) {
-    parent_box->ScrollRectToVisibleRecursive(new_rect, params);
+    parent_box->ScrollRectToVisibleRecursive(parent_absolute_rect, params);
   } else if (GetFrame()->IsLocalRoot() && !GetFrame()->IsMainFrame()) {
     LocalFrameView* frame_view = GetFrameView();
     if (frame_view && frame_view->SafeToPropagateScrollToParent()) {
-      frame_view->ScrollRectToVisibleInRemoteParent(new_rect, params);
+      frame_view->ScrollRectToVisibleInRemoteParent(absolute_rect_to_scroll,
+                                                    params);
     }
   }
 }
