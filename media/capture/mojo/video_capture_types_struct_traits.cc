@@ -122,8 +122,6 @@ EnumTraits<media::mojom::VideoCaptureApi, media::VideoCaptureApi>::ToMojom(
       return media::mojom::VideoCaptureApi::ANDROID_API2_FULL;
     case media::VideoCaptureApi::ANDROID_API2_LIMITED:
       return media::mojom::VideoCaptureApi::ANDROID_API2_LIMITED;
-    case media::VideoCaptureApi::ANDROID_TANGO:
-      return media::mojom::VideoCaptureApi::ANDROID_TANGO;
     case media::VideoCaptureApi::UNKNOWN:
       return media::mojom::VideoCaptureApi::UNKNOWN;
   }
@@ -162,9 +160,6 @@ bool EnumTraits<media::mojom::VideoCaptureApi, media::VideoCaptureApi>::
       return true;
     case media::mojom::VideoCaptureApi::ANDROID_API2_LIMITED:
       *output = media::VideoCaptureApi::ANDROID_API2_LIMITED;
-      return true;
-    case media::mojom::VideoCaptureApi::ANDROID_TANGO:
-      *output = media::VideoCaptureApi::ANDROID_TANGO;
       return true;
     case media::mojom::VideoCaptureApi::UNKNOWN:
       *output = media::VideoCaptureApi::UNKNOWN;
