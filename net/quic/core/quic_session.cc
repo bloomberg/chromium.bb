@@ -327,7 +327,7 @@ void QuicSession::OnCanWrite() {
           write_blocked_streams_.HasWriteBlockedDataStreams())) {
       // Writing one stream removed another!? Something's broken.
       QUIC_BUG << "WriteBlockedStream is missing";
-      RecordInternalErrorLocation(QUIC_SESSION_1);
+      RecordInternalErrorLocation(QUIC_SESSION_ON_CAN_WRITE);
       connection_->CloseConnection(QUIC_INTERNAL_ERROR,
                                    "WriteBlockedStream is missing",
                                    ConnectionCloseBehavior::SILENT_CLOSE);
@@ -398,7 +398,7 @@ QuicConsumedData QuicSession::WritevData(QuicStream* stream,
   // seems like a reasonable mitigation.
   if (id == kCryptoStreamId && stream != GetMutableCryptoStream()) {
     QUIC_BUG << "Stream id mismatch";
-    RecordInternalErrorLocation(QUIC_SESSION_2);
+    RecordInternalErrorLocation(QUIC_SESSION_WRITEV_DATA);
     connection_->CloseConnection(
         QUIC_INTERNAL_ERROR,
         "Non-crypto stream attempted to write data as crypto stream.",
@@ -1073,7 +1073,7 @@ void QuicSession::OnStreamFrameRetransmitted(const QuicStreamFrame& frame) {
   if (stream == nullptr) {
     QUIC_BUG << "Stream: " << frame.stream_id << " is closed when " << frame
              << " is retransmitted.";
-    RecordInternalErrorLocation(QUIC_SESSION_3);
+    RecordInternalErrorLocation(QUIC_SESSION_STREAM_FRAME_RETRANSMITTED);
     connection()->CloseConnection(
         QUIC_INTERNAL_ERROR, "Attempt to retransmit frame of a closed stream",
         ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);

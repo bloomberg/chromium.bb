@@ -108,7 +108,7 @@ void QuicControlFrameManager::OnControlFrameSent(const QuicFrame& frame) {
     session_->connection()->CloseConnection(
         QUIC_INTERNAL_ERROR, "Try to send control frames out of order",
         ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
-    RecordInternalErrorLocation(QUIC_CONTROL_FRAME_MANAGER_1);
+    RecordInternalErrorLocation(QUIC_CONTROL_FRAME_MANAGER_CONTROL_FRAME_SENT);
     return;
   }
   ++least_unsent_;
@@ -125,7 +125,7 @@ bool QuicControlFrameManager::OnControlFrameAcked(const QuicFrame& frame) {
     session_->connection()->CloseConnection(
         QUIC_INTERNAL_ERROR, "Try to ack unsent control frame",
         ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
-    RecordInternalErrorLocation(QUIC_CONTROL_FRAME_MANAGER_2);
+    RecordInternalErrorLocation(QUIC_CONTROL_FRAME_MANAGER_CONTROL_FRAME_ACKED);
     return false;
   }
   if (id < least_unacked_ ||
@@ -161,7 +161,7 @@ void QuicControlFrameManager::OnControlFrameLost(const QuicFrame& frame) {
     session_->connection()->CloseConnection(
         QUIC_INTERNAL_ERROR, "Try to mark unsent control frame as lost",
         ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
-    RecordInternalErrorLocation(QUIC_CONTROL_FRAME_MANAGER_3);
+    RecordInternalErrorLocation(QUIC_CONTROL_FRAME_MANAGER_CONTROL_FRAME_LOST);
     return;
   }
   if (id < least_unacked_ ||
@@ -225,7 +225,8 @@ bool QuicControlFrameManager::RetransmitControlFrame(const QuicFrame& frame) {
     session_->connection()->CloseConnection(
         QUIC_INTERNAL_ERROR, "Try to retransmit unsent control frame",
         ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
-    RecordInternalErrorLocation(QUIC_CONTROL_FRAME_MANAGER_4);
+    RecordInternalErrorLocation(
+        QUIC_CONTROL_FRAME_MANAGER_RETRANSMIT_CONTROL_FRAME);
     return false;
   }
   if (id < least_unacked_ ||
