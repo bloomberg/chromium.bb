@@ -60,7 +60,7 @@ IdentityManager::CreateAccessTokenFetcherForPrimaryAccount(
     const OAuth2TokenService::ScopeSet& scopes,
     PrimaryAccountAccessTokenFetcher::TokenCallback callback,
     PrimaryAccountAccessTokenFetcher::Mode mode) {
-  return base::MakeUnique<PrimaryAccountAccessTokenFetcher>(
+  return std::make_unique<PrimaryAccountAccessTokenFetcher>(
       oauth_consumer_name, signin_manager_, token_service_, scopes,
       std::move(callback), mode);
 }

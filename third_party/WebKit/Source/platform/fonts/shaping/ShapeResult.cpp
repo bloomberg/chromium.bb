@@ -700,7 +700,7 @@ void ShapeResult::InsertRun(std::unique_ptr<ShapeResult::RunInfo> run) {
 // synthesize a run without glyphs.
 void ShapeResult::InsertRunForIndex(unsigned start_character_index) {
   DCHECK(runs_.IsEmpty());
-  runs_.push_back(base::MakeUnique<RunInfo>(
+  runs_.push_back(std::make_unique<RunInfo>(
       primary_font_.get(), !Rtl() ? HB_DIRECTION_LTR : HB_DIRECTION_RTL,
       CanvasRotationInVertical::kRegular, HB_SCRIPT_UNKNOWN,
       start_character_index, 0, num_characters_));

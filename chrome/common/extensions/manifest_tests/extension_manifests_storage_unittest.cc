@@ -18,7 +18,7 @@ TEST_F(ChromeManifestTest, StorageAPIManifestVersionAvailability) {
   {
     base_manifest.SetString(keys::kName, "test");
     base_manifest.SetString(keys::kVersion, "0.1");
-    auto permissions = base::MakeUnique<base::ListValue>();
+    auto permissions = std::make_unique<base::ListValue>();
     permissions->AppendString("storage");
     base_manifest.Set(keys::kPermissions, std::move(permissions));
   }

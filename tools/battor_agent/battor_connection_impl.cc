@@ -165,7 +165,7 @@ void BattOrConnectionImpl::SendBytes(BattOrMessageType type,
   LogSerial(StringPrintf("Bytes sent: %s.", ByteVectorToString(data).c_str()));
 
   pending_write_length_ = data.size();
-  io_handler_->Write(base::MakeUnique<device::SendBuffer>(
+  io_handler_->Write(std::make_unique<device::SendBuffer>(
       data, base::BindOnce(&BattOrConnectionImpl::OnBytesSent, AsWeakPtr())));
 }
 
@@ -218,7 +218,7 @@ void BattOrConnectionImpl::BeginReadBytesForMessage(size_t max_bytes_to_read) {
 
   pending_read_buffer_ = base::MakeRefCounted<net::IOBuffer>(max_bytes_to_read);
 
-  io_handler_->Read(base::MakeUnique<device::ReceiveBuffer>(
+  io_handler_->Read(std::make_unique<device::ReceiveBuffer>(
       pending_read_buffer_, static_cast<uint32_t>(max_bytes_to_read),
       base::BindOnce(&BattOrConnectionImpl::OnBytesReadForMessage,
                      AsWeakPtr())));
@@ -321,7 +321,7 @@ void BattOrConnectionImpl::BeginReadBytesForFlush() {
 
   pending_read_buffer_ = base::MakeRefCounted<net::IOBuffer>(kFlushBufferSize);
 
-  io_handler_->Read(base::MakeUnique<device::ReceiveBuffer>(
+  io_handler_->Read(std::make_unique<device::ReceiveBuffer>(
       pending_read_buffer_, static_cast<uint32_t>(kFlushBufferSize),
       base::BindOnce(&BattOrConnectionImpl::OnBytesReadForFlush,
                      base::Unretained(this))));

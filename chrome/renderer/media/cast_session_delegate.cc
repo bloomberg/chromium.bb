@@ -209,14 +209,14 @@ void CastSessionDelegate::GetEventLogsAndReset(
   DCHECK(io_task_runner_->BelongsToCurrentThread());
 
   if (!event_subscribers_.get()) {
-    callback.Run(base::MakeUnique<base::Value>(base::Value::Type::BINARY));
+    callback.Run(std::make_unique<base::Value>(base::Value::Type::BINARY));
     return;
   }
 
   media::cast::EncodingEventSubscriber* subscriber =
       event_subscribers_->GetEncodingEventSubscriber(is_audio);
   if (!subscriber) {
-    callback.Run(base::MakeUnique<base::Value>(base::Value::Type::BINARY));
+    callback.Run(std::make_unique<base::Value>(base::Value::Type::BINARY));
     return;
   }
 
@@ -247,13 +247,13 @@ void CastSessionDelegate::GetEventLogsAndReset(
 
   if (!success) {
     DVLOG(2) << "Failed to serialize event log.";
-    callback.Run(base::MakeUnique<base::Value>(base::Value::Type::BINARY));
+    callback.Run(std::make_unique<base::Value>(base::Value::Type::BINARY));
     return;
   }
 
   DVLOG(2) << "Serialized log length: " << output_bytes;
 
-  auto blob = base::MakeUnique<base::Value>(std::vector<char>(
+  auto blob = std::make_unique<base::Value>(std::vector<char>(
       serialized_log.get(), serialized_log.get() + output_bytes));
   callback.Run(std::move(blob));
 }
@@ -263,14 +263,14 @@ void CastSessionDelegate::GetStatsAndReset(bool is_audio,
   DCHECK(io_task_runner_->BelongsToCurrentThread());
 
   if (!event_subscribers_.get()) {
-    callback.Run(base::MakeUnique<base::DictionaryValue>());
+    callback.Run(std::make_unique<base::DictionaryValue>());
     return;
   }
 
   media::cast::StatsEventSubscriber* subscriber =
       event_subscribers_->GetStatsEventSubscriber(is_audio);
   if (!subscriber) {
-    callback.Run(base::MakeUnique<base::DictionaryValue>());
+    callback.Run(std::make_unique<base::DictionaryValue>());
     return;
   }
 

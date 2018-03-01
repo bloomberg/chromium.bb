@@ -161,7 +161,7 @@ void MemlogConnectionManager::OnNewConnection(
                      base::MessageLoop::current()->task_runner(),
                      weak_factory_.GetWeakPtr(), pid);
 
-  auto connection = base::MakeUnique<Connection>(
+  auto connection = std::make_unique<Connection>(
       std::move(complete_cb), &backtrace_storage_, pid, std::move(client),
       new_pipe, process_type, params->sampling_rate, params->stack_mode);
 

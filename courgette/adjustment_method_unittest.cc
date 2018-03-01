@@ -37,7 +37,7 @@ class AdjustmentMethodTest : public testing::Test {
   // Returns one of two similar simple programs. These differ only in Label
   // assignment, so it is possible to make them look identical.
   std::unique_ptr<AssemblyProgram> MakeProgram(int kind) const {
-    auto prog = base::MakeUnique<AssemblyProgram>(EXE_WIN_32_X86, 0x00400000);
+    auto prog = std::make_unique<AssemblyProgram>(EXE_WIN_32_X86, 0x00400000);
 
     RVA kRvaA = 0x00410000;
     RVA kRvaB = 0x00410004;

@@ -548,7 +548,7 @@ void ChromeContentRendererClient::RenderFrameCreated(
 
 #if BUILDFLAG(ENABLE_PRINTING)
   new printing::PrintRenderFrameHelper(
-      render_frame, base::MakeUnique<ChromePrintRenderFrameHelperDelegate>());
+      render_frame, std::make_unique<ChromePrintRenderFrameHelperDelegate>());
 #endif
 
 #if defined(OS_ANDROID)
@@ -1389,14 +1389,14 @@ void ChromeContentRendererClient::InitSpellCheck() {
 std::unique_ptr<blink::WebSocketHandshakeThrottle>
 ChromeContentRendererClient::CreateWebSocketHandshakeThrottle() {
   InitSafeBrowsingIfNecessary();
-  return base::MakeUnique<safe_browsing::WebSocketSBHandshakeThrottle>(
+  return std::make_unique<safe_browsing::WebSocketSBHandshakeThrottle>(
       safe_browsing_.get());
 }
 
 std::unique_ptr<blink::WebSpeechSynthesizer>
 ChromeContentRendererClient::OverrideSpeechSynthesizer(
     blink::WebSpeechSynthesizerClient* client) {
-  return base::MakeUnique<TtsDispatcher>(client);
+  return std::make_unique<TtsDispatcher>(client);
 }
 
 bool ChromeContentRendererClient::AllowPepperMediaStreamAPI(
@@ -1447,7 +1447,7 @@ bool ChromeContentRendererClient::ShouldGatherSiteIsolationStats() const {
 std::unique_ptr<blink::WebContentSettingsClient>
 ChromeContentRendererClient::CreateWorkerContentSettingsClient(
     content::RenderFrame* render_frame) {
-  return base::MakeUnique<WorkerContentSettingsClient>(render_frame);
+  return std::make_unique<WorkerContentSettingsClient>(render_frame);
 }
 
 bool ChromeContentRendererClient::IsPluginAllowedToUseDevChannelAPIs() {

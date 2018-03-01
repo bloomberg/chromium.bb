@@ -69,7 +69,7 @@ class FakeDevToolsClient : public StubDevToolsClient {
       const base::DictionaryValue& params,
       std::unique_ptr<base::DictionaryValue>* result) override {
     sent_commands_.push_back(
-        base::MakeUnique<DevToolsCommand>(method, params.DeepCopy()));
+        std::make_unique<DevToolsCommand>(method, params.DeepCopy()));
     return Status(kOk);
   }
 
@@ -123,7 +123,7 @@ void FakeLog::AddEntryTimestamped(const base::Time& timestamp,
                                   const std::string& source,
                                   const std::string& message) {
   entries_.push_back(
-      base::MakeUnique<LogEntry>(timestamp, level, source, message));
+      std::make_unique<LogEntry>(timestamp, level, source, message));
 }
 
 bool FakeLog::Emptied() const {
@@ -331,11 +331,11 @@ TEST(PerformanceLogger, RecordTraceEvents) {
   client.AddListener(&logger);
   logger.OnConnected(&client);
   base::DictionaryValue params;
-  auto trace_events = base::MakeUnique<base::ListValue>();
-  auto event1 = base::MakeUnique<base::DictionaryValue>();
+  auto trace_events = std::make_unique<base::ListValue>();
+  auto event1 = std::make_unique<base::DictionaryValue>();
   event1->SetString("cat", "foo");
   trace_events->GetList().push_back(event1->Clone());
-  auto event2 = base::MakeUnique<base::DictionaryValue>();
+  auto event2 = std::make_unique<base::DictionaryValue>();
   event2->SetString("cat", "bar");
   trace_events->GetList().push_back(event2->Clone());
   params.Set("value", std::move(trace_events));

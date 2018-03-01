@@ -134,7 +134,7 @@ std::unique_ptr<SkCanvas> CreatePlatformCanvasWithSharedSection(
     SkRasterHandleAllocator::Rec rec;
     if (Create(width, height, is_opaque, shared_section, false, &rec))
       return SkRasterHandleAllocator::MakeCanvas(
-          base::MakeUnique<GDIAllocator>(), info, &rec);
+          std::make_unique<GDIAllocator>(), info, &rec);
   } else {
     DCHECK(shared_section != NULL);
     void* pixels =
@@ -143,7 +143,7 @@ std::unique_ptr<SkCanvas> CreatePlatformCanvasWithSharedSection(
       SkBitmap bitmap;
       if (bitmap.installPixels(info, pixels, row_bytes, unmap_view_proc,
                                nullptr)) {
-        return base::MakeUnique<SkCanvas>(bitmap);
+        return std::make_unique<SkCanvas>(bitmap);
       }
     }
   }

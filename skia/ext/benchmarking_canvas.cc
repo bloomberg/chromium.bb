@@ -386,7 +386,7 @@ public:
 
    op_record_->SetString("cmd_string", op_name);
    op_params_ =
-       op_record_->SetList("info", base::MakeUnique<base::ListValue>());
+       op_record_->SetList("info", std::make_unique<base::ListValue>());
 
    if (paint) {
      this->addParam("paint", AsValue(*paint));

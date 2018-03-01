@@ -20,7 +20,7 @@ ProfilingService::ProfilingService()
 ProfilingService::~ProfilingService() {}
 
 std::unique_ptr<service_manager::Service> ProfilingService::CreateService() {
-  return base::MakeUnique<ProfilingService>();
+  return std::make_unique<ProfilingService>();
 }
 
 void ProfilingService::OnStart() {

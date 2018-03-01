@@ -32,7 +32,7 @@ class IPCDump : public IPC::ChannelProxy::OutgoingMessageFilter {
   }
 
   IPC::Message* Rewrite(IPC::Message* message) override {
-    messages_.push_back(base::MakeUnique<IPC::Message>(*message));
+    messages_.push_back(std::make_unique<IPC::Message>(*message));
     return message;
   }
 

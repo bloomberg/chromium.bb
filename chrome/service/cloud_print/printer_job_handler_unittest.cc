@@ -603,7 +603,7 @@ void PrinterJobHandlerTest::BeginTest(int timeout_seconds) {
 
   job_handler_->Initialize();
 
-  active_run_loop_ = base::MakeUnique<base::RunLoop>();
+  active_run_loop_ = std::make_unique<base::RunLoop>();
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, active_run_loop_->QuitWhenIdleClosure(),

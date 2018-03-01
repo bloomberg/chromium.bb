@@ -14,7 +14,7 @@ SigninBrowserTest::~SigninBrowserTest() {}
 
 void SigninBrowserTest::EnableDice() {
   scoped_account_consistency_ =
-      base::MakeUnique<signin::ScopedAccountConsistency>(
+      std::make_unique<signin::ScopedAccountConsistency>(
           signin::AccountConsistencyMethod::kDice);
 }
 

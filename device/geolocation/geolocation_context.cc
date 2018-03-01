@@ -18,7 +18,7 @@ GeolocationContext::~GeolocationContext() = default;
 
 // static
 void GeolocationContext::Create(mojom::GeolocationContextRequest request) {
-  mojo::MakeStrongBinding(base::MakeUnique<GeolocationContext>(),
+  mojo::MakeStrongBinding(std::make_unique<GeolocationContext>(),
                           std::move(request));
 }
 

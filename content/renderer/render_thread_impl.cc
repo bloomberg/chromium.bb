@@ -549,7 +549,7 @@ class ResourceUsageReporterImpl : public content::mojom::ResourceUsageReporter {
 
 void CreateResourceUsageReporter(base::WeakPtr<RenderThread> thread,
                                  mojom::ResourceUsageReporterRequest request) {
-  mojo::MakeStrongBinding(base::MakeUnique<ResourceUsageReporterImpl>(thread),
+  mojo::MakeStrongBinding(std::make_unique<ResourceUsageReporterImpl>(thread),
                           std::move(request));
 }
 

@@ -707,7 +707,7 @@ std::unique_ptr<net::HttpServerResponseInfo> HttpHandler::PrepareLegacyResponse(
     value = std::move(error);
   }
   if (!value)
-    value = base::MakeUnique<base::Value>();
+    value = std::make_unique<base::Value>();
 
   base::DictionaryValue body_params;
   body_params.SetInteger("status", status.code());
@@ -822,7 +822,7 @@ HttpHandler::PrepareStandardResponse(
   }
 
   if (!value)
-    value = base::MakeUnique<base::Value>();
+    value = std::make_unique<base::Value>();
 
   base::DictionaryValue body_params;
   if (status.IsError()){

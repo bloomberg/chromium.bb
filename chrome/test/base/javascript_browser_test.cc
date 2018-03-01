@@ -120,9 +120,9 @@ base::string16 JavaScriptBrowserTest::BuildRunTestJSCall(
     const std::string& function_name,
     std::vector<base::Value> test_func_args) {
   std::vector<std::unique_ptr<base::Value>> arguments;
-  arguments.push_back(base::MakeUnique<base::Value>(is_async));
-  arguments.push_back(base::MakeUnique<base::Value>(function_name));
-  auto baked_argument_list = base::MakeUnique<base::ListValue>();
+  arguments.push_back(std::make_unique<base::Value>(is_async));
+  arguments.push_back(std::make_unique<base::Value>(function_name));
+  auto baked_argument_list = std::make_unique<base::ListValue>();
   for (const auto& arg : test_func_args)
     baked_argument_list->Append(arg.CreateDeepCopy());
   arguments.push_back(std::move(baked_argument_list));

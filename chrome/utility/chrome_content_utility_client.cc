@@ -136,7 +136,7 @@ void ChromeContentUtilityClient::UtilityThreadStarted() {
   if (!connection)
     return;
 
-  auto registry = base::MakeUnique<service_manager::BinderRegistry>();
+  auto registry = std::make_unique<service_manager::BinderRegistry>();
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   extensions::utility_handler::ExposeInterfacesToBrowser(
       registry.get(), utility_process_running_elevated_);
@@ -154,7 +154,7 @@ void ChromeContentUtilityClient::UtilityThreadStarted() {
   }
 
   connection->AddConnectionFilter(
-      base::MakeUnique<content::SimpleConnectionFilter>(std::move(registry)));
+      std::make_unique<content::SimpleConnectionFilter>(std::move(registry)));
 }
 
 bool ChromeContentUtilityClient::OnMessageReceived(

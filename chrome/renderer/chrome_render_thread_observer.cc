@@ -161,13 +161,13 @@ ChromeRenderThreadObserver::ChromeRenderThreadObserver()
   WebSecurityPolicy::RegisterURLSchemeAsNotAllowingJavascriptURLs(
       native_scheme);
 
-  auto registry = base::MakeUnique<service_manager::BinderRegistry>();
+  auto registry = std::make_unique<service_manager::BinderRegistry>();
   registry->AddInterface(visited_link_slave_->GetBindCallback(),
                          base::ThreadTaskRunnerHandle::Get());
   if (content::ChildThread::Get()) {
     content::ChildThread::Get()
         ->GetServiceManagerConnection()
-        ->AddConnectionFilter(base::MakeUnique<content::SimpleConnectionFilter>(
+        ->AddConnectionFilter(std::make_unique<content::SimpleConnectionFilter>(
             std::move(registry)));
   }
 }

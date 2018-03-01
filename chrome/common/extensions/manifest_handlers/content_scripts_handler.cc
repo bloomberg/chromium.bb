@@ -275,7 +275,7 @@ std::unique_ptr<UserScript> LoadUserScriptFromDictionary(
       }
       GURL url = extension->GetResourceURL(relative);
       ExtensionResource resource = extension->GetResource(relative);
-      result->js_scripts().push_back(base::MakeUnique<UserScript::File>(
+      result->js_scripts().push_back(std::make_unique<UserScript::File>(
           resource.extension_root(), resource.relative_path(), url));
     }
   }
@@ -294,7 +294,7 @@ std::unique_ptr<UserScript> LoadUserScriptFromDictionary(
       }
       GURL url = extension->GetResourceURL(relative);
       ExtensionResource resource = extension->GetResource(relative);
-      result->css_scripts().push_back(base::MakeUnique<UserScript::File>(
+      result->css_scripts().push_back(std::make_unique<UserScript::File>(
           resource.extension_root(), resource.relative_path(), url));
     }
   }

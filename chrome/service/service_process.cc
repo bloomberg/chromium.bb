@@ -353,7 +353,7 @@ mojo::ScopedMessagePipeHandle ServiceProcess::CreateChannelMessagePipe() {
 #endif
   CHECK(channel_handle.is_valid());
 
-  peer_connection_ = base::MakeUnique<mojo::edk::PeerConnection>();
+  peer_connection_ = std::make_unique<mojo::edk::PeerConnection>();
   return peer_connection_->Connect(mojo::edk::ConnectionParams(
       mojo::edk::TransportProtocol::kLegacy, std::move(channel_handle)));
 }

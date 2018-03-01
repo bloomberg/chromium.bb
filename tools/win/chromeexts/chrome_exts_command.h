@@ -34,7 +34,7 @@ class ChromeExtsCommand {
  public:
   template <typename T>
   static HRESULT Run(IDebugClient* debug_client, const char* args) {
-    std::unique_ptr<ChromeExtsCommand> command = base::MakeUnique<T>();
+    std::unique_ptr<ChromeExtsCommand> command = std::make_unique<T>();
     HRESULT hr = command->Initialize(debug_client, args);
     if (SUCCEEDED(hr)) {
       hr = command->Execute();

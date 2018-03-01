@@ -103,7 +103,7 @@ void SandboxStatusExtension::GetSandboxStatus(gin::Arguments* args) {
   }
 
   auto global_callback =
-      base::MakeUnique<v8::Global<v8::Function>>(args->isolate(), callback);
+      std::make_unique<v8::Global<v8::Function>>(args->isolate(), callback);
 
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock()},
@@ -121,7 +121,7 @@ std::unique_ptr<base::Value> SandboxStatusExtension::ReadSandboxStatus() {
   path = base::FilePath(FILE_PATH_LITERAL("/proc/self/status"));
   base::ReadFileToString(path, &proc_status);
 
-  auto status = base::MakeUnique<base::DictionaryValue>();
+  auto status = std::make_unique<base::DictionaryValue>();
   status->SetInteger("uid", getuid());
   status->SetInteger("pid", getpid());
   status->SetString("secontext", secontext);

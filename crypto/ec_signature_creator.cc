@@ -21,7 +21,7 @@ std::unique_ptr<ECSignatureCreator> ECSignatureCreator::Create(
     ECPrivateKey* key) {
   if (g_factory_)
     return g_factory_->Create(key);
-  return base::MakeUnique<ECSignatureCreatorImpl>(key);
+  return std::make_unique<ECSignatureCreatorImpl>(key);
 }
 
 // static

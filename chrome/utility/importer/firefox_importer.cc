@@ -722,7 +722,7 @@ void FirefoxImporter::GetTopBookmarkFolder(sql::Connection* db,
   s.BindInt(0, folder_id);
 
   if (s.Step()) {
-    std::unique_ptr<BookmarkItem> item = base::MakeUnique<BookmarkItem>();
+    std::unique_ptr<BookmarkItem> item = std::make_unique<BookmarkItem>();
     item->parent = -1;  // The top level folder has no parent.
     item->id = folder_id;
     item->title = s.ColumnString16(0);
@@ -759,7 +759,7 @@ void FirefoxImporter::GetWholeBookmarkFolder(sql::Connection* db,
 
   BookmarkList temp_list;
   while (s.Step()) {
-    std::unique_ptr<BookmarkItem> item = base::MakeUnique<BookmarkItem>();
+    std::unique_ptr<BookmarkItem> item = std::make_unique<BookmarkItem>();
     item->parent = static_cast<int>(position);
     item->id = s.ColumnInt(0);
     item->url = GURL(s.ColumnString(1));

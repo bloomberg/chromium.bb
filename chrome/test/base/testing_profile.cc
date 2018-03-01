@@ -182,10 +182,10 @@ class TestExtensionURLRequestContextGetter
 
 std::unique_ptr<KeyedService> BuildHistoryService(
     content::BrowserContext* context) {
-  return base::MakeUnique<history::HistoryService>(
-      base::MakeUnique<ChromeHistoryClient>(
+  return std::make_unique<history::HistoryService>(
+      std::make_unique<ChromeHistoryClient>(
           BookmarkModelFactory::GetForBrowserContext(context)),
-      base::MakeUnique<history::ContentVisitDelegate>(context));
+      std::make_unique<history::ContentVisitDelegate>(context));
 }
 
 std::unique_ptr<KeyedService> BuildInMemoryURLIndex(
@@ -205,7 +205,7 @@ std::unique_ptr<KeyedService> BuildBookmarkModel(
     content::BrowserContext* context) {
   Profile* profile = Profile::FromBrowserContext(context);
   std::unique_ptr<BookmarkModel> bookmark_model(
-      new BookmarkModel(base::MakeUnique<ChromeBookmarkClient>(
+      new BookmarkModel(std::make_unique<ChromeBookmarkClient>(
           profile, ManagedBookmarkServiceFactory::GetForProfile(profile))));
   bookmark_model->Load(profile->GetPrefs(), profile->GetPath(),
                        profile->GetIOTaskRunner(),
@@ -223,7 +223,7 @@ void TestProfileErrorCallback(WebDataServiceWrapper::ErrorType error_type,
 std::unique_ptr<KeyedService> BuildWebDataService(
     content::BrowserContext* context) {
   const base::FilePath& context_path = context->GetPath();
-  return base::MakeUnique<WebDataServiceWrapper>(
+  return std::make_unique<WebDataServiceWrapper>(
       context_path, g_browser_process->GetApplicationLocale(),
       BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
       sync_start_util::GetFlareForSyncableService(context_path),
@@ -233,7 +233,7 @@ std::unique_ptr<KeyedService> BuildWebDataService(
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
 std::unique_ptr<KeyedService> BuildOfflinePageModel(
     content::BrowserContext* context) {
-  return base::MakeUnique<offline_pages::StubOfflinePageModel>();
+  return std::make_unique<offline_pages::StubOfflinePageModel>();
 }
 #endif
 
@@ -637,7 +637,7 @@ base::FilePath TestingProfile::GetPath() const {
 #if !defined(OS_ANDROID)
 std::unique_ptr<content::ZoomLevelDelegate>
 TestingProfile::CreateZoomLevelDelegate(const base::FilePath& partition_path) {
-  return base::MakeUnique<ChromeZoomLevelPrefs>(
+  return std::make_unique<ChromeZoomLevelPrefs>(
       GetPrefs(), GetPath(), partition_path,
       zoom::ZoomEventManager::GetForBrowserContext(this)->GetWeakPtr());
 }

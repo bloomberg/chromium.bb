@@ -128,7 +128,7 @@ bool Reader::ReadMessages() {
 
     // Copy is necessary to fix message type later.
     IPC::Message const_message(begin, msglen);
-    messages_->push_back(base::MakeUnique<IPC::Message>(const_message));
+    messages_->push_back(std::make_unique<IPC::Message>(const_message));
     file_data_.remove_prefix(msglen);
   }
   return true;

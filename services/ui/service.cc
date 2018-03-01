@@ -263,10 +263,10 @@ void Service::OnStart() {
         owned_discardable_shared_memory_manager_.get();
   }
 
-  window_server_ = base::MakeUnique<ws::WindowServer>(this, should_host_viz_);
+  window_server_ = std::make_unique<ws::WindowServer>(this, should_host_viz_);
   if (should_host_viz_) {
     std::unique_ptr<ws::GpuHost> gpu_host =
-        base::MakeUnique<ws::DefaultGpuHost>(
+        std::make_unique<ws::DefaultGpuHost>(
             window_server_.get(), context()->connector(),
             discardable_shared_memory_manager_);
     window_server_->SetGpuHost(std::move(gpu_host));

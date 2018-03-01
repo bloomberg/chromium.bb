@@ -516,17 +516,17 @@ void ChromeContentClient::AddPepperPlugins(
   if (!sandbox::Credentials::HasFileSystemAccess())
     return;
 
-  auto component_flash = base::MakeUnique<content::PepperPluginInfo>();
+  auto component_flash = std::make_unique<content::PepperPluginInfo>();
   if (!disable_bundled_flash &&
       GetComponentUpdatedPepperFlash(component_flash.get()))
     flash_versions.push_back(std::move(component_flash));
 #endif  // defined(OS_LINUX)
 
-  auto command_line_flash = base::MakeUnique<content::PepperPluginInfo>();
+  auto command_line_flash = std::make_unique<content::PepperPluginInfo>();
   if (GetCommandLinePepperFlash(command_line_flash.get()))
     flash_versions.push_back(std::move(command_line_flash));
 
-  auto system_flash = base::MakeUnique<content::PepperPluginInfo>();
+  auto system_flash = std::make_unique<content::PepperPluginInfo>();
   if (GetSystemPepperFlash(system_flash.get()))
     flash_versions.push_back(std::move(system_flash));
 
@@ -738,7 +738,7 @@ content::OriginTrialPolicy* ChromeContentClient::GetOriginTrialPolicy() {
   // separate worker thread).
   base::AutoLock auto_lock(origin_trial_policy_lock_);
   if (!origin_trial_policy_)
-    origin_trial_policy_ = base::MakeUnique<ChromeOriginTrialPolicy>();
+    origin_trial_policy_ = std::make_unique<ChromeOriginTrialPolicy>();
   return origin_trial_policy_.get();
 }
 

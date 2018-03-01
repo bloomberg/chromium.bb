@@ -26,7 +26,7 @@ class TestMetricsRenderFrameObserver : public MetricsRenderFrameObserver,
   TestMetricsRenderFrameObserver() : MetricsRenderFrameObserver(nullptr) {}
 
   std::unique_ptr<base::Timer> CreateTimer() override {
-    auto timer = base::MakeUnique<test::WeakMockTimer>();
+    auto timer = std::make_unique<test::WeakMockTimer>();
     SetMockTimer(timer->AsWeakPtr());
     return std::move(timer);
   }

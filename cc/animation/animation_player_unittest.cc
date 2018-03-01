@@ -158,7 +158,7 @@ class AnimationTest : public AnimationTimelinesTest {
 
 TEST_F(AnimationTest, AttachDetachLayerIfTimelineAttached) {
   animation_->AddKeyframeEffect(
-      base::MakeUnique<KeyframeEffect>(keyframe_effect_id_));
+      std::make_unique<KeyframeEffect>(keyframe_effect_id_));
   ASSERT_TRUE(animation_->GetKeyframeEffectById(keyframe_effect_id_));
   EXPECT_FALSE(animation_->GetKeyframeEffectById(keyframe_effect_id_)
                    ->needs_push_properties());
@@ -236,7 +236,7 @@ TEST_F(AnimationTest, AttachDetachTimelineIfLayerAttached) {
   host_->AddAnimationTimeline(timeline_);
 
   animation_->AddKeyframeEffect(
-      base::MakeUnique<KeyframeEffect>(keyframe_effect_id_));
+      std::make_unique<KeyframeEffect>(keyframe_effect_id_));
   ASSERT_TRUE(animation_->GetKeyframeEffectById(keyframe_effect_id_));
 
   EXPECT_FALSE(animation_->GetKeyframeEffectById(keyframe_effect_id_)
@@ -289,7 +289,7 @@ TEST_F(AnimationTest, PropertiesMutate) {
   host_->AddAnimationTimeline(timeline_);
 
   animation_->AddKeyframeEffect(
-      base::MakeUnique<KeyframeEffect>(keyframe_effect_id_));
+      std::make_unique<KeyframeEffect>(keyframe_effect_id_));
   ASSERT_TRUE(animation_->GetKeyframeEffectById(keyframe_effect_id_));
 
   timeline_->AttachAnimation(animation_);
@@ -382,11 +382,11 @@ TEST_F(AnimationTest, AttachTwoAnimationsToOneLayer) {
 
   KeyframeEffectId keyframe_effect_id1 = animation1->NextKeyframeEffectId();
   animation1->AddKeyframeEffect(
-      base::MakeUnique<KeyframeEffect>(keyframe_effect_id1));
+      std::make_unique<KeyframeEffect>(keyframe_effect_id1));
   ASSERT_TRUE(animation1->GetKeyframeEffectById(keyframe_effect_id1));
   KeyframeEffectId keyframe_effect_id2 = animation2->NextKeyframeEffectId();
   animation2->AddKeyframeEffect(
-      base::MakeUnique<KeyframeEffect>(keyframe_effect_id2));
+      std::make_unique<KeyframeEffect>(keyframe_effect_id2));
   ASSERT_TRUE(animation2->GetKeyframeEffectById(keyframe_effect_id2));
 
   host_->AddAnimationTimeline(timeline_);
@@ -474,7 +474,7 @@ TEST_F(AnimationTest, AddRemoveAnimationToNonAttachedAnimation) {
   client_impl_.RegisterElement(element_id_, ElementListType::ACTIVE);
 
   animation_->AddKeyframeEffect(
-      base::MakeUnique<KeyframeEffect>(keyframe_effect_id_));
+      std::make_unique<KeyframeEffect>(keyframe_effect_id_));
   ASSERT_TRUE(animation_->GetKeyframeEffectById(keyframe_effect_id_));
 
   const double duration = 1.;
@@ -552,7 +552,7 @@ TEST_F(AnimationTest, AddRemoveAnimationCausesSetNeedsCommit) {
   client_.RegisterElement(element_id_, ElementListType::ACTIVE);
   host_->AddAnimationTimeline(timeline_);
   animation_->AddKeyframeEffect(
-      base::MakeUnique<KeyframeEffect>(keyframe_effect_id_));
+      std::make_unique<KeyframeEffect>(keyframe_effect_id_));
   ASSERT_TRUE(animation_->GetKeyframeEffectById(keyframe_effect_id_));
 
   timeline_->AttachAnimation(animation_);
@@ -582,7 +582,7 @@ TEST_F(AnimationTest, AddRemoveAnimationCausesSetNeedsCommit) {
 TEST_F(AnimationTest, SwitchToLayer) {
   host_->AddAnimationTimeline(timeline_);
   animation_->AddKeyframeEffect(
-      base::MakeUnique<KeyframeEffect>(keyframe_effect_id_));
+      std::make_unique<KeyframeEffect>(keyframe_effect_id_));
   timeline_->AttachAnimation(animation_);
   animation_->AttachElementForKeyframeEffect(element_id_, keyframe_effect_id_);
 
@@ -641,7 +641,7 @@ TEST_F(AnimationTest, SwitchToLayer) {
 
 TEST_F(AnimationTest, ToString) {
   animation_->AddKeyframeEffect(
-      base::MakeUnique<KeyframeEffect>(keyframe_effect_id_));
+      std::make_unique<KeyframeEffect>(keyframe_effect_id_));
   animation_->AttachElementForKeyframeEffect(element_id_, keyframe_effect_id_);
   EXPECT_EQ(
       base::StringPrintf("Animation{id=%d, element_id=%s, keyframe_models=[]}",
@@ -679,7 +679,7 @@ TEST_F(AnimationTest, ToString) {
       animation_->NextKeyframeEffectId();
   ElementId second_element_id(NextTestLayerId());
   animation_->AddKeyframeEffect(
-      base::MakeUnique<KeyframeEffect>(second_keyframe_effect_id));
+      std::make_unique<KeyframeEffect>(second_keyframe_effect_id));
   animation_->AttachElementForKeyframeEffect(second_element_id,
                                              second_keyframe_effect_id);
   animation_->AddKeyframeModelForKeyframeEffect(
@@ -711,14 +711,14 @@ TEST_F(AnimationTest,
   KeyframeEffectId keyframe_effect_id1 = animation_->NextKeyframeEffectId();
 
   animation_->AddKeyframeEffect(
-      base::MakeUnique<KeyframeEffect>(keyframe_effect_id1));
+      std::make_unique<KeyframeEffect>(keyframe_effect_id1));
   ASSERT_TRUE(animation_->GetKeyframeEffectById(keyframe_effect_id1));
   EXPECT_FALSE(animation_->GetKeyframeEffectById(keyframe_effect_id1)
                    ->needs_push_properties());
 
   KeyframeEffectId keyframe_effect_id2 = animation_->NextKeyframeEffectId();
   animation_->AddKeyframeEffect(
-      base::MakeUnique<KeyframeEffect>(keyframe_effect_id2));
+      std::make_unique<KeyframeEffect>(keyframe_effect_id2));
   ASSERT_TRUE(animation_->GetKeyframeEffectById(keyframe_effect_id2));
   EXPECT_FALSE(animation_->GetKeyframeEffectById(keyframe_effect_id2)
                    ->needs_push_properties());
@@ -838,14 +838,14 @@ TEST_F(AnimationTest,
   KeyframeEffectId keyframe_effect_id1 = animation_->NextKeyframeEffectId();
 
   animation_->AddKeyframeEffect(
-      base::MakeUnique<KeyframeEffect>(keyframe_effect_id1));
+      std::make_unique<KeyframeEffect>(keyframe_effect_id1));
   ASSERT_TRUE(animation_->GetKeyframeEffectById(keyframe_effect_id1));
   EXPECT_FALSE(animation_->GetKeyframeEffectById(keyframe_effect_id1)
                    ->needs_push_properties());
 
   KeyframeEffectId keyframe_effect_id2 = animation_->NextKeyframeEffectId();
   animation_->AddKeyframeEffect(
-      base::MakeUnique<KeyframeEffect>(keyframe_effect_id2));
+      std::make_unique<KeyframeEffect>(keyframe_effect_id2));
   ASSERT_TRUE(animation_->GetKeyframeEffectById(keyframe_effect_id2));
   EXPECT_FALSE(animation_->GetKeyframeEffectById(keyframe_effect_id2)
                    ->needs_push_properties());
@@ -943,14 +943,14 @@ TEST_F(AnimationTest, TickingAnimationsFromTwoKeyframeEffects) {
   KeyframeEffectId keyframe_effect_id1 = animation_->NextKeyframeEffectId();
 
   animation_->AddKeyframeEffect(
-      base::MakeUnique<KeyframeEffect>(keyframe_effect_id1));
+      std::make_unique<KeyframeEffect>(keyframe_effect_id1));
   ASSERT_TRUE(animation_->GetKeyframeEffectById(keyframe_effect_id1));
   EXPECT_FALSE(animation_->GetKeyframeEffectById(keyframe_effect_id1)
                    ->needs_push_properties());
 
   KeyframeEffectId keyframe_effect_id2 = animation_->NextKeyframeEffectId();
   animation_->AddKeyframeEffect(
-      base::MakeUnique<KeyframeEffect>(keyframe_effect_id2));
+      std::make_unique<KeyframeEffect>(keyframe_effect_id2));
   ASSERT_TRUE(animation_->GetKeyframeEffectById(keyframe_effect_id2));
   EXPECT_FALSE(animation_->GetKeyframeEffectById(keyframe_effect_id2)
                    ->needs_push_properties());
@@ -1028,7 +1028,7 @@ TEST_F(AnimationTest, KeyframeEffectSyncToImplTest) {
 
   KeyframeEffectId keyframe_effect_id1 = animation_->NextKeyframeEffectId();
   animation_->AddKeyframeEffect(
-      base::MakeUnique<KeyframeEffect>(keyframe_effect_id1));
+      std::make_unique<KeyframeEffect>(keyframe_effect_id1));
   EXPECT_TRUE(animation_->GetKeyframeEffectById(keyframe_effect_id1));
   EXPECT_FALSE(animation_->GetKeyframeEffectById(keyframe_effect_id1)
                    ->needs_push_properties());
@@ -1045,7 +1045,7 @@ TEST_F(AnimationTest, KeyframeEffectSyncToImplTest) {
 
   KeyframeEffectId keyframe_effect_id2 = animation_->NextKeyframeEffectId();
   animation_->AddKeyframeEffect(
-      base::MakeUnique<KeyframeEffect>(keyframe_effect_id2));
+      std::make_unique<KeyframeEffect>(keyframe_effect_id2));
   EXPECT_TRUE(timeline_->needs_push_properties());
 
   host_->PushPropertiesTo(host_impl_);

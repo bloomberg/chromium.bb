@@ -36,7 +36,7 @@ void PdfToEmfConverterFactory::CreateConverter(
 // static
 void PdfToEmfConverterFactory::Create(
     mojom::PdfToEmfConverterFactoryRequest request) {
-  mojo::MakeStrongBinding(base::MakeUnique<PdfToEmfConverterFactory>(),
+  mojo::MakeStrongBinding(std::make_unique<PdfToEmfConverterFactory>(),
                           std::move(request));
 }
 }  // namespace printing

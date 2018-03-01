@@ -70,7 +70,7 @@ void DisassemblerElf32X86Test::TestExe(const char* file_name,
                                        size_t expected_rel_count) const {
   std::string file1 = FileContents(file_name);
 
-  auto disassembler = base::MakeUnique<TestDisassemblerElf32X86>(
+  auto disassembler = std::make_unique<TestDisassemblerElf32X86>(
       reinterpret_cast<const uint8_t*>(file1.c_str()), file1.length());
 
   bool can_parse_header = disassembler->ParseHeader();

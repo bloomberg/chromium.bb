@@ -61,7 +61,7 @@ GURL ProtocolHandler::TranslateUrl(const GURL& url) const {
 }
 
 std::unique_ptr<base::DictionaryValue> ProtocolHandler::Encode() const {
-  auto d = base::MakeUnique<base::DictionaryValue>();
+  auto d = std::make_unique<base::DictionaryValue>();
   d->SetString("protocol", protocol_);
   d->SetString("url", url_.spec());
   return d;

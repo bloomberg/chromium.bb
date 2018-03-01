@@ -511,28 +511,28 @@ struct FuzzTraits<base::ListValue> {
           bool tmp;
           p->GetBoolean(index, &tmp);
           fuzzer->FuzzBool(&tmp);
-          p->Set(index, base::MakeUnique<base::Value>(tmp));
+          p->Set(index, std::make_unique<base::Value>(tmp));
           break;
         }
         case base::Value::Type::INTEGER: {
           int tmp;
           p->GetInteger(index, &tmp);
           fuzzer->FuzzInt(&tmp);
-          p->Set(index, base::MakeUnique<base::Value>(tmp));
+          p->Set(index, std::make_unique<base::Value>(tmp));
           break;
         }
         case base::Value::Type::DOUBLE: {
           double tmp;
           p->GetDouble(index, &tmp);
           fuzzer->FuzzDouble(&tmp);
-          p->Set(index, base::MakeUnique<base::Value>(tmp));
+          p->Set(index, std::make_unique<base::Value>(tmp));
           break;
         }
         case base::Value::Type::STRING: {
           std::string tmp;
           p->GetString(index, &tmp);
           fuzzer->FuzzString(&tmp);
-          p->Set(index, base::MakeUnique<base::Value>(tmp));
+          p->Set(index, std::make_unique<base::Value>(tmp));
           break;
         }
         case base::Value::Type::BINARY: {
@@ -547,7 +547,7 @@ struct FuzzTraits<base::ListValue> {
           if (p->GetDictionary(index, &dict_weak)) {
             FuzzParam(dict_weak, fuzzer);
           } else {
-            auto dict = base::MakeUnique<base::DictionaryValue>();
+            auto dict = std::make_unique<base::DictionaryValue>();
             FuzzParam(dict.get(), fuzzer);
             p->Set(index, std::move(dict));
           }
@@ -558,7 +558,7 @@ struct FuzzTraits<base::ListValue> {
           if (p->GetList(index, &list_weak)) {
             FuzzParam(list_weak, fuzzer);
           } else {
-            auto list = base::MakeUnique<base::ListValue>();
+            auto list = std::make_unique<base::ListValue>();
             FuzzParam(list.get(), fuzzer);
             p->Set(index, std::move(list));
           }
@@ -620,13 +620,13 @@ struct FuzzTraits<base::DictionaryValue> {
           break;
         }
         case base::Value::Type::DICTIONARY: {
-          auto tmp = base::MakeUnique<base::DictionaryValue>();
+          auto tmp = std::make_unique<base::DictionaryValue>();
           FuzzParam(tmp.get(), fuzzer);
           p->SetWithoutPathExpansion(property, std::move(tmp));
           break;
         }
         case base::Value::Type::LIST: {
-          auto tmp = base::MakeUnique<base::ListValue>();
+          auto tmp = std::make_unique<base::ListValue>();
           FuzzParam(tmp.get(), fuzzer);
           p->SetWithoutPathExpansion(property, std::move(tmp));
           break;
@@ -1639,7 +1639,7 @@ class MessageFactory<Message, IPC::MessageKind::CONTROL> {
  public:
   template <typename... Args>
   static std::unique_ptr<Message> New(const Args&... args) {
-    return base::MakeUnique<Message>(args...);
+    return std::make_unique<Message>(args...);
   }
 };
 
@@ -1648,7 +1648,7 @@ class MessageFactory<Message, IPC::MessageKind::ROUTED> {
  public:
   template <typename... Args>
   static std::unique_ptr<Message> New(const Args&... args) {
-    return base::MakeUnique<Message>(RandInRange(MAX_FAKE_ROUTING_ID), args...);
+    return std::make_unique<Message>(RandInRange(MAX_FAKE_ROUTING_ID), args...);
   }
 };
 

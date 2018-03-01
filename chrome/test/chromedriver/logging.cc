@@ -314,8 +314,8 @@ Status CreateLogs(
     Log::Level level = iter->second;
     if (type == WebDriverLog::kPerformanceType) {
       if (level != Log::kOff) {
-        logs.push_back(base::MakeUnique<WebDriverLog>(type, Log::kAll));
-        devtools_listeners.push_back(base::MakeUnique<PerformanceLogger>(
+        logs.push_back(std::make_unique<WebDriverLog>(type, Log::kAll));
+        devtools_listeners.push_back(std::make_unique<PerformanceLogger>(
             logs.back().get(), session, capabilities.perf_logging_prefs));
         PerformanceLogger* perf_log =
             static_cast<PerformanceLogger*>(devtools_listeners.back().get());
@@ -325,12 +325,12 @@ Status CreateLogs(
         // session->chrome will own |perf_log|, and |session| will own |proxy|.
         // session->command_listeners (the proxy) will be destroyed first.
         command_listeners.push_back(
-            base::MakeUnique<CommandListenerProxy>(perf_log));
+            std::make_unique<CommandListenerProxy>(perf_log));
       }
     } else if (type == WebDriverLog::kDevToolsType) {
-      logs.push_back(base::MakeUnique<WebDriverLog>(type, Log::kAll));
+      logs.push_back(std::make_unique<WebDriverLog>(type, Log::kAll));
       devtools_listeners.push_back(
-          base::MakeUnique<DevToolsEventsLogger>(
+          std::make_unique<DevToolsEventsLogger>(
             logs.back().get(),
             capabilities.devtools_events_logging_prefs.get()));
     } else if (type == WebDriverLog::kBrowserType) {
@@ -343,12 +343,12 @@ Status CreateLogs(
     }
   }
   // Create "browser" log -- should always exist.
-  logs.push_back(base::MakeUnique<WebDriverLog>(WebDriverLog::kBrowserType,
+  logs.push_back(std::make_unique<WebDriverLog>(WebDriverLog::kBrowserType,
                                                 browser_log_level));
   // If the level is OFF, don't even bother listening for DevTools events.
   if (browser_log_level != Log::kOff)
     devtools_listeners.push_back(
-        base::MakeUnique<ConsoleLogger>(logs.back().get()));
+        std::make_unique<ConsoleLogger>(logs.back().get()));
 
   out_logs->swap(logs);
   out_devtools_listeners->swap(devtools_listeners);

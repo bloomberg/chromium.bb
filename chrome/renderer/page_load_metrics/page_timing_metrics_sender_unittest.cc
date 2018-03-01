@@ -33,7 +33,7 @@ class PageTimingMetricsSenderTest : public testing::Test {
  public:
   PageTimingMetricsSenderTest()
       : metrics_sender_(new TestPageTimingMetricsSender(
-            base::MakeUnique<FakePageTimingSender>(&validator_),
+            std::make_unique<FakePageTimingSender>(&validator_),
             mojom::PageLoadTiming::New())) {}
 
  protected:

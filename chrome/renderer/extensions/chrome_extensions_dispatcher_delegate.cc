@@ -141,12 +141,12 @@ void ChromeExtensionsDispatcherDelegate::RegisterNativeHandlers(
 #if BUILDFLAG(ENABLE_WEBRTC)
   module_system->RegisterNativeHandler(
       "cast_streaming_natives",
-      base::MakeUnique<extensions::CastStreamingNativeHandler>(
+      std::make_unique<extensions::CastStreamingNativeHandler>(
           context, bindings_system));
 #endif
   module_system->RegisterNativeHandler(
       "automationInternal",
-      base::MakeUnique<extensions::AutomationInternalCustomBindings>(
+      std::make_unique<extensions::AutomationInternalCustomBindings>(
           context, bindings_system));
 
   // The following are native handlers that are defined in //extensions, but
@@ -330,7 +330,7 @@ void ChromeExtensionsDispatcherDelegate::InitializeBindingsSystem(
       base::FeatureList::IsEnabled(extensions::features::kNativeCrxBindings));
   extensions::APIBindingsSystem* bindings = bindings_system->api_system();
   bindings->GetHooksForAPI("app")->SetDelegate(
-      base::MakeUnique<extensions::AppHooksDelegate>(
+      std::make_unique<extensions::AppHooksDelegate>(
           dispatcher, bindings->request_handler()));
   bindings->GetHooksForAPI("extension")
       ->SetDelegate(std::make_unique<extensions::ExtensionHooksDelegate>(

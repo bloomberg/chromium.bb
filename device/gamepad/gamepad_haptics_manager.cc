@@ -19,7 +19,7 @@ GamepadHapticsManager::~GamepadHapticsManager() = default;
 // static
 void GamepadHapticsManager::Create(
     mojom::GamepadHapticsManagerRequest request) {
-  mojo::MakeStrongBinding(base::MakeUnique<GamepadHapticsManager>(),
+  mojo::MakeStrongBinding(std::make_unique<GamepadHapticsManager>(),
                           std::move(request));
 }
 

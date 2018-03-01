@@ -27,7 +27,7 @@ AutoAdvancingVirtualTimeDomain::AutoAdvancingVirtualTimeDomain(
       previous_time_(initial_time),
       time_overrides_(
           policy == BaseTimeOverridePolicy::OVERRIDE
-              ? base::MakeUnique<base::subtle::ScopedTimeClockOverrides>(
+              ? std::make_unique<base::subtle::ScopedTimeClockOverrides>(
                     &AutoAdvancingVirtualTimeDomain::GetVirtualTime,
                     &AutoAdvancingVirtualTimeDomain::GetVirtualTimeTicks,
                     nullptr)

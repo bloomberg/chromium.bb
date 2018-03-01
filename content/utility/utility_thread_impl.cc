@@ -49,7 +49,7 @@ class ResourceUsageReporterImpl : public mojom::ResourceUsageReporter {
 };
 
 void CreateResourceUsageReporter(mojom::ResourceUsageReporterRequest request) {
-  mojo::MakeStrongBinding(base::MakeUnique<ResourceUsageReporterImpl>(),
+  mojo::MakeStrongBinding(std::make_unique<ResourceUsageReporterImpl>(),
                           std::move(request));
 }
 #endif  // !defined(OS_ANDROID)

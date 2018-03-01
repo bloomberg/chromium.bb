@@ -79,7 +79,7 @@ class CdmFactoryImpl : public mojom::CdmFactory {
       return;
 
     cdm_bindings_.AddBinding(
-        base::MakeUnique<MojoCdmService>(cdm_factory, &cdm_service_context_),
+        std::make_unique<MojoCdmService>(cdm_factory, &cdm_service_context_),
         std::move(request));
   }
 

@@ -34,7 +34,7 @@ void BindConnectorOnIOThread(int render_process_id,
                              storage::QuotaManager* quota_manager,
                              blink::mojom::QuotaDispatcherHostRequest request) {
   mojo::MakeStrongBinding(
-      base::MakeUnique<QuotaDispatcherHost>(
+      std::make_unique<QuotaDispatcherHost>(
           render_process_id, render_frame_id, quota_manager,
           GetContentClient()->browser()->CreateQuotaPermissionContext()),
       std::move(request));

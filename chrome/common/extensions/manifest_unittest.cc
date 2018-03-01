@@ -93,7 +93,7 @@ TEST_F(ManifestUnitTest, Extension) {
   // Set the manifest_version to 2; background_page should stop working.
   value.clear();
   MutateManifest(&manifest, keys::kManifestVersion,
-                 base::MakeUnique<base::Value>(2));
+                 std::make_unique<base::Value>(2));
   EXPECT_FALSE(manifest->GetString("background_page", &value));
   EXPECT_EQ("", value);
 
@@ -115,7 +115,7 @@ TEST_F(ManifestUnitTest, Extension) {
   std::unique_ptr<Manifest> manifest2(manifest->DeepCopy());
   EXPECT_TRUE(manifest->Equals(manifest2.get()));
   EXPECT_TRUE(manifest2->Equals(manifest.get()));
-  MutateManifest(&manifest, "foo", base::MakeUnique<base::Value>("blah"));
+  MutateManifest(&manifest, "foo", std::make_unique<base::Value>("blah"));
   EXPECT_FALSE(manifest->Equals(manifest2.get()));
 }
 
@@ -138,38 +138,38 @@ TEST_F(ManifestUnitTest, ExtensionTypes) {
 
   // Theme.
   MutateManifest(&manifest, keys::kTheme,
-                 base::MakeUnique<base::DictionaryValue>());
+                 std::make_unique<base::DictionaryValue>());
   AssertType(manifest.get(), Manifest::TYPE_THEME);
   MutateManifest(
       &manifest, keys::kTheme, NULL);
 
   // Shared module.
   MutateManifest(&manifest, keys::kExport,
-                 base::MakeUnique<base::DictionaryValue>());
+                 std::make_unique<base::DictionaryValue>());
   AssertType(manifest.get(), Manifest::TYPE_SHARED_MODULE);
   MutateManifest(
       &manifest, keys::kExport, NULL);
 
   // Packaged app.
   MutateManifest(&manifest, keys::kApp,
-                 base::MakeUnique<base::DictionaryValue>());
+                 std::make_unique<base::DictionaryValue>());
   AssertType(manifest.get(), Manifest::TYPE_LEGACY_PACKAGED_APP);
 
   // Platform app with event page.
   MutateManifest(&manifest, keys::kPlatformAppBackground,
-                 base::MakeUnique<base::DictionaryValue>());
+                 std::make_unique<base::DictionaryValue>());
   AssertType(manifest.get(), Manifest::TYPE_PLATFORM_APP);
   MutateManifest(
       &manifest, keys::kPlatformAppBackground, NULL);
 
   // Hosted app.
   MutateManifest(&manifest, keys::kWebURLs,
-                 base::MakeUnique<base::ListValue>());
+                 std::make_unique<base::ListValue>());
   AssertType(manifest.get(), Manifest::TYPE_HOSTED_APP);
   MutateManifest(
       &manifest, keys::kWebURLs, NULL);
   MutateManifest(&manifest, keys::kLaunchWebURL,
-                 base::MakeUnique<base::Value>("foo"));
+                 std::make_unique<base::Value>("foo"));
   AssertType(manifest.get(), Manifest::TYPE_HOSTED_APP);
   MutateManifest(
       &manifest, keys::kLaunchWebURL, NULL);
@@ -192,24 +192,24 @@ TEST_F(ManifestUnitTest, RestrictedKeys) {
   // "Commands" requires manifest version 2.
   const base::Value* output = NULL;
   MutateManifest(&manifest, keys::kCommands,
-                 base::MakeUnique<base::DictionaryValue>());
+                 std::make_unique<base::DictionaryValue>());
   EXPECT_FALSE(manifest->HasKey(keys::kCommands));
   EXPECT_FALSE(manifest->Get(keys::kCommands, &output));
 
   MutateManifest(&manifest, keys::kManifestVersion,
-                 base::MakeUnique<base::Value>(2));
+                 std::make_unique<base::Value>(2));
   EXPECT_TRUE(manifest->HasKey(keys::kCommands));
   EXPECT_TRUE(manifest->Get(keys::kCommands, &output));
 
   MutateManifest(&manifest, keys::kPageAction,
-                 base::MakeUnique<base::DictionaryValue>());
+                 std::make_unique<base::DictionaryValue>());
   AssertType(manifest.get(), Manifest::TYPE_EXTENSION);
   EXPECT_TRUE(manifest->HasKey(keys::kPageAction));
   EXPECT_TRUE(manifest->Get(keys::kPageAction, &output));
 
   // Platform apps cannot have a "page_action" key.
   MutateManifest(&manifest, keys::kPlatformAppBackground,
-                 base::MakeUnique<base::DictionaryValue>());
+                 std::make_unique<base::DictionaryValue>());
   AssertType(manifest.get(), Manifest::TYPE_PLATFORM_APP);
   EXPECT_FALSE(manifest->HasKey(keys::kPageAction));
   EXPECT_FALSE(manifest->Get(keys::kPageAction, &output));

@@ -311,7 +311,7 @@ TEST(MessageLoopTest, RunTasksWhileShuttingDownJavaThread) {
   const int kNumPosts = 6;
   DummyTaskObserver observer(kNumPosts, 1);
 
-  auto java_thread = MakeUnique<android::JavaHandlerThread>("test");
+  auto java_thread = std::make_unique<android::JavaHandlerThread>("test");
   java_thread->Start();
 
   java_thread->message_loop()->task_runner()->PostTask(
