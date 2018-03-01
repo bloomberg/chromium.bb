@@ -1542,7 +1542,7 @@ bool QuicFramer::ProcessAckFrame(QuicDataReader* reader,
         if (use_incremental_ack_processing_) {
           if (!visitor_->OnAckRange(first_received,
                                     first_received + current_block_length,
-                                    /*last_range=*/i == num_ack_blocks - 1)) {
+                                    /*last_range=*/i + 1 == num_ack_blocks)) {
             // The visitor suppresses further processing of the packet. Although
             // this is not a parsing error, returns false as this is in middle
             // of processing an ack frame,
