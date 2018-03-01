@@ -118,6 +118,14 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   // Waits until all workers are idle.
   void WaitForAllWorkersIdleForTesting();
 
+  // Waits until |n| workers have cleaned up. Tests that use this must:
+  //  - Invoke WaitForWorkersCleanedUpForTesting(n) well before any workers
+  //    have had time to clean up.
+  //  - Have a long enough |suggested_reclaim_time_| to strengthen the above.
+  //  - Only invoke this once (currently doesn't support waiting for multiple
+  //    cleanup phases in the same test).
+  void WaitForWorkersCleanedUpForTesting(size_t n);
+
   // Returns the number of workers in this worker pool.
   size_t NumberOfWorkersForTesting() const;
 
@@ -229,6 +237,7 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   // |idle_workers_stack_cv_for_testing_|, |num_wake_ups_before_start_|,
   // |cleanup_timestamps_|, |polling_worker_capacity_|,
   // |worker_cleanup_disallowed_for_testing_|,
+  // |num_workers_cleaned_up_for_testing_|,
   // |SchedulerWorkerDelegateImpl::is_on_idle_workers_stack_|,
   // |SchedulerWorkerDelegateImpl::incremented_worker_capacity_since_blocked_|
   // and |SchedulerWorkerDelegateImpl::may_block_start_time_|. Has
@@ -294,6 +303,15 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
 
   // Indicates to the delegates that workers are not permitted to cleanup.
   bool worker_cleanup_disallowed_for_testing_ = false;
+
+  // Counts the number of workers cleaned up since Start(). Tests with a custom
+  // |suggested_reclaim_time_| can wait on a specific number of workers being
+  // cleaned up via WaitForWorkersCleanedUpForTesting().
+  size_t num_workers_cleaned_up_for_testing_ = 0;
+
+  // Signaled, if non-null, when |num_workers_cleaned_up_for_testing_| is
+  // incremented.
+  std::unique_ptr<ConditionVariable> num_workers_cleaned_up_for_testing_cv_;
 
   // Used for testing and makes MayBlockThreshold() return the maximum
   // TimeDelta.
