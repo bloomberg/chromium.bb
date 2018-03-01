@@ -664,3 +664,25 @@ TEST_F(BlockTabUnderTest, LogsToConsole) {
                                                     blocked_url.spec().c_str());
   EXPECT_EQ(expected_message, messages.front());
 }
+
+// 1. Navigate to a.com
+// 2. Start a navigation without a user gesture to b.com
+// 3. Open a popup
+// 4. Navigation from (2) redirects and should not be blocked.
+TEST_F(BlockTabUnderTest, SlowRedirectAfterPopup_IsNotBlocked) {
+  NavigateAndCommit(GURL("https://a.com"));
+
+  std::unique_ptr<content::NavigationSimulator> candidate_navigation =
+      content::NavigationSimulator::CreateRendererInitiated(
+          GURL("https://b.com"), main_rfh());
+  candidate_navigation->SetHasUserGesture(false);
+  candidate_navigation->Start();
+
+  SimulatePopup();
+
+  candidate_navigation->Redirect(GURL("https://b.com/redirect"));
+  EXPECT_EQ(content::NavigationThrottle::PROCEED,
+            candidate_navigation->GetLastThrottleCheckResult());
+  candidate_navigation->Commit();
+  EXPECT_EQ(main_rfh(), candidate_navigation->GetFinalRenderFrameHost());
+}
