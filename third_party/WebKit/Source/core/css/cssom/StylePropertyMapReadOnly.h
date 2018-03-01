@@ -42,6 +42,8 @@ class CORE_EXPORT StylePropertyMapReadOnly
       std::function<void(const AtomicString&, const CSSValue&)>;
   virtual void ForEachProperty(const IterationCallback&) = 0;
 
+  virtual String SerializationForShorthand(const CSSProperty&) = 0;
+
  private:
   IterationSource* StartIteration(ScriptState*, ExceptionState&) override;
 

@@ -8,10 +8,10 @@
 #include "base/macros.h"
 #include "bindings/core/v8/css_style_value_or_string.h"
 #include "core/css/cssom/StylePropertyMapReadOnly.h"
+#include "core/dom/ExecutionContext.h"
 
 namespace blink {
 
-class CSSProperty;
 class ExceptionState;
 class ExecutionContext;
 
@@ -32,6 +32,9 @@ class CORE_EXPORT StylePropertyMap : public StylePropertyMapReadOnly {
 
  protected:
   virtual void SetProperty(CSSPropertyID, const CSSValue&) = 0;
+  virtual bool SetShorthandProperty(CSSPropertyID,
+                                    const String&,
+                                    SecureContextMode) = 0;
   virtual void SetCustomProperty(const AtomicString&, const CSSValue&) = 0;
   virtual void RemoveProperty(CSSPropertyID) = 0;
   virtual void RemoveCustomProperty(const AtomicString&) = 0;
@@ -40,8 +43,6 @@ class CORE_EXPORT StylePropertyMap : public StylePropertyMapReadOnly {
   StylePropertyMap() = default;
 
  private:
-  bool SetShorthandProperty(const CSSProperty&, const CSSStyleValue&);
-
   DISALLOW_COPY_AND_ASSIGN(StylePropertyMap);
 };
 

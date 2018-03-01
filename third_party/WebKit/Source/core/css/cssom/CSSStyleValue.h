@@ -71,10 +71,17 @@ class CORE_EXPORT CSSStyleValue : public ScriptWrappable {
   }
   virtual String toString() const;
 
+  // TODO(801935): Actually use this for serialization in subclasses.
+  // Currently only used by CSSUnsupportedStyleValue because it's
+  // immutable, so we have to worry about the serialization changing.
+  const String& CSSText() const { return css_text_; }
+  void SetCSSText(const String& css_text) { css_text_ = css_text; }
+
  protected:
   CSSStyleValue() = default;
 
  private:
+  String css_text_;
   DISALLOW_COPY_AND_ASSIGN(CSSStyleValue);
 };
 

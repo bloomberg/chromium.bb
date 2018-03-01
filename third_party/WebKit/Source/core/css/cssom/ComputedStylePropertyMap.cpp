@@ -256,4 +256,22 @@ void ComputedStylePropertyMap::ForEachProperty(
   }
 }
 
+String ComputedStylePropertyMap::SerializationForShorthand(
+    const CSSProperty& property) {
+  DCHECK(property.IsShorthand());
+  const ComputedStyle* style = UpdateStyle();
+  if (!style) {
+    NOTREACHED();
+    return "";
+  }
+
+  if (const CSSValue* value = property.CSSValueFromComputedStyle(
+          *style, nullptr /* layout_object */, StyledNode(), false)) {
+    return value->CssText();
+  }
+
+  NOTREACHED();
+  return "";
+}
+
 }  // namespace blink
