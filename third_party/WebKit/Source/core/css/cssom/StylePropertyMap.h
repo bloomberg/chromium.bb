@@ -11,6 +11,7 @@
 
 namespace blink {
 
+class CSSProperty;
 class ExceptionState;
 class ExecutionContext;
 
@@ -39,6 +40,8 @@ class CORE_EXPORT StylePropertyMap : public StylePropertyMapReadOnly {
   StylePropertyMap() = default;
 
  private:
+  bool SetShorthandProperty(const CSSProperty&, const CSSStyleValue&);
+
   DISALLOW_COPY_AND_ASSIGN(StylePropertyMap);
 };
 
