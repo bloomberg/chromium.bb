@@ -90,8 +90,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, E2E_ENABLED(StartWithSameApps)) {
 // Install some apps on both clients, some on only one client, some on only the
 // other, and sync.  Both clients should end up with all apps, and the app and
 // page ordinals should be identical.
-// Disabled, see http://crbug.com/434438 for details.
-IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, DISABLED_StartWithDifferentApps) {
+IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, StartWithDifferentApps) {
   ASSERT_TRUE(SetupClients());
 
   int i = 0;
