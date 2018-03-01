@@ -325,7 +325,7 @@ class CORE_EXPORT EventHandler final
   // Dispatches ME after corresponding PE provided the PE has not been canceled.
   // The |mouse_event_type| arg must be one of {mousedown, mousemove, mouseup}.
   WebInputEventResult DispatchMousePointerEvent(
-      const AtomicString& mouse_event_type,
+      const WebInputEvent::Type,
       Node* target,
       const String& canvas_region_id,
       const WebMouseEvent&,

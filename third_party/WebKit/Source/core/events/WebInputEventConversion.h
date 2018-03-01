@@ -78,14 +78,6 @@ class CORE_EXPORT WebKeyboardEventBuilder : public WebKeyboardEvent {
   WebKeyboardEventBuilder(const KeyboardEvent&);
 };
 
-// Converts a TouchEvent to a corresponding WebTouchEvent.
-// NOTE: WebTouchEvents have a cap on the number of WebTouchPoints. Any points
-// exceeding that cap will be dropped.
-class CORE_EXPORT WebTouchEventBuilder : public WebTouchEvent {
- public:
-  WebTouchEventBuilder(const LayoutObject*, const TouchEvent&);
-};
-
 // Return a new transformed WebGestureEvent by applying the Widget's scale
 // and translation.
 CORE_EXPORT WebGestureEvent TransformWebGestureEvent(LocalFrameView*,

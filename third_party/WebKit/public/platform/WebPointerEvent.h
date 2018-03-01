@@ -81,6 +81,8 @@ class WebPointerEvent : public WebInputEvent, public WebPointerProperties {
 
 #if INSIDE_BLINK
   bool IsCancelable() const { return dispatch_type == kBlocking; }
+  bool HasWidth() const { return !std::isnan(width); }
+  bool HasHeight() const { return !std::isnan(height); }
 
   BLINK_PLATFORM_EXPORT WebPointerEvent WebPointerEventInRootFrame() const;
 

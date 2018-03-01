@@ -45,7 +45,7 @@ class CORE_EXPORT PointerEventManager
   WebInputEventResult SendMousePointerEvent(
       Node* target,
       const String& canvas_region_id,
-      const AtomicString& type,
+      const WebInputEvent::Type,
       const WebMouseEvent&,
       const Vector<WebMouseEvent>& coalesced_events);
 
