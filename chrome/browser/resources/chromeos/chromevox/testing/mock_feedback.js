@@ -310,6 +310,21 @@ MockFeedback.prototype = {
   },
 
   /**
+   * Clears all pending output. Useful in cases where previous output might
+   * overlap with future expectations.
+   * @return {MockFeedback} |this| for chaining
+   */
+  clearPendingOutput: function() {
+    this.call(function() {
+      this.pendingUtterances_.length = 0;
+      this.pendingBraille_.length = 0;
+      this.pendingEarcons_.length = 0;
+    }.bind(this));
+
+    return this;
+  },
+
+  /**
    * Processes any feedback that has been received so far and treis to
    * satisfy the registered expectations.  Any feedback that is received
    * after this call (via the installed mock objects) is processed immediately.

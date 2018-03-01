@@ -11,6 +11,7 @@ goog.provide('DesktopAutomationHandler');
 goog.require('AutomationObjectConstructorInstaller');
 goog.require('BaseAutomationHandler');
 goog.require('ChromeVoxState');
+goog.require('CommandHandler');
 goog.require('CustomAutomationEvent');
 goog.require('editing.TextEditHandler');
 
@@ -111,6 +112,11 @@ DesktopAutomationHandler.KEYBOARD_URL =
 
 DesktopAutomationHandler.prototype = {
   __proto__: BaseAutomationHandler.prototype,
+
+  /** @type {editing.TextEditHandler} */
+  get textEditHandler() {
+    return this.textEditHandler_;
+  },
 
   /** @override */
   willHandleEvent_: function(evt) {
@@ -316,7 +322,7 @@ DesktopAutomationHandler.prototype = {
     }
 
     // Invalidate any previous editable text handler state.
-    if (!this.createTextEditHandlerIfNeeded_(evt.target))
+    if (!this.createTextEditHandlerIfNeeded_(evt.target, true))
       this.textEditHandler_ = null;
 
     var node = evt.target;
@@ -533,9 +539,11 @@ DesktopAutomationHandler.prototype = {
   /**
    * Create an editable text handler for the given node if needed.
    * @param {!AutomationNode} node
+   * @param {boolean=} opt_onFocus True if called within a focus event handler.
+   *     False by default.
    * @return {boolean} True if the handler exists (created/already present).
    */
-  createTextEditHandlerIfNeeded_: function(node) {
+  createTextEditHandlerIfNeeded_: function(node, opt_onFocus) {
     if (!node.state.editable)
       return false;
 
@@ -556,10 +564,11 @@ DesktopAutomationHandler.prototype = {
     voxTarget = AutomationUtil.getEditableRoot(voxTarget) || voxTarget;
 
     // It is possible that ChromeVox has range over some other node when a text
-    // field is focused. Only allow this when focus is on a desktop node or
-    // ChromeVox is over the keyboard.
+    // field is focused. Only allow this when focus is on a desktop node,
+    // ChromeVox is over the keyboard, or during focus events.
     if (!target || !voxTarget ||
-        (target != voxTarget && target.root.role != RoleType.DESKTOP &&
+        (!opt_onFocus && target != voxTarget &&
+         target.root.role != RoleType.DESKTOP &&
          voxTarget.root.role != RoleType.DESKTOP &&
          voxTarget.root.url.indexOf(DesktopAutomationHandler.KEYBOARD_URL) !=
              0))
@@ -624,13 +633,18 @@ DesktopAutomationHandler.prototype = {
 };
 
 /**
+ * Global instance.
+ * @type {DesktopAutomationHandler}
+ */
+DesktopAutomationHandler.instance;
+
+/**
  * Initializes global state for DesktopAutomationHandler.
  * @private
  */
 DesktopAutomationHandler.init_ = function() {
   chrome.automation.getDesktop(function(desktop) {
-    ChromeVoxState.desktopAutomationHandler =
-        new DesktopAutomationHandler(desktop);
+    DesktopAutomationHandler.instance = new DesktopAutomationHandler(desktop);
   });
 };
 

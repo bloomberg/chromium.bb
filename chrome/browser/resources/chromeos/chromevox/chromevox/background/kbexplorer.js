@@ -9,7 +9,7 @@
 
 goog.provide('cvox.KbExplorer');
 
-goog.require('BrailleCommandHandler');
+goog.require('BrailleCommandData');
 goog.require('Spannable');
 goog.require('cvox.BrailleKeyCommand');
 goog.require('cvox.ChromeVoxKbHandler');
@@ -174,10 +174,10 @@ cvox.KbExplorer.onBrailleKeyEvent = function(evt) {
         break;
       }
 
-      var command = BrailleCommandHandler.getCommand(dots);
+      var command = BrailleCommandData.getCommand(dots);
       if (command && cvox.KbExplorer.onCommand(command))
         return;
-      text = BrailleCommandHandler.makeShortcutText(dots, true);
+      text = BrailleCommandData.makeShortcutText(dots, true);
       break;
     case cvox.BrailleKeyCommand.DOTS:
       var dots = evt.brailleDots;

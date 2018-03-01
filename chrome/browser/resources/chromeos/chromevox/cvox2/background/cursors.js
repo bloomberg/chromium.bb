@@ -466,13 +466,36 @@ cursors.Cursor.prototype = {
         }
         break;
       } else if (
+          newNode.role != RoleType.TEXT_FIELD &&
           newNode.role != RoleType.INLINE_TEXT_BOX &&
           newNode.children[newIndex]) {
         // Valid node offset.
         newNode = newNode.children[newIndex];
         newIndex = 0;
       } else {
-        // Invalid offset.
+        // This offset is a text offset into the descendant visible
+        // text. Approximate this by indexing into the inline text boxes.
+        var lines = newNode.findAll({role: RoleType.INLINE_TEXT_BOX});
+        if (!lines.length)
+          break;
+
+        var targetLine, targetIndex = 0;
+        for (var i = 0, line, cur = 0; line = lines[i]; i++) {
+          cur += line.name.length;
+          if (cur >= newIndex) {
+            targetLine = line;
+            targetIndex = cur - newIndex;
+            break;
+          }
+        }
+        if (!targetLine) {
+          // If we got here, that means the index is actually beyond the total
+          // length of text. Just get the last line.
+          targetLine = lines[lines.length - 1];
+          targetIndex = 0;
+        }
+        newNode = targetLine;
+        newIndex = targetIndex;
         break;
       }
     }

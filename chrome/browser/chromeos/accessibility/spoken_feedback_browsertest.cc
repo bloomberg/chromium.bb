@@ -279,7 +279,8 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, DISABLED_EnableSpokenFeedback) {
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, FocusToolbar) {
   EnableChromeVox();
   chrome::ExecuteCommand(browser(), IDC_FOCUS_TOOLBAR);
-  EXPECT_EQ("Reload", speech_monitor_.GetNextUtterance());
+  while (speech_monitor_.GetNextUtterance() != "Reload") {
+  }
   EXPECT_EQ("Button", speech_monitor_.GetNextUtterance());
 }
 
@@ -698,10 +699,9 @@ class GuestSpokenFeedbackTest : public LoggedInSpokenFeedbackTest {
 
 IN_PROC_BROWSER_TEST_F(GuestSpokenFeedbackTest, FocusToolbar) {
   EnableChromeVox();
-
   chrome::ExecuteCommand(browser(), IDC_FOCUS_TOOLBAR);
-
-  EXPECT_EQ("Reload", speech_monitor_.GetNextUtterance());
+  while (speech_monitor_.GetNextUtterance() != "Reload") {
+  }
   EXPECT_EQ("Button", speech_monitor_.GetNextUtterance());
 }
 
