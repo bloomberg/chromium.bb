@@ -540,7 +540,8 @@ void Scheduler::BeginImplFrame(const viz::BeginFrameArgs& args,
     base::AutoReset<bool> mark_inside(&inside_scheduled_action_, true);
 
     begin_impl_frame_tracker_.Start(args);
-    state_machine_.OnBeginImplFrame(args.source_id, args.sequence_number);
+    state_machine_.OnBeginImplFrame(args.source_id, args.sequence_number,
+                                    args.animate_only);
     devtools_instrumentation::DidBeginFrame(layer_tree_host_id_);
     compositor_timing_history_->WillBeginImplFrame(
         state_machine_.NewActiveTreeLikely(), args.frame_time, args.type, now);

@@ -597,6 +597,9 @@ SchedulerStateMachine::Action SchedulerStateMachine::NextAction() const {
 }
 
 bool SchedulerStateMachine::ShouldPerformImplSideInvalidation() const {
+  if (begin_frame_is_animate_only_)
+    return false;
+
   if (!needs_impl_side_invalidation_)
     return false;
 
@@ -1014,9 +1017,11 @@ bool SchedulerStateMachine::ProactiveBeginFrameWanted() const {
 }
 
 void SchedulerStateMachine::OnBeginImplFrame(uint64_t source_id,
-                                             uint64_t sequence_number) {
+                                             uint64_t sequence_number,
+                                             bool animate_only) {
   begin_impl_frame_state_ = BeginImplFrameState::INSIDE_BEGIN_FRAME;
   current_frame_number_++;
+  begin_frame_is_animate_only_ = animate_only;
 
   // Cache the values from the previous impl frame before reseting them for this
   // frame.

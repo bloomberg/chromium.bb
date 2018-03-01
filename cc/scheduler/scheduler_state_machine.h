@@ -154,7 +154,9 @@ class CC_EXPORT SchedulerStateMachine {
   // Indicates that the system has entered and left a BeginImplFrame callback.
   // The scheduler will not draw more than once in a given BeginImplFrame
   // callback nor send more than one BeginMainFrame message.
-  void OnBeginImplFrame(uint64_t source_id, uint64_t sequence_number);
+  void OnBeginImplFrame(uint64_t source_id,
+                        uint64_t sequence_number,
+                        bool animate_only);
   // Indicates that the scheduler has entered the draw phase. The scheduler
   // will not draw more than once in a single draw phase.
   // TODO(sunnyps): Rename OnBeginImplFrameDeadline to OnDraw or similar.
@@ -403,6 +405,7 @@ class CC_EXPORT SchedulerStateMachine {
   bool needs_impl_side_invalidation_ = false;
   bool next_invalidation_needs_first_draw_on_activation_ = false;
   bool should_defer_invalidation_for_fast_main_frame_ = true;
+  bool begin_frame_is_animate_only_ = false;
 
   // Set to true if the main thread fails to respond with a commit or abort the
   // main frame before the draw deadline on the previous impl frame.
