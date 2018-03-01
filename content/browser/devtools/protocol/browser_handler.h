@@ -34,6 +34,9 @@ class BrowserHandler : public DevToolsDomainHandler, public Browser::Backend {
       const std::string& in_name,
       std::unique_ptr<Browser::Histogram>* out_histogram) override;
 
+  Response GetCommandLine(
+      std::unique_ptr<protocol::Array<String>>* arguments) override;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserHandler);
 };

@@ -491,6 +491,13 @@ domain Browser
       # V8 version.
       string jsVersion
 
+  # Returns the command line switches for the browser process if, and only if
+  # --enable-automation is on the commandline.
+  experimental command getCommandLine
+    returns
+      # Commandline parameters
+      array of string arguments
+
   # Chrome histogram bucket.
   experimental type Bucket extends object
     properties
