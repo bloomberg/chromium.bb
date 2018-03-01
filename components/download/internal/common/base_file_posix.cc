@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/download/base_file.h"
+#include "components/download/public/common/base_file.h"
 
 #include <errno.h>
 
 #include "base/files/file_util.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 
-namespace content {
+namespace download {
 
-download::DownloadInterruptReason BaseFile::MoveFileAndAdjustPermissions(
+DownloadInterruptReason BaseFile::MoveFileAndAdjustPermissions(
     const base::FilePath& new_path) {
   // Similarly, on Unix, we're moving a temp file created with permissions 600
   // to |new_path|. Here, we try to fix up the destination file with appropriate
@@ -38,7 +38,7 @@ download::DownloadInterruptReason BaseFile::MoveFileAndAdjustPermissions(
     if (chmod_error < 0)
       LogSystemError("chmod", errno);
   }
-  return download::DOWNLOAD_INTERRUPT_REASON_NONE;
+  return DOWNLOAD_INTERRUPT_REASON_NONE;
 }
 
-}  // namespace content
+}  // namespace download

@@ -15,10 +15,10 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/download/public/common/download_create_info.h"
+#include "components/download/public/common/download_interrupt_reasons_utils.h"
 #include "components/download/public/common/download_stats.h"
 #include "content/browser/byte_stream.h"
 #include "content/browser/download/download_destination_observer.h"
-#include "content/browser/download/download_interrupt_reasons_utils.h"
 #include "content/browser/download/download_utils.h"
 #include "content/browser/download/parallel_download_utils.h"
 #include "content/public/browser/browser_thread.h"
@@ -91,7 +91,8 @@ void DownloadFileImpl::SourceStream::OnStreamCompleted(
   // This can be called before or after data pipe is completely drained. So we
   // need to pass the |completion_status_| to DownloadFileImpl if the data pipe
   // is already drained.
-  OnResponseCompleted(ConvertMojoNetworkRequestStatusToInterruptReason(status));
+  OnResponseCompleted(
+      download::ConvertMojoNetworkRequestStatusToInterruptReason(status));
 }
 
 void DownloadFileImpl::SourceStream::OnResponseCompleted(

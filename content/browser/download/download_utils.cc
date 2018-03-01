@@ -12,11 +12,11 @@
 #include "components/download/downloader/in_progress/download_entry.h"
 #include "components/download/downloader/in_progress/in_progress_cache.h"
 #include "components/download/public/common/download_create_info.h"
+#include "components/download/public/common/download_interrupt_reasons_utils.h"
 #include "components/download/public/common/download_save_info.h"
 #include "components/download/public/common/download_stats.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
-#include "content/browser/download/download_interrupt_reasons_utils.h"
 #include "content/browser/loader/upload_data_stream_builder.h"
 #include "content/browser/resource_context_impl.h"
 #include "content/public/browser/browser_context.h"
@@ -174,8 +174,8 @@ download::DownloadInterruptReason HandleRequestCompletionStatus(
     return abort_reason;
   }
 
-  return ConvertNetErrorToInterruptReason(
-      error_code, DOWNLOAD_INTERRUPT_FROM_NETWORK);
+  return download::ConvertNetErrorToInterruptReason(
+      error_code, download::DOWNLOAD_INTERRUPT_FROM_NETWORK);
 }
 
 std::unique_ptr<network::ResourceRequest> CreateResourceRequest(

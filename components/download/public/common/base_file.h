@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_DOWNLOAD_BASE_FILE_H_
-#define CONTENT_BROWSER_DOWNLOAD_BASE_FILE_H_
+#ifndef COMPONENTS_DOWNLOAD_PUBLIC_COMMON_BASE_FILE_H_
+#define COMPONENTS_DOWNLOAD_PUBLIC_COMMON_BASE_FILE_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -18,20 +18,20 @@
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
+#include "components/download/public/common/download_export.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
-#include "content/common/content_export.h"
 #include "crypto/secure_hash.h"
 #include "net/base/net_errors.h"
 #include "url/gurl.h"
 
-namespace content {
+namespace download {
 
 // File being downloaded and saved to disk. This is a base class
 // for DownloadFile and SaveFile, which keep more state information. BaseFile
 // considers itself the owner of the physical file and will delete it when the
 // BaseFile object is destroyed unless the ownership is revoked via a call to
 // Detach().
-class CONTENT_EXPORT BaseFile {
+class COMPONENTS_DOWNLOAD_EXPORT BaseFile {
  public:
   // May be constructed on any thread.  All other routines (including
   // destruction) must occur on the same sequence.
@@ -86,7 +86,7 @@ class CONTENT_EXPORT BaseFile {
   // |is_sparse_file|: Specifies whether the file is a sparse file. If so, it is
   //     possible that a write can happen at an offset that is larger than the
   //     file size, thus creating holes in it.
-  download::DownloadInterruptReason Initialize(
+  DownloadInterruptReason Initialize(
       const base::FilePath& full_path,
       const base::FilePath& default_directory,
       base::File file,
@@ -98,14 +98,13 @@ class CONTENT_EXPORT BaseFile {
   // Write a new chunk of data to the file. Returns a DownloadInterruptReason
   // indicating the result of the operation. Works only if |is_sparse_file| is
   // false.
-  download::DownloadInterruptReason AppendDataToFile(const char* data,
-                                                     size_t data_len);
+  DownloadInterruptReason AppendDataToFile(const char* data, size_t data_len);
 
   // Write a new chunk of data to the file. Returns a DownloadInterruptReason
   // indicating the result of the operation.
-  download::DownloadInterruptReason WriteDataToFile(int64_t offset,
-                                                    const char* data,
-                                                    size_t data_len);
+  DownloadInterruptReason WriteDataToFile(int64_t offset,
+                                          const char* data,
+                                          size_t data_len);
 
   // Rename the download file. Returns a DownloadInterruptReason indicating the
   // result of the operation. A return code of NONE indicates that the rename
@@ -113,7 +112,7 @@ class CONTENT_EXPORT BaseFile {
   // used to determine the last known filename and whether the file is available
   // for writing or retrying the rename. Call Finish() to obtain the last known
   // hash state.
-  download::DownloadInterruptReason Rename(const base::FilePath& full_path);
+  DownloadInterruptReason Rename(const base::FilePath& full_path);
 
   // Mark the file as detached. Up until this method is called, BaseFile assumes
   // ownership of the file and hence will delete the file if the BaseFile object
@@ -141,7 +140,7 @@ class CONTENT_EXPORT BaseFile {
   //     that originated this download. Will be used to annotate source
   //     information and also to determine the relative danger level of the
   //     file.
-  download::DownloadInterruptReason AnnotateWithSourceInformation(
+  DownloadInterruptReason AnnotateWithSourceInformation(
       const std::string& client_guid,
       const GURL& source_url,
       const GURL& referrer_url);
@@ -182,7 +181,7 @@ class CONTENT_EXPORT BaseFile {
   // relevant interrupt reason. Unless Open() return
   // DOWNLOAD_INTERRUPT_REASON_NONE, it should be assumed that |file_| is not
   // valid.
-  download::DownloadInterruptReason Open(const std::string& hash_so_far);
+  DownloadInterruptReason Open(const std::string& hash_so_far);
 
   // Closes and resets file_.
   void Close();
@@ -193,7 +192,7 @@ class CONTENT_EXPORT BaseFile {
   // Platform specific method that moves a file to a new path and adjusts the
   // security descriptor / permissions on the file to match the defaults for the
   // new directory.
-  download::DownloadInterruptReason MoveFileAndAdjustPermissions(
+  DownloadInterruptReason MoveFileAndAdjustPermissions(
       const base::FilePath& new_path);
 
   // Split out from CurrentSpeed to enable testing.
@@ -209,26 +208,23 @@ class CONTENT_EXPORT BaseFile {
   // is ready to hash bytes from offset |bytes_so_far_| + 1.
   // If |is_sparse_file_| is true, this function is only called when Finish()
   // is called.
-  download::DownloadInterruptReason CalculatePartialHash(
+  DownloadInterruptReason CalculatePartialHash(
       const std::string& hash_to_expect);
 
   // Log a TYPE_DOWNLOAD_FILE_ERROR NetLog event with |error| and passes error
   // on through, converting to a |DownloadInterruptReason|.
-  download::DownloadInterruptReason LogNetError(const char* operation,
-                                                net::Error error);
+  DownloadInterruptReason LogNetError(const char* operation, net::Error error);
 
   // Log the system error in |os_error| and converts it into a
   // |DownloadInterruptReason|.
-  download::DownloadInterruptReason LogSystemError(
-      const char* operation,
-      logging::SystemErrorCode os_error);
+  DownloadInterruptReason LogSystemError(const char* operation,
+                                         logging::SystemErrorCode os_error);
 
   // Log a TYPE_DOWNLOAD_FILE_ERROR NetLog event with |os_error| and |reason|.
   // Returns |reason|.
-  download::DownloadInterruptReason LogInterruptReason(
-      const char* operation,
-      int os_error,
-      download::DownloadInterruptReason reason);
+  DownloadInterruptReason LogInterruptReason(const char* operation,
+                                             int os_error,
+                                             DownloadInterruptReason reason);
 
   // Full path to the file including the file name.
   base::FilePath full_path_;
@@ -262,6 +258,6 @@ class CONTENT_EXPORT BaseFile {
   DISALLOW_COPY_AND_ASSIGN(BaseFile);
 };
 
-}  // namespace content
+}  // namespace download
 
-#endif  // CONTENT_BROWSER_DOWNLOAD_BASE_FILE_H_
+#endif  // COMPONENTS_DOWNLOAD_PUBLIC_COMMON_BASE_FILE_H_

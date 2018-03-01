@@ -10,7 +10,7 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "content/browser/download/base_file.h"
+#include "components/download/public/common/base_file.h"
 #include "content/browser/download/save_types.h"
 
 namespace content {
@@ -50,7 +50,7 @@ class SaveFile {
   const SaveFileCreateInfo& create_info() const { return *info_; }
 
  private:
-  BaseFile file_;
+  download::BaseFile file_;
   std::unique_ptr<SaveFileCreateInfo> info_;
 
   DISALLOW_COPY_AND_ASSIGN(SaveFile);

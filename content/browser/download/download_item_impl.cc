@@ -47,7 +47,6 @@
 #include "components/download/public/common/download_ukm_helper.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "content/browser/download/download_file.h"
-#include "content/browser/download/download_interrupt_reasons_utils.h"
 #include "content/browser/download/download_item_impl_delegate.h"
 #include "content/browser/download/download_job_factory.h"
 #include "content/browser/download/download_job_impl.h"
