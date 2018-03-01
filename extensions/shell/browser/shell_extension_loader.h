@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "extensions/browser/extension_registrar.h"
 #include "extensions/common/extension_id.h"
+#include "extensions/shell/browser/shell_keep_alive_requester.h"
 
 namespace base {
 class FilePath;
@@ -26,7 +27,7 @@ namespace extensions {
 
 class Extension;
 
-// Handles extension loading using ExtensionRegistrar.
+// Handles extension loading and reloading using ExtensionRegistrar.
 class ShellExtensionLoader : public ExtensionRegistrar::Delegate {
  public:
   explicit ShellExtensionLoader(content::BrowserContext* browser_context);
@@ -36,7 +37,19 @@ class ShellExtensionLoader : public ExtensionRegistrar::Delegate {
   // extension on success, or nullptr otherwise.
   const Extension* LoadExtension(const base::FilePath& extension_dir);
 
+  // Starts reloading the extension. A keep-alive is maintained until the
+  // reload succeeds/fails. If the extension is an app, it will be launched upon
+  // reloading.
+  // This may invalidate references to the old Extension object, so it takes the
+  // ID by value.
+  void ReloadExtension(ExtensionId extension_id);
+
  private:
+  // If the extension loaded successfully, enables it. If it's an app, launches
+  // it. If the load failed, updates ShellKeepAliveRequester.
+  void FinishExtensionReload(const ExtensionId old_extension_id,
+                             scoped_refptr<const Extension> extension);
+
   // ExtensionRegistrar::Delegate:
   void PreAddExtension(const Extension* extension,
                        const Extension* old_extension) override;
@@ -55,6 +68,16 @@ class ShellExtensionLoader : public ExtensionRegistrar::Delegate {
 
   // Registers and unregisters extensions.
   ExtensionRegistrar extension_registrar_;
+
+  // Holds keep-alives for relaunching apps.
+  ShellKeepAliveRequester keep_alive_requester_;
+
+  // Indicates that we posted the (asynchronous) task to start reloading.
+  // Used by ReloadExtension() to check whether ExtensionRegistrar calls
+  // LoadExtensionForReload().
+  bool did_schedule_reload_ = false;
+
+  base::WeakPtrFactory<ShellExtensionLoader> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellExtensionLoader);
 };

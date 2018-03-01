@@ -4,6 +4,7 @@
 
 #include "extensions/shell/browser/shell_extension_system_factory.h"
 
+#include "apps/app_lifetime_monitor_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "extensions/browser/extension_prefs_factory.h"
 #include "extensions/browser/extension_registry_factory.h"
@@ -29,6 +30,7 @@ ShellExtensionSystemFactory::ShellExtensionSystemFactory()
                               BrowserContextDependencyManager::GetInstance()) {
   DependsOn(ExtensionPrefsFactory::GetInstance());
   DependsOn(ExtensionRegistryFactory::GetInstance());
+  DependsOn(apps::AppLifetimeMonitorFactory::GetInstance());
 }
 
 ShellExtensionSystemFactory::~ShellExtensionSystemFactory() {

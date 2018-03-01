@@ -47,11 +47,9 @@ void ShellKeepAliveRequester::OnExtensionLoaded(
     return;
 
   // Add a keep-alive to wait for the app to launch its first app window, as
-  // otherwise the Aura desktop controller will exit.
-  // This assumes that all platform apps will be launched when loaded, which is
-  // true in AppShell. (The launched app may decline to create a window, in
-  // which case this keep-alive will be erased once the app's background page
-  // eventually stops.
+  // otherwise the Aura desktop controller may exit. The assumption is that all
+  // apps will create a visible window. If the app doesn't, this keep-alive will
+  // still be erased once the app's background page eventually stops.
   app_launching_keep_alives_[extension->id()] =
       std::make_unique<ScopedKeepAlive>(KeepAliveOrigin::APP_CONTROLLER,
                                         KeepAliveRestartOption::ENABLED);

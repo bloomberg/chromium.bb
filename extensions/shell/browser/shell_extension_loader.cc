@@ -4,10 +4,17 @@
 
 #include "extensions/shell/browser/shell_extension_loader.h"
 
+#include "apps/launcher.h"
+#include "base/auto_reset.h"
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/sequenced_task_runner.h"
+#include "base/task_runner_util.h"
+#include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/file_util.h"
 
 namespace extensions {
@@ -53,7 +60,9 @@ scoped_refptr<const Extension> LoadUnpacked(
 ShellExtensionLoader::ShellExtensionLoader(
     content::BrowserContext* browser_context)
     : browser_context_(browser_context),
-      extension_registrar_(browser_context, this) {}
+      extension_registrar_(browser_context, this),
+      keep_alive_requester_(browser_context),
+      weak_factory_(this) {}
 
 ShellExtensionLoader::~ShellExtensionLoader() = default;
 
@@ -64,6 +73,47 @@ const Extension* ShellExtensionLoader::LoadExtension(
     extension_registrar_.AddExtension(extension);
 
   return extension.get();
+}
+
+void ShellExtensionLoader::ReloadExtension(ExtensionId extension_id) {
+  const Extension* extension = ExtensionRegistry::Get(browser_context_)
+                                   ->GetInstalledExtension(extension_id);
+  // We shouldn't be trying to reload extensions that haven't been added.
+  DCHECK(extension);
+
+  // This should always start false since it's only set here, or in
+  // LoadExtensionForReload() as a result of the call below.
+  DCHECK_EQ(false, did_schedule_reload_);
+  base::AutoReset<bool> reset_did_schedule_reload(&did_schedule_reload_, false);
+
+  // Set up a keep-alive while the extension reloads. Do this before starting
+  // the reload so that the first step, disabling the extension, doesn't release
+  // the last remaining keep-alive and shut down the application.
+  keep_alive_requester_.StartTrackingReload(extension);
+  extension_registrar_.ReloadExtension(extension_id, LoadErrorBehavior::kQuiet);
+  if (did_schedule_reload_)
+    return;
+
+  // ExtensionRegistrar didn't invoke us to schedule the reload, so the reload
+  // wasn't actually started. Clear the keep-alive so we don't wait forever.
+  keep_alive_requester_.StopTrackingReload(extension_id);
+}
+
+void ShellExtensionLoader::FinishExtensionReload(
+    const ExtensionId old_extension_id,
+    scoped_refptr<const Extension> extension) {
+  if (extension) {
+    extension_registrar_.AddExtension(extension);
+    // If the extension is a platform app, adding it above caused
+    // ShellKeepAliveRequester to create a new keep-alive to wait for the app to
+    // open its first window.
+    // Launch the app now.
+    if (extension->is_platform_app())
+      apps::LaunchPlatformApp(browser_context_, extension.get(), SOURCE_RELOAD);
+  }
+
+  // Whether or not the reload succeeded, we should stop waiting for it.
+  keep_alive_requester_.StopTrackingReload(old_extension_id);
 }
 
 void ShellExtensionLoader::PreAddExtension(const Extension* extension,
@@ -97,7 +147,14 @@ void ShellExtensionLoader::LoadExtensionForReload(
     const ExtensionId& extension_id,
     const base::FilePath& path,
     LoadErrorBehavior load_error_behavior) {
-  // TODO(michaelpg): Support reload.
+  CHECK(!path.empty());
+
+  base::PostTaskAndReplyWithResult(
+      GetExtensionFileTaskRunner().get(), FROM_HERE,
+      base::BindOnce(&LoadUnpacked, path),
+      base::BindOnce(&ShellExtensionLoader::FinishExtensionReload,
+                     weak_factory_.GetWeakPtr(), extension_id));
+  did_schedule_reload_ = true;
 }
 
 bool ShellExtensionLoader::CanEnableExtension(const Extension* extension) {
