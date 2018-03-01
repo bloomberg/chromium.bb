@@ -14,6 +14,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
@@ -113,6 +114,7 @@ public class OSKOverscrollTest {
      * @throws ExecutionException
      */
     @Test
+    @DisabledTest(message = "crbug.com/773076")
     @MediumTest
     @CommandLineFlags.Add({ChromeSwitches.ENABLE_OSK_OVERSCROLL})
     @RetryOnFailure
