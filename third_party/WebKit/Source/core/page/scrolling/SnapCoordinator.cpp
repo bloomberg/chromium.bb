@@ -351,46 +351,40 @@ SnapAreaData SnapCoordinator::CalculateSnapAreaData(
   return snap_area_data;
 }
 
-bool SnapCoordinator::GetSnapPosition(const LayoutBox& snap_container,
-                                      bool did_scroll_x,
-                                      bool did_scroll_y,
-                                      FloatPoint* snap_position) {
+FloatPoint SnapCoordinator::GetSnapPositionForPoint(
+    const LayoutBox& snap_container,
+    const FloatPoint& point,
+    bool did_scroll_x,
+    bool did_scroll_y) {
   auto iter = snap_container_map_.find(&snap_container);
   if (iter == snap_container_map_.end())
-    return false;
+    return point;
 
   const SnapContainerData& data = iter->value;
   if (!data.size())
-    return false;
-
-  ScrollableArea* scrollable_area = ScrollableAreaForSnapping(snap_container);
-  if (!scrollable_area)
-    return false;
-
-  FloatPoint current_position = scrollable_area->ScrollPosition();
+    return point;
 
   gfx::ScrollOffset position = data.FindSnapPosition(
-      gfx::ScrollOffset(current_position.X(), current_position.Y()),
-      did_scroll_x, did_scroll_y);
-  snap_position->SetX(position.x());
-  snap_position->SetY(position.y());
+      gfx::ScrollOffset(point.X(), point.Y()), did_scroll_x, did_scroll_y);
 
-  return *snap_position != current_position;
+  return FloatPoint(position.x(), position.y());
 }
 
 void SnapCoordinator::PerformSnapping(const LayoutBox& snap_container,
                                       bool did_scroll_x,
                                       bool did_scroll_y) {
-  FloatPoint snap_position;
-  if (GetSnapPosition(snap_container, did_scroll_x, did_scroll_y,
-                      &snap_position)) {
-    if (ScrollableArea* scrollable_area =
-            ScrollableAreaForSnapping(snap_container)) {
-      scrollable_area->SetScrollOffset(
-          ScrollPositionToOffset(snap_position,
-                                 scrollable_area->ScrollOrigin()),
-          kProgrammaticScroll, kScrollBehaviorSmooth);
-    }
+  ScrollableArea* scrollable_area = ScrollableAreaForSnapping(snap_container);
+  if (!scrollable_area)
+    return;
+
+  FloatPoint current_position = scrollable_area->ScrollPosition();
+  FloatPoint snap_position = GetSnapPositionForPoint(
+      snap_container, current_position, did_scroll_x, did_scroll_y);
+
+  if (snap_position != current_position) {
+    scrollable_area->SetScrollOffset(
+        ScrollPositionToOffset(snap_position, scrollable_area->ScrollOrigin()),
+        kProgrammaticScroll, kScrollBehaviorSmooth);
   }
 }
 

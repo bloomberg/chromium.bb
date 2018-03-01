@@ -79,12 +79,14 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/layout/AdjustForAbsoluteZoom.h"
+#include "core/layout/LayoutView.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/appcache/ApplicationCache.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/CreateWindow.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
+#include "core/page/scrolling/SnapCoordinator.h"
 #include "core/probe/CoreProbes.h"
 #include "core/script/Modulator.h"
 #include "core/timing/DOMWindowPerformance.h"
@@ -92,6 +94,7 @@
 #include "platform/EventDispatchForbiddenScope.h"
 #include "platform/WebFrameScheduler.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
+#include "platform/scroll/ScrollTypes.h"
 #include "platform/scroll/ScrollbarTheme.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
@@ -1141,9 +1144,14 @@ double LocalDOMWindow::devicePixelRatio() const {
   return GetFrame()->DevicePixelRatio();
 }
 
-void LocalDOMWindow::scrollBy(double x,
-                              double y,
-                              ScrollBehavior scroll_behavior) const {
+void LocalDOMWindow::scrollBy(double x, double y) const {
+  ScrollToOptions options;
+  options.setLeft(x);
+  options.setTop(y);
+  scrollBy(options);
+}
+
+void LocalDOMWindow::scrollBy(const ScrollToOptions& scroll_to_options) const {
   if (!IsCurrentlyDisplayedInFrame())
     return;
 
@@ -1168,32 +1176,41 @@ void LocalDOMWindow::scrollBy(double x,
         .was_scrolled_by_js = true;
   }
 
-  x = ScrollableArea::NormalizeNonFiniteScroll(x);
-  y = ScrollableArea::NormalizeNonFiniteScroll(y);
+  double x = 0.0;
+  double y = 0.0;
+  if (scroll_to_options.hasLeft())
+    x = ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options.left());
+  if (scroll_to_options.hasTop())
+    y = ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options.top());
 
   ScrollableArea* viewport = view->LayoutViewportScrollableArea();
   ScrollOffset current_offset = viewport->GetScrollOffset();
   ScrollOffset scaled_delta(x * GetFrame()->PageZoomFactor(),
                             y * GetFrame()->PageZoomFactor());
+  FloatPoint new_scaled_position = ScrollOffsetToPosition(
+      scaled_delta + current_offset, viewport->ScrollOrigin());
+  if (SnapCoordinator* coordinator = document()->GetSnapCoordinator()) {
+    new_scaled_position = coordinator->GetSnapPositionForPoint(
+        *document()->GetLayoutView(), new_scaled_position,
+        scroll_to_options.hasLeft(), scroll_to_options.hasTop());
+  }
 
-  viewport->SetScrollOffset(current_offset + scaled_delta, kProgrammaticScroll,
-                            scroll_behavior);
-}
-
-void LocalDOMWindow::scrollBy(const ScrollToOptions& scroll_to_options) const {
-  double x = 0.0;
-  double y = 0.0;
-  if (scroll_to_options.hasLeft())
-    x = scroll_to_options.left();
-  if (scroll_to_options.hasTop())
-    y = scroll_to_options.top();
   ScrollBehavior scroll_behavior = kScrollBehaviorAuto;
   ScrollableArea::ScrollBehaviorFromString(scroll_to_options.behavior(),
                                            scroll_behavior);
-  scrollBy(x, y, scroll_behavior);
+  viewport->SetScrollOffset(
+      ScrollPositionToOffset(new_scaled_position, viewport->ScrollOrigin()),
+      kProgrammaticScroll, scroll_behavior);
 }
 
 void LocalDOMWindow::scrollTo(double x, double y) const {
+  ScrollToOptions options;
+  options.setLeft(x);
+  options.setTop(y);
+  scrollTo(options);
+}
+
+void LocalDOMWindow::scrollTo(const ScrollToOptions& scroll_to_options) const {
   if (!IsCurrentlyDisplayedInFrame())
     return;
 
@@ -1215,33 +1232,6 @@ void LocalDOMWindow::scrollTo(double x, double y) const {
         ->GetInitialScrollState()
         .was_scrolled_by_js = true;
   }
-
-  x = ScrollableArea::NormalizeNonFiniteScroll(x);
-  y = ScrollableArea::NormalizeNonFiniteScroll(y);
-
-  // It is only necessary to have an up-to-date layout if the position may be
-  // clamped, which is never the case for (0, 0).
-  if (x || y)
-    document()->UpdateStyleAndLayoutIgnorePendingStylesheets();
-
-  ScrollOffset layout_offset(x * GetFrame()->PageZoomFactor(),
-                             y * GetFrame()->PageZoomFactor());
-  ScrollableArea* viewport = view->LayoutViewportScrollableArea();
-  viewport->SetScrollOffset(layout_offset, kProgrammaticScroll,
-                            kScrollBehaviorAuto);
-}
-
-void LocalDOMWindow::scrollTo(const ScrollToOptions& scroll_to_options) const {
-  if (!IsCurrentlyDisplayedInFrame())
-    return;
-
-  LocalFrameView* view = GetFrame()->View();
-  if (!view)
-    return;
-
-  Page* page = GetFrame()->GetPage();
-  if (!page)
-    return;
 
   // It is only necessary to have an up-to-date layout if the position may be
   // clamped, which is never the case for (0, 0).
@@ -1268,12 +1258,21 @@ void LocalDOMWindow::scrollTo(const ScrollToOptions& scroll_to_options) const {
         ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options.top()) *
         GetFrame()->PageZoomFactor();
 
+  FloatPoint new_scaled_position = ScrollOffsetToPosition(
+      ScrollOffset(scaled_x, scaled_y), viewport->ScrollOrigin());
+  if (SnapCoordinator* coordinator = document()->GetSnapCoordinator()) {
+    new_scaled_position = coordinator->GetSnapPositionForPoint(
+        *document()->GetLayoutView(), new_scaled_position,
+        scroll_to_options.hasLeft(), scroll_to_options.hasTop());
+  }
+
   ScrollBehavior scroll_behavior = kScrollBehaviorAuto;
   ScrollableArea::ScrollBehaviorFromString(scroll_to_options.behavior(),
                                            scroll_behavior);
 
-  viewport->SetScrollOffset(ScrollOffset(scaled_x, scaled_y),
-                            kProgrammaticScroll, scroll_behavior);
+  viewport->SetScrollOffset(
+      ScrollPositionToOffset(new_scaled_position, viewport->ScrollOrigin()),
+      kProgrammaticScroll, scroll_behavior);
 }
 
 void LocalDOMWindow::moveBy(int x, int y) const {

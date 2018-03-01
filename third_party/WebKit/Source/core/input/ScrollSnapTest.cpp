@@ -6,6 +6,7 @@
 #include "core/dom/NodeComputedStyle.h"
 #include "core/input/EventHandler.h"
 #include "core/input/ScrollManager.h"
+#include "core/layout/LayoutBox.h"
 #include "core/style/ComputedStyle.h"
 #include "core/testing/sim/SimCompositor.h"
 #include "core/testing/sim/SimRequest.h"
@@ -124,8 +125,8 @@ void ScrollSnapTest::ScrollEnd(double x, double y) {
 
 void ScrollSnapTest::SetInitialScrollOffset(double x, double y) {
   Element* scroller = GetDocument().getElementById("scroller");
-  scroller->setScrollLeft(x);
-  scroller->setScrollTop(y);
+  scroller->GetLayoutBox()->SetScrollLeft(LayoutUnit::FromFloatRound(x));
+  scroller->GetLayoutBox()->SetScrollTop(LayoutUnit::FromFloatRound(y));
   ASSERT_EQ(scroller->scrollLeft(), x);
   ASSERT_EQ(scroller->scrollTop(), y);
 }
