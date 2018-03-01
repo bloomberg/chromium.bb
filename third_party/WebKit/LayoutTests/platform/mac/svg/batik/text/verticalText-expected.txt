@@ -215,7 +215,7 @@ layer at (0,0) size 450x500
           chunk 1 (vertical) text run 8 at (395.50,131.65) startOffset 7 endOffset 8 height 17.00: "d"
           chunk 1 (vertical) text run 9 at (395.50,139.15) startOffset 8 endOffset 9 height 17.00: " "
         LayoutSVGTSpan {tspan} at (391.50,75) size 17x289.13
-          LayoutSVGInlineText {#text} at (391.50,142.89) size 17x164.86
+          LayoutSVGInlineText {#text} at (391.50,142.89) size 17x168
             chunk 1 (vertical) text run 1 at (395.50,142.90) startOffset 0 endOffset 1 height 17.00: "o"
             chunk 1 (vertical) text run 2 at (395.50,159.90) startOffset 1 endOffset 2 height 17.00: "r"
             chunk 1 (vertical) text run 3 at (395.50,176.90) startOffset 2 endOffset 3 height 17.00: "i"

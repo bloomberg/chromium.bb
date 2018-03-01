@@ -119,14 +119,14 @@ layer at (166,96) size 160x45 clip at (167,97) size 147x43
       LayoutText {#text} at (2,0) size 80x13
         text run at (2,0) width 80 RTL: "\x{5D9}\x{5E9}\x{5E8}\x{5D0}\x{5DC} \x{5DE}\x{5EA}\x{5D9}\x{5D9}\x{5D1}\x{5E9}\x{5EA}"
 layer at (11,165) size 158x45 clip at (23,166) size 145x43
-  LayoutListBox {SELECT} at (1,1) size 158.17x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
-    LayoutBlockFlow {OPTION} at (12,1) size 145.17x14.19
+  LayoutListBox {SELECT} at (1,1) size 158.06x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+    LayoutBlockFlow {OPTION} at (12,1) size 145.06x14.19
       LayoutText {#text} at (29,0) size 115x13
         text run at (29,0) width 115: "This is an English text"
-    LayoutBlockFlow {OPTION} at (12,15.19) size 145.17x14.19
-      LayoutText {#text} at (2,0) size 142x13
-        text run at (2,0) width 142: "It needs to be right aligned"
-    LayoutBlockFlow {OPTION} at (12,29.38) size 145.17x14.19
+    LayoutBlockFlow {OPTION} at (12,15.19) size 145.06x14.19
+      LayoutText {#text} at (1,0) size 143x13
+        text run at (1,0) width 143: "It needs to be right aligned"
+    LayoutBlockFlow {OPTION} at (12,29.38) size 145.06x14.19
       LayoutText {#text} at (60,0) size 84x13
         text run at (60,0) width 84: "Some more text"
 layer at (174,165) size 148x45 clip at (186,166) size 135x43
@@ -141,14 +141,14 @@ layer at (174,165) size 148x45 clip at (186,166) size 135x43
       LayoutText {#text} at (53,0) size 81x13
         text run at (53,0) width 81 RTL: "\x{5D9}\x{5E9}\x{5E8}\x{5D0}\x{5DC} \x{5DE}\x{5EA}\x{5D9}\x{5D9}\x{5D1}\x{5E9}\x{5EA}"
 layer at (327,165) size 158x45 clip at (339,166) size 145x43
-  LayoutListBox {SELECT} at (1,1) size 158.17x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
-    LayoutBlockFlow {OPTION} at (12,1) size 145.17x14.19
+  LayoutListBox {SELECT} at (1,1) size 158.06x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+    LayoutBlockFlow {OPTION} at (12,1) size 145.06x14.19
       LayoutText {#text} at (29,0) size 115x13
         text run at (29,0) width 115: "This is an English text"
-    LayoutBlockFlow {OPTION} at (12,15.19) size 145.17x14.19
-      LayoutText {#text} at (2,0) size 142x13
-        text run at (2,0) width 142: "It needs to be right aligned"
-    LayoutBlockFlow {OPTION} at (12,29.38) size 145.17x14.19
+    LayoutBlockFlow {OPTION} at (12,15.19) size 145.06x14.19
+      LayoutText {#text} at (1,0) size 143x13
+        text run at (1,0) width 143: "It needs to be right aligned"
+    LayoutBlockFlow {OPTION} at (12,29.38) size 145.06x14.19
       LayoutText {#text} at (60,0) size 84x13
         text run at (60,0) width 84: "Some more text"
 layer at (490,165) size 148x45 clip at (502,166) size 135x43
@@ -163,14 +163,14 @@ layer at (490,165) size 148x45 clip at (502,166) size 135x43
       LayoutText {#text} at (53,0) size 81x13
         text run at (53,0) width 81 RTL: "\x{5D9}\x{5E9}\x{5E8}\x{5D0}\x{5DC} \x{5DE}\x{5EA}\x{5D9}\x{5D9}\x{5D1}\x{5E9}\x{5EA}"
 layer at (11,214) size 158x45 clip at (12,215) size 145x43
-  LayoutListBox {SELECT} at (1,1) size 158.17x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
-    LayoutBlockFlow {OPTION} at (1,1) size 145.17x14.19
+  LayoutListBox {SELECT} at (1,1) size 158.06x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+    LayoutBlockFlow {OPTION} at (1,1) size 145.06x14.19
       LayoutText {#text} at (29,0) size 115x13
         text run at (29,0) width 115: "This is an English text"
-    LayoutBlockFlow {OPTION} at (1,15.19) size 145.17x14.19
+    LayoutBlockFlow {OPTION} at (1,15.19) size 145.06x14.19
       LayoutText {#text} at (2,0) size 142x13
         text run at (2,0) width 142: "It needs to be right aligned"
-    LayoutBlockFlow {OPTION} at (1,29.38) size 145.17x14.19
+    LayoutBlockFlow {OPTION} at (1,29.38) size 145.06x14.19
       LayoutText {#text} at (60,0) size 84x13
         text run at (60,0) width 84: "Some more text"
 layer at (174,214) size 148x45 clip at (175,215) size 135x43
@@ -229,25 +229,25 @@ layer at (518,283) size 158x45 clip at (519,284) size 145x43
       LayoutText {#text} at (33,0) size 80x13
         text run at (33,0) width 80 RTL: "\x{5D9}\x{5E9}\x{5E8}\x{5D0}\x{5DC} \x{5DE}\x{5EA}\x{5D9}\x{5D9}\x{5D1}\x{5E9}\x{5EA}"
 layer at (11,352) size 163x45 clip at (23,353) size 150x43
-  LayoutListBox {SELECT} at (1,1) size 162.92x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
-    LayoutBlockFlow {OPTION} at (12,1) size 149.92x14.19
+  LayoutListBox {SELECT} at (1,1) size 162.81x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+    LayoutBlockFlow {OPTION} at (12,1) size 149.81x14.19
       LayoutText {#text} at (2,0) size 146x13
         text run at (2,0) width 146: "This should be right aligned"
-    LayoutBlockFlow {OPTION} at (12,15.19) size 149.92x14.19
+    LayoutBlockFlow {OPTION} at (12,15.19) size 149.81x14.19
       LayoutText {#text} at (2,0) size 139x13
         text run at (2,0) width 139: "This should be left aligned"
-    LayoutBlockFlow {OPTION} at (12,29.38) size 149.92x14.19
+    LayoutBlockFlow {OPTION} at (12,29.38) size 149.81x14.19
       LayoutText {#text} at (36,0) size 78x13
         text run at (36,0) width 78: "Center aligned"
 layer at (178,352) size 163x45 clip at (179,353) size 150x43
-  LayoutListBox {SELECT} at (1,1) size 162.92x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
-    LayoutBlockFlow {OPTION} at (1,1) size 149.92x14.19
+  LayoutListBox {SELECT} at (1,1) size 162.81x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+    LayoutBlockFlow {OPTION} at (1,1) size 149.81x14.19
       LayoutText {#text} at (2,0) size 139x13
         text run at (2,0) width 139: "This should be left aligned"
-    LayoutBlockFlow {OPTION} at (1,15.19) size 149.92x14.19
+    LayoutBlockFlow {OPTION} at (1,15.19) size 149.81x14.19
       LayoutText {#text} at (2,0) size 146x13
         text run at (2,0) width 146: "This should be right aligned"
-    LayoutBlockFlow {OPTION} at (1,29.38) size 149.92x14.19
+    LayoutBlockFlow {OPTION} at (1,29.38) size 149.81x14.19
       LayoutText {#text} at (36,0) size 78x13
         text run at (36,0) width 78: "Center aligned"
 layer at (345,352) size 187x45 clip at (357,353) size 174x43
