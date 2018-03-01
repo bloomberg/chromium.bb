@@ -150,6 +150,10 @@ class ASH_EXPORT DockedMagnifierController
   // viewport shows a magnified version of itself.
   void MaybeCachePointOfInterestMinimumHeight(aura::WindowTreeHost* host);
 
+  // Prevents the mouse cursor from being able to enter inside the magnifier
+  // viewport.
+  void ConfineMouseCursorOutsideViewport();
+
   // The current root window of the source display from which we are reflecting
   // and magnifying into the viewport. It is set to |nullptr| when the magnifier
   // is disabled. The viewport is placed on the same display.

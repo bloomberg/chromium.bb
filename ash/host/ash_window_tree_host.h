@@ -16,6 +16,7 @@ class WindowTreeHost;
 
 namespace gfx {
 class Insets;
+class Rect;
 }
 
 namespace ui {
@@ -37,6 +38,13 @@ class ASH_EXPORT AshWindowTreeHost {
   // Confines the cursor to the bounds of the root window. This should do
   // nothing if allow_confine_cursor() returns false.
   virtual void ConfineCursorToRootWindow() = 0;
+
+  // Clips the cursor to the given |bounds_in_root|.
+  virtual void ConfineCursorToBoundsInRoot(const gfx::Rect& bounds_in_root) = 0;
+
+  // Returns the last used bounds to confine the mouse cursor in the host's
+  // window's pixels.
+  virtual gfx::Rect GetLastCursorConfineBoundsInPixels() const = 0;
 
   virtual void SetRootWindowTransformer(
       std::unique_ptr<RootWindowTransformer> transformer) = 0;

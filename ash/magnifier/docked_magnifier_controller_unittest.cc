@@ -8,9 +8,12 @@
 #include <vector>
 
 #include "ash/display/display_util.h"
+#include "ash/display/window_tree_host_manager.h"
+#include "ash/host/ash_window_tree_host.h"
 #include "ash/magnifier/magnifier_test_utils.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
+#include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/interfaces/docked_magnifier_controller.mojom.h"
 #include "ash/session/session_controller.h"
@@ -19,6 +22,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
+#include "base/command_line.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/session_manager_types.h"
@@ -90,6 +94,11 @@ class DockedMagnifierTest : public NoSessionAshTestBase {
   void SetUp() override {
     // Explicitly enable the Docked Magnifier feature for the tests.
     scoped_feature_list_.InitAndEnableFeature(features::kDockedMagnifier);
+
+    // Explicitly enable --ash-constrain-pointer-to-root to be able to test
+    // mouse cursor confinement outside the magnifier viewport.
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kAshConstrainPointerToRoot);
 
     NoSessionAshTestBase::SetUp();
 
@@ -232,6 +241,13 @@ TEST_F(DockedMagnifierTest, DisplaysWorkAreas) {
   gfx::Rect disp_1_workarea_no_magnifier = disp_1_bounds;
   disp_1_workarea_no_magnifier.Inset(0, 0, 0, kShelfSize);
   EXPECT_EQ(disp_1_workarea_no_magnifier, display_1.work_area());
+  // At this point, normal mouse cursor confinement should be used.
+  AshWindowTreeHost* host1 =
+      Shell::Get()
+          ->window_tree_host_manager()
+          ->GetAshWindowTreeHostForDisplayId(display_1.id());
+  EXPECT_EQ(host1->GetLastCursorConfineBoundsInPixels(),
+            gfx::Rect(gfx::Point(0, 0), disp_1_bounds.size()));
 
   const display::Display& display_2 = display_manager()->GetDisplayAt(1);
   const gfx::Rect disp_2_bounds(800, 0, 400, 300);
@@ -239,6 +255,12 @@ TEST_F(DockedMagnifierTest, DisplaysWorkAreas) {
   gfx::Rect disp_2_workarea_no_magnifier = disp_2_bounds;
   disp_2_workarea_no_magnifier.Inset(0, 0, 0, kShelfSize);
   EXPECT_EQ(disp_2_workarea_no_magnifier, display_2.work_area());
+  AshWindowTreeHost* host2 =
+      Shell::Get()
+          ->window_tree_host_manager()
+          ->GetAshWindowTreeHostForDisplayId(display_2.id());
+  EXPECT_EQ(host2->GetLastCursorConfineBoundsInPixels(),
+            gfx::Rect(gfx::Point(0, 0), disp_2_bounds.size()));
 
   // Enable the magnifier and the check the workareas.
   controller()->SetEnabled(true);
@@ -252,17 +274,25 @@ TEST_F(DockedMagnifierTest, DisplaysWorkAreas) {
   // be further shrunk from the top by 1/4th of its full height + the height of
   // the separator layer.
   gfx::Rect disp_1_workspace_with_magnifier = disp_1_workarea_no_magnifier;
-  disp_1_workspace_with_magnifier.Inset(
-      0,
+  const int disp_1_magnifier_height =
       (disp_1_bounds.height() /
        DockedMagnifierController::kScreenHeightDevisor) +
-          DockedMagnifierController::kSeparatorHeight,
-      0, 0);
+      DockedMagnifierController::kSeparatorHeight;
+  disp_1_workspace_with_magnifier.Inset(0, disp_1_magnifier_height, 0, 0);
   EXPECT_EQ(disp_1_bounds, display_1.bounds());
   EXPECT_EQ(disp_1_workspace_with_magnifier, display_1.work_area());
+  // The first display should confine the mouse movement outside of the
+  // viewport.
+  const gfx::Rect disp_1_confine_bounds(
+      0, disp_1_magnifier_height, disp_1_bounds.width(),
+      disp_1_bounds.height() - disp_1_magnifier_height);
+  EXPECT_EQ(host1->GetLastCursorConfineBoundsInPixels(), disp_1_confine_bounds);
+
   // The second display should remain unaffected.
   EXPECT_EQ(disp_2_bounds, display_2.bounds());
   EXPECT_EQ(disp_2_workarea_no_magnifier, display_2.work_area());
+  EXPECT_EQ(host2->GetLastCursorConfineBoundsInPixels(),
+            gfx::Rect(gfx::Point(0, 0), disp_2_bounds.size()));
 
   // Now, move mouse cursor to display 2, and expect that the workarea of
   // display 1 is restored to its original value, while that of display 2 is
@@ -276,15 +306,22 @@ TEST_F(DockedMagnifierTest, DisplaysWorkAreas) {
             viewport_2_widget->GetNativeView()->GetRootWindow());
   EXPECT_EQ(disp_1_bounds, display_1.bounds());
   EXPECT_EQ(disp_1_workarea_no_magnifier, display_1.work_area());
+  // Display 1 goes back to the normal mouse confinement.
+  EXPECT_EQ(host1->GetLastCursorConfineBoundsInPixels(),
+            gfx::Rect(gfx::Point(0, 0), disp_1_bounds.size()));
   EXPECT_EQ(disp_2_bounds, display_2.bounds());
   gfx::Rect disp_2_workspace_with_magnifier = disp_2_workarea_no_magnifier;
-  disp_2_workspace_with_magnifier.Inset(
-      0,
+  const int disp_2_magnifier_height =
       (disp_2_bounds.height() /
        DockedMagnifierController::kScreenHeightDevisor) +
-          DockedMagnifierController::kSeparatorHeight,
-      0, 0);
+      DockedMagnifierController::kSeparatorHeight;
+  disp_2_workspace_with_magnifier.Inset(0, disp_2_magnifier_height, 0, 0);
   EXPECT_EQ(disp_2_workspace_with_magnifier, display_2.work_area());
+  // Display 2's mouse is confined outside the viewport.
+  const gfx::Rect disp_2_confine_bounds(
+      0, disp_2_magnifier_height, disp_2_bounds.width(),
+      disp_2_bounds.height() - disp_2_magnifier_height);
+  EXPECT_EQ(host2->GetLastCursorConfineBoundsInPixels(), disp_2_confine_bounds);
 
   // Now, disable the magnifier, and expect both displays to return back to
   // their original state.
@@ -294,6 +331,11 @@ TEST_F(DockedMagnifierTest, DisplaysWorkAreas) {
   EXPECT_EQ(disp_1_workarea_no_magnifier, display_1.work_area());
   EXPECT_EQ(disp_2_bounds, display_2.bounds());
   EXPECT_EQ(disp_2_workarea_no_magnifier, display_2.work_area());
+  // Normal mouse confinement for both displays.
+  EXPECT_EQ(host1->GetLastCursorConfineBoundsInPixels(),
+            gfx::Rect(gfx::Point(0, 0), disp_1_bounds.size()));
+  EXPECT_EQ(host2->GetLastCursorConfineBoundsInPixels(),
+            gfx::Rect(gfx::Point(0, 0), disp_2_bounds.size()));
 }
 
 // Tests the behavior of the magnifier when displays are added or removed.
