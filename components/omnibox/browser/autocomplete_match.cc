@@ -197,6 +197,12 @@ const gfx::VectorIcon& AutocompleteMatch::TypeToVectorIcon(Type type,
     return is_touch_ui ? omnibox::kTouchableBookmarkIcon : omnibox::kStarIcon;
 
   switch (type) {
+    case Type::TAB_SEARCH:
+      if (!OmniboxFieldTrial::InTabSwitchSuggestionWithButtonTrial())
+        return omnibox::kTabIcon;
+      // Behave like history match.
+      FALLTHROUGH;
+
     case Type::URL_WHAT_YOU_TYPED:
     case Type::HISTORY_URL:
     case Type::HISTORY_TITLE:
@@ -209,9 +215,6 @@ const gfx::VectorIcon& AutocompleteMatch::TypeToVectorIcon(Type type,
     case Type::PHYSICAL_WEB:
     case Type::PHYSICAL_WEB_OVERFLOW:
       return is_touch_ui ? omnibox::kTouchablePageIcon : omnibox::kHttpIcon;
-
-    case Type::TAB_SEARCH:
-      return omnibox::kTabIcon;
 
     case Type::SEARCH_WHAT_YOU_TYPED:
     case Type::SEARCH_HISTORY:

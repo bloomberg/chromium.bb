@@ -17,7 +17,7 @@ class OmniboxTabSwitchButton : public views::LabelButton,
                                views::ButtonListener {
  public:
   explicit OmniboxTabSwitchButton(OmniboxResultView* result_view)
-      : LabelButton(this, base::ASCIIToUTF16("Switch tabs")),
+      : LabelButton(this, base::ASCIIToUTF16("Switch to open tab")),
         result_view_(result_view) {
     // TODO: SetTooltipText(text);
     //       SetImageAlignment(ALIGN_CENTER, ALIGN_MIDDLE);
@@ -26,7 +26,7 @@ class OmniboxTabSwitchButton : public views::LabelButton,
     SetBackground(
         std::make_unique<BackgroundWith1PxBorder>(bg_color, SK_ColorBLACK));
     SetImage(STATE_NORMAL,
-             gfx::CreateVectorIcon(omnibox::kTabIcon, 16, SK_ColorBLACK));
+             gfx::CreateVectorIcon(omnibox::kSwitchIcon, 16, SK_ColorBLACK));
   }
 
   void SetPressed();
