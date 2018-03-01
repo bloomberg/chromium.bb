@@ -82,6 +82,7 @@ class AcceleratorController;
 class AccessibilityController;
 class AccessibilityDelegate;
 class AshDisplayController;
+class AppListControllerImpl;
 class AppListDelegateImpl;
 class NativeCursorManagerAsh;
 class AshTouchTransformController;
@@ -310,6 +311,9 @@ class ASH_EXPORT Shell : public SessionObserver,
   }
   ::wm::ActivationClient* activation_client();
   app_list::AppList* app_list() { return app_list_.get(); }
+  AppListControllerImpl* app_list_controller() {
+    return app_list_controller_.get();
+  }
   AshDisplayController* ash_display_controller() {
     return ash_display_controller_.get();
   }
@@ -650,6 +654,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<AcceleratorController> accelerator_controller_;
   std::unique_ptr<AccessibilityController> accessibility_controller_;
   std::unique_ptr<AccessibilityDelegate> accessibility_delegate_;
+  std::unique_ptr<AppListControllerImpl> app_list_controller_;
   std::unique_ptr<AshDisplayController> ash_display_controller_;
   std::unique_ptr<BacklightsForcedOffSetter> backlights_forced_off_setter_;
   std::unique_ptr<BrightnessControlDelegate> brightness_control_delegate_;

@@ -3410,6 +3410,8 @@ split_static_library("ui") {
       "app_list/app_context_menu.cc",
       "app_list/app_context_menu.h",
       "app_list/app_context_menu_delegate.h",
+      "app_list/app_list_client_impl.cc",
+      "app_list/app_list_client_impl.h",
       "app_list/app_list_controller_delegate.cc",
       "app_list/app_list_controller_delegate.h",
       "app_list/app_list_model_builder.cc",

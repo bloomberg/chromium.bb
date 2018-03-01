@@ -13,6 +13,7 @@ AppListItem::AppListItem(const std::string& id)
     : metadata_(ash::mojom::AppListItemMetadata::New(id,
                                                      std::string(),
                                                      std::string(),
+                                                     std::string(),
                                                      syncer::StringOrdinal(),
                                                      false)),
       highlighted_(false),

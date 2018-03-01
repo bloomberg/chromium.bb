@@ -47,11 +47,13 @@ void ChromeAppListItem::TestApi::SetPosition(
 // ChromeAppListItem
 ChromeAppListItem::ChromeAppListItem(Profile* profile,
                                      const std::string& app_id)
-    : metadata_(ash::mojom::AppListItemMetadata::New(app_id,
-                                                     "",
-                                                     "",
-                                                     syncer::StringOrdinal(),
-                                                     false)),
+    : metadata_(
+          ash::mojom::AppListItemMetadata::New(app_id,
+                                               std::string() /* name */,
+                                               std::string() /* short_name */,
+                                               std::string() /* folder_id */,
+                                               syncer::StringOrdinal(),
+                                               false)),
       profile_(profile) {}
 
 ChromeAppListItem::~ChromeAppListItem() {
