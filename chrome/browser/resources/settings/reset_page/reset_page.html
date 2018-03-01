@@ -63,7 +63,7 @@
 </if>
 <if expr="_google_chrome and is_win">
         <template is="dom-if" if="[[userInitiatedCleanupsEnabled_]]" restamp>
-          <div class="settings-box two-line" id="chromeCleanupSubpageTrigger"
+          <div class="settings-box" id="chromeCleanupSubpageTrigger"
               on-click="onChromeCleanupTap_" actionable>
             <div class="start">$i18n{resetCleanupComputerTrigger}</div>
             <button id="chromeCleanupArrow" is="paper-icon-button-light"
