@@ -270,11 +270,6 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
 
   void Trace(blink::Visitor*);
 
-  // Returns true if Editor should continue with default processing.
-  bool DispatchClipboardEvent(const AtomicString&,
-                              DataTransferAccessPolicy,
-                              EditorCommandSource,
-                              PasteMode = kAllMimeTypes);
   void RevealSelectionAfterEditingOperation(
       const ScrollAlignment& = ScrollAlignment::kAlignCenterIfNeeded);
 

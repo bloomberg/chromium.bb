@@ -64,7 +64,6 @@
 #include "core/editing/serializers/Serialization.h"
 #include "core/editing/spellcheck/SpellChecker.h"
 #include "core/event_names.h"
-#include "core/events/ClipboardEvent.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/events/TextEvent.h"
 #include "core/frame/LocalFrame.h"
@@ -327,33 +326,6 @@ void Editor::DeleteSelectionWithSmartDelete(
           .Build(),
       input_type, reference_move_position)
       ->Apply();
-}
-
-bool Editor::DispatchClipboardEvent(const AtomicString& event_type,
-                                    DataTransferAccessPolicy policy,
-                                    EditorCommandSource source,
-                                    PasteMode paste_mode) {
-  Element* target = FindEventTargetForClipboardEvent(source);
-  if (!target)
-    return true;
-
-  DataTransfer* data_transfer =
-      DataTransfer::Create(DataTransfer::kCopyAndPaste, policy,
-                           policy == kDataTransferWritable
-                               ? DataObject::Create()
-                               : DataObject::CreateFromPasteboard(paste_mode));
-
-  Event* evt = ClipboardEvent::Create(event_type, data_transfer);
-  target->DispatchEvent(evt);
-  bool no_default_processing = evt->defaultPrevented();
-  if (no_default_processing && policy == kDataTransferWritable)
-    Pasteboard::GeneralPasteboard()->WriteDataObject(
-        data_transfer->GetDataObject());
-
-  // Invalidate clipboard here for security.
-  data_transfer->SetAccessPolicy(kDataTransferNumb);
-
-  return !no_default_processing;
 }
 
 void Editor::ReplaceSelectionWithFragment(DocumentFragment* fragment,
