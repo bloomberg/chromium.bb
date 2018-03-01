@@ -2349,10 +2349,11 @@ AppsGridView::Index AppsGridView::GetNearestTileIndexForPoint(
   const gfx::Size total_tile_size = GetTotalTileSize();
   int col = base::ClampToRange(
       (point.x() - bounds.x()) / total_tile_size.width(), 0, cols_ - 1);
-  int row = rows_per_page_;
-  bool show_suggested_apps = current_page == 0;
-  row = base::ClampToRange((point.y() - bounds.y()) / total_tile_size.height(),
-                           0, rows_per_page_ - (show_suggested_apps ? 2 : 1));
+
+  const bool show_suggested_apps = current_page == 0 && !folder_delegate_;
+  int row =
+      base::ClampToRange((point.y() - bounds.y()) / total_tile_size.height(), 0,
+                         rows_per_page_ - (show_suggested_apps ? 2 : 1));
   return Index(current_page, row * cols_ + col);
 }
 
