@@ -223,6 +223,8 @@ struct gl_renderer {
 	PFNEGLQUERYWAYLANDBUFFERWL query_buffer;
 	int has_bind_display;
 
+	int has_context_priority;
+
 	int has_egl_image_external;
 
 	int has_egl_buffer_age;
@@ -3189,6 +3191,9 @@ gl_renderer_setup_egl_extensions(struct weston_compositor *ec)
 		return -1;
 	}
 
+	if (weston_check_egl_extension(extensions, "EGL_IMG_context_priority"))
+		gr->has_context_priority = 1;
+
 	if (weston_check_egl_extension(extensions, "EGL_WL_bind_wayland_display"))
 		gr->has_bind_display = 1;
 	if (gr->has_bind_display) {
@@ -3631,16 +3636,31 @@ gl_renderer_setup(struct weston_compositor *ec, EGLSurface egl_surface)
 	EGLConfig context_config;
 	EGLBoolean ret;
 
-	EGLint context_attribs[] = {
+	EGLint context_attribs[16] = {
 		EGL_CONTEXT_CLIENT_VERSION, 0,
-		EGL_NONE
 	};
+	unsigned int nattr = 2;
 
 	if (!eglBindAPI(EGL_OPENGL_ES_API)) {
 		weston_log("failed to bind EGL_OPENGL_ES_API\n");
 		gl_renderer_print_egl_error_state();
 		return -1;
 	}
+
+	/*
+	 * Being the compositor we require minimum output latency,
+	 * so request a high priority context for ourselves - that should
+	 * reschedule all of our rendering and its dependencies to be completed
+	 * first. If the driver doesn't permit us to create a high priority
+	 * context, it will fallback to the default priority (MEDIUM).
+	 */
+	if (gr->has_context_priority) {
+		context_attribs[nattr++] = EGL_CONTEXT_PRIORITY_LEVEL_IMG;
+		context_attribs[nattr++] = EGL_CONTEXT_PRIORITY_HIGH_IMG;
+	}
+
+	assert(nattr < ARRAY_LENGTH(context_attribs));
+	context_attribs[nattr] = EGL_NONE;
 
 	context_config = gr->egl_config;
 
@@ -3662,6 +3682,18 @@ gl_renderer_setup(struct weston_compositor *ec, EGLSurface egl_surface)
 			weston_log("failed to create context\n");
 			gl_renderer_print_egl_error_state();
 			return -1;
+		}
+	}
+
+	if (gr->has_context_priority) {
+		EGLint value = EGL_CONTEXT_PRIORITY_MEDIUM_IMG;
+
+		eglQueryContext(gr->egl_display, gr->egl_context,
+				EGL_CONTEXT_PRIORITY_LEVEL_IMG, &value);
+
+		if (value != EGL_CONTEXT_PRIORITY_HIGH_IMG) {
+			weston_log("Failed to obtain a high priority context.\n");
+			/* Not an error, continue on as normal */
 		}
 	}
 
