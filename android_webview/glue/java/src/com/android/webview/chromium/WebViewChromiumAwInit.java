@@ -95,14 +95,6 @@ public class WebViewChromiumAwInit {
         return mAwTracingController;
     }
 
-    // TODO: remove once glue layer is updated (crbug.com/808023)
-    AwTracingController getTracingControllerOnUiThread() {
-        synchronized (mLock) {
-            ensureChromiumStartedLocked(true);
-            return getBrowserContextOnUiThread().getTracingController();
-        }
-    }
-
     // TODO: DIR_RESOURCE_PAKS_ANDROID needs to live somewhere sensible,
     // inlined here for simplicity setting up the HTMLViewer demo. Unfortunately
     // it can't go into base.PathService, as the native constant it refers to
