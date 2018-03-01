@@ -82,6 +82,10 @@ class CastWindowTreeHost : public aura::WindowTreeHostPlatform {
   // aura::WindowTreeHostPlatform implementation:
   void DispatchEvent(ui::Event* event) override;
 
+  // aura::WindowTreeHost implementation
+  void UpdateRootWindowSizeInPixels(
+      const gfx::Size& host_size_in_pixels) override;
+
  private:
   const bool enable_input_;
 
@@ -105,6 +109,15 @@ void CastWindowTreeHost::DispatchEvent(ui::Event* event) {
   }
 
   WindowTreeHostPlatform::DispatchEvent(event);
+}
+
+void CastWindowTreeHost::UpdateRootWindowSizeInPixels(
+    const gfx::Size& host_size_in_pixels) {
+  aura::WindowTreeHost::UpdateRootWindowSizeInPixels(host_size_in_pixels);
+  gfx::Rect window_bounds = window()->bounds();
+  gfx::RectF new_bounds = gfx::RectF(window_bounds);
+  new_bounds.set_origin(gfx::PointF(0, 0));
+  window()->SetBounds(gfx::ToEnclosingRect(new_bounds));
 }
 
 // A layout manager owned by the root window.
@@ -227,8 +240,7 @@ void CastWindowManagerAura::Setup() {
       new CastWindowTreeHost(enable_input_, gfx::Rect(display_size)));
   window_tree_host_->InitHost();
   window_tree_host_->window()->SetLayoutManager(new CastLayoutManager());
-  window_tree_host_->window()->SetTransform(
-      GetPrimaryDisplayRotationTransform());
+  window_tree_host_->SetRootTransform(GetPrimaryDisplayRotationTransform());
 
   // Allow seeing through to the hardware video plane:
   window_tree_host_->compositor()->SetBackgroundColor(SK_ColorTRANSPARENT);
