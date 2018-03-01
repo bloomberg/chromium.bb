@@ -62,6 +62,10 @@ void Scheduler::Stop() {
 
 void Scheduler::SetNeedsImplSideInvalidation(
     bool needs_first_draw_on_activation) {
+  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler"),
+               "Scheduler::SetNeedsImplSideInvalidation",
+               "needs_first_draw_on_activation",
+               needs_first_draw_on_activation);
   state_machine_.SetNeedsImplSideInvalidation(needs_first_draw_on_activation);
   ProcessScheduledActions();
 }
