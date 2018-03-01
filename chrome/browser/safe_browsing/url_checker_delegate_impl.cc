@@ -8,7 +8,10 @@
 #include "chrome/browser/data_reduction_proxy_util.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
+#include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/db/database_manager.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "content/public/browser/browser_thread.h"
@@ -54,14 +57,15 @@ void StartDisplayingBlockingPage(
 
 UrlCheckerDelegateImpl::UrlCheckerDelegateImpl(
     scoped_refptr<SafeBrowsingDatabaseManager> database_manager,
-    scoped_refptr<SafeBrowsingUIManager> ui_manager)
+    scoped_refptr<SafeBrowsingUIManager> ui_manager,
+    const ProfileIOData* profile_io_data)
     : database_manager_(std::move(database_manager)),
       ui_manager_(std::move(ui_manager)),
       threat_types_(
           CreateSBThreatTypeSet({safe_browsing::SB_THREAT_TYPE_URL_MALWARE,
                                  safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
-                                 safe_browsing::SB_THREAT_TYPE_URL_UNWANTED})) {
-}
+                                 safe_browsing::SB_THREAT_TYPE_URL_UNWANTED})),
+      profile_io_data_(profile_io_data) {}
 
 UrlCheckerDelegateImpl::~UrlCheckerDelegateImpl() = default;
 
@@ -85,7 +89,10 @@ void UrlCheckerDelegateImpl::StartDisplayingBlockingPageHelper(
 }
 
 bool UrlCheckerDelegateImpl::IsUrlWhitelisted(const GURL& url) {
-  return false;
+  return profile_io_data_
+             ? safe_browsing::IsURLWhitelistedByPolicy(
+                   url, profile_io_data_->safe_browsing_whitelist_domains())
+             : false;
 }
 
 bool UrlCheckerDelegateImpl::ShouldSkipRequestCheck(

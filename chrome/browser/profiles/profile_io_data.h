@@ -190,6 +190,10 @@ class ProfileIOData {
     return &safe_browsing_enabled_;
   }
 
+  StringListPrefMember* safe_browsing_whitelist_domains() const {
+    return &safe_browsing_whitelist_domains_;
+  }
+
   IntegerPrefMember* network_prediction_options() const {
     return &network_prediction_options_;
   }
@@ -584,6 +588,7 @@ class ProfileIOData {
   mutable BooleanPrefMember force_google_safesearch_;
   mutable IntegerPrefMember force_youtube_restrict_;
   mutable BooleanPrefMember safe_browsing_enabled_;
+  mutable StringListPrefMember safe_browsing_whitelist_domains_;
   mutable StringPrefMember allowed_domains_for_apps_;
   mutable IntegerPrefMember network_prediction_options_;
   mutable IntegerPrefMember incognito_availibility_pref_;

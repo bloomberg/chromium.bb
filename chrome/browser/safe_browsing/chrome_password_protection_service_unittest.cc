@@ -303,6 +303,58 @@ TEST_F(ChromePasswordProtectionServiceTest,
       LoginReputationClientRequest::PASSWORD_REUSE_EVENT, &reason));
 }
 
+TEST_F(ChromePasswordProtectionServiceTest,
+       VerifyPingingIsSkippedIfMatchEnterpriseWhitelist) {
+  PasswordProtectionService::RequestOutcome reason =
+      PasswordProtectionService::UNKNOWN;
+  ASSERT_FALSE(
+      profile()->GetPrefs()->HasPrefPath(prefs::kSafeBrowsingWhitelistDomains));
+
+  // If there's no whitelist, IsURLWhitelistedForPasswordEntry(_,_) should
+  // return false.
+  EXPECT_FALSE(service_->IsURLWhitelistedForPasswordEntry(
+      GURL("https://www.mydomain.com"), &reason));
+  EXPECT_EQ(PasswordProtectionService::UNKNOWN, reason);
+
+  // Verify if match enterprise whitelist.
+  base::ListValue whitelist;
+  whitelist.AppendString("mydomain.com");
+  whitelist.AppendString("mydomain.net");
+  profile()->GetPrefs()->Set(prefs::kSafeBrowsingWhitelistDomains, whitelist);
+  EXPECT_TRUE(service_->IsURLWhitelistedForPasswordEntry(
+      GURL("https://www.mydomain.com"), &reason));
+  EXPECT_EQ(PasswordProtectionService::MATCHED_ENTERPRISE_WHITELIST, reason);
+
+  // Verify if matches enterprise change password url.
+  profile()->GetPrefs()->ClearPref(prefs::kSafeBrowsingWhitelistDomains);
+  reason = PasswordProtectionService::UNKNOWN;
+  EXPECT_FALSE(service_->IsURLWhitelistedForPasswordEntry(
+      GURL("https://www.mydomain.com"), &reason));
+  EXPECT_EQ(PasswordProtectionService::UNKNOWN, reason);
+
+  profile()->GetPrefs()->SetString(prefs::kPasswordProtectionChangePasswordURL,
+                                   "https://mydomain.com/change_password.html");
+  EXPECT_TRUE(service_->IsURLWhitelistedForPasswordEntry(
+      GURL("https://mydomain.com/change_password.html#ref?user_name=alice"),
+      &reason));
+  EXPECT_EQ(PasswordProtectionService::MATCHED_ENTERPRISE_CHANGE_PASSWORD_URL,
+            reason);
+
+  // Verify if matches enterprise login url.
+  profile()->GetPrefs()->ClearPref(prefs::kSafeBrowsingWhitelistDomains);
+  profile()->GetPrefs()->ClearPref(prefs::kPasswordProtectionChangePasswordURL);
+  reason = PasswordProtectionService::UNKNOWN;
+  EXPECT_FALSE(service_->IsURLWhitelistedForPasswordEntry(
+      GURL("https://www.mydomain.com"), &reason));
+  EXPECT_EQ(PasswordProtectionService::UNKNOWN, reason);
+  base::ListValue login_urls;
+  login_urls.AppendString("https://mydomain.com/login.html");
+  profile()->GetPrefs()->Set(prefs::kPasswordProtectionLoginURLs, login_urls);
+  EXPECT_TRUE(service_->IsURLWhitelistedForPasswordEntry(
+      GURL("https://mydomain.com/login.html#ref?user_name=alice"), &reason));
+  EXPECT_EQ(PasswordProtectionService::MATCHED_ENTERPRISE_LOGIN_URL, reason);
+}
+
 TEST_F(ChromePasswordProtectionServiceTest, VerifyGetSyncAccountType) {
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfile(profile());

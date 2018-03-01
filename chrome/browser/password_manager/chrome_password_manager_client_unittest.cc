@@ -129,6 +129,8 @@ class MockPasswordProtectionService
       safe_browsing::PasswordProtectionTrigger(const std::string& pref_name));
   MOCK_CONST_METHOD1(GetPasswordProtectionLoginURLsPref,
                      void(std::vector<GURL>*));
+  MOCK_CONST_METHOD2(IsURLWhitelistedForPasswordEntry,
+                     bool(const GURL&, RequestOutcome*));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockPasswordProtectionService);

@@ -672,7 +672,7 @@ void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(
 
     if (!url_loader_throttle_used) {
       first_throttle = MaybeCreateSafeBrowsingResourceThrottle(
-          request, resource_type, safe_browsing_.get());
+          request, resource_type, safe_browsing_.get(), io_data);
     }
   }
 #endif  // defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)

@@ -1458,8 +1458,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DeveloperToolsDisabledExtensionsDevMode_MD) {
 
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_TRUE(
-      content::ExecuteScript(contents, base::StringPrintf(define_helpers_js)));
+  EXPECT_TRUE(content::ExecuteScript(contents, std::string(define_helpers_js)));
 
   EXPECT_TRUE(content::ExecuteScript(
       contents, base::StringPrintf("domAutomationController.send(%s.click());",
@@ -4033,13 +4032,10 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, PasswordProtectionLoginURLs) {
   // Without setting up the enterprise policy,
   // |GetPasswordProtectionLoginURLsPref(..) should return empty list.
   const PrefService* const prefs = browser()->profile()->GetPrefs();
-  const safe_browsing::ChromePasswordProtectionService* const service =
-      safe_browsing::ChromePasswordProtectionService::
-          GetPasswordProtectionService(browser()->profile());
   EXPECT_FALSE(
       prefs->FindPreference(prefs::kPasswordProtectionLoginURLs)->IsManaged());
   std::vector<GURL> login_urls;
-  service->GetPasswordProtectionLoginURLsPref(&login_urls);
+  safe_browsing::GetPasswordProtectionLoginURLsPref(*prefs, &login_urls);
   EXPECT_TRUE(login_urls.empty());
 
   // Add 2 login URLs to this enterprise policy .
@@ -4053,7 +4049,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, PasswordProtectionLoginURLs) {
   UpdateProviderPolicy(policies);
   EXPECT_TRUE(
       prefs->FindPreference(prefs::kPasswordProtectionLoginURLs)->IsManaged());
-  service->GetPasswordProtectionLoginURLsPref(&login_urls);
+  safe_browsing::GetPasswordProtectionLoginURLsPref(*prefs, &login_urls);
   EXPECT_EQ(2u, login_urls.size());
   EXPECT_EQ(GURL("https://login.mydomain.com"), login_urls[0]);
   EXPECT_EQ(GURL("https://mydomian.com/login.html"), login_urls[1]);
@@ -4069,7 +4065,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, PasswordProtectionLoginURLs) {
   EXPECT_TRUE(
       prefs->FindPreference(prefs::kPasswordProtectionLoginURLs)->IsManaged());
   login_urls.clear();
-  service->GetPasswordProtectionLoginURLsPref(&login_urls);
+  safe_browsing::GetPasswordProtectionLoginURLsPref(*prefs, &login_urls);
   EXPECT_TRUE(login_urls.empty());
 }
 

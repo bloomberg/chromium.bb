@@ -13,6 +13,7 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace safe_browsing {
 
@@ -29,6 +30,9 @@ class SafeBrowsingPrefsTest : public ::testing::Test {
         prefs::kSafeBrowsingSawInterstitialExtendedReporting, false);
     prefs_.registry()->RegisterBooleanPref(
         prefs::kSafeBrowsingSawInterstitialScoutReporting, false);
+    prefs_.registry()->RegisterStringPref(
+        prefs::kPasswordProtectionChangePasswordURL, "");
+    prefs_.registry()->RegisterListPref(prefs::kPasswordProtectionLoginURLs);
 
     ResetExperiments(/*can_show_scout=*/false);
   }
@@ -350,4 +354,36 @@ TEST_F(SafeBrowsingPrefsTest, GetSafeBrowsingExtendedReportingLevel) {
   EXPECT_EQ(SBER_LEVEL_SCOUT, GetExtendedReportingLevel(prefs_));
 }
 
+TEST_F(SafeBrowsingPrefsTest, VerifyIsPasswordProtectionLoginURL) {
+  GURL url("https://mydomain.com/login.html#ref?username=alice");
+  EXPECT_FALSE(prefs_.HasPrefPath(prefs::kPasswordProtectionLoginURLs));
+  EXPECT_FALSE(MatchesPasswordProtectionLoginURL(url, prefs_));
+
+  base::ListValue login_urls;
+  login_urls.AppendString("https://otherdomain.com/login.html");
+  prefs_.Set(prefs::kPasswordProtectionLoginURLs, login_urls);
+  EXPECT_TRUE(prefs_.HasPrefPath(prefs::kPasswordProtectionLoginURLs));
+  EXPECT_FALSE(MatchesPasswordProtectionLoginURL(url, prefs_));
+
+  login_urls.AppendString("https://mydomain.com/login.html");
+  prefs_.Set(prefs::kPasswordProtectionLoginURLs, login_urls);
+  EXPECT_TRUE(prefs_.HasPrefPath(prefs::kPasswordProtectionLoginURLs));
+  EXPECT_TRUE(MatchesPasswordProtectionLoginURL(url, prefs_));
+}
+
+TEST_F(SafeBrowsingPrefsTest, VerifyIsPasswordProtectionChangePasswordURL) {
+  GURL url("https://mydomain.com/change_password.html#ref?username=alice");
+  EXPECT_FALSE(prefs_.HasPrefPath(prefs::kPasswordProtectionChangePasswordURL));
+  EXPECT_FALSE(MatchesPasswordProtectionChangePasswordURL(url, prefs_));
+
+  prefs_.SetString(prefs::kPasswordProtectionChangePasswordURL,
+                   "https://otherdomain.com/change_password.html");
+  EXPECT_TRUE(prefs_.HasPrefPath(prefs::kPasswordProtectionChangePasswordURL));
+  EXPECT_FALSE(MatchesPasswordProtectionChangePasswordURL(url, prefs_));
+
+  prefs_.SetString(prefs::kPasswordProtectionChangePasswordURL,
+                   "https://mydomain.com/change_password.html");
+  EXPECT_TRUE(prefs_.HasPrefPath(prefs::kPasswordProtectionChangePasswordURL));
+  EXPECT_TRUE(MatchesPasswordProtectionChangePasswordURL(url, prefs_));
+}
 }  // namespace safe_browsing

@@ -75,6 +75,9 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
     DISABLED_DUE_TO_FEATURE_DISABLED = 12,
     DISABLED_DUE_TO_USER_POPULATION = 13,
     URL_NOT_VALID_FOR_REPUTATION_COMPUTING = 14,
+    MATCHED_ENTERPRISE_WHITELIST = 15,
+    MATCHED_ENTERPRISE_CHANGE_PASSWORD_URL = 16,
+    MATCHED_ENTERPRISE_LOGIN_URL = 17,
     MAX_OUTCOME
   };
 
@@ -231,9 +234,12 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   virtual PasswordProtectionTrigger GetPasswordProtectionTriggerPref(
       const std::string& pref_name) const = 0;
 
-  // Return the pref value of password protection login URLs.
-  virtual void GetPasswordProtectionLoginURLsPref(
-      std::vector<GURL>* out_login_url_list) const = 0;
+  // If |url| matches Safe Browsing whitelist domains, password protection
+  // change password URL, or password protection login URLs in the enterprise
+  // policy.
+  virtual bool IsURLWhitelistedForPasswordEntry(
+      const GURL& url,
+      RequestOutcome* reason) const = 0;
 
  protected:
   friend class PasswordProtectionRequest;

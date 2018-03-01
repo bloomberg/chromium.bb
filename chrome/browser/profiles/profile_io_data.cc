@@ -1437,6 +1437,7 @@ void ProfileIOData::ShutdownOnUIThread(
   allowed_domains_for_apps_.Destroy();
   enable_metrics_.Destroy();
   safe_browsing_enabled_.Destroy();
+  safe_browsing_whitelist_domains_.Destroy();
   network_prediction_options_.Destroy();
   if (ct_policy_manager_)
     ct_policy_manager_->Shutdown();

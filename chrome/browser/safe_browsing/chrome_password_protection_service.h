@@ -129,15 +129,15 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   PasswordProtectionTrigger GetPasswordProtectionTriggerPref(
       const std::string& pref_name) const override;
 
-  // Returns the pref value of password protection login URLs.
-  // If password protection login URLs are not managed by enterprise policy,
-  // this function should return an empty list.
-  void GetPasswordProtectionLoginURLsPref(
-      std::vector<GURL>* out_login_url_list) const override;
-
   // If change password URL is specified in preference, gets the pref value,
   // otherwise, gets the GAIA change password URL based on |account_info_|.
   GURL GetChangePasswordURL() const;
+
+  // If |url| matches Safe Browsing whitelist domains, password protection
+  // change password URL, or password protection login URLs in the enterprise
+  // policy.
+  bool IsURLWhitelistedForPasswordEntry(const GURL& url,
+                                        RequestOutcome* reason) const override;
 
  protected:
   // PasswordProtectionService overrides.
