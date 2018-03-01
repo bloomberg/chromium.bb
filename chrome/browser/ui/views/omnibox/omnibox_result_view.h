@@ -13,6 +13,7 @@
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/suggestion_answer.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/window_open_disposition.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/font_list.h"
@@ -27,6 +28,8 @@ class Canvas;
 class Image;
 class RenderText;
 }
+
+class OmniboxTabSwitchButton;
 
 class OmniboxResultView : public views::View,
                           private gfx::AnimationDelegate {
@@ -75,6 +78,9 @@ class OmniboxResultView : public views::View,
 
   // Stores the image in a local data member and schedules a repaint.
   void SetAnswerImage(const gfx::ImageSkia& image);
+
+  // Allow other classes to trigger navigation.
+  void OpenMatch(WindowOpenDisposition disposition);
 
   // views::View:
   bool OnMousePressed(const ui::MouseEvent& event) override;
@@ -207,6 +213,7 @@ class OmniboxResultView : public views::View,
 
   gfx::Rect keyword_text_bounds_;
   std::unique_ptr<views::ImageView> keyword_icon_;
+  std::unique_ptr<OmniboxTabSwitchButton> tab_switch_button_;
 
   std::unique_ptr<gfx::SlideAnimation> animation_;
 

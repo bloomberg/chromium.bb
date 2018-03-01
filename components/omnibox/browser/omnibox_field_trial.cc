@@ -52,11 +52,10 @@ const base::Feature kOmniboxRichEntitySuggestions{
 const base::Feature kOmniboxTailSuggestions{
     "OmniboxTailSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Feature used to enable the identification of open tabs given URLs in
-// suggestions, and converting those suggestions to ones that allow switching to
-// the tab if found.  Currently only on the desktop.
-const base::Feature kOmniboxTabSwitchSuggestions{
-    "OmniboxTabSwitchSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
+const char kOmniboxTabSwitchSuggestionsFlag[] =
+    "omnibox-tab-switch-suggestions";
+
+const char kOmniboxTabSwitchWithButton[] = "with-button";
 
 // Feature used to enable clipboard provider, which provides the user with
 // suggestions of the URL in the user's clipboard (if any) upon omnibox focus.
@@ -778,6 +777,25 @@ int OmniboxFieldTrial::GetPhysicalWebAfterTypingBaseRelevance() {
   // Default relevance score of the first Physical Web URL autocomplete match
   // when the user is typing in the omnibox.
   return 700;
+}
+
+// static
+bool OmniboxFieldTrial::InTabSwitchSuggestionTrial() {
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  return command_line.HasSwitch(omnibox::kOmniboxTabSwitchSuggestionsFlag) &&
+         command_line.GetSwitchValueASCII(
+             omnibox::kOmniboxTabSwitchSuggestionsFlag) != "disabled";
+}
+
+// static
+bool OmniboxFieldTrial::InTabSwitchSuggestionWithButtonTrial() {
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  return command_line.HasSwitch(omnibox::kOmniboxTabSwitchSuggestionsFlag) &&
+         command_line.GetSwitchValueASCII(
+             omnibox::kOmniboxTabSwitchSuggestionsFlag) ==
+             omnibox::kOmniboxTabSwitchWithButton;
 }
 
 const char OmniboxFieldTrial::kBundledExperimentFieldTrialName[] =

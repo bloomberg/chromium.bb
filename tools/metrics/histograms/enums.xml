@@ -25621,6 +25621,7 @@ from previous Chrome versions.
   <int value="-1972312724" label="OfflinePagesLoadSignalCollecting:enabled"/>
   <int value="-1972219399" label="NTPSaveToOffline:enabled"/>
   <int value="-1971086581" label="print-scaling"/>
+  <int value="-1965587041" label="omnibox-tab-switch-suggestions"/>
   <int value="-1964261747" label="WebVrVsyncAlign:disabled"/>
   <int value="-1963427770" label="EmojiHandwritingVoiceInput:disabled"/>
   <int value="-1963402827" label="enable-topchrome-md"/>
