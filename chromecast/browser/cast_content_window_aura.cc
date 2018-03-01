@@ -4,37 +4,41 @@
 
 #include "chromecast/browser/cast_content_window_aura.h"
 
-#include "base/macros.h"
+#include <memory>
+
 #include "base/memory/ptr_util.h"
 #include "chromecast/graphics/cast_window_manager.h"
 #include "content/public/browser/web_contents.h"
-#include "ipc/ipc_message.h"
 #include "ui/aura/window.h"
-#include "ui/display/display.h"
-#include "ui/display/screen.h"
 
 namespace chromecast {
 namespace shell {
 
 // static
 std::unique_ptr<CastContentWindow> CastContentWindow::Create(
-    CastContentWindow::Delegate* delegate,
-    bool is_headless,
-    bool enable_touch_input) {
-  DCHECK(delegate);
+    CastContentWindow::Delegate* /* delegate */,
+    bool /* is_headless */,
+    bool /* enable_touch_input */) {
   return base::WrapUnique(new CastContentWindowAura());
 }
 
-CastContentWindowAura::CastContentWindowAura() {}
-CastContentWindowAura::~CastContentWindowAura() {}
+CastContentWindowAura::CastContentWindowAura() = default;
+CastContentWindowAura::~CastContentWindowAura() = default;
 
-void CastContentWindowAura::ShowWebContents(content::WebContents* web_contents,
-                                            CastWindowManager* window_manager) {
+void CastContentWindowAura::CreateWindowForWebContents(
+    content::WebContents* web_contents,
+    CastWindowManager* window_manager,
+    bool is_visible) {
+  DCHECK(web_contents);
   DCHECK(window_manager);
   gfx::NativeView window = web_contents->GetNativeView();
   window_manager->SetWindowId(window, CastWindowManager::APP);
   window_manager->AddWindow(window);
-  window->Show();
+  if (is_visible) {
+    window->Show();
+  } else {
+    window->Hide();
+  }
 }
 
 }  // namespace shell

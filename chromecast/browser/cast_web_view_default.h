@@ -49,7 +49,8 @@ class CastWebViewDefault : public CastWebView,
   content::WebContents* web_contents() const override;
   void LoadUrl(GURL url) override;
   void ClosePage(const base::TimeDelta& shutdown_delay) override;
-  void Show(CastWindowManager* window_manager) override;
+  void CreateWindow(CastWindowManager* window_manager,
+                    bool is_visible) override;
 
  private:
   // WebContentsObserver implementation:

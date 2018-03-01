@@ -5,11 +5,8 @@
 #ifndef CHROMECAST_BROWSER_CAST_CONTENT_WINDOW_AURA_H_
 #define CHROMECAST_BROWSER_CAST_CONTENT_WINDOW_AURA_H_
 
-#include <memory>
-
 #include "base/macros.h"
 #include "chromecast/browser/cast_content_window.h"
-#include "ui/events/keycodes/keyboard_codes.h"
 
 namespace content {
 class WebContents;
@@ -23,8 +20,9 @@ class CastContentWindowAura : public CastContentWindow {
   ~CastContentWindowAura() override;
 
   // CastContentWindow implementation.
-  void ShowWebContents(content::WebContents* web_contents,
-                       CastWindowManager* window_manager) override;
+  void CreateWindowForWebContents(content::WebContents* web_contents,
+                                  CastWindowManager* window_manager,
+                                  bool is_visible) override;
 
  private:
   friend class CastContentWindow;

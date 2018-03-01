@@ -6,6 +6,7 @@
 #define CHROMECAST_BROWSER_CAST_WEB_VIEW_H_
 
 #include <cstdint>
+#include <string>
 
 #include "base/strings/string16.h"
 #include "base/time/time.h"
@@ -84,8 +85,10 @@ class CastWebView {
   // |shutdown_delay| has elapsed, or sooner if required.
   virtual void ClosePage(const base::TimeDelta& shutdown_delay) = 0;
 
-  // Makes the page visible to the user.
-  virtual void Show(CastWindowManager* window_manager) = 0;
+  // Adds the page to the window manager and makes it visible to the user if
+  // |is_visible| is true.
+  virtual void CreateWindow(CastWindowManager* window_manager,
+                            bool is_visible) = 0;
 };
 
 }  // namespace chromecast

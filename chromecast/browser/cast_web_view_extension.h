@@ -5,6 +5,8 @@
 #ifndef CHROMECAST_BROWSER_CAST_WEB_VIEW_EXTENSION_H_
 #define CHROMECAST_BROWSER_CAST_WEB_VIEW_EXTENSION_H_
 
+#include <memory>
+
 #include "chromecast/browser/cast_web_view.h"
 #include "content/public/browser/media_capture_devices.h"
 #include "content/public/browser/navigation_handle.h"
@@ -47,7 +49,8 @@ class CastWebViewExtension : public CastWebView, content::WebContentsObserver {
   // CastWebView implementation:
   void LoadUrl(GURL url) override;
   void ClosePage(const base::TimeDelta& shutdown_delay) override;
-  void Show(CastWindowManager* window_manager) override;
+  void CreateWindow(CastWindowManager* window_manager,
+                    bool is_visible) override;
 
  private:
   // WebContentsObserver implementation:
