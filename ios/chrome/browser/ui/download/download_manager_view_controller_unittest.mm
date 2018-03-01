@@ -32,6 +32,8 @@ TEST_F(DownloadManagerViewControllerTest, NotStartedWithLongFileName) {
               view_controller_.statusLabel.text);
   EXPECT_NSEQ(@"Download", [view_controller_.actionButton
                                titleForState:UIControlStateNormal]);
+  EXPECT_NSEQ([UIImage imageNamed:kDownloadManagerNotStartedImage],
+              view_controller_.statusIcon.image);
 }
 
 // Tests label and button titles with kDownloadManagerStateNotStarted state
@@ -45,6 +47,8 @@ TEST_F(DownloadManagerViewControllerTest,
   EXPECT_NSEQ(@"file.zip - 1.05 GB", view_controller_.statusLabel.text);
   EXPECT_NSEQ(@"Download", [view_controller_.actionButton
                                titleForState:UIControlStateNormal]);
+  EXPECT_NSEQ([UIImage imageNamed:kDownloadManagerNotStartedImage],
+              view_controller_.statusIcon.image);
 }
 
 // Tests label and button hidden state with kDownloadManagerStateInProgress
@@ -56,6 +60,8 @@ TEST_F(DownloadManagerViewControllerTest, InProgressWithLongFileName) {
 
   EXPECT_NSEQ(@"Downloading… Zero KB/10 KB", view_controller_.statusLabel.text);
   EXPECT_TRUE(view_controller_.actionButton.hidden);
+  EXPECT_NSEQ([UIImage imageNamed:kDownloadManagerInProgressImage],
+              view_controller_.statusIcon.image);
 }
 
 // Tests label and button hidden state with kDownloadManagerStateInProgress
@@ -69,6 +75,8 @@ TEST_F(DownloadManagerViewControllerTest,
 
   EXPECT_NSEQ(@"Downloading… 900 bytes", view_controller_.statusLabel.text);
   EXPECT_TRUE(view_controller_.actionButton.hidden);
+  EXPECT_NSEQ([UIImage imageNamed:kDownloadManagerInProgressImage],
+              view_controller_.statusIcon.image);
 }
 
 // Tests label and button titles with kDownloadManagerStateSuceeded state.
@@ -80,6 +88,8 @@ TEST_F(DownloadManagerViewControllerTest, SuceededWithWithLongFileName) {
   EXPECT_NSEQ(@"file.txt", view_controller_.statusLabel.text);
   EXPECT_NSEQ(@"Open in…", [view_controller_.actionButton
                                titleForState:UIControlStateNormal]);
+  EXPECT_NSEQ([UIImage imageNamed:kDownloadManagerSucceededImage],
+              view_controller_.statusIcon.image);
 }
 
 // Tests label and button titles with kDownloadManagerStateFailed state.
@@ -91,6 +101,8 @@ TEST_F(DownloadManagerViewControllerTest, Failed) {
   EXPECT_NSEQ(@"Couldn't Download", view_controller_.statusLabel.text);
   EXPECT_NSEQ(@"Try Again", [view_controller_.actionButton
                                 titleForState:UIControlStateNormal]);
+  EXPECT_NSEQ([UIImage imageNamed:kDownloadManagerFailedImage],
+              view_controller_.statusIcon.image);
 }
 
 // Tests that tapping close button calls downloadManagerViewControllerDidClose:.

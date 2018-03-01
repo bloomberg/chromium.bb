@@ -9,6 +9,12 @@
 
 #import "ios/chrome/browser/ui/download/download_manager_consumer.h"
 
+// Image names for different download states.
+extern NSString* const kDownloadManagerNotStartedImage;
+extern NSString* const kDownloadManagerInProgressImage;
+extern NSString* const kDownloadManagerSucceededImage;
+extern NSString* const kDownloadManagerFailedImage;
+
 @class DownloadManagerViewController;
 
 @protocol DownloadManagerViewControllerDelegate<NSObject>
@@ -46,6 +52,9 @@
 
 // Button to dismiss the download toolbar.
 @property(nonatomic, readonly) UIButton* closeButton;
+
+// Icon that represents the current download status.
+@property(nonatomic, readonly) UIImageView* statusIcon;
 
 // Label that describes the current download status.
 @property(nonatomic, readonly) UILabel* statusLabel;
