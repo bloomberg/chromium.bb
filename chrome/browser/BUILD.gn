@@ -2968,6 +2968,8 @@ jumbo_split_static_library("browser") {
         "conflicts/problematic_programs_updater_win.h",
         "conflicts/third_party_conflicts_manager_win.cc",
         "conflicts/third_party_conflicts_manager_win.h",
+        "conflicts/uninstall_application_win.cc",
+        "conflicts/uninstall_application_win.h",
         "google/google_update_win.cc",
         "google/google_update_win.h",
       ]
