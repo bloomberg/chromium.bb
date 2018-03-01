@@ -4,11 +4,9 @@ accessibility/insert-adjacent-html-causes-crash.xhtml
 animations/animation-shorthand-overriding.html
 animations/stability/empty-keyframes.html
 animations/interpolation/border-image-slice-interpolation-stability.html
-animations/responsive/offset-rotate-responsive.html
+animations/responsive/interpolation/offset-rotate-responsive.html
 animations/svg-attribute-composition/svg-bias-composition.html
 animations/svg-attribute-interpolation/svg-numOctaves-interpolation.html
-bluetooth/idl/idl-NavigatorBluetooth.html
-bluetooth/requestDevice/canonicalizeFilter/no-arguments.html
 compositing/animation/animated-composited-inside-hidden.html
 compositing/animation/animation-compositing.html
 compositing/animation/computed-style-during-delay.html
@@ -67,7 +65,7 @@ css3/selectors3/xml/css3-modsel-61.xml
 css3/style-zoomed-image.html
 css3/supports-crash.html
 cssom/cssimportrule-media.html
-css-parser/at-rule-in-declaration-list.html
+css-parser/color-escape-parsing.html
 css-parser/font-size-adjust.html
 custom-elements/array-squat-crash.html
 custom-elements/imports/upgrade-order.html
@@ -112,7 +110,7 @@ editing/pasteboard/paste-line-endings-004.html
 editing/pasteboard/paste-line-endings-005.html
 editing/pasteboard/paste-text-016.html
 editing/pasteboard/pasting-empty-html-falls-back-to-text.html
-editing/selection/3690719.html
+editing/selection/select_all/select_all_in_contenteditable.html
 editing/selection/4402375.html
 editing/selection/5794920-1.html
 editing/selection/6476.html
@@ -134,6 +132,8 @@ editing/style/query-typing-style.html
 editing/style/stylewithcss-without-selection.html
 editing/undo/5738768.html
 editing/undo/orphaned-selection-crash-bug32823-3.html
+external/wpt/bluetooth/idl/idl-NavigatorBluetooth.html
+external/wpt/bluetooth/requestDevice/canonicalizeFilter/no-arguments.https.html
 external/wpt/content-security-policy/connect-src/connect-src-beacon-blocked.sub.html
 external/wpt/content-security-policy/font-src/font-match-allowed.sub.html
 external/wpt/content-security-policy/font-src/font-none-blocked.sub.html
@@ -152,6 +152,7 @@ external/wpt/css/css-align/default-alignment/place-items-shorthand-001.html
 external/wpt/css/css-display/display-contents-computed-style.html
 external/wpt/css/css-grid/grid-definition/grid-template-columns-rows-resolved-values-001.xht
 external/wpt/css/css-grid/grid-layout-properties.html
+external/wpt/css/css-grid/grid-model/grid-item-accepts-first-line-001.html
 external/wpt/css/css-grid/grid-model/grid-support-display-001.xht
 external/wpt/css/cssom/cssom-cssText-serialize.html
 external/wpt/css/cssom/medialist-interfaces-004.html
@@ -164,6 +165,8 @@ external/wpt/css/css-timing/frames-timing-functions-syntax.html
 external/wpt/css/css-timing/step-timing-functions-output.html
 external/wpt/css/css-typed-om/CSSMatrixComponent-DOMMatrix-mutable.html
 external/wpt/css/css-typed-om/declared-styleMap-accepts-inherit.html
+external/wpt/css/css-typed-om/stylevalue-subclasses/cssKeywordValue.html
+external/wpt/css/css-typed-om/the-stylepropertymap/properties/border-style.html
 external/wpt/custom-elements/HTMLElement-constructor.html
 external/wpt/custom-elements/parser/parser-constructs-custom-element-in-document-write.html
 external/wpt/custom-elements/parser/parser-constructs-custom-elements.html
@@ -231,11 +234,14 @@ external/wpt/html/semantics/document-metadata/the-title-element/title.text-02.xh
 external/wpt/html/semantics/edits/the-del-element/del_effect.html
 external/wpt/html/semantics/edits/the-ins-element/ins_effect.html
 external/wpt/html/semantics/embedded-content/media-elements/interfaces/TextTrackCue/onexit.html
+external/wpt/html/semantics/embedded-content/media-elements/interfaces/TextTrackList/onremovetrack.html
 external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-insert-source-in-div.html
+external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-css-cue-pseudo-class.html
 external/wpt/html/semantics/forms/textfieldselection/selection-not-application.html
 external/wpt/html/semantics/forms/textfieldselection/selection-not-application-textarea.html
 external/wpt/html/semantics/grouping-content/the-ol-element/ol.start-reflection-1.html
 external/wpt/html/semantics/interactive-elements/the-details-element/toggleEvent.html
+external/wpt/html/semantics/interactive-elements/the-dialog-element/dialog-enabled.html
 external/wpt/html/semantics/links/links-created-by-a-and-area-elements/htmlanchorelement_getter.html
 external/wpt/html/semantics/scripting-1/the-script-element/scripting-enabled.html
 external/wpt/html/semantics/scripting-1/the-script-element/script-noembed-noframes-iframe.xhtml
@@ -258,6 +264,7 @@ external/wpt/html/webappapis/timers/type-long-settimeout.html
 external/wpt/infrastructure/failing-test.html
 external/wpt/innerText/setter.html
 external/wpt/input-events/idlharness.html
+external/wpt/input-events/input-events-typing-data-manual.html
 external/wpt/media-capabilities/decodingInfo.html
 external/wpt/mediacapture-record/BlobEvent-constructor.html
 external/wpt/mediacapture-streams/MediaStream-idl.https.html
@@ -311,6 +318,11 @@ external/wpt/web-animations/timing-model/animation-effects/active-time.html
 external/wpt/web-animations/timing-model/animations/finishing-an-animation.html
 external/wpt/web-animations/timing-model/animations/set-the-animation-start-time.html
 external/wpt/web-animations/timing-model/time-transformations/transformed-progress.html
+external/wpt/webaudio/the-audio-api/the-constantsourcenode-interface/constant-source-onended.html
+external/wpt/webaudio/the-audio-api/the-delaynode-interface/delaynode-scheduling.html
+external/wpt/webaudio/the-audio-api/the-iirfilternode-interface/iirfilter-getFrequencyResponse.html
+external/wpt/webaudio/the-audio-api/the-pannernode-interface/distance-linear.html
+external/wpt/webaudio/the-audio-api/the-pannernode-interface/panner-equalpower-stereo.html
 external/wpt/WebIDL/ecmascript-binding/es-exceptions/constructor-object.html
 external/wpt/WebIDL/ecmascript-binding/interface-object.html
 external/wpt/webmessaging/broadcastchannel/basics.html
@@ -323,11 +335,14 @@ external/wpt/webmessaging/without-ports/006.html
 external/wpt/webmessaging/without-ports/013.html
 external/wpt/webmessaging/with-ports/002.html
 external/wpt/webmessaging/with-ports/014.html
+external/wpt/webrtc/RTCPeerConnection-createAnswer.html
 external/wpt/webrtc/RTCPeerConnectionIceEvent-constructor.html
 external/wpt/webrtc/rtcpeerconnection/iceGatheringState.html
 external/wpt/webrtc/simplecall.html
+external/wpt/webstorage/storage_enumerate.html
 external/wpt/webstorage/storage_key.html
 external/wpt/webstorage/storage_length.html
+external/wpt/webusb/usbIsochronousInTransferResult.https.html
 external/wpt/webvtt/api/VTTCue/size.html
 external/wpt/webvtt/api/VTTRegion/constructor.html
 external/wpt/webvtt/api/VTTRegion/regionAnchorX.html
@@ -387,17 +402,19 @@ fast/box-sizing/css-table-collapse.html
 fast/box-sizing/table-no-collapse.html
 fast/canvas/alpha.html
 fast/canvas/canvas-set-font-with-updated-style.html
-fast/canvas/color-space/imageData-colorSpace.html
+fast/canvas/bug535171.html
+fast/canvas/canvas-hides-fallback.html
 fast/canvas/feimage-with-foreignobject-taint-canvas-2.html
 fast/canvas/imagebitmap/transferFromImageBitmap-drawImage.html
-fast/canvas/unclosed-canvas-2.html
-fast/canvas/webgl/canvas-getContext-crash.html
+fast/canvas/script-inside-canvas-fallback.html
+fast/canvas-api/unclosed-canvas-1.html
+fast/canvas-api/unclosed-canvas-2.html
 fast/constructors/blob-sparse-array-assertion-failure.html
 fast/constructors/constructor-as-function-crash.html
 fast/cpu/hardware-concurrency.html
 fast/css3-text/css3-text-align-last/getComputedStyle/getComputedStyle-text-align-last-inherited.html
 fast/css3-text/css3-text-decoration/getComputedStyle/getComputedStyle-text-decoration-line.html
-fast/css3-text/css3-text-decoration/text-decoration-skip.html
+fast/css3-text/css3-text-decoration/text-decoration-skip-ink-css-support.html
 fast/css3-text/css3-text-decoration/text-decoration-style.html
 fast/css3-text/css3-text-decoration/text-decoration-style-inherit.html
 fast/css3-text/css3-text-decoration/text-decoration-style-inherit-links.html
@@ -405,8 +422,6 @@ fast/css3-text/css3-text-decoration/text-decoration-style-inherit-not-propagated
 fast/css3-text/css3-text-decoration/text-decoration-style-inherit-simple-underlines.html
 fast/css3-text/css3-text-indent/text-indent-leading-out-of-flow.html
 fast/css3-text/css3-word-break/word-break-all-rtl.html
-fast/css/atapply/at-apply-invalid-syntax.html
-fast/css/atapply/at-apply-variable-references.html
 fast/css/child-style-can-override-visited-style.html
 fast/css/clip-zooming.html
 fast/css/compare-content-style.html
@@ -423,7 +438,6 @@ fast/css-generated-content/bug-106384.html
 fast/css-generated-content/table-with-scrollbar-corner.html
 fast/css/getComputedStyle/getComputedStyle-margin-percentage.html
 fast/css-grid-layout/grid-item-before-anonymous-child-crash.html
-fast/css-grid-layout/grid-item-first-line-valid.html
 fast/css/image-orientation/image-orientation.html
 fast/css-intrinsic-dimensions/tables.html
 fast/css-intrinsic-dimensions/width-shrinks-avoid-floats.html
@@ -495,7 +509,7 @@ fast/dom/TreeWalker/TreeWalker-currentNode.html
 fast/domurl/url-pathname.html
 fast/dom/Window/alert-undefined.html
 fast/dom/Window/window-remove-event-listener.html
-fast/dom/Window/window-scaled-viewport-properties.html
+fast/dom/viewport/viewport-scale-inert.html
 fast/dynamic/5872671.html
 fast/encoding/api/sharedarraybuffer.html
 fast/encoding/css-charset-evil/css-charset-evil.html
@@ -505,7 +519,6 @@ fast/events/constructors/gamepad-event-constructor.html
 fast/events/constructors/page-transition-event-constructor.html
 fast/events/event-fired-after-removal.html
 fast/events/focus-remove-focuesed-node.html
-fast/events/inputevents/inputevent-data-keyboard.html
 fast/eventsource/eventsource-attribute-listeners.html
 fast/events/pointerevents/mouse-pointer-transition-events.html
 fast/events/reveal-link-when-focused.html
@@ -689,8 +702,6 @@ fast/pagination/first-letter-inherit-all-crash.html
 fast/pagination/very-tall-auto-height-crash.html
 fast/parser/broken-comment-4.html
 fast/peerconnection/RTCIceCandidate.html
-fast/peerconnection/RTCPeerConnection-createAnswer-promise.html
-fast/performance/performance-observer.html
 fast/plugins/keypress-event.html
 fast/plugins/plugin-without-layout-csp-error-crash.html
 fast/plugins/webview-plugin-updates-without-layout.html
@@ -707,11 +718,12 @@ fast/ruby/add-text-to-block-ruby-with-after-pseudo-crash.html
 fast/ruby/before-block-doesnt-crash.html
 fast/ruby/parse-rp.html
 fast/scroll-behavior/scroll-customization/scrollstate-consume-deltas-throw.html
+fast/scrolling/scroll-without-document-element-renderer.html
 fast/scrolling/scrollable-area-overflow-auto-display-none.html
+fast/scrolling/scrollable-area-overflow-auto-display-none-in-parent.html
 fast/scrolling/scrollable-area-overflow-not-set.html
 fast/selectors/018.html
 fast/selectors/061.html
-fast/selectors/style-sharing-adjacent-selector.html
 fast/serviceworker/serviceworkercontainer-interface.html
 fast/shapedetection/shapedetection-empty-input.html
 fast/shapes/crash-caused-by-dirtying-a-shape-while-computing-it-requires-a-long-filename-to-crash.html
@@ -748,6 +760,7 @@ fast/tokenizer/entities-04.html
 fast/tokenizer/external-script-document-open.html
 fast/url/invalid-urls-utf8.html
 fast/url/mailto.html
+fast/webgl/canvas-getContext-crash.html
 fast/workers/worker-sharedarraybuffer-transfer.html
 fast/workers/worker-terminate-forever.html
 fast/writing-mode/english-lr-text.html
@@ -762,7 +775,6 @@ fast/xsl/import-non-document-node.xhtml
 fast/xsl/xslt-doc-enc.xml
 fast/xsl/xslt-fragment-in-empty-doc.html
 fragmentation/margin-top-at-top-of-fragmentainer.html
-fullscreen/api/element-request-fullscreen-and-move.html
 fullscreen/full-screen-inline-split-crash.html
 fullscreen/full-screen-request-rejected.html
 geolocation-api/enabled.html
@@ -773,11 +785,9 @@ html5lib/generated/run-tests24-write.html
 html/details_summary/details-clone.html
 html/details_summary/details-element-render-inline-crash.html
 html/details_summary/details-summary-document-child.html
-html/dialog/dialog-enabled.html
 html/dialog/inert-label-focus.html
 html/grouping_content/figure-element.html
 html/marquee/marquee-inside-template-tag-crash.html
-html/menu_menuitem/menuitem-click.html
 html/sections/article-element.html
 html/sections/body-offset-properties.html
 html/tabular_data/tbody_insertrow_default_argument.html
@@ -797,6 +807,7 @@ http/tests/eventsource/existent-eventsource-status-error-iframe-crash.html
 http/tests/eventsource/workers/eventsource-simple.html
 http/tests/fetch/chromium/discarded-window.html
 http/tests/history/cross-origin-replace-history-object.html
+http/tests/htmlimports/csp-block-import.html
 http/tests/htmlimports/csp-not-block-import-in-import.html
 http/tests/linkHeader/link-header-no-crash-space-invalid.php
 http/tests/loading/remove-child-triggers-parser.html
@@ -811,7 +822,7 @@ http/tests/streams/chromium/get-reader-byob.html
 http/tests/uri/escaped-entity.html
 http/tests/uri/resolve-encoding-relative.html
 http/tests/uri/utf8-path.html
-http/tests/w3c/webperf/approved/navigation-timing/html/test_navigation_redirectCount_none.html
+http/tests/webaudio/audio-worklet/context-audio-worklet.html
 http/tests/websocket/bad-handshake-crash.html
 http/tests/websocket/compressed-control-frame.html
 http/tests/worklet/webexposed/global-interface-listing-paint-worklet.html
@@ -827,8 +838,6 @@ images/script-counter-imageDimensionChanged-crash.html
 images/size-failure.html
 images/style-access-during-imageChanged-crash.html
 images/text-content-crash.html
-media/track/opera/interfaces/TextTrackList/onremovetrack.html
-media/track/track-css-cue-pseudo-class.html
 media/video-error-does-not-exist.html
 media/W3C/video/preload/preload_reflects_none.html
 mhtml/mhtml_in_iframe.html
@@ -857,7 +866,7 @@ plugins/instance-available-before-stylesheets-loaded.html
 pointer-lock/lock-already-locked.html
 pointer-lock/mouse-event-api.html
 pointer-lock/pointerlockelement-null-when-pending.html
-presentation/presentationconnectionavailableevent-ctor.html
+presentation/presentationconnectionavailableevent-ctor-mock.html
 printing/css2.1/page-break-after-000.html
 printing/css2.1/page-break-before-001.html
 screen_orientation/screenorientation-api.html
@@ -882,7 +891,6 @@ storage/domstorage/localstorage/delete-removal.html
 storage/domstorage/localstorage/simple-usage.html
 storage/domstorage/localstorage/string-conversion.html
 storage/domstorage/sessionstorage/delete-removal.html
-storage/domstorage/sessionstorage/enumerate-storage.html
 storage/domstorage/window-attributes-exist.html
 storage/indexeddb/mozilla/create-objectstore-null-name.html
 storage/indexeddb/transaction-crash-in-tasks.html
@@ -958,25 +966,16 @@ transitions/transition-transform-translate-calculated-length-crash.html
 traversal/hixie-node-iterator/001.xml
 traversal/hixie-node-iterator/006.xml
 traversal/tree-walker-004.html
-typedcssom/computedstyle/computedStylePropertyMap.html
 typedcssom/computedstyle/left.html
-typedcssom/cssKeywordValue.html
 typedcssom/inlinestyle/inlineStylePropertyMap_getAll.html
-typedcssom/inlinestyle/properties/border-top-style.html
-usb/usb-isochronous-out-transfer-result.html
 vibration/vibration-page-visibility.html
-virtual/disable-spinvalidation/compositing/empty-render-surface-crasher.html
-virtual/disable-spinvalidation/paint/invalidation/compositing/should-not-repaint-composited-descendants.html
-virtual/display_list_2d_canvas/fast/canvas/bug535171.html
-virtual/display_list_2d_canvas/fast/canvas/canvas-hides-fallback.html
-virtual/display_list_2d_canvas/fast/canvas/feimage-with-foreignobject-taint-canvas-2.html
-virtual/display_list_2d_canvas/fast/canvas/script-inside-canvas-fallback.html
-virtual/display_list_2d_canvas/fast/canvas/unclosed-canvas-1.html
+virtual/color_space/fast/canvas/color-space/imageData-colorSpace.html
 virtual/gpu/fast/canvas/canvas-filter-frameless-document.html
 virtual/gpu/fast/canvas/feimage-with-foreignobject-taint-canvas-2.html
 virtual/gpu-rasterization/images/drag-image-descendant-painting-sibling.html
 virtual/layout_ng/fast/block/float/floats-not-cleared-crash.html
 virtual/layout_ng/fast/block/float/positioned-float-crash.html
+virtual/layout_ng/fast/block/margin-collapse/019.html
 
 # Include //media/OWNERS on review of changes to media-gpu-accelerated SmokeTests coverage.
 virtual/media-gpu-accelerated/media/video-autoplay.html
@@ -985,13 +984,8 @@ virtual/media-gpu-accelerated/external/wpt/media-source/mediasource-config-chang
 virtual/media-gpu-accelerated/external/wpt/media-source/mediasource-config-change-mp4-av-framesize.html
 virtual/media-gpu-accelerated/external/wpt/media-source/mediasource-config-change-mp4-v-framerate.html
 
-virtual/layout_ng/fast/block/margin-collapse/019.html
-virtual/mojo-loading/http/tests/htmlimports/csp-block-import.html
-external/wpt/webstorage/storage_enumerate.html
 virtual/prefer_compositing_to_lcd_text/scrollbars/custom-scroll-corner-crash.html
 virtual/prefer_compositing_to_lcd_text/scrollbars/viewport-scrollbar-corner-with-percent-padding-crash.html
-virtual/rootlayerscrolls/fast/scrolling/scrollable-area-overflow-auto-display-none-in-parent.html
-virtual/rootlayerscrolls/fast/scrolling/scroll-without-document-element-renderer.html
 virtual/stable/fast/css3-text/css3-text-decoration/stable/getComputedStyle-text-decoration.html
 virtual/stable/http/tests/navigation/location-assign-adds-history-item.html
 virtual/stable/http/tests/navigation/replacestate-base-legal.html
@@ -1007,7 +1001,6 @@ webaudio/AudioBufferSource/audiobuffersource-ended.html
 webaudio/AudioBufferSource/audiobuffersource-playbackrate-zero.html
 webaudio/AudioNode/channel-mode-interp-basic.html
 webaudio/AudioParam/audioparam-setValueCurve-duration.html
-webaudio/audioworklet/window-audioworklet.html
 webaudio/ChannelSplitter/audiochannelsplitter.html
 webaudio/codec-tests/flac/flac-decode.html
 webaudio/codec-tests/vorbis/vbr-128kbps-44khz.html
@@ -1015,18 +1008,12 @@ webaudio/codec-tests/vorbis/vbr-70kbps-44khz.html
 webaudio/codec-tests/vorbis/vbr-96kbps-44khz.html
 webaudio/codec-tests/wav/24bit-22khz-resample.html
 webaudio/codec-tests/wav/24bit-44khz.html
-webaudio/ConstantSource/constant-source-onended.html
-webaudio/Delay/delaynode-scheduling.html
-webaudio/IIRFilter/iirfilter-getFrequencyResponse.html
 webaudio/OfflineAudioContext/offlineaudiocontext-suspend-resume-sequence.html
 webaudio/Oscillator/oscillator-ended.html
-webaudio/Panner/distance-linear.html
-webaudio/Panner/panner-equalpower-stereo.html
 webaudio/PeriodicWave/periodicwave-contexts.html
 webaudio/PeriodicWave/periodicwave-exceptions.html
 webaudio/ScriptProcessor/scriptprocessornode-0-output-channels.html
 webaudio/ScriptProcessor/scriptprocessornode-downmix8-2channel-input.html
-webaudio/unit-tests/jstest-test.html
 webaudio/WaveShaper/waveshaper-364379.html
 webexposed/custom-elements.html
 webexposed/internal-properties-should-not-be-exposed.html
