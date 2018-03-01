@@ -129,7 +129,7 @@ Index | Running Total | Section@Address | ...
              flags={anon}  name=kSystemClassPrefixes
 15)  35941187 (46.2%) o@0x0        pss=33984171  padding=0  num_aliases=1
              source_path= 	object_path=
-             flags={}  name=ELF file overhead
+             flags={}  name=Overhead: ELF file
 16)  35941189 (46.2%) r@0x266e600  pss=2.5 (size=5)  padding=0  num_aliases=2
              source_path=base/page_allocator.cc 	object_path=base/base/page_allocator.o
              flags={}  name=string literal
@@ -311,7 +311,7 @@ Index | Running Total | Section@Address | ...
              flags={anon}  name=kSystemClassPrefixes
 15)  35941187 (46.2%) o@0x0        pss=33984171  padding=0  num_aliases=1
              source_path= 	object_path=
-             flags={}  name=ELF file overhead
+             flags={}  name=Overhead: ELF file
 16)  35941189 (46.2%) r@0x266e600  pss=2.5 (size=5)  padding=0  num_aliases=2
              source_path=base/page_allocator.cc 	object_path=base/base/page_allocator.o
              flags={}  name=string literal
