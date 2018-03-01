@@ -44175,6 +44175,7 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="61684939" label="omnibox_navigation_observer"/>
   <int value="62443804" label="webrtc_log_upload"/>
   <int value="63171670" label="navigation_url_loader"/>
+  <int value="63497370" label="webrtc_peer_connection"/>
   <int value="64733114" label="content_hash_verification_job"/>
   <int value="65442685" label="wifi_prefetch_sites_from_network"/>
   <int value="65957842" label="gcm_checkin"/>
