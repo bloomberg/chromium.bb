@@ -121,14 +121,32 @@ void av1_gen_inv_stage_range(int8_t *stage_range_col, int8_t *stage_range_row,
                              int bd) {
   const int fwd_shift = inv_start_range[tx_size];
   const int8_t *shift = cfg->shift;
+  int8_t opt_range_row, opt_range_col;
+  if (bd == 8) {
+    opt_range_row = 16;
+    opt_range_col = 16;
+  } else if (bd == 10) {
+    opt_range_row = 18;
+    opt_range_col = 16;
+  } else {
+    assert(bd == 12);
+    opt_range_row = 20;
+    opt_range_col = 18;
+  }
   // i < MAX_TXFM_STAGE_NUM will mute above array bounds warning
   for (int i = 0; i < cfg->stage_num_row && i < MAX_TXFM_STAGE_NUM; ++i) {
-    stage_range_row[i] = cfg->stage_range_row[i] + fwd_shift + bd + 1;
+    int real_range_row = cfg->stage_range_row[i] + fwd_shift + bd + 1;
+    (void)real_range_row;
+    // assert(opt_range_row >= real_range_row);
+    stage_range_row[i] = opt_range_row;
   }
   // i < MAX_TXFM_STAGE_NUM will mute above array bounds warning
   for (int i = 0; i < cfg->stage_num_col && i < MAX_TXFM_STAGE_NUM; ++i) {
-    stage_range_col[i] =
+    int real_range_col =
         cfg->stage_range_col[i] + fwd_shift + shift[0] + bd + 1;
+    (void)real_range_col;
+    // assert(opt_range_col >= real_range_col);
+    stage_range_col[i] = opt_range_col;
   }
 }
 
