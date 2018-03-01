@@ -42,6 +42,10 @@ struct CORE_EXPORT
   static Vector<SkBitmap> image_bitmap_contents_array(
       const blink::BlinkCloneableMessage& input);
 
+  static bool has_user_gesture(const blink::BlinkTransferableMessage& input) {
+    return input.has_user_gesture;
+  }
+
   static bool Read(blink::mojom::blink::TransferableMessage::DataView,
                    blink::BlinkTransferableMessage* out);
 };

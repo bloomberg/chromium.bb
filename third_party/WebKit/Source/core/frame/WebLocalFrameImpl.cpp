@@ -2378,8 +2378,20 @@ void WebLocalFrameImpl::IncreaseMatchCount(int count, int identifier) {
 
 void WebLocalFrameImpl::DispatchMessageEventWithOriginCheck(
     const WebSecurityOrigin& intended_target_origin,
-    const WebDOMEvent& event) {
+    const WebDOMEvent& event,
+    bool has_user_gesture) {
   DCHECK(!event.IsNull());
+
+  // If this postMessage was sent from another renderer process while having a
+  // user gesture, synthesize the user gesture in this process, and restrict it
+  // from being forwarded cross-process again.  This stops unbounded user
+  // gesture usage by chaining postMessages across multiple processes.
+  std::unique_ptr<UserGestureIndicator> gesture_indicator;
+  if (!RuntimeEnabledFeatures::UserActivationV2Enabled() && has_user_gesture) {
+    gesture_indicator = Frame::NotifyUserActivation(GetFrame());
+    UserGestureIndicator::SetWasForwardedCrossProcess();
+  }
+
   GetFrame()->DomWindow()->DispatchMessageEventWithOriginCheck(
       intended_target_origin.Get(), event,
       SourceLocation::Create(String(), 0, 0, nullptr));

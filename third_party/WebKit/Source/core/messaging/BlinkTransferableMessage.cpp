@@ -37,6 +37,7 @@ BlinkTransferableMessage ToBlinkTransferableMessage(
       std::make_pair(message.stack_trace_debugger_id_first,
                      message.stack_trace_debugger_id_second));
   result.ports.AppendRange(message.ports.begin(), message.ports.end());
+  result.has_user_gesture = message.has_user_gesture;
   return result;
 }
 
@@ -58,6 +59,7 @@ TransferableMessage ToTransferableMessage(BlinkTransferableMessage message) {
   result.stack_trace_debugger_id_second =
       message.sender_stack_trace_id.debugger_id.second;
   result.ports.assign(message.ports.begin(), message.ports.end());
+  result.has_user_gesture = message.has_user_gesture;
   return result;
 }
 
