@@ -115,13 +115,11 @@ RenderFrameProxyHost::~RenderFrameProxyHost() {
 
 void RenderFrameProxyHost::SetChildRWHView(
     RenderWidgetHostView* view,
-    const gfx::Rect* initial_frame_rect) {
+    const gfx::Size* initial_frame_size) {
   cross_process_frame_connector_->SetView(
       static_cast<RenderWidgetHostViewChildFrame*>(view));
-  if (initial_frame_rect) {
-    cross_process_frame_connector_->SetLocalFrameSize(
-        initial_frame_rect->size());
-  }
+  if (initial_frame_size)
+    cross_process_frame_connector_->SetLocalFrameSize(*initial_frame_size);
 }
 
 RenderViewHostImpl* RenderFrameProxyHost::GetRenderViewHost() {

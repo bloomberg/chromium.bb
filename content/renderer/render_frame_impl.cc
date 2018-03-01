@@ -4742,7 +4742,14 @@ void RenderFrameImpl::SaveImageFromDataURL(const blink::WebString& data_url) {
 }
 
 void RenderFrameImpl::FrameRectsChanged(const blink::WebRect& frame_rect) {
-  GetFrameHost()->FrameRectsChanged(frame_rect);
+  // To limit the number of IPCs, only notify the browser when the rect's size
+  // changes, not when the position changes. The size needs to be replicated if
+  // the iframe goes out-of-process.
+  gfx::Size frame_size(frame_rect.width, frame_rect.height);
+  if (!frame_size_ || *frame_size_ != frame_size) {
+    frame_size_ = frame_size;
+    GetFrameHost()->FrameSizeChanged(frame_size);
+  }
 }
 
 void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
