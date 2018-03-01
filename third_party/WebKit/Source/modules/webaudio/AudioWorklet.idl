@@ -5,7 +5,6 @@
 // https://webaudio.github.io/web-audio-api/#AudioWorklet
 
 [
-    OriginTrialEnabled=AudioWorklet,
     SecureContext
 ] interface AudioWorklet : Worklet {
 };

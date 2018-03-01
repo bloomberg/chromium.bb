@@ -105,8 +105,8 @@
     },
     {
       name: "AudioWorklet",
-      origin_trial_feature_name: "AudioWorklet",
-      status: "experimental",
+      depends_on: ["Worklet"],
+      status: "stable",
     },
     {
       name: "AutomationControlled",

@@ -165,6 +165,17 @@ interface AudioParam
     method setValueAtTime
     method setValueCurveAtTime
     setter value
+interface AudioParamMap
+    attribute @@toStringTag
+    getter size
+    method @@iterator
+    method constructor
+    method entries
+    method forEach
+    method get
+    method has
+    method keys
+    method values
 interface AudioProcessingEvent : Event
     attribute @@toStringTag
     getter inputBuffer
@@ -178,12 +189,19 @@ interface AudioScheduledSourceNode : AudioNode
     method start
     method stop
     setter onended
+interface AudioWorklet : Worklet
+    attribute @@toStringTag
+    method constructor
+interface AudioWorkletNode : AudioNode
+    attribute @@toStringTag
+    method constructor
 interface BarProp
     attribute @@toStringTag
     getter visible
     method constructor
 interface BaseAudioContext : EventTarget
     attribute @@toStringTag
+    getter audioWorklet
     getter currentTime
     getter destination
     getter listener

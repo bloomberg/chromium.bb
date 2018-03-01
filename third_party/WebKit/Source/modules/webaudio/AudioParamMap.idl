@@ -3,8 +3,7 @@
 // found in the LICENSE file.
 
 // https://webaudio.github.io/web-audio-api/#idl-def-AudioParamMap
-[
-  OriginTrialEnabled=AudioWorklet
-] interface AudioParamMap {
+
+interface AudioParamMap {
     readonly maplike<DOMString, AudioParam>;
 };
