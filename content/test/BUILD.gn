@@ -1691,7 +1691,7 @@ test("content_unittests") {
     "//device/gamepad",
     "//device/gamepad:test_helpers",
     "//device/gamepad/public/cpp:shared_with_blink",
-    "//device/geolocation",
+    "//device/geolocation/public/cpp:test_support",
     "//device/sensors/public/cpp:shared_with_blink",
     "//gin",
     "//gpu",
