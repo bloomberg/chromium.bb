@@ -351,7 +351,7 @@ gin::Handle<GinPort> NativeRendererMessagingService::CreatePort(
 
   gin::Handle<GinPort> port_handle = gin::CreateHandle(
       isolate,
-      new GinPort(port_id, routing_id, channel_name,
+      new GinPort(context, port_id, routing_id, channel_name,
                   bindings_system_->api_system()->event_handler(), this));
 
   v8::Local<v8::Object> port_object = port_handle.ToV8().As<v8::Object>();

@@ -329,7 +329,7 @@ TEST_F(NativeRendererMessagingServiceTest, Connect) {
 
   EXPECT_EQ(expected_port_id, new_port->port_id());
   EXPECT_EQ(kChannel, new_port->name());
-  EXPECT_FALSE(new_port->is_closed());
+  EXPECT_FALSE(new_port->is_closed_for_testing());
 }
 
 // Tests sending a one-time message through the messaging service. Note that
