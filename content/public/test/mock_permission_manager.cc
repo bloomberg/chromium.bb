@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/test/mock_permission_manager.h"
+#include "content/public/test/mock_permission_manager.h"
 
 #include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
 
