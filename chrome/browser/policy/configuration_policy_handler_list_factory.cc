@@ -420,9 +420,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kDisableSafeBrowsingProceedAnyway,
     prefs::kSafeBrowsingProceedAnywayDisabled,
     base::Value::Type::BOOLEAN },
-  { key::kSafeBrowsingExtendedReportingOptInAllowed,
-    prefs::kSafeBrowsingExtendedReportingOptInAllowed,
-    base::Value::Type::BOOLEAN },
   { key::kSSLErrorOverrideAllowed,
     prefs::kSSLErrorOverrideAllowed,
     base::Value::Type::BOOLEAN },
@@ -1059,6 +1056,22 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       prefs::kPolicyRegisteredProtocolHandlers, chrome_schema, SCHEMA_STRICT,
       SimpleSchemaValidatingPolicyHandler::RECOMMENDED_ALLOWED,
       SimpleSchemaValidatingPolicyHandler::MANDATORY_PROHIBITED));
+
+  // Here we are deprecating policy SafeBrowsingExtendedReportingOptInAllowed
+  // in favour of new policy for SafeBrowsingExtendedReportingEnabled.
+  std::vector<std::unique_ptr<ConfigurationPolicyHandler>> sber_legacy_policy;
+  sber_legacy_policy.push_back(std::make_unique<SimplePolicyHandler>(
+      key::kSafeBrowsingExtendedReportingOptInAllowed,
+      prefs::kSafeBrowsingExtendedReportingOptInAllowed,
+      base::Value::Type::BOOLEAN));
+  handlers->AddHandler(std::make_unique<LegacyPoliciesDeprecatingPolicyHandler>(
+      std::move(sber_legacy_policy),
+      base::WrapUnique(new SimpleSchemaValidatingPolicyHandler(
+          key::kSafeBrowsingExtendedReportingEnabled,
+          prefs::kSafeBrowsingScoutReportingEnabled, chrome_schema,
+          SCHEMA_STRICT,
+          SimpleSchemaValidatingPolicyHandler::RECOMMENDED_ALLOWED,
+          SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED))));
 #endif
 
 #if defined(OS_CHROMEOS)

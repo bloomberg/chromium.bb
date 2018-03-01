@@ -2021,6 +2021,7 @@
   },
 
   "SafeBrowsingExtendedReportingOptInAllowed": {
+    "note": "This policy is being deprecated.",
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "SafeBrowsingExtendedReportingOptInAllowed": true },
     "pref_mappings": [
@@ -3517,6 +3518,15 @@
       }
     ]
   },
+
+  "SafeBrowsingExtendedReportingEnabled": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": { "SafeBrowsingExtendedReportingEnabled": true },
+    "pref_mappings": [
+      { "pref": "safebrowsing.scout_reporting_enabled" }
+    ]
+  },
+
 
   "RestrictAccountsToPatterns": {
   },

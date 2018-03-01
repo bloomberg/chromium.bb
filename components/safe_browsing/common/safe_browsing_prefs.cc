@@ -307,6 +307,10 @@ bool IsExtendedReportingEnabled(const PrefService& prefs) {
   return prefs.GetBoolean(GetExtendedReportingPrefName(prefs));
 }
 
+bool IsExtendedReportingPolicyManaged(const PrefService& prefs) {
+  return prefs.IsManagedPreference(GetExtendedReportingPrefName(prefs));
+}
+
 bool IsScout(const PrefService& prefs) {
   return GetExtendedReportingPrefName(prefs) ==
          prefs::kSafeBrowsingScoutReportingEnabled;

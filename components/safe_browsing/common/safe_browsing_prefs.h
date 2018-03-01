@@ -174,6 +174,10 @@ bool IsExtendedReportingOptInAllowed(const PrefService& prefs);
 // regardless of which specific one is set.
 bool IsExtendedReportingEnabled(const PrefService& prefs);
 
+// Returns whether the active Extended Reporting pref is currently managed by
+// enterprise policy, meaning the user can't change it.
+bool IsExtendedReportingPolicyManaged(const PrefService& prefs);
+
 // Returns whether the currently-active Extended Reporting pref is Scout.
 bool IsScout(const PrefService& prefs);
 

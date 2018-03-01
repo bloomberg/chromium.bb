@@ -79,6 +79,7 @@ BaseBlockingPage::CreateDefaultDisplayOptions(
       false,                 // is_off_the_record
       false,                 // is_extended_reporting
       false,                 // is_scout
+      false,                 // is_sber_policy_managed
       false,                 // kSafeBrowsingProceedAnywayDisabled
       false,                 // should_open_links_in_new_tab
       true,                  // always_show_back_to_safety

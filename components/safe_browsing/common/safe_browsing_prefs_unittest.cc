@@ -33,7 +33,8 @@ class SafeBrowsingPrefsTest : public ::testing::Test {
     prefs_.registry()->RegisterStringPref(
         prefs::kPasswordProtectionChangePasswordURL, "");
     prefs_.registry()->RegisterListPref(prefs::kPasswordProtectionLoginURLs);
-
+    prefs_.registry()->RegisterBooleanPref(
+        prefs::kSafeBrowsingExtendedReportingOptInAllowed, true);
     ResetExperiments(/*can_show_scout=*/false);
   }
 
@@ -386,4 +387,39 @@ TEST_F(SafeBrowsingPrefsTest, VerifyIsPasswordProtectionChangePasswordURL) {
   EXPECT_TRUE(prefs_.HasPrefPath(prefs::kPasswordProtectionChangePasswordURL));
   EXPECT_TRUE(MatchesPasswordProtectionChangePasswordURL(url, prefs_));
 }
+
+TEST_F(SafeBrowsingPrefsTest, IsExtendedReportingPolicyManaged) {
+  // This test checks that manipulating SBEROptInAllowed and the management
+  // state of SBER behaves as expected. Below, we describe what should happen
+  // to the results of IsExtendedReportingPolicyManaged and
+  // IsExtendedReportingOptInAllowed.
+
+  // Confirm default state, SBER should be disabled, OptInAllowed should
+  // be enabled, and SBER is not managed.
+  EXPECT_FALSE(IsExtendedReportingEnabled(prefs_));
+  EXPECT_TRUE(IsExtendedReportingOptInAllowed(prefs_));
+  EXPECT_FALSE(IsExtendedReportingPolicyManaged(prefs_));
+
+  // Setting SBEROptInAllowed to false disallows opt-in but doesn't change
+  // whether SBER is managed.
+  prefs_.SetBoolean(prefs::kSafeBrowsingExtendedReportingOptInAllowed, false);
+  EXPECT_FALSE(IsExtendedReportingOptInAllowed(prefs_));
+  EXPECT_FALSE(IsExtendedReportingPolicyManaged(prefs_));
+  // Setting the value back to true reverts back to the default.
+  prefs_.SetBoolean(prefs::kSafeBrowsingExtendedReportingOptInAllowed, true);
+  EXPECT_TRUE(IsExtendedReportingOptInAllowed(prefs_));
+  EXPECT_FALSE(IsExtendedReportingPolicyManaged(prefs_));
+
+  // Make the SBER pref managed and enable it and ensure that the pref gets
+  // the expected value. Making SBER managed doesn't change the
+  // SBEROptInAllowed setting.
+  prefs_.SetManagedPref(GetExtendedReportingPrefName(prefs_),
+                        std::make_unique<base::Value>(true));
+  EXPECT_TRUE(prefs_.IsManagedPreference(GetExtendedReportingPrefName(prefs_)));
+  // The value of the pref comes from the policy.
+  EXPECT_TRUE(IsExtendedReportingEnabled(prefs_));
+  // SBER being managed doesn't change the SBEROptInAllowed pref.
+  EXPECT_TRUE(IsExtendedReportingOptInAllowed(prefs_));
+}
+
 }  // namespace safe_browsing

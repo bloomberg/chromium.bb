@@ -30,6 +30,7 @@ BaseSafeBrowsingErrorUI::SBErrorDisplayOptions::SBErrorDisplayOptions(
     bool is_off_the_record,
     bool is_extended_reporting_enabled,
     bool is_scout_reporting_enabled,
+    bool is_extended_reporting_policy_managed,
     bool is_proceed_anyway_disabled,
     bool should_open_links_in_new_tab,
     bool always_show_back_to_safety,
@@ -40,6 +41,8 @@ BaseSafeBrowsingErrorUI::SBErrorDisplayOptions::SBErrorDisplayOptions(
       is_off_the_record(is_off_the_record),
       is_extended_reporting_enabled(is_extended_reporting_enabled),
       is_scout_reporting_enabled(is_scout_reporting_enabled),
+      is_extended_reporting_policy_managed(
+          is_extended_reporting_policy_managed),
       is_proceed_anyway_disabled(is_proceed_anyway_disabled),
       should_open_links_in_new_tab(should_open_links_in_new_tab),
       always_show_back_to_safety(always_show_back_to_safety),
@@ -53,6 +56,8 @@ BaseSafeBrowsingErrorUI::SBErrorDisplayOptions::SBErrorDisplayOptions(
       is_off_the_record(other.is_off_the_record),
       is_extended_reporting_enabled(other.is_extended_reporting_enabled),
       is_scout_reporting_enabled(other.is_scout_reporting_enabled),
+      is_extended_reporting_policy_managed(
+          other.is_extended_reporting_policy_managed),
       is_proceed_anyway_disabled(other.is_proceed_anyway_disabled),
       should_open_links_in_new_tab(other.should_open_links_in_new_tab),
       always_show_back_to_safety(other.always_show_back_to_safety),
