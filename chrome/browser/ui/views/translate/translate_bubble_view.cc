@@ -366,8 +366,8 @@ void TranslateBubbleView::ShowOptionsMenu(views::Button* source) {
       OptionsMenuItem::MORE_OPTIONS,
       IDS_TRANSLATE_BUBBLE_ADVANCED_MENU_BUTTON);
 
-  options_menu_runner_.reset(
-      new views::MenuRunner(options_menu_model_.get(), 0));
+  options_menu_runner_.reset(new views::MenuRunner(
+      options_menu_model_.get(), views::MenuRunner::COMBOBOX));
   gfx::Rect screen_bounds = source->GetBoundsInScreen();
   options_menu_runner_->RunMenuAt(source->GetWidget(), nullptr, screen_bounds,
                                   views::MENU_ANCHOR_TOPRIGHT,

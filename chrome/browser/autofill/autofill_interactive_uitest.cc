@@ -1396,15 +1396,6 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_AutofillEvents) {
 #define MAYBE_AutofillAfterTranslate AutofillAfterTranslate
 #endif  // ADDRESS_SANITIZER
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_AutofillAfterTranslate) {
-// TODO(groby): Remove once the bubble is enabled by default everywhere.
-// http://crbug.com/507442
-#if defined(OS_MACOSX)
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ::switches::kEnableTranslateNewUX)) {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        ::switches::kEnableTranslateNewUX);
-  }
-#endif
   ASSERT_TRUE(TranslateService::IsTranslateBubbleEnabled());
 
   translate::TranslateManager::SetIgnoreMissingKeyForTesting(true);

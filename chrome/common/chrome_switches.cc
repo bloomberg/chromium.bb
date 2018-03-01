@@ -865,9 +865,6 @@ const char kDisableHostedAppsInWindows[] = "disable-hosted-apps-in-windows";
 const char kDisableMacViewsNativeAppWindows[] =
     "disable-mac-views-native-app-windows";
 
-// Disables Translate experimental new UX which replaces the infobar.
-const char kDisableTranslateNewUX[] = "disable-translate-new-ux";
-
 // Enable user metrics from within the installer.
 const char kEnableUserMetrics[] = "enable-user-metrics";
 
@@ -891,9 +888,6 @@ const char kEnableHostedAppsInWindows[] = "enable-hosted-apps-in-windows";
 // Enables use of toolkit-views based native app windows.
 const char kEnableMacViewsNativeAppWindows[] =
     "enable-mac-views-native-app-windows";
-
-// Enables Translate experimental new UX which replaces the infobar.
-const char kEnableTranslateNewUX[] = "enable-translate-new-ux";
 
 // Shows a notification when quitting Chrome with hosted apps running. Default
 // behavior is to also quit all hosted apps.

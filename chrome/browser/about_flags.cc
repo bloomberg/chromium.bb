@@ -1819,12 +1819,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPullToRefreshEffectDescription, kOsAndroid,
      SINGLE_DISABLE_VALUE_TYPE(switches::kDisablePullToRefreshEffect)},
 #endif  // OS_ANDROID
-#if defined(OS_MACOSX)
-    {"enable-translate-new-ux", flag_descriptions::kTranslateNewUxName,
-     flag_descriptions::kTranslateNewUxDescription, kOsMac,
-     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableTranslateNewUX,
-                               switches::kDisableTranslateNewUX)},
-#endif  // OS_MACOSX
     {"translate-ranker-enforcement",
      flag_descriptions::kTranslateRankerEnforcementName,
      flag_descriptions::kTranslateRankerEnforcementDescription, kOsAll,
