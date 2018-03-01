@@ -23,6 +23,7 @@ import org.chromium.blink.mojom.RemoteInvocationArgument;
 import org.chromium.blink.mojom.RemoteInvocationError;
 import org.chromium.blink.mojom.RemoteInvocationResult;
 import org.chromium.blink.mojom.RemoteObject;
+import org.chromium.mojo_base.mojom.String16;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -457,6 +458,52 @@ public final class RemoteObjectImplTest {
         inOrder.verify(consumer, times(2)).accept(null);
     }
 
+    @Test
+    public void testArgumentConversionString() {
+        final Consumer<Object> consumer = (Consumer<Object>) mock(Consumer.class);
+        Object target = new VariantConsumer(consumer);
+        String stringWithNonAsciiCharacterAndUnpairedSurrogate = "caf\u00e9\ud800";
+
+        RemoteObject remoteObject = new RemoteObjectImpl(target, TestJavascriptInterface.class);
+        RemoteObject.InvokeMethodResponse response = mock(RemoteObject.InvokeMethodResponse.class);
+        remoteObject.invokeMethod(
+                "consumeByte", new RemoteInvocationArgument[] {stringArgument("hello")}, response);
+        remoteObject.invokeMethod(
+                "consumeChar", new RemoteInvocationArgument[] {stringArgument("hello")}, response);
+        remoteObject.invokeMethod(
+                "consumeShort", new RemoteInvocationArgument[] {stringArgument("hello")}, response);
+        remoteObject.invokeMethod(
+                "consumeInt", new RemoteInvocationArgument[] {stringArgument("hello")}, response);
+        remoteObject.invokeMethod(
+                "consumeLong", new RemoteInvocationArgument[] {stringArgument("hello")}, response);
+        remoteObject.invokeMethod(
+                "consumeFloat", new RemoteInvocationArgument[] {stringArgument("hello")}, response);
+        remoteObject.invokeMethod("consumeDouble",
+                new RemoteInvocationArgument[] {stringArgument("hello")}, response);
+        remoteObject.invokeMethod("consumeString",
+                new RemoteInvocationArgument[] {stringArgument("hello")}, response);
+        remoteObject.invokeMethod("consumeString",
+                new RemoteInvocationArgument[] {
+                        stringArgument(stringWithNonAsciiCharacterAndUnpairedSurrogate)},
+                response);
+        remoteObject.invokeMethod("consumeObjectArray",
+                new RemoteInvocationArgument[] {stringArgument("hello")}, response);
+        remoteObject.invokeMethod("consumeObject",
+                new RemoteInvocationArgument[] {stringArgument("hello")}, response);
+
+        InOrder inOrder = inOrder(consumer);
+        inOrder.verify(consumer).accept((byte) 0);
+        inOrder.verify(consumer).accept('\u0000');
+        inOrder.verify(consumer).accept((short) 0);
+        inOrder.verify(consumer).accept((int) 0);
+        inOrder.verify(consumer).accept((long) 0);
+        inOrder.verify(consumer).accept((float) 0);
+        inOrder.verify(consumer).accept((double) 0);
+        inOrder.verify(consumer).accept("hello");
+        inOrder.verify(consumer).accept(stringWithNonAsciiCharacterAndUnpairedSurrogate);
+        inOrder.verify(consumer, times(2)).accept(null);
+    }
+
     private RemoteInvocationResult resultHasError(final int error) {
         return ArgumentMatchers.argThat(result -> result.error == error);
     }
@@ -474,6 +521,17 @@ public final class RemoteObjectImplTest {
     private RemoteInvocationArgument booleanArgument(boolean booleanValue) {
         RemoteInvocationArgument argument = new RemoteInvocationArgument();
         argument.setBooleanValue(booleanValue);
+        return argument;
+    }
+
+    private RemoteInvocationArgument stringArgument(String stringValue) {
+        String16 string16 = new String16();
+        string16.data = new short[stringValue.length()];
+        for (int i = 0; i < stringValue.length(); i++) {
+            string16.data[i] = (short) stringValue.charAt(i);
+        }
+        RemoteInvocationArgument argument = new RemoteInvocationArgument();
+        argument.setStringValue(string16);
         return argument;
     }
 }
