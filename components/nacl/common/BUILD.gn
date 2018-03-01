@@ -137,7 +137,7 @@ static_library("switches") {
   ]
 }
 
-buildflag_header("features") {
-  header = "features.h"
+buildflag_header("buildflags") {
+  header = "buildflags.h"
   flags = [ "ENABLE_NACL=$enable_nacl" ]
 }

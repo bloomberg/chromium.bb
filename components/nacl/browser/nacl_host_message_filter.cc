@@ -16,7 +16,7 @@
 #include "components/nacl/browser/nacl_file_host.h"
 #include "components/nacl/browser/nacl_process_host.h"
 #include "components/nacl/browser/pnacl_host.h"
-#include "components/nacl/common/features.h"
+#include "components/nacl/common/buildflags.h"
 #include "components/nacl/common/nacl_host_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"

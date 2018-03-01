@@ -23,7 +23,7 @@
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "components/nacl/common/features.h"
+#include "components/nacl/common/buildflags.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/test/browser_test_utils.h"

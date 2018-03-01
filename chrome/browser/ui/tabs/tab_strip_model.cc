@@ -24,7 +24,7 @@
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/web_contents_sizer.h"
 #include "chrome/common/url_constants.h"
-#include "components/feature_engagement/features.h"
+#include "components/feature_engagement/buildflags.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"

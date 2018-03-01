@@ -13,7 +13,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/test/scoped_task_environment.h"
-#include "components/gcm_driver/gcm_build_features.h"
+#include "components/gcm_driver/gcm_buildflags.h"
 #include "components/gcm_driver/instance_id/fake_gcm_driver_for_instance_id.h"
 #include "components/gcm_driver/instance_id/instance_id.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -80,7 +80,7 @@
 #include "chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/common/buildflags.h"
-#include "components/feature_engagement/features.h"
+#include "components/feature_engagement/buildflags.h"
 #include "components/policy/content/policy_blacklist_navigation_throttle.h"
 #include "components/spellcheck/spellcheck_build_features.h"
 #include "extensions/features/features.h"

@@ -19,7 +19,7 @@
 #include "components/browsing_data/core/browsing_data_utils.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/nacl/common/features.h"
+#include "components/nacl/common/buildflags.h"
 #include "components/offline_pages/core/offline_page_model.h"
 #include "components/search_engines/template_url_service.h"
 #include "content/public/browser/browsing_data_remover.h"

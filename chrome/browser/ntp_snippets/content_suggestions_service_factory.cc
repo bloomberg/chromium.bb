@@ -55,7 +55,7 @@
 #include "components/ntp_snippets/sessions/foreign_sessions_suggestions_provider.h"
 #include "components/ntp_snippets/sessions/tab_delegate_sync_adapter.h"
 #include "components/ntp_snippets/user_classifier.h"
-#include "components/offline_pages/features/features.h"
+#include "components/offline_pages/buildflags/buildflags.h"
 #include "components/prefs/pref_service.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_context.h"

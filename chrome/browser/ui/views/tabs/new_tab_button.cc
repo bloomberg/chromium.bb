@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/views/feature_promos/new_tab_promo_bubble_view.h"
 #include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
-#include "components/feature_engagement/features.h"
+#include "components/feature_engagement/buildflags.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/effects/SkBlurMaskFilter.h"
 #include "third_party/skia/include/effects/SkLayerDrawLooper.h"

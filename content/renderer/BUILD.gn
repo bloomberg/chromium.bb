@@ -1085,7 +1085,7 @@ target(link_target_type, "renderer") {
     ]
 
     deps += [
-      "//components/nacl/common:features",
+      "//components/nacl/common:buildflags",
       "//ppapi/host",
       "//ppapi/proxy",
       "//ppapi/shared_impl",

@@ -26,7 +26,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "components/nacl/common/features.h"
+#include "components/nacl/common/buildflags.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_observer.h"

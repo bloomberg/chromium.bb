@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
-#include "components/gcm_driver/gcm_build_features.h"
+#include "components/gcm_driver/gcm_buildflags.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/browser/profile_identity_provider.h"
 #include "components/version_info/version_info.h"

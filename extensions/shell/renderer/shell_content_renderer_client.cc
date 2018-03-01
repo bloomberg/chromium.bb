@@ -4,7 +4,7 @@
 
 #include "extensions/shell/renderer/shell_content_renderer_client.h"
 
-#include "components/nacl/common/features.h"
+#include "components/nacl/common/buildflags.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_frame_observer.h"

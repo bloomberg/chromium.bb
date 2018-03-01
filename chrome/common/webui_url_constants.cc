@@ -5,7 +5,7 @@
 #include "chrome/common/webui_url_constants.h"
 
 #include "base/macros.h"
-#include "components/nacl/common/features.h"
+#include "components/nacl/common/buildflags.h"
 #include "components/safe_browsing/web_ui/constants.h"
 #include "extensions/features/features.h"
 

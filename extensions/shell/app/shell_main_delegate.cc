@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "build/build_config.h"
-#include "components/nacl/common/features.h"
+#include "components/nacl/common/buildflags.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/common/content_switches.h"
 #include "content/shell/common/shell_switches.h"

@@ -44,7 +44,7 @@
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/dom_distiller/core/dom_distiller_switches.h"
-#include "components/feature_engagement/features.h"
+#include "components/feature_engagement/buildflags.h"
 #include "components/prefs/pref_service.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/signin/core/browser/signin_pref_names.h"

@@ -5,7 +5,7 @@
 #include "components/feature_engagement/public/event_constants.h"
 
 #include "build/build_config.h"
-#include "components/feature_engagement/features.h"
+#include "components/feature_engagement/buildflags.h"
 
 namespace feature_engagement {
 

@@ -56,7 +56,7 @@
 #include "components/flags_ui/feature_entry_macros.h"
 #include "components/flags_ui/flags_storage.h"
 #include "components/flags_ui/flags_ui_switches.h"
-#include "components/nacl/common/features.h"
+#include "components/nacl/common/buildflags.h"
 #include "components/nacl/common/nacl_switches.h"
 #include "components/network_session_configurator/common/network_features.h"
 #include "components/network_session_configurator/common/network_switches.h"

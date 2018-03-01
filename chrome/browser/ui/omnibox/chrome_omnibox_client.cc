@@ -42,7 +42,7 @@
 #include "chrome/common/search/instant_types.h"
 #include "chrome/common/url_constants.h"
 #include "components/favicon/content/content_favicon_driver.h"
-#include "components/feature_engagement/features.h"
+#include "components/feature_engagement/buildflags.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_result.h"
 #include "components/omnibox/browser/search_provider.h"

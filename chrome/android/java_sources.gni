@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//components/offline_pages/features/features.gni")
+import("//components/offline_pages/buildflags/features.gni")
 
 chrome_java_sources = [
   "java/src/com/google/android/apps/chrome/appwidget/bookmarks/BookmarkThumbnailWidgetProvider.java",

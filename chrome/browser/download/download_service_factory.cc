@@ -25,7 +25,7 @@
 #include "components/download/public/background_service/features.h"
 #include "components/download/public/background_service/task_scheduler.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/offline_pages/features/features.h"
+#include "components/offline_pages/buildflags/buildflags.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"

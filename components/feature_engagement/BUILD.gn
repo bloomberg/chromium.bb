@@ -10,14 +10,14 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
-buildflag_header("features") {
-  header = "features.h"
+buildflag_header("buildflags") {
+  header = "buildflags.h"
   flags = [ "ENABLE_DESKTOP_IN_PRODUCT_HELP=$enable_desktop_in_product_help" ]
 }
 
 group("feature_engagement") {
   public_deps = [
-    ":features",
+    ":buildflags",
     "//components/feature_engagement/public",
   ]
 

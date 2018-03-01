@@ -6,7 +6,7 @@
 
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/nacl/common/features.h"
+#include "components/nacl/common/buildflags.h"
 #include "content/public/common/user_agent.h"
 #include "extensions/common/constants.h"
 #include "extensions/shell/common/version.h"  // Generated file.

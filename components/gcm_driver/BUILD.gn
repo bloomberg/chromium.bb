@@ -5,8 +5,8 @@
 import("//build/buildflag_header.gni")
 import("//components/gcm_driver/config.gni")
 
-buildflag_header("gcm_build_features") {
-  header = "gcm_build_features.h"
+buildflag_header("gcm_buildflags") {
+  header = "gcm_buildflags.h"
   flags = [ "USE_GCM_FROM_PLATFORM=$use_gcm_from_platform" ]
 }
 
@@ -51,7 +51,7 @@ static_library("gcm_driver") {
     "//components/gcm_driver/instance_id",
   ]
   deps = [
-    ":gcm_build_features",
+    ":gcm_buildflags",
     "//base:i18n",
     "//components/crx_file",
     "//components/data_use_measurement/core",

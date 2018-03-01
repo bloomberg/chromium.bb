@@ -7,7 +7,7 @@
 
 #include "base/feature_list.h"
 #include "build/build_config.h"
-#include "components/feature_engagement/features.h"
+#include "components/feature_engagement/buildflags.h"
 
 namespace feature_engagement {
 

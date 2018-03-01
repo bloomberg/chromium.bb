@@ -11,7 +11,7 @@
 
 #include "build/build_config.h"
 #include "chrome/common/buildflags.h"
-#include "components/offline_pages/features/features.h"
+#include "components/offline_pages/buildflags/buildflags.h"
 #include "extensions/features/features.h"
 #include "media/media_features.h"
 #include "ppapi/features/features.h"
