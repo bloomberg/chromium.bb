@@ -46,6 +46,9 @@ const CGFloat kForwardButtonImageInset = -7;
 const CGFloat kLeadingLocationBarButtonImageInset = 15;
 const CGFloat kCancelButtonHorizontalInset = 8;
 
+const CGFloat kBlurBackgroundGrayscaleComponent = 0.98;
+const CGFloat kBlurBackgroundAlpha = 0.5;
+
 const CGFloat kToolbarButtonTintColorAlpha = 0.5;
 
 const NSInteger kShowTabStripButtonMaxTabCount = 99;

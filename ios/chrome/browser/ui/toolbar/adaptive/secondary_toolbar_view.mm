@@ -82,9 +82,24 @@
   UIBlurEffect* blurEffect = self.buttonFactory.toolbarConfiguration.blurEffect;
   UIVisualEffectView* blur =
       [[UIVisualEffectView alloc] initWithEffect:blurEffect];
+  blur.contentView.backgroundColor =
+      self.buttonFactory.toolbarConfiguration.blurEffectBackgroundColor;
+
   [self addSubview:blur];
   blur.translatesAutoresizingMaskIntoConstraints = NO;
   AddSameConstraints(blur, self);
+
+  UIView* contentView = self;
+  if (UIVisualEffect* vibrancy = [self.buttonFactory.toolbarConfiguration
+          vibrancyEffectForBlurEffect:blurEffect]) {
+    // Add vibrancy only if we have a vibrancy effect.
+    UIVisualEffectView* vibrancyView =
+        [[UIVisualEffectView alloc] initWithEffect:vibrancy];
+    [self addSubview:vibrancyView];
+    vibrancyView.translatesAutoresizingMaskIntoConstraints = NO;
+    AddSameConstraints(self, vibrancyView);
+    contentView = vibrancyView.contentView;
+  }
 
   self.tabGridButton = [self.buttonFactory tabGridButton];
   self.shareButton = [self.buttonFactory shareButton];
@@ -101,7 +116,7 @@
       [[UIStackView alloc] initWithArrangedSubviews:self.allButtons];
   self.stackView.distribution = UIStackViewDistributionEqualSpacing;
   self.stackView.translatesAutoresizingMaskIntoConstraints = NO;
-  [self addSubview:self.stackView];
+  [contentView addSubview:self.stackView];
 
   id<LayoutGuideProvider> safeArea = SafeAreaLayoutGuideForView(self);
 

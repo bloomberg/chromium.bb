@@ -22,6 +22,9 @@
 // Blur effect for the toolbar background.
 @property(nonatomic, readonly) UIBlurEffect* blurEffect;
 
+// Background color for the blur effect view.
+@property(nonatomic, readonly) UIColor* blurEffectBackgroundColor;
+
 // Background color of the NTP. Used to do as if the toolbar was transparent and
 // the NTP is visible behind it.
 @property(nonatomic, readonly) UIColor* NTPBackgroundColor;
@@ -54,6 +57,10 @@
 // color. Even with a |visibilityFactor| of 1, the final color could is
 // translucent.
 - (UIColor*)locationBarBackgroundColorWithVisibility:(CGFloat)visibilityFactor;
+
+// Vibrancy effect for the toolbar elements, based on the |blurEffect|. Returns
+// nil of no vibrancy effect should be applied.
+- (UIVisualEffect*)vibrancyEffectForBlurEffect:(UIBlurEffect*)blurEffect;
 
 @end
 
