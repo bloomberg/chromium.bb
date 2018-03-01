@@ -1,6 +1,46 @@
 {
  "logs": [
   {
+   "description": "Google 'Argon2018' log",
+   "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE0gBVBa3VR7QZu82V+ynXWD14JM3ORp37MtRxTmACJV5ZPtfUA7htQ2hofuigZQs+bnFZkje+qejxoyvk2Q1VaA==",
+   "url": "ct.googleapis.com/logs/argon2018/",
+   "maximum_merge_delay": 86400,
+   "operated_by": [
+    0
+   ],
+   "dns_api_endpoint": "argon2018.ct.googleapis.com"
+  },
+  {
+   "description": "Google 'Argon2019' log",
+   "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEI3MQm+HzXvaYa2mVlhB4zknbtAT8cSxakmBoJcBKGqGwYS0bhxSpuvABM1kdBTDpQhXnVdcq+LSiukXJRpGHVg==",
+   "url": "ct.googleapis.com/logs/argon2019/",
+   "maximum_merge_delay": 86400,
+   "operated_by": [
+    0
+   ],
+   "dns_api_endpoint": "argon2019.ct.googleapis.com"
+  },
+  {
+   "description": "Google 'Argon2020' log",
+   "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE6Tx2p1yKY4015NyIYvdrk36es0uAc1zA4PQ+TGRY+3ZjUTIYY9Wyu+3q/147JG4vNVKLtDWarZwVqGkg6lAYzA==",
+   "url": "ct.googleapis.com/logs/argon2020/",
+   "maximum_merge_delay": 86400,
+   "operated_by": [
+    0
+   ],
+   "dns_api_endpoint": "argon2020.ct.googleapis.com"
+  },
+  {
+   "description": "Google 'Argon2021' log",
+   "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAETeBmZOrzZKo4xYktx9gI2chEce3cw/tbr5xkoQlmhB18aKfsxD+MnILgGNl0FOm0eYGilFVi85wLRIOhK8lxKw==",
+   "url": "ct.googleapis.com/logs/argon2021/",
+   "maximum_merge_delay": 86400,
+   "operated_by": [
+    0
+   ],
+   "dns_api_endpoint": "argon2021.ct.googleapis.com"
+  },
+  {
    "description": "Google 'Aviator' log",
    "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE1/TMabLkDpCjiupacAlP7xNi0I1JYP8bQFAHDG1xhtolSY1l4QgNRzRrvSe8liE+NPWHdjGxfx3JhTsN9x8/6Q==",
    "url": "ct.googleapis.com/aviator/",
@@ -57,12 +97,52 @@
    "dns_api_endpoint": "skydiver.ct.googleapis.com"
   },
   {
+   "description": "Cloudflare 'Nimbus2018' Log",
+   "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEAsVpWvrH3Ke0VRaMg9ZQoQjb5g/xh1z3DDa6IuxY5DyPsk6brlvrUNXZzoIg0DcvFiAn2kd6xmu4Obk5XA/nRg==",
+   "url": "ct.cloudflare.com/logs/nimbus2018/",
+   "maximum_merge_delay": 86400,
+   "operated_by": [
+    1
+   ],
+   "dns_api_endpoint": "cloudflare-nimbus2018.ct.googleapis.com"
+  },
+  {
+   "description": "Cloudflare 'Nimbus2019' Log",
+   "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEkZHz1v5r8a9LmXSMegYZAg4UW+Ug56GtNfJTDNFZuubEJYgWf4FcC5D+ZkYwttXTDSo4OkanG9b3AI4swIQ28g==",
+   "url": "ct.cloudflare.com/logs/nimbus2019/",
+   "maximum_merge_delay": 86400,
+   "operated_by": [
+    1
+   ],
+   "dns_api_endpoint": "cloudflare-nimbus2019.ct.googleapis.com"
+  },
+  {
+   "description": "Cloudflare 'Nimbus2020' Log",
+   "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE01EAhx4o0zPQrXTcYjgCt4MVFsT0Pwjzb1RwrM0lhWDlxAYPP6/gyMCXNkOn/7KFsjL7rwk78tHMpY8rXn8AYg==",
+   "url": "ct.cloudflare.com/logs/nimbus2020/",
+   "maximum_merge_delay": 86400,
+   "operated_by": [
+    1
+   ],
+   "dns_api_endpoint": "cloudflare-nimbus2020.ct.googleapis.com"
+  },
+  {
+   "description": "Cloudflare 'Nimbus2021' Log",
+   "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAExpon7ipsqehIeU1bmpog9TFo4Pk8+9oN8OYHl1Q2JGVXnkVFnuuvPgSo2Ep+6vLffNLcmEbxOucz03sFiematg==",
+   "url": "ct.cloudflare.com/logs/nimbus2021/",
+   "maximum_merge_delay": 86400,
+   "operated_by": [
+    1
+   ],
+   "dns_api_endpoint": "cloudflare-nimbus2021.ct.googleapis.com"
+  },
+  {
    "description": "DigiCert Log Server",
    "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEAkbFvhu7gkAW6MHSrBlpE1n4+HCFRkC5OLAjgqhkTH+/uzSfSl8ois8ZxAD2NgaTZe1M9akhYlrYkes4JECs6A==",
    "url": "ct1.digicert-ct.com/log/",
    "maximum_merge_delay": 86400,
    "operated_by": [
-    1
+    2
    ],
    "dns_api_endpoint": "digicert.ct.googleapis.com"
   },
@@ -72,7 +152,7 @@
    "url": "ct2.digicert-ct.com/log/",
    "maximum_merge_delay": 86400,
    "operated_by": [
-    1
+    2
    ],
    "dns_api_endpoint": "digicert2.ct.googleapis.com"
   },
@@ -208,11 +288,11 @@
    "id": 0
   },
   {
-   "name": "DigiCert",
+   "name": "Cloudflare",
    "id": 1
   },
   {
-   "name": "Symantec",
+   "name": "DigiCert",
    "id": 2
   },
   {
@@ -224,7 +304,7 @@
    "id": 4
   },
   {
-   "name": "Wosign",
+   "name": "WoSign",
    "id": 5
   },
   {
@@ -236,11 +316,11 @@
    "id": 7
   },
   {
-   "name": "StartSSL",
+   "name": "StartCom",
    "id": 8
   },
   {
-   "name": "Comodo",
+   "name": "Comodo CA Limited",
    "id": 9
   }
  ]
