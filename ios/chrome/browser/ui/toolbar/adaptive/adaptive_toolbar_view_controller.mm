@@ -123,6 +123,10 @@
   // No-op, should be handled by the primary toolbar.
 }
 
+- (void)setSearchIcon:(UIImage*)searchIcon {
+  [self.view.omniboxButton setImage:searchIcon forState:UIControlStateNormal];
+}
+
 #pragma mark - NewTabPageControllerDelegate
 
 - (void)setToolbarBackgroundAlpha:(CGFloat)alpha {

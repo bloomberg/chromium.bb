@@ -370,14 +370,8 @@ const int styleCount = 2;
 }
 
 - (ToolbarButton*)omniboxButton {
-  UIImage* searchButtonImage = ios::GetChromeBrowserProvider()
-                                   ->GetBrandedImageProvider()
-                                   ->GetToolbarSearchButtonImage();
-  if (!searchButtonImage) {
-    searchButtonImage = [UIImage imageNamed:@"toolbar_search"];
-  }
-  ToolbarButton* omniboxButton =
-      [ToolbarButton toolbarButtonWithImage:searchButtonImage];
+  ToolbarButton* omniboxButton = [ToolbarButton
+      toolbarButtonWithImage:[UIImage imageNamed:@"toolbar_search"]];
 
   [self configureButton:omniboxButton width:kAdaptiveToolbarButtonWidth];
   [omniboxButton addTarget:self.dispatcher

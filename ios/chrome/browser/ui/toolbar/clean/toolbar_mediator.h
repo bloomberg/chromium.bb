@@ -15,12 +15,20 @@ class BookmarkModel;
 namespace web {
 class WebState;
 }
+class BrandedImageProvider;
+class TemplateURLService;
 class VoiceSearchProvider;
 class WebStateList;
 
 // A mediator object that provides the relevant properties of a web state
 // to a consumer.
 @interface ToolbarMediator : NSObject
+
+// TemplateURLService used to check the default search engine.
+@property(nonatomic, assign) TemplateURLService* templateURLService;
+
+// Image provider for the branded images.
+@property(nonatomic, assign) BrandedImageProvider* imageProvider;
 
 // The WebStateList that this mediator listens for any changes on the total
 // number of Webstates.

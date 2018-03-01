@@ -7,11 +7,15 @@
 #include <memory>
 
 #include "base/strings/sys_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
+#include "components/search_engines/template_url.h"
+#include "components/search_engines/template_url_service.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_consumer.h"
 #import "ios/chrome/browser/ui/toolbar/test/toolbar_test_navigation_manager.h"
 #import "ios/chrome/browser/ui/toolbar/test/toolbar_test_web_state.h"
@@ -19,6 +23,7 @@
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
+#import "ios/public/provider/chrome/browser/images/test_branded_image_provider.h"
 #import "ios/public/provider/chrome/browser/voice/voice_search_provider.h"
 #import "ios/web/public/test/fakes/fake_navigation_context.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
@@ -59,6 +64,9 @@ class ToolbarMediatorTest : public PlatformTest {
  public:
   ToolbarMediatorTest() {
     TestChromeBrowserState::Builder test_cbs_builder;
+    test_cbs_builder.AddTestingFactory(
+        ios::TemplateURLServiceFactory::GetInstance(),
+        ios::TemplateURLServiceFactory::GetDefaultFactory());
     chrome_browser_state_ = test_cbs_builder.Build();
     chrome_browser_state_->CreateBookmarkModel(false);
     bookmark_model_ = ios::BookmarkModelFactory::GetForBrowserState(
@@ -75,6 +83,10 @@ class ToolbarMediatorTest : public PlatformTest {
     consumer_ = OCMProtocolMock(@protocol(ToolbarConsumer));
     strict_consumer_ = OCMStrictProtocolMock(@protocol(ToolbarConsumer));
     SetUpWebStateList();
+    image_provider_ = std::make_unique<TestBrandedImageProvider>();
+    url_service_ = ios::TemplateURLServiceFactory::GetForBrowserState(
+        chrome_browser_state_.get());
+    SetDefaultSearchEngineGoogle();
   }
 
   // Explicitly disconnect the mediator so there won't be any WebStateList
@@ -113,6 +125,28 @@ class ToolbarMediatorTest : public PlatformTest {
 
   void SetUpActiveWebState() { web_state_list_->ActivateWebStateAt(0); }
 
+  // Sets the default search engine of the url_service to google.
+  void SetDefaultSearchEngineGoogle() {
+    TemplateURLData data;
+    data.SetShortName(base::ASCIIToUTF16("Google"));
+    data.SetKeyword(base::ASCIIToUTF16("Google"));
+    data.SetURL("http://google.com/?q={searchTerms}");
+    TemplateURL* template_url =
+        url_service_->Add(std::make_unique<TemplateURL>(data));
+    url_service_->SetUserSelectedDefaultSearchProvider(template_url);
+  }
+
+  // Sets the default search engine of the url_service to not-google.
+  void SetDefaultSearchEngineNotGoogle() {
+    TemplateURLData data;
+    data.SetShortName(base::ASCIIToUTF16("TestEngine"));
+    data.SetKeyword(base::ASCIIToUTF16("TestEngine"));
+    data.SetURL("http://testsearch.com/?q={searchTerms}");
+    TemplateURL* template_url =
+        url_service_->Add(std::make_unique<TemplateURL>(data));
+    url_service_->SetUserSelectedDefaultSearchProvider(template_url);
+  }
+
   TestToolbarMediator* mediator_;
   ToolbarTestWebState* web_state_;
   ToolbarTestNavigationManager* navigation_manager_;
@@ -121,6 +155,8 @@ class ToolbarMediatorTest : public PlatformTest {
   id consumer_;
   id strict_consumer_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
+  std::unique_ptr<TestBrandedImageProvider> image_provider_;
+  TemplateURLService* url_service_;
   BookmarkModel* bookmark_model_;
 
  private:
@@ -272,27 +308,37 @@ TEST_F(ToolbarMediatorTest, TestToolbarSetupWithNoWebstateList) {
 // Test the Toolbar Setup gets called when the mediator's WebState and Consumer
 // have been set.
 TEST_F(ToolbarMediatorTest, TestToolbarSetup) {
+  UIImage* test_image = [[UIImage alloc] init];
+  image_provider_->set_toolbar_search_button_image(test_image);
   mediator_.webStateList = web_state_list_.get();
   SetUpActiveWebState();
+  mediator_.imageProvider = image_provider_.get();
+  mediator_.templateURLService = url_service_;
   mediator_.consumer = consumer_;
 
   [[consumer_ verify] setCanGoForward:NO];
   [[consumer_ verify] setCanGoBack:NO];
   [[consumer_ verify] setLoadingState:YES];
   [[consumer_ verify] setShareMenuEnabled:NO];
+  [[consumer_ verify] setSearchIcon:test_image];
 }
 
 // Test the Toolbar Setup gets called when the mediator's WebState and Consumer
 // have been set in reverse order.
 TEST_F(ToolbarMediatorTest, TestToolbarSetupReverse) {
+  UIImage* test_image = [[UIImage alloc] init];
+  image_provider_->set_toolbar_search_button_image(test_image);
   mediator_.consumer = consumer_;
   mediator_.webStateList = web_state_list_.get();
   SetUpActiveWebState();
+  mediator_.templateURLService = url_service_;
+  mediator_.imageProvider = image_provider_.get();
 
   [[consumer_ verify] setCanGoForward:NO];
   [[consumer_ verify] setCanGoBack:NO];
   [[consumer_ verify] setLoadingState:YES];
   [[consumer_ verify] setShareMenuEnabled:NO];
+  [[consumer_ verify] setSearchIcon:test_image];
 }
 
 // Test the WebstateList related setup gets called when the mediator's WebState
@@ -491,6 +537,75 @@ TEST_F(ToolbarMediatorTest, TestUpdateConsumerForWebState) {
   OCMExpect([consumer_ setShareMenuEnabled:YES]);
 
   [mediator_ updateConsumerForWebState:test_web_state.get()];
+
+  EXPECT_OCMOCK_VERIFY(consumer_);
+}
+
+// Tests that setting the image provider and template service with a default
+// search engine different from google provide a non-nil image.
+TEST_F(ToolbarMediatorTest, TestSetConsumerDefaultSearchEngineNotGoogle) {
+  SetDefaultSearchEngineNotGoogle();
+  OCMExpect([consumer_ setSearchIcon:[OCMArg isNotNil]]);
+
+  mediator_.consumer = consumer_;
+  mediator_.imageProvider = image_provider_.get();
+  mediator_.templateURLService = url_service_;
+
+  EXPECT_OCMOCK_VERIFY(consumer_);
+}
+
+// Tests that changing the search engine to google gives the image from the
+// image provider.
+TEST_F(ToolbarMediatorTest, TestChangeSearchEngineToGoogle) {
+  UIImage* test_image = [[UIImage alloc] init];
+  image_provider_->set_toolbar_search_button_image(test_image);
+  SetDefaultSearchEngineNotGoogle();
+  mediator_.consumer = consumer_;
+  mediator_.imageProvider = image_provider_.get();
+  mediator_.templateURLService = url_service_;
+
+  OCMExpect([consumer_ setSearchIcon:test_image]);
+
+  SetDefaultSearchEngineGoogle();
+
+  EXPECT_OCMOCK_VERIFY(consumer_);
+}
+
+// Tests that changing the search engine to not-google gives an image different
+// from the image provider's one.
+TEST_F(ToolbarMediatorTest, TestChangeSearchEngineToNotGoogle) {
+  UIImage* test_image = [[UIImage alloc] init];
+  image_provider_->set_toolbar_search_button_image(test_image);
+  SetDefaultSearchEngineGoogle();
+  mediator_.consumer = consumer_;
+  mediator_.imageProvider = image_provider_.get();
+  mediator_.templateURLService = url_service_;
+
+  OCMExpect([consumer_ setSearchIcon:[OCMArg isNotEqual:test_image]]);
+
+  SetDefaultSearchEngineNotGoogle();
+
+  EXPECT_OCMOCK_VERIFY(consumer_);
+}
+
+// Tests that having a nil image provider still gives an image.
+TEST_F(ToolbarMediatorTest, TestSetConsumerNoImageProvider) {
+  SetDefaultSearchEngineGoogle();
+  OCMExpect([consumer_ setSearchIcon:[OCMArg isNotNil]]);
+  mediator_.consumer = consumer_;
+  mediator_.templateURLService = url_service_;
+
+  EXPECT_OCMOCK_VERIFY(consumer_);
+}
+
+// Tests that having an image provider returning a nil image still gives an
+// image.
+TEST_F(ToolbarMediatorTest, TestSetConsumerImageProviderNoImage) {
+  SetDefaultSearchEngineGoogle();
+  OCMExpect([consumer_ setSearchIcon:[OCMArg isNotNil]]);
+  mediator_.imageProvider = image_provider_.get();
+  mediator_.templateURLService = url_service_;
+  mediator_.consumer = consumer_;
 
   EXPECT_OCMOCK_VERIFY(consumer_);
 }
