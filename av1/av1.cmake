@@ -417,11 +417,9 @@ endif ()
       "${AOM_ROOT}/av1/encoder/pickrst.c"
       "${AOM_ROOT}/av1/encoder/pickrst.h")
 
-if (CONFIG_INTRA_EDGE)
   set(AOM_AV1_COMMON_INTRIN_SSE4_1
       ${AOM_AV1_COMMON_INTRIN_SSE4_1}
       "${AOM_ROOT}/av1/common/x86/intra_edge_sse4.c")
-endif ()
 
 set(AOM_AV1_COMMON_INTRIN_SSE4_1
     ${AOM_AV1_COMMON_INTRIN_SSE4_1}
