@@ -150,7 +150,7 @@ class ClientControlledShellSurface
   void OnDragStarted(int component);
   void OnDragFinished(bool cancel, const gfx::Point& location);
 
-  void StartResize_DEPRECATED();
+  void StartResize(int component);
 
   // Starts the move-by-drag operation.
   void StartMove(const gfx::Point& location);
@@ -218,6 +218,8 @@ class ClientControlledShellSurface
   gfx::Point GetSurfaceOrigin() const override;
 
   void UpdateBackdrop();
+
+  void AttemptToStartDrag(int component, const gfx::Point& location);
 
   // Lock the compositor if it's not already locked, or extends the
   // lock timeout if it's already locked.
