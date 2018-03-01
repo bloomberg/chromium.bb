@@ -28,6 +28,9 @@ class WiredDisplayPresentationReceiver {
   // Terminates the presentation.
   virtual void Terminate() = 0;
 
+  // Exits fullscreen and shows the receiver in windowed mode.
+  virtual void ExitFullscreen() = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(WiredDisplayPresentationReceiver);
 };

@@ -77,6 +77,10 @@ void PresentationReceiverWindowController::Terminate() {
   }
 }
 
+void PresentationReceiverWindowController::ExitFullscreen() {
+  window_->ExitFullscreen();
+}
+
 void PresentationReceiverWindowController::CloseWindowForTest() {
   window_->Close();
 }
