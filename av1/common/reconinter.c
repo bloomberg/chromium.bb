@@ -975,7 +975,7 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
         is_compound = has_second_ref(this_mbmi);
         DECLARE_ALIGNED(32, int32_t, tmp_dst[8 * 8]);
         int tmp_dst_stride = 8;
-        assert(w <= 8 && h <= 8);
+        assert(w < 8 || h < 8);
         ConvolveParams conv_params = get_conv_params_no_round(
             0, 0, plane, tmp_dst, tmp_dst_stride, is_compound, xd->bd);
 #if CONFIG_JNT_COMP
