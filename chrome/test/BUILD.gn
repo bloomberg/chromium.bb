@@ -2114,7 +2114,7 @@ group("performance_test_suite") {
     # Comment this in when testing on a trybot so it does
     # not have to rebuild chrome each time.
     #"//chrome/test:telemetry_perf_tests_experimental",
-    "//tools/perf/:perf",
+    "//chrome/test:telemetry_perf_tests",
   ]
 
   data = [
