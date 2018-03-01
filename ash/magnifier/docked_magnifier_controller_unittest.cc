@@ -7,6 +7,7 @@
 #include <memory>
 #include <vector>
 
+#include "ash/accessibility/accessibility_controller.h"
 #include "ash/display/display_util.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/host/ash_window_tree_host.h"
@@ -529,6 +530,50 @@ TEST_F(DockedMagnifierTest, TextInputFieldEvents) {
       text_input_helper_.GetCaretBounds().CenterPoint());
   magnifier_layer->transform().TransformPoint(&new_caret_center);
   EXPECT_EQ(new_caret_center, viewport_center);
+}
+
+// Tests that viewport layer is inverted properly when the status of the High
+// Contrast mode changes.
+TEST_F(DockedMagnifierTest, HighContrastMode) {
+  UpdateDisplay("600x900");
+
+  // Enable the docked magnifier.
+  DockedMagnifierController* magnifier = controller();
+  magnifier->SetEnabled(true);
+  EXPECT_TRUE(magnifier->GetEnabled());
+
+  // Expect that the magnifier layer is not inverted.
+  const ui::Layer* viewport_layer =
+      magnifier->GetViewportMagnifierLayerForTesting();
+  ASSERT_TRUE(viewport_layer);
+  EXPECT_FALSE(viewport_layer->layer_inverted());
+
+  // Enable High Contrast mode, and expect the viewport layer to be inverted.
+  Shell::Get()->accessibility_controller()->SetHighContrastEnabled(true);
+  EXPECT_TRUE(
+      Shell::Get()->accessibility_controller()->IsHighContrastEnabled());
+  EXPECT_TRUE(viewport_layer->layer_inverted());
+
+  // Disable High Contrast, the layer should be updated accordingly.
+  Shell::Get()->accessibility_controller()->SetHighContrastEnabled(false);
+  EXPECT_FALSE(
+      Shell::Get()->accessibility_controller()->IsHighContrastEnabled());
+  EXPECT_FALSE(viewport_layer->layer_inverted());
+
+  // Now, disable the Docked Magnifier, enable High Contrast, and then re-enable
+  // the Docked Magnifier. The newly created viewport layer should be inverted.
+  magnifier->SetEnabled(false);
+  EXPECT_FALSE(magnifier->GetEnabled());
+  Shell::Get()->accessibility_controller()->SetHighContrastEnabled(true);
+  EXPECT_TRUE(
+      Shell::Get()->accessibility_controller()->IsHighContrastEnabled());
+  magnifier->SetEnabled(true);
+  EXPECT_TRUE(magnifier->GetEnabled());
+  const ui::Layer* new_viewport_layer =
+      magnifier->GetViewportMagnifierLayerForTesting();
+  ASSERT_TRUE(new_viewport_layer);
+  EXPECT_NE(new_viewport_layer, viewport_layer);
+  EXPECT_TRUE(new_viewport_layer->layer_inverted());
 }
 
 // TODO(afakhry): Expand tests:

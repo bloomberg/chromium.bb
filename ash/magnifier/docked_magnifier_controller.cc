@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "ash/accessibility/accessibility_controller.h"
 #include "ash/host/ash_window_tree_host.h"
 #include "ash/magnifier/magnifier_scale_utils.h"
 #include "ash/public/cpp/ash_pref_names.h"
@@ -44,6 +45,11 @@ constexpr float kScrollScaleFactor = 0.0125f;
 
 constexpr char kDockedMagnifierViewportWindowName[] =
     "DockedMagnifierViewportWindow";
+
+// Returns true if High Contrast mode is enabled.
+bool IsHighContrastEnabled() {
+  return Shell::Get()->accessibility_controller()->IsHighContrastEnabled();
+}
 
 // Returns the current cursor location in screen coordinates.
 inline gfx::Point GetCursorScreenPoint() {
@@ -484,6 +490,11 @@ void DockedMagnifierController::InitFromUserPrefs() {
       base::BindRepeating(
           &DockedMagnifierController::OnFullscreenMagnifierEnabledPrefChanged,
           base::Unretained(this)));
+  pref_change_registrar_->Add(
+      prefs::kAccessibilityHighContrastEnabled,
+      base::BindRepeating(
+          &DockedMagnifierController::OnHighContrastEnabledPrefChanged,
+          base::Unretained(this)));
 
   OnEnabledPrefChanged();
   NotifyClientWithStatusChanged();
@@ -536,6 +547,13 @@ void DockedMagnifierController::OnFullscreenMagnifierEnabledPrefChanged() {
   // Enabling the Fullscreen Magnifier disables the Docked Magnifier.
   if (GetFullscreenMagnifierEnabled())
     SetEnabled(false);
+}
+
+void DockedMagnifierController::OnHighContrastEnabledPrefChanged() {
+  if (!GetEnabled())
+    return;
+
+  viewport_magnifier_layer_->SetLayerInverted(IsHighContrastEnabled());
 }
 
 void DockedMagnifierController::Refresh() {
@@ -593,6 +611,7 @@ void DockedMagnifierController::CreateMagnifierViewport() {
   //    and magnified.
   viewport_magnifier_layer_ =
       std::make_unique<ui::Layer>(ui::LAYER_SOLID_COLOR);
+  viewport_magnifier_layer_->SetLayerInverted(IsHighContrastEnabled());
   viewport_layer->Add(viewport_magnifier_layer_.get());
   viewport_layer->SetMasksToBounds(true);
 
