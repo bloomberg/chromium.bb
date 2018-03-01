@@ -466,7 +466,6 @@ group("gn_all") {
         "//net:crash_cache",
         "//net:dns_fuzz_stub",
         "//net:gdig",
-        "//net:get_server_time",
         "//net:net_watcher",  # TODO(GYP): This should be conditional on use_v8_in_net
         "//net:run_testserver",
         "//net:stress_cache",

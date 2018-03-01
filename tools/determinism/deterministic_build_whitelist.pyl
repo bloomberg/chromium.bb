@@ -234,7 +234,6 @@
     'generate_barcode_video.exe',
     'generate-bytecode-expectations.exe',
     'generate_timecode_audio.exe',
-    'get_server_time.exe',
     'gfx_unittests.exe',
     'gin_shell.exe',
     'gin_unittests.exe',
