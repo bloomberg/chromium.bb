@@ -173,6 +173,10 @@ VrShell::VrShell(JNIEnv* env,
   AssetsLoader::GetInstance()->GetMetricsHelper()->OnEnter(Mode::kVr);
 
   UpdateVrAssetsComponent(g_browser_process->component_updater());
+
+  auto* connector =
+      content::ServiceManagerConnection::GetForProcess()->GetConnector();
+  connector->BindInterface(device::mojom::kServiceName, &geolocation_config_);
 }
 
 void VrShell::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
@@ -862,9 +866,6 @@ void VrShell::PollMediaAccessFlag() {
     if (web_contents->IsConnectedToBluetoothDevice())
       num_tabs_bluetooth_connected++;
   }
-  auto* connector =
-      content::ServiceManagerConnection::GetForProcess()->GetConnector();
-  connector->BindInterface(device::mojom::kServiceName, &geolocation_config_);
 
   geolocation_config_->IsHighAccuracyLocationBeingCaptured(base::BindRepeating(
       &VrShell::SetHighAccuracyLocation, base::Unretained(this)));
