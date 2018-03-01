@@ -525,7 +525,7 @@ AwContentBrowserClient::CreateThrottlesForNavigation(
     throttles.push_back(
         navigation_interception::InterceptNavigationDelegate::CreateThrottleFor(
             navigation_handle));
-    throttles.push_back(base::MakeUnique<PolicyBlacklistNavigationThrottle>(
+    throttles.push_back(std::make_unique<PolicyBlacklistNavigationThrottle>(
         navigation_handle, browser_context_.get()));
   }
   return throttles;

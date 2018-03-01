@@ -70,7 +70,7 @@ class ViewsTextServicesContextMenuMac
 std::unique_ptr<ViewsTextServicesContextMenu>
 ViewsTextServicesContextMenu::Create(ui::SimpleMenuModel* menu,
                                      Textfield* client) {
-  return base::MakeUnique<ViewsTextServicesContextMenuMac>(menu, client);
+  return std::make_unique<ViewsTextServicesContextMenuMac>(menu, client);
 }
 
 // static

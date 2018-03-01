@@ -51,9 +51,9 @@ BrowserWithTestWindowTest::BrowserWithTestWindowTest(Browser::Type browser_type,
                                                      bool hosted_app)
     : browser_type_(browser_type), hosted_app_(hosted_app) {
 #if defined(OS_CHROMEOS)
-  ash_test_environment_ = base::MakeUnique<AshTestEnvironmentChrome>();
+  ash_test_environment_ = std::make_unique<AshTestEnvironmentChrome>();
   ash_test_helper_ =
-      base::MakeUnique<ash::AshTestHelper>(ash_test_environment_.get());
+      std::make_unique<ash::AshTestHelper>(ash_test_environment_.get());
 #endif
 }
 

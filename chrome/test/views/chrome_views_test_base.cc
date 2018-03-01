@@ -12,5 +12,5 @@ ChromeViewsTestBase::~ChromeViewsTestBase() {}
 
 void ChromeViewsTestBase::SetUp() {
   views::ViewsTestBase::SetUp();
-  provider_ = base::MakeUnique<ChromeLayoutProvider>();
+  provider_ = std::make_unique<ChromeLayoutProvider>();
 }

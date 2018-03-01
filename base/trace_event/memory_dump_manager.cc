@@ -911,8 +911,8 @@ MemoryDumpManager::ProcessMemoryDumpAsyncState::ProcessMemoryDumpAsyncState(
   pending_dump_providers.reserve(dump_providers.size());
   pending_dump_providers.assign(dump_providers.rbegin(), dump_providers.rend());
   MemoryDumpArgs args = {req_args.level_of_detail, req_args.dump_guid};
-  process_memory_dump =
-      MakeUnique<ProcessMemoryDump>(heap_profiler_serialization_state, args);
+  process_memory_dump = std::make_unique<ProcessMemoryDump>(
+      heap_profiler_serialization_state, args);
 }
 
 MemoryDumpManager::ProcessMemoryDumpAsyncState::~ProcessMemoryDumpAsyncState() =

@@ -28,7 +28,7 @@ SingleKeyframeEffectAnimation::Create(int id) {
 SingleKeyframeEffectAnimation::SingleKeyframeEffectAnimation(int id)
     : Animation(id) {
   DCHECK(id_);
-  AddKeyframeEffect(base::MakeUnique<KeyframeEffect>(NextKeyframeEffectId()));
+  AddKeyframeEffect(std::make_unique<KeyframeEffect>(NextKeyframeEffectId()));
 }
 
 SingleKeyframeEffectAnimation::SingleKeyframeEffectAnimation(
@@ -36,7 +36,7 @@ SingleKeyframeEffectAnimation::SingleKeyframeEffectAnimation(
     size_t keyframe_effect_id)
     : Animation(id) {
   DCHECK(id_);
-  AddKeyframeEffect(base::MakeUnique<KeyframeEffect>(keyframe_effect_id));
+  AddKeyframeEffect(std::make_unique<KeyframeEffect>(keyframe_effect_id));
 }
 
 SingleKeyframeEffectAnimation::~SingleKeyframeEffectAnimation() {}

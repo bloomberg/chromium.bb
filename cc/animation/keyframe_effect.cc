@@ -59,7 +59,7 @@ KeyframeEffect::~KeyframeEffect() {
 }
 
 std::unique_ptr<KeyframeEffect> KeyframeEffect::Create(KeyframeEffectId id) {
-  return base::MakeUnique<KeyframeEffect>(id);
+  return std::make_unique<KeyframeEffect>(id);
 }
 
 std::unique_ptr<KeyframeEffect> KeyframeEffect::CreateImplInstance() const {

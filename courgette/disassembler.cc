@@ -60,7 +60,7 @@ std::unique_ptr<AssemblyProgram> Disassembler::CreateProgram(bool annotate) {
     return nullptr;
 
   std::unique_ptr<AssemblyProgram> program =
-      base::MakeUnique<AssemblyProgram>(kind(), image_base());
+      std::make_unique<AssemblyProgram>(kind(), image_base());
 
   PrecomputeLabels(program.get());
   RemoveUnusedRel32Locations(program.get());

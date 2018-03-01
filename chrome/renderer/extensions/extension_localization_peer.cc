@@ -106,7 +106,7 @@ void ExtensionLocalizationPeer::OnCompletedRequest(
 
   original_peer_->OnReceivedResponse(response_info_);
   if (!data_.empty())
-    original_peer_->OnReceivedData(base::MakeUnique<StringData>(data_));
+    original_peer_->OnReceivedData(std::make_unique<StringData>(data_));
   original_peer_->OnCompletedRequest(status);
 }
 

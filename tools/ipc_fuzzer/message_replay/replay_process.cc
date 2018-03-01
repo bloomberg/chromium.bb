@@ -147,7 +147,7 @@ void ReplayProcess::OpenChannel() {
       io_thread_.task_runner());
   mojo::MessagePipe ipc_pipe;
   service_manager_connection_->AddConnectionFilter(
-      base::MakeUnique<IPCChannelBootstrapper>(std::move(ipc_pipe.handle0)));
+      std::make_unique<IPCChannelBootstrapper>(std::move(ipc_pipe.handle0)));
   service_manager_connection_->Start();
   channel_ = IPC::ChannelProxy::Create(
       IPC::ChannelMojo::CreateClientFactory(

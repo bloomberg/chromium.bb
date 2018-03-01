@@ -65,7 +65,7 @@ std::unique_ptr<AudioPostProcessor2> PostProcessorFactory::CreatePostProcessor(
                << " Please update " << library_path
                << " to AudioPostProcessor2.";
 
-  return base::MakeUnique<AudioPostProcessorWrapper>(
+  return std::make_unique<AudioPostProcessorWrapper>(
       base::WrapUnique(v1_create(config, channels)), channels);
 }
 

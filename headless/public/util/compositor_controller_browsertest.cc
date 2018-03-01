@@ -165,7 +165,7 @@ class CompositorControllerBrowserTest
     virtual_time_controller_ =
         std::make_unique<VirtualTimeController>(devtools_client_.get());
     const bool update_display_for_animations = false;
-    compositor_controller_ = base::MakeUnique<CompositorController>(
+    compositor_controller_ = std::make_unique<CompositorController>(
         browser()->BrowserMainThread(), devtools_client_.get(),
         virtual_time_controller_.get(), GetAnimationFrameInterval(),
         update_display_for_animations);
@@ -201,7 +201,7 @@ class CompositorControllerBrowserTest
 
   void RunFirstBeginFrame() {
     begin_frame_counter_ =
-        base::MakeUnique<BeginFrameCounter>(devtools_client_.get());
+        std::make_unique<BeginFrameCounter>(devtools_client_.get());
     render_frame_submission_observer_ =
         std::make_unique<content::RenderFrameSubmissionObserver>(
             HeadlessWebContentsImpl::From(web_contents_)->web_contents());

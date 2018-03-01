@@ -173,7 +173,7 @@ void BluetoothRemoteGattServiceWin::UpdateIncludedCharacteristics(
       PBTH_LE_GATT_CHARACTERISTIC info = new BTH_LE_GATT_CHARACTERISTIC();
       *info = characteristics[i];
       auto characteristic_object =
-          base::MakeUnique<BluetoothRemoteGattCharacteristicWin>(
+          std::make_unique<BluetoothRemoteGattCharacteristicWin>(
               this, info, ui_task_runner_);
       included_characteristics_.emplace(characteristic_object->GetIdentifier(),
                                         std::move(characteristic_object));

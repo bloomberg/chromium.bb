@@ -24,7 +24,7 @@ void CloudPrintMessageHandler::Create(
     CloudPrintProxy::Provider* proxy_provider,
     cloud_print::mojom::CloudPrintRequest request) {
   mojo::MakeStrongBinding(
-      base::MakeUnique<CloudPrintMessageHandler>(proxy_provider),
+      std::make_unique<CloudPrintMessageHandler>(proxy_provider),
       std::move(request));
 }
 

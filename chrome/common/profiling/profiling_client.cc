@@ -42,7 +42,7 @@ void ProfilingClient::OnServiceManagerConnected(
   registry->AddInterface(base::Bind(
       &profiling::ProfilingClient::BindToInterface, base::Unretained(this)));
   connection->AddConnectionFilter(
-      base::MakeUnique<content::SimpleConnectionFilter>(std::move(registry)));
+      std::make_unique<content::SimpleConnectionFilter>(std::move(registry)));
 }
 
 void ProfilingClient::BindToInterface(mojom::ProfilingClientRequest request) {

@@ -413,9 +413,9 @@ Status WebViewImpl::DispatchMouseEvents(const std::list<MouseEvent>& events,
 
 Status WebViewImpl::DispatchTouchEvent(const TouchEvent& event) {
   base::ListValue args;
-  args.Append(base::MakeUnique<base::Value>(event.x));
-  args.Append(base::MakeUnique<base::Value>(event.y));
-  args.Append(base::MakeUnique<base::Value>(GetAsString(event.type)));
+  args.Append(std::make_unique<base::Value>(event.x));
+  args.Append(std::make_unique<base::Value>(event.y));
+  args.Append(std::make_unique<base::Value>(GetAsString(event.type)));
   std::unique_ptr<base::Value> unused;
   return CallFunction(std::string(), kDispatchTouchEventScript, args, &unused);
 }
@@ -943,7 +943,7 @@ Status EvaluateScriptAndGetValue(DevToolsClient* client,
     return Status(kUnknownError, "Runtime.evaluate missing string 'type'");
 
   if (type == "undefined") {
-    *result = base::MakeUnique<base::Value>();
+    *result = std::make_unique<base::Value>();
   } else {
     base::Value* value;
     if (!temp_result->Get("value", &value))

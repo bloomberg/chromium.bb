@@ -104,7 +104,7 @@ class PhishingTermFeatureExtractorTest : public ::testing::Test {
         shingle_hashes,
         base::Bind(&PhishingTermFeatureExtractorTest::ExtractionDone,
                    base::Unretained(this)));
-    active_run_loop_ = base::MakeUnique<base::RunLoop>();
+    active_run_loop_ = std::make_unique<base::RunLoop>();
     active_run_loop_->Run();
     return success_;
   }
@@ -122,7 +122,7 @@ class PhishingTermFeatureExtractorTest : public ::testing::Test {
         FROM_HERE,
         base::BindOnce(&PhishingTermFeatureExtractorTest::QuitExtraction,
                        base::Unretained(this)));
-    active_run_loop_ = base::MakeUnique<base::RunLoop>();
+    active_run_loop_ = std::make_unique<base::RunLoop>();
     active_run_loop_->RunUntilIdle();
   }
 

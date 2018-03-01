@@ -373,7 +373,7 @@ class FindElementWebView : public StubWebView {
       }
       case kElementNotExistsQueryOnce: {
         if (only_one_)
-          result_ = base::MakeUnique<base::Value>();
+          result_ = std::make_unique<base::Value>();
         else
           result_.reset(new base::ListValue());
         break;
@@ -408,7 +408,7 @@ class FindElementWebView : public StubWebView {
         (scenario_ == kElementExistsQueryTwice && current_count_ == 1)) {
         // Always return empty result when testing timeout.
         if (only_one_)
-          *result = base::MakeUnique<base::Value>();
+          *result = std::make_unique<base::Value>();
         else
           result->reset(new base::ListValue());
     } else {
@@ -724,8 +724,8 @@ TEST(CommandsTest, SuccessNotifyingCommandListeners) {
   map[id] = thread;
 
   base::DictionaryValue params;
-  auto listener = base::MakeUnique<MockCommandListener>();
-  auto proxy = base::MakeUnique<CommandListenerProxy>(listener.get());
+  auto listener = std::make_unique<MockCommandListener>();
+  auto proxy = std::make_unique<CommandListenerProxy>(listener.get());
   // We add |proxy| to the session instead of adding |listener| directly so that
   // after the session is destroyed by ExecuteQuitSessionCommand, we can still
   // verify the listener was called. The session owns and will destroy |proxy|.
@@ -816,7 +816,7 @@ TEST(CommandsTest, ErrorNotifyingCommandListeners) {
   // In SuccessNotifyingCommandListenersBeforeCommand, we verified BeforeCommand
   // was called before (as opposed to after) command execution. We don't need to
   // verify this again, so we can just add |listener| with PostTask.
-  auto listener = base::MakeUnique<FailingCommandListener>();
+  auto listener = std::make_unique<FailingCommandListener>();
   thread->task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&AddListenerToSessionIfSessionExists,
                                 std::move(listener)));

@@ -97,7 +97,7 @@ void MetricsRenderFrameObserver::DidCommitProvisionalLoad(
   if (HasNoRenderFrame())
     return;
 
-  page_timing_metrics_sender_ = base::MakeUnique<PageTimingMetricsSender>(
+  page_timing_metrics_sender_ = std::make_unique<PageTimingMetricsSender>(
       CreatePageTimingSender(), CreateTimer(), GetTiming());
 }
 
@@ -203,7 +203,7 @@ mojom::PageLoadTimingPtr MetricsRenderFrameObserver::GetTiming() const {
 }
 
 std::unique_ptr<base::Timer> MetricsRenderFrameObserver::CreateTimer() {
-  return base::MakeUnique<base::OneShotTimer>();
+  return std::make_unique<base::OneShotTimer>();
 }
 
 std::unique_ptr<PageTimingSender>

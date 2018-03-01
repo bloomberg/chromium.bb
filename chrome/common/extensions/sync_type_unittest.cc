@@ -42,7 +42,7 @@ class ExtensionSyncTypeTest : public testing::Test {
     if (type == APP)
       source.SetString(keys::kApp, "true");
     if (type == THEME)
-      source.Set(keys::kTheme, base::MakeUnique<base::DictionaryValue>());
+      source.Set(keys::kTheme, std::make_unique<base::DictionaryValue>());
     if (!update_url.is_empty()) {
       source.SetString(keys::kUpdateURL, update_url.spec());
     }

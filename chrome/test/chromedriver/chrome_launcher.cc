@@ -831,7 +831,7 @@ Status WritePrefsFile(
   if (custom_prefs) {
     for (base::DictionaryValue::Iterator it(*custom_prefs); !it.IsAtEnd();
          it.Advance()) {
-      prefs->Set(it.key(), base::MakeUnique<base::Value>(it.value().Clone()));
+      prefs->Set(it.key(), std::make_unique<base::Value>(it.value().Clone()));
     }
   }
 

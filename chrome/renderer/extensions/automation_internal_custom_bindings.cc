@@ -1396,7 +1396,7 @@ void AutomationInternalCustomBindings::SendAutomationEvent(
     const ExtensionMsg_AccessibilityEventParams& params,
     int target_id,
     api::automation::EventType event_type) {
-  auto event_params = base::MakeUnique<base::DictionaryValue>();
+  auto event_params = std::make_unique<base::DictionaryValue>();
   event_params->SetInteger("treeID", params.tree_id);
   event_params->SetInteger("targetID", target_id);
   event_params->SetString("eventType", api::automation::ToString(event_type));
@@ -1437,7 +1437,7 @@ void AutomationInternalCustomBindings::SendNodesRemovedEvent(
   base::ListValue args;
   args.AppendInteger(tree_id);
   {
-    auto nodes = base::MakeUnique<base::ListValue>();
+    auto nodes = std::make_unique<base::ListValue>();
     for (auto id : ids)
       nodes->AppendInteger(id);
     args.Append(std::move(nodes));

@@ -36,7 +36,7 @@ void OnJsonParserRequest(service_manager::ServiceContextRefFactory* ref_factory,
 
 void OnXmlParserRequest(service_manager::ServiceContextRefFactory* ref_factory,
                         mojom::XmlParserRequest request) {
-  mojo::MakeStrongBinding(base::MakeUnique<XmlParser>(ref_factory->CreateRef()),
+  mojo::MakeStrongBinding(std::make_unique<XmlParser>(ref_factory->CreateRef()),
                           std::move(request));
 }
 

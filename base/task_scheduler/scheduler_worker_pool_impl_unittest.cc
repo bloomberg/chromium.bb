@@ -192,7 +192,8 @@ TEST_P(TaskSchedulerWorkerPoolImplTestParam, PostTasksWaitAllWorkersIdle) {
       threads_posting_tasks;
   for (size_t i = 0; i < kNumThreadsPostingTasks; ++i) {
     threads_posting_tasks.push_back(
-        MakeUnique<ThreadPostingTasksWaitIdle>(worker_pool_.get(), GetParam()));
+        std::make_unique<ThreadPostingTasksWaitIdle>(worker_pool_.get(),
+                                                     GetParam()));
     threads_posting_tasks.back()->Start();
   }
 

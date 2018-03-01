@@ -726,7 +726,7 @@ class OnConnectedSyncWebSocket : public SyncWebSocket {
 
     base::DictionaryValue response;
     response.SetInteger("id", id);
-    response.Set("result", base::MakeUnique<base::DictionaryValue>());
+    response.Set("result", std::make_unique<base::DictionaryValue>());
     std::string json_response;
     base::JSONWriter::Write(response, &json_response);
     queued_response_.push_back(json_response);
@@ -734,7 +734,7 @@ class OnConnectedSyncWebSocket : public SyncWebSocket {
     // Push one event.
     base::DictionaryValue event;
     event.SetString("method", "updateEvent");
-    event.Set("params", base::MakeUnique<base::DictionaryValue>());
+    event.Set("params", std::make_unique<base::DictionaryValue>());
     std::string json_event;
     base::JSONWriter::Write(event, &json_event);
     queued_response_.push_back(json_event);
@@ -998,7 +998,7 @@ class MockDevToolsEventListener : public DevToolsEventListener {
 
 std::unique_ptr<SyncWebSocket> CreateMockSyncWebSocket6(
     std::list<std::string>* messages) {
-  return base::MakeUnique<MockSyncWebSocket6>(messages);
+  return std::make_unique<MockSyncWebSocket6>(messages);
 }
 
 }  // namespace

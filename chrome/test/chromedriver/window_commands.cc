@@ -817,7 +817,7 @@ Status ProcessInputActionSequence(Session* session,
     }
 
     session->active_input_sources->Append(
-        base::MakeUnique<base::DictionaryValue>(std::move(tmp_source)));
+        std::make_unique<base::DictionaryValue>(std::move(tmp_source)));
 
     base::DictionaryValue tmp_state;
     if (type == "key") {
@@ -844,7 +844,7 @@ Status ProcessInputActionSequence(Session* session,
       tmp_state.SetInteger("y", y);
     }
     session->input_state_table->SetDictionary(
-        id, base::MakeUnique<base::DictionaryValue>(std::move(tmp_state)));
+        id, std::make_unique<base::DictionaryValue>(std::move(tmp_state)));
   }
 
   const base::ListValue* actions;

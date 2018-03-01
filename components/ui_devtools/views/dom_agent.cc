@@ -765,7 +765,7 @@ std::unique_ptr<DOM::Node> DOMAgent::BuildInitialTree() {
   is_building_tree_ = true;
   std::unique_ptr<Array<DOM::Node>> children = Array<DOM::Node>::create();
 
-  element_root_ = base::MakeUnique<RootElement>(this);
+  element_root_ = std::make_unique<RootElement>(this);
 
   for (aura::Window* window : root_windows()) {
     UIElement* window_element =

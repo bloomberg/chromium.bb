@@ -69,8 +69,9 @@ void Unmap(void* addr, size_t size) {
 
 TEST(ProcessMemoryDumpTest, MoveConstructor) {
   auto heap_state = MakeRefCounted<HeapProfilerSerializationState>();
-  heap_state->SetStackFrameDeduplicator(MakeUnique<StackFrameDeduplicator>());
-  heap_state->SetTypeNameDeduplicator(MakeUnique<TypeNameDeduplicator>());
+  heap_state->SetStackFrameDeduplicator(
+      std::make_unique<StackFrameDeduplicator>());
+  heap_state->SetTypeNameDeduplicator(std::make_unique<TypeNameDeduplicator>());
 
   ProcessMemoryDump pmd1 = ProcessMemoryDump(heap_state, kDetailedDumpArgs);
   pmd1.CreateAllocatorDump("mad1");
@@ -88,15 +89,16 @@ TEST(ProcessMemoryDumpTest, MoveConstructor) {
   EXPECT_EQ(heap_state.get(), pmd2.heap_profiler_serialization_state().get());
 
   // Check that calling serialization routines doesn't cause a crash.
-  auto traced_value = MakeUnique<TracedValue>();
+  auto traced_value = std::make_unique<TracedValue>();
   pmd2.SerializeAllocatorDumpsInto(traced_value.get());
   pmd2.SerializeHeapProfilerDumpsInto(traced_value.get());
 }
 
 TEST(ProcessMemoryDumpTest, MoveAssignment) {
   auto heap_state = MakeRefCounted<HeapProfilerSerializationState>();
-  heap_state->SetStackFrameDeduplicator(MakeUnique<StackFrameDeduplicator>());
-  heap_state->SetTypeNameDeduplicator(MakeUnique<TypeNameDeduplicator>());
+  heap_state->SetStackFrameDeduplicator(
+      std::make_unique<StackFrameDeduplicator>());
+  heap_state->SetTypeNameDeduplicator(std::make_unique<TypeNameDeduplicator>());
 
   ProcessMemoryDump pmd1 = ProcessMemoryDump(heap_state, kDetailedDumpArgs);
   pmd1.CreateAllocatorDump("mad1");
@@ -117,7 +119,7 @@ TEST(ProcessMemoryDumpTest, MoveAssignment) {
   EXPECT_EQ(heap_state.get(), pmd2.heap_profiler_serialization_state().get());
 
   // Check that calling serialization routines doesn't cause a crash.
-  auto traced_value = MakeUnique<TracedValue>();
+  auto traced_value = std::make_unique<TracedValue>();
   pmd2.SerializeAllocatorDumpsInto(traced_value.get());
   pmd2.SerializeHeapProfilerDumpsInto(traced_value.get());
 }
@@ -146,7 +148,7 @@ TEST(ProcessMemoryDumpTest, Clear) {
   ASSERT_EQ(nullptr, pmd1->GetSharedGlobalAllocatorDump(shared_mad_guid2));
 
   // Check that calling serialization routines doesn't cause a crash.
-  auto traced_value = MakeUnique<TracedValue>();
+  auto traced_value = std::make_unique<TracedValue>();
   pmd1->SerializeAllocatorDumpsInto(traced_value.get());
   pmd1->SerializeHeapProfilerDumpsInto(traced_value.get());
 

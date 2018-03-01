@@ -124,12 +124,12 @@ TEST_F(PlatformAppsManifestTest, CertainApisRequirePlatformApps) {
   std::vector<std::unique_ptr<ManifestData>> manifests;
   // Create each manifest.
   for (const char* api_name : kPlatformAppExperimentalApis) {
-    auto permissions = base::MakeUnique<base::ListValue>();
+    auto permissions = std::make_unique<base::ListValue>();
     permissions->AppendString("experimental");
     permissions->AppendString(api_name);
     manifest->Set("permissions", std::move(permissions));
     manifests.push_back(
-        base::MakeUnique<ManifestData>(manifest->CreateDeepCopy(), ""));
+        std::make_unique<ManifestData>(manifest->CreateDeepCopy(), ""));
   }
   // First try to load without any flags. This should warn for every API.
   for (const std::unique_ptr<ManifestData>& manifest : manifests) {

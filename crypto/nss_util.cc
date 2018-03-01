@@ -446,7 +446,7 @@ class NSSInitSingleton {
         "%s %s", kUserNSSDatabaseName, username_hash.c_str());
     ScopedPK11Slot public_slot(OpenPersistentNSSDBForPath(db_name, path));
     chromeos_user_map_[username_hash] =
-        base::MakeUnique<ChromeOSUserData>(std::move(public_slot));
+        std::make_unique<ChromeOSUserData>(std::move(public_slot));
     return true;
   }
 

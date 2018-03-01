@@ -77,7 +77,7 @@ void CheckParse(const ConstCommandsTestData& data,
     }
 
     input.reset(new base::DictionaryValue);
-    auto key_dict = base::MakeUnique<base::DictionaryValue>();
+    auto key_dict = std::make_unique<base::DictionaryValue>();
 
     for (size_t j = 0; j < platforms.size(); ++j)
       key_dict->SetString(platforms[j], data.key);
@@ -240,7 +240,7 @@ TEST(CommandTest, ExtensionCommandParsingFallback) {
   std::unique_ptr<base::DictionaryValue> input(new base::DictionaryValue);
   input->SetString("description", description);
   base::DictionaryValue* key_dict = input->SetDictionary(
-      "suggested_key", base::MakeUnique<base::DictionaryValue>());
+      "suggested_key", std::make_unique<base::DictionaryValue>());
   key_dict->SetString("default", "Ctrl+Shift+D");
   key_dict->SetString("windows", "Ctrl+Shift+W");
   key_dict->SetString("mac", "Ctrl+Shift+M");

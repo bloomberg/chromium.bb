@@ -104,7 +104,7 @@ TEST_F(ExtensionManifestBackgroundTest, BackgroundPageWebRequest) {
   ASSERT_TRUE(extension.get());
   EXPECT_TRUE(BackgroundInfo::HasLazyBackgroundPage(extension.get()));
 
-  auto permissions = base::MakeUnique<base::ListValue>();
+  auto permissions = std::make_unique<base::ListValue>();
   permissions->AppendString("webRequest");
   manifest->Set(keys::kPermissions, std::move(permissions));
   LoadAndExpectError(ManifestData(manifest.get(), ""),

@@ -26,7 +26,7 @@ net::URLRequestContext* URLRequestContextGetter::GetURLRequestContext() {
     builder.set_user_agent("chromedriver");
     builder.DisableHttpCache();
     builder.set_proxy_config_service(
-        base::MakeUnique<net::ProxyConfigServiceFixed>(
+        std::make_unique<net::ProxyConfigServiceFixed>(
             net::ProxyConfig::CreateDirect()));
     url_request_context_ = builder.Build();
   }

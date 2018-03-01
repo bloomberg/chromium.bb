@@ -69,7 +69,7 @@ std::unique_ptr<SkCanvas> CreatePlatformCanvasWithPixels(
         bitmap.eraseARGB(0, 0, 0, 0);
   }
 
-  return base::MakeUnique<SkCanvas>(bitmap);
+  return std::make_unique<SkCanvas>(bitmap);
 }
 
 #endif

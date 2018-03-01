@@ -305,9 +305,9 @@ void PeerConnectionDependencyFactory::InitializeSignalingThread(
 
   // Enable Multiplex codec in SDP optionally.
   if (base::FeatureList::IsEnabled(features::kWebRtcMultiplexCodec)) {
-    webrtc_encoder_factory = base::MakeUnique<webrtc::MultiplexEncoderFactory>(
+    webrtc_encoder_factory = std::make_unique<webrtc::MultiplexEncoderFactory>(
         std::move(webrtc_encoder_factory));
-    webrtc_decoder_factory = base::MakeUnique<webrtc::MultiplexDecoderFactory>(
+    webrtc_decoder_factory = std::make_unique<webrtc::MultiplexDecoderFactory>(
         std::move(webrtc_decoder_factory));
   }
 

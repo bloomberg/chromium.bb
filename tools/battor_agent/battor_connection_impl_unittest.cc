@@ -103,7 +103,7 @@ class BattOrConnectionImplTest : public testing::Test,
     scoped_refptr<net::IOBuffer> buffer(
         new net::IOBuffer((size_t)bytes_to_read));
 
-    connection_->GetIoHandler()->Read(base::MakeUnique<device::ReceiveBuffer>(
+    connection_->GetIoHandler()->Read(std::make_unique<device::ReceiveBuffer>(
         buffer, bytes_to_read, base::BindOnce(&NullReadCallback)));
     task_runner_->RunUntilIdle();
 
@@ -126,7 +126,7 @@ class BattOrConnectionImplTest : public testing::Test,
 
   // Writes the specified bytes directly to the serial connection.
   void SendBytesRaw(const char* data, uint16_t bytes_to_send) {
-    connection_->GetIoHandler()->Write(base::MakeUnique<device::SendBuffer>(
+    connection_->GetIoHandler()->Write(std::make_unique<device::SendBuffer>(
         std::vector<uint8_t>(data, data + bytes_to_send),
         base::BindOnce(&NullWriteCallback)));
     task_runner_->RunUntilIdle();

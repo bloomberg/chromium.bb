@@ -113,7 +113,7 @@ void ChromeRenderViewTest::SetUp() {
   chrome_render_thread_ = new ChromeMockRenderThread();
   render_thread_.reset(chrome_render_thread_);
 
-  registry_ = base::MakeUnique<service_manager::BinderRegistry>();
+  registry_ = std::make_unique<service_manager::BinderRegistry>();
 
   content::RenderViewTest::SetUp();
 
@@ -167,7 +167,7 @@ void ChromeRenderViewTest::InitChromeContentRendererClient(
   ChromeExtensionsRendererClient* ext_client =
       ChromeExtensionsRendererClient::GetInstance();
   ext_client->SetExtensionDispatcherForTest(
-      base::MakeUnique<extensions::Dispatcher>(
+      std::make_unique<extensions::Dispatcher>(
           std::make_unique<ChromeExtensionsDispatcherDelegate>()));
 #endif
 

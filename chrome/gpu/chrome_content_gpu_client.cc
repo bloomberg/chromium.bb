@@ -95,7 +95,7 @@ std::unique_ptr<media::CdmProxy> ChromeContentGpuClient::CreateCdmProxy(
 void ChromeContentGpuClient::CreateArcVideoDecodeAccelerator(
     ::arc::mojom::VideoDecodeAcceleratorRequest request) {
   mojo::MakeStrongBinding(
-      base::MakeUnique<arc::GpuArcVideoDecodeAccelerator>(
+      std::make_unique<arc::GpuArcVideoDecodeAccelerator>(
           gpu_preferences_, protected_buffer_manager_.get()),
       std::move(request));
 }

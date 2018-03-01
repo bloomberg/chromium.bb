@@ -81,7 +81,7 @@ const NavigationCorrection kDefaultCorrections[] = {
 
 std::string SuggestionsToResponse(const NavigationCorrection* corrections,
                                   int num_corrections) {
-  auto url_corrections = base::MakeUnique<base::ListValue>();
+  auto url_corrections = std::make_unique<base::ListValue>();
   for (int i = 0; i < num_corrections; ++i)
     url_corrections->Append(corrections[i].ToValue());
 

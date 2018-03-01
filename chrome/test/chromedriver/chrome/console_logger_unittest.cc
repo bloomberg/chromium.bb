@@ -107,7 +107,7 @@ void FakeLog::AddEntryTimestamped(const base::Time& timestamp,
                                   const std::string& source,
                                   const std::string& message) {
   entries_.push_back(
-      base::MakeUnique<LogEntry>(timestamp, level, source, message));
+      std::make_unique<LogEntry>(timestamp, level, source, message));
 }
 
 bool FakeLog::Emptied() const {

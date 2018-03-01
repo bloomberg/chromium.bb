@@ -388,7 +388,7 @@ void RegisterArticleProviderIfEnabled(ContentSuggestionsService* service,
       service, pref_service, g_browser_process->GetApplicationLocale(),
       service->category_ranker(), service->remote_suggestions_scheduler(),
       std::move(suggestions_fetcher),
-      std::make_unique<ImageFetcherImpl>(base::MakeUnique<ImageDecoderImpl>(),
+      std::make_unique<ImageFetcherImpl>(std::make_unique<ImageDecoderImpl>(),
                                          request_context.get()),
       std::make_unique<RemoteSuggestionsDatabase>(database_dir),
       std::make_unique<RemoteSuggestionsStatusServiceImpl>(

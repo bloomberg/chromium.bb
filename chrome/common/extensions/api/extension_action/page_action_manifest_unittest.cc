@@ -39,7 +39,7 @@ std::unique_ptr<ActionInfo> PageActionManifestTest::LoadAction(
       ActionInfo::GetPageActionInfo(extension.get());
   EXPECT_TRUE(page_action_info);
   if (page_action_info)
-    return base::MakeUnique<ActionInfo>(*page_action_info);
+    return std::make_unique<ActionInfo>(*page_action_info);
   ADD_FAILURE() << "Expected manifest in " << manifest_filename
                 << " to include a page_action section.";
   return nullptr;

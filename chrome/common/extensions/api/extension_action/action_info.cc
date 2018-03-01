@@ -215,26 +215,26 @@ const ActionInfo* ActionInfo::GetSystemIndicatorInfo(
 void ActionInfo::SetExtensionActionInfo(Extension* extension,
                                         ActionInfo* info) {
   extension->SetManifestData(keys::kAction,
-                             base::MakeUnique<ActionInfoData>(info));
+                             std::make_unique<ActionInfoData>(info));
 }
 
 // static
 void ActionInfo::SetBrowserActionInfo(Extension* extension, ActionInfo* info) {
   extension->SetManifestData(keys::kBrowserAction,
-                             base::MakeUnique<ActionInfoData>(info));
+                             std::make_unique<ActionInfoData>(info));
 }
 
 // static
 void ActionInfo::SetPageActionInfo(Extension* extension, ActionInfo* info) {
   extension->SetManifestData(keys::kPageAction,
-                             base::MakeUnique<ActionInfoData>(info));
+                             std::make_unique<ActionInfoData>(info));
 }
 
 // static
 void ActionInfo::SetSystemIndicatorInfo(Extension* extension,
                                         ActionInfo* info) {
   extension->SetManifestData(keys::kSystemIndicator,
-                             base::MakeUnique<ActionInfoData>(info));
+                             std::make_unique<ActionInfoData>(info));
 }
 
 // static

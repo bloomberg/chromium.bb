@@ -282,7 +282,7 @@ void WaylandConnection::Capabilities(void* data,
         LOG(ERROR) << "Failed to get wl_touch from seat";
         return;
       }
-      connection->touch_ = base::MakeUnique<WaylandTouch>(
+      connection->touch_ = std::make_unique<WaylandTouch>(
           touch, base::Bind(&WaylandConnection::DispatchUiEvent,
                             base::Unretained(connection)));
       connection->touch_->set_connection(connection);

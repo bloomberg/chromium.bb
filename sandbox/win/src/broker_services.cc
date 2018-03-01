@@ -441,7 +441,7 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
   // Construct the thread pool here in case it is expensive.
   // The thread pool is shared by all the targets
   if (!thread_pool_)
-    thread_pool_ = base::MakeUnique<Win2kThreadPool>();
+    thread_pool_ = std::make_unique<Win2kThreadPool>();
 
   // Create the TargetProcess object and spawn the target suspended. Note that
   // Brokerservices does not own the target object. It is owned by the Policy.
@@ -481,7 +481,7 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
   // the job object generates notifications using the completion port.
   if (job.IsValid()) {
     std::unique_ptr<JobTracker> tracker =
-        base::MakeUnique<JobTracker>(std::move(job), policy_base);
+        std::make_unique<JobTracker>(std::move(job), policy_base);
 
     // There is no obvious recovery after failure here. Previous version with
     // SpawnCleanup() caused deletion of TargetProcess twice. crbug.com/480639

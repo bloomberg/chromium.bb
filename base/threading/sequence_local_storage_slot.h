@@ -75,7 +75,7 @@ class SequenceLocalStorageSlot {
   // store a std::unique_ptr<T>. This is enforced by the
   // DISALLOW_COPY_AND_ASSIGN style rather than directly by this class however.
   void Set(T value) {
-    // Allocates the |value| with new rather than MakeUnique.
+    // Allocates the |value| with new rather than std::make_unique.
     // Since SequenceLocalStorageMap needs to store values of various types
     // within the same map, the type of value_destructor_pair.value is void*
     // (std::unique_ptr<void> is invalid). Memory is freed by calling

@@ -151,7 +151,7 @@ bool RlzValueStoreChromeOS::AddProductEvent(Product product,
                                             const char* event_rlz) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return AddValueToList(GetKeyName(kProductEventKey, product),
-                        base::MakeUnique<base::Value>(event_rlz));
+                        std::make_unique<base::Value>(event_rlz));
 }
 
 bool RlzValueStoreChromeOS::ReadProductEvents(
@@ -188,7 +188,7 @@ bool RlzValueStoreChromeOS::AddStatefulEvent(Product product,
                                              const char* event_rlz) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return AddValueToList(GetKeyName(kStatefulEventKey, product),
-                        base::MakeUnique<base::Value>(event_rlz));
+                        std::make_unique<base::Value>(event_rlz));
 }
 
 bool RlzValueStoreChromeOS::IsStatefulEvent(Product product,
@@ -251,7 +251,7 @@ bool RlzValueStoreChromeOS::AddValueToList(const std::string& list_name,
   base::ListValue* list_value = NULL;
   if (!rlz_store_->GetList(list_name, &list_value)) {
     list_value =
-        rlz_store_->SetList(list_name, base::MakeUnique<base::ListValue>());
+        rlz_store_->SetList(list_name, std::make_unique<base::ListValue>());
   }
   list_value->AppendIfNotPresent(std::move(value));
   return true;
