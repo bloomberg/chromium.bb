@@ -2,6 +2,7 @@
 #+type:literary
 #+contraction:full
 #+grade:2
+#+system:bfu
 
 #-display-name: Unified French Grade 2
 #-author: Michel Such <michel.such@free.fr>
@@ -9,7 +10,7 @@
 #-author: Nicolas Pitre <nico@cam.org>
 #-author: The BRLTTY Team <http://brltty.com/>
 #-license: LGPLv2.1
-#-updated: 2018-02-28
+#-updated: 2018-03-01
 
 # liblouis: Unified French Grade 2 Table
 
