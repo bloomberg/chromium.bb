@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/resource_coordinator/tracing/agent_registry.h"
+#include "services/tracing/agent_registry.h"
 
 #include <memory>
 #include <string>
@@ -10,17 +10,20 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "services/resource_coordinator/public/mojom/tracing/tracing.mojom.h"
-#include "services/resource_coordinator/tracing/test_util.h"
+#include "services/service_manager/public/cpp/service_context_ref.h"
+#include "services/tracing/public/mojom/tracing.mojom.h"
+#include "services/tracing/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace tracing {
 
 class AgentRegistryTest : public testing::Test {
  public:
+  AgentRegistryTest() : service_ref_factory_(base::DoNothing()) {}
+
   void SetUp() override {
     message_loop_.reset(new base::MessageLoop());
-    registry_.reset(new AgentRegistry());
+    registry_.reset(new AgentRegistry(&service_ref_factory_));
   }
 
   void TearDown() override {
@@ -42,6 +45,7 @@ class AgentRegistryTest : public testing::Test {
   }
 
   std::unique_ptr<AgentRegistry> registry_;
+  service_manager::ServiceContextRefFactory service_ref_factory_;
 
  private:
   std::unique_ptr<base::MessageLoop> message_loop_;

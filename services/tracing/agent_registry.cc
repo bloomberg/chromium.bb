@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/resource_coordinator/tracing/agent_registry.h"
+#include "services/tracing/agent_registry.h"
 
 #include <string>
 #include <utility>
@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/threading/thread_checker.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
+#include "services/service_manager/public/cpp/service_context_ref.h"
 
 namespace {
 tracing::AgentRegistry* g_agent_registry;
@@ -18,19 +19,22 @@ tracing::AgentRegistry* g_agent_registry;
 
 namespace tracing {
 
-AgentRegistry::AgentEntry::AgentEntry(size_t id,
-                                      AgentRegistry* agent_registry,
-                                      mojom::AgentPtr agent,
-                                      const std::string& label,
-                                      mojom::TraceDataType type,
-                                      bool supports_explicit_clock_sync)
+AgentRegistry::AgentEntry::AgentEntry(
+    std::unique_ptr<service_manager::ServiceContextRef> service_ref,
+    size_t id,
+    AgentRegistry* agent_registry,
+    mojom::AgentPtr agent,
+    const std::string& label,
+    mojom::TraceDataType type,
+    bool supports_explicit_clock_sync)
     : id_(id),
       agent_registry_(agent_registry),
       agent_(std::move(agent)),
       label_(label),
       type_(type),
       supports_explicit_clock_sync_(supports_explicit_clock_sync),
-      is_tracing_(false) {
+      is_tracing_(false),
+      service_ref_(std::move(service_ref)) {
   DCHECK(!label.empty());
   agent_.set_connection_error_handler(base::BindRepeating(
       &AgentRegistry::AgentEntry::OnConnectionError, AsWeakPtr()));
@@ -75,7 +79,9 @@ AgentRegistry* AgentRegistry::GetInstance() {
   return g_agent_registry;
 }
 
-AgentRegistry::AgentRegistry() {
+AgentRegistry::AgentRegistry(
+    service_manager::ServiceContextRefFactory* service_ref_factory)
+    : service_ref_factory_(service_ref_factory) {
   DCHECK(!g_agent_registry);
   g_agent_registry = this;
 }
@@ -120,7 +126,8 @@ void AgentRegistry::RegisterAgent(mojom::AgentPtr agent,
                                   mojom::TraceDataType type,
                                   bool supports_explicit_clock_sync) {
   auto id = next_agent_id_++;
-  auto entry = std::make_unique<AgentEntry>(id, this, std::move(agent), label,
+  auto entry = std::make_unique<AgentEntry>(service_ref_factory_->CreateRef(),
+                                            id, this, std::move(agent), label,
                                             type, supports_explicit_clock_sync);
   if (!agent_initialization_callback_.is_null())
     agent_initialization_callback_.Run(entry.get());

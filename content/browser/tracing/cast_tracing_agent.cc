@@ -13,8 +13,8 @@
 #include "base/trace_event/trace_config.h"
 #include "chromecast/tracing/system_tracing_common.h"
 #include "content/public/browser/browser_thread.h"
-#include "services/resource_coordinator/public/mojom/service_constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/tracing/public/mojom/constants.mojom.h"
 
 namespace content {
 namespace {

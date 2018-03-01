@@ -16,8 +16,8 @@
 #include "base/trace_event/trace_config.h"
 #include "base/trace_event/trace_event_impl.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "services/resource_coordinator/public/mojom/service_constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/tracing/public/mojom/constants.mojom.h"
 #include "tools/battor_agent/battor_finder.h"
 
 namespace content {
@@ -38,8 +38,7 @@ PowerTracingAgent::PowerTracingAgent(service_manager::Connector* connector)
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Connect to the agent registry interface.
   tracing::mojom::AgentRegistryPtr agent_registry;
-  connector->BindInterface(resource_coordinator::mojom::kServiceName,
-                           &agent_registry);
+  connector->BindInterface(tracing::mojom::kServiceName, &agent_registry);
 
   // Register this agent.
   tracing::mojom::AgentPtr agent;

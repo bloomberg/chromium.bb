@@ -17,8 +17,6 @@ mojom_component("mojom") {
     "page_signal.mojom",
     "service_constants.mojom",
     "signals.mojom",
-    "tracing/tracing.mojom",
-    "tracing/tracing_constants.mojom",
   ]
 
   public_deps = [

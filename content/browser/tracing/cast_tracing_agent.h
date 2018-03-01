@@ -9,8 +9,8 @@
 #include <string>
 
 #include "chromecast/tracing/system_tracer.h"
-#include "services/resource_coordinator/public/cpp/tracing/base_agent.h"
-#include "services/resource_coordinator/public/mojom/tracing/tracing.mojom.h"
+#include "services/tracing/public/cpp/base_agent.h"
+#include "services/tracing/public/mojom/tracing.mojom.h"
 
 namespace service_manager {
 class Connector;

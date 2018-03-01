@@ -62,7 +62,6 @@ source_set("lib") {
     "//services/metrics/public/cpp:ukm_builders",
     "//services/metrics/public/mojom",
     "//services/resource_coordinator/public/cpp:resource_coordinator_cpp",
-    "//services/resource_coordinator/tracing:lib",
     "//services/service_manager/public/cpp/standalone_service:standalone_service",
   ]
 }
@@ -106,12 +105,6 @@ source_set("tests") {
     "public/cpp/memory_instrumentation/memory_instrumentation_mojom_traits_unittest.cc",
     "public/cpp/memory_instrumentation/os_metrics_unittest.cc",
     "public/cpp/memory_instrumentation/tracing_integration_unittest.cc",
-    "public/cpp/tracing/chrome_trace_event_agent_unittest.cc",
-    "tracing/agent_registry_unittest.cc",
-    "tracing/coordinator_unittest.cc",
-    "tracing/recorder_unittest.cc",
-    "tracing/test_util.cc",
-    "tracing/test_util.h",
   ]
 
   if (!is_android) {
@@ -125,7 +118,6 @@ source_set("tests") {
     "//components/ukm:test_support",
     "//mojo/public/cpp/bindings",
     "//services/resource_coordinator/public/cpp:resource_coordinator_cpp",
-    "//services/resource_coordinator/tracing:lib",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp:service_test_support",
     "//services/service_manager/public/mojom",

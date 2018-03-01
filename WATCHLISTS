@@ -1492,7 +1492,8 @@
       'filepath': 'base/debug/trace_event.*'\
                   '|base/trace_event/'\
                   '|content/browser/tracing/'\
-                  '|components/tracing/'
+                  '|components/tracing/'\
+                  '|services/tracing/'
     },
     'ui_compositor': {
       'filepath': 'ui/compositor/layer\.|'\

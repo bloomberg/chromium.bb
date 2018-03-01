@@ -73,6 +73,8 @@
 #include "services/service_manager/sandbox/sandbox_type.h"
 #include "services/service_manager/service_manager.h"
 #include "services/shape_detection/public/mojom/constants.mojom.h"
+#include "services/tracing/public/mojom/constants.mojom.h"
+#include "services/tracing/tracing_service.h"
 #include "services/video_capture/public/mojom/constants.mojom.h"
 #include "services/video_capture/service_impl.h"
 #include "services/viz/public/interfaces/constants.mojom.h"
@@ -508,6 +510,13 @@ ServiceManagerContext::ServiceManagerContext() {
         base::Bind(&resource_coordinator::ResourceCoordinatorService::Create);
     packaged_services_connection_->AddEmbeddedService(
         resource_coordinator::mojom::kServiceName, resource_coordinator_info);
+  }
+
+  {
+    service_manager::EmbeddedServiceInfo info;
+    info.factory = base::Bind(&tracing::TracingService::Create);
+    packaged_services_connection_->AddEmbeddedService(
+        tracing::mojom::kServiceName, info);
   }
 
   if (features::IsVideoCaptureServiceEnabledForBrowserProcess()) {

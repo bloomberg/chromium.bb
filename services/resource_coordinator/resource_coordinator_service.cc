@@ -12,8 +12,6 @@
 #include "services/resource_coordinator/observers/ipc_volume_reporter.h"
 #include "services/resource_coordinator/observers/metrics_collector.h"
 #include "services/resource_coordinator/observers/page_signal_generator_impl.h"
-#include "services/resource_coordinator/tracing/agent_registry.h"
-#include "services/resource_coordinator/tracing/coordinator.h"
 #include "services/service_manager/public/cpp/service_context.h"
 
 namespace resource_coordinator {
@@ -28,9 +26,7 @@ std::unique_ptr<service_manager::Service> ResourceCoordinatorService::Create() {
 ResourceCoordinatorService::ResourceCoordinatorService()
     : weak_factory_(this) {}
 
-ResourceCoordinatorService::~ResourceCoordinatorService() {
-  ref_factory_.reset();
-}
+ResourceCoordinatorService::~ResourceCoordinatorService() = default;
 
 void ResourceCoordinatorService::OnStart() {
   ref_factory_.reset(new service_manager::ServiceContextRefFactory(
@@ -74,16 +70,6 @@ void ResourceCoordinatorService::OnStart() {
   registry_.AddInterface(base::BindRepeating(
       &memory_instrumentation::CoordinatorImpl::BindHeapProfilerHelperRequest,
       base::Unretained(memory_instrumentation_coordinator_.get())));
-
-  tracing_agent_registry_ = std::make_unique<tracing::AgentRegistry>();
-  registry_.AddInterface(
-      base::BindRepeating(&tracing::AgentRegistry::BindAgentRegistryRequest,
-                          base::Unretained(tracing_agent_registry_.get())));
-
-  tracing_coordinator_ = std::make_unique<tracing::Coordinator>();
-  registry_.AddInterface(
-      base::BindRepeating(&tracing::Coordinator::BindCoordinatorRequest,
-                          base::Unretained(tracing_coordinator_.get())));
 }
 
 void ResourceCoordinatorService::OnBindInterface(

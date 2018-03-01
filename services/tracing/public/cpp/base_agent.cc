@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/resource_coordinator/public/cpp/tracing/base_agent.h"
+#include "services/tracing/public/cpp/base_agent.h"
 
-#include "services/resource_coordinator/public/mojom/service_constants.mojom.h"
+#include <utility>
+
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/tracing/public/mojom/constants.mojom.h"
 
 namespace tracing {
 
@@ -18,8 +20,7 @@ BaseAgent::BaseAgent(service_manager::Connector* connector,
   if (!connector)
     return;
   tracing::mojom::AgentRegistryPtr agent_registry;
-  connector->BindInterface(resource_coordinator::mojom::kServiceName,
-                           &agent_registry);
+  connector->BindInterface(tracing::mojom::kServiceName, &agent_registry);
 
   tracing::mojom::AgentPtr agent;
   binding_.Bind(mojo::MakeRequest(&agent));
