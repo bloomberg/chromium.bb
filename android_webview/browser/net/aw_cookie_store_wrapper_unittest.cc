@@ -66,6 +66,9 @@ INSTANTIATE_TYPED_TEST_CASE_P(AwCookieStoreWrapper,
                               CookieStoreTest,
                               android_webview::AwCookieStoreWrapperTestTraits);
 INSTANTIATE_TYPED_TEST_CASE_P(AwCookieStoreWrapper,
-                              CookieStoreChangeTest,
+                              CookieStoreChangeGlobalTest,
+                              android_webview::AwCookieStoreWrapperTestTraits);
+INSTANTIATE_TYPED_TEST_CASE_P(AwCookieStoreWrapper,
+                              CookieStoreChangeNamedTest,
                               android_webview::AwCookieStoreWrapperTestTraits);
 }  // namespace net

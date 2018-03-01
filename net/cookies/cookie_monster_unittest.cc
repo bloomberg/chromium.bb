@@ -131,7 +131,10 @@ INSTANTIATE_TYPED_TEST_CASE_P(CookieMonster,
                               CookieStoreTest,
                               CookieMonsterTestTraits);
 INSTANTIATE_TYPED_TEST_CASE_P(CookieMonster,
-                              CookieStoreChangeTest,
+                              CookieStoreChangeGlobalTest,
+                              CookieMonsterTestTraits);
+INSTANTIATE_TYPED_TEST_CASE_P(CookieMonster,
+                              CookieStoreChangeNamedTest,
                               CookieMonsterTestTraits);
 
 template <typename T>
