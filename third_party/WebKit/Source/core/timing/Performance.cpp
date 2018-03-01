@@ -359,11 +359,18 @@ WebResourceTimingInfo Performance::GenerateResourceTiming(
         AllowsTimingRedirect(redirect_chain, final_response, destination_origin,
                              &context_for_use_counter);
 
-    result.last_redirect_end_time = TimeTicksInSeconds(
-        redirect_chain.back().GetResourceLoadTiming()->ReceiveHeadersEnd());
-
+    // TODO(https://crbug.com/817691): is |last_chained_timing| being null a bug
+    // or is this if statement reasonable?
+    if (ResourceLoadTiming* last_chained_timing =
+            redirect_chain.back().GetResourceLoadTiming()) {
+      result.last_redirect_end_time =
+          TimeTicksInSeconds(last_chained_timing->ReceiveHeadersEnd());
+    } else {
+      result.allow_redirect_details = false;
+      result.last_redirect_end_time = 0.0;
+    }
     if (!result.allow_redirect_details) {
-      // TODO(https://crbug.com/803913): There was previously a DCHECK that
+      // TODO(https://crbug.com/817691): There was previously a DCHECK that
       // |final_timing| is non-null. However, it clearly can be null: removing
       // this check caused https://crbug.com/803811. Figure out how this can
       // happen so test coverage can be added.
