@@ -266,7 +266,10 @@ class SimpleBuilder(generic_builders.Builder):
     # gather output manually, early slow stages will prevent any output from
     # later stages showing up until it finishes.
     changes = self._GetChangesUnderTest()
-    stage_list = [[test_stages.UnitTestStage, board]]
+    stage_list = [
+        [test_stages.UnitTestStage, board],
+        [test_stages.DebugInfoTestStage, board],
+    ]
 
     # Skip most steps if we're a compilecheck builder.
     if builder_run.config.compilecheck or builder_run.options.compilecheck:

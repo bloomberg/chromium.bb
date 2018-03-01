@@ -502,3 +502,20 @@ class CidbIntegrationTestStage(generic_stages.BuilderStage):
         # '--network'  Doesn't work in a build, yet.
     ]
     cros_build_lib.RunCommand(cmd, enter_chroot=True)
+
+
+class DebugInfoTestStage(generic_stages.BoardSpecificBuilderStage,
+                         generic_stages.ForgivingBuilderStage):
+  """Perform tests that are based on debug info
+
+  Tests may include, for example,
+    * whether dwarf info exists
+    * whether clang is used
+    * whether FORTIFY is enabled, etc.
+  """
+
+  def PerformStage(self):
+    cmd = ['debug_info_test',
+           os.path.join(cros_build_lib.GetSysroot(board=self._current_board),
+                        'usr/lib/debug')]
+    cros_build_lib.RunCommand(cmd, enter_chroot=True)
