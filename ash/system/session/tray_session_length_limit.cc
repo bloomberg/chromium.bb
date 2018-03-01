@@ -163,9 +163,10 @@ void TraySessionLengthLimit::UpdateNotification() {
   std::unique_ptr<message_center::Notification> notification =
       message_center::Notification::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId,
-          base::string16() /* title */,
-          ComposeNotificationMessage() /* message */, gfx::Image(),
-          base::string16() /* display_source */, GURL(),
+          ComposeNotificationTitle(),
+          l10n_util::GetStringUTF16(
+              IDS_ASH_STATUS_TRAY_NOTIFICATION_SESSION_LENGTH_LIMIT_MESSAGE),
+          gfx::Image(), base::string16() /* display_source */, GURL(),
           message_center::NotifierId(
               message_center::NotifierId::SYSTEM_COMPONENT,
               kNotifierSessionLengthTimeout),
@@ -192,12 +193,12 @@ void TraySessionLengthLimit::UpdateTrayBubbleView() const {
   tray_bubble_view_->Layout();
 }
 
-base::string16 TraySessionLengthLimit::ComposeNotificationMessage() const {
+base::string16 TraySessionLengthLimit::ComposeNotificationTitle() const {
   return l10n_util::GetStringFUTF16(
-      IDS_ASH_STATUS_TRAY_NOTIFICATION_SESSION_LENGTH_LIMIT,
-      ui::TimeFormat::Detailed(ui::TimeFormat::FORMAT_DURATION,
-                               ui::TimeFormat::LENGTH_LONG, 10,
-                               remaining_session_time_));
+      IDS_ASH_STATUS_TRAY_NOTIFICATION_SESSION_LENGTH_LIMIT_TITLE,
+      ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_DURATION,
+                             ui::TimeFormat::LENGTH_SHORT,
+                             remaining_session_time_));
 }
 
 base::string16 TraySessionLengthLimit::ComposeTrayBubbleMessage() const {

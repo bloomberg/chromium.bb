@@ -869,8 +869,11 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_BUBBLE_SESSION_LENGTH_LIMIT" desc="Tray bubble item shown to inform the user that the session length is limited.">
         Session ends in <ph name="session_time_remaining">$1<ex>4 minutes 23 seconds</ex></ph>.
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_NOTIFICATION_SESSION_LENGTH_LIMIT" desc="Notification shown to inform the user that the session length is limited.">
-        Session ends in <ph name="session_time_remaining">$1<ex>4 minutes 23 seconds</ex></ph>. You will be signed out.
+      <message name="IDS_ASH_STATUS_TRAY_NOTIFICATION_SESSION_LENGTH_LIMIT_TITLE" desc="The title of the notification shown to inform the user that the session length is limited.">
+        Your session will end in <ph name="session_time_remaining">$1<ex>4 mins 23 secs</ex></ph>
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NOTIFICATION_SESSION_LENGTH_LIMIT_MESSAGE" desc="The message of the notification shown to inform the user that the session length is limited.">
+        You will automatically be signed out.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_ROTATION_LOCK_AUTO" desc="The text shown in the tray menu when rotation is set to auto and the user can enable the rotation lock by tapping.">
         Auto rotate
