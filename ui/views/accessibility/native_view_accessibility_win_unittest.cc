@@ -9,6 +9,7 @@
 #include "base/win/scoped_variant.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
 #include "ui/views/accessibility/native_view_accessibility_base.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/test/views_test_base.h"
@@ -100,6 +101,56 @@ TEST_F(NativeViewAccessibilityWinTest, TextfieldAccessibility) {
   ASSERT_EQ(S_OK, textfield_accessible->put_accValue(childid_self, new_value));
 
   ASSERT_STREQ(L"New value", textfield->text().c_str());
+}
+
+TEST_F(NativeViewAccessibilityWinTest, TextfieldAssociatedLabel) {
+  Widget widget;
+  Widget::InitParams init_params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  widget.Init(init_params);
+
+  View* content = new View;
+  widget.SetContentsView(content);
+
+  Label* label = new Label(L"Label");
+  content->AddChildView(label);
+  Textfield* textfield = new Textfield;
+  textfield->SetAssociatedLabel(label);
+  content->AddChildView(textfield);
+
+  ComPtr<IAccessible> content_accessible(content->GetNativeViewAccessible());
+  LONG child_count = 0;
+  ASSERT_EQ(S_OK, content_accessible->get_accChildCount(&child_count));
+  ASSERT_EQ(2L, child_count);
+
+  ComPtr<IDispatch> textfield_dispatch;
+  ComPtr<IAccessible> textfield_accessible;
+  ScopedVariant child_index(2);
+  ASSERT_EQ(S_OK, content_accessible->get_accChild(
+                      child_index, textfield_dispatch.GetAddressOf()));
+  ASSERT_EQ(S_OK,
+            textfield_dispatch.CopyTo(textfield_accessible.GetAddressOf()));
+
+  ScopedBstr name;
+  ScopedVariant childid_self(CHILDID_SELF);
+  ASSERT_EQ(S_OK,
+            textfield_accessible->get_accName(childid_self, name.Receive()));
+  ASSERT_STREQ(L"Label", name);
+
+  ComPtr<IAccessible2_2> textfield_ia2;
+  EXPECT_EQ(S_OK, textfield_accessible.CopyTo(textfield_ia2.GetAddressOf()));
+  ScopedBstr type(IA2_RELATION_LABELLED_BY);
+  IUnknown** targets;
+  LONG n_targets;
+  EXPECT_EQ(S_OK, textfield_ia2->get_relationTargetsOfType(type, 0, &targets,
+                                                           &n_targets));
+  ASSERT_EQ(1, n_targets);
+  ComPtr<IUnknown> label_unknown(targets[0]);
+  ComPtr<IAccessible> label_accessible;
+  ASSERT_EQ(S_OK, label_unknown.CopyTo(label_accessible.GetAddressOf()));
+  ScopedVariant role;
+  EXPECT_EQ(S_OK, label_accessible->get_accRole(childid_self, role.Receive()));
+  EXPECT_EQ(ROLE_SYSTEM_STATICTEXT, V_I4(role.ptr()));
 }
 
 // A subclass of NativeViewAccessibilityWinTest that we run twice,

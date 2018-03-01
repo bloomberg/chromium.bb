@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <map>
+#include <memory>
+
 #include "ui/views/accessibility/native_view_accessibility_base.h"
 
 #include "base/memory/ptr_util.h"
@@ -15,6 +18,9 @@
 namespace views {
 
 namespace {
+
+base::LazyInstance<std::map<int32_t, ui::AXPlatformNode*>>::Leaky
+    g_unique_id_to_ax_platform_node = LAZY_INSTANCE_INITIALIZER;
 
 bool IsAccessibilityFocusableWhenEnabled(View* view) {
   return view->focus_behavior() != View::FocusBehavior::NEVER &&
@@ -66,9 +72,12 @@ NativeViewAccessibilityBase::NativeViewAccessibilityBase(View* view)
         base::BindRepeating(&FromNativeWindow));
     first_time = false;
   }
+
+  g_unique_id_to_ax_platform_node.Get()[GetUniqueId().Get()] = ax_node_;
 }
 
 NativeViewAccessibilityBase::~NativeViewAccessibilityBase() {
+  g_unique_id_to_ax_platform_node.Get().erase(GetUniqueId().Get());
   ax_node_->Destroy();
 }
 
@@ -225,7 +234,14 @@ gfx::NativeViewAccessible NativeViewAccessibilityBase::GetFocus() {
 }
 
 ui::AXPlatformNode* NativeViewAccessibilityBase::GetFromNodeID(int32_t id) {
-  return nullptr;
+  // Note: For Views, node IDs and unique IDs are the same - but that isn't
+  // necessarily true for all AXPlatformNodes.
+  auto it = g_unique_id_to_ax_platform_node.Get().find(id);
+
+  if (it == g_unique_id_to_ax_platform_node.Get().end())
+    return nullptr;
+
+  return it->second;
 }
 
 int NativeViewAccessibilityBase::GetIndexInParent() const {
