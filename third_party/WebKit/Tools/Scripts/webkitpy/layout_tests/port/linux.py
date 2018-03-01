@@ -141,12 +141,14 @@ class LinuxPort(base.Port):
             if not fs.exists(original_path):
                 continue
             fs.copyfile(original_path, fs.join(dummy_home, filename))
-        # Prevent fontconfig etc. from reconstructing the cache.
-        for dirname in ['.cache']:
-            original_path = fs.join(self._original_home, dirname)
+        # Prevent fontconfig etc. from reconstructing the cache and symlink rr
+        # trace directory.
+        for dirpath in [['.cache'], ['.local', 'share', 'rr']]:
+            original_path = fs.join(self._original_home, *dirpath)
             if not fs.exists(original_path):
                 continue
-            fs.symlink(original_path, fs.join(dummy_home, dirname))
+            fs.maybe_make_directory(fs.join(dummy_home, *dirpath[:-1]))
+            fs.symlink(original_path, fs.join(dummy_home, *dirpath))
 
     def _clean_up_dummy_home_dir(self):
         """Cleans up the dummy dir and resets the HOME environment variable."""
