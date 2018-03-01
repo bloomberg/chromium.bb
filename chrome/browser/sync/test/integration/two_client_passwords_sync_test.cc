@@ -192,13 +192,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, E2E_ONLY(Delete)) {
   ASSERT_EQ(init_password_count - 2, GetPasswordCount(0));
 }
 
-// Flaky on Mac and Windows: http://crbug.com/111399
-#if defined(OS_WIN) || defined(OS_MACOSX)
-#define MAYBE_DeleteAll DISABLED_DeleteAll
-#else
-#define MAYBE_DeleteAll DeleteAll
-#endif
-IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, MAYBE_DeleteAll) {
+IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, DeleteAll) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
 
