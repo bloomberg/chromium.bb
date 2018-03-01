@@ -753,7 +753,7 @@ TEST_F(KeyboardControllerAnimationTest, ContainerAnimation) {
   SetModeCallbackInvocationCounter invocation_counter;
   controller()->SetContainerType(ContainerType::FLOATING,
                                  invocation_counter.GetInvocationCallback());
-  EXPECT_EQ(0, invocation_counter.invocation_count_for_status(true));
+  EXPECT_EQ(1, invocation_counter.invocation_count_for_status(true));
   EXPECT_EQ(0, invocation_counter.invocation_count_for_status(false));
   ShowKeyboard();
   RunAnimationForLayer(layer);
