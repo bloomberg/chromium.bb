@@ -52,6 +52,7 @@ class CastWebViewExtension : public CastWebView, content::WebContentsObserver {
  private:
   // WebContentsObserver implementation:
   void WebContentsDestroyed() override;
+  void RenderViewCreated(content::RenderViewHost* render_view_host) override;
   void RenderProcessGone(base::TerminationStatus status) override;
 
   Delegate* const delegate_;

@@ -69,6 +69,15 @@ void CastWebViewExtension::WebContentsDestroyed() {
   delegate_->OnPageStopped(net::OK);
 }
 
+void CastWebViewExtension::RenderViewCreated(
+    content::RenderViewHost* render_view_host) {
+  content::RenderWidgetHostView* view =
+      render_view_host->GetWidget()->GetView();
+  if (view) {
+    view->SetBackgroundColor(SK_ColorTRANSPARENT);
+  }
+}
+
 void CastWebViewExtension::RenderProcessGone(base::TerminationStatus status) {
   delegate_->OnPageStopped(net::ERR_UNEXPECTED);
 }
