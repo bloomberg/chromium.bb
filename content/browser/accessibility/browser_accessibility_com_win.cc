@@ -197,7 +197,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_imagePosition(
     return E_INVALIDARG;
 
   if (coordinate_type == IA2_COORDTYPE_SCREEN_RELATIVE) {
-    gfx::Rect bounds = owner()->GetScreenBoundsRect();
+    gfx::Rect bounds = owner()->GetUnclippedScreenBoundsRect();
     *x = bounds.x();
     *y = bounds.y();
   } else if (coordinate_type == IA2_COORDTYPE_PARENT_RELATIVE) {

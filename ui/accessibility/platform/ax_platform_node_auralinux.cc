@@ -1129,7 +1129,7 @@ int AXPlatformNodeAuraLinux::GetIndexInParent() {
 
 void AXPlatformNodeAuraLinux::SetExtentsRelativeToAtkCoordinateType(
     gint* x, gint* y, gint* width, gint* height, AtkCoordType coord_type) {
-  gfx::Rect extents = GetBoundsInScreen();
+  gfx::Rect extents = delegate_->GetUnclippedScreenBoundsRect();
 
   if (x)
     *x = extents.x();

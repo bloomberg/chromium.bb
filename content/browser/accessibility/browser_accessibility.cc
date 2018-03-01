@@ -510,7 +510,7 @@ BrowserAccessibility* BrowserAccessibility::ApproximateHitTest(
     if (child->GetRole() == ax::mojom::Role::kColumn)
       continue;
 
-    if (child->GetScreenBoundsRect().Contains(point)) {
+    if (child->GetClippedScreenBoundsRect().Contains(point)) {
       BrowserAccessibility* result = child->ApproximateHitTest(point);
       if (result == child && !child_result)
         child_result = result;
@@ -900,8 +900,18 @@ gfx::NativeViewAccessible BrowserAccessibility::ChildAtIndex(int index) {
   return child->GetNativeViewAccessible();
 }
 
-gfx::Rect BrowserAccessibility::GetScreenBoundsRect() const {
-  gfx::Rect bounds = GetPageBoundsRect();
+gfx::Rect BrowserAccessibility::GetClippedScreenBoundsRect() const {
+  gfx::Rect bounds = GetPageBoundsRect(nullptr, true);
+
+  // Adjust the bounds by the top left corner of the containing view's bounds
+  // in screen coordinates.
+  bounds.Offset(manager_->GetViewBounds().OffsetFromOrigin());
+
+  return bounds;
+}
+
+gfx::Rect BrowserAccessibility::GetUnclippedScreenBoundsRect() const {
+  gfx::Rect bounds = GetPageBoundsRect(nullptr, false);
 
   // Adjust the bounds by the top left corner of the containing view's bounds
   // in screen coordinates.

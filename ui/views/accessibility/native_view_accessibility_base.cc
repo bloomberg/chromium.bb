@@ -166,7 +166,12 @@ gfx::NativeViewAccessible NativeViewAccessibilityBase::GetParent() {
   return nullptr;
 }
 
-gfx::Rect NativeViewAccessibilityBase::GetScreenBoundsRect() const {
+gfx::Rect NativeViewAccessibilityBase::GetClippedScreenBoundsRect() const {
+  // We could optionally add clipping here if ever needed.
+  return view()->GetBoundsInScreen();
+}
+
+gfx::Rect NativeViewAccessibilityBase::GetUnclippedScreenBoundsRect() const {
   return view()->GetBoundsInScreen();
 }
 

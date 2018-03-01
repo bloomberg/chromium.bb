@@ -26,12 +26,6 @@ const AXNodeData& AXPlatformNodeBase::GetData() const {
   return empty_data;
 }
 
-gfx::Rect AXPlatformNodeBase::GetBoundsInScreen() const {
-  if (delegate_)
-    return delegate_->GetScreenBoundsRect();
-  return gfx::Rect();
-}
-
 gfx::NativeViewAccessible AXPlatformNodeBase::GetParent() {
   if (delegate_)
     return delegate_->GetParent();

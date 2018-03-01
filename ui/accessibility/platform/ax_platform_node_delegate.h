@@ -59,8 +59,13 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // Get the child of a node given a 0-based index.
   virtual gfx::NativeViewAccessible ChildAtIndex(int index) = 0;
 
-  // Get the bounds of this node in screen coordinates.
-  virtual gfx::Rect GetScreenBoundsRect() const = 0;
+  // Get the bounds of this node in screen coordinates, applying clipping
+  // to all bounding boxes so that the resulting rect is within the window.
+  virtual gfx::Rect GetClippedScreenBoundsRect() const = 0;
+
+  // Get the bounds of this node in screen coordinates without applying
+  // any clipping; it may be outside of the window or offscreen.
+  virtual gfx::Rect GetUnclippedScreenBoundsRect() const = 0;
 
   // Do a *synchronous* hit test of the given location in global screen
   // coordinates, and the node within this node's subtree (inclusive) that's

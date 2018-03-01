@@ -22,7 +22,6 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
 
   // These are simple wrappers to our delegate.
   const AXNodeData& GetData() const;
-  gfx::Rect GetBoundsInScreen() const;
   gfx::NativeViewAccessible GetParent();
   int GetChildCount();
   gfx::NativeViewAccessible ChildAtIndex(int index);

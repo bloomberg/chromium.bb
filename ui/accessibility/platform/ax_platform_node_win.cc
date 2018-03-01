@@ -404,7 +404,7 @@ STDMETHODIMP AXPlatformNodeWin::accHitTest(
   COM_OBJECT_VALIDATE_1_ARG(child);
 
   gfx::Point point(x_left, y_top);
-  if (!delegate_->GetScreenBoundsRect().Contains(point)) {
+  if (!delegate_->GetClippedScreenBoundsRect().Contains(point)) {
     // Return S_FALSE and VT_EMPTY when outside the object's boundaries.
     child->vt = VT_EMPTY;
     return S_FALSE;
@@ -461,7 +461,7 @@ STDMETHODIMP AXPlatformNodeWin::accLocation(
   COM_OBJECT_VALIDATE_VAR_ID_4_ARGS_AND_GET_TARGET(var_id, x_left, y_top, width,
                                                    height, target);
 
-  gfx::Rect bounds = target->delegate_->GetScreenBoundsRect();
+  gfx::Rect bounds = target->delegate_->GetUnclippedScreenBoundsRect();
   *x_left = bounds.x();
   *y_top = bounds.y();
   *width  = bounds.width();
@@ -1208,11 +1208,12 @@ STDMETHODIMP AXPlatformNodeWin::scrollToPoint(
   gfx::Point scroll_to(x, y);
 
   if (coordinate_type == IA2_COORDTYPE_SCREEN_RELATIVE) {
-    scroll_to -= delegate_->GetScreenBoundsRect().OffsetFromOrigin();
+    scroll_to -= delegate_->GetUnclippedScreenBoundsRect().OffsetFromOrigin();
   } else if (coordinate_type == IA2_COORDTYPE_PARENT_RELATIVE) {
     if (GetParent()) {
       AXPlatformNodeBase* base = FromNativeViewAccessible(GetParent());
-      scroll_to += base->delegate_->GetScreenBoundsRect().OffsetFromOrigin();
+      scroll_to +=
+          base->delegate_->GetUnclippedScreenBoundsRect().OffsetFromOrigin();
     }
   } else {
     return E_INVALIDARG;

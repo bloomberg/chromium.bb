@@ -105,7 +105,14 @@ gfx::NativeViewAccessible TestAXNodeWrapper::ChildAtIndex(int index) {
       nullptr;
 }
 
-gfx::Rect TestAXNodeWrapper::GetScreenBoundsRect() const {
+gfx::Rect TestAXNodeWrapper::GetClippedScreenBoundsRect() const {
+  // We could add clipping here if needed.
+  gfx::RectF bounds = GetData().location;
+  bounds.Offset(g_offset);
+  return gfx::ToEnclosingRect(bounds);
+}
+
+gfx::Rect TestAXNodeWrapper::GetUnclippedScreenBoundsRect() const {
   gfx::RectF bounds = GetData().location;
   bounds.Offset(g_offset);
   return gfx::ToEnclosingRect(bounds);
@@ -115,7 +122,7 @@ TestAXNodeWrapper* TestAXNodeWrapper::HitTestSyncInternal(int x, int y) {
   // Here we find the deepest child whose bounding box contains the given point.
   // The assuptions are that there are no overlapping bounding rects and that
   // all children have smaller bounding rects than their parents.
-  if (!GetScreenBoundsRect().Contains(gfx::Rect(x, y)))
+  if (!GetClippedScreenBoundsRect().Contains(gfx::Rect(x, y)))
     return nullptr;
 
   for (int i = 0; i < GetChildCount(); i++) {

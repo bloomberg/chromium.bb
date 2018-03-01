@@ -297,9 +297,10 @@ bool AlsoUseShowMenuActionForDefaultAction(const ui::AXNodeData& data) {
 }
 
 - (NSRect)boundsInScreen {
-  if (!node_)
+  if (!node_ || !node_->GetDelegate())
     return NSZeroRect;
-  return gfx::ScreenRectToNSRect(node_->GetBoundsInScreen());
+  return gfx::ScreenRectToNSRect(
+      node_->GetDelegate()->GetClippedScreenBoundsRect());
 }
 
 - (NSString*)getStringAttribute:(ax::mojom::StringAttribute)attribute {
