@@ -170,9 +170,9 @@ void PartitionFreeHook(void* address) {
 }  // namespace
 
 SamplingHeapProfiler::Sample::Sample(size_t size,
-                                     size_t count,
+                                     size_t total,
                                      uint32_t ordinal)
-    : size(size), count(count), ordinal(ordinal) {}
+    : size(size), total(total), ordinal(ordinal) {}
 
 SamplingHeapProfiler::Sample::Sample(const Sample&) = default;
 
@@ -338,8 +338,7 @@ void SamplingHeapProfiler::DoRecordAlloc(size_t total_allocated,
   base::AutoLock lock(mutex_);
   entered_.Set(true);
 
-  size_t count = std::max<size_t>(1, (total_allocated + size / 2) / size);
-  Sample sample(size, count, ++g_last_sample_ordinal);
+  Sample sample(size, total_allocated, ++g_last_sample_ordinal);
   RecordStackTrace(&sample, skip_frames);
 
   // Close the fast-path as inserting an element into samples_ may cause
@@ -351,7 +350,7 @@ void SamplingHeapProfiler::DoRecordAlloc(size_t total_allocated,
     }
   }
   for (auto* observer : observers_)
-    observer->SampleAdded(sample.ordinal, size, count);
+    observer->SampleAdded(sample.ordinal, size, total_allocated);
   // TODO(alph): We can do better by keeping the fast-path open when
   // we know insert won't cause rehashing.
   samples_.emplace(address, std::move(sample));

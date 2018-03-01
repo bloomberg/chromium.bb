@@ -35,7 +35,7 @@ Response MemoryHandler::GetBrowserSamplingProfile(
       stack->addItem(base::StringPrintf("%p", frame));
     samples->addItem(Memory::SamplingProfileNode::Create()
                          .SetSize(sample.size)
-                         .SetCount(sample.count)
+                         .SetTotal(sample.total)
                          .SetStack(std::move(stack))
                          .Build());
   }
