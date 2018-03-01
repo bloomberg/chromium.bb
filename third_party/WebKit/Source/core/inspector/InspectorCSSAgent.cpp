@@ -43,6 +43,7 @@
 #include "core/css/CSSStyleRule.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/CSSVariableData.h"
+#include "core/css/FontFace.h"
 #include "core/css/FontSizeFunctions.h"
 #include "core/css/MediaList.h"
 #include "core/css/MediaQuery.h"
@@ -85,6 +86,7 @@
 #include "core/svg/SVGElement.h"
 #include "platform/fonts/Font.h"
 #include "platform/fonts/FontCache.h"
+#include "platform/fonts/FontCustomPlatformData.h"
 #include "platform/fonts/shaping/CachingWordShaper.h"
 #include "platform/text/TextRun.h"
 #include "platform/wtf/Time.h"
@@ -748,9 +750,32 @@ void InspectorCSSAgent::MediaQueryResultChanged() {
   GetFrontend()->mediaQueryResultChanged();
 }
 
-void InspectorCSSAgent::FontsUpdated() {
+void InspectorCSSAgent::FontsUpdated(
+    const FontFace* font,
+    const String& src,
+    const FontCustomPlatformData* fontCustomPlatformData) {
   FlushPendingProtocolNotifications();
-  GetFrontend()->fontsUpdated();
+
+  if (!(font && src && fontCustomPlatformData)) {
+    GetFrontend()->fontsUpdated();
+    return;
+  }
+
+  // blink::FontFace returns sane property defaults per the web fonts spec,
+  // so we don't perform null checks here.
+  std::unique_ptr<protocol::CSS::FontFace> font_face =
+      protocol::CSS::FontFace::create()
+          .setFontFamily(font->family())
+          .setFontStyle(font->style())
+          .setFontVariant(font->variant())
+          .setFontWeight(font->weight())
+          .setFontStretch(font->stretch())
+          .setUnicodeRange(font->unicodeRange())
+          .setSrc(src)
+          .setPlatformFontFamily(String::FromUTF8(
+              fontCustomPlatformData->FamilyNameForInspector().c_str()))
+          .build();
+  GetFrontend()->fontsUpdated(std::move(font_face));
 }
 
 void InspectorCSSAgent::ActiveStyleSheetsUpdated(Document* document) {

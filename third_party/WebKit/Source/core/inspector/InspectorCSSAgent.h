@@ -50,6 +50,8 @@ class CSSStyleRule;
 class CSSStyleSheet;
 class Document;
 class Element;
+class FontCustomPlatformData;
+class FontFace;
 class InspectedFrames;
 class InspectorNetworkAgent;
 class InspectorResourceContainer;
@@ -118,7 +120,9 @@ class CORE_EXPORT InspectorCSSAgent final
 
   void ActiveStyleSheetsUpdated(Document*);
   void DocumentDetached(Document*);
-  void FontsUpdated();
+  void FontsUpdated(const FontFace*,
+                    const String& src,
+                    const FontCustomPlatformData*);
   void SetCoverageEnabled(bool);
   void WillChangeStyleElement(Element*);
 

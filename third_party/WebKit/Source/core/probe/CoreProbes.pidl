@@ -54,6 +54,8 @@
 interface CoreProbes {
 
   class ConsoleMessage;
+  class FontCustomPlatformData;
+  class FontFace;
   class HTMLDocumentParser;
   class ScheduledNavigation;
   class ThreadableLoaderClient;
@@ -76,7 +78,7 @@ interface CoreProbes {
   void didPerformSlotDistribution([Keep] HTMLSlotElement*);
   void documentDetached([Keep] Document*);
   void activeStyleSheetsUpdated([Keep] Document*);
-  void fontsUpdated(Document*);
+  void fontsUpdated(ExecutionContext*, const FontFace* face, const String& src, const FontCustomPlatformData* fontCustomPlatformData);
   void mediaQueryResultChanged(Document*);
   void didPushShadowRoot([Keep] Element* host, ShadowRoot*);
   void willPopShadowRoot([Keep] Element* host, ShadowRoot*);
