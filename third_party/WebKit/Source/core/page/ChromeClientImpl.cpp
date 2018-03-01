@@ -589,6 +589,9 @@ void ChromeClientImpl::OpenFileChooser(
   if (!client)
     return;
 
+  Document* doc = frame->GetDocument();
+  if (doc)
+    doc->MaybeQueueSendDidEditFieldInInsecureContext();
   const WebFileChooserParams& params = file_chooser->Params();
   WebFileChooserCompletionImpl* chooser_completion =
       new WebFileChooserCompletionImpl(std::move(file_chooser));
