@@ -562,7 +562,7 @@ TEST_F(SiteEngagementHelperTest, Occlusion) {
 
   // Occluded -> Visible transition should not affect input tracking.
   EXPECT_EQ(content::Visibility::OCCLUDED, web_contents()->GetVisibility());
-  web_contents()->WasUnOccluded();
+  web_contents()->WasShown();
   EXPECT_EQ(content::Visibility::VISIBLE, web_contents()->GetVisibility());
   EXPECT_FALSE(input_tracker_timer->IsRunning());
   EXPECT_TRUE(IsTrackingInput(helper));
@@ -583,7 +583,7 @@ TEST_F(SiteEngagementHelperTest, Occlusion) {
 
   // Hidden -> Occluded transition should start a timer to track input.
   EXPECT_EQ(content::Visibility::HIDDEN, web_contents()->GetVisibility());
-  web_contents()->WasShown();
+  web_contents()->WasOccluded();
   EXPECT_EQ(content::Visibility::OCCLUDED, web_contents()->GetVisibility());
   EXPECT_TRUE(input_tracker_timer->IsRunning());
   EXPECT_FALSE(IsTrackingInput(helper));
