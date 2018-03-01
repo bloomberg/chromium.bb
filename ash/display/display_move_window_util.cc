@@ -12,6 +12,7 @@
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_util.h"
+#include "base/stl_util.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
@@ -165,12 +166,10 @@ bool CanHandleMoveActiveWindowBetweenDisplays() {
   if (display_manager->IsInUnifiedMode() || display_manager->IsInMirrorMode())
     return false;
 
-  aura::Window* target = GetTargetWindow();
   // The movement target window must be in window cycle list.
-  MruWindowTracker::WindowList window_list =
-      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList();
-  return std::find(window_list.begin(), window_list.end(), target) !=
-         window_list.end();
+  return base::ContainsValue(
+      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(),
+      GetTargetWindow());
 }
 
 void HandleMoveActiveWindowToDisplay(DisplayMoveWindowDirection direction) {

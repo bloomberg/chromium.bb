@@ -10,6 +10,7 @@
 #include "ash/host/ash_window_tree_host_mirroring_delegate.h"
 #include "ash/host/root_window_transformer.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_targeter.h"
@@ -79,8 +80,7 @@ void AshWindowTreeHostMusUnified::RegisterMirroringHost(
   aura::Window* src_root = mirroring_ash_host->AsWindowTreeHost()->window();
   src_root->SetEventTargeter(
       std::make_unique<MusUnifiedEventTargeter>(src_root, window(), delegate_));
-  DCHECK(std::find(mirroring_hosts_.begin(), mirroring_hosts_.end(),
-                   mirroring_ash_host) == mirroring_hosts_.end());
+  DCHECK(!base::ContainsValue(mirroring_hosts_, mirroring_ash_host));
   mirroring_hosts_.push_back(mirroring_ash_host);
   mirroring_ash_host->AsWindowTreeHost()->window()->AddObserver(this);
 }

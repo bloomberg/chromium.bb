@@ -10,6 +10,7 @@
 #include "ash/content/keyboard_overlay/keyboard_overlay_delegate.h"
 #include "ash/content/shell_content_state.h"
 #include "ash/test/ash_test_base.h"
+#include "base/stl_util.h"
 #include "ui/web_dialogs/test/test_web_contents_handler.h"
 #include "ui/web_dialogs/test/test_web_dialog_delegate.h"
 
@@ -85,10 +86,8 @@ TEST_F(KeyboardOverlayViewTest, NoRedundantCancelingKeys) {
 
   // Other canceling keys should be same as opening keys.
   EXPECT_EQ(open_keys.size(), canceling_keys.size());
-  for (size_t i = 0; i < canceling_keys.size(); ++i) {
-    EXPECT_NE(std::find(open_keys.begin(), open_keys.end(), canceling_keys[i]),
-              open_keys.end());
-  }
+  for (size_t i = 0; i < canceling_keys.size(); ++i)
+    EXPECT_TRUE(base::ContainsValue(open_keys, canceling_keys[i]));
 }
 
 }  // namespace ash
