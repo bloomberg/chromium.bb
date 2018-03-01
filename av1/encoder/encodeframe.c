@@ -702,23 +702,30 @@ static void rd_pick_sb_modes(const AV1_COMP *const cpi, TileDataEnc *tile_data,
   ctx->rdcost = rd_cost->rdcost;
 }
 
-static void update_inter_mode_stats(FRAME_COUNTS *counts, PREDICTION_MODE mode,
-                                    int16_t mode_context) {
+static void update_inter_mode_stats(FRAME_CONTEXT *fc, FRAME_COUNTS *counts,
+                                    PREDICTION_MODE mode, int16_t mode_context,
+                                    uint8_t allow_update_cdf) {
   int16_t mode_ctx = mode_context & NEWMV_CTX_MASK;
   if (mode == NEWMV) {
     ++counts->newmv_mode[mode_ctx][0];
+    if (allow_update_cdf) update_cdf(fc->newmv_cdf[mode_ctx], 0, 2);
     return;
   } else {
     ++counts->newmv_mode[mode_ctx][1];
+    if (allow_update_cdf) update_cdf(fc->newmv_cdf[mode_ctx], 1, 2);
 
     mode_ctx = (mode_context >> GLOBALMV_OFFSET) & GLOBALMV_CTX_MASK;
     if (mode == GLOBALMV) {
       ++counts->zeromv_mode[mode_ctx][0];
+      if (allow_update_cdf) update_cdf(fc->zeromv_cdf[mode_ctx], 0, 2);
       return;
     } else {
       ++counts->zeromv_mode[mode_ctx][1];
+      if (allow_update_cdf) update_cdf(fc->zeromv_cdf[mode_ctx], 1, 2);
       mode_ctx = (mode_context >> REFMV_OFFSET) & REFMV_CTX_MASK;
       ++counts->refmv_mode[mode_ctx][mode != NEARESTMV];
+      if (allow_update_cdf)
+        update_cdf(fc->refmv_cdf[mode_ctx], mode != NEARESTMV, 2);
     }
   }
 }
@@ -1253,7 +1260,7 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
           update_cdf(fc->inter_compound_mode_cdf[mode_ctx],
                      INTER_COMPOUND_OFFSET(mode), INTER_COMPOUND_MODES);
       } else {
-        update_inter_mode_stats(counts, mode, mode_ctx);
+        update_inter_mode_stats(fc, counts, mode, mode_ctx, allow_update_cdf);
       }
 #else
       if (has_second_ref(mbmi)) {
