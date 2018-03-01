@@ -142,7 +142,7 @@ class PropertyTreePrinter {
   }
 
   String PathAsString(const NodeType* last_node) {
-    for (const auto* n = last_node; !n->IsRoot(); n = n->Parent())
+    for (const auto* n = last_node; n; n = n->Parent())
       AddNode(n);
     return NodesAsTreeString();
   }
@@ -183,6 +183,12 @@ String PaintPropertyNode<NodeType>::ToTreeString() const {
 }
 
 #endif  // DCHECK_IS_ON()
+
+template <typename NodeType>
+std::ostream& operator<<(std::ostream& os,
+                         const PaintPropertyNode<NodeType>& node) {
+  return os << static_cast<const NodeType&>(node).ToString().Utf8().data();
+}
 
 }  // namespace blink
 

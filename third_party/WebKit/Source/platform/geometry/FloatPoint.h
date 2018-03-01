@@ -237,10 +237,6 @@ PLATFORM_EXPORT bool FindIntersection(const FloatPoint& p1,
 
 PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const FloatPoint&);
 
-// Redeclared here to avoid ODR issues.
-// See platform/testing/GeometryPrinters.h.
-void PrintTo(const FloatPoint&, std::ostream*);
-
 }  // namespace blink
 
 #endif

@@ -132,10 +132,6 @@ inline DoubleSize ToDoubleSize(const DoublePoint& a) {
 
 PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const DoublePoint&);
 
-// Redeclared here to avoid ODR issues.
-// See platform/testing/GeometryPrinters.h.
-void PrintTo(const DoublePoint&, std::ostream*);
-
 }  // namespace blink
 
 #endif

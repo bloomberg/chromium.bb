@@ -149,10 +149,6 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
   std::unique_ptr<GeometryMapperClipCache> geometry_mapper_clip_cache_;
 };
 
-// Redeclared here to avoid ODR issues.
-// See platform/testing/PaintPrinters.h.
-void PrintTo(const ClipPaintPropertyNode&, std::ostream*);
-
 }  // namespace blink
 
 #endif  // ClipPaintPropertyNode_h

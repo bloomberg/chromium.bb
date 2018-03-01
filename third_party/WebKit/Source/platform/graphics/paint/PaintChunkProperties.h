@@ -52,9 +52,8 @@ inline bool operator!=(const PaintChunkProperties& a,
   return !(a == b);
 }
 
-// Redeclared here to avoid ODR issues.
-// See platform/testing/PaintPrinters.h.
-void PrintTo(const PaintChunkProperties&, std::ostream*);
+PLATFORM_EXPORT std::ostream& operator<<(std::ostream&,
+                                         const PaintChunkProperties);
 
 }  // namespace blink
 

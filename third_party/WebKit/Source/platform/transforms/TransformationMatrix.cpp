@@ -1916,4 +1916,9 @@ String TransformationMatrix::ToString(bool as_matrix) const {
       decomposition.perspective_w);
 }
 
+std::ostream& operator<<(std::ostream& ostream,
+                         const TransformationMatrix& transform) {
+  return ostream << transform.ToString();
+}
+
 }  // namespace blink

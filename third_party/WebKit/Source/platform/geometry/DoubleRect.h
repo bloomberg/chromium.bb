@@ -87,10 +87,6 @@ PLATFORM_EXPORT IntRect RoundedIntRect(const DoubleRect&);
 
 PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const DoubleRect&);
 
-// Redeclared here to avoid ODR issues.
-// See platform/testing/GeometryPrinters.h.
-void PrintTo(const DoubleRect&, std::ostream*);
-
 }  // namespace blink
 
 #endif

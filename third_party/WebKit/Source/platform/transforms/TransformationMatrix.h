@@ -519,9 +519,8 @@ class PLATFORM_EXPORT TransformationMatrix {
   Matrix4 matrix_;
 };
 
-// Redeclared here to avoid ODR issues.
-// See platform/testing/TransformPrinters.h.
-void PrintTo(const TransformationMatrix&, std::ostream*);
+PLATFORM_EXPORT std::ostream& operator<<(std::ostream&,
+                                         const TransformationMatrix&);
 
 }  // namespace blink
 

@@ -213,10 +213,6 @@ inline LayoutPoint FlooredLayoutPoint(const FloatSize& s) {
 
 PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const LayoutPoint&);
 
-// Redeclared here to avoid ODR issues.
-// See platform/testing/GeometryPrinters.h.
-void PrintTo(const LayoutPoint&, std::ostream*);
-
 }  // namespace blink
 
 #endif  // LayoutPoint_h

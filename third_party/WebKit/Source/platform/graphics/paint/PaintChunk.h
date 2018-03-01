@@ -151,9 +151,7 @@ inline Vector<PaintChunk>::const_iterator FindChunkInVectorByDisplayItemIndex(
       const_cast<Vector<PaintChunk>&>(chunks), index);
 }
 
-// Redeclared here to avoid ODR issues.
-// See platform/testing/PaintPrinters.h.
-void PrintTo(const PaintChunk&, std::ostream*);
+PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const PaintChunk&);
 
 }  // namespace blink
 

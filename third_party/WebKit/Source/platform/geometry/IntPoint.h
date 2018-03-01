@@ -154,10 +154,6 @@ inline int IntPoint::DistanceSquaredToPoint(const IntPoint& point) const {
 
 PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const IntPoint&);
 
-// Redeclared here to avoid ODR issues.
-// See platform/testing/GeometryPrinters.h.
-void PrintTo(const IntPoint&, std::ostream*);
-
 }  // namespace blink
 
 WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(blink::IntPoint);

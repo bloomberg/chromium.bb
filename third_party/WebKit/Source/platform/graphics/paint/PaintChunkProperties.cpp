@@ -36,4 +36,9 @@ String PaintChunkProperties::ToString() const {
   return sb.ToString();
 }
 
+std::ostream& operator<<(std::ostream& os,
+                         const PaintChunkProperties& properties) {
+  return os << properties.ToString().Utf8().data();
+}
+
 }  // namespace blink

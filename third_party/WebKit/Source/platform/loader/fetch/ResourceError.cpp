@@ -174,4 +174,15 @@ void ResourceError::InitializeDescription() {
   }
 }
 
+std::ostream& operator<<(std::ostream& os, const ResourceError& error) {
+  return os << ", ErrorCode = " << error.ErrorCode()
+            << ", FailingURL = " << error.FailingURL()
+            << ", LocalizedDescription = " << error.LocalizedDescription()
+            << ", IsCancellation = " << error.IsCancellation()
+            << ", IsAccessCheck = " << error.IsAccessCheck()
+            << ", IsTimeout = " << error.IsTimeout()
+            << ", HasCopyInCache = " << error.HasCopyInCache()
+            << ", IsCacheMiss = " << error.IsCacheMiss();
+}
+
 }  // namespace blink

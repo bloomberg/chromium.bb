@@ -236,11 +236,6 @@ PLATFORM_EXPORT std::ostream& operator<<(std::ostream&,
 PLATFORM_EXPORT std::ostream& operator<<(std::ostream&,
                                          const FloatRoundedRect::Radii&);
 
-// Redeclared here to avoid ODR issues.
-// See platform/testing/GeometryPrinters.h.
-void PrintTo(const FloatRoundedRect&, std::ostream*);
-void PrintTo(const FloatRoundedRect::Radii&, std::ostream*);
-
 }  // namespace blink
 
 #endif  // FloatRoundedRect_h
