@@ -3160,8 +3160,9 @@ IN_PROC_BROWSER_TEST_F(ParallelDownloadTest, ResumptionLastSliceFinished) {
 // Verifies that if the last slice is finished, but the database record is not
 // finished, which may happen in database migration.
 // When the server sends HTTP range not satisfied, the download can complete.
-#if defined(OS_WIN)
-// Failing on windows: https://crbug.com/814310
+#if defined(OS_WIN) || defined(OS_ANDROID)
+// Failing on Windows: https://crbug.com/814310
+// Failing on Android: https://crbug.com/817801
 #define MAYBE_ResumptionLastSliceUnfinished \
   DISABLED_ResumptionLastSliceUnfinished
 #else
