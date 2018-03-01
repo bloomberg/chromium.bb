@@ -21,7 +21,6 @@
 #include "services/ui/ws/event_dispatcher.h"
 #include "services/ui/ws/event_dispatcher_delegate.h"
 #include "services/ui/ws/server_window_observer.h"
-#include "services/ui/ws/user_id.h"
 #include "services/ui/ws/window_server.h"
 
 namespace viz {
@@ -49,8 +48,6 @@ class WindowManagerState : public EventDispatcherDelegate,
  public:
   explicit WindowManagerState(WindowTree* window_tree);
   ~WindowManagerState() override;
-
-  const UserId& user_id() const;
 
   WindowTree* window_tree() { return window_tree_; }
   const WindowTree* window_tree() const { return window_tree_; }
@@ -100,13 +97,6 @@ class WindowManagerState : public EventDispatcherDelegate,
   EventDispatcher* event_dispatcher() { return &event_dispatcher_; }
 
   CursorState& cursor_state() { return cursor_state_; }
-
-  // Returns true if this is the WindowManager of the active user.
-  bool IsActive() const;
-
-  void Activate(const gfx::Point& mouse_location_on_display,
-                int64_t display_id);
-  void Deactivate();
 
   // Processes an event from PlatformDisplay. This doesn't take ownership of
   // |event|, but it may modify it.
@@ -187,9 +177,6 @@ class WindowManagerState : public EventDispatcherDelegate,
 
   // Called when a Display is deleted.
   void OnDisplayDestroying(Display* display);
-
-  // Sets the visibility of all window manager roots windows to |value|.
-  void SetAllRootWindowsVisible(bool value);
 
   // Returns the ServerWindow that is the root of the WindowManager for
   // |window|. |window| corresponds to the root of a Display.

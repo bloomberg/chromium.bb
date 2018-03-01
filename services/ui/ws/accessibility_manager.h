@@ -7,7 +7,6 @@
 
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/ui/public/interfaces/accessibility_manager.mojom.h"
-#include "services/ui/ws/user_id.h"
 
 namespace ui {
 namespace ws {
@@ -16,7 +15,7 @@ class WindowServer;
 
 class AccessibilityManager : public mojom::AccessibilityManager {
  public:
-  AccessibilityManager(WindowServer* window_server, const UserId& user);
+  explicit AccessibilityManager(WindowServer* window_server);
   ~AccessibilityManager() override;
 
   void Bind(mojom::AccessibilityManagerRequest request);
@@ -26,7 +25,6 @@ class AccessibilityManager : public mojom::AccessibilityManager {
   void SetHighContrastMode(bool enabled) override;
 
   WindowServer* window_server_;
-  const UserId user_;
   mojo::Binding<mojom::AccessibilityManager> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityManager);

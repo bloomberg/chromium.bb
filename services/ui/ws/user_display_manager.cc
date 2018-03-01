@@ -15,12 +15,9 @@
 namespace ui {
 namespace ws {
 
-UserDisplayManager::UserDisplayManager(UserDisplayManagerDelegate* delegate,
-                                       const UserId& user_id)
+UserDisplayManager::UserDisplayManager(UserDisplayManagerDelegate* delegate)
     : delegate_(delegate),
-      user_id_(user_id),
-      got_valid_frame_decorations_(
-          delegate->GetFrameDecorationsForUser(user_id, nullptr)) {}
+      got_valid_frame_decorations_(delegate->GetFrameDecorations(nullptr)) {}
 
 UserDisplayManager::~UserDisplayManager() {}
 
@@ -80,8 +77,7 @@ mojom::WsDisplayPtr UserDisplayManager::ToWsDisplayPtr(
     const display::Display& display) {
   mojom::WsDisplayPtr ws_display = mojom::WsDisplay::New();
   ws_display->display = display;
-  delegate_->GetFrameDecorationsForUser(user_id_,
-                                        &ws_display->frame_decoration_values);
+  delegate_->GetFrameDecorations(&ws_display->frame_decoration_values);
   return ws_display;
 }
 

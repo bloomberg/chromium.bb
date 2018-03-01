@@ -14,11 +14,6 @@
 namespace ui {
 namespace ws {
 namespace test {
-namespace {
-
-const UserId kTestId1 = "2";
-
-}  // namespace
 
 class CursorStateTest : public testing::Test, public CursorStateDelegate {
  public:
@@ -40,10 +35,9 @@ class CursorStateTest : public testing::Test, public CursorStateDelegate {
   // testing::Test:
   void SetUp() override {
     screen_manager_.Init(window_server()->display_manager());
-    window_server()->user_id_tracker()->AddUserId(kTestId1);
     cursor_state_ = std::make_unique<CursorState>(display_manager(), this);
 
-    AddWindowManager(window_server(), kTestId1);
+    AddWindowManager(window_server());
     screen_manager().AddDisplay(MakeDisplay(0, 0, 1024, 768, 1.0f));
     ASSERT_EQ(1u, display_manager()->displays().size());
   }

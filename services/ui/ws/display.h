@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-#include <map>
 #include <memory>
 #include <queue>
 #include <set>
@@ -23,8 +22,7 @@
 #include "services/ui/ws/platform_display_delegate.h"
 #include "services/ui/ws/server_window.h"
 #include "services/ui/ws/server_window_observer.h"
-#include "services/ui/ws/user_id_tracker_observer.h"
-#include "services/ui/ws/window_manager_window_tree_factory_set_observer.h"
+#include "services/ui/ws/window_manager_window_tree_factory_observer.h"
 #include "ui/display/display.h"
 #include "ui/events/event_sink.h"
 
@@ -57,8 +55,7 @@ class DisplayTestApi;
 class Display : public PlatformDisplayDelegate,
                 public mojom::WindowTreeHost,
                 public FocusControllerObserver,
-                public UserIdTrackerObserver,
-                public WindowManagerWindowTreeFactorySetObserver,
+                public WindowManagerWindowTreeFactoryObserver,
                 public EventSink {
  public:
   explicit Display(WindowServer* window_server);
@@ -101,21 +98,13 @@ class Display : public PlatformDisplayDelegate,
 
   WindowManagerDisplayRoot* GetWindowManagerDisplayRootWithRoot(
       const ServerWindow* window);
-  WindowManagerDisplayRoot* GetWindowManagerDisplayRootForUser(
-      const UserId& user_id) {
-    return const_cast<WindowManagerDisplayRoot*>(
-        const_cast<const Display*>(this)->GetWindowManagerDisplayRootForUser(
-            user_id));
+
+  WindowManagerDisplayRoot* window_manager_display_root() {
+    return window_manager_display_root_;
   }
-  const WindowManagerDisplayRoot* GetWindowManagerDisplayRootForUser(
-      const UserId& user_id) const;
-  WindowManagerDisplayRoot* GetActiveWindowManagerDisplayRoot() {
-    return const_cast<WindowManagerDisplayRoot*>(
-        const_cast<const Display*>(this)->GetActiveWindowManagerDisplayRoot());
-  }
-  const WindowManagerDisplayRoot* GetActiveWindowManagerDisplayRoot() const;
-  size_t num_window_manager_states() const {
-    return window_manager_display_root_map_.size();
+
+  const WindowManagerDisplayRoot* window_manager_display_root() const {
+    return window_manager_display_root_;
   }
 
   // TODO(sky): this should only be called by WindowServer, move to interface
@@ -134,8 +123,7 @@ class Display : public PlatformDisplayDelegate,
   // Called just before |tree| is destroyed.
   void OnWillDestroyTree(WindowTree* tree);
 
-  // Removes |display_root| from internal maps. This called prior to
-  // |display_root| being destroyed.
+  // Called prior to |display_root| being destroyed.
   void RemoveWindowManagerDisplayRoot(WindowManagerDisplayRoot* display_root);
 
   // Sets the native cursor to |cursor|.
@@ -159,17 +147,11 @@ class Display : public PlatformDisplayDelegate,
  private:
   friend class test::DisplayTestApi;
 
-  using WindowManagerDisplayRootMap =
-      std::map<UserId, WindowManagerDisplayRoot*>;
-
   class CursorState;
 
-  // Creates the set of WindowManagerDisplayRoots from the
-  // WindowManagerWindowTreeFactorySet.
-  void CreateWindowManagerDisplayRootsFromFactories();
-
-  void CreateWindowManagerDisplayRootFromFactory(
-      WindowManagerWindowTreeFactory* factory);
+  // Creates a WindowManagerDisplayRoot from the
+  // WindowManagerWindowTreeFactory.
+  void CreateWindowManagerDisplayRootFromFactory();
 
   // Creates the root ServerWindow for this display, where |size| is in physical
   // pixels.
@@ -193,10 +175,7 @@ class Display : public PlatformDisplayDelegate,
                       ServerWindow* old_focused_window,
                       ServerWindow* new_focused_window) override;
 
-  // UserIdTrackerObserver:
-  void OnUserIdRemoved(const UserId& id) override;
-
-  // WindowManagerWindowTreeFactorySetObserver:
+  // WindowManagerWindowTreeFactoryObserver:
   void OnWindowManagerWindowTreeFactoryReady(
       WindowManagerWindowTreeFactory* factory) override;
 
@@ -215,7 +194,8 @@ class Display : public PlatformDisplayDelegate,
 
   viz::ParentLocalSurfaceIdAllocator allocator_;
 
-  WindowManagerDisplayRootMap window_manager_display_root_map_;
+  // This is owned by WindowManagerState.
+  WindowManagerDisplayRoot* window_manager_display_root_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(Display);
 };

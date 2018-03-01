@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "services/ui/ws/display_creation_config.h"
-#include "services/ui/ws/window_manager_window_tree_factory_set.h"
+#include "services/ui/ws/window_manager_window_tree_factory_observer.h"
 #include "services/ui/ws/window_server.h"
 #include "services/ui/ws/window_server_delegate.h"
 #include "services/ui/ws/window_tree.h"
@@ -15,16 +15,29 @@ namespace ui {
 namespace ws {
 
 WindowManagerWindowTreeFactory::WindowManagerWindowTreeFactory(
-    WindowManagerWindowTreeFactorySet* window_manager_window_tree_factory_set,
-    const UserId& user_id,
-    mojo::InterfaceRequest<mojom::WindowManagerWindowTreeFactory> request)
-    : WindowManagerWindowTreeFactory(window_manager_window_tree_factory_set,
-                                     user_id) {
-  if (request.is_pending())
-    binding_.Bind(std::move(request));
-}
+    WindowServer* window_server)
+    : window_server_(window_server), binding_(this) {}
 
 WindowManagerWindowTreeFactory::~WindowManagerWindowTreeFactory() {}
+
+void WindowManagerWindowTreeFactory::Bind(
+    mojo::InterfaceRequest<mojom::WindowManagerWindowTreeFactory> request) {
+  binding_.Bind(std::move(request));
+}
+
+void WindowManagerWindowTreeFactory::AddObserver(
+    WindowManagerWindowTreeFactoryObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void WindowManagerWindowTreeFactory::RemoveObserver(
+    WindowManagerWindowTreeFactoryObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+void WindowManagerWindowTreeFactory::OnTreeDestroyed() {
+  window_tree_ = nullptr;
+}
 
 void WindowManagerWindowTreeFactory::CreateWindowTree(
     mojom::WindowTreeRequest window_tree_request,
@@ -42,35 +55,23 @@ void WindowManagerWindowTreeFactory::CreateWindowTree(
 
   // If the config is MANUAL, then all WindowManagers must connect as MANUAL.
   if (!automatically_create_display_roots &&
-      GetWindowServer()->display_creation_config() ==
+      window_server_->display_creation_config() ==
           DisplayCreationConfig::AUTOMATIC) {
     DVLOG(1) << "CreateWindowTree() called with manual and automatic.";
     return;
   }
 
-  SetWindowTree(GetWindowServer()->CreateTreeForWindowManager(
-      user_id_, std::move(window_tree_request), std::move(window_tree_client),
+  SetWindowTree(window_server_->CreateTreeForWindowManager(
+      std::move(window_tree_request), std::move(window_tree_client),
       automatically_create_display_roots));
-}
-
-WindowManagerWindowTreeFactory::WindowManagerWindowTreeFactory(
-    WindowManagerWindowTreeFactorySet* window_manager_window_tree_factory_set,
-    const UserId& user_id)
-    : window_manager_window_tree_factory_set_(
-          window_manager_window_tree_factory_set),
-      user_id_(user_id),
-      binding_(this) {}
-
-WindowServer* WindowManagerWindowTreeFactory::GetWindowServer() {
-  return window_manager_window_tree_factory_set_->window_server();
 }
 
 void WindowManagerWindowTreeFactory::SetWindowTree(WindowTree* window_tree) {
   DCHECK(!window_tree_);
   window_tree_ = window_tree;
 
-  window_manager_window_tree_factory_set_
-      ->OnWindowManagerWindowTreeFactoryReady(this);
+  for (WindowManagerWindowTreeFactoryObserver& observer : observers_)
+    observer.OnWindowManagerWindowTreeFactoryReady(this);
 }
 
 }  // namespace ws

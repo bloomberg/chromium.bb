@@ -27,10 +27,7 @@
 #include "services/ui/ws/server_window_observer.h"
 #include "services/ui/ws/server_window_tracker.h"
 #include "services/ui/ws/user_display_manager_delegate.h"
-#include "services/ui/ws/user_id_tracker.h"
-#include "services/ui/ws/user_id_tracker_observer.h"
 #include "services/ui/ws/video_detector_impl.h"
-#include "services/ui/ws/window_manager_window_tree_factory_set.h"
 
 namespace ui {
 namespace ws {
@@ -44,6 +41,7 @@ class ThreadedImageCursorsFactory;
 class UserActivityMonitor;
 class WindowManagerDisplayRoot;
 class WindowManagerState;
+class WindowManagerWindowTreeFactory;
 class WindowServerDelegate;
 class WindowTree;
 class WindowTreeBinding;
@@ -55,16 +53,12 @@ enum class DisplayCreationConfig;
 class WindowServer : public ServerWindowDelegate,
                      public ServerWindowObserver,
                      public GpuHostDelegate,
-                     public UserDisplayManagerDelegate,
-                     public UserIdTrackerObserver {
+                     public UserDisplayManagerDelegate {
  public:
   WindowServer(WindowServerDelegate* delegate, bool should_host_viz);
   ~WindowServer() override;
 
   WindowServerDelegate* delegate() { return delegate_; }
-
-  UserIdTracker* user_id_tracker() { return &user_id_tracker_; }
-  const UserIdTracker* user_id_tracker() const { return &user_id_tracker_; }
 
   DisplayManager* display_manager() { return display_manager_.get(); }
   const DisplayManager* display_manager() const {
@@ -95,7 +89,6 @@ class WindowServer : public ServerWindowDelegate,
   // See description of WindowTree::Embed() for details. This assumes
   // |transport_window_id| is valid.
   WindowTree* EmbedAtWindow(ServerWindow* root,
-                            const UserId& user_id,
                             mojom::WindowTreeClientPtr client,
                             uint32_t flags,
                             std::unique_ptr<AccessPolicy> access_policy);
@@ -106,7 +99,6 @@ class WindowServer : public ServerWindowDelegate,
                std::unique_ptr<WindowTreeBinding> binding,
                mojom::WindowTreePtr tree_ptr);
   WindowTree* CreateTreeForWindowManager(
-      const UserId& user_id,
       mojom::WindowTreeRequest window_tree_request,
       mojom::WindowTreeClientPtr window_tree_client,
       bool automatically_create_display_roots);
@@ -145,11 +137,15 @@ class WindowServer : public ServerWindowDelegate,
   }
   const WindowTree* GetTreeWithRoot(const ServerWindow* window) const;
 
-  UserActivityMonitor* GetUserActivityMonitorForUser(const UserId& user_id);
-
-  WindowManagerWindowTreeFactorySet* window_manager_window_tree_factory_set() {
-    return &window_manager_window_tree_factory_set_;
+  UserActivityMonitor* user_activity_monitor() {
+    return user_activity_monitor_.get();
   }
+
+  WindowManagerWindowTreeFactory* window_manager_window_tree_factory() {
+    return window_manager_window_tree_factory_.get();
+  }
+  void BindWindowManagerWindowTreeFactory(
+      mojo::InterfaceRequest<mojom::WindowManagerWindowTreeFactory> request);
 
   // Sets focus to |window|. Returns true if |window| already has focus, or
   // focus was successfully changed. Returns |false| if |window| is not a valid
@@ -157,7 +153,7 @@ class WindowServer : public ServerWindowDelegate,
   bool SetFocusedWindow(ServerWindow* window);
   ServerWindow* GetFocusedWindow();
 
-  void SetHighContrastMode(const UserId& user, bool enabled);
+  void SetHighContrastMode(bool enabled);
 
   // Returns a change id for the window manager that is associated with
   // |source| and |client_change_id|. When the window manager replies
@@ -208,11 +204,10 @@ class WindowServer : public ServerWindowDelegate,
   void ProcessWillChangeWindowCursor(ServerWindow* window,
                                      const ui::CursorData& cursor);
 
-  // Sends an |event| to all WindowTrees belonging to |user_id| that might be
-  // observing events. Skips |ignore_tree| if it is non-null. |target_window| is
-  // the target of the event.
+  // Sends an |event| to all WindowTrees that might be observing events. Skips
+  // |ignore_tree| if it is non-null. |target_window| is the target of the
+  // event.
   void SendToPointerWatchers(const ui::Event& event,
-                             const UserId& user_id,
                              ServerWindow* target_window,
                              WindowTree* ignore_tree,
                              int64_t display_id);
@@ -244,7 +239,7 @@ class WindowServer : public ServerWindowDelegate,
   void OnDisplayReady(Display* display, bool is_first);
   void OnDisplayDestroyed(Display* display);
   void OnNoMoreDisplays();
-  WindowManagerState* GetWindowManagerStateForUser(const UserId& user_id);
+  WindowManagerState* GetWindowManagerState();
 
   VideoDetectorImpl* video_detector() { return &video_detector_; }
 
@@ -254,9 +249,7 @@ class WindowServer : public ServerWindowDelegate,
                                 ServerWindow* window) override;
 
   // UserDisplayManagerDelegate:
-  bool GetFrameDecorationsForUser(
-      const UserId& user_id,
-      mojom::FrameDecorationValuesPtr* values) override;
+  bool GetFrameDecorations(mojom::FrameDecorationValuesPtr* values) override;
   int64_t GetInternalDisplayId() override;
 
  private:
@@ -266,8 +259,6 @@ class WindowServer : public ServerWindowDelegate,
 
   using WindowTreeMap =
       std::map<ClientSpecificId, std::unique_ptr<WindowTree>>;
-  using UserActivityMonitorMap =
-      std::map<UserId, std::unique_ptr<UserActivityMonitor>>;
 
   struct InFlightWindowManagerChange {
     // Identifies the client that initiated the change.
@@ -306,8 +297,6 @@ class WindowServer : public ServerWindowDelegate,
   // is run in response to events that change the mouse cursor properties of
   // |window|.
   void UpdateNativeCursorIfOver(ServerWindow* window);
-
-  bool IsUserInHighContrastMode(const UserId& user) const;
 
   // Finds the parent client that will embed |surface_id| and claims ownership
   // of the temporary reference. If no parent client is found then tell GPU to
@@ -367,14 +356,6 @@ class WindowServer : public ServerWindowDelegate,
   // GpuHostDelegate:
   void OnGpuServiceInitialized() override;
 
-  // UserIdTrackerObserver:
-  void OnActiveUserIdChanged(const UserId& previously_active_id,
-                             const UserId& active_id) override;
-  void OnUserIdAdded(const UserId& id) override;
-  void OnUserIdRemoved(const UserId& id) override;
-
-  UserIdTracker user_id_tracker_;
-
   WindowServerDelegate* delegate_;
 
   // ID to use for next WindowTree.
@@ -393,7 +374,7 @@ class WindowServer : public ServerWindowDelegate,
   Operation* current_operation_;
 
   bool in_destructor_;
-  std::map<UserId, bool> high_contrast_mode_;
+  bool high_contrast_mode_ = false;
 
   // Maps from window manager change id to the client that initiated the
   // request.
@@ -405,9 +386,10 @@ class WindowServer : public ServerWindowDelegate,
   std::unique_ptr<GpuHost> gpu_host_;
   base::Callback<void(ServerWindow*)> window_paint_callback_;
 
-  UserActivityMonitorMap activity_monitor_map_;
+  std::unique_ptr<UserActivityMonitor> user_activity_monitor_;
 
-  WindowManagerWindowTreeFactorySet window_manager_window_tree_factory_set_;
+  std::unique_ptr<WindowManagerWindowTreeFactory>
+      window_manager_window_tree_factory_;
 
   viz::SurfaceId root_surface_id_;
 

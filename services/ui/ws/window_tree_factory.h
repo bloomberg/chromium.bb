@@ -7,7 +7,6 @@
 
 #include "base/macros.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
-#include "services/ui/ws/user_id.h"
 
 namespace ui {
 namespace ws {
@@ -17,7 +16,6 @@ class WindowServer;
 class WindowTreeFactory : public ui::mojom::WindowTreeFactory {
  public:
   WindowTreeFactory(WindowServer* window_server,
-                    const UserId& user_id,
                     const std::string& client_name);
   ~WindowTreeFactory() override;
 
@@ -27,7 +25,6 @@ class WindowTreeFactory : public ui::mojom::WindowTreeFactory {
                         mojom::WindowTreeClientPtr client) override;
 
   WindowServer* window_server_;
-  const UserId user_id_;
   const std::string client_name_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeFactory);

@@ -9,9 +9,8 @@
 namespace ui {
 namespace ws {
 
-AccessibilityManager::AccessibilityManager(WindowServer* window_server,
-                                           const UserId& user)
-    : window_server_(window_server), user_(user), binding_(this) {
+AccessibilityManager::AccessibilityManager(WindowServer* window_server)
+    : window_server_(window_server), binding_(this) {
   DCHECK(window_server_);
 }
 
@@ -23,7 +22,7 @@ void AccessibilityManager::Bind(mojom::AccessibilityManagerRequest request) {
 }
 
 void AccessibilityManager::SetHighContrastMode(bool enabled) {
-  window_server_->SetHighContrastMode(user_, enabled);
+  window_server_->SetHighContrastMode(enabled);
 }
 
 }  // namespace ws

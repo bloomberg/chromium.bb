@@ -32,8 +32,6 @@ namespace ui {
 namespace ws {
 namespace test {
 
-const UserId kTestId1 = "20";
-
 class CursorTest : public testing::Test {
  public:
   CursorTest() {}
@@ -52,19 +50,13 @@ class CursorTest : public testing::Test {
   void SetUp() override {
     screen_manager_.Init(window_server()->display_manager());
     screen_manager_.AddDisplay();
-
-    // As a side effect, this allocates Displays.
-    AddWindowManager(window_server(), kTestId1);
-    window_server()->user_id_tracker()->AddUserId(kTestId1);
-    window_server()->user_id_tracker()->SetActiveUserId(kTestId1);
+    AddWindowManager(window_server());
   }
 
   ServerWindow* GetRoot() {
     DisplayManager* display_manager = window_server()->display_manager();
-    //    ASSERT_EQ(1u, display_manager->displays().size());
     Display* display = *display_manager->displays().begin();
-    return display->GetWindowManagerDisplayRootForUser(kTestId1)
-        ->GetClientVisibleRoot();
+    return display->window_manager_display_root()->GetClientVisibleRoot();
   }
 
   // Create a 30x30 window where the outer 10 pixels is non-client.
@@ -72,7 +64,7 @@ class CursorTest : public testing::Test {
     DisplayManager* display_manager = window_server()->display_manager();
     Display* display = *display_manager->displays().begin();
     WindowManagerDisplayRoot* active_display_root =
-        display->GetActiveWindowManagerDisplayRoot();
+        display->window_manager_display_root();
     WindowTree* tree =
         active_display_root->window_manager_state()->window_tree();
     ClientWindowId child_window_id;
@@ -92,7 +84,7 @@ class CursorTest : public testing::Test {
     ASSERT_EQ(1u, display_manager->displays().size());
     Display* display = *display_manager->displays().begin();
     WindowManagerDisplayRoot* active_display_root =
-        display->GetActiveWindowManagerDisplayRoot();
+        display->window_manager_display_root();
     ASSERT_TRUE(active_display_root);
     PointerEvent event(
         MouseEvent(ET_MOUSE_MOVED, p, p, base::TimeTicks(), 0, 0));

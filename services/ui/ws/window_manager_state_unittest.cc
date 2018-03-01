@@ -164,7 +164,7 @@ void WindowManagerStateTest::OnEventAckTimeout(
 void WindowManagerStateTest::SetUp() {
   window_event_targeting_helper_.SetTaskRunner(task_runner_);
   window_manager_state_ = window_event_targeting_helper_.display()
-                              ->GetActiveWindowManagerDisplayRoot()
+                              ->window_manager_display_root()
                               ->window_manager_state();
   window_ = window_event_targeting_helper_.CreatePrimaryTree(
       gfx::Rect(0, 0, 100, 100), gfx::Rect(0, 0, 50, 50));
@@ -722,12 +722,11 @@ TEST(WindowManagerStateShutdownTest, DestroyTreeBeforeDisplay) {
   TestScreenManager screen_manager;
   screen_manager.Init(window_server->display_manager());
   screen_manager.AddDisplay();
-  const UserId kUserId1 = "2";
-  AddWindowManager(window_server, kUserId1);
+  AddWindowManager(window_server);
   ASSERT_EQ(1u, window_server->display_manager()->displays().size());
   Display* display = *(window_server->display_manager()->displays().begin());
   WindowManagerDisplayRoot* window_manager_display_root =
-      display->GetWindowManagerDisplayRootForUser(kUserId1);
+      display->window_manager_display_root();
   ASSERT_TRUE(window_manager_display_root);
   WindowTree* tree =
       window_manager_display_root->window_manager_state()->window_tree();
@@ -766,16 +765,13 @@ TEST(WindowManagerStateEventTest, AdjustEventLocation) {
   WindowServer* window_server = ws_test_helper.window_server();
   TestScreenManager screen_manager;
   screen_manager.Init(window_server->display_manager());
-  const UserId kUserId1 = "2";
-  AddWindowManager(window_server, kUserId1);
-  window_server->user_id_tracker()->AddUserId(kUserId1);
-  window_server->user_id_tracker()->SetActiveUserId(kUserId1);
+  AddWindowManager(window_server);
   const int64_t first_display_id = screen_manager.AddDisplay();
   const int64_t second_display_id = screen_manager.AddDisplay();
   Display* first_display =
       window_server->display_manager()->GetDisplayById(first_display_id);
   // As there are no child windows make sure the root is a valid target.
-  first_display->GetWindowManagerDisplayRootForUser(kUserId1)
+  first_display->window_manager_display_root()
       ->GetClientVisibleRoot()
       ->set_event_targeting_policy(
           mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS);
@@ -796,7 +792,7 @@ TEST(WindowManagerStateEventTest, AdjustEventLocation) {
       ui::PointerDetails(EventPointerType::POINTER_TYPE_MOUSE, 0),
       base::TimeTicks());
   WindowManagerDisplayRoot* window_manager_display_root =
-      second_display->GetWindowManagerDisplayRootForUser(kUserId1);
+      second_display->window_manager_display_root();
   TestChangeTracker* tracker =
       ws_test_helper.window_server_delegate()->last_client()->tracker();
   tracker->changes()->clear();
@@ -827,8 +823,7 @@ TEST_F(WindowManagerStateTest, CursorLocationManagerUpdatedOnMouseMove) {
   // Tests add display with kInvalidDisplayId.
   window_manager_state()->ProcessEvent(&move, display::kInvalidDisplayId);
   CursorLocationManager* cursor_location_manager =
-      window_server()->display_manager()->GetCursorLocationManager(
-          window_manager_state()->user_id());
+      window_server()->display_manager()->cursor_location_manager();
   // The location reported to clients is offset by the root transform.
   EXPECT_EQ(
       gfx::Point(19, 18),

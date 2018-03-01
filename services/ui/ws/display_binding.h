@@ -11,7 +11,6 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/public/interfaces/window_tree_host.mojom.h"
-#include "services/ui/ws/user_id.h"
 
 namespace ui {
 namespace ws {
@@ -38,7 +37,6 @@ class DisplayBindingImpl : public DisplayBinding {
  public:
   DisplayBindingImpl(mojom::WindowTreeHostRequest request,
                      Display* display,
-                     const UserId& user_id,
                      mojom::WindowTreeClientPtr client,
                      WindowServer* window_server);
   ~DisplayBindingImpl() override;
@@ -48,7 +46,6 @@ class DisplayBindingImpl : public DisplayBinding {
   WindowTree* CreateWindowTree(ServerWindow* root) override;
 
   WindowServer* window_server_;
-  const UserId user_id_;
   mojo::Binding<mojom::WindowTreeHost> binding_;
   mojom::WindowTreeClientPtr client_;
 

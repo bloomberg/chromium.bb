@@ -38,15 +38,11 @@ namespace ui {
 namespace ws {
 
 Display::Display(WindowServer* window_server) : window_server_(window_server) {
-  window_server_->window_manager_window_tree_factory_set()->AddObserver(this);
-  window_server_->user_id_tracker()->AddObserver(this);
+  window_server_->window_manager_window_tree_factory()->AddObserver(this);
 }
 
 Display::~Display() {
-  window_server_->user_id_tracker()->RemoveObserver(this);
-
-  window_server_->window_manager_window_tree_factory_set()->RemoveObserver(
-      this);
+  window_server_->window_manager_window_tree_factory()->RemoveObserver(this);
 
   if (focus_controller_) {
     focus_controller_->RemoveObserver(this);
@@ -54,14 +50,15 @@ Display::~Display() {
   }
 
   if (!binding_) {
-    for (auto& pair : window_manager_display_root_map_)
-      pair.second->window_manager_state()->OnDisplayDestroying(this);
-  } else if (!window_manager_display_root_map_.empty()) {
+    if (window_manager_display_root_) {
+      window_manager_display_root_->window_manager_state()->OnDisplayDestroying(
+          this);
+    }
+  } else if (window_manager_display_root_) {
     // If there is a |binding_| then the tree was created specifically for this
     // display (which corresponds to a WindowTreeHost).
-    window_server_->DestroyTree(window_manager_display_root_map_.begin()
-                                    ->second->window_manager_state()
-                                    ->window_tree());
+    window_server_->DestroyTree(
+        window_manager_display_root_->window_manager_state()->window_tree());
   }
 }
 
@@ -82,17 +79,14 @@ void Display::InitWindowManagerDisplayRoots() {
   if (binding_) {
     std::unique_ptr<WindowManagerDisplayRoot> display_root_ptr(
         new WindowManagerDisplayRoot(this));
+    window_manager_display_root_ = display_root_ptr.get();
     WindowManagerDisplayRoot* display_root = display_root_ptr.get();
-    // For this case we never create additional displays roots, so any
-    // id works.
-    window_manager_display_root_map_[service_manager::mojom::kRootUserID] =
-        display_root_ptr.get();
     WindowTree* window_tree = binding_->CreateWindowTree(display_root->root());
     display_root->window_manager_state_ = window_tree->window_manager_state();
     window_tree->window_manager_state()->AddWindowManagerDisplayRoot(
         std::move(display_root_ptr));
   } else {
-    CreateWindowManagerDisplayRootsFromFactories();
+    CreateWindowManagerDisplayRootFromFactory();
   }
   display_manager()->OnDisplayUpdated(display_);
 }
@@ -131,24 +125,10 @@ gfx::Size Display::GetSize() const {
 
 WindowManagerDisplayRoot* Display::GetWindowManagerDisplayRootWithRoot(
     const ServerWindow* window) {
-  for (auto& pair : window_manager_display_root_map_) {
-    if (pair.second->root() == window)
-      return pair.second;
-  }
-  return nullptr;
-}
-
-const WindowManagerDisplayRoot* Display::GetWindowManagerDisplayRootForUser(
-    const UserId& user_id) const {
-  auto iter = window_manager_display_root_map_.find(user_id);
-  return iter == window_manager_display_root_map_.end() ? nullptr
-                                                        : iter->second;
-}
-
-const WindowManagerDisplayRoot* Display::GetActiveWindowManagerDisplayRoot()
-    const {
-  return GetWindowManagerDisplayRootForUser(
-      window_server_->user_id_tracker()->active_id());
+  return (window_manager_display_root_ &&
+          window_manager_display_root_->root() == window)
+             ? window_manager_display_root_
+             : nullptr;
 }
 
 bool Display::SetFocusedWindow(ServerWindow* new_focused_window) {
@@ -181,27 +161,18 @@ void Display::SetImeVisibility(ServerWindow* window, bool visible) {
 }
 
 void Display::OnWillDestroyTree(WindowTree* tree) {
-  for (auto it = window_manager_display_root_map_.begin();
-       it != window_manager_display_root_map_.end(); ++it) {
-    if (it->second->window_manager_state()->window_tree() == tree) {
-      window_manager_display_root_map_.erase(it);
-      break;
-    }
+  if (window_manager_display_root_ &&
+      window_manager_display_root_->window_manager_state()->window_tree() ==
+          tree) {
+    window_manager_display_root_ = nullptr;
   }
 }
 
 void Display::RemoveWindowManagerDisplayRoot(
     WindowManagerDisplayRoot* display_root) {
-  for (auto it = window_manager_display_root_map_.begin();
-       it != window_manager_display_root_map_.end(); ++it) {
-    if (it->second == display_root) {
-      window_manager_display_root_map_.erase(it);
-      if (window_manager_display_root_map_.empty())
-        display_manager()->DestroyDisplay(this);
-      return;
-    }
-  }
-  NOTREACHED();
+  DCHECK_EQ(window_manager_display_root_, display_root);
+  window_manager_display_root_ = nullptr;
+  display_manager()->DestroyDisplay(this);
 }
 
 void Display::SetNativeCursor(const ui::CursorData& cursor) {
@@ -220,29 +191,21 @@ void Display::SetTitle(const std::string& title) {
   platform_display_->SetTitle(base::UTF8ToUTF16(title));
 }
 
-void Display::CreateWindowManagerDisplayRootsFromFactories() {
-  std::vector<WindowManagerWindowTreeFactory*> factories =
-      window_server_->window_manager_window_tree_factory_set()->GetFactories();
-  for (WindowManagerWindowTreeFactory* factory : factories) {
-    if (factory->window_tree())
-      CreateWindowManagerDisplayRootFromFactory(factory);
-  }
-}
+void Display::CreateWindowManagerDisplayRootFromFactory() {
+  WindowManagerWindowTreeFactory* factory =
+      window_server_->window_manager_window_tree_factory();
+  if (!factory->window_tree())
+    return;
 
-void Display::CreateWindowManagerDisplayRootFromFactory(
-    WindowManagerWindowTreeFactory* factory) {
-  std::unique_ptr<WindowManagerDisplayRoot> display_root_ptr(
-      new WindowManagerDisplayRoot(this));
-  WindowManagerDisplayRoot* display_root = display_root_ptr.get();
-  window_manager_display_root_map_[factory->user_id()] = display_root_ptr.get();
+  std::unique_ptr<WindowManagerDisplayRoot> display_root_ptr =
+      std::make_unique<WindowManagerDisplayRoot>(this);
+  window_manager_display_root_ = display_root_ptr.get();
   WindowManagerState* window_manager_state =
       factory->window_tree()->window_manager_state();
-  display_root->window_manager_state_ = window_manager_state;
-  const bool is_active =
-      factory->user_id() == window_server_->user_id_tracker()->active_id();
-  display_root->root()->SetVisible(is_active);
+  window_manager_display_root_->window_manager_state_ = window_manager_state;
+  window_manager_display_root_->root()->SetVisible(true);
   window_manager_state->window_tree()->AddRootForWindowManager(
-      display_root->root());
+      window_manager_display_root_->root());
   window_manager_state->AddWindowManagerDisplayRoot(
       std::move(display_root_ptr));
 }
@@ -286,9 +249,10 @@ void Display::OnAcceleratedWidgetAvailable() {
 }
 
 void Display::OnNativeCaptureLost() {
-  WindowManagerDisplayRoot* display_root = GetActiveWindowManagerDisplayRoot();
-  if (display_root)
-    display_root->window_manager_state()->SetCapture(nullptr, kInvalidClientId);
+  if (window_manager_display_root_) {
+    window_manager_display_root_->window_manager_state()->SetCapture(
+        nullptr, kInvalidClientId);
+  }
 }
 
 OzonePlatform* Display::GetOzonePlatform() {
@@ -316,14 +280,15 @@ void Display::SetBoundsInPixels(const gfx::Rect& bounds_in_pixels) {
 
   gfx::Rect new_bounds(bounds_in_pixels.size());
   root_->SetBounds(new_bounds, allocator_.GenerateId());
-  for (auto& pair : window_manager_display_root_map_)
-    pair.second->root()->SetBounds(new_bounds, allocator_.GenerateId());
+  if (window_manager_display_root_) {
+    window_manager_display_root_->root()->SetBounds(new_bounds,
+                                                    allocator_.GenerateId());
+  }
 }
 
 ServerWindow* Display::GetActiveRootWindow() {
-  WindowManagerDisplayRoot* display_root = GetActiveWindowManagerDisplayRoot();
-  if (display_root)
-    return display_root->root();
+  if (window_manager_display_root_)
+    return window_manager_display_root_->root();
   return nullptr;
 }
 
@@ -384,9 +349,9 @@ void Display::OnFocusChanged(FocusControllerChangeSource change_source,
   }
 
   // WindowManagers are always notified of focus changes.
-  WindowManagerDisplayRoot* display_root = GetActiveWindowManagerDisplayRoot();
-  if (display_root) {
-    WindowTree* wm_tree = display_root->window_manager_state()->window_tree();
+  if (window_manager_display_root_) {
+    WindowTree* wm_tree =
+        window_manager_display_root_->window_manager_state()->window_tree();
     if (wm_tree != owning_tree_old && wm_tree != embedded_tree_old &&
         wm_tree != owning_tree_new && wm_tree != embedded_tree_new) {
       wm_tree->ProcessFocusChanged(old_focused_window, new_focused_window);
@@ -399,27 +364,20 @@ void Display::OnFocusChanged(FocusControllerChangeSource change_source,
   }
 }
 
-void Display::OnUserIdRemoved(const UserId& id) {
-  window_manager_display_root_map_.erase(id);
-}
-
 void Display::OnWindowManagerWindowTreeFactoryReady(
     WindowManagerWindowTreeFactory* factory) {
   if (!binding_)
-    CreateWindowManagerDisplayRootFromFactory(factory);
+    CreateWindowManagerDisplayRootFromFactory();
 }
 
 EventDispatchDetails Display::OnEventFromSource(Event* event) {
-  WindowManagerDisplayRoot* display_root = GetActiveWindowManagerDisplayRoot();
-  if (display_root) {
-    WindowManagerState* wm_state = display_root->window_manager_state();
+  if (window_manager_display_root_) {
+    WindowManagerState* wm_state =
+        window_manager_display_root_->window_manager_state();
     wm_state->ProcessEvent(event, GetId());
   }
 
-  UserActivityMonitor* activity_monitor =
-      window_server_->GetUserActivityMonitorForUser(
-          window_server_->user_id_tracker()->active_id());
-  activity_monitor->OnUserActivity();
+  window_server_->user_activity_monitor()->OnUserActivity();
   return EventDispatchDetails();
 }
 

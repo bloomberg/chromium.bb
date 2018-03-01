@@ -22,7 +22,7 @@
 #include "services/ui/ws/server_window.h"
 #include "services/ui/ws/test_utils.h"
 #include "services/ui/ws/window_manager_state.h"
-#include "services/ui/ws/window_manager_window_tree_factory_set.h"
+#include "services/ui/ws/window_manager_window_tree_factory.h"
 #include "services/ui/ws/window_server.h"
 #include "services/ui/ws/window_server_delegate.h"
 #include "services/ui/ws/window_tree.h"
@@ -33,8 +33,6 @@ namespace ui {
 namespace ws {
 namespace test {
 namespace {
-
-const char kUserId1[] = "123";
 
 mojom::FrameDecorationValuesPtr CreateDefaultFrameDecorationValues() {
   return mojom::FrameDecorationValues::New();
@@ -71,29 +69,26 @@ class UserDisplayManagerTest : public TaskRunnerTestBase {
 TEST_F(UserDisplayManagerTest, OnlyNotifyWhenFrameDecorationsSet) {
   screen_manager().AddDisplay();
 
-  TestDisplayManagerObserver display_manager_observer1;
+  TestDisplayManagerObserver display_manager_observer;
   DisplayManager* display_manager = window_server()->display_manager();
-  AddWindowManager(window_server(), kUserId1);
-  UserDisplayManager* user_display_manager1 =
-      display_manager->GetUserDisplayManager(kUserId1);
-  ASSERT_TRUE(user_display_manager1);
-  user_display_manager1->AddObserver(display_manager_observer1.GetPtr());
+  AddWindowManager(window_server());
+  UserDisplayManager* user_display_manager =
+      display_manager->GetUserDisplayManager();
+  ASSERT_TRUE(user_display_manager);
+  user_display_manager->AddObserver(display_manager_observer.GetPtr());
   RunUntilIdle();
 
   // Observer should not have been notified yet.
-  EXPECT_EQ(std::string(),
-            display_manager_observer1.GetAndClearObserverCalls());
+  EXPECT_EQ(std::string(), display_manager_observer.GetAndClearObserverCalls());
 
   // Set the frame decoration values, which should trigger sending immediately.
   ASSERT_EQ(1u, display_manager->displays().size());
-  window_server()
-      ->window_manager_window_tree_factory_set()
-      ->GetWindowManagerStateForUser(kUserId1)
-      ->SetFrameDecorationValues(CreateDefaultFrameDecorationValues());
+  window_server()->GetWindowManagerState()->SetFrameDecorationValues(
+      CreateDefaultFrameDecorationValues());
   RunUntilIdle();
 
   EXPECT_EQ("OnDisplaysChanged 1 -1",
-            display_manager_observer1.GetAndClearObserverCalls());
+            display_manager_observer.GetAndClearObserverCalls());
 }
 
 TEST_F(UserDisplayManagerTest, AddObserverAfterFrameDecorationsSet) {
@@ -101,17 +96,15 @@ TEST_F(UserDisplayManagerTest, AddObserverAfterFrameDecorationsSet) {
 
   TestDisplayManagerObserver display_manager_observer1;
   DisplayManager* display_manager = window_server()->display_manager();
-  AddWindowManager(window_server(), kUserId1);
-  UserDisplayManager* user_display_manager1 =
-      display_manager->GetUserDisplayManager(kUserId1);
-  ASSERT_TRUE(user_display_manager1);
+  AddWindowManager(window_server());
+  UserDisplayManager* user_display_manager =
+      display_manager->GetUserDisplayManager();
+  ASSERT_TRUE(user_display_manager);
   ASSERT_EQ(1u, display_manager->displays().size());
-  window_server()
-      ->window_manager_window_tree_factory_set()
-      ->GetWindowManagerStateForUser(kUserId1)
-      ->SetFrameDecorationValues(CreateDefaultFrameDecorationValues());
+  window_server()->GetWindowManagerState()->SetFrameDecorationValues(
+      CreateDefaultFrameDecorationValues());
 
-  user_display_manager1->AddObserver(display_manager_observer1.GetPtr());
+  user_display_manager->AddObserver(display_manager_observer1.GetPtr());
   RunUntilIdle();
 
   EXPECT_EQ("OnDisplaysChanged 1 -1",
@@ -123,16 +116,14 @@ TEST_F(UserDisplayManagerTest, AddRemoveDisplay) {
 
   TestDisplayManagerObserver display_manager_observer1;
   DisplayManager* display_manager = window_server()->display_manager();
-  AddWindowManager(window_server(), kUserId1);
-  UserDisplayManager* user_display_manager1 =
-      display_manager->GetUserDisplayManager(kUserId1);
-  ASSERT_TRUE(user_display_manager1);
+  AddWindowManager(window_server());
+  UserDisplayManager* user_display_manager =
+      display_manager->GetUserDisplayManager();
+  ASSERT_TRUE(user_display_manager);
   ASSERT_EQ(1u, display_manager->displays().size());
-  window_server()
-      ->window_manager_window_tree_factory_set()
-      ->GetWindowManagerStateForUser(kUserId1)
-      ->SetFrameDecorationValues(CreateDefaultFrameDecorationValues());
-  user_display_manager1->AddObserver(display_manager_observer1.GetPtr());
+  window_server()->GetWindowManagerState()->SetFrameDecorationValues(
+      CreateDefaultFrameDecorationValues());
+  user_display_manager->AddObserver(display_manager_observer1.GetPtr());
   RunUntilIdle();
 
   EXPECT_EQ("OnDisplaysChanged 1 -1",
