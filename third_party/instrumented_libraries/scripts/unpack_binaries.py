@@ -12,11 +12,14 @@ import sys
 
 
 def get_archive_name(archive_prefix):
-  supported_releases = ['trusty']
+  supported_release = 'trusty'
   release = subprocess.check_output(['lsb_release', '-cs']).strip()
-  if release not in supported_releases:
-    raise Exception("Supported Ubuntu versions: %s", str(supported_releases))
-  return '%s-%s.tgz' % (archive_prefix, release)
+  if release != supported_release:
+    print('WARNING: unsupported distro. You need to run a Trusty Docker '
+          'image. Please see '
+          'https://www.chromium.org/developers/testing/memorysanitizer/')
+
+  return '%s-%s.tgz' % (archive_prefix, supported_release)
 
 
 def main(archive_prefix, archive_dir, target_dir, stamp_dir=None):
