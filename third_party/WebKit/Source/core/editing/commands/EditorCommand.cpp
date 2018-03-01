@@ -61,6 +61,7 @@
 #include "core/editing/iterators/TextIterator.h"
 #include "core/editing/serializers/Serialization.h"
 #include "core/editing/spellcheck/SpellChecker.h"
+#include "core/events/ClipboardEvent.h"
 #include "core/events/TextEvent.h"
 #include "core/frame/ContentSettingsClient.h"
 #include "core/frame/LocalFrame.h"
@@ -750,6 +751,35 @@ static bool CanWriteClipboard(LocalFrame& frame, EditorCommandSource source) {
 }
 
 // Returns true if Editor should continue with default processing.
+static bool DispatchClipboardEvent(LocalFrame& frame,
+                                   const AtomicString& event_type,
+                                   DataTransferAccessPolicy policy,
+                                   EditorCommandSource source,
+                                   PasteMode paste_mode) {
+  Element* const target =
+      frame.GetEditor().FindEventTargetForClipboardEvent(source);
+  if (!target)
+    return true;
+
+  DataTransfer* const data_transfer =
+      DataTransfer::Create(DataTransfer::kCopyAndPaste, policy,
+                           policy == kDataTransferWritable
+                               ? DataObject::Create()
+                               : DataObject::CreateFromPasteboard(paste_mode));
+
+  Event* const evt = ClipboardEvent::Create(event_type, data_transfer);
+  target->DispatchEvent(evt);
+  const bool no_default_processing = evt->defaultPrevented();
+  if (no_default_processing && policy == kDataTransferWritable) {
+    Pasteboard::GeneralPasteboard()->WriteDataObject(
+        data_transfer->GetDataObject());
+  }
+
+  // Invalidate clipboard here for security.
+  data_transfer->SetAccessPolicy(kDataTransferNumb);
+  return !no_default_processing;
+}
+
 static bool DispatchCopyOrCutEvent(LocalFrame& frame,
                                    EditorCommandSource source,
                                    const AtomicString& event_type) {
@@ -760,8 +790,8 @@ static bool DispatchCopyOrCutEvent(LocalFrame& frame,
           frame.Selection().ComputeVisibleSelectionInDOMTree().Start()))
     return true;
 
-  return frame.GetEditor().DispatchClipboardEvent(
-      event_type, kDataTransferWritable, source);
+  return DispatchClipboardEvent(frame, event_type, kDataTransferWritable,
+                                source, kAllMimeTypes);
 }
 
 static void WriteSelectionToPasteboard(LocalFrame& frame) {
@@ -2012,8 +2042,8 @@ static void PasteAsPlainTextWithPasteboard(LocalFrame& frame,
 static bool DispatchPasteEvent(LocalFrame& frame,
                                PasteMode paste_mode,
                                EditorCommandSource source) {
-  return frame.GetEditor().DispatchClipboardEvent(
-      EventTypeNames::paste, kDataTransferReadable, source, paste_mode);
+  return DispatchClipboardEvent(frame, EventTypeNames::paste,
+                                kDataTransferReadable, source, paste_mode);
 }
 
 static void PasteAsFragment(LocalFrame& frame,
