@@ -109,10 +109,6 @@ const char kCustomElementsJSPath[] = "custom_elements.js";
 const char kCustomElementsUserPodHTMLPath[] = "custom_elements_user_pod.html";
 
 // Paths for deferred resource loading.
-const char kCustomElementsPinKeyboardHTMLPath[] =
-    "custom_elements/pin_keyboard.html";
-const char kCustomElementsPinKeyboardJSPath[] =
-    "custom_elements/pin_keyboard.js";
 const char kEnrollmentHTMLPath[] = "enrollment.html";
 const char kEnrollmentCSSPath[] = "enrollment.css";
 const char kEnrollmentJSPath[] = "enrollment.js";
@@ -149,10 +145,6 @@ content::WebUIDataSource* CreateOobeUIDataSource(
     // files those use).
     source->SetDefaultResource(IDR_MD_LOCK_HTML);
     source->AddResourcePath(kLockJSPath, IDR_MD_LOCK_JS);
-    source->AddResourcePath(kCustomElementsPinKeyboardHTMLPath,
-                            IDR_MD_CUSTOM_ELEMENTS_PIN_KEYBOARD_HTML);
-    source->AddResourcePath(kCustomElementsPinKeyboardJSPath,
-                            IDR_MD_CUSTOM_ELEMENTS_PIN_KEYBOARD_JS);
     source->AddResourcePath(kCustomElementsHTMLPath,
                             IDR_CUSTOM_ELEMENTS_LOCK_HTML);
     source->AddResourcePath(kCustomElementsJSPath, IDR_CUSTOM_ELEMENTS_LOCK_JS);
@@ -165,10 +157,6 @@ content::WebUIDataSource* CreateOobeUIDataSource(
                             IDR_CUSTOM_ELEMENTS_LOGIN_HTML);
     source->AddResourcePath(kCustomElementsJSPath,
                             IDR_CUSTOM_ELEMENTS_LOGIN_JS);
-    source->AddResourcePath(kCustomElementsPinKeyboardHTMLPath,
-                            IDR_MD_CUSTOM_ELEMENTS_PIN_KEYBOARD_HTML);
-    source->AddResourcePath(kCustomElementsPinKeyboardJSPath,
-                            IDR_MD_CUSTOM_ELEMENTS_PIN_KEYBOARD_JS);
     source->AddResourcePath(kCustomElementsUserPodHTMLPath,
                             IDR_CUSTOM_ELEMENTS_USER_POD_HTML);
   }

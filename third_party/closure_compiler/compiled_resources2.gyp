@@ -19,7 +19,6 @@
         '<(DEPTH)/chrome/browser/resources/chromeos/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/chromeos/login/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/chromeos/network_ui/compiled_resources2.gyp:*',
-        '<(DEPTH)/chrome/browser/resources/chromeos/quick_unlock/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/chromeos/select_to_speak/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/chromeos/switch_access/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/chromeos/sys_internals/compiled_resources2.gyp:*',
