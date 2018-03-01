@@ -26,6 +26,7 @@
 #include "ash/wm/splitview/split_view_constants.h"
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/window_state.h"
 #include "base/auto_reset.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string_util.h"
@@ -338,6 +339,16 @@ class WindowSelectorItem::RoundedContainerView
         animation_(new gfx::SlideAnimation(this)) {
     SetPaintToLayer();
     layer()->SetFillsBoundsOpaquely(false);
+
+    if (IsNewOverviewUi()) {
+      // Do not animate in the title bar of windows which are maximized in
+      // tablet mode, as their title bars are already hidden.
+      should_animate_ =
+          !(Shell::Get()
+                ->tablet_mode_controller()
+                ->IsTabletModeWindowManagerEnabled() &&
+            wm::GetWindowState(item_->GetWindow())->IsMaximized());
+    }
   }
 
   ~RoundedContainerView() override { StopObservingImplicitAnimations(); }
@@ -349,7 +360,13 @@ class WindowSelectorItem::RoundedContainerView
   // Used by tests to set animation state.
   gfx::SlideAnimation* animation() { return animation_.get(); }
 
-  void set_color(SkColor target_color) { target_color_ = target_color; }
+  void set_color(SkColor target_color) {
+    target_color_ = target_color;
+    if (should_animate_)
+      SchedulePaint();
+  }
+
+  bool should_animate() const { return should_animate_; }
 
   // Starts a color animation using |tween_type|. The animation will change the
   // color from |initial_color_| to |target_color_| over |duration| specified
@@ -360,6 +377,9 @@ class WindowSelectorItem::RoundedContainerView
   // and from |kLabelBackgroundColor| back to the original window header color
   // on exit from the overview mode.
   void AnimateColor(gfx::Tween::Type tween_type, int duration) {
+    if (!should_animate_)
+      return;
+
     animation_->SetSlideDuration(duration);
     animation_->SetTweenType(tween_type);
     animation_->Reset(0);
@@ -396,8 +416,8 @@ class WindowSelectorItem::RoundedContainerView
     flags.setAntiAlias(true);
     canvas->ClipPath(path, true);
 
-    SkColor target_color = initial_color_;
-    if (target_color_ != target_color) {
+    SkColor target_color = should_animate_ ? initial_color_ : target_color_;
+    if (should_animate_ && (target_color_ != target_color)) {
       target_color = color_utils::AlphaBlend(target_color_, initial_color_,
                                              current_value_);
     }
@@ -452,6 +472,7 @@ class WindowSelectorItem::RoundedContainerView
   SkColor target_color_;
   int current_value_;
   std::unique_ptr<gfx::SlideAnimation> animation_;
+  bool should_animate_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(RoundedContainerView);
 };
@@ -1066,9 +1087,11 @@ void WindowSelectorItem::CreateWindowLabel(const base::string16& title) {
   item_widget_->set_focus_on_creation(false);
   item_widget_->Init(params_label);
   aura::Window* widget_window = item_widget_->GetNativeWindow();
-  if (transform_window_.GetTopInset()) {
+  if (transform_window_.GetTopInset() || !background_view_->should_animate()) {
     // For windows with headers the overview header fades in above the
-    // original window header.
+    // original window header. Windows that should not animate their headers
+    // (maximized tablet mode windows have no headers) should initially be
+    // stacked above as well.
     widget_window->parent()->StackChildAbove(widget_window,
                                              transform_window_.window());
   } else {
