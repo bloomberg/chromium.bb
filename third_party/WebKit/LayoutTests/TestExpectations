@@ -3320,7 +3320,7 @@ skbug.com/7641 fast/multicol/border-radius-clipped-layer.html [ Failure Pass ]
 skbug.com/7641 virtual/disable-spv175/fast/multicol/border-radius-clipped-layer.html [ Failure Pass ]
 
 # Sheriff failures 2018-01-02
-crbug.com/798592 [ Win7 ] virtual/threaded/http/tests/devtools/tracing/timeline-style/timeline-recalculate-styles.js [ Pass Failure ]
+crbug.com/798592 virtual/threaded/http/tests/devtools/tracing/timeline-style/timeline-recalculate-styles.js [ Pass Failure ]
 
 # Sheriff failures 2018-01-03
 crbug.com/798680 external/wpt/pointerevents/pointerlock/pointerevent_pointerlock_supercedes_capture-manual.html [ Pass Timeout ]
