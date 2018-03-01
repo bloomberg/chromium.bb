@@ -88,9 +88,10 @@ class VrController : public PlatformController {
 
  private:
   enum GestureDetectorState {
-    WAITING,   // waiting for user to touch down
-    TOUCHING,  // touching the touch pad but not scrolling
-    SCROLLING  // scrolling on the touch pad
+    WAITING,     // waiting for user to touch down
+    TOUCHING,    // touching the touch pad but not scrolling
+    SCROLLING,   // scrolling on the touch pad
+    POST_SCROLL  // scroll has finished and we are hallucinating events
   };
 
   struct TouchPoint {
@@ -114,17 +115,15 @@ class VrController : public PlatformController {
   };
 
   void UpdateGestureFromTouchInfo(blink::WebGestureEvent* gesture);
+  void UpdateGestureWithScrollDelta(blink::WebGestureEvent* gesture);
 
   bool GetButtonLongPressFromButtonInfo();
 
-  // Handle the waiting state.
   void HandleWaitingState(blink::WebGestureEvent* gesture);
-
-  // Handle the detecting state.
   void HandleDetectingState(blink::WebGestureEvent* gesture);
-
-  // Handle the scrolling state.
   void HandleScrollingState(blink::WebGestureEvent* gesture);
+  void HandlePostScrollingState(blink::WebGestureEvent* gesture);
+
   void UpdateTouchInfo();
 
   // Returns true if the touch position is within the slop of the initial touch
