@@ -175,6 +175,11 @@ StartupTabs StartupTabProviderImpl::GetNewTabPageTabs(
       StartupBrowserCreator::GetSessionStartupPref(command_line, profile));
 }
 
+StartupTabs StartupTabProviderImpl::GetPostCrashTabs(
+    bool has_incompatible_applications) const {
+  return GetPostCrashTabsForState(has_incompatible_applications);
+}
+
 // static
 bool StartupTabProviderImpl::CanShowWelcome(bool is_signin_allowed,
                                             bool is_supervised_user,
@@ -301,6 +306,17 @@ StartupTabs StartupTabProviderImpl::GetNewTabPageTabsForState(
 }
 
 // static
+StartupTabs StartupTabProviderImpl::GetPostCrashTabsForState(
+    bool has_incompatible_applications) {
+  StartupTabs tabs;
+#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+  if (has_incompatible_applications)
+    tabs.emplace_back(GetIncompatibleApplicationsUrl(), false);
+#endif
+  return tabs;
+}
+
+// static
 GURL StartupTabProviderImpl::GetWelcomePageUrl(bool use_later_run_variant) {
   GURL url(chrome::kChromeUIWelcomeURL);
   return use_later_run_variant
@@ -319,7 +335,15 @@ GURL StartupTabProviderImpl::GetWin10WelcomePageUrl(
              ? net::AppendQueryParameter(url, "text", "faster")
              : url;
 }
-#endif
+
+#if defined(GOOGLE_CHROME_BUILD)
+// static
+GURL StartupTabProviderImpl::GetIncompatibleApplicationsUrl() {
+  GURL url(chrome::kChromeUISettingsURL);
+  return url.Resolve("incompatibleApplications");
+}
+#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // defined(OS_WIN)
 
 // static
 GURL StartupTabProviderImpl::GetTriggeredResetSettingsUrl() {

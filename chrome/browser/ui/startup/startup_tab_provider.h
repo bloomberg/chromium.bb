@@ -54,6 +54,11 @@ class StartupTabProvider {
   // configuration where it must be passed explicitly.
   virtual StartupTabs GetNewTabPageTabs(const base::CommandLine& command_line,
                                         Profile* profile) const = 0;
+
+  // Returns the Incompatible Applications settings subpage if any incompatible
+  // applications exists.
+  virtual StartupTabs GetPostCrashTabs(
+      bool has_incompatible_applications) const = 0;
 };
 
 class StartupTabProviderImpl : public StartupTabProvider {
@@ -143,6 +148,11 @@ class StartupTabProviderImpl : public StartupTabProvider {
   // explicitly specified. Session Restore does not expect the NTP to be passed.
   static StartupTabs GetNewTabPageTabsForState(const SessionStartupPref& pref);
 
+  // Determines if the Incompatible Applications settings subpage should be
+  // shown.
+  static StartupTabs GetPostCrashTabsForState(
+      bool has_incompatible_applications);
+
   // Gets the URL for the Welcome page. If |use_later_run_variant| is true, a
   // URL parameter will be appended so as to access the variant page used when
   // onboarding occurs after the first Chrome execution (e.g., when creating an
@@ -154,7 +164,13 @@ class StartupTabProviderImpl : public StartupTabProvider {
   // true, a URL parameter will be appended so as to access the variant page
   // used when onboarding occurs after the first Chrome execution.
   static GURL GetWin10WelcomePageUrl(bool use_later_run_variant);
-#endif
+
+#if defined(GOOGLE_CHROME_BUILD)
+  // Gets the URL for the Incompatible Applications subpage of the Chrome
+  // settings.
+  static GURL GetIncompatibleApplicationsUrl();
+#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // defined(OS_WIN)
 
   // Gets the URL for the page which offers to reset the user's profile
   // settings.
@@ -174,6 +190,8 @@ class StartupTabProviderImpl : public StartupTabProvider {
                                  Profile* profile) const override;
   StartupTabs GetNewTabPageTabs(const base::CommandLine& command_line,
                                 Profile* profile) const override;
+  StartupTabs GetPostCrashTabs(
+      bool has_incompatible_applications) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StartupTabProviderImpl);
