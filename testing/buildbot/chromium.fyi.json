@@ -8992,6 +8992,9 @@
   "linux-blink-heap-incremental-marking": {
     "isolated_scripts": [
       {
+        "args": [
+          "--debug"
+        ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
           "args": [
