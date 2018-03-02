@@ -19,7 +19,7 @@
 #include "base/task_scheduler/post_task.h"
 #include "chrome/browser/printing/pwg_raster_converter.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/print_preview/printer_capabilities.h"
+#include "chrome/browser/ui/webui/print_preview/print_preview_utils.h"
 #include "components/cloud_devices/common/cloud_device_description.h"
 #include "components/cloud_devices/common/printer_description.h"
 #include "device/base/device_client.h"

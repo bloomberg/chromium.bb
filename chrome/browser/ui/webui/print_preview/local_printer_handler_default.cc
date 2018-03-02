@@ -12,7 +12,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_restrictions.h"
-#include "chrome/browser/ui/webui/print_preview/printer_capabilities.h"
+#include "chrome/browser/ui/webui/print_preview/print_preview_utils.h"
+#include "components/printing/common/printer_capabilities.h"
 #include "content/public/browser/browser_thread.h"
 #include "printing/backend/print_backend.h"
 
@@ -46,7 +47,8 @@ std::unique_ptr<base::DictionaryValue> FetchCapabilitiesAsync(
     return nullptr;
   }
 
-  return printing::GetSettingsOnBlockingPool(device_name, basic_info);
+  return printing::GetSettingsOnBlockingPool(device_name, basic_info,
+                                             print_backend);
 }
 
 std::string GetDefaultPrinterAsync() {

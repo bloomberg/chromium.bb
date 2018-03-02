@@ -3729,7 +3729,7 @@ test("unit_tests") {
       "../browser/ui/webui/print_preview/pdf_printer_handler_win_unittest.cc",
       "../browser/ui/webui/print_preview/print_preview_handler_unittest.cc",
       "../browser/ui/webui/print_preview/print_preview_ui_unittest.cc",
-      "../browser/ui/webui/print_preview/printer_capabilities_unittest.cc",
+      "../browser/ui/webui/print_preview/print_preview_utils_unittest.cc",
     ]
 
     deps += [
