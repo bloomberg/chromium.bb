@@ -149,19 +149,8 @@ void od_fatal_impl(const char *_str, const char *_file, int _line);
     }                                        \
   } while (0)
 
-#define OD_ASSERT2(_cond, _message)                        \
-  do {                                                     \
-    if (!(_cond)) {                                        \
-      OD_FATAL("assertion failed: " #_cond "\n" _message); \
-    }                                                      \
-  } while (0)
-
-#define OD_ALWAYS_TRUE(_cond) OD_ASSERT(_cond)
-
 #else
 #define OD_ASSERT(_cond)
-#define OD_ASSERT2(_cond, _message)
-#define OD_ALWAYS_TRUE(_cond) ((void)(_cond))
 #endif
 
 /** Copy n elements of memory from src to dst. The 0* term provides
@@ -178,37 +167,7 @@ void od_fatal_impl(const char *_str, const char *_file, int _line);
  (memmove((dst), (src), sizeof(*(dst))*(n) + 0*((dst) - (src)) ))
 #endif
 
-/** Linkage will break without this if using a C++ compiler, and will issue
- * warnings without this for a C compiler*/
-#if defined(__cplusplus)
-# define OD_EXTERN extern
-#else
-# define OD_EXTERN
-#endif
-
-/** Set n elements of dst to zero */
-#if !defined(OVERRIDE_OD_CLEAR)
-# define OD_CLEAR(dst, n) (memset((dst), 0, sizeof(*(dst))*(n)))
-#endif
-
-/** Silence unused parameter/variable warnings */
-# define OD_UNUSED(expr) (void)(expr)
-
-typedef int16_t od_val16;
-typedef int32_t od_val32;
-/** Compile-time conversion of float constant to 32-bit value */
-# define OD_QCONST32(x, bits) ((od_val32)(.5 + (x)*(((od_val32)1) << (bits))))
-# define OD_ROUND16(x) (int16_t)(floor(.5 + (x)))
-# define OD_ROUND32(x) (int32_t)(floor(.5 + (x)))
-# define OD_ABS(x) (abs(x))
-
 /*All of these macros should expect floats as arguments.*/
-/*These two should compile as a single SSE instruction.*/
-# define OD_MINF(a, b) ((a) < (b) ? (a) : (b))
-# define OD_MAXF(a, b) ((a) > (b) ? (a) : (b))
-
-# define OD_DIV_R0(x, y) (((x) + OD_FLIPSIGNI((((y) + 1) >> 1) - 1, (x)))/(y))
-
 # define OD_SIGNMASK(a) (-((a) < 0))
 # define OD_FLIPSIGNI(a, b) (((a) + OD_SIGNMASK(b)) ^ OD_SIGNMASK(b))
 
