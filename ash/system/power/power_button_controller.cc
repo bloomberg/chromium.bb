@@ -364,8 +364,8 @@ void PowerButtonController::InitTabletPowerButtonMembers() {
     turn_screen_off_for_tap_ = true;
 
   if (!screenshot_controller_) {
-    screenshot_controller_ = std::make_unique<PowerButtonScreenshotController>(
-        tick_clock_, force_clamshell_power_button_);
+    screenshot_controller_ =
+        std::make_unique<PowerButtonScreenshotController>(tick_clock_);
   }
 }
 

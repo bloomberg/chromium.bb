@@ -29,10 +29,8 @@ constexpr base::TimeDelta
     PowerButtonScreenshotController::kScreenshotChordDelay;
 
 PowerButtonScreenshotController::PowerButtonScreenshotController(
-    base::TickClock* tick_clock,
-    bool force_clamshell_power_button)
-    : tick_clock_(tick_clock),
-      force_clamshell_power_button_(force_clamshell_power_button) {
+    base::TickClock* tick_clock)
+    : tick_clock_(tick_clock) {
   DCHECK(tick_clock_);
   // Using prepend to make sure this event handler is put in front of
   // AcceleratorFilter. See Shell::Init().
@@ -57,22 +55,8 @@ bool PowerButtonScreenshotController::OnPowerButtonEvent(
       return true;
   }
 
-  // If forced clamshell power button releases when
-  // |clamshell_power_button_timer_| is still running, stop the timer to
-  // invalidate this delayed power button behavior.
-  if (!down) {
-    clamshell_power_button_timer_.Stop();
+  if (!down)
     return false;
-  }
-
-  // If forced clamshell power button, start a timer waiting volume down key
-  // pressed. When timing out, perform this delayed power button behavior.
-  if (force_clamshell_power_button_ && !volume_down_key_pressed_ && down) {
-    clamshell_power_button_timer_.Start(
-        FROM_HERE, kScreenshotChordDelay, this,
-        &PowerButtonScreenshotController::OnClamshellPowerButtonTimeout);
-    return true;
-  }
 
   // If volume key is pressed, mark power button as consumed. This invalidates
   // other power button's behavior when user tries to operate screenshot.
@@ -86,7 +70,6 @@ void PowerButtonScreenshotController::OnKeyEvent(ui::KeyEvent* event) {
   ui::KeyboardCode key_code = event->key_code();
   if (key_code != ui::VKEY_VOLUME_DOWN && key_code != ui::VKEY_VOLUME_UP)
     return;
-  clamshell_power_button_timer_.Stop();
 
   if (key_code == ui::VKEY_VOLUME_DOWN) {
     if (event->type() == ui::ET_KEY_PRESSED) {
@@ -159,11 +142,6 @@ bool PowerButtonScreenshotController::InterceptScreenshotChord() {
 
 void PowerButtonScreenshotController::OnVolumeDownTimeout() {
   Shell::Get()->accelerator_controller()->PerformActionIfEnabled(VOLUME_DOWN);
-}
-
-void PowerButtonScreenshotController::OnClamshellPowerButtonTimeout() {
-  Shell::Get()->power_button_controller()->OnPowerButtonEvent(
-      true, tick_clock_->NowTicks());
 }
 
 }  // namespace ash
