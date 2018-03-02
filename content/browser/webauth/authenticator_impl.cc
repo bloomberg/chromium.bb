@@ -333,8 +333,7 @@ void AuthenticatorImpl::MakeCredential(
     webauth::mojom::PublicKeyCredentialCreationOptionsPtr options,
     MakeCredentialCallback callback) {
   if (u2f_request_) {
-    InvokeCallbackAndCleanup(
-        std::move(callback),
+    std::move(callback).Run(
         webauth::mojom::AuthenticatorStatus::PENDING_REQUEST, nullptr);
     return;
   }
@@ -419,8 +418,7 @@ void AuthenticatorImpl::GetAssertion(
     webauth::mojom::PublicKeyCredentialRequestOptionsPtr options,
     GetAssertionCallback callback) {
   if (u2f_request_) {
-    InvokeCallbackAndCleanup(
-        std::move(callback),
+    std::move(callback).Run(
         webauth::mojom::AuthenticatorStatus::PENDING_REQUEST, nullptr);
     return;
   }
