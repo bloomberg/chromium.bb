@@ -3022,9 +3022,10 @@ if (enable_java_templates) {
           _rebased_import_path = [ rebase_path(_import_path, root_build_dir) ]
           _rebased_import_paths += _rebased_import_path
           _java_files_build_rel = []
-          _java_files_build_rel = exec_script("//build/android/gyp/find.py",
-                                              _rebased_import_path,
-                                              "list lines")
+          _java_files_build_rel =
+              exec_script("//build/android/gyp/find.py",
+                          [ "--pattern=*.java" ] + _rebased_import_path,
+                          "list lines")
           inputs += rebase_path(_java_files_build_rel, ".", root_build_dir)
         }
         args += [ "--includes=$_rebased_import_paths" ]
