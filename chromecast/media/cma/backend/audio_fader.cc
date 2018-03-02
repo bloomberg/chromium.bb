@@ -43,7 +43,7 @@ int AudioFader::FillFrames(int num_frames, ::media::AudioBus* buffer) {
 
   // Move data in fade_buffer_ to start.
   for (int c = 0; c < fade_buffer_->channels(); ++c) {
-    float* channel_data = buffer->channel(c);
+    float* channel_data = fade_buffer_->channel(c);
     memmove(channel_data, channel_data + filled_frames,
             buffered_frames_ * sizeof(float));
   }
