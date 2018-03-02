@@ -716,7 +716,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
 }
 
 // Ensure that when the JavaScript is blocked, client hints requested using
-// Accept-CH are still attached to the request headers for subresources.
+// Accept-CH are not attached to the request headers for subresources.
 IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
                        ClientHintsNoLifetimeScriptNotAllowed) {
   base::HistogramTester histogram_tester;
@@ -727,8 +727,8 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
                               &host_settings);
   EXPECT_EQ(0u, host_settings.size());
 
-  // Block the Javascript: Client hints should still be attached.
-  SetClientHintExpectationsOnSubresources(true);
+  // Block the Javascript: Client hints should not be attached.
+  SetClientHintExpectationsOnSubresources(false);
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
       ->SetContentSettingDefaultScope(
           accept_ch_without_lifetime_img_localhost(), GURL(),
@@ -736,12 +736,11 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
           CONTENT_SETTING_BLOCK);
   ui_test_utils::NavigateToURL(browser(),
                                accept_ch_without_lifetime_img_localhost());
-  EXPECT_EQ(2u, count_client_hints_headers_seen());
+  EXPECT_EQ(0u, count_client_hints_headers_seen());
   EXPECT_EQ(1u, third_party_request_count_seen());
-  // Client hints should be attached to third party subresources as well.
-  EXPECT_EQ(2u, third_party_client_hints_count_seen());
+  EXPECT_EQ(0u, third_party_client_hints_count_seen());
 
-  // Allow the Javascript.
+  // Allow the Javascript: Client hints should now be attached.
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
       ->SetContentSettingDefaultScope(
           accept_ch_without_lifetime_img_localhost(), GURL(),
@@ -751,17 +750,18 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   SetClientHintExpectationsOnSubresources(true);
   ui_test_utils::NavigateToURL(browser(),
                                accept_ch_without_lifetime_img_localhost());
-  // Headers are attached to the two image subresources.
-  EXPECT_EQ(4u, count_client_hints_headers_seen());
+
+  // Client hints are attached to only the first party image subresource.
+  EXPECT_EQ(2u, count_client_hints_headers_seen());
   EXPECT_EQ(2u, third_party_request_count_seen());
-  EXPECT_EQ(4u, third_party_client_hints_count_seen());
+  EXPECT_EQ(0u, third_party_client_hints_count_seen());
 
   // Clear settings.
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
       ->ClearSettingsForOneType(CONTENT_SETTINGS_TYPE_JAVASCRIPT);
 
   // Block the Javascript again: Client hints should not be attached.
-  SetClientHintExpectationsOnSubresources(true);
+  SetClientHintExpectationsOnSubresources(false);
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
       ->SetContentSettingDefaultScope(
           accept_ch_without_lifetime_img_localhost(), GURL(),
@@ -769,13 +769,13 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
           CONTENT_SETTING_BLOCK);
   ui_test_utils::NavigateToURL(browser(),
                                accept_ch_without_lifetime_img_localhost());
-  EXPECT_EQ(6u, count_client_hints_headers_seen());
+  EXPECT_EQ(2u, count_client_hints_headers_seen());
   EXPECT_EQ(3u, third_party_request_count_seen());
-  EXPECT_EQ(6u, third_party_client_hints_count_seen());
+  EXPECT_EQ(0u, third_party_client_hints_count_seen());
 }
 
-// Ensure that when the cookies are blocked, client hints requested using
-// Accept-CH are not attached to the request headers.
+// Ensure that when the cookies is blocked, client hints are not attached to the
+// request headers.
 IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
                        ClientHintsNoLifetimeCookiesNotAllowed) {
   base::HistogramTester histogram_tester;
@@ -798,10 +798,9 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   ui_test_utils::NavigateToURL(browser(),
                                accept_ch_without_lifetime_img_localhost());
   EXPECT_EQ(0u, count_client_hints_headers_seen());
-  EXPECT_EQ(1u, third_party_request_count_seen());
-  // Client hints are attached to third party subresources since cookies are
-  // blocked only for the forst party origin.
-  EXPECT_EQ(2u, third_party_client_hints_count_seen());
+  // Client hints are not attached to third party subresources even though
+  // cookies are allowed only for the first party origin.
+  EXPECT_EQ(0u, third_party_client_hints_count_seen());
 
   // Allow cookies.
   cookie_settings_->SetCookieSetting(accept_ch_without_lifetime_img_localhost(),
@@ -811,10 +810,10 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   SetClientHintExpectationsOnSubresources(true);
   ui_test_utils::NavigateToURL(browser(),
                                accept_ch_without_lifetime_img_localhost());
-  // Headers are attached to the two image subresources.
+  // Client hints are attached to only the first party image subresource.
   EXPECT_EQ(2u, count_client_hints_headers_seen());
   EXPECT_EQ(2u, third_party_request_count_seen());
-  EXPECT_EQ(4u, third_party_client_hints_count_seen());
+  EXPECT_EQ(0u, third_party_client_hints_count_seen());
 
   // Block cookies again.
   SetClientHintExpectationsOnSubresources(false);
@@ -828,7 +827,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
                                accept_ch_without_lifetime_img_localhost());
   EXPECT_EQ(2u, count_client_hints_headers_seen());
   EXPECT_EQ(3u, third_party_request_count_seen());
-  EXPECT_EQ(6u, third_party_client_hints_count_seen());
+  EXPECT_EQ(0u, third_party_client_hints_count_seen());
 }
 
 // Check the client hints for the given URL in an incognito window.
