@@ -45,6 +45,11 @@ class ASH_EXPORT ClientControlledState : public BaseState {
                                      const gfx::Rect& requested_bounds) = 0;
   };
 
+  // Adjust bounds to ensure window visibility, which is used for window added
+  // to a new workspace.
+  static void AdjustBoundsForMinimumWindowVisibility(aura::Window* window,
+                                                     gfx::Rect* bounds);
+
   explicit ClientControlledState(std::unique_ptr<Delegate> delegate);
   ~ClientControlledState() override;
 

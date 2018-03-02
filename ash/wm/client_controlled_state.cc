@@ -27,6 +27,22 @@
 namespace ash {
 namespace wm {
 
+namespace {
+// |kMinimumOnScreenArea + 1| is used to avoid adjusting loop.
+constexpr int kClientControlledWindowMinimumOnScreenArea =
+    kMinimumOnScreenArea + 1;
+}  // namespace
+
+// static
+void ClientControlledState::AdjustBoundsForMinimumWindowVisibility(
+    aura::Window* window,
+    gfx::Rect* bounds) {
+  AdjustBoundsToEnsureWindowVisibility(
+      window->GetRootWindow()->bounds(),
+      kClientControlledWindowMinimumOnScreenArea,
+      kClientControlledWindowMinimumOnScreenArea, bounds);
+}
+
 ClientControlledState::ClientControlledState(std::unique_ptr<Delegate> delegate)
     : BaseState(mojom::WindowStateType::DEFAULT),
       delegate_(std::move(delegate)) {}
@@ -115,6 +131,15 @@ void ClientControlledState::DetachState(WindowState* window_state) {}
 void ClientControlledState::HandleWorkspaceEvents(WindowState* window_state,
                                                   const WMEvent* event) {
   // Client is responsible for adjusting bounds after workspace bounds change.
+
+  if (event->type() == WM_EVENT_ADDED_TO_WORKSPACE) {
+    aura::Window* window = window_state->window();
+    gfx::Rect bounds = window->bounds();
+    AdjustBoundsForMinimumWindowVisibility(window, &bounds);
+
+    if (window->bounds() != bounds)
+      window_state->SetBoundsConstrained(bounds);
+  }
 }
 
 void ClientControlledState::HandleCompoundEvents(WindowState* window_state,
