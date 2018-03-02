@@ -42,7 +42,7 @@
 namespace blink {
 
 class ScriptResource;
-class CachedMetadataHandler;
+class SingleCachedMetadataHandler;
 
 class CORE_EXPORT ScriptSourceCode final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
@@ -52,7 +52,7 @@ class CORE_EXPORT ScriptSourceCode final {
   ScriptSourceCode(
       const String& source,
       ScriptSourceLocationType = ScriptSourceLocationType::kUnknown,
-      CachedMetadataHandler* cache_handler = nullptr,
+      SingleCachedMetadataHandler* cache_handler = nullptr,
       const KURL& = KURL(),
       const TextPosition& start_position = TextPosition::MinimumPosition());
 
@@ -70,7 +70,7 @@ class CORE_EXPORT ScriptSourceCode final {
   bool IsNull() const { return source_.IsNull(); }
 
   const String& Source() const { return source_; }
-  CachedMetadataHandler* CacheHandler() const { return cache_handler_; }
+  SingleCachedMetadataHandler* CacheHandler() const { return cache_handler_; }
   const KURL& Url() const { return url_; }
   int StartLine() const { return start_position_.line_.OneBasedInt(); }
   const TextPosition& StartPosition() const { return start_position_; }
@@ -83,7 +83,7 @@ class CORE_EXPORT ScriptSourceCode final {
 
  private:
   const String source_;
-  Member<CachedMetadataHandler> cache_handler_;
+  Member<SingleCachedMetadataHandler> cache_handler_;
   Member<ScriptStreamer> streamer_;
 
   // The URL of the source code, which is primarily intended for DevTools

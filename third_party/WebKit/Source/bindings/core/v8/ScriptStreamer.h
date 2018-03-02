@@ -17,7 +17,7 @@
 namespace blink {
 
 class ClassicPendingScript;
-class Resource;
+class ScriptResource;
 class ScriptState;
 class Settings;
 class SourceStream;
@@ -72,7 +72,7 @@ class CORE_EXPORT ScriptStreamer final
   bool StreamingSuppressed() const { return streaming_suppressed_; }
 
   // Called by ClassicPendingScript when data arrives from the network.
-  void NotifyAppendData(Resource*);
+  void NotifyAppendData(ScriptResource*);
   void NotifyFinished();
 
   // Called by ScriptStreamingTask when it has streamed all data to V8 and V8

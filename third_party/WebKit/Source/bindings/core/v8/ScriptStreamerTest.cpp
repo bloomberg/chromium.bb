@@ -264,7 +264,7 @@ TEST_F(ScriptStreamingTest, SuppressingStreaming) {
   AppendData("function foo() {");
   AppendPadding();
 
-  CachedMetadataHandler* cache_handler = GetResource()->CacheHandler();
+  SingleCachedMetadataHandler* cache_handler = GetResource()->CacheHandler();
   EXPECT_TRUE(cache_handler);
   cache_handler->SetCachedMetadata(
       V8ScriptRunner::TagForCodeCache(cache_handler), "X", 1,

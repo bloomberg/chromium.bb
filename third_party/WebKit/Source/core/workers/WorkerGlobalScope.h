@@ -70,7 +70,7 @@ class CORE_EXPORT WorkerGlobalScope
   ~WorkerGlobalScope() override;
 
   // Returns null if caching is not supported.
-  virtual CachedMetadataHandler* CreateWorkerScriptCachedMetadataHandler(
+  virtual SingleCachedMetadataHandler* CreateWorkerScriptCachedMetadataHandler(
       const KURL& script_url,
       const Vector<char>* meta_data) {
     return nullptr;

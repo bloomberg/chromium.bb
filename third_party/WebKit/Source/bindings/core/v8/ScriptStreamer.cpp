@@ -215,7 +215,7 @@ class SourceStream : public v8::ScriptCompiler::ExternalSourceStream {
     data_queue_.Finish();
   }
 
-  void DidReceiveData(Resource* resource, ScriptStreamer* streamer) {
+  void DidReceiveData(ScriptResource* resource, ScriptStreamer* streamer) {
     DCHECK(IsMainThread());
     PrepareDataOnMainThread(resource, streamer);
   }
@@ -235,7 +235,8 @@ class SourceStream : public v8::ScriptCompiler::ExternalSourceStream {
   }
 
  private:
-  void PrepareDataOnMainThread(Resource* resource, ScriptStreamer* streamer) {
+  void PrepareDataOnMainThread(ScriptResource* resource,
+                               ScriptStreamer* streamer) {
     DCHECK(IsMainThread());
 
     if (cancelled_) {
@@ -254,7 +255,7 @@ class SourceStream : public v8::ScriptCompiler::ExternalSourceStream {
       return;
     }
 
-    CachedMetadataHandler* cache_handler = resource->CacheHandler();
+    SingleCachedMetadataHandler* cache_handler = resource->CacheHandler();
     scoped_refptr<CachedMetadata> code_cache(
         cache_handler ? cache_handler->GetCachedMetadata(
                             V8ScriptRunner::TagForCodeCache(cache_handler))
@@ -389,7 +390,7 @@ void ScriptStreamer::SuppressStreaming() {
   streaming_suppressed_ = true;
 }
 
-void ScriptStreamer::NotifyAppendData(Resource* resource) {
+void ScriptStreamer::NotifyAppendData(ScriptResource* resource) {
   DCHECK(IsMainThread());
   if (streaming_suppressed_)
     return;

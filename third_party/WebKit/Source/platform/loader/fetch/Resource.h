@@ -65,6 +65,18 @@ class ResourceTimingInfo;
 class ResourceLoader;
 class SecurityOrigin;
 
+// A callback for sending the serialized data of cached metadata back to the
+// platform.
+class CachedMetadataSender {
+ public:
+  virtual ~CachedMetadataSender() = default;
+  virtual void Send(const char*, size_t) = 0;
+
+  // IsServedFromCacheStorage is used to alter caching strategy to be more
+  // aggressive. See ScriptController.cpp CacheOptions() for an example.
+  virtual bool IsServedFromCacheStorage() = 0;
+};
+
 // A resource that is held in the cache. Classes who want to use this object
 // should derive from ResourceClient, to get the function calls in case the
 // requested data has arrived. This class also does the actual communication
@@ -235,10 +247,9 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   virtual void ReportResourceTimingToClients(const ResourceTimingInfo&) {}
 
   // Sets the serialized metadata retrieved from the platform's cache.
+  // Subclasses of Resource that support cached metadata should override this
+  // method with one that fills the current CachedMetadataHandler.
   virtual void SetSerializedCachedMetadata(const char*, size_t);
-
-  // This may return nullptr when the resource isn't cacheable.
-  CachedMetadataHandler* CacheHandler();
 
   AtomicString HttpContentType() const;
 
@@ -427,13 +438,22 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
 
   virtual void SetEncoding(const String&) {}
 
+  // Create a handler for the cached metadata of this resource. Subclasses of
+  // Resource that support cached metadata should override this method with one
+  // that creates an appropriate CachedMetadataHandler implementation, and
+  // override SetSerializedCachedMetadata with an implementation that fills the
+  // cache handler.
+  virtual CachedMetadataHandler* CreateCachedMetadataHandler(
+      std::unique_ptr<CachedMetadataSender> send_callback) {
+    return nullptr;
+  }
+
+  CachedMetadataHandler* CacheHandler() { return cache_handler_.Get(); }
+
  private:
   // To allow access to SetCORSStatus
   friend class ResourceLoader;
   friend class SubresourceIntegrityTest;
-
-  class CachedMetadataHandlerImpl;
-  class ServiceWorkerResponseCachedMetadataHandler;
 
   void RevalidationSucceeded(const ResourceResponse&);
   void RevalidationFailed();
@@ -451,6 +471,10 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
 
   void CheckResourceIntegrity();
   void TriggerNotificationForFinishObservers(base::SingleThreadTaskRunner*);
+
+  // Helper for creating the send callback function for the cached metadata
+  // handler.
+  std::unique_ptr<CachedMetadataSender> CreateCachedMetadataSender() const;
 
   Type type_;
   ResourceStatus status_;
@@ -475,7 +499,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
 
   CORSStatus cors_status_;
 
-  Member<CachedMetadataHandlerImpl> cache_handler_;
+  Member<CachedMetadataHandler> cache_handler_;
 
   // Holds the SecurityOrigin obtained from the associated FetchContext.
   // ResourceFetcher sets this at the beginning of loading. The override by

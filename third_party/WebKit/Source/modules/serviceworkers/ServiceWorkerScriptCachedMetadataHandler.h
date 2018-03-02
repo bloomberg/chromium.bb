@@ -16,7 +16,8 @@ namespace blink {
 class WorkerGlobalScope;
 class CachedMetadata;
 
-class ServiceWorkerScriptCachedMetadataHandler : public CachedMetadataHandler {
+class ServiceWorkerScriptCachedMetadataHandler
+    : public SingleCachedMetadataHandler {
  public:
   static ServiceWorkerScriptCachedMetadataHandler* Create(
       WorkerGlobalScope* worker_global_scope,

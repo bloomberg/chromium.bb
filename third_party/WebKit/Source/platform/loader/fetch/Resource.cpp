@@ -114,170 +114,72 @@ static inline bool ShouldUpdateHeaderAfterRevalidation(
   return true;
 }
 
-// CachedMetadataHandlerImpl should be created when a response is received,
-// and can be used independently from Resource.
-// - It doesn't have any references to Resource. Necessary data are captured
-//   from Resource when the handler is created.
-// - It is not affected by Resource's revalidation on MemoryCache.
-//   The validity of the handler is solely checked by |response_url_| and
-//   |response_time_| (not by Resource) by the browser process, and the cached
-//   metadata written to the handler is rejected if e.g. the disk cache entry
-//   has been updated and the handler refers to an older response.
-class Resource::CachedMetadataHandlerImpl : public CachedMetadataHandler {
+// This is a CachedMetadataSender implementation for normal responses.
+class CachedMetadataSenderImpl : public CachedMetadataSender {
  public:
-  static Resource::CachedMetadataHandlerImpl* Create(const Resource* resource) {
-    return new CachedMetadataHandlerImpl(resource);
-  }
-  ~CachedMetadataHandlerImpl() override = default;
-  void Trace(blink::Visitor*) override;
-  void SetCachedMetadata(uint32_t, const char*, size_t, CacheType) override;
-  void ClearCachedMetadata(CacheType) override;
-  scoped_refptr<CachedMetadata> GetCachedMetadata(uint32_t) const override;
+  CachedMetadataSenderImpl(const Resource*);
+  ~CachedMetadataSenderImpl() override = default;
 
-  // This returns the encoding at the time of ResponseReceived().
-  // Therefore this does NOT reflect encoding detection from body contents,
-  // but the final encoding after the encoding detection can be determined
-  // uniquely from Encoding(), provided the body content is the same,
-  // as we can assume the encoding detection will results in the same final
-  // encoding.
-  // TODO(hiroshige): Make this semantics cleaner.
-  String Encoding() const override { return String(encoding_.GetName()); }
+  void Send(const char*, size_t) override;
+  bool IsServedFromCacheStorage() override { return false; }
 
-  bool IsServedFromCacheStorage() const override {
-    return !cache_storage_cache_name_.IsNull();
-  }
+ private:
+  const KURL response_url_;
+  const Time response_time_;
+};
 
-  // Sets the serialized metadata retrieved from the platform's cache.
-  void SetSerializedCachedMetadata(const char*, size_t);
+CachedMetadataSenderImpl::CachedMetadataSenderImpl(const Resource* resource)
+    : response_url_(resource->GetResponse().Url()),
+      response_time_(resource->GetResponse().ResponseTime()) {
+  DCHECK(resource->GetResponse().CacheStorageCacheName().IsNull());
+}
 
- protected:
-  explicit CachedMetadataHandlerImpl(const Resource*);
-  virtual void SendToPlatform();
+void CachedMetadataSenderImpl::Send(const char* data, size_t size) {
+  Platform::Current()->CacheMetadata(response_url_, response_time_, data, size);
+}
 
-  scoped_refptr<CachedMetadata> cached_metadata_;
+// This is a CachedMetadataSender implementation that does nothing.
+class NullCachedMetadataSender : public CachedMetadataSender {
+ public:
+  NullCachedMetadataSender() = default;
+  ~NullCachedMetadataSender() override = default;
 
+  void Send(const char*, size_t) override {}
+  bool IsServedFromCacheStorage() override { return false; }
+};
+
+// This is a CachedMetadataSender implementation for responses that are served
+// by a ServiceWorker from cache storage.
+class ServiceWorkerCachedMetadataSender : public CachedMetadataSender {
+ public:
+  ServiceWorkerCachedMetadataSender(const Resource*, const SecurityOrigin*);
+  ~ServiceWorkerCachedMetadataSender() override = default;
+
+  void Send(const char*, size_t) override;
+  bool IsServedFromCacheStorage() override { return true; }
+
+ private:
   const KURL response_url_;
   const Time response_time_;
   const String cache_storage_cache_name_;
-
- private:
-  const WTF::TextEncoding encoding_;
+  scoped_refptr<const SecurityOrigin> security_origin_;
 };
 
-Resource::CachedMetadataHandlerImpl::CachedMetadataHandlerImpl(
-    const Resource* resource)
+ServiceWorkerCachedMetadataSender::ServiceWorkerCachedMetadataSender(
+    const Resource* resource,
+    const SecurityOrigin* security_origin)
     : response_url_(resource->GetResponse().Url()),
       response_time_(resource->GetResponse().ResponseTime()),
       cache_storage_cache_name_(
           resource->GetResponse().CacheStorageCacheName()),
-      encoding_(resource->Encoding()) {}
-
-void Resource::CachedMetadataHandlerImpl::Trace(blink::Visitor* visitor) {
-  CachedMetadataHandler::Trace(visitor);
+      security_origin_(security_origin) {
+  DCHECK(!cache_storage_cache_name_.IsNull());
 }
 
-void Resource::CachedMetadataHandlerImpl::SetCachedMetadata(
-    uint32_t data_type_id,
-    const char* data,
-    size_t size,
-    CachedMetadataHandler::CacheType cache_type) {
-  // Currently, only one type of cached metadata per resource is supported. If
-  // the need arises for multiple types of metadata per resource this could be
-  // enhanced to store types of metadata in a map.
-  DCHECK(!cached_metadata_);
-  cached_metadata_ = CachedMetadata::Create(data_type_id, data, size);
-  if (cache_type == CachedMetadataHandler::kSendToPlatform)
-    SendToPlatform();
-}
-
-void Resource::CachedMetadataHandlerImpl::ClearCachedMetadata(
-    CachedMetadataHandler::CacheType cache_type) {
-  cached_metadata_ = nullptr;
-  if (cache_type == CachedMetadataHandler::kSendToPlatform)
-    SendToPlatform();
-}
-
-scoped_refptr<CachedMetadata>
-Resource::CachedMetadataHandlerImpl::GetCachedMetadata(
-    uint32_t data_type_id) const {
-  if (!cached_metadata_ || cached_metadata_->DataTypeID() != data_type_id)
-    return nullptr;
-  return cached_metadata_;
-}
-
-void Resource::CachedMetadataHandlerImpl::SetSerializedCachedMetadata(
-    const char* data,
-    size_t size) {
-  // We only expect to receive cached metadata from the platform once. If this
-  // triggers, it indicates an efficiency problem which is most likely
-  // unexpected in code designed to improve performance.
-  DCHECK(!cached_metadata_);
-  cached_metadata_ = CachedMetadata::CreateFromSerializedData(data, size);
-}
-
-void Resource::CachedMetadataHandlerImpl::SendToPlatform() {
-  if (cached_metadata_) {
-    const Vector<char>& serialized_data = cached_metadata_->SerializedData();
-    Platform::Current()->CacheMetadata(response_url_, response_time_,
-                                       serialized_data.data(),
-                                       serialized_data.size());
-  } else {
-    Platform::Current()->CacheMetadata(response_url_, response_time_, nullptr,
-                                       0);
-  }
-}
-
-class Resource::ServiceWorkerResponseCachedMetadataHandler final
-    : public Resource::CachedMetadataHandlerImpl {
- public:
-  static Resource::CachedMetadataHandlerImpl* Create(
-      const Resource* resource,
-      const SecurityOrigin* security_origin) {
-    return new ServiceWorkerResponseCachedMetadataHandler(resource,
-                                                          security_origin);
-  }
-  ~ServiceWorkerResponseCachedMetadataHandler() override = default;
-  void Trace(blink::Visitor*) override;
-
- protected:
-  void SendToPlatform() override;
-
- private:
-  explicit ServiceWorkerResponseCachedMetadataHandler(const Resource*,
-                                                      const SecurityOrigin*);
-  scoped_refptr<const SecurityOrigin> security_origin_;
-};
-
-Resource::ServiceWorkerResponseCachedMetadataHandler::
-    ServiceWorkerResponseCachedMetadataHandler(
-        const Resource* resource,
-        const SecurityOrigin* security_origin)
-    : CachedMetadataHandlerImpl(resource), security_origin_(security_origin) {}
-
-void Resource::ServiceWorkerResponseCachedMetadataHandler::Trace(
-    blink::Visitor* visitor) {
-  CachedMetadataHandlerImpl::Trace(visitor);
-}
-
-void Resource::ServiceWorkerResponseCachedMetadataHandler::SendToPlatform() {
-  // We don't support sending the metadata to the platform when the response was
-  // directly fetched via a ServiceWorker (eg:
-  // FetchEvent.respondWith(fetch(FetchEvent.request))) to prevent an attacker's
-  // Service Worker from poisoning the metadata cache of HTTPCache.
-  if (cache_storage_cache_name_.IsNull())
-    return;
-
-  if (cached_metadata_) {
-    const Vector<char>& serialized_data = cached_metadata_->SerializedData();
-    Platform::Current()->CacheMetadataInCacheStorage(
-        response_url_, response_time_, serialized_data.data(),
-        serialized_data.size(), WebSecurityOrigin(security_origin_),
-        cache_storage_cache_name_);
-  } else {
-    Platform::Current()->CacheMetadataInCacheStorage(
-        response_url_, response_time_, nullptr, 0,
-        WebSecurityOrigin(security_origin_), cache_storage_cache_name_);
-  }
+void ServiceWorkerCachedMetadataSender::Send(const char* data, size_t size) {
+  Platform::Current()->CacheMetadataInCacheStorage(
+      response_url_, response_time_, data, size,
+      WebSecurityOrigin(security_origin_), cache_storage_cache_name_);
 }
 
 Resource::Resource(const ResourceRequest& request,
@@ -598,12 +500,19 @@ void Resource::SetResponse(const ResourceResponse& response) {
     return;
   }
 
+  cache_handler_ = CreateCachedMetadataHandler(CreateCachedMetadataSender());
+}
+
+std::unique_ptr<CachedMetadataSender> Resource::CreateCachedMetadataSender()
+    const {
   if (GetResponse().WasFetchedViaServiceWorker()) {
-    cache_handler_ = ServiceWorkerResponseCachedMetadataHandler::Create(
+    if (GetResponse().CacheStorageCacheName().IsNull()) {
+      return std::make_unique<NullCachedMetadataSender>();
+    }
+    return std::make_unique<ServiceWorkerCachedMetadataSender>(
         this, fetcher_security_origin_.get());
-  } else {
-    cache_handler_ = CachedMetadataHandlerImpl::Create(this);
   }
+  return std::make_unique<CachedMetadataSenderImpl>(this);
 }
 
 void Resource::ResponseReceived(const ResourceResponse& response,
@@ -634,12 +543,6 @@ void Resource::ResponseReceived(const ResourceResponse& response,
 void Resource::SetSerializedCachedMetadata(const char* data, size_t size) {
   DCHECK(!is_revalidating_);
   DCHECK(!GetResponse().IsNull());
-  if (cache_handler_)
-    cache_handler_->SetSerializedCachedMetadata(data, size);
-}
-
-CachedMetadataHandler* Resource::CacheHandler() {
-  return cache_handler_.Get();
 }
 
 String Resource::ReasonNotDeletable() const {
