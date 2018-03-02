@@ -32,8 +32,11 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/Element.h"
+#include "core/dom/ElementShadow.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/fullscreen/Fullscreen.h"
+#include "core/html/custom/CustomElement.h"
+#include "core/html/custom/V0CustomElement.h"
 #include "core/html/custom/V0CustomElementProcessingStack.h"
 #include "core/html/forms/TextControlElement.h"
 #include "core/html_names.h"
@@ -124,6 +127,22 @@ WebString WebElement::TextContent() const {
 
 WebString WebElement::InnerHTML() const {
   return ConstUnwrap<Element>()->InnerHTMLAsString();
+}
+
+bool WebElement::IsAutonomousCustomElement() const {
+  auto* element = ConstUnwrap<Element>();
+  if (element->GetCustomElementState() == CustomElementState::kCustom)
+    return CustomElement::IsValidName(element->localName());
+  if (element->GetV0CustomElementState() == Node::kV0Upgraded)
+    return V0CustomElement::IsValidName(element->localName());
+  return false;
+}
+
+WebNode WebElement::ShadowRoot() const {
+  auto* root = ConstUnwrap<Element>()->GetShadowRoot();
+  if (!root || root->IsUserAgent())
+    return WebNode();
+  return WebNode(root);
 }
 
 bool WebElement::HasNonEmptyLayoutSize() const {
