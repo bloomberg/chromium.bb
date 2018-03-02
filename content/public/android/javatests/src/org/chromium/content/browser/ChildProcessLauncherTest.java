@@ -165,7 +165,6 @@ public class ChildProcessLauncherTest {
         @Override
         public void onDestroy() {
             Assert.assertEquals(0, mOnDestroyHelper.getCallCount());
-            mOnDestroyHelper.notifyCalled();
         }
 
         public void waitForOnConnectionSetupCalled() throws InterruptedException, TimeoutException {
@@ -182,10 +181,6 @@ public class ChildProcessLauncherTest {
 
         public void waitOnRunMainCalled() throws InterruptedException, TimeoutException {
             mOnRunMainHelper.waitForCallback(0 /* currentCallCount */);
-        }
-
-        public void waitOnDestroyCalled() throws InterruptedException, TimeoutException {
-            mOnDestroyHelper.waitForCallback(0 /* currentCallCount */);
         }
     };
 
@@ -306,8 +301,10 @@ public class ChildProcessLauncherTest {
                 processLauncher.stop();
             }
         });
-        // Wait for service to notify its onDestroy was called.
-        childProcessBinder.waitOnDestroyCalled();
+
+        // Note we don't wait for service to notify its onDestroy, as it may not
+        // always be called.
+
         // The client should also get a notification that the connection was lost.
         onConnectionLostHelper.waitForCallback(0 /* currentCallback */);
     }
