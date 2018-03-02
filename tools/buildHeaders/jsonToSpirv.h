@@ -47,7 +47,6 @@ enum OperandClass {
     OperandOptionalLiteral,
     OperandOptionalLiteralString,
     OperandVariableLiterals,
-    OperandVariableLiteralStrings,
     OperandVariableIdLiteral,
     OperandVariableLiteralId,
     OperandLiteralNumber,

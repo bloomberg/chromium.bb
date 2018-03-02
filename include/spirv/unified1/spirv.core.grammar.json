@@ -3436,9 +3436,7 @@
       "opcode" : 5632,
       "operands" : [
         { "kind" : "IdRef",         "name" : "'Target'" },
-        { "kind" : "Decoration" },
-        { "kind" : "LiteralString" },
-        { "kind" : "LiteralString", "quantifier" : "*" }
+        { "kind" : "Decoration" }
       ],
       "extensions" : [ "SPV_GOOGLE_decorate_string" ],
       "version" : "None"
@@ -3449,9 +3447,7 @@
       "operands" : [
         { "kind" : "IdRef",          "name" : "'Struct Type'" },
         { "kind" : "LiteralInteger", "name" : "'Member'" },
-        { "kind" : "Decoration" },
-        { "kind" : "LiteralString" },
-        { "kind" : "LiteralString",  "quantifier" : "*" }
+        { "kind" : "Decoration" }
       ],
       "extensions" : [ "SPV_GOOGLE_decorate_string" ],
       "version" : "None"
