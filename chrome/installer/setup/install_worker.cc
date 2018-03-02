@@ -211,7 +211,8 @@ void AddNativeNotificationWorkItems(const InstallerState& installer_state,
                                     const base::FilePath& target_path,
                                     const base::Version& new_version,
                                     WorkItemList* list) {
-  base::string16 toast_activator_reg_path = GetToastActivatorRegistryPath();
+  base::string16 toast_activator_reg_path =
+      InstallUtil::GetToastActivatorRegistryPath();
 
   if (toast_activator_reg_path.empty()) {
     LOG(DFATAL) << "Cannot retrieve the toast activator registry path";
