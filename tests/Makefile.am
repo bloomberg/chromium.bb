@@ -49,11 +49,6 @@ uplow_with_unicode_SOURCES = uplow_with_unicode.c
 check_metadata_SOURCES = check_metadata.c
 suggestChunks_SOURCES = suggestChunks.c
 
-# Note that this is not currently included in check_programs below
-# otherwise make check would never complete.
-infiniteTranslationLoop_SOURCES = infiniteTranslationLoop.c
-noinst_PROGRAMS = infiniteTranslationLoop
-
 program_TESTS =					\
 	backtranslate				\
 	backtranslate_noUndefinedDots		\
@@ -219,6 +214,7 @@ dist_yaml_TESTS =			  \
 	yaml/issue-401.yaml		  \
 	yaml/issue-406.yaml		  \
 	yaml/issue-479.yaml		  \
+	yaml/issue-77.yaml 		  \
 	yaml/letterDefTest_harness.yaml	  \
 	yaml/multipass-backward.yaml	  \
 	yaml/multipass-forward.yaml	  \
