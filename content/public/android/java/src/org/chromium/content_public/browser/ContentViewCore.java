@@ -315,12 +315,6 @@ public interface ContentViewCore {
     void updateDoubleTapSupport(boolean supportsDoubleTap);
 
     /**
-     * Notifies that items were selected in the currently showing select popup.
-     * @param indices Array of indices of the selected items.
-     */
-    void selectPopupMenuItems(int[] indices);
-
-    /**
      * Ensure the selection is preserved the next time the view loses focus.
      */
     void preserveSelectionOnNextLossOfFocus();

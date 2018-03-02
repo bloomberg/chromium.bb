@@ -4,16 +4,218 @@
 
 package org.chromium.content.browser.input;
 
+import android.content.Context;
+import android.view.View;
+
+import org.chromium.base.VisibleForTesting;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
+import org.chromium.content.browser.TapDisambiguator;
+import org.chromium.content.browser.accessibility.WebContentsAccessibilityImpl;
+import org.chromium.content.browser.selection.SelectionPopupControllerImpl;
+import org.chromium.content.browser.webcontents.WebContentsImpl;
+import org.chromium.content.browser.webcontents.WebContentsUserData;
+import org.chromium.content.browser.webcontents.WebContentsUserData.UserDataFactory;
+import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.base.DeviceFormFactor;
+import org.chromium.ui.base.WindowAndroid;
+
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- * Handles the popup UI for the <select> HTML tag support.
+ * Handles the popup UI for the lt&;select&gt; HTML tag support.
  */
-public interface SelectPopup {
+@JNINamespace("content")
+public class SelectPopup {
+    /** UI for Select popup. */
+    public interface Ui {
+        /**
+         * Shows the popup.
+         */
+        public void show();
+        /**
+         * Hides the popup.
+         * @param sendsCancelMessage Sends cancel message before hiding if true.
+         */
+        public void hide(boolean sendsCancelMessage);
+    }
+
+    private final WebContents mWebContents;
+    private Context mContext;
+    private View mContainerView;
+    private Ui mPopupView;
+    private long mNativeSelectPopup;
+    private long mNativeSelectPopupSourceFrame;
+    private boolean mInitialized;
+
+    private static final class UserDataFactoryLazyHolder {
+        private static final UserDataFactory<SelectPopup> INSTANCE = SelectPopup::new;
+    }
+
     /**
-     * Shows the popup.
+     * Create {@link SelectPopup} instance.
+     * @param context Context instance.
+     * @param webContents WebContents instance.
+     * @param view Container view.
      */
-    public void show();
+    public static SelectPopup create(Context context, WebContents webContents, View view) {
+        SelectPopup selectPopup = WebContentsUserData.fromWebContents(
+                webContents, SelectPopup.class, UserDataFactoryLazyHolder.INSTANCE);
+        assert selectPopup != null && !selectPopup.initialized();
+        selectPopup.init(context, view);
+        return selectPopup;
+    }
+
     /**
-     * Hides the popup.
+     * Get {@link SelectPopup} object used for the give WebContents. {@link #create()} should
+     * precede any calls to this.
+     * @param webContents {@link WebContents} object.
+     * @return {@link SelectPopup} object. {@code null} if not available because
+     *         {@link #create()} is not called yet.
      */
-    public void hide(boolean sendsCancelMessage);
+    public static SelectPopup fromWebContents(WebContents webContents) {
+        return WebContentsUserData.fromWebContents(webContents, SelectPopup.class, null);
+    }
+
+    /**
+     * Create {@link SelectPopup} instance.
+     * @param webContents WebContents instance.
+     */
+    public SelectPopup(WebContents webContents) {
+        mWebContents = (WebContentsImpl) webContents;
+    }
+
+    private void init(Context context, View containerView) {
+        mContext = context;
+        mContainerView = containerView;
+        mNativeSelectPopup = nativeInit(mWebContents);
+        mInitialized = true;
+    }
+
+    private boolean initialized() {
+        return mInitialized;
+    }
+
+    /**
+     * Update container view.
+     * @param containerView The new view to update.
+     */
+    public void setContainerView(View containerView) {
+        mContainerView = containerView;
+    }
+
+    /**
+     * Close popup. Called when {@link WindowAndroid} is updated.
+     */
+    public void close() {
+        mPopupView = null;
+    }
+
+    /**
+     * Hide popup after canceling selection of menu items.
+     */
+    public void hideWithCancel() {
+        if (mPopupView != null) mPopupView.hide(true);
+    }
+
+    /**
+     * Called (from native) when the lt&;select&gt; popup needs to be shown.
+     * @param anchorView View anchored for popup.
+     * @param nativeSelectPopupSourceFrame The native RenderFrameHost that owns the popup.
+     * @param items           Items to show.
+     * @param enabled         POPUP_ITEM_TYPEs for items.
+     * @param multiple        Whether the popup menu should support multi-select.
+     * @param selectedIndices Indices of selected items.
+     */
+    @SuppressWarnings("unused")
+    @CalledByNative
+    private void show(View anchorView, long nativeSelectPopupSourceFrame, String[] items,
+            int[] enabled, boolean multiple, int[] selectedIndices, boolean rightAligned) {
+        if (mContainerView.getParent() == null || mContainerView.getVisibility() != View.VISIBLE) {
+            mNativeSelectPopupSourceFrame = nativeSelectPopupSourceFrame;
+            selectMenuItems(null);
+            return;
+        }
+
+        hidePopupsAndClearSelection();
+        assert mNativeSelectPopupSourceFrame == 0 : "Zombie popup did not clear the frame source";
+
+        assert items.length == enabled.length;
+        List<SelectPopupItem> popupItems = new ArrayList<SelectPopupItem>();
+        for (int i = 0; i < items.length; i++) {
+            popupItems.add(new SelectPopupItem(items[i], enabled[i]));
+        }
+        WebContentsAccessibilityImpl wcax =
+                WebContentsAccessibilityImpl.fromWebContents(mWebContents);
+        if (DeviceFormFactor.isTablet() && !multiple && !wcax.isTouchExplorationEnabled()) {
+            mPopupView = new SelectPopupDropdown(
+                    this, mContext, anchorView, popupItems, selectedIndices, rightAligned);
+        } else {
+            WindowAndroid window = getWindowAndroid();
+            if (window == null) return;
+            Context windowContext = window.getContext().get();
+            if (windowContext == null) return;
+            mPopupView = new SelectPopupDialog(
+                    this, windowContext, popupItems, multiple, selectedIndices);
+        }
+        mNativeSelectPopupSourceFrame = nativeSelectPopupSourceFrame;
+        mPopupView.show();
+    }
+
+    /**
+     * Called when the &lt;select&gt; popup needs to be hidden.
+     */
+    @CalledByNative
+    public void hide() {
+        if (mPopupView == null) return;
+        mPopupView.hide(false);
+        mPopupView = null;
+        mNativeSelectPopupSourceFrame = 0;
+    }
+
+    @CalledByNative
+    private void destroy() {
+        mNativeSelectPopup = 0;
+    }
+
+    /**
+     * @return {@code true} if select popup is being shown.
+     */
+    @VisibleForTesting
+    public boolean isVisibleForTesting() {
+        return mPopupView != null;
+    }
+
+    private void hidePopupsAndClearSelection() {
+        SelectionPopupControllerImpl controller =
+                SelectionPopupControllerImpl.fromWebContents(mWebContents);
+        controller.destroyActionModeAndUnselect();
+        controller.destroyPastePopup();
+        mWebContents.dismissTextHandles();
+        TapDisambiguator.fromWebContents(mWebContents).hidePopup(false);
+        TextSuggestionHost.fromWebContents(mWebContents).hidePopups();
+        if (mPopupView != null) mPopupView.hide(true);
+    }
+
+    private WindowAndroid getWindowAndroid() {
+        return (mNativeSelectPopup != 0) ? nativeGetWindowAndroid(mNativeSelectPopup) : null;
+    }
+
+    /**
+     * Notifies that items were selected in the currently showing select popup.
+     * @param indices Array of indices of the selected items.
+     */
+    public void selectMenuItems(int[] indices) {
+        if (mNativeSelectPopup != 0) {
+            nativeSelectMenuItems(mNativeSelectPopup, mNativeSelectPopupSourceFrame, indices);
+        }
+        mNativeSelectPopupSourceFrame = 0;
+        mPopupView = null;
+    }
+
+    private native long nativeInit(WebContents webContents);
+    private native void nativeSelectMenuItems(
+            long nativeSelectPopup, long nativeSelectPopupSourceFrame, int[] indices);
+    private native WindowAndroid nativeGetWindowAndroid(long nativeSelectPopup);
 }

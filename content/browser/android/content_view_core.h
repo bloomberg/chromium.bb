@@ -33,9 +33,7 @@ class WindowAndroid;
 
 namespace content {
 
-class RenderFrameHost;
 class RenderWidgetHostViewAndroid;
-struct MenuItem;
 
 class ContentViewCore : public WebContentsObserver {
  public:
@@ -67,14 +65,6 @@ class ContentViewCore : public WebContentsObserver {
   void OnJavaContentViewCoreDestroyed(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
-
-  // Notifies the ContentViewCore that items were selected in the currently
-  // showing select popup.
-  void SelectPopupMenuItems(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      jlong selectPopupSourceFrame,
-      const base::android::JavaParamRef<jintArray>& indices);
 
   // Returns the amount of the top controls height if controls are in the state
   // of shrinking Blink's view size, otherwise 0.
@@ -171,19 +161,6 @@ class ContentViewCore : public WebContentsObserver {
 
   void HidePopupsAndPreserveSelection();
 
-  // Creates a popup menu with |items|.
-  // |multiple| defines if it should support multi-select.
-  // If not |multiple|, |selected_item| sets the initially selected item.
-  // Otherwise, item's "checked" flag selects it.
-  void ShowSelectPopupMenu(RenderFrameHost* frame,
-                           const gfx::Rect& bounds,
-                           const std::vector<MenuItem>& items,
-                           int selected_item,
-                           bool multiple,
-                           bool right_aligned);
-  // Hides a visible popup menu.
-  void HideSelectPopupMenu();
-
   // All sizes and offsets are in CSS pixels (except |top_show_pix|)
   // as cached by the renderer.
   void UpdateFrameInfo(const gfx::Vector2dF& scroll_offset,
@@ -255,9 +232,6 @@ class ContentViewCore : public WebContentsObserver {
 
   // A weak reference to the Java ContentViewCore object.
   JavaObjectWeakGlobalRef java_ref_;
-
-  // Select popup view
-  ui::ViewAndroid::ScopedAnchorView select_popup_;
 
   // Reference to the current WebContents used to determine how and what to
   // display in the ContentViewCore.

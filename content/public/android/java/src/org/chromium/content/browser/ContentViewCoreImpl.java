@@ -29,9 +29,6 @@ import org.chromium.content.browser.accessibility.captioning.SystemCaptioningBri
 import org.chromium.content.browser.accessibility.captioning.TextTrackSettings;
 import org.chromium.content.browser.input.ImeAdapterImpl;
 import org.chromium.content.browser.input.SelectPopup;
-import org.chromium.content.browser.input.SelectPopupDialog;
-import org.chromium.content.browser.input.SelectPopupDropdown;
-import org.chromium.content.browser.input.SelectPopupItem;
 import org.chromium.content.browser.input.TextSuggestionHost;
 import org.chromium.content.browser.selection.SelectionPopupControllerImpl;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
@@ -42,7 +39,6 @@ import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.device.gamepad.GamepadList;
-import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.EventForwarder;
 import org.chromium.ui.base.GestureEventType;
 import org.chromium.ui.base.ViewAndroidDelegate;
@@ -52,8 +48,6 @@ import org.chromium.ui.display.DisplayAndroid;
 import org.chromium.ui.display.DisplayAndroid.DisplayAndroidObserver;
 
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Implementation of the interface {@ContentViewCore}.
@@ -158,9 +152,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
     private long mNativeContentViewCore;
 
     private boolean mAttachedToWindow;
-
-    private SelectPopup mSelectPopup;
-    private long mNativeSelectPopupSourceFrame;
 
     // Cached copy of all positions and scales as reported by the renderer.
     private RenderCoordinates mRenderCoordinates;
@@ -298,6 +289,7 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
                 TextSuggestionHost.create(mContext, mWebContents, windowAndroid, containerView);
         addWindowAndroidChangedObserver(textSuggestionHost);
 
+        SelectPopup.create(mContext, mWebContents, containerView);
         mWebContentsObserver = new ContentViewWebContentsObserver(this);
 
         mShouldRequestUnbufferedDispatch = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
@@ -319,7 +311,7 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
 
         // TODO(yusufo): Rename this call to be general for tab reparenting.
         // Clean up cached popups that may have been created with an old activity.
-        mSelectPopup = null;
+        getSelectPopup().close();
         destroyPastePopup();
 
         addDisplayAndroidObserverIfNeeded();
@@ -359,6 +351,7 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
                 hideSelectPopupWithCancelMessage();
                 getImeAdapter().setContainerView(containerView);
                 getTextSuggestionHost().setContainerView(containerView);
+                getSelectPopup().setContainerView(containerView);
             }
 
             mContainerView = containerView;
@@ -391,6 +384,10 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
 
     private TextSuggestionHost getTextSuggestionHost() {
         return TextSuggestionHost.fromWebContents(mWebContents);
+    }
+
+    private SelectPopup getSelectPopup() {
+        return SelectPopup.fromWebContents(mWebContents);
     }
 
     @CalledByNative
@@ -827,16 +824,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
         nativeSetDoubleTapSupportEnabled(mNativeContentViewCore, supportsDoubleTap);
     }
 
-    @Override
-    public void selectPopupMenuItems(int[] indices) {
-        if (mNativeContentViewCore != 0) {
-            nativeSelectPopupMenuItems(
-                    mNativeContentViewCore, mNativeSelectPopupSourceFrame, indices);
-        }
-        mNativeSelectPopupSourceFrame = 0;
-        mSelectPopup = null;
-    }
-
     /**
      * Send the screen orientation value to the renderer.
      */
@@ -902,70 +889,17 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
     }
 
     /**
-     * Called (from native) when the <select> popup needs to be shown.
-     * @param anchorView View anchored for popup.
-     * @param nativeSelectPopupSourceFrame The native RenderFrameHost that owns the popup.
-     * @param items           Items to show.
-     * @param enabled         POPUP_ITEM_TYPEs for items.
-     * @param multiple        Whether the popup menu should support multi-select.
-     * @param selectedIndices Indices of selected items.
-     */
-    @SuppressWarnings("unused")
-    @CalledByNative
-    private void showSelectPopup(View anchorView, long nativeSelectPopupSourceFrame, String[] items,
-            int[] enabled, boolean multiple, int[] selectedIndices, boolean rightAligned) {
-        if (mContainerView.getParent() == null || mContainerView.getVisibility() != View.VISIBLE) {
-            mNativeSelectPopupSourceFrame = nativeSelectPopupSourceFrame;
-            selectPopupMenuItems(null);
-            return;
-        }
-
-        hidePopupsAndClearSelection();
-        assert mNativeSelectPopupSourceFrame == 0 : "Zombie popup did not clear the frame source";
-
-        assert items.length == enabled.length;
-        List<SelectPopupItem> popupItems = new ArrayList<SelectPopupItem>();
-        for (int i = 0; i < items.length; i++) {
-            popupItems.add(new SelectPopupItem(items[i], enabled[i]));
-        }
-        if (DeviceFormFactor.isTablet() && !multiple
-                && !getWebContentsAccessibility().isTouchExplorationEnabled()) {
-            mSelectPopup = new SelectPopupDropdown(
-                    this, anchorView, popupItems, selectedIndices, rightAligned);
-        } else {
-            if (getWindowAndroid() == null) return;
-            Context windowContext = getWindowAndroid().getContext().get();
-            if (windowContext == null) return;
-            mSelectPopup = new SelectPopupDialog(
-                    this, windowContext, popupItems, multiple, selectedIndices);
-        }
-        mNativeSelectPopupSourceFrame = nativeSelectPopupSourceFrame;
-        mSelectPopup.show();
-    }
-
-    /**
-     * Called when the <select> popup needs to be hidden.
-     */
-    @CalledByNative
-    private void hideSelectPopup() {
-        if (mSelectPopup == null) return;
-        mSelectPopup.hide(false);
-        mSelectPopup = null;
-        mNativeSelectPopupSourceFrame = 0;
-    }
-
-    /**
-     * Called when the <select> popup needs to be hidden. This calls
-     * nativeSelectPopupMenuItems() with null indices.
+     * Called when the &lt;select&gt; popup needs to be hidden. This calls
+     * nativeSelectMenuItems() with null indices.
      */
     private void hideSelectPopupWithCancelMessage() {
-        if (mSelectPopup != null) mSelectPopup.hide(true);
+        getSelectPopup().hideWithCancel();
     }
 
     @VisibleForTesting
     @Override
     public boolean isSelectPopupVisibleForTest() {
-        return mSelectPopup != null;
+        return getSelectPopup().isVisibleForTesting();
     }
 
     private void destroyPastePopup() {
@@ -1096,8 +1030,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
             long nativeContentViewCore, boolean enabled);
     private native void nativeSetMultiTouchZoomSupportEnabled(
             long nativeContentViewCore, boolean enabled);
-    private native void nativeSelectPopupMenuItems(
-            long nativeContentViewCore, long nativeSelectPopupSourceFrame, int[] indices);
     private native boolean nativeUsingSynchronousCompositing(long nativeContentViewCore);
     private native void nativeSetTextTrackSettings(long nativeContentViewCore,
             boolean textTracksEnabled, String textTrackBackgroundColor, String textTrackFontFamily,

@@ -38,14 +38,11 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/favicon_status.h"
-#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/ssl_host_state_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/menu_item.h"
-#include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/public/common/user_agent.h"
 #include "jni/ContentViewCoreImpl_jni.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
@@ -75,21 +72,6 @@ using blink::WebInputEvent;
 namespace content {
 
 namespace {
-
-// Describes the type and enabled state of a select popup item.
-//
-// A Java counterpart will be generated for this enum.
-// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.content.browser.input
-enum PopupItemType {
-  // Popup item is of type group
-  POPUP_ITEM_TYPE_GROUP,
-
-  // Popup item is disabled
-  POPUP_ITEM_TYPE_DISABLED,
-
-  // Popup item is enabled
-  POPUP_ITEM_TYPE_ENABLED,
-};
 
 const void* const kContentViewUserDataKey = &kContentViewUserDataKey;
 
@@ -380,77 +362,6 @@ void ContentViewCore::UpdateFrameInfo(const gfx::Vector2dF& scroll_offset,
       is_mobile_optimized_hint);
 }
 
-void ContentViewCore::ShowSelectPopupMenu(RenderFrameHost* frame,
-                                          const gfx::Rect& bounds,
-                                          const std::vector<MenuItem>& items,
-                                          int selected_item,
-                                          bool multiple,
-                                          bool right_aligned) {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
-  if (j_obj.is_null())
-    return;
-
-  // For multi-select list popups we find the list of previous selections by
-  // iterating through the items. But for single selection popups we take the
-  // given |selected_item| as is.
-  ScopedJavaLocalRef<jintArray> selected_array;
-  if (multiple) {
-    std::unique_ptr<jint[]> native_selected_array(new jint[items.size()]);
-    size_t selected_count = 0;
-    for (size_t i = 0; i < items.size(); ++i) {
-      if (items[i].checked)
-        native_selected_array[selected_count++] = i;
-    }
-
-    selected_array =
-        ScopedJavaLocalRef<jintArray>(env, env->NewIntArray(selected_count));
-    env->SetIntArrayRegion(selected_array.obj(), 0, selected_count,
-                           native_selected_array.get());
-  } else {
-    selected_array = ScopedJavaLocalRef<jintArray>(env, env->NewIntArray(1));
-    jint value = selected_item;
-    env->SetIntArrayRegion(selected_array.obj(), 0, 1, &value);
-  }
-
-  ScopedJavaLocalRef<jintArray> enabled_array(env,
-                                              env->NewIntArray(items.size()));
-  std::vector<base::string16> labels;
-  labels.reserve(items.size());
-  for (size_t i = 0; i < items.size(); ++i) {
-    labels.push_back(items[i].label);
-    jint enabled = (items[i].type == MenuItem::GROUP
-                        ? POPUP_ITEM_TYPE_GROUP
-                        : (items[i].enabled ? POPUP_ITEM_TYPE_ENABLED
-                                            : POPUP_ITEM_TYPE_DISABLED));
-    env->SetIntArrayRegion(enabled_array.obj(), i, 1, &enabled);
-  }
-  ScopedJavaLocalRef<jobjectArray> items_array(
-      base::android::ToJavaArrayOfStrings(env, labels));
-  ui::ViewAndroid* view = GetViewAndroid();
-  select_popup_ = view->AcquireAnchorView();
-  const ScopedJavaLocalRef<jobject> popup_view = select_popup_.view();
-  if (popup_view.is_null())
-    return;
-  // |bounds| is in physical pixels if --use-zoom-for-dsf is enabled. Otherwise,
-  // it is in DIP pixels.
-  gfx::RectF bounds_dip = gfx::RectF(bounds);
-  if (IsUseZoomForDSFEnabled())
-    bounds_dip.Scale(1 / dpi_scale_);
-  view->SetAnchorRect(popup_view, bounds_dip);
-  Java_ContentViewCoreImpl_showSelectPopup(
-      env, j_obj, popup_view, reinterpret_cast<intptr_t>(frame), items_array,
-      enabled_array, multiple, selected_array, right_aligned);
-}
-
-void ContentViewCore::HideSelectPopupMenu() {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
-  if (!j_obj.is_null())
-    Java_ContentViewCoreImpl_hideSelectPopup(env, j_obj);
-  select_popup_.Reset();
-}
-
 bool ContentViewCore::FilterInputEvent(const blink::WebInputEvent& event) {
   if (event.GetType() != WebInputEvent::kGestureTap &&
       event.GetType() != WebInputEvent::kGestureLongTap &&
@@ -520,28 +431,6 @@ ui::ViewAndroid* ContentViewCore::GetViewAndroid() const {
 // ----------------------------------------------------------------------------
 // Methods called from Java via JNI
 // ----------------------------------------------------------------------------
-
-void ContentViewCore::SelectPopupMenuItems(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    jlong selectPopupSourceFrame,
-    const JavaParamRef<jintArray>& indices) {
-  RenderFrameHostImpl* rfhi =
-      reinterpret_cast<RenderFrameHostImpl*>(selectPopupSourceFrame);
-  DCHECK(rfhi);
-  if (indices == NULL) {
-    rfhi->DidCancelPopupMenu();
-    return;
-  }
-
-  int selected_count = env->GetArrayLength(indices);
-  std::vector<int> selected_indices;
-  jint* indices_ptr = env->GetIntArrayElements(indices, NULL);
-  for (int i = 0; i < selected_count; ++i)
-    selected_indices.push_back(indices_ptr[i]);
-  env->ReleaseIntArrayElements(indices, indices_ptr, JNI_ABORT);
-  rfhi->DidSelectPopupMenuItems(selected_indices);
-}
 
 WebContents* ContentViewCore::GetWebContents() const {
   return web_contents_;
