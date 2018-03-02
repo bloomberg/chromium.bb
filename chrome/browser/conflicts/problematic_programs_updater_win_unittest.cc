@@ -148,7 +148,8 @@ class ProblematicProgramsUpdaterTest : public testing::Test {
 // returned.
 TEST_F(ProblematicProgramsUpdaterTest, EmptyCache) {
   EXPECT_FALSE(ProblematicProgramsUpdater::HasCachedPrograms());
-  EXPECT_TRUE(ProblematicProgramsUpdater::GetCachedPrograms().empty());
+  EXPECT_TRUE(
+      ProblematicProgramsUpdater::GetCachedPrograms().GetList().empty());
 }
 
 // ProblematicProgramsUpdater doesn't do anything when there is no registered
@@ -163,7 +164,8 @@ TEST_F(ProblematicProgramsUpdaterTest, NoProblematicPrograms) {
   problematic_programs_updater->OnModuleDatabaseIdle();
 
   EXPECT_FALSE(ProblematicProgramsUpdater::HasCachedPrograms());
-  EXPECT_TRUE(ProblematicProgramsUpdater::GetCachedPrograms().empty());
+  EXPECT_TRUE(
+      ProblematicProgramsUpdater::GetCachedPrograms().GetList().empty());
 }
 
 TEST_F(ProblematicProgramsUpdaterTest, OneConflict) {
@@ -178,9 +180,9 @@ TEST_F(ProblematicProgramsUpdaterTest, OneConflict) {
   problematic_programs_updater->OnModuleDatabaseIdle();
 
   EXPECT_TRUE(ProblematicProgramsUpdater::HasCachedPrograms());
-  auto program_names = ProblematicProgramsUpdater::GetCachedPrograms();
-  ASSERT_EQ(1u, program_names.size());
-  EXPECT_EQ(L"Foo", program_names[0].info.name);
+  base::Value program_names = ProblematicProgramsUpdater::GetCachedPrograms();
+  ASSERT_EQ(1u, program_names.GetList().size());
+  EXPECT_EQ("Foo", program_names.GetList()[0].FindKey("name")->GetString());
 }
 
 TEST_F(ProblematicProgramsUpdaterTest, MultipleCallsToOnModuleDatabaseIdle) {
@@ -201,8 +203,8 @@ TEST_F(ProblematicProgramsUpdaterTest, MultipleCallsToOnModuleDatabaseIdle) {
   problematic_programs_updater->OnModuleDatabaseIdle();
 
   EXPECT_TRUE(ProblematicProgramsUpdater::HasCachedPrograms());
-  auto program_names = ProblematicProgramsUpdater::GetCachedPrograms();
-  ASSERT_EQ(2u, program_names.size());
+  base::Value program_names = ProblematicProgramsUpdater::GetCachedPrograms();
+  ASSERT_EQ(2u, program_names.GetList().size());
 }
 
 // This is meant to test that cached problematic programs are persisted
@@ -230,8 +232,8 @@ TEST_F(ProblematicProgramsUpdaterTest, PersistsThroughRestarts) {
   EXPECT_TRUE(ProblematicProgramsUpdater::HasCachedPrograms());
 }
 
-// Tests that programs that do not have a registry entry are removed.
-TEST_F(ProblematicProgramsUpdaterTest, StaleEntriesRemoved) {
+// Tests that TrimCache() removes programs that do not have a registry entry.
+TEST_F(ProblematicProgramsUpdaterTest, TrimCache) {
   AddProblematicProgram(dll1_, L"Foo", Option::ADD_REGISTRY_ENTRY);
   AddProblematicProgram(dll2_, L"Bar", Option::NO_REGISTRY_ENTRY);
 
@@ -246,7 +248,13 @@ TEST_F(ProblematicProgramsUpdaterTest, StaleEntriesRemoved) {
   problematic_programs_updater->OnModuleDatabaseIdle();
 
   EXPECT_TRUE(ProblematicProgramsUpdater::HasCachedPrograms());
-  auto program_names = ProblematicProgramsUpdater::GetCachedPrograms();
-  ASSERT_EQ(1u, program_names.size());
-  EXPECT_EQ(L"Foo", program_names[0].info.name);
+  EXPECT_EQ(2u,
+            ProblematicProgramsUpdater::GetCachedPrograms().GetList().size());
+
+  ProblematicProgramsUpdater::TrimCache();
+
+  EXPECT_TRUE(ProblematicProgramsUpdater::HasCachedPrograms());
+  base::Value program_names = ProblematicProgramsUpdater::GetCachedPrograms();
+  ASSERT_EQ(1u, program_names.GetList().size());
+  EXPECT_EQ("Foo", program_names.GetList()[0].FindKey("name")->GetString());
 }
