@@ -1326,31 +1326,18 @@ class HeadlessWebContentsBeginFrameControlViewportTest
   void SetDeviceMetricsOverrideDone(
       std::unique_ptr<emulation::SetDeviceMetricsOverrideResult> result) {
     EXPECT_TRUE(result);
-    // TODO(crbug.com/817364): Due to recent changes in CopyOutputRequests, it
-    // is not possible to take a screenshot directly after resize as it would be
-    // taken from the old surface. Thus, we have to send an intermediate
-    // BeginFrame here, which will replace the surface first. Replace this with
-    // a screenshotting BeginFrame and remove the need for the third BeginFrame
-    // once above problem is resolved.
-    BeginFrame(false);
+    // Take a screenshot in the second BeginFrame.
+    BeginFrame(true);
   }
 
   void OnFrameFinished(std::unique_ptr<headless_experimental::BeginFrameResult>
                            result) override {
     if (num_begin_frames_ == 1) {
-      EXPECT_TRUE(result->GetHasDamage());
-      EXPECT_FALSE(result->HasScreenshotData());
       SetUpViewport();
-      return;
-    } else if (num_begin_frames_ == 2) {
-      EXPECT_TRUE(result->GetHasDamage());
-      EXPECT_FALSE(result->HasScreenshotData());
-      // Capture screenshot in third BeginFrame.
-      BeginFrame(true);
       return;
     }
 
-    DCHECK_EQ(3, num_begin_frames_);
+    DCHECK_EQ(2, num_begin_frames_);
     // Second BeginFrame should have a screenshot of the configured viewport and
     // of the correct size.
     EXPECT_TRUE(result->GetHasDamage());
