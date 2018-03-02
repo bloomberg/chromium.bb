@@ -169,6 +169,10 @@ void AppendFragmentToString(const NGPhysicalFragment* fragment,
   builder->Append("\n");
 }
 
+LayoutUnit BorderWidth(unsigned edges, unsigned edge, float border_width) {
+  return (edges & edge) ? LayoutUnit(border_width) : LayoutUnit();
+}
+
 }  // namespace
 
 // static
@@ -253,14 +257,10 @@ bool NGPhysicalFragment::IsPlacedByLayoutNG() const {
 NGPixelSnappedPhysicalBoxStrut NGPhysicalFragment::BorderWidths() const {
   unsigned edges = BorderEdges();
   NGPhysicalBoxStrut box_strut(
-      LayoutUnit((edges & NGBorderEdges::kTop) ? Style().BorderTopWidth()
-                                               : .0f),
-      LayoutUnit((edges & NGBorderEdges::kRight) ? Style().BorderRightWidth()
-                                                 : .0f),
-      LayoutUnit((edges & NGBorderEdges::kBottom) ? Style().BorderBottomWidth()
-                                                  : .0f),
-      LayoutUnit((edges & NGBorderEdges::kLeft) ? Style().BorderLeftWidth()
-                                                : .0f));
+      BorderWidth(edges, NGBorderEdges::kTop, Style().BorderTopWidth()),
+      BorderWidth(edges, NGBorderEdges::kRight, Style().BorderRightWidth()),
+      BorderWidth(edges, NGBorderEdges::kBottom, Style().BorderBottomWidth()),
+      BorderWidth(edges, NGBorderEdges::kLeft, Style().BorderLeftWidth()));
   return box_strut.SnapToDevicePixels();
 }
 
