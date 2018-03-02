@@ -1749,6 +1749,22 @@
         },
         'os_type': 'android',
       },
+      'ChromeOS Swarm': {
+        'additional_compile_targets': [
+          'chromiumos_preflight',
+        ],
+        'test_suites': {
+          'isolated_scripts': 'linux_chromeos_rel_isolated_scripts',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'device_type': 'kevin-signed-mpkeys',
+              'os': 'ChromeOS',
+            }
+          ],
+        },
+      },
       'Linux Swarm': {
         'test_suites': {
            'gtest_tests': 'chromium_swarm_linux_gtests',
