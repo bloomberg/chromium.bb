@@ -8,7 +8,7 @@
 #-author: Michel Such <michel.such@free.fr>
 #-author: André-Abush Clause <dev@andreabc.net>
 #-author: Ludovic Oger <oger.ludovic@gmail.com>
-#-author: Nicolas Pitre <nico@cam.org>
+#-author: Nicolas Pitre <nico@fluxnic.net>
 #-author: The BRLTTY Team <http://brltty.com/>
 #-license: LGPLv2.1
 #-updated: 2018-02-28
@@ -37,7 +37,7 @@
 #  <http://www.gnu.org/licenses/>.
 
 # Définitions pour code braille français international unifié
-# Par Nicolas Pitre <nico@cam.org>
+# Par Nicolas Pitre <nico@fluxnic.net>
 # maintenu par Michel Such <michel.such@free.fr>
 
 # Uncontracted Unified French Table

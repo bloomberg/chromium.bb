@@ -7,7 +7,7 @@
 #-display-name: Unified French Grade 2
 #-author: Michel Such <michel.such@free.fr>
 #-author: André-Abush CLAUSE <dev@andreabc.net>
-#-author: Nicolas Pitre <nico@cam.org>
+#-author: Nicolas Pitre <nico@fluxnic.net>
 #-author: The BRLTTY Team <http://brltty.com/>
 #-license: LGPLv2.1
 #-updated: 2018-03-01
@@ -16,7 +16,7 @@
 
 # Copyright (C) 1995-2004 by The BRLTTY Team
 # Copyright (C) 2012 Michel Such <michel.such@free.fr>
-# Copyright (C) 2012 Nicolas Pitre <nico@cam.org>
+# Copyright (C) 2012 Nicolas Pitre <nico@fluxnic.net>
 
 # This file is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -36,7 +36,7 @@
 # Auteurs:
 #
 #André-Abush CLAUSE <dev@andreabc.net>
-#	Nicolas Pitre <nico@cam.org>
+#	Nicolas Pitre <nico@fluxnic.net>
 #	Michel such <michel.such@free.fr>
 #
 # Référence:
