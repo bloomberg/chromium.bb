@@ -9,3 +9,7 @@ tests:
     - ⠋⠕⠕ ⠡⠹⠼⠩⠱
     - mode: [compbrlAtCursor]
       cursorPos: [7,7]
+  - - foo [123+456+(789-789)] bar
+    - ⠋⠕⠕ ⠠⠷⠡⠣⠩⠖⠹⠱⠫⠖⠦⠻⠳⠪⠤⠻⠳⠪⠴⠾ ⠃⠈
+    - mode: [compbrlAtCursor]
+      cursorPos: [7,7]
