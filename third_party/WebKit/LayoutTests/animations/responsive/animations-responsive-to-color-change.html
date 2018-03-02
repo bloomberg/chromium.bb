@@ -17,7 +17,7 @@ a { visibility: hidden; }
 <a href='' id='visited'><div id='visitedchild'>Visited</div></a>
 
 <script>
-
+'use strict';
 var container = document.getElementById('container');
 var child = document.getElementById('child');
 var element = document.getElementById('element');
@@ -234,4 +234,20 @@ test(function() {
     assert_equals(getComputedStyle(unvisitedChild).color, getComputedStyle(visitedChild).color);
 }, 'Color animations do not expose parent visited status');
 
+test(function() {
+    var keyframes = [
+        {columnRuleColor: 'inherit'},
+        {columnRuleColor: 'rgb(70, 70, 170)'}
+    ];
+
+    container.style.columnRuleColor = 'rgb(170, 70, 70)';
+    var player = child.animate(keyframes, 10);
+
+    player.pause();
+    player.currentTime = 5;
+    assert_equals(getComputedStyle(child).columnRuleColor, 'rgb(120, 70, 120)');
+
+    container.style.columnRuleColor = 'rgb(70, 170, 70)';
+    assert_equals(getComputedStyle(child).columnRuleColor, 'rgb(70, 120, 120)');
+}, 'Color animations respond to inherited changes');
 </script>
