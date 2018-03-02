@@ -6,6 +6,8 @@ static_library("sync_sessions") {
   sources = [
     "favicon_cache.cc",
     "favicon_cache.h",
+    "local_session_event_handler_impl.cc",
+    "local_session_event_handler_impl.h",
     "local_session_event_router.h",
     "lost_navigations_recorder.cc",
     "lost_navigations_recorder.h",
@@ -61,11 +63,14 @@ static_library("test_support") {
     "mock_sync_sessions_client.h",
     "session_sync_test_helper.cc",
     "session_sync_test_helper.h",
+    "test_synced_window_delegates_getter.cc",
+    "test_synced_window_delegates_getter.h",
   ]
 
   public_deps = [
     ":sync_sessions",
     "//base",
+    "//components/sessions:test_support",
     "//components/sync",
     "//testing/gmock",
     "//testing/gtest",
@@ -79,6 +84,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "favicon_cache_unittest.cc",
+    "local_session_event_handler_impl_unittest.cc",
     "lost_navigations_recorder_unittest.cc",
     "open_tabs_ui_delegate_impl_unittest.cc",
     "session_data_type_controller_unittest.cc",
