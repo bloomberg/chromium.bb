@@ -805,7 +805,11 @@ void AddChromeCleanupStrings(content::WebUIDataSource* html_source) {
       {"chromeCleanupExplanationPermissionsNeeded",
        IDS_SETTINGS_RESET_CLEANUP_EXPLANATION_PERMISSIONS_NEEDED},
       {"chromeCleanupExplanationRemove",
-       IDS_SETTINGS_RESET_CLEANUP_EXPLANATION_REMOVE},
+       // Note: removal explanation should be the same as used in the prompt
+       // dialog. Reusing the string to ensure they will not diverge.
+       IDS_CHROME_CLEANUP_PROMPT_EXPLANATION},
+      {"chromeCleanupExplanationRemoving",
+       IDS_SETTINGS_RESET_CLEANUP_EXPLANATION_CURRENTLY_REMOVING},
       {"chromeCleanupExplanationScanError",
        IDS_SETTINGS_RESET_CLEANUP_EXPLANATION_SCAN_ERROR},
       {"chromeCleanupFindButtonLable",

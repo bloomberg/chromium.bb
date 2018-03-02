@@ -3833,8 +3833,8 @@
     <message name="IDS_SETTINGS_RESET_CLEANUP_EXPLANATION_PERMISSIONS_NEEDED" desc="Body of error message that could appear during the cleanup of harmful software. Imperative. ">
       Click Try Again, and accept the prompt on your computer
     </message>
-    <message name="IDS_SETTINGS_RESET_CLEANUP_EXPLANATION_REMOVE" desc="Description in the Chrome Cleanup web page that Chrome browser shows when unwanted software, like ad injectors or software that changes the user's settings without their knowledge, is found on the user's computer. Appears under the title asking 'Remove harmful software.' Actor is Chrome; we are asking, Do you want Chrome to remove harmful software? 'it' is harmful software. The user can click 'Remove' to proceed with a cleanup. Preferrably, the translation for this string should match IDS_CHROME_CLEANUP_PROMPT_EXPLANATION.">
-      Chrome found harmful software on your computer. Chrome can remove it and restore your settings to make your browser work normally again.
+    <message name="IDS_SETTINGS_RESET_CLEANUP_EXPLANATION_CURRENTLY_REMOVING" desc="Description in the Chrome Cleanup web page that Chrome browser shows when unwanted software, like ad injectors or software that changes the user's settings without their knowledge, is being removed by Chrome from the user's computer. Appears under the title 'Removing harmful software...' Actor is Chrome; we are indicating that harmful software is currently being removed. 'it' is harmful software. Preferrably, the translation for this string should parallel IDS_CHROME_CLEANUP_PROMPT_EXPLANATION.">
+      There's harmful software on your computer. Chrome is removing it and will restore your settings to make your browser work normally again.
     </message>
     <message name="IDS_SETTINGS_RESET_CLEANUP_EXPLANATION_SCAN_ERROR" desc="Body of error message that could appear during the cleanup of harmful software.">
       An error occurred while Chrome was searching for harmful software
@@ -3858,7 +3858,7 @@
       Done! Harmful software removed.
     </message>
     <message name="IDS_SETTINGS_RESET_CLEANUP_TITLE_ERROR_CANT_REMOVE" desc="An error message, appearing on the Chrome Cleanup web page, that Chrome tried to clean up unwanted software, as requested by the user, but was unsuccessful. Omits subject, i.e. Chrome can't remove harmful software.">
-      Can't remove harmful software
+      Cleanup failed
     </message>
     <message name="IDS_SETTINGS_RESET_CLEANUP_TITLE_ERROR_PERMISSIONS_NEEDED" desc="Title of error message that could appear during the cleanup of harmful software. 'permission' refers to the user granting permission, e.g. from an operating system prompt, before the cleanup operation can continue.">
       Chrome needs permission to continue
@@ -3888,7 +3888,7 @@
       Checking for harmful software...
     </message>
     <message name="IDS_SETTINGS_RESET_CLEANUP_TITLE_ERROR_SCANNING_FAILED" desc="Title of error message that could appear during the cleanup of harmful software.">
-      Scanning failed
+      Search failed
     </message>
     <message name="IDS_SETTINGS_RESET_CLEANUP_TRY_AGAIN_BUTTON_LABEL" desc="Generic button that appears next to a message indicating that an operation failed during the cleanup of harmful software." meaning="Button referred to in the string 'Click Try Again, and accept the prompt on your computer', IDS_SETTINGS_RESET_CLEANUP_EXPLANATION_PERMISSIONS_NEEDED">
       Try again
