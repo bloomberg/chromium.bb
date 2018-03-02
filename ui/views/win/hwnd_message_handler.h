@@ -41,9 +41,6 @@ class AXSystemCaretWin;
 class InputMethod;
 class TextInputClient;
 class ViewProp;
-namespace win {
-class DirectManipulationHelper;
-}  // namespace win
 }  // namespace ui
 
 namespace views {
@@ -261,13 +258,13 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
                               WPARAM w_param,
                               LPARAM l_param,
                               bool* handled) override;
-
   LRESULT HandleNcHitTestMessage(unsigned int message,
                                  WPARAM w_param,
                                  LPARAM l_param,
                                  bool* handled) override;
-
   void HandleParentChanged() override;
+  void ApplyPinchZoomScale(float scale) override;
+  void ApplyPanGestureScroll(int scroll_x, int scroll_y) override;
 
   // Returns the auto-hide edges of the appbar. See
   // ViewsDelegate::GetAppbarAutohideEdges() for details. If the edges change,
@@ -727,12 +724,6 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
 
   // Some assistive software need to track the location of the caret.
   std::unique_ptr<ui::AXSystemCaretWin> ax_system_caret_;
-
-  // This class provides functionality to register the legacy window as a
-  // Direct Manipulation consumer. This allows us to support smooth scroll
-  // in Chrome on Windows 10.
-  std::unique_ptr<ui::win::DirectManipulationHelper>
-      direct_manipulation_helper_;
 
   // The location where the user clicked on the caption. We cache this when we
   // receive the WM_NCLBUTTONDOWN message. We use this in the subsequent

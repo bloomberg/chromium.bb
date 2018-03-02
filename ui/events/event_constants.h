@@ -139,6 +139,9 @@ enum MouseEventFlags {
   EF_CURSOR_HIDE = 1 << 20,          // Indicates this mouse event is generated
                                      // because the cursor was just hidden. This
                                      // can be used to update hover state.
+  EF_PRECISION_SCROLLING_DELTA =     // Indicates this mouse event is from high
+  1 << 21,                           // precision touchpad and will come with a
+                                     // high precision delta.
 };
 
 // Result of dispatching an event.

@@ -5,79 +5,134 @@
 #ifndef UI_WIN_DIRECT_MANIPULATION_H_
 #define UI_WIN_DIRECT_MANIPULATION_H_
 
-#include <directmanipulation.h>
-#include <wrl/client.h>
+#include <windows.h>
 
+#include <directmanipulation.h>
+#include <wrl.h>
 #include <memory>
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "ui/base/ui_base_export.h"
+#include "ui/base/win/window_event_target.h"
 #include "ui/gfx/geometry/rect.h"
+
+namespace content {
+class DirectManipulationBrowserTest;
+}  // namespace content
 
 namespace ui {
 namespace win {
 
+class DirectManipulationUnitTest;
+
+class DirectManipulationHelper;
+
+// DirectManipulationHandler receives status update and gesture events from
+// Direct Manipulation API.
+class DirectManipulationHandler
+    : public Microsoft::WRL::RuntimeClass<
+          Microsoft::WRL::RuntimeClassFlags<
+              Microsoft::WRL::RuntimeClassType::ClassicCom>,
+          Microsoft::WRL::Implements<
+              Microsoft::WRL::RuntimeClassFlags<
+                  Microsoft::WRL::RuntimeClassType::ClassicCom>,
+              Microsoft::WRL::FtmBase,
+              IDirectManipulationViewportEventHandler>> {
+ public:
+  explicit DirectManipulationHandler(DirectManipulationHelper* helper);
+
+  // WindowEventTarget updates for every DM_POINTERHITTEST in case window
+  // hierarchy changed.
+  void SetWindowEventTarget(WindowEventTarget* event_target);
+
+ private:
+  friend DirectManipulationUnitTest;
+
+  DirectManipulationHandler();
+  ~DirectManipulationHandler() override;
+
+  HRESULT STDMETHODCALLTYPE
+  OnViewportStatusChanged(_In_ IDirectManipulationViewport* viewport,
+                          _In_ DIRECTMANIPULATION_STATUS current,
+                          _In_ DIRECTMANIPULATION_STATUS previous) override;
+
+  HRESULT STDMETHODCALLTYPE
+  OnViewportUpdated(_In_ IDirectManipulationViewport* viewport) override;
+
+  HRESULT STDMETHODCALLTYPE
+  OnContentUpdated(_In_ IDirectManipulationViewport* viewport,
+                   _In_ IDirectManipulationContent* content) override;
+
+  DirectManipulationHelper* helper_ = nullptr;
+  WindowEventTarget* event_target_ = nullptr;
+  float last_scale_ = 1.0f;
+  int last_x_offset_ = 0;
+  int last_y_offset_ = 0;
+  bool first_ready_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(DirectManipulationHandler);
+};
+
 // Windows 10 provides a new API called Direct Manipulation which generates
-// smooth scroll events via WM_MOUSEWHEEL messages with predictable deltas
-// on high precision touch pads. This basically requires the application window
-// to register as a Direct Manipulation consumer. The way mouse wheel messages
-// are dispatched is
+// smooth scroll and scale factor via IDirectManipulationViewportEventHandler
+// on precision touchpad.
 // 1. The foreground window is checked to see if it is a Direct Manipulation
 //    consumer.
-// 2. If it is then Direct Manipulation takes over and sends the following
-//    messages. WM_POINTERACTIVATE, WM_POINTERDOWN and DM_POINTERHITTEST.
-// 3. It then posts WM_MOUSEWHEEL messages with precision deltas which vary
-//    based on the amount of the scroll.
-// 4. If the foreground window is not a Direct Manipulation consumer, it
-//    then takes a fallback route where it posts WM_MOUSEWHEEL messages
-//    with precision but varying deltas to the window. There is a also
-//    a slight delay in receiving the first set of mouse wheel messages.
-//    This causes scrolling to appear janky and jumpy.
-// Our approach for addressing this is to do the absolute minimum to
-// register our window as a Direct Manipulation consumer. This class
-// provides the necessary functionality to register the passed in HWND as a
-// Direct Manipulation consumer. We don't rely on Direct manipulation
-// to do the smooth scrolling in the background thread as documented on
-// msdn.
+// 2. Call SetContact in Direct Manipulation takes over the following scrolling
+//    when DM_POINTERHITTEST.
+// 3. OnViewportStatusChanged will be called when the gesture phase change.
+//    OnContentUpdated will be called when the gesture update.
 class UI_BASE_EXPORT DirectManipulationHelper {
  public:
-  // Creates an instance of this class if Direct Manipulation is enabled on
-  // the platform. If not returns NULL.
-  static std::unique_ptr<DirectManipulationHelper> CreateInstance();
+  // Creates and initializes an instance of this class if Direct Manipulation is
+  // enabled on the platform. Returns nullptr if it disabled or failed on
+  // initialization.
+  static std::unique_ptr<DirectManipulationHelper> CreateInstance(HWND window);
 
-  // This function instantiates Direct Manipulation and creates a viewport for
-  // the passed in |window|.
-  // consumer. Most of the code is boiler plate and is based on the sample.
-  void Initialize(HWND window);
-
-  // Sets the bounds of the fake Direct manipulation viewport to match those
-  // of the legacy window.
-  void SetBounds(const gfx::Rect& bounds);
-
-  // Registers and activates the passed in |window| as a Direct Manipulation
-  // consumer.
-  void Activate(HWND window);
-
-  // Deactivates Direct Manipulation processing on the passed in |window|.
-  void Deactivate(HWND window);
-
-  // Passes the WM_MOUSEWHEEL messages to Direct Manipulation. This is for
-  // logistics purposes.
-  void HandleMouseWheel(HWND window,
-                        UINT message,
-                        WPARAM w_param,
-                        LPARAM l_param);
+  // Creates and initializes an instance for testing.
+  static std::unique_ptr<DirectManipulationHelper> CreateInstanceForTesting(
+      WindowEventTarget* event_target,
+      Microsoft::WRL::ComPtr<IDirectManipulationViewport> viewport);
 
   ~DirectManipulationHelper();
 
+  // Registers and activates the passed in |window| as a Direct Manipulation
+  // consumer.
+  void Activate();
+
+  // Deactivates Direct Manipulation processing on the passed in |window|.
+  void Deactivate();
+
+  // Reset the fake viewport for gesture end.
+  HRESULT ResetViewport(bool need_animtation);
+
+  // Pass the pointer hit test to Direct Manipulation. Return true indicated we
+  // need poll for new events every frame from here.
+  bool OnPointerHitTest(WPARAM w_param, WindowEventTarget* event_target);
+
+  // On each frame poll new Direct Manipulation events. Return true if we still
+  // need poll for new events on next frame, otherwise stop request need begin
+  // frame.
+  bool PollForNextEvent();
+
  private:
+  friend class content::DirectManipulationBrowserTest;
+  friend class DirectManipulationUnitTest;
+
   DirectManipulationHelper();
 
-  Microsoft::WRL::ComPtr<IDirectManipulationManager2> manager_;
-  Microsoft::WRL::ComPtr<IDirectManipulationCompositor> compositor_;
+  // This function instantiates Direct Manipulation and creates a viewport for
+  // the passed in |window|. Return false if initialize failed.
+  bool Initialize();
+
+  Microsoft::WRL::ComPtr<IDirectManipulationManager> manager_;
   Microsoft::WRL::ComPtr<IDirectManipulationUpdateManager> update_manager_;
-  Microsoft::WRL::ComPtr<IDirectManipulationFrameInfoProvider> frame_info_;
-  Microsoft::WRL::ComPtr<IDirectManipulationViewport2> view_port_outer_;
+  Microsoft::WRL::ComPtr<IDirectManipulationViewport> viewport_;
+  Microsoft::WRL::ComPtr<DirectManipulationHandler> event_handler_;
+  HWND window_;
+  DWORD view_port_handler_cookie_;
+  bool need_poll_events_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(DirectManipulationHelper);
 };

@@ -981,7 +981,10 @@ test("content_browsertests") {
   }
 
   if (is_win) {
-    sources += [ "../browser/accessibility/accessibility_win_browsertest.cc" ]
+    sources += [
+      "../browser/accessibility/accessibility_win_browsertest.cc",
+      "../browser/renderer_host/direct_manipulation_browsertest.cc",
+    ]
 
     deps += [
       "//content/app/strings",

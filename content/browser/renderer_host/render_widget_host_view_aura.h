@@ -67,6 +67,7 @@ class OnScreenKeyboardObserver;
 namespace content {
 #if defined(OS_WIN)
 class LegacyRenderWidgetHostHWND;
+class DirectManipulationBrowserTest;
 #endif
 
 class CursorManager;
@@ -358,6 +359,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   friend class RenderWidgetHostViewAuraTest;
   friend class RenderWidgetHostViewAuraCopyRequestTest;
   friend class TestInputMethodObserver;
+#if defined(OS_WIN)
+  friend class DirectManipulationBrowserTest;
+#endif
   FRIEND_TEST_ALL_PREFIXES(InputMethodResultAuraTest,
                            FinishImeCompositionSession);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
