@@ -44,6 +44,11 @@ def FindPythonDependencies(module_path):
   if modulegraph is None:
     raise import_error
 
+  prefixes = [sys.prefix]
+  if hasattr(sys, 'real_prefix'):
+    prefixes.append(sys.real_prefix)
+  logging.info('Excluding Prefixes: %r', prefixes)
+
   sys_path = sys.path
   sys.path = list(sys_path)
   try:
@@ -73,6 +78,10 @@ def FindPythonDependencies(module_path):
       # we also print out the dependency edges that include python packages
       # that are not in chromium.
       if not path.IsSubpath(module_path, path_util.GetChromiumSrcDir()):
+        continue
+
+      # Exclude any dependencies which exist in the python installation.
+      if any(path.IsSubpath(module_path, pfx) for pfx in prefixes):
         continue
 
       yield module_path
