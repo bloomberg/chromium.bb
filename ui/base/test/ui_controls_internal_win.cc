@@ -229,6 +229,17 @@ void InputDispatcher::DispatchedMessage(WPARAM mouse_message) {
           << "); check the math in SendMouseMoveImpl.";
     }
     MatchingMessageFound();
+  } else if ((message_waiting_for_ == WM_LBUTTONDOWN &&
+              mouse_message == WM_LBUTTONDBLCLK) ||
+             (message_waiting_for_ == WM_MBUTTONDOWN &&
+              mouse_message == WM_MBUTTONDBLCLK) ||
+             (message_waiting_for_ == WM_RBUTTONDOWN &&
+              mouse_message == WM_RBUTTONDBLCLK)) {
+    LOG(WARNING) << "Double click event being treated as single-click. "
+                 << "This may result in different event processing behavior. "
+                 << "If you need a single click try moving the mouse between "
+                 << "down events.";
+    MatchingMessageFound();
   }
 }
 

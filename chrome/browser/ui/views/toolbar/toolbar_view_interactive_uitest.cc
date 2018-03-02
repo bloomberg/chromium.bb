@@ -137,9 +137,8 @@ void ToolbarViewInteractiveUITest::FinishDragAndDrop(
     const base::Closure& quit_closure) {
   dnd_thread_.reset();
   TestWhileInDragOperation();
-  ui_controls::SendMouseEvents(ui_controls::LEFT, ui_controls::UP);
-  ui_controls::RunClosureAfterAllPendingUIEvents(
-      quit_closure);
+  ui_controls::SendMouseEventsNotifyWhenDone(ui_controls::LEFT, ui_controls::UP,
+                                             quit_closure);
 }
 
 void ToolbarViewInteractiveUITest::SetUpCommandLine(

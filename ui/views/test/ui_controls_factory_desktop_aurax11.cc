@@ -210,8 +210,7 @@ class UIControlsDesktopX11 : public UIControlsAura {
   bool SendMouseClick(MouseButton type) override {
     return SendMouseEvents(type, UP | DOWN);
   }
-  void RunClosureAfterAllPendingUIEvents(
-      const base::Closure& closure) override {
+  void RunClosureAfterAllPendingUIEvents(const base::Closure& closure) {
     if (closure.is_null())
       return;
     static XEvent* marker_event = NULL;

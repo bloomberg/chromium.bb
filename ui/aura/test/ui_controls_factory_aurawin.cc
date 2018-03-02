@@ -78,12 +78,6 @@ class UIControlsWin : public UIControlsAura {
   bool SendTouchEvents(int action, int num, int x, int y) override {
     return SendTouchEventsImpl(action, num, x, y);
   }
-  void RunClosureAfterAllPendingUIEvents(
-      const base::Closure& closure) override {
-    // On windows, posting UI events is synchronous so just post the closure.
-    DCHECK(base::MessageLoopForUI::IsCurrent());
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, closure);
-  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UIControlsWin);

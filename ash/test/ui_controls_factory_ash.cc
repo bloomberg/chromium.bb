@@ -115,14 +115,6 @@ class UIControlsAsh : public UIControlsAura {
     return ui_controls && ui_controls->SendMouseClick(type);
   }
 
-  void RunClosureAfterAllPendingUIEvents(
-      const base::Closure& closure) override {
-    UIControlsAura* ui_controls =
-        GetUIControlsForRootWindow(ash::Shell::GetRootWindowForNewWindows());
-    if (ui_controls)
-      ui_controls->RunClosureAfterAllPendingUIEvents(closure);
-  }
-
  private:
   DISALLOW_COPY_AND_ASSIGN(UIControlsAsh);
 };
