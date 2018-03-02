@@ -1645,6 +1645,7 @@
       type_name: "StyleImage",
       computed_style_custom_functions: ["getter", "setter"],
       custom_apply_functions_value: true,
+      keywords: ["none"]
     },
     {
       name: "list-style-position",
