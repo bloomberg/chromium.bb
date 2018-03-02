@@ -282,7 +282,14 @@ void gvr_keyboard_hide(gvr_keyboard_context* context) {
   keyboard_api->impl_gvr_keyboard_hide(context);
 }
 
-bool gvr_keyboard_supports_selection(gvr_keyboard_context* context) {
+bool gvr_keyboard_supports_selection() {
+  if (!keyboard_api)
+    return false;
   return keyboard_api->min_version >= kSelectionSupportApiVersion;
 }
 
+int64_t gvr_keyboard_version() {
+  if (!keyboard_api)
+    return -1;
+  return keyboard_api->min_version;
+}

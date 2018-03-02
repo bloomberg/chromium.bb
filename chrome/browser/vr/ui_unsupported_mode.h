@@ -18,6 +18,7 @@ enum class UiUnsupportedMode : int {
   // kURLWithStrongRTLChars = 3,  // Obsolete.
   kVoiceSearchNeedsRecordAudioOsPermission = 4,  // TODO(ddorwin): Android only.
   kGenericUnsupportedFeature = 5,
+  kNeedsKeyboardUpdate = 6,
   // This must be last.
   kCount,
 };

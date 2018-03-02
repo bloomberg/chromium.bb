@@ -43,6 +43,7 @@ struct UiInitialState {
   // TODO(tiborg): Remove this flag.
   bool assets_available = false;
   bool supports_selection = true;
+  bool needs_keyboard_update = false;
 };
 
 // This class manages all GLThread owned objects and GL rendering for VrShell.

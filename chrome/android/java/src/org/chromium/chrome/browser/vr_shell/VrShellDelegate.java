@@ -87,6 +87,7 @@ public class VrShellDelegate
     // when used with startActivityForResult...
     public static final int EXIT_VR_RESULT = 7212;
     public static final int VR_SERVICES_UPDATE_RESULT = 7213;
+    public static final int GVR_KEYBOARD_UPDATE_RESULT = 7214;
 
     private static final int ENTER_VR_NOT_NECESSARY = 0;
     private static final int ENTER_VR_CANCELLED = 1;
@@ -112,6 +113,9 @@ public class VrShellDelegate
 
     private static final String VR_CORE_MARKET_URI =
             "market://details?id=" + VrCoreVersionChecker.VR_CORE_PACKAGE_ID;
+
+    private static final String GVR_KEYBOARD_MARKET_URI =
+            "market://details?id=com.google.android.vr.inputmethod";
 
     // This value is intentionally probably overkill. This is the time we need to wait from when
     // Chrome is resumed, to when Chrome actually renders a black frame, so that we can cancel the
@@ -320,6 +324,10 @@ public class VrShellDelegate
         // Handles the result of requesting to update VR services.
         if (requestCode == VR_SERVICES_UPDATE_RESULT) {
             if (sInstance != null) sInstance.onVrServicesMaybeUpdated();
+            return true;
+        }
+        // Handles the result of requesting to update GVR Keyboard.
+        if (requestCode == GVR_KEYBOARD_UPDATE_RESULT) {
             return true;
         }
         return false;
@@ -1774,6 +1782,12 @@ public class VrShellDelegate
         SimpleConfirmInfoBarBuilder.create(tab, listener,
                 InfoBarIdentifier.VR_SERVICES_UPGRADE_ANDROID, R.drawable.vr_services, infobarText,
                 buttonText, null, true);
+    }
+
+    /* package */ void promptForKeyboardUpdate() {
+        mActivity.startActivityForResult(
+                new Intent(Intent.ACTION_VIEW, Uri.parse(GVR_KEYBOARD_MARKET_URI)),
+                GVR_KEYBOARD_UPDATE_RESULT);
     }
 
     private boolean createVrShell() {

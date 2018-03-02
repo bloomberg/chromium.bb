@@ -49,6 +49,7 @@ struct Model {
   bool can_apply_new_background = false;
   bool background_loaded = false;
   bool supports_selection = true;
+  bool needs_keyboard_update = false;
 
   // WebVR state.
   WebVrModel web_vr;

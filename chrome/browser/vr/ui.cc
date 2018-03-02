@@ -160,6 +160,9 @@ void Ui::ShowExitVrPrompt(UiUnsupportedMode reason) {
       model_->active_modal_prompt_type =
           kModalPromptTypeGenericUnsupportedFeature;
       return;
+    case UiUnsupportedMode::kNeedsKeyboardUpdate:
+      model_->active_modal_prompt_type = kModalPromptTypeUpdateKeyboard;
+      return;
     case UiUnsupportedMode::kCount:
       NOTREACHED();  // Should never be used as a mode (when |enabled| is true).
       return;
@@ -439,6 +442,7 @@ void Ui::InitializeModel(const UiInitialState& ui_initial_state) {
       ui_initial_state.skips_redraw_when_not_dirty;
   model_->waiting_for_background = ui_initial_state.assets_available;
   model_->supports_selection = ui_initial_state.supports_selection;
+  model_->needs_keyboard_update = ui_initial_state.needs_keyboard_update;
 }
 
 void Ui::AcceptDoffPromptForTesting() {
