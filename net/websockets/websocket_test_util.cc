@@ -11,6 +11,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "net/http/http_network_session.h"
 #include "net/proxy_resolution/proxy_service.h"
 #include "net/socket/socket_test_util.h"
 #include "net/spdy/core/spdy_protocol.h"
@@ -202,6 +203,12 @@ void WebSocketMockClientSocketFactoryMaker::AddSSLSocketDataProvider(
 WebSocketTestURLRequestContextHost::WebSocketTestURLRequestContextHost()
     : url_request_context_(true), url_request_context_initialized_(false) {
   url_request_context_.set_client_socket_factory(maker_.factory());
+  auto params = std::make_unique<HttpNetworkSession::Params>();
+  params->enable_spdy_ping_based_connection_checking = false;
+  params->enable_quic = false;
+  params->enable_websocket_over_http2 = true;
+  params->disable_idle_sockets_close_on_memory_pressure = false;
+  url_request_context_.set_http_network_session_params(std::move(params));
 }
 
 WebSocketTestURLRequestContextHost::~WebSocketTestURLRequestContextHost() =
