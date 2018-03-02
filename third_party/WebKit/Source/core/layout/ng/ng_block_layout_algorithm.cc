@@ -235,6 +235,9 @@ Optional<MinMaxSize> NGBlockLayoutAlgorithm::ComputeMinMaxSize(
   DCHECK_GE(sizes.min_size, LayoutUnit());
   DCHECK_GE(sizes.max_size, sizes.min_size);
 
+  sizes +=
+      CalculateBorderScrollbarPadding(ConstraintSpace(), node_.Style(), node_)
+          .InlineSum();
   return sizes;
 }
 

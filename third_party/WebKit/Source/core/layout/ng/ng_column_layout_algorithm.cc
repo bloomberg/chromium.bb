@@ -217,8 +217,9 @@ Optional<MinMaxSize> NGColumnLayoutAlgorithm::ComputeMinMaxSize(
   sizes.max_size *= column_count;
   LayoutUnit column_gap = ResolveUsedColumnGap(LayoutUnit(), Style());
   LayoutUnit gap_extra = column_gap * (column_count - 1);
-  sizes.min_size += gap_extra;
-  sizes.max_size += gap_extra;
+  sizes += gap_extra + CalculateBorderScrollbarPadding(ConstraintSpace(),
+                                                       node_.Style(), node_)
+                           .InlineSum();
 
   return sizes;
 }

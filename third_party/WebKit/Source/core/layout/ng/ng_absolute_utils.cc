@@ -119,7 +119,6 @@ void ComputeAbsoluteHorizontal(const NGConstraintSpace& space,
   Optional<LayoutUnit> right;
   if (!style.Right().IsAuto())
     right = ValueForLength(style.Right(), percentage_physical.width);
-  LayoutUnit border_padding = HorizontalBorderPadding(space, style);
   Optional<LayoutUnit> width = incoming_width;
   NGPhysicalSize container_size =
       space.AvailableSize().ConvertToPhysical(space.GetWritingMode());
@@ -134,7 +133,7 @@ void ComputeAbsoluteHorizontal(const NGConstraintSpace& space,
     if (!margin_right)
       margin_right = LayoutUnit();
     DCHECK(child_minmax.has_value());
-    width = child_minmax->ShrinkToFit(container_size.width) + border_padding;
+    width = child_minmax->ShrinkToFit(container_size.width);
     if (IsLeftDominant(container_writing_mode, container_direction)) {
       left = static_position.LeftInset(container_size.width, *width,
                                        *margin_left, *margin_right);
@@ -189,7 +188,7 @@ void ComputeAbsoluteHorizontal(const NGConstraintSpace& space,
     // Rule 1: left/width are unknown.
     DCHECK(right.has_value());
     DCHECK(child_minmax.has_value());
-    width = child_minmax->ShrinkToFit(container_size.width) + border_padding;
+    width = child_minmax->ShrinkToFit(container_size.width);
   } else if (!left && !right) {
     // Rule 2.
     DCHECK(width.has_value());
@@ -202,7 +201,7 @@ void ComputeAbsoluteHorizontal(const NGConstraintSpace& space,
   } else if (!width && !right) {
     // Rule 3.
     DCHECK(child_minmax.has_value());
-    width = child_minmax->ShrinkToFit(container_size.width) + border_padding;
+    width = child_minmax->ShrinkToFit(container_size.width);
   }
 
   // Rules 4 through 6, 1 out of 3 are unknown.
@@ -246,7 +245,7 @@ void ComputeAbsoluteHorizontal(const NGConstraintSpace& space,
   }
 
   // Negative widths are not allowed.
-  width = std::max(*width, border_padding);
+  width = std::max(*width, HorizontalBorderPadding(space, style));
 
   position->inset.left = *left + *margin_left;
   position->inset.right = *right + *margin_right;
@@ -298,7 +297,7 @@ void ComputeAbsoluteVertical(const NGConstraintSpace& space,
     if (!margin_bottom)
       margin_bottom = LayoutUnit();
     DCHECK(child_minmax.has_value());
-    height = child_minmax->ShrinkToFit(container_size.height) + border_padding;
+    height = child_minmax->ShrinkToFit(container_size.height);
     if (IsTopDominant(container_writing_mode, container_direction)) {
       top = static_position.TopInset(container_size.height, *height,
                                      *margin_top, *margin_bottom);
@@ -351,7 +350,7 @@ void ComputeAbsoluteVertical(const NGConstraintSpace& space,
     // Rule 1.
     DCHECK(bottom.has_value());
     DCHECK(child_minmax.has_value());
-    height = child_minmax->ShrinkToFit(container_size.height) + border_padding;
+    height = child_minmax->ShrinkToFit(container_size.height);
   } else if (!top && !bottom) {
     // Rule 2.
     DCHECK(height.has_value());
@@ -365,7 +364,7 @@ void ComputeAbsoluteVertical(const NGConstraintSpace& space,
   } else if (!height && !bottom) {
     // Rule 3.
     DCHECK(child_minmax.has_value());
-    height = child_minmax->ShrinkToFit(container_size.height) + border_padding;
+    height = child_minmax->ShrinkToFit(container_size.height);
   }
 
   // Rules 4 through 6, 1 out of 3 are unknown.
@@ -493,11 +492,6 @@ void ComputeFullAbsoluteWithChildBlockSize(
     } else if (replaced_size.has_value()) {
       height = replaced_size.value().block_size;
     }
-    if (child_minmax) {
-      LayoutUnit border_padding = VerticalBorderPadding(space, style);
-      child_minmax.value().min_size -= border_padding;
-      child_minmax.value().max_size -= border_padding;
-    }
     ComputeAbsoluteVertical(space, style, height, static_position, child_minmax,
                             container_writing_mode, container_direction,
                             position);
@@ -508,11 +502,6 @@ void ComputeFullAbsoluteWithChildBlockSize(
                            LengthResolveType::kContentSize);
     } else if (replaced_size.has_value()) {
       width = replaced_size.value().block_size;
-    }
-    if (child_minmax) {
-      LayoutUnit border_padding = HorizontalBorderPadding(space, style);
-      child_minmax.value().min_size -= border_padding;
-      child_minmax.value().max_size -= border_padding;
     }
     ComputeAbsoluteHorizontal(space, style, width, static_position,
                               child_minmax, container_writing_mode,

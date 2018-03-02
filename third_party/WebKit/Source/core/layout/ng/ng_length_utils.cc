@@ -107,11 +107,10 @@ LayoutUnit ResolveInlineLength(const NGConstraintSpace& constraint_space,
       } else {
         NGBoxStrut margins = ComputeMarginsForSelf(constraint_space, style);
         LayoutUnit fill_available =
-            std::max(LayoutUnit(), available_size - margins.InlineSum() -
-                                       border_and_padding.InlineSum());
+            std::max(LayoutUnit(), available_size - margins.InlineSum());
         value = min_and_max->ShrinkToFit(fill_available);
       }
-      return value + border_and_padding.InlineSum();
+      return value;
     }
     case kDeviceWidth:
     case kDeviceHeight:
@@ -216,12 +215,7 @@ MinMaxSize ComputeMinAndMaxContentContribution(
   Length inline_size = style.LogicalWidth();
   if (inline_size.IsAuto()) {
     CHECK(min_and_max.has_value());
-    NGBoxStrut border_and_padding =
-        ComputeBorders(*space, style) + ComputePadding(*space, style);
-    computed_sizes.min_size =
-        min_and_max->min_size + border_and_padding.InlineSum();
-    computed_sizes.max_size =
-        min_and_max->max_size + border_and_padding.InlineSum();
+    computed_sizes = *min_and_max;
   } else {
     computed_sizes.min_size = computed_sizes.max_size =
         ResolveInlineLength(*space, style, min_and_max, inline_size,
