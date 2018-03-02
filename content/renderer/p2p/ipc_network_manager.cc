@@ -100,9 +100,15 @@ void IpcNetworkManager::OnNetworkListChanged(
     DCHECK(!ip_address.IsNil());
 
     rtc::IPAddress prefix = rtc::TruncateIP(ip_address, it->prefix_length);
-    std::unique_ptr<rtc::Network> network(
-        new rtc::Network(it->name, it->name, prefix, it->prefix_length,
-                         ConvertConnectionTypeToAdapterType(it->type)));
+    rtc::AdapterType adapter_type =
+        ConvertConnectionTypeToAdapterType(it->type);
+    // If the adapter type is unknown, try to guess it using WebRTC's string
+    // matching rules.
+    if (adapter_type == rtc::ADAPTER_TYPE_UNKNOWN) {
+      adapter_type = rtc::GetAdapterTypeFromName(it->name.c_str());
+    }
+    std::unique_ptr<rtc::Network> network(new rtc::Network(
+        it->name, it->name, prefix, it->prefix_length, adapter_type));
     network->set_default_local_address_provider(this);
 
     rtc::InterfaceAddress iface_addr;
