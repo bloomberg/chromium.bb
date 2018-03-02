@@ -138,7 +138,7 @@ class DonutsUI : public content::WebUIController {
     content::WebUIDataSource::Add(source);
 
     // Handles messages from JavaScript to C++ via chrome.send().
-    web_ui->AddMessageHandler(base::MakeUnique<OvenHandler>());
+    web_ui->AddMessageHandler(std::make_unique<OvenHandler>());
   }
 };
 ```
