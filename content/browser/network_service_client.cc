@@ -268,10 +268,10 @@ void NetworkServiceClient::OnCertificateRequested(
 }
 
 void NetworkServiceClient::OnSSLCertificateError(
-    int32_t resource_type,
-    const GURL& url,
     uint32_t process_id,
     uint32_t routing_id,
+    int32_t resource_type,
+    const GURL& url,
     const net::SSLInfo& ssl_info,
     bool fatal,
     OnSSLCertificateErrorCallback response) {

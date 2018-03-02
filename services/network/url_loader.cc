@@ -473,7 +473,7 @@ void URLLoader::OnSSLCertificateError(net::URLRequest* request,
     return;
   }
   network_service_client_->OnSSLCertificateError(
-      resource_type_, url_request_->url(), process_id_, render_frame_id_,
+      process_id_, render_frame_id_, resource_type_, url_request_->url(),
       ssl_info, fatal,
       base::Bind(&URLLoader::OnSSLCertificateErrorResponse,
                  weak_ptr_factory_.GetWeakPtr(), ssl_info));

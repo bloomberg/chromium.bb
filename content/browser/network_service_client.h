@@ -33,10 +33,10 @@ class NetworkServiceClient : public network::mojom::NetworkServiceClient {
       const scoped_refptr<net::SSLCertRequestInfo>& cert_info,
       network::mojom::NetworkServiceClient::OnCertificateRequestedCallback
           callback) override;
-  void OnSSLCertificateError(int32_t resource_type,
-                             const GURL& url,
-                             uint32_t process_id,
+  void OnSSLCertificateError(uint32_t process_id,
                              uint32_t routing_id,
+                             int32_t resource_type,
+                             const GURL& url,
                              const net::SSLInfo& ssl_info,
                              bool fatal,
                              OnSSLCertificateErrorCallback response) override;

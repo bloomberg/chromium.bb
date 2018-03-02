@@ -245,10 +245,10 @@ interface NetworkServiceClient {
   // Called when an SSL certificate is encountered.
   // The callback argument is a net::ERROR value. If it's net::OK, then the
   // request is resumed. Otherwise it's cancelled with the given error.
-  OnSSLCertificateError(int32 resource_type,
-                        url.mojom.Url url,
-                        uint32 process_id,
+  OnSSLCertificateError(uint32 process_id,
                         uint32 routing_id,
+                        int32 resource_type,
+                        url.mojom.Url url,
                         SSLInfo ssl_info,
                         bool fatal) => (int32 net_error);
 };
