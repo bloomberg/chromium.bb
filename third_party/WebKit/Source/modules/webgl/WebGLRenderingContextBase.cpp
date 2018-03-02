@@ -765,36 +765,23 @@ scoped_refptr<StaticBitmapImage> WebGLRenderingContextBase::GetImage(
     AccelerationHint hint) const {
   if (!GetDrawingBuffer())
     return nullptr;
-  // If on the main thread, directly access the drawing buffer and create the
-  // image snapshot.
-  if (IsMainThread()) {
-    GetDrawingBuffer()->ResolveAndBindForReadAndDraw();
-    IntSize size = ClampedCanvasSize();
-    std::unique_ptr<CanvasResourceProvider> resource_provider =
-        CanvasResourceProvider::Create(
-            size, CanvasResourceProvider::kAcceleratedResourceUsage,
-            SharedGpuContext::ContextProviderWrapper());
-    if (!resource_provider || !resource_provider->IsValid())
-      return nullptr;
-    if (!CopyRenderingResultsFromDrawingBuffer(resource_provider.get(),
-                                               kBackBuffer)) {
-      // copyRenderingResultsFromDrawingBuffer is expected to always succeed
-      // because we've explicitly created an Accelerated surface and have
-      // already validated it.
-      NOTREACHED();
-      return nullptr;
-    }
-    return resource_provider->Snapshot();
+  GetDrawingBuffer()->ResolveAndBindForReadAndDraw();
+  IntSize size = ClampedCanvasSize();
+  std::unique_ptr<CanvasResourceProvider> resource_provider =
+      CanvasResourceProvider::Create(
+          size, CanvasResourceProvider::kAcceleratedResourceUsage,
+          SharedGpuContext::ContextProviderWrapper(), 0, ColorParams());
+  if (!resource_provider || !resource_provider->IsValid())
+    return nullptr;
+  if (!CopyRenderingResultsFromDrawingBuffer(resource_provider.get(),
+                                             kBackBuffer)) {
+    // copyRenderingResultsFromDrawingBuffer is expected to always succeed
+    // because we've explicitly created an Accelerated surface and have
+    // already validated it.
+    NOTREACHED();
+    return nullptr;
   }
-
-  // If on a worker thread, create a copy from the drawing buffer and create
-  // the snapshot from the copy.
-  int width = GetDrawingBuffer()->Size().Width();
-  int height = GetDrawingBuffer()->Size().Height();
-  SkImageInfo image_info = SkImageInfo::Make(
-      width, height, kRGBA_8888_SkColorType,
-      CreationAttributes().alpha ? kPremul_SkAlphaType : kOpaque_SkAlphaType);
-  return this->MakeImageSnapshot(image_info);
+  return resource_provider->Snapshot();
 }
 
 scoped_refptr<StaticBitmapImage> WebGLRenderingContextBase::MakeImageSnapshot(
@@ -1555,11 +1542,12 @@ bool WebGLRenderingContextBase::CopyRenderingResultsFromDrawingBuffer(
     SourceDrawingBuffer source_buffer) const {
   if (!drawing_buffer_)
     return false;
-  std::unique_ptr<WebGraphicsContext3DProvider> provider =
-      Platform::Current()->CreateSharedOffscreenGraphicsContext3DProvider();
-  if (!provider)
+  base::WeakPtr<WebGraphicsContext3DProviderWrapper> shared_context_wrapper =
+      SharedGpuContext::ContextProviderWrapper();
+  if (!shared_context_wrapper)
     return false;
-  gpu::gles2::GLES2Interface* gl = provider->ContextGL();
+  gpu::gles2::GLES2Interface* gl =
+      shared_context_wrapper->ContextProvider()->ContextGL();
   GLuint texture_id = resource_provider->GetBackingTextureHandleForOverwrite();
   if (!texture_id)
     return false;
