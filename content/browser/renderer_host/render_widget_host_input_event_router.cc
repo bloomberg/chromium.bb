@@ -42,6 +42,26 @@ blink::WebGestureEvent DummyGestureScrollUpdate(double timeStampSeconds) {
                                 timeStampSeconds);
 }
 
+viz::HitTestQuery* GetHitTestQuery(
+    viz::HostFrameSinkManager* host_frame_sink_manager,
+    const viz::FrameSinkId& frame_sink_id) {
+  DCHECK(frame_sink_id.is_valid());
+  const auto& display_hit_test_query_map =
+      host_frame_sink_manager->display_hit_test_query();
+  const auto iter = display_hit_test_query_map.find(frame_sink_id);
+  if (iter == display_hit_test_query_map.end())
+    return nullptr;
+  return iter->second.get();
+}
+
+gfx::PointF ComputePointInRootInPixels(
+    const gfx::PointF& point,
+    content::RenderWidgetHostViewBase* root_view,
+    float device_scale_factor) {
+  gfx::PointF point_in_root = point + root_view->GetOffsetFromRootSurface();
+  return gfx::ConvertPointToPixel(device_scale_factor, point_in_root);
+}
+
 }  // anonymous namespace
 
 namespace content {
@@ -211,8 +231,9 @@ RenderWidgetTargetResult RenderWidgetHostInputEventRouter::FindMouseEventTarget(
   }
 
   if (needs_transform_point) {
-    if (!root_view->TransformPointToCoordSpaceForView(
-            event.PositionInWidget(), target, &transformed_point)) {
+    if (!TransformPointToTargetCoordSpace(
+            root_view, target, event.PositionInWidget(), &transformed_point,
+            viz::EventSource::MOUSE)) {
       return {nullptr, false, base::nullopt};
     }
   }
@@ -230,8 +251,9 @@ RenderWidgetHostInputEventRouter::FindMouseWheelEventTarget(
                  ->delegate()
                  ->GetMouseLockWidget()
                  ->GetView();
-    if (!root_view->TransformPointToCoordSpaceForView(
-            event.PositionInWidget(), target, &transformed_point)) {
+    if (!TransformPointToTargetCoordSpace(
+            root_view, target, event.PositionInWidget(), &transformed_point,
+            viz::EventSource::MOUSE)) {
       return {nullptr, false, base::nullopt};
     }
     return {target, false, transformed_point};
@@ -271,22 +293,18 @@ RenderWidgetTargetResult RenderWidgetHostInputEventRouter::FindViewAtLocation(
   viz::FrameSinkId frame_sink_id;
   bool query_renderer = false;
   if (use_viz_hit_test_) {
-    const auto& display_hit_test_query_map =
-        GetHostFrameSinkManager()->display_hit_test_query();
-    const auto iter =
-        display_hit_test_query_map.find(root_view->GetRootFrameSinkId());
-    if (iter == display_hit_test_query_map.end())
+    viz::HitTestQuery* query = GetHitTestQuery(GetHostFrameSinkManager(),
+                                               root_view->GetRootFrameSinkId());
+    if (!query)
       return {root_view, false, base::nullopt};
     // |point_in_screen| is in the coordinate space of of the screen, but the
     // display HitTestQuery does a hit test in the coordinate space of the root
     // window. The following translation should account for that discrepancy.
     // TODO(riajiang): Get rid of |point_in_screen| since it's not used.
-    gfx::PointF point_in_root = point + root_view->GetOffsetFromRootSurface();
-    viz::HitTestQuery* query = iter->second.get();
     float device_scale_factor = root_view->GetDeviceScaleFactor();
-    DCHECK(device_scale_factor != 0.0f);
+    DCHECK_GT(device_scale_factor, 0.0f);
     gfx::PointF point_in_root_in_pixels =
-        gfx::ConvertPointToPixel(device_scale_factor, point_in_root);
+        ComputePointInRootInPixels(point, root_view, device_scale_factor);
     viz::Target target =
         query->FindTargetForLocation(source, point_in_root_in_pixels);
     frame_sink_id = target.frame_sink_id;
@@ -672,9 +690,11 @@ void RenderWidgetHostInputEventRouter::SendMouseEnterOrLeaveEvents(
     // new compositor surface. The SurfaceID for that might not have
     // propagated to its embedding surface, which makes it impossible to
     // compute the transformation for it
-    if (!root_view->TransformPointToCoordSpaceForView(event.PositionInWidget(),
-                                                      view, &transformed_point))
+    if (!TransformPointToTargetCoordSpace(
+            root_view, view, event.PositionInWidget(), &transformed_point,
+            viz::EventSource::MOUSE)) {
       transformed_point = gfx::PointF();
+    }
     mouse_leave.SetPositionInWidget(transformed_point.x(),
                                     transformed_point.y());
     view->ProcessMouseEvent(mouse_leave, ui::LatencyInfo());
@@ -684,9 +704,11 @@ void RenderWidgetHostInputEventRouter::SendMouseEnterOrLeaveEvents(
   if (common_ancestor && common_ancestor != target) {
     blink::WebMouseEvent mouse_move(event);
     mouse_move.SetType(blink::WebInputEvent::kMouseMove);
-    if (!root_view->TransformPointToCoordSpaceForView(
-            event.PositionInWidget(), common_ancestor, &transformed_point))
+    if (!TransformPointToTargetCoordSpace(
+            root_view, common_ancestor, event.PositionInWidget(),
+            &transformed_point, viz::EventSource::MOUSE)) {
       transformed_point = gfx::PointF();
+    }
     mouse_move.SetPositionInWidget(transformed_point.x(),
                                    transformed_point.y());
     common_ancestor->ProcessMouseEvent(mouse_move, ui::LatencyInfo());
@@ -698,9 +720,11 @@ void RenderWidgetHostInputEventRouter::SendMouseEnterOrLeaveEvents(
       continue;
     blink::WebMouseEvent mouse_enter(event);
     mouse_enter.SetType(blink::WebInputEvent::kMouseMove);
-    if (!root_view->TransformPointToCoordSpaceForView(event.PositionInWidget(),
-                                                      view, &transformed_point))
+    if (!TransformPointToTargetCoordSpace(
+            root_view, view, event.PositionInWidget(), &transformed_point,
+            viz::EventSource::MOUSE)) {
       transformed_point = gfx::PointF();
+    }
     mouse_enter.SetPositionInWidget(transformed_point.x(),
                                     transformed_point.y());
     view->ProcessMouseEvent(mouse_enter, ui::LatencyInfo());
@@ -1185,6 +1209,53 @@ RenderWidgetHostInputEventRouter::GetRenderWidgetHostViewsForTests() const {
 RenderWidgetTargeter*
 RenderWidgetHostInputEventRouter::GetRenderWidgetTargeterForTests() {
   return event_targeter_.get();
+}
+
+bool RenderWidgetHostInputEventRouter::TransformPointToTargetCoordSpace(
+    RenderWidgetHostViewBase* root_view,
+    RenderWidgetHostViewBase* target,
+    const gfx::PointF& point,
+    gfx::PointF* transformed_point,
+    viz::EventSource source) const {
+  if (root_view == target) {
+    *transformed_point = point;
+    return true;
+  }
+
+  if (!use_viz_hit_test_) {
+    return root_view->TransformPointToCoordSpaceForView(point, target,
+                                                        transformed_point);
+  }
+
+  viz::HitTestQuery* query = GetHitTestQuery(GetHostFrameSinkManager(),
+                                             root_view->GetRootFrameSinkId());
+  if (!query)
+    return false;
+
+  std::vector<viz::FrameSinkId> target_ancestors;
+  target_ancestors.push_back(target->GetFrameSinkId());
+  RenderWidgetHostViewBase* cur_view = target;
+  while (cur_view->IsRenderWidgetHostViewChildFrame()) {
+    cur_view =
+        static_cast<RenderWidgetHostViewChildFrame*>(cur_view)->GetParentView();
+    DCHECK(cur_view);
+    target_ancestors.push_back(cur_view->GetFrameSinkId());
+  }
+  DCHECK_EQ(cur_view, root_view);
+  target_ancestors.push_back(root_view->GetRootFrameSinkId());
+
+  float device_scale_factor = root_view->GetDeviceScaleFactor();
+  DCHECK_GT(device_scale_factor, 0.0f);
+  gfx::PointF point_in_root_in_pixels =
+      ComputePointInRootInPixels(point, root_view, device_scale_factor);
+  if (!query->TransformLocationForTarget(source, target_ancestors,
+                                         point_in_root_in_pixels,
+                                         transformed_point)) {
+    return false;
+  }
+  *transformed_point =
+      gfx::ConvertPointToDIP(device_scale_factor, *transformed_point);
+  return true;
 }
 
 RenderWidgetTargetResult

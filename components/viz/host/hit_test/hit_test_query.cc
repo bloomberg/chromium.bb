@@ -65,27 +65,28 @@ Target HitTestQuery::FindTargetForLocation(
   return target;
 }
 
-gfx::PointF HitTestQuery::TransformLocationForTarget(
+bool HitTestQuery::TransformLocationForTarget(
     EventSource event_source,
     const std::vector<FrameSinkId>& target_ancestors,
-    const gfx::PointF& location_in_root) const {
+    const gfx::PointF& location_in_root,
+    gfx::PointF* transformed_location) const {
   SCOPED_UMA_HISTOGRAM_TIMER("Event.VizHitTest.TransformTime");
 
   if (!active_hit_test_list_size_)
-    return location_in_root;
+    return false;
 
-  gfx::PointF location_in_target(location_in_root);
+  if (target_ancestors.size() == 0u ||
+      target_ancestors[target_ancestors.size() - 1] !=
+          active_hit_test_list_->frame_sink_id) {
+    return false;
+  }
+
   // TODO(riajiang): Cache the matrix product such that the transform can be
   // done immediately. crbug/758062.
-  DCHECK(target_ancestors.size() > 0u &&
-         target_ancestors[target_ancestors.size() - 1] ==
-             active_hit_test_list_->frame_sink_id);
-  bool success = TransformLocationForTargetRecursively(
+  *transformed_location = location_in_root;
+  return TransformLocationForTargetRecursively(
       event_source, target_ancestors, target_ancestors.size() - 1,
-      active_hit_test_list_, &location_in_target);
-  // Must provide a valid target.
-  DCHECK(success);
-  return location_in_target;
+      active_hit_test_list_, transformed_location);
 }
 
 bool HitTestQuery::FindTargetInRegionForLocation(
