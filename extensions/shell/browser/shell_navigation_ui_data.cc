@@ -4,8 +4,8 @@
 
 #include "extensions/shell/browser/shell_navigation_ui_data.h"
 
-#include "base/memory/ptr_util.h"
 #include "content/public/browser/navigation_handle.h"
+#include "extensions/common/constants.h"
 
 namespace extensions {
 
@@ -13,8 +13,9 @@ ShellNavigationUIData::ShellNavigationUIData() {}
 
 ShellNavigationUIData::ShellNavigationUIData(
     content::NavigationHandle* navigation_handle) {
-  extension_data_ =
-      std::make_unique<ExtensionNavigationUIData>(navigation_handle, -1, -1);
+  extension_data_ = std::make_unique<ExtensionNavigationUIData>(
+      navigation_handle, extension_misc::kUnknownTabId,
+      extension_misc::kUnknownWindowId);
 }
 
 ShellNavigationUIData::~ShellNavigationUIData() {}

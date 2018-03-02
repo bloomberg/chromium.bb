@@ -10,6 +10,10 @@
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/extension_api_frame_id_map.h"
 
+namespace content {
+class WebContents;
+}  // namespace content
+
 namespace extensions {
 
 class ChromeExtensionApiFrameIdMapHelper
@@ -19,11 +23,17 @@ class ChromeExtensionApiFrameIdMapHelper
   explicit ChromeExtensionApiFrameIdMapHelper(ExtensionApiFrameIdMap* owner);
   ~ChromeExtensionApiFrameIdMapHelper() override;
 
+  // Populates the |tab_id| and |window_id| for the given |web_contents|.
+  // Returns true on success.
+  static bool PopulateTabData(content::WebContents* web_contents,
+                              int* tab_id,
+                              int* window_id);
+
  private:
   // ChromeExtensionApiFrameIdMapHelper:
-  void GetTabAndWindowId(content::RenderFrameHost* rfh,
-                         int* tab_id_out,
-                         int* window_id_out) override;
+  void PopulateTabData(content::RenderFrameHost* rfh,
+                       int* tab_id_out,
+                       int* window_id_out) override;
 
   // content::NotificationObserver:
   void Observe(int type,

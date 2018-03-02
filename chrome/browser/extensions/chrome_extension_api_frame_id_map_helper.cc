@@ -9,6 +9,7 @@
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/common/constants.h"
 
 namespace extensions {
 
@@ -19,20 +20,33 @@ ChromeExtensionApiFrameIdMapHelper::ChromeExtensionApiFrameIdMapHelper(
                  content::NotificationService::AllBrowserContextsAndSources());
 }
 
-ChromeExtensionApiFrameIdMapHelper::~ChromeExtensionApiFrameIdMapHelper() {}
+ChromeExtensionApiFrameIdMapHelper::~ChromeExtensionApiFrameIdMapHelper() =
+    default;
 
-void ChromeExtensionApiFrameIdMapHelper::GetTabAndWindowId(
+// static
+bool ChromeExtensionApiFrameIdMapHelper::PopulateTabData(
+    content::WebContents* web_contents,
+    int* tab_id,
+    int* window_id) {
+  if (!web_contents)
+    return false;
+
+  SessionTabHelper* session_tab_helper =
+      SessionTabHelper::FromWebContents(web_contents);
+  if (!session_tab_helper)
+    return false;
+
+  *tab_id = session_tab_helper->session_id().id();
+  *window_id = session_tab_helper->window_id().id();
+  return true;
+}
+
+void ChromeExtensionApiFrameIdMapHelper::PopulateTabData(
     content::RenderFrameHost* rfh,
     int* tab_id,
     int* window_id) {
-  content::WebContents* web_contents =
-      content::WebContents::FromRenderFrameHost(rfh);
-  SessionTabHelper* session_tab_helper =
-      web_contents ? SessionTabHelper::FromWebContents(web_contents) : nullptr;
-  if (session_tab_helper) {
-    *tab_id = session_tab_helper->session_id().id();
-    *window_id = session_tab_helper->window_id().id();
-  }
+  PopulateTabData(content::WebContents::FromRenderFrameHost(rfh), tab_id,
+                  window_id);
 }
 
 void ChromeExtensionApiFrameIdMapHelper::Observe(
@@ -42,12 +56,12 @@ void ChromeExtensionApiFrameIdMapHelper::Observe(
   DCHECK_EQ(chrome::NOTIFICATION_TAB_PARENTED, type);
   content::WebContents* web_contents =
       content::Source<content::WebContents>(source).ptr();
-  SessionTabHelper* session_tab_helper =
-      web_contents ? SessionTabHelper::FromWebContents(web_contents) : nullptr;
-  if (!session_tab_helper)
+
+  int tab_id = extension_misc::kUnknownTabId;
+  int window_id = extension_misc::kUnknownWindowId;
+  if (!PopulateTabData(web_contents, &tab_id, &window_id))
     return;
-  int tab_id = session_tab_helper->session_id().id();
-  int window_id = session_tab_helper->window_id().id();
+
   web_contents->ForEachFrame(
       base::BindRepeating(&ExtensionApiFrameIdMap::UpdateTabAndWindowId,
                           base::Unretained(owner_), tab_id, window_id));
