@@ -718,6 +718,8 @@
       'ToTAndroid x64',
       # chromium.fyi
       'Out of Process Profiling Android',
+      # chromium.memory
+      'Android CFI',
     ],
     'modifications': {
       'Lollipop Phone Tester': {
