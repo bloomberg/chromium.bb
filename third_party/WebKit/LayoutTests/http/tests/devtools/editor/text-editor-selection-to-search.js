@@ -17,11 +17,11 @@
     setTimeout(step2);
   }
 
-  function step2() {
+  async function step2() {
     panel.searchableView().showSearchField();
     TestRunner.addResult('Search controller: \'' + panel.searchableView()._searchInputElement.value + '\'');
     var action = new Search.SearchView.ActionDelegate();
-    action._showSearch();
+    await action._showSearch();
     var searchView = /** @type {!Search.SearchView} */ (self.runtime.sharedInstance(Search.SearchView));
     TestRunner.addResult('Advanced search controller: \'' + searchView._search.value + '\'');
     TestRunner.completeTest();
