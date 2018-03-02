@@ -565,6 +565,7 @@ void BlinkTestRunner::CloseRemainingWindows() {
 
 void BlinkTestRunner::DeleteAllCookies() {
   Send(new LayoutTestHostMsg_DeleteAllCookies(routing_id()));
+  Send(new LayoutTestHostMsg_DeleteAllCookiesForNetworkService(routing_id()));
 }
 
 int BlinkTestRunner::NavigationEntryCount() {
