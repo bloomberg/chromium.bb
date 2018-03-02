@@ -3041,6 +3041,7 @@ crbug.com/787971 external/wpt/WebCryptoAPI/generateKey/successes_RSASSA-PKCS1-v1
 crbug.com/787971 external/wpt/WebCryptoAPI/generateKey/test_successes_RSA-OAEP.https.html [ Pass Timeout ]
 crbug.com/787971 external/wpt/WebCryptoAPI/generateKey/test_successes_RSA-PSS.https.html [ Pass Timeout ]
 crbug.com/787971 external/wpt/WebCryptoAPI/generateKey/test_successes_RSASSA-PKCS1-v1_5.https.html [ Pass Timeout ]
+crbug.com/787971 [ Mac ] external/wpt/WebCryptoAPI/generateKey/failures_RSA-OAEP.https.worker.html [ Pass Timeout ]
 crbug.com/787971 [ Mac ] external/wpt/WebCryptoAPI/generateKey/failures_RSA-PSS.https.worker.html [ Pass Timeout ]
 crbug.com/787971 external/wpt/WebCryptoAPI/derive_bits_keys/hkdf.https.worker.html [ Pass Timeout ]
 crbug.com/787971 external/wpt/WebCryptoAPI/derive_bits_keys/pbkdf2.https.worker.html [ Pass Timeout ]
@@ -3234,7 +3235,7 @@ crbug.com/790025 virtual/gpu-rasterization/images/image-hover-display-alt.html [
 crbug.com/667560 http/tests/devtools/elements/styles-4/inline-style-sourcemap.js [ Pass Failure ]
 
 # Sheriff failures 2017-12-05
-crbug.com/791941 [ Mac ] virtual/gpu-rasterization/images/color-profile-clip.html [ Pass Failure ]
+crbug.com/791941 [ Mac ] virtual/gpu-rasterization/images/color-profile-clip.html [ Pass Failure Timeout ]
 crbug.com/791941 [ Mac ] virtual/gpu-rasterization/images/color-profile-munsell-adobe-to-srgb.html [ Pass Failure ]
 crbug.com/791941 [ Mac ] virtual/gpu-rasterization/images/color-profile-munsell-srgb-to-srgb.html [ Pass Failure ]
 
