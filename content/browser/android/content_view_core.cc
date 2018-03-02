@@ -84,48 +84,6 @@ int GetRenderProcessIdFromRenderViewHost(RenderViewHost* host) {
   return 0;
 }
 
-int ToGestureEventType(WebInputEvent::Type type) {
-  switch (type) {
-    case WebInputEvent::kGestureScrollBegin:
-      return ui::GESTURE_EVENT_TYPE_SCROLL_START;
-    case WebInputEvent::kGestureScrollEnd:
-      return ui::GESTURE_EVENT_TYPE_SCROLL_END;
-    case WebInputEvent::kGestureScrollUpdate:
-      return ui::GESTURE_EVENT_TYPE_SCROLL_BY;
-    case WebInputEvent::kGestureFlingStart:
-      return ui::GESTURE_EVENT_TYPE_FLING_START;
-    case WebInputEvent::kGestureFlingCancel:
-      return ui::GESTURE_EVENT_TYPE_FLING_CANCEL;
-    case WebInputEvent::kGestureShowPress:
-      return ui::GESTURE_EVENT_TYPE_SHOW_PRESS;
-    case WebInputEvent::kGestureTap:
-      return ui::GESTURE_EVENT_TYPE_SINGLE_TAP_CONFIRMED;
-    case WebInputEvent::kGestureTapUnconfirmed:
-      return ui::GESTURE_EVENT_TYPE_SINGLE_TAP_UNCONFIRMED;
-    case WebInputEvent::kGestureTapDown:
-      return ui::GESTURE_EVENT_TYPE_TAP_DOWN;
-    case WebInputEvent::kGestureTapCancel:
-      return ui::GESTURE_EVENT_TYPE_TAP_CANCEL;
-    case WebInputEvent::kGestureDoubleTap:
-      return ui::GESTURE_EVENT_TYPE_DOUBLE_TAP;
-    case WebInputEvent::kGestureLongPress:
-      return ui::GESTURE_EVENT_TYPE_LONG_PRESS;
-    case WebInputEvent::kGestureLongTap:
-      return ui::GESTURE_EVENT_TYPE_LONG_TAP;
-    case WebInputEvent::kGesturePinchBegin:
-      return ui::GESTURE_EVENT_TYPE_PINCH_BEGIN;
-    case WebInputEvent::kGesturePinchEnd:
-      return ui::GESTURE_EVENT_TYPE_PINCH_END;
-    case WebInputEvent::kGesturePinchUpdate:
-      return ui::GESTURE_EVENT_TYPE_PINCH_BY;
-    case WebInputEvent::kGestureTwoFingerTap:
-    default:
-      NOTREACHED() << "Invalid source gesture type: "
-                   << WebInputEvent::GetName(type);
-      return -1;
-  }
-}
-
 }  // namespace
 
 // Enables a callback when the underlying WebContents is destroyed, to enable
@@ -360,31 +318,6 @@ void ContentViewCore::UpdateFrameInfo(const gfx::Vector2dF& scroll_offset,
       min_page_scale, max_page_scale, content_width, content_height,
       viewport_size.width(), viewport_size.height(), top_shown_pix, top_changed,
       is_mobile_optimized_hint);
-}
-
-bool ContentViewCore::FilterInputEvent(const blink::WebInputEvent& event) {
-  if (event.GetType() != WebInputEvent::kGestureTap &&
-      event.GetType() != WebInputEvent::kGestureLongTap &&
-      event.GetType() != WebInputEvent::kGestureLongPress &&
-      event.GetType() != WebInputEvent::kMouseDown)
-    return false;
-
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
-  if (j_obj.is_null())
-    return false;
-
-  GetViewAndroid()->RequestFocus();
-
-  if (event.GetType() == WebInputEvent::kMouseDown)
-    return false;
-
-  const blink::WebGestureEvent& gesture =
-      static_cast<const blink::WebGestureEvent&>(event);
-  int gesture_type = ToGestureEventType(event.GetType());
-  return Java_ContentViewCoreImpl_filterTapOrPressEvent(
-      env, j_obj, gesture_type, gesture.x * dpi_scale(),
-      gesture.y * dpi_scale());
 }
 
 void ContentViewCore::RequestDisallowInterceptTouchEvent() {

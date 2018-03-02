@@ -1518,8 +1518,10 @@ InputEventAckState RenderWidgetHostViewAndroid::FilterInputEvent(
     return INPUT_EVENT_ACK_STATE_CONSUMED;
   }
 
-  if (content_view_core_ && content_view_core_->FilterInputEvent(input_event))
+  if (gesture_listener_manager_ &&
+      gesture_listener_manager_->FilterInputEvent(input_event)) {
     return INPUT_EVENT_ACK_STATE_CONSUMED;
+  }
 
   if (!host_)
     return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;

@@ -4,6 +4,8 @@
 
 package org.chromium.content.browser;
 
+import android.view.View;
+
 import org.chromium.base.ObserverList;
 import org.chromium.base.ObserverList.RewindableIterator;
 import org.chromium.base.annotations.CalledByNative;
@@ -14,6 +16,7 @@ import org.chromium.content.browser.webcontents.WebContentsUserData.UserDataFact
 import org.chromium.content_public.browser.GestureListenerManager;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.base.GestureEventType;
 
 /**
  * Implementation of the interface {@link GestureListenerManager}. Manages
@@ -32,6 +35,7 @@ public class GestureListenerManagerImpl implements GestureListenerManager, Windo
     private final WebContentsImpl mWebContents;
     private final ObserverList<GestureStateListener> mListeners;
     private final RewindableIterator<GestureStateListener> mIterator;
+    private View mContainerView;
 
     // The outstanding fling start events that hasn't got fling end yet. It may be > 1 because
     // onFlingEnd() is called asynchronously.
@@ -61,6 +65,10 @@ public class GestureListenerManagerImpl implements GestureListenerManager, Windo
      */
     public void reset() {
         if (mNativeGestureListenerManager != 0) nativeReset(mNativeGestureListenerManager);
+    }
+
+    public void setContainerView(View containerView) {
+        mContainerView = containerView;
     }
 
     @Override
@@ -189,6 +197,31 @@ public class GestureListenerManagerImpl implements GestureListenerManager, Windo
         for (mIterator.rewind(); mIterator.hasNext();) mIterator.next().onDestroyed();
         mListeners.clear();
         mNativeGestureListenerManager = 0;
+    }
+
+    /**
+     * Called just prior to a tap or press gesture being forwarded to the renderer.
+     */
+    @SuppressWarnings("unused")
+    @CalledByNative
+    private boolean filterTapOrPressEvent(int type, int x, int y) {
+        if (type == GestureEventType.LONG_PRESS && offerLongPressToEmbedder()) {
+            return true;
+        }
+
+        TapDisambiguator tapDisambiguator = TapDisambiguator.fromWebContents(mWebContents);
+        if (!tapDisambiguator.isShowing()) tapDisambiguator.setLastTouch(x, y);
+
+        return false;
+    }
+
+    /**
+     * Offer a long press gesture to the embedding View, primarily for WebView compatibility.
+     *
+     * @return true if the embedder handled the event.
+     */
+    private boolean offerLongPressToEmbedder() {
+        return mContainerView.performLongClick();
     }
 
     private int verticalScrollOffset() {

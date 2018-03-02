@@ -17,20 +17,21 @@ class WebGestureEvent;
 
 namespace content {
 
-class WebContents;
+class WebContentsImpl;
 
 // Native class for GestureListenerManagerImpl.
 class GestureListenerManager : public RenderWidgetHostConnector {
  public:
   GestureListenerManager(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& obj,
-                         WebContents* web_contents);
+                         WebContentsImpl* web_contents);
   ~GestureListenerManager() override;
 
   void Reset(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
   void GestureEventAck(const blink::WebGestureEvent& event,
                        InputEventAckState ack_result);
   void DidStopFlinging();
+  bool FilterInputEvent(const blink::WebInputEvent& event);
 
   // RendetWidgetHostConnector implementation.
   void UpdateRenderProcessConnection(
@@ -38,6 +39,8 @@ class GestureListenerManager : public RenderWidgetHostConnector {
       RenderWidgetHostViewAndroid* new_rhwva) override;
 
  private:
+  WebContentsImpl* web_contents_;
+
   // A weak reference to the Java GestureListenerManager object.
   JavaObjectWeakGlobalRef java_ref_;
 
