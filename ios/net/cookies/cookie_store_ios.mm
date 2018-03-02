@@ -236,6 +236,15 @@ CookieStoreIOS::CookieChangeDispatcherIOS::AddCallbackForCookie(
 }
 
 std::unique_ptr<CookieChangeSubscription>
+CookieStoreIOS::CookieChangeDispatcherIOS::AddCallbackForUrl(
+    const GURL& gurl,
+    CookieChangeCallback callback) {
+  // Implement when needed by iOS consumers.
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+
+std::unique_ptr<CookieChangeSubscription>
 CookieStoreIOS::CookieChangeDispatcherIOS::AddCallbackForAllChanges(
     CookieChangeCallback callback) {
   // Implement when needed by iOS consumers.

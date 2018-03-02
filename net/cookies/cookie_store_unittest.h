@@ -75,6 +75,10 @@ const char kValidCookieLine[] = "A=B; path=/";
 //   // calls to CookieStore::AddCallbackForAllChanges()).
 //   static const bool supports_global_cookie_tracking;
 //
+//   // The cookie store supports tracking of cookie changes for an URL (i.e.
+//   // calls to CookieStore::AddCallbackForUrl()).
+//   static const bool supports_url_cookie_tracking;
+//
 //   // The cookie store supports tracking of named cookie changes (i.e.
 //   // calls to CookieStore::AddCallbackForCookie()).
 //   static const bool supports_named_cookie_tracking;

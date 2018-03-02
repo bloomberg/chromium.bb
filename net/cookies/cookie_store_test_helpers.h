@@ -29,6 +29,9 @@ class DelayedCookieMonsterChangeDispatcher : public CookieChangeDispatcher {
       const GURL& url,
       const std::string& name,
       CookieChangeCallback callback) override WARN_UNUSED_RESULT;
+  std::unique_ptr<CookieChangeSubscription> AddCallbackForUrl(
+      const GURL& url,
+      CookieChangeCallback callback) override WARN_UNUSED_RESULT;
   std::unique_ptr<CookieChangeSubscription> AddCallbackForAllChanges(
       CookieChangeCallback callback) override WARN_UNUSED_RESULT;
 

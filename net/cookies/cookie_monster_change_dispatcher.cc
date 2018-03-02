@@ -4,13 +4,11 @@
 
 #include "net/cookies/cookie_monster_change_dispatcher.h"
 
-#include <memory>
-#include <string>
-
 #include "base/bind.h"
+#include "base/strings/string_piece.h"
 #include "base/task_runner.h"
-#include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_change_dispatcher.h"
 
@@ -18,84 +16,126 @@ namespace net {
 
 namespace {
 
-// This class owns the CookieChangeCallbackList::Subscription,
-// thus guaranteeing destruction when it is destroyed.  In addition, it
-// wraps the callback for a particular subscription, guaranteeing that it
-// won't be run even if a PostTask completes after the subscription has
-// been destroyed.
-class CookieMonsterChangeSubscription : public CookieChangeSubscription {
- public:
-  using CookieChangeCallbackList =
-      CookieMonsterChangeDispatcher::CookieChangeCallbackList;
+// Special key in GlobalDomainMap for global listeners.
+constexpr base::StringPiece kGlobalDomainKey = base::StringPiece("\0", 1);
 
-  CookieMonsterChangeSubscription(const CookieChangeCallback& callback)
-      : callback_(callback), weak_ptr_factory_(this) {}
-  ~CookieMonsterChangeSubscription() override {
-    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  }
-
-  void SetCallbackSubscription(
-      std::unique_ptr<CookieChangeCallbackList::Subscription> subscription) {
-    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-    subscription_ = std::move(subscription);
-  }
-
-  // The returned callback runs the callback passed to the constructor
-  // directly as long as this object hasn't been destroyed.
-  CookieChangeCallback WeakCallback() {
-    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-    return base::BindRepeating(&CookieMonsterChangeSubscription::DispatchChange,
-                               weak_ptr_factory_.GetWeakPtr());
-  }
-
- private:
-  void DispatchChange(const CanonicalCookie& cookie, CookieChangeCause cause) {
-    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-    callback_.Run(cookie, cause);
-  }
-
-  const CookieChangeCallback callback_;
-  std::unique_ptr<CookieChangeCallbackList::Subscription> subscription_;
-
-  THREAD_CHECKER(thread_checker_);
-  base::WeakPtrFactory<CookieMonsterChangeSubscription> weak_ptr_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(CookieMonsterChangeSubscription);
-};
-
-void RunAsync(scoped_refptr<base::TaskRunner> proxy,
-              const CookieChangeCallback& callback,
-              const CanonicalCookie& cookie,
-              CookieChangeCause cause) {
-  proxy->PostTask(FROM_HERE, base::BindRepeating(callback, cookie, cause));
-}
+//
+constexpr base::StringPiece kGlobalNameKey = base::StringPiece("\0", 1);
 
 }  // anonymous namespace
 
-CookieMonsterChangeDispatcher::CookieMonsterChangeDispatcher() = default;
-CookieMonsterChangeDispatcher::~CookieMonsterChangeDispatcher() = default;
+CookieMonsterChangeDispatcher::Subscription::Subscription(
+    base::WeakPtr<CookieMonsterChangeDispatcher> change_dispatcher,
+    std::string domain_key,
+    std::string name_key,
+    GURL url,
+    net::CookieChangeCallback callback)
+    : change_dispatcher_(std::move(change_dispatcher)),
+      domain_key_(std::move(domain_key)),
+      name_key_(std::move(name_key)),
+      url_(std::move(url)),
+      callback_(std::move(callback)),
+      task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      weak_ptr_factory_(this) {
+  DCHECK(url_.is_valid() || url_.is_empty());
+  DCHECK_EQ(url_.is_empty(), domain_key_ == kGlobalDomainKey);
+
+  // The net::CookieOptions are hard-coded for now, but future APIs may set
+  // different options. For example, JavaScript observers will not be allowed to
+  // see HTTP-only changes.
+  options_.set_include_httponly();
+  options_.set_same_site_cookie_mode(
+      CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX);
+}
+
+CookieMonsterChangeDispatcher::Subscription::~Subscription() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  change_dispatcher_->UnlinkSubscription(this);
+}
+
+void CookieMonsterChangeDispatcher::Subscription::DispatchChange(
+    const net::CanonicalCookie& cookie,
+    net::CookieChangeCause change_cause) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  if (!url_.is_empty() && !cookie.IncludeForRequestURL(url_, options_))
+    return;
+
+  // TODO(mmenke, pwnall): Run callbacks synchronously?
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&Subscription::DoDispatchChange,
+                     weak_ptr_factory_.GetWeakPtr(), cookie, change_cause));
+}
+
+void CookieMonsterChangeDispatcher::Subscription::DoDispatchChange(
+    const net::CanonicalCookie& cookie,
+    net::CookieChangeCause change_cause) const {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  callback_.Run(cookie, change_cause);
+}
+
+CookieMonsterChangeDispatcher::CookieMonsterChangeDispatcher()
+    : weak_ptr_factory_(this) {}
+
+CookieMonsterChangeDispatcher::~CookieMonsterChangeDispatcher() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+}
+
+// static
+std::string CookieMonsterChangeDispatcher::DomainKey(
+    const std::string& domain) {
+  std::string domain_key =
+      net::registry_controlled_domains::GetDomainAndRegistry(
+          domain, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+  DCHECK_NE(domain_key, kGlobalDomainKey);
+  return domain_key;
+}
+
+// static
+std::string CookieMonsterChangeDispatcher::DomainKey(const GURL& url) {
+  std::string domain_key =
+      net::registry_controlled_domains::GetDomainAndRegistry(
+          url, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+  DCHECK_NE(domain_key, kGlobalDomainKey);
+  return domain_key;
+}
+
+// static
+std::string CookieMonsterChangeDispatcher::NameKey(std::string name) {
+  DCHECK_NE(name, kGlobalNameKey);
+  return name;
+}
 
 std::unique_ptr<CookieChangeSubscription>
 CookieMonsterChangeDispatcher::AddCallbackForCookie(
-    const GURL& gurl,
+    const GURL& url,
     const std::string& name,
     CookieChangeCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  std::pair<GURL, std::string> key(gurl, name);
-  if (hook_map_.count(key) == 0)
-    hook_map_[key] = std::make_unique<CookieChangeCallbackList>();
+  std::unique_ptr<Subscription> subscription = std::make_unique<Subscription>(
+      weak_ptr_factory_.GetWeakPtr(), DomainKey(url), NameKey(name), url,
+      std::move(callback));
 
-  auto subscription =
-      std::make_unique<CookieMonsterChangeSubscription>(std::move(callback));
-  subscription->SetCallbackSubscription(hook_map_[key]->Add(
-      base::BindRepeating(&RunAsync, base::ThreadTaskRunnerHandle::Get(),
-                          subscription->WeakCallback())));
+  LinkSubscription(subscription.get());
+  return subscription;
+}
 
-  return std::move(subscription);
+std::unique_ptr<CookieChangeSubscription>
+CookieMonsterChangeDispatcher::AddCallbackForUrl(
+    const GURL& url,
+    CookieChangeCallback callback) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  std::unique_ptr<Subscription> subscription = std::make_unique<Subscription>(
+      weak_ptr_factory_.GetWeakPtr(), DomainKey(url),
+      std::string(kGlobalNameKey), url, std::move(callback));
+
+  LinkSubscription(subscription.get());
+  return subscription;
 }
 
 std::unique_ptr<CookieChangeSubscription>
@@ -103,12 +143,12 @@ CookieMonsterChangeDispatcher::AddCallbackForAllChanges(
     CookieChangeCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  auto subscription =
-      std::make_unique<CookieMonsterChangeSubscription>(std::move(callback));
-  subscription->SetCallbackSubscription(global_hook_map_.Add(
-      base::BindRepeating(&RunAsync, base::ThreadTaskRunnerHandle::Get(),
-                          subscription->WeakCallback())));
-  return std::move(subscription);
+  std::unique_ptr<Subscription> subscription = std::make_unique<Subscription>(
+      weak_ptr_factory_.GetWeakPtr(), std::string(kGlobalDomainKey),
+      std::string(kGlobalNameKey), GURL(""), std::move(callback));
+
+  LinkSubscription(subscription.get());
+  return subscription;
 }
 
 void CookieMonsterChangeDispatcher::DispatchChange(
@@ -117,24 +157,80 @@ void CookieMonsterChangeDispatcher::DispatchChange(
     bool notify_global_hooks) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  CookieOptions opts;
-  opts.set_include_httponly();
-  opts.set_same_site_cookie_mode(
-      CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX);
-  // Note that the callbacks in hook_map_ are wrapped with RunAsync(), so they
-  // are guaranteed to not take long - they just post a RunAsync task back to
-  // the appropriate thread's message loop and return.
-  // TODO(mmenke): Consider running these synchronously?
-  for (const auto& key_value_pair : hook_map_) {
-    const std::pair<GURL, std::string>& key = key_value_pair.first;
-    if (cookie.IncludeForRequestURL(key.first, opts) &&
-        cookie.Name() == key.second) {
-      key_value_pair.second->Notify(cookie, cause);
-    }
-  }
-
+  DispatchChangeToDomainKey(cookie, cause, DomainKey(cookie.Domain()));
   if (notify_global_hooks)
-    global_hook_map_.Notify(cookie, cause);
+    DispatchChangeToDomainKey(cookie, cause, std::string(kGlobalDomainKey));
+}
+
+void CookieMonsterChangeDispatcher::DispatchChangeToDomainKey(
+    const CanonicalCookie& cookie,
+    CookieChangeCause cause,
+    const std::string& domain_key) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  CookieDomainMap::iterator it = cookie_domain_map_.find(domain_key);
+  if (it == cookie_domain_map_.end())
+    return;
+
+  DispatchChangeToNameKey(cookie, cause, it->second, NameKey(cookie.Name()));
+  DispatchChangeToNameKey(cookie, cause, it->second,
+                          std::string(kGlobalNameKey));
+}
+
+void CookieMonsterChangeDispatcher::DispatchChangeToNameKey(
+    const CanonicalCookie& cookie,
+    CookieChangeCause cause,
+    CookieNameMap& cookie_name_map,
+    const std::string& name_key) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  CookieNameMap::iterator it = cookie_name_map.find(name_key);
+  if (it == cookie_name_map.end())
+    return;
+
+  SubscriptionList& subscription_list = it->second;
+  for (base::LinkNode<Subscription>* node = subscription_list.head();
+       node != subscription_list.end(); node = node->next()) {
+    node->value()->DispatchChange(cookie, cause);
+  }
+}
+
+void CookieMonsterChangeDispatcher::LinkSubscription(
+    Subscription* subscription) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  // The subscript operator creates empty maps if the lookups fail. This is
+  // exactly what this method needs.
+  CookieNameMap& cookie_name_map =
+      cookie_domain_map_[subscription->domain_key()];
+  SubscriptionList& subscription_list =
+      cookie_name_map[subscription->name_key()];
+  subscription_list.Append(subscription);
+}
+
+void CookieMonsterChangeDispatcher::UnlinkSubscription(
+    Subscription* subscription) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  CookieDomainMap::iterator cookie_domain_map_iterator =
+      cookie_domain_map_.find(subscription->domain_key());
+  DCHECK(cookie_domain_map_iterator != cookie_domain_map_.end());
+
+  CookieNameMap& cookie_name_map = cookie_domain_map_iterator->second;
+  CookieNameMap::iterator cookie_name_map_iterator =
+      cookie_name_map.find(subscription->name_key());
+  DCHECK(cookie_name_map_iterator != cookie_name_map.end());
+
+  SubscriptionList& subscription_list = cookie_name_map_iterator->second;
+  subscription->RemoveFromList();
+  if (!subscription_list.empty())
+    return;
+
+  cookie_name_map.erase(cookie_name_map_iterator);
+  if (!cookie_name_map.empty())
+    return;
+
+  cookie_domain_map_.erase(cookie_domain_map_iterator);
 }
 
 }  // namespace net
