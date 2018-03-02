@@ -46,6 +46,11 @@ class AutofillHandler {
                             const FormFieldData& field,
                             const gfx::RectF& bounding_box);
 
+  // Invoked when the value of select is changed.
+  void OnSelectControlDidChange(const FormData& form,
+                                const FormFieldData& field,
+                                const gfx::RectF& bounding_box);
+
   // Invoked when the |form| needs to be autofilled, the |bounding_box| is
   // a window relative value of |field|.
   void OnQueryFormFieldAutofill(int query_id,
@@ -124,6 +129,10 @@ class AutofillHandler {
   virtual void OnFocusOnFormFieldImpl(const FormData& form,
                                       const FormFieldData& field,
                                       const gfx::RectF& bounding_box) = 0;
+
+  virtual void OnSelectControlDidChangeImpl(const FormData& form,
+                                            const FormFieldData& field,
+                                            const gfx::RectF& bounding_box) = 0;
 
   AutofillDriver* driver() { return driver_; }
 

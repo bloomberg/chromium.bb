@@ -37,6 +37,11 @@ interface AutofillDriver {
                      FormFieldData field,
                      gfx.mojom.RectF bounding_box);
 
+  // Notification that a form select control has changed.
+  SelectControlDidChange(FormData form,
+                         FormFieldData field,
+                         gfx.mojom.RectF bounding_box);
+
   // Queries the browser for Autofill suggestions for a form input field.
   // |id| is the request ID which is used to map responses correctly.
   QueryFormFieldAutofill(int32 id,

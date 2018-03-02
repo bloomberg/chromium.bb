@@ -685,10 +685,10 @@ void AutofillAgent::QueryAutofillSuggestions(
 
 void AutofillAgent::DoFillFieldWithValue(const base::string16& value,
                                          WebInputElement* node) {
-  form_tracker_.set_ignore_text_changes(true);
+  form_tracker_.set_ignore_control_changes(true);
   node->SetAutofillValue(blink::WebString::FromUTF16(value));
   password_autofill_agent_->UpdateStateForTextChange(*node);
-  form_tracker_.set_ignore_text_changes(false);
+  form_tracker_.set_ignore_control_changes(false);
 }
 
 void AutofillAgent::DoPreviewFieldWithValue(const base::string16& value,
@@ -765,6 +765,11 @@ void AutofillAgent::DidReceiveLeftMouseDownOrGestureTapInNode(
     HandleFocusChangeComplete();
 }
 
+void AutofillAgent::SelectControlDidChange(
+    const WebFormControlElement& element) {
+  form_tracker_.SelectControlDidChange(element);
+}
+
 void AutofillAgent::FormControlElementClicked(
     const WebFormControlElement& element,
     bool was_focused) {
@@ -809,9 +814,10 @@ void AutofillAgent::AjaxSucceeded() {
   form_tracker_.AjaxSucceeded();
 }
 
-void AutofillAgent::OnProvisionallySaveForm(const WebFormElement& form,
-                                            const WebInputElement& element,
-                                            ElementChangeSource source) {
+void AutofillAgent::OnProvisionallySaveForm(
+    const WebFormElement& form,
+    const WebFormControlElement& element,
+    ElementChangeSource source) {
   if (source == ElementChangeSource::WILL_SEND_SUBMIT_EVENT) {
     // Fire the form submission event to avoid missing submission when web site
     // handles the onsubmit event, this also gets the form before Javascript
@@ -822,7 +828,8 @@ void AutofillAgent::OnProvisionallySaveForm(const WebFormElement& form,
                          SubmissionSource::FORM_SUBMISSION);
     ResetLastInteractedElements();
     return;
-  } else if (source == ElementChangeSource::TEXTFIELD_CHANGED) {
+  } else if (source == ElementChangeSource::TEXTFIELD_CHANGED ||
+             source == ElementChangeSource::SELECT_CHANGED) {
     // Remember the last form the user interacted with.
     if (!element.Form().IsNull()) {
       UpdateLastInteractedForm(element.Form());
@@ -844,7 +851,19 @@ void AutofillAgent::OnProvisionallySaveForm(const WebFormElement& form,
         last_interacted_form_.Reset();
       }
     }
-    OnTextFieldDidChange(element);
+
+    if (source == ElementChangeSource::TEXTFIELD_CHANGED)
+      OnTextFieldDidChange(*ToWebInputElement(&element));
+    else {
+      FormData form;
+      FormFieldData field;
+      if (form_util::FindFormAndFieldForFormControlElement(element, &form,
+                                                           &field)) {
+        GetAutofillDriver()->SelectControlDidChange(
+            form, field,
+            render_frame()->GetRenderView()->ElementBoundsInWindow(element));
+      }
+    }
   }
 }
 

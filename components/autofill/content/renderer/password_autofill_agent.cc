@@ -1852,11 +1852,20 @@ bool PasswordAutofillAgent::FillFormOnPasswordReceived(
 
 void PasswordAutofillAgent::OnProvisionallySaveForm(
     const blink::WebFormElement& form,
-    const blink::WebInputElement& element,
+    const blink::WebFormControlElement& element,
     ElementChangeSource source) {
+  // PasswordAutofillAgent isn't interested in SELECT control change.
+  if (source == ElementChangeSource::SELECT_CHANGED)
+    return;
+
+  blink::WebInputElement input_element;
+  if (!element.IsNull() && element.HasHTMLTagName("input"))
+    input_element = *ToWebInputElement(&element);
+
   if (source == ElementChangeSource::TEXTFIELD_CHANGED) {
+    DCHECK(!input_element.IsNull());
     // keeps track of all text changes even if it isn't displaying UI.
-    UpdateStateForTextChange(element);
+    UpdateStateForTextChange(input_element);
     return;
   }
 
@@ -1874,7 +1883,8 @@ void PasswordAutofillAgent::OnProvisionallySaveForm(
   // cleared by some scripts (http://crbug.com/28910, http://crbug.com/391693).
   // Had the user cleared the password, |provisionally_saved_form_| would
   // already have been updated in TextDidChangeInTextField.
-  ProvisionallySavePassword(form, element, RESTRICTION_NON_EMPTY_PASSWORD);
+  ProvisionallySavePassword(form, input_element,
+                            RESTRICTION_NON_EMPTY_PASSWORD);
 }
 
 void PasswordAutofillAgent::OnFormSubmitted(const blink::WebFormElement& form) {

@@ -75,7 +75,7 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
 
   // FormTracker::Observer
   void OnProvisionallySaveForm(const blink::WebFormElement& form,
-                               const blink::WebInputElement& element,
+                               const blink::WebFormControlElement& element,
                                ElementChangeSource source) override;
   void OnProbablyFormSubmitted() override;
   void OnFormSubmitted(const blink::WebFormElement& form) override;

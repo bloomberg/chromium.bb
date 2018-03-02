@@ -71,7 +71,16 @@ void FormTracker::TextFieldDidChange(const WebFormControlElement& element) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(form_tracker_sequence_checker_);
   DCHECK(ToWebInputElement(&element) || form_util::IsTextAreaElement(element));
 
-  if (ignore_text_changes_)
+  if (ignore_control_changes_)
+    return;
+
+  // If the element isn't focused then the changes don't matter. This check is
+  // required to properly handle IME interactions.
+  if (!element.Focused())
+    return;
+
+  const WebInputElement* input_element = ToWebInputElement(&element);
+  if (!input_element)
     return;
 
   // Disregard text changes that aren't caused by user gestures or pastes. Note
@@ -88,35 +97,43 @@ void FormTracker::TextFieldDidChange(const WebFormControlElement& element) {
   // it is needed to trigger autofill.
   weak_ptr_factory_.InvalidateWeakPtrs();
   base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&FormTracker::TextFieldDidChangeImpl,
-                            weak_ptr_factory_.GetWeakPtr(), element));
+      FROM_HERE,
+      base::BindRepeating(&FormTracker::FormControlDidChangeImpl,
+                          weak_ptr_factory_.GetWeakPtr(), element,
+                          Observer::ElementChangeSource::TEXTFIELD_CHANGED));
+}
+
+void FormTracker::SelectControlDidChange(const WebFormControlElement& element) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(form_tracker_sequence_checker_);
+
+  if (ignore_control_changes_)
+    return;
+
+  // Post a task to avoid processing select control change while it is changing.
+  weak_ptr_factory_.InvalidateWeakPtrs();
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindRepeating(&FormTracker::FormControlDidChangeImpl,
+                          weak_ptr_factory_.GetWeakPtr(), element,
+                          Observer::ElementChangeSource::SELECT_CHANGED));
 }
 
 void FormTracker::FireProbablyFormSubmittedForTesting() {
   FireProbablyFormSubmitted();
 }
 
-void FormTracker::TextFieldDidChangeImpl(const WebFormControlElement& element) {
+void FormTracker::FormControlDidChangeImpl(
+    const WebFormControlElement& element,
+    Observer::ElementChangeSource change_source) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(form_tracker_sequence_checker_);
-  // If the element isn't focused then the changes don't matter. This check is
-  // required to properly handle IME interactions.
-  if (!element.Focused())
-    return;
-
-  const WebInputElement* input_element = ToWebInputElement(&element);
-  if (!input_element)
-    return;
-
   if (element.Form().IsNull()) {
-    last_interacted_formless_element_ = *input_element;
+    last_interacted_formless_element_ = element;
   } else {
     last_interacted_form_ = element.Form();
   }
 
   for (auto& observer : observers_) {
-    observer.OnProvisionallySaveForm(
-        element.Form(), *input_element,
-        Observer::ElementChangeSource::TEXTFIELD_CHANGED);
+    observer.OnProvisionallySaveForm(element.Form(), element, change_source);
   }
 }
 
@@ -176,7 +193,7 @@ void FormTracker::WillSendSubmitEvent(const WebFormElement& form) {
   last_interacted_form_ = form;
   for (auto& observer : observers_) {
     observer.OnProvisionallySaveForm(
-        form, blink::WebInputElement(),
+        form, blink::WebFormControlElement(),
         Observer::ElementChangeSource::WILL_SEND_SUBMIT_EVENT);
   }
 }

@@ -208,6 +208,13 @@ void ContentAutofillDriver::TextFieldDidScroll(const FormData& form,
   autofill_handler_->OnTextFieldDidScroll(form, field, bounding_box);
 }
 
+void ContentAutofillDriver::SelectControlDidChange(
+    const FormData& form,
+    const FormFieldData& field,
+    const gfx::RectF& bounding_box) {
+  autofill_handler_->OnSelectControlDidChange(form, field, bounding_box);
+}
+
 void ContentAutofillDriver::QueryFormFieldAutofill(
     int32_t id,
     const FormData& form,

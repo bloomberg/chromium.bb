@@ -49,6 +49,10 @@ class FakeContentAutofillDriver : public mojom::AutofillDriver {
 
   SubmissionSource submission_source() const { return submission_source_; }
 
+  const FormFieldData* select_control_changed() const {
+    return select_control_changed_.get();
+  }
+
  private:
   // mojom::AutofillDriver:
   void FormsSeen(const std::vector<FormData>& forms,
@@ -71,6 +75,12 @@ class FakeContentAutofillDriver : public mojom::AutofillDriver {
   void TextFieldDidScroll(const FormData& form,
                           const FormFieldData& field,
                           const gfx::RectF& bounding_box) override {}
+
+  void SelectControlDidChange(const FormData& form,
+                              const FormFieldData& field,
+                              const gfx::RectF& bounding_box) override {
+    select_control_changed_ = std::make_unique<FormFieldData>(field);
+  }
 
   void QueryFormFieldAutofill(int32_t id,
                               const FormData& form,
@@ -104,6 +114,8 @@ class FakeContentAutofillDriver : public mojom::AutofillDriver {
   bool known_success_;
 
   SubmissionSource submission_source_;
+
+  std::unique_ptr<FormFieldData> select_control_changed_;
 
   mojo::BindingSet<mojom::AutofillDriver> bindings_;
 };
@@ -820,6 +832,33 @@ TEST_F(FormAutocompleteTest, FormSubmittedByProbablyFormSubmitted) {
   VerifyReceivedAddressRendererMessages(
       fake_driver_, "City", false /* expect_known_success */,
       SubmissionSource::PROBABLY_FORM_SUBMITTED);
+}
+
+TEST_F(FormAutocompleteTest, SelectControlChanged) {
+  LoadHTML(
+      "<html>"
+      "<form>"
+      "<select id='color'><option value='red'>red</option><option "
+      "value='blue'>blue</option></select>"
+      "</form>"
+      "</html>");
+
+  std::string change_value =
+      "var color = document.getElementById('color');"
+      "color.selectedIndex = 1;";
+
+  ExecuteJavaScriptForTests(change_value.c_str());
+  WebElement element =
+      GetMainFrame()->GetDocument().GetElementById(blink::WebString("color"));
+  static_cast<blink::WebAutofillClient*>(autofill_agent_)
+      ->SelectControlDidChange(
+          *reinterpret_cast<blink::WebFormControlElement*>(&element));
+  base::RunLoop().RunUntilIdle();
+
+  const FormFieldData* field = fake_driver_.select_control_changed();
+  ASSERT_TRUE(field);
+  EXPECT_EQ(base::ASCIIToUTF16("color"), field->name);
+  EXPECT_EQ(base::ASCIIToUTF16("blue"), field->value);
 }
 
 }  // namespace autofill
