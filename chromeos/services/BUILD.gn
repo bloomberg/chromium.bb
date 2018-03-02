@@ -23,10 +23,6 @@ service_test("chromeos_services_unittests") {
     deps += [ "//chromeos/services/assistant:tests" ]
   }
 
-  data_deps = [
-    "//testing/buildbot/filters:services_unittests_filters",
-  ]
-
   catalog = ":chromeos_services_unittests_catalog"
 }
 

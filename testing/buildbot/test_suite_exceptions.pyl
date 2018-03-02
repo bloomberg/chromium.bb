@@ -2866,18 +2866,6 @@
           'hard_timeout': 300,
         },
       },
-      # chromium.fyi
-      'Chromium Win 10 GCE Tests': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/win10.services_unittests.filter',
-        ],
-      },
-      # chromium.win
-      'Win10 Tests x64': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/win10.services_unittests.filter',
-        ],
-      },
     },
   },
   'site_per_process_browser_tests': {
