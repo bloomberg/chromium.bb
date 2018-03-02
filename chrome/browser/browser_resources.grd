@@ -68,7 +68,7 @@
       </if>
     </structures>
     <includes>
-      <if expr="is_win or is_macosx or is_linux">
+      <if expr="is_win or is_macosx or desktop_linux or chromeos">
         <include name="IDR_ABOUT_DISCARDS_CSS" file="resources\discards\discards.css" type="BINDATA" />
         <include name="IDR_ABOUT_DISCARDS_HTML" file="resources\discards\discards.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_ABOUT_DISCARDS_JS" file="resources\discards\discards.js" type="BINDATA" />
