@@ -8,6 +8,8 @@
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_controller.h"
+#include "ash/system/unified/feature_pod_controller_base.h"
+#include "ash/system/unified/quiet_mode_feature_pod_controller.h"
 #include "ash/system/unified/unified_system_tray_view.h"
 #include "ash/wm/lock_state_controller.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -22,6 +24,7 @@ UnifiedSystemTrayController::~UnifiedSystemTrayController() = default;
 UnifiedSystemTrayView* UnifiedSystemTrayController::CreateView() {
   DCHECK(!unified_view_);
   unified_view_ = new UnifiedSystemTrayView(this);
+  InitFeaturePods();
   return unified_view_;
 }
 
@@ -45,6 +48,25 @@ void UnifiedSystemTrayController::HandlePowerAction() {
 
 void UnifiedSystemTrayController::ToggleExpanded() {
   // TODO(tetsui): Implement.
+}
+
+void UnifiedSystemTrayController::InitFeaturePods() {
+  AddFeaturePodItem(std::make_unique<QuietModeFeaturePodController>());
+
+  // If you want to add a new feature pod item, add here.
+
+  // TODO(tetsui): Add more feature pod items in spec:
+  // * RotationLockFeaturePodController
+  // * NetworkFeaturePodController
+  // * BluetoothFeaturePodController
+  // * NightLightFeaturePodController
+}
+
+void UnifiedSystemTrayController::AddFeaturePodItem(
+    std::unique_ptr<FeaturePodControllerBase> controller) {
+  DCHECK(unified_view_);
+  unified_view_->AddFeaturePodButton(controller->CreateButton());
+  feature_pod_controllers_.push_back(std::move(controller));
 }
 
 }  // namespace ash

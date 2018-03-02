@@ -9,16 +9,25 @@
 
 namespace ash {
 
+class FeaturePodButton;
+class FeaturePodsContainerView;
 class UnifiedSystemTrayController;
 
-// View class of default view in UnifiedSystemTray.
+// View class of the main bubble in UnifiedSystemTray.
 class UnifiedSystemTrayView : public views::View {
  public:
   explicit UnifiedSystemTrayView(UnifiedSystemTrayController* controller);
   ~UnifiedSystemTrayView() override;
 
+  // Add feature pod button to |feature_pods_|.
+  void AddFeaturePodButton(FeaturePodButton* button);
+
  private:
+  // Unowned.
   UnifiedSystemTrayController* controller_;
+
+  // Owned by views hierarchy.
+  FeaturePodsContainerView* feature_pods_container_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedSystemTrayView);
 };

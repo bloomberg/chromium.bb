@@ -4,6 +4,8 @@
 
 #include "ash/system/unified/unified_system_tray_view.h"
 
+#include "ash/system/unified/feature_pod_button.h"
+#include "ash/system/unified/feature_pods_container_view.h"
 #include "ash/system/unified/top_shortcuts_view.h"
 #include "ui/views/layout/box_layout.h"
 
@@ -18,8 +20,15 @@ UnifiedSystemTrayView::UnifiedSystemTrayView(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
 
   AddChildView(new TopShortcutsView(controller_));
+
+  feature_pods_container_ = new FeaturePodsContainerView();
+  AddChildView(feature_pods_container_);
 }
 
 UnifiedSystemTrayView::~UnifiedSystemTrayView() = default;
+
+void UnifiedSystemTrayView::AddFeaturePodButton(FeaturePodButton* button) {
+  feature_pods_container_->AddChildView(button);
+}
 
 }  // namespace ash
