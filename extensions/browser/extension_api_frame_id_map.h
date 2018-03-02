@@ -24,9 +24,9 @@ namespace extensions {
 
 class ExtensionApiFrameIdMapHelper {
  public:
-  virtual void GetTabAndWindowId(content::RenderFrameHost* rfh,
-                                 int* tab_id_out,
-                                 int* window_id_out) = 0;
+  virtual void PopulateTabData(content::RenderFrameHost* rfh,
+                               int* tab_id_out,
+                               int* window_id_out) = 0;
   virtual ~ExtensionApiFrameIdMapHelper() {}
 };
 
@@ -124,16 +124,13 @@ class ExtensionApiFrameIdMap {
   // If |rfh| is nullptr, then the map is not modified.
   FrameData GetFrameData(content::RenderFrameHost* rfh) WARN_UNUSED_RESULT;
 
-  // Looks up the FrameData and stores it in the map. This method should be
-  // called as early as possible, e.g. in a
-  // WebContentsObserver::RenderFrameCreated notification.
-  void CacheFrameData(content::RenderFrameHost* rfh);
+  // Called when a render frame is created. Caches the FrameData for the given
+  // render frame.
+  void OnRenderFrameCreated(content::RenderFrameHost* rfh);
 
-  // Removes the FrameData mapping for a given frame. This method can be called
-  // at any time, but it is typically called when a frame is destroyed.
-  // If this method is not called, the cached mapping for the frame is retained
-  // forever.
-  void RemoveFrameData(content::RenderFrameHost* rfh);
+  // Called when a render frame is deleted. Removes the FrameData mapping for
+  // the given render frame.
+  void OnRenderFrameDeleted(content::RenderFrameHost* rfh);
 
   // Updates the tab and window id for the given RenderFrameHost, if any exists.
   void UpdateTabAndWindowId(int tab_id,

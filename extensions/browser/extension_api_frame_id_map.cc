@@ -6,6 +6,7 @@
 
 #include <tuple>
 
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
@@ -14,6 +15,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/child_process_host.h"
 #include "extensions/browser/extensions_browser_client.h"
+#include "extensions/common/constants.h"
 
 namespace extensions {
 
@@ -39,8 +41,8 @@ const int ExtensionApiFrameIdMap::kTopFrameId = 0;
 ExtensionApiFrameIdMap::FrameData::FrameData()
     : frame_id(kInvalidFrameId),
       parent_frame_id(kInvalidFrameId),
-      tab_id(-1),
-      window_id(-1) {}
+      tab_id(extension_misc::kUnknownTabId),
+      window_id(extension_misc::kUnknownWindowId) {}
 
 ExtensionApiFrameIdMap::FrameData::FrameData(int frame_id,
                                              int parent_frame_id,
@@ -160,10 +162,10 @@ ExtensionApiFrameIdMap::FrameData ExtensionApiFrameIdMap::KeyToValue(
     const RenderFrameIdKey& key) const {
   content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(
       key.render_process_id, key.frame_routing_id);
-  int tab_id = -1;
-  int window_id = -1;
+  int tab_id = extension_misc::kUnknownTabId;
+  int window_id = extension_misc::kUnknownWindowId;
   if (helper_)
-    helper_->GetTabAndWindowId(rfh, &tab_id, &window_id);
+    helper_->PopulateTabData(rfh, &tab_id, &window_id);
   return FrameData(GetFrameId(rfh), GetParentFrameId(rfh), tab_id, window_id);
 }
 
@@ -314,7 +316,8 @@ ExtensionApiFrameIdMap::FrameData ExtensionApiFrameIdMap::GetFrameData(
   return LookupFrameDataOnUI(key, false /* is_from_io */);
 }
 
-void ExtensionApiFrameIdMap::CacheFrameData(content::RenderFrameHost* rfh) {
+void ExtensionApiFrameIdMap::OnRenderFrameCreated(
+    content::RenderFrameHost* rfh) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   const RenderFrameIdKey key(rfh->GetProcess()->GetID(), rfh->GetRoutingID());
@@ -326,7 +329,8 @@ void ExtensionApiFrameIdMap::CacheFrameData(const RenderFrameIdKey& key) {
   LookupFrameDataOnUI(key, false /* is_from_io */);
 }
 
-void ExtensionApiFrameIdMap::RemoveFrameData(content::RenderFrameHost* rfh) {
+void ExtensionApiFrameIdMap::OnRenderFrameDeleted(
+    content::RenderFrameHost* rfh) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(rfh);
 
@@ -347,6 +351,8 @@ void ExtensionApiFrameIdMap::UpdateTabAndWindowId(
     iter->second.tab_id = tab_id;
     iter->second.window_id = window_id;
   } else {
+    // TODO(crbug.com/817075): Remove this branch, after ensuring
+    // OnRenderFrameCreated is called for each frame.
     frame_data_map_[key] =
         FrameData(GetFrameId(rfh), GetParentFrameId(rfh), tab_id, window_id);
   }

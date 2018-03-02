@@ -4,29 +4,16 @@
 
 #include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
 
-#include <tuple>
-
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_histograms.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
 #include "content/public/browser/navigation_handle.h"
 #include "extensions/features/features.h"
 #include "ui/base/window_open_disposition.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-namespace {
-std::pair<int, int> GetTabIdAndWindowId(content::WebContents* web_contents) {
-  SessionTabHelper* session_tab_helper =
-      SessionTabHelper::FromWebContents(web_contents);
-  if (!session_tab_helper)
-    return std::make_pair(-1, -1);
-
-  return std::make_pair(session_tab_helper->session_id().id(),
-                        session_tab_helper->window_id().id());
-}
-}  // namespace
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+#include "chrome/browser/extensions/chrome_extension_api_frame_id_map_helper.h"
+#include "extensions/common/constants.h"
+#endif
 
 ChromeNavigationUIData::ChromeNavigationUIData()
     : disposition_(WindowOpenDisposition::CURRENT_TAB) {}
@@ -36,9 +23,10 @@ ChromeNavigationUIData::ChromeNavigationUIData(
     : disposition_(WindowOpenDisposition::CURRENT_TAB) {
   auto* web_contents = navigation_handle->GetWebContents();
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  int tab_id;
-  int window_id;
-  std::tie(tab_id, window_id) = GetTabIdAndWindowId(web_contents);
+  int tab_id = extension_misc::kUnknownTabId;
+  int window_id = extension_misc::kUnknownWindowId;
+  extensions::ChromeExtensionApiFrameIdMapHelper::PopulateTabData(
+      web_contents, &tab_id, &window_id);
   extension_data_ = std::make_unique<extensions::ExtensionNavigationUIData>(
       navigation_handle, tab_id, window_id);
 #endif
@@ -64,9 +52,10 @@ ChromeNavigationUIData::CreateForMainFrameNavigation(
   navigation_ui_data->disposition_ = disposition;
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  int tab_id;
-  int window_id;
-  std::tie(tab_id, window_id) = GetTabIdAndWindowId(web_contents);
+  int tab_id = extension_misc::kUnknownTabId;
+  int window_id = extension_misc::kUnknownWindowId;
+  extensions::ChromeExtensionApiFrameIdMapHelper::PopulateTabData(
+      web_contents, &tab_id, &window_id);
 
   navigation_ui_data->extension_data_ =
       extensions::ExtensionNavigationUIData::CreateForMainFrameNavigation(
@@ -78,8 +67,7 @@ ChromeNavigationUIData::CreateForMainFrameNavigation(
 
 std::unique_ptr<content::NavigationUIData> ChromeNavigationUIData::Clone()
     const {
-  std::unique_ptr<ChromeNavigationUIData> copy =
-      std::make_unique<ChromeNavigationUIData>();
+  auto copy = std::make_unique<ChromeNavigationUIData>();
 
   copy->disposition_ = disposition_;
 
