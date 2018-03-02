@@ -2165,3 +2165,16 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsSanityTest, InspectElement) {
   DispatchOnTestSuite(window, "testInspectedElementIs", "INSPECTED-DIV");
   DevToolsWindowTesting::CloseDevToolsWindowSync(window);
 }
+
+IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsSanityTest,
+                       InputDispatchEventsToOOPIF) {
+  GURL url(
+      embedded_test_server()->GetURL("a.com", "/devtools/oopif-input.html"));
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(), url, 2);
+  for (auto* frame : GetInspectedTab()->GetAllFrames())
+    content::WaitForChildFrameSurfaceReady(frame);
+  DevToolsWindow* window =
+      DevToolsWindowTesting::OpenDevToolsWindowSync(GetInspectedTab(), false);
+  RunTestFunction(window, "testInputDispatchEventsToOOPIF");
+  DevToolsWindowTesting::CloseDevToolsWindowSync(window);
+}
