@@ -12,7 +12,6 @@
 #include "components/prefs/pref_change_registrar.h"
 #import "ios/chrome/browser/net/connection_type_observer_bridge.h"
 #import "ios/chrome/browser/prefs/pref_observer_bridge.h"
-#import "ios/chrome/browser/tabs/tab_delegate.h"
 #include "ios/web/public/referrer.h"
 #import "ios/web/public/web_state/ui/crw_native_content_provider.h"
 #import "ios/web/public/web_state/web_state_delegate_bridge.h"
@@ -36,7 +35,6 @@ class WebState;
 @interface PreloadController : NSObject<CRWNativeContentProvider,
                                         CRWWebStateDelegate,
                                         PrefObserverDelegate,
-                                        TabDelegate,
                                         CRConnectionTypeObserverBridge>
 // The URL of the currently prerendered Tab.  Empty if there is no prerendered
 // Tab.

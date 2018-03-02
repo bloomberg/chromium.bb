@@ -53,15 +53,12 @@
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/metrics/tab_usage_recorder.h"
 #include "ios/chrome/browser/pref_names.h"
-#import "ios/chrome/browser/prerender/prerender_service.h"
-#import "ios/chrome/browser/prerender/prerender_service_factory.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/tabs/legacy_tab_helper.h"
-#import "ios/chrome/browser/tabs/tab_delegate.h"
 #import "ios/chrome/browser/tabs/tab_dialog_delegate.h"
 #import "ios/chrome/browser/tabs/tab_headers_delegate.h"
 #import "ios/chrome/browser/tabs/tab_helper_util.h"
@@ -169,7 +166,6 @@ NSString* const kTabUrlKey = @"url";
 @synthesize overscrollActionsControllerDelegate =
     overscrollActionsControllerDelegate_;
 @synthesize passKitDialogProvider = passKitDialogProvider_;
-@synthesize delegate = delegate_;
 @synthesize dialogDelegate = dialogDelegate_;
 @synthesize tabHeadersDelegate = tabHeadersDelegate_;
 
@@ -406,23 +402,11 @@ NSString* const kTabUrlKey = @"url";
     didLoadPageWithSuccess:(BOOL)loadSuccess {
   DCHECK([self loadFinished]);
 
-  // Cancel prerendering if response is "application/octet-stream". It can be a
-  // video file which should not be played from preload tab (crbug.com/436813).
-  if (self.isPrerenderTab &&
-      self.webState->GetContentsMimeType() == "application/octet-stream") {
-    [self discardPrerender];
-  }
-
   if (loadSuccess) {
     scoped_refptr<net::HttpResponseHeaders> headers =
         _webStateImpl->GetHttpResponseHeaders();
     [self handleExportableFile:headers.get()];
   }
-}
-
-- (void)webStateDidSuppressDialog:(web::WebState*)webState {
-  DCHECK(self.isPrerenderTab);
-  [self discardPrerender];
 }
 
 - (void)renderProcessGoneForWebState:(web::WebState*)webState {
@@ -541,10 +525,6 @@ NSString* const kTabUrlKey = @"url";
 
 - (BOOL)webController:(CRWWebController*)webController
     shouldOpenExternalURL:(const GURL&)URL {
-  if (self.isPrerenderTab) {
-    [self discardPrerender];
-    return NO;
-  }
   return YES;
 }
 
@@ -558,19 +538,6 @@ NSString* const kTabUrlKey = @"url";
 }
 
 #pragma mark - Private methods
-
-- (void)discardPrerender {
-  DCHECK(self.isPrerenderTab);
-  [delegate_ discardPrerender];
-}
-
-- (BOOL)isPrerenderTab {
-  DCHECK(_browserState);
-  PrerenderService* prerenderService =
-      PrerenderServiceFactory::GetForBrowserState(_browserState);
-  return prerenderService &&
-         prerenderService->IsWebStatePrerendered(self.webState);
-}
 
 - (OpenInController*)openInController {
   if (!_openInController) {
