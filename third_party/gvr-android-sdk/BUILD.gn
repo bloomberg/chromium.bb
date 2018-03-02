@@ -40,9 +40,9 @@ android_aar_prebuilt("gvr_common_java") {
     "*google/vr/cardboard/VrParamsProviderFactory.class",
     "*google/vr/cardboard/VrParamsProviderFactory\$ContentProviderClientHandle.class",
     "*google/vr/cardboard/VrSettingsProviderContract.class",
-
-    # TODO(mthiesse): Figure out whether all files in this directory are needed.
-    "*google/vr/internal/controller/*",
+    "*google/vr/internal/controller/ControllerServiceBridge.class",
+    "*google/vr/internal/controller/ControllerServiceBridge\$*",
+    "*google/vr/internal/controller/NativeCallbacks.class",
     "*google/vr/ndk/base/AndroidCompat.class",
     "*google/vr/ndk/base/BuildConstants.class",
     "*google/vr/ndk/base/DaydreamApi*.class",
@@ -55,23 +55,25 @@ android_aar_prebuilt("gvr_common_java") {
     "*google/vr/ndk/base/SdkConfigurationReader.class",
     "*google/vr/ndk/base/TraceCompat.class",
     "*google/vr/ndk/base/Version.class",
-
-    # TODO(mthiesse): Figure out whether all files in this directory are needed.
-    "*google/vr/sdk/common/deps/*",
-
-    # TODO(mthiesse): Figure out whether all files in this directory are needed.
-    "*google/vr/sdk/proto/nano/*",
-
-    # TODO(mthiesse): Figure out whether all files in this directory are needed.
-    "*google/vr/vrcore/base/api/*",
-
-    # TODO(mthiesse): Figure out whether all files in this directory are needed.
-    "*google/vr/vrcore/common/api/*",
-
-    # TODO(mthiesse): Figure out whether all files in this directory are needed.
-    "*google/vr/vrcore/controller/api/*",
-
-    # TODO(mthiesse): Figure out whether all files in this directory are needed.
+    "*google/vr/sdk/common/deps/a.class",
+    "*google/vr/sdk/common/deps/b.class",
+    "*google/vr/sdk/common/deps/c.class",
+    "*google/vr/sdk/proto/nano/CardboardDevice.class",
+    "*google/vr/sdk/proto/nano/CardboardDevice\$*",
+    "*google/vr/sdk/proto/nano/Display.class",
+    "*google/vr/sdk/proto/nano/Display\$*",
+    "*google/vr/sdk/proto/nano/SdkConfiguration.class",
+    "*google/vr/sdk/proto/nano/SdkConfiguration\$*",
+    "*google/vr/vrcore/base/api/ParcelableProto.class",
+    "*google/vr/vrcore/base/api/VrCoreConstants.class",
+    "*google/vr/vrcore/base/api/VrCoreNotAvailableException.class",
+    "*google/vr/vrcore/base/api/VrCoreUtils.class",
+    "*google/vr/vrcore/base/api/VrCoreUtils\$*",
+    "*google/vr/vrcore/common/api/IDaydream*",
+    "*google/vr/vrcore/common/api/ITransition*",
+    "*google/vr/vrcore/common/api/IVrCore*",
+    "*google/vr/vrcore/controller/api/IController*",
+    "*google/vr/vrcore/controller/api/Controller*",
     "*google/vr/vrcore/library/api/*",
   ]
 
