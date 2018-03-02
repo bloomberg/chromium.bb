@@ -26,9 +26,10 @@ bool ApplyMitigationsToCurrentThread(MitigationFlags flags);
 MitigationFlags FilterPostStartupProcessMitigations(MitigationFlags flags);
 
 // Converts sandbox flags to the PROC_THREAD_ATTRIBUTE_SECURITY_CAPABILITIES
-// policy flags used by UpdateProcThreadAttribute(). The size field varies
-// between a 32-bit and a 64-bit type based on the exact build and version of
-// Windows, so the returned size must be passed to UpdateProcThreadAttribute().
+// policy flags used by UpdateProcThreadAttribute().
+// - |policy_flags| must be a two-element DWORD64 array.
+// - |size| is a size_t so that it can be passed directly into
+//   UpdateProcThreadAttribute().
 void ConvertProcessMitigationsToPolicy(MitigationFlags flags,
                                        DWORD64* policy_flags,
                                        size_t* size);

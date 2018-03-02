@@ -330,6 +330,16 @@ SBOX_TESTS_COMMAND int CheckPolicy(int argc, wchar_t** argv) {
 
       break;
     }
+    //--------------------------------------------------
+    // MITIGATION_RESTRICT_INDIRECT_BRANCH_PREDICTION
+    //--------------------------------------------------
+    case (TESTPOLICY_RESTRICTINDIRECTBRANCHPREDICTION): {
+      // TODO(pennymac): No Policy defines available yet!
+      // Can't use GetProcessMitigationPolicy() API to check if enabled at this
+      // time.  If the creation of THIS process succeeded, then the call to
+      // UpdateProcThreadAttribute() with this mitigation succeeded.
+      break;
+    }
     default:
       return SBOX_TEST_INVALID_PARAMETER;
   }
@@ -894,6 +904,40 @@ TEST(ProcessMitigationsTest, CheckChildProcessAbnormalExit) {
   test_command += std::to_wstring(STATUS_ACCESS_VIOLATION);
 
   EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(test_command.c_str()));
+}
+
+//------------------------------------------------------------------------------
+// Restrict indirect branch prediction
+// (MITIGATION_RESTRICT_INDIRECT_BRANCH_PREDICTION)
+// >= Win10 RS3
+//------------------------------------------------------------------------------
+
+// This test validates that setting the
+// MITIGATION_RESTRICT_INDIRECT_BRANCH_PREDICTION mitigation enables the setting
+// on a process.
+TEST(ProcessMitigationsTest,
+     CheckWin10RestrictIndirectBranchPredictionPolicySuccess) {
+  if (base::win::GetVersion() < base::win::VERSION_WIN10_RS3)
+    return;
+
+  base::string16 test_command = L"CheckPolicy ";
+  test_command += std::to_wstring(TESTPOLICY_RESTRICTINDIRECTBRANCHPREDICTION);
+
+  //---------------------------------
+  // 1) Test setting pre-startup.
+  //---------------------------------
+  TestRunner runner;
+  sandbox::TargetPolicy* policy = runner.GetPolicy();
+
+  EXPECT_EQ(policy->SetProcessMitigations(
+                MITIGATION_RESTRICT_INDIRECT_BRANCH_PREDICTION),
+            SBOX_ALL_OK);
+  EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(test_command.c_str()));
+
+  //---------------------------------
+  // 2) Test setting post-startup.
+  //    ** Post-startup not supported.  Must be enabled on creation.
+  //---------------------------------
 }
 
 }  // namespace sandbox
