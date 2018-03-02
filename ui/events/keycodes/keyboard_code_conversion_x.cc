@@ -25,9 +25,83 @@ namespace ui {
 namespace {
 
 // MAP0 - MAP3:
-// These are the generated VKEY code maps for all possible Latin keyboard
-// layouts in Windows. And the maps are only for special letter keys excluding
-// [a-z] & [0-9].
+// These are the generated VKEY code maps from these layout datas on Windows:
+//   KBDA1.DLL
+//   KBDAL.DLL
+//   KBDARME.DLL
+//   KBDARMW.DLL
+//   KBDAZEL.DLL
+//   KBDBE.DLL
+//   KBDBENE.DLL
+//   KBDBR.DLL
+//   KBDCA.DLL
+//   KBDCAN.DLL
+//   KBDCR.DLL
+//   KBDCZ.DLL
+//   KBDCZ1.DLL
+//   KBDCZ2.DLL
+//   KBDDA.DLL
+//   KBDDV.DLL
+//   KBDES.DLL
+//   KBDEST.DLL
+//   KBDFC.DLL
+//   KBDFI.DLL
+//   KBDFI1.DLL
+//   KBDFO.DLL
+//   KBDFR.DLL
+//   KBDHEB.DLL
+//   KBDGAE.DLL
+//   KBDGEO.DLL
+//   kbdgeoer.dll
+//   kbdgeoqw.dll
+//   KBDGR.DLL
+//   KBDGR1.DLL
+//   KBDGRLND.DLL
+//   KBDHAU.DLL
+//   KBDHU.DLL
+//   KBDHU1.DLL
+//   KBDIBO.DLL
+//   KBDIC.DLL
+//   KBDIR.DLL
+//   KBDIT.DLL
+//   KBDIT142.DLL
+//   KBDLA.DLL
+//   KBDLT.DLL
+//   KBDLT1.DLL
+//   KBDLT2.DLL
+//   KBDLV.DLL
+//   KBDLV1.DLL
+//   KBDMLT47.DLL
+//   KBDMLT48.DLL
+//   KBDNE.DLL
+//   KBDNO.DLL
+//   KBDNO1.DLL
+//   KBDPL.DLL
+//   KBDPL1.DLL
+//   KBDPO.DLL
+//   KBDRO.DLL
+//   KBDROPR.DLL
+//   KBDROST.DLL
+//   KBDRU.DLL
+//   KBDSF.DLL
+//   KBDSG.DLL
+//   KBDSL.DLL
+//   KBDSL1.DLL
+//   KBDSOREX.DLL
+//   KBDSORS1.DLL
+//   KBDSORST.DLL
+//   KBDSP.DLL
+//   KBDSW.DLL
+//   KBDSW09.DLL
+//   KBDUK.DLL
+//   KBDUKX.DLL
+//   KBDUS.DLL
+//   KBDUSL.DLL
+//   KBDUSR.DLL
+//   KBDUSX.DLL
+//   KBDVNTC.DLL
+//   KBDYBA.DLL
+// And the maps are only for special letter keys excluding [a-z] & [0-9].
 //
 // ch0: the keysym without modifier states.
 // ch1: the keysym with shift state.
@@ -122,179 +196,183 @@ const struct MAP1 {
     return m1.ch0 < m2.ch0;
   }
 } map1[] = {
-      {0x0021, 0x0A, 0x31},  // XK_exclam+AE01: VKEY_1
-      {0x0021, 0x11, 0x38},  // XK_exclam+AE08: VKEY_8
-      {0x0021, 0x3D, 0xDF},  // XK_exclam+AB10: VKEY_OEM_8
-      {0x0022, 0x0B, 0x32},  // XK_quotedbl+AE02: VKEY_2
-      {0x0022, 0x0C, 0x33},  // XK_quotedbl+AE03: VKEY_3
-      {0x0023, 0x31, 0xDE},  // XK_numbersign+TLDE: VKEY_OEM_7
-      {0x0024, 0x23, 0xBA},  // XK_dollar+AD12: VKEY_OEM_1
-      {0x0024, 0x33, 0xDF},  // XK_dollar+BKSL: VKEY_OEM_8
-      {0x0027, 0x0D, 0x34},  // XK_quoteright+AE04: VKEY_4
-      {0x0027, 0x18, 0xDE},  // XK_quoteright+AD01: VKEY_OEM_7
-      {0x0027, 0x23, 0xBA},  // XK_quoteright+AD12: VKEY_OEM_1
-      {0x0027, 0x3D, 0xDE},  // XK_quoteright+AB10: VKEY_OEM_7
-      {0x0028, 0x0E, 0x35},  // XK_parenleft+AE05: VKEY_5
-      {0x0028, 0x12, 0x39},  // XK_parenleft+AE09: VKEY_9
-      {0x0028, 0x33, 0xDC},  // XK_parenleft+BKSL: VKEY_OEM_5
-      {0x0029, 0x13, 0x30},  // XK_parenright+AE10: VKEY_0
-      {0x0029, 0x14, 0xDB},  // XK_parenright+AE11: VKEY_OEM_4
-      {0x0029, 0x23, 0xDD},  // XK_parenright+AD12: VKEY_OEM_6
-      {0x002A, 0x23, 0xBA},  // XK_asterisk+AD12: VKEY_OEM_1
-      {0x002A, 0x33, 0xDC},  // XK_asterisk+BKSL: VKEY_OEM_5
-      {0x002B, 0x0A, 0x31},  // XK_plus+AE01: VKEY_1
-      {0x002B, 0x15, 0xBB},  // XK_plus+AE12: VKEY_OEM_PLUS
-      {0x002B, 0x22, 0xBB},  // XK_plus+AD11: VKEY_OEM_PLUS
-      {0x002B, 0x23, 0xBB},  // XK_plus+AD12: VKEY_OEM_PLUS
-      {0x002B, 0x2F, 0xBB},  // XK_plus+AC10: VKEY_OEM_PLUS
-      {0x002B, 0x33, 0xBF},  // XK_plus+BKSL: VKEY_OEM_2
-      {0x002C, 0x0C, 0x33},  // XK_comma+AE03: VKEY_3
-      {0x002C, 0x0E, 0x35},  // XK_comma+AE05: VKEY_5
-      {0x002C, 0x0F, 0x36},  // XK_comma+AE06: VKEY_6
-      {0x002C, 0x12, 0x39},  // XK_comma+AE09: VKEY_9
-      {0x002C, 0x19, 0xBC},  // XK_comma+AD02: VKEY_OEM_COMMA
-      {0x002C, 0x37, 0xBC},  // XK_comma+AB04: VKEY_OEM_COMMA
-      {0x002C, 0x3A, 0xBC},  // XK_comma+AB07: VKEY_OEM_COMMA
-      {0x002C, 0x3B, 0xBC},  // XK_comma+AB08: VKEY_OEM_COMMA
-      {0x002D, 0x0B, 0x32},  // XK_minus+AE02: VKEY_2
-      {0x002D, 0x0F, 0x36},  // XK_minus+AE06: VKEY_6
-      {0x002D, 0x14, 0xBD},  // XK_minus+AE11: VKEY_OEM_MINUS
-      {0x002D, 0x26, 0xBD},  // XK_minus+AC01: VKEY_OEM_MINUS
-      {0x002D, 0x30, 0xBD},  // XK_minus+AC11: VKEY_OEM_MINUS
-      {0x002E, 0x10, 0x37},  // XK_period+AE07: VKEY_7
-      {0x002E, 0x11, 0x38},  // XK_period+AE08: VKEY_8
-      {0x002E, 0x1A, 0xBE},  // XK_period+AD03: VKEY_OEM_PERIOD
-      {0x002E, 0x1B, 0xBE},  // XK_period+AD04: VKEY_OEM_PERIOD
-      {0x002E, 0x20, 0xBE},  // XK_period+AD09: VKEY_OEM_PERIOD
-      {0x002E, 0x30, 0xDE},  // XK_period+AC11: VKEY_OEM_7
-      {0x002E, 0x3C, 0xBE},  // XK_period+AB09: VKEY_OEM_PERIOD
-      {0x002E, 0x3D, 0xBF},  // XK_period+AB10: VKEY_OEM_2
-      {0x002F, 0x14, 0xDB},  // XK_slash+AE11: VKEY_OEM_4
-      {0x002F, 0x22, 0xBF},  // XK_slash+AD11: VKEY_OEM_2
-      {0x002F, 0x31, 0xDE},  // XK_slash+TLDE: VKEY_OEM_7
-      {0x002F, 0x33, 0xDC},  // XK_slash+BKSL: VKEY_OEM_5
-      {0x002F, 0x3D, 0xBF},  // XK_slash+AB10: VKEY_OEM_2
-      {0x003A, 0x0A, 0x31},  // XK_colon+AE01: VKEY_1
-      {0x003A, 0x0E, 0x35},  // XK_colon+AE05: VKEY_5
-      {0x003A, 0x0F, 0x36},  // XK_colon+AE06: VKEY_6
-      {0x003A, 0x3C, 0xBF},  // XK_colon+AB09: VKEY_OEM_2
-      {0x003B, 0x0D, 0x34},  // XK_semicolon+AE04: VKEY_4
-      {0x003B, 0x11, 0x38},  // XK_semicolon+AE08: VKEY_8
-      {0x003B, 0x18, 0xBA},  // XK_semicolon+AD01: VKEY_OEM_1
-      {0x003B, 0x22, 0xBA},  // XK_semicolon+AD11: VKEY_OEM_1
-      {0x003B, 0x23, 0xDD},  // XK_semicolon+AD12: VKEY_OEM_6
-      {0x003B, 0x2F, 0xBA},  // XK_semicolon+AC10: VKEY_OEM_1
-      {0x003B, 0x31, 0xC0},  // XK_semicolon+TLDE: VKEY_OEM_3
-      {0x003B, 0x34, 0xBA},  // XK_semicolon+AB01: VKEY_OEM_1
-      {0x003B, 0x3B, 0xBE},  // XK_semicolon+AB08: VKEY_OEM_PERIOD
-      {0x003B, 0x3D, 0xBF},  // XK_semicolon+AB10: VKEY_OEM_2
-      {0x003D, 0x11, 0x38},  // XK_equal+AE08: VKEY_8
-      {0x003D, 0x15, 0xBB},  // XK_equal+AE12: VKEY_OEM_PLUS
-      {0x003D, 0x23, 0xBB},  // XK_equal+AD12: VKEY_OEM_PLUS
-      {0x003F, 0x0B, 0x32},  // XK_question+AE02: VKEY_2
-      {0x003F, 0x10, 0x37},  // XK_question+AE07: VKEY_7
-      {0x003F, 0x11, 0x38},  // XK_question+AE08: VKEY_8
-      {0x003F, 0x14, 0xBB},  // XK_question+AE11: VKEY_OEM_PLUS
-      {0x0040, 0x23, 0xDD},  // XK_at+AD12: VKEY_OEM_6
-      {0x0040, 0x31, 0xDE},  // XK_at+TLDE: VKEY_OEM_7
-      {0x005B, 0x0A, 0xDB},  // XK_bracketleft+AE01: VKEY_OEM_4
-      {0x005B, 0x14, 0xDB},  // XK_bracketleft+AE11: VKEY_OEM_4
-      {0x005B, 0x22, 0xDB},  // XK_bracketleft+AD11: VKEY_OEM_4
-      {0x005B, 0x23, 0xDD},  // XK_bracketleft+AD12: VKEY_OEM_6
-      {0x005B, 0x30, 0xDE},  // XK_bracketleft+AC11: VKEY_OEM_7
-      {0x005C, 0x15, 0xDB},  // XK_backslash+AE12: VKEY_OEM_4
-      {0x005D, 0x0B, 0xDD},  // XK_bracketright+AE02: VKEY_OEM_6
-      {0x005D, 0x15, 0xDD},  // XK_bracketright+AE12: VKEY_OEM_6
-      {0x005D, 0x23, 0xDD},  // XK_bracketright+AD12: VKEY_OEM_6
-      {0x005D, 0x31, 0xC0},  // XK_bracketright+TLDE: VKEY_OEM_3
-      {0x005D, 0x33, 0xDC},  // XK_bracketright+BKSL: VKEY_OEM_5
-      {0x005F, 0x11, 0x38},  // XK_underscore+AE08: VKEY_8
-      {0x005F, 0x14, 0xBD},  // XK_underscore+AE11: VKEY_OEM_MINUS
-      {0x00A7, 0x0D, 0x34},  // XK_section+AE04: VKEY_4
-      {0x00A7, 0x0F, 0x36},  // XK_section+AE06: VKEY_6
-      {0x00A7, 0x30, 0xDE},  // XK_section+AC11: VKEY_OEM_7
-      {0x00AB, 0x11, 0x38},  // XK_guillemotleft+AE08: VKEY_8
-      {0x00AB, 0x15, 0xDD},  // XK_guillemotleft+AE12: VKEY_OEM_6
-      {0x00B0, 0x15, 0xBF},  // XK_degree+AE12: VKEY_OEM_2
-      {0x00B0, 0x31, 0xDE},  // XK_degree+TLDE: VKEY_OEM_7
-      {0x00BA, 0x30, 0xDE},  // XK_masculine+AC11: VKEY_OEM_7
-      {0x00BA, 0x31, 0xDC},  // XK_masculine+TLDE: VKEY_OEM_5
-      {0x00E0, 0x13, 0x30},  // XK_agrave+AE10: VKEY_0
-      {0x00E0, 0x33, 0xDC},  // XK_agrave+BKSL: VKEY_OEM_5
-      {0x00E1, 0x11, 0x38},  // XK_aacute+AE08: VKEY_8
-      {0x00E1, 0x30, 0xDE},  // XK_aacute+AC11: VKEY_OEM_7
-      {0x00E2, 0x0B, 0x32},  // XK_acircumflex+AE02: VKEY_2
-      {0x00E2, 0x33, 0xDC},  // XK_acircumflex+BKSL: VKEY_OEM_5
-      {0x00E4, 0x23, 0xDD},  // XK_adiaeresis+AD12: VKEY_OEM_6
-      {0x00E6, 0x2F, 0xC0},  // XK_ae+AC10: VKEY_OEM_3
-      {0x00E6, 0x30, 0xDE},  // XK_ae+AC11: VKEY_OEM_7
-      {0x00E7, 0x12, 0x39},  // XK_ccedilla+AE09: VKEY_9
-      {0x00E7, 0x22, 0xDB},  // XK_ccedilla+AD11: VKEY_OEM_4
-      {0x00E7, 0x23, 0xDD},  // XK_ccedilla+AD12: VKEY_OEM_6
-      {0x00E7, 0x30, 0xDE},  // XK_ccedilla+AC11: VKEY_OEM_7
-      {0x00E7, 0x33, 0xBF},  // XK_ccedilla+BKSL: VKEY_OEM_2
-      {0x00E7, 0x3B, 0xBC},  // XK_ccedilla+AB08: VKEY_OEM_COMMA
-      {0x00E8, 0x10, 0x37},  // XK_egrave+AE07: VKEY_7
-      {0x00E8, 0x22, 0xBA},  // XK_egrave+AD11: VKEY_OEM_1
-      {0x00E8, 0x30, 0xC0},  // XK_egrave+AC11: VKEY_OEM_3
-      {0x00E9, 0x0B, 0x32},  // XK_eacute+AE02: VKEY_2
-      {0x00E9, 0x13, 0x30},  // XK_eacute+AE10: VKEY_0
-      {0x00E9, 0x3D, 0xBF},  // XK_eacute+AB10: VKEY_OEM_2
-      {0x00ED, 0x12, 0x39},  // XK_iacute+AE09: VKEY_9
-      {0x00ED, 0x31, 0x30},  // XK_iacute+TLDE: VKEY_0
-      {0x00F0, 0x22, 0xDD},  // XK_eth+AD11: VKEY_OEM_6
-      {0x00F0, 0x23, 0xBA},  // XK_eth+AD12: VKEY_OEM_1
-      {0x00F3, 0x15, 0xBB},  // XK_oacute+AE12: VKEY_OEM_PLUS
-      {0x00F3, 0x33, 0xDC},  // XK_oacute+BKSL: VKEY_OEM_5
-      {0x00F4, 0x0D, 0x34},  // XK_ocircumflex+AE04: VKEY_4
-      {0x00F4, 0x2F, 0xBA},  // XK_ocircumflex+AC10: VKEY_OEM_1
-      {0x00F6, 0x13, 0xC0},  // XK_odiaeresis+AE10: VKEY_OEM_3
-      {0x00F6, 0x14, 0xBB},  // XK_odiaeresis+AE11: VKEY_OEM_PLUS
-      {0x00F6, 0x22, 0xDB},  // XK_odiaeresis+AD11: VKEY_OEM_4
-      {0x00F8, 0x2F, 0xC0},  // XK_oslash+AC10: VKEY_OEM_3
-      {0x00F8, 0x30, 0xDE},  // XK_oslash+AC11: VKEY_OEM_7
-      {0x00F9, 0x30, 0xC0},  // XK_ugrave+AC11: VKEY_OEM_3
-      {0x00F9, 0x33, 0xBF},  // XK_ugrave+BKSL: VKEY_OEM_2
-      {0x00FA, 0x22, 0xDB},  // XK_uacute+AD11: VKEY_OEM_4
-      {0x00FA, 0x23, 0xDD},  // XK_uacute+AD12: VKEY_OEM_6
-      {0x00FC, 0x19, 0x57},  // XK_udiaeresis+AD02: VKEY_W
-      {0x01B1, 0x0A, 0x31},  // XK_aogonek+AE01: VKEY_1
-      {0x01B1, 0x18, 0x51},  // XK_aogonek+AD01: VKEY_Q
-      {0x01B1, 0x30, 0xDE},  // XK_aogonek+AC11: VKEY_OEM_7
-      {0x01B3, 0x2F, 0xBA},  // XK_lstroke+AC10: VKEY_OEM_1
-      {0x01B3, 0x33, 0xBF},  // XK_lstroke+BKSL: VKEY_OEM_2
-      {0x01B9, 0x0C, 0x33},  // XK_scaron+AE03: VKEY_3
-      {0x01B9, 0x0F, 0x36},  // XK_scaron+AE06: VKEY_6
-      {0x01B9, 0x22, 0xDB},  // XK_scaron+AD11: VKEY_OEM_4
-      {0x01B9, 0x26, 0xBA},  // XK_scaron+AC01: VKEY_OEM_1
-      {0x01B9, 0x29, 0x46},  // XK_scaron+AC04: VKEY_F
-      {0x01B9, 0x3C, 0xBE},  // XK_scaron+AB09: VKEY_OEM_PERIOD
-      {0x01BA, 0x2F, 0xBA},  // XK_scedilla+AC10: VKEY_OEM_1
-      {0x01BA, 0x3C, 0xBE},  // XK_scedilla+AB09: VKEY_OEM_PERIOD
-      {0x01BE, 0x0F, 0x36},  // XK_zcaron+AE06: VKEY_6
-      {0x01BE, 0x15, 0xBB},  // XK_zcaron+AE12: VKEY_OEM_PLUS
-      {0x01BE, 0x19, 0x57},  // XK_zcaron+AD02: VKEY_W
-      {0x01BE, 0x22, 0x59},  // XK_zcaron+AD11: VKEY_Y
-      {0x01BE, 0x33, 0xDC},  // XK_zcaron+BKSL: VKEY_OEM_5
-      {0x01BF, 0x22, 0xDB},  // XK_zabovedot+AD11: VKEY_OEM_4
-      {0x01BF, 0x33, 0xDC},  // XK_zabovedot+BKSL: VKEY_OEM_5
-      {0x01E3, 0x0A, 0x31},  // XK_abreve+AE01: VKEY_1
-      {0x01E3, 0x22, 0xDB},  // XK_abreve+AD11: VKEY_OEM_4
-      {0x01E8, 0x0B, 0x32},  // XK_ccaron+AE02: VKEY_2
-      {0x01E8, 0x0D, 0x34},  // XK_ccaron+AE04: VKEY_4
-      {0x01E8, 0x21, 0x58},  // XK_ccaron+AD10: VKEY_X
-      {0x01E8, 0x2F, 0xBA},  // XK_ccaron+AC10: VKEY_OEM_1
-      {0x01E8, 0x3B, 0xBC},  // XK_ccaron+AB08: VKEY_OEM_COMMA
-      {0x01EA, 0x0C, 0x33},  // XK_eogonek+AE03: VKEY_3
-      {0x01F0, 0x13, 0x30},  // XK_dstroke+AE10: VKEY_0
-      {0x01F0, 0x23, 0xDD},  // XK_dstroke+AD12: VKEY_OEM_6
-      {0x03E7, 0x0E, 0x35},  // XK_iogonek+AE05: VKEY_5
-      {0x03EC, 0x0D, 0x34},  // XK_eabovedot+AE04: VKEY_4
-      {0x03EC, 0x30, 0xDE},  // XK_eabovedot+AC11: VKEY_OEM_7
-      {0x03F9, 0x10, 0x37},  // XK_uogonek+AE07: VKEY_7
-      {0x03FE, 0x11, 0x38},  // XK_umacron+AE08: VKEY_8
-      {0x03FE, 0x18, 0x51},  // XK_umacron+AD01: VKEY_Q
-      {0x03FE, 0x35, 0x58},  // XK_umacron+AB02: VKEY_X
+    {0x0021, 0x0A, 0x31},  // XK_exclam+AE01: VKEY_1
+    {0x0021, 0x11, 0x38},  // XK_exclam+AE08: VKEY_8
+    {0x0021, 0x3D, 0xDF},  // XK_exclam+AB10: VKEY_OEM_8
+    {0x0022, 0x0B, 0x32},  // XK_quotedbl+AE02: VKEY_2
+    {0x0022, 0x0C, 0x33},  // XK_quotedbl+AE03: VKEY_3
+    {0x0023, 0x31, 0xDE},  // XK_numbersign+TLDE: VKEY_OEM_7
+    {0x0024, 0x23, 0xBA},  // XK_dollar+AD12: VKEY_OEM_1
+    {0x0024, 0x33, 0xDF},  // XK_dollar+BKSL: VKEY_OEM_8
+    {0x0027, 0x0D, 0x34},  // XK_quoteright+AE04: VKEY_4
+    {0x0027, 0x18, 0xDE},  // XK_quoteright+AD01: VKEY_OEM_7
+    {0x0027, 0x19, 0x57},  // XK_quoteright+AD02: VKEY_W
+    {0x0027, 0x23, 0xBA},  // XK_quoteright+AD12: VKEY_OEM_1
+    {0x0027, 0x3D, 0xDE},  // XK_quoteright+AB10: VKEY_OEM_7
+    {0x0028, 0x0E, 0x35},  // XK_parenleft+AE05: VKEY_5
+    {0x0028, 0x12, 0x39},  // XK_parenleft+AE09: VKEY_9
+    {0x0028, 0x33, 0xDC},  // XK_parenleft+BKSL: VKEY_OEM_5
+    {0x0029, 0x13, 0x30},  // XK_parenright+AE10: VKEY_0
+    {0x0029, 0x14, 0xDB},  // XK_parenright+AE11: VKEY_OEM_4
+    {0x0029, 0x23, 0xDD},  // XK_parenright+AD12: VKEY_OEM_6
+    {0x002A, 0x23, 0xBA},  // XK_asterisk+AD12: VKEY_OEM_1
+    {0x002A, 0x33, 0xDC},  // XK_asterisk+BKSL: VKEY_OEM_5
+    {0x002B, 0x0A, 0x31},  // XK_plus+AE01: VKEY_1
+    {0x002B, 0x15, 0xBB},  // XK_plus+AE12: VKEY_OEM_PLUS
+    {0x002B, 0x22, 0xBB},  // XK_plus+AD11: VKEY_OEM_PLUS
+    {0x002B, 0x23, 0xBB},  // XK_plus+AD12: VKEY_OEM_PLUS
+    {0x002B, 0x2F, 0xBB},  // XK_plus+AC10: VKEY_OEM_PLUS
+    {0x002B, 0x33, 0xBF},  // XK_plus+BKSL: VKEY_OEM_2
+    {0x002C, 0x0C, 0x33},  // XK_comma+AE03: VKEY_3
+    {0x002C, 0x0E, 0x35},  // XK_comma+AE05: VKEY_5
+    {0x002C, 0x0F, 0x36},  // XK_comma+AE06: VKEY_6
+    {0x002C, 0x12, 0x39},  // XK_comma+AE09: VKEY_9
+    {0x002C, 0x19, 0xBC},  // XK_comma+AD02: VKEY_OEM_COMMA
+    {0x002C, 0x30, 0xDE},  // XK_comma+AC11: VKEY_OEM_7
+    {0x002C, 0x37, 0xBC},  // XK_comma+AB04: VKEY_OEM_COMMA
+    {0x002C, 0x3A, 0xBC},  // XK_comma+AB07: VKEY_OEM_COMMA
+    {0x002C, 0x3B, 0xBC},  // XK_comma+AB08: VKEY_OEM_COMMA
+    {0x002D, 0x0B, 0x32},  // XK_minus+AE02: VKEY_2
+    {0x002D, 0x0F, 0x36},  // XK_minus+AE06: VKEY_6
+    {0x002D, 0x14, 0xBD},  // XK_minus+AE11: VKEY_OEM_MINUS
+    {0x002D, 0x26, 0xBD},  // XK_minus+AC01: VKEY_OEM_MINUS
+    {0x002D, 0x30, 0xBD},  // XK_minus+AC11: VKEY_OEM_MINUS
+    {0x002E, 0x10, 0x37},  // XK_period+AE07: VKEY_7
+    {0x002E, 0x11, 0x38},  // XK_period+AE08: VKEY_8
+    {0x002E, 0x1A, 0xBE},  // XK_period+AD03: VKEY_OEM_PERIOD
+    {0x002E, 0x1B, 0xBE},  // XK_period+AD04: VKEY_OEM_PERIOD
+    {0x002E, 0x20, 0xBE},  // XK_period+AD09: VKEY_OEM_PERIOD
+    {0x002E, 0x30, 0xDE},  // XK_period+AC11: VKEY_OEM_7
+    {0x002E, 0x3C, 0xBE},  // XK_period+AB09: VKEY_OEM_PERIOD
+    {0x002E, 0x3D, 0xBF},  // XK_period+AB10: VKEY_OEM_2
+    {0x002F, 0x14, 0xDB},  // XK_slash+AE11: VKEY_OEM_4
+    {0x002F, 0x18, 0x51},  // XK_slash+AD01: VKEY_Q
+    {0x002F, 0x22, 0xBF},  // XK_slash+AD11: VKEY_OEM_2
+    {0x002F, 0x31, 0xDE},  // XK_slash+TLDE: VKEY_OEM_7
+    {0x002F, 0x33, 0xDC},  // XK_slash+BKSL: VKEY_OEM_5
+    {0x002F, 0x3D, 0xBF},  // XK_slash+AB10: VKEY_OEM_2
+    {0x003A, 0x0A, 0x31},  // XK_colon+AE01: VKEY_1
+    {0x003A, 0x0E, 0x35},  // XK_colon+AE05: VKEY_5
+    {0x003A, 0x0F, 0x36},  // XK_colon+AE06: VKEY_6
+    {0x003A, 0x3C, 0xBF},  // XK_colon+AB09: VKEY_OEM_2
+    {0x003B, 0x0D, 0x34},  // XK_semicolon+AE04: VKEY_4
+    {0x003B, 0x11, 0x38},  // XK_semicolon+AE08: VKEY_8
+    {0x003B, 0x18, 0xBA},  // XK_semicolon+AD01: VKEY_OEM_1
+    {0x003B, 0x22, 0xBA},  // XK_semicolon+AD11: VKEY_OEM_1
+    {0x003B, 0x23, 0xDD},  // XK_semicolon+AD12: VKEY_OEM_6
+    {0x003B, 0x2F, 0xBA},  // XK_semicolon+AC10: VKEY_OEM_1
+    {0x003B, 0x31, 0xC0},  // XK_semicolon+TLDE: VKEY_OEM_3
+    {0x003B, 0x34, 0xBA},  // XK_semicolon+AB01: VKEY_OEM_1
+    {0x003B, 0x3B, 0xBE},  // XK_semicolon+AB08: VKEY_OEM_PERIOD
+    {0x003B, 0x3D, 0xBF},  // XK_semicolon+AB10: VKEY_OEM_2
+    {0x003D, 0x11, 0x38},  // XK_equal+AE08: VKEY_8
+    {0x003D, 0x15, 0xBB},  // XK_equal+AE12: VKEY_OEM_PLUS
+    {0x003D, 0x23, 0xBB},  // XK_equal+AD12: VKEY_OEM_PLUS
+    {0x003F, 0x0B, 0x32},  // XK_question+AE02: VKEY_2
+    {0x003F, 0x10, 0x37},  // XK_question+AE07: VKEY_7
+    {0x003F, 0x11, 0x38},  // XK_question+AE08: VKEY_8
+    {0x003F, 0x14, 0xBB},  // XK_question+AE11: VKEY_OEM_PLUS
+    {0x0040, 0x23, 0xDD},  // XK_at+AD12: VKEY_OEM_6
+    {0x0040, 0x31, 0xDE},  // XK_at+TLDE: VKEY_OEM_7
+    {0x005B, 0x0A, 0xDB},  // XK_bracketleft+AE01: VKEY_OEM_4
+    {0x005B, 0x14, 0xDB},  // XK_bracketleft+AE11: VKEY_OEM_4
+    {0x005B, 0x22, 0xDB},  // XK_bracketleft+AD11: VKEY_OEM_4
+    {0x005B, 0x23, 0xDD},  // XK_bracketleft+AD12: VKEY_OEM_6
+    {0x005B, 0x30, 0xDE},  // XK_bracketleft+AC11: VKEY_OEM_7
+    {0x005C, 0x15, 0xDB},  // XK_backslash+AE12: VKEY_OEM_4
+    {0x005D, 0x0B, 0xDD},  // XK_bracketright+AE02: VKEY_OEM_6
+    {0x005D, 0x15, 0xDD},  // XK_bracketright+AE12: VKEY_OEM_6
+    {0x005D, 0x22, 0xDB},  // XK_bracketright+AD11: VKEY_OEM_4
+    {0x005D, 0x23, 0xDD},  // XK_bracketright+AD12: VKEY_OEM_6
+    {0x005D, 0x31, 0xC0},  // XK_bracketright+TLDE: VKEY_OEM_3
+    {0x005D, 0x33, 0xDC},  // XK_bracketright+BKSL: VKEY_OEM_5
+    {0x005F, 0x11, 0x38},  // XK_underscore+AE08: VKEY_8
+    {0x005F, 0x14, 0xBD},  // XK_underscore+AE11: VKEY_OEM_MINUS
+    {0x00A7, 0x0D, 0x34},  // XK_section+AE04: VKEY_4
+    {0x00A7, 0x0F, 0x36},  // XK_section+AE06: VKEY_6
+    {0x00A7, 0x30, 0xDE},  // XK_section+AC11: VKEY_OEM_7
+    {0x00AB, 0x11, 0x38},  // XK_guillemotleft+AE08: VKEY_8
+    {0x00AB, 0x15, 0xDD},  // XK_guillemotleft+AE12: VKEY_OEM_6
+    {0x00B0, 0x15, 0xBF},  // XK_degree+AE12: VKEY_OEM_2
+    {0x00B0, 0x31, 0xDE},  // XK_degree+TLDE: VKEY_OEM_7
+    {0x00BA, 0x30, 0xDE},  // XK_masculine+AC11: VKEY_OEM_7
+    {0x00BA, 0x31, 0xDC},  // XK_masculine+TLDE: VKEY_OEM_5
+    {0x00E0, 0x13, 0x30},  // XK_agrave+AE10: VKEY_0
+    {0x00E0, 0x33, 0xDC},  // XK_agrave+BKSL: VKEY_OEM_5
+    {0x00E1, 0x11, 0x38},  // XK_aacute+AE08: VKEY_8
+    {0x00E1, 0x30, 0xDE},  // XK_aacute+AC11: VKEY_OEM_7
+    {0x00E2, 0x0B, 0x32},  // XK_acircumflex+AE02: VKEY_2
+    {0x00E2, 0x33, 0xDC},  // XK_acircumflex+BKSL: VKEY_OEM_5
+    {0x00E4, 0x23, 0xDD},  // XK_adiaeresis+AD12: VKEY_OEM_6
+    {0x00E6, 0x2F, 0xC0},  // XK_ae+AC10: VKEY_OEM_3
+    {0x00E6, 0x30, 0xDE},  // XK_ae+AC11: VKEY_OEM_7
+    {0x00E7, 0x12, 0x39},  // XK_ccedilla+AE09: VKEY_9
+    {0x00E7, 0x22, 0xDB},  // XK_ccedilla+AD11: VKEY_OEM_4
+    {0x00E7, 0x23, 0xDD},  // XK_ccedilla+AD12: VKEY_OEM_6
+    {0x00E7, 0x30, 0xDE},  // XK_ccedilla+AC11: VKEY_OEM_7
+    {0x00E7, 0x33, 0xBF},  // XK_ccedilla+BKSL: VKEY_OEM_2
+    {0x00E7, 0x3B, 0xBC},  // XK_ccedilla+AB08: VKEY_OEM_COMMA
+    {0x00E8, 0x10, 0x37},  // XK_egrave+AE07: VKEY_7
+    {0x00E8, 0x22, 0xBA},  // XK_egrave+AD11: VKEY_OEM_1
+    {0x00E8, 0x30, 0xC0},  // XK_egrave+AC11: VKEY_OEM_3
+    {0x00E9, 0x0B, 0x32},  // XK_eacute+AE02: VKEY_2
+    {0x00E9, 0x13, 0x30},  // XK_eacute+AE10: VKEY_0
+    {0x00E9, 0x3D, 0xBF},  // XK_eacute+AB10: VKEY_OEM_2
+    {0x00ED, 0x12, 0x39},  // XK_iacute+AE09: VKEY_9
+    {0x00ED, 0x31, 0x30},  // XK_iacute+TLDE: VKEY_0
+    {0x00F0, 0x22, 0xDD},  // XK_eth+AD11: VKEY_OEM_6
+    {0x00F0, 0x23, 0xBA},  // XK_eth+AD12: VKEY_OEM_1
+    {0x00F3, 0x15, 0xBB},  // XK_oacute+AE12: VKEY_OEM_PLUS
+    {0x00F3, 0x33, 0xDC},  // XK_oacute+BKSL: VKEY_OEM_5
+    {0x00F4, 0x0D, 0x34},  // XK_ocircumflex+AE04: VKEY_4
+    {0x00F4, 0x2F, 0xBA},  // XK_ocircumflex+AC10: VKEY_OEM_1
+    {0x00F6, 0x13, 0xC0},  // XK_odiaeresis+AE10: VKEY_OEM_3
+    {0x00F6, 0x14, 0xBB},  // XK_odiaeresis+AE11: VKEY_OEM_PLUS
+    {0x00F6, 0x22, 0xDB},  // XK_odiaeresis+AD11: VKEY_OEM_4
+    {0x00F8, 0x2F, 0xC0},  // XK_oslash+AC10: VKEY_OEM_3
+    {0x00F8, 0x30, 0xDE},  // XK_oslash+AC11: VKEY_OEM_7
+    {0x00F9, 0x30, 0xC0},  // XK_ugrave+AC11: VKEY_OEM_3
+    {0x00F9, 0x33, 0xBF},  // XK_ugrave+BKSL: VKEY_OEM_2
+    {0x00FA, 0x22, 0xDB},  // XK_uacute+AD11: VKEY_OEM_4
+    {0x00FA, 0x23, 0xDD},  // XK_uacute+AD12: VKEY_OEM_6
+    {0x00FC, 0x19, 0x57},  // XK_udiaeresis+AD02: VKEY_W
+    {0x01B1, 0x0A, 0x31},  // XK_aogonek+AE01: VKEY_1
+    {0x01B1, 0x18, 0x51},  // XK_aogonek+AD01: VKEY_Q
+    {0x01B1, 0x30, 0xDE},  // XK_aogonek+AC11: VKEY_OEM_7
+    {0x01B3, 0x2F, 0xBA},  // XK_lstroke+AC10: VKEY_OEM_1
+    {0x01B3, 0x33, 0xBF},  // XK_lstroke+BKSL: VKEY_OEM_2
+    {0x01B9, 0x0C, 0x33},  // XK_scaron+AE03: VKEY_3
+    {0x01B9, 0x0F, 0x36},  // XK_scaron+AE06: VKEY_6
+    {0x01B9, 0x22, 0xDB},  // XK_scaron+AD11: VKEY_OEM_4
+    {0x01B9, 0x26, 0xBA},  // XK_scaron+AC01: VKEY_OEM_1
+    {0x01B9, 0x29, 0x46},  // XK_scaron+AC04: VKEY_F
+    {0x01B9, 0x3C, 0xBE},  // XK_scaron+AB09: VKEY_OEM_PERIOD
+    {0x01BA, 0x2F, 0xBA},  // XK_scedilla+AC10: VKEY_OEM_1
+    {0x01BA, 0x3C, 0xBE},  // XK_scedilla+AB09: VKEY_OEM_PERIOD
+    {0x01BE, 0x0F, 0x36},  // XK_zcaron+AE06: VKEY_6
+    {0x01BE, 0x15, 0xBB},  // XK_zcaron+AE12: VKEY_OEM_PLUS
+    {0x01BE, 0x19, 0x57},  // XK_zcaron+AD02: VKEY_W
+    {0x01BE, 0x22, 0x59},  // XK_zcaron+AD11: VKEY_Y
+    {0x01BE, 0x33, 0xDC},  // XK_zcaron+BKSL: VKEY_OEM_5
+    {0x01BF, 0x22, 0xDB},  // XK_zabovedot+AD11: VKEY_OEM_4
+    {0x01BF, 0x33, 0xDC},  // XK_zabovedot+BKSL: VKEY_OEM_5
+    {0x01E3, 0x0A, 0x31},  // XK_abreve+AE01: VKEY_1
+    {0x01E3, 0x22, 0xDB},  // XK_abreve+AD11: VKEY_OEM_4
+    {0x01E8, 0x0B, 0x32},  // XK_ccaron+AE02: VKEY_2
+    {0x01E8, 0x0D, 0x34},  // XK_ccaron+AE04: VKEY_4
+    {0x01E8, 0x21, 0x58},  // XK_ccaron+AD10: VKEY_X
+    {0x01E8, 0x2F, 0xBA},  // XK_ccaron+AC10: VKEY_OEM_1
+    {0x01E8, 0x3B, 0xBC},  // XK_ccaron+AB08: VKEY_OEM_COMMA
+    {0x01EA, 0x0C, 0x33},  // XK_eogonek+AE03: VKEY_3
+    {0x01F0, 0x13, 0x30},  // XK_dstroke+AE10: VKEY_0
+    {0x01F0, 0x23, 0xDD},  // XK_dstroke+AD12: VKEY_OEM_6
+    {0x03E7, 0x0E, 0x35},  // XK_iogonek+AE05: VKEY_5
+    {0x03EC, 0x0D, 0x34},  // XK_eabovedot+AE04: VKEY_4
+    {0x03EC, 0x30, 0xDE},  // XK_eabovedot+AC11: VKEY_OEM_7
+    {0x03F9, 0x10, 0x37},  // XK_uogonek+AE07: VKEY_7
+    {0x03FE, 0x11, 0x38},  // XK_umacron+AE08: VKEY_8
+    {0x03FE, 0x18, 0x51},  // XK_umacron+AD01: VKEY_Q
+    {0x03FE, 0x35, 0x58},  // XK_umacron+AB02: VKEY_X
 };
 
 const struct MAP2 {
@@ -326,7 +404,6 @@ const struct MAP2 {
       {0x002F, 0x13, 0x003F, 0xBF},  // XK_slash+AE10+XK_question: VKEY_OEM_2
       {0x003D, 0x3D, 0x0025, 0xDF},  // XK_equal+AB10+XK_percent: VKEY_OEM_8
       {0x003D, 0x3D, 0x002B, 0xBB},  // XK_equal+AB10+XK_plus: VKEY_OEM_PLUS
-      {0x005C, 0x33, 0x002F, 0xDE},  // XK_backslash+BKSL+XK_slash: VKEY_OEM_7
       {0x005C, 0x33, 0x007C, 0xDC},  // XK_backslash+BKSL+XK_bar: VKEY_OEM_5
       {0x0060, 0x31, 0x0000, 0xC0},  // XK_quoteleft+TLDE+NoSymbol: VKEY_OEM_3
       {0x0060, 0x31, 0x00AC, 0xDF},  // XK_quoteleft+TLDE+XK_notsign: VKEY_OEM_8
@@ -357,94 +434,98 @@ const struct MAP3 {
     return m1.ch0 < m2.ch0;
   }
 } map3[] = {
-      {0x0023, 0x33, 0x007E, 0x0000,
-       0xDE},  // XK_numbersign+BKSL+XK_asciitilde+NoSymbol: VKEY_OEM_7
-      {0x0027, 0x14, 0x003F, 0x0000,
-       0xDB},  // XK_quoteright+AE11+XK_question+NoSymbol: VKEY_OEM_4
-      {0x0027, 0x14, 0x003F, 0x00DD,
-       0xDB},  // XK_quoteright+AE11+XK_question+XK_Yacute: VKEY_OEM_4
-      {0x0027, 0x15, 0x002A, 0x0000,
-       0xBB},  // XK_quoteright+AE12+XK_asterisk+NoSymbol: VKEY_OEM_PLUS
-      {0x0027, 0x30, 0x0040, 0x0000,
-       0xC0},  // XK_quoteright+AC11+XK_at+NoSymbol: VKEY_OEM_3
-      {0x0027, 0x33, 0x002A, 0x0000,
-       0xBF},  // XK_quoteright+BKSL+XK_asterisk+NoSymbol: VKEY_OEM_2
-      {0x0027, 0x33, 0x002A, 0x00BD,
-       0xDC},  // XK_quoteright+BKSL+XK_asterisk+XK_onehalf: VKEY_OEM_5
-      {0x0027, 0x33, 0x002A, 0x01A3,
-       0xBF},  // XK_quoteright+BKSL+XK_asterisk+XK_Lstroke: VKEY_OEM_2
-      {0x0027, 0x34, 0x0022, 0x0000,
-       0x5A},  // XK_quoteright+AB01+XK_quotedbl+NoSymbol: VKEY_Z
-      {0x0027, 0x34, 0x0022, 0x01D8,
-       0xDE},  // XK_quoteright+AB01+XK_quotedbl+XK_Rcaron: VKEY_OEM_7
-      {0x002B, 0x14, 0x003F, 0x0000,
-       0xBB},  // XK_plus+AE11+XK_question+NoSymbol: VKEY_OEM_PLUS
-      {0x002B, 0x14, 0x003F, 0x005C,
-       0xBD},  // XK_plus+AE11+XK_question+XK_backslash: VKEY_OEM_MINUS
-      {0x002B, 0x14, 0x003F, 0x01F5,
-       0xBB},  // XK_plus+AE11+XK_question+XK_odoubleacute: VKEY_OEM_PLUS
-      {0x002D, 0x15, 0x005F, 0x0000,
-       0xBD},  // XK_minus+AE12+XK_underscore+NoSymbol: VKEY_OEM_MINUS
-      {0x002D, 0x15, 0x005F, 0x03B3,
-       0xDB},  // XK_minus+AE12+XK_underscore+XK_rcedilla: VKEY_OEM_4
-      {0x002D, 0x3D, 0x005F, 0x0000,
-       0xBD},  // XK_minus+AB10+XK_underscore+NoSymbol: VKEY_OEM_MINUS
-      {0x002D, 0x3D, 0x005F, 0x002A,
-       0xBD},  // XK_minus+AB10+XK_underscore+XK_asterisk: VKEY_OEM_MINUS
-      {0x002D, 0x3D, 0x005F, 0x002F,
-       0xBF},  // XK_minus+AB10+XK_underscore+XK_slash: VKEY_OEM_2
-      {0x002D, 0x3D, 0x005F, 0x006E,
-       0xBD},  // XK_minus+AB10+XK_underscore+XK_n: VKEY_OEM_MINUS
-      {0x003D, 0x14, 0x0025, 0x0000,
-       0xBB},  // XK_equal+AE11+XK_percent+NoSymbol: VKEY_OEM_PLUS
-      {0x003D, 0x14, 0x0025, 0x002D,
-       0xBD},  // XK_equal+AE11+XK_percent+XK_minus: VKEY_OEM_MINUS
-      {0x005C, 0x31, 0x007C, 0x0031,
-       0xDC},  // XK_backslash+TLDE+XK_bar+XK_1: VKEY_OEM_5
-      {0x005C, 0x31, 0x007C, 0x03D1,
-       0xC0},  // XK_backslash+TLDE+XK_bar+XK_Ncedilla: VKEY_OEM_3
-      {0x0060, 0x31, 0x007E, 0x0000,
-       0xC0},  // XK_quoteleft+TLDE+XK_asciitilde+NoSymbol: VKEY_OEM_3
-      {0x0060, 0x31, 0x007E, 0x0031,
-       0xC0},  // XK_quoteleft+TLDE+XK_asciitilde+XK_1: VKEY_OEM_3
-      {0x0060, 0x31, 0x007E, 0x003B,
-       0xC0},  // XK_quoteleft+TLDE+XK_asciitilde+XK_semicolon: VKEY_OEM_3
-      {0x0060, 0x31, 0x007E, 0x0060,
-       0xC0},  // XK_quoteleft+TLDE+XK_asciitilde+XK_quoteleft: VKEY_OEM_3
-      {0x0060, 0x31, 0x007E, 0x00BF,
-       0xC0},  // XK_quoteleft+TLDE+XK_asciitilde+XK_questiondown: VKEY_OEM_3
-      {0x0060, 0x31, 0x007E, 0x01F5,
-       0xC0},  // XK_quoteleft+TLDE+XK_asciitilde+XK_odoubleacute: VKEY_OEM_3
-      {0x00E4, 0x30, 0x00C4, 0x0000,
-       0xDE},  // XK_adiaeresis+AC11+XK_Adiaeresis+NoSymbol: VKEY_OEM_7
-      {0x00E4, 0x30, 0x00C4, 0x01A6,
-       0xDE},  // XK_adiaeresis+AC11+XK_Adiaeresis+XK_Sacute: VKEY_OEM_7
-      {0x00E4, 0x30, 0x00C4, 0x01F8,
-       0xDE},  // XK_adiaeresis+AC11+XK_Adiaeresis+XK_rcaron: VKEY_OEM_7
-      {0x00E7, 0x2F, 0x00C7, 0x0000,
-       0xBA},  // XK_ccedilla+AC10+XK_Ccedilla+NoSymbol: VKEY_OEM_1
-      {0x00E7, 0x2F, 0x00C7, 0x00DE,
-       0xC0},  // XK_ccedilla+AC10+XK_Ccedilla+XK_Thorn: VKEY_OEM_3
-      {0x00F6, 0x2F, 0x00D6, 0x0000,
-       0xC0},  // XK_odiaeresis+AC10+XK_Odiaeresis+NoSymbol: VKEY_OEM_3
-      {0x00F6, 0x2F, 0x00D6, 0x01DE,
-       0xC0},  // XK_odiaeresis+AC10+XK_Odiaeresis+XK_Tcedilla: VKEY_OEM_3
-      {0x00FC, 0x14, 0x00DC, 0x0000,
-       0xBF},  // XK_udiaeresis+AE11+XK_Udiaeresis+NoSymbol: VKEY_OEM_2
-      {0x00FC, 0x22, 0x00DC, 0x0000,
-       0xBA},  // XK_udiaeresis+AD11+XK_Udiaeresis+NoSymbol: VKEY_OEM_1
-      {0x00FC, 0x22, 0x00DC, 0x01A3,
-       0xC0},  // XK_udiaeresis+AD11+XK_Udiaeresis+XK_Lstroke: VKEY_OEM_3
-      {0x01EA, 0x3D, 0x01CA, 0x0000,
-       0xBD},  // XK_eogonek+AB10+XK_Eogonek+NoSymbol: VKEY_OEM_MINUS
-      {0x01EA, 0x3D, 0x01CA, 0x006E,
-       0xBF},  // XK_eogonek+AB10+XK_Eogonek+XK_n: VKEY_OEM_2
-      {0x03E7, 0x22, 0x03C7, 0x0000,
-       0xDB},  // XK_iogonek+AD11+XK_Iogonek+NoSymbol: VKEY_OEM_4
-      {0x03F9, 0x2F, 0x03D9, 0x0000,
-       0xC0},  // XK_uogonek+AC10+XK_Uogonek+NoSymbol: VKEY_OEM_3
-      {0x03F9, 0x2F, 0x03D9, 0x01DE,
-       0xBA},  // XK_uogonek+AC10+XK_Uogonek+XK_Tcedilla: VKEY_OEM_1
+    {0x0023, 0x33, 0x007E, 0x0000,
+     0xDE},  // XK_numbersign+BKSL+XK_asciitilde+NoSymbol: VKEY_OEM_7
+    {0x0027, 0x14, 0x003F, 0x0000,
+     0xDB},  // XK_quoteright+AE11+XK_question+NoSymbol: VKEY_OEM_4
+    {0x0027, 0x14, 0x003F, 0x00DD,
+     0xDB},  // XK_quoteright+AE11+XK_question+XK_Yacute: VKEY_OEM_4
+    {0x0027, 0x15, 0x002A, 0x0000,
+     0xBB},  // XK_quoteright+AE12+XK_asterisk+NoSymbol: VKEY_OEM_PLUS
+    {0x0027, 0x30, 0x0040, 0x0000,
+     0xC0},  // XK_quoteright+AC11+XK_at+NoSymbol: VKEY_OEM_3
+    {0x0027, 0x33, 0x002A, 0x0000,
+     0xBF},  // XK_quoteright+BKSL+XK_asterisk+NoSymbol: VKEY_OEM_2
+    {0x0027, 0x33, 0x002A, 0x00BD,
+     0xDC},  // XK_quoteright+BKSL+XK_asterisk+XK_onehalf: VKEY_OEM_5
+    {0x0027, 0x33, 0x002A, 0x01A3,
+     0xBF},  // XK_quoteright+BKSL+XK_asterisk+XK_Lstroke: VKEY_OEM_2
+    {0x0027, 0x34, 0x0022, 0x0000,
+     0x5A},  // XK_quoteright+AB01+XK_quotedbl+NoSymbol: VKEY_Z
+    {0x0027, 0x34, 0x0022, 0x01D8,
+     0xDE},  // XK_quoteright+AB01+XK_quotedbl+XK_Rcaron: VKEY_OEM_7
+    {0x002B, 0x14, 0x003F, 0x0000,
+     0xBB},  // XK_plus+AE11+XK_question+NoSymbol: VKEY_OEM_PLUS
+    {0x002B, 0x14, 0x003F, 0x005C,
+     0xBD},  // XK_plus+AE11+XK_question+XK_backslash: VKEY_OEM_MINUS
+    {0x002B, 0x14, 0x003F, 0x01F5,
+     0xBB},  // XK_plus+AE11+XK_question+XK_odoubleacute: VKEY_OEM_PLUS
+    {0x002D, 0x15, 0x005F, 0x0000,
+     0xBD},  // XK_minus+AE12+XK_underscore+NoSymbol: VKEY_OEM_MINUS
+    {0x002D, 0x15, 0x005F, 0x03B3,
+     0xDB},  // XK_minus+AE12+XK_underscore+XK_rcedilla: VKEY_OEM_4
+    {0x002D, 0x3D, 0x005F, 0x0000,
+     0xBD},  // XK_minus+AB10+XK_underscore+NoSymbol: VKEY_OEM_MINUS
+    {0x002D, 0x3D, 0x005F, 0x002A,
+     0xBD},  // XK_minus+AB10+XK_underscore+XK_asterisk: VKEY_OEM_MINUS
+    {0x002D, 0x3D, 0x005F, 0x002F,
+     0xBF},  // XK_minus+AB10+XK_underscore+XK_slash: VKEY_OEM_2
+    {0x002D, 0x3D, 0x005F, 0x006E,
+     0xBD},  // XK_minus+AB10+XK_underscore+XK_n: VKEY_OEM_MINUS
+    {0x003D, 0x14, 0x0025, 0x0000,
+     0xBB},  // XK_equal+AE11+XK_percent+NoSymbol: VKEY_OEM_PLUS
+    {0x003D, 0x14, 0x0025, 0x002D,
+     0xBD},  // XK_equal+AE11+XK_percent+XK_minus: VKEY_OEM_MINUS
+    {0x005C, 0x31, 0x007C, 0x0031,
+     0xDC},  // XK_backslash+TLDE+XK_bar+XK_1: VKEY_OEM_5
+    {0x005C, 0x31, 0x007C, 0x03D1,
+     0xC0},  // XK_backslash+TLDE+XK_bar+XK_Ncedilla: VKEY_OEM_3
+    {0x005C, 0x33, 0x002F, 0x0000,
+     0xDC},  // XK_backslash+BKSL+XK_slash+NoSymbol: VKEY_OEM_5
+    {0x005C, 0x33, 0x002F, 0x01A3,
+     0xDE},  // XK_backslash+BKSL+XK_slash+XK_Lstroke: VKEY_OEM_7
+    {0x0060, 0x31, 0x007E, 0x0000,
+     0xC0},  // XK_quoteleft+TLDE+XK_asciitilde+NoSymbol: VKEY_OEM_3
+    {0x0060, 0x31, 0x007E, 0x0031,
+     0xC0},  // XK_quoteleft+TLDE+XK_asciitilde+XK_1: VKEY_OEM_3
+    {0x0060, 0x31, 0x007E, 0x003B,
+     0xC0},  // XK_quoteleft+TLDE+XK_asciitilde+XK_semicolon: VKEY_OEM_3
+    {0x0060, 0x31, 0x007E, 0x0060,
+     0xC0},  // XK_quoteleft+TLDE+XK_asciitilde+XK_quoteleft: VKEY_OEM_3
+    {0x0060, 0x31, 0x007E, 0x00BF,
+     0xC0},  // XK_quoteleft+TLDE+XK_asciitilde+XK_questiondown: VKEY_OEM_3
+    {0x0060, 0x31, 0x007E, 0x01F5,
+     0xC0},  // XK_quoteleft+TLDE+XK_asciitilde+XK_odoubleacute: VKEY_OEM_3
+    {0x00E4, 0x30, 0x00C4, 0x0000,
+     0xDE},  // XK_adiaeresis+AC11+XK_Adiaeresis+NoSymbol: VKEY_OEM_7
+    {0x00E4, 0x30, 0x00C4, 0x01A6,
+     0xDE},  // XK_adiaeresis+AC11+XK_Adiaeresis+XK_Sacute: VKEY_OEM_7
+    {0x00E4, 0x30, 0x00C4, 0x01F8,
+     0xDE},  // XK_adiaeresis+AC11+XK_Adiaeresis+XK_rcaron: VKEY_OEM_7
+    {0x00E7, 0x2F, 0x00C7, 0x0000,
+     0xBA},  // XK_ccedilla+AC10+XK_Ccedilla+NoSymbol: VKEY_OEM_1
+    {0x00E7, 0x2F, 0x00C7, 0x00DE,
+     0xC0},  // XK_ccedilla+AC10+XK_Ccedilla+XK_Thorn: VKEY_OEM_3
+    {0x00F6, 0x2F, 0x00D6, 0x0000,
+     0xC0},  // XK_odiaeresis+AC10+XK_Odiaeresis+NoSymbol: VKEY_OEM_3
+    {0x00F6, 0x2F, 0x00D6, 0x01DE,
+     0xC0},  // XK_odiaeresis+AC10+XK_Odiaeresis+XK_Tcedilla: VKEY_OEM_3
+    {0x00FC, 0x14, 0x00DC, 0x0000,
+     0xBF},  // XK_udiaeresis+AE11+XK_Udiaeresis+NoSymbol: VKEY_OEM_2
+    {0x00FC, 0x22, 0x00DC, 0x0000,
+     0xBA},  // XK_udiaeresis+AD11+XK_Udiaeresis+NoSymbol: VKEY_OEM_1
+    {0x00FC, 0x22, 0x00DC, 0x01A3,
+     0xC0},  // XK_udiaeresis+AD11+XK_Udiaeresis+XK_Lstroke: VKEY_OEM_3
+    {0x01EA, 0x3D, 0x01CA, 0x0000,
+     0xBD},  // XK_eogonek+AB10+XK_Eogonek+NoSymbol: VKEY_OEM_MINUS
+    {0x01EA, 0x3D, 0x01CA, 0x006E,
+     0xBF},  // XK_eogonek+AB10+XK_Eogonek+XK_n: VKEY_OEM_2
+    {0x03E7, 0x22, 0x03C7, 0x0000,
+     0xDB},  // XK_iogonek+AD11+XK_Iogonek+NoSymbol: VKEY_OEM_4
+    {0x03F9, 0x2F, 0x03D9, 0x0000,
+     0xC0},  // XK_uogonek+AC10+XK_Uogonek+NoSymbol: VKEY_OEM_3
+    {0x03F9, 0x2F, 0x03D9, 0x01DE,
+     0xBA},  // XK_uogonek+AC10+XK_Uogonek+XK_Tcedilla: VKEY_OEM_1
 };
 
 template <class T_MAP>
