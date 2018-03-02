@@ -34,62 +34,9 @@ extern "C" {
 typedef void (*transform_1d_ssse3)(const __m128i *input, __m128i *output,
                                    int8_t cos_bit);
 
-void av1_lowbd_inv_txfm2d_add_4x4_ssse3(const int32_t *input, uint8_t *output,
-                                        int stride, TX_TYPE tx_type, int bd);
-
-void av1_lowbd_inv_txfm2d_add_8x8_ssse3(const int32_t *input, uint8_t *output,
-                                        int stride, TX_TYPE tx_type, int bd);
-
-void av1_lowbd_inv_txfm2d_add_16x16_ssse3(const int32_t *input, uint8_t *output,
-                                          int stride, TX_TYPE tx_type, int bd);
-
-void av1_lowbd_inv_txfm2d_add_32x32_ssse3(const int32_t *input, uint8_t *output,
-                                          int stride, TX_TYPE tx_type, int bd);
-
-void av1_lowbd_inv_txfm2d_add_64x64_ssse3(const int32_t *input, uint8_t *output,
-                                          int stride, TX_TYPE tx_type, int bd);
-
-void av1_lowbd_inv_txfm2d_add_4x8_ssse3(const int32_t *input, uint8_t *output,
-                                        int stride, TX_TYPE tx_type, int bd);
-
-void av1_lowbd_inv_txfm2d_add_8x4_ssse3(const int32_t *input, uint8_t *output,
-                                        int stride, TX_TYPE tx_type, int bd);
-
-void av1_lowbd_inv_txfm2d_add_8x16_ssse3(const int32_t *input, uint8_t *output,
-                                         int stride, TX_TYPE tx_type, int bd);
-
-void av1_lowbd_inv_txfm2d_add_16x8_ssse3(const int32_t *input, uint8_t *output,
-                                         int stride, TX_TYPE tx_type, int bd);
-
-void av1_lowbd_inv_txfm2d_add_16x32_ssse3(const int32_t *input, uint8_t *output,
-                                          int stride, TX_TYPE tx_type, int bd);
-
-void av1_lowbd_inv_txfm2d_add_32x16_ssse3(const int32_t *input, uint8_t *output,
-                                          int stride, TX_TYPE tx_type, int bd);
-
-void av1_lowbd_inv_txfm2d_add_32x64_ssse3(const int32_t *input, uint8_t *output,
-                                          int stride, TX_TYPE tx_type, int bd);
-
-void av1_lowbd_inv_txfm2d_add_64x32_ssse3(const int32_t *input, uint8_t *output,
-                                          int stride, TX_TYPE tx_type, int bd);
-
-void av1_lowbd_inv_txfm2d_add_4x16_ssse3(const int32_t *input, uint8_t *output,
-                                         int stride, TX_TYPE tx_type, int bd);
-
-void av1_lowbd_inv_txfm2d_add_16x4_ssse3(const int32_t *input, uint8_t *output,
-                                         int stride, TX_TYPE tx_type, int bd);
-
-void av1_lowbd_inv_txfm2d_add_8x32_ssse3(const int32_t *input, uint8_t *output,
-                                         int stride, TX_TYPE tx_type, int bd);
-
-void av1_lowbd_inv_txfm2d_add_32x8_ssse3(const int32_t *input, uint8_t *output,
-                                         int stride, TX_TYPE tx_type, int bd);
-
-void av1_lowbd_inv_txfm2d_add_16x64_ssse3(const int32_t *input, uint8_t *output,
-                                          int stride, TX_TYPE tx_type, int bd);
-
-void av1_lowbd_inv_txfm2d_add_64x16_ssse3(const int32_t *input, uint8_t *output,
-                                          int stride, TX_TYPE tx_type, int bd);
+void av1_lowbd_inv_txfm2d_add_ssse3(const int32_t *input, uint8_t *output,
+                                    int stride, TX_TYPE tx_type,
+                                    TX_SIZE tx_size, int eob);
 #ifdef __cplusplus
 }
 #endif

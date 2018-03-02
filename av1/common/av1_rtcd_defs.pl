@@ -227,7 +227,7 @@ add_proto qw/void av1_highbd_iht16x16_256_add/, "const tran_low_t *input, uint8_
 
 #inv txfm
 add_proto qw/void av1_inv_txfm_add/, "const tran_low_t *dqcoeff, uint8_t *dst, int stride, const TxfmParam *txfm_param";
-specialize qw/av1_inv_txfm_add sse2/;
+specialize qw/av1_inv_txfm_add ssse3/;
 
 add_proto qw/void av1_inv_txfm2d_add_4x8/, "const int32_t *input, uint16_t *output, int stride, TX_TYPE tx_type, int bd";
 add_proto qw/void av1_inv_txfm2d_add_8x4/, "const int32_t *input, uint16_t *output, int stride, TX_TYPE tx_type, int bd";

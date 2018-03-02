@@ -211,20 +211,14 @@ TEST(AV1InvTxfm2d, CfgTest) {
   }
 }
 
-typedef std::tr1::tuple<const LbdInvTxfm2dFunc *, int> AV1LbdInvTxfm2dParam;
+typedef std::tr1::tuple<const LbdInvTxfm2dFunc> AV1LbdInvTxfm2dParam;
 class AV1LbdInvTxfm2d : public ::testing::TestWithParam<AV1LbdInvTxfm2dParam> {
  public:
-  virtual void SetUp() {
-    const LbdInvTxfm2dFunc *target_list = GET_PARAM(0);
-    tx_size_ = GET_PARAM(1);
-    fwd_func_ = libaom_test::fwd_txfm_func_ls[tx_size_];
-    ref_func_ = libaom_test::inv_txfm_func_ls[tx_size_];
-    target_func_ = target_list[tx_size_];
-  }
+  virtual void SetUp() { target_func_ = GET_PARAM(0); }
 
-  bool ValidTypeSize(TX_TYPE tx_type) const {
-    const int rows = tx_size_wide[tx_size_];
-    const int cols = tx_size_high[tx_size_];
+  bool ValidTypeSize(TX_TYPE tx_type, TX_SIZE tx_size) const {
+    const int rows = tx_size_wide[tx_size];
+    const int cols = tx_size_high[tx_size];
     const TX_TYPE_1D vtype = vtx_tab[tx_type];
     const TX_TYPE_1D htype = htx_tab[tx_type];
     if (rows >= 32 && (htype == ADST_1D || htype == FLIPADST_1D)) {
@@ -235,16 +229,16 @@ class AV1LbdInvTxfm2d : public ::testing::TestWithParam<AV1LbdInvTxfm2dParam> {
     return true;
   }
 
-  void RunAV1InvTxfm2dTest(TX_TYPE tx_type, int run_times);
+  void RunAV1InvTxfm2dTest(TX_TYPE tx_type, TX_SIZE tx_size, int run_times);
 
  private:
-  FwdTxfm2dFunc fwd_func_;
-  InvTxfm2dFunc ref_func_;
   LbdInvTxfm2dFunc target_func_;
-  int tx_size_;
 };
 
-void AV1LbdInvTxfm2d::RunAV1InvTxfm2dTest(TX_TYPE tx_type, int run_times) {
+void AV1LbdInvTxfm2d::RunAV1InvTxfm2dTest(TX_TYPE tx_type, TX_SIZE tx_size,
+                                          int run_times) {
+  FwdTxfm2dFunc fwd_func_ = libaom_test::fwd_txfm_func_ls[tx_size];
+  InvTxfm2dFunc ref_func_ = libaom_test::inv_txfm_func_ls[tx_size];
   if (fwd_func_ == NULL || ref_func_ == NULL || target_func_ == NULL) {
     return;
   }
@@ -256,11 +250,11 @@ void AV1LbdInvTxfm2d::RunAV1InvTxfm2dTest(TX_TYPE tx_type, int run_times) {
   DECLARE_ALIGNED(16, uint8_t, output[BLK_SIZE]) = { 0 };
   DECLARE_ALIGNED(16, uint16_t, ref_output[BLK_SIZE]) = { 0 };
   int stride = BLK_WIDTH;
-  int rows = tx_size_high[tx_size_];
-  int cols = tx_size_wide[tx_size_];
-
+  int rows = tx_size_high[tx_size];
+  int cols = tx_size_wide[tx_size];
+  run_times = AOMMAX(run_times / (rows * cols), 1);
   ACMRandom rnd(ACMRandom::DeterministicSeed());
-  int randTimes = run_times == 1 ? 500 : 2;
+  int randTimes = run_times == 1 ? 500 : 1;
   for (int cnt = 0; cnt < randTimes; ++cnt) {
     const int16_t max_in = (1 << (bd + 1)) - 1;
     for (int r = 0; r < rows; ++r) {
@@ -271,6 +265,7 @@ void AV1LbdInvTxfm2d::RunAV1InvTxfm2dTest(TX_TYPE tx_type, int run_times) {
       }
     }
     fwd_func_(input, inv_input, stride, tx_type, bd);
+    int eob = AOMMIN(32, rows) * AOMMIN(32, cols);
 
     aom_usec_timer timer;
     aom_usec_timer_start(&timer);
@@ -281,7 +276,7 @@ void AV1LbdInvTxfm2d::RunAV1InvTxfm2dTest(TX_TYPE tx_type, int run_times) {
     double time1 = static_cast<double>(aom_usec_timer_elapsed(&timer));
     aom_usec_timer_start(&timer);
     for (int i = 0; i < run_times; ++i) {
-      target_func_(inv_input, output, stride, tx_type, bd);
+      target_func_(inv_input, output, stride, tx_type, tx_size, eob);
     }
     aom_usec_timer_mark(&timer);
     double time2 = static_cast<double>(aom_usec_timer_elapsed(&timer));
@@ -294,7 +289,7 @@ void AV1LbdInvTxfm2d::RunAV1InvTxfm2dTest(TX_TYPE tx_type, int run_times) {
       for (int c = 0; c < cols; ++c) {
         uint8_t ref_value = static_cast<uint8_t>(ref_output[r * stride + c]);
         ASSERT_EQ(ref_value, output[r * stride + c])
-            << "[" << r << "," << c << "] " << cnt << " tx_size: " << tx_size_
+            << "[" << r << "," << c << "] " << cnt << " tx_size: " << tx_size
             << " tx_type: " << tx_type;
       }
     }
@@ -302,49 +297,32 @@ void AV1LbdInvTxfm2d::RunAV1InvTxfm2dTest(TX_TYPE tx_type, int run_times) {
 }
 
 TEST_P(AV1LbdInvTxfm2d, match) {
-  for (int i = 0; i < (int)TX_TYPES; ++i) {
-    if (ValidTypeSize((TX_TYPE)(i))) {
-      RunAV1InvTxfm2dTest((TX_TYPE)i, 1);
+  for (int j = 0; j < (int)(TX_SIZES_ALL); ++j) {
+    for (int i = 0; i < (int)TX_TYPES; ++i) {
+      if (ValidTypeSize((TX_TYPE)(i), (TX_SIZE)(j))) {
+        RunAV1InvTxfm2dTest((TX_TYPE)i, (TX_SIZE)(j), 1);
+      }
     }
   }
 }
 
 TEST_P(AV1LbdInvTxfm2d, DISABLED_Speed) {
-  for (int i = 0; i < (int)TX_TYPES; ++i) {
-    if (ValidTypeSize((TX_TYPE)(i))) {
-      RunAV1InvTxfm2dTest((TX_TYPE)i, 1000000);
+  for (int j = 0; j < (int)(TX_SIZES_ALL); ++j) {
+    for (int i = 0; i < (int)TX_TYPES; ++i) {
+      if (ValidTypeSize((TX_TYPE)(i), (TX_SIZE)(j))) {
+        RunAV1InvTxfm2dTest((TX_TYPE)i, (TX_SIZE)(j), 10000000);
+      }
     }
   }
 }
 
-#if HAVE_SSSE3 && defined(__SSSE3__)
+#if HAVE_SSSE3
+#if defined(_MSC_VER) || defined(__SSSE3__)
 #include "av1/common/x86/av1_inv_txfm_ssse3.h"
 
-const LbdInvTxfm2dFunc kLbdInvFuncSSSE3List[TX_SIZES_ALL] = {
-  av1_lowbd_inv_txfm2d_add_4x4_ssse3,    // TX_4X4
-  av1_lowbd_inv_txfm2d_add_8x8_ssse3,    // TX_8X8
-  av1_lowbd_inv_txfm2d_add_16x16_ssse3,  // TX_16X16
-  av1_lowbd_inv_txfm2d_add_32x32_ssse3,  // TX_32X32
-  av1_lowbd_inv_txfm2d_add_64x64_ssse3,  // 64x64
-  av1_lowbd_inv_txfm2d_add_4x8_ssse3,    // TX_4X8
-  av1_lowbd_inv_txfm2d_add_8x4_ssse3,    // TX_8X4
-  av1_lowbd_inv_txfm2d_add_8x16_ssse3,   // TX_8X16
-  av1_lowbd_inv_txfm2d_add_16x8_ssse3,   // TX_16X8
-  av1_lowbd_inv_txfm2d_add_16x32_ssse3,  // TX_16X32
-  av1_lowbd_inv_txfm2d_add_32x16_ssse3,  // TX_32X16
-  av1_lowbd_inv_txfm2d_add_32x64_ssse3,  // TX_32X64
-  av1_lowbd_inv_txfm2d_add_64x32_ssse3,  // TX_64X32
-  av1_lowbd_inv_txfm2d_add_4x16_ssse3,   // TX_4X16
-  av1_lowbd_inv_txfm2d_add_16x4_ssse3,   // TX_16X4
-  av1_lowbd_inv_txfm2d_add_8x32_ssse3,   // 8x32
-  av1_lowbd_inv_txfm2d_add_32x8_ssse3,   // 32x8
-  av1_lowbd_inv_txfm2d_add_16x64_ssse3,  // 16x64
-  av1_lowbd_inv_txfm2d_add_64x16_ssse3,  // 64x16
-};
 INSTANTIATE_TEST_CASE_P(SSSE3, AV1LbdInvTxfm2d,
-                        Combine(Values(kLbdInvFuncSSSE3List),
-                                Range(0, (int)TX_SIZES_ALL, 1)));
-
+                        ::testing::Values(av1_lowbd_inv_txfm2d_add_ssse3));
+#endif  // _MSC_VER || __SSSE3__
 #endif  // HAVE_SSE2
 
 }  // namespace

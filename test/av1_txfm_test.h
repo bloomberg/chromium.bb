@@ -76,7 +76,8 @@ typedef void (*TxfmFunc)(const int32_t *in, int32_t *out, const int8_t cos_bit,
 
 typedef void (*FwdTxfm2dFunc)(const int16_t *, int32_t *, int, TX_TYPE, int);
 typedef void (*InvTxfm2dFunc)(const int32_t *, uint16_t *, int, TX_TYPE, int);
-typedef void (*LbdInvTxfm2dFunc)(const int32_t *, uint8_t *, int, TX_TYPE, int);
+typedef void (*LbdInvTxfm2dFunc)(const int32_t *, uint8_t *, int, TX_TYPE,
+                                 TX_SIZE, int);
 
 static const int bd = 10;
 static const int input_base = (1 << bd);
