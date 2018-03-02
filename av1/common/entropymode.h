@@ -164,10 +164,8 @@ typedef struct frame_contexts {
   aom_cdf_prob kf_y_cdf[KF_MODE_CONTEXTS][KF_MODE_CONTEXTS]
                        [CDF_SIZE(INTRA_MODES)];
 
-#if CONFIG_EXT_INTRA_MOD
   aom_cdf_prob angle_delta_cdf[DIRECTIONAL_MODES]
                               [CDF_SIZE(2 * MAX_ANGLE_DELTA + 1)];
-#endif  // CONFIG_EXT_INTRA_MOD
 
   aom_cdf_prob tx_size_cdf[MAX_TX_CATS][TX_SIZE_CONTEXTS]
                           [CDF_SIZE(MAX_TX_DEPTH + 1)];

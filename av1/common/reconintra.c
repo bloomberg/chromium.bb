@@ -1107,7 +1107,6 @@ static int intra_edge_filter_strength(int bs0, int bs1, int delta, int type) {
   const int d = abs(delta);
   int strength = 0;
 
-#if CONFIG_EXT_INTRA_MOD
   const int blk_wh = bs0 + bs1;
   if (type == 0) {
     if (blk_wh <= 8) {
@@ -1140,45 +1139,6 @@ static int intra_edge_filter_strength(int bs0, int bs1, int delta, int type) {
       if (d >= 1) strength = 3;
     }
   }
-#else
-  (void)type;
-  (void)bs1;
-  switch (bs0) {
-    case 4:
-      if (d < 56) {
-        strength = 0;
-      } else if (d < 90) {
-        strength = 1;
-      }
-      break;
-    case 8:
-      if (d < 8) {
-        strength = 0;
-      } else if (d < 32) {
-        strength = 1;
-      } else if (d < 90) {
-        strength = 3;
-      }
-      break;
-    case 16:
-      if (d < 4) {
-        strength = 0;
-      } else if (d < 16) {
-        strength = 1;
-      } else if (d < 90) {
-        strength = 3;
-      }
-      break;
-    case 32:
-      if (d < 16) {
-        strength = 2;
-      } else if (d < 90) {
-        strength = 3;
-      }
-      break;
-    default: strength = 0; break;
-  }
-#endif  // CONFIG_EXT_INTRA_MOD
   return strength;
 }
 
@@ -1205,7 +1165,6 @@ void av1_filter_intra_edge_c(uint8_t *p, int sz, int strength) {
   }
 }
 
-#if CONFIG_EXT_INTRA_MOD
 static void av1_filter_intra_edge_corner(uint8_t *p_above, uint8_t *p_left) {
   const int kernel[3] = { 5, 6, 5 };
 
@@ -1215,7 +1174,6 @@ static void av1_filter_intra_edge_corner(uint8_t *p_above, uint8_t *p_left) {
   p_above[-1] = s;
   p_left[-1] = s;
 }
-#endif  // CONFIG_EXT_INTRA_MOD
 
 void av1_filter_intra_edge_high_c(uint16_t *p, int sz, int strength) {
   if (!strength) return;
@@ -1240,7 +1198,6 @@ void av1_filter_intra_edge_high_c(uint16_t *p, int sz, int strength) {
   }
 }
 
-#if CONFIG_EXT_INTRA_MOD
 static void av1_filter_intra_edge_corner_high(uint16_t *p_above,
                                               uint16_t *p_left) {
   const int kernel[3] = { 5, 6, 5 };
@@ -1251,20 +1208,12 @@ static void av1_filter_intra_edge_corner_high(uint16_t *p_above,
   p_above[-1] = s;
   p_left[-1] = s;
 }
-#endif  // CONFIG_EXT_INTRA_MOD
 
 static int use_intra_edge_upsample(int bs0, int bs1, int delta, int type) {
   const int d = abs(delta);
-
-#if CONFIG_EXT_INTRA_MOD
   const int blk_wh = bs0 + bs1;
   if (d <= 0 || d >= 40) return 0;
   return type ? (blk_wh <= 8) : (blk_wh <= 16);
-#else
-  (void)type;
-  (void)bs1;
-  return (bs0 == 4 && d > 0 && d < 56);
-#endif  // CONFIG_EXT_INTRA_MOD
 }
 
 void av1_upsample_intra_edge_c(uint8_t *p, int sz) {
@@ -1461,11 +1410,9 @@ static void build_intra_predictors_high(const MACROBLOCKD *xd,
       const int filt_type = get_filt_type(xd, plane);
       if (p_angle != 90 && p_angle != 180) {
         const int ab_le = need_above_left ? 1 : 0;
-#if CONFIG_EXT_INTRA_MOD
         if (need_above && need_left && (txwpx + txhpx >= 24)) {
           av1_filter_intra_edge_corner_high(above_row, left_col);
         }
-#endif  // CONFIG_EXT_INTRA_MOD
         if (need_above && n_top_px > 0) {
           const int strength =
               intra_edge_filter_strength(txwpx, txhpx, p_angle - 90, filt_type);
@@ -1648,11 +1595,9 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
       const int filt_type = get_filt_type(xd, plane);
       if (p_angle != 90 && p_angle != 180) {
         const int ab_le = need_above_left ? 1 : 0;
-#if CONFIG_EXT_INTRA_MOD
         if (need_above && need_left && (txwpx + txhpx >= 24)) {
           av1_filter_intra_edge_corner(above_row, left_col);
         }
-#endif  // CONFIG_EXT_INTRA_MOD
         if (need_above && n_top_px > 0) {
           const int strength =
               intra_edge_filter_strength(txwpx, txhpx, p_angle - 90, filt_type);

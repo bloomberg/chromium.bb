@@ -625,12 +625,7 @@ static void read_palette_mode_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
 }
 
 static int read_angle_delta(aom_reader *r, aom_cdf_prob *cdf) {
-#if CONFIG_EXT_INTRA_MOD
   const int sym = aom_read_symbol(r, cdf, 2 * MAX_ANGLE_DELTA + 1, ACCT_STR);
-#else
-  (void)cdf;
-  const int sym = av1_read_uniform(r, 2 * MAX_ANGLE_DELTA + 1);
-#endif  // CONFIG_EXT_INTRA_MOD
   return sym - MAX_ANGLE_DELTA;
 }
 

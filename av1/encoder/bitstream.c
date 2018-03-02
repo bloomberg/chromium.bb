@@ -634,13 +634,8 @@ static void write_filter_intra_mode_info(const MACROBLOCKD *xd,
 
 static void write_angle_delta(aom_writer *w, int angle_delta,
                               aom_cdf_prob *cdf) {
-#if CONFIG_EXT_INTRA_MOD
   aom_write_symbol(w, angle_delta + MAX_ANGLE_DELTA, cdf,
                    2 * MAX_ANGLE_DELTA + 1);
-#else
-  (void)cdf;
-  write_uniform(w, 2 * MAX_ANGLE_DELTA + 1, MAX_ANGLE_DELTA + angle_delta);
-#endif  // CONFIG_EXT_INTRA_MOD
 }
 
 static void write_mb_interp_filter(AV1_COMP *cpi, const MACROBLOCKD *xd,

@@ -774,7 +774,6 @@ static void sum_intra_stats(FRAME_COUNTS *counts, MACROBLOCKD *xd,
                  2);
     }
   }
-#if CONFIG_EXT_INTRA_MOD
   if (av1_is_directional_mode(mbmi->mode) && av1_use_angle_delta(bsize)) {
 #if CONFIG_ENTROPY_STATS
     ++counts->angle_delta[mbmi->mode - V_PRED]
@@ -786,13 +785,11 @@ static void sum_intra_stats(FRAME_COUNTS *counts, MACROBLOCKD *xd,
                  2 * MAX_ANGLE_DELTA + 1);
     }
   }
-#endif  // CONFIG_EXT_INTRA_MOD
 
   if (!is_chroma_reference(mi_row, mi_col, bsize,
                            xd->plane[AOM_PLANE_U].subsampling_x,
                            xd->plane[AOM_PLANE_U].subsampling_y))
     return;
-#if CONFIG_EXT_INTRA_MOD
   if (av1_is_directional_mode(get_uv_mode(mbmi->uv_mode)) &&
       av1_use_angle_delta(bsize)) {
 #if CONFIG_ENTROPY_STATS
@@ -805,7 +802,6 @@ static void sum_intra_stats(FRAME_COUNTS *counts, MACROBLOCKD *xd,
                  2 * MAX_ANGLE_DELTA + 1);
     }
   }
-#endif  // CONFIG_EXT_INTRA_MOD
 #if CONFIG_ENTROPY_STATS
   ++counts->uv_mode[is_cfl_allowed(mbmi)][y_mode][uv_mode];
 #endif  // CONFIG_ENTROPY_STATS
