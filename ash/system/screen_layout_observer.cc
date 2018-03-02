@@ -69,7 +69,7 @@ base::string16 GetDisplaySize(int64_t display_id) {
 }
 
 // Callback to handle a user selecting the notification view.
-void OpenSettingsFromNotification(base::Optional<int> button_index) {
+void OnNotificationClicked(base::Optional<int> button_index) {
   DCHECK(!button_index);
 
   Shell::Get()->metrics()->RecordUserMetricsAction(
@@ -80,6 +80,8 @@ void OpenSettingsFromNotification(base::Optional<int> button_index) {
     Shell::Get()->metrics()->RecordUserMetricsAction(
         UMA_STATUS_AREA_DISPLAY_NOTIFICATION_SHOW_SETTINGS);
   }
+  message_center::MessageCenter::Get()->RemoveNotification(
+      ScreenLayoutObserver::kNotificationId, true /* by_user */);
 }
 
 // Returns the name of the currently connected external display whose ID is
@@ -371,7 +373,7 @@ void ScreenLayoutObserver::CreateOrUpdateNotification(
               message_center::NotifierId::SYSTEM_COMPONENT, kNotifierDisplay),
           message_center::RichNotificationData(),
           new message_center::HandleNotificationClickDelegate(
-              base::Bind(&OpenSettingsFromNotification)),
+              base::Bind(&OnNotificationClicked)),
           kNotificationScreenIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);
   notification->set_clickable(true);

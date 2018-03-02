@@ -51,6 +51,7 @@ class ScreenLayoutObserverTest : public AshTestBase {
   void CheckUpdate();
 
   void CloseNotification();
+  void ClickNotification();
   base::string16 GetDisplayNotificationText() const;
   base::string16 GetDisplayNotificationAdditionalText() const;
 
@@ -80,6 +81,11 @@ void ScreenLayoutObserverTest::CloseNotification() {
   message_center::MessageCenter::Get()->RemoveNotification(
       ScreenLayoutObserver::kNotificationId, false);
   RunAllPendingInMessageLoop();
+}
+
+void ScreenLayoutObserverTest::ClickNotification() {
+  const message_center::Notification* notification = GetDisplayNotification();
+  notification->Click();
 }
 
 base::string16 ScreenLayoutObserverTest::GetDisplayNotificationText() const {
@@ -704,6 +710,19 @@ TEST_F(ScreenLayoutObserverTest, MirrorModeAddOrRemoveDisplayMessage) {
   display_manager()->OnNativeDisplaysChanged(display_info_list);
   EXPECT_TRUE(GetDisplayNotificationText().empty());
   EXPECT_TRUE(display_manager()->IsInMirrorMode());
+}
+
+TEST_F(ScreenLayoutObserverTest, ClickNotification) {
+  Shell::Get()->screen_layout_observer()->set_show_notifications_for_testing(
+      true);
+
+  // Create notification.
+  UpdateDisplay("400x400/r");
+  EXPECT_FALSE(GetDisplayNotificationAdditionalText().empty());
+
+  // Click notification.
+  ClickNotification();
+  EXPECT_TRUE(GetDisplayNotificationAdditionalText().empty());
 }
 
 }  // namespace ash
