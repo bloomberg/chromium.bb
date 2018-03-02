@@ -11,7 +11,8 @@
 #include <string>
 
 #include "base/time/time.h"
-#include "content/public/browser/browser_message_filter.h"
+#include "content/common/media/media_stream.mojom.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 
 namespace content {
 
@@ -27,20 +28,16 @@ namespace content {
 // If the renderer process goes away without sending messages that
 // tracks were removed, this class instead infers that the tracks were
 // removed.
-class MediaStreamTrackMetricsHost
-    : public BrowserMessageFilter {
+class MediaStreamTrackMetricsHost : public mojom::MediaStreamTrackMetricsHost {
  public:
   explicit MediaStreamTrackMetricsHost();
 
- protected:
   ~MediaStreamTrackMetricsHost() override;
-
-  // BrowserMessageFilter override.
-  bool OnMessageReceived(const IPC::Message& message) override;
+  void BindRequest(mojom::MediaStreamTrackMetricsHostRequest request);
 
  private:
-  void OnAddTrack(uint64_t id, bool is_audio, bool is_remote);
-  void OnRemoveTrack(uint64_t id);
+  void AddTrack(uint64_t id, bool is_audio, bool is_remote) override;
+  void RemoveTrack(uint64_t id) override;
 
   // Information for a track we're keeping in |tracks_|. |is_audio|
   // specifies whether it's an audio or video track, |is_remote|
@@ -58,6 +55,8 @@ class MediaStreamTrackMetricsHost
   // Values are unique (per renderer) track IDs.
   typedef std::map<uint64_t, TrackInfo> TrackMap;
   TrackMap tracks_;
+
+  mojo::BindingSet<mojom::MediaStreamTrackMetricsHost> bindings_;
 };
 
 }  // namespace content

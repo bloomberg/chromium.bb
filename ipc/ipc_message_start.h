@@ -59,7 +59,6 @@ enum IPCMessageStart {
   CacheStorageMsgStart,
   ServiceWorkerMsgStart,
   CastMsgStart,
-  MediaStreamTrackMetricsHostMsgStart,
   ChromeExtensionMsgStart,
   GinJavaBridgeMsgStart,
   ChromeUtilityPrintingMsgStart,

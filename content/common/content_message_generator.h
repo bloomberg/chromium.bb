@@ -67,12 +67,6 @@
 #ifndef CONTENT_COMMON_MEDIA_MEDIA_PLAYER_DELEGATE_MESSAGES_H_
 #error "Failed to include content/common/media/media_player_delegate_messages.h"
 #endif
-#undef CONTENT_COMMON_MEDIA_MEDIA_STREAM_TRACK_METRICS_HOST_MESSAGES_H_
-#include "content/common/media/media_stream_track_metrics_host_messages.h"
-#ifndef CONTENT_COMMON_MEDIA_MEDIA_STREAM_TRACK_METRICS_HOST_MESSAGES_H_
-#error \
-    "Failed to include content/common/media/media_stream_track_metrics_host_messages.h"
-#endif
 #undef CONTENT_COMMON_MEDIA_MIDI_MESSAGES_H_
 #include "content/common/media/midi_messages.h"
 #ifndef CONTENT_COMMON_MEDIA_MIDI_MESSAGES_H_
