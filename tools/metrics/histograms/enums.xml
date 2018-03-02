@@ -635,6 +635,17 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="6" label="Other"/>
 </enum>
 
+<enum name="AndroidDownloadOpenSource">
+  <int value="0" label="UNKNOWN"/>
+  <int value="1" label="ANDROID_DOWNLOAD_MANAGER"/>
+  <int value="2" label="DOWNLOAD_HOME"/>
+  <int value="3" label="NOTIFICATION"/>
+  <int value="4" label="NEW_TAP_PAGE"/>
+  <int value="5" label="INFO_BAR"/>
+  <int value="6" label="SNACK_BAR"/>
+  <int value="7" label="AUTO_OPEN"/>
+</enum>
+
 <enum name="AndroidEvictionReason">
   <int value="0" label="TabUnusedTooLong"/>
   <int value="1" label="TabUnusedInSession"/>

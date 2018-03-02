@@ -14,6 +14,7 @@ import org.chromium.chrome.browser.NativePageHost;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.bookmarks.BookmarkUtils;
 import org.chromium.chrome.browser.device.DeviceClassManager;
+import org.chromium.chrome.browser.download.DownloadMetrics;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
@@ -112,7 +113,7 @@ public class SuggestionsNavigationDelegateImpl implements SuggestionsNavigationD
                     || windowOpenDisposition == WindowOpenDisposition.NEW_BACKGROUND_TAB;
             DownloadUtils.openFile(article.getAssetDownloadFile(),
                     article.getAssetDownloadMimeType(), article.getAssetDownloadGuid(), false, null,
-                    null);
+                    null, DownloadMetrics.NEW_TAP_PAGE);
             return;
         }
 

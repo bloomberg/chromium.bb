@@ -330,7 +330,8 @@ public class DownloadBroadcastManager extends Service {
         String originalUrl = IntentUtils.safeGetStringExtra(intent, Intent.EXTRA_ORIGINATING_URI);
         String referrer = IntentUtils.safeGetStringExtra(intent, Intent.EXTRA_REFERRER);
         DownloadManagerService.openDownloadedContent(context, downloadFilename, isSupportedMimeType,
-                isOffTheRecord, contentId.id, id, originalUrl, referrer);
+                isOffTheRecord, contentId.id, id, originalUrl, referrer,
+                DownloadMetrics.NOTIFICATION);
     }
 
     @Nullable

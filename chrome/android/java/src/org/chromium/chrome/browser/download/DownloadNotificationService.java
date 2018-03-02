@@ -1272,7 +1272,8 @@ public class DownloadNotificationService extends Service {
         String referrer = IntentUtils.safeGetStringExtra(intent, Intent.EXTRA_REFERRER);
         ContentId contentId = DownloadNotificationService.getContentIdFromIntent(intent);
         DownloadManagerService.openDownloadedContent(context, downloadFilename, isSupportedMimeType,
-                isOffTheRecord, contentId.id, id, originalUrl, referrer);
+                isOffTheRecord, contentId.id, id, originalUrl, referrer,
+                DownloadMetrics.NOTIFICATION);
     }
 
     /**
