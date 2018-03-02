@@ -1,5 +1,5 @@
 /*
-** Copyright (c) 2014-2017 The Khronos Group Inc.
+** Copyright (c) 2014-2018 The Khronos Group Inc.
 ** 
 ** Permission is hereby granted, free of charge, to any person obtaining a copy
 ** of this software and/or associated documentation files (the "Materials"),
@@ -392,6 +392,8 @@ typedef enum SpvDecoration_ {
     SpvDecorationPassthroughNV = 5250,
     SpvDecorationViewportRelativeNV = 5252,
     SpvDecorationSecondaryViewportRelativeNV = 5256,
+    SpvDecorationHlslCounterBufferGOOGLE = 5634,
+    SpvDecorationHlslSemanticGOOGLE = 5635,
     SpvDecorationMax = 0x7fffffff,
 } SpvDecoration;
 
@@ -979,6 +981,7 @@ typedef enum SpvOp_ {
     SpvOpNamedBarrierInitialize = 328,
     SpvOpMemoryNamedBarrier = 329,
     SpvOpModuleProcessed = 330,
+    SpvOpDecorateId = 332,
     SpvOpSubgroupBallotKHR = 4421,
     SpvOpSubgroupFirstInvocationKHR = 4422,
     SpvOpSubgroupAllKHR = 4428,
@@ -1003,6 +1006,8 @@ typedef enum SpvOp_ {
     SpvOpSubgroupBlockWriteINTEL = 5576,
     SpvOpSubgroupImageBlockReadINTEL = 5577,
     SpvOpSubgroupImageBlockWriteINTEL = 5578,
+    SpvOpDecorateStringGOOGLE = 5632,
+    SpvOpMemberDecorateStringGOOGLE = 5633,
     SpvOpMax = 0x7fffffff,
 } SpvOp;
 
