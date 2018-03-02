@@ -256,19 +256,6 @@ void StreamMixer::CreatePostProcessors(
       post_processing_pipeline_factory_));
   linearize_filter_ = filter_groups_.back().get();
 
-  // StreamMixer can downmix N channels to 1 channel.
-  CHECK(num_output_channels_ == 1 ||
-        num_output_channels_ == linearize_filter_->GetOutputChannelCount())
-      << "PostProcessor configuration channel count does not match command line"
-      << " flag: " << linearize_filter_->GetOutputChannelCount() << " vs "
-      << num_output_channels_;
-
-  int loopback_channel_count =
-      num_output_channels_ == 1 ? 1 : mix_filter_->GetOutputChannelCount();
-  CHECK_LE(loopback_channel_count, 2)
-      << "PostProcessor configuration has " << loopback_channel_count
-      << " channels after 'mix' group, but only 1 or 2 are allowed.";
-
   LOG(INFO) << "PostProcessor configuration:";
   if (default_filter_ == mix_filter_) {
     LOG(INFO) << "Stream layer: none";
@@ -331,6 +318,8 @@ void StreamMixer::Start() {
   frames_per_write_ =
       output_->OptimalWriteFramesCount() & ~(filter_frame_alignment_ - 1);
   CHECK_GT(frames_per_write_, 0);
+
+  ValidatePostProcessors();
 
   // Initialize filters.
   for (auto&& filter_group : filter_groups_) {
@@ -700,6 +689,25 @@ void StreamMixer::SetPostProcessorConfig(const std::string& name,
   for (auto&& filter_group : filter_groups_) {
     filter_group->SetPostProcessorConfig(name, config);
   }
+}
+
+void StreamMixer::ValidatePostProcessorsForTest() {
+  ValidatePostProcessors();
+}
+
+void StreamMixer::ValidatePostProcessors() {
+  // Ensure filter configuration is viable.
+  // This can't be done in CreatePostProcessors() because it breaks tests.
+  CHECK(num_output_channels_ == 1 ||
+        num_output_channels_ == linearize_filter_->GetOutputChannelCount())
+      << "PostProcessor configuration channel count does not match command line"
+      << " flag: " << linearize_filter_->GetOutputChannelCount() << " vs "
+      << num_output_channels_;
+  int loopback_channel_count =
+      num_output_channels_ == 1 ? 1 : mix_filter_->GetOutputChannelCount();
+  CHECK_LE(loopback_channel_count, 2)
+      << "PostProcessor configuration has " << loopback_channel_count
+      << " channels after 'mix' group, but only 1 or 2 are allowed.";
 }
 
 }  // namespace media

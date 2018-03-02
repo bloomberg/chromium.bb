@@ -102,6 +102,7 @@ class StreamMixer {
       std::unique_ptr<PostProcessingPipelineFactory> pipeline_factory,
       const std::string& pipeline_json);
   void SetNumOutputChannelsForTest(int num_output_channels);
+  void ValidatePostProcessorsForTest();
   int num_output_channels() const { return num_output_channels_; }
 
  private:
@@ -120,6 +121,7 @@ class StreamMixer {
   };
 
   void CreatePostProcessors(PostProcessingPipelineParser* pipeline_parser);
+  void ValidatePostProcessors();
   void FinalizeOnMixerThread();
   void Start();
   void Stop();
