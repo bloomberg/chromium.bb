@@ -51,9 +51,7 @@ static constexpr float kFullscreenVerticalOffset =
 
 static constexpr float kExitPromptWidth = 0.672f * kContentDistance;
 static constexpr float kExitPromptHeight = 0.2f * kContentDistance;
-
 static constexpr float kExitPromptVerticalOffset = -0.09f * kContentDistance;
-static constexpr float kPromptBackplaneSize = 1000.0f;
 
 static constexpr float kUrlBarDistance = 2.4f;
 static constexpr float kUrlBarWidthDMM = 0.672f;
@@ -294,6 +292,12 @@ static constexpr float kRepositionLabelFontScale = 1.5f;
 static constexpr float kRepositionLabelBackgroundPadding = 0.06f;
 static constexpr float kRepositionContentOpacity = 0.2f;
 static constexpr float kRepositionLabelBackgroundCornerRadius = 0.02f;
+
+static constexpr float kPromptWidthDMM = 0.63f;
+static constexpr float kPromptHeightDMM = 0.218f;
+static constexpr float kPromptVerticalOffsetDMM = -0.1f;
+static constexpr float kPromptShadowOffsetDMM = 0.1f;
+static constexpr float kPromptDistance = 2.4f;
 
 }  // namespace vr
 

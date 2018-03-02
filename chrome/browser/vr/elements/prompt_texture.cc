@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/vr/elements/audio_permission_prompt_texture.h"
+#include "chrome/browser/vr/elements/prompt_texture.h"
 
 #include "base/i18n/case_conversion.h"
 #include "cc/paint/skia_paint_canvas.h"
@@ -41,12 +41,19 @@ constexpr char kPreferredFontNameForButtons[] = "sans-serif-medium";
 
 }  // namespace
 
-AudioPermissionPromptTexture::AudioPermissionPromptTexture() = default;
+PromptTexture::PromptTexture(int content_message_id,
+                             const gfx::VectorIcon& icon,
+                             int primary_button_message_id,
+                             int secondary_button_message_id)
+    : icon_(icon),
+      primary_button_message_id_(primary_button_message_id),
+      secondary_button_message_id_(secondary_button_message_id) {
+  SetContentMessageId(content_message_id);
+}
 
-AudioPermissionPromptTexture::~AudioPermissionPromptTexture() = default;
+PromptTexture::~PromptTexture() = default;
 
-void AudioPermissionPromptTexture::Draw(SkCanvas* sk_canvas,
-                                        const gfx::Size& texture_size) {
+void PromptTexture::Draw(SkCanvas* sk_canvas, const gfx::Size& texture_size) {
   size_.set_width(texture_size.width());
   size_.set_height(texture_size.height());
 
@@ -63,12 +70,11 @@ void AudioPermissionPromptTexture::Draw(SkCanvas* sk_canvas,
 
   // Icon
   gfx::PointF icon_location(ToPixels(kPadding), ToPixels(kPadding));
-  VectorIcon::DrawVectorIcon(canvas, vector_icons::kMicIcon,
-                             ToPixels(kIconSize), icon_location, icon_color_);
+  VectorIcon::DrawVectorIcon(canvas, icon_, ToPixels(kIconSize), icon_location,
+                             icon_color_);
 
   // Prompt description.
-  auto text = l10n_util::GetStringUTF16(
-      IDS_VR_SHELL_AUDIO_PERMISSION_PROMPT_DESCRIPTION);
+  auto text = l10n_util::GetStringUTF16(content_message_id_);
   gfx::FontList fonts;
   GetDefaultFontList(ToPixels(kFontSizePromptText), text, &fonts);
   gfx::Rect prompt_text_size(
@@ -91,8 +97,8 @@ void AudioPermissionPromptTexture::Draw(SkCanvas* sk_canvas,
 
   // Secondary button area.
   // TODO(https://crbug.com/787654): Uppercasing should be conditional.
-  text = base::i18n::ToUpper(l10n_util::GetStringUTF16(
-      IDS_VR_SHELL_AUDIO_PERMISSION_PROMPT_ABORT_BUTTON));
+  text = base::i18n::ToUpper(
+      l10n_util::GetStringUTF16(secondary_button_message_id_));
   GetFontList(kPreferredFontNameForButtons, ToPixels(kFontSizePromptButtonText),
               text, &fonts);
   lines = PrepareDrawStringRect(
@@ -118,8 +124,8 @@ void AudioPermissionPromptTexture::Draw(SkCanvas* sk_canvas,
 
   // Primary button area.
   // TODO(https://crbug.com/787654): Uppercasing should be conditional.
-  text = base::i18n::ToUpper(l10n_util::GetStringUTF16(
-      IDS_VR_SHELL_AUDIO_PERMISSION_PROMPT_CONTINUE_BUTTON));
+  text = base::i18n::ToUpper(
+      l10n_util::GetStringUTF16(primary_button_message_id_));
   GetFontList(kPreferredFontNameForButtons, ToPixels(kFontSizePromptButtonText),
               text, &fonts);
   button_text_size.set_size(gfx::Size(ToPixels(kButtonWidth), 0));
@@ -144,17 +150,12 @@ void AudioPermissionPromptTexture::Draw(SkCanvas* sk_canvas,
   canvas->Restore();
 }
 
-void AudioPermissionPromptTexture::SetIconColor(SkColor color) {
+void PromptTexture::SetIconColor(SkColor color) {
   SetAndDirty(&icon_color_, color);
 }
 
-gfx::Size AudioPermissionPromptTexture::GetPreferredTextureSize(
-    int maximum_width) const {
+gfx::Size PromptTexture::GetPreferredTextureSize(int maximum_width) const {
   return gfx::Size(maximum_width, maximum_width * kHeight / kWidth);
-}
-
-void AudioPermissionPromptTexture::SetContentMessageId(int message_id) {
-  NOTREACHED();
 }
 
 }  // namespace vr

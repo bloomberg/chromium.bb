@@ -14,7 +14,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/vr/databinding/binding.h"
 #include "chrome/browser/vr/databinding/vector_binding.h"
-#include "chrome/browser/vr/elements/audio_permission_prompt.h"
 #include "chrome/browser/vr/elements/button.h"
 #include "chrome/browser/vr/elements/content_element.h"
 #include "chrome/browser/vr/elements/controller.h"
@@ -31,6 +30,7 @@
 #include "chrome/browser/vr/elements/linear_layout.h"
 #include "chrome/browser/vr/elements/omnibox_formatting.h"
 #include "chrome/browser/vr/elements/omnibox_text_field.h"
+#include "chrome/browser/vr/elements/prompt.h"
 #include "chrome/browser/vr/elements/rect.h"
 #include "chrome/browser/vr/elements/repositioner.h"
 #include "chrome/browser/vr/elements/reticle.h"
@@ -406,6 +406,76 @@ std::unique_ptr<UiElement> CreateSnackbar(
   return snackbar_root;
 }
 
+std::unique_ptr<UiElement> CreatePrompt(UiElementName name,
+                                        Model* model,
+                                        UiBrowserInterface* browser,
+                                        int content_message_id,
+                                        const gfx::VectorIcon& icon,
+                                        int primary_button_message_id,
+                                        int secondary_button_message_id) {
+  std::unique_ptr<Prompt> prompt = std::make_unique<Prompt>(
+      1024, content_message_id, icon, primary_button_message_id,
+      secondary_button_message_id,
+      base::BindRepeating(
+          [](Model* model, UiBrowserInterface* browser,
+             ExitPrompt::Button button, UiUnsupportedMode mode) {
+            ExitVrPromptChoice choice = CHOICE_NONE;
+            switch (button) {
+              case ExitPrompt::NONE:
+                choice = CHOICE_NONE;
+                break;
+              case ExitPrompt::PRIMARY:
+                choice = CHOICE_EXIT;
+                break;
+              case ExitPrompt::SECONDARY:
+                choice = CHOICE_STAY;
+                break;
+            }
+            browser->OnExitVrPromptResult(choice, mode);
+            model->active_modal_prompt_type = kModalPromptTypeNone;
+          },
+          base::Unretained(model), base::Unretained(browser)));
+  prompt->SetDrawPhase(kPhaseForeground);
+  prompt->SetTranslate(0, 0, kPromptShadowOffsetDMM);
+  prompt->SetSize(kPromptWidthDMM, kPromptHeightDMM);
+  prompt->set_hit_testable(true);
+  VR_BIND_BUTTON_COLORS(model, prompt.get(),
+                        &ColorScheme::modal_prompt_primary_button_colors,
+                        &Prompt::SetPrimaryButtonColors);
+  VR_BIND_BUTTON_COLORS(model, prompt.get(),
+                        &ColorScheme::modal_prompt_secondary_button_colors,
+                        &Prompt::SetSecondaryButtonColors);
+  VR_BIND_COLOR(model, prompt.get(), &ColorScheme::modal_prompt_icon_foreground,
+                &Prompt::SetIconColor);
+  VR_BIND_COLOR(model, prompt.get(), &ColorScheme::modal_prompt_background,
+                &TexturedElement::SetBackgroundColor);
+  VR_BIND_COLOR(model, prompt.get(), &ColorScheme::modal_prompt_foreground,
+                &TexturedElement::SetForegroundColor);
+
+  // Place an invisible but hittable plane behind the exit prompt, to keep the
+  // reticle roughly planar with the content if near content.
+  auto backplane = Create<InvisibleHitTarget>(kNone, kPhaseForeground);
+  backplane->SetType(kTypePromptBackplane);
+  backplane->SetSize(kBackplaneSize, kBackplaneSize);
+  backplane->SetTranslate(0, kPromptVerticalOffsetDMM, 0);
+  backplane->SetTransitionedProperties({OPACITY});
+  EventHandlers event_handlers;
+  event_handlers.button_up =
+      base::BindRepeating([](ExitPrompt* prompt) { prompt->Cancel(); },
+                          base::Unretained(prompt.get()));
+  backplane->set_event_handlers(event_handlers);
+
+  auto shadow = Create<Shadow>(kNone, kPhaseForeground);
+  shadow->SetType(kTypePromptShadow);
+  shadow->AddChild(std::move(prompt));
+  backplane->AddChild(std::move(shadow));
+
+  auto scaler = Create<ScaledDepthAdjuster>(name, kPhaseNone, kPromptDistance);
+  scaler->SetType(kTypeScaledDepthAdjuster);
+  scaler->AddChild(std::move(backplane));
+  return scaler;
+}
+
 std::unique_ptr<UiElement> CreateControllerLabel(UiElementName name,
                                                  float z_offset,
                                                  const base::string16& text,
@@ -541,7 +611,7 @@ void UiSceneCreator::CreateScene() {
   CreateContentQuad();
   CreateHostedUi();
   CreateExitPrompt();
-  CreateAudioPermissionPrompt();
+  CreatePrompts();
   CreateSystemIndicators();
   CreateUrlBar();
   CreateLoadingIndicator();
@@ -652,12 +722,9 @@ void UiSceneCreator::Create2dBrowsingSubtreeRoots() {
 
   element = Create<UiElement>(k2dBrowsingVisibiltyControlForSiteInfoPrompt,
                               kPhaseNone);
-  element->AddBinding(VR_BIND_FUNC(
-      bool, Model, model_,
-      model->active_modal_prompt_type ==
-              kModalPromptTypeExitVRForVoiceSearchRecordAudioOsPermission ||
-          model->active_modal_prompt_type == kModalPromptTypeNone,
-      UiElement, element.get(), SetVisible));
+  VR_BIND_VISIBILITY(element, model->active_modal_prompt_type !=
+                                  kModalPromptTypeExitVRForSiteInfo);
+
   scene_->AddUiElement(k2dBrowsingVisibiltyControlForVoice, std::move(element));
 
   element = Create<UiElement>(k2dBrowsingOpacityControlForAudioPermissionPrompt,
@@ -680,13 +747,24 @@ void UiSceneCreator::Create2dBrowsingSubtreeRoots() {
   scene_->AddUiElement(k2dBrowsingOpacityControlForAudioPermissionPrompt,
                        std::move(element));
 
+  element = Create<UiElement>(k2dBrowsingOpacityControlForUpdateKeyboardPrompt,
+                              kPhaseNone);
+  element->SetTransitionedProperties({OPACITY});
+  element->AddBinding(
+      VR_BIND(bool, Model, model_,
+              model->active_modal_prompt_type != kModalPromptTypeUpdateKeyboard,
+              UiElement, element.get(),
+              view->SetOpacity(value ? 1.0 : kModalPromptFadeOpacity)));
+  scene_->AddUiElement(k2dBrowsingOpacityControlForNativeDialogPrompt,
+                       std::move(element));
+
   element = Create<UiElement>(k2dBrowsingForeground, kPhaseNone);
   element->SetTransitionedProperties({OPACITY});
   element->SetTransitionDuration(base::TimeDelta::FromMilliseconds(
       kSpeechRecognitionOpacityAnimationDurationMs));
   VR_BIND_VISIBILITY(element, model->default_browsing_enabled() ||
                                   model->fullscreen_enabled());
-  scene_->AddUiElement(k2dBrowsingOpacityControlForNativeDialogPrompt,
+  scene_->AddUiElement(k2dBrowsingOpacityControlForUpdateKeyboardPrompt,
                        std::move(element));
 
   element = Create<UiElement>(k2dBrowsingContentGroup, kPhaseNone);
@@ -1257,7 +1335,7 @@ void UiSceneCreator::CreateVoiceSearchUiGroup() {
   auto hit_target = std::make_unique<InvisibleHitTarget>();
   hit_target->SetName(kSpeechRecognitionResultBackplane);
   hit_target->SetDrawPhase(kPhaseForeground);
-  hit_target->SetSize(kPromptBackplaneSize, kPromptBackplaneSize);
+  hit_target->SetSize(kBackplaneSize, kBackplaneSize);
   speech_result_parent->AddChild(std::move(hit_target));
 
   auto speech_recognition_listening = std::make_unique<UiElement>();
@@ -1631,8 +1709,14 @@ void UiSceneCreator::CreateUrlBar() {
   base::RepeatingCallback<void()> url_click_callback;
   if (base::FeatureList::IsEnabled(features::kVrBrowserKeyboard)) {
     url_click_callback = base::BindRepeating(
-        [](Model* model) { model->push_mode(kModeEditingOmnibox); },
-        base::Unretained(model_));
+        [](Model* model, UiBrowserInterface* browser) {
+          if (model->needs_keyboard_update) {
+            browser->OnUnsupportedMode(UiUnsupportedMode::kNeedsKeyboardUpdate);
+          } else {
+            model->push_mode(kModeEditingOmnibox);
+          }
+        },
+        base::Unretained(model_), base::Unretained(browser_));
   } else {
     url_click_callback = base::BindRepeating([] {});
   }
@@ -2109,7 +2193,7 @@ void UiSceneCreator::CreateExitPrompt() {
   auto backplane = std::make_unique<InvisibleHitTarget>();
   backplane->SetDrawPhase(kPhaseForeground);
   backplane->SetName(kExitPromptBackplane);
-  backplane->SetSize(kPromptBackplaneSize, kPromptBackplaneSize);
+  backplane->SetSize(kBackplaneSize, kBackplaneSize);
   backplane->SetTranslate(0.0,
                           kContentVerticalOffset + kExitPromptVerticalOffset,
                           -kContentDistance);
@@ -2117,7 +2201,8 @@ void UiSceneCreator::CreateExitPrompt() {
       backplane,
       model->active_modal_prompt_type != kModalPromptTypeNone &&
           model->active_modal_prompt_type !=
-              kModalPromptTypeExitVRForVoiceSearchRecordAudioOsPermission);
+              kModalPromptTypeExitVRForVoiceSearchRecordAudioOsPermission &&
+          model->active_modal_prompt_type != kModalPromptTypeUpdateKeyboard);
 
   std::unique_ptr<ExitPrompt> exit_prompt = std::make_unique<ExitPrompt>(
       512, base::BindRepeating(
@@ -2180,77 +2265,26 @@ void UiSceneCreator::CreateExitPrompt() {
   scene_->AddUiElement(kExitPromptBackplane, std::move(exit_prompt));
 }
 
-void UiSceneCreator::CreateAudioPermissionPrompt() {
-  // Place an invisible but hittable plane behind the exit prompt, to keep the
-  // reticle roughly planar with the content if near content.
-  auto backplane = std::make_unique<InvisibleHitTarget>();
-  backplane->SetDrawPhase(kPhaseForeground);
-  backplane->SetName(kAudioPermissionPromptBackplane);
-  backplane->SetSize(kPromptBackplaneSize, kPromptBackplaneSize);
-  backplane->SetTranslate(0.0, kContentVerticalOffset, -kOverlayPlaneDistance);
-  backplane->SetVisible(false);
-  backplane->SetTransitionedProperties({OPACITY});
+void UiSceneCreator::CreatePrompts() {
+  auto prompt = CreatePrompt(
+      kAudioPermissionPrompt, model_, browser_,
+      IDS_VR_SHELL_AUDIO_PERMISSION_PROMPT_DESCRIPTION, vector_icons::kMicIcon,
+      IDS_VR_SHELL_AUDIO_PERMISSION_PROMPT_CONTINUE_BUTTON,
+      IDS_VR_SHELL_AUDIO_PERMISSION_PROMPT_ABORT_BUTTON);
   VR_BIND_VISIBILITY(
-      backplane,
-      model->active_modal_prompt_type ==
-          kModalPromptTypeExitVRForVoiceSearchRecordAudioOsPermission);
+      prompt, model->active_modal_prompt_type ==
+                  kModalPromptTypeExitVRForVoiceSearchRecordAudioOsPermission);
+  scene_->AddUiElement(k2dBrowsingRepositioner, std::move(prompt));
 
-  std::unique_ptr<Shadow> shadow = std::make_unique<Shadow>();
-  shadow->SetName(kAudioPermissionPromptShadow);
-  shadow->SetDrawPhase(kPhaseForeground);
-
-  std::unique_ptr<AudioPermissionPrompt> prompt =
-      std::make_unique<AudioPermissionPrompt>(
-          1024, base::BindRepeating(
-                    [](Model* model, UiBrowserInterface* browser,
-                       ExitPrompt::Button button, UiUnsupportedMode mode) {
-                      ExitVrPromptChoice choice = CHOICE_NONE;
-                      switch (button) {
-                        case ExitPrompt::NONE:
-                          choice = CHOICE_NONE;
-                          break;
-                        case ExitPrompt::PRIMARY:
-                          choice = CHOICE_EXIT;
-                          break;
-                        case ExitPrompt::SECONDARY:
-                          choice = CHOICE_STAY;
-                          break;
-                      }
-                      browser->OnExitVrPromptResult(choice, mode);
-                      model->active_modal_prompt_type = kModalPromptTypeNone;
-                    },
-                    base::Unretained(model_), base::Unretained(browser_)));
-  prompt->SetName(kAudioPermissionPrompt);
-  prompt->SetDrawPhase(kPhaseForeground);
-  prompt->SetSize(kAudioPermissionPromptWidth, kAudioPermissionPromptHeight);
-  prompt->set_hit_testable(true);
-  prompt->SetTranslate(0.0, 0.0f, kAudionPermisionPromptDepth);
-  VR_BIND_BUTTON_COLORS(
-      model_, prompt.get(),
-      &ColorScheme::audio_permission_prompt_primary_button_colors,
-      &AudioPermissionPrompt::SetPrimaryButtonColors);
-  VR_BIND_BUTTON_COLORS(
-      model_, prompt.get(),
-      &ColorScheme::audio_permission_prompt_secondary_button_colors,
-      &AudioPermissionPrompt::SetSecondaryButtonColors);
-  VR_BIND_COLOR(model_, prompt.get(),
-                &ColorScheme::audio_permission_prompt_icon_foreground,
-                &AudioPermissionPrompt::SetIconColor);
-  VR_BIND_COLOR(model_, prompt.get(),
-                &ColorScheme::audio_permission_prompt_background,
-                &TexturedElement::SetBackgroundColor);
-  VR_BIND_COLOR(model_, prompt.get(), &ColorScheme::element_foreground,
-                &TexturedElement::SetForegroundColor);
-
-  EventHandlers event_handlers;
-  event_handlers.button_up =
-      base::BindRepeating([](ExitPrompt* prompt) { prompt->Cancel(); },
-                          base::Unretained(prompt.get()));
-  backplane->set_event_handlers(event_handlers);
-
-  shadow->AddChild(std::move(prompt));
-  backplane->AddChild(std::move(shadow));
-  scene_->AddUiElement(k2dBrowsingRepositioner, std::move(backplane));
+  // We re-use the same button texts as the audio permission prompt.
+  prompt = CreatePrompt(kUpdateKeyboardPrompt, model_, browser_,
+                        IDS_VR_UPDATE_KEYBOARD_PROMPT,
+                        vector_icons::kInfoOutlineIcon,
+                        IDS_VR_SHELL_AUDIO_PERMISSION_PROMPT_CONTINUE_BUTTON,
+                        IDS_VR_SHELL_AUDIO_PERMISSION_PROMPT_ABORT_BUTTON);
+  VR_BIND_VISIBILITY(prompt, model->active_modal_prompt_type ==
+                                 kModalPromptTypeUpdateKeyboard);
+  scene_->AddUiElement(k2dBrowsingRepositioner, std::move(prompt));
 }
 
 void UiSceneCreator::CreateWebVrOverlayElements() {

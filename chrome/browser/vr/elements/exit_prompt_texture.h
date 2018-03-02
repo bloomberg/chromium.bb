@@ -51,10 +51,10 @@ class ExitPromptTexture : public UiTexture {
   ButtonColors primary_button_colors_;
   ButtonColors secondary_button_colors_;
 
+  int content_message_id_ = -1;
+
  private:
   void Draw(SkCanvas* sk_canvas, const gfx::Size& texture_size) override;
-
-  int content_message_id_ = -1;
 
   DISALLOW_COPY_AND_ASSIGN(ExitPromptTexture);
 };

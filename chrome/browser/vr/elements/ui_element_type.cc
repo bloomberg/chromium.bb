@@ -24,6 +24,8 @@ static const char* g_ui_element_type_strings[] = {
     "kTypeOmniboxSuggestionIcon",
     "kTypeOmniboxSuggestionContentText",
     "kTypeOmniboxSuggestionDescriptionText",
+    "kTypePromptBackplane",
+    "kTypePromptShadow",
     "kTypeSpacer",
     "kTypeTextInputHint",
     "kTypeTextInputText",

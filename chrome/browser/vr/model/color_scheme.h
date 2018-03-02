@@ -85,10 +85,11 @@ struct ColorScheme {
   SkColor exclusive_screen_toast_background;
   SkColor system_indicator_foreground;
   SkColor system_indicator_background;
-  SkColor audio_permission_prompt_icon_foreground;
-  SkColor audio_permission_prompt_background;
-  ButtonColors audio_permission_prompt_secondary_button_colors;
-  ButtonColors audio_permission_prompt_primary_button_colors;
+  SkColor modal_prompt_icon_foreground;
+  SkColor modal_prompt_background;
+  SkColor modal_prompt_foreground;
+  ButtonColors modal_prompt_secondary_button_colors;
+  ButtonColors modal_prompt_primary_button_colors;
 
   // The colors used for text and buttons on prompts.
   SkColor prompt_foreground;
