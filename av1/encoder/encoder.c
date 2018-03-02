@@ -4710,8 +4710,16 @@ static uint8_t calculate_next_superres_scale(AV1_COMP *cpi) {
       } else {
         const uint8_t min_denom = SCALE_NUMERATOR + 1;
         const uint8_t denom_step = (MAXQ - qthresh + 1) >> 3;
-        const uint8_t additional_denom = (q - qthresh) / denom_step;
-        new_denom = AOMMIN(min_denom + additional_denom, SCALE_NUMERATOR << 1);
+
+        if (q == qthresh) {
+          new_denom = min_denom;
+        } else if (denom_step == 0) {
+          new_denom = SCALE_NUMERATOR << 1;
+        } else {
+          const uint8_t additional_denom = (q - qthresh) / denom_step;
+          new_denom =
+              AOMMIN(min_denom + additional_denom, SCALE_NUMERATOR << 1);
+        }
       }
       break;
     default: assert(0);
