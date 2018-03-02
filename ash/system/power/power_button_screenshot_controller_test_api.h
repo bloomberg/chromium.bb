@@ -24,13 +24,6 @@ class PowerButtonScreenshotControllerTestApi {
   // and returns true. Otherwise returns false.
   bool TriggerVolumeDownTimer() WARN_UNUSED_RESULT;
 
-  // Returns true if |controller_->clamshell_power_button_timer_| is running.
-  bool ClamshellPowerButtonTimerIsRunning() const;
-
-  // If |clamshell_power_button_timer_| is running, stops it, runs its task, and
-  // returns true. Otherwise returns false.
-  bool TriggerClamshellPowerButtonTimer() WARN_UNUSED_RESULT;
-
  private:
   PowerButtonScreenshotController* controller_;
 
