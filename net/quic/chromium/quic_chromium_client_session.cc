@@ -1704,8 +1704,7 @@ void QuicChromiumClientSession::OnMigrationTimeout(size_t num_sockets) {
   if (num_sockets != sockets_.size())
     return;
 
-  LogConnectionMigrationResultToHistogram(
-      MIGRATION_STATUS_NO_ALTERNATE_NETWORK);
+  LogConnectionMigrationResultToHistogram(MIGRATION_STATUS_TIMEOUT);
   CloseSessionOnError(ERR_NETWORK_CHANGED,
                       QUIC_CONNECTION_MIGRATION_NO_NEW_NETWORK);
 }
@@ -1980,8 +1979,8 @@ void QuicChromiumClientSession::OnPathDegrading() {
                                 migration_net_log);
     } else {
       HistogramAndLogMigrationFailure(
-          migration_net_log, MIGRATION_STATUS_NOT_ENABLED, connection_id(),
-          "Migration on path degrading not enabled");
+          migration_net_log, MIGRATION_STATUS_PATH_DEGRADING_NOT_ENABLED,
+          connection_id(), "Migration on path degrading not enabled");
     }
     migration_net_log.EndEvent(
         NetLogEventType::QUIC_CONNECTION_MIGRATION_TRIGGERED);

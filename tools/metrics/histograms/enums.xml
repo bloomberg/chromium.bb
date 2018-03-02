@@ -37058,16 +37058,18 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="QuicConnectionMigrationStatus">
-  <int value="0" label="NO_MIGRATABLE_STREAMS"/>
-  <int value="1" label="ALREADY_MIGRATED"/>
-  <int value="2" label="INTERNAL_ERROR"/>
-  <int value="3" label="TOO_MANY_CHANGES"/>
-  <int value="4" label="SUCCESS"/>
-  <int value="5" label="NON_MIGRATABLE_STREAM"/>
-  <int value="6" label="NOT_ENABLED"/>
-  <int value="7" label="NO_ALTERNATE_NETWORK"/>
-  <int value="8" label="ON_PATH_DEGRADING_DISABLED"/>
-  <int value="9" label="DISABLED_BY_CONFIG"/>
+  <int value="0" label="No stream to migrate"/>
+  <int value="1" label="Already migrated"/>
+  <int value="2" label="Internal error"/>
+  <int value="3" label="Too many migrations"/>
+  <int value="4" label="Success"/>
+  <int value="5" label="Disabled by non-migratable stream"/>
+  <int value="6" label="Migration not enabled"/>
+  <int value="7" label="No alternate network"/>
+  <int value="8" label="Disabled by too many path degradings"/>
+  <int value="9" label="Disabled by config"/>
+  <int value="10" label="Path degrading not enabled"/>
+  <int value="11" label="Timeout with no new network"/>
 </enum>
 
 <enum name="QuicDisabledReason">
