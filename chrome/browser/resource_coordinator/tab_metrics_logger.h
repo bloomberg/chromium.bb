@@ -45,6 +45,13 @@ class TabMetricsLogger {
     PageMetrics page_metrics = {};
   };
 
+  // Index in most-recently-used order and total number of tabs.
+  struct MRUMetrics {
+    int index = 0;  // Zero-based, so this indicates how many of the |total|
+                    // tabs are more recently used than this tab.
+    int total = 0;
+  };
+
   TabMetricsLogger();
   ~TabMetricsLogger();
 
@@ -56,12 +63,14 @@ class TabMetricsLogger {
   // Logs TabManager.Background.ForegroundedOrClosed UKM for a tab that was
   // shown after being inactive.
   void LogBackgroundTabShown(ukm::SourceId ukm_source_id,
-                             base::TimeDelta inactive_duration);
+                             base::TimeDelta inactive_duration,
+                             const MRUMetrics& mru_metrics);
 
   // Logs TabManager.Background.ForegroundedOrClosed UKM for a tab that was
   // closed after being inactive.
   void LogBackgroundTabClosed(ukm::SourceId ukm_source_id,
-                              base::TimeDelta inactive_duration);
+                              base::TimeDelta inactive_duration,
+                              const MRUMetrics& mru_metrics);
 
   // Logs TabManager.TabLifetime UKM for a closed tab.
   void LogTabLifetime(ukm::SourceId ukm_source_id,

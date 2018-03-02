@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/browser_tab_strip_tracker.h"
 #include "chrome/browser/ui/browser_tab_strip_tracker_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
@@ -19,7 +20,8 @@ namespace resource_coordinator {
 // Observes background tab activity in order to log UKMs for tabs. Metrics will
 // be compared against tab reactivation/close events to determine the end state
 // of each background tab.
-class TabActivityWatcher : public TabStripModelObserver,
+class TabActivityWatcher : public BrowserListObserver,
+                           public TabStripModelObserver,
                            public BrowserTabStripTrackerDelegate {
  public:
   // Helper class to observe WebContents.
@@ -34,6 +36,9 @@ class TabActivityWatcher : public TabStripModelObserver,
 
  private:
   friend class TabActivityWatcherTest;
+
+  // BrowserListObserver:
+  void OnBrowserSetLastActive(Browser* browser) override;
 
   // TabStripModelObserver:
   void TabInsertedAt(TabStripModel* tab_strip_model,

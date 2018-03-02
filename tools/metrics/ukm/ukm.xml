@@ -2330,10 +2330,23 @@ be describing additional metrics about the same event.
       brought to foreground again.
     </summary>
   </metric>
+  <metric name="MRUIndex">
+    <summary>
+      Index of the tab in most-recently-used order. A value of N means there are
+      N tabs more recently used than the one that is being foregrounded or
+      closed.
+    </summary>
+  </metric>
   <metric name="TimeFromBackgrounded">
     <summary>
       Duration in MS from when the tab is backgrounded to when it is brought to
       foreground or closed.
+    </summary>
+  </metric>
+  <metric name="TotalTabCount">
+    <summary>
+      Total number of tabs open across all non-incognito browser windows. Helps
+      contextualize the MRUIndex value.
     </summary>
   </metric>
 </event>

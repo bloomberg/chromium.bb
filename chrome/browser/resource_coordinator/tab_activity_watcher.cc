@@ -9,6 +9,7 @@
 #include "chrome/browser/resource_coordinator/time.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/window_activity_watcher.h"
@@ -45,6 +46,11 @@ class TabActivityWatcher::WebContentsData
   // another tab. Copies info from the other WebContentsData so future events
   // can be logged consistently.
   void DidReplace(const WebContentsData& replaced_tab) {
+    // Copy creation and foregrounded times to retain the replaced tab's MRU
+    // position.
+    creation_time_ = replaced_tab.creation_time_;
+    foregrounded_time_ = replaced_tab.foregrounded_time_;
+
     // Copy background status so ForegroundOrClosed can potentially be logged.
     backgrounded_time_ = replaced_tab.backgrounded_time_;
 
@@ -73,7 +79,9 @@ class TabActivityWatcher::WebContentsData
       return;
     }
 
-    if (!foreground) {
+    if (foreground) {
+      foregrounded_time_ = NowTicks();
+    } else {
       // This is a new tab that was opened in the background.
       backgrounded_time_ = NowTicks();
     }
@@ -87,6 +95,10 @@ class TabActivityWatcher::WebContentsData
     }
   }
 
+  // Sets foregrounded_time_ to NowTicks() so this becomes the
+  // most-recently-used tab.
+  void TabWindowActivated() { foregrounded_time_ = NowTicks(); }
+
  private:
   friend class content::WebContentsUserData<WebContentsData>;
 
@@ -95,6 +107,8 @@ class TabActivityWatcher::WebContentsData
     DCHECK(!web_contents->GetBrowserContext()->IsOffTheRecord());
     tab_metrics_.web_contents = web_contents;
     web_contents->GetRenderViewHost()->GetWidget()->AddInputEventObserver(this);
+
+    creation_time_ = NowTicks();
 
     // A navigation may already have completed if this is a replacement tab.
     ukm_source_id_ = ukm::GetSourceIdForWebContentsDocument(web_contents);
@@ -131,10 +145,14 @@ class TabActivityWatcher::WebContentsData
     if (browser && browser->tab_strip_model()->closing_all())
       return;
 
+    // Log the event before updating times.
     TabActivityWatcher::GetInstance()
         ->tab_metrics_logger_->LogBackgroundTabShown(
-            ukm_source_id_, NowTicks() - backgrounded_time_);
+            ukm_source_id_, NowTicks() - backgrounded_time_, GetMRUMetrics());
+
     backgrounded_time_ = base::TimeTicks();
+    foregrounded_time_ = NowTicks();
+    creation_time_ = NowTicks();
   }
 
   // content::WebContentsObserver:
@@ -201,9 +219,14 @@ class TabActivityWatcher::WebContentsData
         ukm_source_id_, NowTicks() - navigation_time_);
 
     if (!backgrounded_time_.is_null()) {
+      // TODO(michaelpg): When closing multiple tabs, log the tab metrics as
+      // they were before any tabs started to close. Currently, we log each tab
+      // one by one as the tabstrip closes, so metrics like MRUIndex are
+      // different than what they were when the close event started.
+      // See https://crbug.com/817174.
       TabActivityWatcher::GetInstance()
           ->tab_metrics_logger_->LogBackgroundTabClosed(
-              ukm_source_id_, NowTicks() - backgrounded_time_);
+              ukm_source_id_, NowTicks() - backgrounded_time_, GetMRUMetrics());
     }
   }
 
@@ -217,12 +240,53 @@ class TabActivityWatcher::WebContentsData
       tab_metrics_.page_metrics.touch_event_count++;
   }
 
+  // Iterates through tabstrips to determine the index of |contents| in
+  // most-recently-used order out of all non-incognito tabs.
+  // Linear in the number of tabs (most users have <10 tabs open).
+  TabMetricsLogger::MRUMetrics GetMRUMetrics() {
+    TabMetricsLogger::MRUMetrics mru_metrics;
+    for (Browser* browser : *BrowserList::GetInstance()) {
+      // Ignore incognito browsers.
+      if (browser->profile()->IsOffTheRecord())
+        continue;
+
+      int count = browser->tab_strip_model()->count();
+      mru_metrics.total += count;
+
+      // Increment the MRU index for each WebContents that was foregrounded more
+      // recently than this one.
+      for (int i = 0; i < count; i++) {
+        auto* other = WebContentsData::FromWebContents(
+            browser->tab_strip_model()->GetWebContentsAt(i));
+        if (this == other)
+          continue;
+
+        // Sort by foregrounded time, then creation time. Both tabs will have a
+        // foregrounded time of 0 if they were never foregrounded.
+        if (foregrounded_time_ < other->foregrounded_time_ ||
+            (foregrounded_time_ == other->foregrounded_time_ &&
+             creation_time_ < other->creation_time_)) {
+          mru_metrics.index++;
+        }
+      }
+    }
+    return mru_metrics;
+  }
+
   // Updated when a navigation is finished.
   ukm::SourceId ukm_source_id_ = 0;
+
+  // When the tab was created.
+  base::TimeTicks creation_time_;
 
   // The most recent time the tab became backgrounded. This happens when a
   // different tab in the tabstrip is activated or the tab's window is hidden.
   base::TimeTicks backgrounded_time_;
+
+  // The most recent time the tab became foregrounded. This happens when the
+  // tab becomes the active tab in the tabstrip or when the active tab's window
+  // is activated.
+  base::TimeTicks foregrounded_time_;
 
   // The last navigation time associated with this tab.
   base::TimeTicks navigation_time_;
@@ -241,7 +305,7 @@ class TabActivityWatcher::WebContentsData
 
 TabActivityWatcher::TabActivityWatcher()
     : tab_metrics_logger_(std::make_unique<TabMetricsLogger>()),
-      browser_tab_strip_tracker_(this, this, nullptr) {
+      browser_tab_strip_tracker_(this, this, this) {
   browser_tab_strip_tracker_.Init();
 
   // TabMetrics UKMs reference WindowMetrics UKM entries, so ensure the
@@ -250,6 +314,23 @@ TabActivityWatcher::TabActivityWatcher()
 }
 
 TabActivityWatcher::~TabActivityWatcher() = default;
+
+void TabActivityWatcher::OnBrowserSetLastActive(Browser* browser) {
+  if (browser->tab_strip_model()->closing_all())
+    return;
+
+  content::WebContents* active_contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+  if (!active_contents)
+    return;
+
+  // Don't assume the WebContentsData already exists in case activation happens
+  // before the tabstrip is fully updated.
+  WebContentsData* web_contents_data =
+      WebContentsData::FromWebContents(active_contents);
+  if (web_contents_data)
+    web_contents_data->TabWindowActivated();
+}
 
 void TabActivityWatcher::TabInsertedAt(TabStripModel* tab_strip_model,
                                        content::WebContents* contents,
