@@ -120,7 +120,7 @@ HoverButton::HoverButton(views::ButtonListener* button_listener,
   const int num_labels = subtitle.empty() ? 1 : 2;
   const int combined_line_height =
       views::style::GetLineHeight(views::style::CONTEXT_LABEL,
-                                  views::style::STYLE_PRIMARY) *
+                                  STYLE_SECONDARY) *
       num_labels;
   if (combined_line_height > icon_height)
     remaining_vert_spacing = (total_height - combined_line_height) / 2;
@@ -273,7 +273,7 @@ bool HoverButton::ShouldUseFloodFillInkDrop() const {
 
 SkColor HoverButton::GetInkDropBaseColor() const {
   return views::style::GetColor(*this, views::style::CONTEXT_BUTTON,
-                                views::style::STYLE_PRIMARY);
+                                STYLE_SECONDARY);
 }
 
 std::unique_ptr<views::InkDropHighlight> HoverButton::CreateInkDropHighlight()
