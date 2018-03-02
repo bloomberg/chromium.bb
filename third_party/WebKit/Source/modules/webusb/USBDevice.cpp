@@ -49,7 +49,7 @@ DOMException* ConvertFatalTransferStatus(const UsbTransferStatus& status) {
   switch (status) {
     case UsbTransferStatus::TRANSFER_ERROR:
       return DOMException::Create(kNetworkError,
-                                  "A transfer error has occured.");
+                                  "A transfer error has occurred.");
     case UsbTransferStatus::PERMISSION_DENIED:
       return DOMException::Create(kSecurityError,
                                   "The transfer was not allowed.");
