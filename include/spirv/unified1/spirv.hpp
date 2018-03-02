@@ -659,6 +659,7 @@ enum Capability {
     CapabilityVariablePointers = 4442,
     CapabilityAtomicStorageOps = 4445,
     CapabilitySampleMaskPostDepthCoverage = 4447,
+    CapabilityFloat16ImageAMD = 5008,
     CapabilityImageGatherBiasLodAMD = 5009,
     CapabilityFragmentMaskAMD = 5010,
     CapabilityStencilExportEXT = 5013,

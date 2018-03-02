@@ -663,6 +663,7 @@ typedef enum SpvCapability_ {
     SpvCapabilityVariablePointers = 4442,
     SpvCapabilityAtomicStorageOps = 4445,
     SpvCapabilitySampleMaskPostDepthCoverage = 4447,
+    SpvCapabilityFloat16ImageAMD = 5008,
     SpvCapabilityImageGatherBiasLodAMD = 5009,
     SpvCapabilityFragmentMaskAMD = 5010,
     SpvCapabilityStencilExportEXT = 5013,
