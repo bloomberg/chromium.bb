@@ -386,7 +386,7 @@ NSString* GetSizeString(long long size_in_bytes) {
       NOTREACHED();
       break;
     }
-    case kDownloadManagerStateSuceeded: {
+    case kDownloadManagerStateSucceeded: {
       SEL selector = @selector
           (downloadManagerViewController:presentOpenInMenuWithLayoutGuide:);
       if ([_delegate respondsToSelector:selector]) {
@@ -443,7 +443,7 @@ NSString* GetSizeString(long long size_in_bytes) {
     case kDownloadManagerStateInProgress:
       imageName = kDownloadManagerInProgressImage;
       break;
-    case kDownloadManagerStateSuceeded:
+    case kDownloadManagerStateSucceeded:
       imageName = kDownloadManagerSucceededImage;
       break;
     case kDownloadManagerStateFailed:
@@ -480,7 +480,7 @@ NSString* GetSizeString(long long size_in_bytes) {
       }
       break;
     }
-    case kDownloadManagerStateSuceeded:
+    case kDownloadManagerStateSucceeded:
       statusText = _fileName;
       break;
     case kDownloadManagerStateFailed:
@@ -502,7 +502,7 @@ NSString* GetSizeString(long long size_in_bytes) {
       break;
     case kDownloadManagerStateInProgress:
       break;
-    case kDownloadManagerStateSuceeded:
+    case kDownloadManagerStateSucceeded:
       title = l10n_util::GetNSString(IDS_IOS_OPEN_IN);
       break;
     case kDownloadManagerStateFailed:

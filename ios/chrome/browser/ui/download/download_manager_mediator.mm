@@ -105,7 +105,7 @@ DownloadManagerState DownloadManagerMediator::GetDownloadManagerState() {
       return kDownloadManagerStateInProgress;
     case web::DownloadTask::State::kComplete:
       return task_->GetErrorCode() ? kDownloadManagerStateFailed
-                                   : kDownloadManagerStateSuceeded;
+                                   : kDownloadManagerStateSucceeded;
     case web::DownloadTask::State::kCancelled:
       // Download Manager should dismiss the UI after download cancellation.
       return kDownloadManagerStateNotStarted;

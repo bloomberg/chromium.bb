@@ -104,7 +104,7 @@ TEST_F(DownloadManagerMediatorTest, ConsumerInstantUpdate) {
   mediator_.SetDownloadTask(task());
   mediator_.SetConsumer(consumer_);
 
-  EXPECT_EQ(kDownloadManagerStateSuceeded, consumer_.state);
+  EXPECT_EQ(kDownloadManagerStateSucceeded, consumer_.state);
   EXPECT_NSEQ(kTestSuggestedFileName, consumer_.fileName);
   EXPECT_EQ(kTestTotalBytes, consumer_.countOfBytesExpectedToReceive);
   EXPECT_EQ(kTestReceivedBytes, consumer_.countOfBytesReceived);
@@ -125,14 +125,14 @@ TEST_F(DownloadManagerMediatorTest, ConsumerFailedStateUpdate) {
   mediator_.SetDownloadTask(nullptr);
 }
 
-// Tests that consumer changes the state to kDownloadManagerStateSuceeded if
+// Tests that consumer changes the state to kDownloadManagerStateSucceeded if
 // task competed without an error.
 TEST_F(DownloadManagerMediatorTest, ConsumerSuceededStateUpdate) {
   mediator_.SetDownloadTask(task());
   mediator_.SetConsumer(consumer_);
 
   task()->SetDone(true);
-  EXPECT_EQ(kDownloadManagerStateSuceeded, consumer_.state);
+  EXPECT_EQ(kDownloadManagerStateSucceeded, consumer_.state);
 
   mediator_.SetDownloadTask(nullptr);
 }
