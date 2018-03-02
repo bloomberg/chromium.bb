@@ -202,6 +202,9 @@
 # ash::Shell access in test.
 -ShutdownPolicyInSessionTest.*
 
+# content::WaitForChildFrameSurfaceReady hangs.
+-SitePerProcessDevToolsSanityTest.InputDispatchEventsToOOPIF
+
 # Function under test uses ash::Shell for window list.
 -SortWindowsByZIndexBrowserTest.*
 
