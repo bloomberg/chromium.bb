@@ -2,59 +2,50 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_WIN_OSK_DISPLAY_MANAGER_H_
-#define UI_BASE_WIN_OSK_DISPLAY_MANAGER_H_
+#ifndef UI_BASE_WIN_ON_SCREEN_KEYBOARD_DISPLAY_MANAGER_TAP_TIP_H_
+#define UI_BASE_WIN_ON_SCREEN_KEYBOARD_DISPLAY_MANAGER_TAP_TIP_H_
 
-#include "base/memory/weak_ptr.h"
-#include "base/observer_list.h"
+#include "base/gtest_prod_util.h"
 #include "base/strings/string16.h"
 #include "ui/base/ui_base_export.h"
-#include "ui/gfx/geometry/rect.h"
+#include "ui/base/win/osk_display_manager.h"
 
 namespace ui {
 
 class OnScreenKeyboardDetector;
-class OnScreenKeyboardObserver;
 
-// This class provides functionality to display the on screen keyboard on
-// Windows 8+. It optionally notifies observers that the OSK is displayed,
-// hidden, etc.
-class UI_BASE_EXPORT OnScreenKeyboardDisplayManager {
+// This class provides an implementation of the OnScreenKeyboardDisplayManager
+// that uses heuristics and the TabTip.exe to display the on screen keyboard.
+// Used on Windows > 7 and Windows < 10.0.10240.0
+class UI_BASE_EXPORT OnScreenKeyboardDisplayManagerTabTip
+    : public OnScreenKeyboardDisplayManager {
  public:
-  static OnScreenKeyboardDisplayManager* GetInstance();
+  ~OnScreenKeyboardDisplayManagerTabTip() override;
 
-  ~OnScreenKeyboardDisplayManager();
-
-  // Functions to display and dismiss the keyboard.
-  // The optional |observer| parameter allows callers to be notified when the
-  // keyboard is displayed, dismissed, etc.
-  bool DisplayVirtualKeyboard(OnScreenKeyboardObserver* observer);
-  // When the keyboard is dismissed, the registered observer if any is removed
-  // after notifying it.
-  bool DismissVirtualKeyboard();
-
-  // Removes a registered observer.
-  void RemoveObserver(OnScreenKeyboardObserver* observer);
+  // OnScreenKeyboardDisplayManager overrides.
+  bool DisplayVirtualKeyboard(OnScreenKeyboardObserver* observer) final;
+  bool DismissVirtualKeyboard() final;
+  void RemoveObserver(OnScreenKeyboardObserver* observer) final;
+  bool IsKeyboardVisible() const final;
 
   // Returns the path of the on screen keyboard exe (TabTip.exe) in the
   // |osk_path| parameter.
   // Returns true on success.
   bool GetOSKPath(base::string16* osk_path);
 
-  // Returns true if the virtual keyboard is currently visible.
-  bool IsKeyboardVisible() const;
-
  private:
-  OnScreenKeyboardDisplayManager();
+  friend class OnScreenKeyboardDisplayManager;
+  friend class OnScreenKeyboardTest;
+  OnScreenKeyboardDisplayManagerTabTip();
 
   std::unique_ptr<OnScreenKeyboardDetector> keyboard_detector_;
 
   // The location of TabTip.exe.
   base::string16 osk_path_;
 
-  DISALLOW_COPY_AND_ASSIGN(OnScreenKeyboardDisplayManager);
+  DISALLOW_COPY_AND_ASSIGN(OnScreenKeyboardDisplayManagerTabTip);
 };
 
 }  // namespace ui
 
-#endif  // UI_BASE_WIN_OSK_DISPLAY_MANAGER_H_
+#endif  // UI_BASE_WIN_ON_SCREEN_KEYBOARD_DISPLAY_MANAGER_TAP_TIP_H_

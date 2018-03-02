@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/win/osk_display_manager.h"
+#include "ui/base/win/on_screen_keyboard_display_manager_tab_tip.h"
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -12,15 +12,26 @@
 #include "base/win/windows_version.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace ui {
+
+class OnScreenKeyboardTest : public ::testing::Test {
+ protected:
+  std::unique_ptr<OnScreenKeyboardDisplayManagerTabTip>
+  CreateOSKDisplayManager() {
+    return std::unique_ptr<OnScreenKeyboardDisplayManagerTabTip>(
+        new OnScreenKeyboardDisplayManagerTabTip());
+  }
+};
+
 // This test validates the on screen keyboard path (tabtip.exe) which is read
 // from the registry.
-TEST(OnScreenKeyboardTest, OSKPath) {
+TEST_F(OnScreenKeyboardTest, OSKPath) {
   // The on screen keyboard is only available on Windows 8+.
   if (base::win::GetVersion() < base::win::VERSION_WIN8)
     return;
 
-  ui::OnScreenKeyboardDisplayManager* keyboard_display_manager =
-      ui::OnScreenKeyboardDisplayManager::GetInstance();
+  std::unique_ptr<OnScreenKeyboardDisplayManagerTabTip>
+      keyboard_display_manager(CreateOSKDisplayManager());
   EXPECT_NE(nullptr, keyboard_display_manager);
 
   base::string16 osk_path;
@@ -38,3 +49,5 @@ TEST(OnScreenKeyboardTest, OSKPath) {
 
   EXPECT_TRUE(base::PathExists(base::FilePath(osk_path)));
 }
+
+}  // namespace ui
