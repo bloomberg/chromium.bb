@@ -1110,6 +1110,7 @@ TEST_F(StreamMixerDeathTest, BadJsonCrashes) {
 }
 
 TEST_F(StreamMixerDeathTest, CrashesIfChannelCountDoesNotMatchFlags) {
+  const int kNumOutputChannels = 2;
   const std::string config = R"Json({
 "postprocessors": {
   "linearize": {
@@ -1122,13 +1123,17 @@ TEST_F(StreamMixerDeathTest, CrashesIfChannelCountDoesNotMatchFlags) {
 }})Json";
 
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
-  ASSERT_DEATH(mixer_->ResetPostProcessorsForTest(
-                   std::make_unique<MockPostProcessorFactory>(), config),
+  mixer_->SetNumOutputChannelsForTest(kNumOutputChannels);
+  mixer_->ResetPostProcessorsForTest(
+      std::make_unique<MockPostProcessorFactory>(), config);
+
+  ASSERT_DEATH(mixer_->ValidatePostProcessorsForTest(),
                DeathRegex("PostProcessor configuration channel count does not "
                           "match command line flag"));
 }
 
 TEST_F(StreamMixerDeathTest, CrashesIfMoreThan2LoopbackChannels) {
+  const int kNumOutputChannels = 2;
   const std::string config = R"Json({
 "postprocessors": {
   "output_streams": [{
@@ -1149,8 +1154,12 @@ TEST_F(StreamMixerDeathTest, CrashesIfMoreThan2LoopbackChannels) {
 }})Json";
 
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
-  ASSERT_DEATH(mixer_->ResetPostProcessorsForTest(
-                   std::make_unique<MockPostProcessorFactory>(), config),
+  mixer_->SetNumOutputChannelsForTest(kNumOutputChannels);
+
+  mixer_->ResetPostProcessorsForTest(
+      std::make_unique<MockPostProcessorFactory>(), config);
+
+  ASSERT_DEATH(mixer_->ValidatePostProcessorsForTest(),
                DeathRegex("loopback_channel_count <= 2"));
 }
 
