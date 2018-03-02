@@ -89,6 +89,13 @@ class UI_BASE_EXPORT WindowEventTarget {
   // Notification from the forwarder window that its parent changed.
   virtual void HandleParentChanged() = 0;
 
+  // Apply the transform from Direct Manipulation API.
+  // ApplyPinchZoomScale is the pinch-zoom gesture. scale is the scale factor.
+  // ApplyPanGestureScroll is the pan gesture, scroll_x and scroll_y are pixel
+  // precison scroll offset.
+  virtual void ApplyPinchZoomScale(float scale) = 0;
+  virtual void ApplyPanGestureScroll(int scroll_x, int scroll_y) = 0;
+
  protected:
   WindowEventTarget();
   virtual ~WindowEventTarget();

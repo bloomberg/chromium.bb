@@ -21,6 +21,7 @@ UI_BASE_EXPORT bool IsTouchableAppContextMenuEnabled();
 #if defined(OS_WIN)
 UI_BASE_EXPORT extern const base::Feature kDirectManipulationStylus;
 UI_BASE_EXPORT extern const base::Feature kPointerEventsForTouch;
+UI_BASE_EXPORT extern const base::Feature kPrecisionTouchpad;
 
 // Returns true if the system should use WM_POINTER events for touch events.
 UI_BASE_EXPORT bool IsUsingWMPointerForTouch();

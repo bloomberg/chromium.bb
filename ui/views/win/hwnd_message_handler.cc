@@ -31,7 +31,6 @@
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/view_prop.h"
-#include "ui/base/win/direct_manipulation.h"
 #include "ui/base/win/internal_constants.h"
 #include "ui/base/win/lock_state.h"
 #include "ui/base/win/mouse_wheel_util.h"
@@ -411,13 +410,6 @@ void HWNDMessageHandler::Init(HWND parent, const gfx::Rect& bounds) {
   DCHECK(delegate_->GetHWNDMessageDelegateInputMethod());
   delegate_->GetHWNDMessageDelegateInputMethod()->AddObserver(this);
 
-  // Direct Manipulation is enabled on Windows 10+. The CreateInstance function
-  // returns NULL if Direct Manipulation is not available.
-  direct_manipulation_helper_ =
-      ui::win::DirectManipulationHelper::CreateInstance();
-  if (direct_manipulation_helper_)
-    direct_manipulation_helper_->Initialize(hwnd());
-
   // Disable pen flicks (http://crbug.com/506977)
   base::win::DisableFlicks(hwnd());
 }
@@ -601,8 +593,6 @@ void HWNDMessageHandler::Show() {
       ShowWindowWithState(ui::SHOW_STATE_INACTIVE);
     }
   }
-  if (direct_manipulation_helper_)
-    direct_manipulation_helper_->Activate(hwnd());
 }
 
 void HWNDMessageHandler::ShowWindowWithState(ui::WindowShowState show_state) {
@@ -1066,6 +1056,48 @@ void HWNDMessageHandler::HandleParentChanged() {
   // context as we will not receive touch releases if the touch was initiated
   // in the forwarder window.
   touch_ids_.clear();
+}
+
+void HWNDMessageHandler::ApplyPinchZoomScale(float scale) {
+  // We fake a default ctrl+wheel event here. Offset 120 is the default scroll
+  // offset on Windows.
+  // TODO(chaopeng) Send pinch-zoom event here.
+  gfx::Vector2d offset =
+      scale > 1 ? gfx::Vector2d(120, 120) : gfx::Vector2d(-120, -120);
+
+  POINT root_location = {0};
+  ::GetCursorPos(&root_location);
+
+  POINT location = {root_location.x, root_location.y};
+  ScreenToClient(hwnd(), &root_location);
+
+  gfx::Point cursor_location(location);
+  gfx::Point cursor_root_location(root_location);
+
+  ui::MouseWheelEvent wheel_event(offset, cursor_location, cursor_root_location,
+                                  base::TimeTicks::Now(), ui::EF_CONTROL_DOWN,
+                                  ui::EF_PRECISION_SCROLLING_DELTA);
+
+  delegate_->HandleMouseEvent(wheel_event);
+}
+
+void HWNDMessageHandler::ApplyPanGestureScroll(int scroll_x, int scroll_y) {
+  gfx::Vector2d offset{scroll_x, scroll_y};
+
+  POINT root_location = {0};
+  ::GetCursorPos(&root_location);
+
+  POINT location = {root_location.x, root_location.y};
+  ScreenToClient(hwnd(), &location);
+
+  gfx::Point cursor_location(location);
+  gfx::Point cursor_root_location(root_location);
+
+  ui::MouseWheelEvent wheel_event(offset, cursor_location, cursor_root_location,
+                                  base::TimeTicks::Now(), ui::EF_NONE,
+                                  ui::EF_PRECISION_SCROLLING_DELTA);
+
+  delegate_->HandleMouseEvent(wheel_event);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2540,13 +2572,9 @@ void HWNDMessageHandler::OnWindowPosChanged(WINDOWPOS* window_pos) {
     SetDwmFrameExtension(DwmFrameState::ON);
   if (window_pos->flags & SWP_SHOWWINDOW) {
     delegate_->HandleVisibilityChanged(true);
-    if (direct_manipulation_helper_)
-      direct_manipulation_helper_->Activate(hwnd());
     SetDwmFrameExtension(DwmFrameState::ON);
   } else if (window_pos->flags & SWP_HIDEWINDOW) {
     delegate_->HandleVisibilityChanged(false);
-    if (direct_manipulation_helper_)
-      direct_manipulation_helper_->Deactivate(hwnd());
   }
 
   SetMsgHandled(FALSE);
@@ -2698,12 +2726,6 @@ LRESULT HWNDMessageHandler::HandleMouseEventInternal(UINT message,
 
   if (!ref.get())
     return 0;
-
-  if (direct_manipulation_helper_ && track_mouse &&
-      (message == WM_MOUSEWHEEL || message == WM_MOUSEHWHEEL)) {
-    direct_manipulation_helper_->HandleMouseWheel(hwnd(), message, w_param,
-        l_param);
-  }
 
   if (!handled && message == WM_NCLBUTTONDOWN && w_param != HTSYSMENU &&
       w_param != HTCAPTION &&
@@ -3031,9 +3053,6 @@ void HWNDMessageHandler::SetBoundsInternal(const gfx::Rect& bounds_in_pixels,
     delegate_->HandleClientSizeChanged(GetClientAreaBounds().size());
     ResetWindowRegion(false, true);
   }
-
-  if (direct_manipulation_helper_)
-    direct_manipulation_helper_->SetBounds(bounds_in_pixels);
 }
 
 void HWNDMessageHandler::CheckAndHandleBackgroundFullscreenOnMonitor(
