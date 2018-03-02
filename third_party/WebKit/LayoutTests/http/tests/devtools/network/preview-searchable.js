@@ -33,7 +33,7 @@
     var compontentView = view;
     var typeName = 'unknown';
     var searchableView = view;
-    if (view instanceof SourceFrame.ResourceSourceFrame._SearchableContainer) {
+    if (view instanceof SourceFrame.ResourceSourceFrame.SearchableContainer) {
       isSearchable = true;
       searchableView = view.children()[0];
     }
@@ -72,7 +72,7 @@
 
 
   function trySearches(request, searches, callback) {
-    TestRunner.addSniffer(Network.RequestPreviewView.prototype, 'showPreview', async function() {
+    TestRunner.addSniffer(Network.RequestPreviewView.prototype, '_doShowPreview', async function() {
       previewViewHandled(searches, callback, await this._contentViewPromise);
     });
     var networkPanel = UI.panels.network;

@@ -20,7 +20,7 @@
   function getViewName(previewer) {
     if (!previewer)
       return '** NONE **';
-    if (previewer instanceof SourceFrame.ResourceSourceFrame._SearchableContainer)
+    if (previewer instanceof SourceFrame.ResourceSourceFrame.SearchableContainer)
       return '_SearchableContainer > ' + getViewName(previewer.children()[0]);
     if (previewer instanceof UI.SearchableView)
       return 'SearchableView > ' + getViewName(previewer._searchProvider);

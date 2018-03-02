@@ -10,6 +10,7 @@ Loaded modules:
     network
     object_ui
     perf_ui
+    search
     source_frame
     text_editor
     workspace_diff
