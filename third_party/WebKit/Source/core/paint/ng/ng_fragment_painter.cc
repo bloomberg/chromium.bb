@@ -124,4 +124,42 @@ void NGFragmentPainter::PaintDescendantOutlines(
   }
 }
 
+void NGFragmentPainter::AddPDFURLRectIfNeeded(const PaintInfo& paint_info,
+                                              const LayoutPoint& paint_offset) {
+  DCHECK(paint_info.IsPrinting());
+
+  // TODO(layout-dev): Should use break token when NG has its own tree building.
+  if (paint_fragment_.GetLayoutObject()->IsElementContinuation() ||
+      !paint_fragment_.GetNode() || !paint_fragment_.GetNode()->IsLink() ||
+      paint_fragment_.Style().Visibility() != EVisibility::kVisible)
+    return;
+
+  KURL url = ToElement(paint_fragment_.GetNode())->HrefURL();
+  if (!url.IsValid())
+    return;
+
+  IntRect rect = PixelSnappedIntRect(paint_fragment_.VisualRect());
+  if (rect.IsEmpty())
+    return;
+
+  const NGPhysicalFragment& fragment = paint_fragment_.PhysicalFragment();
+  if (DrawingRecorder::UseCachedDrawingIfPossible(
+          paint_info.context, paint_fragment_,
+          DisplayItem::kPrintedContentPDFURLRect))
+    return;
+
+  DrawingRecorder recorder(paint_info.context, paint_fragment_,
+                           DisplayItem::kPrintedContentPDFURLRect);
+
+  Document& document = fragment.GetLayoutObject()->GetDocument();
+  if (url.HasFragmentIdentifier() &&
+      EqualIgnoringFragmentIdentifier(url, document.BaseURL())) {
+    String fragment_name = url.FragmentIdentifier();
+    if (document.FindAnchor(fragment_name))
+      paint_info.context.SetURLFragmentForRect(fragment_name, rect);
+    return;
+  }
+  paint_info.context.SetURLForRect(url, rect);
+}
+
 }  // namespace blink
