@@ -5866,6 +5866,13 @@
           "version" : "None"
         },
         {
+          "enumerant" : "Float16ImageAMD",
+          "value" : 5008,
+          "capabilities" : [ "Shader" ],
+          "extensions" : [ "SPV_AMD_gpu_shader_half_float_fetch" ],
+          "version" : "None"
+        },
+        {
           "enumerant" : "ImageGatherBiasLodAMD",
           "value" : 5009,
           "capabilities" : [ "Shader" ],
