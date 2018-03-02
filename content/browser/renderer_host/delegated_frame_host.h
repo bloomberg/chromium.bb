@@ -135,7 +135,7 @@ class CONTENT_EXPORT DelegatedFrameHost
                 const ui::LatencyInfo& latency_info);
   void WasResized(const viz::LocalSurfaceId& local_surface_id,
                   const gfx::Size& dip_size,
-                  const cc::DeadlinePolicy& deadline_policy);
+                  cc::DeadlinePolicy deadline_policy);
   bool HasSavedFrame() const;
   gfx::Size GetRequestedRendererSize() const;
   void SetCompositor(ui::Compositor* compositor);
