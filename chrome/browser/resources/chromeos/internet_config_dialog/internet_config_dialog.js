@@ -131,6 +131,6 @@ Polymer({
 
   /** @private */
   onConnectTap_: function() {
-    this.$.networkConfig.saveOrConnect();
+    this.$.networkConfig.connect();
   },
 });

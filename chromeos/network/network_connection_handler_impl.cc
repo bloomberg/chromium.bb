@@ -85,23 +85,24 @@ bool IsCertificateConfigured(const client_cert::ConfigType cert_config_type,
   return false;
 }
 
-bool VPNRequiresCredentials(const std::string& service_path,
-                            const std::string& provider_type,
-                            const base::DictionaryValue& provider_properties) {
+std::string VPNCheckCredentials(
+    const std::string& service_path,
+    const std::string& provider_type,
+    const base::DictionaryValue& provider_properties) {
   if (provider_type == shill::kProviderOpenVpn) {
     std::string username;
     provider_properties.GetStringWithoutPathExpansion(
         shill::kOpenVPNUserProperty, &username);
     if (username.empty()) {
       NET_LOG(ERROR) << "OpenVPN: No username for: " << service_path;
-      return true;
+      return NetworkConnectionHandler::kErrorConfigurationRequired;
     }
     bool passphrase_required = false;
     provider_properties.GetBooleanWithoutPathExpansion(
         shill::kPassphraseRequiredProperty, &passphrase_required);
     if (passphrase_required) {
       NET_LOG(ERROR) << "OpenVPN: Passphrase Required for: " << service_path;
-      return true;
+      return NetworkConnectionHandler::kErrorPassphraseRequired;
     }
     NET_LOG_EVENT("OpenVPN Is Configured", service_path);
   } else {
@@ -110,17 +111,17 @@ bool VPNRequiresCredentials(const std::string& service_path,
         shill::kL2tpIpsecPskRequiredProperty, &passphrase_required);
     if (passphrase_required) {
       NET_LOG(ERROR) << "VPN: PSK Required for: " << service_path;
-      return true;
+      return NetworkConnectionHandler::kErrorConfigurationRequired;
     }
     provider_properties.GetBooleanWithoutPathExpansion(
         shill::kPassphraseRequiredProperty, &passphrase_required);
     if (passphrase_required) {
       NET_LOG(ERROR) << "VPN: Passphrase Required for: " << service_path;
-      return true;
+      return NetworkConnectionHandler::kErrorPassphraseRequired;
     }
     NET_LOG(EVENT) << "VPN Is Configured: " << service_path;
   }
-  return false;
+  return std::string();
 }
 
 std::string GetDefaultUserProfilePath(const NetworkState* network) {
@@ -544,9 +545,10 @@ void NetworkConnectionHandlerImpl::VerifyConfiguredAndConnect(
     // VPN may require a username, and/or passphrase to be set. (Check after
     // ensuring that any required certificates are configured).
     DCHECK(provider_properties);
-    if (VPNRequiresCredentials(service_path, vpn_provider_type,
-                               *provider_properties)) {
-      ErrorCallbackForPendingRequest(service_path, kErrorConfigurationRequired);
+    std::string error = VPNCheckCredentials(service_path, vpn_provider_type,
+                                            *provider_properties);
+    if (!error.empty()) {
+      ErrorCallbackForPendingRequest(service_path, error);
       return;
     }
 

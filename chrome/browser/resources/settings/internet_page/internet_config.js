@@ -56,6 +56,12 @@ Polymer({
      */
     name: String,
 
+    /**
+     * Set to true to show the 'connect' button instead of 'save'.
+     * @private
+     */
+    showConnect: Boolean,
+
     /** @private */
     enableConnect_: Boolean,
 
@@ -134,22 +140,18 @@ Polymer({
     return this.i18n('networkErrorUnknown');
   },
 
-  /**
-   * @return {boolean}
-   * @private
-   */
-  isConfigured_: function() {
-    const source = this.networkProperties_.Source;
-    return !!this.guid && !!source && source != CrOnc.Source.NONE;
-  },
-
   /** @private */
   onCancelTap_: function() {
     this.close();
   },
 
   /** @private */
-  onSaveOrConnectTap_: function() {
-    this.$.networkConfig.saveOrConnect();
+  onSaveTap_: function() {
+    this.$.networkConfig.save();
+  },
+
+  /** @private */
+  onConnectTap_: function() {
+    this.$.networkConfig.connect();
   },
 });
