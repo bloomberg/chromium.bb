@@ -52,31 +52,38 @@ struct ClipAutos {
   bool is_left_auto;
 };
 
-static ClipAutos GetClipAutos(const ComputedStyle& style) {
-  if (style.HasAutoClip())
-    return ClipAutos();
-  return ClipAutos(style.ClipTop().IsAuto(), style.ClipRight().IsAuto(),
-                   style.ClipBottom().IsAuto(), style.ClipLeft().IsAuto());
-}
-
-class InheritedAutosChecker
-    : public CSSInterpolationType::CSSConversionChecker {
+class InheritedClipChecker : public CSSInterpolationType::CSSConversionChecker {
  public:
-  static std::unique_ptr<InheritedAutosChecker> Create(
-      const ClipAutos& inherited_autos) {
-    return WTF::WrapUnique(new InheritedAutosChecker(inherited_autos));
+  static std::unique_ptr<InheritedClipChecker> Create(
+      const ComputedStyle& parent_style) {
+    Vector<Length> inherited_length_list;
+    GetClipLengthList(parent_style, inherited_length_list);
+    return WTF::WrapUnique(
+        new InheritedClipChecker(std::move(inherited_length_list)));
   }
 
  private:
-  InheritedAutosChecker(const ClipAutos& inherited_autos)
-      : inherited_autos_(inherited_autos) {}
+  InheritedClipChecker(const Vector<Length>&& inherited_length_list)
+      : inherited_length_list_(std::move(inherited_length_list)) {}
 
   bool IsValid(const StyleResolverState& state,
                const InterpolationValue& underlying) const final {
-    return inherited_autos_ == GetClipAutos(*state.ParentStyle());
+    Vector<Length> inherited_length_list;
+    GetClipLengthList(*state.ParentStyle(), inherited_length_list);
+    return inherited_length_list_ == inherited_length_list;
   }
 
-  const ClipAutos inherited_autos_;
+  static void GetClipLengthList(const ComputedStyle& style,
+                                Vector<Length>& length_list) {
+    if (style.HasAutoClip())
+      return;
+    length_list.push_back(style.ClipTop());
+    length_list.push_back(style.ClipRight());
+    length_list.push_back(style.ClipBottom());
+    length_list.push_back(style.ClipLeft());
+  }
+
+  const Vector<Length> inherited_length_list_;
 };
 
 class CSSClipNonInterpolableValue : public NonInterpolableValue {
@@ -187,9 +194,9 @@ InterpolationValue CSSClipInterpolationType::MaybeConvertInitial(
 InterpolationValue CSSClipInterpolationType::MaybeConvertInherit(
     const StyleResolverState& state,
     ConversionCheckers& conversion_checkers) const {
-  ClipAutos inherited_autos = GetClipAutos(*state.ParentStyle());
-  conversion_checkers.push_back(InheritedAutosChecker::Create(inherited_autos));
-  if (inherited_autos.is_auto)
+  conversion_checkers.push_back(
+      InheritedClipChecker::Create(*state.ParentStyle()));
+  if (state.ParentStyle()->HasAutoClip())
     return nullptr;
   return CreateClipValue(state.ParentStyle()->Clip(),
                          state.ParentStyle()->EffectiveZoom());
