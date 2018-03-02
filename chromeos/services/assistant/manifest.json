@@ -4,6 +4,7 @@
   "interface_provider_specs": {
     "service_manager:connector": {
       "requires": {
+        "ash": [ "system_ui" ],
         "identity": [ "identity_manager" ]
       },
       "provides": {

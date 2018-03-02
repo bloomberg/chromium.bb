@@ -153,6 +153,9 @@ class TestSessionController : public ash::mojom::SessionController {
   }
   void ShowMultiprofilesSessionAbortedDialog(
       const std::string& user_email) override {}
+  void AddSessionActivationObserverForAccountId(
+      const AccountId& account_id,
+      ash::mojom::SessionActivationObserverPtr observer) override {}
 
   base::TimeDelta last_session_length_limit_;
   base::TimeTicks last_session_start_time_;

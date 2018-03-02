@@ -24,6 +24,7 @@ class FakeAssistantManagerServiceImpl : public AssistantManagerService {
   // assistant::AssistantManagerService overrides
   void Start(const std::string& access_token) override;
   void SetAccessToken(const std::string& access_token) override;
+  void EnableListening(bool enable) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeAssistantManagerServiceImpl);

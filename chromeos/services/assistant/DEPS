@@ -1,4 +1,5 @@
 include_rules = [
+  "+ash/public",
   "+chromeos/assistant",
   "+google_apis/gaia",
   "+libassistant",

@@ -16,5 +16,7 @@ void FakeAssistantManagerServiceImpl::Start(const std::string& access_token) {}
 void FakeAssistantManagerServiceImpl::SetAccessToken(
     const std::string& access_token) {}
 
+void FakeAssistantManagerServiceImpl::EnableListening(bool enable) {}
+
 }  // namespace assistant
 }  // namespace chromeos

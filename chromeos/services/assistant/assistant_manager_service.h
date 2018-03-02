@@ -21,6 +21,9 @@ class AssistantManagerService {
 
   // Set access token for assistant.
   virtual void SetAccessToken(const std::string& access_token) = 0;
+
+  // Turn on / off hotword listening.
+  virtual void EnableListening(bool enable) = 0;
 };
 
 }  // namespace assistant
