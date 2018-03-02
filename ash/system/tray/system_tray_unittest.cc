@@ -6,10 +6,12 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/accessibility/accessibility_controller.h"
+#include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/ash_view_ids.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
@@ -33,8 +35,6 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/test/histogram_tester.h"
-#include "ui/app_list/presenter/app_list.h"
-#include "ui/app_list/presenter/test/test_app_list_presenter.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/test/event_generator.h"
@@ -97,7 +97,7 @@ class SystemTrayTest : public AshTestBase {
 
   // Swiping on the system tray and ends with finger released. Note, |start| is
   // based on the system tray or system tray bubble's coordinate space.
-  void SendGestureEvent(gfx::Point& start,
+  void SendGestureEvent(const gfx::Point& start,
                         float delta,
                         bool is_fling,
                         float velocity_y,
@@ -117,7 +117,7 @@ class SystemTrayTest : public AshTestBase {
   }
 
   // Swiping on the system tray without releasing the finger.
-  void SendScrollStartAndUpdate(gfx::Point& start,
+  void SendScrollStartAndUpdate(const gfx::Point& start,
                                 float delta,
                                 base::TimeTicks& timestamp,
                                 float scroll_y_hint = -1.0f,
@@ -426,24 +426,20 @@ TEST_F(SystemTrayTest, ToggleAppListAfterOpenSystemTrayBubbleInTabletMode) {
   ASSERT_FALSE(system_tray->drag_controller());
   EXPECT_FALSE(system_tray->clipping_window_for_test());
 
-  app_list::test::TestAppListPresenter test_app_list_presenter;
-  Shell::Get()->app_list()->SetAppListPresenter(
-      test_app_list_presenter.CreateInterfacePtrAndBind());
-
   // Convert from tablet mode to clamshell.
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
-  EXPECT_EQ(0u, test_app_list_presenter.toggle_count());
+  GetAppListTestHelper()->CheckVisibility(false);
 
   // Press the search key should toggle the launcher.
   ui::test::EventGenerator& generator = GetEventGenerator();
   generator.PressKey(ui::VKEY_BROWSER_SEARCH, ui::EF_NONE);
-  RunAllPendingInMessageLoop();
-  EXPECT_EQ(1u, test_app_list_presenter.toggle_count());
+  GetAppListTestHelper()->WaitUntilIdle();
+  GetAppListTestHelper()->CheckVisibility(true);
 
   // Press the search key again should still toggle the launcher.
   generator.PressKey(ui::VKEY_BROWSER_SEARCH, ui::EF_NONE);
-  RunAllPendingInMessageLoop();
-  EXPECT_EQ(2u, test_app_list_presenter.toggle_count());
+  GetAppListTestHelper()->WaitUntilIdle();
+  GetAppListTestHelper()->CheckVisibility(false);
 }
 
 // Verifies only the visible default views are recorded in the

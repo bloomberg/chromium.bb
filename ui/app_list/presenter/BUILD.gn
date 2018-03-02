@@ -74,6 +74,7 @@ static_library("test_support") {
     ":presenter",
   ]
   deps = [
+    "//ash",
     "//base",
     "//mojo/public/cpp/bindings",
     "//ui/app_list:test_support",

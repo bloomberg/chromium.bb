@@ -4,10 +4,12 @@
 
 #include "ash/test/ash_test_base.h"
 
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
 
+#include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/display/extended_mouse_warp_controller.h"
 #include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
@@ -388,6 +390,10 @@ TestScreenshotDelegate* AshTestBase::GetScreenshotDelegate() {
 
 TestSessionControllerClient* AshTestBase::GetSessionControllerClient() {
   return ash_test_helper_->test_session_controller_client();
+}
+
+AppListTestHelper* AshTestBase::GetAppListTestHelper() {
+  return ash_test_helper_->app_list_test_helper();
 }
 
 void AshTestBase::CreateUserSessions(int n) {

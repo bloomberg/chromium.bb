@@ -8,6 +8,7 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/accelerators/accelerator_delegate.h"
+#include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -15,8 +16,6 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/app_list/presenter/app_list.h"
-#include "ui/app_list/presenter/test/test_app_list_presenter.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
@@ -148,8 +147,8 @@ TEST_F(AcceleratorFilterTest, SearchKeyShortcutsAreAlwaysHandled) {
   EXPECT_FALSE(session_controller->IsScreenLocked());
 
   // Search+L is processed when the app_list target visibility is false.
-  Shell::Get()->app_list()->Dismiss();
-  EXPECT_FALSE(Shell::Get()->app_list()->GetTargetVisibility());
+  GetAppListTestHelper()->DismissAndRunLoop();
+  GetAppListTestHelper()->CheckVisibility(false);
   generator.PressKey(ui::VKEY_L, ui::EF_COMMAND_DOWN);
   generator.ReleaseKey(ui::VKEY_L, ui::EF_COMMAND_DOWN);
   session_controller->FlushMojoForTest();  // LockScreen is an async mojo call.
@@ -172,24 +171,25 @@ TEST_F(AcceleratorFilterTest, SearchKeyShortcutsAreAlwaysHandled) {
 
 TEST_F(AcceleratorFilterTest, ToggleAppListInterruptedByMouseEvent) {
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
-  app_list::test::TestAppListPresenter test_app_list_presenter;
-  Shell::Get()->app_list()->SetAppListPresenter(
-      test_app_list_presenter.CreateInterfacePtrAndBind());
-  EXPECT_EQ(0u, test_app_list_presenter.toggle_count());
+  GetAppListTestHelper()->CheckVisibility(false);
 
   // The AppList should toggle if no mouse event occurs between key press and
   // key release.
   generator.PressKey(ui::VKEY_LWIN, ui::EF_NONE);
   generator.ReleaseKey(ui::VKEY_LWIN, ui::EF_NONE);
-  RunAllPendingInMessageLoop();
-  EXPECT_EQ(1u, test_app_list_presenter.toggle_count());
+  GetAppListTestHelper()->WaitUntilIdle();
+  GetAppListTestHelper()->CheckVisibility(true);
+
+  // Close the app list.
+  GetAppListTestHelper()->DismissAndRunLoop();
+  GetAppListTestHelper()->CheckVisibility(false);
 
   // When pressed key is interrupted by mouse, the AppList should not toggle.
   generator.PressKey(ui::VKEY_LWIN, ui::EF_NONE);
   generator.ClickLeftButton();
   generator.ReleaseKey(ui::VKEY_LWIN, ui::EF_NONE);
-  RunAllPendingInMessageLoop();
-  EXPECT_EQ(1u, test_app_list_presenter.toggle_count());
+  GetAppListTestHelper()->WaitUntilIdle();
+  GetAppListTestHelper()->CheckVisibility(false);
 }
 
 }  // namespace ash

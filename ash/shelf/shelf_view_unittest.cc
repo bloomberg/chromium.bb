@@ -9,7 +9,7 @@
 #include <utility>
 #include <vector>
 
-#include "ash/app_list/test_app_list_presenter_impl.h"
+#include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_prefs.h"
@@ -54,8 +54,6 @@
 #include "base/time/time.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/app_list/presenter/app_list.h"
-#include "ui/app_list/presenter/test/test_app_list_presenter.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/window.h"
@@ -1485,8 +1483,7 @@ TEST_F(ShelfViewTest, ShouldHideTooltipTest) {
 
 // Test that shelf button tooltips show (except app list) with an open app list.
 TEST_F(ShelfViewTest, ShouldHideTooltipWithAppListWindowTest) {
-  TestAppListPresenterImpl app_list_presenter_impl;
-  app_list_presenter_impl.ShowAndRunLoop(GetPrimaryDisplay().id());
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
 
   // The tooltip shouldn't hide if the mouse is on normal buttons.
   for (int i = 2; i < test_api_->GetButtonCount(); i++) {
@@ -2082,61 +2079,6 @@ TEST_F(ShelfViewTest, ShelfDragViewAndContextMenu) {
   EXPECT_FALSE(shelf_view_->drag_view());
 }
 
-TEST_F(ShelfViewTest, MouseWheelScrollOnShelfTransitionsAppList) {
-  TestAppListPresenterImpl app_list_presenter_impl;
-  app_list_presenter_impl.ShowAndRunLoop(GetPrimaryDisplayId());
-  app_list::test::TestAppListPresenter test_app_list_presenter;
-  Shell::Get()->app_list()->SetAppListPresenter(
-      test_app_list_presenter.CreateInterfacePtrAndBind());
-  ui::test::EventGenerator& generator = GetEventGenerator();
-  gfx::Point shelf_center = shelf_view_->GetBoundsInScreen().CenterPoint();
-  generator.MoveMouseTo(shelf_center);
-
-  // Mousewheel scroll on the shelf view.
-  generator.MoveMouseWheel(0, -1);
-  RunAllPendingInMessageLoop();
-
-  ASSERT_EQ(1u, test_app_list_presenter.process_mouse_wheel_offset_count());
-}
-
-TEST_F(ShelfViewTest, MouseWheelScrollOnApplistButtonTransitionsAppList) {
-  TestAppListPresenterImpl app_list_presenter_impl;
-  app_list_presenter_impl.ShowAndRunLoop(GetPrimaryDisplayId());
-  app_list::test::TestAppListPresenter test_app_list_presenter;
-  Shell::Get()->app_list()->SetAppListPresenter(
-      test_app_list_presenter.CreateInterfacePtrAndBind());
-  ui::test::EventGenerator& generator = GetEventGenerator();
-  gfx::Point app_list_button_center =
-      shelf_view_->GetAppListButton()->GetBoundsInScreen().CenterPoint();
-  generator.MoveMouseTo(app_list_button_center);
-
-  // Mousewheel scroll on the AppListButton.
-  generator.MoveMouseWheel(0, -1);
-  RunAllPendingInMessageLoop();
-
-  ASSERT_EQ(1u, test_app_list_presenter.process_mouse_wheel_offset_count());
-}
-
-TEST_F(ShelfViewTest, MouseWheelScrollOnAppIconTransitionsAppList) {
-  TestAppListPresenterImpl app_list_presenter_impl;
-  app_list_presenter_impl.ShowAndRunLoop(GetPrimaryDisplayId());
-  app_list::test::TestAppListPresenter test_app_list_presenter;
-  Shell::Get()->app_list()->SetAppListPresenter(
-      test_app_list_presenter.CreateInterfacePtrAndBind());
-  ui::test::EventGenerator& generator = GetEventGenerator();
-  // Add an app button
-  ShelfID id = AddApp();
-  gfx::Point button_center =
-      GetButtonByID(id)->GetBoundsInScreen().CenterPoint();
-  generator.MoveMouseTo(button_center);
-
-  // Mousewheel scroll on the app button.
-  generator.MoveMouseWheel(0, -1);
-  RunAllPendingInMessageLoop();
-
-  ASSERT_EQ(1u, test_app_list_presenter.process_mouse_wheel_offset_count());
-}
-
 class ShelfViewTouchableContextMenuTest : public ShelfViewTest {
  public:
   ShelfViewTouchableContextMenuTest() = default;
@@ -2392,13 +2334,6 @@ class ShelfViewInkDropTest : public ShelfViewTest {
         .SetInkDrop(std::move(browser_button_ink_drop));
   }
 
-  void FinishAppListVisibilityChange() {
-    // Trigger a mock notification that the app list finished animating.
-    app_list::AppList* app_list = Shell::Get()->app_list();
-    app_list->OnVisibilityChanged(app_list->GetTargetVisibility(),
-                                  GetPrimaryDisplayId());
-  }
-
   AppListButton* app_list_button_ = nullptr;
   InkDropSpy* app_list_button_ink_drop_ = nullptr;
   ShelfButton* browser_button_ = nullptr;
@@ -2413,14 +2348,15 @@ class ShelfViewInkDropTest : public ShelfViewTest {
 TEST_F(ShelfViewInkDropTest, AppListButtonWhenVisibilityChanges) {
   InitAppListButtonInkDrop();
 
-  TestAppListPresenterImpl app_list_presenter_impl;
-  app_list_presenter_impl.ShowAndRunLoop(GetPrimaryDisplay().id());
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+
   EXPECT_EQ(views::InkDropState::ACTIVATED,
             app_list_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
               ElementsAre(views::InkDropState::ACTIVATED));
 
-  app_list_presenter_impl.DismissAndRunLoop();
+  GetAppListTestHelper()->DismissAndRunLoop();
+
   EXPECT_EQ(views::InkDropState::HIDDEN,
             app_list_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
@@ -2439,9 +2375,8 @@ TEST_F(ShelfViewInkDropTest, AppListButtonMouseEventsWhenHidden) {
   // Mouse press on the button, which shows the app list, should end up in the
   // activated state.
   generator.PressLeftButton();
-  // Trigger a mock button notification that the app list was shown.
-  app_list_button_->OnAppListShown();
-  FinishAppListVisibilityChange();
+
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
   EXPECT_EQ(views::InkDropState::ACTIVATED,
             app_list_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
@@ -2465,8 +2400,7 @@ TEST_F(ShelfViewInkDropTest, AppListButtonMouseEventsWhenHidden) {
 TEST_F(ShelfViewInkDropTest, AppListButtonMouseEventsWhenVisible) {
   InitAppListButtonInkDrop();
 
-  TestAppListPresenterImpl app_list_presenter_impl;
-  app_list_presenter_impl.ShowAndRunLoop(GetPrimaryDisplay().id());
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
   EXPECT_EQ(views::InkDropState::ACTIVATED,
             app_list_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
@@ -2512,9 +2446,8 @@ TEST_F(ShelfViewInkDropTest, AppListButtonGestureTapWhenHidden) {
   // Touch release on the button, which shows the app list, should end up in the
   // activated state.
   generator.ReleaseTouch();
-  // Trigger a mock button notification that the app list was shown.
-  app_list_button_->OnAppListShown();
-  FinishAppListVisibilityChange();
+
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
   EXPECT_EQ(views::InkDropState::ACTIVATED,
             app_list_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
@@ -2526,8 +2459,8 @@ TEST_F(ShelfViewInkDropTest, AppListButtonGestureTapWhenHidden) {
 TEST_F(ShelfViewInkDropTest, AppListButtonGestureTapWhenVisible) {
   InitAppListButtonInkDrop();
 
-  TestAppListPresenterImpl app_list_presenter_impl;
-  app_list_presenter_impl.ShowAndRunLoop(GetPrimaryDisplay().id());
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+
   EXPECT_EQ(views::InkDropState::ACTIVATED,
             app_list_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
@@ -2539,7 +2472,7 @@ TEST_F(ShelfViewInkDropTest, AppListButtonGestureTapWhenVisible) {
   generator.MoveMouseTo(app_list_button_->GetBoundsInScreen().CenterPoint());
   generator.PressTouch();
   generator.ReleaseTouch();
-  RunAllPendingInMessageLoop();
+  GetAppListTestHelper()->WaitUntilIdle();
   EXPECT_EQ(views::InkDropState::HIDDEN,
             app_list_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
@@ -2584,8 +2517,8 @@ TEST_F(ShelfViewInkDropTest, AppListButtonGestureTapDragWhenHidden) {
 TEST_F(ShelfViewInkDropTest, AppListButtonGestureTapDragWhenVisible) {
   InitAppListButtonInkDrop();
 
-  TestAppListPresenterImpl app_list_presenter_impl;
-  app_list_presenter_impl.ShowAndRunLoop(GetPrimaryDisplay().id());
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+
   EXPECT_EQ(views::InkDropState::ACTIVATED,
             app_list_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
