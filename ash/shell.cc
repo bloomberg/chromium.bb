@@ -82,6 +82,7 @@
 #include "ash/system/keyboard_brightness/keyboard_brightness_controller.h"
 #include "ash/system/keyboard_brightness_control_delegate.h"
 #include "ash/system/locale/locale_notification_controller.h"
+#include "ash/system/model/system_tray_model.h"
 #include "ash/system/network/sms_observer.h"
 #include "ash/system/network/vpn_list.h"
 #include "ash/system/night_light/night_light_controller.h"
@@ -973,6 +974,8 @@ void Shell::Init(ui::ContextFactory* context_factory,
     cursor_manager_->SetDisplay(
         display::Screen::GetScreen()->GetPrimaryDisplay());
   }
+
+  system_tray_model_ = std::make_unique<SystemTrayModel>();
 
   accelerator_controller_ = shell_port_->CreateAcceleratorController();
   app_list_controller_ = std::make_unique<AppListControllerImpl>();

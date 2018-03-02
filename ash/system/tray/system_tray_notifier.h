@@ -20,7 +20,6 @@ namespace ash {
 class AccessibilityObserver;
 class BluetoothObserver;
 class ClockObserver;
-class EnterpriseDomainObserver;
 class IMEObserver;
 class NetworkObserver;
 class NetworkPortalDetectorObserver;
@@ -59,11 +58,6 @@ class ASH_EXPORT SystemTrayNotifier {
   void NotifyDateFormatChanged();
   void NotifySystemClockTimeUpdated();
   void NotifySystemClockCanSetTimeChanged(bool can_set_time);
-
-  // Enterprise domain.
-  void AddEnterpriseDomainObserver(EnterpriseDomainObserver* observer);
-  void RemoveEnterpriseDomainObserver(EnterpriseDomainObserver* observer);
-  void NotifyEnterpriseDomainChanged();
 
   // Input methods.
   void AddIMEObserver(IMEObserver* observer);
@@ -116,7 +110,6 @@ class ASH_EXPORT SystemTrayNotifier {
   base::ObserverList<AccessibilityObserver> accessibility_observers_;
   base::ObserverList<BluetoothObserver> bluetooth_observers_;
   base::ObserverList<ClockObserver> clock_observers_;
-  base::ObserverList<EnterpriseDomainObserver> enterprise_domain_observers_;
   base::ObserverList<IMEObserver> ime_observers_;
   base::ObserverList<NetworkObserver> network_observers_;
   base::ObserverList<NetworkPortalDetectorObserver>

@@ -7,7 +7,6 @@
 #include "ash/system/accessibility_observer.h"
 #include "ash/system/bluetooth/bluetooth_observer.h"
 #include "ash/system/date/clock_observer.h"
-#include "ash/system/enterprise/enterprise_domain_observer.h"
 #include "ash/system/ime/ime_observer.h"
 #include "ash/system/network/network_observer.h"
 #include "ash/system/network/network_portal_detector_observer.h"
@@ -83,21 +82,6 @@ void SystemTrayNotifier::NotifySystemClockTimeUpdated() {
 void SystemTrayNotifier::NotifySystemClockCanSetTimeChanged(bool can_set_time) {
   for (auto& observer : clock_observers_)
     observer.OnSystemClockCanSetTimeChanged(can_set_time);
-}
-
-void SystemTrayNotifier::AddEnterpriseDomainObserver(
-    EnterpriseDomainObserver* observer) {
-  enterprise_domain_observers_.AddObserver(observer);
-}
-
-void SystemTrayNotifier::RemoveEnterpriseDomainObserver(
-    EnterpriseDomainObserver* observer) {
-  enterprise_domain_observers_.RemoveObserver(observer);
-}
-
-void SystemTrayNotifier::NotifyEnterpriseDomainChanged() {
-  for (auto& observer : enterprise_domain_observers_)
-    observer.OnEnterpriseDomainChanged();
 }
 
 void SystemTrayNotifier::AddIMEObserver(IMEObserver* observer) {

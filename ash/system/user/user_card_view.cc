@@ -14,6 +14,8 @@
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/model/enterprise_domain_model.h"
+#include "ash/system/model/system_tray_model.h"
 #include "ash/system/tray/system_tray_controller.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_item_style.h"
@@ -125,8 +127,10 @@ PublicAccountUserDetails::PublicAccountUserDetails() : learn_more_(nullptr) {
   base::RemoveChars(display_name, kDisplayNameMark, &display_name);
   display_name = kDisplayNameMark[0] + display_name + kDisplayNameMark[0];
   // Retrieve the domain managing the device and wrap it with markers.
-  base::string16 domain = base::UTF8ToUTF16(
-      Shell::Get()->system_tray_controller()->enterprise_display_domain());
+  base::string16 domain = base::UTF8ToUTF16(Shell::Get()
+                                                ->system_tray_model()
+                                                ->enterprise_domain()
+                                                ->enterprise_display_domain());
   base::RemoveChars(domain, kDisplayNameMark, &domain);
   base::i18n::WrapStringWithLTRFormatting(&domain);
   // Retrieve the label text, inserting the display name and domain.

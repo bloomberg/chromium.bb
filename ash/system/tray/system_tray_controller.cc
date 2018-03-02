@@ -6,6 +6,8 @@
 
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
+#include "ash/system/model/enterprise_domain_model.h"
+#include "ash/system/model/system_tray_model.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_notifier.h"
@@ -182,9 +184,11 @@ void SystemTrayController::SetUse24HourClock(bool use_24_hour) {
 void SystemTrayController::SetEnterpriseDisplayDomain(
     const std::string& enterprise_display_domain,
     bool active_directory_managed) {
-  enterprise_display_domain_ = enterprise_display_domain;
-  active_directory_managed_ = active_directory_managed;
-  Shell::Get()->system_tray_notifier()->NotifyEnterpriseDomainChanged();
+  Shell::Get()
+      ->system_tray_model()
+      ->enterprise_domain()
+      ->SetEnterpriseDisplayDomain(enterprise_display_domain,
+                                   active_directory_managed);
 }
 
 void SystemTrayController::SetPerformanceTracingIconVisible(bool visible) {
