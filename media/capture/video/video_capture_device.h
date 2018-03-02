@@ -28,7 +28,7 @@
 #include "build/build_config.h"
 #include "media/base/video_frame.h"
 #include "media/capture/capture_export.h"
-#include "media/capture/mojo/image_capture.mojom.h"
+#include "media/capture/mojom/image_capture.mojom.h"
 #include "media/capture/video/video_capture_buffer_handle.h"
 #include "media/capture/video/video_capture_device_descriptor.h"
 #include "media/capture/video_capture_types.h"

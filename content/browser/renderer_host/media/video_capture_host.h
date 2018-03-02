@@ -14,7 +14,7 @@
 #include "content/browser/renderer_host/media/video_capture_controller.h"
 #include "content/browser/renderer_host/media/video_capture_controller_event_handler.h"
 #include "content/common/content_export.h"
-#include "media/capture/mojo/video_capture.mojom.h"
+#include "media/capture/mojom/video_capture.mojom.h"
 
 namespace content {
 class MediaStreamManager;

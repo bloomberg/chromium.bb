@@ -5,7 +5,7 @@
 #ifndef MediaSettingsRange_h
 #define MediaSettingsRange_h
 
-#include "media/capture/mojo/image_capture.mojom-blink.h"
+#include "media/capture/mojom/image_capture.mojom-blink.h"
 #include "platform/bindings/ScriptWrappable.h"
 
 namespace blink {

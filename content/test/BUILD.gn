@@ -322,7 +322,7 @@ jumbo_static_library("test_support") {
     "//ipc:test_support",
     "//media",
     "//media/capture",
-    "//media/capture/mojo:image_capture",
+    "//media/capture/mojom:image_capture",
     "//mojo/edk/system",
     "//net:test_support",
     "//services/device/public/mojom",

@@ -9,7 +9,7 @@
 
 #include "base/memory/shared_memory.h"
 #include "content/common/content_export.h"
-#include "media/capture/mojo/video_capture_types.mojom.h"
+#include "media/capture/mojom/video_capture_types.mojom.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "ui/gfx/geometry/size.h"
 

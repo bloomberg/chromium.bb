@@ -9,7 +9,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "content/child/child_process.h"
 #include "content/renderer/media/video_capture_impl.h"
-#include "media/capture/mojo/video_capture.mojom.h"
+#include "media/capture/mojom/video_capture.mojom.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

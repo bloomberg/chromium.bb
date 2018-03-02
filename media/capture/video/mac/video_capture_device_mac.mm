@@ -25,7 +25,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "media/base/timestamp_constants.h"
-#include "media/capture/mojo/image_capture_types.h"
+#include "media/capture/mojom/image_capture_types.h"
 #import "media/capture/video/mac/video_capture_device_avfoundation_mac.h"
 #include "ui/gfx/geometry/size.h"
 
