@@ -90,6 +90,11 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
     // does not require ordering information.
     private static final int MENU_ITEM_ORDER_TEXT_PROCESS_START = 100;
 
+    // A flag to determine if we should get readback view from WindowAndroid.
+    // The readback view could be the ContainerView, which WindowAndroid has no control on that.
+    // Embedders should set this properly to use the correct view for readback.
+    private static boolean sShouldGetReadbackViewFromWindowAndroid = false;
+
     private static final class UserDataFactoryLazyHolder {
         private static final UserDataFactory<SelectionPopupControllerImpl> INSTANCE =
                 SelectionPopupControllerImpl::new;
@@ -162,6 +167,23 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
      * none exists.
      */
     private SelectionInsertionHandleObserver mHandleObserver;
+
+    /**
+     * An interface for getting {@link View} for readback.
+     */
+    public interface ReadbackViewCallback {
+        /**
+         * Gets the {@link View} for readback.
+         */
+        View getReadbackView();
+    }
+
+    /**
+     * Sets to use the readback view from {@link WindowAndroid}.
+     */
+    public static void setShouldGetReadbackViewFromWindowAndroid() {
+        sShouldGetReadbackViewFromWindowAndroid = true;
+    }
 
     /**
      * Create {@link SelectionPopupController} instance.
@@ -241,7 +263,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
 
         mLastSelectedText = "";
 
-        mHandleObserver = ContentClassFactory.get().createHandleObserver(view);
+        initHandleObserver();
 
         if (initializeNative) nativeInit(mWebContents);
 
@@ -270,6 +292,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
         destroyPastePopup();
 
         mView = view;
+        initHandleObserver();
     }
 
     // ImeEventObserver
@@ -537,6 +560,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
     @Override
     public void onWindowAndroidChanged(WindowAndroid newWindowAndroid) {
         mWindowAndroid = newWindowAndroid;
+        initHandleObserver();
     }
 
     // WindowEventObserver
@@ -1290,6 +1314,16 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
     void setSelectionInsertionHandleObserver(
             @Nullable SelectionInsertionHandleObserver handleObserver) {
         mHandleObserver = handleObserver;
+    }
+
+    private void initHandleObserver() {
+        mHandleObserver = ContentClassFactory.get().createHandleObserver(() -> {
+            if (sShouldGetReadbackViewFromWindowAndroid) {
+                return mWindowAndroid == null ? null : mWindowAndroid.getReadbackView();
+            } else {
+                return mView;
+            }
+        });
     }
 
     @CalledByNative
