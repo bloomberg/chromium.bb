@@ -328,6 +328,41 @@ class MetaBuildWrapper(object):
     else:
       return self._RunLocallyIsolated(build_dir, target)
 
+  @staticmethod
+  def _AddBaseSoftware(cmd):
+    # HACK(iannucci): These packages SHOULD NOT BE HERE.
+    # Remove method once Swarming Pool Task Templates are implemented.
+    # crbug.com/812428
+
+    # Add in required base software. This should be kept in sync with the
+    # `swarming` recipe module in build.git. All references to `swarming_module`
+    # below are purely due to this.
+    cipd_packages = [
+      ('infra/python/cpython/${platform}',
+       'version:2.7.14.chromium14'),
+      ('infra/tools/luci/logdog/butler/${platform}',
+       'git_revision:e1abc57be62d198b5c2f487bfb2fa2d2eb0e867c'),
+      ('infra/tools/luci/vpython-native/${platform}',
+       'git_revision:e1abc57be62d198b5c2f487bfb2fa2d2eb0e867c'),
+      ('infra/tools/luci/vpython/${platform}',
+       'git_revision:e1abc57be62d198b5c2f487bfb2fa2d2eb0e867c'),
+    ]
+    for pkg, vers in cipd_packages:
+      cmd.append('--cipd-package=.swarming_module:%s:%s' % (pkg, vers))
+
+    # Add packages to $PATH
+    cmd.extend([
+      '--env-prefix=PATH', '.swarming_module',
+      '--env-prefix=PATH', '.swarming_module/bin',
+    ])
+
+    # Add cache directives for vpython.
+    vpython_cache_path = '.swarming_module_cache/vpython'
+    cmd.extend([
+      '--named-cache=swarming_module_cache_vpython', vpython_cache_path,
+      '--env-prefix=VPYTHON_VIRTUALENV_ROOT', vpython_cache_path,
+    ])
+
   def _RunUnderSwarming(self, build_dir, target):
     # TODO(dpranke): Look up the information for the target in
     # the //testing/buildbot.json file, if possible, so that we
@@ -360,6 +395,7 @@ class MetaBuildWrapper(object):
           '-I', 'isolateserver.appspot.com',
           '-S', 'chromium-swarm.appspot.com',
       ] + dimensions
+    self._AddBaseSoftware(cmd)
     if self.args.extra_args:
       cmd += ['--'] + self.args.extra_args
     ret, _, _ = self.Run(cmd, force_verbose=True, buffer_output=False)
