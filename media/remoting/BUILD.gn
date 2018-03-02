@@ -41,20 +41,8 @@ source_set("remoting") {
     "courier_renderer_factory.h",
     "metrics.cc",
     "metrics.h",
-    "remoting_cdm.cc",
-    "remoting_cdm.h",
-    "remoting_cdm_context.cc",
-    "remoting_cdm_context.h",
-    "remoting_cdm_controller.cc",
-    "remoting_cdm_controller.h",
-    "remoting_cdm_factory.cc",
-    "remoting_cdm_factory.h",
     "renderer_controller.cc",
     "renderer_controller.h",
-    "shared_session.cc",
-    "shared_session.h",
-    "sink_availability_observer.cc",
-    "sink_availability_observer.h",
   ]
 
   deps = [

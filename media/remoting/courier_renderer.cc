@@ -140,26 +140,22 @@ void CourierRenderer::Initialize(MediaResource* media_resource,
   }
 
   // Establish remoting data pipe connection using main thread.
-  const SharedSession::DataPipeStartCallback data_pipe_callback =
-      base::Bind(&CourierRenderer::OnDataPipeCreatedOnMainThread,
-                 media_task_runner_, weak_factory_.GetWeakPtr(), rpc_broker_);
   main_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&RendererController::StartDataPipe, controller_,
-                 base::Passed(&audio_data_pipe), base::Passed(&video_data_pipe),
-                 data_pipe_callback));
+      base::BindOnce(
+          &RendererController::StartDataPipe, controller_,
+          base::Passed(&audio_data_pipe), base::Passed(&video_data_pipe),
+          base::BindOnce(&CourierRenderer::OnDataPipeCreatedOnMainThread,
+                         media_task_runner_, weak_factory_.GetWeakPtr(),
+                         rpc_broker_)));
 }
 
 void CourierRenderer::SetCdm(CdmContext* cdm_context,
                              const CdmAttachedCB& cdm_attached_cb) {
-  VLOG(2) << __func__ << " cdm_id:" << cdm_context->GetCdmId();
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
-  // TODO(erickung): add implementation once Remote CDM implementation is done.
-  // Right now it returns callback immediately.
-  if (!cdm_attached_cb.is_null()) {
-    cdm_attached_cb.Run(false);
-  }
+  // Media remoting doesn't support encrypted content.
+  NOTIMPLEMENTED();
 }
 
 void CourierRenderer::Flush(const base::Closure& flush_cb) {

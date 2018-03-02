@@ -12,7 +12,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/buildflag.h"
 #include "media/media_features.h"
-#include "media/remoting/shared_session.h"
+#include "media/remoting/renderer_controller.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -188,7 +188,7 @@ void FakeRemoterFactory::Create(mojom::RemotingSourcePtr source,
 }
 
 // static
-scoped_refptr<SharedSession> FakeRemoterFactory::CreateSharedSession(
+std::unique_ptr<RendererController> FakeRemoterFactory::CreateController(
     bool start_will_fail) {
   mojom::RemotingSourcePtr remoting_source;
   auto remoting_source_request = mojo::MakeRequest(&remoting_source);
@@ -196,8 +196,8 @@ scoped_refptr<SharedSession> FakeRemoterFactory::CreateSharedSession(
   FakeRemoterFactory remoter_factory(start_will_fail);
   remoter_factory.Create(std::move(remoting_source),
                          mojo::MakeRequest(&remoter));
-  return new SharedSession(std::move(remoting_source_request),
-                           std::move(remoter));
+  return std::make_unique<RendererController>(
+      std::move(remoting_source_request), std::move(remoter));
 }
 
 }  // namespace remoting

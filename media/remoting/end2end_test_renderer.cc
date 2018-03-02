@@ -69,7 +69,7 @@ class TestStreamSender final : public mojom::RemotingDataStreamSender {
 class TestRemoter final : public mojom::Remoter {
  public:
   using SendMessageToSinkCallback =
-      base::Callback<void(const std::vector<uint8_t>& message)>;
+      base::RepeatingCallback<void(const std::vector<uint8_t>& message)>;
   TestRemoter(
       mojom::RemotingSourcePtr source,
       const SendMessageToSinkCallback& send_message_to_sink_cb,
@@ -130,7 +130,7 @@ class TestRemoter final : public mojom::Remoter {
   DISALLOW_COPY_AND_ASSIGN(TestRemoter);
 };
 
-scoped_refptr<SharedSession> CreateSharedSession(
+std::unique_ptr<RendererController> CreateController(
     const TestRemoter::SendMessageToSinkCallback& send_message_to_sink_cb,
     const TestStreamSender::SendFrameToSinkCallback& send_frame_to_sink_cb) {
   mojom::RemotingSourcePtr remoting_source;
@@ -140,23 +140,23 @@ scoped_refptr<SharedSession> CreateSharedSession(
       std::move(remoting_source), send_message_to_sink_cb,
       send_frame_to_sink_cb);
   mojo::MakeStrongBinding(std::move(test_remoter), mojo::MakeRequest(&remoter));
-  return new SharedSession(std::move(remoting_source_request),
-                           std::move(remoter));
+  return std::make_unique<RendererController>(
+      std::move(remoting_source_request), std::move(remoter));
 }
 
 }  // namespace
 
 End2EndTestRenderer::End2EndTestRenderer(std::unique_ptr<Renderer> renderer)
-    : receiver_rpc_broker_(base::Bind(&End2EndTestRenderer::OnMessageFromSink,
-                                      base::Unretained(this))),
+    : receiver_rpc_broker_(
+          base::BindRepeating(&End2EndTestRenderer::OnMessageFromSink,
+                              base::Unretained(this))),
       receiver_(new Receiver(std::move(renderer), &receiver_rpc_broker_)),
       weak_factory_(this) {
-  shared_session_ =
-      CreateSharedSession(base::Bind(&End2EndTestRenderer::SendMessageToSink,
-                                     weak_factory_.GetWeakPtr()),
-                          base::Bind(&End2EndTestRenderer::SendFrameToSink,
-                                     weak_factory_.GetWeakPtr()));
-  controller_.reset(new RendererController(shared_session_));
+  controller_ = CreateController(
+      base::BindRepeating(&End2EndTestRenderer::SendMessageToSink,
+                          weak_factory_.GetWeakPtr()),
+      base::BindRepeating(&End2EndTestRenderer::SendFrameToSink,
+                          weak_factory_.GetWeakPtr()));
   courier_renderer_.reset(new CourierRenderer(
       base::ThreadTaskRunnerHandle::Get(), controller_->GetWeakPtr(), nullptr));
 }
@@ -215,7 +215,7 @@ void End2EndTestRenderer::SendFrameToSink(const std::vector<uint8_t>& frame,
 
 void End2EndTestRenderer::OnMessageFromSink(
     std::unique_ptr<std::vector<uint8_t>> message) {
-  shared_session_->OnMessageFromSink(*message);
+  controller_->OnMessageFromSink(*message);
 }
 
 }  // namespace remoting

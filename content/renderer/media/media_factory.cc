@@ -71,11 +71,7 @@
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
 #include "media/remoting/courier_renderer_factory.h"    // nogncheck
-#include "media/remoting/remoting_cdm_controller.h"     // nogncheck
-#include "media/remoting/remoting_cdm_factory.h"        // nogncheck
 #include "media/remoting/renderer_controller.h"         // nogncheck
-#include "media/remoting/shared_session.h"              // nogncheck
-#include "media/remoting/sink_availability_observer.h"  // nogncheck
 #endif
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
@@ -146,19 +142,6 @@ void MediaFactory::SetupMojo() {
 
   remote_interfaces_ = render_frame_->GetRemoteInterfaces();
   DCHECK(remote_interfaces_);
-
-#if BUILDFLAG(ENABLE_MEDIA_REMOTING)
-  // Create the SinkAvailabilityObserver to monitor the remoting sink
-  // availablity.
-  media::mojom::RemotingSourcePtr remoting_source;
-  auto remoting_source_request = mojo::MakeRequest(&remoting_source);
-  media::mojom::RemoterPtr remoter;
-  GetRemoterFactory()->Create(std::move(remoting_source),
-                              mojo::MakeRequest(&remoter));
-  remoting_sink_observer_ =
-      std::make_unique<media::remoting::SinkAvailabilityObserver>(
-          std::move(remoting_source_request), std::move(remoter));
-#endif  // BUILDFLAG(ENABLE_MEDIA_REMOTING)
 }
 
 #if defined(OS_ANDROID)
@@ -434,9 +417,8 @@ MediaFactory::CreateRendererFactorySelector(
   GetRemoterFactory()->Create(std::move(remoting_source),
                               mojo::MakeRequest(&remoter));
   using RemotingController = media::remoting::RendererController;
-  std::unique_ptr<RemotingController> remoting_controller(
-      new RemotingController(new media::remoting::SharedSession(
-          std::move(remoting_source_request), std::move(remoter))));
+  auto remoting_controller = std::make_unique<RemotingController>(
+      std::move(remoting_source_request), std::move(remoter));
   *out_media_observer = remoting_controller->GetWeakPtr();
 
   auto courier_factory =
@@ -557,12 +539,6 @@ media::CdmFactory* MediaFactory::GetCdmFactory() {
 #elif BUILDFLAG(ENABLE_MOJO_CDM)
   cdm_factory_.reset(new media::MojoCdmFactory(GetMediaInterfaceFactory()));
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
-
-#if BUILDFLAG(ENABLE_MEDIA_REMOTING)
-  cdm_factory_.reset(new media::remoting::RemotingCdmFactory(
-      std::move(cdm_factory_), GetRemoterFactory(),
-      std::move(remoting_sink_observer_)));
-#endif  // BUILDFLAG(ENABLE_MEDIA_REMOTING)
 
   return cdm_factory_.get();
 }

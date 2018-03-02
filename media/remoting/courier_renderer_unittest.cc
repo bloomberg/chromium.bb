@@ -279,8 +279,7 @@ class CourierRendererTest : public testing::Test {
   }
 
   void SetUp() override {
-    controller_ = std::make_unique<RendererController>(
-        FakeRemoterFactory::CreateSharedSession(false));
+    controller_ = FakeRemoterFactory::CreateController(false);
     controller_->OnMetadataChanged(DefaultMetadata());
 
     // Redirect RPC message to CourierRendererTest::OnSendMessageToSink().

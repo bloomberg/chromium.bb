@@ -13,7 +13,7 @@
 namespace media {
 namespace remoting {
 
-class SharedSession;
+class RendererController;
 
 class FakeRemotingDataStreamSender : public mojom::RemotingDataStreamSender {
  public:
@@ -92,7 +92,8 @@ class FakeRemoterFactory final : public mojom::RemoterFactory {
   void Create(mojom::RemotingSourcePtr source,
               mojom::RemoterRequest request) override;
 
-  static scoped_refptr<SharedSession> CreateSharedSession(bool start_will_fail);
+  static std::unique_ptr<RendererController> CreateController(
+      bool start_will_fail);
 
  private:
   bool start_will_fail_;

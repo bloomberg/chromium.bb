@@ -193,6 +193,11 @@ void MediaRouterMojoImpl::CreateRoute(
     return;
   }
 
+  if (IsTabMirroringMediaSource(MediaSource(source_id))) {
+    // Ensure the CastRemotingConnector is created before mirroring starts.
+    CastRemotingConnector::Get(web_contents);
+  }
+
   MediaRouterMetrics::RecordMediaSinkType(sink->icon_type());
   MediaRouteProviderId provider_id = sink->provider_id();
   int tab_id = SessionTabHelper::IdForTab(web_contents);
