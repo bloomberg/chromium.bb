@@ -2969,6 +2969,8 @@ jumbo_split_static_library("browser") {
         "conflicts/msi_util_win.h",
         "conflicts/problematic_programs_updater_win.cc",
         "conflicts/problematic_programs_updater_win.h",
+        "conflicts/registry_key_watcher_win.cc",
+        "conflicts/registry_key_watcher_win.h",
         "conflicts/third_party_conflicts_manager_win.cc",
         "conflicts/third_party_conflicts_manager_win.h",
         "conflicts/uninstall_application_win.cc",

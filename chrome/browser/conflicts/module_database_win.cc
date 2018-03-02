@@ -49,6 +49,10 @@ ModuleDatabase::ModuleDatabase(
 #endif
       weak_ptr_factory_(this) {
   AddObserver(&third_party_metrics_);
+
+#if defined(GOOGLE_CHROME_BUILD)
+  AddObserver(&third_party_conflicts_manager_);
+#endif
 }
 
 ModuleDatabase::~ModuleDatabase() {
