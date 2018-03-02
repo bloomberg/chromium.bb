@@ -376,13 +376,10 @@ NSString* const kFindElementResultHandlerName = @"FindElementResultHandler";
   [self setDOMElementForLastTouch:nil];
   [self cancelContextMenuDisplay];
 
-  base::TimeTicks fetchStartTime = base::TimeTicks::Now();
   __weak CRWContextMenuController* weakSelf = self;
   [self fetchDOMElementAtPoint:[touch locationInView:_webView]
              completionHandler:^(NSDictionary* element) {
-               CRWContextMenuController* strongSelf = weakSelf;
-               [strongSelf logElementFetchDurationWithStartTime:fetchStartTime];
-               [strongSelf setDOMElementForLastTouch:element];
+               [weakSelf setDOMElementForLastTouch:element];
              }];
   return YES;
 }
