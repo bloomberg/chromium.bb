@@ -78,6 +78,12 @@ public interface VrDaydreamApi {
     Intent setupVrIntent(Intent intent);
 
     /**
+     * Whether the user is currently in a VR session. Note that this should be treated as heuristic,
+     * and may at times be wrong.
+     */
+    boolean isInVrSession();
+
+    /**
      * Closes this DaydreamApi instance.
      */
     void close();
