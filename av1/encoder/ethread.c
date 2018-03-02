@@ -83,15 +83,13 @@ void av1_encode_tiles_mt(AV1_COMP *cpi) {
         thread_data->td->pc_tree = NULL;
         av1_setup_pc_tree(cm, thread_data->td);
 
-        int buf_scaler = 2;
-
         CHECK_MEM_ERROR(cm, thread_data->td->above_pred_buf,
                         (uint8_t *)aom_memalign(
-                            16, buf_scaler * MAX_MB_PLANE * MAX_SB_SQUARE *
+                            16, MAX_MB_PLANE * MAX_SB_SQUARE *
                                     sizeof(*thread_data->td->above_pred_buf)));
         CHECK_MEM_ERROR(cm, thread_data->td->left_pred_buf,
                         (uint8_t *)aom_memalign(
-                            16, buf_scaler * MAX_MB_PLANE * MAX_SB_SQUARE *
+                            16, MAX_MB_PLANE * MAX_SB_SQUARE *
                                     sizeof(*thread_data->td->left_pred_buf)));
 
         CHECK_MEM_ERROR(
