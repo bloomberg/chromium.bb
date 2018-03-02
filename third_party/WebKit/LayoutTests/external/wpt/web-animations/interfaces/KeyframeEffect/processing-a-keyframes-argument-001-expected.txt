@@ -1,39 +1,39 @@
 This is a testharness.js-based test.
-Found 50 tests; 12 PASS, 38 FAIL, 0 TIMEOUT, 0 NOTRUN.
-FAIL non-animatable property 'animation' is not accessed when using a property-indexed keyframe object assert_equals: Accessor not called expected 0 but got 1
-FAIL non-animatable property 'animationDelay' is not accessed when using a property-indexed keyframe object assert_equals: Accessor not called expected 0 but got 1
-FAIL non-animatable property 'animationDirection' is not accessed when using a property-indexed keyframe object assert_equals: Accessor not called expected 0 but got 1
-FAIL non-animatable property 'animationDuration' is not accessed when using a property-indexed keyframe object assert_equals: Accessor not called expected 0 but got 1
-FAIL non-animatable property 'animationFillMode' is not accessed when using a property-indexed keyframe object assert_equals: Accessor not called expected 0 but got 1
-FAIL non-animatable property 'animationIterationCount' is not accessed when using a property-indexed keyframe object assert_equals: Accessor not called expected 0 but got 1
-FAIL non-animatable property 'animationName' is not accessed when using a property-indexed keyframe object assert_equals: Accessor not called expected 0 but got 1
-FAIL non-animatable property 'animationPlayState' is not accessed when using a property-indexed keyframe object assert_equals: Accessor not called expected 0 but got 1
-FAIL non-animatable property 'animationTimingFunction' is not accessed when using a property-indexed keyframe object assert_equals: Accessor not called expected 0 but got 1
-FAIL non-animatable property 'transition' is not accessed when using a property-indexed keyframe object assert_equals: Accessor not called expected 0 but got 1
-FAIL non-animatable property 'transitionDelay' is not accessed when using a property-indexed keyframe object assert_equals: Accessor not called expected 0 but got 1
-FAIL non-animatable property 'transitionDuration' is not accessed when using a property-indexed keyframe object assert_equals: Accessor not called expected 0 but got 1
-FAIL non-animatable property 'transitionProperty' is not accessed when using a property-indexed keyframe object assert_equals: Accessor not called expected 0 but got 1
-FAIL non-animatable property 'transitionTimingFunction' is not accessed when using a property-indexed keyframe object assert_equals: Accessor not called expected 0 but got 1
-FAIL non-animatable property 'display' is not accessed when using a property-indexed keyframe object assert_equals: Accessor not called expected 0 but got 1
-FAIL non-animatable property 'unsupportedProperty' is not accessed when using a property-indexed keyframe object assert_equals: Accessor not called expected 0 but got 1
-FAIL non-animatable property 'font-size' is not accessed when using a property-indexed keyframe object assert_equals: Accessor not called expected 0 but got 1
-FAIL non-animatable property 'animation' is not accessed when using a keyframe sequence assert_equals: Accessor not called expected 0 but got 1
-FAIL non-animatable property 'animationDelay' is not accessed when using a keyframe sequence assert_equals: Accessor not called expected 0 but got 1
-FAIL non-animatable property 'animationDirection' is not accessed when using a keyframe sequence assert_equals: Accessor not called expected 0 but got 1
-FAIL non-animatable property 'animationDuration' is not accessed when using a keyframe sequence assert_equals: Accessor not called expected 0 but got 1
-FAIL non-animatable property 'animationFillMode' is not accessed when using a keyframe sequence assert_equals: Accessor not called expected 0 but got 1
-FAIL non-animatable property 'animationIterationCount' is not accessed when using a keyframe sequence assert_equals: Accessor not called expected 0 but got 1
-FAIL non-animatable property 'animationName' is not accessed when using a keyframe sequence assert_equals: Accessor not called expected 0 but got 1
-FAIL non-animatable property 'animationPlayState' is not accessed when using a keyframe sequence assert_equals: Accessor not called expected 0 but got 1
-FAIL non-animatable property 'animationTimingFunction' is not accessed when using a keyframe sequence assert_equals: Accessor not called expected 0 but got 1
-FAIL non-animatable property 'transition' is not accessed when using a keyframe sequence assert_equals: Accessor not called expected 0 but got 1
-FAIL non-animatable property 'transitionDelay' is not accessed when using a keyframe sequence assert_equals: Accessor not called expected 0 but got 1
-FAIL non-animatable property 'transitionDuration' is not accessed when using a keyframe sequence assert_equals: Accessor not called expected 0 but got 1
-FAIL non-animatable property 'transitionProperty' is not accessed when using a keyframe sequence assert_equals: Accessor not called expected 0 but got 1
-FAIL non-animatable property 'transitionTimingFunction' is not accessed when using a keyframe sequence assert_equals: Accessor not called expected 0 but got 1
-FAIL non-animatable property 'display' is not accessed when using a keyframe sequence assert_equals: Accessor not called expected 0 but got 1
-FAIL non-animatable property 'unsupportedProperty' is not accessed when using a keyframe sequence assert_equals: Accessor not called expected 0 but got 1
-FAIL non-animatable property 'font-size' is not accessed when using a keyframe sequence assert_equals: Accessor not called expected 0 but got 1
+Found 50 tests; 46 PASS, 4 FAIL, 0 TIMEOUT, 0 NOTRUN.
+PASS non-animatable property 'animation' is not accessed when using a property-indexed keyframe object
+PASS non-animatable property 'animationDelay' is not accessed when using a property-indexed keyframe object
+PASS non-animatable property 'animationDirection' is not accessed when using a property-indexed keyframe object
+PASS non-animatable property 'animationDuration' is not accessed when using a property-indexed keyframe object
+PASS non-animatable property 'animationFillMode' is not accessed when using a property-indexed keyframe object
+PASS non-animatable property 'animationIterationCount' is not accessed when using a property-indexed keyframe object
+PASS non-animatable property 'animationName' is not accessed when using a property-indexed keyframe object
+PASS non-animatable property 'animationPlayState' is not accessed when using a property-indexed keyframe object
+PASS non-animatable property 'animationTimingFunction' is not accessed when using a property-indexed keyframe object
+PASS non-animatable property 'transition' is not accessed when using a property-indexed keyframe object
+PASS non-animatable property 'transitionDelay' is not accessed when using a property-indexed keyframe object
+PASS non-animatable property 'transitionDuration' is not accessed when using a property-indexed keyframe object
+PASS non-animatable property 'transitionProperty' is not accessed when using a property-indexed keyframe object
+PASS non-animatable property 'transitionTimingFunction' is not accessed when using a property-indexed keyframe object
+PASS non-animatable property 'display' is not accessed when using a property-indexed keyframe object
+PASS non-animatable property 'unsupportedProperty' is not accessed when using a property-indexed keyframe object
+PASS non-animatable property 'font-size' is not accessed when using a property-indexed keyframe object
+PASS non-animatable property 'animation' is not accessed when using a keyframe sequence
+PASS non-animatable property 'animationDelay' is not accessed when using a keyframe sequence
+PASS non-animatable property 'animationDirection' is not accessed when using a keyframe sequence
+PASS non-animatable property 'animationDuration' is not accessed when using a keyframe sequence
+PASS non-animatable property 'animationFillMode' is not accessed when using a keyframe sequence
+PASS non-animatable property 'animationIterationCount' is not accessed when using a keyframe sequence
+PASS non-animatable property 'animationName' is not accessed when using a keyframe sequence
+PASS non-animatable property 'animationPlayState' is not accessed when using a keyframe sequence
+PASS non-animatable property 'animationTimingFunction' is not accessed when using a keyframe sequence
+PASS non-animatable property 'transition' is not accessed when using a keyframe sequence
+PASS non-animatable property 'transitionDelay' is not accessed when using a keyframe sequence
+PASS non-animatable property 'transitionDuration' is not accessed when using a keyframe sequence
+PASS non-animatable property 'transitionProperty' is not accessed when using a keyframe sequence
+PASS non-animatable property 'transitionTimingFunction' is not accessed when using a keyframe sequence
+PASS non-animatable property 'display' is not accessed when using a keyframe sequence
+PASS non-animatable property 'unsupportedProperty' is not accessed when using a keyframe sequence
+PASS non-animatable property 'font-size' is not accessed when using a keyframe sequence
 PASS Equivalent property-indexed and sequenced keyframes: two properties with one value
 PASS Equivalent property-indexed and sequenced keyframes: two properties with three values
 PASS Equivalent property-indexed and sequenced keyframes: two properties with different numbers of values

@@ -43,6 +43,7 @@
 #include "core/animation/CompositorAnimations.h"
 #include "core/animation/KeyframeEffectModel.h"
 #include "core/animation/StringKeyframe.h"
+#include "core/animation/css/CSSAnimations.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
@@ -192,6 +193,26 @@ EffectModel::CompositeOperation ResolveCompositeOperationForKeyframe(
   return composite;
 }
 
+bool IsAnimatableKeyframeAttribute(const String& property,
+                                   Element* element,
+                                   const Document& document) {
+  CSSPropertyID css_property =
+      AnimationInputHelpers::KeyframeAttributeToCSSProperty(property, document);
+  if (css_property != CSSPropertyInvalid) {
+    return !CSSAnimations::IsAnimationAffectingProperty(
+        CSSProperty::Get(css_property));
+  }
+
+  css_property =
+      AnimationInputHelpers::KeyframeAttributeToPresentationAttribute(property,
+                                                                      element);
+  if (css_property != CSSPropertyInvalid)
+    return true;
+
+  return !!AnimationInputHelpers::KeyframeAttributeToSVGAttribute(property,
+                                                                  element);
+}
+
 // Temporary storage struct used when converting array-form keyframes.
 struct KeyframeOutput {
   BaseKeyframe base_keyframe;
@@ -235,6 +256,10 @@ StringKeyframeVector ConvertArrayForm(Element* element,
           property == "easing") {
         continue;
       }
+
+      // By spec, we are not allowed to access any non-animatable property.
+      if (!IsAnimatableKeyframeAttribute(property, element, document))
+        continue;
 
       // By spec, we are only allowed to access a given (property, value) pair
       // once. This is observable by the web client, so we take care to adhere
@@ -438,6 +463,10 @@ StringKeyframeVector ConvertObjectForm(Element* element,
         property == "easing") {
       continue;
     }
+
+    // By spec, we are not allowed to access any non-animatable property.
+    if (!IsAnimatableKeyframeAttribute(property, element, document))
+      continue;
 
     Vector<String> values;
     if (!GetPropertyIndexedKeyframeValues(dictionary, property, script_state,

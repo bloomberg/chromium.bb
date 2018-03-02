@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 809 tests; 652 PASS, 157 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 722 tests; 631 PASS, 91 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS align-content (type: discrete) has testInterpolation function
 PASS align-content uses discrete animation when animating between "flex-start" and "flex-end" with linear easing
 PASS align-content uses discrete animation when animating between "flex-start" and "flex-end" with effect easing
@@ -130,10 +130,6 @@ PASS border-top-style uses discrete animation when animating between "dotted" an
 PASS border-top-width (type: length) has testInterpolation function
 PASS border-top-width supports animating as a length
 PASS border-top-width supports animating as a length of rem
-PASS box-decoration-break (type: discrete) has testInterpolation function
-FAIL box-decoration-break uses discrete animation when animating between "slice" and "clone" with linear easing assert_equals: The value should be slice at 0ms expected (string) "slice" but got (undefined) undefined
-FAIL box-decoration-break uses discrete animation when animating between "slice" and "clone" with effect easing assert_equals: The value should be slice at 0ms expected (string) "slice" but got (undefined) undefined
-FAIL box-decoration-break uses discrete animation when animating between "slice" and "clone" with keyframe easing assert_equals: The value should be slice at 0ms expected (string) "slice" but got (undefined) undefined
 PASS box-shadow (type: boxShadowList) has testInterpolation function
 PASS box-shadow: from none to other
 PASS box-shadow: from other to none
@@ -181,10 +177,6 @@ PASS color supports animating as color of hsl()
 PASS color supports animating as color of #RGBa
 PASS color supports animating as color of rgba()
 PASS color supports animating as color of hsla()
-PASS color-adjust (type: discrete) has testInterpolation function
-FAIL color-adjust uses discrete animation when animating between "economy" and "exact" with linear easing assert_equals: The value should be economy at 0ms expected (string) "economy" but got (undefined) undefined
-FAIL color-adjust uses discrete animation when animating between "economy" and "exact" with effect easing assert_equals: The value should be economy at 0ms expected (string) "economy" but got (undefined) undefined
-FAIL color-adjust uses discrete animation when animating between "economy" and "exact" with keyframe easing assert_equals: The value should be economy at 0ms expected (string) "economy" but got (undefined) undefined
 PASS color-interpolation (type: discrete) has testInterpolation function
 FAIL color-interpolation uses discrete animation when animating between "linearRGB" and "auto" with linear easing assert_equals: The value should be linearrgb at 0ms expected "linearrgb" but got "linearRGB"
 FAIL color-interpolation uses discrete animation when animating between "linearRGB" and "auto" with effect easing assert_equals: The value should be linearrgb at 0ms expected "linearrgb" but got "linearRGB"
@@ -338,18 +330,6 @@ PASS font-kerning (type: discrete) has testInterpolation function
 PASS font-kerning uses discrete animation when animating between "auto" and "normal" with linear easing
 PASS font-kerning uses discrete animation when animating between "auto" and "normal" with effect easing
 PASS font-kerning uses discrete animation when animating between "auto" and "normal" with keyframe easing
-PASS font-language-override (type: discrete) has testInterpolation function
-FAIL font-language-override uses discrete animation when animating between ""eng"" and "normal" with linear easing assert_equals: The value should be "eng" at 0ms expected (string) "\"eng\"" but got (undefined) undefined
-FAIL font-language-override uses discrete animation when animating between ""eng"" and "normal" with effect easing assert_equals: The value should be "eng" at 0ms expected (string) "\"eng\"" but got (undefined) undefined
-FAIL font-language-override uses discrete animation when animating between ""eng"" and "normal" with keyframe easing assert_equals: The value should be "eng" at 0ms expected (string) "\"eng\"" but got (undefined) undefined
-PASS font-synthesis (type: discrete) has testInterpolation function
-FAIL font-synthesis uses discrete animation when animating between "none" and "weight style" with linear easing assert_equals: The value should be none at 0ms expected (string) "none" but got (undefined) undefined
-FAIL font-synthesis uses discrete animation when animating between "none" and "weight style" with effect easing assert_equals: The value should be none at 0ms expected (string) "none" but got (undefined) undefined
-FAIL font-synthesis uses discrete animation when animating between "none" and "weight style" with keyframe easing assert_equals: The value should be none at 0ms expected (string) "none" but got (undefined) undefined
-PASS font-variant-alternates (type: discrete) has testInterpolation function
-FAIL font-variant-alternates uses discrete animation when animating between "swash(unknown)" and "stylistic(unknown)" with linear easing assert_equals: The value should be swash(unknown) at 0ms expected (string) "swash(unknown)" but got (undefined) undefined
-FAIL font-variant-alternates uses discrete animation when animating between "swash(unknown)" and "stylistic(unknown)" with effect easing assert_equals: The value should be swash(unknown) at 0ms expected (string) "swash(unknown)" but got (undefined) undefined
-FAIL font-variant-alternates uses discrete animation when animating between "swash(unknown)" and "stylistic(unknown)" with keyframe easing assert_equals: The value should be swash(unknown) at 0ms expected (string) "swash(unknown)" but got (undefined) undefined
 PASS font-variant-caps (type: discrete) has testInterpolation function
 PASS font-variant-caps uses discrete animation when animating between "small-caps" and "unicase" with linear easing
 PASS font-variant-caps uses discrete animation when animating between "small-caps" and "unicase" with effect easing
@@ -366,10 +346,6 @@ PASS font-variant-numeric (type: discrete) has testInterpolation function
 PASS font-variant-numeric uses discrete animation when animating between "lining-nums" and "oldstyle-nums" with linear easing
 PASS font-variant-numeric uses discrete animation when animating between "lining-nums" and "oldstyle-nums" with effect easing
 PASS font-variant-numeric uses discrete animation when animating between "lining-nums" and "oldstyle-nums" with keyframe easing
-PASS font-variant-position (type: discrete) has testInterpolation function
-FAIL font-variant-position uses discrete animation when animating between "sub" and "super" with linear easing assert_equals: The value should be sub at 0ms expected (string) "sub" but got (undefined) undefined
-FAIL font-variant-position uses discrete animation when animating between "sub" and "super" with effect easing assert_equals: The value should be sub at 0ms expected (string) "sub" but got (undefined) undefined
-FAIL font-variant-position uses discrete animation when animating between "sub" and "super" with keyframe easing assert_equals: The value should be sub at 0ms expected (string) "sub" but got (undefined) undefined
 PASS font-variation-settings (type: fontVariationSettings) has testInterpolation function
 PASS font-variation-settings supports animation as float
 FAIL font-variation-settings supports animation as float with multiple tags assert_array_equals: The computed values should be "wdth" 2,"wght" 1.2 at 250ms property 0, expected "\"wdth\" 2" but got "\"wdth\" 1"
@@ -429,14 +405,6 @@ PASS image-orientation (type: discrete) has testInterpolation function
 FAIL image-orientation uses discrete animation when animating between "0deg" and "90deg" with linear easing assert_equals: The value should be 90deg at 500ms expected "90deg" but got "0deg"
 FAIL image-orientation uses discrete animation when animating between "0deg" and "90deg" with effect easing assert_equals: The value should be 90deg at 960ms expected "90deg" but got "0deg"
 FAIL image-orientation uses discrete animation when animating between "0deg" and "90deg" with keyframe easing assert_equals: The value should be 90deg at 960ms expected "90deg" but got "0deg"
-PASS ime-mode (type: discrete) has testInterpolation function
-FAIL ime-mode uses discrete animation when animating between "disabled" and "auto" with linear easing assert_equals: The value should be disabled at 0ms expected (string) "disabled" but got (undefined) undefined
-FAIL ime-mode uses discrete animation when animating between "disabled" and "auto" with effect easing assert_equals: The value should be disabled at 0ms expected (string) "disabled" but got (undefined) undefined
-FAIL ime-mode uses discrete animation when animating between "disabled" and "auto" with keyframe easing assert_equals: The value should be disabled at 0ms expected (string) "disabled" but got (undefined) undefined
-PASS initial-letter (type: discrete) has testInterpolation function
-FAIL initial-letter uses discrete animation when animating between "1 2" and "3 4" with linear easing assert_equals: The value should be 1 2 at 0ms expected (string) "1 2" but got (undefined) undefined
-FAIL initial-letter uses discrete animation when animating between "1 2" and "3 4" with effect easing assert_equals: The value should be 1 2 at 0ms expected (string) "1 2" but got (undefined) undefined
-FAIL initial-letter uses discrete animation when animating between "1 2" and "3 4" with keyframe easing assert_equals: The value should be 1 2 at 0ms expected (string) "1 2" but got (undefined) undefined
 PASS isolation (type: discrete) has testInterpolation function
 PASS isolation uses discrete animation when animating between "auto" and "isolate" with linear easing
 PASS isolation uses discrete animation when animating between "auto" and "isolate" with effect easing
@@ -491,30 +459,6 @@ PASS mask (type: discrete) has testInterpolation function
 FAIL mask uses discrete animation when animating between "url("http://localhost/test-1")" and "url("http://localhost/test-2")" with linear easing assert_equals: The value should be url("http://localhost/test-1") at 0ms expected "url(\"http://localhost/test-1\")" but got "none"
 FAIL mask uses discrete animation when animating between "url("http://localhost/test-1")" and "url("http://localhost/test-2")" with effect easing assert_equals: The value should be url("http://localhost/test-1") at 0ms expected "url(\"http://localhost/test-1\")" but got "none"
 FAIL mask uses discrete animation when animating between "url("http://localhost/test-1")" and "url("http://localhost/test-2")" with keyframe easing assert_equals: The value should be url("http://localhost/test-1") at 0ms expected "url(\"http://localhost/test-1\")" but got "none"
-PASS mask-clip (type: discrete) has testInterpolation function
-FAIL mask-clip uses discrete animation when animating between "content-box" and "border-box" with linear easing assert_equals: The value should be content-box at 0ms expected (string) "content-box" but got (undefined) undefined
-FAIL mask-clip uses discrete animation when animating between "content-box" and "border-box" with effect easing assert_equals: The value should be content-box at 0ms expected (string) "content-box" but got (undefined) undefined
-FAIL mask-clip uses discrete animation when animating between "content-box" and "border-box" with keyframe easing assert_equals: The value should be content-box at 0ms expected (string) "content-box" but got (undefined) undefined
-PASS mask-composite (type: discrete) has testInterpolation function
-FAIL mask-composite uses discrete animation when animating between "add" and "subtract" with linear easing assert_equals: The value should be add at 0ms expected (string) "add" but got (undefined) undefined
-FAIL mask-composite uses discrete animation when animating between "add" and "subtract" with effect easing assert_equals: The value should be add at 0ms expected (string) "add" but got (undefined) undefined
-FAIL mask-composite uses discrete animation when animating between "add" and "subtract" with keyframe easing assert_equals: The value should be add at 0ms expected (string) "add" but got (undefined) undefined
-PASS mask-image (type: discrete) has testInterpolation function
-FAIL mask-image uses discrete animation when animating between "url("http://localhost/test-1")" and "url("http://localhost/test-2")" with linear easing assert_equals: The value should be url("http://localhost/test-1") at 0ms expected (string) "url(\"http://localhost/test-1\")" but got (undefined) undefined
-FAIL mask-image uses discrete animation when animating between "url("http://localhost/test-1")" and "url("http://localhost/test-2")" with effect easing assert_equals: The value should be url("http://localhost/test-1") at 0ms expected (string) "url(\"http://localhost/test-1\")" but got (undefined) undefined
-FAIL mask-image uses discrete animation when animating between "url("http://localhost/test-1")" and "url("http://localhost/test-2")" with keyframe easing assert_equals: The value should be url("http://localhost/test-1") at 0ms expected (string) "url(\"http://localhost/test-1\")" but got (undefined) undefined
-PASS mask-mode (type: discrete) has testInterpolation function
-FAIL mask-mode uses discrete animation when animating between "alpha" and "luminance" with linear easing assert_equals: The value should be alpha at 0ms expected (string) "alpha" but got (undefined) undefined
-FAIL mask-mode uses discrete animation when animating between "alpha" and "luminance" with effect easing assert_equals: The value should be alpha at 0ms expected (string) "alpha" but got (undefined) undefined
-FAIL mask-mode uses discrete animation when animating between "alpha" and "luminance" with keyframe easing assert_equals: The value should be alpha at 0ms expected (string) "alpha" but got (undefined) undefined
-PASS mask-origin (type: discrete) has testInterpolation function
-FAIL mask-origin uses discrete animation when animating between "content-box" and "border-box" with linear easing assert_equals: The value should be content-box at 0ms expected (string) "content-box" but got (undefined) undefined
-FAIL mask-origin uses discrete animation when animating between "content-box" and "border-box" with effect easing assert_equals: The value should be content-box at 0ms expected (string) "content-box" but got (undefined) undefined
-FAIL mask-origin uses discrete animation when animating between "content-box" and "border-box" with keyframe easing assert_equals: The value should be content-box at 0ms expected (string) "content-box" but got (undefined) undefined
-PASS mask-repeat (type: discrete) has testInterpolation function
-FAIL mask-repeat uses discrete animation when animating between "space" and "round" with linear easing assert_equals: The value should be space at 0ms expected (string) "space" but got (undefined) undefined
-FAIL mask-repeat uses discrete animation when animating between "space" and "round" with effect easing assert_equals: The value should be space at 0ms expected (string) "space" but got (undefined) undefined
-FAIL mask-repeat uses discrete animation when animating between "space" and "round" with keyframe easing assert_equals: The value should be space at 0ms expected (string) "space" but got (undefined) undefined
 PASS mask-type (type: discrete) has testInterpolation function
 PASS mask-type uses discrete animation when animating between "alpha" and "luminance" with linear easing
 PASS mask-type uses discrete animation when animating between "alpha" and "luminance" with effect easing
@@ -597,26 +541,10 @@ PASS resize (type: discrete) has testInterpolation function
 PASS resize uses discrete animation when animating between "both" and "horizontal" with linear easing
 PASS resize uses discrete animation when animating between "both" and "horizontal" with effect easing
 PASS resize uses discrete animation when animating between "both" and "horizontal" with keyframe easing
-PASS ruby-align (type: discrete) has testInterpolation function
-FAIL ruby-align uses discrete animation when animating between "start" and "center" with linear easing assert_equals: The value should be start at 0ms expected (string) "start" but got (undefined) undefined
-FAIL ruby-align uses discrete animation when animating between "start" and "center" with effect easing assert_equals: The value should be start at 0ms expected (string) "start" but got (undefined) undefined
-FAIL ruby-align uses discrete animation when animating between "start" and "center" with keyframe easing assert_equals: The value should be start at 0ms expected (string) "start" but got (undefined) undefined
-PASS ruby-position (type: discrete) has testInterpolation function
-FAIL ruby-position uses discrete animation when animating between "under" and "over" with linear easing assert_equals: The value should be under at 0ms expected (string) "under" but got (undefined) undefined
-FAIL ruby-position uses discrete animation when animating between "under" and "over" with effect easing assert_equals: The value should be under at 0ms expected (string) "under" but got (undefined) undefined
-FAIL ruby-position uses discrete animation when animating between "under" and "over" with keyframe easing assert_equals: The value should be under at 0ms expected (string) "under" but got (undefined) undefined
 PASS scroll-behavior (type: discrete) has testInterpolation function
 PASS scroll-behavior uses discrete animation when animating between "auto" and "smooth" with linear easing
 PASS scroll-behavior uses discrete animation when animating between "auto" and "smooth" with effect easing
 PASS scroll-behavior uses discrete animation when animating between "auto" and "smooth" with keyframe easing
-PASS scroll-snap-type-x (type: discrete) has testInterpolation function
-FAIL scroll-snap-type-x uses discrete animation when animating between "mandatory" and "proximity" with linear easing assert_equals: The value should be mandatory at 0ms expected (string) "mandatory" but got (undefined) undefined
-FAIL scroll-snap-type-x uses discrete animation when animating between "mandatory" and "proximity" with effect easing assert_equals: The value should be mandatory at 0ms expected (string) "mandatory" but got (undefined) undefined
-FAIL scroll-snap-type-x uses discrete animation when animating between "mandatory" and "proximity" with keyframe easing assert_equals: The value should be mandatory at 0ms expected (string) "mandatory" but got (undefined) undefined
-PASS scroll-snap-type-y (type: discrete) has testInterpolation function
-FAIL scroll-snap-type-y uses discrete animation when animating between "mandatory" and "proximity" with linear easing assert_equals: The value should be mandatory at 0ms expected (string) "mandatory" but got (undefined) undefined
-FAIL scroll-snap-type-y uses discrete animation when animating between "mandatory" and "proximity" with effect easing assert_equals: The value should be mandatory at 0ms expected (string) "mandatory" but got (undefined) undefined
-FAIL scroll-snap-type-y uses discrete animation when animating between "mandatory" and "proximity" with keyframe easing assert_equals: The value should be mandatory at 0ms expected (string) "mandatory" but got (undefined) undefined
 PASS shape-outside (type: discrete) has testInterpolation function
 PASS shape-outside uses discrete animation when animating between "url("http://localhost/test-1")" and "url("http://localhost/test-2")" with linear easing
 PASS shape-outside uses discrete animation when animating between "url("http://localhost/test-1")" and "url("http://localhost/test-2")" with effect easing
@@ -690,21 +618,6 @@ PASS text-decoration-style (type: discrete) has testInterpolation function
 PASS text-decoration-style uses discrete animation when animating between "solid" and "dotted" with linear easing
 PASS text-decoration-style uses discrete animation when animating between "solid" and "dotted" with effect easing
 PASS text-decoration-style uses discrete animation when animating between "solid" and "dotted" with keyframe easing
-PASS text-emphasis-color (type: color) has testInterpolation function
-FAIL text-emphasis-color supports animating as color of rgb() assert_equals: The value should be rgb(128, 0, 128) at 500ms expected (string) "rgb(128, 0, 128)" but got (undefined) undefined
-FAIL text-emphasis-color supports animating as color of #RGB assert_equals: The value should be rgb(128, 0, 128) at 500ms expected (string) "rgb(128, 0, 128)" but got (undefined) undefined
-FAIL text-emphasis-color supports animating as color of hsl() assert_equals: The value should be rgb(128, 0, 128) at 500ms expected (string) "rgb(128, 0, 128)" but got (undefined) undefined
-FAIL text-emphasis-color supports animating as color of #RGBa assert_equals: The value should be rgba(85, 0, 170, 0.6) at 500ms expected (string) "rgba(85, 0, 170, 0.6)" but got (undefined) undefined
-FAIL text-emphasis-color supports animating as color of rgba() assert_equals: The value should be rgba(85, 0, 170, 0.6) at 500ms expected (string) "rgba(85, 0, 170, 0.6)" but got (undefined) undefined
-FAIL text-emphasis-color supports animating as color of hsla() assert_equals: The value should be rgba(85, 0, 170, 0.6) at 500ms expected (string) "rgba(85, 0, 170, 0.6)" but got (undefined) undefined
-PASS text-emphasis-position (type: discrete) has testInterpolation function
-FAIL text-emphasis-position uses discrete animation when animating between "over right" and "under left" with linear easing assert_equals: The value should be over right at 0ms expected (string) "over right" but got (undefined) undefined
-FAIL text-emphasis-position uses discrete animation when animating between "over right" and "under left" with effect easing assert_equals: The value should be over right at 0ms expected (string) "over right" but got (undefined) undefined
-FAIL text-emphasis-position uses discrete animation when animating between "over right" and "under left" with keyframe easing assert_equals: The value should be over right at 0ms expected (string) "over right" but got (undefined) undefined
-PASS text-emphasis-style (type: discrete) has testInterpolation function
-FAIL text-emphasis-style uses discrete animation when animating between "filled circle" and "open dot" with linear easing assert_equals: The value should be filled circle at 0ms expected (string) "filled circle" but got (undefined) undefined
-FAIL text-emphasis-style uses discrete animation when animating between "filled circle" and "open dot" with effect easing assert_equals: The value should be filled circle at 0ms expected (string) "filled circle" but got (undefined) undefined
-FAIL text-emphasis-style uses discrete animation when animating between "filled circle" and "open dot" with keyframe easing assert_equals: The value should be filled circle at 0ms expected (string) "filled circle" but got (undefined) undefined
 PASS text-orientation (type: discrete) has testInterpolation function
 PASS text-orientation uses discrete animation when animating between "upright" and "sideways" with linear easing
 PASS text-orientation uses discrete animation when animating between "upright" and "sideways" with effect easing
