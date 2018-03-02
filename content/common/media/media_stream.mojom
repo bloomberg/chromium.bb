@@ -99,3 +99,13 @@ interface MediaStreamDispatcherHost {
   // Tells the browser process that the stream has been started successfully.
   OnStreamStarted(string label);
 };
+
+// Browser-side interface that is used by the renderer process to notify the
+// addition or deletion of tracks.
+interface MediaStreamTrackMetricsHost {
+  // Adds the track with the specified information to the list of tracks.
+  AddTrack(uint64 id, bool is_audio, bool is_remote);
+
+  // Removes the track with the specified ID from the list of tracks.
+  RemoveTrack(uint64 id);
+};

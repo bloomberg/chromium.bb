@@ -214,7 +214,6 @@ source_set("common") {
     "media/media_stream_controls.h",
     "media/media_stream_param_traits.cc",
     "media/media_stream_param_traits.h",
-    "media/media_stream_track_metrics_host_messages.h",
     "media/midi_messages.h",
     "media/peer_connection_tracker_messages.h",
     "media/surface_view_manager_messages_android.h",

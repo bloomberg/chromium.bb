@@ -12,6 +12,7 @@
 
 #include "base/sequence_checker.h"
 #include "content/common/content_export.h"
+#include "content/common/media/media_stream.mojom.h"
 #include "third_party/webrtc/api/peerconnectioninterface.h"
 
 namespace webrtc {
@@ -91,6 +92,10 @@ class CONTENT_EXPORT MediaStreamTrackMetrics {
   // Make a unique ID for the given track, that is valid while the
   // track object and the PeerConnection it is attached to both exist.
   uint64_t MakeUniqueId(const std::string& track, StreamType stream_type);
+
+  mojom::MediaStreamTrackMetricsHostPtr& GetMediaStreamTrackMetricsHost();
+
+  mojom::MediaStreamTrackMetricsHostPtr track_metrics_host_;
 
   typedef std::vector<std::unique_ptr<MediaStreamTrackMetricsObserver>>
       ObserverVector;

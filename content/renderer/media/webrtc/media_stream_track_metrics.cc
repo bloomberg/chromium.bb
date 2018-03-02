@@ -10,8 +10,10 @@
 
 #include "base/md5.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/common/media/media_stream_track_metrics_host_messages.h"
+#include "content/child/child_thread_impl.h"
+#include "content/public/common/service_names.mojom.h"
 #include "content/renderer/render_thread_impl.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/webrtc/api/mediastreaminterface.h"
 
 using webrtc::AudioTrackVector;
@@ -351,16 +353,13 @@ void MediaStreamTrackMetrics::SendLifetimeMessage(const std::string& track_id,
   // |of a unit test.
   if (render_thread) {
     if (event == CONNECTED) {
-      RenderThreadImpl::current()->Send(
-          new MediaStreamTrackMetricsHost_AddTrack(
-              MakeUniqueId(track_id, stream_type),
-              track_type == AUDIO_TRACK,
-              stream_type == RECEIVED_STREAM));
+      GetMediaStreamTrackMetricsHost()->AddTrack(
+          MakeUniqueId(track_id, stream_type), track_type == AUDIO_TRACK,
+          stream_type == RECEIVED_STREAM);
     } else {
       DCHECK_EQ(DISCONNECTED, event);
-      RenderThreadImpl::current()->Send(
-          new MediaStreamTrackMetricsHost_RemoveTrack(
-              MakeUniqueId(track_id, stream_type)));
+      GetMediaStreamTrackMetricsHost()->RemoveTrack(
+          MakeUniqueId(track_id, stream_type));
     }
   }
 }
@@ -397,6 +396,15 @@ uint64_t MediaStreamTrackMetrics::MakeUniqueId(const std::string& track_id,
   return MakeUniqueIdImpl(
       reinterpret_cast<uint64_t>(reinterpret_cast<void*>(this)), track_id,
       stream_type);
+}
+
+mojom::MediaStreamTrackMetricsHostPtr&
+MediaStreamTrackMetrics::GetMediaStreamTrackMetricsHost() {
+  if (!track_metrics_host_) {
+    ChildThreadImpl::current()->GetConnector()->BindInterface(
+        mojom::kBrowserServiceName, &track_metrics_host_);
+  }
+  return track_metrics_host_;
 }
 
 }  // namespace content
