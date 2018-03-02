@@ -56,11 +56,24 @@
         margin-bottom: 6px;
       }
 
-      .backspace-button-container {
+      #backspaceButton {
+        color: var(--pin-keyboard-backspace-color, #000);
+        left: 0;
+        opacity: var(--pin-keyboard-backspace-opacity, --dark-primary-opacity);
+        padding: 14px;
+        position: absolute;
+        top: 0;
+      }
+
+      #backspaceButton[disabled] {
+        opacity: 0.34;
+      }
+
+      #backspaceButtonContainer {
         position: relative;
       }
 
-      .backspace-button-container paper-ripple {
+      #backspaceButtonContainer paper-ripple {
         left: var(--pin-keyboard-backspace-paper-ripple-offset, 0);
         top: var(--pin-keyboard-backspace-paper-ripple-offset, 0);
       }
@@ -82,19 +95,6 @@
         width: 60px;
 
         @apply --pin-keyboard-digit-button;
-      }
-
-      .digit-button.backspace-button {
-        color: var(--pin-keyboard-backspace-color, #000);
-        left: 0;
-        opacity: var(--pin-keyboard-backspace-opacity, --dark-primary-opacity);
-        padding: 14px;
-        position: absolute;
-        top: 0;
-      }
-
-      .digit-button.backspace-button:not([has-content]) {
-        opacity: 0.34;
       }
 
       .digit-button inner-text {
@@ -247,9 +247,9 @@
           <inner-text class="letter">+</inner-text>
           <paper-ripple>
         </paper-button>
-        <div class="backspace-button-container">
-          <paper-icon-button class="digit-button backspace-button"
-              has-content$="[[hasInput_(value)]]"
+        <div id="backspaceButtonContainer">
+          <paper-icon-button id="backspaceButton" class="digit-button"
+              disabled$="[[!hasInput_(value)]]"
               icon="pin-keyboard:backspace"
               on-pointerdown="onBackspacePointerDown_"
               on-pointerout="clearAndReset_"
