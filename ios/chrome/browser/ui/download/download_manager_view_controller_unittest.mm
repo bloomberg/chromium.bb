@@ -79,9 +79,9 @@ TEST_F(DownloadManagerViewControllerTest,
               view_controller_.statusIcon.image);
 }
 
-// Tests label and button titles with kDownloadManagerStateSuceeded state.
+// Tests label and button titles with kDownloadManagerStateSucceeded state.
 TEST_F(DownloadManagerViewControllerTest, SuceededWithWithLongFileName) {
-  view_controller_.state = kDownloadManagerStateSuceeded;
+  view_controller_.state = kDownloadManagerStateSucceeded;
   view_controller_.fileName = @"file.txt";
   view_controller_.countOfBytesReceived = 1024;
 
@@ -143,7 +143,7 @@ TEST_F(DownloadManagerViewControllerTest, OpenIn) {
   OCMExpect([delegate downloadManagerViewController:view_controller_
                    presentOpenInMenuWithLayoutGuide:[OCMArg any]]);
 
-  view_controller_.state = kDownloadManagerStateSuceeded;
+  view_controller_.state = kDownloadManagerStateSucceeded;
   view_controller_.delegate = delegate;
   [view_controller_.actionButton
       sendActionsForControlEvents:UIControlEventTouchUpInside];

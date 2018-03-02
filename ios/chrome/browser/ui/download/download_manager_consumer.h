@@ -13,7 +13,7 @@ typedef NS_ENUM(NSInteger, DownloadManagerState) {
   // Download is actively progressing.
   kDownloadManagerStateInProgress,
   // Download is completely finished without errors.
-  kDownloadManagerStateSuceeded,
+  kDownloadManagerStateSucceeded,
   // Download has failed with an error.
   kDownloadManagerStateFailed,
 };
