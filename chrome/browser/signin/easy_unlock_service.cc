@@ -22,6 +22,12 @@
 #include "base/version.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_key_manager.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager_factory.h"
+#include "chrome/browser/chromeos/login/easy_unlock/secure_message_delegate_chromeos.h"
+#include "chrome/browser/chromeos/login/session/user_session_manager.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/chrome_proximity_auth_client.h"
 #include "chrome/browser/signin/easy_unlock_app_manager.h"
@@ -32,6 +38,9 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/login/auth/user_context.h"
 #include "components/cryptauth/cryptauth_client_impl.h"
 #include "components/cryptauth/cryptauth_device_manager.h"
 #include "components/cryptauth/cryptauth_enrollment_manager.h"
@@ -46,26 +55,14 @@
 #include "components/proximity_auth/proximity_auth_system.h"
 #include "components/proximity_auth/screenlock_bridge.h"
 #include "components/proximity_auth/switches.h"
+#include "components/session_manager/core/session_manager.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/user_manager/user.h"
 #include "components/version_info/version_info.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_key_manager.h"
-#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager.h"
-#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager_factory.h"
-#include "chrome/browser/chromeos/login/easy_unlock/secure_message_delegate_chromeos.h"
-#include "chrome/browser/chromeos/login/session/user_session_manager.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/power_manager_client.h"
-#include "chromeos/login/auth/user_context.h"
-#include "components/session_manager/core/session_manager.h"
-#include "components/signin/core/account_id/account_id.h"
-#endif
 
 using proximity_auth::ScreenlockState;
 
@@ -85,14 +82,10 @@ EasyUnlockService* EasyUnlockService::Get(Profile* profile) {
 // static
 EasyUnlockService* EasyUnlockService::GetForUser(
     const user_manager::User& user) {
-#if defined(OS_CHROMEOS)
   Profile* profile = chromeos::ProfileHelper::Get()->GetProfileByUser(&user);
   if (!profile)
     return NULL;
   return EasyUnlockService::Get(profile);
-#else
-  return NULL;
-#endif
 }
 
 class EasyUnlockService::BluetoothDetector
@@ -172,7 +165,6 @@ class EasyUnlockService::BluetoothDetector
   DISALLOW_COPY_AND_ASSIGN(BluetoothDetector);
 };
 
-#if defined(OS_CHROMEOS)
 class EasyUnlockService::PowerMonitor
     : public chromeos::PowerManagerClient::Observer {
  public:
@@ -234,7 +226,6 @@ class EasyUnlockService::PowerMonitor
 
   DISALLOW_COPY_AND_ASSIGN(PowerMonitor);
 };
-#endif
 
 EasyUnlockService::EasyUnlockService(Profile* profile)
     : profile_(profile),
@@ -261,10 +252,8 @@ void EasyUnlockService::RegisterProfilePrefs(
 void EasyUnlockService::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kEasyUnlockDeviceId, std::string());
   registry->RegisterDictionaryPref(prefs::kEasyUnlockHardlockState);
-#if defined(OS_CHROMEOS)
   EasyUnlockTpmKeyManager::RegisterLocalStatePrefs(registry);
   proximity_auth::ProximityAuthLocalStatePrefManager::RegisterPrefs(registry);
-#endif
 }
 
 // static
@@ -278,9 +267,7 @@ void EasyUnlockService::ResetLocalStateForUser(const AccountId& account_id) {
   DictionaryPrefUpdate update(local_state, prefs::kEasyUnlockHardlockState);
   update->RemoveWithoutPathExpansion(account_id.GetUserEmail(), NULL);
 
-#if defined(OS_CHROMEOS)
   EasyUnlockTpmKeyManager::ResetLocalStateForUser(account_id);
-#endif
 }
 
 // static
@@ -318,15 +305,10 @@ bool EasyUnlockService::IsAllowed() const {
   if (!IsAllowedInternal())
     return false;
 
-#if defined(OS_CHROMEOS)
   if (!bluetooth_detector_->IsPresent())
     return false;
 
   return true;
-#else
-  // TODO(xiyuan): Revisit when non-chromeos platforms are supported.
-  return false;
-#endif
 }
 
 bool EasyUnlockService::IsEnabled() const {
@@ -406,10 +388,8 @@ bool EasyUnlockService::UpdateScreenlockState(ScreenlockState state) {
   handler->ChangeState(state);
 
   if (state == ScreenlockState::AUTHENTICATED) {
-#if defined(OS_CHROMEOS)
     if (power_monitor_)
       power_monitor_->RecordStartUpTime();
-#endif
   } else if (auth_attempt_.get()) {
     // Clean up existing auth attempt if we can no longer authenticate the
     // remote device.
@@ -515,7 +495,6 @@ void EasyUnlockService::HandleAuthFailure(const AccountId& account_id) {
 }
 
 void EasyUnlockService::CheckCryptohomeKeysAndMaybeHardlock() {
-#if defined(OS_CHROMEOS)
   const AccountId& account_id = GetAccountId();
   if (!account_id.is_valid() || !IsChromeOSLoginEnabled())
     return;
@@ -548,7 +527,6 @@ void EasyUnlockService::CheckCryptohomeKeysAndMaybeHardlock() {
       chromeos::UserContext(account_id),
       base::Bind(&EasyUnlockService::OnCryptohomeKeysFetchedForChecking,
                  weak_ptr_factory_.GetWeakPtr(), account_id, paired_devices));
-#endif
 }
 
 void EasyUnlockService::SetTrialRun() {
@@ -582,9 +560,7 @@ void EasyUnlockService::Shutdown() {
   ResetScreenlockState();
   bluetooth_detector_.reset();
   proximity_auth_system_.reset();
-#if defined(OS_CHROMEOS)
   power_monitor_.reset();
-#endif
 
   weak_ptr_factory_.InvalidateWeakPtrs();
 }
@@ -605,28 +581,25 @@ void EasyUnlockService::UpdateAppState() {
     if (proximity_auth_system_)
       proximity_auth_system_->Start();
 
-#if defined(OS_CHROMEOS)
     if (!power_monitor_)
       power_monitor_.reset(new PowerMonitor(this));
-#endif
   } else {
     bool bluetooth_waking_up = false;
-#if defined(OS_CHROMEOS)
+
     // If the service is not allowed due to bluetooth not being detected just
     // after system suspend is done, give bluetooth more time to be detected
     // before disabling the app (and resetting screenlock state).
     bluetooth_waking_up =
         power_monitor_.get() && power_monitor_->waking_up() &&
         !bluetooth_detector_->IsPresent();
-#endif
 
     if (!bluetooth_waking_up) {
       app_manager_->DisableAppIfLoaded();
+
       if (proximity_auth_system_)
         proximity_auth_system_->Stop();
-#if defined(OS_CHROMEOS)
+
       power_monitor_.reset();
-#endif
     }
   }
 }
@@ -672,15 +645,7 @@ void EasyUnlockService::InitializeOnAppManagerReady() {
 
   InitializeInternal();
 
-#if defined(OS_CHROMEOS)
-  // Only start Bluetooth detection for ChromeOS since the feature is
-  // only offered on ChromeOS. Enabling this on non-ChromeOS platforms
-  // previously introduced a performance regression: http://crbug.com/404482
-  // Make sure not to reintroduce a performance regression if re-enabling on
-  // additional platforms.
-  // TODO(xiyuan): Revisit when non-chromeos platforms are supported.
   bluetooth_detector_->Initialize();
-#endif  // defined(OS_CHROMEOS)
 }
 
 void EasyUnlockService::OnBluetoothAdapterPresentChanged() {
@@ -793,7 +758,6 @@ void EasyUnlockService::SetProximityAuthDevices(
   proximity_auth_system_->Start();
 }
 
-#if defined(OS_CHROMEOS)
 void EasyUnlockService::OnCryptohomeKeysFetchedForChecking(
     const AccountId& account_id,
     const std::set<std::string> paired_devices,
@@ -822,7 +786,6 @@ void EasyUnlockService::OnCryptohomeKeysFetchedForChecking(
 
 void EasyUnlockService::HandleUserReauth(
     const chromeos::UserContext& user_context) {}
-#endif
 
 void EasyUnlockService::PrepareForSuspend() {
   app_manager_->DisableAppIfLoaded();
@@ -843,7 +806,6 @@ void EasyUnlockService::EnsureTpmKeyPresentIfNeeded() {
     return;
   }
 
-#if defined(OS_CHROMEOS)
   // If this is called before the session is started, the chances are Chrome
   // is restarting in order to apply user flags. Don't check TPM keys in this
   // case.
@@ -856,7 +818,6 @@ void EasyUnlockService::EnsureTpmKeyPresentIfNeeded() {
   EasyUnlockTpmKeyManagerFactory::GetInstance()->Get(profile_)
       ->PrepareTpmKey(true /* check_private_key */,
                       base::Closure());
-#endif  // defined(OS_CHROMEOS)
 
   tpm_key_checked_ = true;
 }

@@ -12,14 +12,11 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "chrome/browser/chromeos/login/easy_unlock/short_lived_user_context.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
 #include "components/cryptauth/cryptauth_device_manager.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/proximity_auth/screenlock_bridge.h"
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/easy_unlock/short_lived_user_context.h"
-#endif
 
 namespace base {
 class DictionaryValue;
@@ -104,9 +101,7 @@ class EasyUnlockServiceRegular
   bool IsChromeOSLoginEnabled() const override;
   void OnWillFinalizeUnlock(bool success) override;
   void OnSuspendDoneInternal() override;
-#if defined(OS_CHROMEOS)
   void HandleUserReauth(const chromeos::UserContext& user_context) override;
-#endif
 
   // CryptAuthDeviceManager::Observer:
   void OnSyncStarted() override;
@@ -131,7 +126,6 @@ class EasyUnlockServiceRegular
       const cryptauth::ToggleEasyUnlockResponse& response);
   void OnToggleEasyUnlockApiFailed(const std::string& error_message);
 
-#if defined(OS_CHROMEOS)
   // Called with the user's credentials (e.g. username and password) after the
   // user reauthenticates to begin setup.
   void OpenSetupAppAfterReauth(const chromeos::UserContext& user_context);
@@ -143,7 +137,6 @@ class EasyUnlockServiceRegular
       bool success);
 
   std::unique_ptr<chromeos::ShortLivedUserContext> short_lived_user_context_;
-#endif
 
   // Updates local state with the preference from the user's profile, so they
   // can be accessed on the sign-in screen.

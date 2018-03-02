@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "build/build_config.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_types.h"
 #include "chrome/browser/signin/chrome_proximity_auth_client.h"
 #include "chrome/browser/signin/easy_unlock_auth_attempt.h"
 #include "chrome/browser/signin/easy_unlock_metrics.h"
@@ -22,10 +23,6 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/proximity_auth/screenlock_state.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_types.h"
-#endif
-
 class AccountId;
 
 namespace base {
@@ -33,11 +30,9 @@ class DictionaryValue;
 class ListValue;
 }
 
-#if defined(OS_CHROMEOS)
 namespace chromeos {
 class UserContext;
 }
-#endif
 
 namespace user_manager {
 class User;
@@ -217,11 +212,9 @@ class EasyUnlockService : public KeyedService {
   // initiated by the Easy Unlock app.
   void RecordClickOnLockIcon();
 
-#if defined(OS_CHROMEOS)
   // Called when the user reauths (e.g. in chrome://settings) so we can cache
   // the user context for the setup flow.
   virtual void HandleUserReauth(const chromeos::UserContext& user_context);
-#endif
 
   void AddObserver(EasyUnlockServiceObserver* observer);
   void RemoveObserver(EasyUnlockServiceObserver* observer);
@@ -325,14 +318,12 @@ class EasyUnlockService : public KeyedService {
   // Unlock gets disabled.
   EasyUnlockScreenlockStateHandler* GetScreenlockStateHandler();
 
-#if defined(OS_CHROMEOS)
   // Callback for get key operation from CheckCryptohomeKeysAndMaybeHardlock.
   void OnCryptohomeKeysFetchedForChecking(
       const AccountId& account_id,
       const std::set<std::string> paired_devices,
       bool success,
       const chromeos::EasyUnlockDeviceKeyDataList& key_data_list);
-#endif
 
   // Updates the service to state for handling system suspend.
   void PrepareForSuspend();
@@ -366,11 +357,9 @@ class EasyUnlockService : public KeyedService {
   // app in favor of |proximity_auth_system_|.
   std::unique_ptr<proximity_auth::ProximityAuthSystem> proximity_auth_system_;
 
-#if defined(OS_CHROMEOS)
   // Monitors suspend and wake state of ChromeOS.
   class PowerMonitor;
   std::unique_ptr<PowerMonitor> power_monitor_;
-#endif
 
   // Whether the service has been shut down.
   bool shut_down_;

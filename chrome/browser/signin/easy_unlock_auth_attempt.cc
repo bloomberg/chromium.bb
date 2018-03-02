@@ -8,15 +8,12 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "build/build_config.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_key_manager.h"
 #include "chrome/browser/signin/easy_unlock_app_manager.h"
 #include "components/proximity_auth/screenlock_bridge.h"
 #include "components/proximity_auth/switches.h"
 #include "crypto/encryptor.h"
 #include "crypto/symmetric_key.h"
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_key_manager.h"
-#endif
 
 namespace {
 
@@ -174,11 +171,7 @@ void EasyUnlockAuthAttempt::FinalizeSignin(const AccountId& account_id,
   }
 
   std::string unwrapped_secret = UnwrapSecret(wrapped_secret, raw_session_key);
-
-  std::string key_label;
-#if defined(OS_CHROMEOS)
-  key_label = chromeos::EasyUnlockKeyManager::GetKeyLabel(0u);
-#endif  // defined(OS_CHROMEOS)
+  std::string key_label = chromeos::EasyUnlockKeyManager::GetKeyLabel(0u);
 
   const bool kSuccess = true;
   finalized_callback_.Run(type_, kSuccess, account_id, unwrapped_secret,

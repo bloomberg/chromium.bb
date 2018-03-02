@@ -8,17 +8,24 @@
 
 #include <utility>
 
+#include "apps/app_lifetime_monitor_factory.h"
 #include "base/base64url.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/json/json_string_value_serializer.h"
+#include "base/linux_util.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/sys_info.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_key_manager.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_reauth.h"
+#include "chrome/browser/chromeos/login/session/user_session_manager.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/cryptauth/chrome_cryptauth_service_factory.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -27,6 +34,7 @@
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/extensions/api/easy_unlock_private.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "components/cryptauth/cryptauth_access_token_fetcher.h"
@@ -51,26 +59,15 @@
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/translate/core/browser/translate_download_manager.h"
+#include "components/user_manager/user_manager.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/common/constants.h"
 #include "google_apis/gaia/gaia_auth_util.h"
-
-#if defined(OS_CHROMEOS)
-#include "apps/app_lifetime_monitor_factory.h"
-#include "base/linux_util.h"
-#include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_key_manager.h"
-#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_reauth.h"
-#include "chrome/browser/chromeos/login/session/user_session_manager.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/common/extensions/api/easy_unlock_private.h"
-#include "components/user_manager/user_manager.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
-#endif
 
 namespace {
 
@@ -138,7 +135,6 @@ void EasyUnlockServiceRegular::OnRemoteDevicesLoaded(
     const cryptauth::RemoteDeviceList& remote_devices) {
   SetProximityAuthDevices(GetAccountId(), remote_devices);
 
-#if defined(OS_CHROMEOS)
   // We need to store a copy of |remote devices_| in the TPM, so it can be
   // retrieved on the sign-in screen when a user session has not been started
   // yet.
@@ -181,11 +177,9 @@ void EasyUnlockServiceRegular::OnRemoteDevicesLoaded(
 
   // TODO(tengs): Rename this function after the easy_unlock app is replaced.
   SetRemoteDevices(*device_list);
-#endif
 }
 
 bool EasyUnlockServiceRegular::ShouldPromote() {
-#if defined(OS_CHROMEOS)
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           proximity_auth::switches::kDisableBluetoothLowEnergyDiscovery) ||
       !base::FeatureList::IsEnabled(features::kEasyUnlockPromotions)) {
@@ -197,9 +191,6 @@ bool EasyUnlockServiceRegular::ShouldPromote() {
   }
 
   return true;
-#else
-  return false;
-#endif
 }
 
 void EasyUnlockServiceRegular::StartPromotionManager() {
@@ -246,7 +237,6 @@ AccountId EasyUnlockServiceRegular::GetAccountId() const {
 
 void EasyUnlockServiceRegular::LaunchSetup() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-#if defined(OS_CHROMEOS)
   // TODO(tengs): To keep login working for existing EasyUnlock users, we need
   // to explicitly disable login here for new users who set up EasyUnlock.
   // After a sufficient number of releases, we should make the default value
@@ -265,12 +255,8 @@ void EasyUnlockServiceRegular::LaunchSetup() {
     if (!reauth_success)
       OpenSetupApp();
   }
-#else
-  OpenSetupApp();
-#endif
 }
 
-#if defined(OS_CHROMEOS)
 void EasyUnlockServiceRegular::HandleUserReauth(
     const chromeos::UserContext& user_context) {
   // Cache the user context for the next X minutes, so the user doesn't have to
@@ -312,7 +298,6 @@ void EasyUnlockServiceRegular::SetHardlockAfterKeyOperation(
   // cryptohome keys against the keys in local preferences as a sanity check.
   CheckCryptohomeKeysAndMaybeHardlock();
 }
-#endif
 
 const base::DictionaryValue* EasyUnlockServiceRegular::GetPermitAccess() const {
   const base::DictionaryValue* pairing_dict =
@@ -469,7 +454,6 @@ void EasyUnlockServiceRegular::StartAutoPairing(
 
   auto_pairing_callback_ = callback;
 
-#if defined(OS_CHROMEOS)
   std::unique_ptr<base::ListValue> args(new base::ListValue());
   std::unique_ptr<extensions::Event> event(new extensions::Event(
       extensions::events::EASY_UNLOCK_PRIVATE_ON_START_AUTO_PAIRING,
@@ -477,7 +461,6 @@ void EasyUnlockServiceRegular::StartAutoPairing(
       std::move(args)));
   extensions::EventRouter::Get(profile())->DispatchEventWithLazyListener(
       extension_misc::kEasyUnlockAppId, std::move(event));
-#endif
 }
 
 void EasyUnlockServiceRegular::SetAutoPairingResult(
@@ -495,7 +478,6 @@ void EasyUnlockServiceRegular::InitializeInternal() {
   pref_manager_.reset(new proximity_auth::ProximityAuthProfilePrefManager(
       profile()->GetPrefs()));
 
-#if defined(OS_CHROMEOS)
   // TODO(tengs): Due to badly configured browser_tests, Chrome crashes during
   // shutdown. Revisit this condition after migration is fully completed.
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -517,13 +499,10 @@ void EasyUnlockServiceRegular::InitializeInternal() {
       proximity_auth::prefs::kProximityAuthIsChromeOSLoginEnabled,
       base::Bind(&EasyUnlockServiceRegular::RefreshCryptohomeKeysIfPossible,
                  weak_ptr_factory_.GetWeakPtr()));
-#endif
 }
 
 void EasyUnlockServiceRegular::ShutdownInternal() {
-#if defined(OS_CHROMEOS)
   short_lived_user_context_.reset();
-#endif
 
   turn_off_flow_status_ = EasyUnlockService::IDLE;
   proximity_auth::ScreenlockBridge::Get()->RemoveObserver(this);
@@ -532,7 +511,6 @@ void EasyUnlockServiceRegular::ShutdownInternal() {
 }
 
 bool EasyUnlockServiceRegular::IsAllowedInternal() const {
-#if defined(OS_CHROMEOS)
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   if (!user_manager->IsLoggedInAsUserWithGaiaAccount())
     return false;
@@ -550,14 +528,9 @@ bool EasyUnlockServiceRegular::IsAllowedInternal() const {
     return false;
 
   return true;
-#else
-  // TODO(xiyuan): Revisit when non-chromeos platforms are supported.
-  return false;
-#endif
 }
 
 bool EasyUnlockServiceRegular::IsEnabled() const {
-#if defined(OS_CHROMEOS)
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           proximity_auth::switches::kDisableBluetoothLowEnergyDiscovery)) {
     // The feature is enabled iff there are any paired devices set by the
@@ -567,9 +540,6 @@ bool EasyUnlockServiceRegular::IsEnabled() const {
   }
 
   return pref_manager_ && pref_manager_->IsEasyUnlockEnabled();
-#else
-  return false;
-#endif
 }
 
 bool EasyUnlockServiceRegular::IsChromeOSLoginEnabled() const {
@@ -618,12 +588,9 @@ void EasyUnlockServiceRegular::OnSyncFinished(
 // changes an existing key.
 // Note: We do not show a notification when EasyUnlock is disabled by sync nor
 // if EasyUnlock was enabled through the setup app.
-#if defined(OS_CHROMEOS)
   bool is_setup_fresh =
       short_lived_user_context_ && short_lived_user_context_->user_context();
-#else
-  bool is_setup_fresh = true;
-#endif
+
   if (public_keys_after_sync.size() > 0 && !is_setup_fresh) {
     if (public_keys_before_sync.size() == 0) {
       notification_controller_->ShowChromebookAddedNotification();
@@ -761,7 +728,6 @@ EasyUnlockServiceRegular::GetCryptAuthDeviceManager() {
 }
 
 void EasyUnlockServiceRegular::RefreshCryptohomeKeysIfPossible() {
-#if defined(OS_CHROMEOS)
   // If the user reauthed on the settings page, then the UserContext will be
   // cached.
   if (short_lived_user_context_ && short_lived_user_context_->user_context()) {
@@ -783,7 +749,4 @@ void EasyUnlockServiceRegular::RefreshCryptohomeKeysIfPossible() {
   } else {
     CheckCryptohomeKeysAndMaybeHardlock();
   }
-#else
-  CheckCryptohomeKeysAndMaybeHardlock();
-#endif
 }
