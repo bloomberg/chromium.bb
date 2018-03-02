@@ -21,6 +21,7 @@
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/tabbed_pane/tabbed_pane_listener.h"
@@ -60,24 +61,6 @@ constexpr int kLabelFontSizeDeltaHighlight = 1;
 
 const int kHarmonyTabStripTabHeight = 32;
 constexpr int kBorderThickness = 2;
-
-// The View containing the text for each tab in the tab strip.
-class TabLabel : public Label {
- public:
-  explicit TabLabel(const base::string16& tab_title)
-      : Label(tab_title, style::CONTEXT_LABEL, style::STYLE_TAB_ACTIVE) {}
-
-  // Label:
-  void GetAccessibleNodeData(ui::AXNodeData* data) override {
-    // views::Tab shouldn't expose any of its children in the a11y tree.
-    // Instead, it should provide the a11y information itself. Normally,
-    // non-keyboard-focusable children of keyboard-focusable parents are
-    // ignored, but Tabs only mark the currently selected tab as
-    // keyboard-focusable. This means all unselected Tabs expose their children
-    // to the a11y tree. To fix, manually ignore the children.
-    data->role = ax::mojom::Role::kIgnored;
-  }
-};
 
 }  // namespace
 
@@ -141,7 +124,7 @@ const char Tab::kViewClassName[] = "Tab";
 
 Tab::Tab(TabbedPane* tabbed_pane, const base::string16& title, View* contents)
     : tabbed_pane_(tabbed_pane),
-      title_(new TabLabel(title)),
+      title_(new Label(title, style::CONTEXT_LABEL, style::STYLE_TAB_ACTIVE)),
       tab_state_(TAB_ACTIVE),
       contents_(contents) {
   // Calculate the size while the font list is bold.
@@ -172,6 +155,10 @@ Tab::Tab(TabbedPane* tabbed_pane, const base::string16& title, View* contents)
   // Calculate the size while the font list is normal and set the max size.
   preferred_title_size_.SetToMax(title_->GetPreferredSize());
   AddChildView(title_);
+
+  // Use leaf so that name is spoken by screen reader without exposing the
+  // children.
+  GetViewAccessibility().OverrideIsLeaf();
 }
 
 Tab::~Tab() {}
@@ -195,6 +182,10 @@ void Tab::OnStateChanged() {
                                                 : ui::kLabelFontSizeDelta;
   switch (tab_state_) {
     case TAB_INACTIVE:
+      // Notify assistive tools to update this tab's selected status.
+      // The way Chrome OS accessibility is implemented right now, firing almost
+      // any event will work, we just need to trigger its state to be refreshed.
+      NotifyAccessibilityEvent(ax::mojom::Event::kCheckedStateChanged, true);
       title_->SetEnabledColor(is_highlight_mode
                                   ? kTabTitleColor_InactiveHighlight
                                   : kTabTitleColor_InactiveBorder);
@@ -219,8 +210,7 @@ void Tab::OnStateChanged() {
 }
 
 bool Tab::OnMousePressed(const ui::MouseEvent& event) {
-  if (event.IsOnlyLeftMouseButton() &&
-      GetLocalBounds().Contains(event.location()))
+  if (enabled() && event.IsOnlyLeftMouseButton())
     tabbed_pane_->SelectTab(this);
   return true;
 }
@@ -302,13 +292,12 @@ void Tab::GetAccessibleNodeData(ui::AXNodeData* data) {
 }
 
 bool Tab::HandleAccessibleAction(const ui::AXActionData& action_data) {
-  if (action_data.action != ax::mojom::Action::kSetSelection || !enabled())
-    return false;
-
-  // It's not clear what should happen if a tab is 'deselected', so the
-  // ax::mojom::Action::kSetSelection action will always select the tab.
-  tabbed_pane_->SelectTab(this);
-  return true;
+  // If the assistive tool sends kSetSelection, handle it like kDoDefault.
+  // These generate a click event handled in Tab::OnMousePressed.
+  ui::AXActionData action_data_copy(action_data);
+  if (action_data.action == ax::mojom::Action::kSetSelection)
+    action_data_copy.action = ax::mojom::Action::kDoDefault;
+  return View::HandleAccessibleAction(action_data_copy);
 }
 
 void Tab::OnFocus() {
@@ -329,9 +318,16 @@ void Tab::OnBlur() {
 
 bool Tab::OnKeyPressed(const ui::KeyEvent& event) {
   ui::KeyboardCode key = event.key_code();
-  if (key != ui::VKEY_LEFT && key != ui::VKEY_RIGHT)
-    return false;
-  return tabbed_pane_->MoveSelectionBy(key == ui::VKEY_RIGHT ? 1 : -1);
+  const bool is_horizontal =
+      tabbed_pane_->GetOrientation() == TabbedPane::Orientation::kHorizontal;
+  // Use left and right arrows to navigate tabs in horizontal orientation.
+  if (is_horizontal) {
+    return (key == ui::VKEY_LEFT || key == ui::VKEY_RIGHT) &&
+           tabbed_pane_->MoveSelectionBy(key == ui::VKEY_RIGHT ? 1 : -1);
+  }
+  // Use up and down arrows to navigate tabs in vertical orientation.
+  return (key == ui::VKEY_UP || key == ui::VKEY_DOWN) &&
+         tabbed_pane_->MoveSelectionBy(key == ui::VKEY_DOWN ? 1 : -1);
 }
 
 MdTab::MdTab(TabbedPane* tabbed_pane,
