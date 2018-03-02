@@ -50,10 +50,6 @@ class UIControlsAura {
 #if defined(OS_WIN)
   virtual bool SendTouchEvents(int action, int num, int x, int y) = 0;
 #endif
-
-  // Runs |closure| after processing all pending ui events.
-  virtual void RunClosureAfterAllPendingUIEvents(
-      const base::Closure& closure) = 0;
 };
 
 }  // namespace ui_controls

@@ -173,8 +173,7 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
   bool SendMouseClick(ui_controls::MouseButton type) override {
     return SendMouseEvents(type, ui_controls::UP | ui_controls::DOWN);
   }
-  void RunClosureAfterAllPendingUIEvents(
-      const base::Closure& closure) override {
+  void RunClosureAfterAllPendingUIEvents(const base::Closure& closure) {
     if (!closure.is_null())
       base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, closure);
   }

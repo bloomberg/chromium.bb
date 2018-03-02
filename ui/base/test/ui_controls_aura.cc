@@ -83,11 +83,6 @@ bool SendTouchEvents(int action, int num, int x, int y) {
 }
 #endif
 
-// static
-void RunClosureAfterAllPendingUIEvents(const base::Closure& closure) {
-  instance_->RunClosureAfterAllPendingUIEvents(closure);
-}
-
 UIControlsAura::UIControlsAura() {
 }
 

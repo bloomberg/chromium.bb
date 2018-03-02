@@ -407,11 +407,6 @@ bool SendMouseClick(MouseButton type) {
   return SendMouseEventsNotifyWhenDone(type, UP|DOWN, base::Closure());
 }
 
-void RunClosureAfterAllPendingUIEvents(const base::Closure& closure) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&EventQueueWatcher, closure));
-}
-
 bool IsFullKeyboardAccessEnabled() {
   return [NSApp isFullKeyboardAccessEnabled];
 }

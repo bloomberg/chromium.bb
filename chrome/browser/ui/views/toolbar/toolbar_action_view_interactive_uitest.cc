@@ -321,10 +321,9 @@ IN_PROC_BROWSER_TEST_F(ToolbarActionViewInteractiveUITest,
     // For reasons unbeknownst to me, SendMouseEventsSync() with only a down
     // event will cause Windows to hang. Using SendMouseEvents() and running all
     // pending UI tasks seems to do the trick.
-    EXPECT_TRUE(ui_controls::SendMouseEvents(ui_controls::LEFT,
-                                             ui_controls::DOWN));
     base::RunLoop loop;
-    ui_controls::RunClosureAfterAllPendingUIEvents(loop.QuitClosure());
+    EXPECT_TRUE(ui_controls::SendMouseEventsNotifyWhenDone(
+        ui_controls::LEFT, ui_controls::DOWN, loop.QuitClosure()));
     loop.Run();
     observer.Wait();  // Wait for the popup to fully close.
   }

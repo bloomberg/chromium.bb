@@ -71,9 +71,4 @@ bool SendTouchEvents(int action, int num, int x, int y) {
   return internal::SendTouchEventsImpl(action, num, x, y);
 }
 
-void RunClosureAfterAllPendingUIEvents(const base::Closure& closure) {
-  // On windows, posting UI events is synchronous so just post the closure.
-  base::MessageLoopForUI::current()->PostTask(FROM_HERE, closure);
-}
-
 }  // namespace ui_controls

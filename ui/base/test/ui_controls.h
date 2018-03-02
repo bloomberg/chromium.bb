@@ -106,11 +106,6 @@ bool SendMouseClick(MouseButton type);
 bool SendTouchEvents(int action, int num, int screen_x, int screen_y);
 #endif
 
-#if defined(TOOLKIT_VIEWS)
-// Runs |closure| after processing all pending ui events.
-void RunClosureAfterAllPendingUIEvents(const base::Closure& closure);
-#endif
-
 #if defined(USE_AURA)
 class UIControlsAura;
 void InstallUIControlsAura(UIControlsAura* instance);
