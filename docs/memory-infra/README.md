@@ -7,48 +7,38 @@ click of a button you can understand where memory is being used in your system.
 
 [TOC]
 
-## Getting Started
+## Taking a memory-infra trace
 
- 1. Get a bleeding-edge or tip-of-tree build of Chrome.
-
- 2. [Record a trace as usual][record-trace]: open [chrome://tracing][tracing]
+ 1. [Record a trace as usual][record-trace]: open [chrome://tracing][tracing]
     on Desktop Chrome or [chrome://inspect?tracing][inspect-tracing] to trace
     Chrome for Android.
 
- 3. Make sure to enable the **memory-infra** category on the right.
+ 2. Make sure to enable the **memory-infra** category on the right.
 
       ![Tick the memory-infra checkbox when recording a trace.][memory-infra-box]
 
- 4. For now, some subsystems only work if Chrome is started with the
-    `--no-sandbox` flag. 
-    <!-- TODO(primiano) TODO(ssid): https://crbug.com/461788 -->
 
 [record-trace]:     https://sites.google.com/a/chromium.org/dev/developers/how-tos/trace-event-profiling-tool/recording-tracing-runs
 [tracing]:          chrome://tracing
 [inspect-tracing]:  chrome://inspect?tracing
 [memory-infra-box]: https://storage.googleapis.com/chromium-docs.appspot.com/1c6d1886584e7cc6ffed0d377f32023f8da53e02
 
+## Navigating a memory-infra trace
+
 ![Timeline View and Analysis View][tracing-views]
 
-After recording a trace, you will see the **timeline view**. Timeline view
-shows:
-
- * Total resident memory grouped by process (at the top).
- * Total resident memory grouped by subsystem (at the top).
- * Allocated memory per subsystem for every process.
-
-Click one of the ![M][m-blue] dots to bring up the **analysis view**. Click
-on a cell in analysis view to reveal more information about its subsystem.
-PartitionAlloc for instance, has more details about its partitions.
+After recording a trace, you will see the **timeline view**. The **timeline
+view** is primarily used for other tracing features. Click one of the
+![M][m-purple] dots to bring up the **analysis view**. Click on a cell in
+analysis view to reveal more information about its subsystem. PartitionAlloc for
+instance, has more details about its partitions.
 
 ![Component details for PartitionAlloc][partalloc-details]
 
-The purple ![M][m-purple] dots represent heavy dumps. In these dumps, components
-can provide more details than in the regular dumps. The full details of the
-MemoryInfra UI are explained in its [design doc][mi-ui-doc].
+The full details of the MemoryInfra UI are explained in its [design
+doc][mi-ui-doc].
 
 [tracing-views]:     https://storage.googleapis.com/chromium-docs.appspot.com/db12015bd262385f0f8bd69133330978a99da1ca
-[m-blue]:            https://storage.googleapis.com/chromium-docs.appspot.com/b60f342e38ff3a3767bbe4c8640d96a2d8bc864b
 [partalloc-details]: https://storage.googleapis.com/chromium-docs.appspot.com/02eade61d57c83f8ef8227965513456555fc3324
 [m-purple]:          https://storage.googleapis.com/chromium-docs.appspot.com/d7bdf4d16204c293688be2e5a0bcb2bf463dbbc3
 [mi-ui-doc]:         https://docs.google.com/document/d/1b5BSBEd1oB-3zj_CBAQWiQZ0cmI0HmjmXG-5iNveLqw/edit
