@@ -45,6 +45,8 @@ class GL_EXPORT GLImageGLX : public GLImage {
   ~GLImageGLX() override;
 
  private:
+  static bool ValidFormat(unsigned internalformat);
+
   XID glx_pixmap_;
   const gfx::Size size_;
   unsigned internalformat_;

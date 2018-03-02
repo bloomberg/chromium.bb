@@ -49,6 +49,8 @@ class GL_EXPORT GLImageNativePixmap : public gl::GLImageEGL {
   ~GLImageNativePixmap() override;
 
  private:
+  static bool ValidFormat(gfx::BufferFormat format);
+
   unsigned internalformat_;
   scoped_refptr<gfx::NativePixmap> pixmap_;
   bool has_image_flush_external_;

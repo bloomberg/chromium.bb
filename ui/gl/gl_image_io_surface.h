@@ -89,6 +89,7 @@ class GL_EXPORT GLImageIOSurface : public GLImage {
   ~GLImageIOSurface() override;
   virtual bool BindTexImageImpl(unsigned internalformat);
 
+  static bool ValidFormat(gfx::BufferFormat format);
   Type GetType() const override;
   class RGBConverter;
 
