@@ -28,6 +28,9 @@ namespace net {
 
 namespace {
 
+const int kMaxJsonSize = 16 * 1024;
+const int kMaxJsonDepth = 4;
+
 const char kReportToKey[] = "report-to";
 const char kMaxAgeKey[] = "max-age";
 const char kIncludeSubdomainsKey[] = "includeSubdomains";
@@ -257,7 +260,11 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
                    OriginPolicy* policy_out) const {
     DCHECK(policy_out);
 
-    std::unique_ptr<base::Value> value = base::JSONReader::Read(json_value);
+    if (json_value.size() > kMaxJsonSize)
+      return false;
+
+    std::unique_ptr<base::Value> value =
+        base::JSONReader::Read(json_value, base::JSON_PARSE_RFC, kMaxJsonDepth);
     if (!value)
       return false;
 

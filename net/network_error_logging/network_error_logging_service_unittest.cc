@@ -156,6 +156,12 @@ class NetworkErrorLoggingServiceTest : public ::testing::Test {
   const std::string kHeaderIncludeSubdomains_ =
       "{\"report-to\":\"group\",\"max-age\":86400,\"includeSubdomains\":true}";
   const std::string kHeaderMaxAge0_ = "{\"max-age\":0}";
+  const std::string kHeaderTooLong_ =
+      "{\"report-to\":\"group\",\"max-age\":86400,\"junk\":\"" +
+      std::string(32 * 1024, 'a') + "\"}";
+  const std::string kHeaderTooDeep_ =
+      "{\"report-to\":\"group\",\"max-age\":86400,\"junk\":[[[[[[[[[[]]]]]]]]]]"
+      "}";
 
   const std::string kGroup_ = "group";
 
@@ -202,6 +208,22 @@ TEST_F(NetworkErrorLoggingServiceTest, OriginInsecure) {
 }
 
 TEST_F(NetworkErrorLoggingServiceTest, NoPolicyForOrigin) {
+  service()->OnRequest(MakeRequestDetails(kUrl_, ERR_CONNECTION_REFUSED));
+
+  EXPECT_TRUE(reports().empty());
+}
+
+TEST_F(NetworkErrorLoggingServiceTest, JsonTooLong) {
+  service()->OnHeader(kOrigin_, kHeaderTooLong_);
+
+  service()->OnRequest(MakeRequestDetails(kUrl_, ERR_CONNECTION_REFUSED));
+
+  EXPECT_TRUE(reports().empty());
+}
+
+TEST_F(NetworkErrorLoggingServiceTest, JsonTooDeep) {
+  service()->OnHeader(kOrigin_, kHeaderTooDeep_);
+
   service()->OnRequest(MakeRequestDetails(kUrl_, ERR_CONNECTION_REFUSED));
 
   EXPECT_TRUE(reports().empty());
