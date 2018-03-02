@@ -11,8 +11,10 @@
 namespace content {
 
 NotificationDispatcher::NotificationDispatcher(
-    ThreadSafeSender* thread_safe_sender)
-    : WorkerThreadMessageFilter(thread_safe_sender) {}
+    ThreadSafeSender* thread_safe_sender,
+    scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner)
+    : WorkerThreadMessageFilter(thread_safe_sender,
+                                std::move(main_thread_task_runner)) {}
 
 NotificationDispatcher::~NotificationDispatcher() {}
 

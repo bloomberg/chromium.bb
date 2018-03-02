@@ -13,7 +13,9 @@ namespace content {
 
 class CacheStorageMessageFilter : public WorkerThreadMessageFilter {
  public:
-  explicit CacheStorageMessageFilter(ThreadSafeSender* thread_safe_sender);
+  CacheStorageMessageFilter(
+      ThreadSafeSender* thread_safe_sender,
+      scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner);
 
  protected:
   ~CacheStorageMessageFilter() override;

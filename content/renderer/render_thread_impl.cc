@@ -806,8 +806,8 @@ void RenderThreadImpl::Init(
           shared_bitmap_allocation_notifier_ptr.PassInterface(),
           GetChannel()->ipc_task_runner_refptr()));
 
-  notification_dispatcher_ =
-      new NotificationDispatcher(thread_safe_sender());
+  notification_dispatcher_ = new NotificationDispatcher(
+      thread_safe_sender(), GetRendererScheduler()->IPCTaskRunner());
   AddFilter(notification_dispatcher_->GetFilter());
 
   resource_dispatcher_.reset(new ResourceDispatcher());
@@ -894,7 +894,9 @@ void RenderThreadImpl::Init(
   midi_message_filter_ = new MidiMessageFilter(GetIOTaskRunner());
   AddFilter(midi_message_filter_.get());
 
-  AddFilter((new CacheStorageMessageFilter(thread_safe_sender()))->GetFilter());
+  AddFilter((new CacheStorageMessageFilter(
+                 thread_safe_sender(), GetRendererScheduler()->IPCTaskRunner()))
+                ->GetFilter());
 
 #if defined(USE_AURA)
   if (features::IsMusEnabled())
@@ -1391,8 +1393,8 @@ void RenderThreadImpl::InitializeWebKit(
     isolate->IsolateInBackgroundNotification();
   }
 
-  service_worker_message_filter_ =
-      new ServiceWorkerMessageFilter(thread_safe_sender());
+  service_worker_message_filter_ = new ServiceWorkerMessageFilter(
+      thread_safe_sender(), GetRendererScheduler()->IPCTaskRunner());
   AddFilter(service_worker_message_filter_->GetFilter());
 
   renderer_scheduler_->SetStoppingWhenBackgroundedEnabled(

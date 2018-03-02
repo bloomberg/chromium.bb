@@ -12,9 +12,10 @@
 
 namespace content {
 
-ServiceWorkerMessageFilter::ServiceWorkerMessageFilter(ThreadSafeSender* sender)
-    : WorkerThreadMessageFilter(sender) {
-}
+ServiceWorkerMessageFilter::ServiceWorkerMessageFilter(
+    ThreadSafeSender* sender,
+    scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner)
+    : WorkerThreadMessageFilter(sender, std::move(main_thread_task_runner)) {}
 
 ServiceWorkerMessageFilter::~ServiceWorkerMessageFilter() {}
 
