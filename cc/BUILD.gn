@@ -686,8 +686,8 @@ cc_test("cc_unittests") {
 
     # Animation test files.
     "animation/animation_host_unittest.cc",
-    "animation/animation_player_unittest.cc",
     "animation/animation_timeline_unittest.cc",
+    "animation/animation_unittest.cc",
     "animation/element_animations_unittest.cc",
     "animation/keyframe_model_unittest.cc",
     "animation/keyframed_animation_curve_unittest.cc",
