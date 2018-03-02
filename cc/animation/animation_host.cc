@@ -659,7 +659,7 @@ void AnimationHost::SetAnimationCounts(
   // If an animation is being run on the compositor, it will have a ticking
   // Animation (which will have a corresponding impl-thread version). Therefore
   // to find the count of main-only animations, we can simply subtract the
-  // number of ticking players from the total count.
+  // number of ticking animations from the total count.
   size_t ticking_animations_count = ticking_animations_.size();
   if (main_thread_animations_count_ !=
       total_animations_count - ticking_animations_count) {
