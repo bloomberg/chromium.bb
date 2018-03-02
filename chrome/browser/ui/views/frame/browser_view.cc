@@ -1836,10 +1836,26 @@ void BrowserView::OnWidgetActivationChanged(views::Widget* widget,
 }
 
 void BrowserView::OnWindowBeginUserBoundsChange() {
+  if (interactive_resize_)
+    return;
   WebContents* web_contents = GetActiveWebContents();
   if (!web_contents)
     return;
+  interactive_resize_ = ResizeSession();
+  interactive_resize_->begin_timestamp = base::TimeTicks::Now();
   web_contents->GetRenderViewHost()->NotifyMoveOrResizeStarted();
+}
+
+void BrowserView::OnWindowEndUserBoundsChange() {
+  if (!interactive_resize_)
+    return;
+  auto now = base::TimeTicks::Now();
+  DCHECK(!interactive_resize_->begin_timestamp.is_null());
+  UMA_HISTOGRAM_TIMES("BrowserWindow.Resize.Duration",
+                      now - interactive_resize_->begin_timestamp);
+  UMA_HISTOGRAM_COUNTS_1000("BrowserWindow.Resize.StepCount",
+                            interactive_resize_->step_count);
+  interactive_resize_.reset();
 }
 
 void BrowserView::OnWidgetMove() {
@@ -2023,6 +2039,32 @@ void BrowserView::PaintChildren(const views::PaintInfo& paint_info) {
         MaybeRecordValueAndCreateInstanceOnBrowserPaint(
             GetWidget()->GetCompositor());
   }
+}
+
+void BrowserView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  if (!interactive_resize_)
+    return;
+  auto now = base::TimeTicks::Now();
+  if (!interactive_resize_->last_resize_timestamp.is_null()) {
+    const auto& current_size = size();
+    // If size doesn't change, then do not update the timestamp.
+    if (current_size == previous_bounds.size())
+      return;
+    UMA_HISTOGRAM_CUSTOM_TIMES("BrowserWindow.Resize.StepInterval",
+                               now - interactive_resize_->last_resize_timestamp,
+                               base::TimeDelta::FromMilliseconds(1),
+                               base::TimeDelta::FromSeconds(1), 50);
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        "BrowserWindow.Resize.StepBoundsChange.Width",
+        std::abs(previous_bounds.size().width() - current_size.width()),
+        1 /* min */, 300 /* max */, 100 /* buckets */);
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        "BrowserWindow.Resize.StepBoundsChange.Height",
+        std::abs(previous_bounds.size().height() - current_size.height()),
+        1 /* min */, 300 /* max */, 100 /* buckets */);
+  }
+  ++interactive_resize_->step_count;
+  interactive_resize_->last_resize_timestamp = now;
 }
 
 void BrowserView::ChildPreferredSizeChanged(View* child) {

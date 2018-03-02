@@ -429,6 +429,7 @@ class BrowserView : public BrowserWindow,
   views::View* GetContentsView() override;
   views::ClientView* CreateClientView(views::Widget* widget) override;
   void OnWindowBeginUserBoundsChange() override;
+  void OnWindowEndUserBoundsChange() override;
   void OnWidgetMove() override;
   views::Widget* GetWidget() override;
   const views::Widget* GetWidget() const override;
@@ -455,6 +456,7 @@ class BrowserView : public BrowserWindow,
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
   void PaintChildren(const views::PaintInfo& paint_info) override;
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   void ChildPreferredSizeChanged(View* child) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void OnThemeChanged() override;
@@ -750,6 +752,16 @@ class BrowserView : public BrowserWindow,
   std::unique_ptr<BrowserWindowHistogramHelper> histogram_helper_;
 
   std::unique_ptr<FullscreenControlHost> fullscreen_control_host_;
+
+  struct ResizeSession {
+    // The time when user started resizing the window.
+    base::TimeTicks begin_timestamp;
+    base::TimeTicks last_resize_timestamp;
+    // The number of times the window size is changed from the start (i.e. since
+    // begin_timestamp).
+    size_t step_count = 0;
+  };
+  base::Optional<ResizeSession> interactive_resize_;
 
   mutable base::WeakPtrFactory<BrowserView> activate_modal_dialog_factory_{
       this};
