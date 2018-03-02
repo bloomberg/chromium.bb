@@ -871,11 +871,24 @@ void FrameFetchContext::AddClientHintsIfNecessary(
 
     // Check if |url| is allowed to run JavaScript. If not, client hints are not
     // attached to the requests that initiate on the render side.
-    if (GetContentSettingsClient() && AllowScriptFromSource(request.Url())) {
-      // TODO(tbansal): crbug.com/735518 This code path is not executed for main
-      // frame navigations when browser side navigation is enabled. For main
-      // frame requests with browser side navigation enabled, the client hints
-      // should be attached by the browser process.
+    if (!AllowScriptFromSource(request.Url())) {
+      return;
+    }
+
+    if (IsDetached())
+      return;
+
+    if (!GetFrame()
+             ->Tree()
+             .Top()
+             .GetSecurityContext()
+             ->GetSecurityOrigin()
+             ->IsSameSchemeHostPort(
+                 SecurityOrigin::Create(request.Url()).get())) {
+      // No client hints for 3p origins.
+      return;
+    }
+    if (GetContentSettingsClient()) {
       GetContentSettingsClient()->GetAllowedClientHintsFromSource(
           request.Url(), &enabled_hints);
     }

@@ -572,7 +572,8 @@ class FrameFetchContextHintsTest : public FrameFetchContextTest {
 };
 
 // Verify that the client hints should be attached for subresources fetched
-// over secure transport.
+// over secure transport. Tests when the persistent client hint feature is
+// enabled.
 TEST_F(FrameFetchContextHintsTest, MonitorDeviceMemorySecureTransport) {
   ExpectHeader("https://www.example.com/1.gif", "Device-Memory", false, "");
   ClientHintsPreferences preferences;
@@ -584,7 +585,29 @@ TEST_F(FrameFetchContextHintsTest, MonitorDeviceMemorySecureTransport) {
   ExpectHeader("https://www.example.com/1.gif", "Width", false, "");
   ExpectHeader("https://www.example.com/1.gif", "Viewport-Width", false, "");
   // The origin of the resource does not match the origin of the main frame
-  // resource. Client hints are still attached.
+  // resource. Client hint should not be attached.
+  ExpectHeader("https://www.someother-example.com/1.gif", "Device-Memory",
+               false, "");
+}
+
+// Verify that the client hints should be attached for subresources fetched
+// over secure transport. Tests when the persistent client hint feature is not
+// enabled.
+TEST_F(FrameFetchContextHintsTest,
+       MonitorDeviceMemorySecureTransportPersistentHintsDisabled) {
+  WebRuntimeFeatures::EnableClientHintsPersistent(false);
+  ExpectHeader("https://www.example.com/1.gif", "Device-Memory", false, "");
+  ClientHintsPreferences preferences;
+  preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kDeviceMemory);
+  document->GetClientHintsPreferences().UpdateFrom(preferences);
+  ApproximatedDeviceMemory::SetPhysicalMemoryMBForTesting(4096);
+  ExpectHeader("https://www.example.com/1.gif", "Device-Memory", true, "4");
+  ExpectHeader("https://www.example.com/1.gif", "DPR", false, "");
+  ExpectHeader("https://www.example.com/1.gif", "Width", false, "");
+  ExpectHeader("https://www.example.com/1.gif", "Viewport-Width", false, "");
+  // The origin of the resource does not match the origin of the main frame
+  // resource. Client hint should be attached since the persisten client hint
+  // feature is not enabled.
   ExpectHeader("https://www.someother-example.com/1.gif", "Device-Memory", true,
                "4");
 }
@@ -627,6 +650,9 @@ TEST_F(FrameFetchContextHintsTest, MonitorDeviceMemoryHintsInsecureContext) {
 // Verify that client hints are attched when the resources belong to a local
 // context.
 TEST_F(FrameFetchContextHintsTest, MonitorDeviceMemoryHintsLocalContext) {
+  document->SetURL(KURL("http://localhost/"));
+  document->SetSecurityOrigin(
+      SecurityOrigin::Create(KURL("http://localhost/")));
   ExpectHeader("http://localhost/1.gif", "Device-Memory", false, "");
   ClientHintsPreferences preferences;
   preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kDeviceMemory);
