@@ -24,6 +24,9 @@ class KSVSearchBoxView : public search_box::SearchBoxViewBase {
   gfx::Size CalculatePreferredSize() const override;
   void OnKeyEvent(ui::KeyEvent* event) override;
 
+  // Overridden from views::ButtonListener:
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+
  private:
   // search_box::SearchBoxViewBase:
   void ModelChanged() override {}
@@ -34,9 +37,6 @@ class KSVSearchBoxView : public search_box::SearchBoxViewBase {
   void UpdateSearchBoxBorder() override;
   void SetupCloseButton() override;
   void SetupBackButton() override;
-
-  // True to exit search mode on the next ui::VKEY_BACK event.
-  bool exit_search_mode_on_next_backspace_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(KSVSearchBoxView);
 };

@@ -32,15 +32,15 @@ KSVSearchBoxView::KSVSearchBoxView(search_box::SearchBoxViewDelegate* delegate)
   SetSearchBoxBackgroundCornerRadius(kBorderCornerRadius);
   SetSearchBoxBackgroundColor(kDefaultSearchBoxBackgroundColor);
   search_box()->SetBackgroundColor(SK_ColorTRANSPARENT);
-  search_box()->set_placeholder_text(
-      l10n_util::GetStringUTF16(IDS_KSV_SEARCH_BOX_PLACEHOLDER));
   constexpr SkColor kSearchBoxTextColor =
       SkColorSetARGBMacro(0xFF, 0x3C, 0x40, 0x43);
   search_box()->SetColor(kSearchBoxTextColor);
   search_box()->set_placeholder_text_color(kSearchBoxTextColor);
   search_box()->set_placeholder_text_draw_flags(gfx::Canvas::TEXT_ALIGN_CENTER);
-  search_box()->SetAccessibleName(
+  const base::string16 search_box_name(
       l10n_util::GetStringUTF16(IDS_KSV_SEARCH_BOX_ACCESSIBILITY_NAME));
+  search_box()->set_placeholder_text(search_box_name);
+  search_box()->SetAccessibleName(search_box_name);
 
   constexpr SkColor kSearchBarIconColor =
       SkColorSetARGBMacro(0xFF, 0x3C, 0x40, 0x43);
@@ -49,21 +49,29 @@ KSVSearchBoxView::KSVSearchBoxView(search_box::SearchBoxViewDelegate* delegate)
 }
 
 gfx::Size KSVSearchBoxView::CalculatePreferredSize() const {
-  return gfx::Size(704, 32);
+  return gfx::Size(740, 32);
 }
 
 void KSVSearchBoxView::OnKeyEvent(ui::KeyEvent* event) {
-  if (event->key_code() != ui::VKEY_BACK)
+  const ui::KeyboardCode key = event->key_code();
+  const bool is_escape_key = (key == ui::VKEY_ESCAPE);
+  if (!is_escape_key && key != ui::VKEY_BROWSER_BACK)
     return;
 
-  if (!search_box()->text().empty())
-    return;
-
-  if (exit_search_mode_on_next_backspace_) {
+  event->SetHandled();
+  // |VKEY_BROWSER_BACK| will only clear all the text.
+  ClearSearch();
+  // |VKEY_ESCAPE| will clear text and exit search mode directly.
+  if (is_escape_key)
     SetSearchBoxActive(false);
-    event->SetHandled();
-  }
-  exit_search_mode_on_next_backspace_ = !exit_search_mode_on_next_backspace_;
+}
+
+void KSVSearchBoxView::ButtonPressed(views::Button* sender,
+                                     const ui::Event& event) {
+  // Focus on the search box text field after clicking close button.
+  if (close_button() && sender == close_button())
+    search_box()->RequestFocus();
+  SearchBoxViewBase::ButtonPressed(sender, event);
 }
 
 void KSVSearchBoxView::UpdateBackgroundColor(SkColor color) {
@@ -71,6 +79,11 @@ void KSVSearchBoxView::UpdateBackgroundColor(SkColor color) {
 }
 
 void KSVSearchBoxView::UpdateSearchBoxBorder() {
+  // TODO(wutao): Rename this function or create another function in base class.
+  // It updates many things in addition to the border.
+  if (!search_box()->HasFocus() && search_box()->text().empty())
+    SetSearchBoxActive(false);
+
   constexpr int kBorderThichness = 2;
   constexpr SkColor kActiveBorderColor =
       SkColorSetARGBMacro(0x7F, 0x1A, 0x73, 0xE8);
@@ -97,8 +110,10 @@ void KSVSearchBoxView::SetupCloseButton() {
   close->SetSize(gfx::Size(kIconSize, kIconSize));
   close->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                            views::ImageButton::ALIGN_MIDDLE);
-  close->SetAccessibleName(
+  const base::string16 close_button_label(
       l10n_util::GetStringUTF16(IDS_KSV_CLEAR_SEARCHBOX_ACCESSIBILITY_NAME));
+  close->SetAccessibleName(close_button_label);
+  close->SetTooltipText(close_button_label);
   close->SetVisible(false);
 }
 
@@ -111,8 +126,10 @@ void KSVSearchBoxView::SetupBackButton() {
   back->SetSize(gfx::Size(kIconSize, kIconSize));
   back->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                           views::ImageButton::ALIGN_MIDDLE);
-  back->SetAccessibleName(
+  const base::string16 back_button_label(
       l10n_util::GetStringUTF16(IDS_KSV_BACK_ACCESSIBILITY_NAME));
+  back->SetAccessibleName(back_button_label);
+  back->SetTooltipText(back_button_label);
   back->SetVisible(false);
 }
 

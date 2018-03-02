@@ -72,7 +72,7 @@ void SetupSearchIllustrationView(views::View* illustration_view,
   constexpr int kLabelFontSizeDelta = 1;
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   text->SetFontList(rb.GetFontListWithDelta(
-      kLabelFontSizeDelta, gfx::Font::NORMAL, gfx::Font::Weight::MEDIUM));
+      kLabelFontSizeDelta, gfx::Font::NORMAL, gfx::Font::Weight::NORMAL));
   illustration_view->AddChildView(text);
 }
 
@@ -100,7 +100,7 @@ views::Widget* KeyboardShortcutView::Show(gfx::NativeWindow context) {
     base::RecordAction(
         base::UserMetricsAction("KeyboardShortcutViewer.CreateWindow"));
 
-    constexpr gfx::Size kKSVWindowSize(768, 512);
+    constexpr gfx::Size kKSVWindowSize(800, 512);
     gfx::Rect window_bounds(kKSVWindowSize);
     if (context) {
       window_bounds = context->GetRootWindow()->bounds();
@@ -158,11 +158,6 @@ void KeyboardShortcutView::InitViews() {
   search_box_view_->Init();
   AddChildView(search_box_view_.get());
 
-  // Init start searching illustration view.
-  search_start_view_ = std::make_unique<views::View>();
-  SetupSearchIllustrationView(search_start_view_.get(), kKsvSearchStartIcon,
-                              IDS_KSV_SEARCH_START);
-
   // Init no search result illustration view.
   search_no_result_view_ = std::make_unique<views::View>();
   SetupSearchIllustrationView(search_no_result_view_.get(),
@@ -172,7 +167,6 @@ void KeyboardShortcutView::InitViews() {
   search_results_container_ = new views::View();
   search_results_container_->SetLayoutManager(
       std::make_unique<views::FillLayout>());
-  search_results_container_->AddChildView(search_start_view_.get());
   search_results_container_->SetVisible(false);
   AddChildView(search_results_container_);
 
@@ -246,7 +240,7 @@ void KeyboardShortcutView::Layout() {
 
   constexpr int kSearchBoxTopPadding = 8;
   constexpr int kSearchBoxBottomPadding = 16;
-  constexpr int kSearchBoxHorizontalPadding = 32;
+  constexpr int kSearchBoxHorizontalPadding = 30;
   const int left = content_bounds.x();
   const int top = content_bounds.y();
   gfx::Rect search_box_bounds(search_box_view_->GetPreferredSize());
@@ -270,77 +264,79 @@ void KeyboardShortcutView::Layout() {
 }
 
 void KeyboardShortcutView::BackButtonPressed() {
-  search_box_view_->SetSearchBoxActive(false);
   search_box_view_->ClearSearch();
+  search_box_view_->SetSearchBoxActive(false);
 }
 
 void KeyboardShortcutView::QueryChanged(search_box::SearchBoxViewBase* sender) {
-  search_results_container_->RemoveAllChildViews(true);
   const bool query_empty = sender->IsSearchBoxTrimmedQueryEmpty();
-  auto* search_container_content_view = search_start_view_.get();
-  if (!query_empty) {
-    search_container_content_view = search_no_result_view_.get();
+  if (is_search_box_empty_ != query_empty) {
+    is_search_box_empty_ = query_empty;
+    UpdateViewsLayout(/*is_search_box_active=*/true);
+  }
 
-    auto found_items_list_view =
-        std::make_unique<KeyboardShortcutItemListView>();
-    const base::string16& new_contents = sender->search_box()->text();
-    base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents finder(
-        new_contents);
-    ShortcutCategory current_category = ShortcutCategory::kUnknown;
-    bool has_category_item = false;
-    for (auto* item_view : shortcut_views_) {
-      base::string16 description_text =
-          item_view->description_label_view()->text();
-      base::string16 shortcut_text = item_view->shortcut_label_view()->text();
-      size_t match_index = -1;
-      size_t match_length = 0;
-      // Only highlight |description_label_view_| in KeyboardShortcutItemView.
-      // |shortcut_label_view_| has customized style ranges for bubble views
-      // so it may have overlappings with the searched ranges. The highlighted
-      // behaviors are not defined so we don't highlight
-      // |shortcut_label_view_|.
-      if (finder.Search(description_text, &match_index, &match_length) ||
-          finder.Search(shortcut_text, nullptr, nullptr)) {
-        const ShortcutCategory category = item_view->category();
-        if (current_category != category) {
-          current_category = category;
-          has_category_item = false;
-          found_items_list_view->AddCategoryLabel(
-              GetStringForCategory(category));
-        }
-        if (has_category_item)
-          found_items_list_view->AddHorizontalSeparator();
-        else
-          has_category_item = true;
-        auto* matched_item_view =
-            new KeyboardShortcutItemView(*item_view->shortcut_item(), category);
-        // Highlight matched query in |description_label_view_|.
-        if (match_length > 0) {
-          views::StyledLabel::RangeStyleInfo style;
-          views::StyledLabel* description_label_view =
-              matched_item_view->description_label_view();
-          style.custom_font =
-              description_label_view->GetDefaultFontList().Derive(
-                  0, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::BOLD);
-          description_label_view->AddStyleRange(
-              gfx::Range(match_index, match_index + match_length), style);
-        }
+  // If search box is empty, do not show |search_results_container_|.
+  if (query_empty)
+    return;
 
-        found_items_list_view->AddChildView(matched_item_view);
+  search_results_container_->RemoveAllChildViews(true);
+  auto* search_container_content_view = search_no_result_view_.get();
+  auto found_items_list_view = std::make_unique<KeyboardShortcutItemListView>();
+  const base::string16& new_contents = sender->search_box()->text();
+  base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents finder(
+      new_contents);
+  ShortcutCategory current_category = ShortcutCategory::kUnknown;
+  bool has_category_item = false;
+  for (auto* item_view : shortcut_views_) {
+    base::string16 description_text =
+        item_view->description_label_view()->text();
+    base::string16 shortcut_text = item_view->shortcut_label_view()->text();
+    size_t match_index = -1;
+    size_t match_length = 0;
+    // Only highlight |description_label_view_| in KeyboardShortcutItemView.
+    // |shortcut_label_view_| has customized style ranges for bubble views
+    // so it may have overlappings with the searched ranges. The highlighted
+    // behaviors are not defined so we don't highlight
+    // |shortcut_label_view_|.
+    if (finder.Search(description_text, &match_index, &match_length) ||
+        finder.Search(shortcut_text, nullptr, nullptr)) {
+      const ShortcutCategory category = item_view->category();
+      if (current_category != category) {
+        current_category = category;
+        has_category_item = false;
+        found_items_list_view->AddCategoryLabel(GetStringForCategory(category));
       }
-    }
+      if (has_category_item)
+        found_items_list_view->AddHorizontalSeparator();
+      else
+        has_category_item = true;
+      auto* matched_item_view =
+          new KeyboardShortcutItemView(*item_view->shortcut_item(), category);
+      // Highlight matched query in |description_label_view_|.
+      if (match_length > 0) {
+        views::StyledLabel::RangeStyleInfo style;
+        views::StyledLabel* description_label_view =
+            matched_item_view->description_label_view();
+        style.custom_font = description_label_view->GetDefaultFontList().Derive(
+            0, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::BOLD);
+        description_label_view->AddStyleRange(
+            gfx::Range(match_index, match_index + match_length), style);
+      }
 
-    if (found_items_list_view->has_children()) {
-      // To offset the padding between the bottom of the |search_box_view_| and
-      // the top of the |search_results_container_|.
-      constexpr int kTopPadding = -16;
-      constexpr int kHorizontalPadding = 128;
-      found_items_list_view->SetBorder(views::CreateEmptyBorder(
-          gfx::Insets(kTopPadding, kHorizontalPadding, 0, kHorizontalPadding)));
-      views::ScrollView* const scroller = CreateScrollView();
-      scroller->SetContents(found_items_list_view.release());
-      search_container_content_view = scroller;
+      found_items_list_view->AddChildView(matched_item_view);
     }
+  }
+
+  if (found_items_list_view->has_children()) {
+    // To offset the padding between the bottom of the |search_box_view_| and
+    // the top of the |search_results_container_|.
+    constexpr int kTopPadding = -16;
+    constexpr int kHorizontalPadding = 128;
+    found_items_list_view->SetBorder(views::CreateEmptyBorder(
+        gfx::Insets(kTopPadding, kHorizontalPadding, 0, kHorizontalPadding)));
+    views::ScrollView* const scroller = CreateScrollView();
+    scroller->SetContents(found_items_list_view.release());
+    search_container_content_view = scroller;
   }
   search_results_container_->AddChildView(search_container_content_view);
   Layout();
@@ -349,14 +345,27 @@ void KeyboardShortcutView::QueryChanged(search_box::SearchBoxViewBase* sender) {
 
 void KeyboardShortcutView::ActiveChanged(
     search_box::SearchBoxViewBase* sender) {
-  const bool is_active = sender->is_search_box_active();
-  sender->ShowBackOrGoogleIcon(is_active);
-  search_results_container_->SetVisible(is_active);
-  tabbed_pane_->SetVisible(!is_active);
-  if (is_active) {
+  const bool is_search_box_active = sender->is_search_box_active();
+  is_search_box_empty_ = sender->IsSearchBoxTrimmedQueryEmpty();
+  sender->ShowBackOrGoogleIcon(is_search_box_active);
+  if (is_search_box_active) {
     base::RecordAction(
         base::UserMetricsAction("KeyboardShortcutViewer.Search"));
-  } else {
+  }
+  UpdateViewsLayout(is_search_box_active);
+}
+
+void KeyboardShortcutView::UpdateViewsLayout(bool is_search_box_active) {
+  // 1. Search box is not active: show |tabbed_pane_| and focus on active tab.
+  // 2. Search box is active and empty: show |tabbed_pane_| but focus on search
+  //    box.
+  // 3. Search box is not empty, show |search_results_container_|. Focus is on
+  //    search box.
+  const bool should_show_search_results =
+      is_search_box_active && !is_search_box_empty_;
+  search_results_container_->SetVisible(should_show_search_results);
+  tabbed_pane_->SetVisible(!should_show_search_results);
+  if (!is_search_box_active) {
     search_results_container_->RemoveAllChildViews(true);
     RequestFocusForActiveTab();
   }

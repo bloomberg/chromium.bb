@@ -52,8 +52,10 @@ class KeyboardShortcutView : public views::WidgetDelegateView,
   // after exiting search mode.
   void RequestFocusForActiveTab();
 
+  // Update views' layout based on search box status.
+  void UpdateViewsLayout(bool is_search_box_active);
+
   static KeyboardShortcutView* GetInstanceForTesting();
-  int GetCategoryNumberForTesting() const;
   int GetTabCountForTesting() const;
   const std::vector<KeyboardShortcutItemView*>& GetShortcutViewsForTesting() {
     return shortcut_views_;
@@ -67,21 +69,24 @@ class KeyboardShortcutView : public views::WidgetDelegateView,
 
   // Owned by views hierarchy.
   views::TabbedPane* tabbed_pane_;
+  views::View* search_results_container_;
+
   // SearchBoxViewBase is a WidgetDelegateView, which owns itself and cannot be
   // deleted from the views hierarchy automatically.
   std::unique_ptr<KSVSearchBoxView> search_box_view_;
-  views::View* search_results_container_;
 
   // Contains all the shortcut item views from all categories. This list is used
   // for searching. The views are owned by the Views hierarchy.
   std::vector<KeyboardShortcutItemView*> shortcut_views_;
 
-  // Two illustrations to indicate the two search states: start searching and no
-  // result found. Since these two views need to be added and removed
-  // frequently from the |search_results_container_|, they are not owned by view
-  // hierarchy to avoid recreating them.
-  std::unique_ptr<views::View> search_start_view_;
+  // An illustration to indicate no search results found. Since this view need
+  // to be added and removed frequently from the |search_results_container_|, it
+  // is not owned by view hierarchy to avoid recreating it.
   std::unique_ptr<views::View> search_no_result_view_;
+
+  // Cached value of search box text status. When the status changes, need to
+  // update views' layout.
+  bool is_search_box_empty_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardShortcutView);
 };

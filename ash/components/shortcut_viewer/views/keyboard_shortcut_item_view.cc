@@ -148,8 +148,9 @@ void KeyboardShortcutItemView::MaybeCalculateAndDoLayout(int width) const {
   // The width of |description_label_view_| and |shortcut_label_view_| as a
   // ratio of its parent view's width. The unused width is to have some spacing
   // in between the two views.
-  constexpr float kDescriptionViewPreferredWidthRatio = 0.32f;
-  constexpr float kShortcutViewPreferredWidthRatio = 0.65f;
+  // These values are chosen to put all the bubble views in one line.
+  constexpr float kDescriptionViewPreferredWidthRatio = 0.29f;
+  constexpr float kShortcutViewPreferredWidthRatio = 0.69f;
   const int description_view_preferred_width =
       width * kDescriptionViewPreferredWidthRatio;
   const int shortcut_view_preferred_width =
