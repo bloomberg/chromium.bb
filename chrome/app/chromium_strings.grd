@@ -1249,11 +1249,12 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@example.com</
         </message>
         <message name="IDS_RELAUNCH_REQUIRED_TITLE_DAYS" desc="The title of a dialog that tells users the browser must be relaunched within two or more days.">
           {0, plural,
+           =1 {Relaunch Chromium within a day}}
            other {Relaunch Chromium within # days}}
         </message>
         <message name="IDS_RELAUNCH_REQUIRED_TITLE_HOURS" desc="The title of a dialog that tells users the browser must be relaunched within one or more hours.">
           {0, plural,
-           =1 {Chromium will relaunch in 1 hour}
+           =1 {Chromium will relaunch in an hour}
            other {Chromium will relaunch in # hours}}
         </message>
         <message name="IDS_RELAUNCH_REQUIRED_TITLE_MINUTES" desc="The title of a dialog that tells users the browser must be relaunched within one or more minutes.">
