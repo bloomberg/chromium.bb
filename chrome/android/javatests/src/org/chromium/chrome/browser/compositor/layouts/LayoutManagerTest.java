@@ -266,7 +266,7 @@ public class LayoutManagerTest implements MockTabModelDelegate {
                 mManager.getActiveLayout() instanceof StackLayout);
 
         StackLayout layout = (StackLayout) mManager.getActiveLayout();
-        Stack stack = layout.getTabStack(false);
+        Stack stack = layout.getTabStackAtIndex(StackLayout.NORMAL_STACK_INDEX);
         StackTab[] tabs = stack.getTabs();
 
         long time = 0;

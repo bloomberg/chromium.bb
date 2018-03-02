@@ -998,7 +998,8 @@ public class TabsTest {
                 "getStack must be executed on the ui thread", ThreadUtils.runningOnUiThread());
         LayoutManagerChromePhone layoutManagerPhone = (LayoutManagerChromePhone) layoutManager;
         StackLayout layout = (StackLayout) layoutManagerPhone.getOverviewLayout();
-        return (layout).getTabStack(isIncognito);
+        return (layout).getTabStackAtIndex(
+                isIncognito ? StackLayout.INCOGNITO_STACK_INDEX : StackLayout.NORMAL_STACK_INDEX);
     }
 
     private int getLayoutTabInStackCount(final boolean isIncognito) {
