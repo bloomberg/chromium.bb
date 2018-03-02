@@ -62,6 +62,8 @@ gfx::Insets LayoutProvider::GetInsetsMetric(int metric) const {
       return gfx::Insets(5, 6);
     case InsetsMetric::INSETS_VECTOR_IMAGE_BUTTON:
       return gfx::Insets(4);
+    case InsetsMetric::INSETS_LABEL_BUTTON:
+      return gfx::Insets(5, 6);
   }
   NOTREACHED();
   return gfx::Insets();

@@ -12,6 +12,7 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_context_menu_cocoa_controller.h"
 #include "chrome/browser/ui/cocoa/l10n_util.h"
+#include "chrome/browser/ui/layout_constants.h"
 #include "chrome/grit/generated_resources.h"
 #import "components/bookmarks/browser/bookmark_model.h"
 #import "ui/base/cocoa/nsview_additions.h"
@@ -377,7 +378,7 @@ const CGFloat kKernAmount = 0.2;
   // Return the space needed to display the image and title, with a little
   // distance between them.
   cellSize = NSMakeSize(kIconLeadingPadding + [[self image] size].width,
-                        bookmarks::kBookmarkButtonHeight);
+                        GetLayoutConstant(BOOKMARK_BAR_HEIGHT));
   NSString* title = [self visibleTitle];
   if ([title length] > 0) {
     CGFloat textWidth =

@@ -21,7 +21,6 @@
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/signin/chrome_signin_helper.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
-#include "chrome/browser/ui/bookmarks/bookmark_bar_constants.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -48,6 +47,7 @@
 #include "chrome/browser/ui/cocoa/task_manager_mac.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
+#include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/profile_chooser_constants.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/buildflags.h"
@@ -694,7 +694,7 @@ int
 BrowserWindowCocoa::GetRenderViewHeightInsetWithDetachedBookmarkBar() {
   if (browser_->bookmark_bar_state() != BookmarkBar::DETACHED)
     return 0;
-  return chrome::kNTPBookmarkBarHeight;
+  return GetLayoutConstant(BOOKMARK_BAR_NTP_HEIGHT);
 }
 
 void BrowserWindowCocoa::ExecuteExtensionCommand(

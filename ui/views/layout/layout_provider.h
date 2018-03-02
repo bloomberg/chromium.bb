@@ -35,6 +35,8 @@ enum InsetsMetric {
   // Padding to add to vector image buttons to increase their click and touch
   // target size.
   INSETS_VECTOR_IMAGE_BUTTON,
+  // Padding used in a label button.
+  INSETS_LABEL_BUTTON,
 
   // Embedders must start Insets enum values from this value.
   VIEWS_INSETS_END,
