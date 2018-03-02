@@ -172,7 +172,12 @@ TEST(ThroughputAnalyzerTest, TestMinRequestsForThroughputSample) {
   base::DefaultTickClock* tick_clock = base::DefaultTickClock::GetInstance();
   TestNetworkQualityProvider network_quality_provider;
   std::map<std::string, std::string> variation_params;
+  variation_params["throughput_hanging_requests_cwnd_size_multiplier"] = "-1";
   NetworkQualityEstimatorParams params(variation_params);
+  // Set HTTP RTT to a large value so that the throughput observation window
+  // is not detected as hanging. In practice, this would be provided by
+  // |network_quality_provider| based on the recent observations.
+  network_quality_provider.SetHttpRtt(base::TimeDelta::FromSeconds(100));
 
   for (size_t num_requests = 1;
        num_requests <= params.throughput_min_requests_in_flight() + 1;
@@ -276,6 +281,12 @@ TEST(ThroughputAnalyzerTest, TestHangingRequests) {
     if (test.http_rtt >= base::TimeDelta())
       network_quality_provider.SetHttpRtt(test.http_rtt);
     std::map<std::string, std::string> variation_params;
+    // Set the transport RTT multiplier to a large value so that the hanging
+    // request decision is made only on the basis of the HTTP RTT.
+    variation_params
+        ["hanging_request_http_rtt_upper_bound_transport_rtt_multiplier"] =
+            "10000";
+    variation_params["throughput_hanging_requests_cwnd_size_multiplier"] = "-1";
     variation_params["hanging_request_duration_http_rtt_multiplier"] =
         base::IntToString(test.hanging_request_duration_http_rtt_multiplier);
     variation_params["hanging_request_min_duration_msec"] = "2000";
@@ -562,7 +573,9 @@ TEST(ThroughputAnalyzerTest, TestThroughputWithMultipleRequestsOverlap) {
     TestNetworkQualityProvider network_quality_provider;
     // Localhost requests are not allowed for estimation purposes.
     std::map<std::string, std::string> variation_params;
+    variation_params["throughput_hanging_requests_cwnd_size_multiplier"] = "-1";
     NetworkQualityEstimatorParams params(variation_params);
+
     TestThroughputAnalyzer throughput_analyzer(&network_quality_provider,
                                                &params, tick_clock);
 
@@ -665,7 +678,13 @@ TEST(ThroughputAnalyzerTest, TestThroughputWithNetworkRequestsOverlap) {
     std::map<std::string, std::string> variation_params;
     variation_params["throughput_min_requests_in_flight"] =
         base::IntToString(test.throughput_min_requests_in_flight);
+    variation_params["throughput_hanging_requests_cwnd_size_multiplier"] = "-1";
     NetworkQualityEstimatorParams params(variation_params);
+    // Set HTTP RTT to a large value so that the throughput observation window
+    // is not detected as hanging. In practice, this would be provided by
+    // |network_quality_provider| based on the recent observations.
+    network_quality_provider.SetHttpRtt(base::TimeDelta::FromSeconds(100));
+
     TestThroughputAnalyzer throughput_analyzer(&network_quality_provider,
                                                &params, tick_clock);
     TestDelegate test_delegate;
@@ -721,7 +740,13 @@ TEST(ThroughputAnalyzerTest, TestThroughputWithMultipleNetworkRequests) {
   TestNetworkQualityProvider network_quality_provider;
   std::map<std::string, std::string> variation_params;
   variation_params["throughput_min_requests_in_flight"] = "3";
+  variation_params["throughput_hanging_requests_cwnd_size_multiplier"] = "-1";
   NetworkQualityEstimatorParams params(variation_params);
+  // Set HTTP RTT to a large value so that the throughput observation window
+  // is not detected as hanging. In practice, this would be provided by
+  // |network_quality_provider| based on the recent observations.
+  network_quality_provider.SetHttpRtt(base::TimeDelta::FromSeconds(100));
+
   TestThroughputAnalyzer throughput_analyzer(&network_quality_provider, &params,
                                              tick_clock);
   TestDelegate test_delegate;

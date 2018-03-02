@@ -223,6 +223,9 @@ bool ThroughputAnalyzer::IsHangingWindow(int64_t bits_received,
   if (params_->throughput_hanging_requests_cwnd_size_multiplier() <= 0)
     return false;
 
+  if (params_->use_small_responses())
+    return false;
+
   // Initial congestion window size for TCP connections.
   static constexpr size_t kCwndSizeKilobytes = 10 * 1.5;
   static constexpr size_t kCwndSizeBits = kCwndSizeKilobytes * 1000 * 8;
