@@ -77,11 +77,11 @@ class puncEnd ⠂,;:.?!")]}
 letsign 56
 noletsignafter '\X2018\X2019
 hyphen - 36
-math [ 12356a
-math ] 23456a
+nofor math [ 12356a
+nofor math ] 23456a
 #Caractères permettant le traitement des crochets mathématiques en forward
-math \xfffd 12356
-math \xfffe 23456
+noback math \xfffd 12356
+noback math \xfffe 23456
 
 ###
 ### 1. Assemblages de lettres représentés par un seul symbole,
@@ -4365,10 +4365,11 @@ nofor context @6-6-2368-6-2368 "{("
 noback correct `["["]$dmp "`\xfffd"
 noback correct $s["["]$dmp "`\xfffd"
 noback correct ["["]$dmp "\xfffd"
-noback correct $dm2["]"] "\xfffe"
+noback correct $dm["]"] "\xfffe"
 
 noback pass2 @12356[@6]$dm ?
 noback pass2 @23456[@6]$dm ?
+noback pass2 $d[@6]$d ?
 #Fin opérations mathématiques
 
 
