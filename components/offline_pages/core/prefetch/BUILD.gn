@@ -192,6 +192,7 @@ source_set("unit_tests") {
     "prefetch_request_fetcher_unittest.cc",
     "prefetch_request_operation_response_unittest.cc",
     "prefetch_server_urls_unittest.cc",
+    "prefetch_task_test_base_unittest.cc",
     "sent_get_operation_cleanup_task_unittest.cc",
     "stale_entry_finalizer_task_unittest.cc",
     "store/prefetch_downloader_quota_unittest.cc",

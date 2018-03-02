@@ -13,18 +13,21 @@
 #include "sql/statement.h"
 
 namespace offline_pages {
+
 namespace {
 
 bool DeletePageByClientIdIfNotDownloadedSync(const ClientId& client_id,
                                              sql::Connection* db) {
   if (!db)
     return false;
+
+  static const std::array<PrefetchItemState, 6>& finalizable_states =
+      FinalizeDismissedUrlSuggestionTask::kFinalizableStates;
+
   static const char kSql[] =
       "UPDATE prefetch_items SET state = ?, error_code = ?"
       " WHERE client_id = ? AND client_namespace = ? "
-      // TODO(carlosk): make this check robust to future changes to the
-      // |PrefetchItemState| enum.
-      " AND state NOT IN (?, ?, ?, ?, ?)";
+      " AND state IN (?, ?, ?, ?, ?, ?)";
 
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt(0, static_cast<int>(PrefetchItemState::FINISHED));
@@ -32,14 +35,15 @@ bool DeletePageByClientIdIfNotDownloadedSync(const ClientId& client_id,
       1, static_cast<int>(PrefetchItemErrorCode::SUGGESTION_INVALIDATED));
   statement.BindString(2, client_id.id);
   statement.BindString(3, client_id.name_space);
-  statement.BindInt(4, static_cast<int>(PrefetchItemState::DOWNLOADING));
-  statement.BindInt(5, static_cast<int>(PrefetchItemState::DOWNLOADED));
-  statement.BindInt(6, static_cast<int>(PrefetchItemState::IMPORTING));
-  statement.BindInt(7, static_cast<int>(PrefetchItemState::FINISHED));
-  statement.BindInt(8, static_cast<int>(PrefetchItemState::ZOMBIE));
+  for (size_t i = 0; i < finalizable_states.size(); ++i)
+    statement.BindInt(4 + i, static_cast<int>(finalizable_states[i]));
   return statement.Run();
 }
 }  // namespace
+
+// static
+constexpr std::array<PrefetchItemState, 6>
+    FinalizeDismissedUrlSuggestionTask::kFinalizableStates;
 
 FinalizeDismissedUrlSuggestionTask::FinalizeDismissedUrlSuggestionTask(
     PrefetchStore* prefetch_store,

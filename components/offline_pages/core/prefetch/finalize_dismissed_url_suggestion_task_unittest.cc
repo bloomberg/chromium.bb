@@ -4,6 +4,10 @@
 
 #include "components/offline_pages/core/prefetch/finalize_dismissed_url_suggestion_task.h"
 
+#include <array>
+#include <set>
+#include <vector>
+
 #include "components/offline_pages/core/prefetch/prefetch_item.h"
 #include "components/offline_pages/core/prefetch/prefetch_task_test_base.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
@@ -21,6 +25,10 @@ class FinalizeDismissedUrlSuggestionTaskTest : public PrefetchTaskTestBase {
     PrefetchItem item = item_generator()->CreateItem(state);
     EXPECT_TRUE(store_util()->InsertPrefetchItem(item));
     return item;
+  }
+
+  const std::array<PrefetchItemState, 6>& finalizable_states() {
+    return FinalizeDismissedUrlSuggestionTask::kFinalizableStates;
   }
 };
 
@@ -44,21 +52,10 @@ TEST_F(FinalizeDismissedUrlSuggestionTaskTest, NotFound) {
 }
 
 TEST_F(FinalizeDismissedUrlSuggestionTaskTest, Change) {
-  // All states where we expect a transition to SUGGESTION_INVALIDATED.
-  // TODO(carlosk): Make this test robust to future changes to the
-  // |PrefetchItemState| enum.
-  const std::vector<PrefetchItemState> change_states = {
-      PrefetchItemState::NEW_REQUEST,
-      PrefetchItemState::SENT_GENERATE_PAGE_BUNDLE,
-      PrefetchItemState::AWAITING_GCM,
-      PrefetchItemState::RECEIVED_GCM,
-      PrefetchItemState::SENT_GET_OPERATION,
-      PrefetchItemState::RECEIVED_BUNDLE,
-  };
   // Add an item for each state, and add the FINISHED item to the expectation.
   std::vector<PrefetchItem> items;
   std::set<PrefetchItem> want_items;
-  for (const PrefetchItemState state : change_states) {
+  for (const PrefetchItemState state : finalizable_states()) {
     PrefetchItem item = AddItem(state);
     items.push_back(item);
     item.state = PrefetchItemState::FINISHED;
@@ -78,18 +75,13 @@ TEST_F(FinalizeDismissedUrlSuggestionTaskTest, Change) {
 }
 
 TEST_F(FinalizeDismissedUrlSuggestionTaskTest, NoChange) {
-  // All states where no change is made.
-  // TODO(carlosk): Make this test robust to future changes to the
-  // |PrefetchItemState| enum.
-  const std::vector<PrefetchItemState> no_change_states = {
-      PrefetchItemState::DOWNLOADING, PrefetchItemState::DOWNLOADED,
-      PrefetchItemState::IMPORTING,   PrefetchItemState::FINISHED,
-      PrefetchItemState::ZOMBIE,
-  };
   std::set<PrefetchItem> items;
-  for (const PrefetchItemState state : no_change_states) {
+  // Insert an item for every state that is not affected by this task.
+  for (const PrefetchItemState state : GetAllStatesExcept(
+           {finalizable_states().begin(), finalizable_states().end()})) {
     items.insert(AddItem(state));
   }
+
   for (const PrefetchItem& item : items) {
     FinalizeDismissedUrlSuggestionTask task(store(), item.client_id);
     ExpectTaskCompletes(&task);
