@@ -750,14 +750,26 @@ static bool CanWriteClipboard(LocalFrame& frame, EditorCommandSource source) {
   return frame.GetContentSettingsClient()->AllowWriteToClipboard(default_value);
 }
 
+static Element* FindEventTargetForClipboardEvent(LocalFrame& frame,
+                                                 EditorCommandSource source) {
+  // https://www.w3.org/TR/clipboard-apis/#fire-a-clipboard-event says:
+  //  "Set target to be the element that contains the start of the selection in
+  //   document order, or the body element if there is no selection or cursor."
+  // We treat hidden selections as "no selection or cursor".
+  if (source == kCommandFromMenuOrKeyBinding && frame.Selection().IsHidden())
+    return frame.Selection().GetDocument().body();
+
+  return FindEventTargetFrom(
+      frame, frame.Selection().ComputeVisibleSelectionInDOMTree());
+}
+
 // Returns true if Editor should continue with default processing.
 static bool DispatchClipboardEvent(LocalFrame& frame,
                                    const AtomicString& event_type,
                                    DataTransferAccessPolicy policy,
                                    EditorCommandSource source,
                                    PasteMode paste_mode) {
-  Element* const target =
-      frame.GetEditor().FindEventTargetForClipboardEvent(source);
+  Element* const target = FindEventTargetForClipboardEvent(frame, source);
   if (!target)
     return true;
 
@@ -914,7 +926,7 @@ static bool ExecuteCut(LocalFrame& frame,
 
   if (source == kCommandFromMenuOrKeyBinding) {
     if (DispatchBeforeInputDataTransfer(
-            frame.GetEditor().FindEventTargetForClipboardEvent(source),
+            FindEventTargetForClipboardEvent(frame, source),
             InputEvent::InputType::kDeleteByCut,
             nullptr) != DispatchEventResult::kNotCanceled)
       return true;
@@ -2030,8 +2042,7 @@ static bool CanSmartReplaceWithPasteboard(LocalFrame& frame,
 static void PasteAsPlainTextWithPasteboard(LocalFrame& frame,
                                            Pasteboard* pasteboard,
                                            EditorCommandSource source) {
-  Element* const target =
-      frame.GetEditor().FindEventTargetForClipboardEvent(source);
+  Element* const target = FindEventTargetForClipboardEvent(frame, source);
   if (!target)
     return;
   target->DispatchEvent(TextEvent::CreateForPlainTextPaste(
@@ -2051,8 +2062,7 @@ static void PasteAsFragment(LocalFrame& frame,
                             bool smart_replace,
                             bool match_style,
                             EditorCommandSource source) {
-  Element* const target =
-      frame.GetEditor().FindEventTargetForClipboardEvent(source);
+  Element* const target = FindEventTargetForClipboardEvent(frame, source);
   if (!target)
     return;
   target->DispatchEvent(TextEvent::CreateForFragmentPaste(
@@ -2132,7 +2142,7 @@ static void Paste(LocalFrame& frame, EditorCommandSource source) {
                              DataObject::CreateFromPasteboard(paste_mode));
 
     if (DispatchBeforeInputDataTransfer(
-            frame.GetEditor().FindEventTargetForClipboardEvent(source),
+            FindEventTargetForClipboardEvent(frame, source),
             InputEvent::InputType::kInsertFromPaste,
             data_transfer) != DispatchEventResult::kNotCanceled)
       return;

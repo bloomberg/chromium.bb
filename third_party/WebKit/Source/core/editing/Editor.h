@@ -203,8 +203,6 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
 
   void AddToKillRing(const EphemeralRange&);
 
-  Element* FindEventTargetForClipboardEvent(EditorCommandSource) const;
-
   bool FindString(const String&, FindOptions);
 
   Range* FindRangeOfString(const String& target,
