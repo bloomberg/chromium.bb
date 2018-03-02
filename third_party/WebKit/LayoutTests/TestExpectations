@@ -2899,7 +2899,6 @@ crbug.com/755405 [ Android ] tables/mozilla_expected_failures/bugs/bug1010.html 
 crbug.com/755405 [ Android ] tables/mozilla_expected_failures/bugs/bug1055-2.html [ Failure ]
 crbug.com/755405 [ Android ] tables/mozilla_expected_failures/bugs/bug2479-5.html [ Failure ]
 crbug.com/755405 [ Android ] virtual/layout_ng/fast/block/margin-collapse/019.html [ Failure Crash ]
-crbug.com/755405 [ Android ] fast/scrolling/scrollable-area-overflow-auto-display-none-in-parent.html [ Failure ]
 crbug.com/755405 [ Android ] compositing/sibling-positioning.html [ Failure ]
 crbug.com/755405 [ Android ] css3/selectors3/html/css3-modsel-18.html [ Failure Crash ]
 crbug.com/755405 [ Android ] css3/selectors3/html/css3-modsel-61.html [ Failure Crash ]
@@ -3357,8 +3356,6 @@ crbug.com/807110 external/wpt/media-source/mediasource-sourcebuffer-mode-timesta
 ################################################################################
 # Root Layer Scrolling expectations
 
-crbug.com/417782 [ Android ] fast/scrolling/scrollable-area-overflow-auto-display-none.html [ Failure Pass ]
-crbug.com/417782 [ Android ] fast/scrolling/scrollable-area-overflow-not-set.html [ Failure Crash Pass ]
 crbug.com/417782 paint/invalidation/window-resize/window-resize-vertical-writing-mode.html [ Crash ]
 crbug.com/417782 virtual/disable-spv175/paint/invalidation/window-resize/window-resize-vertical-writing-mode.html [ Skip ]
 crbug.com/417782 [ Linux ] virtual/android/fullscreen/compositor-touch-hit-rects-fullscreen-video-controls.html [ Failure ]
