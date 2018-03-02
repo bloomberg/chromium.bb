@@ -46,19 +46,26 @@ action("media_router_modules") {
     outputs += [ "${target_gen_dir}/${module_name}.js" ]
   }
   args = [ "--module-specs" ] + mr_module_specs + [
-           "--prelude-file",
-           rebase_path("prelude.js", root_build_dir),
            "--output-dir",
-           rebase_path(target_gen_dir + "/", root_build_dir),
+           rebase_path(target_gen_dir, root_build_dir),
            "--",
          ] + rebase_path(module_inputs, root_build_dir)
+}
+
+copy("copy_prelude") {
+  sources = [
+    "prelude.js",
+  ]
+  outputs = [
+    "${target_gen_dir}/prelude.js",
+  ]
 }
 
 # Produce the Media Router extension.  At present, the extension isn't
 # included in the Chromium distribution, but it can be sideloaded into
 # Chromium for testing.
 action("media_router") {
-  script = "assemble_extension.py"
+  script = "generate_manifest.py"
   inputs = [
     "manifest.yaml",
   ]
@@ -66,6 +73,7 @@ action("media_router") {
     "$target_gen_dir/manifest.json",
   ]
   deps = [
+    ":copy_prelude",
     ":media_router_modules",
   ]
   if (enable_media_router_jscompile) {

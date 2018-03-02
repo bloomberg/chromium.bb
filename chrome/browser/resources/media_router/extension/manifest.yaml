@@ -30,6 +30,7 @@
   # Background script.
   "background": {
     "scripts": [
+      "prelude.js",
       "common.js",
       "mirroring_common.js",
       "background_script.js"
