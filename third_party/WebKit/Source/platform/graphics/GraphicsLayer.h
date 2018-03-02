@@ -340,6 +340,7 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   void SetupContentsLayer(WebLayer*);
   void ClearContentsLayerIfUnregistered();
   WebLayer* ContentsLayerIfRegistered();
+  void SetContentsLayer(WebLayer*);
 
   typedef HashMap<int, int> RenderingContextMap;
   std::unique_ptr<JSONObject> LayerTreeAsJSONInternal(

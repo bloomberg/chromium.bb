@@ -118,6 +118,7 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient& client)
 
 GraphicsLayer::~GraphicsLayer() {
   layer_->Layer()->SetLayerClient(nullptr);
+  SetContentsLayer(nullptr);
   for (size_t i = 0; i < link_highlights_.size(); ++i)
     link_highlights_[i]->ClearCurrentGraphicsLayer();
   link_highlights_.clear();
@@ -503,8 +504,7 @@ void GraphicsLayer::SetContentsTo(WebLayer* layer) {
       children_changed = true;
 
       // The old contents layer will be removed via updateChildList.
-      contents_layer_ = nullptr;
-      contents_layer_id_ = 0;
+      SetContentsLayer(nullptr);
     }
   }
 
@@ -514,10 +514,8 @@ void GraphicsLayer::SetContentsTo(WebLayer* layer) {
 
 void GraphicsLayer::SetupContentsLayer(WebLayer* contents_layer) {
   DCHECK(contents_layer);
-  contents_layer_ = contents_layer;
-  contents_layer_id_ = contents_layer_->Id();
+  SetContentsLayer(contents_layer);
 
-  contents_layer_->SetLayerClient(this);
   contents_layer_->SetTransformOrigin(FloatPoint3D());
   contents_layer_->SetUseParentBackfaceVisibility(true);
 
@@ -543,8 +541,22 @@ void GraphicsLayer::ClearContentsLayerIfUnregistered() {
       g_registered_layer_set->Contains(contents_layer_id_))
     return;
 
-  contents_layer_ = nullptr;
-  contents_layer_id_ = 0;
+  SetContentsLayer(nullptr);
+}
+
+void GraphicsLayer::SetContentsLayer(WebLayer* contents_layer) {
+  // If we have a previous contents layer which is still registered, then unset
+  // this client pointer. If unregistered, it has already nulled out the client
+  // pointer and may have been deleted.
+  if (contents_layer_ && g_registered_layer_set->Contains(contents_layer_id_))
+    contents_layer_->SetLayerClient(nullptr);
+  contents_layer_ = contents_layer;
+  if (!contents_layer_) {
+    contents_layer_id_ = 0;
+    return;
+  }
+  contents_layer_->SetLayerClient(this);
+  contents_layer_id_ = contents_layer_->Id();
 }
 
 GraphicsLayerDebugInfo& GraphicsLayer::DebugInfo() {
