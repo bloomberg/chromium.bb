@@ -1704,6 +1704,7 @@ crbug.com/805463 external/wpt/acid/acid3/numbered-tests.html [ Skip ]
 crbug.com/817930 [ Mac10.13 ] fast/text/mac-system-ui-trak.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Android ] external/wpt/bluetooth/requestDevice/canonicalizeFilter/no-arguments.https.html [ Crash ]
 crbug.com/626703 external/wpt/css/css-text/line-break/line-break-strict-018b.xht [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/line-break/line-break-strict-018a.xht [ Failure ]
 crbug.com/626703 external/wpt/payment-request/show-method-optional-promise-rejects-manual.https.html [ Skip ]
