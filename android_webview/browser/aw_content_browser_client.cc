@@ -677,7 +677,7 @@ bool AwContentBrowserClient::ShouldCreateTaskScheduler() {
   return g_should_create_task_scheduler;
 }
 
-scoped_refptr<content::ResourceDispatcherHostLoginDelegate>
+scoped_refptr<content::LoginDelegate>
 AwContentBrowserClient::CreateLoginDelegate(
     net::AuthChallengeInfo* auth_info,
     content::ResourceRequestInfo::WebContentsGetter web_contents_getter,

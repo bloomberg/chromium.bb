@@ -12,11 +12,11 @@
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "content/public/browser/client_certificate_delegate.h"
+#include "content/public/browser/login_delegate.h"
 #include "content/public/browser/memory_coordinator_delegate.h"
 #include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/page_navigator.h"
-#include "content/public/browser/resource_dispatcher_host_login_delegate.h"
 #include "content/public/browser/vpn_service_proxy.h"
 #include "content/public/common/url_loader_throttle.h"
 #include "device/geolocation/public/cpp/location_provider.h"
@@ -677,8 +677,7 @@ ContentBrowserClient::CreateClientCertStore(ResourceContext* resource_context) {
   return nullptr;
 }
 
-scoped_refptr<ResourceDispatcherHostLoginDelegate>
-ContentBrowserClient::CreateLoginDelegate(
+scoped_refptr<LoginDelegate> ContentBrowserClient::CreateLoginDelegate(
     net::AuthChallengeInfo* auth_info,
     content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
     bool is_main_frame,

@@ -11,8 +11,8 @@
 #include "content/browser/ssl_private_key_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/login_delegate.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/resource_dispatcher_host_login_delegate.h"
 #include "content/public/browser/resource_request_info.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/ssl/client_cert_store.h"
@@ -207,7 +207,7 @@ class LoginHandlerDelegate {
   GURL url_;
   bool first_auth_attempt_;
   ResourceRequestInfo::WebContentsGetter web_contents_getter_;
-  scoped_refptr<ResourceDispatcherHostLoginDelegate> login_delegate_;
+  scoped_refptr<LoginDelegate> login_delegate_;
 };
 
 }  // namespace

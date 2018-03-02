@@ -10,7 +10,7 @@
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
-#include "content/public/browser/resource_dispatcher_host_login_delegate.h"
+#include "content/public/browser/login_delegate.h"
 
 #if defined(OS_MACOSX)
 #if __OBJC__
@@ -29,7 +29,7 @@ namespace content {
 
 // This class provides a dialog box to ask the user for credentials. Useful in
 // ResourceDispatcherHostDelegate::CreateLoginDelegate.
-class ShellLoginDialog : public ResourceDispatcherHostLoginDelegate {
+class ShellLoginDialog : public LoginDelegate {
  public:
   // Threading: IO thread.
   ShellLoginDialog(
@@ -37,7 +37,7 @@ class ShellLoginDialog : public ResourceDispatcherHostLoginDelegate {
       base::Callback<void(const base::Optional<net::AuthCredentials>&)>
           auth_required_callback);
 
-  // ResourceDispatcherHostLoginDelegate implementation:
+  // LoginDelegate implementation:
   // Threading: IO thread.
   void OnRequestCancelled() override;
 

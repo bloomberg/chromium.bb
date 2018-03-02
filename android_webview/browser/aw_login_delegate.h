@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
-#include "content/public/browser/resource_dispatcher_host_login_delegate.h"
+#include "content/public/browser/login_delegate.h"
 #include "content/public/browser/resource_request_info.h"
 
 namespace net {
@@ -22,8 +22,7 @@ class AuthCredentials;
 
 namespace android_webview {
 
-class AwLoginDelegate :
-    public content::ResourceDispatcherHostLoginDelegate {
+class AwLoginDelegate : public content::LoginDelegate {
  public:
   AwLoginDelegate(
       net::AuthChallengeInfo* auth_info,
@@ -36,7 +35,7 @@ class AwLoginDelegate :
                        const base::string16& password);
   virtual void Cancel();
 
-  // from ResourceDispatcherHostLoginDelegate
+  // content::LoginDelegate:
   void OnRequestCancelled() override;
 
  private:
