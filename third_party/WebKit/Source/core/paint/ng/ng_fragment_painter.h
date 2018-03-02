@@ -25,9 +25,10 @@ class NGFragmentPainter : public ObjectPainterBase {
       : paint_fragment_(paint_fragment) {}
 
   void PaintOutline(const PaintInfo&, const LayoutPoint& paint_offset);
-
   void PaintDescendantOutlines(const PaintInfo&,
                                const LayoutPoint& paint_offset);
+
+  void AddPDFURLRectIfNeeded(const PaintInfo&, const LayoutPoint& paint_offset);
 
  private:
   void CollectDescendantOutlines(

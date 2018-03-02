@@ -176,10 +176,10 @@ void NGBoxFragmentPainter::PaintObject(
   if (paint_phase == PaintPhase::kClippingMask && is_visible)
     return PaintClippingMask(paint_info, paint_offset);
 
-  // TODO(eae): Add PDF URL painting for printing.
-  // if (paint_phase == PaintPhase::kForeground && paint_info.IsPrinting())
-  //  ObjectPainter(box_fragment_)
-  //      .AddPDFURLRectIfNeeded(paint_info, paint_offset);
+  if (paint_phase == PaintPhase::kForeground && paint_info.IsPrinting()) {
+    NGFragmentPainter(box_fragment_)
+        .AddPDFURLRectIfNeeded(paint_info, paint_offset);
+  }
 
   if (paint_phase != PaintPhase::kSelfOutlineOnly) {
     // TODO(layout-dev): Figure out where paint properties should live.
