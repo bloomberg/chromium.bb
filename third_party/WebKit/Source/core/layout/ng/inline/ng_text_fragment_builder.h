@@ -43,8 +43,6 @@ class CORE_EXPORT NGTextFragmentBuilder final : public NGBaseFragmentBuilder {
   NGLogicalSize size_;
   scoped_refptr<const ShapeResult> shape_result_;
   NGTextEndEffect end_effect_ = NGTextEndEffect::kNone;
-
-  // TODO(eae): Replace with Node pointer.
   LayoutObject* layout_object_ = nullptr;
 
   // Not used in NG paint, only to copy to InlineTextBox::SetExpansion().

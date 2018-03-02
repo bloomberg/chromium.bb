@@ -217,8 +217,6 @@ const ComputedStyle& NGPhysicalFragment::Style() const {
 }
 
 Node* NGPhysicalFragment::GetNode() const {
-  // TODO(layout-dev): This should store the node directly instead of going
-  // through LayoutObject.
   return layout_object_ ? layout_object_->GetNode() : nullptr;
 }
 
