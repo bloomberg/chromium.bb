@@ -817,13 +817,8 @@ camera.views.Camera.prototype.onActivate = function() {
  * @override
  */
 camera.views.Camera.prototype.onInactivate = function() {
+  this.setExpanded_(false);
   this.scrollTracker_.stop();
-};
-
-/**
- * @override
- */
-camera.views.Camera.prototype.onInactivate = function() {
   this.endTakePicture_();
 };
 
@@ -899,7 +894,8 @@ camera.views.Camera.prototype.onWindowKeyDown_ = function(event) {
   if (this.performanceTestTimer_)
     return;
   // When the ribbon is focused, then do not collapse it when pressing keys.
-  if (document.activeElement == document.querySelector('#effects-wrapper')) {
+  if (this.active &&
+      document.activeElement == document.querySelector('#effects-wrapper')) {
     this.setExpanded_(true);
     this.setControlsVisible_(true);
     return;
@@ -1097,25 +1093,27 @@ camera.views.Camera.prototype.onPointerActivity_ = function(event) {
   // Show the window controls.
   this.setControlsVisible_(true);
 
-  // Update the ribbon's visibility.
-  switch (event.type) {
-    case 'mousedown':
-      // Toggle the ribbon if clicking on static area.
-      if (event.target == document.body ||
-          document.querySelector('#main-canvas-wrapper').contains(
-              event.target) ||
-          document.querySelector('#main-preview-canvas-wrapper').contains(
-              event.target) ||
-          document.querySelector('#main-fast-canvas-wrapper').contains(
-              event.target)) {
-        this.setExpanded_(!this.expanded_);
+  // Update the ribbon's visibility only when camera view is active.
+  if (this.active) {
+    switch (event.type) {
+      case 'mousedown':
+        // Toggle the ribbon if clicking on static area.
+        if (event.target == document.body ||
+            document.querySelector('#main-canvas-wrapper').contains(
+                event.target) ||
+            document.querySelector('#main-preview-canvas-wrapper').contains(
+                event.target) ||
+            document.querySelector('#main-fast-canvas-wrapper').contains(
+                event.target)) {
+          this.setExpanded_(!this.expanded_);
+          break;
+        }  // Otherwise continue.
+      default:
+        // Prevent auto-hiding the ribbon for any other activity.
+        if (this.expanded_)
+          this.setExpanded_(true);
         break;
-      }  // Otherwise continue.
-    default:
-      // Prevent auto-hiding the ribbon for any other activity.
-      if (this.expanded_)
-        this.setExpanded_(true);
-      break;
+    }
   }
 };
 
