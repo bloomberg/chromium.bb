@@ -47,6 +47,7 @@ Retrieving: MetaRobots
 Retrieving: Hreflang
 Retrieving: EmbeddedContent
 Retrieving: Canonical
+Retrieving: Fonts
 Loading page & waiting for onload
 Retrieving devtoolsLog and network records
 Retrieving: ServiceWorker
@@ -85,6 +86,8 @@ Evaluating: Displays images with correct aspect ratio
 Evaluating: Avoids deprecated APIs
 Evaluating: Main thread work breakdown
 Evaluating: JavaScript boot-up time
+Evaluating: Preload key requests
+Evaluating: All text remains visible during webfont loads
 Evaluating: Site works cross-browser
 Evaluating: Page transitions don't feel like they block on the network
 Evaluating: Each page has a URL
@@ -171,7 +174,7 @@ Generating results...
 
 =============== Lighthouse Results ===============
 URL: http://127.0.0.1:8000/devtools/resources/inspected-page.html
-Version: 2.8.0
+Version: 2.9.1
 
 
 accesskeys: false
@@ -207,6 +210,7 @@ first-interactive: false
 first-meaningful-paint: false
 focus-traps: false
 focusable-controls: false
+font-display: true
 font-size: false
 frame-title: false
 geolocation-on-start: true
@@ -272,6 +276,7 @@ uses-http2: false
 uses-long-cache-ttl: false
 uses-optimized-images: false
 uses-passive-event-listeners: true
+uses-rel-preload: false
 uses-request-compression: false
 uses-responsive-images: false
 uses-webp-images: false
