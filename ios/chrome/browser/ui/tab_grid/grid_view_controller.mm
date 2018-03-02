@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/tab_grid/grid_view_controller.h"
 
+#import "base/ios/block_types.h"
 #import "base/mac/foundation_util.h"
 #import "base/numerics/safe_conversions.h"
 #import "ios/chrome/browser/ui/tab_grid/grid_cell.h"
@@ -152,30 +153,46 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 - (void)insertItem:(GridItem*)item
            atIndex:(NSUInteger)index
      selectedIndex:(NSUInteger)selectedIndex {
-  [self.items insertObject:item atIndex:index];
-  self.selectedIndex = selectedIndex;
-  if (![self isViewVisible])
+  ProceduralBlock performDataSourceUpdates = ^{
+    [self.items insertObject:item atIndex:index];
+    self.selectedIndex = selectedIndex;
+  };
+  if (![self isViewVisible]) {
+    performDataSourceUpdates();
     return;
-  [self.collectionView insertItemsAtIndexPaths:@[ CreateIndexPath(index) ]];
-  [self.collectionView
-      selectItemAtIndexPath:CreateIndexPath(selectedIndex)
-                   animated:YES
-             scrollPosition:UICollectionViewScrollPositionNone];
+  }
+  ProceduralBlock performAllUpdates = ^{
+    performDataSourceUpdates();
+    [self.collectionView insertItemsAtIndexPaths:@[ CreateIndexPath(index) ]];
+    [self.collectionView
+        selectItemAtIndexPath:CreateIndexPath(selectedIndex)
+                     animated:YES
+               scrollPosition:UICollectionViewScrollPositionNone];
+  };
+  [self.collectionView performBatchUpdates:performAllUpdates completion:nil];
 }
 
 - (void)removeItemAtIndex:(NSUInteger)index
             selectedIndex:(NSUInteger)selectedIndex {
-  [self.items removeObjectAtIndex:index];
-  self.selectedIndex = selectedIndex;
-  if (![self isViewVisible])
+  ProceduralBlock performDataSourceUpdates = ^{
+    [self.items removeObjectAtIndex:index];
+    self.selectedIndex = selectedIndex;
+  };
+  if (![self isViewVisible]) {
+    performDataSourceUpdates();
     return;
-  [self.collectionView deleteItemsAtIndexPaths:@[ CreateIndexPath(index) ]];
-  if (self.items.count == 0)
-    return;
-  [self.collectionView
-      selectItemAtIndexPath:CreateIndexPath(selectedIndex)
-                   animated:YES
-             scrollPosition:UICollectionViewScrollPositionNone];
+  }
+  ProceduralBlock performAllUpdates = ^{
+    performDataSourceUpdates();
+    [self.collectionView deleteItemsAtIndexPaths:@[ CreateIndexPath(index) ]];
+    if (self.items.count > 0) {
+      [self.collectionView
+          selectItemAtIndexPath:CreateIndexPath(selectedIndex)
+                       animated:YES
+                 scrollPosition:UICollectionViewScrollPositionNone];
+    }
+  };
+  [self.collectionView performBatchUpdates:performAllUpdates completion:nil];
 }
 
 - (void)selectItemAtIndex:(NSUInteger)selectedIndex {
@@ -198,14 +215,26 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 - (void)moveItemFromIndex:(NSUInteger)fromIndex
                   toIndex:(NSUInteger)toIndex
             selectedIndex:(NSUInteger)selectedIndex {
-  GridItem* item = self.items[fromIndex];
-  [self.items removeObjectAtIndex:fromIndex];
-  [self.items insertObject:item atIndex:toIndex];
-  self.selectedIndex = selectedIndex;
-  if (![self isViewVisible])
+  ProceduralBlock performDataSourceUpdates = ^{
+    GridItem* item = self.items[fromIndex];
+    [self.items removeObjectAtIndex:fromIndex];
+    [self.items insertObject:item atIndex:toIndex];
+    self.selectedIndex = selectedIndex;
+  };
+  if (![self isViewVisible]) {
+    performDataSourceUpdates();
     return;
-  [self.collectionView moveItemAtIndexPath:CreateIndexPath(fromIndex)
-                               toIndexPath:CreateIndexPath(toIndex)];
+  }
+  ProceduralBlock performAllUpdates = ^{
+    performDataSourceUpdates();
+    [self.collectionView moveItemAtIndexPath:CreateIndexPath(fromIndex)
+                                 toIndexPath:CreateIndexPath(toIndex)];
+    [self.collectionView
+        selectItemAtIndexPath:CreateIndexPath(selectedIndex)
+                     animated:YES
+               scrollPosition:UICollectionViewScrollPositionNone];
+  };
+  [self.collectionView performBatchUpdates:performAllUpdates completion:nil];
 }
 
 #pragma mark - Private

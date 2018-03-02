@@ -93,6 +93,13 @@
   self.adaptor.adaptedDispatcher =
       static_cast<id<ApplicationCommands, BrowserCommands, OmniboxFocuser,
                      ToolbarCommands>>(self.dispatcher);
+
+  self.regularTabsMediator = [[TabGridMediator alloc]
+      initWithConsumer:mainViewController.regularTabsConsumer];
+  self.regularTabsMediator.tabModel = self.regularTabModel;
+  self.incognitoTabsMediator = [[TabGridMediator alloc]
+      initWithConsumer:mainViewController.incognitoTabsConsumer];
+  self.incognitoTabsMediator.tabModel = self.incognitoTabModel;
 }
 
 - (void)stop {
