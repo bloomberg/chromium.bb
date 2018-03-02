@@ -388,7 +388,7 @@ public class ToolbarPhone extends ToolbarLayout
                     mLocationBarBackgroundPadding.bottom);
 
             mModernLocationBarExtraFocusedStartMargin = getResources().getDimensionPixelSize(
-                    R.dimen.bottom_toolbar_background_focused_left_margin);
+                    R.dimen.modern_toolbar_background_focused_left_margin);
             mLocationBarBackgroundCornerRadius = 0;
         } else {
             mLocationBarVerticalMargin =

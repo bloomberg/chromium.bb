@@ -265,14 +265,8 @@
     <dimen name="tablet_toolbar_end_padding">6dp</dimen>
     <dimen name="location_bar_status_separator_width">1dp</dimen>
 
-    <!-- Bottom toolbar dimensions -->
-    <dimen name="bottom_toolbar_top_margin">2dp</dimen>
-    <dimen name="bottom_toolbar_url_bar_top_margin">3.5dp</dimen>
-    <dimen name="bottom_toolbar_background_focused_left_margin">6dp</dimen>
-    <dimen name="bottom_location_bar_content_lateral_inset">8dp</dimen>
-    <dimen name="bottom_location_bar_content_vertical_inset">4dp</dimen>
-
-    <!-- Modern toolbar background dimensions -->
+    <!-- Modern toolbar dimensions -->
+    <dimen name="modern_toolbar_background_focused_left_margin">6dp</dimen>
     <dimen name="modern_toolbar_background_size">40dp</dimen>
     <dimen name="modern_toolbar_background_corner_radius">20dp</dimen>
     <dimen name="modern_toolbar_background_lateral_inset">2dp</dimen>
@@ -514,7 +508,6 @@
 
     <!-- Chrome Home dimensions -->
     <dimen name="chrome_home_min_full_half_distance">160dp</dimen>
-    <dimen name="chrome_home_progress_bar_height">4dp</dimen>
     <dimen name="chrome_home_incognito_ntp_bottom_margin">32dp</dimen>
 
     <!-- TextBubble dimensions -->
