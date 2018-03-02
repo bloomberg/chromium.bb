@@ -1058,8 +1058,10 @@ void GraphicsLayer::SetDrawsContent(bool draws_content) {
   draws_content_ = draws_content;
   UpdateLayerIsDrawable();
 
-  if (!draws_content && paint_controller_)
+  if (!draws_content) {
     paint_controller_.reset();
+    raster_invalidator_.reset();
+  }
 }
 
 void GraphicsLayer::SetContentsVisible(bool contents_visible) {
