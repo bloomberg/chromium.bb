@@ -61,59 +61,42 @@ MenuItemView* MenuModelAdapter::AddMenuItemFromModelAt(ui::MenuModel* model,
                                                        MenuItemView* menu,
                                                        int menu_index,
                                                        int item_id) {
-  gfx::Image icon;
-  model->GetIconAt(model_index, &icon);
-  base::string16 label, sublabel, minor_text;
-  const gfx::VectorIcon* minor_icon = nullptr;
-  ui::MenuSeparatorType separator_style = ui::NORMAL_SEPARATOR;
-  MenuItemView::Type type;
+  base::Optional<MenuItemView::Type> type;
   ui::MenuModel::ItemType menu_type = model->GetTypeAt(model_index);
-
   switch (menu_type) {
     case ui::MenuModel::TYPE_COMMAND:
     case ui::MenuModel::TYPE_BUTTON_ITEM:
       type = MenuItemView::NORMAL;
-      label = model->GetLabelAt(model_index);
-      sublabel = model->GetSublabelAt(model_index);
-      minor_text = model->GetMinorTextAt(model_index);
-      minor_icon = model->GetMinorIconAt(model_index);
       break;
     case ui::MenuModel::TYPE_CHECK:
       type = MenuItemView::CHECKBOX;
-      label = model->GetLabelAt(model_index);
-      sublabel = model->GetSublabelAt(model_index);
-      minor_text = model->GetMinorTextAt(model_index);
-      minor_icon = model->GetMinorIconAt(model_index);
       break;
     case ui::MenuModel::TYPE_RADIO:
       type = MenuItemView::RADIO;
-      label = model->GetLabelAt(model_index);
-      sublabel = model->GetSublabelAt(model_index);
-      minor_text = model->GetMinorTextAt(model_index);
-      minor_icon = model->GetMinorIconAt(model_index);
       break;
     case ui::MenuModel::TYPE_SEPARATOR:
-      icon = gfx::Image();
       type = MenuItemView::SEPARATOR;
-      separator_style = model->GetSeparatorTypeAt(model_index);
       break;
     case ui::MenuModel::TYPE_SUBMENU:
       type = MenuItemView::SUBMENU;
-      label = model->GetLabelAt(model_index);
-      sublabel = model->GetSublabelAt(model_index);
-      minor_text = model->GetMinorTextAt(model_index);
-      minor_icon = model->GetMinorIconAt(model_index);
-      break;
-    default:
-      NOTREACHED();
-      type = MenuItemView::NORMAL;
       break;
   }
 
+  if (*type == MenuItemView::SEPARATOR) {
+    return menu->AddMenuItemAt(menu_index, item_id, base::string16(),
+                               base::string16(), base::string16(), nullptr,
+                               gfx::ImageSkia(), *type,
+                               model->GetSeparatorTypeAt(model_index));
+  }
+
+  gfx::Image icon;
+  model->GetIconAt(model_index, &icon);
   return menu->AddMenuItemAt(
-      menu_index, item_id, label, sublabel, minor_text, minor_icon,
-      icon.IsEmpty() ? gfx::ImageSkia() : *icon.ToImageSkia(), type,
-      separator_style);
+      menu_index, item_id, model->GetLabelAt(model_index),
+      model->GetSublabelAt(model_index), model->GetMinorTextAt(model_index),
+      model->GetMinorIconAt(model_index),
+      icon.IsEmpty() ? gfx::ImageSkia() : *icon.ToImageSkia(), *type,
+      ui::NORMAL_SEPARATOR);
 }
 
 // Static.
