@@ -285,6 +285,13 @@ void GpuChildThread::OnGpuServiceConnection(viz::GpuServiceImpl* gpu_service) {
   release_pending_requests_closure_.Run();
 }
 
+void GpuChildThread::PostCompositorThreadCreated(
+    base::SingleThreadTaskRunner* task_runner) {
+  auto* gpu_client = GetContentClient()->gpu();
+  if (gpu_client)
+    gpu_client->PostCompositorThreadCreated(task_runner);
+}
+
 void GpuChildThread::BindServiceFactoryRequest(
     service_manager::mojom::ServiceFactoryRequest request) {
   DVLOG(1) << "GPU: Binding service_manager::mojom::ServiceFactoryRequest";
