@@ -15,11 +15,11 @@ class PlatformEventWaiter : public PlatformEventObserver {
  public:
   typedef base::Callback<bool(const PlatformEvent&)> PlatformEventMatcher;
 
-  static PlatformEventWaiter* Create(const base::Closure& success_callback,
+  static PlatformEventWaiter* Create(base::OnceClosure success_callback,
                                      const PlatformEventMatcher& event_matcher);
 
  private:
-  PlatformEventWaiter(const base::Closure& success_callback,
+  PlatformEventWaiter(base::OnceClosure success_callback,
                       const PlatformEventMatcher& event_matcher);
   ~PlatformEventWaiter() override;
 
@@ -27,7 +27,7 @@ class PlatformEventWaiter : public PlatformEventObserver {
   void WillProcessEvent(const PlatformEvent& event) override;
   void DidProcessEvent(const PlatformEvent& event) override;
 
-  base::Closure success_callback_;
+  base::OnceClosure success_callback_;
   PlatformEventMatcher event_matcher_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformEventWaiter);

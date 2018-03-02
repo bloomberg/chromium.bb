@@ -45,7 +45,7 @@ class MenuTestBase : public ViewEventTestBase,
   virtual void Click(views::View* view, const base::Closure& next);
 
   // Generate a keypress and run |next| once the event has been processed.
-  void KeyPress(ui::KeyboardCode keycode, const base::Closure& next);
+  void KeyPress(ui::KeyboardCode keycode, base::OnceClosure next);
 
   views::MenuItemView* menu() {
     return menu_;

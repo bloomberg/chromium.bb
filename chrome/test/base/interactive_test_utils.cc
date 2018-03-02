@@ -202,11 +202,13 @@ namespace internal {
 
 void ClickTask(ui_controls::MouseButton button,
                int state,
-               const base::Closure& followup) {
-  if (!followup.is_null())
-    ui_controls::SendMouseEventsNotifyWhenDone(button, state, followup);
-  else
+               base::OnceClosure followup) {
+  if (!followup.is_null()) {
+    ui_controls::SendMouseEventsNotifyWhenDone(button, state,
+                                               std::move(followup));
+  } else {
     ui_controls::SendMouseEvents(button, state);
+  }
 }
 
 }  // namespace internal

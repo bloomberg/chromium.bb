@@ -61,7 +61,7 @@ class UIControlsAsh : public UIControlsAura {
                     bool alt,
                     bool command) override {
     return SendKeyPressNotifyWhenDone(window, key, control, shift, alt, command,
-                                      base::Closure());
+                                      base::OnceClosure());
   }
 
   bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
@@ -70,13 +70,13 @@ class UIControlsAsh : public UIControlsAura {
                                   bool shift,
                                   bool alt,
                                   bool command,
-                                  const base::Closure& closure) override {
+                                  base::OnceClosure closure) override {
     aura::Window* root = window ? window->GetRootWindow()
                                 : ash::Shell::GetRootWindowForNewWindows();
     UIControlsAura* ui_controls = GetUIControlsForRootWindow(root);
     return ui_controls &&
-           ui_controls->SendKeyPressNotifyWhenDone(window, key, control, shift,
-                                                   alt, command, closure);
+           ui_controls->SendKeyPressNotifyWhenDone(
+               window, key, control, shift, alt, command, std::move(closure));
   }
 
   bool SendMouseMove(long x, long y) override {
@@ -87,11 +87,11 @@ class UIControlsAsh : public UIControlsAura {
 
   bool SendMouseMoveNotifyWhenDone(long x,
                                    long y,
-                                   const base::Closure& closure) override {
+                                   base::OnceClosure closure) override {
     gfx::Point p(x, y);
     UIControlsAura* ui_controls = GetUIControlsAt(p);
-    return ui_controls &&
-           ui_controls->SendMouseMoveNotifyWhenDone(p.x(), p.y(), closure);
+    return ui_controls && ui_controls->SendMouseMoveNotifyWhenDone(
+                              p.x(), p.y(), std::move(closure));
   }
 
   bool SendMouseEvents(MouseButton type, int state) override {
@@ -102,11 +102,11 @@ class UIControlsAsh : public UIControlsAura {
 
   bool SendMouseEventsNotifyWhenDone(MouseButton type,
                                      int state,
-                                     const base::Closure& closure) override {
+                                     base::OnceClosure closure) override {
     gfx::Point p(aura::Env::GetInstance()->last_mouse_location());
     UIControlsAura* ui_controls = GetUIControlsAt(p);
-    return ui_controls &&
-           ui_controls->SendMouseEventsNotifyWhenDone(type, state, closure);
+    return ui_controls && ui_controls->SendMouseEventsNotifyWhenDone(
+                              type, state, std::move(closure));
   }
 
   bool SendMouseClick(MouseButton type) override {

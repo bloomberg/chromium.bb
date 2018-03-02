@@ -30,20 +30,21 @@ class UIControlsAura {
                                           bool shift,
                                           bool alt,
                                           bool command,
-                                          const base::Closure& task) = 0;
+                                          base::OnceClosure task) = 0;
 
   // Simulate a mouse move. (x,y) are absolute screen coordinates.
   virtual bool SendMouseMove(long x, long y) = 0;
   virtual bool SendMouseMoveNotifyWhenDone(long x,
                                            long y,
-                                           const base::Closure& task) = 0;
+                                           base::OnceClosure task) = 0;
 
   // Sends a mouse down and/or up message. The click will be sent to wherever
   // the cursor currently is, so be sure to move the cursor before calling this
   // (and be sure the cursor has arrived!).
   virtual bool SendMouseEvents(MouseButton type, int state) =0;
-  virtual bool SendMouseEventsNotifyWhenDone(MouseButton type, int state,
-                                             const base::Closure& task) = 0;
+  virtual bool SendMouseEventsNotifyWhenDone(MouseButton type,
+                                             int state,
+                                             base::OnceClosure task) = 0;
   // Same as SendMouseEvents with BUTTON_UP | BUTTON_DOWN.
   virtual bool SendMouseClick(MouseButton type) = 0;
 

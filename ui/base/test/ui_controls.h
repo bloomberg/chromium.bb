@@ -60,7 +60,7 @@ bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
                                 bool shift,
                                 bool alt,
                                 bool command,
-                                const base::Closure& task);
+                                base::OnceClosure task);
 
 // Simulate a mouse move.
 bool SendMouseMove(long screen_x, long screen_y);
@@ -69,7 +69,7 @@ bool SendMouseMove(long screen_x, long screen_y);
 // belonging to the current process.
 bool SendMouseMoveNotifyWhenDone(long screen_x,
                                  long screen_y,
-                                 const base::Closure& task);
+                                 base::OnceClosure task);
 
 enum MouseButton {
   LEFT = 0,
@@ -91,7 +91,7 @@ enum TouchType { PRESS = 1 << 0, RELEASE = 1 << 1, MOVE = 1 << 2 };
 bool SendMouseEvents(MouseButton type, int state);
 bool SendMouseEventsNotifyWhenDone(MouseButton type,
                                    int state,
-                                   const base::Closure& task);
+                                   base::OnceClosure task);
 
 // Same as SendMouseEvents with UP | DOWN.
 bool SendMouseClick(MouseButton type);

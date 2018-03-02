@@ -32,9 +32,8 @@ void MoveMouseToCenterAndPress(views::View* view,
   gfx::Point view_center(view->width() / 2, view->height() / 2);
   views::View::ConvertPointToScreen(view, &view_center);
   ui_controls::SendMouseMoveNotifyWhenDone(
-      view_center.x(),
-      view_center.y(),
-      base::Bind(&internal::ClickTask, button, state, closure));
+      view_center.x(), view_center.y(),
+      base::BindOnce(&internal::ClickTask, button, state, closure));
 }
 
 }  // namespace ui_test_utils

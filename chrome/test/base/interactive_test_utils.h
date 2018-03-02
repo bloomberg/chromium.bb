@@ -194,7 +194,7 @@ namespace internal {
 // ui_controls_linux.cc and ui_controls_mac.cc
 void ClickTask(ui_controls::MouseButton button,
                int state,
-               const base::Closure& followup);
+               base::OnceClosure followup);
 
 }  // namespace internal
 
