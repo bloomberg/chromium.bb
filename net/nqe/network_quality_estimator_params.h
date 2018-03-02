@@ -150,15 +150,6 @@ class NET_EXPORT NetworkQualityEstimatorParams {
     return lower_bound_http_rtt_transport_rtt_multiplier_;
   }
 
-  // Returns the multiplier by which the transport RTT should be multipled when
-  // computing the HTTP RTT. The multiplied value of the transport RTT serves
-  // as an upper bound to the HTTP RTT estimate. e.g., if the multiplied
-  // transport RTT is 100 msec., then HTTP RTT estimate can't be more than
-  // 100 msec. Returns a negative value if the param is not set.
-  double upper_bound_http_rtt_transport_rtt_multiplier() const {
-    return upper_bound_http_rtt_transport_rtt_multiplier_;
-  }
-
   // For the purpose of estimating the HTTP RTT, a request is marked as hanging
   // only if its RTT is at least this times the transport RTT estimate.
   int hanging_request_http_rtt_upper_bound_transport_rtt_multiplier() const {
@@ -264,7 +255,6 @@ class NET_EXPORT NetworkQualityEstimatorParams {
   bool persistent_cache_reading_enabled_;
   const base::TimeDelta min_socket_watcher_notification_interval_;
   const double lower_bound_http_rtt_transport_rtt_multiplier_;
-  const double upper_bound_http_rtt_transport_rtt_multiplier_;
   const int hanging_request_http_rtt_upper_bound_transport_rtt_multiplier_;
   const int hanging_request_http_rtt_upper_bound_http_rtt_multiplier_;
   const base::TimeDelta hanging_request_upper_bound_min_http_rtt_;

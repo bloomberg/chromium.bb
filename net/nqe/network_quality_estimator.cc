@@ -1117,12 +1117,6 @@ NetworkQualityEstimator::GetRecentEffectiveConnectionTypeUsingMetrics(
             *transport_rtt *
                 params_->lower_bound_http_rtt_transport_rtt_multiplier());
       }
-      if (params_->upper_bound_http_rtt_transport_rtt_multiplier() > 0) {
-        *http_rtt = std::min(
-            *http_rtt,
-            *transport_rtt *
-                params_->upper_bound_http_rtt_transport_rtt_multiplier());
-      }
     }
   }
 

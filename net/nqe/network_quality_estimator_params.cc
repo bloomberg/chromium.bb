@@ -415,7 +415,7 @@ NetworkQualityEstimatorParams::NetworkQualityEstimatorParams(
           GetDoubleValueForVariationParamWithDefaultValue(
               params_,
               "throughput_hanging_requests_cwnd_size_multiplier",
-              -1)),
+              1)),
       weight_multiplier_per_second_(GetWeightMultiplierPerSecond(params_)),
       weight_multiplier_per_signal_strength_level_(
           GetDoubleValueForVariationParamWithDefaultValue(
@@ -438,31 +438,22 @@ NetworkQualityEstimatorParams::NetworkQualityEstimatorParams(
           GetPersistentCacheReadingEnabled(params_)),
       min_socket_watcher_notification_interval_(
           GetMinSocketWatcherNotificationInterval(params_)),
-      lower_bound_http_rtt_transport_rtt_multiplier_(
-          GetDoubleValueForVariationParamWithDefaultValue(
-              params_,
-              "lower_bound_http_rtt_transport_rtt_multiplier",
-              1.0)),
-      upper_bound_http_rtt_transport_rtt_multiplier_(
-          GetDoubleValueForVariationParamWithDefaultValue(
-              params_,
-              "upper_bound_http_rtt_transport_rtt_multiplier",
-              -1)),
+      lower_bound_http_rtt_transport_rtt_multiplier_(1.0),
       hanging_request_http_rtt_upper_bound_transport_rtt_multiplier_(
           GetValueForVariationParam(
               params_,
               "hanging_request_http_rtt_upper_bound_transport_rtt_multiplier",
-              -1)),
+              8)),
       hanging_request_http_rtt_upper_bound_http_rtt_multiplier_(
           GetValueForVariationParam(
               params_,
               "hanging_request_http_rtt_upper_bound_http_rtt_multiplier",
-              -1)),
+              6)),
       hanging_request_upper_bound_min_http_rtt_(
           base::TimeDelta::FromMilliseconds(GetValueForVariationParam(
               params_,
               "hanging_request_upper_bound_min_http_rtt_msec",
-              -1))),
+              500))),
       http_rtt_transport_rtt_min_count_(
           GetValueForVariationParam(params_,
                                     "http_rtt_transport_rtt_min_count",
@@ -502,15 +493,6 @@ NetworkQualityEstimatorParams::NetworkQualityEstimatorParams(
               "socket_watchers_min_notification_interval_msec",
               200))),
       use_small_responses_(false) {
-  DCHECK(lower_bound_http_rtt_transport_rtt_multiplier_ == -1 ||
-         lower_bound_http_rtt_transport_rtt_multiplier_ > 0);
-  DCHECK(upper_bound_http_rtt_transport_rtt_multiplier_ == -1 ||
-         upper_bound_http_rtt_transport_rtt_multiplier_ > 0);
-  DCHECK(lower_bound_http_rtt_transport_rtt_multiplier_ == -1 ||
-         upper_bound_http_rtt_transport_rtt_multiplier_ == -1 ||
-         lower_bound_http_rtt_transport_rtt_multiplier_ <
-             upper_bound_http_rtt_transport_rtt_multiplier_);
-
   DCHECK(hanging_request_http_rtt_upper_bound_transport_rtt_multiplier_ == -1 ||
          hanging_request_http_rtt_upper_bound_transport_rtt_multiplier_ > 0);
   DCHECK(hanging_request_http_rtt_upper_bound_http_rtt_multiplier_ == -1 ||
@@ -519,11 +501,6 @@ NetworkQualityEstimatorParams::NetworkQualityEstimatorParams(
          hanging_request_http_rtt_upper_bound_http_rtt_multiplier_ == -1 ||
          hanging_request_http_rtt_upper_bound_transport_rtt_multiplier_ >=
              hanging_request_http_rtt_upper_bound_http_rtt_multiplier_);
-
-  DCHECK(upper_bound_http_rtt_transport_rtt_multiplier_ == -1 ||
-         hanging_request_http_rtt_upper_bound_transport_rtt_multiplier_ == -1 ||
-         upper_bound_http_rtt_transport_rtt_multiplier_ <
-             hanging_request_http_rtt_upper_bound_transport_rtt_multiplier_);
 
   DCHECK_GE(1.0, weight_multiplier_per_signal_strength_level_);
   DCHECK_LE(0.0, weight_multiplier_per_signal_strength_level_);
