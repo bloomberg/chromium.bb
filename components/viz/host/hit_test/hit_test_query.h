@@ -80,14 +80,17 @@ class VIZ_HOST_EXPORT HitTestQuery {
                                const gfx::PointF& location_in_root) const;
 
   // When a target window is already known, e.g. capture/latched window, convert
-  // |location_in_root| to be in the coordinate space of the target.
+  // |location_in_root| to be in the coordinate space of the target and store
+  // that in |transformed_location|. Return true if the transform is successful
+  // and false otherwise.
   // |target_ancestors| contains the FrameSinkId from target to root.
   // |target_ancestors.front()| is the target, and |target_ancestors.back()|
   // is the root.
-  gfx::PointF TransformLocationForTarget(
+  bool TransformLocationForTarget(
       EventSource event_source,
       const std::vector<FrameSinkId>& target_ancestors,
-      const gfx::PointF& location_in_root) const;
+      const gfx::PointF& location_in_root,
+      gfx::PointF* transformed_location) const;
 
  private:
   // Helper function to find |target| for |location_in_parent| in the |region|,
