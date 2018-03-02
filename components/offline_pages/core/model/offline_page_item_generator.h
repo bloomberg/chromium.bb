@@ -31,6 +31,7 @@ class OfflinePageItemGenerator {
   void SetUrl(const GURL& url);
   void SetOriginalUrl(const GURL& url);
   void SetFileSize(int64_t file_size);
+  void SetCreationTime(base::Time time);
   void SetLastAccessTime(base::Time time);
   void SetAccessCount(int access_count);
   void SetArchiveDirectory(const base::FilePath& archive_dir);
@@ -43,6 +44,7 @@ class OfflinePageItemGenerator {
   GURL url_;
   GURL original_url_;
   int64_t file_size_ = 0;
+  base::Time creation_time_;
   base::Time last_access_time_;
   int access_count_ = 0;
   base::FilePath archive_dir_;

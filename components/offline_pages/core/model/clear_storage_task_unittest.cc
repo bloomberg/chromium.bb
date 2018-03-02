@@ -9,10 +9,10 @@
 #include "base/bind.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/time/clock.h"
 #include "base/time/time.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/client_policy_controller.h"
@@ -76,10 +76,9 @@ class ClearStorageTaskTest
   void TearDown() override;
 
   void Initialize(const std::vector<PageSettings>& settings,
-                  base::SimpleTestClock* clock,
                   TestOptions options = TestOptions::DEFAULT);
   void OnClearStorageDone(size_t cleared_page_count, ClearStorageResult result);
-  void AddPages(const PageSettings& setting, base::SimpleTestClock* clock_ptr);
+  void AddPages(const PageSettings& setting);
   void RunClearStorageTask(const base::Time& start_time);
 
   void SetFreeSpace(int64_t free_space) {
@@ -97,12 +96,13 @@ class ClearStorageTaskTest
   }
   ArchiveManager* archive_manager() { return archive_manager_.get(); }
   const base::FilePath& temp_dir_path() { return temp_dir_.GetPath(); }
-  base::SimpleTestClock* clock() { return clock_; }
+  base::SimpleTestClock* clock() { return &clock_; }
   size_t last_cleared_page_count() { return last_cleared_page_count_; }
   int total_cleared_times() { return total_cleared_times_; }
   ClearStorageResult last_clear_storage_result() {
     return last_clear_storage_result_;
   }
+  base::HistogramTester* histogram_tester() { return histogram_tester_.get(); }
 
  private:
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
@@ -114,11 +114,12 @@ class ClearStorageTaskTest
   std::unique_ptr<ClientPolicyController> policy_controller_;
   std::unique_ptr<TestArchiveManager> archive_manager_;
   base::ScopedTempDir temp_dir_;
-  base::SimpleTestClock* clock_;
+  base::SimpleTestClock clock_;
 
   size_t last_cleared_page_count_;
   int total_cleared_times_;
   ClearStorageResult last_clear_storage_result_;
+  std::unique_ptr<base::HistogramTester> histogram_tester_;
 };
 
 ClearStorageTaskTest::ClearStorageTaskTest()
@@ -137,6 +138,8 @@ void ClearStorageTaskTest::SetUp() {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   // Setting up policies for testing.
   policy_controller_ = std::make_unique<ClientPolicyController>();
+  clock_.SetNow(base::Time::Now());
+  histogram_tester_ = std::make_unique<base::HistogramTester>();
 }
 
 void ClearStorageTaskTest::TearDown() {
@@ -150,13 +153,12 @@ void ClearStorageTaskTest::TearDown() {
 
 void ClearStorageTaskTest::Initialize(
     const std::vector<PageSettings>& page_settings,
-    base::SimpleTestClock* clock,
     TestOptions options) {
   generator()->SetFileSize(kTestFileSize);
 
   // Adding pages based on |page_settings|.
   for (const auto& setting : page_settings)
-    AddPages(setting, clock);
+    AddPages(setting);
   archive_manager_.reset(new TestArchiveManager(store_test_util()));
 }
 
@@ -167,20 +169,26 @@ void ClearStorageTaskTest::OnClearStorageDone(size_t cleared_page_count,
   total_cleared_times_++;
 }
 
-void ClearStorageTaskTest::AddPages(const PageSettings& setting,
-                                    base::SimpleTestClock* clock_ptr) {
+void ClearStorageTaskTest::AddPages(const PageSettings& setting) {
+  // Note: even though the creation time set below is inconsistent with the last
+  // access time set further down, these values are used independently and
+  // this choice allows for easier testing of the TimeSinceCreation metric. This
+  // way we can work directly with the times used to advance the testing clock
+  // during each test.
+  generator()->SetCreationTime(clock()->Now());
   generator()->SetNamespace(setting.name_space);
   generator()->SetArchiveDirectory(temp_dir_path());
+
   for (int i = 0; i < setting.fresh_page_count; ++i) {
-    generator()->SetLastAccessTime(clock_ptr->Now());
+    generator()->SetLastAccessTime(clock_.Now());
     OfflinePageItem page = generator()->CreateItemWithTempFile();
     store_test_util()->InsertItem(page);
   }
   for (int i = 0; i < setting.expired_page_count; ++i) {
     // Make the pages expired.
     generator()->SetLastAccessTime(
-        clock_ptr->Now() - policy_controller_->GetPolicy(setting.name_space)
-                               .lifetime_policy.expiration_period);
+        clock_.Now() - policy_controller_->GetPolicy(setting.name_space)
+                           .lifetime_policy.expiration_period);
     OfflinePageItem page = generator()->CreateItemWithTempFile();
     store_test_util()->InsertItem(page);
   }
@@ -195,15 +203,10 @@ void ClearStorageTaskTest::RunClearStorageTask(const base::Time& start_time) {
 }
 
 TEST_F(ClearStorageTaskTest, ClearPagesLessThanLimit) {
-  auto clock = std::make_unique<base::SimpleTestClock>();
-  clock->SetNow(base::Time::Now());
-  Initialize({{kBookmarkNamespace, 1, 1}, {kLastNNamespace, 1, 1}},
-             clock.get());
+  Initialize({{kBookmarkNamespace, 1, 1}, {kLastNNamespace, 1, 1}});
 
-  clock->Advance(base::TimeDelta::FromMinutes(5));
-  base::Time start_time = clock->Now();
-
-  RunClearStorageTask(start_time);
+  clock()->Advance(base::TimeDelta::FromMinutes(5));
+  RunClearStorageTask(clock()->Now());
 
   // In total there're 2 expired pages so they'll be cleared successfully.
   // There will be 2 pages remaining in the store, and make sure their files
@@ -213,18 +216,15 @@ TEST_F(ClearStorageTaskTest, ClearPagesLessThanLimit) {
   EXPECT_EQ(ClearStorageResult::SUCCESS, last_clear_storage_result());
   EXPECT_EQ(2LL, store_test_util()->GetPageCount());
   EXPECT_EQ(2UL, test_utils::GetFileCountInDirectory(temp_dir_path()));
+  histogram_tester()->ExpectUniqueSample(
+      "OfflinePages.ClearTemporaryPages.TimeSinceCreation", 5, 2);
 }
 
 TEST_F(ClearStorageTaskTest, ClearPagesMoreFreshPages) {
-  auto clock = std::make_unique<base::SimpleTestClock>();
-  clock->SetNow(base::Time::Now());
-  Initialize({{kBookmarkNamespace, 30, 0}, {kLastNNamespace, 100, 1}},
-             clock.get());
+  Initialize({{kBookmarkNamespace, 30, 0}, {kLastNNamespace, 100, 1}});
 
-  clock->Advance(base::TimeDelta::FromMinutes(5));
-  base::Time start_time = clock->Now();
-
-  RunClearStorageTask(start_time);
+  clock()->Advance(base::TimeDelta::FromMinutes(5));
+  RunClearStorageTask(clock()->Now());
 
   // In total there's 1 expired page so it'll be cleared successfully.
   // There will be (30 + 100) pages remaining in the store, and make sure their
@@ -234,17 +234,15 @@ TEST_F(ClearStorageTaskTest, ClearPagesMoreFreshPages) {
   EXPECT_EQ(ClearStorageResult::SUCCESS, last_clear_storage_result());
   EXPECT_EQ(130LL, store_test_util()->GetPageCount());
   EXPECT_EQ(130UL, test_utils::GetFileCountInDirectory(temp_dir_path()));
+  histogram_tester()->ExpectUniqueSample(
+      "OfflinePages.ClearTemporaryPages.TimeSinceCreation", 5, 1);
 }
 
 TEST_F(ClearStorageTaskTest, TryClearPersistentPages) {
-  auto clock = std::make_unique<base::SimpleTestClock>();
-  clock->SetNow(base::Time::Now());
-  Initialize({{kDownloadNamespace, 20, 0}}, clock.get());
+  Initialize({{kDownloadNamespace, 20, 0}});
 
-  clock->Advance(base::TimeDelta::FromDays(367));
-  base::Time start_time = clock->Now();
-
-  RunClearStorageTask(start_time);
+  clock()->Advance(base::TimeDelta::FromDays(367));
+  RunClearStorageTask(clock()->Now());
 
   // There's 20 pages and the clock advances for more than a year.
   // No pages should be deleted since they're all persistent pages.
@@ -253,19 +251,17 @@ TEST_F(ClearStorageTaskTest, TryClearPersistentPages) {
   EXPECT_EQ(ClearStorageResult::UNNECESSARY, last_clear_storage_result());
   EXPECT_EQ(20LL, store_test_util()->GetPageCount());
   EXPECT_EQ(20UL, test_utils::GetFileCountInDirectory(temp_dir_path()));
+  histogram_tester()->ExpectTotalCount(
+      "OfflinePages.ClearTemporaryPages.TimeSinceCreation", 0);
 }
 
 TEST_F(ClearStorageTaskTest, TryClearPersistentPagesWithStoragePressure) {
-  auto clock = std::make_unique<base::SimpleTestClock>();
-  clock->SetNow(base::Time::Now());
   // Sets the free space with 1KB.
-  Initialize({{kDownloadNamespace, 20, 0}}, clock.get());
+  Initialize({{kDownloadNamespace, 20, 0}});
   SetFreeSpace(1024);
 
-  clock->Advance(base::TimeDelta::FromDays(367));
-  base::Time start_time = clock->Now();
-
-  RunClearStorageTask(start_time);
+  clock()->Advance(base::TimeDelta::FromDays(367));
+  RunClearStorageTask(clock()->Now());
 
   // There're 20 pages and the clock advances for more than a year.
   // No pages should be deleted since they're all persistent pages.
@@ -277,15 +273,12 @@ TEST_F(ClearStorageTaskTest, TryClearPersistentPagesWithStoragePressure) {
 }
 
 TEST_F(ClearStorageTaskTest, ClearMultipleTimes) {
-  auto clock = std::make_unique<base::SimpleTestClock>();
-  clock->SetNow(base::Time::Now());
   // Initializing with 20 unexpired and 0 expired pages in bookmark namespace,
   // 30 unexpired and 1 expired pages in last_n namespace, and 40 persistent
   // pages in download namespace. Free space on the disk is 200MB.
   Initialize({{kBookmarkNamespace, 20, 0},
               {kLastNNamespace, 30, 1},
-              {kDownloadNamespace, 40, 0}},
-             clock.get());
+              {kDownloadNamespace, 40, 0}});
 
   // Check preconditions, especially that last_n expiration is longer than
   // bookmark's.
@@ -304,8 +297,8 @@ TEST_F(ClearStorageTaskTest, ClearMultipleTimes) {
   ASSERT_GT(last_n_policy.expiration_period, bookmark_policy.expiration_period);
 
   // Advance 30 minutes from initial pages creation time.
-  clock->Advance(base::TimeDelta::FromMinutes(30));
-  RunClearStorageTask(clock->Now());
+  clock()->Advance(base::TimeDelta::FromMinutes(30));
+  RunClearStorageTask(clock()->Now());
 
   // There's only 1 expired pages, so it will be cleared. There will be (30 +
   // 20 + 40) pages remaining.
@@ -314,11 +307,13 @@ TEST_F(ClearStorageTaskTest, ClearMultipleTimes) {
   EXPECT_EQ(ClearStorageResult::SUCCESS, last_clear_storage_result());
   EXPECT_EQ(90LL, store_test_util()->GetPageCount());
   EXPECT_EQ(90UL, test_utils::GetFileCountInDirectory(temp_dir_path()));
+  histogram_tester()->ExpectUniqueSample(
+      "OfflinePages.ClearTemporaryPages.TimeSinceCreation", 30, 1);
 
   // Advance the clock by the expiration period of bookmark namespace so that
   // all pages left in that namespace should be expired.
-  clock->Advance(bookmark_policy.expiration_period);
-  RunClearStorageTask(clock->Now());
+  clock()->Advance(bookmark_policy.expiration_period);
+  RunClearStorageTask(clock()->Now());
 
   // All pages in bookmark namespace should be cleared. And only 70 pages
   // remaining after the clearing.
@@ -327,11 +322,16 @@ TEST_F(ClearStorageTaskTest, ClearMultipleTimes) {
   EXPECT_EQ(ClearStorageResult::SUCCESS, last_clear_storage_result());
   EXPECT_EQ(70LL, store_test_util()->GetPageCount());
   EXPECT_EQ(70UL, test_utils::GetFileCountInDirectory(temp_dir_path()));
+  histogram_tester()->ExpectTotalCount(
+      "OfflinePages.ClearTemporaryPages.TimeSinceCreation", 21);
+  histogram_tester()->ExpectBucketCount(
+      "OfflinePages.ClearTemporaryPages.TimeSinceCreation",
+      30 + bookmark_policy.expiration_period.InMinutes(), 20);
 
   // Advance the clock by 1 ms, there's no change in pages so the attempt to
   // clear storage should be unnecessary.
-  clock->Advance(base::TimeDelta::FromMilliseconds(1));
-  RunClearStorageTask(clock->Now());
+  clock()->Advance(base::TimeDelta::FromMilliseconds(1));
+  RunClearStorageTask(clock()->Now());
 
   // The clearing attempt is unnecessary.
   EXPECT_EQ(0UL, last_cleared_page_count());
@@ -339,6 +339,8 @@ TEST_F(ClearStorageTaskTest, ClearMultipleTimes) {
   EXPECT_EQ(ClearStorageResult::UNNECESSARY, last_clear_storage_result());
   EXPECT_EQ(70LL, store_test_util()->GetPageCount());
   EXPECT_EQ(70UL, test_utils::GetFileCountInDirectory(temp_dir_path()));
+  histogram_tester()->ExpectTotalCount(
+      "OfflinePages.ClearTemporaryPages.TimeSinceCreation", 21);
 
   // Adding more fresh pages in last_n namespace to make storage usage exceed
   // limit, so even if only 5 minutes passed from last clearing, this will still
@@ -348,10 +350,10 @@ TEST_F(ClearStorageTaskTest, ClearMultipleTimes) {
   // * 0.3 = 100.5MB. In order to bring the storage usage down to (135MB +
   // 200MB) * 0.1 = 33.5MB, (115MB - 33.5MB) needs to be released, which is 163
   // temporary pages to be cleared.
-  AddPages({kLastNNamespace, 200, 0}, clock.get());
+  AddPages({kLastNNamespace, 200, 0});
   SetFreeSpace(200 * (1 << 20));
-  clock->Advance(base::TimeDelta::FromMinutes(5));
-  RunClearStorageTask(clock->Now());
+  clock()->Advance(base::TimeDelta::FromMinutes(5));
+  RunClearStorageTask(clock()->Now());
 
   // There should be 107 pages remaining after the clearing.
   EXPECT_EQ(163UL, last_cleared_page_count());
@@ -359,11 +361,21 @@ TEST_F(ClearStorageTaskTest, ClearMultipleTimes) {
   EXPECT_EQ(ClearStorageResult::SUCCESS, last_clear_storage_result());
   EXPECT_EQ(107LL, store_test_util()->GetPageCount());
   EXPECT_EQ(107UL, test_utils::GetFileCountInDirectory(temp_dir_path()));
+  histogram_tester()->ExpectTotalCount(
+      "OfflinePages.ClearTemporaryPages.TimeSinceCreation", 184);
+  // The 30 original ones last_n pages are cleared (and they fall into the same
+  // bucket as the 20 from bookmarks)...
+  histogram_tester()->ExpectBucketCount(
+      "OfflinePages.ClearTemporaryPages.TimeSinceCreation",
+      30 + bookmark_policy.expiration_period.InMinutes() + 5, 20 + 30);
+  // ... As well as 133 from this latest round.
+  histogram_tester()->ExpectBucketCount(
+      "OfflinePages.ClearTemporaryPages.TimeSinceCreation", 5, 133);
 
   // Advance the clock by 300 days, in order to expire all temporary pages. Only
   // 67 temporary pages are left from the last clearing.
-  clock->Advance(base::TimeDelta::FromDays(300));
-  RunClearStorageTask(clock->Now());
+  clock()->Advance(base::TimeDelta::FromDays(300));
+  RunClearStorageTask(clock()->Now());
 
   // All temporary pages should be cleared by now.
   EXPECT_EQ(67UL, last_cleared_page_count());
@@ -371,6 +383,11 @@ TEST_F(ClearStorageTaskTest, ClearMultipleTimes) {
   EXPECT_EQ(ClearStorageResult::SUCCESS, last_clear_storage_result());
   EXPECT_EQ(40LL, store_test_util()->GetPageCount());
   EXPECT_EQ(40UL, test_utils::GetFileCountInDirectory(temp_dir_path()));
+  histogram_tester()->ExpectTotalCount(
+      "OfflinePages.ClearTemporaryPages.TimeSinceCreation", 251);
+  histogram_tester()->ExpectBucketCount(
+      "OfflinePages.ClearTemporaryPages.TimeSinceCreation",
+      base::TimeDelta::FromDays(300).InMinutes() + 5, 67);
 }
 
 }  // namespace offline_pages

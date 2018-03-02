@@ -28,6 +28,7 @@ OfflinePageItem OfflinePageItemGenerator::CreateItem() {
   item.url = url_;
   item.original_url = original_url_;
   item.file_size = file_size_;
+  item.creation_time = creation_time_;
   item.last_access_time = last_access_time_;
   item.access_count = access_count_;
   item.digest = digest_;
@@ -71,6 +72,10 @@ void OfflinePageItemGenerator::SetOriginalUrl(const GURL& url) {
 
 void OfflinePageItemGenerator::SetFileSize(int64_t file_size) {
   file_size_ = file_size;
+}
+
+void OfflinePageItemGenerator::SetCreationTime(base::Time creation_time) {
+  creation_time_ = creation_time;
 }
 
 void OfflinePageItemGenerator::SetLastAccessTime(base::Time last_access_time) {
