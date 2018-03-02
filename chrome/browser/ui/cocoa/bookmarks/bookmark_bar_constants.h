@@ -7,27 +7,13 @@
 
 #include <ApplicationServices/ApplicationServices.h>
 
-#include "chrome/browser/ui/bookmarks/bookmark_bar_constants.h"
-
 // Constants used for positioning the bookmark bar. These aren't placed in a
 // different file because they're conditionally included in cross platform code
 // and thus no Objective-C++ stuff.
 namespace bookmarks {
 
 // Correction used for computing other values based on the height.
-const int kVisualHeightOffset = 2;
 const int kMaterialVisualHeightOffset = 2;
-
-// The amount of space between the inner bookmark bar and the outer toolbar on
-// new tab pages.
-const int kNTPBookmarkBarPadding =
-    (chrome::kNTPBookmarkBarHeight -
-     (chrome::kMinimumBookmarkBarHeight + kVisualHeightOffset)) /
-    2;
-
-// The height of buttons in the bookmark bar.
-const int kBookmarkButtonHeight =
-    chrome::kMinimumBookmarkBarHeight + kVisualHeightOffset;
 
 // The height of buttons in a bookmark bar folder menu.
 const CGFloat kBookmarkFolderButtonHeight = 24.0;

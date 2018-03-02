@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/harmony/harmony_layout_provider.h"
 
+#include "ui/base/material_design/material_design_controller.h"
+
 namespace {
 constexpr int kSmallSnapPoint = 320;
 constexpr int kMediumSnapPoint = 448;
@@ -26,6 +28,10 @@ gfx::Insets HarmonyLayoutProvider::GetInsetsMetric(int metric) const {
       return gfx::Insets(kHarmonyLayoutUnit / 4);
     case INSETS_TOAST:
       return gfx::Insets(0, kHarmonyLayoutUnit);
+    case views::InsetsMetric::INSETS_LABEL_BUTTON:
+      if (ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
+        return gfx::Insets(kHarmonyLayoutUnit / 2, kHarmonyLayoutUnit / 2);
+      return ChromeLayoutProvider::GetInsetsMetric(metric);
     default:
       return ChromeLayoutProvider::GetInsetsMetric(metric);
   }

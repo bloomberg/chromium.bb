@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/cocoa/test/cocoa_profile_test.h"
 #import "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/view_resizer_pong.h"
+#include "chrome/browser/ui/layout_constants.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
@@ -179,9 +180,10 @@ class BookmarkBarFolderControllerTest : public CocoaProfileTest {
     [bar_ loaded:model];
     // Make parent frame for bookmark bar then open it.
     NSRect frame = [[test_window() contentView] frame];
-    frame = NSMakeRect(frame.origin.x,
-                       frame.size.height - chrome::kNTPBookmarkBarHeight,
-                       frame.size.width, chrome::kNTPBookmarkBarHeight);
+    frame = NSMakeRect(
+        frame.origin.x,
+        frame.size.height - GetLayoutConstant(BOOKMARK_BAR_NTP_HEIGHT),
+        frame.size.width, GetLayoutConstant(BOOKMARK_BAR_NTP_HEIGHT));
     NSView* fakeToolbarView = [[[NSView alloc] initWithFrame:frame]
                                 autorelease];
     [[test_window() contentView] addSubview:fakeToolbarView];

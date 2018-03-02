@@ -21,7 +21,7 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/apps/app_info_dialog.h"
-#include "chrome/browser/ui/bookmarks/bookmark_bar_constants.h"
+#include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/webui/app_launcher_login_handler.h"
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #include "chrome/common/buildflags.h"
@@ -108,7 +108,7 @@ std::string GetNewTabBackgroundCSS(const ui::ThemeProvider& theme_provider,
   if (alignment & ThemeProperties::ALIGN_TOP) {
     // The bar is detached, so we must offset the background by the bar size
     // if it's a top-aligned bar.
-    int offset = chrome::kNTPBookmarkBarHeight;
+    int offset = GetLayoutConstant(BOOKMARK_BAR_NTP_HEIGHT);
 
     if (alignment & ThemeProperties::ALIGN_LEFT)
       return "left " + base::IntToString(-offset) + "px";

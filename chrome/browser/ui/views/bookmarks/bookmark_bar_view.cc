@@ -31,13 +31,13 @@
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/themes/theme_properties.h"
-#include "chrome/browser/ui/bookmarks/bookmark_bar_constants.h"
 #include "chrome/browser/ui/bookmarks/bookmark_drag_drop.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils_desktop.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_instructions_view.h"
@@ -71,6 +71,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
@@ -154,10 +155,6 @@ static const int kInstructionsPadding = 6;
 // Tag for the 'Apps Shortcut' button.
 static const int kAppsShortcutButtonTag = 2;
 
-// Preferred padding between text and edge.
-static const int kButtonPaddingHorizontal = 6;
-static const int kButtonPaddingVertical = 5;
-
 static const gfx::ElideBehavior kElideBehavior = gfx::FADE_TAIL;
 
 namespace {
@@ -206,16 +203,6 @@ class BookmarkButtonBase : public views::LabelButton {
   View* GetTooltipHandlerForPoint(const gfx::Point& point) override {
     return HitTestPoint(point) && CanProcessEventsWithinSubtree() ? this
                                                                   : nullptr;
-  }
-
-  std::unique_ptr<LabelButtonBorder> CreateDefaultBorder() const override {
-    std::unique_ptr<LabelButtonBorder> border =
-        LabelButton::CreateDefaultBorder();
-    border->set_insets(gfx::Insets(kButtonPaddingVertical,
-                                   kButtonPaddingHorizontal,
-                                   kButtonPaddingVertical,
-                                   kButtonPaddingHorizontal));
-    return border;
   }
 
   bool IsTriggerableEvent(const ui::Event& e) override {
@@ -810,7 +797,7 @@ int BookmarkBarView::GetToolbarOverlap() const {
 }
 
 int BookmarkBarView::GetPreferredHeight() const {
-  int height = chrome::kMinimumBookmarkBarHeight;
+  int height = GetLayoutConstant(BOOKMARK_BAR_HEIGHT);
   for (int i = 0; i < child_count(); ++i) {
     const views::View* view = child_at(i);
     if (view->visible())
@@ -825,8 +812,9 @@ gfx::Size BookmarkBarView::CalculatePreferredSize() const {
   if (IsDetached()) {
     prefsize.set_height(
         preferred_height +
-        static_cast<int>((chrome::kNTPBookmarkBarHeight - preferred_height) *
-                         (1 - size_animation_.GetCurrentValue())));
+        static_cast<int>(
+            (GetLayoutConstant(BOOKMARK_BAR_NTP_HEIGHT) - preferred_height) *
+            (1 - size_animation_.GetCurrentValue())));
   } else {
     prefsize.set_height(
         static_cast<int>(preferred_height * size_animation_.GetCurrentValue()));
@@ -858,8 +846,8 @@ gfx::Size BookmarkBarView::GetMinimumSize() const {
   if (IsDetached()) {
     double current_state = 1 - size_animation_.GetCurrentValue();
     width += 2 * static_cast<int>(kNewTabHorizontalPadding * current_state);
-    height += static_cast<int>((chrome::kNTPBookmarkBarHeight - height) *
-                               current_state);
+    height += static_cast<int>(
+        (GetLayoutConstant(BOOKMARK_BAR_NTP_HEIGHT) - height) * current_state);
   }
 
   if (managed_bookmarks_button_->visible()) {
@@ -920,8 +908,8 @@ void BookmarkBarView::Layout() {
   gfx::Size apps_page_shortcut_pref = apps_page_shortcut_->visible() ?
       apps_page_shortcut_->GetPreferredSize() : gfx::Size();
 
-  int max_x = width - overflow_pref.width() - kButtonPadding -
-      bookmarks_separator_pref.width();
+  int max_x = kHorizontalMargin + width - overflow_pref.width() -
+              kButtonPadding - bookmarks_separator_pref.width();
   if (other_bookmarks_button_->visible())
     max_x -= other_bookmarks_pref.width() + kButtonPadding;
 
@@ -1604,8 +1592,6 @@ void BookmarkBarView::Init() {
   UpdateBookmarksSeparatorVisibility();
 
   instructions_ = new BookmarkBarInstructionsView(this);
-  instructions_->SetBorder(views::CreateEmptyBorder(kButtonPaddingVertical, 0,
-                                                    kButtonPaddingVertical, 0));
   AddChildView(instructions_);
 
   set_context_menu_controller(this);
@@ -1734,7 +1720,20 @@ void BookmarkBarView::ConfigureButton(const BookmarkNode* node,
     bool themify_icon = node->url().SchemeIs(content::kChromeUIScheme);
     gfx::ImageSkia favicon = model_->GetFavicon(node).AsImageSkia();
     if (favicon.isNull()) {
-      favicon = *GetImageSkiaNamed(IDR_DEFAULT_FAVICON);
+      if (ui::MaterialDesignController::IsTouchOptimizedUiEnabled() &&
+          GetThemeProvider()) {
+        // This favicon currently does not match the default favicon icon used
+        // elsewhere in the codebase.
+        // See https://crbug/814447
+        const gfx::ImageSkia icon = gfx::CreateVectorIcon(
+            kDefaultTouchFaviconIcon,
+            GetThemeProvider()->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT));
+        const gfx::ImageSkia mask =
+            gfx::CreateVectorIcon(kDefaultTouchFaviconMaskIcon, SK_ColorBLACK);
+        favicon = gfx::ImageSkiaOperations::CreateMaskedImage(icon, mask);
+      } else {
+        favicon = *GetImageSkiaNamed(IDR_DEFAULT_FAVICON);
+      }
       themify_icon = true;
     }
 
@@ -2046,11 +2045,15 @@ void BookmarkBarView::UpdateAppearanceForTheme() {
   if (apps_page_shortcut_->visible())
     apps_page_shortcut_->SetEnabledTextColors(color);
 
+  const SkColor overflow_color =
+      theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
+  const bool is_touch_optimized =
+      ui::MaterialDesignController::IsTouchOptimizedUiEnabled();
   overflow_button_->SetImage(
       views::Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(kOverflowChevronIcon, 8,
-                            theme_provider->GetColor(
-                                ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON)));
+      gfx::CreateVectorIcon(is_touch_optimized ? kBookmarkbarTouchOverflowIcon
+                                               : kOverflowChevronIcon,
+                            overflow_color));
 
   // Redraw the background.
   SchedulePaint();

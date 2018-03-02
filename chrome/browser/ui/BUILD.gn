@@ -665,7 +665,6 @@ split_static_library("ui") {
     "blocked_content/tab_under_navigation_throttle.cc",
     "blocked_content/tab_under_navigation_throttle.h",
     "bookmarks/bookmark_bar.h",
-    "bookmarks/bookmark_bar_constants.h",
     "bookmarks/bookmark_bar_instructions_delegate.h",
     "bookmarks/bookmark_bubble_observer.h",
     "bookmarks/bookmark_editor.cc",

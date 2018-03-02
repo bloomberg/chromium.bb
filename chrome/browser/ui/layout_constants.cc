@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/layout_constants.h"
 
 #include "base/logging.h"
-#include "build/build_config.h"
 #include "ui/base/material_design/material_design_controller.h"
 
 int GetLayoutConstant(LayoutConstant constant) {
@@ -14,6 +13,21 @@ int GetLayoutConstant(LayoutConstant constant) {
   const bool touch_optimized_material =
       mode == ui::MaterialDesignController::MATERIAL_TOUCH_OPTIMIZED;
   switch (constant) {
+    case BOOKMARK_BAR_HEIGHT:
+      return touch_optimized_material ? 40 : 28;
+#if defined(OS_MACOSX)
+    case BOOKMARK_BAR_HEIGHT_NO_OVERLAP:
+      return GetLayoutConstant(BOOKMARK_BAR_HEIGHT) - 2;
+#endif
+    case BOOKMARK_BAR_NTP_HEIGHT:
+      return touch_optimized_material ? GetLayoutConstant(BOOKMARK_BAR_HEIGHT)
+                                      : 39;
+#if defined(OS_MACOSX)
+    case BOOKMARK_BAR_NTP_PADDING:
+      return (GetLayoutConstant(BOOKMARK_BAR_NTP_HEIGHT) -
+              GetLayoutConstant(BOOKMARK_BAR_HEIGHT)) /
+             2;
+#endif
     case LOCATION_BAR_BUBBLE_VERTICAL_PADDING:
       return hybrid ? 1 : 3;
     case LOCATION_BAR_BUBBLE_FONT_VERTICAL_PADDING:
@@ -47,28 +61,28 @@ int GetLayoutConstant(LayoutConstant constant) {
       constexpr int kSpacing[] = {-5, -6, 6};
       return kSpacing[mode];
     }
+    case TAB_AFTER_TITLE_PADDING:
+      return touch_optimized_material ? 8 : 4;
+    case TAB_ALERT_INDICATOR_CAPTURE_ICON_WIDTH:
+      return 16;
+    case TAB_ALERT_INDICATOR_ICON_WIDTH:
+      return touch_optimized_material ? 12 : 16;
     case TAB_HEIGHT: {
       constexpr int kTabHeight[] = {29, 33, 41};
       return kTabHeight[mode];
     }
+    case TAB_PRE_TITLE_PADDING:
+      return touch_optimized_material ? 8 : 6;
+    case TAB_STACK_DISTANCE:
+      return touch_optimized_material ? 4 : 6;
+    case TAB_STACK_TAB_WIDTH:
+      return touch_optimized_material ? 68 : 120;
+    case TAB_STANDARD_WIDTH:
+      return touch_optimized_material ? 245 : 193;
     case TOOLBAR_ELEMENT_PADDING:
       return hybrid ? 8 : 0;
     case TOOLBAR_STANDARD_SPACING:
       return hybrid ? 8 : 4;
-    case TAB_STACK_TAB_WIDTH:
-      return touch_optimized_material ? 68 : 120;
-    case TAB_STACK_DISTANCE:
-      return touch_optimized_material ? 4 : 6;
-    case TAB_STANDARD_WIDTH:
-      return touch_optimized_material ? 245 : 193;
-    case TAB_PRE_TITLE_PADDING:
-      return touch_optimized_material ? 8 : 6;
-    case TAB_AFTER_TITLE_PADDING:
-      return touch_optimized_material ? 8 : 4;
-    case TAB_ALERT_INDICATOR_ICON_WIDTH:
-      return touch_optimized_material ? 12 : 16;
-    case TAB_ALERT_INDICATOR_CAPTURE_ICON_WIDTH:
-      return 16;
   }
   NOTREACHED();
   return 0;
