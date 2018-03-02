@@ -820,7 +820,13 @@ void SavePackage::SaveNextFile(bool process_all_remaining_items) {
         requester_frame->render_view_host()->GetRoutingID(),
         requester_frame->routing_id(), save_item_ptr->save_source(),
         save_item_ptr->full_path(),
-        web_contents()->GetBrowserContext()->GetResourceContext(), this);
+        web_contents()->GetBrowserContext()->GetResourceContext(),
+        web_contents()
+            ->GetRenderViewHost()
+            ->GetProcess()
+            ->GetStoragePartition(),
+        this);
+
   } while (process_all_remaining_items && !waiting_item_queue_.empty());
 }
 
@@ -1046,16 +1052,10 @@ void SavePackage::OnSerializedHtmlWithLocalLinksResponse(
   }
 
   if (!data.empty()) {
-    // Prepare buffer for saving HTML data.
-    scoped_refptr<net::IOBuffer> new_data(new net::IOBuffer(data.size()));
-    memcpy(new_data->data(), data.data(), data.size());
-
     // Call write file functionality in download sequence.
     download::GetDownloadTaskRunner()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&SaveFileManager::UpdateSaveProgress, file_manager_,
-                       save_item->id(), base::RetainedRef(new_data),
-                       static_cast<int>(data.size())));
+        FROM_HERE, base::BindOnce(&SaveFileManager::UpdateSaveProgress,
+                                  file_manager_, save_item->id(), data));
   }
 
   // Current frame is completed saving, call finish in download sequence.

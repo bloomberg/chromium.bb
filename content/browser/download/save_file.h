@@ -43,7 +43,6 @@ class SaveFile {
   // Accessors.
   SaveItemId save_item_id() const { return info_->save_item_id; }
   int render_process_id() const { return info_->render_process_id; }
-  int request_id() const { return info_->request_id; }
   SaveFileCreateInfo::SaveFileSource save_source() const {
     return info_->save_source;
   }

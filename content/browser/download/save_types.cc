@@ -21,7 +21,6 @@ SaveFileCreateInfo::SaveFileCreateInfo(const base::FilePath& path,
       save_package_id(save_package_id),
       render_process_id(render_process_id),
       render_frame_routing_id(render_frame_routing_id),
-      request_id(-1),
       save_source(save_source) {}
 
 SaveFileCreateInfo::SaveFileCreateInfo(const GURL& url,
@@ -30,7 +29,6 @@ SaveFileCreateInfo::SaveFileCreateInfo(const GURL& url,
                                        SavePackageId save_package_id,
                                        int render_process_id,
                                        int render_frame_routing_id,
-                                       int request_id,
                                        const std::string& content_disposition)
     : url(url),
       final_url(final_url),
@@ -38,7 +36,6 @@ SaveFileCreateInfo::SaveFileCreateInfo(const GURL& url,
       save_package_id(save_package_id),
       render_process_id(render_process_id),
       render_frame_routing_id(render_frame_routing_id),
-      request_id(request_id),
       content_disposition(content_disposition),
       save_source(SaveFileCreateInfo::SAVE_FILE_FROM_NET) {}
 
