@@ -51,11 +51,6 @@ uint32_t GetOffsetInUTF16(const base::string16& utf16_string,
   return char_iterator.array_pos();
 }
 
-enum KeyEventHandlerBehavior {
-  KEYEVENT_CONSUME,
-  KEYEVENT_NOT_CONSUME,
-};
-
 }  // namespace
 
 
@@ -108,72 +103,6 @@ class TestableInputMethodChromeOS : public InputMethodChromeOS {
  private:
   ProcessKeyEventPostIMEArgs process_key_event_post_ime_args_;
   int process_key_event_post_ime_call_count_;
-};
-
-class SynchronousKeyEventHandler {
- public:
-  SynchronousKeyEventHandler(uint32_t expected_keyval,
-                             uint32_t expected_keycode,
-                             uint32_t expected_state,
-                             KeyEventHandlerBehavior behavior)
-      : expected_keyval_(expected_keyval),
-        expected_keycode_(expected_keycode),
-        expected_state_(expected_state),
-        behavior_(behavior) {}
-
-  virtual ~SynchronousKeyEventHandler() {}
-
-  void Run(uint32_t keyval,
-           uint32_t keycode,
-           uint32_t state,
-           const KeyEventCallback& callback) {
-    EXPECT_EQ(expected_keyval_, keyval);
-    EXPECT_EQ(expected_keycode_, keycode);
-    EXPECT_EQ(expected_state_, state);
-    callback.Run(behavior_ == KEYEVENT_CONSUME);
-  }
-
- private:
-  const uint32_t expected_keyval_;
-  const uint32_t expected_keycode_;
-  const uint32_t expected_state_;
-  const KeyEventHandlerBehavior behavior_;
-
-  DISALLOW_COPY_AND_ASSIGN(SynchronousKeyEventHandler);
-};
-
-class AsynchronousKeyEventHandler {
- public:
-  AsynchronousKeyEventHandler(uint32_t expected_keyval,
-                              uint32_t expected_keycode,
-                              uint32_t expected_state)
-      : expected_keyval_(expected_keyval),
-        expected_keycode_(expected_keycode),
-        expected_state_(expected_state) {}
-
-  virtual ~AsynchronousKeyEventHandler() {}
-
-  void Run(uint32_t keyval,
-           uint32_t keycode,
-           uint32_t state,
-           const KeyEventCallback& callback) {
-    EXPECT_EQ(expected_keyval_, keyval);
-    EXPECT_EQ(expected_keycode_, keycode);
-    EXPECT_EQ(expected_state_, state);
-    callback_ = callback;
-  }
-
-  void RunCallback(KeyEventHandlerBehavior behavior) {
-    callback_.Run(behavior == KEYEVENT_CONSUME);
-  }
-
- private:
-  const uint32_t expected_keyval_;
-  const uint32_t expected_keycode_;
-  const uint32_t expected_state_;
-  KeyEventCallback callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(AsynchronousKeyEventHandler);
 };
 
 class SetSurroundingTextVerifier {
