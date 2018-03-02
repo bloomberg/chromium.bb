@@ -461,13 +461,11 @@ class DetachToBrowserTabDragControllerTest
     return true;
   }
 
-  bool DragInputToNotifyWhenDone(int x,
-                                 int y,
-                                 const base::Closure& task) {
+  bool DragInputToNotifyWhenDone(int x, int y, base::OnceClosure task) {
     if (input_source() == INPUT_SOURCE_MOUSE)
-      return ui_controls::SendMouseMoveNotifyWhenDone(x, y, task);
+      return ui_controls::SendMouseMoveNotifyWhenDone(x, y, std::move(task));
 #if defined(OS_CHROMEOS)
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, task);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(task));
     event_generator_->MoveTouch(gfx::Point(x, y));
 #else
     NOTREACHED();
@@ -2375,9 +2373,9 @@ class DetachToBrowserInSeparateDisplayAndCancelTabDragControllerTest
   }
 
   bool DragTabAndExecuteTaskWhenDone(const gfx::Point& position,
-                                     const base::Closure& task) {
-    return ui_controls::SendMouseMoveNotifyWhenDone(
-        position.x(), position.y(), task);
+                                     base::Closure task) {
+    return ui_controls::SendMouseMoveNotifyWhenDone(position.x(), position.y(),
+                                                    std::move(task));
   }
 
   void QuitWhenNotDragging() {

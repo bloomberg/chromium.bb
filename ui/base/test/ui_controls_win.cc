@@ -25,7 +25,7 @@ bool SendKeyPress(gfx::NativeWindow window,
   CHECK(g_ui_controls_enabled);
   DCHECK(!command);  // No command key on Windows
   return internal::SendKeyPressImpl(window, key, control, shift, alt,
-                                    base::Closure());
+                                    base::OnceClosure());
 }
 
 bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
@@ -34,36 +34,38 @@ bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
                                 bool shift,
                                 bool alt,
                                 bool command,
-                                const base::Closure& task) {
+                                base::OnceClosure task) {
   CHECK(g_ui_controls_enabled);
   DCHECK(!command);  // No command key on Windows
-  return internal::SendKeyPressImpl(window, key, control, shift, alt, task);
+  return internal::SendKeyPressImpl(window, key, control, shift, alt,
+                                    std::move(task));
 }
 
 bool SendMouseMove(long x, long y) {
   CHECK(g_ui_controls_enabled);
-  return internal::SendMouseMoveImpl(x, y, base::Closure());
+  return internal::SendMouseMoveImpl(x, y, base::OnceClosure());
 }
 
-bool SendMouseMoveNotifyWhenDone(long x, long y, const base::Closure& task) {
+bool SendMouseMoveNotifyWhenDone(long x, long y, base::OnceClosure task) {
   CHECK(g_ui_controls_enabled);
-  return internal::SendMouseMoveImpl(x, y, task);
+  return internal::SendMouseMoveImpl(x, y, std::move(task));
 }
 
 bool SendMouseEvents(MouseButton type, int state) {
   CHECK(g_ui_controls_enabled);
-  return internal::SendMouseEventsImpl(type, state, base::Closure());
+  return internal::SendMouseEventsImpl(type, state, base::OnceClosure());
 }
 
-bool SendMouseEventsNotifyWhenDone(MouseButton type, int state,
-                                   const base::Closure& task) {
+bool SendMouseEventsNotifyWhenDone(MouseButton type,
+                                   int state,
+                                   base::OnceClosure task) {
   CHECK(g_ui_controls_enabled);
-  return internal::SendMouseEventsImpl(type, state, task);
+  return internal::SendMouseEventsImpl(type, state, std::move(task));
 }
 
 bool SendMouseClick(MouseButton type) {
   CHECK(g_ui_controls_enabled);
-  return internal::SendMouseEventsImpl(type, UP | DOWN, base::Closure());
+  return internal::SendMouseEventsImpl(type, UP | DOWN, base::OnceClosure());
 }
 
 bool SendTouchEvents(int action, int num, int x, int y) {

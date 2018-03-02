@@ -4,6 +4,7 @@
 
 #include "ui/base/test/ui_controls_aura.h"
 
+#include "base/callback.h"
 #include "base/logging.h"
 
 namespace ui_controls {
@@ -35,10 +36,10 @@ bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
                                 bool shift,
                                 bool alt,
                                 bool command,
-                                const base::Closure& task) {
+                                base::OnceClosure task) {
   CHECK(g_ui_controls_enabled);
-  return instance_->SendKeyPressNotifyWhenDone(
-      window, key, control, shift, alt, command, task);
+  return instance_->SendKeyPressNotifyWhenDone(window, key, control, shift, alt,
+                                               command, std::move(task));
 }
 
 // static
@@ -48,11 +49,9 @@ bool SendMouseMove(long x, long y) {
 }
 
 // static
-bool SendMouseMoveNotifyWhenDone(long x,
-                                 long y,
-                                 const base::Closure& task) {
+bool SendMouseMoveNotifyWhenDone(long x, long y, base::OnceClosure task) {
   CHECK(g_ui_controls_enabled);
-  return instance_->SendMouseMoveNotifyWhenDone(x, y, task);
+  return instance_->SendMouseMoveNotifyWhenDone(x, y, std::move(task));
 }
 
 // static
@@ -64,9 +63,9 @@ bool SendMouseEvents(MouseButton type, int state) {
 // static
 bool SendMouseEventsNotifyWhenDone(MouseButton type,
                                    int state,
-                                   const base::Closure& task) {
+                                   base::OnceClosure task) {
   CHECK(g_ui_controls_enabled);
-  return instance_->SendMouseEventsNotifyWhenDone(type, state, task);
+  return instance_->SendMouseEventsNotifyWhenDone(type, state, std::move(task));
 }
 
 // static

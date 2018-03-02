@@ -38,7 +38,7 @@ void MoveMouseToNSViewCenterAndPress(
 
   ui_controls::SendMouseMoveNotifyWhenDone(
       center.x, center.y,
-      base::Bind(&internal::ClickTask, button, state, task));
+      base::BindOnce(&internal::ClickTask, button, state, task));
 }
 
 }  // namespace

@@ -69,7 +69,7 @@ class ViewEventTestPlatformPart;
 //   // Schedule the mouse move at a location slightly different from where
 //   // you really want to move to.
 //   ui_controls::SendMouseMoveNotifyWhenDone(loc.x + 10, loc.y,
-//       base::Bind(&YYY, this));
+//       base::BindOnce(&YYY, this));
 //   // Then use this to schedule another mouse move.
 //   ScheduleMouseMoveInBackground(loc.x, loc.y);
 

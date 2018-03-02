@@ -56,8 +56,8 @@ class UIControlsX11 : public UIControlsAura {
                     bool shift,
                     bool alt,
                     bool command) override {
-    return SendKeyPressNotifyWhenDone(
-        window, key, control, shift, alt, command, base::Closure());
+    return SendKeyPressNotifyWhenDone(window, key, control, shift, alt, command,
+                                      base::OnceClosure());
   }
   bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
                                   ui::KeyboardCode key,
@@ -65,7 +65,7 @@ class UIControlsX11 : public UIControlsAura {
                                   bool shift,
                                   bool alt,
                                   bool command,
-                                  const base::Closure& closure) override {
+                                  base::OnceClosure closure) override {
     XEvent xevent = {0};
     xevent.xkey.type = KeyPress;
     if (control)
@@ -93,16 +93,16 @@ class UIControlsX11 : public UIControlsAura {
     if (command)
       UnmaskAndSetKeycodeThenSend(&xevent, Mod4Mask, XK_Meta_L);
     DCHECK(!xevent.xkey.state);
-    RunClosureAfterAllPendingUIEvents(closure);
+    RunClosureAfterAllPendingUIEvents(std::move(closure));
     return true;
   }
 
   bool SendMouseMove(long screen_x, long screen_y) override {
-    return SendMouseMoveNotifyWhenDone(screen_x, screen_y, base::Closure());
+    return SendMouseMoveNotifyWhenDone(screen_x, screen_y, base::OnceClosure());
   }
   bool SendMouseMoveNotifyWhenDone(long screen_x,
                                    long screen_y,
-                                   const base::Closure& closure) override {
+                                   base::OnceClosure closure) override {
     gfx::Point root_location(screen_x, screen_y);
     aura::client::ScreenPositionClient* screen_position_client =
         aura::client::GetScreenPositionClient(host_->window());
@@ -129,15 +129,15 @@ class UIControlsX11 : public UIControlsAura {
       // WindowTreeHost will take care of other necessary fields.
       PostEventToWindowTreeHost(xevent, host_);
     }
-    RunClosureAfterAllPendingUIEvents(closure);
+    RunClosureAfterAllPendingUIEvents(std::move(closure));
     return true;
   }
   bool SendMouseEvents(MouseButton type, int state) override {
-    return SendMouseEventsNotifyWhenDone(type, state, base::Closure());
+    return SendMouseEventsNotifyWhenDone(type, state, base::OnceClosure());
   }
   bool SendMouseEventsNotifyWhenDone(MouseButton type,
                                      int state,
-                                     const base::Closure& closure) override {
+                                     base::OnceClosure closure) override {
     XEvent xevent = {0};
     XButtonEvent* xbutton = &xevent.xbutton;
     gfx::Point mouse_loc = aura::Env::GetInstance()->last_mouse_location();
@@ -175,13 +175,13 @@ class UIControlsX11 : public UIControlsAura {
       PostEventToWindowTreeHost(xevent, host_);
       button_down_mask = (button_down_mask | xbutton->state) ^ xbutton->state;
     }
-    RunClosureAfterAllPendingUIEvents(closure);
+    RunClosureAfterAllPendingUIEvents(std::move(closure));
     return true;
   }
   bool SendMouseClick(MouseButton type) override {
     return SendMouseEvents(type, UP | DOWN);
   }
-  void RunClosureAfterAllPendingUIEvents(const base::Closure& closure) {
+  void RunClosureAfterAllPendingUIEvents(base::OnceClosure closure) {
     if (closure.is_null())
       return;
     static XEvent* marker_event = NULL;
@@ -194,7 +194,7 @@ class UIControlsX11 : public UIControlsAura {
     }
     marker_event->xclient.message_type = MarkerEventAtom();
     PostEventToWindowTreeHost(*marker_event, host_);
-    ui::PlatformEventWaiter::Create(closure, base::Bind(&Matcher));
+    ui::PlatformEventWaiter::Create(std::move(closure), base::Bind(&Matcher));
   }
  private:
   void SetKeycodeAndSendThenMask(XEvent* xevent,

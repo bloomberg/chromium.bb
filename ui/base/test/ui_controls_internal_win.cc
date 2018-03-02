@@ -38,7 +38,7 @@ class InputDispatcher : public base::RefCounted<InputDispatcher> {
   // reference when the message is received.
   static scoped_refptr<InputDispatcher> CreateForMessage(
       WPARAM message_type,
-      const base::Closure& callback);
+      base::OnceClosure callback);
 
   // Constructs a dispatcher that will invoke |callback| when a mouse move
   // message has been received. Upon receipt, an error message is logged if the
@@ -51,7 +51,7 @@ class InputDispatcher : public base::RefCounted<InputDispatcher> {
   // instance will release this reference when the message is received.
   static scoped_refptr<InputDispatcher> CreateForMouseMove(
       const gfx::Point& screen_point,
-      const base::Closure& callback);
+      base::OnceClosure callback);
 
  private:
   template <typename T, typename... Args>
@@ -60,7 +60,7 @@ class InputDispatcher : public base::RefCounted<InputDispatcher> {
 
   InputDispatcher(WPARAM message_waiting_for,
                   const gfx::Point& screen_point,
-                  const base::Closure& callback);
+                  base::OnceClosure callback);
   ~InputDispatcher();
 
   // Installs the dispatcher as the current hook.
@@ -97,7 +97,7 @@ class InputDispatcher : public base::RefCounted<InputDispatcher> {
   THREAD_CHECKER(thread_checker_);
 
   // The callback to run when the desired message is received.
-  base::Closure callback_;
+  base::OnceClosure callback_;
 
   // The message on which the instance is waiting -- unsed for WM_KEYUP
   // messages.
@@ -120,24 +120,24 @@ HHOOK InputDispatcher::next_hook_ = nullptr;
 // static
 scoped_refptr<InputDispatcher> InputDispatcher::CreateForMessage(
     WPARAM message_type,
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   DCHECK_NE(message_type, static_cast<WPARAM>(WM_MOUSEMOVE));
   return base::MakeRefCounted<InputDispatcher>(message_type, gfx::Point(0, 0),
-                                               callback);
+                                               std::move(callback));
 }
 
 // static
 scoped_refptr<InputDispatcher> InputDispatcher::CreateForMouseMove(
     const gfx::Point& screen_point,
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   return base::MakeRefCounted<InputDispatcher>(WM_MOUSEMOVE, screen_point,
-                                               callback);
+                                               std::move(callback));
 }
 
 InputDispatcher::InputDispatcher(WPARAM message_waiting_for,
                                  const gfx::Point& screen_point,
-                                 const base::Closure& callback)
-    : callback_(callback),
+                                 base::OnceClosure callback)
+    : callback_(std::move(callback)),
       message_waiting_for_(message_waiting_for),
       expected_mouse_location_(screen_point),
       weak_factory_(this) {
@@ -333,7 +333,7 @@ bool SendKeyPressImpl(HWND window,
                       bool control,
                       bool shift,
                       bool alt,
-                      const base::Closure& task) {
+                      base::OnceClosure task) {
   // SendInput only works as we expect it if one of our windows is the
   // foreground window already.
   HWND target_window = (::GetActiveWindow() &&
@@ -345,7 +345,7 @@ bool SendKeyPressImpl(HWND window,
 
   scoped_refptr<InputDispatcher> dispatcher;
   if (task)
-    dispatcher = InputDispatcher::CreateForMessage(WM_KEYUP, task);
+    dispatcher = InputDispatcher::CreateForMessage(WM_KEYUP, std::move(task));
 
   // If a pop-up menu is open, it won't receive events sent using SendInput.
   // Check for a pop-up menu using its window class (#32768) and if one
@@ -418,9 +418,7 @@ bool SendKeyPressImpl(HWND window,
   return true;
 }
 
-bool SendMouseMoveImpl(long screen_x,
-                       long screen_y,
-                       const base::Closure& task) {
+bool SendMouseMoveImpl(long screen_x, long screen_y, base::OnceClosure task) {
   gfx::Point screen_point =
       display::win::ScreenWin::DIPToScreenPoint({screen_x, screen_y});
   screen_x = screen_point.x();
@@ -446,7 +444,7 @@ bool SendMouseMoveImpl(long screen_x,
   ::GetCursorPos(&current_pos);
   if (screen_x == current_pos.x && screen_y == current_pos.y) {
     if (task)
-      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, task);
+      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(task));
     return true;
   }
 
@@ -458,8 +456,8 @@ bool SendMouseMoveImpl(long screen_x,
 
   scoped_refptr<InputDispatcher> dispatcher;
   if (task) {
-    dispatcher =
-        InputDispatcher::CreateForMouseMove({screen_x, screen_y}, task);
+    dispatcher = InputDispatcher::CreateForMouseMove({screen_x, screen_y},
+                                                     std::move(task));
   }
 
   if (!::SendInput(1, &input, sizeof(input)))
@@ -471,8 +469,7 @@ bool SendMouseMoveImpl(long screen_x,
   return true;
 }
 
-bool SendMouseEventsImpl(MouseButton type, int state,
-                         const base::Closure& task) {
+bool SendMouseEventsImpl(MouseButton type, int state, base::OnceClosure task) {
   DWORD down_flags = MOUSEEVENTF_ABSOLUTE;
   DWORD up_flags = MOUSEEVENTF_ABSOLUTE;
   UINT last_event;
@@ -503,7 +500,7 @@ bool SendMouseEventsImpl(MouseButton type, int state,
 
   scoped_refptr<InputDispatcher> dispatcher;
   if (task)
-    dispatcher = InputDispatcher::CreateForMessage(last_event, task);
+    dispatcher = InputDispatcher::CreateForMessage(last_event, std::move(task));
 
   INPUT input = { 0 };
   input.type = INPUT_MOUSE;

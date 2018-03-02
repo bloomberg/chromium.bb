@@ -31,17 +31,16 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
                     bool shift,
                     bool alt,
                     bool command) override {
-    return SendKeyPressNotifyWhenDone(
-        window, key, control, shift, alt, command, base::Closure());
+    return SendKeyPressNotifyWhenDone(window, key, control, shift, alt, command,
+                                      base::OnceClosure());
   }
-  bool SendKeyPressNotifyWhenDone(
-      gfx::NativeWindow window,
-      ui::KeyboardCode key,
-      bool control,
-      bool shift,
-      bool alt,
-      bool command,
-      const base::Closure& closure) override {
+  bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
+                                  ui::KeyboardCode key,
+                                  bool control,
+                                  bool shift,
+                                  bool alt,
+                                  bool command,
+                                  base::OnceClosure closure) override {
     int flags = button_down_mask_;
 
     if (control) {
@@ -87,17 +86,16 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
       PostKeyEvent(ui::ET_KEY_RELEASED, ui::VKEY_LWIN, flags);
     }
 
-    RunClosureAfterAllPendingUIEvents(closure);
+    RunClosureAfterAllPendingUIEvents(std::move(closure));
     return true;
   }
 
   bool SendMouseMove(long screen_x, long screen_y) override {
-    return SendMouseMoveNotifyWhenDone(screen_x, screen_y, base::Closure());
+    return SendMouseMoveNotifyWhenDone(screen_x, screen_y, base::OnceClosure());
   }
-  bool SendMouseMoveNotifyWhenDone(
-      long screen_x,
-      long screen_y,
-      const base::Closure& closure) override {
+  bool SendMouseMoveNotifyWhenDone(long screen_x,
+                                   long screen_y,
+                                   base::OnceClosure closure) override {
     gfx::Point root_location(screen_x, screen_y);
     aura::client::ScreenPositionClient* screen_position_client =
         aura::client::GetScreenPositionClient(host_->window());
@@ -118,16 +116,15 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
 
     PostMouseEvent(event_type, host_location, button_down_mask_, 0);
 
-    RunClosureAfterAllPendingUIEvents(closure);
+    RunClosureAfterAllPendingUIEvents(std::move(closure));
     return true;
   }
   bool SendMouseEvents(ui_controls::MouseButton type, int state) override {
-    return SendMouseEventsNotifyWhenDone(type, state, base::Closure());
+    return SendMouseEventsNotifyWhenDone(type, state, base::OnceClosure());
   }
-  bool SendMouseEventsNotifyWhenDone(
-      ui_controls::MouseButton type,
-      int state,
-      const base::Closure& closure) override {
+  bool SendMouseEventsNotifyWhenDone(ui_controls::MouseButton type,
+                                     int state,
+                                     base::OnceClosure closure) override {
     gfx::Point root_location = aura::Env::GetInstance()->last_mouse_location();
     aura::client::ScreenPositionClient* screen_position_client =
         aura::client::GetScreenPositionClient(host_->window());
@@ -167,15 +164,16 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
                      button_down_mask_ | flag, flag);
     }
 
-    RunClosureAfterAllPendingUIEvents(closure);
+    RunClosureAfterAllPendingUIEvents(std::move(closure));
     return true;
   }
   bool SendMouseClick(ui_controls::MouseButton type) override {
     return SendMouseEvents(type, ui_controls::UP | ui_controls::DOWN);
   }
-  void RunClosureAfterAllPendingUIEvents(const base::Closure& closure) {
+  void RunClosureAfterAllPendingUIEvents(base::OnceClosure closure) {
     if (!closure.is_null())
-      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, closure);
+      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                    std::move(closure));
   }
 
  private:

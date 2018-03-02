@@ -205,10 +205,10 @@ class TabKeyWaiter : public ui::EventHandler {
 void MoveMouseAndPress(const gfx::Point& screen_pos,
                        ui_controls::MouseButton button,
                        int state,
-                       const base::Closure& closure) {
+                       base::OnceClosure closure) {
   ASSERT_TRUE(ui_controls::SendMouseMove(screen_pos.x(), screen_pos.y()));
-  ASSERT_TRUE(
-      ui_controls::SendMouseEventsNotifyWhenDone(button, state, closure));
+  ASSERT_TRUE(ui_controls::SendMouseEventsNotifyWhenDone(button, state,
+                                                         std::move(closure)));
 }
 
 // PageNavigator implementation that records the URL.
@@ -856,11 +856,12 @@ class BookmarkBarViewTest7 : public BookmarkBarViewEventTestBase {
     // and drop checking state.
     ASSERT_TRUE(ui_controls::SendMouseMoveNotifyWhenDone(
         loc.x() + 10, loc.y(),
-        base::Bind(&BookmarkBarViewTest7::Step3A, this)));
+        base::BindOnce(&BookmarkBarViewTest7::Step3A, this)));
 #else
     // Start a drag.
     ASSERT_TRUE(ui_controls::SendMouseMoveNotifyWhenDone(
-        loc.x() + 10, loc.y(), base::Bind(&BookmarkBarViewTest7::Step4, this)));
+        loc.x() + 10, loc.y(),
+        base::BindOnce(&BookmarkBarViewTest7::Step4, this)));
 
     // See comment above this method as to why we do this.
     ScheduleMouseMoveInBackground(loc.x(), loc.y());
@@ -874,7 +875,7 @@ class BookmarkBarViewTest7 : public BookmarkBarViewEventTestBase {
     views::View::ConvertPointToScreen(other_button, &loc);
 
     ASSERT_TRUE(ui_controls::SendMouseMoveNotifyWhenDone(
-        loc.x(), loc.y(), base::Bind(&BookmarkBarViewTest7::Step4, this)));
+        loc.x(), loc.y(), base::BindOnce(&BookmarkBarViewTest7::Step4, this)));
   }
 
   void Step4() {
@@ -956,10 +957,11 @@ class BookmarkBarViewTest8 : public BookmarkBarViewEventTestBase {
     // and drop checking state.
     ASSERT_TRUE(ui_controls::SendMouseMoveNotifyWhenDone(
         loc.x() + 10, loc.y(),
-        base::Bind(&BookmarkBarViewTest8::Step3A, this)));
+        base::BindOnce(&BookmarkBarViewTest8::Step3A, this)));
 #else
     ASSERT_TRUE(ui_controls::SendMouseMoveNotifyWhenDone(
-        loc.x() + 10, loc.y(), base::Bind(&BookmarkBarViewTest8::Step4, this)));
+        loc.x() + 10, loc.y(),
+        base::BindOnce(&BookmarkBarViewTest8::Step4, this)));
     // See comment above this method as to why we do this.
     ScheduleMouseMoveInBackground(loc.x(), loc.y());
 #endif
@@ -972,7 +974,8 @@ class BookmarkBarViewTest8 : public BookmarkBarViewEventTestBase {
     views::View::ConvertPointToScreen(other_button, &loc);
 
     ASSERT_TRUE(ui_controls::SendMouseMoveNotifyWhenDone(
-        loc.x() + 10, loc.y(), base::Bind(&BookmarkBarViewTest8::Step4, this)));
+        loc.x() + 10, loc.y(),
+        base::BindOnce(&BookmarkBarViewTest8::Step4, this)));
   }
 
   void Step4() {
@@ -985,7 +988,7 @@ class BookmarkBarViewTest8 : public BookmarkBarViewEventTestBase {
     gfx::Point loc(button->width() / 2, button->height() / 2);
     views::View::ConvertPointToScreen(button, &loc);
     ASSERT_TRUE(ui_controls::SendMouseMoveNotifyWhenDone(
-        loc.x(), loc.y(), base::Bind(&BookmarkBarViewTest8::Step5, this)));
+        loc.x(), loc.y(), base::BindOnce(&BookmarkBarViewTest8::Step5, this)));
   }
 
   void Step5() {
@@ -1367,7 +1370,7 @@ class BookmarkBarViewTest12 : public BookmarkBarViewEventTestBase {
     // And press enter so that the cancel button is selected.
     ASSERT_TRUE(ui_controls::SendKeyPressNotifyWhenDone(
         window_->GetNativeWindow(), ui::VKEY_RETURN, false, false, false, false,
-        base::Closure()));
+        base::OnceClosure()));
     waiter.WaitForDialogClose();
     Done();
   }

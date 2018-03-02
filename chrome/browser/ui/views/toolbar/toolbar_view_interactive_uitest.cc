@@ -67,7 +67,7 @@ class ToolbarViewInteractiveUITest : public ExtensionBrowserTest {
 
  private:
   // Finishes the drag-and-drop operation started in DoDragAndDrop().
-  void FinishDragAndDrop(const base::Closure& quit_closure);
+  void FinishDragAndDrop(base::Closure quit_closure);
 
   // InProcessBrowserTest:
   void SetUpCommandLine(base::CommandLine* command_line) override;
@@ -106,11 +106,9 @@ void ToolbarViewInteractiveUITest::DoDragAndDrop(const gfx::Point& start,
       new content::MessageLoopRunner();
 
   ui_controls::SendMouseMoveNotifyWhenDone(
-      end.x() + 10,
-      end.y(),
-      base::Bind(&ToolbarViewInteractiveUITest::FinishDragAndDrop,
-                 base::Unretained(this),
-                 runner->QuitClosure()));
+      end.x() + 10, end.y(),
+      base::BindOnce(&ToolbarViewInteractiveUITest::FinishDragAndDrop,
+                     base::Unretained(this), runner->QuitClosure()));
 
   // Also post a move task to the drag and drop thread.
   if (!dnd_thread_.get()) {
@@ -134,7 +132,7 @@ void ToolbarViewInteractiveUITest::TestWhileInDragOperation() {
 }
 
 void ToolbarViewInteractiveUITest::FinishDragAndDrop(
-    const base::Closure& quit_closure) {
+    base::Closure quit_closure) {
   dnd_thread_.reset();
   TestWhileInDragOperation();
   ui_controls::SendMouseEventsNotifyWhenDone(ui_controls::LEFT, ui_controls::UP,

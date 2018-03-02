@@ -41,8 +41,8 @@ class UIControlsWin : public UIControlsAura {
     DCHECK(!command);  // No command key on Aura
     HWND window =
         native_window->GetHost()->GetAcceleratedWidget();
-    return SendKeyPressImpl(
-        window, key, control, shift, alt, base::Closure());
+    return SendKeyPressImpl(window, key, control, shift, alt,
+                            base::OnceClosure());
   }
   bool SendKeyPressNotifyWhenDone(gfx::NativeWindow native_window,
                                   ui::KeyboardCode key,
@@ -50,27 +50,27 @@ class UIControlsWin : public UIControlsAura {
                                   bool shift,
                                   bool alt,
                                   bool command,
-                                  const base::Closure& task) override {
+                                  base::OnceClosure task) override {
     DCHECK(!command);  // No command key on Aura
     HWND window =
         native_window->GetHost()->GetAcceleratedWidget();
-    return SendKeyPressImpl(window, key, control, shift, alt, task);
+    return SendKeyPressImpl(window, key, control, shift, alt, std::move(task));
   }
   bool SendMouseMove(long screen_x, long screen_y) override {
-    return SendMouseMoveImpl(screen_x, screen_y, base::Closure());
+    return SendMouseMoveImpl(screen_x, screen_y, base::OnceClosure());
   }
   bool SendMouseMoveNotifyWhenDone(long screen_x,
                                    long screen_y,
-                                   const base::Closure& task) override {
-    return SendMouseMoveImpl(screen_x, screen_y, task);
+                                   base::OnceClosure task) override {
+    return SendMouseMoveImpl(screen_x, screen_y, std::move(task));
   }
   bool SendMouseEvents(MouseButton type, int state) override {
-    return SendMouseEventsImpl(type, state, base::Closure());
+    return SendMouseEventsImpl(type, state, base::OnceClosure());
   }
   bool SendMouseEventsNotifyWhenDone(MouseButton type,
                                      int state,
-                                     const base::Closure& task) override {
-    return SendMouseEventsImpl(type, state, task);
+                                     base::OnceClosure task) override {
+    return SendMouseEventsImpl(type, state, std::move(task));
   }
   bool SendMouseClick(MouseButton type) override {
     return SendMouseEvents(type, UP | DOWN);
