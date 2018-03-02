@@ -78,10 +78,9 @@ void LayoutTestContentBrowserClient::RenderProcessWillLaunch(
   StoragePartition* partition =
       BrowserContext::GetDefaultStoragePartition(browser_context());
   host->AddFilter(new LayoutTestMessageFilter(
-      host->GetID(),
-      partition->GetDatabaseTracker(),
-      partition->GetQuotaManager(),
-      partition->GetURLRequestContext()));
+      host->GetID(), partition->GetDatabaseTracker(),
+      partition->GetQuotaManager(), partition->GetURLRequestContext(),
+      partition->GetNetworkContext()));
 
   host->Send(new ShellViewMsg_SetWebKitSourceDir(GetWebKitRootDirFilePath()));
 }

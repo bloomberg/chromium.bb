@@ -13,6 +13,7 @@
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "content/public/browser/browser_message_filter.h"
+#include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
 
 class GURL;
@@ -24,6 +25,12 @@ class DictionaryValue;
 namespace net {
 class URLRequestContextGetter;
 }
+
+namespace network {
+namespace mojom {
+class NetworkContext;
+}
+}  // namespace network
 
 namespace storage {
 class QuotaManager;
@@ -38,14 +45,20 @@ namespace content {
 class LayoutTestMessageFilter : public BrowserMessageFilter {
  public:
   LayoutTestMessageFilter(int render_process_id,
-                     storage::DatabaseTracker* database_tracker,
-                     storage::QuotaManager* quota_manager,
-                     net::URLRequestContextGetter* request_context_getter);
+                          storage::DatabaseTracker* database_tracker,
+                          storage::QuotaManager* quota_manager,
+                          net::URLRequestContextGetter* request_context_getter,
+                          network::mojom::NetworkContext* network_context);
 
  private:
+  friend struct content::BrowserThread::DeleteOnThread<
+      content::BrowserThread::UI>;
+  friend class base::DeleteHelper<LayoutTestMessageFilter>;
+
   ~LayoutTestMessageFilter() override;
 
   // BrowserMessageFilter implementation.
+  void OnDestruct() const override;
   base::TaskRunner* OverrideTaskRunnerForMessage(
       const IPC::Message& message) override;
   bool OnMessageReceived(const IPC::Message& message) override;
@@ -69,6 +82,7 @@ class LayoutTestMessageFilter : public BrowserMessageFilter {
   void OnClearPushMessagingPermissions();
   void OnBlockThirdPartyCookies(bool block);
   void OnDeleteAllCookies();
+  void OnDeleteAllCookiesForNetworkService();
   void OnSetPermission(const std::string& name,
                        blink::mojom::PermissionStatus status,
                        const GURL& origin,
@@ -84,6 +98,7 @@ class LayoutTestMessageFilter : public BrowserMessageFilter {
   scoped_refptr<storage::DatabaseTracker> database_tracker_;
   scoped_refptr<storage::QuotaManager> quota_manager_;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
+  network::mojom::CookieManagerPtr cookie_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(LayoutTestMessageFilter);
 };

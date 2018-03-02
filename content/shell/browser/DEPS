@@ -5,6 +5,7 @@ include_rules = [
   "+device/geolocation/public",
   "+services/service_manager/public/cpp",
   "+services/service_manager/sandbox",
+  "+services/network/public",
 ]
 
 specific_include_rules = {
