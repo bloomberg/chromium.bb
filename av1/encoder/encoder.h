@@ -331,9 +331,7 @@ typedef struct TileDataEnc {
   int mode_map[BLOCK_SIZES_ALL][MAX_MODES];
   int m_search_count;
   int ex_search_count;
-#if CONFIG_CFL
   CFL_CTX cfl;
-#endif
   DECLARE_ALIGNED(16, FRAME_CONTEXT, tctx);
   uint8_t allow_update_cdf;
 } TileDataEnc;

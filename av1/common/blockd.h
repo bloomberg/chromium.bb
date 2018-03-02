@@ -285,12 +285,10 @@ typedef struct MB_MODE_INFO {
   int num_proj_ref[2];
   WarpedMotionParams wm_params[2];
 
-#if CONFIG_CFL
   // Index of the alpha Cb and alpha Cr combination
   int cfl_alpha_idx;
   // Joint sign of alpha Cb and alpha Cr
   int cfl_alpha_signs;
-#endif
 
 #if CONFIG_JNT_COMP
   int compound_idx;
@@ -324,9 +322,7 @@ static INLINE PREDICTION_MODE get_uv_mode(UV_PREDICTION_MODE mode) {
     SMOOTH_V_PRED,  // UV_SMOOTH_V_PRED
     SMOOTH_H_PRED,  // UV_SMOOTH_H_PRED
     PAETH_PRED,     // UV_PAETH_PRED
-#if CONFIG_CFL
     DC_PRED,        // UV_CFL_PRED
-#endif              // CONFIG_CFL
     INTRA_INVALID,  // UV_INTRA_MODES
     INTRA_INVALID,  // UV_MODE_INVALID
   };
@@ -473,7 +469,6 @@ typedef struct {
   int xqd[2];
 } SgrprojInfo;
 
-#if CONFIG_CFL
 #if CONFIG_DEBUG
 #define CFL_SUB8X8_VAL_MI_SIZE (4)
 #define CFL_SUB8X8_VAL_MI_SQUARE \
@@ -518,7 +513,6 @@ typedef struct cfl_ctx {
 
   int is_chroma_reference;
 } CFL_CTX;
-#endif  // CONFIG_CFL
 
 #if CONFIG_JNT_COMP
 typedef struct jnt_comp_params {
@@ -633,9 +627,7 @@ typedef struct macroblockd {
 
   DECLARE_ALIGNED(16, uint8_t, seg_mask[2 * MAX_SB_SQUARE]);
 
-#if CONFIG_CFL
   CFL_CTX cfl;
-#endif
 
 #if CONFIG_JNT_COMP
   JNT_COMP_PARAMS jcp_param;

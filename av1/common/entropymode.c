@@ -717,12 +717,8 @@ static const aom_cdf_prob
     };
 
 static const aom_cdf_prob
-#if CONFIG_CFL
     default_uv_mode_cdf[CFL_ALLOWED_TYPES][INTRA_MODES][CDF_SIZE(
         UV_INTRA_MODES)] = {
-#else
-    default_uv_mode_cdf[INTRA_MODES][CDF_SIZE(UV_INTRA_MODES)] =
-#endif  // CONFIG_CFL
       {
           { AOM_CDF13(17902, 18828, 21117, 21487, 21924, 22484, 23588, 24669,
                       25177, 28731, 29903, 31509) },
@@ -750,7 +746,6 @@ static const aom_cdf_prob
                       23685, 28079, 29091, 32028) },
           { AOM_CDF13(13638, 16789, 19763, 19903, 19995, 20201, 20405, 20861,
                       21174, 22802, 23566, 24754) },
-#if CONFIG_CFL
       },
       {
           { AOM_CDF14(18377, 18815, 19743, 20178, 20560, 20889, 21359, 22098,
@@ -780,7 +775,6 @@ static const aom_cdf_prob
           { AOM_CDF14(4015, 6473, 9853, 10285, 10655, 11032, 11431, 12199,
                       12738, 14760, 16121, 17263, 28612) },
       }
-#endif  // CONFIG_CFL
     };
 
 static const aom_cdf_prob default_partition_cdf[PARTITION_CONTEXTS][CDF_SIZE(
@@ -1035,7 +1029,6 @@ static const aom_cdf_prob
         { AOM_CDF2(1536) } },
     };
 
-#if CONFIG_CFL
 static const aom_cdf_prob default_cfl_sign_cdf[CDF_SIZE(CFL_JOINT_SIGNS)] = {
   AOM_CDF8(1892, 2229, 11464, 14116, 25661, 26409, 32508)
 };
@@ -1055,7 +1048,6 @@ static const aom_cdf_prob
       { AOM_CDF16(15939, 24151, 27754, 29680, 30651, 31267, 31527, 31868, 32001,
                   32090, 32181, 32284, 32314, 32366, 32486) }
     };
-#endif
 
 // TODO(jingning): This initial models are copied directly from the entries
 // from the original table. The copied indexes are (0, 0), (0, 1), .. (4, 4).
@@ -1194,10 +1186,8 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_copy(fc->delta_lf_cdf, default_delta_lf_cdf);
   av1_copy(fc->delta_lf_multi_cdf, default_delta_lf_multi_cdf);
 #endif
-#if CONFIG_CFL
   av1_copy(fc->cfl_sign_cdf, default_cfl_sign_cdf);
   av1_copy(fc->cfl_alpha_cdf, default_cfl_alpha_cdf);
-#endif
   av1_copy(fc->intrabc_cdf, default_intrabc_cdf);
 }
 

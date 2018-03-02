@@ -47,10 +47,8 @@ struct insp_mi_data {
   int16_t tx_size;
   int16_t cdef_level;
   int16_t cdef_strength;
-#if CONFIG_CFL
   int16_t cfl_alpha_idx;
   int16_t cfl_alpha_sign;
-#endif
   int16_t current_qindex;
 };
 

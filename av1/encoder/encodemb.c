@@ -22,6 +22,7 @@
 #include "aom_util/debug_util.h"
 #endif  // CONFIG_BITSTREAM_DEBUG || CONFIG_MISMATCH_DEBUG
 
+#include "av1/common/cfl.h"
 #include "av1/common/idct.h"
 #include "av1/common/reconinter.h"
 #include "av1/common/reconintra.h"
@@ -33,10 +34,6 @@
 #include "av1/encoder/hybrid_fwd_txfm.h"
 #include "av1/encoder/rd.h"
 #include "av1/encoder/rdopt.h"
-
-#if CONFIG_CFL
-#include "av1/common/cfl.h"
-#endif
 
 // Check if one needs to use c version subtraction.
 static int check_subtract_block_size(int w, int h) { return w < 4 || h < 4; }
@@ -529,12 +526,10 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
     *(args->skip) = 0;
     assert(xd->mi[0]->mbmi.txk_type[av1_get_txk_type_index(
                plane_bsize, blk_row, blk_col)] == DCT_DCT);
-#if CONFIG_CFL
     if (plane == AOM_PLANE_Y && xd->cfl.store_y &&
         is_cfl_allowed(&xd->mi[0]->mbmi)) {
       cfl_store_tx(xd, blk_row, blk_col, tx_size, plane_bsize);
     }
-#endif  // CONFIG_CFL
     return;
   }
 
@@ -568,12 +563,10 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
 
   if (*eob) *(args->skip) = 0;
 
-#if CONFIG_CFL
   if (plane == AOM_PLANE_Y && xd->cfl.store_y &&
       is_cfl_allowed(&xd->mi[0]->mbmi)) {
     cfl_store_tx(xd, blk_row, blk_col, tx_size, plane_bsize);
   }
-#endif  // CONFIG_CFL
 }
 
 void av1_encode_intra_block_plane(const struct AV1_COMP *cpi, MACROBLOCK *x,

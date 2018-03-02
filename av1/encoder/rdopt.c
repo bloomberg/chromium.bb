@@ -22,9 +22,7 @@
 #include "aom_ports/mem.h"
 #include "aom_ports/system_state.h"
 
-#if CONFIG_CFL
 #include "av1/common/cfl.h"
-#endif
 #include "av1/common/common.h"
 #include "av1/common/common_data.h"
 #include "av1/common/entropy.h"
@@ -334,16 +332,12 @@ static const PREDICTION_MODE intra_rd_search_mode_order[INTRA_MODES] = {
   D67_PRED,      D113_PRED,     D45_PRED,
 };
 
-#if CONFIG_CFL
 static const UV_PREDICTION_MODE uv_rd_search_mode_order[UV_INTRA_MODES] = {
   UV_DC_PRED,     UV_CFL_PRED,   UV_H_PRED,        UV_V_PRED,
   UV_SMOOTH_PRED, UV_PAETH_PRED, UV_SMOOTH_V_PRED, UV_SMOOTH_H_PRED,
   UV_D135_PRED,   UV_D203_PRED,  UV_D157_PRED,     UV_D67_PRED,
   UV_D113_PRED,   UV_D45_PRED,
 };
-#else
-#define uv_rd_search_mode_order intra_rd_search_mode_order
-#endif  // CONFIG_CFL
 
 static INLINE int write_uniform_cost(int n, int v) {
   const int l = get_unsigned_bits(n);
@@ -2024,12 +2018,10 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
                   a, l, 0, args->use_fast_coef_costing, INT64_MAX,
                   &this_rd_stats);
 
-#if CONFIG_CFL
   if (plane == AOM_PLANE_Y && xd->cfl.store_y && is_cfl_allowed(mbmi)) {
     assert(!is_inter_block(mbmi) || plane_bsize < BLOCK_8X8);
     cfl_store_tx(xd, blk_row, blk_col, tx_size, plane_bsize);
   }
-#endif  // CONFIG_CFL
 
 #if CONFIG_RD_DEBUG
   av1_update_txb_coeff_cost(&this_rd_stats, plane, tx_size, blk_row, blk_col,
@@ -4804,7 +4796,6 @@ static int rd_pick_intra_angle_sbuv(const AV1_COMP *const cpi, MACROBLOCK *x,
   return rd_stats->rate != INT_MAX;
 }
 
-#if CONFIG_CFL
 #define PLANE_SIGN_TO_JOINT_SIGN(plane, a, b) \
   (plane == CFL_PRED_U ? a * CFL_SIGNS + b - 1 : b * CFL_SIGNS + a - 1)
 static int cfl_rd_pick_alpha(MACROBLOCK *const x, const AV1_COMP *const cpi,
@@ -4823,7 +4814,7 @@ static int cfl_rd_pick_alpha(MACROBLOCK *const x, const AV1_COMP *const cpi,
     assert(block_size_wide[plane_bsize] == tx_size_wide[tx_size]);
     assert(block_size_high[plane_bsize] == tx_size_high[tx_size]);
   }
-#endif
+#endif  // CONFIG_DEBUG
 
   xd->cfl.use_dc_pred_cache = 1;
   const int64_t mode_rd =
@@ -4927,7 +4918,6 @@ static int cfl_rd_pick_alpha(MACROBLOCK *const x, const AV1_COMP *const cpi,
   xd->cfl.dc_pred_is_cached[1] = 0;
   return best_rate_overhead;
 }
-#endif  // CONFIG_CFL
 
 static void init_sbuv_mode(MB_MODE_INFO *const mbmi) {
   mbmi->uv_mode = UV_DC_PRED;
@@ -4954,7 +4944,6 @@ static int64_t rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
       continue;
 
     mbmi->uv_mode = mode;
-#if CONFIG_CFL
     int cfl_alpha_rate = 0;
     if (mode == UV_CFL_PRED) {
       if (!is_cfl_allowed(mbmi)) continue;
@@ -4963,19 +4952,14 @@ static int64_t rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
       cfl_alpha_rate = cfl_rd_pick_alpha(x, cpi, uv_tx_size, best_rd);
       if (cfl_alpha_rate == INT_MAX) continue;
     }
-#endif
     mbmi->angle_delta[PLANE_TYPE_UV] = 0;
     if (is_directional_mode && av1_use_angle_delta(mbmi->sb_type)) {
-#if CONFIG_CFL
       const int rate_overhead =
           x->intra_uv_mode_cost[is_cfl_allowed(mbmi)][mbmi->mode][mode] +
-#else
-      const int rate_overhead = x->intra_uv_mode_cost[mbmi->mode][mode] +
-#endif  // CONFIG_CFL
 #if CONFIG_EXT_INTRA_MOD
           0;
 #else
-                                write_uniform_cost(2 * MAX_ANGLE_DELTA + 1, 0);
+          write_uniform_cost(2 * MAX_ANGLE_DELTA + 1, 0);
 #endif  // CONFIG_EXT_INTRA_MOD
       if (!rd_pick_intra_angle_sbuv(cpi, x, bsize, rate_overhead, best_rd,
                                     &this_rate, &tokenonly_rd_stats))
@@ -4986,15 +4970,10 @@ static int64_t rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
       }
     }
     const int mode_cost =
-#if CONFIG_CFL
         x->intra_uv_mode_cost[is_cfl_allowed(mbmi)][mbmi->mode][mode] +
         cfl_alpha_rate;
-#else
-        x->intra_uv_mode_cost[mbmi->mode][mode];
-#endif
     this_rate = tokenonly_rd_stats.rate +
                 intra_mode_info_cost_uv(cpi, x, mbmi, bsize, mode_cost);
-#if CONFIG_CFL
     if (mode == UV_CFL_PRED) {
       assert(is_cfl_allowed(mbmi));
 #if CONFIG_DEBUG
@@ -5002,7 +4981,6 @@ static int64_t rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
         assert(xd->cfl.rate == tokenonly_rd_stats.rate + mode_cost);
 #endif  // CONFIG_DEBUG
     }
-#endif
     this_rd = RDCOST(x->rdmult, this_rate, tokenonly_rd_stats.dist);
 
     if (this_rd < best_rd) {
@@ -5021,11 +4999,7 @@ static int64_t rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
     uint8_t *best_palette_color_map = x->palette_buffer->best_palette_color_map;
     rd_pick_palette_intra_sbuv(
         cpi, x,
-#if CONFIG_CFL
         x->intra_uv_mode_cost[is_cfl_allowed(mbmi)][mbmi->mode][UV_DC_PRED],
-#else
-        x->intra_uv_mode_cost[mbmi->mode][UV_DC_PRED],
-#endif
         best_palette_color_map, &best_mbmi, &best_rd, rate, rate_tokenonly,
         distortion, skippable);
   }
@@ -5056,7 +5030,6 @@ static void choose_intra_uv_mode(const AV1_COMP *const cpi, MACROBLOCK *const x,
   }
   bsize = scale_chroma_bsize(bsize, xd->plane[AOM_PLANE_U].subsampling_x,
                              xd->plane[AOM_PLANE_U].subsampling_y);
-#if CONFIG_CFL
   // Only store reconstructed luma when there's chroma RDO. When there's no
   // chroma RDO, the reconstructed luma will be stored in encode_superblock().
   xd->cfl.store_y = !x->skip_chroma_rd;
@@ -5069,7 +5042,6 @@ static void choose_intra_uv_mode(const AV1_COMP *const cpi, MACROBLOCK *const x,
                      cpi->sf.use_fast_coef_costing);
     xd->cfl.store_y = 0;
   }
-#endif  // CONFIG_CFL
   rd_pick_intra_sbuv_mode(cpi, x, rate_uv, rate_uv_tokenonly, dist_uv, skip_uv,
                           bsize, max_tx_size);
   *mode_uv = mbmi->uv_mode;
@@ -8216,7 +8188,6 @@ void av1_rd_pick_intra_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x, int mi_row,
                              &y_skip, bsize, best_rd, ctx);
 
   if (intra_yrd < best_rd) {
-#if CONFIG_CFL
     // Only store reconstructed luma when there's chroma RDO. When there's no
     // chroma RDO, the reconstructed luma will be stored in encode_superblock().
     xd->cfl.store_y = !x->skip_chroma_rd;
@@ -8229,7 +8200,6 @@ void av1_rd_pick_intra_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x, int mi_row,
                                    mi_row, mi_col);
       xd->cfl.store_y = 0;
     }
-#endif  // CONFIG_CFL
     if (num_planes > 1) {
       max_uv_tx_size = av1_get_tx_size(AOM_PLANE_U, xd);
       init_sbuv_mode(mbmi);
@@ -9177,12 +9147,8 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
       }
       if (num_planes > 1 && !x->skip_chroma_rd) {
         const int uv_mode_cost =
-#if CONFIG_CFL
             x->intra_uv_mode_cost[is_cfl_allowed(mbmi)][mbmi->mode]
                                  [mbmi->uv_mode];
-#else
-            x->intra_uv_mode_cost[mbmi->mode][mbmi->uv_mode];
-#endif
         rate2 += rate_uv +
                  intra_mode_info_cost_uv(cpi, x, mbmi, bsize, uv_mode_cost);
       }

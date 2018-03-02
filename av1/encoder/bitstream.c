@@ -25,9 +25,7 @@
 #endif  // CONFIG_BITSTREAM_DEBUG
 
 #include "av1/common/cdef.h"
-#if CONFIG_CFL
 #include "av1/common/cfl.h"
-#endif
 #include "av1/common/entropy.h"
 #include "av1/common/entropymode.h"
 #include "av1/common/entropymv.h"
@@ -894,20 +892,11 @@ static void write_intra_mode(FRAME_CONTEXT *frame_ctx, BLOCK_SIZE bsize,
 static void write_intra_uv_mode(FRAME_CONTEXT *frame_ctx,
                                 UV_PREDICTION_MODE uv_mode,
                                 PREDICTION_MODE y_mode,
-#if CONFIG_CFL
-                                CFL_ALLOWED_TYPE cfl_allowed,
-#endif
-                                aom_writer *w) {
-#if CONFIG_CFL
+                                CFL_ALLOWED_TYPE cfl_allowed, aom_writer *w) {
   aom_write_symbol(w, uv_mode, frame_ctx->uv_mode_cdf[cfl_allowed][y_mode],
                    UV_INTRA_MODES - !cfl_allowed);
-#else
-  uv_mode = get_uv_mode(uv_mode);
-  aom_write_symbol(w, uv_mode, frame_ctx->uv_mode_cdf[y_mode], UV_INTRA_MODES);
-#endif
 }
 
-#if CONFIG_CFL
 static void write_cfl_alphas(FRAME_CONTEXT *const ec_ctx, int idx,
                              int joint_sign, aom_writer *w) {
   aom_write_symbol(w, joint_sign, ec_ctx->cfl_sign_cdf, CFL_JOINT_SIGNS);
@@ -921,7 +910,6 @@ static void write_cfl_alphas(FRAME_CONTEXT *const ec_ctx, int idx,
     aom_write_symbol(w, CFL_IDX_V(idx), cdf_v, CFL_ALPHABET_SIZE);
   }
 }
-#endif
 
 static void write_cdef(AV1_COMMON *cm, aom_writer *w, int skip, int mi_col,
                        int mi_row) {
@@ -1100,13 +1088,9 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
         is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
                             xd->plane[1].subsampling_y)) {
       const UV_PREDICTION_MODE uv_mode = mbmi->uv_mode;
-#if !CONFIG_CFL
-      write_intra_uv_mode(ec_ctx, uv_mode, mode, w);
-#else
       write_intra_uv_mode(ec_ctx, uv_mode, mode, is_cfl_allowed(mbmi), w);
       if (uv_mode == UV_CFL_PRED)
         write_cfl_alphas(ec_ctx, mbmi->cfl_alpha_idx, mbmi->cfl_alpha_signs, w);
-#endif
       if (use_angle_delta && av1_is_directional_mode(get_uv_mode(uv_mode))) {
         write_angle_delta(w, mbmi->angle_delta[PLANE_TYPE_UV],
                           ec_ctx->angle_delta_cdf[uv_mode - V_PRED]);
@@ -1394,13 +1378,9 @@ static void write_mb_modes_kf(AV1_COMP *cpi, MACROBLOCKD *xd,
       is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
                           xd->plane[1].subsampling_y)) {
     const UV_PREDICTION_MODE uv_mode = mbmi->uv_mode;
-#if !CONFIG_CFL
-    write_intra_uv_mode(ec_ctx, uv_mode, mode, w);
-#else
     write_intra_uv_mode(ec_ctx, uv_mode, mode, is_cfl_allowed(mbmi), w);
     if (uv_mode == UV_CFL_PRED)
       write_cfl_alphas(ec_ctx, mbmi->cfl_alpha_idx, mbmi->cfl_alpha_signs, w);
-#endif
     if (use_angle_delta && av1_is_directional_mode(get_uv_mode(uv_mode))) {
       write_angle_delta(w, mbmi->angle_delta[PLANE_TYPE_UV],
                         ec_ctx->angle_delta_cdf[uv_mode - V_PRED]);

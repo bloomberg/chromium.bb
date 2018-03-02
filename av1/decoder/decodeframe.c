@@ -34,6 +34,7 @@
 
 #include "av1/common/alloccommon.h"
 #include "av1/common/cdef.h"
+#include "av1/common/cfl.h"
 #if CONFIG_INSPECTION
 #include "av1/decoder/inspection.h"
 #endif
@@ -60,10 +61,6 @@
 
 #define MAX_AV1_HEADER_SIZE 80
 #define ACCT_STR __func__
-
-#if CONFIG_CFL
-#include "av1/common/cfl.h"
-#endif
 
 static void loop_restoration_read_sb_coeffs(const AV1_COMMON *const cm,
                                             MACROBLOCKD *xd,
@@ -144,11 +141,9 @@ static void predict_and_reconstruct_intra_block(
                               max_scan_line, eob, cm->reduced_tx_set_used);
     }
   }
-#if CONFIG_CFL
   if (plane == AOM_PLANE_Y && xd->cfl.store_y && is_cfl_allowed(mbmi)) {
     cfl_store_tx(xd, row, col, tx_size, mbmi->sb_type);
   }
-#endif  // CONFIG_CFL
 }
 
 static void decode_reconstruct_tx(AV1_COMMON *cm, MACROBLOCKD *const xd,
@@ -250,10 +245,8 @@ static void set_offsets(AV1_COMMON *const cm, MACROBLOCKD *const xd,
   xd->mi[0]->mbmi.mi_row = mi_row;
   xd->mi[0]->mbmi.mi_col = mi_col;
 #endif
-#if CONFIG_CFL
   xd->cfl.mi_row = mi_row;
   xd->cfl.mi_col = mi_col;
-#endif
 
   assert(x_mis && y_mis);
   for (int x = 1; x < x_mis; ++x) xd->mi[x] = xd->mi[0];
@@ -318,11 +311,9 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
 
   set_offsets(cm, xd, bsize, mi_row, mi_col, bw, bh, x_mis, y_mis);
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
-#if CONFIG_CFL
   CFL_CTX *const cfl = &xd->cfl;
   cfl->is_chroma_reference = is_chroma_reference(
       mi_row, mi_col, bsize, cfl->subsampling_x, cfl->subsampling_y);
-#endif  // CONFIG_CFL
 
   if (cm->delta_q_present_flag) {
     for (int i = 0; i < MAX_SEGMENTS; i++) {
@@ -485,14 +476,12 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
       }
     }
   }
-#if CONFIG_CFL
   if (mbmi->uv_mode != UV_CFL_PRED) {
     if (!cfl->is_chroma_reference && is_inter_block(mbmi) &&
         is_cfl_allowed(mbmi)) {
       cfl_store_block(xd, mbmi->sb_type, mbmi->tx_size);
     }
   }
-#endif  // CONFIG_CFL
 
   int reader_corrupted_flag = aom_reader_has_error(r);
   aom_merge_corrupted_flag(&xd->corrupted, reader_corrupted_flag);

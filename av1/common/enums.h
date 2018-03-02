@@ -354,7 +354,6 @@ typedef enum ATTRIBUTE_PACKED {
   PLANE_TYPES
 } PLANE_TYPE;
 
-#if CONFIG_CFL
 #define CFL_ALPHABET_SIZE_LOG2 4
 #define CFL_ALPHABET_SIZE (1 << CFL_ALPHABET_SIZE_LOG2)
 #define CFL_MAGS_SIZE ((2 << CFL_ALPHABET_SIZE_LOG2) + 1)
@@ -394,7 +393,6 @@ typedef enum ATTRIBUTE_PACKED {
 // Also, the contexts are symmetric under swapping the planes.
 #define CFL_CONTEXT_V(js) \
   (CFL_SIGN_V(js) * CFL_SIGNS + CFL_SIGN_U(js) - CFL_SIGNS)
-#endif
 
 typedef enum ATTRIBUTE_PACKED {
   PALETTE_MAP,
@@ -474,9 +472,7 @@ typedef enum ATTRIBUTE_PACKED {
   UV_SMOOTH_V_PRED,  // Vertical interpolation
   UV_SMOOTH_H_PRED,  // Horizontal interpolation
   UV_PAETH_PRED,     // Predict from the direction of smallest gradient
-#if CONFIG_CFL
-  UV_CFL_PRED,  // Chroma-from-Luma
-#endif          // CONFIG_CFL
+  UV_CFL_PRED,       // Chroma-from-Luma
   UV_INTRA_MODES,
   UV_MODE_INVALID,  // For uv_mode in inter blocks
 } UV_PREDICTION_MODE;

@@ -27,9 +27,7 @@
 #include "aom_util/debug_util.h"
 #endif  // CONFIG_MISMATCH_DEBUG
 
-#if CONFIG_CFL
 #include "av1/common/cfl.h"
-#endif
 #include "av1/common/common.h"
 #include "av1/common/entropy.h"
 #include "av1/common/entropymode.h"
@@ -296,10 +294,8 @@ static void set_offsets(const AV1_COMP *const cpi, const TileInfo *const tile,
   set_offsets_without_segment_id(cpi, tile, x, mi_row, mi_col, bsize);
 
   mbmi = &xd->mi[0]->mbmi;
-#if CONFIG_CFL
   xd->cfl.mi_row = mi_row;
   xd->cfl.mi_col = mi_col;
-#endif
 
   mbmi->segment_id = 0;
 
@@ -818,22 +814,13 @@ static void sum_intra_stats(FRAME_COUNTS *counts, MACROBLOCKD *xd,
   }
 #endif  // CONFIG_EXT_INTRA_MOD
 #if CONFIG_ENTROPY_STATS
-#if CONFIG_CFL
   ++counts->uv_mode[is_cfl_allowed(mbmi)][y_mode][uv_mode];
-#else
-  ++counts->uv_mode[y_mode][uv_mode];
-#endif  // CONFIG_CFL
 #endif  // CONFIG_ENTROPY_STATS
-#if CONFIG_CFL
   if (allow_update_cdf) {
     const CFL_ALLOWED_TYPE cfl_allowed = is_cfl_allowed(mbmi);
     update_cdf(fc->uv_mode_cdf[cfl_allowed][y_mode], uv_mode,
                UV_INTRA_MODES - !cfl_allowed);
   }
-#else
-  if (allow_update_cdf)
-    update_cdf(fc->uv_mode_cdf[y_mode], uv_mode, UV_INTRA_MODES);
-#endif  // CONFIG_CFL
 }
 
 // TODO(anybody) We can add stats accumulation here to train entropy models for
@@ -2933,10 +2920,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
           PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
           // Neither palette mode nor cfl predicted
           if (pmi->palette_size[0] == 0 && pmi->palette_size[1] == 0) {
-#if CONFIG_CFL
-            if (mbmi->uv_mode != UV_CFL_PRED)
-#endif  // CONFIG_CFL
-              split_ctx_is_ready[idx] = 1;
+            if (mbmi->uv_mode != UV_CFL_PRED) split_ctx_is_ready[idx] = 1;
           }
         }
       }
@@ -2950,7 +2934,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
       dist_8x8 = dist_8x8_yuv(cpi, x, src_plane_8x8, dst_plane_8x8);
 #ifdef DEBUG_DIST_8X8
       // TODO(anyone): Fix dist-8x8 assert failure here when CFL is enabled
-      if (x->tune_metric == AOM_TUNE_PSNR && xd->bd == 8 && !CONFIG_CFL)
+      if (x->tune_metric == AOM_TUNE_PSNR && xd->bd == 8 && 0 /*!CONFIG_CFL*/)
         assert(sum_rdc.dist == dist_8x8);
 #endif  // DEBUG_DIST_8X8
       sum_rdc.dist = dist_8x8;
@@ -2997,10 +2981,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
       PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
       // Neither palette mode nor cfl predicted
       if (pmi->palette_size[0] == 0 && pmi->palette_size[1] == 0) {
-#if CONFIG_CFL
-        if (mbmi->uv_mode != UV_CFL_PRED)
-#endif  // CONFIG_CFL
-          horz_ctx_is_ready = 1;
+        if (mbmi->uv_mode != UV_CFL_PRED) horz_ctx_is_ready = 1;
       }
       update_state(cpi, tile_data, td, ctx_h, mi_row, mi_col, subsize, 1);
       encode_superblock(cpi, tile_data, td, tp, DRY_RUN_NORMAL, mi_row, mi_col,
@@ -3041,7 +3022,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
         dist_8x8 = dist_8x8_yuv(cpi, x, src_plane_8x8, dst_plane_8x8);
 #ifdef DEBUG_DIST_8X8
         // TODO(anyone): Fix dist-8x8 assert failure here when CFL is enabled
-        if (x->tune_metric == AOM_TUNE_PSNR && xd->bd == 8 && !CONFIG_CFL)
+        if (x->tune_metric == AOM_TUNE_PSNR && xd->bd == 8 && 0 /*!CONFIG_CFL*/)
           assert(sum_rdc.dist == dist_8x8);
 #endif  // DEBUG_DIST_8X8
         sum_rdc.dist = dist_8x8;
@@ -3085,10 +3066,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
       PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
       // Neither palette mode nor cfl predicted
       if (pmi->palette_size[0] == 0 && pmi->palette_size[1] == 0) {
-#if CONFIG_CFL
-        if (mbmi->uv_mode != UV_CFL_PRED)
-#endif  // CONFIG_CFL
-          vert_ctx_is_ready = 1;
+        if (mbmi->uv_mode != UV_CFL_PRED) vert_ctx_is_ready = 1;
       }
       update_state(cpi, tile_data, td, &pc_tree->vertical[0], mi_row, mi_col,
                    subsize, 1);
@@ -3130,7 +3108,8 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
         dist_8x8 = dist_8x8_yuv(cpi, x, src_plane_8x8, dst_plane_8x8);
 #ifdef DEBUG_DIST_8X8
         // TODO(anyone): Fix dist-8x8 assert failure here when CFL is enabled
-        if (x->tune_metric == AOM_TUNE_PSNR && xd->bd == 8 && !CONFIG_CFL)
+        if (x->tune_metric == AOM_TUNE_PSNR && xd->bd == 8 &&
+            0 /* !CONFIG_CFL */)
           assert(sum_rdc.dist == dist_8x8);
 #endif  // DEBUG_DIST_8X8
         sum_rdc.dist = dist_8x8;
@@ -3735,9 +3714,7 @@ void av1_encode_tile(AV1_COMP *cpi, ThreadData *td, int tile_row,
   this_tile->tctx = *cm->fc;
   td->mb.e_mbd.tile_ctx = &this_tile->tctx;
 
-#if CONFIG_CFL
   cfl_init(&td->mb.e_mbd.cfl, cm);
-#endif
 
 #if CONFIG_LOOPFILTERING_ACROSS_TILES
 #if CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
@@ -4702,17 +4679,13 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
   const int is_inter = is_inter_block(mbmi);
 
   if (!is_inter) {
-#if CONFIG_CFL
     xd->cfl.store_y = 1;
-#endif  // CONFIG_CFL
     mbmi->skip = 1;
     for (int plane = 0; plane < num_planes; ++plane) {
       av1_encode_intra_block_plane(cpi, x, bsize, plane, x->optimize, mi_row,
                                    mi_col);
     }
-#if CONFIG_CFL
     xd->cfl.store_y = 0;
-#endif  // CONFIG_CFL
     if (av1_allow_palette(cm->allow_screen_content_tools, bsize)) {
       for (int plane = 0; plane < AOMMIN(2, num_planes); ++plane) {
         if (mbmi->palette_mode_info.palette_size[plane] > 0) {
@@ -4834,7 +4807,6 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
     set_txfm_ctxs(tx_size, xd->n8_w, xd->n8_h,
                   (mbmi->skip || seg_skip) && is_inter_block(mbmi), xd);
   }
-#if CONFIG_CFL
   CFL_CTX *const cfl = &xd->cfl;
   if (is_inter_block(mbmi) &&
       !is_chroma_reference(mi_row, mi_col, bsize, cfl->subsampling_x,
@@ -4842,5 +4814,4 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
       is_cfl_allowed(mbmi)) {
     cfl_store_block(xd, mbmi->sb_type, mbmi->tx_size);
   }
-#endif  // CONFIG_CFL
 }

@@ -115,16 +115,10 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
 
   for (i = 0; i < BLOCK_SIZE_GROUPS; ++i)
     av1_cost_tokens_from_cdf(x->mbmode_cost[i], fc->y_mode_cdf[i], NULL);
-#if CONFIG_CFL
   for (i = 0; i < CFL_ALLOWED_TYPES; ++i)
     for (j = 0; j < INTRA_MODES; ++j)
       av1_cost_tokens_from_cdf(x->intra_uv_mode_cost[i][j],
                                fc->uv_mode_cdf[i][j], NULL);
-#else
-  for (i = 0; i < INTRA_MODES; ++i)
-    av1_cost_tokens_from_cdf(x->intra_uv_mode_cost[i], fc->uv_mode_cdf[i],
-                             NULL);
-#endif
 
   av1_cost_tokens_from_cdf(x->filter_intra_mode_cost, fc->filter_intra_mode_cdf,
                            NULL);
@@ -161,7 +155,6 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
     }
   }
 
-#if CONFIG_CFL
   int sign_cost[CFL_JOINT_SIGNS];
   av1_cost_tokens_from_cdf(sign_cost, fc->cfl_sign_cdf, NULL);
   for (int joint_sign = 0; joint_sign < CFL_JOINT_SIGNS; joint_sign++) {
@@ -182,7 +175,6 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
     for (int u = 0; u < CFL_ALPHABET_SIZE; u++)
       cost_u[u] += sign_cost[joint_sign];
   }
-#endif  // CONFIG_CFL
 
   for (i = 0; i < MAX_TX_CATS; ++i)
     for (j = 0; j < TX_SIZE_CONTEXTS; ++j)

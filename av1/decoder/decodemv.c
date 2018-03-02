@@ -11,6 +11,7 @@
 
 #include <assert.h>
 
+#include "av1/common/cfl.h"
 #include "av1/common/common.h"
 #include "av1/common/entropy.h"
 #include "av1/common/entropymode.h"
@@ -26,10 +27,6 @@
 #include "av1/decoder/decodemv.h"
 
 #include "aom_dsp/aom_dsp_common.h"
-
-#if CONFIG_CFL
-#include "av1/common/cfl.h"
-#endif
 
 #define ACCT_STR __func__
 
@@ -139,21 +136,14 @@ static int read_delta_lflevel(AV1_COMMON *cm, MACROBLOCKD *xd, aom_reader *r,
 
 static UV_PREDICTION_MODE read_intra_mode_uv(FRAME_CONTEXT *ec_ctx,
                                              aom_reader *r,
-#if CONFIG_CFL
                                              CFL_ALLOWED_TYPE cfl_allowed,
-#endif
                                              PREDICTION_MODE y_mode) {
   const UV_PREDICTION_MODE uv_mode =
-#if CONFIG_CFL
       aom_read_symbol(r, ec_ctx->uv_mode_cdf[cfl_allowed][y_mode],
                       UV_INTRA_MODES - !cfl_allowed, ACCT_STR);
-#else
-      (UV_PREDICTION_MODE)read_intra_mode(r, ec_ctx->uv_mode_cdf[y_mode]);
-#endif  // CONFIG_CFL
   return uv_mode;
 }
 
-#if CONFIG_CFL
 static int read_cfl_alphas(FRAME_CONTEXT *const ec_ctx, aom_reader *r,
                            int *signs_out) {
   const int joint_sign =
@@ -172,7 +162,6 @@ static int read_cfl_alphas(FRAME_CONTEXT *const ec_ctx, aom_reader *r,
   *signs_out = joint_sign;
   return idx;
 }
-#endif
 
 static INTERINTRA_MODE read_interintra_mode(MACROBLOCKD *xd, aom_reader *r,
                                             int size_group) {
@@ -855,9 +844,6 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
                           xd->plane[1].subsampling_y))
 #endif  // CONFIG_MONO_VIDEO
   {
-#if !CONFIG_CFL
-    mbmi->uv_mode = read_intra_mode_uv(ec_ctx, r, mbmi->mode);
-#else
     xd->cfl.is_chroma_reference = 1;
     mbmi->uv_mode =
         read_intra_mode_uv(ec_ctx, r, is_cfl_allowed(mbmi), mbmi->mode);
@@ -867,7 +853,6 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
     } else {
       xd->cfl.store_y = 0;
     }
-#endif  // !CONFIG_CFL
     mbmi->angle_delta[PLANE_TYPE_UV] =
         (use_angle_delta && av1_is_directional_mode(get_uv_mode(mbmi->uv_mode)))
             ? read_angle_delta(r,
@@ -876,10 +861,8 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
   } else {
     // Avoid decoding angle_info if there is is no chroma prediction
     mbmi->uv_mode = UV_DC_PRED;
-#if CONFIG_CFL
     xd->cfl.is_chroma_reference = 0;
     xd->cfl.store_y = 1;
-#endif
   }
 
   if (av1_allow_palette(cm->allow_screen_content_tools, bsize))
@@ -1143,9 +1126,6 @@ static void read_intra_block_mode_info(AV1_COMMON *const cm, const int mi_row,
                           xd->plane[1].subsampling_y))
 #endif  // CONFIG_MONO_VIDEO
   {
-#if !CONFIG_CFL
-    mbmi->uv_mode = read_intra_mode_uv(ec_ctx, r, mbmi->mode);
-#else
     mbmi->uv_mode =
         read_intra_mode_uv(ec_ctx, r, is_cfl_allowed(mbmi), mbmi->mode);
     if (mbmi->uv_mode == UV_CFL_PRED) {
@@ -1155,7 +1135,6 @@ static void read_intra_block_mode_info(AV1_COMMON *const cm, const int mi_row,
     } else {
       xd->cfl.store_y = 0;
     }
-#endif  // !CONFIG_CFL
     mbmi->angle_delta[PLANE_TYPE_UV] =
         use_angle_delta && av1_is_directional_mode(get_uv_mode(mbmi->uv_mode))
             ? read_angle_delta(r,
@@ -1164,10 +1143,8 @@ static void read_intra_block_mode_info(AV1_COMMON *const cm, const int mi_row,
   } else {
     // Avoid decoding angle_info if there is is no chroma prediction
     mbmi->uv_mode = UV_DC_PRED;
-#if CONFIG_CFL
     xd->cfl.is_chroma_reference = 0;
     xd->cfl.store_y = 1;
-#endif
   }
 
   mbmi->palette_mode_info.palette_size[0] = 0;

@@ -287,11 +287,7 @@ struct macroblock {
   int interintra_mode_cost[BLOCK_SIZE_GROUPS][INTERINTRA_MODES];
   int motion_mode_cost[BLOCK_SIZES_ALL][MOTION_MODES];
   int motion_mode_cost1[BLOCK_SIZES_ALL][2];
-#if CONFIG_CFL
   int intra_uv_mode_cost[CFL_ALLOWED_TYPES][INTRA_MODES][UV_INTRA_MODES];
-#else
-  int intra_uv_mode_cost[INTRA_MODES][UV_INTRA_MODES];
-#endif
   int y_mode_costs[INTRA_MODES][INTRA_MODES][INTRA_MODES];
   int filter_intra_cost[TX_SIZES_ALL][2];
   int filter_intra_mode_cost[FILTER_INTRA_MODES];
@@ -305,10 +301,8 @@ struct macroblock {
                            [PALETTE_COLORS];
   int palette_y_mode_cost[PALATTE_BSIZE_CTXS][PALETTE_Y_MODE_CONTEXTS][2];
   int palette_uv_mode_cost[PALETTE_UV_MODE_CONTEXTS][2];
-#if CONFIG_CFL
   // The rate associated with each alpha codeword
   int cfl_cost[CFL_JOINT_SIGNS][CFL_PRED_PLANES][CFL_ALPHABET_SIZE];
-#endif  // CONFIG_CFL
   int tx_size_cost[TX_SIZES - 1][TX_SIZE_CONTEXTS][TX_SIZES];
   int txfm_partition_cost[TXFM_PARTITION_CONTEXTS][2];
   int inter_tx_type_costs[EXT_TX_SETS_INTER][EXT_TX_SIZES][TX_TYPES];

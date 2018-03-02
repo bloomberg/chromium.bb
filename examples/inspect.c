@@ -90,10 +90,8 @@ static const arg_def_t dump_skip_arg = ARG_DEF("s", "skip", 0, "Dump Skip");
 static const arg_def_t dump_filter_arg =
     ARG_DEF("f", "filter", 0, "Dump Filter");
 static const arg_def_t dump_cdef_arg = ARG_DEF("c", "cdef", 0, "Dump CDEF");
-#if CONFIG_CFL
 static const arg_def_t dump_cfl_arg =
     ARG_DEF("cfl", "chroma_from_luma", 0, "Dump Chroma from Luma Alphas");
-#endif
 static const arg_def_t dump_dual_filter_type_arg =
     ARG_DEF("df", "dualFilterType", 0, "Dump Dual Filter Type");
 static const arg_def_t dump_reference_frame_arg =
@@ -119,9 +117,7 @@ static const arg_def_t *main_args[] = { &limit_arg,
                                         &dump_filter_arg,
                                         &dump_cdef_arg,
                                         &dump_dual_filter_type_arg,
-#if CONFIG_CFL
                                         &dump_cfl_arg,
-#endif
                                         &dump_reference_frame_arg,
                                         &dump_motion_vectors_arg,
                                         &dump_delta_q_arg,
@@ -200,7 +196,6 @@ const map_entry prediction_mode_map[] = {
   ENUM(NEW_NEWMV),   ENUM(INTRA_INVALID), LAST_ENUM
 };
 
-#if CONFIG_CFL
 const map_entry uv_prediction_mode_map[] = {
   ENUM(UV_DC_PRED),       ENUM(UV_V_PRED),
   ENUM(UV_H_PRED),        ENUM(UV_D45_PRED),
@@ -208,15 +203,9 @@ const map_entry uv_prediction_mode_map[] = {
   ENUM(UV_D157_PRED),     ENUM(UV_D203_PRED),
   ENUM(UV_D67_PRED),      ENUM(UV_SMOOTH_PRED),
   ENUM(UV_SMOOTH_V_PRED), ENUM(UV_SMOOTH_H_PRED),
-  ENUM(UV_PAETH_PRED),
-#if CONFIG_CFL
-  ENUM(UV_CFL_PRED),
-#endif
+  ENUM(UV_PAETH_PRED),    ENUM(UV_CFL_PRED),
   ENUM(UV_MODE_INVALID),  LAST_ENUM
 };
-#else
-#define uv_prediction_mode_map prediction_mode_map
-#endif
 #define NO_SKIP 0
 #define SKIP 1
 
@@ -551,14 +540,12 @@ void inspect(void *pbi, void *data) {
     buf += put_block_info(buf, NULL, "cdef_strength",
                           offsetof(insp_mi_data, cdef_strength), 0);
   }
-#if CONFIG_CFL
   if (layers & CFL_LAYER) {
     buf += put_block_info(buf, NULL, "cfl_alpha_idx",
                           offsetof(insp_mi_data, cfl_alpha_idx), 0);
     buf += put_block_info(buf, NULL, "cfl_alpha_sign",
                           offsetof(insp_mi_data, cfl_alpha_sign), 0);
   }
-#endif
   if (layers & Q_INDEX_LAYER) {
     buf += put_block_info(buf, NULL, "delta_q",
                           offsetof(insp_mi_data, current_qindex), 0);
@@ -709,10 +696,8 @@ static void parse_args(char **argv) {
       layers |= FILTER_LAYER;
     else if (arg_match(&arg, &dump_cdef_arg, argi))
       layers |= CDEF_LAYER;
-#if CONFIG_CFL
     else if (arg_match(&arg, &dump_cfl_arg, argi))
       layers |= CFL_LAYER;
-#endif
     else if (arg_match(&arg, &dump_reference_frame_arg, argi))
       layers |= REFERENCE_FRAME_LAYER;
     else if (arg_match(&arg, &dump_motion_vectors_arg, argi))

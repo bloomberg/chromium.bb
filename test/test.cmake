@@ -148,11 +148,9 @@ if (NOT BUILD_SHARED_LIBS)
             "${AOM_ROOT}/test/filterintra_test.cc")
     endif ()
 
-    if (CONFIG_CFL)
-      set(AOM_UNIT_TEST_COMMON_SOURCES
+    set(AOM_UNIT_TEST_COMMON_SOURCES
         ${AOM_UNIT_TEST_COMMON_SOURCES}
         "${AOM_ROOT}/test/cfl_test.cc")
-    endif ()
 
     set(AOM_UNIT_TEST_COMMON_SOURCES
         ${AOM_UNIT_TEST_COMMON_SOURCES}

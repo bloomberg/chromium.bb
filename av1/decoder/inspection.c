@@ -108,7 +108,6 @@ int ifd_inspect(insp_frame_data *fd, void *decoder) {
       mi->cdef_strength =
           cm->cdef_strengths[mbmi->cdef_strength] % CDEF_SEC_STRENGTHS;
       mi->cdef_strength += mi->cdef_strength == 3;
-#if CONFIG_CFL
       if (mbmi->uv_mode == UV_CFL_PRED) {
         mi->cfl_alpha_idx = mbmi->cfl_alpha_idx;
         mi->cfl_alpha_sign = mbmi->cfl_alpha_signs;
@@ -116,7 +115,6 @@ int ifd_inspect(insp_frame_data *fd, void *decoder) {
         mi->cfl_alpha_idx = 0;
         mi->cfl_alpha_sign = 0;
       }
-#endif
       // delta_q
       mi->current_qindex = mbmi->current_q_index;
     }

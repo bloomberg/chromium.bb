@@ -741,9 +741,7 @@ static INLINE int mi_rows_aligned_to_sb(const AV1_COMMON *cm) {
   return ALIGN_POWER_OF_TWO(cm->mi_rows, cm->seq_params.mib_size_log2);
 }
 
-#if CONFIG_CFL
 void cfl_init(CFL_CTX *cfl, AV1_COMMON *cm);
-#endif  // CONFIG_CFL
 
 static INLINE int av1_num_planes(const AV1_COMMON *cm) {
   return cm->seq_params.monochrome ? 1 : MAX_MB_PLANE;
@@ -779,9 +777,7 @@ static INLINE void av1_init_macroblockd(AV1_COMMON *cm, MACROBLOCKD *xd,
   xd->above_txfm_context = cm->above_txfm_context;
   xd->mi_stride = cm->mi_stride;
   xd->error_info = &cm->error;
-#if CONFIG_CFL
   cfl_init(&xd->cfl, cm);
-#endif
 }
 
 static INLINE void set_skip_context(MACROBLOCKD *xd, int mi_row, int mi_col,
@@ -1118,7 +1114,6 @@ static INLINE int max_block_high(const MACROBLOCKD *xd, BLOCK_SIZE bsize,
   return max_blocks_high >> tx_size_wide_log2[0];
 }
 
-#if CONFIG_CFL
 static INLINE int max_intra_block_width(const MACROBLOCKD *xd,
                                         BLOCK_SIZE plane_bsize, int plane,
                                         TX_SIZE tx_size) {
@@ -1134,7 +1129,6 @@ static INLINE int max_intra_block_height(const MACROBLOCKD *xd,
                               << tx_size_high_log2[0];
   return ALIGN_POWER_OF_TWO(max_blocks_high, tx_size_high_log2[tx_size]);
 }
-#endif  // CONFIG_CFL
 
 static INLINE void av1_zero_above_context(AV1_COMMON *const cm,
                                           int mi_col_start, int mi_col_end) {

@@ -152,12 +152,8 @@ typedef struct frame_contexts {
   aom_cdf_prob wiener_restore_cdf[CDF_SIZE(2)];
   aom_cdf_prob sgrproj_restore_cdf[CDF_SIZE(2)];
   aom_cdf_prob y_mode_cdf[BLOCK_SIZE_GROUPS][CDF_SIZE(INTRA_MODES)];
-#if CONFIG_CFL
   aom_cdf_prob uv_mode_cdf[CFL_ALLOWED_TYPES][INTRA_MODES]
                           [CDF_SIZE(UV_INTRA_MODES)];
-#else
-  aom_cdf_prob uv_mode_cdf[INTRA_MODES][CDF_SIZE(UV_INTRA_MODES)];
-#endif
   aom_cdf_prob partition_cdf[PARTITION_CONTEXTS][CDF_SIZE(EXT_PARTITION_TYPES)];
   aom_cdf_prob switchable_interp_cdf[SWITCHABLE_FILTER_CONTEXTS]
                                     [CDF_SIZE(SWITCHABLE_FILTERS)];
@@ -184,10 +180,8 @@ typedef struct frame_contexts {
                                [CDF_SIZE(TX_TYPES)];
   aom_cdf_prob inter_ext_tx_cdf[EXT_TX_SETS_INTER][EXT_TX_SIZES]
                                [CDF_SIZE(TX_TYPES)];
-#if CONFIG_CFL
   aom_cdf_prob cfl_sign_cdf[CDF_SIZE(CFL_JOINT_SIGNS)];
   aom_cdf_prob cfl_alpha_cdf[CFL_ALPHA_CONTEXTS][CDF_SIZE(CFL_ALPHABET_SIZE)];
-#endif
 } FRAME_CONTEXT;
 
 typedef struct FRAME_COUNTS {
@@ -197,11 +191,7 @@ typedef struct FRAME_COUNTS {
   unsigned int kf_y_mode[KF_MODE_CONTEXTS][KF_MODE_CONTEXTS][INTRA_MODES];
   unsigned int angle_delta[DIRECTIONAL_MODES][2 * MAX_ANGLE_DELTA + 1];
   unsigned int y_mode[BLOCK_SIZE_GROUPS][INTRA_MODES];
-#if CONFIG_CFL
   unsigned int uv_mode[CFL_ALLOWED_TYPES][INTRA_MODES][UV_INTRA_MODES];
-#else
-  unsigned int uv_mode[INTRA_MODES][UV_INTRA_MODES];
-#endif  // CONFIG_CFL
 #endif  // CONFIG_ENTROPY_STATS
   unsigned int partition[PARTITION_CONTEXTS][EXT_PARTITION_TYPES];
   unsigned int switchable_interp[SWITCHABLE_FILTER_CONTEXTS]

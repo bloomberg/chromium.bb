@@ -21,9 +21,7 @@
 #include "aom_ports/system_state.h"
 #include "av1/common/reconintra.h"
 #include "av1/common/onyxc_int.h"
-#if CONFIG_CFL
 #include "av1/common/cfl.h"
-#endif
 
 enum {
   NEED_LEFT = 1 << 1,
@@ -1803,7 +1801,6 @@ void av1_predict_intra_block_facade(const AV1_COMMON *cm, MACROBLOCKD *xd,
   const PREDICTION_MODE mode =
       (plane == AOM_PLANE_Y) ? mbmi->mode : get_uv_mode(mbmi->uv_mode);
 
-#if CONFIG_CFL
   if (plane != AOM_PLANE_Y && mbmi->uv_mode == UV_CFL_PRED) {
 #if CONFIG_DEBUG
     assert(is_cfl_allowed(mbmi));
@@ -1833,7 +1830,6 @@ void av1_predict_intra_block_facade(const AV1_COMMON *cm, MACROBLOCKD *xd,
     cfl_predict_block(xd, dst, dst_stride, tx_size, plane);
     return;
   }
-#endif
   av1_predict_intra_block(cm, xd, pd->width, pd->height, tx_size, mode, dst,
                           dst_stride, dst, dst_stride, blk_col, blk_row, plane);
 }

@@ -36,7 +36,6 @@ struct mv;
 union int_mv;
 struct yv12_buffer_config;
 
-#if CONFIG_CFL
 /* Function pointers return by CfL functions */
 typedef void (*cfl_subsample_lbd_fn)(const uint8_t *input, int input_stride,
                                      int16_t *output_q3);
@@ -53,7 +52,6 @@ typedef void (*cfl_predict_lbd_fn)(const int16_t *pred_buf_q3, uint8_t *dst,
 typedef void (*cfl_predict_hbd_fn)(const int16_t *pred_buf_q3, uint16_t *dst,
                                    int dst_stride, TX_SIZE tx_size,
                                    int alpha_q3, int bd);
-#endif
 EOF
 }
 forward_decls qw/av1_common_forward_decls/;
@@ -565,18 +563,16 @@ add_proto qw/void av1_upsample_intra_edge_high/, "uint16_t *p, int sz, int bd";
 specialize qw/av1_upsample_intra_edge_high sse4_1/;
 
 # CFL
-if (aom_config("CONFIG_CFL") eq "yes") {
-  add_proto qw/cfl_subtract_average_fn get_subtract_average_fn/, "TX_SIZE tx_size";
-  specialize qw/get_subtract_average_fn sse2 avx2 neon/;
+add_proto qw/cfl_subtract_average_fn get_subtract_average_fn/, "TX_SIZE tx_size";
+specialize qw/get_subtract_average_fn sse2 avx2 neon/;
 
-  add_proto qw/cfl_subsample_lbd_fn cfl_get_luma_subsampling_420_lbd/, "TX_SIZE tx_size";
-  specialize qw/cfl_get_luma_subsampling_420_lbd ssse3 avx2/;
+add_proto qw/cfl_subsample_lbd_fn cfl_get_luma_subsampling_420_lbd/, "TX_SIZE tx_size";
+specialize qw/cfl_get_luma_subsampling_420_lbd ssse3 avx2/;
 
-  add_proto qw/cfl_predict_lbd_fn get_predict_lbd_fn/, "TX_SIZE tx_size";
-  specialize qw/get_predict_lbd_fn ssse3 avx2/;
+add_proto qw/cfl_predict_lbd_fn get_predict_lbd_fn/, "TX_SIZE tx_size";
+specialize qw/get_predict_lbd_fn ssse3 avx2/;
 
-  add_proto qw/cfl_predict_hbd_fn get_predict_hbd_fn/, "TX_SIZE tx_size";
-  specialize qw/get_predict_hbd_fn ssse3 avx2/;
-}
+add_proto qw/cfl_predict_hbd_fn get_predict_hbd_fn/, "TX_SIZE tx_size";
+specialize qw/get_predict_hbd_fn ssse3 avx2/;
 
 1;
