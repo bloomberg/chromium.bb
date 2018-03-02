@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 645 tests; 547 PASS, 98 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 578 tests; 526 PASS, 52 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS align-content (type: discrete) has testAddition function
 PASS align-content: "flex-end" onto "flex-start"
 PASS align-content: "flex-start" onto "flex-end"
@@ -110,9 +110,6 @@ PASS border-top-style: "dotted" onto "solid"
 PASS border-top-width (type: length) has testAddition function
 PASS border-top-width: length
 PASS border-top-width: length of rem
-PASS box-decoration-break (type: discrete) has testAddition function
-FAIL box-decoration-break: "clone" onto "slice" assert_equals: The value should be clone at 0ms expected (string) "clone" but got (undefined) undefined
-FAIL box-decoration-break: "slice" onto "clone" assert_equals: The value should be slice at 0ms expected (string) "slice" but got (undefined) undefined
 PASS box-shadow (type: boxShadowList) has testAddition function
 FAIL box-shadow: shadow assert_equals: The value should be rgb(0, 0, 0) 0px 0px 0px 0px, rgb(120, 120, 120) 10px 10px 10px 0px at 0ms expected "rgb(0, 0, 0) 0px 0px 0px 0px, rgb(120, 120, 120) 10px 10px 10px 0px" but got "rgb(120, 120, 120) 10px 10px 10px 0px"
 PASS box-sizing (type: discrete) has testAddition function
@@ -148,9 +145,6 @@ PASS color supports animating as color of hsl()
 PASS color supports animating as color of #RGBa
 PASS color supports animating as color of rgba()
 PASS color supports animating as color of hsla()
-PASS color-adjust (type: discrete) has testAddition function
-FAIL color-adjust: "exact" onto "economy" assert_equals: The value should be exact at 0ms expected (string) "exact" but got (undefined) undefined
-FAIL color-adjust: "economy" onto "exact" assert_equals: The value should be economy at 0ms expected (string) "economy" but got (undefined) undefined
 PASS color-interpolation (type: discrete) has testAddition function
 PASS color-interpolation: "auto" onto "linearRGB"
 FAIL color-interpolation: "linearRGB" onto "auto" assert_equals: The value should be linearrgb at 0ms expected "linearrgb" but got "linearRGB"
@@ -275,15 +269,6 @@ PASS font-feature-settings: ""liga" 5" onto "normal"
 PASS font-kerning (type: discrete) has testAddition function
 PASS font-kerning: "normal" onto "auto"
 PASS font-kerning: "auto" onto "normal"
-PASS font-language-override (type: discrete) has testAddition function
-FAIL font-language-override: "normal" onto ""eng"" assert_equals: The value should be normal at 0ms expected (string) "normal" but got (undefined) undefined
-FAIL font-language-override: ""eng"" onto "normal" assert_equals: The value should be "eng" at 0ms expected (string) "\"eng\"" but got (undefined) undefined
-PASS font-synthesis (type: discrete) has testAddition function
-FAIL font-synthesis: "weight style" onto "none" assert_equals: The value should be weight style at 0ms expected (string) "weight style" but got (undefined) undefined
-FAIL font-synthesis: "none" onto "weight style" assert_equals: The value should be none at 0ms expected (string) "none" but got (undefined) undefined
-PASS font-variant-alternates (type: discrete) has testAddition function
-FAIL font-variant-alternates: "stylistic(unknown)" onto "swash(unknown)" assert_equals: The value should be stylistic(unknown) at 0ms expected (string) "stylistic(unknown)" but got (undefined) undefined
-FAIL font-variant-alternates: "swash(unknown)" onto "stylistic(unknown)" assert_equals: The value should be swash(unknown) at 0ms expected (string) "swash(unknown)" but got (undefined) undefined
 PASS font-variant-caps (type: discrete) has testAddition function
 PASS font-variant-caps: "unicase" onto "small-caps"
 PASS font-variant-caps: "small-caps" onto "unicase"
@@ -296,9 +281,6 @@ PASS font-variant-ligatures: "common-ligatures" onto "no-common-ligatures"
 PASS font-variant-numeric (type: discrete) has testAddition function
 PASS font-variant-numeric: "oldstyle-nums" onto "lining-nums"
 PASS font-variant-numeric: "lining-nums" onto "oldstyle-nums"
-PASS font-variant-position (type: discrete) has testAddition function
-FAIL font-variant-position: "super" onto "sub" assert_equals: The value should be super at 0ms expected (string) "super" but got (undefined) undefined
-FAIL font-variant-position: "sub" onto "super" assert_equals: The value should be sub at 0ms expected (string) "sub" but got (undefined) undefined
 PASS font-variation-settings (type: fontVariationSettings) has testAddition function
 PASS font-variation-settings with composite type add
 PASS font-variation-settings (type: discrete) has testAddition function
@@ -342,12 +324,6 @@ PASS hyphens: "manual" onto "auto"
 PASS image-orientation (type: discrete) has testAddition function
 FAIL image-orientation: "90deg" onto "0deg" assert_equals: The value should be 90deg at 0ms expected "90deg" but got "0deg"
 PASS image-orientation: "0deg" onto "90deg"
-PASS ime-mode (type: discrete) has testAddition function
-FAIL ime-mode: "auto" onto "disabled" assert_equals: The value should be auto at 0ms expected (string) "auto" but got (undefined) undefined
-FAIL ime-mode: "disabled" onto "auto" assert_equals: The value should be disabled at 0ms expected (string) "disabled" but got (undefined) undefined
-PASS initial-letter (type: discrete) has testAddition function
-FAIL initial-letter: "3 4" onto "1 2" assert_equals: The value should be 3 4 at 0ms expected (string) "3 4" but got (undefined) undefined
-FAIL initial-letter: "1 2" onto "3 4" assert_equals: The value should be 1 2 at 0ms expected (string) "1 2" but got (undefined) undefined
 PASS isolation (type: discrete) has testAddition function
 PASS isolation: "isolate" onto "auto"
 PASS isolation: "auto" onto "isolate"
@@ -391,24 +367,6 @@ FAIL marker-start: "url("http://localhost/test-1")" onto "url("http://localhost/
 PASS mask (type: discrete) has testAddition function
 FAIL mask: "url("http://localhost/test-2")" onto "url("http://localhost/test-1")" assert_equals: The value should be url("http://localhost/test-2") at 0ms expected "url(\"http://localhost/test-2\")" but got "none"
 FAIL mask: "url("http://localhost/test-1")" onto "url("http://localhost/test-2")" assert_equals: The value should be url("http://localhost/test-1") at 0ms expected "url(\"http://localhost/test-1\")" but got "none"
-PASS mask-clip (type: discrete) has testAddition function
-FAIL mask-clip: "border-box" onto "content-box" assert_equals: The value should be border-box at 0ms expected (string) "border-box" but got (undefined) undefined
-FAIL mask-clip: "content-box" onto "border-box" assert_equals: The value should be content-box at 0ms expected (string) "content-box" but got (undefined) undefined
-PASS mask-composite (type: discrete) has testAddition function
-FAIL mask-composite: "subtract" onto "add" assert_equals: The value should be subtract at 0ms expected (string) "subtract" but got (undefined) undefined
-FAIL mask-composite: "add" onto "subtract" assert_equals: The value should be add at 0ms expected (string) "add" but got (undefined) undefined
-PASS mask-image (type: discrete) has testAddition function
-FAIL mask-image: "url("http://localhost/test-2")" onto "url("http://localhost/test-1")" assert_equals: The value should be url("http://localhost/test-2") at 0ms expected (string) "url(\"http://localhost/test-2\")" but got (undefined) undefined
-FAIL mask-image: "url("http://localhost/test-1")" onto "url("http://localhost/test-2")" assert_equals: The value should be url("http://localhost/test-1") at 0ms expected (string) "url(\"http://localhost/test-1\")" but got (undefined) undefined
-PASS mask-mode (type: discrete) has testAddition function
-FAIL mask-mode: "luminance" onto "alpha" assert_equals: The value should be luminance at 0ms expected (string) "luminance" but got (undefined) undefined
-FAIL mask-mode: "alpha" onto "luminance" assert_equals: The value should be alpha at 0ms expected (string) "alpha" but got (undefined) undefined
-PASS mask-origin (type: discrete) has testAddition function
-FAIL mask-origin: "border-box" onto "content-box" assert_equals: The value should be border-box at 0ms expected (string) "border-box" but got (undefined) undefined
-FAIL mask-origin: "content-box" onto "border-box" assert_equals: The value should be content-box at 0ms expected (string) "content-box" but got (undefined) undefined
-PASS mask-repeat (type: discrete) has testAddition function
-FAIL mask-repeat: "round" onto "space" assert_equals: The value should be round at 0ms expected (string) "round" but got (undefined) undefined
-FAIL mask-repeat: "space" onto "round" assert_equals: The value should be space at 0ms expected (string) "space" but got (undefined) undefined
 PASS mask-type (type: discrete) has testAddition function
 PASS mask-type: "luminance" onto "alpha"
 PASS mask-type: "alpha" onto "luminance"
@@ -476,21 +434,9 @@ PASS quotes: ""“" "”" "‘" "’"" onto ""‘" "’" "“" "”""
 PASS resize (type: discrete) has testAddition function
 PASS resize: "horizontal" onto "both"
 PASS resize: "both" onto "horizontal"
-PASS ruby-align (type: discrete) has testAddition function
-FAIL ruby-align: "center" onto "start" assert_equals: The value should be center at 0ms expected (string) "center" but got (undefined) undefined
-FAIL ruby-align: "start" onto "center" assert_equals: The value should be start at 0ms expected (string) "start" but got (undefined) undefined
-PASS ruby-position (type: discrete) has testAddition function
-FAIL ruby-position: "over" onto "under" assert_equals: The value should be over at 0ms expected (string) "over" but got (undefined) undefined
-FAIL ruby-position: "under" onto "over" assert_equals: The value should be under at 0ms expected (string) "under" but got (undefined) undefined
 PASS scroll-behavior (type: discrete) has testAddition function
 PASS scroll-behavior: "smooth" onto "auto"
 PASS scroll-behavior: "auto" onto "smooth"
-PASS scroll-snap-type-x (type: discrete) has testAddition function
-FAIL scroll-snap-type-x: "proximity" onto "mandatory" assert_equals: The value should be proximity at 0ms expected (string) "proximity" but got (undefined) undefined
-FAIL scroll-snap-type-x: "mandatory" onto "proximity" assert_equals: The value should be mandatory at 0ms expected (string) "mandatory" but got (undefined) undefined
-PASS scroll-snap-type-y (type: discrete) has testAddition function
-FAIL scroll-snap-type-y: "proximity" onto "mandatory" assert_equals: The value should be proximity at 0ms expected (string) "proximity" but got (undefined) undefined
-FAIL scroll-snap-type-y: "mandatory" onto "proximity" assert_equals: The value should be mandatory at 0ms expected (string) "mandatory" but got (undefined) undefined
 PASS shape-outside (type: discrete) has testAddition function
 PASS shape-outside: "url("http://localhost/test-2")" onto "url("http://localhost/test-1")"
 PASS shape-outside: "url("http://localhost/test-1")" onto "url("http://localhost/test-2")"
@@ -551,19 +497,6 @@ PASS text-decoration-line: "underline" onto "overline"
 PASS text-decoration-style (type: discrete) has testAddition function
 PASS text-decoration-style: "dotted" onto "solid"
 PASS text-decoration-style: "solid" onto "dotted"
-PASS text-emphasis-color (type: color) has testAddition function
-FAIL text-emphasis-color supports animating as color of rgb() with overflowed  from and to values assert_equals: The value should be rgb(255, 128, 128) at 0ms expected (string) "rgb(255, 128, 128)" but got (undefined) undefined
-FAIL text-emphasis-color supports animating as color of #RGB assert_equals: The value should be rgb(255, 128, 128) at 0ms expected (string) "rgb(255, 128, 128)" but got (undefined) undefined
-FAIL text-emphasis-color supports animating as color of hsl() assert_equals: The value should be rgb(255, 128, 128) at 0ms expected (string) "rgb(255, 128, 128)" but got (undefined) undefined
-FAIL text-emphasis-color supports animating as color of #RGBa assert_equals: The value should be rgb(230, 128, 128) at 0ms expected (string) "rgb(230, 128, 128)" but got (undefined) undefined
-FAIL text-emphasis-color supports animating as color of rgba() assert_equals: The value should be rgb(230, 128, 128) at 0ms expected (string) "rgb(230, 128, 128)" but got (undefined) undefined
-FAIL text-emphasis-color supports animating as color of hsla() assert_equals: The value should be rgb(230, 128, 128) at 0ms expected (string) "rgb(230, 128, 128)" but got (undefined) undefined
-PASS text-emphasis-position (type: discrete) has testAddition function
-FAIL text-emphasis-position: "under left" onto "over right" assert_equals: The value should be under left at 0ms expected (string) "under left" but got (undefined) undefined
-FAIL text-emphasis-position: "over right" onto "under left" assert_equals: The value should be over right at 0ms expected (string) "over right" but got (undefined) undefined
-PASS text-emphasis-style (type: discrete) has testAddition function
-FAIL text-emphasis-style: "open dot" onto "filled circle" assert_equals: The value should be open dot at 0ms expected (string) "open dot" but got (undefined) undefined
-FAIL text-emphasis-style: "filled circle" onto "open dot" assert_equals: The value should be filled circle at 0ms expected (string) "filled circle" but got (undefined) undefined
 PASS text-orientation (type: discrete) has testAddition function
 PASS text-orientation: "sideways" onto "upright"
 PASS text-orientation: "upright" onto "sideways"
