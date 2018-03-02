@@ -11,6 +11,7 @@
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
+#import "ios/chrome/test/app/histogram_test_util.h"
 #import "ios/chrome/test/app/settings_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/app/web_view_interaction_test_util.h"
@@ -280,6 +281,27 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
       assertWithMatcher:grey_notNil()];
 }
 
+// Tests that the element fetch duration is logged once with the
+// kContextMenuElementPostMessage feature disabled.
+- (void)testContextMenuElementFetchDurationMetric {
+  base::test::ScopedFeatureList scopedFeatureList;
+  scopedFeatureList.InitAndDisableFeature(
+      web::features::kContextMenuElementPostMessage);
+  chrome_test_util::HistogramTester histogramTester;
+
+  const GURL pageURL = self.testServer->GetURL(kLogoPagePath);
+  [ChromeEarlGrey loadURL:pageURL];
+  [ChromeEarlGrey waitForMainTabCount:1];
+
+  LongPressElement(kChromiumImageID);
+  TapOnContextMenuButton(OpenImageButton());
+
+  histogramTester.ExpectTotalCount("ContextMenu.DOMElementFetchDuration", 1,
+                                   ^(NSString* error) {
+                                     GREYFail(error);
+                                   });
+}
+
 // Tests that selecting "Open Image" from the context menu properly opens the
 // image in the current tab. (With the kContextMenuElementPostMessage feature
 // enabled.)
@@ -403,6 +425,27 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
   // Verify url.
   [[EarlGrey selectElementWithMatcher:OmniboxText(imageURL.GetContent())]
       assertWithMatcher:grey_notNil()];
+}
+
+// Tests that the element fetch duration is logged once with the
+// kContextMenuElementPostMessage feature enabled.
+- (void)testContextMenuElementFetchDurationMetricPostMessage {
+  base::test::ScopedFeatureList scopedFeatureList;
+  scopedFeatureList.InitAndEnableFeature(
+      web::features::kContextMenuElementPostMessage);
+  chrome_test_util::HistogramTester histogramTester;
+
+  const GURL pageURL = self.testServer->GetURL(kLogoPagePath);
+  [ChromeEarlGrey loadURL:pageURL];
+  [ChromeEarlGrey waitForMainTabCount:1];
+
+  LongPressElement(kChromiumImageID);
+  TapOnContextMenuButton(OpenImageButton());
+
+  histogramTester.ExpectTotalCount("ContextMenu.DOMElementFetchDuration", 1,
+                                   ^(NSString* error) {
+                                     GREYFail(error);
+                                   });
 }
 
 @end
