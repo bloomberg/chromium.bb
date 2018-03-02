@@ -164,9 +164,9 @@ TEST_F(WindowAnimationsTest, CrossFadeToBounds) {
                                        base::TimeDelta::FromSeconds(1));
 }
 
-// Tests that when crossfading from a window which has a transform that the
-// crossfade starts from this transformed size rather than snapping the window
-// to an identity transform and crossfading from there.
+// Tests that when crossfading from a window which has a transform, the cross
+// fading animation should be ignored and the window should set to its desired
+// bounds directly.
 TEST_F(WindowAnimationsTest, CrossFadeToBoundsFromTransform) {
   ui::ScopedAnimationDurationScaleMode test_duration_mode(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
@@ -185,23 +185,13 @@ TEST_F(WindowAnimationsTest, CrossFadeToBoundsFromTransform) {
   // Cross fade to a larger size, as in a maximize animation.
   GetWindowState(window.get())
       ->SetBoundsDirectCrossFade(gfx::Rect(0, 0, 640, 480));
-  // Window's layer has been replaced.
-  EXPECT_NE(old_layer, window->layer());
-  // Original layer stays opaque and stretches to new size.
+  // Window's layer has not been replaced.
+  EXPECT_EQ(old_layer, window->layer());
+  // Original layer stays opaque and set to new size directly.
   EXPECT_EQ(1.0f, old_layer->GetTargetOpacity());
-  EXPECT_EQ("10,10 320x240", old_layer->bounds().ToString());
+  EXPECT_EQ("0,0 640x480", old_layer->bounds().ToString());
+  // Window still has its old transform before crossfading animation.
   EXPECT_EQ(half_size, old_layer->transform());
-
-  // New layer animates in from the old window's transformed size to the
-  // identity transform.
-  EXPECT_EQ(1.0f, window->layer()->GetTargetOpacity());
-  // Set up the transform necessary to start at the old windows transformed
-  // position.
-  gfx::Transform quarter_size_shifted;
-  quarter_size_shifted.Translate(20, 20);
-  quarter_size_shifted.Scale(0.25f, 0.25f);
-  EXPECT_EQ(quarter_size_shifted, window->layer()->transform());
-  EXPECT_EQ(gfx::Transform(), window->layer()->GetTargetTransform());
 }
 
 }  // namespace wm

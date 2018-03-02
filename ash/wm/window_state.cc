@@ -619,6 +619,13 @@ void WindowState::SetBoundsDirectCrossFade(const gfx::Rect& new_bounds) {
     return;
   }
 
+  // If the window already has a transform in place, do not use the cross fade
+  // animation, set the bounds directly instead.
+  if (!window_->layer()->GetTargetTransform().IsIdentity()) {
+    SetBoundsDirect(new_bounds);
+    return;
+  }
+
   // Create fresh layers for the window and all its children to paint into.
   // Takes ownership of the old layer and all its children, which will be
   // cleaned up after the animation completes.
