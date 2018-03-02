@@ -318,7 +318,7 @@ class WebSocketSpdyStreamAdapterTest : public Test {
 
   void AddSSLSocketData() {
     ssl_.ssl_info.cert =
-        ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
+        ImportCertFromFile(GetTestCertsDirectory(), "wildcard.pem");
     ASSERT_TRUE(ssl_.ssl_info.cert);
     session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_);
   }
