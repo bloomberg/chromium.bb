@@ -54,6 +54,7 @@
 -SitePerProcessHitTestBrowserTest.SubframeTouchEventRouting*
 -SitePerProcessHitTestBrowserTest.SurfaceHitTestPointerEventsNone*
 -SitePerProcessHitTestBrowserTest.SurfaceHitTestTest*
+-SitePerProcessMacBrowserTest.InputEventRouterTouchpadGestureTargetTest
 -SitePerProcessNonIntegerScaleFactorHitTestBrowserTest.NestedSurfaceHitTestTest*
 
 # Copy Surface timing out http://crbug.com/785257
@@ -91,8 +92,8 @@
 # Flaky Result on Windows-7 http://crbug.com/883463
 -MainThreadEventQueueBrowserTest.MouseMove
 
-# New Mac failures to triage
+# Surface Invariants Failure on Mac http://crbug.com/817827
 -NavigationControllerBrowserTest.FrameNavigationEntry_RecreatedSubframeBackForward
--SitePerProcessMacBrowserTest.InputEventRouterTouchpadGestureTargetTest
--WebContentsVideoCaptureDeviceBrowserTestP.CapturesContentChanges/2
--WebContentsVideoCaptureDeviceBrowserTestP.CapturesContentChanges/3
+
+# GL Renderer Check Failure on Mac https://crbug.com/817830
+-WebContentsVideoCaptureDeviceBrowserTestP.CapturesContentChanges/*
