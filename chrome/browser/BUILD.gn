@@ -770,7 +770,7 @@ jumbo_split_static_library("browser") {
     "net/loading_predictor_observer.cc",
     "net/loading_predictor_observer.h",
     "net/net_error_diagnostics_dialog.h",
-    "net/net_error_diagnostics_dialog_mac.cc",
+    "net/net_error_diagnostics_dialog_posix.cc",
     "net/net_error_diagnostics_dialog_win.cc",
     "net/net_error_tab_helper.cc",
     "net/net_error_tab_helper.h",
@@ -3102,8 +3102,6 @@ jumbo_split_static_library("browser") {
       "recovery/recovery_install_global_error_factory.cc",
       "recovery/recovery_install_global_error_factory.h",
     ]
-  } else {
-    sources += [ "net/net_error_diagnostics_dialog_generic.cc" ]
   }
 
   if (is_win || is_linux) {
