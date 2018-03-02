@@ -9,14 +9,14 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
-#include "chrome/browser/media/router/discovery/dial/dial_url_fetcher.h"
-#include "chrome/browser/media/router/test/test_helper.h"
+#include "chrome/browser/media/router/discovery/dial/dial_app_info_fetcher.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -24,9 +24,32 @@
 
 namespace media_router {
 
-class DialURLFetcherTest : public testing::Test {
+class TestDialAppInfoFetcher : public DialAppInfoFetcher {
  public:
-  DialURLFetcherTest() : url_("http://127.0.0.1/app/Youtube") {}
+  TestDialAppInfoFetcher(
+      const GURL& app_url,
+      base::OnceCallback<void(const std::string&)> success_cb,
+      base::OnceCallback<void(int, const std::string&)> error_cb,
+      network::TestURLLoaderFactory* factory)
+      : DialAppInfoFetcher(app_url, std::move(success_cb), std::move(error_cb)),
+        factory_(factory) {}
+  ~TestDialAppInfoFetcher() override = default;
+
+  void StartDownload() override {
+    loader_->DownloadToString(
+        factory_,
+        base::BindOnce(&DialAppInfoFetcher::ProcessResponse,
+                       base::Unretained(this)),
+        256 * 1024);
+  }
+
+ private:
+  network::TestURLLoaderFactory* const factory_;
+};
+
+class DialAppInfoFetcherTest : public testing::Test {
+ public:
+  DialAppInfoFetcherTest() : url_("http://127.0.0.1/app/Youtube") {}
 
   void ExpectSuccess(const std::string& expected_app_info) {
     EXPECT_CALL(*this, OnSuccess(expected_app_info));
@@ -38,10 +61,12 @@ class DialURLFetcherTest : public testing::Test {
   }
 
   void StartRequest() {
-    fetcher_ = std::make_unique<TestDialURLFetcher>(
+    fetcher_ = std::make_unique<TestDialAppInfoFetcher>(
         url_,
-        base::BindOnce(&DialURLFetcherTest::OnSuccess, base::Unretained(this)),
-        base::BindOnce(&DialURLFetcherTest::OnError, base::Unretained(this)),
+        base::BindOnce(&DialAppInfoFetcherTest::OnSuccess,
+                       base::Unretained(this)),
+        base::BindOnce(&DialAppInfoFetcherTest::OnError,
+                       base::Unretained(this)),
         &loader_factory_);
     fetcher_->Start();
     base::RunLoop().RunUntilIdle();
@@ -52,7 +77,7 @@ class DialURLFetcherTest : public testing::Test {
   network::TestURLLoaderFactory loader_factory_;
   const GURL url_;
   std::string expected_error_;
-  std::unique_ptr<TestDialURLFetcher> fetcher_;
+  std::unique_ptr<TestDialAppInfoFetcher> fetcher_;
 
  private:
   MOCK_METHOD1(OnSuccess, void(const std::string&));
@@ -63,10 +88,10 @@ class DialURLFetcherTest : public testing::Test {
     DoOnError();
   }
 
-  DISALLOW_COPY_AND_ASSIGN(DialURLFetcherTest);
+  DISALLOW_COPY_AND_ASSIGN(DialAppInfoFetcherTest);
 };
 
-TEST_F(DialURLFetcherTest, FetchSuccessful) {
+TEST_F(DialAppInfoFetcherTest, FetchSuccessful) {
   std::string body("<xml>appInfo</xml>");
   ExpectSuccess(body);
   network::URLLoaderCompletionStatus status;
@@ -76,7 +101,7 @@ TEST_F(DialURLFetcherTest, FetchSuccessful) {
   StartRequest();
 }
 
-TEST_F(DialURLFetcherTest, FetchFailsOnMissingAppInfo) {
+TEST_F(DialAppInfoFetcherTest, FetchFailsOnMissingAppInfo) {
   ExpectError("HTTP 404:");
 
   loader_factory_.AddResponse(
@@ -85,7 +110,7 @@ TEST_F(DialURLFetcherTest, FetchFailsOnMissingAppInfo) {
   StartRequest();
 }
 
-TEST_F(DialURLFetcherTest, FetchFailsOnEmptyAppInfo) {
+TEST_F(DialAppInfoFetcherTest, FetchFailsOnEmptyAppInfo) {
   ExpectError("Missing or empty response");
 
   loader_factory_.AddResponse(url_, network::ResourceResponseHead(), "",
@@ -93,7 +118,7 @@ TEST_F(DialURLFetcherTest, FetchFailsOnEmptyAppInfo) {
   StartRequest();
 }
 
-TEST_F(DialURLFetcherTest, FetchFailsOnBadAppInfo) {
+TEST_F(DialAppInfoFetcherTest, FetchFailsOnBadAppInfo) {
   ExpectError("Invalid response encoding");
   std::string body("\xfc\x9c\xbf\x80\xbf\x80");
   network::URLLoaderCompletionStatus status;

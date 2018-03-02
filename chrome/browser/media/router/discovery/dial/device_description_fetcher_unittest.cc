@@ -12,9 +12,11 @@
 #include "base/test/scoped_task_environment.h"
 #include "chrome/browser/media/router/discovery/dial/device_description_fetcher.h"
 #include "chrome/browser/media/router/discovery/dial/dial_device_data.h"
-#include "chrome/browser/media/router/test/test_helper.h"
+#include "net/http/http_response_headers.h"
+#include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -35,15 +37,12 @@ class TestDeviceDescriptionFetcher : public DeviceDescriptionFetcher {
         factory_(factory) {}
   ~TestDeviceDescriptionFetcher() override = default;
 
-  void Start() override {
-    fetcher_ = std::make_unique<TestDialURLFetcher>(
-        device_description_url_,
+  void StartDownload() override {
+    loader_->DownloadToString(
+        factory_,
         base::BindOnce(&DeviceDescriptionFetcher::ProcessResponse,
                        base::Unretained(this)),
-        base::BindOnce(&DeviceDescriptionFetcher::ReportError,
-                       base::Unretained(this)),
-        factory_);
-    fetcher_->Start();
+        256 * 1024);
   }
 
  private:
@@ -68,14 +67,14 @@ class DeviceDescriptionFetcherTest : public testing::Test {
   }
 
   void StartRequest() {
-    description_fetcher_ = std::make_unique<TestDeviceDescriptionFetcher>(
+    fetcher_ = std::make_unique<TestDeviceDescriptionFetcher>(
         url_,
         base::BindOnce(&DeviceDescriptionFetcherTest::OnSuccess,
                        base::Unretained(this)),
         base::BindOnce(&DeviceDescriptionFetcherTest::OnError,
                        base::Unretained(this)),
         &loader_factory_);
-    description_fetcher_->Start();
+    fetcher_->Start();
     base::RunLoop().RunUntilIdle();
   }
 
@@ -85,7 +84,7 @@ class DeviceDescriptionFetcherTest : public testing::Test {
   network::TestURLLoaderFactory loader_factory_;
   base::OnceCallback<void(const DialDeviceDescriptionData&)> success_cb_;
   base::OnceCallback<void(const std::string&)> error_cb_;
-  std::unique_ptr<TestDeviceDescriptionFetcher> description_fetcher_;
+  std::unique_ptr<TestDeviceDescriptionFetcher> fetcher_;
   GURL expected_app_url_;
   std::string expected_description_;
   std::string expected_error_;

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_MEDIA_ROUTER_DISCOVERY_DIAL_DIAL_URL_FETCHER_H_
-#define CHROME_BROWSER_MEDIA_ROUTER_DISCOVERY_DIAL_DIAL_URL_FETCHER_H_
+#ifndef CHROME_BROWSER_MEDIA_ROUTER_DISCOVERY_DIAL_DIAL_APP_INFO_FETCHER_H_
+#define CHROME_BROWSER_MEDIA_ROUTER_DISCOVERY_DIAL_DIAL_APP_INFO_FETCHER_H_
 
 #include <memory>
 #include <string>
@@ -23,39 +23,27 @@ struct ResourceResponseHead;
 
 namespace media_router {
 
-// Used to make a single HTTP GET request with |url| to fetch a response
+// Used to make a single HTTP GET request with |app_url| to fetch an app info
 // from a DIAL device.  If successful, |success_cb| is invoked with the result;
 // otherwise, |error_cb| is invoked with an error reason.
 // This class is not sequence safe.
-class DialURLFetcher {
+class DialAppInfoFetcher {
  public:
-  // Constructor.
-  // |url|: HTTP request URL
-  // |success_cb|: Invoked when HTTP request to |url| succeeds
-  //   |arg 0|: response text of the HTTP request
-  // |error_cb|: Invoked when HTTP request to |url| fails
-  //   |arg 0|: HTTP response code
-  //   |arg 1|: error message
-  DialURLFetcher(const GURL& url,
-                 base::OnceCallback<void(const std::string&)> success_cb,
-                 base::OnceCallback<void(int, const std::string&)> error_cb);
+  DialAppInfoFetcher(
+      const GURL& app_url,
+      base::OnceCallback<void(const std::string&)> success_cb,
+      base::OnceCallback<void(int, const std::string&)> error_cb);
 
-  virtual ~DialURLFetcher();
+  virtual ~DialAppInfoFetcher();
 
-  const GURL& url() { return url_; }
+  const GURL& app_url() { return app_url_; }
 
   // Starts the fetch. |ProcessResponse| will be invoked on completion.
   // |ReportRedirectError| will be invoked when a redirect occurrs.
   void Start();
 
-  // Returns the response header of an HTTP request. The response header is
-  // owned by underlying |loader_| object and is reset per HTTP request. Returns
-  // nullptr if this function is called before |loader_| has informed the caller
-  // of completion.
-  const network::ResourceResponseHead* GetResponseHead() const;
-
  private:
-  friend class TestDialURLFetcher;
+  friend class TestDialAppInfoFetcher;
 
   // Starts the download on |loader_|.
   virtual void StartDownload();
@@ -70,15 +58,15 @@ class DialURLFetcher {
   // Runs |error_cb_| with |message| and clears it.
   void ReportError(int response_code, const std::string& message);
 
-  const GURL url_;
+  const GURL app_url_;
   base::OnceCallback<void(const std::string&)> success_cb_;
   base::OnceCallback<void(int, const std::string&)> error_cb_;
   std::unique_ptr<network::SimpleURLLoader> loader_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-  DISALLOW_COPY_AND_ASSIGN(DialURLFetcher);
+  DISALLOW_COPY_AND_ASSIGN(DialAppInfoFetcher);
 };
 
 }  // namespace media_router
 
-#endif  // CHROME_BROWSER_MEDIA_ROUTER_DISCOVERY_DIAL_DIAL_URL_FETCHER_H_
+#endif  // CHROME_BROWSER_MEDIA_ROUTER_DISCOVERY_DIAL_DIAL_APP_INFO_FETCHER_H_

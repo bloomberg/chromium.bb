@@ -24,7 +24,7 @@ class Connector;
 
 namespace media_router {
 
-class DialURLFetcher;
+class DialAppInfoFetcher;
 class SafeDialAppInfoParser;
 
 // Represents DIAL app status on receiver device.
@@ -117,7 +117,7 @@ class DialAppDiscoveryService {
                            SafeDialAppInfoParser::ParsingResult parsing_result);
 
   // Map of pending app info fetchers, keyed by request id.
-  base::flat_map<std::string, std::unique_ptr<DialURLFetcher>>
+  base::flat_map<std::string, std::unique_ptr<DialAppInfoFetcher>>
       pending_fetcher_map_;
 
   // See comments for DialAppInfoParseCompletedCallback.
