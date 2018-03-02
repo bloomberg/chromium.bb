@@ -127,30 +127,6 @@ bool GetDyldRegions(std::vector<VMRegion>* regions) {
   return true;
 }
 
-void PopulateByteStats(VMRegion* region,
-                       const vm_region_top_info_data_t& info) {
-  uint64_t dirty_bytes =
-      (info.private_pages_resident + info.shared_pages_resident) * PAGE_SIZE;
-  switch (info.share_mode) {
-    case SM_LARGE_PAGE:
-    case SM_PRIVATE:
-    case SM_COW:
-      region->byte_stats_private_dirty_resident = dirty_bytes;
-      break;
-    case SM_SHARED:
-    case SM_PRIVATE_ALIASED:
-    case SM_TRUESHARED:
-    case SM_SHARED_ALIASED:
-      region->byte_stats_shared_dirty_resident = dirty_bytes;
-      break;
-    case SM_EMPTY:
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
-}
-
 // Creates VMRegions using mach vm syscalls. Returns whether the operation
 // succeeded.
 bool GetAllRegions(std::vector<VMRegion>* regions) {
@@ -164,26 +140,16 @@ bool GetAllRegions(std::vector<VMRegion>* regions) {
     if (!next_address.IsValid())
       return false;
     address = next_address.ValueOrDie();
-    mach_vm_address_t address_copy = address;
-
-    vm_region_top_info_data_t info;
-    base::MachVMRegionResult result =
-        base::GetTopInfo(task, &size, &address, &info);
-    if (result == base::MachVMRegionResult::Error)
-      return false;
-    if (result == base::MachVMRegionResult::Finished)
-      break;
 
     vm_region_basic_info_64 basic_info;
-    mach_vm_size_t dummy_size = 0;
-    result = base::GetBasicInfo(task, &dummy_size, &address_copy, &basic_info);
+    base::MachVMRegionResult result =
+        base::GetBasicInfo(task, &size, &address, &basic_info);
     if (result == base::MachVMRegionResult::Error)
       return false;
     if (result == base::MachVMRegionResult::Finished)
       break;
 
     VMRegion region;
-    PopulateByteStats(&region, info);
 
     if (basic_info.protection & VM_PROT_READ)
       region.protection_flags |= VMRegion::kProtectionFlagsRead;

@@ -259,8 +259,8 @@ TEST(OSMetricsTest, TestMachOReading) {
   ASSERT_EQ(0, result);
   std::string name = basename(full_path);
 
-  uint64_t components_unittests_resident_pages = 0;
   bool found_appkit = false;
+  bool found_components_unittests = false;
   for (const mojom::VmRegionPtr& region : maps) {
     EXPECT_NE(0u, region->start_address);
     EXPECT_NE(0u, region->size_in_bytes);
@@ -270,18 +270,14 @@ TEST(OSMetricsTest, TestMachOReading) {
                                          mojom::VmRegion::kProtectionFlagsExec;
     if (region->mapped_file.find(name) != std::string::npos &&
         region->protection_flags == required_protection_flags) {
-      components_unittests_resident_pages +=
-          region->byte_stats_private_dirty_resident +
-          region->byte_stats_shared_dirty_resident +
-          region->byte_stats_private_clean_resident +
-          region->byte_stats_shared_clean_resident;
+      found_components_unittests = true;
     }
 
     if (region->mapped_file.find("AppKit") != std::string::npos) {
       found_appkit = true;
     }
   }
-  EXPECT_GT(components_unittests_resident_pages, 0u);
+  EXPECT_TRUE(found_components_unittests);
   EXPECT_TRUE(found_appkit);
 }
 #endif  // defined(OS_MACOSX)
