@@ -3354,6 +3354,7 @@ void RenderFrameHostImpl::NavigateToInterstitialURL(const GURL& data_url) {
   CommitNavigation(nullptr, network::mojom::URLLoaderClientEndpointsPtr(),
                    std::unique_ptr<StreamHandle>(), common_params,
                    RequestNavigationParams(), false, base::nullopt,
+                   base::nullopt /* subresource_overrides */,
                    base::UnguessableToken::Create() /* not traced */);
 }
 
@@ -3502,6 +3503,8 @@ void RenderFrameHostImpl::CommitNavigation(
     const RequestNavigationParams& request_params,
     bool is_view_source,
     base::Optional<SubresourceLoaderParams> subresource_loader_params,
+    base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
+        subresource_overrides,
     const base::UnguessableToken& devtools_navigation_token) {
   TRACE_EVENT2("navigation", "RenderFrameHostImpl::CommitNavigation",
                "frame_tree_node", frame_tree_node_->frame_tree_node_id(), "url",
@@ -3646,6 +3649,7 @@ void RenderFrameHostImpl::CommitNavigation(
         head, body_url, common_params, request_params,
         std::move(url_loader_client_endpoints),
         std::move(subresource_loader_factories),
+        std::move(subresource_overrides),
         std::move(controller_service_worker_info), devtools_navigation_token);
 
     // If a network request was made, update the Previews state.

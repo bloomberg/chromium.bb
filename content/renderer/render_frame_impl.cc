@@ -3084,6 +3084,8 @@ void RenderFrameImpl::CommitNavigation(
     const RequestNavigationParams& request_params,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories,
+    base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
+        subresource_overrides,
     mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info,
     const base::UnguessableToken& devtools_navigation_token) {
   DCHECK(!IsRendererDebugURL(common_params.url));
@@ -3113,7 +3115,8 @@ void RenderFrameImpl::CommitNavigation(
          !base::FeatureList::IsEnabled(network::features::kNetworkService) ||
          subresource_loader_factories);
 
-  SetupLoaderFactoryBundle(std::move(subresource_loader_factories));
+  SetupLoaderFactoryBundle(std::move(subresource_loader_factories),
+                           std::move(subresource_overrides));
 
   // Clear pending navigations which weren't sent to the browser because we
   // did not get a didStartProvisionalLoad() notification for them.
@@ -3213,7 +3216,8 @@ void RenderFrameImpl::CommitFailedNavigation(
   GetContentClient()->SetActiveURL(
       common_params.url, frame_->Top()->GetSecurityOrigin().ToString().Utf8());
 
-  SetupLoaderFactoryBundle(std::move(subresource_loader_factories));
+  SetupLoaderFactoryBundle(std::move(subresource_loader_factories),
+                           base::nullopt /* subresource_overrides */);
 
   pending_navigation_params_.reset(new PendingNavigationParams(
       common_params, request_params,
@@ -6581,14 +6585,17 @@ ChildURLLoaderFactoryBundle* RenderFrameImpl::GetLoaderFactoryBundle() {
           base::MakeRefCounted<TrackedChildURLLoaderFactoryBundle>(
               std::move(bundle_info));
     } else {
-      SetupLoaderFactoryBundle(nullptr);
+      SetupLoaderFactoryBundle(nullptr,
+                               base::nullopt /* subresource_overrides */);
     }
   }
   return loader_factories_.get();
 }
 
 void RenderFrameImpl::SetupLoaderFactoryBundle(
-    std::unique_ptr<URLLoaderFactoryBundleInfo> info) {
+    std::unique_ptr<URLLoaderFactoryBundleInfo> info,
+    base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
+        subresource_overrides) {
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
 
   loader_factories_ = base::MakeRefCounted<HostChildURLLoaderFactoryBundle>();
@@ -6597,12 +6604,14 @@ void RenderFrameImpl::SetupLoaderFactoryBundle(
   if (render_thread) {
     loader_factories_->Update(render_thread->blink_platform_impl()
                                   ->CreateDefaultURLLoaderFactoryBundle()
-                                  ->PassInterface());
+                                  ->PassInterface(),
+                              base::nullopt);
   }
 
   if (info) {
-    static_cast<URLLoaderFactoryBundle*>(loader_factories_.get())
-        ->Update(std::move(info));
+    loader_factories_->Update(
+        std::make_unique<ChildURLLoaderFactoryBundleInfo>(std::move(info)),
+        std::move(subresource_overrides));
   }
 }
 

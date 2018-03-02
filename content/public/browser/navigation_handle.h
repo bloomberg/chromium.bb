@@ -13,6 +13,7 @@
 #include "content/public/browser/reload_type.h"
 #include "content/public/browser/restore_type.h"
 #include "content/public/common/referrer.h"
+#include "content/public/common/transferrable_url_loader.mojom.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_info.h"
@@ -317,6 +318,9 @@ class CONTENT_EXPORT NavigationHandle {
   // ResourceDispatcherHostDelegate::GetNavigationData during commit. This will
   // be a clone of the NavigationData.
   virtual NavigationData* GetNavigationData() = 0;
+
+  virtual void RegisterSubresourceOverride(
+      mojom::TransferrableURLLoaderPtr transferrable_loader) = 0;
 };
 
 }  // namespace content

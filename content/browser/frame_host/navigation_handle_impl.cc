@@ -557,6 +557,19 @@ NavigationData* NavigationHandleImpl::GetNavigationData() {
   return navigation_data_.get();
 }
 
+void NavigationHandleImpl::RegisterSubresourceOverride(
+    mojom::TransferrableURLLoaderPtr transferrable_loader) {
+  if (!transferrable_loader)
+    return;
+
+  NavigationRequest* request = frame_tree_node_->navigation_request();
+  if (!request)
+    request = frame_tree_node_->current_frame_host()->navigation_request();
+
+  if (request)
+    request->RegisterSubresourceOverride(std::move(transferrable_loader));
+}
+
 void NavigationHandleImpl::SetOnDeferCallbackForTesting(
     const base::Closure& on_defer_callback) {
   on_defer_callback_for_testing_ = on_defer_callback;

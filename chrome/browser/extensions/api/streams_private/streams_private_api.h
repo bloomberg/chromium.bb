@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/scoped_observer.h"
+#include "content/public/common/transferrable_url_loader.mojom.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/extension_registry_observer.h"
@@ -27,15 +28,8 @@ class ExtensionRegistry;
 class StreamsPrivateAPI : public BrowserContextKeyedAPI,
                           public ExtensionRegistryObserver {
  public:
-  // Convenience method to get the StreamsPrivateAPI for a BrowserContext.
-  static StreamsPrivateAPI* Get(content::BrowserContext* context);
-
-  explicit StreamsPrivateAPI(content::BrowserContext* context);
-  ~StreamsPrivateAPI() override;
-
   // Send the onExecuteMimeTypeHandler event to |extension_id|.
-  // |web_contents| is used to determine the tabId where the document is being
-  // opened. The data for the document will be readable from |stream|, and
+  // The data for the document will be readable from |stream|, and
   // should be |expected_content_size| bytes long. If the viewer is being opened
   // in a BrowserPlugin, specify a non-empty |view_id| of the plugin. |embedded|
   // should be set to whether the document is embedded within another document.
@@ -44,14 +38,23 @@ class StreamsPrivateAPI : public BrowserContextKeyedAPI,
   // it overrides the |render_process_id| and |render_frame_id| parameters.
   // The |render_process_id| is the id of the renderer process.
   // The |render_frame_id| is the routing id of the RenderFrameHost.
-  void ExecuteMimeTypeHandler(const std::string& extension_id,
-                              std::unique_ptr<content::StreamInfo> stream,
-                              const std::string& view_id,
-                              int64_t expected_content_size,
-                              bool embedded,
-                              int frame_tree_node_id,
-                              int render_process_id,
-                              int render_frame_id);
+  //
+  // If the network service is not enabled, |stream| is used; otherwise,
+  // |transferrable_loader| and |original_url| are used instead.
+  static void SendExecuteMimeTypeHandlerEvent(
+      int64_t expected_content_size,
+      const std::string& extension_id,
+      const std::string& view_id,
+      bool embedded,
+      int frame_tree_node_id,
+      int render_process_id,
+      int render_frame_id,
+      std::unique_ptr<content::StreamInfo> stream,
+      content::mojom::TransferrableURLLoaderPtr transferrable_loader,
+      const GURL& original_url);
+
+  explicit StreamsPrivateAPI(content::BrowserContext* context);
+  ~StreamsPrivateAPI() override;
 
   void AbortStream(const std::string& extension_id,
                    const GURL& stream_url,

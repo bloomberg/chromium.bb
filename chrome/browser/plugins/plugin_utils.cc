@@ -5,6 +5,7 @@
 #include "chrome/browser/plugins/plugin_utils.h"
 
 #include "base/values.h"
+#include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/plugin_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -13,6 +14,13 @@
 #include "content/public/common/webplugininfo.h"
 #include "url/gurl.h"
 #include "url/origin.h"
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "extensions/browser/info_map.h"
+#include "extensions/common/constants.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/manifest_handlers/mime_types_handler.h"
+#endif
 
 namespace {
 
@@ -138,4 +146,39 @@ void PluginUtils::RememberFlashChangedForSite(
 bool PluginUtils::ShouldPreferHtmlOverPlugins(
     const HostContentSettingsMap* host_content_settings_map) {
   return base::FeatureList::IsEnabled(features::kPreferHtmlOverPlugins);
+}
+
+// static
+std::string PluginUtils::GetExtensionIdForMimeType(
+    content::ResourceContext* resource_context,
+    const std::string& mime_type) {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
+  bool profile_is_off_the_record = io_data->IsOffTheRecord();
+  const scoped_refptr<const extensions::InfoMap> extension_info_map(
+      io_data->GetExtensionInfoMap());
+  std::vector<std::string> whitelist = MimeTypesHandler::GetMIMETypeWhitelist();
+  // Go through the white-listed extensions and try to use them to intercept
+  // the URL request.
+  for (const std::string& extension_id : whitelist) {
+    const extensions::Extension* extension =
+        extension_info_map->extensions().GetByID(extension_id);
+    // The white-listed extension may not be installed, so we have to NULL check
+    // |extension|.
+    if (!extension || (profile_is_off_the_record &&
+                       !extension_info_map->IsIncognitoEnabled(extension_id))) {
+      continue;
+    }
+
+    if (extension_id == extension_misc::kPdfExtensionId &&
+        io_data->always_open_pdf_externally()->GetValue()) {
+      continue;
+    }
+
+    MimeTypesHandler* handler = MimeTypesHandler::GetHandler(extension);
+    if (handler && handler->CanHandleMIMEType(mime_type))
+      return extension_id;
+  }
+#endif
+  return std::string();
 }

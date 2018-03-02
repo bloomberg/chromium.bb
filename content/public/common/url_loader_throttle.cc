@@ -12,6 +12,14 @@ void URLLoaderThrottle::Delegate::SetPriority(net::RequestPriority priority) {}
 void URLLoaderThrottle::Delegate::PauseReadingBodyFromNet() {}
 void URLLoaderThrottle::Delegate::ResumeReadingBodyFromNet() {}
 
+void URLLoaderThrottle::Delegate::InterceptResponse(
+    network::mojom::URLLoaderPtr new_loader,
+    network::mojom::URLLoaderClientRequest new_client_request,
+    network::mojom::URLLoaderPtr* original_loader,
+    network::mojom::URLLoaderClientRequest* original_client_request) {
+  NOTIMPLEMENTED();
+}
+
 URLLoaderThrottle::Delegate::~Delegate() {}
 
 URLLoaderThrottle::~URLLoaderThrottle() {}

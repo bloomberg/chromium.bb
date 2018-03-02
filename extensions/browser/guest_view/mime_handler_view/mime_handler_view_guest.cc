@@ -8,6 +8,7 @@
 
 #include "components/guest_view/common/guest_view_constants.h"
 #include "content/public/browser/host_zoom_map.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -33,18 +34,29 @@ using guest_view::GuestViewBase;
 
 namespace extensions {
 
-StreamContainer::StreamContainer(std::unique_ptr<content::StreamInfo> stream,
-                                 int tab_id,
-                                 bool embedded,
-                                 const GURL& handler_url,
-                                 const std::string& extension_id)
+StreamContainer::StreamContainer(
+    std::unique_ptr<content::StreamInfo> stream,
+    int tab_id,
+    bool embedded,
+    const GURL& handler_url,
+    const std::string& extension_id,
+    content::mojom::TransferrableURLLoaderPtr transferrable_loader,
+    const GURL& original_url)
     : stream_(std::move(stream)),
       embedded_(embedded),
       tab_id_(tab_id),
       handler_url_(handler_url),
       extension_id_(extension_id),
+      transferrable_loader_(std::move(transferrable_loader)),
+      mime_type_(stream_ ? stream_->mime_type
+                         : transferrable_loader_->head.mime_type),
+      original_url_(stream_ ? stream_->original_url : original_url),
+      stream_url_(stream_ ? stream_->handle->GetURL()
+                          : transferrable_loader_->url),
+      response_headers_(stream_ ? stream_->response_headers
+                                : transferrable_loader_->head.headers),
       weak_factory_(this) {
-  DCHECK(stream_);
+  DCHECK(stream_ || transferrable_loader_);
 }
 
 StreamContainer::~StreamContainer() {
@@ -57,10 +69,16 @@ void StreamContainer::Abort(const base::Closure& callback) {
   }
   stream_->handle->AddCloseListener(callback);
   stream_->handle.reset();
+  stream_url_ = GURL();
 }
 
 base::WeakPtr<StreamContainer> StreamContainer::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
+}
+
+content::mojom::TransferrableURLLoaderPtr
+StreamContainer::TakeTransferrableURLLoader() {
+  return std::move(transferrable_loader_);
 }
 
 // static
@@ -152,7 +170,7 @@ void MimeHandlerViewGuest::CreateWebContents(
           .GetByID(stream_->extension_id());
   if (!mime_handler_extension) {
     LOG(ERROR) << "Extension for mime_type not found, mime_type = "
-               << stream_->stream_info()->mime_type;
+               << stream_->mime_type();
     callback.Run(nullptr);
     return;
   }
@@ -267,8 +285,7 @@ bool MimeHandlerViewGuest::SaveFrame(const GURL& url,
   if (!attached())
     return false;
 
-  embedder_web_contents()->SaveFrame(stream_->stream_info()->original_url,
-                                     referrer);
+  embedder_web_contents()->SaveFrame(stream_->original_url(), referrer);
   return true;
 }
 
@@ -298,6 +315,12 @@ void MimeHandlerViewGuest::OnInterfaceRequestFromFrame(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle* interface_pipe) {
   registry_.TryBindInterface(interface_name, interface_pipe);
+}
+
+void MimeHandlerViewGuest::ReadyToCommitNavigation(
+    content::NavigationHandle* navigation_handle) {
+  navigation_handle->RegisterSubresourceOverride(
+      stream_->TakeTransferrableURLLoader());
 }
 
 }  // namespace extensions

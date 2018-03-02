@@ -155,7 +155,7 @@ void TestRenderFrame::Navigate(const CommonNavigationParams& common_params,
                    request_params,
                    network::mojom::URLLoaderClientEndpointsPtr(),
                    std::make_unique<URLLoaderFactoryBundleInfo>(),
-                   mojom::ControllerServiceWorkerInfoPtr(),
+                   base::nullopt, mojom::ControllerServiceWorkerInfoPtr(),
                    base::UnguessableToken::Create());
 }
 

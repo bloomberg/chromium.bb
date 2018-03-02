@@ -8,6 +8,7 @@
 #include "base/strings/string_piece.h"
 #include "content/common/content_export.h"
 #include "content/public/common/resource_type.h"
+#include "content/public/common/transferrable_url_loader.mojom.h"
 #include "net/base/request_priority.h"
 
 class GURL;
@@ -57,6 +58,14 @@ class CONTENT_EXPORT URLLoaderThrottle {
     // network.
     virtual void PauseReadingBodyFromNet();
     virtual void ResumeReadingBodyFromNet();
+
+    // Replaces the URLLoader and URLLoaderClient endpoints held by the
+    // ThrottlingURLLoader instance.
+    virtual void InterceptResponse(
+        network::mojom::URLLoaderPtr new_loader,
+        network::mojom::URLLoaderClientRequest new_client_request,
+        network::mojom::URLLoaderPtr* original_loader,
+        network::mojom::URLLoaderClientRequest* original_client_request);
 
    protected:
     virtual ~Delegate();
