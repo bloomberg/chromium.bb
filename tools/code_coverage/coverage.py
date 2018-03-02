@@ -64,6 +64,8 @@ import argparse
 import json
 import logging
 import os
+import re
+import shlex
 import subprocess
 import urllib2
 
@@ -316,7 +318,7 @@ def _GetPlatform():
     return 'mac'
 
 
-def _IsTargetOsIos():
+def _IsIOS():
   """Returns true if the target_os specified in args.gn file is ios"""
   build_args = _ParseArgsGnFile()
   return 'target_os' in build_args and build_args['target_os'] == '"ios"'
@@ -422,11 +424,7 @@ def _GeneratePerFileLineByLineCoverageInHtml(binary_paths, profdata_file_path,
   ]
   subprocess_cmd.extend(
       ['-object=' + binary_path for binary_path in binary_paths[1:]])
-  if _IsTargetOsIos():
-    # iOS binaries are universal binaries, and it requires specifying the
-    # architecture to use.
-    subprocess_cmd.append('-arch=x86_64')
-
+  _AddArchArgumentForIOSIfNeeded(subprocess_cmd, len(binary_paths))
   subprocess_cmd.extend(filters)
   subprocess.check_call(subprocess_cmd)
   logging.debug('Finished running "llvm-cov show" command')
@@ -771,11 +769,11 @@ def _GetProfileRawDataPathsByExecutingCommands(targets, commands):
     logging.info('Running command: "%s", the output is redirected to "%s"',
                  command, output_file_path)
 
-    if _IsIosCommand(command):
+    if _IsIOSCommand(command):
       # On iOS platform, due to lack of write permissions, profraw files are
       # generated outside of the OUTPUT_DIR, and the exact paths are contained
       # in the output of the command execution.
-      output = _ExecuteIosCommand(target, command)
+      output = _ExecuteIOSCommand(target, command)
       profraw_file_paths.append(_GetProfrawDataFileByParsingOutput(output))
     else:
       # On other platforms, profraw files are generated inside the OUTPUT_DIR.
@@ -786,7 +784,7 @@ def _GetProfileRawDataPathsByExecutingCommands(targets, commands):
 
   logging.debug('Finished executing the test commands')
 
-  if _IsTargetOsIos():
+  if _IsIOS():
     return profraw_file_paths
 
   for file_or_dir in os.listdir(OUTPUT_DIR):
@@ -825,7 +823,8 @@ def _ExecuteCommand(target, command):
 
   try:
     output = subprocess.check_output(
-        command.split(), env={'LLVM_PROFILE_FILE': expected_profraw_file_path})
+        shlex.split(command),
+        env={'LLVM_PROFILE_FILE': expected_profraw_file_path})
   except subprocess.CalledProcessError as e:
     output = e.output
     logging.warning('Command: "%s" exited with non-zero return code', command)
@@ -833,7 +832,7 @@ def _ExecuteCommand(target, command):
   return output
 
 
-def _ExecuteIosCommand(target, command):
+def _ExecuteIOSCommand(target, command):
   """Runs a single iOS command and generates a profraw data file.
 
   iOS application doesn't have write access to folders outside of the app, so
@@ -842,10 +841,18 @@ def _ExecuteIosCommand(target, command):
   application's Documents folder, and the full path can be obtained by parsing
   the output.
   """
-  assert _IsIosCommand(command)
+  assert _IsIOSCommand(command)
+
+  # After running tests, iossim generates a profraw data file, it won't be
+  # needed anyway, so dump it into the OUTPUT_DIR to avoid polluting the
+  # checkout.
+  iossim_profraw_file_path = os.path.join(
+      OUTPUT_DIR, os.extsep.join(['iossim', PROFRAW_FILE_EXTENSION]))
 
   try:
-    output = subprocess.check_output(command.split())
+    output = subprocess.check_output(
+        shlex.split(command),
+        env={'LLVM_PROFILE_FILE': iossim_profraw_file_path})
   except subprocess.CalledProcessError as e:
     # iossim emits non-zero return code even if tests run successfully, so
     # ignore the return code.
@@ -861,15 +868,15 @@ def _GetProfrawDataFileByParsingOutput(output):
   have a single line containing the path to the generated profraw data file.
   NOTE: This should only be called when target os is iOS.
   """
-  assert _IsTargetOsIos()
+  assert _IsIOS()
 
-  output_by_lines = ''.join(output).split('\n')
-  profraw_file_identifier = 'Coverage data at '
+  output_by_lines = ''.join(output).splitlines()
+  profraw_file_pattern = re.compile('.*Coverage data at (.*coverage\.profraw).')
 
   for line in output_by_lines:
-    if profraw_file_identifier in line:
-      profraw_file_path = line.split(profraw_file_identifier)[1][:-1]
-      return profraw_file_path
+    result = profraw_file_pattern.match(line)
+    if result:
+      return result.group(1)
 
   assert False, ('No profraw data file was generated, did you call '
                  'coverage_util::ConfigureCoverageReportPath() in test setup? '
@@ -922,10 +929,7 @@ def _GeneratePerFileCoverageSummary(binary_paths, profdata_file_path, filters):
   ]
   subprocess_cmd.extend(
       ['-object=' + binary_path for binary_path in binary_paths[1:]])
-  if _IsTargetOsIos():
-    # iOS binaries are universal binaries, and it requires specifying the
-    # architecture to use.
-    subprocess_cmd.append('-arch=x86_64')
+  _AddArchArgumentForIOSIfNeeded(subprocess_cmd, len(binary_paths))
 
   subprocess_cmd.extend(filters)
 
@@ -953,6 +957,16 @@ def _GeneratePerFileCoverageSummary(binary_paths, profdata_file_path, filters):
   return per_file_coverage_summary
 
 
+def _AddArchArgumentForIOSIfNeeded(cmd_list, num_archs):
+  """Appends -arch arguments to the command list if it's ios platform.
+
+  iOS binaries are universal binaries, and require specifying the architecture
+  to use, and one architecture needs to be specified for each binary.
+  """
+  if _IsIOS():
+    cmd_list.extend(['-arch=x86_64'] * num_archs)
+
+
 def _GetBinaryPath(command):
   """Returns a relative path to the binary to be run by the command.
 
@@ -973,7 +987,7 @@ def _GetBinaryPath(command):
   """
   xvfb_script_name = os.extsep.join(['xvfb', 'py'])
 
-  command_parts = command.split()
+  command_parts = shlex.split(command)
   if os.path.basename(command_parts[0]) == 'python':
     assert os.path.basename(command_parts[1]) == xvfb_script_name, (
         'This tool doesn\'t understand the command: "%s"' % command)
@@ -982,19 +996,19 @@ def _GetBinaryPath(command):
   if os.path.basename(command_parts[0]) == xvfb_script_name:
     return command_parts[1]
 
-  if _IsIosCommand(command):
+  if _IsIOSCommand(command):
     # For a given application bundle, the binary resides in the bundle and has
     # the same name with the application without the .app extension.
     app_path = command_parts[1]
     app_name = os.path.splitext(os.path.basename(app_path))[0]
     return os.path.join(app_path, app_name)
 
-  return command.split()[0]
+  return command_parts[0]
 
 
-def _IsIosCommand(command):
+def _IsIOSCommand(command):
   """Returns true if command is used to run tests on iOS platform."""
-  return os.path.basename(command.split()[0]) == 'iossim'
+  return os.path.basename(shlex.split(command)[0]) == 'iossim'
 
 
 def _VerifyTargetExecutablesAreInBuildDirectory(commands):
@@ -1144,7 +1158,7 @@ def Main():
   """Execute tool commands."""
   assert _GetPlatform() in [
       'linux', 'mac'
-  ], ('Coverage is only supported on linux and mac platforms.')
+  ], ('This script is only supported on linux and mac platforms.')
   assert os.path.abspath(os.getcwd()) == SRC_ROOT_PATH, ('This script must be '
                                                          'called from the root '
                                                          'of checkout.')
