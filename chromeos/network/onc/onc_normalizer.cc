@@ -194,9 +194,12 @@ void Normalizer::NormalizeOpenVPN(base::DictionaryValue* openvpn) {
                     ::onc::client_cert::kClientCertRef,
                     clientcert_type == ::onc::client_cert::kRef);
 
-  std::string user_auth_type;
-  openvpn->GetStringWithoutPathExpansion(
-      ::onc::openvpn::kUserAuthenticationType, &user_auth_type);
+  base::Value* user_auth_type_value = openvpn->FindKeyOfType(
+      ::onc::openvpn::kUserAuthenticationType, base::Value::Type::STRING);
+  // If UserAuthenticationType is unspecified, do not strip Password and OTP.
+  if (!user_auth_type_value)
+    return;
+  std::string user_auth_type = user_auth_type_value->GetString();
   RemoveEntryUnless(
       openvpn,
       ::onc::openvpn::kPassword,
