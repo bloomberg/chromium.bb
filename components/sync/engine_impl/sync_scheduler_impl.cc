@@ -12,6 +12,7 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -700,10 +701,17 @@ void SyncSchedulerImpl::TrySyncCycleJob() {
 void SyncSchedulerImpl::TrySyncCycleJobImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  // TODO(treib): Pass this as a parameter instead.
   JobPriority priority = next_sync_cycle_job_priority_;
   next_sync_cycle_job_priority_ = NORMAL_PRIORITY;
 
-  nudge_tracker_.SetSyncCycleStartTime(TimeTicks::Now());
+  TimeTicks now = TimeTicks::Now();
+  if (!last_sync_cycle_start_.is_null()) {
+    UMA_HISTOGRAM_LONG_TIMES("Sync.SyncCycleInterval",
+                             now - last_sync_cycle_start_);
+  }
+  last_sync_cycle_start_ = now;
+  nudge_tracker_.SetSyncCycleStartTime(now);
 
   if (mode_ == CONFIGURATION_MODE) {
     if (pending_configure_params_) {
@@ -777,7 +785,7 @@ void SyncSchedulerImpl::PerformDelayedNudge() {
   if (CanRunNudgeJobNow(NORMAL_PRIORITY)) {
     TrySyncCycleJob();
   } else {
-    // If we set |waiting_interal_| while this PerformDelayedNudge was pending
+    // If we set |wait_interval_| while this PerformDelayedNudge was pending
     // callback scheduled to |retry_timer_|, it's possible we didn't re-schedule
     // because this PerformDelayedNudge was going to execute sooner. If that's
     // the case, we need to make sure we setup to waiting callback now.

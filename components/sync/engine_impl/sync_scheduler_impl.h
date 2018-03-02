@@ -275,6 +275,10 @@ class SyncSchedulerImpl : public SyncScheduler {
   // in the call will have its TimeTicks value updated.
   std::map<ModelType, base::TimeTicks> last_local_nudges_by_model_type_;
 
+  // The last time we ran a sync cycle. Null if we haven't ran one since Chrome
+  // startup. Used for metrics.
+  base::TimeTicks last_sync_cycle_start_;
+
   // TryJob might get called for multiple reasons. It should only call
   // DoPollSyncCycleJob after some time since the last attempt.
   // last_poll_reset_ keeps track of when was last attempt.
