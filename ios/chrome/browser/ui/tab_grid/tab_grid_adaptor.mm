@@ -84,4 +84,8 @@
   self.incognitoMediator.tabModel = otrModel;
 }
 
+- (void)setTransitionContext:(TabSwitcherTransitionContext*)transitionContext {
+  // No-op. Tab grid will not use this iPad TabSwitcher-specific mechanism.
+}
+
 @end
