@@ -122,6 +122,24 @@ struct GestureData {
   LocationData location;
 };
 
+// Data to support scroll events.
+struct ScrollData {
+  LocationData location;
+
+  // Potential accelerated offsets.
+  float x_offset;
+  float y_offset;
+  // Unaccelerated offsets.
+  float x_offset_ordinal;
+  float y_offset_ordinal;
+  // Number of fingers on the pad.
+  int32 finger_count;
+
+  // For non-fling events, provides momentum information (e.g. for the case
+  // where the device provides continuous event updates during a fling).
+  EventMomentumPhase momentum_phase;
+};
+
 struct Event {
   // TODO(sky): rename to type.
   EventType action;
@@ -138,4 +156,5 @@ struct Event {
   KeyData? key_data;
   PointerData? pointer_data;
   GestureData? gesture_data;
+  ScrollData? scroll_data;
 };

@@ -203,16 +203,8 @@ void PlatformDisplayDefault::OnDamageRect(const gfx::Rect& damaged_region) {
 }
 
 void PlatformDisplayDefault::DispatchEvent(ui::Event* event) {
-  // Event location and event root location are the same, and both in pixels
-  // and display coordinates.
-  if (event->IsScrollEvent()) {
-    // TODO(moshayedi): crbug.com/602859. Dispatch scroll events as
-    // they are once we have proper support for scroll events.
-
-    ui::PointerEvent pointer_event(
-        ui::MouseWheelEvent(*event->AsScrollEvent()));
-    SendEventToSink(&pointer_event);
-  } else if (event->IsMouseEvent()) {
+  // Mojo requires conversion of mouse and touch events to pointer events.
+  if (event->IsMouseEvent()) {
     ui::PointerEvent pointer_event(*event->AsMouseEvent());
     SendEventToSink(&pointer_event);
   } else if (event->IsTouchEvent()) {

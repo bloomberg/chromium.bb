@@ -23,6 +23,9 @@ enum EventType {
   POINTER_WHEEL_CHANGED,
   MOUSE_EXIT,
   GESTURE_TAP,
+  SCROLL,
+  SCROLL_FLING_START,
+  SCROLL_FLING_CANCEL,
 };
 
 // This mirrors ui::EventFlags
@@ -62,4 +65,13 @@ enum WheelMode {
   LINE,
   PAGE,
   SCALING,
+};
+
+// Momentum phase information used for a ScrollEvent.
+// These values match ui::EventMomentumPhase in ui/events/event_constants.h
+enum EventMomentumPhase {
+  NONE,
+  MAY_BEGIN,
+  INERTIAL_UPDATE,
+  END,
 };

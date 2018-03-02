@@ -41,11 +41,19 @@ bool IsOnlyOneMouseButtonDown(int flags) {
 
 // This is meant to mirror when implicit capture stops. Specifically non-mouse
 // pointer up, or mouse and no more buttons down.
-bool IsPointerGoingUp(const PointerEvent& event) {
-  return (event.type() == ui::ET_POINTER_UP ||
+bool IsPointerGoingUp(const Event& event) {
+  return event.IsPointerEvent() &&
+         (event.type() == ui::ET_POINTER_UP ||
           event.type() == ui::ET_POINTER_CANCELLED) &&
          (!event.IsMousePointerEvent() ||
           IsOnlyOneMouseButtonDown(event.flags()));
+}
+
+// Get the pointer id from an event, only supports PointerEvents for now.
+int32_t GetPointerId(const Event& event) {
+  if (event.IsPointerEvent())
+    return event.AsPointerEvent()->pointer_details().id;
+  return PointerDetails::kUnknownPointerId;
 }
 
 }  // namespace
@@ -311,21 +319,21 @@ void EventDispatcher::ProcessEvent(const ui::Event& event,
     return;
   }
 
-  DCHECK(event.IsPointerEvent());
+  DCHECK(event.IsPointerEvent() || event.IsScrollEvent());
+  DCHECK(event_location.location == event.AsLocatedEvent()->root_location_f());
+  DCHECK(event_location.location == event.AsLocatedEvent()->location_f());
   DCHECK(!waiting_on_event_targeter_);
-  const EventSource event_source =
-      event.IsMousePointerEvent() ? EventSource::MOUSE : EventSource::TOUCH;
-  DCHECK(event_location.location == event.AsPointerEvent()->root_location_f());
-  DCHECK(event_location.location == event.AsPointerEvent()->location_f());
-  if (ShouldUseEventTargeter(*event.AsPointerEvent())) {
+  if (ShouldUseEventTargeter(event)) {
     waiting_on_event_targeter_ = true;
+    const EventSource event_source =
+        event.IsMousePointerEvent() ? EventSource::MOUSE : EventSource::TOUCH;
     event_targeter_->FindTargetForLocation(
         event_source, event_location,
-        base::BindOnce(&EventDispatcher::ProcessPointerEventOnFoundTarget,
-                       base::Unretained(this), *event.AsPointerEvent()));
+        base::BindOnce(&EventDispatcher::ProcessEventOnFoundTarget,
+                       base::Unretained(this), ui::Event::Clone(event)));
   } else {
-    ProcessPointerEventOnFoundTargetImpl(*event.AsPointerEvent(),
-                                         event_location, nullptr);
+    ProcessEventOnFoundTargetImpl(ui::Event::Clone(event), event_location,
+                                  nullptr);
   }
 }
 
@@ -438,15 +446,14 @@ void EventDispatcher::HideCursorOnMatchedKeyEvent(const ui::KeyEvent& event) {
     delegate_->OnEventChangesCursorVisibility(event, false);
 }
 
-bool EventDispatcher::ShouldUseEventTargeter(const PointerEvent& event) const {
-  const int32_t pointer_id = event.pointer_details().id;
+bool EventDispatcher::ShouldUseEventTargeter(const Event& event) const {
   if (drag_controller_)
     return true;
 
   if (capture_window_)
     return false;
 
-  auto iter = pointer_targets_.find(pointer_id);
+  auto iter = pointer_targets_.find(GetPointerId(event));
   if (iter == pointer_targets_.end() || !iter->second.is_pointer_down)
     return true;
 
@@ -454,40 +461,39 @@ bool EventDispatcher::ShouldUseEventTargeter(const PointerEvent& event) const {
          event.type() == ET_POINTER_DOWN;
 }
 
-void EventDispatcher::ProcessPointerEventOnFoundTarget(
-    const ui::PointerEvent& event,
+void EventDispatcher::ProcessEventOnFoundTarget(
+    std::unique_ptr<ui::Event> event,
     const EventLocation& event_location,
     const DeepestWindow& target) {
   DCHECK(waiting_on_event_targeter_);
   waiting_on_event_targeter_ = false;
-  ProcessPointerEventOnFoundTargetImpl(event, event_location, &target);
+  ProcessEventOnFoundTargetImpl(std::move(event), event_location, &target);
 }
 
-void EventDispatcher::ProcessPointerEventOnFoundTargetImpl(
-    const ui::PointerEvent& event,
+void EventDispatcher::ProcessEventOnFoundTargetImpl(
+    std::unique_ptr<ui::Event> event,
     const EventLocation& event_location,
     const DeepestWindow* found_target) {
-  DCHECK(!waiting_on_event_targeter_);
   // WARNING: |found_target| may be null!
-  std::unique_ptr<ui::Event> cloned_event = ui::Event::Clone(event);
+  DCHECK(!waiting_on_event_targeter_);
 
-  UpdateCursorRelatedProperties(event, event_location);
+  UpdateCursorRelatedProperties(*event, event_location);
 
-  const bool is_mouse_event = event.IsMousePointerEvent();
-  const bool is_pointer_going_up = IsPointerGoingUp(event);
+  const bool is_mouse_event = event->IsMousePointerEvent();
+  const bool is_pointer_going_up = IsPointerGoingUp(*event);
 
   // Update mouse down state upon events which change it.
   if (is_mouse_event) {
-    if (event.type() == ui::ET_POINTER_DOWN)
+    if (event->type() == ui::ET_POINTER_DOWN)
       mouse_button_down_ = true;
     else if (is_pointer_going_up)
       mouse_button_down_ = false;
   }
 
-  if (drag_controller_) {
+  if (drag_controller_ && event->IsPointerEvent()) {
     DCHECK(found_target);
     if (drag_controller_->DispatchPointerEvent(
-            *cloned_event->AsPointerEvent(),
+            *event->AsPointerEvent(),
             AdjustTargetForModal(*found_target).window)) {
       return;
     }
@@ -496,7 +502,7 @@ void EventDispatcher::ProcessPointerEventOnFoundTargetImpl(
   if (capture_window_) {
     SetMouseCursorSourceWindow(capture_window_);
     DispatchToClient(capture_window_, capture_window_client_id_,
-                     *cloned_event->AsPointerEvent(), event_location);
+                     *event->AsLocatedEvent(), event_location);
     return;
   }
 
@@ -509,17 +515,16 @@ void EventDispatcher::ProcessPointerEventOnFoundTargetImpl(
     result->pointer_target.in_nonclient_area =
         result->deepest_window.in_non_client_area;
     result->pointer_target.is_pointer_down =
-        event.type() == ui::ET_POINTER_DOWN;
+        event->type() == ui::ET_POINTER_DOWN;
     result->pointer_target.display_id = event_location.display_id;
   }
 
-  const int32_t pointer_id = event.pointer_details().id;
-
+  const int32_t pointer_id = GetPointerId(*event);
   if (!IsTrackingPointer(pointer_id) ||
       !pointer_targets_[pointer_id].is_pointer_down) {
     DCHECK(result);
     const bool any_pointers_down = AreAnyPointersDown();
-    UpdateTargetForPointer(pointer_id, *cloned_event->AsPointerEvent(),
+    UpdateTargetForPointer(pointer_id, *event->AsLocatedEvent(),
                            result->pointer_target, event_location);
     if (is_mouse_event)
       SetMouseCursorSourceWindow(pointer_targets_[pointer_id].window);
@@ -550,7 +555,7 @@ void EventDispatcher::ProcessPointerEventOnFoundTargetImpl(
   }
 
   DispatchToPointerTarget(pointer_targets_[pointer_id],
-                          *cloned_event->AsPointerEvent(), event_location);
+                          *event->AsLocatedEvent(), event_location);
 
   if (is_pointer_going_up) {
     if (is_mouse_event)
@@ -561,7 +566,7 @@ void EventDispatcher::ProcessPointerEventOnFoundTargetImpl(
       delegate_->ReleaseNativeCapture();
   }
 
-  if (event.type() == ET_POINTER_DOWN) {
+  if (event->type() == ET_POINTER_DOWN) {
     // Use |found_target| as |result| has already been adjusted for the
     // modal window.
     DCHECK(found_target);
@@ -571,7 +576,7 @@ void EventDispatcher::ProcessPointerEventOnFoundTargetImpl(
 }
 
 void EventDispatcher::UpdateCursorRelatedProperties(
-    const ui::PointerEvent& event,
+    const ui::Event& event,
     const EventLocation& event_location) {
   if (event.IsMousePointerEvent()) {
     // This corresponds to the code in CompoundEventFilter which updates
@@ -585,7 +590,7 @@ void EventDispatcher::UpdateCursorRelatedProperties(
                             event_location.display_id);
     delegate_->OnMouseCursorLocationChanged(event_location.raw_location,
                                             event_location.display_id);
-  } else {
+  } else if (event.IsPointerEvent()) {
     // When we have a non-touch event that wasn't synthesized, hide the mouse
     // cursor until the next non-synthesized mouse event.
     delegate_->OnEventChangesCursorTouchVisibility(event, false);
@@ -663,7 +668,7 @@ void EventDispatcher::StopTrackingPointer(int32_t pointer_id) {
 
 void EventDispatcher::UpdateTargetForPointer(
     int32_t pointer_id,
-    const ui::PointerEvent& event,
+    const ui::LocatedEvent& event,
     const PointerTarget& pointer_target,
     const EventLocation& event_location) {
   if (!IsTrackingPointer(pointer_id)) {
