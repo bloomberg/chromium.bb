@@ -12,6 +12,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
 #include "net/http/bidirectional_stream_request_info.h"
+#include "net/http/http_util.h"
 #include "net/quic/core/quic_connection.h"
 #include "net/quic/platform/api/quic_string_piece.h"
 #include "net/socket/next_proto.h"
@@ -81,7 +82,7 @@ void BidirectionalStreamQuicImpl::Start(
 
   // TODO(https://crbug.com/656607): Add proper annotation here.
   int rv = session_->RequestStream(
-      request_info_->method == "POST",
+      !HttpUtil::IsMethodSafe(request_info_->method),
       base::Bind(&BidirectionalStreamQuicImpl::OnStreamReady,
                  weak_factory_.GetWeakPtr()),
       NO_TRAFFIC_ANNOTATION_BUG_656607);

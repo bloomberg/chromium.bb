@@ -171,8 +171,7 @@ void bidirectional_stream_delay_request_headers_until_flush(
 
 /* Starts the stream by sending request to |url| using |method| and |headers|.
  * If |end_of_stream| is true, then no data is expected to be written. The
- * |method| is HTTP verb, with PUT having a special meaning to mark idempotent
- * request, which could use QUIC 0-RTT.
+ * |method| is HTTP verb.
  */
 GRPC_SUPPORT_EXPORT
 int bidirectional_stream_start(bidirectional_stream* stream,

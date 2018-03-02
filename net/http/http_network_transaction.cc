@@ -137,7 +137,7 @@ int HttpNetworkTransaction::Start(const HttpRequestInfo* request_info,
     proxy_ssl_config_.rev_checking_enabled = false;
   }
 
-  if (request_info->method != "POST") {
+  if (HttpUtil::IsMethodSafe(request_info->method)) {
     can_send_early_data_ = true;
   }
 
