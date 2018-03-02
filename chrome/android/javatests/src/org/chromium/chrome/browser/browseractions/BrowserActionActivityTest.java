@@ -340,7 +340,7 @@ public class BrowserActionActivityTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                activity.getHelperForTesting().onItemSelected(itemid);
+                activity.getHelperForTesting().onItemSelected(itemid, false);
             }
         });
 
@@ -577,7 +577,7 @@ public class BrowserActionActivityTest {
                 StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
                 try {
                     activity.getHelperForTesting().onItemSelected(
-                            R.id.browser_actions_open_in_background);
+                            R.id.browser_actions_open_in_background, false);
                 } finally {
                     StrictMode.setThreadPolicy(oldPolicy);
                 }

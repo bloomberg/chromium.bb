@@ -33,7 +33,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.metrics.CachedMetrics.EnumeratedHistogramSample;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuItem;
@@ -119,6 +119,7 @@ public class BrowserActionsContextMenuHelper implements OnCreateContextMenuListe
     private final Runnable mOnMenuShownListener;
     private final Callback<Boolean> mOnShareClickedRunnable;
     private final PendingIntent mOnBrowserActionSelectedCallback;
+    private final EnumeratedHistogramSample mActionHistogram;
 
     private final List<Pair<Integer, List<ContextMenuItem>>> mItems;
 
@@ -154,7 +155,7 @@ public class BrowserActionsContextMenuHelper implements OnCreateContextMenuListe
         mItemSelectedCallback = new Callback<Integer>() {
             @Override
             public void onResult(Integer result) {
-                onItemSelected(result);
+                onItemSelected(result, true);
             }
         };
         mOnShareClickedRunnable = new Callback<Boolean>() {
@@ -179,6 +180,8 @@ public class BrowserActionsContextMenuHelper implements OnCreateContextMenuListe
         mMenuItemDelegate = new BrowserActionsContextMenuItemDelegate(mActivity, sourcePackageName);
         mOnBrowserActionSelectedCallback = onBrowserActionSelectedCallback;
         mProgressDialog = new ProgressDialog(mActivity);
+        mActionHistogram =
+                new EnumeratedHistogramSample("BrowserActions.SelectedOption", NUM_ACTIONS);
 
         mItems = buildContextMenuItems(customItems, sourcePackageName);
     }
@@ -249,45 +252,54 @@ public class BrowserActionsContextMenuHelper implements OnCreateContextMenuListe
         }
     }
 
-    boolean onItemSelected(int itemId) {
+    boolean onItemSelected(int itemId, boolean recordMetrics) {
         if (itemId == R.id.browser_actions_open_in_background) {
             if (mIsNativeInitialized) {
-                recordBrowserActionsSelection(ACTION_OPEN_IN_NEW_CHROME_TAB);
                 handleOpenInBackground();
             } else {
                 mPendingItemId = itemId;
                 waitNativeInitialized();
             }
         } else if (itemId == R.id.browser_actions_open_in_incognito_tab) {
-            recordBrowserActionsSelection(ACTION_OPEN_IN_INCOGNITO_TAB);
             mMenuItemDelegate.onOpenInIncognitoTab(mCurrentContextMenuParams.getLinkUrl());
             notifyBrowserActionSelected(BrowserActionsIntent.ITEM_OPEN_IN_INCOGNITO);
         } else if (itemId == R.id.browser_actions_save_link_as) {
             if (mIsNativeInitialized) {
-                recordBrowserActionsSelection(ACTION_DOWNLOAD_PAGE);
                 handleDownload();
             } else {
                 mPendingItemId = itemId;
                 waitNativeInitialized();
             }
         } else if (itemId == R.id.browser_actions_copy_address) {
-            recordBrowserActionsSelection(ACTION_COPY_LINK);
             mMenuItemDelegate.onSaveToClipboard(mCurrentContextMenuParams.getLinkUrl());
             notifyBrowserActionSelected(BrowserActionsIntent.ITEM_COPY);
         } else if (itemId == R.id.browser_actions_share) {
-            recordBrowserActionsSelection(ACTION_SHARE);
             mMenuItemDelegate.share(false, mCurrentContextMenuParams.getLinkUrl());
             notifyBrowserActionSelected(BrowserActionsIntent.ITEM_SHARE);
         } else if (mCustomItemActionMap.indexOfKey(itemId) >= 0) {
-            recordBrowserActionsSelection(ACTION_APP_PROVIDED);
             mMenuItemDelegate.onCustomItemSelected(mCustomItemActionMap.get(itemId));
         }
+        if (recordMetrics) recordBrowserActionsSelection(itemId);
         return true;
     }
 
-    private void recordBrowserActionsSelection(@BrowserActionsActionId int itemId) {
-        RecordHistogram.recordEnumeratedHistogram(
-                "BrowserActions.SelectedOption", itemId, NUM_ACTIONS);
+    private void recordBrowserActionsSelection(int itemId) {
+        @BrowserActionsActionId
+        final int actionId;
+        if (itemId == R.id.browser_actions_open_in_background) {
+            actionId = ACTION_OPEN_IN_NEW_CHROME_TAB;
+        } else if (itemId == R.id.browser_actions_open_in_incognito_tab) {
+            actionId = ACTION_OPEN_IN_INCOGNITO_TAB;
+        } else if (itemId == R.id.browser_actions_save_link_as) {
+            actionId = ACTION_DOWNLOAD_PAGE;
+        } else if (itemId == R.id.browser_actions_copy_address) {
+            actionId = ACTION_COPY_LINK;
+        } else if (itemId == R.id.browser_actions_share) {
+            actionId = ACTION_SHARE;
+        } else {
+            actionId = ACTION_APP_PROVIDED;
+        }
+        mActionHistogram.record(actionId);
     }
 
     private void notifyBrowserActionSelected(int menuId) {
@@ -365,7 +377,7 @@ public class BrowserActionsContextMenuHelper implements OnCreateContextMenuListe
         }
         if (mPendingItemId != 0) {
             dismissProgressDialog();
-            onItemSelected(mPendingItemId);
+            onItemSelected(mPendingItemId, false);
             mPendingItemId = 0;
             mActivity.finish();
         }
