@@ -402,8 +402,15 @@ EC (RW) version: reef_v1.1.5909-bd1f0c9
 
   def testUnifiedBuilds(self):
     """Test that unified builds are marked as such."""
-    self.PatchObject(commands, 'GetModels', return_value=['amd64-generic'])
+    def _HookRunCommandCrosConfigHost(rc):
+      rc.AddCmdResult(partial_mock.ListRegex('cros_config_host_py'),
+                      output='reef')
+
     self._update_metadata = True
+    cros_config_host = os.path.join(self.build_root,
+                                    'chroot/usr/bin/cros_config_host_py')
+    osutils.Touch(cros_config_host, makedirs=True)
+    self._mock_configurator = _HookRunCommandCrosConfigHost
     self.RunTestsWithBotId('amd64-generic-paladin', options_tests=False)
     self.assertTrue(self._run.attrs.metadata.GetDict()['unibuild'])
 

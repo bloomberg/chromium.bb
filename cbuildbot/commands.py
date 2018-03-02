@@ -544,12 +544,12 @@ def GetFirmwareVersions(buildroot, board):
   else:
     return FirmwareVersions(None, None, None, None, None)
 
-def RunCrosConfigHost(buildroot, boardroot, args):
+def RunCrosConfigHost(buildroot, board, args):
   """Run the cros_config_host tool in the buildroot
 
   Args:
     buildroot: The buildroot of the current build.
-    boardroot: The board sysroot.
+    board: The board the build is for.
     args: List of arguments to pass.
 
   Returns:
@@ -561,29 +561,12 @@ def RunCrosConfigHost(buildroot, boardroot, args):
     return None
   tool = path_util.ToChrootPath(tool)
 
-  config_fname = os.path.join(
-      boardroot,
-      'usr',
-      'share',
-      'chromeos-config',
-      'config.dtb')
-  if not os.path.isfile(config_fname):
-    config_fname = os.path.join(
-        boardroot,
-        'usr',
-        'share',
-        'chromeos-config',
-        'yaml',
-        'private-files.yaml')
-
-  if not os.path.isfile(config_fname):
-    return None
-  result = cros_build_lib.RunCommand([tool, '-c', config_fname] + args,
-                                     enter_chroot=True,
-                                     capture_output=True,
-                                     log_output=True,
-                                     cwd=buildroot,
-                                     error_code_ok=True)
+  config_fname = os.path.join(cros_build_lib.GetSysroot(board), 'usr', 'share',
+                              'chromeos-config', 'config.dtb')
+  result = cros_build_lib.RunCommand(
+      [tool, '-c', config_fname] + args,
+      enter_chroot=True, capture_output=True, log_output=True, cwd=buildroot,
+      error_code_ok=True)
   if result.returncode:
     # Show the output for debugging purposes.
     if 'No such file or directory' not in result.error:
@@ -591,7 +574,7 @@ def RunCrosConfigHost(buildroot, boardroot, args):
     return None
   return result.output.strip().splitlines()
 
-def GetModels(buildroot, boardroot):
+def GetModels(buildroot, board):
   """Obtain a list of models supported by a unified board
 
   This ignored whitelabel models since GoldenEye has no specific support for
@@ -599,13 +582,13 @@ def GetModels(buildroot, boardroot):
 
   Args:
     buildroot: The buildroot of the current build.
-    boardroot: The board sysroot.
+    board: The board the build is for.
 
   Returns:
     A list of models supported by this board, if it is a unified build; None,
     if it is not a unified build.
   """
-  return RunCrosConfigHost(buildroot, boardroot, ['list-models'])
+  return RunCrosConfigHost(buildroot, board, ['list-models'])
 
 def BuildImage(buildroot, board, images_to_build, version=None,
                builder_path=None, rootfs_verification=True, extra_env=None,
