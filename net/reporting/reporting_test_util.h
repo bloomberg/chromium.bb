@@ -36,6 +36,7 @@ namespace net {
 class ReportingCache;
 struct ReportingClient;
 class ReportingGarbageCollector;
+class TestURLRequestContext;
 
 // Finds a particular client (by origin and endpoint) in the cache and returns
 // it (or nullptr if not found).
@@ -82,6 +83,9 @@ class TestReportingUploader : public ReportingUploader {
   DISALLOW_COPY_AND_ASSIGN(TestReportingUploader);
 };
 
+// Allows all permissions unless set_disallow_report_uploads is called; uses
+// the real ReportingDelegate for JSON parsing to exercise depth and size
+// limits.
 class TestReportingDelegate : public ReportingDelegate {
  public:
   TestReportingDelegate();
@@ -111,6 +115,8 @@ class TestReportingDelegate : public ReportingDelegate {
                  const JsonFailureCallback& failure_callback) const override;
 
  private:
+  std::unique_ptr<TestURLRequestContext> test_request_context_;
+  std::unique_ptr<ReportingDelegate> real_delegate_;
   bool disallow_report_uploads_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestReportingDelegate);
