@@ -16,6 +16,7 @@
 
 namespace blink {
 
+class IntPoint;
 class ScrollManager;
 class SelectionController;
 class PointerEventManager;
@@ -59,6 +60,11 @@ class CORE_EXPORT GestureManager
 
   WebInputEventResult SendContextMenuEventForGesture(
       const GestureEventWithHitTestResults&);
+  // Shows the Unhandled Tap UI if needed.
+  void ShowUnhandledTapUIIfNeeded(bool dom_tree_changed,
+                                  bool style_changed,
+                                  Node* tapped_node,
+                                  const IntPoint& tapped_position_in_viewport);
 
   // NOTE: If adding a new field to this class please ensure that it is
   // cleared if needed in |GestureManager::clear()|.

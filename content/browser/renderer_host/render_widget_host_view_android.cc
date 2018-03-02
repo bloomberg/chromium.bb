@@ -248,8 +248,6 @@ bool RenderWidgetHostViewAndroid::OnMessageReceived(
   }
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderWidgetHostViewAndroid, message)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ShowUnhandledTapUIIfNeeded,
-                        OnShowUnhandledTapUIIfNeeded)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SelectWordAroundCaretAck,
                         OnSelectWordAroundCaretAck)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -380,13 +378,6 @@ bool RenderWidgetHostViewAndroid::IsShowing() {
   // ContentViewCore.  It being NULL means that it is not attached
   // to the View system yet, so we treat this RWHVA as hidden.
   return is_showing_ && content_view_core_;
-}
-
-void RenderWidgetHostViewAndroid::OnShowUnhandledTapUIIfNeeded(int x_px,
-                                                               int y_px) {
-  if (!selection_popup_controller_ || !content_view_core_)
-    return;
-  selection_popup_controller_->OnShowUnhandledTapUIIfNeeded(x_px, y_px);
 }
 
 void RenderWidgetHostViewAndroid::OnSelectWordAroundCaretAck(bool did_select,

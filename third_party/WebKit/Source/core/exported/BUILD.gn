@@ -82,7 +82,6 @@ blink_core_sources("exported") {
     "WebSharedWorkerImpl.cpp",
     "WebSharedWorkerImpl.h",
     "WebSurroundingText.cpp",
-    "WebTappedInfo.cpp",
     "WebTextCheckingResult.cpp",
     "WebUserGestureIndicator.cpp",
     "WebUserGestureToken.cpp",
