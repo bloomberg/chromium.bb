@@ -994,7 +994,7 @@ something, remove all callers and remove the function instead.</td>
 
 <tr>
 <td>Lambda capture expressions</td>
-<td><code>auto widget = base::MakeUnique&lt;Widget&gt;();<br>auto lambda = [widget = std::move(widget)]() {<br>&nbsp;&nbsp;SetWidget(std::move(widget));<br>}</code></td>
+<td><code>auto widget = std::make_unique&lt;Widget&gt;();<br>auto lambda = [widget = std::move(widget)]() {<br>&nbsp;&nbsp;SetWidget(std::move(widget));<br>}</code></td>
 <td>Allows lambda captures to be explicitly initialized with expressions.</td>
 <td><a href="http://en.cppreference.com/w/cpp/language/lambda#Lambda_capture">Lambda capture</a></td>
 <td>Particularly useful to capture move-only types in a lambda when a reference would go out of scope. Less useful without allowing lambdas to outlive the scope.</td>

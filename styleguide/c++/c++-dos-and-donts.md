@@ -362,38 +362,39 @@ general rules:
    auto x{1};  // Until C++17, decltype(x) is std::initializer_list<int>, not int!
    ```
 
-## Prefer `MakeUnique` to `WrapUnique`
+## Prefer `make_unique` to `WrapUnique`
 
-[`base::MakeUnique`](https://cs.chromium.org/chromium/src/base/memory/ptr_util.h?q=MakeUnique)`<Type>(...)`
+[`std::make_unique`](http://en.cppreference.com/w/cpp/memory/unique_ptr/make_unique)`<Type>(...)`
 and
 [`base::WrapUnique`](https://cs.chromium.org/chromium/src/base/memory/ptr_util.h?q=WrapUnique)`(new Type(...))`
 are equivalent.
-`MakeUnique` should be preferred, because it is harder to use unsafely than
-`WrapUnique`. In general, bare calls to `new` require careful scrutiny. Bare
-calls to `new` are currently required to construct reference-counted types;
+`std::make_unique` should be preferred, because it is harder to use unsafely
+than `WrapUnique`. In general, bare calls to `new` require careful scrutiny.
+Bare calls to `new` are currently required to construct reference-counted types;
 however, reference counted types themselves require careful scrutiny.
 
 ```cpp
 return std::unique_ptr<C>(new C(1, 2, 3));  // BAD: type name mentioned twice
 return base::WrapUnique(new C(1, 2, 3));    // BAD: bare call to new
-return base::MakeUnique<C>(1, 2, 3);        // GOOD
+return std::make_unique<C>(1, 2, 3);        // GOOD
 ```
 
 **Notes:**
 
-1. Never friend `MakeUnique` to work around constructor access restrictions. It
-   will allow anyone to construct the class. Use `WrapUnique` in this case.
+1. Never friend `std::make_unique` to work around constructor access
+   restrictions. It will allow anyone to construct the class. Use `WrapUnique`
+   in this case.
 
    DON'T:
    ```cpp
    class Bad {
     public:
-     std::unique_ptr<Bad> Create() { return base::MakeUnique<Bad>(); }
+     std::unique_ptr<Bad> Create() { return std::make_unique<Bad>(); }
      // ...
     private:
      Bad();
      // ...
-     friend std::unique_ptr<Bad> base::MakeUnique<Bad>();  // Lost access control
+     friend std::unique_ptr<Bad> std::make_unique<Bad>();  // Lost access control
    };
    ```
 
@@ -413,17 +414,19 @@ return base::MakeUnique<C>(1, 2, 3);        // GOOD
 
 2. `WrapUnique(new Foo)` and `WrapUnique(new Foo())` mean something different if
    `Foo` does not have a user-defined constructor. Don't make future maintainers
-   guess whether you left off the '()' on purpose. Use `MakeUnique<Foo>()`
+   guess whether you left off the '()' on purpose. Use `std::make_unique<Foo>()`
    instead. If you're intentionally leaving off the "()" as an optimisation,
    please leave a comment.
 
    ```cpp
    auto a = base::WrapUnique(new A); // BAD: "()" omitted intentionally?
-   auto a = base::MakeUnique<A>();   // GOOD
+   auto a = std::make_unique<A>();   // GOOD
    // "()" intentionally omitted to avoid unnecessary zero-initialisation.
    // WrapUnique() does the wrong thing for array pointers.
    auto array = std::unique_ptr<A[]>(new A[size]);
    ```
+
+See also [TOTW 126](https://abseil.io/tips/126).
 
 ## Do not use `auto` to deduce a raw pointer
 
