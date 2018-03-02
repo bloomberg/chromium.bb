@@ -64,6 +64,8 @@ ASH_PUBLIC_EXPORT extern const char kTouchscreenEnabled[];
 
 ASH_PUBLIC_EXPORT extern const char kQuickUnlockPinSalt[];
 
+ASH_PUBLIC_EXPORT extern const char kDetachableBaseDevices[];
+
 }  // namespace prefs
 
 }  // namespace ash

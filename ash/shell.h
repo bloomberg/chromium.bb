@@ -92,6 +92,7 @@ class BluetoothNotificationController;
 class BluetoothPowerController;
 class BrightnessControlDelegate;
 class CastConfigController;
+class DetachableBaseHandler;
 class DisplayColorManager;
 class DisplayConfigurationController;
 class DisplayErrorObserver;
@@ -334,6 +335,10 @@ class ASH_EXPORT Shell : public SessionObserver,
 
   // Returns nullptr in mash which has no global cursor manager.
   ::wm::CursorManager* cursor_manager() { return cursor_manager_.get(); }
+
+  DetachableBaseHandler* detachable_base_handler() {
+    return detachable_base_handler_.get();
+  }
 
   display::DisplayManager* display_manager() { return display_manager_.get(); }
   DisplayConfigurationController* display_configuration_controller() {
@@ -661,6 +666,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<BacklightsForcedOffSetter> backlights_forced_off_setter_;
   std::unique_ptr<BrightnessControlDelegate> brightness_control_delegate_;
   std::unique_ptr<CastConfigController> cast_config_;
+  std::unique_ptr<DetachableBaseHandler> detachable_base_handler_;
   std::unique_ptr<DragDropController> drag_drop_controller_;
   std::unique_ptr<FocusCycler> focus_cycler_;
   std::unique_ptr<ImeController> ime_controller_;
