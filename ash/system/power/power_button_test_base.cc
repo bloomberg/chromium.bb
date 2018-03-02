@@ -64,21 +64,19 @@ void PowerButtonTestBase::ResetPowerButtonController() {
 void PowerButtonTestBase::InitPowerButtonControllerMembers(
     chromeos::PowerManagerClient::TabletMode initial_tablet_mode_switch_state) {
   power_button_controller_ = Shell::Get()->power_button_controller();
-  power_button_controller_->SetTickClockForTesting(&tick_clock_);
   power_button_test_api_ =
       std::make_unique<PowerButtonControllerTestApi>(power_button_controller_);
+  power_button_test_api_->SetTickClock(&tick_clock_);
 
   if (initial_tablet_mode_switch_state !=
       chromeos::PowerManagerClient::TabletMode::UNSUPPORTED) {
     SetTabletModeSwitchState(initial_tablet_mode_switch_state);
     turn_screen_off_for_tap_ =
-        power_button_controller_->turn_screen_off_for_tap_for_test();
-    screenshot_controller_ =
-        power_button_controller_->screenshot_controller_for_test();
+        power_button_test_api_->ShouldTurnScreenOffForTap();
+    screenshot_controller_ = power_button_test_api_->GetScreenshotController();
   } else {
     turn_screen_off_for_tap_ = false;
-    power_button_controller_->set_turn_screen_off_for_tap_for_test(
-        turn_screen_off_for_tap_);
+    power_button_test_api_->SetTurnScreenOffForTap(turn_screen_off_for_tap_);
     screenshot_controller_ = nullptr;
   }
 }
@@ -91,10 +89,8 @@ void PowerButtonTestBase::SetTabletModeSwitchState(
           tablet_mode_switch_state});
 
   turn_screen_off_for_tap_ =
-      power_button_controller_->turn_screen_off_for_tap_for_test();
-
-  screenshot_controller_ =
-      power_button_controller_->screenshot_controller_for_test();
+      power_button_test_api_->ShouldTurnScreenOffForTap();
+  screenshot_controller_ = power_button_test_api_->GetScreenshotController();
 }
 
 void PowerButtonTestBase::ForceClamshellPowerButton() {
@@ -128,7 +124,7 @@ void PowerButtonTestBase::GenerateMouseMoveEvent() {
 void PowerButtonTestBase::Initialize(
     PowerButtonController::ButtonType button_type,
     LoginStatus status) {
-  power_button_controller_->set_power_button_type_for_test(button_type);
+  power_button_test_api_->SetPowerButtonType(button_type);
   if (status == LoginStatus::NOT_LOGGED_IN)
     ClearLogin();
   else
