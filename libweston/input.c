@@ -2458,8 +2458,9 @@ notify_touch_normalized(struct weston_touch_device *device,
 			 * more fingers on the touch screen, in which
 			 * case we didn't get the corresponding down
 			 * event. */
-			weston_log("unmatched touch up event\n");
-			break;
+			weston_log("Unmatched touch up event on seat %s, device %s\n",
+				   seat->seat_name, device->syspath);
+			return;
 		}
 		weston_compositor_idle_release(seat->compositor);
 
