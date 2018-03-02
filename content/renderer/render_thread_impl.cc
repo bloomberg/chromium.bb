@@ -771,6 +771,8 @@ void RenderThreadImpl::Init(
     const scoped_refptr<base::SingleThreadTaskRunner>& resource_task_queue) {
   TRACE_EVENT0("startup", "RenderThreadImpl::Init");
 
+  GetContentClient()->renderer()->PostIOThreadCreated(GetIOTaskRunner().get());
+
   base::trace_event::TraceLog::GetInstance()->SetThreadSortIndex(
       base::PlatformThread::CurrentId(),
       kTraceEventRendererMainThreadSortIndex);
