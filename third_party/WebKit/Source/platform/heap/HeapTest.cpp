@@ -360,7 +360,7 @@ class TestGCScope {
   }
 
   ~TestGCScope() {
-    state_->MarkPhaseEpilogue();
+    state_->MarkPhaseEpilogue(BlinkGC::kGCWithSweep);
     state_->PreSweep(BlinkGC::kGCWithSweep);
   }
 
@@ -720,8 +720,7 @@ class TraceCounter : public GarbageCollectedFinalized<TraceCounter> {
   static TraceCounter* Create() { return new TraceCounter(); }
 
   void Trace(blink::Visitor* visitor) { trace_count_++; }
-
-  int TraceCount() { return trace_count_; }
+  int TraceCount() const { return trace_count_; }
 
  private:
   TraceCounter() : trace_count_(0) {}
@@ -729,27 +728,24 @@ class TraceCounter : public GarbageCollectedFinalized<TraceCounter> {
   int trace_count_;
 };
 
+TEST(HeapTest, IsHeapObjectAliveForConstPointer) {
+  // See http://crbug.com/661363.
+  SimpleObject* object = SimpleObject::Create();
+  HeapObjectHeader* header = HeapObjectHeader::FromPayload(object);
+  header->Mark();
+  EXPECT_TRUE(ThreadHeap::IsHeapObjectAlive(object));
+  const SimpleObject* const_object = const_cast<const SimpleObject*>(object);
+  EXPECT_TRUE(ThreadHeap::IsHeapObjectAlive(const_object));
+}
+
 class ClassWithMember : public GarbageCollected<ClassWithMember> {
  public:
   static ClassWithMember* Create() { return new ClassWithMember(); }
 
   void Trace(blink::Visitor* visitor) {
-    EXPECT_TRUE(ThreadHeap::IsHeapObjectAlive(this));
-
-    // Const pointer should also be alive. See http://crbug.com/661363.
-    const ClassWithMember* const_ptr =
-        static_cast<const ClassWithMember*>(this);
-    EXPECT_TRUE(ThreadHeap::IsHeapObjectAlive(const_ptr));
-
-    if (!TraceCount())
-      EXPECT_FALSE(ThreadHeap::IsHeapObjectAlive(trace_counter_));
-    else
-      EXPECT_TRUE(ThreadHeap::IsHeapObjectAlive(trace_counter_));
-
     visitor->Trace(trace_counter_);
   }
-
-  int TraceCount() { return trace_counter_->TraceCount(); }
+  int TraceCount() const { return trace_counter_->TraceCount(); }
 
  private:
   ClassWithMember() : trace_counter_(TraceCounter::Create()) {}
@@ -1870,16 +1866,15 @@ TEST(HeapTest, SimpleAllocation) {
 TEST(HeapTest, SimplePersistent) {
   Persistent<TraceCounter> trace_counter = TraceCounter::Create();
   EXPECT_EQ(0, trace_counter->TraceCount());
-
   PreciselyCollectGarbage();
-  EXPECT_EQ(1, trace_counter->TraceCount());
+  int saved_trace_count = trace_counter->TraceCount();
+  EXPECT_LT(0, saved_trace_count);
 
   Persistent<ClassWithMember> class_with_member = ClassWithMember::Create();
   EXPECT_EQ(0, class_with_member->TraceCount());
-
   PreciselyCollectGarbage();
-  EXPECT_EQ(1, class_with_member->TraceCount());
-  EXPECT_EQ(2, trace_counter->TraceCount());
+  EXPECT_LT(0, class_with_member->TraceCount());
+  EXPECT_LT(saved_trace_count, trace_counter->TraceCount());
 }
 
 TEST(HeapTest, SimpleFinalization) {
@@ -4796,13 +4791,13 @@ TEST(HeapTest, DerivedMultipleMixins) {
     Persistent<MixinA> a = obj;
     PreciselyCollectGarbage();
     EXPECT_EQ(0, IntWrapper::destructor_calls_);
-    EXPECT_EQ(1, DerivedMultipleMixins::trace_called_);
+    EXPECT_LT(0, DerivedMultipleMixins::trace_called_);
   }
   {
     Persistent<MixinB> b = obj;
     PreciselyCollectGarbage();
     EXPECT_EQ(0, IntWrapper::destructor_calls_);
-    EXPECT_EQ(2, DerivedMultipleMixins::trace_called_);
+    EXPECT_LT(0, DerivedMultipleMixins::trace_called_);
   }
   PreciselyCollectGarbage();
   EXPECT_EQ(4, IntWrapper::destructor_calls_);
@@ -4823,18 +4818,23 @@ TEST(HeapTest, MixinInstanceWithoutTrace) {
   ClearOutOldGarbage();
   MixinA::trace_count_ = 0;
   MixinInstanceWithoutTrace* obj = new MixinInstanceWithoutTrace();
+  int saved_trace_count = 0;
   {
     Persistent<MixinA> a = obj;
     PreciselyCollectGarbage();
-    EXPECT_EQ(1, MixinA::trace_count_);
+    saved_trace_count = MixinA::trace_count_;
+    EXPECT_LT(0, saved_trace_count);
   }
   {
     Persistent<MixinInstanceWithoutTrace> b = obj;
     PreciselyCollectGarbage();
-    EXPECT_EQ(2, MixinA::trace_count_);
+    EXPECT_LT(saved_trace_count, MixinA::trace_count_);
+    saved_trace_count = MixinA::trace_count_;
   }
   PreciselyCollectGarbage();
-  EXPECT_EQ(2, MixinA::trace_count_);
+  // Oilpan might still call trace on dead objects for various reasons which is
+  // valid before sweeping started.
+  EXPECT_LE(saved_trace_count, MixinA::trace_count_);
 }
 
 TEST(HeapTest, NeedsAdjustAndMark) {

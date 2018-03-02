@@ -1293,7 +1293,7 @@ void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,
       MarkPhasePrologue(stack_state, gc_type, reason);
       MarkPhaseVisitRoots();
       CHECK(MarkPhaseAdvanceMarking(std::numeric_limits<double>::infinity()));
-      MarkPhaseEpilogue();
+      MarkPhaseEpilogue(gc_type);
     }
   }
 
@@ -1399,11 +1399,15 @@ bool ThreadState::MarkPhaseAdvanceMarking(double deadline_seconds) {
   return complete;
 }
 
-void ThreadState::MarkPhaseEpilogue() {
+void ThreadState::MarkPhaseEpilogue(BlinkGC::GCType gc_type) {
   VisitWeakPersistents(current_gc_data_.visitor.get());
   Heap().PostMarkingProcessing(current_gc_data_.visitor.get());
   Heap().WeakProcessing(current_gc_data_.visitor.get());
   Heap().DecommitCallbackStacks();
+
+#if BUILDFLAG(BLINK_HEAP_VERIFICATION)
+  VerifyMarking(gc_type);
+#endif  // BLINK_HEAP_VERIFICATION
 
   Heap().HeapStats().SetEstimatedMarkingTimePerByte(
       current_gc_data_.marked_object_size
@@ -1434,6 +1438,15 @@ void ThreadState::MarkPhaseEpilogue() {
       EnumerationHistogram, gc_reason_histogram,
       ("BlinkGC.GCReason", BlinkGC::kLastGCReason + 1));
   gc_reason_histogram.Count(current_gc_data_.reason);
+}
+
+void ThreadState::VerifyMarking(BlinkGC::GCType gc_type) {
+  // Marking for snapshot does not clear unreachable weak fields prohibiting
+  // verification of markbits as we leave behind non-marked non-cleared weak
+  // fields.
+  if (gc_type == BlinkGC::kTakeSnapshot)
+    return;
+  Heap().VerifyMarking();
 }
 
 void ThreadState::CollectAllGarbage() {

@@ -296,7 +296,9 @@ class PLATFORM_EXPORT ThreadState {
                          BlinkGC::GCReason);
   void MarkPhaseVisitRoots();
   bool MarkPhaseAdvanceMarking(double deadline_seconds);
-  void MarkPhaseEpilogue();
+  void MarkPhaseEpilogue(BlinkGC::GCType);
+  void VerifyMarking(BlinkGC::GCType);
+
   void CompleteSweep();
   void PreSweep(BlinkGC::GCType);
   void PostSweep();

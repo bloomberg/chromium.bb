@@ -49,6 +49,7 @@ blink_platform_sources("heap") {
     "HeapTerminatedArray.h",
     "HeapTerminatedArrayBuilder.h",
     "HeapTraits.h",
+    "MarkingVerifier.h",
     "MarkingVisitor.cpp",
     "MarkingVisitor.h",
     "Member.h",
