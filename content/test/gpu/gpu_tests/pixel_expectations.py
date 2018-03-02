@@ -137,9 +137,6 @@ class PixelExpectations(GpuTestExpectations):
     self.Flaky('Pixel_CanvasDisplayLinearRGBUnaccelerated2DGPUCompositing',
                ['android'], bug=810006)
 
-    self.Fail('Pixel_CSSFilterEffects', ['mac'], bug=815045)
-    self.Fail('Pixel_CSSFilterEffects_NoOverlays', ['mac'], bug=815045)
-
     # TODO(kainino): temporary suppressions for perf experiment
     self.Fail('Pixel_2DCanvasWebGL',
         ['mac', 'intel'], bug=815154)
@@ -169,3 +166,4 @@ class PixelExpectations(GpuTestExpectations):
         ['mac', 'intel'], bug=815154)
     self.Fail('Pixel_WebGLGreenTriangle_NonChromiumImage_AA_NoAlpha',
         ['mac', 'intel'], bug=815154)
+
