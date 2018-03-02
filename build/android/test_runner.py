@@ -300,7 +300,7 @@ def AddGTestOptions(parser):
       help='Host directory to which app data files will be'
            ' saved. Used with --app-data-file.')
   parser.add_argument(
-      '--chartjson-result-file',
+      '--isolated-script-test-perf-output',
       help='If present, store chartjson results on this path.')
   parser.add_argument(
       '--delete-stale-data',

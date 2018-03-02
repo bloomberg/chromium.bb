@@ -284,7 +284,8 @@ class GtestTestInstance(test_instance.TestInstance):
     # TODO(jbudorick): Support multiple test suites.
     if len(args.suite_name) > 1:
       raise ValueError('Platform mode currently supports only 1 gtest suite')
-    self._chartjson_result_file = args.chartjson_result_file
+    self._isolated_script_test_perf_output = (
+        args.isolated_script_test_perf_output)
     self._exe_dist_dir = None
     self._external_shard_index = args.test_launcher_shard_index
     self._extract_test_list_from_filter = args.extract_test_list_from_filter
@@ -433,8 +434,8 @@ class GtestTestInstance(test_instance.TestInstance):
     return self._gtest_filter
 
   @property
-  def chartjson_result_file(self):
-    return self._chartjson_result_file
+  def isolated_script_test_perf_output(self):
+    return self._isolated_script_test_perf_output
 
   @property
   def package(self):
