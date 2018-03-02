@@ -208,7 +208,7 @@ class TestObserver : public chromeos::CrasAudioHandler::AudioObserver {
     ++input_gain_changed_count_;
   }
 
-  void OnOuputChannelRemixingChanged(bool /* mono_on */) override {
+  void OnOutputChannelRemixingChanged(bool /* mono_on */) override {
     ++output_channel_remixing_changed_count_;
   }
 

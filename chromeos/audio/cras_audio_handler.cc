@@ -102,13 +102,16 @@ void CrasAudioHandler::AudioObserver::OnActiveOutputNodeChanged() {
 void CrasAudioHandler::AudioObserver::OnActiveInputNodeChanged() {
 }
 
-void CrasAudioHandler::AudioObserver::OnOuputChannelRemixingChanged(
-    bool /* mono_on */) {
-}
+void CrasAudioHandler::AudioObserver::OnOutputChannelRemixingChanged(
+    bool /* mono_on */) {}
 
 void CrasAudioHandler::AudioObserver::OnHotwordTriggered(
     uint64_t /* tv_sec */,
     uint64_t /* tv_nsec */) {}
+
+void CrasAudioHandler::AudioObserver::OnOutputStarted() {}
+
+void CrasAudioHandler::AudioObserver::OnOutputStopped() {}
 
 // static
 void CrasAudioHandler::Initialize(
@@ -496,7 +499,7 @@ void CrasAudioHandler::SetOutputMonoEnabled(bool enabled) {
   }
 
   for (auto& observer : observers_)
-    observer.OnOuputChannelRemixingChanged(enabled);
+    observer.OnOutputChannelRemixingChanged(enabled);
 }
 
 bool CrasAudioHandler::has_alternative_input() const {
@@ -782,6 +785,10 @@ void CrasAudioHandler::HotwordTriggered(uint64_t tv_sec, uint64_t tv_nsec) {
     observer.OnHotwordTriggered(tv_sec, tv_nsec);
 }
 
+void CrasAudioHandler::NumberOfActiveStreamsChanged() {
+  GetNumberOfOutputStreams();
+}
+
 void CrasAudioHandler::OnAudioPolicyPrefChanged() {
   ApplyAudioPolicy();
 }
@@ -904,6 +911,7 @@ void CrasAudioHandler::InitializeAudioAfterCrasServiceAvailable(
   cras_service_available_ = true;
   GetDefaultOutputBufferSizeInternal();
   GetNodes();
+  GetNumberOfOutputStreams();
 }
 
 void CrasAudioHandler::ApplyAudioPolicy() {
@@ -986,6 +994,12 @@ void CrasAudioHandler::SetInputMuteInternal(bool mute_on) {
 void CrasAudioHandler::GetNodes() {
   GetCrasAudioClient()->GetNodes(base::BindOnce(
       &CrasAudioHandler::HandleGetNodes, weak_ptr_factory_.GetWeakPtr()));
+}
+
+void CrasAudioHandler::GetNumberOfOutputStreams() {
+  GetCrasAudioClient()->GetNumberOfActiveOutputStreams(
+      base::BindOnce(&CrasAudioHandler::HandleGetNumActiveOutputStreams,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 bool CrasAudioHandler::ChangeActiveDevice(
@@ -1460,6 +1474,24 @@ void CrasAudioHandler::HandleGetNodes(
   UpdateDevicesAndSwitchActive(node_list.value());
   for (auto& observer : observers_)
     observer.OnAudioNodesChanged();
+}
+
+void CrasAudioHandler::HandleGetNumActiveOutputStreams(
+    base::Optional<int> new_output_streams_count) {
+  if (!new_output_streams_count.has_value()) {
+    LOG(ERROR) << "Failed to retrieve number of active output streams";
+    return;
+  }
+
+  DCHECK(*new_output_streams_count >= 0);
+  if (*new_output_streams_count > 0 && num_active_output_streams_ == 0) {
+    for (auto& observer : observers_)
+      observer.OnOutputStarted();
+  } else if (*new_output_streams_count == 0 && num_active_output_streams_ > 0) {
+    for (auto& observer : observers_)
+      observer.OnOutputStopped();
+  }
+  num_active_output_streams_ = *new_output_streams_count;
 }
 
 void CrasAudioHandler::AddAdditionalActiveNode(uint64_t node_id, bool notify) {
