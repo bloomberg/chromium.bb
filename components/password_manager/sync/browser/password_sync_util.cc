@@ -5,10 +5,15 @@
 #include "components/password_manager/sync/browser/password_sync_util.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "components/autofill/core/common/password_form.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "url/origin.h"
+
+#if !defined(OS_IOS)
+#include "components/safe_browsing/common/safe_browsing_prefs.h"
+#endif  // !OS_IOS
 
 using autofill::PasswordForm;
 using url::Origin;
@@ -38,9 +43,9 @@ std::string GetSyncUsernameIfSyncingPasswords(
   return signin_manager->GetAuthenticatedAccountInfo().email;
 }
 
-bool IsSyncAccountCredential(const autofill::PasswordForm& form,
-                             const syncer::SyncService* sync_service,
-                             const SigninManagerBase* signin_manager) {
+bool IsGoogleSyncAccount(const autofill::PasswordForm& form,
+                         const syncer::SyncService* sync_service,
+                         const SigninManagerBase* signin_manager) {
   const Origin gaia_origin =
       Origin::Create(GaiaUrls::GetInstance()->gaia_url().GetOrigin());
   if (!Origin::Create(GURL(form.signon_realm)).IsSameOriginWith(gaia_origin) &&
@@ -57,6 +62,38 @@ bool IsSyncAccountCredential(const autofill::PasswordForm& form,
   return gaia::AreEmailsSame(
       base::UTF16ToUTF8(form.username_value),
       GetSyncUsernameIfSyncingPasswords(sync_service, signin_manager));
+}
+
+bool IsSyncAccountCredential(const autofill::PasswordForm& form,
+                             const syncer::SyncService* sync_service,
+                             const SigninManagerBase* signin_manager,
+                             PrefService* prefs) {
+#if defined(OS_IOS)
+  return IsGoogleSyncAccount(form, sync_service, signin_manager);
+#else
+  if (safe_browsing::MatchesPasswordProtectionLoginURL(form.origin, *prefs) ||
+      safe_browsing::MatchesPasswordProtectionChangePasswordURL(form.origin,
+                                                                *prefs)) {
+    // Form is on one of the enterprise configured password protection URLs,
+    // then we need to check its user name field.
+    std::string sync_user_name =
+        GetSyncUsernameIfSyncingPasswords(sync_service, signin_manager);
+
+    // User is not signed in or is not syncing password.
+    if (sync_user_name.empty())
+      return false;
+
+    // For some SSO case, username might not be the complete email address.
+    // It might be the email prefix before '@'.
+    std::string username = base::UTF16ToUTF8(form.username_value);
+    if (username.find('@') == std::string::npos) {
+      username += "@";
+      username += gaia::ExtractDomainName(sync_user_name);
+    }
+    return gaia::AreEmailsSame(username, sync_user_name);
+  }
+  return IsGoogleSyncAccount(form, sync_service, signin_manager);
+#endif
 }
 
 }  // namespace sync_util

@@ -65,9 +65,10 @@ class MockPasswordManagerClient
       : last_committed_url_(kHttpsWebOrigin), password_manager_(this) {
     store_ = base::MakeRefCounted<TestPasswordStore>();
     store_->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
-    prefs_.registry()->RegisterBooleanPref(
+    prefs_ = std::make_unique<TestingPrefServiceSimple>();
+    prefs_->registry()->RegisterBooleanPref(
         password_manager::prefs::kCredentialsEnableAutosignin, true);
-    prefs_.registry()->RegisterBooleanPref(
+    prefs_->registry()->RegisterBooleanPref(
         password_manager::prefs::kWasAutoSignInFirstRunExperienceShown, true);
   }
 
@@ -95,7 +96,7 @@ class MockPasswordManagerClient
 
  private:
   // PasswordManagerClient:
-  PrefService* GetPrefs() override { return &prefs_; }
+  PrefService* GetPrefs() const override { return prefs_.get(); }
   PasswordStore* GetPasswordStore() const override { return store_.get(); }
   const PasswordManager* GetPasswordManager() const override {
     return &password_manager_;
@@ -116,7 +117,7 @@ class MockPasswordManagerClient
       const GURL& origin,
       const CredentialsCallback& callback) override;
 
-  TestingPrefServiceSimple prefs_;
+  std::unique_ptr<TestingPrefServiceSimple> prefs_;
   GURL last_committed_url_;
   PasswordManager password_manager_;
   std::unique_ptr<PasswordFormManager> manager_;

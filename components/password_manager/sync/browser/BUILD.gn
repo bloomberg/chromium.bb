@@ -28,6 +28,10 @@ static_library("browser") {
     "//net",
     "//url",
   ]
+
+  if (!is_ios) {
+    deps += [ "//components/safe_browsing/common:safe_browsing_prefs" ]
+  }
 }
 
 source_set("unit_tests") {
@@ -55,4 +59,8 @@ source_set("unit_tests") {
     "//testing/gmock",
     "//testing/gtest",
   ]
+
+  if (!is_ios) {
+    deps += [ "//components/safe_browsing/common:safe_browsing_prefs" ]
+  }
 }

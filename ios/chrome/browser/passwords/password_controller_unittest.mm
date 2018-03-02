@@ -75,20 +75,22 @@ class MockPasswordManagerClient
     : public password_manager::StubPasswordManagerClient {
  public:
   explicit MockPasswordManagerClient(password_manager::PasswordStore* store)
-      : store_(store) {}
+      : store_(store) {
+    prefs_ = std::make_unique<TestingPrefServiceSimple>();
+  }
 
   ~MockPasswordManagerClient() override = default;
 
   MOCK_CONST_METHOD0(GetLogManager, password_manager::LogManager*(void));
 
-  PrefService* GetPrefs() override { return &prefs_; }
+  PrefService* GetPrefs() const override { return prefs_.get(); }
 
   password_manager::PasswordStore* GetPasswordStore() const override {
     return store_;
   }
 
  private:
-  TestingPrefServiceSimple prefs_;
+  std::unique_ptr<TestingPrefServiceSimple> prefs_;
   password_manager::PasswordStore* const store_;
 };
 

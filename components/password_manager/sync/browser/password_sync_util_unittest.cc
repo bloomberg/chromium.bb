@@ -7,9 +7,16 @@
 #include <stddef.h>
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/sync/browser/sync_username_test_base.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if !defined(OS_IOS)
+#include "components/safe_browsing/common/safe_browsing_prefs.h"
+#endif  // !OS_IOS
 
 using autofill::PasswordForm;
 
@@ -61,7 +68,7 @@ TEST_F(PasswordSyncUtilTest, GetSyncUsernameIfSyncingPasswords) {
   }
 }
 
-TEST_F(PasswordSyncUtilTest, IsSyncAccountCredential) {
+TEST_F(PasswordSyncUtilTest, IsGoogleSyncAccount) {
   const struct {
     PasswordForm form;
     std::string fake_sync_username;
@@ -82,10 +89,77 @@ TEST_F(PasswordSyncUtilTest, IsSyncAccountCredential) {
     SetSyncingPasswords(true);
     FakeSigninAs(kTestCases[i].fake_sync_username);
     EXPECT_EQ(kTestCases[i].expected_result,
-              IsSyncAccountCredential(kTestCases[i].form, sync_service(),
-                                      signin_manager()));
+              IsGoogleSyncAccount(kTestCases[i].form, sync_service(),
+                                  signin_manager()));
   }
 }
+
+#if !defined(OS_IOS)
+class PasswordSyncUtilEnterpriseTest : public SyncUsernameTestBase {
+ public:
+  void SetUp() override {
+    // prefs_ = std::make_unique<TestingPrefServiceSimple>();
+    prefs_.registry()->RegisterListPref(prefs::kPasswordProtectionLoginURLs);
+    prefs_.registry()->RegisterStringPref(
+        prefs::kPasswordProtectionChangePasswordURL, "");
+  }
+
+ protected:
+  TestingPrefServiceSimple prefs_;
+};
+
+TEST_F(PasswordSyncUtilEnterpriseTest,
+       IsSyncAccountCredentialForEnterpriseSSO) {
+  prefs_.SetString(prefs::kPasswordProtectionChangePasswordURL,
+                   "https://pwchange.mydomain.com/");
+  base::ListValue login_url;
+  login_url.AppendString("https://login.mydomain.com/");
+  prefs_.Set(prefs::kPasswordProtectionLoginURLs, login_url);
+  const struct {
+    PasswordForm form;
+    std::string fake_sync_username;
+    bool expected_result;
+  } kTestCases[] = {
+      {SimpleNonGaiaForm("sync_user@mydomain.com",
+                         "https://pwchange.mydomain.com/"),
+       "sync_user@mydomain.com", true},
+      {SimpleNonGaiaForm("sync_user@mydomain.com",
+                         "https://login.mydomain.com/"),
+       "sync_user@mydomain.com", true},
+      {SimpleNonGaiaForm("non_sync_user@mydomain.com",
+                         "https://pwchange.mydomain.com/"),
+       "sync_user@mydomain.com", false},
+      {SimpleNonGaiaForm("non_sync_user@mydomain.com",
+                         "https://login.mydomain.com/"),
+       "sync_user@mydomain.com", false},
+      {SimpleNonGaiaForm("sync_user", "https://pwchange.mydomain.com/"),
+       "sync_user@mydomain.com", true},
+      {SimpleNonGaiaForm("sync_user", "https://login.mydomain.com/"),
+       "sync_user@mydomain.com", true},
+      {SimpleNonGaiaForm("non_sync_user", "https://pwchange.mydomain.com/"),
+       "sync_user@mydomain.com", false},
+      {SimpleNonGaiaForm("non_sync_user", "https://login.mydomain.com/"),
+       "sync_user@mydomain.com", false},
+      {SimpleNonGaiaForm("", "https://pwchange.mydomain.com/"),
+       "sync_user@mydomain.com", false},
+      {SimpleNonGaiaForm("", "https://login.mydomain.com/"),
+       "sync_user@mydomain.com", false},
+      {SimpleNonGaiaForm("sync_user@mydomain.com", "https://otherdomain.com/"),
+       "sync_user@mydomain.com", false},
+      {SimpleNonGaiaForm("sync_user", "https://otherdomain.com/"),
+       "sync_user@mydomain.com", false},
+  };
+
+  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+    SCOPED_TRACE(testing::Message() << "i=" << i);
+    SetSyncingPasswords(true);
+    FakeSigninAs(kTestCases[i].fake_sync_username);
+    EXPECT_EQ(kTestCases[i].expected_result,
+              IsSyncAccountCredential(kTestCases[i].form, sync_service(),
+                                      signin_manager(), &prefs_));
+  }
+}
+#endif  // !OS_IOS
 
 }  // namespace sync_util
 }  // namespace password_manager

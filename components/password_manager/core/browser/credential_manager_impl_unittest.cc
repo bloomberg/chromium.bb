@@ -61,9 +61,10 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
 
   explicit MockPasswordManagerClient(PasswordStore* store)
       : store_(store), password_manager_(this) {
-    prefs_.registry()->RegisterBooleanPref(prefs::kCredentialsEnableAutosignin,
-                                           true);
-    prefs_.registry()->RegisterBooleanPref(
+    prefs_ = std::make_unique<TestingPrefServiceSimple>();
+    prefs_->registry()->RegisterBooleanPref(prefs::kCredentialsEnableAutosignin,
+                                            true);
+    prefs_->registry()->RegisterBooleanPref(
         prefs::kWasAutoSignInFirstRunExperienceShown, true);
   }
   ~MockPasswordManagerClient() override {}
@@ -83,7 +84,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
 
   PasswordStore* GetPasswordStore() const override { return store_; }
 
-  PrefService* GetPrefs() override { return &prefs_; }
+  PrefService* GetPrefs() const override { return prefs_.get(); }
 
   const PasswordManager* GetPasswordManager() const override {
     return &password_manager_;
@@ -121,12 +122,12 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   PasswordFormManager* pending_manager() const { return manager_.get(); }
 
   void set_zero_click_enabled(bool zero_click_enabled) {
-    prefs_.SetBoolean(prefs::kCredentialsEnableAutosignin, zero_click_enabled);
+    prefs_->SetBoolean(prefs::kCredentialsEnableAutosignin, zero_click_enabled);
   }
 
   void set_first_run_seen(bool first_run_seen) {
-    prefs_.SetBoolean(prefs::kWasAutoSignInFirstRunExperienceShown,
-                      first_run_seen);
+    prefs_->SetBoolean(prefs::kWasAutoSignInFirstRunExperienceShown,
+                       first_run_seen);
   }
 
   void set_last_committed_url(GURL last_committed_url) {
@@ -134,7 +135,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   }
 
  private:
-  TestingPrefServiceSimple prefs_;
+  std::unique_ptr<TestingPrefServiceSimple> prefs_;
   PasswordStore* store_;
   std::unique_ptr<PasswordFormManager> manager_;
   PasswordManager password_manager_;

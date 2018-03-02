@@ -76,7 +76,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   MOCK_METHOD1(NotifySuccessfulLoginWithExistingPassword,
                void(const autofill::PasswordForm&));
   MOCK_METHOD0(AutomaticPasswordSaveIndicator, void());
-  MOCK_METHOD0(GetPrefs, PrefService*());
+  MOCK_CONST_METHOD0(GetPrefs, PrefService*());
   MOCK_CONST_METHOD0(GetMainFrameURL, const GURL&());
   MOCK_METHOD0(GetDriver, PasswordManagerDriver*());
   MOCK_CONST_METHOD0(GetStoreResultFilter, const MockStoreResultFilter*());

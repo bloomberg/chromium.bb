@@ -8,6 +8,7 @@
 #include <string>
 
 #include "components/autofill/core/common/password_form.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/sync/driver/sync_service.h"
 
@@ -23,12 +24,20 @@ std::string GetSyncUsernameIfSyncingPasswords(
     const syncer::SyncService* sync_service,
     const SigninManagerBase* signin_manager);
 
+// If |form| doesn't match GAIA sign-on realm or enterprise-specified password
+// protection URL, returns false. Otherwise, checks if the username
+// in |form| matches sync account.
+bool IsSyncAccountCredential(const autofill::PasswordForm& form,
+                             const syncer::SyncService* sync_service,
+                             const SigninManagerBase* signin_manager,
+                             PrefService* prefs);
+
 // Returns true if |form| corresponds to the account specified by
 // GetSyncUsernameIfSyncingPasswords. Returns false if
 // GetSyncUsernameIfSyncingPasswords does not specify any account.
-bool IsSyncAccountCredential(const autofill::PasswordForm& form,
-                             const syncer::SyncService* sync_service,
-                             const SigninManagerBase* signin_manager);
+bool IsGoogleSyncAccount(const autofill::PasswordForm& form,
+                         const syncer::SyncService* sync_service,
+                         const SigninManagerBase* signin_manager);
 
 }  // namespace sync_util
 }  // namespace password_manager
