@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "content/renderer/device_sensors/device_sensor_event_pump.h"
-#include "device/sensors/public/cpp/orientation_data.h"
+#include "services/device/public/cpp/generic_sensor/orientation_data.h"
 #include "third_party/WebKit/public/platform/modules/device_orientation/WebDeviceOrientationListener.h"
 
 namespace content {

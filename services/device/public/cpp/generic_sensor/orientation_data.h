@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_SENSORS_PUBLIC_CPP_ORIENTATION_DATA_H_
-#define DEVICE_SENSORS_PUBLIC_CPP_ORIENTATION_DATA_H_
+#ifndef SERVICES_DEVICE_PUBLIC_CPP_GENERIC_SENSOR_ORIENTATION_DATA_H_
+#define SERVICES_DEVICE_PUBLIC_CPP_GENERIC_SENSOR_ORIENTATION_DATA_H_
 
 namespace device {
 
@@ -35,4 +35,4 @@ static_assert(sizeof(OrientationData) ==
 
 }  // namespace device
 
-#endif  // DEVICE_SENSORS_PUBLIC_CPP_ORIENTATION_DATA_H_
+#endif  // SERVICES_DEVICE_PUBLIC_CPP_GENERIC_SENSOR_ORIENTATION_DATA_H_
