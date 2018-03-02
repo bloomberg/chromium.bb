@@ -11,11 +11,8 @@
 #include <utility>
 #include <vector>
 
-#include "base/base64.h"
 #include "base/logging.h"
 #include "base/sys_byteorder.h"
-#include "net/http/transport_security_state.h"
-#include "net/ssl/ssl_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -103,37 +100,6 @@ void SetFrameLength(SpdySerializedFrame* frame, size_t length) {
   }
 }
 
-HashValue GetTestHashValue(uint8_t label) {
-  HashValue hash_value(HASH_VALUE_SHA256);
-  memset(hash_value.data(), label, hash_value.size());
-  return hash_value;
-}
-
-SpdyString GetTestPin(uint8_t label) {
-  HashValue hash_value = GetTestHashValue(label);
-  SpdyString base64;
-  base::Base64Encode(SpdyStringPiece(reinterpret_cast<char*>(hash_value.data()),
-                                     hash_value.size()),
-                     &base64);
-
-  return SpdyString("pin-sha256=\"") + base64 + "\"";
-}
-
-void AddPin(TransportSecurityState* state,
-            const SpdyString& host,
-            uint8_t primary_label,
-            uint8_t backup_label) {
-  SpdyString primary_pin = GetTestPin(primary_label);
-  SpdyString backup_pin = GetTestPin(backup_label);
-  SpdyString header = "max-age = 10000; " + primary_pin + "; " + backup_pin;
-
-  // Construct a fake SSLInfo that will pass AddHPKPHeader's checks.
-  SSLInfo ssl_info;
-  ssl_info.is_issued_by_known_root = true;
-  ssl_info.public_key_hashes.push_back(GetTestHashValue(primary_label));
-  EXPECT_TRUE(state->AddHPKPHeader(host, header, ssl_info));
-}
-
 void TestHeadersHandler::OnHeaderBlockStart() {
   block_.clear();
 }
@@ -147,24 +113,6 @@ void TestHeadersHandler::OnHeaderBlockEnd(
     size_t compressed_header_bytes_parsed) {
   header_bytes_parsed_ = header_bytes_parsed;
   compressed_header_bytes_parsed_ = compressed_header_bytes_parsed;
-}
-
-TestServerPushDelegate::TestServerPushDelegate() = default;
-
-TestServerPushDelegate::~TestServerPushDelegate() = default;
-
-void TestServerPushDelegate::OnPush(
-    std::unique_ptr<ServerPushHelper> push_helper,
-    const NetLogWithSource& session_net_log) {
-  push_helpers[push_helper->GetURL()] = std::move(push_helper);
-}
-
-bool TestServerPushDelegate::CancelPush(GURL url) {
-  auto itr = push_helpers.find(url);
-  DCHECK(itr != push_helpers.end());
-  itr->second->Cancel();
-  push_helpers.erase(itr);
-  return true;
 }
 
 }  // namespace test

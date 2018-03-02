@@ -24,9 +24,6 @@
 
 namespace net {
 
-class HashValue;
-class TransportSecurityState;
-
 inline bool operator==(SpdyStringPiece x,
                        const SpdyHeaderBlock::ValueProxy& y) {
   return x == y.as_string();
@@ -48,19 +45,6 @@ void CompareCharArraysWithHexError(const SpdyString& description,
 void SetFrameFlags(SpdySerializedFrame* frame, uint8_t flags);
 
 void SetFrameLength(SpdySerializedFrame* frame, size_t length);
-
-// Returns a SHA1 HashValue in which each byte has the value |label|.
-HashValue GetTestHashValue(uint8_t label);
-
-// Returns SHA1 pinning header for the of the base64 encoding of
-// GetTestHashValue(|label|).
-SpdyString GetTestPin(uint8_t label);
-
-// Adds a pin for |host| to |state|.
-void AddPin(TransportSecurityState* state,
-            const SpdyString& host,
-            uint8_t primary_label,
-            uint8_t backup_label);
 
 // A test implementation of SpdyHeadersHandlerInterface that correctly
 // reconstructs multiple header values for the same name.
@@ -87,22 +71,6 @@ class TestHeadersHandler : public SpdyHeadersHandlerInterface {
   size_t compressed_header_bytes_parsed_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TestHeadersHandler);
-};
-
-// A test implementation of ServerPushDelegate that caches all the pushed
-// request and provides a interface to cancel the push given url.
-class TestServerPushDelegate : public ServerPushDelegate {
- public:
-  TestServerPushDelegate();
-  ~TestServerPushDelegate() override;
-
-  void OnPush(std::unique_ptr<ServerPushHelper> push_helper,
-              const NetLogWithSource& session_net_log) override;
-
-  bool CancelPush(GURL url);
-
- private:
-  std::map<GURL, std::unique_ptr<ServerPushHelper>> push_helpers;
 };
 
 }  // namespace test

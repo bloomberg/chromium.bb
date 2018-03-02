@@ -8,6 +8,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "net/quic/platform/api/quic_endian.h"
+#include "net/spdy/chromium/spdy_log_util.h"
 
 namespace net {
 

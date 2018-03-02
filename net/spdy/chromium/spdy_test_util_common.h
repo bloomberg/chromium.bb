@@ -46,12 +46,14 @@ namespace net {
 
 class CTVerifier;
 class CTPolicyEnforcer;
+class HashValue;
 class HostPortPair;
 class NetLogWithSource;
 class SpdySessionKey;
 class SpdySessionPool;
 class SpdyStream;
 class SpdyStreamRequest;
+class TransportSecurityState;
 
 // Default upload data used by both, mock objects and framer when creating
 // data frames.
@@ -495,6 +497,38 @@ class SpdyTestUtil {
   std::map<int, std::vector<int>> priority_to_stream_id_list_;
 };
 
+namespace test {
+
+// Returns a SHA1 HashValue in which each byte has the value |label|.
+HashValue GetTestHashValue(uint8_t label);
+
+// Returns SHA1 pinning header for the of the base64 encoding of
+// GetTestHashValue(|label|).
+SpdyString GetTestPin(uint8_t label);
+
+// Adds a pin for |host| to |state|.
+void AddPin(TransportSecurityState* state,
+            const SpdyString& host,
+            uint8_t primary_label,
+            uint8_t backup_label);
+
+// A test implementation of ServerPushDelegate that caches all the pushed
+// request and provides a interface to cancel the push given url.
+class TestServerPushDelegate : public ServerPushDelegate {
+ public:
+  TestServerPushDelegate();
+  ~TestServerPushDelegate() override;
+
+  void OnPush(std::unique_ptr<ServerPushHelper> push_helper,
+              const NetLogWithSource& session_net_log) override;
+
+  bool CancelPush(GURL url);
+
+ private:
+  std::map<GURL, std::unique_ptr<ServerPushHelper>> push_helpers;
+};
+
+}  // namespace test
 }  // namespace net
 
 #endif  // NET_SPDY_CHROMIUM_SPDY_TEST_UTIL_COMMON_H_

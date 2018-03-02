@@ -15,18 +15,11 @@
 
 #include "base/macros.h"
 #include "net/base/linked_hash_map.h"
-#include "net/log/net_log.h"
 #include "net/spdy/platform/api/spdy_export.h"
 #include "net/spdy/platform/api/spdy_string.h"
 #include "net/spdy/platform/api/spdy_string_piece.h"
 
-namespace base {
-class Value;
-}
-
 namespace net {
-
-class NetLogCaptureMode;
 
 namespace test {
 class SpdyHeaderBlockPeer;
@@ -255,11 +248,6 @@ class SPDY_EXPORT_PRIVATE SpdyHeaderBlock {
 SPDY_EXPORT_PRIVATE size_t Join(char* dst,
                                 const std::vector<SpdyStringPiece>& fragments,
                                 SpdyStringPiece separator);
-
-// Converts a SpdyHeaderBlock into NetLog event parameters.
-SPDY_EXPORT_PRIVATE std::unique_ptr<base::Value> SpdyHeaderBlockNetLogCallback(
-    const SpdyHeaderBlock* headers,
-    NetLogCaptureMode capture_mode);
 
 }  // namespace net
 

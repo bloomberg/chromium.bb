@@ -44,6 +44,7 @@
 #include "net/quic/test_tools/simple_quic_framer.h"
 #include "net/socket/datagram_client_socket.h"
 #include "net/socket/socket_test_util.h"
+#include "net/spdy/chromium/spdy_test_util_common.h"
 #include "net/spdy/core/spdy_test_utils.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
