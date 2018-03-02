@@ -283,10 +283,13 @@ class CORE_EXPORT VisualViewport final
   std::unique_ptr<GraphicsLayer> overscroll_elasticity_layer_;
   std::unique_ptr<GraphicsLayer> page_scale_layer_;
   std::unique_ptr<GraphicsLayer> inner_viewport_scroll_layer_;
-  std::unique_ptr<GraphicsLayer> overlay_scrollbar_horizontal_;
-  std::unique_ptr<GraphicsLayer> overlay_scrollbar_vertical_;
+
+  // The layers of the WebScrollbarLayers are referenced from the GraphicsLayers
+  // so the GraphicsLayers must be destructed first (declared after).
   std::unique_ptr<WebScrollbarLayer> web_overlay_scrollbar_horizontal_;
   std::unique_ptr<WebScrollbarLayer> web_overlay_scrollbar_vertical_;
+  std::unique_ptr<GraphicsLayer> overlay_scrollbar_horizontal_;
+  std::unique_ptr<GraphicsLayer> overlay_scrollbar_vertical_;
 
   // Offset of the visual viewport from the main frame's origin, in CSS pixels.
   ScrollOffset offset_;
