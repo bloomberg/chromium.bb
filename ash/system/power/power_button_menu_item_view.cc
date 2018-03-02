@@ -27,7 +27,7 @@ constexpr int kTitleFontSizeDelta = -1;
 constexpr int kIconSize = 24;
 
 // Top padding of the image icon to the top of the item view.
-constexpr int kIconTopPadding = 16;
+constexpr int kIconTopPadding = 24;
 
 // Top padding of the label of title to the top of the item view.
 constexpr int kTitleTopPadding = 50;
