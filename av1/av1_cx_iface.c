@@ -1391,7 +1391,7 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
           return AOM_CODEC_ERROR;
         }
 #else
-        mem_put_le32(ctx->pending_cx_data, obu_size);
+        mem_put_le32(ctx->pending_cx_data, obu_header_size + obu_payload_size);
 #endif  // CONFIG_OBU_SIZING
         pkt.data.frame.sz +=
             obu_header_size + obu_payload_size + length_field_size;

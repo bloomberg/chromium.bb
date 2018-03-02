@@ -3830,6 +3830,9 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
   }
 #endif  // CONFIG_EXT_TILE
 
+#if CONFIG_OBU_SIZING
+  uint32_t obu_header_size = 0;
+#endif  // CONFIG_OBU_SIZING
   for (tile_row = 0; tile_row < tile_rows; tile_row++) {
     TileInfo tile_info;
     const int is_last_row = (tile_row == tile_rows - 1);
@@ -3844,7 +3847,6 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
       const int is_last_col = (tile_col == tile_cols - 1);
       const int is_last_tile = is_last_col && is_last_row;
       int is_last_tile_in_tg = 0;
-      uint32_t obu_header_size = 0;
 
       if (new_tg) {
         data = dst + total_size;
@@ -3852,7 +3854,9 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
         // tile group header
         curr_tg_data_size = write_obu_header(
             OBU_TILE_GROUP, obu_extension_header, data + PRE_OBU_SIZE_BYTES);
+#if CONFIG_OBU_SIZING
         obu_header_size = curr_tg_data_size;
+#endif  // CONFIG_OBU_SIZING
         if (n_log2_tiles)
           curr_tg_data_size += write_tile_group_header(
               data + curr_tg_data_size + PRE_OBU_SIZE_BYTES, tile_idx,
