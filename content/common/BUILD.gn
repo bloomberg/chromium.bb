@@ -267,7 +267,6 @@ source_set("common") {
     "send_zygote_child_ping_linux.cc",
     "service_manager/service_manager_connection_impl.cc",
     "service_manager/service_manager_connection_impl.h",
-    "service_worker/embedded_worker_messages.h",
     "service_worker/service_worker_loader_helpers.cc",
     "service_worker/service_worker_loader_helpers.h",
     "service_worker/service_worker_messages.h",

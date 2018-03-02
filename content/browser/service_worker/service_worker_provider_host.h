@@ -34,6 +34,7 @@
 #include "services/network/public/mojom/request_context_frame_type.mojom.h"
 #include "third_party/WebKit/public/mojom/service_worker/service_worker_provider_type.mojom.h"
 #include "third_party/WebKit/public/mojom/service_worker/service_worker_registration.mojom.h"
+#include "third_party/WebKit/public/platform/web_feature.mojom.h"
 
 namespace network {
 class ResourceRequestBody;
@@ -296,7 +297,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
 
   // Notifies the client that its controller used a feature, for UseCounter
   // purposes. This can only be called if IsProviderForClient() is true.
-  void CountFeature(uint32_t feature);
+  void CountFeature(blink::mojom::WebFeature feature);
 
   // |registration| claims the document to be controlled.
   void ClaimedByRegistration(ServiceWorkerRegistration* registration);

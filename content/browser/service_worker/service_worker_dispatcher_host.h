@@ -136,7 +136,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
   void OnProviderCreated(ServiceWorkerProviderHostInfo info) override;
 
   // IPC Message handlers
-  void OnCountFeature(int64_t version_id, uint32_t feature);
   void OnPostMessageToWorker(
       int handle_id,
       int provider_id,

@@ -34,7 +34,6 @@
 #include "content/browser/service_worker/service_worker_type_converters.h"
 #include "content/common/origin_trials/trial_policy_impl.h"
 #include "content/common/service_worker/embedded_worker.mojom.h"
-#include "content/common/service_worker/embedded_worker_messages.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_thread.h"
@@ -1348,7 +1347,7 @@ void ServiceWorkerVersion::OnSimpleEventFinished(
   std::move(callback).Run(mojo::ConvertTo<ServiceWorkerStatusCode>(status));
 }
 
-void ServiceWorkerVersion::CountFeature(uint32_t feature) {
+void ServiceWorkerVersion::CountFeature(blink::mojom::WebFeature feature) {
   if (!used_features_.insert(feature).second)
     return;
   for (auto provider_host_by_uuid : controllee_map_)

@@ -555,17 +555,12 @@ void ServiceWorkerProviderHost::PostMessageToClient(
                                   std::move(message));
 }
 
-void ServiceWorkerProviderHost::CountFeature(uint32_t feature) {
+void ServiceWorkerProviderHost::CountFeature(blink::mojom::WebFeature feature) {
   if (!dispatcher_host_)
     return;
   // CountFeature message should be sent only for clients.
   DCHECK(IsProviderForClient());
-  DCHECK_LT(feature,
-            static_cast<uint32_t>(blink::mojom::WebFeature::kNumberOfFeatures));
-
-  blink::mojom::WebFeature web_feature =
-      static_cast<blink::mojom::WebFeature>(feature);
-  container_->CountFeature(web_feature);
+  container_->CountFeature(feature);
 }
 
 void ServiceWorkerProviderHost::ClaimedByRegistration(
@@ -796,11 +791,8 @@ void ServiceWorkerProviderHost::SendSetControllerServiceWorker(
 
   // Populate used features for UseCounter purposes.
   std::vector<blink::mojom::WebFeature> used_features;
-  for (const uint32_t feature : controller_->used_features()) {
-    DCHECK_LT(feature, static_cast<uint32_t>(
-                           blink::mojom::WebFeature::kNumberOfFeatures));
-    used_features.push_back(static_cast<blink::mojom::WebFeature>(feature));
-  }
+  for (const blink::mojom::WebFeature feature : controller_->used_features())
+    used_features.push_back(feature);
 
   // S13nServiceWorker: Pass an endpoint for the client to talk to this
   // controller.

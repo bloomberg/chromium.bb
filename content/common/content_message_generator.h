@@ -99,12 +99,6 @@
 #ifndef CONTENT_COMMON_RESOURCE_MESSAGES_H_
 #error "Failed to include content/common/resource_messages.h"
 #endif
-#undef CONTENT_COMMON_SERVICE_WORKER_EMBEDDED_WORKER_MESSAGES_H_
-#include "content/common/service_worker/embedded_worker_messages.h"
-#ifndef CONTENT_COMMON_SERVICE_WORKER_EMBEDDED_WORKER_MESSAGES_H_
-#error \
-    "Failed to include content/common/service_worker/embedded_worker_messages.h"
-#endif
 #undef CONTENT_COMMON_SERVICE_WORKER_SERVICE_WORKER_MESSAGES_H_
 #include "content/common/service_worker/service_worker_messages.h"
 #ifndef CONTENT_COMMON_SERVICE_WORKER_SERVICE_WORKER_MESSAGES_H_

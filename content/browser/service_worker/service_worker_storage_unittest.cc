@@ -697,7 +697,10 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
   const int64_t kVersionId = 0;
   const base::Time kToday = base::Time::Now();
   const base::Time kYesterday = kToday - base::TimeDelta::FromDays(1);
-  std::set<uint32_t> used_features = {124, 901, 1019};
+  std::set<blink::mojom::WebFeature> used_features = {
+      blink::mojom::WebFeature::kServiceWorkerControlledPage,
+      blink::mojom::WebFeature::kReferrerPolicyHeader,
+      blink::mojom::WebFeature::kLocationOrigin};
 
   scoped_refptr<ServiceWorkerRegistration> found_registration;
 
@@ -731,7 +734,8 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
       ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
   live_version->SetStatus(ServiceWorkerVersion::INSTALLED);
   live_version->script_cache_map()->SetResources(resources);
-  live_version->set_used_features(used_features);
+  live_version->set_used_features(
+      std::set<blink::mojom::WebFeature>(used_features));
   live_registration->SetWaitingVersion(live_version);
   live_registration->set_last_update_check(kYesterday);
   EXPECT_EQ(SERVICE_WORKER_OK,

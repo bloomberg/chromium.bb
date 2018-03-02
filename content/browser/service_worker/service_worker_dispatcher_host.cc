@@ -22,7 +22,6 @@
 #include "content/browser/service_worker/service_worker_handle.h"
 #include "content/browser/service_worker/service_worker_navigation_handle_core.h"
 #include "content/browser/service_worker/service_worker_registration.h"
-#include "content/common/service_worker/embedded_worker_messages.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/content_browser_client.h"
@@ -37,7 +36,6 @@
 #include "third_party/WebKit/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/WebKit/public/mojom/service_worker/service_worker_provider_type.mojom.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerError.h"
-#include "third_party/WebKit/public/platform/web_feature.mojom.h"
 #include "url/gurl.h"
 
 using blink::MessagePortChannel;
@@ -48,7 +46,7 @@ namespace content {
 namespace {
 
 const uint32_t kServiceWorkerFilteredMessageClasses[] = {
-    ServiceWorkerMsgStart, EmbeddedWorkerMsgStart,
+    ServiceWorkerMsgStart,
 };
 
 }  // namespace
@@ -133,7 +131,6 @@ bool ServiceWorkerDispatcherHost::OnMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(ServiceWorkerDispatcherHost, message)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_PostMessageToWorker,
                         OnPostMessageToWorker)
-    IPC_MESSAGE_HANDLER(EmbeddedWorkerHostMsg_CountFeature, OnCountFeature)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -420,24 +417,6 @@ void ServiceWorkerDispatcherHost::
   }
   worker->event_dispatcher()->DispatchExtendableMessageEvent(
       std::move(event), worker->CreateSimpleEventCallback(request_id));
-}
-
-void ServiceWorkerDispatcherHost::OnCountFeature(int64_t version_id,
-                                                 uint32_t feature) {
-  if (!GetContext())
-    return;
-  ServiceWorkerVersion* version = GetContext()->GetLiveVersion(version_id);
-  if (!version)
-    return;
-  if (feature >=
-      static_cast<uint32_t>(blink::mojom::WebFeature::kNumberOfFeatures)) {
-    // We don't use BadMessageReceived here since this IPC will be converted to
-    // a Mojo method call soon, which will validate inputs for us.
-    // TODO(xiaofeng.zhang): Convert the OnCountFeature IPC into a Mojo method
-    // call.
-    return;
-  }
-  version->CountFeature(feature);
 }
 
 ServiceWorkerContextCore* ServiceWorkerDispatcherHost::GetContext() {
