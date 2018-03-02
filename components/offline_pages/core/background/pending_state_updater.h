@@ -34,10 +34,9 @@ class PendingStateUpdater {
   void SetPendingState(SavePageRequest& request);
 
  private:
-  // Set PendingState for multiple requests and notify
-  // RequestCoordinator::Observers. Callback for
-  // RequestCoordinator::GetAllRequests.
-  void SetPendingStatesAndNotifyChanged(
+  // Notify RequestCoordinator::Observers that the PendingState changed for
+  // multiple requests. Callback for RequestCoordinator::GetAllRequests.
+  void NotifyChangedPendingStates(
       std::vector<std::unique_ptr<SavePageRequest>> requests);
 
   // Unowned pointer.

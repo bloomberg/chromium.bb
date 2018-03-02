@@ -321,6 +321,9 @@ void RequestCoordinator::GetQueuedRequestsCallback(
     const GetRequestsCallback& callback,
     GetRequestsResult result,
     std::vector<std::unique_ptr<SavePageRequest>> requests) {
+  for (auto& request : requests) {
+    pending_state_updater_.SetPendingState(*request.get());
+  }
   callback.Run(std::move(requests));
 }
 
