@@ -102,6 +102,21 @@ class GraphicsLayerTest : public ::testing::Test,
     return layer.PaintWithoutCommit(interest_rect);
   }
 
+  const CompositedLayerRasterInvalidator* GetInternalRasterInvalidator(
+      const GraphicsLayer& layer) {
+    return layer.raster_invalidator_.get();
+  }
+
+  CompositedLayerRasterInvalidator& EnsureRasterInvalidator(
+      GraphicsLayer& layer) {
+    return layer.EnsureRasterInvalidator();
+  }
+
+  const PaintController* GetInternalPaintController(
+      const GraphicsLayer& layer) {
+    return layer.paint_controller_.get();
+  }
+
   WebLayer* platform_layer_;
   std::unique_ptr<FakeGraphicsLayer> graphics_layer_;
   std::unique_ptr<FakeGraphicsLayer> page_scale_layer_;
@@ -246,6 +261,18 @@ TEST_P(GraphicsLayerTest, PaintRecursively) {
 
   EXPECT_FALSE(transform1->Changed(*transform_root));
   EXPECT_FALSE(transform2->Changed(*transform_root));
+}
+
+TEST_P(GraphicsLayerTest, SetDrawsContentFalse) {
+  EXPECT_TRUE(graphics_layer_->DrawsContent());
+  graphics_layer_->GetPaintController();
+  EXPECT_NE(nullptr, GetInternalPaintController(*graphics_layer_));
+  EnsureRasterInvalidator(*graphics_layer_);
+  EXPECT_NE(nullptr, GetInternalRasterInvalidator(*graphics_layer_));
+
+  graphics_layer_->SetDrawsContent(false);
+  EXPECT_EQ(nullptr, GetInternalPaintController(*graphics_layer_));
+  EXPECT_EQ(nullptr, GetInternalRasterInvalidator(*graphics_layer_));
 }
 
 }  // namespace blink
