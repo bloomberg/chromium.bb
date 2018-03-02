@@ -6,7 +6,6 @@ source_set("tabs") {
   sources = [
     "legacy_tab_helper.h",
     "tab.h",
-    "tab_delegate.h",
     "tab_dialog_delegate.h",
     "tab_headers_delegate.h",
     "tab_helper_util.h",

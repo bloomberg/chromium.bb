@@ -26,7 +26,6 @@ class GURL;
 @class PasswordController;
 @class SnapshotManager;
 @class FormSuggestionController;
-@protocol TabDelegate;
 @protocol TabDialogDelegate;
 @class Tab;
 @protocol TabHeadersDelegate;
@@ -95,7 +94,6 @@ extern NSString* const kProxyPassthroughHeaderValue;
 
 @property(nonatomic, readonly) BOOL canGoBack;
 @property(nonatomic, readonly) BOOL canGoForward;
-@property(nonatomic, weak) id<TabDelegate> delegate;
 @property(nonatomic, weak) id<TabHeadersDelegate> tabHeadersDelegate;
 
 @property(nonatomic, readonly)
