@@ -173,11 +173,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
     // if they are supported. Otherwise does nothing.
     private final SystemCaptioningBridge mSystemCaptioningBridge;
 
-    // Whether a touch scroll sequence is active, used to hide text selection
-    // handles. Note that a scroll sequence will *always* bound a pinch
-    // sequence, so this will also be true for the duration of a pinch gesture.
-    private boolean mTouchScrollInProgress;
-
     /**
      * PID used to indicate an invalid render process.
      */
@@ -470,12 +465,14 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
 
     @Override
     public boolean isScrollInProgress() {
-        return mTouchScrollInProgress || getGestureListenerManager().hasPotentiallyActiveFling();
+        return getSelectionPopupController().getScrollInProgress()
+                || getGestureListenerManager().hasPotentiallyActiveFling();
     }
 
-    private void setTouchScrollInProgress(boolean inProgress) {
-        mTouchScrollInProgress = inProgress;
-        getSelectionPopupController().setScrollInProgress(inProgress, isScrollInProgress());
+    private void setTouchScrollInProgress(boolean touchScrollInProgress) {
+        final boolean scrollInProgress =
+                touchScrollInProgress || getGestureListenerManager().hasPotentiallyActiveFling();
+        getSelectionPopupController().setScrollInProgress(touchScrollInProgress, scrollInProgress);
     }
 
     /**
@@ -1019,7 +1016,7 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
     private void resetScrollInProgress() {
         if (!isScrollInProgress()) return;
 
-        final boolean touchScrollInProgress = mTouchScrollInProgress;
+        final boolean touchScrollInProgress = getSelectionPopupController().getScrollInProgress();
 
         setTouchScrollInProgress(false);
         if (touchScrollInProgress) getGestureListenerManager().updateOnScrollEnd();
