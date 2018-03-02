@@ -8,17 +8,14 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/test_mock_time_task_runner.h"
-#include "base/time/tick_clock.h"
-#include "base/time/time.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "content/browser/webauth/authenticator_impl.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
-#include "content/public/test/browser_test.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
@@ -32,10 +29,59 @@
 
 namespace content {
 
+namespace {
+
 using webauth::mojom::AuthenticatorPtr;
 using webauth::mojom::AuthenticatorStatus;
 using webauth::mojom::GetAssertionAuthenticatorResponsePtr;
 using webauth::mojom::MakeCredentialAuthenticatorResponsePtr;
+
+class MockCreateCallback {
+ public:
+  MockCreateCallback() = default;
+  MOCK_METHOD1_T(Run, void(AuthenticatorStatus));
+
+  using MakeCredentialCallback =
+      base::OnceCallback<void(AuthenticatorStatus,
+                              MakeCredentialAuthenticatorResponsePtr)>;
+
+  void RunWrapper(AuthenticatorStatus status,
+                  MakeCredentialAuthenticatorResponsePtr unused_response) {
+    Run(status);
+  }
+
+  MakeCredentialCallback Get() {
+    return base::BindOnce(&MockCreateCallback::RunWrapper,
+                          base::Unretained(this));
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockCreateCallback);
+};
+
+class MockGetCallback {
+ public:
+  MockGetCallback() = default;
+  MOCK_METHOD1_T(Run, void(AuthenticatorStatus));
+
+  using GetAssertionCallback =
+      base::OnceCallback<void(AuthenticatorStatus,
+                              GetAssertionAuthenticatorResponsePtr)>;
+
+  void RunWrapper(AuthenticatorStatus status,
+                  GetAssertionAuthenticatorResponsePtr unused_response) {
+    Run(status);
+  }
+
+  GetAssertionCallback Get() {
+    return base::BindOnce(&MockGetCallback::RunWrapper, base::Unretained(this));
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockGetCallback);
+};
+
+}  // namespace
 
 class WebAuthBrowserTest : public content::ContentBrowserTest {
  public:
@@ -49,6 +95,9 @@ class WebAuthBrowserTest : public content::ContentBrowserTest {
     host_resolver()->AddRule("*", "127.0.0.1");
     https_server_.ServeFilesFromSourceDirectory("content/test/data");
     ASSERT_TRUE(https_server_.Start());
+
+    NavigateToURL(shell(), GetHttpsURL("www.example.com", "/title1.html"));
+    authenticator_ptr_ = ConnectToAuthenticatorWithTestConnector();
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -128,95 +177,54 @@ class WebAuthBrowserTest : public content::ContentBrowserTest {
     return authenticator;
   }
 
+  void ResetAuthenticatorImplAndWaitForConnectionError() {
+    EXPECT_TRUE(authenticator_impl_);
+    EXPECT_TRUE(authenticator_ptr_);
+    EXPECT_TRUE(authenticator_ptr_.is_bound());
+    EXPECT_FALSE(authenticator_ptr_.encountered_error());
+
+    base::RunLoop run_loop;
+    authenticator_ptr_.set_connection_error_handler(run_loop.QuitClosure());
+
+    authenticator_impl_.reset();
+    run_loop.Run();
+  }
+
+  AuthenticatorPtr& authenticator() { return authenticator_ptr_; }
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
   net::EmbeddedTestServer https_server_;
   std::unique_ptr<content::AuthenticatorImpl> authenticator_impl_;
+  AuthenticatorPtr authenticator_ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(WebAuthBrowserTest);
 };
 
-class MockCreateCallback {
- public:
-  MockCreateCallback() = default;
-  MOCK_METHOD0_T(Run, void());
-
-  using MakeCredentialCallback =
-      base::OnceCallback<void(AuthenticatorStatus,
-                              MakeCredentialAuthenticatorResponsePtr)>;
-
-  void RunWrapper(AuthenticatorStatus unused,
-                  MakeCredentialAuthenticatorResponsePtr unused2) {
-    Run();
-  }
-
-  MakeCredentialCallback Get() {
-    return base::BindOnce(&MockCreateCallback::RunWrapper,
-                          base::Unretained(this));
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockCreateCallback);
-};
-
-class MockGetCallback {
- public:
-  MockGetCallback() = default;
-  MOCK_METHOD0_T(Run, void());
-
-  using GetAssertionCallback =
-      base::OnceCallback<void(AuthenticatorStatus,
-                              GetAssertionAuthenticatorResponsePtr)>;
-
-  void RunWrapper(AuthenticatorStatus unused,
-                  GetAssertionAuthenticatorResponsePtr unused2) {
-    Run();
-  }
-
-  GetAssertionCallback Get() {
-    return base::BindOnce(&MockGetCallback::RunWrapper, base::Unretained(this));
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockGetCallback);
-};
-
-// Tests.
-
-// Tests that no crash occurs when navigating away during a pending
-// create(publicKey) request.
+// Tests that no crash occurs when the implementation is destroyed with a
+// pending create(publicKey) request.
 IN_PROC_BROWSER_TEST_F(WebAuthBrowserTest,
                        CreatePublicKeyCredentialNavigateAway) {
-  const GURL a_url1 = GetHttpsURL("www.example.com", "/title1.html");
-  const GURL b_url1 = GetHttpsURL("www.test.com", "/title1.html");
-
-  NavigateToURL(shell(), a_url1);
-
-  AuthenticatorPtr authenticator = ConnectToAuthenticatorWithTestConnector();
-
   MockCreateCallback create_callback;
-  EXPECT_CALL(create_callback, Run()).Times(0);
-  authenticator->MakeCredential(BuildBasicCreateOptions(),
-                                create_callback.Get());
+  EXPECT_CALL(create_callback, Run(::testing::_)).Times(0);
 
-  ASSERT_NO_FATAL_FAILURE(NavigateToURL(shell(), b_url1));
+  authenticator()->MakeCredential(BuildBasicCreateOptions(),
+                                  create_callback.Get());
+  authenticator().FlushForTesting();
+
+  ResetAuthenticatorImplAndWaitForConnectionError();
 }
 
-// Tests that no crash occurs when navigating away during a pending
-// get(publicKey) request.
+// Tests that no crash occurs when the implementation is destroyed with a
+// pending get(publicKey) request.
 IN_PROC_BROWSER_TEST_F(WebAuthBrowserTest, GetPublicKeyCredentialNavigateAway) {
-  const GURL a_url1 = GetHttpsURL("www.example.com", "/title1.html");
-  const GURL b_url1 = GetHttpsURL("www.test.com", "/title1.html");
-
-  NavigateToURL(shell(), a_url1);
-
-  AuthenticatorPtr authenticator = ConnectToAuthenticatorWithTestConnector();
-
   MockGetCallback get_callback;
-  EXPECT_CALL(get_callback, Run()).Times(0);
-  authenticator->GetAssertion(BuildBasicGetOptions(), get_callback.Get());
+  EXPECT_CALL(get_callback, Run(::testing::_)).Times(0);
 
-  ASSERT_NO_FATAL_FAILURE(NavigateToURL(shell(), b_url1));
+  authenticator()->GetAssertion(BuildBasicGetOptions(), get_callback.Get());
+  authenticator().FlushForTesting();
+
+  ResetAuthenticatorImplAndWaitForConnectionError();
 }
 
 }  // namespace content
