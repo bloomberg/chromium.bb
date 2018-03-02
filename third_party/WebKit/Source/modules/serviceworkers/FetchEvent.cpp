@@ -191,11 +191,10 @@ void FetchEvent::OnNavigationPreloadComplete(
   resource_response.SetEncodedDataLength(encoded_data_length);
   resource_response.SetEncodedBodyLength(encoded_body_length);
   resource_response.SetDecodedBodyLength(decoded_body_length);
-  // According to the current spec of Resource Timing, the initiator type of
-  // navigation preload request must be "other". But it may change when the spec
-  // discussion is settled. https://github.com/w3c/resource-timing/issues/110
+  // According to the Resource Timing spec, the initiator type of
+  // navigation preload request is "navigation".
   scoped_refptr<ResourceTimingInfo> info = ResourceTimingInfo::Create(
-      "other",
+      "navigation",
       TimeTicksInSeconds(
           resource_response.GetResourceLoadTiming()->RequestTime()),
       false /* is_main_resource */);
