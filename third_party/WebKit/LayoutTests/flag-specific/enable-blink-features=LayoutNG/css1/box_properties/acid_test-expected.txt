@@ -23,12 +23,12 @@ layer at (0,0) size 800x420
                 LayoutNGBlockFlow {P} at (0,0) size 139.97x22
                   LayoutText {#text} at (0,6) size 28x12
                     text run at (0,6) width 28: "bang "
-                  LayoutNGBlockFlow {INPUT} at (33,3) size 13x13 [color=#000000]
+                  LayoutBlockFlow {INPUT} at (33,3) size 13x13 [color=#000000]
                   LayoutText {#text} at (0,0) size 0x0
                 LayoutNGBlockFlow {P} at (0,22) size 139.97x22
                   LayoutText {#text} at (0,6) size 47x12
                     text run at (0,6) width 47: "whimper "
-                  LayoutNGBlockFlow {INPUT} at (52,3) size 13x13 [color=#000000]
+                  LayoutBlockFlow {INPUT} at (52,3) size 13x13 [color=#000000]
                   LayoutText {#text} at (0,0) size 0x0
               LayoutNGBlockFlow (anonymous) at (10,64) size 139.97x0
                 LayoutInline {FORM} at (0,0) size 0x0
