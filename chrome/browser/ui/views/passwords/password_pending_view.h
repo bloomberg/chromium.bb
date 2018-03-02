@@ -18,7 +18,6 @@ class StyledLabel;
 class ToggleImageButton;
 }  // namespace views
 
-class CredentialsSelectionView;
 class DesktopIOSPromotionBubbleView;
 class PasswordSignInPromoView;
 
@@ -95,10 +94,6 @@ class PasswordPendingView : public PasswordBubbleViewBase,
   views::Label* password_label_;
 
   bool are_passwords_revealed_;
-
-  // The view for selecting a username from the list of existing usernames
-  // (applicable only to an update bubble).
-  CredentialsSelectionView* selection_view_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordPendingView);
 };

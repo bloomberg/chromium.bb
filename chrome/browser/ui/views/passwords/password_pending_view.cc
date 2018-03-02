@@ -12,7 +12,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
-#include "chrome/browser/ui/views/passwords/credentials_selection_view.h"
 #include "chrome/browser/ui/views/passwords/password_items_view.h"
 #include "chrome/browser/ui/views/passwords/password_sign_in_promo_view.h"
 #include "chrome/grit/generated_resources.h"
@@ -199,50 +198,31 @@ PasswordPendingView::PasswordPendingView(content::WebContents* web_contents,
       password_dropdown_(nullptr),
       password_label_(nullptr),
       are_passwords_revealed_(
-          model()->are_passwords_revealed_when_bubble_is_opened()),
-      selection_view_(nullptr) {
-  if (is_update_bubble_) {
-    // Credential row.
-    if (model()->ShouldShowMultipleAccountUpdateUI()) {
-      SetLayoutManager(std::make_unique<views::FillLayout>());
-      selection_view_ = new CredentialsSelectionView(model());
-      AddChildView(selection_view_);
-    } else {
-      const autofill::PasswordForm& password_form = model()->pending_password();
-      views::GridLayout* layout =
-          SetLayoutManager(std::make_unique<views::GridLayout>(this));
-      PasswordPendingView::BuildCredentialRows(
-          layout, CreateUsernameLabel(password_form).release(),
-          CreatePasswordLabel(password_form,
-                              IDS_PASSWORD_MANAGER_SIGNIN_VIA_FEDERATION, false)
-              .release(),
-          nullptr, /* password_view_button */
-          true /* show_password_label */);
-    }
+          model()->are_passwords_revealed_when_bubble_is_opened()) {
+  DCHECK(model()->state() == password_manager::ui::PENDING_PASSWORD_STATE ||
+         model()->state() ==
+             password_manager::ui::PENDING_PASSWORD_UPDATE_STATE);
+  const autofill::PasswordForm& password_form = model()->pending_password();
+  if (model()->enable_editing()) {
+    username_field_ =
+        CreateUsernameEditable(model()->GetInitialUsername()).release();
   } else {
-    DCHECK(model()->state() == password_manager::ui::PENDING_PASSWORD_STATE);
-    // Create credentials row.
-    const autofill::PasswordForm& password_form = model()->pending_password();
-    const bool is_password_credential =
-        password_form.federation_origin.unique();
-    if (model()->enable_editing()) {
-      username_field_ = CreateUsernameEditable(password_form).release();
-    } else {
-      username_field_ = CreateUsernameLabel(password_form).release();
-    }
+    username_field_ = CreateUsernameLabel(password_form).release();
+  }
 
-    CreatePasswordField();
+  const bool is_password_credential = password_form.federation_origin.unique();
 
-    if (is_password_credential) {
-      password_view_button_ =
-          CreatePasswordViewButton(this, are_passwords_revealed_).release();
-    }
+  CreatePasswordField();
 
-    CreateAndSetLayout(is_password_credential);
-    if (model()->enable_editing() &&
-        model()->pending_password().username_value.empty()) {
-      initially_focused_view_ = username_field_;
-    }
+  if (is_password_credential) {
+    password_view_button_ =
+        CreatePasswordViewButton(this, are_passwords_revealed_).release();
+  }
+
+  CreateAndSetLayout(is_password_credential);
+  if (model()->enable_editing() &&
+      model()->pending_password().username_value.empty()) {
+    initially_focused_view_ = username_field_;
   }
 }
 
@@ -297,12 +277,8 @@ PasswordPendingView::~PasswordPendingView() = default;
 
 bool PasswordPendingView::Accept() {
   if (is_update_bubble_) {
-    if (selection_view_) {
-      // Multi account case.
-      model()->OnUpdateClicked(*selection_view_->GetSelectedCredentials());
-    } else {
-      model()->OnUpdateClicked(model()->pending_password());
-    }
+    UpdateUsernameAndPasswordInModel();
+    model()->OnUpdateClicked(model()->pending_password());
     return true;
   }
   if (sign_in_promo_)

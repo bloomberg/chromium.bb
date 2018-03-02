@@ -144,6 +144,9 @@ class ManagePasswordsBubbleModel {
   // should be presented.
   bool ShouldShowMultipleAccountUpdateUI() const;
 
+  // Returns the value for the username field when the bubble is opened.
+  base::string16 GetInitialUsername() const;
+
   // Returns true and updates the internal state iff the Save bubble should
   // switch to show a promotion after the password was saved. Otherwise,
   // returns false and leaves the current state.

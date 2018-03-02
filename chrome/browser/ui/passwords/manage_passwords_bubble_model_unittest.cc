@@ -156,7 +156,8 @@ class ManagePasswordsBubbleModelTest : public ::testing::Test {
   void SetUpWithState(password_manager::ui::State state,
                       ManagePasswordsBubbleModel::DisplayReason reason);
   void PretendPasswordWaiting();
-  void PretendUpdatePasswordWaiting();
+  void PretendUpdatePasswordWaiting(
+      const autofill::PasswordForm& pending_password);
   void PretendAutoSigningIn();
   void PretendManagingPasswords();
 
@@ -166,6 +167,7 @@ class ManagePasswordsBubbleModelTest : public ::testing::Test {
 
   static password_manager::InteractionsStats GetTestStats();
   static autofill::PasswordForm GetPendingPassword();
+  static std::vector<std::unique_ptr<autofill::PasswordForm>> GetCurrentForms();
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
@@ -201,10 +203,12 @@ void ManagePasswordsBubbleModelTest::PretendPasswordWaiting() {
                  ManagePasswordsBubbleModel::AUTOMATIC);
 }
 
-void ManagePasswordsBubbleModelTest::PretendUpdatePasswordWaiting() {
-  autofill::PasswordForm form = GetPendingPassword();
-  EXPECT_CALL(*controller(), GetPendingPassword()).WillOnce(ReturnRef(form));
-  std::vector<std::unique_ptr<autofill::PasswordForm>> forms;
+void ManagePasswordsBubbleModelTest::PretendUpdatePasswordWaiting(
+    const autofill::PasswordForm& pending_password) {
+  EXPECT_CALL(*controller(), GetPendingPassword())
+      .WillOnce(ReturnRef(pending_password));
+  std::vector<std::unique_ptr<autofill::PasswordForm>> forms =
+      GetCurrentForms();
   EXPECT_CALL(*controller(), GetCurrentForms()).WillOnce(ReturnRef(forms));
   EXPECT_CALL(*controller(), IsPasswordOverridden()).WillOnce(Return(false));
   SetUpWithState(password_manager::ui::PENDING_PASSWORD_UPDATE_STATE,
@@ -219,8 +223,8 @@ void ManagePasswordsBubbleModelTest::PretendAutoSigningIn() {
 }
 
 void ManagePasswordsBubbleModelTest::PretendManagingPasswords() {
-  std::vector<std::unique_ptr<autofill::PasswordForm>> forms(1);
-  forms[0].reset(new autofill::PasswordForm(GetPendingPassword()));
+  std::vector<std::unique_ptr<autofill::PasswordForm>> forms =
+      GetCurrentForms();
   EXPECT_CALL(*controller(), GetCurrentForms()).WillOnce(ReturnRef(forms));
   SetUpWithState(password_manager::ui::MANAGE_STATE,
                  ManagePasswordsBubbleModel::USER_ACTION);
@@ -261,6 +265,21 @@ autofill::PasswordForm ManagePasswordsBubbleModelTest::GetPendingPassword() {
   form.username_value = base::ASCIIToUTF16(kUsername);
   form.password_value = base::ASCIIToUTF16(kPassword);
   return form;
+}
+
+// static
+std::vector<std::unique_ptr<autofill::PasswordForm>>
+ManagePasswordsBubbleModelTest::GetCurrentForms() {
+  std::vector<std::unique_ptr<autofill::PasswordForm>> forms(3);
+  autofill::PasswordForm another_form(GetPendingPassword());
+  another_form.username_value = base::ASCIIToUTF16("another_username");
+  forms[0].reset(new autofill::PasswordForm(another_form));
+  forms[1].reset(new autofill::PasswordForm(GetPendingPassword()));
+  autofill::PasswordForm preferred_form(GetPendingPassword());
+  preferred_form.username_value = base::ASCIIToUTF16("preferred_username");
+  preferred_form.preferred = true;
+  forms[2].reset(new autofill::PasswordForm(preferred_form));
+  return forms;
 }
 
 TEST_F(ManagePasswordsBubbleModelTest, CloseWithoutInteraction) {
@@ -333,12 +352,26 @@ TEST_F(ManagePasswordsBubbleModelTest, PopupAutoSigninToast) {
 }
 
 TEST_F(ManagePasswordsBubbleModelTest, ClickUpdate) {
-  PretendUpdatePasswordWaiting();
+  PretendUpdatePasswordWaiting(GetPendingPassword());
 
   autofill::PasswordForm form;
   EXPECT_CALL(*controller(), UpdatePassword(form));
   model()->OnUpdateClicked(form);
   DestroyModelAndVerifyControllerExpectations();
+}
+
+TEST_F(ManagePasswordsBubbleModelTest, GetInitialUsername_MatchedUsername) {
+  PretendUpdatePasswordWaiting(GetPendingPassword());
+  EXPECT_EQ(base::UTF8ToUTF16(kUsername), model()->GetInitialUsername());
+}
+
+TEST_F(ManagePasswordsBubbleModelTest, GetInitialUsername_PreferredCredential) {
+  autofill::PasswordForm form = GetPendingPassword();
+  // There is no matched username, the preferred credential should be selected.
+  form.username_value = base::UTF8ToUTF16("captcha_code");
+  PretendUpdatePasswordWaiting(form);
+  EXPECT_EQ(base::UTF8ToUTF16("preferred_username"),
+            model()->GetInitialUsername());
 }
 
 TEST_F(ManagePasswordsBubbleModelTest, EditCredential) {
@@ -562,7 +595,7 @@ TEST_F(ManagePasswordsBubbleModelTest, RecordUKMs) {
                              : CredentialSourceType::kPasswordManager));
 
           if (update)
-            PretendUpdatePasswordWaiting();
+            PretendUpdatePasswordWaiting(GetPendingPassword());
           else
             PretendPasswordWaiting();
 
