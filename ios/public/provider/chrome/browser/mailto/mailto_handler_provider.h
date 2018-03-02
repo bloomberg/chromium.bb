@@ -30,6 +30,11 @@ class MailtoHandlerProvider {
       SignedInIdentityBlock signed_in_identity_block,
       SignedInIdentitiesBlock signed_in_identities_block);
 
+  // Returns a properly localized title for the menu item or button used to open
+  // the settings for this handler. Returns nil if mailto handling is not
+  // supported by the provider.
+  virtual NSString* MailtoHandlerSettingsTitle() const;
+
   // Creates and returns a view controller for presenting the settings for
   // mailto handling to the user. Returns nil if mailto handling is not
   // supported by the provider.

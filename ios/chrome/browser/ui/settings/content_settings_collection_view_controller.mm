@@ -139,9 +139,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   if (base::FeatureList::IsEnabled(kMailtoHandledWithGoogleUI)) {
     MailtoHandlerProvider* provider =
         ios::GetChromeBrowserProvider()->GetMailtoHandlerProvider();
-    UIViewController* settingsController =
-        provider->MailtoHandlerSettingsController();
-    if (settingsController) {
+    NSString* settingsTitle = provider->MailtoHandlerSettingsTitle();
+    if (settingsTitle) {
       [model addItem:[self composeEmailItem]
           toSectionWithIdentifier:SectionIdentifierSettings];
     }
@@ -183,9 +182,18 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (CollectionViewItem*)composeEmailItem {
   _composeEmailDetailItem = [[CollectionViewDetailItem alloc]
       initWithType:ItemTypeSettingsComposeEmail];
-  _composeEmailDetailItem.text =
-      l10n_util::GetNSString(IDS_IOS_COMPOSE_EMAIL_SETTING);
-  if (!base::FeatureList::IsEnabled(kMailtoHandledWithGoogleUI)) {
+  if (base::FeatureList::IsEnabled(kMailtoHandledWithGoogleUI)) {
+    // Use the handler's preferred title string for the compose email item.
+    MailtoHandlerProvider* provider =
+        ios::GetChromeBrowserProvider()->GetMailtoHandlerProvider();
+    NSString* settingsTitle = provider->MailtoHandlerSettingsTitle();
+    DCHECK([settingsTitle length]);
+    _composeEmailDetailItem.text = settingsTitle;
+  } else {
+    // Use the default Chrome string when mailto handling with Google UI is not
+    // available.
+    _composeEmailDetailItem.text =
+        l10n_util::GetNSString(IDS_IOS_COMPOSE_EMAIL_SETTING);
     // Displaying the selected app name is only supported in the Chrome
     // implementation of mailto content settings.
     // The Google UI version of mailto handling does not expose the name of the
