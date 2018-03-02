@@ -415,6 +415,7 @@ public class VrShellImpl
 
     private void initializeImeForVr() {
         assert mTab != null;
+        if (mTab.getWebContents() == null) return;
         ImeAdapter imeAdapter = ImeAdapter.fromWebContents(mTab.getWebContents());
         if (imeAdapter != null) {
             imeAdapter.setInputMethodManagerWrapper(
@@ -424,6 +425,7 @@ public class VrShellImpl
 
     private void uninitializeImeForVr() {
         assert mTab != null;
+        if (mTab.getWebContents() == null) return;
         ImeAdapter imeAdapter = ImeAdapter.fromWebContents(mTab.getWebContents());
         if (imeAdapter != null) {
             imeAdapter.setInputMethodManagerWrapper(
