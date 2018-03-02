@@ -98,14 +98,11 @@ void TextureAllocation::AllocateStorage(gpu::raster::RasterInterface* ri,
   // ETC1 resources cannot be preallocated.
   if (format == ETC1)
     return;
-  ri->BindTexture(alloc.texture_target, alloc.texture_id);
-  ri->TexStorageForRaster(
-      alloc.texture_target, format, size.width(), size.height(),
-      alloc.overlay_candidate ? gpu::raster::kOverlay : gpu::raster::kNone);
+  ri->TexStorage2D(alloc.texture_id, 1, size.width(), size.height());
   if (alloc.overlay_candidate && color_space.IsValid()) {
-    ri->SetColorSpaceMetadataCHROMIUM(
-        alloc.texture_id, reinterpret_cast<GLColorSpace>(
-                              const_cast<gfx::ColorSpace*>(&color_space)));
+    ri->SetColorSpaceMetadata(alloc.texture_id,
+                              reinterpret_cast<GLColorSpace>(
+                                  const_cast<gfx::ColorSpace*>(&color_space)));
   }
 }
 

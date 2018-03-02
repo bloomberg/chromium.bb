@@ -56,7 +56,9 @@ static void RasterizeSourceOOP(
     bool use_distance_field_text,
     int msaa_sample_count) {
   gpu::raster::RasterInterface* ri = context_provider->RasterInterface();
-  GLuint texture_id = ri->CreateAndConsumeTextureCHROMIUM(mailbox.name);
+  GLuint texture_id = ri->CreateAndConsumeTexture(
+      texture_is_overlay_candidate, gfx::BufferUsage::SCANOUT, resource_format,
+      mailbox.name);
   if (!texture_storage_allocated) {
     viz::TextureAllocation alloc = {texture_id, texture_target,
                                     texture_is_overlay_candidate};
@@ -126,10 +128,10 @@ static void RasterizeSource(
     viz::RasterContextProvider* context_provider,
     bool use_distance_field_text,
     int msaa_sample_count) {
-  ScopedGrContextAccess gr_context_access(context_provider);
-
   gpu::raster::RasterInterface* ri = context_provider->RasterInterface();
-  GLuint texture_id = ri->CreateAndConsumeTextureCHROMIUM(mailbox.name);
+  GLuint texture_id = ri->CreateAndConsumeTexture(
+      texture_is_overlay_candidate, gfx::BufferUsage::SCANOUT, resource_format,
+      mailbox.name);
   if (!texture_storage_allocated) {
     viz::TextureAllocation alloc = {texture_id, texture_target,
                                     texture_is_overlay_candidate};
@@ -139,6 +141,7 @@ static void RasterizeSource(
   }
 
   {
+    ScopedGrContextAccess gr_context_access(context_provider);
     LayerTreeResourceProvider::ScopedSkSurface scoped_surface(
         context_provider->GrContext(), texture_id, texture_target,
         resource_size, resource_format, use_distance_field_text,

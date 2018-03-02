@@ -111,6 +111,8 @@ class VIZ_COMMON_EXPORT RasterContextProvider {
   // calling this.
   virtual const gpu::GpuFeatureInfo& GetGpuFeatureInfo() const = 0;
 
+  // TODO(vmiura): Hide ContextGL() & GrContext() behind some kind of lock.
+
   // Get a GLES2 interface to the 3d context.  The context provider must have
   // been successfully bound to a thread before calling this.
   virtual gpu::gles2::GLES2Interface* ContextGL() = 0;

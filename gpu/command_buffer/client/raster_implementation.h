@@ -99,63 +99,39 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
 #include "gpu/command_buffer/client/raster_implementation_autogen.h"
 
   // RasterInterface implementation.
-  void GenTextures(GLsizei n, GLuint* textures) override;
-  void BindTexture(GLenum target, GLuint texture) override;
-  void ActiveTexture(GLenum texture) override;
-  void GenerateMipmap(GLenum target) override;
-  void SetColorSpaceMetadataCHROMIUM(GLuint texture_id,
-                                     GLColorSpace color_space) override;
-  void GenMailboxCHROMIUM(GLbyte* mailbox) override;
-  void ProduceTextureDirectCHROMIUM(GLuint texture,
-                                    const GLbyte* mailbox) override;
-  GLuint CreateAndConsumeTextureCHROMIUM(const GLbyte* mailbox) override;
-  void BindTexImage2DCHROMIUM(GLenum target, GLint imageId) override;
-  void ReleaseTexImage2DCHROMIUM(GLenum target, GLint imageId) override;
-  void TexImage2D(GLenum target,
-                  GLint level,
-                  GLint internalformat,
-                  GLsizei width,
-                  GLsizei height,
-                  GLint border,
-                  GLenum format,
-                  GLenum type,
-                  const void* pixels) override;
-  void TexSubImage2D(GLenum target,
-                     GLint level,
-                     GLint xoffset,
-                     GLint yoffset,
-                     GLsizei width,
-                     GLsizei height,
-                     GLenum format,
-                     GLenum type,
-                     const void* pixels) override;
-  void CompressedTexImage2D(GLenum target,
-                            GLint level,
-                            GLenum internalformat,
-                            GLsizei width,
-                            GLsizei height,
-                            GLint border,
-                            GLsizei imageSize,
-                            const void* data) override;
-  void TexStorageForRaster(GLenum target,
-                           viz::ResourceFormat format,
-                           GLsizei width,
-                           GLsizei height,
-                           RasterTexStorageFlags flags) override;
-  void CopySubTextureCHROMIUM(GLuint source_id,
-                              GLint source_level,
-                              GLenum dest_target,
-                              GLuint dest_id,
-                              GLint dest_level,
-                              GLint xoffset,
-                              GLint yoffset,
-                              GLint x,
-                              GLint y,
-                              GLsizei width,
-                              GLsizei height,
-                              GLboolean unpack_flip_y,
-                              GLboolean unpack_premultiply_alpha,
-                              GLboolean unpack_unmultiply_alpha) override;
+  // Texture objects.
+  GLuint CreateTexture(bool use_buffer,
+                       gfx::BufferUsage buffer_usage,
+                       viz::ResourceFormat format) override;
+  void SetColorSpaceMetadata(GLuint texture_id,
+                             GLColorSpace color_space) override;
+
+  // Mailboxes.
+  void GenMailbox(GLbyte* mailbox) override;
+  void ProduceTextureDirect(GLuint texture, const GLbyte* mailbox) override;
+  GLuint CreateAndConsumeTexture(bool use_buffer,
+                                 gfx::BufferUsage buffer_usage,
+                                 viz::ResourceFormat format,
+                                 const GLbyte* mailbox) override;
+
+  // Image objects.
+  void BindTexImage2DCHROMIUM(GLuint texture_id, GLint image_id) override;
+  void ReleaseTexImage2DCHROMIUM(GLuint texture_id, GLint image_id) override;
+
+  // Texture allocation and copying.
+  void TexStorage2D(GLuint texture_id,
+                    GLint levels,
+                    GLsizei width,
+                    GLsizei height) override;
+  void CopySubTexture(GLuint source_id,
+                      GLuint dest_id,
+                      GLint xoffset,
+                      GLint yoffset,
+                      GLint x,
+                      GLint y,
+                      GLsizei width,
+                      GLsizei height) override;
+
   void BeginRasterCHROMIUM(
       GLuint texture_id,
       GLuint sk_color,
