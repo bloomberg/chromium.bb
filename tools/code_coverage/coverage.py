@@ -307,8 +307,11 @@ class _CoverageReportHtmlGenerator(object):
       html_file.write(html_header + html_table + html_footer)
 
 
-def _GetPlatform():
-  """Returns current running platform."""
+def _GetHostPlatform():
+  """Returns the host platform.
+
+  This is separate from the target platform/os that coverage is running for.
+  """
   if sys.platform == 'win32' or sys.platform == 'cygwin':
     return 'win'
   if sys.platform.startswith('linux'):
@@ -318,10 +321,18 @@ def _GetPlatform():
     return 'mac'
 
 
+def _GetTargetOS():
+  """Returns the target os specified in args.gn file.
+
+  Returns an empty string is target_os is not specified.
+  """
+  build_args = _ParseArgsGnFile()
+  return build_args['target_os'] if 'target_os' in build_args else ''
+
+
 def _IsIOS():
   """Returns true if the target_os specified in args.gn file is ios"""
-  build_args = _ParseArgsGnFile()
-  return 'target_os' in build_args and build_args['target_os'] == '"ios"'
+  return _GetTargetOS() == 'ios'
 
 
 # TODO(crbug.com/759794): remove this function once tools get included to
@@ -330,7 +341,7 @@ def _IsIOS():
 def DownloadCoverageToolsIfNeeded():
   """Temporary solution to download llvm-profdata and llvm-cov tools."""
 
-  def _GetRevisionFromStampFile(stamp_file_path, platform):
+  def _GetRevisionFromStampFile(stamp_file_path):
     """Returns a pair of revision number by reading the build stamp file.
 
     Args:
@@ -343,29 +354,23 @@ def DownloadCoverageToolsIfNeeded():
       return 0, 0
 
     with open(stamp_file_path) as stamp_file:
-      for stamp_file_line in stamp_file.readlines():
-        if ',' in stamp_file_line:
-          package_version, target_os = stamp_file_line.rstrip().split(',')
-        else:
-          package_version = stamp_file_line.rstrip()
-          target_os = ''
+      stamp_file_line = stamp_file.readline()
+      if ',' in stamp_file_line:
+        package_version = stamp_file_line.rstrip().split(',')[0]
+      else:
+        package_version = stamp_file_line.rstrip()
 
-        if target_os and target_os != 'ios' and platform != target_os:
-          continue
+      clang_revision_str, clang_sub_revision_str = package_version.split('-')
+      return int(clang_revision_str), int(clang_sub_revision_str)
 
-        clang_revision_str, clang_sub_revision_str = package_version.split('-')
-        return int(clang_revision_str), int(clang_sub_revision_str)
-
-    assert False, 'Coverage is only supported on target_os - linux, mac and ios'
-
-  platform = _GetPlatform()
+  host_platform = _GetHostPlatform()
   clang_revision, clang_sub_revision = _GetRevisionFromStampFile(
-      clang_update.STAMP_FILE, platform)
+      clang_update.STAMP_FILE)
 
   coverage_revision_stamp_file = os.path.join(
       os.path.dirname(clang_update.STAMP_FILE), 'cr_coverage_revision')
   coverage_revision, coverage_sub_revision = _GetRevisionFromStampFile(
-      coverage_revision_stamp_file, platform)
+      coverage_revision_stamp_file)
 
   has_coverage_tools = (
       os.path.exists(LLVM_COV_PATH) and os.path.exists(LLVM_PROFDATA_PATH))
@@ -373,25 +378,27 @@ def DownloadCoverageToolsIfNeeded():
   if (has_coverage_tools and coverage_revision == clang_revision and
       coverage_sub_revision == clang_sub_revision):
     # LLVM coverage tools are up to date, bail out.
-    return clang_revision
+    return
 
   package_version = '%d-%d' % (clang_revision, clang_sub_revision)
   coverage_tools_file = 'llvm-code-coverage-%s.tgz' % package_version
 
   # The code bellow follows the code from tools/clang/scripts/update.py.
-  if platform == 'mac':
+  if host_platform == 'mac':
     coverage_tools_url = clang_update.CDS_URL + '/Mac/' + coverage_tools_file
-  else:
-    assert platform == 'linux'
+  elif host_platform == 'linux':
     coverage_tools_url = (
         clang_update.CDS_URL + '/Linux_x64/' + coverage_tools_file)
+  else:
+    assert host_platform == 'win'
+    coverage_tools_url = (clang_update.CDS_URL + '/Win/' + coverage_tools_file)
 
   try:
     clang_update.DownloadAndUnpack(coverage_tools_url,
                                    clang_update.LLVM_BUILD_DIR)
     logging.info('Coverage tools %s unpacked', package_version)
     with open(coverage_revision_stamp_file, 'w') as file_handle:
-      file_handle.write('%s,%s' % (package_version, platform))
+      file_handle.write('%s,%s' % (package_version, host_platform))
       file_handle.write('\n')
   except urllib2.URLError:
     raise Exception(
@@ -930,7 +937,6 @@ def _GeneratePerFileCoverageSummary(binary_paths, profdata_file_path, filters):
   subprocess_cmd.extend(
       ['-object=' + binary_path for binary_path in binary_paths[1:]])
   _AddArchArgumentForIOSIfNeeded(subprocess_cmd, len(binary_paths))
-
   subprocess_cmd.extend(filters)
 
   json_output = json.loads(subprocess.check_output(subprocess_cmd))
@@ -1032,6 +1038,19 @@ def _ValidateBuildingWithClangCoverage():
                   ).format(CLANG_COVERAGE_BUILD_ARG)
 
 
+def _ValidateCurrentPlatformIsSupported():
+  """Asserts that this script suports running on the current platform"""
+  target_os = _GetTargetOS()
+  if target_os:
+    current_platform = target_os
+  else:
+    current_platform = _GetHostPlatform()
+
+  assert current_platform in [
+      'linux', 'mac', 'chromeos', 'ios'
+  ], ('Coverage is only supported on linux, mac, chromeos and ios.')
+
+
 def _ParseArgsGnFile():
   """Parses args.gn file and returns results as a dictionary.
 
@@ -1052,7 +1071,10 @@ def _ParseArgsGnFile():
       continue
 
     key = key_value_pair[0].strip()
-    value = key_value_pair[1].strip()
+
+    # Values are wrapped within a pair of double-quotes, so remove the leading
+    # and trailing double-quotes.
+    value = key_value_pair[1].strip().strip('"')
     build_args[key] = value
 
   return build_args
@@ -1156,33 +1178,33 @@ def _ParseCommandArguments():
 
 def Main():
   """Execute tool commands."""
-  assert _GetPlatform() in [
-      'linux', 'mac'
-  ], ('This script is only supported on linux and mac platforms.')
   assert os.path.abspath(os.getcwd()) == SRC_ROOT_PATH, ('This script must be '
                                                          'called from the root '
                                                          'of checkout.')
-  DownloadCoverageToolsIfNeeded()
-
   args = _ParseCommandArguments()
   global BUILD_DIR
   BUILD_DIR = args.build_dir
   global OUTPUT_DIR
   OUTPUT_DIR = args.output_dir
 
-  log_level = logging.DEBUG if args.verbose else logging.INFO
-  log_format = '[%(asctime)s] %(message)s'
-  log_file = args.log_file if args.log_file else None
-  logging.basicConfig(filename=log_file, level=log_level, format=log_format)
-
   assert len(args.targets) == len(args.command), ('Number of targets must be '
                                                   'equal to the number of test '
                                                   'commands.')
+
+  # logging should be configured before it is used.
+  log_level = logging.DEBUG if args.verbose else logging.INFO
+  log_format = '[%(asctime)s %(levelname)s] %(message)s'
+  log_file = args.log_file if args.log_file else None
+  logging.basicConfig(filename=log_file, level=log_level, format=log_format)
+
   assert os.path.exists(BUILD_DIR), (
       'Build directory: {} doesn\'t exist. '
       'Please run "gn gen" to generate.').format(BUILD_DIR)
+  _ValidateCurrentPlatformIsSupported()
   _ValidateBuildingWithClangCoverage()
   _VerifyTargetExecutablesAreInBuildDirectory(args.command)
+
+  DownloadCoverageToolsIfNeeded()
 
   absolute_filter_paths = []
   if args.filters:
