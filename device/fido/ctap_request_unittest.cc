@@ -124,7 +124,7 @@ TEST(CTAPRequestTest, TestConstructMakeCredentialRequestParam) {
   auto serialized_data = make_credential_param.SetResidentKeySupported(true)
                              .SetUserVerificationRequired(true)
                              .EncodeAsCBOR();
-  EXPECT_THAT(serialized_data, testing::ElementsAreArray(kSerializedRequest));
+  EXPECT_THAT(serialized_data, ::testing::ElementsAreArray(kSerializedRequest));
 }
 
 TEST(CTAPRequestTest, TestConstructGetAssertionRequest) {
@@ -222,7 +222,7 @@ TEST(CTAPRequestTest, TestConstructGetAssertionRequest) {
       .SetUserVerificationRequired(true);
 
   auto serialized_data = get_assertion_req.EncodeAsCBOR();
-  EXPECT_THAT(serialized_data, testing::ElementsAreArray(kSerializedRequest));
+  EXPECT_THAT(serialized_data, ::testing::ElementsAreArray(kSerializedRequest));
 }
 
 TEST(CTAPRequestTest, TestConstructCtapAuthenticatorRequestParam) {
@@ -232,13 +232,13 @@ TEST(CTAPRequestTest, TestConstructCtapAuthenticatorRequestParam) {
   static constexpr uint8_t kSerializedResetCmd = 0x07;
 
   EXPECT_THAT(AuthenticatorGetInfoRequest().Serialize(),
-              testing::ElementsAre(kSerializedGetInfoCmd));
+              ::testing::ElementsAre(kSerializedGetInfoCmd));
   EXPECT_THAT(AuthenticatorGetNextAssertionRequest().Serialize(),
-              testing::ElementsAre(kSerializedGetNextAssertionCmd));
+              ::testing::ElementsAre(kSerializedGetNextAssertionCmd));
   EXPECT_THAT(AuthenticatorCancelRequest().Serialize(),
-              testing::ElementsAre(kSerializedCancelCmd));
+              ::testing::ElementsAre(kSerializedCancelCmd));
   EXPECT_THAT(AuthenticatorResetRequest().Serialize(),
-              testing::ElementsAre(kSerializedResetCmd));
+              ::testing::ElementsAre(kSerializedResetCmd));
 }
 
 }  // namespace device

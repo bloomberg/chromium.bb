@@ -54,7 +54,7 @@ MATCHER_P(IdMatches, id, "") {
 
 }  // namespace
 
-class U2fHidDiscoveryTest : public testing::Test {
+class U2fHidDiscoveryTest : public ::testing::Test {
  public:
   base::test::ScopedTaskEnvironment& scoped_task_environment() {
     return scoped_task_environment_;

@@ -179,7 +179,8 @@ TEST(CTAPResponseTest, TestReadMakeCredentialResponse) {
   it = attestation_object_map.find(cbor::CBORValue("authData"));
   ASSERT_TRUE(it != attestation_object_map.end());
   ASSERT_TRUE(it->second.is_bytestring());
-  EXPECT_THAT(it->second.GetBytestring(), testing::ElementsAreArray(kAuthData));
+  EXPECT_THAT(it->second.GetBytestring(),
+              ::testing::ElementsAreArray(kAuthData));
 
   it = attestation_object_map.find(cbor::CBORValue("attStmt"));
   ASSERT_TRUE(it != attestation_object_map.end());
@@ -196,7 +197,7 @@ TEST(CTAPResponseTest, TestReadMakeCredentialResponse) {
   ASSERT_TRUE(attStmt_it != attestation_statement_map.end());
   ASSERT_TRUE(attStmt_it->second.is_bytestring());
   EXPECT_THAT(attStmt_it->second.GetBytestring(),
-              testing::ElementsAreArray(kSignature));
+              ::testing::ElementsAreArray(kSignature));
 
   attStmt_it = attestation_statement_map.find(cbor::CBORValue("x5c"));
   ASSERT_TRUE(attStmt_it != attestation_statement_map.end());
@@ -205,7 +206,7 @@ TEST(CTAPResponseTest, TestReadMakeCredentialResponse) {
   ASSERT_EQ(certificate.GetArray().size(), 1u);
   ASSERT_TRUE(certificate.GetArray()[0].is_bytestring());
   EXPECT_THAT(certificate.GetArray()[0].GetBytestring(),
-              testing::ElementsAreArray(kCertificate));
+              ::testing::ElementsAreArray(kCertificate));
 }
 
 // Leveraging example 5 of section 6.1 of the spec https://fidoalliance.org
@@ -311,9 +312,9 @@ TEST(CTAPResponseTest, TestReadGetAssertionResponse) {
   EXPECT_EQ(*get_assertion_response->num_credentials(), 1u);
 
   EXPECT_THAT(get_assertion_response->auth_data(),
-              testing::ElementsAreArray(kAuthData));
+              ::testing::ElementsAreArray(kAuthData));
   EXPECT_THAT(get_assertion_response->signature(),
-              testing::ElementsAreArray(kSignature));
+              ::testing::ElementsAreArray(kSignature));
 }
 
 }  // namespace device
