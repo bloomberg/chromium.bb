@@ -10,12 +10,18 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "build/buildflag.h"
 #include "media/base/media_observer.h"
 #include "media/media_features.h"
+#include "media/mojo/interfaces/remoting.mojom.h"
 #include "media/remoting/metrics.h"
-#include "media/remoting/shared_session.h"
+#include "mojo/public/cpp/bindings/binding.h"
+
+#if BUILDFLAG(ENABLE_MEDIA_REMOTING_RPC)
+#include "media/remoting/rpc_broker.h"  // nogncheck
+#endif
 
 namespace base {
 class TickClock;
@@ -25,26 +31,25 @@ namespace media {
 
 namespace remoting {
 
-class RpcBroker;
-
-// This class:
-// 1) Implements the SharedSession::Client;
-// 2) Monitors player events as a MediaObserver;
-// 3) May trigger the switch of the media renderer between local playback
-// and remoting.
-class RendererController final : public SharedSession::Client,
+// This class monitors player events as a MediaObserver and may trigger the
+// switch of the media renderer between local playback and remoting.
+class RendererController final : public mojom::RemotingSource,
                                  public MediaObserver {
  public:
-  explicit RendererController(scoped_refptr<SharedSession> session);
+  RendererController(mojom::RemotingSourceRequest source_request,
+                     mojom::RemoterPtr remoter);
   ~RendererController() override;
 
-  // SharedSession::Client implementation.
-  void OnStarted(bool success) override;
-  void OnSessionStateChanged() override;
+  // mojom::RemotingSource implementations.
+  void OnSinkAvailable(mojom::RemotingSinkMetadataPtr metadata) override;
+  void OnSinkGone() override;
+  void OnStarted() override;
+  void OnStartFailed(mojom::RemotingStartFailReason reason) override;
+  void OnMessageFromSink(const std::vector<uint8_t>& message) override;
+  void OnStopped(mojom::RemotingStopReason reason) override;
 
   // MediaObserver implementation.
   void OnBecameDominantVisibleContent(bool is_dominant) override;
-  void OnSetCdm(CdmContext* cdm_context) override;
   void OnMetadataChanged(const PipelineMetadata& metadata) override;
   void OnRemotePlaybackDisabled(bool disabled) override;
   void OnPlaying() override;
@@ -63,15 +68,17 @@ class RendererController final : public SharedSession::Client,
     return remote_rendering_started_;
   }
 
+  using DataPipeStartCallback =
+      base::OnceCallback<void(mojom::RemotingDataStreamSenderPtrInfo audio,
+                              mojom::RemotingDataStreamSenderPtrInfo video,
+                              mojo::ScopedDataPipeProducerHandle audio_handle,
+                              mojo::ScopedDataPipeProducerHandle video_handle)>;
   void StartDataPipe(std::unique_ptr<mojo::DataPipe> audio_data_pipe,
                      std::unique_ptr<mojo::DataPipe> video_data_pipe,
-                     const SharedSession::DataPipeStartCallback& done_callback);
-
-  // Used by CourierRenderer to query the session state.
-  SharedSession* session() const { return session_.get(); }
+                     DataPipeStartCallback done_callback);
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING_RPC)
-  base::WeakPtr<RpcBroker> GetRpcBroker() const;
+  base::WeakPtr<RpcBroker> GetRpcBroker();
 #endif
 
   // Called by CourierRenderer when it encountered a fatal error. This will
@@ -101,7 +108,6 @@ class RendererController final : public SharedSession::Client,
 
   bool IsVideoCodecSupported() const;
   bool IsAudioCodecSupported() const;
-  bool IsRemoteSinkAvailable() const;
   bool IsAudioOrVideoSupported() const;
 
   // Returns true if all of the technical requirements for the media pipeline
@@ -133,14 +139,28 @@ class RendererController final : public SharedSession::Client,
                                 unsigned decoded_frame_count_before_delay,
                                 base::TimeTicks delayed_start_time);
 
-  // Helper to request the media pipeline switch to the remoting renderer.
-  void StartRemoting(StartTrigger start_trigger);
+  // Queries on remoting sink capabilities.
+  bool HasVideoCapability(mojom::RemotingSinkVideoCapability capability) const;
+  bool HasAudioCapability(mojom::RemotingSinkAudioCapability capability) const;
+  bool HasFeatureCapability(mojom::RemotingSinkFeature capability) const;
+
+  // Callback from RpcBroker when sending message to remote sink.
+  void SendMessageToSink(std::unique_ptr<std::vector<uint8_t>> message);
+
+#if BUILDFLAG(ENABLE_MEDIA_REMOTING_RPC)
+  // Handles dispatching of incoming and outgoing RPC messages.
+  RpcBroker rpc_broker_;
+#endif
+
+  const mojo::Binding<mojom::RemotingSource> binding_;
+  const mojom::RemoterPtr remoter_;
+
+  // When the sink is available for remoting, this describes its metadata. When
+  // not available, this is empty. Updated by OnSinkAvailable/Gone().
+  mojom::RemotingSinkMetadata sink_metadata_;
 
   // Indicates whether remoting is started.
   bool remote_rendering_started_ = false;
-
-  // Indicates whether audio or video is encrypted.
-  bool is_encrypted_ = false;
 
   // Indicates whether remote playback is currently disabled. This starts out as
   // true, and should be updated at least once via a call to
@@ -170,10 +190,6 @@ class RendererController final : public SharedSession::Client,
   // When this is true, remoting will never start again for the lifetime of this
   // controller.
   bool permanently_disable_remoting_ = false;
-
-  // This is initially the SharedSession passed to the ctor, and might be
-  // replaced with a different instance later if OnSetCdm() is called.
-  scoped_refptr<SharedSession> session_;
 
   // This is used to check all the methods are called on the current thread in
   // debug builds.

@@ -61,10 +61,6 @@ class MEDIA_EXPORT MediaObserver {
   // content.
   virtual void OnBecameDominantVisibleContent(bool is_dominant) {}
 
-  // Called when CDM is attached to the media element. The |cdm_context| is
-  // only guaranteed to be valid in this call.
-  virtual void OnSetCdm(CdmContext* cdm_context) = 0;
-
   // Called after demuxer is initialized.
   virtual void OnMetadataChanged(const PipelineMetadata& metadata) = 0;
 

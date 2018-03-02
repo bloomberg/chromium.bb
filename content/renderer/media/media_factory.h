@@ -49,9 +49,6 @@ class WebEncryptedMediaClientImpl;
 #if defined(OS_ANDROID)
 class RendererMediaPlayerManager;
 #endif
-namespace remoting {
-class SinkAvailabilityObserver;
-}
 }
 
 namespace service_manager {
@@ -197,14 +194,6 @@ class MediaFactory {
   // Lazy-bound pointer to the RemoterFactory service in the browser
   // process. Always use the GetRemoterFactory() accessor instead of this.
   media::mojom::RemoterFactoryPtr remoter_factory_;
-
-  // An observer for the remoting sink availability that is used by
-  // media::RemotingCdmFactory to initialize media::RemotingSourceImpl. Created
-  // in the constructor of RenderFrameImpl to make sure
-  // media::RemotingSourceImpl be intialized with correct availability info.
-  // Own by media::RemotingCdmFactory after it is created.
-  std::unique_ptr<media::remoting::SinkAvailabilityObserver>
-      remoting_sink_observer_;
 #endif
 };
 

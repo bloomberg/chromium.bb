@@ -13,8 +13,6 @@
 #include "build/build_config.h"
 #include "build/buildflag.h"
 #include "media/media_features.h"
-#include "media/remoting/remoting_cdm.h"
-#include "media/remoting/remoting_cdm_context.h"
 
 #if defined(OS_ANDROID)
 #include "media/base/android/media_codec_util.h"
@@ -105,65 +103,97 @@ MediaObserverClient::ReasonToSwitchToLocal GetSwitchReason(
 
 }  // namespace
 
-RendererController::RendererController(scoped_refptr<SharedSession> session)
-    : session_(std::move(session)),
+RendererController::RendererController(
+    mojom::RemotingSourceRequest source_request,
+    mojom::RemoterPtr remoter)
+#if BUILDFLAG(ENABLE_MEDIA_REMOTING_RPC)
+    : rpc_broker_(base::BindRepeating(&RendererController::SendMessageToSink,
+                                      base::Unretained(this))),
+#else
+    :
+#endif
+      binding_(this, std::move(source_request)),
+      remoter_(std::move(remoter)),
       clock_(base::DefaultTickClock::GetInstance()),
       weak_factory_(this) {
-  session_->AddClient(this);
+  DCHECK(remoter_);
 }
 
 RendererController::~RendererController() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  metrics_recorder_.WillStopSession(MEDIA_ELEMENT_DESTROYED);
-  session_->RemoveClient(this);
+
+  CancelDelayedStart();
+  if (remote_rendering_started_) {
+    metrics_recorder_.WillStopSession(MEDIA_ELEMENT_DESTROYED);
+    remoter_->Stop(mojom::RemotingStopReason::UNEXPECTED_FAILURE);
+  }
 }
 
-void RendererController::OnStarted(bool success) {
+void RendererController::OnSinkAvailable(
+    mojom::RemotingSinkMetadataPtr metadata) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (success) {
-    if (remote_rendering_started_) {
-      metrics_recorder_.DidStartSession();
-      DCHECK(client_);
-      client_->SwitchToRemoteRenderer(session_->sink_name());
-    } else {
-      session_->StopRemoting(this);
-    }
-  } else {
-    VLOG(1) << "Failed to start remoting.";
-    remote_rendering_started_ = false;
+  sink_metadata_ = *metadata;
+
+  if (!HasFeatureCapability(mojom::RemotingSinkFeature::RENDERING)) {
+    OnSinkGone();
+    return;
+  }
+  UpdateAndMaybeSwitch(SINK_AVAILABLE, UNKNOWN_STOP_TRIGGER);
+}
+
+void RendererController::OnSinkGone() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  // Prevent the clients to start any future remoting sessions. Won't affect the
+  // behavior of the currently-running session (if any).
+  sink_metadata_ = mojom::RemotingSinkMetadata();
+}
+
+void RendererController::OnStarted() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  VLOG(1) << "Remoting started successively.";
+  if (remote_rendering_started_) {
+    metrics_recorder_.DidStartSession();
+    DCHECK(client_);
+    client_->SwitchToRemoteRenderer(sink_metadata_.friendly_name);
+  }
+}
+
+void RendererController::OnStartFailed(mojom::RemotingStartFailReason reason) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  VLOG(1) << "Failed to start remoting:" << reason;
+  if (remote_rendering_started_) {
     metrics_recorder_.WillStopSession(START_RACE);
+    remote_rendering_started_ = false;
   }
 }
 
-void RendererController::OnSessionStateChanged() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  UpdateFromSessionState(SINK_AVAILABLE,
-                         GetStopTrigger(session_->get_last_stop_reason()));
-}
-
-void RendererController::UpdateFromSessionState(StartTrigger start_trigger,
-                                                StopTrigger stop_trigger) {
-  VLOG(1) << "UpdateFromSessionState: " << session_->state();
-  UpdateAndMaybeSwitch(start_trigger, stop_trigger);
-}
-
-bool RendererController::IsRemoteSinkAvailable() const {
+void RendererController::OnStopped(mojom::RemotingStopReason reason) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  switch (session_->state()) {
-    case SharedSession::SESSION_CAN_START:
-    case SharedSession::SESSION_STARTING:
-    case SharedSession::SESSION_STARTED:
-      return true;
-    case SharedSession::SESSION_UNAVAILABLE:
-    case SharedSession::SESSION_STOPPING:
-    case SharedSession::SESSION_PERMANENTLY_STOPPED:
-      return false;
+  VLOG(1) << "Remoting stopped: " << reason;
+  OnSinkGone();
+  UpdateAndMaybeSwitch(UNKNOWN_START_TRIGGER, GetStopTrigger(reason));
+}
+
+void RendererController::OnMessageFromSink(
+    const std::vector<uint8_t>& message) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+#if BUILDFLAG(ENABLE_MEDIA_REMOTING_RPC)
+  std::unique_ptr<pb::RpcMessage> rpc(new pb::RpcMessage());
+  if (!rpc->ParseFromArray(message.data(), message.size())) {
+    VLOG(1) << "corrupted Rpc message";
+    OnSinkGone();
+    UpdateAndMaybeSwitch(UNKNOWN_START_TRIGGER, RPC_INVALID);
+    return;
   }
 
-  NOTREACHED();
-  return false;  // To suppress compiler warning on Windows.
+  rpc_broker_.ProcessMessageFromRemote(std::move(rpc));
+#endif
 }
 
 void RendererController::OnBecameDominantVisibleContent(bool is_dominant) {
@@ -179,20 +209,6 @@ void RendererController::OnBecameDominantVisibleContent(bool is_dominant) {
   UpdateAndMaybeSwitch(BECAME_DOMINANT_CONTENT, BECAME_AUXILIARY_CONTENT);
 }
 
-void RendererController::OnSetCdm(CdmContext* cdm_context) {
-  VLOG(2) << __func__;
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  auto* remoting_cdm_context = RemotingCdmContext::From(cdm_context);
-  if (!remoting_cdm_context)
-    return;
-
-  session_->RemoveClient(this);
-  session_ = remoting_cdm_context->GetSharedSession();
-  session_->AddClient(this);
-  UpdateFromSessionState(CDM_READY, DECRYPTION_ERROR);
-}
-
 void RendererController::OnRemotePlaybackDisabled(bool disabled) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -202,21 +218,48 @@ void RendererController::OnRemotePlaybackDisabled(bool disabled) {
 }
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING_RPC)
-base::WeakPtr<RpcBroker> RendererController::GetRpcBroker() const {
+base::WeakPtr<RpcBroker> RendererController::GetRpcBroker() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  return session_->rpc_broker()->GetWeakPtr();
+  return rpc_broker_.GetWeakPtr();
 }
 #endif
 
 void RendererController::StartDataPipe(
     std::unique_ptr<mojo::DataPipe> audio_data_pipe,
     std::unique_ptr<mojo::DataPipe> video_data_pipe,
-    const SharedSession::DataPipeStartCallback& done_callback) {
+    DataPipeStartCallback done_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!done_callback.is_null());
 
-  session_->StartDataPipe(std::move(audio_data_pipe),
-                          std::move(video_data_pipe), done_callback);
+  bool audio = audio_data_pipe != nullptr;
+  bool video = video_data_pipe != nullptr;
+  if (!audio && !video) {
+    LOG(ERROR) << "No audio nor video to establish data pipe";
+    std::move(done_callback)
+        .Run(mojom::RemotingDataStreamSenderPtrInfo(),
+             mojom::RemotingDataStreamSenderPtrInfo(),
+             mojo::ScopedDataPipeProducerHandle(),
+             mojo::ScopedDataPipeProducerHandle());
+    return;
+  }
+  mojom::RemotingDataStreamSenderPtr audio_stream_sender;
+  mojom::RemotingDataStreamSenderPtr video_stream_sender;
+  remoter_->StartDataStreams(audio ? std::move(audio_data_pipe->consumer_handle)
+                                   : mojo::ScopedDataPipeConsumerHandle(),
+                             video ? std::move(video_data_pipe->consumer_handle)
+                                   : mojo::ScopedDataPipeConsumerHandle(),
+                             audio ? mojo::MakeRequest(&audio_stream_sender)
+                                   : mojom::RemotingDataStreamSenderRequest(),
+                             video ? mojo::MakeRequest(&video_stream_sender)
+                                   : mojom::RemotingDataStreamSenderRequest());
+  std::move(done_callback)
+      .Run(audio_stream_sender.PassInterface(),
+           video_stream_sender.PassInterface(),
+           audio ? std::move(audio_data_pipe->producer_handle)
+                 : mojo::ScopedDataPipeProducerHandle(),
+           video ? std::move(video_data_pipe->producer_handle)
+                 : mojo::ScopedDataPipeProducerHandle());
 }
 
 void RendererController::OnMetadataChanged(const PipelineMetadata& metadata) {
@@ -228,12 +271,6 @@ void RendererController::OnMetadataChanged(const PipelineMetadata& metadata) {
   const bool is_audio_codec_supported = has_audio() && IsAudioCodecSupported();
   const bool is_video_codec_supported = has_video() && IsVideoCodecSupported();
   metrics_recorder_.OnPipelineMetadataChanged(metadata);
-
-  is_encrypted_ = false;
-  if (has_video())
-    is_encrypted_ |= metadata.video_decoder_config.is_encrypted();
-  if (has_audio())
-    is_encrypted_ |= metadata.audio_decoder_config.is_encrypted();
 
   StartTrigger start_trigger = UNKNOWN_START_TRIGGER;
   if (!was_audio_codec_supported && is_audio_codec_supported)
@@ -299,19 +336,19 @@ bool RendererController::IsVideoCodecSupported() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(has_video());
 
+  // Media Remoting doesn't support encrypted media.
+  if (pipeline_metadata_.video_decoder_config.is_encrypted())
+    return false;
+
   switch (pipeline_metadata_.video_decoder_config.codec()) {
     case VideoCodec::kCodecH264:
-      return session_->HasVideoCapability(
-          mojom::RemotingSinkVideoCapability::CODEC_H264);
+      return HasVideoCapability(mojom::RemotingSinkVideoCapability::CODEC_H264);
     case VideoCodec::kCodecVP8:
-      return session_->HasVideoCapability(
-          mojom::RemotingSinkVideoCapability::CODEC_VP8);
+      return HasVideoCapability(mojom::RemotingSinkVideoCapability::CODEC_VP8);
     case VideoCodec::kCodecVP9:
-      return session_->HasVideoCapability(
-          mojom::RemotingSinkVideoCapability::CODEC_VP9);
+      return HasVideoCapability(mojom::RemotingSinkVideoCapability::CODEC_VP9);
     case VideoCodec::kCodecHEVC:
-      return session_->HasVideoCapability(
-          mojom::RemotingSinkVideoCapability::CODEC_HEVC);
+      return HasVideoCapability(mojom::RemotingSinkVideoCapability::CODEC_HEVC);
     default:
       VLOG(2) << "Remoting does not support video codec: "
               << pipeline_metadata_.video_decoder_config.codec();
@@ -323,13 +360,15 @@ bool RendererController::IsAudioCodecSupported() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(has_audio());
 
+  // Media Remoting doesn't support encrypted media.
+  if (pipeline_metadata_.audio_decoder_config.is_encrypted())
+    return false;
+
   switch (pipeline_metadata_.audio_decoder_config.codec()) {
     case AudioCodec::kCodecAAC:
-      return session_->HasAudioCapability(
-          mojom::RemotingSinkAudioCapability::CODEC_AAC);
+      return HasAudioCapability(mojom::RemotingSinkAudioCapability::CODEC_AAC);
     case AudioCodec::kCodecOpus:
-      return session_->HasAudioCapability(
-          mojom::RemotingSinkAudioCapability::CODEC_OPUS);
+      return HasAudioCapability(mojom::RemotingSinkAudioCapability::CODEC_OPUS);
     case AudioCodec::kCodecMP3:
     case AudioCodec::kCodecPCM:
     case AudioCodec::kCodecVorbis:
@@ -344,7 +383,7 @@ bool RendererController::IsAudioCodecSupported() const {
     case AudioCodec::kCodecPCM_ALAW:
     case AudioCodec::kCodecALAC:
     case AudioCodec::kCodecAC3:
-      return session_->HasAudioCapability(
+      return HasAudioCapability(
           mojom::RemotingSinkAudioCapability::CODEC_BASELINE_SET);
     default:
       VLOG(2) << "Remoting does not support audio codec: "
@@ -376,35 +415,8 @@ bool RendererController::CanBeRemoting() const {
     return false;  // No way to switch to the remoting renderer.
   }
 
-  const SharedSession::SessionState state = session_->state();
-  if (is_encrypted_) {
-    // Due to technical limitations when playing encrypted content, once a
-    // remoting session has been started, playback cannot be resumed locally
-    // without reloading the page, so leave the CourierRenderer in-place to
-    // avoid having the default renderer attempt and fail to play the content.
-    //
-    // TODO(miu): Revisit this once more of the encrypted-remoting impl is
-    // in-place. For example, this will prevent metrics from recording session
-    // stop reasons.
-    return state == SharedSession::SESSION_STARTED ||
-           state == SharedSession::SESSION_STOPPING ||
-           state == SharedSession::SESSION_PERMANENTLY_STOPPED;
-  }
-
   if (permanently_disable_remoting_)
     return false;
-
-  switch (state) {
-    case SharedSession::SESSION_UNAVAILABLE:
-      return false;  // Cannot remote media without a remote sink.
-    case SharedSession::SESSION_CAN_START:
-    case SharedSession::SESSION_STARTING:
-    case SharedSession::SESSION_STARTED:
-      break;  // Media remoting is possible, assuming other requirments are met.
-    case SharedSession::SESSION_STOPPING:
-    case SharedSession::SESSION_PERMANENTLY_STOPPED:
-      return false;  // Use local rendering after stopping remoting.
-  }
 
   if (!IsAudioOrVideoSupported())
     return false;
@@ -433,27 +445,19 @@ void RendererController::UpdateAndMaybeSwitch(StartTrigger start_trigger,
   DCHECK(thread_checker_.CalledOnValidThread());
 
   bool should_be_remoting = CanBeRemoting();
-  if (!is_encrypted_ && client_)
+  if (client_)
     client_->ActivateViewportIntersectionMonitoring(should_be_remoting);
 
-  // Normally, being the dominant visible content is the signal that starts
-  // remote rendering. However, current technical limitations require encrypted
-  // content be remoted without waiting for a user signal.
-  if (!is_encrypted_)
-    should_be_remoting &=
-        (is_dominant_content_ && !encountered_renderer_fatal_error_);
+  // Being the dominant visible content is the signal that starts remote
+  // rendering.
+  should_be_remoting &=
+      (is_dominant_content_ && !encountered_renderer_fatal_error_);
 
   if ((remote_rendering_started_ ||
        delayed_start_stability_timer_.IsRunning()) == should_be_remoting)
     return;
 
   DCHECK(client_);
-
-  if (is_encrypted_) {
-    DCHECK(should_be_remoting);
-    StartRemoting(start_trigger);
-    return;
-  }
 
   // Only switch to remoting when media is playing. Since the renderer is
   // created when video starts loading/playing, receiver will display a black
@@ -470,16 +474,11 @@ void RendererController::UpdateAndMaybeSwitch(StartTrigger start_trigger,
     CancelDelayedStart();
   } else {
     remote_rendering_started_ = false;
-    // For encrypted content, it's only valid to switch to remoting renderer,
-    // and never back to the local renderer. The RemotingCdmController will
-    // force-stop the session when remoting has ended; so no need to call
-    // StopRemoting() from here.
-    DCHECK(!is_encrypted_);
     DCHECK_NE(UNKNOWN_STOP_TRIGGER, stop_trigger);
     metrics_recorder_.WillStopSession(stop_trigger);
     client_->SwitchToLocalRenderer(GetSwitchReason(stop_trigger));
     VLOG(2) << "Request to stop remoting: stop_trigger=" << stop_trigger;
-    session_->StopRemoting(this);
+    remoter_->Stop(mojom::RemotingStopReason::LOCAL_PLAYBACK);
   }
 }
 
@@ -487,12 +486,11 @@ void RendererController::WaitForStabilityBeforeStart(
     StartTrigger start_trigger) {
   DCHECK(!delayed_start_stability_timer_.IsRunning());
   DCHECK(!remote_rendering_started_);
-  DCHECK(!is_encrypted_);
   delayed_start_stability_timer_.Start(
       FROM_HERE, kDelayedStart,
-      base::Bind(&RendererController::OnDelayedStartTimerFired,
-                 base::Unretained(this), start_trigger,
-                 client_->DecodedFrameCount(), clock_->NowTicks()));
+      base::BindRepeating(&RendererController::OnDelayedStartTimerFired,
+                          base::Unretained(this), start_trigger,
+                          client_->DecodedFrameCount(), clock_->NowTicks()));
 }
 
 void RendererController::CancelDelayedStart() {
@@ -505,7 +503,6 @@ void RendererController::OnDelayedStartTimerFired(
     base::TimeTicks delayed_start_time) {
   DCHECK(is_dominant_content_);
   DCHECK(!remote_rendering_started_);
-  DCHECK(!is_encrypted_);
 
   base::TimeDelta elapsed = clock_->NowTicks() - delayed_start_time;
   DCHECK(!elapsed.is_zero());
@@ -517,8 +514,7 @@ void RendererController::OnDelayedStartTimerFired(
         frame_rate * pipeline_metadata_.natural_size.GetArea();
     if ((pixel_per_sec > kPixelPerSec4K) ||
         ((pixel_per_sec > kPixelPerSec2K) &&
-         !session_->HasVideoCapability(
-             mojom::RemotingSinkVideoCapability::SUPPORT_4K))) {
+         !HasVideoCapability(mojom::RemotingSinkVideoCapability::SUPPORT_4K))) {
       VLOG(1) << "Media remoting is not supported: frame_rate = " << frame_rate
               << " resolution = " << pipeline_metadata_.natural_size.ToString();
       permanently_disable_remoting_ = true;
@@ -526,21 +522,13 @@ void RendererController::OnDelayedStartTimerFired(
     }
   }
 
-  StartRemoting(start_trigger);
-}
-
-void RendererController::StartRemoting(StartTrigger start_trigger) {
   DCHECK(client_);
   remote_rendering_started_ = true;
-  if (session_->state() == SharedSession::SESSION_PERMANENTLY_STOPPED) {
-    client_->SwitchToRemoteRenderer(session_->sink_name());
-    return;
-  }
   DCHECK_NE(UNKNOWN_START_TRIGGER, start_trigger);
   metrics_recorder_.WillStartSession(start_trigger);
   // |MediaObserverClient::SwitchToRemoteRenderer()| will be called after
   // remoting is started successfully.
-  session_->StartRemoting(this);
+  remoter_->Start();
 }
 
 void RendererController::OnRendererFatalError(StopTrigger stop_trigger) {
@@ -561,8 +549,42 @@ void RendererController::SetClient(MediaObserverClient* client) {
   DCHECK(!client_);
 
   client_ = client;
-  if (!is_encrypted_)
-    client_->ActivateViewportIntersectionMonitoring(CanBeRemoting());
+  client_->ActivateViewportIntersectionMonitoring(CanBeRemoting());
+}
+
+bool RendererController::HasVideoCapability(
+    mojom::RemotingSinkVideoCapability capability) const {
+#if defined(OS_ANDROID)
+  return true;
+#else
+  return std::find(std::begin(sink_metadata_.video_capabilities),
+                   std::end(sink_metadata_.video_capabilities),
+                   capability) != std::end(sink_metadata_.video_capabilities);
+#endif
+}
+
+bool RendererController::HasAudioCapability(
+    mojom::RemotingSinkAudioCapability capability) const {
+#if defined(OS_ANDROID)
+  return true;
+#else
+  return std::find(std::begin(sink_metadata_.audio_capabilities),
+                   std::end(sink_metadata_.audio_capabilities),
+                   capability) != std::end(sink_metadata_.audio_capabilities);
+#endif
+}
+
+bool RendererController::HasFeatureCapability(
+    mojom::RemotingSinkFeature capability) const {
+  return std::find(std::begin(sink_metadata_.features),
+                   std::end(sink_metadata_.features),
+                   capability) != std::end(sink_metadata_.features);
+}
+
+void RendererController::SendMessageToSink(
+    std::unique_ptr<std::vector<uint8_t>> message) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  remoter_->SendMessageToSink(*message);
 }
 
 }  // namespace remoting
