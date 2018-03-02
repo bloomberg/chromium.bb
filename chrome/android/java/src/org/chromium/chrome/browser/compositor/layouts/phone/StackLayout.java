@@ -62,6 +62,9 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
 
     private enum SwipeMode { NONE, SEND_TO_STACK, SWITCH_STACK }
 
+    public static final int NORMAL_STACK_INDEX = 0;
+    public static final int INCOGNITO_STACK_INDEX = 1;
+
     private static final String TAG = "StackLayout";
 
     // One stack for normal tabs and one stack for incognito tabs.
@@ -348,8 +351,8 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
      * @return The tab stack state for the given mode.
      * @VisibleForTesting
      */
-    public Stack getTabStack(boolean incognito) {
-        return mStacks.get(incognito ? 1 : 0);
+    public Stack getTabStackAtIndex(int index) {
+        return mStacks.get(index);
     }
 
     /**
@@ -372,7 +375,7 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
             boolean incognito = mTemporarySelectedStack != null
                     ? mTemporarySelectedStack
                     : mTabModelSelector.isIncognitoSelected();
-            return incognito ? 1 : 0;
+            return incognito ? INCOGNITO_STACK_INDEX : NORMAL_STACK_INDEX;
         } else {
             return TabModelUtils.getTabById(mTabModelSelector.getModel(true), tabId) != null ? 1
                                                                                              : 0;
@@ -386,7 +389,7 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
      * @return The tab stack state for the given tab id.
      * @VisibleForTesting
      */
-    protected Stack getTabStack(int tabId) {
+    protected Stack getTabStackForTabId(int tabId) {
         return mStacks.get(getTabStackIndex(tabId));
     }
 
@@ -412,7 +415,7 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
 
     @Override
     public void onTabClosing(long time, int id) {
-        Stack stack = getTabStack(id);
+        Stack stack = getTabStackForTabId(id);
         if (stack == null) return;
         stack.tabClosingEffect(time, id);
 
@@ -426,7 +429,8 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
     @Override
     public void onTabsAllClosing(long time, boolean incognito) {
         super.onTabsAllClosing(time, incognito);
-        getTabStack(incognito).tabsAllClosingEffect(time);
+        getTabStackAtIndex(incognito ? INCOGNITO_STACK_INDEX : NORMAL_STACK_INDEX)
+                .tabsAllClosingEffect(time);
         // trigger the overlap animation.
         startMarginAnimation(true);
         // Animate the stack to leave incognito mode.
@@ -436,7 +440,8 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
     @Override
     public void onTabClosureCancelled(long time, int id, boolean incognito) {
         super.onTabClosureCancelled(time, id, incognito);
-        getTabStack(incognito).undoClosure(time, id);
+        getTabStackAtIndex(incognito ? INCOGNITO_STACK_INDEX : NORMAL_STACK_INDEX)
+                .undoClosure(time, id);
     }
 
     @Override
@@ -599,7 +604,7 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
      */
     public void uiRequestingCloseTab(long time, int id) {
         // Start the tab closing effect if necessary.
-        getTabStack(id).tabClosingEffect(time, id);
+        getTabStackForTabId(id).tabClosingEffect(time, id);
 
         int incognitoCount = mTabModelSelector.getModel(true).getCount();
         TabModel model = mTabModelSelector.getModelForTabId(id);
