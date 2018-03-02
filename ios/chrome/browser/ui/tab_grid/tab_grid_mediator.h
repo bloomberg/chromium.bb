@@ -19,10 +19,8 @@
 // The source tab model.
 @property(nonatomic, weak) TabModel* tabModel;
 
-// Initializer with |tabModel| as the source model. |consumer| is the receiver
-// of model layer updates.
-- (instancetype)initWithTabModel:(TabModel*)tabModel
-                        consumer:(id<GridConsumer>)consumer
+// Initializer with |consumer| as the receiver of model layer updates.
+- (instancetype)initWithConsumer:(id<GridConsumer>)consumer
     NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
 @end

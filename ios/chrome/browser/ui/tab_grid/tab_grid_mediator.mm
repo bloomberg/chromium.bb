@@ -69,27 +69,38 @@ NSArray* CreateItems(WebStateList* webStateList) {
 @synthesize webStateList = _webStateList;
 @synthesize consumer = _consumer;
 
-- (instancetype)initWithTabModel:(TabModel*)tabModel
-                        consumer:(id<GridConsumer>)consumer {
+- (instancetype)initWithConsumer:(id<GridConsumer>)consumer {
   if (self = [super init]) {
-    _tabModel = tabModel;
-    _webStateList = tabModel.webStateList;
     _consumer = consumer;
-
     _webStateListObserverBridge =
         std::make_unique<WebStateListObserverBridge>(self);
     _scopedWebStateListObserver =
         std::make_unique<ScopedObserver<WebStateList, WebStateListObserver>>(
             _webStateListObserverBridge.get());
-    _scopedWebStateListObserver->Add(_webStateList);
     _webStateObserverBridge =
         std::make_unique<web::WebStateObserverBridge>(self);
     _scopedWebStateObserver =
         std::make_unique<ScopedObserver<web::WebState, web::WebStateObserver>>(
             _webStateObserverBridge.get());
-    [self populateConsumerItems];
   }
   return self;
+}
+
+#pragma mark - Public properties
+
+- (void)setTabModel:(TabModel*)tabModel {
+  _scopedWebStateListObserver->RemoveAll();
+  _scopedWebStateObserver->RemoveAll();
+  _tabModel = tabModel;
+  _webStateList = tabModel.webStateList;
+  if (_webStateList) {
+    _scopedWebStateListObserver->Add(_webStateList);
+    for (int i = 0; i < self.webStateList->count(); i++) {
+      web::WebState* webState = self.webStateList->GetWebStateAt(i);
+      _scopedWebStateObserver->Add(webState);
+    }
+    [self populateConsumerItems];
+  }
 }
 
 #pragma mark - WebStateListObserving
@@ -134,7 +145,7 @@ NSArray* CreateItems(WebStateList* webStateList) {
     didChangeActiveWebState:(web::WebState*)newWebState
                 oldWebState:(web::WebState*)oldWebState
                     atIndex:(int)atIndex
-                 userAction:(BOOL)userAction {
+                     reason:(int)reason {
   [self.consumer selectItemAtIndex:atIndex];
 }
 
