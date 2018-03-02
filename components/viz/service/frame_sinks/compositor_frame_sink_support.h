@@ -90,6 +90,9 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   void ReturnResources(const std::vector<ReturnedResource>& resources) override;
   void ReceiveFromChild(
       const std::vector<TransferableResource>& resources) override;
+  bool HasCopyOutputRequests() override;
+  std::vector<std::unique_ptr<CopyOutputRequest>> TakeCopyOutputRequests()
+      override;
 
   // mojom::CompositorFrameSink helpers.
   void SetNeedsBeginFrame(bool needs_begin_frame);
@@ -238,6 +241,11 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   // interface. On closing this interface, the display compositor should drop
   // ownership of the bitmaps with these ids to avoid leaking them.
   std::set<SharedBitmapId> owned_bitmaps_;
+
+  // These are the CopyOutputRequests made on the frame sink (as opposed to
+  // being included as a part of a CompositorFrame). They stay here until a
+  // Surface takes them.
+  std::vector<std::unique_ptr<CopyOutputRequest>> copy_output_requests_;
 
   base::WeakPtrFactory<CompositorFrameSinkSupport> weak_factory_;
 

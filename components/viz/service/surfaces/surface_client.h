@@ -46,6 +46,13 @@ class VIZ_SERVICE_EXPORT SurfaceClient {
   virtual void ReceiveFromChild(
       const std::vector<TransferableResource>& resources) = 0;
 
+  // Returns whether there are any CopyOutputRequests at the client level.
+  virtual bool HasCopyOutputRequests() = 0;
+
+  // Takes all the CopyOutputRequests made at the client level.
+  virtual std::vector<std::unique_ptr<CopyOutputRequest>>
+  TakeCopyOutputRequests() = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SurfaceClient);
 };
