@@ -1,15 +1,6 @@
 # crbug.com/417518: Get tests working with --site-per-process
 -BrowserTest.OtherRedirectsDontForkProcess
--ChromeRenderProcessHostTest.ProcessOverflow
--ChromeRenderProcessHostTest.ProcessPerTab
--ChromeRenderProcessHostTestWithCommandLine.ProcessOverflowCommandLine
--PrerenderBrowserTest.PrerenderLocationReplaceGWSHistograms
--ProcessManagementTest.ExtensionProcessBalancing
--ProcessManagementTest.ProcessOverflow
 
 # crbug.com/671734: WebNavigationApiTest.ServerRedirectSingleProcess from
 # fails with --site-per-process
 -WebNavigationApiTest.ServerRedirectSingleProcess
-
-# crbug.com/671712: CookieIsolation test fails with --site-per-process
--IsolatedAppTest.CookieIsolation

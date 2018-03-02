@@ -26,6 +26,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/process_map.h"
@@ -267,8 +268,14 @@ IN_PROC_BROWSER_TEST_F(ProcessManagementTest, MAYBE_ProcessOverflow) {
   EXPECT_EQ(web1_host, web2_host);
   EXPECT_NE(web1_host, extension1_host);
 
-  // Extensions only share with each other.
-  EXPECT_EQ(extension1_host, extension2_host);
+  if (!content::AreAllSitesIsolatedForTesting()) {
+    // Extensions only share with each other ...
+    EXPECT_EQ(extension1_host, extension2_host);
+  } else {
+    // ... unless site-per-process is enabled - in this case no sharing
+    // is possible.
+    EXPECT_NE(extension1_host, extension2_host);
+  }
 }
 
 // See
@@ -309,9 +316,12 @@ IN_PROC_BROWSER_TEST_F(ProcessManagementTest, MAYBE_ExtensionProcessBalancing) {
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("api_test/management/test")));
 
+  // TODO(lukasza): It might be worth it to navigate to actual
+  // chrome-extension:// URIs below (not to HTTP URIs) to make sure the 1/3rd
+  // of process limit also applies to normal tabs (not just to background pages
+  // and scripts).
   ui_test_utils::NavigateToURL(
       browser(), base_url.Resolve("isolated_apps/app1/main.html"));
-
   ui_test_utils::NavigateToURL(
       browser(), base_url.Resolve("api_test/management/test/basics.html"));
 
@@ -321,13 +331,27 @@ IN_PROC_BROWSER_TEST_F(ProcessManagementTest, MAYBE_ExtensionProcessBalancing) {
   for (extensions::ExtensionHost* host : epm->background_hosts())
     process_ids.insert(host->render_process_host()->GetID());
 
-  // We've loaded 5 extensions with background pages, 1 extension without
-  // background page, and one isolated app. We expect only 2 unique processes
-  // hosting those extensions.
-  extensions::ProcessMap* process_map = extensions::ProcessMap::Get(profile);
+  // We've loaded 5 extensions with background pages
+  // (api_test/browser_action/*), 1 extension without background page
+  // (api_test/management), and one isolated app. We expect only 2 unique
+  // processes hosting the background pages/scripts of these extensions without
+  // site-per-process (which extension gets assigned to which process is
+  // randomized).  With site-per-process (which is not subject to the 1/3rd of
+  // process limit cap) each of the 5 background pages/scripts will be hosted in
+  // a separate process.
+  if (!content::AreAllSitesIsolatedForTesting())
+    EXPECT_EQ(2u, process_ids.size());
+  else
+    EXPECT_EQ(5u, process_ids.size());
 
-  EXPECT_GE((size_t) 6, process_map->size());
-  EXPECT_EQ((size_t) 2, process_ids.size());
+  // ProcessMap will always have exactly 5 entries - one for each of the
+  // extensions with a background page (api_test/browser_action/*).  There won't
+  // be any additional entries, since 1) the isolated app will be associated
+  // with a separate content::BrowserContext and 2) the navigation to
+  // api_test/management/test/basics.html navigates to a file: URI (not to a
+  // chrome-extension: URI).
+  extensions::ProcessMap* process_map = extensions::ProcessMap::Get(profile);
+  EXPECT_EQ(5u, process_map->size());
 }
 
 IN_PROC_BROWSER_TEST_F(ProcessManagementTest,
