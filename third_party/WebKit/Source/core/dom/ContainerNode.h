@@ -56,8 +56,9 @@ enum DynamicRestyleFlags {
   kAffectedByFirstChildRules = 1 << 10,
   kAffectedByLastChildRules = 1 << 11,
   kChildrenOrSiblingsAffectedByFocusWithin = 1 << 12,
+  kChildrenOrSiblingsAffectedByFocusVisible = 1 << 13,
 
-  kNumberOfDynamicRestyleFlags = 13,
+  kNumberOfDynamicRestyleFlags = 14,
 
   kChildrenAffectedByStructuralRules =
       kChildrenAffectedByFirstChildRules | kChildrenAffectedByLastChildRules |
@@ -149,6 +150,7 @@ class CORE_EXPORT ContainerNode : public Node {
   void SetFocused(bool, WebFocusType) override;
   void SetHasFocusWithinUpToAncestor(bool, Node* ancestor);
   void FocusStateChanged();
+  void FocusVisibleStateChanged();
   void FocusWithinStateChanged();
   void SetActive(bool = true) override;
   void SetDragged(bool) override;
@@ -159,6 +161,13 @@ class CORE_EXPORT ContainerNode : public Node {
   }
   void SetChildrenOrSiblingsAffectedByFocus() {
     SetRestyleFlag(kChildrenOrSiblingsAffectedByFocus);
+  }
+
+  bool ChildrenOrSiblingsAffectedByFocusVisible() const {
+    return HasRestyleFlag(kChildrenOrSiblingsAffectedByFocusVisible);
+  }
+  void SetChildrenOrSiblingsAffectedByFocusVisible() {
+    SetRestyleFlag(kChildrenOrSiblingsAffectedByFocusVisible);
   }
 
   bool ChildrenOrSiblingsAffectedByFocusWithin() const {

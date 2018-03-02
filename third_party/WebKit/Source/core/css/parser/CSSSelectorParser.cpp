@@ -228,6 +228,7 @@ bool IsUserActionPseudoClass(CSSSelector::PseudoType pseudo) {
   switch (pseudo) {
     case CSSSelector::kPseudoHover:
     case CSSSelector::kPseudoFocus:
+    case CSSSelector::kPseudoFocusVisible:
     case CSSSelector::kPseudoFocusWithin:
     case CSSSelector::kPseudoActive:
       return true;

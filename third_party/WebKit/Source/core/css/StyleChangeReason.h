@@ -55,6 +55,7 @@ extern const AtomicString& g_active;
 extern const AtomicString& g_disabled;
 extern const AtomicString& g_drag;
 extern const AtomicString& g_focus;
+extern const AtomicString& g_focus_visible;
 extern const AtomicString& g_focus_within;
 extern const AtomicString& g_hover;
 extern const AtomicString& g_past;

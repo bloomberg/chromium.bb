@@ -222,6 +222,7 @@ PseudoId CSSSelector::GetPseudoId(PseudoType type) {
     case kPseudoHover:
     case kPseudoDrag:
     case kPseudoFocus:
+    case kPseudoFocusVisible:
     case kPseudoFocusWithin:
     case kPseudoActive:
     case kPseudoChecked:
@@ -342,6 +343,7 @@ const static NameToPseudoStruct kPseudoTypeWithoutArgumentsMap[] = {
     {"first-line", CSSSelector::kPseudoFirstLine},
     {"first-of-type", CSSSelector::kPseudoFirstOfType},
     {"focus", CSSSelector::kPseudoFocus},
+    {"focus-visible", CSSSelector::kPseudoFocusVisible},
     {"focus-within", CSSSelector::kPseudoFocusWithin},
     {"fullscreen", CSSSelector::kPseudoFullscreen},
     {"future", CSSSelector::kPseudoFutureCue},
@@ -440,6 +442,9 @@ static CSSSelector::PseudoType NameToPseudoType(const AtomicString& name,
 
   if (match->type == CSSSelector::kPseudoFullscreen &&
       !RuntimeEnabledFeatures::FullscreenUnprefixedEnabled())
+    return CSSSelector::kPseudoUnknown;
+  if (match->type == CSSSelector::kPseudoFocusVisible &&
+      !RuntimeEnabledFeatures::CSSFocusVisibleEnabled())
     return CSSSelector::kPseudoUnknown;
 
   return static_cast<CSSSelector::PseudoType>(match->type);
@@ -581,6 +586,7 @@ void CSSSelector::UpdatePseudoType(const AtomicString& value,
     case kPseudoFirstChild:
     case kPseudoFirstOfType:
     case kPseudoFocus:
+    case kPseudoFocusVisible:
     case kPseudoFocusWithin:
     case kPseudoFullPageMedia:
     case kPseudoFullScreen:

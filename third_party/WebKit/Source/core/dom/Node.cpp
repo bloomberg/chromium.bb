@@ -2543,6 +2543,10 @@ void Node::SetHasFocusWithin(bool flag) {
   GetDocument().UserActionElements().SetHasFocusWithin(this, flag);
 }
 
+void Node::SetWasFocusedByMouse(bool flag) {
+  GetDocument().UserActionElements().SetWasFocusedByMouse(this, flag);
+}
+
 void Node::SetActive(bool flag) {
   GetDocument().UserActionElements().SetActive(this, flag);
 }
@@ -2583,6 +2587,11 @@ bool Node::IsUserActionElementFocused() const {
 bool Node::IsUserActionElementHasFocusWithin() const {
   DCHECK(IsUserActionElement());
   return GetDocument().UserActionElements().HasFocusWithin(this);
+}
+
+bool Node::IsUserActionElementWasFocusedByMouse() const {
+  DCHECK(IsUserActionElement());
+  return GetDocument().UserActionElements().WasFocusedByMouse(this);
 }
 
 void Node::SetCustomElementState(CustomElementState new_state) {

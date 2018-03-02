@@ -145,6 +145,7 @@ class SelectorChecker {
   }
 
   static bool MatchesFocusPseudoClass(const Element&);
+  static bool MatchesFocusVisiblePseudoClass(const Element&);
 
  private:
   bool CheckOne(const SelectorCheckingContext&, MatchResult&) const;

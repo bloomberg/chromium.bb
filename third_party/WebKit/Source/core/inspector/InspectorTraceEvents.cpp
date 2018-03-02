@@ -251,6 +251,7 @@ const char* PseudoTypeToString(CSSSelector::PseudoType pseudo_type) {
     DEFINE_STRING_MAPPING(PseudoHover)
     DEFINE_STRING_MAPPING(PseudoDrag)
     DEFINE_STRING_MAPPING(PseudoFocus)
+    DEFINE_STRING_MAPPING(PseudoFocusVisible)
     DEFINE_STRING_MAPPING(PseudoFocusWithin)
     DEFINE_STRING_MAPPING(PseudoActive)
     DEFINE_STRING_MAPPING(PseudoChecked)
