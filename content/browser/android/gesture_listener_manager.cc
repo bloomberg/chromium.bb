@@ -7,7 +7,6 @@
 #include "content/browser/android/gesture_listener_manager.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_contents_view_android.h"
-#include "content/public/browser/web_contents.h"
 #include "jni/GestureListenerManagerImpl_jni.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "ui/events/android/gesture_event_type.h"
@@ -21,10 +20,58 @@ using base::android::ScopedJavaLocalRef;
 
 namespace content {
 
+namespace {
+
+int ToGestureEventType(WebInputEvent::Type type) {
+  switch (type) {
+    case WebInputEvent::kGestureScrollBegin:
+      return ui::GESTURE_EVENT_TYPE_SCROLL_START;
+    case WebInputEvent::kGestureScrollEnd:
+      return ui::GESTURE_EVENT_TYPE_SCROLL_END;
+    case WebInputEvent::kGestureScrollUpdate:
+      return ui::GESTURE_EVENT_TYPE_SCROLL_BY;
+    case WebInputEvent::kGestureFlingStart:
+      return ui::GESTURE_EVENT_TYPE_FLING_START;
+    case WebInputEvent::kGestureFlingCancel:
+      return ui::GESTURE_EVENT_TYPE_FLING_CANCEL;
+    case WebInputEvent::kGestureShowPress:
+      return ui::GESTURE_EVENT_TYPE_SHOW_PRESS;
+    case WebInputEvent::kGestureTap:
+      return ui::GESTURE_EVENT_TYPE_SINGLE_TAP_CONFIRMED;
+    case WebInputEvent::kGestureTapUnconfirmed:
+      return ui::GESTURE_EVENT_TYPE_SINGLE_TAP_UNCONFIRMED;
+    case WebInputEvent::kGestureTapDown:
+      return ui::GESTURE_EVENT_TYPE_TAP_DOWN;
+    case WebInputEvent::kGestureTapCancel:
+      return ui::GESTURE_EVENT_TYPE_TAP_CANCEL;
+    case WebInputEvent::kGestureDoubleTap:
+      return ui::GESTURE_EVENT_TYPE_DOUBLE_TAP;
+    case WebInputEvent::kGestureLongPress:
+      return ui::GESTURE_EVENT_TYPE_LONG_PRESS;
+    case WebInputEvent::kGestureLongTap:
+      return ui::GESTURE_EVENT_TYPE_LONG_TAP;
+    case WebInputEvent::kGesturePinchBegin:
+      return ui::GESTURE_EVENT_TYPE_PINCH_BEGIN;
+    case WebInputEvent::kGesturePinchEnd:
+      return ui::GESTURE_EVENT_TYPE_PINCH_END;
+    case WebInputEvent::kGesturePinchUpdate:
+      return ui::GESTURE_EVENT_TYPE_PINCH_BY;
+    case WebInputEvent::kGestureTwoFingerTap:
+    default:
+      NOTREACHED() << "Invalid source gesture type: "
+                   << WebInputEvent::GetName(type);
+      return -1;
+  }
+}
+
+}  // namespace
+
 GestureListenerManager::GestureListenerManager(JNIEnv* env,
                                                const JavaParamRef<jobject>& obj,
-                                               WebContents* web_contents)
-    : RenderWidgetHostConnector(web_contents), java_ref_(env, obj) {}
+                                               WebContentsImpl* web_contents)
+    : RenderWidgetHostConnector(web_contents),
+      web_contents_(web_contents),
+      java_ref_(env, obj) {}
 
 GestureListenerManager::~GestureListenerManager() {
   JNIEnv* env = AttachCurrentThread();
@@ -98,6 +145,30 @@ void GestureListenerManager::DidStopFlinging() {
   Java_GestureListenerManagerImpl_onFlingEnd(env, j_obj);
 }
 
+bool GestureListenerManager::FilterInputEvent(const WebInputEvent& event) {
+  if (event.GetType() != WebInputEvent::kGestureTap &&
+      event.GetType() != WebInputEvent::kGestureLongTap &&
+      event.GetType() != WebInputEvent::kGestureLongPress &&
+      event.GetType() != WebInputEvent::kMouseDown)
+    return false;
+
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
+  if (j_obj.is_null())
+    return false;
+
+  web_contents_->GetNativeView()->RequestFocus();
+
+  if (event.GetType() == WebInputEvent::kMouseDown)
+    return false;
+
+  const WebGestureEvent& gesture = static_cast<const WebGestureEvent&>(event);
+  int gesture_type = ToGestureEventType(event.GetType());
+  float dip_scale = web_contents_->GetNativeView()->GetDipScale();
+  return Java_GestureListenerManagerImpl_filterTapOrPressEvent(
+      env, j_obj, gesture_type, gesture.x * dip_scale, gesture.y * dip_scale);
+}
+
 void GestureListenerManager::UpdateRenderProcessConnection(
     RenderWidgetHostViewAndroid* old_rwhva,
     RenderWidgetHostViewAndroid* new_rwhva) {
@@ -116,7 +187,8 @@ jlong JNI_GestureListenerManagerImpl_Init(
   CHECK(web_contents) << "Should be created with a valid WebContents.";
 
   // Owns itself and gets destroyed when |WebContentsDestroyed| is called.
-  auto* manager = new GestureListenerManager(env, obj, web_contents);
+  auto* manager = new GestureListenerManager(
+      env, obj, static_cast<WebContentsImpl*>(web_contents));
   manager->Initialize();
   return reinterpret_cast<intptr_t>(manager);
 }

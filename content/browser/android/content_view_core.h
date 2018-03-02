@@ -175,7 +175,6 @@ class ContentViewCore : public WebContentsObserver {
                        bool is_mobile_optimized_hint);
 
   void RequestDisallowInterceptTouchEvent();
-  bool FilterInputEvent(const blink::WebInputEvent& event);
 
   // Returns the context with which the ContentViewCore was created, typically
   // the Activity context.

@@ -40,7 +40,6 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.device.gamepad.GamepadList;
 import org.chromium.ui.base.EventForwarder;
-import org.chromium.ui.base.GestureEventType;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.ViewUtils;
 import org.chromium.ui.base.WindowAndroid;
@@ -357,6 +356,7 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
             mContainerView = containerView;
             mContainerView.setClickable(true);
             getSelectionPopupController().setContainerView(containerView);
+            getGestureListenerManager().setContainerView(containerView);
         } finally {
             TraceEvent.end("ContentViewCore.setContainerView");
         }
@@ -470,22 +470,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
         final boolean scrollInProgress =
                 touchScrollInProgress || getGestureListenerManager().hasPotentiallyActiveFling();
         getSelectionPopupController().setScrollInProgress(touchScrollInProgress, scrollInProgress);
-    }
-
-    /**
-     * Called just prior to a tap or press gesture being forwarded to the renderer.
-     */
-    @SuppressWarnings("unused")
-    @CalledByNative
-    private boolean filterTapOrPressEvent(int type, int x, int y) {
-        if (type == GestureEventType.LONG_PRESS && offerLongPressToEmbedder()) {
-            return true;
-        }
-
-        TapDisambiguator tapDisambiguator = getTapDisambiguator();
-        if (!tapDisambiguator.isShowing()) tapDisambiguator.setLastTouch(x, y);
-
-        return false;
     }
 
     @VisibleForTesting
@@ -932,15 +916,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
     @Override
     public boolean getIsMobileOptimizedHint() {
         return mIsMobileOptimizedHint;
-    }
-
-    /**
-     * Offer a long press gesture to the embedding View, primarily for WebView compatibility.
-     *
-     * @return true if the embedder handled the event.
-     */
-    private boolean offerLongPressToEmbedder() {
-        return mContainerView.performLongClick();
     }
 
     /**
