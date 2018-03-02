@@ -23,19 +23,19 @@ CONTENT_EXPORT extern const base::Feature kArrayPrototypeValues;
 CONTENT_EXPORT extern const base::Feature kAsmJsToWebAssembly;
 CONTENT_EXPORT extern const base::Feature kAsyncWheelEvents;
 CONTENT_EXPORT extern const base::Feature kBlockCredentialedSubresources;
-CONTENT_EXPORT extern const base::Feature kDataSaverHoldback;
 CONTENT_EXPORT extern const base::Feature kBrotliEncoding;
-CONTENT_EXPORT extern const base::Feature kNavigationMojoResponse;
 CONTENT_EXPORT extern const base::Feature kCanvas2DImageChromium;
 CONTENT_EXPORT extern const base::Feature kCheckerImaging;
+CONTENT_EXPORT extern const base::Feature kCodeCacheAfterExecute;
 CONTENT_EXPORT extern const base::Feature kCompositeOpaqueFixedPosition;
 CONTENT_EXPORT extern const base::Feature kCompositeOpaqueScrollers;
 CONTENT_EXPORT extern const base::Feature kCompositorImageAnimation;
 CONTENT_EXPORT extern const base::Feature kCompositorTouchAction;
 CONTENT_EXPORT extern const base::Feature kCrossSiteDocumentBlockingAlways;
 CONTENT_EXPORT extern const base::Feature kCrossSiteDocumentBlockingIfIsolating;
-CONTENT_EXPORT extern const base::Feature kExtendedMouseButtons;
+CONTENT_EXPORT extern const base::Feature kDataSaverHoldback;
 CONTENT_EXPORT extern const base::Feature kExpensiveBackgroundTimerThrottling;
+CONTENT_EXPORT extern const base::Feature kExtendedMouseButtons;
 CONTENT_EXPORT extern const base::Feature kFontCacheScaling;
 CONTENT_EXPORT extern const base::Feature
     kFramebustingNeedsSameOriginOrUserGesture;
@@ -51,16 +51,17 @@ CONTENT_EXPORT extern const base::Feature kKeyboardLockAPI;
 CONTENT_EXPORT extern const base::Feature kLazyInitializeMediaControls;
 CONTENT_EXPORT extern const base::Feature kLazyParseCSS;
 CONTENT_EXPORT extern const base::Feature kLowPriorityIframes;
+CONTENT_EXPORT extern const base::Feature kMainThreadBusyScrollIntervention;
 CONTENT_EXPORT extern const base::Feature kMediaDevicesSystemMonitorCache;
 CONTENT_EXPORT extern const base::Feature kMemoryCoordinator;
-CONTENT_EXPORT extern const base::Feature kNetworkServiceInProcess;
-CONTENT_EXPORT extern const base::Feature kNotificationContentImage;
-CONTENT_EXPORT extern const base::Feature kMainThreadBusyScrollIntervention;
+CONTENT_EXPORT extern const base::Feature kModuleScriptsDynamicImport;
+CONTENT_EXPORT extern const base::Feature kModuleScriptsImportMetaUrl;
 CONTENT_EXPORT extern const base::Feature kMojoInputMessages;
 CONTENT_EXPORT extern const base::Feature kMojoSessionStorage;
 CONTENT_EXPORT extern const base::Feature kMojoVideoCapture;
-CONTENT_EXPORT extern const base::Feature kModuleScriptsDynamicImport;
-CONTENT_EXPORT extern const base::Feature kModuleScriptsImportMetaUrl;
+CONTENT_EXPORT extern const base::Feature kNavigationMojoResponse;
+CONTENT_EXPORT extern const base::Feature kNetworkServiceInProcess;
+CONTENT_EXPORT extern const base::Feature kNotificationContentImage;
 CONTENT_EXPORT extern const base::Feature kNotificationsWithMojo;
 CONTENT_EXPORT extern const base::Feature kOriginManifest;
 CONTENT_EXPORT extern const base::Feature kOriginTrials;
@@ -79,8 +80,8 @@ CONTENT_EXPORT extern const base::Feature
     kRunVideoCaptureServiceInBrowserProcess;
 CONTENT_EXPORT extern const base::Feature kScrollAnchoring;
 CONTENT_EXPORT extern const base::Feature kScrollAnchorSerialization;
-CONTENT_EXPORT
-extern const base::Feature kSendBeaconThrowForBlobWithNonSimpleType;
+CONTENT_EXPORT extern const base::Feature
+    kSendBeaconThrowForBlobWithNonSimpleType;
 CONTENT_EXPORT extern const base::Feature kServiceWorkerPaymentApps;
 CONTENT_EXPORT extern const base::Feature kServiceWorkerScriptFullCodeCache;
 CONTENT_EXPORT extern const base::Feature kServiceWorkerServicification;
@@ -101,12 +102,11 @@ CONTENT_EXPORT extern const base::Feature kUseFeaturePolicyForPermissions;
 CONTENT_EXPORT extern const base::Feature kUseMojoAudioInputStreamFactory;
 CONTENT_EXPORT extern const base::Feature kUseMojoAudioOutputStreamFactory;
 CONTENT_EXPORT extern const base::Feature kUserActivationV2;
-CONTENT_EXPORT extern const base::Feature kV8ContextSnapshot;
 CONTENT_EXPORT extern const base::Feature kV8BackgroundCompile;
+CONTENT_EXPORT extern const base::Feature kV8ContextSnapshot;
 CONTENT_EXPORT extern const base::Feature kV8VmFuture;
-CONTENT_EXPORT extern const base::Feature kVrWebInputEditing;
-CONTENT_EXPORT extern const base::Feature kCodeCacheAfterExecute;
 CONTENT_EXPORT extern const base::Feature kVibrateRequiresUserGesture;
+CONTENT_EXPORT extern const base::Feature kVrWebInputEditing;
 CONTENT_EXPORT extern const base::Feature kWebAssembly;
 CONTENT_EXPORT extern const base::Feature kWebAssemblyStreaming;
 CONTENT_EXPORT extern const base::Feature kWebAssemblyTrapHandler;
@@ -126,12 +126,6 @@ CONTENT_EXPORT extern const base::Feature kWebUsb;
 CONTENT_EXPORT extern const base::Feature kWebVrVsyncAlign;
 CONTENT_EXPORT extern const base::Feature kWebXr;
 CONTENT_EXPORT extern const base::Feature kWebXrOrientationSensorDevice;
-#if defined(OS_ANDROID)
-CONTENT_EXPORT extern const base::Feature kWebXrRenderPath;
-CONTENT_EXPORT extern const char kWebXrRenderPathParamName[];
-CONTENT_EXPORT extern const char kWebXrRenderPathParamValueClientWait[];
-CONTENT_EXPORT extern const char kWebXrRenderPathParamValueGpuFence[];
-#endif  // defined(OS_ANDROID)
 CONTENT_EXPORT extern const base::Feature kWorkStealingInScriptRunner;
 
 #if defined(OS_ANDROID)
@@ -139,6 +133,10 @@ CONTENT_EXPORT extern const base::Feature kAndroidAutofillAccessibility;
 CONTENT_EXPORT extern const base::Feature kHideIncorrectlySizedFullscreenFrames;
 CONTENT_EXPORT extern const base::Feature kImeThread;
 CONTENT_EXPORT extern const base::Feature kWebNfc;
+CONTENT_EXPORT extern const base::Feature kWebXrRenderPath;
+CONTENT_EXPORT extern const char kWebXrRenderPathParamName[];
+CONTENT_EXPORT extern const char kWebXrRenderPathParamValueClientWait[];
+CONTENT_EXPORT extern const char kWebXrRenderPathParamValueGpuFence[];
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_MACOSX)
