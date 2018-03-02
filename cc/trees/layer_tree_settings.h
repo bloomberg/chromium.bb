@@ -142,6 +142,10 @@ class CC_EXPORT LayerTreeSettings {
   // Whether images should be animated in the compositor.
   bool enable_image_animations = false;
 
+  // Whether image animations can be reset to the beginning to avoid skipping
+  // many frames. Only effective if |enable_image_animations| is true.
+  bool enable_image_animation_resync = true;
+
   // Whether to use edge anti-aliasing for all layer types that supports it.
   bool enable_edge_anti_aliasing = true;
 

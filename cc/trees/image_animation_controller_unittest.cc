@@ -78,7 +78,8 @@ class ImageAnimationControllerTest : public testing::Test {
         base::Bind(&ImageAnimationControllerTest::RequestInvalidation,
                    base::Unretained(this));
     controller_ = std::make_unique<ImageAnimationController>(
-        task_runner_.get(), invalidation_callback);
+        task_runner_.get(), invalidation_callback,
+        GetEnableImageAnimationResync());
     now_ += base::TimeDelta::FromSeconds(10);
   }
 
@@ -150,6 +151,8 @@ class ImageAnimationControllerTest : public testing::Test {
   void RequestInvalidation() { invalidation_count_++; }
 
   void AdvanceNow(base::TimeDelta delta) { now_ += delta; }
+
+  virtual bool GetEnableImageAnimationResync() const { return true; }
 
   base::TimeTicks now_;
   int invalidation_count_ = 0;
@@ -731,6 +734,114 @@ TEST_F(ImageAnimationControllerTest, ResetAnimations) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(invalidation_count_, 0);
 
+  controller_->UnregisterAnimationDriver(data.paint_image_id, &driver);
+}
+
+class ImageAnimationControllerNoResyncTest
+    : public ImageAnimationControllerTest {
+ protected:
+  bool GetEnableImageAnimationResync() const override { return false; }
+};
+
+TEST_F(ImageAnimationControllerNoResyncTest, NoSyncCutoffAfterIdle) {
+  std::vector<FrameMetadata> frames = {
+      FrameMetadata(true, base::TimeDelta::FromMilliseconds(2)),
+      FrameMetadata(true, base::TimeDelta::FromMilliseconds(3))};
+
+  DiscardableImageMap::AnimatedImageMetadata data(
+      PaintImage::GetNextId(), PaintImage::CompletionState::DONE, frames,
+      kAnimationLoopInfinite, 0);
+  controller_->UpdateAnimatedImage(data);
+  FakeAnimationDriver driver;
+  controller_->RegisterAnimationDriver(data.paint_image_id, &driver);
+  controller_->UpdateStateFromDrivers(now_);
+
+  // Advance the first frame.
+  task_runner_->VerifyDelay(base::TimeDelta());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(invalidation_count_, 1);
+  auto animated_images = controller_->AnimateForSyncTree(now_);
+  EXPECT_EQ(animated_images.size(), 0u);
+  EXPECT_EQ(controller_->GetFrameIndexForImage(data.paint_image_id,
+                                               WhichTree::PENDING_TREE),
+            0u);
+  EXPECT_EQ(controller_->GetFrameIndexForImage(data.paint_image_id,
+                                               WhichTree::ACTIVE_TREE),
+            0u);
+  controller_->DidActivate();
+
+  // Invalidation request for the second frame.
+  task_runner_->VerifyDelay(frames[0].duration);
+
+  // Advance the time by 10 min (divisible by animation duration) and first
+  // frame duration.
+  AdvanceNow(base::TimeDelta::FromMinutes(10) + frames[0].duration);
+
+  // Animate again, it should not restart from the start. Should display second
+  // animation frame.
+  animated_images = controller_->AnimateForSyncTree(now_);
+  EXPECT_EQ(animated_images.size(), 1u);
+  EXPECT_EQ(controller_->GetFrameIndexForImage(data.paint_image_id,
+                                               WhichTree::PENDING_TREE),
+            1u);
+  EXPECT_EQ(controller_->GetFrameIndexForImage(data.paint_image_id,
+                                               WhichTree::ACTIVE_TREE),
+            0u);
+  controller_->DidActivate();
+
+  // New invalidation request since the desired invalidation time changed.
+  task_runner_->VerifyDelay(frames[1].duration);
+  invalidation_count_ = 0;
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(invalidation_count_, 1);
+
+  controller_->UnregisterAnimationDriver(data.paint_image_id, &driver);
+}
+
+TEST_F(ImageAnimationControllerNoResyncTest, SkipsLoopsAfterFirstIteration) {
+  std::vector<FrameMetadata> frames = {
+      FrameMetadata(true, base::TimeDelta::FromMilliseconds(2)),
+      FrameMetadata(true, base::TimeDelta::FromMilliseconds(3)),
+      FrameMetadata(true, base::TimeDelta::FromMilliseconds(4)),
+      FrameMetadata(true, base::TimeDelta::FromMilliseconds(5))};
+
+  DiscardableImageMap::AnimatedImageMetadata data(
+      PaintImage::GetNextId(), PaintImage::CompletionState::PARTIALLY_DONE,
+      frames, kAnimationLoopInfinite, 0);
+  controller_->UpdateAnimatedImage(data);
+  FakeAnimationDriver driver;
+  controller_->RegisterAnimationDriver(data.paint_image_id, &driver);
+  controller_->UpdateStateFromDrivers(now_);
+
+  // Perform the first loop while the image is partially loaded, until the third
+  // frame.
+  LoopOnceNoDelay(data.paint_image_id, frames, 3u, 0);
+
+  // The invalidation has been scheduled with a delay for the third frame's
+  // duration.
+  task_runner_->VerifyDelay(frames[2].duration);
+
+  // |now_| is set to the desired time for the fourth frame. Advance further so
+  // we reach the time for the second frame.
+  AdvanceNow(frames[3].duration + frames[0].duration);
+
+  // Finish the image load.
+  data.completion_state = PaintImage::CompletionState::DONE;
+  controller_->UpdateAnimatedImage(data);
+  controller_->UpdateStateFromDrivers(now_);
+
+  // Invalidation is scheduled immediately because we are way past the desired
+  // time. We skip frames even after the image is loaded.
+  task_runner_->VerifyDelay(base::TimeDelta());
+  auto animated_images = controller_->AnimateForSyncTree(now_);
+  EXPECT_EQ(animated_images.size(), 1u);
+  EXPECT_EQ(animated_images.count(data.paint_image_id), 1u);
+  EXPECT_EQ(controller_->GetFrameIndexForImage(data.paint_image_id,
+                                               WhichTree::PENDING_TREE),
+            1u);
+  EXPECT_EQ(controller_->GetFrameIndexForImage(data.paint_image_id,
+                                               WhichTree::ACTIVE_TREE),
+            2u);
   controller_->UnregisterAnimationDriver(data.paint_image_id, &driver);
 }
 

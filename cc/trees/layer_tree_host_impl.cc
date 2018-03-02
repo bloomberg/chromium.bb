@@ -290,8 +290,9 @@ LayerTreeHostImpl::LayerTreeHostImpl(
     base::Closure invalidation_callback =
         base::Bind(&LayerTreeHostImpl::RequestInvalidationForAnimatedImages,
                    base::Unretained(this));
-    image_animation_controller_.emplace(GetTaskRunner(),
-                                        std::move(invalidation_callback));
+    image_animation_controller_.emplace(
+        GetTaskRunner(), std::move(invalidation_callback),
+        settings_.enable_image_animation_resync);
   }
 }
 

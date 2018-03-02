@@ -29,6 +29,12 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/codec/png_codec.h"
 
+#define EXPECT_SCOPED(statements) \
+  {                               \
+    SCOPED_TRACE("");             \
+    statements;                   \
+  }
+
 namespace headless {
 
 // BeginFrameControl is not supported on Mac.
@@ -145,6 +151,7 @@ class CompositorControllerBrowserTest
     command_line->AppendSwitch(switches::kDisableNewContentRenderingTimeout);
     command_line->AppendSwitch(cc::switches::kDisableCheckerImaging);
     command_line->AppendSwitch(cc::switches::kDisableThreadedAnimation);
+    command_line->AppendSwitch(switches::kDisableImageAnimationResync);
     command_line->AppendSwitch(switches::kDisableThreadedScrolling);
 
     scoped_feature_list_.InitAndEnableFeature(
@@ -226,8 +233,7 @@ class CompositorControllerBrowserTest
   virtual void OnFirstBeginFrameComplete() {
     // With surface sync enabled, we should have waited for the renderer's
     // CompositorFrame in the first BeginFrame.
-    EXPECT_EQ(1, begin_frame_counter_->begin_frame_count());
-    EXPECT_EQ(1, render_frame_submission_observer_->render_frame_count());
+    EXPECT_SCOPED(ExpectAdditionalFrameCounts(1, 1));
   }
 
   void CaptureDoubleScreenshot(
@@ -256,6 +262,16 @@ class CompositorControllerBrowserTest
     FinishAsynchronousTest();
   }
 
+  void ExpectAdditionalFrameCounts(int additional_begin_frame_count,
+                                   int additional_render_frame_count) {
+    expected_begin_frame_count_ += additional_begin_frame_count;
+    expected_render_frame_count_ += additional_render_frame_count;
+    EXPECT_EQ(expected_begin_frame_count_,
+              begin_frame_counter_->begin_frame_count());
+    EXPECT_EQ(expected_render_frame_count_,
+              render_frame_submission_observer_->render_frame_count());
+  }
+
   base::test::ScopedFeatureList scoped_feature_list_;
 
   std::unique_ptr<VirtualTimeController> virtual_time_controller_;
@@ -264,6 +280,9 @@ class CompositorControllerBrowserTest
   std::unique_ptr<BeginFrameCounter> begin_frame_counter_;
   std::unique_ptr<content::RenderFrameSubmissionObserver>
       render_frame_submission_observer_;
+
+  int expected_begin_frame_count_ = 0;
+  int expected_render_frame_count_ = 0;
 };
 
 // Runs requestAnimationFrame three times without updating display for
@@ -305,8 +324,7 @@ class CompositorControllerRafBrowserTest
     // Even though the rAF made a change to the frame's background color, no
     // further CompositorFrames should have been produced for animations,
     // because update_display_for_animations is false.
-    EXPECT_EQ(1 + kNumFrames, begin_frame_counter_->begin_frame_count());
-    EXPECT_EQ(1, render_frame_submission_observer_->render_frame_count());
+    EXPECT_SCOPED(ExpectAdditionalFrameCounts(kNumFrames, 0));
 
     // Get animation frame count.
     devtools_client_->GetRuntime()->Evaluate(
@@ -328,9 +346,7 @@ class CompositorControllerRafBrowserTest
 
   void OnScreenshot(const std::string& screenshot_data) {
     // Screenshot should have incurred two new CompositorFrames from renderer.
-    EXPECT_EQ(3 + kNumFrames, begin_frame_counter_->begin_frame_count());
-    EXPECT_EQ(3, render_frame_submission_observer_->render_frame_count());
-
+    EXPECT_SCOPED(ExpectAdditionalFrameCounts(2, 2));
     EXPECT_LT(0U, screenshot_data.length());
 
     if (screenshot_data.length()) {
@@ -408,9 +424,7 @@ class CompositorControllerImageAnimationBrowserTest
     // The GIF should not have started animating yet, even though we advanced
     // virtual time. It only starts animating when first painted, i.e. when the
     // first screenshot is taken.
-    EXPECT_EQ(1 + kNumFramesFirstIteration,
-              begin_frame_counter_->begin_frame_count());
-    EXPECT_EQ(1, render_frame_submission_observer_->render_frame_count());
+    EXPECT_SCOPED(ExpectAdditionalFrameCounts(kNumFramesFirstIteration, 0));
 
     CaptureDoubleScreenshot(
         base::BindRepeating(&CompositorControllerImageAnimationBrowserTest::
@@ -421,10 +435,7 @@ class CompositorControllerImageAnimationBrowserTest
   void OnScreenshotAfterFirstIteration(const std::string& screenshot_data) {
     // Screenshot should have incurred one new CompositorFrame from renderer,
     // but two new BeginFrames.
-    EXPECT_EQ(3 + kNumFramesFirstIteration,
-              begin_frame_counter_->begin_frame_count());
-    EXPECT_EQ(2, render_frame_submission_observer_->render_frame_count());
-
+    EXPECT_SCOPED(ExpectAdditionalFrameCounts(2, 1));
     EXPECT_LT(0U, screenshot_data.length());
 
     if (screenshot_data.length()) {
@@ -453,11 +464,10 @@ class CompositorControllerImageAnimationBrowserTest
   void OnSecondBudgetExpired() {
     // Even though the GIF animated, no further CompositorFrames should have
     // been produced, because update_display_for_animations is false. The second
-    // animation only produces kNumFramesSecondIteration - 1 BeginFrames since
+    // iteration only produces kNumFramesSecondIteration - 1 BeginFrames since
     // the first animation frame is skipped because of the prior screenshot.
-    EXPECT_EQ(2 + kNumFramesFirstIteration + kNumFramesSecondIteration,
-              begin_frame_counter_->begin_frame_count());
-    EXPECT_EQ(2, render_frame_submission_observer_->render_frame_count());
+    EXPECT_SCOPED(
+        ExpectAdditionalFrameCounts(kNumFramesSecondIteration - 1, 0));
 
     CaptureDoubleScreenshot(
         base::BindRepeating(&CompositorControllerImageAnimationBrowserTest::
@@ -468,9 +478,7 @@ class CompositorControllerImageAnimationBrowserTest
   void OnScreenshotAfterSecondIteration(const std::string& screenshot_data) {
     // Screenshot should have incurred one new CompositorFrame from renderer,
     // but two new BeginFrames.
-    EXPECT_EQ(4 + kNumFramesFirstIteration + kNumFramesSecondIteration,
-              begin_frame_counter_->begin_frame_count());
-    EXPECT_EQ(3, render_frame_submission_observer_->render_frame_count());
+    EXPECT_SCOPED(ExpectAdditionalFrameCounts(2, 1));
 
     EXPECT_LT(0U, screenshot_data.length());
 
@@ -486,6 +494,48 @@ class CompositorControllerImageAnimationBrowserTest
       EXPECT_EQ(expected_color, actual_color);
     }
 
+    // Advance a full animation iteration and check that animation doesn't reset
+    // to the beginning, because of kDisableImageAnimationResync.
+    new AdditionalVirtualTimeBudget(
+        virtual_time_controller_.get(),
+        AdditionalVirtualTimeBudget::StartPolicy::START_IMMEDIATELY,
+        kNumFramesThirdIteration * GetAnimationFrameInterval(),
+        base::BindOnce(&CompositorControllerImageAnimationBrowserTest::
+                           OnThirdBudgetExpired,
+                       base::Unretained(this)));
+  }
+
+  void OnThirdBudgetExpired() {
+    // Even though the GIF animated, no further CompositorFrames should have
+    // been produced, because update_display_for_animations is false. The third
+    // iteration only produces kNumFramesThirdIteration - 1 BeginFrames since
+    // the first animation frame is skipped because of the prior screenshot.
+    EXPECT_SCOPED(ExpectAdditionalFrameCounts(kNumFramesThirdIteration - 1, 0));
+
+    CaptureDoubleScreenshot(
+        base::BindRepeating(&CompositorControllerImageAnimationBrowserTest::
+                                OnScreenshotAfterThirdIteration,
+                            base::Unretained(this)));
+  }
+
+  void OnScreenshotAfterThirdIteration(const std::string& screenshot_data) {
+    // Screenshot should have incurred no new CompositorFrame from renderer
+    // since animation frame didn't change, but two new BeginFrames.
+    EXPECT_SCOPED(ExpectAdditionalFrameCounts(2, 0));
+    EXPECT_LT(0U, screenshot_data.length());
+
+    if (screenshot_data.length()) {
+      SkBitmap result_bitmap;
+      EXPECT_TRUE(DecodePNG(screenshot_data, &result_bitmap));
+
+      EXPECT_EQ(800, result_bitmap.width());
+      EXPECT_EQ(600, result_bitmap.height());
+      SkColor actual_color = result_bitmap.getColor(50, 50);
+      // We advanced a full iteration, so animation should be yellow again.
+      SkColor expected_color = SkColorSetRGB(0xff, 0xff, 0x00);
+      EXPECT_EQ(expected_color, actual_color);
+    }
+
     FinishCompositorControllerTest();
   }
 
@@ -493,6 +543,8 @@ class CompositorControllerImageAnimationBrowserTest
   static constexpr int kNumFramesFirstIteration = 7;
   // Advances two animation frames only.
   static constexpr int kNumFramesSecondIteration = 5;
+  // Advances a full animation iteration.
+  static constexpr int kNumFramesThirdIteration = 6;
 };
 
 /* static */
@@ -501,6 +553,9 @@ constexpr int
 /* static */
 constexpr int
     CompositorControllerImageAnimationBrowserTest::kNumFramesSecondIteration;
+/* static */
+constexpr int
+    CompositorControllerImageAnimationBrowserTest::kNumFramesThirdIteration;
 
 HEADLESS_ASYNC_DEVTOOLED_TEST_P(CompositorControllerImageAnimationBrowserTest);
 

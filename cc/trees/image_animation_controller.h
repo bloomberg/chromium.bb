@@ -58,8 +58,11 @@ class CC_EXPORT ImageAnimationController {
   // created.
   // |task_runner| is the thread on which the controller is used. The
   // invalidation_callback can only be run on this thread.
+  // |enable_image_animation_resync| specifies whether the animation can be
+  // reset to the beginning to avoid skipping many frames.
   ImageAnimationController(base::SingleThreadTaskRunner* task_runner,
-                           base::Closure invalidation_callback);
+                           base::RepeatingClosure invalidation_callback,
+                           bool enable_image_animation_resync);
   ~ImageAnimationController();
 
   // Called to update the state for a PaintImage received in a new recording.
@@ -110,7 +113,7 @@ class CC_EXPORT ImageAnimationController {
     ~AnimationState();
 
     bool ShouldAnimate() const;
-    bool AdvanceFrame(base::TimeTicks now);
+    bool AdvanceFrame(base::TimeTicks now, bool enable_image_animation_resync);
     void UpdateMetadata(const DiscardableImageMap::AnimatedImageMetadata& data);
     void PushPendingToActive();
 
@@ -193,7 +196,7 @@ class CC_EXPORT ImageAnimationController {
   class DelayedNotifier {
    public:
     DelayedNotifier(base::SingleThreadTaskRunner* task_runner,
-                    base::Closure closure);
+                    base::RepeatingClosure closure);
     ~DelayedNotifier();
 
     void Schedule(base::TimeTicks now, base::TimeTicks notification_time);
@@ -204,7 +207,7 @@ class CC_EXPORT ImageAnimationController {
     void Notify();
 
     base::SingleThreadTaskRunner* task_runner_;
-    base::Closure closure_;
+    base::RepeatingClosure closure_;
 
     // Set if a notification is currently pending.
     base::Optional<base::TimeTicks> pending_notification_time_;
@@ -231,6 +234,8 @@ class CC_EXPORT ImageAnimationController {
   PaintImageIdFlatSet images_animated_on_sync_tree_;
 
   DelayedNotifier notifier_;
+
+  const bool enable_image_animation_resync_;
 };
 
 }  // namespace cc

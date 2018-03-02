@@ -2539,6 +2539,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableFileSystem,
     switches::kDisableGpuMemoryBufferVideoFrames,
     switches::kDisableGpuVsync,
+    switches::kDisableImageAnimationResync,
     switches::kDisableLowResTiling,
     switches::kDisableHistogramCustomizer,
     switches::kDisableLCDText,
