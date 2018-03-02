@@ -11,6 +11,7 @@
 #include "content/browser/accessibility/browser_accessibility_manager_android.h"
 #include "content/browser/android/content_view_core.h"
 #include "content/browser/android/gesture_listener_manager.h"
+#include "content/browser/android/select_popup.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/renderer_host/display_util.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
@@ -114,6 +115,11 @@ void WebContentsViewAndroid::SetContentViewCore(
     if (rwhv)
       rwhv->SetContentViewCore(content_view_core_);
   }
+}
+
+void WebContentsViewAndroid::SetSelectPopup(
+    std::unique_ptr<SelectPopup> select_popup) {
+  select_popup_ = std::move(select_popup);
 }
 
 void WebContentsViewAndroid::SetOverscrollRefreshHandler(
@@ -289,16 +295,15 @@ void WebContentsViewAndroid::ShowPopupMenu(
     const std::vector<MenuItem>& items,
     bool right_aligned,
     bool allow_multiple_selection) {
-  if (content_view_core_) {
-    content_view_core_->ShowSelectPopupMenu(
-        render_frame_host, bounds, items, selected_item,
-        allow_multiple_selection, right_aligned);
+  if (select_popup_) {
+    select_popup_->ShowMenu(render_frame_host, bounds, items, selected_item,
+                            allow_multiple_selection, right_aligned);
   }
 }
 
 void WebContentsViewAndroid::HidePopupMenu() {
-  if (content_view_core_)
-    content_view_core_->HideSelectPopupMenu();
+  if (select_popup_)
+    select_popup_->HideMenu();
 }
 
 void WebContentsViewAndroid::StartDragging(

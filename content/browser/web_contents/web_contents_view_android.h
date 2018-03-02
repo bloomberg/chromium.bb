@@ -21,6 +21,7 @@
 namespace content {
 class ContentViewCore;
 class RenderWidgetHostViewAndroid;
+class SelectPopup;
 class SynchronousCompositorClient;
 class WebContentsImpl;
 
@@ -37,6 +38,9 @@ class WebContentsViewAndroid : public WebContentsView,
   // by its Java ContentViewCore counterpart, whose lifetime is managed
   // by the UI frontend.
   void SetContentViewCore(ContentViewCore* content_view_core);
+
+  // Sets the object that show/hide popup view for <select> tag.
+  void SetSelectPopup(std::unique_ptr<SelectPopup> select_popup);
 
   void set_synchronous_compositor_client(SynchronousCompositorClient* client) {
     synchronous_compositor_client_ = client;
@@ -140,6 +144,9 @@ class WebContentsViewAndroid : public WebContentsView,
 
   // Interface used to get notified of events from the synchronous compositor.
   SynchronousCompositorClient* synchronous_compositor_client_;
+
+  // Show/hide popup UI for <select> tag.
+  std::unique_ptr<SelectPopup> select_popup_;
 
   gfx::PointF drag_location_;
   gfx::PointF drag_screen_location_;

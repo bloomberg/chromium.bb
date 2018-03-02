@@ -2104,6 +2104,8 @@ jumbo_source_set("browser") {
       "android/overscroll_controller_android.h",
       "android/render_widget_host_connector.cc",
       "android/render_widget_host_connector.h",
+      "android/select_popup.cc",
+      "android/select_popup.h",
       "android/selection_popup_controller.cc",
       "android/selection_popup_controller.h",
       "android/smart_selection_client.cc",

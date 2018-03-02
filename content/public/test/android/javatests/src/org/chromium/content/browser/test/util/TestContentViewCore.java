@@ -181,9 +181,6 @@ public class TestContentViewCore implements ContentViewCore {
     public void updateDoubleTapSupport(boolean supportsDoubleTap) {}
 
     @Override
-    public void selectPopupMenuItems(int[] indices) {}
-
-    @Override
     public void preserveSelectionOnNextLossOfFocus() {}
 
     @Override

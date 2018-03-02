@@ -323,7 +323,7 @@ java_strings_grd("content_strings_grd") {
 
 java_cpp_enum("content_public_android_java_enums_srcjar") {
   sources = [
-    "//content/browser/android/content_view_core.cc",
+    "//content/browser/android/select_popup.cc",
     "//content/public/browser/android/child_process_importance.h",
     "//content/public/browser/android/motion_event_action.h",
     "//content/public/browser/invalidate_type.h",
@@ -382,6 +382,7 @@ generate_jni("content_jni_headers") {
     "java/src/org/chromium/content/browser/framehost/RenderFrameHostImpl.java",
     "java/src/org/chromium/content/browser/input/DateTimeChooserAndroid.java",
     "java/src/org/chromium/content/browser/input/ImeAdapterImpl.java",
+    "java/src/org/chromium/content/browser/input/SelectPopup.java",
     "java/src/org/chromium/content/browser/input/SuggestionInfo.java",
     "java/src/org/chromium/content/browser/input/TextSuggestionHost.java",
     "java/src/org/chromium/content/browser/selection/HandleViewResources.java",
