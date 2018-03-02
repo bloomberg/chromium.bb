@@ -67,6 +67,7 @@ buildflag_header("features") {
     "DEBUG_DEVTOOLS=$debug_devtools",
     "USE_DEFAULT_RENDER_THEME=$use_default_render_theme",
     "USE_MINIKIN_HYPHENATION=$use_minikin_hyphenation",
+    "ENABLE_UNHANDLED_TAP=$enable_unhandled_tap",
   ]
 }
 
@@ -840,6 +841,11 @@ mojom("android_mojo_bindings") {
     "//ui/gfx/geometry/mojo",
     "//url/mojom:url_mojom_gurl",
   ]
+
+  # This Android unhandled-tap feature uses another mojo source, add it in.
+  if (enable_unhandled_tap) {
+    sources += [ "platform/unhandled_tap_notifier.mojom" ]
+  }
 
   component_output_prefix = "blink_android_mojo_bindings"
 

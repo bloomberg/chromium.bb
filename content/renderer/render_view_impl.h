@@ -73,7 +73,6 @@ class WebDateTimeChooserCompletion;
 class WebGestureEvent;
 class WebMouseEvent;
 class WebSpeechRecognizer;
-class WebTappedInfo;
 class WebURLRequest;
 struct WebDateTimeChooserParams;
 struct WebMediaPlayerAction;
@@ -271,8 +270,6 @@ class CONTENT_EXPORT RenderViewImpl : public RenderWidget,
   void SetToolTipText(const blink::WebString&,
                       blink::WebTextDirection hint) override;
   void SetTouchAction(cc::TouchAction touchAction) override;
-  void ShowUnhandledTapUIIfNeeded(
-      const blink::WebTappedInfo& tappedInfo) override;
   blink::WebWidgetClient* WidgetClient() override;
 
   // blink::WebViewClient implementation --------------------------------------

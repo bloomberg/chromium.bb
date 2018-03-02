@@ -18,7 +18,14 @@
 #include "core/input/InputDeviceCapabilities.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
-#include "public/web/WebTappedInfo.h"
+#include "public/public_features.h"
+
+#if BUILDFLAG(ENABLE_UNHANDLED_TAP)
+#include "core/frame/LocalFrameClient.h"
+#include "public/platform/unhandled_tap_notifier.mojom-blink.h"
+#include "public/web/WebNode.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
+#endif  // BUILDFLAG(ENABLE_UNHANDLED_TAP)
 
 namespace blink {
 
@@ -302,9 +309,8 @@ WebInputEventResult GestureManager::HandleGestureTap(
     IntPoint tapped_position_in_viewport =
         frame_->GetPage()->GetVisualViewport().RootFrameToViewport(
             tapped_position);
-    WebTappedInfo tapped_info(dom_tree_changed, style_changed, tapped_node,
-                              tapped_position_in_viewport);
-    frame_->GetChromeClient().ShowUnhandledTapUIIfNeeded(tapped_info);
+    ShowUnhandledTapUIIfNeeded(dom_tree_changed, style_changed, tapped_node,
+                               tapped_position_in_viewport);
   }
   return event_result;
 }
@@ -435,6 +441,31 @@ WebInputEventResult GestureManager::HandleGestureShowPress() {
 WTF::Optional<WTF::TimeTicks> GestureManager::GetLastShowPressTimestamp()
     const {
   return last_show_press_timestamp_;
+}
+
+void GestureManager::ShowUnhandledTapUIIfNeeded(
+    bool dom_tree_changed,
+    bool style_changed,
+    Node* tapped_node,
+    const IntPoint& tapped_position_in_viewport) {
+#if BUILDFLAG(ENABLE_UNHANDLED_TAP)
+  WebNode web_node(tapped_node);
+  bool should_trigger = !dom_tree_changed && !style_changed &&
+                        tapped_node->IsTextNode() &&
+                        !web_node.IsContentEditable() &&
+                        !web_node.IsInsideFocusableElementOrARIAWidget();
+  // Renderer-side trigger-filtering to minimize messaging.
+  // The Browser may do additional trigger-filtering.
+  if (should_trigger) {
+    WebPoint point(tapped_position_in_viewport.X(),
+                   tapped_position_in_viewport.Y());
+    auto tapped_info = mojom::blink::UnhandledTapInfo::New(point);
+    mojom::blink::UnhandledTapNotifierPtr provider;
+    frame_->Client()->GetInterfaceProvider()->GetInterface(
+        mojo::MakeRequest(&provider));
+    provider->ShowUnhandledTapUIIfNeeded(std::move(tapped_info));
+  }
+#endif  // BUILDFLAG(ENABLE_UNHANDLED_TAP)
 }
 
 }  // namespace blink
