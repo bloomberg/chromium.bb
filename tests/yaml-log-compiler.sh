@@ -16,7 +16,7 @@
 yaml_test=$1
 
 case $yaml_test in
-    ./braille-specs/*)
+    */braille-specs/*)
         export LOUIS_TABLEPATH=${LOUIS_TABLEPATH}/tables
         ;;
     *)
