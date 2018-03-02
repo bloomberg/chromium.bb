@@ -806,12 +806,17 @@ static bool DispatchCopyOrCutEvent(LocalFrame& frame,
                                 source, kAllMimeTypes);
 }
 
+static bool CanSmartCopyOrDelete(LocalFrame& frame) {
+  return frame.GetEditor().SmartInsertDeleteEnabled() &&
+         frame.Selection().Granularity() == TextGranularity::kWord;
+}
+
 static void WriteSelectionToPasteboard(LocalFrame& frame) {
   const KURL& url = frame.GetDocument()->Url();
   const String html = frame.Selection().SelectedHTMLForClipboard();
   const String plain_text = frame.SelectedTextForClipboard();
-  Pasteboard::GeneralPasteboard()->WriteHTML(
-      html, url, plain_text, frame.GetEditor().CanSmartCopyOrDelete());
+  Pasteboard::GeneralPasteboard()->WriteHTML(html, url, plain_text,
+                                             CanSmartCopyOrDelete(frame));
 }
 
 static bool ExecuteCopy(LocalFrame& frame,
@@ -846,9 +851,8 @@ static bool ExecuteCopy(LocalFrame& frame,
           frame.Selection().ComputeVisibleSelectionInDOMTree().Start())) {
     Pasteboard::GeneralPasteboard()->WritePlainText(
         frame.SelectedTextForClipboard(),
-        frame.GetEditor().CanSmartCopyOrDelete()
-            ? Pasteboard::kCanSmartReplace
-            : Pasteboard::kCannotSmartReplace);
+        CanSmartCopyOrDelete(frame) ? Pasteboard::kCanSmartReplace
+                                    : Pasteboard::kCannotSmartReplace);
     return true;
   }
   const Document* const document = frame.GetDocument();
@@ -917,7 +921,7 @@ static bool ExecuteCut(LocalFrame& frame,
           frame.Selection().ComputeVisibleSelectionInDOMTree().Start())) {
     const String plain_text = frame.SelectedTextForClipboard();
     Pasteboard::GeneralPasteboard()->WritePlainText(
-        plain_text, frame.GetEditor().CanSmartCopyOrDelete()
+        plain_text, CanSmartCopyOrDelete(frame)
                         ? Pasteboard::kCanSmartReplace
                         : Pasteboard::kCannotSmartReplace);
   } else {
@@ -935,8 +939,7 @@ static bool ExecuteCut(LocalFrame& frame,
       return true;
   }
   frame.GetEditor().DeleteSelectionWithSmartDelete(
-      frame.GetEditor().CanSmartCopyOrDelete() ? DeleteMode::kSmart
-                                               : DeleteMode::kSimple,
+      CanSmartCopyOrDelete(frame) ? DeleteMode::kSmart : DeleteMode::kSimple,
       InputEvent::InputType::kDeleteByCut);
 
   return true;
@@ -969,8 +972,7 @@ static void PerformDelete(LocalFrame& frame) {
   // TODO(chongz): |Editor::performDelete()| has no direction.
   // https://github.com/w3c/editing/issues/130
   frame.GetEditor().DeleteSelectionWithSmartDelete(
-      frame.GetEditor().CanSmartCopyOrDelete() ? DeleteMode::kSmart
-                                               : DeleteMode::kSimple,
+      CanSmartCopyOrDelete(frame) ? DeleteMode::kSmart : DeleteMode::kSimple,
       InputEvent::InputType::kDeleteContentBackward);
 
   // clear the "start new kill ring sequence" setting, because it was set to
@@ -1022,21 +1024,21 @@ static bool DeleteWithDirection(LocalFrame& frame,
       DCHECK(frame.GetDocument());
       TypingCommand::DeleteKeyPressed(
           *frame.GetDocument(),
-          editor.CanSmartCopyOrDelete() ? TypingCommand::kSmartDelete : 0,
+          CanSmartCopyOrDelete(frame) ? TypingCommand::kSmartDelete : 0,
           granularity);
       editor.RevealSelectionAfterEditingOperation();
     } else {
       if (kill_ring)
         editor.AddToKillRing(editor.SelectedRange());
       editor.DeleteSelectionWithSmartDelete(
-          editor.CanSmartCopyOrDelete() ? DeleteMode::kSmart
-                                        : DeleteMode::kSimple,
+          CanSmartCopyOrDelete(frame) ? DeleteMode::kSmart
+                                      : DeleteMode::kSimple,
           DeletionInputTypeFromTextGranularity(direction, granularity));
       // Implicitly calls revealSelectionAfterEditingOperation().
     }
   } else {
     TypingCommand::Options options = 0;
-    if (editor.CanSmartCopyOrDelete())
+    if (CanSmartCopyOrDelete(frame))
       options |= TypingCommand::kSmartDelete;
     if (kill_ring)
       options |= TypingCommand::kKillRing;

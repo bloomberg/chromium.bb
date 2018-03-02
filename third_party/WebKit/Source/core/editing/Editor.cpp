@@ -260,11 +260,6 @@ bool Editor::SmartInsertDeleteEnabled() const {
   return false;
 }
 
-bool Editor::CanSmartCopyOrDelete() const {
-  return SmartInsertDeleteEnabled() &&
-         GetFrameSelection().Granularity() == TextGranularity::kWord;
-}
-
 bool Editor::IsSelectTrailingWhitespaceEnabled() const {
   if (Settings* settings = GetFrame().GetSettings())
     return settings->GetSelectTrailingWhitespaceEnabled();
