@@ -780,6 +780,7 @@ void SiteSettingsHandler::HandleIsOriginValid(const base::ListValue* args) {
 
 void SiteSettingsHandler::HandleIsPatternValid(
     const base::ListValue* args) {
+  AllowJavascript();
   CHECK_EQ(2U, args->GetSize());
   const base::Value* callback_id;
   CHECK(args->Get(0, &callback_id));
