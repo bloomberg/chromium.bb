@@ -48,9 +48,16 @@ bool FontFormatCheck::IsCff2OutlineFont() {
   return table_tags_.size() && table_tags_.Contains(HB_TAG('C', 'F', 'F', '2'));
 }
 
-bool FontFormatCheck::IsVariableFont(sk_sp<SkTypeface> typeface) {
-  return typeface->getTableSize(
-      SkFontTableTag(SkSetFourByteTag('f', 'v', 'a', 'r')));
+FontFormatCheck::VariableFontSubType FontFormatCheck::ProbeVariableFont(
+    sk_sp<SkTypeface> typeface) {
+  if (!typeface->getTableSize(
+          SkFontTableTag(SkSetFourByteTag('f', 'v', 'a', 'r'))))
+    return VariableFontSubType::kNotVariable;
+
+  if (typeface->getTableSize(
+          SkFontTableTag(SkSetFourByteTag('C', 'F', 'F', '2'))))
+    return VariableFontSubType::kVariableCFF2;
+  return VariableFontSubType::kVariableTrueType;
 }
 
 }  // namespace blink

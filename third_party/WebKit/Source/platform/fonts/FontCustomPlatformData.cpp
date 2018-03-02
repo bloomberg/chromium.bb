@@ -48,6 +48,16 @@
 
 namespace blink {
 
+namespace {
+sk_sp<SkFontMgr> FontManagerForSubType(
+    FontFormatCheck::VariableFontSubType font_sub_type) {
+  CHECK_NE(font_sub_type, FontFormatCheck::VariableFontSubType::kNotVariable);
+  if (font_sub_type == FontFormatCheck::VariableFontSubType::kVariableCFF2)
+    return WebFontTypefaceFactory::FreeTypeFontManager();
+  return WebFontTypefaceFactory::FontManagerForVariations();
+}
+}  // namespace
+
 FontCustomPlatformData::FontCustomPlatformData(sk_sp<SkTypeface> typeface,
                                                size_t data_size)
     : base_typeface_(std::move(typeface)), data_size_(data_size) {}
@@ -74,7 +84,11 @@ FontPlatformData FontCustomPlatformData::GetFontPlatformData(
   // now, going with a reasonable upper limit. Deduplication is
   // handled by Skia with priority given to the last occuring
   // assignment.
-  if (FontFormatCheck::IsVariableFont(base_typeface_)) {
+  FontFormatCheck::VariableFontSubType font_sub_type =
+      FontFormatCheck::ProbeVariableFont(base_typeface_);
+  if (font_sub_type ==
+          FontFormatCheck::VariableFontSubType::kVariableTrueType ||
+      font_sub_type == FontFormatCheck::VariableFontSubType::kVariableCFF2) {
     Vector<SkFontArguments::Axis, 0> axes;
 
     SkFontArguments::Axis weight_axis = {
@@ -105,9 +119,10 @@ FontPlatformData FontCustomPlatformData::GetFontPlatformData(
     }
 
     sk_sp<SkTypeface> sk_variation_font(
-        WebFontTypefaceFactory::FontManagerForVariations()->makeFromStream(
-            base_typeface_->openStream(nullptr)->duplicate(),
-            SkFontArguments().setAxes(axes.data(), axes.size())));
+        FontManagerForSubType(font_sub_type)
+            ->makeFromStream(
+                base_typeface_->openStream(nullptr)->duplicate(),
+                SkFontArguments().setAxes(axes.data(), axes.size())));
 
     if (sk_variation_font) {
       return_typeface = sk_variation_font;
