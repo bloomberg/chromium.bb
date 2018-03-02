@@ -835,11 +835,6 @@
     },
   },
 
-  'goma_gtests': {
-    'base_unittests': {},
-    'content_unittests': {},
-  },
-
   'headless_linux_gtests': {
     'headless_browsertests': {},
     'headless_unittests': {},
@@ -881,6 +876,27 @@
   'goma_gtests': {
     'base_unittests': {},
     'content_unittests': {},
+  },
+
+  'goma_mac_gtests': {
+    'base_unittests': {
+      'swarming': {
+        'dimension_sets': [
+          {
+            'os': 'Mac',
+          },
+        ],
+      }
+    },
+    'content_unittests': {
+      'swarming': {
+        'dimension_sets': [
+          {
+            'os': 'Mac',
+          },
+        ],
+      },
+    },
   },
 
   'linux_and_chromeos_non_clang_specific_chromium_gtests': {
