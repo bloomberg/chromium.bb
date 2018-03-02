@@ -87,7 +87,6 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
   bool CanCopy() const;
   bool CanPaste() const;
   bool CanDelete() const;
-  bool CanSmartCopyOrDelete() const;
 
   static void CountEvent(ExecutionContext*, const Event*);
   void CopyImage(const HitTestResult&);
