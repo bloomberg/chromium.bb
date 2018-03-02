@@ -464,12 +464,8 @@ const FeatureEntry::Choice kTopChromeMaterialDesignChoices[] = {
      switches::kTopChromeMDMaterialHybrid},
     {flag_descriptions::kTopChromeMdMaterialAuto, switches::kTopChromeMD,
      switches::kTopChromeMDMaterialAuto},
-#if defined(OS_LINUX)
-    // Exposed on Linux and ChromeOS: Windows/Mac support is too rough.
     {flag_descriptions::kTopChromeMdMaterialTouchOptimized,
-     switches::kTopChromeMD, switches::kTopChromeMDMaterialTouchOptimized},
-#endif
-};
+     switches::kTopChromeMD, switches::kTopChromeMDMaterialTouchOptimized}};
 
 #if defined(OS_CHROMEOS)
 const FeatureEntry::Choice kAshShelfColorChoices[] = {
