@@ -93,6 +93,8 @@ class TabActivityWatcherTest : public InProcessBrowserTest {
 
  protected:
   void ExpectNewForegroundedEntry(const GURL& url) {
+    // TODO(michaelpg): Add an interactive_ui_test to test MRU metrics since
+    // they can be affected by window activation.
     UkmMetricMap expected_metrics = {
         {TabManager_Background_ForegroundedOrClosed::kIsForegroundedName, 1},
     };

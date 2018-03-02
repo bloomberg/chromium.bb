@@ -7,11 +7,13 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/resource_coordinator/tab_activity_watcher.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
 #include "chrome/browser/resource_coordinator/tab_metrics_event.pb.h"
+#include "chrome/browser/resource_coordinator/time.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_activity_simulator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -40,9 +42,10 @@ using ForegroundedOrClosed =
 namespace resource_coordinator {
 namespace {
 
+// Test URLs need to be from different origins to test site engagement score.
 const GURL kTestUrls[] = {
-    GURL("https://example.com/"), GURL("https://google.fake"),
-    GURL("https://example3.com"),
+    GURL("https://test1.example.com"), GURL("https://test3.example.com"),
+    GURL("https://test2.example.com"), GURL("https://test4.example.com"),
 };
 
 // The default metric values for a tab.
@@ -567,13 +570,23 @@ TEST_F(TabMetricsTest, ReplaceForegroundTab) {
 // TabActivityWatcher.
 class ForegroundedOrClosedTest : public TabActivityWatcherTest {
  public:
-  ForegroundedOrClosedTest() = default;
+  ForegroundedOrClosedTest()
+      : scoped_set_tick_clock_for_testing_(&test_clock_) {
+    // Start at a nonzero time.
+    AdvanceClock();
+  }
   ~ForegroundedOrClosedTest() override = default;
 
  protected:
   const char* kEntryName = ForegroundedOrClosed::kEntryName;
 
+  void AdvanceClock() { test_clock_.Advance(base::TimeDelta::FromSeconds(1)); }
+
  private:
+  base::SimpleTestTickClock test_clock_;
+  resource_coordinator::ScopedSetTickClockForTesting
+      scoped_set_tick_clock_for_testing_;
+
   DISALLOW_COPY_AND_ASSIGN(ForegroundedOrClosedTest);
 };
 
@@ -601,10 +614,15 @@ TEST_F(ForegroundedOrClosedTest, MultipleTabs) {
   TabStripModel* tab_strip_model = browser->tab_strip_model();
   tab_activity_simulator_.AddWebContentsAndNavigate(tab_strip_model,
                                                     GURL(kTestUrls[0]));
+  tab_strip_model->ActivateTabAt(0, false);
   tab_activity_simulator_.AddWebContentsAndNavigate(tab_strip_model,
                                                     GURL(kTestUrls[1]));
+  AdvanceClock();
   tab_activity_simulator_.AddWebContentsAndNavigate(tab_strip_model,
                                                     GURL(kTestUrls[2]));
+  AdvanceClock();
+  // MRU ordering by tab indices:
+  // 0 (foreground), 1 (created first), 2 (created last)
 
   // Foreground a tab to log an event.
   tab_activity_simulator_.SwitchToTabAt(tab_strip_model, 2);
@@ -614,8 +632,12 @@ TEST_F(ForegroundedOrClosedTest, MultipleTabs) {
         kEntryName, kTestUrls[2],
         {
             {ForegroundedOrClosed::kIsForegroundedName, 1},
+            {ForegroundedOrClosed::kMRUIndexName, 1},
         });
   }
+  AdvanceClock();
+  // MRU ordering by tab indices:
+  // 2 (foreground), 0 (foregrounded earlier), 1 (never foregrounded)
 
   // Foreground the middle tab to log another event.
   tab_activity_simulator_.SwitchToTabAt(tab_strip_model, 1);
@@ -625,8 +647,12 @@ TEST_F(ForegroundedOrClosedTest, MultipleTabs) {
         kEntryName, kTestUrls[1],
         {
             {ForegroundedOrClosed::kIsForegroundedName, 1},
+            {ForegroundedOrClosed::kMRUIndexName, 2},
         });
   }
+  AdvanceClock();
+  // MRU ordering by tab indices:
+  // 1 (foreground), 2 (foregrounded earlier), 0 (foregrounded even earlier)
 
   // Close all tabs. Background tabs are logged as closed.
   tab_strip_model->CloseAllTabs();
@@ -637,6 +663,7 @@ TEST_F(ForegroundedOrClosedTest, MultipleTabs) {
         kEntryName, kTestUrls[2],
         {
             {ForegroundedOrClosed::kIsForegroundedName, 0},
+            {ForegroundedOrClosed::kMRUIndexName, 1},
         });
 
     // The leftmost tab was in the background and was closed.
@@ -644,10 +671,180 @@ TEST_F(ForegroundedOrClosedTest, MultipleTabs) {
         kEntryName, kTestUrls[0],
         {
             {ForegroundedOrClosed::kIsForegroundedName, 0},
+            // TODO(michaelpg): The final tab has an MRU of 0 because the
+            // remaining tabs were closed first. It would be more accurate to
+            // use the MRUIndex this tab had when CloseAllTabs() was called.
+            // See https://crbug.com/817174.
+            {ForegroundedOrClosed::kMRUIndexName, 0},
         });
 
     // No event is logged for the middle tab, which was in the foreground.
     EXPECT_EQ(0, ukm_entry_checker_.NumNewEntriesRecorded(kEntryName));
+  }
+}
+
+// Tests the MRUIndex value for ForegroundedOrClosed events.
+TEST_F(ForegroundedOrClosedTest, MRUIndex) {
+  Browser::CreateParams params(profile(), true);
+  std::unique_ptr<Browser> browser =
+      CreateBrowserWithTestWindowForParams(&params);
+
+  TabStripModel* tab_strip_model = browser->tab_strip_model();
+  tab_activity_simulator_.AddWebContentsAndNavigate(tab_strip_model,
+                                                    GURL(kTestUrls[0]));
+  tab_strip_model->ActivateTabAt(0, false);
+  AdvanceClock();
+
+  tab_activity_simulator_.AddWebContentsAndNavigate(tab_strip_model,
+                                                    GURL(kTestUrls[1]));
+  AdvanceClock();
+  tab_activity_simulator_.AddWebContentsAndNavigate(tab_strip_model,
+                                                    GURL(kTestUrls[2]));
+  AdvanceClock();
+  tab_activity_simulator_.AddWebContentsAndNavigate(tab_strip_model,
+                                                    GURL(kTestUrls[3]));
+  AdvanceClock();
+
+  // Tabs in MRU order: [0, 3, 2, 1]
+  // The 0th tab is foregrounded. The other tabs are ordered by most recently
+  // created since they haven't ever been foregrounded.
+
+  tab_activity_simulator_.SwitchToTabAt(tab_strip_model, 2);
+  {
+    SCOPED_TRACE("");
+    ukm_entry_checker_.ExpectNewEntry(
+        kEntryName, kTestUrls[2],
+        {
+            {ForegroundedOrClosed::kIsForegroundedName, 1},
+            {ForegroundedOrClosed::kMRUIndexName, 2},
+        });
+  }
+  AdvanceClock();
+  // New MRU order: [2, 0, 3, 1]
+
+  tab_activity_simulator_.SwitchToTabAt(tab_strip_model, 0);
+  {
+    SCOPED_TRACE("");
+    ukm_entry_checker_.ExpectNewEntry(
+        kEntryName, kTestUrls[0],
+        {
+            {ForegroundedOrClosed::kIsForegroundedName, 1},
+            {ForegroundedOrClosed::kMRUIndexName, 1},
+        });
+  }
+  AdvanceClock();
+  // New MRU order: [0, 2, 3, 1]
+
+  tab_activity_simulator_.SwitchToTabAt(tab_strip_model, 1);
+  {
+    SCOPED_TRACE("");
+    ukm_entry_checker_.ExpectNewEntry(
+        kEntryName, kTestUrls[1],
+        {
+            {ForegroundedOrClosed::kIsForegroundedName, 1},
+            {ForegroundedOrClosed::kMRUIndexName, 3},
+        });
+  }
+  AdvanceClock();
+  // New MRU order: [1, 0, 2, 3]
+
+  tab_activity_simulator_.SwitchToTabAt(tab_strip_model, 0);
+  {
+    SCOPED_TRACE("");
+    ukm_entry_checker_.ExpectNewEntry(
+        kEntryName, kTestUrls[0],
+        {
+            {ForegroundedOrClosed::kIsForegroundedName, 1},
+            {ForegroundedOrClosed::kMRUIndexName, 1},
+        });
+  }
+  AdvanceClock();
+  // New MRU order: [0, 1, 2, 3]
+
+  tab_activity_simulator_.SwitchToTabAt(tab_strip_model, 3);
+  {
+    SCOPED_TRACE("");
+    ukm_entry_checker_.ExpectNewEntry(
+        kEntryName, kTestUrls[3],
+        {
+            {ForegroundedOrClosed::kIsForegroundedName, 1},
+            {ForegroundedOrClosed::kMRUIndexName, 3},
+        });
+  }
+  AdvanceClock();
+  // New MRU order: [3, 0, 1, 2]
+
+  tab_activity_simulator_.SwitchToTabAt(tab_strip_model, 1);
+  {
+    SCOPED_TRACE("");
+    ukm_entry_checker_.ExpectNewEntry(
+        kEntryName, kTestUrls[1],
+        {
+            {ForegroundedOrClosed::kIsForegroundedName, 1},
+            {ForegroundedOrClosed::kMRUIndexName, 2},
+        });
+  }
+  AdvanceClock();
+  // New MRU order: [1, 3, 0, 2]
+
+  // Close a background tab.
+  tab_strip_model->CloseWebContentsAt(3, TabStripModel::CLOSE_NONE);
+  {
+    SCOPED_TRACE("");
+    ukm_entry_checker_.ExpectNewEntry(
+        kEntryName, kTestUrls[3],
+        {
+            {ForegroundedOrClosed::kIsForegroundedName, 0},
+            {ForegroundedOrClosed::kMRUIndexName, 1},
+        });
+  }
+  AdvanceClock();
+  // New MRU order: [1, 0, 2]
+
+  tab_activity_simulator_.SwitchToTabAt(tab_strip_model, 2);
+  {
+    SCOPED_TRACE("");
+    ukm_entry_checker_.ExpectNewEntry(
+        kEntryName, kTestUrls[2],
+        {
+            {ForegroundedOrClosed::kIsForegroundedName, 1},
+            {ForegroundedOrClosed::kMRUIndexName, 2},
+        });
+  }
+  AdvanceClock();
+  // New MRU order: [2, 1, 0]
+
+  // Close a foreground tab.
+  tab_strip_model->CloseWebContentsAt(2, TabStripModel::CLOSE_NONE);
+  // This activates the next tab in the tabstrip. Since this is a
+  // TestWebContents, we must manually call WasShown().
+  tab_strip_model->GetWebContentsAt(1)->WasShown();
+  {
+    SCOPED_TRACE("");
+    ukm_entry_checker_.ExpectNewEntry(
+        kEntryName, kTestUrls[1],
+        {
+            {ForegroundedOrClosed::kIsForegroundedName, 1},
+            {ForegroundedOrClosed::kMRUIndexName, 0},
+        });
+  }
+  AdvanceClock();
+  // New MRU order: [1, 0]
+
+  tab_strip_model->CloseAllTabs();
+  {
+    SCOPED_TRACE("");
+    // The rightmost tab was in the foreground, so only the leftmost tab is
+    // logged.
+    // TODO(michaelpg): The last tab has an MRU of 0 because the remaining tabs
+    // were closed first. It would be more accurate to use the MRUIndex this tab
+    // had when CloseAllTabs() was called. See https://crbug.com/817174.
+    ukm_entry_checker_.ExpectNewEntry(
+        kEntryName, kTestUrls[0],
+        {
+            {ForegroundedOrClosed::kIsForegroundedName, 0},
+            {ForegroundedOrClosed::kMRUIndexName, 0},
+        });
   }
 }
 
