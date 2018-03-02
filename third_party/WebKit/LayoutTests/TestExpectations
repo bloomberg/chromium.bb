@@ -3419,3 +3419,4 @@ crbug.com/817705 [ Mac Win Linux ] http/tests/media/media-src-suspend-before-hav
 
 # Sheriff 2018-03-02
 crbug.com/818107 [ Android ] presentation/presentationconnectionavailableevent-ctor-mock.html [ Failure Crash ]
+crbug.com/818076 http/tests/devtools/oopif/oopif-elements-navigate-in.js [ Failure Pass ]
