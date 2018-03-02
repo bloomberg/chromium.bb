@@ -4950,6 +4950,8 @@ Dead<combining katakana-hiragana semi-voiced sound mark> <katakana letter ho> <k
 # Windows-style combinations.
 # Reference:
 # https://support.microsoft.com/en-ca/help/97738/using-us-int-l-keyboard-layout-to-type-accented-characters
+# Mappings for ~a and `a are not in the reference but are reported to be
+# active on current Windows systems.
 
 Dead<'> <space>  <'>
 Dead<'> <A>      <latin capital letter a with acute>
@@ -4980,18 +4982,22 @@ Dead<"> <o>      <latin small letter o with diaeresis>
 Dead<"> <u>      <latin small letter u with diaeresis>
 
 Dead<`> <space>  <`>
+Dead<`> <A>      <latin capital letter a with grave>
 Dead<`> <E>      <latin capital letter e with grave>
 Dead<`> <I>      <latin capital letter i with grave>
 Dead<`> <O>      <latin capital letter o with grave>
 Dead<`> <U>      <latin capital letter u with grave>
+Dead<`> <a>      <latin small letter a with grave>
 Dead<`> <e>      <latin small letter e with grave>
 Dead<`> <i>      <latin small letter i with grave>
 Dead<`> <o>      <latin small letter o with grave>
 Dead<`> <u>      <latin small letter u with grave>
 
 Dead<~> <space>  <~>
+Dead<~> <A>      <latin capital letter a with tilde>
 Dead<~> <N>      <latin capital letter n with tilde>
 Dead<~> <O>      <latin capital letter o with tilde>
+Dead<~> <a>      <latin small letter a with tilde>
 Dead<~> <n>      <latin small letter n with tilde>
 Dead<~> <o>      <latin small letter o with tilde>
 
