@@ -39,6 +39,9 @@ TAGS
 .cproject
 .project
 
+# Netbeans
+/nbproject/
+
 # /build-aux/
 /build-aux/ar-lib
 /build-aux/compile
