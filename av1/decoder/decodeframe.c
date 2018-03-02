@@ -2336,7 +2336,6 @@ void av1_read_bitdepth_colorspace_sampling(AV1_COMMON *cm,
   cm->separate_uv_delta_q = aom_rb_read_bit(rb);
 }
 
-#if CONFIG_TIMING_INFO_IN_SEQ_HEADERS
 void av1_read_timing_info_header(AV1_COMMON *cm,
                                  struct aom_read_bit_buffer *rb) {
   cm->timing_info_present = aom_rb_read_bit(rb);  // timing info present flag
@@ -2353,7 +2352,6 @@ void av1_read_timing_info_header(AV1_COMMON *cm,
     }
   }
 }
-#endif
 
 void read_sequence_header(SequenceHeader *seq_params,
                           struct aom_read_bit_buffer *rb) {

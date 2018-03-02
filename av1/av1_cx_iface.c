@@ -77,9 +77,7 @@ struct av1_extracfg {
 #endif
   unsigned int num_tg;
   unsigned int mtu_size;
-#if CONFIG_TIMING_INFO_IN_SEQ_HEADERS
   aom_timing_info_t timing_info;
-#endif
   unsigned int disable_tempmv;
   unsigned int frame_parallel_decoding_mode;
   int use_dual_filter;
@@ -158,15 +156,13 @@ static struct av1_extracfg default_extra_cfg = {
 #if CONFIG_DIST_8X8
   0,
 #endif
-  1,  // max number of tile groups
-  0,  // mtu_size
-#if CONFIG_TIMING_INFO_IN_SEQ_HEADERS
+  1,                       // max number of tile groups
+  0,                       // mtu_size
   AOM_TIMING_UNSPECIFIED,  // No picture timing signaling in bitstream
-#endif
-  0,      // disable temporal mv prediction
-  1,      // frame_parallel_decoding_mode
-  1,      // enable dual filter
-  NO_AQ,  // aq_mode
+  0,                       // disable temporal mv prediction
+  1,                       // frame_parallel_decoding_mode
+  1,                       // enable dual filter
+  NO_AQ,                   // aq_mode
 #if CONFIG_EXT_DELTA_Q
   NO_DELTA_Q,  // deltaq_mode
 #endif
@@ -435,9 +431,7 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
   RANGE_CHECK(extra_cfg, tuning, AOM_TUNE_PSNR, AOM_TUNE_SSIM);
 #endif
 
-#if CONFIG_TIMING_INFO_IN_SEQ_HEADERS
   RANGE_CHECK(extra_cfg, timing_info, AOM_TIMING_UNSPECIFIED, AOM_TIMING_EQUAL);
-#endif
 
 #if CONFIG_FILM_GRAIN
   RANGE_CHECK(extra_cfg, film_grain_test_vector, 0, 16);
@@ -518,7 +512,6 @@ static aom_codec_err_t set_encoder_config(
   oxcf->input_bit_depth = cfg->g_input_bit_depth;
   // guess a frame rate if out of whack, use 30
   oxcf->init_framerate = (double)cfg->g_timebase.den / cfg->g_timebase.num;
-#if CONFIG_TIMING_INFO_IN_SEQ_HEADERS
   if (extra_cfg->timing_info == AOM_TIMING_EQUAL) {
     oxcf->timing_info_present = 1;
     oxcf->num_units_in_tick = cfg->g_timebase.num;
@@ -532,10 +525,6 @@ static aom_codec_err_t set_encoder_config(
     oxcf->init_framerate = 30;
     oxcf->timing_info_present = 0;
   }
-#else
-  if (oxcf->init_framerate > 180) oxcf->init_framerate = 30;
-
-#endif
   oxcf->mode = GOOD;
   oxcf->cfg = &cfg->cfg;
 
@@ -1035,14 +1024,13 @@ static aom_codec_err_t ctrl_set_mtu(aom_codec_alg_priv_t *ctx, va_list args) {
   extra_cfg.mtu_size = CAST(AV1E_SET_MTU, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
-#if CONFIG_TIMING_INFO_IN_SEQ_HEADERS
 static aom_codec_err_t ctrl_set_timing_info(aom_codec_alg_priv_t *ctx,
                                             va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
   extra_cfg.timing_info = CAST(AV1E_SET_TIMING_INFO, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
-#endif
+
 static aom_codec_err_t ctrl_set_disable_tempmv(aom_codec_alg_priv_t *ctx,
                                                va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
@@ -1726,9 +1714,7 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
 #endif
   { AV1E_SET_NUM_TG, ctrl_set_num_tg },
   { AV1E_SET_MTU, ctrl_set_mtu },
-#if CONFIG_TIMING_INFO_IN_SEQ_HEADERS
   { AV1E_SET_TIMING_INFO, ctrl_set_timing_info },
-#endif
   { AV1E_SET_DISABLE_TEMPMV, ctrl_set_disable_tempmv },
   { AV1E_SET_FRAME_PARALLEL_DECODING, ctrl_set_frame_parallel_decoding_mode },
   { AV1E_SET_ENABLE_DF, ctrl_set_enable_df },

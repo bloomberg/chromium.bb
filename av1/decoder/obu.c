@@ -108,9 +108,7 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
 
   av1_read_bitdepth_colorspace_sampling(cm, rb, pbi->allow_lowbitdepth);
 
-#if CONFIG_TIMING_INFO_IN_SEQ_HEADERS
   av1_read_timing_info_header(cm, rb);
-#endif
 
 #if CONFIG_FILM_GRAIN
   cm->film_grain_params_present = aom_rb_read_bit(rb);

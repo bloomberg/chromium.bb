@@ -1030,13 +1030,11 @@ static void init_config(struct AV1_COMP *cpi, AV1EncoderConfig *oxcf) {
   cm->seq_params.monochrome = oxcf->monochrome;
   cm->chroma_sample_position = oxcf->chroma_sample_position;
   cm->color_range = oxcf->color_range;
-#if CONFIG_TIMING_INFO_IN_SEQ_HEADERS
   cm->timing_info_present = oxcf->timing_info_present;
   cm->num_units_in_tick = oxcf->num_units_in_tick;
   cm->time_scale = oxcf->time_scale;
   cm->equal_picture_interval = oxcf->equal_picture_interval;
   cm->num_ticks_per_picture = oxcf->num_ticks_per_picture;
-#endif
   cm->seq_params.enable_dual_filter = oxcf->enable_dual_filter;
 #if CONFIG_JNT_COMP
   cm->seq_params.enable_jnt_comp = oxcf->enable_jnt_comp;
@@ -2936,13 +2934,11 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
 
   assert(IMPLIES(cm->profile <= PROFILE_1, cm->bit_depth <= AOM_BITS_10));
 
-#if CONFIG_TIMING_INFO_IN_SEQ_HEADERS
   cm->timing_info_present = oxcf->timing_info_present;
   cm->num_units_in_tick = oxcf->num_units_in_tick;
   cm->time_scale = oxcf->time_scale;
   cm->equal_picture_interval = oxcf->equal_picture_interval;
   cm->num_ticks_per_picture = oxcf->num_ticks_per_picture;
-#endif
 
 #if CONFIG_FILM_GRAIN
   update_film_grain_parameters(cpi, oxcf);

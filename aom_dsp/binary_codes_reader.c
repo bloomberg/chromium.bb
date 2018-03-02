@@ -144,7 +144,6 @@ int16_t aom_rb_read_signed_primitive_refsubexpfin(
   return aom_rb_read_primitive_refsubexpfin(rb, scaled_n, k, ref) - n + 1;
 }
 
-#if CONFIG_TIMING_INFO_IN_SEQ_HEADERS
 uint32_t aom_rb_read_uvlc(struct aom_read_bit_buffer *rb) {
   int leading_zeros = 0;
 
@@ -155,4 +154,3 @@ uint32_t aom_rb_read_uvlc(struct aom_read_bit_buffer *rb) {
 
   return value;
 }
-#endif
