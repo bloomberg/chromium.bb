@@ -14,6 +14,7 @@
 #include "ash/session/session_controller.h"
 #include "ash/shelf/app_list_shelf_item_delegate.h"
 #include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -374,11 +375,20 @@ void ShelfController::OnNotificationAdded(const std::string& notification_id) {
       message_center::MessageCenter::Get()->FindVisibleNotificationById(
           notification_id);
 
-  // TODO(newcomer): Support ARC app notifications.
-  if (!notification || notification->notifier_id().type !=
-                           message_center::NotifierId::APPLICATION) {
+  if (!notification)
+    return;
+
+  // Skip this if the notification shouldn't badge an app.
+  if (notification->notifier_id().type !=
+          message_center::NotifierId::APPLICATION &&
+      notification->notifier_id().type !=
+          message_center::NotifierId::ARC_APPLICATION) {
     return;
   }
+
+  // Skip this if the notification doesn't have a valid app id.
+  if (notification->notifier_id().id == ash::kDefaultArcNotifierId)
+    return;
 
   model_.AddNotificationRecord(notification->notifier_id().id, notification_id);
 }

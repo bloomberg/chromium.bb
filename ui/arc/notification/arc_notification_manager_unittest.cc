@@ -85,6 +85,7 @@ class ArcNotificationManagerTest : public testing::Test {
     data->key = key;
     data->title = "TITLE";
     data->message = "MESSAGE";
+    data->package_name = "PACKAGE_NAME";
 
     arc_notification_manager()->OnNotificationPosted(std::move(data));
 

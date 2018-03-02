@@ -178,6 +178,12 @@ class ArcAppListPrefs : public KeyedService,
   static std::string GetAppId(const std::string& package_name,
                               const std::string& activity);
 
+  // Constructs a unique id based on package name and activity name. Activity
+  // name is found by iterating through the |prefs_| arc app dictionary to find
+  // the app which has a matching |package_name|. This id is safe to use in file
+  // paths and as preference keys.
+  std::string GetAppIdByPackageName(const std::string& package_name) const;
+
   // It is called from chrome/browser/prefs/browser_prefs.cc.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
@@ -235,6 +241,9 @@ class ArcAppListPrefs : public KeyedService,
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
   bool HasObserver(Observer* observer);
+
+  base::RepeatingCallback<std::string(const std::string&)>
+  GetAppIdByPackageNameCallback();
 
   // arc::ArcSessionManager::Observer:
   void OnArcPlayStoreEnabledChanged(bool enabled) override;

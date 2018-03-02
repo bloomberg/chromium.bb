@@ -51,6 +51,12 @@ class ArcNotificationManager
 
   ~ArcNotificationManager() override;
 
+  void set_get_app_id_callback(
+      base::RepeatingCallback<std::string(const std::string&)>
+          get_app_id_callback) {
+    get_app_id_callback_ = std::move(get_app_id_callback);
+  }
+
   // ConnectionObserver<mojom::NotificationsInstance> implementation:
   void OnConnectionReady() override;
   void OnConnectionClosed() override;
@@ -73,12 +79,18 @@ class ArcNotificationManager
   bool IsOpeningSettingsSupported() const;
   void SendNotificationToggleExpansionOnChrome(const std::string& key);
 
+  // Overridden from KeyedService:
+  void Shutdown() override;
+
  private:
   ArcNotificationManager(ArcBridgeService* bridge_service,
                          const AccountId& main_profile_id,
                          message_center::MessageCenter* message_center);
 
   bool ShouldIgnoreNotification(mojom::ArcNotificationData* data);
+
+  // Calls |get_app_id_callback_| to retrieve the app id from ArcAppListPrefs.
+  std::string GetAppId(const std::string& package_name) const;
 
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
   const AccountId main_profile_id_;
@@ -87,6 +99,8 @@ class ArcNotificationManager
   using ItemMap =
       std::unordered_map<std::string, std::unique_ptr<ArcNotificationItem>>;
   ItemMap items_;
+
+  base::RepeatingCallback<std::string(const std::string&)> get_app_id_callback_;
 
   bool ready_ = false;
 

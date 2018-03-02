@@ -269,6 +269,29 @@ std::string ArcAppListPrefs::GetAppId(const std::string& package_name,
   return app_id;
 }
 
+std::string ArcAppListPrefs::GetAppIdByPackageName(
+    const std::string& package_name) const {
+  const base::DictionaryValue* apps =
+      prefs_->GetDictionary(arc::prefs::kArcApps);
+  if (!apps)
+    return std::string();
+
+  for (const auto& it : apps->DictItems()) {
+    const base::Value& value = it.second;
+    const base::Value* installed_package_name =
+        value.FindKeyOfType(kPackageName, base::Value::Type::STRING);
+    if (!installed_package_name ||
+        installed_package_name->GetString() != package_name)
+      continue;
+
+    const base::Value* activity_name =
+        value.FindKeyOfType(kActivity, base::Value::Type::STRING);
+    return activity_name ? GetAppId(package_name, activity_name->GetString())
+                         : std::string();
+  }
+  return std::string();
+}
+
 ArcAppListPrefs::ArcAppListPrefs(
     Profile* profile,
     arc::ConnectionHolder<arc::mojom::AppInstance, arc::mojom::AppHost>*
@@ -476,6 +499,17 @@ void ArcAppListPrefs::RemoveObserver(Observer* observer) {
 
 bool ArcAppListPrefs::HasObserver(Observer* observer) {
   return observer_list_.HasObserver(observer);
+}
+
+base::RepeatingCallback<std::string(const std::string&)>
+ArcAppListPrefs::GetAppIdByPackageNameCallback() {
+  return base::BindRepeating(
+      [](base::WeakPtr<ArcAppListPrefs> self, const std::string& package_name) {
+        if (!self)
+          return std::string();
+        return self->GetAppIdByPackageName(package_name);
+      },
+      weak_ptr_factory_.GetWeakPtr());
 }
 
 std::unique_ptr<ArcAppListPrefs::PackageInfo> ArcAppListPrefs::GetPackage(
