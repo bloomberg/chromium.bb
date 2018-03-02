@@ -7,24 +7,16 @@
 
   <!-- Accessibility -->
   <message name="IDS_KSV_SEARCH_BOX_ACCESSIBILITY_NAME" desc="Accessibility name for the search box.">
-    Search for shortcuts
+    Search for keyboard shortcuts
   </message>
-  <message name="IDS_KSV_BACK_ACCESSIBILITY_NAME" desc="Accessibility name for the button that goes to the previous screen.">
-    Back
+  <message name="IDS_KSV_BACK_ACCESSIBILITY_NAME" desc="Accessibility name for the button that exits search mode.">
+    Exit search mode
   </message>
   <message name="IDS_KSV_CLEAR_SEARCHBOX_ACCESSIBILITY_NAME" desc="Accessibility name for the button that clears all text from the search box.">
     Clear searchbox text
   </message>
 
-  <!-- Search box placeholder text -->
-  <message name="IDS_KSV_SEARCH_BOX_PLACEHOLDER" desc="Placeholder text for search box.">
-    Search for shortcuts
-  </message>
-
   <!-- Search illustration -->
-  <message name="IDS_KSV_SEARCH_START" desc="Start searching.">
-    Start search...
-  </message>
   <message name="IDS_KSV_SEARCH_NO_RESULT" desc="No search results.">
     No matching results found
   </message>
@@ -339,7 +331,7 @@
     Open the webpage in a new tab
   </message>
   <message name="IDS_KSV_SHORTCUT_OPEN_PAGE_IN_NEW_TAB" desc="Human readable version of the keyboard shortcut.">
-    Type a web address (URL) in the address bar, then press <ph name="alt">$1</ph><ph name="separator">$2</ph><ph name="enter">$3</ph>
+    Type a web address in the address bar, then press <ph name="alt">$1</ph><ph name="separator">$2</ph><ph name="enter">$3</ph>
   </message>
   <message name="IDS_KSV_DESCRIPTION_STOP_DRAG_TAB" desc="Description of the command in keyboard shortcut viewer.">
     Return the tab to its original position

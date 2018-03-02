@@ -20,11 +20,6 @@ class KeyboardShortcutViewTest : public ash::AshTestBase {
   ~KeyboardShortcutViewTest() override = default;
 
  protected:
-  int GetCategoryNumber() const {
-    DCHECK(GetView());
-    return GetView()->GetCategoryNumberForTesting();
-  }
-
   int GetTabCount() const {
     DCHECK(GetView());
     return GetView()->GetTabCountForTesting();
