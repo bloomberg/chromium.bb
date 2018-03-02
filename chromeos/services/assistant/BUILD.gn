@@ -25,6 +25,7 @@ source_set("lib") {
   ]
 
   public_deps = [
+    "//ash/public/cpp:cpp",
     "//mojo/public/cpp/bindings:bindings",
     "//services/service_manager/public/cpp:cpp",
   ]

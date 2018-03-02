@@ -384,6 +384,8 @@ component("ash") {
     "session/multiprofiles_intro_dialog.h",
     "session/session_aborted_dialog.cc",
     "session/session_aborted_dialog.h",
+    "session/session_activation_observer_holder.cc",
+    "session/session_activation_observer_holder.h",
     "session/session_controller.cc",
     "session/session_controller.h",
     "session/session_observer.cc",

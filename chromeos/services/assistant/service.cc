@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "build/buildflag.h"
@@ -34,7 +35,7 @@ constexpr char kScopeAssistant[] =
 
 }  // namespace
 
-Service::Service() : weak_factory_(this) {}
+Service::Service() : session_observer_binding_(this), weak_factory_(this) {}
 
 Service::~Service() = default;
 
@@ -47,6 +48,10 @@ void Service::OnBindInterface(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
   registry_.BindInterface(interface_name, std::move(interface_pipe));
+}
+
+void Service::OnSessionActivated(bool activated) {
+  assistant_manager_service_->EnableListening(activated);
 }
 
 void Service::RequestAccessToken() {
@@ -65,8 +70,12 @@ identity::mojom::IdentityManager* Service::GetIdentityManager() {
 void Service::GetPrimaryAccountInfoCallback(
     const base::Optional<AccountInfo>& account_info,
     const identity::AccountState& account_state) {
-  if (!account_info.has_value() || !account_state.has_refresh_token)
+  if (!account_info.has_value() || !account_state.has_refresh_token ||
+      account_info.value().gaia.empty()) {
     return;
+  }
+  account_id_ = AccountId::FromUserEmailGaiaId(account_info.value().email,
+                                               account_info.value().gaia);
   OAuth2TokenService::ScopeSet scopes;
   scopes.insert(kScopeAssistant);
   scopes.insert(kScopeAuthGcm);
@@ -93,9 +102,20 @@ void Service::GetAccessTokenCallback(const base::Optional<std::string>& token,
         std::make_unique<FakeAssistantManagerServiceImpl>();
 #endif
     assistant_manager_service_->Start(token.value());
+    AddAshSessionObserver();
   } else {
     assistant_manager_service_->SetAccessToken(token.value());
   }
+}
+
+void Service::AddAshSessionObserver() {
+  ash::mojom::SessionControllerPtr session_controller;
+  context()->connector()->BindInterface(ash::mojom::kServiceName,
+                                        &session_controller);
+  ash::mojom::SessionActivationObserverPtr observer;
+  session_observer_binding_.Bind(mojo::MakeRequest(&observer));
+  session_controller->AddSessionActivationObserverForAccountId(
+      account_id_, std::move(observer));
 }
 
 }  // namespace assistant

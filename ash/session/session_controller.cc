@@ -11,6 +11,7 @@
 #include "ash/public/interfaces/user_info.mojom.h"
 #include "ash/session/multiprofiles_intro_dialog.h"
 #include "ash/session/session_aborted_dialog.h"
+#include "ash/session/session_observer.h"
 #include "ash/session/teleport_warning_dialog.h"
 #include "ash/shell.h"
 #include "ash/system/power/power_event_observer.h"
@@ -303,6 +304,10 @@ void SessionController::SetUserSessionOrder(
     const std::vector<uint32_t>& user_session_order) {
   DCHECK_EQ(user_sessions_.size(), user_session_order.size());
 
+  AccountId last_active_account_id;
+  if (user_sessions_.size())
+    last_active_account_id = user_sessions_[0]->user_info->account_id;
+
   // Adjusts |user_sessions_| to match the given order.
   std::vector<mojom::UserSessionPtr> sessions;
   for (const auto& session_id : user_session_order) {
@@ -318,11 +323,15 @@ void SessionController::SetUserSessionOrder(
 
     sessions.push_back(std::move(*it));
   }
+
   user_sessions_.swap(sessions);
 
   // Check active user change and notifies observers.
   if (user_sessions_[0]->session_id != active_session_id_) {
     active_session_id_ = user_sessions_[0]->session_id;
+
+    session_activation_observer_holder_.NotifyActiveSessionChanged(
+        last_active_account_id, user_sessions_[0]->user_info->account_id);
 
     // When switching to a user for whose PrefService is not ready,
     // |last_active_user_prefs_| continues to point to the PrefService of the
@@ -424,6 +433,16 @@ void SessionController::ShowTeleportWarningDialog(
 void SessionController::ShowMultiprofilesSessionAbortedDialog(
     const std::string& user_email) {
   SessionAbortedDialog::Show(user_email);
+}
+
+void SessionController::AddSessionActivationObserverForAccountId(
+    const AccountId& account_id,
+    mojom::SessionActivationObserverPtr observer) {
+  observer->OnSessionActivated(user_sessions_.size() &&
+                               user_sessions_[0]->user_info->account_id ==
+                                   account_id);
+  session_activation_observer_holder_.AddSessionActivationObserverForAccountId(
+      account_id, std::move(observer));
 }
 
 void SessionController::ClearUserSessionsForTest() {

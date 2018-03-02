@@ -33,9 +33,6 @@ void AssistantManagerServiceImpl::Start(const std::string& access_token) {
   });
   assistant_manager_internal_->SetDisplayConnection(&display_connection_);
 
-  // By default AssistantManager will not start listening for its hotword until
-  // we explicitly set EnableListening() to |true|.
-  assistant_manager_->EnableListening(true);
   SetAccessToken(access_token);
   assistant_manager_->Start();
 }
@@ -49,6 +46,10 @@ void AssistantManagerServiceImpl::SetAccessToken(
   // dummy value like "0".
   assistant_manager_->SetAuthTokens({std::pair<std::string, std::string>(
       /* user_id: */ "0", access_token)});
+}
+
+void AssistantManagerServiceImpl::EnableListening(bool enable) {
+  assistant_manager_->EnableListening(enable);
 }
 
 }  // namespace assistant

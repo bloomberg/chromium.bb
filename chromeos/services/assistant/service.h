@@ -8,11 +8,13 @@
 #include <memory>
 #include <string>
 
+#include "ash/public/interfaces/session_controller.mojom.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/time/time.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "components/signin/core/account_id/account_id.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "services/identity/public/mojom/identity_manager.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
@@ -24,7 +26,8 @@ namespace assistant {
 
 class AssistantManagerService;
 
-class Service : public service_manager::Service {
+class Service : public service_manager::Service,
+                public ash::mojom::SessionActivationObserver {
  public:
   Service();
   ~Service() override;
@@ -35,6 +38,9 @@ class Service : public service_manager::Service {
   void OnBindInterface(const service_manager::BindSourceInfo& source_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
+
+  // ash::mojom::SessionActivationObserver overrides:
+  void OnSessionActivated(bool activated) override;
 
   void RequestAccessToken();
 
@@ -48,9 +54,16 @@ class Service : public service_manager::Service {
                               base::Time expiration_time,
                               const GoogleServiceAuthError& error);
 
+  void AddAshSessionObserver();
+
+  AccountId account_id_;
+
   service_manager::BinderRegistry registry_;
 
   identity::mojom::IdentityManagerPtr identity_manager_;
+
+  mojo::Binding<ash::mojom::SessionActivationObserver>
+      session_observer_binding_;
 
   std::unique_ptr<AssistantManagerService> assistant_manager_service_;
 

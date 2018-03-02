@@ -32,6 +32,7 @@ class AssistantManagerServiceImpl : public AssistantManagerService {
   // assistant::AssistantManagerService overrides
   void Start(const std::string& access_token) override;
   void SetAccessToken(const std::string& access_token) override;
+  void EnableListening(bool enable) override;
 
  private:
   CrosDisplayConnection display_connection_;

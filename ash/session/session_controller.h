@@ -13,6 +13,7 @@
 #include "ash/login_status.h"
 #include "ash/public/cpp/session_types.h"
 #include "ash/public/interfaces/session_controller.mojom.h"
+#include "ash/session/session_activation_observer_holder.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -186,6 +187,9 @@ class ASH_EXPORT SessionController : public mojom::SessionController {
       ShowTeleportWarningDialogCallback callback) override;
   void ShowMultiprofilesSessionAbortedDialog(
       const std::string& user_email) override;
+  void AddSessionActivationObserverForAccountId(
+      const AccountId& account_id,
+      mojom::SessionActivationObserverPtr observer) override;
 
   // Test helpers.
   void ClearUserSessionsForTest();
@@ -274,6 +278,8 @@ class ASH_EXPORT SessionController : public mojom::SessionController {
 
   // Prefs for the incognito profile used by the signin screen.
   std::unique_ptr<PrefService> signin_screen_prefs_;
+
+  SessionActivationObserverHolder session_activation_observer_holder_;
 
   bool signin_screen_prefs_requested_ = false;
 
