@@ -200,14 +200,16 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, DesktopFocusWeb) {
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(AutomationApiTest, DesktopFocusIframe) {
+// TODO(https://crbug.com/622387): flaky.
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, DISABLED_DesktopFocusIframe) {
   StartEmbeddedTestServer();
   ASSERT_TRUE(
       RunExtensionSubtest("automation/tests/desktop", "focus_iframe.html"))
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(AutomationApiTest, DesktopHitTestIframe) {
+// TODO(https://crbug.com/622387): flaky.
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, DISABLED_DesktopHitTestIframe) {
   StartEmbeddedTestServer();
   ASSERT_TRUE(
       RunExtensionSubtest("automation/tests/desktop", "hit_test_iframe.html"))
