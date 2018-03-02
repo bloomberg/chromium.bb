@@ -16,7 +16,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/sync/base/data_type_histogram.h"
 #include "components/sync/base/logging.h"
 #include "components/sync/engine_impl/backoff_delay_provider.h"
 #include "components/sync/protocol/proto_enum_conversions.h"
@@ -339,7 +338,6 @@ void SyncSchedulerImpl::ScheduleLocalNudge(
 
   SDVLOG_LOC(nudge_location, 2) << "Scheduling sync because of local change to "
                                 << ModelTypeSetToString(types);
-  UpdateNudgeTimeRecords(types);
   TimeDelta nudge_delay = nudge_tracker_.RecordLocalChange(types);
   ScheduleNudgeImpl(nudge_delay, nudge_location);
 }
@@ -552,24 +550,6 @@ void SyncSchedulerImpl::DoPollSyncCycleJob() {
     HandleSuccess();
   } else {
     HandleFailure(cycle.status_controller().model_neutral_state());
-  }
-}
-
-void SyncSchedulerImpl::UpdateNudgeTimeRecords(ModelTypeSet types) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  TimeTicks now = TimeTicks::Now();
-  // Update timing information for how often datatypes are triggering nudges.
-  for (ModelTypeSet::Iterator iter = types.First(); iter.Good(); iter.Inc()) {
-    TimeTicks previous = last_local_nudges_by_model_type_[iter.Get()];
-    last_local_nudges_by_model_type_[iter.Get()] = now;
-    if (previous.is_null())
-      continue;
-
-#define PER_DATA_TYPE_MACRO(type_str) \
-  SYNC_FREQ_HISTOGRAM("Sync.Freq" type_str, now - previous);
-    SYNC_DATA_TYPE_HISTOGRAM(iter.Get());
-#undef PER_DATA_TYPE_MACRO
   }
 }
 

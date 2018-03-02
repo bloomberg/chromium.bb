@@ -20,12 +20,6 @@ void SyncRecordMemoryKbHistogram(const std::string& histogram_name_prefix,
                                  syncer::ModelType model_type,
                                  size_t value);
 
-// For now, this just implements UMA_HISTOGRAM_LONG_TIMES. This can be adjusted
-// if we feel the min, max, or bucket count amount are not appropriate.
-#define SYNC_FREQ_HISTOGRAM(name, time)                                        \
-  UMA_HISTOGRAM_CUSTOM_TIMES(name, time, base::TimeDelta::FromMilliseconds(1), \
-                             base::TimeDelta::FromHours(1), 50)
-
 // Helper macro for datatype specific histograms. For each datatype, invokes
 // a pre-defined PER_DATA_TYPE_MACRO(type_str), where |type_str| is the string
 // version of the datatype.
