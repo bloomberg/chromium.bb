@@ -464,19 +464,6 @@ void Editor::RegisterCommandGroup(CompositeEditCommand* command_group_wrapper) {
   last_edit_command_ = command_group_wrapper;
 }
 
-Element* Editor::FindEventTargetForClipboardEvent(
-    EditorCommandSource source) const {
-  // https://www.w3.org/TR/clipboard-apis/#fire-a-clipboard-event says:
-  //  "Set target to be the element that contains the start of the selection in
-  //   document order, or the body element if there is no selection or cursor."
-  // We treat hidden selections as "no selection or cursor".
-  if (source == kCommandFromMenuOrKeyBinding && GetFrameSelection().IsHidden())
-    return GetFrameSelection().GetDocument().body();
-
-  return FindEventTargetFrom(
-      GetFrame(), GetFrameSelection().ComputeVisibleSelectionInDOMTree());
-}
-
 void Editor::ApplyParagraphStyle(CSSPropertyValueSet* style,
                                  InputEvent::InputType input_type) {
   if (GetFrame()
