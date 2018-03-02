@@ -392,13 +392,10 @@ bool NGInlineLayoutAlgorithm::ApplyJustify(NGLineInfo* line_info) {
       DCHECK(item_result.text_end_effect != NGTextEndEffect::kNone ||
              shape_result->NumCharacters() ==
                  item_result.end_offset - item_result.start_offset);
-      LayoutUnit size_before_justify = item_result.inline_size;
       shape_result->ApplySpacing(
           spacing, item_result.start_offset - line_info->StartOffset() -
                        shape_result->StartIndexForResult());
       item_result.inline_size = shape_result->SnappedWidth();
-      item_result.expansion =
-          (item_result.inline_size - size_before_justify).ToInt();
       item_result.shape_result = std::move(shape_result);
     } else {
       // TODO(kojii): Implement atomic inline.
