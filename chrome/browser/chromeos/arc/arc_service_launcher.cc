@@ -154,7 +154,10 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   ArcMetricsService::GetForBrowserContext(profile);
   ArcMidisBridge::GetForBrowserContext(profile);
   ArcNetHostImpl::GetForBrowserContext(profile);
-  ArcNotificationManager::GetForBrowserContext(profile);
+  // TODO(https://crbug.com/816441): Remove the callback workaround.
+  ArcNotificationManager::GetForBrowserContext(profile)
+      ->set_get_app_id_callback(
+          ArcAppListPrefs::Get(profile)->GetAppIdByPackageNameCallback());
   ArcObbMounterBridge::GetForBrowserContext(profile);
   ArcOemCryptoBridge::GetForBrowserContext(profile);
   ArcPolicyBridge::GetForBrowserContext(profile);

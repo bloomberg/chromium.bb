@@ -130,7 +130,8 @@ void ArcNotificationManager::OnNotificationPosted(
   const std::string& key = data->key;
   auto it = items_.find(key);
   if (it == items_.end()) {
-    // Show a notification on the primary logged-in user's desktop.
+    // Show a notification on the primary logged-in user's desktop and badge the
+    // app icon in the shelf if the icon exists.
     // TODO(yoshiki): Reconsider when ARC supports multi-user.
     auto item = std::make_unique<ArcNotificationItemImpl>(
         this, message_center_, key, main_profile_id_);
@@ -139,7 +140,9 @@ void ArcNotificationManager::OnNotificationPosted(
     DCHECK(result.second);
     it = result.first;
   }
-  it->second->OnUpdatedFromAndroid(std::move(data));
+  const std::string app_id =
+      data->package_name ? GetAppId(data->package_name.value()) : std::string();
+  it->second->OnUpdatedFromAndroid(std::move(data), app_id);
 }
 
 void ArcNotificationManager::OnNotificationUpdated(
@@ -154,7 +157,8 @@ void ArcNotificationManager::OnNotificationUpdated(
   if (it == items_.end())
     return;
 
-  it->second->OnUpdatedFromAndroid(std::move(data));
+  const std::string app_id = GetAppId(data->package_name.value());
+  it->second->OnUpdatedFromAndroid(std::move(data), app_id);
 }
 
 void ArcNotificationManager::OnNotificationRemoved(const std::string& key) {
@@ -340,6 +344,10 @@ void ArcNotificationManager::SendNotificationToggleExpansionOnChrome(
       key, mojom::ArcNotificationEvent::TOGGLE_EXPANSION);
 }
 
+void ArcNotificationManager::Shutdown() {
+  get_app_id_callback_.Reset();
+}
+
 void ArcNotificationManager::OnToastPosted(mojom::ArcToastDataPtr data) {
   const base::string16 text16(
       base::UTF8ToUTF16(data->text.has_value() ? *data->text : std::string()));
@@ -359,6 +367,14 @@ bool ArcNotificationManager::ShouldIgnoreNotification(
   // TODO: Use centralized const for Play Store package.
   return data->package_name.has_value() &&
          *data->package_name == kPlayStorePackageName && IsRobotAccountMode();
+}
+
+std::string ArcNotificationManager::GetAppId(
+    const std::string& package_name) const {
+  if (get_app_id_callback_.is_null())
+    return std::string();
+
+  return get_app_id_callback_.Run(package_name);
 }
 
 }  // namespace arc

@@ -32,7 +32,8 @@ class ArcNotificationItemImpl : public ArcNotificationItem {
 
   // ArcNotificationItem overrides:
   void OnClosedFromAndroid() override;
-  void OnUpdatedFromAndroid(mojom::ArcNotificationDataPtr data) override;
+  void OnUpdatedFromAndroid(mojom::ArcNotificationDataPtr data,
+                            const std::string& app_id) override;
   void Close(bool by_user) override;
   void Click() override;
   void OpenSettings() override;

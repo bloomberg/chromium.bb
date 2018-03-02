@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/shelf/shelf_constants.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -22,7 +23,6 @@ namespace arc {
 
 namespace {
 
-constexpr char kNotifierId[] = "ARC_NOTIFICATION";
 constexpr char kNotificationIdPrefix[] = "ARC_NOTIFICATION_";
 
 // Converts from Android notification priority to Chrome notification priority.
@@ -68,7 +68,8 @@ ArcNotificationItemImpl::~ArcNotificationItemImpl() {
 }
 
 void ArcNotificationItemImpl::OnUpdatedFromAndroid(
-    mojom::ArcNotificationDataPtr data) {
+    mojom::ArcNotificationDataPtr data,
+    const std::string& app_id) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(notification_key_, data->key);
 
@@ -91,7 +92,8 @@ void ArcNotificationItemImpl::OnUpdatedFromAndroid(
   }
 
   message_center::NotifierId notifier_id(
-      message_center::NotifierId::ARC_APPLICATION, kNotifierId);
+      message_center::NotifierId::ARC_APPLICATION,
+      app_id.empty() ? ash::kDefaultArcNotifierId : app_id);
   notifier_id.profile_id = profile_id_.GetUserEmail();
 
   auto notification = std::make_unique<message_center::Notification>(

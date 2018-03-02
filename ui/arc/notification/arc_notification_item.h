@@ -32,7 +32,8 @@ class ArcNotificationItem {
   virtual void OnClosedFromAndroid() = 0;
   // Called when the notification is updated on Android-side. This is called
   // from ArcNotificationManager.
-  virtual void OnUpdatedFromAndroid(mojom::ArcNotificationDataPtr data) = 0;
+  virtual void OnUpdatedFromAndroid(mojom::ArcNotificationDataPtr data,
+                                    const std::string& app_id) = 0;
 
   // Called when the notification is closed on Chrome-side. This is called from
   // ArcNotificationDelegate.

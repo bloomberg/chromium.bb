@@ -123,8 +123,9 @@ class MockArcNotificationItem : public ArcNotificationItem {
   gfx::Rect GetSwipeInputRect() const override { return gfx::Rect(); }
   const base::string16& GetAccessibleName() const override {
     return base::EmptyString16();
-  };
-  void OnUpdatedFromAndroid(mojom::ArcNotificationDataPtr data) override {}
+  }
+  void OnUpdatedFromAndroid(mojom::ArcNotificationDataPtr data,
+                            const std::string& app_id) override {}
   bool IsManuallyExpandedOrCollapsed() const override { return false; }
 
  private:
