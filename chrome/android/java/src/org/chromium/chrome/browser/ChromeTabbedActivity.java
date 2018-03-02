@@ -651,7 +651,7 @@ public class ChromeTabbedActivity
         if (shouldDestroyIncognitoProfile()) {
             Profile.getLastUsedProfile().getOffTheRecordProfile().destroyWhenAppropriate();
         } else {
-            CookiesFetcher.restoreCookies(this);
+            CookiesFetcher.restoreCookies();
         }
 
         StartupMetrics.getInstance().recordHistogram(false);
@@ -692,7 +692,7 @@ public class ChromeTabbedActivity
     @Override
     public void onPauseWithNative() {
         mTabModelSelectorImpl.commitAllTabClosures();
-        CookiesFetcher.persistCookies(this);
+        CookiesFetcher.persistCookies();
 
         mLocaleManager.setSnackbarManager(null);
         mLocaleManager.stopObservingPhoneChanges();
