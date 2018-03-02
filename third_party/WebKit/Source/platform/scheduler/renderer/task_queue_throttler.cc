@@ -353,7 +353,9 @@ void TaskQueueThrottler::UpdateQueueThrottlingStateInternal(base::TimeTicks now,
 
     base::Optional<base::TimeTicks> next_wake_up =
         queue->GetNextScheduledWakeUp();
-    if (next_wake_up && next_wake_up.value() > unblock_until.value()) {
+    // TODO(altimin, crbug.com/813218): Find a testcase to repro freezes
+    // mentioned in the bug.
+    if (next_wake_up) {
       MaybeSchedulePumpThrottledTasks(
           FROM_HERE, now, GetNextAllowedRunTime(queue, next_wake_up.value()));
     }
