@@ -24,6 +24,12 @@ namespace content {
 // TODO(eladalon): Block remote-bound logging on mobile devices.
 // https://crbug.com/775415
 
+const size_t kMaxRemoteLogFileMetadataSizeBytes = 0xffffu;  // 65535
+static_assert(kMaxRemoteLogFileMetadataSizeBytes <= 0xFFFFFFu,
+              "Only 24 bits available for encoding the metadata's length.");
+
+const size_t kMaxRemoteLogFileSizeBytes = (1u << 29);  // ~500MBs
+
 namespace {
 const base::FilePath::CharType kRemoteBoundLogSubDirectory[] =
     FILE_PATH_LITERAL("webrtc_event_logs");
@@ -37,17 +43,20 @@ void DiscardLogFile(base::File* file, const base::FilePath& file_path) {
   }
 }
 
-bool ValidLogParameters(size_t max_file_size_bytes,
-                        const std::string& metadata) {
-  // TODO(eladalon): Set a tighter limit (following discussion with rschriebman
-  // and manj). https://crbug.com/775415
+bool AreLogParametersValid(size_t max_file_size_bytes,
+                           const std::string& metadata) {
   if (max_file_size_bytes == kWebRtcEventLogManagerUnlimitedFileSize) {
+    LOG(WARNING) << "Unlimited file sizes not allowed for remote-bound logs.";
     return false;
   }
 
-  if (metadata.length() > 0xFFFFFFu) {
-    // We use three bytes to encode the length of the metadata.
-    LOG(ERROR) << "Metadata must be less than 2^24 bytes.";
+  if (max_file_size_bytes > kMaxRemoteLogFileSizeBytes) {
+    LOG(WARNING) << "File size exceeds maximum allowed.";
+    return false;
+  }
+
+  if (metadata.length() > kMaxRemoteLogFileMetadataSizeBytes) {
+    LOG(ERROR) << "Excessively long metadata.";
     return false;
   }
 
@@ -177,7 +186,7 @@ bool WebRtcRemoteEventLogManager::StartRemoteLogging(
     const std::string& metadata) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
 
-  if (!ValidLogParameters(max_file_size_bytes, metadata)) {
+  if (!AreLogParametersValid(max_file_size_bytes, metadata)) {
     return false;
   }
 

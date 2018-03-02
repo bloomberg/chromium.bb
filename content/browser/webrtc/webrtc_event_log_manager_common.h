@@ -28,6 +28,9 @@ CONTENT_EXPORT extern const size_t kWebRtcEventLogManagerUnlimitedFileSize;
 CONTENT_EXPORT extern const size_t kDefaultMaxLocalLogFileSizeBytes;
 CONTENT_EXPORT extern const size_t kMaxNumberLocalWebRtcEventLogFiles;
 
+CONTENT_EXPORT extern const size_t kMaxRemoteLogFileMetadataSizeBytes;
+CONTENT_EXPORT extern const size_t kMaxRemoteLogFileSizeBytes;
+
 // Limit over the number of concurrently active (currently being written to
 // disk) remote-bound log files. This limits IO operations, and so it is
 // applied globally (all browser contexts are limited together).
