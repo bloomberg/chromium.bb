@@ -27,8 +27,6 @@ namespace ui_test_utils {
 
 // Use in browser interactive uitests to wait until a browser is set to active.
 // To use, create and call WaitForActivation().
-// TODO(warx): check if code base exists the requirement for deactivation sync,
-// this class can be modified to support that.
 class BrowserActivationWaiter : public BrowserListObserver {
  public:
   explicit BrowserActivationWaiter(const Browser* browser);
@@ -48,6 +46,30 @@ class BrowserActivationWaiter : public BrowserListObserver {
   base::RunLoop run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserActivationWaiter);
+};
+
+// Use in browser interactive uitests to wait until a browser is deactivated.
+// To use, create and call WaitForDeactivation().
+class BrowserDeactivationWaiter : public BrowserListObserver {
+ public:
+  explicit BrowserDeactivationWaiter(const Browser* browser);
+  ~BrowserDeactivationWaiter() override;
+
+  // Runs a message loop until the |browser_| supplied to the constructor is
+  // deactivated, or returns immediately if |browser_| has already become
+  // inactive.
+  // Should only be called once.
+  void WaitForDeactivation();
+
+ private:
+  // BrowserListObserver:
+  void OnBrowserNoLongerActive(Browser* browser) override;
+
+  const Browser* const browser_;
+  bool observed_;
+  base::RunLoop run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(BrowserDeactivationWaiter);
 };
 
 // Brings the native window for |browser| to the foreground and waits until the

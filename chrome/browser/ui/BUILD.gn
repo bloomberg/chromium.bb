@@ -3885,13 +3885,17 @@ static_library("test_support") {
       "passwords/password_dialog_controller_mock.h",
       "passwords/passwords_model_delegate_mock.cc",
       "passwords/passwords_model_delegate_mock.h",
+      "tabs/tab_ukm_test_helper.cc",
+      "tabs/tab_ukm_test_helper.h",
       "test/test_confirm_bubble_model.cc",
       "test/test_confirm_bubble_model.h",
     ]
     deps += [
       "//chrome/test:test_support_ui",
       "//components/signin/core/browser",
+      "//components/ukm:test_support",
       "//components/zoom",
+      "//services/metrics/public/mojom",
     ]
   }
 

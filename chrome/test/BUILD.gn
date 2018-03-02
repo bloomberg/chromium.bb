@@ -182,7 +182,10 @@ static_library("test_support") {
       "base/test_browser_window.h",
     ]
   } else {
-    public_deps += [ "//components/zoom:test_support" ]
+    public_deps += [
+      "//components/ukm:test_support",
+      "//components/zoom:test_support",
+    ]
     sources += [
       "../browser/ui/tabs/pinned_tab_test_utils.cc",
       "../browser/ui/tabs/pinned_tab_test_utils.h",
@@ -3009,7 +3012,6 @@ test("unit_tests") {
       "//chrome/browser/resource_coordinator:tab_metrics_event_proto",
       "//components/favicon/core/test:test_support",
       "//components/signin/core/browser:signin_features",
-      "//components/ukm:test_support",
       "//services/metrics/public/cpp:ukm_builders",
       "//third_party/libaddressinput",
     ]
@@ -4543,6 +4545,7 @@ if (!is_android) {
       "../browser/ui/search/local_ntp_uitest.cc",
       "../browser/ui/send_mouse_move_uitest_win.cc",
       "../browser/ui/startup/startup_browser_creator_interactive_uitest.cc",
+      "../browser/ui/tabs/window_activity_watcher_interactive_uitest.cc",
       "../browser/ui/translate/translate_bubble_test_utils.h",
       "../browser/ui/views/accessibility/navigation_accessibility_uitest_win.cc",
       "//ui/base/clipboard/clipboard_unittest.cc",
@@ -4622,11 +4625,13 @@ if (!is_android) {
       "//chrome:strings",
       "//chrome/browser",
       "//chrome/browser/devtools",
+      "//chrome/browser/resource_coordinator:tab_metrics_event_proto",
       "//chrome/renderer",
       "//components/keep_alive_registry",
       "//components/resources",
       "//components/sync",
       "//components/sync:test_support_model",
+      "//components/ukm:test_support",
       "//content/app/resources",
       "//content/test:test_support",
       "//crypto:platform",
@@ -4637,6 +4642,7 @@ if (!is_android) {
       "//net",
       "//net:net_resources",
       "//net:test_support",
+      "//services/metrics/public/cpp:ukm_builders",
       "//skia",
       "//testing/gmock",
       "//testing/gtest",
