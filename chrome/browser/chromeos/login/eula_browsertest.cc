@@ -191,7 +191,8 @@ IN_PROC_BROWSER_TEST_F(EulaTest, LoadOnline) {
 
 // Tests that offline version is shown when the online version is not
 // accessible.
-IN_PROC_BROWSER_TEST_F(EulaTest, LoadOffline) {
+// Disabled due to flaky timeouts; https://crbug.com/817995.
+IN_PROC_BROWSER_TEST_F(EulaTest, DISABLED_LoadOffline) {
   set_allow_online_eula(false);
   ShowEulaScreen();
 
