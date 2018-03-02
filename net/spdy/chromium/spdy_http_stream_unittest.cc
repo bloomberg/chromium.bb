@@ -846,7 +846,7 @@ TEST_F(SpdyHttpStreamTest, SpdyURLTest) {
   EXPECT_THAT(http_stream->SendRequest(headers, &response, callback.callback()),
               IsError(ERR_IO_PENDING));
 
-  EXPECT_EQ(base_url, http_stream->stream()->GetUrlFromHeaders().spec());
+  EXPECT_EQ(base_url, http_stream->stream()->url().spec());
 
   callback.WaitForResult();
 

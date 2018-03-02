@@ -178,13 +178,12 @@ TEST_F(SpdySessionPoolTest, CloseCurrentIdleSessions) {
   CreateNetworkSession();
 
   // Set up session 1
-  const SpdyString kTestHost1("www.example.org");
-  HostPortPair test_host_port_pair1(kTestHost1, 80);
+  const GURL url1("https://www.example.org");
+  HostPortPair test_host_port_pair1(HostPortPair::FromURL(url1));
   SpdySessionKey key1(test_host_port_pair1, ProxyServer::Direct(),
                       PRIVACY_MODE_DISABLED, SocketTag());
   base::WeakPtr<SpdySession> session1 =
       CreateSpdySession(http_session_.get(), key1, NetLogWithSource());
-  GURL url1(kTestHost1);
   base::WeakPtr<SpdyStream> spdy_stream1 = CreateStreamSynchronously(
       SPDY_BIDIRECTIONAL_STREAM, session1, url1, MEDIUM, NetLogWithSource());
   ASSERT_TRUE(spdy_stream1);
@@ -193,13 +192,12 @@ TEST_F(SpdySessionPoolTest, CloseCurrentIdleSessions) {
   StaticSocketDataProvider data2(reads, arraysize(reads), nullptr, 0);
   data2.set_connect_data(connect_data);
   session_deps_.socket_factory->AddSocketDataProvider(&data2);
-  const SpdyString kTestHost2("mail.example.org");
-  HostPortPair test_host_port_pair2(kTestHost2, 80);
+  const GURL url2("https://mail.example.org");
+  HostPortPair test_host_port_pair2(HostPortPair::FromURL(url2));
   SpdySessionKey key2(test_host_port_pair2, ProxyServer::Direct(),
                       PRIVACY_MODE_DISABLED, SocketTag());
   base::WeakPtr<SpdySession> session2 =
       CreateSpdySession(http_session_.get(), key2, NetLogWithSource());
-  GURL url2(kTestHost2);
   base::WeakPtr<SpdyStream> spdy_stream2 = CreateStreamSynchronously(
       SPDY_BIDIRECTIONAL_STREAM, session2, url2, MEDIUM, NetLogWithSource());
   ASSERT_TRUE(spdy_stream2);
@@ -208,13 +206,12 @@ TEST_F(SpdySessionPoolTest, CloseCurrentIdleSessions) {
   StaticSocketDataProvider data3(reads, arraysize(reads), nullptr, 0);
   data3.set_connect_data(connect_data);
   session_deps_.socket_factory->AddSocketDataProvider(&data3);
-  const SpdyString kTestHost3("mail.example.com");
-  HostPortPair test_host_port_pair3(kTestHost3, 80);
+  const GURL url3("https://mail.example.com");
+  HostPortPair test_host_port_pair3(HostPortPair::FromURL(url3));
   SpdySessionKey key3(test_host_port_pair3, ProxyServer::Direct(),
                       PRIVACY_MODE_DISABLED, SocketTag());
   base::WeakPtr<SpdySession> session3 =
       CreateSpdySession(http_session_.get(), key3, NetLogWithSource());
-  GURL url3(kTestHost3);
   base::WeakPtr<SpdyStream> spdy_stream3 = CreateStreamSynchronously(
       SPDY_BIDIRECTIONAL_STREAM, session3, url3, MEDIUM, NetLogWithSource());
   ASSERT_TRUE(spdy_stream3);
@@ -347,7 +344,7 @@ void SpdySessionPoolTest::RunIPPoolingTest(
     SpdySessionKey key;
     AddressList addresses;
   } test_hosts[] = {
-      {"http:://www.example.org", "www.example.org",
+      {"http://www.example.org", "www.example.org",
        "192.0.2.33,192.168.0.1,192.168.0.5"},
       {"http://mail.example.org", "mail.example.org",
        "192.168.0.2,192.168.0.3,192.168.0.5,192.0.2.33"},

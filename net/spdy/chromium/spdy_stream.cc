@@ -473,7 +473,6 @@ void SpdyStream::OnPushPromiseHeadersReceived(SpdyHeaderBlock headers,
   io_state_ = STATE_RESERVED_REMOTE;
   request_headers_ = std::move(headers);
   request_headers_valid_ = true;
-  url_from_header_block_ = std::move(url);
 }
 
 void SpdyStream::OnDataReceived(std::unique_ptr<SpdyBuffer> buffer) {
@@ -706,7 +705,6 @@ int SpdyStream::SendRequestHeaders(SpdyHeaderBlock request_headers,
   CHECK_EQ(io_state_, STATE_IDLE);
   request_headers_ = std::move(request_headers);
   request_headers_valid_ = true;
-  url_from_header_block_ = GetUrlFromHeaderBlock(request_headers_);
   pending_send_status_ = send_status;
   session_->EnqueueStreamWrite(
       GetWeakPtr(), SpdyFrameType::HEADERS,
@@ -801,7 +799,6 @@ size_t SpdyStream::EstimateMemoryUsage() const {
   // once scoped_refptr support is in.
   return SpdyEstimateMemoryUsage(url_) +
          SpdyEstimateMemoryUsage(request_headers_) +
-         SpdyEstimateMemoryUsage(url_from_header_block_) +
          SpdyEstimateMemoryUsage(pending_recv_data_) +
          SpdyEstimateMemoryUsage(response_headers_);
 }

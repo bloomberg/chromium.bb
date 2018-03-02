@@ -192,17 +192,15 @@ TEST_F(SpdyStreamTest, SendDataAfterOpen) {
   base::WeakPtr<SpdyStream> stream = CreateStreamSynchronously(
       SPDY_BIDIRECTIONAL_STREAM, session, url_, LOWEST, NetLogWithSource());
   ASSERT_TRUE(stream);
+  EXPECT_EQ(kDefaultUrl, stream->url().spec());
 
   StreamDelegateSendImmediate delegate(stream, kPostBodyStringPiece);
   stream->SetDelegate(&delegate);
-
-  EXPECT_TRUE(stream->GetUrlFromHeaders().is_empty());
 
   SpdyHeaderBlock headers(
       spdy_util_.ConstructPostHeaderBlock(kDefaultUrl, kPostBodyLength));
   EXPECT_THAT(stream->SendRequestHeaders(std::move(headers), MORE_DATA_TO_SEND),
               IsError(ERR_IO_PENDING));
-  EXPECT_EQ(kDefaultUrl, stream->GetUrlFromHeaders().spec());
 
   EXPECT_THAT(delegate.WaitForClose(), IsError(ERR_CONNECTION_CLOSED));
 
@@ -270,17 +268,15 @@ TEST_F(SpdyStreamTest, Trailers) {
   base::WeakPtr<SpdyStream> stream = CreateStreamSynchronously(
       SPDY_REQUEST_RESPONSE_STREAM, session, url_, LOWEST, NetLogWithSource());
   ASSERT_TRUE(stream);
+  EXPECT_EQ(kDefaultUrl, stream->url().spec());
 
   StreamDelegateWithTrailers delegate(stream, kPostBodyStringPiece);
   stream->SetDelegate(&delegate);
-
-  EXPECT_TRUE(stream->GetUrlFromHeaders().is_empty());
 
   SpdyHeaderBlock headers(
       spdy_util_.ConstructPostHeaderBlock(kDefaultUrl, kPostBodyLength));
   EXPECT_THAT(stream->SendRequestHeaders(std::move(headers), MORE_DATA_TO_SEND),
               IsError(ERR_IO_PENDING));
-  EXPECT_EQ(kDefaultUrl, stream->GetUrlFromHeaders().spec());
 
   EXPECT_THAT(delegate.WaitForClose(), IsError(ERR_CONNECTION_CLOSED));
 
@@ -339,17 +335,15 @@ TEST_F(SpdyStreamTest, PushedStream) {
   base::WeakPtr<SpdyStream> stream = CreateStreamSynchronously(
       SPDY_REQUEST_RESPONSE_STREAM, session, url_, LOWEST, NetLogWithSource());
   ASSERT_TRUE(stream);
+  EXPECT_EQ(kDefaultUrl, stream->url().spec());
 
   StreamDelegateDoNothing delegate(stream);
   stream->SetDelegate(&delegate);
-
-  EXPECT_TRUE(stream->GetUrlFromHeaders().is_empty());
 
   SpdyHeaderBlock headers(spdy_util_.ConstructGetHeaderBlock(kDefaultUrl));
   EXPECT_THAT(
       stream->SendRequestHeaders(std::move(headers), NO_MORE_DATA_TO_SEND),
       IsError(ERR_IO_PENDING));
-  EXPECT_EQ(kDefaultUrl, stream->GetUrlFromHeaders().spec());
 
   data.RunUntilPaused();
 
@@ -372,7 +366,7 @@ TEST_F(SpdyStreamTest, PushedStream) {
                                        &push_stream, NetLogWithSource()),
               IsOk());
   ASSERT_TRUE(push_stream);
-  EXPECT_EQ(kPushUrl, push_stream->GetUrlFromHeaders().spec());
+  EXPECT_EQ(kPushUrl, push_stream->url().spec());
 
   LoadTimingInfo load_timing_info;
   EXPECT_TRUE(push_stream->GetLoadTimingInfo(&load_timing_info));
@@ -430,17 +424,15 @@ TEST_F(SpdyStreamTest, StreamError) {
   base::WeakPtr<SpdyStream> stream = CreateStreamSynchronously(
       SPDY_BIDIRECTIONAL_STREAM, session, url_, LOWEST, log.bound());
   ASSERT_TRUE(stream);
+  EXPECT_EQ(kDefaultUrl, stream->url().spec());
 
   StreamDelegateSendImmediate delegate(stream, kPostBodyStringPiece);
   stream->SetDelegate(&delegate);
-
-  EXPECT_TRUE(stream->GetUrlFromHeaders().is_empty());
 
   SpdyHeaderBlock headers(
       spdy_util_.ConstructPostHeaderBlock(kDefaultUrl, kPostBodyLength));
   EXPECT_THAT(stream->SendRequestHeaders(std::move(headers), MORE_DATA_TO_SEND),
               IsError(ERR_IO_PENDING));
-  EXPECT_EQ(kDefaultUrl, stream->GetUrlFromHeaders().spec());
 
   EXPECT_THAT(delegate.WaitForClose(), IsError(ERR_CONNECTION_CLOSED));
 
@@ -501,18 +493,16 @@ TEST_F(SpdyStreamTest, SendLargeDataAfterOpenRequestResponse) {
   base::WeakPtr<SpdyStream> stream = CreateStreamSynchronously(
       SPDY_REQUEST_RESPONSE_STREAM, session, url_, LOWEST, NetLogWithSource());
   ASSERT_TRUE(stream);
+  EXPECT_EQ(kDefaultUrl, stream->url().spec());
 
   SpdyString body_data(3 * kMaxSpdyFrameChunkSize, 'x');
   StreamDelegateWithBody delegate(stream, body_data);
   stream->SetDelegate(&delegate);
 
-  EXPECT_TRUE(stream->GetUrlFromHeaders().is_empty());
-
   SpdyHeaderBlock headers(
       spdy_util_.ConstructPostHeaderBlock(kDefaultUrl, kPostBodyLength));
   EXPECT_THAT(stream->SendRequestHeaders(std::move(headers), MORE_DATA_TO_SEND),
               IsError(ERR_IO_PENDING));
-  EXPECT_EQ(kDefaultUrl, stream->GetUrlFromHeaders().spec());
 
   EXPECT_THAT(delegate.WaitForClose(), IsError(ERR_CONNECTION_CLOSED));
 
@@ -554,18 +544,16 @@ TEST_F(SpdyStreamTest, SendLargeDataAfterOpenBidirectional) {
   base::WeakPtr<SpdyStream> stream = CreateStreamSynchronously(
       SPDY_BIDIRECTIONAL_STREAM, session, url_, LOWEST, NetLogWithSource());
   ASSERT_TRUE(stream);
+  EXPECT_EQ(kDefaultUrl, stream->url().spec());
 
   SpdyString body_data(3 * kMaxSpdyFrameChunkSize, 'x');
   StreamDelegateSendImmediate delegate(stream, body_data);
   stream->SetDelegate(&delegate);
 
-  EXPECT_TRUE(stream->GetUrlFromHeaders().is_empty());
-
   SpdyHeaderBlock headers(
       spdy_util_.ConstructPostHeaderBlock(kDefaultUrl, kPostBodyLength));
   EXPECT_THAT(stream->SendRequestHeaders(std::move(headers), MORE_DATA_TO_SEND),
               IsError(ERR_IO_PENDING));
-  EXPECT_EQ(kDefaultUrl, stream->GetUrlFromHeaders().spec());
 
   EXPECT_THAT(delegate.WaitForClose(), IsError(ERR_CONNECTION_CLOSED));
 
@@ -604,17 +592,15 @@ TEST_F(SpdyStreamTest, UpperCaseHeaders) {
   base::WeakPtr<SpdyStream> stream = CreateStreamSynchronously(
       SPDY_REQUEST_RESPONSE_STREAM, session, url_, LOWEST, NetLogWithSource());
   ASSERT_TRUE(stream);
+  EXPECT_EQ(kDefaultUrl, stream->url().spec());
 
   StreamDelegateDoNothing delegate(stream);
   stream->SetDelegate(&delegate);
-
-  EXPECT_TRUE(stream->GetUrlFromHeaders().is_empty());
 
   SpdyHeaderBlock headers(spdy_util_.ConstructGetHeaderBlock(kDefaultUrl));
   EXPECT_THAT(
       stream->SendRequestHeaders(std::move(headers), NO_MORE_DATA_TO_SEND),
       IsError(ERR_IO_PENDING));
-  EXPECT_EQ(kDefaultUrl, stream->GetUrlFromHeaders().spec());
 
   EXPECT_THAT(delegate.WaitForClose(), IsError(ERR_SPDY_PROTOCOL_ERROR));
 
@@ -664,17 +650,15 @@ TEST_F(SpdyStreamTest, UpperCaseHeadersOnPush) {
   base::WeakPtr<SpdyStream> stream = CreateStreamSynchronously(
       SPDY_REQUEST_RESPONSE_STREAM, session, url_, LOWEST, NetLogWithSource());
   ASSERT_TRUE(stream);
+  EXPECT_EQ(kDefaultUrl, stream->url().spec());
 
   StreamDelegateDoNothing delegate(stream);
   stream->SetDelegate(&delegate);
-
-  EXPECT_TRUE(stream->GetUrlFromHeaders().is_empty());
 
   SpdyHeaderBlock headers(spdy_util_.ConstructGetHeaderBlock(kDefaultUrl));
   EXPECT_THAT(
       stream->SendRequestHeaders(std::move(headers), NO_MORE_DATA_TO_SEND),
       IsError(ERR_IO_PENDING));
-  EXPECT_EQ(kDefaultUrl, stream->GetUrlFromHeaders().spec());
 
   data.RunUntilPaused();
 
@@ -721,16 +705,14 @@ TEST_F(SpdyStreamTest, HeadersMustHaveStatus) {
   base::WeakPtr<SpdyStream> stream = CreateStreamSynchronously(
       SPDY_REQUEST_RESPONSE_STREAM, session, url_, LOWEST, NetLogWithSource());
   ASSERT_TRUE(stream);
+  EXPECT_EQ(kDefaultUrl, stream->url().spec());
 
   StreamDelegateDoNothing delegate(stream);
   stream->SetDelegate(&delegate);
 
-  EXPECT_TRUE(stream->GetUrlFromHeaders().is_empty());
-
   SpdyHeaderBlock headers(spdy_util_.ConstructGetHeaderBlock(kDefaultUrl));
   EXPECT_EQ(ERR_IO_PENDING, stream->SendRequestHeaders(std::move(headers),
                                                        NO_MORE_DATA_TO_SEND));
-  EXPECT_EQ(kDefaultUrl, stream->GetUrlFromHeaders().spec());
 
   EXPECT_THAT(delegate.WaitForClose(), IsError(ERR_SPDY_PROTOCOL_ERROR));
 
@@ -789,17 +771,15 @@ TEST_F(SpdyStreamTest, HeadersMustHaveStatusOnPushedStream) {
   base::WeakPtr<SpdyStream> stream = CreateStreamSynchronously(
       SPDY_REQUEST_RESPONSE_STREAM, session, url_, LOWEST, NetLogWithSource());
   ASSERT_TRUE(stream);
+  EXPECT_EQ(kDefaultUrl, stream->url().spec());
 
   StreamDelegateDoNothing delegate(stream);
   stream->SetDelegate(&delegate);
-
-  EXPECT_TRUE(stream->GetUrlFromHeaders().is_empty());
 
   SpdyHeaderBlock headers(spdy_util_.ConstructGetHeaderBlock(kDefaultUrl));
   EXPECT_THAT(
       stream->SendRequestHeaders(std::move(headers), NO_MORE_DATA_TO_SEND),
       IsError(ERR_IO_PENDING));
-  EXPECT_EQ(kDefaultUrl, stream->GetUrlFromHeaders().spec());
 
   EXPECT_THAT(delegate.WaitForClose(), IsOk());
   EXPECT_EQ("200", delegate.GetResponseHeaderValue(kHttp2StatusHeader));
@@ -841,16 +821,14 @@ TEST_F(SpdyStreamTest, HeadersMustPreceedData) {
   base::WeakPtr<SpdyStream> stream = CreateStreamSynchronously(
       SPDY_REQUEST_RESPONSE_STREAM, session, url_, LOWEST, NetLogWithSource());
   ASSERT_TRUE(stream);
+  EXPECT_EQ(kDefaultUrl, stream->url().spec());
 
   StreamDelegateDoNothing delegate(stream);
   stream->SetDelegate(&delegate);
 
-  EXPECT_TRUE(stream->GetUrlFromHeaders().is_empty());
-
   SpdyHeaderBlock headers(spdy_util_.ConstructGetHeaderBlock(kDefaultUrl));
   EXPECT_EQ(ERR_IO_PENDING, stream->SendRequestHeaders(std::move(headers),
                                                        NO_MORE_DATA_TO_SEND));
-  EXPECT_EQ(kDefaultUrl, stream->GetUrlFromHeaders().spec());
 
   EXPECT_THAT(delegate.WaitForClose(), IsError(ERR_SPDY_PROTOCOL_ERROR));
 }
@@ -897,17 +875,15 @@ TEST_F(SpdyStreamTest, HeadersMustPreceedDataOnPushedStream) {
   base::WeakPtr<SpdyStream> stream = CreateStreamSynchronously(
       SPDY_REQUEST_RESPONSE_STREAM, session, url_, LOWEST, NetLogWithSource());
   ASSERT_TRUE(stream);
+  EXPECT_EQ(kDefaultUrl, stream->url().spec());
 
   StreamDelegateDoNothing delegate(stream);
   stream->SetDelegate(&delegate);
-
-  EXPECT_TRUE(stream->GetUrlFromHeaders().is_empty());
 
   SpdyHeaderBlock headers(spdy_util_.ConstructGetHeaderBlock(kDefaultUrl));
   EXPECT_THAT(
       stream->SendRequestHeaders(std::move(headers), NO_MORE_DATA_TO_SEND),
       IsError(ERR_IO_PENDING));
-  EXPECT_EQ(kDefaultUrl, stream->GetUrlFromHeaders().spec());
 
   EXPECT_THAT(delegate.WaitForClose(), IsOk());
   EXPECT_EQ("200", delegate.GetResponseHeaderValue(kHttp2StatusHeader));
@@ -962,16 +938,14 @@ TEST_F(SpdyStreamTest, TrailersMustNotFollowTrailers) {
   base::WeakPtr<SpdyStream> stream = CreateStreamSynchronously(
       SPDY_REQUEST_RESPONSE_STREAM, session, url_, LOWEST, NetLogWithSource());
   ASSERT_TRUE(stream);
+  EXPECT_EQ(kDefaultUrl, stream->url().spec());
 
   StreamDelegateDoNothing delegate(stream);
   stream->SetDelegate(&delegate);
 
-  EXPECT_TRUE(stream->GetUrlFromHeaders().is_empty());
-
   SpdyHeaderBlock headers(spdy_util_.ConstructGetHeaderBlock(kDefaultUrl));
   EXPECT_EQ(ERR_IO_PENDING, stream->SendRequestHeaders(std::move(headers),
                                                        NO_MORE_DATA_TO_SEND));
-  EXPECT_EQ(kDefaultUrl, stream->GetUrlFromHeaders().spec());
 
   EXPECT_THAT(delegate.WaitForClose(), IsError(ERR_SPDY_PROTOCOL_ERROR));
 
@@ -1021,16 +995,14 @@ TEST_F(SpdyStreamTest, DataMustNotFollowTrailers) {
   base::WeakPtr<SpdyStream> stream = CreateStreamSynchronously(
       SPDY_REQUEST_RESPONSE_STREAM, session, url_, LOWEST, NetLogWithSource());
   ASSERT_TRUE(stream);
+  EXPECT_EQ(kDefaultUrl, stream->url().spec());
 
   StreamDelegateDoNothing delegate(stream);
   stream->SetDelegate(&delegate);
 
-  EXPECT_TRUE(stream->GetUrlFromHeaders().is_empty());
-
   SpdyHeaderBlock headers(spdy_util_.ConstructGetHeaderBlock(kDefaultUrl));
   EXPECT_EQ(ERR_IO_PENDING, stream->SendRequestHeaders(std::move(headers),
                                                        NO_MORE_DATA_TO_SEND));
-  EXPECT_EQ(kDefaultUrl, stream->GetUrlFromHeaders().spec());
 
   EXPECT_THAT(delegate.WaitForClose(), IsError(ERR_SPDY_PROTOCOL_ERROR));
 
@@ -1074,16 +1046,14 @@ TEST_F(SpdyStreamTest, InformationalHeaders) {
   base::WeakPtr<SpdyStream> stream = CreateStreamSynchronously(
       SPDY_REQUEST_RESPONSE_STREAM, session, url_, LOWEST, NetLogWithSource());
   ASSERT_TRUE(stream);
+  EXPECT_EQ(kDefaultUrl, stream->url().spec());
 
   StreamDelegateDoNothing delegate(stream);
   stream->SetDelegate(&delegate);
 
-  EXPECT_TRUE(stream->GetUrlFromHeaders().is_empty());
-
   SpdyHeaderBlock headers(spdy_util_.ConstructGetHeaderBlock(kDefaultUrl));
   EXPECT_EQ(ERR_IO_PENDING, stream->SendRequestHeaders(std::move(headers),
                                                        NO_MORE_DATA_TO_SEND));
-  EXPECT_EQ(kDefaultUrl, stream->GetUrlFromHeaders().spec());
 
   EXPECT_THAT(delegate.WaitForClose(), IsOk());
   EXPECT_EQ("200", delegate.GetResponseHeaderValue(kHttp2StatusHeader));
@@ -1126,16 +1096,14 @@ TEST_F(SpdyStreamTest, StatusMustBeNumber) {
   base::WeakPtr<SpdyStream> stream = CreateStreamSynchronously(
       SPDY_REQUEST_RESPONSE_STREAM, session, url_, LOWEST, NetLogWithSource());
   ASSERT_TRUE(stream);
+  EXPECT_EQ(kDefaultUrl, stream->url().spec());
 
   StreamDelegateDoNothing delegate(stream);
   stream->SetDelegate(&delegate);
 
-  EXPECT_TRUE(stream->GetUrlFromHeaders().is_empty());
-
   SpdyHeaderBlock headers(spdy_util_.ConstructGetHeaderBlock(kDefaultUrl));
   EXPECT_EQ(ERR_IO_PENDING, stream->SendRequestHeaders(std::move(headers),
                                                        NO_MORE_DATA_TO_SEND));
-  EXPECT_EQ(kDefaultUrl, stream->GetUrlFromHeaders().spec());
 
   EXPECT_THAT(delegate.WaitForClose(), IsError(ERR_SPDY_PROTOCOL_ERROR));
 
@@ -1180,16 +1148,14 @@ TEST_F(SpdyStreamTest, StatusCannotHaveExtraText) {
   base::WeakPtr<SpdyStream> stream = CreateStreamSynchronously(
       SPDY_REQUEST_RESPONSE_STREAM, session, url_, LOWEST, NetLogWithSource());
   ASSERT_TRUE(stream);
+  EXPECT_EQ(kDefaultUrl, stream->url().spec());
 
   StreamDelegateDoNothing delegate(stream);
   stream->SetDelegate(&delegate);
 
-  EXPECT_TRUE(stream->GetUrlFromHeaders().is_empty());
-
   SpdyHeaderBlock headers(spdy_util_.ConstructGetHeaderBlock(kDefaultUrl));
   EXPECT_EQ(ERR_IO_PENDING, stream->SendRequestHeaders(std::move(headers),
                                                        NO_MORE_DATA_TO_SEND));
-  EXPECT_EQ(kDefaultUrl, stream->GetUrlFromHeaders().spec());
 
   EXPECT_THAT(delegate.WaitForClose(), IsError(ERR_SPDY_PROTOCOL_ERROR));
 
@@ -1232,16 +1198,14 @@ TEST_F(SpdyStreamTest, StatusMustBePresent) {
   base::WeakPtr<SpdyStream> stream = CreateStreamSynchronously(
       SPDY_REQUEST_RESPONSE_STREAM, session, url_, LOWEST, NetLogWithSource());
   ASSERT_TRUE(stream);
+  EXPECT_EQ(kDefaultUrl, stream->url().spec());
 
   StreamDelegateDoNothing delegate(stream);
   stream->SetDelegate(&delegate);
 
-  EXPECT_TRUE(stream->GetUrlFromHeaders().is_empty());
-
   SpdyHeaderBlock headers(spdy_util_.ConstructGetHeaderBlock(kDefaultUrl));
   EXPECT_EQ(ERR_IO_PENDING, stream->SendRequestHeaders(std::move(headers),
                                                        NO_MORE_DATA_TO_SEND));
-  EXPECT_EQ(kDefaultUrl, stream->GetUrlFromHeaders().spec());
 
   EXPECT_THAT(delegate.WaitForClose(), IsError(ERR_SPDY_PROTOCOL_ERROR));
 
@@ -1284,6 +1248,8 @@ TEST_F(SpdyStreamTest, IncreaseSendWindowSizeOverflow) {
   base::WeakPtr<SpdyStream> stream = CreateStreamSynchronously(
       SPDY_BIDIRECTIONAL_STREAM, session, url_, LOWEST, log.bound());
   ASSERT_TRUE(stream);
+  EXPECT_EQ(kDefaultUrl, stream->url().spec());
+
   StreamDelegateSendImmediate delegate(stream, kPostBodyStringPiece);
   stream->SetDelegate(&delegate);
 
@@ -1291,7 +1257,6 @@ TEST_F(SpdyStreamTest, IncreaseSendWindowSizeOverflow) {
       spdy_util_.ConstructPostHeaderBlock(kDefaultUrl, kPostBodyLength));
   EXPECT_THAT(stream->SendRequestHeaders(std::move(headers), MORE_DATA_TO_SEND),
               IsError(ERR_IO_PENDING));
-  EXPECT_EQ(kDefaultUrl, stream->GetUrlFromHeaders().spec());
 
   data.RunUntilPaused();
 
@@ -1369,18 +1334,17 @@ void SpdyStreamTest::RunResumeAfterUnstallRequestResponseTest(
   base::WeakPtr<SpdyStream> stream = CreateStreamSynchronously(
       SPDY_REQUEST_RESPONSE_STREAM, session, url_, LOWEST, NetLogWithSource());
   ASSERT_TRUE(stream);
+  EXPECT_EQ(kDefaultUrl, stream->url().spec());
 
   StreamDelegateWithBody delegate(stream, kPostBodyStringPiece);
   stream->SetDelegate(&delegate);
 
-  EXPECT_TRUE(stream->GetUrlFromHeaders().is_empty());
   EXPECT_FALSE(stream->send_stalled_by_flow_control());
 
   SpdyHeaderBlock headers(
       spdy_util_.ConstructPostHeaderBlock(kDefaultUrl, kPostBodyLength));
   EXPECT_THAT(stream->SendRequestHeaders(std::move(headers), MORE_DATA_TO_SEND),
               IsError(ERR_IO_PENDING));
-  EXPECT_EQ(kDefaultUrl, stream->GetUrlFromHeaders().spec());
 
   StallStream(stream);
 
@@ -1446,17 +1410,15 @@ void SpdyStreamTest::RunResumeAfterUnstallBidirectionalTest(
   base::WeakPtr<SpdyStream> stream = CreateStreamSynchronously(
       SPDY_BIDIRECTIONAL_STREAM, session, url_, LOWEST, NetLogWithSource());
   ASSERT_TRUE(stream);
+  EXPECT_EQ(kDefaultUrl, stream->url().spec());
 
   StreamDelegateSendImmediate delegate(stream, kPostBodyStringPiece);
   stream->SetDelegate(&delegate);
-
-  EXPECT_TRUE(stream->GetUrlFromHeaders().is_empty());
 
   SpdyHeaderBlock headers(
       spdy_util_.ConstructPostHeaderBlock(kDefaultUrl, kPostBodyLength));
   EXPECT_THAT(stream->SendRequestHeaders(std::move(headers), MORE_DATA_TO_SEND),
               IsError(ERR_IO_PENDING));
-  EXPECT_EQ(kDefaultUrl, stream->GetUrlFromHeaders().spec());
 
   data.RunUntilPaused();
 
@@ -1525,17 +1487,15 @@ TEST_F(SpdyStreamTest, ReceivedBytes) {
   base::WeakPtr<SpdyStream> stream = CreateStreamSynchronously(
       SPDY_REQUEST_RESPONSE_STREAM, session, url_, LOWEST, NetLogWithSource());
   ASSERT_TRUE(stream);
+  EXPECT_EQ(kDefaultUrl, stream->url().spec());
 
   StreamDelegateDoNothing delegate(stream);
   stream->SetDelegate(&delegate);
-
-  EXPECT_TRUE(stream->GetUrlFromHeaders().is_empty());
 
   SpdyHeaderBlock headers(spdy_util_.ConstructGetHeaderBlock(kDefaultUrl));
   EXPECT_THAT(
       stream->SendRequestHeaders(std::move(headers), NO_MORE_DATA_TO_SEND),
       IsError(ERR_IO_PENDING));
-  EXPECT_EQ(kDefaultUrl, stream->GetUrlFromHeaders().spec());
 
   int64_t reply_frame_len = reply.size();
   int64_t data_header_len = kDataFrameMinimumSize;
@@ -1598,17 +1558,15 @@ TEST_F(SpdyStreamTest, DataOnHalfClosedRemoveStream) {
   base::WeakPtr<SpdyStream> stream = CreateStreamSynchronously(
       SPDY_BIDIRECTIONAL_STREAM, session, url_, LOWEST, NetLogWithSource());
   ASSERT_TRUE(stream);
+  EXPECT_EQ(kDefaultUrl, stream->url().spec());
 
   StreamDelegateDoNothing delegate(stream);
   stream->SetDelegate(&delegate);
-
-  EXPECT_TRUE(stream->GetUrlFromHeaders().is_empty());
 
   SpdyHeaderBlock headers(
       spdy_util_.ConstructPostHeaderBlock(kDefaultUrl, kPostBodyLength));
   EXPECT_THAT(stream->SendRequestHeaders(std::move(headers), MORE_DATA_TO_SEND),
               IsError(ERR_IO_PENDING));
-  EXPECT_EQ(kDefaultUrl, stream->GetUrlFromHeaders().spec());
 
   EXPECT_THAT(delegate.WaitForClose(), IsError(ERR_SPDY_PROTOCOL_ERROR));
 
