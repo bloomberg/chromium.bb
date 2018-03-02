@@ -261,12 +261,12 @@ bool IsValidStateForWindowsCreateFunction(
   return true;
 }
 
-#if defined(OS_CHROMEOS)
 bool ExtensionHasLockedFullscreenPermission(const Extension* extension) {
   return extension->permissions_data()->HasAPIPermission(
       APIPermission::kLockWindowFullscreenPrivate);
 }
 
+#if defined(OS_CHROMEOS)
 void SetLockedFullscreenState(Browser* browser, bool locked) {
   aura::Window* window = browser->window()->GetNativeWindow();
   // TRUSTED_PINNED is used here because that one locks the window fullscreen
@@ -615,13 +615,11 @@ ExtensionFunction::ResponseAction WindowsCreateFunction::Run() {
   }
   create_params.initial_show_state = ui::SHOW_STATE_NORMAL;
   if (create_data && create_data->state) {
-#if defined(OS_CHROMEOS)
     if (create_data->state == windows::WINDOW_STATE_LOCKED_FULLSCREEN &&
         !ExtensionHasLockedFullscreenPermission(extension())) {
       return RespondNow(
           Error(keys::kMissingLockWindowFullscreenPrivatePermission));
     }
-#endif
     create_params.initial_show_state =
         ConvertToWindowShowState(create_data->state);
   }
@@ -709,14 +707,19 @@ ExtensionFunction::ResponseAction WindowsUpdateFunction::Run() {
   // state (crbug.com/703733).
   ReportRequestedWindowState(params->update_info.state);
 
+  if (params->update_info.state == windows::WINDOW_STATE_LOCKED_FULLSCREEN &&
+      !ExtensionHasLockedFullscreenPermission(extension())) {
+    return RespondNow(
+        Error(keys::kMissingLockWindowFullscreenPrivatePermission));
+  }
+
 #if defined(OS_CHROMEOS)
   const bool is_window_trusted_pinned =
       ash::IsWindowTrustedPinned(browser->window());
   // Don't allow locked fullscreen operations on a window without the proper
   // permission (also don't allow any operations on a locked window if the
   // extension doesn't have the permission).
-  if ((is_window_trusted_pinned ||
-       params->update_info.state == windows::WINDOW_STATE_LOCKED_FULLSCREEN) &&
+  if (is_window_trusted_pinned &&
       !ExtensionHasLockedFullscreenPermission(extension())) {
     return RespondNow(
         Error(keys::kMissingLockWindowFullscreenPrivatePermission));
