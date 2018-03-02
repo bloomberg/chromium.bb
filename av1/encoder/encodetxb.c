@@ -1158,7 +1158,7 @@ int av1_optimize_txb(const struct AV1_COMP *cpi, MACROBLOCK *x, int plane,
   const int height = get_txb_high(tx_size);
   const int is_inter = is_inter_block(mbmi);
   const SCAN_ORDER *const scan_order = get_scan(tx_size, tx_type);
-  const LV_MAP_COEFF_COST txb_costs = x->coeff_costs[txs_ctx][plane_type];
+  const LV_MAP_COEFF_COST *txb_costs = &x->coeff_costs[txs_ctx][plane_type];
   const int eob_multi_size = txsize_log2_minus4[tx_size];
   const LV_MAP_EOB_COST txb_eob_costs =
       x->eob_costs[eob_multi_size][plane_type];
@@ -1187,14 +1187,14 @@ int av1_optimize_txb(const struct AV1_COMP *cpi, MACROBLOCK *x, int plane,
   // by storing the coefficient deltas in a hash table.
   // Currently disabled in speedfeatures.c
   if (eob <= HBT_EOB && eob > 0 && cpi->sf.use_hash_based_trellis) {
-    return hbt_create_hashes(&txb_info, &txb_costs, &txb_eob_costs, p, block,
+    return hbt_create_hashes(&txb_info, txb_costs, &txb_eob_costs, p, block,
                              fast_mode, rate_cost);
   }
 
   av1_txb_init_levels(qcoeff, width, height, levels);
 
   const int update =
-      optimize_txb(&txb_info, &txb_costs, &txb_eob_costs, rate_cost);
+      optimize_txb(&txb_info, txb_costs, &txb_eob_costs, rate_cost);
 
   if (update) {
     p->eobs[block] = txb_info.eob;
