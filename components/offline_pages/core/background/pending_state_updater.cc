@@ -20,7 +20,7 @@ PendingStateUpdater::~PendingStateUpdater() {}
 void PendingStateUpdater::UpdateRequestsOnLossOfNetwork() {
   requests_pending_another_download_ = false;
   request_coordinator_->GetAllRequests(
-      base::Bind(&PendingStateUpdater::SetPendingStatesAndNotifyChanged,
+      base::Bind(&PendingStateUpdater::NotifyChangedPendingStates,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -54,10 +54,9 @@ void PendingStateUpdater::SetPendingState(SavePageRequest& request) {
   }
 }
 
-void PendingStateUpdater::SetPendingStatesAndNotifyChanged(
+void PendingStateUpdater::NotifyChangedPendingStates(
     std::vector<std::unique_ptr<SavePageRequest>> requests) {
-  for (auto& request : requests) {
-    SetPendingState(*request.get());
+  for (const auto& request : requests) {
     request_coordinator_->NotifyChanged(*request);
   }
 }
