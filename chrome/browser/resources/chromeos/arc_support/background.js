@@ -114,6 +114,8 @@ class PreferenceCheckbox {
     this.checkbox_ = container.querySelector('.checkbox-option');
     this.label_ = container.querySelector('.checkbox-text');
 
+    this.isManaged_ = false;
+
     var learnMoreLink = this.label_.querySelector(learnMoreLinkId);
     if (learnMoreLink) {
       learnMoreLink.addEventListener(
@@ -144,12 +146,21 @@ class PreferenceCheckbox {
   }
 
   /**
+   * Returns if the checkbox reflects a managed setting, rather than a
+   * user-controlled setting.
+   */
+  isManaged() {
+    return this.isManaged_;
+  }
+
+  /**
    * Called when the preference value in native code is updated.
    */
   onPreferenceChanged(isEnabled, isManaged) {
     this.checkbox_.checked = isEnabled;
     this.checkbox_.disabled = isManaged;
     this.label_.disabled = isManaged;
+    this.isManaged_ = isManaged;
 
     if (this.policyIndicator_) {
       if (isManaged) {
@@ -282,6 +293,9 @@ class TermsOfServicePage {
     this.locationServiceCheckbox_ = locationServiceCheckbox;
 
     this.isManaged_ = isManaged;
+
+    this.tosContent_ = '';
+    this.tosShown_ = false;
 
     // Set event listener for webview loading.
     this.termsView_ = container.querySelector('#terms-view');
@@ -431,6 +445,7 @@ class TermsOfServicePage {
     // their language by selection at the bottom of the Terms Of Service
     // content.
     this.state_ = LoadState.LOADING;
+    this.tosContent_ = '';
     // Show loading page.
     this.loadingContainer_.hidden = false;
     this.contentContainer_.hidden = true;
@@ -443,7 +458,22 @@ class TermsOfServicePage {
     // state_ is set to ABORTED. Here, switch the view only for the
     // successful loading case.
     if (this.state_ == LoadState.LOADING) {
+      var getToSContent = {code: 'getToSContent();'};
+      termsPage.termsView_.executeScript(
+          getToSContent, this.onGetToSContent_.bind(this));
+    }
+  }
+
+  /** Callback for getToSContent. */
+  onGetToSContent_(results) {
+    if (this.state_ == LoadState.LOADING) {
+      if (!results || results.length != 1 || typeof results[0] !== 'string') {
+        this.onTermsViewLoadAborted_('unable to get ToS content');
+        return;
+      }
       this.state_ = LoadState.LOADED;
+      this.tosContent_ = results[0];
+      this.tosShown_ = true;
       this.showContent_();
 
       if (this.fastLocation_) {
@@ -486,9 +516,13 @@ class TermsOfServicePage {
   /** Called when "AGREE" button is clicked. */
   onAgree() {
     sendNativeMessage('onAgreed', {
+      tosContent: this.tosContent_,
+      tosShown: this.tosShown_,
       isMetricsEnabled: this.metricsCheckbox_.isChecked(),
       isBackupRestoreEnabled: this.backupRestoreCheckbox_.isChecked(),
-      isLocationServiceEnabled: this.locationServiceCheckbox_.isChecked()
+      isBackupRestoreManaged: this.backupRestoreCheckbox_.isManaged(),
+      isLocationServiceEnabled: this.locationServiceCheckbox_.isChecked(),
+      isLocationServiceManaged: this.locationServiceCheckbox_.isManaged()
     });
   }
 

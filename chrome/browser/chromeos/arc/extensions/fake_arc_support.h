@@ -55,8 +55,14 @@ class FakeArcSupport : public extensions::NativeMessageHost::Client {
   void ClickSendFeedbackButton();
 
   bool metrics_mode() const { return metrics_mode_; }
+  bool backup_and_restore_managed() const {
+    return backup_and_restore_managed_;
+  }
   bool backup_and_restore_mode() const { return backup_and_restore_mode_; }
+  bool location_service_managed() const { return location_service_managed_; }
   bool location_service_mode() const { return location_service_mode_; }
+  const std::string& tos_content() const { return tos_content_; }
+  bool tos_shown() const { return tos_shown_; }
 
   // Emulates checking preference box.
   void set_metrics_mode(bool mode) { metrics_mode_ = mode; }
@@ -64,6 +70,20 @@ class FakeArcSupport : public extensions::NativeMessageHost::Client {
     backup_and_restore_mode_ = mode;
   }
   void set_location_service_mode(bool mode) { location_service_mode_ = mode; }
+
+  // Allows control of whether some preferences are managed by policy.
+  void set_backup_and_restore_managed(bool managed) {
+    backup_and_restore_managed_ = managed;
+  }
+  void set_location_service_managed(bool managed) {
+    location_service_managed_ = managed;
+  }
+
+  // Allows emulation of the ToS display.
+  void set_tos_content(const std::string& tos_content) {
+    tos_content_ = tos_content;
+  }
+  void set_tos_shown(bool shown) { tos_shown_ = shown; }
 
   // Emulate setting the Active Directory auth federation URL.
   void set_active_directory_auth_federation_url(
@@ -106,8 +126,12 @@ class FakeArcSupport : public extensions::NativeMessageHost::Client {
   std::unique_ptr<extensions::NativeMessageHost> native_message_host_;
   ArcSupportHost::UIPage ui_page_ = ArcSupportHost::UIPage::NO_PAGE;
   bool metrics_mode_ = false;
+  bool backup_and_restore_managed_ = false;
   bool backup_and_restore_mode_ = false;
+  bool location_service_managed_ = false;
   bool location_service_mode_ = false;
+  std::string tos_content_;
+  bool tos_shown_ = false;
   std::string active_directory_auth_federation_url_;
   std::string active_directory_auth_device_management_url_prefix_;
   base::ObserverList<Observer> observer_list_;

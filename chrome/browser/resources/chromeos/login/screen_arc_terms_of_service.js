@@ -273,7 +273,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
 
       chrome.send(
           'arcTermsOfServiceAccept',
-          [isBackupRestoreEnabled, isLocationServiceEnabled]);
+          [isBackupRestoreEnabled, isLocationServiceEnabled, this.tosContent_]);
     },
 
     /**
@@ -388,6 +388,21 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
         return;
       }
 
+      var getToSContent = {code: 'getToSContent();'};
+      var termsView = this.getElement_('arc-tos-view');
+      termsView.executeScript(getToSContent, this.onGetToSContent_.bind(this));
+    },
+
+    /**
+     * Handles callback for getToSContent.
+     */
+    onGetToSContent_: function(results) {
+      if (!results || results.length != 1 || typeof results[0] !== 'string') {
+        this.showError_();
+        return;
+      }
+
+      this.tosContent_ = results[0];
       this.removeClass_('arc-tos-loading');
       this.removeClass_('error');
       this.addClass_('arc-tos-loaded');
@@ -412,6 +427,14 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
      * Handles event when terms view cannot be loaded.
      */
     onTermsViewErrorOccurred: function(details) {
+      this.showError_();
+    },
+
+    /**
+     * Shows error UI when terms view cannot be loaded or terms content cannot
+     * be fetched from webview.
+     */
+    showError_: function() {
       this.termsError = true;
       this.removeClass_('arc-tos-loading');
       this.removeClass_('arc-tos-loaded');

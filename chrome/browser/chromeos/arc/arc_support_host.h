@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -168,6 +169,12 @@ class ArcSupportHost : public arc::ArcSupportMessageHost::Observer,
 
   void SetRequestOpenAppCallbackForTesting(
       const RequestOpenAppCallback& callback);
+
+  // Computes consent IDs based on the content of the Play ToS. Useful as the
+  // Play ToS is not contained within the Chrome binary, but rather fetched
+  // live.
+  // Returns a vector of consent "IDs" based on the Play ToS content.
+  static std::vector<int> ComputePlayToSConsentIds(const std::string& content);
 
  private:
   struct PreferenceCheckboxData {

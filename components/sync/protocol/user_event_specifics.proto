@@ -93,6 +93,9 @@ message UserEventSpecifics {
     enum Feature {
       FEATURE_UNSPECIFIED = 0;
       CHROME_SYNC = 1;
+      PLAY_STORE = 2;
+      BACKUP_AND_RESTORE = 3;
+      GOOGLE_LOCATION_SERVICE = 4;
     }
     optional Feature feature = 1;
     // Ids of the strings of the consent text presented to the user.

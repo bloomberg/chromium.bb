@@ -32,12 +32,12 @@ UserEventSpecifics::UserConsent::Feature FeatureToProtoEnum(
   switch (feature) {
     case consent_auditor::Feature::CHROME_SYNC:
       return UserEventSpecifics::UserConsent::CHROME_SYNC;
-    case consent_auditor::Feature::FEATURE_COUNT:
-      // TODO(crbug.com/645032): There is currently just one supported feature,
-      // but histograms with only one bucket are not supported. Remove this hack
-      // when more features are added, or when crbug.com/645032 is fixed.
-      NOTREACHED();
-      return UserEventSpecifics::UserConsent::FEATURE_UNSPECIFIED;
+    case consent_auditor::Feature::PLAY_STORE:
+      return UserEventSpecifics::UserConsent::PLAY_STORE;
+    case consent_auditor::Feature::BACKUP_AND_RESTORE:
+      return UserEventSpecifics::UserConsent::BACKUP_AND_RESTORE;
+    case consent_auditor::Feature::GOOGLE_LOCATION_SERVICE:
+      return UserEventSpecifics::UserConsent::GOOGLE_LOCATION_SERVICE;
   }
   NOTREACHED();
   return UserEventSpecifics::UserConsent::FEATURE_UNSPECIFIED;
@@ -88,18 +88,18 @@ void ConsentAuditor::RecordGaiaConsent(
   if (!base::FeatureList::IsEnabled(switches::kSyncUserConsentEvents))
     return;
 
-  DCHECK_NE(consent_auditor::Feature::FEATURE_COUNT, feature);
+  DCHECK_LE(feature, consent_auditor::Feature::FEATURE_LAST);
 
   switch (status) {
     case ConsentStatus::GIVEN:
       UMA_HISTOGRAM_ENUMERATION(
           "Privacy.ConsentAuditor.ConsentGiven.Feature", feature,
-          static_cast<int>(consent_auditor::Feature::FEATURE_COUNT));
+          static_cast<int>(consent_auditor::Feature::FEATURE_LAST) + 1);
       break;
     case ConsentStatus::NOT_GIVEN:
       UMA_HISTOGRAM_ENUMERATION(
           "Privacy.ConsentAuditor.ConsentNotGiven.Feature", feature,
-          static_cast<int>(consent_auditor::Feature::FEATURE_COUNT));
+          static_cast<int>(consent_auditor::Feature::FEATURE_LAST) + 1);
       break;
   }
 

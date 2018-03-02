@@ -4,9 +4,15 @@
 
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
 
+#include <vector>
+
 #include "chrome/browser/chromeos/arc/extensions/fake_arc_support.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/consent_auditor/consent_auditor_factory.h"
+#include "chrome/browser/sync/user_event_service_factory.h"
+#include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/consent_auditor/consent_auditor.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -54,17 +60,43 @@ class MockErrorDelegateNonStrict : public ArcSupportHost::ErrorDelegate {
 
 using MockErrorDelegate = StrictMock<MockErrorDelegateNonStrict>;
 
-class ArcSupportHostTest : public testing::Test {
+// TODO(jhorwich): Integrate with centralized FakeConsentAuditor.
+class FakeConsentAuditor : public consent_auditor::ConsentAuditor {
+ public:
+  static std::unique_ptr<KeyedService> Build(content::BrowserContext* context) {
+    return std::make_unique<FakeConsentAuditor>(
+        Profile::FromBrowserContext(context));
+  }
+
+  explicit FakeConsentAuditor(Profile* profile)
+      : ConsentAuditor(
+            profile->GetPrefs(),
+            browser_sync::UserEventServiceFactory::GetForProfile(profile),
+            std::string(),
+            std::string()) {}
+
+  ~FakeConsentAuditor() override = default;
+
+  void RecordGaiaConsent(consent_auditor::Feature feature,
+                         const std::vector<int>& description_grd_ids,
+                         int confirmation_grd_id,
+                         consent_auditor::ConsentStatus status) override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FakeConsentAuditor);
+};
+
+class ArcSupportHostTest : public BrowserWithTestWindowTest {
  public:
   ArcSupportHostTest() = default;
   ~ArcSupportHostTest() override = default;
 
   void SetUp() override {
+    BrowserWithTestWindowTest::SetUp();
     user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
         std::make_unique<chromeos::FakeChromeUserManager>());
 
-    profile_ = std::make_unique<TestingProfile>();
-    support_host_ = std::make_unique<ArcSupportHost>(profile_.get());
+    support_host_ = std::make_unique<ArcSupportHost>(profile());
     fake_arc_support_ = std::make_unique<FakeArcSupport>(support_host_.get());
   }
 
@@ -75,8 +107,9 @@ class ArcSupportHostTest : public testing::Test {
 
     fake_arc_support_.reset();
     support_host_.reset();
-    profile_.reset();
     user_manager_enabler_.reset();
+
+    BrowserWithTestWindowTest::TearDown();
   }
 
   ArcSupportHost* support_host() { return support_host_.get(); }
@@ -107,11 +140,17 @@ class ArcSupportHostTest : public testing::Test {
                                             kFakeActiveDirectoryPrefix);
   }
 
- private:
-  // Fake as if the current testing thread is UI thread.
-  content::TestBrowserThreadBundle bundle_;
+  FakeConsentAuditor* consent_auditor() {
+    return static_cast<FakeConsentAuditor*>(
+        ConsentAuditorFactory::GetForProfile(profile()));
+  }
 
-  std::unique_ptr<TestingProfile> profile_;
+  // BrowserWithTestWindowTest:
+  TestingProfile::TestingFactories GetTestingFactories() override {
+    return {{ConsentAuditorFactory::GetInstance(), FakeConsentAuditor::Build}};
+  }
+
+ private:
   std::unique_ptr<ArcSupportHost> support_host_;
   std::unique_ptr<FakeArcSupport> fake_arc_support_;
   std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
