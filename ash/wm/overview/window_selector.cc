@@ -757,6 +757,12 @@ void WindowSelector::OnAttemptToReactivateWindow(aura::Window* request_active,
 
 void WindowSelector::ContentsChanged(views::Textfield* sender,
                                      const base::string16& new_contents) {
+  // If the user enters underline mode via CTRL+SHIFT+U, ContentsChanged
+  // will get called after shutdown has started. Prevent anything from
+  // happening if shutdown has started (grids have been cleared).
+  if (grid_list_.size() < 1)
+    return;
+
   text_filter_string_length_ = new_contents.length();
   if (!text_filter_string_length_)
     num_times_textfield_cleared_++;
