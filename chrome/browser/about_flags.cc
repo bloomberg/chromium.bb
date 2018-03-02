@@ -3426,8 +3426,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableManualFallbacksFillingName,
      flag_descriptions::kEnableManualFallbacksFillingDescription,
      kOsDesktop | kOsAndroid,
-     FEATURE_VALUE_TYPE(
-         password_manager::features::kManualFallbacksFilling)},
+     FEATURE_VALUE_TYPE(password_manager::features::kManualFallbacksFilling)},
 
 #if !defined(OS_ANDROID)
     {"voice-search-on-local-ntp", flag_descriptions::kVoiceSearchOnLocalNtpName,
@@ -3615,7 +3614,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"ash-enable-keyboard-shortcut-viewer",
      flag_descriptions::kAshEnableKeyboardShortcutViewerName,
      flag_descriptions::kAshEnableKeyboardShortcutViewerDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(ash::switches::kAshEnableKeyboardShortcutViewer)},
+     FEATURE_VALUE_TYPE(ash::features::kKeyboardShortcutViewer)},
 
     {"ash-disable-login-dim-and-blur",
      flag_descriptions::kAshDisableLoginDimAndBlurName,
