@@ -64,6 +64,8 @@ void VrGLThread::Init() {
   }
   auto* keyboard_delegate =
       !keyboard_delegate_ ? nullptr : keyboard_delegate_.get();
+  if (!keyboard_delegate)
+    ui_initial_state_.needs_keyboard_update = true;
   auto ui = std::make_unique<Ui>(this, this, keyboard_delegate,
                                  text_input_delegate_.get(), ui_initial_state_);
   if (keyboard_enabled) {

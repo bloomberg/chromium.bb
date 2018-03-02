@@ -513,6 +513,21 @@ public class VrShellImpl
         }, UiUnsupportedMode.VOICE_SEARCH_NEEDS_RECORD_AUDIO_OS_PERMISSION);
     }
 
+    // Called when the user has an older GVR Keyboard installed on their device and we need them to
+    // have a newer one.
+    @CalledByNative
+    public void onNeedsKeyboardUpdate() {
+        VrShellDelegate.requestToExitVr(new OnExitVrRequestListener() {
+            @Override
+            public void onSucceeded() {
+                mDelegate.promptForKeyboardUpdate();
+            }
+
+            @Override
+            public void onDenied() {}
+        }, UiUnsupportedMode.NEEDS_KEYBOARD_UPDATE);
+    }
+
     // Exits CCT, returning to the app that opened it.
     @CalledByNative
     public void exitCct() {

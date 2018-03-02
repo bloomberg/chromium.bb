@@ -17,9 +17,13 @@
 
 // This method is supplied by the VR keyboard shim, but is not part of the
 // GVR interface.
-bool gvr_keyboard_supports_selection(gvr_keyboard_context* context);
+bool gvr_keyboard_supports_selection();
+int64_t gvr_keyboard_version();
 
 namespace vr {
+
+// The minimum keyboard version required for the needed features to work.
+constexpr int64_t kMinRequiredApiVersion = 2;
 
 namespace {
 
@@ -38,6 +42,12 @@ std::unique_ptr<GvrKeyboardDelegate> GvrKeyboardDelegate::Create() {
   auto* gvr_keyboard = gvr_keyboard_create(callback, OnKeyboardEvent);
   if (!gvr_keyboard)
     return nullptr;
+
+  if (gvr_keyboard_version() < kMinRequiredApiVersion) {
+    gvr_keyboard_destroy(&gvr_keyboard);
+    return nullptr;
+  }
+
   delegate->Init(gvr_keyboard);
   return delegate;
 }
@@ -126,7 +136,7 @@ void GvrKeyboardDelegate::Draw(const CameraModel& model) {
 }
 
 bool GvrKeyboardDelegate::SupportsSelection() {
-  return gvr_keyboard_supports_selection(gvr_keyboard_);
+  return gvr_keyboard_supports_selection();
 }
 
 void GvrKeyboardDelegate::OnTouchStateUpdated(

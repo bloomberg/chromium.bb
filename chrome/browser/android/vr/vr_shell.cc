@@ -729,6 +729,11 @@ void VrShell::OnUnsupportedMode(UiUnsupportedMode mode) {
       Java_VrShellImpl_onUnhandledPermissionPrompt(env, j_vr_shell_);
       return;
     }
+    case UiUnsupportedMode::kNeedsKeyboardUpdate: {
+      JNIEnv* env = base::android::AttachCurrentThread();
+      Java_VrShellImpl_onNeedsKeyboardUpdate(env, j_vr_shell_);
+      return;
+    }
     case UiUnsupportedMode::kCount:
       NOTREACHED();  // Should never be used as a mode.
       return;
