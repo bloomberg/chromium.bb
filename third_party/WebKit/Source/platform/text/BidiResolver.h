@@ -215,7 +215,6 @@ class NoIsolatedRun {};
 template <class Iterator, class Run, class IsolatedRun = NoIsolatedRun>
 class BidiResolver final {
   DISALLOW_NEW();
-  WTF_MAKE_NONCOPYABLE(BidiResolver);
 
  public:
   BidiResolver()
@@ -382,6 +381,8 @@ class BidiResolver final {
 
   Vector<BidiEmbedding, 8> current_explicit_embedding_sequence_;
   HashMap<Run*, MidpointState<Iterator>> midpoint_state_for_isolated_run_;
+
+  DISALLOW_COPY_AND_ASSIGN(BidiResolver);
 };
 
 #if DCHECK_IS_ON()

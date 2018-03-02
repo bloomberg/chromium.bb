@@ -32,7 +32,6 @@ namespace blink {
 template <class Run>
 class BidiRunList final {
   DISALLOW_NEW();
-  WTF_MAKE_NONCOPYABLE(BidiRunList);
 
  public:
   BidiRunList()
@@ -70,6 +69,8 @@ class BidiRunList final {
   Run* last_run_;
   Run* logically_last_run_;
   unsigned run_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(BidiRunList);
 };
 
 template <class Run>
