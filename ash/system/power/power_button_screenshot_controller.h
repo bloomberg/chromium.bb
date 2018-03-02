@@ -19,8 +19,6 @@ class TickClock;
 
 namespace ash {
 
-class TabletPowerButtonController;
-
 // Handles power button screenshot accelerator. The screenshot condition is
 // pressing power button and volume down key simultaneously, similar to Android
 // phones.
@@ -31,10 +29,8 @@ class ASH_EXPORT PowerButtonScreenshotController : public ui::EventHandler {
   static constexpr base::TimeDelta kScreenshotChordDelay =
       base::TimeDelta::FromMilliseconds(150);
 
-  PowerButtonScreenshotController(
-      TabletPowerButtonController* tablet_controller,
-      base::TickClock* tick_clock,
-      bool force_clamshell_power_button);
+  PowerButtonScreenshotController(base::TickClock* tick_clock,
+                                  bool force_clamshell_power_button);
   ~PowerButtonScreenshotController() override;
 
   // Returns true if power button event is consumed by |this|, otherwise false.
@@ -86,11 +82,11 @@ class ASH_EXPORT PowerButtonScreenshotController : public ui::EventHandler {
   // Runs OnClamshellTimeout to start clamshell power button behavior.
   base::OneShotTimer clamshell_power_button_timer_;
 
-  TabletPowerButtonController* tablet_controller_;  // Not owned.
-
   // Time source for performed action times.
   base::TickClock* tick_clock_;  // Not owned.
 
+  // TODO(minch): Remove |force_clamshell_power_button_| related logic. Since
+  // there is no lock animation within 150ms.
   // Initialized by PowerButtonController to indicate using non-tablet-style
   // power button behavior even if we're running on a convertible device.
   const bool force_clamshell_power_button_;

@@ -8,37 +8,44 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/system/power/backlights_forced_off_setter.h"
+#include "ash/wm/lock_state_observer.h"
+#include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "chromeos/accelerometer/accelerometer_reader.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "ui/display/manager/chromeos/display_configurator.h"
-#include "ui/events/event_handler.h"
 
 namespace base {
 class TickClock;
 class TimeTicks;
 }  // namespace base
 
+namespace views {
+class Widget;
+}  // namespace views
+
 namespace ash {
 
-class BacklightsForcedOffSetter;
 class LockStateController;
 class PowerButtonDisplayController;
 class PowerButtonScreenshotController;
-class TabletPowerButtonController;
 
-// Handles power button and lock button events. For convertible/tablet devices,
-// power button events are handled by TabletPowerButtonController to
-// perform tablet power button behavior, except forced clamshell set by
-// command line. For clamshell devices, power button acts locking or shutdown.
-// On tablet mode, power button may also be consumed to take a screenshot.
+// Handles power button and lock button events. Holding the power button
+// displays a menu and later shuts down on all devices. Tapping the power button
+// of convertible/slate/detachable devices (except forced clamshell set by
+// command line) will turn screen off but nothing will happen for clamshell
+// devices. In tablet mode, power button may also be consumed to take a
+// screenshot.
 class ASH_EXPORT PowerButtonController
-    : public ui::EventHandler,
-      public display::DisplayConfigurator::Observer,
+    : public display::DisplayConfigurator::Observer,
       public chromeos::PowerManagerClient::Observer,
-      public chromeos::AccelerometerReader::Observer {
+      public chromeos::AccelerometerReader::Observer,
+      public BacklightsForcedOffSetter::Observer,
+      public TabletModeObserver,
+      public LockStateObserver {
  public:
   enum class ButtonType {
     // Indicates normal power button type.
@@ -50,20 +57,41 @@ class ASH_EXPORT PowerButtonController
     LEGACY,
   };
 
+  // Amount of time since last screen state change that power button event needs
+  // to be ignored.
+  static constexpr base::TimeDelta kScreenStateChangeDelay =
+      base::TimeDelta::FromMilliseconds(500);
+
+  // Ignore button-up events occurring within this many milliseconds of the
+  // previous button-up event. This prevents us from falling behind if the power
+  // button is pressed repeatedly.
+  static constexpr base::TimeDelta kIgnoreRepeatedButtonUpDelay =
+      base::TimeDelta::FromMilliseconds(500);
+
+  // Amount of time since last SuspendDone() that power button event needs to be
+  // ignored.
+  static constexpr base::TimeDelta kIgnorePowerButtonAfterResumeDelay =
+      base::TimeDelta::FromSeconds(2);
+
   explicit PowerButtonController(
       BacklightsForcedOffSetter* backlights_forced_off_setter);
   ~PowerButtonController() override;
 
-  // Handles clamshell power button behavior.
+  // Handles power button behavior.
   void OnPowerButtonEvent(bool down, const base::TimeTicks& timestamp);
 
   // Handles lock button behavior.
   void OnLockButtonEvent(bool down, const base::TimeTicks& timestamp);
 
-  // ui::EventHandler:
-  void OnKeyEvent(ui::KeyEvent* event) override;
-  void OnMouseEvent(ui::MouseEvent* event) override;
-  void OnTouchEvent(ui::TouchEvent* event) override;
+  // Cancels the ongoing power button behavior. This can be called while the
+  // button is still held to prevent any action from being taken on release.
+  void CancelPowerButtonEvent();
+
+  // True if the menu is opened.
+  bool IsMenuOpened() const;
+
+  // Dismisses the menu.
+  void DismissMenu();
 
   // display::DisplayConfigurator::Observer:
   void OnDisplayModeChanged(
@@ -73,9 +101,11 @@ class ASH_EXPORT PowerButtonController
   void BrightnessChanged(int level, bool user_initiated) override;
   void PowerButtonEventReceived(bool down,
                                 const base::TimeTicks& timestamp) override;
+  void SuspendImminent(power_manager::SuspendImminent::Reason reason) override;
+  void SuspendDone(const base::TimeDelta& sleep_duration) override;
 
-  // Initializes the |tablet_controller_| and |screenshot_controller_| according
-  // to the tablet mode switch in |result|.
+  // Initializes |turn_screen_off_for_tap_| and |screenshot_controller_|
+  // according to the tablet mode switch in |result|.
   void OnGetSwitchStates(
       base::Optional<chromeos::PowerManagerClient::SwitchStates> result);
 
@@ -85,39 +115,59 @@ class ASH_EXPORT PowerButtonController
   void OnAccelerometerUpdated(
       scoped_refptr<const chromeos::AccelerometerUpdate> update) override;
 
+  // BacklightsForcedOffSetter::Observer:
+  void OnBacklightsForcedOffChanged(bool forced_off) override;
+  void OnScreenStateChanged(
+      BacklightsForcedOffSetter::ScreenState screen_state) override;
+
+  // TabletModeObserver:
+  void OnTabletModeStarted() override;
+  void OnTabletModeEnded() override;
+
+  // LockStateObserver:
+  void OnLockStateEvent(LockStateObserver::EventType event) override;
+
+  // TODO(minch): Move all of these test related get/set functions to
+  // PowerButtonControllerTestApi.
   // Overrides the tick clock used by |this| for testing.
   void SetTickClockForTesting(base::TickClock* tick_clock);
 
-  // If |display_off_timer_| is running, stops it, runs its task, and returns
-  // true. Otherwise, returns false.
-  bool TriggerDisplayOffTimerForTesting() WARN_UNUSED_RESULT;
+  bool turn_screen_off_for_tap_for_test() const {
+    return turn_screen_off_for_tap_;
+  }
 
   PowerButtonScreenshotController* screenshot_controller_for_test() {
     return screenshot_controller_.get();
-  }
-
-  TabletPowerButtonController* tablet_power_button_controller_for_test() {
-    return tablet_controller_.get();
   }
 
   void set_power_button_type_for_test(ButtonType button_type) {
     button_type_ = button_type;
   }
 
+  void set_turn_screen_off_for_tap_for_test(bool turn_screen_off_for_tap) {
+    turn_screen_off_for_tap_ = turn_screen_off_for_tap;
+  }
+
  private:
+  friend class PowerButtonControllerTestApi;
+
+  // Stops |power_button_menu_timer_|, |shutdown_timer_| and dismisses the power
+  // button menu.
+  void StopTimersAndDismissMenu();
+
+  // Called by |power_button_menu_timer_| to start showing power button menu.
+  void OnPowerButtonMenuTimeout();
+
+  // Called by |shutdown_timer_| to turn the screen off and request shutdown.
+  void OnShutdownTimeout();
+
   // Updates |button_type_| and |force_clamshell_power_button_| based on the
   // current command line.
   void ProcessCommandLine();
 
-  // Called by |display_off_timer_| to force backlights off shortly after the
-  // screen is locked. Only used when |force_clamshell_power_button_| is true.
-  void ForceDisplayOffAfterLock();
-
-  // Initializes |tablet_controller_| and |screenshot_controller_|.
-  void InitControllerMembers();
-
-  // Used to force backlights off, when needed.
-  BacklightsForcedOffSetter* backlights_forced_off_setter_;  // Not owned.
+  // Initializes tablet power button behavior related members
+  // |turn_screen_off_for_tap_| and |screenshot_controller_|.
+  void InitTabletPowerButtonMembers();
 
   // Are the power or lock buttons currently held?
   bool power_button_down_ = false;
@@ -138,20 +188,24 @@ class ASH_EXPORT PowerButtonController
   // mode.
   bool observe_accelerometer_events_ = false;
 
-  // True if the device should show power button menu when the power button is
-  // long-pressed.
-  bool show_power_button_menu_ = false;
-
   // True if the device should use non-tablet-style power button behavior even
   // if it is a convertible device.
   bool force_clamshell_power_button_ = false;
 
-  // True if the lock animation was started for the last power button down
-  // event.
-  bool started_lock_animation_for_power_button_down_ = false;
-
   // True if the device has tablet mode switch.
   bool has_tablet_mode_switch_ = false;
+
+  // True if should turn screen off when tapping the power button.
+  bool turn_screen_off_for_tap_ = false;
+
+  // True if the screen was off when the power button was pressed.
+  bool screen_off_when_power_button_down_ = false;
+
+  // True if the next button release event should force the display off.
+  bool force_off_on_button_up_ = false;
+
+  // Used to force backlights off, when needed.
+  BacklightsForcedOffSetter* backlights_forced_off_setter_;  // Not owned.
 
   LockStateController* lock_state_controller_;  // Not owned.
 
@@ -164,12 +218,26 @@ class ASH_EXPORT PowerButtonController
   // Handles events for power button screenshot.
   std::unique_ptr<PowerButtonScreenshotController> screenshot_controller_;
 
-  // Handles events for convertible/tablet devices.
-  std::unique_ptr<TabletPowerButtonController> tablet_controller_;
+  // Saves the most recent timestamp that powerd resumed from suspend,
+  // updated in SuspendDone().
+  base::TimeTicks last_resume_time_;
 
-  // Used to run ForceDisplayOffAfterLock() shortly after the screen is locked.
-  // Only started when |force_clamshell_power_button_| is true.
-  base::OneShotTimer display_off_timer_;
+  // Saves the most recent timestamp that power button was released.
+  base::TimeTicks last_button_up_time_;
+
+  // Started when the power button is pressed and stopped when it's released.
+  // Runs OnShutdownTimeout() to start shutdown.
+  base::OneShotTimer shutdown_timer_;
+
+  // Started when the power button is pressed and stopped when it's released.
+  // Runs OnPowerButtonMenuTimeout() to show the power button menu.
+  base::OneShotTimer power_button_menu_timer_;
+
+  // The fullscreen widget of power button menu.
+  std::unique_ptr<views::Widget> menu_widget_;
+
+  ScopedObserver<BacklightsForcedOffSetter, BacklightsForcedOffSetter::Observer>
+      backlights_forced_off_observer_;
 
   base::WeakPtrFactory<PowerButtonController> weak_factory_;
 

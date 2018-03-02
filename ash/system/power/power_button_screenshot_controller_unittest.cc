@@ -9,9 +9,9 @@
 #include "ash/login_status.h"
 #include "ash/shell.h"
 #include "ash/system/power/power_button_controller.h"
+#include "ash/system/power/power_button_controller_test_api.h"
 #include "ash/system/power/power_button_screenshot_controller_test_api.h"
 #include "ash/system/power/power_button_test_base.h"
-#include "ash/system/power/tablet_power_button_controller_test_api.h"
 #include "ash/test_screenshot_delegate.h"
 #include "ash/wm/lock_state_controller_test_api.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -39,7 +39,7 @@ class PowerButtonScreenshotControllerTest : public PowerButtonTestBase {
     // Advance a duration longer than |kIgnorePowerButtonAfterResumeDelay| to
     // avoid events being ignored.
     tick_clock_.Advance(
-        TabletPowerButtonController::kIgnorePowerButtonAfterResumeDelay +
+        PowerButtonController::kIgnorePowerButtonAfterResumeDelay +
         base::TimeDelta::FromMilliseconds(2));
   }
 
@@ -181,52 +181,50 @@ TEST_F(PowerButtonScreenshotControllerTest,
   EXPECT_FALSE(LastKeyConsumed());
 }
 
-// Tests volume key pressed cancels the ongoing convertible power button.
+// Tests volume key pressed cancels the ongoing power button behavior.
 TEST_F(PowerButtonScreenshotControllerTest,
-       PowerButtonPressedFirst_VolumeKeyCancelConvertiblePowerButton) {
-  // Tests volume down key can stop convertible power button's shutdown timer.
+       PowerButtonPressedFirst_VolumeKeyCancelPowerButton) {
+  // Tests volume down key can stop power button's shutdown timer and power
+  // button menu timer.
   PressPowerButton();
-  EXPECT_TRUE(tablet_test_api_->ShutdownTimerIsRunning());
+  EXPECT_TRUE(power_button_test_api_->ShutdownTimerIsRunning());
+  EXPECT_TRUE(power_button_test_api_->PowerButtonMenuTimerIsRunning());
   PressKey(ui::VKEY_VOLUME_DOWN);
-  EXPECT_FALSE(tablet_test_api_->ShutdownTimerIsRunning());
+  EXPECT_FALSE(power_button_test_api_->ShutdownTimerIsRunning());
+  EXPECT_FALSE(power_button_test_api_->PowerButtonMenuTimerIsRunning());
   ReleasePowerButton();
   ReleaseKey(ui::VKEY_VOLUME_DOWN);
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
 
-  // Tests volume down key can stop shutdown animation timer.
+  // Tests volume up key can stop power button's shutdown timer and power button
+  // menu timer. Also tests that volume up key is not consumed.
   PressPowerButton();
-  EXPECT_TRUE(tablet_test_api_->TriggerShutdownTimeout());
-  EXPECT_TRUE(lock_state_test_api_->shutdown_timer_is_running());
+  EXPECT_TRUE(power_button_test_api_->ShutdownTimerIsRunning());
+  EXPECT_TRUE(power_button_test_api_->PowerButtonMenuTimerIsRunning());
+  PressKey(ui::VKEY_VOLUME_UP);
+  EXPECT_FALSE(LastKeyConsumed());
+  EXPECT_FALSE(power_button_test_api_->ShutdownTimerIsRunning());
+  EXPECT_FALSE(power_button_test_api_->PowerButtonMenuTimerIsRunning());
+  ReleasePowerButton();
+  ReleaseKey(ui::VKEY_VOLUME_UP);
+  EXPECT_FALSE(power_manager_client_->backlights_forced_off());
+  EXPECT_FALSE(LastKeyConsumed());
+}
+
+// Tests volume key pressed can not cancel the started real shutdown.
+TEST_F(PowerButtonScreenshotControllerTest,
+       PowerButtonPressedFirst_VolumeKeyNotCancelPowerButton) {
+  // Power button shutdown behavior will turn screen off and then start the real
+  // shutdown.
+  PressPowerButton();
+  EXPECT_TRUE(power_button_test_api_->TriggerShutdownTimeout());
+  ShutdownSoundPlayed();
+  EXPECT_TRUE(lock_state_test_api_->real_shutdown_timer_is_running());
   PressKey(ui::VKEY_VOLUME_DOWN);
-  EXPECT_FALSE(lock_state_test_api_->shutdown_timer_is_running());
   ReleasePowerButton();
   ReleaseKey(ui::VKEY_VOLUME_DOWN);
-  EXPECT_FALSE(power_manager_client_->backlights_forced_off());
-
-  // Tests volume up key can stop convertible power button's shutdown timer.
-  // Also tests that volume up key is not consumed.
-  PressPowerButton();
-  EXPECT_TRUE(tablet_test_api_->ShutdownTimerIsRunning());
-  PressKey(ui::VKEY_VOLUME_UP);
-  EXPECT_FALSE(LastKeyConsumed());
-  EXPECT_FALSE(tablet_test_api_->ShutdownTimerIsRunning());
-  ReleasePowerButton();
-  ReleaseKey(ui::VKEY_VOLUME_UP);
-  EXPECT_FALSE(power_manager_client_->backlights_forced_off());
-  EXPECT_FALSE(LastKeyConsumed());
-
-  // Tests volume up key can stop shutdown animation timer.
-  // Also tests that volume up key is not consumed.
-  PressPowerButton();
-  EXPECT_TRUE(tablet_test_api_->TriggerShutdownTimeout());
-  EXPECT_TRUE(lock_state_test_api_->shutdown_timer_is_running());
-  PressKey(ui::VKEY_VOLUME_UP);
-  EXPECT_FALSE(LastKeyConsumed());
-  EXPECT_FALSE(lock_state_test_api_->shutdown_timer_is_running());
-  ReleasePowerButton();
-  ReleaseKey(ui::VKEY_VOLUME_UP);
-  EXPECT_FALSE(power_manager_client_->backlights_forced_off());
-  EXPECT_FALSE(LastKeyConsumed());
+  EXPECT_TRUE(power_manager_client_->backlights_forced_off());
+  EXPECT_TRUE(lock_state_test_api_->real_shutdown_timer_is_running());
 }
 
 // Tests volume down key pressed first and meets screenshot chord condition.
@@ -296,23 +294,25 @@ TEST_F(PowerButtonScreenshotControllerTest,
   EXPECT_FALSE(LastKeyConsumed());
 }
 
-// Tests volume key pressed first invalidates convertible power button behavior.
+// Tests volume key pressed first invalidates the power button behavior.
 TEST_F(PowerButtonScreenshotControllerTest,
        VolumeKeyPressedFirst_InvalidateConvertiblePowerButton) {
-  // Tests volume down key invalidates convertible power button behavior.
+  // Tests volume down key invalidates the power button behavior.
   PressKey(ui::VKEY_VOLUME_DOWN);
   PressPowerButton();
-  EXPECT_FALSE(tablet_test_api_->ShutdownTimerIsRunning());
+  EXPECT_FALSE(power_button_test_api_->ShutdownTimerIsRunning());
+  EXPECT_FALSE(power_button_test_api_->PowerButtonMenuTimerIsRunning());
   ReleasePowerButton();
   ReleaseKey(ui::VKEY_VOLUME_DOWN);
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
 
-  // Tests volume up key invalidates convertible power button behavior. Also
+  // Tests volume up key invalidates the power button behavior. Also
   // tests that volume up key is not consumed.
   PressKey(ui::VKEY_VOLUME_UP);
   PressPowerButton();
   EXPECT_FALSE(LastKeyConsumed());
-  EXPECT_FALSE(tablet_test_api_->ShutdownTimerIsRunning());
+  EXPECT_FALSE(power_button_test_api_->ShutdownTimerIsRunning());
+  EXPECT_FALSE(power_button_test_api_->PowerButtonMenuTimerIsRunning());
   ReleasePowerButton();
   ReleaseKey(ui::VKEY_VOLUME_UP);
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
@@ -345,12 +345,16 @@ TEST_F(ClamshellPowerButtonScreenshotControllerTest,
        PowerButtonPressedFirst_UserSessionWaitForVolumeDownKey) {
   Initialize(ButtonType::NORMAL, LoginStatus::USER);
   PressPowerButton();
-  // Verifies that lock animation is not running when waiting for volume key.
+  // Verifies that power button menu timer and shutdown timer are not running
+  // when waiting for volume key.
   EXPECT_TRUE(screenshot_test_api_->ClamshellPowerButtonTimerIsRunning());
-  EXPECT_FALSE(lock_state_test_api_->is_animating_lock());
-  // Starts lock animation once it is done with waiting.
+  EXPECT_FALSE(power_button_test_api_->PowerButtonMenuTimerIsRunning());
+  EXPECT_FALSE(power_button_test_api_->ShutdownTimerIsRunning());
+  // Starts power button menu timer and shutdown timer once they are done with
+  // waiting.
   EXPECT_TRUE(screenshot_test_api_->TriggerClamshellPowerButtonTimer());
-  EXPECT_TRUE(lock_state_test_api_->is_animating_lock());
+  EXPECT_TRUE(power_button_test_api_->PowerButtonMenuTimerIsRunning());
+  EXPECT_TRUE(power_button_test_api_->ShutdownTimerIsRunning());
   ReleasePowerButton();
 }
 
@@ -360,13 +364,16 @@ TEST_F(ClamshellPowerButtonScreenshotControllerTest,
        PowerButtonPressedFirst_NonUserSessionWaitForVolumeDownKey) {
   Initialize(ButtonType::NORMAL, LoginStatus::NOT_LOGGED_IN);
   PressPowerButton();
-  // Verifies that shutdown animation is not running when waiting for volume
-  // key.
+  // Verifies that power button menu timer and shutdown timer are not running
+  // when waiting for volume key.
   EXPECT_TRUE(screenshot_test_api_->ClamshellPowerButtonTimerIsRunning());
-  EXPECT_FALSE(lock_state_test_api_->shutdown_timer_is_running());
-  // Starts shutdown animation once it is done with waiting.
+  EXPECT_FALSE(power_button_test_api_->PowerButtonMenuTimerIsRunning());
+  EXPECT_FALSE(power_button_test_api_->ShutdownTimerIsRunning());
+  // Starts power button menu timer and shutdown timer once they are done with
+  // waiting.
   EXPECT_TRUE(screenshot_test_api_->TriggerClamshellPowerButtonTimer());
-  EXPECT_TRUE(lock_state_test_api_->shutdown_timer_is_running());
+  EXPECT_TRUE(power_button_test_api_->PowerButtonMenuTimerIsRunning());
+  EXPECT_TRUE(power_button_test_api_->ShutdownTimerIsRunning());
   ReleasePowerButton();
 }
 
@@ -410,68 +417,6 @@ TEST_F(ClamshellPowerButtonScreenshotControllerTest,
   EXPECT_TRUE(screenshot_test_api_->ClamshellPowerButtonTimerIsRunning());
   ReleasePowerButton();
   EXPECT_FALSE(screenshot_test_api_->ClamshellPowerButtonTimerIsRunning());
-}
-
-// Same as PowerButtonTestBase except that switches::kShowPowerButtonMenu is
-// set.
-class PowerButtonScreenshotControllerShowMenuTest
-    : public PowerButtonScreenshotControllerTest {
- public:
-  PowerButtonScreenshotControllerShowMenuTest() {
-    set_show_power_button_menu(true);
-  }
-  ~PowerButtonScreenshotControllerShowMenuTest() override = default;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PowerButtonScreenshotControllerShowMenuTest);
-};
-
-// Tests volume key pressed stops showing the power button menu.
-TEST_F(PowerButtonScreenshotControllerShowMenuTest,
-       PowerButtonPressedFirst_VolumeKeyCancelTabletPowerButton) {
-  // Tests volume down key can stop the power button menu timer.
-  PressPowerButton();
-  EXPECT_TRUE(tablet_test_api_->PowerButtonMenuTimerIsRunning());
-  PressKey(ui::VKEY_VOLUME_DOWN);
-  EXPECT_FALSE(tablet_test_api_->PowerButtonMenuTimerIsRunning());
-  ReleasePowerButton();
-  ReleaseKey(ui::VKEY_VOLUME_DOWN);
-  EXPECT_FALSE(power_manager_client_->backlights_forced_off());
-
-  // Tests volume up key can stop power button menu timer. Also tests that
-  // volume up key is not consumed.
-  PressPowerButton();
-  EXPECT_TRUE(tablet_test_api_->PowerButtonMenuTimerIsRunning());
-  PressKey(ui::VKEY_VOLUME_UP);
-  EXPECT_FALSE(LastKeyConsumed());
-  EXPECT_FALSE(tablet_test_api_->PowerButtonMenuTimerIsRunning());
-  ReleasePowerButton();
-  ReleaseKey(ui::VKEY_VOLUME_UP);
-  EXPECT_FALSE(power_manager_client_->backlights_forced_off());
-  EXPECT_FALSE(LastKeyConsumed());
-}
-
-// Tests volume key pressed first invalidates showing the power button menu.
-TEST_F(PowerButtonScreenshotControllerShowMenuTest,
-       VolumeKeyPressedFirst_InvalidateTabletPowerButton) {
-  // Tests volume down key invalidates showing the power button menu.
-  PressKey(ui::VKEY_VOLUME_DOWN);
-  PressPowerButton();
-  EXPECT_FALSE(tablet_test_api_->PowerButtonMenuTimerIsRunning());
-  ReleasePowerButton();
-  ReleaseKey(ui::VKEY_VOLUME_DOWN);
-  EXPECT_FALSE(power_manager_client_->backlights_forced_off());
-
-  // Tests volume up key invalidates showing the power button menu. Also tests
-  // that volume up key is not consumed.
-  PressKey(ui::VKEY_VOLUME_UP);
-  PressPowerButton();
-  EXPECT_FALSE(LastKeyConsumed());
-  EXPECT_FALSE(tablet_test_api_->PowerButtonMenuTimerIsRunning());
-  ReleasePowerButton();
-  ReleaseKey(ui::VKEY_VOLUME_UP);
-  EXPECT_FALSE(power_manager_client_->backlights_forced_off());
-  EXPECT_FALSE(LastKeyConsumed());
 }
 
 }  // namespace ash

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_POWER_TABLET_POWER_BUTTON_CONTROLLER_TEST_API_H_
-#define ASH_SYSTEM_POWER_TABLET_POWER_BUTTON_CONTROLLER_TEST_API_H_
+#ifndef ASH_SYSTEM_POWER_POWER_BUTTON_CONTROLLER_TEST_API_H_
+#define ASH_SYSTEM_POWER_POWER_BUTTON_CONTROLLER_TEST_API_H_
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -18,15 +18,13 @@ class Rect;
 
 namespace ash {
 class PowerButtonMenuView;
-class TabletPowerButtonController;
+class PowerButtonController;
 
-// Helper class used by tests to access TabletPowerButtonController's
-// internal state.
-class TabletPowerButtonControllerTestApi {
+// Helper class used by tests to access PowerButtonController's internal state.
+class PowerButtonControllerTestApi {
  public:
-  explicit TabletPowerButtonControllerTestApi(
-      TabletPowerButtonController* controller);
-  ~TabletPowerButtonControllerTestApi();
+  explicit PowerButtonControllerTestApi(PowerButtonController* controller);
+  ~PowerButtonControllerTestApi();
 
   // Returns true when |controller_->shutdown_timer_| is running.
   bool ShutdownTimerIsRunning() const;
@@ -59,11 +57,11 @@ class TabletPowerButtonControllerTestApi {
   bool MenuHasSignOutItem() const;
 
  private:
-  TabletPowerButtonController* controller_;  // Not owned.
+  PowerButtonController* controller_;  // Not owned.
 
-  DISALLOW_COPY_AND_ASSIGN(TabletPowerButtonControllerTestApi);
+  DISALLOW_COPY_AND_ASSIGN(PowerButtonControllerTestApi);
 };
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_POWER_TABLET_POWER_BUTTON_CONTROLLER_TEST_API_H_
+#endif  // ASH_SYSTEM_POWER_POWER_BUTTON_CONTROLLER_TEST_API_H_

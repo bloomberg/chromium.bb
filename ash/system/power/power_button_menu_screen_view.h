@@ -12,7 +12,6 @@
 
 namespace ash {
 class PowerButtonMenuView;
-class TabletPowerButtonController;
 
 // PowerButtonMenuScreenView is the top-level view of power button menu UI. It
 // creates a PowerButtonMenuBackgroundView to display the fullscreen background
@@ -20,7 +19,7 @@ class TabletPowerButtonController;
 class ASH_EXPORT PowerButtonMenuScreenView : public views::View,
                                              public display::DisplayObserver {
  public:
-  explicit PowerButtonMenuScreenView(TabletPowerButtonController* controller);
+  PowerButtonMenuScreenView();
   ~PowerButtonMenuScreenView() override;
 
   PowerButtonMenuView* power_button_menu_view() const {

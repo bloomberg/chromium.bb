@@ -4,13 +4,14 @@
 
 #include "ash/system/power/power_button_test_base.h"
 
+#include "ash/accessibility/accessibility_controller.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/session/session_controller.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
 #include "ash/shell_test_api.h"
 #include "ash/system/power/power_button_controller.h"
-#include "ash/system/power/tablet_power_button_controller_test_api.h"
+#include "ash/system/power/power_button_controller_test_api.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/lock_state_controller_test_api.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -38,19 +39,14 @@ void PowerButtonTestBase::SetUp() {
   session_manager_client_ = new chromeos::FakeSessionManagerClient;
   dbus_setter->SetSessionManagerClient(
       base::WrapUnique(session_manager_client_));
-  if (has_tablet_mode_switch_) {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kAshEnableTabletMode);
-  }
-  if (show_power_button_menu_) {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kShowPowerButtonMenu);
-  }
   AshTestBase::SetUp();
 
   lock_state_controller_ = Shell::Get()->lock_state_controller();
   lock_state_test_api_ =
       std::make_unique<LockStateControllerTestApi>(lock_state_controller_);
+
+  a11y_controller_ = Shell::Get()->accessibility_controller();
+  a11y_controller_->SetClient(a11y_client_.CreateInterfacePtrAndBind());
 }
 
 void PowerButtonTestBase::TearDown() {
@@ -60,6 +56,7 @@ void PowerButtonTestBase::TearDown() {
 
 void PowerButtonTestBase::ResetPowerButtonController() {
   ShellTestApi().ResetPowerButtonControllerForTest();
+  power_button_test_api_ = nullptr;
   InitPowerButtonControllerMembers(
       chromeos::PowerManagerClient::TabletMode::UNSUPPORTED);
 }
@@ -68,19 +65,20 @@ void PowerButtonTestBase::InitPowerButtonControllerMembers(
     chromeos::PowerManagerClient::TabletMode initial_tablet_mode_switch_state) {
   power_button_controller_ = Shell::Get()->power_button_controller();
   power_button_controller_->SetTickClockForTesting(&tick_clock_);
+  power_button_test_api_ =
+      std::make_unique<PowerButtonControllerTestApi>(power_button_controller_);
 
   if (initial_tablet_mode_switch_state !=
       chromeos::PowerManagerClient::TabletMode::UNSUPPORTED) {
     SetTabletModeSwitchState(initial_tablet_mode_switch_state);
-    tablet_controller_ =
-        power_button_controller_->tablet_power_button_controller_for_test();
-    tablet_test_api_ = std::make_unique<TabletPowerButtonControllerTestApi>(
-        tablet_controller_);
+    turn_screen_off_for_tap_ =
+        power_button_controller_->turn_screen_off_for_tap_for_test();
     screenshot_controller_ =
         power_button_controller_->screenshot_controller_for_test();
   } else {
-    tablet_test_api_ = nullptr;
-    tablet_controller_ = nullptr;
+    turn_screen_off_for_tap_ = false;
+    power_button_controller_->set_turn_screen_off_for_tap_for_test(
+        turn_screen_off_for_tap_);
     screenshot_controller_ = nullptr;
   }
 }
@@ -92,8 +90,9 @@ void PowerButtonTestBase::SetTabletModeSwitchState(
           chromeos::PowerManagerClient::LidState::OPEN,
           tablet_mode_switch_state});
 
-  tablet_controller_ =
-      power_button_controller_->tablet_power_button_controller_for_test();
+  turn_screen_off_for_tap_ =
+      power_button_controller_->turn_screen_off_for_tap_for_test();
+
   screenshot_controller_ =
       power_button_controller_->screenshot_controller_for_test();
 }
@@ -154,9 +153,12 @@ void PowerButtonTestBase::EnableTabletMode(bool enable) {
 }
 
 void PowerButtonTestBase::AdvanceClockToAvoidIgnoring() {
-  tick_clock_.Advance(
-      TabletPowerButtonController::kIgnoreRepeatedButtonUpDelay +
-      base::TimeDelta::FromMilliseconds(1));
+  tick_clock_.Advance(PowerButtonController::kIgnoreRepeatedButtonUpDelay +
+                      base::TimeDelta::FromMilliseconds(1));
+}
+
+void PowerButtonTestBase::ShutdownSoundPlayed() {
+  a11y_controller_->FlushMojoForTest();
 }
 
 }  // namespace ash
