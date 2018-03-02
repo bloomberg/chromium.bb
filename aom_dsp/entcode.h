@@ -9,8 +9,9 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#if !defined(_entcode_H)
-#define _entcode_H (1)
+#ifndef AOM_DSP_ENTCODE_H_
+#define AOM_DSP_ENTCODE_H_
+
 #include <limits.h>
 #include <stddef.h>
 #include "av1/common/odintrin.h"
@@ -39,4 +40,4 @@ typedef uint32_t od_ec_window;
 OD_WARN_UNUSED_RESULT uint32_t od_ec_tell_frac(uint32_t nbits_total,
                                                uint32_t rng);
 
-#endif
+#endif  // AOM_DSP_ENTCODE_H_
