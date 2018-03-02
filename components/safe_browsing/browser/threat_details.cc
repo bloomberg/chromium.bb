@@ -558,8 +558,8 @@ void ThreatDetails::StartCollection() {
     // OnReceivedThreatDOMDetails will be called when the renderer replies.
     // TODO(mattm): In theory, if the user proceeds through the warning DOM
     // detail collection could be started once the page loads.
-    web_contents()->ForEachFrame(base::BindRepeating(
-        &ThreatDetails::RequestThreatDOMDetails, base::Unretained(this)));
+    web_contents()->ForEachFrame(
+        base::BindRepeating(&ThreatDetails::RequestThreatDOMDetails, this));
   }
 }
 
@@ -568,9 +568,9 @@ void ThreatDetails::RequestThreatDOMDetails(content::RenderFrameHost* frame) {
   frame->GetRemoteInterfaces()->GetInterface(&threat_reporter);
   safe_browsing::mojom::ThreatReporter* raw_threat_report =
       threat_reporter.get();
-  raw_threat_report->GetThreatDOMDetails(base::BindOnce(
-      &ThreatDetails::OnReceivedThreatDOMDetails, base::Unretained(this),
-      base::Passed(&threat_reporter), frame));
+  raw_threat_report->GetThreatDOMDetails(
+      base::BindOnce(&ThreatDetails::OnReceivedThreatDOMDetails, this,
+                     base::Passed(&threat_reporter), frame));
 }
 
 // When the renderer is done, this is called.
