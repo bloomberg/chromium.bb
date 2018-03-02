@@ -20,7 +20,7 @@ source_set("ash_unittests_filters") {
   testonly = true
 
   data = [
-    "//testing/buildbot/filters/ash_unittests_mash.filter",
+    "//testing/buildbot/filters/mash.ash_unittests.filter",
   ]
 }
 

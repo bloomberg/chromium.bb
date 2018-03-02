@@ -984,7 +984,7 @@
       'override_isolate_target': 'ash_unittests',
       'args': [
         '--enable-features=Mash',
-        '--test-launcher-filter-file=../../testing/buildbot/filters/ash_unittests_mash.filter',
+        '--test-launcher-filter-file=../../testing/buildbot/filters/mash.ash_unittests.filter',
       ],
     },
     'mash_browser_tests': {

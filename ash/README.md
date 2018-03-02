@@ -54,7 +54,7 @@ suite without the filter to see what passes.
 To simulate what the bots run (e.g. to check if you broke an existing test that
 works under mash) you can run:
 
-`ash_unittests --enable-features=Mash --test-launcher-filter-file=testing/buildbot/filters/ash_unittests_mash.filter`
+`ash_unittests --enable-features=Mash --test-launcher-filter-file=testing/buildbot/filters/mash.ash_unittests.filter`
 
 Any new feature you add (and its tests) should work under mash. If your test
 cannot pass under mash due to some dependency being broken you may add the test
