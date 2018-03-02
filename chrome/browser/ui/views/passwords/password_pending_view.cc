@@ -4,6 +4,11 @@
 
 #include "chrome/browser/ui/views/passwords/password_pending_view.h"
 
+#include <algorithm>
+#include <memory>
+#include <utility>
+#include <vector>
+
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
@@ -76,12 +81,23 @@ void BuildColumnSet(views::GridLayout* layout, ColumnSetType type) {
   }
 }
 
+// Create a vector which contains only the values in |items| and no elements.
+std::vector<base::string16> ToValues(
+    const autofill::ValueElementVector& items) {
+  std::vector<base::string16> passwords;
+  passwords.reserve(items.size());
+  for (auto& pair : items)
+    passwords.push_back(pair.first);
+  return passwords;
+}
+
 // A combobox model for password dropdown that allows to reveal/mask values in
 // the combobox.
 class PasswordDropdownModel : public ui::ComboboxModel {
  public:
-  PasswordDropdownModel(bool revealed, const std::vector<base::string16>& items)
-      : revealed_(revealed), passwords_(items) {}
+  PasswordDropdownModel(bool revealed,
+                        const autofill::ValueElementVector& items)
+      : revealed_(revealed), passwords_(ToValues(items)) {}
   ~PasswordDropdownModel() override {}
 
   void SetRevealed(bool revealed) {
@@ -146,10 +162,13 @@ std::unique_ptr<views::Combobox> CreatePasswordDropdownView(
   std::unique_ptr<views::Combobox> combobox =
       std::make_unique<views::Combobox>(std::make_unique<PasswordDropdownModel>(
           are_passwords_revealed, form.all_possible_passwords));
-  size_t index = std::distance(
-      form.all_possible_passwords.begin(),
-      find(form.all_possible_passwords.begin(),
-           form.all_possible_passwords.end(), form.password_value));
+  size_t index =
+      std::distance(form.all_possible_passwords.begin(),
+                    find_if(form.all_possible_passwords.begin(),
+                            form.all_possible_passwords.end(),
+                            [&form](const autofill::ValueElementPair& pair) {
+                              return pair.first == form.password_value;
+                            }));
   // Unlikely, but if we don't find the password in possible passwords,
   // we will set the default to first element.
   if (index == form.all_possible_passwords.size()) {
@@ -412,8 +431,11 @@ void PasswordPendingView::UpdateUsernameAndPasswordInModel() {
     base::TrimString(new_username, base::ASCIIToUTF16(" "), &new_username);
   }
   if (password_editable) {
-    new_password = model()->pending_password().all_possible_passwords.at(
-        password_dropdown_->selected_index());
+    new_password =
+        model()
+            ->pending_password()
+            .all_possible_passwords.at(password_dropdown_->selected_index())
+            .first;
   }
   model()->OnCredentialEdited(new_username, new_password);
 }

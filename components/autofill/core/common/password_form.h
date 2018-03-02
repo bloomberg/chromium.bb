@@ -18,11 +18,11 @@
 
 namespace autofill {
 
-// Pair of possible username value and field name that contained this value.
-using PossibleUsernamePair = std::pair<base::string16, base::string16>;
+// Pair of a value and the name of the element that contained this value.
+using ValueElementPair = std::pair<base::string16, base::string16>;
 
 // Vector of possible username values and corresponding field names.
-using PossibleUsernamesVector = std::vector<PossibleUsernamePair>;
+using ValueElementVector = std::vector<ValueElementPair>;
 
 // The PasswordForm struct encapsulates information about a login form,
 // which can be an HTML form or a dialog with username/password text fields.
@@ -181,12 +181,12 @@ struct PasswordForm {
   // determining the username are incorrect. Optional.
   //
   // When parsing an HTML form, this is typically empty.
-  PossibleUsernamesVector other_possible_usernames;
+  ValueElementVector other_possible_usernames;
 
   // This member is populated in cases where we there are multiple possible
   // password values. Used in pending password state, to populate a dropdown
   // for possible passwords. Contains all possible passwords. Optional.
-  std::vector<base::string16> all_possible_passwords;
+  ValueElementVector all_possible_passwords;
 
   // True if |all_possible_passwords| have autofilled value or its part.
   bool form_has_autofilled_value;
@@ -362,13 +362,9 @@ struct LessThanUniqueKey {
                   const std::unique_ptr<PasswordForm>& right) const;
 };
 
-// Converts a vector of possible usernames to string.
-base::string16 OtherPossibleUsernamesToString(
-    const PossibleUsernamesVector& possible_usernames);
-
-// Converts a vector of possible passwords to string.
-base::string16 AllPossiblePasswordsToString(
-    const std::vector<base::string16>& possible_passwords);
+// Converts a vector of ValueElementPair to string.
+base::string16 ValueElementVectorToString(
+    const ValueElementVector& value_element_pairs);
 
 // For testing.
 std::ostream& operator<<(std::ostream& os, PasswordForm::Layout layout);

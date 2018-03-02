@@ -860,10 +860,10 @@ bool StructTraits<autofill::mojom::FormsPredictionsMapDataView,
 }
 
 // static
-bool StructTraits<autofill::mojom::PossibleUsernamePairDataView,
-                  autofill::PossibleUsernamePair>::
-    Read(autofill::mojom::PossibleUsernamePairDataView data,
-         autofill::PossibleUsernamePair* out) {
+bool StructTraits<autofill::mojom::ValueElementPairDataView,
+                  autofill::ValueElementPair>::
+    Read(autofill::mojom::ValueElementPairDataView data,
+         autofill::ValueElementPair* out) {
   if (!data.ReadValue(&out->first) || !data.ReadFieldName(&out->second))
     return false;
 

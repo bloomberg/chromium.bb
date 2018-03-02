@@ -70,12 +70,14 @@ void CreateTestPasswordForm(PasswordForm* form) {
   form->username_element = base::ASCIIToUTF16("username");
   form->username_marked_by_site = true;
   form->username_value = base::ASCIIToUTF16("test@gmail.com");
-  form->other_possible_usernames.push_back(PossibleUsernamePair(
+  form->other_possible_usernames.push_back(ValueElementPair(
       base::ASCIIToUTF16("Jerry_1"), base::ASCIIToUTF16("id1")));
-  form->other_possible_usernames.push_back(PossibleUsernamePair(
+  form->other_possible_usernames.push_back(ValueElementPair(
       base::ASCIIToUTF16("Jerry_2"), base::ASCIIToUTF16("id2")));
-  form->all_possible_passwords.push_back(base::ASCIIToUTF16("pass1"));
-  form->all_possible_passwords.push_back(base::ASCIIToUTF16("pass2"));
+  form->all_possible_passwords.push_back(
+      ValueElementPair(base::ASCIIToUTF16("pass1"), base::ASCIIToUTF16("el1")));
+  form->all_possible_passwords.push_back(
+      ValueElementPair(base::ASCIIToUTF16("pass2"), base::ASCIIToUTF16("el2")));
   form->form_has_autofilled_value = true;
   form->password_element = base::ASCIIToUTF16("password");
   form->password_value = base::ASCIIToUTF16("test");

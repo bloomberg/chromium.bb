@@ -64,9 +64,13 @@ void ManagePasswordsControllerTest::SetUpSavePendingState(
   autofill::PasswordForm form;
   form.username_value = base::ASCIIToUTF16(username);
   form.password_value = base::ASCIIToUTF16(password);
-  form.all_possible_passwords.push_back(form.password_value);
-  for (auto other_password : other_passwords)
-    form.all_possible_passwords.push_back(base::ASCIIToUTF16(other_password));
+  form.all_possible_passwords.push_back(
+      {form.password_value, base::ASCIIToUTF16("pass_el")});
+  for (size_t i = 0; i < other_passwords.size(); i++) {
+    form.all_possible_passwords.push_back(
+        {base::ASCIIToUTF16(other_passwords[i]),
+         base::ASCIIToUTF16("pass_el" + std::to_string(i))});
+  }
   EXPECT_CALL(*ui_controller_, GetPendingPassword()).WillOnce(ReturnRef(form));
   GURL origin(kSiteOrigin);
   EXPECT_CALL(*ui_controller_, GetOrigin()).WillOnce(ReturnRef(origin));

@@ -31,8 +31,8 @@
 #include "url/origin.h"
 
 using autofill::PasswordForm;
-using autofill::PossibleUsernamePair;
-using autofill::PossibleUsernamesVector;
+using autofill::ValueElementPair;
+using autofill::ValueElementVector;
 using base::ASCIIToUTF16;
 using ::testing::Eq;
 using ::testing::Pointee;
@@ -134,9 +134,8 @@ MATCHER(IsBasicAuthAccount, "") {
 }  // namespace
 
 // Serialization routines for vectors implemented in login_database.cc.
-base::Pickle SerializePossibleUsernamePairs(const PossibleUsernamesVector& vec);
-PossibleUsernamesVector DeserializePossibleUsernamePairs(
-    const base::Pickle& pickle);
+base::Pickle SerializeValueElementPairs(const ValueElementVector& vec);
+ValueElementVector DeserializeValueElementPairs(const base::Pickle& pickle);
 
 class LoginDatabaseTest : public testing::Test {
  protected:
@@ -1168,21 +1167,18 @@ TEST_F(LoginDatabaseTest, BlacklistedLogins) {
 
 TEST_F(LoginDatabaseTest, VectorSerialization) {
   // Empty vector.
-  PossibleUsernamesVector vec;
-  base::Pickle temp = SerializePossibleUsernamePairs(vec);
-  PossibleUsernamesVector output = DeserializePossibleUsernamePairs(temp);
+  ValueElementVector vec;
+  base::Pickle temp = SerializeValueElementPairs(vec);
+  ValueElementVector output = DeserializeValueElementPairs(temp);
   EXPECT_THAT(output, Eq(vec));
 
   // Normal data.
-  vec.push_back(
-      PossibleUsernamePair(ASCIIToUTF16("first"), ASCIIToUTF16("id1")));
-  vec.push_back(
-      PossibleUsernamePair(ASCIIToUTF16("second"), ASCIIToUTF16("id2")));
-  vec.push_back(
-      PossibleUsernamePair(ASCIIToUTF16("third"), ASCIIToUTF16("id3")));
+  vec.push_back({ASCIIToUTF16("first"), ASCIIToUTF16("id1")});
+  vec.push_back({ASCIIToUTF16("second"), ASCIIToUTF16("id2")});
+  vec.push_back({ASCIIToUTF16("third"), ASCIIToUTF16("id3")});
 
-  temp = SerializePossibleUsernamePairs(vec);
-  output = DeserializePossibleUsernamePairs(temp);
+  temp = SerializeValueElementPairs(vec);
+  output = DeserializeValueElementPairs(temp);
   EXPECT_THAT(output, Eq(vec));
 }
 
@@ -1357,7 +1353,7 @@ TEST_F(LoginDatabaseTest, UpdateLogin) {
   form.action = GURL("http://accounts.google.com/login");
   form.password_value = ASCIIToUTF16("my_new_password");
   form.preferred = false;
-  form.other_possible_usernames.push_back(autofill::PossibleUsernamePair(
+  form.other_possible_usernames.push_back(autofill::ValueElementPair(
       ASCIIToUTF16("my_new_username"), ASCIIToUTF16("new_username_id")));
   form.times_used = 20;
   form.submit_element = ASCIIToUTF16("submit_element");
@@ -1734,7 +1730,7 @@ class LoginDatabaseMigrationTest : public testing::TestWithParam<int> {
 
   void TearDown() override { OSCryptMocker::TearDown(); }
 
-  // Creates the databse from |sql_file|.
+  // Creates the database from |sql_file|.
   void CreateDatabase(base::StringPiece sql_file) {
     base::FilePath database_dump;
     ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &database_dump));

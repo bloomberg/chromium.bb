@@ -5,7 +5,10 @@
 #ifndef COMPONENTS_AUTOFILL_CONTENT_COMMON_AUTOFILL_TYPES_STRUCT_TRAITS_H_
 #define COMPONENTS_AUTOFILL_CONTENT_COMMON_AUTOFILL_TYPES_STRUCT_TRAITS_H_
 
+#include <map>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "base/i18n/rtl.h"
 #include "base/strings/string16.h"
@@ -426,12 +429,12 @@ struct StructTraits<autofill::mojom::PasswordFormDataView,
     return r.username_value;
   }
 
-  static const std::vector<autofill::PossibleUsernamePair>&
+  static const std::vector<autofill::ValueElementPair>&
   other_possible_usernames(const autofill::PasswordForm& r) {
     return r.other_possible_usernames;
   }
 
-  static const std::vector<base::string16>& all_possible_passwords(
+  static const std::vector<autofill::ValueElementPair>& all_possible_passwords(
       const autofill::PasswordForm& r) {
     return r.all_possible_passwords;
   }
@@ -585,18 +588,18 @@ struct StructTraits<autofill::mojom::FormsPredictionsMapDataView,
 };
 
 template <>
-struct StructTraits<autofill::mojom::PossibleUsernamePairDataView,
-                    autofill::PossibleUsernamePair> {
-  static base::string16 value(const autofill::PossibleUsernamePair& r) {
+struct StructTraits<autofill::mojom::ValueElementPairDataView,
+                    autofill::ValueElementPair> {
+  static base::string16 value(const autofill::ValueElementPair& r) {
     return r.first;
   }
 
-  static base::string16 field_name(const autofill::PossibleUsernamePair& r) {
+  static base::string16 field_name(const autofill::ValueElementPair& r) {
     return r.second;
   }
 
-  static bool Read(autofill::mojom::PossibleUsernamePairDataView data,
-                   autofill::PossibleUsernamePair* out);
+  static bool Read(autofill::mojom::ValueElementPairDataView data,
+                   autofill::ValueElementPair* out);
 };
 
 }  // namespace mojo

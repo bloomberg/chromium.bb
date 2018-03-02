@@ -41,11 +41,10 @@ void PasswordFormToJSON(const PasswordForm& form,
                      form.new_password_value_is_default);
   target->SetBoolean("new_password_marked_by_site",
                      form.new_password_marked_by_site);
-  target->SetString(
-      "other_possible_usernames",
-      OtherPossibleUsernamesToString(form.other_possible_usernames));
+  target->SetString("other_possible_usernames",
+                    ValueElementVectorToString(form.other_possible_usernames));
   target->SetString("all_possible_passwords",
-                    AllPossiblePasswordsToString(form.all_possible_passwords));
+                    ValueElementVectorToString(form.all_possible_passwords));
   target->SetBoolean("blacklisted", form.blacklisted_by_user);
   target->SetBoolean("preferred", form.preferred);
   target->SetDouble("date_created", form.date_created.ToDoubleT());
@@ -191,19 +190,14 @@ bool LessThanUniqueKey::operator()(
   return left->origin < right->origin;
 }
 
-base::string16 OtherPossibleUsernamesToString(
-    const PossibleUsernamesVector& possible_usernames) {
-  std::vector<base::string16> pairs(possible_usernames.size());
-  std::transform(possible_usernames.begin(), possible_usernames.end(),
-                 pairs.begin(), [](const PossibleUsernamePair& p) {
+base::string16 ValueElementVectorToString(
+    const ValueElementVector& value_element_pairs) {
+  std::vector<base::string16> pairs(value_element_pairs.size());
+  std::transform(value_element_pairs.begin(), value_element_pairs.end(),
+                 pairs.begin(), [](const ValueElementPair& p) {
                    return p.first + base::ASCIIToUTF16("+") + p.second;
                  });
   return base::JoinString(pairs, base::ASCIIToUTF16(", "));
-}
-
-base::string16 AllPossiblePasswordsToString(
-    const std::vector<base::string16>& possible_passwords) {
-  return base::JoinString(possible_passwords, base::ASCIIToUTF16(", "));
 }
 
 std::ostream& operator<<(std::ostream& os, PasswordForm::Layout layout) {

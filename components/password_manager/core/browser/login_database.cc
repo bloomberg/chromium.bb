@@ -51,8 +51,8 @@ const int kCurrentVersionNumber = 19;
 // version can still read/write the current database.
 const int kCompatibleVersionNumber = 19;
 
-base::Pickle SerializePossibleUsernamePairs(
-    const autofill::PossibleUsernamesVector& vec) {
+base::Pickle SerializeValueElementPairs(
+    const autofill::ValueElementVector& vec) {
   base::Pickle p;
   for (size_t i = 0; i < vec.size(); ++i) {
     p.WriteString16(vec[i].first);
@@ -61,9 +61,9 @@ base::Pickle SerializePossibleUsernamePairs(
   return p;
 }
 
-autofill::PossibleUsernamesVector DeserializePossibleUsernamePairs(
+autofill::ValueElementVector DeserializeValueElementPairs(
     const base::Pickle& p) {
-  autofill::PossibleUsernamesVector ret;
+  autofill::ValueElementVector ret;
   base::string16 value;
   base::string16 field_name;
 
@@ -71,7 +71,7 @@ autofill::PossibleUsernamesVector DeserializePossibleUsernamePairs(
   while (iterator.ReadString16(&value)) {
     bool name_success = iterator.ReadString16(&field_name);
     DCHECK(name_success);
-    ret.push_back(autofill::PossibleUsernamePair(value, field_name));
+    ret.push_back(autofill::ValueElementPair(value, field_name));
   }
   return ret;
 }
@@ -156,7 +156,7 @@ void BindAddStatement(const PasswordForm& form,
   s->BindInt(COLUMN_SKIP_ZERO_CLICK, form.skip_zero_click);
   s->BindInt(COLUMN_GENERATION_UPLOAD_STATUS, form.generation_upload_status);
   base::Pickle usernames_pickle =
-      SerializePossibleUsernamePairs(form.other_possible_usernames);
+      SerializeValueElementPairs(form.other_possible_usernames);
   s->BindBlob(COLUMN_POSSIBLE_USERNAME_PAIRS, usernames_pickle.data(),
               usernames_pickle.size());
 }
@@ -879,7 +879,7 @@ PasswordStoreChangeList LoginDatabase::UpdateLogin(const PasswordForm& form) {
   s.BindInt(next_param++, form.skip_zero_click);
   s.BindInt(next_param++, form.generation_upload_status);
   base::Pickle username_pickle =
-      SerializePossibleUsernamePairs(form.other_possible_usernames);
+      SerializeValueElementPairs(form.other_possible_usernames);
   s.BindBlob(next_param++, username_pickle.data(), username_pickle.size());
   // NOTE: Add new fields here unless the field is a part of the unique key.
   // If so, add new field below.
@@ -1019,7 +1019,7 @@ LoginDatabase::EncryptionResult LoginDatabase::InitPasswordFormFromStatement(
     base::Pickle pickle(
         static_cast<const char*>(s.ColumnBlob(COLUMN_POSSIBLE_USERNAME_PAIRS)),
         s.ColumnByteLength(COLUMN_POSSIBLE_USERNAME_PAIRS));
-    form->other_possible_usernames = DeserializePossibleUsernamePairs(pickle);
+    form->other_possible_usernames = DeserializeValueElementPairs(pickle);
   }
   form->times_used = s.ColumnInt(COLUMN_TIMES_USED);
   if (s.ColumnByteLength(COLUMN_FORM_DATA)) {
