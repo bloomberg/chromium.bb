@@ -112,7 +112,7 @@ MockU2fDiscovery* SetMockDiscovery(
 
 }  // namespace
 
-class U2fSignTest : public testing::Test {
+class U2fSignTest : public ::testing::Test {
  public:
   U2fSignTest()
       : scoped_task_environment_(
@@ -192,7 +192,7 @@ TEST_F(U2fSignTest, TestCreateSignApduCommand) {
   const auto encoded_sign = u2f_sign.GetU2fSignApduCommand(handles[0]);
   ASSERT_TRUE(encoded_sign);
   EXPECT_THAT(encoded_sign->GetEncodedCommand(),
-              testing::ElementsAreArray(kSignApduEncoded));
+              ::testing::ElementsAreArray(kSignApduEncoded));
 
   constexpr uint8_t kSignApduEncodedCheckOnly[] = {
       // clang-format off
@@ -220,7 +220,7 @@ TEST_F(U2fSignTest, TestCreateSignApduCommand) {
       u2f_sign.GetU2fSignApduCommand(handles[0], true);
   ASSERT_TRUE(encoded_sign_check_only);
   EXPECT_THAT(encoded_sign_check_only->GetEncodedCommand(),
-              testing::ElementsAreArray(kSignApduEncodedCheckOnly));
+              ::testing::ElementsAreArray(kSignApduEncodedCheckOnly));
 }
 
 TEST_F(U2fSignTest, TestSignSuccess) {
@@ -237,15 +237,15 @@ TEST_F(U2fSignTest, TestSignSuccess) {
       SetMockDiscovery(request.get(), std::make_unique<MockU2fDiscovery>());
   EXPECT_CALL(*discovery, Start())
       .WillOnce(
-          testing::Invoke(discovery, &MockU2fDiscovery::StartSuccessAsync));
+          ::testing::Invoke(discovery, &MockU2fDiscovery::StartSuccessAsync));
   request->Start();
 
   auto device = std::make_unique<MockU2fDevice>();
-  EXPECT_CALL(*device, GetId()).WillRepeatedly(testing::Return("device"));
+  EXPECT_CALL(*device, GetId()).WillRepeatedly(::testing::Return("device"));
   EXPECT_CALL(*device, DeviceTransactPtr(_, _))
-      .WillOnce(testing::Invoke(MockU2fDevice::NoErrorSign));
+      .WillOnce(::testing::Invoke(MockU2fDevice::NoErrorSign));
   EXPECT_CALL(*device, TryWinkRef(_))
-      .WillOnce(testing::Invoke(MockU2fDevice::WinkDoNothing));
+      .WillOnce(::testing::Invoke(MockU2fDevice::WinkDoNothing));
   discovery->AddDevice(std::move(device));
 
   cb.WaitForCallback();
@@ -272,18 +272,18 @@ TEST_F(U2fSignTest, TestDelayedSuccess) {
       SetMockDiscovery(request.get(), std::make_unique<MockU2fDiscovery>());
   EXPECT_CALL(*discovery, Start())
       .WillOnce(
-          testing::Invoke(discovery, &MockU2fDiscovery::StartSuccessAsync));
+          ::testing::Invoke(discovery, &MockU2fDiscovery::StartSuccessAsync));
   request->Start();
 
   // Go through the state machine twice before success.
   auto device = std::make_unique<MockU2fDevice>();
-  EXPECT_CALL(*device, GetId()).WillRepeatedly(testing::Return("device"));
+  EXPECT_CALL(*device, GetId()).WillRepeatedly(::testing::Return("device"));
   EXPECT_CALL(*device, DeviceTransactPtr(_, _))
-      .WillOnce(testing::Invoke(MockU2fDevice::NotSatisfied))
-      .WillOnce(testing::Invoke(MockU2fDevice::NoErrorSign));
+      .WillOnce(::testing::Invoke(MockU2fDevice::NotSatisfied))
+      .WillOnce(::testing::Invoke(MockU2fDevice::NoErrorSign));
   EXPECT_CALL(*device, TryWinkRef(_))
       .Times(2)
-      .WillRepeatedly(testing::Invoke(MockU2fDevice::WinkDoNothing));
+      .WillRepeatedly(::testing::Invoke(MockU2fDevice::WinkDoNothing));
   discovery->AddDevice(std::move(device));
 
   cb.WaitForCallback();
@@ -315,20 +315,20 @@ TEST_F(U2fSignTest, TestMultipleHandles) {
       SetMockDiscovery(request.get(), std::make_unique<MockU2fDiscovery>());
   EXPECT_CALL(*discovery, Start())
       .WillOnce(
-          testing::Invoke(discovery, &MockU2fDiscovery::StartSuccessAsync));
+          ::testing::Invoke(discovery, &MockU2fDiscovery::StartSuccessAsync));
   request->Start();
 
   auto device = std::make_unique<MockU2fDevice>();
   // Wrong key would respond with SW_WRONG_DATA.
-  EXPECT_CALL(*device, GetId()).WillRepeatedly(testing::Return("device"));
+  EXPECT_CALL(*device, GetId()).WillRepeatedly(::testing::Return("device"));
   EXPECT_CALL(*device, DeviceTransactPtr(_, _))
-      .WillOnce(testing::Invoke(MockU2fDevice::WrongData))
-      .WillOnce(testing::Invoke(MockU2fDevice::WrongData))
-      .WillOnce(testing::Invoke(MockU2fDevice::WrongData))
-      .WillOnce(testing::Invoke(MockU2fDevice::NoErrorSign));
+      .WillOnce(::testing::Invoke(MockU2fDevice::WrongData))
+      .WillOnce(::testing::Invoke(MockU2fDevice::WrongData))
+      .WillOnce(::testing::Invoke(MockU2fDevice::WrongData))
+      .WillOnce(::testing::Invoke(MockU2fDevice::NoErrorSign));
   // Only one wink expected per device.
   EXPECT_CALL(*device, TryWinkRef(_))
-      .WillOnce(testing::Invoke(MockU2fDevice::WinkDoNothing));
+      .WillOnce(::testing::Invoke(MockU2fDevice::WinkDoNothing));
   discovery->AddDevice(std::move(device));
 
   cb.WaitForCallback();
@@ -356,27 +356,27 @@ TEST_F(U2fSignTest, TestMultipleDevices) {
       SetMockDiscovery(request.get(), std::make_unique<MockU2fDiscovery>());
   EXPECT_CALL(*discovery, Start())
       .WillOnce(
-          testing::Invoke(discovery, &MockU2fDiscovery::StartSuccessAsync));
+          ::testing::Invoke(discovery, &MockU2fDiscovery::StartSuccessAsync));
   request->Start();
 
   auto device0 = std::make_unique<MockU2fDevice>();
-  EXPECT_CALL(*device0, GetId()).WillRepeatedly(testing::Return("device0"));
+  EXPECT_CALL(*device0, GetId()).WillRepeatedly(::testing::Return("device0"));
   EXPECT_CALL(*device0, DeviceTransactPtr(_, _))
-      .WillOnce(testing::Invoke(MockU2fDevice::WrongData))
-      .WillOnce(testing::Invoke(MockU2fDevice::NotSatisfied));
+      .WillOnce(::testing::Invoke(MockU2fDevice::WrongData))
+      .WillOnce(::testing::Invoke(MockU2fDevice::NotSatisfied));
   // One wink per device.
   EXPECT_CALL(*device0, TryWinkRef(_))
-      .WillOnce(testing::Invoke(MockU2fDevice::WinkDoNothing));
+      .WillOnce(::testing::Invoke(MockU2fDevice::WinkDoNothing));
   discovery->AddDevice(std::move(device0));
 
   // Second device will have a successful touch.
   auto device1 = std::make_unique<MockU2fDevice>();
-  EXPECT_CALL(*device1, GetId()).WillRepeatedly(testing::Return("device1"));
+  EXPECT_CALL(*device1, GetId()).WillRepeatedly(::testing::Return("device1"));
   EXPECT_CALL(*device1, DeviceTransactPtr(_, _))
-      .WillOnce(testing::Invoke(MockU2fDevice::NoErrorSign));
+      .WillOnce(::testing::Invoke(MockU2fDevice::NoErrorSign));
   // One wink per device.
   EXPECT_CALL(*device1, TryWinkRef(_))
-      .WillOnce(testing::Invoke(MockU2fDevice::WinkDoNothing));
+      .WillOnce(::testing::Invoke(MockU2fDevice::WinkDoNothing));
   discovery->AddDevice(std::move(device1));
 
   cb.WaitForCallback();
@@ -404,30 +404,30 @@ TEST_F(U2fSignTest, TestFakeEnroll) {
       SetMockDiscovery(request.get(), std::make_unique<MockU2fDiscovery>());
   EXPECT_CALL(*discovery, Start())
       .WillOnce(
-          testing::Invoke(discovery, &MockU2fDiscovery::StartSuccessAsync));
+          ::testing::Invoke(discovery, &MockU2fDiscovery::StartSuccessAsync));
   request->Start();
 
   auto device0 = std::make_unique<MockU2fDevice>();
-  EXPECT_CALL(*device0, GetId()).WillRepeatedly(testing::Return("device0"));
+  EXPECT_CALL(*device0, GetId()).WillRepeatedly(::testing::Return("device0"));
   EXPECT_CALL(*device0, DeviceTransactPtr(_, _))
-      .WillOnce(testing::Invoke(MockU2fDevice::WrongData))
-      .WillOnce(testing::Invoke(MockU2fDevice::NotSatisfied));
+      .WillOnce(::testing::Invoke(MockU2fDevice::WrongData))
+      .WillOnce(::testing::Invoke(MockU2fDevice::NotSatisfied));
   // One wink per device.
   EXPECT_CALL(*device0, TryWinkRef(_))
-      .WillOnce(testing::Invoke(MockU2fDevice::WinkDoNothing));
+      .WillOnce(::testing::Invoke(MockU2fDevice::WinkDoNothing));
   discovery->AddDevice(std::move(device0));
 
   // Second device will be have a successful touch.
   auto device1 = std::make_unique<MockU2fDevice>();
-  EXPECT_CALL(*device1, GetId()).WillRepeatedly(testing::Return("device1"));
+  EXPECT_CALL(*device1, GetId()).WillRepeatedly(::testing::Return("device1"));
   // Both keys will be tried, when both fail, register is tried on that device.
   EXPECT_CALL(*device1, DeviceTransactPtr(_, _))
-      .WillOnce(testing::Invoke(MockU2fDevice::WrongData))
-      .WillOnce(testing::Invoke(MockU2fDevice::WrongData))
-      .WillOnce(testing::Invoke(MockU2fDevice::NoErrorRegister));
+      .WillOnce(::testing::Invoke(MockU2fDevice::WrongData))
+      .WillOnce(::testing::Invoke(MockU2fDevice::WrongData))
+      .WillOnce(::testing::Invoke(MockU2fDevice::NoErrorRegister));
   // One wink per device.
   EXPECT_CALL(*device1, TryWinkRef(_))
-      .WillOnce(testing::Invoke(MockU2fDevice::WinkDoNothing));
+      .WillOnce(::testing::Invoke(MockU2fDevice::WinkDoNothing));
   discovery->AddDevice(std::move(device1));
 
   cb.WaitForCallback();
@@ -513,15 +513,15 @@ TEST_F(U2fSignTest, TestSignWithCorruptedResponse) {
       SetMockDiscovery(request.get(), std::make_unique<MockU2fDiscovery>());
   EXPECT_CALL(*discovery, Start())
       .WillOnce(
-          testing::Invoke(discovery, &MockU2fDiscovery::StartSuccessAsync));
+          ::testing::Invoke(discovery, &MockU2fDiscovery::StartSuccessAsync));
   request->Start();
 
   auto device = std::make_unique<MockU2fDevice>();
-  EXPECT_CALL(*device, GetId()).WillRepeatedly(testing::Return("device"));
+  EXPECT_CALL(*device, GetId()).WillRepeatedly(::testing::Return("device"));
   EXPECT_CALL(*device, DeviceTransactPtr(_, _))
-      .WillOnce(testing::Invoke(MockU2fDevice::SignWithCorruptedResponse));
+      .WillOnce(::testing::Invoke(MockU2fDevice::SignWithCorruptedResponse));
   EXPECT_CALL(*device, TryWinkRef(_))
-      .WillOnce(testing::Invoke(MockU2fDevice::WinkDoNothing));
+      .WillOnce(::testing::Invoke(MockU2fDevice::WinkDoNothing));
   discovery->AddDevice(std::move(device));
 
   cb.WaitForCallback();
@@ -561,21 +561,21 @@ TEST_F(U2fSignTest, TestAlternativeApplicationParameter) {
       SetMockDiscovery(request.get(), std::make_unique<MockU2fDiscovery>());
   EXPECT_CALL(*discovery, Start())
       .WillOnce(
-          testing::Invoke(discovery, &MockU2fDiscovery::StartSuccessAsync));
+          ::testing::Invoke(discovery, &MockU2fDiscovery::StartSuccessAsync));
   request->Start();
 
   auto device = std::make_unique<MockU2fDevice>();
-  EXPECT_CALL(*device, GetId()).WillRepeatedly(testing::Return("device"));
+  EXPECT_CALL(*device, GetId()).WillRepeatedly(::testing::Return("device"));
   // The first request will use the primary app_param, which will be rejected.
   EXPECT_CALL(*device,
               DeviceTransactPtr(WithApplicationParameter(primary_app_param), _))
-      .WillOnce(testing::Invoke(MockU2fDevice::WrongData));
+      .WillOnce(::testing::Invoke(MockU2fDevice::WrongData));
   // After the rejection, the alternative should be tried.
   EXPECT_CALL(*device,
               DeviceTransactPtr(WithApplicationParameter(alt_app_param), _))
-      .WillOnce(testing::Invoke(MockU2fDevice::NoErrorSign));
+      .WillOnce(::testing::Invoke(MockU2fDevice::NoErrorSign));
   EXPECT_CALL(*device, TryWinkRef(_))
-      .WillOnce(testing::Invoke(MockU2fDevice::WinkDoNothing));
+      .WillOnce(::testing::Invoke(MockU2fDevice::WinkDoNothing));
   discovery->AddDevice(std::move(device));
 
   cb.WaitForCallback();

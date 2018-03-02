@@ -76,7 +76,7 @@ TEST(FidoHidMessageTest, TestPacketConstructors) {
   EXPECT_EQ(orig_packet->payload_length(),
             reconstructed_packet->payload_length());
   EXPECT_THAT(orig_packet->GetPacketPayload(),
-              testing::ContainerEq(reconstructed_packet->GetPacketPayload()));
+              ::testing::ContainerEq(reconstructed_packet->GetPacketPayload()));
 
   EXPECT_EQ(channel_id, reconstructed_packet->channel_id());
 
@@ -119,7 +119,7 @@ TEST(FidoHidMessageTest, TestMaxLengthPacketConstructors) {
          new_msg_it != new_msg_packets.end();
        ++orig_it, ++new_msg_it) {
     EXPECT_THAT((*orig_it)->GetPacketPayload(),
-                testing::ContainerEq((*new_msg_it)->GetPacketPayload()));
+                ::testing::ContainerEq((*new_msg_it)->GetPacketPayload()));
 
     EXPECT_EQ((*orig_it)->channel_id(), (*new_msg_it)->channel_id());
 
@@ -169,7 +169,8 @@ TEST(FidoHidMessageTest, TestDeconstruct) {
   auto filled_message = FidoHidMessage::Create(
       channel_id, CtapHidDeviceCommand::kCtapHidPing, data);
   ASSERT_TRUE(filled_message);
-  EXPECT_THAT(data, testing::ContainerEq(filled_message->GetMessagePayload()));
+  EXPECT_THAT(data,
+              ::testing::ContainerEq(filled_message->GetMessagePayload()));
 }
 
 TEST(FidoHidMessageTest, TestDeserialize) {

@@ -59,7 +59,7 @@ std::pair<MockU2fDiscovery*, MockU2fDiscovery*> SetMockDiscoveries(
 
 }  // namespace
 
-class U2fRequestTest : public testing::Test {
+class U2fRequestTest : public ::testing::Test {
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_{
       base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
@@ -71,8 +71,8 @@ TEST_F(U2fRequestTest, TestIterateDevice) {
       SetMockDiscovery(&request, std::make_unique<MockU2fDiscovery>());
   auto device0 = std::make_unique<MockU2fDevice>();
   auto device1 = std::make_unique<MockU2fDevice>();
-  EXPECT_CALL(*device0, GetId()).WillRepeatedly(testing::Return("device0"));
-  EXPECT_CALL(*device1, GetId()).WillRepeatedly(testing::Return("device1"));
+  EXPECT_CALL(*device0, GetId()).WillRepeatedly(::testing::Return("device0"));
+  EXPECT_CALL(*device1, GetId()).WillRepeatedly(::testing::Return("device1"));
   // Add two U2F devices
   discovery->AddDevice(std::move(device0));
   discovery->AddDevice(std::move(device1));
@@ -111,14 +111,14 @@ TEST_F(U2fRequestTest, TestBasicMachine) {
   auto* discovery =
       SetMockDiscovery(&request, std::make_unique<MockU2fDiscovery>());
   EXPECT_CALL(*discovery, Start())
-      .WillOnce(testing::Invoke(discovery, &MockU2fDiscovery::StartSuccess));
+      .WillOnce(::testing::Invoke(discovery, &MockU2fDiscovery::StartSuccess));
   request.Start();
 
   // Add one U2F device
   auto device = std::make_unique<MockU2fDevice>();
   EXPECT_CALL(*device, GetId());
   EXPECT_CALL(*device, TryWinkRef(_))
-      .WillOnce(testing::Invoke(MockU2fDevice::WinkDoNothing));
+      .WillOnce(::testing::Invoke(MockU2fDevice::WinkDoNothing));
   discovery->AddDevice(std::move(device));
 
   EXPECT_EQ(U2fRequest::State::BUSY, request.state_);
@@ -133,7 +133,7 @@ TEST_F(U2fRequestTest, TestAlreadyPresentDevice) {
   FakeU2fRequest request;
   EXPECT_CALL(*discovery, Start())
       .WillOnce(
-          testing::Invoke(discovery.get(), &MockU2fDiscovery::StartSuccess));
+          ::testing::Invoke(discovery.get(), &MockU2fDiscovery::StartSuccess));
   SetMockDiscovery(&request, std::move(discovery));
   request.Start();
 
@@ -151,17 +151,17 @@ TEST_F(U2fRequestTest, TestMultipleDiscoveries) {
 
   EXPECT_CALL(*discoveries[0], Start())
       .WillOnce(
-          testing::Invoke(discoveries[0], &MockU2fDiscovery::StartSuccess));
+          ::testing::Invoke(discoveries[0], &MockU2fDiscovery::StartSuccess));
   EXPECT_CALL(*discoveries[1], Start())
       .WillOnce(
-          testing::Invoke(discoveries[1], &MockU2fDiscovery::StartSuccess));
+          ::testing::Invoke(discoveries[1], &MockU2fDiscovery::StartSuccess));
   request.Start();
 
   // Let each discovery find a device.
   auto device_1 = std::make_unique<MockU2fDevice>();
   auto device_2 = std::make_unique<MockU2fDevice>();
-  EXPECT_CALL(*device_1, GetId()).WillRepeatedly(testing::Return("device_1"));
-  EXPECT_CALL(*device_2, GetId()).WillRepeatedly(testing::Return("device_2"));
+  EXPECT_CALL(*device_1, GetId()).WillRepeatedly(::testing::Return("device_1"));
+  EXPECT_CALL(*device_2, GetId()).WillRepeatedly(::testing::Return("device_2"));
   auto* device_1_ptr = device_1.get();
   auto* device_2_ptr = device_2.get();
   discoveries[0]->AddDevice(std::move(device_1));
@@ -180,7 +180,7 @@ TEST_F(U2fRequestTest, TestMultipleDiscoveries) {
 
   // Add a third device.
   auto device_3 = std::make_unique<MockU2fDevice>();
-  EXPECT_CALL(*device_3, GetId()).WillRepeatedly(testing::Return("device_3"));
+  EXPECT_CALL(*device_3, GetId()).WillRepeatedly(::testing::Return("device_3"));
   auto* device_3_ptr = device_3.get();
   discoveries[0]->AddDevice(std::move(device_3));
 
@@ -208,7 +208,7 @@ TEST_F(U2fRequestTest, TestSlowDiscovery) {
 
   EXPECT_CALL(*fast_discovery, Start())
       .WillOnce(
-          testing::Invoke(fast_discovery, &MockU2fDiscovery::StartSuccess));
+          ::testing::Invoke(fast_discovery, &MockU2fDiscovery::StartSuccess));
   // slow_discovery does not succeed immediately.
   EXPECT_CALL(*slow_discovery, Start());
 
@@ -216,19 +216,21 @@ TEST_F(U2fRequestTest, TestSlowDiscovery) {
   auto fast_device = std::make_unique<MockU2fDevice>();
   auto slow_device = std::make_unique<MockU2fDevice>();
   EXPECT_CALL(*fast_device, GetId())
-      .WillRepeatedly(testing::Return("fast_device"));
+      .WillRepeatedly(::testing::Return("fast_device"));
   EXPECT_CALL(*slow_device, GetId())
-      .WillRepeatedly(testing::Return("slow_device"));
+      .WillRepeatedly(::testing::Return("slow_device"));
 
   bool fast_winked = false;
   EXPECT_CALL(*fast_device, TryWinkRef(_))
-      .WillOnce(testing::DoAll(testing::Assign(&fast_winked, true),
-                               testing::Invoke(MockU2fDevice::WinkDoNothing)))
-      .WillRepeatedly(testing::Invoke(MockU2fDevice::WinkDoNothing));
+      .WillOnce(
+          ::testing::DoAll(::testing::Assign(&fast_winked, true),
+                           ::testing::Invoke(MockU2fDevice::WinkDoNothing)))
+      .WillRepeatedly(::testing::Invoke(MockU2fDevice::WinkDoNothing));
   bool slow_winked = false;
   EXPECT_CALL(*slow_device, TryWinkRef(_))
-      .WillOnce(testing::DoAll(testing::Assign(&slow_winked, true),
-                               testing::Invoke(MockU2fDevice::WinkDoNothing)));
+      .WillOnce(
+          ::testing::DoAll(::testing::Assign(&slow_winked, true),
+                           ::testing::Invoke(MockU2fDevice::WinkDoNothing)));
   auto* fast_device_ptr = fast_device.get();
   auto* slow_device_ptr = slow_device.get();
   fast_discovery->AddDeviceWithoutNotification(std::move(fast_device));
@@ -288,10 +290,10 @@ TEST_F(U2fRequestTest, TestMultipleDiscoveriesWithFailures) {
 
     EXPECT_CALL(*discoveries[0], Start())
         .WillOnce(
-            testing::Invoke(discoveries[0], &MockU2fDiscovery::StartFailure));
+            ::testing::Invoke(discoveries[0], &MockU2fDiscovery::StartFailure));
     EXPECT_CALL(*discoveries[1], Start())
         .WillOnce(
-            testing::Invoke(discoveries[1], &MockU2fDiscovery::StartFailure));
+            ::testing::Invoke(discoveries[1], &MockU2fDiscovery::StartFailure));
     request.Start();
     EXPECT_EQ(U2fRequest::State::OFF, request.state_);
   }
@@ -307,15 +309,16 @@ TEST_F(U2fRequestTest, TestMultipleDiscoveriesWithFailures) {
 
     EXPECT_CALL(*discoveries[0], Start())
         .WillOnce(
-            testing::Invoke(discoveries[0], &MockU2fDiscovery::StartSuccess));
+            ::testing::Invoke(discoveries[0], &MockU2fDiscovery::StartSuccess));
     EXPECT_CALL(*discoveries[1], Start())
         .WillOnce(
-            testing::Invoke(discoveries[1], &MockU2fDiscovery::StartFailure));
+            ::testing::Invoke(discoveries[1], &MockU2fDiscovery::StartFailure));
 
     auto device0 = std::make_unique<MockU2fDevice>();
-    EXPECT_CALL(*device0, GetId()).WillRepeatedly(testing::Return("device_0"));
+    EXPECT_CALL(*device0, GetId())
+        .WillRepeatedly(::testing::Return("device_0"));
     EXPECT_CALL(*device0, TryWinkRef(_))
-        .WillOnce(testing::Invoke(MockU2fDevice::WinkDoNothing));
+        .WillOnce(::testing::Invoke(MockU2fDevice::WinkDoNothing));
     discoveries[0]->AddDevice(std::move(device0));
 
     request.Start();
@@ -328,9 +331,10 @@ TEST_F(U2fRequestTest, TestMultipleDiscoveriesWithFailures) {
 
     // Adding another device should trigger examination and a busy state.
     auto device1 = std::make_unique<MockU2fDevice>();
-    EXPECT_CALL(*device1, GetId()).WillRepeatedly(testing::Return("device_1"));
+    EXPECT_CALL(*device1, GetId())
+        .WillRepeatedly(::testing::Return("device_1"));
     EXPECT_CALL(*device1, TryWinkRef(_))
-        .WillOnce(testing::Invoke(MockU2fDevice::WinkDoNothing));
+        .WillOnce(::testing::Invoke(MockU2fDevice::WinkDoNothing));
     discoveries[0]->AddDevice(std::move(device1));
 
     request.Transition();
@@ -342,14 +346,14 @@ TEST_F(U2fRequestTest, TestEncodeVersionRequest) {
   constexpr uint8_t kEncodedU2fVersionRequest[] = {0x00, 0x03, 0x00, 0x00,
                                                    0x00, 0x00, 0x00};
   EXPECT_THAT(U2fRequest::GetU2fVersionApduCommand(false)->GetEncodedCommand(),
-              testing::ElementsAreArray(kEncodedU2fVersionRequest));
+              ::testing::ElementsAreArray(kEncodedU2fVersionRequest));
 
   // Legacy version command contains 2 extra null bytes compared to ISO 7816-4
   // format.
   constexpr uint8_t kEncodedU2fLegacyVersionRequest[] = {
       0x00, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
   EXPECT_THAT(U2fRequest::GetU2fVersionApduCommand(true)->GetEncodedCommand(),
-              testing::ElementsAreArray(kEncodedU2fLegacyVersionRequest));
+              ::testing::ElementsAreArray(kEncodedU2fLegacyVersionRequest));
 }
 
 }  // namespace device

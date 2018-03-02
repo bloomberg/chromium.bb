@@ -199,7 +199,7 @@ class TestDeviceCallback {
   base::RunLoop run_loop_;
 };
 
-class U2fHidDeviceTest : public testing::Test {
+class U2fHidDeviceTest : public ::testing::Test {
  public:
   U2fHidDeviceTest()
       : scoped_task_environment_(
