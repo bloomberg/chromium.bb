@@ -2713,6 +2713,25 @@ TEST_F(WindowSelectorTest, Backdrop) {
   ToggleOverview();
 }
 
+// Verify that the system does not crash when exiting overview mode after
+// pressing CTRL+SHIFT+U.
+TEST_F(WindowSelectorTest, ExitInUnderlineMode) {
+  std::unique_ptr<aura::Window> window(
+      CreateWindow(gfx::Rect(10, 10, 200, 200)));
+
+  ToggleOverview();
+
+  // Enter underline mode on the text selector by generating CTRL+SHIFT+U
+  // sequence.
+  GetEventGenerator().PressKey(ui::VKEY_U,
+                               ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
+  GetEventGenerator().ReleaseKey(ui::VKEY_U,
+                                 ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
+
+  // Test that leaving overview mode cleans up properly.
+  ToggleOverview();
+}
+
 class SplitViewWindowSelectorTest : public WindowSelectorTest {
  public:
   SplitViewWindowSelectorTest() = default;
