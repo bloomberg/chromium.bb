@@ -509,7 +509,7 @@ WindowGrid* WindowSelector::GetGridWithRootWindow(aura::Window* root_window) {
 void WindowSelector::AddItem(aura::Window* window) {
   // Early exit if a grid already contains |window|.
   WindowGrid* grid = GetGridWithRootWindow(window->GetRootWindow());
-  if (!grid || grid->Contains(window))
+  if (!grid || grid->GetWindowSelectorItemContaining(window))
     return;
 
   // This is meant to be called when a item in split view mode was previously
@@ -540,7 +540,7 @@ void WindowSelector::RemoveWindowSelectorItem(WindowSelectorItem* item) {
 
   // Remove |item| from the corresponding grid.
   for (std::unique_ptr<WindowGrid>& grid : grid_list_) {
-    if (grid->Contains(item->GetWindow())) {
+    if (grid->GetWindowSelectorItemContaining(item->GetWindow())) {
       grid->RemoveItem(item);
       if (grid->empty())
         OnGridEmpty(grid.get());

@@ -91,9 +91,11 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
   // Returns the target selected window, or NULL if there is none selected.
   WindowSelectorItem* SelectedWindow() const;
 
-  // Returns true if a window is contained in any of the WindowSelectorItems
-  // this grid owns.
-  bool Contains(const aura::Window* window) const;
+  // Returns the WindowSelectorItem if a window is contained in any of the
+  // WindowSelectorItems this grid owns. Returns nullptr if no such a
+  // WindowSelectorItem exist.
+  WindowSelectorItem* GetWindowSelectorItemContaining(
+      const aura::Window* window) const;
 
   // Adds |window| to the grid. Intended to be used by split view. |window|
   // cannot already be on the grid.
