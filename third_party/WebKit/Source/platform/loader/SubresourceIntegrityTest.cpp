@@ -15,6 +15,7 @@
 #include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/loader/testing/CryptoTestingPlatformSupport.h"
 #include "platform/loader/testing/MockFetchContext.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
@@ -91,6 +92,12 @@ class SubresourceIntegrityTest : public ::testing::Test {
         MockFetchContext::Create(MockFetchContext::kShouldLoadNewResource);
   }
 
+  SubresourceIntegrity::IntegrityFeatures Features() const {
+    return RuntimeEnabledFeatures::SignatureBasedIntegrityEnabledByRuntimeFlag()
+               ? SubresourceIntegrity::IntegrityFeatures::kSignatures
+               : SubresourceIntegrity::IntegrityFeatures::kDefault;
+  }
+
   void ExpectAlgorithm(const String& text,
                        IntegrityAlgorithm expected_algorithm) {
     Vector<UChar> characters;
@@ -100,8 +107,8 @@ class SubresourceIntegrityTest : public ::testing::Test {
     IntegrityAlgorithm algorithm;
 
     EXPECT_EQ(SubresourceIntegrity::kAlgorithmValid,
-              SubresourceIntegrity::ParseAttributeAlgorithm(position, end,
-                                                            algorithm));
+              SubresourceIntegrity::ParseAttributeAlgorithm(
+                  position, end, Features(), algorithm));
     EXPECT_EQ(expected_algorithm, algorithm);
     EXPECT_EQ(end, position);
   }
@@ -117,7 +124,7 @@ class SubresourceIntegrityTest : public ::testing::Test {
     IntegrityAlgorithm algorithm;
 
     EXPECT_EQ(expected_result, SubresourceIntegrity::ParseAttributeAlgorithm(
-                                   position, end, algorithm));
+                                   position, end, Features(), algorithm));
     EXPECT_EQ(begin, position);
   }
 
@@ -149,8 +156,8 @@ class SubresourceIntegrityTest : public ::testing::Test {
     IntegrityMetadataSet metadata_set;
 
     EXPECT_EQ(SubresourceIntegrity::kIntegrityParseValidResult,
-              SubresourceIntegrity::ParseIntegrityAttribute(integrity_attribute,
-                                                            metadata_set));
+              SubresourceIntegrity::ParseIntegrityAttribute(
+                  integrity_attribute, Features(), metadata_set));
     EXPECT_EQ(1u, metadata_set.size());
     if (metadata_set.size() > 0) {
       IntegrityMetadata metadata = *metadata_set.begin();
@@ -169,8 +176,8 @@ class SubresourceIntegrityTest : public ::testing::Test {
     }
     IntegrityMetadataSet metadata_set;
     EXPECT_EQ(SubresourceIntegrity::kIntegrityParseValidResult,
-              SubresourceIntegrity::ParseIntegrityAttribute(integrity_attribute,
-                                                            metadata_set));
+              SubresourceIntegrity::ParseIntegrityAttribute(
+                  integrity_attribute, Features(), metadata_set));
     EXPECT_TRUE(
         IntegrityMetadata::SetsEqual(expected_metadata_set, metadata_set));
   }
@@ -179,16 +186,16 @@ class SubresourceIntegrityTest : public ::testing::Test {
     IntegrityMetadataSet metadata_set;
 
     EXPECT_EQ(SubresourceIntegrity::kIntegrityParseNoValidResult,
-              SubresourceIntegrity::ParseIntegrityAttribute(integrity_attribute,
-                                                            metadata_set));
+              SubresourceIntegrity::ParseIntegrityAttribute(
+                  integrity_attribute, Features(), metadata_set));
   }
 
   void ExpectEmptyParseResult(const char* integrity_attribute) {
     IntegrityMetadataSet metadata_set;
 
     EXPECT_EQ(SubresourceIntegrity::kIntegrityParseValidResult,
-              SubresourceIntegrity::ParseIntegrityAttribute(integrity_attribute,
-                                                            metadata_set));
+              SubresourceIntegrity::ParseIntegrityAttribute(
+                  integrity_attribute, Features(), metadata_set));
     EXPECT_EQ(0u, metadata_set.size());
   }
 
@@ -219,14 +226,18 @@ class SubresourceIntegrityTest : public ::testing::Test {
                               Expectation expectation) {
     context->SetSecurityOrigin(SecurityOrigin::Create(test.origin));
 
+    IntegrityMetadataSet metadata_set;
+    EXPECT_EQ(SubresourceIntegrity::kIntegrityParseValidResult,
+              SubresourceIntegrity::ParseIntegrityAttribute(
+                  String(integrity), Features(), metadata_set));
+
     SubresourceIntegrity::ReportInfo report_info;
-    EXPECT_EQ(
-        expectation == kIntegritySuccess,
-        SubresourceIntegrity::CheckSubresourceIntegrity(
-            String(integrity), kBasicScript, strlen(kBasicScript), test.target,
-            *CreateTestResource(test.target, test.allow_origin_url,
-                                test.service_worker),
-            report_info));
+    EXPECT_EQ(expectation == kIntegritySuccess,
+              SubresourceIntegrity::CheckSubresourceIntegrity(
+                  metadata_set, kBasicScript, strlen(kBasicScript), test.target,
+                  *CreateTestResource(test.target, test.allow_origin_url,
+                                      test.service_worker),
+                  report_info));
   }
 
   Resource* CreateTestResource(const KURL& url,

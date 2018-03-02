@@ -72,6 +72,7 @@ struct CORE_EXPORT CachedDocumentParameters {
   bool viewport_meta_zero_values_quirk;
   bool viewport_meta_enabled;
   ReferrerPolicy referrer_policy;
+  SubresourceIntegrity::IntegrityFeatures integrity_features;
 
  private:
   explicit CachedDocumentParameters(Document*);

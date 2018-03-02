@@ -324,7 +324,9 @@ LinkStyle::LoadReturnValue LinkStyle::LoadStylesheetIfNeeded(
   String integrity_attr = owner_->FastGetAttribute(integrityAttr);
   if (!integrity_attr.IsEmpty()) {
     IntegrityMetadataSet metadata_set;
-    SubresourceIntegrity::ParseIntegrityAttribute(integrity_attr, metadata_set);
+    SubresourceIntegrity::ParseIntegrityAttribute(
+        integrity_attr, SubresourceIntegrityHelper::GetFeatures(&GetDocument()),
+        metadata_set);
     params.SetIntegrityMetadata(metadata_set);
     params.MutableResourceRequest().SetFetchIntegrity(integrity_attr);
   }

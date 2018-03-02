@@ -6,7 +6,6 @@
 
 #include "platform/Crypto.h"
 #include "platform/loader/fetch/Resource.h"
-#include "platform/runtime_enabled_features.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/ASCIICType.h"
@@ -72,26 +71,6 @@ void SubresourceIntegrity::ReportInfo::Clear() {
 }
 
 bool SubresourceIntegrity::CheckSubresourceIntegrity(
-    const String& integrity_attribute,
-    const char* content,
-    size_t size,
-    const KURL& resource_url,
-    const Resource& resource,
-    ReportInfo& report_info) {
-  if (integrity_attribute.IsEmpty())
-    return true;
-
-  IntegrityMetadataSet metadata_set;
-  IntegrityParseResult integrity_parse_result =
-      ParseIntegrityAttribute(integrity_attribute, metadata_set, &report_info);
-  if (integrity_parse_result != kIntegrityParseValidResult)
-    return true;
-
-  return CheckSubresourceIntegrity(metadata_set, content, size, resource_url,
-                                   resource, report_info);
-}
-
-bool SubresourceIntegrity::CheckSubresourceIntegrity(
     const IntegrityMetadataSet& metadata_set,
     const char* content,
     size_t size,
@@ -117,6 +96,7 @@ bool SubresourceIntegrity::CheckSubresourceIntegrity(
 
 bool SubresourceIntegrity::CheckSubresourceIntegrity(
     const String& integrity_metadata,
+    IntegrityFeatures features,
     const char* content,
     size_t size,
     const KURL& resource_url,
@@ -125,8 +105,8 @@ bool SubresourceIntegrity::CheckSubresourceIntegrity(
     return true;
 
   IntegrityMetadataSet metadata_set;
-  IntegrityParseResult integrity_parse_result =
-      ParseIntegrityAttribute(integrity_metadata, metadata_set, &report_info);
+  IntegrityParseResult integrity_parse_result = ParseIntegrityAttribute(
+      integrity_metadata, features, metadata_set, &report_info);
   if (integrity_parse_result != kIntegrityParseValidResult)
     return true;
   // TODO(vogelheim): crbug.com/753349, figure out how deal with Ed25519
@@ -324,6 +304,7 @@ bool SubresourceIntegrity::CheckSubresourceIntegritySignature(
 SubresourceIntegrity::AlgorithmParseResult
 SubresourceIntegrity::ParseAttributeAlgorithm(const UChar*& begin,
                                               const UChar* end,
+                                              IntegrityFeatures features,
                                               IntegrityAlgorithm& algorithm) {
   static const AlgorithmPrefixPair kPrefixes[] = {
       {"sha256", IntegrityAlgorithm::kSha256},
@@ -334,8 +315,11 @@ SubresourceIntegrity::ParseAttributeAlgorithm(const UChar*& begin,
       {"sha-512", IntegrityAlgorithm::kSha512},
       {"ed25519", IntegrityAlgorithm::kEd25519}};
 
+  // The last algorithm prefix is the ed25519 signature algorithm, which should
+  // only be enabled if kSignatures is requested. We'll implement this by
+  // adjusting the last_prefix index into the array.
   size_t last_prefix = WTF_ARRAY_LENGTH(kPrefixes);
-  if (!RuntimeEnabledFeatures::SignatureBasedIntegrityEnabled())
+  if (features != IntegrityFeatures::kSignatures)
     last_prefix--;
 
   return ParseAlgorithmPrefix(begin, end, kPrefixes, last_prefix, algorithm);
@@ -404,22 +388,27 @@ bool SubresourceIntegrity::ParseDigest(const UChar*& position,
 SubresourceIntegrity::IntegrityParseResult
 SubresourceIntegrity::ParseIntegrityAttribute(
     const WTF::String& attribute,
+    IntegrityFeatures features,
     IntegrityMetadataSet& metadata_set) {
-  return ParseIntegrityAttribute(attribute, metadata_set, nullptr);
+  return ParseIntegrityAttribute(attribute, features, metadata_set, nullptr);
 }
 
 SubresourceIntegrity::IntegrityParseResult
 SubresourceIntegrity::ParseIntegrityAttribute(
     const WTF::String& attribute,
+    IntegrityFeatures features,
     IntegrityMetadataSet& metadata_set,
     ReportInfo* report_info) {
+  // We expect a "clean" metadata_set, since metadata_set should only be filled
+  // once.
+  DCHECK(metadata_set.IsEmpty());
+
   Vector<UChar> characters;
   attribute.StripWhiteSpace().AppendTo(characters);
   const UChar* position = characters.data();
   const UChar* end = characters.end();
   const UChar* current_integrity_end;
 
-  metadata_set.clear();
   bool error = false;
 
   // The integrity attribute takes the form:
@@ -438,8 +427,8 @@ SubresourceIntegrity::ParseIntegrityAttribute(
     // still be loaded) because strong hash algorithms should be used
     // without fear of breaking older user agents that don't support
     // them.
-    AlgorithmParseResult parse_result =
-        ParseAttributeAlgorithm(position, current_integrity_end, algorithm);
+    AlgorithmParseResult parse_result = ParseAttributeAlgorithm(
+        position, current_integrity_end, features, algorithm);
     if (parse_result == kAlgorithmUnknown) {
       // Unknown hash algorithms are treated as if they're not present,
       // and thus are not marked as an error, they're just skipped.

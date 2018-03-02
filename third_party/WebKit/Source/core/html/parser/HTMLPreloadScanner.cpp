@@ -45,6 +45,7 @@
 #include "core/html_names.h"
 #include "core/input_type_names.h"
 #include "core/loader/LinkLoader.h"
+#include "core/loader/SubresourceIntegrityHelper.h"
 #include "core/script/ScriptLoader.h"
 #include "platform/Histogram.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
@@ -116,6 +117,7 @@ class TokenPreloadScanner::StartTagScanner {
  public:
   StartTagScanner(const StringImpl* tag_impl,
                   MediaValuesCached* media_values,
+                  SubresourceIntegrity::IntegrityFeatures features,
                   TokenPreloadScanner::ScannerType scanner_type)
       : tag_impl_(tag_impl),
         link_is_style_sheet_(false),
@@ -133,6 +135,7 @@ class TokenPreloadScanner::StartTagScanner {
         media_values_(media_values),
         referrer_policy_set_(false),
         referrer_policy_(kReferrerPolicyDefault),
+        integrity_features_(features),
         scanner_type_(scanner_type) {
     if (Match(tag_impl_, imgTag) || Match(tag_impl_, sourceTag)) {
       source_size_ = SizesAttributeParser(media_values_, String()).length();
@@ -278,25 +281,26 @@ class TokenPreloadScanner::StartTagScanner {
   void ProcessScriptAttribute(const NameType& attribute_name,
                               const String& attribute_value) {
     // FIXME - Don't set crossorigin multiple times.
-    if (Match(attribute_name, srcAttr))
+    if (Match(attribute_name, srcAttr)) {
       SetUrlToLoad(attribute_value, kDisallowURLReplacement);
-    else if (Match(attribute_name, crossoriginAttr))
+    } else if (Match(attribute_name, crossoriginAttr)) {
       SetCrossOrigin(attribute_value);
-    else if (Match(attribute_name, nonceAttr))
+    } else if (Match(attribute_name, nonceAttr)) {
       SetNonce(attribute_value);
-    else if (Match(attribute_name, asyncAttr))
+    } else if (Match(attribute_name, asyncAttr)) {
       SetDefer(FetchParameters::kLazyLoad);
-    else if (Match(attribute_name, deferAttr))
+    } else if (Match(attribute_name, deferAttr)) {
       SetDefer(FetchParameters::kLazyLoad);
-    else if (Match(attribute_name, integrityAttr))
-      SubresourceIntegrity::ParseIntegrityAttribute(attribute_value,
-                                                    integrity_metadata_);
-    else if (Match(attribute_name, typeAttr))
+    } else if (Match(attribute_name, integrityAttr)) {
+      SubresourceIntegrity::ParseIntegrityAttribute(
+          attribute_value, integrity_features_, integrity_metadata_);
+    } else if (Match(attribute_name, typeAttr)) {
       type_attribute_value_ = attribute_value;
-    else if (Match(attribute_name, languageAttr))
+    } else if (Match(attribute_name, languageAttr)) {
       language_attribute_value_ = attribute_value;
-    else if (Match(attribute_name, nomoduleAttr))
+    } else if (Match(attribute_name, nomoduleAttr)) {
       nomodule_attribute_value_ = true;
+    }
   }
 
   template <typename NameType>
@@ -366,8 +370,8 @@ class TokenPreloadScanner::StartTagScanner {
           attribute_value, kDoNotSupportReferrerPolicyLegacyKeywords,
           &referrer_policy_);
     } else if (Match(attribute_name, integrityAttr)) {
-      SubresourceIntegrity::ParseIntegrityAttribute(attribute_value,
-                                                    integrity_metadata_);
+      SubresourceIntegrity::ParseIntegrityAttribute(
+          attribute_value, integrity_features_, integrity_metadata_);
     } else if (Match(attribute_name, srcsetAttr) &&
                srcset_attribute_value_.IsNull()) {
       srcset_attribute_value_ = attribute_value;
@@ -591,6 +595,7 @@ class TokenPreloadScanner::StartTagScanner {
   bool referrer_policy_set_;
   ReferrerPolicy referrer_policy_;
   IntegrityMetadataSet integrity_metadata_;
+  SubresourceIntegrity::IntegrityFeatures integrity_features_;
   TokenPreloadScanner::ScannerType scanner_type_;
 };
 
@@ -816,7 +821,9 @@ void TokenPreloadScanner::ScanCommon(const Token& token,
         return;
       }
 
-      StartTagScanner scanner(tag_impl, media_values_, scanner_type_);
+      StartTagScanner scanner(tag_impl, media_values_,
+                              document_parameters_->integrity_features,
+                              scanner_type_);
       scanner.ProcessAttributes(token.Attributes());
       // TODO(yoav): ViewportWidth is currently racy and might be zero in some
       // cases, at least in tests. That problem will go away once
@@ -910,6 +917,7 @@ CachedDocumentParameters::CachedDocumentParameters(Document* document) {
   viewport_meta_enabled = document->GetSettings() &&
                           document->GetSettings()->GetViewportMetaEnabled();
   referrer_policy = document->GetReferrerPolicy();
+  integrity_features = SubresourceIntegrityHelper::GetFeatures(document);
 }
 
 }  // namespace blink

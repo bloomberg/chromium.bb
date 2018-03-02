@@ -358,9 +358,11 @@ TEST_F(CSPDirectiveListTest, AllowScriptFromSourceWithHash) {
     const KURL resource(test.url);
 
     IntegrityMetadataSet integrity_metadata;
-    ASSERT_EQ(SubresourceIntegrity::kIntegrityParseValidResult,
-              SubresourceIntegrity::ParseIntegrityAttribute(
-                  test.integrity, integrity_metadata));
+    EXPECT_EQ(
+        SubresourceIntegrity::kIntegrityParseValidResult,
+        SubresourceIntegrity::ParseIntegrityAttribute(
+            test.integrity, SubresourceIntegrity::IntegrityFeatures::kDefault,
+            integrity_metadata));
 
     // Report-only 'script-src'
     Member<CSPDirectiveList> directive_list =
