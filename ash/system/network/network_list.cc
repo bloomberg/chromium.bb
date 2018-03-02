@@ -845,21 +845,18 @@ std::unique_ptr<std::set<std::string>> NetworkListView::UpdateNetworkChildren(
   for (const auto& info : network_list_) {
     if (info->type != type)
       continue;
-    if (UpdateNetworkChild(index, info.get()))
-      ++index;
+    UpdateNetworkChild(index++, info.get());
     new_guids->insert(info->guid);
   }
   return new_guids;
 }
 
-bool NetworkListView::UpdateNetworkChild(int index, const NetworkInfo* info) {
-  bool added = false;
+void NetworkListView::UpdateNetworkChild(int index, const NetworkInfo* info) {
   HoverHighlightView* network_view = nullptr;
   NetworkGuidMap::const_iterator found = network_guid_map_.find(info->guid);
   if (found == network_guid_map_.end()) {
     network_view = new HoverHighlightView(this);
     UpdateViewForNetwork(network_view, *info);
-    added = true;
   } else {
     network_view = found->second;
     if (NeedUpdateViewForNetwork(*info))
@@ -870,7 +867,6 @@ bool NetworkListView::UpdateNetworkChild(int index, const NetworkInfo* info) {
     network_view->SetEnabled(false);
   network_map_[network_view] = info->guid;
   network_guid_map_[info->guid] = network_view;
-  return added;
 }
 
 void NetworkListView::PlaceViewAtIndex(views::View* view, int index) {
