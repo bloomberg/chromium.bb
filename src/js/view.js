@@ -138,9 +138,9 @@ camera.View.prototype.enter = function(opt_arguments) {
  * Leaves the view.
  */
 camera.View.prototype.leave = function() {
-  document.body.classList.remove(this.name_);
-  this.entered_ = false;
   this.onLeave();
+  this.entered_ = false;
+  document.body.classList.remove(this.name_);
 };
 
 /**
@@ -164,9 +164,10 @@ camera.View.prototype.activate = function() {
  * Inactivates the view. Makes all of the elements on the view not focusable.
  */
 camera.View.prototype.inactivate = function() {
-  document.body.classList.remove(this.name_ + '-active');
+  this.onInactivate();
+  this.active_ = false;
 
-  // Remember tabIndex attribute values, and set them to -1, so the elemenst
+  // Remember tabIndex attribute values, and set them to -1, so the elements
   // are not focusable.
   var childElements = this.rootElement_.querySelectorAll('[tabindex]');
   var elementsArray = Array.prototype.slice.call(childElements);
@@ -182,8 +183,7 @@ camera.View.prototype.inactivate = function() {
     element.tabIndex = -1;
   }
 
-  this.active_ = false;
-  this.onInactivate();
+  document.body.classList.remove(this.name_ + '-active');
 };
 
 /**
