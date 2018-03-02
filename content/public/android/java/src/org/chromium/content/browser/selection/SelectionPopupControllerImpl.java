@@ -558,6 +558,15 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
     }
 
     /**
+     * Whether a touch scroll sequence is active, used to hide text selection
+     * handles. Note that a scroll sequence will *always* bound a pinch
+     * sequence, so this will also be true for the duration of a pinch gesture.
+     */
+    public boolean getScrollInProgress() {
+        return mScrollInProgress;
+    }
+
+    /**
      * Hide or reveal the ActionMode. Note that this only has visible
      * side-effects if the underlying ActionMode supports hiding.
      * @param hide whether to hide or show the ActionMode.
