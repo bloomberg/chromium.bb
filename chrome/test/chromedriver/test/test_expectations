@@ -290,6 +290,7 @@ _OS_NEGATIVE_FILTER['android:chromium'] = (
         'CorrectEventFiringTest.testShouldEmitClickEventWhenClickingOnATextInputElement',
         'CorrectEventFiringTest.testSendingKeysToAnElementShouldCauseTheFocusEventToFire',
         'ElementAttributeTest.testShouldReturnAnAbsoluteUrlWhenGettingHrefAttributeOfAValidAnchorTag',
+        'ElementAttributeTest.testShouldReturnTrueForPresentBooleanAttributes',
         'JavascriptEnabledDriverTest.testShouldBeAbleToFindElementAfterJavascriptCausesANewPageToLoad',
         'JavascriptEnabledDriverTest.testShouldBeAbleToSwitchToFocusedElement',
         'JavascriptEnabledDriverTest.testShouldBeAbleToDetermineTheLocationOfAnElement',
@@ -301,7 +302,7 @@ _OS_NEGATIVE_FILTER['android:chromium'] = (
         'MiscTest.testShouldReturnTheSourceOfAPage',
         'MiscTest.testClickingShouldNotTrampleWOrHInGlobalScope',
         'MiscTest.testShouldReportTheCurrentUrlCorrectly',
-        'MiscTest.testStimulatesStrangeOnloadInteractionInFirefox'
+        'MiscTest.testStimulatesStrangeOnloadInteractionInFirefox',
     ]
 )
 _OS_NEGATIVE_FILTER['android:chrome_beta'] = (
