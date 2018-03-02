@@ -82,6 +82,25 @@ def main():
 
   args, rest_args = parser.parse_known_args()
 
+  rc, charts, output_json = execute_perf_test(args, rest_args)
+
+  # TODO(eakuefner): Make isolated_script_test_perf_output mandatory after
+  # flipping flag in swarming.
+  if args.isolated_script_test_perf_output:
+    filename = args.isolated_script_test_perf_output
+  else:
+    filename = args.isolated_script_test_chartjson_output
+  # Write the returned encoded json to a the charts output file
+  with open(filename, 'w') as f:
+    f.write(charts)
+
+  with open(args.isolated_script_test_output, 'w') as fp:
+    json.dump(output_json, fp)
+
+  return rc
+
+
+def execute_perf_test(args, rest_args):
   env = os.environ.copy()
   # Assume we want to set up the sandbox environment variables all the
   # time; doing so is harmless on non-Linux platforms and is needed
@@ -124,28 +143,17 @@ def main():
       results_processor = (
           generate_legacy_perf_dashboard_json.LegacyResultsProcessor())
       charts = results_processor.GenerateJsonResults(tempfile_path)
-      # TODO(eakuefner): Make isolated_script_test_perf_output mandatory after
-      # flipping flag in swarming.
-      if args.isolated_script_test_perf_output:
-        filename = args.isolated_script_test_perf_output
-      else:
-        filename = args.isolated_script_test_chartjson_output
-      # Write the returned encoded json to a the charts output file
-      with open(filename, 'w') as f:
-        f.write(charts)
   except Exception:
     traceback.print_exc()
     rc = 1
 
   valid = (rc == 0)
   failures = [] if valid else ['(entire test suite)']
-  with open(args.isolated_script_test_output, 'w') as fp:
-    json.dump({
-        'valid': valid,
-        'failures': failures,
-    }, fp)
-
-  return rc
+  output_json = {
+      'valid': valid,
+      'failures': failures,
+    }
+  return rc, charts, output_json
 
 # This is not really a "script test" so does not need to manually add
 # any additional compile targets.

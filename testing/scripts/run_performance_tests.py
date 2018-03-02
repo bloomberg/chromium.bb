@@ -27,7 +27,11 @@ followed by a subsequent Python script. It could be generalized to
 invoke an arbitrary executable.
 
 It currently runs several benchmarks. The benchmarks it will execute are
-based on the shard it is running on and the sharding_map_path(
+based on the shard it is running on and the sharding_map_path.
+
+If this is executed with a non-telemetry perf test, the flag --non-telemetry
+has to be passed in to the script so the script knows it is running
+an executable and not the run_benchmark command.
 
 The results of running the benchmark are put in separate directories per
 benchmark. Two files will be present in each directory; perf_results.json, which
@@ -51,6 +55,7 @@ import traceback
 import common
 
 import run_telemetry_benchmark_as_googletest
+import run_gtest_perf_test
 
 # Current whitelist of benchmarks outputting histograms
 BENCHMARKS_TO_OUTPUT_HISTOGRAMS = [
@@ -81,6 +86,21 @@ def get_sharding_map_path(total_shards, testing):
       'benchmark_bot_map.json')
 
 
+def write_results(
+    perf_test_name, perf_results, json_test_results, isolated_out_dir, encoded):
+  benchmark_path = os.path.join(isolated_out_dir, perf_test_name)
+
+  os.makedirs(benchmark_path)
+  with open(os.path.join(benchmark_path, 'perf_results.json'), 'w') as f:
+    # non telemetry perf results are already json encoded
+    if encoded:
+      f.write(perf_results)
+    else:
+      json.dump(perf_results, f)
+  with open(os.path.join(benchmark_path, 'test_results.json'), 'w') as f:
+    json.dump(json_test_results, f)
+
+
 def execute_benchmark(benchmark, isolated_out_dir,
                       args, rest_args, is_reference):
   # While we are between chartjson and histogram set we need
@@ -100,7 +120,7 @@ def execute_benchmark(benchmark, isolated_out_dir,
   # Need to append output format.
   per_benchmark_args = (rest_args[:1] + [benchmark]
                         + rest_args[1:] + [output_format])
-  benchmark_path = None
+  benchmark_name = benchmark
   if is_reference:
     # Need to parse out the browser to replace browser flag with
     # reference build so we run it reference build as well
@@ -113,9 +133,7 @@ def execute_benchmark(benchmark, isolated_out_dir,
     # Now we need to add in the rest of the reference build args
     per_benchmark_args.append('--max-failures=5')
     per_benchmark_args.append('--output-trace-tag=_ref')
-    benchmark_path = os.path.join(isolated_out_dir, benchmark + '.reference')
-  else:
-    benchmark_path = os.path.join(isolated_out_dir, benchmark)
+    benchmark_name = benchmark + '.reference'
 
   # We don't care exactly what these are. In particular, the perf results
   # could be any format (chartjson, legacy, histogram). We just pass these
@@ -124,11 +142,8 @@ def execute_benchmark(benchmark, isolated_out_dir,
       run_telemetry_benchmark_as_googletest.run_benchmark(
           args, per_benchmark_args, is_histograms))
 
-  os.makedirs(benchmark_path)
-  with open(os.path.join(benchmark_path, 'perf_results.json'), 'w') as f:
-    json.dump(perf_results, f)
-  with open(os.path.join(benchmark_path, 'test_results.json'), 'w') as f:
-    json.dump(json_test_results, f)
+  write_results(
+      benchmark_name, perf_results, json_test_results, isolated_out_dir, False)
   return rc
 
 
@@ -148,38 +163,52 @@ def main():
   parser.add_argument(
       '--isolated-script-test-filter', type=str, required=False)
   parser.add_argument('--xvfb', help='Start xvfb.', action='store_true')
+  # TODO(eyaich) We could potentially assume this based on shards == 1 since
+  # benchmarks will always have multiple shards.
+  parser.add_argument('--non-telemetry',
+                      help='Type of perf test', type=bool, default=False)
   parser.add_argument('--testing', help='Testing instance',
                       type=bool, default=False)
 
   args, rest_args = parser.parse_known_args()
   isolated_out_dir = os.path.dirname(args.isolated_script_test_output)
 
-  # First determine what shard we are running on to know how to
-  # index into the bot map to get list of benchmarks to run.
-  total_shards = None
-  shard_index = None
+  if args.non_telemetry:
+    # For non telemetry tests the benchmark name is the name of the executable.
+    benchmark_name = rest_args[0]
+    return_code, charts, output_json = run_gtest_perf_test.execute_perf_test(
+        args, rest_args)
 
-  env = os.environ.copy()
-  if 'GTEST_TOTAL_SHARDS' in env:
-    total_shards = env['GTEST_TOTAL_SHARDS']
-  if 'GTEST_SHARD_INDEX' in env:
-    shard_index = env['GTEST_SHARD_INDEX']
+    write_results(benchmark_name, charts, output_json, isolated_out_dir, True)
+  else:
+    # First determine what shard we are running on to know how to
+    # index into the bot map to get list of benchmarks to run.
+    total_shards = None
+    shard_index = None
 
-  if not (total_shards or shard_index):
-    raise Exception('Shard indicators must be present for perf tests')
+    env = os.environ.copy()
+    if 'GTEST_TOTAL_SHARDS' in env:
+      total_shards = env['GTEST_TOTAL_SHARDS']
+    if 'GTEST_SHARD_INDEX' in env:
+      shard_index = env['GTEST_SHARD_INDEX']
 
-  sharding_map_path = get_sharding_map_path(total_shards, args.testing or False)
-  with open(sharding_map_path) as f:
-    sharding_map = json.load(f)
-  sharding = None
-  sharding = sharding_map[shard_index]['benchmarks']
-  return_code = 0
+    if not (total_shards or shard_index):
+      raise Exception('Shard indicators must be present for perf tests')
 
-  for benchmark in sharding:
-    return_code = (execute_benchmark(
-        benchmark, isolated_out_dir, args, rest_args, False) or return_code)
-    return_code = (execute_benchmark(
-        benchmark, isolated_out_dir, args, rest_args, True) or return_code)
+    sharding_map_path = get_sharding_map_path(
+        total_shards, args.testing or False)
+    with open(sharding_map_path) as f:
+      sharding_map = json.load(f)
+    sharding = None
+    sharding = sharding_map[shard_index]['benchmarks']
+    return_code = 0
+
+    for benchmark in sharding:
+      return_code = (execute_benchmark(
+          benchmark, isolated_out_dir, args, rest_args, False) or return_code)
+      return_code = (execute_benchmark(
+          benchmark, isolated_out_dir, args, rest_args, True) or return_code)
+
   return return_code
 
 # This is not really a "script test" so does not need to manually add
