@@ -26,6 +26,7 @@
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/fake_picture_layer.h"
 #include "cc/test/layer_tree_test.h"
+#include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/transform_node.h"
 
@@ -1772,6 +1773,196 @@ class LayerTreeHostAnimationTestImplSideInvalidation
 };
 
 MULTI_THREAD_TEST_F(LayerTreeHostAnimationTestImplSideInvalidation);
+
+class LayerTreeHostAnimationTestImplSideInvalidationWithoutCommit
+    : public LayerTreeHostAnimationTest {
+ public:
+  void SetupTree() override {
+    LayerTreeHostAnimationTest::SetupTree();
+    layer_ = FakePictureLayer::Create(&client_);
+    layer_->SetBounds(gfx::Size(4, 4));
+    client_.set_bounds(layer_->bounds());
+    layer_tree_host()->root_layer()->AddChild(layer_);
+    AttachAnimationsToTimeline();
+    animation_child_->AttachElement(layer_->element_id());
+    num_draws_ = 0;
+  }
+
+  void UpdateAnimationState(LayerTreeHostImpl* host_impl,
+                            bool has_unfinished_animation) override {
+    if (!has_unfinished_animation && !did_request_impl_side_invalidation_) {
+      // The animation on the active tree has finished, now request an impl-side
+      // invalidation and verify that the final value on an impl-side pending
+      // tree is correct.
+      did_request_impl_side_invalidation_ = true;
+      host_impl->RequestImplSideInvalidationForCheckerImagedTiles();
+    }
+  }
+
+  void AfterTest() override {}
+
+ protected:
+  scoped_refptr<Layer> layer_;
+  FakeContentLayerClient client_;
+  bool did_request_impl_side_invalidation_ = false;
+  int num_draws_;
+};
+
+class ImplSideInvalidationWithoutCommitTestOpacity
+    : public LayerTreeHostAnimationTestImplSideInvalidationWithoutCommit {
+ public:
+  void BeginTest() override {
+    AddOpacityTransitionToAnimation(animation_child_.get(), 0.04, 0.2f, 0.8f,
+                                    false);
+    PostSetNeedsCommitToMainThread();
+  }
+
+  void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
+    if (num_draws_++ > 0)
+      return;
+    EXPECT_EQ(0, host_impl->active_tree()->source_frame_number());
+    LayerImpl* layer_impl = host_impl->active_tree()->LayerById(layer_->id());
+    EXPECT_FLOAT_EQ(0.2f, layer_impl->Opacity());
+  }
+
+  void DidInvalidateContentOnImplSide(LayerTreeHostImpl* host_impl) override {
+    ASSERT_TRUE(did_request_impl_side_invalidation_);
+    EXPECT_EQ(0, host_impl->sync_tree()->source_frame_number());
+    const float expected_opacity = 0.8f;
+    LayerImpl* layer_impl = host_impl->sync_tree()->LayerById(layer_->id());
+    EXPECT_FLOAT_EQ(expected_opacity, layer_impl->Opacity());
+    EndTest();
+  }
+};
+
+MULTI_THREAD_TEST_F(ImplSideInvalidationWithoutCommitTestOpacity);
+
+class ImplSideInvalidationWithoutCommitTestTransform
+    : public LayerTreeHostAnimationTestImplSideInvalidationWithoutCommit {
+ public:
+  void BeginTest() override {
+    AddAnimatedTransformToAnimation(animation_child_.get(), 0.04, 5, 5);
+    PostSetNeedsCommitToMainThread();
+  }
+
+  void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
+    if (num_draws_++ > 0)
+      return;
+    EXPECT_EQ(0, host_impl->active_tree()->source_frame_number());
+    LayerImpl* layer_impl = host_impl->active_tree()->LayerById(layer_->id());
+    EXPECT_TRANSFORMATION_MATRIX_EQ(gfx::Transform(),
+                                    layer_impl->DrawTransform());
+  }
+
+  void DidInvalidateContentOnImplSide(LayerTreeHostImpl* host_impl) override {
+    ASSERT_TRUE(did_request_impl_side_invalidation_);
+    EXPECT_EQ(0, host_impl->sync_tree()->source_frame_number());
+    gfx::Transform expected_transform;
+    expected_transform.Translate(5.f, 5.f);
+    LayerImpl* layer_impl = host_impl->sync_tree()->LayerById(layer_->id());
+    EXPECT_TRANSFORMATION_MATRIX_EQ(expected_transform,
+                                    layer_impl->DrawTransform());
+    EndTest();
+  }
+};
+
+MULTI_THREAD_TEST_F(ImplSideInvalidationWithoutCommitTestTransform);
+
+class ImplSideInvalidationWithoutCommitTestFilter
+    : public LayerTreeHostAnimationTestImplSideInvalidationWithoutCommit {
+ public:
+  void BeginTest() override {
+    AddAnimatedFilterToAnimation(animation_child_.get(), 0.04, 0.f, 1.f);
+    PostSetNeedsCommitToMainThread();
+  }
+
+  void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
+    if (num_draws_++ > 0)
+      return;
+    EXPECT_EQ(0, host_impl->active_tree()->source_frame_number());
+    EXPECT_EQ(
+        std::string("{\"FilterOperations\":[{\"type\":5,\"amount\":0.0}]}"),
+        host_impl->active_tree()
+            ->property_trees()
+            ->effect_tree.FindNodeFromElementId(layer_->element_id())
+            ->filters.ToString());
+  }
+
+  void DidInvalidateContentOnImplSide(LayerTreeHostImpl* host_impl) override {
+    ASSERT_TRUE(did_request_impl_side_invalidation_);
+    EXPECT_EQ(0, host_impl->sync_tree()->source_frame_number());
+    // AddAnimatedFilterToAnimation adds brightness filter which is type 5.
+    EXPECT_EQ(
+        std::string("{\"FilterOperations\":[{\"type\":5,\"amount\":1.0}]}"),
+        host_impl->sync_tree()
+            ->property_trees()
+            ->effect_tree.FindNodeFromElementId(layer_->element_id())
+            ->filters.ToString());
+    EndTest();
+  }
+};
+
+MULTI_THREAD_TEST_F(ImplSideInvalidationWithoutCommitTestFilter);
+
+class ImplSideInvalidationWithoutCommitTestScroll
+    : public LayerTreeHostAnimationTestImplSideInvalidationWithoutCommit {
+ public:
+  void SetupTree() override {
+    LayerTreeHostAnimationTestImplSideInvalidationWithoutCommit::SetupTree();
+
+    layer_->SetScrollable(gfx::Size(100, 100));
+    layer_->SetBounds(gfx::Size(1000, 1000));
+    client_.set_bounds(layer_->bounds());
+    layer_->SetScrollOffset(gfx::ScrollOffset(10.f, 20.f));
+  }
+
+  void BeginTest() override {
+    std::unique_ptr<ScrollOffsetAnimationCurve> curve(
+        ScrollOffsetAnimationCurve::Create(
+            gfx::ScrollOffset(500.f, 550.f),
+            CubicBezierTimingFunction::CreatePreset(
+                CubicBezierTimingFunction::EaseType::EASE_IN_OUT)));
+    std::unique_ptr<KeyframeModel> keyframe_model(KeyframeModel::Create(
+        std::move(curve), 1, 0, TargetProperty::SCROLL_OFFSET));
+    keyframe_model->set_needs_synchronized_start_time(true);
+    ASSERT_TRUE(proxy()->SupportsImplScrolling());
+    animation_child_->AddKeyframeModel(std::move(keyframe_model));
+    PostSetNeedsCommitToMainThread();
+  }
+
+  void WillCommit() override {
+    if (layer_tree_host()->SourceFrameNumber() == 1) {
+      // Block until the invalidation is done after animation finishes on the
+      // compositor thread. We need to make sure the pending tree has valid
+      // information based on invalidation only.
+      completion_.Wait();
+    }
+  }
+
+  void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
+    if (num_draws_++ > 0)
+      return;
+    EXPECT_EQ(0, host_impl->active_tree()->source_frame_number());
+    LayerImpl* layer_impl = host_impl->active_tree()->LayerById(layer_->id());
+    EXPECT_VECTOR2DF_EQ(gfx::ScrollOffset(10.f, 20.f),
+                        layer_impl->CurrentScrollOffset());
+  }
+
+  void DidInvalidateContentOnImplSide(LayerTreeHostImpl* host_impl) override {
+    ASSERT_TRUE(did_request_impl_side_invalidation_);
+    EXPECT_EQ(0, host_impl->sync_tree()->source_frame_number());
+    LayerImpl* layer_impl = host_impl->pending_tree()->LayerById(layer_->id());
+    EXPECT_VECTOR2DF_EQ(gfx::ScrollOffset(500.f, 550.f),
+                        layer_impl->CurrentScrollOffset());
+    completion_.Signal();
+    EndTest();
+  }
+
+ private:
+  CompletionEvent completion_;
+};
+
+MULTI_THREAD_TEST_F(ImplSideInvalidationWithoutCommitTestScroll);
 
 class LayerTreeHostAnimationTestNotifyAnimationFinished
     : public LayerTreeHostAnimationTest {

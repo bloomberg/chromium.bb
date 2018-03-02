@@ -362,11 +362,6 @@ void LayerTreeHostImpl::CommitComplete() {
   if (input_handler_client_ && impl_thread_phase_ == ImplThreadPhase::IDLE)
     input_handler_client_->DeliverInputForBeginFrame();
 
-  UpdateSyncTreeAfterCommitOrImplSideInvalidation();
-  micro_benchmark_controller_.DidCompleteCommit();
-}
-
-void LayerTreeHostImpl::UpdateSyncTreeAfterCommitOrImplSideInvalidation() {
   if (CommitToActiveTree()) {
     active_tree_->HandleScrollbarShowRequestsFromMain();
 
@@ -385,6 +380,11 @@ void LayerTreeHostImpl::UpdateSyncTreeAfterCommitOrImplSideInvalidation() {
   else
     AnimatePendingTreeAfterCommit();
 
+  UpdateSyncTreeAfterCommitOrImplSideInvalidation();
+  micro_benchmark_controller_.DidCompleteCommit();
+}
+
+void LayerTreeHostImpl::UpdateSyncTreeAfterCommitOrImplSideInvalidation() {
   // LayerTreeHost may have changed the GPU rasterization flags state, which
   // may require an update of the tree resources.
   UpdateTreeResourcesForGpuRasterizationIfNeeded();
@@ -1188,6 +1188,8 @@ void LayerTreeHostImpl::SetViewportDamage(const gfx::Rect& damage_rect) {
 
 void LayerTreeHostImpl::InvalidateContentOnImplSide() {
   DCHECK(!pending_tree_);
+  // Invalidation should never be ran outside the impl frame.
+  DCHECK_EQ(impl_thread_phase_, ImplThreadPhase::INSIDE_IMPL_FRAME);
 
   if (!CommitToActiveTree())
     CreatePendingTree();

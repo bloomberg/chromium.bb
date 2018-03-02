@@ -13568,6 +13568,10 @@ TEST_F(LayerTreeHostImplTest, CheckerImagingTileInvalidation) {
   scoped_refptr<RasterSource> raster_source =
       recording_source->CreateRasterSource();
 
+  viz::BeginFrameArgs begin_frame_args =
+      viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1);
+  host_impl_->WillBeginImplFrame(begin_frame_args);
+
   // Create the pending tree.
   host_impl_->BeginCommit();
   LayerTreeImpl* pending_tree = host_impl_->pending_tree();
