@@ -687,7 +687,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       bool is_new_request);
 
   void RunAuthRequiredCallback(
-      net::URLRequest* url_request,
+      GlobalRequestID request_id,
       const base::Optional<net::AuthCredentials>& credentials);
 
   // Returns true if there are two or more tabs that are not network 2-quiet
