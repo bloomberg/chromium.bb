@@ -1874,6 +1874,7 @@ enum WebFeature {
   kV8RTCRtpSender_Dtmf_AttributeGetter = 2381,
   kRTCConstraintEnableDtlsSrtpTrue = 2382,
   kRTCConstraintEnableDtlsSrtpFalse = 2383,
+  kRtcPeerConnectionId = 2383,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

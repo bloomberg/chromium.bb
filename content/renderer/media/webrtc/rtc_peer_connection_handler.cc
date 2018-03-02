@@ -4,8 +4,10 @@
 
 #include "content/renderer/media/webrtc/rtc_peer_connection_handler.h"
 
+#include <ctype.h>
 #include <string.h>
 
+#include <algorithm>
 #include <memory>
 #include <string>
 #include <utility>
@@ -16,9 +18,11 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
+#include "base/unguessable_token.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/renderer/media/stream/media_stream_constraints_util.h"
@@ -1336,7 +1340,8 @@ RTCPeerConnectionHandler::RTCPeerConnectionHandler(
     blink::WebRTCPeerConnectionHandlerClient* client,
     PeerConnectionDependencyFactory* dependency_factory,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : initialize_called_(false),
+    : id_(base::ToUpperASCII(base::UnguessableToken::Create().ToString())),
+      initialize_called_(false),
       client_(client),
       is_closed_(false),
       dependency_factory_(dependency_factory),
@@ -1349,6 +1354,7 @@ RTCPeerConnectionHandler::RTCPeerConnectionHandler(
       task_runner_(std::move(task_runner)),
       weak_factory_(this) {
   CHECK(client_);
+
   GetPeerConnectionHandlers()->insert(this);
 }
 
@@ -1996,6 +2002,10 @@ void RTCPeerConnectionHandler::Stop() {
 
   // This object may no longer forward call backs to blink.
   is_closed_ = true;
+}
+
+blink::WebString RTCPeerConnectionHandler::Id() const {
+  return blink::WebString::FromASCII(id_);
 }
 
 void RTCPeerConnectionHandler::OnSignalingChange(
