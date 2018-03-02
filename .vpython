@@ -67,6 +67,7 @@ wheel: <
 
 # Used by:
 #   third_party/catapult
+#   chrome/test/vr/perf/latency/run_latency_test.py
 #
 # This version must be compatible with the version range specified by
 # //third_party/catapult/telemetry/telemetry/internal/util/external_modules.py
@@ -145,6 +146,10 @@ wheel: <
     abi: "cp27mu"
     platform: "manylinux1_x86_64"
   >
+>
+wheel: <
+  name: "infra/python/wheels/pyserial-py2_py3"
+  version: "version:3.4"
 >
 wheel: <
   name: "infra/python/wheels/scipy/${vpython_platform}"
