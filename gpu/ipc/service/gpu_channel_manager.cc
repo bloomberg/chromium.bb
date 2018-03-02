@@ -266,6 +266,10 @@ void GpuChannelManager::DoWakeUpGpu() {
 
 void GpuChannelManager::OnApplicationStateChange(
     base::android::ApplicationState state) {
+  // TODO(ericrk): Temporarily disable the context release logic due to
+  // https://crbug.com/792120. Re-enable when the fix lands.
+  return;
+
   if (state != base::android::APPLICATION_STATE_HAS_STOPPED_ACTIVITIES ||
       !is_running_on_low_end_mode_) {
     return;
