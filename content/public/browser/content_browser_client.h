@@ -138,6 +138,7 @@ class BrowserURLHandler;
 class ClientCertificateDelegate;
 class ControllerPresentationServiceDelegate;
 class DevToolsManagerDelegate;
+class LoginDelegate;
 class MediaObserver;
 class MemoryCoordinatorDelegate;
 class NavigationHandle;
@@ -149,7 +150,6 @@ class RenderFrameHost;
 class RenderProcessHost;
 class RenderViewHost;
 class ResourceContext;
-class ResourceDispatcherHostLoginDelegate;
 class SiteInstance;
 class SpeechRecognitionManagerDelegate;
 class StoragePartition;
@@ -1096,8 +1096,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual std::unique_ptr<net::ClientCertStore> CreateClientCertStore(
       ResourceContext* resource_context);
 
-  // Creates a ResourceDispatcherHostLoginDelegate that asks the user for a
-  // username and password.
+  // Creates a LoginDelegate that asks the user for a username and password.
   // Caller owns the returned pointer.
   // |first_auth_attempt| is needed by AwHttpAuthHandler constructor.
   // |auth_required_callback| is used to transfer auth credentials to
@@ -1105,8 +1104,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // is base::nullopt if the request should be cancelled; otherwise
   // the credentials will be used to respond to the auth challenge. This
   // callback should be called on the IO thread task runner.
-  virtual scoped_refptr<ResourceDispatcherHostLoginDelegate>
-  CreateLoginDelegate(
+  virtual scoped_refptr<LoginDelegate> CreateLoginDelegate(
       net::AuthChallengeInfo* auth_info,
       content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
       bool is_main_frame,

@@ -19,14 +19,14 @@ struct ResourceResponse;
 }
 
 namespace content {
-class ResourceDispatcherHostLoginDelegate;
+class LoginDelegate;
 class ResourceLoader;
 
 class CONTENT_EXPORT ResourceLoaderDelegate {
  public:
-  virtual scoped_refptr<ResourceDispatcherHostLoginDelegate>
-  CreateLoginDelegate(ResourceLoader* loader,
-                      net::AuthChallengeInfo* auth_info) = 0;
+  virtual scoped_refptr<LoginDelegate> CreateLoginDelegate(
+      ResourceLoader* loader,
+      net::AuthChallengeInfo* auth_info) = 0;
 
   virtual bool HandleExternalProtocol(ResourceLoader* loader,
                                       const GURL& url) = 0;

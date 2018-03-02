@@ -19,11 +19,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "content/public/browser/client_certificate_delegate.h"
+#include "content/public/browser/login_delegate.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
-#include "content/public/browser/resource_dispatcher_host_login_delegate.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_names.mojom.h"
@@ -350,8 +350,7 @@ void ShellContentBrowserClient::OpenURL(
                                       gfx::Size())->web_contents());
 }
 
-scoped_refptr<ResourceDispatcherHostLoginDelegate>
-ShellContentBrowserClient::CreateLoginDelegate(
+scoped_refptr<LoginDelegate> ShellContentBrowserClient::CreateLoginDelegate(
     net::AuthChallengeInfo* auth_info,
     content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
     bool is_main_frame,

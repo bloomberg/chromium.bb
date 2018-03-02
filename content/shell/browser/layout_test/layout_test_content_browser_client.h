@@ -67,7 +67,7 @@ class LayoutTestContentBrowserClient : public ShellContentBrowserClient {
   void ExposeInterfacesToFrame(
       service_manager::BinderRegistryWithArgs<content::RenderFrameHost*>*
           registry) override;
-  scoped_refptr<ResourceDispatcherHostLoginDelegate> CreateLoginDelegate(
+  scoped_refptr<LoginDelegate> CreateLoginDelegate(
       net::AuthChallengeInfo* auth_info,
       content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
       bool is_main_frame,

@@ -403,7 +403,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   typedef std::map<std::string, HeaderInterceptorInfo> HeaderInterceptorMap;
 
   // ResourceLoaderDelegate implementation:
-  scoped_refptr<ResourceDispatcherHostLoginDelegate> CreateLoginDelegate(
+  scoped_refptr<LoginDelegate> CreateLoginDelegate(
       ResourceLoader* loader,
       net::AuthChallengeInfo* auth_info) override;
   bool HandleExternalProtocol(ResourceLoader* loader, const GURL& url) override;

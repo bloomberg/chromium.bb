@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_BROWSER_RESOURCE_DISPATCHER_HOST_LOGIN_DELEGATE_H_
-#define CONTENT_PUBLIC_BROWSER_RESOURCE_DISPATCHER_HOST_LOGIN_DELEGATE_H_
+#ifndef CONTENT_PUBLIC_BROWSER_LOGIN_DELEGATE_H_
+#define CONTENT_PUBLIC_BROWSER_LOGIN_DELEGATE_H_
 
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
@@ -15,18 +15,18 @@ namespace content {
 // method. If the user cancels, the login delegate should call the URLRequest's
 // CancelAuth instead. And in either case, it must make a call to
 // ResourceDispatcherHost::ClearLoginDelegateForRequest.
-class CONTENT_EXPORT ResourceDispatcherHostLoginDelegate
-    : public base::RefCountedThreadSafe<ResourceDispatcherHostLoginDelegate> {
+class CONTENT_EXPORT LoginDelegate
+    : public base::RefCountedThreadSafe<LoginDelegate> {
  public:
   // Notify the login delegate that the request was cancelled.
   // This function can only be called from the IO thread.
   virtual void OnRequestCancelled() = 0;
 
  protected:
-  friend class base::RefCountedThreadSafe<ResourceDispatcherHostLoginDelegate>;
-  virtual ~ResourceDispatcherHostLoginDelegate() {}
+  friend class base::RefCountedThreadSafe<LoginDelegate>;
+  virtual ~LoginDelegate() {}
 };
 
-}  // public content
+}  // namespace content
 
-#endif  // CONTENT_PUBLIC_BROWSER_RESOURCE_DISPATCHER_HOST_LOGIN_DELEGATE_H_
+#endif  // CONTENT_PUBLIC_BROWSER_LOGIN_DELEGATE_H_

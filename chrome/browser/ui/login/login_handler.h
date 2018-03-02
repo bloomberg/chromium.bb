@@ -16,8 +16,8 @@
 #include "base/optional.h"
 #include "base/synchronization/lock.h"
 #include "components/password_manager/core/browser/password_manager.h"
+#include "content/public/browser/login_delegate.h"
 #include "content/public/browser/notification_observer.h"
-#include "content/public/browser/resource_dispatcher_host_login_delegate.h"
 #include "content/public/browser/resource_request_info.h"
 
 class GURL;
@@ -37,7 +37,7 @@ class AuthCredentials;
 // This is the base implementation for the OS-specific classes that route
 // authentication info to the net::URLRequest that needs it. These functions
 // must be implemented in a thread safe manner.
-class LoginHandler : public content::ResourceDispatcherHostLoginDelegate,
+class LoginHandler : public content::LoginDelegate,
                      public password_manager::LoginModelObserver,
                      public content::NotificationObserver {
  public:
@@ -75,7 +75,7 @@ class LoginHandler : public content::ResourceDispatcherHostLoginDelegate,
     interstitial_delegate_ = delegate;
   }
 
-  // ResourceDispatcherHostLoginDelegate implementation:
+  // LoginDelegate implementation:
   void OnRequestCancelled() override;
 
   // Use this to build a view with password manager support. |password_manager|

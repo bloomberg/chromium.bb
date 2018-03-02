@@ -24,7 +24,7 @@
 #include "content/browser/loader/resource_loader_delegate.h"
 #include "content/browser/loader/test_resource_handler.h"
 #include "content/public/browser/client_certificate_delegate.h"
-#include "content/public/browser/resource_dispatcher_host_login_delegate.h"
+#include "content/public/browser/login_delegate.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/resource_type.h"
@@ -490,7 +490,7 @@ class ResourceLoaderTest : public testing::Test,
   }
 
   // ResourceLoaderDelegate:
-  scoped_refptr<ResourceDispatcherHostLoginDelegate> CreateLoginDelegate(
+  scoped_refptr<LoginDelegate> CreateLoginDelegate(
       ResourceLoader* loader,
       net::AuthChallengeInfo* auth_info) override {
     return nullptr;

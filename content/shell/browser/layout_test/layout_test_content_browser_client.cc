@@ -9,9 +9,9 @@
 #include "base/strings/pattern.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/login_delegate.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
-#include "content/public/browser/resource_dispatcher_host_login_delegate.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/shell/browser/layout_test/blink_test_controller.h"
 #include "content/shell/browser/layout_test/layout_test_bluetooth_fake_adapter_setter_impl.h"
@@ -189,7 +189,7 @@ void LayoutTestContentBrowserClient::ExposeInterfacesToFrame(
   registry->AddInterface(base::Bind(&BindLayoutTestHelper));
 }
 
-scoped_refptr<ResourceDispatcherHostLoginDelegate>
+scoped_refptr<LoginDelegate>
 LayoutTestContentBrowserClient::CreateLoginDelegate(
     net::AuthChallengeInfo* auth_info,
     content::ResourceRequestInfo::WebContentsGetter web_contents_getter,

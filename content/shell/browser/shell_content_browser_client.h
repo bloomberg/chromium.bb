@@ -69,7 +69,7 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   void OpenURL(BrowserContext* browser_context,
                const OpenURLParams& params,
                const base::Callback<void(WebContents*)>& callback) override;
-  scoped_refptr<ResourceDispatcherHostLoginDelegate> CreateLoginDelegate(
+  scoped_refptr<LoginDelegate> CreateLoginDelegate(
       net::AuthChallengeInfo* auth_info,
       content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
       bool is_main_frame,
