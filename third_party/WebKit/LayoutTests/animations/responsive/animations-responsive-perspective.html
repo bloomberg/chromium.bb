@@ -32,4 +32,18 @@ test(function() {
     assert_equals(getComputedStyle(element).perspective, 'none');
 }, 'perspective clamped to none');
 
+test(function() {
+    container.style.perspective = 'none';
+    var player = element.animate([{perspective: 'inherit'}, {perspective: '20px'}], 4000);
+    player.pause();
+
+    player.currentTime = 1000;
+    assert_equals(getComputedStyle(element).perspective, 'none');
+
+    container.style.perspective = '100px';
+    assert_equals(getComputedStyle(element).perspective, '80px');
+
+    container.style.perspective = 'none';
+    assert_equals(getComputedStyle(element).perspective, 'none');
+}, 'perspective responsive to inherited changes');
 </script>
