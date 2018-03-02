@@ -382,7 +382,7 @@ cfl_subsample_lbd_fn cfl_get_luma_subsampling_444_lbd_c(TX_SIZE tx_size) {
   return subfn_444[tx_size];
 }
 
-static inline cfl_subsample_hbd_fn cfl_subsampling_hbd(TX_SIZE tx_size,
+static INLINE cfl_subsample_hbd_fn cfl_subsampling_hbd(TX_SIZE tx_size,
                                                        int sub_x, int sub_y) {
   if (sub_x == 1) {
     if (sub_y == 1) {
@@ -396,7 +396,7 @@ static inline cfl_subsample_hbd_fn cfl_subsampling_hbd(TX_SIZE tx_size,
   return cfl_get_luma_subsampling_444_hbd_c(tx_size);
 }
 
-static inline cfl_subsample_lbd_fn cfl_subsampling_lbd(TX_SIZE tx_size,
+static INLINE cfl_subsample_lbd_fn cfl_subsampling_lbd(TX_SIZE tx_size,
                                                        int sub_x, int sub_y) {
   if (sub_x == 1) {
     if (sub_y == 1) {
