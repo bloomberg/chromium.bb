@@ -15,6 +15,8 @@
 
 namespace blink {
 
+class IconDefinition;
+
 class MODULES_EXPORT BackgroundFetchIconLoader final
     : public GarbageCollectedFinalized<BackgroundFetchIconLoader>,
       public ThreadableLoaderClient {
@@ -32,7 +34,9 @@ class MODULES_EXPORT BackgroundFetchIconLoader final
 
   // Asynchronously download an icon from the given url, decodes the loaded
   // data, and passes the bitmap to the given callback.
-  void Start(ExecutionContext*, const KURL&, IconCallback);
+  void Start(ExecutionContext*,
+             const HeapVector<IconDefinition>&,
+             IconCallback);
 
   // Cancels the pending load, if there is one. The |icon_callback_| will not
   // be run.

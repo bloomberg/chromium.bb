@@ -6,6 +6,7 @@
 
 #include "core/dom/ExecutionContext.h"
 #include "core/loader/ThreadableLoader.h"
+#include "modules/background_fetch/IconDefinition.h"
 #include "platform/graphics/ColorBehavior.h"
 #include "platform/image-decoders/ImageDecoder.h"
 #include "platform/image-decoders/ImageFrame.h"
@@ -25,12 +26,28 @@ const unsigned long kIconFetchTimeoutInMs = 30000;
 }  // namespace
 
 BackgroundFetchIconLoader::BackgroundFetchIconLoader() = default;
-BackgroundFetchIconLoader::~BackgroundFetchIconLoader() = default;
+BackgroundFetchIconLoader::~BackgroundFetchIconLoader() {
+  // We should've called Stop() before the destructor is invoked.
+  DCHECK(stopped_ || icon_callback_.is_null());
+}
 
+// TODO(nator): Add functionality to select which icon to load.
 void BackgroundFetchIconLoader::Start(ExecutionContext* execution_context,
-                                      const KURL& url,
+                                      const HeapVector<IconDefinition>& icons,
                                       IconCallback icon_callback) {
   DCHECK(!stopped_);
+  DCHECK_GE(icons.size(), 1u);
+
+  if (!icons[0].hasSrc()) {
+    std::move(icon_callback).Run(SkBitmap());
+    return;
+  }
+
+  KURL first_icon_url = execution_context->CompleteURL(icons[0].src());
+  if (!first_icon_url.IsValid() || first_icon_url.IsEmpty()) {
+    std::move(icon_callback).Run(SkBitmap());
+    return;
+  }
 
   icon_callback_ = std::move(icon_callback);
 
@@ -41,7 +58,7 @@ void BackgroundFetchIconLoader::Start(ExecutionContext* execution_context,
   if (execution_context->IsWorkerGlobalScope())
     resource_loader_options.request_initiator_context = kWorkerContext;
 
-  ResourceRequest resource_request(url);
+  ResourceRequest resource_request(first_icon_url);
   resource_request.SetRequestContext(WebURLRequest::kRequestContextImage);
   resource_request.SetPriority(ResourceLoadPriority::kMedium);
   resource_request.SetRequestorOrigin(execution_context->GetSecurityOrigin());
