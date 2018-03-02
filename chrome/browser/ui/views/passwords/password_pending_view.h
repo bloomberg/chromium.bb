@@ -18,12 +18,13 @@ class StyledLabel;
 class ToggleImageButton;
 }  // namespace views
 
+class CredentialsSelectionView;
 class DesktopIOSPromotionBubbleView;
 class PasswordSignInPromoView;
 
-// A view offering the user the ability to save credentials. Contains a
-// username and password field, along with a "Save Passwords" button and a
-// "Never" button.
+// A view offering the user the ability to save or update credentials (depending
+// on |is_update_bubble|). Contains a username and password field, along with a
+// "Save"/"Update" button and a "Never"/"Nope" button.
 class PasswordPendingView : public PasswordBubbleViewBase,
                             public views::ButtonListener,
                             public views::StyledLabelListener {
@@ -75,6 +76,9 @@ class PasswordPendingView : public PasswordBubbleViewBase,
   void ReplaceWithPromo();
   void UpdateTitleText(views::StyledLabel* title_view);
 
+  // True iff it is an update password bubble. False iff it is a save bubble.
+  const bool is_update_bubble_;
+
   // Different promo dialogs that helps the user get access to credentials
   // across devices. One of these are non-null when the promotion dialog is
   // active.
@@ -91,6 +95,10 @@ class PasswordPendingView : public PasswordBubbleViewBase,
   views::Label* password_label_;
 
   bool are_passwords_revealed_;
+
+  // The view for selecting a username from the list of existing usernames
+  // (applicable only to an update bubble).
+  CredentialsSelectionView* selection_view_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordPendingView);
 };

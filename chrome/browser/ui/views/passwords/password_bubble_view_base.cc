@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/views/passwords/password_items_view.h"
 #include "chrome/browser/ui/views/passwords/password_pending_view.h"
 #include "chrome/browser/ui/views/passwords/password_save_confirmation_view.h"
-#include "chrome/browser/ui/views/passwords/password_update_pending_view.h"
 #include "ui/base/material_design/material_design_controller.h"
 
 #if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
@@ -95,10 +94,8 @@ PasswordBubbleViewBase* PasswordBubbleViewBase::CreateBubble(
     view = new PasswordSaveConfirmationView(web_contents, anchor_view,
                                             anchor_point, reason);
   } else if (model_state ==
-             password_manager::ui::PENDING_PASSWORD_UPDATE_STATE) {
-    view = new PasswordUpdatePendingView(web_contents, anchor_view,
-                                         anchor_point, reason);
-  } else if (model_state == password_manager::ui::PENDING_PASSWORD_STATE) {
+                 password_manager::ui::PENDING_PASSWORD_UPDATE_STATE ||
+             model_state == password_manager::ui::PENDING_PASSWORD_STATE) {
     view = new PasswordPendingView(web_contents, anchor_view, anchor_point,
                                    reason);
   } else {
