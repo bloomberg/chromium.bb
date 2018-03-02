@@ -51,17 +51,6 @@ namespace {
 
 enum HandshakeStreamType { BASIC_HANDSHAKE_STREAM, HTTP2_HANDSHAKE_STREAM };
 
-std::string WebSocketExtraHeadersToString(WebSocketExtraHeaders headers) {
-  std::string answer;
-  for (const auto& header : headers) {
-    answer.append(header.first);
-    answer.append(": ");
-    answer.append(header.second);
-    answer.append("\r\n");
-  }
-  return answer;
-}
-
 // This class encapsulates the details of creating a mock ClientSocketHandle.
 class MockClientSocketHandleFactory {
  public:
@@ -214,7 +203,7 @@ class WebSocketHandshakeStreamCreateHelperTest
 
         SSLSocketDataProvider ssl(ASYNC, OK);
         ssl.ssl_info.cert =
-            ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
+            ImportCertFromFile(GetTestCertsDirectory(), "wildcard.pem");
 
         SpdySessionDependencies session_deps;
         session_deps.socket_factory->AddSocketDataProvider(&data);

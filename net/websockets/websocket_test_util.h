@@ -45,6 +45,9 @@ class LinearCongruentialGenerator {
   uint64_t current_;
 };
 
+// Converts a vector of header key-value pairs into a single string.
+std::string WebSocketExtraHeadersToString(const WebSocketExtraHeaders& headers);
+
 // Generates a standard WebSocket handshake request. The challenge key used is
 // "dGhlIHNhbXBsZSBub25jZQ==". Each header in |extra_headers| must be terminated
 // with "\r\n".

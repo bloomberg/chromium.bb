@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "net/proxy_resolution/proxy_service.h"
@@ -34,6 +35,15 @@ uint32_t LinearCongruentialGenerator::Generate() {
   uint64_t result = current_;
   current_ = (current_ * kA + kC) % kM;
   return static_cast<uint32_t>(result >> 16);
+}
+
+std::string WebSocketExtraHeadersToString(
+    const WebSocketExtraHeaders& headers) {
+  std::string answer;
+  for (const auto& header : headers) {
+    base::StrAppend(&answer, {header.first, ": ", header.second, "\r\n"});
+  }
+  return answer;
 }
 
 std::string WebSocketStandardRequest(
