@@ -25,7 +25,10 @@ enum VerifyArenaCompaction {
 
 class IntWrapper : public blink::GarbageCollectedFinalized<IntWrapper> {
  public:
+  static bool did_verify_at_least_once;
+
   static IntWrapper* Create(int x, VerifyArenaCompaction verify = NoVerify) {
+    did_verify_at_least_once = false;
     return new IntWrapper(x, verify);
   }
 
@@ -33,7 +36,13 @@ class IntWrapper : public blink::GarbageCollectedFinalized<IntWrapper> {
 
   void Trace(blink::Visitor* visitor) {
     // Verify if compaction is indeed activated.
-    //
+
+    // There may be multiple passes over objects during a GC, even after
+    // compaction is finished. Filter out that cases here.
+    if (!visitor->Heap().Compaction()->IsCompacting())
+      return;
+
+    did_verify_at_least_once = true;
     // What arenas end up being compacted is dependent on residency,
     // so approximate the arena checks to fit.
     blink::HeapCompact* compaction = visitor->Heap().Compaction();
@@ -66,6 +75,9 @@ class IntWrapper : public blink::GarbageCollectedFinalized<IntWrapper> {
   int x_;
   VerifyArenaCompaction verify_;
 };
+
+bool IntWrapper::did_verify_at_least_once = false;
+
 static_assert(WTF::IsTraceable<IntWrapper>::value,
               "IsTraceable<> template failed to recognize trace method.");
 
@@ -255,6 +267,7 @@ TEST(HeapCompactTest, CompactHashMap) {
     EXPECT_EQ(k.key->Value(), 100 - k.value);
 
   PerformHeapCompaction();
+  EXPECT_TRUE(IntWrapper::did_verify_at_least_once);
 
   for (auto k : *int_map)
     EXPECT_EQ(k.key->Value(), 100 - k.value);
@@ -284,6 +297,7 @@ TEST(HeapCompactTest, CompactVectorPartHashMap) {
   }
 
   PerformHeapCompaction();
+  EXPECT_TRUE(IntWrapper::did_verify_at_least_once);
 
   EXPECT_EQ(10u, int_map_vector->size());
   for (auto map : *int_map_vector) {
@@ -317,6 +331,7 @@ TEST(HeapCompactTest, CompactHashPartVector) {
   }
 
   PerformHeapCompaction();
+  EXPECT_TRUE(IntWrapper::did_verify_at_least_once);
 
   EXPECT_EQ(10u, int_vector_map->size());
   for (const IntVector& int_vector : int_vector_map->Values()) {
@@ -338,6 +353,7 @@ TEST(HeapCompactTest, CompactDeques) {
     EXPECT_EQ(static_cast<int>(7 - i), deque->at(i)->Value());
 
   PerformHeapCompaction();
+  EXPECT_TRUE(IntWrapper::did_verify_at_least_once);
 
   for (size_t i = 0; i < deque->size(); ++i)
     EXPECT_EQ(static_cast<int>(7 - i), deque->at(i)->Value());
@@ -356,6 +372,7 @@ TEST(HeapCompactTest, CompactDequeVectors) {
     EXPECT_EQ(static_cast<int>(7 - i), deque->at(i).at(i)->Value());
 
   PerformHeapCompaction();
+  EXPECT_TRUE(IntWrapper::did_verify_at_least_once);
 
   for (size_t i = 0; i < deque->size(); ++i)
     EXPECT_EQ(static_cast<int>(7 - i), deque->at(i).at(i)->Value());
@@ -377,6 +394,7 @@ TEST(HeapCompactTest, CompactLinkedHashSet) {
   }
 
   PerformHeapCompaction();
+  EXPECT_TRUE(IntWrapper::did_verify_at_least_once);
 
   expected = 0;
   for (IntWrapper* v : *set) {
@@ -402,6 +420,7 @@ TEST(HeapCompactTest, CompactLinkedHashSetVector) {
   }
 
   PerformHeapCompaction();
+  EXPECT_TRUE(IntWrapper::did_verify_at_least_once);
 
   expected = 0;
   for (IntVector* v : *set) {
@@ -431,6 +450,7 @@ TEST(HeapCompactTest, CompactLinkedHashSetMap) {
   }
 
   PerformHeapCompaction();
+  EXPECT_TRUE(IntWrapper::did_verify_at_least_once);
 
   expected = 0;
   for (const Inner* v : *set) {
@@ -461,6 +481,7 @@ TEST(HeapCompactTest, CompactLinkedHashSetNested) {
   }
 
   PerformHeapCompaction();
+  EXPECT_TRUE(IntWrapper::did_verify_at_least_once);
 
   expected = 0;
   for (const Inner* v : *set) {

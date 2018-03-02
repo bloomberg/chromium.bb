@@ -436,6 +436,8 @@ class BasePage {
   // Returns true if magic number is valid.
   bool IsValid() const;
 
+  virtual void VerifyMarking() = 0;
+
  private:
   // Returns a random magic value.
   uint32_t GetMagic() const { return GetRandomMagic() ^ 0xba5e4a9e; }
@@ -593,6 +595,8 @@ class PLATFORM_EXPORT NormalPage final : public BasePage {
   // found, or it is pointing to valid object or free list entry.
   HeapObjectHeader* FindHeaderFromAddress(Address);
 
+  void VerifyMarking() override;
+
  private:
   ObjectStartBitmap object_start_bit_map_;
 };
@@ -667,6 +671,8 @@ class LargeObjectPage final : public BasePage {
   void SetIsVectorBackingPage() { is_vector_backing_page_ = true; }
   bool IsVectorBackingPage() const { return is_vector_backing_page_; }
 #endif
+
+  void VerifyMarking() override {}
 
  private:
   size_t payload_size_;
@@ -807,6 +813,7 @@ class PLATFORM_EXPORT BaseArena {
   void DisableIncrementalMarkingBarrier();
 
   virtual void Verify(){};
+  virtual void VerifyMarking(){};
 
  protected:
   bool SweepingCompleted() const { return !first_unswept_page_; }
@@ -868,6 +875,7 @@ class PLATFORM_EXPORT NormalPageArena final : public BaseArena {
   void SweepAndCompact();
 
   void Verify() override;
+  void VerifyMarking() override;
 
   Address CurrentAllocationPoint() const { return current_allocation_point_; }
 
@@ -876,6 +884,8 @@ class PLATFORM_EXPORT NormalPageArena final : public BaseArena {
            (CurrentAllocationPoint() <= address) &&
            (address < (CurrentAllocationPoint() + RemainingAllocationSize()));
   }
+
+  size_t RemainingAllocationSize() const { return remaining_allocation_size_; }
 
   void MakeConsistentForGC() override;
 
@@ -892,7 +902,6 @@ class PLATFORM_EXPORT NormalPageArena final : public BaseArena {
   }
   void SetAllocationPoint(Address, size_t);
 
-  size_t RemainingAllocationSize() const { return remaining_allocation_size_; }
   void SetRemainingAllocationSize(size_t);
   void UpdateRemainingAllocationSize();
 

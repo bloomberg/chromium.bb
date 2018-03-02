@@ -37,6 +37,7 @@
 #include "platform/heap/BlinkGCMemoryDumpProvider.h"
 #include "platform/heap/CallbackStack.h"
 #include "platform/heap/HeapCompact.h"
+#include "platform/heap/MarkingVerifier.h"
 #include "platform/heap/MarkingVisitor.h"
 #include "platform/heap/PageMemory.h"
 #include "platform/heap/PagePool.h"
@@ -598,6 +599,14 @@ void NormalPageArena::Verify() {
   for (NormalPage* page = static_cast<NormalPage*>(first_page_); page;
        page = static_cast<NormalPage*>(page->Next()))
     page->VerifyObjectStartBitmapIsConsistentWithPayload();
+#endif  // DCHECK_IS_ON()
+}
+
+void NormalPageArena::VerifyMarking() {
+#if DCHECK_IS_ON()
+  for (NormalPage* page = static_cast<NormalPage*>(first_page_); page;
+       page = static_cast<NormalPage*>(page->Next()))
+    page->VerifyMarking();
 #endif  // DCHECK_IS_ON()
 }
 
@@ -1572,6 +1581,22 @@ void NormalPage::VerifyObjectStartBitmapIsConsistentWithPayload() {
                                                          object_header->size());
   });
 #endif  // DCHECK_IS_ON()
+}
+
+void NormalPage::VerifyMarking() {
+  DCHECK(!ArenaForNormalPage()
+              ->GetThreadState()
+              ->Heap()
+              .GetStackFrameDepth()
+              .IsSafeToRecurse());
+  DCHECK(!ArenaForNormalPage()->CurrentAllocationPoint());
+  MarkingVerifier verifier(ArenaForNormalPage()->GetThreadState());
+  for (Address header_address = Payload(); header_address < PayloadEnd();) {
+    HeapObjectHeader* header =
+        reinterpret_cast<HeapObjectHeader*>(header_address);
+    verifier.VerifyObject(header);
+    header_address += header->size();
+  }
 }
 
 Address ObjectStartBitmap::FindHeader(

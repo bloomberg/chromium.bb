@@ -397,6 +397,12 @@ void ThreadHeap::WeakProcessing(Visitor* visitor) {
   weak_processing_time_histogram.Count(time_for_weak_processing);
 }
 
+void ThreadHeap::VerifyMarking() {
+  for (int i = 0; i < BlinkGC::kNumberOfArenas; ++i) {
+    arenas_[i]->VerifyMarking();
+  }
+}
+
 void ThreadHeap::ReportMemoryUsageHistogram() {
   static size_t supported_max_size_in_mb = 4 * 1024;
   static size_t observed_max_size_in_mb = 0;
