@@ -211,3 +211,24 @@ message DestroyDiskImageResponse {
   // The failure reason if the disk image could not be destroyed or doesn't exist.
   string failure_reason = 3;
 }
+
+// Request to list all VM disk images in the given storage area.
+message ListVmDisksRequest {
+  // The cryptohome id for the user's encrypted storage.
+  string cryptohome_id = 1;
+
+  // The storage location to check.
+  StorageLocation storage_location = 2;
+}
+
+// Response to ListVmDisks {
+message ListVmDisksResponse {
+  // If true, the images array is valid.
+  bool success = 1;
+
+  // List of disk images.
+  repeated string images = 2;
+
+  // The failure reason if the disks could not be listed.
+  string failure_reason = 3;
+}
