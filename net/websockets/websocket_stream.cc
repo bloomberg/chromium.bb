@@ -15,6 +15,7 @@
 #include "net/base/url_util.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
+#include "net/http/http_response_info.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/redirect_info.h"
@@ -329,6 +330,20 @@ void Delegate::OnResponseStarted(URLRequest* request, int net_error) {
   }
   const int response_code = request->GetResponseCode();
   DVLOG(3) << "OnResponseStarted (response code " << response_code << ")";
+
+  if (request->response_info().connection_info ==
+      HttpResponseInfo::CONNECTION_INFO_HTTP2) {
+    if (response_code == HTTP_OK) {
+      result_ = CONNECTED;
+      owner_->PerformUpgrade();
+      return;
+    }
+
+    result_ = FAILED;
+    owner_->ReportFailure(net_error);
+    return;
+  }
+
   switch (response_code) {
     case HTTP_SWITCHING_PROTOCOLS:
       result_ = CONNECTED;

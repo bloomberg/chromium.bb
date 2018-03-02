@@ -99,8 +99,7 @@ void AppendToHeaderBlock(const char* const extra_headers[],
   for (int i = 0; i < extra_header_count; i++) {
     SpdyStringPiece key(extra_headers[i * 2]);
     SpdyStringPiece value(extra_headers[i * 2 + 1]);
-    DCHECK(!key.empty()) << "Empty header key.";
-    DCHECK(!value.empty()) << "Empty header value.";
+    DCHECK(!key.empty()) << "Header key must not be empty.";
     headers->AppendValueOrAddHeader(key, value);
   }
 }
