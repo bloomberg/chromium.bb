@@ -56,6 +56,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/browsertest_util.h"
 #include "extensions/browser/disable_reason.h"
 #include "extensions/browser/extension_creator.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
