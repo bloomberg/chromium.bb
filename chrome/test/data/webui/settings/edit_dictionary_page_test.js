@@ -91,7 +91,7 @@ suite('settings-edit-dictionary-page', function() {
         function() {
           Polymer.dom.flush();
 
-          assertTrue(!!editDictPage.$$('#noWordsLabel'));
+          assertFalse(editDictPage.$.noWordsLabel.hidden);
           assertFalse(!!editDictPage.$$('#list'));
         });
   });
@@ -104,7 +104,7 @@ suite('settings-edit-dictionary-page', function() {
     MockInteractions.tap(addWordButton);
     Polymer.dom.flush();
 
-    assertFalse(!!editDictPage.$$('#noWordsLabel'));
+    assertTrue(editDictPage.$.noWordsLabel.hidden);
     assertTrue(!!editDictPage.$$('#list'));
     assertEquals(2, editDictPage.$$('#list').items.length);
   });

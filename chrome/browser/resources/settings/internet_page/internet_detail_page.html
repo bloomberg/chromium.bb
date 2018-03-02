@@ -182,13 +182,11 @@
         </div>
       </template>
       <!-- IP Address. -->
-      <template is="dom-if"
-          if="[[showIpAddress_(ipAddress_, networkProperties)]]">
-        <div class="settings-box two-line single-column stretch">
-          <div>$i18n{networkIPAddress}</div>
-          <div class="secondary">[[ipAddress_]]</div>
-        </div>
-      </template>
+      <div class="settings-box two-line single-column stretch"
+        hidden$="[[!showIpAddress_(ipAddress_, networkProperties)]]">
+        <div>$i18n{networkIPAddress}</div>
+        <div class="secondary">[[ipAddress_]]</div>
+      </div>
       <!-- Properties to always show if present. -->
       <template is="dom-if" if="[[hasInfoFields_(networkProperties)]]">
         <div class="settings-box single-column stretch">

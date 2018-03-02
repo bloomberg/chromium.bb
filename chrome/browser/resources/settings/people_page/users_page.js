@@ -76,5 +76,10 @@ Polymer({
    */
   isEditingUsersDisabled_: function(isOwner, isWhitelistManaged, allowGuest) {
     return !isOwner || isWhitelistManaged || allowGuest;
-  }
+  },
+
+  /** @return {boolean} */
+  shouldHideModifiedByOwnerLabel_: function() {
+    return this.isWhitelistManaged_ || this.isOwner_;
+  },
 });

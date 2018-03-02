@@ -26,14 +26,14 @@
         display: block;
       }
     </style>
-    <template is="dom-if" if="[[isWhitelistManaged_]]">
-      <div class="settings-box">$i18n{settingsManagedLabel}</div>
-    </template>
-    <template is="dom-if" if="[[!isWhitelistManaged_]]">
-      <template is="dom-if" if="[[!isOwner_]]">
-        <div class="settings-box">$i18n{usersModifiedByOwnerLabel}</div>
-      </template>
-    </template>
+    <div class="settings-box" hidden$="[[!isWhitelistManaged_]]">
+      $i18n{settingsManagedLabel}
+    </div>
+    <div class="settings-box"
+        hidden$="[[shouldHideModifiedByOwnerLabel_(
+            isWhitelistManaged_, isOwner_)]]">
+      $i18n{usersModifiedByOwnerLabel}
+    </div>
     <settings-toggle-button class="first"
         pref="{{prefs.cros.accounts.allowBWSI}}"
         label="$i18n{guestBrowsingLabel}"

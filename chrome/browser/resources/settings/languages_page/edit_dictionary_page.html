@@ -64,11 +64,10 @@
           </template>
         </iron-list>
       </template>
-      <template is="dom-if" if="[[!hasWords_(words_.length)]]">
-        <div id="noWordsLabel" class="list-item">
-          $i18n{noCustomDictionaryWordsFound}
-        </div>
-      </template>
+      <div id="noWordsLabel" class="list-item"
+          hidden$="[[hasWords_(words_.length)]]">
+        $i18n{noCustomDictionaryWordsFound}
+      </div>
     </div>
   </template>
   <script src="edit_dictionary_page.js"></script>
