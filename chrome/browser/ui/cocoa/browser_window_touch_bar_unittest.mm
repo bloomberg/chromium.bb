@@ -36,7 +36,6 @@ NSString* const kHomeTouchId = @"HOME";
 NSString* const kSearchTouchId = @"SEARCH";
 NSString* const kStarTouchId = @"BOOKMARK";
 NSString* const kNewTabTouchId = @"NEW-TAB";
-NSString* const kExitFullscreenTouchId = @"EXIT-FULLSCREEN";
 NSString* const kFullscreenOriginLabelTouchId = @"FULLSCREEN-ORIGIN-LABEL";
 
 // The button indexes in the back and forward segment control.
@@ -110,8 +109,6 @@ TEST_F(BrowserWindowTouchBarUnitTest, TouchBarItems) {
     EXPECT_TRUE(
         [touch_bar_items containsObject:GetFullscreenTouchBarItemId(
                                             kFullscreenOriginLabelTouchId)]);
-    EXPECT_TRUE([[touch_bar escapeKeyReplacementItemIdentifier]
-        isEqualToString:GetFullscreenTouchBarItemId(kExitFullscreenTouchId)]);
 
     BOOL no = NO;
     [[[bwc() stub] andReturnValue:OCMOCK_VALUE(no)]
