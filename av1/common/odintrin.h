@@ -74,10 +74,6 @@ extern "C" {
 # define OD_DISABLE_CFL (1)
 # define OD_DISABLE_FILTER (1)
 
-#if !defined(NDEBUG)
-# define OD_ENABLE_ASSERTIONS (1)
-#endif
-
 # define OD_LOG(a)
 # define OD_LOG_PARTIAL(a)
 
@@ -134,24 +130,7 @@ extern uint32_t OD_DIVU_SMALL_CONSTS[OD_DIVU_DMAX][2];
 #define OD_ARG_NONNULL(x)
 #endif
 
-#if defined(OD_ENABLE_ASSERTIONS)
-#if OD_GNUC_PREREQ(2, 5, 0)
-__attribute__((noreturn))
-#endif
-void od_fatal_impl(const char *_str, const char *_file, int _line);
-
-#define OD_FATAL(_str) (od_fatal_impl(_str, __FILE__, __LINE__))
-
-#define OD_ASSERT(_cond)                     \
-  do {                                       \
-    if (!(_cond)) {                          \
-      OD_FATAL("assertion failed: " #_cond); \
-    }                                        \
-  } while (0)
-
-#else
-#define OD_ASSERT(_cond)
-#endif
+#define OD_ASSERT(_cond) assert(_cond)
 
 /** Copy n elements of memory from src to dst. The 0* term provides
     compile-time type checking  */
