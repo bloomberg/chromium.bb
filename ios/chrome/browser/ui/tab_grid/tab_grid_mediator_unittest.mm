@@ -9,6 +9,7 @@
 
 #include "base/test/scoped_task_environment.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
+#import "ios/chrome/browser/ui/tab_grid/grid_commands.h"
 #import "ios/chrome/browser/ui/tab_grid/grid_consumer.h"
 #import "ios/chrome/browser/ui/tab_grid/grid_item.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
@@ -121,4 +122,26 @@ TEST_F(TabGridMediatorTest, ConsumerMoveItem) {
   // Selected index is 1 before the move.
   web_state_list_->MoveWebStateAt(1, 2);
   [[consumer_ verify] moveItemFromIndex:1 toIndex:2 selectedIndex:2];
+}
+
+// Tests that the active index is updated when |-selectItemAtIndex:| is called.
+TEST_F(TabGridMediatorTest, SelectItemCommand) {
+  // Previous selected index is 1.
+  [mediator_ selectItemAtIndex:2];
+  EXPECT_EQ(2, web_state_list_->active_index());
+}
+
+// Tests that the webStateList count is decremented when |-closeItemAtIndex:| is
+// called.
+TEST_F(TabGridMediatorTest, CloseItemCommand) {
+  // Previously there were 3 items.
+  [mediator_ closeItemAtIndex:1];
+  EXPECT_EQ(2, web_state_list_->count());
+}
+
+// Tests that the webStateList is empty when |-closeAllItems| is called.
+TEST_F(TabGridMediatorTest, CloseAllItemsCommand) {
+  // Previously there were 3 items.
+  [mediator_ closeAllItems];
+  EXPECT_EQ(0, web_state_list_->count());
 }
