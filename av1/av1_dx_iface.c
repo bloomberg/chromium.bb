@@ -519,12 +519,14 @@ aom_image_t *add_grain_if_needed(aom_image_t *img, aom_image_t *grain_img_buf,
 
   if (grain_img_buf &&
       (img->d_w != grain_img_buf->d_w || img->d_h != grain_img_buf->d_h ||
-       img->fmt != grain_img_buf->fmt)) {
+       img->fmt != grain_img_buf->fmt || !(img->d_h % 2) || !(img->d_w % 2))) {
     aom_img_free(grain_img_buf);
     grain_img_buf = NULL;
   }
   if (!grain_img_buf) {
-    grain_img_buf = aom_img_alloc(NULL, img->fmt, img->d_w, img->d_h, 16);
+    int w_even = img->d_w % 2 ? img->d_w + 1 : img->d_w;
+    int h_even = img->d_h % 2 ? img->d_h + 1 : img->d_h;
+    grain_img_buf = aom_img_alloc(NULL, img->fmt, w_even, h_even, 16);
     grain_img_buf->bit_depth = img->bit_depth;
   }
 
