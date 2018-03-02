@@ -19,7 +19,7 @@
 #include "chrome/browser/printing/cloud_print/privet_constants.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/ui/webui/print_preview/printer_capabilities.h"
+#include "chrome/browser/ui/webui/print_preview/print_preview_utils.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "ui/gfx/geometry/size.h"
@@ -192,7 +192,7 @@ void PrivetPrinterHandler::OnGotCapabilities(
       std::make_unique<base::DictionaryValue>();
   FillPrinterDescription(name, *description, true, printer_info.get());
   base::DictionaryValue printer_info_and_caps;
-  printer_info_and_caps.SetDictionary(printing::kPrinter,
+  printer_info_and_caps.SetDictionary(cloud_print::kPrivetTypePrinter,
                                       std::move(printer_info));
   std::unique_ptr<base::DictionaryValue> capabilities_copy =
       capabilities->CreateDeepCopy();
