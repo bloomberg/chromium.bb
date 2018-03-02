@@ -15,8 +15,6 @@
 
 namespace net {
 
-class NetLog;
-
 // The CookieStoreIOSPersistent is an implementation of CookieStore relying on
 // on backing CookieStore.
 // CookieStoreIOSPersistent is not thread safe.
@@ -29,15 +27,13 @@ class NetLog;
 class CookieStoreIOSPersistent : public CookieStoreIOS {
  public:
   // Constructs a CookieStoreIOS with a default SystemCookieStore.
-  CookieStoreIOSPersistent(
-      net::CookieMonster::PersistentCookieStore* persistent_store,
-      NetLog* log);
+  explicit CookieStoreIOSPersistent(
+      net::CookieMonster::PersistentCookieStore* persistent_store);
 
   // Constructs a CookieStoreIOS backed by |system_store|.
   CookieStoreIOSPersistent(
       net::CookieMonster::PersistentCookieStore* persistent_store,
-      std::unique_ptr<SystemCookieStore> system_store,
-      NetLog* log);
+      std::unique_ptr<SystemCookieStore> system_store);
 
   ~CookieStoreIOSPersistent() override;
 

@@ -19,7 +19,6 @@ namespace net {
 class CookieCryptoDelegate;
 class CookieStore;
 class SystemCookieStore;
-class NetLog;
 }
 
 namespace cookie_util {
@@ -76,8 +75,7 @@ struct CookieStoreConfig {
 // CookieStoreIOS.
 std::unique_ptr<net::CookieStore> CreateCookieStore(
     const CookieStoreConfig& config,
-    std::unique_ptr<net::SystemCookieStore> system_cookie_store,
-    net::NetLog* log);
+    std::unique_ptr<net::SystemCookieStore> system_cookie_store);
 
 // Returns true if the cookies should be cleared.
 // Current implementation returns true if the device has rebooted since the

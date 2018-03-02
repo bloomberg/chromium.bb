@@ -38,12 +38,9 @@ enum class CookieChangeCause {
   EXPIRED_OVERWRITE
 };
 
-// Return a string corresponding to the change cause.  For debugging/logging.
-NET_EXPORT const char* CookieChangeCauseToString(CookieChangeCause cause);
-
 // Returns whether |cause| is one that could be a reason for deleting a cookie.
 // This function assumes that ChangeCause::EXPLICIT is a reason for deletion.
-NET_EXPORT bool CookieChangeCauseIsDeletion(CookieChangeCause cause);
+bool NET_EXPORT CookieChangeCauseIsDeletion(CookieChangeCause cause);
 
 // Called when a cookie is changed in a CookieStore.
 //

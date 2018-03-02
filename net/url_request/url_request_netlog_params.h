@@ -27,7 +27,7 @@ class NetLogCaptureMode;
 NET_EXPORT std::unique_ptr<base::Value> NetLogURLRequestConstructorCallback(
     const GURL* url,
     RequestPriority priority,
-    NetLogCaptureMode capture_mode);
+    NetLogCaptureMode /* capture_mode */);
 
 // Returns a Value containing NetLog parameters for starting a URLRequest.
 NET_EXPORT std::unique_ptr<base::Value> NetLogURLRequestStartCallback(
@@ -35,7 +35,7 @@ NET_EXPORT std::unique_ptr<base::Value> NetLogURLRequestStartCallback(
     const std::string* method,
     int load_flags,
     int64_t upload_id,
-    NetLogCaptureMode capture_mode);
+    NetLogCaptureMode /* capture_mode */);
 
 }  // namespace net
 

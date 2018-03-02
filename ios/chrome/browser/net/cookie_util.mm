@@ -20,7 +20,6 @@
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_store.h"
 #include "net/extras/sqlite/sqlite_persistent_cookie_store.h"
-#include "net/log/net_log.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -50,11 +49,10 @@ scoped_refptr<net::SQLitePersistentCookieStore> CreatePersistentCookieStore(
 
 // Creates a CookieMonster configured by |config|.
 std::unique_ptr<net::CookieMonster> CreateCookieMonster(
-    const CookieStoreConfig& config,
-    net::NetLog* log) {
+    const CookieStoreConfig& config) {
   if (config.path.empty()) {
     // Empty path means in-memory store.
-    return std::make_unique<net::CookieMonster>(nullptr, log);
+    return std::make_unique<net::CookieMonster>(nullptr);
   }
 
   const bool restore_old_session_cookies =
@@ -63,7 +61,7 @@ std::unique_ptr<net::CookieMonster> CreateCookieMonster(
       CreatePersistentCookieStore(config.path, restore_old_session_cookies,
                                   config.crypto_delegate);
   std::unique_ptr<net::CookieMonster> cookie_monster(
-      new net::CookieMonster(persistent_store.get(), log));
+      new net::CookieMonster(persistent_store.get()));
   if (restore_old_session_cookies)
     cookie_monster->SetPersistSessionCookies(true);
   return cookie_monster;
@@ -86,10 +84,9 @@ CookieStoreConfig::~CookieStoreConfig() {}
 
 std::unique_ptr<net::CookieStore> CreateCookieStore(
     const CookieStoreConfig& config,
-    std::unique_ptr<net::SystemCookieStore> system_cookie_store,
-    net::NetLog* log) {
+    std::unique_ptr<net::SystemCookieStore> system_cookie_store) {
   if (config.cookie_store_type == CookieStoreConfig::COOKIE_MONSTER)
-    return CreateCookieMonster(config, log);
+    return CreateCookieMonster(config);
 
   scoped_refptr<net::SQLitePersistentCookieStore> persistent_store = nullptr;
   if (config.session_cookie_mode ==
@@ -100,7 +97,7 @@ std::unique_ptr<net::CookieStore> CreateCookieStore(
         config.crypto_delegate);
   }
   return std::make_unique<net::CookieStoreIOSPersistent>(
-      persistent_store.get(), std::move(system_cookie_store), log);
+      persistent_store.get(), std::move(system_cookie_store));
 }
 
 bool ShouldClearSessionCookies() {
