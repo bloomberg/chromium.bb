@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 
@@ -55,35 +56,49 @@ public class ShareActivity extends Activity {
             return null;
         }
 
-        Pattern placeholder = Pattern.compile("\\{.*?\\}");
-        Matcher matcher = placeholder.matcher(shareTemplate);
-        StringBuffer buffer = new StringBuffer();
-        while (matcher.find()) {
-            String replacement = null;
-            if (matcher.group().equals("{text}")) {
-                replacement = getEncodedUrlFromIntent(Intent.EXTRA_TEXT);
-            } else if (matcher.group().equals("{title}")) {
-                replacement = getEncodedUrlFromIntent(Intent.EXTRA_SUBJECT);
-            }
-
-            matcher.appendReplacement(buffer, (replacement == null) ? "" : replacement);
-        }
-        matcher.appendTail(buffer);
-        return buffer.toString();
+        String text = getIntent().getStringExtra(Intent.EXTRA_TEXT);
+        String shareUrl = getIntent().getStringExtra(Intent.EXTRA_SUBJECT);
+        Uri shareTemplateUri = Uri.parse(shareTemplate);
+        return shareTemplateUri.buildUpon()
+                .encodedQuery(
+                        replacePlaceholders(shareTemplateUri.getEncodedQuery(), text, shareUrl))
+                .encodedFragment(
+                        replacePlaceholders(shareTemplateUri.getEncodedFragment(), text, shareUrl))
+                .build()
+                .toString();
     }
 
-    /** Gets value for {@link key} from the intent and encodes the URL. */
-    private String getEncodedUrlFromIntent(String key) {
-        String value = getIntent().getStringExtra(key);
-        if (value == null) {
+    /**
+     * Replace {} placeholders in {@link toFill}. "{text}" and "{title}" are replaced with the
+     * supplied strings. All other placeholders are deleted.
+     */
+    private String replacePlaceholders(String toFill, String text, String title) {
+        if (toFill == null) {
             return null;
         }
 
-        try {
-            return URLEncoder.encode(value, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            // No-op: we'll just treat this as unspecified.
+        Pattern placeholder = Pattern.compile("\\{.*?\\}");
+        Matcher matcher = placeholder.matcher(toFill);
+        StringBuffer buffer = new StringBuffer();
+        while (matcher.find()) {
+            String replacement = "";
+            if (matcher.group().equals("{text}")) {
+                replacement = text;
+            } else if (matcher.group().equals("{title}")) {
+                replacement = title;
+            }
+
+            String encodedReplacement = "";
+            if (replacement != null) {
+                try {
+                    encodedReplacement = URLEncoder.encode(replacement, "UTF-8");
+                } catch (UnsupportedEncodingException e) {
+                    // Should not be reached.
+                }
+            }
+            matcher.appendReplacement(buffer, encodedReplacement);
         }
-        return null;
+        matcher.appendTail(buffer);
+        return buffer.toString();
     }
 }
