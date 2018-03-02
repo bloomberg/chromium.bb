@@ -2,11 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""This script generates manifest.json from manifest.yaml.
-
-In the future it may copy other non-JS files into the target
-directory, hence the name of the script.
-"""
+"""This script generates manifest.json from manifest.yaml."""
 
 import argparse
 import json

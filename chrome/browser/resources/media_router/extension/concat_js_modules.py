@@ -25,17 +25,9 @@ def main():
       "--output-dir",
       help="Directory where output files are written.")
   parser.add_argument(
-      "--prelude-file",
-      help="A prelude file included in every output module.")
-  parser.add_argument(
       "sources", nargs="+",
       help="JS input files.")
   args = parser.parse_args()
-
-  # Read the prelude file, which contains code to be placed at the
-  # start of each module.
-  with open(args.prelude_file, "r") as prelude_in:
-    prelude = prelude_in.read()
 
   # Loop over all specified modules, and simulaneously traverse the
   # list of source files using `source_index`.
@@ -53,8 +45,6 @@ def main():
     # Write the module file.
     module_file = os.path.join(args.output_dir, module_name + ".js")
     with open(module_file, "w") as module_out:
-      module_out.write(prelude)
-
       # Append as many input files as requested by the module spec.
       for i in range(input_count):
         source_file = args.sources[source_index]
