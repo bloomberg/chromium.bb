@@ -530,6 +530,10 @@
                 "href": "/extensions/content_scripts"
               },
               {
+                "title": "Protect User Privacy",
+                "href": "/extensions/user_privacy"
+              },
+              {
                 "title": "activeTab Permission",
                 "href": "/extensions/activeTab"
               },
