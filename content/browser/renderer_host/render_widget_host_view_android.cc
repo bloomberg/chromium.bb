@@ -1788,6 +1788,13 @@ SkColor RenderWidgetHostViewAndroid::GetCachedBackgroundColor() const {
 
 void RenderWidgetHostViewAndroid::SetIsInVR(bool is_in_vr) {
   is_in_vr_ = is_in_vr;
+  // TODO(crbug.com/779126): support touch selection handles in VR.
+  if (is_in_vr) {
+    touch_selection_controller_.reset();
+  } else if (content_view_core_) {
+    touch_selection_controller_ = CreateSelectionController(
+        touch_selection_controller_client_manager_.get(), content_view_core_);
+  }
 }
 
 bool RenderWidgetHostViewAndroid::IsInVR() const {
