@@ -31,9 +31,13 @@
 
 #include "core/dom/NodeComputedStyle.h"
 #include "core/editing/EditingUtilities.h"
+#include "core/editing/FrameSelection.h"
 #include "core/editing/SelectionTemplate.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleSelection.h"
+#include "core/editing/commands/SelectionForUndoStep.h"
+#include "core/editing/commands/TypingCommand.h"
+#include "core/frame/LocalFrameClient.h"
 #include "core/frame/UseCounter.h"
 #include "core/frame/WebFeatureForward.h"
 #include "core/html/HTMLBodyElement.h"
@@ -568,6 +572,98 @@ InputEvent::InputType DeletionInputTypeFromTextGranularity(
     default:
       return InputType::kNone;
   }
+}
+
+void DispatchEditableContentChangedEvents(Element* start_root,
+                                          Element* end_root) {
+  if (start_root) {
+    start_root->DispatchEvent(
+        Event::Create(EventTypeNames::webkitEditableContentChanged));
+  }
+  if (end_root && end_root != start_root) {
+    end_root->DispatchEvent(
+        Event::Create(EventTypeNames::webkitEditableContentChanged));
+  }
+}
+
+static void DispatchInputEvent(Element* target,
+                               InputEvent::InputType input_type,
+                               const String& data,
+                               InputEvent::EventIsComposing is_composing) {
+  if (!target)
+    return;
+  // TODO(chongz): Pass appreciate |ranges| after it's defined on spec.
+  // http://w3c.github.io/editing/input-events.html#dom-inputevent-inputtype
+  InputEvent* const input_event =
+      InputEvent::CreateInput(input_type, data, is_composing, nullptr);
+  target->DispatchScopedEvent(input_event);
+}
+
+void DispatchInputEventEditableContentChanged(
+    Element* start_root,
+    Element* end_root,
+    InputEvent::InputType input_type,
+    const String& data,
+    InputEvent::EventIsComposing is_composing) {
+  if (start_root)
+    DispatchInputEvent(start_root, input_type, data, is_composing);
+  if (end_root && end_root != start_root)
+    DispatchInputEvent(end_root, input_type, data, is_composing);
+}
+
+SelectionInDOMTree CorrectedSelectionAfterCommand(
+    const SelectionForUndoStep& passed_selection,
+    const Document* document) {
+  if (!passed_selection.Base().IsConnected() ||
+      !passed_selection.Extent().IsConnected() ||
+      passed_selection.Base().GetDocument() != document ||
+      passed_selection.Base().GetDocument() !=
+          passed_selection.Extent().GetDocument())
+    return SelectionInDOMTree();
+  return passed_selection.AsSelection();
+}
+
+void ChangeSelectionAfterCommand(LocalFrame* frame,
+                                 const SelectionInDOMTree& new_selection,
+                                 const SetSelectionOptions& options) {
+  if (new_selection.IsNone())
+    return;
+  // See <rdar://problem/5729315> Some shouldChangeSelectedDOMRange contain
+  // Ranges for selections that are no longer valid
+  const bool selection_did_not_change_dom_position =
+      new_selection == frame->Selection().GetSelectionInDOMTree() &&
+      options.IsDirectional() == frame->Selection().IsDirectional();
+  const bool handle_visible =
+      frame->Selection().IsHandleVisible() && new_selection.IsRange();
+  frame->Selection().SetSelection(new_selection,
+                                  SetSelectionOptions::Builder(options)
+                                      .SetShouldShowHandle(handle_visible)
+                                      .SetIsDirectional(options.IsDirectional())
+                                      .Build());
+
+  // Some editing operations change the selection visually without affecting its
+  // position within the DOM. For example when you press return in the following
+  // (the caret is marked by ^):
+  // <div contentEditable="true"><div>^Hello</div></div>
+  // WebCore inserts <div><br></div> *before* the current block, which correctly
+  // moves the paragraph down but which doesn't change the caret's DOM position
+  // (["hello", 0]). In these situations the above FrameSelection::setSelection
+  // call does not call LocalFrameClient::DidChangeSelection(), which, on the
+  // Mac, sends selection change notifications and starts a new kill ring
+  // sequence, but we want to do these things (matches AppKit).
+  if (!selection_did_not_change_dom_position)
+    return;
+  frame->Client()->DidChangeSelection(
+      frame->Selection().GetSelectionInDOMTree().Type() != kRangeSelection);
+}
+
+InputEvent::EventIsComposing IsComposingFromCommand(
+    const CompositeEditCommand* command) {
+  if (command->IsTypingCommand() &&
+      ToTypingCommand(command)->CompositionType() !=
+          TypingCommand::kTextCompositionNone)
+    return InputEvent::EventIsComposing::kIsComposing;
+  return InputEvent::EventIsComposing::kNotComposing;
 }
 
 }  // namespace blink

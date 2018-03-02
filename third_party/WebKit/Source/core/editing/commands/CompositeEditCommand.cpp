@@ -64,6 +64,7 @@
 #include "core/editing/commands/SplitElementCommand.h"
 #include "core/editing/commands/SplitTextNodeCommand.h"
 #include "core/editing/commands/SplitTextNodeContainingElementCommand.h"
+#include "core/editing/commands/UndoStack.h"
 #include "core/editing/commands/WrapContentsInDummySpanCommand.h"
 #include "core/editing/iterators/TextIterator.h"
 #include "core/editing/markers/DocumentMarkerController.h"
@@ -162,7 +163,7 @@ bool CompositeEditCommand::Apply() {
   // Only need to call appliedEditing for top-level commands, and TypingCommands
   // do it on their own (see TypingCommand::typingAddedToOpenCommand).
   if (!IsTypingCommand())
-    frame->GetEditor().AppliedEditing(this);
+    AppliedEditing();
   return !editing_state.IsAborted();
 }
 
@@ -2004,6 +2005,61 @@ void CompositeEditCommand::Trace(blink::Visitor* visitor) {
   visitor->Trace(ending_selection_);
   visitor->Trace(undo_step_);
   EditCommand::Trace(visitor);
+}
+
+void CompositeEditCommand::AppliedEditing() {
+  DCHECK(!IsCommandGroupWrapper());
+  EventQueueScope scope;
+
+  const UndoStep& undo_step = *GetUndoStep();
+  DispatchEditableContentChangedEvents(undo_step.StartingRootEditableElement(),
+                                       undo_step.EndingRootEditableElement());
+  LocalFrame* const frame = GetDocument().GetFrame();
+  Editor& editor = frame->GetEditor();
+  // TODO(chongz): Filter empty InputType after spec is finalized.
+  DispatchInputEventEditableContentChanged(
+      undo_step.StartingRootEditableElement(),
+      undo_step.EndingRootEditableElement(), GetInputType(),
+      TextDataForInputEvent(), IsComposingFromCommand(this));
+
+  const SelectionInDOMTree& new_selection =
+      CorrectedSelectionAfterCommand(EndingSelection(), &GetDocument());
+
+  // Don't clear the typing style with this selection change. We do those things
+  // elsewhere if necessary.
+  ChangeSelectionAfterCommand(frame, new_selection,
+                              SetSelectionOptions::Builder()
+                                  .SetIsDirectional(SelectionIsDirectional())
+                                  .Build());
+
+  if (!PreservesTypingStyle())
+    editor.ClearTypingStyle();
+
+  CompositeEditCommand* const last_edit_command = editor.LastEditCommand();
+  // Command will be equal to last edit command only in the case of typing
+  if (last_edit_command == this) {
+    DCHECK(IsTypingCommand());
+  } else if (last_edit_command && last_edit_command->IsDragAndDropCommand() &&
+             (GetInputType() == InputEvent::InputType::kDeleteByDrag ||
+              GetInputType() == InputEvent::InputType::kInsertFromDrop)) {
+    // Only register undo entry when combined with other commands.
+    if (!last_edit_command->GetUndoStep()) {
+      editor.GetUndoStack().RegisterUndoStep(
+          last_edit_command->EnsureUndoStep());
+    }
+    last_edit_command->EnsureUndoStep()->SetEndingSelection(
+        EnsureUndoStep()->EndingSelection());
+    last_edit_command->GetUndoStep()->SetSelectionIsDirectional(
+        GetUndoStep()->SelectionIsDirectional());
+    last_edit_command->AppendCommandToUndoStep(this);
+  } else {
+    // Only register a new undo command if the command passed in is
+    // different from the last command
+    editor.SetLastEditCommand(this);
+    editor.GetUndoStack().RegisterUndoStep(EnsureUndoStep());
+  }
+
+  editor.RespondToChangedContents(new_selection.Base());
 }
 
 }  // namespace blink

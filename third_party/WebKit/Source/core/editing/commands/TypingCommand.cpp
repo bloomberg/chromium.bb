@@ -576,7 +576,7 @@ void TypingCommand::TypingAddedToOpenCommand(
   UpdatePreservesTypingStyle(command_type_for_added_typing);
   UpdateCommandTypeOfOpenCommand(command_type_for_added_typing);
 
-  frame->GetEditor().AppliedEditing(this);
+  AppliedEditing();
 }
 
 void TypingCommand::InsertTextInternal(const String& text,

@@ -79,6 +79,8 @@ class CORE_EXPORT CompositeEditCommand : public EditCommand {
   virtual bool IsDragAndDropCommand() const;
   virtual bool PreservesTypingStyle() const;
 
+  virtual void AppliedEditing();
+
   virtual void Trace(blink::Visitor*);
 
  protected:

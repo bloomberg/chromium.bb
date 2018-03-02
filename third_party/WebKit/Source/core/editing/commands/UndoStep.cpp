@@ -4,9 +4,14 @@
 
 #include "core/editing/commands/UndoStep.h"
 
+#include "core/dom/events/ScopedEventQueue.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/Editor.h"
+#include "core/editing/SelectionTemplate.h"
+#include "core/editing/SetSelectionOptions.h"
 #include "core/editing/commands/EditCommand.h"
+#include "core/editing/commands/EditingCommandsUtilities.h"
+#include "core/editing/commands/UndoStack.h"
 
 namespace blink {
 
@@ -54,7 +59,28 @@ void UndoStep::Unapply() {
       commands_[i - 1]->DoUnapply();
   }
 
-  frame->GetEditor().UnappliedEditing(this);
+  EventQueueScope scope;
+
+  DispatchEditableContentChangedEvents(StartingRootEditableElement(),
+                                       EndingRootEditableElement());
+  DispatchInputEventEditableContentChanged(
+      StartingRootEditableElement(), EndingRootEditableElement(),
+      InputEvent::InputType::kHistoryUndo, g_null_atom,
+      InputEvent::EventIsComposing::kNotComposing);
+
+  const SelectionInDOMTree& new_selection =
+      CorrectedSelectionAfterCommand(StartingSelection(), document_);
+  ChangeSelectionAfterCommand(frame, new_selection,
+                              SetSelectionOptions::Builder()
+                                  .SetShouldCloseTyping(true)
+                                  .SetShouldClearTypingStyle(true)
+                                  .SetIsDirectional(SelectionIsDirectional())
+                                  .Build());
+
+  Editor& editor = frame->GetEditor();
+  editor.SetLastEditCommand(nullptr);
+  editor.GetUndoStack().RegisterRedoStep(this);
+  editor.RespondToChangedContents(new_selection.Base());
 }
 
 void UndoStep::Reapply() {
@@ -74,7 +100,28 @@ void UndoStep::Reapply() {
       command->DoReapply();
   }
 
-  frame->GetEditor().ReappliedEditing(this);
+  EventQueueScope scope;
+
+  DispatchEditableContentChangedEvents(StartingRootEditableElement(),
+                                       EndingRootEditableElement());
+  DispatchInputEventEditableContentChanged(
+      StartingRootEditableElement(), EndingRootEditableElement(),
+      InputEvent::InputType::kHistoryRedo, g_null_atom,
+      InputEvent::EventIsComposing::kNotComposing);
+
+  const SelectionInDOMTree& new_selection =
+      CorrectedSelectionAfterCommand(EndingSelection(), document_);
+  ChangeSelectionAfterCommand(frame, new_selection,
+                              SetSelectionOptions::Builder()
+                                  .SetShouldCloseTyping(true)
+                                  .SetShouldClearTypingStyle(true)
+                                  .SetIsDirectional(SelectionIsDirectional())
+                                  .Build());
+
+  Editor& editor = frame->GetEditor();
+  editor.SetLastEditCommand(nullptr);
+  editor.GetUndoStack().RegisterUndoStep(this);
+  editor.RespondToChangedContents(new_selection.Base());
 }
 
 InputEvent::InputType UndoStep::GetInputType() const {

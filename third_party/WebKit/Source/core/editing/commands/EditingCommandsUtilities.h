@@ -44,11 +44,14 @@ enum class DeleteDirection {
   kBackward,
 };
 
+class CompositeEditCommand;
 class Document;
 class Element;
 class HTMLElement;
 class Node;
 class QualifiedName;
+class SelectionForUndoStep;
+class SetSelectionOptions;
 
 // -------------------------------------------------------------------------
 // Node
@@ -131,6 +134,26 @@ VisibleSelection SelectionForParagraphIteration(const VisibleSelection&);
 const String& NonBreakingSpaceString();
 
 CORE_EXPORT void TidyUpHTMLStructure(Document&);
+
+SelectionInDOMTree CorrectedSelectionAfterCommand(const SelectionForUndoStep&,
+                                                  const Document*);
+void ChangeSelectionAfterCommand(LocalFrame*,
+                                 const SelectionInDOMTree&,
+                                 const SetSelectionOptions&);
+
+// -------------------------------------------------------------------------
+// Events
+// -------------------------------------------------------------------------
+
+void DispatchEditableContentChangedEvents(Element* start_root,
+                                          Element* end_root);
+void DispatchInputEventEditableContentChanged(Element* start_root,
+                                              Element* end_root,
+                                              InputEvent::InputType,
+                                              const String&,
+                                              InputEvent::EventIsComposing);
+InputEvent::EventIsComposing IsComposingFromCommand(
+    const CompositeEditCommand*);
 
 InputEvent::InputType DeletionInputTypeFromTextGranularity(DeleteDirection,
                                                            TextGranularity);
