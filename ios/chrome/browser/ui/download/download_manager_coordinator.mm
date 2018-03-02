@@ -76,6 +76,10 @@
   _storeKitCoordinator = nil;
 }
 
+- (UIViewController*)viewController {
+  return _viewController;
+}
+
 #pragma mark - DownloadManagerTabHelperDelegate
 
 - (void)downloadManagerTabHelper:(nonnull DownloadManagerTabHelper*)tabHelper
