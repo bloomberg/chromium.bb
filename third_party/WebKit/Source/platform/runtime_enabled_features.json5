@@ -1019,6 +1019,7 @@
     },
     {
       name: "SignatureBasedIntegrity",
+      origin_trial_feature_name: "SignatureBasedIntegrity",
       status: "experimental",
     },
     {

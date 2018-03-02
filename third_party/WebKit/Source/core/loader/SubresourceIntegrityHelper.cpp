@@ -7,6 +7,8 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/UseCounter.h"
 #include "core/inspector/ConsoleTypes.h"
+#include "core/origin_trials/origin_trials.h"
+#include "platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -57,6 +59,15 @@ void SubresourceIntegrityHelper::GetConsoleMessages(
     messages->push_back(ConsoleMessage::Create(kSecurityMessageSource,
                                                kErrorMessageLevel, message));
   }
+}
+
+SubresourceIntegrity::IntegrityFeatures SubresourceIntegrityHelper::GetFeatures(
+    ExecutionContext* execution_context) {
+  bool allow_signatures =
+      RuntimeEnabledFeatures::SignatureBasedIntegrityEnabledByRuntimeFlag() ||
+      OriginTrials::signatureBasedIntegrityEnabled(execution_context);
+  return allow_signatures ? SubresourceIntegrity::IntegrityFeatures::kSignatures
+                          : SubresourceIntegrity::IntegrityFeatures::kDefault;
 }
 
 }  // namespace blink

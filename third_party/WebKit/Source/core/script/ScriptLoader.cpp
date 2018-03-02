@@ -349,9 +349,11 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   String integrity_attr = element_->IntegrityAttributeValue();
   IntegrityMetadataSet integrity_metadata;
   if (!integrity_attr.IsEmpty()) {
+    SubresourceIntegrity::IntegrityFeatures integrity_features =
+        SubresourceIntegrityHelper::GetFeatures(&element_document);
     SubresourceIntegrity::ReportInfo report_info;
     SubresourceIntegrity::ParseIntegrityAttribute(
-        integrity_attr, integrity_metadata, &report_info);
+        integrity_attr, integrity_features, integrity_metadata, &report_info);
     SubresourceIntegrityHelper::DoReport(element_document, report_info);
   }
 

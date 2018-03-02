@@ -510,9 +510,11 @@ static void ModulePreloadIfNeeded(const LinkLoadParameters& params,
   // it is specified, or the empty string otherwise." [spec text]
   IntegrityMetadataSet integrity_metadata;
   if (!params.integrity.IsEmpty()) {
+    SubresourceIntegrity::IntegrityFeatures integrity_features =
+        SubresourceIntegrityHelper::GetFeatures(&document);
     SubresourceIntegrity::ReportInfo report_info;
     SubresourceIntegrity::ParseIntegrityAttribute(
-        params.integrity, integrity_metadata, &report_info);
+        params.integrity, integrity_features, integrity_metadata, &report_info);
     SubresourceIntegrityHelper::DoReport(document, report_info);
   }
 
