@@ -6,13 +6,17 @@ package org.chromium.chrome.browser.vr_shell;
 
 import static org.chromium.chrome.browser.vr_shell.TestFramework.PAGE_LOAD_TIMEOUT_S;
 import static org.chromium.chrome.browser.vr_shell.VrTestFramework.PAGE_LOAD_TIMEOUT_S;
+import static org.chromium.chrome.browser.vr_shell.VrTestFramework.POLL_CHECK_INTERVAL_LONG_MS;
 import static org.chromium.chrome.browser.vr_shell.VrTestFramework.POLL_CHECK_INTERVAL_SHORT_MS;
 import static org.chromium.chrome.browser.vr_shell.VrTestFramework.POLL_TIMEOUT_LONG_MS;
 import static org.chromium.chrome.browser.vr_shell.VrTestFramework.POLL_TIMEOUT_SHORT_MS;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_DON_ENABLED;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
+import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.SystemClock;
 import android.support.test.InstrumentationRegistry;
@@ -64,6 +68,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "enable-webvr"})
 @MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT) // WebVR and WebXR are only supported on K+
+@TargetApi(Build.VERSION_CODES.KITKAT) // Necessary to allow taking screenshots with UiAutomation
 public class WebVrTransitionTest {
     @ClassParameter
     private static List<ParameterSet> sClassParams =
@@ -115,6 +120,30 @@ public class WebVrTransitionTest {
         framework.loadUrlAndAwaitInitialization(url, PAGE_LOAD_TIMEOUT_S);
         TransitionUtils.enterPresentationOrFail(framework);
         Assert.assertTrue("VrShellDelegate is in VR", VrShellDelegate.isInVr());
+
+        // Initial Pixel Test - Verify that the Canvas is blue.
+        // The Canvas is set to blue while presenting.
+        final UiDevice uiDevice =
+                UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                Bitmap bmpCurrentScreen = InstrumentationRegistry.getInstrumentation()
+                                                  .getUiAutomation()
+                                                  .takeScreenshot();
+
+                if (bmpCurrentScreen != null) {
+                    // Calculate center of eye coordinates.
+                    int iheight = uiDevice.getDisplayHeight() / 2;
+                    int iwidth = uiDevice.getDisplayWidth() / 4;
+
+                    // Verify screen is blue.
+                    return Color.BLUE == bmpCurrentScreen.getPixel(iwidth, iheight);
+                }
+                return false;
+            }
+        }, POLL_TIMEOUT_LONG_MS, POLL_CHECK_INTERVAL_LONG_MS);
     }
 
     /**
