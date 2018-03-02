@@ -3352,7 +3352,7 @@ IntRect CompositedLayerMapping::RecomputeInterestRect(
     // bounds into viewport space, with offsetFromAnchorLayoutObject to
     // translate squashing layer's bounds into the first squashed layer's space.
     anchor_layout_object =
-        &owning_layer_.EnclosingTransformedAncestor()->GetLayoutObject();
+        &owning_layer_.TransformAncestorOrRoot().GetLayoutObject();
     offset_from_anchor_layout_object =
         ToFloatSize(FloatPoint(SquashingOffsetFromTransformedAncestor()));
   } else {
