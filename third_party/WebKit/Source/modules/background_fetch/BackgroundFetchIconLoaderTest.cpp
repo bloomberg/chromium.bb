@@ -5,6 +5,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/testing/PageTestBase.h"
 #include "modules/background_fetch/BackgroundFetchIconLoader.h"
+#include "modules/background_fetch/IconDefinition.h"
 #include "platform/heap/Persistent.h"
 #include "platform/testing/TestingPlatformSupport.h"
 #include "platform/testing/URLTestHelpers.h"
@@ -50,7 +51,6 @@ class BackgroundFetchIconLoaderTest : public PageTestBase {
   // Callback for BackgroundFetchIconLoader. This will set up the state of the
   // load as either success or failed based on whether the bitmap is empty.
   void IconLoaded(const SkBitmap& bitmap) {
-    LOG(ERROR) << "did icon get loaded?";
     if (!bitmap.empty())
       loaded_ = BackgroundFetchLoadState::kLoadSuccessful;
     else
@@ -58,7 +58,12 @@ class BackgroundFetchIconLoaderTest : public PageTestBase {
   }
 
   void LoadIcon(const KURL& url) {
-    loader_->Start(GetContext(), url,
+    IconDefinition icon;
+    icon.setSrc(url.GetString());
+    icon.setType("image/png");
+    icon.setSizes("500x500");
+    HeapVector<IconDefinition> icons(1, icon);
+    loader_->Start(GetContext(), icons,
                    Bind(&BackgroundFetchIconLoaderTest::IconLoaded,
                         WTF::Unretained(this)));
   }

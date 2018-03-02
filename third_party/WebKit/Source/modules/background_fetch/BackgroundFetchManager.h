@@ -6,18 +6,23 @@
 #define BackgroundFetchManager_h
 
 #include "bindings/core/v8/ScriptPromise.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "modules/ModulesExport.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/GarbageCollected.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/modules/background_fetch/background_fetch.mojom-blink.h"
 
+class SkBitmap;
+
 namespace blink {
 
 class BackgroundFetchBridge;
+class BackgroundFetchIconLoader;
 class BackgroundFetchOptions;
 class BackgroundFetchRegistration;
 class ExceptionState;
+class ExecutionContext;
 class RequestOrUSVStringOrRequestOrUSVStringSequence;
 class ScriptPromiseResolver;
 class ScriptState;
@@ -26,10 +31,14 @@ class WebServiceWorkerRequest;
 
 // Implementation of the BackgroundFetchManager JavaScript object, accessible
 // by developers through ServiceWorkerRegistration.backgroundFetch.
-class MODULES_EXPORT BackgroundFetchManager final : public ScriptWrappable {
+class MODULES_EXPORT BackgroundFetchManager final
+    : public ScriptWrappable,
+      public ContextLifecycleObserver {
+  USING_GARBAGE_COLLECTED_MIXIN(BackgroundFetchManager);
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  ~BackgroundFetchManager() override = default;
   static BackgroundFetchManager* Create(
       ServiceWorkerRegistration* registration) {
     return new BackgroundFetchManager(registration);
@@ -47,6 +56,9 @@ class MODULES_EXPORT BackgroundFetchManager final : public ScriptWrappable {
 
   void Trace(blink::Visitor*);
 
+  // ContextLifecycleObserver interface
+  void ContextDestroyed(ExecutionContext*) override;
+
  private:
   friend class BackgroundFetchManagerTest;
 
@@ -59,6 +71,11 @@ class MODULES_EXPORT BackgroundFetchManager final : public ScriptWrappable {
       const RequestOrUSVStringOrRequestOrUSVStringSequence& requests,
       ExceptionState&);
 
+  void DidLoadIcons(const String&,
+                    Vector<WebServiceWorkerRequest>,
+                    const BackgroundFetchOptions&,
+                    ScriptPromiseResolver*,
+                    const SkBitmap&);
   void DidFetch(ScriptPromiseResolver*,
                 mojom::blink::BackgroundFetchError,
                 BackgroundFetchRegistration*);
@@ -71,6 +88,7 @@ class MODULES_EXPORT BackgroundFetchManager final : public ScriptWrappable {
 
   Member<ServiceWorkerRegistration> registration_;
   Member<BackgroundFetchBridge> bridge_;
+  Member<BackgroundFetchIconLoader> loader_;
 };
 
 }  // namespace blink

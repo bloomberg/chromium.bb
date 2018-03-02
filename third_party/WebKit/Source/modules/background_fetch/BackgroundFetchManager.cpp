@@ -15,6 +15,7 @@
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/loader/MixedContentChecker.h"
 #include "modules/background_fetch/BackgroundFetchBridge.h"
+#include "modules/background_fetch/BackgroundFetchIconLoader.h"
 #include "modules/background_fetch/BackgroundFetchOptions.h"
 #include "modules/background_fetch/BackgroundFetchRegistration.h"
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
@@ -27,6 +28,7 @@
 #include "platform/weborigin/KnownPorts.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace blink {
 
@@ -158,7 +160,9 @@ bool ShouldBlockCORSPreflight(ExecutionContext* execution_context,
 
 BackgroundFetchManager::BackgroundFetchManager(
     ServiceWorkerRegistration* registration)
-    : registration_(registration) {
+    : ContextLifecycleObserver(registration->GetExecutionContext()),
+      registration_(registration),
+      loader_(new BackgroundFetchIconLoader()) {
   DCHECK(registration);
   bridge_ = BackgroundFetchBridge::From(registration_);
 }
@@ -250,11 +254,31 @@ ScriptPromise BackgroundFetchManager::fetch(
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
+  // Load Icons. Right now, we just load the first icon. Lack of icons or
+  // inability to load them should not be fatal to the fetch.
+  if (options.icons().size()) {
+    loader_->Start(
+        execution_context, options.icons(),
+        WTF::Bind(&BackgroundFetchManager::DidLoadIcons, WrapPersistent(this),
+                  id, WTF::Passed(std::move(web_requests)), options,
+                  WrapPersistent(resolver)));
+    return promise;
+  }
+
+  DidLoadIcons(id, std::move(web_requests), options, WrapPersistent(resolver),
+               SkBitmap());
+  return promise;
+}
+
+void BackgroundFetchManager::DidLoadIcons(
+    const String& id,
+    Vector<WebServiceWorkerRequest> web_requests,
+    const BackgroundFetchOptions& options,
+    ScriptPromiseResolver* resolver,
+    const SkBitmap& bitmap) {
   bridge_->Fetch(id, std::move(web_requests), options,
                  WTF::Bind(&BackgroundFetchManager::DidFetch,
                            WrapPersistent(this), WrapPersistent(resolver)));
-
-  return promise;
 }
 
 void BackgroundFetchManager::DidFetch(
@@ -433,7 +457,15 @@ void BackgroundFetchManager::DidGetDeveloperIds(
 void BackgroundFetchManager::Trace(blink::Visitor* visitor) {
   visitor->Trace(registration_);
   visitor->Trace(bridge_);
+  visitor->Trace(loader_);
+  ContextLifecycleObserver::Trace(visitor);
   ScriptWrappable::Trace(visitor);
+}
+
+void BackgroundFetchManager::ContextDestroyed(ExecutionContext*) {
+  if (loader_) {
+    loader_->Stop();
+  }
 }
 
 }  // namespace blink
