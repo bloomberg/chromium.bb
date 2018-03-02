@@ -250,4 +250,40 @@ TEST_F(StructTraitsTest, GestureEvent) {
   }
 }
 
+TEST_F(StructTraitsTest, ScrollEvent) {
+  ScrollEvent kTestData[] = {
+      {ET_SCROLL, gfx::Point(10, 20),
+       base::TimeTicks() + base::TimeDelta::FromMicroseconds(501), EF_NONE, 1,
+       2, 3, 4, 5, EventMomentumPhase::NONE},
+      {ET_SCROLL_FLING_START, gfx::Point(10, 20),
+       base::TimeTicks() + base::TimeDelta::FromMicroseconds(502), EF_NONE, 1,
+       2, 3, 4, 5, EventMomentumPhase::MAY_BEGIN},
+      {ET_SCROLL_FLING_CANCEL, gfx::Point(10, 20),
+       base::TimeTicks() + base::TimeDelta::FromMicroseconds(502), EF_NONE, 1,
+       2, 3, 4, 5, EventMomentumPhase::END},
+  };
+
+  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  for (size_t i = 0; i < arraysize(kTestData); i++) {
+    std::unique_ptr<Event> output;
+    proxy->EchoEvent(Event::Clone(kTestData[i]), &output);
+    EXPECT_TRUE(output->IsScrollEvent());
+
+    const ScrollEvent* output_ptr_event = output->AsScrollEvent();
+    EXPECT_EQ(kTestData[i].type(), output_ptr_event->type());
+    EXPECT_EQ(kTestData[i].location(), output_ptr_event->location());
+    EXPECT_EQ(kTestData[i].time_stamp(), output_ptr_event->time_stamp());
+    EXPECT_EQ(kTestData[i].flags(), output_ptr_event->flags());
+    EXPECT_EQ(kTestData[i].x_offset(), output_ptr_event->x_offset());
+    EXPECT_EQ(kTestData[i].y_offset(), output_ptr_event->y_offset());
+    EXPECT_EQ(kTestData[i].x_offset_ordinal(),
+              output_ptr_event->x_offset_ordinal());
+    EXPECT_EQ(kTestData[i].y_offset_ordinal(),
+              output_ptr_event->y_offset_ordinal());
+    EXPECT_EQ(kTestData[i].finger_count(), output_ptr_event->finger_count());
+    EXPECT_EQ(kTestData[i].momentum_phase(),
+              output_ptr_event->momentum_phase());
+  }
+}
+
 }  // namespace ui

@@ -33,7 +33,6 @@ namespace ui {
 class Event;
 class KeyEvent;
 class LocatedEvent;
-class PointerEvent;
 
 namespace ws {
 
@@ -241,16 +240,16 @@ class EventDispatcher : public ServerWindowDrawnTrackerObserver,
     return pointer_targets_.count(pointer_id) > 0;
   }
 
-  // Returns true if EventTargeter needs to queried for the specified event.
-  bool ShouldUseEventTargeter(const PointerEvent& event) const;
+  // Returns true if EventTargeter needs to be queried for the specified event.
+  bool ShouldUseEventTargeter(const Event& event) const;
 
   // Callback from EventTargeter once the target has been found. Calls
-  // ProcessPointerEventOnFoundTargetImpl().
-  void ProcessPointerEventOnFoundTarget(const ui::PointerEvent& event,
-                                        const EventLocation& event_location,
-                                        const DeepestWindow& target);
+  // ProcessEventOnFoundTargetImpl().
+  void ProcessEventOnFoundTarget(std::unique_ptr<ui::Event> event,
+                                 const EventLocation& event_location,
+                                 const DeepestWindow& target);
 
-  // EventDispatcher provides the following logic for pointer events:
+  // EventDispatcher provides the following logic for events:
   // . wheel events go to the current target of the associated pointer. If
   //   there is no target, they go to the deepest window.
   // . move (not drag) events go to the deepest window.
@@ -264,13 +263,12 @@ class EventDispatcher : public ServerWindowDrawnTrackerObserver,
   // If ShouldUseEventTargeter() returned false it means this function should
   // not need |found_target| and has enough information to process the event
   // without a DeepestWindow.
-  void ProcessPointerEventOnFoundTargetImpl(const ui::PointerEvent& event,
-                                            const EventLocation& event_location,
-                                            const DeepestWindow* found_target);
+  void ProcessEventOnFoundTargetImpl(std::unique_ptr<ui::Event> event,
+                                     const EventLocation& event_location,
+                                     const DeepestWindow* found_target);
 
-  // Called when processing a pointer event to updated cursor related
-  // properties.
-  void UpdateCursorRelatedProperties(const ui::PointerEvent& event,
+  // Called when processing a event to updated cursor related properties.
+  void UpdateCursorRelatedProperties(const ui::Event& event,
                                      const EventLocation& event_location);
 
   void UpdateNonClientAreaForCurrentWindowOnFoundWindow(
@@ -301,7 +299,7 @@ class EventDispatcher : public ServerWindowDrawnTrackerObserver,
   // pointer sends the appropriate event to the delegate and updates the
   // currently tracked PointerTarget appropriately.
   void UpdateTargetForPointer(int32_t pointer_id,
-                              const ui::PointerEvent& event,
+                              const ui::LocatedEvent& event,
                               const PointerTarget& pointer_target,
                               const EventLocation& event_location);
 
