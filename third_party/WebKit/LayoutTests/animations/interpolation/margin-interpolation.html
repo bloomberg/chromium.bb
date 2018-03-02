@@ -90,5 +90,18 @@ assertInterpolation({
   {at: 1, is: '10px'},
   {at: 1.5, is: '15px'}
 ]);
+
+assertInterpolation({
+  property: 'margin',
+  from: '20px 40px 60px 80px',
+  to: '30px 50px 70px 90px'
+}, [
+  {at: -0.3, is: '17px 37px 57px 77px'},
+  {at: 0, is: '20px 40px 60px 80px'},
+  {at: 0.3, is: '23px 43px 63px 83px'},
+  {at: 0.6, is: '26px 46px 66px 86px'},
+  {at: 1, is: '30px 50px 70px 90px'},
+  {at: 1.5, is: '35px 55px 75px 95px'}
+]);
 </script>
 </body>
