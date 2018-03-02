@@ -20,25 +20,13 @@
 -EnabledSignInIsolationBrowserTest.SyntheticTrial
 -ExpectCTBrowserTest.TestDynamicExpectCTHeaderProcessing
 -ExpectCTBrowserTest.TestDynamicExpectCTReporting
--ExperimentalAppWindowApiTest.SetIcon
 -ExtensionApiTest.Cookies
 -ExtensionApiTest.Debugger
--ExtensionApiTestWithManagementPolicy.InitiatorProtectedByPolicy
--ExtensionApiTestWithManagementPolicy.UrlProtectedByPolicy
 -ExtensionApiTestWithSwitch.ExtensionDebugger
--ExtensionBrowserTest.OnlyComponentExtensionsCanAccessChromeThemeUrls
 -ExtensionUnloadBrowserTest.UnloadWithContentScripts
--FeedbackTest.AnonymousUser
--FeedbackTest.ExtraDiagnostics
--FeedbackTest.ShowLoginFeedback
 -InstantThemeTest.ThemeBackgroundAccess
 -IsolatedAppTest.CookieIsolation
 -IsolatedAppTest.SubresourceCookieIsolation
--LaunchWebAuthFlowFunctionTest.InteractionRequired
--LaunchWebAuthFlowFunctionTest.InteractiveFirstNavigationSuccess
--LaunchWebAuthFlowFunctionTest.LoadFailed
--LaunchWebAuthFlowFunctionTest.NonInteractiveSuccess
--LaunchWebAuthFlowFunctionTest.UserCloseWindow
 -LazyBackgroundPageApiTest.NaClInBackgroundPage
 -LazyBackgroundPageApiTest.NaClInView
 -LocalNTPJavascriptTest.SimpleJavascriptTests
@@ -48,7 +36,6 @@
 -LocalNTPVoiceJavascriptTest.ViewTests
 -MediaGalleriesPlatformAppBrowserTest.ToURL
 -MediaGalleriesPlatformAppPpapiTest.SendFilesystem
--MediaStreamDevicesControllerTest.ExtensionRequestMicCam
 -NaClBrowserTestGLibcVcacheExtension.ValidationCacheOfMainNexe
 -NaClBrowserTestNewlibVcacheExtension.ValidationCacheOfMainNexe
 -NetInternalsTest.netInternalsSessionBandwidthSucceed
@@ -60,7 +47,6 @@
 -PageLoadMetricsBrowserTest.LoadingMetricsFailed
 -PageLoadMetricsBrowserTest.PayloadSize
 -PageLoadMetricsBrowserTest.PayloadSizeChildFrame
--PermissionsApiTest.FaviconPermission
 -PKPModelClientTest.PKPBypass
 -PKPModelClientTest.PKPEnforced
 -PlatformAppBrowserTest.AppWindowAdjustBoundsToBeVisibleOnScreen
@@ -78,8 +64,6 @@
 -RegisterProtocolHandlerBrowserTest.CustomHandler
 -ResourcePrefetchPredictorPrefetchingBrowserTest.Redirect
 -ResourcePrefetchPredictorPrefetchingBrowserTest.Simple
--SafeBrowsingServiceTest.Prefetch
--SafeBrowsingTriggeredPopupBlockerBrowserTest.NoFeature_AllowCreatingNewWindows
 -SafeBrowsingTriggeredPopupBlockerBrowserTest.NoFeature_NoMessages
 -SecurityStateTabHelperTest.PasswordSecurityLevelDowngradedOnFilesystemUrl
 -SiteDetailsBrowserTest.PlatformAppsNotIsolated
@@ -88,9 +72,6 @@
 -TaskManagerBrowserTest.SentDataObserved
 -TaskManagerBrowserTest.TotalSentDataObserved
 -TaskManagerUtilityProcessBrowserTest.UtilityJSHeapMemory
--TtsApiTest.NetworkSpeechEngine
--V4SafeBrowsingServiceTest.Prefetch
--WebRtcFromWebAccessibleResourceTest.GetUserMediaInWebAccessibleResourceSuccess
 # This test is flaky.
 -WebRtcRtpBrowserTest.TrackAddedToSecondStream
 -WebRtcRtpBrowserTest.TrackSwitchingStream
@@ -244,7 +225,6 @@
 -ExtensionWebRequestApiTest.WebRequestDeclarative2
 -ExtensionWebRequestApiTest.WebRequestDiceHeaderProtection
 -ExtensionWebRequestApiTest.WebRequestTypes
--ExtensionWebRequestApiTest.WebRequestWithWithheldPermissions
 
 # http://crbug.com/705114
 # Remove streams concept from code and replace with data pipe passing.
