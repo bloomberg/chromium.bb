@@ -11,8 +11,9 @@
 namespace ash {
 
 class CollapseButton;
-class UnifiedSystemTrayController;
+class SignOutButton;
 class TopShortcutButton;
+class UnifiedSystemTrayController;
 
 // Top shortcuts view shown on the top of UnifiedSystemTrayView.
 class TopShortcutsView : public views::View, public views::ButtonListener {
@@ -27,6 +28,7 @@ class TopShortcutsView : public views::View, public views::ButtonListener {
   UnifiedSystemTrayController* controller_;
 
   // Owned by views hierarchy.
+  SignOutButton* sign_out_button_ = nullptr;
   TopShortcutButton* lock_button_ = nullptr;
   TopShortcutButton* settings_button_ = nullptr;
   TopShortcutButton* power_button_ = nullptr;

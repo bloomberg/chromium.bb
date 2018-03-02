@@ -24,6 +24,8 @@ class UnifiedSystemTrayController {
   // Create the view. The created view is unowned.
   UnifiedSystemTrayView* CreateView();
 
+  // Sign out from the current user. Called from the view.
+  void HandleSignOutAction();
   // Show lock screen which asks the user password. Called from the view.
   void HandleLockAction();
   // Show WebUI settings. Called from the view.

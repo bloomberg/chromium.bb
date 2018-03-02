@@ -12,6 +12,7 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/unified/collapse_button.h"
+#include "ash/system/unified/sign_out_button.h"
 #include "ash/system/unified/top_shortcut_button.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
 #include "ui/views/layout/box_layout.h"
@@ -31,6 +32,9 @@ TopShortcutsView::TopShortcutsView(UnifiedSystemTrayController* controller)
   // screen, lock screen, or in a secondary account flow. The exception is
   // |power_button_| which is always shown as enabled.
   const bool can_show_web_ui = TrayPopupUtils::CanOpenWebUISettings();
+
+  sign_out_button_ = new SignOutButton(this);
+  AddChildView(sign_out_button_);
 
   lock_button_ = new TopShortcutButton(this, kSystemMenuLockIcon,
                                        IDS_ASH_STATUS_TRAY_LOCK);
@@ -65,7 +69,9 @@ TopShortcutsView::~TopShortcutsView() = default;
 
 void TopShortcutsView::ButtonPressed(views::Button* sender,
                                      const ui::Event& event) {
-  if (sender == lock_button_)
+  if (sender == sign_out_button_)
+    controller_->HandleSignOutAction();
+  else if (sender == lock_button_)
     controller_->HandleLockAction();
   else if (sender == settings_button_)
     controller_->HandleSettingsAction();

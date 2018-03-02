@@ -6,6 +6,7 @@
 
 #include "ash/metrics/user_metrics_action.h"
 #include "ash/metrics/user_metrics_recorder.h"
+#include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_controller.h"
 #include "ash/system/unified/feature_pod_controller_base.h"
@@ -26,6 +27,11 @@ UnifiedSystemTrayView* UnifiedSystemTrayController::CreateView() {
   unified_view_ = new UnifiedSystemTrayView(this);
   InitFeaturePods();
   return unified_view_;
+}
+
+void UnifiedSystemTrayController::HandleSignOutAction() {
+  Shell::Get()->metrics()->RecordUserMetricsAction(UMA_STATUS_AREA_SIGN_OUT);
+  Shell::Get()->session_controller()->RequestSignOut();
 }
 
 void UnifiedSystemTrayController::HandleLockAction() {
