@@ -27,6 +27,7 @@
 #include "base/values.h"
 #include "crypto/ec_private_key.h"
 #include "crypto/ec_signature_creator.h"
+#include "net/base/url_util.h"
 #include "net/cert/asn1_util.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/ct_policy_status.h"
@@ -626,10 +627,11 @@ int SpdyStreamRequest::StartRequest(
   DCHECK(!session_);
   DCHECK(!stream_);
   DCHECK(callback_.is_null());
+  DCHECK(url.is_valid()) << url.possibly_invalid_spec();
 
   type_ = type;
   session_ = session;
-  url_ = url;
+  url_ = SimplifyUrlForRequest(url);
   priority_ = priority;
   socket_tag_ = socket_tag;
   net_log_ = net_log;
@@ -1693,7 +1695,7 @@ void SpdySession::TryCreatePushStream(SpdyStreamId stream_id,
   }
 
   // Cross-origin push validation.
-  GURL associated_url(associated_it->second->GetUrlFromHeaders());
+  GURL associated_url(associated_it->second->url());
   if (associated_url.GetOrigin() != gurl.GetOrigin()) {
     if (is_trusted_proxy_) {
       if (!gurl.SchemeIs(url::kHttpScheme)) {

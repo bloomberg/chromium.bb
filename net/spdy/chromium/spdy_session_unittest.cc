@@ -4477,7 +4477,7 @@ void SpdySessionTest::RunResumeAfterUnstallTest(
       spdy_util_.ConstructPostHeaderBlock(kDefaultUrl, kBodyDataSize));
   EXPECT_EQ(ERR_IO_PENDING,
             stream->SendRequestHeaders(std::move(headers), MORE_DATA_TO_SEND));
-  EXPECT_EQ(kDefaultUrl, stream->GetUrlFromHeaders().spec());
+  EXPECT_EQ(kDefaultUrl, stream->url().spec());
 
   stall_function.Run(stream.get());
 
@@ -4614,7 +4614,7 @@ TEST_F(SpdySessionTest, ResumeByPriorityAfterSendWindowSizeIncrease) {
       spdy_util_.ConstructPostHeaderBlock(kDefaultUrl, kBodyDataSize));
   EXPECT_EQ(ERR_IO_PENDING, stream1->SendRequestHeaders(std::move(headers1),
                                                         MORE_DATA_TO_SEND));
-  EXPECT_EQ(kDefaultUrl, stream1->GetUrlFromHeaders().spec());
+  EXPECT_EQ(kDefaultUrl, stream1->url().spec());
 
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, stream1->stream_id());
@@ -4624,7 +4624,7 @@ TEST_F(SpdySessionTest, ResumeByPriorityAfterSendWindowSizeIncrease) {
       spdy_util_.ConstructPostHeaderBlock(kDefaultUrl, kBodyDataSize));
   EXPECT_EQ(ERR_IO_PENDING, stream2->SendRequestHeaders(std::move(headers2),
                                                         MORE_DATA_TO_SEND));
-  EXPECT_EQ(kDefaultUrl, stream2->GetUrlFromHeaders().spec());
+  EXPECT_EQ(kDefaultUrl, stream2->url().spec());
 
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(3u, stream2->stream_id());
@@ -4718,7 +4718,7 @@ TEST_F(SpdySessionTest, ResumeSessionWithStalledStream) {
       spdy_util_.ConstructPostHeaderBlock(kDefaultUrl, kBodyDataSize));
   EXPECT_EQ(ERR_IO_PENDING, stream1->SendRequestHeaders(std::move(headers1),
                                                         MORE_DATA_TO_SEND));
-  EXPECT_EQ(kDefaultUrl, stream1->GetUrlFromHeaders().spec());
+  EXPECT_EQ(kDefaultUrl, stream1->url().spec());
 
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, stream1->stream_id());
@@ -4728,7 +4728,7 @@ TEST_F(SpdySessionTest, ResumeSessionWithStalledStream) {
       spdy_util_.ConstructPostHeaderBlock(kDefaultUrl, kBodyDataSize));
   EXPECT_EQ(ERR_IO_PENDING, stream2->SendRequestHeaders(std::move(headers2),
                                                         MORE_DATA_TO_SEND));
-  EXPECT_EQ(kDefaultUrl, stream2->GetUrlFromHeaders().spec());
+  EXPECT_EQ(kDefaultUrl, stream2->url().spec());
 
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(3u, stream2->stream_id());
@@ -4870,7 +4870,7 @@ TEST_F(SpdySessionTest, SendWindowSizeIncreaseWithDeletedStreams) {
       spdy_util_.ConstructPostHeaderBlock(kDefaultUrl, kBodyDataSize));
   EXPECT_EQ(ERR_IO_PENDING, stream1->SendRequestHeaders(std::move(headers1),
                                                         MORE_DATA_TO_SEND));
-  EXPECT_EQ(kDefaultUrl, stream1->GetUrlFromHeaders().spec());
+  EXPECT_EQ(kDefaultUrl, stream1->url().spec());
 
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, stream1->stream_id());
@@ -4880,7 +4880,7 @@ TEST_F(SpdySessionTest, SendWindowSizeIncreaseWithDeletedStreams) {
       spdy_util_.ConstructPostHeaderBlock(kDefaultUrl, kBodyDataSize));
   EXPECT_EQ(ERR_IO_PENDING, stream2->SendRequestHeaders(std::move(headers2),
                                                         MORE_DATA_TO_SEND));
-  EXPECT_EQ(kDefaultUrl, stream2->GetUrlFromHeaders().spec());
+  EXPECT_EQ(kDefaultUrl, stream2->url().spec());
 
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(3u, stream2->stream_id());
@@ -4890,7 +4890,7 @@ TEST_F(SpdySessionTest, SendWindowSizeIncreaseWithDeletedStreams) {
       spdy_util_.ConstructPostHeaderBlock(kDefaultUrl, kBodyDataSize));
   EXPECT_EQ(ERR_IO_PENDING, stream3->SendRequestHeaders(std::move(headers3),
                                                         MORE_DATA_TO_SEND));
-  EXPECT_EQ(kDefaultUrl, stream3->GetUrlFromHeaders().spec());
+  EXPECT_EQ(kDefaultUrl, stream3->url().spec());
 
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(5u, stream3->stream_id());
@@ -4995,7 +4995,7 @@ TEST_F(SpdySessionTest, SendWindowSizeIncreaseWithDeletedSession) {
       spdy_util_.ConstructPostHeaderBlock(kDefaultUrl, kBodyDataSize));
   EXPECT_EQ(ERR_IO_PENDING, stream1->SendRequestHeaders(std::move(headers1),
                                                         MORE_DATA_TO_SEND));
-  EXPECT_EQ(kDefaultUrl, stream1->GetUrlFromHeaders().spec());
+  EXPECT_EQ(kDefaultUrl, stream1->url().spec());
 
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, stream1->stream_id());
@@ -5005,7 +5005,7 @@ TEST_F(SpdySessionTest, SendWindowSizeIncreaseWithDeletedSession) {
       spdy_util_.ConstructPostHeaderBlock(kDefaultUrl, kBodyDataSize));
   EXPECT_EQ(ERR_IO_PENDING, stream2->SendRequestHeaders(std::move(headers2),
                                                         MORE_DATA_TO_SEND));
-  EXPECT_EQ(kDefaultUrl, stream2->GetUrlFromHeaders().spec());
+  EXPECT_EQ(kDefaultUrl, stream2->url().spec());
 
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(3u, stream2->stream_id());

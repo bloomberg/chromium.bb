@@ -379,10 +379,6 @@ class NET_EXPORT_PRIVATE SpdyStream {
 
   const SpdyHeaderBlock& request_headers() { return request_headers_; }
 
-  // Get the URL from the appropriate stream headers, or the empty
-  // GURL() if it is unknown.
-  const GURL& GetUrlFromHeaders() const { return url_from_header_block_; }
-
   // Returns the estimate of dynamically allocated memory in bytes.
   size_t EstimateMemoryUsage() const;
 
@@ -483,9 +479,6 @@ class NET_EXPORT_PRIVATE SpdyStream {
   // The headers for the request to send.
   bool request_headers_valid_;
   SpdyHeaderBlock request_headers_;
-
-  // The URL from the request headers.
-  GURL url_from_header_block_;
 
   // Data waiting to be sent, and the close state of the local endpoint
   // after the data is fully written.
