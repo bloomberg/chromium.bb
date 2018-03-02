@@ -130,26 +130,6 @@ std::unique_ptr<base::Value> NetLogQuicConnectionMigrationSuccessCallback(
   return std::move(dict);
 }
 
-void HistogramAndLogMigrationFailure(const NetLogWithSource& net_log,
-                                     enum QuicConnectionMigrationStatus status,
-                                     QuicConnectionId connection_id,
-                                     std::string reason) {
-  UMA_HISTOGRAM_ENUMERATION("Net.QuicSession.ConnectionMigration", status,
-                            MIGRATION_STATUS_MAX);
-  net_log.AddEvent(NetLogEventType::QUIC_CONNECTION_MIGRATION_FAILURE,
-                   base::Bind(&NetLogQuicConnectionMigrationFailureCallback,
-                              connection_id, reason));
-}
-
-void HistogramAndLogMigrationSuccess(const NetLogWithSource& net_log,
-                                     QuicConnectionId connection_id) {
-  UMA_HISTOGRAM_ENUMERATION("Net.QuicSession.ConnectionMigration",
-                            MIGRATION_STATUS_SUCCESS, MIGRATION_STATUS_MAX);
-  net_log.AddEvent(
-      NetLogEventType::QUIC_CONNECTION_MIGRATION_SUCCESS,
-      base::Bind(&NetLogQuicConnectionMigrationSuccessCallback, connection_id));
-}
-
 // Histogram for recording the different reasons that a QUIC session is unable
 // to complete the handshake.
 enum HandshakeFailureReason {
@@ -178,6 +158,26 @@ enum HandshakeState {
 void RecordHandshakeState(HandshakeState state) {
   UMA_HISTOGRAM_ENUMERATION("Net.QuicHandshakeState", state,
                             NUM_HANDSHAKE_STATES);
+}
+
+std::string ConnectionMigrationCauseToString(ConnectionMigrationCause cause) {
+  switch (cause) {
+    case UNKNOWN:
+      return "Unknown";
+    case ON_NETWORK_CONNECTED:
+      return "OnNetworkConnected";
+    case ON_NETWORK_DISCONNECTED:
+      return "OnNetworkDisconnected";
+    case ON_WRITE_ERROR:
+      return "OnWriteError";
+    case ON_NETWORK_MADE_DEFAULT:
+      return "OnNetworkMadeDefault";
+    case ON_MIGRATE_BACK_TO_DEFAULT_NETWORK:
+      return "OnMigrateBackToDefaultNetwork";
+    case ON_PATH_DEGRADING:
+      return "OnPathDegrading";
+  }
+  return "InvalidCause";
 }
 
 std::unique_ptr<base::Value> NetLogQuicClientSessionCallback(
@@ -721,6 +721,7 @@ QuicChromiumClientSession::QuicChromiumClientSession(
       bytes_pushed_and_unclaimed_count_(0),
       probing_manager_(this, task_runner_),
       retry_migrate_back_count_(0),
+      current_connection_migration_cause_(UNKNOWN),
       migration_pending_(false),
       headers_include_h2_stream_dependency_(
           headers_include_h2_stream_dependency &&
@@ -1619,6 +1620,8 @@ void QuicChromiumClientSession::MigrateSessionOnWriteError(int error_code) {
   if (!migration_pending_)
     return;
 
+  current_connection_migration_cause_ = ON_WRITE_ERROR;
+
   MigrationResult result = MigrationResult::FAILURE;
   if (stream_factory_ != nullptr) {
     const NetLogWithSource migration_net_log = NetLogWithSource::Make(
@@ -1700,9 +1703,9 @@ void QuicChromiumClientSession::OnMigrationTimeout(size_t num_sockets) {
   // If number of sockets has changed, this migration task is stale.
   if (num_sockets != sockets_.size())
     return;
-  UMA_HISTOGRAM_ENUMERATION("Net.QuicSession.ConnectionMigration",
-                            MIGRATION_STATUS_NO_ALTERNATE_NETWORK,
-                            MIGRATION_STATUS_MAX);
+
+  LogConnectionMigrationResultToHistogram(
+      MIGRATION_STATUS_NO_ALTERNATE_NETWORK);
   CloseSessionOnError(ERR_NETWORK_CHANGED,
                       QUIC_CONNECTION_MIGRATION_NO_NEW_NETWORK);
 }
@@ -1745,6 +1748,7 @@ void QuicChromiumClientSession::OnProbeNetworkSucceeded(
              << "successful probing network: " << network << ".";
     current_migrations_to_non_default_network_on_path_degrading_++;
     if (!migrate_back_to_default_timer_.IsRunning()) {
+      current_connection_migration_cause_ = ON_MIGRATE_BACK_TO_DEFAULT_NETWORK;
       // Session gets off the |default_network|, stay on |network| for now but
       // try to migrate back to default network after 1 second.
       StartMigrateBackToDefaultNetworkTimer(
@@ -1782,6 +1786,7 @@ void QuicChromiumClientSession::OnNetworkConnected(
   if (!migration_pending_)
     return;
 
+  current_connection_migration_cause_ = ON_NETWORK_CONNECTED;
   // |migration_pending_| is true, there was no working network previously.
   // |network| is now the only possible candidate, migrate immediately.
   if (migrate_session_on_network_change_v2_) {
@@ -1806,6 +1811,7 @@ void QuicChromiumClientSession::OnNetworkDisconnected(
   if (!migrate_session_on_network_change_)
     return;
 
+  current_connection_migration_cause_ = ON_NETWORK_DISCONNECTED;
   MaybeMigrateOrCloseSession(
       alternate_network, /*close_if_cannot_migrate*/ true, migration_net_log);
 }
@@ -1829,6 +1835,7 @@ void QuicChromiumClientSession::OnNetworkDisconnectedV2(
     return;
   }
 
+  current_connection_migration_cause_ = ON_NETWORK_DISCONNECTED;
   // Attempt to find alternative network.
   NetworkChangeNotifier::NetworkHandle new_network =
       stream_factory_->FindAlternateNetwork(disconnected_network);
@@ -1837,6 +1844,7 @@ void QuicChromiumClientSession::OnNetworkDisconnectedV2(
     OnNoNewNetwork();
     return;
   }
+
   // Current network is being disconnected, migrate immediately to the
   // alternative network.
   MigrateImmediately(new_network);
@@ -1855,6 +1863,7 @@ void QuicChromiumClientSession::OnNetworkMadeDefault(
 
   DCHECK_NE(NetworkChangeNotifier::kInvalidNetworkHandle, new_network);
   default_network_ = new_network;
+  current_connection_migration_cause_ = ON_NETWORK_MADE_DEFAULT;
 
   if (!migrate_session_on_network_change_v2_) {
     MaybeMigrateOrCloseSession(new_network, /*close_if_cannot_migrate*/ false,
@@ -1943,6 +1952,7 @@ void QuicChromiumClientSession::OnPathDegrading() {
       NetworkChangeNotifier::NetworkHandle alternate_network =
           stream_factory_->FindAlternateNetwork(
               GetDefaultSocket()->GetBoundNetwork());
+      current_connection_migration_cause_ = ON_PATH_DEGRADING;
       if (alternate_network != NetworkChangeNotifier::kInvalidNetworkHandle) {
         if (GetDefaultSocket()->GetBoundNetwork() == default_network_ &&
             current_migrations_to_non_default_network_on_path_degrading_ >=
@@ -2193,6 +2203,9 @@ ProbingResult QuicChromiumClientSession::StartProbeNetwork(
 
 void QuicChromiumClientSession::StartMigrateBackToDefaultNetworkTimer(
     base::TimeDelta delay) {
+  if (current_connection_migration_cause_ != ON_NETWORK_MADE_DEFAULT)
+    current_connection_migration_cause_ = ON_MIGRATE_BACK_TO_DEFAULT_NETWORK;
+
   CancelMigrateBackToDefaultNetworkTimer();
   // Post a task to try migrate back to default network after |delay|.
   migrate_back_to_default_timer_.Start(
@@ -2362,6 +2375,40 @@ void QuicChromiumClientSession::LogMetricsOnNetworkMadeDefault() {
     }
     most_recent_path_degrading_timestamp_ = base::TimeTicks();
   }
+}
+
+void QuicChromiumClientSession::LogConnectionMigrationResultToHistogram(
+    QuicConnectionMigrationStatus status) {
+  UMA_HISTOGRAM_ENUMERATION("Net.QuicSession.ConnectionMigration", status,
+                            MIGRATION_STATUS_MAX);
+
+  // Log the connection migraiton result to different histograms based on the
+  // cause of the connection migration.
+  std::string histogram_name =
+      "Net.QuicSession.ConnectionMigration." +
+      ConnectionMigrationCauseToString(current_connection_migration_cause_);
+  base::UmaHistogramEnumeration(histogram_name, status, MIGRATION_STATUS_MAX);
+  current_connection_migration_cause_ = UNKNOWN;
+}
+
+void QuicChromiumClientSession::HistogramAndLogMigrationFailure(
+    const NetLogWithSource& net_log,
+    QuicConnectionMigrationStatus status,
+    QuicConnectionId connection_id,
+    const std::string& reason) {
+  LogConnectionMigrationResultToHistogram(status);
+  net_log.AddEvent(NetLogEventType::QUIC_CONNECTION_MIGRATION_FAILURE,
+                   base::Bind(&NetLogQuicConnectionMigrationFailureCallback,
+                              connection_id, reason));
+}
+
+void QuicChromiumClientSession::HistogramAndLogMigrationSuccess(
+    const NetLogWithSource& net_log,
+    QuicConnectionId connection_id) {
+  LogConnectionMigrationResultToHistogram(MIGRATION_STATUS_SUCCESS);
+  net_log.AddEvent(
+      NetLogEventType::QUIC_CONNECTION_MIGRATION_SUCCESS,
+      base::Bind(&NetLogQuicConnectionMigrationSuccessCallback, connection_id));
 }
 
 std::unique_ptr<base::Value> QuicChromiumClientSession::GetInfoAsValue(
