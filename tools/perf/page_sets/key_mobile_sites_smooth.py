@@ -31,7 +31,8 @@ class KeyMobileSitesSmoothPage(page_module.Page):
                name='',
                tags=None,
                action_on_load_complete=False,
-               extra_browser_args=None):
+               extra_browser_args=None,
+               shared_page_state_class=shared_page_state.SharedMobilePageState):
     if name == '':
       name = url
     super(KeyMobileSitesSmoothPage, self).__init__(
@@ -39,8 +40,8 @@ class KeyMobileSitesSmoothPage(page_module.Page):
         page_set=page_set,
         name=name,
         tags=tags,
-        shared_page_state_class=shared_page_state.SharedMobilePageState,
-        extra_browser_args=extra_browser_args)
+        extra_browser_args=extra_browser_args,
+        shared_page_state_class=shared_page_state_class)
     self.action_on_load_complete = action_on_load_complete
 
   def RunPageInteractions(self, action_runner):
@@ -52,9 +53,8 @@ class KeyMobileSitesSmoothPage(page_module.Page):
 
 class LinkedInSmoothPage(key_mobile_sites_pages.LinkedInPage):
 
-  def __init__(self, page_set, name='', extra_browser_args=None):
-    super(LinkedInSmoothPage, self).__init__(
-        page_set=page_set, name=name, extra_browser_args=extra_browser_args)
+  def RunPageInteractions(self, action_runner):
+      _IssueMarkerAndScroll(action_runner)
 
   # Linkedin has expensive shader compilation so it can benefit from shader
   # cache from reload.
@@ -67,12 +67,17 @@ class LinkedInSmoothPage(key_mobile_sites_pages.LinkedInPage):
 class WowwikiSmoothPage(KeyMobileSitesSmoothPage):
   """Why: Mobile wiki."""
 
-  def __init__(self, page_set, name='', extra_browser_args=None):
+  def __init__(self,
+               page_set,
+               name='',
+               extra_browser_args=None,
+               shared_page_state_class=shared_page_state.SharedMobilePageState):
     super(WowwikiSmoothPage, self).__init__(
         url='http://www.wowwiki.com/World_of_Warcraft:_Mists_of_Pandaria',
         page_set=page_set,
         name=name,
-        extra_browser_args=extra_browser_args)
+        extra_browser_args=extra_browser_args,
+        shared_page_state_class=shared_page_state_class)
 
   # Wowwiki has expensive shader compilation so it can benefit from shader
   # cache from reload.
