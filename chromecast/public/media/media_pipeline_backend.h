@@ -6,6 +6,7 @@
 #define CHROMECAST_PUBLIC_MEDIA_MEDIA_PIPELINE_BACKEND_H_
 
 #include <stdint.h>
+
 #include <string>
 
 #include "cast_key_status.h"
