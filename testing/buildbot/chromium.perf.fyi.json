@@ -463,7 +463,7 @@
             }
           ],
           "expiration": 36000,
-          "hard_timeout": 10800,
+          "hard_timeout": 36000,
           "ignore_task_failure": false,
           "io_timeout": 3600,
           "shards": 2,

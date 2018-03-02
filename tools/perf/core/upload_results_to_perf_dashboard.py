@@ -40,7 +40,7 @@ def _GetDashboardJson(options):
   if not 'charts' in results:
     # These are legacy results.
     dashboard_json = results_dashboard.MakeListOfPoints(
-      results, options.configuration.name, stripped_test_name,
+      results, options.configuration_name, stripped_test_name,
       options.buildername, options.buildnumber, {},
       _GetMachineGroup(options), revisions_dict=revisions)
   else:
