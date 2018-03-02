@@ -53,6 +53,7 @@ class WidgetDelegate;
 
 namespace ash {
 
+class AppListTestHelper;
 class AshTestEnvironment;
 class AshTestHelper;
 class Shelf;
@@ -177,6 +178,8 @@ class AshTestBase : public testing::Test,
   TestScreenshotDelegate* GetScreenshotDelegate();
 
   TestSessionControllerClient* GetSessionControllerClient();
+
+  AppListTestHelper* GetAppListTestHelper();
 
   // Emulates an ash session that have |session_count| user sessions running.
   // Note that existing user sessions will be cleared.

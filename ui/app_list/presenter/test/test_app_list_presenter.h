@@ -5,9 +5,11 @@
 #ifndef UI_APP_LIST_PRESENTER_TEST_TEST_APP_LIST_PRESENTER_H_
 #define UI_APP_LIST_PRESENTER_TEST_TEST_APP_LIST_PRESENTER_H_
 
+#include "ash/app_list/model/app_list_view_state.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/app_list/presenter/app_list_presenter.mojom.h"
+#include "ui/app_list/presenter/app_list_presenter_impl.h"
 
 namespace app_list {
 namespace test {
@@ -32,28 +34,15 @@ class TestAppListPresenter : public mojom::AppListPresenter {
   void EndDragFromShelf(mojom::AppListState app_list_state) override;
   void ProcessMouseWheelOffset(int y_scroll_offset) override;
 
-  size_t show_count() const { return show_count_; }
-  size_t dismiss_count() const { return dismiss_count_; }
-  size_t toggle_count() const { return toggle_count_; }
   size_t voice_session_count() const { return voice_session_count_; }
-  size_t voice_session_toggle_count() const {
-    return voice_session_toggle_count_;
-  }
-  size_t set_y_position_count() const { return set_y_position_count_; }
-  size_t process_mouse_wheel_offset_count() const {
-    return process_mouse_wheel_offset_count_;
-  }
-  mojom::AppListState app_list_state() const { return app_list_state_; }
+  AppListViewState GetAppListViewState();
+  AppListPresenterImpl* presenter() { return &app_list_presenter_impl_; }
+
+  void FlushForTesting();
 
  private:
-  size_t show_count_ = 0u;
-  size_t dismiss_count_ = 0u;
-  size_t toggle_count_ = 0u;
   size_t voice_session_count_ = 0u;
-  size_t voice_session_toggle_count_ = 0u;
-  size_t set_y_position_count_ = 0u;
-  size_t process_mouse_wheel_offset_count_ = 0u;
-  mojom::AppListState app_list_state_ = mojom::AppListState::CLOSED;
+  AppListPresenterImpl app_list_presenter_impl_;
 
   mojo::Binding<mojom::AppListPresenter> binding_;
 

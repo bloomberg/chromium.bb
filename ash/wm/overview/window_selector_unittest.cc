@@ -4,11 +4,12 @@
 
 #include <algorithm>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/test_accessibility_controller_client.h"
-#include "ash/app_list/test_app_list_presenter_impl.h"
+#include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/display/screen_orientation_controller_chromeos.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/drag_drop/drag_drop_controller.h"
@@ -544,8 +545,8 @@ TEST_F(WindowSelectorTest, TextFilterActive) {
 
   // Pass an enum to satisfy the function, it is arbitrary and will not affect
   // histograms.
-  Shell::Get()->app_list()->ToggleAppList(GetPrimaryDisplay().id(),
-                                          app_list::kShelfButton);
+  GetAppListTestHelper()->ToggleAndRunLoop(GetPrimaryDisplay().id(),
+                                           app_list::kShelfButton);
 
   // Activating overview cancels the App-list which normally would activate the
   // previously active |window1|. Overview mode should properly transfer focus
@@ -1000,14 +1001,12 @@ TEST_F(WindowSelectorTest, SelectingHidesAppList) {
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
 
-  // The tested behavior relies on the app list presenter delegate.
-  TestAppListPresenterImpl app_list_presenter_impl;
-
-  app_list_presenter_impl.ShowAndRunLoop(GetPrimaryDisplay().id());
-  EXPECT_TRUE(app_list_presenter_impl.IsVisible());
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplay().id());
+  GetAppListTestHelper()->CheckVisibility(true);
 
   ToggleOverview();
-  EXPECT_FALSE(app_list_presenter_impl.IsVisible());
+  GetAppListTestHelper()->WaitUntilIdle();
+  GetAppListTestHelper()->CheckVisibility(false);
   ToggleOverview();
 }
 

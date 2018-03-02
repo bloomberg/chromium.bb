@@ -5,10 +5,11 @@
 #include "ash/shelf/shelf_layout_manager.h"
 
 #include <memory>
+#include <utility>
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/accelerators/accelerator_table.h"
-#include "ash/app_list/test_app_list_presenter_impl.h"
+#include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/focus_cycler.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -35,8 +36,6 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "ui/app_list/app_list_features.h"
-#include "ui/app_list/presenter/app_list.h"
-#include "ui/app_list/presenter/test/test_app_list_presenter.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/window.h"
@@ -1040,24 +1039,21 @@ TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfVisibleState) {
   Shelf* shelf = GetPrimaryShelf();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
 
-  // The tested behavior relies on the app list presenter implementation.
-  TestAppListPresenterImpl app_list_presenter_impl;
-
   // Create a normal unmaximized window; the shelf should be visible.
   aura::Window* window = CreateTestWindow();
   window->SetBounds(gfx::Rect(0, 0, 100, 100));
   window->Show();
-  EXPECT_FALSE(app_list_presenter_impl.GetTargetVisibility());
+  GetAppListTestHelper()->CheckVisibility(false);
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
 
   // Show the app list and the shelf stays visible.
-  app_list_presenter_impl.ShowAndRunLoop(GetPrimaryDisplayId());
-  EXPECT_TRUE(app_list_presenter_impl.GetTargetVisibility());
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+  GetAppListTestHelper()->CheckVisibility(true);
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
 
   // Hide the app list and the shelf stays visible.
-  app_list_presenter_impl.DismissAndRunLoop();
-  EXPECT_FALSE(app_list_presenter_impl.GetTargetVisibility());
+  GetAppListTestHelper()->DismissAndRunLoop();
+  GetAppListTestHelper()->CheckVisibility(false);
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
 }
 
@@ -1067,29 +1063,26 @@ TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfAutoHideState) {
   Shelf* shelf = GetPrimaryShelf();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
 
-  // The tested behavior relies on the app list presenter implementation.
-  TestAppListPresenterImpl app_list_presenter_impl;
-
   // Create a normal unmaximized window; the shelf should be hidden.
   aura::Window* window = CreateTestWindow();
   window->SetBounds(gfx::Rect(0, 0, 100, 100));
   window->Show();
-  EXPECT_FALSE(app_list_presenter_impl.GetTargetVisibility());
+  GetAppListTestHelper()->CheckVisibility(false);
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
 
   // Show the app list and the shelf should be temporarily visible.
-  app_list_presenter_impl.ShowAndRunLoop(GetPrimaryDisplayId());
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
   // The shelf's auto hide state won't be changed until the timer fires, so
   // force it to update now.
   GetShelfLayoutManager()->UpdateVisibilityState();
-  EXPECT_TRUE(app_list_presenter_impl.GetTargetVisibility());
+  GetAppListTestHelper()->CheckVisibility(true);
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
 
   // Hide the app list and the shelf should be hidden again.
-  app_list_presenter_impl.DismissAndRunLoop();
-  EXPECT_FALSE(app_list_presenter_impl.GetTargetVisibility());
+  GetAppListTestHelper()->DismissAndRunLoop();
+  GetAppListTestHelper()->CheckVisibility(false);
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
 }
@@ -1130,29 +1123,26 @@ TEST_F(ShelfLayoutManagerTest, DualDisplayOpenAppListWithShelfAutoHideState) {
   // Activate one window in one display.
   wm::ActivateWindow(window_1);
 
-  // The tested behavior relies on the app list presenter implementation.
-  TestAppListPresenterImpl app_list_presenter_impl;
-
   Shell::Get()->UpdateShelfVisibility();
-  EXPECT_FALSE(app_list_presenter_impl.GetTargetVisibility());
+  GetAppListTestHelper()->CheckVisibility(false);
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf_1->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf_2->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf_1->GetAutoHideState());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf_2->GetAutoHideState());
 
   // Show the app list; only the shelf on the same display should be shown.
-  app_list_presenter_impl.ShowAndRunLoop(GetPrimaryDisplayId());
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
   Shell::Get()->UpdateShelfVisibility();
-  EXPECT_TRUE(app_list_presenter_impl.GetTargetVisibility());
+  GetAppListTestHelper()->CheckVisibility(true);
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf_1->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf_1->GetAutoHideState());
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf_2->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf_2->GetAutoHideState());
 
   // Hide the app list, both shelves should be hidden.
-  app_list_presenter_impl.DismissAndRunLoop();
+  GetAppListTestHelper()->DismissAndRunLoop();
   Shell::Get()->UpdateShelfVisibility();
-  EXPECT_FALSE(app_list_presenter_impl.GetTargetVisibility());
+  GetAppListTestHelper()->CheckVisibility(false);
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf_1->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf_2->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf_1->GetAutoHideState());
@@ -1164,26 +1154,23 @@ TEST_F(ShelfLayoutManagerTest, DualDisplayOpenAppListWithShelfAutoHideState) {
 TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfHiddenState) {
   Shelf* shelf = GetPrimaryShelf();
 
-  // The tested behavior relies on the app list presenter implementation.
-  TestAppListPresenterImpl app_list_presenter_impl;
-
   // Create a window and make it full screen; the shelf should be hidden.
   aura::Window* window = CreateTestWindow();
   window->SetBounds(gfx::Rect(0, 0, 100, 100));
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
   window->Show();
   wm::ActivateWindow(window);
-  EXPECT_FALSE(app_list_presenter_impl.GetTargetVisibility());
+  GetAppListTestHelper()->CheckVisibility(false);
   EXPECT_EQ(SHELF_HIDDEN, shelf->GetVisibilityState());
 
   // Show the app list and the shelf should be temporarily visible.
-  app_list_presenter_impl.ShowAndRunLoop(GetPrimaryDisplayId());
-  EXPECT_TRUE(app_list_presenter_impl.GetTargetVisibility());
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+  GetAppListTestHelper()->CheckVisibility(true);
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
 
   // Hide the app list and the shelf should be hidden again.
-  app_list_presenter_impl.DismissAndRunLoop();
-  EXPECT_FALSE(app_list_presenter_impl.GetTargetVisibility());
+  GetAppListTestHelper()->DismissAndRunLoop();
+  GetAppListTestHelper()->CheckVisibility(false);
   EXPECT_EQ(SHELF_HIDDEN, shelf->GetVisibilityState());
 }
 
@@ -1405,18 +1392,21 @@ TEST_F(ShelfLayoutManagerTest, GestureDrag) {
     SCOPED_TRACE("BOTTOM");
     shelf->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
     RunGestureDragTests(gfx::Vector2d(0, 120));
+    GetAppListTestHelper()->WaitUntilIdle();
   }
 
   {
     SCOPED_TRACE("LEFT");
     shelf->SetAlignment(SHELF_ALIGNMENT_LEFT);
     RunGestureDragTests(gfx::Vector2d(-120, 0));
+    GetAppListTestHelper()->WaitUntilIdle();
   }
 
   {
     SCOPED_TRACE("RIGHT");
     shelf->SetAlignment(SHELF_ALIGNMENT_RIGHT);
     RunGestureDragTests(gfx::Vector2d(120, 0));
+    GetAppListTestHelper()->WaitUntilIdle();
   }
 }
 
@@ -1428,9 +1418,6 @@ TEST_F(ShelfLayoutManagerTest, FlingUpOnShelfForFullscreenAppList) {
   EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
 
-  app_list::test::TestAppListPresenter test_app_list_presenter;
-  Shell::Get()->app_list()->SetAppListPresenter(
-      test_app_list_presenter.CreateInterfacePtrAndBind());
   // Starts the drag from the center of the shelf's bottom.
   gfx::Rect shelf_widget_bounds = GetShelfWidget()->GetWindowBoundsInScreen();
   gfx::Point start =
@@ -1443,21 +1430,24 @@ TEST_F(ShelfLayoutManagerTest, FlingUpOnShelfForFullscreenAppList) {
   UpdateScroll(-ShelfLayoutManager::kAppListDragSnapToPeekingThreshold);
   EndScroll(true /* is_fling */,
             -(ShelfLayoutManager::kAppListDragVelocityThreshold + 10));
-  RunAllPendingInMessageLoop();
-  EXPECT_EQ(1u, test_app_list_presenter.show_count());
-  EXPECT_GE(test_app_list_presenter.set_y_position_count(), 1u);
-  EXPECT_EQ(app_list::mojom::AppListState::FULLSCREEN_ALL_APPS,
-            test_app_list_presenter.app_list_state());
+  GetAppListTestHelper()->WaitUntilIdle();
+  GetAppListTestHelper()->CheckVisibility(true);
+  GetAppListTestHelper()->CheckState(
+      app_list::AppListViewState::FULLSCREEN_ALL_APPS);
+
+  // Closing the app list.
+  GetAppListTestHelper()->DismissAndRunLoop();
+  GetAppListTestHelper()->CheckVisibility(false);
+  GetAppListTestHelper()->CheckState(app_list::AppListViewState::CLOSED);
 
   // Fling down that exceeds the velocity threshold should close the app list.
   StartScroll(start);
   UpdateScroll(-ShelfLayoutManager::kAppListDragSnapToPeekingThreshold);
   EndScroll(true /* is_fling */,
             ShelfLayoutManager::kAppListDragVelocityThreshold + 10);
-  RunAllPendingInMessageLoop();
-  EXPECT_EQ(2u, test_app_list_presenter.show_count());
-  EXPECT_EQ(app_list::mojom::AppListState::CLOSED,
-            test_app_list_presenter.app_list_state());
+  GetAppListTestHelper()->WaitUntilIdle();
+  GetAppListTestHelper()->CheckVisibility(false);
+  GetAppListTestHelper()->CheckState(app_list::AppListViewState::CLOSED);
 
   // Fling the app list not exceed the velocity threshold, the state depends on
   // the drag amount.
@@ -1465,10 +1455,9 @@ TEST_F(ShelfLayoutManagerTest, FlingUpOnShelfForFullscreenAppList) {
   UpdateScroll(-(ShelfLayoutManager::kAppListDragSnapToPeekingThreshold - 10));
   EndScroll(true /* is_fling */,
             -(ShelfLayoutManager::kAppListDragVelocityThreshold - 10));
-  RunAllPendingInMessageLoop();
-  EXPECT_EQ(3u, test_app_list_presenter.show_count());
-  EXPECT_EQ(app_list::mojom::AppListState::PEEKING,
-            test_app_list_presenter.app_list_state());
+  GetAppListTestHelper()->WaitUntilIdle();
+  GetAppListTestHelper()->CheckVisibility(true);
+  GetAppListTestHelper()->CheckState(app_list::AppListViewState::PEEKING);
 }
 
 // Change the shelf alignment during dragging should dismiss the app list.
@@ -1478,21 +1467,16 @@ TEST_F(ShelfLayoutManagerTest, ChangeShelfAlignmentDuringAppListDragging) {
   EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
 
-  app_list::test::TestAppListPresenter test_app_list_presenter;
-  Shell::Get()->app_list()->SetAppListPresenter(
-      test_app_list_presenter.CreateInterfacePtrAndBind());
-
   StartScroll(GetShelfWidget()->GetWindowBoundsInScreen().CenterPoint());
   UpdateScroll(-ShelfLayoutManager::kAppListDragSnapToPeekingThreshold);
+  GetAppListTestHelper()->WaitUntilIdle();
   shelf->SetAlignment(SHELF_ALIGNMENT_LEFT);
   // Note, value -10 here has no specific meaning, it only used to make the
   // event scroll up a little bit.
   UpdateScroll(-10);
   EndScroll(false /* is_fling */, 0.f);
-  RunAllPendingInMessageLoop();
-  EXPECT_EQ(1u, test_app_list_presenter.show_count());
-  EXPECT_EQ(1u, test_app_list_presenter.dismiss_count());
-  EXPECT_GE(test_app_list_presenter.set_y_position_count(), 1u);
+  GetAppListTestHelper()->WaitUntilIdle();
+  GetAppListTestHelper()->CheckVisibility(false);
 }
 
 TEST_F(ShelfLayoutManagerTest,
@@ -1506,10 +1490,6 @@ TEST_F(ShelfLayoutManagerTest,
 
   // Note: A window must be visible in order to hide the shelf.
   views::Widget* widget = CreateTestWidget();
-
-  app_list::test::TestAppListPresenter test_app_list_presenter;
-  shell->app_list()->SetAppListPresenter(
-      test_app_list_presenter.CreateInterfacePtrAndBind());
 
   ui::test::EventGenerator& generator(GetEventGenerator());
   constexpr base::TimeDelta kTimeDelta = base::TimeDelta::FromMilliseconds(100);
@@ -1526,12 +1506,16 @@ TEST_F(ShelfLayoutManagerTest,
   delta.set_y(ShelfLayoutManager::kAppListDragSnapToFullscreenThreshold + 10);
   gfx::Point end = start - delta;
   generator.GestureScrollSequence(start, end, kTimeDelta, kNumScrollSteps);
-  RunAllPendingInMessageLoop();
+  GetAppListTestHelper()->WaitUntilIdle();
+  GetAppListTestHelper()->CheckVisibility(true);
+  GetAppListTestHelper()->CheckState(
+      app_list::AppListViewState::FULLSCREEN_ALL_APPS);
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
-  EXPECT_EQ(1u, test_app_list_presenter.show_count());
-  EXPECT_GE(test_app_list_presenter.set_y_position_count(), 1u);
-  EXPECT_EQ(app_list::mojom::AppListState::FULLSCREEN_ALL_APPS,
-            test_app_list_presenter.app_list_state());
+
+  // Closing the app list.
+  GetAppListTestHelper()->DismissAndRunLoop();
+  GetAppListTestHelper()->CheckVisibility(false);
+  GetAppListTestHelper()->CheckState(app_list::AppListViewState::CLOSED);
 
   // Swiping up less or equal to the threshold should dismiss the app list.
   delta.set_y(ShelfLayoutManager::kAppListDragSnapToFullscreenThreshold - 10);
@@ -1540,12 +1524,10 @@ TEST_F(ShelfLayoutManagerTest,
   // http://crbug.com/746481.
   shell->tablet_mode_controller()->EnableTabletModeWindowManager(true);
   generator.GestureScrollSequence(start, end, kTimeDelta, kNumScrollSteps);
-  RunAllPendingInMessageLoop();
+  GetAppListTestHelper()->WaitUntilIdle();
+  GetAppListTestHelper()->CheckVisibility(false);
+  GetAppListTestHelper()->CheckState(app_list::AppListViewState::CLOSED);
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
-  EXPECT_EQ(2u, test_app_list_presenter.show_count());
-  EXPECT_GE(test_app_list_presenter.set_y_position_count(), 1u);
-  EXPECT_EQ(app_list::mojom::AppListState::CLOSED,
-            test_app_list_presenter.app_list_state());
 
   // Swiping down on the shelf should hide it.
   end = start + delta;
@@ -1556,13 +1538,11 @@ TEST_F(ShelfLayoutManagerTest,
 
   // Swiping up should show the shelf but not the app list if shelf is hidden.
   generator.GestureScrollSequence(end, start, kTimeDelta, kNumScrollSteps);
-  RunAllPendingInMessageLoop();
+  GetAppListTestHelper()->WaitUntilIdle();
+  GetAppListTestHelper()->CheckVisibility(false);
+  GetAppListTestHelper()->CheckState(app_list::AppListViewState::CLOSED);
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
-  EXPECT_EQ(2u, test_app_list_presenter.show_count());
-  EXPECT_GE(test_app_list_presenter.set_y_position_count(), 1u);
-  EXPECT_EQ(app_list::mojom::AppListState::CLOSED,
-            test_app_list_presenter.app_list_state());
 
   // Swiping down should hide the shelf.
   generator.GestureScrollSequence(start, end, kTimeDelta, kNumScrollSteps);
@@ -1581,10 +1561,10 @@ TEST_F(ShelfLayoutManagerTest,
   delta.set_y(ShelfLayoutManager::kAppListDragSnapToFullscreenThreshold + 10);
   end = start - delta;
   generator.GestureScrollSequence(start, end, kTimeDelta, kNumScrollSteps);
-  RunAllPendingInMessageLoop();
-  EXPECT_EQ(3u, test_app_list_presenter.show_count());
-  EXPECT_EQ(app_list::mojom::AppListState::FULLSCREEN_ALL_APPS,
-            test_app_list_presenter.app_list_state());
+  GetAppListTestHelper()->WaitUntilIdle();
+  GetAppListTestHelper()->CheckVisibility(true);
+  GetAppListTestHelper()->CheckState(
+      app_list::AppListViewState::FULLSCREEN_ALL_APPS);
 }
 
 TEST_F(ShelfLayoutManagerTest,
@@ -1593,10 +1573,6 @@ TEST_F(ShelfLayoutManagerTest,
   EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM, shelf->alignment());
   EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
-
-  app_list::test::TestAppListPresenter test_app_list_presenter;
-  Shell::Get()->app_list()->SetAppListPresenter(
-      test_app_list_presenter.CreateInterfacePtrAndBind());
 
   ui::test::EventGenerator& generator(GetEventGenerator());
   constexpr base::TimeDelta kTimeDelta = base::TimeDelta::FromMilliseconds(100);
@@ -1613,37 +1589,36 @@ TEST_F(ShelfLayoutManagerTest,
   delta.set_y(ShelfLayoutManager::kAppListDragSnapToClosedThreshold - 10);
   gfx::Point end = start - delta;
   generator.GestureScrollSequence(start, end, kTimeDelta, kNumScrollSteps);
-  RunAllPendingInMessageLoop();
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
-  EXPECT_EQ(1u, test_app_list_presenter.show_count());
-  EXPECT_GE(test_app_list_presenter.set_y_position_count(), 1u);
-  EXPECT_EQ(app_list::mojom::AppListState::CLOSED,
-            test_app_list_presenter.app_list_state());
+  GetAppListTestHelper()->WaitUntilIdle();
+  GetAppListTestHelper()->CheckVisibility(false);
+  GetAppListTestHelper()->CheckState(app_list::AppListViewState::CLOSED);
 
   // Swiping up more than the close threshold but less than peeking threshold
   // should keep the app list at PEEKING state.
   delta.set_y(ShelfLayoutManager::kAppListDragSnapToPeekingThreshold - 10);
   end = start - delta;
   generator.GestureScrollSequence(start, end, kTimeDelta, kNumScrollSteps);
-  RunAllPendingInMessageLoop();
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
-  EXPECT_EQ(2u, test_app_list_presenter.show_count());
-  EXPECT_GE(test_app_list_presenter.set_y_position_count(), 1u);
-  EXPECT_EQ(app_list::mojom::AppListState::PEEKING,
-            test_app_list_presenter.app_list_state());
+  GetAppListTestHelper()->WaitUntilIdle();
+  GetAppListTestHelper()->CheckVisibility(true);
+  GetAppListTestHelper()->CheckState(app_list::AppListViewState::PEEKING);
+
+  // Closing the app list.
+  GetAppListTestHelper()->DismissAndRunLoop();
+  GetAppListTestHelper()->CheckVisibility(false);
+  GetAppListTestHelper()->CheckState(app_list::AppListViewState::CLOSED);
 
   // Swiping up more than the peeking threshold should keep the app list at
   // FULLSCREEN_ALL_APPS state.
-  Shell::Get()->app_list()->Dismiss();
   delta.set_y(ShelfLayoutManager::kAppListDragSnapToPeekingThreshold + 10);
   end = start - delta;
   generator.GestureScrollSequence(start, end, kTimeDelta, kNumScrollSteps);
-  RunAllPendingInMessageLoop();
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
-  EXPECT_EQ(3u, test_app_list_presenter.show_count());
-  EXPECT_GE(test_app_list_presenter.set_y_position_count(), 1u);
-  EXPECT_EQ(app_list::mojom::AppListState::FULLSCREEN_ALL_APPS,
-            test_app_list_presenter.app_list_state());
+  GetAppListTestHelper()->WaitUntilIdle();
+  GetAppListTestHelper()->CheckVisibility(true);
+  GetAppListTestHelper()->CheckState(
+      app_list::AppListViewState::FULLSCREEN_ALL_APPS);
 }
 
 // Swiping on shelf when fullscreen app list is opened should have no effect.

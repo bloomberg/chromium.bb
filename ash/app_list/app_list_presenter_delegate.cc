@@ -167,10 +167,10 @@ void AppListPresenterDelegate::ProcessLocatedEvent(ui::LocatedEvent* event) {
   if (!view_ || !is_visible_)
     return;
 
-  // If the event happened on a menu, then the event should not close the app
-  // list.
   aura::Window* target = static_cast<aura::Window*>(event->target());
   if (target) {
+    // If the event happened on a menu, then the event should not close the app
+    // list.
     RootWindowController* root_controller =
         RootWindowController::ForWindow(target);
     if (root_controller) {
@@ -182,6 +182,16 @@ void AppListPresenterDelegate::ProcessLocatedEvent(ui::LocatedEvent* event) {
           kShellWindowId_VirtualKeyboardContainer);
       if (keyboard_container->Contains(target))
         return;
+    }
+
+    // If the event happened on the app list button, it'll get handled by the
+    // button.
+    AppListButton* app_list_button =
+        Shelf::ForWindow(target)->shelf_widget()->GetAppListButton();
+    if (app_list_button && app_list_button->GetWidget() &&
+        target == app_list_button->GetWidget()->GetNativeWindow() &&
+        app_list_button->bounds().Contains(event->location())) {
+      return;
     }
   }
 

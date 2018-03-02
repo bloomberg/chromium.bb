@@ -206,9 +206,13 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
   DisplayConfigurationControllerTestApi(
       shell->display_configuration_controller())
       .DisableDisplayAnimator();
+
+  app_list_test_helper_ = std::make_unique<AppListTestHelper>();
 }
 
 void AshTestHelper::TearDown() {
+  app_list_test_helper_.reset();
+
   window_manager_service_.reset();
 
   // WindowManger owns the Shell in mash.

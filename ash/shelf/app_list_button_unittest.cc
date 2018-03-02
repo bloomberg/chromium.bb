@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 
+#include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/public/cpp/config.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
@@ -21,8 +22,6 @@
 #include "base/command_line.h"
 #include "base/test/scoped_command_line.h"
 #include "chromeos/chromeos_switches.h"
-#include "ui/app_list/presenter/app_list.h"
-#include "ui/app_list/presenter/test/test_app_list_presenter.h"
 #include "ui/events/test/event_generator.h"
 
 namespace ash {
@@ -41,14 +40,10 @@ class AppListButtonTest : public AshTestBase {
     AshTestBase::SetUp();
     app_list_button_ =
         GetPrimaryShelf()->GetShelfViewForTesting()->GetAppListButton();
-    Shell::Get()->app_list()->SetAppListPresenter(
-        test_app_list_presenter.CreateInterfacePtrAndBind());
   }
 
   void SendGestureEvent(ui::GestureEvent* event) {
     app_list_button_->OnGestureEvent(event);
-    Shell::Get()->app_list()->FlushForTesting();
-    RunAllPendingInMessageLoop();
   }
 
   void SendGestureEventToSecondaryDisplay(ui::GestureEvent* event) {
@@ -59,14 +54,9 @@ class AppListButtonTest : public AshTestBase {
         ->GetShelfViewForTesting()
         ->GetAppListButton()
         ->OnGestureEvent(event);
-    Shell::Get()->app_list()->FlushForTesting();
-    RunAllPendingInMessageLoop();
   }
 
   const AppListButton* app_list_button() const { return app_list_button_; }
-
- protected:
-  app_list::test::TestAppListPresenter test_app_list_presenter;
 
  private:
   AppListButton* app_list_button_ = nullptr;
@@ -84,11 +74,11 @@ TEST_F(AppListButtonTest, LongPressGestureWithoutVoiceInteractionFlag) {
   ui::GestureEvent long_press =
       CreateGestureEvent(ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
   SendGestureEvent(&long_press);
-  EXPECT_EQ(0u, test_app_list_presenter.voice_session_count());
+  GetAppListTestHelper()->CheckVoiceSessionCount(0u);
 
   // Test long press gesture on secondary display.
   SendGestureEventToSecondaryDisplay(&long_press);
-  EXPECT_EQ(0u, test_app_list_presenter.voice_session_count());
+  GetAppListTestHelper()->CheckVoiceSessionCount(0u);
 }
 
 TEST_F(AppListButtonTest, SwipeUpToOpenFullscreenAppList) {
@@ -104,12 +94,14 @@ TEST_F(AppListButtonTest, SwipeUpToOpenFullscreenAppList) {
             ShelfLayoutManager::kAppListDragSnapToPeekingThreshold + 10);
   GetEventGenerator().GestureScrollSequence(
       start, end, base::TimeDelta::FromMilliseconds(100), 4 /* steps */);
-  RunAllPendingInMessageLoop();
-  Shell::Get()->app_list()->FlushForTesting();
-  EXPECT_EQ(1u, test_app_list_presenter.show_count());
-  EXPECT_GE(test_app_list_presenter.set_y_position_count(), 1u);
-  EXPECT_EQ(app_list::mojom::AppListState::PEEKING,
-            test_app_list_presenter.app_list_state());
+  GetAppListTestHelper()->WaitUntilIdle();
+  GetAppListTestHelper()->CheckVisibility(true);
+  GetAppListTestHelper()->CheckState(app_list::AppListViewState::PEEKING);
+
+  // Closing the app list.
+  GetAppListTestHelper()->DismissAndRunLoop();
+  GetAppListTestHelper()->CheckVisibility(false);
+  GetAppListTestHelper()->CheckState(app_list::AppListViewState::CLOSED);
 
   // Swiping above the threshold should trigger a fullscreen app list.
   end.set_y(shelf->GetIdealBounds().bottom() -
@@ -118,10 +110,10 @@ TEST_F(AppListButtonTest, SwipeUpToOpenFullscreenAppList) {
       start, end, base::TimeDelta::FromMilliseconds(100), 4 /* steps */);
   RunAllPendingInMessageLoop();
   Shell::Get()->app_list()->FlushForTesting();
-  EXPECT_EQ(2u, test_app_list_presenter.show_count());
-  EXPECT_GE(test_app_list_presenter.set_y_position_count(), 1u);
-  EXPECT_EQ(app_list::mojom::AppListState::FULLSCREEN_ALL_APPS,
-            test_app_list_presenter.app_list_state());
+  GetAppListTestHelper()->WaitUntilIdle();
+  GetAppListTestHelper()->CheckVisibility(true);
+  GetAppListTestHelper()->CheckState(
+      app_list::AppListViewState::FULLSCREEN_ALL_APPS);
 }
 
 TEST_F(AppListButtonTest, ButtonPositionInTabletMode) {
@@ -170,11 +162,13 @@ TEST_F(VoiceInteractionAppListButtonTest,
   ui::GestureEvent long_press =
       CreateGestureEvent(ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
   SendGestureEvent(&long_press);
-  EXPECT_EQ(1u, test_app_list_presenter.voice_session_count());
+  GetAppListTestHelper()->WaitUntilIdle();
+  GetAppListTestHelper()->CheckVoiceSessionCount(1u);
 
   // Test long press gesture on secondary display.
   SendGestureEventToSecondaryDisplay(&long_press);
-  EXPECT_EQ(2u, test_app_list_presenter.voice_session_count());
+  GetAppListTestHelper()->WaitUntilIdle();
+  GetAppListTestHelper()->CheckVoiceSessionCount(2u);
 }
 
 TEST_F(VoiceInteractionAppListButtonTest, LongPressGestureWithSecondaryUser) {
@@ -190,11 +184,11 @@ TEST_F(VoiceInteractionAppListButtonTest, LongPressGestureWithSecondaryUser) {
   SendGestureEvent(&long_press);
   // Voice interaction is disabled for secondary user, so the count here should
   // be 0.
-  EXPECT_EQ(0u, test_app_list_presenter.voice_session_count());
+  GetAppListTestHelper()->CheckVoiceSessionCount(0u);
 
   // Test long press gesture on secondary display.
   SendGestureEventToSecondaryDisplay(&long_press);
-  EXPECT_EQ(0u, test_app_list_presenter.voice_session_count());
+  GetAppListTestHelper()->CheckVoiceSessionCount(0u);
 }
 
 TEST_F(VoiceInteractionAppListButtonTest,
@@ -212,11 +206,11 @@ TEST_F(VoiceInteractionAppListButtonTest,
   SendGestureEvent(&long_press);
   // After value prop has been accepted, if voice interaction is disalbed in
   // settings we should not handle long press action in app list button.
-  EXPECT_EQ(0u, test_app_list_presenter.voice_session_count());
+  GetAppListTestHelper()->CheckVoiceSessionCount(0u);
 
   // Test long press gesture on secondary display.
   SendGestureEventToSecondaryDisplay(&long_press);
-  EXPECT_EQ(0u, test_app_list_presenter.voice_session_count());
+  GetAppListTestHelper()->CheckVoiceSessionCount(0u);
 }
 
 TEST_F(VoiceInteractionAppListButtonTest,
@@ -230,13 +224,15 @@ TEST_F(VoiceInteractionAppListButtonTest,
   ui::GestureEvent long_press =
       CreateGestureEvent(ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
   SendGestureEvent(&long_press);
+  GetAppListTestHelper()->WaitUntilIdle();
   // Before setup flow completed we should show the animation even if the
   // settings are disabled.
-  EXPECT_EQ(1u, test_app_list_presenter.voice_session_count());
+  GetAppListTestHelper()->CheckVoiceSessionCount(1u);
 
   // Test long press gesture on secondary display.
   SendGestureEventToSecondaryDisplay(&long_press);
-  EXPECT_EQ(2u, test_app_list_presenter.voice_session_count());
+  GetAppListTestHelper()->WaitUntilIdle();
+  GetAppListTestHelper()->CheckVoiceSessionCount(2u);
 }
 
 }  // namespace ash

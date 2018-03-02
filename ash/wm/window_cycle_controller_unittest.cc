@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <memory>
 
-#include "ash/app_list/test_app_list_presenter_impl.h"
+#include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/focus_cycler.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
@@ -490,17 +490,15 @@ TEST_F(WindowCycleControllerTest, MostRecentlyUsed) {
 
 // Tests that beginning window selection hides the app list.
 TEST_F(WindowCycleControllerTest, SelectingHidesAppList) {
-  // The tested behavior relies on the app list presenter implementation.
-  TestAppListPresenterImpl app_list_presenter_impl;
-
   WindowCycleController* controller = Shell::Get()->window_cycle_controller();
 
   std::unique_ptr<aura::Window> window0(CreateTestWindowInShellWithId(0));
   std::unique_ptr<aura::Window> window1(CreateTestWindowInShellWithId(1));
-  app_list_presenter_impl.ShowAndRunLoop(GetPrimaryDisplay().id());
-  EXPECT_TRUE(app_list_presenter_impl.IsVisible());
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplay().id());
+  GetAppListTestHelper()->CheckVisibility(true);
   controller->HandleCycleWindow(WindowCycleController::FORWARD);
-  EXPECT_FALSE(app_list_presenter_impl.IsVisible());
+  GetAppListTestHelper()->WaitUntilIdle();
+  GetAppListTestHelper()->CheckVisibility(false);
 
   // Make sure that dismissing the app list this way doesn't pass activation
   // to a different window.
