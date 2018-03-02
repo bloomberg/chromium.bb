@@ -163,15 +163,15 @@ NSArray* CreateItems(WebStateList* webStateList) {
 }
 
 - (void)selectItemAtIndex:(NSUInteger)index {
-  // TODO(crbug.com/804503) : Add alerts for unimplemented controls.
+  self.webStateList->ActivateWebStateAt(index);
 }
 
 - (void)closeItemAtIndex:(NSUInteger)index {
-  // TODO(crbug.com/804503) : Add alerts for unimplemented controls.
+  self.webStateList->CloseWebStateAt(index, WebStateList::CLOSE_USER_ACTION);
 }
 
 - (void)closeAllItems {
-  // TODO(crbug.com/804503) : Add alerts for unimplemented controls.
+  self.webStateList->CloseAllWebStates(WebStateList::CLOSE_USER_ACTION);
 }
 
 #pragma mark - GridImageDataSource
