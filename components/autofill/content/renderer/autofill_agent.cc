@@ -544,6 +544,9 @@ void AutofillAgent::ShowNotSecureWarning(
 }
 
 bool AutofillAgent::CollectFormlessElements(FormData* output) {
+  if (render_frame() == nullptr || render_frame()->GetWebFrame() == nullptr)
+    return false;
+
   WebDocument document = render_frame()->GetWebFrame()->GetDocument();
 
   // Build up the FormData from the unowned elements. This logic mostly
