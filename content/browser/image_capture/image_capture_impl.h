@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_IMAGE_CAPTURE_IMAGE_CAPTURE_IMPL_H_
 #define CONTENT_BROWSER_IMAGE_CAPTURE_IMAGE_CAPTURE_IMPL_H_
 
-#include "media/capture/mojo/image_capture.mojom.h"
+#include "media/capture/mojom/image_capture.mojom.h"
 
 namespace content {
 

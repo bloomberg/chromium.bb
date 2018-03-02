@@ -30,6 +30,6 @@ source_set("image_capture_types") {
   ]
 
   deps = [
-    "//media/capture/mojo:image_capture",
+    ":image_capture",
   ]
 }

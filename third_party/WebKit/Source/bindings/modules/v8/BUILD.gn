@@ -107,7 +107,7 @@ group("generate_mojo_bindings") {
     "//device/gamepad/public/mojom:mojom_blink__generator",
     "//device/usb/public/mojom:mojom_blink__generator",
     "//device/vr/public/mojom:mojom_blink__generator",
-    "//media//capture/mojo:image_capture_blink__generator",
+    "//media/capture/mojom:image_capture_blink__generator",
     "//services/device/public/mojom:generic_sensor__generator",
     "//services/device/public/mojom:mojom_blink__generator",
     "//services/shape_detection/public/mojom:mojom_blink__generator",

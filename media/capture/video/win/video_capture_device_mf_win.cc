@@ -19,7 +19,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/win/scoped_co_mem.h"
 #include "base/win/windows_version.h"
-#include "media/capture/mojo/image_capture_types.h"
+#include "media/capture/mojom/image_capture_types.h"
 #include "media/capture/video/blob_utils.h"
 #include "media/capture/video/win/capability_list_win.h"
 #include "media/capture/video/win/sink_filter_win.h"

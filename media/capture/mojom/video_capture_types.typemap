@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//media/capture/mojo/video_capture_types.mojom"
+mojom = "//media/capture/mojom/video_capture_types.mojom"
 
 public_headers = [
   "//media/capture/video_capture_types.h",
@@ -13,11 +13,11 @@ public_headers = [
 traits_headers = [
   "//media/capture/ipc/capture_param_traits_macros.h",
   "//media/capture/ipc/capture_param_traits.h",
-  "//media/capture/mojo/video_capture_types_struct_traits.h",
+  "//media/capture/mojom/video_capture_types_mojom_traits.h",
 ]
 
 sources = [
-  "//media/capture/mojo/video_capture_types_struct_traits.cc",
+  "//media/capture/mojom/video_capture_types_mojom_traits.cc",
 ]
 
 deps = [

@@ -16,7 +16,7 @@
 #include "base/sequence_checker.h"
 #include "content/public/browser/video_capture_device_launcher.h"
 #include "content/public/common/media_stream_request.h"
-#include "media/capture/mojo/video_capture.mojom.h"
+#include "media/capture/mojom/video_capture.mojom.h"
 #include "media/capture/video/video_frame_receiver.h"
 
 namespace media {

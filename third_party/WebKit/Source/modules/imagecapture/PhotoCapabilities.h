@@ -5,7 +5,7 @@
 #ifndef PhotoCapabilities_h
 #define PhotoCapabilities_h
 
-#include "media/capture/mojo/image_capture.mojom-blink.h"
+#include "media/capture/mojom/image_capture.mojom-blink.h"
 #include "modules/imagecapture/MediaSettingsRange.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/wtf/Vector.h"

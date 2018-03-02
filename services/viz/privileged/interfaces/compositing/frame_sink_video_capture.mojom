@@ -4,7 +4,7 @@
 
 module viz.mojom;
 
-import "media/capture/mojo/video_capture_types.mojom";
+import "media/capture/mojom/video_capture_types.mojom";
 import "media/mojo/interfaces/media_types.mojom";
 import "mojo/common/time.mojom";
 import "services/viz/public/interfaces/compositing/frame_sink_id.mojom";

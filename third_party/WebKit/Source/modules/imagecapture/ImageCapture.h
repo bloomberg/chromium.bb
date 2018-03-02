@@ -10,7 +10,7 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/events/EventTarget.h"
-#include "media/capture/mojo/image_capture.mojom-blink.h"
+#include "media/capture/mojom/image_capture.mojom-blink.h"
 #include "modules/EventTargetModules.h"
 #include "modules/ModulesExport.h"
 #include "modules/imagecapture/PhotoSettings.h"
