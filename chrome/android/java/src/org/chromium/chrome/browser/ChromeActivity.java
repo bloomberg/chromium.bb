@@ -398,6 +398,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         final long begin = SystemClock.elapsedRealtime();
         TraceEvent.begin("onCreate->setContentView()");
 
+        SelectionPopupController.setShouldGetReadbackViewFromWindowAndroid();
+
         enableHardwareAcceleration();
         setLowEndTheme();
         int controlContainerLayoutId = getControlContainerLayoutId();
