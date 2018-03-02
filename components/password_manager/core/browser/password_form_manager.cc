@@ -40,7 +40,7 @@
 
 using autofill::FormStructure;
 using autofill::PasswordForm;
-using autofill::PossibleUsernamePair;
+using autofill::ValueElementPair;
 using base::Time;
 
 // Shorten the name to spare line breaks. The code provides enough context
@@ -110,7 +110,7 @@ void SanitizePossibleUsernames(PasswordForm* form) {
 
   // Filter out |form->username_value| and sensitive information.
   const base::string16& username_value = form->username_value;
-  base::EraseIf(usernames, [&username_value](const PossibleUsernamePair& pair) {
+  base::EraseIf(usernames, [&username_value](const ValueElementPair& pair) {
     return pair.first == username_value ||
            autofill::IsValidCreditCardNumber(pair.first) ||
            autofill::IsSSN(pair.first);
@@ -488,9 +488,8 @@ void PasswordFormManager::UpdateUsername(const base::string16& new_username) {
   // |username_value| and |username_element| of the submitted form. When the
   // user has to override the username, Chrome will send a username vote.
   if (!submitted_form_->username_value.empty()) {
-    credential.other_possible_usernames.push_back(
-        autofill::PossibleUsernamePair(submitted_form_->username_value,
-                                       submitted_form_->username_element));
+    credential.other_possible_usernames.push_back(autofill::ValueElementPair(
+        submitted_form_->username_value, submitted_form_->username_element));
   }
 
   ProvisionallySave(credential, IGNORE_OTHER_POSSIBLE_USERNAMES);
@@ -781,7 +780,7 @@ bool PasswordFormManager::FindUsernameInOtherPossibleUsernames(
     const base::string16& username) {
   DCHECK(!username_correction_vote_);
 
-  for (const PossibleUsernamePair& pair : match.other_possible_usernames) {
+  for (const ValueElementPair& pair : match.other_possible_usernames) {
     if (pair.first == username) {
       username_correction_vote_.reset(new autofill::PasswordForm(match));
       username_correction_vote_->username_element = pair.second;

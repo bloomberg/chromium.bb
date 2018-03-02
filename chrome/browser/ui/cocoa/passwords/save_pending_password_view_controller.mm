@@ -50,21 +50,25 @@ void FillPasswordPopup(const autofill::PasswordForm& form,
                        bool are_passwords_revealed,
                        NSPopUpButton* button) {
   [button removeAllItems];
-  for (const base::string16& possible_password : form.all_possible_passwords) {
+  for (const autofill::ValueElementPair& possible_password :
+       form.all_possible_passwords) {
     base::string16 text =
         are_passwords_revealed
-            ? possible_password
-            : base::string16(possible_password.length(), kBulletChar);
+            ? possible_password.first
+            : base::string16(possible_password.first.length(), kBulletChar);
     base::scoped_nsobject<NSMenuItem> newItem([[NSMenuItem alloc]
         initWithTitle:base::SysUTF16ToNSString(text)
                action:NULL
         keyEquivalent:[NSString string]]);
     [[button menu] addItem:newItem];
   }
-  size_t index = std::distance(
-      form.all_possible_passwords.begin(),
-      find(form.all_possible_passwords.begin(),
-           form.all_possible_passwords.end(), form.password_value));
+  size_t index =
+      std::distance(form.all_possible_passwords.begin(),
+                    find_if(form.all_possible_passwords.begin(),
+                            form.all_possible_passwords.end(),
+                            [&form](const autofill::ValueElementPair& pair) {
+                              return pair.first == form.password_value;
+                            }));
   // Unlikely, but if we don't find the password in possible passwords,
   // we will set the default to first element.
   if (index == form.all_possible_passwords.size()) {
@@ -139,7 +143,7 @@ NSButton* EyeIcon(id target, SEL action) {
   if (passwordSelectionField_) {
     NSInteger index = [passwordSelectionField_ indexOfSelectedItem];
     self.model->OnCredentialEdited(form.username_value,
-                                   form.all_possible_passwords[index]);
+                                   form.all_possible_passwords[index].first);
     FillPasswordPopup(form, are_passwords_revealed,
                       passwordSelectionField_.get());
   } else {
@@ -161,7 +165,7 @@ NSButton* EyeIcon(id target, SEL action) {
     if (passwordSelectionField_) {
       NSInteger index = [passwordSelectionField_ indexOfSelectedItem];
       new_password =
-          self.model->pending_password().all_possible_passwords[index];
+          self.model->pending_password().all_possible_passwords[index].first;
     }
     model->OnCredentialEdited(std::move(new_username), std::move(new_password));
     model->OnSaveClicked();

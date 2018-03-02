@@ -406,13 +406,12 @@ void GetFieldFilteringLevels(
   }
 }
 
-autofill::PossibleUsernamePair MakePossibleUsernamePair(
+autofill::ValueElementPair MakePossibleUsernamePair(
     const blink::WebInputElement& input) {
   base::string16 trimmed_input_value, trimmed_input_autofill;
   base::TrimString(input.Value().Utf16(), base::ASCIIToUTF16(" "),
                    &trimmed_input_value);
-  return autofill::PossibleUsernamePair(trimmed_input_value,
-                                        input.NameForAutofill().Utf16());
+  return {trimmed_input_value, input.NameForAutofill().Utf16()};
 }
 
 // Check if a script modified username is suitable for Password Manager to
@@ -680,7 +679,7 @@ bool GetPasswordForm(
 
   bool form_has_autofilled_value = false;
   // Add non-empty unique possible passwords to the vector.
-  std::vector<base::string16> all_possible_passwords;
+  std::vector<autofill::ValueElementPair> all_possible_passwords;
   for (const WebInputElement& password_element : passwords_without_heuristics) {
     const base::string16 value = password_element.Value().Utf16();
     if (value.empty())
@@ -689,9 +688,12 @@ bool GetPasswordForm(
         FieldHasPropertiesMask(field_value_and_properties_map, password_element,
                                FieldPropertiesFlags::AUTOFILLED);
     form_has_autofilled_value |= element_has_autofilled_value;
-    if (find(all_possible_passwords.begin(), all_possible_passwords.end(),
-             value) == all_possible_passwords.end()) {
-      all_possible_passwords.push_back(std::move(value));
+    if (find_if(all_possible_passwords.begin(), all_possible_passwords.end(),
+                [&value](const auto& pair) -> bool {
+                  return pair.first == value;
+                }) == all_possible_passwords.end()) {
+      all_possible_passwords.push_back(
+          {std::move(value), password_element.NameForAutofill().Utf16()});
     }
   }
 
@@ -753,8 +755,8 @@ bool GetPasswordForm(
       form_util::GetCanonicalOriginForDocument(form.document);
   password_form->signon_realm = GetSignOnRealm(password_form->origin);
 
-  // Convert |possible_usernames| to PossibleUsernamesVector.
-  autofill::PossibleUsernamesVector other_possible_usernames;
+  // Convert |possible_usernames| to ValueElementVector.
+  autofill::ValueElementVector other_possible_usernames;
   for (const WebInputElement& possible_username : possible_usernames) {
     if (possible_username == username_element)
       continue;

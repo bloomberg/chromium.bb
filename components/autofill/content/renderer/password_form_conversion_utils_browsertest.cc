@@ -858,7 +858,7 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest,
         EXPECT_EQ(base::UTF8ToUTF16(cases[i].expected_username_value),
                   password_form->username_value);
         EXPECT_EQ(base::UTF8ToUTF16(cases[i].expected_other_possible_usernames),
-                  OtherPossibleUsernamesToString(
+                  ValueElementVectorToString(
                       password_form->other_possible_usernames));
       } else {
         EXPECT_TRUE(password_form->username_value.empty());
@@ -928,8 +928,8 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, IdentifyingTwoPasswordFields) {
     EXPECT_EQ(base::UTF8ToUTF16("William"), password_form->username_value);
     EXPECT_THAT(
         password_form->other_possible_usernames,
-        testing::ElementsAre(PossibleUsernamePair(
-            base::UTF8ToUTF16("Smith"), base::UTF8ToUTF16("usrname2"))));
+        testing::ElementsAre(ValueElementPair(base::UTF8ToUTF16("Smith"),
+                                              base::UTF8ToUTF16("usrname2"))));
   }
 }
 
@@ -998,8 +998,8 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, IdentifyingThreePasswordFields) {
     EXPECT_EQ(base::UTF8ToUTF16("William"), password_form->username_value);
     EXPECT_THAT(
         password_form->other_possible_usernames,
-        testing::ElementsAre(PossibleUsernamePair(
-            base::UTF8ToUTF16("Smith"), base::UTF8ToUTF16("usrname2"))));
+        testing::ElementsAre(ValueElementPair(base::UTF8ToUTF16("Smith"),
+                                              base::UTF8ToUTF16("usrname2"))));
   }
 }
 
@@ -1357,12 +1357,12 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest,
     if (strcmp(cases[i].expected_username_value, "William") == 0) {
       EXPECT_THAT(
           password_form->other_possible_usernames,
-          testing::ElementsAre(PossibleUsernamePair(
+          testing::ElementsAre(ValueElementPair(
               base::UTF8ToUTF16("Smith"), base::UTF8ToUTF16("usrname2"))));
     } else {
       EXPECT_THAT(
           password_form->other_possible_usernames,
-          testing::ElementsAre(PossibleUsernamePair(
+          testing::ElementsAre(ValueElementPair(
               base::UTF8ToUTF16("William"), base::UTF8ToUTF16("usrname1"))));
     }
     EXPECT_EQ(base::UTF8ToUTF16(cases[i].expected_password_element),
@@ -1814,13 +1814,19 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, SetOtherPossiblePasswords) {
   EXPECT_EQ(base::ASCIIToUTF16("username1"), password_form->username_element);
   EXPECT_EQ(base::ASCIIToUTF16("John"), password_form->username_value);
   EXPECT_EQ(base::ASCIIToUTF16("alpha1"), password_form->password_value);
-  EXPECT_THAT(password_form->all_possible_passwords,
-              testing::ElementsAre(
-                  base::ASCIIToUTF16("alpha1"), base::ASCIIToUTF16("alpha2"),
-                  base::ASCIIToUTF16("alpha3"), base::ASCIIToUTF16("alpha4")));
-  EXPECT_EQ(
-      base::ASCIIToUTF16("alpha1, alpha2, alpha3, alpha4"),
-      AllPossiblePasswordsToString(password_form->all_possible_passwords));
+  EXPECT_THAT(
+      password_form->all_possible_passwords,
+      testing::ElementsAre(ValueElementPair(base::ASCIIToUTF16("alpha1"),
+                                            base::ASCIIToUTF16("password1")),
+                           ValueElementPair(base::ASCIIToUTF16("alpha2"),
+                                            base::ASCIIToUTF16("password2")),
+                           ValueElementPair(base::ASCIIToUTF16("alpha3"),
+                                            base::ASCIIToUTF16("password3")),
+                           ValueElementPair(base::ASCIIToUTF16("alpha4"),
+                                            base::ASCIIToUTF16("password4"))));
+  EXPECT_EQ(base::ASCIIToUTF16("alpha1+password1, alpha2+password2, "
+                               "alpha3+password3, alpha4+password4"),
+            ValueElementVectorToString(password_form->all_possible_passwords));
 }
 
 TEST_F(MAYBE_PasswordFormConversionUtilsTest,
