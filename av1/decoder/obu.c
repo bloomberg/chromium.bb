@@ -276,6 +276,8 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
   int is_first_tg_obu_received = 1;
   int frame_header_received = 0;
   int frame_header_size = 0;
+  int seq_header_received = 0;
+  size_t seq_header_size = 0;
 #if CONFIG_SCALABILITY
   uint8_t obu_extension_header = 0;
 #endif
@@ -358,7 +360,19 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
         obu_payload_size = read_temporal_delimiter_obu();
         break;
       case OBU_SEQUENCE_HEADER:
-        obu_payload_size = read_sequence_header_obu(pbi, &rb);
+        if (!seq_header_received) {
+          obu_payload_size = read_sequence_header_obu(pbi, &rb);
+          seq_header_size = obu_payload_size;
+          seq_header_received = 1;
+        } else {
+          // Seeing another sequence header, skip as all sequence headers
+          // are requred to be identical.
+          if (obu_size - obu_header_size != seq_header_size) {
+            cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
+            return;
+          }
+          obu_payload_size = seq_header_size;
+        }
         break;
       case OBU_FRAME_HEADER:
         // Only decode first frame header received
