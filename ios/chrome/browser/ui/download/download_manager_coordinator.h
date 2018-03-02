@@ -28,6 +28,9 @@ class DownloadTask;
 // stop method is called.
 @property(nonatomic) web::DownloadTask* downloadTask;
 
+// Underlying UIViewController presented by this coordinator.
+@property(nonatomic, readonly) UIViewController* viewController;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_DOWNLOAD_DOWNLOAD_MANAGER_COORDINATOR_H_

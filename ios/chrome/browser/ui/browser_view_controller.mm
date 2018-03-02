@@ -3208,6 +3208,16 @@ bubblePresenterForFeature:(const base::Feature&)feature
                                       yOffset:infoBarYOffset];
     [overlays addObject:infoBarOverlay];
   }
+
+  UIView* downloadManagerView = _downloadManagerCoordinator.viewController.view;
+  if (downloadManagerView) {
+    CGFloat offset = [self downloadManagerOverlayYOffsetForTab:tab];
+    SnapshotOverlay* downloadManagerOverlay =
+        [[SnapshotOverlay alloc] initWithView:downloadManagerView
+                                      yOffset:offset];
+    [overlays addObject:downloadManagerOverlay];
+  }
+
   return overlays;
 }
 
@@ -3270,6 +3280,12 @@ bubblePresenterForFeature:(const base::Feature&)feature
     return CGRectGetMaxY(visibleFrame) -
            CGRectGetHeight(_infoBarContainer->view().frame);
   }
+}
+
+// Returns a vertical download manager offset relative to the tab content.
+- (CGFloat)downloadManagerOverlayYOffsetForTab:(Tab*)tab {
+  return CGRectGetMaxY([tab.webController visibleFrame]) -
+         CGRectGetHeight(_downloadManagerCoordinator.viewController.view.frame);
 }
 
 // Provides a view that encompasses the voice search bar if it's displayed or

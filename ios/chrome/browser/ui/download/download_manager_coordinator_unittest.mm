@@ -405,3 +405,25 @@ TEST_F(DownloadManagerCoordinatorTest, StartDownload) {
   // Stop to avoid holding a dangling pointer to destroyed task.
   [coordinator_ stop];
 }
+
+// Tests that viewController returns correct view controller if coordinator is
+// started and nil when stopped.
+TEST_F(DownloadManagerCoordinatorTest, ViewController) {
+  auto task = CreateTestTask();
+  coordinator_.downloadTask = task.get();
+  ASSERT_FALSE(coordinator_.viewController);
+  [coordinator_ start];
+
+  // Verify that presented view controller is DownloadManagerViewController.
+  EXPECT_EQ(1U, base_view_controller_.childViewControllers.count);
+  DownloadManagerViewController* viewController =
+      base_view_controller_.childViewControllers.firstObject;
+  ASSERT_EQ([DownloadManagerViewController class], [viewController class]);
+
+  // Verify view controller property.
+  EXPECT_NSEQ(viewController, coordinator_.viewController);
+
+  // Stop to avoid holding a dangling pointer to destroyed task.
+  [coordinator_ stop];
+  EXPECT_FALSE(coordinator_.viewController);
+}
