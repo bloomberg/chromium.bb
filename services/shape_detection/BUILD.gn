@@ -22,6 +22,8 @@ source_set("lib") {
       "detection_utils_mac.mm",
       "face_detection_impl_mac.h",
       "face_detection_impl_mac.mm",
+      "face_detection_impl_mac_vision.h",
+      "face_detection_impl_mac_vision.mm",
       "face_detection_provider_mac.h",
       "face_detection_provider_mac.mm",
       "text_detection_impl_mac.h",

@@ -258,6 +258,33 @@ BASE_EXPORT extern NSString* const CIDetectorTypeText;
 
 #endif  // MAC_OS_X_VERSION_10_12_1
 
+// Once Chrome no longer supports OSX 10.12, everything within this
+// preprocessor block can be removed.
+#if !defined(MAC_OS_X_VERSION_10_13) || \
+    MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_13
+
+// VNRequest forward declarations.
+@class VNRequest;
+typedef void (^VNRequestCompletionHandler)(VNRequest* request, NSError* error);
+
+@interface VNRequest : NSObject<NSCopying>
+- (instancetype)initWithCompletionHandler:
+    (VNRequestCompletionHandler)completionHandler NS_DESIGNATED_INITIALIZER;
+@property(readonly, nonatomic, copy) NSArray* results;
+@end
+
+// VNDetectFaceLandmarksRequest forward declarations.
+@interface VNImageBasedRequest : VNRequest
+@end
+
+@protocol VNFaceObservationAccepting<NSObject>
+@end
+
+@interface VNDetectFaceLandmarksRequest
+    : VNImageBasedRequest<VNFaceObservationAccepting>
+@end
+
+#endif  // MAC_OS_X_VERSION_10_13
 // ----------------------------------------------------------------------------
 // The symbol for kCWSSIDDidChangeNotification is available in the
 // CoreWLAN.framework for OSX versions 10.6 through 10.10. The symbol is not
