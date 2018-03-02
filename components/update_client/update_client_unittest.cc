@@ -247,7 +247,6 @@ TEST_F(UpdateClientTest, OneCrxNoUpdate) {
                          const IdToComponentPtrMap& components,
                          const std::string& additional_attributes,
                          bool enabled_component_updates,
-                         bool is_foreground,
                          UpdateCheckCallback update_check_callback) override {
       EXPECT_FALSE(session_id.empty());
       EXPECT_TRUE(enabled_component_updates);
@@ -258,7 +257,7 @@ TEST_F(UpdateClientTest, OneCrxNoUpdate) {
 
       auto& component = components.at(id);
 
-      EXPECT_FALSE(component->on_demand());
+      EXPECT_TRUE(component->is_foreground());
 
       ProtocolParser::Result result;
       result.extension_id = id;
@@ -309,7 +308,7 @@ TEST_F(UpdateClientTest, OneCrxNoUpdate) {
 
   const std::vector<std::string> ids = {"jebgalgnebhfojomionfpkfelancnnkf"};
   update_client->Update(
-      ids, base::BindOnce(&DataCallbackFake::Callback),
+      ids, base::BindOnce(&DataCallbackFake::Callback), true,
       base::BindOnce(&CompletionCallbackFake::Callback, quit_closure()));
 
   RunThreads();
@@ -362,7 +361,6 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
                          const IdToComponentPtrMap& components,
                          const std::string& additional_attributes,
                          bool enabled_component_updates,
-                         bool is_foreground,
                          UpdateCheckCallback update_check_callback) override {
       /*
       Fake the following response:
@@ -410,7 +408,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
         auto& component = components.at(id);
         component->SetParseResult(result);
 
-        EXPECT_FALSE(component->on_demand());
+        EXPECT_FALSE(component->is_foreground());
       }
 
       {
@@ -425,7 +423,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
         auto& component = components.at(id);
         component->SetParseResult(result);
 
-        EXPECT_FALSE(component->on_demand());
+        EXPECT_FALSE(component->is_foreground());
       }
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -524,7 +522,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
   const std::vector<std::string> ids = {"jebgalgnebhfojomionfpkfelancnnkf",
                                         "abagagagagagagagagagagagagagagag"};
   update_client->Update(
-      ids, base::BindOnce(&DataCallbackFake::Callback),
+      ids, base::BindOnce(&DataCallbackFake::Callback), false,
       base::BindOnce(&CompletionCallbackFake::Callback, quit_closure()));
 
   RunThreads();
@@ -576,7 +574,6 @@ TEST_F(UpdateClientTest, TwoCrxUpdate) {
                          const IdToComponentPtrMap& components,
                          const std::string& additional_attributes,
                          bool enabled_component_updates,
-                         bool is_foreground,
                          UpdateCheckCallback update_check_callback) override {
       /*
       Fake the following response:
@@ -638,7 +635,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdate) {
         auto& component = components.at(id);
         component->SetParseResult(result);
 
-        EXPECT_FALSE(component->on_demand());
+        EXPECT_FALSE(component->is_foreground());
       }
 
       {
@@ -662,7 +659,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdate) {
         auto& component = components.at(id);
         component->SetParseResult(result);
 
-        EXPECT_FALSE(component->on_demand());
+        EXPECT_FALSE(component->is_foreground());
       }
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -795,7 +792,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdate) {
   const std::vector<std::string> ids = {"jebgalgnebhfojomionfpkfelancnnkf",
                                         "ihfokbkgjpifnbbojhneepfflplebdkc"};
   update_client->Update(
-      ids, base::BindOnce(&DataCallbackFake::Callback),
+      ids, base::BindOnce(&DataCallbackFake::Callback), false,
       base::BindOnce(&CompletionCallbackFake::Callback, quit_closure()));
 
   RunThreads();
@@ -849,7 +846,6 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
                          const IdToComponentPtrMap& components,
                          const std::string& additional_attributes,
                          bool enabled_component_updates,
-                         bool is_foreground,
                          UpdateCheckCallback update_check_callback) override {
       /*
       Fake the following response:
@@ -1062,7 +1058,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
                                         "ihfokbkgjpifnbbojhneepfflplebdkc"};
 
   update_client->Update(
-      ids, base::BindOnce(&DataCallbackFake::Callback),
+      ids, base::BindOnce(&DataCallbackFake::Callback), false,
       base::BindOnce(&CompletionCallbackFake::Callback, quit_closure()));
 
   RunThreads();
@@ -1121,7 +1117,6 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
                          const IdToComponentPtrMap& components,
                          const std::string& additional_attributes,
                          bool enabled_component_updates,
-                         bool is_foreground,
                          UpdateCheckCallback update_check_callback) override {
       EXPECT_FALSE(session_id.empty());
 
@@ -1353,6 +1348,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
   {
     base::RunLoop runloop;
     update_client->Update(ids, base::BindOnce(&DataCallbackFake::Callback),
+                          false,
                           base::BindOnce(&CompletionCallbackFake::Callback,
                                          runloop.QuitClosure()));
     runloop.Run();
@@ -1361,6 +1357,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
   {
     base::RunLoop runloop;
     update_client->Update(ids, base::BindOnce(&DataCallbackFake::Callback),
+                          false,
                           base::BindOnce(&CompletionCallbackFake::Callback,
                                          runloop.QuitClosure()));
     runloop.Run();
@@ -1453,7 +1450,6 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
                          const IdToComponentPtrMap& components,
                          const std::string& additional_attributes,
                          bool enabled_component_updates,
-                         bool is_foreground,
                          UpdateCheckCallback update_check_callback) override {
       /*
       Fake the following response:
@@ -1587,7 +1583,7 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
 
   std::vector<std::string> ids = {"jebgalgnebhfojomionfpkfelancnnkf"};
   update_client->Update(
-      ids, base::BindOnce(&DataCallbackFake::Callback),
+      ids, base::BindOnce(&DataCallbackFake::Callback), false,
       base::BindOnce(&CompletionCallbackFake::Callback, quit_closure()));
 
   RunThreads();
@@ -1646,7 +1642,6 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
                          const IdToComponentPtrMap& components,
                          const std::string& additional_attributes,
                          bool enabled_component_updates,
-                         bool is_foreground,
                          UpdateCheckCallback update_check_callback) override {
       EXPECT_FALSE(session_id.empty());
 
@@ -1894,6 +1889,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
   {
     base::RunLoop runloop;
     update_client->Update(ids, base::BindOnce(&DataCallbackFake::Callback),
+                          false,
                           base::BindOnce(&CompletionCallbackFake::Callback,
                                          runloop.QuitClosure()));
     runloop.Run();
@@ -1902,6 +1898,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
   {
     base::RunLoop runloop;
     update_client->Update(ids, base::BindOnce(&DataCallbackFake::Callback),
+                          false,
                           base::BindOnce(&CompletionCallbackFake::Callback,
                                          runloop.QuitClosure()));
     runloop.Run();
@@ -1953,7 +1950,6 @@ TEST_F(UpdateClientTest, OneCrxNoUpdateQueuedCall) {
                          const IdToComponentPtrMap& components,
                          const std::string& additional_attributes,
                          bool enabled_component_updates,
-                         bool is_foreground,
                          UpdateCheckCallback update_check_callback) override {
       EXPECT_FALSE(session_id.empty());
       EXPECT_TRUE(enabled_component_updates);
@@ -1964,7 +1960,7 @@ TEST_F(UpdateClientTest, OneCrxNoUpdateQueuedCall) {
 
       auto& component = components.at(id);
 
-      EXPECT_FALSE(component->on_demand());
+      EXPECT_FALSE(component->is_foreground());
 
       ProtocolParser::Result result;
       result.extension_id = id;
@@ -2019,10 +2015,10 @@ TEST_F(UpdateClientTest, OneCrxNoUpdateQueuedCall) {
 
   const std::vector<std::string> ids = {"jebgalgnebhfojomionfpkfelancnnkf"};
   update_client->Update(
-      ids, base::BindOnce(&DataCallbackFake::Callback),
+      ids, base::BindOnce(&DataCallbackFake::Callback), false,
       base::BindOnce(&CompletionCallbackFake::Callback, quit_closure()));
   update_client->Update(
-      ids, base::BindOnce(&DataCallbackFake::Callback),
+      ids, base::BindOnce(&DataCallbackFake::Callback), false,
       base::BindOnce(&CompletionCallbackFake::Callback, quit_closure()));
 
   RunThreads();
@@ -2067,7 +2063,6 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
                          const IdToComponentPtrMap& components,
                          const std::string& additional_attributes,
                          bool enabled_component_updates,
-                         bool is_foreground,
                          UpdateCheckCallback update_check_callback) override {
       /*
       Fake the following response:
@@ -2115,7 +2110,7 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
       component->SetParseResult(result);
 
       // Verify that calling Install sets ondemand.
-      EXPECT_TRUE(component->on_demand());
+      EXPECT_TRUE(component->is_foreground());
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(std::move(update_check_callback), 0, 0));
@@ -2263,7 +2258,6 @@ TEST_F(UpdateClientTest, ConcurrentInstallSameCRX) {
                          const IdToComponentPtrMap& components,
                          const std::string& additional_attributes,
                          bool enabled_component_updates,
-                         bool is_foreground,
                          UpdateCheckCallback update_check_callback) override {
       EXPECT_FALSE(session_id.empty());
       EXPECT_TRUE(enabled_component_updates);
@@ -2279,8 +2273,8 @@ TEST_F(UpdateClientTest, ConcurrentInstallSameCRX) {
       auto& component = components.at(id);
       component->SetParseResult(result);
 
-      // Verify that calling Install sets ondemand.
-      EXPECT_TRUE(component->on_demand());
+      // Verify that calling Install sets |is_foreground| for the component.
+      EXPECT_TRUE(component->is_foreground());
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(std::move(update_check_callback), 0, 0));
@@ -2370,7 +2364,6 @@ TEST_F(UpdateClientTest, EmptyIdList) {
                          const IdToComponentPtrMap& components,
                          const std::string& additional_attributes,
                          bool enabled_component_updates,
-                         bool is_foreground,
                          UpdateCheckCallback update_check_callback) override {
       NOTREACHED();
     }
@@ -2406,7 +2399,7 @@ TEST_F(UpdateClientTest, EmptyIdList) {
 
   const std::vector<std::string> empty_id_list;
   update_client->Update(
-      empty_id_list, base::BindOnce(&DataCallbackFake::Callback),
+      empty_id_list, base::BindOnce(&DataCallbackFake::Callback), false,
       base::BindOnce(&CompletionCallbackFake::Callback, quit_closure()));
   RunThreads();
 }
@@ -2432,7 +2425,6 @@ TEST_F(UpdateClientTest, SendUninstallPing) {
                          const IdToComponentPtrMap& components,
                          const std::string& additional_attributes,
                          bool enabled_component_updates,
-                         bool is_foreground,
                          UpdateCheckCallback update_check_callback) override {
       NOTREACHED();
     }
@@ -2536,7 +2528,6 @@ TEST_F(UpdateClientTest, RetryAfter) {
                          const IdToComponentPtrMap& components,
                          const std::string& additional_attributes,
                          bool enabled_component_updates,
-                         bool is_foreground,
                          UpdateCheckCallback update_check_callback) override {
       EXPECT_FALSE(session_id.empty());
 
@@ -2627,6 +2618,7 @@ TEST_F(UpdateClientTest, RetryAfter) {
     // |retry_after_sec|, which causes subsequent calls to fail.
     base::RunLoop runloop;
     update_client->Update(ids, base::BindOnce(&DataCallbackFake::Callback),
+                          false,
                           base::BindOnce(&CompletionCallbackFake::Callback,
                                          runloop.QuitClosure()));
     runloop.Run();
@@ -2637,6 +2629,7 @@ TEST_F(UpdateClientTest, RetryAfter) {
     // Error::ERROR_UPDATE_RETRY_LATER.
     base::RunLoop runloop;
     update_client->Update(ids, base::BindOnce(&DataCallbackFake::Callback),
+                          false,
                           base::BindOnce(&CompletionCallbackFake::Callback,
                                          runloop.QuitClosure()));
     runloop.Run();
@@ -2657,6 +2650,7 @@ TEST_F(UpdateClientTest, RetryAfter) {
     // This call succeeds.
     base::RunLoop runloop;
     update_client->Update(ids, base::BindOnce(&DataCallbackFake::Callback),
+                          false,
                           base::BindOnce(&CompletionCallbackFake::Callback,
                                          runloop.QuitClosure()));
     runloop.Run();
@@ -2715,7 +2709,6 @@ TEST_F(UpdateClientTest, TwoCrxUpdateOneUpdateDisabled) {
                          const IdToComponentPtrMap& components,
                          const std::string& additional_attributes,
                          bool enabled_component_updates,
-                         bool is_foreground,
                          UpdateCheckCallback update_check_callback) override {
       /*
       Fake the following response:
@@ -2921,7 +2914,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateOneUpdateDisabled) {
   const std::vector<std::string> ids = {"jebgalgnebhfojomionfpkfelancnnkf",
                                         "ihfokbkgjpifnbbojhneepfflplebdkc"};
   update_client->Update(
-      ids, base::BindOnce(&DataCallbackFake::Callback),
+      ids, base::BindOnce(&DataCallbackFake::Callback), false,
       base::BindOnce(&CompletionCallbackFake::Callback, quit_closure()));
 
   RunThreads();
@@ -2965,7 +2958,6 @@ TEST_F(UpdateClientTest, OneCrxUpdateCheckFails) {
                          const IdToComponentPtrMap& components,
                          const std::string& additional_attributes,
                          bool enabled_component_updates,
-                         bool is_foreground,
                          UpdateCheckCallback update_check_callback) override {
       EXPECT_FALSE(session_id.empty());
       EXPECT_TRUE(enabled_component_updates);
@@ -3025,7 +3017,7 @@ TEST_F(UpdateClientTest, OneCrxUpdateCheckFails) {
 
   const std::vector<std::string> ids = {"jebgalgnebhfojomionfpkfelancnnkf"};
   update_client->Update(
-      ids, base::BindOnce(&DataCallbackFake::Callback),
+      ids, base::BindOnce(&DataCallbackFake::Callback), false,
       base::BindOnce(&CompletionCallbackFake::Callback, quit_closure()));
 
   RunThreads();
@@ -3050,7 +3042,6 @@ TEST_F(UpdateClientTest, ActionRun_Install) {
                          const IdToComponentPtrMap& components,
                          const std::string& additional_attributes,
                          bool enabled_component_updates,
-                         bool is_foreground,
                          UpdateCheckCallback update_check_callback) override {
       /*
       Fake the following response:
@@ -3216,7 +3207,6 @@ TEST_F(UpdateClientTest, ActionRun_NoUpdate) {
                          const IdToComponentPtrMap& components,
                          const std::string& additional_attributes,
                          bool enabled_component_updates,
-                         bool is_foreground,
                          UpdateCheckCallback update_check_callback) override {
       /*
       Fake the following response:
@@ -3340,6 +3330,7 @@ TEST_F(UpdateClientTest, ActionRun_NoUpdate) {
             components->push_back(crx);
           },
           unpack_path),
+      false,
       base::BindOnce(
           [](base::OnceClosure quit_closure, Error error) {
             EXPECT_EQ(Error::NONE, error);

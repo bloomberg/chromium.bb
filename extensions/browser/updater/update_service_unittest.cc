@@ -59,6 +59,7 @@ class FakeUpdateClient : public update_client::UpdateClient {
                update_client::Callback callback) override {}
   void Update(const std::vector<std::string>& ids,
               CrxDataCallback crx_data_callback,
+              bool is_foreground,
               update_client::Callback callback) override;
   bool GetCrxUpdateState(
       const std::string& id,
@@ -89,6 +90,7 @@ FakeUpdateClient::FakeUpdateClient() {}
 
 void FakeUpdateClient::Update(const std::vector<std::string>& ids,
                               CrxDataCallback crx_data_callback,
+                              bool is_foreground,
                               update_client::Callback callback) {
   std::move(crx_data_callback).Run(ids, &data_);
   std::move(callback).Run(update_client::Error::NONE);

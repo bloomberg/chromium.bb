@@ -97,13 +97,7 @@ class Component {
     update_check_error_ = update_check_error;
   }
 
-  // Returns the time when processing of an update for this component has
-  // begun, once the update has been discovered. Returns a null TimeTicks object
-  // if the handling of an update has not happened.
-  // base::TimeTicks update_begin() const { return update_begin_; }
-
-  bool on_demand() const { return on_demand_; }
-  void set_on_demand(bool on_demand) { on_demand_ = on_demand; }
+  bool is_foreground() const;
 
   const std::vector<std::string>& events() const { return events_; }
 
@@ -406,9 +400,6 @@ class Component {
 
   // True if the update check response for this component includes an update.
   bool is_update_available_ = false;
-
-  // True if the current update check cycle is on-demand.
-  bool on_demand_ = false;
 
   // The error reported by the update checker.
   int update_check_error_ = 0;

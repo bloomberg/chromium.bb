@@ -300,6 +300,26 @@ std::string BuildProtocolRequest(
   return request;
 }
 
+std::map<std::string, std::string> BuildUpdateCheckExtraRequestHeaders(
+    scoped_refptr<Configurator> config,
+    const std::vector<std::string>& ids,
+    bool is_foreground) {
+  // This number of extension ids result in an HTTP header length of about 1KB.
+  constexpr size_t maxExtensionCount = 30;
+  const std::vector<std::string>& app_ids =
+      ids.size() <= maxExtensionCount
+          ? ids
+          : std::vector<std::string>(ids.cbegin(),
+                                     ids.cbegin() + maxExtensionCount);
+  return std::map<std::string, std::string>{
+      {"X-GoogleUpdate-Updater",
+       base::StringPrintf("%s-%s", config->GetProdId().c_str(),
+                          config->GetBrowserVersion().GetString().c_str())},
+      {"X-GoogleUpdate-Interactivity", is_foreground ? "fg" : "bg"},
+      {"X-GoogleUpdate-AppId", base::JoinString(app_ids, ",")},
+  };
+}
+
 std::string BuildUpdateCheckRequest(
     const Configurator& config,
     const std::string& session_id,
@@ -328,7 +348,7 @@ std::string BuildUpdateCheckRequest(
     if (!crx_component.install_source.empty())
       base::StringAppendF(&app, " installsource=\"%s\"",
                           crx_component.install_source.c_str());
-    else if (component.on_demand())
+    else if (component.is_foreground())
       base::StringAppendF(&app, " installsource=\"ondemand\"");
     for (const auto& attr : installer_attributes) {
       base::StringAppendF(&app, " %s=\"%s\"", attr.first.c_str(),
@@ -417,26 +437,6 @@ std::string BuildEventPingRequest(const Configurator& config,
                               config.GetChannel(), config.GetLang(),
                               config.GetOSLongName(),
                               config.GetDownloadPreference(), app, "", nullptr);
-}
-
-std::map<std::string, std::string> BuildUpdateCheckExtraRequestHeaders(
-    scoped_refptr<Configurator> config,
-    const std::vector<std::string>& ids,
-    bool is_foreground) {
-  // This number of extension ids result in an HTTP header length of about 1KB.
-  constexpr size_t maxExtensionCount = 30;
-  const std::vector<std::string>& app_ids =
-      ids.size() <= maxExtensionCount
-          ? ids
-          : std::vector<std::string>(ids.cbegin(),
-                                     ids.cbegin() + maxExtensionCount);
-  return std::map<std::string, std::string>{
-      {"X-GoogleUpdate-Updater",
-       base::StringPrintf("%s-%s", config->GetProdId().c_str(),
-                          config->GetBrowserVersion().GetString().c_str())},
-      {"X-GoogleUpdate-Interactivity", is_foreground ? "fg" : "bg"},
-      {"X-GoogleUpdate-AppId", base::JoinString(app_ids, ",")},
-  };
 }
 
 }  // namespace update_client

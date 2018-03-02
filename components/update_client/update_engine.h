@@ -126,14 +126,18 @@ struct UpdateContext {
 
   scoped_refptr<Configurator> config;
 
-  // True if this update has been initiated by the user.
+  // True if the component is updated as a result of user interaction.
   bool is_foreground = false;
 
   // True if the component updates are enabled in this context.
   const bool enabled_component_updates;
 
-  // Contains the ids of all CRXs in this context.
+  // Contains the ids of all CRXs in this context in the order specified
+  // by the caller of |UpdateClient::Update| or |UpdateClient:Install|.
   const std::vector<std::string> ids;
+
+  // Contains the map of ids to components for all the CRX in this context.
+  IdToComponentPtrMap components;
 
   // Called before an update check, when update metadata is needed.
   UpdateEngine::CrxDataCallback crx_data_callback;
@@ -155,8 +159,6 @@ struct UpdateContext {
   int update_check_error = 0;
   size_t num_components_ready_to_check = 0;
   size_t num_components_checked = 0;
-
-  IdToComponentPtrMap components;
 
   base::queue<std::string> component_queue;
 
