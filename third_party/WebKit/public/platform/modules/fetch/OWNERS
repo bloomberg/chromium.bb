@@ -1,6 +1,5 @@
 hiroshige@chromium.org
 horo@chromium.org
-tyoshino@chromium.org
 yhirano@chromium.org
 
 per-file *.mojom=set noparent
