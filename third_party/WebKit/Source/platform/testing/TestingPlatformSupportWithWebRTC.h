@@ -43,6 +43,7 @@ class MockWebRTCPeerConnectionHandler : public WebRTCPeerConnectionHandler {
       const WebString& label,
       const WebRTCDataChannelInit&) override;
   void Stop() override;
+  WebString Id() const override;
 };
 
 class TestingPlatformSupportWithWebRTC : public TestingPlatformSupport {

@@ -5322,6 +5322,7 @@ interface RTCPeerConnection : EventTarget
     attribute @@toStringTag
     getter iceConnectionState
     getter iceGatheringState
+    getter id
     getter localDescription
     getter onaddstream
     getter ondatachannel
@@ -9122,6 +9123,7 @@ interface webkitRTCPeerConnection : EventTarget
     attribute @@toStringTag
     getter iceConnectionState
     getter iceGatheringState
+    getter id
     getter localDescription
     getter onaddstream
     getter ondatachannel

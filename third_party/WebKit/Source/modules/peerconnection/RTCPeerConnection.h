@@ -154,6 +154,8 @@ class MODULES_EXPORT RTCPeerConnection final
 
   void removeStream(MediaStream*, ExceptionState&);
 
+  String id(ScriptState*) const;
+
   ScriptPromise getStats(ScriptState*,
                          V8RTCStatsCallback* success_callback,
                          MediaStreamTrack* selector = nullptr);

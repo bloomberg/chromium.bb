@@ -109,6 +109,10 @@ WebRTCDataChannelHandler* MockWebRTCPeerConnectionHandler::CreateDataChannel(
 
 void MockWebRTCPeerConnectionHandler::Stop() {}
 
+WebString MockWebRTCPeerConnectionHandler::Id() const {
+  return WebString();
+}
+
 std::unique_ptr<WebRTCPeerConnectionHandler>
 TestingPlatformSupportWithWebRTC::CreateRTCPeerConnectionHandler(
     WebRTCPeerConnectionHandlerClient*,

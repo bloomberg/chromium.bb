@@ -58,6 +58,7 @@
 #include "core/frame/LocalFrameClient.h"
 #include "core/frame/UseCounter.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
+#include "core/origin_trials/origin_trials.h"
 #include "modules/crypto/CryptoResultImpl.h"
 #include "modules/mediastream/MediaConstraintsImpl.h"
 #include "modules/mediastream/MediaStream.h"
@@ -1174,6 +1175,12 @@ void RTCPeerConnection::removeStream(MediaStream* stream,
     exception_state.ClearException();
   }
   stream->UnregisterObserver(this);
+}
+
+String RTCPeerConnection::id(ScriptState* script_state) const {
+  DCHECK(OriginTrials::rtcPeerConnectionIdEnabled(
+      ExecutionContext::From(script_state)));
+  return peer_handler_->Id();
 }
 
 MediaStreamVector RTCPeerConnection::getLocalStreams() const {

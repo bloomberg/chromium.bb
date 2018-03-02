@@ -102,6 +102,9 @@ class WebRTCPeerConnectionHandler {
   // track must have been set to null.
   virtual bool RemoveTrack(WebRTCRtpSender*) = 0;
   virtual void Stop() = 0;
+
+  // Origin Trial - RtcPeerConnectionId
+  virtual WebString Id() const = 0;
 };
 
 }  // namespace blink

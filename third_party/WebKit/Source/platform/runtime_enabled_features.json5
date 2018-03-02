@@ -931,6 +931,11 @@
       status: "stable",
     },
     {
+      name: "RtcPeerConnectionId",
+      origin_trial_feature_name: "RtcPeerConnectionId",
+      status: "experimental",
+    },
+    {
       name: "RTCUnifiedPlan",
       status: "experimental",
     },

@@ -17919,6 +17919,7 @@ Called by update_net_error_codes.py.-->
   <int value="2381" label="V8RTCRtpSender_Dtmf_AttributeGetter"/>
   <int value="2382" label="RTCConstraintEnableDtlsSrtpTrue"/>
   <int value="2383" label="RTCConstraintEnableDtlsSrtpFalse"/>
+  <int value="2384" label="RtcPeerConnectionId"/>
 </enum>
 
 <enum name="FeedbackSource">
