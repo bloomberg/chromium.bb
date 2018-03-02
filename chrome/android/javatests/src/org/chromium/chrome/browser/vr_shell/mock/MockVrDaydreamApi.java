@@ -100,4 +100,9 @@ public class MockVrDaydreamApi implements VrDaydreamApi {
     public void setForwardSetupIntent(boolean forward) {
         mForwardSetupIntent = forward;
     }
+
+    @Override
+    public boolean isInVrSession() {
+        return true;
+    }
 }
