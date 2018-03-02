@@ -681,7 +681,7 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
         <message name="IDS_APP_STORE_TITLE" desc="App Store title of the Chrome Remote Desktop app for iOS. If needed to meet the 50-char limit, please translate just 'Remote Desktop' instead. [CHAR-LIMIT=50] [NAME=app_store_title]" meaning="Title used in App Store">
           Chrome Remote Desktop
         </message>
-        <message name="IDS_APP_STORE_PROMOTIONAL_TEXT" desc="App Store promotional text. To be displayed below the app title in App Store. No period at the end. [CHAR-LIMIT=170]">
+        <message name="IDS_APP_STORE_SUBTITLE" desc="App Store subtitle text. To be displayed below the app title in App Store. No period at the end. [CHAR-LIMIT=30]" meaning="Please try to keep translation below 30 characters. If not possible, please try to translate 'access your computer' instead.">
           Securely access your computer
         </message>
         <message name="IDS_APP_STORE_KEYWORDS" desc="App Store keywords (to be used to search for the app) for the Chrome Remote Desktop app for iOS. Separate keywords with newline. [NAME=app_store_keywords]">
