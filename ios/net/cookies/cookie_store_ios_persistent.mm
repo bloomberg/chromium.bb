@@ -12,7 +12,6 @@
 #import "ios/net/cookies/ns_http_system_cookie_store.h"
 #import "ios/net/cookies/system_cookie_util.h"
 #include "net/cookies/cookie_monster.h"
-#include "net/log/net_log.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -24,17 +23,14 @@ namespace net {
 #pragma mark CookieStoreIOSPersistent
 
 CookieStoreIOSPersistent::CookieStoreIOSPersistent(
-    net::CookieMonster::PersistentCookieStore* persistent_store,
-    NetLog* log)
+    net::CookieMonster::PersistentCookieStore* persistent_store)
     : CookieStoreIOS(persistent_store,
-                     std::make_unique<net::NSHTTPSystemCookieStore>(),
-                     log) {}
+                     std::make_unique<net::NSHTTPSystemCookieStore>()) {}
 
 CookieStoreIOSPersistent::CookieStoreIOSPersistent(
     net::CookieMonster::PersistentCookieStore* persistent_store,
-    std::unique_ptr<SystemCookieStore> system_store,
-    NetLog* log)
-    : CookieStoreIOS(persistent_store, std::move(system_store), log) {}
+    std::unique_ptr<SystemCookieStore> system_store)
+    : CookieStoreIOS(persistent_store, std::move(system_store)) {}
 
 CookieStoreIOSPersistent::~CookieStoreIOSPersistent() {}
 

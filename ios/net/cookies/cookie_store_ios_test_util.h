@@ -34,8 +34,7 @@ class TestPersistentCookieStore
 
  private:
   // net::CookieMonster::PersistentCookieStore implementation:
-  void Load(const LoadedCallback& loaded_callback,
-            const net::NetLogWithSource& /* net_log */) override;
+  void Load(const LoadedCallback& loaded_callback) override;
   void LoadCookiesForKey(const std::string& key,
                          const LoadedCallback& loaded_callback) override;
   void AddCookie(const net::CanonicalCookie& cc) override;
@@ -44,7 +43,6 @@ class TestPersistentCookieStore
   void SetForceKeepSessionState() override;
   void SetBeforeFlushCallback(base::RepeatingClosure callback) override;
   void Flush(base::OnceClosure callback) override;
-  void Close() override;
 
   ~TestPersistentCookieStore() override;
 

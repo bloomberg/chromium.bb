@@ -28,7 +28,7 @@ namespace net {
 
 struct InactiveCookieStoreIOSTestTraits {
   static std::unique_ptr<net::CookieStore> Create() {
-    return std::make_unique<CookieStoreIOSPersistent>(nullptr, nullptr);
+    return std::make_unique<CookieStoreIOSPersistent>(nullptr);
   }
 
   static void RunUntilIdle() { base::RunLoop().RunUntilIdle(); }
@@ -77,8 +77,8 @@ class CookieStoreIOSPersistentTest : public PlatformTest {
         scoped_cookie_store_ios_client_(
             std::make_unique<TestCookieStoreIOSClient>()),
         backend_(new net::TestPersistentCookieStore),
-        store_(std::make_unique<net::CookieStoreIOSPersistent>(backend_.get(),
-                                                               nullptr)) {
+        store_(
+            std::make_unique<net::CookieStoreIOSPersistent>(backend_.get())) {
     cookie_change_subscription_ =
         store_->GetChangeDispatcher().AddCallbackForCookie(
             kTestCookieURL, "abc",

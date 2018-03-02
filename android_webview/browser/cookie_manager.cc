@@ -318,7 +318,7 @@ net::CookieStore* CookieManager::GetCookieStore() {
       cookie_store_created_ = true;
     }
 
-    cookie_store_ = content::CreateCookieStore(cookie_config, nullptr);
+    cookie_store_ = content::CreateCookieStore(cookie_config);
   }
 
   return cookie_store_.get();

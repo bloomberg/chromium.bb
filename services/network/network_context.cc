@@ -289,10 +289,8 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
             crypto_delegate));
 
     std::unique_ptr<net::CookieMonster> cookie_store =
-        std::make_unique<net::CookieMonster>(
-            sqlite_store.get(), channel_id_service.get(),
-            // |network_service_| may be nullptr in tests.
-            network_service_ ? network_service_->net_log() : nullptr);
+        std::make_unique<net::CookieMonster>(sqlite_store.get(),
+                                             channel_id_service.get());
     if (network_context_params->persist_session_cookies)
       cookie_store->SetPersistSessionCookies(true);
 

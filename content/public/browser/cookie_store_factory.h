@@ -21,7 +21,6 @@ namespace net {
 class ChannelIDService;
 class CookieCryptoDelegate;
 class CookieStore;
-class NetLog;
 }
 
 namespace storage {
@@ -84,8 +83,7 @@ struct CONTENT_EXPORT CookieStoreConfig {
 };
 
 CONTENT_EXPORT std::unique_ptr<net::CookieStore> CreateCookieStore(
-    const CookieStoreConfig& config,
-    net::NetLog* net_log);
+    const CookieStoreConfig& config);
 
 }  // namespace content
 

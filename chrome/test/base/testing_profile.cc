@@ -151,7 +151,7 @@ class TestExtensionURLRequestContext : public net::URLRequestContext {
   TestExtensionURLRequestContext() {
     content::CookieStoreConfig cookie_config;
     cookie_config.cookieable_schemes.push_back(extensions::kExtensionScheme);
-    cookie_store_ = content::CreateCookieStore(cookie_config, nullptr);
+    cookie_store_ = content::CreateCookieStore(cookie_config);
     set_cookie_store(cookie_store_.get());
   }
 

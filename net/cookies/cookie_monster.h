@@ -30,7 +30,6 @@
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_monster_change_dispatcher.h"
 #include "net/cookies/cookie_store.h"
-#include "net/log/net_log_with_source.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -133,21 +132,16 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // this class, but it must remain valid for the duration of the cookie
   // monster's existence. If |store| is NULL, then no backing store will be
   // updated.
-  // |log| must outlive the CookieMonster.
-  CookieMonster(PersistentCookieStore* store, NetLog* log);
+  explicit CookieMonster(PersistentCookieStore* store);
 
   // Like above, but includes a non-owning pointer |channel_id_service| for the
   // corresponding ChannelIDService used with this CookieStore. The
   // |channel_id_service| must outlive the CookieMonster.
-  // |log| must outlive the CookieMonster.
   CookieMonster(PersistentCookieStore* store,
-                ChannelIDService* channel_id_service,
-                NetLog* log);
+                ChannelIDService* channel_id_service);
 
   // Only used during unit testing.
-  // |log| must outlive the CookieMonster.
   CookieMonster(PersistentCookieStore* store,
-                NetLog* log,
                 base::TimeDelta last_access_threshold);
 
   ~CookieMonster() override;
@@ -214,7 +208,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
  private:
   CookieMonster(PersistentCookieStore* store,
                 ChannelIDService* channel_id_service,
-                NetLog* log,
                 base::TimeDelta last_access_threshold);
 
   // For garbage collection constants.
@@ -621,8 +614,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // for typical use.
   bool seen_global_task_;
 
-  NetLogWithSource net_log_;
-
   scoped_refptr<PersistentCookieStore> store_;
 
   base::Time last_time_seen_;
@@ -677,11 +668,7 @@ class NET_EXPORT CookieMonster::PersistentCookieStore
   // that are not yet returned to CookieMonster by previous priority loads.
   //
   // |loaded_callback| may not be NULL.
-  // |net_log| is a NetLogWithSource that may be copied if the persistent
-  // store wishes to log NetLog events.  Any copied NetLogWithSource may
-  // not be used after Close() is called.
-  virtual void Load(const LoadedCallback& loaded_callback,
-                    const NetLogWithSource& net_log) = 0;
+  virtual void Load(const LoadedCallback& loaded_callback) = 0;
 
   // Does a priority load of all cookies for the domain key (eTLD+1). The
   // callback will return all the cookies that are not yet returned by previous
@@ -708,16 +695,6 @@ class NET_EXPORT CookieMonster::PersistentCookieStore
   // Flushes the store and posts |callback| when complete. |callback| may be
   // NULL.
   virtual void Flush(base::OnceClosure callback) = 0;
-
-  // Shut down the persistent store, doing any final processing.  All of the
-  // above calls will be no-ops after this call, except for Load() and
-  // LoadCookiesForKey(), which will call their callback methods with
-  // an empty vector of CanonicalCookies.
-  // This method call must be called before any NetLog referenced through the
-  // NetLogWithSource passed to the constructor is destroyed.  If there is
-  // no such reference, Close() does not need to be called explicitly.
-  // Instead, implementations should call it from the destructor.
-  virtual void Close() = 0;
 
  protected:
   PersistentCookieStore() {}

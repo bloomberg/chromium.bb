@@ -130,7 +130,7 @@ class CookieManagerTest : public testing::Test {
  public:
   CookieManagerTest()
       : connection_error_seen_(false),
-        cookie_monster_(nullptr, nullptr, nullptr),
+        cookie_monster_(nullptr, nullptr),
         cookie_service_(std::make_unique<CookieManager>(&cookie_monster_)) {
     cookie_service_->AddRequest(mojo::MakeRequest(&cookie_service_ptr_));
     service_wrapper_ =
