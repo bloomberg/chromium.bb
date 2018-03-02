@@ -10,10 +10,10 @@
 
 #import "ios/third_party/material_components_ios/src/components/AppBar/src/MaterialAppBar.h"
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
-#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #import "remoting/ios/app/app_delegate.h"
 #import "remoting/ios/app/remoting_theme.h"
 #import "remoting/ios/app/settings/setting_option.h"
+#import "remoting/ios/app/settings/settings_view_cell.h"
 #import "remoting/ios/app/view_utils.h"
 
 #include "base/logging.h"
@@ -67,7 +67,7 @@ static const CGFloat kSectionSeparatorHeight = 1.f;
   self.navigationItem.leftBarButtonItem = nil;
   self.navigationItem.rightBarButtonItem = closeButton;
 
-  [self.collectionView registerClass:[MDCCollectionViewTextCell class]
+  [self.collectionView registerClass:[SettingsViewCell class]
           forCellWithReuseIdentifier:kReusableIdentifierItem];
 
   [self.collectionView registerClass:[MDCCollectionViewTextCell class]
@@ -87,7 +87,8 @@ static const CGFloat kSectionSeparatorHeight = 1.f;
     l10n_util::GetNSString(IDS_KEYBOARD_OPTIONS),
     l10n_util::GetNSString(IDS_SUPPORT_MENU),
   ];
-  self.styler.cellStyle = MDCCollectionViewCellStyleCard;
+  self.styler.cellStyle = MDCCollectionViewCellStyleDefault;
+  self.styler.cellBackgroundColor = UIColor.clearColor;
   self.styler.shouldHideSeparators = YES;
 }
 
@@ -116,41 +117,10 @@ static const CGFloat kSectionSeparatorHeight = 1.f;
 - (UICollectionViewCell*)collectionView:(UICollectionView*)collectionView
                  cellForItemAtIndexPath:(NSIndexPath*)indexPath {
   SettingOption* setting = _content[indexPath.section][indexPath.item];
-  MDCCollectionViewTextCell* cell = [collectionView
+  SettingsViewCell* cell = [collectionView
       dequeueReusableCellWithReuseIdentifier:kReusableIdentifierItem
                                 forIndexPath:indexPath];
-  cell.contentView.backgroundColor = RemotingTheme.menuBlueColor;
-  cell.textLabel.text = setting.title;
-  cell.textLabel.textColor = RemotingTheme.menuTextColor;
-  cell.textLabel.numberOfLines = 1;
-  cell.textLabel.font = [MDCTypography boldFontFromFont:cell.textLabel.font];
-  cell.detailTextLabel.text = setting.subtext;
-  cell.detailTextLabel.textColor = RemotingTheme.menuTextColor;
-  cell.detailTextLabel.numberOfLines = 1;
-  cell.tintColor = RemotingTheme.menuBlueColor;
-  cell.isAccessibilityElement = YES;
-  cell.accessibilityLabel =
-      [NSString stringWithFormat:@"%@\n%@", setting.title, setting.subtext];
-
-  switch (setting.style) {
-    case OptionCheckbox:
-      if (setting.checked) {
-        cell.imageView.image = RemotingTheme.checkboxCheckedIcon;
-      } else {
-        cell.imageView.image = RemotingTheme.checkboxOutlineIcon;
-      }
-      break;
-    case OptionSelector:
-      if (setting.checked) {
-        cell.imageView.image = RemotingTheme.radioCheckedIcon;
-      } else {
-        cell.imageView.image = RemotingTheme.radioOutlineIcon;
-      }
-      break;
-    case FlatButton:  // Fall-through.
-    default:
-      cell.imageView.image = [[UIImage alloc] init];
-  }
+  [cell setSettingOption:setting];
   return cell;
 }
 
