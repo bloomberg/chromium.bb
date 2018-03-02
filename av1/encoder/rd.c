@@ -948,14 +948,10 @@ int av1_get_switchable_rate(const AV1_COMMON *const cm, MACROBLOCK *x,
     int dir;
 
     for (dir = 0; dir < 2; ++dir) {
-      if (has_subpel_mv_component(xd->mi[0], xd, dir) ||
-          (mbmi->ref_frame[1] > INTRA_FRAME &&
-           has_subpel_mv_component(xd->mi[0], xd, dir + 2))) {
-        const int ctx = av1_get_pred_context_switchable_interp(xd, dir);
-        const InterpFilter filter =
-            av1_extract_interp_filter(mbmi->interp_filters, dir);
-        inter_filter_cost += x->switchable_interp_costs[ctx][filter];
-      }
+      const int ctx = av1_get_pred_context_switchable_interp(xd, dir);
+      const InterpFilter filter =
+          av1_extract_interp_filter(mbmi->interp_filters, dir);
+      inter_filter_cost += x->switchable_interp_costs[ctx][filter];
     }
     return SWITCHABLE_INTERP_RATE_FACTOR * inter_filter_cost;
   } else {

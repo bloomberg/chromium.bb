@@ -6843,10 +6843,9 @@ static int64_t interpolation_filter_search(
 static InterpFilters condition_interp_filters_on_mv(
     InterpFilters interp_filters, const MACROBLOCKD *xd) {
   InterpFilter filters[2];
+  (void)xd;
   for (int i = 0; i < 2; ++i)
-    filters[i] = (has_subpel_mv_component(xd->mi[0], xd, i))
-                     ? av1_extract_interp_filter(interp_filters, i)
-                     : EIGHTTAP_REGULAR;
+    filters[i] = av1_extract_interp_filter(interp_filters, i);
 
   return av1_make_interp_filters(filters[0], filters[1]);
 }

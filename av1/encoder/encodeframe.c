@@ -313,14 +313,11 @@ static void set_offsets(const AV1_COMP *const cpi, const TileInfo *const tile,
 static void reset_intmv_filter_type(const AV1_COMMON *const cm, MACROBLOCKD *xd,
                                     MB_MODE_INFO *mbmi) {
   InterpFilter filters[2];
-  InterpFilter default_filter = av1_unswitchable_filter(cm->interp_filter);
+  (void)cm;
+  (void)xd;
 
   for (int dir = 0; dir < 2; ++dir) {
-    filters[dir] = ((!has_subpel_mv_component(xd->mi[0], xd, dir) &&
-                     (mbmi->ref_frame[1] == NONE_FRAME ||
-                      !has_subpel_mv_component(xd->mi[0], xd, dir + 2)))
-                        ? default_filter
-                        : av1_extract_interp_filter(mbmi->interp_filters, dir));
+    filters[dir] = av1_extract_interp_filter(mbmi->interp_filters, dir);
   }
   mbmi->interp_filters = av1_make_interp_filters(filters[0], filters[1]);
 }
@@ -331,20 +328,16 @@ static void update_filter_type_count(uint8_t allow_update_cdf,
                                      const MB_MODE_INFO *mbmi) {
   int dir;
   for (dir = 0; dir < 2; ++dir) {
-    if (has_subpel_mv_component(xd->mi[0], xd, dir) ||
-        (mbmi->ref_frame[1] > INTRA_FRAME &&
-         has_subpel_mv_component(xd->mi[0], xd, dir + 2))) {
-      const int ctx = av1_get_pred_context_switchable_interp(xd, dir);
-      InterpFilter filter =
-          av1_extract_interp_filter(mbmi->interp_filters, dir);
-      ++counts->switchable_interp[ctx][filter];
-      if (allow_update_cdf) {
-        update_cdf(xd->tile_ctx->switchable_interp_cdf[ctx], filter,
-                   SWITCHABLE_FILTERS);
-      }
+    const int ctx = av1_get_pred_context_switchable_interp(xd, dir);
+    InterpFilter filter = av1_extract_interp_filter(mbmi->interp_filters, dir);
+    ++counts->switchable_interp[ctx][filter];
+    if (allow_update_cdf) {
+      update_cdf(xd->tile_ctx->switchable_interp_cdf[ctx], filter,
+                 SWITCHABLE_FILTERS);
     }
   }
 }
+
 static void update_global_motion_used(PREDICTION_MODE mode, BLOCK_SIZE bsize,
                                       const MB_MODE_INFO *mbmi,
                                       RD_COUNTS *rdc) {

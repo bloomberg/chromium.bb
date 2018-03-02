@@ -658,19 +658,12 @@ static void write_mb_interp_filter(AV1_COMP *cpi, const MACROBLOCKD *xd,
   if (cm->interp_filter == SWITCHABLE) {
     int dir;
     for (dir = 0; dir < 2; ++dir) {
-      if (has_subpel_mv_component(xd->mi[0], xd, dir) ||
-          (mbmi->ref_frame[1] > INTRA_FRAME &&
-           has_subpel_mv_component(xd->mi[0], xd, dir + 2))) {
-        const int ctx = av1_get_pred_context_switchable_interp(xd, dir);
-        InterpFilter filter =
-            av1_extract_interp_filter(mbmi->interp_filters, dir);
-        aom_write_symbol(w, filter, ec_ctx->switchable_interp_cdf[ctx],
-                         SWITCHABLE_FILTERS);
-        ++cpi->interp_filter_selected[0][filter];
-      } else {
-        assert(av1_extract_interp_filter(mbmi->interp_filters, dir) ==
-               EIGHTTAP_REGULAR);
-      }
+      const int ctx = av1_get_pred_context_switchable_interp(xd, dir);
+      InterpFilter filter =
+          av1_extract_interp_filter(mbmi->interp_filters, dir);
+      aom_write_symbol(w, filter, ec_ctx->switchable_interp_cdf[ctx],
+                       SWITCHABLE_FILTERS);
+      ++cpi->interp_filter_selected[0][filter];
       if (cm->seq_params.enable_dual_filter == 0) return;
     }
   }

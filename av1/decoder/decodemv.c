@@ -1079,15 +1079,9 @@ static INLINE void read_mb_interp_filter(AV1_COMMON *const cm,
   } else {
     InterpFilter ref0_filter[2] = { EIGHTTAP_REGULAR, EIGHTTAP_REGULAR };
     for (int dir = 0; dir < 2; ++dir) {
-      if (has_subpel_mv_component(xd->mi[0], xd, dir) ||
-          (mbmi->ref_frame[1] > INTRA_FRAME &&
-           has_subpel_mv_component(xd->mi[0], xd, dir + 2))) {
-        const int ctx = av1_get_pred_context_switchable_interp(xd, dir);
-        ref0_filter[dir] =
-            (InterpFilter)aom_read_symbol(r, ec_ctx->switchable_interp_cdf[ctx],
-                                          SWITCHABLE_FILTERS, ACCT_STR);
-      }
-
+      const int ctx = av1_get_pred_context_switchable_interp(xd, dir);
+      ref0_filter[dir] = (InterpFilter)aom_read_symbol(
+          r, ec_ctx->switchable_interp_cdf[ctx], SWITCHABLE_FILTERS, ACCT_STR);
       if (cm->seq_params.enable_dual_filter == 0) {
         ref0_filter[1] = ref0_filter[0];
         break;
