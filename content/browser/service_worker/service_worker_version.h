@@ -45,6 +45,7 @@
 #include "third_party/WebKit/public/mojom/service_worker/service_worker.mojom.h"
 #include "third_party/WebKit/public/mojom/service_worker/service_worker_client.mojom.h"
 #include "third_party/WebKit/public/mojom/service_worker/service_worker_event_status.mojom.h"
+#include "third_party/WebKit/public/platform/web_feature.mojom.h"
 #include "ui/base/mojo/window_open_disposition.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -463,11 +464,13 @@ class CONTENT_EXPORT ServiceWorkerVersion
     return max_request_expiration_time_ - tick_clock_->NowTicks();
   }
 
-  void CountFeature(uint32_t feature);
-  void set_used_features(const std::set<uint32_t>& used_features) {
-    used_features_ = used_features;
+  void CountFeature(blink::mojom::WebFeature feature);
+  void set_used_features(std::set<blink::mojom::WebFeature> used_features) {
+    used_features_ = std::move(used_features);
   }
-  const std::set<uint32_t>& used_features() const { return used_features_; }
+  const std::set<blink::mojom::WebFeature>& used_features() const {
+    return used_features_;
+  }
 
   static bool IsInstalled(ServiceWorkerVersion::Status status);
 
@@ -855,9 +858,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   base::Optional<ServiceWorkerMetrics::EventType> start_worker_first_purpose_;
 
   // This is the set of features that were used up until installation of this
-  // version completed, or used during the lifetime of |this|. The values must
-  // be from blink::UseCounter::Feature enum.
-  std::set<uint32_t> used_features_;
+  // version completed, or used during the lifetime of |this|.
+  std::set<blink::mojom::WebFeature> used_features_;
 
   std::unique_ptr<blink::TrialTokenValidator> validator_;
 

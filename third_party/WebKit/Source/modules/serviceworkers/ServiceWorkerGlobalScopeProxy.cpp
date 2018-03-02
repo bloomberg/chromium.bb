@@ -496,7 +496,7 @@ bool ServiceWorkerGlobalScopeProxy::HasFetchEventHandler() {
 }
 
 void ServiceWorkerGlobalScopeProxy::CountFeature(WebFeature feature) {
-  Client().CountFeature(static_cast<uint32_t>(feature));
+  Client().CountFeature(feature);
 }
 
 void ServiceWorkerGlobalScopeProxy::CountDeprecation(WebFeature feature) {

@@ -137,7 +137,7 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   void DidInitializeWorkerContext(v8::Local<v8::Context> context) override;
   void WillDestroyWorkerContext(v8::Local<v8::Context> context) override;
   void WorkerContextDestroyed() override;
-  void CountFeature(uint32_t feature) override;
+  void CountFeature(blink::mojom::WebFeature feature) override;
   void ReportException(const blink::WebString& error_message,
                        int line_number,
                        int column_number,

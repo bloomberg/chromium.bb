@@ -14,6 +14,7 @@ import "mojo/common/unguessable_token.mojom";
 import "services/service_manager/public/mojom/interface_provider.mojom";
 import "third_party/WebKit/public/mojom/service_worker/service_worker.mojom";
 import "third_party/WebKit/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom";
+import "third_party/WebKit/public/platform/web_feature.mojom";
 import "third_party/WebKit/public/web/console_message.mojom";
 import "third_party/WebKit/public/web/devtools_agent.mojom";
 import "third_party/WebKit/public/web/worker_content_settings_proxy.mojom";
@@ -109,6 +110,17 @@ interface EmbeddedWorkerInstanceHost {
   // if the worker thread is continuously busy and the browser's periodic ping
   // message has been missed, the browser will terminate the service worker.
   RequestTermination();
+
+  // Tells the browser process that this service worker used |feature|, for
+  // UseCounter purposes. The browser process propagates the feature usage bit
+  // to all clients controlled by the service worker. See
+  // https://crbug.com/376039 for background.
+  // Note: Because CountFeature() is possible to be called on the main thread
+  // during service worker startup and is also called on the worker thread after
+  // that, we put it here rather than interface ServiceWorkerHost, so that we
+  // can still keep interface ServiceWorkerHost being used solely on the worker
+  // thread in the renderer process.
+  CountFeature(blink.mojom.WebFeature feature);
 
   // Indicates that the worker is ready for inspection.
   OnReadyForInspection();

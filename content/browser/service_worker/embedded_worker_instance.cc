@@ -19,7 +19,6 @@
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/renderer.mojom.h"
-#include "content/common/service_worker/embedded_worker_messages.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_thread.h"
@@ -680,6 +679,10 @@ void EmbeddedWorkerInstance::RequestTermination() {
   if (status() == EmbeddedWorkerStatus::STOPPING)
     return;
   owner_version_->StopWorkerIfIdle(true /* requested_from_renderer */);
+}
+
+void EmbeddedWorkerInstance::CountFeature(blink::mojom::WebFeature feature) {
+  owner_version_->CountFeature(feature);
 }
 
 void EmbeddedWorkerInstance::OnReadyForInspection() {

@@ -431,7 +431,8 @@ void ServiceWorkerStorage::StoreRegistration(
   if (version->origin_trial_tokens())
     data.origin_trial_tokens = *version->origin_trial_tokens();
   data.navigation_preload_state = registration->navigation_preload_state();
-  data.used_features = version->used_features();
+  for (const blink::mojom::WebFeature feature : version->used_features())
+    data.used_features.insert(static_cast<uint32_t>(feature));
 
   ResourceList resources;
   version->script_cache_map()->GetResources(&resources);
@@ -1540,16 +1541,14 @@ ServiceWorkerStorage::GetOrCreateRegistration(
     // TODO(falken): Maybe Chrome should have a generic mechanism to detect
     // profile downgrade and just abort? Or we could just crash here, but that
     // seems extreme and difficult for a user to escape.
-    std::set<uint32_t> used_features = data.used_features;
-    for (auto it = used_features.begin(); it != used_features.end();) {
-      if (*it >=
+    std::set<blink::mojom::WebFeature> used_features;
+    for (const uint32_t feature : data.used_features) {
+      if (feature <
           static_cast<uint32_t>(blink::mojom::WebFeature::kNumberOfFeatures)) {
-        it = used_features.erase(it);
-      } else {
-        ++it;
+        used_features.insert(static_cast<blink::mojom::WebFeature>(feature));
       }
     }
-    version->set_used_features(used_features);
+    version->set_used_features(std::move(used_features));
   }
 
   if (version->status() == ServiceWorkerVersion::ACTIVATED)

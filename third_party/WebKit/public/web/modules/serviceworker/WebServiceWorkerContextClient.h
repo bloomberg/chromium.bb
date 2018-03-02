@@ -41,6 +41,7 @@
 #include "public/platform/modules/serviceworker/WebServiceWorkerStreamHandle.h"
 #include "third_party/WebKit/public/common/message_port/transferable_message.h"
 #include "third_party/WebKit/public/mojom/service_worker/service_worker_event_status.mojom-shared.h"
+#include "third_party/WebKit/public/platform/web_feature.mojom-shared.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -136,7 +137,7 @@ class WebServiceWorkerContextClient {
 
   // Called when some API to be recorded in UseCounter is called on the worker
   // global scope.
-  virtual void CountFeature(uint32_t feature) {}
+  virtual void CountFeature(mojom::WebFeature feature) {}
 
   // Called when the WorkerGlobalScope had an error or an exception.
   virtual void ReportException(const WebString& error_message,
