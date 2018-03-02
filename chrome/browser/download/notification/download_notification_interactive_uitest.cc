@@ -398,7 +398,9 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadDangerousFile) {
   EXPECT_TRUE(base::PathExists(GetDownloadPath().Append(filename.BaseName())));
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DiscardDangerousFile) {
+// Disabled due to timeouts; see https://crbug.com/810302.
+IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
+                       DISABLED_DiscardDangerousFile) {
   GURL download_url(
       embedded_test_server()->GetURL("/downloads/dangerous/dangerous.swf"));
 
