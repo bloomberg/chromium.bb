@@ -164,11 +164,6 @@ ScriptResource::ScriptResource(
 
 ScriptResource::~ScriptResource() = default;
 
-void ScriptResource::Trace(blink::Visitor* visitor) {
-  visitor->Trace(cache_handler_);
-  TextResource::Trace(visitor);
-}
-
 void ScriptResource::OnMemoryDump(WebMemoryDumpLevelOfDetail level_of_detail,
                                   WebProcessMemoryDump* memory_dump) const {
   Resource::OnMemoryDump(level_of_detail, memory_dump);
@@ -205,8 +200,10 @@ CachedMetadataHandler* ScriptResource::CreateCachedMetadataHandler(
 void ScriptResource::SetSerializedCachedMetadata(const char* data,
                                                  size_t size) {
   Resource::SetSerializedCachedMetadata(data, size);
-  if (cache_handler_) {
-    cache_handler_->SetSerializedCachedMetadata(data, size);
+  SingleCachedMetadataHandlerImpl* cache_handler =
+      static_cast<SingleCachedMetadataHandlerImpl*>(Resource::CacheHandler());
+  if (cache_handler) {
+    cache_handler->SetSerializedCachedMetadata(data, size);
   }
 }
 
