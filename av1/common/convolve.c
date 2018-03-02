@@ -1407,6 +1407,7 @@ void av1_highbd_jnt_convolve_x_c(const uint16_t *src, int src_stride,
   (void)dst_stride0;
   (void)bd;
 
+  assert(bits >= 0);
   // horizontal filter
   const int16_t *x_filter = av1_get_interp_filter_subpel_kernel(
       *filter_params_x, subpel_x_q4 & SUBPEL_MASK);

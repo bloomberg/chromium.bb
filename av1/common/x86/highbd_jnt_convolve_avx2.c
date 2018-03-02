@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Alliance for Open Media. All rights reserved
+ * Copyright (c) 2018, Alliance for Open Media. All rights reserved
  *
  * This source code is subject to the terms of the BSD 2 Clause License and
  * the Alliance for Open Media Patent License 1.0. If the BSD 2 Clause License
@@ -274,4 +274,114 @@ void av1_highbd_jnt_convolve_2d_avx2(
     }
   }
 }
+#endif
+
+#if CONFIG_JNT_COMP
+void av1_highbd_jnt_convolve_x_avx2(const uint16_t *src, int src_stride,
+                                    uint16_t *dst0, int dst_stride0, int w,
+                                    int h, InterpFilterParams *filter_params_x,
+                                    InterpFilterParams *filter_params_y,
+                                    const int subpel_x_q4,
+                                    const int subpel_y_q4,
+                                    ConvolveParams *conv_params, int bd) {
+  CONV_BUF_TYPE *dst = conv_params->dst;
+  int dst_stride = conv_params->dst_stride;
+  const int fo_horiz = filter_params_x->taps / 2 - 1;
+  const uint16_t *const src_ptr = src - fo_horiz;
+  const int bits = FILTER_BITS - conv_params->round_1;
+  (void)filter_params_y;
+  (void)subpel_y_q4;
+  (void)dst0;
+  (void)dst_stride0;
+  (void)bd;
+
+  int i, j;
+  __m256i s[4], coeffs_x[4];
+
+  const int do_average = conv_params->do_average;
+  const int w0 = conv_params->fwd_offset;
+  const int w1 = conv_params->bck_offset;
+  const __m256i wt0 = _mm256_set1_epi32(w0);
+  const __m256i wt1 = _mm256_set1_epi32(w1);
+  const __m128i wt0_128 = _mm256_castsi256_si128(wt0);
+  const __m128i wt1_128 = _mm256_castsi256_si128(wt1);
+
+  const __m256i round_const_x =
+      _mm256_set1_epi32(((1 << conv_params->round_0) >> 1));
+  const __m128i round_shift_x = _mm_cvtsi32_si128(conv_params->round_0);
+  const __m128i round_shift_bits = _mm_cvtsi32_si128(bits);
+
+  assert(bits >= 0);
+  prepare_coeffs(filter_params_x, subpel_x_q4, coeffs_x);
+
+  for (j = 0; j < w; j += 8) {
+    /* Horizontal filter */
+    for (i = 0; i < h; i += 2) {
+      const __m256i row0 =
+          _mm256_loadu_si256((__m256i *)&src_ptr[i * src_stride + j]);
+      __m256i row1 =
+          _mm256_loadu_si256((__m256i *)&src_ptr[(i + 1) * src_stride + j]);
+
+      const __m256i r0 = _mm256_permute2x128_si256(row0, row1, 0x20);
+      const __m256i r1 = _mm256_permute2x128_si256(row0, row1, 0x31);
+
+      // even pixels
+      s[0] = _mm256_alignr_epi8(r1, r0, 0);
+      s[1] = _mm256_alignr_epi8(r1, r0, 4);
+      s[2] = _mm256_alignr_epi8(r1, r0, 8);
+      s[3] = _mm256_alignr_epi8(r1, r0, 12);
+
+      __m256i res_even = convolve(s, coeffs_x);
+      res_even = _mm256_sra_epi32(_mm256_add_epi32(res_even, round_const_x),
+                                  round_shift_x);
+
+      // odd pixels
+      s[0] = _mm256_alignr_epi8(r1, r0, 2);
+      s[1] = _mm256_alignr_epi8(r1, r0, 6);
+      s[2] = _mm256_alignr_epi8(r1, r0, 10);
+      s[3] = _mm256_alignr_epi8(r1, r0, 14);
+
+      __m256i res_odd = convolve(s, coeffs_x);
+      res_odd = _mm256_sra_epi32(_mm256_add_epi32(res_odd, round_const_x),
+                                 round_shift_x);
+
+      res_even = _mm256_sll_epi32(res_even, round_shift_bits);
+      res_odd = _mm256_sll_epi32(res_odd, round_shift_bits);
+
+      __m256i res1 = _mm256_unpacklo_epi32(res_even, res_odd);
+
+      if (w - j > 4) {
+        __m256i res2 = _mm256_unpackhi_epi32(res_even, res_odd);
+
+        const __m256i res_ax = _mm256_permute2x128_si256(res1, res2, 0x20);
+        const __m256i res_bx = _mm256_permute2x128_si256(res1, res2, 0x31);
+
+        if (conv_params->use_jnt_comp_avg) {
+          mult_add_store_aligned_256(&dst[i * dst_stride + j], &res_ax, &wt0,
+                                     &wt1, do_average);
+          mult_add_store_aligned_256(&dst[i * dst_stride + j + dst_stride],
+                                     &res_bx, &wt0, &wt1, do_average);
+        } else {
+          add_store_aligned_256(&dst[i * dst_stride + j], &res_ax, do_average);
+          add_store_aligned_256(&dst[i * dst_stride + j + dst_stride], &res_bx,
+                                do_average);
+        }
+      } else {
+        const __m128i res_ax = _mm256_castsi256_si128(res1);
+        const __m128i res_bx = _mm256_extracti128_si256(res1, 1);
+
+        if (conv_params->use_jnt_comp_avg) {
+          mult_add_store(&dst[i * dst_stride + j], &res_ax, &wt0_128, &wt1_128,
+                         do_average);
+          mult_add_store(&dst[i * dst_stride + j + dst_stride], &res_bx,
+                         &wt0_128, &wt1_128, do_average);
+        } else {
+          add_store(&dst[i * dst_stride + j], &res_ax, do_average);
+          add_store(&dst[i * dst_stride + j + dst_stride], &res_bx, do_average);
+        }
+      }
+    }
+  }
+}
+
 #endif

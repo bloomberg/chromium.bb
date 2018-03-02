@@ -230,6 +230,10 @@ TEST_P(AV1HighbdJntConvolve2DTest, CheckOutput) {
   RunCheckOutput(GET_PARAM(1));
 }
 
+TEST_P(AV1HighbdJntConvolve2DTest, DISABLED_Speed) {
+  RunSpeedTest(GET_PARAM(1));
+}
+
 INSTANTIATE_TEST_CASE_P(SSE4_1, AV1HighbdJntConvolve2DTest,
                         libaom_test::AV1HighbdConvolve2D::BuildParams(
                             av1_highbd_jnt_convolve_2d_sse4_1, 1, 1, 1));
@@ -252,6 +256,9 @@ INSTANTIATE_TEST_CASE_P(AVX2_COPY, AV1HighbdJntConvolve2DTest,
 INSTANTIATE_TEST_CASE_P(AVX2, AV1HighbdJntConvolve2DTest,
                         libaom_test::AV1HighbdConvolve2D::BuildParams(
                             av1_highbd_jnt_convolve_2d_avx2, 1, 1, 1));
+INSTANTIATE_TEST_CASE_P(AVX2_X, AV1HighbdJntConvolve2DTest,
+                        libaom_test::AV1HighbdConvolve2D::BuildParams(
+                            av1_highbd_jnt_convolve_x_avx2, 1, 0, 1));
 #endif
 #endif  // CONFIG_JNT_COMP
 #endif
