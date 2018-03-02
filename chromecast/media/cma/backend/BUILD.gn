@@ -117,16 +117,28 @@ cast_source_set("public") {
   ]
 }
 
+cast_source_set("audio_helpers") {
+  sources = [
+    "audio_fader.cc",
+    "audio_fader.h",
+  ]
+
+  deps = [
+    "//base",
+    "//media",
+  ]
+}
+
 cast_source_set("for_mixer_audio") {
   sources = [
     "audio_decoder_for_mixer.cc",
     "audio_decoder_for_mixer.h",
-    "audio_fader.cc",
-    "audio_fader.h",
     "buffering_mixer_source.cc",
     "buffering_mixer_source.h",
     "cast_audio_json.cc",
     "cast_audio_json.h",
+    "direct_mixer_source.cc",
+    "direct_mixer_source.h",
     "filter_group.cc",
     "filter_group.h",
     "media_codec_support_cast_audio.cc",
@@ -150,6 +162,7 @@ cast_source_set("for_mixer_audio") {
 
   deps = [
     ":audio_buildflags",
+    ":audio_helpers",
     ":null",
     ":public",
     "//base",
@@ -183,6 +196,7 @@ test("cast_audio_backend_unittests") {
   ]
 
   deps = [
+    ":audio_helpers",
     ":for_mixer_audio",
     ":public",
     "//base",

@@ -160,6 +160,14 @@ void MediaPipelineBackendManager::LogicalResume(MediaPipelineBackend* backend) {
   wrapper->LogicalResume();
 }
 
+void MediaPipelineBackendManager::AddExtraPlayingStream(bool sfx) {
+  UpdatePlayingAudioCount(sfx, 1);
+}
+
+void MediaPipelineBackendManager::RemoveExtraPlayingStream(bool sfx) {
+  UpdatePlayingAudioCount(sfx, -1);
+}
+
 void MediaPipelineBackendManager::SetGlobalVolumeMultiplier(
     AudioContentType type,
     float multiplier) {

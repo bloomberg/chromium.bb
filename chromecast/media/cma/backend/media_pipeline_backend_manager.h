@@ -104,7 +104,14 @@ class MediaPipelineBackendManager {
   void LogicalPause(MediaPipelineBackend* backend);
   void LogicalResume(MediaPipelineBackend* backend);
 
-  // Sets a global multiplier for output volume for streams fo the given |type|.
+  // Add/remove a playing audio stream that is not accounted for by a
+  // MediaPipelineBackend instance (for example, direct audio output using
+  // CastMediaShlib::AddDirectAudioSource()). |sfx| indicates whether or not
+  // the stream is a sound effects stream (has no effect on volume feedback).
+  void AddExtraPlayingStream(bool sfx);
+  void RemoveExtraPlayingStream(bool sfx);
+
+  // Sets a global multiplier for output volume for streams of the given |type|.
   // The multiplier may be any value >= 0; if the resulting volume for an
   // individual stream would be > 1.0, that stream's volume is clamped to 1.0.
   // The default multiplier is 1.0. May be called on any thread.
