@@ -357,7 +357,9 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadFile) {
   EXPECT_FALSE(GetNotification(notification_id()));
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadDangerousFile) {
+// Disabled due to timeouts; see https://crbug.com/810302.
+IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
+                       DISABLED_DownloadDangerousFile) {
   GURL download_url(
       embedded_test_server()->GetURL("/downloads/dangerous/dangerous.swf"));
 
@@ -442,7 +444,8 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
   EXPECT_FALSE(base::PathExists(GetDownloadPath().Append(filename.BaseName())));
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadImageFile) {
+// Disabled due to timeouts; see https://crbug.com/810302.
+IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DISABLED_DownloadImageFile) {
   GURL download_url(
       embedded_test_server()->GetURL("/downloads/image-octet-stream.png"));
 
