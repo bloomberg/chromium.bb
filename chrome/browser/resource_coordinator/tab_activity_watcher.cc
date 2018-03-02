@@ -4,6 +4,7 @@
 
 #include "chrome/browser/resource_coordinator/tab_activity_watcher.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/tab_metrics_logger.h"
 #include "chrome/browser/resource_coordinator/time.h"
@@ -26,6 +27,14 @@
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(
     resource_coordinator::TabActivityWatcher::WebContentsData);
+
+// Use a 1-day max for tab visibility histograms since it's not uncommon to keep
+// a tab in the same visibility state for a very long time (see Tab.VisibleTime
+// which has 5% of samples in the overflow bucket with a 1-hour max).
+#define UMA_TAB_VISIBILITY_HISTOGRAM(visibility, sample)           \
+  UMA_HISTOGRAM_CUSTOM_TIMES("Tab.Visibility." visibility, sample, \
+                             base::TimeDelta::FromMilliseconds(1), \
+                             base::TimeDelta::FromDays(1), 50)
 
 namespace resource_coordinator {
 
@@ -199,19 +208,49 @@ class TabActivityWatcher::WebContentsData
   }
 
   void OnVisibilityChanged(content::Visibility visibility) override {
-    // Ignore visibility changes while the WebContents is being destroyed.
-    if (web_contents()->IsBeingDestroyed())
-      return;
+    // Record Tab.Visibility.* histogram and do associated bookkeeping.
+    // Recording is done at every visibility state change rather than just when
+    // the WebContents is destroyed to reduce data loss on session end.
+    RecordVisibilityHistogram(visibility);
 
-    // TODO(michaelpg): Consider tracking occluded tabs, not just background
-    // tabs.
-    if (visibility == content::Visibility::HIDDEN)
-      WasHidden();
-    else
-      WasShown();
+    // Record background tab UKMs and do associated bookkepping.
+    if (!web_contents()->IsBeingDestroyed()) {
+      // TODO(michaelpg): Consider treating occluded tabs as hidden.
+      if (visibility == content::Visibility::HIDDEN) {
+        WasHidden();
+      } else {
+        WasShown();
+      }
+    }
+  }
+
+  void RecordVisibilityHistogram(content::Visibility new_visibility) {
+    const base::TimeTicks now = NowTicks();
+    const base::TimeDelta duration = now - last_visibility_change_time_;
+    switch (visibility_) {
+      case content::Visibility::VISIBLE: {
+        UMA_TAB_VISIBILITY_HISTOGRAM("Visible", duration);
+        break;
+      }
+
+      case content::Visibility::OCCLUDED: {
+        UMA_TAB_VISIBILITY_HISTOGRAM("Occluded", duration);
+        break;
+      }
+
+      case content::Visibility::HIDDEN: {
+        UMA_TAB_VISIBILITY_HISTOGRAM("Hidden", duration);
+        break;
+      }
+    }
+
+    visibility_ = new_visibility;
+    last_visibility_change_time_ = now;
   }
 
   void WebContentsDestroyed() override {
+    RecordVisibilityHistogram(visibility_);
+
     if (was_replaced_)
       return;
 
@@ -299,6 +338,12 @@ class TabActivityWatcher::WebContentsData
 
   // If true, future events such as the tab being destroyed won't be logged.
   bool was_replaced_ = false;
+
+  // Current tab visibility.
+  content::Visibility visibility_ = web_contents()->GetVisibility();
+
+  // The last time at which |visibility_| changed.
+  base::TimeTicks last_visibility_change_time_ = NowTicks();
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsData);
 };
