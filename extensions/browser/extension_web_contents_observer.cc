@@ -250,8 +250,12 @@ void ExtensionWebContentsObserver::InitializeFrameHelper(
   // are ready.
   // We only initialize the frame if the renderer counterpart is live; otherwise
   // we wait for the RenderFrameCreated notification.
-  if (render_frame_host->IsRenderFrameLive())
+  if (render_frame_host->IsRenderFrameLive()) {
+    // Initialize the FrameData for this frame here since we didn't receive the
+    // RenderFrameCreated notification for it.
+    ExtensionApiFrameIdMap::Get()->OnRenderFrameCreated(render_frame_host);
     InitializeRenderFrame(render_frame_host);
+  }
 }
 
 }  // namespace extensions
