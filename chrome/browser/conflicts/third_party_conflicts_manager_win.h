@@ -21,24 +21,17 @@ class FilePath;
 
 // This class owns all the third-party conflicts-related classes and is
 // responsible for their initialization.
-class ThirdPartyConflictsManager : public ModuleDatabaseObserver {
+class ThirdPartyConflictsManager {
  public:
   explicit ThirdPartyConflictsManager(ModuleDatabase* module_database);
-  ~ThirdPartyConflictsManager() override;
+  ~ThirdPartyConflictsManager();
 
-  // ModuleDatabaseObserver:
-  void OnModuleDatabaseIdle() override;
-
-  // Loads the |module_list_filter_| using the Module List at |path|.
+  // Gets modules
   void LoadModuleList(const base::FilePath& path);
 
  private:
   // Called when |installed_programs_| finishes its initialization.
   void OnInstalledProgramsInitialized();
-
-  // Initializes |problematic_programs_updater_| when both the ModuleListFilter
-  // and the InstalledPrograms are available.
-  void InitializeProblematicProgramsUpdater();
 
   ModuleDatabase* module_database_;
 

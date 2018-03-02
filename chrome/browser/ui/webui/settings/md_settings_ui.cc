@@ -228,6 +228,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
 #endif  // defined(OS_WIN)
 
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+  ProblematicProgramsUpdater::TrimCache();
   bool has_incompatible_applications =
       ProblematicProgramsUpdater::HasCachedPrograms();
   html_source->AddBoolean("showIncompatibleApplications",

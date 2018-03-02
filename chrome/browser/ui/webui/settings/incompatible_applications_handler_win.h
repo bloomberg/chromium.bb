@@ -5,14 +5,8 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SETTINGS_INCOMPATIBLE_APPLICATIONS_HANDLER_WIN_H_
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_INCOMPATIBLE_APPLICATIONS_HANDLER_WIN_H_
 
-#include <map>
-#include <memory>
-
 #include "base/macros.h"
-#include "chrome/browser/conflicts/installed_programs_win.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
-
-class RegistryKeyWatcher;
 
 namespace base {
 class ListValue;
@@ -28,8 +22,8 @@ class IncompatibleApplicationsHandler : public SettingsPageUIHandler {
 
   // SettingsPageUIHandler:
   void RegisterMessages() override;
-  void OnJavascriptAllowed() override;
-  void OnJavascriptDisallowed() override;
+  void OnJavascriptAllowed() override {}
+  void OnJavascriptDisallowed() override {}
 
  private:
   // Sends the list of incompatible applications to the caller via a promise.
@@ -42,13 +36,6 @@ class IncompatibleApplicationsHandler : public SettingsPageUIHandler {
   void HandleGetSubtitleNoAdminRightsPluralString(const base::ListValue* args);
   void HandleGetListTitlePluralString(const base::ListValue* args);
   void GetPluralString(int id, const base::ListValue* args);
-
-  // Callback for the registry key watchers.
-  void OnApplicationRemoved(const InstalledPrograms::ProgramInfo& program);
-
-  // Container for the watchers.
-  std::map<InstalledPrograms::ProgramInfo, std::unique_ptr<RegistryKeyWatcher>>
-      registry_key_watchers_;
 
   DISALLOW_COPY_AND_ASSIGN(IncompatibleApplicationsHandler);
 };

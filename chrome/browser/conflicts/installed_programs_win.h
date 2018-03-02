@@ -133,7 +133,4 @@ class InstalledPrograms {
   DISALLOW_COPY_AND_ASSIGN(InstalledPrograms);
 };
 
-bool operator<(const InstalledPrograms::ProgramInfo& lhs,
-               const InstalledPrograms::ProgramInfo& rhs);
-
 #endif  // CHROME_BROWSER_CONFLICTS_INSTALLED_PROGRAMS_WIN_H_
