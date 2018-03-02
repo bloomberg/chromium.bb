@@ -131,7 +131,7 @@ bool GLSurfaceEGL::initialized_ = false;
 
 namespace {
 
-EGLDisplay g_display = EGL_NO_DISPLAY;
+EGLDisplay g_egl_display = EGL_NO_DISPLAY;
 EGLNativeDisplayType g_native_display = EGL_DEFAULT_DISPLAY;
 
 const char* g_egl_extensions = nullptr;
@@ -184,9 +184,10 @@ class EGLSyncControlVSyncProvider : public SyncControlVSyncProvider {
                      int64_t* media_stream_counter,
                      int64_t* swap_buffer_counter) override {
     uint64_t u_system_time, u_media_stream_counter, u_swap_buffer_counter;
-    bool result = eglGetSyncValuesCHROMIUM(
-        g_display, surface_, &u_system_time,
-        &u_media_stream_counter, &u_swap_buffer_counter) == EGL_TRUE;
+    bool result =
+        eglGetSyncValuesCHROMIUM(g_egl_display, surface_, &u_system_time,
+                                 &u_media_stream_counter,
+                                 &u_swap_buffer_counter) == EGL_TRUE;
     if (result) {
       *system_time = static_cast<int64_t>(u_system_time);
       *media_stream_counter = static_cast<int64_t>(u_media_stream_counter);
@@ -411,7 +412,7 @@ EGLConfig ChooseConfig(GLSurfaceFormat format, bool surfaceless) {
     EGLConfig config = nullptr;
     EGLConfig* config_data = &config;
     // Validate if there are any configs for given attribs.
-    if (!ValidateEglConfig(g_display, choose_attributes, &num_configs)) {
+    if (!ValidateEglConfig(g_egl_display, choose_attributes, &num_configs)) {
       // Try the next renderable_type
       continue;
     }
@@ -422,8 +423,8 @@ EGLConfig ChooseConfig(GLSurfaceFormat format, bool surfaceless) {
       config_data = matching_configs.get();
     }
 
-    if (!eglChooseConfig(g_display, choose_attributes, config_data, config_size,
-                         &num_configs)) {
+    if (!eglChooseConfig(g_egl_display, choose_attributes, config_data,
+                         config_size, &num_configs)) {
       LOG(ERROR) << "eglChooseConfig failed with error "
                  << GetLastEGLErrorString();
       return config;
@@ -437,14 +438,14 @@ EGLConfig ChooseConfig(GLSurfaceFormat format, bool surfaceless) {
       for (int i = 0; i < num_configs; i++) {
         EGLint red, green, blue, alpha;
         // Read the relevant attributes of the EGLConfig.
-        if (eglGetConfigAttrib(g_display, matching_configs[i], EGL_RED_SIZE,
+        if (eglGetConfigAttrib(g_egl_display, matching_configs[i], EGL_RED_SIZE,
                                &red) &&
-            eglGetConfigAttrib(g_display, matching_configs[i], EGL_BLUE_SIZE,
-                               &blue) &&
-            eglGetConfigAttrib(g_display, matching_configs[i], EGL_GREEN_SIZE,
-                               &green) &&
-            eglGetConfigAttrib(g_display, matching_configs[i], EGL_ALPHA_SIZE,
-                               &alpha) &&
+            eglGetConfigAttrib(g_egl_display, matching_configs[i],
+                               EGL_BLUE_SIZE, &blue) &&
+            eglGetConfigAttrib(g_egl_display, matching_configs[i],
+                               EGL_GREEN_SIZE, &green) &&
+            eglGetConfigAttrib(g_egl_display, matching_configs[i],
+                               EGL_ALPHA_SIZE, &alpha) &&
             alpha == 0 && red == 5 && green == 6 && blue == 5) {
           config = matching_configs[i];
           match_found = true;
@@ -454,11 +455,12 @@ EGLConfig ChooseConfig(GLSurfaceFormat format, bool surfaceless) {
       if (!match_found) {
         // To fall back to default 32 bit format, choose with
         // the right attributes again.
-        if (!ValidateEglConfig(g_display, config_attribs_8888, &num_configs)) {
+        if (!ValidateEglConfig(g_egl_display, config_attribs_8888,
+                               &num_configs)) {
           // Try the next renderable_type
           continue;
         }
-        if (!eglChooseConfig(g_display, config_attribs_8888, &config, 1,
+        if (!eglChooseConfig(g_egl_display, config_attribs_8888, &config, 1,
                              &num_configs)) {
           LOG(ERROR) << "eglChooseConfig failed with error "
                      << GetLastEGLErrorString();
@@ -549,7 +551,7 @@ GLSurfaceFormat GLSurfaceEGL::GetFormat() {
 }
 
 EGLDisplay GLSurfaceEGL::GetDisplay() {
-  return g_display;
+  return g_egl_display;
 }
 
 EGLConfig GLSurfaceEGL::GetConfig() {
@@ -568,7 +570,7 @@ bool GLSurfaceEGL::InitializeOneOff(EGLNativeDisplayType native_display) {
   g_driver_egl.InitializeClientExtensionBindings();
 
   InitializeDisplay(native_display);
-  if (g_display == EGL_NO_DISPLAY)
+  if (g_egl_display == EGL_NO_DISPLAY)
     return false;
 
   // Must be called after InitializeDisplay().
@@ -580,14 +582,14 @@ bool GLSurfaceEGL::InitializeOneOff(EGLNativeDisplayType native_display) {
 // static
 bool GLSurfaceEGL::InitializeOneOffForTesting() {
   g_driver_egl.InitializeClientExtensionBindings();
-  g_display = eglGetCurrentDisplay();
+  g_egl_display = eglGetCurrentDisplay();
   g_driver_egl.InitializeExtensionBindings();
   return InitializeOneOffCommon();
 }
 
 // static
 bool GLSurfaceEGL::InitializeOneOffCommon() {
-  g_egl_extensions = eglQueryString(g_display, EGL_EXTENSIONS);
+  g_egl_extensions = eglQueryString(g_egl_display, EGL_EXTENSIONS);
 
   g_egl_create_context_robustness_supported =
       HasEGLExtension("EGL_EXT_create_context_robustness");
@@ -690,20 +692,20 @@ bool GLSurfaceEGL::InitializeExtensionSettingsOneOff() {
   if (!initialized_)
     return false;
   g_driver_egl.UpdateConditionalExtensionBindings();
-  g_egl_extensions = eglQueryString(g_display, EGL_EXTENSIONS);
+  g_egl_extensions = eglQueryString(g_egl_display, EGL_EXTENSIONS);
 
   return true;
 }
 
 // static
 void GLSurfaceEGL::ShutdownOneOff() {
-  angle::ResetPlatform(g_display);
+  angle::ResetPlatform(g_egl_display);
 
-  if (g_display != EGL_NO_DISPLAY) {
+  if (g_egl_display != EGL_NO_DISPLAY) {
     DCHECK(g_driver_egl.fn.eglTerminateFn);
-    eglTerminate(g_display);
+    eglTerminate(g_egl_display);
   }
-  g_display = EGL_NO_DISPLAY;
+  g_egl_display = EGL_NO_DISPLAY;
 
   g_egl_extensions = nullptr;
   g_egl_create_context_robustness_supported = false;
@@ -723,7 +725,7 @@ void GLSurfaceEGL::ShutdownOneOff() {
 
 // static
 EGLDisplay GLSurfaceEGL::GetHardwareDisplay() {
-  return g_display;
+  return g_egl_display;
 }
 
 // static
@@ -792,8 +794,8 @@ GLSurfaceEGL::~GLSurfaceEGL() {}
 // static
 EGLDisplay GLSurfaceEGL::InitializeDisplay(
     EGLNativeDisplayType native_display) {
-  if (g_display != EGL_NO_DISPLAY) {
-    return g_display;
+  if (g_egl_display != EGL_NO_DISPLAY) {
+    return g_egl_display;
   }
 
   g_native_display = native_display;
@@ -846,12 +848,12 @@ EGLDisplay GLSurfaceEGL::InitializeDisplay(
     } else {
       UMA_HISTOGRAM_ENUMERATION("GPU.EGLDisplayType", display_type,
                                 DISPLAY_TYPE_MAX);
-      g_display = display;
+      g_egl_display = display;
       break;
     }
   }
 
-  return g_display;
+  return g_egl_display;
 }
 
 NativeViewGLSurfaceEGL::NativeViewGLSurfaceEGL(
@@ -1523,8 +1525,7 @@ void* PbufferGLSurfaceEGL::GetShareHandle() {
     return NULL;
 
   void* handle;
-  if (!eglQuerySurfacePointerANGLE(g_display,
-                                   GetHandle(),
+  if (!eglQuerySurfacePointerANGLE(g_egl_display, GetHandle(),
                                    EGL_D3D_TEXTURE_2D_SHARE_HANDLE_ANGLE,
                                    &handle)) {
     return NULL;

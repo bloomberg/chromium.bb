@@ -145,7 +145,7 @@ class DisplayWGL {
   HDC device_context_;
   int pixel_format_;
 };
-DisplayWGL* g_display;
+DisplayWGL* g_wgl_display;
 }  // namespace
 
 // static
@@ -166,12 +166,12 @@ bool GLSurfaceWGL::InitializeOneOff() {
   if (initialized_)
     return true;
 
-  DCHECK(g_display == NULL);
+  DCHECK(g_wgl_display == NULL);
   std::unique_ptr<DisplayWGL> wgl_display(new DisplayWGL);
   if (!wgl_display->Init())
     return false;
 
-  g_display = wgl_display.release();
+  g_wgl_display = wgl_display.release();
   initialized_ = true;
   return true;
 }
@@ -185,13 +185,13 @@ bool GLSurfaceWGL::InitializeExtensionSettingsOneOff() {
 }
 
 void GLSurfaceWGL::InitializeOneOffForTesting() {
-  if (g_display == NULL) {
-    g_display = new DisplayWGL;
+  if (g_wgl_display == NULL) {
+    g_wgl_display = new DisplayWGL;
   }
 }
 
 HDC GLSurfaceWGL::GetDisplayDC() {
-  return g_display->device_context();
+  return g_wgl_display->device_context();
 }
 
 NativeViewGLSurfaceWGL::NativeViewGLSurfaceWGL(gfx::AcceleratedWidget window)
@@ -215,19 +215,11 @@ bool NativeViewGLSurfaceWGL::Initialize(GLSurfaceFormat format) {
 
   // Create a child window. WGL has problems using a window handle owned by
   // another process.
-  child_window_ =
-      CreateWindowEx(WS_EX_NOPARENTNOTIFY,
-                     reinterpret_cast<wchar_t*>(g_display->window_class()),
-                     L"",
-                     WS_CHILDWINDOW | WS_DISABLED | WS_VISIBLE,
-                     0,
-                     0,
-                     rect.right - rect.left,
-                     rect.bottom - rect.top,
-                     window_,
-                     NULL,
-                     NULL,
-                     NULL);
+  child_window_ = CreateWindowEx(
+      WS_EX_NOPARENTNOTIFY,
+      reinterpret_cast<wchar_t*>(g_wgl_display->window_class()), L"",
+      WS_CHILDWINDOW | WS_DISABLED | WS_VISIBLE, 0, 0, rect.right - rect.left,
+      rect.bottom - rect.top, window_, NULL, NULL, NULL);
   if (!child_window_) {
     LOG(ERROR) << "CreateWindow failed.\n";
     Destroy();
@@ -242,8 +234,7 @@ bool NativeViewGLSurfaceWGL::Initialize(GLSurfaceFormat format) {
     return false;
   }
 
-  if (!SetPixelFormat(device_context_,
-                      g_display->pixel_format(),
+  if (!SetPixelFormat(device_context_, g_wgl_display->pixel_format(),
                       &kPixelFormatDescriptor)) {
     LOG(ERROR) << "Unable to set the pixel format for GL context.";
     Destroy();
@@ -362,10 +353,9 @@ bool PbufferGLSurfaceWGL::Initialize(GLSurfaceFormat format) {
   }
 
   const int kNoAttributes[] = { 0 };
-  pbuffer_ = wglCreatePbufferARB(g_display->device_context(),
-                                 g_display->pixel_format(),
-                                 size_.width(), size_.height(),
-                                 kNoAttributes);
+  pbuffer_ = wglCreatePbufferARB(g_wgl_display->device_context(),
+                                 g_wgl_display->pixel_format(), size_.width(),
+                                 size_.height(), kNoAttributes);
 
   if (!pbuffer_) {
     LOG(ERROR) << "Unable to create pbuffer.";

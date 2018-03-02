@@ -35,7 +35,6 @@ namespace gl {
 
 namespace {
 
-Display* g_display = nullptr;
 bool g_glx_context_create = false;
 bool g_glx_create_context_robustness_supported = false;
 bool g_glx_create_context_profile_supported = false;
@@ -150,7 +149,7 @@ class OMLSyncControlVSyncProvider : public SyncControlVSyncProvider {
   bool GetSyncValues(int64_t* system_time,
                      int64_t* media_stream_counter,
                      int64_t* swap_buffer_counter) override {
-    return glXGetSyncValuesOML(g_display, glx_window_, system_time,
+    return glXGetSyncValuesOML(gfx::GetXDisplay(), glx_window_, system_time,
                                media_stream_counter, swap_buffer_counter);
   }
 
@@ -158,7 +157,8 @@ class OMLSyncControlVSyncProvider : public SyncControlVSyncProvider {
     if (!g_glx_get_msc_rate_oml_supported)
       return false;
 
-    if (!glXGetMscRateOML(g_display, glx_window_, numerator, denominator)) {
+    if (!glXGetMscRateOML(gfx::GetXDisplay(), glx_window_, numerator,
+                          denominator)) {
       // Once glXGetMscRateOML has been found to fail, don't try again,
       // since each failing call may spew an error message.
       g_glx_get_msc_rate_oml_supported = false;
@@ -218,7 +218,7 @@ class SGIVideoSyncProviderThreadShim {
         vsync_lock_() {
     // This ensures that creation of |parent_window_| has occured when this shim
     // is executing in the same thread as the call to create |parent_window_|.
-    XSync(g_display, x11::False);
+    XSync(gfx::GetXDisplay(), x11::False);
   }
 
   virtual ~SGIVideoSyncProviderThreadShim() {
@@ -415,14 +415,13 @@ bool GLSurfaceGLX::InitializeOneOff() {
   // it's own thread.
   gfx::InitializeThreadedX11();
 
-  g_display = gfx::GetXDisplay();
-  if (!g_display) {
+  if (!gfx::GetXDisplay()) {
     LOG(ERROR) << "XOpenDisplay failed.";
     return false;
   }
 
   int major, minor;
-  if (!glXQueryVersion(g_display, &major, &minor)) {
+  if (!glXQueryVersion(gfx::GetXDisplay(), &major, &minor)) {
     LOG(ERROR) << "glxQueryVersion failed";
     return false;
   }
@@ -436,8 +435,9 @@ bool GLSurfaceGLX::InitializeOneOff() {
       gl::GLVisualPickerGLX::GetInstance()->system_visual();
   g_visual = visual_info.visual;
   g_depth = visual_info.depth;
-  g_colormap = XCreateColormap(g_display, DefaultRootWindow(g_display),
-                               visual_info.visual, AllocNone);
+  g_colormap =
+      XCreateColormap(gfx::GetXDisplay(), DefaultRootWindow(gfx::GetXDisplay()),
+                      visual_info.visual, AllocNone);
 
   // We create a dummy unmapped window for both the main Display and the video
   // sync Display so that the Nvidia driver can initialize itself before the
@@ -445,8 +445,8 @@ bool GLSurfaceGLX::InitializeOneOff() {
   // Unfortunately some fds e.g. /dev/nvidia0 are cached per thread and because
   // we can't start threads before the sandbox is set up, these are accessed
   // through the broker process. See GpuProcessPolicy::InitGpuBrokerProcess.
-  if (!CreateDummyWindow(g_display)) {
-    LOG(ERROR) << "CreateDummyWindow(g_display) failed";
+  if (!CreateDummyWindow(gfx::GetXDisplay())) {
+    LOG(ERROR) << "CreateDummyWindow(gfx::GetXDisplay()) failed";
     return false;
   }
 
@@ -494,7 +494,6 @@ bool GLSurfaceGLX::InitializeExtensionSettingsOneOff() {
 // static
 void GLSurfaceGLX::ShutdownOneOff() {
   initialized_ = false;
-  g_display = nullptr;
   g_glx_context_create = false;
   g_glx_create_context_robustness_supported = false;
   g_glx_create_context_profile_supported = false;
@@ -514,7 +513,7 @@ void GLSurfaceGLX::ShutdownOneOff() {
 
 // static
 const char* GLSurfaceGLX::GetGLXExtensions() {
-  return glXQueryExtensionsString(g_display, 0);
+  return glXQueryExtensionsString(gfx::GetXDisplay(), 0);
 }
 
 // static
@@ -563,7 +562,7 @@ bool GLSurfaceGLX::IsOMLSyncControlSupported() {
 }
 
 void* GLSurfaceGLX::GetDisplay() {
-  return g_display;
+  return gfx::GetXDisplay();
 }
 
 GLSurfaceGLX::~GLSurfaceGLX() {}
@@ -577,7 +576,7 @@ NativeViewGLSurfaceGLX::NativeViewGLSurfaceGLX(gfx::AcceleratedWidget window)
 
 bool NativeViewGLSurfaceGLX::Initialize(GLSurfaceFormat format) {
   XWindowAttributes attributes;
-  if (!XGetWindowAttributes(g_display, parent_window_, &attributes)) {
+  if (!XGetWindowAttributes(gfx::GetXDisplay(), parent_window_, &attributes)) {
     LOG(ERROR) << "XGetWindowAttributes failed for window " << parent_window_
                << ".";
     return false;
@@ -592,24 +591,25 @@ bool NativeViewGLSurfaceGLX::Initialize(GLSurfaceFormat format) {
   memset(&swa, 0, sizeof(swa));
   swa.background_pixmap = 0;
   swa.bit_gravity = NorthWestGravity;
-  window_ = XCreateWindow(g_display, parent_window_, 0, 0, size_.width(),
-                          size_.height(), 0, CopyFromParent, InputOutput,
-                          CopyFromParent, CWBackPixmap | CWBitGravity, &swa);
+  window_ =
+      XCreateWindow(gfx::GetXDisplay(), parent_window_, 0, 0, size_.width(),
+                    size_.height(), 0, CopyFromParent, InputOutput,
+                    CopyFromParent, CWBackPixmap | CWBitGravity, &swa);
   if (!window_) {
     LOG(ERROR) << "XCreateWindow failed";
     return false;
   }
-  XMapWindow(g_display, window_);
+  XMapWindow(gfx::GetXDisplay(), window_);
 
   RegisterEvents();
-  XFlush(g_display);
+  XFlush(gfx::GetXDisplay());
 
   GetConfig();
   if (!config_) {
     LOG(ERROR) << "Failed to get GLXConfig";
     return false;
   }
-  glx_window_ = glXCreateWindow(g_display, config_, window_, NULL);
+  glx_window_ = glXCreateWindow(gfx::GetXDisplay(), config_, window_, NULL);
   if (!glx_window_) {
     LOG(ERROR) << "glXCreateWindow failed";
     return false;
@@ -647,14 +647,14 @@ void NativeViewGLSurfaceGLX::Destroy() {
   presentation_helper_ = nullptr;
   vsync_provider_ = nullptr;
   if (glx_window_) {
-    glXDestroyWindow(g_display, glx_window_);
+    glXDestroyWindow(gfx::GetXDisplay(), glx_window_);
     glx_window_ = 0;
   }
   if (window_) {
     UnregisterEvents();
-    XDestroyWindow(g_display, window_);
+    XDestroyWindow(gfx::GetXDisplay(), window_);
     window_ = 0;
-    XFlush(g_display);
+    XFlush(gfx::GetXDisplay());
   }
 }
 
@@ -664,7 +664,7 @@ bool NativeViewGLSurfaceGLX::Resize(const gfx::Size& size,
                                     bool has_alpha) {
   size_ = size;
   glXWaitGL();
-  XResizeWindow(g_display, window_, size.width(), size.height());
+  XResizeWindow(gfx::GetXDisplay(), window_, size.width(), size.height());
   glXWaitX();
   return true;
 }
@@ -679,7 +679,7 @@ gfx::SwapResult NativeViewGLSurfaceGLX::SwapBuffers(
                GetSize().width(), "height", GetSize().height());
   GLSurfacePresentationHelper::ScopedSwapBuffers scoped_swap_buffers(
       presentation_helper_.get(), callback);
-  glXSwapBuffers(g_display, GetDrawableHandle());
+  glXSwapBuffers(gfx::GetXDisplay(), GetDrawableHandle());
   return scoped_swap_buffers.result();
 }
 
@@ -701,7 +701,7 @@ bool NativeViewGLSurfaceGLX::SupportsPostSubBuffer() {
 
 void* NativeViewGLSurfaceGLX::GetConfig() {
   if (!config_)
-    config_ = GetConfigForWindow(g_display, window_);
+    config_ = GetConfigForWindow(gfx::GetXDisplay(), window_);
   return config_;
 }
 
@@ -723,7 +723,8 @@ gfx::SwapResult NativeViewGLSurfaceGLX::PostSubBuffer(
 
   GLSurfacePresentationHelper::ScopedSwapBuffers scoped_swap_buffers(
       presentation_helper_.get(), callback);
-  glXCopySubBufferMESA(g_display, GetDrawableHandle(), x, y, width, height);
+  glXCopySubBufferMESA(gfx::GetXDisplay(), GetDrawableHandle(), x, y, width,
+                       height);
   return scoped_swap_buffers.result();
 }
 
@@ -743,9 +744,9 @@ NativeViewGLSurfaceGLX::~NativeViewGLSurfaceGLX() {
 void NativeViewGLSurfaceGLX::ForwardExposeEvent(XEvent* event) {
   XEvent forwarded_event = *event;
   forwarded_event.xexpose.window = parent_window_;
-  XSendEvent(g_display, parent_window_, x11::False, ExposureMask,
+  XSendEvent(gfx::GetXDisplay(), parent_window_, x11::False, ExposureMask,
              &forwarded_event);
-  XFlush(g_display);
+  XFlush(gfx::GetXDisplay());
 }
 
 bool NativeViewGLSurfaceGLX::CanHandleEvent(XEvent* event) {
@@ -768,14 +769,14 @@ UnmappedNativeViewGLSurfaceGLX::UnmappedNativeViewGLSurfaceGLX(
 bool UnmappedNativeViewGLSurfaceGLX::Initialize(GLSurfaceFormat format) {
   DCHECK(!window_);
 
-  gfx::AcceleratedWidget parent_window = DefaultRootWindow(g_display);
+  gfx::AcceleratedWidget parent_window = DefaultRootWindow(gfx::GetXDisplay());
 
   XSetWindowAttributes attrs;
   attrs.border_pixel = 0;
   attrs.colormap = g_colormap;
-  window_ = XCreateWindow(g_display, parent_window, 0, 0, size_.width(),
-                          size_.height(), 0, g_depth, InputOutput, g_visual,
-                          CWBorderPixel | CWColormap, &attrs);
+  window_ = XCreateWindow(
+      gfx::GetXDisplay(), parent_window, 0, 0, size_.width(), size_.height(), 0,
+      g_depth, InputOutput, g_visual, CWBorderPixel | CWColormap, &attrs);
   if (!window_) {
     LOG(ERROR) << "XCreateWindow failed";
     return false;
@@ -785,7 +786,7 @@ bool UnmappedNativeViewGLSurfaceGLX::Initialize(GLSurfaceFormat format) {
     LOG(ERROR) << "Failed to get GLXConfig";
     return false;
   }
-  glx_window_ = glXCreateWindow(g_display, config_, window_, NULL);
+  glx_window_ = glXCreateWindow(gfx::GetXDisplay(), config_, window_, NULL);
   if (!glx_window_) {
     LOG(ERROR) << "glXCreateWindow failed";
     return false;
@@ -796,11 +797,11 @@ bool UnmappedNativeViewGLSurfaceGLX::Initialize(GLSurfaceFormat format) {
 void UnmappedNativeViewGLSurfaceGLX::Destroy() {
   config_ = nullptr;
   if (glx_window_) {
-    glXDestroyWindow(g_display, glx_window_);
+    glXDestroyWindow(gfx::GetXDisplay(), glx_window_);
     glx_window_ = 0;
   }
   if (window_) {
-    XDestroyWindow(g_display, window_);
+    XDestroyWindow(gfx::GetXDisplay(), window_);
     window_ = 0;
   }
 }
@@ -825,7 +826,7 @@ void* UnmappedNativeViewGLSurfaceGLX::GetHandle() {
 
 void* UnmappedNativeViewGLSurfaceGLX::GetConfig() {
   if (!config_)
-    config_ = GetConfigForWindow(g_display, window_);
+    config_ = GetConfigForWindow(gfx::GetXDisplay(), window_);
   return config_;
 }
 
