@@ -57,6 +57,7 @@ NGPhysicalContainerFragment::NGPhysicalContainerFragment(
     const ComputedStyle& style,
     NGPhysicalSize size,
     NGFragmentType type,
+    unsigned sub_type,
     Vector<scoped_refptr<NGPhysicalFragment>>& children,
     const NGPhysicalOffsetRect& contents_visual_rect,
     scoped_refptr<NGBreakToken> break_token)
@@ -64,6 +65,7 @@ NGPhysicalContainerFragment::NGPhysicalContainerFragment(
                          style,
                          size,
                          type,
+                         sub_type,
                          std::move(break_token)),
       children_(std::move(children)),
       contents_visual_rect_(contents_visual_rect) {

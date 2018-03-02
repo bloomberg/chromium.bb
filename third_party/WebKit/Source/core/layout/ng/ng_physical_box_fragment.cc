@@ -27,13 +27,13 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
                                   style,
                                   size,
                                   kFragmentBox,
+                                  box_type,
                                   children,
                                   contents_visual_rect,
                                   std::move(break_token)),
       baselines_(std::move(baselines)),
       padding_(padding) {
   DCHECK(baselines.IsEmpty());  // Ensure move semantics is used.
-  box_type_ = box_type;
   is_old_layout_root_ = is_old_layout_root;
   border_edge_ = border_edges;
 }

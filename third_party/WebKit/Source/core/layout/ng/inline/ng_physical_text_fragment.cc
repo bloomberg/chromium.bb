@@ -73,12 +73,6 @@ NGPhysicalOffsetRect NGPhysicalTextFragment::SelfVisualRect() const {
   return {};
 }
 
-bool NGPhysicalTextFragment::IsLineBreak() const {
-  // TODO(xiaochengh): Introduce and set a text fragment type flag in fragment
-  // builder, instead of check text content string.
-  return Text() == "\n";
-}
-
 bool NGPhysicalTextFragment::IsAnonymousText() const {
   // TODO(xiaochengh): Introduce and set a flag for anonymous text.
   const LayoutObject* layout_object = GetLayoutObject();

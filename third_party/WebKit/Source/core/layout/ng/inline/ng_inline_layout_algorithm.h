@@ -53,6 +53,9 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
 
   void BidiReorder();
 
+  void PlaceControlItem(const NGInlineItem&,
+                        NGInlineItemResult*,
+                        NGInlineBoxState*);
   void PlaceGeneratedContent(scoped_refptr<NGPhysicalFragment>,
                              UBiDiLevel,
                              NGInlineBoxState*);

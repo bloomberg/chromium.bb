@@ -40,8 +40,19 @@ enum class NGLineOrientation {
 
 class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
  public:
+  enum NGTextType {
+    kNormalText,
+    kForcedLineBreak,
+    // Flow controls are not to be painted. In particular, a tabulation
+    // character and a soft-wrap opportunity.
+    kFlowControl,
+    // When adding new values, make sure the bit size of |sub_type_| is large
+    // enough to store.
+  };
+
   NGPhysicalTextFragment(LayoutObject* layout_object,
                          const ComputedStyle& style,
+                         NGTextType text_type,
                          const String& text,
                          unsigned start_offset,
                          unsigned end_offset,
@@ -49,17 +60,33 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
                          NGLineOrientation line_orientation,
                          NGTextEndEffect end_effect,
                          scoped_refptr<const ShapeResult> shape_result)
-      : NGPhysicalFragment(layout_object, style, size, kFragmentText),
+      : NGPhysicalFragment(layout_object,
+                           style,
+                           size,
+                           kFragmentText,
+                           text_type),
         text_(text),
         start_offset_(start_offset),
         end_offset_(end_offset),
         shape_result_(shape_result),
         line_orientation_(static_cast<unsigned>(line_orientation)),
-        end_effect_(static_cast<unsigned>(end_effect)) {}
+        end_effect_(static_cast<unsigned>(end_effect)) {
+    DCHECK(shape_result_ || IsFlowControl()) << ToString();
+  }
+
+  NGTextType TextType() const { return static_cast<NGTextType>(sub_type_); }
+  // True if this is a forced line break.
+  bool IsLineBreak() const { return TextType() == kForcedLineBreak; }
+  // True if this is not for painting; i.e., a forced line break, a tabulation,
+  // or a soft-wrap opportunity.
+  bool IsFlowControl() const {
+    return IsLineBreak() || TextType() == kFlowControl;
+  }
 
   unsigned Length() const { return end_offset_ - start_offset_; }
   StringView Text() const { return StringView(text_, start_offset_, Length()); }
 
+  // ShapeResult may be nullptr if |IsFlowControl()|.
   const ShapeResult* TextShapeResult() const { return shape_result_.get(); }
 
   // Start/end offset to the text of the block container.
@@ -86,16 +113,14 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
 
   scoped_refptr<NGPhysicalFragment> CloneWithoutOffset() const {
     return base::AdoptRef(new NGPhysicalTextFragment(
-        layout_object_, Style(), text_, start_offset_, end_offset_, size_,
-        LineOrientation(), EndEffect(), shape_result_));
+        layout_object_, Style(), TextType(), text_, start_offset_, end_offset_,
+        size_, LineOrientation(), EndEffect(), shape_result_));
   }
 
   NGTextFragmentPaintInfo PaintInfo() const {
     return NGTextFragmentPaintInfo{text_, StartOffset(), EndOffset(),
                                    TextShapeResult()};
   }
-
-  bool IsLineBreak() const;
 
   // Returns true if the text is generated (from, e.g., list marker,
   // pseudo-element, ...) instead of from a DOM text node.
