@@ -43,4 +43,8 @@ void UnifiedSystemTrayController::HandlePowerAction() {
       ShutdownReason::TRAY_SHUT_DOWN_BUTTON);
 }
 
+void UnifiedSystemTrayController::ToggleExpanded() {
+  // TODO(tetsui): Implement.
+}
+
 }  // namespace ash

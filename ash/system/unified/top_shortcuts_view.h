@@ -10,6 +10,7 @@
 
 namespace ash {
 
+class CollapseButton;
 class UnifiedSystemTrayController;
 class TopShortcutButton;
 
@@ -29,6 +30,7 @@ class TopShortcutsView : public views::View, public views::ButtonListener {
   TopShortcutButton* lock_button_ = nullptr;
   TopShortcutButton* settings_button_ = nullptr;
   TopShortcutButton* power_button_ = nullptr;
+  CollapseButton* collapse_button_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(TopShortcutsView);
 };

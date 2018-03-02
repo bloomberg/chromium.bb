@@ -26,6 +26,8 @@ class UnifiedSystemTrayController {
   void HandleSettingsAction();
   // Shutdown the computer. Called from the view.
   void HandlePowerAction();
+  // Toggle expanded state of UnifiedSystemTrayView. Called from the view.
+  void ToggleExpanded();
 
  private:
   // Unowned. Owned by Views hierarchy.

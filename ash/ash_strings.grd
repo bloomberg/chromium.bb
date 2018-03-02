@@ -422,6 +422,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_SHUTDOWN" desc="The accessible text for the shutdown button.">
         Shut down
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_COLLAPSE" desc="The accessible text for the collapse button of system menu.">
+        Collapse
+      </message>
 
       <!-- Status tray enterprise management. -->
       <message name="IDS_ASH_ENTERPRISE_DEVICE_MANAGED_BY" desc="Text for notifications showing that this device is enterpise managed. Used when the organization's domain name is available.">
