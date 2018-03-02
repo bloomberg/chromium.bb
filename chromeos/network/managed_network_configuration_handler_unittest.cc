@@ -431,6 +431,25 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyUpdateManagedVPN) {
   EXPECT_EQ(*expected_shill_properties, *properties);
 }
 
+TEST_F(ManagedNetworkConfigurationHandlerTest,
+       SetPolicyUpdateManagedVPNNoUserAuthType) {
+  InitializeStandardProfiles();
+  SetUpEntry("policy/shill_managed_vpn.json", kUser1ProfilePath, "entry_path");
+
+  std::unique_ptr<base::DictionaryValue> expected_shill_properties =
+      test_utils::ReadTestDictionary("policy/shill_policy_on_managed_vpn.json");
+
+  SetPolicy(::onc::ONC_SOURCE_USER_POLICY, kUser1,
+            "policy/policy_vpn_no_user_auth_type.onc");
+  base::RunLoop().RunUntilIdle();
+
+  const base::DictionaryValue* properties =
+      GetShillServiceClient()->GetServiceProperties(
+          "{a3860e83-f03d-4cb1-bafa-b22c9e746950}");
+  ASSERT_TRUE(properties);
+  EXPECT_EQ(*expected_shill_properties, *properties);
+}
+
 TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyReapplyToManaged) {
   InitializeStandardProfiles();
   SetUpEntry("policy/shill_policy_on_unmanaged_wifi1.json",
