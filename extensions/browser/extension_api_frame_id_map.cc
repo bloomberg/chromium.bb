@@ -351,8 +351,9 @@ void ExtensionApiFrameIdMap::UpdateTabAndWindowId(
     iter->second.tab_id = tab_id;
     iter->second.window_id = window_id;
   } else {
-    // TODO(crbug.com/817075): Remove this branch, after ensuring
-    // OnRenderFrameCreated is called for each frame.
+    // TODO(crbug.com/817205): Remove this branch. We should only maintain frame
+    // data for tracked live render frames. Most probably this is causing a
+    // memory leak.
     frame_data_map_[key] =
         FrameData(GetFrameId(rfh), GetParentFrameId(rfh), tab_id, window_id);
   }
