@@ -323,7 +323,7 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
   // |startup_info| because |UpdateProcThreadAttribute| requires that
   // its |lpValue| parameter persist until |DeleteProcThreadAttributeList| is
   // called; StartupInformation's destructor makes such a call.
-  DWORD64 mitigations;
+  DWORD64 mitigations[2];
   std::vector<HANDLE> inherited_handle_list;
   DWORD child_process_creation = PROCESS_CREATION_CHILD_PROCESS_RESTRICTED;
 
@@ -339,8 +339,8 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
 
   size_t mitigations_size;
   ConvertProcessMitigationsToPolicy(policy_base->GetProcessMitigations(),
-                                    &mitigations, &mitigations_size);
-  if (mitigations)
+                                    &mitigations[0], &mitigations_size);
+  if (mitigations[0] || mitigations[1])
     ++attribute_count;
 
   bool restrict_child_process_creation = false;
@@ -385,9 +385,9 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
   if (!startup_info.InitializeProcThreadAttributeList(attribute_count))
     return SBOX_ERROR_PROC_THREAD_ATTRIBUTES;
 
-  if (mitigations) {
+  if (mitigations[0] || mitigations[1]) {
     if (!startup_info.UpdateProcThreadAttribute(
-            PROC_THREAD_ATTRIBUTE_MITIGATION_POLICY, &mitigations,
+            PROC_THREAD_ATTRIBUTE_MITIGATION_POLICY, &mitigations[0],
             mitigations_size)) {
       return SBOX_ERROR_PROC_THREAD_ATTRIBUTES;
     }
