@@ -9,7 +9,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_item_controller.h"
-#include "components/exo/shell_surface.h"
+#include "components/exo/shell_surface_base.h"
 #include "extensions/common/constants.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -157,14 +157,14 @@ void ArcAppWindow::SetAlwaysOnTop(bool always_on_top) {
 }
 
 void ArcAppWindow::SetIcon(const gfx::ImageSkia& icon) {
-  if (!exo::ShellSurface::GetMainSurface(GetNativeWindow())) {
+  if (!exo::ShellSurfaceBase::GetMainSurface(GetNativeWindow())) {
     // Support unit tests where we don't have exo system initialized.
     views::NativeWidgetAura::AssignIconToAuraWindow(
         GetNativeWindow(), gfx::ImageSkia() /* window_icon */,
         icon /* app_icon */);
     return;
   }
-  exo::ShellSurface* shell_surface = static_cast<exo::ShellSurface*>(
+  exo::ShellSurfaceBase* shell_surface = static_cast<exo::ShellSurfaceBase*>(
       widget_->widget_delegate()->GetContentsView());
   if (!shell_surface)
     return;
