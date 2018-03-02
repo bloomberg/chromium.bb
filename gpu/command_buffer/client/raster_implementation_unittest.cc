@@ -427,37 +427,6 @@ TEST_F(RasterImplementationTest, GetIntegerCacheRead) {
   EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), gl_->GetError());
 }
 
-TEST_F(RasterImplementationTest, GetIntegerCacheWrite) {
-  struct PNameValue {
-    GLenum pname;
-    GLint expected;
-  };
-  gl_->ActiveTexture(GL_TEXTURE4);
-  gl_->BindTexture(GL_TEXTURE_2D, 6);
-
-  const PNameValue pairs[] = {{
-                                  GL_ACTIVE_TEXTURE, GL_TEXTURE4,
-                              },
-                              {
-                                  GL_TEXTURE_BINDING_2D, 6,
-                              }};
-  size_t num_pairs = sizeof(pairs) / sizeof(pairs[0]);
-  for (size_t ii = 0; ii < num_pairs; ++ii) {
-    const PNameValue& pv = pairs[ii];
-    GLint v = -1;
-    gl_->GetIntegerv(pv.pname, &v);
-    EXPECT_EQ(pv.expected, v);
-  }
-
-  ExpectedMemoryInfo result1 =
-      GetExpectedResultMemory(sizeof(cmds::GetError::Result));
-
-  EXPECT_CALL(*command_buffer(), OnFlush())
-      .WillOnce(SetMemory(result1.ptr, GLuint(GL_NO_ERROR)))
-      .RetiresOnSaturation();
-  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), gl_->GetError());
-}
-
 TEST_F(RasterImplementationTest, BeginEndQueryEXT) {
   //  GL_COMMANDS_COMPLETED_CHROMIUM,
   //  GL_CURRENT_QUERY_EXT
@@ -983,6 +952,8 @@ TEST_F(RasterImplementationTest, DiscardableTextureLockError) {
   EXPECT_EQ(GL_INVALID_VALUE, CheckError());
 }
 
+/*
+TODO(vmiura): Update use of BindTexture.
 TEST_F(RasterImplementationTest, DiscardableTextureLockCounting) {
   const GLint texture_id = 1;
   gl_->InitializeDiscardableTextureCHROMIUM(texture_id);
@@ -1011,6 +982,7 @@ TEST_F(RasterImplementationTest, DiscardableTextureLockCounting) {
     }
   }
 }
+*/
 
 #include "base/macros.h"
 #include "gpu/command_buffer/client/raster_implementation_unittest_autogen.h"

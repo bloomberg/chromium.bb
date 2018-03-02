@@ -905,78 +905,21 @@ void RasterImplementation::UnmapRasterCHROMIUM(GLsizeiptr written_size) {
 // instead of having to edit some template or the code generator.
 #include "gpu/command_buffer/client/raster_implementation_impl_autogen.h"
 
-void RasterImplementation::GenTextures(GLsizei n, GLuint* textures) {
-  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glGenTextures(" << n << ", "
-                     << static_cast<const void*>(textures) << ")");
-  if (n < 0) {
-    SetGLError(GL_INVALID_VALUE, "glGenTextures", "n < 0");
-    return;
-  }
-  GPU_CLIENT_SINGLE_THREAD_CHECK();
-  for (int ii = 0; ii < n; ++ii) {
-    textures[ii] = texture_id_allocator_.AllocateID();
-  }
-  // TODO(backer): Send some signal to service side.
-  // helper_->GenTexturesImmediate(n, textures);
-  // if (share_group_->bind_generates_resource())
-  //   helper_->CommandBufferHelper::Flush();
-
-  GPU_CLIENT_LOG_CODE_BLOCK({
-    for (GLsizei i = 0; i < n; ++i) {
-      GPU_CLIENT_LOG("  " << i << ": " << textures[i]);
-    }
-  });
-  CheckGLError();
-}
-
-void RasterImplementation::BindTexture(GLenum target, GLuint texture) {
-  GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glBindTexture("
-                     << GLES2Util::GetStringEnum(texture) << ")");
-  DCHECK_EQ(target, static_cast<GLenum>(GL_TEXTURE_2D));
-  if (target != GL_TEXTURE_2D) {
-    return;
-  }
-  TextureUnit& unit = texture_units_[active_texture_unit_];
-  unit.bound_texture_2d = texture;
-  // TODO(backer): Update bound texture on the server side.
-  // helper_->BindTexture(target, texture);
-  texture_id_allocator_.MarkAsUsed(texture);
-}
-
-void RasterImplementation::ActiveTexture(GLenum texture) {
-  GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glActiveTexture("
-                     << GLES2Util::GetStringEnum(texture) << ")");
-  GLuint texture_index = texture - GL_TEXTURE0;
-  if (texture_index >=
-      static_cast<GLuint>(capabilities_.max_combined_texture_image_units)) {
-    SetGLErrorInvalidEnum("glActiveTexture", texture, "texture");
-    return;
-  }
-
-  active_texture_unit_ = texture_index;
-  // TODO(backer): Update active texture on the server side.
-  // helper_->ActiveTexture(texture);
-  CheckGLError();
-}
-
-void RasterImplementation::GenerateMipmap(GLenum target) {
+void RasterImplementation::SetColorSpaceMetadata(GLuint texture_id,
+                                                 GLColorSpace color_space) {
   NOTIMPLEMENTED();
 }
-void RasterImplementation::SetColorSpaceMetadataCHROMIUM(
-    GLuint texture_id,
-    GLColorSpace color_space) {
+void RasterImplementation::GenMailbox(GLbyte* mailbox) {
   NOTIMPLEMENTED();
 }
-void RasterImplementation::GenMailboxCHROMIUM(GLbyte* mailbox) {
+void RasterImplementation::ProduceTextureDirect(GLuint texture,
+                                                const GLbyte* mailbox) {
   NOTIMPLEMENTED();
 }
-void RasterImplementation::ProduceTextureDirectCHROMIUM(GLuint texture,
-                                                        const GLbyte* mailbox) {
-  NOTIMPLEMENTED();
-}
-GLuint RasterImplementation::CreateAndConsumeTextureCHROMIUM(
+GLuint RasterImplementation::CreateAndConsumeTexture(
+    bool use_buffer,
+    gfx::BufferUsage buffer_usage,
+    viz::ResourceFormat format,
     const GLbyte* mailbox) {
   NOTIMPLEMENTED();
   return 0;
@@ -989,60 +932,28 @@ void RasterImplementation::ReleaseTexImage2DCHROMIUM(GLenum target,
                                                      GLint imageId) {
   NOTIMPLEMENTED();
 }
-void RasterImplementation::TexImage2D(GLenum target,
-                                      GLint level,
-                                      GLint internalformat,
-                                      GLsizei width,
-                                      GLsizei height,
-                                      GLint border,
-                                      GLenum format,
-                                      GLenum type,
-                                      const void* pixels) {
+
+GLuint RasterImplementation::CreateTexture(bool use_buffer,
+                                           gfx::BufferUsage buffer_usage,
+                                           viz::ResourceFormat format) {
+  NOTIMPLEMENTED();
+  return 0;
+}
+
+void RasterImplementation::TexStorage2D(GLuint texture_id,
+                                        GLint levels,
+                                        GLsizei width,
+                                        GLsizei height) {
   NOTIMPLEMENTED();
 }
-void RasterImplementation::TexSubImage2D(GLenum target,
-                                         GLint level,
-                                         GLint xoffset,
-                                         GLint yoffset,
-                                         GLsizei width,
-                                         GLsizei height,
-                                         GLenum format,
-                                         GLenum type,
-                                         const void* pixels) {
-  NOTIMPLEMENTED();
-}
-void RasterImplementation::CompressedTexImage2D(GLenum target,
-                                                GLint level,
-                                                GLenum internalformat,
-                                                GLsizei width,
-                                                GLsizei height,
-                                                GLint border,
-                                                GLsizei imageSize,
-                                                const void* data) {
-  NOTIMPLEMENTED();
-}
-void RasterImplementation::TexStorageForRaster(GLenum target,
-                                               viz::ResourceFormat format,
-                                               GLsizei width,
-                                               GLsizei height,
-                                               RasterTexStorageFlags flags) {
-  NOTIMPLEMENTED();
-}
-void RasterImplementation::CopySubTextureCHROMIUM(
-    GLuint source_id,
-    GLint source_level,
-    GLenum dest_target,
-    GLuint dest_id,
-    GLint dest_level,
-    GLint xoffset,
-    GLint yoffset,
-    GLint x,
-    GLint y,
-    GLsizei width,
-    GLsizei height,
-    GLboolean unpack_flip_y,
-    GLboolean unpack_premultiply_alpha,
-    GLboolean unpack_unmultiply_alpha) {
+void RasterImplementation::CopySubTexture(GLuint source_id,
+                                          GLuint dest_id,
+                                          GLint xoffset,
+                                          GLint yoffset,
+                                          GLint x,
+                                          GLint y,
+                                          GLsizei width,
+                                          GLsizei height) {
   NOTIMPLEMENTED();
 }
 void RasterImplementation::BeginRasterCHROMIUM(

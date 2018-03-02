@@ -5,6 +5,9 @@
 #ifndef GPU_COMMAND_BUFFER_CLIENT_RASTER_IMPLEMENTATION_GLES_H_
 #define GPU_COMMAND_BUFFER_CLIENT_RASTER_IMPLEMENTATION_GLES_H_
 
+#include <unordered_map>
+
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/raster_interface.h"
@@ -54,77 +57,45 @@ class RASTER_EXPORT RasterImplementationGLES : public RasterInterface {
   void GetQueryObjectuivEXT(GLuint id, GLenum pname, GLuint* params) override;
 
   // Texture objects.
-  void GenTextures(GLsizei n, GLuint* textures) override;
+  GLuint CreateTexture(bool use_buffer,
+                       gfx::BufferUsage buffer_usage,
+                       viz::ResourceFormat format) override;
   void DeleteTextures(GLsizei n, const GLuint* textures) override;
-  void BindTexture(GLenum target, GLuint texture) override;
-  void ActiveTexture(GLenum texture) override;
-  void GenerateMipmap(GLenum target) override;
-  void SetColorSpaceMetadataCHROMIUM(GLuint texture_id,
-                                     GLColorSpace color_space) override;
-  void TexParameteri(GLenum target, GLenum pname, GLint param) override;
+  void SetColorSpaceMetadata(GLuint texture_id,
+                             GLColorSpace color_space) override;
+  void TexParameteri(GLuint texture_id, GLenum pname, GLint param) override;
 
   // Mailboxes.
-  void GenMailboxCHROMIUM(GLbyte* mailbox) override;
-  void ProduceTextureDirectCHROMIUM(GLuint texture,
-                                    const GLbyte* mailbox) override;
-  GLuint CreateAndConsumeTextureCHROMIUM(const GLbyte* mailbox) override;
+  void GenMailbox(GLbyte* mailbox) override;
+  void ProduceTextureDirect(GLuint texture, const GLbyte* mailbox) override;
+  GLuint CreateAndConsumeTexture(bool use_buffer,
+                                 gfx::BufferUsage buffer_usage,
+                                 viz::ResourceFormat format,
+                                 const GLbyte* mailbox) override;
 
   // Image objects.
   GLuint CreateImageCHROMIUM(ClientBuffer buffer,
                              GLsizei width,
                              GLsizei height,
                              GLenum internalformat) override;
-  void BindTexImage2DCHROMIUM(GLenum target, GLint imageId) override;
-  void ReleaseTexImage2DCHROMIUM(GLenum target, GLint imageId) override;
+  void BindTexImage2DCHROMIUM(GLuint texture_id, GLint image_id) override;
+  void ReleaseTexImage2DCHROMIUM(GLuint texture_id, GLint image_id) override;
   void DestroyImageCHROMIUM(GLuint image_id) override;
 
   // Texture allocation and copying.
-  void TexImage2D(GLenum target,
-                  GLint level,
-                  GLint internalformat,
-                  GLsizei width,
-                  GLsizei height,
-                  GLint border,
-                  GLenum format,
-                  GLenum type,
-                  const void* pixels) override;
-  void TexSubImage2D(GLenum target,
-                     GLint level,
-                     GLint xoffset,
-                     GLint yoffset,
-                     GLsizei width,
-                     GLsizei height,
-                     GLenum format,
-                     GLenum type,
-                     const void* pixels) override;
-  void CompressedTexImage2D(GLenum target,
-                            GLint level,
-                            GLenum internalformat,
-                            GLsizei width,
-                            GLsizei height,
-                            GLint border,
-                            GLsizei imageSize,
-                            const void* data) override;
-  void TexStorageForRaster(GLenum target,
-                           viz::ResourceFormat format,
-                           GLsizei width,
-                           GLsizei height,
-                           RasterTexStorageFlags flags) override;
+  void TexStorage2D(GLuint texture_id,
+                    GLint levels,
+                    GLsizei width,
+                    GLsizei height) override;
 
-  void CopySubTextureCHROMIUM(GLuint source_id,
-                              GLint source_level,
-                              GLenum dest_target,
-                              GLuint dest_id,
-                              GLint dest_level,
-                              GLint xoffset,
-                              GLint yoffset,
-                              GLint x,
-                              GLint y,
-                              GLsizei width,
-                              GLsizei height,
-                              GLboolean unpack_flip_y,
-                              GLboolean unpack_premultiply_alpha,
-                              GLboolean unpack_unmultiply_alpha) override;
+  void CopySubTexture(GLuint source_id,
+                      GLuint dest_id,
+                      GLint xoffset,
+                      GLint yoffset,
+                      GLint x,
+                      GLint y,
+                      GLsizei width,
+                      GLsizei height) override;
   void CompressedCopyTextureCHROMIUM(GLuint source_id, GLuint dest_id) override;
   void UnpremultiplyAndDitherCopyCHROMIUM(GLuint source_id,
                                           GLuint dest_id,
@@ -162,11 +133,31 @@ class RASTER_EXPORT RasterImplementationGLES : public RasterInterface {
   void EndGpuRaster() override;
 
  private:
+  struct Texture {
+    Texture(GLuint id,
+            GLenum target,
+            bool use_buffer,
+            gfx::BufferUsage buffer_usage,
+            viz::ResourceFormat format);
+    GLuint id;
+    GLenum target;
+    bool use_buffer;
+    gfx::BufferUsage buffer_usage;
+    viz::ResourceFormat format;
+  };
+
+  Texture* GetTexture(GLuint texture_id);
+  Texture* EnsureTextureBound(Texture* texture);
+
   gles2::GLES2Interface* gl_;
   SkColor background_color_;
   ContextSupport* support_;
+  gpu::Capabilities caps_;
   bool use_texture_storage_;
   bool use_texture_storage_image_;
+
+  std::unordered_map<GLuint, Texture> texture_info_;
+  Texture* bound_texture_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(RasterImplementationGLES);
 };

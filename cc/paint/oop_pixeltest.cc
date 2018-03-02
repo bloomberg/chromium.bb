@@ -151,12 +151,11 @@ class OopPixelTest : public testing::Test {
 
     // Create and allocate a texture on the raster interface.
     GLuint raster_texture_id;
-    raster_implementation_->GenTextures(1, &raster_texture_id);
-    raster_implementation_->BindTexture(GL_TEXTURE_2D, raster_texture_id);
-    raster_implementation_->TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height,
-                                       0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-    raster_implementation_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-                                          GL_LINEAR);
+    raster_texture_id = raster_implementation_->CreateTexture(
+        false, gfx::BufferUsage::GPU_READ, viz::ResourceFormat::RGBA_8888);
+    raster_implementation_->TexStorage2D(raster_texture_id, 1, width, height);
+    raster_implementation_->TexParameteri(raster_texture_id,
+                                          GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
     EXPECT_EQ(raster_implementation_->GetError(),
               static_cast<unsigned>(GL_NO_ERROR));
@@ -186,9 +185,9 @@ class OopPixelTest : public testing::Test {
     // Produce a mailbox and insert an ordering barrier (assumes the raster
     // interface and gl are on the same scheduling group).
     gpu::Mailbox mailbox;
-    raster_implementation_->GenMailboxCHROMIUM(mailbox.name);
-    raster_implementation_->ProduceTextureDirectCHROMIUM(raster_texture_id,
-                                                         mailbox.name);
+    raster_implementation_->GenMailbox(mailbox.name);
+    raster_implementation_->ProduceTextureDirect(raster_texture_id,
+                                                 mailbox.name);
     raster_implementation_->OrderingBarrierCHROMIUM();
 
     EXPECT_EQ(raster_implementation_->GetError(),

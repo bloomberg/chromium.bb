@@ -162,6 +162,7 @@ source_set("raster_interface") {
   deps = [
     "//base",
     "//components/viz/common:resource_format",
+    "//ui/gfx:buffer_types",
   ]
 }
 

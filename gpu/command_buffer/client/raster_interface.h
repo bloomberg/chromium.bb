@@ -8,6 +8,7 @@
 #include <GLES2/gl2.h>
 #include "base/compiler_specific.h"
 #include "components/viz/common/resources/resource_format.h"
+#include "ui/gfx/buffer_types.h"
 
 namespace cc {
 class DisplayItemList;
@@ -35,69 +36,38 @@ class RasterInterface {
   virtual ~RasterInterface() {}
 
   // Texture objects.
-  virtual void GenTextures(GLsizei n, GLuint* textures) = 0;
-  virtual void BindTexture(GLenum target, GLuint texture) = 0;
-  virtual void ActiveTexture(GLenum texture) = 0;
-  virtual void GenerateMipmap(GLenum target) = 0;
-  virtual void SetColorSpaceMetadataCHROMIUM(GLuint texture_id,
-                                             GLColorSpace color_space) = 0;
+  virtual GLuint CreateTexture(bool use_buffer,
+                               gfx::BufferUsage buffer_usage,
+                               viz::ResourceFormat format) = 0;
+  virtual void SetColorSpaceMetadata(GLuint texture_id,
+                                     GLColorSpace color_space) = 0;
 
   // Mailboxes.
-  virtual void GenMailboxCHROMIUM(GLbyte* mailbox) = 0;
-  virtual void ProduceTextureDirectCHROMIUM(GLuint texture,
-                                            const GLbyte* mailbox) = 0;
-  virtual GLuint CreateAndConsumeTextureCHROMIUM(const GLbyte* mailbox) = 0;
+  virtual void GenMailbox(GLbyte* mailbox) = 0;
+  virtual void ProduceTextureDirect(GLuint texture, const GLbyte* mailbox) = 0;
+  virtual GLuint CreateAndConsumeTexture(bool use_buffer,
+                                         gfx::BufferUsage buffer_usage,
+                                         viz::ResourceFormat format,
+                                         const GLbyte* mailbox) = 0;
 
   // Image objects.
-  virtual void BindTexImage2DCHROMIUM(GLenum target, GLint imageId) = 0;
-  virtual void ReleaseTexImage2DCHROMIUM(GLenum target, GLint imageId) = 0;
+  virtual void BindTexImage2DCHROMIUM(GLuint texture_id, GLint image_id) = 0;
+  virtual void ReleaseTexImage2DCHROMIUM(GLuint texture_id, GLint image_id) = 0;
 
   // Texture allocation and copying.
-  virtual void TexImage2D(GLenum target,
-                          GLint level,
-                          GLint internalformat,
-                          GLsizei width,
-                          GLsizei height,
-                          GLint border,
-                          GLenum format,
-                          GLenum type,
-                          const void* pixels) = 0;
-  virtual void TexSubImage2D(GLenum target,
-                             GLint level,
-                             GLint xoffset,
-                             GLint yoffset,
-                             GLsizei width,
-                             GLsizei height,
-                             GLenum format,
-                             GLenum type,
-                             const void* pixels) = 0;
-  virtual void CompressedTexImage2D(GLenum target,
-                                    GLint level,
-                                    GLenum internalformat,
-                                    GLsizei width,
-                                    GLsizei height,
-                                    GLint border,
-                                    GLsizei imageSize,
-                                    const void* data) = 0;
-  virtual void TexStorageForRaster(GLenum target,
-                                   viz::ResourceFormat format,
-                                   GLsizei width,
-                                   GLsizei height,
-                                   RasterTexStorageFlags flags) = 0;
-  virtual void CopySubTextureCHROMIUM(GLuint source_id,
-                                      GLint source_level,
-                                      GLenum dest_target,
-                                      GLuint dest_id,
-                                      GLint dest_level,
-                                      GLint xoffset,
-                                      GLint yoffset,
-                                      GLint x,
-                                      GLint y,
-                                      GLsizei width,
-                                      GLsizei height,
-                                      GLboolean unpack_flip_y,
-                                      GLboolean unpack_premultiply_alpha,
-                                      GLboolean unpack_unmultiply_alpha) = 0;
+  virtual void TexStorage2D(GLuint texture_id,
+                            GLint levels,
+                            GLsizei width,
+                            GLsizei height) = 0;
+  virtual void CopySubTexture(GLuint source_id,
+                              GLuint dest_id,
+                              GLint xoffset,
+                              GLint yoffset,
+                              GLint x,
+                              GLint y,
+                              GLsizei width,
+                              GLsizei height) = 0;
+
   // OOP-Raster
   virtual void BeginRasterCHROMIUM(
       GLuint texture_id,

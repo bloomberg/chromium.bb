@@ -790,6 +790,7 @@ LayerTreeResourceProvider::ScopedWriteLockGpu::ScopedWriteLockGpu(
   DCHECK_EQ(resource->type, viz::ResourceType::kTexture);
   resource_provider->CreateTexture(resource);
   size_ = resource->size;
+  usage_ = resource->usage;
   format_ = resource->format;
   color_space_ = resource_provider_->GetResourceColorSpaceForRaster(resource);
   texture_id_ = resource->gl_id;
@@ -892,7 +893,8 @@ GLuint LayerTreeResourceProvider::ScopedWriteLockRaster::ConsumeTexture(
   DCHECK(ri);
   DCHECK(!mailbox_.IsZero());
 
-  GLuint texture_id = ri->CreateAndConsumeTextureCHROMIUM(mailbox_.name);
+  GLuint texture_id =
+      ri->CreateAndConsumeTexture(is_overlay_, usage_, format_, mailbox_.name);
   DCHECK(texture_id);
 
   LazyAllocate(ri, texture_id);
@@ -911,13 +913,10 @@ void LayerTreeResourceProvider::ScopedWriteLockRaster::LazyAllocate(
     return;
   allocated_ = true;
 
-  ri->BindTexture(target_, texture_id);
-  ri->TexStorageForRaster(
-      target_, format_, size_.width(), size_.height(),
-      is_overlay_ ? gpu::raster::kOverlay : gpu::raster::kNone);
+  ri->TexStorage2D(texture_id, 1, size_.width(), size_.height());
   if (is_overlay_ && color_space_.IsValid()) {
-    ri->SetColorSpaceMetadataCHROMIUM(
-        texture_id, reinterpret_cast<GLColorSpace>(&color_space_));
+    ri->SetColorSpaceMetadata(texture_id,
+                              reinterpret_cast<GLColorSpace>(&color_space_));
   }
 }
 

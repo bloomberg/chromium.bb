@@ -185,6 +185,7 @@ class CC_EXPORT LayerTreeResourceProvider : public ResourceProvider {
 
     // The following are copied from the resource.
     gfx::Size size_;
+    gfx::BufferUsage usage_;
     viz::ResourceFormat format_;
     gfx::ColorSpace color_space_;
     GLuint texture_id_;
