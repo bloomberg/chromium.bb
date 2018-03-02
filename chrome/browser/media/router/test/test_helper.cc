@@ -8,7 +8,6 @@
 #include "base/json/string_escape.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/common/media_router/media_source.h"
-#include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
 
 namespace media_router {
@@ -56,22 +55,6 @@ MockDialMediaSinkService::~MockDialMediaSinkService() = default;
 
 MockCastMediaSinkService::MockCastMediaSinkService() : CastMediaSinkService() {}
 MockCastMediaSinkService::~MockCastMediaSinkService() = default;
-
-TestDialURLFetcher::TestDialURLFetcher(
-    const GURL& url,
-    base::OnceCallback<void(const std::string&)> success_cb,
-    base::OnceCallback<void(int, const std::string&)> error_cb,
-    network::TestURLLoaderFactory* factory)
-    : DialURLFetcher(url, std::move(success_cb), std::move(error_cb)),
-      factory_(factory) {}
-TestDialURLFetcher::~TestDialURLFetcher() = default;
-
-void TestDialURLFetcher::StartDownload() {
-  loader_->DownloadToString(
-      factory_,
-      base::BindOnce(&DialURLFetcher::ProcessResponse, base::Unretained(this)),
-      256 * 1024);
-}
 #endif  // !defined(OS_ANDROID)
 
 net::IPEndPoint CreateIPEndPoint(int num) {
