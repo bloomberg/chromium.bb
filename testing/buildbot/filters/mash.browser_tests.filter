@@ -274,3 +274,6 @@
 # https://crbug.com/815379
 -WindowOpenApiTest.RemoveLockedFullscreenFromWindow
 -WindowOpenApiTest.RemoveLockedFullscreenFromWindowWithoutPermission
+
+# Flaky segfaults: https://crbug.com/818147
+-ExtensionApiTest.BookmarkManager
