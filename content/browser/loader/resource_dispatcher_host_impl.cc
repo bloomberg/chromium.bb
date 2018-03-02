@@ -569,6 +569,7 @@ ResourceDispatcherHostImpl::CreateLoginDelegate(
       ResourceRequestInfoImpl::ForRequest(request);
   DCHECK(resource_request_info);
   bool is_main_frame = resource_request_info->IsMainFrame();
+  GlobalRequestID request_id = resource_request_info->GetGlobalRequestID();
 
   GURL url = request->url();
 
@@ -577,7 +578,7 @@ ResourceDispatcherHostImpl::CreateLoginDelegate(
           auth_info, resource_request_info->GetWebContentsGetterForRequest(),
           is_main_frame, url, resource_request_info->first_auth_attempt(),
           base::Bind(&ResourceDispatcherHostImpl::RunAuthRequiredCallback,
-                     base::Unretained(this), request));
+                     base::Unretained(this), request_id));
 
   resource_request_info->set_first_auth_attempt(false);
 
@@ -2609,9 +2610,17 @@ bool ResourceDispatcherHostImpl::HasRequestsFromMultipleActiveTabs() {
 }
 
 void ResourceDispatcherHostImpl::RunAuthRequiredCallback(
-    net::URLRequest* url_request,
+    GlobalRequestID request_id,
     const base::Optional<net::AuthCredentials>& credentials) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  ResourceLoader* loader = GetLoader(request_id);
+  if (!loader)
+    return;
+
+  net::URLRequest* url_request = loader->request();
+  if (!url_request)
+    return;
 
   if (!credentials.has_value()) {
     url_request->CancelAuth();
@@ -2620,13 +2629,7 @@ void ResourceDispatcherHostImpl::RunAuthRequiredCallback(
   }
 
   // Clears the ResourceDispatcherHostLoginDelegate associated with the request.
-  ResourceRequestInfoImpl* info =
-      ResourceRequestInfoImpl::ForRequest(url_request);
-  if (info) {
-    ResourceLoader* loader = GetLoader(info->GetGlobalRequestID());
-    if (loader)
-      loader->ClearLoginDelegate();
-  }
+  loader->ClearLoginDelegate();
 }
 
 // static
