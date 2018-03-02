@@ -8,7 +8,9 @@ import "ui/gfx/geometry/mojo/geometry.mojom";
 
 // See components/viz/service/quads/render_frame_metadata.h
 struct RenderFrameMetadata {
-  gfx.mojom.Vector2dF root_scroll_offset;
+  // Scroll offset of the root layer. This optional parameter is only sent
+  // during tests.
+  gfx.mojom.Vector2dF? root_scroll_offset;
 };
 
 // This interface is provided by the renderer. It can optionally enable

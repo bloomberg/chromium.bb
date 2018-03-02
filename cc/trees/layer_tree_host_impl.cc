@@ -1923,7 +1923,7 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
   if (render_frame_metadata_observer_) {
     RenderFrameMetadata render_frame_metadata = MakeRenderFrameMetadata();
     render_frame_metadata_observer_->OnRenderFrameSubmission(
-        render_frame_metadata);
+        std::move(render_frame_metadata));
   }
 
   metadata.latency_info.emplace_back(ui::SourceEventType::FRAME);

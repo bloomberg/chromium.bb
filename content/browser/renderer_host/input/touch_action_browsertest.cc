@@ -168,9 +168,11 @@ class TouchActionBrowserTest : public ContentBrowserTest {
 
     // Expect that the compositor scrolled at least one pixel while the
     // main thread was in a busy loop.
+    gfx::Vector2dF default_scroll_offset;
     while (wait_until_scrolled &&
            frame_metadata_observer.LastRenderFrameMetadata()
-                   .root_scroll_offset.y() < (distance.y() / 2)) {
+                   .root_scroll_offset.value_or(default_scroll_offset)
+                   .y() < (distance.y() / 2)) {
       frame_metadata_observer.WaitForMetadataChange();
     }
 

@@ -26,7 +26,7 @@ class CC_EXPORT RenderFrameMetadataObserver {
 
   // Notification of the RendarFrameMetadata for the frame being submitted to
   // the display compositor.
-  virtual void OnRenderFrameSubmission(const RenderFrameMetadata& metadata) = 0;
+  virtual void OnRenderFrameSubmission(RenderFrameMetadata metadata) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RenderFrameMetadataObserver);
