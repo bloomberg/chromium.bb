@@ -3172,12 +3172,14 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   cm->all_lossless = all_lossless(cm, xd);
   setup_segmentation_dequant(cm);
   if (cm->all_lossless) {
-    assert(cm->lf.filter_level[0] == 0 && cm->lf.filter_level[1] == 0);
-    assert(cm->cdef_bits == 0 && cm->cdef_strengths[0] == 0 &&
-           cm->cdef_uv_strengths[0] == 0);
-    assert(cm->rst_info[0].frame_restoration_type == RESTORE_NONE &&
-           cm->rst_info[1].frame_restoration_type == RESTORE_NONE &&
-           cm->rst_info[2].frame_restoration_type == RESTORE_NONE);
+    cm->lf.filter_level[0] = 0;
+    cm->lf.filter_level[1] = 0;
+    cm->cdef_bits = 0;
+    cm->cdef_strengths[0] = 0;
+    cm->cdef_uv_strengths[0] = 0;
+    cm->rst_info[0].frame_restoration_type = RESTORE_NONE;
+    cm->rst_info[1].frame_restoration_type = RESTORE_NONE;
+    cm->rst_info[2].frame_restoration_type = RESTORE_NONE;
   } else {
     setup_loopfilter(cm, rb);
     setup_cdef(cm, rb);
