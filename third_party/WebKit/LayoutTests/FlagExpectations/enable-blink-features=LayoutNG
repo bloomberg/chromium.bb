@@ -1026,6 +1026,7 @@ crbug.com/591099 external/wpt/css/css-text/i18n/css3-text-line-break-jazh-142.ht
 crbug.com/591099 external/wpt/css/css-text/i18n/css3-text-line-break-opclns-118.html [ Pass ]
 crbug.com/591099 external/wpt/css/css-text/i18n/css3-text-line-break-opclns-255.html [ Pass ]
 crbug.com/591099 external/wpt/css/css-text/i18n/css3-text-line-break-opclns-259.html [ Pass ]
+crbug.com/817776 external/wpt/css/css-text/line-break/line-break-normal-025.xht [ Pass ]
 crbug.com/591099 external/wpt/css/css-text/line-breaking/line-breaking-009.html [ Pass ]
 crbug.com/591099 external/wpt/css/css-text/line-breaking/line-breaking-011.html [ Pass ]
 crbug.com/591099 external/wpt/css/css-text/line-breaking/line-breaking-ic-002.html [ Pass ]
