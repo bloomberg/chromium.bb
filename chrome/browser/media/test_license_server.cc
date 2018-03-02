@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/process/launch.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/media/test_license_server_config.h"
 
 TestLicenseServer::TestLicenseServer(
@@ -49,7 +50,12 @@ bool TestLicenseServer::Stop() {
   if (!license_server_process_.IsValid())
     return true;
   DVLOG(0) << "Killing license server.";
-  bool kill_succeeded = license_server_process_.Terminate(1, true);
+
+  bool kill_succeeded = false;
+  {
+    base::ScopedAllowBaseSyncPrimitivesForTesting allow_sync_primitives;
+    kill_succeeded = license_server_process_.Terminate(1, true);
+  }
 
   if (kill_succeeded) {
     license_server_process_.Close();
