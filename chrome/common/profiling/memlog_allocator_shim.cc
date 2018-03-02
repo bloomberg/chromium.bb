@@ -355,11 +355,11 @@ void HookFree(const AllocatorDispatch* self, void* address, void* context) {
   if (LIKELY(!reentering))
     g_prevent_reentrancy.Pointer()->Set(true);
 
-  AllocatorShimLogFree(address);
   const AllocatorDispatch* const next = self->next;
   next->free_function(next, address, context);
 
   if (LIKELY(!reentering)) {
+    AllocatorShimLogFree(address);
     g_prevent_reentrancy.Pointer()->Set(false);
   }
 }
@@ -416,9 +416,18 @@ void HookFreeDefiniteSize(const AllocatorDispatch* self,
                           void* ptr,
                           size_t size,
                           void* context) {
-  AllocatorShimLogFree(ptr);
+  // If this is our first time passing through, set the reentrancy bit.
+  bool reentering = g_prevent_reentrancy.Pointer()->Get();
+  if (LIKELY(!reentering))
+    g_prevent_reentrancy.Pointer()->Set(true);
+
   const AllocatorDispatch* const next = self->next;
   next->free_definite_size_function(next, ptr, size, context);
+
+  if (LIKELY(!reentering)) {
+    AllocatorShimLogFree(ptr);
+    g_prevent_reentrancy.Pointer()->Set(false);
+  }
 }
 
 AllocatorDispatch g_memlog_hooks = {
