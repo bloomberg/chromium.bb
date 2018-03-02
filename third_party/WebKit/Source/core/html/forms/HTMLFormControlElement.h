@@ -122,6 +122,8 @@ class CORE_EXPORT HTMLFormControlElement : public LabelableElement,
 
   bool IsAutofocusable() const;
 
+  virtual bool ShouldShowFocusRingOnMouseFocus() const;
+
   bool IsAutofilled() const { return is_autofilled_; }
   void SetAutofilled(bool = true);
 
@@ -156,7 +158,6 @@ class CORE_EXPORT HTMLFormControlElement : public LabelableElement,
 
   bool SupportsFocus() const override;
   bool IsKeyboardFocusable() const override;
-  virtual bool ShouldShowFocusRingOnMouseFocus() const;
   bool ShouldHaveFocusAppearance() const final;
   void DispatchBlurEvent(Element* new_focused_element,
                          WebFocusType,

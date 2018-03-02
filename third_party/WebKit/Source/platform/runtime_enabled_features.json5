@@ -230,6 +230,10 @@
       status: "stable",
     },
     {
+      name: "CSSFocusVisible",
+      status: "experimental",
+    },
+    {
       name: "CSSFontSizeAdjust",
       status: "experimental",
     },

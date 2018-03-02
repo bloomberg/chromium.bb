@@ -53,6 +53,7 @@ DEFINE_GLOBAL(AtomicString, g_active);
 DEFINE_GLOBAL(AtomicString, g_disabled);
 DEFINE_GLOBAL(AtomicString, g_drag);
 DEFINE_GLOBAL(AtomicString, g_focus);
+DEFINE_GLOBAL(AtomicString, g_focus_visible);
 DEFINE_GLOBAL(AtomicString, g_focus_within);
 DEFINE_GLOBAL(AtomicString, g_hover);
 DEFINE_GLOBAL(AtomicString, g_past);
@@ -65,6 +66,7 @@ void Init() {
   new (NotNull, (void*)&g_disabled) AtomicString(":disabled");
   new (NotNull, (void*)&g_drag) AtomicString(":-webkit-drag");
   new (NotNull, (void*)&g_focus) AtomicString(":focus");
+  new (NotNull, (void*)&g_focus_visible) AtomicString(":focus-visible");
   new (NotNull, (void*)&g_focus_within) AtomicString(":focus-within");
   new (NotNull, (void*)&g_hover) AtomicString(":hover");
   new (NotNull, (void*)&g_past) AtomicString(":past");

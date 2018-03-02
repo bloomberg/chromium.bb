@@ -4438,6 +4438,7 @@ bool Document::SetFocusedElement(Element* new_focused_element,
 
   // Remove focus from the existing focus node (if any)
   if (old_focused_element) {
+    old_focused_element->SetWasFocusedByMouse(false);
     old_focused_element->SetFocused(false, params.type);
     old_focused_element->SetHasFocusWithinUpToAncestor(false, ancestor);
 
@@ -4486,6 +4487,7 @@ bool Document::SetFocusedElement(Element* new_focused_element,
     focused_element_ = new_focused_element;
     SetSequentialFocusNavigationStartingPoint(focused_element_.Get());
 
+    focused_element_->SetWasFocusedByMouse(params.type == kWebFocusTypeMouse);
     focused_element_->SetFocused(true, params.type);
     focused_element_->SetHasFocusWithinUpToAncestor(true, ancestor);
 

@@ -444,6 +444,9 @@ class CORE_EXPORT Node : public EventTarget {
   bool HasFocusWithin() const {
     return IsUserActionElement() && IsUserActionElementHasFocusWithin();
   }
+  bool WasFocusedByMouse() const {
+    return IsUserActionElement() && IsUserActionElementWasFocusedByMouse();
+  }
 
   bool NeedsAttach() const {
     return GetStyleChangeType() == kNeedsReattachStyleChange;
@@ -536,6 +539,7 @@ class CORE_EXPORT Node : public EventTarget {
   virtual void SetActive(bool flag = true);
   virtual void SetDragged(bool flag);
   virtual void SetHovered(bool flag = true);
+  void SetWasFocusedByMouse(bool flag);
 
   virtual int tabIndex() const;
 
@@ -986,6 +990,7 @@ class CORE_EXPORT Node : public EventTarget {
   bool IsUserActionElementHovered() const;
   bool IsUserActionElementFocused() const;
   bool IsUserActionElementHasFocusWithin() const;
+  bool IsUserActionElementWasFocusedByMouse() const;
 
   void RecalcDistribution();
 

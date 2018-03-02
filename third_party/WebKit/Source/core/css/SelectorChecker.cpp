@@ -46,6 +46,7 @@
 #include "core/html/HTMLDocument.h"
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/html/HTMLSlotElement.h"
+#include "core/html/forms/HTMLFormControlElement.h"
 #include "core/html/forms/HTMLInputElement.h"
 #include "core/html/forms/HTMLOptionElement.h"
 #include "core/html/forms/HTMLSelectElement.h"
@@ -917,6 +918,12 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
         element.SetChildrenOrSiblingsAffectedByFocus();
       }
       return MatchesFocusPseudoClass(element);
+    case CSSSelector::kPseudoFocusVisible:
+      if (mode_ == kResolvingStyle && !context.in_rightmost_compound) {
+        element_style_->SetUnique();
+        element.SetChildrenOrSiblingsAffectedByFocusVisible();
+      }
+      return MatchesFocusVisiblePseudoClass(element);
     case CSSSelector::kPseudoFocusWithin:
       if (mode_ == kResolvingStyle) {
         if (context.in_rightmost_compound) {
@@ -1348,6 +1355,14 @@ bool SelectorChecker::MatchesFocusPseudoClass(const Element& element) {
   if (force_pseudo_state)
     return true;
   return element.IsFocused() && IsFrameFocused(element);
+}
+
+bool SelectorChecker::MatchesFocusVisiblePseudoClass(const Element& element) {
+  bool always_show_focus_ring =
+      IsHTMLFormControlElement(element) &&
+      ToHTMLFormControlElement(element).ShouldShowFocusRingOnMouseFocus();
+  return MatchesFocusPseudoClass(element) &&
+         (!element.WasFocusedByMouse() || always_show_focus_ring);
 }
 
 }  // namespace blink

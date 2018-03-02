@@ -97,6 +97,7 @@ bool SupportsInvalidation(CSSSelector::PseudoType type) {
     case CSSSelector::kPseudoHover:
     case CSSSelector::kPseudoDrag:
     case CSSSelector::kPseudoFocus:
+    case CSSSelector::kPseudoFocusVisible:
     case CSSSelector::kPseudoFocusWithin:
     case CSSSelector::kPseudoActive:
     case CSSSelector::kPseudoChecked:
@@ -445,6 +446,7 @@ InvalidationSet* RuleFeatureSet::InvalidationSetForSimpleSelector(
       case CSSSelector::kPseudoHover:
       case CSSSelector::kPseudoDrag:
       case CSSSelector::kPseudoFocus:
+      case CSSSelector::kPseudoFocusVisible:
       case CSSSelector::kPseudoFocusWithin:
       case CSSSelector::kPseudoActive:
       case CSSSelector::kPseudoChecked:

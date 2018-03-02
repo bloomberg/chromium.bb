@@ -57,6 +57,7 @@
 #include "platform/bindings/RuntimeCallStats.h"
 #include "platform/bindings/ScriptForbiddenScope.h"
 #include "platform/bindings/V8PerIsolateData.h"
+#include "platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -1005,7 +1006,25 @@ void ContainerNode::FocusStateChanged() {
     ToElement(this)->PseudoStateChanged(CSSSelector::kPseudoFocus);
 
   GetLayoutObject()->InvalidateIfControlStateChanged(kFocusControlState);
+  FocusVisibleStateChanged();
   FocusWithinStateChanged();
+}
+
+void ContainerNode::FocusVisibleStateChanged() {
+  if (!RuntimeEnabledFeatures::CSSFocusVisibleEnabled())
+    return;
+  StyleChangeType change_type =
+      GetComputedStyle()->HasPseudoStyle(kPseudoIdFirstLetter)
+          ? kSubtreeStyleChange
+          : kLocalStyleChange;
+  SetNeedsStyleRecalc(change_type,
+                      StyleChangeReasonForTracing::CreateWithExtraData(
+                          StyleChangeReason::kPseudoClass,
+                          StyleChangeExtraData::g_focus_visible));
+
+  if (IsElementNode() &&
+      ToElement(this)->ChildrenOrSiblingsAffectedByFocusVisible())
+    ToElement(this)->PseudoStateChanged(CSSSelector::kPseudoFocusVisible);
 }
 
 void ContainerNode::FocusWithinStateChanged() {
@@ -1061,6 +1080,18 @@ void ContainerNode::SetFocused(bool received, WebFocusType focus_type) {
         kLocalStyleChange,
         StyleChangeReasonForTracing::CreateWithExtraData(
             StyleChangeReason::kPseudoClass, StyleChangeExtraData::g_focus));
+
+  if (RuntimeEnabledFeatures::CSSFocusVisibleEnabled()) {
+    if (IsElementNode() &&
+        ToElement(this)->ChildrenOrSiblingsAffectedByFocusVisible()) {
+      ToElement(this)->PseudoStateChanged(CSSSelector::kPseudoFocusVisible);
+    } else {
+      SetNeedsStyleRecalc(kLocalStyleChange,
+                          StyleChangeReasonForTracing::CreateWithExtraData(
+                              StyleChangeReason::kPseudoClass,
+                              StyleChangeExtraData::g_focus_visible));
+    }
+  }
 
   if (IsElementNode() &&
       ToElement(this)->ChildrenOrSiblingsAffectedByFocusWithin()) {
