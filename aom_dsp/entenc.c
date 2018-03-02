@@ -15,8 +15,16 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 #include "aom_dsp/entenc.h"
 #include "aom_dsp/prob.h"
+
+#if OD_MEASURE_EC_OVERHEAD
+#if !defined(M_LOG2E)
+#define M_LOG2E (1.4426950408889634073599246810019)
+#endif
+#define OD_LOG2(x) (M_LOG2E * log(x))
+#endif  // OD_MEASURE_EC_OVERHEAD
 
 /*A range encoder.
   See entdec.c and the references for implementation details \cite{Mar79,MNW98}.

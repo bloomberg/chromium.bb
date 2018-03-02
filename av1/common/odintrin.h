@@ -14,10 +14,6 @@
 #ifndef AV1_COMMON_ODINTRIN_H_
 #define AV1_COMMON_ODINTRIN_H_
 
-#if defined(_MSC_VER)
-# define _USE_MATH_DEFINES
-#endif
-#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -29,26 +25,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-# if !defined(M_PI)
-#  define M_PI      (3.1415926535897932384626433832795)
-# endif
-
-# if !defined(M_SQRT2)
-#  define M_SQRT2 (1.41421356237309504880168872420970)
-# endif
-
-# if !defined(M_SQRT1_2)
-#  define M_SQRT1_2 (0.70710678118654752440084436210485)
-# endif
-
-# if !defined(M_LOG2E)
-#  define M_LOG2E (1.4426950408889634073599246810019)
-# endif
-
-# if !defined(M_LN2)
-#  define M_LN2 (0.69314718055994530941723212145818)
-# endif
 
 typedef int od_coeff;
 
@@ -73,9 +49,6 @@ extern uint32_t OD_DIVU_SMALL_CONSTS[OD_DIVU_DMAX][2];
 #define OD_CLZ0 (1)
 #define OD_CLZ(x) (-get_msb(x))
 #define OD_ILOG_NZ(x) (OD_CLZ0 - OD_CLZ(x))
-
-#define OD_LOG2(x) (M_LOG2E*log(x))
-#define OD_EXP2(x) (exp(M_LN2*(x)))
 
 /*Enable special features for gcc and compatible compilers.*/
 #if defined(__GNUC__) && defined(__GNUC_MINOR__) && defined(__GNUC_PATCHLEVEL__)
