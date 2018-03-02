@@ -9,6 +9,7 @@
 
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/shape_detection/face_detection_impl_mac.h"
+#include "services/shape_detection/face_detection_impl_mac_vision.h"
 
 namespace shape_detection {
 
@@ -26,6 +27,17 @@ void FaceDetectionProviderMac::Create(
 void FaceDetectionProviderMac::CreateFaceDetection(
     mojom::FaceDetectionRequest request,
     mojom::FaceDetectorOptionsPtr options) {
+  // Vision Framework needs at least MAC OS X 10.13.
+  if (@available(macOS 10.13, *)) {
+    // Vision is more accurate than Core Image Framework, but it also needs more
+    // processing time.
+    if (!options->fast_mode) {
+      mojo::MakeStrongBinding(std::make_unique<FaceDetectionImplMacVision>(),
+                              std::move(request));
+      return;
+    }
+  }
+
   mojo::MakeStrongBinding(
       std::make_unique<FaceDetectionImplMac>(std::move(options)),
       std::move(request));
