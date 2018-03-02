@@ -48,7 +48,6 @@ void NGTextFragmentBuilder::SetItem(NGInlineItemResult* item_result,
   size_ = {item_result->inline_size, line_height};
   end_effect_ = item_result->text_end_effect;
   shape_result_ = std::move(item_result->shape_result);
-  expansion_ = item_result->expansion;
   layout_object_ = item_result->item->GetLayoutObject();
 }
 
@@ -74,14 +73,13 @@ void NGTextFragmentBuilder::SetText(
   shape_result_ = std::move(shape_result);
   layout_object_ = layout_object;
   end_effect_ = NGTextEndEffect::kNone;
-  expansion_ = 0;
 }
 
 scoped_refptr<NGPhysicalTextFragment> NGTextFragmentBuilder::ToTextFragment() {
   scoped_refptr<NGPhysicalTextFragment> fragment =
       base::AdoptRef(new NGPhysicalTextFragment(
-          layout_object_, Style(), text_, item_index_, start_offset_,
-          end_offset_, size_.ConvertToPhysical(GetWritingMode()), expansion_,
+          layout_object_, Style(), text_, start_offset_, end_offset_,
+          size_.ConvertToPhysical(GetWritingMode()),
           ToLineOrientation(GetWritingMode()), end_effect_,
           std::move(shape_result_)));
   return fragment;

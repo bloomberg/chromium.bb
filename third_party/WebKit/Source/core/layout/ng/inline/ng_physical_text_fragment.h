@@ -43,21 +43,17 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
   NGPhysicalTextFragment(LayoutObject* layout_object,
                          const ComputedStyle& style,
                          const String& text,
-                         unsigned item_index,
                          unsigned start_offset,
                          unsigned end_offset,
                          NGPhysicalSize size,
-                         int expansion,
                          NGLineOrientation line_orientation,
                          NGTextEndEffect end_effect,
                          scoped_refptr<const ShapeResult> shape_result)
       : NGPhysicalFragment(layout_object, style, size, kFragmentText),
         text_(text),
-        item_index_(item_index),
         start_offset_(start_offset),
         end_offset_(end_offset),
         shape_result_(shape_result),
-        expansion_(expansion),
         line_orientation_(static_cast<unsigned>(line_orientation)),
         end_effect_(static_cast<unsigned>(end_effect)) {}
 
@@ -66,20 +62,9 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
 
   const ShapeResult* TextShapeResult() const { return shape_result_.get(); }
 
-  // Deprecating ItemIndex in favor of storing and accessing each component;
-  // e.g., text, style, ShapeResult, etc. Currently used for CreateBidiRuns and
-  // tests.
-  unsigned ItemIndexDeprecated() const { return item_index_; }
-
   // Start/end offset to the text of the block container.
   unsigned StartOffset() const { return start_offset_; }
   unsigned EndOffset() const { return end_offset_; }
-
-  // The amount of expansion for justification.
-  // Not used in NG paint, only to copy to InlineTextBox::SetExpansion().
-  // TODO(layout-dev): crbug.com/714962 Remove once fragment painting is enabled
-  // by default.
-  int Expansion() const { return expansion_; }
 
   NGLineOrientation LineOrientation() const {
     return static_cast<NGLineOrientation>(line_orientation_);
@@ -101,8 +86,8 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
 
   scoped_refptr<NGPhysicalFragment> CloneWithoutOffset() const {
     return base::AdoptRef(new NGPhysicalTextFragment(
-        layout_object_, Style(), text_, item_index_, start_offset_, end_offset_,
-        size_, expansion_, LineOrientation(), EndEffect(), shape_result_));
+        layout_object_, Style(), text_, start_offset_, end_offset_, size_,
+        LineOrientation(), EndEffect(), shape_result_));
   }
 
   NGTextFragmentPaintInfo PaintInfo() const {
@@ -126,16 +111,11 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
   // fragment is a substring(start_offset_, end_offset_) of this string.
   const String text_;
 
-  // Deprecating, ItemIndexDeprecated().
-  unsigned item_index_;
-
   // Start and end offset of the parent block text.
   unsigned start_offset_;
   unsigned end_offset_;
 
   scoped_refptr<const ShapeResult> shape_result_;
-
-  int expansion_;
 
   unsigned line_orientation_ : 2;  // NGLineOrientation
   unsigned end_effect_ : 1;        // NGTextEndEffect

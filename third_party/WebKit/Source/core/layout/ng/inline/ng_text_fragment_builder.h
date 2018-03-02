@@ -44,9 +44,6 @@ class CORE_EXPORT NGTextFragmentBuilder final : public NGBaseFragmentBuilder {
   scoped_refptr<const ShapeResult> shape_result_;
   NGTextEndEffect end_effect_ = NGTextEndEffect::kNone;
   LayoutObject* layout_object_ = nullptr;
-
-  // Not used in NG paint, only to copy to InlineTextBox::SetExpansion().
-  int expansion_ = 0;
 };
 
 }  // namespace blink

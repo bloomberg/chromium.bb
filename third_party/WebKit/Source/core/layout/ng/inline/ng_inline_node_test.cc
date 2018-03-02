@@ -334,11 +334,9 @@ TEST_F(NGInlineNodeTest, SegmentBidiIsolate) {
   TEST_ITEM_OFFSET_DIR(items[8], 22u, 28u, TextDirection::kLtr);
 }
 
-#define TEST_TEXT_FRAGMENT(fragment, index, start_offset, end_offset, dir) \
-  EXPECT_EQ(index, fragment->ItemIndexDeprecated());                       \
-  EXPECT_EQ(start_offset, fragment->StartOffset());                        \
-  EXPECT_EQ(end_offset, fragment->EndOffset());                            \
-  EXPECT_EQ(dir, node.Items()[fragment->ItemIndexDeprecated()].Direction())
+#define TEST_TEXT_FRAGMENT(fragment, start_offset, end_offset) \
+  EXPECT_EQ(start_offset, fragment->StartOffset());            \
+  EXPECT_EQ(end_offset, fragment->EndOffset());
 
 TEST_F(NGInlineNodeTest, CreateLineBidiIsolate) {
   UseLayoutObjectAndAhem();
@@ -351,11 +349,11 @@ TEST_F(NGInlineNodeTest, CreateLineBidiIsolate) {
   Vector<scoped_refptr<const NGPhysicalTextFragment>> fragments;
   CreateLine(node, &fragments);
   ASSERT_EQ(5u, fragments.size());
-  TEST_TEXT_FRAGMENT(fragments[0], 0u, 0u, 6u, TextDirection::kLtr);
-  TEST_TEXT_FRAGMENT(fragments[1], 6u, 16u, 21u, TextDirection::kRtl);
-  TEST_TEXT_FRAGMENT(fragments[2], 4u, 14u, 15u, TextDirection::kLtr);
-  TEST_TEXT_FRAGMENT(fragments[3], 2u, 7u, 13u, TextDirection::kRtl);
-  TEST_TEXT_FRAGMENT(fragments[4], 8u, 22u, 28u, TextDirection::kLtr);
+  TEST_TEXT_FRAGMENT(fragments[0], 0u, 6u);
+  TEST_TEXT_FRAGMENT(fragments[1], 16u, 21u);
+  TEST_TEXT_FRAGMENT(fragments[2], 14u, 15u);
+  TEST_TEXT_FRAGMENT(fragments[3], 7u, 13u);
+  TEST_TEXT_FRAGMENT(fragments[4], 22u, 28u);
 }
 
 TEST_F(NGInlineNodeTest, MinMaxSize) {
