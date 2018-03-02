@@ -51,12 +51,10 @@ class FrameSelection;
 class LocalFrame;
 class HitTestResult;
 class KillRing;
-class SetSelectionOptions;
 class SpellChecker;
 class CSSPropertyValueSet;
 class TextEvent;
 class UndoStack;
-class UndoStep;
 
 enum class DeleteDirection;
 enum class DeleteMode { kSimple, kSmart };
@@ -75,6 +73,9 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
   ~Editor();
 
   CompositeEditCommand* LastEditCommand() { return last_edit_command_.Get(); }
+  void SetLastEditCommand(CompositeEditCommand* last_edit_command) {
+    last_edit_command_ = last_edit_command;
+  }
 
   void HandleKeyboardEvent(KeyboardEvent*);
   bool HandleTextEvent(TextEvent*);
@@ -103,10 +104,6 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
   void ApplyParagraphStyle(CSSPropertyValueSet*, InputEvent::InputType);
   void ApplyParagraphStyleToSelection(CSSPropertyValueSet*,
                                       InputEvent::InputType);
-
-  void AppliedEditing(CompositeEditCommand*);
-  void UnappliedEditing(UndoStep*);
-  void ReappliedEditing(UndoStep*);
 
   void SetShouldStyleWithCSS(bool flag) { should_style_with_css_ = flag; }
   bool ShouldStyleWithCSS() const { return should_style_with_css_; }
@@ -292,9 +289,6 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
     DCHECK(frame_);
     return *frame_;
   }
-
-  void ChangeSelectionAfterCommand(const SelectionInDOMTree&,
-                                   const SetSelectionOptions&);
 
   SpellChecker& GetSpellChecker() const;
   FrameSelection& GetFrameSelection() const;
