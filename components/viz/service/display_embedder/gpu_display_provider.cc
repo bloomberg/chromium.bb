@@ -107,22 +107,11 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
   bool gpu_compositing = !force_software_compositing;
   (void)compositing_mode_reporter_;
 
-#if !defined(GPU_SURFACE_HANDLE_IS_ACCELERATED_WINDOW)
-  // TODO(crbug.com/730660): On Mac/Android the handle is not an
-  // AcceleratedWidget, and the widget is only available in the browser process
-  // via GpuSurfaceTracker (and maybe can't be used in the viz process??)
-  NOTIMPLEMENTED();
-  gfx::AcceleratedWidget widget = 0;
-  (void)widget;
-#else
-  gfx::AcceleratedWidget widget = surface_handle;
-#endif
-
   std::unique_ptr<OutputSurface> output_surface;
 
   if (!gpu_compositing) {
     output_surface = std::make_unique<SoftwareOutputSurface>(
-        CreateSoftwareOutputDeviceForPlatform(widget), task_runner_);
+        CreateSoftwareOutputDeviceForPlatform(surface_handle), task_runner_);
   } else {
     auto context_provider = base::MakeRefCounted<InProcessContextProvider>(
         gpu_service_, surface_handle, gpu_memory_buffer_manager_.get(),
@@ -179,23 +168,25 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
 
 std::unique_ptr<SoftwareOutputDevice>
 GpuDisplayProvider::CreateSoftwareOutputDeviceForPlatform(
-    gfx::AcceleratedWidget widget) {
+    gpu::SurfaceHandle surface_handle) {
+#if defined(GPU_SURFACE_HANDLE_IS_ACCELERATED_WINDOW)
+  gfx::AcceleratedWidget widget = surface_handle;
+#endif
+
 #if defined(OS_WIN)
   if (!output_device_backing_)
     output_device_backing_ = std::make_unique<OutputDeviceBacking>();
   return std::make_unique<SoftwareOutputDeviceWin>(output_device_backing_.get(),
                                                    widget);
 #elif defined(OS_MACOSX)
-  // TODO(crbug.com/730660): We don't have a widget here, so what do we do to
-  // get something we can draw to? Can we use an IO surface? Can we use CA
-  // layers and overlays like we do for gpu compositing?
-  // See https://chromium-review.googlesource.com/c/chromium/src/+/792295 to
-  // no longer have GpuSurfaceTracker.
-  // Part of the SoftwareOutputDeviceMac::EndPaint probably needs to move to
-  // the browser process, and we need to set up transport of an IO surface to
-  // here?
-  // return std::make_unique<SoftwareOutputDeviceMac>(widget);
+  // TODO(crbug.com/730660): What do we do to get something we can draw to? Can
+  // we use an IO surface? Can we use CA layers and overlays like we do for gpu
+  // compositing? See https://crrev.com/c/792295 to no longer have
+  // GpuSurfaceTracker. Part of the SoftwareOutputDeviceMac::EndPaint probably
+  // needs to move to the browser process, and we need to set up transport of an
+  // IO surface to here?
   NOTIMPLEMENTED();
+  (void)widget;
   return nullptr;
 #elif defined(OS_ANDROID)
   // Android does not do software compositing, so we can't get here.

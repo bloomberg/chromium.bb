@@ -53,7 +53,7 @@ class VIZ_SERVICE_EXPORT GpuDisplayProvider : public DisplayProvider {
 
  private:
   std::unique_ptr<SoftwareOutputDevice> CreateSoftwareOutputDeviceForPlatform(
-      gfx::AcceleratedWidget widget);
+      gpu::SurfaceHandle surface_handle);
 
   const uint32_t restart_id_;
   scoped_refptr<gpu::InProcessCommandBuffer::Service> gpu_service_;
