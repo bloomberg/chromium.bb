@@ -1144,6 +1144,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_LOGIN_ERROR_KEYBOARD_SWITCH_HINT" desc="A hint text for the login and lock screens about layout switching">
         Hit <ph name="KEYBOARD_SHORTCUT">$1<ex>Control-Shift-Space</ex></ph> to switch keyboard layout.
       </message>
+      <message name="IDS_ASH_LOGIN_ERROR_DETACHABLE_BASE_CHANGED" desc="Text for the error dialog shown on the lock screen when a detachable base different from the base last used by the currently active user is attached.">
+        A different keyboard has been connected since you last entered your password. It may be attempting to steal your keystrokes.
+      </message>
       <message name="IDS_ASH_LOGIN_POD_PASSWORD_FIELD_ACCESSIBLE_NAME" desc="Text to be spoken when the focus is set to the password field of a user pod on the sign-in screen.">
         Password for <ph name="USER_EMAIL_ADDRESS">$1<ex>john.doe@example.com</ex></ph>
       </message>
@@ -1262,6 +1265,23 @@ Subsequent notifications, windows and dialogs may be split between desktops.
       <!-- Power off menu  -->
       <message name="IDS_ASH_POWER_OFF_MENU_POWER_OFF_BUTTON" desc="Text shown on power off button in power off menu.">
         Power off
+      </message>
+
+      <!-- Detachable base notifications -->
+      <message name="IDS_ASH_DETACHABLE_BASE_NOTIFICATION_DEVICE_CHANGED_TITLE" desc="Title for the notification shown when the user connects a detachable keyboard different from the one they used previously.">
+        Different keyboard connected
+      </message>
+      <message name="IDS_ASH_DETACHABLE_BASE_NOTIFICATION_DEVICE_CHANGED_MESSAGE" desc="Message for the notification shown when the user connects a detachable keyboard different from the one they used previously. 'It' refers to the connected detachable keyboard.">
+        It may be attempting to steal your keystrokes
+      </message>
+      <message name="IDS_ASH_DETACHABLE_BASE_NOTIFICATION_UPDATE_NEEDED_TITLE" desc="Title for the notification shown to the user when the detachable base (keyboard) connected to the device has to be updated.">
+        Your detachable keybaord needs a critical update
+      </message>
+      <message name="IDS_ASH_DETACHABLE_BASE_NOTIFICATION_UPDATE_NEEDED_MESSAGE" desc="Body for the notification shown to the user when the detachable base (keyboard) connected to the device has to be updated. This notification is shown if the keyboard is usable without the update.">
+        To get the update, restart your Chromebook with the keyboard attached.
+      </message>
+      <message name="IDS_ASH_DETACHABLE_BASE_NOTIFICATION_CRITICAL_UPDATE_NEEDED_MESSAGE" desc="Body for the notification shown to the user when the detachable base (keyboard) connected to the device has to be updated. This notification is shown if the keyboard is not usable without the update.">
+        To get the update, use the touchscreen to restart your Chromebook with the keyboard attached.
       </message>
     </messages>
   </release>
