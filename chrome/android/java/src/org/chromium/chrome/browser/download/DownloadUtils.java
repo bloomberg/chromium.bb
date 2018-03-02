@@ -431,11 +431,13 @@ public class DownloadUtils {
      * @param isOffTheRecord whether we are in an off the record context.
      * @param originalUrl The original url of the downloaded file.
      * @param referrer Referrer of the downloaded file.
+     * @param source The source that tries to open the download file.
      * @return whether the file could successfully be opened.
      */
-    public static boolean openFile(
-            File file, String mimeType, String downloadGuid, boolean isOffTheRecord,
-            String originalUrl, String referrer) {
+    public static boolean openFile(File file, String mimeType, String downloadGuid,
+            boolean isOffTheRecord, String originalUrl, String referrer,
+            @DownloadMetrics.DownloadOpenSource int source) {
+        DownloadMetrics.recordDownloadOpen(source, mimeType);
         Context context = ContextUtils.getApplicationContext();
         DownloadManagerService service = DownloadManagerService.getDownloadManagerService();
 
@@ -858,15 +860,6 @@ public class DownloadUtils {
     public static boolean isDownloadViewed(DownloadItem item) {
         if (item == null || item.getDownloadInfo() == null) return false;
         return item.getDownloadInfo().getLastAccessTime() != 0;
-    }
-
-    private static boolean isMimeTypeVideo(String mimeType) {
-        if (TextUtils.isEmpty(mimeType)) return false;
-
-        String[] pieces = mimeType.split(MIME_TYPE_DELIMITER);
-        if (pieces.length != 2) return false;
-
-        return MIME_TYPE_VIDEO.equals(pieces[0]);
     }
 
     /**

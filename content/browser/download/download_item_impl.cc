@@ -597,6 +597,7 @@ void DownloadItemImpl::Cancel(bool user_cancel) {
 void DownloadItemImpl::Remove() {
   DVLOG(20) << __func__ << "() download = " << DebugString(true);
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  download::RecordDownloadDeletion(GetEndTime(), GetMimeType());
 
   delegate_->AssertStateConsistent(this);
   InterruptAndDiscardPartialState(
