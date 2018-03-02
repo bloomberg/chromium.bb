@@ -53,9 +53,6 @@ Polymer({
      */
     type: String,
 
-    /** Set by embedder if saveOrConnect should always connect. */
-    connectOnSave: Boolean,
-
     /** True if the user configuring the network can toggle the shared state. */
     shareAllowEnable: Boolean,
 
@@ -360,7 +357,19 @@ Polymer({
     this.setShareNetwork_();
   },
 
-  saveOrConnect: function() {
+  save: function() {
+    this.saveAndConnect_(false /* connect */);
+  },
+
+  connect: function() {
+    this.saveAndConnect_(true /* connect */);
+  },
+
+  /**
+   * @param {boolean} connect If true, connect after save.
+   * @private
+   */
+  saveAndConnect_: function(connect) {
     if (this.propertiesSent_)
       return;
     this.propertiesSent_ = true;
@@ -376,13 +385,14 @@ Polymer({
            this.globalPolicy.AllowOnlyPolicyNetworksToConnect)) {
         CrOnc.setTypeProperty(propertiesToSet, 'AutoConnect', false);
       }
-      // Create the configuration, then connect to it in the callback.
       this.networkingPrivate.createNetwork(
-          this.shareNetwork_, propertiesToSet,
-          this.createNetworkCallback_.bind(this));
+          this.shareNetwork_, propertiesToSet, (guid) => {
+            this.createNetworkCallback_(connect, guid);
+          });
     } else {
-      this.networkingPrivate.setProperties(
-          this.guid, propertiesToSet, this.setPropertiesCallback_.bind(this));
+      this.networkingPrivate.setProperties(this.guid, propertiesToSet, () => {
+        this.setPropertiesCallback_(connect);
+      });
     }
   },
 
@@ -400,7 +410,7 @@ Polymer({
   connectIfConfigured_: function() {
     if (!this.isConfigured_)
       return;
-    this.saveOrConnect();
+    this.connect();
   },
 
   /** @private */
@@ -1204,8 +1214,11 @@ Polymer({
     return (chrome.runtime.lastError && chrome.runtime.lastError.message) || '';
   },
 
-  /** @private */
-  setPropertiesCallback_: function() {
+  /**
+   * @param {boolean} connect If true, connect after save.
+   * @private
+   */
+  setPropertiesCallback_: function(connect) {
     this.setError_(this.getRuntimeError_());
     if (this.error) {
       console.error('setProperties error: ' + this.guid + ': ' + this.error);
@@ -1213,7 +1226,7 @@ Polymer({
       return;
     }
     var connectState = this.networkProperties.ConnectionState;
-    if (this.connectOnSave &&
+    if (connect &&
         (!connectState ||
          connectState == CrOnc.ConnectionState.NOT_CONNECTED)) {
       this.startConnect_(this.guid);
@@ -1223,10 +1236,11 @@ Polymer({
   },
 
   /**
+   * @param {boolean} connect If true, connect after save.
    * @param {string} guid
    * @private
    */
-  createNetworkCallback_: function(guid) {
+  createNetworkCallback_: function(connect, guid) {
     this.setError_(this.getRuntimeError_());
     if (this.error) {
       console.error(
@@ -1235,7 +1249,8 @@ Polymer({
       this.propertiesSent_ = false;
       return;
     }
-    this.startConnect_(guid);
+    if (connect)
+      this.startConnect_(guid);
   },
 
   /**

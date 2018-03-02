@@ -272,23 +272,27 @@ Polymer({
    */
   onShowConfig_: function(event) {
     const properties = event.detail;
+    let configAndConnect = !properties.GUID;  // New configuration
     this.showConfig_(
-        properties.Type, properties.GUID, CrOnc.getNetworkName(properties));
+        configAndConnect, properties.Type, properties.GUID,
+        CrOnc.getNetworkName(properties));
   },
 
   /**
+   * @param {boolean} configAndConnect
    * @param {string} type
    * @param {string=} guid
    * @param {string=} name
    * @private
    */
-  showConfig_: function(type, guid, name) {
+  showConfig_: function(configAndConnect, type, guid, name) {
     const configDialog =
         /** @type {!InternetConfigElement} */ (this.$.configDialog);
     configDialog.type =
         /** @type {chrome.networkingPrivate.NetworkType} */ (type);
     configDialog.guid = guid || '';
     configDialog.name = name || '';
+    configDialog.showConnect = configAndConnect;
     configDialog.open();
   },
 
@@ -378,7 +382,7 @@ Polymer({
   /** @private */
   onAddWiFiTap_: function() {
     if (loadTimeData.getBoolean('networkSettingsConfig'))
-      this.showConfig_(CrOnc.Type.WI_FI);
+      this.showConfig_(true /* configAndConnect */, CrOnc.Type.WI_FI);
     else
       chrome.send('addNetwork', [CrOnc.Type.WI_FI]);
   },
@@ -386,7 +390,7 @@ Polymer({
   /** @private */
   onAddVPNTap_: function() {
     if (loadTimeData.getBoolean('networkSettingsConfig'))
-      this.showConfig_(CrOnc.Type.VPN);
+      this.showConfig_(true /* configAndConnect */, CrOnc.Type.VPN);
     else
       chrome.send('addNetwork', [CrOnc.Type.VPN]);
   },
@@ -600,7 +604,8 @@ Polymer({
     }
 
     if (properties.Connectable === false || properties.ErrorState) {
-      this.showConfig_(properties.Type, properties.GUID, name);
+      this.showConfig_(
+          true /* configAndConnect */, properties.Type, properties.GUID, name);
       return;
     }
 
@@ -614,7 +619,9 @@ Polymer({
         console.error(
             'networkingPrivate.startConnect error: ' + message +
             ' For: ' + properties.GUID);
-        this.showConfig_(properties.Type, properties.GUID, name);
+        this.showConfig_(
+            true /* configAndConnect */, properties.Type, properties.GUID,
+            name);
       }
     });
   },
