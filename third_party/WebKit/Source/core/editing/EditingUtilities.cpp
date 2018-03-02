@@ -1270,40 +1270,6 @@ bool IsTableCell(const Node* node) {
   return r ? r->IsTableCell() : IsHTMLTableCellElement(*node);
 }
 
-bool IsEmptyTableCell(const Node* node) {
-  // Returns true IFF the passed in node is one of:
-  //   .) a table cell with no children,
-  //   .) a table cell with a single BR child, and which has no other child
-  //      layoutObject, including :before and :after layoutObject
-  //   .) the BR child of such a table cell
-
-  // Find rendered node
-  while (node && !node->GetLayoutObject())
-    node = node->parentNode();
-  if (!node)
-    return false;
-
-  // Make sure the rendered node is a table cell or <br>.
-  // If it's a <br>, then the parent node has to be a table cell.
-  LayoutObject* layout_object = node->GetLayoutObject();
-  if (layout_object->IsBR()) {
-    layout_object = layout_object->Parent();
-    if (!layout_object)
-      return false;
-  }
-  if (!layout_object->IsTableCell())
-    return false;
-
-  // Check that the table cell contains no child layoutObjects except for
-  // perhaps a single <br>.
-  LayoutObject* child_layout_object = layout_object->SlowFirstChild();
-  if (!child_layout_object)
-    return true;
-  if (!child_layout_object->IsBR())
-    return false;
-  return !child_layout_object->NextSibling();
-}
-
 HTMLElement* CreateDefaultParagraphElement(Document& document) {
   switch (document.GetFrame()->GetEditor().DefaultParagraphSeparator()) {
     case kEditorParagraphSeparatorIsDiv:
