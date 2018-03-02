@@ -57,7 +57,6 @@ struct SaveFileCreateInfo {
                      SavePackageId save_package_id,
                      int render_process_id,
                      int render_frame_routing_id,
-                     int request_id,
                      const std::string& content_disposition);
 
   SaveFileCreateInfo(const SaveFileCreateInfo& other);
@@ -78,8 +77,6 @@ struct SaveFileCreateInfo {
   // IDs for looking up the contents we are associated with.
   int render_process_id;
   int render_frame_routing_id;
-  // Handle for informing the ResourceDispatcherHost of a UI based cancel.
-  int request_id;
   // Disposition info from HTTP response.
   std::string content_disposition;
   // Source type of saved file.

@@ -1376,7 +1376,7 @@ void SimpleURLLoaderImpl::OnDataDownloaded(int64_t data_length,
 
 void SimpleURLLoaderImpl::OnReceiveCachedMetadata(
     const std::vector<uint8_t>& data) {
-  NOTREACHED();
+  // Ignored.
 }
 
 void SimpleURLLoaderImpl::OnTransferSizeUpdated(int32_t transfer_size_diff) {}

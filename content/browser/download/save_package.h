@@ -45,15 +45,15 @@ class SaveItem;
 class SavePackage;
 class WebContents;
 
-// The SavePackage object manages the process of saving a page as only-html or
-// complete-html or MHTML and providing the information for displaying saving
-// status.  Saving page as only-html means means that we save web page to a
-// single HTML file regardless internal sub resources and sub frames.  Saving
-// page as complete-html page means we save not only the main html file the user
-// told it to save but also a directory for the auxiliary files such as all
-// sub-frame html files, image files, css files and js files.  Saving page as
-// MHTML means the same thing as complete-html, but it uses the MHTML format to
-// contain the html and all auxiliary files in a single text file.
+// SavePackage manages the process of saving a page as only-HTML, complete-HTML
+// or MHTML and provides status information about the job.
+// - only-html: the web page is saved to a single HTML file excluding
+// sub-resources and sub-frames
+// - complete-html: the web page's main frame HTML is saved to the user selected
+// file and a directory for the auxiliary files such as all sub-frame html
+// files, image files, css files and js files is created
+// - MHTML: the main frame and all auxiliary files are stored a single text
+//   file using the MHTML format.
 //
 // Each page saving job may include one or multiple files which need to be
 // saved. Each file is represented by a SaveItem, and all SaveItems are owned

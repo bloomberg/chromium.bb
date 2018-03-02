@@ -172,10 +172,6 @@
 # crbug.com/778860 SecurityStyleExplanations::info_explanations is empty.
 -BrowserTestNonsecureURLRequest.DidChangeVisibleSecurityStateObserverObsoleteTLSSettings
 
-# crbug.com/779210 NOTREACHED() reached at SaveFileManager::OnSaveURL().
--SavePageBrowserTest.SavePageBrowserTest_NonMHTML
--SavePageBrowserTest.SaveUnauthorizedResource
-
 # crbug.com/779217 The NetworkContext is not created when the network service is enabled.
 -SpellingMenuObserverTest.SuggestionsForceTopSeparator
 

@@ -10,27 +10,22 @@
 // thread or the UI thread. It coordinates the notifications from the network
 // and UI.
 //
-// The SaveFileManager itself is a singleton object owned by the
-// ResourceDispatcherHostImpl.
+// The SaveFileManager itself is a singleton object created and owned by the
+// BrowserMainLoop.
 //
-// The data sent to SaveFileManager have 2 sources, one is from
-// ResourceDispatcherHostImpl, run in network IO thread, the all sub-resources
-// and save-only-HTML pages will be got from network IO. The second is from
-// render process, those html pages which are serialized from DOM will be
-// composed in render process and encoded to its original encoding, then sent
-// to UI loop in browser process, then UI loop will dispatch the data to
-// SaveFileManager on the file thread. SaveFileManager will directly
-// call SaveFile's method to persist data.
+// The data sent to SaveFileManager have 2 sources:
+// - SimpleURLLoaders which are used to download sub-resources and
+//   save-only-HTML pages
+// - render processese, for HTML pages which are serialized from the DOM in
+//   their original encoding. The data is received on the UI thread and
+//   dispatched directly to the SaveFileManager on the file thread.
 //
 // A typical saving job operation involves multiple threads and sequences:
 //
-// Updating an in progress save file
-// io_thread
-//      |----> data from net   ---->|
-//                                  |
-//                                  |
+// Updating an in progress save file:
 //      |----> data from    ---->|  |
 //      |      render process    |  |
+//      |      SimpleURLLoaders  |  |
 // ui_thread                     |  |
 //                   download_task_runner (writes to disk)
 //                               |----> stats ---->|
@@ -62,6 +57,7 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -74,14 +70,11 @@ namespace base {
 class FilePath;
 }
 
-namespace net {
-class IOBuffer;
-}
-
 namespace content {
 class ResourceContext;
 class SaveFile;
 class SavePackage;
+class StoragePartition;
 struct Referrer;
 
 class CONTENT_EXPORT SaveFileManager
@@ -95,10 +88,8 @@ class CONTENT_EXPORT SaveFileManager
   // Lifetime management.
   void Shutdown();
 
-  // Save the specified URL.  Caller has to guarantee that |save_package| will
-  // be alive until the call to RemoveSaveFile.  Called on the UI thread (and in
-  // case of network downloads forwarded to the ResourceDispatcherHostImpl on
-  // the IO thread).
+  // Saves the specified URL |url|. |save_package| must not be deleted before
+  // the call to RemoveSaveFile. Should be called on the UI thread,
   void SaveURL(SaveItemId save_item_id,
                const GURL& url,
                const Referrer& referrer,
@@ -108,13 +99,12 @@ class CONTENT_EXPORT SaveFileManager
                SaveFileCreateInfo::SaveFileSource save_source,
                const base::FilePath& file_full_path,
                ResourceContext* context,
+               StoragePartition* storage_partition,
                SavePackage* save_package);
 
   // Notifications sent from the IO thread and run on the file thread:
   void StartSave(std::unique_ptr<SaveFileCreateInfo> info);
-  void UpdateSaveProgress(SaveItemId save_item_id,
-                          net::IOBuffer* data,
-                          int size);
+  void UpdateSaveProgress(SaveItemId save_item_id, const std::string& data);
   void SaveFinished(SaveItemId save_item_id,
                     SavePackageId save_package_id,
                     bool is_success);
@@ -149,6 +139,8 @@ class CONTENT_EXPORT SaveFileManager
 
  private:
   friend class base::RefCountedThreadSafe<SaveFileManager>;
+
+  class SimpleURLLoaderHelper;
 
   ~SaveFileManager();
 
@@ -205,10 +197,12 @@ class CONTENT_EXPORT SaveFileManager
                  int render_process_host_id,
                  int render_view_routing_id,
                  int render_frame_routing_id,
-                 ResourceContext* context);
-  // Call ResourceDispatcherHostImpl's CancelRequest method to execute cancel
-  // action in the IO thread.
-  void ExecuteCancelSaveRequest(int render_process_id, int request_id);
+                 StoragePartition* storage_partition);
+
+  // Called on the UI thread to remove the SimpleURLLoader in
+  // |url_loader_helpers_| associated with |save_item_id|. This stops the load
+  // if it is not complete.
+  void ClearURLLoader(SaveItemId save_item_id);
 
   // A map from save_item_id into SaveFiles.
   std::unordered_map<SaveItemId, std::unique_ptr<SaveFile>, SaveItemId::Hasher>
@@ -217,6 +211,13 @@ class CONTENT_EXPORT SaveFileManager
   // Tracks which SavePackage to send data to, called only on UI thread.
   // SavePackageMap maps save item ids to their SavePackage.
   std::unordered_map<SaveItemId, SavePackage*, SaveItemId::Hasher> packages_;
+
+  // The helper object doing the actual download. Should be accessed on the UI
+  // thread.
+  std::unordered_map<SaveItemId,
+                     std::unique_ptr<SimpleURLLoaderHelper>,
+                     SaveItemId::Hasher>
+      url_loader_helpers_;
 
   DISALLOW_COPY_AND_ASSIGN(SaveFileManager);
 };
