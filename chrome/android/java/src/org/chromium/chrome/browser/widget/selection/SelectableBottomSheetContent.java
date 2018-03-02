@@ -11,7 +11,6 @@ import android.widget.TextView;
 
 import org.chromium.base.CollectionUtil;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.toolbar.BottomToolbarPhone;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
 
@@ -80,9 +79,6 @@ public abstract class SelectableBottomSheetContent<E> implements BottomSheetCont
                 activity.getBottomSheet().setSheetState(BottomSheet.SHEET_STATE_FULL, true);
             }
         });
-
-        ((BottomToolbarPhone) activity.getToolbarManager().getToolbar())
-                .setOtherToolbarStyle(mToolbarView);
     }
 
     @Override
