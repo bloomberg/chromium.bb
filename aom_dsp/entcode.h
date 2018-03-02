@@ -26,9 +26,6 @@ typedef uint32_t od_ec_window;
 
 #define OD_EC_WINDOW_SIZE ((int)sizeof(od_ec_window) * CHAR_BIT)
 
-/*The number of bits to use for the range-coded part of unsigned integers.*/
-#define OD_EC_UINT_BITS (4)
-
 /*The resolution of fractional-precision bit usage measurements, i.e.,
    3 => 1/8th bits.*/
 #define OD_BITRES (3)
