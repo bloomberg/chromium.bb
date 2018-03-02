@@ -14,6 +14,8 @@ source_set("settings") {
     "remoting_settings_view_controller.mm",
     "setting_option.h",
     "setting_option.mm",
+    "settings_view_cell.h",
+    "settings_view_cell.mm",
   ]
 
   deps = [
