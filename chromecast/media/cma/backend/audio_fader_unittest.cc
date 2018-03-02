@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <memory>
 
 #include "base/macros.h"
 #include "chromecast/media/cma/backend/audio_fader.h"
@@ -20,6 +21,16 @@ namespace {
 
 const int kNumChannels = 2;
 const int kFadeFrames = 128;
+
+std::unique_ptr<::media::AudioBus> CreateAudioBus(int num_frames) {
+  auto buffer = ::media::AudioBus::Create(kNumChannels, num_frames);
+  // Fill with invalid values.
+  for (int c = 0; c < buffer->channels(); ++c) {
+    float* channel_data = buffer->channel(c);
+    std::fill_n(channel_data, num_frames, -2.0f);
+  }
+  return buffer;
+}
 
 class TestFaderSource : public AudioFader::Source {
  public:
@@ -76,7 +87,7 @@ TEST(AudioFaderTest, Startup) {
   // The fader should fill its internal buffer, plus the size of the request.
   EXPECT_EQ(frames_needed, kFadeFrames + kFillSize);
 
-  auto dest = ::media::AudioBus::Create(kNumChannels, kFillSize);
+  auto dest = CreateAudioBus(kFillSize);
   EXPECT_EQ(fader.FillFrames(kFillSize, dest.get()), kFillSize);
 
   // Test that FramesNeededFromSource() works correctly.
@@ -99,7 +110,7 @@ TEST(AudioFaderTest, FadeInOver2Buffers) {
 
   const int kFillSize = kFadeFrames * 2 / 3;
   int frames_needed = fader.FramesNeededFromSource(kFillSize);
-  auto dest = ::media::AudioBus::Create(kNumChannels, kFillSize);
+  auto dest = CreateAudioBus(kFillSize);
   EXPECT_EQ(fader.FillFrames(kFillSize, dest.get()), kFillSize);
 
   // Fader's internal buffer should be full.
@@ -132,7 +143,7 @@ TEST(AudioFaderTest, ContinuePlaying) {
   EXPECT_EQ(fader.buffered_frames(), 0);
 
   const int kFillSize = kFadeFrames * 2;
-  auto dest = ::media::AudioBus::Create(kNumChannels, kFillSize);
+  auto dest = CreateAudioBus(kFillSize);
 
   int frames_needed = fader.FramesNeededFromSource(kFillSize);
   EXPECT_EQ(fader.FillFrames(kFillSize, dest.get()), kFillSize);
@@ -160,7 +171,7 @@ TEST(AudioFaderTest, FadeOut) {
   EXPECT_EQ(fader.buffered_frames(), 0);
 
   const int kFillSize = kFadeFrames * 2;
-  auto dest = ::media::AudioBus::Create(kNumChannels, kFillSize);
+  auto dest = CreateAudioBus(kFillSize);
 
   int frames_needed = fader.FramesNeededFromSource(kFillSize);
   EXPECT_EQ(fader.FillFrames(kFillSize, dest.get()), kFillSize);
@@ -186,6 +197,7 @@ TEST(AudioFaderTest, FadeOut) {
   // Data should be faded out.
   EXPECT_EQ(dest->channel(0)[0], 1.0f);
   EXPECT_LT(dest->channel(0)[filled - 1], 0.1f);
+  EXPECT_GE(dest->channel(0)[filled - 1], 0.0f);
 
   // Fader's internal buffer should be empty since we are fully faded out.
   EXPECT_EQ(fader.buffered_frames(), 0);
@@ -199,7 +211,7 @@ TEST(AudioFaderTest, FadeOutPartially) {
   EXPECT_EQ(fader.buffered_frames(), 0);
 
   const int kFillSize = kFadeFrames * 2;
-  auto dest = ::media::AudioBus::Create(kNumChannels, kFillSize);
+  auto dest = CreateAudioBus(kFillSize);
 
   int frames_needed = fader.FramesNeededFromSource(kFillSize);
   EXPECT_EQ(fader.FillFrames(kFillSize, dest.get()), kFillSize);
@@ -222,6 +234,7 @@ TEST(AudioFaderTest, FadeOutPartially) {
   // Data should be partially faded out.
   EXPECT_EQ(dest->channel(0)[0], 1.0f);
   EXPECT_LT(dest->channel(0)[filled - 1], 1.0f);
+  EXPECT_GE(dest->channel(0)[filled - 1], 0.0f);
   float fade_min = dest->channel(0)[filled - 1];
 
   // Fader's internal buffer should be partially full.
@@ -254,7 +267,7 @@ TEST(AudioFaderTest, IncompleteFadeIn) {
 
   // The source only partially fills the fader request. Since we're fading in
   // from silence, the fader should output silence.
-  auto dest = ::media::AudioBus::Create(kNumChannels, kFillSize);
+  auto dest = CreateAudioBus(kFillSize);
   source.set_max_fill_frames(10);
   int filled = fader.FillFrames(kFillSize, dest.get());
 
@@ -280,7 +293,7 @@ TEST(AudioFaderTest, FadeInPartially) {
   const int kFillSize = kFadeFrames * 2 / 3;
 
   int frames_needed = fader.FramesNeededFromSource(kFillSize);
-  auto dest = ::media::AudioBus::Create(kNumChannels, kFillSize);
+  auto dest = CreateAudioBus(kFillSize);
   EXPECT_EQ(fader.FillFrames(kFillSize, dest.get()), kFillSize);
 
   // Fader's internal buffer should be full.
@@ -300,6 +313,7 @@ TEST(AudioFaderTest, FadeInPartially) {
 
   // Data should be faded out.
   EXPECT_LE(dest->channel(0)[0], fade_max);
+  EXPECT_GE(dest->channel(0)[0], 0.0f);
   EXPECT_EQ(dest->channel(0)[filled - 1], 0.0f);
 
   // Test that FramesNeededFromSource() works correctly.
