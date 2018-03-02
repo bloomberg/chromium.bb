@@ -311,7 +311,8 @@ scoped_refptr<NGLayoutResult> NGOutOfFlowLayoutPart::LayoutDescendant(
     // This is a new formatting context, so whatever happened on the outside
     // doesn't concern us.
     MinMaxSizeInput zero_input;
-    min_max_size = node.ComputeMinMaxSize(zero_input);
+    min_max_size =
+        node.ComputeMinMaxSize(zero_input, descendant_constraint_space.get());
   }
 
   Optional<NGLogicalSize> replaced_size;
@@ -319,12 +320,8 @@ scoped_refptr<NGLayoutResult> NGOutOfFlowLayoutPart::LayoutDescendant(
     replaced_size = ComputeReplacedSize(
         descendant.node, *descendant_constraint_space, min_max_size);
   } else if (descendant.node.ShouldBeConsideredAsReplaced()) {
-    NGBoxStrut border_scrollbar_padding = CalculateBorderScrollbarPadding(
-        *descendant_constraint_space, descendant.node.Style(), descendant.node);
-    MinMaxSize min_max_border_box(*min_max_size);
-    min_max_border_box += border_scrollbar_padding.InlineSum();
     replaced_size = NGLogicalSize{
-        min_max_border_box.ShrinkToFit(
+        min_max_size->ShrinkToFit(
             descendant_constraint_space->AvailableSize().inline_size),
         NGSizeIndefinite};
   }

@@ -127,9 +127,11 @@ scoped_refptr<NGLayoutResult> NGLayoutInputNode::Layout(
                     : ToNGBlockNode(*this).Layout(space, break_token);
 }
 
-MinMaxSize NGLayoutInputNode::ComputeMinMaxSize(const MinMaxSizeInput& input) {
+MinMaxSize NGLayoutInputNode::ComputeMinMaxSize(
+    const MinMaxSizeInput& input,
+    const NGConstraintSpace* space) {
   return IsInline() ? ToNGInlineNode(*this).ComputeMinMaxSize(input)
-                    : ToNGBlockNode(*this).ComputeMinMaxSize(input);
+                    : ToNGBlockNode(*this).ComputeMinMaxSize(input, space);
 }
 
 void NGLayoutInputNode::IntrinsicSize(

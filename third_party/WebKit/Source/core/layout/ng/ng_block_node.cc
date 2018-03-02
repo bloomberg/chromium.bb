@@ -194,29 +194,31 @@ scoped_refptr<NGLayoutResult> NGBlockNode::Layout(
   return layout_result;
 }
 
-MinMaxSize NGBlockNode::ComputeMinMaxSize(const MinMaxSizeInput& input) {
+MinMaxSize NGBlockNode::ComputeMinMaxSize(
+    const MinMaxSizeInput& input,
+    const NGConstraintSpace* constraint_space) {
   MinMaxSize sizes;
   if (!CanUseNewLayout()) {
     // TODO(layout-ng): This could be somewhat optimized by directly calling
     // computeIntrinsicLogicalWidths, but that function is currently private.
     // Consider doing that if this becomes a performance issue.
-    LayoutUnit border_and_padding = box_->BorderAndPaddingLogicalWidth();
     sizes.min_size = box_->ComputeLogicalWidthUsing(
-                         kMainOrPreferredSize, Length(kMinContent),
-                         LayoutUnit(), box_->ContainingBlock()) -
-                     border_and_padding;
+        kMainOrPreferredSize, Length(kMinContent), LayoutUnit(),
+        box_->ContainingBlock());
     sizes.max_size = box_->ComputeLogicalWidthUsing(
-                         kMainOrPreferredSize, Length(kMaxContent),
-                         LayoutUnit(), box_->ContainingBlock()) -
-                     border_and_padding;
+        kMainOrPreferredSize, Length(kMaxContent), LayoutUnit(),
+        box_->ContainingBlock());
     return sizes;
   }
 
-  scoped_refptr<NGConstraintSpace> constraint_space =
+  scoped_refptr<NGConstraintSpace> zero_constraint_space =
       NGConstraintSpaceBuilder(Style().GetWritingMode(),
                                InitialContainingBlockSize())
           .SetTextDirection(Style().Direction())
           .ToConstraintSpace(Style().GetWritingMode());
+
+  if (!constraint_space)
+    constraint_space = zero_constraint_space.get();
 
   // TODO(cbiesinger): For orthogonal children, we need to always synthesize.
   NGBlockLayoutAlgorithm minmax_algorithm(*this, *constraint_space);
@@ -225,14 +227,14 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(const MinMaxSizeInput& input) {
     return *maybe_sizes;
 
   // Have to synthesize this value.
-  scoped_refptr<NGLayoutResult> layout_result = Layout(*constraint_space);
+  scoped_refptr<NGLayoutResult> layout_result = Layout(*zero_constraint_space);
   NGBoxFragment min_fragment(
       Style().GetWritingMode(),
       ToNGPhysicalBoxFragment(*layout_result->PhysicalFragment()));
   sizes.min_size = min_fragment.Size().inline_size;
 
   // Now, redo with infinite space for max_content
-  constraint_space =
+  scoped_refptr<NGConstraintSpace> infinite_constraint_space =
       NGConstraintSpaceBuilder(Style().GetWritingMode(),
                                InitialContainingBlockSize())
           .SetTextDirection(Style().Direction())
@@ -240,7 +242,7 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(const MinMaxSizeInput& input) {
           .SetPercentageResolutionSize({LayoutUnit(), LayoutUnit()})
           .ToConstraintSpace(Style().GetWritingMode());
 
-  layout_result = Layout(*constraint_space);
+  layout_result = Layout(*infinite_constraint_space);
   NGBoxFragment max_fragment(
       Style().GetWritingMode(),
       ToNGPhysicalBoxFragment(*layout_result->PhysicalFragment()));

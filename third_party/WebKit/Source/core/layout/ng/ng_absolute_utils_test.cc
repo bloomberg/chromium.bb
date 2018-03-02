@@ -120,7 +120,8 @@ TEST_F(NGAbsoluteUtilsTest, Horizontal) {
 
   Optional<MinMaxSize> estimated_inline;
   Optional<LayoutUnit> estimated_block;
-  MinMaxSize minmax_60{LayoutUnit(60), LayoutUnit(60)};
+  MinMaxSize minmax_60{LayoutUnit(60) + border_padding,
+                       LayoutUnit(60) + border_padding};
 
   style_->SetBorderLeftWidth(border_left.ToInt());
   style_->SetBorderRightWidth(border_right.ToInt());
@@ -149,7 +150,7 @@ TEST_F(NGAbsoluteUtilsTest, Horizontal) {
   p = ComputePartialAbsoluteWithChildInlineSize(
       *ltr_space_, *style_, static_position, estimated_inline, WTF::nullopt,
       WritingMode::kHorizontalTb, TextDirection::kLtr);
-  EXPECT_EQ(minmax_60.min_size + border_padding, p.size.width);
+  EXPECT_EQ(minmax_60.min_size, p.size.width);
   EXPECT_EQ(LayoutUnit(0), p.inset.left);
 
   // All auto => width is estimated_inline, static_position is right
@@ -159,16 +160,15 @@ TEST_F(NGAbsoluteUtilsTest, Horizontal) {
   p = ComputePartialAbsoluteWithChildInlineSize(
       *ltr_space_, *style_, static_right_position, estimated_inline,
       WTF::nullopt, WritingMode::kHorizontalTb, TextDirection::kLtr);
-  EXPECT_EQ(minmax_60.min_size + border_padding, p.size.width);
+  EXPECT_EQ(minmax_60.min_size, p.size.width);
   EXPECT_EQ(container_size_.inline_size, p.inset.right);
 
   // All auto + RTL.
   p = ComputePartialAbsoluteWithChildInlineSize(
       *rtl_space_, *style_, static_position, estimated_inline, WTF::nullopt,
       WritingMode::kHorizontalTb, TextDirection::kLtr);
-  EXPECT_EQ(minmax_60.min_size + border_padding, p.size.width);
-  EXPECT_EQ(container_size_.inline_size - minmax_60.min_size - border_padding,
-            p.inset.right);
+  EXPECT_EQ(minmax_60.min_size, p.size.width);
+  EXPECT_EQ(container_size_.inline_size - minmax_60.min_size, p.inset.right);
 
   // left, right, and left are known, compute margins.
   SetHorizontalStyle(left, NGAuto, width, NGAuto, right);
@@ -230,7 +230,7 @@ TEST_F(NGAbsoluteUtilsTest, Horizontal) {
   p = ComputePartialAbsoluteWithChildInlineSize(
       *ltr_space_, *style_, static_position, estimated_inline, WTF::nullopt,
       WritingMode::kHorizontalTb, TextDirection::kLtr);
-  EXPECT_EQ(minmax_60.min_size + border_padding, p.size.width);
+  EXPECT_EQ(minmax_60.min_size, p.size.width);
 
   // Rule 2 left and right are auto LTR.
   SetHorizontalStyle(NGAuto, margin_left, width, margin_right, NGAuto);
@@ -259,10 +259,10 @@ TEST_F(NGAbsoluteUtilsTest, Horizontal) {
   p = ComputePartialAbsoluteWithChildInlineSize(
       *ltr_space_, *style_, static_position, estimated_inline, WTF::nullopt,
       WritingMode::kHorizontalTb, TextDirection::kLtr);
-  EXPECT_EQ(container_size_.inline_size - minmax_60.min_size - border_padding -
-                left - margin_left,
-            p.inset.right);
-  EXPECT_EQ(minmax_60.min_size + border_padding, p.size.width);
+  EXPECT_EQ(
+      container_size_.inline_size - minmax_60.min_size - left - margin_left,
+      p.inset.right);
+  EXPECT_EQ(minmax_60.min_size, p.size.width);
 
   // Rule 4: left is auto.
   SetHorizontalStyle(NGAuto, margin_left, width, margin_right, right);

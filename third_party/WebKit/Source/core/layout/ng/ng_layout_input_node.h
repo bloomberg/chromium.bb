@@ -70,7 +70,8 @@ class CORE_EXPORT NGLayoutInputNode {
   // Performs layout on this input node, will return the layout result.
   scoped_refptr<NGLayoutResult> Layout(const NGConstraintSpace&, NGBreakToken*);
 
-  MinMaxSize ComputeMinMaxSize(const MinMaxSizeInput&);
+  MinMaxSize ComputeMinMaxSize(const MinMaxSizeInput&,
+                               const NGConstraintSpace* = nullptr);
 
   // Returns intrinsic sizing information for replaced elements.
   // ComputeReplacedSize can use it to compute actual replaced size.

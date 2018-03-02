@@ -40,7 +40,14 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   // special constraint spaces -- infinite available size for max content, zero
   // available size for min content, and percentage resolution size zero for
   // both.
-  MinMaxSize ComputeMinMaxSize(const MinMaxSizeInput&);
+  // An optional constraint space may be supplied, which will be used to resolve
+  // percentage padding on this node, to set up the right min/max size
+  // contribution. This is typically desirable for the subtree root of the
+  // min/max calculation (e.g. the node that will undergo shrink-to-fit). This
+  // constraint space will not be passed on to children. If no constraint space
+  // is specified, a zero-sized one will be used.
+  MinMaxSize ComputeMinMaxSize(const MinMaxSizeInput&,
+                               const NGConstraintSpace* = nullptr);
 
   NGBoxStrut GetScrollbarSizes() const;
 
