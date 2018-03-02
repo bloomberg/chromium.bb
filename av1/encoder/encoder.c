@@ -251,12 +251,13 @@ static void set_high_precision_mv(AV1_COMP *cpi, int allow_high_precision_mv
 #endif
 ) {
   MACROBLOCK *const mb = &cpi->td.mb;
-  cpi->common.allow_high_precision_mv = allow_high_precision_mv;
-
 #if CONFIG_AMVR
+  cpi->common.allow_high_precision_mv =
+      allow_high_precision_mv && cur_frame_force_integer_mv == 0;
   const int copy_hp =
       cpi->common.allow_high_precision_mv && cur_frame_force_integer_mv == 0;
 #else
+  cpi->common.allow_high_precision_mv = allow_high_precision_mv;
   const int copy_hp = cpi->common.allow_high_precision_mv;
 #endif
   int *(*src)[2] = copy_hp ? mb->nmvcost_hp : mb->nmvcost;
