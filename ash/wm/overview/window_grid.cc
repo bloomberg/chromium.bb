@@ -492,16 +492,17 @@ WindowSelectorItem* WindowGrid::SelectedWindow() const {
   return window_list_[selected_index_].get();
 }
 
-bool WindowGrid::Contains(const aura::Window* window) const {
+WindowSelectorItem* WindowGrid::GetWindowSelectorItemContaining(
+    const aura::Window* window) const {
   for (const auto& window_item : window_list_) {
     if (window_item->Contains(window))
-      return true;
+      return window_item.get();
   }
-  return false;
+  return nullptr;
 }
 
 void WindowGrid::AddItem(aura::Window* window) {
-  DCHECK(!Contains(window));
+  DCHECK(!GetWindowSelectorItemContaining(window));
 
   window_observer_.Add(window);
   window_state_observer_.Add(wm::GetWindowState(window));
@@ -671,8 +672,6 @@ bool WindowGrid::IsNoItemsIndicatorLabelVisibleForTesting() {
   return shield_view_ && shield_view_->IsLabelVisible();
 }
 
-// TODO(https://crbug.com/812497): Handle the correct z-order of always-on-top
-// windows.
 void WindowGrid::SetWindowListAnimationStates(
     WindowSelectorItem* selected_item,
     WindowSelector::OverviewTransition transition) {
@@ -681,13 +680,48 @@ void WindowGrid::SetWindowListAnimationStates(
          selected_item == nullptr);
 
   bool has_covered_available_workspace = false;
-  // Check the |selected_item| first. The order matters when the |selected_item|
-  // window can cover available workspace.
-  SetWindowSelectorItemAnimationState(selected_item,
-                                      &has_covered_available_workspace,
-                                      /*selected=*/true, transition);
+  bool has_checked_selected_item = false;
+  if (!selected_item ||
+      !wm::GetWindowState(selected_item->GetWindow())->IsFullscreen()) {
+    // Check the always on top window first if |selected_item| is nullptr or the
+    // |selected_item|'s window is not fullscreen. Because always on top windows
+    // are visible and may have a window which can cover available workspace.
+    // If the |selected_item| is fullscreen, we will depromote all always on top
+    // windows.
+    aura::Window* always_on_top_container =
+        RootWindowController::ForWindow(root_window_)
+            ->GetContainer(kShellWindowId_AlwaysOnTopContainer);
+    aura::Window::Windows top_windows = always_on_top_container->children();
+    for (aura::Window::Windows::const_reverse_iterator
+             it = top_windows.rbegin(),
+             rend = top_windows.rend();
+         it != rend; ++it) {
+      aura::Window* top_window = *it;
+      WindowSelectorItem* container_item =
+          GetWindowSelectorItemContaining(top_window);
+      if (!container_item)
+        continue;
+
+      const bool is_selected_item = (selected_item == container_item);
+      if (!has_checked_selected_item && is_selected_item)
+        has_checked_selected_item = true;
+      SetWindowSelectorItemAnimationState(
+          container_item, &has_covered_available_workspace,
+          /*selected=*/is_selected_item, transition);
+    }
+  }
+
+  if (!has_checked_selected_item) {
+    SetWindowSelectorItemAnimationState(selected_item,
+                                        &has_covered_available_workspace,
+                                        /*selected=*/true, transition);
+  }
   for (const auto& item : window_list_) {
+    // Has checked the |selected_item|.
     if (selected_item == item.get())
+      continue;
+    // Has checked all always on top windows.
+    if (item->GetWindow()->GetProperty(aura::client::kAlwaysOnTopKey))
       continue;
     SetWindowSelectorItemAnimationState(item.get(),
                                         &has_covered_available_workspace,
@@ -951,7 +985,7 @@ void WindowGrid::SetWindowSelectorItemAnimationState(
 
   aura::Window* window = selector_item->GetWindow();
   // |selector_item| should be contained in the |window_list_|.
-  DCHECK(Contains(window));
+  DCHECK(GetWindowSelectorItemContaining(window));
 
   bool can_cover_available_workspace = CanCoverAvailableWorkspace(window);
   const bool should_animate = selected || !(*has_covered_available_workspace);
