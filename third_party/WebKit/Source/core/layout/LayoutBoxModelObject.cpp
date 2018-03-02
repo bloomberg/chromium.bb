@@ -470,12 +470,14 @@ void LayoutBoxModelObject::CreateLayerAfterStyleChange() {
       std::make_unique<PaintLayer>(*this));
   SetHasLayer(true);
   Layer()->InsertOnlyThisLayerAfterStyleChange();
+  SetNeedsPaintPropertyUpdate();
 }
 
 void LayoutBoxModelObject::DestroyLayer() {
   DCHECK(HasLayer() && Layer());
   SetHasLayer(false);
   GetMutableForPainting().FirstFragment().SetLayer(nullptr);
+  SetNeedsPaintPropertyUpdate();
 }
 
 bool LayoutBoxModelObject::HasSelfPaintingLayer() const {
