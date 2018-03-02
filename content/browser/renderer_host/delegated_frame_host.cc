@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/time/default_tick_clock.h"
+#include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/quads/compositor_frame.h"
@@ -265,7 +266,7 @@ bool DelegatedFrameHost::ShouldSkipFrame(const gfx::Size& size_in_dip) {
 void DelegatedFrameHost::WasResized(
     const viz::LocalSurfaceId& new_pending_local_surface_id,
     const gfx::Size& new_pending_dip_size,
-    const cc::DeadlinePolicy& deadline_policy) {
+    cc::DeadlinePolicy deadline_policy) {
   const viz::SurfaceId* primary_surface_id =
       client_->DelegatedFrameHostGetLayer()->GetPrimarySurfaceId();
 
@@ -286,6 +287,13 @@ void DelegatedFrameHost::WasResized(
       current_frame_size_in_dip_ = pending_surface_dip_size_;
 
       viz::SurfaceId surface_id(frame_sink_id_, pending_local_surface_id_);
+#if defined(OS_WIN) || defined(OS_LINUX)
+      // On Windows and Linux, we would like to produce new content as soon as
+      // possible or the OS will create an additional black gutter. Until we can
+      // block resize on surface synchronization on these platforms, we will not
+      // block UI on the top-level renderer.
+      deadline_policy = cc::DeadlinePolicy::UseSpecifiedDeadline(0u);
+#endif
       client_->DelegatedFrameHostGetLayer()->SetShowPrimarySurface(
           surface_id, current_frame_size_in_dip_, GetGutterColor(),
           deadline_policy);
