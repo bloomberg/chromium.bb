@@ -89,16 +89,80 @@ systems.
 
 ## Terms and definitions
 
-TODO(awong): To through Erik's Consistent Memory Metrics doc and pull out bits
-that reconcile with this.
+Each platform exposes a different memory model. This section describes a
+consistent set of terminology that will be used by this document. This
+terminology is intentionally Linux-biased, since that is the platform most
+readers are expected to be familiar with.
 
-### Commited Memory
-### Discardable memory
-### Proportional Set Size
-### Image memory
-### Shared Memory.
+### Supported platforms
+* Linux
+* Android
+* ChromeOS
+* Windows [kernel: Windows NT]
+* macOS/iOS [kernel: Darwin/XNU/Mach]
 
-TODO(awong): Write overview of our platform diversity, windows vs \*nix memory models (eg,
-"committed" memory), what "discardable" memory is, GPU memory, zram, overcommit,
-the various Chrome heaps (pageheap, partitionalloc, oilpan, v8, malloc...per
-platform), etc.
+### Terminology
+Warning: This terminology is neither complete, nor precise, when compared to the
+terminology used by any specific platform. Any in-depth discussion should occur
+on a per-platform basis, and use terminology specific to that platform.
+
+* **Virtual memory** - A per-process abstraction layer exposed by the kernel. A
+  contiguous region divided into 4kb **virtual pages**.
+* **Physical memory** - A per-machine abstraction layer internal to the kernel.
+  A contiguous region divided into 4kb **physical pages**. Each **physical
+  page** represents 4kb of physical memory.
+* **Resident** - A virtual page whose contents is backed by a physical
+  page.
+* **Swapped/Compressed** - A virtual page whose contents is backed by
+  something other than a physical page.
+* **Swapping/Compression** - [verb] The process of taking Resident pages and
+  making them Swapped/Compressed pages. This frees up physical pages.
+* **Unlocked Discardable/Reusable** - Android [Ashmem] and Darwin specific. A virtual
+  page whose contents is backed by a physical page, but the Kernel is free
+  to reuse the physical page at any point in time.
+* **Private** - A virtual page whose contents will only be modifiable by the
+  current process.
+* **Copy on Write** - A private virtual page owned by the parent process.
+  When either the parent or child process attempts to make a modification, the
+  child is given a private copy of the page.
+* **Shared** - A virtual page whose contents could be shared with other
+  processes.
+* **File-backed** - A virtual page whose contents reflect those of a
+  file.
+* **Anonymous** - A virtual page that is not file-backed.
+
+## Platform Specific Sources of Truth
+Memory is a complex topic, fraught with potential miscommunications. In an
+attempt to forestall disagreement over semantics, these are the sources of truth
+used to determine memory usage for a given process.
+
+* Windows: [SysInternals
+  VMMap](https://docs.microsoft.com/en-us/sysinternals/downloads/vmmap)
+* Darwin:
+  [vmmap](https://developer.apple.com/legacy/library/documentation/Darwin/Reference/ManPages/man1/vmmap.1.html)
+* Linux/Derivatives:
+  [/proc/<pid\>/smaps](http://man7.org/linux/man-pages/man5/proc.5.html)
+
+## Shared Memory
+
+Accounting for shared memory is poorly defined. If a memory region is mapped
+into multiple processes [possibly multiple times], which ones should it count
+towards?
+
+On Linux, one common solution is to use proportional set size, which counts
+1/Nth of the resident size, where N is the number of other processes that have
+page faulted the region. This has the nice property of being additive across
+processes. The downside is that it is context dependent. e.g. If a user opens
+more tabs, thus causing a system library to be mapped into more processes, the
+PSS for previous tabs will go down.
+
+File backed shared memory regions are typically not interesting to report, since
+they typically represent shared system resources, libraries, and the browser
+binary itself, all of which are outside of the control of developers. This is
+particularly problematic across different versions of the OS, where the set of
+base libraries that get linked by default into a process highly varies, out of
+Chrome's control.
+
+In Chrome, we have implemented ownership tracking for anonymous shared memory
+regions - each shared memory region counts towards exactly one process, which is
+determined by the type and usage of the shared memory region.
