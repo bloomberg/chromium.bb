@@ -54,7 +54,7 @@ class InterfaceRequest {
   // Indicates whether the request currently contains a valid message pipe.
   bool is_pending() const { return handle_.is_valid(); }
 
-  explicit operator bool() const { return handle_; }
+  explicit operator bool() const { return handle_.is_valid(); }
 
   // Removes the message pipe from the request and returns it.
   ScopedMessagePipeHandle PassMessagePipe() { return std::move(handle_); }
