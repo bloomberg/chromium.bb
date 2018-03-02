@@ -33,6 +33,7 @@ class SkBitmap;
 
 namespace base {
 class FilePath;
+class SingleThreadTaskRunner;
 }
 
 namespace blink {
@@ -178,6 +179,11 @@ class CONTENT_EXPORT ContentRendererClient {
   // If it returns NULL the content layer will provide an engine.
   virtual std::unique_ptr<blink::WebSpeechSynthesizer>
   OverrideSpeechSynthesizer(blink::WebSpeechSynthesizerClient* client);
+
+  // Called on the main-thread immediately after the io thread is
+  // created.
+  virtual void PostIOThreadCreated(
+      base::SingleThreadTaskRunner* io_thread_task_runner);
 
   // Called on the main-thread immediately after the compositor thread is
   // created.

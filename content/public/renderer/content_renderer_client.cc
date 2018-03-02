@@ -89,6 +89,9 @@ ContentRendererClient::OverrideSpeechSynthesizer(
   return nullptr;
 }
 
+void ContentRendererClient::PostIOThreadCreated(
+    base::SingleThreadTaskRunner* io_thread_task_runner) {}
+
 void ContentRendererClient::PostCompositorThreadCreated(
     base::SingleThreadTaskRunner* compositor_thread_task_runner) {}
 
