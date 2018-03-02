@@ -24,6 +24,8 @@ enum UiElementType {
   kTypeOmniboxSuggestionIcon,
   kTypeOmniboxSuggestionContentText,
   kTypeOmniboxSuggestionDescriptionText,
+  kTypePromptBackplane,
+  kTypePromptShadow,
   kTypeSpacer,
   kTypeTextInputHint,
   kTypeTextInputText,

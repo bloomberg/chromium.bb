@@ -521,6 +521,41 @@ TEST_F(UiTest, SecurityIconClickTriggersUnsupportedMode) {
   VerifyOnlyElementsVisible("Prompt invisible", kElementsVisibleInBrowsing);
 }
 
+TEST_F(UiTest, ClickingOmniboxTriggersUnsupportedMode) {
+  UiInitialState state;
+  state.needs_keyboard_update = true;
+  CreateScene(state);
+  VerifyOnlyElementsVisible("Initial", kElementsVisibleInBrowsing);
+
+  // Clicking the omnibox should show the update prompt.
+  auto* omnibox = scene_->GetUiElementByName(kUrlBarOriginContent);
+  EXPECT_CALL(*browser_,
+              OnUnsupportedMode(UiUnsupportedMode::kNeedsKeyboardUpdate));
+  omnibox->OnButtonUp({0, 10});
+  ui_->ShowExitVrPrompt(UiUnsupportedMode::kNeedsKeyboardUpdate);
+  OnBeginFrame();
+  EXPECT_EQ(model_->active_modal_prompt_type,
+            ModalPromptType::kModalPromptTypeUpdateKeyboard);
+  EXPECT_TRUE(scene_->GetUiElementByName(kUpdateKeyboardPrompt)->IsVisible());
+}
+
+TEST_F(UiTest, WebInputEditingTriggersUnsupportedMode) {
+  UiInitialState state;
+  state.needs_keyboard_update = true;
+  CreateScene(state);
+  VerifyOnlyElementsVisible("Initial", kElementsVisibleInBrowsing);
+
+  // A call to show the keyboard should show the update prompt.
+  EXPECT_CALL(*browser_,
+              OnUnsupportedMode(UiUnsupportedMode::kNeedsKeyboardUpdate));
+  ui_->ShowSoftInput(true);
+  ui_->ShowExitVrPrompt(UiUnsupportedMode::kNeedsKeyboardUpdate);
+  OnBeginFrame();
+  EXPECT_EQ(model_->active_modal_prompt_type,
+            ModalPromptType::kModalPromptTypeUpdateKeyboard);
+  EXPECT_TRUE(scene_->GetUiElementByName(kUpdateKeyboardPrompt)->IsVisible());
+}
+
 TEST_F(UiTest, UiUpdatesForShowingExitPrompt) {
   CreateScene(kNotInCct, kNotInWebVr);
 

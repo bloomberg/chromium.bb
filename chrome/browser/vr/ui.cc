@@ -211,6 +211,10 @@ bool Ui::CanSendWebVrVSync() {
 }
 
 void Ui::ShowSoftInput(bool show) {
+  if (model_->needs_keyboard_update) {
+    browser_->OnUnsupportedMode(UiUnsupportedMode::kNeedsKeyboardUpdate);
+    return;
+  }
   model_->editing_web_input = show;
 }
 

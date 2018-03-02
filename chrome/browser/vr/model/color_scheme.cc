@@ -53,28 +53,26 @@ void InitializeColorSchemes() {
 
   normal_scheme.system_indicator_foreground = normal_scheme.element_foreground;
   normal_scheme.system_indicator_background = normal_scheme.element_background;
-  normal_scheme.audio_permission_prompt_icon_foreground = 0xFF4285F4;
-  normal_scheme.audio_permission_prompt_background = 0xFFF5F5F5;
-  normal_scheme.audio_permission_prompt_secondary_button_colors.foreground =
-      0xFF4285F4;
-  normal_scheme.audio_permission_prompt_secondary_button_colors
-      .foreground_disabled = normal_scheme.button_colors.foreground_disabled;
-  normal_scheme.audio_permission_prompt_secondary_button_colors.background =
-      normal_scheme.audio_permission_prompt_background;
-  normal_scheme.audio_permission_prompt_secondary_button_colors
-      .background_hover = 0x19999999;
-  normal_scheme.audio_permission_prompt_secondary_button_colors
-      .background_down = 0x33999999;
-  normal_scheme.audio_permission_prompt_primary_button_colors.foreground =
-      normal_scheme.audio_permission_prompt_background;
-  normal_scheme.audio_permission_prompt_secondary_button_colors
-      .foreground_disabled = normal_scheme.button_colors.foreground_disabled;
-  normal_scheme.audio_permission_prompt_primary_button_colors.background =
-      0xFF4285F4;
-  normal_scheme.audio_permission_prompt_primary_button_colors.background_hover =
+  normal_scheme.modal_prompt_icon_foreground = 0xFF4285F4;
+  normal_scheme.modal_prompt_background = 0xFFF5F5F5;
+  normal_scheme.modal_prompt_foreground = 0xFF333333;
+  normal_scheme.modal_prompt_secondary_button_colors.foreground = 0xFF4285F4;
+  normal_scheme.modal_prompt_secondary_button_colors.foreground_disabled =
+      normal_scheme.button_colors.foreground_disabled;
+  normal_scheme.modal_prompt_secondary_button_colors.background =
+      normal_scheme.modal_prompt_background;
+  normal_scheme.modal_prompt_secondary_button_colors.background_hover =
+      0x19999999;
+  normal_scheme.modal_prompt_secondary_button_colors.background_down =
+      0x33999999;
+  normal_scheme.modal_prompt_primary_button_colors.foreground =
+      normal_scheme.modal_prompt_background;
+  normal_scheme.modal_prompt_secondary_button_colors.foreground_disabled =
+      normal_scheme.button_colors.foreground_disabled;
+  normal_scheme.modal_prompt_primary_button_colors.background = 0xFF4285F4;
+  normal_scheme.modal_prompt_primary_button_colors.background_hover =
       0xFF3E7DE6;
-  normal_scheme.audio_permission_prompt_primary_button_colors.background_down =
-      0xFF3E7DE6;
+  normal_scheme.modal_prompt_primary_button_colors.background_down = 0xFF3E7DE6;
   normal_scheme.back_button.background = normal_scheme.element_background;
   normal_scheme.back_button.background_down =
       normal_scheme.element_background_down;
@@ -363,10 +361,10 @@ void ColorScheme::UpdateForComponent(const base::Version& component_version) {
     normal_scheme.system_indicator_background =
         normal_scheme.element_background;
 
-    normal_scheme.audio_permission_prompt_secondary_button_colors
-        .foreground_disabled = normal_scheme.button_colors.foreground_disabled;
-    normal_scheme.audio_permission_prompt_secondary_button_colors.background =
-        normal_scheme.audio_permission_prompt_background;
+    normal_scheme.modal_prompt_secondary_button_colors.foreground_disabled =
+        normal_scheme.button_colors.foreground_disabled;
+    normal_scheme.modal_prompt_secondary_button_colors.background =
+        normal_scheme.modal_prompt_background;
 
     ColorScheme& incognito_scheme = g_incognito_scheme.Get();
     incognito_scheme.element_foreground = 0xA6FFFFFF;

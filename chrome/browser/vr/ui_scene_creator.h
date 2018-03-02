@@ -47,7 +47,7 @@ class UiSceneCreator {
   void CreateOmnibox();
   void CreateCloseButton();
   void CreateExitPrompt();
-  void CreateAudioPermissionPrompt();
+  void CreatePrompts();
   void CreateFullscreenToast();
   void CreateVoiceSearchUiGroup();
   void CreateContentRepositioningAffordance();
