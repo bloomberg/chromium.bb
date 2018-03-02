@@ -226,4 +226,32 @@ suite('incompatibleApplicationsHandler', function() {
       });
     });
   });
+
+  test('removeSingleApplication', function() {
+    const incompatibleApplicationsTestList = [
+      incompatibleApplication1,
+    ];
+
+    incompatibleApplicationsBrowserProxy.setIncompatibleApplications(
+        incompatibleApplicationsTestList);
+
+    return initPage(true /* hasAdminRights */).then(function() {
+      validateList(incompatibleApplicationsTestList);
+
+
+      const isDoneSection = incompatibleApplicationsPage.$$('#is-done-section');
+      assertTrue(isDoneSection.hidden);
+
+      // Send the event.
+      cr.webUIListenerCallback(
+          'incompatible-application-removed', incompatibleApplication1.name);
+      Polymer.dom.flush();
+
+      // Make sure the list is now empty.
+      validateList([]);
+
+      // The "Done!" text is visible.
+      assertFalse(isDoneSection.hidden);
+    });
+  });
 });

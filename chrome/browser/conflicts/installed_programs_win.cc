@@ -325,3 +325,11 @@ void InstalledPrograms::OnInitializationDone(
   if (on_initialized_callback)
     std::move(on_initialized_callback).Run();
 }
+
+bool operator<(const InstalledPrograms::ProgramInfo& lhs,
+               const InstalledPrograms::ProgramInfo& rhs) {
+  return std::tie(lhs.name, lhs.registry_root, lhs.registry_key_path,
+                  lhs.registry_wow64_access) <
+         std::tie(rhs.name, rhs.registry_root, rhs.registry_key_path,
+                  rhs.registry_wow64_access);
+}

@@ -5,12 +5,16 @@
 #include "chrome/browser/ui/webui/settings/incompatible_applications_handler_win.h"
 
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "base/win/registry.h"
 #include "chrome/browser/conflicts/problematic_programs_updater_win.h"
+#include "chrome/browser/conflicts/registry_key_watcher_win.h"
 #include "chrome/browser/conflicts/uninstall_application_win.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -49,16 +53,58 @@ void IncompatibleApplicationsHandler::RegisterMessages() {
           base::Unretained(this)));
 }
 
+void IncompatibleApplicationsHandler::OnJavascriptAllowed() {}
+
+void IncompatibleApplicationsHandler::OnJavascriptDisallowed() {
+  registry_key_watchers_.clear();
+}
+
 void IncompatibleApplicationsHandler::HandleRequestIncompatibleApplicationsList(
     const base::ListValue* args) {
   CHECK_EQ(1u, args->GetList().size());
-  CHECK(ProblematicProgramsUpdater::HasCachedPrograms());
 
   AllowJavascript();
 
+  // Reset the registry watchers, to correctly handle repeated calls to
+  // requestIncompatibleApplicationsList().
+  registry_key_watchers_.clear();
+
+  std::vector<ProblematicProgramsUpdater::ProblematicProgram>
+      problematic_programs = ProblematicProgramsUpdater::GetCachedPrograms();
+
+  base::Value application_list(base::Value::Type::LIST);
+  application_list.GetList().reserve(problematic_programs.size());
+
+  for (const auto& program : problematic_programs) {
+    // Set up a registry watcher for each problem application.
+    // Since this instance owns the watcher, it is safe to use
+    // base::Unretained() because the callback won't be invoked when the watcher
+    // gets deleted.
+    auto registry_key_watcher = RegistryKeyWatcher::Create(
+        program.info.registry_root, program.info.registry_key_path.c_str(),
+        program.info.registry_wow64_access,
+        base::BindOnce(&IncompatibleApplicationsHandler::OnApplicationRemoved,
+                       base::Unretained(this), program.info));
+
+    // Only keep the watcher if it was successfully initialized. A failure here
+    // is unlikely, but the worst that can happen is that the |program| will not
+    // get removed from the list automatically in the Incompatible Applications
+    // subpage.
+    if (registry_key_watcher) {
+      registry_key_watchers_.insert(
+          {program.info, std::move(registry_key_watcher)});
+    }
+
+    // Also the application to the list that is passed to the javascript.
+    base::Value dict(base::Value::Type::DICTIONARY);
+    dict.SetKey("name", base::Value(program.info.name));
+    dict.SetKey("type", base::Value(program.blacklist_action->message_type()));
+    dict.SetKey("url", base::Value(program.blacklist_action->message_url()));
+    application_list.GetList().push_back(std::move(dict));
+  }
+
   const base::Value& callback_id = args->GetList().front();
-  ResolveJavascriptCallback(callback_id,
-                            ProblematicProgramsUpdater::GetCachedPrograms());
+  ResolveJavascriptCallback(callback_id, application_list);
 }
 
 void IncompatibleApplicationsHandler::HandleStartProgramUninstallation(
@@ -100,6 +146,13 @@ void IncompatibleApplicationsHandler::GetPluralString(
   ResolveJavascriptCallback(
       callback_id,
       base::Value(l10n_util::GetPluralStringFUTF16(id, num_applications)));
+}
+
+void IncompatibleApplicationsHandler::OnApplicationRemoved(
+    const InstalledPrograms::ProgramInfo& program) {
+  registry_key_watchers_.erase(program);
+  FireWebUIListener("incompatible-application-removed",
+                    base::Value(program.name));
 }
 
 }  // namespace settings
