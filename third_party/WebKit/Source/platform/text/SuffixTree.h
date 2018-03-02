@@ -55,7 +55,6 @@ class ASCIICodebook {
 template <typename Codebook>
 class SuffixTree {
   USING_FAST_MALLOC(SuffixTree);
-  WTF_MAKE_NONCOPYABLE(SuffixTree);
 
  public:
   SuffixTree(const String& text, unsigned depth) : depth_(depth), leaf_(true) {
@@ -77,7 +76,6 @@ class SuffixTree {
  private:
   class Node {
     USING_FAST_MALLOC(Node);
-    WTF_MAKE_NONCOPYABLE(Node);
 
    public:
     Node(bool is_leaf = false) : is_leaf_(is_leaf) {}
@@ -113,6 +111,8 @@ class SuffixTree {
     // TODO(tsepez): convert to base::flat_map when allowed in blink.
     Vector<std::pair<int, Node*>> children_;
     const bool is_leaf_;
+
+    DISALLOW_COPY_AND_ASSIGN(Node);
   };
 
   void Build(const String& text) {
@@ -136,6 +136,8 @@ class SuffixTree {
   // (there can be a lot of these), we alias all the leaves to this "static"
   // leaf node.
   Node leaf_;
+
+  DISALLOW_COPY_AND_ASSIGN(SuffixTree);
 };
 
 }  // namespace blink

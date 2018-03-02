@@ -42,7 +42,7 @@ namespace {
 
 class OutputBuffer {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(OutputBuffer);
+  DISALLOW_COPY_AND_ASSIGN(OutputBuffer);
 
  public:
   OutputBuffer() = default;
