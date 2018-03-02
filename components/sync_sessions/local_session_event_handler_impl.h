@@ -1,0 +1,159 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef COMPONENTS_SYNC_SESSIONS_LOCAL_SESSION_EVENT_HANDLER_IMPL_H_
+#define COMPONENTS_SYNC_SESSIONS_LOCAL_SESSION_EVENT_HANDLER_IMPL_H_
+
+#include <memory>
+#include <set>
+#include <string>
+
+#include "base/macros.h"
+#include "base/time/time.h"
+#include "components/sessions/core/session_id.h"
+#include "components/sessions/core/session_types.h"
+#include "components/sync_sessions/local_session_event_router.h"
+#include "components/sync_sessions/sessions_global_id_mapper.h"
+#include "components/sync_sessions/synced_session.h"
+#include "components/sync_sessions/task_tracker.h"
+
+namespace sync_pb {
+class SessionSpecifics;
+class SessionTab;
+}  // namespace sync_pb
+
+namespace sync_sessions {
+
+class SyncedSessionTracker;
+class SyncedTabDelegate;
+
+// Class responsible for propagating local session changes to the sessions
+// model including SyncedSessionTracker (in-memory representation) as well as
+// the persistency and sync layers (via delegate).
+class LocalSessionEventHandlerImpl : public LocalSessionEventHandler {
+ public:
+  class WriteBatch {
+   public:
+    WriteBatch();
+    virtual ~WriteBatch();
+    virtual void Delete(int tab_node_id) = 0;
+    virtual void Add(std::unique_ptr<sync_pb::SessionSpecifics> specifics) = 0;
+    virtual void Update(
+        std::unique_ptr<sync_pb::SessionSpecifics> specifics) = 0;
+    virtual void Commit() = 0;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(WriteBatch);
+  };
+
+  class Delegate {
+   public:
+    virtual ~Delegate();
+    virtual std::unique_ptr<WriteBatch> CreateLocalSessionWriteBatch() = 0;
+    // Analogous to the functions in FaviconCache.
+    virtual void OnPageFaviconUpdated(const GURL& page_url) = 0;
+    virtual void OnFaviconVisited(const GURL& page_url,
+                                  const GURL& favicon_url) = 0;
+  };
+
+  LocalSessionEventHandlerImpl(Delegate* delegate,
+                               SyncSessionsClient* sessions_client,
+                               SyncedSessionTracker* session_tracker);
+  ~LocalSessionEventHandlerImpl() override;
+
+  SessionsGlobalIdMapper* GetGlobalIdMapper();
+
+  // Resync local window and tab information. Updates the local sessions header
+  // node with the status of open windows and the order of tabs they contain.
+  // |change_output| must not be nullptr.
+  //
+  // Must be called before routing events to this class (typically a call to
+  // the router's StartRoutingTo()), that is, before using this object as
+  // LocalSessionEventHandler.
+  // TODO(crbug.com/681921): Revisit if this function can be merged with the
+  // constructor, since it's essentially a two-step initialization.
+  void AssociateWindowsAndTabs(const std::string& session_tag,
+                               const std::string& session_name,
+                               sync_pb::SyncEnums::DeviceType device_type,
+                               WriteBatch* change_output);
+
+  // LocalSessionEventHandler implementation.
+  void OnLocalTabModified(SyncedTabDelegate* modified_tab) override;
+  void OnFaviconsChanged(const std::set<GURL>& page_urls,
+                         const GURL& icon_url) override;
+
+  // Set |session_tab| from |tab_delegate| and |mtime|. Exposed publicly for
+  // testing.
+  void SetSessionTabFromDelegateForTest(const SyncedTabDelegate& tab_delegate,
+                                        base::Time mtime,
+                                        sessions::SessionTab* session_tab);
+
+ private:
+  enum ReloadTabsOption { RELOAD_TABS, DONT_RELOAD_TABS };
+  void AssociateWindows(ReloadTabsOption option,
+                        bool has_tabbed_window,
+                        WriteBatch* change_output);
+
+  // Loads and reassociates the local tab referenced in |tab|.
+  // |change_output| *must* be provided as a link to the SyncChange pipeline
+  // that exists in the caller's context. This function will append necessary
+  // changes for processing later. Will only assign a new sync id if there is
+  // a tabbed window, which results in failure for tabs without sync ids yet.
+  void AssociateTab(SyncedTabDelegate* const tab,
+                    bool has_tabbed_window,
+                    WriteBatch* change_output);
+
+  // It's possible that when we associate windows, tabs aren't all loaded
+  // into memory yet (e.g on android) and we don't have a WebContents. In this
+  // case we can't do a full association, but we still want to update tab IDs
+  // as they may have changed after a session was restored.  This method
+  // compares new_tab_id and new_window_id against the previously persisted tab
+  // ID and window ID (from our TabNodePool) and updates them if either differs.
+  void AssociateRestoredPlaceholderTab(const SyncedTabDelegate& tab_delegate,
+                                       SessionID::id_type new_tab_id,
+                                       SessionID::id_type new_window_id,
+                                       WriteBatch* change_output);
+
+  // Appends an ACTION_UPDATE for a sync tab entity onto |change_output| to
+  // reflect the contents of |tab|, given the tab node id |sync_id|.
+  void AppendChangeForExistingTab(int sync_id,
+                                  const sessions::SessionTab& tab,
+                                  WriteBatch* change_output) const;
+
+  // Set |session_tab| from |tab_delegate| and |mtime|.
+  void SetSessionTabFromDelegate(const SyncedTabDelegate& tab_delegate,
+                                 base::Time mtime,
+                                 sessions::SessionTab* session_tab) const;
+
+  // Updates task tracker with the navigations of |tab_delegate|.
+  void UpdateTaskTracker(SyncedTabDelegate* const tab_delegate);
+
+  // Update |tab_specifics| with the corresponding task ids.
+  void WriteTasksIntoSpecifics(sync_pb::SessionTab* tab_specifics);
+
+  // On Android, it's possible to not have any tabbed windows when only custom
+  // tabs are currently open. This means that there is tab data that will be
+  // restored later, but we cannot access it. This method is an elaborate way to
+  // check if we're currently in that state or not.
+  bool ScanForTabbedWindow();
+
+  // Injected dependencies (not owned).
+  Delegate* const delegate_;
+  SyncSessionsClient* const sessions_client_;
+  SyncedSessionTracker* const session_tracker_;
+
+  SessionsGlobalIdMapper global_id_mapper_;
+
+  // Tracks Chrome Tasks, which associates navigations, with tab and navigation
+  // changes of current session.
+  TaskTracker task_tracker_;
+
+  std::string current_session_tag_;
+
+  DISALLOW_COPY_AND_ASSIGN(LocalSessionEventHandlerImpl);
+};
+
+}  // namespace sync_sessions
+
+#endif  // COMPONENTS_SYNC_SESSIONS_LOCAL_SESSION_EVENT_HANDLER_IMPL_H_
