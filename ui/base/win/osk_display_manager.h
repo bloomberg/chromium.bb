@@ -13,7 +13,6 @@
 
 namespace ui {
 
-class OnScreenKeyboardDetector;
 class OnScreenKeyboardObserver;
 
 // This class provides functionality to display the on screen keyboard on
@@ -23,36 +22,24 @@ class UI_BASE_EXPORT OnScreenKeyboardDisplayManager {
  public:
   static OnScreenKeyboardDisplayManager* GetInstance();
 
-  ~OnScreenKeyboardDisplayManager();
+  virtual ~OnScreenKeyboardDisplayManager();
 
   // Functions to display and dismiss the keyboard.
   // The optional |observer| parameter allows callers to be notified when the
   // keyboard is displayed, dismissed, etc.
-  bool DisplayVirtualKeyboard(OnScreenKeyboardObserver* observer);
+  virtual bool DisplayVirtualKeyboard(OnScreenKeyboardObserver* observer) = 0;
   // When the keyboard is dismissed, the registered observer if any is removed
   // after notifying it.
-  bool DismissVirtualKeyboard();
+  virtual bool DismissVirtualKeyboard() = 0;
 
   // Removes a registered observer.
-  void RemoveObserver(OnScreenKeyboardObserver* observer);
-
-  // Returns the path of the on screen keyboard exe (TabTip.exe) in the
-  // |osk_path| parameter.
-  // Returns true on success.
-  bool GetOSKPath(base::string16* osk_path);
+  virtual void RemoveObserver(OnScreenKeyboardObserver* observer) = 0;
 
   // Returns true if the virtual keyboard is currently visible.
-  bool IsKeyboardVisible() const;
+  virtual bool IsKeyboardVisible() const = 0;
 
- private:
+ protected:
   OnScreenKeyboardDisplayManager();
-
-  std::unique_ptr<OnScreenKeyboardDetector> keyboard_detector_;
-
-  // The location of TabTip.exe.
-  base::string16 osk_path_;
-
-  DISALLOW_COPY_AND_ASSIGN(OnScreenKeyboardDisplayManager);
 };
 
 }  // namespace ui
