@@ -55,7 +55,7 @@ class CORE_EXPORT NGPhysicalFragment
     kAtomicInline,
     kFloating,
     kOutOfFlowPositioned,
-    // When adding new values, make sure the bit size of |box_type_| is large
+    // When adding new values, make sure the bit size of |sub_type_| is large
     // enough to store.
 
     // Also, add after kMinimumBlockLayoutRoot if the box type is a block layout
@@ -75,22 +75,29 @@ class CORE_EXPORT NGPhysicalFragment
   bool IsLineBox() const { return Type() == NGFragmentType::kFragmentLineBox; }
 
   // Returns the box type of this fragment.
-  NGBoxType BoxType() const { return static_cast<NGBoxType>(box_type_); }
+  NGBoxType BoxType() const {
+    DCHECK(IsBox());
+    return static_cast<NGBoxType>(sub_type_);
+  }
   // True if this is an inline box; e.g., <span>. Atomic inlines such as
   // replaced elements or inline block are not included.
-  bool IsInlineBox() const { return BoxType() == NGBoxType::kInlineBox; }
-  // Returns whether the fragment is old layout root.
-  bool IsOldLayoutRoot() const { return is_old_layout_root_; }
+  bool IsInlineBox() const {
+    return IsBox() && BoxType() == NGBoxType::kInlineBox;
+  }
   // An atomic inline is represented as a kFragmentBox, such as inline block and
   // replaced elements.
-  bool IsAtomicInline() const { return BoxType() == NGBoxType::kAtomicInline; }
+  bool IsAtomicInline() const {
+    return IsBox() && BoxType() == NGBoxType::kAtomicInline;
+  }
   // True if this fragment is in-flow in an inline formatting context.
   bool IsInline() const {
     return IsText() || IsInlineBox() || IsAtomicInline();
   }
-  bool IsFloating() const { return BoxType() == NGBoxType::kFloating; }
+  bool IsFloating() const {
+    return IsBox() && BoxType() == NGBoxType::kFloating;
+  }
   bool IsOutOfFlowPositioned() const {
-    return BoxType() == NGBoxType::kOutOfFlowPositioned;
+    return IsBox() && BoxType() == NGBoxType::kOutOfFlowPositioned;
   }
   bool IsFloatingOrOutOfFlowPositioned() const {
     return IsFloating() || IsOutOfFlowPositioned();
@@ -98,11 +105,15 @@ class CORE_EXPORT NGPhysicalFragment
   bool IsBlockFlow() const;
   bool IsListMarker() const;
 
+  // Returns whether the fragment is old layout root.
+  bool IsOldLayoutRoot() const { return is_old_layout_root_; }
+
   // A block sub-layout starts on this fragment. Inline blocks, floats, out of
   // flow positioned objects are such examples. This is also true on NG/legacy
   // boundary.
   bool IsBlockLayoutRoot() const {
-    return BoxType() >= NGBoxType::kMinimumBlockLayoutRoot || IsOldLayoutRoot();
+    return (IsBox() && BoxType() >= NGBoxType::kMinimumBlockLayoutRoot) ||
+           IsOldLayoutRoot();
   }
 
   // |Offset()| is reliable only when this fragment was placed by LayoutNG
@@ -191,6 +202,7 @@ class CORE_EXPORT NGPhysicalFragment
                      const ComputedStyle& style,
                      NGPhysicalSize size,
                      NGFragmentType type,
+                     unsigned sub_type,
                      scoped_refptr<NGBreakToken> break_token = nullptr);
 
   LayoutObject* layout_object_;
@@ -200,7 +212,7 @@ class CORE_EXPORT NGPhysicalFragment
   scoped_refptr<NGBreakToken> break_token_;
 
   unsigned type_ : 2;  // NGFragmentType
-  unsigned box_type_ : 3;  // NGBoxType
+  unsigned sub_type_ : 3;  // Union of NGBoxType and NGTextType
   unsigned is_old_layout_root_ : 1;
   unsigned is_placed_ : 1;
   unsigned border_edge_ : 4;  // NGBorderEdges::Physical

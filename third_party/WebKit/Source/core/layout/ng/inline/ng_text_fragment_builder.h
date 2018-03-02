@@ -7,6 +7,7 @@
 
 #include "core/layout/ng/geometry/ng_logical_size.h"
 #include "core/layout/ng/inline/ng_inline_node.h"
+#include "core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "core/layout/ng/inline/ng_text_end_effect.h"
 #include "core/layout/ng/ng_base_fragment_builder.h"
 #include "platform/wtf/Allocator.h"
@@ -14,7 +15,6 @@
 namespace blink {
 
 class LayoutObject;
-class NGPhysicalTextFragment;
 class ShapeResult;
 struct NGInlineItemResult;
 
@@ -25,7 +25,9 @@ class CORE_EXPORT NGTextFragmentBuilder final : public NGBaseFragmentBuilder {
   NGTextFragmentBuilder(NGInlineNode, WritingMode);
 
   // NOTE: Takes ownership of the shape result within the item result.
-  void SetItem(NGInlineItemResult*, LayoutUnit line_height);
+  void SetItem(NGPhysicalTextFragment::NGTextType,
+               NGInlineItemResult*,
+               LayoutUnit line_height);
   void SetText(LayoutObject*,
                const String& text,
                scoped_refptr<const ComputedStyle>,
@@ -42,6 +44,10 @@ class CORE_EXPORT NGTextFragmentBuilder final : public NGBaseFragmentBuilder {
   unsigned end_offset_;
   NGLogicalSize size_;
   scoped_refptr<const ShapeResult> shape_result_;
+
+  NGPhysicalTextFragment::NGTextType text_type_ =
+      NGPhysicalTextFragment::kNormalText;
+
   NGTextEndEffect end_effect_ = NGTextEndEffect::kNone;
   LayoutObject* layout_object_ = nullptr;
 };

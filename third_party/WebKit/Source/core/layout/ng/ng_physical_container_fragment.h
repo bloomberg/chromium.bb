@@ -30,6 +30,7 @@ class CORE_EXPORT NGPhysicalContainerFragment : public NGPhysicalFragment {
       const ComputedStyle&,
       NGPhysicalSize,
       NGFragmentType,
+      unsigned sub_type,
       Vector<scoped_refptr<NGPhysicalFragment>>& children,
       const NGPhysicalOffsetRect& contents_visual_rect,
       scoped_refptr<NGBreakToken> = nullptr);

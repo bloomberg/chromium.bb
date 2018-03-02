@@ -20,6 +20,7 @@ NGPhysicalLineBoxFragment::NGPhysicalLineBoxFragment(
                                   style,
                                   size,
                                   kFragmentLineBox,
+                                  0,
                                   children,
                                   contents_visual_rect,
                                   std::move(break_token)),

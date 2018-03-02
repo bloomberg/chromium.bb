@@ -117,31 +117,27 @@ void NGInlineLayoutAlgorithm::CreateLine(NGLineInfo* line_info,
   for (auto& item_result : *line_items) {
     DCHECK(item_result.item);
     const NGInlineItem& item = *item_result.item;
-    if (item.Type() == NGInlineItem::kText ||
-        item.Type() == NGInlineItem::kControl) {
-      if (!item.GetLayoutObject()) {
-        // TODO(kojii): Add a flag to NGInlineItem for this case.
-        continue;
-      }
+    if (item.Type() == NGInlineItem::kText) {
+      DCHECK(item.GetLayoutObject());
       DCHECK(item.GetLayoutObject()->IsText() ||
              item.GetLayoutObject()->IsLayoutNGListItem());
-      if (item_result.shape_result) {
-        if (quirks_mode_)
-          box->EnsureTextMetrics(*item.Style(), baseline_type_);
-        // Take all used fonts into account if 'line-height: normal'.
-        if (box->include_used_fonts && item.Type() == NGInlineItem::kText) {
-          box->AccumulateUsedFonts(item_result.shape_result.get(),
-                                   baseline_type_);
-        }
-      } else {
-        DCHECK(!item.TextShapeResult());  // kControl or unit tests.
-        if (quirks_mode_ && !box->HasMetrics())
-          box->EnsureTextMetrics(*item.Style(), baseline_type_);
+      DCHECK(item_result.shape_result);
+
+      if (quirks_mode_)
+        box->EnsureTextMetrics(*item.Style(), baseline_type_);
+
+      // Take all used fonts into account if 'line-height: normal'.
+      if (box->include_used_fonts) {
+        box->AccumulateUsedFonts(item_result.shape_result.get(),
+                                 baseline_type_);
       }
 
-      text_builder.SetItem(&item_result, box->text_height);
+      text_builder.SetItem(NGPhysicalTextFragment::kNormalText, &item_result,
+                           box->text_height);
       line_box_.AddChild(text_builder.ToTextFragment(), box->text_top,
                          item_result.inline_size, item.BidiLevel());
+    } else if (item.Type() == NGInlineItem::kControl) {
+      PlaceControlItem(item, &item_result, box);
     } else if (item.Type() == NGInlineItem::kOpenTag) {
       box = box_states_->OnOpenTag(item, item_result, line_box_);
       // Compute text metrics for all inline boxes since even empty inlines
@@ -237,6 +233,45 @@ void NGInlineLayoutAlgorithm::CreateLine(NGLineInfo* line_info,
   container_builder_.SetInlineSize(inline_size);
   container_builder_.SetMetrics(line_box_metrics);
   container_builder_.SetBfcOffset(line_bfc_offset);
+}
+
+void NGInlineLayoutAlgorithm::PlaceControlItem(const NGInlineItem& item,
+                                               NGInlineItemResult* item_result,
+                                               NGInlineBoxState* box) {
+  DCHECK_EQ(item.Type(), NGInlineItem::kControl);
+  DCHECK_EQ(item.Length(), 1u);
+  DCHECK(!item.TextShapeResult());
+  UChar character = Node().Text()[item.StartOffset()];
+  NGPhysicalTextFragment::NGTextType type;
+  switch (character) {
+    case kNewlineCharacter:
+      type = NGPhysicalTextFragment::kForcedLineBreak;
+      break;
+    case kTabulationCharacter:
+      type = NGPhysicalTextFragment::kFlowControl;
+      break;
+    case kZeroWidthSpaceCharacter:
+      // Don't generate fragments if this is a generated (not in DOM) break
+      // opportunity during the white space collapsing in NGInlineItemBuilder.
+      if (!item.GetLayoutObject())
+        return;
+      type = NGPhysicalTextFragment::kFlowControl;
+      break;
+    default:
+      NOTREACHED();
+      return;
+  }
+  DCHECK(item.GetLayoutObject());
+  DCHECK(item.GetLayoutObject()->IsText());
+
+  if (quirks_mode_ && !box->HasMetrics())
+    box->EnsureTextMetrics(*item.Style(), baseline_type_);
+
+  NGTextFragmentBuilder text_builder(Node(),
+                                     ConstraintSpace().GetWritingMode());
+  text_builder.SetItem(type, item_result, box->text_height);
+  line_box_.AddChild(text_builder.ToTextFragment(), box->text_top,
+                     item_result->inline_size, item.BidiLevel());
 }
 
 // Place a generated content that does not exist in DOM nor in LayoutObject

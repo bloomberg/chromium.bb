@@ -184,13 +184,14 @@ NGPhysicalFragment::NGPhysicalFragment(LayoutObject* layout_object,
                                        const ComputedStyle& style,
                                        NGPhysicalSize size,
                                        NGFragmentType type,
+                                       unsigned sub_type,
                                        scoped_refptr<NGBreakToken> break_token)
     : layout_object_(layout_object),
       style_(&style),
       size_(size),
       break_token_(std::move(break_token)),
       type_(type),
-      box_type_(NGBoxType::kNormalBox),
+      sub_type_(sub_type),
       is_old_layout_root_(false),
       is_placed_(false) {}
 
@@ -333,7 +334,8 @@ String NGPhysicalFragment::ToString() const {
       break;
     case kFragmentText: {
       const NGPhysicalTextFragment& text = ToNGPhysicalTextFragment(*this);
-      output.Append(String::Format(", Text: (%u,%u) \"", text.StartOffset(),
+      output.Append(String::Format(", TextType: %u, Text: (%u,%u) \"",
+                                   text.TextType(), text.StartOffset(),
                                    text.EndOffset()));
       output.Append(text.Text());
       output.Append("\"");

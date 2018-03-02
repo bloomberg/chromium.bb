@@ -35,11 +35,14 @@ NGTextFragmentBuilder::NGTextFragmentBuilder(NGInlineNode node,
     : NGBaseFragmentBuilder(writing_mode, TextDirection::kLtr),
       inline_node_(node) {}
 
-void NGTextFragmentBuilder::SetItem(NGInlineItemResult* item_result,
-                                    LayoutUnit line_height) {
+void NGTextFragmentBuilder::SetItem(
+    NGPhysicalTextFragment::NGTextType text_type,
+    NGInlineItemResult* item_result,
+    LayoutUnit line_height) {
   DCHECK(item_result);
   DCHECK(item_result->item->Style());
 
+  text_type_ = text_type;
   text_ = inline_node_.Text();
   item_index_ = item_result->item_index;
   start_offset_ = item_result->start_offset;
@@ -60,6 +63,7 @@ void NGTextFragmentBuilder::SetText(
   DCHECK(style);
   DCHECK(shape_result);
 
+  text_type_ = NGPhysicalTextFragment::kNormalText;
   text_ = text;
   item_index_ = std::numeric_limits<unsigned>::max();
   start_offset_ = shape_result->StartIndexForResult();
@@ -78,8 +82,8 @@ void NGTextFragmentBuilder::SetText(
 scoped_refptr<NGPhysicalTextFragment> NGTextFragmentBuilder::ToTextFragment() {
   scoped_refptr<NGPhysicalTextFragment> fragment =
       base::AdoptRef(new NGPhysicalTextFragment(
-          layout_object_, Style(), text_, start_offset_, end_offset_,
-          size_.ConvertToPhysical(GetWritingMode()),
+          layout_object_, Style(), text_type_, text_, start_offset_,
+          end_offset_, size_.ConvertToPhysical(GetWritingMode()),
           ToLineOrientation(GetWritingMode()), end_effect_,
           std::move(shape_result_)));
   return fragment;
