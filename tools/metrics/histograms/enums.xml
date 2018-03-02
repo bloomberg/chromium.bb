@@ -25862,6 +25862,7 @@ from previous Chrome versions.
   <int value="-1469536698" label="ChromeHomeDoodle:enabled"/>
   <int value="-1469228683" label="QuickUnlockPinSignin:disabled"/>
   <int value="-1468126425" label="ResourceLoadScheduler:disabled"/>
+  <int value="-1467642274" label="KeyboardShortcutViewer:disabled"/>
   <int value="-1467332609" label="tab-management-experiment-type-anise"/>
   <int value="-1466990325" label="CrosCompUpdates:enabled"/>
   <int value="-1466759286" label="TabModalJsDialog:disabled"/>
@@ -26169,7 +26170,6 @@ from previous Chrome versions.
   <int value="-723224470" label="enable-password-force-saving:enabled"/>
   <int value="-722474177" label="browser-side-navigation:disabled"/>
   <int value="-718626298" label="SysInternals:enabled"/>
-  <int value="-717281513" label="ash-enable-keyboard-shortcut-viewer"/>
   <int value="-716953514" label="disable-password-separated-signin-flow"/>
   <int value="-715733307" label="force-effective-connection-type"/>
   <int value="-714712077" label="ClickToOpenPDFPlaceholder:disabled"/>
@@ -26182,6 +26182,7 @@ from previous Chrome versions.
   <int value="-704232562" label="UseMonitorColorSpace:enabled"/>
   <int value="-702477233" label="ContentFullscreen:enabled"/>
   <int value="-699767107" label="enable-sync-app-list"/>
+  <int value="-699198009" label="KeyboardShortcutViewer:enabled"/>
   <int value="-697751423" label="disable-quickoffice-component-app"/>
   <int value="-684900739" label="disable-merge-key-char-events"/>
   <int value="-684223908" label="enable-android-wallpapers-app"/>

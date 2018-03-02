@@ -52,11 +52,6 @@ const char kAshEnableV1AppBackButton[] = "ash-enable-v1-app-back-button";
 const char kAshEnableDisplayMoveWindowAccels[] =
     "ash-enable-display-move-window-accels";
 
-// Enables keyboard shortcut viewer.
-// TODO(wutao): Remove this once the feature is launched. crbug.com/768932.
-const char kAshEnableKeyboardShortcutViewer[] =
-    "ash-enable-keyboard-shortcut-viewer";
-
 // Enables key bindings to scroll magnified screen.
 const char kAshEnableMagnifierKeyScroller[] =
     "ash-enable-magnifier-key-scroller";

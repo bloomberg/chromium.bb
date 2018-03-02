@@ -10,11 +10,18 @@ namespace features {
 const base::Feature kDockedMagnifier{"DockedMagnifier",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kKeyboardShortcutViewer{"KeyboardShortcutViewer",
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
+
 const base::Feature kSystemTrayUnified{"SystemTrayUnified",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsDockedMagnifierEnabled() {
   return base::FeatureList::IsEnabled(kDockedMagnifier);
+}
+
+bool IsKeyboardShortcutViewerEnabled() {
+  return base::FeatureList::IsEnabled(kKeyboardShortcutViewer);
 }
 
 bool IsSystemTrayUnifiedEnabled() {
