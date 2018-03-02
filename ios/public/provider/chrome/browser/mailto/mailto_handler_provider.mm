@@ -17,6 +17,10 @@ void MailtoHandlerProvider::PrepareMailtoHandling(
     SignedInIdentityBlock signed_in_identity_block,
     SignedInIdentitiesBlock signed_in_identities_block) {}
 
+NSString* MailtoHandlerProvider::MailtoHandlerSettingsTitle() const {
+  return nil;
+}
+
 UIViewController* MailtoHandlerProvider::MailtoHandlerSettingsController()
     const {
   return nil;

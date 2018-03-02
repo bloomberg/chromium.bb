@@ -13,7 +13,7 @@ class TestMailtoHandlerProvider : public MailtoHandlerProvider {
   TestMailtoHandlerProvider();
   ~TestMailtoHandlerProvider() override;
 
-  UIViewController* MailtoHandlerSettingsController() const override;
+  NSString* MailtoHandlerSettingsTitle() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestMailtoHandlerProvider);

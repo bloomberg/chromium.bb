@@ -12,8 +12,7 @@ TestMailtoHandlerProvider::TestMailtoHandlerProvider() {}
 
 TestMailtoHandlerProvider::~TestMailtoHandlerProvider() {}
 
-UIViewController* TestMailtoHandlerProvider::MailtoHandlerSettingsController()
-    const {
+NSString* TestMailtoHandlerProvider::MailtoHandlerSettingsTitle() const {
   // Return something other than nil.
-  return [[UIViewController alloc] init];
+  return @"Test Mailto Settings";
 }
