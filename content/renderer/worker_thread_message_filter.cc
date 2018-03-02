@@ -12,10 +12,10 @@
 namespace content {
 
 WorkerThreadMessageFilter::WorkerThreadMessageFilter(
-    ThreadSafeSender* thread_safe_sender)
-    : main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      thread_safe_sender_(thread_safe_sender) {
-}
+    ThreadSafeSender* thread_safe_sender,
+    scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner)
+    : main_thread_task_runner_(std::move(main_thread_task_runner)),
+      thread_safe_sender_(thread_safe_sender) {}
 
 WorkerThreadMessageFilter::~WorkerThreadMessageFilter() {
 }

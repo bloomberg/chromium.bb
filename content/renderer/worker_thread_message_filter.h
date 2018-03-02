@@ -19,7 +19,9 @@ class ThreadSafeSender;
 // A base class for filtering IPC messages targeted for worker threads.
 class WorkerThreadMessageFilter : public ChildMessageFilter {
  public:
-  explicit WorkerThreadMessageFilter(ThreadSafeSender* thread_safe_sender);
+  WorkerThreadMessageFilter(
+      ThreadSafeSender* thread_safe_sender,
+      scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner);
 
  protected:
   ~WorkerThreadMessageFilter() override;

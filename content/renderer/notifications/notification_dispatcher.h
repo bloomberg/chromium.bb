@@ -15,7 +15,9 @@ namespace content {
 
 class NotificationDispatcher : public WorkerThreadMessageFilter {
  public:
-  explicit NotificationDispatcher(ThreadSafeSender* thread_safe_sender);
+  NotificationDispatcher(
+      ThreadSafeSender* thread_safe_sender,
+      scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner);
 
   // Generates and stores a new process-unique notification request ID mapped to
   // |thread_id|, and returns the generated request ID. This method can be

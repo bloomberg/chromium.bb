@@ -14,7 +14,9 @@ namespace content {
 class CONTENT_EXPORT ServiceWorkerMessageFilter
     : public WorkerThreadMessageFilter {
  public:
-  explicit ServiceWorkerMessageFilter(ThreadSafeSender* thread_safe_sender);
+  ServiceWorkerMessageFilter(
+      ThreadSafeSender* thread_safe_sender,
+      scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner);
 
  protected:
   ~ServiceWorkerMessageFilter() override;
