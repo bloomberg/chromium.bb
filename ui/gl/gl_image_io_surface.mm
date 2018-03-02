@@ -55,36 +55,6 @@ bool ValidInternalFormat(unsigned internalformat) {
   }
 }
 
-bool ValidFormat(gfx::BufferFormat format) {
-  switch (format) {
-    case gfx::BufferFormat::R_8:
-    case gfx::BufferFormat::BGRA_8888:
-    case gfx::BufferFormat::BGRX_8888:
-    case gfx::BufferFormat::RGBA_8888:
-    case gfx::BufferFormat::RGBA_F16:
-    case gfx::BufferFormat::BGRX_1010102:
-    case gfx::BufferFormat::UYVY_422:
-    case gfx::BufferFormat::YUV_420_BIPLANAR:
-      return true;
-    case gfx::BufferFormat::R_16:
-    case gfx::BufferFormat::RG_88:
-    case gfx::BufferFormat::ATC:
-    case gfx::BufferFormat::ATCIA:
-    case gfx::BufferFormat::DXT1:
-    case gfx::BufferFormat::DXT5:
-    case gfx::BufferFormat::ETC1:
-    case gfx::BufferFormat::BGR_565:
-    case gfx::BufferFormat::RGBA_4444:
-    case gfx::BufferFormat::RGBX_8888:
-    case gfx::BufferFormat::RGBX_1010102:
-    case gfx::BufferFormat::YVU_420:
-      return false;
-  }
-
-  NOTREACHED();
-  return false;
-}
-
 GLenum TextureFormat(gfx::BufferFormat format) {
   switch (format) {
     case gfx::BufferFormat::R_8:
@@ -491,6 +461,37 @@ GLImageIOSurface* GLImageIOSurface::FromGLImage(GLImage* image) {
   if (!image || image->GetType() != Type::IOSURFACE)
     return nullptr;
   return static_cast<GLImageIOSurface*>(image);
+}
+
+// static
+bool GLImageIOSurface::ValidFormat(gfx::BufferFormat format) {
+  switch (format) {
+    case gfx::BufferFormat::R_8:
+    case gfx::BufferFormat::BGRA_8888:
+    case gfx::BufferFormat::BGRX_8888:
+    case gfx::BufferFormat::RGBA_8888:
+    case gfx::BufferFormat::RGBA_F16:
+    case gfx::BufferFormat::BGRX_1010102:
+    case gfx::BufferFormat::UYVY_422:
+    case gfx::BufferFormat::YUV_420_BIPLANAR:
+      return true;
+    case gfx::BufferFormat::R_16:
+    case gfx::BufferFormat::RG_88:
+    case gfx::BufferFormat::ATC:
+    case gfx::BufferFormat::ATCIA:
+    case gfx::BufferFormat::DXT1:
+    case gfx::BufferFormat::DXT5:
+    case gfx::BufferFormat::ETC1:
+    case gfx::BufferFormat::BGR_565:
+    case gfx::BufferFormat::RGBA_4444:
+    case gfx::BufferFormat::RGBX_8888:
+    case gfx::BufferFormat::RGBX_1010102:
+    case gfx::BufferFormat::YVU_420:
+      return false;
+  }
+
+  NOTREACHED();
+  return false;
 }
 
 }  // namespace gl

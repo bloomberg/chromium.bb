@@ -55,6 +55,8 @@ class GL_EXPORT GLImageMemory : public GLImage {
   ~GLImageMemory() override;
 
  private:
+  static bool ValidFormat(gfx::BufferFormat format);
+
   const gfx::Size size_;
   const unsigned internalformat_;
   const unsigned char* memory_;
