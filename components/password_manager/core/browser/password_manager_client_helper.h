@@ -19,7 +19,7 @@ class PasswordManagerClientHelperDelegate {
 
   // Methods required from PasswordManagerClient implementation:
   virtual bool IsIncognito() const = 0;
-  virtual PrefService* GetPrefs() = 0;
+  virtual PrefService* GetPrefs() const = 0;
   virtual PasswordManager* GetPasswordManager() = 0;
 
  protected:

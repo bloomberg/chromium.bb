@@ -93,7 +93,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   ~MockPasswordManagerClient() override { store_->ShutdownOnUIThread(); }
 
   PasswordStore* GetPasswordStore() const override { return store_.get(); }
-  PrefService* GetPrefs() override { return prefs_.get(); }
+  PrefService* GetPrefs() const override { return prefs_.get(); }
 
   TestPasswordManagerDriver* test_driver() { return &driver_; }
 

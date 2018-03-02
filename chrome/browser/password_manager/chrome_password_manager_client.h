@@ -88,7 +88,7 @@ class ChromePasswordManagerClient
       const GURL& origin,
       const std::vector<const autofill::PasswordForm*>* federated_matches)
       const override;
-  PrefService* GetPrefs() override;
+  PrefService* GetPrefs() const override;
   password_manager::PasswordStore* GetPasswordStore() const override;
   password_manager::PasswordSyncState GetPasswordSyncState() const override;
   bool WasLastNavigationHTTPError() const override;

@@ -33,6 +33,8 @@ class SyncUsernameTestBase : public testing::Test {
   // Produce a sample PasswordForm.
   static autofill::PasswordForm SimpleGaiaForm(const char* username);
   static autofill::PasswordForm SimpleNonGaiaForm(const char* username);
+  static autofill::PasswordForm SimpleNonGaiaForm(const char* username,
+                                                  const char* origin);
 
   // Instruct the sync service to pretend whether or not it is syncing
   // passwords.

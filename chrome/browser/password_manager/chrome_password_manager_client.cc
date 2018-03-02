@@ -549,7 +549,7 @@ void ChromePasswordManagerClient::OnInputEvent(
 }
 #endif
 
-PrefService* ChromePasswordManagerClient::GetPrefs() {
+PrefService* ChromePasswordManagerClient::GetPrefs() const {
   return profile_->GetPrefs();
 }
 

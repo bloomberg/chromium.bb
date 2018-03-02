@@ -81,16 +81,16 @@ bool SyncCredentialsFilter::ShouldSave(const autofill::PasswordForm& form,
   return !gaia::ShouldSkipSavePasswordForGaiaURL(main_frame_url) &&
          !sync_util::IsSyncAccountCredential(
              form, sync_service_factory_function_.Run(),
-             signin_manager_factory_function_.Run());
+             signin_manager_factory_function_.Run(), client_->GetPrefs());
 }
 
 void SyncCredentialsFilter::ReportFormLoginSuccess(
     const PasswordFormManager& form_manager) const {
   if (!form_manager.IsNewLogin() &&
-      sync_util::IsSyncAccountCredential(
-          form_manager.pending_credentials(),
-          sync_service_factory_function_.Run(),
-          signin_manager_factory_function_.Run())) {
+      sync_util::IsSyncAccountCredential(form_manager.pending_credentials(),
+                                         sync_service_factory_function_.Run(),
+                                         signin_manager_factory_function_.Run(),
+                                         client_->GetPrefs())) {
     base::RecordAction(base::UserMetricsAction(
         "PasswordManager_SyncCredentialFilledAndLoginSuccessfull"));
   }

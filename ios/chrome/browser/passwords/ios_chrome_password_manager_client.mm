@@ -126,7 +126,7 @@ IOSChromePasswordManagerClient::GetPasswordManager() const {
   return delegate_.passwordManager;
 }
 
-PrefService* IOSChromePasswordManagerClient::GetPrefs() {
+PrefService* IOSChromePasswordManagerClient::GetPrefs() const {
   return (delegate_.browserState)->GetPrefs();
 }
 

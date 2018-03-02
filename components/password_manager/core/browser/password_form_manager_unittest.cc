@@ -360,11 +360,12 @@ class TestPasswordManagerClient : public StubPasswordManagerClient {
  public:
   TestPasswordManagerClient()
       : driver_(new NiceMock<MockPasswordManagerDriver>) {
-    prefs_.registry()->RegisterBooleanPref(prefs::kCredentialsEnableService,
-                                           true);
+    prefs_ = std::make_unique<TestingPrefServiceSimple>();
+    prefs_->registry()->RegisterBooleanPref(prefs::kCredentialsEnableService,
+                                            true);
   }
 
-  PrefService* GetPrefs() override { return &prefs_; }
+  PrefService* GetPrefs() const override { return prefs_.get(); }
 
   MockPasswordManagerDriver* mock_driver() { return driver_.get(); }
 
@@ -377,7 +378,7 @@ class TestPasswordManagerClient : public StubPasswordManagerClient {
   void KillDriver() { driver_.reset(); }
 
  private:
-  TestingPrefServiceSimple prefs_;
+  std::unique_ptr<TestingPrefServiceSimple> prefs_;
   std::unique_ptr<MockPasswordManagerDriver> driver_;
 };
 

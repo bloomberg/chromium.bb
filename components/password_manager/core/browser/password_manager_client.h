@@ -170,7 +170,7 @@ class PasswordManagerClient {
       const;
 
   // Gets prefs associated with this embedder.
-  virtual PrefService* GetPrefs() = 0;
+  virtual PrefService* GetPrefs() const = 0;
 
   // Returns the PasswordStore associated with this instance.
   virtual PasswordStore* GetPasswordStore() const = 0;

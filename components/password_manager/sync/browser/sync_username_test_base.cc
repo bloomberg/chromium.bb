@@ -58,6 +58,16 @@ PasswordForm SyncUsernameTestBase::SimpleNonGaiaForm(const char* username) {
   return form;
 }
 
+// static
+PasswordForm SyncUsernameTestBase::SimpleNonGaiaForm(const char* username,
+                                                     const char* origin) {
+  PasswordForm form;
+  form.signon_realm = "https://site.com";
+  form.username_value = base::ASCIIToUTF16(username);
+  form.origin = GURL(origin);
+  return form;
+}
+
 void SyncUsernameTestBase::SetSyncingPasswords(bool syncing_passwords) {
   sync_service_.set_syncing_passwords(syncing_passwords);
 }

@@ -51,7 +51,7 @@ void StubPasswordManagerClient::NotifyStorePasswordCalled() {}
 void StubPasswordManagerClient::AutomaticPasswordSave(
     std::unique_ptr<PasswordFormManager> saved_manager) {}
 
-PrefService* StubPasswordManagerClient::GetPrefs() {
+PrefService* StubPasswordManagerClient::GetPrefs() const {
   return nullptr;
 }
 
