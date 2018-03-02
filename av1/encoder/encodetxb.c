@@ -739,41 +739,10 @@ static int get_coeff_cost(const tran_low_t qc, const int scan_idx,
 }
 
 static int optimize_txb(TxbInfo *txb_info, const LV_MAP_COEFF_COST *txb_costs,
-                        const LV_MAP_EOB_COST *txb_eob_costs,
-                        TxbCache *txb_cache, int dry_run, int fast_mode,
-                        int *rate_cost) {
-  (void)fast_mode;
-  (void)txb_cache;
+                        const LV_MAP_EOB_COST *txb_eob_costs, int *rate_cost) {
   int update = 0;
-  // return update;  // TODO(DKHE): training only.
   if (txb_info->eob == 0) return update;
-  const int max_eob = av1_get_max_eob(txb_info->tx_size);
-
-  tran_low_t *org_qcoeff = txb_info->qcoeff;
-  tran_low_t *org_dqcoeff = txb_info->dqcoeff;
-  uint8_t *const org_levels = txb_info->levels;
-
-  tran_low_t tmp_qcoeff[MAX_TX_SQUARE];
-  tran_low_t tmp_dqcoeff[MAX_TX_SQUARE];
-  uint8_t tmp_levels_buf[TX_PAD_2D];
-  uint8_t *const tmp_levels = set_levels(tmp_levels_buf, txb_info->width);
-  const int org_eob = txb_info->eob;
-  if (dry_run) {
-    const int stride = txb_info->width + TX_PAD_HOR;
-    const int levels_size =
-
-        (stride * (txb_info->height + TX_PAD_VER) + TX_PAD_END);
-    memcpy(tmp_qcoeff, org_qcoeff, sizeof(org_qcoeff[0]) * max_eob);
-    memcpy(tmp_dqcoeff, org_dqcoeff, sizeof(org_dqcoeff[0]) * max_eob);
-    memcpy(tmp_levels, org_levels - TX_PAD_TOP * stride,
-           sizeof(org_levels[0]) * levels_size);
-    txb_info->qcoeff = tmp_qcoeff;
-    txb_info->dqcoeff = tmp_dqcoeff;
-    txb_info->levels = tmp_levels;
-  }
-
   const int16_t *const scan = txb_info->scan_order->scan;
-
   // forward optimize the nz_map`
   const int init_eob = txb_info->eob;
   const int seg_eob = txb_info->seg_eob;
@@ -889,13 +858,6 @@ static int optimize_txb(TxbInfo *txb_info, const LV_MAP_COEFF_COST *txb_costs,
   *rate_cost = zero_blk_rd_cost <= prev_eob_rd_cost
                    ? zero_blk_rate
                    : accu_rate + non_zero_blk_rate;
-
-  if (dry_run) {
-    txb_info->qcoeff = org_qcoeff;
-    txb_info->dqcoeff = org_dqcoeff;
-    txb_info->levels = org_levels;
-    set_eob(txb_info, org_eob);
-  }
   return update;
 }
 
@@ -922,6 +884,7 @@ int hbt_hash_miss(uint32_t hbt_ctx_hash, uint32_t hbt_qc_hash,
                   const LV_MAP_EOB_COST *txb_eob_costs,
                   const struct macroblock_plane *p, int block, int fast_mode,
                   int *rate_cost) {
+  (void)fast_mode;
   const int16_t *scan = txb_info->scan_order->scan;
   int prev_eob = txb_info->eob;
   assert(HBT_EOB <= 16);  // Lengthen array if allowing longer eob.
@@ -936,8 +899,8 @@ int hbt_hash_miss(uint32_t hbt_ctx_hash, uint32_t hbt_qc_hash,
   av1_txb_init_levels(txb_info->qcoeff, txb_info->width, txb_info->height,
                       txb_info->levels);
 
-  const int update = optimize_txb(txb_info, txb_costs, txb_eob_costs, NULL, 0,
-                                  fast_mode, rate_cost);
+  const int update =
+      optimize_txb(txb_info, txb_costs, txb_eob_costs, rate_cost);
 
   // Overwrite old entry
   uint16_t hbt_table_index = hbt_ctx_hash % HBT_TABLE_SIZE;
@@ -1078,8 +1041,8 @@ int hbt_create_hashes(TxbInfo *txb_info, const LV_MAP_COEFF_COST *txb_costs,
       av1_txb_init_levels(txb_info->qcoeff, txb_info->width, txb_info->height,
                           txb_info->levels);
 
-      const int update = optimize_txb(txb_info, txb_costs, txb_eob_costs, NULL,
-                                      0, fast_mode, rate_cost);
+      const int update =
+          optimize_txb(txb_info, txb_costs, txb_eob_costs, rate_cost);
 
       if (update) {
         p->eobs[block] = txb_info->eob;
@@ -1230,8 +1193,8 @@ int av1_optimize_txb(const struct AV1_COMP *cpi, MACROBLOCK *x, int plane,
 
   av1_txb_init_levels(qcoeff, width, height, levels);
 
-  const int update = optimize_txb(&txb_info, &txb_costs, &txb_eob_costs, NULL,
-                                  0, fast_mode, rate_cost);
+  const int update =
+      optimize_txb(&txb_info, &txb_costs, &txb_eob_costs, rate_cost);
 
   if (update) {
     p->eobs[block] = txb_info.eob;

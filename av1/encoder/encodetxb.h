@@ -45,20 +45,6 @@ typedef struct TxbInfo {
   const qm_val_t *iqmatrix;
 } TxbInfo;
 
-typedef struct TxbCache {
-  int nz_count_arr[MAX_TX_SQUARE];
-  int nz_ctx_arr[MAX_TX_SQUARE];
-  int base_count_arr[NUM_BASE_LEVELS][MAX_TX_SQUARE];
-  int base_mag_arr[MAX_TX_SQUARE]
-                  [2];  // [0]: max magnitude [1]: num of max magnitude
-  int base_ctx_arr[NUM_BASE_LEVELS][MAX_TX_SQUARE];
-
-  int br_count_arr[MAX_TX_SQUARE];
-  int br_mag_arr[MAX_TX_SQUARE]
-                [2];  // [0]: max magnitude [1]: num of max magnitude
-  int br_ctx_arr[MAX_TX_SQUARE];
-} TxbCache;
-
 void av1_alloc_txb_buf(AV1_COMP *cpi);
 void av1_free_txb_buf(AV1_COMP *cpi);
 int av1_cost_coeffs_txb(const AV1_COMMON *const cm, const MACROBLOCK *x,
