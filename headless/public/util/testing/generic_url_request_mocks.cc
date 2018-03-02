@@ -46,6 +46,13 @@ MockCookieChangeDispatcher::AddCallbackForCookie(
   return nullptr;
 }
 std::unique_ptr<net::CookieChangeSubscription>
+MockCookieChangeDispatcher::AddCallbackForUrl(
+    const GURL& url,
+    net::CookieChangeCallback callback) {
+  CHECK(false);
+  return nullptr;
+}
+std::unique_ptr<net::CookieChangeSubscription>
 MockCookieChangeDispatcher::AddCallbackForAllChanges(
     net::CookieChangeCallback callback) {
   CHECK(false);

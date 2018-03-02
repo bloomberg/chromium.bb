@@ -113,6 +113,11 @@ class CookieChangeDispatcher {
       const std::string& name,
       CookieChangeCallback callback) WARN_UNUSED_RESULT = 0;
 
+  // Observe changes to the cookies that would be sent for a request to |url|.
+  virtual std::unique_ptr<CookieChangeSubscription> AddCallbackForUrl(
+      const GURL& url,
+      CookieChangeCallback callback) WARN_UNUSED_RESULT = 0;
+
   // Observe all the CookieStore's changes.
   //
   // The callback will not observe a few bookkeeping changes.

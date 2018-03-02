@@ -34,7 +34,7 @@ class AwCookieChangeSubscription : public net::CookieChangeSubscription {
 
 // Wraps a subscription to cookie change notifications for the global
 // CookieStore for a consumer that lives on another thread. Handles passing
-// messages between thread, and destroys itself when the consumer unsubscribes.
+// messages between threads, and destroys itself when the consumer unsubscribes.
 // Must be created on the consumer's thread. Each instance only supports a
 // single subscription.
 class SubscriptionWrapper {
@@ -146,10 +146,19 @@ AwCookieChangeDispatcherWrapper::AddCallbackForCookie(
 }
 
 std::unique_ptr<net::CookieChangeSubscription>
+AwCookieChangeDispatcherWrapper::AddCallbackForUrl(
+    const GURL& url,
+    net::CookieChangeCallback callback) {
+  // Implement when needed by Android Webview consumers.
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+
+std::unique_ptr<net::CookieChangeSubscription>
 AwCookieChangeDispatcherWrapper::AddCallbackForAllChanges(
     net::CookieChangeCallback callback) {
-  // TODO(rdsmith): Implement when needed by Android Webview consumer.
-  CHECK(false);
+  // Implement when needed by Android Webview consumers.
+  NOTIMPLEMENTED();
   return nullptr;
 }
 

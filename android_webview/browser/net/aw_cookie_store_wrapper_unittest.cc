@@ -52,6 +52,7 @@ struct AwCookieStoreWrapperTestTraits {
   static const bool has_path_prefix_bug = false;
   static const bool forbids_setting_empty_name = false;
   static const bool supports_global_cookie_tracking = false;
+  static const bool supports_url_cookie_tracking = false;
   static const bool supports_named_cookie_tracking = true;
   static const bool supports_multiple_tracking_callbacks = false;
   static const int creation_time_granularity_in_ms = 0;
@@ -67,6 +68,9 @@ INSTANTIATE_TYPED_TEST_CASE_P(AwCookieStoreWrapper,
                               android_webview::AwCookieStoreWrapperTestTraits);
 INSTANTIATE_TYPED_TEST_CASE_P(AwCookieStoreWrapper,
                               CookieStoreChangeGlobalTest,
+                              android_webview::AwCookieStoreWrapperTestTraits);
+INSTANTIATE_TYPED_TEST_CASE_P(AwCookieStoreWrapper,
+                              CookieStoreChangeUrlTest,
                               android_webview::AwCookieStoreWrapperTestTraits);
 INSTANTIATE_TYPED_TEST_CASE_P(AwCookieStoreWrapper,
                               CookieStoreChangeNamedTest,

@@ -49,6 +49,13 @@ DelayedCookieMonsterChangeDispatcher::AddCallbackForCookie(
   return nullptr;
 }
 std::unique_ptr<CookieChangeSubscription>
+DelayedCookieMonsterChangeDispatcher::AddCallbackForUrl(
+    const GURL& url,
+    CookieChangeCallback callback) {
+  ADD_FAILURE();
+  return nullptr;
+}
+std::unique_ptr<CookieChangeSubscription>
 DelayedCookieMonsterChangeDispatcher::AddCallbackForAllChanges(
     CookieChangeCallback callback) {
   ADD_FAILURE();

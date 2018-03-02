@@ -49,6 +49,9 @@ class MockCookieChangeDispatcher : public net::CookieChangeDispatcher {
       const GURL& url,
       const std::string& name,
       net::CookieChangeCallback callback) override WARN_UNUSED_RESULT;
+  std::unique_ptr<net::CookieChangeSubscription> AddCallbackForUrl(
+      const GURL& url,
+      net::CookieChangeCallback callback) override WARN_UNUSED_RESULT;
   std::unique_ptr<net::CookieChangeSubscription> AddCallbackForAllChanges(
       net::CookieChangeCallback callback) override WARN_UNUSED_RESULT;
 

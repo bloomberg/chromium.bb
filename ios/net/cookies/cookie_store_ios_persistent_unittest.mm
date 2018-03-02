@@ -43,6 +43,7 @@ struct InactiveCookieStoreIOSTestTraits {
   static const bool supports_global_cookie_tracking = false;
   // TODO(crbug.com/813931): Fix the bugs uncovered by these tests.
   static const bool supports_named_cookie_tracking = false;
+  static const bool supports_url_cookie_tracking = false;
   static const bool supports_multiple_tracking_callbacks = false;
   static const int creation_time_granularity_in_ms = 0;
   static const int enforces_prefixes = true;
@@ -56,6 +57,9 @@ INSTANTIATE_TYPED_TEST_CASE_P(InactiveCookieStoreIOS,
                               InactiveCookieStoreIOSTestTraits);
 INSTANTIATE_TYPED_TEST_CASE_P(InactiveCookieStoreIOS,
                               CookieStoreChangeGlobalTest,
+                              InactiveCookieStoreIOSTestTraits);
+INSTANTIATE_TYPED_TEST_CASE_P(InactiveCookieStoreIOS,
+                              CookieStoreChangeUrlTest,
                               InactiveCookieStoreIOSTestTraits);
 INSTANTIATE_TYPED_TEST_CASE_P(InactiveCookieStoreIOS,
                               CookieStoreChangeNamedTest,
