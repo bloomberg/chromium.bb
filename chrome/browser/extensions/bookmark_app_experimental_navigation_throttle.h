@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_BOOKMARK_APP_NAVIGATION_THROTTLE_H_
-#define CHROME_BROWSER_EXTENSIONS_BOOKMARK_APP_NAVIGATION_THROTTLE_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_BOOKMARK_APP_EXPERIMENTAL_NAVIGATION_THROTTLE_H_
+#define CHROME_BROWSER_EXTENSIONS_BOOKMARK_APP_EXPERIMENTAL_NAVIGATION_THROTTLE_H_
 
 #include <memory>
 
@@ -22,7 +22,8 @@ class Extension;
 
 // This class creates navigation throttles that redirect URLs to Bookmark Apps
 // if the URLs are in scope of the Bookmark App.
-class BookmarkAppNavigationThrottle : public content::NavigationThrottle {
+class BookmarkAppExperimentalNavigationThrottle
+    : public content::NavigationThrottle {
  public:
   // Used to record the result of a navigation.
   enum class ProcessNavigationResult {
@@ -58,9 +59,9 @@ class BookmarkAppNavigationThrottle : public content::NavigationThrottle {
   static std::unique_ptr<content::NavigationThrottle> MaybeCreateThrottleFor(
       content::NavigationHandle* navigation_handle);
 
-  explicit BookmarkAppNavigationThrottle(
+  explicit BookmarkAppExperimentalNavigationThrottle(
       content::NavigationHandle* navigation_handle);
-  ~BookmarkAppNavigationThrottle() override;
+  ~BookmarkAppExperimentalNavigationThrottle() override;
 
   // content::NavigationThrottle:
   content::NavigationThrottle::ThrottleCheckResult WillStartRequest() override;
@@ -94,11 +95,12 @@ class BookmarkAppNavigationThrottle : public content::NavigationThrottle {
   // Retrieves the Bookmark App that has the current URL in its scope.
   scoped_refptr<const Extension> GetAppForCurrentURL();
 
-  base::WeakPtrFactory<BookmarkAppNavigationThrottle> weak_ptr_factory_;
+  base::WeakPtrFactory<BookmarkAppExperimentalNavigationThrottle>
+      weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(BookmarkAppNavigationThrottle);
+  DISALLOW_COPY_AND_ASSIGN(BookmarkAppExperimentalNavigationThrottle);
 };
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_BOOKMARK_APP_NAVIGATION_THROTTLE_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_BOOKMARK_APP_EXPERIMENTAL_NAVIGATION_THROTTLE_H_

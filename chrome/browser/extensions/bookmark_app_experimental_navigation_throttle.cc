@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/bookmark_app_navigation_throttle.h"
+#include "chrome/browser/extensions/bookmark_app_experimental_navigation_throttle.h"
 
 #include <memory>
 
@@ -42,7 +42,7 @@ using content::BrowserThread;
 namespace extensions {
 
 using ProcessNavigationResult =
-    BookmarkAppNavigationThrottle::ProcessNavigationResult;
+    BookmarkAppExperimentalNavigationThrottle::ProcessNavigationResult;
 
 namespace {
 
@@ -177,7 +177,7 @@ scoped_refptr<const Extension> GetAppForURL(
 
 // static
 std::unique_ptr<content::NavigationThrottle>
-BookmarkAppNavigationThrottle::MaybeCreateThrottleFor(
+BookmarkAppExperimentalNavigationThrottle::MaybeCreateThrottleFor(
     content::NavigationHandle* navigation_handle) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -197,32 +197,34 @@ BookmarkAppNavigationThrottle::MaybeCreateThrottleFor(
   }
 
   DVLOG(1) << "Attaching Bookmark App Navigation Throttle.";
-  return std::make_unique<extensions::BookmarkAppNavigationThrottle>(
-      navigation_handle);
+  return std::make_unique<
+      extensions::BookmarkAppExperimentalNavigationThrottle>(navigation_handle);
 }
 
-BookmarkAppNavigationThrottle::BookmarkAppNavigationThrottle(
-    content::NavigationHandle* navigation_handle)
+BookmarkAppExperimentalNavigationThrottle::
+    BookmarkAppExperimentalNavigationThrottle(
+        content::NavigationHandle* navigation_handle)
     : content::NavigationThrottle(navigation_handle), weak_ptr_factory_(this) {}
 
-BookmarkAppNavigationThrottle::~BookmarkAppNavigationThrottle() {}
+BookmarkAppExperimentalNavigationThrottle::
+    ~BookmarkAppExperimentalNavigationThrottle() {}
 
-const char* BookmarkAppNavigationThrottle::GetNameForLogging() {
-  return "BookmarkAppNavigationThrottle";
+const char* BookmarkAppExperimentalNavigationThrottle::GetNameForLogging() {
+  return "BookmarkAppExperimentalNavigationThrottle";
 }
 
 content::NavigationThrottle::ThrottleCheckResult
-BookmarkAppNavigationThrottle::WillStartRequest() {
+BookmarkAppExperimentalNavigationThrottle::WillStartRequest() {
   return ProcessNavigation(false /* is_redirect */);
 }
 
 content::NavigationThrottle::ThrottleCheckResult
-BookmarkAppNavigationThrottle::WillRedirectRequest() {
+BookmarkAppExperimentalNavigationThrottle::WillRedirectRequest() {
   return ProcessNavigation(true /* is_redirect */);
 }
 
 content::NavigationThrottle::ThrottleCheckResult
-BookmarkAppNavigationThrottle::ProcessNavigation(bool is_redirect) {
+BookmarkAppExperimentalNavigationThrottle::ProcessNavigation(bool is_redirect) {
   scoped_refptr<const Extension> target_app = GetTargetApp();
 
   if (navigation_handle()->WasStartedFromContextMenu()) {
@@ -437,8 +439,9 @@ BookmarkAppNavigationThrottle::ProcessNavigation(bool is_redirect) {
     // experience for out-of-scope navigations improves.
     DVLOG(1) << "Open in new tab.";
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&BookmarkAppNavigationThrottle::OpenInNewTab,
-                                  weak_ptr_factory_.GetWeakPtr()));
+        FROM_HERE,
+        base::BindOnce(&BookmarkAppExperimentalNavigationThrottle::OpenInNewTab,
+                       weak_ptr_factory_.GetWeakPtr()));
     RecordProcessNavigationResult(
         ProcessNavigationResult::kDeferOpenNewTabInAppOutOfScope);
     return content::NavigationThrottle::DEFER;
@@ -450,8 +453,9 @@ BookmarkAppNavigationThrottle::ProcessNavigation(bool is_redirect) {
 }
 
 content::NavigationThrottle::ThrottleCheckResult
-BookmarkAppNavigationThrottle::OpenInAppWindowAndCloseTabIfNecessary(
-    scoped_refptr<const Extension> target_app) {
+BookmarkAppExperimentalNavigationThrottle::
+    OpenInAppWindowAndCloseTabIfNecessary(
+        scoped_refptr<const Extension> target_app) {
   content::WebContents* source = navigation_handle()->GetWebContents();
   if (source->GetController().IsInitialNavigation()) {
     // The first navigation might happen synchronously. This could result in us
@@ -460,10 +464,9 @@ BookmarkAppNavigationThrottle::OpenInAppWindowAndCloseTabIfNecessary(
     // attached to a browser window.
     DVLOG(1) << "Defer reparenting WebContents into app window.";
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(
-            &BookmarkAppNavigationThrottle::ReparentWebContentsAndResume,
-            weak_ptr_factory_.GetWeakPtr(), target_app));
+        FROM_HERE, base::BindOnce(&BookmarkAppExperimentalNavigationThrottle::
+                                      ReparentWebContentsAndResume,
+                                  weak_ptr_factory_.GetWeakPtr(), target_app));
     return content::NavigationThrottle::DEFER;
   }
 
@@ -471,7 +474,7 @@ BookmarkAppNavigationThrottle::OpenInAppWindowAndCloseTabIfNecessary(
   return content::NavigationThrottle::CANCEL_AND_IGNORE;
 }
 
-void BookmarkAppNavigationThrottle::OpenBookmarkApp(
+void BookmarkAppExperimentalNavigationThrottle::OpenBookmarkApp(
     scoped_refptr<const Extension> bookmark_app) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -488,12 +491,12 @@ void BookmarkAppNavigationThrottle::OpenBookmarkApp(
   OpenApplication(launch_params);
 }
 
-void BookmarkAppNavigationThrottle::CloseWebContents() {
+void BookmarkAppExperimentalNavigationThrottle::CloseWebContents() {
   DVLOG(1) << "Closing empty tab.";
   navigation_handle()->GetWebContents()->Close();
 }
 
-void BookmarkAppNavigationThrottle::OpenInNewTab() {
+void BookmarkAppExperimentalNavigationThrottle::OpenInNewTab() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   content::WebContents* source = navigation_handle()->GetWebContents();
@@ -514,7 +517,7 @@ void BookmarkAppNavigationThrottle::OpenInNewTab() {
   CancelDeferredNavigation(content::NavigationThrottle::CANCEL_AND_IGNORE);
 }
 
-void BookmarkAppNavigationThrottle::ReparentWebContentsAndResume(
+void BookmarkAppExperimentalNavigationThrottle::ReparentWebContentsAndResume(
     scoped_refptr<const Extension> target_app) {
   ReparentWebContentsIntoAppBrowser(navigation_handle()->GetWebContents(),
                                     target_app.get());
@@ -522,7 +525,7 @@ void BookmarkAppNavigationThrottle::ReparentWebContentsAndResume(
 }
 
 scoped_refptr<const Extension>
-BookmarkAppNavigationThrottle::GetAppForWindow() {
+BookmarkAppExperimentalNavigationThrottle::GetAppForWindow() {
   SCOPED_UMA_HISTOGRAM_TIMER("Extensions.BookmarkApp.GetAppForWindowDuration");
   content::WebContents* source = navigation_handle()->GetWebContents();
   content::BrowserContext* context = source->GetBrowserContext();
@@ -546,14 +549,15 @@ BookmarkAppNavigationThrottle::GetAppForWindow() {
   return app;
 }
 
-scoped_refptr<const Extension> BookmarkAppNavigationThrottle::GetTargetApp() {
+scoped_refptr<const Extension>
+BookmarkAppExperimentalNavigationThrottle::GetTargetApp() {
   SCOPED_UMA_HISTOGRAM_TIMER("Extensions.BookmarkApp.GetTargetAppDuration");
   return GetAppForURL(navigation_handle()->GetURL(),
                       navigation_handle()->GetWebContents());
 }
 
 scoped_refptr<const Extension>
-BookmarkAppNavigationThrottle::GetAppForCurrentURL() {
+BookmarkAppExperimentalNavigationThrottle::GetAppForCurrentURL() {
   SCOPED_UMA_HISTOGRAM_TIMER(
       "Extensions.BookmarkApp.GetAppForCurrentURLDuration");
   return GetAppForURL(navigation_handle()

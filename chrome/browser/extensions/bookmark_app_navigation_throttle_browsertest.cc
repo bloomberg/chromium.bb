@@ -7,8 +7,8 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/extensions/bookmark_app_experimental_navigation_throttle.h"
 #include "chrome/browser/extensions/bookmark_app_helper.h"
-#include "chrome/browser/extensions/bookmark_app_navigation_throttle.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -51,7 +51,7 @@ using namespace net::test_server;
 namespace extensions {
 
 using ProcessNavigationResult =
-    BookmarkAppNavigationThrottle::ProcessNavigationResult;
+    BookmarkAppExperimentalNavigationThrottle::ProcessNavigationResult;
 
 enum class LinkTarget {
   SELF,
@@ -423,12 +423,10 @@ const char kAppUrlPath[]        = "/in_scope/index.html";
 const char kInScopeUrlPath[]    = "/in_scope/other.html";
 const char kOutOfScopeUrlPath[] = "/out_of_scope/index.html";
 
-class BookmarkAppNavigationThrottleBrowserTest : public ExtensionBrowserTest {
+class BookmarkAppNavigationThrottleBaseBrowserTest
+    : public ExtensionBrowserTest {
  public:
   void SetUp() override {
-    scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
-    scoped_feature_list_->InitAndEnableFeature(features::kDesktopPWAWindowing);
-
     // Register a request handler that will return empty pages. Tests are
     // responsible for adding elements and firing events on these empty pages.
     embedded_test_server()->RegisterRequestHandler(
@@ -764,8 +762,6 @@ class BookmarkAppNavigationThrottleBrowserTest : public ExtensionBrowserTest {
     return !HasFailure();
   }
 
-  void ResetFeatureList() { scoped_feature_list_.reset(); }
-
   GURL GetLaunchingPageURL() {
     return embedded_test_server()->GetURL(kLaunchingPageHost,
                                           kLaunchingPagePath);
@@ -778,19 +774,35 @@ class BookmarkAppNavigationThrottleBrowserTest : public ExtensionBrowserTest {
  private:
   const Extension* test_bookmark_app_;
   base::HistogramTester histogram_tester_;
-  std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
+};
+
+// Tests for the behavior when the kDesktopPWAsLinkCapturing flag is on.
+class BookmarkAppNavigationThrottleExperimentalBrowserTest
+    : public BookmarkAppNavigationThrottleBaseBrowserTest {
+ public:
+  void SetUp() override {
+    scoped_feature_list_.InitWithFeatures(
+        {features::kDesktopPWAWindowing, features::kDesktopPWAsLinkCapturing},
+        {});
+    BookmarkAppNavigationThrottleBaseBrowserTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 // Tests that the result is the same regardless of the 'rel' attribute of links.
-class BookmarkAppNavigationThrottleLinkBrowserTest
-    : public BookmarkAppNavigationThrottleBrowserTest,
+class BookmarkAppNavigationThrottleExperimentalLinkBrowserTest
+    : public BookmarkAppNavigationThrottleExperimentalBrowserTest,
       public ::testing::WithParamInterface<std::string> {};
 
 // Tests that navigating to the Web App's app_url doesn't open a new window
-// if features::kDesktopPWAWindowing is disabled before installing the app.
-IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
+// if features::kDesktopPWAsLinkCapturing is disabled before installing the app.
+IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleExperimentalLinkBrowserTest,
                        FeatureDisable_BeforeInstall) {
-  ResetFeatureList();
+  base::test::ScopedFeatureList disabled_features;
+  disabled_features.InitWithFeatures({}, {features::kDesktopPWAWindowing,
+                                          features::kDesktopPWAsLinkCapturing});
   InstallTestBookmarkApp();
   NavigateToLaunchingPage();
 
@@ -806,10 +818,12 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
 
 // Tests that navigating to the Web App's app_url doesn't open a new window
 // if features::kDesktopPWAWindowing is disabled after installing the app.
-IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
+IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleExperimentalLinkBrowserTest,
                        FeatureDisable_AfterInstall) {
   InstallTestBookmarkApp();
-  ResetFeatureList();
+  base::test::ScopedFeatureList disabled_features;
+  disabled_features.InitWithFeatures({}, {features::kDesktopPWAWindowing,
+                                          features::kDesktopPWAsLinkCapturing});
   NavigateToLaunchingPage();
 
   const GURL app_url = embedded_test_server()->GetURL(kAppUrlHost, kAppUrlPath);
@@ -824,20 +838,21 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
 
 // Tests that most transition types for navigations to in-scope or
 // out-of-scope URLs do not result in new app windows.
-class BookmarkAppNavigationThrottleTransitionBrowserTest
-    : public BookmarkAppNavigationThrottleBrowserTest,
+class BookmarkAppNavigationThrottleExperimentalTransitionBrowserTest
+    : public BookmarkAppNavigationThrottleExperimentalBrowserTest,
       public ::testing::WithParamInterface<
           std::tuple<std::string, ui::PageTransition>> {};
 
 INSTANTIATE_TEST_CASE_P(
     /* no prefix */,
-    BookmarkAppNavigationThrottleTransitionBrowserTest,
+    BookmarkAppNavigationThrottleExperimentalTransitionBrowserTest,
     testing::Combine(testing::Values(kInScopeUrlPath, kOutOfScopeUrlPath),
                      testing::Range(ui::PAGE_TRANSITION_FIRST,
                                     ui::PAGE_TRANSITION_LAST_CORE)));
 
-IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleTransitionBrowserTest,
-                       MainFrameNavigations) {
+IN_PROC_BROWSER_TEST_P(
+    BookmarkAppNavigationThrottleExperimentalTransitionBrowserTest,
+    MainFrameNavigations) {
   InstallTestBookmarkApp();
 
   GURL target_url =
@@ -847,7 +862,7 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleTransitionBrowserTest,
 
   if (!ui::PageTransitionIsMainFrame(transition)) {
     // Subframe navigations require a different setup. See
-    // BookmarkAppNavigationThrottleBrowserTest.SubframeNavigation.
+    // BookmarkAppNavigationThrottleExperimentalBrowserTest.SubframeNavigation.
     return;
   }
 
@@ -870,7 +885,7 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleTransitionBrowserTest,
 // PAGE_TRANSITION_AUTO_SUBFRAME/PAGE_TRANSITION_MANUAL_SUBFRAME, even though,
 // by the end of the navigation, the transition type is
 // PAGE_TRANSITION_AUTO_SUBFRAME/PAGE_TRANSITON_MANUAL_SUBFRAME.
-IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
+IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleExperimentalBrowserTest,
                        AutoSubframeNavigation) {
   InstallTestBookmarkApp();
   NavigateToLaunchingPage();
@@ -896,7 +911,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
   ExpectNavigationResultHistogramEquals(global_histogram(), {});
 }
 
-IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
+IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleExperimentalBrowserTest,
                        ManualSubframeNavigation) {
   InstallTestBookmarkApp();
   NavigateToLaunchingPage();
@@ -936,7 +951,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
 // Tests that pasting an in-scope URL into the address bar and navigating to it,
 // does not open an app window.
 // https://crbug.com/782004
-IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
+IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleExperimentalBrowserTest,
                        LinkNavigationFromAddressBar) {
   InstallTestBookmarkApp();
 
@@ -957,7 +972,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
 }
 
 // Tests that going back to an in-scope URL does not open a new app window.
-IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
+IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleExperimentalBrowserTest,
                        BackNavigation) {
   InstallTestBookmarkApp();
   NavigateToTestAppURL();
@@ -1001,7 +1016,8 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
 
 // Tests that clicking a link to an app that launches in a tab does not open a
 // a new app window.
-IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest, TabApp) {
+IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleExperimentalLinkBrowserTest,
+                       TabApp) {
   InstallTestBookmarkApp();
 
   // Set a pref indicating that the user wants to launch in a regular tab.
@@ -1024,7 +1040,7 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest, TabApp) {
 
 // Tests that clicking a link with target="_self" to the app's app_url opens the
 // Bookmark App.
-IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
+IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleExperimentalLinkBrowserTest,
                        AppUrlSelf) {
   InstallTestBookmarkApp();
   NavigateToLaunchingPage();
@@ -1043,7 +1059,7 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
 
 // Tests that clicking a link with target="_blank" to the app's app_url opens
 // the Bookmark App.
-IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
+IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleExperimentalLinkBrowserTest,
                        AppUrlBlank) {
   InstallTestBookmarkApp();
   NavigateToLaunchingPage();
@@ -1062,7 +1078,7 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
 
 // Tests that Ctrl + Clicking a link to the app's app_url opens a new background
 // tab and not the app.
-IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
+IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleExperimentalLinkBrowserTest,
                        AppUrlCtrlClick) {
   InstallTestBookmarkApp();
   NavigateToLaunchingPage();
@@ -1081,7 +1097,7 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
 
 // Tests that clicking a link with target="_self" and for which the server
 // redirects to the app's app_url opens the Bookmark App.
-IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
+IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleExperimentalLinkBrowserTest,
                        ServerRedirectToAppUrlSelf) {
   InstallTestBookmarkApp();
   NavigateToLaunchingPage();
@@ -1102,7 +1118,7 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
 
 // Tests that clicking a link with target="_blank" and for which the server
 // redirects to the app's app_url opens the Bookmark App.
-IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
+IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleExperimentalLinkBrowserTest,
                        ServerRedirectToAppUrlBlank) {
   InstallTestBookmarkApp();
   NavigateToLaunchingPage();
@@ -1124,7 +1140,7 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
 // Tests that clicking a link with target="_self" and for which the client
 // redirects to the app's app_url opens the Bookmark App. The initial tab will
 // be left on the redirecting URL.
-IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
+IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleExperimentalLinkBrowserTest,
                        ClientRedirectToAppUrlSelf) {
   InstallTestBookmarkApp();
   NavigateToLaunchingPage();
@@ -1160,7 +1176,7 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
 // Tests that clicking a link with target="_blank" and for which the client
 // redirects to the app's app_url opens the Bookmark App. The new tab will be
 // left on the redirecting URL.
-IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
+IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleExperimentalLinkBrowserTest,
                        ClientRedirectToAppUrlBlank) {
   InstallTestBookmarkApp();
   NavigateToLaunchingPage();
@@ -1199,7 +1215,7 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
 
 // Tests that an app that immediately redirects to an out-of-scope URL opens a
 // new foreground tab.
-IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
+IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleExperimentalBrowserTest,
                        ImmediateOutOfScopeRedirect) {
   size_t num_browsers = chrome::GetBrowserCount(profile());
   int num_tabs_browser = browser()->tab_strip_model()->count();
@@ -1236,7 +1252,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
 
 // Tests that clicking a link with target="_self" to a URL in the Web App's
 // scope opens a new browser window.
-IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
+IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleExperimentalLinkBrowserTest,
                        InScopeUrlSelf) {
   InstallTestBookmarkApp();
   NavigateToLaunchingPage();
@@ -1256,7 +1272,7 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
 
 // Tests that clicking a link with target="_self" to a URL out of the Web App's
 // scope but with the same origin doesn't open a new browser window.
-IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
+IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleExperimentalLinkBrowserTest,
                        OutOfScopeUrlSelf) {
   InstallTestBookmarkApp();
   NavigateToLaunchingPage();
@@ -1273,8 +1289,8 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
 }
 
 // Set of tests to make sure form submissions have the correct behavior.
-class BookmarkAppNavigationThrottleFormSubmissionBrowserTest
-    : public BookmarkAppNavigationThrottleBrowserTest,
+class BookmarkAppNavigationThrottleExperimentalFormSubmissionBrowserTest
+    : public BookmarkAppNavigationThrottleExperimentalBrowserTest,
       public ::testing::WithParamInterface<
           std::tuple<StartIn,
                      std::string,
@@ -1283,15 +1299,16 @@ class BookmarkAppNavigationThrottleFormSubmissionBrowserTest
 
 INSTANTIATE_TEST_CASE_P(
     /* no prefix */,
-    BookmarkAppNavigationThrottleFormSubmissionBrowserTest,
+    BookmarkAppNavigationThrottleExperimentalFormSubmissionBrowserTest,
     testing::Combine(testing::Values(StartIn::BROWSER, StartIn::APP),
                      testing::Values(kLaunchingPagePath, kAppUrlPath),
                      testing::Values(net::URLFetcher::RequestType::GET,
                                      net::URLFetcher::RequestType::POST),
                      testing::Values(kOutOfScopeUrlPath, kInScopeUrlPath)));
 
-IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleFormSubmissionBrowserTest,
-                       FormSubmission) {
+IN_PROC_BROWSER_TEST_P(
+    BookmarkAppNavigationThrottleExperimentalFormSubmissionBrowserTest,
+    FormSubmission) {
   StartIn start_in;
   std::string start_url_path;
   net::URLFetcher::RequestType request_type;
@@ -1386,7 +1403,7 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleFormSubmissionBrowserTest,
 }
 
 // Tests that prerender links don't open the app.
-IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
+IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleExperimentalBrowserTest,
                        PrerenderLinks) {
   prerender::PrerenderManager::SetMode(
       prerender::PrerenderManager::PRERENDER_MODE_ENABLED);
@@ -1420,7 +1437,8 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
 }
 
 // Tests fetch calls don't open a new App window.
-IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest, Fetch) {
+IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleExperimentalBrowserTest,
+                       Fetch) {
   InstallTestBookmarkApp();
   NavigateToLaunchingPage();
 
@@ -1447,7 +1465,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest, Fetch) {
 
 // Tests that clicking "Open link in new tab" to an in-scope URL opens a new
 // tab in the background.
-IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
+IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleExperimentalBrowserTest,
                        ContextMenuNewTab) {
   InstallTestBookmarkApp();
   NavigateToLaunchingPage();
@@ -1466,7 +1484,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
 
 // Tests that clicking "Open link in new window" to an in-scope URL opens a new
 // window in the foreground.
-IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
+IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleExperimentalBrowserTest,
                        ContextMenuNewWindow) {
   InstallTestBookmarkApp();
   NavigateToLaunchingPage();
@@ -1485,7 +1503,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
 
 // Tests that clicking "Open link in new tab" in an app to an in-scope URL opens
 // a new foreground tab in a regular browser window.
-IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
+IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleExperimentalBrowserTest,
                        InAppContextMenuNewTab) {
   InstallTestBookmarkApp();
   Browser* app_browser = OpenTestBookmarkApp();
@@ -1505,7 +1523,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
 
 // Tests that clicking "Open link in incognito window" to an in-scope URL opens
 // an incognito window and not an app window.
-IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
+IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleExperimentalBrowserTest,
                        OpenInIncognito) {
   InstallTestBookmarkApp();
   NavigateToLaunchingPage();
@@ -1546,7 +1564,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
 
 // Tests that clicking a link to an in-scope URL when in incognito does not open
 // an App window.
-IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
+IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleExperimentalLinkBrowserTest,
                        InScopeUrlIncognito) {
   InstallTestBookmarkApp();
   Browser* incognito_browser = CreateIncognitoBrowser();
@@ -1567,7 +1585,7 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
 
 // Tests that clicking a target=_self link from a URL out of the Web App's scope
 // but with the same origin to an in-scope URL results in a new App window.
-IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
+IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleExperimentalLinkBrowserTest,
                        FromOutOfScopeUrlToInScopeUrlSelf) {
   InstallTestBookmarkApp();
 
@@ -1594,7 +1612,7 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
 // Tests that clicking a target=_blank link from a URL out of the Web App's
 // scope but with the same origin to an in-scope URL results in a new App
 // window.
-IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
+IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleExperimentalLinkBrowserTest,
                        FromOutOfScopeUrlToInScopeUrlBlank) {
   InstallTestBookmarkApp();
 
@@ -1620,7 +1638,7 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
 
 // Tests that clicking links inside a website for an installed app doesn't open
 // a new browser window.
-IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
+IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleExperimentalLinkBrowserTest,
                        InWebsiteNavigation) {
   InstallTestBookmarkApp();
   NavigateToTestAppURL();
@@ -1639,14 +1657,15 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
       {{ProcessNavigationResult::kProceedInBrowserSameScope, 1}});
 }
 
-class BookmarkAppNavigationThrottleWindowOpenBrowserTest
-    : public BookmarkAppNavigationThrottleBrowserTest,
+class BookmarkAppNavigationThrottleExperimentalWindowOpenBrowserTest
+    : public BookmarkAppNavigationThrottleExperimentalBrowserTest,
       public ::testing::WithParamInterface<std::string> {};
 
 // Tests that same-origin or cross-origin apps created with window.open() from
 // a regular browser window have an opener.
-IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleWindowOpenBrowserTest,
-                       WindowOpenInBrowser) {
+IN_PROC_BROWSER_TEST_P(
+    BookmarkAppNavigationThrottleExperimentalWindowOpenBrowserTest,
+    WindowOpenInBrowser) {
   InstallTestBookmarkApp();
   InstallOtherTestBookmarkApp();
 
@@ -1664,8 +1683,9 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleWindowOpenBrowserTest,
 
 // Tests that same-origin or cross-origin apps created with window.open() from
 // another app window have an opener.
-IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleWindowOpenBrowserTest,
-                       WindowOpenInApp) {
+IN_PROC_BROWSER_TEST_P(
+    BookmarkAppNavigationThrottleExperimentalWindowOpenBrowserTest,
+    WindowOpenInApp) {
   InstallTestBookmarkApp();
   InstallOtherTestBookmarkApp();
 
@@ -1684,12 +1704,12 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleWindowOpenBrowserTest,
 
 INSTANTIATE_TEST_CASE_P(
     /* no prefix */,
-    BookmarkAppNavigationThrottleWindowOpenBrowserTest,
+    BookmarkAppNavigationThrottleExperimentalWindowOpenBrowserTest,
     testing::Values(kAppUrlHost, kOtherAppUrlHost));
 
 // Tests that a child window can access its opener, when the opener is a regular
 // browser tab.
-IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
+IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleExperimentalBrowserTest,
                        AccessOpenerBrowserWindowFromChildWindow) {
   InstallTestBookmarkApp();
   InstallOtherTestBookmarkApp();
@@ -1711,7 +1731,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
 
 // Tests that a child window can access its opener, when the opener is another
 // app.
-IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
+IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleExperimentalBrowserTest,
                        AccessOpenerAppWindowFromChildWindow) {
   InstallTestBookmarkApp();
   InstallOtherTestBookmarkApp();
@@ -1739,7 +1759,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
 //
 // Clicking on sites in the New Tab Page is one of the ways to trigger this
 // type of navigation.
-IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
+IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleExperimentalBrowserTest,
                        AutoBookmarkInScopeRedirect) {
   const Extension* app =
       InstallImmediateRedirectingApp(kAppUrlHost, kInScopeUrlPath);
@@ -1765,7 +1785,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
 //
 // Clicking on sites in the New Tab Page is one of the ways to trigger this
 // type of navigation.
-IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
+IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleExperimentalBrowserTest,
                        AutoBookmarkOutOfScopeRedirect) {
   const Extension* app =
       InstallImmediateRedirectingApp(kLaunchingPageHost, kLaunchingPagePath);
@@ -1782,7 +1802,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
 
 // Tests that clicking links inside the app to in-scope URLs doesn't open new
 // browser windows.
-IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
+IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleExperimentalLinkBrowserTest,
                        InAppInScopeNavigation) {
   InstallTestBookmarkApp();
   Browser* app_browser = OpenTestBookmarkApp();
@@ -1813,7 +1833,7 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
 // Tests that clicking links inside the app to out-of-scope URLs opens a new
 // tab in an existing browser window, instead of navigating the existing
 // app window.
-IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
+IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleExperimentalLinkBrowserTest,
                        InAppOutOfScopeNavigation) {
   InstallTestBookmarkApp();
   Browser* app_browser = OpenTestBookmarkApp();
@@ -1834,7 +1854,7 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
 
 INSTANTIATE_TEST_CASE_P(
     /* no prefix */,
-    BookmarkAppNavigationThrottleLinkBrowserTest,
+    BookmarkAppNavigationThrottleExperimentalLinkBrowserTest,
     testing::Values("", "noopener", "noreferrer", "nofollow"));
 
 }  // namespace extensions
