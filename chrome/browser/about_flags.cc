@@ -3748,7 +3748,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"ash-enable-new-overview-animations",
      flag_descriptions::kAshEnableNewOverviewAnimationsName,
      flag_descriptions::kAshEnableNewOverviewAnimationsDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(ash::switches::kAshEnableNewOverviewAnimations)},
+     FEATURE_VALUE_TYPE(ash::features::kNewOverviewAnimations)},
     {"enable-experimental-crostini-ui",
      flag_descriptions::kExperimentalCrostiniUIName,
      flag_descriptions::kExperimentalCrostiniUIDescription, kOsCrOS,
