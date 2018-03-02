@@ -114,3 +114,7 @@ Current patches:
 
   libavformat/mov.c
     mov_read_trun(): Fix memset size on ctts_data. https://crbug.com/812567
+
+  libavformat/mov.c
+    mov_build_index(): Initialize the allocated new ctts_data when constructing
+    the normalized 1-1 version.  https://crbug.com/816787
