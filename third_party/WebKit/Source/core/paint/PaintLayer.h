@@ -779,6 +779,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
                ? ancestor_dependent_compositing_inputs_->transform_ancestor
                : nullptr;
   }
+  const PaintLayer& TransformAncestorOrRoot() const;
   const PaintLayer* FilterAncestor() const {
     DCHECK(!needs_ancestor_dependent_compositing_inputs_update_);
     return ancestor_dependent_compositing_inputs_
@@ -884,7 +885,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // like those in PaintInvalidatorContext.
   PaintLayer* EnclosingSelfPaintingLayer();
 
-  PaintLayer* EnclosingTransformedAncestor() const;
+  // Returned value does not include any composited scroll offset of
+  // the transform ancestor.
   LayoutPoint ComputeOffsetFromTransformedAncestor() const;
 
   void DidUpdateScrollsOverflow();

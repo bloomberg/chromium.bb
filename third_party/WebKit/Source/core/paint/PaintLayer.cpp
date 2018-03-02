@@ -585,26 +585,29 @@ void PaintLayer::ClearPaginationRecursive() {
     child->ClearPaginationRecursive();
 }
 
+const PaintLayer& PaintLayer::TransformAncestorOrRoot() const {
+  return TransformAncestor() ? *TransformAncestor()
+                             : *GetLayoutObject().View()->Layer();
+}
+
 void PaintLayer::MapPointInPaintInvalidationContainerToBacking(
     const LayoutBoxModelObject& paint_invalidation_container,
     FloatPoint& point) {
-  // TODO(chrishtr): this should be
-  // PaintLayer*  transformedAncestorPaintLayer =
-  //    paintInvalidationLayer->enclosingTransformedAncestor();
-  // if (!transformedAncestorPaintLayer)
-  //  return;
   PaintLayer* paint_invalidation_layer = paint_invalidation_container.Layer();
   if (!paint_invalidation_layer->GroupedMapping())
     return;
 
   LayoutBoxModelObject& transformed_ancestor =
-      paint_invalidation_layer->EnclosingTransformedAncestor()
-          ->GetLayoutObject();
+      paint_invalidation_layer->TransformAncestorOrRoot().GetLayoutObject();
 
   // |paintInvalidationContainer| may have a local 2D transform on it, so take
   // that into account when mapping into the space of the transformed ancestor.
   point = paint_invalidation_container.LocalToAncestorPoint(
       point, &transformed_ancestor);
+  // Don't include composited scroll offsets, since
+  // SquashingOffsetFromTransformedAncestor does not.
+  if (transformed_ancestor.UsesCompositedScrolling())
+    point.Move(ToLayoutBox(transformed_ancestor).ScrolledContentOffset());
 
   point.MoveBy(-paint_invalidation_layer->GroupedMapping()
                     ->SquashingOffsetFromTransformedAncestor());
@@ -613,18 +616,12 @@ void PaintLayer::MapPointInPaintInvalidationContainerToBacking(
 void PaintLayer::MapRectInPaintInvalidationContainerToBacking(
     const LayoutBoxModelObject& paint_invalidation_container,
     LayoutRect& rect) {
-  // TODO(chrishtr): this should be
-  // PaintLayer*  transformedAncestorPaintLayer =
-  //    paintInvalidationLayer->enclosingTransformedAncestor();
-  // if (!transformedAncestorPaintLayer)
-  //  return;
   PaintLayer* paint_invalidation_layer = paint_invalidation_container.Layer();
   if (!paint_invalidation_layer->GroupedMapping())
     return;
 
   LayoutBoxModelObject& transformed_ancestor =
-      paint_invalidation_layer->EnclosingTransformedAncestor()
-          ->GetLayoutObject();
+      paint_invalidation_layer->TransformAncestorOrRoot().GetLayoutObject();
 
   // |paintInvalidationContainer| may have a local 2D transform on it, so take
   // that into account when mapping into the space of the transformed ancestor.
@@ -632,6 +629,10 @@ void PaintLayer::MapRectInPaintInvalidationContainerToBacking(
       paint_invalidation_container
           .LocalToAncestorQuad(FloatRect(rect), &transformed_ancestor)
           .BoundingBox());
+  // Don't include composited scroll offsets, since
+  // SquashingOffsetFromTransformedAncestor does not.
+  if (transformed_ancestor.UsesCompositedScrolling())
+    rect.Move(ToLayoutBox(transformed_ancestor).ScrolledContentOffset());
 
   rect.MoveBy(-paint_invalidation_layer->GroupedMapping()
                    ->SquashingOffsetFromTransformedAncestor());
@@ -972,20 +973,15 @@ PaintLayer* PaintLayer::ContainingLayer(const PaintLayer* ancestor,
   return nullptr;
 }
 
-PaintLayer* PaintLayer::EnclosingTransformedAncestor() const {
-  PaintLayer* curr = Parent();
-  while (curr && !curr->IsRootLayer() && !curr->Transform())
-    curr = curr->Parent();
-
-  return curr;
-}
-
 LayoutPoint PaintLayer::ComputeOffsetFromTransformedAncestor() const {
   TransformState transform_state(TransformState::kApplyTransformDirection,
                                  FloatPoint());
-  GetLayoutObject().MapLocalToAncestor(
-      TransformAncestor() ? &TransformAncestor()->GetLayoutObject() : nullptr,
-      transform_state, 0);
+  const LayoutBoxModelObject& ancestor =
+      TransformAncestorOrRoot().GetLayoutObject();
+
+  GetLayoutObject().MapLocalToAncestor(&ancestor, transform_state, 0);
+  if (ancestor.UsesCompositedScrolling())
+    transform_state.Move(ToLayoutBox(ancestor).ScrolledContentOffset());
   transform_state.Flatten();
   return LayoutPoint(transform_state.LastPlanarPoint());
 }

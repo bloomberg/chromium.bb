@@ -17,6 +17,11 @@ class PaintLayerTest : public PaintTestConfigurations, public RenderingTest {
  public:
   PaintLayerTest() : RenderingTest(SingleChildLocalFrameClient::Create()) {}
 
+  void SetUp() override {
+    RenderingTest::SetUp();
+    EnableCompositing();
+  }
+
  protected:
   PaintLayer* GetPaintLayerByElementId(const char* id) {
     return ToLayoutBoxModelObject(GetLayoutObjectByElementId(id))->Layer();
@@ -1217,6 +1222,52 @@ TEST_P(PaintLayerTest, ReferenceClipPathWithPageZoom) {
   // A hit test on the content div outside the clip should not hit it.
   EXPECT_EQ(body, GetDocument().ElementFromPoint(151, 60));
   EXPECT_EQ(body, GetDocument().ElementFromPoint(60, 151));
+}
+
+TEST_P(PaintLayerTest, SquashingOffsets) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    return;
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+      * { margin: 0 }
+    </style>
+    <div id=target
+        style='width: 200px; height: 200px; position: relative; will-change: transform'></div>
+    <div id=squashed
+        style='width: 200px; height: 200px; top: -200px; position: relative;'></div>
+    <div style='width: 10px; height: 3000px'></div>
+  )HTML");
+
+  auto* squashed =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("squashed"))->Layer();
+  EXPECT_EQ(kPaintsIntoGroupedBacking, squashed->GetCompositingState());
+  FloatPoint point;
+  LayoutRect rect(0, 0, 200, 200);
+  PaintLayer::MapPointInPaintInvalidationContainerToBacking(
+      squashed->GetLayoutObject(), point);
+  EXPECT_EQ(FloatPoint(), point);
+
+  PaintLayer::MapRectInPaintInvalidationContainerToBacking(
+      squashed->GetLayoutObject(), rect);
+  EXPECT_EQ(LayoutRect(0, 0, 200, 200), rect);
+
+  EXPECT_EQ(LayoutPoint(0, 0),
+            squashed->ComputeOffsetFromTransformedAncestor());
+
+  GetDocument().View()->LayoutViewportScrollableArea()->ScrollBy(
+      ScrollOffset(0, 25), kUserScroll);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  PaintLayer::MapPointInPaintInvalidationContainerToBacking(
+      squashed->GetLayoutObject(), point);
+  EXPECT_EQ(FloatPoint(), point);
+
+  PaintLayer::MapRectInPaintInvalidationContainerToBacking(
+      squashed->GetLayoutObject(), rect);
+  EXPECT_EQ(LayoutRect(0, 0, 200, 200), rect);
+
+  EXPECT_EQ(LayoutPoint(0, 0),
+            squashed->ComputeOffsetFromTransformedAncestor());
 }
 
 TEST_P(PaintLayerTest, HitTestWithIgnoreClipping) {
