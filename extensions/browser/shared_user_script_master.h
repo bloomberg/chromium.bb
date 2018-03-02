@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_SHARED_USER_SCRIPT_MASTER_H_
-#define CHROME_BROWSER_EXTENSIONS_SHARED_USER_SCRIPT_MASTER_H_
+#ifndef EXTENSIONS_BROWSER_SHARED_USER_SCRIPT_MASTER_H_
+#define EXTENSIONS_BROWSER_SHARED_USER_SCRIPT_MASTER_H_
 
 #include <set>
 
@@ -18,8 +18,6 @@ namespace content {
 class BrowserContext;
 }
 
-class Profile;
-
 namespace extensions {
 
 class ExtensionRegistry;
@@ -29,7 +27,7 @@ class ExtensionRegistry;
 // operations are delegated.
 class SharedUserScriptMaster : public ExtensionRegistryObserver {
  public:
-  explicit SharedUserScriptMaster(Profile* profile);
+  explicit SharedUserScriptMaster(content::BrowserContext* browser_context);
   ~SharedUserScriptMaster() override;
 
   // Provides access to loader state method: scripts_ready().
@@ -52,8 +50,7 @@ class SharedUserScriptMaster : public ExtensionRegistryObserver {
   // and notifying renderers of scripts in shared memory.
   ExtensionUserScriptLoader loader_;
 
-  // The profile for which the scripts managed here are installed.
-  Profile* profile_;
+  content::BrowserContext* browser_context_;
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observer_;
@@ -63,4 +60,4 @@ class SharedUserScriptMaster : public ExtensionRegistryObserver {
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_SHARED_USER_SCRIPT_MASTER_H_
+#endif  // EXTENSIONS_BROWSER_SHARED_USER_SCRIPT_MASTER_H_

@@ -705,8 +705,6 @@ static_library("extensions") {
     "settings_api_helpers.h",
     "shared_module_service.cc",
     "shared_module_service.h",
-    "shared_user_script_master.cc",
-    "shared_user_script_master.h",
     "signin/gaia_auth_extension_loader.cc",
     "signin/gaia_auth_extension_loader.h",
     "signin/scoped_gaia_auth_extension.cc",

@@ -3846,15 +3846,6 @@ are declared in build/common.gypi.
       <message name="IDS_EXTENSION_INVALID_IMAGE_PATH" desc="">
         Could not load '<ph name="IMAGE_PATH">$1<ex>/path/to/file</ex></ph>' for theme.
       </message>
-      <message name="IDS_EXTENSION_LOAD_JAVASCRIPT_FAILED" desc="">
-        Could not load javascript '<ph name="RELATIVE_PATH">$1<ex>javas.js</ex></ph>' for content script.
-      </message>
-      <message name="IDS_EXTENSION_LOAD_CSS_FAILED" desc="">
-        Could not load css '<ph name="RELATIVE_PATH">$1<ex>file.css</ex></ph>' for content script.
-      </message>
-      <message name="IDS_EXTENSION_BAD_FILE_ENCODING" desc="">
-        Could not load file '<ph name="RELATIVE_PATH">$1<ex>file.js</ex></ph>' for content script. It isn't UTF-8 encoded.
-      </message>
       <message name="IDS_EXTENSION_LOAD_ICON_FOR_PAGE_ACTION_FAILED" desc="">
         Could not load icon '<ph name="ICON">$1<ex>icon.png</ex></ph>' for page action.
       </message>
