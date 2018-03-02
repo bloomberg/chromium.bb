@@ -133,6 +133,9 @@ VizMainImpl::VizMainImpl(Delegate* delegate,
   if (dependencies_.create_display_compositor) {
     compositor_thread_ = CreateAndStartCompositorThread();
     compositor_thread_task_runner_ = compositor_thread_->task_runner();
+    if (delegate_)
+      delegate_->PostCompositorThreadCreated(
+          compositor_thread_task_runner_.get());
   }
 
   CreateUkmRecorderIfNeeded(dependencies.connector);

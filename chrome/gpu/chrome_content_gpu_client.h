@@ -35,6 +35,8 @@ class ChromeContentGpuClient : public content::ContentGpuClient {
       const gpu::GpuPreferences& gpu_preferences) override;
   void PostIOThreadCreated(
       base::SingleThreadTaskRunner* io_task_runner) override;
+  void PostCompositorThreadCreated(
+      base::SingleThreadTaskRunner* task_runner) override;
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   std::unique_ptr<media::CdmProxy> CreateCdmProxy(

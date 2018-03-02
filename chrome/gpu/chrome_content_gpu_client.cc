@@ -80,6 +80,14 @@ void ChromeContentGpuClient::PostIOThreadCreated(
                                 metrics::CallStackProfileParams::IO_THREAD));
 }
 
+void ChromeContentGpuClient::PostCompositorThreadCreated(
+    base::SingleThreadTaskRunner* task_runner) {
+  task_runner->PostTask(
+      FROM_HERE,
+      base::BindOnce(&ThreadProfiler::StartOnChildThread,
+                     metrics::CallStackProfileParams::COMPOSITOR_THREAD));
+}
+
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 std::unique_ptr<media::CdmProxy> ChromeContentGpuClient::CreateCdmProxy(
     const std::string& cdm_guid) {

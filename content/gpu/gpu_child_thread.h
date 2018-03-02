@@ -77,6 +77,8 @@ class GpuChildThread : public ChildThreadImpl,
   // viz::VizMainImpl::Delegate:
   void OnInitializationFailed() override;
   void OnGpuServiceConnection(viz::GpuServiceImpl* gpu_service) override;
+  void PostCompositorThreadCreated(
+      base::SingleThreadTaskRunner* task_runner) override;
 
   void BindServiceFactoryRequest(
       service_manager::mojom::ServiceFactoryRequest request);

@@ -42,9 +42,11 @@ class CONTENT_EXPORT ContentGpuClient {
   virtual void GpuServiceInitialized(
       const gpu::GpuPreferences& gpu_preferences) {}
 
-  // Called right after the IO thread is created.
+  // Called right after the IO/compositor thread is created.
   virtual void PostIOThreadCreated(
       base::SingleThreadTaskRunner* io_task_runner) {}
+  virtual void PostCompositorThreadCreated(
+      base::SingleThreadTaskRunner* task_runner) {}
 
   // Allows client to supply a SyncPointManager instance instead of having
   // content internally create one.
