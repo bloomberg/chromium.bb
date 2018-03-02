@@ -205,7 +205,7 @@ bool ParseCertificatesFile(base::StringPiece certs_input, Pinsets* pinsets) {
 
   for (const base::StringPiece& line : SplitStringPiece(
            certs_input, "\n", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL)) {
-    if (line[0] == '#') {
+    if (!line.empty() && line[0] == '#') {
       continue;
     }
 
