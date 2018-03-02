@@ -2351,7 +2351,8 @@ TEST_F(WindowSelectorTest, HandleActiveWindowNotInWindowGrid) {
 
 // Tests that AlwaysOnTopWindow can be handled correctly in new overview
 // animations.
-TEST_F(WindowSelectorTest, HandleAlwaysOnTopWindow) {
+// Fails consistently; see https://crbug.com/812497.
+TEST_F(WindowSelectorTest, DISABLED_HandleAlwaysOnTopWindow) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kAshEnableNewOverviewAnimations);
 
