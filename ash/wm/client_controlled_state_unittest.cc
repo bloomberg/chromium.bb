@@ -431,5 +431,26 @@ TEST_F(ClientControlledStateTest, MoveWindowToDisplay) {
   EXPECT_EQ(gfx::Rect(0, 0, 100, 100), delegate()->requested_bounds());
 }
 
+TEST_F(ClientControlledStateTest, MoveWindowToDisplayWindowVisibility) {
+  UpdateDisplay("1000x500, 500x500");
+
+  state()->set_bounds_locally(true);
+  widget()->SetBounds(gfx::Rect(600, 0, 100, 200));
+  state()->set_bounds_locally(false);
+  EXPECT_EQ(gfx::Rect(600, 0, 100, 200), widget()->GetWindowBoundsInScreen());
+
+  display::Screen* screen = display::Screen::GetScreen();
+
+  const int64_t first_display_id = screen->GetAllDisplays()[0].id();
+  const int64_t second_display_id = screen->GetAllDisplays()[1].id();
+  EXPECT_EQ(first_display_id, screen->GetDisplayNearestWindow(window()).id());
+
+  MoveWindowToDisplay(window(), second_display_id);
+
+  // Ensure |ash::wm::kMinimumOnScreenArea + 1| window visibility for window
+  // added to a new workspace.
+  EXPECT_EQ(gfx::Rect(1474, 0, 100, 200), widget()->GetWindowBoundsInScreen());
+}
+
 }  // namespace wm
 }  // namespace ash

@@ -13,6 +13,7 @@
 #include "ash/wm/drag_details.h"
 #include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/toplevel_window_event_handler.h"
+#include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
@@ -642,8 +643,22 @@ void ClientControlledShellSurface::SetWidgetBounds(const gfx::Rect& bounds) {
       (client_controlled_move_resize_ &&
        (!resizer_ || resizer_->details().window_component != HTCAPTION))) {
     {
-      ScopedSetBoundsLocally scoped_set_bounds(this);
-      widget_->SetBounds(bounds);
+      // Calculate a minimum window visibility required bounds.
+      aura::Window* window = widget_->GetNativeWindow();
+      gfx::Rect rect(bounds);
+      wm::ConvertRectFromScreen(window->GetRootWindow(), &rect);
+      ash::wm::ClientControlledState::AdjustBoundsForMinimumWindowVisibility(
+          window, &rect);
+      wm::ConvertRectToScreen(window->GetRootWindow(), &rect);
+
+      if (bounds != rect) {
+        // Request the client a new bounds to ensure that it has enough visible
+        // area.
+        window->SetBounds(rect);
+      } else {
+        ScopedSetBoundsLocally scoped_set_bounds(this);
+        widget_->SetBounds(bounds);
+      }
     }
     UpdateSurfaceBounds();
     return;
