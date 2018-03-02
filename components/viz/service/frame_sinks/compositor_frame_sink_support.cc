@@ -147,6 +147,15 @@ void CompositorFrameSinkSupport::ReceiveFromChild(
   surface_resource_holder_.ReceiveFromChild(resources);
 }
 
+bool CompositorFrameSinkSupport::HasCopyOutputRequests() {
+  return !copy_output_requests_.empty();
+}
+
+std::vector<std::unique_ptr<CopyOutputRequest>>
+CompositorFrameSinkSupport::TakeCopyOutputRequests() {
+  return std::move(copy_output_requests_);
+}
+
 void CompositorFrameSinkSupport::EvictLastActivatedSurface() {
   if (!last_activated_surface_id_.is_valid())
     return;
@@ -483,13 +492,10 @@ void CompositorFrameSinkSupport::RequestCopyOfSurface(
     std::unique_ptr<CopyOutputRequest> copy_request) {
   if (!last_activated_surface_id_.is_valid())
     return;
-  Surface* current_surface =
-      surface_manager_->GetSurfaceForId(last_activated_surface_id_);
-  current_surface->RequestCopyOfOutput(std::move(copy_request));
+  copy_output_requests_.push_back(std::move(copy_request));
   BeginFrameAck ack;
   ack.has_damage = true;
-  if (current_surface->HasActiveFrame())
-    surface_manager_->SurfaceModified(current_surface->surface_id(), ack);
+  surface_manager_->SurfaceModified(last_activated_surface_id_, ack);
 }
 
 HitTestAggregator* CompositorFrameSinkSupport::GetHitTestAggregator() {

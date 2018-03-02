@@ -127,7 +127,6 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
                   base::OnceClosure draw_callback,
                   const AggregatedDamageCallback& aggregated_damage_callback,
                   PresentedCallback presented_callback);
-  void RequestCopyOfOutput(std::unique_ptr<CopyOutputRequest> copy_request);
 
   // Notifies the Surface that a blocking SurfaceId now has an active
   // frame.
@@ -145,6 +144,10 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
   // caller takes ownership of them. |copy_requests| is keyed by RenderPass
   // ids.
   void TakeCopyOutputRequests(CopyRequestsMap* copy_requests);
+
+  // Returns whether there is a CopyOutputRequest inside the active frame or at
+  // the client level.
+  bool HasCopyOutputRequests();
 
   // Returns the most recent frame that is eligible to be rendered.
   // You must check whether HasActiveFrame() returns true before calling this
@@ -192,6 +195,9 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
 
   // SurfaceDeadlineClient implementation:
   void OnDeadline(base::TimeDelta duration) override;
+
+  // Called when this surface will be included in the next display frame.
+  void OnWillBeDrawn();
 
  private:
   struct SequenceNumbers {
@@ -246,6 +252,10 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
   static void TakeLatencyInfoFromFrame(
       CompositorFrame* frame,
       std::vector<ui::LatencyInfo>* latency_info);
+
+  void RequestCopyOfOutput(std::unique_ptr<CopyOutputRequest> copy_request);
+
+  void TakeCopyOutputRequestsFromClient();
 
   const SurfaceInfo surface_info_;
   SurfaceId previous_frame_surface_id_;

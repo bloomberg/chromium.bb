@@ -844,9 +844,6 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
   if (!surface->HasActiveFrame())
     return gfx::Rect();
 
-  if (will_draw)
-    manager_->SurfaceWillBeDrawn(surface);
-
   const CompositorFrame& frame = surface->GetActiveFrame();
   int child_id = 0;
   // TODO(jbauman): hack for unit tests that don't set up rp
@@ -1061,6 +1058,9 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
     surface->NotifyAggregatedDamage(damage_rect);
   }
 
+  if (will_draw)
+    surface->OnWillBeDrawn();
+
   CHECK(debug_weak_this.get());
   for (const auto& render_pass : frame.render_pass_list) {
     if (!render_pass->copy_requests.empty()) {
@@ -1101,11 +1101,7 @@ void SurfaceAggregator::CopyUndrawnSurfaces(PrewalkResult* prewalk_result) {
     if (!surface->HasActiveFrame())
       continue;
     const CompositorFrame& frame = surface->GetActiveFrame();
-    bool surface_has_copy_requests = false;
-    for (const auto& render_pass : frame.render_pass_list) {
-      surface_has_copy_requests |= !render_pass->copy_requests.empty();
-    }
-    if (!surface_has_copy_requests) {
+    if (!surface->HasCopyOutputRequests()) {
       // Children are not necessarily included in undrawn_surfaces (because
       // they weren't referenced directly from a drawn surface), but may have
       // copy requests, so make sure to check them as well.
