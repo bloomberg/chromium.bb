@@ -60,6 +60,20 @@ class ThrottlingURLLoader::ForwardingThrottleDelegate
     loader_->ResumeReadingBodyFromNet(throttle_);
   }
 
+  void InterceptResponse(
+      network::mojom::URLLoaderPtr new_loader,
+      network::mojom::URLLoaderClientRequest new_client_request,
+      network::mojom::URLLoaderPtr* original_loader,
+      network::mojom::URLLoaderClientRequest* original_client_request)
+      override {
+    if (!loader_)
+      return;
+
+    ScopedDelegateCall scoped_delegate_call(this);
+    loader_->InterceptResponse(std::move(new_loader),
+                               std::move(new_client_request), original_loader,
+                               original_client_request);
+  }
   void Detach() { loader_ = nullptr; }
 
  private:
@@ -496,6 +510,24 @@ void ThrottlingURLLoader::ResumeReadingBodyFromNet(
   pausing_reading_body_from_net_throttles_.erase(iter);
   if (pausing_reading_body_from_net_throttles_.empty() && url_loader_)
     url_loader_->ResumeReadingBodyFromNet();
+}
+
+void ThrottlingURLLoader::InterceptResponse(
+    network::mojom::URLLoaderPtr new_loader,
+    network::mojom::URLLoaderClientRequest new_client_request,
+    network::mojom::URLLoaderPtr* original_loader,
+    network::mojom::URLLoaderClientRequest* original_client_request) {
+  response_intercepted_ = true;
+
+  if (original_loader)
+    *original_loader = std::move(url_loader_);
+  url_loader_ = std::move(new_loader);
+
+  if (original_client_request)
+    *original_client_request = client_binding_.Unbind();
+  client_binding_.Bind(std::move(new_client_request));
+  client_binding_.set_connection_error_handler(base::BindRepeating(
+      &ThrottlingURLLoader::OnClientConnectionError, base::Unretained(this)));
 }
 
 void ThrottlingURLLoader::DisconnectClient(base::StringPiece custom_reason) {

@@ -407,6 +407,7 @@
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "chrome/browser/plugins/chrome_content_browser_client_plugins_part.h"
 #include "chrome/browser/plugins/flash_download_interception.h"
+#include "chrome/browser/plugins/plugin_response_interceptor_url_loader_throttle.h"
 #endif
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
@@ -3749,6 +3750,13 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
     }
   }
 
+#if BUILDFLAG(ENABLE_PLUGINS)
+  if (network_service_enabled) {
+    result.push_back(
+        std::make_unique<PluginResponseInterceptorURLLoaderThrottle>(
+            resource_context, request.resource_type, frame_tree_node_id));
+  }
+#endif
   return result;
 }
 

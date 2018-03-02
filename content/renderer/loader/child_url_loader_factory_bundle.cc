@@ -5,12 +5,97 @@
 #include "content/renderer/loader/child_url_loader_factory_bundle.h"
 
 #include "base/logging.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
 namespace content {
 
+namespace {
+
+class URLLoaderRelay : public network::mojom::URLLoaderClient,
+                       public network::mojom::URLLoader {
+ public:
+  URLLoaderRelay(network::mojom::URLLoaderPtr loader_sink,
+                 network::mojom::URLLoaderClientRequest client_source,
+                 network::mojom::URLLoaderClientPtr client_sink)
+      : loader_sink_(std::move(loader_sink)),
+        client_source_binding_(this, std::move(client_source)),
+        client_sink_(std::move(client_sink)) {}
+
+  // network::mojom::URLLoader implementation:
+  void FollowRedirect() override { loader_sink_->FollowRedirect(); }
+
+  void ProceedWithResponse() override { loader_sink_->ProceedWithResponse(); }
+
+  void SetPriority(net::RequestPriority priority,
+                   int32_t intra_priority_value) override {
+    loader_sink_->SetPriority(priority, intra_priority_value);
+  }
+
+  void PauseReadingBodyFromNet() override {
+    loader_sink_->PauseReadingBodyFromNet();
+  }
+
+  void ResumeReadingBodyFromNet() override {
+    loader_sink_->ResumeReadingBodyFromNet();
+  }
+
+  // network::mojom::URLLoaderClient implementation:
+  void OnReceiveResponse(
+      const network::ResourceResponseHead& head,
+      const base::Optional<net::SSLInfo>& ssl_info,
+      network::mojom::DownloadedTempFilePtr downloaded_file) override {
+    client_sink_->OnReceiveResponse(head, ssl_info, std::move(downloaded_file));
+  }
+
+  void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
+                         const network::ResourceResponseHead& head) override {
+    client_sink_->OnReceiveRedirect(redirect_info, head);
+  }
+
+  void OnDataDownloaded(int64_t data_length, int64_t encoded_length) override {
+    client_sink_->OnDataDownloaded(data_length, encoded_length);
+  }
+
+  void OnUploadProgress(int64_t current_position,
+                        int64_t total_size,
+                        OnUploadProgressCallback callback) override {
+    client_sink_->OnUploadProgress(current_position, total_size,
+                                   std::move(callback));
+  }
+
+  void OnReceiveCachedMetadata(const std::vector<uint8_t>& data) override {
+    client_sink_->OnReceiveCachedMetadata(data);
+  }
+
+  void OnTransferSizeUpdated(int32_t transfer_size_diff) override {
+    client_sink_->OnTransferSizeUpdated(transfer_size_diff);
+  }
+
+  void OnStartLoadingResponseBody(
+      mojo::ScopedDataPipeConsumerHandle body) override {
+    client_sink_->OnStartLoadingResponseBody(std::move(body));
+  }
+
+  void OnComplete(const network::URLLoaderCompletionStatus& status) override {
+    client_sink_->OnComplete(status);
+  }
+
+ private:
+  network::mojom::URLLoaderPtr loader_sink_;
+  mojo::Binding<network::mojom::URLLoaderClient> client_source_binding_;
+  network::mojom::URLLoaderClientPtr client_sink_;
+};
+
+}  // namespace
+
 ChildURLLoaderFactoryBundleInfo::ChildURLLoaderFactoryBundleInfo() = default;
+
+ChildURLLoaderFactoryBundleInfo::ChildURLLoaderFactoryBundleInfo(
+    std::unique_ptr<URLLoaderFactoryBundleInfo> base_info)
+    : URLLoaderFactoryBundleInfo(std::move(base_info->default_factory_info()),
+                                 std::move(base_info->factories_info())) {}
 
 ChildURLLoaderFactoryBundleInfo::ChildURLLoaderFactoryBundleInfo(
     network::mojom::URLLoaderFactoryPtrInfo default_factory_info,
@@ -39,7 +124,7 @@ ChildURLLoaderFactoryBundle::ChildURLLoaderFactoryBundle() = default;
 
 ChildURLLoaderFactoryBundle::ChildURLLoaderFactoryBundle(
     std::unique_ptr<ChildURLLoaderFactoryBundleInfo> info) {
-  Update(std::move(info));
+  Update(std::move(info), base::nullopt);
 }
 
 ChildURLLoaderFactoryBundle::ChildURLLoaderFactoryBundle(
@@ -75,6 +160,25 @@ void ChildURLLoaderFactoryBundle::CreateLoaderAndStart(
     const network::ResourceRequest& request,
     network::mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
+  auto override_iter = subresource_overrides_.find(request.url);
+  if (override_iter != subresource_overrides_.end()) {
+    mojom::TransferrableURLLoaderPtr transferrable_loader =
+        std::move(override_iter->second);
+    subresource_overrides_.erase(override_iter);
+
+    client->OnReceiveResponse(transferrable_loader->head, base::nullopt,
+                              nullptr);
+    mojo::MakeStrongBinding(
+        std::make_unique<URLLoaderRelay>(
+            network::mojom::URLLoaderPtr(
+                std::move(transferrable_loader->url_loader)),
+            std::move(transferrable_loader->url_loader_client),
+            std::move(client)),
+        std::move(loader));
+
+    return;
+  }
+
   network::mojom::URLLoaderFactory* factory_ptr = GetFactoryForURL(request.url);
 
   factory_ptr->CreateLoaderAndStart(std::move(loader), routing_id, request_id,
@@ -104,18 +208,29 @@ ChildURLLoaderFactoryBundle::Clone() {
         mojo::MakeRequest(&direct_network_factory_info));
   }
 
+  // Currently there is no need to override subresources from workers,
+  // therefore |subresource_overrides| are not shared with the clones.
+
   return std::make_unique<ChildURLLoaderFactoryBundleInfo>(
       std::move(default_factory_info), std::move(factories_info),
       std::move(direct_network_factory_info));
 }
 
 void ChildURLLoaderFactoryBundle::Update(
-    std::unique_ptr<ChildURLLoaderFactoryBundleInfo> info) {
+    std::unique_ptr<ChildURLLoaderFactoryBundleInfo> info,
+    base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
+        subresource_overrides) {
   if (info->direct_network_factory_info()) {
     direct_network_factory_.Bind(
         std::move(info->direct_network_factory_info()));
   }
   URLLoaderFactoryBundle::Update(std::move(info));
+
+  if (subresource_overrides) {
+    for (auto& element : *subresource_overrides) {
+      subresource_overrides_[element->url] = std::move(element);
+    }
+  }
 }
 
 bool ChildURLLoaderFactoryBundle::IsHostChildURLLoaderFactoryBundle() const {

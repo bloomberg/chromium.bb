@@ -43,7 +43,7 @@ TrackedChildURLLoaderFactoryBundle::TrackedChildURLLoaderFactoryBundle(
     std::unique_ptr<TrackedChildURLLoaderFactoryBundleInfo> info) {
   DCHECK(info->main_thread_host_bundle());
   main_thread_host_bundle_ = std::move(info->main_thread_host_bundle());
-  Update(std::move(info));
+  Update(std::move(info), base::nullopt);
   AddObserverOnMainThread();
 }
 
@@ -98,7 +98,8 @@ void TrackedChildURLLoaderFactoryBundle::RemoveObserverOnMainThread() {
 void TrackedChildURLLoaderFactoryBundle::OnUpdate(
     std::unique_ptr<SharedURLLoaderFactoryInfo> info) {
   Update(base::WrapUnique(
-      static_cast<ChildURLLoaderFactoryBundleInfo*>(info.release())));
+             static_cast<ChildURLLoaderFactoryBundleInfo*>(info.release())),
+         base::nullopt);
 }
 
 // -----------------------------------------------------------------------------
@@ -142,7 +143,7 @@ void HostChildURLLoaderFactoryBundle::UpdateThisAndAllClones(
                                      partial_bundle->Clone());
   }
 
-  Update(partial_bundle->PassInterface());
+  Update(partial_bundle->PassInterface(), base::nullopt);
 }
 
 bool HostChildURLLoaderFactoryBundle::IsHostChildURLLoaderFactoryBundle()

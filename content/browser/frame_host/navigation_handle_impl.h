@@ -168,6 +168,8 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
                                 NavigationThrottle::ThrottleCheckResult result);
 
   NavigationData* GetNavigationData() override;
+  void RegisterSubresourceOverride(
+      mojom::TransferrableURLLoaderPtr transferrable_loader) override;
 
   // Used in tests.
   State state_for_testing() const { return state_; }

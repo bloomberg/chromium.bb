@@ -529,6 +529,8 @@ class CONTENT_EXPORT RenderFrameImpl
       const RequestNavigationParams& request_params,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loaders,
+      base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
+          subresource_overrides,
       mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info,
       const base::UnguessableToken& devtools_navigation_token) override;
   void CommitFailedNavigation(
@@ -1119,7 +1121,9 @@ class CONTENT_EXPORT RenderFrameImpl
   ChildURLLoaderFactoryBundle* GetLoaderFactoryBundle();
 
   void SetupLoaderFactoryBundle(
-      std::unique_ptr<URLLoaderFactoryBundleInfo> info);
+      std::unique_ptr<URLLoaderFactoryBundleInfo> info,
+      base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
+          subresource_overrides);
 
   // Update current main frame's encoding and send it to browser window.
   // Since we want to let users see the right encoding info from menu

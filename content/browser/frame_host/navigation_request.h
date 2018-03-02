@@ -202,6 +202,9 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   // due to another navigation committing in the meantime.
   void ResetForCrossDocumentRestart();
 
+  void RegisterSubresourceOverride(
+      mojom::TransferrableURLLoaderPtr transferrable_loader);
+
  private:
   // This enum describes the result of a Content Security Policy (CSP) check for
   // the request.
@@ -390,6 +393,9 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
 
   // See comment on accessor.
   base::UnguessableToken devtools_navigation_token_;
+
+  base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
+      subresource_overrides_;
 
   base::WeakPtrFactory<NavigationRequest> weak_factory_;
 

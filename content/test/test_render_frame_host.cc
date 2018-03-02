@@ -65,6 +65,8 @@ class TestRenderFrameHost::NavigationInterceptor
       const RequestNavigationParams& request_params,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories,
+      base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
+          subresource_overrides,
       mojom::ControllerServiceWorkerInfoPtr controller_service_worker,
       const base::UnguessableToken& devtools_navigation_token) override {
     frame_host_->GetProcess()->set_did_frame_commit_navigation(true);
@@ -72,7 +74,8 @@ class TestRenderFrameHost::NavigationInterceptor
         head, body_url, common_params, request_params,
         std::move(url_loader_client_endpoints),
         std::move(subresource_loader_factories),
-        std::move(controller_service_worker), devtools_navigation_token);
+        std::move(subresource_overrides), std::move(controller_service_worker),
+        devtools_navigation_token);
   }
 
   void CommitSameDocumentNavigation(

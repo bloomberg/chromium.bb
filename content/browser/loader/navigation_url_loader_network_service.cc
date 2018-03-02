@@ -672,8 +672,13 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
       return;
 
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints;
+
+    // Currently only plugin handlers may intercept the response. Don't treat
+    // the response as download if it has been handled by plugins.
+    bool response_intercepted = false;
     if (url_loader_) {
       url_loader_client_endpoints = url_loader_->Unbind();
+      response_intercepted = url_loader_->response_intercepted();
     } else {
       url_loader_client_endpoints =
           network::mojom::URLLoaderClientEndpoints::New(
@@ -689,7 +694,8 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
     bool is_stream;
     std::unique_ptr<NavigationData> cloned_navigation_data;
     if (IsRequestHandlerEnabled()) {
-      is_download = IsDownload(*response.get(), url_, url_chain_,
+      is_download = !response_intercepted &&
+                    IsDownload(*response.get(), url_, url_chain_,
                                initiator_origin_, suggested_filename_);
       is_stream = false;
     } else {
@@ -697,7 +703,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
       net::URLRequest* url_request = rdh->GetURLRequest(global_request_id_);
       ResourceRequestInfoImpl* info =
           ResourceRequestInfoImpl::ForRequest(url_request);
-      is_download = info->IsDownload();
+      is_download = !response_intercepted && info->IsDownload();
       is_stream = info->is_stream();
       if (rdh->delegate()) {
         NavigationData* navigation_data =

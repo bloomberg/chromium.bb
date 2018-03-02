@@ -62,6 +62,8 @@ class CONTENT_EXPORT ThrottlingURLLoader
     forwarding_client_ = client;
   }
 
+  bool response_intercepted() const { return response_intercepted_; }
+
  private:
   class ForwardingThrottleDelegate;
 
@@ -122,6 +124,11 @@ class CONTENT_EXPORT ThrottlingURLLoader
   void SetPriority(net::RequestPriority priority);
   void PauseReadingBodyFromNet(URLLoaderThrottle* throttle);
   void ResumeReadingBodyFromNet(URLLoaderThrottle* throttle);
+  void InterceptResponse(
+      network::mojom::URLLoaderPtr new_loader,
+      network::mojom::URLLoaderClientRequest new_client_request,
+      network::mojom::URLLoaderPtr* original_loader,
+      network::mojom::URLLoaderClientRequest* original_client_request);
 
   // Disconnects the client connection and releases the URLLoader.
   void DisconnectClient(base::StringPiece custom_description);
@@ -225,6 +232,8 @@ class CONTENT_EXPORT ThrottlingURLLoader
 
   // The latest request URL from where we expect a response
   GURL response_url_;
+
+  bool response_intercepted_ = false;
 
   base::WeakPtrFactory<ThrottlingURLLoader> weak_factory_;
 

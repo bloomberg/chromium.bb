@@ -641,6 +641,14 @@ void NavigationRequest::ResetForCrossDocumentRestart() {
   state_ = NOT_STARTED;
 }
 
+void NavigationRequest::RegisterSubresourceOverride(
+    mojom::TransferrableURLLoaderPtr transferrable_loader) {
+  if (!subresource_overrides_)
+    subresource_overrides_.emplace();
+
+  subresource_overrides_->push_back(std::move(transferrable_loader));
+}
+
 void NavigationRequest::OnRequestRedirected(
     const net::RedirectInfo& redirect_info,
     const scoped_refptr<network::ResourceResponse>& response) {
@@ -1366,7 +1374,8 @@ void NavigationRequest::CommitNavigation() {
   render_frame_host->CommitNavigation(
       response_.get(), std::move(url_loader_client_endpoints_),
       std::move(body_), common_params_, request_params_, is_view_source_,
-      std::move(subresource_loader_params_), devtools_navigation_token_);
+      std::move(subresource_loader_params_), std::move(subresource_overrides_),
+      devtools_navigation_token_);
 }
 
 NavigationRequest::ContentSecurityPolicyCheckResult

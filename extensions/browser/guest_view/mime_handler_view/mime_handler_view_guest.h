@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/guest_view/browser/guest_view.h"
+#include "content/public/common/transferrable_url_loader.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 
 namespace content {
@@ -26,11 +27,14 @@ class MimeHandlerViewGuestDelegate;
 // MimeHandler to handle a resource stream.
 class StreamContainer {
  public:
-  StreamContainer(std::unique_ptr<content::StreamInfo> stream,
-                  int tab_id,
-                  bool embedded,
-                  const GURL& handler_url,
-                  const std::string& extension_id);
+  StreamContainer(
+      std::unique_ptr<content::StreamInfo> stream,
+      int tab_id,
+      bool embedded,
+      const GURL& handler_url,
+      const std::string& extension_id,
+      content::mojom::TransferrableURLLoaderPtr transferrable_loader,
+      const GURL& original_url);
   ~StreamContainer();
 
   // Aborts the stream.
@@ -38,11 +42,19 @@ class StreamContainer {
 
   base::WeakPtr<StreamContainer> GetWeakPtr();
 
-  const content::StreamInfo* stream_info() const { return stream_.get(); }
+  content::mojom::TransferrableURLLoaderPtr TakeTransferrableURLLoader();
+
   bool embedded() const { return embedded_; }
   int tab_id() const { return tab_id_; }
   GURL handler_url() const { return handler_url_; }
   std::string extension_id() const { return extension_id_; }
+
+  const std::string& mime_type() const { return mime_type_; }
+  const GURL& original_url() const { return original_url_; }
+  const GURL& stream_url() const { return stream_url_; }
+  net::HttpResponseHeaders* response_headers() const {
+    return response_headers_.get();
+  }
 
  private:
   const std::unique_ptr<content::StreamInfo> stream_;
@@ -50,6 +62,12 @@ class StreamContainer {
   const int tab_id_;
   const GURL handler_url_;
   const std::string extension_id_;
+  content::mojom::TransferrableURLLoaderPtr transferrable_loader_;
+
+  std::string mime_type_;
+  GURL original_url_;
+  GURL stream_url_;
+  scoped_refptr<net::HttpResponseHeaders> response_headers_;
 
   base::WeakPtrFactory<StreamContainer> weak_factory_;
 
@@ -109,6 +127,8 @@ class MimeHandlerViewGuest :
       content::RenderFrameHost* render_frame_host,
       const std::string& interface_name,
       mojo::ScopedMessagePipeHandle* interface_pipe) final;
+  void ReadyToCommitNavigation(
+      content::NavigationHandle* navigation_handle) final;
 
   std::unique_ptr<MimeHandlerViewGuestDelegate> delegate_;
   std::unique_ptr<StreamContainer> stream_;

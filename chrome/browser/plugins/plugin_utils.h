@@ -12,6 +12,7 @@ class GURL;
 class HostContentSettingsMap;
 
 namespace content {
+class ResourceContext;
 struct WebPluginInfo;
 }
 
@@ -52,6 +53,12 @@ class PluginUtils {
   // base::FeatureList::IsEnabled(features::kPreferHtmlOverPlugins).
   static bool ShouldPreferHtmlOverPlugins(
       const HostContentSettingsMap* host_content_settings_map);
+
+  // If there's an extension that is allowed to handle |mime_type|, returns its
+  // ID. Otherwise returns an empty string.
+  static std::string GetExtensionIdForMimeType(
+      content::ResourceContext* resource_context,
+      const std::string& mime_type);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(PluginUtils);

@@ -3853,6 +3853,8 @@ jumbo_split_static_library("browser") {
       "plugins/plugin_prefs.h",
       "plugins/plugin_prefs_factory.cc",
       "plugins/plugin_prefs_factory.h",
+      "plugins/plugin_response_interceptor_url_loader_throttle.cc",
+      "plugins/plugin_response_interceptor_url_loader_throttle.h",
       "plugins/plugin_status_pref_setter.cc",
       "plugins/plugin_status_pref_setter.h",
       "plugins/plugin_utils.cc",
