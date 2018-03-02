@@ -148,6 +148,10 @@ vars = {
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
   'libprotobuf-mutator': '3fc43a01d721ef1bacfefed170bc22abf1b8b051',
+  # Three lines of non-changing comments so that
+  # the commit queue can handle CLs rolling feed
+  # and whatever else without interference from each other.
+  'feed_revision': '5ebe38905c1a1d09e39a22cfb8ae59531553b65a',
 }
 
 # Only these hosts are allowed for dependencies in this DEPS file.
@@ -352,6 +356,11 @@ deps = {
 
   'src/third_party/errorprone/lib': {
       'url': Var('chromium_git') + '/chromium/third_party/errorprone.git' + '@' + 'ecc57c2b00627667874744b9ad8efe10734d97a8',
+      'condition': 'checkout_android',
+  },
+
+  'src/third_party/feed/src': {
+      'url': Var('chromium_git') + '/feed' + '@' + Var('feed_revision'),
       'condition': 'checkout_android',
   },
 
