@@ -69,6 +69,15 @@ class BLINK_EXPORT WebElement : public WebNode {
   WebString AttributeValue(unsigned index) const;
   unsigned AttributeCount() const;
 
+  // Returns true if this is an autonomous custom element, regardless of
+  // Custom Elements V0 or V1.
+  bool IsAutonomousCustomElement() const;
+
+  // Returns an author ShadowRoot attached to this element, regardless
+  // of V0, V1 open, or V1 closed.  This returns null WebNode if this
+  // element has no ShadowRoot or has a UA ShadowRoot.
+  WebNode ShadowRoot() const;
+
   // If this element takes up space in the layout of the page.
   bool HasNonEmptyLayoutSize() const;
 

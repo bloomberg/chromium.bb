@@ -5,9 +5,13 @@
 #include "public/web/WebElement.h"
 
 #include <memory>
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/ShadowRoot.h"
+#include "core/dom/ShadowRootInit.h"
+#include "core/frame/Settings.h"
+#include "core/html/HTMLElement.h"
 #include "core/testing/PageTestBase.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -158,6 +162,82 @@ TEST_F(WebElementTest, IsEditable) {
 
   InsertHTML("<fieldset disabled><div><input id=testElement></div></fieldset>");
   EXPECT_FALSE(TestElement().IsEditable());
+}
+
+TEST_F(WebElementTest, IsAutonomousCustomElement) {
+  InsertHTML("<x-undefined id=testElement></x-undefined>");
+  EXPECT_FALSE(TestElement().IsAutonomousCustomElement());
+  InsertHTML("<div id=testElement></div>");
+  EXPECT_FALSE(TestElement().IsAutonomousCustomElement());
+
+  GetDocument().GetSettings()->SetScriptEnabled(true);
+  auto* script = GetDocument().CreateRawElement(HTMLNames::scriptTag);
+  script->setTextContent(R"JS(
+    customElements.define('v1-custom', class extends HTMLElement {});
+    document.body.appendChild(document.createElement('v1-custom'));
+    customElements.define('v1-builtin',
+                          class extends HTMLButtonElement {},
+                          { extends:'button' });
+    document.body.appendChild(
+        document.createElement('button', { is: 'v1-builtin' }));
+
+    document.registerElement('v0-custom');
+    document.body.appendChild(document.createElement('v0-custom'));
+    document.registerElement('v0-typext', {
+        prototype: Object.create(HTMLInputElement.prototype),
+        extends: 'input' });
+    document.body.appendChild(document.createElement('input', 'v0-typeext'));
+  )JS");
+  GetDocument().body()->appendChild(script);
+  auto* v0typeext = GetDocument().body()->lastChild();
+  EXPECT_FALSE(WebElement(ToElement(v0typeext)).IsAutonomousCustomElement());
+  auto* v0autonomous = v0typeext->previousSibling();
+  EXPECT_TRUE(WebElement(ToElement(v0autonomous)).IsAutonomousCustomElement());
+  auto* v1builtin = v0autonomous->previousSibling();
+  EXPECT_FALSE(WebElement(ToElement(v1builtin)).IsAutonomousCustomElement());
+  auto* v1autonomous = v1builtin->previousSibling();
+  EXPECT_TRUE(WebElement(ToElement(v1autonomous)).IsAutonomousCustomElement());
+}
+
+TEST_F(WebElementTest, ShadowRoot) {
+  InsertHTML("<input id=testElement>");
+  EXPECT_TRUE(TestElement().ShadowRoot().IsNull())
+      << "ShadowRoot() should not return a UA ShadowRoot.";
+
+  auto* script_state = ToScriptStateForMainWorld(GetDocument().GetFrame());
+  {
+    InsertHTML("<div id=testElement></div>");
+    EXPECT_TRUE(TestElement().ShadowRoot().IsNull())
+        << "No ShadowRoot initially.";
+    auto* element = GetDocument().getElementById("testElement");
+    element->createShadowRoot(script_state, ASSERT_NO_EXCEPTION);
+    EXPECT_FALSE(TestElement().ShadowRoot().IsNull())
+        << "Should return V0 ShadowRoot.";
+  }
+
+  {
+    InsertHTML("<span id=testElement></span>");
+    EXPECT_TRUE(TestElement().ShadowRoot().IsNull())
+        << "No ShadowRoot initially.";
+    auto* element = GetDocument().getElementById("testElement");
+    ShadowRootInit init;
+    init.setMode("open");
+    element->attachShadow(script_state, init, ASSERT_NO_EXCEPTION);
+    EXPECT_FALSE(TestElement().ShadowRoot().IsNull())
+        << "Should return V1 open ShadowRoot.";
+  }
+
+  {
+    InsertHTML("<p id=testElement></p>");
+    EXPECT_TRUE(TestElement().ShadowRoot().IsNull())
+        << "No ShadowRoot initially.";
+    auto* element = GetDocument().getElementById("testElement");
+    ShadowRootInit init;
+    init.setMode("closed");
+    element->attachShadow(script_state, init, ASSERT_NO_EXCEPTION);
+    EXPECT_FALSE(TestElement().ShadowRoot().IsNull())
+        << "Should return V1 closed ShadowRoot.";
+  }
 }
 
 }  // namespace blink
