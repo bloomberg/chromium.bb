@@ -63,6 +63,10 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
     private enum SwipeMode { NONE, SEND_TO_STACK, SWITCH_STACK }
 
     private static final String TAG = "StackLayout";
+
+    // One stack for normal tabs and one stack for incognito tabs.
+    private static final int NUM_STACKS = 2;
+
     // Width of the partially shown stack when there are multiple stacks.
     private static final int MIN_INNER_MARGIN_PERCENT_DP = 55;
     private static final float INNER_MARGIN_PERCENT_PERCENT = 0.17f;
@@ -84,10 +88,10 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
     private static final float SWITCH_STACK_FLING_DT = 1.0f / 30.0f;
 
     /** The array of potentially visible stacks. The code works for only 2 stacks. */
-    private final Stack[] mStacks;
+    private final ArrayList<Stack> mStacks;
 
     /** Rectangles that defines the area where each stack need to be laid out. */
-    private final RectF[] mStackRects;
+    private final ArrayList<RectF> mStackRects;
 
     private int mStackAnimationCount;
 
@@ -162,7 +166,7 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
             mLastOnDownY = y;
             mLastOnDownTimeStamp = time;
             mInputMode = computeInputMode(time, x, y, 0, 0);
-            mStacks[getTabStackIndex()].onDown(time);
+            mStacks.get(getTabStackIndex()).onDown(time);
         }
 
         @Override
@@ -179,14 +183,14 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
             mInputMode = computeInputMode(time, x, y, amountX, amountY);
 
             if (oldInputMode == SwipeMode.SEND_TO_STACK && mInputMode == SwipeMode.SWITCH_STACK) {
-                mStacks[getTabStackIndex()].onUpOrCancel(time);
+                mStacks.get(getTabStackIndex()).onUpOrCancel(time);
             } else if (oldInputMode == SwipeMode.SWITCH_STACK
                     && mInputMode == SwipeMode.SEND_TO_STACK) {
                 onUpOrCancel(time);
             }
 
             if (mInputMode == SwipeMode.SEND_TO_STACK) {
-                mStacks[getTabStackIndex()].drag(time, x, y, amountX, amountY);
+                mStacks.get(getTabStackIndex()).drag(time, x, y, amountX, amountY);
             } else if (mInputMode == SwipeMode.SWITCH_STACK) {
                 scrollStacks(getOrientation() == Orientation.PORTRAIT ? amountX : amountY);
             }
@@ -199,7 +203,7 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
             PortraitViewport viewportParams = getViewportParameters();
             int stackIndexAt = viewportParams.getStackIndexAt(x, y);
             if (stackIndexAt == getTabStackIndex()) {
-                mStacks[getTabStackIndex()].click(time(), x, y);
+                mStacks.get(getTabStackIndex()).click(time(), x, y);
             } else {
                 flingStacks(getTabStackIndex() == 0);
             }
@@ -218,7 +222,7 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
             }
 
             if (mInputMode == SwipeMode.SEND_TO_STACK) {
-                mStacks[getTabStackIndex()].fling(time, x, y, vx, vy);
+                mStacks.get(getTabStackIndex()).fling(time, x, y, vx, vy);
             } else if (mInputMode == SwipeMode.SWITCH_STACK) {
                 final float velocity = getOrientation() == Orientation.PORTRAIT ? vx : vy;
                 final float origin = getOrientation() == Orientation.PORTRAIT ? x : y;
@@ -233,12 +237,12 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
 
         @Override
         public void onLongPress(float x, float y) {
-            mStacks[getTabStackIndex()].onLongPress(time(), x, y);
+            mStacks.get(getTabStackIndex()).onLongPress(time(), x, y);
         }
 
         @Override
         public void onPinch(float x0, float y0, float x1, float y1, boolean firstEvent) {
-            mStacks[getTabStackIndex()].onPinch(time(), x0, y0, x1, y1, firstEvent);
+            mStacks.get(getTabStackIndex()).onPinch(time(), x0, y0, x1, y1, firstEvent);
         }
 
         private void onUpOrCancel(long time) {
@@ -246,12 +250,12 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
             int nextIndex = 1 - currentIndex;
             if (!mClicked
                     && Math.abs(currentIndex + mRenderedScrollOffset) > THRESHOLD_TO_SWITCH_STACK
-                    && mStacks[nextIndex].isDisplayable()) {
+                    && mStacks.get(nextIndex).isDisplayable()) {
                 setActiveStackState(nextIndex == 1);
             }
             mClicked = false;
             finishScrollStacks();
-            mStacks[getTabStackIndex()].onUpOrCancel(time);
+            mStacks.get(getTabStackIndex()).onUpOrCancel(time);
             mInputMode = SwipeMode.NONE;
         }
 
@@ -278,12 +282,16 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
 
         mMinMaxInnerMargin = (int) (MIN_INNER_MARGIN_PERCENT_DP + 0.5);
         mFlingSpeed = FLING_SPEED_DP;
-        mStacks = new Stack[2];
-        mStacks[0] = new Stack(context, this);
-        mStacks[1] = new Stack(context, this);
-        mStackRects = new RectF[2];
-        mStackRects[0] = new RectF();
-        mStackRects[1] = new RectF();
+
+        mStacks = new ArrayList<Stack>();
+        for (int i = 0; i < NUM_STACKS; i++) {
+            mStacks.add(new Stack(context, this));
+        }
+
+        mStackRects = new ArrayList<RectF>();
+        for (int i = 0; i < NUM_STACKS; i++) {
+            mStackRects.add(new RectF());
+        }
 
         mViewContainer = new FrameLayout(getContext());
         mSceneLayer = new TabListSceneLayer();
@@ -328,8 +336,8 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
     @Override
     public void setTabModelSelector(TabModelSelector modelSelector, TabContentManager manager) {
         super.setTabModelSelector(modelSelector, manager);
-        mStacks[0].setTabList(modelSelector.getModel(false));
-        mStacks[1].setTabList(modelSelector.getModel(true));
+        mStacks.get(0).setTabList(modelSelector.getModel(false));
+        mStacks.get(1).setTabList(modelSelector.getModel(true));
         resetScrollData();
     }
 
@@ -341,7 +349,7 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
      * @VisibleForTesting
      */
     public Stack getTabStack(boolean incognito) {
-        return mStacks[incognito ? 1 : 0];
+        return mStacks.get(incognito ? 1 : 0);
     }
 
     /**
@@ -379,7 +387,7 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
      * @VisibleForTesting
      */
     protected Stack getTabStack(int tabId) {
-        return mStacks[getTabStackIndex(tabId)];
+        return mStacks.get(getTabStackIndex(tabId));
     }
 
     /**
@@ -387,8 +395,8 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
      * @param time  The current time of the app in ms.
      */
     public void commitOutstandingModelState(long time) {
-        mStacks[1].ensureCleaningUpDyingTabs(time);
-        mStacks[0].ensureCleaningUpDyingTabs(time);
+        mStacks.get(1).ensureCleaningUpDyingTabs(time);
+        mStacks.get(0).ensureCleaningUpDyingTabs(time);
     }
 
     @Override
@@ -396,7 +404,7 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
         commitOutstandingModelState(time);
         if (tabId == Tab.INVALID_TAB_ID) tabId = mTabModelSelector.getCurrentTabId();
         super.onTabSelecting(time, tabId);
-        mStacks[getTabStackIndex()].tabSelectingEffect(time, tabId);
+        mStacks.get(getTabStackIndex()).tabSelectingEffect(time, tabId);
         startMarginAnimation(false);
         startYOffsetAnimation(false);
         finishScrollStacks();
@@ -412,7 +420,7 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
         startMarginAnimation(true);
 
         // Animate the stack to leave incognito mode.
-        if (!mStacks[1].isDisplayable()) uiPreemptivelySelectTabModel(false);
+        if (!mStacks.get(1).isDisplayable()) uiPreemptivelySelectTabModel(false);
     }
 
     @Override
@@ -422,7 +430,7 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
         // trigger the overlap animation.
         startMarginAnimation(true);
         // Animate the stack to leave incognito mode.
-        if (!mStacks[1].isDisplayable()) uiPreemptivelySelectTabModel(false);
+        if (!mStacks.get(1).isDisplayable()) uiPreemptivelySelectTabModel(false);
     }
 
     @Override
@@ -497,7 +505,7 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
         super.onTabCreated(
                 time, id, tabIndex, sourceId, newIsIncognito, background, originX, originY);
         startHiding(id, false);
-        mStacks[getTabStackIndex(id)].tabCreated(time, id);
+        mStacks.get(getTabStackIndex(id)).tabCreated(time, id);
 
         if (FeatureUtilities.isChromeHomeEnabled()) {
             mNewTabLayoutTab = createLayoutTab(id, newIsIncognito, NO_CLOSE_BUTTON, NO_TITLE);
@@ -535,10 +543,10 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
     @Override
     public boolean onUpdateAnimation(long time, boolean jumpToEnd) {
         boolean animationsWasDone = super.onUpdateAnimation(time, jumpToEnd);
-        boolean finishedView0 = mStacks[0].onUpdateViewAnimation(time, jumpToEnd);
-        boolean finishedView1 = mStacks[1].onUpdateViewAnimation(time, jumpToEnd);
-        boolean finishedCompositor0 = mStacks[0].onUpdateCompositorAnimations(time, jumpToEnd);
-        boolean finishedCompositor1 = mStacks[1].onUpdateCompositorAnimations(time, jumpToEnd);
+        boolean finishedView0 = mStacks.get(0).onUpdateViewAnimation(time, jumpToEnd);
+        boolean finishedView1 = mStacks.get(1).onUpdateViewAnimation(time, jumpToEnd);
+        boolean finishedCompositor0 = mStacks.get(0).onUpdateCompositorAnimations(time, jumpToEnd);
+        boolean finishedCompositor1 = mStacks.get(1).onUpdateCompositorAnimations(time, jumpToEnd);
         if (animationsWasDone && finishedView0 && finishedView1 && finishedCompositor0
                 && finishedCompositor1) {
             return true;
@@ -648,7 +656,7 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
      *              is being left.
      */
     private void startMarginAnimation(boolean enter) {
-        startMarginAnimation(enter, mStacks[1].isDisplayable());
+        startMarginAnimation(enter, mStacks.get(1).isDisplayable());
     }
 
     private void startMarginAnimation(boolean enter, boolean showIncognito) {
@@ -685,21 +693,21 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
         mViewContainer.removeAllViews();
         int currentTabModel = mTabModelSelector.isIncognitoSelected() ? 1 : 0;
 
-        for (int i = mStacks.length - 1; i >= 0; --i) {
-            mStacks[i].reset();
-            if (mStacks[i].isDisplayable()) {
-                mStacks[i].show(i == currentTabModel);
+        for (int i = mStacks.size() - 1; i >= 0; --i) {
+            mStacks.get(i).reset();
+            if (mStacks.get(i).isDisplayable()) {
+                mStacks.get(i).show(i == currentTabModel);
             } else {
-                mStacks[i].cleanupTabs();
+                mStacks.get(i).cleanupTabs();
             }
         }
         // Initialize the animation and the positioning of all the elements
         mSortingComparator = mOrderComparator;
         resetScrollData();
-        for (int i = mStacks.length - 1; i >= 0; --i) {
-            if (mStacks[i].isDisplayable()) {
+        for (int i = mStacks.size() - 1; i >= 0; --i) {
+            if (mStacks.get(i).isDisplayable()) {
                 boolean offscreen = (i != getTabStackIndex());
-                mStacks[i].stackEntered(time, !offscreen);
+                mStacks.get(i).stackEntered(time, !offscreen);
             }
         }
         startMarginAnimation(true);
@@ -715,43 +723,43 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
 
     @Override
     public void swipeStarted(long time, ScrollDirection direction, float x, float y) {
-        mStacks[getTabStackIndex()].swipeStarted(time, direction, x, y);
+        mStacks.get(getTabStackIndex()).swipeStarted(time, direction, x, y);
     }
 
     @Override
     public void swipeUpdated(long time, float x, float y, float dx, float dy, float tx, float ty) {
-        mStacks[getTabStackIndex()].swipeUpdated(time, x, y, dx, dy, tx, ty);
+        mStacks.get(getTabStackIndex()).swipeUpdated(time, x, y, dx, dy, tx, ty);
     }
 
     @Override
     public void swipeFinished(long time) {
-        mStacks[getTabStackIndex()].swipeFinished(time);
+        mStacks.get(getTabStackIndex()).swipeFinished(time);
     }
 
     @Override
     public void swipeCancelled(long time) {
-        mStacks[getTabStackIndex()].swipeCancelled(time);
+        mStacks.get(getTabStackIndex()).swipeCancelled(time);
     }
 
     @Override
     public void swipeFlingOccurred(
             long time, float x, float y, float tx, float ty, float vx, float vy) {
-        mStacks[getTabStackIndex()].swipeFlingOccurred(time, x, y, tx, ty, vx, vy);
+        mStacks.get(getTabStackIndex()).swipeFlingOccurred(time, x, y, tx, ty, vx, vy);
     }
 
     private void requestStackUpdate() {
         // TODO(jgreenwald): It isn't always necessary to invalidate both
         // stacks.
-        mStacks[0].requestUpdate();
-        mStacks[1].requestUpdate();
+        mStacks.get(0).requestUpdate();
+        mStacks.get(1).requestUpdate();
     }
 
     @Override
     public void notifySizeChanged(float width, float height, int orientation) {
         mCachedLandscapeViewport = null;
         mCachedPortraitViewport = null;
-        mStacks[0].notifySizeChanged(width, height, orientation);
-        mStacks[1].notifySizeChanged(width, height, orientation);
+        mStacks.get(0).notifySizeChanged(width, height, orientation);
+        mStacks.get(1).notifySizeChanged(width, height, orientation);
         resetScrollData();
         requestStackUpdate();
     }
@@ -760,8 +768,8 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
     public void contextChanged(Context context) {
         super.contextChanged(context);
         StackTab.resetDimensionConstants(context);
-        mStacks[0].contextChanged(context);
-        mStacks[1].contextChanged(context);
+        mStacks.get(0).contextChanged(context);
+        mStacks.get(1).contextChanged(context);
         requestStackUpdate();
     }
 
@@ -775,7 +783,7 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
      * @return     The input mode to select.
      */
     private SwipeMode computeInputMode(long time, float x, float y, float dx, float dy) {
-        if (!mStacks[1].isDisplayable()) return SwipeMode.SEND_TO_STACK;
+        if (!mStacks.get(1).isDisplayable()) return SwipeMode.SEND_TO_STACK;
         int currentIndex = getTabStackIndex();
         float relativeX = mLastOnDownX - (x + dx);
         float relativeY = mLastOnDownY - (y + dy);
@@ -818,7 +826,7 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
         }
 
         float getClampedRenderedScrollOffset() {
-            if (mStacks[1].isDisplayable() || mFlingFromModelChange) {
+            if (mStacks.get(1).isDisplayable() || mFlingFromModelChange) {
                 return MathUtils.clamp(mRenderedScrollOffset, 0, -1);
             } else {
                 return 0;
@@ -1009,29 +1017,31 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
         boolean needUpdate = false;
 
         final PortraitViewport viewport = getViewportParameters();
-        mStackRects[0].left = viewport.getStack0Left();
-        mStackRects[0].right = mStackRects[0].left + viewport.getWidth();
-        mStackRects[0].top = viewport.getStack0Top();
-        mStackRects[0].bottom = mStackRects[0].top + viewport.getHeight();
-        mStackRects[1].left = mStackRects[0].left + viewport.getStack0ToStack1TranslationX();
-        mStackRects[1].right = mStackRects[1].left + viewport.getWidth();
-        mStackRects[1].top = mStackRects[0].top + viewport.getStack0ToStack1TranslationY();
-        mStackRects[1].bottom = mStackRects[1].top + viewport.getHeight();
+        mStackRects.get(0).left = viewport.getStack0Left();
+        mStackRects.get(0).right = mStackRects.get(0).left + viewport.getWidth();
+        mStackRects.get(0).top = viewport.getStack0Top();
+        mStackRects.get(0).bottom = mStackRects.get(0).top + viewport.getHeight();
+        mStackRects.get(1).left =
+                mStackRects.get(0).left + viewport.getStack0ToStack1TranslationX();
+        mStackRects.get(1).right = mStackRects.get(1).left + viewport.getWidth();
+        mStackRects.get(1).top = mStackRects.get(0).top + viewport.getStack0ToStack1TranslationY();
+        mStackRects.get(1).bottom = mStackRects.get(1).top + viewport.getHeight();
 
-        mStacks[0].setStackFocusInfo(1.0f + mRenderedScrollOffset,
+        mStacks.get(0).setStackFocusInfo(1.0f + mRenderedScrollOffset,
                 mSortingComparator == mOrderComparator ? mTabModelSelector.getModel(false).index()
                                                        : -1);
-        mStacks[1].setStackFocusInfo(-mRenderedScrollOffset, mSortingComparator == mOrderComparator
-                        ? mTabModelSelector.getModel(true).index()
-                        : -1);
+        mStacks.get(1).setStackFocusInfo(-mRenderedScrollOffset,
+                mSortingComparator == mOrderComparator ? mTabModelSelector.getModel(true).index()
+                                                       : -1);
 
         // Compute position and visibility
-        mStacks[0].computeTabPosition(time, mStackRects[0]);
-        mStacks[1].computeTabPosition(time, mStackRects[1]);
+        mStacks.get(0).computeTabPosition(time, mStackRects.get(0));
+        mStacks.get(1).computeTabPosition(time, mStackRects.get(1));
 
         // Pre-allocate/resize {@link #mLayoutTabs} before it get populated by
         // computeTabPositionAndAppendLayoutTabs.
-        final int tabVisibleCount = mStacks[0].getVisibleCount() + mStacks[1].getVisibleCount();
+        final int tabVisibleCount =
+                mStacks.get(0).getVisibleCount() + mStacks.get(1).getVisibleCount();
 
         int layoutTabCount = tabVisibleCount + (mNewTabLayoutTab == null ? 0 : 1);
 
@@ -1069,7 +1079,7 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
     }
 
     private int appendVisibleLayoutTabs(long time, int stackIndex, LayoutTab[] tabs, int tabIndex) {
-        final StackTab[] stackTabs = mStacks[stackIndex].getTabs();
+        final StackTab[] stackTabs = mStacks.get(stackIndex).getTabs();
         if (stackTabs != null) {
             for (int i = 0; i < stackTabs.length; i++) {
                 LayoutTab t = stackTabs[i].getLayoutTab();
@@ -1149,14 +1159,14 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
     }
 
     private boolean updateSortedPriorityArray(Comparator<StackTab> comparator) {
-        final int allTabsCount = mStacks[0].getCount() + mStacks[1].getCount();
+        final int allTabsCount = mStacks.get(0).getCount() + mStacks.get(1).getCount();
         if (allTabsCount == 0) return false;
         if (mSortedPriorityArray == null || mSortedPriorityArray.length != allTabsCount) {
             mSortedPriorityArray = new StackTab[allTabsCount];
         }
         int sortedOffset = 0;
-        sortedOffset = addAllTabs(mStacks[0], mSortedPriorityArray, sortedOffset);
-        sortedOffset = addAllTabs(mStacks[1], mSortedPriorityArray, sortedOffset);
+        sortedOffset = addAllTabs(mStacks.get(0), mSortedPriorityArray, sortedOffset);
+        sortedOffset = addAllTabs(mStacks.get(1), mSortedPriorityArray, sortedOffset);
         assert sortedOffset == mSortedPriorityArray.length;
         Arrays.sort(mSortedPriorityArray, comparator);
         return true;
