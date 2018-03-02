@@ -41,47 +41,69 @@ typedef enum {
 } SCALABILITY_STRUCTURES;
 #endif
 
+typedef struct {
+  size_t size;
+  OBU_TYPE type;
+  int has_extension;
+  int temporal_layer_id;
+  int enhancement_layer_id;
+} ObuHeader;
+
 int get_obu_type(uint8_t obu_header, OBU_TYPE *obu_type) {
   if (!obu_type) return -1;
   *obu_type = (OBU_TYPE)((obu_header >> 3) & 0xF);
   switch (*obu_type) {
-    case OBU_SEQUENCE_HEADER: break;
-    case OBU_TEMPORAL_DELIMITER: break;
-    case OBU_FRAME_HEADER: break;
-    case OBU_TILE_GROUP: break;
-    case OBU_METADATA: break;
+    case OBU_SEQUENCE_HEADER:
+    case OBU_TEMPORAL_DELIMITER:
+    case OBU_FRAME_HEADER:
+    case OBU_TILE_GROUP:
+    case OBU_METADATA:
     case OBU_PADDING: break;
     default: return -1;
   }
   return 0;
 }
 
-static OBU_TYPE read_obu_header(struct aom_read_bit_buffer *rb,
-                                size_t *header_size,
-                                uint8_t *obu_extension_header) {
-  *header_size = 1;
+// Returns 1 when OBU type is valid, and 0 otherwise.
+static int valid_obu_type(int obu_type) {
+  int valid_type = 0;
+  switch (obu_type) {
+    case OBU_SEQUENCE_HEADER:
+    case OBU_TEMPORAL_DELIMITER:
+    case OBU_FRAME_HEADER:
+    case OBU_TILE_GROUP:
+    case OBU_METADATA:
+    case OBU_PADDING: valid_type = 1; break;
+    default: break;
+  }
+  return valid_type;
+}
+
+// Parses OBU header and stores values in 'header'. Returns 0 for success, and
+// -1 when an error occurs.
+static int read_obu_header(struct aom_read_bit_buffer *rb, ObuHeader *header) {
+  if (!rb || !header) return AOM_CODEC_INVALID_PARAM;
+
+  header->size = 1;
 
   // first bit is obu_forbidden_bit (0) according to R19
   aom_rb_read_bit(rb);
 
-  const OBU_TYPE obu_type = (OBU_TYPE)aom_rb_read_literal(rb, 4);
+  header->type = (OBU_TYPE)aom_rb_read_literal(rb, 4);
+
+  if (!valid_obu_type(header->type)) return AOM_CODEC_CORRUPT_FRAME;
+
   aom_rb_read_literal(rb, 2);  // reserved
-  const int obu_extension_flag = aom_rb_read_bit(rb);
-  if (obu_extension_header) *obu_extension_header = 0;
-  if (obu_extension_flag) {
-    *header_size += 1;
-#if !CONFIG_SCALABILITY
-    aom_rb_read_literal(rb, 3);  // temporal_id
-    aom_rb_read_literal(rb, 2);
-    aom_rb_read_literal(rb, 2);
-    aom_rb_read_literal(rb, 1);  // reserved
-#else
-    if (obu_extension_header)
-      *obu_extension_header = (uint8_t)aom_rb_read_literal(rb, 8);
-#endif
+
+  header->has_extension = aom_rb_read_bit(rb);
+  if (header->has_extension) {
+    header->size += 1;
+    header->temporal_layer_id = aom_rb_read_literal(rb, 3);
+    header->enhancement_layer_id = aom_rb_read_literal(rb, 2);
+    aom_rb_read_literal(rb, 3);  // reserved
   }
 
-  return obu_type;
+  return AOM_CODEC_OK;
 }
 
 static uint32_t read_temporal_delimiter_obu() { return 0; }
@@ -258,13 +280,6 @@ static size_t read_metadata(const uint8_t *data, size_t sz) {
   return sz;
 }
 
-#if CONFIG_SCALABILITY
-static const uint32_t kObuExtTemporalIdBitsMask = 0x7;
-static const uint32_t kObuExtTemporalIdBitsShift = 5;
-static const uint32_t kObuExtEnhancementIdBitsMask = 0x3;
-static const uint32_t kObuExtEnhancementIdBitsShift = 3;
-#endif
-
 #if CONFIG_OBU_SIZING
 static aom_codec_err_t read_obu_size(const uint8_t *data,
                                      size_t bytes_available,
@@ -291,9 +306,8 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
   int frame_header_size = 0;
   int seq_header_received = 0;
   size_t seq_header_size = 0;
-#if CONFIG_SCALABILITY
-  uint8_t obu_extension_header = 0;
-#endif
+  ObuHeader obu_header;
+  memset(&obu_header, 0, sizeof(obu_header));
 
   if (data_end < data) {
     cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
@@ -303,7 +317,6 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
   // decode frame as a series of OBUs
   while (!frame_decoding_finished && !cm->error.error_code) {
     struct aom_read_bit_buffer rb;
-    size_t obu_header_size = 0;
     size_t obu_payload_size = 0;
     const size_t bytes_available = data_end - data;
 
@@ -323,6 +336,7 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
       return;
     }
 #endif  // !CONFIG_OBU_SIZING
+
 #if CONFIG_OBU_SIZE_AFTER_HEADER
     size_t length_field_size = 0;
 #else
@@ -334,41 +348,37 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
       return;
     }
 #endif  // CONFIG_OBU_SIZE_AFTER_HEADER
+
     av1_init_read_bit_buffer(pbi, &rb, data + length_field_size, data_end);
 
-#if !CONFIG_SCALABILITY
-    const OBU_TYPE obu_type = read_obu_header(&rb, &obu_header_size, NULL);
-#else
-    const OBU_TYPE obu_type =
-        read_obu_header(&rb, &obu_header_size, &obu_extension_header);
-#endif
+    if (read_obu_header(&rb, &obu_header) != AOM_CODEC_OK) {
+      cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
+      return;
+    }
+
 #if CONFIG_OBU_SIZE_AFTER_HEADER
     size_t obu_size;
-    if (read_obu_size(data + obu_header_size, bytes_available - obu_header_size,
+    if (read_obu_size(data + obu_header.size, bytes_available - obu_header.size,
                       &obu_size, &length_field_size) != AOM_CODEC_OK) {
       cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
       return;
     }
     av1_init_read_bit_buffer(
-        pbi, &rb, data + length_field_size + obu_header_size, data_end);
+        pbi, &rb, data + length_field_size + obu_header.size, data_end);
 #endif  // CONFIG_OBU_SIZE_AFTER_HEADER
 
-    data += length_field_size + obu_header_size;
+    data += length_field_size + obu_header.size;
     if (data_end < data) {
       cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
       return;
     }
 
 #if CONFIG_SCALABILITY
-    cm->temporal_layer_id =
-        (obu_extension_header >> kObuExtTemporalIdBitsShift) &
-        kObuExtTemporalIdBitsMask;
-    cm->enhancement_layer_id =
-        (obu_extension_header >> kObuExtEnhancementIdBitsShift) &
-        kObuExtEnhancementIdBitsMask;
+    cm->temporal_layer_id = obu_header.temporal_layer_id;
+    cm->enhancement_layer_id = obu_header.enhancement_layer_id;
 #endif
 
-    switch (obu_type) {
+    switch (obu_header.type) {
       case OBU_TEMPORAL_DELIMITER:
         obu_payload_size = read_temporal_delimiter_obu();
         break;
@@ -380,7 +390,7 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
         } else {
           // Seeing another sequence header, skip as all sequence headers
           // are requred to be identical.
-          if (obu_size - obu_header_size != seq_header_size) {
+          if (obu_size - obu_header.size != seq_header_size) {
             cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
             return;
           }
@@ -406,7 +416,7 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
         // In this case, obu_size is already excluding the header size.
         const size_t payload_offset = obu_size;
 #else
-        const size_t payload_offset = obu_size - obu_header_size;
+        const size_t payload_offset = obu_size - obu_header.size;
 #endif  // CONFIG_OBU_SIZE_AFTER_HEADER
         obu_payload_size = read_one_tile_group_obu(
             pbi, &rb, is_first_tg_obu_received, data, data + payload_offset,
