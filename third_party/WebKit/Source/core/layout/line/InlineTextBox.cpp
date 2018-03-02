@@ -472,6 +472,7 @@ LayoutUnit InlineTextBox::PlaceEllipsisBox(bool flow_is_ltr,
 bool InlineTextBox::IsLineBreak() const {
   return GetLineLayoutItem().IsBR() ||
          (GetLineLayoutItem().Style()->PreserveNewline() && Len() == 1 &&
+          GetLineLayoutItem().GetText().length() > Start() &&
           (*GetLineLayoutItem().GetText().Impl())[Start()] == '\n');
 }
 
