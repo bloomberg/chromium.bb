@@ -58,7 +58,6 @@ NSString* const kHomeTouchId = @"HOME";
 NSString* const kSearchTouchId = @"SEARCH";
 NSString* const kStarTouchId = @"BOOKMARK";
 NSString* const kNewTabTouchId = @"NEW-TAB";
-NSString* const kExitFullscreenTouchId = @"EXIT-FULLSCREEN";
 NSString* const kFullscreenOriginLabelTouchId = @"FULLSCREEN-ORIGIN-LABEL";
 
 // The button indexes in the back and forward segment control.
@@ -343,8 +342,6 @@ class BrowserTouchBarNotificationBridge : public CommandObserver {
 
     [touchBarItem
         setView:[NSTextField labelWithAttributedString:attributedString.get()]];
-  } else if ([identifier hasSuffix:kExitFullscreenTouchId]) {
-    return nil;
   }
 
   return touchBarItem.autorelease();
@@ -353,28 +350,9 @@ class BrowserTouchBarNotificationBridge : public CommandObserver {
 - (NSTouchBar*)createTabFullscreenTouchBar API_AVAILABLE(macos(10.12.2)) {
   base::scoped_nsobject<NSTouchBar> touchBar([[ui::NSTouchBar() alloc] init]);
   [touchBar setDelegate:self];
-
-  if ([touchBar respondsToSelector:
-      @selector(setEscapeKeyReplacementItemIdentifier:)]) {
-    NSString* exitIdentifier =
-        ui::GetTouchBarItemId(kTabFullscreenTouchBarId, kExitFullscreenTouchId);
-    [touchBar setEscapeKeyReplacementItemIdentifier:exitIdentifier];
-    [touchBar setDefaultItemIdentifiers:@[ ui::GetTouchBarItemId(
-                                            kTabFullscreenTouchBarId,
-                                            kFullscreenOriginLabelTouchId) ]];
-
-    base::scoped_nsobject<NSCustomTouchBarItem> touchBarItem(
-        [[ui::NSCustomTouchBarItem() alloc] initWithIdentifier:exitIdentifier]);
-
-    [touchBarItem
-        setView:[NSButton buttonWithTitle:l10n_util::GetNSString(
-                                              IDS_TOUCH_BAR_EXIT_FULLSCREEN)
-                                   target:self
-                                   action:@selector(exitFullscreenForTab:)]];
-    [touchBar
-        setTemplateItems:[NSSet setWithObject:touchBarItem.autorelease()]];
-  }
-
+  [touchBar setDefaultItemIdentifiers:@[ ui::GetTouchBarItemId(
+                                          kTabFullscreenTouchBarId,
+                                          kFullscreenOriginLabelTouchId) ]];
   return touchBar.autorelease();
 }
 
@@ -497,12 +475,6 @@ class BrowserTouchBarNotificationBridge : public CommandObserver {
       [control selectedSegment] == kBackSegmentIndex ? IDC_BACK : IDC_FORWARD;
   LogTouchBarUMA(TouchBarActionFromCommand(command));
   commandUpdater_->ExecuteCommand(command);
-}
-
-- (void)exitFullscreenForTab:(id)sender {
-  browser_->exclusive_access_manager()
-      ->fullscreen_controller()
-      ->ExitExclusiveAccessIfNecessary();
 }
 
 - (void)executeCommand:(id)sender {
