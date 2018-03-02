@@ -844,12 +844,17 @@ sandbox::ResultCode SandboxWin::StartSandboxedProcess(
 
   // Pre-startup mitigations.
   sandbox::MitigationFlags mitigations =
-      sandbox::MITIGATION_HEAP_TERMINATE | sandbox::MITIGATION_BOTTOM_UP_ASLR |
-      sandbox::MITIGATION_DEP | sandbox::MITIGATION_DEP_NO_ATL_THUNK |
-      sandbox::MITIGATION_EXTENSION_POINT_DISABLE | sandbox::MITIGATION_SEHOP |
+      sandbox::MITIGATION_HEAP_TERMINATE |
+      sandbox::MITIGATION_BOTTOM_UP_ASLR |
+      sandbox::MITIGATION_DEP |
+      sandbox::MITIGATION_DEP_NO_ATL_THUNK |
+      sandbox::MITIGATION_EXTENSION_POINT_DISABLE |
+      sandbox::MITIGATION_SEHOP |
       sandbox::MITIGATION_NONSYSTEM_FONT_DISABLE |
       sandbox::MITIGATION_IMAGE_LOAD_NO_REMOTE |
-      sandbox::MITIGATION_IMAGE_LOAD_NO_LOW_LABEL;
+      sandbox::MITIGATION_IMAGE_LOAD_NO_LOW_LABEL |
+      sandbox::MITIGATION_IMAGE_LOAD_PREFER_SYS32 |
+      sandbox::MITIGATION_RESTRICT_INDIRECT_BRANCH_PREDICTION;
 
   sandbox::ResultCode result = policy->SetProcessMitigations(mitigations);
   if (result != sandbox::SBOX_ALL_OK)
