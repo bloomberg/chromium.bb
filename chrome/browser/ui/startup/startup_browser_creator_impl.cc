@@ -85,10 +85,13 @@
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #include "chrome/browser/apps/app_launch_for_metro_restart_win.h"
+#if defined(GOOGLE_CHROME_BUILD)
+#include "chrome/browser/conflicts/problematic_programs_updater_win.h"
+#endif  // defined(GOOGLE_CHROME_BUILD)
 #include "chrome/browser/notifications/notification_platform_bridge_win.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/shell_integration_win.h"
-#endif
+#endif  // defined(OS_WIN)
 
 #if BUILDFLAG(ENABLE_RLZ)
 #include "components/google/core/browser/google_util.h"
@@ -613,6 +616,17 @@ void StartupBrowserCreatorImpl::DetermineURLsAndLaunch(
   bool is_incognito_or_guest =
       profile_->GetProfileType() != Profile::ProfileType::REGULAR_PROFILE;
   bool is_post_crash_launch = HasPendingUncleanExit(profile_);
+  bool has_incompatible_applications = false;
+#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+  if (is_post_crash_launch) {
+    // Check if there are any incompatible applications cached from the last
+    // Chrome run. The TrimCache() function removes any invalid cached entries
+    // first.
+    ProblematicProgramsUpdater::TrimCache();
+    has_incompatible_applications =
+        ProblematicProgramsUpdater::HasCachedPrograms();
+  }
+#endif
   const auto session_startup_pref =
       StartupBrowserCreator::GetSessionStartupPref(command_line_, profile_);
   // Both mandatory and recommended startup policies should skip promo pages.
@@ -621,7 +635,8 @@ void StartupBrowserCreatorImpl::DetermineURLsAndLaunch(
       session_startup_pref.TypeIsRecommended(profile_->GetPrefs());
   StartupTabs tabs = DetermineStartupTabs(
       StartupTabProviderImpl(), cmd_line_tabs, process_startup,
-      is_incognito_or_guest, is_post_crash_launch, are_startup_urls_managed);
+      is_incognito_or_guest, is_post_crash_launch,
+      has_incompatible_applications, are_startup_urls_managed);
 
   // Return immediately if we start an async restore, since the remainder of
   // that process is self-contained.
@@ -670,14 +685,27 @@ StartupTabs StartupBrowserCreatorImpl::DetermineStartupTabs(
     bool process_startup,
     bool is_incognito_or_guest,
     bool is_post_crash_launch,
+    bool has_incompatible_applications,
     bool are_startup_urls_managed) {
   // Only the New Tab Page or command line URLs may be shown in incognito mode.
+  if (is_incognito_or_guest) {
+    if (!cmd_line_tabs.empty())
+      return cmd_line_tabs;
+
+    return StartupTabs({StartupTab(GURL(chrome::kChromeUINewTabURL), false)});
+  }
+
   // A similar policy exists for crash recovery launches, to prevent getting the
   // user stuck in a crash loop.
-  if (is_incognito_or_guest || is_post_crash_launch) {
-    if (cmd_line_tabs.empty())
-      return StartupTabs({StartupTab(GURL(chrome::kChromeUINewTabURL), false)});
-    return cmd_line_tabs;
+  if (is_post_crash_launch) {
+    if (!cmd_line_tabs.empty())
+      return cmd_line_tabs;
+
+    StartupTabs tabs = provider.GetPostCrashTabs(has_incompatible_applications);
+    if (!tabs.empty())
+      return tabs;
+
+    return StartupTabs({StartupTab(GURL(chrome::kChromeUINewTabURL), false)});
   }
 
   // A trigger on a profile may indicate that we should show a tab which
