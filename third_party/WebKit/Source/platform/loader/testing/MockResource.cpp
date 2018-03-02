@@ -39,8 +39,65 @@ MockResource* MockResource::Create(const ResourceRequest& request) {
   return new MockResource(request, options);
 }
 
+MockResource* MockResource::Create(const KURL& url) {
+  ResourceRequest request(url);
+  return Create(request);
+}
+
 MockResource::MockResource(const ResourceRequest& request,
                            const ResourceLoaderOptions& options)
     : Resource(request, Resource::kMock, options) {}
+
+CachedMetadataHandler* MockResource::CreateCachedMetadataHandler(
+    std::unique_ptr<CachedMetadataSender> send_callback) {
+  return new MockCacheHandler(std::move(send_callback));
+}
+
+void MockResource::SetSerializedCachedMetadata(const char* data, size_t size) {
+  Resource::SetSerializedCachedMetadata(data, size);
+  MockCacheHandler* cache_handler =
+      static_cast<MockCacheHandler*>(Resource::CacheHandler());
+  if (cache_handler) {
+    cache_handler->Set(data, size);
+  }
+}
+
+void MockResource::SendCachedMetadata(const char* data, size_t size) {
+  MockCacheHandler* cache_handler =
+      static_cast<MockCacheHandler*>(Resource::CacheHandler());
+  if (cache_handler) {
+    cache_handler->Set(data, size);
+    cache_handler->Send();
+  }
+}
+
+MockCacheHandler* MockResource::CacheHandler() {
+  return static_cast<MockCacheHandler*>(Resource::CacheHandler());
+}
+
+MockCacheHandler::MockCacheHandler(
+    std::unique_ptr<CachedMetadataSender> send_callback)
+    : send_callback_(std::move(send_callback)) {}
+
+void MockCacheHandler::Set(const char* data, size_t size) {
+  data_.emplace();
+  data_->Append(data, size);
+}
+
+void MockCacheHandler::ClearCachedMetadata(
+    CachedMetadataHandler::CacheType cache_type) {
+  if (cache_type == CachedMetadataHandler::kSendToPlatform) {
+    Send();
+  }
+  data_.reset();
+}
+
+void MockCacheHandler::Send() {
+  if (data_) {
+    send_callback_->Send(data_->data(), data_->size());
+  } else {
+    send_callback_->Send(nullptr, 0);
+  }
+}
 
 }  // namespace blink

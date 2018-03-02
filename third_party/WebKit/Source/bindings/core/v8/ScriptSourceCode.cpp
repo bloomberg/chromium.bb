@@ -51,7 +51,7 @@ String SourceMapUrlFromResponse(const ResourceResponse& response) {
 ScriptSourceCode::ScriptSourceCode(
     const String& source,
     ScriptSourceLocationType source_location_type,
-    CachedMetadataHandler* cache_handler,
+    SingleCachedMetadataHandler* cache_handler,
     const KURL& url,
     const TextPosition& start_position)
     : source_(TreatNullSourceAsEmpty(source)),

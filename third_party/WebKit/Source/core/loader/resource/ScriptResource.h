@@ -59,6 +59,8 @@ class CORE_EXPORT ScriptResource final : public TextResource {
     return new ScriptResource(request, options, decoder_options);
   }
 
+  void Trace(blink::Visitor*) override;
+
   ~ScriptResource() override;
 
   void OnMemoryDump(WebMemoryDumpLevelOfDetail,
@@ -66,11 +68,21 @@ class CORE_EXPORT ScriptResource final : public TextResource {
 
   void DestroyDecodedDataForFailedRevalidation() override;
 
+  void SetSerializedCachedMetadata(const char*, size_t) override;
+
   const String& SourceText();
 
   AccessControlStatus CalculateAccessControlStatus(const SecurityOrigin*) const;
 
+  SingleCachedMetadataHandler* CacheHandler();
+
+ protected:
+  CachedMetadataHandler* CreateCachedMetadataHandler(
+      std::unique_ptr<CachedMetadataSender> send_callback) override;
+
  private:
+  class SingleCachedMetadataHandlerImpl;
+
   class ScriptResourceFactory : public ResourceFactory {
    public:
     ScriptResourceFactory()
@@ -91,6 +103,7 @@ class CORE_EXPORT ScriptResource final : public TextResource {
 
   bool CanUseCacheValidator() const override;
 
+  Member<SingleCachedMetadataHandlerImpl> cache_handler_;
   AtomicString source_text_;
 };
 

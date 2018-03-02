@@ -127,7 +127,7 @@ v8::MaybeLocal<v8::Script> CompileEager(
 
 // Compile a script, and consume a V8 cache that was generated previously.
 static v8::MaybeLocal<v8::Script> CompileAndConsumeCache(
-    CachedMetadataHandler* cache_handler,
+    SingleCachedMetadataHandler* cache_handler,
     scoped_refptr<CachedMetadata> cached_metadata,
     v8::ScriptCompiler::CompileOptions consume_options,
     v8::Isolate* isolate,
@@ -174,7 +174,7 @@ uint32_t CacheTag(CacheTagKind kind, const String& encoding) {
 }
 
 // Check previously stored timestamp.
-bool IsResourceHotForCaching(CachedMetadataHandler* cache_handler,
+bool IsResourceHotForCaching(SingleCachedMetadataHandler* cache_handler,
                              int hot_hours) {
   const double cache_within_seconds = hot_hours * 60 * 60;
   scoped_refptr<CachedMetadata> cached_metadata =
@@ -192,7 +192,7 @@ bool IsResourceHotForCaching(CachedMetadataHandler* cache_handler,
 // Final compile call for a streamed compilation.
 v8::MaybeLocal<v8::Script> PostStreamCompile(
     v8::ScriptCompiler::CompileOptions compile_options,
-    CachedMetadataHandler* cache_handler,
+    SingleCachedMetadataHandler* cache_handler,
     ScriptStreamer* streamer,
     v8::Isolate* isolate,
     v8::Local<v8::String> code,
@@ -213,7 +213,7 @@ typedef base::OnceCallback<v8::MaybeLocal<v8::Script>(
 // Select a compile function from any of the above depending on compile_options.
 static CompileFn SelectCompileFunction(
     v8::ScriptCompiler::CompileOptions compile_options,
-    CachedMetadataHandler* cache_handler,
+    SingleCachedMetadataHandler* cache_handler,
     v8::ScriptCompiler::NoCacheReason no_cache_reason) {
   switch (compile_options) {
     case v8::ScriptCompiler::kNoCompileOptions:
@@ -245,7 +245,7 @@ static CompileFn SelectCompileFunction(
 // Select a compile function for a streaming compile.
 CompileFn SelectCompileFunction(
     v8::ScriptCompiler::CompileOptions compile_options,
-    CachedMetadataHandler* cache_handler,
+    SingleCachedMetadataHandler* cache_handler,
     ScriptStreamer* streamer) {
   DCHECK(streamer->IsFinished());
   DCHECK(!streamer->StreamingSuppressed());
@@ -284,7 +284,7 @@ V8ScriptRunner::GetCompileOptions(V8CacheOptions cache_options,
       break;
   }
 
-  CachedMetadataHandler* cache_handler = source.CacheHandler();
+  SingleCachedMetadataHandler* cache_handler = source.CacheHandler();
   if (!cache_handler) {
     return std::make_tuple(v8::ScriptCompiler::kNoCompileOptions,
                            ProduceCacheOptions::kNoProduceCache,
@@ -368,7 +368,7 @@ v8::MaybeLocal<v8::Script> V8ScriptRunner::CompileScript(
   const String& file_name = source.Url();
   const TextPosition& script_start_position = source.StartPosition();
   ScriptStreamer* streamer = source.Streamer();
-  CachedMetadataHandler* cache_handler = source.CacheHandler();
+  SingleCachedMetadataHandler* cache_handler = source.CacheHandler();
 
   constexpr const char* kTraceEventCategoryGroup = "v8,devtools.timeline";
   TRACE_EVENT_BEGIN1(kTraceEventCategoryGroup, "v8.compile", "fileName",
@@ -503,7 +503,7 @@ void V8ScriptRunner::ProduceCache(
               ("V8.CodeCacheSizeRatio", 0, 10000, 50));
           code_cache_size_histogram.Count(cache_size_ratio);
         }
-        CachedMetadataHandler* cache_handler = source.CacheHandler();
+        SingleCachedMetadataHandler* cache_handler = source.CacheHandler();
         cache_handler->ClearCachedMetadata(
             CachedMetadataHandler::kCacheLocally);
         cache_handler->SetCachedMetadata(
@@ -683,16 +683,19 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::EvaluateModule(
   return module->Evaluate(context);
 }
 
-uint32_t V8ScriptRunner::TagForCodeCache(CachedMetadataHandler* cache_handler) {
+uint32_t V8ScriptRunner::TagForCodeCache(
+    SingleCachedMetadataHandler* cache_handler) {
   return CacheTag(kCacheTagCode, cache_handler->Encoding());
 }
 
-uint32_t V8ScriptRunner::TagForTimeStamp(CachedMetadataHandler* cache_handler) {
+uint32_t V8ScriptRunner::TagForTimeStamp(
+    SingleCachedMetadataHandler* cache_handler) {
   return CacheTag(kCacheTagTimeStamp, cache_handler->Encoding());
 }
 
 // Store a timestamp to the cache as hint.
-void V8ScriptRunner::SetCacheTimeStamp(CachedMetadataHandler* cache_handler) {
+void V8ScriptRunner::SetCacheTimeStamp(
+    SingleCachedMetadataHandler* cache_handler) {
   double now = WTF::CurrentTime();
   cache_handler->ClearCachedMetadata(CachedMetadataHandler::kCacheLocally);
   cache_handler->SetCachedMetadata(TagForTimeStamp(cache_handler),

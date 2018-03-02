@@ -48,7 +48,7 @@ class TextEncoding;
 namespace blink {
 
 class CachedMetadata;
-class CachedMetadataHandler;
+class SingleCachedMetadataHandler;
 class ExecutionContext;
 class ScriptSourceCode;
 
@@ -69,7 +69,7 @@ class CORE_EXPORT V8ScriptRunner final {
 
   // For the following methods, the caller sites have to hold
   // a HandleScope and a ContextScope.
-  // CachedMetadataHandler is set when metadata caching is supported.
+  // SingleCachedMetadataHandler is set when metadata caching is supported.
   static v8::MaybeLocal<v8::Script> CompileScript(
       ScriptState*,
       const ScriptSourceCode&,
@@ -132,10 +132,10 @@ class CORE_EXPORT V8ScriptRunner final {
                                        const String& file_name,
                                        const TextPosition&);
 
-  static uint32_t TagForParserCache(CachedMetadataHandler*);
-  static uint32_t TagForCodeCache(CachedMetadataHandler*);
-  static uint32_t TagForTimeStamp(CachedMetadataHandler*);
-  static void SetCacheTimeStamp(CachedMetadataHandler*);
+  static uint32_t TagForParserCache(SingleCachedMetadataHandler*);
+  static uint32_t TagForCodeCache(SingleCachedMetadataHandler*);
+  static uint32_t TagForTimeStamp(SingleCachedMetadataHandler*);
+  static void SetCacheTimeStamp(SingleCachedMetadataHandler*);
 
   // Utilities for calling functions added to the V8 extras binding object.
 

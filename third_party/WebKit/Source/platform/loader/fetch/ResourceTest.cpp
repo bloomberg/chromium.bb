@@ -6,7 +6,6 @@
 
 #include "platform/SharedBuffer.h"
 #include "platform/loader/fetch/MemoryCache.h"
-#include "platform/loader/fetch/RawResource.h"
 #include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/loader/testing/MockResource.h"
@@ -46,12 +45,9 @@ ResourceResponse CreateTestResourceResponse() {
 
 void CreateTestResourceAndSetCachedMetadata(const ResourceResponse& response) {
   const char kTestData[] = "test data";
-  Resource* resource =
-      RawResource::CreateForTest(response.Url(), Resource::kRaw);
+  MockResource* resource = MockResource::Create(response.Url());
   resource->SetResponse(response);
-  resource->CacheHandler()->SetCachedMetadata(
-      100, kTestData, sizeof(kTestData),
-      CachedMetadataHandler::kSendToPlatform);
+  resource->SendCachedMetadata(kTestData, sizeof(kTestData));
   return;
 }
 
@@ -79,7 +75,7 @@ TEST(ResourceTest, RevalidateWithFragment) {
   KURL url("http://127.0.0.1:8000/foo.html");
   ResourceResponse response(url);
   response.SetHTTPStatusCode(200);
-  Resource* resource = RawResource::CreateForTest(url, Resource::kRaw);
+  MockResource* resource = MockResource::Create(url);
   resource->ResponseReceived(response, nullptr);
   resource->FinishForTest();
 
@@ -98,7 +94,7 @@ TEST(ResourceTest, Vary) {
   ResourceResponse response(url);
   response.SetHTTPStatusCode(200);
 
-  Resource* resource = RawResource::CreateForTest(url, Resource::kRaw);
+  MockResource* resource = MockResource::Create(url);
   resource->ResponseReceived(response, nullptr);
   resource->FinishForTest();
 
@@ -124,7 +120,7 @@ TEST(ResourceTest, Vary) {
   ResourceRequest old_request(url);
   old_request.SetHTTPHeaderField(HTTPNames::User_Agent, "something");
   old_request.SetHTTPHeaderField(HTTPNames::Referer, "http://foo.com");
-  resource = RawResource::CreateForTest(old_request, Resource::kRaw);
+  resource = MockResource::Create(old_request);
   resource->ResponseReceived(response, nullptr);
   resource->FinishForTest();
 
@@ -152,7 +148,7 @@ TEST(ResourceTest, RevalidationFailed) {
   ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
       platform_;
   const KURL url("http://test.example.com/");
-  Resource* resource = MockResource::Create(ResourceRequest(url));
+  MockResource* resource = MockResource::Create(ResourceRequest(url));
   ResourceResponse response(url);
   response.SetHTTPStatusCode(200);
   resource->ResponseReceived(response, nullptr);
@@ -161,7 +157,7 @@ TEST(ResourceTest, RevalidationFailed) {
   resource->FinishForTest();
   GetMemoryCache()->Add(resource);
 
-  CachedMetadataHandler* original_cache_handler = resource->CacheHandler();
+  MockCacheHandler* original_cache_handler = resource->CacheHandler();
   EXPECT_TRUE(original_cache_handler);
 
   // Simulate revalidation start.
@@ -199,7 +195,7 @@ TEST(ResourceTest, RevalidationSucceeded) {
   ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
       platform_;
   const KURL url("http://test.example.com/");
-  Resource* resource = MockResource::Create(ResourceRequest(url));
+  MockResource* resource = MockResource::Create(ResourceRequest(url));
   ResourceResponse response(url);
   response.SetHTTPStatusCode(200);
   resource->ResponseReceived(response, nullptr);
@@ -208,7 +204,7 @@ TEST(ResourceTest, RevalidationSucceeded) {
   resource->FinishForTest();
   GetMemoryCache()->Add(resource);
 
-  CachedMetadataHandler* original_cache_handler = resource->CacheHandler();
+  MockCacheHandler* original_cache_handler = resource->CacheHandler();
   EXPECT_TRUE(original_cache_handler);
 
   // Simulate a successful revalidation.
@@ -348,7 +344,7 @@ TEST(ResourceTest, RedirectDuringRevalidation) {
   const KURL url("http://test.example.com/1");
   const KURL redirect_target_url("http://test.example.com/2");
 
-  Resource* resource = MockResource::Create(ResourceRequest(url));
+  MockResource* resource = MockResource::Create(ResourceRequest(url));
   ResourceResponse response(url);
   response.SetHTTPStatusCode(200);
   resource->ResponseReceived(response, nullptr);
@@ -361,7 +357,7 @@ TEST(ResourceTest, RedirectDuringRevalidation) {
   EXPECT_EQ(url, resource->GetResourceRequest().Url());
   EXPECT_EQ(url, resource->LastResourceRequest().Url());
 
-  CachedMetadataHandler* original_cache_handler = resource->CacheHandler();
+  MockCacheHandler* original_cache_handler = resource->CacheHandler();
   EXPECT_TRUE(original_cache_handler);
 
   // Simulate a revalidation.

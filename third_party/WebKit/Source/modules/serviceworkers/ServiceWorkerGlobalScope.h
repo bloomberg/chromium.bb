@@ -129,7 +129,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
                            ServiceWorkerThread*,
                            double time_origin);
   void importScripts(const Vector<String>& urls, ExceptionState&) override;
-  CachedMetadataHandler* CreateWorkerScriptCachedMetadataHandler(
+  SingleCachedMetadataHandler* CreateWorkerScriptCachedMetadataHandler(
       const KURL& script_url,
       const Vector<char>* meta_data) override;
   void ExceptionThrown(ErrorEvent*) override;

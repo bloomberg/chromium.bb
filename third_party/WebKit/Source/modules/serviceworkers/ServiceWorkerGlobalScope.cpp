@@ -298,7 +298,7 @@ void ServiceWorkerGlobalScope::importScripts(const Vector<String>& urls,
   WorkerGlobalScope::importScripts(urls, exception_state);
 }
 
-CachedMetadataHandler*
+SingleCachedMetadataHandler*
 ServiceWorkerGlobalScope::CreateWorkerScriptCachedMetadataHandler(
     const KURL& script_url,
     const Vector<char>* meta_data) {

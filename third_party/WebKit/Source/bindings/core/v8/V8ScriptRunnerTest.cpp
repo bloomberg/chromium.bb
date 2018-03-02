@@ -42,13 +42,13 @@ class V8ScriptRunnerTest : public ::testing::Test {
   KURL Url() const {
     return KURL(WTF::String::Format("http://bla.com/bla%d", counter_));
   }
-  unsigned TagForCodeCache(CachedMetadataHandler* cache_handler) const {
+  unsigned TagForCodeCache(SingleCachedMetadataHandler* cache_handler) const {
     return V8ScriptRunner::TagForCodeCache(cache_handler);
   }
-  unsigned TagForTimeStamp(CachedMetadataHandler* cache_handler) const {
+  unsigned TagForTimeStamp(SingleCachedMetadataHandler* cache_handler) const {
     return V8ScriptRunner::TagForTimeStamp(cache_handler);
   }
-  void SetCacheTimeStamp(CachedMetadataHandler* cache_handler) {
+  void SetCacheTimeStamp(SingleCachedMetadataHandler* cache_handler) {
     V8ScriptRunner::SetCacheTimeStamp(cache_handler);
   }
 
@@ -124,14 +124,14 @@ TEST_F(V8ScriptRunnerTest, resourcelessShouldPass) {
 }
 
 TEST_F(V8ScriptRunnerTest, emptyResourceDoesNotHaveCacheHandler) {
-  Resource* resource = CreateEmptyResource();
+  ScriptResource* resource = CreateEmptyResource();
   EXPECT_FALSE(resource->CacheHandler());
 }
 
 TEST_F(V8ScriptRunnerTest, codeOption) {
   V8TestingScope scope;
   ScriptSourceCode source_code(nullptr, CreateResource(UTF8Encoding()));
-  CachedMetadataHandler* cache_handler = source_code.CacheHandler();
+  SingleCachedMetadataHandler* cache_handler = source_code.CacheHandler();
   SetCacheTimeStamp(cache_handler);
 
   EXPECT_TRUE(CompileScript(scope.GetIsolate(), scope.GetScriptState(),
@@ -149,7 +149,7 @@ TEST_F(V8ScriptRunnerTest, consumeCodeOption) {
   V8TestingScope scope;
   ScriptSourceCode source_code(nullptr, CreateResource(UTF8Encoding()));
   // Set timestamp to simulate a warm run.
-  CachedMetadataHandler* cache_handler = source_code.CacheHandler();
+  SingleCachedMetadataHandler* cache_handler = source_code.CacheHandler();
   SetCacheTimeStamp(cache_handler);
 
   // Warm run - should produce code cache.
@@ -178,7 +178,7 @@ TEST_F(V8ScriptRunnerTest, consumeCodeOption) {
 TEST_F(V8ScriptRunnerTest, produceAndConsumeCodeOption) {
   V8TestingScope scope;
   ScriptSourceCode source_code(nullptr, CreateResource(UTF8Encoding()));
-  CachedMetadataHandler* cache_handler = source_code.CacheHandler();
+  SingleCachedMetadataHandler* cache_handler = source_code.CacheHandler();
 
   // Cold run - should set the timestamp
   EXPECT_TRUE(CompileScript(scope.GetIsolate(), scope.GetScriptState(),

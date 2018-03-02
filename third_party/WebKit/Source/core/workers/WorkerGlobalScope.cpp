@@ -179,8 +179,9 @@ void WorkerGlobalScope::importScripts(const Vector<String>& urls,
     }
 
     ErrorEvent* error_event = nullptr;
-    CachedMetadataHandler* handler(CreateWorkerScriptCachedMetadataHandler(
-        complete_url, cached_meta_data.get()));
+    SingleCachedMetadataHandler* handler(
+        CreateWorkerScriptCachedMetadataHandler(complete_url,
+                                                cached_meta_data.get()));
     ReportingProxy().WillEvaluateImportedScript(
         source_code.length(), cached_meta_data ? cached_meta_data->size() : 0);
     ScriptController()->Evaluate(
@@ -298,8 +299,9 @@ void WorkerGlobalScope::EvaluateClassicScript(
     String source_code,
     std::unique_ptr<Vector<char>> cached_meta_data) {
   DCHECK(IsContextThread());
-  CachedMetadataHandler* handler = CreateWorkerScriptCachedMetadataHandler(
-      script_url, cached_meta_data.get());
+  SingleCachedMetadataHandler* handler =
+      CreateWorkerScriptCachedMetadataHandler(script_url,
+                                              cached_meta_data.get());
   DCHECK(!source_code.IsNull());
   ReportingProxy().WillEvaluateWorkerScript(
       source_code.length(),
