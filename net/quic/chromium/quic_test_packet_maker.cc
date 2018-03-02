@@ -439,8 +439,9 @@ QuicTestPacketMaker::MakeRequestHeadersAndMultipleDataFramesPacket(
     size_t* spdy_headers_frame_length,
     const std::vector<std::string>& data_writes) {
   InitializeHeader(packet_number, should_include_version);
-  SpdySerializedFrame spdy_frame = MakeSpdyHeadersFrame(
-      stream_id, fin, priority, std::move(headers), parent_stream_id);
+  SpdySerializedFrame spdy_frame =
+      MakeSpdyHeadersFrame(stream_id, fin && data_writes.empty(), priority,
+                           std::move(headers), parent_stream_id);
 
   if (spdy_headers_frame_length) {
     *spdy_headers_frame_length = spdy_frame.size();
