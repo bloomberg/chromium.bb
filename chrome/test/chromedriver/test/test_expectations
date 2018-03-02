@@ -303,6 +303,7 @@ _OS_NEGATIVE_FILTER['android:chromium'] = (
         'MiscTest.testClickingShouldNotTrampleWOrHInGlobalScope',
         'MiscTest.testShouldReportTheCurrentUrlCorrectly',
         'MiscTest.testStimulatesStrangeOnloadInteractionInFirefox',
+        'ElementAttributeTest.testCanRetrieveTheCurrentValueOfATextFormField_emailInput',
     ]
 )
 _OS_NEGATIVE_FILTER['android:chrome_beta'] = (
