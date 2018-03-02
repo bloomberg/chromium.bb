@@ -35,11 +35,11 @@ namespace consent_auditor {
 // GENERATED_JAVA_CLASS_NAME_OVERRIDE: ConsentAuditorFeature
 enum class Feature {
   CHROME_SYNC = 0,
+  PLAY_STORE = 1,
+  BACKUP_AND_RESTORE = 2,
+  GOOGLE_LOCATION_SERVICE = 3,
 
-  // TODO(crbug.com/645032): There is currently just one supported feature, but
-  // histograms with only one bucket are not supported. Remove this hack when
-  // more features are added, or when crbug.com/645032 is fixed.
-  FEATURE_COUNT = 2
+  FEATURE_LAST = GOOGLE_LOCATION_SERVICE
 };
 
 // Whether a consent is given or not given.

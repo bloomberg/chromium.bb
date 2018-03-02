@@ -113,6 +113,14 @@ function processLangZoneTerms(initialLoad, language, countryCode) {
 }
 
 /**
+ * Returns the raw body HTML of the ToS contents.
+ * @return {string} HTML of document body.
+ */
+function getToSContent() {
+  return document.body.innerHTML;
+}
+
+/**
  * Formats current document in order to display it correctly.
  */
 function formatDocument() {

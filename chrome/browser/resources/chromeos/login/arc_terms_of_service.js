@@ -50,7 +50,7 @@ Polymer({
    * @private
    */
   onRetry_: function() {
-    this.screen.reloadPlayStore();
+    this.screen.reloadPlayStoreToS();
   },
 
   /**

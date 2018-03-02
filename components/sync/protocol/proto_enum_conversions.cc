@@ -320,10 +320,14 @@ const char* ProtoEnumToString(
 const char* ProtoEnumToString(
     sync_pb::UserEventSpecifics::UserConsent::Feature feature) {
   ASSERT_ENUM_BOUNDS(sync_pb::UserEventSpecifics::UserConsent, Feature,
-                     FEATURE_UNSPECIFIED, CHROME_SYNC);
+                     FEATURE_UNSPECIFIED, GOOGLE_LOCATION_SERVICE);
   switch (feature) {
     ENUM_CASE(sync_pb::UserEventSpecifics::UserConsent, FEATURE_UNSPECIFIED);
     ENUM_CASE(sync_pb::UserEventSpecifics::UserConsent, CHROME_SYNC);
+    ENUM_CASE(sync_pb::UserEventSpecifics::UserConsent, PLAY_STORE);
+    ENUM_CASE(sync_pb::UserEventSpecifics::UserConsent, BACKUP_AND_RESTORE);
+    ENUM_CASE(sync_pb::UserEventSpecifics::UserConsent,
+              GOOGLE_LOCATION_SERVICE);
   }
   NOTREACHED();
   return "";

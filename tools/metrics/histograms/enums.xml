@@ -6569,6 +6569,9 @@ Called by update_net_error_codes.py.-->
 
 <enum name="ConsentAuditorFeature">
   <int value="0" label="CHROME_SYNC"/>
+  <int value="1" label="PLAY_STORE"/>
+  <int value="2" label="BACKUP_AND_RESTORE"/>
+  <int value="3" label="GOOGLE_LOCATION_SERVICE"/>
 </enum>
 
 <enum name="ContentResourceType">

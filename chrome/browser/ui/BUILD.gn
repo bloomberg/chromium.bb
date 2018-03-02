@@ -2119,6 +2119,7 @@ split_static_library("ui") {
       "//chromeos:cryptohome_proto",
       "//chromeos/components/tether",
       "//components/arc",
+      "//components/consent_auditor:consent_auditor",
       "//components/cryptauth",
       "//components/drive:drive_chromeos",
       "//components/exo",

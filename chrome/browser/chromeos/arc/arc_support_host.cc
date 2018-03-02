@@ -6,15 +6,18 @@
 
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/i18n/timezone.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/sha1.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/consent_auditor/consent_auditor_factory.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
@@ -23,6 +26,7 @@
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/consent_auditor/consent_auditor.h"
 #include "components/user_manager/known_user.h"
 #include "extensions/browser/extension_registry.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -78,14 +82,22 @@ constexpr char kEventOnAuthFailed[] = "onAuthFailed";
 constexpr char kAuthErrorMessage[] = "errorMessage";
 
 // "onAgree" is fired when a user clicks "Agree" button.
-// The message should have the following three fields:
+// The message should have the following fields:
+// - tosContent
+// - tosShown
 // - isMetricsEnabled
 // - isBackupRestoreEnabled
+// - isBackupRestoreManaged
 // - isLocationServiceEnabled
+// - isLocationServiceManaged
 constexpr char kEventOnAgreed[] = "onAgreed";
+constexpr char kTosContent[] = "tosContent";
+constexpr char kTosShown[] = "tosShown";
 constexpr char kIsMetricsEnabled[] = "isMetricsEnabled";
 constexpr char kIsBackupRestoreEnabled[] = "isBackupRestoreEnabled";
+constexpr char kIsBackupRestoreManaged[] = "isBackupRestoreManaged";
 constexpr char kIsLocationServiceEnabled[] = "isLocationServiceEnabled";
+constexpr char kIsLocationServiceManaged[] = "isLocationServiceManaged";
 
 // "onRetryClicked" is fired when a user clicks "RETRY" button on the error
 // page.
@@ -157,6 +169,28 @@ std::ostream& operator<<(std::ostream& os, ArcSupportHost::Error error) {
 }
 
 }  // namespace
+
+// static
+std::vector<int> ArcSupportHost::ComputePlayToSConsentIds(
+    const std::string& content) {
+  std::vector<int> result;
+
+  // Record the content length and the SHA1 hash of the content, rather than
+  // wastefully copying the entire content which is dynamically loaded from
+  // Play, rather than included in the Chrome build itself.
+  result.push_back(static_cast<int>(content.length()));
+
+  uint8_t hash[base::kSHA1Length];
+  base::SHA1HashBytes(reinterpret_cast<const uint8_t*>(content.c_str()),
+                      content.size(), hash);
+  for (size_t i = 0; i < base::kSHA1Length; i += 4) {
+    uint32_t acc =
+        hash[i] << 24 | hash[i + 1] << 16 | hash[i + 2] << 8 | hash[i + 3];
+    result.push_back(static_cast<int>(acc));
+  }
+
+  return result;
+}
 
 ArcSupportHost::ArcSupportHost(Profile* profile)
     : profile_(profile),
@@ -581,17 +615,54 @@ void ArcSupportHost::OnMessage(const base::DictionaryValue& message) {
     auth_delegate_->OnAuthFailed(error_message);
   } else if (event == kEventOnAgreed) {
     DCHECK(tos_delegate_);
+    bool tos_shown;
+    std::string tos_content;
     bool is_metrics_enabled;
     bool is_backup_restore_enabled;
+    bool is_backup_restore_managed;
     bool is_location_service_enabled;
-    if (!message.GetBoolean(kIsMetricsEnabled, &is_metrics_enabled) ||
+    bool is_location_service_managed;
+    if (!message.GetString(kTosContent, &tos_content) ||
+        !message.GetBoolean(kTosShown, &tos_shown) ||
+        !message.GetBoolean(kIsMetricsEnabled, &is_metrics_enabled) ||
         !message.GetBoolean(kIsBackupRestoreEnabled,
                             &is_backup_restore_enabled) ||
+        !message.GetBoolean(kIsBackupRestoreManaged,
+                            &is_backup_restore_managed) ||
         !message.GetBoolean(kIsLocationServiceEnabled,
-                            &is_location_service_enabled)) {
+                            &is_location_service_enabled) ||
+        !message.GetBoolean(kIsLocationServiceManaged,
+                            &is_location_service_managed)) {
       NOTREACHED();
       return;
     }
+
+    // Record acceptance of ToS if it was shown to the user.
+    if (tos_shown) {
+      ConsentAuditorFactory::GetForProfile(profile_)->RecordGaiaConsent(
+          consent_auditor::Feature::PLAY_STORE,
+          ComputePlayToSConsentIds(tos_content),
+          IDS_ARC_OPT_IN_DIALOG_BUTTON_AGREE,
+          consent_auditor::ConsentStatus::GIVEN);
+    }
+
+    // If the user - not policy - chose Backup and Restore, record consent.
+    if (is_backup_restore_enabled && !is_backup_restore_managed) {
+      ConsentAuditorFactory::GetForProfile(profile_)->RecordGaiaConsent(
+          consent_auditor::Feature::BACKUP_AND_RESTORE,
+          {IDS_ARC_OPT_IN_DIALOG_BACKUP_RESTORE},
+          IDS_ARC_OPT_IN_DIALOG_BUTTON_AGREE,
+          consent_auditor::ConsentStatus::GIVEN);
+    }
+
+    // If the user - not policy - chose Location Services, record consent.
+    if (is_location_service_enabled && !is_location_service_managed) {
+      ConsentAuditorFactory::GetForProfile(profile_)->RecordGaiaConsent(
+          consent_auditor::Feature::GOOGLE_LOCATION_SERVICE,
+          {IDS_ARC_OPT_IN_LOCATION_SETTING}, IDS_ARC_OPT_IN_DIALOG_BUTTON_AGREE,
+          consent_auditor::ConsentStatus::GIVEN);
+    }
+
     tos_delegate_->OnTermsAgreed(is_metrics_enabled, is_backup_restore_enabled,
                                  is_location_service_enabled);
   } else if (event == kEventOnRetryClicked) {

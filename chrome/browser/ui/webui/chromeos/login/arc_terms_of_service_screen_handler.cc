@@ -5,9 +5,11 @@
 #include "chrome/browser/ui/webui/chromeos/login/arc_terms_of_service_screen_handler.h"
 
 #include "base/i18n/timezone.h"
+#include "chrome/browser/chromeos/arc/arc_support_host.h"
 #include "chrome/browser/chromeos/arc/optin/arc_optin_preference_handler.h"
 #include "chrome/browser/chromeos/login/screens/arc_terms_of_service_screen_view_observer.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/consent_auditor/consent_auditor_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/grit/generated_resources.h"
@@ -16,6 +18,7 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "components/arc/arc_prefs.h"
+#include "components/consent_auditor/consent_auditor.h"
 #include "components/login/localized_values_builder.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_contents.h"
@@ -136,11 +139,13 @@ void ArcTermsOfServiceScreenHandler::OnMetricsModeChanged(bool enabled,
 
 void ArcTermsOfServiceScreenHandler::OnBackupAndRestoreModeChanged(
     bool enabled, bool managed) {
+  backup_restore_managed_ = managed;
   CallJS("setBackupAndRestoreMode", enabled, managed);
 }
 
 void ArcTermsOfServiceScreenHandler::OnLocationServicesModeChanged(
     bool enabled, bool managed) {
+  location_services_managed_ = managed;
   CallJS("setLocationServicesMode", enabled, managed);
 }
 
@@ -229,12 +234,40 @@ void ArcTermsOfServiceScreenHandler::HandleSkip() {
 
 void ArcTermsOfServiceScreenHandler::HandleAccept(
     bool enable_backup_restore,
-    bool enable_location_services) {
+    bool enable_location_services,
+    const std::string& tos_content) {
   if (!NeedDispatchEventOnAction())
     return;
-
   pref_handler_->EnableBackupRestore(enable_backup_restore);
   pref_handler_->EnableLocationService(enable_location_services);
+
+  consent_auditor::ConsentAuditor* consent_auditor =
+      ConsentAuditorFactory::GetForProfile(
+          ProfileManager::GetPrimaryUserProfile());
+
+  // Record acceptance of Play ToS.
+  consent_auditor->RecordGaiaConsent(
+      consent_auditor::Feature::PLAY_STORE,
+      ArcSupportHost::ComputePlayToSConsentIds(tos_content),
+      IDS_ARC_OOBE_TERMS_BUTTON_ACCEPT, consent_auditor::ConsentStatus::GIVEN);
+
+  // If the user - not policy - chose Backup and Restore, record consent.
+  if (enable_backup_restore && !backup_restore_managed_) {
+    consent_auditor->RecordGaiaConsent(
+        consent_auditor::Feature::BACKUP_AND_RESTORE,
+        {IDS_ARC_OPT_IN_DIALOG_BACKUP_RESTORE},
+        IDS_ARC_OOBE_TERMS_BUTTON_ACCEPT,
+        consent_auditor::ConsentStatus::GIVEN);
+  }
+
+  // If the user - not policy - chose Location Services, record consent.
+  if (enable_location_services && !location_services_managed_) {
+    consent_auditor->RecordGaiaConsent(
+        consent_auditor::Feature::GOOGLE_LOCATION_SERVICE,
+        {IDS_ARC_OPT_IN_LOCATION_SETTING}, IDS_ARC_OOBE_TERMS_BUTTON_ACCEPT,
+        consent_auditor::ConsentStatus::GIVEN);
+  }
+
   for (auto& observer : observer_list_)
     observer.OnAccept();
 }
