@@ -127,27 +127,6 @@ class ASH_EXPORT PowerButtonController
   // LockStateObserver:
   void OnLockStateEvent(LockStateObserver::EventType event) override;
 
-  // TODO(minch): Move all of these test related get/set functions to
-  // PowerButtonControllerTestApi.
-  // Overrides the tick clock used by |this| for testing.
-  void SetTickClockForTesting(base::TickClock* tick_clock);
-
-  bool turn_screen_off_for_tap_for_test() const {
-    return turn_screen_off_for_tap_;
-  }
-
-  PowerButtonScreenshotController* screenshot_controller_for_test() {
-    return screenshot_controller_.get();
-  }
-
-  void set_power_button_type_for_test(ButtonType button_type) {
-    button_type_ = button_type;
-  }
-
-  void set_turn_screen_off_for_tap_for_test(bool turn_screen_off_for_tap) {
-    turn_screen_off_for_tap_ = turn_screen_off_for_tap;
-  }
-
  private:
   friend class PowerButtonControllerTestApi;
 

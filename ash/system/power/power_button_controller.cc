@@ -319,15 +319,6 @@ void PowerButtonController::OnLockStateEvent(
     lock_button_down_ = false;
 }
 
-void PowerButtonController::SetTickClockForTesting(
-    base::TickClock* tick_clock) {
-  DCHECK(tick_clock);
-  tick_clock_ = tick_clock;
-
-  display_controller_ = std::make_unique<PowerButtonDisplayController>(
-      backlights_forced_off_setter_, tick_clock_);
-}
-
 void PowerButtonController::StopTimersAndDismissMenu() {
   shutdown_timer_.Stop();
   power_button_menu_timer_.Stop();

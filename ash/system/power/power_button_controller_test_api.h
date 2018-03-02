@@ -5,8 +5,13 @@
 #ifndef ASH_SYSTEM_POWER_POWER_BUTTON_CONTROLLER_TEST_API_H_
 #define ASH_SYSTEM_POWER_POWER_BUTTON_CONTROLLER_TEST_API_H_
 
+#include "ash/system/power/power_button_controller.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+
+namespace base {
+class TickClock;
+}  // namespace base
 
 namespace ui {
 class KeyEvent;
@@ -18,7 +23,7 @@ class Rect;
 
 namespace ash {
 class PowerButtonMenuView;
-class PowerButtonController;
+class PowerButtonScreenshotController;
 
 // Helper class used by tests to access PowerButtonController's internal state.
 class PowerButtonControllerTestApi {
@@ -55,6 +60,17 @@ class PowerButtonControllerTestApi {
 
   // True if |controller_|'s menu has a sign out item.
   bool MenuHasSignOutItem() const;
+
+  // True if should turn screen off when tapping the power button.
+  bool ShouldTurnScreenOffForTap() const;
+
+  PowerButtonScreenshotController* GetScreenshotController();
+
+  void SetPowerButtonType(PowerButtonController::ButtonType button_type);
+
+  void SetTickClock(base::TickClock* tick_clock);
+
+  void SetTurnScreenOffForTap(bool turn_screen_off_for_tap);
 
  private:
   PowerButtonController* controller_;  // Not owned.
