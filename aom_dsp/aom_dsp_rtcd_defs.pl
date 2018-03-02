@@ -186,6 +186,10 @@ specialize qw/aom_dc_predictor_16x16 dspr2 neon msa sse2/;
 specialize qw/aom_dc_predictor_16x32 sse2/;
 specialize qw/aom_dc_predictor_32x16 sse2 avx2/;
 specialize qw/aom_dc_predictor_32x32 msa neon sse2 avx2/;
+specialize qw/aom_dc_predictor_32x64 sse2 avx2/;
+specialize qw/aom_dc_predictor_64x64 sse2 avx2/;
+specialize qw/aom_dc_predictor_64x32 sse2 avx2/;
+specialize qw/aom_dc_predictor_64x16 sse2 avx2/;
 
   specialize qw/aom_highbd_v_predictor_4x4 sse2/;
   specialize qw/aom_highbd_v_predictor_4x8 sse2/;

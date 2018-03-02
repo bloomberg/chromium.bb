@@ -195,6 +195,58 @@ void aom_dc_predictor_32x16_sse2(uint8_t *dst, ptrdiff_t stride,
   dc_store_32xh(&row, 16, dst, stride);
 }
 
+void aom_dc_predictor_32x64_sse2(uint8_t *dst, ptrdiff_t stride,
+                                 const uint8_t *above, const uint8_t *left) {
+  __m128i sum_above = dc_sum_32(above);
+  const __m128i sum_left = dc_sum_64(left);
+  sum_above = _mm_add_epi16(sum_above, sum_left);
+
+  uint32_t sum = _mm_cvtsi128_si32(sum_above);
+  sum += 48;
+  sum /= 96;
+  const __m128i row = _mm_set1_epi8((uint8_t)sum);
+  dc_store_32xh(&row, 64, dst, stride);
+}
+
+void aom_dc_predictor_64x64_sse2(uint8_t *dst, ptrdiff_t stride,
+                                 const uint8_t *above, const uint8_t *left) {
+  __m128i sum_above = dc_sum_64(above);
+  const __m128i sum_left = dc_sum_64(left);
+  sum_above = _mm_add_epi16(sum_above, sum_left);
+
+  uint32_t sum = _mm_cvtsi128_si32(sum_above);
+  sum += 64;
+  sum /= 128;
+  const __m128i row = _mm_set1_epi8((uint8_t)sum);
+  dc_store_64xh(&row, 64, dst, stride);
+}
+
+void aom_dc_predictor_64x32_sse2(uint8_t *dst, ptrdiff_t stride,
+                                 const uint8_t *above, const uint8_t *left) {
+  __m128i sum_above = dc_sum_64(above);
+  const __m128i sum_left = dc_sum_32(left);
+  sum_above = _mm_add_epi16(sum_above, sum_left);
+
+  uint32_t sum = _mm_cvtsi128_si32(sum_above);
+  sum += 48;
+  sum /= 96;
+  const __m128i row = _mm_set1_epi8((uint8_t)sum);
+  dc_store_64xh(&row, 32, dst, stride);
+}
+
+void aom_dc_predictor_64x16_sse2(uint8_t *dst, ptrdiff_t stride,
+                                 const uint8_t *above, const uint8_t *left) {
+  __m128i sum_above = dc_sum_64(above);
+  const __m128i sum_left = dc_sum_16(left);
+  sum_above = _mm_add_epi16(sum_above, sum_left);
+
+  uint32_t sum = _mm_cvtsi128_si32(sum_above);
+  sum += 40;
+  sum /= 80;
+  const __m128i row = _mm_set1_epi8((uint8_t)sum);
+  dc_store_64xh(&row, 16, dst, stride);
+}
+
 // -----------------------------------------------------------------------------
 // DC_TOP
 

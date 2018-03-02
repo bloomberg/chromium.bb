@@ -189,9 +189,56 @@ void aom_dc_predictor_32x16_avx2(uint8_t *dst, ptrdiff_t stride,
   uint32_t sum = _mm_cvtsi128_si32(left_sum);
   sum += 24;
   sum /= 48;
-
   const __m256i row = _mm256_set1_epi8((uint8_t)sum);
   row_store_32xh(&row, 16, dst, stride);
+}
+
+void aom_dc_predictor_32x64_avx2(uint8_t *dst, ptrdiff_t stride,
+                                 const uint8_t *above, const uint8_t *left) {
+  const __m256i sum_above = dc_sum_32(above);
+  __m256i sum_left = dc_sum_64(left);
+  sum_left = _mm256_add_epi16(sum_left, sum_above);
+  uint32_t sum = _mm_cvtsi128_si32(_mm256_castsi256_si128(sum_left));
+  sum += 48;
+  sum /= 96;
+  const __m256i row = _mm256_set1_epi8((uint8_t)sum);
+  row_store_32xh(&row, 64, dst, stride);
+}
+
+void aom_dc_predictor_64x64_avx2(uint8_t *dst, ptrdiff_t stride,
+                                 const uint8_t *above, const uint8_t *left) {
+  const __m256i sum_above = dc_sum_64(above);
+  __m256i sum_left = dc_sum_64(left);
+  sum_left = _mm256_add_epi16(sum_left, sum_above);
+  uint32_t sum = _mm_cvtsi128_si32(_mm256_castsi256_si128(sum_left));
+  sum += 64;
+  sum /= 128;
+  const __m256i row = _mm256_set1_epi8((uint8_t)sum);
+  row_store_64xh(&row, 64, dst, stride);
+}
+
+void aom_dc_predictor_64x32_avx2(uint8_t *dst, ptrdiff_t stride,
+                                 const uint8_t *above, const uint8_t *left) {
+  const __m256i sum_above = dc_sum_64(above);
+  __m256i sum_left = dc_sum_32(left);
+  sum_left = _mm256_add_epi16(sum_left, sum_above);
+  uint32_t sum = _mm_cvtsi128_si32(_mm256_castsi256_si128(sum_left));
+  sum += 48;
+  sum /= 96;
+  const __m256i row = _mm256_set1_epi8((uint8_t)sum);
+  row_store_64xh(&row, 32, dst, stride);
+}
+
+void aom_dc_predictor_64x16_avx2(uint8_t *dst, ptrdiff_t stride,
+                                 const uint8_t *above, const uint8_t *left) {
+  const __m256i sum_above = dc_sum_64(above);
+  __m256i sum_left = _mm256_castsi128_si256(dc_sum_16_sse2(left));
+  sum_left = _mm256_add_epi16(sum_left, sum_above);
+  uint32_t sum = _mm_cvtsi128_si32(_mm256_castsi256_si128(sum_left));
+  sum += 40;
+  sum /= 80;
+  const __m256i row = _mm256_set1_epi8((uint8_t)sum);
+  row_store_64xh(&row, 16, dst, stride);
 }
 
 void aom_dc_top_predictor_32x16_avx2(uint8_t *dst, ptrdiff_t stride,
