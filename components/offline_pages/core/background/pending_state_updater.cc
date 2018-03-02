@@ -33,13 +33,13 @@ void PendingStateUpdater::UpdateRequestsOnRequestPicked(
 
   // All available requests expect for the picked request changed to waiting
   // for another download to complete.
-  requests_pending_another_download_ = true;
   for (auto& request : *available_requests) {
     if (request.request_id() != picked_request_id) {
       request.set_pending_state(PendingState::PENDING_ANOTHER_DOWNLOAD);
       request_coordinator_->NotifyChanged(request);
     }
   }
+  requests_pending_another_download_ = true;
 }
 
 void PendingStateUpdater::SetPendingState(SavePageRequest& request) {
@@ -48,6 +48,7 @@ void PendingStateUpdater::SetPendingState(SavePageRequest& request) {
         RequestCoordinator::RequestCoordinatorState::OFFLINING) {
       request.set_pending_state(PendingState::PENDING_ANOTHER_DOWNLOAD);
     } else {
+      requests_pending_another_download_ = false;
       request.set_pending_state(PendingState::PENDING_NETWORK);
     }
   }
