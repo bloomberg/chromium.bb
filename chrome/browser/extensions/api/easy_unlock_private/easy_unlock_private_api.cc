@@ -20,6 +20,8 @@
 #include "base/timer/timer.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager_factory.h"
 #include "chrome/browser/extensions/api/easy_unlock_private/easy_unlock_private_connection_manager.h"
 #include "chrome/browser/extensions/api/easy_unlock_private/easy_unlock_private_crypto_delegate.h"
 #include "chrome/browser/profiles/profile.h"
@@ -44,18 +46,13 @@
 #include "components/proximity_auth/switches.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/chromeos/devicetype_utils.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/range/range.h"
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager.h"
-#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager_factory.h"
-#include "components/user_manager/user_manager.h"
-#include "ui/chromeos/devicetype_utils.h"
-#endif
 
 using proximity_auth::ScreenlockState;
 
@@ -138,24 +135,13 @@ EasyUnlockPrivateGetStringsFunction::~EasyUnlockPrivateGetStringsFunction() {
 ExtensionFunction::ResponseAction EasyUnlockPrivateGetStringsFunction::Run() {
   std::unique_ptr<base::DictionaryValue> strings(new base::DictionaryValue);
 
-#if defined(OS_CHROMEOS)
   const base::string16 device_type = ui::GetChromeOSDeviceName();
-#else
-  // TODO(isherman): Set an appropriate device name for non-ChromeOS devices.
-  const base::string16 device_type = base::ASCIIToUTF16("Chromeschnozzle");
-#endif  // defined(OS_CHROMEOS)
 
-#if defined(OS_CHROMEOS)
   const user_manager::UserManager* manager = user_manager::UserManager::Get();
   const user_manager::User* user = manager ? manager->GetActiveUser() : NULL;
   const std::string user_email_utf8 =
       user ? user->display_email() : std::string();
   const base::string16 user_email = base::UTF8ToUTF16(user_email_utf8);
-#else
-  // TODO(isherman): Set an appropriate user display email for non-ChromeOS
-  // platforms.
-  const base::string16 user_email = base::UTF8ToUTF16("superman@example.com");
-#endif  // defined(OS_CHROMEOS)
 
   // Common strings.
   strings->SetString("learnMoreLinkTitle",
@@ -826,7 +812,6 @@ bool EasyUnlockPrivateGetSignInChallengeFunction::RunAsync() {
       easy_unlock_private::GetSignInChallenge::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-#if defined(OS_CHROMEOS)
   Profile* profile = Profile::FromBrowserContext(browser_context());
   const std::string challenge =
       EasyUnlockService::Get(profile)->GetChallenge();
@@ -846,10 +831,6 @@ bool EasyUnlockPrivateGetSignInChallengeFunction::RunAsync() {
     OnDone(challenge, std::string());
   }
   return true;
-#else  // if !defined(OS_CHROMEOS)
-  SetError("Sign-in not supported.");
-  return false;
-#endif  // defined(OS_CHROMEOS)
 }
 
 void EasyUnlockPrivateGetSignInChallengeFunction::OnDone(

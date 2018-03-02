@@ -15,6 +15,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
+#include "chrome/browser/chromeos/login/users/scoped_test_user_manager.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/extensions/api/screenlock_private/screenlock_private_api.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -35,12 +38,6 @@
 #include "extensions/common/api/app_runtime.h"
 #include "extensions/common/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/users/scoped_test_user_manager.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/chromeos/settings/device_settings_service.h"
-#endif
 
 namespace easy_unlock_private_api = extensions::api::easy_unlock_private;
 namespace screenlock_private_api = extensions::api::screenlock_private;
@@ -282,13 +279,11 @@ class EasyUnlockAppManagerTest : public testing::Test {
   // Needed by extension system.
   content::TestBrowserThreadBundle thread_bundle_;
 
-#if defined(OS_CHROMEOS)
   // Cros settings and device settings are needed when creating user manager.
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
   chromeos::ScopedTestCrosSettings test_cros_settings_;
   // Needed for creating ExtensionService.
   chromeos::ScopedTestUserManager test_user_manager_;
-#endif
 
   TestingProfile profile_;
 

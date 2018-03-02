@@ -7,12 +7,15 @@
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
 #include "build/build_config.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager_factory.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/cryptauth/chrome_cryptauth_service_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/easy_unlock_app_manager.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/browser/signin/easy_unlock_service_regular.h"
+#include "chrome/browser/signin/easy_unlock_service_signin_chromeos.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/browser_resources.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -20,12 +23,6 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager_factory.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/signin/easy_unlock_service_signin_chromeos.h"
-#endif
 
 namespace {
 
@@ -40,9 +37,7 @@ base::FilePath GetEasyUnlockAppPath() {
     return command_line->GetSwitchValuePath(switches::kEasyUnlockAppPath);
 #endif  // !defined(NDEBUG)
 
-#if defined(OS_CHROMEOS)
   return base::FilePath("/usr/share/chromeos-assets/easy_unlock");
-#endif  // defined(OS_CHROMEOS)
 #endif  // defined(GOOGLE_CHROME_BUILD)
 
   return base::FilePath();
@@ -70,9 +65,7 @@ EasyUnlockServiceFactory::EasyUnlockServiceFactory()
   DependsOn(ChromeCryptAuthServiceFactory::GetInstance());
   DependsOn(
       extensions::ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
-#if defined(OS_CHROMEOS)
   DependsOn(EasyUnlockTpmKeyManagerFactory::GetInstance());
-#endif
 }
 
 EasyUnlockServiceFactory::~EasyUnlockServiceFactory() {
@@ -83,7 +76,6 @@ KeyedService* EasyUnlockServiceFactory::BuildServiceInstanceFor(
   EasyUnlockService* service = NULL;
   int manifest_id = 0;
 
-#if defined(OS_CHROMEOS)
   if (chromeos::ProfileHelper::IsLockScreenAppProfile(
           Profile::FromBrowserContext(context))) {
     return nullptr;
@@ -96,7 +88,6 @@ KeyedService* EasyUnlockServiceFactory::BuildServiceInstanceFor(
     service = new EasyUnlockServiceSignin(Profile::FromBrowserContext(context));
     manifest_id = IDR_EASY_UNLOCK_MANIFEST_SIGNIN;
   }
-#endif
 
   if (!service) {
     service =
@@ -108,10 +99,9 @@ KeyedService* EasyUnlockServiceFactory::BuildServiceInstanceFor(
                                       ? GetEasyUnlockAppPath()
                                       : app_path_for_testing_;
 
-#if defined(OS_CHROMEOS)
   service->Initialize(EasyUnlockAppManager::Create(
       extensions::ExtensionSystem::Get(context), manifest_id, app_path));
-#endif
+
   return service;
 }
 
@@ -124,12 +114,11 @@ void EasyUnlockServiceFactory::RegisterProfilePrefs(
 
 content::BrowserContext* EasyUnlockServiceFactory::GetBrowserContextToUse(
       content::BrowserContext* context) const {
-#if defined(OS_CHROMEOS)
   if (chromeos::ProfileHelper::IsSigninProfile(
           Profile::FromBrowserContext(context))) {
     return chrome::GetBrowserContextOwnInstanceInIncognito(context);
   }
-#endif
+
   return chrome::GetBrowserContextRedirectedInIncognito(context);
 }
 
