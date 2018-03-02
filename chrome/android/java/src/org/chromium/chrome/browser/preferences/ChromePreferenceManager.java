@@ -482,7 +482,7 @@ public class ChromePreferenceManager {
      * @return True if Sole integration is enabled.
      */
     public boolean isSoleEnabled() {
-        return mSharedPreferences.getBoolean(SOLE_INTEGRATION_ENABLED_KEY, false);
+        return mSharedPreferences.getBoolean(SOLE_INTEGRATION_ENABLED_KEY, true);
     }
 
     /**
