@@ -11,6 +11,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
+#include "ash/system/unified/collapse_button.h"
 #include "ash/system/unified/top_shortcut_button.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
 #include "ui/views/layout/box_layout.h"
@@ -21,9 +22,10 @@ TopShortcutsView::TopShortcutsView(UnifiedSystemTrayController* controller)
     : controller_(controller) {
   DCHECK(controller_);
 
-  SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, gfx::Insets(kUnifiedTopShortcutSpacing),
-      kUnifiedTopShortcutSpacing));
+  auto layout = std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kHorizontal, kUnifiedTopShortcutPadding,
+      kUnifiedTopShortcutSpacing);
+  layout->set_cross_axis_alignment(views::BoxLayout::CROSS_AXIS_ALIGNMENT_END);
 
   // Show the buttons in this row as disabled if the user is at the login
   // screen, lock screen, or in a secondary account flow. The exception is
@@ -46,6 +48,17 @@ TopShortcutsView::TopShortcutsView(UnifiedSystemTrayController* controller)
       this, kSystemMenuPowerIcon,
       reboot ? IDS_ASH_STATUS_TRAY_REBOOT : IDS_ASH_STATUS_TRAY_SHUTDOWN);
   AddChildView(power_button_);
+
+  // |collapse_button_| should be right-aligned, so we need spacing between
+  // other buttons and |collapse_button_|.
+  views::View* spacing = new views::View;
+  layout->SetFlexForView(spacing, 1);
+  AddChildView(spacing);
+
+  collapse_button_ = new CollapseButton(this);
+  AddChildView(collapse_button_);
+
+  SetLayoutManager(std::move(layout));
 }
 
 TopShortcutsView::~TopShortcutsView() = default;
@@ -58,6 +71,8 @@ void TopShortcutsView::ButtonPressed(views::Button* sender,
     controller_->HandleSettingsAction();
   else if (sender == power_button_)
     controller_->HandlePowerAction();
+  else if (sender == collapse_button_)
+    controller_->ToggleExpanded();
 }
 
 }  // namespace ash

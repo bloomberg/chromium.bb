@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/geometry/insets.h"
 
 namespace ash {
 
@@ -133,6 +134,8 @@ constexpr SkColor kUnifiedMenuButtonColor =
     SkColorSetA(kUnifiedMenuIconColor, 0x14);
 
 constexpr int kUnifiedTopShortcutSpacing = 16;
+
+constexpr gfx::Insets kUnifiedTopShortcutPadding(0, 16, 16, 16);
 
 }  // namespace ash
 
