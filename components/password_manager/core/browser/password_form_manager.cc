@@ -1157,6 +1157,8 @@ void PasswordFormManager::CreatePendingCredentials() {
   pending_credentials_.preferred = submitted_form_->preferred;
   pending_credentials_.form_has_autofilled_value =
       submitted_form_->form_has_autofilled_value;
+  pending_credentials_.all_possible_passwords =
+      submitted_form_->all_possible_passwords;
   CopyFieldPropertiesMasks(*submitted_form_, &pending_credentials_);
 
   // If we're dealing with an API-driven provisionally saved form, then take

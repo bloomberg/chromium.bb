@@ -536,6 +536,23 @@ bool ManagePasswordsBubbleModel::ShouldShowMultipleAccountUpdateUI() const {
          local_credentials_.size() > 1 && !password_overridden_;
 }
 
+base::string16 ManagePasswordsBubbleModel::GetInitialUsername() const {
+  const base::string16& captured_username = pending_password_.username_value;
+  if (!ShouldShowMultipleAccountUpdateUI())
+    return captured_username;
+  DCHECK_EQ(password_manager::ui::PENDING_PASSWORD_UPDATE_STATE, state_);
+  DCHECK_GT(local_credentials_.size(), 1u);
+  size_t preferred_form_index = 0;
+  for (size_t index = 0; index < local_credentials_.size(); ++index) {
+    if (local_credentials_.at(index).username_value == captured_username)
+      return captured_username;
+    if (local_credentials_.at(index).preferred)
+      preferred_form_index = index;
+  }
+
+  return local_credentials_.at(preferred_form_index).username_value;
+}
+
 bool ManagePasswordsBubbleModel::ReplaceToShowPromotionIfNeeded() {
   DCHECK_EQ(password_manager::ui::PENDING_PASSWORD_STATE, state_);
   PrefService* prefs = GetProfile()->GetPrefs();

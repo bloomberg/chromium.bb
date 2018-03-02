@@ -107,9 +107,9 @@ std::unique_ptr<views::Label> CreateUsernameLabel(
 }
 
 std::unique_ptr<views::Textfield> CreateUsernameEditable(
-    const autofill::PasswordForm& form) {
+    const base::string16& initial_username) {
   auto editable = std::make_unique<views::Textfield>();
-  editable->SetText(form.username_value);
+  editable->SetText(initial_username);
   editable->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_USERNAME_LABEL));
   // In case of long username, ensure that the beginning of value is visible.

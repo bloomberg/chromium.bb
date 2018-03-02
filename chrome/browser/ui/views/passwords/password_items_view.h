@@ -28,7 +28,7 @@ std::unique_ptr<views::Label> CreatePasswordLabel(
     int federation_message_id,
     bool is_password_visible);
 std::unique_ptr<views::Textfield> CreateUsernameEditable(
-    const autofill::PasswordForm& form);
+    const base::string16& initial_username);
 
 // A dialog for managing stored password and federated login information for a
 // specific site. A user can remove managed credentials for the site via this
