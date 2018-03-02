@@ -117,8 +117,16 @@ class CONTENT_EXPORT PluginServiceImpl : public PluginService {
   // Used to monitor plugin stability.
   void RegisterPluginCrash(const base::FilePath& plugin_path);
 
+  // For testing without creating many, many processes.
+  void SetMaxPpapiProcessesPerProfileForTesting(int number) {
+    max_ppapi_processes_per_profile_ = number;
+  }
+
  private:
   friend struct base::DefaultSingletonTraits<PluginServiceImpl>;
+
+  // Pulled out of the air, seems reasonable.
+  static constexpr int kDefaultMaxPpapiProcessesPerProfile = 15;
 
   // Helper for recording URLs to UKM.
   static void RecordBrokerUsage(int render_process_id, int render_frame_id);
@@ -142,12 +150,18 @@ class CONTENT_EXPORT PluginServiceImpl : public PluginService {
   PpapiPluginProcessHost* FindPpapiBrokerProcess(
       const base::FilePath& broker_path);
 
+  int CountPpapiPluginProcessesForProfile(
+      const base::FilePath& plugin_path,
+      const base::FilePath& profile_data_directory);
+
   void RegisterPepperPlugins();
 
   // Loads the plugins synchronously in a thread pool.
   std::vector<WebPluginInfo> GetPluginsInternal();
 
   std::vector<PepperPluginInfo> ppapi_plugins_;
+
+  int max_ppapi_processes_per_profile_ = kDefaultMaxPpapiProcessesPerProfile;
 
   // Weak pointer; outlives us.
   PluginServiceFilter* filter_;

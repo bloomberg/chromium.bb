@@ -5,9 +5,11 @@
 #include "content/browser/plugin_service_impl.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/optional.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "content/browser/ppapi_plugin_process_host.h"
@@ -86,6 +88,7 @@ class PluginServiceImplBrowserTest : public ContentBrowserTest {
                        base::Unretained(service), 0, plugin_path_, profile_dir_,
                        origin, base::Unretained(client)));
     client->WaitForQuit();
+    client->SetRunLoop(nullptr);
   }
 
   base::FilePath plugin_path_;
@@ -130,6 +133,42 @@ IN_PROC_BROWSER_TEST_F(PluginServiceImplBrowserTest, OriginLock) {
   EXPECT_NE(client2a.plugin_pid(), client3a.plugin_pid());
   EXPECT_NE(client2a.plugin_pid(), client3b.plugin_pid());
   EXPECT_EQ(client3a.plugin_pid(), client3b.plugin_pid());
+}
+
+IN_PROC_BROWSER_TEST_F(PluginServiceImplBrowserTest, NoForkBombs) {
+  RegisterFakePlugin();
+
+  PluginServiceImpl* service = PluginServiceImpl::GetInstance();
+  service->SetMaxPpapiProcessesPerProfileForTesting(4);
+
+  const char* kFakeURLTemplate = "https://foo.fake%d.com/";
+  TestPluginClient client;
+  for (int i = 0; i < 4; ++i) {
+    std::string url = base::StringPrintf(kFakeURLTemplate, i);
+    url::Origin origin = url::Origin::Create(GURL(url));
+    OpenChannelToFakePlugin(origin, &client);
+    EXPECT_NE(base::kNullProcessId, client.plugin_pid());
+  }
+
+  // After a while we stop handing out processes per-origin.
+  for (int i = 4; i < 8; ++i) {
+    std::string url = base::StringPrintf(kFakeURLTemplate, i);
+    url::Origin origin = url::Origin::Create(GURL(url));
+    OpenChannelToFakePlugin(origin, &client);
+    EXPECT_EQ(base::kNullProcessId, client.plugin_pid());
+  }
+
+  // But there's always room for the empty origin case.
+  OpenChannelToFakePlugin(base::nullopt, &client);
+  EXPECT_NE(base::kNullProcessId, client.plugin_pid());
+
+  // And re-using existing processes is always possible.
+  for (int i = 0; i < 4; ++i) {
+    std::string url = base::StringPrintf(kFakeURLTemplate, i);
+    url::Origin origin = url::Origin::Create(GURL(url));
+    OpenChannelToFakePlugin(origin, &client);
+    EXPECT_NE(base::kNullProcessId, client.plugin_pid());
+  }
 }
 
 }  // namespace content

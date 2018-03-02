@@ -136,6 +136,19 @@ PpapiPluginProcessHost* PluginServiceImpl::FindPpapiPluginProcess(
   return nullptr;
 }
 
+int PluginServiceImpl::CountPpapiPluginProcessesForProfile(
+    const base::FilePath& plugin_path,
+    const base::FilePath& profile_data_directory) {
+  int count = 0;
+  for (PpapiPluginProcessHostIterator iter; !iter.Done(); ++iter) {
+    if (iter->plugin_path() == plugin_path &&
+        iter->profile_data_directory() == profile_data_directory) {
+      ++count;
+    }
+  }
+  return count;
+}
+
 PpapiPluginProcessHost* PluginServiceImpl::FindPpapiBrokerProcess(
     const base::FilePath& broker_path) {
   for (PpapiBrokerProcessHostIterator iter; !iter.Done(); ++iter) {
@@ -178,6 +191,13 @@ PpapiPluginProcessHost* PluginServiceImpl::FindOrStartPpapiPluginProcess(
     UMA_HISTOGRAM_ENUMERATION("Plugin.FlashUsage",
                               START_PPAPI_FLASH_AT_LEAST_ONCE,
                               FLASH_USAGE_ENUM_COUNT);
+  }
+
+  // Avoid fork bomb.
+  if (origin_lock.has_value() && CountPpapiPluginProcessesForProfile(
+                                     plugin_path, profile_data_directory) >=
+                                     max_ppapi_processes_per_profile_) {
+    return nullptr;
   }
 
   // This plugin isn't loaded by any plugin process, so create a new process.
