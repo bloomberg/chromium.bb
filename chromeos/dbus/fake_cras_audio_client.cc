@@ -110,6 +110,11 @@ void FakeCrasAudioClient::GetNodes(DBusMethodCallback<AudioNodeList> callback) {
   std::move(callback).Run(node_list_);
 }
 
+void FakeCrasAudioClient::GetNumberOfActiveOutputStreams(
+    DBusMethodCallback<int> callback) {
+  std::move(callback).Run(0);
+}
+
 void FakeCrasAudioClient::SetOutputNodeVolume(uint64_t node_id,
                                               int32_t volume) {
   if (!notify_volume_change_with_delay_)

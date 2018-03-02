@@ -74,10 +74,16 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
     virtual void OnActiveInputNodeChanged();
 
     // Called when output channel remixing changed.
-    virtual void OnOuputChannelRemixingChanged(bool mono_on);
+    virtual void OnOutputChannelRemixingChanged(bool mono_on);
 
     // Called when hotword is detected.
     virtual void OnHotwordTriggered(uint64_t tv_sec, uint64_t tv_nsec);
+
+    // Called when an initial output stream is opened.
+    virtual void OnOutputStarted();
+
+    // Called when the last output stream is closed.
+    virtual void OnOutputStopped();
 
    protected:
     AudioObserver();
@@ -283,6 +289,7 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   void ActiveInputNodeChanged(uint64_t node_id) override;
   void OutputNodeVolumeChanged(uint64_t node_id, int volume) override;
   void HotwordTriggered(uint64_t tv_sec, uint64_t tv_nsec) override;
+  void NumberOfActiveStreamsChanged() override;
 
   // AudioPrefObserver overrides.
   void OnAudioPolicyPrefChanged() override;
@@ -349,8 +356,11 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   // Sets input mute state to |mute_on| internally.
   void SetInputMuteInternal(bool mute_on);
 
-  // Calling dbus to get nodes data.
+  // Calls CRAS over D-Bus to get nodes data.
   void GetNodes();
+
+  // Calls CRAS over D-Bus to get the number of active output streams.
+  void GetNumberOfOutputStreams();
 
   // Updates the current audio nodes list and switches the active device
   // if needed.
@@ -374,6 +384,9 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
 
   // Handles dbus callback for GetNodes.
   void HandleGetNodes(base::Optional<chromeos::AudioNodeList> node_list);
+
+  void HandleGetNumActiveOutputStreams(
+      base::Optional<int> num_active_output_streams);
 
   // Adds an active node.
   // If there is no active node, |node_id| will be switched to become the
@@ -507,6 +520,8 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
 
   // Default output buffer size in frames.
   int32_t default_output_buffer_size_;
+
+  int num_active_output_streams_ = 0;
 
   // Task runner of browser main thread. All member variables should be accessed
   // on this thread.

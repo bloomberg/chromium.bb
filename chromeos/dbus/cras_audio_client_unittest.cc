@@ -93,6 +93,7 @@ class MockObserver : public CrasAudioClient::Observer {
   MOCK_METHOD1(ActiveInputNodeChanged, void(uint64_t node_id));
   MOCK_METHOD2(OutputNodeVolumeChanged, void(uint64_t node_id, int volume));
   MOCK_METHOD2(HotwordTriggered, void(uint64_t tv_sec, uint64_t tv_nsec));
+  MOCK_METHOD0(NumberOfActiveStreamsChanged, void());
 };
 
 // Expect the reader to be empty.
@@ -328,6 +329,15 @@ class CrasAudioClientTest : public testing::Test {
         DoConnectToSignal(interface_name_, cras::kHotwordTriggered, _, _))
         .WillRepeatedly(Invoke(this, &CrasAudioClientTest::OnHotwordTriggered));
 
+    // Set an expectation so mock_cras_proxy's monitoring
+    // NumberOfActiveStreamsChanged ConnectToSignal will use
+    // OnNumberOfActiveStreamsChanged() to run the callback.
+    EXPECT_CALL(*mock_cras_proxy_.get(),
+                DoConnectToSignal(interface_name_,
+                                  cras::kNumberOfActiveStreamsChanged, _, _))
+        .WillRepeatedly(
+            Invoke(this, &CrasAudioClientTest::OnNumberOfActiveStreamsChanged));
+
     // Set an expectation so mock_bus's GetObjectProxy() for the given
     // service name and the object path will return mock_cras_proxy_.
     EXPECT_CALL(*mock_bus_.get(),
@@ -403,6 +413,12 @@ class CrasAudioClientTest : public testing::Test {
     hotword_triggered_handler_.Run(signal);
   }
 
+  // Send number-of-active-streams-changed signal to the tested client.
+  void SendNumberOfActiveStreamsChangedSignal(dbus::Signal* signal) {
+    ASSERT_FALSE(number_of_active_streams_changed_handler_.is_null());
+    number_of_active_streams_changed_handler_.Run(signal);
+  }
+
   // The interface name.
   const std::string interface_name_;
   // The client to be tested.
@@ -428,6 +444,8 @@ class CrasAudioClientTest : public testing::Test {
 
   // The HotwordTriggered signal handler given by the tested client.
   dbus::ObjectProxy::SignalCallback hotword_triggered_handler_;
+  // The NumberOfActiveStreamsChanged signal handler given by the tested client.
+  dbus::ObjectProxy::SignalCallback number_of_active_streams_changed_handler_;
   // The name of the method which is expected to be called.
   std::string expected_method_name_;
   // The response which the mock cras proxy returns.
@@ -528,6 +546,20 @@ class CrasAudioClientTest : public testing::Test {
       const dbus::ObjectProxy::SignalCallback& signal_callback,
       dbus::ObjectProxy::OnConnectedCallback* on_connected_callback) {
     hotword_triggered_handler_ = signal_callback;
+    const bool success = true;
+    message_loop_.task_runner()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(*on_connected_callback),
+                                  interface_name, signal_name, success));
+  }
+
+  // Checks the requested interface name and signal name.
+  // Used to implement the mock cras proxy.
+  void OnNumberOfActiveStreamsChanged(
+      const std::string& interface_name,
+      const std::string& signal_name,
+      const dbus::ObjectProxy::SignalCallback& signal_callback,
+      dbus::ObjectProxy::OnConnectedCallback* on_connected_callback) {
+    number_of_active_streams_changed_handler_ = signal_callback;
     const bool success = true;
     message_loop_.task_runner()->PostTask(
         FROM_HERE, base::BindOnce(std::move(*on_connected_callback),
@@ -642,6 +674,26 @@ TEST_F(CrasAudioClientTest, HotwordTriggered) {
 
   // Run the signal callback again and make sure the observer isn't called.
   SendHotwordTriggeredSignal(&signal);
+
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(CrasAudioClientTest, NumberOfActiveStreamsChanged) {
+  dbus::Signal signal(cras::kCrasControlInterface,
+                      cras::kNumberOfActiveStreamsChanged);
+  MockObserver observer;
+  EXPECT_CALL(observer, NumberOfActiveStreamsChanged()).Times(1);
+
+  client_->AddObserver(&observer);
+
+  SendNumberOfActiveStreamsChangedSignal(&signal);
+
+  client_->RemoveObserver(&observer);
+
+  EXPECT_CALL(observer, NumberOfActiveStreamsChanged()).Times(0);
+
+  // Run the signal callback again and make sure the observer isn't called.
+  SendNumberOfActiveStreamsChangedSignal(&signal);
 
   base::RunLoop().RunUntilIdle();
 }
