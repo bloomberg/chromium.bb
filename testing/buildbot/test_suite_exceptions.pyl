@@ -3637,6 +3637,11 @@
           'shards': 6,
         },
       },
+      'linux-blink-heap-incremental-marking': {
+        'args': [
+          '--debug',
+        ],
+      },
       'WebKit Linux layout_ng Dummy Builder': {
         'args': [
           '--additional-driver-flag=--enable-blink-features=LayoutNG',
