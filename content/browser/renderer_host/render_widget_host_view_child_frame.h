@@ -185,8 +185,9 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
       BrowserAccessibilityDelegate* delegate,
       bool for_root_frame) override;
   void GetScreenInfo(ScreenInfo* screen_info) const override;
-  void ResizeDueToAutoResize(const gfx::Size& new_size,
-                             uint64_t sequence_number) override;
+  viz::ScopedSurfaceIdAllocator ResizeDueToAutoResize(
+      const gfx::Size& new_size,
+      uint64_t sequence_number) override;
 
   // viz::mojom::CompositorFrameSinkClient implementation.
   void DidReceiveCompositorFrameAck(
@@ -304,6 +305,9 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   // associated with this view or a cross process ancestor frame has been hidden
   // using CSS.
   bool CanBecomeVisible();
+
+  void OnResizeDueToAutoResizeComplete(const gfx::Size& new_size,
+                                       uint64_t sequence_number);
 
   std::vector<base::OnceClosure> frame_swapped_callbacks_;
 

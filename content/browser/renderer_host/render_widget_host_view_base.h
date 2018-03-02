@@ -19,6 +19,7 @@
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "components/viz/common/quads/compositor_frame.h"
+#include "components/viz/common/surfaces/scoped_surface_id_allocator.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/common/content_export.h"
@@ -162,8 +163,11 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
 
   // Informs the view that the renderer has resized to |new_size| because auto-
   // resize is enabled.
-  virtual void ResizeDueToAutoResize(const gfx::Size& new_size,
-                                     uint64_t sequence_number);
+  virtual viz::ScopedSurfaceIdAllocator ResizeDueToAutoResize(
+      const gfx::Size& new_size,
+      uint64_t sequence_number);
+
+  virtual bool IsLocalSurfaceIdAllocationSuppressed() const;
 
   base::WeakPtr<RenderWidgetHostViewBase> GetWeakPtr();
 
@@ -571,6 +575,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // RenderWidgetHostImpl in order to allow the view to allocate a new
   // LocalSurfaceId.
   virtual void OnSynchronizedDisplayPropertiesChanged() {}
+
+  void OnResizeDueToAutoResizeComplete(uint64_t sequence_number);
 
   gfx::Rect current_display_area_;
 

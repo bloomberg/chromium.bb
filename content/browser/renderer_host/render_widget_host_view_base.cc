@@ -279,10 +279,21 @@ void RenderWidgetHostViewBase::DidUnregisterFromTextInputManager(
   text_input_manager_ = nullptr;
 }
 
-void RenderWidgetHostViewBase::ResizeDueToAutoResize(const gfx::Size& new_size,
-                                                     uint64_t sequence_number) {
-  RenderWidgetHostImpl* host = GetRenderWidgetHostImpl();
-  host->DidAllocateLocalSurfaceIdForAutoResize(sequence_number);
+viz::ScopedSurfaceIdAllocator RenderWidgetHostViewBase::ResizeDueToAutoResize(
+    const gfx::Size& new_size,
+    uint64_t sequence_number) {
+  // TODO(cblume): This doesn't currently suppress allocation.
+  // It maintains existing behavior while using the suppression style.
+  // This will be addressed in a follow-up patch.
+  // See https://crbug.com/805073
+  base::OnceCallback<void()> allocation_task =
+      base::BindOnce(&RenderWidgetHostViewBase::OnResizeDueToAutoResizeComplete,
+                     weak_factory_.GetWeakPtr(), sequence_number);
+  return viz::ScopedSurfaceIdAllocator(std::move(allocation_task));
+}
+
+bool RenderWidgetHostViewBase::IsLocalSurfaceIdAllocationSuppressed() const {
+  return false;
 }
 
 base::WeakPtr<RenderWidgetHostViewBase> RenderWidgetHostViewBase::GetWeakPtr() {
@@ -581,6 +592,13 @@ RenderWidgetHostViewBase::GetWindowTreeClientFromRenderer() {
 }
 
 #endif
+
+void RenderWidgetHostViewBase::OnResizeDueToAutoResizeComplete(
+    uint64_t sequence_number) {
+  RenderWidgetHostImpl* host = GetRenderWidgetHostImpl();
+  if (host)
+    host->DidAllocateLocalSurfaceIdForAutoResize(sequence_number);
+}
 
 #if defined(OS_MACOSX)
 bool RenderWidgetHostViewBase::ShouldContinueToPauseForFrame() {

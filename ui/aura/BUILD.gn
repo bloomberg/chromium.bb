@@ -151,6 +151,7 @@ jumbo_component("aura") {
     "//components/discardable_memory/client",
     "//components/discardable_memory/public/interfaces",
     "//components/viz/client",
+    "//components/viz/common",
     "//components/viz/host",
     "//components/viz/service",
     "//gpu/ipc/client",

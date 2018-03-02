@@ -6,8 +6,9 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-// ParentLocalSurfaceIdAllocator has 1 accessor which does not alter state:
+// ParentLocalSurfaceIdAllocator has 2 accessors which do not alter state:
 // - last_known_local_surface_id()
+// - is_allocation_suppressed()
 //
 // For every operation which changes state we can test:
 // - the operation completed as expected,
@@ -29,7 +30,8 @@ ParentLocalSurfaceIdAllocator GetChildUpdatedAllocator();
 }  // namespace
 
 // The default constructor should generate a nonce and initialize the sequence
-// number of the last known LocalSurfaceId to an invalid state.
+// number of the last known LocalSurfaceId to an invalid state. Allocation
+// should not be suppressed.
 TEST(ParentLocalSurfaceIdAllocatorTest,
      DefaultConstructorShouldNotSetLocalSurfaceIdComponents) {
   ParentLocalSurfaceIdAllocator default_constructed_parent_allocator;
@@ -40,6 +42,7 @@ TEST(ParentLocalSurfaceIdAllocatorTest,
   EXPECT_TRUE(ParentSequenceNumberIsNotSet(default_local_surface_id));
   EXPECT_TRUE(ChildSequenceNumberIsSet(default_local_surface_id));
   EXPECT_FALSE(NonceIsEmpty(default_local_surface_id));
+  EXPECT_FALSE(default_constructed_parent_allocator.is_allocation_suppressed());
 }
 
 // The move constructor should move the last-known LocalSurfaceId.
@@ -55,6 +58,7 @@ TEST(ParentLocalSurfaceIdAllocatorTest,
 
   EXPECT_EQ(premoved_local_surface_id,
             moved_to_parent_allocator.last_known_local_surface_id());
+  EXPECT_FALSE(moved_to_parent_allocator.is_allocation_suppressed());
 }
 
 // The move assignment operator should move the last-known LocalSurfaceId.
@@ -72,6 +76,7 @@ TEST(ParentLocalSurfaceIdAllocatorTest,
 
   EXPECT_EQ(premoved_local_surface_id,
             moved_to_parent_allocator.last_known_local_surface_id());
+  EXPECT_FALSE(moved_to_parent_allocator.is_allocation_suppressed());
 }
 
 // UpdateFromChild() on a parent allocator should accept the child's sequence
@@ -105,6 +110,7 @@ TEST(ParentLocalSurfaceIdAllocatorTest,
             child_allocated_local_surface_id.nonce());
   EXPECT_EQ(returned_local_surface_id,
             child_updated_parent_allocator.last_known_local_surface_id());
+  EXPECT_FALSE(child_updated_parent_allocator.is_allocation_suppressed());
 }
 
 // GenerateId() on a parent allocator should monotonically increment the parent
@@ -129,6 +135,7 @@ TEST(ParentLocalSurfaceIdAllocatorTest,
             postgenerateid_local_surface_id.nonce());
   EXPECT_EQ(returned_local_surface_id,
             generating_parent_allocator.last_known_local_surface_id());
+  EXPECT_FALSE(generating_parent_allocator.is_allocation_suppressed());
 }
 
 // This test verifies that calling reset with a LocalSurfaceId updates the

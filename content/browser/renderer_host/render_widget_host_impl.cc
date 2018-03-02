@@ -2501,9 +2501,15 @@ void RenderWidgetHostImpl::DelayedAutoResized() {
   if (!auto_resize_enabled_)
     return;
 
-  if (delegate_) {
-    delegate_->ResizeDueToAutoResize(this, new_size,
+  if (view_) {
+    viz::ScopedSurfaceIdAllocator scoped_allocator =
+        view_->ResizeDueToAutoResize(new_size,
                                      last_auto_resize_request_number_);
+
+    if (delegate_) {
+      delegate_->ResizeDueToAutoResize(this, new_size,
+                                       last_auto_resize_request_number_);
+    }
   }
 }
 
@@ -2518,6 +2524,8 @@ void RenderWidgetHostImpl::DidAllocateLocalSurfaceIdForAutoResize(
       last_auto_resize_request_number_ != sequence_number) {
     return;
   }
+
+  DCHECK(!view_->IsLocalSurfaceIdAllocationSuppressed());
 
   viz::LocalSurfaceId local_surface_id(view_->GetLocalSurfaceId());
   if (local_surface_id.is_valid()) {

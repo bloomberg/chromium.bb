@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
+#include "components/viz/common/surfaces/scoped_surface_id_allocator.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "ui/aura/aura_export.h"
 #include "ui/base/class_property.h"
@@ -89,6 +90,18 @@ class AURA_EXPORT WindowPort {
   // CompositorFrame submission in anticipation of a synchronization operation
   // that does not involve a resize or a device scale factor change.
   virtual void AllocateLocalSurfaceId() = 0;
+
+  // When a child-allocated viz::LocalSurfaceId is being processed, this returns
+  // true.
+  virtual bool IsLocalSurfaceIdAllocationSuppressed() const = 0;
+
+  // When a ScopedSurfaceIdAllocator is alive, it prevents the
+  // allocator from actually allocating. Instead, it triggers its
+  // |allocation_task| upon destruction. This allows us to issue only one
+  // allocation during the lifetime. This is used to continue routing and
+  // processing when a child allocates its own LocalSurfaceId.
+  virtual viz::ScopedSurfaceIdAllocator GetSurfaceIdAllocator(
+      base::OnceCallback<void()> allocation_task) = 0;
 
   // Gets the current viz::LocalSurfaceId. The viz::LocalSurfaceId is allocated
   // lazily on call, and will be updated on changes to size or device scale

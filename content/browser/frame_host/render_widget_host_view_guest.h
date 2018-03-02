@@ -154,8 +154,9 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
 
   void GetScreenInfo(ScreenInfo* screen_info) const override;
 
-  void ResizeDueToAutoResize(const gfx::Size& new_size,
-                             uint64_t sequence_number) override;
+  viz::ScopedSurfaceIdAllocator ResizeDueToAutoResize(
+      const gfx::Size& new_size,
+      uint64_t sequence_number) override;
 
  private:
   friend class RenderWidgetHostView;

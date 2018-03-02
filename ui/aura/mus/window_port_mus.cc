@@ -409,6 +409,16 @@ void WindowPortMus::AllocateLocalSurfaceId() {
   UpdatePrimarySurfaceId();
 }
 
+bool WindowPortMus::IsLocalSurfaceIdAllocationSuppressed() const {
+  return parent_local_surface_id_allocator_.is_allocation_suppressed();
+}
+
+viz::ScopedSurfaceIdAllocator WindowPortMus::GetSurfaceIdAllocator(
+    base::OnceCallback<void()> allocation_task) {
+  return viz::ScopedSurfaceIdAllocator(&parent_local_surface_id_allocator_,
+                                       std::move(allocation_task));
+}
+
 const viz::LocalSurfaceId& WindowPortMus::GetLocalSurfaceId() {
   if (base::FeatureList::IsEnabled(features::kMash))
     return local_surface_id_;

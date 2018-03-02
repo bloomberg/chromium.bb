@@ -59,6 +59,15 @@ WindowPortForShutdown::CreateLayerTreeFrameSink() {
 
 void WindowPortForShutdown::AllocateLocalSurfaceId() {}
 
+bool WindowPortForShutdown::IsLocalSurfaceIdAllocationSuppressed() const {
+  return false;
+}
+
+viz::ScopedSurfaceIdAllocator WindowPortForShutdown::GetSurfaceIdAllocator(
+    base::OnceCallback<void()> allocation_task) {
+  return viz::ScopedSurfaceIdAllocator(std::move(allocation_task));
+}
+
 const viz::LocalSurfaceId& WindowPortForShutdown::GetLocalSurfaceId() {
   return local_surface_id_;
 }
