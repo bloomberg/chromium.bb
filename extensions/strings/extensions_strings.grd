@@ -142,6 +142,9 @@
       <!-- Document Scan API strings. Please keep alphabetized. -->
 
       <!-- General extensions strings. Please keep alphabetized. -->
+      <message name="IDS_EXTENSION_BAD_FILE_ENCODING" desc="">
+        Could not load file '<ph name="RELATIVE_PATH">$1<ex>file.js</ex></ph>' for content script. It isn't UTF-8 encoded.
+      </message>
       <message name="IDS_EXTENSION_CANT_GET_ABSOLUTE_PATH" desc="Warning displayed in pack dialog when the absolute path to the extension directory can not be found.">
         Can't find the absolute path to the directory to pack.
       </message>
@@ -169,8 +172,14 @@
       <message name="IDS_EXTENSION_LOAD_BACKGROUND_PAGE_FAILED" desc="">
         Could not load background page '<ph name="BACKGROUND_PAGE">$1<ex>page.html</ex></ph>'.
       </message>
+      <message name="IDS_EXTENSION_LOAD_CSS_FAILED" desc="">
+        Could not load css '<ph name="RELATIVE_PATH">$1<ex>file.css</ex></ph>' for content script.
+      </message>
       <message name="IDS_EXTENSION_LOAD_ICON_FAILED" desc="">
         Could not load extension icon '<ph name="ICON">$1<ex>icon.png</ex></ph>'.
+      </message>
+      <message name="IDS_EXTENSION_LOAD_JAVASCRIPT_FAILED" desc="">
+        Could not load javascript '<ph name="RELATIVE_PATH">$1<ex>javas.js</ex></ph>' for content script.
       </message>
       <message name="IDS_EXTENSION_LOAD_OPTIONS_PAGE_FAILED" desc="">
         Could not load options page '<ph name="OPTIONS_PAGE">$1<ex>page.html</ex></ph>'.
