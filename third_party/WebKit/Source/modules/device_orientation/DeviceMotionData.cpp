@@ -25,10 +25,10 @@
 
 #include "modules/device_orientation/DeviceMotionData.h"
 
-#include "device/sensors/public/cpp/motion_data.h"
 #include "modules/device_orientation/DeviceAccelerationInit.h"
 #include "modules/device_orientation/DeviceMotionEventInit.h"
 #include "modules/device_orientation/DeviceRotationRateInit.h"
+#include "services/device/public/cpp/generic_sensor/motion_data.h"
 
 namespace blink {
 

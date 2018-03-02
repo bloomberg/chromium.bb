@@ -25,8 +25,8 @@
 
 #include "modules/device_orientation/DeviceOrientationData.h"
 
-#include "device/sensors/public/cpp/orientation_data.h"
 #include "modules/device_orientation/DeviceOrientationEventInit.h"
+#include "services/device/public/cpp/generic_sensor/orientation_data.h"
 
 namespace blink {
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/sensors/public/cpp/orientation_data.h"
+#include "services/device/public/cpp/generic_sensor/orientation_data.h"
 
 #include <string.h>
 

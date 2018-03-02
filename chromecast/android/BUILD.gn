@@ -36,7 +36,6 @@ cast_shared_library("libcast_shell_android") {
     deps += [
       "//device/bluetooth",
       "//device/gamepad",
-      "//device/sensors",
       "//media/midi",
       "//ui/android",
       "//ui/events/devices",

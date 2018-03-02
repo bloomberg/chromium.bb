@@ -17,7 +17,6 @@ include_rules = [
   "+content",
   "+device/bluetooth", # For WebBluetooth tests
   "+device/gamepad/public/cpp",
-  "+device/sensors/public/cpp",
   # For loading V8's initial snapshot from external files.
   "+gin/v8_initializer.h",
   "+services/catalog",

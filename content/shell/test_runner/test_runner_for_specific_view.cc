@@ -26,8 +26,6 @@
 #include "content/shell/test_runner/test_runner.h"
 #include "content/shell/test_runner/web_test_delegate.h"
 #include "content/shell/test_runner/web_view_test_proxy.h"
-#include "device/sensors/public/cpp/motion_data.h"
-#include "device/sensors/public/cpp/orientation_data.h"
 #include "gin/arguments.h"
 #include "gin/array_buffer.h"
 #include "gin/handle.h"
