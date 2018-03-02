@@ -14,6 +14,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "media/audio/agc_audio_stream.h"
 #include "media/audio/audio_io.h"
@@ -65,6 +66,9 @@ class MEDIA_EXPORT AlsaPcmInputStream
   // Recovers from any device errors if possible.
   bool Recover(int error);
 
+  // Set |running_| to false on |capture_thread_|.
+  void StopRunningOnCaptureThread();
+
   // Non-refcounted pointer back to the audio manager.
   // The AudioManager indirectly holds on to stream objects, so we don't
   // want circular references.  Additionally, stream objects live on the audio
@@ -85,9 +89,8 @@ class MEDIA_EXPORT AlsaPcmInputStream
   std::unique_ptr<uint8_t[]> audio_buffer_;
   bool read_callback_behind_schedule_;
   std::unique_ptr<AudioBus> audio_bus_;
-
-  // NOTE: Weak pointers must be invalidated before all other member variables.
-  base::WeakPtrFactory<AlsaPcmInputStream> weak_factory_;
+  base::Thread capture_thread_;
+  bool running_;
 
   DISALLOW_COPY_AND_ASSIGN(AlsaPcmInputStream);
 };
