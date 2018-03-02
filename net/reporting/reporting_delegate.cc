@@ -12,6 +12,9 @@ namespace net {
 
 namespace {
 
+const int kMaxJsonSize = 16 * 1024;
+const int kMaxJsonDepth = 5;
+
 class ReportingDelegateImpl : public ReportingDelegate {
  public:
   ReportingDelegateImpl(URLRequestContext* request_context)
@@ -53,7 +56,13 @@ class ReportingDelegateImpl : public ReportingDelegate {
   void ParseJson(const std::string& unsafe_json,
                  const JsonSuccessCallback& success_callback,
                  const JsonFailureCallback& failure_callback) const override {
-    std::unique_ptr<base::Value> value = base::JSONReader::Read(unsafe_json);
+    if (unsafe_json.size() > kMaxJsonSize) {
+      failure_callback.Run();
+      return;
+    }
+
+    std::unique_ptr<base::Value> value = base::JSONReader::Read(
+        unsafe_json, base::JSON_PARSE_RFC, kMaxJsonDepth);
     if (value)
       success_callback.Run(std::move(value));
     else

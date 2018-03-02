@@ -24,6 +24,7 @@
 #include "net/reporting/reporting_garbage_collector.h"
 #include "net/reporting/reporting_policy.h"
 #include "net/reporting/reporting_uploader.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -110,7 +111,9 @@ bool TestReportingUploader::RequestIsUpload(const URLRequest& request) {
   return true;
 }
 
-TestReportingDelegate::TestReportingDelegate() = default;
+TestReportingDelegate::TestReportingDelegate()
+    : test_request_context_(std::make_unique<TestURLRequestContext>()),
+      real_delegate_(ReportingDelegate::Create(test_request_context_.get())) {}
 
 TestReportingDelegate::~TestReportingDelegate() = default;
 
@@ -140,11 +143,7 @@ void TestReportingDelegate::ParseJson(
     const std::string& unsafe_json,
     const JsonSuccessCallback& success_callback,
     const JsonFailureCallback& failure_callback) const {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(unsafe_json);
-  if (value)
-    success_callback.Run(std::move(value));
-  else
-    failure_callback.Run();
+  real_delegate_->ParseJson(unsafe_json, success_callback, failure_callback);
 }
 
 TestReportingContext::TestReportingContext(base::Clock* clock,

@@ -78,5 +78,37 @@ TEST_F(ReportingServiceTest, ProcessHeader) {
             client->expires);
 }
 
+TEST_F(ReportingServiceTest, ProcessHeader_TooLong) {
+  const std::string header_too_long =
+      "{\"endpoints\":[{\"url\":\"" + kEndpoint_.spec() +
+      "\"}],"
+      "\"group\":\"" +
+      kGroup_ +
+      "\","
+      "\"max-age\":86400," +
+      "\"junk\":\"" + std::string(32 * 1024, 'a') + "\"}";
+  service()->ProcessHeader(kUrl_, header_too_long);
+
+  const ReportingClient* client =
+      FindClientInCache(context()->cache(), kOrigin_, kEndpoint_);
+  EXPECT_FALSE(client);
+}
+
+TEST_F(ReportingServiceTest, ProcessHeader_TooDeep) {
+  const std::string header_too_deep = "{\"endpoints\":[{\"url\":\"" +
+                                      kEndpoint_.spec() +
+                                      "\"}],"
+                                      "\"group\":\"" +
+                                      kGroup_ +
+                                      "\","
+                                      "\"max-age\":86400," +
+                                      "\"junk\":[[[[[[[[[[]]]]]]]]]]}";
+  service()->ProcessHeader(kUrl_, header_too_deep);
+
+  const ReportingClient* client =
+      FindClientInCache(context()->cache(), kOrigin_, kEndpoint_);
+  EXPECT_FALSE(client);
+}
+
 }  // namespace
 }  // namespace net
