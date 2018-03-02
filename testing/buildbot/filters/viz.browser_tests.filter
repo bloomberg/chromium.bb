@@ -36,6 +36,7 @@
 
 # WaitForChildFrameSurfaceReady crashes crbug.com/787945
 -PDFExtensionTest.ContextMenuCoordinates
+-SitePerProcessDevToolsSanityTest.InputDispatchEventsToOOPIF
 -WebViewTests/WebViewTest.InterstitialPageFocusedWidget/1
 -WebViewTests/WebViewTest.ReloadAfterCrash/1
 
@@ -54,6 +55,9 @@
 -WebViewTests/WebViewTest.Shim_TestContentScriptIsInjectedAfterTerminateAndReloadWebView/0
 -WebViewTests/WebViewTest.Shim_TestReloadAfterTerminate/0
 -WebViewTests/WebViewTest.Shim_TestTerminateAfterExit/0
+
+# Incorrect Focus State crbug.com/818205
+-WebViewTests/WebViewFocusTest.TouchFocusesEmbedder/0
 
 # Windows only failures
 -ExtensionApiTabTest.TabsOnUpdated
