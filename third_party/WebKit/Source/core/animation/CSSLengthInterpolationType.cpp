@@ -47,9 +47,8 @@ class InheritedLengthChecker
   bool IsValid(const StyleResolverState& state,
                const InterpolationValue& underlying) const final {
     Length parent_length;
-    if (!LengthPropertyFunctions::GetLength(property_, *state.ParentStyle(),
-                                            parent_length))
-      return false;
+    LengthPropertyFunctions::GetLength(property_, *state.ParentStyle(),
+                                       parent_length);
     return parent_length == length_;
   }
 
@@ -79,11 +78,15 @@ InterpolationValue CSSLengthInterpolationType::MaybeConvertInherit(
   if (!state.ParentStyle())
     return nullptr;
   Length inherited_length;
-  if (!LengthPropertyFunctions::GetLength(CssProperty(), *state.ParentStyle(),
-                                          inherited_length))
-    return nullptr;
+  LengthPropertyFunctions::GetLength(CssProperty(), *state.ParentStyle(),
+                                     inherited_length);
   conversion_checkers.push_back(
       InheritedLengthChecker::Create(CssProperty(), inherited_length));
+  if (inherited_length.IsAuto()) {
+    // If the inherited value changes to a length, the InheritedLengthChecker
+    // will invalidate the interpolation's cache.
+    return nullptr;
+  }
   return LengthInterpolationFunctions::MaybeConvertLength(
       inherited_length, EffectiveZoom(*state.ParentStyle()));
 }
