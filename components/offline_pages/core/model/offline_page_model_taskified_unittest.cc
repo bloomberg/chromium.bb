@@ -28,7 +28,6 @@
 #include "components/offline_pages/core/offline_page_metadata_store_test_util.h"
 #include "components/offline_pages/core/offline_page_model.h"
 #include "components/offline_pages/core/offline_page_test_archiver.h"
-#include "components/offline_pages/core/offline_page_test_store.h"
 #include "components/offline_pages/core/offline_page_types.h"
 #include "components/offline_pages/core/system_download_manager_stub.h"
 #include "testing/gmock/include/gmock/gmock.h"
