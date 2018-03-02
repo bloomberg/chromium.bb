@@ -1106,10 +1106,17 @@ void RenderWidgetHostViewMac::SetTooltipText(
   }
 }
 
-void RenderWidgetHostViewMac::ResizeDueToAutoResize(const gfx::Size& new_size,
-                                                    uint64_t sequence_number) {
-  browser_compositor_->UpdateForAutoResize(new_size);
-  RenderWidgetHostViewBase::ResizeDueToAutoResize(new_size, sequence_number);
+viz::ScopedSurfaceIdAllocator RenderWidgetHostViewMac::ResizeDueToAutoResize(
+    const gfx::Size& new_size,
+    uint64_t sequence_number) {
+  // TODO(cblume): This doesn't currently suppress allocation.
+  // It maintains existing behavior while using the suppression style.
+  // This will be addressed in a follow-up patch.
+  // See https://crbug.com/805073
+  base::OnceCallback<void()> allocation_task =
+      base::BindOnce(&RenderWidgetHostViewMac::OnResizeDueToAutoResizeComplete,
+                     weak_factory_.GetWeakPtr(), new_size, sequence_number);
+  return viz::ScopedSurfaceIdAllocator(std::move(allocation_task));
 }
 
 void RenderWidgetHostViewMac::DidNavigate() {
@@ -1215,6 +1222,13 @@ void RenderWidgetHostViewMac::SetNeedsBeginFrames(bool needs_begin_frames) {
 
 void RenderWidgetHostViewMac::UpdateNeedsBeginFramesInternal() {
   browser_compositor_->SetNeedsBeginFrames(needs_begin_frames_);
+}
+
+void RenderWidgetHostViewMac::OnResizeDueToAutoResizeComplete(
+    const gfx::Size& new_size,
+    uint64_t sequence_number) {
+  browser_compositor_->UpdateForAutoResize(new_size);
+  render_widget_host_->DidAllocateLocalSurfaceIdForAutoResize(sequence_number);
 }
 
 void RenderWidgetHostViewMac::SetWantsAnimateOnlyBeginFrames() {

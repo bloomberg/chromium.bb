@@ -724,11 +724,17 @@ void RenderWidgetHostViewGuest::GetScreenInfo(ScreenInfo* screen_info) const {
     RenderWidgetHostViewBase::GetScreenInfo(screen_info);
 }
 
-void RenderWidgetHostViewGuest::ResizeDueToAutoResize(
+viz::ScopedSurfaceIdAllocator RenderWidgetHostViewGuest::ResizeDueToAutoResize(
     const gfx::Size& new_size,
     uint64_t sequence_number) {
-  if (guest_)
-    guest_->ResizeDueToAutoResize(new_size, sequence_number);
+  // TODO(cblume): This doesn't currently suppress allocation.
+  // It maintains existing behavior while using the suppression style.
+  // This will be addressed in a follow-up patch.
+  // See https://crbug.com/805073
+  base::OnceCallback<void()> allocation_task =
+      base::BindOnce(&BrowserPluginGuest::ResizeDueToAutoResize, guest_,
+                     new_size, sequence_number);
+  return viz::ScopedSurfaceIdAllocator(std::move(allocation_task));
 }
 
 bool RenderWidgetHostViewGuest::IsRenderWidgetHostViewGuest() {

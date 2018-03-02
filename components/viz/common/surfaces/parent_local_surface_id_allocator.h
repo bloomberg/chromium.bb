@@ -43,8 +43,13 @@ class VIZ_COMMON_EXPORT ParentLocalSurfaceIdAllocator {
     return last_known_local_surface_id_;
   }
 
+  bool is_allocation_suppressed() const { return is_allocation_suppressed_; }
+
  private:
   LocalSurfaceId last_known_local_surface_id_;
+  bool is_allocation_suppressed_ = false;
+
+  friend class ScopedSurfaceIdAllocator;
 
   DISALLOW_COPY_AND_ASSIGN(ParentLocalSurfaceIdAllocator);
 };

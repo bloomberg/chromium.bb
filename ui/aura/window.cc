@@ -1100,6 +1100,15 @@ void Window::AllocateLocalSurfaceId() {
   port_->AllocateLocalSurfaceId();
 }
 
+bool Window::IsLocalSurfaceIdAllocationSuppressed() const {
+  return port_->IsLocalSurfaceIdAllocationSuppressed();
+}
+
+viz::ScopedSurfaceIdAllocator Window::GetSurfaceIdAllocator(
+    base::OnceCallback<void()> allocation_task) {
+  return port_->GetSurfaceIdAllocator(std::move(allocation_task));
+}
+
 const viz::LocalSurfaceId& Window::GetLocalSurfaceId() const {
   return port_->GetLocalSurfaceId();
 }

@@ -337,8 +337,9 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   bool ShouldContinueToPauseForFrame() override;
   gfx::Vector2d GetOffsetFromRootSurface() override;
   gfx::Rect GetBoundsInRootWindow() override;
-  void ResizeDueToAutoResize(const gfx::Size& new_size,
-                             uint64_t sequence_number) override;
+  viz::ScopedSurfaceIdAllocator ResizeDueToAutoResize(
+      const gfx::Size& new_size,
+      uint64_t sequence_number) override;
   void DidNavigate() override;
 
   bool LockMouse() override;
@@ -562,6 +563,9 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void SendSyntheticWheelEventWithPhaseEnded(
       blink::WebMouseWheelEvent wheel_event,
       bool should_route_event);
+
+  void OnResizeDueToAutoResizeComplete(const gfx::Size& new_size,
+                                       uint64_t sequence_number);
 
   // The associated view. This is weak and is inserted into the view hierarchy
   // to own this RenderWidgetHostViewMac object. Set to nil at the start of the

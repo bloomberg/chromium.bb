@@ -114,6 +114,10 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient {
   void OnFrameTokenChanged(uint32_t frame_token) override;
   void DidReceiveFirstFrameAfterNavigation() override;
 
+  base::WeakPtr<BrowserCompositorMac> GetWeakPtr() {
+    return weak_factory_.GetWeakPtr();
+  }
+
   // Returns nullptr if no compositor is attached.
   ui::Compositor* CompositorForTesting() const;
 

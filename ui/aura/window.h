@@ -19,9 +19,11 @@
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
+#include "components/viz/common/surfaces/scoped_surface_id_allocator.h"
 #include "ui/aura/aura_export.h"
 #include "ui/aura/client/window_types.h"
 #include "ui/aura/window_observer.h"
+#include "ui/aura/window_port.h"
 #include "ui/base/class_property.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/layer_delegate.h"
@@ -58,7 +60,6 @@ class LayoutManager;
 class ScopedKeyboardHook;
 class WindowDelegate;
 class WindowObserver;
-class WindowPort;
 class WindowPortForShutdown;
 class WindowTreeHost;
 
@@ -385,6 +386,13 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // CompositorFrame submission in anticipation of a synchronization operation
   // that does not involve a resize or a device scale factor change.
   void AllocateLocalSurfaceId();
+
+  // When a child-allocated viz::LocalSurfaceId is being processed, this returns
+  // true.
+  bool IsLocalSurfaceIdAllocationSuppressed() const;
+
+  viz::ScopedSurfaceIdAllocator GetSurfaceIdAllocator(
+      base::OnceCallback<void()> allocation_task);
 
   // Gets the current viz::LocalSurfaceId.
   const viz::LocalSurfaceId& GetLocalSurfaceId() const;

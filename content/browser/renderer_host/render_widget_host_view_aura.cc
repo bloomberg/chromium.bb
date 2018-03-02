@@ -2187,6 +2187,9 @@ void RenderWidgetHostViewAura::InternalSetBounds(const gfx::Rect& rect) {
 
 void RenderWidgetHostViewAura::SyncSurfaceProperties(
     const cc::DeadlinePolicy& deadline_policy) {
+  if (IsLocalSurfaceIdAllocationSuppressed())
+    return;
+
   if (delegated_frame_host_) {
     delegated_frame_host_->WasResized(window_->GetLocalSurfaceId(),
                                       window_->bounds().size(),
@@ -2485,9 +2488,18 @@ void RenderWidgetHostViewAura::OnSynchronizedDisplayPropertiesChanged() {
   WasResized(cc::DeadlinePolicy::UseDefaultDeadline());
 }
 
-void RenderWidgetHostViewAura::ResizeDueToAutoResize(const gfx::Size& new_size,
-                                                     uint64_t sequence_number) {
-  WasResized(cc::DeadlinePolicy::UseDefaultDeadline());
+viz::ScopedSurfaceIdAllocator RenderWidgetHostViewAura::ResizeDueToAutoResize(
+    const gfx::Size& new_size,
+    uint64_t sequence_number) {
+  base::OnceCallback<void()> allocation_task = base::BindOnce(
+      &RenderWidgetHostViewAura::WasResized, weak_ptr_factory_.GetWeakPtr(),
+      cc::DeadlinePolicy::UseDefaultDeadline());
+  return window_->GetSurfaceIdAllocator(std::move(allocation_task));
+}
+
+bool RenderWidgetHostViewAura::IsLocalSurfaceIdAllocationSuppressed() const {
+  DCHECK(window_);
+  return window_->IsLocalSurfaceIdAllocationSuppressed();
 }
 
 void RenderWidgetHostViewAura::DidNavigate() {

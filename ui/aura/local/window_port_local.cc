@@ -140,6 +140,16 @@ void WindowPortLocal::AllocateLocalSurfaceId() {
     frame_sink_->SetLocalSurfaceId(local_surface_id_);
 }
 
+bool WindowPortLocal::IsLocalSurfaceIdAllocationSuppressed() const {
+  return parent_local_surface_id_allocator_.is_allocation_suppressed();
+}
+
+viz::ScopedSurfaceIdAllocator WindowPortLocal::GetSurfaceIdAllocator(
+    base::OnceCallback<void()> allocation_task) {
+  return viz::ScopedSurfaceIdAllocator(&parent_local_surface_id_allocator_,
+                                       std::move(allocation_task));
+}
+
 const viz::LocalSurfaceId& WindowPortLocal::GetLocalSurfaceId() {
   if (!local_surface_id_.is_valid())
     AllocateLocalSurfaceId();

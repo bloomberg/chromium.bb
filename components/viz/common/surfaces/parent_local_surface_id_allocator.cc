@@ -29,7 +29,8 @@ void ParentLocalSurfaceIdAllocator::Reset(
 }
 
 const LocalSurfaceId& ParentLocalSurfaceIdAllocator::GenerateId() {
-  ++last_known_local_surface_id_.parent_sequence_number_;
+  if (!is_allocation_suppressed_)
+    ++last_known_local_surface_id_.parent_sequence_number_;
   return last_known_local_surface_id_;
 }
 

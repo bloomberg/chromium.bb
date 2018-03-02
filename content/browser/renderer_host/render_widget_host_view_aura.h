@@ -200,8 +200,12 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
                      base::OnceCallback<void(const base::UnguessableToken&)>
                          callback) override;
   void OnSynchronizedDisplayPropertiesChanged() override;
-  void ResizeDueToAutoResize(const gfx::Size& new_size,
-                             uint64_t sequence_number) override;
+  viz::ScopedSurfaceIdAllocator ResizeDueToAutoResize(
+      const gfx::Size& new_size,
+      uint64_t sequence_number) override;
+
+  bool IsLocalSurfaceIdAllocationSuppressed() const override;
+
   void DidNavigate() override;
 
   // Overridden from ui::TextInputClient:
