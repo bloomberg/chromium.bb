@@ -3066,12 +3066,9 @@ void RenderProcessHostImpl::Cleanup() {
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
   deleting_soon_ = true;
 
-  // It's important not to wait for the DeleteTask to delete the channel
-  // proxy. Kill it off now. That way, in case the profile is going away, the
-  // rest of the objects attached to this RenderProcessHost start going
-  // away first, since deleting the channel proxy will post a
-  // OnChannelClosed() to IPC::ChannelProxy::Context on the IO thread.
-  ResetChannelProxy();
+  // Destroy all mojo bindings and IPC channels that can cause calls to this
+  // object, to avoid method invocations that trigger usages of profile.
+  ResetIPC();
 
   // Its important to remove the kSessionStorageHolder after the channel
   // has been reset to avoid deleting the underlying namespaces prior
@@ -3671,11 +3668,10 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead,
 
   child_process_launcher_.reset();
   is_dead_ = true;
-  if (route_provider_binding_.is_bound())
-    route_provider_binding_.Close();
-  associated_interfaces_.reset();
+  // Make sure no IPCs or mojo calls from the old process get dispatched after
+  // it has died.
+  ResetIPC();
   process_resource_coordinator_.reset();
-  ResetChannelProxy();
 
   UpdateProcessPriority();
 
@@ -3708,13 +3704,6 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead,
   if (delayed_cleanup_needed_)
     Cleanup();
 
-  // If RenderProcessHostImpl is reused, the next renderer will send a new
-  // request for FrameSinkProvider so make sure frame_sink_provider_ is ready
-  // for that.
-  frame_sink_provider_.Unbind();
-  if (renderer_host_binding_.is_bound())
-    renderer_host_binding_.Unbind();
-
   compositing_mode_reporter_.reset();
 
   shared_bitmap_allocation_notifier_impl_.ChildDied();
@@ -3722,6 +3711,27 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead,
   HistogramController::GetInstance()->NotifyChildDied<RenderProcessHost>(this);
   // This object is not deleted at this point and might be reused later.
   // TODO(darin): clean this up
+}
+
+void RenderProcessHostImpl::ResetIPC() {
+  if (renderer_host_binding_.is_bound())
+    renderer_host_binding_.Unbind();
+  if (route_provider_binding_.is_bound())
+    route_provider_binding_.Close();
+  associated_interface_provider_bindings_.CloseAllBindings();
+  associated_interfaces_.reset();
+
+  // If RenderProcessHostImpl is reused, the next renderer will send a new
+  // request for FrameSinkProvider so make sure frame_sink_provider_ is ready
+  // for that.
+  frame_sink_provider_.Unbind();
+
+  // It's important not to wait for the DeleteTask to delete the channel
+  // proxy. Kill it off now. That way, in case the profile is going away, the
+  // rest of the objects attached to this RenderProcessHost start going
+  // away first, since deleting the channel proxy will post a
+  // OnChannelClosed() to IPC::ChannelProxy::Context on the IO thread.
+  ResetChannelProxy();
 }
 
 size_t RenderProcessHost::GetActiveViewCount() {

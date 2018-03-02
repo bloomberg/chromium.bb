@@ -500,6 +500,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // Handle termination of our process.
   void ProcessDied(bool already_dead, RendererClosedDetails* known_details);
 
+  // Destroy all objects that can cause methods to be invoked on this object or
+  // any other that hang off it.
+  void ResetIPC();
+
   // GpuSwitchingObserver implementation.
   void OnGpuSwitched() override;
 
