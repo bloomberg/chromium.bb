@@ -802,6 +802,13 @@ void AutofillManager::OnFocusOnFormFieldImpl(const FormData& form,
                                              const FormFieldData& field,
                                              const gfx::RectF& bounding_box) {}
 
+void AutofillManager::OnSelectControlDidChangeImpl(
+    const FormData& form,
+    const FormFieldData& field,
+    const gfx::RectF& bounding_box) {
+  // TODO(crbug.com/814961): Handle select control change.
+}
+
 void AutofillManager::OnDidPreviewAutofillFormData() {
   if (test_delegate_)
     test_delegate_->DidPreviewFormData();

@@ -30,14 +30,17 @@ class FormTracker : public content::RenderFrameObserver {
     enum class ElementChangeSource {
       TEXTFIELD_CHANGED,
       WILL_SEND_SUBMIT_EVENT,
+      SELECT_CHANGED,
     };
 
     // Invoked when form needs to be saved because of |source|, |element| is
-    // valid if the callback caused by TEXTFIELD_CHANGED, |form| is valid for
-    // the callback caused by WILL_SEND_SUBMIT_EVENT.
-    virtual void OnProvisionallySaveForm(const blink::WebFormElement& form,
-                                         const blink::WebInputElement& element,
-                                         ElementChangeSource source) = 0;
+    // valid if the callback caused by source other than
+    // WILL_SEND_SUBMIT_EVENT, |form| is valid for the callback caused by
+    // WILL_SEND_SUBMIT_EVENT.
+    virtual void OnProvisionallySaveForm(
+        const blink::WebFormElement& form,
+        const blink::WebFormControlElement& element,
+        ElementChangeSource source) = 0;
 
     // Invoked when the form is probably submitted, the submmited form could be
     // the one saved in OnProvisionallySaveForm() or others in the page.
@@ -67,9 +70,10 @@ class FormTracker : public content::RenderFrameObserver {
   // AutofillAgent.
   void AjaxSucceeded();
   void TextFieldDidChange(const blink::WebFormControlElement& element);
+  void SelectControlDidChange(const blink::WebFormControlElement& element);
 
-  void set_ignore_text_changes(bool ignore_text_changes) {
-    ignore_text_changes_ = ignore_text_changes;
+  void set_ignore_control_changes(bool ignore_control_changes) {
+    ignore_control_changes_ = ignore_control_changes;
   }
 
   void set_user_gesture_required(bool required) {
@@ -95,8 +99,10 @@ class FormTracker : public content::RenderFrameObserver {
   void OnDestruct() override;
 
   // Called in a posted task by textFieldDidChange() to work-around a WebKit bug
-  // http://bugs.webkit.org/show_bug.cgi?id=16976
-  void TextFieldDidChangeImpl(const blink::WebFormControlElement& element);
+  // http://bugs.webkit.org/show_bug.cgi?id=16976 , we also don't want to
+  // process element while it is changing.
+  void FormControlDidChangeImpl(const blink::WebFormControlElement& element,
+                                Observer::ElementChangeSource change_source);
   void FireProbablyFormSubmitted();
   void FireFormSubmitted(const blink::WebFormElement& form);
   void FireInferredFormSubmission(SubmissionSource source);
@@ -107,10 +113,10 @@ class FormTracker : public content::RenderFrameObserver {
   void ResetLastInteractedElements();
 
   base::ObserverList<Observer> observers_;
-  bool ignore_text_changes_ = false;
+  bool ignore_control_changes_ = false;
   bool user_gesture_required_ = true;
   blink::WebFormElement last_interacted_form_;
-  blink::WebInputElement last_interacted_formless_element_;
+  blink::WebFormControlElement last_interacted_formless_element_;
   blink::WebFormElementObserver* form_element_observer_ = nullptr;
 
   SEQUENCE_CHECKER(form_tracker_sequence_checker_);

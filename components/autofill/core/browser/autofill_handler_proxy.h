@@ -63,6 +63,10 @@ class AutofillHandlerProxy : public AutofillHandler {
                               const FormFieldData& field,
                               const gfx::RectF& bounding_box) override;
 
+  void OnSelectControlDidChangeImpl(const FormData& form,
+                                    const FormFieldData& field,
+                                    const gfx::RectF& bounding_box) override;
+
  private:
   AutofillProvider* provider_;
   base::WeakPtrFactory<AutofillHandlerProxy> weak_ptr_factory_;

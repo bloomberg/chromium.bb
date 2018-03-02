@@ -98,7 +98,7 @@ class AutofillAgent : public content::RenderFrameObserver,
 
   // FormTracker::Observer
   void OnProvisionallySaveForm(const blink::WebFormElement& form,
-                               const blink::WebInputElement& element,
+                               const blink::WebFormControlElement& element,
                                ElementChangeSource source) override;
   void OnProbablyFormSubmitted() override;
   void OnFormSubmitted(const blink::WebFormElement& form) override;
@@ -183,6 +183,8 @@ class AutofillAgent : public content::RenderFrameObserver,
   void DidCompleteFocusChangeInFrame() override;
   void DidReceiveLeftMouseDownOrGestureTapInNode(
       const blink::WebNode& node) override;
+  void SelectControlDidChange(
+      const blink::WebFormControlElement& element) override;
 
   void HandleFocusChangeComplete();
 
@@ -278,7 +280,7 @@ class AutofillAgent : public content::RenderFrameObserver,
 
   // When dealing with forms that don't use a <form> tag, we keep track of the
   // elements the user has modified so we can determine when submission occurs.
-  std::set<blink::WebInputElement> formless_elements_user_edited_;
+  std::set<blink::WebFormControlElement> formless_elements_user_edited_;
 
   // The form user interacted, it is used if last_interacted_form_ or formless
   // form can't be converted to FormData at the time of form submission.

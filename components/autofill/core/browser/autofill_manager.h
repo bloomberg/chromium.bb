@@ -256,6 +256,9 @@ class AutofillManager : public AutofillHandler,
   void OnFocusOnFormFieldImpl(const FormData& form,
                               const FormFieldData& field,
                               const gfx::RectF& bounding_box) override;
+  void OnSelectControlDidChangeImpl(const FormData& form,
+                                    const FormFieldData& field,
+                                    const gfx::RectF& bounding_box) override;
 
   std::vector<std::unique_ptr<FormStructure>>* form_structures() {
     return &form_structures_;

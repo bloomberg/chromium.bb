@@ -55,6 +55,11 @@ void AutofillHandlerProxy::OnFocusOnFormFieldImpl(
   provider_->OnFocusOnFormField(this, form, field, bounding_box);
 }
 
+void AutofillHandlerProxy::OnSelectControlDidChangeImpl(
+    const FormData& form,
+    const FormFieldData& field,
+    const gfx::RectF& bounding_box) {}
+
 void AutofillHandlerProxy::OnFocusNoLongerOnForm() {
   provider_->OnFocusNoLongerOnForm(this);
 }
