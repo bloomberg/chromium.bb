@@ -1127,7 +1127,7 @@
           'all',
         ],
         'test_suites': {
-          'gtest_tests': 'goma_gtests',
+          'gtest_tests': 'goma_mac_gtests',
         },
       },
       'Mac Builder (dbg) Goma Canary (clobber)': {
@@ -1135,7 +1135,7 @@
           'all',
         ],
         'test_suites': {
-          'gtest_tests': 'goma_gtests',
+          'gtest_tests': 'goma_mac_gtests',
         },
       },
       'Mac Builder Goma Canary': {
@@ -1144,7 +1144,7 @@
           'pdf_fuzzers',
         ],
         'test_suites': {
-          'gtest_tests': 'goma_gtests',
+          'gtest_tests': 'goma_mac_gtests',
         },
       },
       'Mac Goma Canary (clobber)': {
@@ -1152,7 +1152,7 @@
           'all',
         ],
         'test_suites': {
-          'gtest_tests': 'goma_gtests',
+          'gtest_tests': 'goma_mac_gtests',
         },
       },
       'Mac Goma Canary LocalOutputCache': {
@@ -1160,7 +1160,7 @@
           'all',
         ],
         'test_suites': {
-          'gtest_tests': 'goma_gtests',
+          'gtest_tests': 'goma_mac_gtests',
         },
       },
       'Mojo Android': {
