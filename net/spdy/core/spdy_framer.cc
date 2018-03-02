@@ -15,7 +15,6 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
-#include "net/quic/platform/api/quic_flags.h"
 #include "net/spdy/core/hpack/hpack_constants.h"
 #include "net/spdy/core/spdy_bitmasks.h"
 #include "net/spdy/core/spdy_bug_tracker.h"

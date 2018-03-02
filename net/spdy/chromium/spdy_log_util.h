@@ -9,6 +9,8 @@
 
 #include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
+#include "net/http/http_log_util.h"
+#include "net/log/net_log.h"
 #include "net/log/net_log_capture_mode.h"
 #include "net/spdy/core/spdy_header_block.h"
 #include "net/spdy/platform/api/spdy_string.h"
@@ -29,6 +31,11 @@ ElideGoAwayDebugDataForNetLog(NetLogCaptureMode capture_mode,
 NET_EXPORT_PRIVATE std::unique_ptr<base::ListValue>
 ElideSpdyHeaderBlockForNetLog(const SpdyHeaderBlock& headers,
                               NetLogCaptureMode capture_mode);
+
+// Converts a SpdyHeaderBlock into NetLog event parameters.
+NET_EXPORT_PRIVATE std::unique_ptr<base::Value> SpdyHeaderBlockNetLogCallback(
+    const SpdyHeaderBlock* headers,
+    NetLogCaptureMode capture_mode);
 
 }  // namespace net
 

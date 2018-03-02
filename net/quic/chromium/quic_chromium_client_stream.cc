@@ -18,6 +18,7 @@
 #include "net/quic/core/quic_spdy_session.h"
 #include "net/quic/core/quic_write_blocked_list.h"
 #include "net/quic/core/spdy_utils.h"
+#include "net/spdy/chromium/spdy_log_util.h"
 
 namespace net {
 namespace {

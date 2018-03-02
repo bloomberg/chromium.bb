@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/values.h"
-#include "net/log/net_log_capture_mode.h"
 #include "net/spdy/core/spdy_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

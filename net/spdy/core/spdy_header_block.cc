@@ -11,10 +11,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/values.h"
 #include "net/base/arena.h"
-#include "net/http/http_log_util.h"
-#include "net/log/net_log_capture_mode.h"
 #include "net/spdy/platform/api/spdy_estimate_memory_usage.h"
 #include "net/spdy/platform/api/spdy_ptr_util.h"
 #include "net/spdy/platform/api/spdy_string_utils.h"
@@ -361,22 +358,6 @@ SpdyHeaderBlock::Storage* SpdyHeaderBlock::GetStorage() {
     storage_ = SpdyMakeUnique<Storage>();
   }
   return storage_.get();
-}
-
-std::unique_ptr<base::Value> SpdyHeaderBlockNetLogCallback(
-    const SpdyHeaderBlock* headers,
-    NetLogCaptureMode capture_mode) {
-  auto dict = std::make_unique<base::DictionaryValue>();
-  auto headers_dict = std::make_unique<base::DictionaryValue>();
-  for (SpdyHeaderBlock::const_iterator it = headers->begin();
-       it != headers->end(); ++it) {
-    headers_dict->SetKey(
-        it->first.as_string(),
-        base::Value(ElideHeaderValueForNetLog(
-            capture_mode, it->first.as_string(), it->second.as_string())));
-  }
-  dict->Set("headers", std::move(headers_dict));
-  return std::move(dict);
 }
 
 SpdyStringPiece SpdyHeaderBlock::WriteKey(const SpdyStringPiece key) {
