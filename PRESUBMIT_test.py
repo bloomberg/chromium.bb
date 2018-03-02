@@ -741,6 +741,152 @@ class PydepsNeedsUpdatingTest(unittest.TestCase):
     self.assertTrue('File is stale' in str(results[0]))
     self.assertTrue('File is stale' in str(results[1]))
 
+class IncludeGuardTest(unittest.TestCase):
+  def testIncludeGuardChecks(self):
+    mock_input_api = MockInputApi()
+    mock_output_api = MockOutputApi()
+    mock_input_api.files = [
+        MockAffectedFile('content/browser/thing/foo.h', [
+          '// Comment',
+          '#ifndef CONTENT_BROWSER_THING_FOO_H_',
+          '#define CONTENT_BROWSER_THING_FOO_H_',
+          'struct McBoatFace;',
+          '#endif  // CONTENT_BROWSER_THING_FOO_H_',
+        ]),
+        MockAffectedFile('content/browser/thing/bar.h', [
+          '#ifndef CONTENT_BROWSER_THING_BAR_H_',
+          '#define CONTENT_BROWSER_THING_BAR_H_',
+          'namespace content {',
+          '#endif  // CONTENT_BROWSER_THING_BAR_H_',
+          '}  // namespace content',
+        ]),
+        MockAffectedFile('content/browser/test1.h', [
+          'namespace content {',
+          '}  // namespace content',
+        ]),
+        MockAffectedFile('content\\browser\\win.h', [
+          '#ifndef CONTENT_BROWSER_WIN_H_',
+          '#define CONTENT_BROWSER_WIN_H_',
+          'struct McBoatFace;',
+          '#endif  // CONTENT_BROWSER_WIN_H_',
+        ]),
+        MockAffectedFile('content/browser/test2.h', [
+          '// Comment',
+          '#ifndef CONTENT_BROWSER_TEST2_H_',
+          'struct McBoatFace;',
+          '#endif  // CONTENT_BROWSER_TEST2_H_',
+        ]),
+        MockAffectedFile('content/browser/internal.h', [
+          '// Comment',
+          '#ifndef CONTENT_BROWSER_INTERNAL_H_',
+          '#define CONTENT_BROWSER_INTERNAL_H_',
+          '// Comment',
+          '#ifndef INTERNAL_CONTENT_BROWSER_INTERNAL_H_',
+          '#define INTERNAL_CONTENT_BROWSER_INTERNAL_H_',
+          'namespace internal {',
+          '}  // namespace internal',
+          '#endif  // INTERNAL_CONTENT_BROWSER_THING_BAR_H_',
+          'namespace content {',
+          '}  // namespace content',
+          '#endif  // CONTENT_BROWSER_THING_BAR_H_',
+        ]),
+        MockAffectedFile('content/browser/thing/foo.cc', [
+          '// This is a non-header.',
+        ]),
+        MockAffectedFile('content/browser/disabled.h', [
+          '// no-include-guard-because-multiply-included',
+          'struct McBoatFace;',
+        ]),
+        # New files don't allow misspelled include guards.
+        MockAffectedFile('content/browser/spleling.h', [
+          '#ifndef CONTENT_BROWSER_SPLLEING_H_',
+          '#define CONTENT_BROWSER_SPLLEING_H_',
+          'struct McBoatFace;',
+          '#endif  // CONTENT_BROWSER_SPLLEING_H_',
+        ]),
+        # Old files allow misspelled include guards (for now).
+        MockAffectedFile('chrome/old.h', [
+          '// New contents',
+          '#ifndef CHROME_ODL_H_',
+          '#define CHROME_ODL_H_',
+          '#endif  // CHROME_ODL_H_',
+        ], [
+          '// Old contents',
+          '#ifndef CHROME_ODL_H_',
+          '#define CHROME_ODL_H_',
+          '#endif  // CHROME_ODL_H_',
+        ]),
+        # Using a Blink style include guard outside Blink is wrong.
+        MockAffectedFile('content/NotInBlink.h', [
+          '#ifndef NotInBlink_h',
+          '#define NotInBlink_h',
+          'struct McBoatFace;',
+          '#endif  // NotInBlink_h',
+        ]),
+        # Using a Blink style include guard in Blink is ok for now.
+        MockAffectedFile('third_party/WebKit/InBlink.h', [
+          '#ifndef InBlink_h',
+          '#define InBlink_h',
+          'struct McBoatFace;',
+          '#endif  // InBlink_h',
+        ]),
+        # Using a bad include guard in Blink is not ok.
+        MockAffectedFile('third_party/WebKit/AlsoInBlink.h', [
+          '#ifndef WrongInBlink_h',
+          '#define WrongInBlink_h',
+          'struct McBoatFace;',
+          '#endif  // WrongInBlink_h',
+        ]),
+        # Using a bad include guard in Blink is accepted if it's an old file.
+        MockAffectedFile('third_party/WebKit/StillInBlink.h', [
+          '// New contents',
+          '#ifndef AcceptedInBlink_h',
+          '#define AcceptedInBlink_h',
+          'struct McBoatFace;',
+          '#endif  // AcceptedInBlink_h',
+        ], [
+          '// Old contents',
+          '#ifndef AcceptedInBlink_h',
+          '#define AcceptedInBlink_h',
+          'struct McBoatFace;',
+          '#endif  // AcceptedInBlink_h',
+        ]),
+      ]
+    msgs = PRESUBMIT._CheckForIncludeGuards(
+        mock_input_api, mock_output_api)
+    expected_fail_count = 6
+    self.assertEqual(expected_fail_count, len(msgs),
+                     'Expected %d items, found %d: %s'
+                     % (expected_fail_count, len(msgs), msgs))
+    self.assertEqual(msgs[0].items, [ 'content/browser/thing/bar.h' ])
+    self.assertEqual(msgs[0].message,
+                     'Include guard CONTENT_BROWSER_THING_BAR_H_ '
+                     'not covering the whole file')
+
+    self.assertEqual(msgs[1].items, [ 'content/browser/test1.h' ])
+    self.assertEqual(msgs[1].message,
+                     'Missing include guard CONTENT_BROWSER_TEST1_H_')
+
+    self.assertEqual(msgs[2].items, [ 'content/browser/test2.h:3' ])
+    self.assertEqual(msgs[2].message,
+                     'Missing "#define CONTENT_BROWSER_TEST2_H_" for '
+                     'include guard')
+
+    self.assertEqual(msgs[3].items, [ 'content/browser/spleling.h:1' ])
+    self.assertEqual(msgs[3].message,
+                     'Header using the wrong include guard name '
+                     'CONTENT_BROWSER_SPLLEING_H_')
+
+    self.assertEqual(msgs[4].items, [ 'content/NotInBlink.h:1' ])
+    self.assertEqual(msgs[4].message,
+                     'Header using the wrong include guard name '
+                     'NotInBlink_h')
+
+    self.assertEqual(msgs[5].items, [ 'third_party/WebKit/AlsoInBlink.h:1' ])
+    self.assertEqual(msgs[5].message,
+                     'Header using the wrong include guard name '
+                     'WrongInBlink_h')
+
 class AndroidDeprecatedTestAnnotationTest(unittest.TestCase):
   def testCheckAndroidTestAnnotationUsage(self):
     mock_input_api = MockInputApi()

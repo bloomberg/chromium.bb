@@ -2610,6 +2610,7 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckNoDeprecatedJs(input_api, output_api))
   results.extend(_CheckParseErrors(input_api, output_api))
   results.extend(_CheckForIPCRules(input_api, output_api))
+  results.extend(_CheckForIncludeGuards(input_api, output_api))
   results.extend(_CheckForWindowsLineEndings(input_api, output_api))
   results.extend(_CheckSingletonInHeaders(input_api, output_api))
   results.extend(_CheckPydepsNeedsUpdating(input_api, output_api))
@@ -2809,6 +2810,116 @@ def _CheckForIPCRules(input_api, output_api):
         _IPC_ENUM_TRAITS_DEPRECATED, problems)]
   else:
     return []
+
+
+def _CheckForIncludeGuards(input_api, output_api):
+  """Check that header files have proper guards against multiple inclusion.
+  If a file should not have such guards (and it probably should) then it
+  should include the string "no-include-guard-because-multiply-included".
+  """
+  def is_header_file(f):
+    return f.LocalPath().endswith('.h')
+
+  def replace_special_with_underscore(string):
+    return input_api.re.sub(r'[\\/.-]', '_', string)
+
+  errors = []
+
+  for f in input_api.AffectedSourceFiles(is_header_file):
+    guard_name = None
+    guard_line_number = None
+    seen_guard_end = False
+
+    file_with_path = input_api.os_path.normpath(f.LocalPath())
+    base_file_name = input_api.os_path.splitext(
+      input_api.os_path.basename(file_with_path))[0]
+    upper_base_file_name = base_file_name.upper()
+
+    expected_guard = replace_special_with_underscore(
+      file_with_path.upper() + '_')
+    expected_guard_if_blink = base_file_name + '_h'
+
+    # For "path/elem/file_name.h" we should really only accept
+    # PATH_ELEM_FILE_NAME_H_ per coding style or, if Blink,
+    # file_name_h.  Unfortunately there are too many (1000+) files
+    # with slight deviations from the coding style. Since the most
+    # important part is that the include guard is there, and that it's
+    # unique, not the name, this check is forgiving for existing files.
+    #
+    # As code becomes more uniform, this could be made stricter.
+
+    guard_name_pattern_list = [
+      # Anything with the right suffix (maybe with an extra _).
+      r'\w+_H__?',
+
+      # To cover include guards with Blink style.
+      r'\w+_h',
+
+      # Anything including the uppercase name of the file.
+      r'\w*' + input_api.re.escape(replace_special_with_underscore(
+        upper_base_file_name)) + r'\w*',
+    ]
+    guard_name_pattern = '|'.join(guard_name_pattern_list)
+    guard_pattern = input_api.re.compile(
+      r'#ifndef\s+(' + guard_name_pattern + ')')
+
+    for line_number, line in enumerate(f.NewContents()):
+      if 'no-include-guard-because-multiply-included' in line:
+        guard_name = 'DUMMY'  # To not trigger check outside the loop.
+        break
+
+      if guard_name is None:
+        match = guard_pattern.match(line)
+        if match:
+          guard_name = match.group(1)
+          guard_line_number = line_number
+
+          # We allow existing files to use slightly wrong include
+          # guards, but new files should get it right.
+          if not f.OldContents():
+            is_in_blink = file_with_path.startswith(input_api.os_path.join(
+              'third_party', 'WebKit'))
+            if not (guard_name == expected_guard or
+                    is_in_blink and guard_name == expected_guard_if_blink):
+              if is_in_blink:
+                expected_text = "%s or %s" % (expected_guard,
+                                              expected_guard_if_blink)
+              else:
+                expected_text = expected_guard
+              errors.append(output_api.PresubmitPromptWarning(
+                'Header using the wrong include guard name %s' % guard_name,
+                ['%s:%d' % (f.LocalPath(), line_number + 1)],
+                'Expected: %r\nGot: %r' % (guard_name, expected_text)))
+      else:
+        # The line after #ifndef should have a #define of the same name.
+        if line_number == guard_line_number + 1:
+          expected_line = '#define %s' % guard_name
+          if line != expected_line:
+            errors.append(output_api.PresubmitPromptWarning(
+              'Missing "%s" for include guard' % expected_line,
+              ['%s:%d' % (f.LocalPath(), line_number + 1)],
+              'Expected: %r\nGot: %r' % (expected_line, line)))
+
+        if not seen_guard_end and line == '#endif  // %s' % guard_name:
+          seen_guard_end = True
+        elif seen_guard_end:
+          if line.strip() != '':
+            errors.append(output_api.PresubmitPromptWarning(
+              'Include guard %s not covering the whole file' % (
+                guard_name), [f.LocalPath()]))
+            break  # Nothing else to check and enough to warn once.
+
+    if guard_name is None:
+      errors.append(output_api.PresubmitPromptWarning(
+        'Missing include guard %s' % expected_guard,
+        [f.LocalPath()],
+        'Missing include guard in %s\n'
+        'Recommended name: %s\n'
+        'This check can be disabled by having the string\n'
+        'no-include-guard-because-multiply-included in the header.' %
+        (f.LocalPath(), expected_guard)))
+
+  return errors
 
 
 def _CheckForWindowsLineEndings(input_api, output_api):
