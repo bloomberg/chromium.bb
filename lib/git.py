@@ -868,6 +868,7 @@ def ShallowFetch(git_repo, git_url, sparse_checkout=None):
     RunGit(git_repo, ['config', 'core.sparsecheckout', 'true'])
     osutils.WriteFile(os.path.join(git_repo, '.git/info/sparse-checkout'),
                       '\n'.join(sparse_checkout))
+    logging.info('Sparse checkout: %s', sparse_checkout)
 
   utcnow = datetime.datetime.utcnow
   start = utcnow()
