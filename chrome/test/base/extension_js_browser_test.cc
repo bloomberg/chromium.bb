@@ -9,10 +9,10 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/browsertest_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
+#include "extensions/browser/browsertest_util.h"
 
 ExtensionJSBrowserTest::ExtensionJSBrowserTest() : libs_loaded_(false) {
 }

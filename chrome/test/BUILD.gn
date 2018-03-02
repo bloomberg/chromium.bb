@@ -1208,7 +1208,6 @@ test("browser_tests") {
         "../browser/extensions/bookmark_app_navigation_throttle_browsertest.cc",
         "../browser/extensions/browsertest_util.cc",
         "../browser/extensions/browsertest_util.h",
-        "../browser/extensions/browsertest_util_browsertest.cc",
         "../browser/extensions/chrome_app_api_browsertest.cc",
         "../browser/extensions/chrome_theme_url_browsertest.cc",
         "../browser/extensions/chrome_ui_overrides_browsertest.cc",
