@@ -58,7 +58,12 @@ class ClipboardMacTest : public PlatformTest {
   }
 };
 
-TEST_F(ClipboardMacTest, ReadImageRetina) {
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_ReadImageRetina DISABLED_ReadImageRetina
+#else
+#define MAYBE_ReadImageRetina ReadImageRetina
+#endif
+TEST_F(ClipboardMacTest, MAYBE_ReadImageRetina) {
   int32_t width = 99;
   int32_t height = 101;
   scoped_refptr<ui::UniquePasteboard> pasteboard = new ui::UniquePasteboard;
@@ -74,7 +79,12 @@ TEST_F(ClipboardMacTest, ReadImageRetina) {
   EXPECT_EQ(2 * height, bitmap.height());
 }
 
-TEST_F(ClipboardMacTest, ReadImageNonRetina) {
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_ReadImageNonRetina DISABLED_ReadImageNonRetina
+#else
+#define MAYBE_ReadImageNonRetina ReadImageNonRetina
+#endif
+TEST_F(ClipboardMacTest, MAYBE_ReadImageNonRetina) {
   int32_t width = 99;
   int32_t height = 101;
   scoped_refptr<ui::UniquePasteboard> pasteboard = new ui::UniquePasteboard;
