@@ -34,7 +34,6 @@
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/offline_page_model.h"
 #include "components/offline_pages/core/offline_page_test_archiver.h"
-#include "components/offline_pages/core/offline_page_test_store.h"
 #include "components/offline_pages/core/offline_page_types.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
