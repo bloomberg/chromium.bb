@@ -491,6 +491,23 @@ void MapperSwitchProBluetooth(const Gamepad& input, Gamepad* mapped) {
   mapped->axes_length = AXIS_INDEX_COUNT;
 }
 
+void MapperLogitechDInput(const Gamepad& input, Gamepad* mapped) {
+  *mapped = input;
+  mapped->buttons[BUTTON_INDEX_PRIMARY] = input.buttons[1];
+  mapped->buttons[BUTTON_INDEX_SECONDARY] = input.buttons[2];
+  mapped->buttons[BUTTON_INDEX_TERTIARY] = input.buttons[0];
+  mapped->buttons[BUTTON_INDEX_DPAD_UP] = AxisNegativeAsButton(input.axes[5]);
+  mapped->buttons[BUTTON_INDEX_DPAD_DOWN] = AxisPositiveAsButton(input.axes[5]);
+  mapped->buttons[BUTTON_INDEX_DPAD_LEFT] = AxisNegativeAsButton(input.axes[4]);
+  mapped->buttons[BUTTON_INDEX_DPAD_RIGHT] =
+      AxisPositiveAsButton(input.axes[4]);
+
+  // The Logitech button (BUTTON_INDEX_META) is not accessible through the
+  // device's D-mode.
+  mapped->buttons_length = BUTTON_INDEX_COUNT - 1;
+  mapped->axes_length = AXIS_INDEX_COUNT;
+}
+
 struct MappingData {
   const char* const vendor_id;
   const char* const product_id;
@@ -509,9 +526,12 @@ struct MappingData {
     {"045e", "02ea", MapperXInputStyleGamepad},  // Xbox One S (USB)
     {"045e", "02fd", MapperXboxOneS},            // Xbox One S (Bluetooth)
     {"045e", "0719", MapperXInputStyleGamepad},  // Xbox 360 Wireless
-    {"046d", "c21d", MapperXInputStyleGamepad},  // Logitech F310
-    {"046d", "c21e", MapperXInputStyleGamepad},  // Logitech F510
-    {"046d", "c21f", MapperXInputStyleGamepad},  // Logitech F710
+    {"046d", "c216", MapperLogitechDInput},      // Logitech F310 D-mode
+    {"046d", "c218", MapperLogitechDInput},      // Logitech F510 D-mode
+    {"046d", "c219", MapperLogitechDInput},      // Logitech F710 D-mode
+    {"046d", "c21d", MapperXInputStyleGamepad},  // Logitech F310 X-mode
+    {"046d", "c21e", MapperXInputStyleGamepad},  // Logitech F510 X-mode
+    {"046d", "c21f", MapperXInputStyleGamepad},  // Logitech F710 X-mode
     {"04e8", "a000", MapperSamsung_EI_GP20},     // Samsung Gamepad EI-GP20
     {"054c", "0268", MapperDualshock3SixAxis},   // Dualshock 3 / SIXAXIS
     {"054c", "05c4", MapperDualshock4},          // Playstation Dualshock 4
