@@ -4,8 +4,9 @@
 
 #include "ash/system/power/power_button_menu_screen_view.h"
 
+#include "ash/shell.h"
+#include "ash/system/power/power_button_controller.h"
 #include "ash/system/power/power_button_menu_view.h"
-#include "ash/system/power/tablet_power_button_controller.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -29,10 +30,7 @@ class PowerButtonMenuScreenView::PowerButtonMenuBackgroundView
     : public views::View,
       public ui::ImplicitAnimationObserver {
  public:
-  explicit PowerButtonMenuBackgroundView(
-      TabletPowerButtonController* controller)
-      : controller_(controller) {
-    DCHECK(controller_);
+  PowerButtonMenuBackgroundView() {
     SetPaintToLayer(ui::LAYER_SOLID_COLOR);
     layer()->SetColor(kShieldColor);
   }
@@ -42,7 +40,7 @@ class PowerButtonMenuScreenView::PowerButtonMenuBackgroundView
   void OnImplicitAnimationsCompleted() override {
     if (layer()->opacity() == 0.f) {
       SetVisible(false);
-      controller_->DismissMenu();
+      Shell::Get()->power_button_controller()->DismissMenu();
     }
   }
 
@@ -61,15 +59,11 @@ class PowerButtonMenuScreenView::PowerButtonMenuBackgroundView
   }
 
  private:
-  TabletPowerButtonController* controller_ = nullptr;  // Not owned.
-
   DISALLOW_COPY_AND_ASSIGN(PowerButtonMenuBackgroundView);
 };
 
-PowerButtonMenuScreenView::PowerButtonMenuScreenView(
-    TabletPowerButtonController* controller) {
-  power_button_screen_background_shield_ =
-      new PowerButtonMenuBackgroundView(controller);
+PowerButtonMenuScreenView::PowerButtonMenuScreenView() {
+  power_button_screen_background_shield_ = new PowerButtonMenuBackgroundView();
   AddChildView(power_button_screen_background_shield_);
 
   power_button_menu_view_ = new PowerButtonMenuView();

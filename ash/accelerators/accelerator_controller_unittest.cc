@@ -22,11 +22,11 @@
 #include "ash/shell_test_api.h"
 #include "ash/system/brightness_control_delegate.h"
 #include "ash/system/keyboard_brightness_control_delegate.h"
+#include "ash/system/power/power_button_controller_test_api.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test_media_client.h"
 #include "ash/test_screenshot_delegate.h"
 #include "ash/wm/lock_state_controller.h"
-#include "ash/wm/lock_state_controller_test_api.h"
 #include "ash/wm/panels/panel_layout_manager.h"
 #include "ash/wm/test_session_state_animator.h"
 #include "ash/wm/window_positioning_utils.h"
@@ -1037,10 +1037,11 @@ TEST_F(PreferredReservedAcceleratorsTest, AcceleratorsWithFullscreen) {
   ui::test::EventGenerator& generator = GetEventGenerator();
 
   // Power key (reserved) should always be handled.
-  LockStateControllerTestApi test_api(Shell::Get()->lock_state_controller());
-  EXPECT_FALSE(test_api.is_animating_lock());
+  PowerButtonControllerTestApi test_api(
+      Shell::Get()->power_button_controller());
+  EXPECT_FALSE(test_api.PowerButtonMenuTimerIsRunning());
   generator.PressKey(ui::VKEY_POWER, ui::EF_NONE);
-  EXPECT_TRUE(test_api.is_animating_lock());
+  EXPECT_TRUE(test_api.PowerButtonMenuTimerIsRunning());
 
   auto press_and_release_alt_tab = [&generator]() {
     generator.PressKey(ui::VKEY_TAB, ui::EF_ALT_DOWN);
@@ -1085,10 +1086,11 @@ TEST_F(PreferredReservedAcceleratorsTest, AcceleratorsWithPinned) {
   ui::test::EventGenerator& generator = GetEventGenerator();
 
   // Power key (reserved) should always be handled.
-  LockStateControllerTestApi test_api(Shell::Get()->lock_state_controller());
-  EXPECT_FALSE(test_api.is_animating_lock());
+  PowerButtonControllerTestApi test_api(
+      Shell::Get()->power_button_controller());
+  EXPECT_FALSE(test_api.PowerButtonMenuTimerIsRunning());
   generator.PressKey(ui::VKEY_POWER, ui::EF_NONE);
-  EXPECT_TRUE(test_api.is_animating_lock());
+  EXPECT_TRUE(test_api.PowerButtonMenuTimerIsRunning());
 
   // A pinned window can consume ALT-TAB (preferred), but no side effect.
   ASSERT_EQ(w1, wm::GetActiveWindow());

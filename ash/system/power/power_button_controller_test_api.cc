@@ -2,29 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/power/tablet_power_button_controller_test_api.h"
+#include "ash/system/power/power_button_controller_test_api.h"
 
+#include "ash/system/power/power_button_controller.h"
 #include "ash/system/power/power_button_display_controller.h"
 #include "ash/system/power/power_button_menu_screen_view.h"
 #include "ash/system/power/power_button_menu_view.h"
-#include "ash/system/power/tablet_power_button_controller.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
 
-TabletPowerButtonControllerTestApi::TabletPowerButtonControllerTestApi(
-    TabletPowerButtonController* controller)
+PowerButtonControllerTestApi::PowerButtonControllerTestApi(
+    PowerButtonController* controller)
     : controller_(controller) {}
 
-TabletPowerButtonControllerTestApi::~TabletPowerButtonControllerTestApi() =
-    default;
+PowerButtonControllerTestApi::~PowerButtonControllerTestApi() = default;
 
-bool TabletPowerButtonControllerTestApi::ShutdownTimerIsRunning() const {
+bool PowerButtonControllerTestApi::ShutdownTimerIsRunning() const {
   return controller_->shutdown_timer_.IsRunning();
 }
 
-bool TabletPowerButtonControllerTestApi::TriggerShutdownTimeout() {
+bool PowerButtonControllerTestApi::TriggerShutdownTimeout() {
   if (!controller_->shutdown_timer_.IsRunning())
     return false;
 
@@ -34,11 +33,11 @@ bool TabletPowerButtonControllerTestApi::TriggerShutdownTimeout() {
   return true;
 }
 
-bool TabletPowerButtonControllerTestApi::PowerButtonMenuTimerIsRunning() const {
+bool PowerButtonControllerTestApi::PowerButtonMenuTimerIsRunning() const {
   return controller_->power_button_menu_timer_.IsRunning();
 }
 
-bool TabletPowerButtonControllerTestApi::TriggerPowerButtonMenuTimeout() {
+bool PowerButtonControllerTestApi::TriggerPowerButtonMenuTimeout() {
   if (!controller_->power_button_menu_timer_.IsRunning())
     return false;
 
@@ -48,28 +47,28 @@ bool TabletPowerButtonControllerTestApi::TriggerPowerButtonMenuTimeout() {
   return true;
 }
 
-void TabletPowerButtonControllerTestApi::SendKeyEvent(ui::KeyEvent* event) {
+void PowerButtonControllerTestApi::SendKeyEvent(ui::KeyEvent* event) {
   controller_->display_controller_->OnKeyEvent(event);
 }
 
-gfx::Rect TabletPowerButtonControllerTestApi::GetMenuBoundsInScreen() const {
+gfx::Rect PowerButtonControllerTestApi::GetMenuBoundsInScreen() const {
   return IsMenuOpened() ? GetPowerButtonMenuView()->GetBoundsInScreen()
                         : gfx::Rect();
 }
 
-PowerButtonMenuView*
-TabletPowerButtonControllerTestApi::GetPowerButtonMenuView() const {
+PowerButtonMenuView* PowerButtonControllerTestApi::GetPowerButtonMenuView()
+    const {
   return IsMenuOpened() ? static_cast<PowerButtonMenuScreenView*>(
                               controller_->menu_widget_->GetContentsView())
                               ->power_button_menu_view()
                         : nullptr;
 }
 
-bool TabletPowerButtonControllerTestApi::IsMenuOpened() const {
+bool PowerButtonControllerTestApi::IsMenuOpened() const {
   return controller_->IsMenuOpened();
 }
 
-bool TabletPowerButtonControllerTestApi::MenuHasSignOutItem() const {
+bool PowerButtonControllerTestApi::MenuHasSignOutItem() const {
   return IsMenuOpened() &&
          GetPowerButtonMenuView()->sign_out_item_for_testing();
 }
