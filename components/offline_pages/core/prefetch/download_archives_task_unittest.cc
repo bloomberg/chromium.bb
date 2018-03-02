@@ -81,16 +81,10 @@ TEST_F(DownloadArchivesTaskTest, StoreFailure) {
 }
 
 TEST_F(DownloadArchivesTaskTest, NoArchivesToDownload) {
-  InsertDummyItemInState(PrefetchItemState::NEW_REQUEST);
-  InsertDummyItemInState(PrefetchItemState::SENT_GENERATE_PAGE_BUNDLE);
-  InsertDummyItemInState(PrefetchItemState::AWAITING_GCM);
-  InsertDummyItemInState(PrefetchItemState::RECEIVED_GCM);
-  InsertDummyItemInState(PrefetchItemState::SENT_GET_OPERATION);
-  InsertDummyItemInState(PrefetchItemState::DOWNLOADING);
-  InsertDummyItemInState(PrefetchItemState::DOWNLOADED);
-  InsertDummyItemInState(PrefetchItemState::IMPORTING);
-  InsertDummyItemInState(PrefetchItemState::FINISHED);
-  InsertDummyItemInState(PrefetchItemState::ZOMBIE);
+  for (PrefetchItemState state :
+       GetAllStatesExcept({PrefetchItemState::RECEIVED_BUNDLE})) {
+    InsertDummyItemInState(state);
+  }
 
   std::set<PrefetchItem> items_before_run;
   EXPECT_EQ(10U, store_util()->GetAllItems(&items_before_run));

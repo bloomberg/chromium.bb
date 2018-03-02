@@ -161,8 +161,7 @@ TEST_F(SentGetOperationCleanupTaskTest, SkipForOngoingRequestWithMaxAttempts) {
 TEST_F(SentGetOperationCleanupTaskTest, NoUpdateForOtherStates) {
   std::set<PrefetchItem> items;
   std::vector<PrefetchItemState> all_other_states =
-      PrefetchTaskTestBase::GetAllStatesExcept(
-          PrefetchItemState::SENT_GET_OPERATION);
+      GetAllStatesExcept({PrefetchItemState::SENT_GET_OPERATION});
   for (const auto& state : all_other_states) {
     PrefetchItem item = item_generator()->CreateItem(state);
     item.get_operation_attempts =
