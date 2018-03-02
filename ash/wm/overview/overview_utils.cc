@@ -4,6 +4,7 @@
 
 #include "ash/wm/overview/overview_utils.h"
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
@@ -106,8 +107,7 @@ bool CanCoverAvailableWorkspace(aura::Window* window) {
 bool IsNewOverviewAnimationsEnabled() {
   if (g_enable_new_overview_animations == base::nullopt) {
     g_enable_new_overview_animations =
-        base::make_optional(base::CommandLine::ForCurrentProcess()->HasSwitch(
-            ash::switches::kAshEnableNewOverviewAnimations));
+        base::make_optional(ash::features::IsNewOverviewAnimationsEnabled());
   }
 
   return g_enable_new_overview_animations.value();

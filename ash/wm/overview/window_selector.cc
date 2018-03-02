@@ -353,8 +353,11 @@ void WindowSelector::Shutdown() {
   size_t remaining_items = 0;
   for (std::unique_ptr<WindowGrid>& window_grid : grid_list_) {
     if (IsNewOverviewAnimationsEnabled()) {
-      window_grid->SetWindowListAnimationStates(selected_item_,
-                                                OverviewTransition::kExit);
+      window_grid->SetWindowListAnimationStates(
+          selected_item_ && selected_item_->window_grid() == window_grid.get()
+              ? selected_item_
+              : nullptr,
+          OverviewTransition::kExit);
     }
     for (const auto& window_selector_item : window_grid->window_list())
       window_selector_item->RestoreWindow(/*reset_transform=*/true);

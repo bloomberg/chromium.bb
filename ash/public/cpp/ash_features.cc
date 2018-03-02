@@ -13,6 +13,9 @@ const base::Feature kDockedMagnifier{"DockedMagnifier",
 const base::Feature kKeyboardShortcutViewer{"KeyboardShortcutViewer",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kNewOverviewAnimations{"NewOverviewAnimations",
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
+
 const base::Feature kSystemTrayUnified{"SystemTrayUnified",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -22,6 +25,10 @@ bool IsDockedMagnifierEnabled() {
 
 bool IsKeyboardShortcutViewerEnabled() {
   return base::FeatureList::IsEnabled(kKeyboardShortcutViewer);
+}
+
+bool IsNewOverviewAnimationsEnabled() {
+  return base::FeatureList::IsEnabled(kNewOverviewAnimations);
 }
 
 bool IsSystemTrayUnifiedEnabled() {

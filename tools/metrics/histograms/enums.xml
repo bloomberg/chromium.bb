@@ -26850,7 +26850,6 @@ from previous Chrome versions.
   <int value="1007444341" label="enable-prefixed-encrypted-media"/>
   <int value="1015895665" label="drop-sync-credential:enabled"/>
   <int value="1017364362" label="VrIconInDaydreamHome:enabled"/>
-  <int value="1017488850" label="ash-enable-new-overview-animations"/>
   <int value="1018998019" label="memlog"/>
   <int value="1019623058" label="ash-enable-shelf-model-synchronization"/>
   <int value="1019857902"
@@ -26864,6 +26863,7 @@ from previous Chrome versions.
   <int value="1049885154" label="OfflinePagesPrefetching:disabled"/>
   <int value="1050048304" label="enable-font-cache-scaling"/>
   <int value="1050321458" label="new-profile-management"/>
+  <int value="1053743655" label="NewOverviewAnimations:enabled"/>
   <int value="1054910800" label="enable-timezone-tracking-option"/>
   <int value="1057887829" label="AutofillScanThemeDialog:disabled"/>
   <int value="1059007599" label="enable-gpu-appcontainer"/>
@@ -27254,6 +27254,7 @@ from previous Chrome versions.
   <int value="1960169775" label="NewPhotoPicker:disabled"/>
   <int value="1961425320" label="force-qtkit"/>
   <int value="1964816410" label="AndroidPayIntegrationV2:enabled"/>
+  <int value="1965976546" label="NewOverviewAnimations:disabled"/>
   <int value="1966730288" label="disable-threaded-compositing"/>
   <int value="1969604362" label="enable-pinch-virtual-viewport"/>
   <int value="1971964569" label="NewEncodeCpuLoadEstimator:disabled"/>
