@@ -44,7 +44,6 @@ class UpdateChecker {
                                const IdToComponentPtrMap& components,
                                const std::string& additional_attributes,
                                bool enabled_component_updates,
-                               bool is_foreground,
                                UpdateCheckCallback update_check_callback) = 0;
 
   static std::unique_ptr<UpdateChecker> Create(

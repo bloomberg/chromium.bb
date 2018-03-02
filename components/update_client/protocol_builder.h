@@ -19,6 +19,14 @@ namespace update_client {
 class Configurator;
 class PersistedData;
 
+// Creates the values for the DDOS extra request headers sent with the update
+// check. These headers include "X-GoogleUpdate-Updater",
+// "X-GoogleUpdate-AppId", and  "X-GoogleUpdate-Interactivity".
+std::map<std::string, std::string> BuildUpdateCheckExtraRequestHeaders(
+    scoped_refptr<Configurator> config,
+    const std::vector<std::string>& ids_checked,
+    bool is_foreground);
+
 // Builds an update check request for |components|. |additional_attributes| is
 // serialized as part of the <request> element of the request to customize it
 // with data that is not platform or component specific. For each |item|, a
@@ -114,14 +122,6 @@ std::string BuildProtocolRequest(
     const std::string& request_body,
     const std::string& additional_attributes,
     const std::unique_ptr<UpdaterState::Attributes>& updater_state_attributes);
-
-// Creates the values for the DDOS extra request headers sent with the update
-// check. These headers include "X-GoogleUpdate-Updater",
-// "X-GoogleUpdate-AppId", and  "X-GoogleUpdate-Interactivity".
-std::map<std::string, std::string> BuildUpdateCheckExtraRequestHeaders(
-    scoped_refptr<Configurator> config,
-    const std::vector<std::string>& ids,
-    bool is_foreground);
 
 }  // namespace update_client
 

@@ -116,7 +116,6 @@ void UpdateEngine::Update(bool is_foreground,
     DCHECK(update_context->components.at(id));
 
     auto& component = *update_context->components.at(id);
-    component.set_on_demand(update_context->is_foreground);
     component.set_crx_component(crx_component);
     component.set_previous_version(crx_component.version);
     component.set_previous_fp(crx_component.fingerprint);
@@ -168,7 +167,7 @@ void UpdateEngine::DoUpdateCheck(const UpdateContextIterator it) {
   update_context->update_checker->CheckForUpdates(
       update_context->session_id, update_context->ids,
       update_context->components, config_->ExtraRequestParams(),
-      update_context->enabled_component_updates, update_context->is_foreground,
+      update_context->enabled_component_updates,
       base::BindOnce(&UpdateEngine::UpdateCheckDone, base::Unretained(this),
                      it));
 }

@@ -98,20 +98,23 @@ void UpdateClientImpl::Install(const std::string& id,
 
   // Partially applies |callback| to OnTaskComplete, so this argument is
   // available when the task completes, along with the task itself.
-  // Install tasks are run concurrently and never queued up.
+  // Install tasks are run concurrently and never queued up. They are always
+  // considered foreground tasks.
+  constexpr bool kIsForeground = true;
   RunTask(std::make_unique<TaskUpdate>(
-      update_engine_.get(), true, ids, std::move(crx_data_callback),
+      update_engine_.get(), kIsForeground, ids, std::move(crx_data_callback),
       base::BindOnce(&UpdateClientImpl::OnTaskComplete, this,
                      std::move(callback))));
 }
 
 void UpdateClientImpl::Update(const std::vector<std::string>& ids,
                               CrxDataCallback crx_data_callback,
+                              bool is_foreground,
                               Callback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   auto task = std::make_unique<TaskUpdate>(
-      update_engine_.get(), false, ids, std::move(crx_data_callback),
+      update_engine_.get(), is_foreground, ids, std::move(crx_data_callback),
       base::BindOnce(&UpdateClientImpl::OnTaskComplete, this,
                      std::move(callback)));
 

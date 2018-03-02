@@ -349,9 +349,11 @@ class UpdateClient : public base::RefCounted<UpdateClient> {
   // is intended to be used for background updates of several CRXs. Overlapping
   // calls to this function result in a queuing behavior, and the execution
   // of each call is serialized. In addition, updates are always queued up when
-  // installs are running.
+  // installs are running. The |is_foreground| parameter must be set to true if
+  // the invocation of this function is a result of a user initiated update.
   virtual void Update(const std::vector<std::string>& ids,
                       CrxDataCallback crx_data_callback,
+                      bool is_foreground,
                       Callback callback) = 0;
 
   // Sends an uninstall ping for the CRX identified by |id| and |version|. The

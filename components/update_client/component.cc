@@ -180,6 +180,10 @@ std::string Component::session_id() const {
   return update_context_.session_id;
 }
 
+bool Component::is_foreground() const {
+  return update_context_.is_foreground;
+}
+
 void Component::Handle(CallbackHandleComplete callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(state_);
@@ -268,8 +272,8 @@ void Component::UpdateCheckComplete() {
 }
 
 bool Component::CanDoBackgroundDownload() const {
-  // On demand component updates are always downloaded in foreground.
-  return !on_demand_ && crx_component_.allows_background_download &&
+  // Foreground component updates are always downloaded in foreground.
+  return !is_foreground() && crx_component_.allows_background_download &&
          update_context_.config->EnabledBackgroundDownloader();
 }
 

@@ -5,6 +5,7 @@
 #include "extensions/browser/updater/update_service.h"
 
 #include <map>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
@@ -133,6 +134,7 @@ void UpdateService::StartUpdateCheck(
       extension_ids,
       base::BindOnce(&UpdateDataProvider::GetData, update_data_provider_,
                      std::move(update_data)),
+      false,
       base::BindOnce(&UpdateService::UpdateCheckComplete,
                      weak_ptr_factory_.GetWeakPtr(), extension_ids));
 }
