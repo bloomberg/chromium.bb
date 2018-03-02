@@ -30,6 +30,7 @@ issues]].
 - Minor updates to the Danish tables thanks to Bue Vester-Andersen
 - Fix back translation of numbers in Dutch, Finnish and Canadian
   French, thanks to Leonard de Ruijter.
+
 ** Other changes
 *** Improved documentation
 - Extend the documentation on multipass opcodes. Thanks to Dave Mielke
@@ -52,6 +53,8 @@ issues]].
   really implemented anyway
 - Support for the ~pass1Only~ flag has now been removed. Thanks to Bue
   Vester-Andersen.
+- The old UEB tables ~UEBC-g1.ctb~ and ~UEBC-g2.ctb~ have been removed
+  as the have been superseded by ~en-ueb-g1.ctb~ and ~en-ueb-g2.ctb~
 
 ** New, renamed or removed tables
 *** New
@@ -60,7 +63,8 @@ issues]].
 *** Renamed
 - mn-MN.utb -> mn-MN-g1.utb
 *** Removed
-None
+- UEBC-g1.ctb
+- UEBC-g2.ctb
 
 * Noteworthy changes in release 3.4.0 (2017-12-04)
 This release brings together a lot of work by lots of different
