@@ -1277,6 +1277,12 @@ aura::Window* WindowSelectorItem::GetOverviewWindowForMinimizedStateForTest() {
 void WindowSelectorItem::StartDrag() {
   window_grid_->SetSelectionWidgetVisibility(false);
 
+  // |transform_window_| handles hiding shadow and rounded edges mask while
+  // animating, and applies them after animation is complete. Prevent the shadow
+  // and rounded edges mask from showing up after dragging in the case the
+  // window is pressed while still animating.
+  transform_window_.CancelAnimationsListener();
+
   gfx::Rect scaled_bounds(target_bounds_);
   scaled_bounds.Inset(-target_bounds_.width() * kDragWindowScale,
                       -target_bounds_.height() * kDragWindowScale);

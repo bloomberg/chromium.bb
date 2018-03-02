@@ -530,6 +530,23 @@ void ScopedTransformOverviewWindow::EnsureVisible() {
   original_opacity_ = 1.f;
 }
 
+aura::Window*
+ScopedTransformOverviewWindow::GetOverviewWindowForMinimizedState() const {
+  return minimized_widget_ ? minimized_widget_->GetNativeWindow() : nullptr;
+}
+
+void ScopedTransformOverviewWindow::UpdateWindowDimensionsType() {
+  if (!IsNewOverviewUi())
+    return;
+
+  type_ = GetWindowDimensionsType(window_);
+  window_selector_bounds_.reset();
+}
+
+void ScopedTransformOverviewWindow::CancelAnimationsListener() {
+  StopObservingImplicitAnimations();
+}
+
 void ScopedTransformOverviewWindow::OnImplicitAnimationsCompleted() {
   // Add the mask which gives the window selector items rounded corners, and add
   // the shadow around the window.
@@ -547,19 +564,6 @@ void ScopedTransformOverviewWindow::OnImplicitAnimationsCompleted() {
   layer->SetMaskLayer(mask_->layer());
   selector_item_->SetShadowBounds(base::make_optional(GetTransformedBounds()));
   selector_item_->EnableBackdropIfNeeded();
-}
-
-aura::Window*
-ScopedTransformOverviewWindow::GetOverviewWindowForMinimizedState() const {
-  return minimized_widget_ ? minimized_widget_->GetNativeWindow() : nullptr;
-}
-
-void ScopedTransformOverviewWindow::UpdateWindowDimensionsType() {
-  if (!IsNewOverviewUi())
-    return;
-
-  type_ = GetWindowDimensionsType(window_);
-  window_selector_bounds_.reset();
 }
 
 void ScopedTransformOverviewWindow::CreateMirrorWindowForMinimizedState() {
