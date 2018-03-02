@@ -1,4 +1,5 @@
 include_rules = [
+  "+ash/public/cpp",
   "+ash/public/interfaces",
   "+components/captive_portal",
   "+components/login",

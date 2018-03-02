@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "ash/multi_profile_uma.h"
+#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/session_controller.mojom.h"
 #include "base/bind.h"
@@ -1022,6 +1023,15 @@ void ChromeUserManagerImpl::RemoveNonCryptohomeData(
   WallpaperControllerClient::Get()->RemoveUserWallpaper(account_id);
   GetUserImageManager(account_id)->DeleteUserImage();
   ExternalPrintersFactory::Get()->RemoveForUserId(account_id);
+  // TODO(tbarzic): Forward data removal request to ash::HammerDeviceHandler,
+  // instead of removing the prefs value here.
+  if (GetLocalState()->FindPreference(ash::prefs::kDetachableBaseDevices)) {
+    DictionaryPrefUpdate update(GetLocalState(),
+                                ash::prefs::kDetachableBaseDevices);
+    update->RemoveKey(account_id.HasAccountIdKey()
+                          ? account_id.GetAccountIdKey()
+                          : account_id.GetUserEmail());
+  }
 
   supervised_user_manager_->RemoveNonCryptohomeData(account_id.GetUserEmail());
 

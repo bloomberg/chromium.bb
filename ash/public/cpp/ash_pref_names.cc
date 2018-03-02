@@ -160,6 +160,10 @@ const char kTouchscreenEnabled[] = "events.touch_screen.enabled";
 // String pref storing the salt for the pin quick unlock mechanism.
 const char kQuickUnlockPinSalt[] = "quick_unlock.pin.salt";
 
+// Dictionary prefs in local state that keeps information about detachable
+// bases - for exmaple the last used base per user.
+const char kDetachableBaseDevices[] = "ash.detachable_base.devices";
+
 // NOTE: New prefs should start with the "ash." prefix. Existing prefs moved
 // into this file should not be renamed, since they may be synced.
 

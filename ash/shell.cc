@@ -21,6 +21,7 @@
 #include "ash/ash_constants.h"
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/cast_config_controller.h"
+#include "ash/detachable_base/detachable_base_handler.h"
 #include "ash/display/ash_display_controller.h"
 #include "ash/display/cursor_window_controller.h"
 #include "ash/display/display_color_manager_chromeos.h"
@@ -377,6 +378,7 @@ void Shell::RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   PaletteTray::RegisterLocalStatePrefs(registry);
   WallpaperController::RegisterLocalStatePrefs(registry);
   BluetoothPowerController::RegisterLocalStatePrefs(registry);
+  DetachableBaseHandler::RegisterPrefs(registry);
 }
 
 // static
@@ -852,6 +854,9 @@ Shell::~Shell() {
   // TouchDevicesController depends on the PrefService and must be destructed
   // before it.
   touch_devices_controller_ = nullptr;
+  // DetachableBaseHandler depends on the PrefService and must be destructed
+  // before it.
+  detachable_base_handler_.reset();
 
   local_state_.reset();
   shell_delegate_.reset();
@@ -873,6 +878,7 @@ void Shell::Init(ui::ContextFactory* context_factory,
     night_light_controller_ = std::make_unique<NightLightController>();
   touch_devices_controller_ = std::make_unique<TouchDevicesController>();
   bluetooth_power_controller_ = std::make_unique<BluetoothPowerController>();
+  detachable_base_handler_ = std::make_unique<DetachableBaseHandler>(this);
 
   // Connector can be null in tests.
   if (shell_delegate_->GetShellConnector()) {
