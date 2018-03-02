@@ -11,7 +11,7 @@ namespace device {
 
 namespace {
 
-void MapperLogitechDualAction(const Gamepad& input, Gamepad* mapped) {
+void MapperLogitechDInput(const Gamepad& input, Gamepad* mapped) {
   *mapped = input;
   mapped->buttons[BUTTON_INDEX_PRIMARY] = input.buttons[1];
   mapped->buttons[BUTTON_INDEX_SECONDARY] = input.buttons[2];
@@ -19,7 +19,9 @@ void MapperLogitechDualAction(const Gamepad& input, Gamepad* mapped) {
   mapped->axes[AXIS_INDEX_RIGHT_STICK_Y] = input.axes[5];
   DpadFromAxis(mapped, input.axes[9]);
 
-  mapped->buttons_length = BUTTON_INDEX_COUNT;
+  // The Logitech button (BUTTON_INDEX_META) is not accessible through the
+  // device's D-mode.
+  mapped->buttons_length = BUTTON_INDEX_COUNT - 1;
   mapped->axes_length = AXIS_INDEX_COUNT;
 }
 
@@ -234,16 +236,18 @@ struct MappingData {
   GamepadStandardMappingFunction function;
 } AvailableMappings[] = {
     // http://www.linux-usb.org/usb.ids
-    {"0079", "0011", Mapper2Axes8Keys},          // 2Axes 8Keys Game Pad
-    {"046d", "c216", MapperLogitechDualAction},  // Logitech DualAction
-    {"054c", "05c4", MapperDualshock4},          // Playstation Dualshock 4
-    {"054c", "09cc", MapperDualshock4},          // Dualshock 4 (PS4 Slim)
-    {"054c", "0ba0", MapperDualshock4},          // Dualshock 4 USB receiver
-    {"0583", "2060", MapperIBuffalo},            // iBuffalo Classic
-    {"0955", "7210", MapperNvShield},            // Nvidia Shield gamepad
-    {"0b05", "4500", MapperADT1},                // Nexus Player Controller
-    {"1532", "0900", MapperRazerServal},         // Razer Serval Controller
-    {"18d1", "2c40", MapperADT1},                // ADT-1 Controller
+    {"0079", "0011", Mapper2Axes8Keys},      // 2Axes 8Keys Game Pad
+    {"046d", "c216", MapperLogitechDInput},  // Logitech F310, D-mode
+    {"046d", "c218", MapperLogitechDInput},  // Logitech F510, D-mode
+    {"046d", "c219", MapperLogitechDInput},  // Logitech F710, D-mode
+    {"054c", "05c4", MapperDualshock4},      // Playstation Dualshock 4
+    {"054c", "09cc", MapperDualshock4},      // Dualshock 4 (PS4 Slim)
+    {"054c", "0ba0", MapperDualshock4},      // Dualshock 4 USB receiver
+    {"0583", "2060", MapperIBuffalo},        // iBuffalo Classic
+    {"0955", "7210", MapperNvShield},        // Nvidia Shield gamepad
+    {"0b05", "4500", MapperADT1},            // Nexus Player Controller
+    {"1532", "0900", MapperRazerServal},     // Razer Serval Controller
+    {"18d1", "2c40", MapperADT1},            // ADT-1 Controller
     {"20d6", "6271", MapperMogaPro},         // Moga Pro Controller (HID mode)
     {"2378", "1008", MapperOnLiveWireless},  // OnLive Controller (Bluetooth)
     {"2378", "100a", MapperOnLiveWireless},  // OnLive Controller (Wired)
