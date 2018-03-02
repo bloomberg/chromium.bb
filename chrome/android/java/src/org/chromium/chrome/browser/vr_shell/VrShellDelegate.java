@@ -114,8 +114,9 @@ public class VrShellDelegate
     private static final String VR_CORE_MARKET_URI =
             "market://details?id=" + VrCoreVersionChecker.VR_CORE_PACKAGE_ID;
 
+    private static final String GVR_KEYBOARD_PACKAGE_ID = "com.google.android.vr.inputmethod";
     private static final String GVR_KEYBOARD_MARKET_URI =
-            "market://details?id=com.google.android.vr.inputmethod";
+            "market://details?id=" + GVR_KEYBOARD_PACKAGE_ID;
 
     // This value is intentionally probably overkill. This is the time we need to wait from when
     // Chrome is resumed, to when Chrome actually renders a black frame, so that we can cancel the
@@ -136,6 +137,7 @@ public class VrShellDelegate
 
     private @VrSupportLevel int mVrSupportLevel;
     private int mCachedVrCorePackageVersion;
+    private int mCachedGvrKeyboardPackageVersion;
 
     // How often to prompt the user to enter VR feedback.
     private int mFeedbackFrequency;
@@ -328,6 +330,7 @@ public class VrShellDelegate
         }
         // Handles the result of requesting to update GVR Keyboard.
         if (requestCode == GVR_KEYBOARD_UPDATE_RESULT) {
+            if (sInstance != null) sInstance.onGvrKeyboardMaybeUpdated();
             return true;
         }
         return false;
@@ -786,6 +789,11 @@ public class VrShellDelegate
                 ContextUtils.getApplicationContext(), VrCoreVersionChecker.VR_CORE_PACKAGE_ID);
     }
 
+    private int getGvrKeyboardPackageVersion() {
+        return PackageUtils.getPackageVersion(
+                ContextUtils.getApplicationContext(), GVR_KEYBOARD_PACKAGE_ID);
+    }
+
     /**
      * Updates mVrSupportLevel to the correct value. isVrCoreCompatible might return different value
      * at runtime.
@@ -818,8 +826,12 @@ public class VrShellDelegate
     }
 
     private void onVrServicesMaybeUpdated() {
-        int vrCorePackageVersion = getVrCorePackageVersion();
-        if (mCachedVrCorePackageVersion == vrCorePackageVersion) return;
+        if (mCachedVrCorePackageVersion == getVrCorePackageVersion()) return;
+        ApplicationLifetime.terminate(true);
+    }
+
+    private void onGvrKeyboardMaybeUpdated() {
+        if (mCachedGvrKeyboardPackageVersion == getGvrKeyboardPackageVersion()) return;
         ApplicationLifetime.terminate(true);
     }
 
@@ -1785,6 +1797,7 @@ public class VrShellDelegate
     }
 
     /* package */ void promptForKeyboardUpdate() {
+        mCachedGvrKeyboardPackageVersion = getGvrKeyboardPackageVersion();
         mActivity.startActivityForResult(
                 new Intent(Intent.ACTION_VIEW, Uri.parse(GVR_KEYBOARD_MARKET_URI)),
                 GVR_KEYBOARD_UPDATE_RESULT);
