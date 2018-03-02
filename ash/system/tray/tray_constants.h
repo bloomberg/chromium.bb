@@ -8,6 +8,7 @@
 #include "ash/ash_export.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace ash {
 
@@ -132,10 +133,19 @@ constexpr SkColor kUnifiedMenuIconColorDisabled =
     SkColorSetA(kUnifiedMenuIconColor, 0xa3);
 constexpr SkColor kUnifiedMenuButtonColor =
     SkColorSetA(kUnifiedMenuIconColor, 0x14);
+constexpr SkColor kUnifiedMenuButtonColorActive =
+    SkColorSetRGB(0x25, 0x81, 0xdf);
 
 constexpr int kUnifiedTopShortcutSpacing = 16;
+constexpr gfx::Insets kUnifiedTopShortcutPadding(0, 16);
 
-constexpr gfx::Insets kUnifiedTopShortcutPadding(0, 16, 16, 16);
+// Constants used in FeaturePodsView of UnifiedSystemTray.
+constexpr int kUnifiedFeaturePodIconSize = 48;
+constexpr gfx::Size kUnifiedFeaturePodSize(64, 88);
+constexpr int kUnifiedFeaturePodVerticalPadding = 28;
+constexpr int kUnifiedFeaturePodHorizontalSidePadding = 52;
+constexpr int kUnifiedFeaturePodHorizontalMiddlePadding = 32;
+constexpr int kUnifiedFeaturePodItemsInRow = 3;
 
 }  // namespace ash
 
