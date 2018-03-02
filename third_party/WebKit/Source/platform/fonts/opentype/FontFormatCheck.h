@@ -21,7 +21,13 @@ class FontFormatCheck {
   bool IsCff2OutlineFont();
 
   // Still needed in FontCustomPlatformData.
-  static bool IsVariableFont(sk_sp<SkTypeface>);
+  enum class VariableFontSubType {
+    kNotVariable,
+    kVariableTrueType,
+    kVariableCFF2
+  };
+
+  static VariableFontSubType ProbeVariableFont(sk_sp<SkTypeface>);
 
  private:
   // hb-common.h: typedef uint32_t hb_tag_t;

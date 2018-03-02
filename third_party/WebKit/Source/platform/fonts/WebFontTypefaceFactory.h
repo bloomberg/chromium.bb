@@ -26,6 +26,7 @@ class WebFontTypefaceFactory {
   // https://bugs.chromium.org/p/skia/issues/detail?id=7121
   static sk_sp<SkFontMgr> FontManagerForVariations();
   static sk_sp<SkFontMgr> FontManagerForSbix();
+  static sk_sp<SkFontMgr> FreeTypeFontManager();
 
  private:
   // These values are written to logs.  New enum values can be added, but
@@ -41,7 +42,6 @@ class WebFontTypefaceFactory {
   };
 
   static sk_sp<SkFontMgr> DefaultFontManager();
-  static sk_sp<SkFontMgr> FreeTypeFontManager();
 
   static void ReportWebFontInstantiationResult(WebFontInstantiationResult);
 };
