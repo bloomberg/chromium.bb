@@ -8,7 +8,7 @@ import android.content.Context;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.SystemClock;
-import android.view.ViewConfiguration;
+import android.support.annotation.IntDef;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.animation.Interpolator;
@@ -44,6 +44,8 @@ import org.chromium.ui.interpolators.BakedBezierInterpolator;
 import org.chromium.ui.resources.ResourceManager;
 
 import java.io.Serializable;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -59,6 +61,13 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
         STACK_SNAP,
         STACK_OFFSET_Y_PERCENT,
     }
+
+    @IntDef({DRAG_DIRECTION_NONE, DRAG_DIRECTION_HORIZONTAL, DRAG_DIRECTION_VERTICAL})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface DragDirection {}
+    private static final int DRAG_DIRECTION_NONE = 0;
+    private static final int DRAG_DIRECTION_HORIZONTAL = 1;
+    private static final int DRAG_DIRECTION_VERTICAL = 2;
 
     private enum SwipeMode { NONE, SEND_TO_STACK, SWITCH_STACK }
 
@@ -79,7 +88,6 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
     private static final int FLING_MIN_DURATION = 100; // ms
 
     private static final float THRESHOLD_TO_SWITCH_STACK = 0.4f;
-    private static final float THRESHOLD_TIME_TO_SWITCH_STACK_INPUT_MODE = 200;
     private static final int NEW_TAB_ANIMATION_DURATION_MS = 300;
 
     public static final int MODERN_TOP_MARGIN_DP = 16;
@@ -117,12 +125,13 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
     private float mInnerMarginPercent;
     private float mStackOffsetYPercent;
 
+    @DragDirection
+    private int mDragDirection = DRAG_DIRECTION_NONE;
+
     private SwipeMode mInputMode = SwipeMode.NONE;
     private float mLastOnDownX;
     private float mLastOnDownY;
     private long mLastOnDownTimeStamp;
-    private final float mMinShortPressThresholdSqr; // Computed from Android ViewConfiguration
-    private final float mMinDirectionThreshold; // Computed from Android ViewConfiguration
 
     // Pre-allocated temporary arrays that store id of visible tabs.
     // They can be used to call populatePriorityVisibilityList.
@@ -165,10 +174,10 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
         @Override
         public void onDown(float x, float y, boolean fromMouse, int buttons) {
             long time = time();
+            mDragDirection = DRAG_DIRECTION_NONE;
             mLastOnDownX = x;
             mLastOnDownY = y;
             mLastOnDownTimeStamp = time;
-            mInputMode = computeInputMode(time, x, y, 0, 0);
             mStacks.get(getTabStackIndex()).onDown(time);
         }
 
@@ -184,6 +193,9 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
             float amountX = dx;
             float amountY = dy;
             mInputMode = computeInputMode(time, x, y, amountX, amountY);
+
+            if (mDragDirection == DRAG_DIRECTION_HORIZONTAL) amountY = 0;
+            if (mDragDirection == DRAG_DIRECTION_VERTICAL) amountX = 0;
 
             if (oldInputMode == SwipeMode.SEND_TO_STACK && mInputMode == SwipeMode.SWITCH_STACK) {
                 mStacks.get(getTabStackIndex()).onUpOrCancel(time);
@@ -278,10 +290,6 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
 
         mGestureHandler = new StackLayoutGestureHandler();
         mGestureEventFilter = new GestureEventFilter(context, mGestureHandler);
-        final ViewConfiguration configuration = ViewConfiguration.get(context);
-        mMinDirectionThreshold = configuration.getScaledTouchSlop();
-        mMinShortPressThresholdSqr =
-                configuration.getScaledPagingTouchSlop() * configuration.getScaledPagingTouchSlop();
 
         mMinMaxInnerMargin = (int) (MIN_INNER_MARGIN_PERCENT_DP + 0.5);
         mFlingSpeed = FLING_SPEED_DP;
@@ -790,37 +798,45 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
     private SwipeMode computeInputMode(long time, float x, float y, float dx, float dy) {
         if (!mStacks.get(1).isDisplayable()) return SwipeMode.SEND_TO_STACK;
         int currentIndex = getTabStackIndex();
-        float relativeX = mLastOnDownX - (x + dx);
-        float relativeY = mLastOnDownY - (y + dy);
-        float distanceToDownSqr = dx * dx + dy * dy;
-        float switchDelta = getOrientation() == Orientation.PORTRAIT ? relativeX : relativeY;
-        float otherDelta = getOrientation() == Orientation.PORTRAIT ? relativeY : relativeX;
 
-        // Dragging in the opposite direction of the stack switch
-        if (distanceToDownSqr > mMinDirectionThreshold * mMinDirectionThreshold
-                && Math.abs(otherDelta) > Math.abs(switchDelta)) {
-            return SwipeMode.SEND_TO_STACK;
-        }
-        // Dragging in a direction the stack cannot switch
-        if (Math.abs(switchDelta) > mMinDirectionThreshold) {
-            if ((currentIndex == 0) ^ (switchDelta > 0)
-                    ^ (getOrientation() == Orientation.PORTRAIT
-                              && LocalizationUtils.isLayoutRtl())) {
-                return SwipeMode.SEND_TO_STACK;
+        // When a drag starts, lock the drag into being either horizontal or vertical until the
+        // next touch down. The deltas here are already verified by StackLayoutGestureHandler as
+        // being above some threshold so that we know we're handling a drag or fling and not a long
+        // press.
+        if (mDragDirection == DRAG_DIRECTION_NONE) {
+            if (Math.abs(dx) > Math.abs(dy)) {
+                mDragDirection = DRAG_DIRECTION_HORIZONTAL;
             } else {
-                return SwipeMode.SWITCH_STACK;
+                mDragDirection = DRAG_DIRECTION_VERTICAL;
             }
         }
 
-        // Not moving the finger
-        if (time - mLastOnDownTimeStamp > THRESHOLD_TIME_TO_SWITCH_STACK_INPUT_MODE) {
+        if ((mDragDirection == DRAG_DIRECTION_VERTICAL)
+                ^ (getOrientation() == Orientation.LANDSCAPE)) {
             return SwipeMode.SEND_TO_STACK;
         }
-        // Dragging fast
-        if (distanceToDownSqr > mMinShortPressThresholdSqr) {
+
+        float relativeX = mLastOnDownX - (x + dx);
+        float relativeY = mLastOnDownY - (y + dy);
+        float switchDelta = getOrientation() == Orientation.PORTRAIT ? relativeX : relativeY;
+
+        // In LTR portrait mode, the first stack can be swiped to the left to switch to the second
+        // stack, and the second stack can be swiped to the right to switch to the first stack. We
+        // reverse the check for RTL portrait mode because increasing the stack index corresponds
+        // to a negative switchDelta.
+        //
+        // Landscape mode is like LTR portrait mode (increasing the stack index corresponds to a
+        // positive switchDelta).
+        final boolean isRtlPortraitMode =
+                (getOrientation() == Orientation.PORTRAIT && LocalizationUtils.isLayoutRtl());
+        if ((currentIndex == 0) ^ (switchDelta > 0) ^ isRtlPortraitMode) {
+            // Dragging in a direction the stack cannot switch. Pass the drag to the Stack, which
+            // will treat it as intending to discard a tab.
+            return SwipeMode.SEND_TO_STACK;
+        } else {
+            // Interpret the drag as intending to switch between tab stacks.
             return SwipeMode.SWITCH_STACK;
         }
-        return SwipeMode.NONE;
     }
 
     class PortraitViewport {
