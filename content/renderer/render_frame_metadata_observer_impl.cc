@@ -22,20 +22,32 @@ void RenderFrameMetadataObserverImpl::BindToCurrentThread() {
 }
 
 void RenderFrameMetadataObserverImpl::OnRenderFrameSubmission(
-    const cc::RenderFrameMetadata& metadata) {
-  bool metadata_changed = last_render_frame_metadata_ != metadata;
-  last_render_frame_metadata_ = metadata;
-
+    cc::RenderFrameMetadata metadata) {
   if (!render_frame_metadata_observer_client_)
     return;
 
-  if (report_all_frame_submissions_for_testing_enabled_)
+  // By default only report metadata changes for fields which have a low
+  // frequency of change. However if there are changes in high frequency fields
+  // these can be reported while testing is enabled.
+  bool send_metadata = false;
+  if (report_all_frame_submissions_for_testing_enabled_) {
     render_frame_metadata_observer_client_->OnFrameSubmissionForTesting();
+    send_metadata = last_render_frame_metadata_ != metadata;
+  } else {
+    // Sending |root_scroll_offset| outside of tests would leave the browser
+    // process with out of date information. It is an optional parameter which
+    // we clear here.
+    metadata.root_scroll_offset = base::nullopt;
+    send_metadata = cc::RenderFrameMetadata::HasAlwaysUpdateMetadataChanged(
+        last_render_frame_metadata_, metadata);
+  }
 
-  if (metadata_changed) {
+  if (send_metadata) {
     render_frame_metadata_observer_client_->OnRenderFrameMetadataChanged(
         metadata);
   }
+
+  last_render_frame_metadata_ = metadata;
 }
 
 void RenderFrameMetadataObserverImpl::ReportAllFrameSubmissionsForTesting(

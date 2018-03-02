@@ -15,6 +15,13 @@ RenderFrameMetadata::RenderFrameMetadata(RenderFrameMetadata&& other) = default;
 
 RenderFrameMetadata::~RenderFrameMetadata() {}
 
+bool RenderFrameMetadata::HasAlwaysUpdateMetadataChanged(
+    const RenderFrameMetadata& rfm1,
+    const RenderFrameMetadata& rfm2) {
+  // TODO(jonross): as low frequency fields are added, update this method.
+  return false;
+}
+
 RenderFrameMetadata& RenderFrameMetadata::operator=(
     const RenderFrameMetadata&) = default;
 

@@ -5,6 +5,7 @@
 #ifndef CONTENT_COMMON_RENDER_FRAME_METADATA_STRUCT_TRAITS_H_
 #define CONTENT_COMMON_RENDER_FRAME_METADATA_STRUCT_TRAITS_H_
 
+#include "base/optional.h"
 #include "cc/trees/render_frame_metadata.h"
 #include "content/common/render_frame_metadata.mojom-shared.h"
 
@@ -13,7 +14,7 @@ namespace mojo {
 template <>
 struct StructTraits<content::mojom::RenderFrameMetadataDataView,
                     cc::RenderFrameMetadata> {
-  static gfx::Vector2dF root_scroll_offset(
+  static base::Optional<gfx::Vector2dF> root_scroll_offset(
       const cc::RenderFrameMetadata& metadata) {
     return metadata.root_scroll_offset;
   }

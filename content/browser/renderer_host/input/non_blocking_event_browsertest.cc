@@ -143,8 +143,12 @@ class NonBlockingEventBrowserTest : public ContentBrowserTest {
 
     // Expect that the compositor scrolled at least one pixel while the
     // main thread was in a busy loop.
-    while (observer.LastRenderFrameMetadata().root_scroll_offset.y() <= 0)
+    gfx::Vector2dF default_scroll_offset;
+    while (observer.LastRenderFrameMetadata()
+               .root_scroll_offset.value_or(default_scroll_offset)
+               .y() <= 0) {
       observer.WaitForMetadataChange();
+    }
   }
 
   void DoTouchScroll() {
@@ -172,8 +176,12 @@ class NonBlockingEventBrowserTest : public ContentBrowserTest {
 
     // Expect that the compositor scrolled at least one pixel while the
     // main thread was in a busy loop.
-    while (observer.LastRenderFrameMetadata().root_scroll_offset.y() <= 0)
+    gfx::Vector2dF default_scroll_offset;
+    while (observer.LastRenderFrameMetadata()
+               .root_scroll_offset.value_or(default_scroll_offset)
+               .y() <= 0) {
       observer.WaitForMetadataChange();
+    }
   }
 
  private:

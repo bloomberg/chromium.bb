@@ -32,8 +32,7 @@ class RenderFrameMetadataObserverImpl
 
   // cc::RenderFrameMetadataObserver:
   void BindToCurrentThread() override;
-  void OnRenderFrameSubmission(
-      const cc::RenderFrameMetadata& metadata) override;
+  void OnRenderFrameSubmission(cc::RenderFrameMetadata metadata) override;
 
   // mojom::RenderFrameMetadataObserver:
   void ReportAllFrameSubmissionsForTesting(bool enabled) override;
