@@ -73,7 +73,6 @@ static INLINE int av1_get_pred_context_seg_id(const MACROBLOCKD *xd) {
   return above_sip + left_sip;
 }
 
-#if CONFIG_JNT_COMP
 static INLINE int get_comp_index_context(const AV1_COMMON *cm,
                                          const MACROBLOCKD *xd) {
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
@@ -137,7 +136,6 @@ static INLINE int get_comp_group_idx_context(const MACROBLOCKD *xd) {
 
   return above_ctx + left_ctx;
 }
-#endif  // CONFIG_JNT_COMP
 
 static INLINE aom_cdf_prob *av1_get_pred_cdf_seg_id(
     struct segmentation_probs *segp, const MACROBLOCKD *xd) {

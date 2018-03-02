@@ -680,7 +680,6 @@ void av1_convolve_2d_copy_sr_sse2(const uint8_t *src, int src_stride,
   }
 }
 
-#if CONFIG_JNT_COMP
 void av1_jnt_convolve_2d_copy_sse2(const uint8_t *src, int src_stride,
                                    uint8_t *dst0, int dst_stride0, int w, int h,
                                    InterpFilterParams *filter_params_x,
@@ -908,4 +907,3 @@ void av1_jnt_convolve_2d_copy_sse2(const uint8_t *src, int src_stride,
     }
   }
 }
-#endif  // CONFIG_JNT_COMP

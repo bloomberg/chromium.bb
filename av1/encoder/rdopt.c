@@ -5245,9 +5245,7 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
                        // found for the 'other' reference frame is factored in.
     const int plane = 0;
     ConvolveParams conv_params = get_conv_params(!id, 0, plane, xd->bd);
-#if CONFIG_JNT_COMP
     conv_params.use_jnt_comp_avg = 0;
-#endif
     WarpTypesAllowed warp_types;
     warp_types.global_warp_allowed = is_global[!id];
     warp_types.local_warp_allowed = mbmi->motion_mode == WARPED_CAUSAL;
@@ -5256,10 +5254,8 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
     ref_yv12[0] = xd->plane[plane].pre[0];
     ref_yv12[1] = xd->plane[plane].pre[1];
 
-// Get the prediction block from the 'other' reference frame.
-#if CONFIG_JNT_COMP
+    // Get the prediction block from the 'other' reference frame.
     InterpFilters interp_filters = EIGHTTAP_REGULAR;
-#endif  // CONFIG_JNT_COMP
 
     // Since we have scaled the reference frames to match the size of the
     // current frame we must use a unit scaling factor during mode selection.
@@ -5267,34 +5263,22 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
       second_pred = CONVERT_TO_BYTEPTR(second_pred_alloc_16);
       av1_highbd_build_inter_predictor(
           ref_yv12[!id].buf, ref_yv12[!id].stride, second_pred, pw,
-          &frame_mv[refs[!id]].as_mv,
-#if CONFIG_JNT_COMP
-          &cm->sf_identity, pw, ph, 0, interp_filters,
-#else
-          &cm->sf_identity, pw, ph, 0, mbmi->interp_filters,
-#endif  // CONFIG_JNT_COMP
-          &warp_types, p_col, p_row, plane, MV_PRECISION_Q3, mi_col * MI_SIZE,
-          mi_row * MI_SIZE, xd);
+          &frame_mv[refs[!id]].as_mv, &cm->sf_identity, pw, ph, 0,
+          interp_filters, &warp_types, p_col, p_row, plane, MV_PRECISION_Q3,
+          mi_col * MI_SIZE, mi_row * MI_SIZE, xd);
     } else {
       second_pred = (uint8_t *)second_pred_alloc_16;
       av1_build_inter_predictor(
           ref_yv12[!id].buf, ref_yv12[!id].stride, second_pred, pw,
-          &frame_mv[refs[!id]].as_mv,
-#if CONFIG_JNT_COMP
-          &cm->sf_identity, pw, ph, &conv_params, interp_filters,
-#else
-          &cm->sf_identity, pw, ph, &conv_params, mbmi->interp_filters,
-#endif  // CONFIG_JNT_COMP
-          &warp_types, p_col, p_row, plane, !id, MV_PRECISION_Q3,
-          mi_col * MI_SIZE, mi_row * MI_SIZE, xd);
+          &frame_mv[refs[!id]].as_mv, &cm->sf_identity, pw, ph, &conv_params,
+          interp_filters, &warp_types, p_col, p_row, plane, !id,
+          MV_PRECISION_Q3, mi_col * MI_SIZE, mi_row * MI_SIZE, xd);
     }
 
-#if CONFIG_JNT_COMP
     const int order_idx = id != 0;
     av1_jnt_comp_weight_assign(cm, mbmi, order_idx, &xd->jcp_param.fwd_offset,
                                &xd->jcp_param.bck_offset,
                                &xd->jcp_param.use_jnt_comp_avg, 1);
-#endif  // CONFIG_JNT_COMP
 
     // Do compound motion search on the current reference frame.
     if (id) xd->plane[plane].pre[0] = ref_yv12[id];
@@ -5869,11 +5853,9 @@ static void build_second_inter_pred(const AV1_COMP *cpi, MACROBLOCK *x,
         !ref_idx, MV_PRECISION_Q3, mi_col * MI_SIZE, mi_row * MI_SIZE, xd);
   }
 
-#if CONFIG_JNT_COMP
   av1_jnt_comp_weight_assign(cm, mbmi, 0, &xd->jcp_param.fwd_offset,
                              &xd->jcp_param.bck_offset,
                              &xd->jcp_param.use_jnt_comp_avg, 1);
-#endif  // CONFIG_JNT_COMP
 
   if (scaled_ref_frame) {
     // Restore the prediction frame pointers to their unscaled versions.
@@ -7347,10 +7329,8 @@ static int64_t handle_inter_mode(
 
   int compmode_interinter_cost = 0;
   mbmi->interinter_compound_type = COMPOUND_AVERAGE;
-#if CONFIG_JNT_COMP
   mbmi->comp_group_idx = 0;
   mbmi->compound_idx = 1;
-#endif
   if (mbmi->ref_frame[1] == INTRA_FRAME) mbmi->ref_frame[1] = NONE_FRAME;
 
 #if CONFIG_OPT_REF_MV
@@ -7385,7 +7365,6 @@ static int64_t handle_inter_mode(
   const int masked_compound_used =
       is_any_masked_compound_used(bsize) && cm->allow_masked_compound;
   int64_t ret_val = INT64_MAX;
-#if CONFIG_JNT_COMP
   const RD_STATS backup_rd_stats = *rd_stats;
   const RD_STATS backup_rd_stats_y = *rd_stats_y;
   const RD_STATS backup_rd_stats_uv = *rd_stats_uv;
@@ -7420,37 +7399,25 @@ static int64_t handle_inter_mode(
         rd_stats->rate += x->comp_group_idx_cost[comp_group_idx_ctx][0];
       rd_stats->rate += x->comp_idx_cost[comp_index_ctx][0];
     }
-#endif  // CONFIG_JNT_COMP
 
     if (have_newmv_in_inter_mode(this_mode)) {
       ret_val = handle_newmv(cpi, x, bsize, mode_mv, mi_row, mi_col, &rate_mv,
                              single_newmv, args);
-#if CONFIG_JNT_COMP
       if (ret_val != 0) {
         early_terminate = INT64_MAX;
         continue;
       } else {
         rd_stats->rate += rate_mv;
       }
-#else
-    if (ret_val != 0)
-      return ret_val;
-    else
-      rd_stats->rate += rate_mv;
-#endif  // CONFIG_JNT_COMP
     }
     for (i = 0; i < is_comp_pred + 1; ++i) {
       cur_mv[i] = frame_mv[refs[i]];
       // Clip "next_nearest" so that it does not extend to far out of image
       if (this_mode != NEWMV) clamp_mv2(&cur_mv[i].as_mv, xd);
-#if CONFIG_JNT_COMP
       if (mv_check_bounds(&x->mv_limits, &cur_mv[i].as_mv)) {
         early_terminate = INT64_MAX;
         continue;
       }
-#else
-    if (mv_check_bounds(&x->mv_limits, &cur_mv[i].as_mv)) return INT64_MAX;
-#endif  // CONFIG_JNT_COMP
       mbmi->mv[i].as_int = cur_mv[i].as_int;
     }
 
@@ -7461,14 +7428,10 @@ static int64_t handle_inter_mode(
 
         for (i = 0; i < 2; ++i) {
           clamp_mv2(&cur_mv[i].as_mv, xd);
-#if CONFIG_JNT_COMP
           if (mv_check_bounds(&x->mv_limits, &cur_mv[i].as_mv)) {
             early_terminate = INT64_MAX;
             continue;
           }
-#else
-        if (mv_check_bounds(&x->mv_limits, &cur_mv[i].as_mv)) return INT64_MAX;
-#endif  // CONFIG_JNT_COMP
           mbmi->mv[i].as_int = cur_mv[i].as_int;
         }
       }
@@ -7482,17 +7445,13 @@ static int64_t handle_inter_mode(
         lower_mv_precision(&cur_mv[0].as_mv, cm->allow_high_precision_mv,
                            cm->cur_frame_force_integer_mv);
 #else
-      lower_mv_precision(&cur_mv[0].as_mv, cm->allow_high_precision_mv);
+        lower_mv_precision(&cur_mv[0].as_mv, cm->allow_high_precision_mv);
 #endif
         clamp_mv2(&cur_mv[0].as_mv, xd);
-#if CONFIG_JNT_COMP
         if (mv_check_bounds(&x->mv_limits, &cur_mv[0].as_mv)) {
           early_terminate = INT64_MAX;
           continue;
         }
-#else
-      if (mv_check_bounds(&x->mv_limits, &cur_mv[0].as_mv)) return INT64_MAX;
-#endif  // CONFIG_JNT_COMP
         mbmi->mv[0].as_int = cur_mv[0].as_int;
       }
 
@@ -7503,17 +7462,13 @@ static int64_t handle_inter_mode(
         lower_mv_precision(&cur_mv[1].as_mv, cm->allow_high_precision_mv,
                            cm->cur_frame_force_integer_mv);
 #else
-      lower_mv_precision(&cur_mv[1].as_mv, cm->allow_high_precision_mv);
+        lower_mv_precision(&cur_mv[1].as_mv, cm->allow_high_precision_mv);
 #endif
         clamp_mv2(&cur_mv[1].as_mv, xd);
-#if CONFIG_JNT_COMP
         if (mv_check_bounds(&x->mv_limits, &cur_mv[1].as_mv)) {
           early_terminate = INT64_MAX;
           continue;
         }
-#else
-      if (mv_check_bounds(&x->mv_limits, &cur_mv[1].as_mv)) return INT64_MAX;
-#endif  // CONFIG_JNT_COMP
         mbmi->mv[1].as_int = cur_mv[1].as_int;
       }
     }
@@ -7527,17 +7482,13 @@ static int64_t handle_inter_mode(
         lower_mv_precision(&cur_mv[0].as_mv, cm->allow_high_precision_mv,
                            cm->cur_frame_force_integer_mv);
 #else
-      lower_mv_precision(&cur_mv[0].as_mv, cm->allow_high_precision_mv);
+        lower_mv_precision(&cur_mv[0].as_mv, cm->allow_high_precision_mv);
 #endif
         clamp_mv2(&cur_mv[0].as_mv, xd);
-#if CONFIG_JNT_COMP
         if (mv_check_bounds(&x->mv_limits, &cur_mv[0].as_mv)) {
           early_terminate = INT64_MAX;
           continue;
         }
-#else
-      if (mv_check_bounds(&x->mv_limits, &cur_mv[0].as_mv)) return INT64_MAX;
-#endif  // CONFIG_JNT_COMP
         mbmi->mv[0].as_int = cur_mv[0].as_int;
       }
 
@@ -7548,17 +7499,13 @@ static int64_t handle_inter_mode(
         lower_mv_precision(&cur_mv[1].as_mv, cm->allow_high_precision_mv,
                            cm->cur_frame_force_integer_mv);
 #else
-      lower_mv_precision(&cur_mv[1].as_mv, cm->allow_high_precision_mv);
+        lower_mv_precision(&cur_mv[1].as_mv, cm->allow_high_precision_mv);
 #endif
         clamp_mv2(&cur_mv[1].as_mv, xd);
-#if CONFIG_JNT_COMP
         if (mv_check_bounds(&x->mv_limits, &cur_mv[1].as_mv)) {
           early_terminate = INT64_MAX;
           continue;
         }
-#else
-      if (mv_check_bounds(&x->mv_limits, &cur_mv[1].as_mv)) return INT64_MAX;
-#endif  // CONFIG_JNT_COMP
         mbmi->mv[1].as_int = cur_mv[1].as_int;
       }
     }
@@ -7601,36 +7548,21 @@ static int64_t handle_inter_mode(
       rd_stats->rate += cost_mv_ref(x, this_mode, mode_ctx);
     }
 
-#if CONFIG_JNT_COMP
     if (RDCOST(x->rdmult, rd_stats->rate, 0) > ref_best_rd &&
         mbmi->mode != NEARESTMV && mbmi->mode != NEAREST_NEARESTMV) {
       early_terminate = INT64_MAX;
       continue;
     }
-#else
-  if (RDCOST(x->rdmult, rd_stats->rate, 0) > ref_best_rd &&
-      mbmi->mode != NEARESTMV && mbmi->mode != NEAREST_NEARESTMV)
-    return INT64_MAX;
-#endif  // CONFIG_JNT_COMP
 
     ret_val = interpolation_filter_search(
         x, cpi, bsize, mi_row, mi_col, &tmp_dst, &orig_dst, args->single_filter,
         &rd, &rs, &skip_txfm_sb, &skip_sse_sb);
-#if CONFIG_JNT_COMP
     if (ret_val != 0) {
       early_terminate = INT64_MAX;
       continue;
     }
-#else
-  if (ret_val != 0) return ret_val;
-#endif  // CONFIG_JNT_COMP
 
-#if CONFIG_JNT_COMP
-    if (is_comp_pred && comp_idx)
-#else
-  if (is_comp_pred)
-#endif
-    {
+    if (is_comp_pred && comp_idx) {
       int rate_sum, rs2;
       int64_t dist_sum;
       int64_t best_rd_compound = INT64_MAX, best_rd_cur = INT64_MAX;
@@ -7668,7 +7600,6 @@ static int64_t handle_inter_mode(
         tmp_rate_mv = rate_mv;
         best_rd_cur = INT64_MAX;
         mbmi->interinter_compound_type = cur_type;
-#if CONFIG_JNT_COMP
         int masked_type_cost = 0;
 
         const int comp_group_idx_ctx = get_comp_group_idx_context(xd);
@@ -7695,16 +7626,6 @@ static int64_t handle_inter_mode(
 
           masked_type_cost += x->comp_idx_cost[comp_index_ctx][1];
         }
-#else
-      int masked_type_cost = 0;
-      if (masked_compound_used) {
-        if (!is_interinter_compound_used(COMPOUND_WEDGE, bsize))
-          masked_type_cost += av1_cost_literal(1);
-        else
-          masked_type_cost +=
-              x->compound_type_cost[bsize][mbmi->interinter_compound_type];
-      }
-#endif  // CONFIG_JNT_COMP
         rs2 = masked_type_cost;
 
         switch (cur_type) {
@@ -7782,12 +7703,8 @@ static int64_t handle_inter_mode(
 
       if (ref_best_rd < INT64_MAX && best_rd_compound / 3 > ref_best_rd) {
         restore_dst_buf(xd, orig_dst, num_planes);
-#if CONFIG_JNT_COMP
         early_terminate = INT64_MAX;
         continue;
-#else
-      return INT64_MAX;
-#endif  // CONFIG_JNT_COMP
       }
 
       pred_exists = 0;
@@ -7816,12 +7733,8 @@ static int64_t handle_inter_mode(
                                    args->modelled_rd[mode1][refs[1]]);
         if (rd / 4 * 3 > mrd && ref_best_rd < INT64_MAX) {
           restore_dst_buf(xd, orig_dst, num_planes);
-#if CONFIG_JNT_COMP
           early_terminate = INT64_MAX;
           continue;
-#else
-        return INT64_MAX;
-#endif  // CONFIG_JNT_COMP
         }
       } else {
         args->modelled_rd[this_mode][refs[0]] = rd;
@@ -7833,12 +7746,8 @@ static int64_t handle_inter_mode(
       // so far, do not bother doing full rd
       if (rd / 2 > ref_best_rd) {
         restore_dst_buf(xd, orig_dst, num_planes);
-#if CONFIG_JNT_COMP
         early_terminate = INT64_MAX;
         continue;
-#else
-      return INT64_MAX;
-#endif  // CONFIG_JNT_COMP
       }
     }
 
@@ -7847,7 +7756,6 @@ static int64_t handle_inter_mode(
     ret_val = motion_mode_rd(cpi, x, bsize, rd_stats, rd_stats_y, rd_stats_uv,
                              disable_skip, mode_mv, mi_row, mi_col, args,
                              ref_best_rd, refs, rate_mv, &orig_dst);
-#if CONFIG_JNT_COMP
     if (is_comp_pred && ret_val != INT64_MAX) {
       int64_t tmp_rd;
       const int skip_ctx = av1_get_skip_context(xd);
@@ -7888,7 +7796,6 @@ static int64_t handle_inter_mode(
              sizeof(uint8_t) * xd->n8_h * xd->n8_w);
   }
   if (early_terminate == INT64_MAX) return INT64_MAX;
-#endif  // CONFIG_JNT_COMP
   if (ret_val != 0) return ret_val;
 
   return 0;  // The rate-distortion cost will be re-calculated by caller.
@@ -8383,10 +8290,8 @@ static void estimate_skip_mode_rdcost(
 
     mbmi->filter_intra_mode_info.use_filter_intra = 0;
     mbmi->interintra_mode = (INTERINTRA_MODE)(II_DC_PRED - 1);
-#if CONFIG_JNT_COMP
     mbmi->comp_group_idx = 0;
     mbmi->compound_idx = x->compound_idx;
-#endif  // CONFIG_JNT_COMP
     mbmi->interinter_compound_type = COMPOUND_AVERAGE;
     mbmi->motion_mode = SIMPLE_TRANSLATION;
     mbmi->ref_mv_idx = 0;
@@ -9672,10 +9577,8 @@ PALETTE_EXIT:
   if (cm->skip_mode_flag &&
       !segfeature_active(seg, segment_id, SEG_LVL_REF_FRAME) &&
       is_comp_ref_allowed(bsize)) {
-// Obtain the rdcost for skip_mode.
-#if CONFIG_JNT_COMP
+    // Obtain the rdcost for skip_mode.
     x->compound_idx = 1;  // COMPOUND_AVERAGE
-#endif                    // CONFIG_JNT_COMP
     estimate_skip_mode_rdcost(cpi, tile_data, x, bsize, mi_row, mi_col,
                               frame_mv, yv12_mb);
 
@@ -9723,10 +9626,8 @@ PALETTE_EXIT:
       best_mbmode.palette_mode_info.palette_size[0] = 0;
       best_mbmode.palette_mode_info.palette_size[1] = 0;
 
-#if CONFIG_JNT_COMP
       best_mbmode.comp_group_idx = 0;
       best_mbmode.compound_idx = x->compound_idx;
-#endif  // CONFIG_JNT_COMP
       best_mbmode.interinter_compound_type = COMPOUND_AVERAGE;
       best_mbmode.motion_mode = SIMPLE_TRANSLATION;
 

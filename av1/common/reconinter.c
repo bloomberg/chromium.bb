@@ -861,7 +861,6 @@ typedef struct SubpelParams {
   int subpel_y;
 } SubpelParams;
 
-#if CONFIG_JNT_COMP
 void av1_jnt_comp_weight_assign(const AV1_COMMON *cm, const MB_MODE_INFO *mbmi,
                                 int order_idx, int *fwd_offset, int *bck_offset,
                                 int *use_jnt_comp_avg, int is_compound) {
@@ -908,7 +907,6 @@ void av1_jnt_comp_weight_assign(const AV1_COMMON *cm, const MB_MODE_INFO *mbmi,
   *fwd_offset = quant_dist_lookup_table[order_idx][i][order];
   *bck_offset = quant_dist_lookup_table[order_idx][i][1 - order];
 }
-#endif  // CONFIG_JNT_COMP
 
 static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                           int plane, const MODE_INFO *mi,
@@ -978,9 +976,7 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
         assert(w < 8 || h < 8);
         ConvolveParams conv_params = get_conv_params_no_round(
             0, 0, plane, tmp_dst, tmp_dst_stride, is_compound, xd->bd);
-#if CONFIG_JNT_COMP
         conv_params.use_jnt_comp_avg = 0;
-#endif  // CONFIG_JNT_COMP
         struct buf_2d *const dst_buf = &pd->dst;
         x = x_base + idx;
         y = y_base + idy;
@@ -1140,11 +1136,9 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
 
     ConvolveParams conv_params = get_conv_params_no_round(
         0, 0, plane, tmp_dst, MAX_SB_SIZE, is_compound, xd->bd);
-#if CONFIG_JNT_COMP
     av1_jnt_comp_weight_assign(cm, &mi->mbmi, 0, &conv_params.fwd_offset,
                                &conv_params.bck_offset,
                                &conv_params.use_jnt_comp_avg, is_compound);
-#endif  // CONFIG_JNT_COMP
 
     for (ref = 0; ref < 1 + is_compound; ++ref) {
       const struct scale_factors *const sf =

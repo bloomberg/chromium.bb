@@ -309,7 +309,6 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
     for (i = BLOCK_8X8; i < BLOCK_SIZES_ALL; i++) {
       av1_cost_tokens_from_cdf(x->motion_mode_cost1[i], fc->obmc_cdf[i], NULL);
     }
-#if CONFIG_JNT_COMP
     for (i = 0; i < COMP_INDEX_CONTEXTS; ++i) {
       av1_cost_tokens_from_cdf(x->comp_idx_cost[i], fc->compound_index_cdf[i],
                                NULL);
@@ -318,7 +317,6 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
       av1_cost_tokens_from_cdf(x->comp_group_idx_cost[i],
                                fc->comp_group_idx_cdf[i], NULL);
     }
-#endif  // CONFIG_JNT_COMP
   }
 }
 

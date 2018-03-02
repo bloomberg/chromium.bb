@@ -101,11 +101,7 @@ typedef struct frame_contexts {
 
   aom_cdf_prob inter_compound_mode_cdf[INTER_MODE_CONTEXTS]
                                       [CDF_SIZE(INTER_COMPOUND_MODES)];
-#if CONFIG_JNT_COMP
   aom_cdf_prob compound_type_cdf[BLOCK_SIZES_ALL][CDF_SIZE(COMPOUND_TYPES - 1)];
-#else
-  aom_cdf_prob compound_type_cdf[BLOCK_SIZES_ALL][CDF_SIZE(COMPOUND_TYPES)];
-#endif  // CONFIG_JNT_COMP
 #if WEDGE_IDX_ENTROPY_CODING
   aom_cdf_prob wedge_idx_cdf[BLOCK_SIZES_ALL][CDF_SIZE(16)];
 #endif
@@ -134,10 +130,8 @@ typedef struct frame_contexts {
   aom_cdf_prob comp_ref_cdf[REF_CONTEXTS][FWD_REFS - 1][CDF_SIZE(2)];
   aom_cdf_prob comp_bwdref_cdf[REF_CONTEXTS][BWD_REFS - 1][CDF_SIZE(2)];
   aom_cdf_prob txfm_partition_cdf[TXFM_PARTITION_CONTEXTS][CDF_SIZE(2)];
-#if CONFIG_JNT_COMP
   aom_cdf_prob compound_index_cdf[COMP_INDEX_CONTEXTS][CDF_SIZE(2)];
   aom_cdf_prob comp_group_idx_cdf[COMP_GROUP_IDX_CONTEXTS][CDF_SIZE(2)];
-#endif  // CONFIG_JNT_COMP
   aom_cdf_prob skip_mode_cdfs[SKIP_CONTEXTS][CDF_SIZE(2)];
   aom_cdf_prob skip_cdfs[SKIP_CONTEXTS][CDF_SIZE(2)];
   aom_cdf_prob intra_inter_cdf[INTRA_INTER_CONTEXTS][CDF_SIZE(2)];
@@ -229,11 +223,7 @@ typedef struct FRAME_COUNTS {
   unsigned int interintra[BLOCK_SIZE_GROUPS][2];
   unsigned int interintra_mode[BLOCK_SIZE_GROUPS][INTERINTRA_MODES];
   unsigned int wedge_interintra[BLOCK_SIZES_ALL][2];
-#if CONFIG_JNT_COMP
   unsigned int compound_interinter[BLOCK_SIZES_ALL][COMPOUND_TYPES - 1];
-#else
-  unsigned int compound_interinter[BLOCK_SIZES_ALL][COMPOUND_TYPES];
-#endif  // CONFIG_JNT_COMP
   unsigned int motion_mode[BLOCK_SIZES_ALL][MOTION_MODES];
   unsigned int obmc[BLOCK_SIZES_ALL][2];
   unsigned int intra_inter[INTRA_INTER_CONTEXTS][2];
@@ -249,10 +239,8 @@ typedef struct FRAME_COUNTS {
   unsigned int txfm_partition[TXFM_PARTITION_CONTEXTS][2];
   unsigned int skip_mode[SKIP_MODE_CONTEXTS][2];
   unsigned int skip[SKIP_CONTEXTS][2];
-#if CONFIG_JNT_COMP
   unsigned int compound_index[COMP_INDEX_CONTEXTS][2];
   unsigned int comp_group_idx[COMP_GROUP_IDX_CONTEXTS][2];
-#endif  // CONFIG_JNT_COMP
   unsigned int delta_q[DELTA_Q_PROBS][2];
 #if CONFIG_EXT_DELTA_Q
   unsigned int delta_lf_multi[FRAME_LF_COUNT][DELTA_LF_PROBS][2];

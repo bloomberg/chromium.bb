@@ -74,7 +74,6 @@ extern "C" {
 #define II_WEDGE_IDX_ENTROPY_CODING 0
 #endif
 
-#if CONFIG_JNT_COMP
 typedef enum COMPOUND_DIST_WEIGHT_MODE {
   DIST,
 } COMPOUND_DIST_WEIGHT_MODE;
@@ -82,7 +81,6 @@ typedef enum COMPOUND_DIST_WEIGHT_MODE {
 #define COMPOUND_WEIGHT_MODE DIST
 #define DIST_PRECISION_BITS 4
 #define DIST_PRECISION (1 << DIST_PRECISION_BITS)  // 16
-#endif                                             // CONFIG_JNT_COMP
 
 #define FRAME_NUM_LIMIT (INT_MAX - MAX_FRAME_DISTANCE - 1)
 
@@ -509,10 +507,8 @@ typedef enum ATTRIBUTE_PACKED {
 #define SKIP_CONTEXTS 3
 #define SKIP_MODE_CONTEXTS 3
 
-#if CONFIG_JNT_COMP
 #define COMP_INDEX_CONTEXTS 6
 #define COMP_GROUP_IDX_CONTEXTS 7
-#endif  // CONFIG_JNT_COMP
 
 #define NMV_CONTEXTS 3
 

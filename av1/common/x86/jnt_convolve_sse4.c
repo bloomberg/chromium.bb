@@ -77,7 +77,6 @@ static INLINE __m128i convolve_hi_y(const __m128i *const s,
   return convolve(ss, coeffs);
 }
 
-#if CONFIG_JNT_COMP
 void av1_jnt_convolve_y_sse4_1(const uint8_t *src, int src_stride,
                                const uint8_t *dst0, int dst_stride0, int w,
                                int h, InterpFilterParams *filter_params_x,
@@ -574,4 +573,3 @@ void av1_jnt_convolve_2d_sse4_1(const uint8_t *src, int src_stride,
     }
   }
 }
-#endif

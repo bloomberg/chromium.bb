@@ -34,7 +34,6 @@ typedef uint32_t (*SadMxNAvgFunc)(const uint8_t *src_ptr, int src_stride,
                                   const uint8_t *second_pred);
 typedef std::tr1::tuple<int, int, SadMxNAvgFunc, int> SadMxNAvgParam;
 
-#if CONFIG_JNT_COMP
 typedef void (*JntCompAvgFunc)(uint8_t *comp_pred, const uint8_t *pred,
                                int width, int height, const uint8_t *ref,
                                int ref_stride,
@@ -51,7 +50,6 @@ typedef uint32_t (*JntSadMxNAvgFunc)(const uint8_t *src_ptr, int src_stride,
                                      const uint8_t *second_pred,
                                      const JNT_COMP_PARAMS *jcp_param);
 typedef std::tr1::tuple<int, int, JntSadMxNAvgFunc, int> JntSadMxNAvgParam;
-#endif  // CONFIG_JNT_COMP
 
 typedef void (*SadMxNx4Func)(const uint8_t *src_ptr, int src_stride,
                              const uint8_t *const ref_ptr[], int ref_stride,
@@ -73,24 +71,20 @@ class SADTestBase : public ::testing::Test {
         aom_memalign(kDataAlignment, kDataBufferSize));
     second_pred8_ =
         reinterpret_cast<uint8_t *>(aom_memalign(kDataAlignment, 128 * 128));
-#if CONFIG_JNT_COMP
     comp_pred8_ =
         reinterpret_cast<uint8_t *>(aom_memalign(kDataAlignment, 128 * 128));
     comp_pred8_test_ =
         reinterpret_cast<uint8_t *>(aom_memalign(kDataAlignment, 128 * 128));
-#endif
     source_data16_ = reinterpret_cast<uint16_t *>(
         aom_memalign(kDataAlignment, kDataBlockSize * sizeof(uint16_t)));
     reference_data16_ = reinterpret_cast<uint16_t *>(
         aom_memalign(kDataAlignment, kDataBufferSize * sizeof(uint16_t)));
     second_pred16_ = reinterpret_cast<uint16_t *>(
         aom_memalign(kDataAlignment, 128 * 128 * sizeof(uint16_t)));
-#if CONFIG_JNT_COMP
     comp_pred16_ = reinterpret_cast<uint16_t *>(
         aom_memalign(kDataAlignment, 128 * 128 * sizeof(uint16_t)));
     comp_pred16_test_ = reinterpret_cast<uint16_t *>(
         aom_memalign(kDataAlignment, 128 * 128 * sizeof(uint16_t)));
-#endif
   }
 
   static void TearDownTestCase() {
@@ -100,24 +94,20 @@ class SADTestBase : public ::testing::Test {
     reference_data8_ = NULL;
     aom_free(second_pred8_);
     second_pred8_ = NULL;
-#if CONFIG_JNT_COMP
     aom_free(comp_pred8_);
     comp_pred8_ = NULL;
     aom_free(comp_pred8_test_);
     comp_pred8_test_ = NULL;
-#endif
     aom_free(source_data16_);
     source_data16_ = NULL;
     aom_free(reference_data16_);
     reference_data16_ = NULL;
     aom_free(second_pred16_);
     second_pred16_ = NULL;
-#if CONFIG_JNT_COMP
     aom_free(comp_pred16_);
     comp_pred16_ = NULL;
     aom_free(comp_pred16_test_);
     comp_pred16_test_ = NULL;
-#endif
   }
 
   virtual void TearDown() { libaom_test::ClearSystemState(); }
@@ -135,20 +125,16 @@ class SADTestBase : public ::testing::Test {
       source_data_ = source_data8_;
       reference_data_ = reference_data8_;
       second_pred_ = second_pred8_;
-#if CONFIG_JNT_COMP
       comp_pred_ = comp_pred8_;
       comp_pred_test_ = comp_pred8_test_;
-#endif
     } else {
       use_high_bit_depth_ = true;
       bit_depth_ = static_cast<aom_bit_depth_t>(bd_);
       source_data_ = CONVERT_TO_BYTEPTR(source_data16_);
       reference_data_ = CONVERT_TO_BYTEPTR(reference_data16_);
       second_pred_ = CONVERT_TO_BYTEPTR(second_pred16_);
-#if CONFIG_JNT_COMP
       comp_pred_ = CONVERT_TO_BYTEPTR(comp_pred16_);
       comp_pred_test_ = CONVERT_TO_BYTEPTR(comp_pred16_test_);
-#endif
     }
     mask_ = (1 << bit_depth_) - 1;
     source_stride_ = (width_ + 31) & ~31;
@@ -216,7 +202,6 @@ class SADTestBase : public ::testing::Test {
     return sad;
   }
 
-#if CONFIG_JNT_COMP
   void ReferenceJntCompAvg(int block_idx) {
     const uint8_t *const reference8 = GetReference(block_idx);
     const uint8_t *const second_pred8 = second_pred_;
@@ -270,7 +255,6 @@ class SADTestBase : public ::testing::Test {
     }
     return sad;
   }
-#endif  // CONFIG_JNT_COMP
 
   void FillConstant(uint8_t *data, int stride, uint16_t fill_constant) {
     uint8_t *data8 = data;
@@ -314,7 +298,6 @@ class SADTestBase : public ::testing::Test {
   static uint16_t *reference_data16_;
   static uint16_t *second_pred16_;
   int reference_stride_;
-#if CONFIG_JNT_COMP
   static uint8_t *comp_pred_;
   static uint8_t *comp_pred8_;
   static uint16_t *comp_pred16_;
@@ -322,7 +305,6 @@ class SADTestBase : public ::testing::Test {
   static uint8_t *comp_pred8_test_;
   static uint16_t *comp_pred16_test_;
   JNT_COMP_PARAMS jcp_param_;
-#endif
 
   ACMRandom rnd_;
 };
@@ -408,7 +390,6 @@ class SADavgTest : public ::testing::WithParamInterface<SadMxNAvgParam>,
   }
 };
 
-#if CONFIG_JNT_COMP
 class JntCompAvgTest : public ::testing::WithParamInterface<JntCompAvgParam>,
                        public SADTestBase {
  public:
@@ -503,29 +484,22 @@ class JntSADavgTest : public ::testing::WithParamInterface<JntSadMxNAvgParam>,
     }
   }
 };
-#endif  // CONFIG_JNT_COMP
 
 uint8_t *SADTestBase::source_data_ = NULL;
 uint8_t *SADTestBase::reference_data_ = NULL;
 uint8_t *SADTestBase::second_pred_ = NULL;
-#if CONFIG_JNT_COMP
 uint8_t *SADTestBase::comp_pred_ = NULL;
 uint8_t *SADTestBase::comp_pred_test_ = NULL;
-#endif
 uint8_t *SADTestBase::source_data8_ = NULL;
 uint8_t *SADTestBase::reference_data8_ = NULL;
 uint8_t *SADTestBase::second_pred8_ = NULL;
-#if CONFIG_JNT_COMP
 uint8_t *SADTestBase::comp_pred8_ = NULL;
 uint8_t *SADTestBase::comp_pred8_test_ = NULL;
-#endif
 uint16_t *SADTestBase::source_data16_ = NULL;
 uint16_t *SADTestBase::reference_data16_ = NULL;
 uint16_t *SADTestBase::second_pred16_ = NULL;
-#if CONFIG_JNT_COMP
 uint16_t *SADTestBase::comp_pred16_ = NULL;
 uint16_t *SADTestBase::comp_pred16_test_ = NULL;
-#endif
 
 TEST_P(SADTest, MaxRef) {
   FillConstant(source_data_, source_stride_, 0);
@@ -633,7 +607,6 @@ TEST_P(SADavgTest, ShortSrc) {
   source_stride_ = tmp_stride;
 }
 
-#if CONFIG_JNT_COMP
 TEST_P(JntCompAvgTest, MaxRef) {
   FillConstant(reference_data_, reference_stride_, mask_);
   FillConstant(second_pred_, width_, 0);
@@ -759,7 +732,6 @@ TEST_P(JntSADavgTest, ShortSrc) {
   }
   source_stride_ = tmp_stride;
 }
-#endif  // CONFIG_JNT_COMP
 
 TEST_P(SADx4Test, MaxRef) {
   FillConstant(source_data_, source_stride_, 0);
@@ -989,7 +961,6 @@ const SadMxNAvgParam avg_c_tests[] = {
 };
 INSTANTIATE_TEST_CASE_P(C, SADavgTest, ::testing::ValuesIn(avg_c_tests));
 
-#if CONFIG_JNT_COMP
 // TODO(chengchen): add highbd tests
 const JntCompAvgParam jnt_comp_avg_c_tests[] = {
 #if CONFIG_AV1
@@ -1036,7 +1007,6 @@ const JntSadMxNAvgParam jnt_avg_c_tests[] = {
   make_tuple(4, 4, &aom_jnt_sad4x4_avg_c, -1),
 };
 INSTANTIATE_TEST_CASE_P(C, JntSADavgTest, ::testing::ValuesIn(jnt_avg_c_tests));
-#endif  // CONFIG_JNT_COMP
 
 const SadMxNx4Param x4d_c_tests[] = {
 #if CONFIG_AV1
@@ -1310,7 +1280,6 @@ const SadMxNx4Param x4d_sse2_tests[] = {
 };
 INSTANTIATE_TEST_CASE_P(SSE2, SADx4Test, ::testing::ValuesIn(x4d_sse2_tests));
 
-#if CONFIG_JNT_COMP
 const JntSadMxhParam jnt_sad_sse2_tests[] = {
   make_tuple(4, 4, &aom_sad4xh_sse2, -1),
   make_tuple(4, 8, &aom_sad4xh_sse2, -1),
@@ -1339,7 +1308,6 @@ const JntSadMxhParam jnt_sad_sse2_tests[] = {
 };
 INSTANTIATE_TEST_CASE_P(SSE2, JntSADTest,
                         ::testing::ValuesIn(jnt_sad_sse2_tests));
-#endif  // CONFIG_JNT_COMP
 
 #endif  // HAVE_SSE2
 
@@ -1348,7 +1316,6 @@ INSTANTIATE_TEST_CASE_P(SSE2, JntSADTest,
 #endif  // HAVE_SSE3
 
 #if HAVE_SSSE3
-#if CONFIG_JNT_COMP
 const JntCompAvgParam jnt_comp_avg_ssse3_tests[] = {
 #if CONFIG_AV1
   make_tuple(128, 128, &aom_jnt_comp_avg_pred_ssse3, -1),
@@ -1396,7 +1363,6 @@ const JntSadMxNAvgParam jnt_avg_ssse3_tests[] = {
 };
 INSTANTIATE_TEST_CASE_P(SSSE3, JntSADavgTest,
                         ::testing::ValuesIn(jnt_avg_ssse3_tests));
-#endif  // CONFIG_JNT_COMP
 #endif  // HAVE_SSSE3
 
 #if HAVE_SSE4_1

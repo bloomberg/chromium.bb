@@ -22,7 +22,6 @@
 #include "aom_dsp/aom_filter.h"
 #include "av1/common/convolve.h"
 
-#if CONFIG_JNT_COMP
 void av1_highbd_jnt_convolve_2d_copy_avx2(
     const uint16_t *src, int src_stride, uint16_t *dst0, int dst_stride0, int w,
     int h, InterpFilterParams *filter_params_x,
@@ -106,9 +105,7 @@ void av1_highbd_jnt_convolve_2d_copy_avx2(
     }
   }
 }
-#endif
 
-#if CONFIG_JNT_COMP
 void av1_highbd_jnt_convolve_2d_avx2(
     const uint16_t *src, int src_stride, CONV_BUF_TYPE *dst0, int dst_stride0,
     int w, int h, InterpFilterParams *filter_params_x,
@@ -274,9 +271,7 @@ void av1_highbd_jnt_convolve_2d_avx2(
     }
   }
 }
-#endif
 
-#if CONFIG_JNT_COMP
 void av1_highbd_jnt_convolve_x_avx2(const uint16_t *src, int src_stride,
                                     uint16_t *dst0, int dst_stride0, int w,
                                     int h, InterpFilterParams *filter_params_x,
@@ -383,5 +378,3 @@ void av1_highbd_jnt_convolve_x_avx2(const uint16_t *src, int src_stride,
     }
   }
 }
-
-#endif

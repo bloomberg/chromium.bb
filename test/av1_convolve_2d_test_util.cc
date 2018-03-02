@@ -273,7 +273,6 @@ void AV1Convolve2DSrTest::RunSpeedTest(convolve_2d_func test_impl) {
   }
 }
 
-#if CONFIG_JNT_COMP
 AV1JntConvolve2DTest::~AV1JntConvolve2DTest() {}
 void AV1JntConvolve2DTest::SetUp() {
   rnd_.Reset(ACMRandom::DeterministicSeed());
@@ -391,7 +390,6 @@ void AV1JntConvolve2DTest::RunCheckOutput(convolve_2d_func test_impl) {
     }
   }
 }
-#endif  // CONFIG_JNT_COMP
 }  // namespace AV1Convolve2D
 
 namespace AV1HighbdConvolve2D {
@@ -565,7 +563,6 @@ void AV1HighbdConvolve2DSrTest::RunCheckOutput(
   }
 }
 
-#if CONFIG_JNT_COMP
 AV1HighbdJntConvolve2DTest::~AV1HighbdJntConvolve2DTest() {}
 void AV1HighbdJntConvolve2DTest::SetUp() {
   rnd_.Reset(ACMRandom::DeterministicSeed());
@@ -735,6 +732,5 @@ void AV1HighbdJntConvolve2DTest::RunCheckOutput(
     }
   }
 }
-#endif  // CONFIG_JNT_COMP
 }  // namespace AV1HighbdConvolve2D
 }  // namespace libaom_test

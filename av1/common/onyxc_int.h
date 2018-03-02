@@ -226,10 +226,8 @@ typedef struct SequenceHeader {
   int monochrome;
   int enable_dual_filter;  // 0 - disable dual interpolation filter
                            // 1 - enable vertical and horiz filter selection
-#if CONFIG_JNT_COMP
-  int enable_jnt_comp;  // 0 - disable joint compound modes
-                        // 1 - enable it
-#endif
+  int enable_jnt_comp;     // 0 - disable joint compound modes
+                           // 1 - enable it
 } SequenceHeader;
 
 typedef struct AV1Common {

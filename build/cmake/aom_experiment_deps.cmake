@@ -45,10 +45,8 @@ macro (fix_experiment_configs)
     endif  ()
   endif ()
 
-  if (CONFIG_JNT_COMP)
-    if (CONFIG_RD_DEBUG)
-      change_config_and_warn(CONFIG_RD_DEBUG 0 CONFIG_JNT_COMP)
-    endif()
+  if (CONFIG_RD_DEBUG)
+    change_config_and_warn(CONFIG_RD_DEBUG 0 CONFIG_JNT_COMP)
   endif()
 
   if (CONFIG_FRAME_COUNTER_FOR_SCALABILITY)

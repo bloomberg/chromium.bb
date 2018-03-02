@@ -41,12 +41,10 @@ typedef unsigned int (*SubpixAvgVarMxNFunc)(const uint8_t *a, int a_stride,
 typedef unsigned int (*Get4x4SseFunc)(const uint8_t *a, int a_stride,
                                       const uint8_t *b, int b_stride);
 typedef unsigned int (*SumOfSquaresFunction)(const int16_t *src);
-#if CONFIG_JNT_COMP
 typedef unsigned int (*JntSubpixAvgVarMxNFunc)(
     const uint8_t *a, int a_stride, int xoffset, int yoffset, const uint8_t *b,
     int b_stride, uint32_t *sse, const uint8_t *second_pred,
     const JNT_COMP_PARAMS *jcp_param);
-#endif
 
 using libaom_test::ACMRandom;
 
@@ -212,7 +210,6 @@ static uint32_t subpel_avg_variance_ref(const uint8_t *ref, const uint8_t *src,
   return static_cast<uint32_t>(sse - ((se * se) >> (l2w + l2h)));
 }
 
-#if CONFIG_JNT_COMP
 static uint32_t jnt_subpel_avg_variance_ref(
     const uint8_t *ref, const uint8_t *src, const uint8_t *second_pred, int l2w,
     int l2h, int xoff, int yoff, uint32_t *sse_ptr, bool use_high_bit_depth,
@@ -270,7 +267,6 @@ static uint32_t jnt_subpel_avg_variance_ref(
   *sse_ptr = static_cast<uint32_t>(sse);
   return static_cast<uint32_t>(sse - ((se * se) >> (l2w + l2h)));
 }
-#endif  // CONFIG_JNT_COMP
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -629,9 +625,7 @@ class SubpelVarianceTest
   uint8_t *ref_;
   uint8_t *sec_;
   TestParams<FunctionType> params_;
-#if CONFIG_JNT_COMP
   JNT_COMP_PARAMS jcp_param_;
-#endif
 
   // some relay helpers
   bool use_high_bit_depth() const { return params_.use_high_bit_depth; }
@@ -741,7 +735,6 @@ void SubpelVarianceTest<SubpixAvgVarMxNFunc>::RefTest() {
   }
 }
 
-#if CONFIG_JNT_COMP
 template <>
 void SubpelVarianceTest<JntSubpixAvgVarMxNFunc>::RefTest() {
   for (int x = 0; x < 8; ++x) {
@@ -782,16 +775,13 @@ void SubpelVarianceTest<JntSubpixAvgVarMxNFunc>::RefTest() {
     }
   }
 }
-#endif  // CONFIF_JNT_COMP
 
 typedef MainTestClass<Get4x4SseFunc> AvxSseTest;
 typedef MainTestClass<VarianceMxNFunc> AvxMseTest;
 typedef MainTestClass<VarianceMxNFunc> AvxVarianceTest;
 typedef SubpelVarianceTest<SubpixVarMxNFunc> AvxSubpelVarianceTest;
 typedef SubpelVarianceTest<SubpixAvgVarMxNFunc> AvxSubpelAvgVarianceTest;
-#if CONFIG_JNT_COMP
 typedef SubpelVarianceTest<JntSubpixAvgVarMxNFunc> AvxJntSubpelAvgVarianceTest;
-#endif
 
 TEST_P(AvxSseTest, RefSse) { RefTestSse(); }
 TEST_P(AvxSseTest, MaxSse) { MaxTestSse(); }
@@ -806,9 +796,7 @@ TEST_P(SumOfSquaresTest, Ref) { RefTest(); }
 TEST_P(AvxSubpelVarianceTest, Ref) { RefTest(); }
 TEST_P(AvxSubpelVarianceTest, ExtremeRef) { ExtremeRefTest(); }
 TEST_P(AvxSubpelAvgVarianceTest, Ref) { RefTest(); }
-#if CONFIG_JNT_COMP
 TEST_P(AvxJntSubpelAvgVarianceTest, Ref) { RefTest(); }
-#endif
 
 INSTANTIATE_TEST_CASE_P(C, SumOfSquaresTest,
                         ::testing::Values(aom_get_mb_ss_c));
@@ -878,7 +866,6 @@ INSTANTIATE_TEST_CASE_P(
         SubpelAvgVarianceParams(2, 3, &aom_sub_pixel_avg_variance4x8_c, 0),
         SubpelAvgVarianceParams(2, 2, &aom_sub_pixel_avg_variance4x4_c, 0)));
 
-#if CONFIG_JNT_COMP
 typedef TestParams<JntSubpixAvgVarMxNFunc> JntSubpelAvgVarianceParams;
 INSTANTIATE_TEST_CASE_P(
     C, AvxJntSubpelAvgVarianceTest,
@@ -909,7 +896,6 @@ INSTANTIATE_TEST_CASE_P(
                                    0),
         JntSubpelAvgVarianceParams(2, 2, &aom_jnt_sub_pixel_avg_variance4x4_c,
                                    0)));
-#endif  // CONFIG_JNT_COMP
 
 typedef MainTestClass<VarianceMxNFunc> AvxHBDMseTest;
 typedef MainTestClass<VarianceMxNFunc> AvxHBDVarianceTest;
@@ -1446,7 +1432,6 @@ INSTANTIATE_TEST_CASE_P(
         SubpelAvgVarianceParams(2, 2, &aom_sub_pixel_avg_variance4x4_ssse3,
                                 0)));
 
-#if CONFIG_JNT_COMP
 INSTANTIATE_TEST_CASE_P(
     SSSE3, AvxJntSubpelAvgVarianceTest,
     ::testing::Values(
@@ -1486,7 +1471,6 @@ INSTANTIATE_TEST_CASE_P(
         JntSubpelAvgVarianceParams(2, 2,
                                    &aom_jnt_sub_pixel_avg_variance4x4_ssse3,
                                    0)));
-#endif  // CONFIG_JNT_COMP
 #endif  // HAVE_SSSE3
 
 #if HAVE_AVX2

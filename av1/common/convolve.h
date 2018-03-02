@@ -35,11 +35,9 @@ typedef struct ConvolveParams {
   int round_1;
   int plane;
   int is_compound;
-#if CONFIG_JNT_COMP
   int use_jnt_comp_avg;
   int fwd_offset;
   int bck_offset;
-#endif
 } ConvolveParams;
 
 #if CONFIG_LOWPRECISION_BLEND

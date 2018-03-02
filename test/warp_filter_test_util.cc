@@ -130,10 +130,8 @@ void AV1WarpFilterTest::RunCheckOutput(warp_affine_func test_impl) {
     for (sub_x = 0; sub_x < 2; ++sub_x)
       for (sub_y = 0; sub_y < 2; ++sub_y) {
         generate_warped_model(&rnd_, mat, &alpha, &beta, &gamma, &delta);
-#if CONFIG_JNT_COMP
         for (int ii = 0; ii < 2; ++ii) {
           for (int jj = 0; jj < 5; ++jj) {
-#endif  // CONFIG_JNT_COMP
             if (use_no_round) {
               // Prepare two copies of the destination
               for (j = 0; j < out_w * out_h; ++j) {
@@ -146,7 +144,6 @@ void AV1WarpFilterTest::RunCheckOutput(warp_affine_func test_impl) {
             } else {
               conv_params = get_conv_params(0, 0, 0, bd);
             }
-#if CONFIG_JNT_COMP
             if (jj >= 4) {
               conv_params.use_jnt_comp_avg = 0;
             } else {
@@ -154,7 +151,6 @@ void AV1WarpFilterTest::RunCheckOutput(warp_affine_func test_impl) {
               conv_params.fwd_offset = quant_dist_lookup_table[ii][jj][0];
               conv_params.bck_offset = quant_dist_lookup_table[ii][jj][1];
             }
-#endif  // CONFIG_JNT_COMP
 
             av1_warp_affine_c(mat, input, w, h, stride, output, 32, 32, out_w,
                               out_h, out_w, sub_x, sub_y, &conv_params, alpha,
@@ -163,7 +159,6 @@ void AV1WarpFilterTest::RunCheckOutput(warp_affine_func test_impl) {
               conv_params =
                   get_conv_params_no_round(0, 0, 0, dstb, out_w, 1, bd);
             }
-#if CONFIG_JNT_COMP
             if (jj >= 4) {
               conv_params.use_jnt_comp_avg = 0;
             } else {
@@ -171,7 +166,6 @@ void AV1WarpFilterTest::RunCheckOutput(warp_affine_func test_impl) {
               conv_params.fwd_offset = quant_dist_lookup_table[ii][jj][0];
               conv_params.bck_offset = quant_dist_lookup_table[ii][jj][1];
             }
-#endif  // CONFIG_JNT_COMP
             test_impl(mat, input, w, h, stride, output2, 32, 32, out_w, out_h,
                       out_w, sub_x, sub_y, &conv_params, alpha, beta, gamma,
                       delta);
@@ -187,10 +181,8 @@ void AV1WarpFilterTest::RunCheckOutput(warp_affine_func test_impl) {
                     << "Pixel mismatch at index " << j << " = (" << (j % out_w)
                     << ", " << (j / out_w) << ") on iteration " << i;
             }
-#if CONFIG_JNT_COMP
           }
         }
-#endif  // CONFIG_JNT_COMP
       }
   }
   delete[] input_;
@@ -263,10 +255,8 @@ void AV1HighbdWarpFilterTest::RunCheckOutput(
     for (sub_x = 0; sub_x < 2; ++sub_x)
       for (sub_y = 0; sub_y < 2; ++sub_y) {
         generate_warped_model(&rnd_, mat, &alpha, &beta, &gamma, &delta);
-#if CONFIG_JNT_COMP
         for (int ii = 0; ii < 2; ++ii) {
           for (int jj = 0; jj < 5; ++jj) {
-#endif  // CONFIG_JNT_COMP
             if (use_no_round) {
               // Prepare two copies of the destination
               for (j = 0; j < out_w * out_h; ++j) {
@@ -279,7 +269,6 @@ void AV1HighbdWarpFilterTest::RunCheckOutput(
             } else {
               conv_params = get_conv_params(0, 0, 0, bd);
             }
-#if CONFIG_JNT_COMP
             if (jj >= 4) {
               conv_params.use_jnt_comp_avg = 0;
             } else {
@@ -287,7 +276,6 @@ void AV1HighbdWarpFilterTest::RunCheckOutput(
               conv_params.fwd_offset = quant_dist_lookup_table[ii][jj][0];
               conv_params.bck_offset = quant_dist_lookup_table[ii][jj][1];
             }
-#endif  // CONFIG_JNT_COMP
             av1_highbd_warp_affine_c(mat, input, w, h, stride, output, 32, 32,
                                      out_w, out_h, out_w, sub_x, sub_y, bd,
                                      &conv_params, alpha, beta, gamma, delta);
@@ -297,7 +285,6 @@ void AV1HighbdWarpFilterTest::RunCheckOutput(
               conv_params =
                   get_conv_params_no_round(0, 0, 0, dstb, out_w, 1, bd);
             }
-#if CONFIG_JNT_COMP
             if (jj >= 4) {
               conv_params.use_jnt_comp_avg = 0;
             } else {
@@ -305,7 +292,6 @@ void AV1HighbdWarpFilterTest::RunCheckOutput(
               conv_params.fwd_offset = quant_dist_lookup_table[ii][jj][0];
               conv_params.bck_offset = quant_dist_lookup_table[ii][jj][1];
             }
-#endif  // CONFIG_JNT_COMP
             test_impl(mat, input, w, h, stride, output2, 32, 32, out_w, out_h,
                       out_w, sub_x, sub_y, bd, &conv_params, alpha, beta, gamma,
                       delta);
@@ -321,10 +307,8 @@ void AV1HighbdWarpFilterTest::RunCheckOutput(
                     << "Pixel mismatch at index " << j << " = (" << (j % out_w)
                     << ", " << (j / out_w) << ") on iteration " << i;
             }
-#if CONFIG_JNT_COMP
           }
         }
-#endif  // CONFIG_JNT_COMP
       }
   }
 

@@ -678,7 +678,6 @@ void aom_highbd_comp_avg_upsampled_pred_sse2(uint16_t *comp_pred,
   }
 }
 
-#if CONFIG_JNT_COMP
 static void highbd_compute_jnt_comp_avg(__m128i *p0, __m128i *p1,
                                         const __m128i *w0, const __m128i *w1,
                                         const __m128i *r, void *const result) {
@@ -771,4 +770,3 @@ void aom_highbd_jnt_comp_avg_upsampled_pred_sse2(
     pred += 8;
   }
 }
-#endif  // CONFIG_JNT_COMP

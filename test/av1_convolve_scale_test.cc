@@ -20,9 +20,7 @@
 #include "test/register_state_check.h"
 #include "test/util.h"
 
-#if CONFIG_JNT_COMP
 #include "av1/common/common_data.h"
-#endif
 
 namespace {
 const int kTestIters = 10;
@@ -262,7 +260,6 @@ class ConvolveScaleTestBase : public ::testing::Test {
     image_ = new TestImage<SrcPixel>(width_, height_, bd_);
   }
 
-#if CONFIG_JNT_COMP
   void SetConvParamOffset(int i, int j) {
     if (i == -1 && j == -1) {
       convolve_params_.use_jnt_comp_avg = 0;
@@ -272,12 +269,10 @@ class ConvolveScaleTestBase : public ::testing::Test {
       convolve_params_.bck_offset = quant_dist_lookup_table[i][j][1];
     }
   }
-#endif  // CONFIG_JNT_COMP
 
   void Run() {
     ACMRandom rnd(ACMRandom::DeterministicSeed());
     for (int i = 0; i < kTestIters; ++i) {
-#if CONFIG_JNT_COMP
       SetConvParamOffset(-1, -1);
       Prep(&rnd);
       RunOne(true);
@@ -293,12 +288,6 @@ class ConvolveScaleTestBase : public ::testing::Test {
           image_->Check();
         }
       }
-#else
-      Prep(&rnd);
-      RunOne(true);
-      RunOne(false);
-      image_->Check();
-#endif  // CONFIG_JNT_COMP
     }
   }
 

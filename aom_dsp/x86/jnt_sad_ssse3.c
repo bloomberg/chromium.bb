@@ -20,7 +20,6 @@
 
 #include "./av1_rtcd.h"
 
-#if CONFIG_JNT_COMP
 unsigned int aom_sad4xh_sse2(const uint8_t *a, int a_stride, const uint8_t *b,
                              int b_stride, int width, int height) {
   int i;
@@ -213,7 +212,6 @@ unsigned int aom_sad128xh_sse2(const uint8_t *a, int a_stride, const uint8_t *b,
                           jcp_param);                                         \
     return aom_sad##m##xh_avx2(src, src_stride, comp_pred, m, m, n);          \
   }
-#endif  // CONFIG_JNT_COMP
 
 /* clang-format off */
 #if CONFIG_AV1

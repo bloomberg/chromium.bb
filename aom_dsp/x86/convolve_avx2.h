@@ -134,7 +134,6 @@ static INLINE void add_store_aligned_256(CONV_BUF_TYPE *const dst,
   _mm256_store_si256((__m256i *)dst, d);
 }
 
-#if CONFIG_JNT_COMP
 static INLINE void mult_add_store_aligned_256(CONV_BUF_TYPE *const dst,
                                               const __m256i *const res,
                                               const __m256i *const wt0,
@@ -151,6 +150,5 @@ static INLINE void mult_add_store_aligned_256(CONV_BUF_TYPE *const dst,
   }
   _mm256_store_si256((__m256i *)dst, d);
 }
-#endif
 
 #endif

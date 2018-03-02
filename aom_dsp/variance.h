@@ -54,7 +54,6 @@ typedef unsigned int (*aom_subp_avg_variance_fn_t)(
     const uint8_t *a, int a_stride, int xoffset, int yoffset, const uint8_t *b,
     int b_stride, unsigned int *sse, const uint8_t *second_pred);
 
-#if CONFIG_JNT_COMP
 typedef unsigned int (*aom_jnt_sad_avg_fn_t)(const uint8_t *a, int a_stride,
                                              const uint8_t *b, int b_stride,
                                              const uint8_t *second_pred,
@@ -64,7 +63,6 @@ typedef unsigned int (*aom_jnt_subp_avg_variance_fn_t)(
     const uint8_t *a, int a_stride, int xoffset, int yoffset, const uint8_t *b,
     int b_stride, unsigned int *sse, const uint8_t *second_pred,
     const JNT_COMP_PARAMS *jcp_param);
-#endif  // CONFIG_JNT_COMP
 
 #if CONFIG_AV1
 typedef unsigned int (*aom_masked_sad_fn_t)(const uint8_t *src, int src_stride,
@@ -113,10 +111,8 @@ typedef struct aom_variance_vtable {
   aom_obmc_sad_fn_t osdf;
   aom_obmc_variance_fn_t ovf;
   aom_obmc_subpixvariance_fn_t osvf;
-#if CONFIG_JNT_COMP
   aom_jnt_sad_avg_fn_t jsdaf;
   aom_jnt_subp_avg_variance_fn_t jsvaf;
-#endif  // CONFIG_JNT_COMP
 } aom_variance_fn_ptr_t;
 #endif  // CONFIG_AV1
 

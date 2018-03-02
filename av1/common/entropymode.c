@@ -69,7 +69,6 @@ static const aom_cdf_prob
     };
 #endif
 
-#if CONFIG_JNT_COMP
 static const aom_cdf_prob
     default_compound_type_cdf[BLOCK_SIZES_ALL][CDF_SIZE(COMPOUND_TYPES - 1)] = {
       { AOM_CDF2(16384) }, { AOM_CDF2(16384) }, { AOM_CDF2(16384) },
@@ -82,24 +81,6 @@ static const aom_cdf_prob
       { AOM_CDF2(16384) },  // 208, 1
       { AOM_CDF2(16384) }, { AOM_CDF2(16384) }, { AOM_CDF2(16384) },
     };
-#else
-static const aom_cdf_prob
-    default_compound_type_cdf[BLOCK_SIZES_ALL][CDF_SIZE(COMPOUND_TYPES)] = {
-      { AOM_CDF3(16384, 24576) }, { AOM_CDF3(32640, 32704) },
-      { AOM_CDF3(32640, 32704) }, { AOM_CDF3(8448, 13293) },
-      { AOM_CDF3(9216, 12436) },  { AOM_CDF3(10112, 12679) },
-      { AOM_CDF3(9088, 10753) },  { AOM_CDF3(10368, 12906) },
-      { AOM_CDF3(10368, 12643) }, { AOM_CDF3(8832, 10609) },
-      { AOM_CDF3(13312, 13388) }, { AOM_CDF3(12672, 12751) },
-      { AOM_CDF3(9600, 9691) },   { AOM_CDF3(32640, 32641) },  // 255, 1
-      { AOM_CDF3(32640, 32641) }, { AOM_CDF3(32640, 32641) },
-      { AOM_CDF3(16384, 24576) }, { AOM_CDF3(16384, 24576) },
-      { AOM_CDF3(16384, 24576) }, { AOM_CDF3(16384, 24576) },
-      { AOM_CDF3(26624, 26648) },  // 208, 1
-      { AOM_CDF3(26624, 26648) }, { AOM_CDF3(26624, 26648) },
-      { AOM_CDF3(26624, 26648) },
-    };
-#endif  // CONFIG_JNT_COMP
 
 #if WEDGE_IDX_ENTROPY_CODING
 static const aom_cdf_prob default_wedge_idx_cdf[BLOCK_SIZES_ALL][CDF_SIZE(16)] =
@@ -584,7 +565,6 @@ static const aom_cdf_prob default_skip_cdfs[SKIP_CONTEXTS][CDF_SIZE(2)] = {
   { AOM_CDF2(30224) }, { AOM_CDF2(16244) }, { AOM_CDF2(4835) }
 };
 
-#if CONFIG_JNT_COMP
 static const aom_cdf_prob
     default_compound_idx_cdfs[COMP_INDEX_CONTEXTS][CDF_SIZE(2)] = {
       { AOM_ICDF(24576), AOM_ICDF(32768), 0 },
@@ -605,7 +585,6 @@ static const aom_cdf_prob
       { AOM_ICDF(13107), AOM_ICDF(32768), 0 },
       { AOM_ICDF(13107), AOM_ICDF(32768), 0 },
     };
-#endif  // CONFIG_JNT_COMP
 
 static const aom_cdf_prob default_filter_intra_mode_cdf[CDF_SIZE(
     FILTER_INTRA_MODES)] = { AOM_CDF5(14259, 17304, 20463, 29377) };
@@ -1138,10 +1117,8 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_copy(fc->comp_bwdref_cdf, default_comp_bwdref_cdf);
   av1_copy(fc->single_ref_cdf, default_single_ref_cdf);
   av1_copy(fc->txfm_partition_cdf, default_txfm_partition_cdf);
-#if CONFIG_JNT_COMP
   av1_copy(fc->compound_index_cdf, default_compound_idx_cdfs);
   av1_copy(fc->comp_group_idx_cdf, default_comp_group_idx_cdfs);
-#endif  // CONFIG_JNT_COMP
   av1_copy(fc->newmv_cdf, default_newmv_cdf);
   av1_copy(fc->zeromv_cdf, default_zeromv_cdf);
   av1_copy(fc->refmv_cdf, default_refmv_cdf);

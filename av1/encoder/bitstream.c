@@ -1180,7 +1180,6 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
 
     if (mbmi->ref_frame[1] != INTRA_FRAME) write_motion_mode(cm, xd, mi, w);
 
-#if CONFIG_JNT_COMP
     // First write idx to indicate current compound inter prediction mode group
     // Group A (0): jnt_comp, compound_average
     // Group B (1): interintra, compound_segment, wedge
@@ -1236,33 +1235,6 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
         }
       }
     }
-#else  // CONFIG_JNT_COMP
-    if (cpi->common.reference_mode != SINGLE_REFERENCE &&
-        is_inter_compound_mode(mbmi->mode) &&
-        mbmi->motion_mode == SIMPLE_TRANSLATION &&
-        is_any_masked_compound_used(bsize)) {
-      if (cm->allow_masked_compound) {
-        if (!is_interinter_compound_used(COMPOUND_WEDGE, bsize))
-          aom_write_bit(w, mbmi->interinter_compound_type == COMPOUND_AVERAGE);
-        else
-          aom_write_symbol(w, mbmi->interinter_compound_type,
-                           ec_ctx->compound_type_cdf[bsize], COMPOUND_TYPES);
-        if (is_interinter_compound_used(COMPOUND_WEDGE, bsize) &&
-            mbmi->interinter_compound_type == COMPOUND_WEDGE) {
-#if WEDGE_IDX_ENTROPY_CODING
-          aom_write_symbol(w, mbmi->wedge_index, ec_ctx->wedge_idx_cdf[bsize],
-                           16);
-#else
-          aom_write_literal(w, mbmi->wedge_index, get_wedge_bits_lookup(bsize));
-#endif
-          aom_write_bit(w, mbmi->wedge_sign);
-        }
-        if (mbmi->interinter_compound_type == COMPOUND_SEG) {
-          aom_write_literal(w, mbmi->mask_type, MAX_SEG_MASK_BITS);
-        }
-      }
-    }
-#endif  // CONFIG_JNT_COMP
 
     write_mb_interp_filter(cpi, xd, w);
   }
@@ -2851,9 +2823,7 @@ void write_sequence_header(AV1_COMP *cpi, struct aom_write_bit_buffer *wb) {
 
   aom_wb_write_bit(wb, seq_params->enable_dual_filter);
 
-#if CONFIG_JNT_COMP
   aom_wb_write_bit(wb, seq_params->enable_jnt_comp);
-#endif
 
   if (seq_params->force_screen_content_tools == 2) {
     aom_wb_write_bit(wb, 1);

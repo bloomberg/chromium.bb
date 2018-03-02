@@ -15,16 +15,12 @@
 using libaom_test::ACMRandom;
 using libaom_test::AV1Convolve2D::AV1Convolve2DSrTest;
 using libaom_test::AV1Convolve2D::AV1Convolve2DTest;
-using std::tr1::make_tuple;
-using std::tr1::tuple;
-#if CONFIG_JNT_COMP
 using libaom_test::AV1Convolve2D::AV1JntConvolve2DTest;
-#endif
 using libaom_test::AV1HighbdConvolve2D::AV1HighbdConvolve2DSrTest;
 using libaom_test::AV1HighbdConvolve2D::AV1HighbdConvolve2DTest;
-#if CONFIG_JNT_COMP
 using libaom_test::AV1HighbdConvolve2D::AV1HighbdJntConvolve2DTest;
-#endif
+using std::tr1::make_tuple;
+using std::tr1::tuple;
 
 namespace {
 
@@ -124,7 +120,7 @@ INSTANTIATE_TEST_CASE_P(
     libaom_test::AV1Convolve2D::BuildParams(av1_convolve_2d_sr_avx2, 1, 1, 0));
 #endif
 
-#if CONFIG_JNT_COMP && HAVE_SSE4_1
+#if HAVE_SSE4_1
 TEST_P(AV1JntConvolve2DTest, CheckOutput) { RunCheckOutput(GET_PARAM(0)); }
 
 INSTANTIATE_TEST_CASE_P(C_COPY, AV1JntConvolve2DTest,
@@ -225,7 +221,7 @@ INSTANTIATE_TEST_CASE_P(AVX2_COPY, AV1HighbdConvolve2DSrTest,
                         libaom_test::AV1HighbdConvolve2D::BuildParams(
                             av1_highbd_convolve_2d_copy_sr_avx2, 0, 0, 0));
 #endif
-#if CONFIG_JNT_COMP && HAVE_SSE4_1
+#if HAVE_SSE4_1
 TEST_P(AV1HighbdJntConvolve2DTest, CheckOutput) {
   RunCheckOutput(GET_PARAM(1));
 }
@@ -260,7 +256,7 @@ INSTANTIATE_TEST_CASE_P(AVX2_X, AV1HighbdJntConvolve2DTest,
                         libaom_test::AV1HighbdConvolve2D::BuildParams(
                             av1_highbd_jnt_convolve_x_avx2, 1, 0, 1));
 #endif
-#endif  // CONFIG_JNT_COMP
+#endif
 #endif
 
 }  // namespace

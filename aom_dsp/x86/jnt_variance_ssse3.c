@@ -20,7 +20,6 @@
 
 #include "./av1_rtcd.h"
 
-#if CONFIG_JNT_COMP
 void aom_var_filter_block2d_bil_first_pass_ssse3(
     const uint8_t *a, uint16_t *b, unsigned int src_pixels_per_line,
     unsigned int pixel_step, unsigned int output_height,
@@ -302,5 +301,3 @@ JNT_SUBPIX_AVG_VAR(64, 16)
 JNT_SUBPIX_AVG_VAR(32, 128)
 JNT_SUBPIX_AVG_VAR(128, 32)
 #endif  // CONFIG_AV1
-
-#endif  // CONFIG_JNT_COMP

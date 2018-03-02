@@ -176,7 +176,6 @@ static INLINE const uint8_t *pre(const uint8_t *buf, int stride, int r, int c) {
 }
 
 /* checks if (r, c) has better score than previous best */
-#if CONFIG_JNT_COMP
 #define CHECK_BETTER(v, r, c)                                                \
   if (c >= minc && c <= maxc && r >= minr && r <= maxr) {                    \
     MV this_mv = { r, c };                                                   \
@@ -208,33 +207,6 @@ static INLINE const uint8_t *pre(const uint8_t *buf, int stride, int r, int c) {
   } else {                                                                   \
     v = INT_MAX;                                                             \
   }
-#else  // CONFIG_JNT_COMP
-#define CHECK_BETTER(v, r, c)                                             \
-  if (c >= minc && c <= maxc && r >= minr && r <= maxr) {                 \
-    MV this_mv = { r, c };                                                \
-    v = mv_err_cost(&this_mv, ref_mv, mvjcost, mvcost, error_per_bit);    \
-    if (second_pred == NULL)                                              \
-      thismse = vfp->svf(pre(y, y_stride, r, c), y_stride, sp(c), sp(r),  \
-                         src_address, src_stride, &sse);                  \
-    else if (mask)                                                        \
-      thismse = vfp->msvf(pre(y, y_stride, r, c), y_stride, sp(c), sp(r), \
-                          src_address, src_stride, second_pred, mask,     \
-                          mask_stride, invert_mask, &sse);                \
-    else                                                                  \
-      thismse = vfp->svaf(pre(y, y_stride, r, c), y_stride, sp(c), sp(r), \
-                          src_address, src_stride, &sse, second_pred);    \
-    v += thismse;                                                         \
-    if (v < besterr) {                                                    \
-      besterr = v;                                                        \
-      br = r;                                                             \
-      bc = c;                                                             \
-      *distortion = thismse;                                              \
-      *sse1 = sse;                                                        \
-    }                                                                     \
-  } else {                                                                \
-    v = INT_MAX;                                                          \
-  }
-#endif  // CONFIG_JNT_COMP
 
 #define CHECK_BETTER0(v, r, c) CHECK_BETTER(v, r, c)
 
@@ -372,12 +344,10 @@ static unsigned int setup_center_error(
         aom_highbd_comp_mask_pred(comp_pred16, second_pred, w, h, y + offset,
                                   y_stride, mask, mask_stride, invert_mask);
       } else {
-#if CONFIG_JNT_COMP
         if (xd->jcp_param.use_jnt_comp_avg)
           aom_highbd_jnt_comp_avg_pred(comp_pred16, second_pred, w, h,
                                        y + offset, y_stride, &xd->jcp_param);
         else
-#endif  // CONFIG_JNT_COMP
           aom_highbd_comp_avg_pred(comp_pred16, second_pred, w, h, y + offset,
                                    y_stride);
       }
@@ -389,12 +359,10 @@ static unsigned int setup_center_error(
         aom_comp_mask_pred(comp_pred, second_pred, w, h, y + offset, y_stride,
                            mask, mask_stride, invert_mask);
       } else {
-#if CONFIG_JNT_COMP
         if (xd->jcp_param.use_jnt_comp_avg)
           aom_jnt_comp_avg_pred(comp_pred, second_pred, w, h, y + offset,
                                 y_stride, &xd->jcp_param);
         else
-#endif  // CONFIG_JNT_COMP
           aom_comp_avg_pred(comp_pred, second_pred, w, h, y + offset, y_stride);
       }
       besterr = vfp->vf(comp_pred, w, src, src_stride, sse1);
@@ -675,13 +643,11 @@ static int upsampled_pref_error(const MACROBLOCKD *xd,
             pred16, second_pred, w, h, subpel_x_q3, subpel_y_q3, y, y_stride,
             mask, mask_stride, invert_mask, xd->bd);
       } else {
-#if CONFIG_JNT_COMP
         if (xd->jcp_param.use_jnt_comp_avg)
           aom_highbd_jnt_comp_avg_upsampled_pred(
               pred16, second_pred, w, h, subpel_x_q3, subpel_y_q3, y, y_stride,
               xd->bd, &xd->jcp_param);
         else
-#endif  // CONFIG_JNT_COMP
           aom_highbd_comp_avg_upsampled_pred(pred16, second_pred, w, h,
                                              subpel_x_q3, subpel_y_q3, y,
                                              y_stride, xd->bd);
@@ -700,13 +666,11 @@ static int upsampled_pref_error(const MACROBLOCKD *xd,
                                      subpel_y_q3, y, y_stride, mask,
                                      mask_stride, invert_mask);
       } else {
-#if CONFIG_JNT_COMP
         if (xd->jcp_param.use_jnt_comp_avg)
           aom_jnt_comp_avg_upsampled_pred(pred, second_pred, w, h, subpel_x_q3,
                                           subpel_y_q3, y, y_stride,
                                           &xd->jcp_param);
         else
-#endif  // CONFIG_JNT_COMP
           aom_comp_avg_upsampled_pred(pred, second_pred, w, h, subpel_x_q3,
                                       subpel_y_q3, y, y_stride);
       }
@@ -810,13 +774,11 @@ int av1_find_best_sub_pixel_tree(
                                 src_address, src_stride, second_pred, mask,
                                 mask_stride, invert_mask, &sse);
           } else {
-#if CONFIG_JNT_COMP
             if (xd->jcp_param.use_jnt_comp_avg)
               thismse =
                   vfp->jsvaf(pre_address, y_stride, sp(tc), sp(tr), src_address,
                              src_stride, &sse, second_pred, &xd->jcp_param);
             else
-#endif  // CONFIG_JNT_COMP
               thismse = vfp->svaf(pre_address, y_stride, sp(tc), sp(tr),
                                   src_address, src_stride, &sse, second_pred);
           }
@@ -861,13 +823,11 @@ int av1_find_best_sub_pixel_tree(
                               src_address, src_stride, second_pred, mask,
                               mask_stride, invert_mask, &sse);
         } else {
-#if CONFIG_JNT_COMP
           if (xd->jcp_param.use_jnt_comp_avg)
             thismse =
                 vfp->jsvaf(pre_address, y_stride, sp(tc), sp(tr), src_address,
                            src_stride, &sse, second_pred, &xd->jcp_param);
           else
-#endif  // CONFIG_JNT_COMP
             thismse = vfp->svaf(pre_address, y_stride, sp(tc), sp(tr),
                                 src_address, src_stride, &sse, second_pred);
         }
@@ -1444,7 +1404,6 @@ int av1_get_mvpred_av_var(const MACROBLOCK *x, const MV *best_mv,
   const MV mv = { best_mv->row * 8, best_mv->col * 8 };
   unsigned int unused;
 
-#if CONFIG_JNT_COMP
   if (xd->jcp_param.use_jnt_comp_avg)
     return vfp->jsvaf(get_buf_from_mv(in_what, best_mv), in_what->stride, 0, 0,
                       what->buf, what->stride, &unused, second_pred,
@@ -1453,7 +1412,6 @@ int av1_get_mvpred_av_var(const MACROBLOCK *x, const MV *best_mv,
                                      x->errorperbit)
                        : 0);
   else
-#endif  // CONFIG_JNT_COMP
     return vfp->svaf(get_buf_from_mv(in_what, best_mv), in_what->stride, 0, 0,
                      what->buf, what->stride, &unused, second_pred) +
            (use_mvcost ? mv_err_cost(&mv, center_mv, x->nmvjointcost, x->mvcost,
@@ -2475,14 +2433,12 @@ int av1_refining_search_8p_c(MACROBLOCK *x, int error_per_bit, int search_range,
                             second_pred, mask, mask_stride, invert_mask) +
                mvsad_err_cost(x, best_mv, &fcenter_mv, error_per_bit);
   } else {
-#if CONFIG_JNT_COMP
     if (xd->jcp_param.use_jnt_comp_avg)
       best_sad = fn_ptr->jsdaf(what->buf, what->stride,
                                get_buf_from_mv(in_what, best_mv),
                                in_what->stride, second_pred, &xd->jcp_param) +
                  mvsad_err_cost(x, best_mv, &fcenter_mv, error_per_bit);
     else
-#endif  // CONFIG_JNT_COMP
       best_sad = fn_ptr->sdaf(what->buf, what->stride,
                               get_buf_from_mv(in_what, best_mv),
                               in_what->stride, second_pred) +
@@ -2503,13 +2459,11 @@ int av1_refining_search_8p_c(MACROBLOCK *x, int error_per_bit, int search_range,
                              get_buf_from_mv(in_what, &mv), in_what->stride,
                              second_pred, mask, mask_stride, invert_mask);
         } else {
-#if CONFIG_JNT_COMP
           if (xd->jcp_param.use_jnt_comp_avg)
             sad = fn_ptr->jsdaf(what->buf, what->stride,
                                 get_buf_from_mv(in_what, &mv), in_what->stride,
                                 second_pred, &xd->jcp_param);
           else
-#endif  // CONFIG_JNT_COMP
             sad = fn_ptr->sdaf(what->buf, what->stride,
                                get_buf_from_mv(in_what, &mv), in_what->stride,
                                second_pred);

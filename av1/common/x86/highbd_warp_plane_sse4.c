@@ -34,12 +34,10 @@ void av1_highbd_warp_affine_sse4_1(const int32_t *mat, const uint16_t *ref,
   assert(IMPLIES(conv_params->is_compound, conv_params->dst != NULL));
   assert(!(bd == 12 && reduce_bits_horiz < 5));
 
-#if CONFIG_JNT_COMP
   const int w0 = conv_params->fwd_offset;
   const int w1 = conv_params->bck_offset;
   const __m128i wt0 = _mm_set1_epi32(w0);
   const __m128i wt1 = _mm_set1_epi32(w1);
-#endif  // CONFIG_JNT_COMP
 
   /* Note: For this code to work, the left/right frame borders need to be
      extended by at least 13 pixels each. By the time we get here, other
@@ -306,7 +304,6 @@ void av1_highbd_warp_affine_sse4_1(const int32_t *mat, const uint16_t *ref,
               ((1 << (reduce_bits_vert)) >> 1));
           res_lo = _mm_add_epi32(res_lo, round_const);
           res_lo = _mm_sra_epi32(res_lo, _mm_cvtsi32_si128(reduce_bits_vert));
-#if CONFIG_JNT_COMP
           if (conv_params->use_jnt_comp_avg) {
             if (comp_avg) {
               const __m128i sum =
@@ -321,18 +318,11 @@ void av1_highbd_warp_affine_sse4_1(const int32_t *mat, const uint16_t *ref,
           }
 
           _mm_storeu_si128(p, res_lo);
-#else
-          if (comp_avg)
-            res_lo =
-                _mm_srai_epi32(_mm_add_epi32(_mm_loadu_si128(p), res_lo), 1);
-          _mm_storeu_si128(p, res_lo);
-#endif
 
           if (p_width > 4) {
             res_hi = _mm_add_epi32(res_hi, round_const);
             res_hi = _mm_sra_epi32(res_hi, _mm_cvtsi32_si128(reduce_bits_vert));
 
-#if CONFIG_JNT_COMP
             if (conv_params->use_jnt_comp_avg) {
               if (comp_avg) {
                 const __m128i sum =
@@ -347,12 +337,6 @@ void av1_highbd_warp_affine_sse4_1(const int32_t *mat, const uint16_t *ref,
             }
 
             _mm_storeu_si128(p + 1, res_hi);
-#else
-            if (comp_avg)
-              res_hi = _mm_srai_epi32(
-                  _mm_add_epi32(_mm_loadu_si128(p + 1), res_hi), 1);
-            _mm_storeu_si128(p + 1, res_hi);
-#endif
           }
         } else {
           // Round and pack into 8 bits

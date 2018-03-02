@@ -33,7 +33,6 @@ static INLINE unsigned int sad(const uint8_t *a, int a_stride, const uint8_t *b,
   return sad;
 }
 
-#if CONFIG_JNT_COMP
 #define sadMxh(m)                                                          \
   unsigned int aom_sad##m##xh_c(const uint8_t *a, int a_stride,            \
                                 const uint8_t *b, int b_stride, int width, \
@@ -61,20 +60,6 @@ static INLINE unsigned int sad(const uint8_t *a, int a_stride, const uint8_t *b,
                             jcp_param);                                       \
     return sad(src, src_stride, comp_pred, m, m, n);                          \
   }
-#else  // CONFIG_JNT_COMP
-#define sadMxN(m, n)                                                        \
-  unsigned int aom_sad##m##x##n##_c(const uint8_t *src, int src_stride,     \
-                                    const uint8_t *ref, int ref_stride) {   \
-    return sad(src, src_stride, ref, ref_stride, m, n);                     \
-  }                                                                         \
-  unsigned int aom_sad##m##x##n##_avg_c(const uint8_t *src, int src_stride, \
-                                        const uint8_t *ref, int ref_stride, \
-                                        const uint8_t *second_pred) {       \
-    uint8_t comp_pred[m * n];                                               \
-    aom_comp_avg_pred_c(comp_pred, second_pred, m, n, ref, ref_stride);     \
-    return sad(src, src_stride, comp_pred, m, m, n);                        \
-  }
-#endif  // CONFIG_JNT_COMP
 
 // depending on call sites, pass **ref_array to avoid & in subsequent call and
 // de-dup with 4D below.
@@ -184,14 +169,12 @@ sadMxNxK(4, 4, 3)
 sadMxNxK(4, 4, 8)
 sadMxNx4D(4, 4)
 
-#if CONFIG_JNT_COMP
 sadMxh(128);
 sadMxh(64);
 sadMxh(32);
 sadMxh(16);
 sadMxh(8);
 sadMxh(4);
-#endif  // CONFIG_JNT_COMP
 
 #if CONFIG_AV1
 sadMxN(4, 16)
@@ -244,7 +227,6 @@ static INLINE unsigned int highbd_sadb(const uint8_t *a8, int a_stride,
   return sad;
 }
 
-#if CONFIG_JNT_COMP
 #define highbd_sadMxN(m, n)                                                    \
   unsigned int aom_highbd_sad##m##x##n##_c(const uint8_t *src, int src_stride, \
                                            const uint8_t *ref,                 \
@@ -266,21 +248,6 @@ static INLINE unsigned int highbd_sadb(const uint8_t *a8, int a_stride,
                                  ref_stride, jcp_param);                       \
     return highbd_sadb(src, src_stride, comp_pred, m, m, n);                   \
   }
-#else
-#define highbd_sadMxN(m, n)                                                    \
-  unsigned int aom_highbd_sad##m##x##n##_c(const uint8_t *src, int src_stride, \
-                                           const uint8_t *ref,                 \
-                                           int ref_stride) {                   \
-    return highbd_sad(src, src_stride, ref, ref_stride, m, n);                 \
-  }                                                                            \
-  unsigned int aom_highbd_sad##m##x##n##_avg_c(                                \
-      const uint8_t *src, int src_stride, const uint8_t *ref, int ref_stride,  \
-      const uint8_t *second_pred) {                                            \
-    uint16_t comp_pred[m * n];                                                 \
-    aom_highbd_comp_avg_pred_c(comp_pred, second_pred, m, n, ref, ref_stride); \
-    return highbd_sadb(src, src_stride, comp_pred, m, m, n);                   \
-  }
-#endif  // CONFIG_JNT_COMP
 
 #define highbd_sadMxNxK(m, n, k)                                             \
   void aom_highbd_sad##m##x##n##x##k##_c(                                    \
