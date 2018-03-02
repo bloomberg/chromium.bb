@@ -1071,8 +1071,10 @@
       'asan', 'lsan', 'release_trybot',
     ],
 
+    # Cast Linux takes very long in linking, possibly due to being on GCE
+    # (crbug/794423).
     'cast_release_bot': [
-      'cast', 'release_bot',
+      'cast', 'release_bot', 'minimal_symbols',
     ],
 
     'cast_release_trybot': [
