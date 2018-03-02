@@ -41,9 +41,10 @@
           <img class="user-icon" src="[[getProfilePictureUrl_(item)]]">
           <div class="flex layout vertical user-info no-min-width">
             <div class="text-elide">[[getUserName_(item)]]</div>
-            <template is="dom-if" if="[[shouldShowEmail_(item)]]">
-              <div class="secondary text-elide">[[item.displayEmail]]</div>
-            </template>
+            <div class="secondary text-elide"
+                hidden$="[[!shouldShowEmail_(item)]]">
+              [[item.displayEmail]]
+            </div>
           </div>
           <button is="paper-icon-button-light" class="icon-clear"
               on-click="removeUser_"

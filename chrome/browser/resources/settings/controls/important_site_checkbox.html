@@ -37,10 +37,13 @@
         <div class="label">[[site.registerableDomain]]</div>
         <div class="secondary label">
           <span class="storage-size">[[site.storageSize]]</span>
-          <template is="dom-if" if="[[site.hasNotifications]]">
-            <span class="middot">&middot;</span>
-            <span class="has-notifications">$i18n{notificationWarning}</span>
-          </template>
+            <span class="middot" hidden$="[[!site.hasNotifications]]">
+              &middot;
+            </span>
+            <span class="has-notifications"
+                hidden$="[[!site.hasNotifications]]">
+              $i18n{notificationWarning}
+            </span>
         </div>
       </paper-checkbox>
     </div>

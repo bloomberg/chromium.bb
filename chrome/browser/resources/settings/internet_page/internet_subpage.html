@@ -149,14 +149,11 @@
         </template>
 
         <!-- Text shown if no networks exist. -->
-        <template is="dom-if"
-            if="[[!shouldShowNetworkList_(networkStateList_)]]">
-          <div
-              inner-h-t-m-l=
-                  "[[getNoNetworksString_(deviceState, tetherDeviceState)]]"
-              class="no-networks">
-          </div>
-        </template>
+        <div hidden="[[shouldShowNetworkList_(networkStateList_)]]"
+          inner-h-t-m-l=
+              "[[getNoNetworksString_(deviceState, tetherDeviceState)]]"
+          class="no-networks">
+        </div>
 
         <template is="dom-if" if="[[isEqual_('VPN', deviceState.Type)]]">
           <!-- Third party VPNs. -->
