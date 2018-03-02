@@ -39,7 +39,6 @@ schema_sources = [
   "dial.idl",
   "downloads.idl",
   "downloads_internal.idl",
-  "easy_unlock_private.idl",
   "font_settings.json",
   "gcm.json",
   "history.json",
@@ -92,6 +91,7 @@ if (is_chromeos) {
   schema_sources += [
     "certificate_provider.idl",
     "certificate_provider_internal.idl",
+    "easy_unlock_private.idl",
     "echo_private.json",
     "enterprise_device_attributes.idl",
     "enterprise_platform_keys.idl",

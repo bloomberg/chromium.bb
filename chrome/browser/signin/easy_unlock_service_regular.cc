@@ -27,7 +27,6 @@
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/chrome_features.h"
-#include "chrome/common/extensions/api/easy_unlock_private.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "components/cryptauth/cryptauth_access_token_fetcher.h"
@@ -67,6 +66,7 @@
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_reauth.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/common/extensions/api/easy_unlock_private.h"
 #include "components/user_manager/user_manager.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
@@ -469,6 +469,7 @@ void EasyUnlockServiceRegular::StartAutoPairing(
 
   auto_pairing_callback_ = callback;
 
+#if defined(OS_CHROMEOS)
   std::unique_ptr<base::ListValue> args(new base::ListValue());
   std::unique_ptr<extensions::Event> event(new extensions::Event(
       extensions::events::EASY_UNLOCK_PRIVATE_ON_START_AUTO_PAIRING,
@@ -476,6 +477,7 @@ void EasyUnlockServiceRegular::StartAutoPairing(
       std::move(args)));
   extensions::EventRouter::Get(profile())->DispatchEventWithLazyListener(
       extension_misc::kEasyUnlockAppId, std::move(event));
+#endif
 }
 
 void EasyUnlockServiceRegular::SetAutoPairingResult(
