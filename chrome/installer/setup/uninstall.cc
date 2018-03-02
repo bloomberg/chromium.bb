@@ -640,7 +640,8 @@ bool DeleteChromeRegistrationKeys(const InstallerState& installer_state,
   InstallUtil::DeleteRegistryKey(root, reg_app_id, WorkItem::kWow64Default);
 
   // Delete Software\Classes\CLSID\|toast_activator_clsid|.
-  base::string16 toast_activator_reg_path = GetToastActivatorRegistryPath();
+  base::string16 toast_activator_reg_path =
+      InstallUtil::GetToastActivatorRegistryPath();
   if (!toast_activator_reg_path.empty()) {
     InstallUtil::DeleteRegistryKey(root, toast_activator_reg_path,
                                    WorkItem::kWow64Default);

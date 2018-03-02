@@ -23,6 +23,7 @@
 #include "base/values.h"
 #include "base/version.h"
 #include "base/win/registry.h"
+#include "base/win/shortcut.h"
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -33,6 +34,7 @@
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/installation_state.h"
 #include "chrome/installer/util/l10n_string_util.h"
+#include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/util_constants.h"
 #include "chrome/installer/util/work_item_list.h"
 
@@ -275,6 +277,49 @@ bool InstallUtil::IsFirstRunSentinelPresent() {
   base::FilePath user_data_dir;
   return !PathService::Get(chrome::DIR_USER_DATA, &user_data_dir) ||
          base::PathExists(user_data_dir.Append(chrome::kFirstRunSentinel));
+}
+
+// static
+bool InstallUtil::IsStartMenuShortcutWithActivatorGuidInstalled() {
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  base::FilePath shortcut_path;
+
+  if (!ShellUtil::GetShortcutPath(
+          ShellUtil::SHORTCUT_LOCATION_START_MENU_ROOT, dist,
+          install_static::IsSystemInstall() ? ShellUtil::SYSTEM_LEVEL
+                                            : ShellUtil::CURRENT_USER,
+          &shortcut_path)) {
+    return false;
+  }
+
+  shortcut_path =
+      shortcut_path.Append(dist->GetShortcutName() + installer::kLnkExt);
+  if (!base::PathExists(shortcut_path))
+    return false;
+
+  base::win::ShortcutProperties properties;
+  base::win::ResolveShortcutProperties(
+      shortcut_path,
+      base::win::ShortcutProperties::PROPERTIES_TOAST_ACTIVATOR_CLSID,
+      &properties);
+
+  return ::IsEqualCLSID(properties.toast_activator_clsid,
+                        install_static::GetToastActivatorClsid());
+}
+
+// static
+base::string16 InstallUtil::GetToastActivatorRegistryPath() {
+  // CLSID has a string format of "{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}",
+  // which contains 38 characters. The length is 39 to make space for the
+  // string terminator.
+  constexpr int kGuidLength = 39;
+  base::string16 guid_string;
+  if (::StringFromGUID2(install_static::GetToastActivatorClsid(),
+                        base::WriteInto(&guid_string, kGuidLength),
+                        kGuidLength) != kGuidLength) {
+    return base::string16();
+  }
+  return L"Software\\Classes\\CLSID\\" + guid_string;
 }
 
 // static

@@ -25,6 +25,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/win/core_winrt_util.h"
+#include "base/win/registry.h"
 #include "base/win/scoped_hstring.h"
 #include "base/win/scoped_winrt_initializer.h"
 #include "base/win/windows_version.h"
@@ -37,6 +38,7 @@
 #include "chrome/browser/notifications/notification_template_builder.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/install_static/install_util.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/shell_util.h"
 #include "components/version_info/channel.h"
@@ -461,10 +463,23 @@ class NotificationPlatformBridgeWinImpl
                        /*supports_synchronization=*/true));
   }
 
+  // Test to see if the notification_helper.exe has been registered in the
+  // system, either under HKCU or HKLM.
+  bool IsToastActivatorRegistered() {
+    base::win::RegKey key;
+    base::string16 path =
+        InstallUtil::GetToastActivatorRegistryPath() + L"\\LocalServer32";
+    HKEY root = install_static::IsSystemInstall() ? HKEY_LOCAL_MACHINE
+                                                  : HKEY_CURRENT_USER;
+    return ERROR_SUCCESS == key.Open(root, path.c_str(), KEY_QUERY_VALUE);
+  }
+
   void SetReadyCallback(
       NotificationPlatformBridge::NotificationBridgeReadyCallback callback) {
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
-    std::move(callback).Run(com_functions_initialized_);
+    std::move(callback).Run(
+        com_functions_initialized_ && IsToastActivatorRegistered() &&
+        InstallUtil::IsStartMenuShortcutWithActivatorGuidInstalled());
   }
 
   void HandleEvent(winui::Notifications::IToastNotification* notification,

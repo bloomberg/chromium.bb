@@ -89,6 +89,14 @@ class InstallUtil {
   // Returns true if the sentinel file exists (or the path cannot be obtained).
   static bool IsFirstRunSentinelPresent();
 
+  // Test to see if a Start menu shortcut exists with the right toast activator
+  // CLSID registered.
+  static bool IsStartMenuShortcutWithActivatorGuidInstalled();
+
+  // Returns the toast activator registry path if found, or an empty string in
+  // case of error.
+  static base::string16 GetToastActivatorRegistryPath();
+
   // Populates |path| with EULA sentinel file path. Returns false on error.
   static bool GetEULASentinelFilePath(base::FilePath* path);
 

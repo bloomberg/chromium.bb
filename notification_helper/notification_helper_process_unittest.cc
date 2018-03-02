@@ -57,7 +57,7 @@ base::Process FindHelperProcess() {
 class NotificationHelperTest : public testing::Test {
  protected:
   NotificationHelperTest()
-      : toast_activator_reg_path_(installer::GetToastActivatorRegistryPath()),
+      : toast_activator_reg_path_(InstallUtil::GetToastActivatorRegistryPath()),
         root_(HKEY_CURRENT_USER) {}
 
   void SetUp() override {

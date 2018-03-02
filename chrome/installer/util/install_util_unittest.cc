@@ -554,3 +554,21 @@ TEST(DeleteRegistryKeyTest, DeleteAccessRightIsEnoughToDelete) {
   EXPECT_TRUE(InstallUtil::DeleteRegistryKey(HKEY_CURRENT_USER, L"TestKey",
                                              WorkItem::kWow64Default));
 }
+
+TEST_F(InstallUtilTest, GetToastActivatorRegistryPath) {
+  base::string16 toast_activator_reg_path =
+      InstallUtil::GetToastActivatorRegistryPath();
+  EXPECT_FALSE(toast_activator_reg_path.empty());
+
+  // Confirm that the string is a path followed by a GUID.
+  size_t guid_begin = toast_activator_reg_path.find('{');
+  EXPECT_NE(std::wstring::npos, guid_begin);
+  ASSERT_GE(guid_begin, 1u);
+  EXPECT_EQ(L'\\', toast_activator_reg_path[guid_begin - 1]);
+
+  // A GUID has the form "{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}".
+  constexpr size_t kGuidLength = 38;
+  EXPECT_EQ(kGuidLength, toast_activator_reg_path.length() - guid_begin);
+
+  EXPECT_EQ('}', toast_activator_reg_path.back());
+}
