@@ -60,9 +60,9 @@ struct TestAccountInfo {
 // Accounts for multi profile test.
 static const TestAccountInfo kTestAccounts[] = {
     {"__dummy__@invalid.domain", "10000", "hashdummy", "Dummy Account"},
-    {"alice@invalid.domain",     "10001", "hashalice", "Alice"},
-    {"bob@invalid.domain",       "10002", "hashbobbo", "Bob"},
-    {"charlie@invalid.domain",   "10003", "hashcharl", "Charlie"},
+    {"alice@invalid.domain", "10001", "hashalice", "Alice"},
+    {"bob@invalid.domain", "10002", "hashbobbo", "Bob"},
+    {"charlie@invalid.domain", "10003", "hashcharl", "Charlie"},
 };
 
 class TestChromeDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
@@ -106,7 +106,7 @@ void WaitForDownloadNotificationForDisplayService(
   display_service->SetNotificationAddedClosure(base::RepeatingClosure());
 }
 
-}  // anonnymous namespace
+}  // namespace
 
 // Base class for tests
 class DownloadNotificationTestBase : public InProcessBrowserTest {
@@ -225,8 +225,7 @@ class DownloadNotificationTest : public DownloadNotificationTestBase {
 
   void CreateDownload() {
     return CreateDownloadForBrowserAndURL(
-        browser(),
-        GURL(net::URLRequestSlowDownloadJob::kKnownSizeUrl));
+        browser(), GURL(net::URLRequestSlowDownloadJob::kKnownSizeUrl));
   }
 
   // Returns the correct display service for the given Browser. If |browser| is
@@ -305,8 +304,8 @@ class DownloadNotificationTest : public DownloadNotificationTestBase {
   }
   Browser* incognito_browser() const { return incognito_browser_; }
   base::FilePath GetDownloadPath() {
-    return DownloadPrefs::FromDownloadManager(GetDownloadManager(browser()))->
-      DownloadPath();
+    return DownloadPrefs::FromDownloadManager(GetDownloadManager(browser()))
+        ->DownloadPath();
   }
   std::vector<message_center::Notification> GetDownloadNotifications() {
     return display_service_->GetDisplayedNotificationsForType(
@@ -358,19 +357,12 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadFile) {
   EXPECT_FALSE(GetNotification(notification_id()));
 }
 
-// Flaky on ChromeOS.  http://crbug.com/810302
-#if defined(OS_CHROMEOS)
-#define MAYBE_DownloadDangerousFile DISABLED_DownloadDangerousFile
-#else
-#define MAYBE_DownloadDangerousFile DownloadDangerousFile
-#endif
-IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, MAYBE_DownloadDangerousFile) {
-  GURL download_url(embedded_test_server()->GetURL(
-      "/downloads/dangerous/dangerous.swf"));
+IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadDangerousFile) {
+  GURL download_url(
+      embedded_test_server()->GetURL("/downloads/dangerous/dangerous.swf"));
 
   content::DownloadTestObserverTerminal download_terminal_observer(
-      GetDownloadManager(browser()),
-      1u,  /* wait_count */
+      GetDownloadManager(browser()), 1u, /* wait_count */
       content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_IGNORE);
 
   CreateDownloadForBrowserAndURL(browser(), download_url);
@@ -406,19 +398,12 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, MAYBE_DownloadDangerousFile) {
   EXPECT_TRUE(base::PathExists(GetDownloadPath().Append(filename.BaseName())));
 }
 
-// Flaky on ChromeOS.  http://crbug.com/810302
-#if defined(OS_CHROMEOS)
-#define MAYBE_DiscardDangerousFile DISABLED_DiscardDangerousFile
-#else
-#define MAYBE_DiscardDangerousFile DiscardDangerousFile
-#endif
-IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, MAYBE_DiscardDangerousFile) {
-  GURL download_url(embedded_test_server()->GetURL(
-      "/downloads/dangerous/dangerous.swf"));
+IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DiscardDangerousFile) {
+  GURL download_url(
+      embedded_test_server()->GetURL("/downloads/dangerous/dangerous.swf"));
 
   content::DownloadTestObserverTerminal download_terminal_observer(
-      GetDownloadManager(browser()),
-      1u,  /* wait_count */
+      GetDownloadManager(browser()), 1u, /* wait_count */
       content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_IGNORE);
 
   CreateDownloadForBrowserAndURL(browser(), download_url);
@@ -455,15 +440,9 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, MAYBE_DiscardDangerousFile) {
   EXPECT_FALSE(base::PathExists(GetDownloadPath().Append(filename.BaseName())));
 }
 
-// Flaky on ChromeOS.  http://crbug.com/810738
-#if defined(OS_CHROMEOS)
-#define MAYBE_DownloadImageFile DISABLED_DownloadImageFile
-#else
-#define MAYBE_DownloadImageFile DownloadImageFile
-#endif
-IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, MAYBE_DownloadImageFile) {
-  GURL download_url(embedded_test_server()->GetURL(
-      "/downloads/image-octet-stream.png"));
+IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadImageFile) {
+  GURL download_url(
+      embedded_test_server()->GetURL("/downloads/image-octet-stream.png"));
 
   content::DownloadTestObserverTerminal download_terminal_observer(
       GetDownloadManager(browser()), 1u, /* wait_count */
@@ -539,8 +518,7 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
 
   // Installs observers before requesting the completion.
   content::DownloadTestObserverInterrupted download_terminal_observer(
-      download_manager,
-      1u, /* wait_count */
+      download_manager, 1u, /* wait_count */
       content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL);
 
   InterruptTheDownload();
@@ -732,8 +710,7 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, IncognitoDownloadFile) {
 
   // Starts an incognito download.
   CreateDownloadForBrowserAndURL(
-      incognito_browser(),
-      GURL(net::URLRequestSlowDownloadJob::kKnownSizeUrl));
+      incognito_browser(), GURL(net::URLRequestSlowDownloadJob::kKnownSizeUrl));
 
   EXPECT_EQ(l10n_util::GetStringFUTF16(
                 IDS_DOWNLOAD_STATUS_IN_PROGRESS_TITLE,
