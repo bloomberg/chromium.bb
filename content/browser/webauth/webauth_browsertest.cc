@@ -227,4 +227,27 @@ IN_PROC_BROWSER_TEST_F(WebAuthBrowserTest, GetPublicKeyCredentialNavigateAway) {
   ResetAuthenticatorImplAndWaitForConnectionError();
 }
 
+// Regression test for https://crbug.com/818219.
+IN_PROC_BROWSER_TEST_F(WebAuthBrowserTest,
+                       CreatePublicKeyCredentialTwiceInARow) {
+  MockCreateCallback callback_1;
+  MockCreateCallback callback_2;
+  EXPECT_CALL(callback_1, Run(::testing::_)).Times(0);
+  EXPECT_CALL(callback_2, Run(AuthenticatorStatus::PENDING_REQUEST)).Times(1);
+  authenticator()->MakeCredential(BuildBasicCreateOptions(), callback_1.Get());
+  authenticator()->MakeCredential(BuildBasicCreateOptions(), callback_2.Get());
+  authenticator().FlushForTesting();
+}
+
+// Regression test for https://crbug.com/818219.
+IN_PROC_BROWSER_TEST_F(WebAuthBrowserTest, GetPublicKeyCredentialTwiceInARow) {
+  MockGetCallback callback_1;
+  MockGetCallback callback_2;
+  EXPECT_CALL(callback_1, Run(::testing::_)).Times(0);
+  EXPECT_CALL(callback_2, Run(AuthenticatorStatus::PENDING_REQUEST)).Times(1);
+  authenticator()->GetAssertion(BuildBasicGetOptions(), callback_1.Get());
+  authenticator()->GetAssertion(BuildBasicGetOptions(), callback_2.Get());
+  authenticator().FlushForTesting();
+}
+
 }  // namespace content
