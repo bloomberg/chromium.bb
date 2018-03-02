@@ -21,6 +21,7 @@ dom-size: true
 estimated-input-latency: false
 first-interactive: false
 first-meaningful-paint: false
+font-display: true
 link-blocking-first-paint: false
 mainthread-work-breakdown: true
 offscreen-images: false
@@ -36,6 +37,7 @@ unused-css-rules: false
 user-timings: true
 uses-long-cache-ttl: false
 uses-optimized-images: false
+uses-rel-preload: false
 uses-request-compression: false
 uses-responsive-images: false
 uses-webp-images: false
