@@ -212,7 +212,9 @@ class CppFunctionsTest(unittest.TestCase):
         self.assertFalse(cpp_style._check_parameter_name_against_text(parameter, 'FooF', error_collector))
         self.assertEqual(
             error_collector.results(),
-            'The parameter name "ooF" adds no information, so it should be removed.  [readability/parameter_name] [5]')
+            'The parameter name "ooF" adds no information, so it should be removed. '
+            'See https://chromium.googlesource.com/chromium/src/+/master/styleguide/c++/blink-c++.md'
+            '#Leave-obvious-parameter-names-out-of-function-declarations.  [readability/parameter_name] [5]')
 
 
 class CppStyleTestBase(unittest.TestCase):
@@ -2905,8 +2907,10 @@ class WebKitStyleTest(CppStyleTestBase):
     def test_parameter_names(self):
         # Leave meaningless variable names out of function declarations.
         # This variable name is very long.  # pylint: disable=invalid-name
-        meaningless_variable_name_error_message = ('The parameter name "%s" adds no information, '
-                                                   'so it should be removed.  [readability/parameter_name] [5]')
+        meaningless_variable_name_error_message = (
+            'The parameter name "%s" adds no information, so it should be removed. '
+            'See https://chromium.googlesource.com/chromium/src/+/master/styleguide/c++/blink-c++.md'
+            '#Leave-obvious-parameter-names-out-of-function-declarations.  [readability/parameter_name] [5]')
 
         parameter_error_rules = ('-', '+readability/parameter_name')
         # No variable name, so no error.
