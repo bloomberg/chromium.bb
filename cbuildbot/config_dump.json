@@ -37378,6 +37378,7 @@
         ],
         "important": true,
         "models": [
+            "{\n    \"lab_board_name\": \"nami\",\n    \"name\": \"akali\",\n    \"test_suites\": []\n}",
             "{\n    \"lab_board_name\": \"nami\",\n    \"name\": \"nami\",\n    \"test_suites\": []\n}",
             "{\n    \"lab_board_name\": \"nami\",\n    \"name\": \"pantheon\",\n    \"test_suites\": []\n}",
             "{\n    \"lab_board_name\": \"nami\",\n    \"name\": \"vayne\",\n    \"test_suites\": []\n}"
@@ -37520,6 +37521,7 @@
         "hw_tests_override": null,
         "important": true,
         "models": [
+            "{\n    \"lab_board_name\": \"nami\",\n    \"name\": \"akali\",\n    \"test_suites\": []\n}",
             "{\n    \"lab_board_name\": \"nami\",\n    \"name\": \"nami\",\n    \"test_suites\": []\n}",
             "{\n    \"lab_board_name\": \"nami\",\n    \"name\": \"pantheon\",\n    \"test_suites\": []\n}",
             "{\n    \"lab_board_name\": \"nami\",\n    \"name\": \"vayne\",\n    \"test_suites\": []\n}"

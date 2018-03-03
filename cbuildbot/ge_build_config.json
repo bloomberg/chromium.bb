@@ -1835,6 +1835,12 @@
       "models": [
         {
           "board_name": "nami",
+          "name": "akali",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "nami",
           "name": "nami",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
