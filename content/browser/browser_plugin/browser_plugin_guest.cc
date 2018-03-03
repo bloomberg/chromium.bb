@@ -1020,15 +1020,18 @@ void BrowserPluginGuest::OnSetVisibility(int browser_plugin_instance_id,
     return;
 
   guest_visible_ = visible;
-
-  // Do not use WebContents::UpdateWebContentsVisibility() because it ignores
-  // visibility changes that come before the first change to VISIBLE.
-  if (!guest_visible_ || embedder_visibility_ == Visibility::HIDDEN)
+  // TODO(fdoray): Simplify the logic below. https://crbug.com/668690
+  if (!guest_visible_ || embedder_visibility_ == Visibility::HIDDEN) {
     GetWebContents()->WasHidden();
-  else if (embedder_visibility_ == Visibility::VISIBLE)
+  } else if (embedder_visibility_ == Visibility::VISIBLE) {
     GetWebContents()->WasShown();
-  else
+    if (GetWebContents()->GetVisibility() == Visibility::OCCLUDED)
+      GetWebContents()->WasUnOccluded();
+  } else {
+    if (GetWebContents()->GetVisibility() == Visibility::HIDDEN)
+      GetWebContents()->WasShown();
     GetWebContents()->WasOccluded();
+  }
 }
 
 void BrowserPluginGuest::OnUnlockMouse() {

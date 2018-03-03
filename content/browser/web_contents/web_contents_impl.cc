@@ -531,6 +531,9 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
       last_sent_theme_color_(SK_ColorTRANSPARENT),
       did_first_visually_non_empty_paint_(false),
       capturer_count_(0),
+      should_normally_be_visible_(true),
+      should_normally_be_occluded_(false),
+      did_first_set_visible_(false),
       is_being_destroyed_(false),
       is_notifying_observers_(false),
       notify_disconnection_(false),
@@ -1314,7 +1317,6 @@ const std::string& WebContentsImpl::GetEncoding() const {
 
 void WebContentsImpl::IncrementCapturerCount(const gfx::Size& capture_size) {
   DCHECK(!is_being_destroyed_);
-  const bool was_captured = IsBeingCaptured();
   ++capturer_count_;
   DVLOG(1) << "There are now " << capturer_count_
            << " capturing(s) of WebContentsImpl@" << this;
@@ -1326,14 +1328,8 @@ void WebContentsImpl::IncrementCapturerCount(const gfx::Size& capture_size) {
     OnPreferredSizeChanged(preferred_size_);
   }
 
-  if (GetVisibility() != Visibility::VISIBLE && !was_captured) {
-    // Ensure that all views act as if they were visible before capture begins.
-    // TODO(fdoray): Replace RenderWidgetHostView::WasUnOccluded() with a method
-    // to explicitly notify the RenderWidgetHostView that capture began.
-    // https://crbug.com/668690
-    for (RenderWidgetHostView* view : GetRenderWidgetHostViewsInTree())
-      view->WasUnOccluded();
-  }
+  // Ensure that all views are un-occluded before capture begins.
+  DoWasUnOccluded();
 }
 
 void WebContentsImpl::DecrementCapturerCount() {
@@ -1350,12 +1346,13 @@ void WebContentsImpl::DecrementCapturerCount() {
     preferred_size_for_capture_ = gfx::Size();
     OnPreferredSizeChanged(old_size);
 
-    if (visibility_ == Visibility::HIDDEN) {
+    if (IsHidden()) {
       DVLOG(1) << "Executing delayed WasHidden().";
       WasHidden();
-    } else if (visibility_ == Visibility::OCCLUDED) {
-      WasOccluded();
     }
+
+    if (should_normally_be_occluded_)
+      WasOccluded();
   }
 }
 
@@ -1466,6 +1463,8 @@ void WebContentsImpl::SetLastActiveTime(base::TimeTicks last_active_time) {
 }
 
 void WebContentsImpl::WasShown() {
+  const Visibility previous_visibility = GetVisibility();
+
   controller_.SetActive(true);
 
   if (auto* view = GetRenderWidgetHostView()) {
@@ -1481,10 +1480,13 @@ void WebContentsImpl::WasShown() {
   SendPageMessage(new PageMsg_WasShown(MSG_ROUTING_NONE));
 
   last_active_time_ = base::TimeTicks::Now();
-  SetVisibility(Visibility::VISIBLE);
+  should_normally_be_visible_ = true;
+  NotifyVisibilityChanged(previous_visibility);
 }
 
 void WebContentsImpl::WasHidden() {
+  const Visibility previous_visibility = GetVisibility();
+
   // If there are entities capturing screenshots or video (e.g., mirroring),
   // don't activate the "disable rendering" optimization.
   if (!IsBeingCaptured()) {
@@ -1503,7 +1505,8 @@ void WebContentsImpl::WasHidden() {
     SendPageMessage(new PageMsg_WasHidden(MSG_ROUTING_NONE));
   }
 
-  SetVisibility(Visibility::HIDDEN);
+  should_normally_be_visible_ = false;
+  NotifyVisibilityChanged(previous_visibility);
 }
 
 #if defined(OS_ANDROID)
@@ -1536,15 +1539,39 @@ void WebContentsImpl::SetImportance(ChildProcessImportance importance) {
 #endif
 
 void WebContentsImpl::WasOccluded() {
+  const Visibility previous_visibility = GetVisibility();
+
   if (!IsBeingCaptured()) {
     for (RenderWidgetHostView* view : GetRenderWidgetHostViewsInTree())
       view->WasOccluded();
   }
-  SetVisibility(Visibility::OCCLUDED);
+
+  should_normally_be_occluded_ = true;
+  NotifyVisibilityChanged(previous_visibility);
+}
+
+void WebContentsImpl::WasUnOccluded() {
+  const Visibility previous_visibility = GetVisibility();
+
+  if (!IsBeingCaptured())
+    DoWasUnOccluded();
+
+  should_normally_be_occluded_ = false;
+  NotifyVisibilityChanged(previous_visibility);
+}
+
+void WebContentsImpl::DoWasUnOccluded() {
+  // TODO(fdoray): Only call WasUnOccluded on frames in the active viewport.
+  for (RenderWidgetHostView* view : GetRenderWidgetHostViewsInTree())
+    view->WasUnOccluded();
 }
 
 Visibility WebContentsImpl::GetVisibility() const {
-  return visibility_;
+  if (!should_normally_be_visible_)
+    return Visibility::HIDDEN;
+  if (should_normally_be_occluded_)
+    return Visibility::OCCLUDED;
+  return Visibility::VISIBLE;
 }
 
 bool WebContentsImpl::NeedToFireBeforeUnload() {
@@ -1697,8 +1724,7 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
   // This is set before initializing the render manager since
   // RenderFrameHostManager::Init calls back into us via its delegate to ask if
   // it should be hidden.
-  visibility_ =
-      params.initially_hidden ? Visibility::HIDDEN : Visibility::VISIBLE;
+  should_normally_be_visible_ = !params.initially_hidden;
 
   // The routing ids must either all be set or all be unset.
   DCHECK((params.routing_id == MSG_ROUTING_NONE &&
@@ -3410,12 +3436,10 @@ void WebContentsImpl::LoadStateChanged(
   }
 }
 
-void WebContentsImpl::SetVisibility(Visibility visibility) {
-  const Visibility previous_visibility = visibility_;
-  visibility_ = visibility;
-
+void WebContentsImpl::NotifyVisibilityChanged(Visibility previous_visibility) {
   // Notify observers if the visibility changed or if WasShown() is being called
   // for the first time.
+  const Visibility visibility = GetVisibility();
   if (visibility != previous_visibility ||
       (visibility == Visibility::VISIBLE && !did_first_set_visible_)) {
     for (auto& observer : observers_)
@@ -5757,7 +5781,7 @@ void WebContentsImpl::SetEncoding(const std::string& encoding) {
 }
 
 bool WebContentsImpl::IsHidden() {
-  return !IsBeingCaptured() && visibility_ != Visibility::VISIBLE;
+  return !IsBeingCaptured() && !should_normally_be_visible_;
 }
 
 int WebContentsImpl::GetOuterDelegateFrameTreeNodeId() {
@@ -6008,40 +6032,25 @@ int WebContentsImpl::GetCurrentlyPlayingVideoCount() {
   return currently_playing_video_count_;
 }
 
-void WebContentsImpl::UpdateWebContentsVisibility(Visibility visibility) {
-  // Occlusion can cause flakiness in browser tests.
-  static const bool occlusion_is_disabled =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableBackgroundingOccludedWindowsForTesting);
-  if (occlusion_is_disabled && visibility == Visibility::OCCLUDED)
-    visibility = Visibility::VISIBLE;
-
+void WebContentsImpl::UpdateWebContentsVisibility(bool visible) {
   if (!did_first_set_visible_) {
-    if (visibility == Visibility::VISIBLE) {
-      // A WebContents created with CreateParams::initially_hidden = false
-      // starts with GetVisibility() == Visibility::VISIBLE even though it is
-      // not really visible. Call WasShown() when it becomes visible for real as
-      // the page load mechanism and some WebContentsObserver rely on that.
+    // If this WebContents has not yet been set to be visible for the first
+    // time, ignore any requests to make it hidden, since resources would
+    // immediately be destroyed and only re-created after content loaded. In
+    // this state the window content is undefined and can show garbage.
+    // However, the page load mechanism requires an activation call through a
+    // visibility call to (re)load.
+    if (visible) {
       WasShown();
       did_first_set_visible_ = true;
     }
-
-    // Trust the initial visibility of the WebContents and do not switch it to
-    // HIDDEN or OCCLUDED before it becomes VISIBLE for real. Doing so would
-    // result in destroying resources that would immediately be recreated (e.g.
-    // UpdateWebContents(HIDDEN) can be called when a WebContents is added to a
-    // hidden window that is about to be shown).
-
     return;
   }
-
-  if (visibility == visibility_)
+  if (visible == should_normally_be_visible_)
     return;
 
-  if (visibility == Visibility::VISIBLE)
+  if (visible)
     WasShown();
-  else if (visibility == Visibility::OCCLUDED)
-    WasOccluded();
   else
     WasHidden();
 }
