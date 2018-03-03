@@ -1420,6 +1420,7 @@ be describing additional metrics about the same event.
 
 <event name="Memory.Experimental">
   <owner>erikchen@chromium.org</owner>
+  <owner>ssid@chromium.org</owner>
   <summary>
     Metrics associated with memory consumption, in MB.
   </summary>
@@ -1433,9 +1434,29 @@ be describing additional metrics about the same event.
       Measure of memory consumed by Oilpan.
     </summary>
   </metric>
+  <metric name="BlinkGC.AllocatedObjects">
+    <summary>
+      Measure of memory consumed by live allocations made from Oilpan.
+    </summary>
+  </metric>
   <metric name="CommandBuffer">
     <summary>
       Measure of memory consumed by GL command buffer.
+    </summary>
+  </metric>
+  <metric name="Discardable">
+    <summary>
+      Measure of memory consumed by Discardable memory service.
+    </summary>
+  </metric>
+  <metric name="Extensions.ValueStore">
+    <summary>
+      Measure of memory consumed by Key Value Store databases of extensions.
+    </summary>
+  </metric>
+  <metric name="History">
+    <summary>
+      Approximate measure of memory consumed by History service.
     </summary>
   </metric>
   <metric name="IsVisible">
@@ -1444,9 +1465,30 @@ be describing additional metrics about the same event.
       collection.
     </summary>
   </metric>
+  <metric name="JavaHeap">
+    <summary>
+      Measure of memory consumed by java heap on Android.
+    </summary>
+  </metric>
+  <metric name="LevelDatabase">
+    <summary>
+      Measure of memory consumed by unaccounted level databases.
+    </summary>
+  </metric>
   <metric name="Malloc">
     <summary>
-      Measure of memory allocated by malloc.
+      Measure of memory allocated by malloc, that is not classified by other
+      metrics.
+    </summary>
+  </metric>
+  <metric name="Net">
+    <summary>
+      Measure of memory allocated by network sockets and caches.
+    </summary>
+  </metric>
+  <metric name="Net.UrlRequestContext">
+    <summary>
+      Measure of memory allocated by all network requests.
     </summary>
   </metric>
   <metric name="NumberOfDocuments">
@@ -1470,6 +1512,11 @@ be describing additional metrics about the same event.
       The number of layout objects that the associated renderer owns.
     </summary>
   </metric>
+  <metric name="NumberOfMojoHandles">
+    <summary>
+      The number of mojo handles stored in HandleTable.
+    </summary>
+  </metric>
   <metric name="NumberOfNodes">
     <summary>
       The number of nodes that the associated renderer owns.
@@ -1477,7 +1524,32 @@ be describing additional metrics about the same event.
   </metric>
   <metric name="PartitionAlloc">
     <summary>
-      Measure of memory allocated by PartitionAlloc.
+      Measure of memory allocated by PartitionAlloc allocator.
+    </summary>
+  </metric>
+  <metric name="PartitionAlloc.AllocatedObjects">
+    <summary>
+      Measure of total memory used by objects allocated using PartitionAlloc.
+    </summary>
+  </metric>
+  <metric name="PartitionAlloc.Partitions.ArrayBuffer">
+    <summary>
+      Measure of memory used by Array Buffer partition in PartitionAlloc.
+    </summary>
+  </metric>
+  <metric name="PartitionAlloc.Partitions.Buffer">
+    <summary>
+      Measure of memory used by Buffer partition in PartitionAlloc.
+    </summary>
+  </metric>
+  <metric name="PartitionAlloc.Partitions.FastMalloc">
+    <summary>
+      Measure of memory used by Fast Malloc partition in PartitionAlloc.
+    </summary>
+  </metric>
+  <metric name="PartitionAlloc.Partitions.Layout">
+    <summary>
+      Measure of memory used by Layout partition in PartitionAlloc.
     </summary>
   </metric>
   <metric name="PrivateMemoryFootprint">
@@ -1508,6 +1580,56 @@ be describing additional metrics about the same event.
       Measure of total shared memory consumed by process.
     </summary>
   </metric>
+  <metric name="SiteStorage">
+    <summary>
+      Measure of memory used due to web storage APIs in browser process.
+    </summary>
+  </metric>
+  <metric name="SiteStorage.IndexDB">
+    <summary>
+      Measure of memory used due to IndexedDB API in browser process.
+    </summary>
+  </metric>
+  <metric name="SiteStorage.LocalStorage">
+    <summary>
+      Measure of memory used due to Local Storage API in browser process.
+    </summary>
+  </metric>
+  <metric name="SiteStorage.SessionStorage">
+    <summary>
+      Measure of memory used due to Session Storage API in browser process.
+    </summary>
+  </metric>
+  <metric name="Skia">
+    <summary>
+      Measure of memory used by Skia.
+    </summary>
+  </metric>
+  <metric name="Skia.SkGlyphCache">
+    <summary>
+      Measure of memory used by Skia Glyph Cache.
+    </summary>
+  </metric>
+  <metric name="Skia.SkResourceCache">
+    <summary>
+      Measure of memory used by Skia Resource Cache.
+    </summary>
+  </metric>
+  <metric name="Sqlite">
+    <summary>
+      Measure of memory used by all sqlite databases.
+    </summary>
+  </metric>
+  <metric name="Sync">
+    <summary>
+      Measure of memory used by Sync storage.
+    </summary>
+  </metric>
+  <metric name="TabRestore">
+    <summary>
+      Approximate measure of memory used by Tab restore service.
+    </summary>
+  </metric>
   <metric name="TimeSinceLastNavigation">
     <summary>
       The time in seconds since the Tab navigated. Only emitted for tabs that
@@ -1530,6 +1652,11 @@ be describing additional metrics about the same event.
       Measure of total shared memory consumed by all processes.
     </summary>
   </metric>
+  <metric name="UI">
+    <summary>
+      Measure of memory used by Android UI bitmaps.
+    </summary>
+  </metric>
   <metric name="Uptime">
     <summary>
       Process uptime.
@@ -1538,6 +1665,41 @@ be describing additional metrics about the same event.
   <metric name="V8">
     <summary>
       Measure of memory consumed by V8.
+    </summary>
+  </metric>
+  <metric name="WebCache">
+    <summary>
+      Measure of memory consumed by all resources in Blink Web Cache.
+    </summary>
+  </metric>
+  <metric name="WebCache.CSSStylesheetResources">
+    <summary>
+      Measure of memory consumed by CSS Stylesheet resources in Blink Web Cache.
+    </summary>
+  </metric>
+  <metric name="WebCache.FontResources">
+    <summary>
+      Measure of memory consumed by Font resources in Blink Web Cache.
+    </summary>
+  </metric>
+  <metric name="WebCache.ImageResources">
+    <summary>
+      Measure of memory consumed by Image resources in Blink Web Cache.
+    </summary>
+  </metric>
+  <metric name="WebCache.OtherResources">
+    <summary>
+      Measure of memory consumed by other resources in Blink Web Cache.
+    </summary>
+  </metric>
+  <metric name="WebCache.ScriptResources">
+    <summary>
+      Measure of memory consumed by Script resources in Blink Web Cache.
+    </summary>
+  </metric>
+  <metric name="WebCache.XSLStylesheetResources">
+    <summary>
+      Measure of memory consumed by XSL Stylesheet resources in Blink Web Cache.
     </summary>
   </metric>
 </event>

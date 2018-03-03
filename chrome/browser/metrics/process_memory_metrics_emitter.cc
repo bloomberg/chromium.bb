@@ -29,36 +29,143 @@
 #endif
 
 using memory_instrumentation::GlobalMemoryDump;
+using ukm::builders::Memory_Experimental;
 
 namespace {
 
-void AddCommonGpuMetricsToBuilder(ukm::builders::Memory_Experimental* builder,
-                                  const GlobalMemoryDump::ProcessDump& pmd) {
-  DCHECK(builder);
-  UMA_HISTOGRAM_MEMORY_LARGE_MB(
-      "Memory.Experimental.Gpu2.CommandBuffer",
-      pmd.chrome_dump().command_buffer_total_kb / 1024);
-  builder->SetCommandBuffer(pmd.chrome_dump().command_buffer_total_kb / 1024);
+const char kEffectiveSize[] = "effective_size";
+
+struct Metric {
+  const char* const dump_name;
+  const char* const ukm_name;
+  const char* const metric;
+  Memory_Experimental& (Memory_Experimental::*setter)(int64_t);
+};
+const Metric kAllocatorDumpNamesForMetrics[] = {
+    {"blink_gc", "BlinkGC", kEffectiveSize, &Memory_Experimental::SetBlinkGC},
+    {"blink_gc/allocated_objects", "BlinkGC.AllocatedObjects", kEffectiveSize,
+     &Memory_Experimental::SetBlinkGC_AllocatedObjects},
+    {"blink_objects/Document", "NumberOfDocuments",
+     base::trace_event::MemoryAllocatorDump::kNameObjectCount,
+     &Memory_Experimental::SetNumberOfDocuments},
+    {"blink_objects/Frame", "NumberOfFrames",
+     base::trace_event::MemoryAllocatorDump::kNameObjectCount,
+     &Memory_Experimental::SetNumberOfFrames},
+    {"blink_objects/LayoutObject", "NumberOfLayoutObjects",
+     base::trace_event::MemoryAllocatorDump::kNameObjectCount,
+     &Memory_Experimental::SetNumberOfLayoutObjects},
+    {"blink_objects/Node", "NumberOfNodes",
+     base::trace_event::MemoryAllocatorDump::kNameObjectCount,
+     &Memory_Experimental::SetNumberOfNodes},
+    {"discardable", "Discardable", kEffectiveSize,
+     &Memory_Experimental::SetDiscardable},
+    {"extensions/value_store", "Extensions.ValueStore", kEffectiveSize,
+     &Memory_Experimental::SetExtensions_ValueStore},
+    {"gpu/gl", "CommandBuffer", kEffectiveSize,
+     &Memory_Experimental::SetCommandBuffer},
+    {"history", "History", kEffectiveSize, &Memory_Experimental::SetHistory},
+    {"java_heap", "JavaHeap", kEffectiveSize,
+     &Memory_Experimental::SetJavaHeap},
+    {"leveldatabase", "LevelDatabase", kEffectiveSize,
+     &Memory_Experimental::SetLevelDatabase},
+    {"malloc", "Malloc", kEffectiveSize, &Memory_Experimental::SetMalloc},
+    {"mojo", "NumberOfMojoHandles",
+     base::trace_event::MemoryAllocatorDump::kNameObjectCount,
+     &Memory_Experimental::SetNumberOfMojoHandles},
+    {"net", "Net", kEffectiveSize, &Memory_Experimental::SetNet},
+    {"net/url_request_context", "Net.UrlRequestContext", kEffectiveSize,
+     &Memory_Experimental::SetNet_UrlRequestContext},
+    {"partition_alloc", "PartitionAlloc", kEffectiveSize,
+     &Memory_Experimental::SetPartitionAlloc},
+    {"partition_alloc/allocated_objects", "PartitionAlloc.AllocatedObjects",
+     kEffectiveSize, &Memory_Experimental::SetPartitionAlloc_AllocatedObjects},
+    {"partition_alloc/partitions/array_buffer",
+     "PartitionAlloc.Partitions.ArrayBuffer", kEffectiveSize,
+     &Memory_Experimental::SetPartitionAlloc_Partitions_ArrayBuffer},
+    {"partition_alloc/partitions/buffer", "PartitionAlloc.Partitions.Buffer",
+     kEffectiveSize, &Memory_Experimental::SetPartitionAlloc_Partitions_Buffer},
+    {"partition_alloc/partitions/fast_malloc",
+     "PartitionAlloc.Partitions.FastMalloc", kEffectiveSize,
+     &Memory_Experimental::SetPartitionAlloc_Partitions_FastMalloc},
+    {"partition_alloc/partitions/layout", "PartitionAlloc.Partitions.Layout",
+     kEffectiveSize, &Memory_Experimental::SetPartitionAlloc_Partitions_Layout},
+    {"site_storage", "SiteStorage", kEffectiveSize,
+     &Memory_Experimental::SetSiteStorage},
+    {"site_storage/index_db", "SiteStorage.IndexDB", kEffectiveSize,
+     &Memory_Experimental::SetSiteStorage_IndexDB},
+    // TODO(ssid): This metric does not return total value.
+    {"site_storage/localstorage", "SiteStorage.LocalStorage", kEffectiveSize,
+     &Memory_Experimental::SetSiteStorage_LocalStorage},
+    {"site_storage/session_storage", "SiteStorage.SessionStorage",
+     kEffectiveSize, &Memory_Experimental::SetSiteStorage_SessionStorage},
+    {"skia", "Skia", kEffectiveSize, &Memory_Experimental::SetSkia},
+    {"skia/sk_glyph_cache", "Skia.SkGlyphCache", kEffectiveSize,
+     &Memory_Experimental::SetSkia_SkGlyphCache},
+    {"skia/sk_resource_cache", "Skia.SkResourceCache", kEffectiveSize,
+     &Memory_Experimental::SetSkia_SkResourceCache},
+    {"sqlite", "Sqlite", kEffectiveSize, &Memory_Experimental::SetSqlite},
+    {"sync", "Sync", kEffectiveSize, &Memory_Experimental::SetSync},
+    {"tab_restore", "TabRestore", kEffectiveSize,
+     &Memory_Experimental::SetTabRestore},
+    {"ui", "UI", kEffectiveSize, &Memory_Experimental::SetUI},
+    {"v8", "V8", kEffectiveSize, &Memory_Experimental::SetV8},
+    {"web_cache", "WebCache", kEffectiveSize,
+     &Memory_Experimental::SetWebCache},
+    {"web_cache/Image_resources", "WebCache.ImageResources", kEffectiveSize,
+     &Memory_Experimental::SetWebCache_ImageResources},
+    {"web_cache/CSS stylesheet_resources", "WebCache.CSSStylesheetResources",
+     kEffectiveSize, &Memory_Experimental::SetWebCache_CSSStylesheetResources},
+    {"web_cache/Script_resources", "WebCache.ScriptResources", kEffectiveSize,
+     &Memory_Experimental::SetWebCache_ScriptResources},
+    {"web_cache/XSL stylesheet_resources", "WebCache.XSLStylesheetResources",
+     kEffectiveSize, &Memory_Experimental::SetWebCache_XSLStylesheetResources},
+    {"web_cache/Font_resources", "WebCache.FontResources", kEffectiveSize,
+     &Memory_Experimental::SetWebCache_FontResources},
+    {"web_cache/Other_resources", "WebCache.OtherResources", kEffectiveSize,
+     &Memory_Experimental::SetWebCache_OtherResources},
+};
+
+void EmitProcessUkm(const GlobalMemoryDump::ProcessDump& pmd,
+                    const base::Optional<base::TimeDelta>& uptime,
+                    Memory_Experimental* builder) {
+  for (const auto& item : kAllocatorDumpNamesForMetrics) {
+    base::Optional<uint64_t> value = pmd.GetMetric(item.dump_name, item.metric);
+    if (value) {
+      if (base::StringPiece(item.metric) ==
+          base::trace_event::MemoryAllocatorDump::kNameObjectCount) {
+        ((*builder).*(item.setter))(value.value());
+      } else {
+        ((*builder).*(item.setter))(value.value() / 1024 / 1024);
+      }
+    }
+  }
+  builder->SetResident(pmd.os_dump().resident_set_kb / 1024);
+  builder->SetPrivateMemoryFootprint(pmd.os_dump().private_footprint_kb / 1024);
+  builder->SetSharedMemoryFootprint(pmd.os_dump().shared_footprint_kb / 1024);
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+  builder->SetPrivateSwapFootprint(pmd.os_dump().private_footprint_swap_kb /
+                                   1024);
+#endif
+  if (uptime)
+    builder->SetUptime(uptime.value().InSeconds());
 }
 
 void EmitBrowserMemoryMetrics(const GlobalMemoryDump::ProcessDump& pmd,
                               ukm::SourceId ukm_source_id,
                               ukm::UkmRecorder* ukm_recorder,
                               const base::Optional<base::TimeDelta>& uptime) {
-  ukm::builders::Memory_Experimental builder(ukm_source_id);
+  Memory_Experimental builder(ukm_source_id);
   builder.SetProcessType(static_cast<int64_t>(
       memory_instrumentation::mojom::ProcessType::BROWSER));
+  EmitProcessUkm(pmd, uptime, &builder);
 
   UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Experimental.Browser2.Resident",
                                 pmd.os_dump().resident_set_kb / 1024);
-  builder.SetResident(pmd.os_dump().resident_set_kb / 1024);
 
 #if !defined(OS_WIN)
   UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Experimental.Browser2.Malloc",
                                 pmd.chrome_dump().malloc_total_kb / 1024);
-  builder.SetMalloc(pmd.chrome_dump().malloc_total_kb / 1024);
 #endif
-
   UMA_HISTOGRAM_MEMORY_LARGE_MB(
       "Memory.Experimental.Browser2.PrivateMemoryFootprint",
       pmd.os_dump().private_footprint_kb / 1024);
@@ -69,22 +176,16 @@ void EmitBrowserMemoryMetrics(const GlobalMemoryDump::ProcessDump& pmd,
 #if defined(OS_LINUX) || defined(OS_ANDROID)
   UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Browser.PrivateSwapFootprint",
                                 pmd.os_dump().private_footprint_swap_kb / 1024);
-  builder.SetPrivateSwapFootprint(pmd.os_dump().private_footprint_swap_kb /
-                                  1024);
 #endif
-
-  builder.SetPrivateMemoryFootprint(pmd.os_dump().private_footprint_kb / 1024);
-  builder.SetSharedMemoryFootprint(pmd.os_dump().shared_footprint_kb / 1024);
-
   // It is possible to run without a separate GPU process.
   // When that happens, we should log common GPU metrics from the browser proc.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kInProcessGPU)) {
-    AddCommonGpuMetricsToBuilder(&builder, pmd);
+    UMA_HISTOGRAM_MEMORY_LARGE_MB(
+        "Memory.Experimental.Gpu2.CommandBuffer",
+        pmd.chrome_dump().command_buffer_total_kb / 1024);
   }
 
-  if (uptime)
-    builder.SetUptime(uptime.value().InSeconds());
   builder.Record(ukm_recorder);
 }
 
@@ -142,43 +243,11 @@ void EmitRendererMemoryMetrics(
   ukm::SourceId ukm_source_id = page_info.is_null()
                                     ? ukm::UkmRecorder::GetNewSourceID()
                                     : page_info->ukm_source_id;
-  ukm::builders::Memory_Experimental builder(ukm_source_id);
+  Memory_Experimental builder(ukm_source_id);
   builder.SetProcessType(static_cast<int64_t>(
       memory_instrumentation::mojom::ProcessType::RENDERER));
-  builder.SetResident(pmd.os_dump().resident_set_kb / 1024);
-#if !defined(OS_WIN)
-  builder.SetMalloc(pmd.chrome_dump().malloc_total_kb / 1024);
-#endif
-  builder.SetPrivateMemoryFootprint(pmd.os_dump().private_footprint_kb / 1024);
-  builder.SetSharedMemoryFootprint(pmd.os_dump().shared_footprint_kb / 1024);
-  builder.SetPartitionAlloc(pmd.chrome_dump().partition_alloc_total_kb / 1024);
-  builder.SetBlinkGC(pmd.chrome_dump().blink_gc_total_kb / 1024);
-  builder.SetV8(pmd.chrome_dump().v8_total_kb / 1024);
   builder.SetNumberOfExtensions(number_of_extensions);
-#if defined(OS_LINUX) || defined(OS_ANDROID)
-  builder.SetPrivateSwapFootprint(pmd.os_dump().private_footprint_swap_kb /
-                                  1024);
-#endif
-  base::Optional<uint64_t> number_of_documents =
-      pmd.GetMetric("blink_objects/Document", "object_count");
-  if (number_of_documents.has_value())
-    builder.SetNumberOfDocuments(number_of_documents.value());
-  base::Optional<uint64_t> number_of_layout_objects =
-      pmd.GetMetric("blink_objects/LayoutObject", "object_count");
-  if (number_of_layout_objects.has_value())
-    builder.SetNumberOfLayoutObjects(number_of_layout_objects.value());
-  base::Optional<uint64_t> number_of_nodes =
-      pmd.GetMetric("blink_objects/Node", "object_count");
-  if (number_of_nodes.has_value())
-    builder.SetNumberOfNodes(number_of_nodes.value());
-  base::Optional<uint64_t> number_of_frames =
-      pmd.GetMetric("blink_objects/Frame", "object_count");
-  if (number_of_frames.has_value())
-    builder.SetNumberOfFrames(number_of_frames.value());
-  base::Optional<uint64_t> array_buffer_size =
-      pmd.GetMetric("partition_alloc/partitions/array_buffer", "size");
-  if (array_buffer_size.has_value())
-    builder.SetArrayBuffer(array_buffer_size.value() / 1024 / 1024);
+  EmitProcessUkm(pmd, uptime, &builder);
 
   if (!page_info.is_null()) {
     builder.SetIsVisible(page_info->is_visible);
@@ -188,9 +257,6 @@ void EmitRendererMemoryMetrics(
         page_info->time_since_last_navigation.InSeconds());
   }
 
-  if (uptime)
-    builder.SetUptime(uptime.value().InSeconds());
-
   builder.Record(ukm_recorder);
 }
 
@@ -198,21 +264,18 @@ void EmitGpuMemoryMetrics(const GlobalMemoryDump::ProcessDump& pmd,
                           ukm::SourceId ukm_source_id,
                           ukm::UkmRecorder* ukm_recorder,
                           const base::Optional<base::TimeDelta>& uptime) {
-  ukm::builders::Memory_Experimental builder(ukm_source_id);
+  Memory_Experimental builder(ukm_source_id);
   builder.SetProcessType(
       static_cast<int64_t>(memory_instrumentation::mojom::ProcessType::GPU));
+  EmitProcessUkm(pmd, uptime, &builder);
 
   UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Experimental.Gpu2.Resident",
                                 pmd.os_dump().resident_set_kb / 1024);
-  builder.SetResident(pmd.os_dump().resident_set_kb / 1024);
 
 #if !defined(OS_WIN)
   UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Experimental.Gpu2.Malloc",
                                 pmd.chrome_dump().malloc_total_kb / 1024);
-  builder.SetMalloc(pmd.chrome_dump().malloc_total_kb / 1024);
 #endif
-
-  AddCommonGpuMetricsToBuilder(&builder, pmd);
 
   UMA_HISTOGRAM_MEMORY_LARGE_MB(
       "Memory.Experimental.Gpu2.PrivateMemoryFootprint",
@@ -224,13 +287,11 @@ void EmitGpuMemoryMetrics(const GlobalMemoryDump::ProcessDump& pmd,
 #if defined(OS_LINUX) || defined(OS_ANDROID)
   UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Gpu.PrivateSwapFootprint",
                                 pmd.os_dump().private_footprint_swap_kb / 1024);
-  builder.SetPrivateSwapFootprint(pmd.os_dump().private_footprint_swap_kb /
-                                  1024);
 #endif
-  builder.SetPrivateMemoryFootprint(pmd.os_dump().private_footprint_kb / 1024);
-  builder.SetSharedMemoryFootprint(pmd.os_dump().shared_footprint_kb / 1024);
-  if (uptime)
-    builder.SetUptime(uptime.value().InSeconds());
+  UMA_HISTOGRAM_MEMORY_LARGE_MB(
+      "Memory.Experimental.Gpu2.CommandBuffer",
+      pmd.chrome_dump().command_buffer_total_kb / 1024);
+
   builder.Record(ukm_recorder);
 }
 
@@ -244,11 +305,11 @@ void ProcessMemoryMetricsEmitter::FetchAndEmitProcessMemoryMetrics() {
   // The callback keeps this object alive until the callback is invoked.
   auto callback =
       base::Bind(&ProcessMemoryMetricsEmitter::ReceivedMemoryDump, this);
+  std::vector<std::string> mad_list;
+  for (const auto& metric : kAllocatorDumpNamesForMetrics)
+    mad_list.push_back(metric.dump_name);
   memory_instrumentation::MemoryInstrumentation::GetInstance()
-      ->RequestGlobalDump({"blink_objects/Document", "blink_objects/Frame",
-                           "blink_objects/LayoutObject", "blink_objects/Node",
-                           "partition_alloc/partitions/array_buffer"},
-                          callback);
+      ->RequestGlobalDump(mad_list, callback);
 
   // The callback keeps this object alive until the callback is invoked.
   if (IsResourceCoordinatorEnabled()) {
@@ -409,7 +470,7 @@ void ProcessMemoryMetricsEmitter::CollateResults() {
   UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Total.SharedMemoryFootprint",
                                 shared_footprint_total_kb / 1024);
 
-  ukm::builders::Memory_Experimental(ukm::UkmRecorder::GetNewSourceID())
+  Memory_Experimental(ukm::UkmRecorder::GetNewSourceID())
       .SetTotal2_PrivateMemoryFootprint(private_footprint_total_kb / 1024)
       .SetTotal2_SharedMemoryFootprint(shared_footprint_total_kb / 1024)
       .Record(GetUkmRecorder());

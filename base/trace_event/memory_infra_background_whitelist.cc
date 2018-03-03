@@ -40,7 +40,6 @@ const char* const kDumpProviderWhitelist[] = {
     "MemoryCache",
     "MojoHandleTable",
     "MojoLevelDB",
-    "OutOfProcessHeapProfilingDumpProvider",
     "PartitionAlloc",
     "ProcessMemoryMetrics",
     "Skia",
@@ -55,17 +54,36 @@ const char* const kDumpProviderWhitelist[] = {
 };
 
 // The names of dump providers whitelisted for summary tracing.
+// TODO(ssid): Some dump providers do not create ownership edges on background
+// dump. So, the effective size will not be correct.
 const char* const kDumpProviderSummaryWhitelist[] = {
+    "android::ResourceManagerImpl",
     "BlinkGC",
     "BlinkObjectCounters",
+    "ClientDiscardableSharedMemoryManager",
+    "DiscardableSharedMemoryManager",
     "gpu::BufferManager",
     "gpu::RenderbufferManager",
     "gpu::TextureManager",
+    "HistoryReport",
+    "IndexedDBBackingStore",
+    "JavaHeap",
+    "LevelDB",
+    "LeveldbValueStore",
+    "LocalStorage",
     "Malloc",
+    "MemoryCache",
+    "MojoHandleTable",
+    "MojoLevelDB",
     "PartitionAlloc",
     "ProcessMemoryMetrics",
     "SharedMemoryTracker",
+    "Skia",
+    "Sql",
+    "URLRequestContext",
     "V8Isolate",
+    "SyncDirectory",
+    "TabRestoreServiceHelper",
     nullptr  // End of list marker.
 };
 
