@@ -45,7 +45,8 @@ DhcpProxyScriptFetcherChromeos::~DhcpProxyScriptFetcherChromeos() = default;
 
 int DhcpProxyScriptFetcherChromeos::Fetch(
     base::string16* utf16_text,
-    const net::CompletionCallback& callback) {
+    const net::CompletionCallback& callback,
+    const net::NetLogWithSource& net_log) {
   if (!network_handler_task_runner_.get())
     return net::ERR_PAC_NOT_IN_DHCP;
   CHECK(!callback.is_null());

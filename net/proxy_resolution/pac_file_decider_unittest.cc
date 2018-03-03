@@ -145,7 +145,8 @@ class MockDhcpProxyScriptFetcher : public DhcpProxyScriptFetcher {
   ~MockDhcpProxyScriptFetcher() override;
 
   int Fetch(base::string16* utf16_text,
-            const CompletionCallback& callback) override;
+            const CompletionCallback& callback,
+            const NetLogWithSource& net_log) override;
   void Cancel() override;
   void OnShutdown() override;
   const GURL& GetPacURL() const override;
@@ -166,7 +167,8 @@ MockDhcpProxyScriptFetcher::MockDhcpProxyScriptFetcher() = default;
 MockDhcpProxyScriptFetcher::~MockDhcpProxyScriptFetcher() = default;
 
 int MockDhcpProxyScriptFetcher::Fetch(base::string16* utf16_text,
-                                      const CompletionCallback& callback) {
+                                      const CompletionCallback& callback,
+                                      const NetLogWithSource& net_log) {
   utf16_text_ = utf16_text;
   callback_ = callback;
   return ERR_IO_PENDING;
@@ -673,7 +675,8 @@ class SynchronousSuccessDhcpFetcher : public DhcpProxyScriptFetcher {
       : gurl_("http://dhcppac/"), expected_text_(expected_text) {}
 
   int Fetch(base::string16* utf16_text,
-            const CompletionCallback& callback) override {
+            const CompletionCallback& callback,
+            const NetLogWithSource& net_log) override {
     *utf16_text = expected_text_;
     return OK;
   }
@@ -751,7 +754,8 @@ class AsyncFailDhcpFetcher
   ~AsyncFailDhcpFetcher() override = default;
 
   int Fetch(base::string16* utf16_text,
-            const CompletionCallback& callback) override {
+            const CompletionCallback& callback,
+            const NetLogWithSource& net_log) override {
     callback_ = callback;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
