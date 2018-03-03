@@ -20542,6 +20542,9 @@ void GLES2DecoderImpl::DoEndRasterCHROMIUM() {
   sk_surface_->prepareForExternalIO();
   sk_surface_.reset();
 
+  // It is important to reset state after each RasterCHROMIUM since skia can
+  // change the GL state which can invalidate the tracking done in this
+  // decoder.
   RestoreState(nullptr);
 }
 
