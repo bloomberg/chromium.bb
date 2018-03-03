@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_shelf_id.h"
+#include "chrome/test/base/testing_profile.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -24,14 +26,7 @@ std::string GetPlayStoreInitialLaunchIntent() {
 
 }  // namespace
 
-class ArcAppUtilsTest : public testing::Test {
- public:
-  ArcAppUtilsTest() = default;
-  ~ArcAppUtilsTest() override = default;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ArcAppUtilsTest);
-};
+using ArcAppUtilsTest = testing::Test;
 
 TEST_F(ArcAppUtilsTest, LaunchIntent) {
   const std::string launch_intent = GetPlayStoreInitialLaunchIntent();
@@ -77,4 +72,13 @@ TEST_F(ArcAppUtilsTest, ShelfGroupId) {
       GetPlayStoreInitialLaunchIntent(), arc::kPlayStoreAppId);
   EXPECT_FALSE(shelf_id2.has_shelf_group_id());
   EXPECT_EQ(shelf_id2.app_id(), arc::kPlayStoreAppId);
+}
+
+// Tests that IsArcItem does not crash or DCHECK with invalid crx file ids.
+TEST_F(ArcAppUtilsTest, IsArcItemDoesNotCrashWithInvalidCrxFileIds) {
+  // TestingProfile checks CurrentlyOn(cotnent::BrowserThread::UI).
+  content::TestBrowserThreadBundle thread_bundle;
+  TestingProfile testing_profile;
+  EXPECT_FALSE(arc::IsArcItem(&testing_profile, std::string()));
+  EXPECT_FALSE(arc::IsArcItem(&testing_profile, "ShelfWindowWatcher0"));
 }

@@ -21,6 +21,8 @@ constexpr char kShelfGroupPrefix[] = "shelf_group:";
 
 }  // namespace
 
+ArcAppShelfId::ArcAppShelfId() = default;
+
 ArcAppShelfId::ArcAppShelfId(const std::string& shelf_group_id,
                              const std::string& app_id)
     : shelf_group_id_(shelf_group_id), app_id_(app_id) {
@@ -33,14 +35,15 @@ ArcAppShelfId::~ArcAppShelfId() = default;
 
 // static
 ArcAppShelfId ArcAppShelfId::FromString(const std::string& id) {
-  if (!base::StartsWith(id, kShelfGroupPrefix, base::CompareCase::SENSITIVE))
+  if (base::StartsWith(id, kShelfGroupPrefix, base::CompareCase::SENSITIVE)) {
+    const std::vector<std::string> parts = base::SplitString(
+        id, ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+    if (parts.size() == 3u && crx_file::id_util::IdIsValid(parts[2]))
+      return ArcAppShelfId(parts[1], parts[2]);
+  } else if (crx_file::id_util::IdIsValid(id)) {
     return ArcAppShelfId(std::string(), id);
-
-  const std::vector<std::string> parts = base::SplitString(
-      id, ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  DCHECK_EQ(3u, parts.size());
-
-  return ArcAppShelfId(parts[1], parts[2]);
+  }
+  return ArcAppShelfId();
 }
 
 // static
