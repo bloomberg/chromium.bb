@@ -244,6 +244,33 @@ static void optimize_cdf_table(aom_count_type *counts, FILE *const probsfile,
   fprintf(probsfile, "};\n\n");
 }
 
+static void optimize_uv_mode(aom_count_type *counts, FILE *const probsfile,
+                             int dim_of_cts, int *cts_each_dim, char *prefix) {
+  aom_count_type *ct_ptr = counts;
+
+  fprintf(probsfile, "%s = {\n", prefix);
+  fprintf(probsfile, "%*c{\n", SPACES_PER_TAB, ' ');
+  cts_each_dim[2] = UV_INTRA_MODES - 1;
+  for (int k = 0; k < cts_each_dim[1]; ++k) {
+    fprintf(probsfile, "%*c{", 2 * SPACES_PER_TAB, ' ');
+    parse_counts_for_cdf_opt(&ct_ptr, probsfile, 0, dim_of_cts - 2,
+                             cts_each_dim + 2);
+    if (k + 1 == cts_each_dim[1]) {
+      fprintf(probsfile, "}\n");
+    } else {
+      fprintf(probsfile, "},\n");
+    }
+    ++ct_ptr;
+  }
+  fprintf(probsfile, "%*c},\n", SPACES_PER_TAB, ' ');
+  fprintf(probsfile, "%*c{\n", SPACES_PER_TAB, ' ');
+  cts_each_dim[2] = UV_INTRA_MODES;
+  parse_counts_for_cdf_opt(&ct_ptr, probsfile, 2, dim_of_cts - 1,
+                           cts_each_dim + 1);
+  fprintf(probsfile, "%*c}\n", SPACES_PER_TAB, ' ');
+  fprintf(probsfile, "};\n\n");
+}
+
 int main(int argc, const char **argv) {
   if (argc < 2) {
     fprintf(stderr, "Please specify the input stats file!\n");
@@ -303,10 +330,10 @@ int main(int argc, const char **argv) {
   cts_each_dim[0] = CFL_ALLOWED_TYPES;
   cts_each_dim[1] = INTRA_MODES;
   cts_each_dim[2] = UV_INTRA_MODES;
-  optimize_cdf_table(&fc.uv_mode[0][0][0], probsfile, 3, cts_each_dim,
-                     "static const aom_cdf_prob\n"
-                     "default_uv_mode_cdf[CFL_ALLOWED_TYPES][INTRA_MODES]"
-                     "[CDF_SIZE(UV_INTRA_MODES)]");
+  optimize_uv_mode(&fc.uv_mode[0][0][0], probsfile, 3, cts_each_dim,
+                   "static const aom_cdf_prob\n"
+                   "default_uv_mode_cdf[CFL_ALLOWED_TYPES][INTRA_MODES]"
+                   "[CDF_SIZE(UV_INTRA_MODES)]");
 
   /* Partition */
   cts_each_dim[0] = PARTITION_CONTEXTS;
