@@ -853,7 +853,6 @@ sandbox::ResultCode SandboxWin::StartSandboxedProcess(
       sandbox::MITIGATION_NONSYSTEM_FONT_DISABLE |
       sandbox::MITIGATION_IMAGE_LOAD_NO_REMOTE |
       sandbox::MITIGATION_IMAGE_LOAD_NO_LOW_LABEL |
-      sandbox::MITIGATION_IMAGE_LOAD_PREFER_SYS32 |
       sandbox::MITIGATION_RESTRICT_INDIRECT_BRANCH_PREDICTION;
 
   sandbox::ResultCode result = policy->SetProcessMitigations(mitigations);
@@ -871,7 +870,8 @@ sandbox::ResultCode SandboxWin::StartSandboxedProcess(
 
   // Post-startup mitigations.
   mitigations = sandbox::MITIGATION_STRICT_HANDLE_CHECKS |
-                sandbox::MITIGATION_DLL_SEARCH_ORDER;
+                sandbox::MITIGATION_DLL_SEARCH_ORDER |
+                sandbox::MITIGATION_IMAGE_LOAD_PREFER_SYS32;
   if (base::FeatureList::IsEnabled(
           service_manager::features::kWinSboxForceMsSigned) &&
       !cmd_line->HasSwitch(switches::kAllowThirdPartyModules)) {
