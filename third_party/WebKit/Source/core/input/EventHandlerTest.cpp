@@ -37,7 +37,7 @@ class EventHandlerTest : public PageTestBase {
   ShadowRoot* SetShadowContent(const char* shadow_content, const char* host);
 };
 
-class EventHandlerIFrameTest : public SimTest {};
+class EventHandlerSimTest : public SimTest {};
 
 class TapEventBuilder : public WebGestureEvent {
  public:
@@ -1047,7 +1047,7 @@ TEST_F(EventHandlerTest, MouseLeaveResetsUnknownState) {
 
 // Test that leaving an iframe sets the mouse position to unknown on that
 // iframe.
-TEST_F(EventHandlerIFrameTest, MouseLeaveResets) {
+TEST_F(EventHandlerSimTest, MouseLeaveIFrameResets) {
   WebView().Resize(WebSize(800, 600));
 
   SimRequest main_resource("https://example.com/test.html", "text/html");
@@ -1108,6 +1108,49 @@ TEST_F(EventHandlerIFrameTest, MouseLeaveResets) {
   EXPECT_TRUE(ToLocalFrame(GetDocument().GetFrame()->Tree().FirstChild())
                   ->GetEventHandler()
                   .IsMousePositionUnknown());
+}
+
+// Test that mouse down and move a small distance on a draggable element will
+// not change cursor style.
+TEST_F(EventHandlerSimTest, CursorStyleBeforeStartDragging) {
+  WebView().Resize(WebSize(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    div {
+      width: 300px;
+      height: 100px;
+      cursor: help;
+    }
+    </style>
+    <div draggable='true'>foo</div>
+  )HTML");
+  Compositor().BeginFrame();
+
+  WebMouseEvent mouse_down_event(WebMouseEvent::kMouseDown,
+                                 WebFloatPoint(150, 50), WebFloatPoint(150, 50),
+                                 WebPointerProperties::Button::kLeft, 1,
+                                 WebInputEvent::Modifiers::kLeftButtonDown,
+                                 WebInputEvent::GetStaticTimeStampForTests());
+  mouse_down_event.SetFrameScale(1);
+  GetDocument().GetFrame()->GetEventHandler().HandleMousePressEvent(
+      mouse_down_event);
+
+  WebMouseEvent mouse_move_event(WebMouseEvent::kMouseMove,
+                                 WebFloatPoint(151, 50), WebFloatPoint(151, 50),
+                                 WebPointerProperties::Button::kLeft, 1,
+                                 WebInputEvent::Modifiers::kLeftButtonDown,
+                                 WebInputEvent::GetStaticTimeStampForTests());
+  mouse_move_event.SetFrameScale(1);
+  GetDocument().GetFrame()->GetEventHandler().HandleMouseMoveEvent(
+      mouse_move_event, Vector<WebMouseEvent>());
+  EXPECT_EQ(Cursor::Type::kHelp, GetDocument()
+                                     .GetFrame()
+                                     ->GetChromeClient()
+                                     .LastSetCursorForTesting()
+                                     .GetType());
 }
 
 }  // namespace blink
