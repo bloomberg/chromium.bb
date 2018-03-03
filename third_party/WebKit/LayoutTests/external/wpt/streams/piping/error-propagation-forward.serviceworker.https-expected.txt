@@ -29,6 +29,8 @@ PASS Errors must be propagated forward: becomes errored after one chunk; dest ne
 PASS Errors must be propagated forward: becomes errored after one chunk; dest never desires chunks; preventAbort = false; rejected abort promise
 PASS Errors must be propagated forward: becomes errored after one chunk; dest never desires chunks; preventAbort = true
 PASS Errors must be propagated forward: shutdown must not occur until the final write completes
-FAIL Errors must be propagated forward: abort should not happen until all queued writes complete assert_array_equals: abort should not be called before the second write completes property 2, expected "write" but got "abort"
+FAIL Errors must be propagated forward: shutdown must not occur until the final write completes; preventAbort = true assert_equals: the pipe must not be complete expected false but got true
+FAIL Errors must be propagated forward: shutdown must not occur until the final write completes; becomes errored after first write assert_array_equals: the second chunk must have been written, but abort must not have happened yet property 2, expected "write" but got "abort"
+FAIL Errors must be propagated forward: shutdown must not occur until the final write completes; becomes errored after first write; preventAbort = true assert_false: the pipe should not complete while the second write is pending expected false got true
 Harness: the test ran to completion.
 
