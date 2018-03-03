@@ -9,6 +9,7 @@
 #include <queue>
 #include <vector>
 
+#include "ash/accessibility/chromevox_layout_manager.h"
 #include "ash/accessibility/touch_exploration_controller.h"
 #include "ash/ash_constants.h"
 #include "ash/ash_touch_exploration_manager_chromeos.h"
@@ -928,6 +929,14 @@ void RootWindowController::CreateContainers() {
   wm::SetSnapsChildrenToPhysicalPixelBoundary(settings_bubble_container);
   settings_bubble_container->SetProperty(kUsesScreenCoordinatesKey, true);
   settings_bubble_container->SetProperty(kLockedToRootKey, true);
+
+  aura::Window* chromevox_container =
+      CreateContainer(kShellWindowId_ChromeVoxContainer, "ChromeVoxContainer",
+                      lock_screen_related_containers);
+  ::wm::SetChildWindowVisibilityChangesAnimated(chromevox_container);
+  chromevox_container->SetProperty(kUsesScreenCoordinatesKey, true);
+  chromevox_container->SetProperty(kLockedToRootKey, true);
+  chromevox_container->SetLayoutManager(new ChromeVoxLayoutManager());
 
   aura::Window* virtual_keyboard_parent_container = CreateContainer(
       kShellWindowId_ImeWindowParentContainer, "VirtualKeyboardParentContainer",

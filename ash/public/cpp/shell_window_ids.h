@@ -108,6 +108,9 @@ enum ShellWindowId {
   // changes (volume, brightness, input method bubbles, etc.).
   kShellWindowId_SettingBubbleContainer,
 
+  // Contains the ChromeVox spoken feedback window.
+  kShellWindowId_ChromeVoxContainer,
+
   // The container for special components overlaid onscreen, such as the
   // region selector for partial screenshots.
   kShellWindowId_OverlayContainer,
@@ -157,6 +160,7 @@ const int32_t kAllShellContainerIds[] = {
     kShellWindowId_MenuContainer,
     kShellWindowId_DragImageAndTooltipContainer,
     kShellWindowId_SettingBubbleContainer,
+    kShellWindowId_ChromeVoxContainer,
     kShellWindowId_OverlayContainer,
     kShellWindowId_DockedMagnifierContainer,
     kShellWindowId_MouseCursorContainer,

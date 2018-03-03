@@ -44,7 +44,8 @@ namespace chromeos {
 
 namespace {
 
-constexpr char kTestUserName[] = "owner@invalid.domain";
+// Use a real domain to avoid policy loading problems.
+constexpr char kTestUserName[] = "owner@gmail.com";
 constexpr char kTestUserGaiaId[] = "9876543210";
 
 constexpr int kTestAutoclickDelayMs = 2000;
