@@ -388,16 +388,18 @@ static void ForceRecomputeVisualRectsIncludingNonCompositingDescendants(
   }
 }
 
-GraphicsLayer* PaintLayerCompositor::ParentForContentLayers() const {
+GraphicsLayer* PaintLayerCompositor::ParentForContentLayers(
+    GraphicsLayer* child_frame_parent_candidate) const {
   if (root_content_layer_)
     return root_content_layer_.get();
 
   DCHECK(RuntimeEnabledFeatures::RootLayerScrollingEnabled());
 
-  // Iframe content layers will be connected by the parent frame using
-  // attachFrameContentLayersToIframeLayer.
+  // Iframe content layers were connected by the parent frame using
+  // AttachFrameContentLayersToIframeLayer. Return whatever candidate was given
+  // to us as the child frame parent.
   if (!IsMainFrame())
-    return nullptr;
+    return child_frame_parent_candidate;
 
   // If this is a popup, don't hook into the VisualViewport layers.
   if (!layout_view_.GetDocument()
@@ -495,6 +497,24 @@ void PaintLayerCompositor::UpdateIfNeeded(
     }
   }
 
+  GraphicsLayer* current_parent = nullptr;
+  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
+    // Save off our current parent. We need this in subframes, because our
+    // parent attached us to itself via AttachFrameContentLayersToIframeLayer().
+    // However, if we're about to update our layer structure in
+    // GraphicsLayerUpdater, we will sometimes remove our root graphics layer
+    // from its parent. If there are no further tree updates, this means that
+    // our root graphics layer will not be attached to anything. Below, we would
+    // normally get the ParentForContentLayer to fix up this situation. However,
+    // in RLS non-main frames don't have this parent. So, instead use this
+    // saved-off parent.
+    if (!IsMainFrame() && update_root->GetCompositedLayerMapping()) {
+      current_parent = update_root->GetCompositedLayerMapping()
+                           ->ChildForSuperlayers()
+                           ->Parent();
+    }
+  }
+
   GraphicsLayerUpdater updater;
   updater.Update(*update_root, layers_needing_paint_invalidation);
 
@@ -516,8 +536,10 @@ void PaintLayerCompositor::UpdateIfNeeded(
 
     if (!child_list.IsEmpty()) {
       CHECK(compositing_);
-      if (GraphicsLayer* content_parent = ParentForContentLayers())
+      if (GraphicsLayer* content_parent =
+              ParentForContentLayers(current_parent)) {
         content_parent->SetChildren(child_list);
+      }
     }
 
     ApplyOverlayFullscreenVideoAdjustmentIfNeeded();
