@@ -10,14 +10,17 @@ import android.text.TextUtils;
 import org.chromium.base.SysUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.ServiceTabLauncher;
 import org.chromium.chrome.browser.TabState;
+import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
+import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -168,6 +171,22 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
             TabLaunchType type, String url) {
         // The parent tab was already closed.  Do not open child tabs.
         if (mTabModel.isClosurePending(parentId)) return false;
+
+        // For this experiment, avoid creating extra new tabs, if there is already a tab with the
+        // same url and use that tab instead.
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_MEMEX) && parent != null) {
+            String parentUrl = parent.getUrl();
+            if (parentUrl.startsWith(UrlConstants.CHROME_MEMEX_URL)
+                    || parentUrl.startsWith(UrlConstants.CHROME_MEMEX_DEV_URL)) {
+                for (int i = 0; i < mTabModel.getCount(); i++) {
+                    String tabUrl = mTabModel.getTabAt(i).getUrl();
+                    if (url.equals(tabUrl)) {
+                        mTabModel.setIndex(i, TabSelectionType.FROM_USER);
+                        return false;
+                    }
+                }
+            }
+        }
 
         // If parent is in the same tab model, place the new tab next to it.
         int position = TabModel.INVALID_TAB_INDEX;

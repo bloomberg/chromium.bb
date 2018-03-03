@@ -74,4 +74,7 @@ public class UrlConstants {
 
     public static final String MY_ACTIVITY_URL_IN_HISTORY =
             "https://myactivity.google.com/myactivity/?utm_source=chrome_h";
+
+    public static final String CHROME_MEMEX_URL = "https://chrome-memex.appspot.com/";
+    public static final String CHROME_MEMEX_DEV_URL = "https://chrome-memex-dev.appspot.com/";
 }
