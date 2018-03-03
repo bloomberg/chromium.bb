@@ -1345,7 +1345,7 @@
       }
     ]
   },
-  "Mac10.9 Tests": {
+  "Mac10.13 Tests": {
     "gtest_tests": [
       {
         "swarming": {
@@ -1788,7 +1788,7 @@
       }
     ]
   },
-  "Mac10.9 Tests (dbg)": {
+  "Mac10.13 Tests (dbg)": {
     "gtest_tests": [
       {
         "swarming": {
