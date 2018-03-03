@@ -3475,8 +3475,6 @@ jumbo_split_static_library("browser") {
       "renderer_context_menu/context_menu_content_type_platform_app.h",
       "renderer_host/chrome_extension_message_filter.cc",
       "renderer_host/chrome_extension_message_filter.h",
-      "signin/chrome_proximity_auth_client.cc",
-      "signin/chrome_proximity_auth_client.h",
       "speech/extension_api/tts_engine_extension_api.cc",
       "speech/extension_api/tts_engine_extension_api.h",
       "speech/extension_api/tts_engine_extension_observer.cc",
@@ -3625,6 +3623,8 @@ jumbo_split_static_library("browser") {
 
     if (is_chromeos) {
       sources += [
+        "signin/chrome_proximity_auth_client.cc",
+        "signin/chrome_proximity_auth_client.h",
         "signin/easy_unlock_app_manager.cc",
         "signin/easy_unlock_app_manager.h",
         "signin/easy_unlock_auth_attempt.cc",
