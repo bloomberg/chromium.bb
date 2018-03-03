@@ -51,7 +51,7 @@ class SadTabViewInteractiveUITest : public InProcessBrowserTest {
         web_contents->GetMainFrame()->GetProcess();
     content::RenderProcessHostWatcher crash_observer(
         process, content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-    process->Shutdown(content::RESULT_CODE_KILLED, false);
+    process->Shutdown(content::RESULT_CODE_KILLED);
     crash_observer.Wait();
   }
 

@@ -897,7 +897,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
       iframe_node->current_frame_host()->GetSiteInstance()->GetProcess();
   RenderProcessHostWatcher crash_observer(
       rph, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-  EXPECT_TRUE(rph->Shutdown(0, false));
+  EXPECT_TRUE(rph->Shutdown(0));
   crash_observer.Wait();
   scroll_event.delta_y = 0.0f;
   scroll_event.phase = blink::WebMouseWheelEvent::kPhaseEnded;
@@ -2018,7 +2018,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessMouseWheelHitTestBrowserTest,
       root->child_at(0)->current_frame_host()->GetProcess();
   RenderProcessHostWatcher crash_observer(
       child_process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-  child_process->Shutdown(0, false);
+  child_process->Shutdown(0);
   crash_observer.Wait();
   EXPECT_EQ(nullptr, router->wheel_target_.target);
 }

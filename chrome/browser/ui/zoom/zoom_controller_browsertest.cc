@@ -84,7 +84,7 @@ IN_PROC_BROWSER_TEST_F(ZoomControllerBrowserTest,
   {
     content::RenderProcessHostWatcher crash_observer(
         host, content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-    host->Shutdown(0, false);
+    host->Shutdown(0);
     crash_observer.Wait();
   }
   EXPECT_FALSE(web_contents->GetRenderViewHost()->IsRenderViewLive());

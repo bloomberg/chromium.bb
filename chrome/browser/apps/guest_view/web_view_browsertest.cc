@@ -3716,7 +3716,7 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, ReloadAfterCrash) {
   auto* rph = GetGuestWebContents()->GetMainFrame()->GetProcess();
   content::RenderProcessHostWatcher crash_observer(
       rph, content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-  EXPECT_TRUE(rph->Shutdown(content::RESULT_CODE_KILLED, false));
+  EXPECT_TRUE(rph->Shutdown(content::RESULT_CODE_KILLED));
   crash_observer.Wait();
   EXPECT_FALSE(GetGuestWebContents()->GetMainFrame()->GetView());
 

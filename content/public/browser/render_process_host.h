@@ -150,12 +150,11 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   virtual StoragePartition* GetStoragePartition() const = 0;
 
   // Try to shut down the associated renderer process without running unload
-  // handlers, etc, giving it the specified exit code. If |wait| is true, wait
-  // for the process to be actually terminated before returning.  Returns true
+  // handlers, etc, giving it the specified exit code.  Returns true
   // if it was able to shut down.  On Windows, this must not be called before
   // RenderProcessReady was called on a RenderProcessHostObserver, otherwise
   // RenderProcessExited may never be called.
-  virtual bool Shutdown(int exit_code, bool wait) = 0;
+  virtual bool Shutdown(int exit_code) = 0;
 
   // Try to shut down the associated renderer process as fast as possible.
   // If a non-zero |page_count| value is provided, then a fast shutdown will

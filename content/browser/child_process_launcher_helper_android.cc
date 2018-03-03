@@ -160,8 +160,8 @@ base::TerminationStatus ChildProcessLauncherHelper::GetTerminationStatus(
 }
 
 // static
-bool ChildProcessLauncherHelper::TerminateProcess(
-    const base::Process& process, int exit_code, bool wait) {
+bool ChildProcessLauncherHelper::TerminateProcess(const base::Process& process,
+                                                  int exit_code) {
   BrowserThread::PostTask(BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
                           base::Bind(&StopChildProcess, process.Handle()));
   return true;

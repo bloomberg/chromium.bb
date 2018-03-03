@@ -156,10 +156,8 @@ class ChildProcessLauncherHelper :
   // Terminates |process|.
   // Returns true if the process was stopped, false if the process had not been
   // started yet or could not be stopped.
-  // Note that |exit_code| and |wait| are not used on Android.
-  static bool TerminateProcess(const base::Process& process,
-                               int exit_code,
-                               bool wait);
+  // Note that |exit_code| is not used on Android.
+  static bool TerminateProcess(const base::Process& process, int exit_code);
 
   // Terminates the process with the normal exit code and ensures it has been
   // stopped. By returning a normal exit code this ensures UMA won't treat this

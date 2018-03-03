@@ -122,8 +122,7 @@ class KillPrintFrameContentMsgFilter : public content::BrowserMessageFilter {
 
   void KillRenderProcess(int document_cookie,
                          const PrintHostMsg_DidPrintContent_Params& param) {
-    base::ScopedAllowBaseSyncPrimitivesForTesting allow_sync_primitives;
-    rph_->Shutdown(0, true);
+    rph_->Shutdown(0);
   }
 
   content::RenderProcessHost* rph_;
@@ -401,7 +400,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessPrintBrowserTest,
       test_frame->GetProcess(),
       content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
   // Shutdown the subframe.
-  ASSERT_TRUE(test_frame->GetProcess()->Shutdown(0, false));
+  ASSERT_TRUE(test_frame->GetProcess()->Shutdown(0));
   render_process_watcher.Wait();
   ASSERT_FALSE(test_frame->IsRenderFrameLive());
 

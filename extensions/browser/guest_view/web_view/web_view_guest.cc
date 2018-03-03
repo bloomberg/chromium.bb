@@ -735,9 +735,10 @@ void WebViewGuest::Terminate() {
   base::RecordAction(UserMetricsAction("WebView.Guest.Terminate"));
   base::ProcessHandle process_handle =
       web_contents()->GetMainFrame()->GetProcess()->GetHandle();
-  if (process_handle)
+  if (process_handle) {
     web_contents()->GetMainFrame()->GetProcess()->Shutdown(
-        content::RESULT_CODE_KILLED, false);
+        content::RESULT_CODE_KILLED);
+  }
 }
 
 bool WebViewGuest::ClearData(base::Time remove_since,

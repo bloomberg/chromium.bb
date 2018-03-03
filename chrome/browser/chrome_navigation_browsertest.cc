@@ -1013,7 +1013,7 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest, ChromeSchemeNavFromSadTab) {
                                             ->GetProcess();
   content::RenderProcessHostWatcher crash_observer(
       process, content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-  process->Shutdown(-1, true);
+  process->Shutdown(-1);
   crash_observer.Wait();
 
   // Attempt to navigate to a chrome://... URL.  This used to hang and never

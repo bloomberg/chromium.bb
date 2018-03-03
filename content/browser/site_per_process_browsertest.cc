@@ -2222,7 +2222,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   RenderProcessHost* child_process = node2->current_frame_host()->GetProcess();
   RenderProcessHostWatcher crash_observer(
       child_process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-  child_process->Shutdown(0, false);
+  child_process->Shutdown(0);
   crash_observer.Wait();
 
   // Now navigate the second iframe (node3) to the same site as the node2.
@@ -2258,7 +2258,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, RemoveFocusFromKilledFrame) {
   RenderProcessHost* child_process = node2->current_frame_host()->GetProcess();
   RenderProcessHostWatcher crash_observer(
       child_process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-  child_process->Shutdown(0, false);
+  child_process->Shutdown(0);
   crash_observer.Wait();
 
   // Try to focus the root's owning WebContents.
@@ -2335,7 +2335,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
         root->child_at(0)->current_frame_host()->GetProcess();
     RenderProcessHostWatcher crash_observer(
         child_process_b, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-    child_process_b->Shutdown(0, false);
+    child_process_b->Shutdown(0);
     crash_observer.Wait();
 
     // The Site C frame (a child of the crashed Site B frame) should go away,
@@ -2560,7 +2560,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       root->child_at(0)->current_frame_host()->GetProcess();
   RenderProcessHostWatcher crash_observer(
       child_process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-  child_process->Shutdown(0, false);
+  child_process->Shutdown(0);
   crash_observer.Wait();
 
   // Navigate the second subframe to b.com to recreate the b.com process.
@@ -2624,7 +2624,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       root->child_at(0)->current_frame_host()->GetProcess();
   RenderProcessHostWatcher crash_observer(
       child_process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-  child_process->Shutdown(0, false);
+  child_process->Shutdown(0);
   crash_observer.Wait();
 
   // Add a new child frame to the third subframe.
@@ -2711,7 +2711,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   RenderProcessHost* child_process = root->current_frame_host()->GetProcess();
   RenderProcessHostWatcher crash_observer(
       child_process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-  child_process->Shutdown(0, false);
+  child_process->Shutdown(0);
   crash_observer.Wait();
   EXPECT_FALSE(root->current_frame_host()->IsRenderFrameLive());
 
@@ -2811,7 +2811,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       root->child_at(0)->current_frame_host()->GetProcess();
   RenderProcessHostWatcher crash_observer(
       child_process_b, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-  child_process_b->Shutdown(0, false);
+  child_process_b->Shutdown(0);
   crash_observer.Wait();
 
   // Make sure proxy C has gone from root.
@@ -2854,7 +2854,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrashSubframe) {
   {
     RenderProcessHostWatcher crash_observer(
         child_process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-    child_process->Shutdown(0, false);
+    child_process->Shutdown(0);
     crash_observer.Wait();
   }
 
@@ -2878,7 +2878,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrashSubframe) {
   {
     RenderProcessHostWatcher crash_observer(
         root_process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-    root_process->Shutdown(0, false);
+    root_process->Shutdown(0);
     crash_observer.Wait();
   }
   EXPECT_EQ(0U, root->child_count());
@@ -7603,7 +7603,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // and the popup.
   RenderProcessHostWatcher crash_observer(
       pending_process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-  EXPECT_TRUE(pending_process->Shutdown(0, false));
+  EXPECT_TRUE(pending_process->Shutdown(0));
   crash_observer.Wait();
 
   // The pending RFH should have been canceled and destroyed, so that it won't
@@ -7657,7 +7657,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       popup_shell->web_contents()->GetMainFrame()->GetProcess();
   RenderProcessHostWatcher crash_observer(
       pending_process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-  EXPECT_TRUE(pending_process->Shutdown(0, false));
+  EXPECT_TRUE(pending_process->Shutdown(0));
   crash_observer.Wait();
 
   // Since the navigation above didn't commit, the b.com RenderViewHost in the
@@ -7696,7 +7696,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   RenderProcessHost* child_process = child->current_frame_host()->GetProcess();
   RenderProcessHostWatcher crash_observer(
       child_process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-  child_process->Shutdown(0, false);
+  child_process->Shutdown(0);
   crash_observer.Wait();
   EXPECT_FALSE(child->current_frame_host()->IsRenderFrameLive());
 
@@ -8047,7 +8047,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       popup->web_contents()->GetMainFrame()->GetProcess();
   RenderProcessHostWatcher crash_observer(
       b_process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-  b_process->Shutdown(0, false);
+  b_process->Shutdown(0);
   crash_observer.Wait();
 
   // Navigate the second popup to b.com.  This used to crash when creating the
@@ -8372,7 +8372,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   {
     RenderProcessHostWatcher crash_observer(
         child_process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-    child_process->Shutdown(0, false);
+    child_process->Shutdown(0);
     crash_observer.Wait();
   }
   EXPECT_FALSE(child->current_frame_host()->IsRenderFrameLive());

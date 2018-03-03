@@ -589,7 +589,7 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest,
   // Kill the renderer process, simulating a crash. This should the ProcessDied
   // method to be called. Alternatively, RenderProcessHost::OnChannelError can
   // be called to directly force a call to ProcessDied.
-  wc1->GetMainFrame()->GetProcess()->Shutdown(-1, true);
+  wc1->GetMainFrame()->GetProcess()->Shutdown(-1);
 
   observer.Wait();
 }
