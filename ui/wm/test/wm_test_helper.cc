@@ -15,6 +15,7 @@
 #include "ui/aura/mus/property_converter.h"
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/mus/window_tree_host_mus.h"
+#include "ui/aura/test/mus/window_tree_client_private.h"
 #include "ui/aura/test/test_focus_client.h"
 #include "ui/aura/window.h"
 #include "ui/wm/core/compound_event_filter.h"
@@ -71,10 +72,11 @@ void WMTestHelper::InitMusHost(service_manager::Connector* connector) {
   property_converter_ = std::make_unique<aura::PropertyConverter>();
 
   const bool create_discardable_memory = false;
-  window_tree_client_ = std::make_unique<aura::WindowTreeClient>(
-      connector, this, nullptr, nullptr, nullptr, create_discardable_memory);
+  window_tree_client_ = aura::WindowTreeClient::CreateForWindowTreeHostFactory(
+      connector, this, create_discardable_memory);
   aura::Env::GetInstance()->SetWindowTreeClient(window_tree_client_.get());
-  window_tree_client_->ConnectViaWindowTreeHostFactory();
+  aura::WindowTreeClientPrivate(window_tree_client_.get())
+      .WaitForInitialDisplays();
 
   // ConnectViaWindowTreeHostFactory() should callback to OnEmbed() and set
   // |host_|.

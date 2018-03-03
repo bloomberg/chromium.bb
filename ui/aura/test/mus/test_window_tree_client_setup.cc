@@ -61,9 +61,9 @@ WindowTreeClient* TestWindowTreeClientSetup::window_tree_client() {
 void TestWindowTreeClientSetup::CommonInit(
     WindowTreeClientDelegate* window_tree_delegate,
     WindowManagerDelegate* window_manager_delegate) {
-  window_tree_.reset(new TestWindowTree);
-  window_tree_client_ = std::make_unique<WindowTreeClient>(
-      nullptr, window_tree_delegate, window_manager_delegate);
+  window_tree_ = std::make_unique<TestWindowTree>();
+  window_tree_client_ = WindowTreeClientPrivate::CreateWindowTreeClient(
+      window_tree_delegate, window_manager_delegate);
   window_tree_->set_client(window_tree_client_.get());
 }
 

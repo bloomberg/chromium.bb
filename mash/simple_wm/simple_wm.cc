@@ -373,10 +373,9 @@ void SimpleWM::OnStart() {
     context()->QuitNow();
     return;
   }
-  window_tree_client_ = std::make_unique<aura::WindowTreeClient>(
+  window_tree_client_ = aura::WindowTreeClient::CreateForWindowManager(
       context()->connector(), this, this);
   aura::Env::GetInstance()->SetWindowTreeClient(window_tree_client_.get());
-  window_tree_client_->ConnectAsWindowManager();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

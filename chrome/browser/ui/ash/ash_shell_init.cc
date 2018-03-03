@@ -63,13 +63,11 @@ std::unique_ptr<ash::WindowManager> CreateMusShell() {
   // When Ash runs in the same services as chrome content creates the
   // DiscardableSharedMemoryManager.
   const bool create_discardable_memory = false;
-  std::unique_ptr<aura::WindowTreeClient> window_tree_client =
-      std::make_unique<aura::WindowTreeClient>(
-          connector, window_manager.get(), window_manager.get(), nullptr,
-          nullptr, create_discardable_memory);
   const bool automatically_create_display_roots = false;
-  window_tree_client->ConnectAsWindowManager(
-      automatically_create_display_roots);
+  std::unique_ptr<aura::WindowTreeClient> window_tree_client =
+      aura::WindowTreeClient::CreateForWindowManager(
+          connector, window_manager.get(), window_manager.get(),
+          automatically_create_display_roots, create_discardable_memory);
   aura::Env::GetInstance()->SetWindowTreeClient(window_tree_client.get());
   window_manager->Init(std::move(window_tree_client),
                        std::make_unique<ChromeShellDelegate>());

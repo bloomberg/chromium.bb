@@ -24,12 +24,11 @@ MusDemoInternal::~MusDemoInternal() {}
 
 std::unique_ptr<aura::WindowTreeClient>
 MusDemoInternal::CreateWindowTreeClient() {
-  return std::make_unique<aura::WindowTreeClient>(context()->connector(), this,
-                                                  this);
+  return aura::WindowTreeClient::CreateForWindowManager(context()->connector(),
+                                                        this, this);
 }
 
 void MusDemoInternal::OnStartImpl() {
-  window_tree_client()->ConnectAsWindowManager();
   // The demo will actually start when the window server creates the display,
   // causing OnWmNewDisplay to be called.
 }

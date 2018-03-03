@@ -686,14 +686,14 @@ class EstablishConnectionViaFactoryDelegate
 TEST_F(WindowServerTest, EstablishConnectionViaFactory) {
   EstablishConnectionViaFactoryDelegate delegate(window_manager());
   set_window_manager_delegate(&delegate);
-  aura::WindowTreeClient second_client(connector(), this, nullptr, nullptr,
-                                       nullptr, false);
-  second_client.ConnectViaWindowTreeFactory();
+  std::unique_ptr<aura::WindowTreeClient> second_client =
+      aura::WindowTreeClient::CreateForWindowTreeFactory(connector(), this,
+                                                         false);
   aura::WindowTreeHostMus window_tree_host_in_second_client(
-      aura::CreateInitParamsForTopLevel(&second_client));
+      aura::CreateInitParamsForTopLevel(second_client.get()));
   window_tree_host_in_second_client.InitHost();
   window_tree_host_in_second_client.window()->Show();
-  ASSERT_TRUE(second_client.GetRoots().count(
+  ASSERT_TRUE(second_client->GetRoots().count(
                   window_tree_host_in_second_client.window()) > 0);
   // Wait for the window to appear in the wm.
   ASSERT_TRUE(delegate.QuitOnCreate());
@@ -716,17 +716,17 @@ TEST_F(WindowServerTest, OnWindowHierarchyChangedIncludesTransientParent) {
   // of the first window and then add it.
   EstablishConnectionViaFactoryDelegate delegate(window_manager());
   set_window_manager_delegate(&delegate);
-  aura::WindowTreeClient second_client(connector(), this, nullptr, nullptr,
-                                       nullptr, false);
-  second_client.ConnectViaWindowTreeFactory();
+  std::unique_ptr<aura::WindowTreeClient> second_client =
+      aura::WindowTreeClient::CreateForWindowTreeFactory(connector(), this,
+                                                         false);
   aura::WindowTreeHostMus window_tree_host_in_second_client(
-      aura::CreateInitParamsForTopLevel(&second_client));
+      aura::CreateInitParamsForTopLevel(second_client.get()));
   window_tree_host_in_second_client.InitHost();
   window_tree_host_in_second_client.window()->Show();
   aura::Window* second_client_child = NewVisibleWindow(
-      window_tree_host_in_second_client.window(), &second_client);
+      window_tree_host_in_second_client.window(), second_client.get());
   // Create the transient without a parent, set transient parent, then add.
-  aura::Window* transient = NewVisibleWindow(nullptr, &second_client);
+  aura::Window* transient = NewVisibleWindow(nullptr, second_client.get());
   aura::client::TransientWindowClient* transient_window_client =
       aura::client::GetTransientWindowClient();
   transient_window_client->AddTransientChild(second_client_child, transient);

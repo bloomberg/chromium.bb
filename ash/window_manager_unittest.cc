@@ -105,16 +105,17 @@ TEST_F(WindowManagerServiceTest, OpenWindow) {
 
   // Connect to mus and create a new top level window. The request goes to
   // |ash|, but is async.
-  aura::WindowTreeClient client(connector(), &window_tree_delegate, nullptr,
-                                nullptr, nullptr, false);
-  client.ConnectViaWindowTreeFactory();
-  aura::test::EnvWindowTreeClientSetter env_window_tree_client_setter(&client);
+  std::unique_ptr<aura::WindowTreeClient> client =
+      aura::WindowTreeClient::CreateForWindowTreeFactory(
+          connector(), &window_tree_delegate, false);
+  aura::test::EnvWindowTreeClientSetter env_window_tree_client_setter(
+      client.get());
   std::map<std::string, std::vector<uint8_t>> properties;
   properties[ui::mojom::WindowManager::kWindowType_InitProperty] =
       mojo::ConvertTo<std::vector<uint8_t>>(
           static_cast<int32_t>(ui::mojom::WindowType::WINDOW));
   aura::WindowTreeHostMus window_tree_host_mus(
-      aura::CreateInitParamsForTopLevel(&client, std::move(properties)));
+      aura::CreateInitParamsForTopLevel(client.get(), std::move(properties)));
   window_tree_host_mus.InitHost();
   aura::Window* child_window = new aura::Window(nullptr);
   child_window->Init(ui::LAYER_NOT_DRAWN);
@@ -124,12 +125,13 @@ TEST_F(WindowManagerServiceTest, OpenWindow) {
   // |child_window|. This blocks until it succeeds.
   ui::mojom::WindowTreeClientPtr tree_client;
   auto tree_client_request = MakeRequest(&tree_client);
-  client.Embed(child_window, std::move(tree_client), 0u, base::Bind(&OnEmbed));
-  aura::WindowTreeClient child_client(connector(), &window_tree_delegate,
-                                      nullptr, std::move(tree_client_request),
-                                      nullptr, false);
+  client->Embed(child_window, std::move(tree_client), 0u, base::Bind(&OnEmbed));
+  std::unique_ptr<aura::WindowTreeClient> child_client =
+      aura::WindowTreeClient::CreateForEmbedding(
+          connector(), &window_tree_delegate, std::move(tree_client_request),
+          false);
   window_tree_delegate.WaitForEmbed();
-  ASSERT_TRUE(!child_client.GetRoots().empty());
+  ASSERT_TRUE(!child_client->GetRoots().empty());
   window_tree_delegate.DestroyWindowTreeHost();
 }
 

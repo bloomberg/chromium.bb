@@ -81,11 +81,13 @@ class WindowTreeHostMus;
 
 using EventResultCallback = base::Callback<void(ui::mojom::EventResult)>;
 
-// Manages the connection with mus.
+// Used to enable Aura to act as the client-library for the Window Service.
 //
-// WindowTreeClient is owned by the creator. Generally when the delegate gets
-// one of OnEmbedRootDestroyed() or OnLostConnection() it should delete the
-// WindowTreeClient.
+// WindowTreeClient is created in a handful of distinct ways. See the various
+// Create functions for details.
+//
+// Generally when the delegate gets one of OnEmbedRootDestroyed() or
+// OnLostConnection() it should delete the WindowTreeClient.
 //
 // When WindowTreeClient is deleted all windows are deleted (and observers
 // notified).
@@ -99,31 +101,38 @@ class AURA_EXPORT WindowTreeClient
       public WindowTreeHostMusDelegate,
       public client::TransientWindowClientObserver {
  public:
-  // |create_discardable_memory| If it is true, WindowTreeClient will setup the
-  // dicardable shared memory manager for this process. In some test, more than
-  // one WindowTreeClient will be created, so we need pass false to avoid
-  // setup the discardable shared memory manager more than once.
-  WindowTreeClient(
+  // Creates a WindowTreeClient to act as the window manager. See mojom for
+  // details on |automatically_create_display_roots|.
+  // TODO(sky): move |create_discardable_memory| out of this class.
+  static std::unique_ptr<WindowTreeClient> CreateForWindowManager(
       service_manager::Connector* connector,
       WindowTreeClientDelegate* delegate,
-      WindowManagerDelegate* window_manager_delegate = nullptr,
-      ui::mojom::WindowTreeClientRequest request = nullptr,
-      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner = nullptr,
+      WindowManagerDelegate* window_manager_delegate,
+      bool automatically_create_display_roots = true,
       bool create_discardable_memory = true);
+
+  // Creates a WindowTreeClient for use in embedding.
+  static std::unique_ptr<WindowTreeClient> CreateForEmbedding(
+      service_manager::Connector* connector,
+      WindowTreeClientDelegate* delegate,
+      ui::mojom::WindowTreeClientRequest request,
+      bool create_discardable_memory = true);
+
+  // Creates a WindowTreeClient useful for creating top-level windows.
+  static std::unique_ptr<WindowTreeClient> CreateForWindowTreeFactory(
+      service_manager::Connector* connector,
+      WindowTreeClientDelegate* delegate,
+      bool create_discardable_memory = true,
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner = nullptr);
+
+  // Creates a WindowTreeClient such that the Window Service creates a single
+  // WindowTreeHost. This is useful for testing and examples.
+  static std::unique_ptr<WindowTreeClient> CreateForWindowTreeHostFactory(
+      service_manager::Connector* connector,
+      WindowTreeClientDelegate* delegate,
+      bool create_discardable_memory = true);
+
   ~WindowTreeClient() override;
-
-  // Establishes the connection by way of the WindowTreeFactory.
-  void ConnectViaWindowTreeFactory();
-
-  // Establishes the connection by way of WindowManagerWindowTreeFactory.
-  // See mojom for details on |automatically_create_display_roots|.
-  void ConnectAsWindowManager(bool automatically_create_display_roots = true);
-
-  // Connects to mus such that a single WindowTreeHost is created. This blocks
-  // until the WindowTreeHost is obtained and calls
-  // WindowTreeClientDelegate::OnEmbed() with the WindowTreeHost. This entry
-  // point is mostly useful for testing and examples.
-  void ConnectViaWindowTreeHostFactory();
 
   void DisableDragDropClient() { install_drag_drop_client_ = false; }
 
@@ -211,6 +220,18 @@ class AURA_EXPORT WindowTreeClient
 
   // TODO(sky): this assumes change_ids never wrap, which is a bad assumption.
   using InFlightMap = std::map<uint32_t, std::unique_ptr<InFlightChange>>;
+
+  // |create_discardable_memory| specifies whether WindowTreeClient will setup
+  // the dicardable shared memory manager for this process. In some tests, more
+  // than one WindowTreeClient will be created, so we need to pass false to
+  // avoid setting up the discardable shared memory manager more than once.
+  WindowTreeClient(
+      service_manager::Connector* connector,
+      WindowTreeClientDelegate* delegate,
+      WindowManagerDelegate* window_manager_delegate = nullptr,
+      ui::mojom::WindowTreeClientRequest request = nullptr,
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner = nullptr,
+      bool create_discardable_memory = true);
 
   void RegisterWindowMus(WindowMus* window);
 

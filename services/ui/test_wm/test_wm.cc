@@ -59,10 +59,9 @@ class TestWM : public service_manager::Service,
     screen_ = std::make_unique<display::ScreenBase>();
     display::Screen::SetScreenInstance(screen_.get());
     aura_env_ = aura::Env::CreateInstance(aura::Env::Mode::MUS);
-    window_tree_client_ = std::make_unique<aura::WindowTreeClient>(
+    window_tree_client_ = aura::WindowTreeClient::CreateForWindowManager(
         context()->connector(), this, this);
     aura_env_->SetWindowTreeClient(window_tree_client_.get());
-    window_tree_client_->ConnectAsWindowManager();
   }
   void OnBindInterface(const service_manager::BindSourceInfo& source_info,
                        const std::string& interface_name,

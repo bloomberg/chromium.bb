@@ -23,6 +23,16 @@ WindowTreeClientPrivate::WindowTreeClientPrivate(Window* window)
 
 WindowTreeClientPrivate::~WindowTreeClientPrivate() {}
 
+// static
+std::unique_ptr<WindowTreeClient>
+WindowTreeClientPrivate::CreateWindowTreeClient(
+    WindowTreeClientDelegate* window_tree_delegate,
+    WindowManagerDelegate* window_manager_delegate) {
+  std::unique_ptr<WindowTreeClient> wtc(new WindowTreeClient(
+      nullptr, window_tree_delegate, window_manager_delegate));
+  return wtc;
+}
+
 void WindowTreeClientPrivate::OnEmbed(ui::mojom::WindowTree* window_tree) {
   ui::mojom::WindowDataPtr root_data(ui::mojom::WindowData::New());
   root_data->parent_id = 0;
@@ -115,6 +125,10 @@ bool WindowTreeClientPrivate::HasChangeInFlightOfType(ChangeType type) {
       return true;
   }
   return false;
+}
+
+void WindowTreeClientPrivate::WaitForInitialDisplays() {
+  tree_client_impl_->WaitForInitialDisplays();
 }
 
 }  // namespace aura

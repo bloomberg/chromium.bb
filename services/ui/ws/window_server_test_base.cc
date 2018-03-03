@@ -100,8 +100,7 @@ void WindowServerTestBase::SetUp() {
   env_ = aura::Env::CreateInstance(aura::Env::Mode::MUS);
   display::Screen::SetScreenInstance(&screen_);
   std::unique_ptr<aura::WindowTreeClient> window_manager_window_tree_client =
-      std::make_unique<aura::WindowTreeClient>(connector(), this, this);
-  window_manager_window_tree_client->ConnectAsWindowManager();
+      aura::WindowTreeClient::CreateForWindowManager(connector(), this, this);
   window_manager_ = window_manager_window_tree_client.get();
   window_tree_clients_.push_back(std::move(window_manager_window_tree_client));
 
@@ -290,11 +289,10 @@ void WindowServerTestBase::OnWmDeactivateWindow(aura::Window* window) {
 }
 
 void WindowServerTestBase::BindWindowTreeClientRequest(
-    mojom::WindowTreeClientRequest request) {
+    ui::mojom::WindowTreeClientRequest request) {
   const bool create_discardable_memory = false;
-  window_tree_clients_.push_back(std::make_unique<aura::WindowTreeClient>(
-      connector(), this, nullptr, std::move(request), nullptr,
-      create_discardable_memory));
+  window_tree_clients_.push_back(aura::WindowTreeClient::CreateForEmbedding(
+      connector(), this, std::move(request), create_discardable_memory));
 }
 
 bool WindowServerTestBase::DeleteWindowTreeHost(
