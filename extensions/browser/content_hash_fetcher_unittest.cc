@@ -71,13 +71,12 @@ class ContentHashFetcherWaiter {
     result_->force = force;
     result_->mismatch_paths = mismatch_paths;
     if (run_loop_quit_)
-      base::ResetAndReturn(&run_loop_quit_).Run();
+      std::move(run_loop_quit_).Run();
   }
 
-  base::Closure run_loop_quit_;
+  base::OnceClosure run_loop_quit_;
   std::unique_ptr<ContentHashFetcherResult> result_;
   base::WeakPtrFactory<ContentHashFetcherWaiter> weak_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(ContentHashFetcherWaiter);
 };
 
@@ -94,6 +93,69 @@ class ContentHashFetcherTest : public ExtensionsTest {
   }
   ~ContentHashFetcherTest() override {}
 
+  bool LoadTestExtension() {
+    test_dir_base_ = GetTestPath(
+        base::FilePath(FILE_PATH_LITERAL("missing_verified_contents")));
+
+    // We unzip the extension source to a temp directory to simulate it being
+    // installed there, because the ContentHashFetcher will create the
+    // _metadata/ directory within the extension install dir and write the
+    // fetched verified_contents.json file there.
+    extension_ =
+        UnzipToTempDirAndLoad(test_dir_base_.AppendASCII("source.zip"));
+    if (!extension_.get())
+      return false;
+
+    // Make sure there isn't already a verified_contents.json file there.
+    EXPECT_FALSE(VerifiedContentsFileExists());
+    delegate_ = std::make_unique<MockContentVerifierDelegate>();
+    fetch_url_ = delegate_->GetSignatureFetchUrl(extension_->id(),
+                                                 extension_->version());
+    return true;
+  }
+
+  std::unique_ptr<ContentHashFetcherResult> DoHashFetch() {
+    if (!extension_.get() || !delegate_.get()) {
+      ADD_FAILURE() << "No valid extension_ or delegate_, "
+                       "did you forget to call LoadTestExtension()?";
+      return nullptr;
+    }
+
+    ContentHashFetcherWaiter waiter;
+    ContentHashFetcher fetcher(request_context(), delegate_.get(),
+                               waiter.GetCallback());
+    fetcher.DoFetch(extension_.get(), true /* force */);
+    return waiter.WaitForCallback();
+  }
+  const GURL& fetch_url() { return fetch_url_; }
+
+  const base::FilePath& extension_root() { return extension_->path(); }
+
+  bool VerifiedContentsFileExists() const {
+    return base::PathExists(
+        file_util::GetVerifiedContentsPath(extension_->path()));
+  }
+
+  base::FilePath GetResourcePath(const std::string& resource_filename) const {
+    return test_dir_base_.AppendASCII(resource_filename);
+  }
+
+  // Registers interception of requests for |url| to respond with the contents
+  // of the file at |response_path|.
+  void RegisterInterception(const GURL& url,
+                            const base::FilePath& response_path) {
+    ASSERT_TRUE(base::PathExists(response_path));
+    ASSERT_FALSE(interceptor_);
+    interceptor_ = std::make_unique<net::TestURLRequestInterceptor>(
+        url.scheme(), url.host(),
+        content::BrowserThread::GetTaskRunnerForThread(
+            content::BrowserThread::IO),
+        base::CreateTaskRunnerWithTraits(
+            {base::MayBlock(), base::TaskPriority::BACKGROUND}));
+    interceptor_->SetResponse(url, response_path);
+  }
+
+ private:
   net::URLRequestContextGetter* request_context() {
     return request_context_.get();
   }
@@ -122,55 +184,27 @@ class ContentHashFetcherTest : public ExtensionsTest {
     return extension;
   }
 
-  // Registers interception of requests for |url| to respond with the contents
-  // of the file at |response_path|.
-  void RegisterInterception(const GURL& url,
-                            const base::FilePath& response_path) {
-    interceptor_ = std::make_unique<net::TestURLRequestInterceptor>(
-        url.scheme(), url.host(),
-        content::BrowserThread::GetTaskRunnerForThread(
-            content::BrowserThread::IO),
-        base::CreateTaskRunnerWithTraits(
-            {base::MayBlock(), base::TaskPriority::BACKGROUND}));
-    interceptor_->SetResponse(url, response_path);
-  }
-
- protected:
   std::unique_ptr<net::TestURLRequestInterceptor> interceptor_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_;
   base::ScopedTempDir temp_dir_;
+
+  GURL fetch_url_;
+  base::FilePath test_dir_base_;
+  std::unique_ptr<MockContentVerifierDelegate> delegate_;
+  scoped_refptr<Extension> extension_;
+
+  DISALLOW_COPY_AND_ASSIGN(ContentHashFetcherTest);
 };
 
 // This tests our ability to successfully fetch, parse, and validate a missing
 // verified_contents.json file for an extension.
 TEST_F(ContentHashFetcherTest, MissingVerifiedContents) {
-  // We unzip the extension source to a temp directory to simulate it being
-  // installed there, because the ContentHashFetcher will create the _metadata/
-  // directory within the extension install dir and write the fetched
-  // verified_contents.json file there.
-  base::FilePath test_dir_base = GetTestPath(
-      base::FilePath(FILE_PATH_LITERAL("missing_verified_contents")));
-  scoped_refptr<Extension> extension =
-      UnzipToTempDirAndLoad(test_dir_base.AppendASCII("source.zip"));
+  ASSERT_TRUE(LoadTestExtension());
 
-  // Make sure there isn't already a verified_contents.json file there.
-  EXPECT_FALSE(
-      base::PathExists(file_util::GetVerifiedContentsPath(extension->path())));
-
-  MockContentVerifierDelegate delegate;
-  ContentHashFetcherWaiter waiter;
-  GURL fetch_url =
-      delegate.GetSignatureFetchUrl(extension->id(), extension->version());
-
-  RegisterInterception(fetch_url,
-                       test_dir_base.AppendASCII("verified_contents.json"));
-
-  ContentHashFetcher fetcher(request_context(), &delegate,
-                             waiter.GetCallback());
-  fetcher.DoFetch(extension.get(), true /* force */);
+  RegisterInterception(fetch_url(), GetResourcePath("verified_contents.json"));
 
   // Make sure the fetch was successful.
-  std::unique_ptr<ContentHashFetcherResult> result = waiter.WaitForCallback();
+  std::unique_ptr<ContentHashFetcherResult> result = DoHashFetch();
   ASSERT_TRUE(result.get());
   EXPECT_TRUE(result->success);
   EXPECT_TRUE(result->force);
@@ -178,37 +212,69 @@ TEST_F(ContentHashFetcherTest, MissingVerifiedContents) {
 
   // Make sure the verified_contents.json file was written into the extension's
   // install dir.
-  EXPECT_TRUE(
-      base::PathExists(file_util::GetVerifiedContentsPath(extension->path())));
+  EXPECT_TRUE(VerifiedContentsFileExists());
+}
+
+// Tests that if the network fetches invalid verified_contents.json, failure
+// happens correctly.
+TEST_F(ContentHashFetcherTest, FetchInvalidVerifiedContents) {
+  ASSERT_TRUE(LoadTestExtension());
+
+  // Simulate invalid verified_contents.json fetch by providing a modified and
+  // incorrect json file.
+  // invalid_verified_contents.json is a modified version of
+  // verified_contents.json, with one hash character garbled.
+  RegisterInterception(fetch_url(),
+                       GetResourcePath("invalid_verified_contents.json"));
+
+  std::unique_ptr<ContentHashFetcherResult> result = DoHashFetch();
+  ASSERT_TRUE(result.get());
+  EXPECT_FALSE(result->success);
+  EXPECT_TRUE(result->force);
+  EXPECT_TRUE(result->mismatch_paths.empty());
+
+  // TODO(lazyboy): This should be EXPECT_FALSE, we shouldn't be writing
+  // verified_contents.json file if it didn't succeed.
+  //// Make sure the verified_contents.json file was *not* written into the
+  //// extension's install dir.
+  // EXPECT_FALSE(VerifiedContentsFileExists());
+  EXPECT_TRUE(VerifiedContentsFileExists());
+}
+
+// Tests that if the verified_contents.json network request 404s, failure
+// happens as expected.
+TEST_F(ContentHashFetcherTest, Fetch404VerifiedContents) {
+  ASSERT_TRUE(LoadTestExtension());
+
+  // NOTE: No RegisterInterception(), hash fetch will result in 404.
+
+  // Make sure the fetch was *not* successful.
+  std::unique_ptr<ContentHashFetcherResult> result = DoHashFetch();
+  ASSERT_TRUE(result.get());
+  EXPECT_FALSE(result->success);
+  EXPECT_TRUE(result->force);
+  EXPECT_TRUE(result->mismatch_paths.empty());
+
+  // Make sure the verified_contents.json file was *not* written into the
+  // extension's install dir.
+  EXPECT_FALSE(VerifiedContentsFileExists());
 }
 
 // Similar to MissingVerifiedContents, but tests the case where the extension
 // actually has corruption.
 TEST_F(ContentHashFetcherTest, MissingVerifiedContentsAndCorrupt) {
-  base::FilePath test_dir_base =
-      GetTestPath(base::FilePath()).AppendASCII("missing_verified_contents");
-  scoped_refptr<Extension> extension =
-      UnzipToTempDirAndLoad(test_dir_base.AppendASCII("source.zip"));
+  ASSERT_TRUE(LoadTestExtension());
 
   // Tamper with a file in the extension.
-  base::FilePath script_path = extension->path().AppendASCII("script.js");
+  base::FilePath script_path = extension_root().AppendASCII("script.js");
   std::string addition = "//hello world";
   ASSERT_TRUE(
       base::AppendToFile(script_path, addition.c_str(), addition.size()));
-  MockContentVerifierDelegate delegate;
-  ContentHashFetcherWaiter waiter;
-  GURL fetch_url =
-      delegate.GetSignatureFetchUrl(extension->id(), extension->version());
 
-  RegisterInterception(fetch_url,
-                       test_dir_base.AppendASCII("verified_contents.json"));
-
-  ContentHashFetcher fetcher(request_context(), &delegate,
-                             waiter.GetCallback());
-  fetcher.DoFetch(extension.get(), true /* force */);
+  RegisterInterception(fetch_url(), GetResourcePath("verified_contents.json"));
 
   // Make sure the fetch was *not* successful.
-  std::unique_ptr<ContentHashFetcherResult> result = waiter.WaitForCallback();
+  std::unique_ptr<ContentHashFetcherResult> result = DoHashFetch();
   ASSERT_NE(nullptr, result.get());
   EXPECT_TRUE(result->success);
   EXPECT_TRUE(result->force);
@@ -217,8 +283,7 @@ TEST_F(ContentHashFetcherTest, MissingVerifiedContentsAndCorrupt) {
 
   // Make sure the verified_contents.json file was written into the extension's
   // install dir.
-  EXPECT_TRUE(
-      base::PathExists(file_util::GetVerifiedContentsPath(extension->path())));
+  EXPECT_TRUE(VerifiedContentsFileExists());
 }
 
 }  // namespace extensions
