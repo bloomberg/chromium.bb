@@ -269,11 +269,9 @@ static const arg_def_t error_resilient =
     ARG_DEF(NULL, "error-resilient", 1, "Enable error resiliency features");
 static const arg_def_t lag_in_frames =
     ARG_DEF(NULL, "lag-in-frames", 1, "Max number of frames to lag");
-#if CONFIG_EXT_TILE
 static const arg_def_t large_scale_tile =
     ARG_DEF(NULL, "large-scale-tile", 1,
             "Large scale tile coding (0: off (default), 1: on)");
-#endif  // CONFIG_EXT_TILE
 #if CONFIG_MONO_VIDEO
 static const arg_def_t monochrome =
     ARG_DEF(NULL, "monochrome", 0, "Monochrome video (no chroma planes)");
@@ -299,9 +297,7 @@ static const arg_def_t *global_args[] = { &use_yv12,
                                           &error_resilient,
                                           &bitdeptharg,
                                           &lag_in_frames,
-#if CONFIG_EXT_TILE
                                           &large_scale_tile,
-#endif  // CONFIG_EXT_TILE
 #if CONFIG_MONO_VIDEO
                                           &monochrome,
 #endif  // CONFIG_MONO_VIDEO
@@ -421,11 +417,9 @@ static const arg_def_t cpu_used_av1 =
     ARG_DEF(NULL, "cpu-used", 1, "CPU Used (0..8)");
 static const arg_def_t dev_sf_av1 =
     ARG_DEF(NULL, "dev-sf", 1, "Dev Speed (0..255)");
-#if CONFIG_EXT_TILE
 static const arg_def_t single_tile_decoding =
     ARG_DEF(NULL, "single-tile-decoding", 1,
             "Single tile decoding (0: off (default), 1: on)");
-#endif  // CONFIG_EXT_TILE
 static const arg_def_t tile_cols =
     ARG_DEF(NULL, "tile-columns", 1, "Number of tile columns to use, log2");
 static const arg_def_t tile_rows =
@@ -643,9 +637,7 @@ static const arg_def_t *av1_args[] = { &cpu_used_av1,
                                        &auto_altref,
                                        &sharpness,
                                        &static_thresh,
-#if CONFIG_EXT_TILE
                                        &single_tile_decoding,
-#endif  // CONFIG_EXT_TILE
                                        &tile_cols,
                                        &tile_rows,
 #if CONFIG_DEPENDENT_HORZTILES
@@ -708,9 +700,7 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
                                         AOME_SET_ENABLEAUTOALTREF,
                                         AOME_SET_SHARPNESS,
                                         AOME_SET_STATIC_THRESHOLD,
-#if CONFIG_EXT_TILE
                                         AV1E_SET_SINGLE_TILE_DECODING,
-#endif  // CONFIG_EXT_TILE
                                         AV1E_SET_TILE_COLUMNS,
                                         AV1E_SET_TILE_ROWS,
 #if CONFIG_DEPENDENT_HORZTILES
@@ -1234,10 +1224,8 @@ static int parse_stream_params(struct AvxEncoderConfig *global,
       config->cfg.g_error_resilient = arg_parse_uint(&arg);
     } else if (arg_match(&arg, &lag_in_frames, argi)) {
       config->cfg.g_lag_in_frames = arg_parse_uint(&arg);
-#if CONFIG_EXT_TILE
     } else if (arg_match(&arg, &large_scale_tile, argi)) {
       config->cfg.large_scale_tile = arg_parse_uint(&arg);
-#endif  // CONFIG_EXT_TILE
 #if CONFIG_MONO_VIDEO
     } else if (arg_match(&arg, &monochrome, argi)) {
       config->cfg.monochrome = 1;
@@ -1456,9 +1444,7 @@ static void show_stream_config(struct stream_state *stream,
   SHOW(g_error_resilient);
   SHOW(g_pass);
   SHOW(g_lag_in_frames);
-#if CONFIG_EXT_TILE
   SHOW(large_scale_tile);
-#endif  // CONFIG_EXT_TILE
   SHOW(rc_dropframe_thresh);
   SHOW(rc_resize_mode);
   SHOW(rc_resize_denominator);
@@ -1614,7 +1600,6 @@ static void initialize_encoder(struct stream_state *stream,
     aom_codec_dec_cfg_t cfg = { 0, 0, 0, CONFIG_LOWBITDEPTH, { 1 } };
     aom_codec_dec_init(&stream->decoder, decoder->codec_interface(), &cfg, 0);
 
-#if CONFIG_EXT_TILE
     if (strcmp(global->codec->name, "av1") == 0) {
       aom_codec_control(&stream->decoder, AV1_SET_TILE_MODE,
                         stream->config.cfg.large_scale_tile);
@@ -1626,7 +1611,6 @@ static void initialize_encoder(struct stream_state *stream,
       aom_codec_control(&stream->decoder, AV1_SET_DECODE_TILE_COL, -1);
       ctx_exit_on_error(&stream->decoder, "Failed to set decode_tile_col");
     }
-#endif  // CONFIG_EXT_TILE
   }
 #endif
 }

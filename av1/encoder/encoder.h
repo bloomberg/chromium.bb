@@ -305,10 +305,8 @@ typedef struct AV1EncoderConfig {
   uint8_t cdf_update_mode;
 #endif  // CONFIG_CDF_UPDATE_MODE
   aom_superblock_size_t superblock_size;
-#if CONFIG_EXT_TILE
   unsigned int large_scale_tile;
   unsigned int single_tile_decoding;
-#endif  // CONFIG_EXT_TILE
   int monochrome;
   int enable_dual_filter;
   unsigned int motion_vector_unit_test;

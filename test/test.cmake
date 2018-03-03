@@ -309,11 +309,9 @@ if (NOT BUILD_SHARED_LIBS)
         "${AOM_ROOT}/test/boolcoder_test.cc"
         "${AOM_ROOT}/test/ec_test.cc")
 
-    if (CONFIG_EXT_TILE)
       set(AOM_UNIT_TEST_COMMON_SOURCES
           ${AOM_UNIT_TEST_COMMON_SOURCES}
           "${AOM_ROOT}/test/av1_ext_tile_test.cc")
-    endif ()
   endif ()
 endif ()
 

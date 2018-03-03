@@ -125,11 +125,9 @@ class TileIndependenceTest
 // inverted tile ordering. Ensure that the MD5 of the output in both cases
 // is identical. If so, tiles are considered independent and the test passes.
 TEST_P(TileIndependenceTest, MD5Match) {
-#if CONFIG_EXT_TILE
   cfg_.large_scale_tile = 0;
   fw_dec_->Control(AV1_SET_TILE_MODE, 0);
   inv_dec_->Control(AV1_SET_TILE_MODE, 0);
-#endif  // CONFIG_EXT_TILE
   DoTest();
 }
 
@@ -141,11 +139,9 @@ class TileIndependenceTestLarge : public TileIndependenceTest {
 };
 
 TEST_P(TileIndependenceTestLarge, MD5Match) {
-#if CONFIG_EXT_TILE
   cfg_.large_scale_tile = 0;
   fw_dec_->Control(AV1_SET_TILE_MODE, 0);
   inv_dec_->Control(AV1_SET_TILE_MODE, 0);
-#endif  // CONFIG_EXT_TILE
   DoTest();
 }
 
@@ -154,7 +150,6 @@ AV1_INSTANTIATE_TEST_CASE(TileIndependenceTest, ::testing::Values(0, 1),
 AV1_INSTANTIATE_TEST_CASE(TileIndependenceTestLarge, ::testing::Values(0, 1),
                           ::testing::Values(0, 1));
 
-#if CONFIG_EXT_TILE
 class TileIndependenceLSTest : public TileIndependenceTest {};
 
 TEST_P(TileIndependenceLSTest, MD5Match) {
@@ -178,5 +173,4 @@ AV1_INSTANTIATE_TEST_CASE(TileIndependenceLSTest, ::testing::Values(1, 2, 32),
 AV1_INSTANTIATE_TEST_CASE(TileIndependenceLSTestLarge,
                           ::testing::Values(1, 2, 32),
                           ::testing::Values(1, 2, 32));
-#endif  // CONFIG_EXT_TILE
 }  // namespace

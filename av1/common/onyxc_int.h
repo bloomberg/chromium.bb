@@ -494,18 +494,14 @@ typedef struct AV1Common {
 #if CONFIG_DEPENDENT_HORZTILES
   int tile_row_independent[MAX_TILE_ROWS];  // valid for 0 <= i <  tile_rows
 #endif
-#if CONFIG_EXT_TILE
   int tile_width, tile_height;  // In MI units
-#endif
 #else
   int log2_tile_cols, log2_tile_rows;  // Used in non-large_scale_tile_coding.
   int tile_width, tile_height;         // In MI units
 #endif  // CONFIG_MAX_TILE
 
-#if CONFIG_EXT_TILE
   unsigned int large_scale_tile;
   unsigned int single_tile_decoding;
-#endif  // CONFIG_EXT_TILE
 
 #if CONFIG_DEPENDENT_HORZTILES
   int dependent_horz_tiles;
@@ -671,10 +667,7 @@ static INLINE int frame_is_intra_only(const AV1_COMMON *const cm) {
 // function doesn't consider whether prev_frame is actually suitable (see
 // frame_can_use_prev_frame_mvs for that)
 static INLINE int frame_might_use_prev_frame_mvs(const AV1_COMMON *cm) {
-  return !cm->error_resilient_mode &&
-#if CONFIG_EXT_TILE
-         !cm->large_scale_tile &&
-#endif  // CONFIG_EXT_TILE
+  return !cm->error_resilient_mode && !cm->large_scale_tile &&
          !frame_is_intra_only(cm);
 }
 

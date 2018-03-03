@@ -170,20 +170,20 @@ class AVxEncoderThreadTest
 };
 
 TEST_P(AVxEncoderThreadTest, EncoderResultTest) {
-#if CONFIG_AV1 && CONFIG_EXT_TILE
+#if CONFIG_AV1
   cfg_.large_scale_tile = 0;
   decoder_->Control(AV1_SET_TILE_MODE, 0);
-#endif  // CONFIG_AV1 && CONFIG_EXT_TILE
+#endif  // CONFIG_AV1
   DoTest();
 }
 
 class AVxEncoderThreadTestLarge : public AVxEncoderThreadTest {};
 
 TEST_P(AVxEncoderThreadTestLarge, EncoderResultTest) {
-#if CONFIG_AV1 && CONFIG_EXT_TILE
+#if CONFIG_AV1
   cfg_.large_scale_tile = 0;
   decoder_->Control(AV1_SET_TILE_MODE, 0);
-#endif  // CONFIG_AV1 && CONFIG_EXT_TILE
+#endif  // CONFIG_AV1
   DoTest();
 }
 
@@ -198,7 +198,7 @@ AV1_INSTANTIATE_TEST_CASE(AVxEncoderThreadTestLarge,
                                             ::libaom_test::kOnePassGood),
                           ::testing::Range(0, 2));
 
-#if CONFIG_AV1 && CONFIG_EXT_TILE
+#if CONFIG_AV1
 class AVxEncoderThreadLSTest : public AVxEncoderThreadTest {
   virtual void SetTileSize(libaom_test::Encoder *encoder) {
     encoder->Control(AV1E_SET_TILE_COLUMNS, 1);
@@ -230,5 +230,5 @@ AV1_INSTANTIATE_TEST_CASE(AVxEncoderThreadLSTestLarge,
                           ::testing::Values(::libaom_test::kTwoPassGood,
                                             ::libaom_test::kOnePassGood),
                           ::testing::Range(0, 2));
-#endif  // CONFIG_AV1 && CONFIG_EXT_TILE
+#endif  // CONFIG_AV1
 }  // namespace

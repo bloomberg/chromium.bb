@@ -34,21 +34,6 @@ void Encoder::InitEncoder(VideoSource *video) {
 
     res = aom_codec_enc_init(&encoder_, CodecInterface(), &cfg_, init_flags_);
     ASSERT_EQ(AOM_CODEC_OK, res) << EncoderError();
-
-#if CONFIG_AV1_ENCODER
-    if (CodecInterface() == &aom_codec_av1_cx_algo) {
-// Default to 1 tile column for AV1. With CONFIG_EXT_TILE, the
-// default is already the largest possible tile size
-#if !CONFIG_EXT_TILE
-      const int log2_tile_columns = 0;
-      res = aom_codec_control_(&encoder_, AV1E_SET_TILE_COLUMNS,
-                               log2_tile_columns);
-      ASSERT_EQ(AOM_CODEC_OK, res) << EncoderError();
-#endif  // !CONFIG_EXT_TILE
-    } else
-#endif
-    {
-    }
   }
 }
 
@@ -226,7 +211,7 @@ void EncoderTest::RunLoop(VideoSource *video) {
       dec_init_flags |= AOM_CODEC_USE_INPUT_FRAGMENTS;
     testing::internal::scoped_ptr<Decoder> decoder(
         codec_->CreateDecoder(dec_cfg, dec_init_flags));
-#if CONFIG_AV1_DECODER && CONFIG_EXT_TILE
+#if CONFIG_AV1_DECODER
     if (decoder->IsAV1()) {
       // Set dec_cfg.tile_row = -1 and dec_cfg.tile_col = -1 so that the whole
       // frame is decoded.

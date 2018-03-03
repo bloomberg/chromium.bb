@@ -106,7 +106,6 @@ static const arg_def_t framestatsarg =
     ARG_DEF(NULL, "framestats", 1, "Output per-frame stats (.csv format)");
 static const arg_def_t outbitdeptharg =
     ARG_DEF(NULL, "output-bit-depth", 1, "Output bit-depth for decoded frames");
-#if CONFIG_EXT_TILE
 static const arg_def_t tilem = ARG_DEF(NULL, "tile-mode", 1,
                                        "Tile coding mode "
                                        "(0 for normal tile coding mode)");
@@ -116,17 +115,13 @@ static const arg_def_t tiler = ARG_DEF(NULL, "tile-row", 1,
 static const arg_def_t tilec = ARG_DEF(NULL, "tile-column", 1,
                                        "Column index of tile to decode "
                                        "(-1 for all columns)");
-#endif  // CONFIG_EXT_TILE
 
 static const arg_def_t *all_args[] = {
   &help,        &codecarg,       &use_yv12,    &use_i420,   &flipuvarg,
   &rawvideo,    &noblitarg,      &progressarg, &limitarg,   &skiparg,
   &postprocarg, &summaryarg,     &outputfile,  &threadsarg, &frameparallelarg,
   &verbosearg,  &scalearg,       &fb_arg,      &md5arg,     &framestatsarg,
-  &continuearg, &outbitdeptharg,
-#if CONFIG_EXT_TILE
-  &tilem,       &tiler,          &tilec,
-#endif  // CONFIG_EXT_TILE
+  &continuearg, &outbitdeptharg, &tilem,       &tiler,      &tilec,
   NULL
 };
 
@@ -515,11 +510,9 @@ static int main_loop(int argc, const char **argv_) {
   int opt_raw = 0;
   aom_codec_dec_cfg_t cfg = { 0, 0, 0, CONFIG_LOWBITDEPTH, { 1 } };
   unsigned int output_bit_depth = 0;
-#if CONFIG_EXT_TILE
   unsigned int tile_mode = 0;
   int tile_row = -1;
   int tile_col = -1;
-#endif  // CONFIG_EXT_TILE
   int frames_corrupted = 0;
   int dec_flags = 0;
   int do_scale = 0;
@@ -622,15 +615,12 @@ static int main_loop(int argc, const char **argv_) {
       keep_going = 1;
     else if (arg_match(&arg, &outbitdeptharg, argi)) {
       output_bit_depth = arg_parse_uint(&arg);
-    }
-#if CONFIG_EXT_TILE
-    else if (arg_match(&arg, &tilem, argi))
+    } else if (arg_match(&arg, &tilem, argi))
       tile_mode = arg_parse_int(&arg);
     else if (arg_match(&arg, &tiler, argi))
       tile_row = arg_parse_int(&arg);
     else if (arg_match(&arg, &tilec, argi))
       tile_col = arg_parse_int(&arg);
-#endif  // CONFIG_EXT_TILE
     else
       argj++;
   }
@@ -736,7 +726,7 @@ static int main_loop(int argc, const char **argv_) {
 
   if (!quiet) fprintf(stderr, "%s\n", decoder.name);
 
-#if CONFIG_AV1_DECODER && CONFIG_EXT_TILE
+#if CONFIG_AV1_DECODER
   if (aom_codec_control(&decoder, AV1_SET_TILE_MODE, tile_mode)) {
     fprintf(stderr, "Failed to set decode_tile_mode: %s\n",
             aom_codec_error(&decoder));
@@ -929,10 +919,8 @@ static int main_loop(int argc, const char **argv_) {
         }
       }
 
-#if CONFIG_EXT_TILE
       aom_input_ctx.width = img->d_w;
       aom_input_ctx.height = img->d_h;
-#endif  // CONFIG_EXT_TILE
 
 #if CONFIG_MONO_VIDEO
       int num_planes = (!use_y4m && opt_raw && img->monochrome) ? 1 : 3;

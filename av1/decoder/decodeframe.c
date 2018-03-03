@@ -1521,7 +1521,6 @@ static void read_tile_info_max_tile(AV1_COMMON *const cm,
 static void read_tile_info(AV1Decoder *const pbi,
                            struct aom_read_bit_buffer *const rb) {
   AV1_COMMON *const cm = &pbi->common;
-#if CONFIG_EXT_TILE
   cm->single_tile_decoding = 0;
   if (cm->large_scale_tile) {
     struct loopfilter *lf = &cm->lf;
@@ -1599,7 +1598,6 @@ static void read_tile_info(AV1Decoder *const pbi,
 #endif  // CONFIG_MAX_TILE
     return;
   }
-#endif  // CONFIG_EXT_TILE
 
 #if CONFIG_MAX_TILE
   read_tile_info_max_tile(cm, rb);
@@ -1666,7 +1664,6 @@ static int mem_get_varsize(const uint8_t *src, int sz) {
   }
 }
 
-#if CONFIG_EXT_TILE
 // Reads the next tile returning its size and adjusting '*data' accordingly
 // based on 'is_last'.
 static void get_ls_tile_buffer(
@@ -1800,7 +1797,6 @@ static void get_ls_tile_buffers(
     }
   }
 }
-#endif  // CONFIG_EXT_TILE
 
 // Reads the next tile returning its size and adjusting '*data' accordingly
 // based on 'is_last'.
@@ -1912,12 +1908,10 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
   const int tile_rows = cm->tile_rows;
   const int n_tiles = tile_cols * tile_rows;
   TileBufferDec(*const tile_buffers)[MAX_TILE_COLS] = pbi->tile_buffers;
-#if CONFIG_EXT_TILE
   const int dec_tile_row = AOMMIN(pbi->dec_tile_row, tile_rows);
   const int single_row = pbi->dec_tile_row >= 0;
   const int dec_tile_col = AOMMIN(pbi->dec_tile_col, tile_cols);
   const int single_col = pbi->dec_tile_col >= 0;
-#endif  // CONFIG_EXT_TILE
   int tile_rows_start;
   int tile_rows_end;
   int tile_cols_start;
@@ -1927,7 +1921,6 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
   int tile_row, tile_col;
   uint8_t allow_update_cdf;
 
-#if CONFIG_EXT_TILE
   if (cm->large_scale_tile) {
     tile_rows_start = single_row ? dec_tile_row : 0;
     tile_rows_end = single_row ? dec_tile_row + 1 : tile_rows;
@@ -1937,7 +1930,6 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
     inv_row_order = pbi->inv_tile_order && !single_row;
     allow_update_cdf = 0;
   } else {
-#endif  // CONFIG_EXT_TILE
     tile_rows_start = 0;
     tile_rows_end = tile_rows;
     tile_cols_start = 0;
@@ -1945,9 +1937,7 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
     inv_col_order = pbi->inv_tile_order;
     inv_row_order = pbi->inv_tile_order;
     allow_update_cdf = 1;
-#if CONFIG_EXT_TILE
   }
-#endif  // CONFIG_EXT_TILE
 
 #if CONFIG_CDF_UPDATE_MODE
   allow_update_cdf = allow_update_cdf && !cm->disable_cdf_update;
@@ -1956,11 +1946,9 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
   assert(tile_rows <= MAX_TILE_ROWS);
   assert(tile_cols <= MAX_TILE_COLS);
 
-#if CONFIG_EXT_TILE
   if (cm->large_scale_tile)
     get_ls_tile_buffers(pbi, data, data_end, tile_buffers);
   else
-#endif  // CONFIG_EXT_TILE
     get_tile_buffers(pbi, data, data_end, tile_buffers, startTile, endTile);
 
   if (pbi->tile_data == NULL || n_tiles != pbi->allocated_tiles) {
@@ -2092,7 +2080,6 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
   if (cm->frame_parallel_decode)
     av1_frameworker_broadcast(pbi->cur_buf, INT_MAX);
 
-#if CONFIG_EXT_TILE
   if (cm->large_scale_tile) {
     if (n_tiles == 1) {
       // Find the end of the single tile buffer
@@ -2101,7 +2088,6 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
     // Return the end of the last tile buffer
     return tile_buffers[tile_rows - 1][tile_cols - 1].raw_data_end;
   }
-#endif  // CONFIG_EXT_TILE
 
   TileData *const td = pbi->tile_data + endTile;
 
@@ -3018,12 +3004,8 @@ static int read_uncompressed_header(AV1Decoder *pbi,
                        " state");
   }
 
-#if CONFIG_EXT_TILE
   const int might_bwd_adapt =
       !(cm->error_resilient_mode || cm->large_scale_tile);
-#else
-  const int might_bwd_adapt = !cm->error_resilient_mode;
-#endif  // CONFIG_EXT_TILE
   if (might_bwd_adapt) {
     cm->refresh_frame_context = aom_rb_read_bit(rb)
                                     ? REFRESH_FRAME_CONTEXT_DISABLED
@@ -3329,7 +3311,6 @@ int av1_decode_frame_headers_and_setup(AV1Decoder *pbi, const uint8_t *data,
   read_uncompressed_header(pbi,
                            av1_init_read_bit_buffer(pbi, &rb, data, data_end));
 
-#if CONFIG_EXT_TILE
   // If cm->single_tile_decoding = 0, the independent decoding of a single tile
   // or a section of a frame is not allowed.
   if (!cm->single_tile_decoding &&
@@ -3337,7 +3318,6 @@ int av1_decode_frame_headers_and_setup(AV1Decoder *pbi, const uint8_t *data,
     pbi->dec_tile_row = -1;
     pbi->dec_tile_col = -1;
   }
-#endif  // CONFIG_EXT_TILE
 
   pbi->uncomp_hdr_size = aom_rb_bytes_read(&rb);
   YV12_BUFFER_CONFIG *new_fb = get_frame_new_buffer(cm);
@@ -3537,10 +3517,8 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
   }
 #endif
 
-// Non frame parallel update frame context here.
-#if CONFIG_EXT_TILE
+  // Non frame parallel update frame context here.
   if (!cm->large_scale_tile) {
-#endif  // CONFIG_EXT_TILE
     // TODO(yunqingwang): If cm->frame_parallel_decode = 0, then the following
     // update always happens. Seems it is done more than necessary.
     if (!cm->frame_parallel_decode ||
@@ -3548,11 +3526,9 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
 #if CONFIG_NO_FRAME_CONTEXT_SIGNALING
       cm->frame_contexts[cm->new_fb_idx] = *cm->fc;
 #else
-    if (!cm->error_resilient_mode)
-      cm->frame_contexts[cm->frame_context_idx] = *cm->fc;
+      if (!cm->error_resilient_mode)
+        cm->frame_contexts[cm->frame_context_idx] = *cm->fc;
 #endif
     }
-#if CONFIG_EXT_TILE
   }
-#endif  // CONFIG_EXT_TILE
 }

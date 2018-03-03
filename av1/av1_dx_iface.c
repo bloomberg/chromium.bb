@@ -408,11 +408,9 @@ static aom_codec_err_t init_decoder(aom_codec_alg_priv_t *ctx) {
     frame_worker_data->pbi->inv_tile_order = ctx->invert_tile_order;
     frame_worker_data->pbi->common.frame_parallel_decode =
         ctx->frame_parallel_decode;
-#if CONFIG_EXT_TILE
     frame_worker_data->pbi->common.large_scale_tile = ctx->tile_mode;
     frame_worker_data->pbi->dec_tile_row = ctx->decode_tile_row;
     frame_worker_data->pbi->dec_tile_col = ctx->decode_tile_col;
-#endif  // CONFIG_EXT_TILE
     worker->hook = (AVxWorkerHook)frame_worker_hook;
     if (!winterface->reset(worker)) {
       set_error_detail(ctx, "Frame Worker thread creation failed");
@@ -468,11 +466,9 @@ static aom_codec_err_t decode_one(aom_codec_alg_priv_t *ctx,
     frame_worker_data->pbi->inspect_ctx = ctx->inspect_ctx;
 #endif
 
-#if CONFIG_EXT_TILE
     frame_worker_data->pbi->common.large_scale_tile = ctx->tile_mode;
     frame_worker_data->pbi->dec_tile_row = ctx->decode_tile_row;
     frame_worker_data->pbi->dec_tile_col = ctx->decode_tile_col;
-#endif  // CONFIG_EXT_TILE
 
     worker->had_error = 0;
     winterface->execute(worker);
@@ -758,7 +754,6 @@ static aom_image_t *decoder_get_frame(aom_codec_alg_priv_t *ctx,
           if (ctx->need_resync) return NULL;
           yuvconfig2image(&ctx->img, &sd, frame_worker_data->user_priv);
 
-#if CONFIG_EXT_TILE
           const int num_planes = av1_num_planes(cm);
           if (cm->single_tile_decoding &&
               frame_worker_data->pbi->dec_tile_row >= 0) {
@@ -794,7 +789,6 @@ static aom_image_t *decoder_get_frame(aom_codec_alg_priv_t *ctx,
             ctx->img.d_w =
                 AOMMIN(cm->tile_width, cm->mi_cols - mi_col) * MI_SIZE;
           }
-#endif  // CONFIG_EXT_TILE
 
           ctx->img.fb_priv = frame_bufs[cm->new_fb_idx].raw_frame_buffer.priv;
           img = &ctx->img;

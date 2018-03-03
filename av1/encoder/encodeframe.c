@@ -3670,11 +3670,7 @@ void av1_init_tile_data(AV1_COMP *cpi) {
       pre_tok = cpi->tile_tok[tile_row][tile_col];
       tile_tok = allocated_tokens(
           *tile_info, cm->seq_params.mib_size_log2 + MI_SIZE_LOG2, num_planes);
-#if CONFIG_EXT_TILE
       tile_data->allow_update_cdf = !cm->large_scale_tile;
-#else
-      tile_data->allow_update_cdf = 1;
-#endif  // CONFIG_EXT_TILE
 #if CONFIG_CDF_UPDATE_MODE
       tile_data->allow_update_cdf =
           tile_data->allow_update_cdf && !cm->disable_cdf_update;
@@ -4408,9 +4404,7 @@ void av1_encode_frame(AV1_COMP *cpi) {
       cm->reference_mode = REFERENCE_MODE_SELECT;
 
     cm->interp_filter = SWITCHABLE;
-#if CONFIG_EXT_TILE
     if (cm->large_scale_tile) cm->interp_filter = EIGHTTAP_REGULAR;
-#endif  // CONFIG_EXT_TILE
 
     cm->switchable_motion_mode = 1;
 
@@ -4442,14 +4436,10 @@ void av1_encode_frame(AV1_COMP *cpi) {
     if (cm->skip_mode_flag && rdc->skip_mode_used_flag == 0)
       cm->skip_mode_flag = 0;
 
-#if CONFIG_EXT_TILE
     if (!cm->large_scale_tile) {
-#endif  // CONFIG_EXT_TILE
       if (cm->tx_mode == TX_MODE_SELECT && cpi->td.mb.txb_split_count == 0)
         cm->tx_mode = TX_MODE_LARGEST;
-#if CONFIG_EXT_TILE
     }
-#endif  // CONFIG_EXT_TILE
   } else {
     make_consistent_compound_tools(cm);
     encode_frame_internal(cpi);

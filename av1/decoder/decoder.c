@@ -385,12 +385,10 @@ int av1_receive_compressed_data(AV1Decoder *pbi, size_t size,
 
   swap_frame_buffers(pbi);
 
-#if CONFIG_EXT_TILE
   // For now, we only extend the frame borders when the whole frame is decoded.
   // Later, if needed, extend the border for the decoded tile on the frame
   // border.
   if (pbi->dec_tile_row == -1 && pbi->dec_tile_col == -1)
-#endif  // CONFIG_EXT_TILE
     // TODO(debargha): Fix encoder side mv range, so that we can use the
     // inner border extension. As of now use the larger extension.
     // aom_extend_frame_inner_borders(cm->frame_to_show, num_planes);
