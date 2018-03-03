@@ -11,7 +11,7 @@
 #-author: Nicolas Pitre <nico@fluxnic.net>
 #-author: The BRLTTY Team <http://brltty.com/>
 #-license: LGPLv2.1
-#-updated: 2018-02-28
+#-updated: 2018-03-03
 
 # liblouis: Unified French 6 dots Braille table
 
@@ -86,7 +86,9 @@ punctuation ' 3    #  apostrophe
 punctuation « 2356 # guillemet français ouvrant
 punctuation » 2356 # guillemet français fermant
 punctuation [ 45-236  # crochet droit ouvrant
+comp6 [ 45-236
 punctuation ] 356-12	#	crochet droit fermant
+comp6 ] 356-12
 punctuation { 6-6-236	#	accolade de gauche
 punctuation } 356-3-3	#	accolade de droite
 
