@@ -41,7 +41,7 @@ source_set("renderer") {
   }
 
   public_deps = [
-    "//components/spellcheck:build_features",
+    "//components/spellcheck:buildflags",
   ]
   deps = [
     "//base:i18n",

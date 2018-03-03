@@ -11,7 +11,7 @@
 #include "base/strings/string16.h"
 #include "build/buildflag.h"
 #include "components/signin/core/browser/account_info.h"
-#include "components/signin/core/browser/signin_features.h"
+#include "components/signin/core/browser/signin_buildflags.h"
 #include "components/signin/core/browser/signin_metrics.h"
 
 class Profile;

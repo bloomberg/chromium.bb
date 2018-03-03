@@ -14,7 +14,7 @@
 #include "components/prefs/pref_member.h"
 #include "components/signin/core/browser/chrome_connected_header_helper.h"
 #include "components/signin/core/browser/profile_management_switches.h"
-#include "components/signin/core/browser/signin_features.h"
+#include "components/signin/core/browser/signin_buildflags.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"

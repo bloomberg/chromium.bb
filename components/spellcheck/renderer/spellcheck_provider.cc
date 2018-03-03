@@ -10,7 +10,7 @@
 #include "components/spellcheck/common/spellcheck_result.h"
 #include "components/spellcheck/renderer/spellcheck.h"
 #include "components/spellcheck/renderer/spellcheck_language.h"
-#include "components/spellcheck/spellcheck_build_features.h"
+#include "components/spellcheck/spellcheck_buildflags.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"

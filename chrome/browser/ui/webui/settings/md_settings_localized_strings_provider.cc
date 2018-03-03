@@ -29,7 +29,7 @@
 #include "components/google/core/browser/google_util.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
-#include "components/signin/core/browser/signin_features.h"
+#include "components/signin/core/browser/signin_buildflags.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "content/public/browser/web_ui_data_source.h"

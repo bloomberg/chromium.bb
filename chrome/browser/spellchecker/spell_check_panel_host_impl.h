@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "components/spellcheck/common/spellcheck_panel.mojom.h"
-#include "components/spellcheck/spellcheck_build_features.h"
+#include "components/spellcheck/spellcheck_buildflags.h"
 
 #if !BUILDFLAG(HAS_SPELLCHECK_PANEL)
 #error "Spellcheck panel should be enabled."

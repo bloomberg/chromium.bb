@@ -17,7 +17,7 @@
 #include "base/strings/string16.h"
 #include "components/spellcheck/common/spellcheck.mojom.h"
 #include "components/spellcheck/renderer/custom_dictionary_engine.h"
-#include "components/spellcheck/spellcheck_build_features.h"
+#include "components/spellcheck/spellcheck_buildflags.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 

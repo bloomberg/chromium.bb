@@ -9,8 +9,8 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
-buildflag_header("signin_features") {
-  header = "signin_features.h"
+buildflag_header("signin_buildflags") {
+  header = "signin_buildflags.h"
   flags = [
     "ENABLE_DICE_SUPPORT=$enable_dice_support",
     "ENABLE_MIRROR=$enable_mirror",
@@ -108,6 +108,7 @@ static_library("browser") {
 
   public_deps = [
     ":account_info",
+    ":signin_buildflags",
     "//base",
     "//components/content_settings/core/browser",
     "//components/content_settings/core/common",
@@ -115,7 +116,6 @@ static_library("browser") {
     "//components/keyed_service/core",
     "//components/prefs",
     "//components/signin/core/account_id",
-    "//components/signin/core/browser:signin_features",
     "//google_apis",
     "//net",
     "//ui/gfx",
@@ -219,13 +219,13 @@ source_set("unit_tests") {
   ]
 
   deps = [
+    ":signin_buildflags",
     ":test_support",
     "//base/test:test_support",
     "//components/content_settings/core/browser",
     "//components/os_crypt:test_support",
     "//components/pref_registry:pref_registry",
     "//components/prefs",
-    "//components/signin/core/browser:signin_features",
     "//components/sync_preferences",
     "//components/sync_preferences:test_support",
     "//testing/gmock",

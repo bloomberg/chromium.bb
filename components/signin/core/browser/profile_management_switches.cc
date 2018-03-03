@@ -12,7 +12,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "build/build_config.h"
 #include "components/pref_registry/pref_registry_syncable.h"
-#include "components/signin/core/browser/signin_features.h"
+#include "components/signin/core/browser/signin_buildflags.h"
 #include "components/signin/core/browser/signin_switches.h"
 
 #if defined(OS_CHROMEOS)

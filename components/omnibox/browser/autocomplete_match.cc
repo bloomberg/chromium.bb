@@ -21,7 +21,7 @@
 #include "base/trace_event/memory_usage_estimator.h"
 #include "build/build_config.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
-#include "components/omnibox/browser/features.h"
+#include "components/omnibox/browser/buildflags.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/suggestion_answer.h"
 #include "components/search_engines/template_url.h"

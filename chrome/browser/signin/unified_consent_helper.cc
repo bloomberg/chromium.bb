@@ -8,7 +8,7 @@
 #include "build/buildflag.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/common/chrome_features.h"
-#include "components/signin/core/browser/signin_features.h"
+#include "components/signin/core/browser/signin_buildflags.h"
 
 bool IsUnifiedConsentEnabled(Profile* profile) {
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)

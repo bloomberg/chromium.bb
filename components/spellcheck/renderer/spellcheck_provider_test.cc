@@ -12,7 +12,7 @@
 #include "components/spellcheck/common/spellcheck.mojom.h"
 #include "components/spellcheck/common/spellcheck_result.h"
 #include "components/spellcheck/renderer/spellcheck.h"
-#include "components/spellcheck/spellcheck_build_features.h"
+#include "components/spellcheck/spellcheck_buildflags.h"
 
 FakeTextCheckingCompletion::FakeTextCheckingCompletion()
     : completion_count_(0), cancellation_count_(0) {}

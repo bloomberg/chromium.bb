@@ -6,7 +6,7 @@
 #define COMPONENTS_SPELLCHECK_COMMON_SPELLCHECK_SWITCHES_H_
 
 #include "build/build_config.h"
-#include "components/spellcheck/spellcheck_build_features.h"
+#include "components/spellcheck/spellcheck_buildflags.h"
 
 namespace spellcheck {
 namespace switches {

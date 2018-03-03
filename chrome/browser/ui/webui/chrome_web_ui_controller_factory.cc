@@ -81,7 +81,7 @@
 #include "components/safe_browsing/web_ui/constants.h"
 #include "components/safe_browsing/web_ui/safe_browsing_ui.h"
 #include "components/signin/core/browser/profile_management_switches.h"
-#include "components/signin/core/browser/signin_features.h"
+#include "components/signin/core/browser/signin_buildflags.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/content_client.h"

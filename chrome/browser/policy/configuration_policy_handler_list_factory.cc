@@ -53,7 +53,7 @@
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/search_engines/default_search_policy_handler.h"
 #include "components/signin/core/browser/signin_pref_names.h"
-#include "components/spellcheck/spellcheck_build_features.h"
+#include "components/spellcheck/spellcheck_buildflags.h"
 #include "components/ssl_config/ssl_config_prefs.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync/driver/sync_policy_handler.h"

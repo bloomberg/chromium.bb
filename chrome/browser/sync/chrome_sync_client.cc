@@ -57,7 +57,7 @@
 #include "components/password_manager/sync/browser/password_model_worker.h"
 #include "components/search_engines/search_engine_data_type_controller.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/spellcheck/spellcheck_build_features.h"
+#include "components/spellcheck/spellcheck_buildflags.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync/base/report_unrecoverable_error.h"
 #include "components/sync/driver/async_directory_type_controller.h"

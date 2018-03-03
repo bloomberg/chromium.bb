@@ -13,7 +13,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/toolbar/features.h"
+#include "components/toolbar/buildflags.h"
 #include "components/toolbar/toolbar_field_trial.h"
 #include "components/toolbar/toolbar_model_delegate.h"
 #include "components/url_formatter/elide_url.h"

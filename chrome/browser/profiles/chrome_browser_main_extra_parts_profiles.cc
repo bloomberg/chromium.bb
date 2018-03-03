@@ -82,7 +82,7 @@
 #include "chrome/common/buildflags.h"
 #include "components/feature_engagement/buildflags.h"
 #include "components/policy/content/policy_blacklist_navigation_throttle.h"
-#include "components/spellcheck/spellcheck_build_features.h"
+#include "components/spellcheck/spellcheck_buildflags.h"
 #include "extensions/features/features.h"
 #include "ppapi/features/features.h"
 #include "printing/features/features.h"

@@ -81,7 +81,7 @@
 #include "components/pdf/renderer/pepper_pdf_host.h"
 #include "components/safe_browsing/renderer/threat_dom_details.h"
 #include "components/safe_browsing/renderer/websocket_sb_handshake_throttle.h"
-#include "components/spellcheck/spellcheck_build_features.h"
+#include "components/spellcheck/spellcheck_buildflags.h"
 #include "components/startup_metric_utils/common/startup_metric.mojom.h"
 #include "components/subresource_filter/content/renderer/subresource_filter_agent.h"
 #include "components/subresource_filter/content/renderer/unverified_ruleset_dealer.h"
