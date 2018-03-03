@@ -41,8 +41,7 @@
     <link rel="stylesheet" href="oobe_dialog_parameters.css">
     <link rel="stylesheet" href="oobe_flex_layout.css">
     <oobe-dialog id="syncConsentOverviewDialog" role="dialog" has-buttons
-        aria-label$="[[i18nDynamic(locale, 'syncConsentScreenTitle')]]"
-        hidden="[[isSectionHidden_(activeSection_,'overview')]]">
+        aria-label$="[[i18nDynamic(locale, 'syncConsentScreenTitle')]]">
       <hd-iron-icon class="oobe-icon"
           icon1x="sync-consent-32:googleg" icon2x="sync-consent-64:googleg">
       </hd-iron-icon>
@@ -81,59 +80,18 @@
             </div>
           </div>
         </div>
-        <div id="settingsLink" class="sync-status-line"
-            locale-monitor="[[updateSettingsLink_(locale)]]">
-        </div>
-      </div>
-      <div class="bottom-buttons layout horizontal end-justified">
-        <oobe-next-button on-tap="onSettingsSaveAndContinue_"
-          disabled="[[!userPrefsKnown_]]" class="focus-on-show">
-        </oobe-next-button>
-      </div>
-    </oobe-dialog>
-    <oobe-dialog id="syncConsentSettingsDialog" role="dialog" has-buttons
-        aria-label$="[[i18nDynamic(locale, 'syncConsentSettingsDialogTitle')]]"
-        hidden="[[isSectionHidden_(activeSection_,'settings')]]">
-      <hd-iron-icon class="oobe-icon"
-          icon1x="sync-consent-32:googleg" icon2x="sync-consent-64:googleg">
-      </hd-iron-icon>
-      <div class="header">
-        <h1 class="title">
-          [[i18nDynamic(locale, 'syncConsentSettingsDialogTitle')]]
-        </h1>
-        <div class="subtitle">
-          [[i18nDynamic(locale, 'syncConsentSettingsDialogSubTitle')]]
-        </div>
-      </div>
-      <div class="footer layout vertical">
-        <oobe-a11y-option checked="[[syncAllEnabled_]]"
-            on-change="onSyncAllEnabledChanged_"
-            label-for-aria="[[i18nDynamic(locale, 'syncConsentSyncAllOptionTitle')]]"
-            disabled="[[isManaged_]]"
-            class="focus-on-show">
-          <span class="title">
-            [[i18nDynamic(locale, 'syncConsentSyncAllOptionTitle')]]
-          </span>
-          <span class="checked-value">
-            [[i18nDynamic(locale, 'syncConsentSyncAllOptionOn')]]
-          </span>
-          <span class="unchecked-value">
-            [[i18nDynamic(locale, 'syncConsentSyncAllOptionOff')]]
-          </span>
-        </oobe-a11y-option>
-        <div class="sync-status-line" hidden="[[!syncAllEnabled_]]">
-          [[i18nDynamic(locale, 'syncConsentSettingsStatusSyncAllOn')]]
-        </div>
-        <div class="sync-status-line" hidden="[[syncAllEnabled_]]">
-          [[i18nDynamic(locale, 'syncConsentSettingsStatusSyncAllOff')]]
-        </div>
-      </div>
-      <div class="bottom-buttons layout horizontal end-justified">
-        <oobe-text-button inverse on-tap="onSettingsSaveAndContinue_"
-            disabled="[[!userPrefsKnown_]]">
-          <div>
-            [[i18nDynamic(locale, 'syncConsentSettingsSaveAndContinue')]]
+        <div id="reviewSettings" class="layout horizontal">
+          <paper-checkbox id="reviewSettingsBox">
+          </paper-checkbox>
+          <div id="reviewSettingsLabelContainer">
+            [[i18nDynamic(locale, 'syncConsentReviewSyncOptionsText')]]
           </div>
+        </div>
+      </div>
+      <div class="bottom-buttons layout horizontal end-justified">
+        <oobe-text-button id="acceptAndContinue"
+          on-tap="onSettingsSaveAndContinue_" class="focus-on-show" inverse>
+          [[i18nDynamic(locale, 'syncConsentAcceptAndContinue')]]
         </oobe-text-button>
       </div>
     </oobe-dialog>
