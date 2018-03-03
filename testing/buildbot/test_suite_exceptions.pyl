@@ -1187,11 +1187,11 @@
       # On chromium.linux, unclear why these only run on "Linux Tests".
       'Linux Tests (dbg)(1)',
       'Linux Tests (dbg)(1)(32)',
-      # On chromium.mac, unclear why these only run on "Mac10.9 Tests".
+      # On chromium.mac, unclear why these only run on "Mac10.13 Tests".
       'Mac10.10 Tests',
       'Mac10.11 Tests',
       'Mac10.12 Tests',
-      'Mac10.9 Tests (dbg)',
+      'Mac10.13 Tests (dbg)',
       # On chromium.win, unclear why these only run on "Win7 Tests (1)".
       'Win 7 Tests x64 (1)',
       'Win10 Tests x64',
@@ -1200,7 +1200,7 @@
       'Linux - Future (dbg)',
     ],
     'modifications': {
-      'Mac10.9 Tests': {
+      'Mac10.13 Tests': {
         # Remove this once the tests is not flaky on Mac os 10.13
         # See crbug.com/813163
         'experiment_percentage': 100,
@@ -1577,8 +1577,8 @@
       'Mac10.10 Tests',
       'Mac10.11 Tests',
       'Mac10.12 Tests',
-      'Mac10.9 Tests',
-      'Mac10.9 Tests (dbg)',
+      'Mac10.13 Tests',
+      'Mac10.13 Tests (dbg)',
       # chromium.memory
       'Linux Chromium OS ASan LSan Tests (1)',
       'Linux TSan Tests',
@@ -1662,8 +1662,8 @@
       'Mac10.10 Tests',
       'Mac10.11 Tests',
       'Mac10.12 Tests',
-      'Mac10.9 Tests',
-      'Mac10.9 Tests (dbg)',
+      'Mac10.13 Tests',
+      'Mac10.13 Tests (dbg)',
       # chromium.memory
       'Linux ASan LSan Tests (1)',
       # On chromium.win, unclear why these only run on "Win7 Tests (1)".
@@ -2233,8 +2233,8 @@
       'Mac10.10 Tests',
       'Mac10.11 Tests',
       'Mac10.12 Tests',
-      'Mac10.9 Tests',
-      'Mac10.9 Tests (dbg)',
+      'Mac10.13 Tests',
+      'Mac10.13 Tests (dbg)',
 
       # chromium.fyi
       'Chromium Mac 10.10 MacViews',
@@ -2266,11 +2266,11 @@
       'Chromium Mac 10.11',
       'Chromium Mac 10.13',
       'Out of Process Profiling Mac',
-      # On chromium.mac, unclear why these only run on "Mac10.9 Tests".
+      # On chromium.mac, unclear why these only run on "Mac10.13 Tests".
       'Mac10.10 Tests',
       'Mac10.11 Tests',
       'Mac10.12 Tests',
-      'Mac10.9 Tests (dbg)',
+      'Mac10.13 Tests (dbg)',
       # chromium.win
       'Win7 Tests (dbg)(1)',
     ],
@@ -2807,8 +2807,8 @@
       'Mac10.10 Tests',
       'Mac10.11 Tests',
       'Mac10.12 Tests',
-      'Mac10.9 Tests',
-      'Mac10.9 Tests (dbg)',
+      'Mac10.13 Tests',
+      'Mac10.13 Tests (dbg)',
       'Win7 Tests (dbg)(1)',
       'Win10 Tests x64',
     ],
@@ -3250,8 +3250,8 @@
     },
     'remove_from': [
       'Linux Tests (dbg)(1)(32)',
-      'Mac10.9 Tests',
-      'Mac10.9 Tests (dbg)',
+      'Mac10.13 Tests',
+      'Mac10.13 Tests (dbg)',
       # client.v8.chromium
       'Linux - Future (dbg)',
     ],
@@ -3608,8 +3608,8 @@
       'Linux Tests (dbg)(1)',
       'Linux Tests (dbg)(1)(32)',
       # chromium.mac
-      'Mac10.9 Tests',
-      'Mac10.9 Tests (dbg)',
+      'Mac10.13 Tests',
+      'Mac10.13 Tests (dbg)',
       # chromium.win
       'Win 7 Tests x64 (1)',
       'Win10 Tests x64',
