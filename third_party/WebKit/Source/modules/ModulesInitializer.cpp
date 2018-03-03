@@ -176,6 +176,8 @@ void ModulesInitializer::InstallSupplements(LocalFrame& frame) const {
                                      new AudioOutputDeviceClientImpl(frame));
   }
   InstalledAppController::ProvideTo(frame, client->GetRelatedAppsFetcher());
+  ::blink::ProvideSpeechRecognitionTo(
+      frame, SpeechRecognitionClientProxy::Create(client->SpeechRecognizer()));
 }
 
 void ModulesInitializer::ProvideLocalFileSystemToWorker(
@@ -257,9 +259,6 @@ void ModulesInitializer::ProvideModulesToPage(Page& page,
   ::blink::ProvideContextFeaturesTo(page, ContextFeaturesClientImpl::Create());
   ::blink::ProvideDatabaseClientTo(page, new DatabaseClient);
   StorageNamespaceController::ProvideStorageNamespaceTo(page, client);
-  ::blink::ProvideSpeechRecognitionTo(
-      page, SpeechRecognitionClientProxy::Create(
-                client ? client->SpeechRecognizer() : nullptr));
 }
 
 void ModulesInitializer::ForceNextWebGLContextCreationToFail() const {

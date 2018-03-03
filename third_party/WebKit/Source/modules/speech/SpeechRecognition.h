@@ -41,7 +41,7 @@ namespace blink {
 
 class ExceptionState;
 class ExecutionContext;
-class Page;
+class LocalFrame;
 class SpeechRecognitionController;
 class SpeechRecognitionError;
 
@@ -119,7 +119,7 @@ class MODULES_EXPORT SpeechRecognition final
   virtual void Trace(blink::Visitor*);
 
  private:
-  SpeechRecognition(Page*, ExecutionContext*);
+  SpeechRecognition(LocalFrame*, ExecutionContext*);
 
   Member<SpeechGrammarList> grammars_;
   String lang_;

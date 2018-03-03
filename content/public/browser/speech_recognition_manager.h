@@ -42,19 +42,15 @@ class SpeechRecognitionManager {
   virtual int CreateSession(const SpeechRecognitionSessionConfig& config) = 0;
 
   // Starts/restarts recognition for an existing session, after performing a
-  // premilinary check on the delegate (CheckRecognitionIsAllowed).
+  // preliminary check on the delegate (CheckRecognitionIsAllowed).
   virtual void StartSession(int session_id) = 0;
 
   // Aborts recognition for an existing session, without providing any result.
   virtual void AbortSession(int session_id) = 0;
 
-  // Aborts all sessions for a given render process,
-  // without providing any result.
-  virtual void AbortAllSessionsForRenderProcess(int render_process_id) = 0;
-
-  // Aborts all sessions for a given RenderView, without providing any result.
-  virtual void AbortAllSessionsForRenderView(int render_process_id,
-                                             int render_view_id) = 0;
+  // Aborts all sessions for a given RenderFrame, without providing any result.
+  virtual void AbortAllSessionsForRenderFrame(int render_process_id,
+                                              int render_frame_id) = 0;
 
   // Stops audio capture for an existing session. The audio captured before the
   // call will be processed, possibly ending up with a result.
@@ -69,10 +65,10 @@ class SpeechRecognitionManager {
   virtual SpeechRecognitionSessionContext GetSessionContext(
       int session_id) const = 0;
 
-  // Looks-up an existing session from the context tuple
-  // {render_view_id, render_view_id, request_id}.
+  // Looks up an existing session from the context tuple
+  // {render_process_id, render_frame_id, request_id}.
   virtual int GetSession(int render_process_id,
-                         int render_view_id,
+                         int render_frame_id,
                          int request_id) const = 0;
 
  protected:

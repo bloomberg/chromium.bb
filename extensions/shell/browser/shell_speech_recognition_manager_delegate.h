@@ -46,10 +46,10 @@ class ShellSpeechRecognitionManagerDelegate
   content::SpeechRecognitionEventListener* GetEventListener() override;
   bool FilterProfanities(int render_process_id) override;
 
-  static void CheckRenderViewType(
+  static void CheckRenderFrameType(
       base::OnceCallback<void(bool ask_user, bool is_allowed)> callback,
       int render_process_id,
-      int render_view_id);
+      int render_frame_id);
 
   DISALLOW_COPY_AND_ASSIGN(ShellSpeechRecognitionManagerDelegate);
 };

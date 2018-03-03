@@ -28,7 +28,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/page/Page.h"
+#include "core/frame/LocalFrame.h"
 #include "modules/speech/SpeechRecognitionController.h"
 #include "modules/speech/SpeechRecognitionError.h"
 #include "modules/speech/SpeechRecognitionEvent.h"
@@ -40,7 +40,7 @@ SpeechRecognition* SpeechRecognition::Create(ExecutionContext* context) {
   DCHECK(context->IsDocument());
   Document* document = ToDocument(context);
   DCHECK(document);
-  return new SpeechRecognition(document->GetPage(), context);
+  return new SpeechRecognition(document->GetFrame(), context);
 }
 
 void SpeechRecognition::start(ExceptionState& exception_state) {
@@ -159,7 +159,8 @@ bool SpeechRecognition::HasPendingActivity() const {
   return started_;
 }
 
-SpeechRecognition::SpeechRecognition(Page* page, ExecutionContext* context)
+SpeechRecognition::SpeechRecognition(LocalFrame* frame,
+                                     ExecutionContext* context)
     : ContextLifecycleObserver(context),
       grammars_(SpeechGrammarList::Create()),  // FIXME: The spec is not clear
                                                // on the default value for the
@@ -167,11 +168,10 @@ SpeechRecognition::SpeechRecognition(Page* page, ExecutionContext* context)
       continuous_(false),
       interim_results_(false),
       max_alternatives_(1),
-      controller_(SpeechRecognitionController::From(page)),
+      controller_(SpeechRecognitionController::From(frame)),
       started_(false),
       stopping_(false) {
-  // FIXME: Need to hook up with Page to get notified when the visibility
-  // changes.
+  // FIXME: Need to hook up to get notified when the visibility changes.
 }
 
 SpeechRecognition::~SpeechRecognition() = default;

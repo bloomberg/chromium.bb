@@ -28,14 +28,14 @@
 
 #include <memory>
 
-#include "core/page/Page.h"
+#include "core/frame/LocalFrame.h"
 #include "modules/speech/SpeechRecognitionClient.h"
 
 namespace blink {
 
 class SpeechRecognitionController final
     : public GarbageCollectedFinalized<SpeechRecognitionController>,
-      public Supplement<Page> {
+      public Supplement<LocalFrame> {
   USING_GARBAGE_COLLECTED_MIXIN(SpeechRecognitionController);
 
  public:
@@ -58,12 +58,12 @@ class SpeechRecognitionController final
 
   static SpeechRecognitionController* Create(
       std::unique_ptr<SpeechRecognitionClient>);
-  static SpeechRecognitionController* From(Page* page) {
-    return Supplement<Page>::From<SpeechRecognitionController>(page);
+  static SpeechRecognitionController* From(LocalFrame* frame) {
+    return Supplement<LocalFrame>::From<SpeechRecognitionController>(frame);
   }
 
   virtual void Trace(blink::Visitor* visitor) {
-    Supplement<Page>::Trace(visitor);
+    Supplement<LocalFrame>::Trace(visitor);
   }
 
  private:

@@ -197,9 +197,6 @@ class WebViewTestProxy : public Base, public WebViewTestProxyBase {
   void PrintPage(blink::WebLocalFrame* frame) override {
     view_test_client()->PrintPage(frame);
   }
-  blink::WebSpeechRecognizer* SpeechRecognizer() override {
-    return view_test_client()->SpeechRecognizer();
-  }
   blink::WebString AcceptLanguages() override {
     return view_test_client()->AcceptLanguages();
   }

@@ -38,7 +38,6 @@ class WebViewTestClient : public blink::WebViewClient {
                              bool suppress_opener,
                              blink::WebSandboxFlags) override;
   void PrintPage(blink::WebLocalFrame* frame) override;
-  blink::WebSpeechRecognizer* SpeechRecognizer() override;
   blink::WebString AcceptLanguages() override;
   void DidFocus(blink::WebLocalFrame* calling_frame) override;
   bool CanHandleGestureEvent() override;

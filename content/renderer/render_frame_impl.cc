@@ -144,6 +144,7 @@
 #include "content/renderer/service_worker/worker_fetch_context_impl.h"
 #include "content/renderer/shared_worker/shared_worker_repository.h"
 #include "content/renderer/skia_benchmarking_extension.h"
+#include "content/renderer/speech_recognition_dispatcher.h"
 #include "content/renderer/stats_collection_controller.h"
 #include "content/renderer/v8_value_converter_impl.h"
 #include "content/renderer/web_frame_utils.h"
@@ -5342,12 +5343,12 @@ RenderFrameImpl::MakeDidCommitProvisionalLoadParams(
   params->post_id = -1;
   params->nav_entry_id = navigation_state->request_params().nav_entry_id;
   // We need to track the RenderViewHost routing_id because of downstream
-  // dependencies (crbug.com/392171 DownloadRequestHandle, SaveFileManager,
-  // ResourceDispatcherHostImpl, MediaStreamUIProxy,
-  // SpeechRecognitionDispatcherHost and possibly others). They look up the view
-  // based on the ID stored in the resource requests. Once those dependencies
-  // are unwound or moved to RenderFrameHost (crbug.com/304341) we can move the
-  // client to be based on the routing_id of the RenderFrameHost.
+  // dependencies (https://crbug.com/392171 DownloadRequestHandle,
+  // SaveFileManager, ResourceDispatcherHostImpl, MediaStreamUIProxy and
+  // possibly others). They look up the view based on the ID stored in the
+  // resource requests. Once those dependencies are unwound or moved to
+  // RenderFrameHost (https://crbug.com/304341) we can move the client to be
+  // based on the routing_id of the RenderFrameHost.
   params->render_view_routing_id = render_view_->routing_id();
 
   // "Standard" commits from Blink create new NavigationEntries. We also treat
@@ -7149,6 +7150,12 @@ void RenderFrameImpl::CheckIfAudioSinkExistsAndIsAuthorized(
   callback.Run(AudioDeviceFactory::GetOutputDeviceInfo(
                    GetRoutingID(), 0, sink_id.Utf8(), security_origin)
                    .device_status());
+}
+
+blink::WebSpeechRecognizer* RenderFrameImpl::SpeechRecognizer() {
+  if (!speech_recognition_dispatcher_)
+    speech_recognition_dispatcher_ = new SpeechRecognitionDispatcher(this);
+  return speech_recognition_dispatcher_;
 }
 
 blink::mojom::PageVisibilityState RenderFrameImpl::VisibilityState() const {

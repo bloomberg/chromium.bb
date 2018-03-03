@@ -11,7 +11,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "content/shell/test_runner/event_sender.h"
-#include "content/shell/test_runner/mock_web_speech_recognizer.h"
 #include "content/shell/test_runner/test_common.h"
 #include "content/shell/test_runner/test_interfaces.h"
 #include "content/shell/test_runner/test_runner.h"
@@ -75,10 +74,6 @@ void WebViewTestClient::PrintPage(blink::WebLocalFrame* frame) {
   blink::WebPrintParams printParams(page_size_in_pixels);
   frame->PrintBegin(printParams);
   frame->PrintEnd();
-}
-
-blink::WebSpeechRecognizer* WebViewTestClient::SpeechRecognizer() {
-  return test_runner()->getMockWebSpeechRecognizer();
 }
 
 blink::WebString WebViewTestClient::AcceptLanguages() {

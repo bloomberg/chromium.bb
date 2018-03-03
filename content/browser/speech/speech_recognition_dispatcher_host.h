@@ -19,11 +19,12 @@ struct SpeechRecognitionHostMsg_StartRequest_Params;
 namespace content {
 
 class SpeechRecognitionManager;
+struct SpeechRecognitionSessionContext;
 
 // SpeechRecognitionDispatcherHost is a delegate for Speech API messages used by
 // RenderMessageFilter. Basically it acts as a proxy, relaying the events coming
 // from the SpeechRecognitionManager to IPC messages (and vice versa).
-// It's the complement of SpeechRecognitionDispatcher (owned by RenderView).
+// It's the complement of SpeechRecognitionDispatcher (owned by RenderFrame).
 class CONTENT_EXPORT SpeechRecognitionDispatcherHost
     : public BrowserMessageFilter,
       public SpeechRecognitionEventListener {
@@ -66,15 +67,12 @@ class CONTENT_EXPORT SpeechRecognitionDispatcherHost
 
   void OnStartRequest(
       const SpeechRecognitionHostMsg_StartRequest_Params& params);
-  void OnStartRequestOnIO(
-      int embedder_render_process_id,
-      int embedder_render_view_id,
-      const SpeechRecognitionHostMsg_StartRequest_Params& params,
-      int params_render_frame_id,
-      bool filter_profanities);
-  void OnAbortRequest(int render_view_id, int request_id);
-  void OnStopCaptureRequest(int render_view_id, int request_id);
-  void OnAbortAllRequests(int render_view_id);
+  void StartSession(const SpeechRecognitionHostMsg_StartRequest_Params& params,
+                    const SpeechRecognitionSessionContext& context,
+                    bool filter_profanities);
+  void OnAbortRequest(int render_frame_id, int request_id);
+  void OnStopCaptureRequest(int render_frame_id, int request_id);
+  void OnAbortAllRequests(int render_frame_id);
 
   int render_process_id_;
   scoped_refptr<net::URLRequestContextGetter> context_getter_;

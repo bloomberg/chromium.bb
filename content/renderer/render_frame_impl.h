@@ -110,17 +110,18 @@ struct FrameMsg_TextTrackSettings_Params;
 namespace blink {
 class WebComputedAXTree;
 class WebContentDecryptionModule;
+class WebLayerTreeView;
 class WebLocalFrame;
 class WebPresentationClient;
 class WebPushClient;
+class WebRelatedAppsFetcher;
 class WebSecurityOrigin;
-struct WebImeTextSpan;
+class WebSpeechRecognizer;
+struct FramePolicy;
 struct WebContextMenuData;
 struct WebCursorInfo;
 struct WebFindOptions;
-class WebLayerTreeView;
-class WebRelatedAppsFetcher;
-struct FramePolicy;
+struct WebImeTextSpan;
 struct WebScrollIntoViewParams;
 }  // namespace blink
 
@@ -168,6 +169,7 @@ class RenderViewImpl;
 class RenderWidget;
 class RenderWidgetFullscreenPepper;
 class SharedWorkerRepository;
+class SpeechRecognitionDispatcher;
 class UserMediaClientImpl;
 struct CSPViolationParams;
 struct CommonNavigationParams;
@@ -750,6 +752,7 @@ class CONTENT_EXPORT RenderFrameImpl
       const blink::WebString& sink_id,
       const blink::WebSecurityOrigin& security_origin,
       blink::WebSetSinkIdCallbacks* web_callbacks) override;
+  blink::WebSpeechRecognizer* SpeechRecognizer() override;
   blink::mojom::PageVisibilityState VisibilityState() const override;
   std::unique_ptr<blink::WebURLLoaderFactory> CreateURLLoaderFactory() override;
   void DraggableRegionsChanged() override;
@@ -1510,6 +1513,11 @@ class CONTENT_EXPORT RenderFrameImpl
   // The Manifest Manager handles the manifest requests from the browser
   // process.
   std::unique_ptr<ManifestManager> manifest_manager_;
+
+  // The speech recognition dispatcher attached to this frame, lazily
+  // initialized. It is an observer of this frame, owning itself and managing
+  // its own lifetime.
+  SpeechRecognitionDispatcher* speech_recognition_dispatcher_ = nullptr;
 
   // The current accessibility mode.
   ui::AXMode accessibility_mode_;

@@ -49,8 +49,8 @@ IPC_STRUCT_TRAITS_END()
 
 // Used to start a speech recognition session.
 IPC_STRUCT_BEGIN(SpeechRecognitionHostMsg_StartRequest_Params)
-  // The render view requesting speech recognition.
-  IPC_STRUCT_MEMBER(int, render_view_id)
+  // The render frame requesting speech recognition.
+  IPC_STRUCT_MEMBER(int, render_frame_id)
   // Unique ID associated with the JS object making the calls.
   IPC_STRUCT_MEMBER(int, request_id)
   // Language to use for speech recognition.
@@ -73,25 +73,25 @@ IPC_MESSAGE_CONTROL1(SpeechRecognitionHostMsg_StartRequest,
                      SpeechRecognitionHostMsg_StartRequest_Params)
 
 // Requests the speech recognition service to abort speech recognition on
-// behalf of the given |render_view_id| and |request_id|. If there are no
-// sessions associated with the |request_id| in the render view, this call
+// behalf of the given |render_frame_id| and |request_id|. If there are no
+// sessions associated with the |request_id| in the render frame, this call
 // does nothing.
 IPC_MESSAGE_CONTROL2(SpeechRecognitionHostMsg_AbortRequest,
-                     int /* render_view_id */,
+                     int /* render_frame_id */,
                      int /* request_id */)
 
 // Requests the speech recognition service to abort all speech recognitions on
-// behalf of the given |render_view_id|. If speech recognition is not happening
-// or is happening on behalf of some other render view, this call does nothing.
+// behalf of the given |render_frame_id|. If speech recognition is not happening
+// or is happening on behalf of some other render frame, this call does nothing.
 IPC_MESSAGE_CONTROL1(SpeechRecognitionHostMsg_AbortAllRequests,
-                     int /* render_view_id */)
+                     int /* render_frame_id */)
 
 // Requests the speech recognition service to stop audio capture on behalf of
-// the given |render_view_id|. Any audio recorded so far will be fed to the
+// the given |render_frame_id|. Any audio recorded so far will be fed to the
 // speech recognizer. If speech recognition is not happening nor or is
-// happening on behalf of some other render view, this call does nothing.
+// happening on behalf of some other render frame, this call does nothing.
 IPC_MESSAGE_CONTROL2(SpeechRecognitionHostMsg_StopCaptureRequest,
-                     int /* render_view_id */,
+                     int /* render_frame_id */,
                      int /* request_id */)
 
 // Browser -> Renderer messages.
