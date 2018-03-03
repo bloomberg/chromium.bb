@@ -315,6 +315,8 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
   source->AddLocalizedString("offlineForWeek",
                              IDS_PRINT_PREVIEW_OFFLINE_FOR_WEEK);
   source->AddLocalizedString("offline", IDS_PRINT_PREVIEW_OFFLINE);
+  source->AddLocalizedString("noLongerSupportedFragment",
+                             IDS_PRINT_PREVIEW_NO_LONGER_SUPPORTED_FRAGMENT);
   source->AddLocalizedString("noLongerSupported",
                              IDS_PRINT_PREVIEW_NO_LONGER_SUPPORTED);
   source->AddLocalizedString("couldNotPrint",

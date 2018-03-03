@@ -139,15 +139,23 @@ cr.define('print_preview', function() {
         locationEl.textContent = hint;
         locationEl.title = hint;
 
-        const connectionStatusText = destination.connectionStatusText;
+        const showDestinationInvalid =
+            (destination.hasInvalidCertificate &&
+             !loadTimeData.getBoolean('isEnterpriseManaged'));
+        let connectionStatusText = '';
+        if (showDestinationInvalid) {
+          connectionStatusText =
+              loadTimeData.getString('noLongerSupportedFragment');
+        } else {
+          connectionStatusText = destination.connectionStatusText;
+        }
         const connectionStatusEl =
             this.getChildElement('.destination-settings-connection-status');
         connectionStatusEl.textContent = connectionStatusText;
         connectionStatusEl.title = connectionStatusText;
 
-        const hasConnectionError = destination.isOffline ||
-            (destination.hasInvalidCertificate &&
-             !loadTimeData.getBoolean('isEnterpriseManaged'));
+        const hasConnectionError =
+            destination.isOffline || showDestinationInvalid;
         destinationSettingsBoxEl.classList.toggle(
             print_preview.DestinationSettingsClasses_.STALE,
             hasConnectionError);
