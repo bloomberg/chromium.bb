@@ -247,6 +247,10 @@ crbug.com/724701 overflow/overflow-basic-004.html [ Failure ]
 
 ### external/wpt/css/css-tables/
 crbug.com/598134 external/wpt/css/css-tables/table-has-box-sizing-border-box-002.html [ Failure ]
+crbug.com/708345 external/wpt/css/css-tables/height-distribution/extra-height-given-to-all-row-groups-001.html [ Failure ]
+crbug.com/708345 external/wpt/css/css-tables/height-distribution/extra-height-given-to-all-row-groups-003.html [ Failure ]
+crbug.com/708345 external/wpt/css/css-tables/height-distribution/extra-height-given-to-all-row-groups-004.html [ Failure ]
+crbug.com/708345 external/wpt/css/css-tables/height-distribution/extra-height-given-to-all-row-groups-005.html [ Failure ]
 
 # ====== Layout team owned tests to here ======
 
