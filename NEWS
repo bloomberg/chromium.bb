@@ -39,12 +39,26 @@ issues]].
   still problems with back-translation we will not remove support for
   it. See also the discussion in the [[https://github.com/liblouis/liblouis/issues/500][github issue]].
 
+*** Improved meta data information in tables
+The meta data in the tables such as locale, contraction grade, etc has
+been improved and is now also used when testing from a YAML test.
+Thanks to Bert Frees.
+
 *** Major overhaul of the YAML test suite
-- Due to problems in the cursor position computation the YAML test
-  suite was improved to support proper testing of cursor position also
-  in combination with input, output position and modes. In essence all
-  of the liblouis API is now supported and can be tested via the YAML
-  tests. Thanks to Christian Egli.
+**** Support for proper testing of cursor positions
+Due to problems in the cursor position computation the YAML test
+suite was improved to support proper testing of cursor position also
+in combination with input, output position and modes. In essence all
+of the liblouis API is now supported and can be tested via the YAML
+tests. Thanks to Christian Egli.
+
+**** Support for table selection via meta data query
+The tables to be tested can now be specified via a meta data query in
+addition to specifying them by filename. See the documentation for
+more details. Internally the YAML tests have been split up into tests
+that test the braille translation for a particular locale (now located
+in ~tests/braille_specs~) and tests that check a specific feature of
+liblouis. Thanks to Bert Frees.
 
 ** Deprecation notice
 
