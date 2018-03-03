@@ -317,7 +317,9 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
 
   // Update the RTT if the ack is for the largest acked packet number.
   // Returns true if the rtt was updated.
-  bool MaybeUpdateRTT(const QuicAckFrame& ack_frame, QuicTime ack_receive_time);
+  bool MaybeUpdateRTT(QuicPacketNumber largest_acked,
+                      QuicTime::Delta ack_delay_time,
+                      QuicTime ack_receive_time);
 
   // Invokes the loss detection algorithm and loses and retransmits packets if
   // necessary.
