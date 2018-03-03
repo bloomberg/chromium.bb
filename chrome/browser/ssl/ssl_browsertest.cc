@@ -7017,6 +7017,34 @@ IN_PROC_BROWSER_TEST_F(SymantecMessageSSLUITest, DistrustedSubresources) {
       base::MatchPattern(console_observer.message(), "*has been distrusted*"));
 }
 
+// Tests that the Symantec console message is logged for iframe resources with
+// certs that have already been distrusted.
+IN_PROC_BROWSER_TEST_F(SymantecMessageSSLUITest, DistrustedIframeResource) {
+  content::SetupCrossSiteRedirector(https_server());
+  // Only distrust subresources on *.test, so that the main resource loads
+  // without an interstitial.
+  ASSERT_NO_FATAL_FAILURE(
+      SetUpCertVerifier("*.test", true /* already_distrusted */));
+  ASSERT_TRUE(https_server()->Start());
+  GURL url(https_server()->GetURL("/ssl/blank_page.html"));
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_FALSE(IsShowingInterstitial(tab));
+
+  content::ConsoleObserverDelegate console_observer(tab, "*https://a.test*");
+  tab->SetDelegate(&console_observer);
+  ASSERT_TRUE(
+      content::ExecuteScript(tab,
+                             "var i = document.createElement('iframe');"
+                             "i.src = '" +
+                                 https_server()->GetURL("a.test", "/").spec() +
+                                 "';"
+                                 "document.body.appendChild(i);"));
+  console_observer.Wait();
+  EXPECT_TRUE(
+      base::MatchPattern(console_observer.message(), "*has been distrusted*"));
+}
+
 // Checks that SimpleURLLoader, which uses services/network/url_loader.cc, goes
 // through the new NetworkServiceClient interface to deliver cert error
 // notifications to the browser which then overrides the certificate error.

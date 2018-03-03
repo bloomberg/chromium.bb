@@ -696,9 +696,8 @@ class CONTENT_EXPORT RenderFrameImpl
                              const blink::WebURL& target) override;
   void DidDisplayContentWithCertificateErrors() override;
   void DidRunContentWithCertificateErrors() override;
-  bool OverrideLegacySymantecCertConsoleMessage(
-      const blink::WebURL& url,
-      blink::WebString* console_message) override;
+  void ReportLegacySymantecCert(const blink::WebURL& url,
+                                bool did_fail) override;
   void DidChangePerformanceTiming() override;
   void DidObserveLoadingBehavior(
       blink::WebLoadingBehaviorFlag behavior) override;
@@ -1691,6 +1690,13 @@ class CONTENT_EXPORT RenderFrameImpl
   // Return the mojo interface for making ClipboardHost calls.
   blink::mojom::ClipboardHostPtr clipboard_host_;
 #endif
+
+  // Used to cap the number of console messages that are printed to warn about
+  // legacy certificates that will be distrusted in future or have already been
+  // distrusted.
+  uint32_t num_certificate_warning_messages_ = 0;
+  // The origins for which a legacy certificate warning has been printed.
+  std::set<url::Origin> certificate_warning_origins_;
 
   base::WeakPtrFactory<RenderFrameImpl> weak_factory_;
 
