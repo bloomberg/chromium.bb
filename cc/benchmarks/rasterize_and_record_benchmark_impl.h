@@ -42,7 +42,6 @@ class RasterizeAndRecordBenchmarkImpl : public MicroBenchmarkImpl {
     int pixels_rasterized_with_non_solid_color;
     int pixels_rasterized_as_opaque;
     base::TimeDelta total_best_time;
-    size_t total_memory_usage;
     int total_layers;
     int total_picture_layers;
     int total_picture_layers_with_no_content;

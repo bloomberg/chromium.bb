@@ -91,15 +91,17 @@ class RasterizeAndRecordMicroUnitTest(page_test_test_case.PageTestTestCase):
     self.assertEqual(
         total_picture_layers_off_screen[0].GetRepresentativeNumber(), 0)
 
-    viewport_picture_size = \
-        results.FindAllPageSpecificValuesNamed('viewport_picture_size')
-    self.assertEquals(len(viewport_picture_size), 1)
-    self.assertGreater(
-        viewport_picture_size[0].GetRepresentativeNumber(), 0)
+    painter_memory_usage = results.FindAllPageSpecificValuesNamed(
+        'painter_memory_usage')
+    self.assertEquals(len(painter_memory_usage), 1)
+    self.assertGreater(painter_memory_usage[0].GetRepresentativeNumber(), 0)
 
-    total_size_of_pictures_in_piles = \
-        results.FindAllPageSpecificValuesNamed(
-            'total_size_of_pictures_in_piles')
-    self.assertEquals(len(total_size_of_pictures_in_piles), 1)
-    self.assertGreater(
-        total_size_of_pictures_in_piles[0].GetRepresentativeNumber(), 0)
+    paint_op_memory_usage = results.FindAllPageSpecificValuesNamed(
+        'paint_op_memory_usage')
+    self.assertEquals(len(paint_op_memory_usage), 1)
+    self.assertGreater(paint_op_memory_usage[0].GetRepresentativeNumber(), 0)
+
+    paint_op_count = results.FindAllPageSpecificValuesNamed(
+        'paint_op_count')
+    self.assertEquals(len(paint_op_count), 1)
+    self.assertGreater(paint_op_count[0].GetRepresentativeNumber(), 0)
