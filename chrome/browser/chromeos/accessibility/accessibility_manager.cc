@@ -1329,6 +1329,7 @@ void AccessibilityManager::ReloadChromeVoxPanel() {
 }
 
 void AccessibilityManager::OnChromeVoxPanelClosing() {
+  // TODO: Handle this in ash::ChromeVoxLayoutManager.
   chromevox_panel_->ResetPanelHeight();
   chromevox_panel_widget_observer_.reset();
   chromevox_panel_ = nullptr;

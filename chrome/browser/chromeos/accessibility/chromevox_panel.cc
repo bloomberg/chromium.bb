@@ -103,7 +103,7 @@ ChromeVoxPanel::ChromeVoxPanel(content::BrowserContext* browser_context,
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   aura::Window* root_window = ash::Shell::GetPrimaryRootWindow();
   params.parent = ash::Shell::GetContainer(
-      root_window, ash::kShellWindowId_SettingBubbleContainer);
+      root_window, ash::kShellWindowId_ChromeVoxContainer);
   params.delegate = this;
   params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
   params.bounds = gfx::Rect(0, 0, root_window->bounds().width(),
@@ -127,6 +127,9 @@ aura::Window* ChromeVoxPanel::GetRootWindow() {
 }
 
 void ChromeVoxPanel::Close() {
+  // NOTE: CloseNow() does not work here due to a use-after-free where
+  // WebContentsImpl accesses a deleted RenderFrameHost. It's not clear if it's
+  // legal to close a WebContents during DidFinishNavigation.
   widget_->Close();
 }
 
@@ -216,10 +219,13 @@ void ChromeVoxPanel::UpdateWidgetBounds() {
 }
 
 void ChromeVoxPanel::SendPanelHeightToAsh(int panel_height) {
-  // TODO(mash): Replace with shelf mojo API.
   ash::Shelf* shelf = ash::Shelf::ForWindow(GetRootWindow());
   ash::ShelfLayoutManager* shelf_layout_manager =
       shelf ? shelf->shelf_layout_manager() : nullptr;
   if (shelf_layout_manager)
     shelf_layout_manager->SetChromeVoxPanelHeight(panel_height);
+  // NOTE: Setting the panel height causes a display work area change,
+  // which causes a display::DisplayManager::NotifyMetricsChanged, which calls
+  // OnDisplayMetricsChanged which calls UpdateWidgetBounds. This can result
+  // in multiple bounds updates when the window is opened and closed.
 }
