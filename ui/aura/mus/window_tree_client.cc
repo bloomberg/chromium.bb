@@ -249,67 +249,6 @@ WindowTreeClient::CreateForWindowTreeHostFactory(
   return wtc;
 }
 
-// TODO(sky): move to match location in header.
-WindowTreeClient::WindowTreeClient(
-    service_manager::Connector* connector,
-    WindowTreeClientDelegate* delegate,
-    WindowManagerDelegate* window_manager_delegate,
-    mojo::InterfaceRequest<ui::mojom::WindowTreeClient> request,
-    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-    bool create_discardable_memory)
-    : connector_(connector),
-      next_window_id_(1),
-      next_change_id_(1),
-      delegate_(delegate),
-      window_manager_delegate_(window_manager_delegate),
-      binding_(this),
-      tree_(nullptr),
-      in_destructor_(false),
-      weak_factory_(this) {
-  DCHECK(delegate_);
-  // Allow for a null request in tests.
-  if (request.is_pending())
-    binding_.Bind(std::move(request));
-  // Some tests may not create a TransientWindowClient.
-  if (client::GetTransientWindowClient())
-    client::GetTransientWindowClient()->AddObserver(this);
-  if (window_manager_delegate)
-    window_manager_delegate->SetWindowManagerClient(this);
-  if (connector) {  // |connector| can be null in tests.
-    if (!io_task_runner) {
-      // |io_task_runner| is null in most case. But for the browser process,
-      // the |io_task_runner| is the browser's IO thread.
-      io_thread_ = std::make_unique<base::Thread>("IOThread");
-      base::Thread::Options thread_options(base::MessageLoop::TYPE_IO, 0);
-      thread_options.priority = base::ThreadPriority::NORMAL;
-      CHECK(io_thread_->StartWithOptions(thread_options));
-      io_task_runner = io_thread_->task_runner();
-    }
-
-    if (base::FeatureList::IsEnabled(features::kMash)) {
-      gpu_ =
-          ui::Gpu::Create(connector, ui::mojom::kServiceName, io_task_runner);
-      compositor_context_factory_ =
-          std::make_unique<MusContextFactory>(gpu_.get());
-      initial_context_factory_ = Env::GetInstance()->context_factory();
-      Env::GetInstance()->set_context_factory(
-          compositor_context_factory_.get());
-    }
-
-    // WindowServerTest will create more than one WindowTreeClient. We will not
-    // create the discardable memory manager for those tests.
-    if (create_discardable_memory) {
-      discardable_memory::mojom::DiscardableSharedMemoryManagerPtr manager_ptr;
-      connector->BindInterface(ui::mojom::kServiceName, &manager_ptr);
-      discardable_shared_memory_manager_ = std::make_unique<
-          discardable_memory::ClientDiscardableSharedMemoryManager>(
-          std::move(manager_ptr), std::move(io_task_runner));
-      base::DiscardableMemoryAllocator::SetInstance(
-          discardable_shared_memory_manager_.get());
-    }
-  }
-}
-
 WindowTreeClient::~WindowTreeClient() {
   in_destructor_ = true;
 
@@ -433,6 +372,66 @@ void WindowTreeClient::AttachCompositorFrameSink(
   DCHECK(tree_);
   tree_->AttachCompositorFrameSink(window_id, std::move(compositor_frame_sink),
                                    std::move(client));
+}
+
+WindowTreeClient::WindowTreeClient(
+    service_manager::Connector* connector,
+    WindowTreeClientDelegate* delegate,
+    WindowManagerDelegate* window_manager_delegate,
+    mojo::InterfaceRequest<ui::mojom::WindowTreeClient> request,
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+    bool create_discardable_memory)
+    : connector_(connector),
+      next_window_id_(1),
+      next_change_id_(1),
+      delegate_(delegate),
+      window_manager_delegate_(window_manager_delegate),
+      binding_(this),
+      tree_(nullptr),
+      in_destructor_(false),
+      weak_factory_(this) {
+  DCHECK(delegate_);
+  // Allow for a null request in tests.
+  if (request.is_pending())
+    binding_.Bind(std::move(request));
+  // Some tests may not create a TransientWindowClient.
+  if (client::GetTransientWindowClient())
+    client::GetTransientWindowClient()->AddObserver(this);
+  if (window_manager_delegate)
+    window_manager_delegate->SetWindowManagerClient(this);
+  if (connector) {  // |connector| can be null in tests.
+    if (!io_task_runner) {
+      // |io_task_runner| is null in most case. But for the browser process,
+      // the |io_task_runner| is the browser's IO thread.
+      io_thread_ = std::make_unique<base::Thread>("IOThread");
+      base::Thread::Options thread_options(base::MessageLoop::TYPE_IO, 0);
+      thread_options.priority = base::ThreadPriority::NORMAL;
+      CHECK(io_thread_->StartWithOptions(thread_options));
+      io_task_runner = io_thread_->task_runner();
+    }
+
+    if (base::FeatureList::IsEnabled(features::kMash)) {
+      gpu_ =
+          ui::Gpu::Create(connector, ui::mojom::kServiceName, io_task_runner);
+      compositor_context_factory_ =
+          std::make_unique<MusContextFactory>(gpu_.get());
+      initial_context_factory_ = Env::GetInstance()->context_factory();
+      Env::GetInstance()->set_context_factory(
+          compositor_context_factory_.get());
+    }
+
+    // WindowServerTest will create more than one WindowTreeClient. We will not
+    // create the discardable memory manager for those tests.
+    if (create_discardable_memory) {
+      discardable_memory::mojom::DiscardableSharedMemoryManagerPtr manager_ptr;
+      connector->BindInterface(ui::mojom::kServiceName, &manager_ptr);
+      discardable_shared_memory_manager_ = std::make_unique<
+          discardable_memory::ClientDiscardableSharedMemoryManager>(
+          std::move(manager_ptr), std::move(io_task_runner));
+      base::DiscardableMemoryAllocator::SetInstance(
+          discardable_shared_memory_manager_.get());
+    }
+  }
 }
 
 void WindowTreeClient::RegisterWindowMus(WindowMus* window) {
