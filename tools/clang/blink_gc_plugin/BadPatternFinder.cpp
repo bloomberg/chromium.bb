@@ -31,14 +31,12 @@ class UniquePtrGarbageCollectedMatcher : public MatchFinder::MatchCallback {
     // Matches any application of make_unique where the template argument is
     // known to refer to a garbage-collected type.
     auto make_unique_matcher =
-        callExpr(callee(functionDecl(
-                            hasAnyName(
-                                "::std::make_unique", "::base::MakeUnique",
-                                "::WTF::MakeUnique", "::base::WrapUnique",
-                                "::WTF::WrapUnique", "::WTF::WrapArrayUnique"),
-                            hasTemplateArgument(
-                                0, refersToType(GarbageCollectedType())))
-                            .bind("badfunc")))
+        callExpr(
+            callee(functionDecl(
+                       hasAnyName("::std::make_unique", "::base::WrapUnique"),
+                       hasTemplateArgument(
+                           0, refersToType(GarbageCollectedType())))
+                       .bind("badfunc")))
             .bind("bad");
     match_finder.addDynamicMatcher(make_unique_matcher, this);
   }
