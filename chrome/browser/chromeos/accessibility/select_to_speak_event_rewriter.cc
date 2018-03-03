@@ -210,8 +210,13 @@ ui::EventRewriteStatus SelectToSpeakEventRewriter::RewriteEvent(
       event.type() == ui::ET_MOUSE_MOVED) {
     const ui::MouseEvent mouse_event =
         static_cast<const ui::MouseEvent&>(event);
-    if (OnMouseEvent(&mouse_event))
+    if (OnMouseEvent(&mouse_event) && (event.type() == ui::ET_MOUSE_PRESSED ||
+                                       event.type() == ui::ET_MOUSE_RELEASED)) {
+      // Cancel only click events if they were consumed by Select-to-Speak.
+      // Mouse move and drag should still happen or the mouse cursor may
+      // not be drawn in the right place.
       return ui::EVENT_REWRITE_DISCARD;
+    }
   }
 
   return ui::EVENT_REWRITE_CONTINUE;
