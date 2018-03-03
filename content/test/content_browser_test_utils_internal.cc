@@ -27,11 +27,13 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/resource_throttle.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/file_chooser_file_info.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_frame_navigation_observer.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_javascript_dialog_manager.h"
 #include "net/url_request/url_request.h"
@@ -56,6 +58,20 @@ void SetShouldProceedOnBeforeUnload(Shell* shell, bool proceed, bool success) {
 
 RenderFrameHost* ConvertToRenderFrameHost(FrameTreeNode* frame_tree_node) {
   return frame_tree_node->current_frame_host();
+}
+
+bool NavigateToURLInSameBrowsingInstance(Shell* window, const GURL& url) {
+  TestNavigationObserver observer(window->web_contents());
+  // Using a PAGE_TRANSITION_LINK transition with a browser-initiated
+  // navigation forces it to stay in the current BrowsingInstance, as normally
+  // that transition is used by renderer-initiated navigations.
+  window->LoadURLForFrame(url, std::string(),
+                          ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK));
+  observer.Wait();
+
+  if (!IsLastCommittedEntryOfPageType(window->web_contents(), PAGE_TYPE_NORMAL))
+    return false;
+  return window->web_contents()->GetLastCommittedURL() == url;
 }
 
 FrameTreeVisualizer::FrameTreeVisualizer() {

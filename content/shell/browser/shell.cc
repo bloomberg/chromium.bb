@@ -216,14 +216,18 @@ Shell* Shell::CreateNewWindow(BrowserContext* browser_context,
 }
 
 void Shell::LoadURL(const GURL& url) {
-  LoadURLForFrame(url, std::string());
+  LoadURLForFrame(
+      url, std::string(),
+      ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
+                                ui::PAGE_TRANSITION_FROM_ADDRESS_BAR));
 }
 
-void Shell::LoadURLForFrame(const GURL& url, const std::string& frame_name) {
+void Shell::LoadURLForFrame(const GURL& url,
+                            const std::string& frame_name,
+                            ui::PageTransition transition_type) {
   NavigationController::LoadURLParams params(url);
-  params.transition_type = ui::PageTransitionFromInt(
-      ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
   params.frame_name = frame_name;
+  params.transition_type = transition_type;
   web_contents_->GetController().LoadURLWithParams(params);
   web_contents_->Focus();
 }

@@ -67,7 +67,7 @@ class IsolatedOriginTest : public ContentBrowserTest {
 
 // Check that navigating a main frame from an non-isolated origin to an
 // isolated origin and vice versa swaps processes and uses a new SiteInstance,
-// both for browser-initiated and renderer-initiated navigations.
+// both for renderer-initiated and browser-initiated navigations.
 IN_PROC_BROWSER_TEST_F(IsolatedOriginTest, MainFrameNavigation) {
   GURL unisolated_url(
       embedded_test_server()->GetURL("www.foo.com", "/title1.html"));
@@ -83,42 +83,29 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest, MainFrameNavigation) {
   RenderProcessHost* unisolated_process =
       popup->web_contents()->GetMainFrame()->GetProcess();
 
-  // Perform a browser-initiated navigation to an isolated origin and ensure
-  // that this ends up in a new process and SiteInstance for isolated.foo.com.
-  EXPECT_TRUE(NavigateToURL(shell(), isolated_url));
-
+  // Go to isolated.foo.com with a renderer-initiated navigation.
+  EXPECT_TRUE(NavigateToURLFromRenderer(web_contents(), isolated_url));
   scoped_refptr<SiteInstance> isolated_instance =
       web_contents()->GetSiteInstance();
-  EXPECT_NE(isolated_instance, unisolated_instance);
-  EXPECT_NE(web_contents()->GetMainFrame()->GetProcess(), unisolated_process);
+  EXPECT_EQ(isolated_instance, web_contents()->GetSiteInstance());
+  EXPECT_NE(unisolated_process, web_contents()->GetMainFrame()->GetProcess());
 
   // The site URL for isolated.foo.com should be the full origin rather than
   // scheme and eTLD+1.
   EXPECT_EQ(isolated_url.GetOrigin(), isolated_instance->GetSiteURL());
 
-  // Now perform a renderer-initiated navigation to an unisolated origin,
-  // www.foo.com. This should end up in the |popup|'s process.
-  {
-    TestNavigationObserver observer(web_contents());
-    EXPECT_TRUE(ExecuteScript(
-        web_contents(), "location.href = '" + unisolated_url.spec() + "'"));
-    observer.Wait();
-  }
-
+  // Now use a renderer-initiated navigation to go to an unisolated origin,
+  // www.foo.com. This should end up back in the |popup|'s process.
+  EXPECT_TRUE(NavigateToURLFromRenderer(web_contents(), unisolated_url));
   EXPECT_EQ(unisolated_instance, web_contents()->GetSiteInstance());
   EXPECT_EQ(unisolated_process, web_contents()->GetMainFrame()->GetProcess());
 
-  // Go to isolated.foo.com again, this time with a renderer-initiated
-  // navigation from the unisolated www.foo.com.
-  {
-    TestNavigationObserver observer(web_contents());
-    EXPECT_TRUE(ExecuteScript(web_contents(),
-                              "location.href = '" + isolated_url.spec() + "'"));
-    observer.Wait();
-  }
-
-  EXPECT_EQ(isolated_instance, web_contents()->GetSiteInstance());
-  EXPECT_NE(unisolated_process, web_contents()->GetMainFrame()->GetProcess());
+  // Now, perform a browser-initiated navigation to an isolated origin and
+  // ensure that this ends up in a new process and SiteInstance for
+  // isolated.foo.com.
+  EXPECT_TRUE(NavigateToURL(shell(), isolated_url));
+  EXPECT_NE(web_contents()->GetSiteInstance(), unisolated_instance);
+  EXPECT_NE(web_contents()->GetMainFrame()->GetProcess(), unisolated_process);
 
   // Go back to www.foo.com: this should end up in the unisolated process.
   {
@@ -144,14 +131,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest, MainFrameNavigation) {
   // isolated origin and ensure there is a different isolated process.
   GURL second_isolated_url(
       embedded_test_server()->GetURL("isolated.bar.com", "/title3.html"));
-  {
-    TestNavigationObserver observer(web_contents());
-    EXPECT_TRUE(
-        ExecuteScript(web_contents(),
-                      "location.href = '" + second_isolated_url.spec() + "'"));
-    observer.Wait();
-  }
-
+  EXPECT_TRUE(NavigateToURLFromRenderer(web_contents(), second_isolated_url));
   EXPECT_EQ(second_isolated_url.GetOrigin(),
             web_contents()->GetSiteInstance()->GetSiteURL());
   EXPECT_NE(isolated_instance, web_contents()->GetSiteInstance());

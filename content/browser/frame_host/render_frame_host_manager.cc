@@ -1261,6 +1261,15 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
   if (IsCurrentlySameSite(render_frame_host_.get(), dest_url))
     return SiteInstanceDescriptor(render_frame_host_->GetSiteInstance());
 
+  // At this point, |dest_url| corresponds to a cross-site navigation.  See if
+  // we can swap BrowsingInstances to avoid unneeded process sharing.  This is
+  // done for certain main frame browser-initiated navigations. See
+  // https://crbug.com/803367.
+  if (IsBrowsingInstanceSwapAllowedForPageTransition(transition, dest_url)) {
+    return SiteInstanceDescriptor(browser_context, dest_url,
+                                  SiteInstanceRelation::UNRELATED);
+  }
+
   // Shortcut some common cases for reusing an existing frame's SiteInstance.
   // There are several reasons for this:
   // - looking at the main frame and openers is required for TDI mode.
@@ -1335,6 +1344,43 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
   // BrowsingInstance.
   return SiteInstanceDescriptor(browser_context, dest_url,
                                 SiteInstanceRelation::RELATED);
+}
+
+bool RenderFrameHostManager::IsBrowsingInstanceSwapAllowedForPageTransition(
+    ui::PageTransition transition,
+    const GURL& dest_url) {
+  // Disallow BrowsingInstance swaps for subframes.
+  if (!frame_tree_node_->IsMainFrame())
+    return false;
+
+  // Skip data: and file: URLs, as some tests rely on browser-initiated
+  // navigations to those URLs to stay in the same process.  Swapping
+  // BrowsingInstances for those URLs may not carry much benefit anyway, since
+  // they're likely less common.
+  //
+  // Note that such URLs are not considered same-site, but since their
+  // SiteInstance site URL is based only on scheme (e.g., all data URLs use a
+  // site URL of "data:"), a browser-initiated navigation from one such URL to
+  // another will still stay in the same SiteInstance, due to the matching site
+  // URL.
+  if (dest_url.SchemeIsFile() || dest_url.SchemeIs(url::kDataScheme))
+    return false;
+
+  // Allow page transitions corresponding to certain browser-initiated
+  // navigations: typing in the URL, using a bookmark, or using search.
+  switch (ui::PageTransitionStripQualifier(transition)) {
+    case ui::PAGE_TRANSITION_TYPED:
+    case ui::PAGE_TRANSITION_AUTO_BOOKMARK:
+    case ui::PAGE_TRANSITION_GENERATED:
+    case ui::PAGE_TRANSITION_KEYWORD:
+      return true;
+    // TODO(alexmos): PAGE_TRANSITION_AUTO_TOPLEVEL is not included due to a
+    // bug that would cause unneeded BrowsingInstance swaps for DevTools,
+    // https://crbug.com/733767.  Once that bug is fixed, consider adding this
+    // transition here.
+    default:
+      return false;
+  }
 }
 
 bool RenderFrameHostManager::IsRendererTransferNeededForNavigation(
@@ -1495,6 +1541,20 @@ bool RenderFrameHostManager::IsCurrentlySameSite(RenderFrameHostImpl* candidate,
           browser_context,
           GURL(candidate->GetLastCommittedOrigin().Serialize()), dest_url,
           should_compare_effective_urls)) {
+    return true;
+  }
+
+  // If the last successful URL was "about:blank" with a unique origin (which
+  // implies that it was a browser-initiated navigation to "about:blank"), none
+  // of the cases above apply, but we should still allow a scenario like
+  // foo.com -> about:blank -> foo.com to be treated as same-site, as some
+  // tests rely on that behavior.  To accomplish this, compare |dest_url|
+  // against the site URL.
+  if (candidate->last_successful_url().IsAboutBlank() &&
+      candidate->GetLastCommittedOrigin().unique() &&
+      SiteInstanceImpl::IsSameWebSite(
+          browser_context, candidate->GetSiteInstance()->original_url(),
+          dest_url, should_compare_effective_urls)) {
     return true;
   }
 

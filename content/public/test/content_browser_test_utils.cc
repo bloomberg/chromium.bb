@@ -14,9 +14,11 @@
 #include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_frame_navigation_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
@@ -85,7 +87,18 @@ bool NavigateToURL(Shell* window, const GURL& url) {
   NavigateToURLBlockUntilNavigationsComplete(window, url, 1);
   if (!IsLastCommittedEntryOfPageType(window->web_contents(), PAGE_TYPE_NORMAL))
     return false;
+
   return window->web_contents()->GetLastCommittedURL() == url;
+}
+
+bool NavigateToURLFromRenderer(const ToRenderFrameHost& adapter,
+                               const GURL& url) {
+  RenderFrameHost* rfh = adapter.render_frame_host();
+  TestFrameNavigationObserver nav_observer(rfh);
+  if (!ExecuteScript(rfh, "location = '" + url.spec() + "';"))
+    return false;
+  nav_observer.Wait();
+  return nav_observer.last_committed_url() == url;
 }
 
 bool NavigateToURLAndExpectNoCommit(Shell* window, const GURL& url) {

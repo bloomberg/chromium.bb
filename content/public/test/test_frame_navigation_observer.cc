@@ -70,6 +70,7 @@ void TestFrameNavigationObserver::DidFinishNavigation(
   }
 
   transition_type_ = navigation_handle->GetPageTransition();
+  last_committed_url_ = navigation_handle->GetURL();
 
   has_committed_ = true;
   if (wait_for_commit_)

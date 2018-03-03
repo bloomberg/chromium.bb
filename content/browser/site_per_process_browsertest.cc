@@ -2689,7 +2689,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_TRUE(ExecuteScript(root, "popup = window.open('about:blank');"));
   Shell* popup = new_shell_observer.GetShell();
   GURL popup_url(embedded_test_server()->GetURL("b.com", "/title2.html"));
-  EXPECT_TRUE(NavigateToURL(popup, popup_url));
+  EXPECT_TRUE(NavigateToURLFromRenderer(popup, popup_url));
 
   // Verify that each top-level frame has proxies in the other's SiteInstance.
   FrameTreeNode* popup_root =
@@ -4429,8 +4429,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   ShellAddedObserver new_shell_observer;
   EXPECT_TRUE(ExecuteScript(web_contents(), "window.open('about:blank');"));
   Shell* popup = new_shell_observer.GetShell();
-  EXPECT_TRUE(NavigateToURL(popup, embedded_test_server()->GetURL(
-                                       "bar.com", "/navigate_opener.html")));
+  EXPECT_TRUE(NavigateToURLFromRenderer(
+      popup,
+      embedded_test_server()->GetURL("bar.com", "/navigate_opener.html")));
 
   // Show an interstitial in the opener.
   TestInterstitialDelegate* delegate = new TestInterstitialDelegate;
@@ -4480,7 +4481,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   Shell* popup = new_shell_observer.GetShell();
   GURL popup_url(
       embedded_test_server()->GetURL("bar.com", "/post_message.html"));
-  EXPECT_TRUE(NavigateToURL(popup, popup_url));
+  EXPECT_TRUE(NavigateToURLFromRenderer(popup, popup_url));
 
   // From the popup, open another popup for baz.com.  This will be used to
   // check that the whole opener chain is processed when creating proxies and
@@ -4490,7 +4491,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   Shell* popup2 = new_shell_observer2.GetShell();
   GURL popup2_url(
       embedded_test_server()->GetURL("baz.com", "/post_message.html"));
-  EXPECT_TRUE(NavigateToURL(popup2, popup2_url));
+  EXPECT_TRUE(NavigateToURLFromRenderer(popup2, popup2_url));
 
   // Ensure that we've created proxies for SiteInstances of both popups (C, D)
   // in the main window's frame tree.
@@ -4788,7 +4789,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, NavigatePopupToIllegalURL) {
             popup->web_contents()->GetLastCommittedURL());
 
   // Navigate popup back to a cross-site URL.
-  EXPECT_TRUE(NavigateToURL(popup, popup_url));
+  EXPECT_TRUE(NavigateToURLFromRenderer(popup, popup_url));
   EXPECT_NE(popup->web_contents()->GetSiteInstance(),
             shell()->web_contents()->GetSiteInstance());
 
@@ -4842,7 +4843,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // Navigate the popup cross-site and ensure it's still reachable via
   // window.open from the main frame.
   GURL d_url(embedded_test_server()->GetURL("d.com", "/title3.html"));
-  EXPECT_TRUE(NavigateToURL(foo_shell, d_url));
+  EXPECT_TRUE(NavigateToURLFromRenderer(foo_shell, d_url));
   EXPECT_EQ(d_url, foo_root->current_url());
   NavigateNamedFrame(shell(), named_frame_url, "foo");
   EXPECT_TRUE(WaitForLoadStop(foo_shell->web_contents()));
@@ -4927,7 +4928,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, UpdateSubframeOpener) {
   EXPECT_TRUE(popup_shell);
   GURL popup_url(embedded_test_server()->GetURL(
       "bar.com", "/frame_tree/page_with_post_message_frames.html"));
-  EXPECT_TRUE(NavigateToURL(popup_shell, popup_url));
+  EXPECT_TRUE(NavigateToURLFromRenderer(popup_shell, popup_url));
 
   FrameTreeNode* popup_root =
       static_cast<WebContentsImpl*>(popup_shell->web_contents())
@@ -5196,7 +5197,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // destroy |rfh| and |rvh| before they are checked in the test.
   GURL b_url(embedded_test_server()->GetURL("b.com", "/title2.html"));
   TestFrameNavigationObserver commit_observer(root);
-  shell()->LoadURL(b_url);
+  EXPECT_TRUE(ExecuteScript(shell(), "location = '" + b_url.spec() + "'"));
   commit_observer.WaitForCommit();
   EXPECT_FALSE(deleted_observer.deleted());
 
@@ -5222,10 +5223,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_FALSE(root->frame_tree()->GetRenderViewHost(site_instance));
   EXPECT_TRUE(deleted_observer.deleted());
 
-  // Start a navigation back to A and check that the RenderViewHost wasn't
-  // reused.
+  // Start a navigation back to A, being careful to stay in the same
+  // BrowsingInstance, and check that the RenderViewHost wasn't reused.
   TestNavigationObserver navigation_observer(shell()->web_contents());
-  shell()->LoadURL(a_url);
+  shell()->LoadURLForFrame(a_url, std::string(),
+                           ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK));
   RenderViewHostImpl* pending_rvh =
       root->render_manager()->speculative_frame_host()->render_view_host();
   EXPECT_EQ(site_instance, pending_rvh->GetSiteInstance());
@@ -7587,7 +7589,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // Navigate main tab to a b.com URL that will not commit.
   GURL stall_url(embedded_test_server()->GetURL("b.com", "/title2.html"));
   TestNavigationManager delayer(shell()->web_contents(), stall_url);
-  shell()->LoadURL(stall_url);
+  EXPECT_TRUE(ExecuteScript(shell(), "location = '" + stall_url.spec() + "'"));
   EXPECT_TRUE(delayer.WaitForRequestStart());
 
   // The pending RFH should be in the same process as the popup.
@@ -7614,7 +7616,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // Navigate main tab to b.com again.  This should not crash.
   GURL b_url(embedded_test_server()->GetURL("b.com", "/title3.html"));
-  EXPECT_TRUE(NavigateToURL(shell(), b_url));
+  EXPECT_TRUE(NavigateToURLFromRenderer(shell(), b_url));
 
   // The b.com RVH in the main tab should become active.
   EXPECT_TRUE(rvh->is_active());
@@ -7646,7 +7648,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   GURL stall_url(embedded_test_server()->GetURL("b.com", "/title2.html"));
   NavigationHandleObserver handle_observer(shell()->web_contents(), stall_url);
   TestNavigationManager delayer(shell()->web_contents(), stall_url);
-  shell()->LoadURL(stall_url);
+  EXPECT_TRUE(ExecuteScript(shell(), "location = '" + stall_url.spec() + "'"));
   EXPECT_TRUE(delayer.WaitForRequestStart());
 
   // Kill the b.com process, currently in use by the pending RenderFrameHost
@@ -7670,7 +7672,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // RenderViewHost was brought into an active state by the navigation to
   // |stall_url| above, even though it never committed.
   GURL b_url(embedded_test_server()->GetURL("b.com", "/title3.html"));
-  EXPECT_TRUE(NavigateToURL(popup_shell, b_url));
+  EXPECT_TRUE(NavigateToURLInSameBrowsingInstance(popup_shell, b_url));
   EXPECT_FALSE(rvh->is_active());
 }
 
@@ -8023,18 +8025,18 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // Open a popup and navigate it to b.com.
   Shell* popup = OpenPopup(shell(), a_url, "popup");
-  EXPECT_TRUE(NavigateToURL(popup, b_url));
+  EXPECT_TRUE(NavigateToURLFromRenderer(popup, b_url));
 
   // Open a second popup and navigate it to b.com, which redirects to c.com.
   // The navigation to b.com will create a pending RenderFrameHost, which will
-  // be canceled during the redirect to c.com.  Note that NavigateToURL will
-  // return false because the committed URL won't match the requested URL due
-  // to the redirect.
+  // be canceled during the redirect to c.com.  Note that
+  // NavigateToURLFromRenderer will return false because the committed URL
+  // won't match the requested URL due to the redirect.
   Shell* popup2 = OpenPopup(shell(), a_url, "popup2");
   TestNavigationObserver observer(popup2->web_contents());
   GURL redirect_url(embedded_test_server()->GetURL(
       "b.com", "/server-redirect?" + c_url.spec()));
-  EXPECT_FALSE(NavigateToURL(popup2, redirect_url));
+  EXPECT_FALSE(NavigateToURLFromRenderer(popup2, redirect_url));
   EXPECT_EQ(c_url, observer.last_navigation_url());
   EXPECT_TRUE(observer.last_navigation_succeeded());
 
@@ -8052,7 +8054,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // RenderView, because it reused the RenderViewHost created by the canceled
   // navigation to b.com, and that RenderViewHost had a stale main frame
   // routing ID and active state.
-  EXPECT_TRUE(NavigateToURL(popup2, b_url));
+  EXPECT_TRUE(NavigateToURLInSameBrowsingInstance(popup2, b_url));
 }
 
 // Check that after a pending RFH is canceled and replaced with a proxy (which
@@ -8070,7 +8072,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // Open a popup and navigate it to b.com.
   Shell* popup = OpenPopup(shell(), a_url, "popup");
-  EXPECT_TRUE(NavigateToURL(popup, b_url));
+  EXPECT_TRUE(NavigateToURLFromRenderer(popup, b_url));
 
   // Open a second popup and navigate it to b.com, which redirects to c.com.
   // The navigation to b.com will create a pending RenderFrameHost, which will
@@ -8081,14 +8083,14 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   TestNavigationObserver observer(popup2->web_contents());
   GURL redirect_url(embedded_test_server()->GetURL(
       "b.com", "/server-redirect?" + c_url.spec()));
-  EXPECT_FALSE(NavigateToURL(popup2, redirect_url));
+  EXPECT_FALSE(NavigateToURLFromRenderer(popup2, redirect_url));
   EXPECT_EQ(c_url, observer.last_navigation_url());
   EXPECT_TRUE(observer.last_navigation_succeeded());
 
   // Navigate the second popup to b.com.  This used to crash the b.com renderer
   // because it failed to delete the canceled RFH's RenderFrame, so this caused
   // it to try to create a frame widget which already existed.
-  EXPECT_TRUE(NavigateToURL(popup2, b_url));
+  EXPECT_TRUE(NavigateToURLFromRenderer(popup2, b_url));
 }
 
 // Check that when a pending RFH is canceled and a proxy needs to be created in
@@ -8104,7 +8106,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // Open a popup and navigate it to b.com.
   Shell* popup = OpenPopup(shell(), a_url, "popup");
-  EXPECT_TRUE(NavigateToURL(popup, b_url));
+  EXPECT_TRUE(NavigateToURLFromRenderer(popup, b_url));
 
   // Open a second popup and navigate it to b.com, which redirects to c.com.
   // The navigation to b.com will create a pending RenderFrameHost, which will
@@ -8115,7 +8117,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   TestNavigationObserver observer(popup2->web_contents());
   GURL redirect_url(embedded_test_server()->GetURL(
       "b.com", "/server-redirect?" + c_url.spec()));
-  EXPECT_FALSE(NavigateToURL(popup2, redirect_url));
+  EXPECT_FALSE(NavigateToURLFromRenderer(popup2, redirect_url));
   EXPECT_EQ(c_url, observer.last_navigation_url());
   EXPECT_TRUE(observer.last_navigation_succeeded());
 
@@ -8144,7 +8146,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // reach the window reference for |popup2| due to a security restriction in
   // Blink. So, navigate the main tab to b.com and then send a postMessage to
   // |popup2|. This is allowed since the main tab is |popup2|'s opener.
-  EXPECT_TRUE(NavigateToURL(shell(), b_url));
+  EXPECT_TRUE(NavigateToURLFromRenderer(shell(), b_url));
 
   base::string16 expected_title(base::UTF8ToUTF16("foo"));
   TitleWatcher title_watcher(popup2->web_contents(), expected_title);
@@ -9057,8 +9059,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   OpenPopup(shell(), GURL(url::kAboutBlankURL), "foo");
 
   // Navigate foo -> bar -> foo.
-  EXPECT_TRUE(NavigateToURL(shell(), bar_url));
-  EXPECT_TRUE(NavigateToURL(shell(), foo_url));
+  EXPECT_TRUE(NavigateToURLFromRenderer(shell(), bar_url));
+  EXPECT_TRUE(NavigateToURLFromRenderer(shell(), foo_url));
 
   // There should be three history entries.
   EXPECT_EQ(3, web_contents()->GetController().GetEntryCount());
@@ -9539,7 +9541,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // Before it commits, start and commit a navigation to b.com in the second
   // tab.
   GURL new_url_2(embedded_test_server()->GetURL("b.com", "/title2.html"));
-  EXPECT_TRUE(NavigateToURL(popup_shell, new_url_2));
+  EXPECT_TRUE(NavigateToURLFromRenderer(popup_shell, new_url_2));
 
   // Check that the opener still has a speculative RenderFrameHost and a
   // corresponding proxy for b.com.
@@ -10435,6 +10437,60 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_NE(third_shell_instance,
             child->current_frame_host()->GetSiteInstance());
   EXPECT_NE(third_shell_instance->GetProcess(), bar_process);
+}
+
+// Check that when a subframe reuses an existing process for the same site
+// across BrowsingInstances, a browser-initiated navigation in that subframe's
+// tab doesn't unnecessarily share the reused process.  See
+// https://crbug.com/803367.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       NoProcessSharingAfterSubframeReusesExistingProcess) {
+  GURL foo_url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), foo_url));
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  SiteInstanceImpl* foo_instance =
+      root->current_frame_host()->GetSiteInstance();
+
+  // Open an unrelated tab in a separate BrowsingInstance, and navigate it to
+  // to bar.com.
+  GURL bar_url(
+      embedded_test_server()->GetURL("bar.com", "/page_with_iframe.html"));
+  Shell* second_shell = CreateBrowser();
+  EXPECT_TRUE(NavigateToURL(second_shell, bar_url));
+  FrameTreeNode* second_root =
+      static_cast<WebContentsImpl*>(second_shell->web_contents())
+          ->GetFrameTree()
+          ->root();
+  FrameTreeNode* second_child = second_root->child_at(0);
+  scoped_refptr<SiteInstanceImpl> bar_instance =
+      second_root->current_frame_host()->GetSiteInstance();
+  EXPECT_FALSE(bar_instance->IsRelatedSiteInstance(foo_instance));
+
+  // Navigate the second tab's subframe to foo.com.  Confirm that it reuses
+  // first tab's process.
+  NavigateIframeToURL(second_shell->web_contents(), "test_iframe", foo_url);
+  EXPECT_EQ(foo_url, second_child->current_url());
+  scoped_refptr<SiteInstanceImpl> second_child_foo_instance =
+      second_child->current_frame_host()->GetSiteInstance();
+  EXPECT_EQ(
+      SiteInstanceImpl::ProcessReusePolicy::REUSE_PENDING_OR_COMMITTED_SITE,
+      second_child_foo_instance->process_reuse_policy());
+  EXPECT_NE(foo_instance, second_child_foo_instance);
+  EXPECT_EQ(foo_instance->GetProcess(),
+            second_child_foo_instance->GetProcess());
+
+  // Perform a browser-initiated address bar navigation in the second tab to
+  // foo.com.  This should swap BrowsingInstances and end up in a separate
+  // process from the first tab.
+  EXPECT_TRUE(NavigateToURL(second_shell, foo_url));
+  SiteInstanceImpl* new_instance =
+      second_root->current_frame_host()->GetSiteInstance();
+  EXPECT_NE(second_child_foo_instance, new_instance);
+  EXPECT_FALSE(second_child_foo_instance->IsRelatedSiteInstance(new_instance));
+  EXPECT_FALSE(bar_instance->IsRelatedSiteInstance(new_instance));
+  EXPECT_FALSE(foo_instance->IsRelatedSiteInstance(new_instance));
+  EXPECT_NE(new_instance->GetProcess(), foo_instance->GetProcess());
+  EXPECT_NE(new_instance->GetProcess(), bar_instance->GetProcess());
 }
 
 namespace {

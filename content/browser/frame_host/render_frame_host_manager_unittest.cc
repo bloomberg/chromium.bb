@@ -3096,12 +3096,11 @@ TEST_F(RenderFrameHostManagerTest,
   EXPECT_EQ(kFooUrl, initial_instance->GetSiteURL());
 
   // Simulate a browser-initiated navigation to an app URL, which should swap
-  // processes and create a new related SiteInstance in the same
-  // BrowsingInstance.  This new SiteInstance should have correct site URL and
-  // |original_url()|.
+  // processes and create a new SiteInstance in a new BrowsingInstance.
+  // This new SiteInstance should have correct site URL and |original_url()|.
   NavigationSimulator::NavigateAndCommitFromBrowser(contents(), kOriginalUrl);
   EXPECT_NE(initial_instance.get(), main_test_rfh()->GetSiteInstance());
-  EXPECT_TRUE(initial_instance->IsRelatedSiteInstance(
+  EXPECT_FALSE(initial_instance->IsRelatedSiteInstance(
       main_test_rfh()->GetSiteInstance()));
   EXPECT_EQ(kOriginalUrl, main_test_rfh()->GetSiteInstance()->original_url());
   EXPECT_EQ(kTranslatedUrl, main_test_rfh()->GetSiteInstance()->GetSiteURL());

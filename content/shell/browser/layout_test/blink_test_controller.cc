@@ -451,8 +451,10 @@ bool BlinkTestController::PrepareForLayoutTest(
       LoadDevToolsJSTest();
     } else {
       NavigationController::LoadURLParams params(test_url_);
-      params.transition_type = ui::PageTransitionFromInt(
-          ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
+      // Using PAGE_TRANSITION_LINK avoids a BrowsingInstance/process swap
+      // between layout tests.
+      params.transition_type =
+          ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK);
       params.should_clear_history_list = true;
       main_window_->web_contents()->GetController().LoadURLWithParams(params);
       main_window_->web_contents()->Focus();
@@ -1009,7 +1011,7 @@ void BlinkTestController::OnReload() {
 
 void BlinkTestController::OnLoadURLForFrame(const GURL& url,
                                             const std::string& frame_name) {
-  main_window_->LoadURLForFrame(url, frame_name);
+  main_window_->LoadURLForFrame(url, frame_name, ui::PAGE_TRANSITION_LINK);
 }
 
 void BlinkTestController::OnCloseRemainingWindows() {

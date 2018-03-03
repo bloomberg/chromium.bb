@@ -25,6 +25,7 @@ class TestFrameNavigationObserver : public WebContentsObserver {
   ~TestFrameNavigationObserver() override;
 
   ui::PageTransition transition_type() { return transition_type_.value(); }
+  const GURL& last_committed_url() { return last_committed_url_; }
 
   // Runs a nested run loop and blocks until the full load has
   // completed.
@@ -55,6 +56,7 @@ class TestFrameNavigationObserver : public WebContentsObserver {
 
   // Saved parameters from NavigationHandle.
   base::Optional<ui::PageTransition> transition_type_;
+  GURL last_committed_url_;
 
   // The RunLoop used to spin the message loop.
   base::RunLoop run_loop_;
