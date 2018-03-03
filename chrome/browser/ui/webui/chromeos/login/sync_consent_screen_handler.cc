@@ -35,24 +35,10 @@ void SyncConsentScreenHandler::DeclareLocalizedValues(
   builder->Add(
       "syncConsentScreenPersonalizeGoogleServicesDescription",
       IDS_LOGIN_SYNC_CONSENT_SCREEN_PERSONALIZE_GOOGLE_SERVICES_DESCRIPTION);
-  builder->Add("syncConsentScreenSettingsLink",
-               IDS_LOGIN_SYNC_CONSENT_SCREEN_SETTINGS_LINK);
-  builder->Add("syncConsentSettingsDialogTitle",
-               IDS_LOGIN_SYNC_CONSENT_SETTINGS_TITLE);
-  builder->Add("syncConsentSettingsDialogSubTitle",
-               IDS_LOGIN_SYNC_CONSENT_SETTINGS_SUBTITLE);
-  builder->Add("syncConsentSyncAllOptionTitle",
-               IDS_LOGIN_SYNC_CONSENT_SYNC_ALL_OPTION);
-  builder->Add("syncConsentSyncAllOptionOn",
-               IDS_LOGIN_SYNC_CONSENT_SYNC_ALL_OPTION_ON);
-  builder->Add("syncConsentSyncAllOptionOff",
-               IDS_LOGIN_SYNC_CONSENT_SYNC_ALL_OPTION_OFF);
-  builder->Add("syncConsentSettingsStatusSyncAllOn",
-               IDS_LOGIN_SYNC_CONSENT_STATUS_SYNC_ALL_ON);
-  builder->Add("syncConsentSettingsStatusSyncAllOff",
-               IDS_LOGIN_SYNC_CONSENT_STATUS_SYNC_ALL_OFF);
-  builder->Add("syncConsentSettingsSaveAndContinue",
-               IDS_LOGIN_SYNC_CONSENT_SAVE_AND_CONTINUE);
+  builder->Add("syncConsentReviewSyncOptionsText",
+               IDS_LOGIN_SYNC_CONSENT_SCREEN_REVIEW_SYNC_OPTIONS_LATER);
+  builder->Add("syncConsentAcceptAndContinue",
+               IDS_LOGIN_SYNC_CONSENT_SCREEN_ACCEPT_AND_CONTINUE);
 }
 
 void SyncConsentScreenHandler::RegisterMessages() {

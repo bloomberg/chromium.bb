@@ -15,7 +15,9 @@
 namespace chromeos {
 namespace {
 
-constexpr const char kUserActionButtonClicked[] = "save-and-continue";
+constexpr const char kUserActionConinueAndReview[] = "continue-and-review";
+constexpr const char kUserActionContinueWithDefaults[] =
+    "continue-with-defaults";
 
 browser_sync::ProfileSyncService* GetSyncService(Profile* profile) {
   if (ProfileSyncServiceFactory::HasProfileSyncService(profile))
@@ -54,7 +56,11 @@ void SyncConsentScreen::Hide() {
 }
 
 void SyncConsentScreen::OnUserAction(const std::string& action_id) {
-  if (action_id == kUserActionButtonClicked) {
+  if (action_id == kUserActionConinueAndReview) {
+    Finish(ScreenExitCode::SYNC_CONSENT_FINISHED);
+    return;
+  }
+  if (action_id == kUserActionContinueWithDefaults) {
     Finish(ScreenExitCode::SYNC_CONSENT_FINISHED);
     return;
   }

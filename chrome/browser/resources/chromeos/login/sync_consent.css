@@ -40,17 +40,6 @@ a {
   padding: 0 6px; /* = 8px - 2px button border */
 }
 
-/************* Settings Section **************/
-#syncConsentSettingsDialog oobe-a11y-option {
-  border-top: var(--sync-consent-dialog-list-item-border);
-  min-height: 56px;
+#acceptAndContinue {
+  -webkit-padding-end: 18px;
 }
-
-#syncConsentSettingsDialog oobe-a11y-option:last-of-type {
-  border-bottom: var(--sync-consent-dialog-list-item-border);
-}
-
-#syncConsentSettingsDialog .bottom-buttons {
-  padding: 0 24px;
-}
-
