@@ -4,6 +4,8 @@
 
 package org.chromium.content.browser.remoteobjects;
 
+import android.support.annotation.IntDef;
+
 import org.chromium.blink.mojom.RemoteInvocationArgument;
 import org.chromium.blink.mojom.RemoteInvocationError;
 import org.chromium.blink.mojom.RemoteInvocationResult;
@@ -13,7 +15,10 @@ import org.chromium.mojo.system.MojoException;
 import org.chromium.mojo_base.mojom.String16;
 
 import java.lang.annotation.Annotation;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -135,7 +140,7 @@ class RemoteObjectImpl implements RemoteObject {
         Class<?>[] parameterTypes = method.getParameterTypes();
         Object[] args = new Object[numArguments];
         for (int i = 0; i < numArguments; i++) {
-            args[i] = convertArgument(arguments[i], parameterTypes[i]);
+            args[i] = convertArgument(arguments[i], parameterTypes[i], StringCoercionMode.COERCE);
         }
 
         Object result = null;
@@ -192,7 +197,20 @@ class RemoteObjectImpl implements RemoteObject {
         return null;
     }
 
-    private Object convertArgument(RemoteInvocationArgument argument, Class<?> parameterType) {
+    @IntDef({StringCoercionMode.DO_NOT_COERCE, StringCoercionMode.COERCE})
+    @Retention(RetentionPolicy.SOURCE)
+    private @interface StringCoercionMode {
+        // Do not coerce non-strings to string; instead produce null.
+        // Used when coercing arguments inside arrays.
+        int DO_NOT_COERCE = 0;
+
+        // Coerce into strings more aggressively. Applied when the parameter type is
+        // java.lang.String exactly.
+        int COERCE = 1;
+    }
+
+    private Object convertArgument(RemoteInvocationArgument argument, Class<?> parameterType,
+            @StringCoercionMode int stringCoercionMode) {
         switch (argument.which()) {
             case RemoteInvocationArgument.Tag.NumberValue:
                 // See http://jdk6.java.net/plugin2/liveconnect/#JS_NUMBER_VALUES.
@@ -225,9 +243,9 @@ class RemoteObjectImpl implements RemoteObject {
                     // requires converting to false for 0 or NaN, true otherwise.
                     return false;
                 } else if (parameterType == String.class) {
-                    // TODO(jbroman): Don't coerce to string if this is inside the conversion of an
-                    // array.
-                    return doubleToString(numberValue);
+                    return stringCoercionMode == StringCoercionMode.COERCE
+                            ? doubleToString(numberValue)
+                            : null;
                 } else if (parameterType.isArray()) {
                     // LIVECONNECT_COMPLIANCE: Existing behavior is to convert to null. Spec
                     // requires raising a JavaScript exception.
@@ -248,7 +266,9 @@ class RemoteObjectImpl implements RemoteObject {
                     // non-boolean primitive types. Spec requires converting to 0 or 1.
                     return getPrimitiveZero(parameterType);
                 } else if (parameterType == String.class) {
-                    return Boolean.toString(booleanValue);
+                    return stringCoercionMode == StringCoercionMode.COERCE
+                            ? Boolean.toString(booleanValue)
+                            : null;
                 } else if (parameterType.isArray()) {
                     return null;
                 } else {
@@ -281,9 +301,8 @@ class RemoteObjectImpl implements RemoteObject {
                 if (parameterType == String.class) {
                     // LIVECONNECT_COMPLIANCE: Existing behavior is to convert undefined to
                     // "undefined". Spec requires converting undefined to NULL.
-                    // TODO(jbroman): Don't coerce undefined to string if this is inside the
-                    // conversion of an array.
-                    return argument.getSingletonValue() == SingletonJavaScriptValue.UNDEFINED
+                    return (argument.getSingletonValue() == SingletonJavaScriptValue.UNDEFINED
+                                   && stringCoercionMode == StringCoercionMode.COERCE)
                             ? "undefined"
                             : null;
                 } else if (parameterType.isPrimitive()) {
@@ -293,6 +312,34 @@ class RemoteObjectImpl implements RemoteObject {
                     // requires raising a JavaScript exception.
                     return null;
                 } else {
+                    return null;
+                }
+            case RemoteInvocationArgument.Tag.ArrayValue:
+                RemoteInvocationArgument[] arrayValue = argument.getArrayValue();
+                if (parameterType.isArray()) {
+                    Class<?> componentType = parameterType.getComponentType();
+
+                    // LIVECONNECT_COMPLIANCE: Existing behavior is to return null for
+                    // multi-dimensional and object arrays. Spec requires handling them.
+                    if (!componentType.isPrimitive() && componentType != String.class) {
+                        return null;
+                    }
+
+                    Object result = Array.newInstance(componentType, arrayValue.length);
+                    for (int i = 0; i < arrayValue.length; i++) {
+                        Object element = convertArgument(
+                                arrayValue[i], componentType, StringCoercionMode.DO_NOT_COERCE);
+                        Array.set(result, i, element);
+                    }
+                    return result;
+                } else if (parameterType == String.class) {
+                    return stringCoercionMode == StringCoercionMode.COERCE ? "undefined" : null;
+                } else if (parameterType.isPrimitive()) {
+                    return getPrimitiveZero(parameterType);
+                } else {
+                    // LIVECONNECT_COMPLIANCE: Existing behavior is to pass null. Spec requires
+                    // converting if the target type is netscape.javascript.JSObject, otherwise
+                    // raising a JavaScript exception.
                     return null;
                 }
             default:
