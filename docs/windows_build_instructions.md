@@ -23,25 +23,28 @@ Are you a Google employee? See
 
 ### Visual Studio
 
-As of September, 2017 (R503915) Chromium requires Visual Studio 2017 update 3.2
-with the 15063 (Creators Update) Windows SDK or later to build. Visual Studio
-Community Edition should work if its license is appropriate for you. You must
-install the "Desktop development with C++" component and the "MFC and ATL
-support" sub-component. This can be done from the command line by passing these
-arguments to the Visual Studio installer that you download:
+As of September, 2017 (R503915) Chromium requires Visual Studio 2017 update 3.x
+to build. The clang-cl compiler is used but Visual Studio's header files,
+libraries, and some tools are required. Visual Studio Community Edition should
+work if its license is appropriate for you. You must install the "Desktop
+development with C++" component and the "MFC and ATL support" sub-component.
+This can be done from the command line by passing these arguments to the Visual
+Studio installer that you download:
 ```shell
 --add Microsoft.VisualStudio.Workload.NativeDesktop
     --add Microsoft.VisualStudio.Component.VC.ATLMFC --includeRecommended
 ```
-You must have the Windows 10 SDK installed, version 10.0.15063 or later.
-The 10.0.15063 SDK initially had errors but the 10.0.15063.468 version works
-well. Most of this will be installed by Visual Studio.
 
-If the Windows 10 SDK was installed via the Visual Studio installer, the Debugging
-Tools can be installed by going to: Control Panel → Programs →
-Programs and Features → Select the "Windows Software Development Kit" →
-Change → Change → Check "Debugging Tools For Windows" → Change. Or, you can
-download the standalone SDK installer and use it to install the Debugging Tools.
+You must have the version 10.0.15063 Windows 10 SDK installed. This can be
+installed separately or by checking the appropriate box in the Visual Studio
+Installer.
+
+The SDK Debugging Tools must also be installed. If the Windows 10 SDK was
+installed via the Visual Studio installer, then they can be installed by going
+to: Control Panel → Programs → Programs and Features → Select the "Windows
+Software Development Kit" → Change → Change → Check "Debugging Tools For
+Windows" → Change. Or, you can download the standalone SDK installer and use it
+to install the Debugging Tools.
 
 ## Install `depot_tools`
 
@@ -199,7 +202,7 @@ in the editor that appears when you create your output directory
 (`gn args out/Default`) or on the gn gen command line
 (`gn gen out/Default --args="is_component_build = true is_debug = true"`).
 Some helpful settings to consider using include:
-* `use_jumbo_build = true` - *Experimental* [Jumbo/unity](jumbo.md) builds.
+* `use_jumbo_build = true` - *experimental* [Jumbo/unity](jumbo.md) builds.
 * `is_component_build = true` - this uses more, smaller DLLs, and incremental
 linking.
 * `enable_nacl = false` - this disables Native Client which is usually not
@@ -210,31 +213,107 @@ don't' set enable_nacl = false then build times may get worse.
 * `remove_webcore_debug_symbols = true` - turn off source-level debugging for
 blink to reduce build times, appropriate if you don't plan to debug blink.
 
-In addition, Google employees should consider using goma, a distributed
-compilation system. Detailed information is available internally but the
-relevant gn args are:
-* `use_goma = true`
-* `symbol_level = 2` - by default goma builds change symbol_level from 2 to 1
-which disables source-level debugging. This turns it back on. This actually
-makes builds slower, but it makes goma more usable.
-* `is_win_fastlink = true` - this is required if you have goma enabled and
-symbol_level set to 2.
+In order to ensure that linking is fast enough we recommend that you use one of
+these settings - they all have tradeoffs:
+* `use_lld = true` - this linker is very fast on full links but does not support
+incremental linking.
+* `is_win_fastlink = true` - this option makes the Visual Studio linker run much
+faster, and incremental linking is supported, but it can lead to debugger
+slowdowns or out-of-memory crashes.
+* `symbol_level = 1` - this option reduces the work the linker has to do but
+when this option is set you cannot do source-level debugging.
 
-Note that debugging of is_win_fastlink built binaries is unreliable prior to
-VS 2017 Update 3 and may crash Visual Studio.
+In addition, Google employees should use goma, a distributed compilation system.
+Detailed information is available internally but the relevant gn arg is:
+* `use_goma = true`
 
 To get any benefit from goma it is important to pass a large -j value to ninja.
-A good default is 10\*numCores to 20\*numCores. If you run autoninja.bat then it
-will pass an appropriate -j value to ninja for goma or not, automatically.
+A good default is 10\*numCores to 20\*numCores. If you run autoninja then it
+will automatically pass an appropriate -j value to ninja for goma or not.
+
+```shell
+$ autoninja -C out\Default chrome
+```
 
 When invoking ninja specify 'chrome' as the target to avoid building all test
 binaries as well.
 
 Still, builds will take many hours on many machines.
 
+### Why is my build slow?
+
+Many things can make builds slow, with Windows Defender slowing process startups
+being a frequent culprit. Have you ensured that the entire Chromium src
+directory is excluded from anti-virus scanning (on Google machines this means
+putting it in a ``src`` directory in the root of a drive)? Have you tried the
+different settings listed above, including different link settings and -j
+values? Have you asked on the chromium-dev mailing list to see if your build is
+slower than expected for your machine's specifications?
+
+The next step is to gather some data. There are several options. Setting
+[NINJA_STATUS](https://ninja-build.org/manual.html#_environment_variables) lets
+you configure Ninja's output so that, for instance, you can see how many
+processes are running at any given time, how long the build has been running,
+etc., as shown here:
+
+```shell
+$ set NINJA_STATUS=[%r processes, %f/%t @ %o/s : %es ] 
+$ autoninja -C out\Default base
+ninja: Entering directory `out\Default'
+[1 processes, 86/86 @ 2.7/s : 31.785s ] LINK(DLL) base.dll base.dll.lib base.dll.pdb
+```
+
+In addition, if you set the ``NINJA_SUMMARIZE_BUILD`` environment variable to 1 then
+autoninja will print a build performance summary when the build completes,
+showing the slowest build steps and build-step types, as shown here:
+
+```shell
+$ set NINJA_SUMMARIZE_BUILD=1
+$ autoninja -C out\Default base
+    Longest build steps:
+...
+           1.2 weighted s to build base.dll, base.dll.lib, base.dll.pdb (1.2 s CPU time)
+           8.5 weighted s to build obj/base/base/base_jumbo_38.obj (30.1 s CPU time)
+    Time by build-step type:
+...
+           1.2 s weighted time to generate 1 PEFile (linking) files (1.2 s CPU time)
+          30.3 s weighted time to generate 45 .obj files (688.8 s CPU time)
+    31.8 s weighted time (693.8 s CPU time, 21.8x parallelism)
+    86 build steps completed, average of 2.71/s
+```
+
+You can also get a visual report of the build performance with
+[ninjatracing](https://github.com/nico/ninjatracing). This converts the
+.ninja_log file into a .json file which can be loaded into chrome://tracing:
+
+```shell
+$ python ninjatracing out\Default\.ninja_log >build.json
+```
+
+Finally, Ninja can report on its own overhead which can be helpful if, for
+instance, process creation is making builds slow, perhaps due to anti-virus
+interference due to clang-cl not being in an excluded directory:
+
+```shell
+$ autoninja -d stats -C out\Default base
+metric                  count   avg (us)        total (ms)
+.ninja parse            3555    1539.4          5472.6
+canonicalize str        1383032 0.0             12.7
+canonicalize path       1402349 0.0             11.2
+lookup node             1398245 0.0             8.1
+.ninja_log load         2       118.0           0.2
+.ninja_deps load        2       67.5            0.1
+node stat               2516    29.6            74.4
+depfile load            2       1132.0          2.3
+StartEdge               88      3508.1          308.7
+FinishCommand           87      1670.9          145.4
+CLParser::Parse         45      1889.1          85.0
+```
+
 ## Build Chromium
 
-Build Chromium (the "chrome" target) with Ninja using the command:
+Build Chromium (the "chrome" target) with Ninja (or autoninja) using the
+command:
 
 ```shell
 $ ninja -C out\Default chrome
