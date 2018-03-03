@@ -592,7 +592,8 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
     // object.
   };
 
-  scoped_refptr<StaticBitmapImage> GetImage(AccelerationHint) const override;
+  scoped_refptr<StaticBitmapImage> GetImage(
+      AccelerationHint = kPreferAcceleration) const override;
   void SetFilterQuality(SkFilterQuality) override;
   bool IsWebGL2OrHigher() { return Version() >= 2; }
 
@@ -1698,7 +1699,6 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                            GLint,
                            const IntRect&);
 
-  scoped_refptr<StaticBitmapImage> MakeImageSnapshot(SkImageInfo&) const;
   const unsigned version_;
 
   bool IsPaintable() const final { return GetDrawingBuffer(); }
