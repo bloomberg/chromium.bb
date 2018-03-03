@@ -10,7 +10,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/download/download_manager_tab_helper.h"
-#import "ios/chrome/browser/download/google_drive_app_constants.h"
+#import "ios/chrome/browser/download/google_drive_app_util.h"
 #import "ios/chrome/browser/store_kit/store_kit_coordinator.h"
 #import "ios/chrome/browser/ui/download/download_manager_mediator.h"
 #import "ios/chrome/browser/ui/download/download_manager_view_controller.h"
