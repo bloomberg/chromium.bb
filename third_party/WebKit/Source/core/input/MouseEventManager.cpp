@@ -889,11 +889,6 @@ bool MouseEventManager::HandleDrag(const MouseEventWithHitTestResults& event,
            !mouse_down_may_start_autoscroll_;
   }
 
-  // We are starting a text/image/url drag, so the cursor should be an arrow
-  // FIXME <rdar://7577595>: Custom cursors aren't supported during drag and
-  // drop (default to pointer).
-  frame_->View()->SetCursor(PointerCursor());
-
   if (initiator == DragInitiator::kMouse &&
       !DragThresholdExceeded(
           FlooredIntPoint(event.Event().PositionInRootFrame()))) {
