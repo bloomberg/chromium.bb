@@ -6104,7 +6104,10 @@ I don't think this site should be blocked!
         <message name="IDS_PRINT_PREVIEW_OFFLINE" desc="Shown when printer is currently offline.">
           Currently offline
         </message>
-        <message name="IDS_PRINT_PREVIEW_NO_LONGER_SUPPORTED" desc="Shown when printer is no longer supported.">
+        <message name="IDS_PRINT_PREVIEW_NO_LONGER_SUPPORTED_FRAGMENT" desc="Shown in destination settings when printer is no longer supported.">
+          No longer supported
+        </message>
+        <message name="IDS_PRINT_PREVIEW_NO_LONGER_SUPPORTED" desc="Shown in destinations dialog when printer is no longer supported.">
           No longer supported.
         </message>
         <message name="IDS_PRINT_PREVIEW_EXTENSION_DESTINATION_ICON_TOOLTIP" desc="Tooltip for the icon shown in print destination list next to print destination provided by an extension.">
