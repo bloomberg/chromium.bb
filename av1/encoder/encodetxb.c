@@ -255,23 +255,18 @@ static void get_dist_cost_stats(LevelDownStats *const stats, const int scan_idx,
                      scan_idx, is_eob, txb_info->tx_size, txb_info->tx_type);
   const int qc_cost =
       get_coeff_cost(qc, scan_idx, is_eob, txb_info, txb_costs, coeff_ctx);
-  if (qc == 0) {
-    stats->dist = 0;
-    stats->rate = qc_cost;
-    return;
-  } else {
-    const tran_low_t dqc = qcoeff_to_dqcoeff(
-        qc, coeff_idx, dqv, txb_info->shift, txb_info->iqmatrix);
-    const int64_t dqc_dist = get_coeff_dist(tqc, dqc, txb_info->shift);
+  assert(qc != 0);
+  const tran_low_t dqc = qcoeff_to_dqcoeff(qc, coeff_idx, dqv, txb_info->shift,
+                                           txb_info->iqmatrix);
+  const int64_t dqc_dist = get_coeff_dist(tqc, dqc, txb_info->shift);
 
-    // distortion difference when coefficient is quantized to 0
-    const tran_low_t dqc0 = qcoeff_to_dqcoeff(
-        0, coeff_idx, dqv, txb_info->shift, txb_info->iqmatrix);
+  // distortion difference when coefficient is quantized to 0
+  const tran_low_t dqc0 =
+      qcoeff_to_dqcoeff(0, coeff_idx, dqv, txb_info->shift, txb_info->iqmatrix);
 
-    stats->dist0 = get_coeff_dist(tqc, dqc0, txb_info->shift);
-    stats->dist = dqc_dist - stats->dist0;
-    stats->rate = qc_cost;
-  }
+  stats->dist0 = get_coeff_dist(tqc, dqc0, txb_info->shift);
+  stats->dist = dqc_dist - stats->dist0;
+  stats->rate = qc_cost;
 
   stats->rd = RDCOST(txb_info->rdmult, stats->rate, stats->dist);
 
@@ -760,13 +755,17 @@ static int optimize_txb(TxbInfo *txb_info, const LV_MAP_COEFF_COST *txb_costs,
     const int coeff_idx = scan[si];
     tran_low_t qc = txb_info->qcoeff[coeff_idx];
 
-    LevelDownStats stats;
-    get_dist_cost_stats(&stats, si, si == init_eob - 1, txb_costs, txb_info,
-                        has_nz_tail);
-
     if (qc == 0) {
-      accu_rate += stats.rate;
+      assert(si != init_eob - 1);
+      const int coeff_ctx =
+          get_lower_levels_ctx(txb_info->levels, coeff_idx, txb_info->bwl,
+                               txb_info->tx_size, txb_info->tx_type);
+      accu_rate += txb_costs->base_cost[coeff_ctx][0];
     } else {
+      LevelDownStats stats;
+      get_dist_cost_stats(&stats, si, si == init_eob - 1, txb_costs, txb_info,
+                          has_nz_tail);
+
       if (has_nz_tail < 2) {
         if (si == init_eob - 1) {
           if ((stats.rd_low < stats.rd) && (stats.low_qc != 0)) {
