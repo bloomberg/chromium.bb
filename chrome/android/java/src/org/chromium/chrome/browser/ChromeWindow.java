@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser;
 
 import android.app.Activity;
-import android.view.View;
 
 import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
 import org.chromium.chrome.browser.infobar.SimpleConfirmInfoBarBuilder;
@@ -25,16 +24,6 @@ public class ChromeWindow extends ActivityWindowAndroid {
      */
     public ChromeWindow(ChromeActivity activity) {
         super(activity);
-    }
-
-    @Override
-    public View getReadbackView() {
-        assert getActivity().get() instanceof ChromeActivity;
-
-        ChromeActivity chromeActivity = (ChromeActivity) getActivity().get();
-        return chromeActivity.getCompositorViewHolder() == null
-                ? null
-                : chromeActivity.getCompositorViewHolder().getActiveSurfaceView();
     }
 
     @Override

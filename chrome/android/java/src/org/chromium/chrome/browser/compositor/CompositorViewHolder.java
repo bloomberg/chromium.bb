@@ -396,13 +396,6 @@ public class CompositorViewHolder extends FrameLayout
         return mCompositorView;
     }
 
-    /**
-     * @return The active {@link SurfaceView} of the Compositor.
-     */
-    public View getActiveSurfaceView() {
-        return mCompositorView.getActiveSurfaceView();
-    }
-
     private Tab getCurrentTab() {
         if (mLayoutManager == null || mTabModelSelector == null) return null;
         Tab currentTab = mTabModelSelector.getCurrentTab();
