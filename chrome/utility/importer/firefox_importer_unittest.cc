@@ -207,17 +207,15 @@ TEST(FirefoxImporterTest, ImportBookmarks_Firefox57) {
   EXPECT_EQ("https://www.mozilla.org/en-US/about/", bookmarks[4].url.spec());
   EXPECT_EQ("https://www.google.com/", bookmarks[5].url.spec());
 
-  ASSERT_EQ(5u, favicons.size());
+  ASSERT_EQ(4u, favicons.size());
   EXPECT_EQ("http://www.mozilla.org/2005/made-up-favicon/0-1513248843421",
             favicons[0].favicon_url.spec());
   EXPECT_EQ("http://www.mozilla.org/2005/made-up-favicon/1-1513248843424",
             favicons[1].favicon_url.spec());
-  EXPECT_EQ("http://www.mozilla.org/2005/made-up-favicon/2-1513248843426",
-            favicons[2].favicon_url.spec());
   EXPECT_EQ("http://www.mozilla.org/2005/made-up-favicon/3-1513248843427",
-            favicons[3].favicon_url.spec());
+            favicons[2].favicon_url.spec());
   EXPECT_EQ("http://www.mozilla.org/2005/made-up-favicon/4-1513248843429",
-            favicons[4].favicon_url.spec());
+            favicons[3].favicon_url.spec());
 }
 
 TEST(FirefoxImporterTest, ImportHistorySchema) {
