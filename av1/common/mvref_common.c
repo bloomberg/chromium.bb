@@ -1944,7 +1944,7 @@ void av1_set_frame_refs(AV1_COMMON *const cm, int lst_map_idx,
   int lst_frame_offset = -1;
   int gld_frame_offset = -1;
 
-  const int cur_frame_offset = (int)cm->cur_frame->cur_frame_offset;
+  const int cur_frame_offset = (int)cm->frame_offset;
 
   REF_FRAME_INFO ref_frame_info[REF_FRAMES];
   int ref_flag_list[INTER_REFS_PER_FRAME] = { 0, 0, 0, 0, 0, 0, 0 };

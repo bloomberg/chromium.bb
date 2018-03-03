@@ -3083,6 +3083,17 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
   cm->frame_refs_short_signaling = 0;
 #endif  // CONFIG_FRAME_REFS_SIGNALING
 
+  if (cm->show_frame == 0) {
+    int arf_offset = AOMMIN(
+        (MAX_GF_INTERVAL - 1),
+        cpi->twopass.gf_group.arf_src_offset[cpi->twopass.gf_group.index]);
+    int brf_offset =
+        cpi->twopass.gf_group.brf_src_offset[cpi->twopass.gf_group.index];
+
+    arf_offset = AOMMIN((MAX_GF_INTERVAL - 1), arf_offset + brf_offset);
+    aom_wb_write_literal(wb, arf_offset, FRAME_OFFSET_BITS);
+  }
+
   if (cm->frame_type == KEY_FRAME) {
     write_frame_size(cm, frame_size_override_flag, wb);
     assert(av1_superres_unscaled(cm) ||
@@ -3232,17 +3243,6 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
     if (frame_might_use_prev_frame_mvs(cm)) {
       aom_wb_write_bit(wb, cm->use_ref_frame_mvs);
     }
-  }
-
-  if (cm->show_frame == 0) {
-    int arf_offset = AOMMIN(
-        (MAX_GF_INTERVAL - 1),
-        cpi->twopass.gf_group.arf_src_offset[cpi->twopass.gf_group.index]);
-    int brf_offset =
-        cpi->twopass.gf_group.brf_src_offset[cpi->twopass.gf_group.index];
-
-    arf_offset = AOMMIN((MAX_GF_INTERVAL - 1), arf_offset + brf_offset);
-    aom_wb_write_literal(wb, arf_offset, FRAME_OFFSET_BITS);
   }
 
   if (cm->seq_params.frame_id_numbers_present_flag) {
