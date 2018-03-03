@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 
+#include "chromecast_export.h"  // NOLINT(build/include)
+
 namespace chromecast {
 
 // Pure abstract interface for system information which is accessed by other
@@ -50,6 +52,10 @@ class CastSysInfo {
   // Returns default country and locale baked from the factory.
   virtual std::string GetFactoryCountry() = 0;
   virtual std::string GetFactoryLocale(std::string* second_locale) = 0;
+
+  // TODO(bcf): Make unstatic in next API update.
+  static CHROMECAST_EXPORT std::vector<std::string> GetFactoryLocaleList()
+      __attribute__((__weak__));
 
   // Returns the name of the wifi interface used to connect to the internet.
   virtual std::string GetWifiInterface() = 0;
