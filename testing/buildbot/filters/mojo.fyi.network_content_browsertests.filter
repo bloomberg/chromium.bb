@@ -95,10 +95,6 @@
 -ResourceDispatcherHostBrowserTest.CrossOriginRedirectBlocked
 -ResourceDispatcherHostBrowserTest.CrossSiteAfterCrash
 -ResourceDispatcherHostBrowserTest.CrossSiteNavigationNonBuffered
--ResourceDispatcherHostBrowserTest.DoNotSniffHTMLFromImageGIF
--ResourceDispatcherHostBrowserTest.DoNotSniffHTMLFromTextPlain
--ResourceDispatcherHostBrowserTest.RespectNoSniffDirective
--ResourceDispatcherHostBrowserTest.SniffHTMLWithNoContentType
 -ResourceDispatcherHostBrowserTest.SniffNoContentTypeNoData
 
 # Cross-origin read blocking (CORB) needs to be implemented in the network
