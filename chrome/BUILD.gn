@@ -625,13 +625,13 @@ if (is_win) {
       deps += [ ":chrome_helpers" ]
     }
 
-    # Remove the default strip configuration (which strips all symbols) so that
-    # a saves file can be specified.
     if (enable_stripping) {
-      remove_configs = [ "//build/config/mac:strip_all" ]
-
-      ldflags =
-          [ "-Wcrl,strip,-s," + rebase_path("app/app.saves", root_build_dir) ]
+      # At link time, preserve the global symbols specified in the .exports
+      # file. All other global symbols will be marked as private. The default
+      # //build/config/mac:strip_all config will then remove the remaining
+      # local and debug symbols.
+      ldflags = [ "-Wl,-exported_symbols_list," +
+                  rebase_path("app/app.exports", root_build_dir) ]
     }
   }
 
@@ -821,13 +821,13 @@ if (is_win) {
       ]
     }
 
-    # Remove the default strip configuration (which strips all symbols) so that
-    # a saves file can be specified.
     if (enable_stripping) {
-      remove_configs = [ "//build/config/mac:strip_all" ]
-
-      ldflags +=
-          [ "-Wcrl,strip,-s," + rebase_path("app/app.saves", root_build_dir) ]
+      # At link time, preserve the global symbols specified in the .exports
+      # file. All other global symbols will be marked as private. The default
+      # //build/config/mac:strip_all config will then remove the remaining
+      # local and debug symbols.
+      ldflags += [ "-Wl,-exported_symbols_list," +
+                   rebase_path("app/app.exports", root_build_dir) ]
     }
   }
 
