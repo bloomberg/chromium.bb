@@ -80,7 +80,7 @@ IN_PROC_BROWSER_TEST_F(WebBluetoothTest, WebBluetoothAfterCrash) {
       web_contents_->GetMainFrame()->GetProcess();
   content::RenderProcessHostWatcher crash_observer(
       process, content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-  process->Shutdown(0, false);
+  process->Shutdown(0);
   crash_observer.Wait();
 
   // Reload tab.

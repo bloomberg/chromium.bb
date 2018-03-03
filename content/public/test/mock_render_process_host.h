@@ -77,7 +77,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   void OnMediaStreamRemoved() override;
   StoragePartition* GetStoragePartition() const override;
   virtual void AddWord(const base::string16& word);
-  bool Shutdown(int exit_code, bool wait) override;
+  bool Shutdown(int exit_code) override;
   bool FastShutdownIfPossible(size_t page_count,
                               bool skip_unload_handlers) override;
   bool FastShutdownStarted() const override;

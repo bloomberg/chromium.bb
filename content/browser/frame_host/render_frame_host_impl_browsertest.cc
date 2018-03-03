@@ -565,7 +565,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   RenderProcessHost* renderer_process = main_frame->GetProcess();
   RenderProcessHostWatcher crash_observer(
       renderer_process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-  renderer_process->Shutdown(0, false);
+  renderer_process->Shutdown(0);
   crash_observer.Wait();
 
   // The |stream_handle_| must have been released now.
@@ -703,7 +703,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   RenderProcessHost* renderer_process = main_frame->GetProcess();
   RenderProcessHostWatcher crash_observer(
       renderer_process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-  renderer_process->Shutdown(0, false);
+  renderer_process->Shutdown(0);
   crash_observer.Wait();
 
   EXPECT_FALSE(main_frame->GetSuddenTerminationDisablerState(

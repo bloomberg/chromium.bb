@@ -128,17 +128,16 @@ base::TerminationStatus ChildProcessLauncher::GetChildTerminationStatus(
   return termination_status_;
 }
 
-bool ChildProcessLauncher::Terminate(int exit_code, bool wait) {
+bool ChildProcessLauncher::Terminate(int exit_code) {
   return IsStarting() ? false
                       : ChildProcessLauncherHelper::TerminateProcess(
-                            GetProcess(), exit_code, wait);
+                            GetProcess(), exit_code);
 }
 
 // static
 bool ChildProcessLauncher::TerminateProcess(const base::Process& process,
-                                            int exit_code,
-                                            bool wait) {
-  return ChildProcessLauncherHelper::TerminateProcess(process, exit_code, wait);
+                                            int exit_code) {
+  return ChildProcessLauncherHelper::TerminateProcess(process, exit_code);
 }
 
 // static

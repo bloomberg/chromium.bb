@@ -196,7 +196,7 @@ class HungRendererObserverBridge : public content::WebContentsObserver,
 
 - (IBAction)kill:(id)sender {
   if (hungWidget_)
-    hungWidget_->GetProcess()->Shutdown(content::RESULT_CODE_HUNG, false);
+    hungWidget_->GetProcess()->Shutdown(content::RESULT_CODE_HUNG);
 
   // Cannot call performClose:, because the close button is disabled.
   [self close];

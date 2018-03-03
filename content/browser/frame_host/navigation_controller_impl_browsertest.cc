@@ -4591,7 +4591,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
       shell()->web_contents()->GetMainFrame()->GetProcess();
   RenderProcessHostWatcher crash_observer(
       process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-  process->Shutdown(0, false);
+  process->Shutdown(0);
   crash_observer.Wait();
   {
     TestNavigationObserver back_load_observer(shell()->web_contents());

@@ -96,9 +96,9 @@ base::TerminationStatus ChildProcessLauncherHelper::GetTerminationStatus(
 }
 
 // static
-bool ChildProcessLauncherHelper::TerminateProcess(
-    const base::Process& process, int exit_code, bool wait) {
-  return process.Terminate(exit_code, wait);
+bool ChildProcessLauncherHelper::TerminateProcess(const base::Process& process,
+                                                  int exit_code) {
+  return process.Terminate(exit_code, false);
 }
 
 void ChildProcessLauncherHelper::ForceNormalProcessTerminationSync(

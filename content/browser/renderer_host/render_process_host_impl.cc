@@ -2223,7 +2223,7 @@ void RenderProcessHostImpl::ShutdownForBadMessage(
 
   // We kill the renderer but don't include a NOTREACHED, because we want the
   // browser to try to survive when it gets illegal messages from the renderer.
-  Shutdown(RESULT_CODE_KILLED_BAD_MESSAGE, false);
+  Shutdown(RESULT_CODE_KILLED_BAD_MESSAGE);
 
   if (crash_report_mode == CrashReportMode::GENERATE_CRASH_DUMP) {
     // Set crash keys to understand renderer kills related to site isolation.
@@ -2791,14 +2791,14 @@ bool RenderProcessHostImpl::IsReady() const {
   return GetHandle() && channel_connected_;
 }
 
-bool RenderProcessHostImpl::Shutdown(int exit_code, bool wait) {
+bool RenderProcessHostImpl::Shutdown(int exit_code) {
   if (run_renderer_in_process())
     return false;  // Single process mode never shuts down the renderer.
 
   if (!child_process_launcher_.get())
     return false;
 
-  return child_process_launcher_->Terminate(exit_code, wait);
+  return child_process_launcher_->Terminate(exit_code);
 }
 
 bool RenderProcessHostImpl::FastShutdownIfPossible(size_t page_count,

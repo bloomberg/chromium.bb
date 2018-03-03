@@ -2687,7 +2687,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
       popup_root->current_frame_host()->GetProcess();
   RenderProcessHostWatcher crash_observer(
       popup_process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-  popup_process->Shutdown(0, false);
+  popup_process->Shutdown(0);
   crash_observer.Wait();
   EXPECT_FALSE(popup_root->current_frame_host()->IsRenderFrameLive());
   EXPECT_FALSE(
@@ -2956,7 +2956,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   RenderProcessHost* process = popup_root->current_frame_host()->GetProcess();
   RenderProcessHostWatcher crash_observer(
       process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-  process->Shutdown(0, false);
+  process->Shutdown(0);
   crash_observer.Wait();
   EXPECT_FALSE(popup_root->current_frame_host()->IsRenderFrameLive());
   EXPECT_FALSE(
@@ -3019,7 +3019,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   RenderProcessHost* process = rfh_a->GetProcess();
   RenderProcessHostWatcher crash_observer(
       process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-  process->Shutdown(0, false);
+  process->Shutdown(0);
   crash_observer.Wait();
   EXPECT_FALSE(popup_root->current_frame_host()->IsRenderFrameLive());
   // |rfh_a| is now deleted, thanks to the bug fix.
@@ -3098,7 +3098,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   RenderProcessHost* process = rfh_a->GetProcess();
   RenderProcessHostWatcher crash_observer(
       process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-  process->Shutdown(0, false);
+  process->Shutdown(0);
   crash_observer.Wait();
   // |rfh_a| is now deleted, thanks to the bug fix.
 
@@ -3384,7 +3384,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
       popup->web_contents()->GetMainFrame()->GetProcess();
   RenderProcessHostWatcher crash_observer(
       b_process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-  b_process->Shutdown(0, false);
+  b_process->Shutdown(0);
   crash_observer.Wait();
 
   // The popup should now be showing the sad tab.  Main tab should not be.

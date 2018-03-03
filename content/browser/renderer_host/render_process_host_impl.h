@@ -159,7 +159,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   int VisibleWidgetCount() const override;
   bool IsForGuestsOnly() const override;
   StoragePartition* GetStoragePartition() const override;
-  bool Shutdown(int exit_code, bool wait) override;
+  bool Shutdown(int exit_code) override;
   bool FastShutdownIfPossible(size_t page_count = 0,
                               bool skip_unload_handlers = false) override;
   base::ProcessHandle GetHandle() const override;

@@ -378,7 +378,7 @@ IN_PROC_BROWSER_TEST_F(WakeLockTest, UnlockAfterCrashOutOfProcessFrame) {
   RenderProcessHostWatcher watcher(
       GetNestedFrame()->GetProcess(),
       RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-  GetNestedFrame()->GetProcess()->Shutdown(0, false);
+  GetNestedFrame()->GetProcess()->Shutdown(0);
   watcher.Wait();
 
   // Screen wake lock should be released.

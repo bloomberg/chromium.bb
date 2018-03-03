@@ -183,7 +183,7 @@ StoragePartition* MockRenderProcessHost::GetStoragePartition() const {
 void MockRenderProcessHost::AddWord(const base::string16& word) {
 }
 
-bool MockRenderProcessHost::Shutdown(int exit_code, bool wait) {
+bool MockRenderProcessHost::Shutdown(int exit_code) {
   return true;
 }
 

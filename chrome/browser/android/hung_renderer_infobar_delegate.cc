@@ -69,7 +69,7 @@ base::string16 HungRendererInfoBarDelegate::GetButtonLabel(
 
 bool HungRendererInfoBarDelegate::Accept() {
   LogEvent(KILL_CLICKED);
-  render_process_host_->Shutdown(content::RESULT_CODE_HUNG, false);
+  render_process_host_->Shutdown(content::RESULT_CODE_HUNG);
   return true;
 }
 

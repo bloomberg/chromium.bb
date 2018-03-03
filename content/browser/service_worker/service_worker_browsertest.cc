@@ -2452,7 +2452,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, RendererCrash) {
   RunOnIOThread(base::Bind(&ServiceWorkerVersion::AddListener,
                            base::Unretained(version_.get()), &observer));
   shell()->web_contents()->GetMainFrame()->GetProcess()->Shutdown(
-      content::RESULT_CODE_KILLED, false /* wait */);
+      content::RESULT_CODE_KILLED);
   run_loop.Run();
 
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, version_->running_status());

@@ -130,9 +130,11 @@ base::TerminationStatus ChildProcessLauncherHelper::GetTerminationStatus(
 }
 
 // static
-bool ChildProcessLauncherHelper::TerminateProcess(
-    const base::Process& process, int exit_code, bool wait) {
-  return process.Terminate(exit_code, wait);
+bool ChildProcessLauncherHelper::TerminateProcess(const base::Process& process,
+                                                  int exit_code) {
+  // TODO(https://crbug.com/818244): Determine whether we should also call
+  // EnsureProcessTerminated() to make sure of process-exit, and reap it.
+  return process.Terminate(exit_code, false);
 }
 
 // static
