@@ -29,11 +29,6 @@
 
 namespace {
 
-template <typename T>
-std::unique_ptr<T[]> WrapArrayUnique(T* ptr) {
-  return std::unique_ptr<T[]>(ptr);
-}
-
 constexpr size_t kTestMaxAllocation = base::kSystemPageSize;
 
 bool IsLargeMemoryDevice() {
@@ -573,8 +568,7 @@ TEST_F(PartitionAllocTest, FreePageListPageTransitions) {
   // The +1 is because we need to account for the fact that the current page
   // never gets thrown on the freelist.
   ++numToFillFreeListPage;
-  std::unique_ptr<PartitionPage* []> pages =
-      WrapArrayUnique(new PartitionPage*[numToFillFreeListPage]);
+  auto pages = std::make_unique<PartitionPage* []>(numToFillFreeListPage);
 
   size_t i;
   for (i = 0; i < numToFillFreeListPage; ++i) {
@@ -616,8 +610,7 @@ TEST_F(PartitionAllocTest, MultiPageAllocs) {
   --numPagesNeeded;
 
   EXPECT_GT(numPagesNeeded, 1u);
-  std::unique_ptr<PartitionPage* []> pages;
-  pages = WrapArrayUnique(new PartitionPage*[numPagesNeeded]);
+  auto pages = std::make_unique<PartitionPage* []>(numPagesNeeded);
   uintptr_t firstSuperPageBase = 0;
   size_t i;
   for (i = 0; i < numPagesNeeded; ++i) {
@@ -1163,10 +1156,10 @@ TEST_F(PartitionAllocTest, MappingCollision) {
   // The -2 is because the first and last partition pages in a super page are
   // guard pages.
   size_t numPartitionPagesNeeded = kNumPartitionPagesPerSuperPage - 2;
-  std::unique_ptr<PartitionPage* []> firstSuperPagePages =
-      WrapArrayUnique(new PartitionPage*[numPartitionPagesNeeded]);
-  std::unique_ptr<PartitionPage* []> secondSuperPagePages =
-      WrapArrayUnique(new PartitionPage*[numPartitionPagesNeeded]);
+  auto firstSuperPagePages =
+      std::make_unique<PartitionPage* []>(numPartitionPagesNeeded);
+  auto secondSuperPagePages =
+      std::make_unique<PartitionPage* []>(numPartitionPagesNeeded);
 
   size_t i;
   for (i = 0; i < numPartitionPagesNeeded; ++i)
