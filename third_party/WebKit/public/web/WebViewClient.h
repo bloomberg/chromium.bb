@@ -45,7 +45,6 @@ namespace blink {
 class WebDateTimeChooserCompletion;
 class WebFileChooserCompletion;
 class WebNode;
-class WebSpeechRecognizer;
 class WebURL;
 class WebURLRequest;
 class WebView;
@@ -196,11 +195,6 @@ class WebViewClient : protected WebWidgetClient {
 
   virtual void DidUpdateInspectorSetting(const WebString& key,
                                          const WebString& value) {}
-
-  // Speech --------------------------------------------------------------
-
-  // Access the embedder API for speech recognition services.
-  virtual WebSpeechRecognizer* SpeechRecognizer() { return nullptr; }
 
   // Zoom ----------------------------------------------------------------
 

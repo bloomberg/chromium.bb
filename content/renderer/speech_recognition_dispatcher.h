@@ -10,32 +10,29 @@
 
 #include "base/macros.h"
 #include "content/public/common/speech_recognition_result.h"
-#include "content/public/renderer/render_view_observer.h"
+#include "content/public/renderer/render_frame_observer.h"
 #include "third_party/WebKit/public/web/WebSpeechRecognitionHandle.h"
 #include "third_party/WebKit/public/web/WebSpeechRecognizer.h"
 
 namespace content {
-class RenderViewImpl;
 struct SpeechRecognitionError;
 
 // SpeechRecognitionDispatcher is a delegate for methods used by WebKit for
 // scripted JS speech APIs. It's the complement of
-// SpeechRecognitionDispatcherHost (owned by RenderViewHost).
-class SpeechRecognitionDispatcher : public RenderViewObserver,
+// SpeechRecognitionDispatcherHost (owned by RenderFrameHost).
+class SpeechRecognitionDispatcher : public RenderFrameObserver,
                                     public blink::WebSpeechRecognizer {
  public:
-  explicit SpeechRecognitionDispatcher(RenderViewImpl* render_view);
+  explicit SpeechRecognitionDispatcher(RenderFrame* render_frame);
   ~SpeechRecognitionDispatcher() override;
-
-  // Aborts all speech recognitions.
-  void AbortAllRecognitions();
 
  private:
   using HandleMap = std::map<int, blink::WebSpeechRecognitionHandle>;
 
-  // RenderViewObserver implementation.
+  // RenderFrameObserver implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnDestruct() override;
+  void WasHidden() override;
 
   // blink::WebSpeechRecognizer implementation.
   void Start(const blink::WebSpeechRecognitionHandle&,
@@ -62,7 +59,7 @@ class SpeechRecognitionDispatcher : public RenderViewObserver,
       const blink::WebSpeechRecognitionHandle& handle);
   const blink::WebSpeechRecognitionHandle& GetHandleFromID(int handle_id);
 
-  // The WebKit client class that we use to send events back to the JS world.
+  // The Blink client class that we use to send events back to the JS world.
   blink::WebSpeechRecognizerClient* recognizer_client_;
 
   // This maps between request id values and the Blink handle values.

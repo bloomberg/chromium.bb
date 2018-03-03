@@ -66,9 +66,8 @@ class FakeSpeechRecognitionManager : public content::SpeechRecognitionManager {
     session_id_ = 0;
   }
 
-  void AbortAllSessionsForRenderProcess(int render_process_id) override {}
-  void AbortAllSessionsForRenderView(int render_process_id,
-                                     int render_view_id) override {}
+  void AbortAllSessionsForRenderFrame(int render_process_id,
+                                      int render_frame_id) override {}
   void StopAudioCaptureForSession(int session_id) override {}
 
   const content::SpeechRecognitionSessionConfig& GetSessionConfig(
@@ -84,7 +83,7 @@ class FakeSpeechRecognitionManager : public content::SpeechRecognitionManager {
   }
 
   int GetSession(int render_process_id,
-                 int render_view_id,
+                 int render_frame_id,
                  int request_id) const override {
     return session_id_;
   }

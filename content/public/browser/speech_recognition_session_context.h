@@ -18,33 +18,21 @@ namespace content {
 // elements involved with it (e.g., the page element that requested the
 // recognition). The manager keeps this struct attached to the recognition
 // session during all the session lifetime, making its contents available to
-// clients (In this regard, see SpeechRecognitionManager::GetSessionContext and
-// SpeechRecognitionManager::LookupSessionByContext methods).
+// clients. (In this regard, see SpeechRecognitionManager::GetSessionContext().)
 struct CONTENT_EXPORT SpeechRecognitionSessionContext {
   SpeechRecognitionSessionContext();
   SpeechRecognitionSessionContext(const SpeechRecognitionSessionContext& other);
   ~SpeechRecognitionSessionContext();
 
   int render_process_id;
-  int render_view_id;
   int render_frame_id;
 
-  // Browser plugin guest's render view id, if this context represents a speech
-  // recognition request from an embedder on behalf of the guest. This is used
-  // for input tag where speech bubble is to be shown.
-  //
-  // TODO(lazyboy): Right now showing bubble from guest does not work, we fall
-  // back to embedder instead, fix this and use
-  // embedder_render_process_id/embedder_render_view_id similar to Web Speech
-  // API below.
-  int guest_render_view_id;
-
-  // The pair (|embedder_render_process_id|, |embedder_render_view_id|)
+  // The pair (|embedder_render_process_id|, |embedder_render_frame_id|)
   // represents a Browser plugin guest's embedder. This is filled in if the
   // session is from a guest Web Speech API. We use these to check if the
   // embedder (app) is permitted to use audio.
   int embedder_render_process_id;
-  int embedder_render_view_id;
+  int embedder_render_frame_id;
 
   // The request id provided by the originating SpeechRecognitionDispatcher.
   int request_id;

@@ -370,14 +370,14 @@ IPC_STRUCT_BEGIN_WITH_PARENT(FrameHostMsg_DidCommitProvisionalLoad_Params,
   // successfully cleared.
   IPC_STRUCT_MEMBER(bool, history_list_was_cleared)
 
-  // The routing_id of the render view associated with the navigation.
-  // We need to track the RenderViewHost routing_id because of downstream
-  // dependencies (crbug.com/392171 DownloadRequestHandle, SaveFileManager,
-  // ResourceDispatcherHostImpl, MediaStreamUIProxy,
-  // SpeechRecognitionDispatcherHost and possibly others). They look up the view
-  // based on the ID stored in the resource requests. Once those dependencies
-  // are unwound or moved to RenderFrameHost (crbug.com/304341) we can move the
-  // client to be based on the routing_id of the RenderFrameHost.
+  // The routing_id of the render view associated with the navigation. We need
+  // to track the RenderViewHost routing_id because of downstream dependencies
+  // (https://crbug.com/392171 DownloadRequestHandle, SaveFileManager,
+  // ResourceDispatcherHostImpl, MediaStreamUIProxy and possibly others). They
+  // look up the view based on the ID stored in the resource requests. Once
+  // those dependencies are unwound or moved to RenderFrameHost
+  // (https://crbug.com/304341) we can move the client to be based on the
+  // routing_id of the RenderFrameHost.
   IPC_STRUCT_MEMBER(int, render_view_routing_id)
 
   // Origin of the frame.  This will be replicated to any associated

@@ -14,6 +14,7 @@
 #include "content/shell/test_runner/accessibility_controller.h"
 #include "content/shell/test_runner/event_sender.h"
 #include "content/shell/test_runner/mock_screen_orientation_client.h"
+#include "content/shell/test_runner/mock_web_speech_recognizer.h"
 #include "content/shell/test_runner/test_common.h"
 #include "content/shell/test_runner/test_interfaces.h"
 #include "content/shell/test_runner/test_plugin.h"
@@ -695,6 +696,10 @@ void WebFrameTestClient::CheckIfAudioSinkExistsAndIsAuthorized(
     callback->OnError(blink::WebSetSinkIdError::kNotAuthorized);
   else
     callback->OnError(blink::WebSetSinkIdError::kNotFound);
+}
+
+blink::WebSpeechRecognizer* WebFrameTestClient::SpeechRecognizer() {
+  return test_runner()->getMockWebSpeechRecognizer();
 }
 
 void WebFrameTestClient::DidClearWindowObject() {

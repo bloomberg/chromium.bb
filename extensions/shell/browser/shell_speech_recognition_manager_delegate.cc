@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/speech_recognition_manager.h"
 #include "content/public/browser/speech_recognition_session_context.h"
 #include "content/public/browser/web_contents.h"
@@ -78,8 +78,8 @@ void ShellSpeechRecognitionManagerDelegate::CheckRecognitionIsAllowed(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&CheckRenderViewType, std::move(callback),
-                     context.render_process_id, context.render_view_id));
+      base::BindOnce(&CheckRenderFrameType, std::move(callback),
+                     context.render_process_id, context.render_frame_id));
 }
 
 content::SpeechRecognitionEventListener*
@@ -94,19 +94,20 @@ bool ShellSpeechRecognitionManagerDelegate::FilterProfanities(
 }
 
 // static
-void ShellSpeechRecognitionManagerDelegate::CheckRenderViewType(
+void ShellSpeechRecognitionManagerDelegate::CheckRenderFrameType(
     base::OnceCallback<void(bool ask_user, bool is_allowed)> callback,
     int render_process_id,
-    int render_view_id) {
+    int render_frame_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  content::RenderViewHost* render_view_host =
-      content::RenderViewHost::FromID(render_process_id, render_view_id);
+
+  content::RenderFrameHost* render_frame_host =
+      content::RenderFrameHost::FromID(render_process_id, render_frame_id);
   bool allowed = false;
   bool check_permission = false;
 
-  if (render_view_host) {
+  if (render_frame_host) {
     WebContents* web_contents =
-        WebContents::FromRenderViewHost(render_view_host);
+        WebContents::FromRenderFrameHost(render_frame_host);
     extensions::ViewType view_type = extensions::GetViewType(web_contents);
 
     if (view_type == extensions::VIEW_TYPE_APP_WINDOW ||

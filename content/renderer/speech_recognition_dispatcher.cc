@@ -11,8 +11,9 @@
 #include <utility>
 
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "content/common/speech_recognition_messages.h"
-#include "content/renderer/render_view_impl.h"
+#include "content/renderer/render_frame_impl.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebSpeechGrammar.h"
@@ -31,17 +32,12 @@ using blink::WebSpeechRecognizerClient;
 namespace content {
 
 SpeechRecognitionDispatcher::SpeechRecognitionDispatcher(
-    RenderViewImpl* render_view)
-    : RenderViewObserver(render_view),
+    RenderFrame* render_frame)
+    : RenderFrameObserver(render_frame),
       recognizer_client_(nullptr),
       next_id_(1) {}
 
-SpeechRecognitionDispatcher::~SpeechRecognitionDispatcher() {}
-
-void SpeechRecognitionDispatcher::AbortAllRecognitions() {
-  Send(new SpeechRecognitionHostMsg_AbortAllRequests(
-      routing_id()));
-}
+SpeechRecognitionDispatcher::~SpeechRecognitionDispatcher() = default;
 
 bool SpeechRecognitionDispatcher::OnMessageReceived(
     const IPC::Message& message) {
@@ -65,6 +61,12 @@ void SpeechRecognitionDispatcher::OnDestruct() {
   delete this;
 }
 
+void SpeechRecognitionDispatcher::WasHidden() {
+#if defined(OS_ANDROID) && BUILDFLAG(ENABLE_WEBRTC)
+  Send(new SpeechRecognitionHostMsg_AbortAllRequests(routing_id()));
+#endif
+}
+
 void SpeechRecognitionDispatcher::Start(
     const WebSpeechRecognitionHandle& handle,
     const WebSpeechRecognitionParams& params,
@@ -82,7 +84,7 @@ void SpeechRecognitionDispatcher::Start(
   msg_params.continuous = params.Continuous();
   msg_params.interim_results = params.InterimResults();
   msg_params.origin_url = params.Origin().ToString().Utf8();
-  msg_params.render_view_id = routing_id();
+  msg_params.render_frame_id = routing_id();
   msg_params.request_id = GetOrCreateIDForHandle(handle);
 
   // The handle mapping will be removed in |OnRecognitionEnd|.

@@ -72,7 +72,6 @@ namespace blink {
 class WebDateTimeChooserCompletion;
 class WebGestureEvent;
 class WebMouseEvent;
-class WebSpeechRecognizer;
 class WebURLRequest;
 struct WebDateTimeChooserParams;
 struct WebMediaPlayerAction;
@@ -91,7 +90,6 @@ class RendererDateTimePicker;
 class RenderViewImplTest;
 class RenderViewObserver;
 class RenderViewTest;
-class SpeechRecognitionDispatcher;
 struct FileChooserParams;
 struct ResizeParams;
 
@@ -312,7 +310,6 @@ class CONTENT_EXPORT RenderViewImpl : public RenderWidget,
   void NavigateBackForwardSoon(int offset) override;
   int HistoryBackListCount() override;
   int HistoryForwardListCount() override;
-  blink::WebSpeechRecognizer* SpeechRecognizer() override;
   void ZoomLimitsChanged(double minimum_level, double maximum_level) override;
   void PageScaleFactorChanged() override;
   virtual double zoomLevelToZoomFactor(double zoom_level) const;
@@ -740,14 +737,6 @@ class CONTENT_EXPORT RenderViewImpl : public RenderWidget,
   // Note: RenderViewImpl is pulling double duty: it's the RenderWidget for the
   // "view", but it's also the RenderWidget for the main frame.
   blink::WebFrameWidget* frame_widget_;
-
-  // The next group of objects all implement RenderViewObserver, so are deleted
-  // along with the RenderView automatically.  This is why we just store
-  // weak references.
-
-  // The speech recognition dispatcher attached to this view, lazily
-  // initialized.
-  SpeechRecognitionDispatcher* speech_recognition_dispatcher_;
 
 #if defined(OS_ANDROID)
   // Android Specific ---------------------------------------------------------

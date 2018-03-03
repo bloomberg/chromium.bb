@@ -7,7 +7,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "content/public/browser/speech_recognition_event_listener.h"
 #include "content/public/browser/speech_recognition_manager_delegate.h"
 #include "content/public/browser/speech_recognition_session_config.h"
@@ -50,20 +49,13 @@ class ChromeSpeechRecognitionManagerDelegate
   content::SpeechRecognitionEventListener* GetEventListener() override;
   bool FilterProfanities(int render_process_id) override;
 
-  // Callback called by |tab_watcher_| on the IO thread to signal tab closure.
-  virtual void TabClosedCallback(int render_process_id, int render_view_id);
-
  private:
-  class TabWatcher;
-
   // Checks for VIEW_TYPE_TAB_CONTENTS host in the UI thread and notifies back
   // the result in the IO thread through |callback|.
-  static void CheckRenderViewType(
+  static void CheckRenderFrameType(
       base::OnceCallback<void(bool ask_user, bool is_allowed)> callback,
       int render_process_id,
-      int render_view_id);
-
-  scoped_refptr<TabWatcher> tab_watcher_;
+      int render_frame_id);
 
   DISALLOW_COPY_AND_ASSIGN(ChromeSpeechRecognitionManagerDelegate);
 };

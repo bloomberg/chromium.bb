@@ -93,7 +93,6 @@
 #include "content/renderer/renderer_webapplicationcachehost_impl.h"
 #include "content/renderer/resizing_mode_selector.h"
 #include "content/renderer/savable_resources.h"
-#include "content/renderer/speech_recognition_dispatcher.h"
 #include "content/renderer/v8_value_converter_impl.h"
 #include "content/renderer/web_ui_extension_data.h"
 #include "media/audio/audio_output_device.h"
@@ -493,7 +492,6 @@ RenderViewImpl::RenderViewImpl(
       page_zoom_level_(params.page_zoom_level),
       main_render_frame_(nullptr),
       frame_widget_(nullptr),
-      speech_recognition_dispatcher_(nullptr),
 #if defined(OS_ANDROID)
       was_created_by_renderer_(false),
 #endif
@@ -2135,10 +2133,6 @@ void RenderViewImpl::Close() {
 void RenderViewImpl::OnPageWasHidden() {
 #if defined(OS_ANDROID)
   SuspendVideoCaptureDevices(true);
-#if BUILDFLAG(ENABLE_WEBRTC)
-  if (speech_recognition_dispatcher_)
-    speech_recognition_dispatcher_->AbortAllRecognitions();
-#endif
 #endif
 
   if (webview()) {
@@ -2214,12 +2208,6 @@ void RenderViewImpl::SetScreenMetricsEmulationParameters(
     else
       webview()->DisableDeviceEmulation();
   }
-}
-
-blink::WebSpeechRecognizer* RenderViewImpl::SpeechRecognizer() {
-  if (!speech_recognition_dispatcher_)
-    speech_recognition_dispatcher_ = new SpeechRecognitionDispatcher(this);
-  return speech_recognition_dispatcher_;
 }
 
 void RenderViewImpl::ZoomLimitsChanged(double minimum_level,

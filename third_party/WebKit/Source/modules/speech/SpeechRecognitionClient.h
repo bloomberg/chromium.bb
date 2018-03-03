@@ -27,12 +27,13 @@
 #define SpeechRecognitionClient_h
 
 #include <memory>
+
 #include "modules/ModulesExport.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 
-class Page;
+class LocalFrame;
 class SpeechGrammarList;
 class SpeechRecognition;
 
@@ -51,7 +52,7 @@ class SpeechRecognitionClient {
 };
 
 MODULES_EXPORT void ProvideSpeechRecognitionTo(
-    Page&,
+    LocalFrame&,
     std::unique_ptr<SpeechRecognitionClient>);
 
 }  // namespace blink

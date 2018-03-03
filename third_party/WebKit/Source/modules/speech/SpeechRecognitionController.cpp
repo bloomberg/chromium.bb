@@ -46,10 +46,10 @@ SpeechRecognitionController* SpeechRecognitionController::Create(
 }
 
 void ProvideSpeechRecognitionTo(
-    Page& page,
+    LocalFrame& frame,
     std::unique_ptr<SpeechRecognitionClient> client) {
   SpeechRecognitionController::ProvideTo(
-      page, SpeechRecognitionController::Create(std::move(client)));
+      frame, SpeechRecognitionController::Create(std::move(client)));
 }
 
 }  // namespace blink
