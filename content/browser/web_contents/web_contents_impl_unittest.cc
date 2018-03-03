@@ -691,33 +691,35 @@ TEST_F(WebContentsImplTest, NavigateTwoTabsCrossSite) {
 
   // Navigate first contents to a new site.
   const GURL url2a("http://www.yahoo.com");
-  controller().LoadURL(
-      url2a, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
+  controller().LoadURL(url2a, Referrer(), ui::PAGE_TRANSITION_LINK,
+                       std::string());
   entry_id = controller().GetPendingEntry()->GetUniqueID();
   orig_rfh->PrepareForCommit();
   TestRenderFrameHost* pending_rfh_a = contents()->GetPendingMainFrame();
+  if (AreAllSitesIsolatedForTesting())
+    EXPECT_TRUE(contents()->CrossProcessNavigationPending());
   contents()->TestDidNavigate(pending_rfh_a, entry_id, true, url2a,
-                              ui::PAGE_TRANSITION_TYPED);
+                              ui::PAGE_TRANSITION_LINK);
   SiteInstance* instance2a = contents()->GetSiteInstance();
   EXPECT_NE(instance1, instance2a);
 
   // Navigate second contents to the same site as the first tab.
   const GURL url2b("http://mail.yahoo.com");
   contents2->GetController().LoadURL(url2b, Referrer(),
-                                     ui::PAGE_TRANSITION_TYPED,
-                                     std::string());
+                                     ui::PAGE_TRANSITION_LINK, std::string());
   entry_id = contents2->GetController().GetPendingEntry()->GetUniqueID();
   TestRenderFrameHost* rfh2 = contents2->GetMainFrame();
   rfh2->PrepareForCommit();
   TestRenderFrameHost* pending_rfh_b = contents2->GetPendingMainFrame();
   EXPECT_NE(nullptr, pending_rfh_b);
-  EXPECT_TRUE(contents2->CrossProcessNavigationPending());
+  if (AreAllSitesIsolatedForTesting())
+    EXPECT_TRUE(contents2->CrossProcessNavigationPending());
 
   // NOTE(creis): We used to be in danger of showing a crash page here if the
   // second contents hadn't navigated somewhere first (bug 1145430).  That case
   // is now covered by the CrossSiteBoundariesAfterCrash test.
   contents2->TestDidNavigate(pending_rfh_b, entry_id, true, url2b,
-                             ui::PAGE_TRANSITION_TYPED);
+                             ui::PAGE_TRANSITION_LINK);
   SiteInstance* instance2b = contents2->GetSiteInstance();
   EXPECT_NE(instance1, instance2b);
 
@@ -3012,21 +3014,36 @@ TEST_F(WebContentsImplTest, ActiveContentsCountNavigate) {
   contents->CommitPendingNavigation();
   EXPECT_EQ(1u, instance->GetRelatedActiveContentsCount());
 
-  // Navigate to a URL in a different site.
-  const GURL kUrl = GURL("http://b.com");
-  contents->GetController().LoadURL(kUrl,
-                                    Referrer(),
-                                    ui::PAGE_TRANSITION_TYPED,
+  // Navigate to a URL in a different site in the same BrowsingInstance.
+  const GURL kUrl2("http://b.com");
+  contents->GetController().LoadURL(kUrl2, Referrer(), ui::PAGE_TRANSITION_LINK,
                                     std::string());
   int entry_id = contents->GetController().GetPendingEntry()->GetUniqueID();
   contents->GetMainFrame()->PrepareForCommit();
-  EXPECT_TRUE(contents->CrossProcessNavigationPending());
+  if (AreAllSitesIsolatedForTesting())
+    EXPECT_TRUE(contents->CrossProcessNavigationPending());
   EXPECT_EQ(1u, instance->GetRelatedActiveContentsCount());
-  contents->GetPendingMainFrame()->SendNavigate(entry_id, true, kUrl);
+  contents->GetPendingMainFrame()->SendNavigate(entry_id, true, kUrl2);
   EXPECT_EQ(1u, instance->GetRelatedActiveContentsCount());
 
-  contents.reset();
+  // Navigate to a URL in a different site and different BrowsingInstance, by
+  // using a TYPED page transition instead of LINK.
+  const GURL kUrl3("http://c.com");
+  contents->GetController().LoadURL(kUrl3, Referrer(),
+                                    ui::PAGE_TRANSITION_TYPED, std::string());
+  entry_id = contents->GetController().GetPendingEntry()->GetUniqueID();
+  contents->GetMainFrame()->PrepareForCommit();
+  EXPECT_TRUE(contents->CrossProcessNavigationPending());
+  EXPECT_EQ(1u, instance->GetRelatedActiveContentsCount());
+  scoped_refptr<SiteInstance> new_instance =
+      contents->GetPendingMainFrame()->GetSiteInstance();
+  contents->GetPendingMainFrame()->SendNavigate(entry_id, true, kUrl3);
   EXPECT_EQ(0u, instance->GetRelatedActiveContentsCount());
+  EXPECT_EQ(1u, new_instance->GetRelatedActiveContentsCount());
+  EXPECT_FALSE(new_instance->IsRelatedSiteInstance(instance.get()));
+
+  contents.reset();
+  EXPECT_EQ(0u, new_instance->GetRelatedActiveContentsCount());
 }
 
 // Tests that GetRelatedActiveContentsCount tracks BrowsingInstance changes

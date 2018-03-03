@@ -798,10 +798,11 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_ReloadAppAfterCrash) {
   ASSERT_TRUE(is_installed);
 }
 
-// Test that a cross-process navigation away from a hosted app stays in the same
-// BrowsingInstance, so that postMessage calls to the app's other windows still
-// work.
-IN_PROC_BROWSER_TEST_F(AppApiTest, SameBrowsingInstanceAfterSwap) {
+// Test that a cross-site renderer-initiated navigation away from a hosted app
+// stays in the same BrowsingInstance, so that postMessage calls to the app's
+// other windows still work, and a cross-site browser-initiated navigation away
+// from a hosted app switches BrowsingInstances.
+IN_PROC_BROWSER_TEST_F(AppApiTest, NavigatePopupFromAppToOutsideApp) {
   extensions::ProcessMap* process_map =
       extensions::ProcessMap::Get(browser()->profile());
 
@@ -828,13 +829,40 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, SameBrowsingInstanceAfterSwap) {
   SiteInstance* popup_instance = popup_contents->GetSiteInstance();
   EXPECT_EQ(app_instance, popup_instance);
 
-  // Navigate the popup to another process outside the app.
+  // Do a renderer-initiated navigation in the popup to a URL outside the app.
   GURL non_app_url(base_url.Resolve("path3/empty.html"));
-  ui_test_utils::NavigateToURL(active_browser_list->get(1), non_app_url);
-  SiteInstance* new_instance = popup_contents->GetSiteInstance();
-  EXPECT_NE(app_instance, new_instance);
+  content::TestNavigationObserver observer(popup_contents);
+  EXPECT_TRUE(ExecuteScript(
+      popup_contents,
+      base::StringPrintf("location = '%s';", non_app_url.spec().c_str())));
+  observer.Wait();
 
-  // It should still be in the same BrowsingInstance, allowing postMessage to
-  // work.
-  EXPECT_TRUE(app_instance->IsRelatedSiteInstance(new_instance));
+  // The popup will stay in the same SiteInstance, unless we are in
+  // --site-per-process mode, in which case it will go into a new related
+  // SiteInstance.  Either case will allow postMessage to still work.
+  EXPECT_TRUE(
+      app_instance->IsRelatedSiteInstance(popup_contents->GetSiteInstance()));
+  if (content::AreAllSitesIsolatedForTesting())
+    EXPECT_NE(app_instance, popup_contents->GetSiteInstance());
+  else
+    EXPECT_EQ(app_instance, popup_contents->GetSiteInstance());
+
+  // Go back to app process in the popup.
+  {
+    content::TestNavigationObserver observer(popup_contents);
+    popup_contents->GetController().GoBack();
+    observer.Wait();
+    EXPECT_EQ(app_instance, popup_contents->GetSiteInstance());
+  }
+
+  // Do a browser-initiated navigation in the popup to a URL outside the app.
+  // This should swap BrowsingInstances.
+  {
+    content::TestNavigationObserver observer(popup_contents);
+    ui_test_utils::NavigateToURL(active_browser_list->get(1), non_app_url);
+    observer.Wait();
+    EXPECT_NE(app_instance, popup_contents->GetSiteInstance());
+    EXPECT_FALSE(
+        app_instance->IsRelatedSiteInstance(popup_contents->GetSiteInstance()));
+  }
 }

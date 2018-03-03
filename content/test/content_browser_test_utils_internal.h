@@ -48,6 +48,14 @@ void SetShouldProceedOnBeforeUnload(Shell* shell, bool proceed, bool success);
 // Extends the ToRenderFrameHost mechanism to FrameTreeNodes.
 RenderFrameHost* ConvertToRenderFrameHost(FrameTreeNode* frame_tree_node);
 
+// Helper function to navigate a window to a |url|, using a browser-initiated
+// navigation that will stay in the same BrowsingInstance.  Most
+// browser-initiated navigations swap BrowsingInstances, but some tests need a
+// navigation to swap processes for cross-site URLs (even outside of
+// --site-per-process) while staying in the same BrowsingInstance.
+WARN_UNUSED_RESULT bool NavigateToURLInSameBrowsingInstance(Shell* window,
+                                                            const GURL& url);
+
 // Creates compact textual representations of the state of the frame tree that
 // is appropriate for use in assertions.
 //

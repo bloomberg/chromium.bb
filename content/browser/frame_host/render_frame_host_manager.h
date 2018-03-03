@@ -595,6 +595,27 @@ class CONTENT_EXPORT RenderFrameHostManager
       bool force_browsing_instance_swap,
       bool was_server_redirect);
 
+  // Returns true if a navigation to |dest_url| that uses the specified
+  // PageTransition in the current frame is allowed to swap BrowsingInstances.
+  // DetermineSiteInstanceForURL() uses this helper to determine when it is
+  // allowed to swap BrowsingInstances to avoid unneeded process sharing.  See
+  // https://crbug.com/803367.
+  //
+  // Note that this is different from
+  // ShouldSwapBrowsingInstancesForNavigation(), which identifies cases in
+  // which a BrowsingInstance swap is *required* (e.g., for security). This
+  // function only identifies cases where a BrowsingInstance swap *may* be
+  // performed to optimize process placement.  In particular, this is true for
+  // certain browser-initiated transitions for main frame navigations.
+  //
+  // Returning true here doesn't imply that DetermineSiteInstanceForURL() will
+  // swap BrowsingInstances.  For example, this swap will not be done for
+  // same-site navigations, for history navigations, or when starting from an
+  // uninitialized SiteInstance.
+  bool IsBrowsingInstanceSwapAllowedForPageTransition(
+      ui::PageTransition transition,
+      const GURL& dest_url);
+
   // Converts a SiteInstanceDescriptor to the actual SiteInstance it describes.
   // If a |candidate_instance| is provided (is not nullptr) and it matches the
   // description, it is returned as is.

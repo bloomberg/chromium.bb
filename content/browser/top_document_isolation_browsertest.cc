@@ -233,7 +233,7 @@ IN_PROC_BROWSER_TEST_F(TopDocumentIsolationTest,
 
   GURL ba_url(embedded_test_server()->GetURL(
       "b.com", "/cross_site_iframe_factory.html?b(a, c)"));
-  NavigateToURL(shell(), ba_url);
+  EXPECT_TRUE(NavigateToURLInSameBrowsingInstance(shell(), ba_url));
 
   // This navigation destroys the popup's opener, so we allow the main frame to
   // commit in a top level process for b.com, in spite of the b.com popup in the
@@ -254,7 +254,7 @@ IN_PROC_BROWSER_TEST_F(TopDocumentIsolationTest,
   // Navigate the popup to a new site.
   GURL c_url(embedded_test_server()->GetURL(
       "c.com", "/cross_site_iframe_factory.html?c(c, c, c, c)"));
-  NavigateToURL(popup, c_url);
+  EXPECT_TRUE(NavigateToURLInSameBrowsingInstance(popup, c_url));
   EXPECT_EQ(
       " Site D ------------ proxies for B\n"
       "   |--Site D ------- proxies for B\n"
@@ -264,7 +264,7 @@ IN_PROC_BROWSER_TEST_F(TopDocumentIsolationTest,
       "Where B = default subframe process\n"
       "      D = http://c.com/",
       DepictFrameTree(popup_root));
-  NavigateToURL(shell(), c_url);
+  EXPECT_TRUE(NavigateToURLInSameBrowsingInstance(shell(), c_url));
   EXPECT_EQ(
       " Site D\n"
       "   |--Site D\n"
@@ -348,7 +348,7 @@ IN_PROC_BROWSER_TEST_F(TopDocumentIsolationTest,
       "c.com", "/cross_site_iframe_factory.html?c(a, b)"));
   {
     RenderFrameDeletedObserver deleted_observer(root()->current_frame_host());
-    NavigateToURL(shell(), cab_url);
+    EXPECT_TRUE(NavigateToURLInSameBrowsingInstance(shell(), cab_url));
     deleted_observer.WaitUntilDeleted();
   }
 
@@ -376,7 +376,7 @@ IN_PROC_BROWSER_TEST_F(TopDocumentIsolationTest,
   {
     RenderFrameDeletedObserver deleted_observer(
         popup_root->current_frame_host());
-    NavigateToURL(popup, d_url);
+    EXPECT_TRUE(NavigateToURLInSameBrowsingInstance(popup, d_url));
     deleted_observer.WaitUntilDeleted();
   }
   EXPECT_EQ(
@@ -386,7 +386,7 @@ IN_PROC_BROWSER_TEST_F(TopDocumentIsolationTest,
       DepictFrameTree(popup_root));
   {
     RenderFrameDeletedObserver deleted_observer(root()->current_frame_host());
-    NavigateToURL(shell(), d_url);
+    EXPECT_TRUE(NavigateToURLInSameBrowsingInstance(shell(), d_url));
     deleted_observer.WaitUntilDeleted();
   }
   EXPECT_EQ(

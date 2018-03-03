@@ -62,7 +62,9 @@ class Shell : public WebContentsDelegate,
   ~Shell() override;
 
   void LoadURL(const GURL& url);
-  void LoadURLForFrame(const GURL& url, const std::string& frame_name);
+  void LoadURLForFrame(const GURL& url,
+                       const std::string& frame_name,
+                       ui::PageTransition);
   void LoadDataWithBaseURL(const GURL& url,
                            const std::string& data,
                            const GURL& base_url);
