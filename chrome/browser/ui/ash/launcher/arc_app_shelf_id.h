@@ -7,19 +7,21 @@
 
 #include <string>
 
-// Represents ARC app shelf id that consists from app id and optional shelf
-// group id.
 namespace arc {
 
+// An ARC app shelf id consisting of an app id (must be a valid crx file id)
+// and an optional shelf group id. Ids with empty app ids are invalid.
 class ArcAppShelfId {
  public:
+  ArcAppShelfId();
   ArcAppShelfId(const std::string& shelf_group_id, const std::string& app_id);
   ArcAppShelfId(const ArcAppShelfId& other);
   ~ArcAppShelfId();
 
-  // Returns id from string representation which has syntax
-  // "shelf_group:some_group_id:some_app_id". In case suffix shelf_group is
-  // absent then id is treated as app id.
+  // Returns an id from a string with syntax "shelf_group:group_id:app_id".
+  // If the shelf_group prefix is absent then the input is treated as an app id.
+  // In either case, if the app_id is not a valid crx file id, then the returned
+  // ArcAppShelfId is empty and considered invalid.
   static ArcAppShelfId FromString(const std::string& id);
 
   // Constructs id from app id and optional shelf_group_id encoded into the
@@ -37,6 +39,8 @@ class ArcAppShelfId {
   const std::string& shelf_group_id() const { return shelf_group_id_; }
 
   const std::string& app_id() const { return app_id_; }
+
+  bool valid() const { return !app_id_.empty(); }
 
  private:
   const std::string shelf_group_id_;

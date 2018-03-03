@@ -394,15 +394,16 @@ bool ShowPackageInfo(const std::string& package_name,
 bool IsArcItem(content::BrowserContext* context, const std::string& id) {
   DCHECK(context);
 
-  // Some unit tests use empty id.
-  if (id.empty())
+  // Some unit tests use empty ids, some app ids are not valid ARC app ids.
+  const ArcAppShelfId arc_app_shelf_id = ArcAppShelfId::FromString(id);
+  if (!arc_app_shelf_id.valid())
     return false;
 
   const ArcAppListPrefs* const arc_prefs = ArcAppListPrefs::Get(context);
   if (!arc_prefs)
     return false;
 
-  return arc_prefs->IsRegistered(ArcAppShelfId::FromString(id).app_id());
+  return arc_prefs->IsRegistered(arc_app_shelf_id.app_id());
 }
 
 std::string GetLaunchIntent(const std::string& package_name,

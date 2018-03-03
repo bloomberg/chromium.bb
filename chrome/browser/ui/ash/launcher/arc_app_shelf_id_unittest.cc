@@ -17,14 +17,7 @@ constexpr char kTestIntentWithShelfGroup[] =
 constexpr char kTestIntentWithoutShelfGroup[] = "#Intent;S.other=tmp;end";
 }  // namespace
 
-class ArcAppShelfIdTest : public testing::Test {
- public:
-  ArcAppShelfIdTest() = default;
-  ~ArcAppShelfIdTest() override = default;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ArcAppShelfIdTest);
-};
+using ArcAppShelfIdTest = testing::Test;
 
 TEST_F(ArcAppShelfIdTest, BaseTestAAA) {
   const arc::ArcAppShelfId shelf_id1(kTestShelfGroupId, kTestAppId);
@@ -61,4 +54,20 @@ TEST_F(ArcAppShelfIdTest, BaseTestAAA) {
       arc::ArcAppShelfId::FromIntentAndAppId(std::string(), kTestAppId);
   EXPECT_FALSE(shelf_id7.has_shelf_group_id());
   EXPECT_EQ(shelf_id7.app_id(), kTestAppId);
+}
+
+// Tests valid and invalid input to ArcAppShelfId::FromString.
+TEST_F(ArcAppShelfIdTest, FromString) {
+  // A string containing just a valid crx id string yields a valid id.
+  EXPECT_TRUE(arc::ArcAppShelfId::FromString(kTestAppId).valid());
+  // A serialized string with a group id and valid crx id yields a valid id.
+  const arc::ArcAppShelfId id(kTestShelfGroupId, kTestAppId);
+  EXPECT_TRUE(arc::ArcAppShelfId::FromString(id.ToString()).valid());
+
+  // An empty string yields an invalid id.
+  EXPECT_FALSE(arc::ArcAppShelfId::FromString(std::string()).valid());
+  // A string with just a group id yields an invalid id.
+  EXPECT_FALSE(arc::ArcAppShelfId::FromString(kTestShelfGroupId).valid());
+  // A string with arbitrary text (possibly a non-crx id) yields an invalid id.
+  EXPECT_FALSE(arc::ArcAppShelfId::FromString("ShelfWindowWatcher0").valid());
 }
