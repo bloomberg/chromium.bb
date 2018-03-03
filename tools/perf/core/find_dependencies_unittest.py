@@ -5,6 +5,7 @@
 import os
 import unittest
 
+from telemetry import decorators
 from telemetry.core import util
 
 from core import find_dependencies
@@ -12,6 +13,7 @@ from core import find_dependencies
 
 class FindDependenciesTest(unittest.TestCase):
 
+  @decorators.Disabled('chromeos')  # crbug.com/818230
   def testFindPythonDependencies(self):
     try:
       dog_object_path = os.path.join(
@@ -30,6 +32,7 @@ class FindDependenciesTest(unittest.TestCase):
     except ImportError:  # crbug.com/559527
       pass
 
+  @decorators.Disabled('chromeos')  # crbug.com/818230
   def testFindPythonDependenciesWithNestedImport(self):
     try:
       moose_module_path = os.path.join(
