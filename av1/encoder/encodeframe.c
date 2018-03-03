@@ -4304,9 +4304,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   x->txb_split_count = 0;
   av1_zero(x->blk_skip_drl);
 
-#if CONFIG_MFMV
   av1_setup_motion_field(cm);
-#endif  // CONFIG_MFMV
 
   cpi->all_one_sided_refs =
       frame_is_intra_only(cm) ? 0 : av1_refs_are_one_sided(cm);

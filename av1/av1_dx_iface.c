@@ -137,10 +137,8 @@ static aom_codec_err_t decoder_destroy(aom_codec_alg_priv_t *ctx) {
       FrameWorkerData *const frame_worker_data =
           (FrameWorkerData *)worker->data1;
       aom_get_worker_interface()->end(worker);
-#if CONFIG_MFMV
       aom_free(frame_worker_data->pbi->common.tpl_mvs);
       frame_worker_data->pbi->common.tpl_mvs = NULL;
-#endif
       av1_remove_common(&frame_worker_data->pbi->common);
       av1_free_restoration_buffers(&frame_worker_data->pbi->common);
       av1_decoder_remove(frame_worker_data->pbi);

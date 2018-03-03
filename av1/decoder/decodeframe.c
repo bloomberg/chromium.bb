@@ -3379,9 +3379,7 @@ int av1_decode_frame_headers_and_setup(AV1Decoder *pbi, const uint8_t *data,
   cm->current_frame_seg_map = cm->cur_frame->seg_map;
 #endif
 
-#if CONFIG_MFMV
   av1_setup_motion_field(cm);
-#endif  // CONFIG_MFMV
 
   av1_setup_block_planes(xd, cm->subsampling_x, cm->subsampling_y, num_planes);
 #if CONFIG_NO_FRAME_CONTEXT_SIGNALING

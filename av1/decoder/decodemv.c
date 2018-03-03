@@ -1844,19 +1844,11 @@ static void read_inter_frame_mode_info(AV1Decoder *const pbi,
 
 static void av1_intra_copy_frame_mvs(AV1_COMMON *const cm, int mi_row,
                                      int mi_col, int x_mis, int y_mis) {
-#if CONFIG_TMV || CONFIG_MFMV
   const int frame_mvs_stride = ROUND_POWER_OF_TWO(cm->mi_cols, 1);
   MV_REF *frame_mvs =
       cm->cur_frame->mvs + (mi_row >> 1) * frame_mvs_stride + (mi_col >> 1);
   x_mis = ROUND_POWER_OF_TWO(x_mis, 1);
   y_mis = ROUND_POWER_OF_TWO(y_mis, 1);
-#else
-  const int frame_mvs_stride = cm->mi_cols;
-  MV_REF *frame_mvs = cm->cur_frame->mvs +
-                      (mi_row & 0xfffe) * frame_mvs_stride + (mi_col & 0xfffe);
-  x_mis = AOMMAX(x_mis, 2);
-  y_mis = AOMMAX(y_mis, 2);
-#endif  // CONFIG_TMV
 
   for (int h = 0; h < y_mis; h++) {
     MV_REF *mv = frame_mvs;

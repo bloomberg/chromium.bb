@@ -114,14 +114,11 @@ typedef enum {
   REFRESH_FRAME_CONTEXT_BACKWARD,
 } REFRESH_FRAME_CONTEXT_MODE;
 
-#if CONFIG_MFMV
 #define MFMV_STACK_SIZE 3
-
 typedef struct {
   int_mv mfmv0[MFMV_STACK_SIZE];
   uint8_t ref_frame_offset[MFMV_STACK_SIZE];
 } TPL_MV_REF;
-#endif
 
 typedef struct {
   int_mv mv[2];
@@ -577,12 +574,10 @@ typedef struct AV1Common {
   int refresh_mask;
   int invalid_delta_frame_id_minus1;
   LV_MAP_CTX_TABLE coeff_ctx_table;
-#if CONFIG_MFMV
   TPL_MV_REF *tpl_mvs;
   int tpl_mvs_mem_size;
   // TODO(jingning): This can be combined with sign_bias later.
   int8_t ref_frame_side[TOTAL_REFS_PER_FRAME];
-#endif
 
 #if CONFIG_FRAME_REFS_SIGNALING
   int frame_refs_short_signaling;
@@ -698,16 +693,10 @@ static INLINE void ensure_mv_buffer(RefCntBuffer *buf, AV1_COMMON *cm) {
     aom_free(buf->mvs);
     buf->mi_rows = cm->mi_rows;
     buf->mi_cols = cm->mi_cols;
-#if CONFIG_TMV || CONFIG_MFMV
     CHECK_MEM_ERROR(cm, buf->mvs,
                     (MV_REF *)aom_calloc(
                         ((cm->mi_rows + 1) >> 1) * ((cm->mi_cols + 1) >> 1),
                         sizeof(*buf->mvs)));
-#else
-    CHECK_MEM_ERROR(
-        cm, buf->mvs,
-        (MV_REF *)aom_calloc(cm->mi_rows * cm->mi_cols, sizeof(*buf->mvs)));
-#endif  // CONFIG_TMV
 #if CONFIG_SEGMENT_PRED_LAST
     aom_free(buf->seg_map);
     CHECK_MEM_ERROR(cm, buf->seg_map,
@@ -716,7 +705,6 @@ static INLINE void ensure_mv_buffer(RefCntBuffer *buf, AV1_COMMON *cm) {
 #endif
   }
 
-#if CONFIG_MFMV
   const int mem_size =
       ((cm->mi_rows + MAX_MIB_SIZE) >> 1) * (cm->mi_stride >> 1);
   int realloc = cm->tpl_mvs == NULL;
@@ -728,7 +716,6 @@ static INLINE void ensure_mv_buffer(RefCntBuffer *buf, AV1_COMMON *cm) {
                     (TPL_MV_REF *)aom_calloc(mem_size, sizeof(*cm->tpl_mvs)));
     cm->tpl_mvs_mem_size = mem_size;
   }
-#endif
 }
 
 static INLINE int mi_cols_aligned_to_sb(const AV1_COMMON *cm) {

@@ -513,10 +513,8 @@ static void dealloc_compressor_data(AV1_COMP *cpi) {
   aom_free(cpi->td.mb.mask_buf);
   cpi->td.mb.mask_buf = NULL;
 
-#if CONFIG_MFMV
   aom_free(cm->tpl_mvs);
   cm->tpl_mvs = NULL;
-#endif
 
   av1_free_ref_frame_buffers(cm->buffer_pool);
   av1_free_txb_buf(cpi);
