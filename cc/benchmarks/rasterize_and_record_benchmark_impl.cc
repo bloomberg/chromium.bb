@@ -153,8 +153,6 @@ void RasterizeAndRecordBenchmarkImpl::DidCompleteCommit(
   std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
   result->SetDouble("rasterize_time_ms",
                     rasterize_results_.total_best_time.InMillisecondsF());
-  result->SetDouble("total_pictures_in_pile_size",
-                    static_cast<int>(rasterize_results_.total_memory_usage));
   result->SetInteger("pixels_rasterized", rasterize_results_.pixels_rasterized);
   result->SetInteger("pixels_rasterized_with_non_solid_color",
                      rasterize_results_.pixels_rasterized_with_non_solid_color);
@@ -225,17 +223,12 @@ void RasterizeAndRecordBenchmarkImpl::RunOnLayer(PictureLayerImpl* layer) {
     rasterize_results_.pixels_rasterized += tile_size;
     rasterize_results_.total_best_time += min_time;
   }
-
-  const RasterSource* layer_raster_source = layer->GetRasterSource();
-  rasterize_results_.total_memory_usage +=
-      layer_raster_source->GetMemoryUsage();
 }
 
 RasterizeAndRecordBenchmarkImpl::RasterizeResults::RasterizeResults()
     : pixels_rasterized(0),
       pixels_rasterized_with_non_solid_color(0),
       pixels_rasterized_as_opaque(0),
-      total_memory_usage(0),
       total_layers(0),
       total_picture_layers(0),
       total_picture_layers_with_no_content(0),
