@@ -42,6 +42,8 @@ def GetParser():
                       help='Base path to pre-pend to all files.')
   parser.add_argument('--notrim_base', action='store_false', dest='trim_base',
                       help='Do not trim the file path prefixes.')
+  parser.add_argument('--trim_path', action='store_true',
+                      help='Trim the file path.')
   return parser
 
 
@@ -342,7 +344,7 @@ def PrintLog(log):
   print('%s: %s' % (log.filename, log.log))
 
 
-def TrimLogFilename(log, base):
+def TrimLogPrefix(log, base):
   """Removes the prefix |base| from |log|'s filename.
 
   Args:
@@ -353,6 +355,15 @@ def TrimLogFilename(log, base):
   if fname.startswith(base):
     fname = fname[len(base):]
   return Log(fname, log.date, log.log)
+
+
+def TrimLogPath(log):
+  """Removes the prefix path from |log|'s filename.
+
+  Args:
+    log: a Log namedtuple
+  """
+  return Log(os.path.basename(log.filename), log.date, log.log)
 
 
 def PrintHtmlHeader():
@@ -409,8 +420,11 @@ def main(argv):
   if options.sort:
     logs.sort(key=lambda log: log.date)
 
-  if options.trim_base:
-    logs = [TrimLogFilename(log, options.base) for log in logs]
+  if options.trim_base and options.base:
+    logs = [TrimLogPrefix(log, options.base) for log in logs]
+
+  if options.trim_path:
+    logs = [TrimLogPath(log) for log in logs]
 
   # TODO(davidriley): This should dump JSON as well.
   if options.html:
