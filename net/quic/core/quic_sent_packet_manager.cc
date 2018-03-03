@@ -241,7 +241,8 @@ void QuicSentPacketManager::OnIncomingAck(const QuicAckFrame& ack_frame,
                                           QuicTime ack_receive_time) {
   DCHECK_LE(LargestAcked(ack_frame), unacked_packets_.largest_sent_packet());
   QuicByteCount prior_in_flight = unacked_packets_.bytes_in_flight();
-  bool rtt_updated = MaybeUpdateRTT(ack_frame, ack_receive_time);
+  bool rtt_updated = MaybeUpdateRTT(LargestAcked(ack_frame),
+                                    ack_frame.ack_delay_time, ack_receive_time);
   DCHECK_GE(LargestAcked(ack_frame), unacked_packets_.largest_observed());
   unacked_packets_.IncreaseLargestObserved(LargestAcked(ack_frame));
 
@@ -809,26 +810,27 @@ void QuicSentPacketManager::InvokeLossDetection(QuicTime time) {
   }
 }
 
-bool QuicSentPacketManager::MaybeUpdateRTT(const QuicAckFrame& ack_frame,
+bool QuicSentPacketManager::MaybeUpdateRTT(QuicPacketNumber largest_acked,
+                                           QuicTime::Delta ack_delay_time,
                                            QuicTime ack_receive_time) {
   // We rely on ack_delay_time to compute an RTT estimate, so we
   // only update rtt when the largest observed gets acked.
-  if (!unacked_packets_.IsUnacked(LargestAcked(ack_frame))) {
+  if (!unacked_packets_.IsUnacked(largest_acked)) {
     return false;
   }
   // We calculate the RTT based on the highest ACKed packet number, the lower
   // packet numbers will include the ACK aggregation delay.
   const QuicTransmissionInfo& transmission_info =
-      unacked_packets_.GetTransmissionInfo(LargestAcked(ack_frame));
+      unacked_packets_.GetTransmissionInfo(largest_acked);
   // Ensure the packet has a valid sent time.
   if (transmission_info.sent_time == QuicTime::Zero()) {
     QUIC_BUG << "Acked packet has zero sent time, largest_observed:"
-             << LargestAcked(ack_frame);
+             << largest_acked;
     return false;
   }
 
   QuicTime::Delta send_delta = ack_receive_time - transmission_info.sent_time;
-  rtt_stats_.UpdateRtt(send_delta, ack_frame.ack_delay_time, ack_receive_time);
+  rtt_stats_.UpdateRtt(send_delta, ack_delay_time, ack_receive_time);
 
   return true;
 }
