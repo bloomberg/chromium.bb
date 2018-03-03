@@ -1650,8 +1650,10 @@ static void read_tile_info(AV1Decoder *const pbi,
 #endif  // CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
 #endif  // CONFIG_LOOPFILTERING_ACROSS_TILES
 
-  // tile size magnitude
-  pbi->tile_size_bytes = aom_rb_read_literal(rb, 2) + 1;
+  if (cm->tile_rows * cm->tile_cols > 1) {
+    // tile size magnitude
+    pbi->tile_size_bytes = aom_rb_read_literal(rb, 2) + 1;
+  }
 }
 
 static int mem_get_varsize(const uint8_t *src, int sz) {

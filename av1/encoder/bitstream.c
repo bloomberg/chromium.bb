@@ -2395,8 +2395,10 @@ static void write_tile_info(const AV1_COMMON *const cm,
     }
     return;
   }
-  // Number of bytes in tile size - 1
-  aom_wb_write_literal(wb, 3, 2);
+  if (cm->tile_rows * cm->tile_cols > 1) {
+    // Number of bytes in tile size - 1
+    aom_wb_write_literal(wb, 3, 2);
+  }
 }
 
 #if USE_GF16_MULTI_LAYER
