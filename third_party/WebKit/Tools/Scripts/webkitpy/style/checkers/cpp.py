@@ -1489,8 +1489,10 @@ def _check_parameter_name_against_text(parameter, text, error):
     # Used to detect cases like ec for ExceptionCode.
     acronym = _create_acronym(text).lower()
     if canonical_text.find(canonical_parameter_name) != -1 or acronym.find(canonical_parameter_name) != -1:
+        info_url = 'https://chromium.googlesource.com/chromium/src/+/master/styleguide/c++/blink-c++.md' + \
+                   '#Leave-obvious-parameter-names-out-of-function-declarations'
         error(parameter.row, 'readability/parameter_name', 5,
-              'The parameter name "%s" adds no information, so it should be removed.' % parameter.name)
+              'The parameter name "%s" adds no information, so it should be removed. See %s.' % (parameter.name, info_url))
         return False
     return True
 
