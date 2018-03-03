@@ -18,6 +18,8 @@ class QuicStreamSendBufferPeer {
 
   static const BufferedSlice* CurrentWriteSlice(
       QuicStreamSendBuffer* send_buffer);
+
+  static QuicByteCount TotalLength(QuicStreamSendBuffer* send_buffer);
 };
 
 }  // namespace test

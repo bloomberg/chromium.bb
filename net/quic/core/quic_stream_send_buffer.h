@@ -132,6 +132,11 @@ class QUIC_EXPORT_PRIVATE QuicStreamSendBuffer {
                                 QuicByteCount data_length,
                                 QuicDataWriter* writer);
 
+  // Called when data within offset [start, end) gets acked. Frees fully
+  // acked buffered slices if any. Returns false if the corresponding data does
+  // not exist or has been acked.
+  bool FreeMemSlices(QuicStreamOffset start, QuicStreamOffset end);
+
   QuicDeque<BufferedSlice> buffered_slices_;
 
   // Offset of next inserted byte.
@@ -157,6 +162,9 @@ class QUIC_EXPORT_PRIVATE QuicStreamSendBuffer {
 
   // Latched value of quic_reloadable_flag_quic_stream_send_buffer_write_index.
   const bool use_write_index_;
+
+  // Latched value of quic_reloadable_flag_quic_free_mem_slice_out_of_order.
+  const bool free_mem_slice_out_of_order_;
 };
 
 }  // namespace net

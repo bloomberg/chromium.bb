@@ -188,6 +188,40 @@ TEST_F(QuicStreamSendBufferTest, AckStreamDataMultipleTimes) {
   EXPECT_FALSE(send_buffer_.OnStreamDataAcked(4000, 100, &newly_acked_length));
 }
 
+TEST_F(QuicStreamSendBufferTest, AckStreamDataOutOfOrder) {
+  WriteAllData();
+  QuicByteCount newly_acked_length;
+  EXPECT_TRUE(send_buffer_.OnStreamDataAcked(500, 1000, &newly_acked_length));
+  EXPECT_EQ(1000u, newly_acked_length);
+  EXPECT_EQ(4u, send_buffer_.size());
+  EXPECT_EQ(3840u, QuicStreamSendBufferPeer::TotalLength(&send_buffer_));
+
+  EXPECT_TRUE(send_buffer_.OnStreamDataAcked(1200, 1000, &newly_acked_length));
+  EXPECT_EQ(700u, newly_acked_length);
+  EXPECT_EQ(4u, send_buffer_.size());
+  if (GetQuicReloadableFlag(quic_free_mem_slice_out_of_order)) {
+    // Slice 2 gets fully acked.
+    EXPECT_EQ(2816u, QuicStreamSendBufferPeer::TotalLength(&send_buffer_));
+  } else {
+    EXPECT_EQ(3840u, QuicStreamSendBufferPeer::TotalLength(&send_buffer_));
+  }
+
+  EXPECT_TRUE(send_buffer_.OnStreamDataAcked(2000, 1840, &newly_acked_length));
+  EXPECT_EQ(1640u, newly_acked_length);
+  EXPECT_EQ(4u, send_buffer_.size());
+  if (GetQuicReloadableFlag(quic_free_mem_slice_out_of_order)) {
+    // Slices 3 and 4 get fully acked.
+    EXPECT_EQ(1024u, QuicStreamSendBufferPeer::TotalLength(&send_buffer_));
+  } else {
+    EXPECT_EQ(3840u, QuicStreamSendBufferPeer::TotalLength(&send_buffer_));
+  }
+
+  EXPECT_TRUE(send_buffer_.OnStreamDataAcked(0, 1000, &newly_acked_length));
+  EXPECT_EQ(500u, newly_acked_length);
+  EXPECT_EQ(0u, send_buffer_.size());
+  EXPECT_EQ(0u, QuicStreamSendBufferPeer::TotalLength(&send_buffer_));
+}
+
 TEST_F(QuicStreamSendBufferTest, PendingRetransmission) {
   WriteAllData();
   EXPECT_TRUE(send_buffer_.IsStreamDataOutstanding(0, 3840));
