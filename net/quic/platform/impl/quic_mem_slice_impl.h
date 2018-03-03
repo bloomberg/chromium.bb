@@ -34,6 +34,10 @@ class QUIC_EXPORT_PRIVATE QuicMemSliceImpl {
 
   ~QuicMemSliceImpl();
 
+  // Release the underlying reference. Further access the memory will result in
+  // undefined behavior.
+  void Reset();
+
   // Returns a char pointer to underlying data buffer.
   const char* data() const;
   // Returns the length of underlying data buffer.

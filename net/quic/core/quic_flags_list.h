@@ -178,3 +178,8 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_max_ack_delay2, false)
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_use_incremental_ack_processing,
           false)
+
+// If true, MemSlices in the send buffer is freed out of order.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_free_mem_slice_out_of_order,
+          false)

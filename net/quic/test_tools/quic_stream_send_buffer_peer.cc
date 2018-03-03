@@ -23,6 +23,17 @@ const BufferedSlice* QuicStreamSendBufferPeer::CurrentWriteSlice(
   }
   return &send_buffer->buffered_slices_[send_buffer->write_index_];
 }
+
+// static
+QuicByteCount QuicStreamSendBufferPeer::TotalLength(
+    QuicStreamSendBuffer* send_buffer) {
+  QuicByteCount length = 0;
+  for (const auto& slice : send_buffer->buffered_slices_) {
+    length += slice.slice.length();
+  }
+  return length;
+}
+
 }  // namespace test
 
 }  // namespace net

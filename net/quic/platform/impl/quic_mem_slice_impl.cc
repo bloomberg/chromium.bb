@@ -34,6 +34,11 @@ QuicMemSliceImpl& QuicMemSliceImpl::operator=(QuicMemSliceImpl&& other) {
 
 QuicMemSliceImpl::~QuicMemSliceImpl() = default;
 
+void QuicMemSliceImpl::Reset() {
+  io_buffer_ = nullptr;
+  length_ = 0;
+}
+
 const char* QuicMemSliceImpl::data() const {
   if (io_buffer_ == nullptr) {
     return nullptr;

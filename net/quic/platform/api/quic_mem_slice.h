@@ -41,6 +41,10 @@ class QUIC_EXPORT_PRIVATE QuicMemSlice {
 
   ~QuicMemSlice() = default;
 
+  // Release the underlying reference. Further access the memory will result in
+  // undefined behavior.
+  void Reset() { impl_.Reset(); }
+
   // Returns a const char pointer to underlying data buffer.
   const char* data() const { return impl_.data(); }
   // Returns the length of underlying data buffer.
