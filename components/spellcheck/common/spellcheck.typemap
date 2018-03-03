@@ -9,7 +9,7 @@ public_headers = [ "//components/spellcheck/common/spellcheck_result.h" ]
 traits_headers = [ "//components/spellcheck/common/spellcheck_struct_traits.h" ]
 
 deps = [
-  "//components/spellcheck:build_features",
+  "//components/spellcheck:buildflags",
 ]
 
 type_mappings = [

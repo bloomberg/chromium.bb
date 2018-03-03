@@ -11,8 +11,8 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
-buildflag_header("build_features") {
-  header = "features.h"
+buildflag_header("buildflags") {
+  header = "buildflags.h"
   flags = [ "ENABLE_VR=$enable_vr" ]
 }
 
@@ -155,7 +155,7 @@ static_library("browser") {
     "//third_party/metrics_proto",
   ]
   deps = [
-    ":build_features",
+    ":buildflags",
     ":in_memory_url_index_cache_proto",
     "//base",
     "//base:i18n",

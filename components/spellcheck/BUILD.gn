@@ -5,11 +5,11 @@
 import("//build/buildflag_header.gni")
 import("//components/spellcheck/spellcheck_build_features.gni")
 
-buildflag_header("build_features") {
+buildflag_header("buildflags") {
   # Name this "build" features to avoid confusion with
   # components/spellcheck/common/spellcheck_features.h which are runtime
   # features.
-  header = "spellcheck_build_features.h"
+  header = "spellcheck_buildflags.h"
   flags = [
     "ENABLE_SPELLCHECK=$enable_spellcheck",
     "USE_BROWSER_SPELLCHECKER=$use_browser_spellchecker",

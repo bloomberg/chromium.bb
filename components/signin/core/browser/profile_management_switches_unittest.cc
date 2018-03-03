@@ -11,7 +11,7 @@
 #include "base/message_loop/message_loop.h"
 #include "components/prefs/pref_member.h"
 #include "components/signin/core/browser/scoped_account_consistency.h"
-#include "components/signin/core/browser/signin_features.h"
+#include "components/signin/core/browser/signin_buildflags.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -12,7 +12,7 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/test/scoped_feature_list.h"
-#include "components/signin/core/browser/signin_features.h"
+#include "components/signin/core/browser/signin_buildflags.h"
 
 namespace signin {
 

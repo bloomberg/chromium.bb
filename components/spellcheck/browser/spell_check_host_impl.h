@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "components/spellcheck/common/spellcheck.mojom.h"
-#include "components/spellcheck/spellcheck_build_features.h"
+#include "components/spellcheck/spellcheck_buildflags.h"
 
 #if defined(OS_ANDROID)
 #include "components/spellcheck/browser/spellchecker_session_bridge_android.h"

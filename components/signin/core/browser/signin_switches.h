@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_SWITCHES_H_
 #define COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_SWITCHES_H_
 
-#include "components/signin/core/browser/signin_features.h"
+#include "components/signin/core/browser/signin_buildflags.h"
 
 namespace switches {
 

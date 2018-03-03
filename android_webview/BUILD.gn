@@ -714,7 +714,7 @@ source_set("common") {
     "//components/safe_browsing/renderer:throttles",
     "//components/safe_browsing/triggers",
     "//components/safe_browsing/web_ui",
-    "//components/spellcheck:build_features",
+    "//components/spellcheck:buildflags",
     "//components/supervised_user_error_page",
     "//components/supervised_user_error_page:gin",
     "//components/url_matcher",

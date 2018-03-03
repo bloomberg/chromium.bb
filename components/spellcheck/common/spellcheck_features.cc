@@ -5,7 +5,7 @@
 #include "components/spellcheck/common/spellcheck_features.h"
 
 #include "base/sys_info.h"
-#include "components/spellcheck/spellcheck_build_features.h"
+#include "components/spellcheck/spellcheck_buildflags.h"
 
 namespace spellcheck {
 

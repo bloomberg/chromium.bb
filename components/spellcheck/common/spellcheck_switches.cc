@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "build/build_config.h"
 #include "components/spellcheck/common/spellcheck_switches.h"
-#include "components/spellcheck/spellcheck_build_features.h"
+
+#include "build/build_config.h"
+#include "components/spellcheck/spellcheck_buildflags.h"
 
 namespace spellcheck {
 namespace switches {
