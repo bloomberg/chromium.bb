@@ -1148,9 +1148,18 @@ std::unique_ptr<DragImage> DragController::DragImageForSelection(
   PaintRecordBuilder builder;
   frame.View()->PaintContents(builder.Context(), paint_flags,
                               EnclosingIntRect(painting_rect));
+
+  PropertyTreeState property_tree_state = PropertyTreeState::Root();
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+    property_tree_state = frame.View()
+                              ->GetLayoutView()
+                              ->FirstFragment()
+                              .LocalBorderBoxProperties();
+  }
+
   return DataTransfer::CreateDragImageForFrame(
       frame, opacity, kDoNotRespectImageOrientation, painting_rect.Size(),
-      painting_rect.Location(), builder, PropertyTreeState::Root());
+      painting_rect.Location(), builder, property_tree_state);
 }
 
 bool DragController::StartDrag(LocalFrame* src,
