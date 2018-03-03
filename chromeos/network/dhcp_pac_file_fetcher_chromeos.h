@@ -20,6 +20,7 @@ class SingleThreadTaskRunner;
 
 namespace net {
 class URLRequestContext;
+class NetLogWithSource;
 class ProxyScriptFetcher;
 }
 
@@ -37,7 +38,8 @@ class CHROMEOS_EXPORT DhcpProxyScriptFetcherChromeos
 
   // net::DhcpProxyScriptFetcher
   int Fetch(base::string16* utf16_text,
-            const net::CompletionCallback& callback) override;
+            const net::CompletionCallback& callback,
+            const net::NetLogWithSource& net_log) override;
   void Cancel() override;
   void OnShutdown() override;
   const GURL& GetPacURL() const override;

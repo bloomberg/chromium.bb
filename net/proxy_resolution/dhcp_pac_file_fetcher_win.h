@@ -16,6 +16,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "net/base/net_export.h"
+#include "net/log/net_log_with_source.h"
 #include "net/proxy_resolution/dhcp_pac_file_fetcher.h"
 
 namespace base {
@@ -24,6 +25,7 @@ class TaskRunner;
 
 namespace net {
 
+struct DhcpAdapterNamesLoggingInfo;
 class DhcpProxyScriptAdapterFetcher;
 class URLRequestContext;
 
@@ -40,16 +42,19 @@ class NET_EXPORT_PRIVATE DhcpProxyScriptFetcherWin
 
   // DhcpProxyScriptFetcher implementation.
   int Fetch(base::string16* utf16_text,
-            const CompletionCallback& callback) override;
+            const CompletionCallback& callback,
+            const NetLogWithSource& net_log) override;
   void Cancel() override;
   void OnShutdown() override;
   const GURL& GetPacURL() const override;
   std::string GetFetcherName() const override;
 
   // Sets |adapter_names| to contain the name of each network adapter on
-  // this machine that has DHCP enabled and is not a loop-back adapter. Returns
-  // false on error.
-  static bool GetCandidateAdapterNames(std::set<std::string>* adapter_names);
+  // this machine that has DHCP enabled and is not a loop-back adapter. May
+  // optionally update |info| (if non-null) with information for logging.
+  // Returns false on error.
+  static bool GetCandidateAdapterNames(std::set<std::string>* adapter_names,
+                                       DhcpAdapterNamesLoggingInfo* info);
 
  protected:
   int num_pending_fetchers() const;
@@ -73,19 +78,23 @@ class NET_EXPORT_PRIVATE DhcpProxyScriptFetcherWin
     // been run. Its lifetime is scoped by this object.
     const std::set<std::string>& adapter_names() const;
 
+    DhcpAdapterNamesLoggingInfo* logging_info() { return logging_info_.get(); }
+
    protected:
     // Virtual method introduced to allow unit testing.
     virtual bool ImplGetCandidateAdapterNames(
-        std::set<std::string>* adapter_names);
+        std::set<std::string>* adapter_names,
+        DhcpAdapterNamesLoggingInfo* info);
 
     friend class base::RefCountedThreadSafe<AdapterQuery>;
     virtual ~AdapterQuery();
 
    private:
-    // This is constructed on the originating thread, then used on the
+    // These are constructed on the originating thread, then used on the
     // worker thread, then used again on the originating thread only when
     // the task has completed on the worker thread. No locking required.
     std::set<std::string> adapter_names_;
+    std::unique_ptr<DhcpAdapterNamesLoggingInfo> logging_info_;
 
     DISALLOW_COPY_AND_ASSIGN(AdapterQuery);
   };
@@ -100,7 +109,7 @@ class NET_EXPORT_PRIVATE DhcpProxyScriptFetcherWin
   // Event/state transition handlers
   void CancelImpl();
   void OnGetCandidateAdapterNamesDone(scoped_refptr<AdapterQuery> query);
-  void OnFetcherDone(int result);
+  void OnFetcherDone(size_t fetcher_i, int result);
   void OnWaitTimer();
   void TransitionToDone();
 
@@ -139,9 +148,6 @@ class NET_EXPORT_PRIVATE DhcpProxyScriptFetcherWin
     STATE_DONE,
   };
 
-  // Current state of this state machine.
-  State state_;
-
   // Vector, in Windows' network adapter preference order, of
   // DhcpProxyScriptAdapterFetcher objects that are or were attempting
   // to fetch a PAC file based on DHCP configuration.
@@ -149,11 +155,19 @@ class NET_EXPORT_PRIVATE DhcpProxyScriptFetcherWin
       std::vector<std::unique_ptr<DhcpProxyScriptAdapterFetcher>>;
   FetcherVector fetchers_;
 
+  // Current state of this state machine.
+  State state_;
+
+  // The following members are associated with the latest call to Fetch().
+
   // Number of fetchers we are waiting for.
   int num_pending_fetchers_;
 
   // Lets our client know we're done. Not valid in states START or DONE.
   CompletionCallback callback_;
+
+  // The NetLog to use for the current Fetch().
+  NetLogWithSource net_log_;
 
   // Pointer to string we will write results to. Not valid in states
   // START and DONE.
@@ -169,9 +183,6 @@ class NET_EXPORT_PRIVATE DhcpProxyScriptFetcherWin
 
   // NULL or the AdapterQuery currently in flight.
   scoped_refptr<AdapterQuery> last_query_;
-
-  // Time |Fetch()| was last called, 0 if never.
-  base::TimeTicks fetch_start_time_;
 
   // TaskRunner used for all DHCP lookup tasks.
   const scoped_refptr<base::TaskRunner> task_runner_;

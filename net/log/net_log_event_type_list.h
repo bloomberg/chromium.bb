@@ -3219,3 +3219,55 @@ EVENT_TYPE(HOST_CACHE_PREF_WRITE)
 // This event is created when the HostCachePersistenceManager starts the timer
 // for writing a cache change to prefs.
 EVENT_TYPE(HOST_CACHE_PERSISTENCE_START_TIMER)
+
+// -----------------------------------------------------------------------------
+// DHCP-based WPAD (Windows)
+// -----------------------------------------------------------------------------
+
+// The start/end of running DHCP based WPAD.
+//
+// The start event contains no parameters, whereas the END event describes
+// which of the "adapter fetchers" was used:
+//  {
+//    "fetcher_index": <Index of the fetcher that "won" the race, or -1 if no
+//                     fetcher won>,
+//    "net_error": <The network error code for the overall result of DHCP
+//                  based auto-discovery>,
+//  }
+EVENT_TYPE(WPAD_DHCP_WIN_FETCH)
+
+// The start/end of getting the list of network adapters.
+//
+// The END event describes all the adapters that were enumerated, as well
+// as how long it took to do the various thread-hops (from origin to worker
+// thread, and then worker thread back to origin thread):
+//  {
+//    "adapters": <List describing each adapter (its name, flags, and
+//                 status)>,
+//    "origin_to_worker_thread_hop_dt": <The time in milliseconds it took
+//                                       for the worker thread task to get
+//                                       scheduled>,
+//    "worker_to_origin_thread_hop_dt": <The time in milliseconds it took
+//                                       for the reply task from worker
+//                                       thread to get scheduled>,
+//    "worker_dt": <The time in milliseconds it took to enumerate network
+//                  adapters on the worker thread>,
+//    "error": <The result code returned by iphlpapi!GetAdaptersAddresses>
+//  }
+EVENT_TYPE(WPAD_DHCP_WIN_GET_ADAPTERS)
+
+// This event logs when one of the "adapter fetchers" completed. (Fetchers
+// may not complete in the order that they were started):
+//  {
+//    "fetcher_index": <Index of the fetcher that completed>,
+//    "net_error": <The network error code returned by the fetcher>,
+//  }
+EVENT_TYPE(WPAD_DHCP_WIN_ON_FETCHER_DONE)
+
+// This event is logged when a timer is started to timeout remaining
+// adapter fetchers. The event has no parameters.
+EVENT_TYPE(WPAD_DHCP_WIN_START_WAIT_TIMER)
+
+// This event is emitted if the wait timer for remaining fetchers fires. It
+// has no parameters.
+EVENT_TYPE(WPAD_DHCP_WIN_ON_WAIT_TIMER)

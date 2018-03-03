@@ -36,11 +36,8 @@ TEST(DhcpProxyScriptFetcherWin, AdapterNamesAndPacURLFromDhcp) {
   // is no crash and no error returned, but does not assert on the number
   // of interfaces or the information returned via DHCP.
   std::set<std::string> adapter_names;
-  DhcpProxyScriptFetcherWin::GetCandidateAdapterNames(&adapter_names);
-  for (std::set<std::string>::const_iterator it = adapter_names.begin();
-       it != adapter_names.end();
-       ++it) {
-    const std::string& adapter_name = *it;
+  DhcpProxyScriptFetcherWin::GetCandidateAdapterNames(&adapter_names, nullptr);
+  for (const std::string& adapter_name : adapter_names) {
     DhcpProxyScriptAdapterFetcher::GetPacURLFromDhcp(adapter_name);
   }
 }
@@ -61,7 +58,8 @@ class RealFetchTester {
   void RunTest() {
     int result = fetcher_->Fetch(
         &pac_text_,
-        base::Bind(&RealFetchTester::OnCompletion, base::Unretained(this)));
+        base::Bind(&RealFetchTester::OnCompletion, base::Unretained(this)),
+        NetLogWithSource());
     if (result != ERR_IO_PENDING)
       finished_ = true;
   }
@@ -276,9 +274,10 @@ class MockDhcpProxyScriptFetcherWin : public DhcpProxyScriptFetcherWin {
     }
 
     bool ImplGetCandidateAdapterNames(
-        std::set<std::string>* adapter_names) override {
-      adapter_names->insert(
-          mock_adapter_names_.begin(), mock_adapter_names_.end());
+        std::set<std::string>* adapter_names,
+        DhcpAdapterNamesLoggingInfo* logging) override {
+      adapter_names->insert(mock_adapter_names_.begin(),
+                            mock_adapter_names_.end());
       return true;
     }
 
@@ -388,14 +387,16 @@ class FetcherClient {
   void RunTest() {
     int result = fetcher_.Fetch(
         &pac_text_,
-        base::Bind(&FetcherClient::OnCompletion, base::Unretained(this)));
+        base::Bind(&FetcherClient::OnCompletion, base::Unretained(this)),
+        NetLogWithSource());
     ASSERT_THAT(result, IsError(ERR_IO_PENDING));
   }
 
   int RunTestThatMayFailSync() {
     int result = fetcher_.Fetch(
         &pac_text_,
-        base::Bind(&FetcherClient::OnCompletion, base::Unretained(this)));
+        base::Bind(&FetcherClient::OnCompletion, base::Unretained(this)),
+        NetLogWithSource());
     if (result != ERR_IO_PENDING)
       result_ = result;
     return result;
