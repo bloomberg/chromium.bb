@@ -28,8 +28,7 @@
 		<key>CFBundlePrimaryIcon</key>
 		<dict>
 			<key>CFBundleIconFiles</key>
-			<array>
-			</array>
+			<array/>
 			<key>UIPrerenderedIcon</key>
 			<true/>
 		</dict>
@@ -39,8 +38,7 @@
 		<key>CFBundlePrimaryIcon</key>
 		<dict>
 			<key>CFBundleIconFiles</key>
-			<array>
-			</array>
+			<array/>
 			<key>UIPrerenderedIcon</key>
 			<true/>
 		</dict>
@@ -167,6 +165,10 @@
 	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>googledrive</string>
+	</array>
 	<key>SSOAuthURLScheme</key>
 	<string>${SSOAUTH_URL_SCHEME}</string>
 	<key>KSChannelChromeScheme</key>

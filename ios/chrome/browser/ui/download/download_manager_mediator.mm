@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
 #include "ios/chrome/browser/download/download_directory_util.h"
+#import "ios/chrome/browser/download/google_drive_app_util.h"
 #import "ios/web/public/download/download_task.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_fetcher_response_writer.h"
@@ -90,7 +91,12 @@ void DownloadManagerMediator::OnDownloadUpdated(web::DownloadTask* task) {
 }
 
 void DownloadManagerMediator::UpdateConsumer() {
-  [consumer_ setState:GetDownloadManagerState()];
+  DownloadManagerState state = GetDownloadManagerState();
+  if (state == kDownloadManagerStateSucceeded && !IsGoogleDriveAppInstalled()) {
+    [consumer_ setInstallDriveButtonVisible:YES animated:YES];
+  }
+
+  [consumer_ setState:state];
   [consumer_ setCountOfBytesReceived:task_->GetReceivedBytes()];
   [consumer_ setCountOfBytesExpectedToReceive:task_->GetTotalBytes()];
   [consumer_
