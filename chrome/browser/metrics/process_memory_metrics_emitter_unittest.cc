@@ -79,6 +79,22 @@ class ProcessMemoryMetricsEmitterFake : public ProcessMemoryMetricsEmitter {
   DISALLOW_COPY_AND_ASSIGN(ProcessMemoryMetricsEmitterFake);
 };
 
+void SetAllocatorDumpMetric(ProcessMemoryDumpPtr& pmd,
+                            const std::string& dump_name,
+                            const std::string& metric_name,
+                            uint64_t value) {
+  auto it = pmd->chrome_dump->entries_for_allocator_dumps.find(dump_name);
+  if (it == pmd->chrome_dump->entries_for_allocator_dumps.end()) {
+    memory_instrumentation::mojom::AllocatorMemDumpPtr amd(
+        memory_instrumentation::mojom::AllocatorMemDump::New());
+    amd->numeric_entries.insert(std::make_pair(metric_name, value));
+    pmd->chrome_dump->entries_for_allocator_dumps.insert(
+        std::make_pair(dump_name, std::move(amd)));
+  } else {
+    it->second->numeric_entries.insert(std::make_pair(metric_name, value));
+  }
+}
+
 OSMemDumpPtr GetFakeOSMemDump(uint32_t resident_set_kb,
                               uint32_t private_footprint_kb,
 #if defined(OS_LINUX) || defined(OS_ANDROID)
@@ -106,9 +122,8 @@ void PopulateBrowserMetrics(GlobalMemoryDumpPtr& global_dump,
       memory_instrumentation::mojom::ProcessMemoryDump::New());
   pmd->process_type = ProcessType::BROWSER;
   pmd->chrome_dump = memory_instrumentation::mojom::ChromeMemDump::New();
-#if !defined(OS_WIN)
-  pmd->chrome_dump->malloc_total_kb = metrics_mb["Malloc"] * 1024;
-#endif
+  SetAllocatorDumpMetric(pmd, "malloc", "effective_size",
+                         metrics_mb["Malloc"] * 1024 * 1024);
   OSMemDumpPtr os_dump =
       GetFakeOSMemDump(metrics_mb["Resident"] * 1024,
                        metrics_mb["PrivateMemoryFootprint"] * 1024,
@@ -131,9 +146,7 @@ base::flat_map<const char*, int64_t> GetExpectedBrowserMetrics() {
       {
         {"ProcessType", static_cast<int64_t>(ProcessType::BROWSER)},
             {"Resident", 10},
-#if !defined(OS_WIN)
             {"Malloc", 20},
-#endif
             {"PrivateMemoryFootprint", 30}, {"SharedMemoryFootprint", 35},
             {"Uptime", 42},
 #if defined(OS_LINUX) || defined(OS_ANDROID)
@@ -141,22 +154,6 @@ base::flat_map<const char*, int64_t> GetExpectedBrowserMetrics() {
 #endif
       },
       base::KEEP_FIRST_OF_DUPES);
-}
-
-void SetAllocatorDumpMetric(ProcessMemoryDumpPtr& pmd,
-                            const std::string& dump_name,
-                            const std::string& metric_name,
-                            uint64_t value) {
-  auto it = pmd->chrome_dump->entries_for_allocator_dumps.find(dump_name);
-  if (it == pmd->chrome_dump->entries_for_allocator_dumps.end()) {
-    memory_instrumentation::mojom::AllocatorMemDumpPtr amd(
-        memory_instrumentation::mojom::AllocatorMemDump::New());
-    amd->numeric_entries.insert(std::make_pair(metric_name, value));
-    pmd->chrome_dump->entries_for_allocator_dumps.insert(
-        std::make_pair(dump_name, std::move(amd)));
-  } else {
-    it->second->numeric_entries.insert(std::make_pair(metric_name, value));
-  }
 }
 
 void PopulateRendererMetrics(
@@ -167,13 +164,14 @@ void PopulateRendererMetrics(
       memory_instrumentation::mojom::ProcessMemoryDump::New());
   pmd->process_type = ProcessType::RENDERER;
   pmd->chrome_dump = memory_instrumentation::mojom::ChromeMemDump::New();
-#if !defined(OS_WIN)
-  pmd->chrome_dump->malloc_total_kb = metrics_mb_or_count["Malloc"] * 1024;
-#endif
-  pmd->chrome_dump->partition_alloc_total_kb =
-      metrics_mb_or_count["PartitionAlloc"] * 1024;
-  pmd->chrome_dump->blink_gc_total_kb = metrics_mb_or_count["BlinkGC"] * 1024;
-  pmd->chrome_dump->v8_total_kb = metrics_mb_or_count["V8"] * 1024;
+  SetAllocatorDumpMetric(pmd, "malloc", "effective_size",
+                         metrics_mb_or_count["Malloc"] * 1024 * 1024);
+  SetAllocatorDumpMetric(pmd, "partition_alloc", "effective_size",
+                         metrics_mb_or_count["PartitionAlloc"] * 1024 * 1024);
+  SetAllocatorDumpMetric(pmd, "blink_gc", "effective_size",
+                         metrics_mb_or_count["BlinkGC"] * 1024 * 1024);
+  SetAllocatorDumpMetric(pmd, "v8", "effective_size",
+                         metrics_mb_or_count["V8"] * 1024 * 1024);
 
   SetAllocatorDumpMetric(pmd, "blink_objects/Document", "object_count",
                          metrics_mb_or_count["NumberOfDocuments"]);
@@ -183,8 +181,10 @@ void PopulateRendererMetrics(
                          metrics_mb_or_count["NumberOfLayoutObjects"]);
   SetAllocatorDumpMetric(pmd, "blink_objects/Node", "object_count",
                          metrics_mb_or_count["NumberOfNodes"]);
-  SetAllocatorDumpMetric(pmd, "partition_alloc/partitions/array_buffer", "size",
-                         metrics_mb_or_count["ArrayBuffer"] * 1024 * 1024);
+  SetAllocatorDumpMetric(
+      pmd, "partition_alloc/partitions/array_buffer", "effective_size",
+      metrics_mb_or_count["PartitionAlloc.Partitions.ArrayBuffer"] * 1024 *
+          1024);
 
   OSMemDumpPtr os_dump = GetFakeOSMemDump(
       metrics_mb_or_count["Resident"] * 1024,
@@ -208,19 +208,16 @@ base::flat_map<const char*, int64_t> GetExpectedRendererMetrics() {
   return base::flat_map<const char*, int64_t>(
       {
         {"ProcessType", static_cast<int64_t>(ProcessType::RENDERER)},
-            {"Resident", 110},
-#if !defined(OS_WIN)
-            {"Malloc", 120},
-#endif
-            {"PrivateMemoryFootprint", 130}, {"SharedMemoryFootprint", 135},
-            {"PartitionAlloc", 140}, {"BlinkGC", 150}, {"V8", 160},
-            {"NumberOfExtensions", 0}, {"Uptime", 42},
+            {"Resident", 110}, {"Malloc", 120}, {"PrivateMemoryFootprint", 130},
+            {"SharedMemoryFootprint", 135}, {"PartitionAlloc", 140},
+            {"BlinkGC", 150}, {"V8", 160}, {"NumberOfExtensions", 0},
+            {"Uptime", 42},
 #if defined(OS_LINUX) || defined(OS_ANDROID)
             {"PrivateSwapFootprint", 50},
 #endif
             {"NumberOfDocuments", 1}, {"NumberOfFrames", 2},
             {"NumberOfLayoutObjects", 5}, {"NumberOfNodes", 3},
-            {"ArrayBuffer", 10},
+            {"PartitionAlloc.Partitions.ArrayBuffer", 10},
       },
       base::KEEP_FIRST_OF_DUPES);
 }
@@ -237,11 +234,10 @@ void PopulateGpuMetrics(GlobalMemoryDumpPtr& global_dump,
       memory_instrumentation::mojom::ProcessMemoryDump::New());
   pmd->process_type = ProcessType::GPU;
   pmd->chrome_dump = memory_instrumentation::mojom::ChromeMemDump::New();
-#if !defined(OS_WIN)
-  pmd->chrome_dump->malloc_total_kb = metrics_mb["Malloc"] * 1024;
-#endif
-  pmd->chrome_dump->command_buffer_total_kb =
-      metrics_mb["CommandBuffer"] * 1024;
+  SetAllocatorDumpMetric(pmd, "malloc", "effective_size",
+                         metrics_mb["Malloc"] * 1024 * 1024);
+  SetAllocatorDumpMetric(pmd, "gpu/gl", "effective_size",
+                         metrics_mb["CommandBuffer"] * 1024 * 1024);
   OSMemDumpPtr os_dump =
       GetFakeOSMemDump(metrics_mb["Resident"] * 1024,
                        metrics_mb["PrivateMemoryFootprint"] * 1024,
@@ -264,9 +260,7 @@ base::flat_map<const char*, int64_t> GetExpectedGpuMetrics() {
       {
         {"ProcessType", static_cast<int64_t>(ProcessType::GPU)},
             {"Resident", 210},
-#if !defined(OS_WIN)
             {"Malloc", 220},
-#endif
             {"PrivateMemoryFootprint", 230}, {"SharedMemoryFootprint", 235},
             {"CommandBuffer", 240}, {"Uptime", 42},
 #if defined(OS_LINUX) || defined(OS_ANDROID)
