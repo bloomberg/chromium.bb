@@ -58,6 +58,7 @@ int main(int argc, char **argv) {
   if (!(simd_caps & HAS_SSE3)) append_negative_gtest_filter("SSE3");
   if (!(simd_caps & HAS_SSSE3)) append_negative_gtest_filter("SSSE3");
   if (!(simd_caps & HAS_SSE4_1)) append_negative_gtest_filter("SSE4_1");
+  if (!(simd_caps & HAS_SSE4_2)) append_negative_gtest_filter("SSE4_2");
   if (!(simd_caps & HAS_AVX)) append_negative_gtest_filter("AVX");
   if (!(simd_caps & HAS_AVX2)) append_negative_gtest_filter("AVX2");
 #endif  // ARCH_X86 || ARCH_X86_64
