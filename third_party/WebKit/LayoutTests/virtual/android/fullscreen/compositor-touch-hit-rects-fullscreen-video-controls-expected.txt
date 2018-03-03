@@ -4,7 +4,7 @@ Should have single rect on document before fullscreen
 handler: #document (0, 0, 800, 600)
 
 EVENT(webkitfullscreenchange)
-Should report another rect which is not on the document
+Should report no rect or another rect which is not on the document
 handler: DIV (42, 3, 637, 24)
 
 END OF TEST

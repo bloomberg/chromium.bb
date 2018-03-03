@@ -1976,7 +1976,10 @@ LayerRectList* Internals::touchEventTargetLayerRects(
 
   if (auto* view = document->GetLayoutView()) {
     if (PaintLayerCompositor* compositor = view->Compositor()) {
-      if (GraphicsLayer* root_layer = compositor->RootGraphicsLayer()) {
+      // Use the paint-root since we sometimes want to know about touch rects
+      // on layers outside the document hierarchy (e.g. when we replace the
+      // document with a video layer).
+      if (GraphicsLayer* root_layer = compositor->PaintRootGraphicsLayer()) {
         LayerRectList* rects = LayerRectList::Create();
         AccumulateLayerRectList(compositor, root_layer, rects);
         return rects;

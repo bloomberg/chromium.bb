@@ -26,7 +26,7 @@ window.onload = function () {
 
     waitForEvent(document, 'webkitfullscreenchange', function() {
         if (window.internals.runtimeFlags.forceOverlayFullscreenVideoEnabled)
-            consoleWrite("Should report another rect which is not on the document");
+            consoleWrite("Should report no rect or another rect which is not on the document");
         else
             consoleWrite("Should keep rect on document");
         window.internals.forceCompositingUpdate(document);
