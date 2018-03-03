@@ -260,7 +260,8 @@ class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
 
   bool IsMainFrame() const;
   VisualViewport& GetVisualViewport() const;
-  GraphicsLayer* ParentForContentLayers() const;
+  GraphicsLayer* ParentForContentLayers(
+      GraphicsLayer* child_frame_parent_candidate = nullptr) const;
 
   LayoutView& layout_view_;
 
