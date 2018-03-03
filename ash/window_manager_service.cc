@@ -139,12 +139,11 @@ void WindowManagerService::OnStart() {
   window_manager_ = std::make_unique<WindowManager>(
       context()->connector(), ash_config_, show_primary_host_on_connect_);
 
-  std::unique_ptr<aura::WindowTreeClient> window_tree_client =
-      std::make_unique<aura::WindowTreeClient>(
-          context()->connector(), window_manager_.get(), window_manager_.get());
   const bool automatically_create_display_roots = false;
-  window_tree_client->ConnectAsWindowManager(
-      automatically_create_display_roots);
+  std::unique_ptr<aura::WindowTreeClient> window_tree_client =
+      aura::WindowTreeClient::CreateForWindowManager(
+          context()->connector(), window_manager_.get(), window_manager_.get(),
+          automatically_create_display_roots);
 
   const bool init_network_handler = true;
   InitWindowManager(std::move(window_tree_client), init_network_handler);

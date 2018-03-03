@@ -176,6 +176,80 @@ ui::Id GetServerIdForWindow(Window* window) {
 
 }  // namespace
 
+// static
+std::unique_ptr<WindowTreeClient> WindowTreeClient::CreateForWindowManager(
+    service_manager::Connector* connector,
+    WindowTreeClientDelegate* delegate,
+    WindowManagerDelegate* window_manager_delegate,
+    bool automatically_create_display_roots,
+    bool create_discardable_memory) {
+  std::unique_ptr<WindowTreeClient> wtc(
+      new WindowTreeClient(connector, delegate, window_manager_delegate,
+                           nullptr, nullptr, create_discardable_memory));
+
+  ui::mojom::WindowManagerWindowTreeFactoryPtr factory;
+  connector->BindInterface(ui::mojom::kServiceName, &factory);
+  ui::mojom::WindowTreePtr window_tree;
+  ui::mojom::WindowTreeClientPtr client;
+  wtc->binding_.Bind(MakeRequest(&client));
+  factory->CreateWindowTree(MakeRequest(&window_tree), std::move(client),
+                            automatically_create_display_roots);
+  wtc->SetWindowTree(std::move(window_tree));
+  return wtc;
+}
+
+// static
+std::unique_ptr<WindowTreeClient> WindowTreeClient::CreateForEmbedding(
+    service_manager::Connector* connector,
+    WindowTreeClientDelegate* delegate,
+    ui::mojom::WindowTreeClientRequest request,
+    bool create_discardable_memory) {
+  std::unique_ptr<WindowTreeClient> wtc(
+      new WindowTreeClient(connector, delegate, nullptr, std::move(request),
+                           nullptr, create_discardable_memory));
+  return wtc;
+}
+
+// static
+std::unique_ptr<WindowTreeClient> WindowTreeClient::CreateForWindowTreeFactory(
+    service_manager::Connector* connector,
+    WindowTreeClientDelegate* delegate,
+    bool create_discardable_memory,
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) {
+  std::unique_ptr<WindowTreeClient> wtc(
+      new WindowTreeClient(connector, delegate, nullptr, nullptr, nullptr,
+                           create_discardable_memory));
+  ui::mojom::WindowTreeFactoryPtr factory;
+  connector->BindInterface(ui::mojom::kServiceName, &factory);
+  ui::mojom::WindowTreePtr window_tree;
+  ui::mojom::WindowTreeClientPtr client;
+  wtc->binding_.Bind(MakeRequest(&client));
+  factory->CreateWindowTree(MakeRequest(&window_tree), std::move(client));
+  wtc->SetWindowTree(std::move(window_tree));
+  return wtc;
+}
+
+// static
+std::unique_ptr<WindowTreeClient>
+WindowTreeClient::CreateForWindowTreeHostFactory(
+    service_manager::Connector* connector,
+    WindowTreeClientDelegate* delegate,
+    bool create_discardable_memory) {
+  std::unique_ptr<WindowTreeClient> wtc(
+      new WindowTreeClient(connector, delegate, nullptr, nullptr, nullptr,
+                           create_discardable_memory));
+  ui::mojom::WindowTreeHostFactoryPtr factory;
+  connector->BindInterface(ui::mojom::kServiceName, &factory);
+
+  ui::mojom::WindowTreeHostPtr window_tree_host;
+  ui::mojom::WindowTreeClientPtr client;
+  wtc->binding_.Bind(MakeRequest(&client));
+  factory->CreateWindowTreeHost(MakeRequest(&window_tree_host),
+                                std::move(client));
+  return wtc;
+}
+
+// TODO(sky): move to match location in header.
 WindowTreeClient::WindowTreeClient(
     service_manager::Connector* connector,
     WindowTreeClientDelegate* delegate,
@@ -280,42 +354,6 @@ WindowTreeClient::~WindowTreeClient() {
 
   env->WindowTreeClientDestroyed(this);
   CHECK(windows_.empty());
-}
-
-void WindowTreeClient::ConnectViaWindowTreeFactory() {
-  ui::mojom::WindowTreeFactoryPtr factory;
-  connector_->BindInterface(ui::mojom::kServiceName, &factory);
-  ui::mojom::WindowTreePtr window_tree;
-  ui::mojom::WindowTreeClientPtr client;
-  binding_.Bind(MakeRequest(&client));
-  factory->CreateWindowTree(MakeRequest(&window_tree), std::move(client));
-  SetWindowTree(std::move(window_tree));
-}
-
-void WindowTreeClient::ConnectAsWindowManager(
-    bool automatically_create_display_roots) {
-  DCHECK(window_manager_delegate_);
-
-  ui::mojom::WindowManagerWindowTreeFactoryPtr factory;
-  connector_->BindInterface(ui::mojom::kServiceName, &factory);
-  ui::mojom::WindowTreePtr window_tree;
-  ui::mojom::WindowTreeClientPtr client;
-  binding_.Bind(MakeRequest(&client));
-  factory->CreateWindowTree(MakeRequest(&window_tree), std::move(client),
-                            automatically_create_display_roots);
-  SetWindowTree(std::move(window_tree));
-}
-
-void WindowTreeClient::ConnectViaWindowTreeHostFactory() {
-  ui::mojom::WindowTreeHostFactoryPtr factory;
-  connector_->BindInterface(ui::mojom::kServiceName, &factory);
-
-  ui::mojom::WindowTreeHostPtr window_tree_host;
-  ui::mojom::WindowTreeClientPtr client;
-  binding_.Bind(MakeRequest(&client));
-  factory->CreateWindowTreeHost(MakeRequest(&window_tree_host),
-                                std::move(client));
-  WaitForInitialDisplays();
 }
 
 void WindowTreeClient::SetCanFocus(Window* window, bool can_focus) {
