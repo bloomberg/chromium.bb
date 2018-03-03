@@ -88,6 +88,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'texturelodoffset.html',
         bug=794335)
 
+    self.Fail('conformance2/sync/sync-webgl-specific.html',
+        ['mac', 'win'], bug=818336)
     self.Fail('conformance2/textures/misc/copy-texture-image-same-texture.html',
         ['mac', 'linux'], bug=809233)
     self.Fail('conformance2/textures/misc/copy-texture-image-same-texture.html',
@@ -1249,7 +1251,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/textures/image_data/' +
         'tex-3d-rgb5_a1-rgba-unsigned_byte.html',
         ['linux', ('amd', 0x6613)], bug=701138)
-
     # Conflicting expectations to test that the
     # "Expectations have no collisions" unittest works.
     # page_name = 'conformance/glsl/constructors/glsl-construct-ivec4.html'
