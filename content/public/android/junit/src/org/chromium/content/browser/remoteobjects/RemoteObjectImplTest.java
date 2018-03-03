@@ -346,6 +346,14 @@ public final class RemoteObjectImplTest {
             mConsumer.accept(oa);
         }
         @TestJavascriptInterface
+        public void consumeIntArray(int[] ia) {
+            mConsumer.accept(ia);
+        }
+        @TestJavascriptInterface
+        public void consumeStringArray(String[] sa) {
+            mConsumer.accept(sa);
+        }
+        @TestJavascriptInterface
         public void consumeObject(Object o) {
             mConsumer.accept(o);
         }
@@ -564,6 +572,44 @@ public final class RemoteObjectImplTest {
         verify(consumer, times(2)).accept(null);
     }
 
+    @Test
+    public void testArgumentConversionArray() {
+        final Consumer<Object> consumer = (Consumer<Object>) mock(Consumer.class);
+        Object target = new VariantConsumer(consumer);
+
+        RemoteObject remoteObject = new RemoteObjectImpl(target, TestJavascriptInterface.class);
+        RemoteObject.InvokeMethodResponse response = mock(RemoteObject.InvokeMethodResponse.class);
+        RemoteInvocationArgument args[] = {
+                arrayArgument(numberArgument(3.14159), booleanArgument(true),
+                        stringArgument("Hello"), arrayArgument(), undefinedArgument())};
+        remoteObject.invokeMethod("consumeByte", args, response);
+        remoteObject.invokeMethod("consumeChar", args, response);
+        remoteObject.invokeMethod("consumeShort", args, response);
+        remoteObject.invokeMethod("consumeInt", args, response);
+        remoteObject.invokeMethod("consumeLong", args, response);
+        remoteObject.invokeMethod("consumeFloat", args, response);
+        remoteObject.invokeMethod("consumeDouble", args, response);
+        remoteObject.invokeMethod("consumeBoolean", args, response);
+        remoteObject.invokeMethod("consumeString", args, response);
+        remoteObject.invokeMethod("consumeIntArray", args, response);
+        remoteObject.invokeMethod("consumeStringArray", args, response);
+        remoteObject.invokeMethod("consumeObjectArray", args, response);
+        remoteObject.invokeMethod("consumeObject", args, response);
+
+        verify(consumer).accept((byte) 0);
+        verify(consumer).accept('\u0000');
+        verify(consumer).accept((short) 0);
+        verify(consumer).accept((int) 0);
+        verify(consumer).accept((long) 0);
+        verify(consumer).accept((float) 0);
+        verify(consumer).accept((double) 0);
+        verify(consumer).accept(false);
+        verify(consumer).accept("undefined");
+        verify(consumer).accept(aryEq(new int[] {3, 0, 0, 0, 0}));
+        verify(consumer).accept(aryEq(new String[] {null, null, "Hello", null, null}));
+        verify(consumer, times(2)).accept(null);
+    }
+
     private RemoteInvocationResult resultHasError(final int error) {
         return ArgumentMatchers.argThat(result -> result.error == error);
     }
@@ -604,6 +650,12 @@ public final class RemoteObjectImplTest {
     private RemoteInvocationArgument undefinedArgument() {
         RemoteInvocationArgument argument = new RemoteInvocationArgument();
         argument.setSingletonValue(SingletonJavaScriptValue.UNDEFINED);
+        return argument;
+    }
+
+    private RemoteInvocationArgument arrayArgument(RemoteInvocationArgument... elements) {
+        RemoteInvocationArgument argument = new RemoteInvocationArgument();
+        argument.setArrayValue(elements);
         return argument;
     }
 }
