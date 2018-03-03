@@ -1115,6 +1115,7 @@ monochrome_public_apk_tmpl("monochrome_public_apk") {
 
   deps = [
     ":monochrome_java",
+    "//android_webview:platform_service_bridge_upstream_implementation_java",
     "//base:base_java",
     "//chrome/android:app_hooks_java",
     "//chrome/android:chrome_java",
