@@ -232,8 +232,7 @@ static int get_coeff_cost(const tran_low_t qc, const int scan_idx,
 static void get_dist_cost_stats(LevelDownStats *const stats, const int scan_idx,
                                 const int is_eob,
                                 const LV_MAP_COEFF_COST *const txb_costs,
-                                const TxbInfo *const txb_info,
-                                int has_nz_tail) {
+                                const TxbInfo *const txb_info) {
   const int16_t *const scan = txb_info->scan_order->scan;
   const int coeff_idx = scan[scan_idx];
   const tran_low_t qc = txb_info->qcoeff[coeff_idx];
@@ -289,24 +288,32 @@ static void get_dist_cost_stats(LevelDownStats *const stats, const int scan_idx,
     stats->rate_low = low_qc_cost;
     stats->rd_low = RDCOST(txb_info->rdmult, stats->rate_low, stats->dist_low);
   }
-  if ((has_nz_tail < 2) && !is_eob) {
-    (void)levels;
-    const int coeff_ctx_temp =
-        get_nz_map_ctx(levels, coeff_idx, txb_info->bwl, txb_info->height,
-                       scan_idx, 1, txb_info->tx_size, txb_info->tx_type);
-    const int qc_eob_cost =
-        get_coeff_cost(qc, scan_idx, 1, txb_info, txb_costs, coeff_ctx_temp);
-    int64_t rd_eob = RDCOST(txb_info->rdmult, qc_eob_cost, stats->dist);
-    if (stats->low_qc != 0) {
-      const int low_qc_eob_cost = get_coeff_cost(
-          stats->low_qc, scan_idx, 1, txb_info, txb_costs, coeff_ctx_temp);
-      int64_t rd_eob_low =
-          RDCOST(txb_info->rdmult, low_qc_eob_cost, stats->dist_low);
-      rd_eob = (rd_eob > rd_eob_low) ? rd_eob_low : rd_eob;
-    }
+}
 
-    stats->nz_rd = AOMMIN(stats->rd_low, stats->rd) - rd_eob;
+static void get_dist_cost_stats_with_eob(
+    LevelDownStats *const stats, const int scan_idx,
+    const LV_MAP_COEFF_COST *const txb_costs, const TxbInfo *const txb_info) {
+  const int is_eob = 0;
+  get_dist_cost_stats(stats, scan_idx, is_eob, txb_costs, txb_info);
+
+  const int16_t *const scan = txb_info->scan_order->scan;
+  const int coeff_idx = scan[scan_idx];
+  const tran_low_t qc = txb_info->qcoeff[coeff_idx];
+  const int coeff_ctx_temp = get_nz_map_ctx(
+      txb_info->levels, coeff_idx, txb_info->bwl, txb_info->height, scan_idx, 1,
+      txb_info->tx_size, txb_info->tx_type);
+  const int qc_eob_cost =
+      get_coeff_cost(qc, scan_idx, 1, txb_info, txb_costs, coeff_ctx_temp);
+  int64_t rd_eob = RDCOST(txb_info->rdmult, qc_eob_cost, stats->dist);
+  if (stats->low_qc != 0) {
+    const int low_qc_eob_cost = get_coeff_cost(
+        stats->low_qc, scan_idx, 1, txb_info, txb_costs, coeff_ctx_temp);
+    int64_t rd_eob_low =
+        RDCOST(txb_info->rdmult, low_qc_eob_cost, stats->dist_low);
+    rd_eob = (rd_eob > rd_eob_low) ? rd_eob_low : rd_eob;
   }
+
+  stats->nz_rd = AOMMIN(stats->rd_low, stats->rd) - rd_eob;
 }
 
 static INLINE void update_qcoeff(const int coeff_idx, const tran_low_t qc,
@@ -749,71 +756,106 @@ static int optimize_txb(TxbInfo *txb_info, const LV_MAP_COEFF_COST *txb_costs,
   int64_t accu_dist = 0;
   int64_t prev_eob_rd_cost = INT64_MAX;
   int64_t cur_eob_rd_cost = 0;
-  int8_t has_nz_tail = 0;
 
-  for (int si = init_eob - 1; si >= 0; --si) {
+  {
+    const int si = init_eob - 1;
+    const int coeff_idx = scan[si];
+    LevelDownStats stats;
+    get_dist_cost_stats(&stats, si, si == init_eob - 1, txb_costs, txb_info);
+    if ((stats.rd_low < stats.rd) && (stats.low_qc != 0)) {
+      update = 1;
+      update_coeff(coeff_idx, stats.low_qc, txb_info);
+      accu_rate += stats.rate_low;
+      accu_dist += stats.dist_low;
+    } else {
+      accu_rate += stats.rate;
+      accu_dist += stats.dist;
+    }
+  }
+
+  int si = init_eob - 2;
+  int8_t has_nz_tail = 0;
+  // eob is not fixed
+  for (; si >= 0 && has_nz_tail < 2; --si) {
+    assert(si != init_eob - 1);
     const int coeff_idx = scan[si];
     tran_low_t qc = txb_info->qcoeff[coeff_idx];
 
     if (qc == 0) {
-      assert(si != init_eob - 1);
       const int coeff_ctx =
           get_lower_levels_ctx(txb_info->levels, coeff_idx, txb_info->bwl,
                                txb_info->tx_size, txb_info->tx_type);
       accu_rate += txb_costs->base_cost[coeff_ctx][0];
     } else {
       LevelDownStats stats;
-      get_dist_cost_stats(&stats, si, si == init_eob - 1, txb_costs, txb_info,
-                          has_nz_tail);
+      get_dist_cost_stats_with_eob(&stats, si, txb_costs, txb_info);
+      // check if it is better to make this the last significant coefficient
+      int cur_eob_rate = get_eob_cost(si + 1, seg_eob, txb_eob_costs, txb_costs,
+                                      txb_info->tx_type);
+      cur_eob_rd_cost = RDCOST(txb_info->rdmult, cur_eob_rate, 0);
+      prev_eob_rd_cost =
+          RDCOST(txb_info->rdmult, accu_rate, accu_dist) + stats.nz_rd;
+      if (cur_eob_rd_cost <= prev_eob_rd_cost) {
+        update = 1;
+        for (int j = si + 1; j < txb_info->eob; j++) {
+          const int coeff_pos_j = scan[j];
+          update_coeff(coeff_pos_j, 0, txb_info);
+        }
+        txb_info->eob = si + 1;
 
-      if (has_nz_tail < 2) {
-        if (si == init_eob - 1) {
-          if ((stats.rd_low < stats.rd) && (stats.low_qc != 0)) {
-            update = 1;
-            update_coeff(coeff_idx, stats.low_qc, txb_info);
-            accu_rate += stats.rate_low;
-            accu_dist += stats.dist_low;
-          } else {
-            accu_rate += stats.rate;
-            accu_dist += stats.dist;
-          }
-          continue;
+        // rerun cost calculation due to change of eob
+        accu_rate = cur_eob_rate;
+        accu_dist = 0;
+        get_dist_cost_stats(&stats, si, 1, txb_costs, txb_info);
+        if ((stats.rd_low < stats.rd) && (stats.low_qc != 0)) {
+          update = 1;
+          update_coeff(coeff_idx, stats.low_qc, txb_info);
+          accu_rate += stats.rate_low;
+          accu_dist += stats.dist_low;
         } else {
-          // check if it is better to make this the last significant coefficient
-          int cur_eob_rate = get_eob_cost(si + 1, seg_eob, txb_eob_costs,
-                                          txb_costs, txb_info->tx_type);
-          cur_eob_rd_cost = RDCOST(txb_info->rdmult, cur_eob_rate, 0);
-          prev_eob_rd_cost =
-              RDCOST(txb_info->rdmult, accu_rate, accu_dist) + stats.nz_rd;
-          if (cur_eob_rd_cost <= prev_eob_rd_cost) {
+          accu_rate += stats.rate;
+          accu_dist += stats.dist;
+        }
+
+        // reset non zero tail when new eob is found
+        has_nz_tail = 0;
+      } else {
+        int bUpdCoeff = 0;
+        if (stats.rd_low < stats.rd) {
+          if ((si < txb_info->eob - 1)) {
+            bUpdCoeff = 1;
             update = 1;
-            for (int j = si + 1; j < txb_info->eob; j++) {
-              const int coeff_pos_j = scan[j];
-              update_coeff(coeff_pos_j, 0, txb_info);
-            }
-            txb_info->eob = si + 1;
-
-            // rerun cost calculation due to change of eob
-            accu_rate = cur_eob_rate;
-            accu_dist = 0;
-            get_dist_cost_stats(&stats, si, 1, txb_costs, txb_info,
-                                has_nz_tail);
-            if ((stats.rd_low < stats.rd) && (stats.low_qc != 0)) {
-              update = 1;
-              update_coeff(coeff_idx, stats.low_qc, txb_info);
-              accu_rate += stats.rate_low;
-              accu_dist += stats.dist_low;
-            } else {
-              accu_rate += stats.rate;
-              accu_dist += stats.dist;
-            }
-
-            // reset non zero tail when new eob is found
-            has_nz_tail = 0;
-            continue;
           }
+        } else {
+          ++has_nz_tail;
+        }
+
+        if (bUpdCoeff) {
+          update_coeff(coeff_idx, stats.low_qc, txb_info);
+          accu_rate += stats.rate_low;
+          accu_dist += stats.dist_low;
+        } else {
+          accu_rate += stats.rate;
+          accu_dist += stats.dist;
         }
       }
+    }
+  }  // for (si)
+
+  // eob is fixed
+  for (; si >= 0; --si) {
+    assert(si != init_eob - 1);
+    const int coeff_idx = scan[si];
+    tran_low_t qc = txb_info->qcoeff[coeff_idx];
+
+    if (qc == 0) {
+      const int coeff_ctx =
+          get_lower_levels_ctx(txb_info->levels, coeff_idx, txb_info->bwl,
+                               txb_info->tx_size, txb_info->tx_type);
+      accu_rate += txb_costs->base_cost[coeff_ctx][0];
+    } else {
+      LevelDownStats stats;
+      get_dist_cost_stats(&stats, si, 0, txb_costs, txb_info);
 
       int bUpdCoeff = 0;
       if (stats.rd_low < stats.rd) {
@@ -821,10 +863,7 @@ static int optimize_txb(TxbInfo *txb_info, const LV_MAP_COEFF_COST *txb_costs,
           bUpdCoeff = 1;
           update = 1;
         }
-      } else {
-        ++has_nz_tail;
       }
-
       if (bUpdCoeff) {
         update_coeff(coeff_idx, stats.low_qc, txb_info);
         accu_rate += stats.rate_low;
