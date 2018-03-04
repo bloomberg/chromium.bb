@@ -10,7 +10,7 @@
 #-author: Nicolas Pitre <nico@fluxnic.net>
 #-author: The BRLTTY Team <http://brltty.com/>
 #-license: LGPLv2.1
-#-updated: 2018-03-01
+#-updated: 2018-03-04
 
 # liblouis: Unified French Grade 2 Table
 
@@ -41,10 +41,10 @@
 #
 # Référence:
 #
-#	Index de l'abrégé orthographique français étendu, lecture et écriture
-#	Révision 1993
-#	Service de production Braille, Institut Nazareth et Louis-Braille
-#	Longueuil (Québec)
+#	Manuel d'Abrégé Braille Français - Adaptation du CBFU 2008 - https://www.avh.asso.fr/sites/default/files/manuel_abrege2013_complet_noir_0.doc
+#	Révision 2013
+#	Association Valentin Haüy
+#5, rue Duroc 75343 Paris Cedex 07
 
 # Contracted Unified French Table
 # --------------------------------
@@ -74,6 +74,7 @@ class voyabr3 aeiouyéàèùAEIOUYÉÀÈÙœŒ⠈⠅⠜⠢⠦⠐⠨⠵⠠⠾⠺�
 #En désabrègement, cette classe permet de savoir si nous sommes dans une opération mathématique ou non
 class frmath ⠬⠼⠡⠣⠩⠹⠱⠫⠻⠳⠪⠂⠆⠒⠲⠖⠶⠦⠔⠴⠤⠄⠐⠠⠌⠘⠷⠾⠜⠃⠨⠈
 class puncEnd ⠂,;:.?!")]}
+
 letsign 56
 noletsignafter '\X2018\X2019
 hyphen - 36

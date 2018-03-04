@@ -11,7 +11,7 @@
 #-author: Nicolas Pitre <nico@fluxnic.net>
 #-author: The BRLTTY Team <http://brltty.com/>
 #-license: LGPLv2.1
-#-updated: 2018-03-03
+#-updated: 2018-03-04
 
 # liblouis: Unified French 6 dots Braille table
 
@@ -39,6 +39,13 @@
 # Définitions pour code braille français international unifié
 # Par Nicolas Pitre <nico@fluxnic.net>
 # maintenu par Michel Such <michel.such@free.fr>
+#
+# Référence:
+#
+#	Code braille français uniformisé | association Valentin Haüy - http://www.avh.asso.fr/fr/tout-savoir-sur-le-braille/lecriture-braille/code-braille-francais-uniformise
+#	Révision 2008
+#	Association Valentin Haüy
+#5, rue Duroc 75343 Paris Cedex 07
 
 # Uncontracted Unified French Table
 # ---------------------------------

@@ -10,7 +10,7 @@
 #-license: LGPLv2.1
 #-reference-name: TABLE BRAILLE INFORMATIQUE FRANÇAISE « TBFR2007 »
 #-reference-url: https://www.avh.asso.fr/sites/default/files/table_braille_informatique_tbfr2007_final_0.doc
-#-updated: 2018-02-20
+#-updated: 2018-03-04
 
 
 # liblouis: Unified French 8 dots Braille table
@@ -31,10 +31,15 @@
 #  License along with liblouis. If not, see
 #  <http://www.gnu.org/licenses/>.
 
+# Référence:
+#
+#	Code braille français uniformisé | association Valentin Haüy - http://www.avh.asso.fr/fr/tout-savoir-sur-le-braille/lecriture-braille/code-braille-francais-uniformise
+#	Révision 2008
+#	Association Valentin Haüy
+#5, rue Duroc 75343 Paris Cedex 07
+#
 # Uncontracted Unified French Table
 # ---------------------------------
-
-# The 2007 unification of french computer braille tables is based on the cp1252 character set
 
 undefined 0
 
