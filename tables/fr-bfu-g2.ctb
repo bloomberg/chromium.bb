@@ -721,8 +721,12 @@ word (la 236-123-1
 ### 2. Mots représentés par un seul symbole
 ###
 
+word A 1
 word à 12356
-contraction à 12356
+word À 12356
+word E 15
+word Y 13456
+
 word ai 34
 word au 13
 word aux 13-1346
@@ -4443,12 +4447,6 @@ nofor correct "D-ROM" "D-Rom"
 nofor correct "Neels?" "Neelsen"
 nofor correct "eTtire" "eWire"
 noback pass2 @26[@56]@36 ?
-
-#Certaines lettres majuscules seules ne devraient pas être précédées  des points 56
-noback pass2 [@56]@46-1!$l ?
-noback pass2 [@56]@46-15!$l ?
-noback pass2 [@56]@46-12356 ?
-noback pass2 [@56]@46-13456!$l ?
 
 # Séquences de caractères particulières
 compbrl :// URLs
