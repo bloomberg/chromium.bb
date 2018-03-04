@@ -5,18 +5,16 @@
 #+system:bfu
 
 #-display-name: Unified French Grade 2
-#-author: Michel Such <michel.such@free.fr>
-#-author: André-Abush CLAUSE <dev@andreabc.net>
-#-author: Nicolas Pitre <nico@fluxnic.net>
-#-author: The BRLTTY Team <http://brltty.com/>
+#-authors: 
+# - The BRLTTY Team <http://brltty.com/>
+# - André-Abush CLAUSE <dev@andreabc.net>
+# - Nicolas Pitre <nico@fluxnic.net>
+# - Michel Such <michel.such@free.fr>
+#
 #-license: LGPLv2.1
 #-updated: 2018-03-04
 
 # liblouis: Unified French Grade 2 Table
-
-# Copyright (C) 1995-2004 by The BRLTTY Team
-# Copyright (C) 2012 Michel Such <michel.such@free.fr>
-# Copyright (C) 2012 Nicolas Pitre <nico@fluxnic.net>
 
 # This file is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -32,22 +30,15 @@
 # License along with this file; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 # liblouis  comes with ABSOLUTELY NO WARRANTY.
+#
+#	Référence :
+#		Manuel d'Abrégé Braille Français - Adaptation du CBFU 2008 - Révision 2013
+#		https://www.avh.asso.fr/sites/default/files/manuel_abrege2013_complet_noir_0.doc
+#		Association Valentin Haüy
+#		5, rue Duroc 75343 Paris Cedex 07
 
-# Auteurs:
-#
-#André-Abush CLAUSE <dev@andreabc.net>
-#	Nicolas Pitre <nico@fluxnic.net>
-#	Michel such <michel.such@free.fr>
-#
-# Référence:
-#
-#	Manuel d'Abrégé Braille Français - Adaptation du CBFU 2008 - https://www.avh.asso.fr/sites/default/files/manuel_abrege2013_complet_noir_0.doc
-#	Révision 2013
-#	Association Valentin Haüy
-#5, rue Duroc 75343 Paris Cedex 07
-
-# Contracted Unified French Table
-# --------------------------------
+# Contracted Unified French Table: forward and backward translation
+# -----------------------------------------------------------------
 
 sign „ 56
 
@@ -731,6 +722,7 @@ word (la 236-123-1
 ###
 
 word à 12356
+contraction à 12356
 word ai 34
 word au 13
 word aux 13-1346
@@ -4451,6 +4443,12 @@ nofor correct "D-ROM" "D-Rom"
 nofor correct "Neels?" "Neelsen"
 nofor correct "eTtire" "eWire"
 noback pass2 @26[@56]@36 ?
+
+#Certaines lettres majuscules seules ne devraient pas être précédées  des points 56
+noback pass2 [@56]@46-1!$l ?
+noback pass2 [@56]@46-15!$l ?
+noback pass2 [@56]@46-12356 ?
+noback pass2 [@56]@46-13456!$l ?
 
 # Séquences de caractères particulières
 compbrl :// URLs

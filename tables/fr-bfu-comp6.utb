@@ -5,20 +5,17 @@
 #+system:bfu
 
 #-display-name: Unified French 6 dots
-#-author: Michel Such <michel.such@free.fr>
-#-author: André-Abush Clause <dev@andreabc.net>
-#-author: Ludovic Oger <oger.ludovic@gmail.com>
-#-author: Nicolas Pitre <nico@fluxnic.net>
-#-author: The BRLTTY Team <http://brltty.com/>
+#-authors:
+# - The BRLTTY Team <http://brltty.com/>
+# - André-Abush Clause <dev@andreabc.net>
+# - Ludovic Oger <oger.ludovic@gmail.com>
+# - Nicolas Pitre <nico@fluxnic.net>
+# - Michel Such <michel.such@free.fr>
+#
 #-license: LGPLv2.1
 #-updated: 2018-03-04
 
 # liblouis: Unified French 6 dots Braille table
-
-# Copyright (C) 1995-2004 by The BRLTTY Team
-# Copyright (C) 2012-2018 Michel Such <michel.such@free.fr>
-# Copyright (C) 2017-2018 André-Abush Clause <dev@andreabc.net>
-# Copyright (C) 2017 Ludovic Oger <oger.ludovic@gmail.com>
 
 #  This file is part of liblouis.
 #
@@ -36,16 +33,11 @@
 #  License along with liblouis. If not, see
 #  <http://www.gnu.org/licenses/>.
 
-# Définitions pour code braille français international unifié
-# Par Nicolas Pitre <nico@fluxnic.net>
-# maintenu par Michel Such <michel.such@free.fr>
-#
-# Référence:
-#
-#	Code braille français uniformisé | association Valentin Haüy - http://www.avh.asso.fr/fr/tout-savoir-sur-le-braille/lecriture-braille/code-braille-francais-uniformise
-#	Révision 2008
+#	Référence :
+#		Code braille français uniformisé | association Valentin Haüy - Révision 2008
+#		http://www.avh.asso.fr/fr/tout-savoir-sur-le-braille/lecriture-braille/code-braille-francais-uniformise
 #	Association Valentin Haüy
-#5, rue Duroc 75343 Paris Cedex 07
+#		5, rue Duroc 75343 Paris Cedex 07
 
 # Uncontracted Unified French Table
 # ---------------------------------

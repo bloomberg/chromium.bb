@@ -2,16 +2,19 @@ display: unicode.dis
 table: [fr-bfu-g2.ctb]
 flags: {testmode: forward}
 tests:
-    - - Isolated letters
-      - a b c d e f g h i j k l m n o p q r s t u v w x y z
-      - ⠁ ⠰⠃ ⠰⠉ ⠰⠙ ⠑ ⠰⠋ ⠰⠛ ⠰⠓ ⠰⠊ ⠰⠚ ⠰⠅ ⠰⠇ ⠰⠍ ⠰⠝ ⠰⠕ ⠰⠏ ⠰⠟ ⠰⠗ ⠰⠎ ⠰⠞ ⠰⠥ ⠰⠧ ⠰⠺ ⠰⠭ ⠽ ⠰⠵
+    - - Isolated letters (lower)
+      - a b c d e f g h i j k l m n o p q r s t u v w x y z à ç
+      - ⠁ ⠰⠃ ⠰⠉ ⠰⠙ ⠑ ⠰⠋ ⠰⠛ ⠰⠓ ⠰⠊ ⠰⠚ ⠰⠅ ⠰⠇ ⠰⠍ ⠰⠝ ⠰⠕ ⠰⠏ ⠰⠟ ⠰⠗ ⠰⠎ ⠰⠞ ⠰⠥ ⠰⠧ ⠰⠺ ⠰⠭ ⠽ ⠰⠵ ⠷ ⠰⠯
+    - - Isolated letters (upper)
+      - A B C D E F G H I J K L M N O P Q R S T U V W X Y Z À Ç
+      - ⠨⠁ ⠰⠨⠃ ⠰⠨⠉ ⠰⠨⠙ ⠨⠑ ⠰⠨⠋ ⠰⠨⠛ ⠰⠨⠓ ⠰⠨⠊ ⠰⠨⠚ ⠰⠨⠅ ⠰⠨⠇ ⠰⠨⠍ ⠰⠨⠝ ⠰⠨⠕ ⠰⠨⠏ ⠰⠨⠟ ⠰⠨⠗ ⠰⠨⠎ ⠰⠨⠞ ⠰⠨⠥ ⠰⠨⠧ ⠰⠨⠺ ⠰⠨⠭ ⠨⠽ ⠰⠨⠵ ⠨⠷ ⠰⠨⠯
     - ["-42 -28 -12,4 1 2 3 4 5 6 7 8 9 0 42 1234",
        "⠠⠤⠹⠣ ⠠⠤⠣⠳ ⠠⠤⠡⠣⠂⠹ ⠠⠡ ⠠⠣ ⠠⠩ ⠠⠹ ⠠⠱ ⠠⠫ ⠠⠻ ⠠⠳ ⠠⠪ ⠠⠼ ⠠⠹⠣ ⠠⠡⠣⠩⠹"]
     - - Roman numerals (f) 
       - I. II. III. IV. V. X. XI. XII. XIII. XIV. XV. L. C. D. M.
       - ⠰⠨⠊⠲ ⠨⠨⠊⠊⠲ ⠨⠨⠊⠊⠊⠲ ⠨⠨⠊⠧⠲ ⠰⠨⠧⠲ ⠰⠨⠭⠲ ⠨⠨⠭⠊⠲ ⠨⠨⠭⠊⠊⠲ ⠨⠨⠭⠊⠊⠊⠲ ⠨⠨⠭⠊⠧⠲ ⠨⠨⠭⠧⠲ ⠰⠨⠇⠲ ⠰⠨⠉⠲ ⠰⠨⠙⠲ ⠰⠨⠍⠲
     - ["A1 b5 1200W E1566 C2I",
-       "⠰⠨⠁⠠⠡ ⠰⠃⠠⠱ ⠠⠡⠣⠼⠼⠰⠨⠺ ⠰⠨⠑⠠⠡⠱⠫⠫ ⠰⠨⠉⠠⠣⠰⠨⠊"]
+       "⠨⠁⠠⠡ ⠰⠃⠠⠱ ⠠⠡⠣⠼⠼⠰⠨⠺ ⠨⠑⠠⠡⠱⠫⠫ ⠰⠨⠉⠠⠣⠰⠨⠊"]
     - ["m.t.s.", "⠰⠍⠲⠰⠞⠲⠰⠎⠲"]
     - ["+", "⠠⠖"]
     - ["=", "⠠⠶"]
