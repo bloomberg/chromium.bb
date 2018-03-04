@@ -29,8 +29,11 @@ namespace safe_browsing {
 const char kAdSamplerFrequencyDenominatorParam[] =
     "safe_browsing_ad_sampler_frequency_denominator";
 
+// Default frequency denominator for the ad sampler.
+const size_t kAdSamplerDefaultFrequency = 1000;
+
 // A frequency denominator with this value indicates sampling is disabled.
-const size_t kSamplerFrequencyDisabled = 0;
+const size_t kAdSamplerFrequencyDisabled = 0;
 
 // Number of milliseconds to wait after a page finished loading before starting
 // a report. Allows ads which load in the background to finish loading.
@@ -48,14 +51,14 @@ namespace {
 
 size_t GetSamplerFrequencyDenominator() {
   if (!base::FeatureList::IsEnabled(kAdSamplerTriggerFeature))
-    return kSamplerFrequencyDisabled;
+    return kAdSamplerDefaultFrequency;
 
   const std::string sampler_frequency_denominator =
       base::GetFieldTrialParamValueByFeature(
           kAdSamplerTriggerFeature, kAdSamplerFrequencyDenominatorParam);
   int result;
   if (!base::StringToInt(sampler_frequency_denominator, &result))
-    return kSamplerFrequencyDisabled;
+    return kAdSamplerDefaultFrequency;
 
   return result;
 }
@@ -89,7 +92,7 @@ bool DetectGoogleAd(content::RenderFrameHost* render_frame_host,
 }
 
 bool ShouldSampleAd(const size_t frequency_denominator) {
-  return frequency_denominator != kSamplerFrequencyDisabled &&
+  return frequency_denominator != kAdSamplerFrequencyDisabled &&
          (base::RandUint64() % frequency_denominator) == 0;
 }
 

@@ -132,7 +132,7 @@ class AdSamplerTriggerTest : public content::RenderViewHostTestHarness {
 TEST_F(AdSamplerTriggerTest, TriggerDisabledBySamplingFrequency) {
   // Make sure the trigger doesn't fire when the sampling frequency is set to
   // zero, which disables the trigger.
-  CreateTriggerWithFrequency(kSamplerFrequencyDisabled);
+  CreateTriggerWithFrequency(kAdSamplerFrequencyDisabled);
   EXPECT_CALL(*get_trigger_manager(),
               StartCollectingThreatDetails(_, _, _, _, _, _))
       .Times(0);
@@ -245,7 +245,12 @@ TEST_F(AdSamplerTriggerTest, ReportRejectedByTriggerManager) {
 
 TEST(AdSamplerTriggerTestFinch, FrequencyDenominatorFeature) {
   // Make sure that setting the frequency denominator via Finch params works as
-  // expected.
+  // expected, and that the default frequency is used when no Finch config is
+  // given.
+  AdSamplerTrigger trigger_default(nullptr, nullptr, nullptr, nullptr, nullptr);
+  EXPECT_EQ(kAdSamplerDefaultFrequency,
+            trigger_default.sampler_frequency_denominator_);
+
   const size_t kDenominatorInt = 12345;
   base::FieldTrialList field_trial_list(nullptr);
 
@@ -266,7 +271,7 @@ TEST(AdSamplerTriggerTestFinch, FrequencyDenominatorFeature) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatureList(std::move(feature_list));
 
-  AdSamplerTrigger trigger(nullptr, nullptr, nullptr, nullptr, nullptr);
-  EXPECT_EQ(kDenominatorInt, trigger.sampler_frequency_denominator_);
+  AdSamplerTrigger trigger_finch(nullptr, nullptr, nullptr, nullptr, nullptr);
+  EXPECT_EQ(kDenominatorInt, trigger_finch.sampler_frequency_denominator_);
 }
 }  // namespace safe_browsing

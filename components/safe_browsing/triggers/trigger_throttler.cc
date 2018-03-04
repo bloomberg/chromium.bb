@@ -14,6 +14,7 @@
 
 namespace safe_browsing {
 const char kTriggerTypeAndQuotaParam[] = "trigger_type_and_quota_csv";
+const size_t kAdSamplerTriggerDefaultQuota = 10;
 
 namespace {
 const size_t kUnlimitedTriggerQuota = std::numeric_limits<size_t>::max();
@@ -74,26 +75,20 @@ void ParseTriggerTypeAndQuotaParam(
                const TriggerTypeAndQuotaItem& b) { return a.first < b.first; });
 }
 
-size_t GetDailyQuotaForTrigger(
+// Looks in |trigger_quota_list| for |trigger_type|. If found, sets |out_quota|
+// to the configured quota, and returns true. If not found, returns false.
+bool TryFindQuotaForTrigger(
     const TriggerType trigger_type,
-    const std::vector<TriggerTypeAndQuotaItem>& trigger_quota_list) {
-  switch (trigger_type) {
-    case TriggerType::SECURITY_INTERSTITIAL:
-    case TriggerType::GAIA_PASSWORD_REUSE:
-      return kUnlimitedTriggerQuota;
-    case TriggerType::AD_SAMPLE:
-      // These triggers have quota configured via Finch, lookup the value in
-      // |trigger_quota_list|.
-      const auto& trigger_quota_iter =
-          std::find_if(trigger_quota_list.begin(), trigger_quota_list.end(),
-                       TriggerTypeIs(trigger_type));
-      if (trigger_quota_iter != trigger_quota_list.end())
-        return trigger_quota_iter->second;
-
-      break;
+    const std::vector<TriggerTypeAndQuotaItem>& trigger_quota_list,
+    size_t* out_quota) {
+  const auto& trigger_quota_iter =
+      std::find_if(trigger_quota_list.begin(), trigger_quota_list.end(),
+                   TriggerTypeIs(trigger_type));
+  if (trigger_quota_iter != trigger_quota_list.end()) {
+    *out_quota = trigger_quota_iter->second;
+    return true;
   }
-  // By default, unhandled or unconfigured trigger types have no quota.
-  return 0;
+  return false;
 }
 
 }  // namespace
@@ -111,8 +106,7 @@ void TriggerThrottler::SetClockForTesting(base::Clock* test_clock) {
 
 bool TriggerThrottler::TriggerCanFire(const TriggerType trigger_type) const {
   // Lookup how many times this trigger is allowed to fire each day.
-  const size_t trigger_quota =
-      GetDailyQuotaForTrigger(trigger_type, trigger_type_and_quota_list_);
+  const size_t trigger_quota = GetDailyQuotaForTrigger(trigger_type);
 
   // Some basic corner cases for triggers that always fire, or disabled
   // triggers that never fire.
@@ -142,8 +136,7 @@ bool TriggerThrottler::TriggerCanFire(const TriggerType trigger_type) const {
 
 void TriggerThrottler::TriggerFired(const TriggerType trigger_type) {
   // Lookup how many times this trigger is allowed to fire each day.
-  const size_t trigger_quota =
-      GetDailyQuotaForTrigger(trigger_type, trigger_type_and_quota_list_);
+  const size_t trigger_quota = GetDailyQuotaForTrigger(trigger_type);
 
   // For triggers that always fire, don't bother tracking quota.
   if (trigger_quota == kUnlimitedTriggerQuota)
@@ -160,8 +153,7 @@ void TriggerThrottler::TriggerFired(const TriggerType trigger_type) {
 void TriggerThrottler::CleanupOldEvents() {
   for (const auto& map_iter : trigger_events_) {
     const TriggerType trigger_type = map_iter.first;
-    const size_t trigger_quota =
-        GetDailyQuotaForTrigger(trigger_type, trigger_type_and_quota_list_);
+    const size_t trigger_quota = GetDailyQuotaForTrigger(trigger_type);
     const std::vector<time_t>& trigger_times = map_iter.second;
 
     // Skip the cleanup if we have quota room, quotas should generally be small.
@@ -180,6 +172,29 @@ void TriggerThrottler::CleanupOldEvents() {
 
     trigger_events_[trigger_type].swap(tmp_trigger_times);
   }
+}
+
+size_t TriggerThrottler::GetDailyQuotaForTrigger(
+    const TriggerType trigger_type) const {
+  size_t quota_from_finch = 0;
+  switch (trigger_type) {
+    case TriggerType::SECURITY_INTERSTITIAL:
+    case TriggerType::GAIA_PASSWORD_REUSE:
+      return kUnlimitedTriggerQuota;
+    case TriggerType::AD_SAMPLE:
+      // These triggers have quota configured via Finch, lookup the value in
+      // |trigger_quota_list|. If it's not found, return the default quota.
+      if (TryFindQuotaForTrigger(trigger_type, trigger_type_and_quota_list_,
+                                 &quota_from_finch)) {
+        return quota_from_finch;
+      } else {
+        return kAdSamplerTriggerDefaultQuota;
+      }
+
+      break;
+  }
+  // By default, unhandled or unconfigured trigger types have no quota.
+  return 0;
 }
 
 }  // namespace safe_browsing
