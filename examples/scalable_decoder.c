@@ -122,6 +122,7 @@ int main(int argc, char **argv) {
   if (!(inputfile = fopen(argv[1], "rb")))
     die("Failed to open %s for read.", argv[1]);
   input.aom_input_ctx->file = inputfile;
+  input.aom_input_ctx->filename = argv[1];
 
   decoder = get_aom_decoder_by_index(0);
   printf("Using %s\n", aom_codec_iface_name(decoder->codec_interface()));
