@@ -5,6 +5,7 @@
 #ifndef ClipPathClipper_h
 #define ClipPathClipper_h
 
+#include "core/CoreExport.h"
 #include "core/paint/FloatClipRecorder.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/paint/ClipPathRecorder.h"
@@ -16,7 +17,7 @@ namespace blink {
 class GraphicsContext;
 class LayoutObject;
 
-class ClipPathClipper {
+class CORE_EXPORT ClipPathClipper {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:

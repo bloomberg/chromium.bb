@@ -93,7 +93,9 @@ Optional<FloatRect> ClipPathClipper::LocalClipPathBoundingBox(
     ShapeClipPathOperation& shape = ToShapeClipPathOperation(clip_path);
     if (!shape.IsValid())
       return WTF::nullopt;
-    return shape.GetPath(reference_box).BoundingRect();
+    FloatRect bounding_box = shape.GetPath(reference_box).BoundingRect();
+    bounding_box.Intersect(LayoutRect::InfiniteIntRect());
+    return bounding_box;
   }
 
   DCHECK_EQ(clip_path.GetType(), ClipPathOperation::REFERENCE);
@@ -112,6 +114,7 @@ Optional<FloatRect> ClipPathClipper::LocalClipPathBoundingBox(
     // local space is shifted by paint offset.
     bounding_box.MoveBy(reference_box.Location());
   }
+  bounding_box.Intersect(LayoutRect::InfiniteIntRect());
   return bounding_box;
 }
 
