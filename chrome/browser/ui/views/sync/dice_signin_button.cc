@@ -110,8 +110,10 @@ DiceSigninButton::DiceSigninButton(const AccountInfo& account,
         views::Button::STATE_NORMAL,
         gfx::CreateVectorIcon(kSigninButtonDropDownArrowIcon,
                               kDropDownArrowIconSize, SK_ColorWHITE));
-    arrow_->SetAccessibleName(l10n_util::GetStringUTF16(
-        IDS_PROFILES_DICE_SIGNIN_WITH_ANOTHER_ACCOUNT_BUTTON));
+    base::string16 arrow_accessible_name = l10n_util::GetStringUTF16(
+        IDS_PROFILES_DICE_SIGNIN_WITH_ANOTHER_ACCOUNT_BUTTON);
+    arrow_->SetAccessibleName(arrow_accessible_name);
+    arrow_->SetTooltipText(arrow_accessible_name);
     AddChildView(arrow_);
   }
 
