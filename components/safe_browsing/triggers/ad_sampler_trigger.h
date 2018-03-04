@@ -26,8 +26,11 @@ class TriggerManager;
 // Param name of the denominator for controlling sampling frequency.
 extern const char kAdSamplerFrequencyDenominatorParam[];
 
+// Default frequency for the ad sampler, if not configured in Finch.
+extern const size_t kAdSamplerDefaultFrequency;
+
 // A frequency denominator with this value indicates sampling is disabled.
-extern const size_t kSamplerFrequencyDisabled;
+extern const size_t kAdSamplerFrequencyDisabled;
 
 // Metric for tracking what the Ad Sampler trigger does on each navigation.
 extern const char kAdSamplerTriggerActionMetricName[];

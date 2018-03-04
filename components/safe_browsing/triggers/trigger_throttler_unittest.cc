@@ -142,13 +142,14 @@ TEST(TriggerThrottlerTestFinch, ConfigureQuotaViaFinch) {
   // Make sure that setting the quota param via Finch params works as expected.
   base::FieldTrialList field_trial_list(nullptr);
   base::FieldTrial* trial = base::FieldTrialList::CreateFieldTrial(
-      safe_browsing::kTriggerThrottlerDailyQuotaFeature.name, "Group");
+      safe_browsing::kTriggerThrottlerDailyQuotaFeature.name,
+      "Group_ConfigureQuotaViaFinch");
   std::map<std::string, std::string> feature_params;
   feature_params[std::string(safe_browsing::kTriggerTypeAndQuotaParam)] =
       base::StringPrintf("%d,%d", TriggerType::AD_SAMPLE, 3);
   base::AssociateFieldTrialParams(
-      safe_browsing::kTriggerThrottlerDailyQuotaFeature.name, "Group",
-      feature_params);
+      safe_browsing::kTriggerThrottlerDailyQuotaFeature.name,
+      "Group_ConfigureQuotaViaFinch", feature_params);
   std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
   feature_list->InitializeFromCommandLine(
       safe_browsing::kTriggerThrottlerDailyQuotaFeature.name, std::string());
@@ -172,5 +173,37 @@ TEST(TriggerThrottlerTestFinch, ConfigureQuotaViaFinch) {
 
   // Fourth attempt will fail since we're out of quota.
   EXPECT_FALSE(throttler.TriggerCanFire(TriggerType::AD_SAMPLE));
+}
+
+TEST(TriggerThrottlerTestFinch, AdSamplerDefaultQuota) {
+  // Make sure that the ad sampler gets its own default quota when no finch
+  // config exists, but the quota can be overwritten through Finch.
+  TriggerThrottler throttler_default;
+  EXPECT_EQ(kAdSamplerTriggerDefaultQuota,
+            throttler_default.GetDailyQuotaForTrigger(TriggerType::AD_SAMPLE));
+
+  size_t quota_from_finch = 4;
+  base::FieldTrialList field_trial_list(nullptr);
+  base::FieldTrial* trial = base::FieldTrialList::CreateFieldTrial(
+      safe_browsing::kTriggerThrottlerDailyQuotaFeature.name,
+      "Group_AdSamplerDefaultQuota");
+  std::map<std::string, std::string> feature_params;
+  feature_params[std::string(safe_browsing::kTriggerTypeAndQuotaParam)] =
+      base::StringPrintf("%d,%zu", TriggerType::AD_SAMPLE, quota_from_finch);
+  base::AssociateFieldTrialParams(
+      safe_browsing::kTriggerThrottlerDailyQuotaFeature.name,
+      "Group_AdSamplerDefaultQuota", feature_params);
+  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+  feature_list->InitializeFromCommandLine(
+      safe_browsing::kTriggerThrottlerDailyQuotaFeature.name, std::string());
+  feature_list->AssociateReportingFieldTrial(
+      safe_browsing::kTriggerThrottlerDailyQuotaFeature.name,
+      base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial);
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatureList(std::move(feature_list));
+
+  TriggerThrottler throttler_finch;
+  EXPECT_EQ(quota_from_finch,
+            throttler_finch.GetDailyQuotaForTrigger(TriggerType::AD_SAMPLE));
 }
 }  // namespace safe_browsing

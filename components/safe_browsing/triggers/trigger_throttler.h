@@ -9,6 +9,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/time/clock.h"
 
@@ -17,6 +18,9 @@ namespace safe_browsing {
 // Param name of the finch param containing the comma-separated list of trigger
 // types and daily quotas.
 extern const char kTriggerTypeAndQuotaParam[];
+
+// Default quota for ad sampler trigger.
+extern const size_t kAdSamplerTriggerDefaultQuota;
 
 enum class TriggerType {
   SECURITY_INTERSTITIAL = 1,
@@ -57,9 +61,13 @@ class TriggerThrottler {
 
  private:
   friend class TriggerThrottlerTest;
+  FRIEND_TEST_ALL_PREFIXES(TriggerThrottlerTestFinch, AdSamplerDefaultQuota);
 
   // Called to periodically clean-up the list of event timestamps.
   void CleanupOldEvents();
+
+  // Returns the daily quota for the specified trigger.
+  size_t GetDailyQuotaForTrigger(const TriggerType trigger_type) const;
 
   // Can be set for testing.
   base::Clock* clock_;
