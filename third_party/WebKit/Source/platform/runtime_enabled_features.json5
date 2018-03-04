@@ -1036,7 +1036,7 @@
     },
     {
       name: "SlotInFlatTree",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "SMIL",
