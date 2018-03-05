@@ -277,4 +277,108 @@ TEST_F(AddressFieldTest, ParseCompany) {
       field_candidates_map_[ASCIIToUTF16("company1")].BestHeuristicType());
 }
 
+TEST_F(AddressFieldTest, ParseSearchTermFirst) {
+  FormFieldData search_field;
+  search_field.form_control_type = "text";
+
+  search_field.label = ASCIIToUTF16("Search");
+  search_field.name = ASCIIToUTF16("search");
+
+  FormFieldData address_field;
+  address_field.form_control_type = "text";
+
+  address_field.label = ASCIIToUTF16("Address");
+  address_field.name = ASCIIToUTF16("address");
+
+  list_.push_back(
+      std::make_unique<AutofillField>(search_field, ASCIIToUTF16("search1")));
+  list_.push_back(
+      std::make_unique<AutofillField>(address_field, ASCIIToUTF16("address")));
+
+  AutofillScanner scanner(list_);
+  field_ = Parse(&scanner);
+  ASSERT_NE(nullptr, field_.get());
+  field_->AddClassifications(&field_candidates_map_);
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("search1")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(SEARCH_TERM,
+            field_candidates_map_[ASCIIToUTF16("search1")].BestHeuristicType());
+}
+
+TEST_F(AddressFieldTest, ParseSearchTermSecond) {
+  FormFieldData search_field;
+  search_field.form_control_type = "text";
+
+  search_field.label = ASCIIToUTF16("Search");
+  search_field.name = ASCIIToUTF16("search");
+
+  FormFieldData address_field;
+  address_field.form_control_type = "text";
+
+  address_field.label = ASCIIToUTF16("Address");
+  address_field.name = ASCIIToUTF16("address");
+
+  list_.push_back(
+      std::make_unique<AutofillField>(address_field, ASCIIToUTF16("address")));
+  list_.push_back(
+      std::make_unique<AutofillField>(search_field, ASCIIToUTF16("search1")));
+
+  AutofillScanner scanner(list_);
+  field_ = Parse(&scanner);
+  ASSERT_NE(nullptr, field_.get());
+  field_->AddClassifications(&field_candidates_map_);
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("search1")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(SEARCH_TERM,
+            field_candidates_map_[ASCIIToUTF16("search1")].BestHeuristicType());
+}
+
+// For fields that are identified and not detected, (practically expanded
+// version of UNKNOWN fields,) we would not detect them if they are isolated.
+TEST_F(AddressFieldTest, ParseSearchTermIsolated) {
+  FormFieldData search_field;
+  search_field.form_control_type = "text";
+
+  search_field.label = ASCIIToUTF16("Search");
+  search_field.name = ASCIIToUTF16("search");
+
+  list_.push_back(
+      std::make_unique<AutofillField>(search_field, ASCIIToUTF16("search1")));
+
+  AutofillScanner scanner(list_);
+  field_ = Parse(&scanner);
+  ASSERT_EQ(nullptr, field_.get());
+}
+
+// For a "search xx" phrase, xx has priority to search, if xx is a valid
+// fillable type.
+TEST_F(AddressFieldTest, ParseNonSearchTermWithSearch) {
+  FormFieldData addr_field;
+  addr_field.form_control_type = "text";
+
+  addr_field.label = ASCIIToUTF16("Search Address");
+  addr_field.name = ASCIIToUTF16("search_addr");
+
+  FormFieldData company_field;
+  company_field.form_control_type = "text";
+
+  company_field.label = ASCIIToUTF16("Company");
+  company_field.name = ASCIIToUTF16("company1");
+
+  list_.push_back(
+      std::make_unique<AutofillField>(addr_field, ASCIIToUTF16("search_addr")));
+  list_.push_back(
+      std::make_unique<AutofillField>(company_field, ASCIIToUTF16("company1")));
+
+  AutofillScanner scanner(list_);
+  field_ = Parse(&scanner);
+  ASSERT_NE(nullptr, field_.get());
+  field_->AddClassifications(&field_candidates_map_);
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("search_addr")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(
+      ADDRESS_HOME_LINE1,
+      field_candidates_map_[ASCIIToUTF16("search_addr")].BestHeuristicType());
+}
+
 }  // namespace autofill

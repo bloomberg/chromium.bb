@@ -117,6 +117,9 @@ FieldTypeGroup GroupTypeOfServerFieldType(ServerFieldType field_type) {
     case USERNAME:
       return USERNAME_FIELD;
 
+    case SEARCH_TERM:
+      return UNFILLABLE;
+
     case UNKNOWN_TYPE:
       return NO_GROUP;
     default:
@@ -769,6 +772,8 @@ std::string AutofillType::ServerFieldTypeToString(ServerFieldType type) {
       return "PROBABLY_ACCOUNT_CREATION_PASSWORD";
     case CONFIRMATION_PASSWORD:
       return "CONFIRMATION_PASSWORD";
+    case SEARCH_TERM:
+      return "SEARCH_TERM";
 
     case AMBIGUOUS_TYPE:
       return "AMBIGUOUS_TYPE";

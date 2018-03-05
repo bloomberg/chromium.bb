@@ -119,6 +119,16 @@ const char kStateRe[] =
     "|地區"                 // zh-TW
     "|^시[·・]?도";         // ko-KR
 
+const char kSearchTermRe[] =
+    "search"
+    "|suche.*"              // de-DE
+    "|搜索"                 // zh-CN zh-TW
+    "|探す|検索"            // ja-JP to search
+    "|recherch.*"           // fr-FR
+    "|busca"                // pt-BR, pt-PT
+    "|جستجو"                // fa
+    "|искать|найти|поиск";  // ru
+
 /////////////////////////////////////////////////////////////////////////////
 // credit_card_field.cc
 /////////////////////////////////////////////////////////////////////////////
