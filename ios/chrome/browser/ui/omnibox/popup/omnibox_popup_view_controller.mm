@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/omnibox/omnibox_popup_view_controller.h"
+#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_view_controller.h"
 
 #include <memory>
 
 #include "base/ios/ios_util.h"
 #include "ios/chrome/browser/ui/animation_util.h"
 #import "ios/chrome/browser/ui/omnibox/image_retriever.h"
-#import "ios/chrome/browser/ui/omnibox/omnibox_popup_row.h"
 #include "ios/chrome/browser/ui/omnibox/omnibox_util.h"
+#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_row.h"
 #import "ios/chrome/browser/ui/omnibox/truncating_attributed_label.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #include "ios/chrome/browser/ui/ui_util.h"
