@@ -87,8 +87,7 @@ void ExtensionActionPlatformDelegateCocoa::ShowPopup(
     std::unique_ptr<extensions::ExtensionViewHost> host,
     bool grant_tab_permissions,
     ExtensionActionViewController::PopupShowAction show_action) {
-  if (!chrome::ShowAllDialogsWithViewsToolkit() ||
-      !chrome::ShowExtensionPopupWithViewsToolkit()) {
+  if (!chrome::ShowAllDialogsWithViewsToolkit()) {
     BOOL devMode =
         show_action == ExtensionActionViewController::SHOW_POPUP_AND_INSPECT;
     [ExtensionPopupController host:std::move(host)

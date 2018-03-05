@@ -40,9 +40,6 @@ bool ShowPilotDialogsWithViewsToolkit();
 // Whether to show all dialogs with toolkit-views on Mac, rather than Cocoa.
 bool ShowAllDialogsWithViewsToolkit();
 
-// Whether to show the ExtensionPopup using toolkit-views.
-bool ShowExtensionPopupWithViewsToolkit();
-
 // Shows a Views page info bubble on the given |browser|.
 void ShowPageInfoBubbleViews(Browser* browser,
                              content::WebContents* web_contents,

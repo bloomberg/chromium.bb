@@ -145,8 +145,7 @@ std::unique_ptr<ExtensionView> ExtensionViewHost::CreateExtensionView(
     ExtensionViewHost* host,
     Browser* browser) {
 #if defined(OS_MACOSX)
-  if (!chrome::ShowAllDialogsWithViewsToolkit() ||
-      !chrome::ShowExtensionPopupWithViewsToolkit()) {
+  if (!chrome::ShowAllDialogsWithViewsToolkit()) {
     return CreateExtensionViewCocoa(host, browser);
   }
 #endif
