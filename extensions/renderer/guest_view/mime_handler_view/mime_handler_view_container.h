@@ -14,6 +14,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "components/guest_view/renderer/guest_view_container.h"
+#include "content/public/common/transferrable_url_loader.mojom.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "services/network/public/mojom/url_loader.mojom.h"
 #include "third_party/WebKit/public/web/WebAssociatedURLLoaderClient.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
@@ -22,6 +25,11 @@
 namespace blink {
 class WebAssociatedURLLoader;
 }  // namespace blink
+
+namespace content {
+class URLLoaderThrottle;
+struct WebPluginInfo;
+}  // namespace content
 
 namespace extensions {
 
@@ -45,6 +53,7 @@ class MimeHandlerViewContainer : public guest_view::GuestViewContainer,
                                  public blink::WebAssociatedURLLoaderClient {
  public:
   MimeHandlerViewContainer(content::RenderFrame* render_frame,
+                           const content::WebPluginInfo& info,
                            const std::string& mime_type,
                            const GURL& original_url);
 
@@ -75,10 +84,24 @@ class MimeHandlerViewContainer : public guest_view::GuestViewContainer,
   // Post |message| to the guest.
   void PostMessageFromValue(const base::Value& message);
 
+  // If the URL matches the same URL that this object has created and it hasn't
+  // added a throttle yet, it will return a new one for the purpose of
+  // intercepting it.
+  std::unique_ptr<content::URLLoaderThrottle> MaybeCreatePluginThrottle(
+      const GURL& url);
+
  protected:
   ~MimeHandlerViewContainer() override;
 
  private:
+  class PluginResourceThrottle;
+
+  // Called for embedded plugins when network service is enabled. This is called
+  // by the URLLoaderThrottle which intercepts the resource load, which is then
+  // sent to the browser to be handed off to the plugin.
+  void SetEmbeddedLoader(
+      content::mojom::TransferrableURLLoaderPtr transferrable_url_loader);
+
   // Message handlers.
   void OnCreateMimeHandlerViewGuestACK(int element_instance_id);
   void OnGuestAttached(int element_instance_id,
@@ -88,6 +111,9 @@ class MimeHandlerViewContainer : public guest_view::GuestViewContainer,
   // Creates a guest when a geometry and the URL of the extension to navigate
   // to are available.
   void CreateMimeHandlerViewGuestIfNecessary();
+
+  // Path of the plugin.
+  const std::string plugin_path_;
 
   // The MIME type of the plugin.
   const std::string mime_type_;
@@ -104,6 +130,11 @@ class MimeHandlerViewContainer : public guest_view::GuestViewContainer,
   // The RenderView routing ID of the guest.
   int guest_proxy_routing_id_;
 
+  // Used when network service is enabled:
+  bool waiting_to_create_throttle_ = false;
+  content::mojom::TransferrableURLLoaderPtr transferrable_url_loader_;
+
+  // Used when network service is disabled:
   // A URL loader to load the |original_url_| when the plugin is embedded. In
   // the embedded case, no URL request is made automatically.
   std::unique_ptr<blink::WebAssociatedURLLoader> loader_;

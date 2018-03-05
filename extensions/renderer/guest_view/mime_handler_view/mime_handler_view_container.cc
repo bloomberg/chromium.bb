@@ -7,21 +7,29 @@
 #include <map>
 #include <set>
 
+#include "base/guid.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "components/guest_view/common/guest_view_constants.h"
 #include "components/guest_view/common/guest_view_messages.h"
+#include "content/public/common/url_loader_throttle.h"
+#include "content/public/common/webplugininfo.h"
 #include "content/public/renderer/render_frame.h"
+#include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/v8_value_converter.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/guest_view/extensions_guest_view_messages.h"
+#include "extensions/common/mojo/guest_view.mojom.h"
+#include "extensions/renderer/extension_frame_helper.h"
 #include "gin/arguments.h"
 #include "gin/dictionary.h"
 #include "gin/handle.h"
 #include "gin/interceptor.h"
 #include "gin/object_template_builder.h"
 #include "gin/wrappable.h"
+#include "ipc/ipc_sync_channel.h"
+#include "services/network/public/cpp/features.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebAssociatedURLLoader.h"
 #include "third_party/WebKit/public/web/WebAssociatedURLLoaderOptions.h"
@@ -35,6 +43,17 @@ namespace extensions {
 namespace {
 
 const char kPostMessageName[] = "postMessage";
+
+base::LazyInstance<mojom::GuestViewAssociatedPtr>::Leaky g_guest_view;
+
+mojom::GuestView* GetGuestView() {
+  if (!g_guest_view.Get()) {
+    content::RenderThread::Get()->GetChannel()->GetRemoteAssociatedInterface(
+        &g_guest_view.Get());
+  }
+
+  return g_guest_view.Get().get();
+}
 
 // The gin-backed scriptable object which is exposed by the BrowserPlugin for
 // MimeHandlerViewContainer. This currently only implements "postMessage".
@@ -106,11 +125,56 @@ base::LazyInstance<
 
 }  // namespace
 
+// Stores a raw pointer to MimeHandlerViewContainer since this throttle's
+// lifetime is shorter (it matches |container|'s loader_).
+class MimeHandlerViewContainer::PluginResourceThrottle
+    : public content::URLLoaderThrottle {
+ public:
+  explicit PluginResourceThrottle(MimeHandlerViewContainer* container)
+      : container_(container) {}
+  ~PluginResourceThrottle() override {}
+
+ private:
+  // content::URLLoaderThrottle overrides;
+  void WillProcessResponse(const GURL& response_url,
+                           const network::ResourceResponseHead& response_head,
+                           bool* defer) override {
+    network::mojom::URLLoaderPtr dummy_new_loader;
+    mojo::MakeRequest(&dummy_new_loader);
+    network::mojom::URLLoaderClientPtr new_client;
+    network::mojom::URLLoaderClientRequest new_client_request =
+        mojo::MakeRequest(&new_client);
+
+    network::mojom::URLLoaderPtr original_loader;
+    network::mojom::URLLoaderClientRequest original_client;
+    delegate_->InterceptResponse(std::move(dummy_new_loader),
+                                 std::move(new_client_request),
+                                 &original_loader, &original_client);
+
+    auto transferrable_loader = content::mojom::TransferrableURLLoader::New();
+    transferrable_loader->url_loader = original_loader.PassInterface();
+    transferrable_loader->url_loader_client = std::move(original_client);
+
+    // Make a deep copy of ResourceResponseHead before passing it cross-thread.
+    auto resource_response = base::MakeRefCounted<network::ResourceResponse>();
+    resource_response->head = response_head;
+    auto deep_copied_response = resource_response->DeepCopy();
+    transferrable_loader->head = std::move(deep_copied_response->head);
+    container_->SetEmbeddedLoader(std::move(transferrable_loader));
+  }
+
+  MimeHandlerViewContainer* container_;
+
+  DISALLOW_COPY_AND_ASSIGN(PluginResourceThrottle);
+};
+
 MimeHandlerViewContainer::MimeHandlerViewContainer(
     content::RenderFrame* render_frame,
+    const content::WebPluginInfo& info,
     const std::string& mime_type,
     const GURL& original_url)
     : GuestViewContainer(render_frame),
+      plugin_path_(info.path.MaybeAsASCII()),
       mime_type_(mime_type),
       original_url_(original_url),
       guest_proxy_routing_id_(-1),
@@ -164,6 +228,8 @@ void MimeHandlerViewContainer::OnReady() {
   // may get their security origins from their own urls".
   // https://w3c.github.io/ServiceWorker/#implementer-concerns
   request.SetSkipServiceWorker(true);
+
+  waiting_to_create_throttle_ = true;
   loader_->LoadAsynchronously(request, this);
 }
 
@@ -281,6 +347,15 @@ void MimeHandlerViewContainer::PostMessageFromValue(
                             &message, frame->MainWorldScriptContext()));
 }
 
+std::unique_ptr<content::URLLoaderThrottle>
+MimeHandlerViewContainer::MaybeCreatePluginThrottle(const GURL& url) {
+  if (!waiting_to_create_throttle_ || url != original_url_)
+    return nullptr;
+
+  waiting_to_create_throttle_ = false;
+  return std::make_unique<PluginResourceThrottle>(this);
+}
+
 void MimeHandlerViewContainer::OnCreateMimeHandlerViewGuestACK(
     int element_instance_id) {
   DCHECK_NE(this->element_instance_id(), guest_view::kInstanceIDNone);
@@ -323,8 +398,36 @@ void MimeHandlerViewContainer::OnMimeHandlerViewGuestOnLoadCompleted(
   pending_messages_.clear();
 }
 
+void MimeHandlerViewContainer::SetEmbeddedLoader(
+    content::mojom::TransferrableURLLoaderPtr transferrable_url_loader) {
+  transferrable_url_loader_ = std::move(transferrable_url_loader);
+  transferrable_url_loader_->url = GURL(plugin_path_ + base::GenerateGUID());
+  CreateMimeHandlerViewGuestIfNecessary();
+}
+
 void MimeHandlerViewContainer::CreateMimeHandlerViewGuestIfNecessary() {
-  if (guest_created_ || !element_size_.has_value() || view_id_.empty())
+  if (guest_created_ || !element_size_.has_value())
+    return;
+
+  // When the network service is enabled, subresource requests like plugins are
+  // made directly from the renderer to the network service. So we need to
+  // intercept the URLLoader and send it to the browser so that it can forward
+  // it to the plugin.
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
+      is_embedded_) {
+    if (transferrable_url_loader_.is_null())
+      return;
+
+    GetGuestView()->CreateEmbeddedMimeHandlerViewGuest(
+        render_frame()->GetRoutingID(),
+        ExtensionFrameHelper::Get(render_frame())->tab_id(), original_url_,
+        element_instance_id(), *element_size_,
+        std::move(transferrable_url_loader_));
+    guest_created_ = true;
+    return;
+  }
+
+  if (view_id_.empty())
     return;
 
   // The loader has completed loading |view_id_| so we can dispose it.

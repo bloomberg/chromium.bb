@@ -24,6 +24,10 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "extensions/renderer/guest_view/mime_handler_view/mime_handler_view_container.h"
+#endif
+
 namespace {
 
 chrome::mojom::PrerenderCanceler* GetPrerenderCanceller(int render_frame_id) {
@@ -118,6 +122,25 @@ URLLoaderThrottleProviderImpl::CreateThrottles(
       throttles.push_back(std::move(throttle));
     }
   }
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  if (network_service_enabled &&
+      type_ == content::URLLoaderThrottleProviderType::kFrame &&
+      resource_type == content::RESOURCE_TYPE_OBJECT) {
+    content::RenderFrame* render_frame =
+        content::RenderFrame::FromRoutingID(render_frame_id);
+    auto mime_handlers =
+        extensions::MimeHandlerViewContainer::FromRenderFrame(render_frame);
+    GURL gurl(url);
+    for (auto* handler : mime_handlers) {
+      auto throttle = handler->MaybeCreatePluginThrottle(gurl);
+      if (throttle) {
+        throttles.push_back(std::move(throttle));
+        break;
+      }
+    }
+  }
+#endif
 
   return throttles;
 }

@@ -21,6 +21,7 @@ include_rules = [
 
   "+storage/common/fileapi",
 
+  "+services/network/public",
   "+services/service_manager/public/cpp",
 ]
 

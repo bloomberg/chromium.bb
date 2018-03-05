@@ -112,13 +112,14 @@ bool ShellContentRendererClient::ShouldGatherSiteIsolationStats() const {
 content::BrowserPluginDelegate*
 ShellContentRendererClient::CreateBrowserPluginDelegate(
     content::RenderFrame* render_frame,
+    const content::WebPluginInfo& info,
     const std::string& mime_type,
     const GURL& original_url) {
   if (mime_type == content::kBrowserPluginMimeType) {
     return new extensions::ExtensionsGuestViewContainer(render_frame);
   } else {
-    return new extensions::MimeHandlerViewContainer(
-        render_frame, mime_type, original_url);
+    return new extensions::MimeHandlerViewContainer(render_frame, info,
+                                                    mime_type, original_url);
   }
 }
 

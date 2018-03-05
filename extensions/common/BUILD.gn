@@ -25,6 +25,7 @@ if (enable_extensions) {
     sources = [
       "extension_unpacker.mojom",
       "mojo/app_window.mojom",
+      "mojo/guest_view.mojom",
       "mojo/keep_alive.mojom",
     ]
 
@@ -33,9 +34,15 @@ if (enable_extensions) {
     }
 
     public_deps = [
+      "//content/public/common:interfaces",
       "//mojo/common:common_custom_types",
+      "//ui/gfx/geometry/mojo",
       "//url/mojom:url_mojom_gurl",
     ]
+
+    overridden_deps = [ "//content/public/common:interfaces" ]
+
+    component_deps = [ "//content/public/common" ]
   }
 
   # This must be a static library because extensions common depends on
