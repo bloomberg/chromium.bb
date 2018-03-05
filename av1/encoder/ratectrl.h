@@ -84,6 +84,7 @@ typedef struct {
   int source_alt_ref_pending;
   int source_alt_ref_active;
   int is_src_frame_alt_ref;
+  int sframe_due;
 
   // Length of the bi-predictive frame group interval
   int bipred_group_interval;

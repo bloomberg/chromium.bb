@@ -2709,7 +2709,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   cm->frame_type = (FRAME_TYPE)aom_rb_read_literal(rb, 2);  // 2 bits
   cm->show_frame = aom_rb_read_bit(rb);
   cm->intra_only = cm->frame_type == INTRA_ONLY_FRAME;
-  cm->error_resilient_mode = aom_rb_read_bit(rb);
+  cm->error_resilient_mode = frame_is_sframe(cm) ? 1 : aom_rb_read_bit(rb);
   cm->enable_intra_edge_filter = aom_rb_read_bit(rb);
   cm->allow_filter_intra = aom_rb_read_bit(rb);
 
@@ -2776,7 +2776,8 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     }
   }
 
-  int frame_size_override_flag = aom_rb_read_literal(rb, 1);
+  int frame_size_override_flag =
+      frame_is_sframe(cm) ? 1 : aom_rb_read_literal(rb, 1);
   cm->allow_intrabc = 0;
 
 #if CONFIG_FRAME_REFS_SIGNALING
@@ -2876,9 +2877,8 @@ static int read_uncompressed_header(AV1Decoder *pbi,
           (av1_superres_unscaled(cm) || !NO_FILTER_FOR_IBC))
         cm->allow_intrabc = aom_rb_read_bit(rb);
     } else if (pbi->need_resync != 1) { /* Skip if need resync */
-      pbi->refresh_frame_flags = (cm->frame_type == S_FRAME)
-                                     ? 0xFF
-                                     : aom_rb_read_literal(rb, REF_FRAMES);
+      pbi->refresh_frame_flags =
+          frame_is_sframe(cm) ? 0xFF : aom_rb_read_literal(rb, REF_FRAMES);
 
       if (!pbi->refresh_frame_flags) {
         // NOTE: "pbi->refresh_frame_flags == 0" indicates that the coded frame
@@ -2966,7 +2966,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
         }
       }
 
-      if (cm->error_resilient_mode == 0 && frame_size_override_flag) {
+      if (!cm->error_resilient_mode && frame_size_override_flag) {
         setup_frame_size_with_refs(cm, rb);
       } else {
         setup_frame_size(cm, frame_size_override_flag, rb);
@@ -3013,7 +3013,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 
   av1_setup_frame_buf_refs(cm);
 
-  if (cm->frame_type != S_FRAME) av1_setup_frame_sign_bias(cm);
+  if (!frame_is_sframe(cm)) av1_setup_frame_sign_bias(cm);
 
   cm->cur_frame->intra_only = cm->frame_type == KEY_FRAME || cm->intra_only;
   cm->cur_frame->frame_type = cm->frame_type;
@@ -3102,7 +3102,6 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 
   setup_quantization(cm, rb);
   xd->bd = (int)cm->bit_depth;
-
   if (frame_is_intra_only(cm) || cm->error_resilient_mode) {
     av1_setup_past_independence(cm);
     av1_setup_frame_contexts(cm);

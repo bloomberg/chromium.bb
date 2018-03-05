@@ -1340,6 +1340,10 @@ void av1_rc_get_one_pass_vbr_params(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
   RATE_CONTROL *const rc = &cpi->rc;
   int target;
+  int altref_enabled = is_altref_enabled(cpi);
+  int sframe_dist = cpi->oxcf.sframe_dist;
+  int sframe_mode = cpi->oxcf.sframe_mode;
+  int sframe_enabled = cpi->oxcf.sframe_enabled;
   // TODO(yaowu): replace the "auto_key && 0" below with proper decision logic.
   if (!cpi->refresh_alt_ref_frame &&
       (cm->current_video_frame == 0 || (cpi->frame_flags & FRAMEFLAGS_KEY) ||
@@ -1352,6 +1356,37 @@ void av1_rc_get_one_pass_vbr_params(AV1_COMP *cpi) {
     rc->source_alt_ref_active = 0;
   } else {
     cm->frame_type = INTER_FRAME;
+    if (sframe_enabled) {
+      if (altref_enabled) {
+        if (sframe_mode == 1) {
+          // sframe_mode == 1: insert sframe if it matches altref frame.
+
+          if (cm->current_video_frame % sframe_dist == 0 &&
+              cm->frame_type != KEY_FRAME && cm->current_video_frame != 0 &&
+              cpi->refresh_alt_ref_frame) {
+            cm->frame_type = S_FRAME;
+          }
+        } else {
+          // sframe_mode != 1: if sframe will be inserted at the next available
+          // altref frame
+
+          if (cm->current_video_frame % sframe_dist == 0 &&
+              cm->frame_type != KEY_FRAME && cm->current_video_frame != 0) {
+            rc->sframe_due = 1;
+          }
+
+          if (rc->sframe_due && cpi->refresh_alt_ref_frame) {
+            cm->frame_type = S_FRAME;
+            rc->sframe_due = 0;
+          }
+        }
+      } else {
+        if (cm->current_video_frame % sframe_dist == 0 &&
+            cm->frame_type != KEY_FRAME && cm->current_video_frame != 0) {
+          cm->frame_type = S_FRAME;
+        }
+      }
+    }
   }
   if (rc->frames_till_gf_update_due == 0) {
     rc->baseline_gf_interval = (rc->min_gf_interval + rc->max_gf_interval) / 2;

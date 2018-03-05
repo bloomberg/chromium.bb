@@ -161,7 +161,9 @@ typedef struct AV1EncoderConfig {
   // Key Framing Operations
   int auto_key;  // autodetect cut scenes and set the keyframes
   int key_freq;  // maximum distance to key frame.
-
+  int sframe_dist;
+  int sframe_mode;
+  int sframe_enabled;
   int lag_in_frames;  // how many frames lag before we start encoding
 
   // ----------------------------------------------------------------

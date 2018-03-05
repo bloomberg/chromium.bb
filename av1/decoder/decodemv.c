@@ -228,7 +228,7 @@ static MOTION_MODE read_motion_mode(AV1_COMMON *cm, MACROBLOCKD *xd,
   if (mbmi->skip_mode) return SIMPLE_TRANSLATION;
 
   const MOTION_MODE last_motion_mode_allowed =
-      motion_mode_allowed(xd->global_motion, xd, mi);
+      motion_mode_allowed(xd->global_motion, xd, mi, cm->use_ref_frame_mvs);
   int motion_mode;
 
   if (last_motion_mode_allowed == SIMPLE_TRANSLATION) return SIMPLE_TRANSLATION;

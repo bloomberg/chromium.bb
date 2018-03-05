@@ -1221,7 +1221,8 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
         set_ref_ptrs(cm, xd, mbmi->ref_frame[0], mbmi->ref_frame[1]);
         const MOTION_MODE motion_allowed =
             cm->switchable_motion_mode
-                ? motion_mode_allowed(xd->global_motion, xd, mi)
+                ? motion_mode_allowed(xd->global_motion, xd, mi,
+                                      cm->use_ref_frame_mvs)
                 : SIMPLE_TRANSLATION;
         if (mbmi->ref_frame[1] != INTRA_FRAME) {
           if (motion_allowed == WARPED_CAUSAL) {

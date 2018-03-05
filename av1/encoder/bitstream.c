@@ -270,7 +270,8 @@ static void write_motion_mode(const AV1_COMMON *cm, MACROBLOCKD *xd,
 
   MOTION_MODE last_motion_mode_allowed =
       cm->switchable_motion_mode
-          ? motion_mode_allowed(cm->global_motion, xd, mi)
+          ? motion_mode_allowed(cm->global_motion, xd, mi,
+                                cm->use_ref_frame_mvs)
           : SIMPLE_TRANSLATION;
   assert(mbmi->motion_mode <= last_motion_mode_allowed);
   switch (last_motion_mode_allowed) {
@@ -2351,6 +2352,9 @@ static void write_tile_info(const AV1_COMMON *const cm,
 
 #if USE_GF16_MULTI_LAYER
 static int get_refresh_mask_gf16(AV1_COMP *cpi) {
+  if (cpi->common.frame_type == KEY_FRAME || frame_is_sframe(&cpi->common))
+    return 0xFF;
+
   int refresh_mask = 0;
 
   if (cpi->refresh_last_frame || cpi->refresh_golden_frame ||
@@ -2365,6 +2369,9 @@ static int get_refresh_mask_gf16(AV1_COMP *cpi) {
 #endif  // USE_GF16_MULTI_LAYER
 
 static int get_refresh_mask(AV1_COMP *cpi) {
+  if (cpi->common.frame_type == KEY_FRAME || frame_is_sframe(&cpi->common))
+    return 0xFF;
+
   int refresh_mask = 0;
 #if USE_GF16_MULTI_LAYER
   if (cpi->rc.baseline_gf_interval == 16) return get_refresh_mask_gf16(cpi);
@@ -2992,7 +2999,11 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
   if (cm->intra_only) cm->frame_type = INTRA_ONLY_FRAME;
 
   aom_wb_write_bit(wb, cm->show_frame);
-  aom_wb_write_bit(wb, cm->error_resilient_mode);
+  if (frame_is_sframe(cm)) {
+    assert(cm->error_resilient_mode);
+  } else {
+    aom_wb_write_bit(wb, cm->error_resilient_mode);
+  }
 
   aom_wb_write_bit(wb, cm->enable_intra_edge_filter);
   aom_wb_write_bit(wb, cm->allow_filter_intra);
@@ -3031,10 +3042,12 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
     aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
                        "Frame dimensions are larger than the maximum values");
   }
+
   int frame_size_override_flag =
-      (cm->width != cm->seq_params.max_frame_width ||
-       cm->height != cm->seq_params.max_frame_height);
-  aom_wb_write_bit(wb, frame_size_override_flag);
+      frame_is_sframe(cm) ? 1
+                          : (cm->width != cm->seq_params.max_frame_width ||
+                             cm->height != cm->seq_params.max_frame_height);
+  if (!frame_is_sframe(cm)) aom_wb_write_bit(wb, frame_size_override_flag);
 
 #if CONFIG_FRAME_REFS_SIGNALING
   cm->frame_refs_short_signaling = 0;
@@ -3108,12 +3121,14 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
             (av1_superres_unscaled(cm) || !NO_FILTER_FOR_IBC))
           aom_wb_write_bit(wb, cm->allow_intrabc);
       }
-    } else if (cm->frame_type == INTER_FRAME || cm->frame_type == S_FRAME) {
+    } else if (cm->frame_type == INTER_FRAME || frame_is_sframe(cm)) {
       MV_REFERENCE_FRAME ref_frame;
 
+      cpi->refresh_frame_mask = get_refresh_mask(cpi);
       if (cm->frame_type == INTER_FRAME) {
-        cpi->refresh_frame_mask = get_refresh_mask(cpi);
         aom_wb_write_literal(wb, cpi->refresh_frame_mask, REF_FRAMES);
+      } else {
+        assert(frame_is_sframe(cm) && cpi->refresh_frame_mask == 0xFF);
       }
 
       int updated_fb = -1;
@@ -3162,7 +3177,7 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
 #endif  // CONFIG_FRAME_REFS_SIGNALING
           aom_wb_write_literal(wb, get_ref_frame_map_idx(cpi, ref_frame),
                                REF_FRAMES_LOG2);
-        if (cm->frame_type == S_FRAME) {
+        if (frame_is_sframe(cm)) {
           assert(cm->ref_frame_sign_bias[ref_frame] == 0);
         }
 
@@ -3182,7 +3197,7 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
         }
       }
 
-      if (cm->error_resilient_mode == 0 && frame_size_override_flag) {
+      if (!cm->error_resilient_mode && frame_size_override_flag) {
         write_frame_size_with_refs(cpi, wb);
       } else {
         write_frame_size(cm, frame_size_override_flag, wb);
@@ -3207,10 +3222,8 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
     }
   }
 
-  if (cm->seq_params.frame_id_numbers_present_flag) {
-    cm->refresh_mask =
-        cm->frame_type == KEY_FRAME ? 0xFF : get_refresh_mask(cpi);
-  }
+  if (cm->seq_params.frame_id_numbers_present_flag)
+    cm->refresh_mask = get_refresh_mask(cpi);
 
   const int might_bwd_adapt = !(cm->large_scale_tile);
   if (might_bwd_adapt) {

@@ -195,7 +195,7 @@ void av1_make_masked_inter_predictor(
     const int subpel_x, const int subpel_y, const struct scale_factors *sf,
     int w, int h, ConvolveParams *conv_params, InterpFilters interp_filters,
     int xs, int ys, int plane, const WarpTypesAllowed *warp_types, int p_col,
-    int p_row, int ref, MACROBLOCKD *xd);
+    int p_row, int ref, MACROBLOCKD *xd, int can_use_previous);
 
 // TODO(jkoleszar): yet another mv clamping function :-(
 static INLINE MV32 clamp_mv_to_umv_border_sb(const MACROBLOCKD *xd,
@@ -233,19 +233,22 @@ void av1_build_inter_predictors_sb(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                    int mi_row, int mi_col, BUFFER_SET *ctx,
                                    BLOCK_SIZE bsize);
 
-void av1_build_inter_predictor(
-    const uint8_t *src, int src_stride, uint8_t *dst, int dst_stride,
-    const MV *src_mv, const struct scale_factors *sf, int w, int h,
-    ConvolveParams *conv_params, InterpFilters interp_filters,
-    const WarpTypesAllowed *warp_types, int p_col, int p_row, int plane,
-    int ref, enum mv_precision precision, int x, int y, const MACROBLOCKD *xd);
+void av1_build_inter_predictor(const uint8_t *src, int src_stride, uint8_t *dst,
+                               int dst_stride, const MV *src_mv,
+                               const struct scale_factors *sf, int w, int h,
+                               ConvolveParams *conv_params,
+                               InterpFilters interp_filters,
+                               const WarpTypesAllowed *warp_types, int p_col,
+                               int p_row, int plane, int ref,
+                               enum mv_precision precision, int x, int y,
+                               const MACROBLOCKD *xd, int can_use_previous);
 
 void av1_highbd_build_inter_predictor(
     const uint8_t *src, int src_stride, uint8_t *dst, int dst_stride,
     const MV *mv_q3, const struct scale_factors *sf, int w, int h, int do_avg,
     InterpFilters interp_filters, const WarpTypesAllowed *warp_types, int p_col,
     int p_row, int plane, enum mv_precision precision, int x, int y,
-    const MACROBLOCKD *xd);
+    const MACROBLOCKD *xd, int can_use_previous);
 
 static INLINE int scaled_buffer_offset(int x_offset, int y_offset, int stride,
                                        const struct scale_factors *sf) {
@@ -414,7 +417,8 @@ void av1_combine_interintra(MACROBLOCKD *xd, BLOCK_SIZE bsize, int plane,
 // Encoder only
 void av1_build_inter_predictors_for_planes_single_buf(
     MACROBLOCKD *xd, BLOCK_SIZE bsize, int plane_from, int plane_to, int mi_row,
-    int mi_col, int ref, uint8_t *ext_dst[3], int ext_dst_stride[3]);
+    int mi_col, int ref, uint8_t *ext_dst[3], int ext_dst_stride[3],
+    int can_use_previous);
 void av1_build_wedge_inter_predictor_from_buf(MACROBLOCKD *xd, BLOCK_SIZE bsize,
                                               int plane_from, int plane_to,
                                               uint8_t *ext_dst0[3],

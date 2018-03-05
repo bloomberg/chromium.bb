@@ -5340,14 +5340,15 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
           ref_yv12[!id].buf, ref_yv12[!id].stride, second_pred, pw,
           &frame_mv[refs[!id]].as_mv, &cm->sf_identity, pw, ph, 0,
           interp_filters, &warp_types, p_col, p_row, plane, MV_PRECISION_Q3,
-          mi_col * MI_SIZE, mi_row * MI_SIZE, xd);
+          mi_col * MI_SIZE, mi_row * MI_SIZE, xd, cm->use_ref_frame_mvs);
     } else {
       second_pred = (uint8_t *)second_pred_alloc_16;
-      av1_build_inter_predictor(
-          ref_yv12[!id].buf, ref_yv12[!id].stride, second_pred, pw,
-          &frame_mv[refs[!id]].as_mv, &cm->sf_identity, pw, ph, &conv_params,
-          interp_filters, &warp_types, p_col, p_row, plane, !id,
-          MV_PRECISION_Q3, mi_col * MI_SIZE, mi_row * MI_SIZE, xd);
+      av1_build_inter_predictor(ref_yv12[!id].buf, ref_yv12[!id].stride,
+                                second_pred, pw, &frame_mv[refs[!id]].as_mv,
+                                &cm->sf_identity, pw, ph, &conv_params,
+                                interp_filters, &warp_types, p_col, p_row,
+                                plane, !id, MV_PRECISION_Q3, mi_col * MI_SIZE,
+                                mi_row * MI_SIZE, xd, cm->use_ref_frame_mvs);
     }
 
     const int order_idx = id != 0;
@@ -5919,12 +5920,14 @@ static void build_second_inter_pred(const AV1_COMP *cpi, MACROBLOCK *x,
     av1_highbd_build_inter_predictor(
         ref_yv12.buf, ref_yv12.stride, second_pred, pw, other_mv, &sf, pw, ph,
         0, mbmi->interp_filters, &warp_types, p_col, p_row, plane,
-        MV_PRECISION_Q3, mi_col * MI_SIZE, mi_row * MI_SIZE, xd);
+        MV_PRECISION_Q3, mi_col * MI_SIZE, mi_row * MI_SIZE, xd,
+        cm->use_ref_frame_mvs);
   } else {
     av1_build_inter_predictor(
         ref_yv12.buf, ref_yv12.stride, second_pred, pw, other_mv, &sf, pw, ph,
         &conv_params, mbmi->interp_filters, &warp_types, p_col, p_row, plane,
-        !ref_idx, MV_PRECISION_Q3, mi_col * MI_SIZE, mi_row * MI_SIZE, xd);
+        !ref_idx, MV_PRECISION_Q3, mi_col * MI_SIZE, mi_row * MI_SIZE, xd,
+        cm->use_ref_frame_mvs);
   }
 
   av1_jnt_comp_weight_assign(cm, mbmi, 0, &xd->jcp_param.fwd_offset,
@@ -6879,7 +6882,8 @@ static int64_t motion_mode_rd(
   base_mbmi = *mbmi;
   MOTION_MODE last_motion_mode_allowed =
       cm->switchable_motion_mode
-          ? motion_mode_allowed(xd->global_motion, xd, mi)
+          ? motion_mode_allowed(xd->global_motion, xd, mi,
+                                cm->use_ref_frame_mvs)
           : SIMPLE_TRANSLATION;
   assert(mbmi->ref_frame[1] != INTRA_FRAME);
   const MV_REFERENCE_FRAME ref_frame_1 = mbmi->ref_frame[1];
@@ -7626,6 +7630,7 @@ static int64_t handle_inter_mode(
       int tmp_rate_mv;
       COMPOUND_TYPE cur_type;
       int best_compmode_interinter_cost = 0;
+      int can_use_previous = cm->use_ref_frame_mvs;
 
       best_mv[0].as_int = cur_mv[0].as_int;
       best_mv[1].as_int = cur_mv[1].as_int;
@@ -7636,9 +7641,11 @@ static int64_t handle_inter_mode(
       if (masked_compound_used) {
         // get inter predictors to use for masked compound modes
         av1_build_inter_predictors_for_planes_single_buf(
-            xd, bsize, 0, 0, mi_row, mi_col, 0, preds0, strides);
+            xd, bsize, 0, 0, mi_row, mi_col, 0, preds0, strides,
+            can_use_previous);
         av1_build_inter_predictors_for_planes_single_buf(
-            xd, bsize, 0, 0, mi_row, mi_col, 1, preds1, strides);
+            xd, bsize, 0, 0, mi_row, mi_col, 1, preds1, strides,
+            can_use_previous);
       }
 
       for (cur_type = COMPOUND_AVERAGE; cur_type < COMPOUND_TYPES; cur_type++) {

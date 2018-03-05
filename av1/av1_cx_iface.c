@@ -597,7 +597,9 @@ static aom_codec_err_t set_encoder_config(
       cfg->kf_mode == AOM_KF_AUTO && cfg->kf_min_dist != cfg->kf_max_dist;
 
   oxcf->key_freq = cfg->kf_max_dist;
-
+  oxcf->sframe_dist = cfg->sframe_dist;
+  oxcf->sframe_mode = cfg->sframe_mode;
+  oxcf->sframe_enabled = cfg->sframe_dist != 0;
   oxcf->speed = extra_cfg->cpu_used;
   oxcf->dev_sf = extra_cfg->dev_sf;
   oxcf->enable_auto_arf = extra_cfg->enable_auto_alt_ref;
@@ -1763,6 +1765,8 @@ static aom_codec_enc_cfg_map_t encoder_usage_cfg_map[] = {
         AOM_KF_AUTO,  // g_kfmode
         0,            // kf_min_dist
         9999,         // kf_max_dist
+        0,            // sframe_dist
+        1,            // sframe_mode
         0,            // large_scale_tile
         0,            // monochrome
         0,            // tile_width_count

@@ -626,6 +626,28 @@ typedef struct aom_codec_enc_cfg {
    */
   unsigned int kf_max_dist;
 
+  /*!\brief sframe interval
+   *
+   * This value, expressed as a number of frames, forces the encoder to code
+   * an S-Frame every sframe_dist frames.
+   */
+  unsigned int sframe_dist;
+
+  /*!\brief sframe insertion mode
+   *
+   * This value must be set to 1 or 2, and tells the encoder how to insert
+   * S-Frames. It will only have an effect if sframe_dist != 0.
+   *
+   * If altref is enabled:
+   *   - if sframe_mode == 1, the considered frame will be made into an
+   *     S-Frame only if it is an altref frame
+   *   - if sframe_mode == 2, the next altref frame will be made into an
+   *     S-Frame.
+   *
+   * Otherwise: the considered frame will be made into an S-Frame.
+   */
+  unsigned int sframe_mode;
+
   /*!\brief Tile coding mode
    *
    * This value indicates the tile coding mode.
