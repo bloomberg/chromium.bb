@@ -15,7 +15,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"
 #include "build/build_config.h"
-#include "content/browser/accessibility/accessibility_buildflags.h"
+#include "content/browser/accessibility/accessibility_flags.h"
 #include "content/browser/accessibility/browser_accessibility_position.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/web/WebAXEnums.h"

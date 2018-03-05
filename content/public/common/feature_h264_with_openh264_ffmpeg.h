@@ -6,7 +6,7 @@
 #define CONTENT_PUBLIC_COMMON_FEATURE_H264_WITH_OPENH264_FFMPEG_H_
 
 #include "base/feature_list.h"
-#include "content/public/common/buildflags.h"
+#include "content/public/common/features.h"
 #include "media/media_features.h"
 
 namespace content {

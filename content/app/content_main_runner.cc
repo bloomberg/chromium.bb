@@ -52,7 +52,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/sandbox_init.h"
-#include "content/public/common/zygote_buildflags.h"
+#include "content/public/common/zygote_features.h"
 #include "gin/v8_initializer.h"
 #include "media/base/media.h"
 #include "media/media_features.h"

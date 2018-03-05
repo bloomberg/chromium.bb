@@ -17,8 +17,8 @@ if (is_mac) {
 
 # For feature flags internal to content. See content/public/common:features
 # for feature flags that clients of contents need to know about.
-buildflag_header("buildflags") {
-  header = "buildflags.h"
+buildflag_header("features") {
+  header = "features.h"
 
   flags = [
     "USE_EXTERNAL_POPUP_MENU=$use_external_popup_menu",
@@ -323,7 +323,7 @@ source_set("common") {
     "//ui/accessibility",
   ]
   deps = [
-    ":buildflags",
+    ":features",
     "//base",
     "//base/third_party/dynamic_annotations",
     "//build/util:webkit_version",
@@ -336,7 +336,7 @@ source_set("common") {
     "//content/app/resources",
     "//content/public/common:interfaces",
     "//content/public/common:service_names",
-    "//content/public/common:zygote_buildflags",
+    "//content/public/common:zygote_features",
     "//device/base/synchronization",
     "//device/bluetooth",
     "//gpu",

@@ -166,7 +166,7 @@
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
-#include "content/public/common/zygote_buildflags.h"
+#include "content/public/common/zygote_features.h"
 #include "device/gamepad/gamepad_haptics_manager.h"
 #include "device/gamepad/gamepad_monitor.h"
 #include "gpu/GLES2/gl2extchromium.h"

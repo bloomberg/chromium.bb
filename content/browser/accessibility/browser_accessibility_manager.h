@@ -14,7 +14,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "content/browser/accessibility/accessibility_buildflags.h"
+#include "content/browser/accessibility/accessibility_flags.h"
 #include "content/browser/accessibility/browser_accessibility_position.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/ax_event_notification_details.h"
