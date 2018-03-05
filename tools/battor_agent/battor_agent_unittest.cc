@@ -65,6 +65,7 @@ class MockBattOrConnection : public BattOrConnection {
   MOCK_METHOD0(Open, void());
   MOCK_METHOD0(Flush, void());
   MOCK_METHOD0(Close, void());
+  MOCK_METHOD0(IsOpen, bool());
   MOCK_METHOD3(SendBytes,
                void(BattOrMessageType type,
                     const void* buffer,
