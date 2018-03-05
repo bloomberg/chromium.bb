@@ -23,6 +23,7 @@ class Window;
 }
 
 namespace arc {
+class AXTreeSourceArcTest;
 
 using AXTreeArcSerializer =
     ui::AXTreeSerializer<mojom::AccessibilityNodeInfoData*,
@@ -59,12 +60,8 @@ class AXTreeSourceArc
   // Gets the window id of this tree.
   int32_t window_id() const { return window_id_; }
 
-  // Gets children for testing.
-  void GetChildrenForTest(
-      mojom::AccessibilityNodeInfoData* node,
-      std::vector<mojom::AccessibilityNodeInfoData*>* out_children) const;
-
  private:
+  friend class arc::AXTreeSourceArcTest;
   class FocusStealer;
 
   // AXTreeSource overrides.
