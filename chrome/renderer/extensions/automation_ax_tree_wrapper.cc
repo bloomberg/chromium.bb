@@ -103,6 +103,8 @@ api::automation::EventType ToAutomationEvent(ax::mojom::Event event_type) {
       return api::automation::EVENT_TYPE_SELECTIONREMOVE;
     case ax::mojom::Event::kShow:
       return api::automation::EVENT_TYPE_SHOW;
+    case ax::mojom::Event::kStateChanged:
+      return api::automation::EVENT_TYPE_NONE;
     case ax::mojom::Event::kTextChanged:
       return api::automation::EVENT_TYPE_TEXTCHANGED;
     case ax::mojom::Event::kTextSelectionChanged:
@@ -306,6 +308,7 @@ bool AutomationAXTreeWrapper::IsEventTypeHandledByAXEventGenerator(
     case api::automation::EVENT_TYPE_SELECTIONADD:
     case api::automation::EVENT_TYPE_SELECTIONREMOVE:
     case api::automation::EVENT_TYPE_SHOW:
+    case api::automation::EVENT_TYPE_STATECHANGED:
     case api::automation::EVENT_TYPE_TREECHANGED:
       return false;
 

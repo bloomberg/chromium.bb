@@ -57,6 +57,7 @@
     selectionAdd,
     selectionRemove,
     show,
+    stateChanged,
     textChanged,
     textSelectionChanged,
     treeChanged,

@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(nektar): Migrate entire file to Mojoq.
 // Must also be kept in sync with chrome/common/extensions/api/automation.idl.
 module ax.mojom;
 
@@ -10,19 +9,22 @@ module ax.mojom;
  // chrome/common/extensions/api/automation.idl. This is enforced
  // by a PRESUBMIT check.
  //
- // Explanation of the comments next to these events:
+ // Explanation of in-lined comments next to some enum values/attributes:
  //
- // Web: this event is only used in web content. Unless a specific platform
- //      is specified, it fires a native event on multiple platforms.
+ // Web: this attribute is only used in web content.
  //
- // Native: this event is only used in native UI.
+ // Native: this attribute is only used in native UI.
  //
- // Implicit: it would be cleaner if we just updated the AX node
- //     and each platform fired the appropriate events to indicate which
+ // Implicit: for events, it would be cleaner if we just updated the AX node and
+ //     each platform fired the appropriate events to indicate which
  //     platform-specific attributes changed.
  //
- // If unspecified, the event is used across web and native on multiple
+ //  if Native / [Platform1, ...] is specified, the attribute is only used
+ //  on those platforms.
+ //
+ // If unspecified, the atribute is used across web and native on multiple
  // platforms.
+
 enum Event {
   kNone,
   kActiveDescendantChanged,   // Web
@@ -46,8 +48,8 @@ enum Event {
   kLiveRegionChanged,         // Web
   kLoadComplete,              // Web
   kLocationChanged,           // Web
-  kMediaStartedPlaying,       // Automation
-  kMediaStoppedPlaying,       // Automation
+  kMediaStartedPlaying,       // Native / Automation
+  kMediaStoppedPlaying,       // Native / Automation
   kMenuEnd,                   // Native / Win
   kMenuListItemSelected,      // Web
   kMenuListValueChanged,      // Web
@@ -69,6 +71,7 @@ enum Event {
   kSelectionAdd,              // Native
   kSelectionRemove,           // Native
   kShow,                      // Remove: http://crbug.com/392502
+  kStateChanged,              // Native / Automation
   kTextChanged,
   kTextSelectionChanged,
   kTreeChanged,               // Accessibility tree changed. Don't
@@ -366,8 +369,8 @@ enum StringAttribute {
    // Only used when invalid_state == invalid_state_other.
   kAriaInvalidValue,
   kAutoComplete,
-  kChromeChannel,   // Automation only.
-  kClassName,  // views and Android
+  kChromeChannel,   // Native / Automation
+  kClassName,       // Native / Android
   kContainerLiveRelevant,
   kContainerLiveStatus,
   kDescription,

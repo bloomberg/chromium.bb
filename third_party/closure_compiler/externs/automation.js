@@ -65,6 +65,7 @@ chrome.automation.EventType = {
   SELECTION_ADD: 'selectionAdd',
   SELECTION_REMOVE: 'selectionRemove',
   SHOW: 'show',
+  STATE_CHANGED: 'stateChanged',
   TEXT_CHANGED: 'textChanged',
   TEXT_SELECTION_CHANGED: 'textSelectionChanged',
   TREE_CHANGED: 'treeChanged',
