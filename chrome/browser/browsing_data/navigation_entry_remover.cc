@@ -76,6 +76,10 @@ void DeleteNavigationEntries(
     const content::NavigationController::DeletionPredicate& predicate) {
   for (int i = 0; i < tab_count; i++) {
     content::WebContents* web_contents = tab_list->GetWebContentsAt(i);
+    // TODO(dullweber): Non-loaded tabs on Android don't have a WebContents.
+    // We need to cleanup their TabState instead.
+    if (!web_contents)
+      continue;
     content::NavigationController* controller = &web_contents->GetController();
     controller->DiscardNonCommittedEntries();
     // We discarded pending and transient entries but there could still be
