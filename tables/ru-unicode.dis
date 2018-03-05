@@ -94,3 +94,14 @@ display \x283E 234569
 display \x282A 2469
 display \x2833 12569
 display \x282B 12469
+
+# For Ukrainian letters (defined in uk.utb)
+display \x285C 34579
+display \x287D 1345679
+display \x2879 145679
+display \x287B 1245679
+
+display \x281C 3459
+display \x283D 134569
+display \x2839 14569
+display \x283B 124569

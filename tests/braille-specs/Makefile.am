@@ -75,6 +75,7 @@ EXTRA_DIST =					\
 	sk-g1_harness.yaml			\
 	sr-g1_harness.yaml			\
 	ta-ta-g1_harness.yaml			\
+	uk.yaml					\
 	vi-g1_backward.yaml			\
 	vi-g1_harness.yaml			\
 	zh-chn.yaml

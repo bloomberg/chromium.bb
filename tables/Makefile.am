@@ -349,6 +349,7 @@ table_files = \
 	tr-g1.ctb \
 	tr.tbl \
 	tsn-za-g1.ctb \
+	uk.utb \
 	ukchardefs.cti \
 	ukmaths.ctb \
 	ukmaths_edit.ctb \

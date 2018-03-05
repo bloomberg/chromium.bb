@@ -35,6 +35,7 @@ issues]].
 - Minor updates to the Danish tables thanks to Bue Vester-Andersen
 - Fix back translation of numbers in Dutch, Finnish and Canadian
   French, thanks to Leonard de Ruijter.
+- New table for Ukrainian thanks to Sergiy Moskalets.
 
 ** Other changes
 *** Improved documentation
@@ -79,6 +80,7 @@ liblouis. Thanks to Bert Frees.
 *** New
 - IPA-unicode-range.uti
 - mn-MN-g2.ctb
+- uk.utb
 *** Renamed
 - mn-MN.utb -> mn-MN-g1.utb
 *** Removed
