@@ -675,10 +675,15 @@ bool TrafficAnnotationAuditor::RunAllChecks(
     }
   }
 
-  if (report_xml_updates && exporter_.modified()) {
-    errors_.push_back(
-        AuditorResult(AuditorResult::Type::ERROR_ANNOTATIONS_XML_UPDATE,
-                      exporter_.GetRequiredUpdates()));
+  // If |report_xml_updates| is true, check annotations.xml whether or not it is
+  // modified, as there might be format differences with exporter outputs due to
+  // manual updates.
+  if (report_xml_updates) {
+    std::string updates = exporter_.GetRequiredUpdates();
+    if (!updates.empty()) {
+      errors_.push_back(AuditorResult(
+          AuditorResult::Type::ERROR_ANNOTATIONS_XML_UPDATE, updates));
+    }
   }
 
   return true;
