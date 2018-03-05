@@ -57,7 +57,7 @@ class Tokenizer {
   bool IsCurrentNewline() const;
   bool IsCurrentStringTerminator(char quote_char) const;
 
-  bool CanIncrement() const { return cur_ < input_.size(); }
+  bool CanIncrement() const { return cur_ < input_.size() - 1; }
 
   // Increments the current location by one.
   void Advance();
