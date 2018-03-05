@@ -2544,7 +2544,8 @@ static void wrap_around_current_video_frame(AV1Decoder *pbi) {
 }
 
 #if CONFIG_FWD_KF
-static void show_existing_frame_reset(AV1Decoder *const pbi) {
+static void show_existing_frame_reset(AV1Decoder *const pbi,
+                                      int existing_frame_idx) {
   AV1_COMMON *const cm = &pbi->common;
   BufferPool *const pool = cm->buffer_pool;
   RefCntBuffer *const frame_bufs = pool->frame_bufs;
@@ -2613,7 +2614,8 @@ static void show_existing_frame_reset(AV1Decoder *const pbi) {
   unlock_buffer_pool(pool);
   pbi->hold_ref_buf = 1;
 
-  av1_setup_past_independence(cm);
+  // Reload the adapted CDFs from when we originally coded this keyframe
+  *cm->fc = cm->frame_contexts[existing_frame_idx];
 }
 #endif  // CONFIG_FWD_KF
 
@@ -2685,7 +2687,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 
 #if CONFIG_FWD_KF
     if (cm->reset_decoder_state) {
-      show_existing_frame_reset(pbi);
+      show_existing_frame_reset(pbi, existing_frame_idx);
     } else {
 #endif  // CONFIG_FWD_KF
       pbi->refresh_frame_flags = 0;
