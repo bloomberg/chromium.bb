@@ -1981,6 +1981,15 @@ void Node::WillMoveToNewDocument(Document& old_document,
     return;
 
   old_document.GetPage()->GetEventHandlerRegistry().DidMoveOutOfPage(*this);
+
+  if (IsElementNode()) {
+    StylePropertyMapReadOnly* computed_style_map_item =
+        old_document.RemoveComputedStyleMapItem(ToElement(this));
+    if (computed_style_map_item) {
+      new_document.AddComputedStyleMapItem(ToElement(this),
+                                           computed_style_map_item);
+    }
+  }
 }
 
 void Node::DidMoveToNewDocument(Document& old_document) {

@@ -15,7 +15,7 @@ class ElementComputedStyleMap {
 
  public:
   static StylePropertyMapReadOnly* computedStyleMap(Element& element) {
-    return ComputedStylePropertyMap::Create(&element);
+    return element.ComputedStyleMap();
   }
 };
 

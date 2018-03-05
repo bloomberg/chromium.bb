@@ -175,6 +175,7 @@ class SnapCoordinator;
 class StringOrDictionary;
 class StyleEngine;
 class StyleResolver;
+class StylePropertyMapReadOnly;
 class StyleSheetList;
 class TextAutosizer;
 class Touch;
@@ -1420,6 +1421,10 @@ class CORE_EXPORT Document : public ContainerNode,
 
   const AtomicString& RequiredCSP();
 
+  StylePropertyMapReadOnly* ComputedStyleMap(Element*);
+  void AddComputedStyleMapItem(Element*, StylePropertyMapReadOnly*);
+  StylePropertyMapReadOnly* RemoveComputedStyleMapItem(Element*);
+
  protected:
   Document(const DocumentInit&, DocumentClassFlags = kDefaultDocumentClass);
 
@@ -1633,6 +1638,10 @@ class CORE_EXPORT Document : public ContainerNode,
   const Member<VisitedLinkState> visited_link_state_;
 
   bool visually_ordered_;
+
+  using ElementComputedStyleMap =
+      HeapHashMap<WeakMember<Element>, Member<StylePropertyMapReadOnly>>;
+  ElementComputedStyleMap element_computed_style_map_;
 
   DocumentReadyState ready_state_;
   ParsingState parsing_state_;
