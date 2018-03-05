@@ -148,6 +148,10 @@ class ASH_EXPORT PowerButtonController
   // |turn_screen_off_for_tap_| and |screenshot_controller_|.
   void InitTabletPowerButtonMembers();
 
+  // Locks the screen if the "Show lock screen when waking from sleep" pref is
+  // set and locking is possible.
+  void LockScreenIfRequired();
+
   // Are the power or lock buttons currently held?
   bool power_button_down_ = false;
   bool lock_button_down_ = false;

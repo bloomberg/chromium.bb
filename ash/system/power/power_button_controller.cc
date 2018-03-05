@@ -177,6 +177,7 @@ void PowerButtonController::OnPowerButtonEvent(
     if (menu_timer_was_running && !screen_off_when_power_button_down_ &&
         force_off_on_button_up_) {
       display_controller_->SetBacklightsForcedOff(true);
+      LockScreenIfRequired();
     }
   }
 }
@@ -357,6 +358,17 @@ void PowerButtonController::InitTabletPowerButtonMembers() {
   if (!screenshot_controller_) {
     screenshot_controller_ =
         std::make_unique<PowerButtonScreenshotController>(tick_clock_);
+  }
+}
+
+void PowerButtonController::LockScreenIfRequired() {
+  const SessionController* session_controller =
+      Shell::Get()->session_controller();
+  if (session_controller->ShouldLockScreenAutomatically() &&
+      session_controller->CanLockScreen() &&
+      !session_controller->IsUserSessionBlocked() &&
+      !lock_state_controller_->LockRequested()) {
+    lock_state_controller_->LockWithoutAnimation();
   }
 }
 
