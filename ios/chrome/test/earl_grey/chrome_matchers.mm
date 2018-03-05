@@ -126,6 +126,10 @@ id<GREYMatcher> CancelButton() {
   return ButtonWithAccessibilityLabelId(IDS_CANCEL);
 }
 
+id<GREYMatcher> CloseButton() {
+  return ButtonWithAccessibilityLabelId(IDS_CLOSE);
+}
+
 id<GREYMatcher> ForwardButton() {
   return ButtonWithAccessibilityLabelId(IDS_ACCNAME_FORWARD);
 }

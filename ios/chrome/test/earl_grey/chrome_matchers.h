@@ -34,6 +34,9 @@ id<GREYMatcher> StaticTextWithAccessibilityLabel(NSString* label);
 // Returns matcher for a cancel button.
 id<GREYMatcher> CancelButton();
 
+// Returns matcher for a close button.
+id<GREYMatcher> CloseButton();
+
 // Matcher for the navigate forward button.
 id<GREYMatcher> ForwardButton();
 
