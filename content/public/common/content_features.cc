@@ -147,7 +147,7 @@ const base::Feature kLazyInitializeMediaControls{
 
 // Enables lazily parsing css properties for performance.
 const base::Feature kLazyParseCSS{"LazyParseCSS",
-                                  base::FEATURE_DISABLED_BY_DEFAULT};
+                                  base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables lowering the priority of the resources in iframes.
 const base::Feature kLowPriorityIframes{"LowPriorityIframes",
