@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/media/router/discovery/dial/dial_app_info_fetcher.h"
+#include "chrome/browser/media/router/discovery/dial/dial_url_fetcher.h"
 
-#include "base/strings/stringprintf.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -20,22 +19,22 @@
 constexpr int kMaxRetries = 3;
 // DIAL devices are unlikely to expose uPnP functions other than DIAL, so 256kb
 // should be more than sufficient.
-constexpr int kMaxAppInfoSizeBytes = 262144;
+constexpr int kMaxResponseSizeBytes = 262144;
 
 namespace media_router {
 
 namespace {
 
 constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
-    net::DefineNetworkTrafficAnnotation("dial_get_app_info", R"(
+    net::DefineNetworkTrafficAnnotation("dial_url_fetcher", R"(
         semantics {
           sender: "DIAL"
           description:
             "Chromium sends a request to a device (such as a smart TV) "
             "discovered via the DIAL (Discovery and Launch) protocol to obtain "
-            "its app info data. Chromium then uses the app info data to"
-            "determine the capabilities of the device to be used as a target"
-            "for casting media content."
+            "its device description or app info data. Chromium then uses the "
+            "data to determine the capabilities of the device to be used as a "
+            "targetfor casting media content."
           trigger:
             "A new or updated device has been discovered via DIAL in the local "
             "network."
@@ -66,26 +65,31 @@ void BindURLLoaderFactoryRequestOnUIThread(
 
 }  // namespace
 
-DialAppInfoFetcher::DialAppInfoFetcher(
-    const GURL& app_url,
+DialURLFetcher::DialURLFetcher(
+    const GURL& url,
     base::OnceCallback<void(const std::string&)> success_cb,
     base::OnceCallback<void(int, const std::string&)> error_cb)
-    : app_url_(app_url),
+    : url_(url),
       success_cb_(std::move(success_cb)),
       error_cb_(std::move(error_cb)) {
-  DCHECK(app_url_.is_valid());
+  DCHECK(url_.is_valid());
 }
 
-DialAppInfoFetcher::~DialAppInfoFetcher() {
+DialURLFetcher::~DialURLFetcher() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-void DialAppInfoFetcher::Start() {
+const network::ResourceResponseHead* DialURLFetcher::GetResponseHead() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return loader_ ? loader_->ResponseInfo() : nullptr;
+}
+
+void DialURLFetcher::Start() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!loader_);
 
   auto request = std::make_unique<network::ResourceRequest>();
-  request->url = app_url_;
+  request->url = url_;
 
   // net::LOAD_BYPASS_PROXY: Proxies almost certainly hurt more cases than they
   //     help.
@@ -110,17 +114,17 @@ void DialAppInfoFetcher::Start() {
   // In practice, the callback will only get called once, since |loader_| will
   // be deleted.
   loader_->SetOnRedirectCallback(base::BindRepeating(
-      &DialAppInfoFetcher::ReportRedirectError, base::Unretained(this)));
+      &DialURLFetcher::ReportRedirectError, base::Unretained(this)));
 
   StartDownload();
 }
 
-void DialAppInfoFetcher::ReportError(int response_code,
-                                     const std::string& message) {
+void DialURLFetcher::ReportError(int response_code,
+                                 const std::string& message) {
   std::move(error_cb_).Run(response_code, message);
 }
 
-void DialAppInfoFetcher::ReportRedirectError(
+void DialURLFetcher::ReportRedirectError(
     const net::RedirectInfo& redirect_info,
     const network::ResourceResponseHead& response_head) {
   // Cancel the request.
@@ -131,7 +135,7 @@ void DialAppInfoFetcher::ReportRedirectError(
   ReportError(net::Error::OK, "Redirect not allowed");
 }
 
-void DialAppInfoFetcher::StartDownload() {
+void DialURLFetcher::StartDownload() {
   // Bind the request to the system URLLoaderFactory obtained on UI thread.
   // Currently this is the only way to guarantee a live URLLoaderFactory.
   // TOOD(mmenke): Figure out a way to do this transparently on IO thread.
@@ -141,14 +145,13 @@ void DialAppInfoFetcher::StartDownload() {
       base::BindOnce(&BindURLLoaderFactoryRequestOnUIThread,
                      mojo::MakeRequest(&loader_factory)));
 
-  loader_->DownloadToString(loader_factory.get(),
-                            base::BindOnce(&DialAppInfoFetcher::ProcessResponse,
-                                           base::Unretained(this)),
-                            kMaxAppInfoSizeBytes);
+  loader_->DownloadToString(
+      loader_factory.get(),
+      base::BindOnce(&DialURLFetcher::ProcessResponse, base::Unretained(this)),
+      kMaxResponseSizeBytes);
 }
 
-void DialAppInfoFetcher::ProcessResponse(
-    std::unique_ptr<std::string> response) {
+void DialURLFetcher::ProcessResponse(std::unique_ptr<std::string> response) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   int response_code = loader_->NetError();
   if (response_code != net::Error::OK) {
