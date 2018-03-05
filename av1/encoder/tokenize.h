@@ -20,27 +20,11 @@
 extern "C" {
 #endif
 
-#define EOSB_TOKEN 127  // Not signalled, encoder only
-
-typedef int32_t EXTRABIT;
-
 typedef struct {
-  int16_t token;
-  EXTRABIT extra;
-} TOKENVALUE;
-
-typedef struct {
-  aom_cdf_prob (*tail_cdf)[CDF_SIZE(ENTROPY_TOKENS)];
-  aom_cdf_prob (*head_cdf)[CDF_SIZE(ENTROPY_TOKENS)];
   aom_cdf_prob *color_map_cdf;
   // TODO(yaowu: use packed enum type if appropriate)
-  int8_t eob_val;
-  int8_t first_val;
-  EXTRABIT extra;
   uint8_t token;
 } TOKENEXTRA;
-
-int av1_is_skippable_in_plane(MACROBLOCK *x, BLOCK_SIZE bsize, int plane);
 
 struct AV1_COMP;
 struct ThreadData;
@@ -73,54 +57,6 @@ int av1_cost_color_map(const MACROBLOCK *const x, int plane, BLOCK_SIZE bsize,
 void av1_tokenize_color_map(const MACROBLOCK *const x, int plane,
                             TOKENEXTRA **t, BLOCK_SIZE bsize, TX_SIZE tx_size,
                             COLOR_MAP_TYPE type);
-
-void av1_tokenize_sb(const struct AV1_COMP *cpi, struct ThreadData *td,
-                     TOKENEXTRA **t, RUN_TYPE dry_run, BLOCK_SIZE bsize,
-                     int *rate, const int mi_row, const int mi_col,
-                     uint8_t allow_update_cdf);
-
-extern const int16_t *av1_dct_value_cost_ptr;
-/* TODO: The Token field should be broken out into a separate char array to
- *  improve cache locality, since it's needed for costing when the rest of the
- *  fields are not.
- */
-extern const TOKENVALUE *av1_dct_value_tokens_ptr;
-extern const TOKENVALUE *av1_dct_cat_lt_10_value_tokens;
-extern const int *av1_dct_cat_lt_10_value_cost;
-extern const int16_t av1_cat6_low_cost[256];
-#define CAT6_HIGH_COST_ENTRIES 1024
-extern const int av1_cat6_high_cost[CAT6_HIGH_COST_ENTRIES];
-extern const uint8_t av1_cat6_skipped_bits_discount[8];
-
-static INLINE void av1_get_token_extra(int v, int16_t *token, EXTRABIT *extra) {
-  if (v >= CAT6_MIN_VAL || v <= -CAT6_MIN_VAL) {
-    *token = CATEGORY6_TOKEN;
-    if (v >= CAT6_MIN_VAL)
-      *extra = 2 * v - 2 * CAT6_MIN_VAL;
-    else
-      *extra = -2 * v - 2 * CAT6_MIN_VAL + 1;
-    return;
-  }
-  *token = av1_dct_cat_lt_10_value_tokens[v].token;
-  *extra = av1_dct_cat_lt_10_value_tokens[v].extra;
-}
-static INLINE int16_t av1_get_token(int v) {
-  if (v >= CAT6_MIN_VAL || v <= -CAT6_MIN_VAL) return 10;
-  return av1_dct_cat_lt_10_value_tokens[v].token;
-}
-
-static INLINE int av1_get_token_cost(int v, int16_t *token, int cat6_bits) {
-  if (v >= CAT6_MIN_VAL || v <= -CAT6_MIN_VAL) {
-    EXTRABIT extrabits;
-    *token = CATEGORY6_TOKEN;
-    extrabits = abs(v) - CAT6_MIN_VAL;
-    return av1_cat6_low_cost[extrabits & 0xff] +
-           av1_cat6_high_cost[extrabits >> 8] -
-           av1_cat6_skipped_bits_discount[18 - cat6_bits];
-  }
-  *token = av1_dct_cat_lt_10_value_tokens[v].token;
-  return av1_dct_cat_lt_10_value_cost[v];
-}
 
 static INLINE int av1_get_tx_eob(const struct segmentation *seg, int segment_id,
                                  TX_SIZE tx_size) {
