@@ -28,6 +28,7 @@
 #include "base/timer/elapsed_timer.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
+#include "build/build_config.h"
 #include "cc/base/devtools_instrumentation.h"
 #include "cc/base/histograms.h"
 #include "cc/base/math_util.h"
@@ -1054,7 +1055,6 @@ void LayerTreeHost::SetViewportSizeAndScale(
       << "A valid LocalSurfaceId has been provided with an empty device "
          "viewport size "
       << local_surface_id;
-  // TODO(ccameron): Add CHECKs here for surface invariants violations.
   if (settings_.enable_surface_synchronization)
     SetLocalSurfaceId(local_surface_id);
 
@@ -1080,6 +1080,11 @@ void LayerTreeHost::SetViewportSizeAndScale(
   if (changed) {
     SetPropertyTreesNeedRebuild();
     SetNeedsCommit();
+#if defined(OS_MACOSX)
+    // TODO(ccameron): This check is not valid on Aura or Mus yet, but should
+    // be.
+    CHECK(!has_pushed_local_surface_id_ || !local_surface_id_.is_valid());
+#endif
   }
 }
 
@@ -1171,6 +1176,7 @@ void LayerTreeHost::SetLocalSurfaceId(
   if (local_surface_id_ == local_surface_id)
     return;
   local_surface_id_ = local_surface_id;
+  has_pushed_local_surface_id_ = false;
   UpdateDeferCommitsInternal();
   SetNeedsCommit();
 }
@@ -1361,6 +1367,7 @@ void LayerTreeHost::PushLayerTreePropertiesTo(LayerTreeImpl* tree_impl) {
   tree_impl->set_content_source_id(content_source_id_);
 
   tree_impl->set_local_surface_id(local_surface_id_);
+  has_pushed_local_surface_id_ = true;
 
   if (pending_page_scale_animation_) {
     tree_impl->SetPendingPageScaleAnimation(
