@@ -23,6 +23,7 @@
 #include "content/browser/accessibility/browser_accessibility_win.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
 #include "ui/base/win/atl_module.h"
+#include "ui/gfx/win/hwnd_util.h"
 
 namespace content {
 
@@ -202,6 +203,23 @@ void AccessibilityEventRecorderWin::OnWinEventHook(
   if (!SUCCEEDED(hr)) {
     VLOG(1) << "Ignoring result " << hr << " from QueryInterface";
     return;
+  }
+
+  if (only_web_events_) {
+    std::string hwnd_class_name = base::UTF16ToUTF8(gfx::GetClassName(hwnd));
+    if (hwnd_class_name != "Chrome_RenderWidgetHostHWND")
+      return;
+
+    Microsoft::WRL::ComPtr<IServiceProvider> service_provider;
+    hr = iaccessible->QueryInterface(service_provider.GetAddressOf());
+    if (!SUCCEEDED(hr))
+      return;
+
+    Microsoft::WRL::ComPtr<IAccessible> content_document;
+    hr = service_provider->QueryService(GUID_IAccessibleContentDocument,
+                                        content_document.GetAddressOf());
+    if (!SUCCEEDED(hr))
+      return;
   }
 
   std::string event_str = AccessibilityEventToStringUTF8(event);

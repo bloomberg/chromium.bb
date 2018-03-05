@@ -1,2 +1,2 @@
-AXLiveRegionCreated on AXGroup
 AXLiveRegionChanged on AXGroup
+AXLiveRegionCreated on AXGroup

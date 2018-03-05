@@ -43,19 +43,6 @@ using BrowserAccessibilityPositionInstance =
 using AXPlatformRange =
     ui::AXRange<BrowserAccessibilityPositionInstance::element_type>;
 
-// These nonstandard GUIDs are taken directly from the Mozilla sources
-// (accessible/src/msaa/nsAccessNodeWrap.cpp); some documentation is here:
-// http://developer.mozilla.org/en/Accessibility/AT-APIs/ImplementationFeatures/MSAA
-const GUID GUID_ISimpleDOM = {0x0c539790,
-                              0x12e4,
-                              0x11cf,
-                              {0xb6, 0x61, 0x00, 0xaa, 0x00, 0x4c, 0xd6, 0xd8}};
-const GUID GUID_IAccessibleContentDocument = {
-    0xa5d8e1f3,
-    0x3571,
-    0x4d8f,
-    {0x95, 0x21, 0x07, 0xed, 0x28, 0xfb, 0x07, 0x2e}};
-
 void AddAccessibilityModeFlags(ui::AXMode mode_flags) {
   BrowserAccessibilityStateImpl::GetInstance()->AddAccessibilityModeFlags(
       mode_flags);

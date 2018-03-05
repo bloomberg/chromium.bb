@@ -43,6 +43,8 @@ namespace content {
 
 typedef AccessibilityTreeFormatter::Filter Filter;
 
+// See content/test/data/accessibility/readme.md for an overview.
+//
 // This test takes a snapshot of the platform BrowserAccessibility tree and
 // tests it against an expected baseline.
 //

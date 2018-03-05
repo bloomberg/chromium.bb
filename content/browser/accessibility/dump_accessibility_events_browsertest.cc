@@ -29,6 +29,8 @@ namespace content {
 
 typedef AccessibilityTreeFormatter::Filter Filter;
 
+// See content/test/data/accessibility/readme.md for an overview.
+//
 // Tests that the right platform-specific accessibility events are fired
 // in response to things that happen in a web document.
 //
@@ -62,6 +64,9 @@ typedef AccessibilityTreeFormatter::Filter Filter;
 class DumpAccessibilityEventsTest : public DumpAccessibilityTestBase {
  public:
   void AddDefaultFilters(std::vector<Filter>* filters) override {
+    // Suppress spurious focus events on the document object.
+    filters->push_back(Filter(
+        base::ASCIIToUTF16("EVENT_OBJECT_FOCUS*DOCUMENT*"), Filter::DENY));
   }
 
   std::vector<std::string> Dump() override;
@@ -81,6 +86,7 @@ std::vector<std::string> DumpAccessibilityEventsTest::Dump() {
   std::unique_ptr<AccessibilityEventRecorder> event_recorder(
       AccessibilityEventRecorder::Create(
           web_contents->GetRootBrowserAccessibilityManager(), pid));
+  event_recorder->set_only_web_events(true);
 
   // Save a copy of the accessibility tree (as a text dump); we'll
   // log this for the user later if the test fails.
@@ -126,6 +132,12 @@ std::vector<std::string> DumpAccessibilityEventsTest::Dump() {
       result.push_back(event_logs[i]);
     }
   }
+
+  // Sort the logs so that results are predictable. There are too many
+  // nondeterministic things that affect the exact order of events fired,
+  // so these tests shouldn't be used to make assertions about event order.
+  std::sort(result.begin(), result.end());
+
   return result;
 }
 

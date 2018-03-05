@@ -355,6 +355,8 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
 
   // Call the subclass to dump the output.
   std::vector<std::string> actual_lines = Dump();
+  std::string actual_contents_for_output =
+      base::JoinString(actual_lines, "\n") + "\n";
 
   // Perform a diff (or write the initial baseline).
   std::vector<std::string> expected_lines = base::SplitString(
@@ -394,18 +396,17 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
     diff += "------\n";
     diff += actual_contents;
     LOG(ERROR) << "Diff:\n" << diff;
-
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kGenerateAccessibilityTestExpectations)) {
-      base::ThreadRestrictions::ScopedAllowIO allow_io_to_write_expected_file;
-      CHECK(base::WriteFile(expected_file, actual_contents.c_str(),
-                            actual_contents.size()) ==
-            static_cast<int>(actual_contents.size()));
-      LOG(INFO) << "Wrote expectations to: "
-                << expected_file.LossyDisplayName();
-    }
   } else {
     LOG(INFO) << "Test output matches expectations.";
+  }
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kGenerateAccessibilityTestExpectations)) {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    CHECK(base::WriteFile(expected_file, actual_contents_for_output.c_str(),
+                          actual_contents_for_output.size()) ==
+          static_cast<int>(actual_contents_for_output.size()));
+    LOG(INFO) << "Wrote expectations to: " << expected_file.LossyDisplayName();
   }
 }
 

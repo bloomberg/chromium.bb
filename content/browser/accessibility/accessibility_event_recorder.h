@@ -40,6 +40,10 @@ class AccessibilityEventRecorder {
       base::ProcessId pid);
   virtual ~AccessibilityEventRecorder();
 
+  void set_only_web_events(bool only_web_events) {
+    only_web_events_ = only_web_events;
+  }
+
   void ListenToEvents(AccessibilityEventCallback callback) {
     callback_ = callback;
   }
@@ -54,12 +58,13 @@ class AccessibilityEventRecorder {
   void OnEvent(std::string event);
 
   BrowserAccessibilityManager* manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(AccessibilityEventRecorder);
+  bool only_web_events_ = false;
 
  private:
   std::vector<std::string> event_logs_;
   AccessibilityEventCallback callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(AccessibilityEventRecorder);
 };
 
 }  // namespace content

@@ -22,6 +22,8 @@ namespace content {
 //
 // The system was inspired by WebKit/Blink LayoutTests, but customized for
 // testing accessibility in Chromium.
+//
+// See content/test/data/accessibility/readme.md for an overview.
 class DumpAccessibilityTestBase : public ContentBrowserTest {
  public:
   DumpAccessibilityTestBase();
