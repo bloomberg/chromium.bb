@@ -420,12 +420,6 @@ bool AXTreeSourceArc::GetTreeData(ui::AXTreeData* data) const {
   return true;
 }
 
-void AXTreeSourceArc::GetChildrenForTest(
-    mojom::AccessibilityNodeInfoData* node,
-    std::vector<mojom::AccessibilityNodeInfoData*>* out_children) const {
-  GetChildren(node, out_children);
-}
-
 mojom::AccessibilityNodeInfoData* AXTreeSourceArc::GetRoot() const {
   mojom::AccessibilityNodeInfoData* root = GetFromId(root_id_);
   return root;
@@ -539,21 +533,21 @@ void AXTreeSourceArc::SerializeNode(mojom::AccessibilityNodeInfoData* node,
   // String properties.
   int labelled_by = -1;
 
-  // Accessible name computation picks (in-order) content description, text, or
-  // labelled by text.
+  // Accessible name computation picks the first non-empty string from content
+  // description, text, or labelled by text.
   std::string name;
-  bool has_name = false;
-  if (GetStringProperty(node, AXStringProperty::CONTENT_DESCRIPTION, &name) ||
-      GetStringProperty(node, AXStringProperty::TEXT, &name)) {
-    has_name = true;
-  } else if (GetIntProperty(node,
-                            arc::mojom::AccessibilityIntProperty::LABELED_BY,
-                            &labelled_by)) {
+  bool has_name =
+      GetStringProperty(node, AXStringProperty::CONTENT_DESCRIPTION, &name);
+  if (name.empty())
+    has_name |= GetStringProperty(node, AXStringProperty::TEXT, &name);
+  if (name.empty() &&
+      GetIntProperty(node, arc::mojom::AccessibilityIntProperty::LABELED_BY,
+                     &labelled_by)) {
     mojom::AccessibilityNodeInfoData* labelled_by_node = GetFromId(labelled_by);
     if (labelled_by_node) {
       ui::AXNodeData labelled_by_data;
       SerializeNode(labelled_by_node, &labelled_by_data);
-      has_name = labelled_by_data.GetStringAttribute(
+      has_name |= labelled_by_data.GetStringAttribute(
           ax::mojom::StringAttribute::kName, &name);
     }
   }
