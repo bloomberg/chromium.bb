@@ -104,6 +104,7 @@ def _process_perf_results(output_json, configuration_name,
 
     with oauth_api.with_access_token(service_account_file) as oauth_file:
       for directory in benchmark_directory_list:
+        print 'Uploading perf results from %s benchmark' % directory
         _upload_perf_results(join(directory, 'perf_results.json'),
             directory, configuration_name, build_properties,
             oauth_file, tmpfile_dir)

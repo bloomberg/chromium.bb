@@ -34,6 +34,7 @@ def _GetDashboardJson(options):
   reference_build = 'reference' in options.name
   stripped_test_name = options.name.replace('.reference', '')
   results = {}
+  print 'Opening results file %s' % options.results_file
   with open(options.results_file) as f:
     results = json.load(f)
   dashboard_json = {}
