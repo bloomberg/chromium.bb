@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_ELF_HOOK_UTIL_THUNK_GETTER_H_
-#define CHROME_ELF_HOOK_UTIL_THUNK_GETTER_H_
+#ifndef CHROME_ELF_HOOK_UTIL_HOOK_UTIL_H_
+#define CHROME_ELF_HOOK_UTIL_HOOK_UTIL_H_
 
 #include <windows.h>
 
@@ -63,4 +63,4 @@ class IATHook {
 
 }  // namespace elf_hook
 
-#endif  // CHROME_ELF_HOOK_UTIL_THUNK_GETTER_H_
+#endif  // CHROME_ELF_HOOK_UTIL_HOOK_UTIL_H_
