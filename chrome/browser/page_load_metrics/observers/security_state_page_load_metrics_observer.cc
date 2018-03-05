@@ -15,6 +15,7 @@
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "components/security_state/core/security_state.h"
 #include "content/public/browser/navigation_handle.h"
+#include "services/metrics/public/cpp/metrics_utils.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 
@@ -170,12 +171,17 @@ void SecurityStatePageLoadMetricsObserver::OnComplete(
   if (engagement_service_) {
     double final_engagement_score =
         engagement_service_->GetScore(extra_info.url);
+    // Round the engagement score down to the closest multiple of 10 to decrease
+    // the granularity of the UKM collection.
+    int64_t coarse_engagement_score =
+        ukm::GetLinearBucketMin(final_engagement_score, 10);
 
     ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
     ukm::builders::Security_SiteEngagement(source_id_)
         .SetInitialSecurityLevel(initial_security_level_)
         .SetFinalSecurityLevel(current_security_level_)
         .SetScoreDelta(final_engagement_score - initial_engagement_score_)
+        .SetScoreFinal(coarse_engagement_score)
         .Record(ukm_recorder);
 
     // Get the change in Site Engagement score and transform it into the range
