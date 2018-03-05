@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/test/fuzzed_data_provider.h"
@@ -82,7 +83,7 @@ class WebSocketFuzzedStream final : public WebSocketStream {
     uint64_t payload_length =
         fuzzed_data_provider_->ConsumeUint32InRange(0, 64);
     std::string payload = fuzzed_data_provider_->ConsumeBytes(payload_length);
-    frame->data = new StringIOBuffer(payload);
+    frame->data = base::MakeRefCounted<StringIOBuffer>(payload);
     frame->header.payload_length = payload.size();
     return frame;
   }

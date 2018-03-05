@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/memory/ref_counted.h"
 #include "net/base/io_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -16,7 +16,6 @@
 #include "base/containers/circular_deque.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
@@ -355,7 +354,7 @@ WebSocketChannel::WebSocketChannel(
       has_received_close_frame_(false),
       received_close_code_(0),
       state_(FRESHLY_CONSTRUCTED),
-      notification_sender_(new HandshakeNotificationSender(this)),
+      notification_sender_(std::make_unique<HandshakeNotificationSender>(this)),
       sending_text_message_(false),
       receiving_text_message_(false),
       expecting_to_handle_continuation_(false),
@@ -479,7 +478,8 @@ ChannelState WebSocketChannel::SendFlowControl(int64_t quota) {
     const bool final = front.final() && data_size == bytes_to_send;
     scoped_refptr<IOBuffer> buffer_to_pass;
     if (front.data()) {
-      buffer_to_pass = new DependentIOBuffer(front.data(), front.offset());
+      buffer_to_pass =
+          base::MakeRefCounted<DependentIOBuffer>(front.data(), front.offset());
     } else {
       DCHECK(!bytes_to_send) << "Non empty data should not be null.";
     }
@@ -617,11 +617,9 @@ void WebSocketChannel::SendAddChannelRequestWithSuppliedCallback(
     return;
   }
   socket_url_ = socket_url;
-  std::unique_ptr<WebSocketStream::ConnectDelegate> connect_delegate(
-      new ConnectDelegate(this));
-  std::unique_ptr<WebSocketHandshakeStreamCreateHelper> create_helper(
-      new WebSocketHandshakeStreamCreateHelper(connect_delegate.get(),
-                                               requested_subprotocols));
+  auto connect_delegate = std::make_unique<ConnectDelegate>(this);
+  auto create_helper = std::make_unique<WebSocketHandshakeStreamCreateHelper>(
+      connect_delegate.get(), requested_subprotocols);
   stream_request_ =
       callback.Run(socket_url_, std::move(create_helper), origin,
                    site_for_cookies, additional_headers, url_request_context_,
@@ -1080,7 +1078,7 @@ ChannelState WebSocketChannel::SendFrameInternal(
   DCHECK(state_ == CONNECTED || state_ == RECV_CLOSED);
   DCHECK(stream_);
 
-  std::unique_ptr<WebSocketFrame> frame(new WebSocketFrame(op_code));
+  auto frame = std::make_unique<WebSocketFrame>(op_code);
   WebSocketFrameHeader& header = frame->header;
   header.final = fin;
   header.masked = true;
@@ -1093,12 +1091,12 @@ ChannelState WebSocketChannel::SendFrameInternal(
     // TODO(ricea): Keep some statistics to work out the situation and adjust
     // quota appropriately.
     if (!data_to_send_next_)
-      data_to_send_next_.reset(new SendBuffer);
+      data_to_send_next_ = std::make_unique<SendBuffer>();
     data_to_send_next_->AddFrame(std::move(frame));
     return CHANNEL_ALIVE;
   }
 
-  data_being_sent_.reset(new SendBuffer);
+  data_being_sent_ = std::make_unique<SendBuffer>();
   data_being_sent_->AddFrame(std::move(frame));
   return WriteFrames();
 }
@@ -1136,10 +1134,10 @@ ChannelState WebSocketChannel::SendClose(uint16_t code,
     // Special case: translate kWebSocketErrorNoStatusReceived into a Close
     // frame with no payload.
     DCHECK(reason.empty());
-    body = new IOBuffer(0);
+    body = base::MakeRefCounted<IOBuffer>(0);
   } else {
     const size_t payload_length = kWebSocketCloseCodeLength + reason.length();
-    body = new IOBuffer(payload_length);
+    body = base::MakeRefCounted<IOBuffer>(payload_length);
     size = payload_length;
     base::WriteBigEndian(body->data(), code);
     static_assert(sizeof(code) == kWebSocketCloseCodeLength,

@@ -13,7 +13,7 @@
 
 #include "base/compiler_specific.h"  // for WARN_UNUSED_RESULT
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "net/base/net_export.h"
 
 class GURL;

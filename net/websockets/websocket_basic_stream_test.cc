@@ -125,13 +125,12 @@ class WebSocketBasicStreamSocketTest : public WebSocketBasicStreamTest {
                                                           size_t reads_count,
                                                           MockWrite writes[],
                                                           size_t writes_count) {
-    socket_data_.reset(new StrictStaticSocketDataProvider(
-        reads, reads_count, writes, writes_count, expect_all_io_to_complete_));
+    socket_data_ = std::make_unique<StrictStaticSocketDataProvider>(
+        reads, reads_count, writes, writes_count, expect_all_io_to_complete_);
     socket_data_->set_connect_data(MockConnect(SYNCHRONOUS, OK));
     factory_.AddSocketDataProvider(socket_data_.get());
 
-    std::unique_ptr<ClientSocketHandle> transport_socket(
-        new ClientSocketHandle);
+    auto transport_socket = std::make_unique<ClientSocketHandle>();
     scoped_refptr<MockTransportSocketParams> params;
     transport_socket->Init("a", params, MEDIUM, SocketTag(),
                            ClientSocketPool::RespectLimits::ENABLED,
@@ -140,7 +139,7 @@ class WebSocketBasicStreamSocketTest : public WebSocketBasicStreamTest {
   }
 
   void SetHttpReadBuffer(const char* data, size_t size) {
-    http_read_buffer_ = new GrowableIOBuffer;
+    http_read_buffer_ = base::MakeRefCounted<GrowableIOBuffer>();
     http_read_buffer_->SetCapacity(size);
     memcpy(http_read_buffer_->data(), data, size);
     http_read_buffer_->set_offset(size);
@@ -244,12 +243,12 @@ class WebSocketBasicStreamSocketWriteTest
   // Creates a WebSocketFrame with a wire format matching kWriteFrame and adds
   // it to |frames_|.
   void PrepareWriteFrame() {
-    std::unique_ptr<WebSocketFrame> frame(
-        new WebSocketFrame(WebSocketFrameHeader::kOpCodeText));
+    auto frame =
+        std::make_unique<WebSocketFrame>(WebSocketFrameHeader::kOpCodeText);
     const size_t payload_size =
         kWriteFrameSize - (WebSocketFrameHeader::kBaseHeaderSize +
                            WebSocketFrameHeader::kMaskingKeyLength);
-    frame->data = new IOBuffer(payload_size);
+    frame->data = base::MakeRefCounted<IOBuffer>(payload_size);
     memcpy(frame->data->data(),
            kWriteFrame + kWriteFrameSize - payload_size,
            payload_size);
@@ -918,8 +917,8 @@ TEST_F(WebSocketBasicStreamSocketWriteTest, WriteNullPong) {
       MockWrite(SYNCHRONOUS, kMaskedEmptyPong, kMaskedEmptyPongSize)};
   CreateWriteOnly(writes);
 
-  std::unique_ptr<WebSocketFrame> frame(
-      new WebSocketFrame(WebSocketFrameHeader::kOpCodePong));
+  auto frame =
+      std::make_unique<WebSocketFrame>(WebSocketFrameHeader::kOpCodePong);
   WebSocketFrameHeader& header = frame->header;
   header.final = true;
   header.masked = true;
@@ -939,11 +938,11 @@ TEST_F(WebSocketBasicStreamSocketTest, WriteNonNulMask) {
   generator_ = &GenerateNonNulMaskingKey;
   CreateStream(NULL, 0, writes, arraysize(writes));
 
-  std::unique_ptr<WebSocketFrame> frame(
-      new WebSocketFrame(WebSocketFrameHeader::kOpCodeText));
+  auto frame =
+      std::make_unique<WebSocketFrame>(WebSocketFrameHeader::kOpCodeText);
   const std::string unmasked_payload = "graphics";
   const size_t payload_size = unmasked_payload.size();
-  frame->data = new IOBuffer(payload_size);
+  frame->data = base::MakeRefCounted<IOBuffer>(payload_size);
   memcpy(frame->data->data(), unmasked_payload.data(), payload_size);
   WebSocketFrameHeader& header = frame->header;
   header.final = true;

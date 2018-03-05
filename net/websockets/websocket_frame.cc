@@ -60,7 +60,7 @@ inline void MaskWebSocketFramePayloadByBytes(
 }  // namespace
 
 std::unique_ptr<WebSocketFrameHeader> WebSocketFrameHeader::Clone() const {
-  std::unique_ptr<WebSocketFrameHeader> ret(new WebSocketFrameHeader(opcode));
+  auto ret = std::make_unique<WebSocketFrameHeader>(opcode);
   ret->CopyFrom(*this);
   return ret;
 }

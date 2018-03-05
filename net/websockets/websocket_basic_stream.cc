@@ -99,7 +99,7 @@ WebSocketBasicStream::WebSocketBasicStream(
     const scoped_refptr<GrowableIOBuffer>& http_read_buffer,
     const std::string& sub_protocol,
     const std::string& extensions)
-    : read_buffer_(new IOBufferWithSize(kReadBufferSize)),
+    : read_buffer_(base::MakeRefCounted<IOBufferWithSize>(kReadBufferSize)),
       connection_(std::move(connection)),
       http_read_buffer_(http_read_buffer),
       sub_protocol_(sub_protocol),
@@ -166,8 +166,7 @@ int WebSocketBasicStream::WriteFrames(
   //
   // First calculate the size of the buffer we need to allocate.
   int total_size = CalculateSerializedSizeAndTurnOnMaskBit(frames);
-  scoped_refptr<IOBufferWithSize> combined_buffer(
-      new IOBufferWithSize(total_size));
+  auto combined_buffer = base::MakeRefCounted<IOBufferWithSize>(total_size);
 
   char* dest = combined_buffer->data();
   int remaining_size = total_size;
@@ -195,8 +194,8 @@ int WebSocketBasicStream::WriteFrames(
   }
   DCHECK_EQ(0, remaining_size) << "Buffer size calculation was wrong; "
                                << remaining_size << " bytes left over.";
-  scoped_refptr<DrainableIOBuffer> drainable_buffer(
-      new DrainableIOBuffer(combined_buffer.get(), total_size));
+  auto drainable_buffer = base::MakeRefCounted<DrainableIOBuffer>(
+      combined_buffer.get(), total_size);
   return WriteEverything(drainable_buffer, callback);
 }
 
@@ -348,7 +347,8 @@ int WebSocketBasicStream::ConvertChunkToFrame(
         AddToIncompleteControlFrameBody(data_buffer);
       } else {
         DVLOG(3) << "Creating new storage for an incomplete control frame.";
-        incomplete_control_frame_body_ = new GrowableIOBuffer();
+        incomplete_control_frame_body_ =
+            base::MakeRefCounted<GrowableIOBuffer>();
         // This method checks for oversize control frames above, so as long as
         // the frame parser is working correctly, this won't overflow. If a bug
         // does cause it to overflow, it will CHECK() in
@@ -364,7 +364,7 @@ int WebSocketBasicStream::ConvertChunkToFrame(
       const int body_size = incomplete_control_frame_body_->offset();
       DCHECK_EQ(body_size,
                 static_cast<int>(current_frame_header_->payload_length));
-      scoped_refptr<IOBufferWithSize> body = new IOBufferWithSize(body_size);
+      auto body = base::MakeRefCounted<IOBufferWithSize>(body_size);
       memcpy(body->data(),
              incomplete_control_frame_body_->StartOfBuffer(),
              body_size);
@@ -402,7 +402,7 @@ std::unique_ptr<WebSocketFrame> WebSocketBasicStream::CreateFrame(
   if (is_final_chunk_in_message || data_size > 0 ||
       current_frame_header_->opcode !=
           WebSocketFrameHeader::kOpCodeContinuation) {
-    result_frame.reset(new WebSocketFrame(opcode));
+    result_frame = std::make_unique<WebSocketFrame>(opcode);
     result_frame->header.CopyFrom(*current_frame_header_);
     result_frame->header.final = is_final_chunk_in_message;
     result_frame->header.payload_length = data_size;

@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "base/memory/ref_counted.h"
 #include "net/base/io_buffer.h"
 #include "net/websockets/websocket_deflater.h"
 #include "net/websockets/websocket_test_util.h"
