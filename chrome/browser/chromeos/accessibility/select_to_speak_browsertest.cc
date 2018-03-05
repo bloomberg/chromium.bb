@@ -256,13 +256,7 @@ IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, FocusRingMovesWithMouse) {
   EXPECT_EQ(focus_rings.size(), 0u);
 }
 
-// Disabled due to use-after-free; see https://crbug.com/818603.
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_ContinuesReadingDuringResize DISABLED_ContinuesReadingDuringResize
-#else
-#define MAYBE_ContinuesReadingDuringResize ContinuesReadingDuringResize
-#endif
-IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, MAYBE_ContinuesReadingDuringResize) {
+IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, ContinuesReadingDuringResize) {
   ActivateSelectToSpeakInWindowBounds(
       "data:text/html;charset=utf-8,<p>First paragraph</p>"
       "<div id='resize' style='width:300px; font-size: 10em'>"
