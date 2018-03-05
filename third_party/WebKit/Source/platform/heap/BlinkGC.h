@@ -16,6 +16,7 @@ namespace blink {
 
 class MarkingVisitor;
 class Visitor;
+class ScriptWrappableVisitor;
 
 using Address = uint8_t*;
 
@@ -23,6 +24,7 @@ using FinalizationCallback = void (*)(void*);
 using VisitorCallback = void (*)(Visitor*, void*);
 using MarkingVisitorCallback = void (*)(MarkingVisitor*, void*);
 using TraceCallback = VisitorCallback;
+using TraceWrappersCallback = void (*)(ScriptWrappableVisitor*, void*);
 using WeakCallback = VisitorCallback;
 using EphemeronCallback = VisitorCallback;
 

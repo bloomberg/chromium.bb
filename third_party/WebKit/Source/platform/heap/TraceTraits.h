@@ -54,19 +54,15 @@ class AdjustAndMarkTrait<T, false> {
     return {self, TraceTrait<T>::Trace, TraceEagerlyTrait<T>::value};
   }
 
-  static HeapObjectHeader* GetHeapObjectHeader(const T* self) {
+  static TraceWrapperDescriptor GetTraceWrapperDescriptor(void* self) {
+    return {self, TraceTrait<T>::TraceWrappers};
+  }
+
+  static HeapObjectHeader* GetHeapObjectHeader(void* self) {
 #if DCHECK_IS_ON()
     HeapObjectHeader::CheckFromPayload(self);
 #endif
     return HeapObjectHeader::FromPayload(self);
-  }
-
-  static void TraceMarkedWrapper(const ScriptWrappableVisitor* visitor,
-                                 const T* self) {
-    // The term *mark* is misleading here as we effectively trace through the
-    // API boundary, i.e., tell V8 that an object is alive. Actual marking
-    // will be done in V8.
-    visitor->DispatchTraceWrappers(self);
   }
 };
 
@@ -75,18 +71,19 @@ class AdjustAndMarkTrait<T, true> {
   STATIC_ONLY(AdjustAndMarkTrait);
 
  public:
-  static HeapObjectHeader* GetHeapObjectHeader(const T* self) {
-    return self->GetHeapObjectHeader();
-  }
-
-  static TraceDescriptor GetTraceDescriptor(T* self) {
+  static TraceDescriptor GetTraceDescriptor(const T* self) {
     DCHECK(self);
     return self->GetTraceDescriptor();
   }
 
-  static void TraceMarkedWrapper(const ScriptWrappableVisitor* visitor,
-                                 const T* self) {
-    self->AdjustAndTraceMarkedWrapper(visitor);
+  static TraceWrapperDescriptor GetTraceWrapperDescriptor(const T* self) {
+    DCHECK(self);
+    return self->GetTraceWrapperDescriptor();
+  }
+
+  static HeapObjectHeader* GetHeapObjectHeader(const T* self) {
+    DCHECK(self);
+    return self->GetHeapObjectHeader();
   }
 };
 
@@ -173,10 +170,11 @@ struct TraceCollectionIfEnabled {
   }
 };
 
-// The TraceTrait is used to specify how to mark an object pointer and
-// how to trace all of the pointers in the object.
+// The TraceTrait is used to specify how to trace and object for Oilpan and
+// wrapper tracing.
 //
-// By default, the 'trace' method implemented on an object itself is
+//
+// By default, the 'Trace' method implemented on an object itself is
 // used to trace the pointers to other heap objects inside the object.
 //
 // However, the TraceTrait can be specialized to use a different
@@ -193,17 +191,17 @@ class TraceTrait {
     return AdjustAndMarkTrait<T>::GetTraceDescriptor(static_cast<T*>(self));
   }
 
-  static void Trace(Visitor*, void* self);
-  static void TraceMarkedWrapper(const ScriptWrappableVisitor*, const void*);
-  static HeapObjectHeader* GetHeapObjectHeader(const void*);
-
- private:
-  static const T* ToWrapperTracingType(const void* t) {
-    static_assert(sizeof(T), "type needs to be defined");
-    static_assert(IsGarbageCollectedType<T>::value,
-                  "only objects deriving from GarbageCollected can be used");
-    return reinterpret_cast<const T*>(t);
+  static TraceWrapperDescriptor GetTraceWrapperDescriptor(void* self) {
+    return AdjustAndMarkTrait<T>::GetTraceWrapperDescriptor(
+        static_cast<T*>(self));
   }
+
+  static HeapObjectHeader* GetHeapObjectHeader(void* self) {
+    return AdjustAndMarkTrait<T>::GetHeapObjectHeader(static_cast<T*>(self));
+  }
+
+  static void Trace(Visitor*, void* self);
+  static void TraceWrappers(ScriptWrappableVisitor*, void*);
 };
 
 template <typename T>
@@ -216,16 +214,13 @@ void TraceTrait<T>::Trace(Visitor* visitor, void* self) {
 }
 
 template <typename T>
-void TraceTrait<T>::TraceMarkedWrapper(const ScriptWrappableVisitor* visitor,
-                                       const void* t) {
-  const T* traceable = ToWrapperTracingType(t);
-  AdjustAndMarkTrait<T>::TraceMarkedWrapper(visitor, traceable);
+void TraceTrait<T>::TraceWrappers(ScriptWrappableVisitor* visitor, void* self) {
+  static_assert(sizeof(T), "type needs to be defined");
+  static_assert(IsGarbageCollectedType<T>::value,
+                "only objects deriving from GarbageCollected can be used");
+  visitor->DispatchTraceWrappers(static_cast<T*>(self));
 }
 
-template <typename T>
-HeapObjectHeader* TraceTrait<T>::GetHeapObjectHeader(const void* t) {
-  return AdjustAndMarkTrait<T>::GetHeapObjectHeader(ToWrapperTracingType(t));
-}
 
 template <typename T, typename Traits>
 struct TraceTrait<HeapVectorBacking<T, Traits>> {

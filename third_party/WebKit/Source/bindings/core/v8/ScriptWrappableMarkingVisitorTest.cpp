@@ -501,7 +501,6 @@ TEST(ScriptWrappableMarkingVisitorTest, MixinTracing) {
       DeathAwareScriptWrappable::Create();
   Base* base = Base::Create(base_wrapper, mixin_wrapper);
   Mixin* mixin = static_cast<Mixin*>(base);
-
   HeapObjectHeader* base_header = HeapObjectHeader::FromPayload(base);
   EXPECT_FALSE(base_header->IsWrapperHeaderMarked());
 
@@ -516,7 +515,7 @@ TEST(ScriptWrappableMarkingVisitorTest, MixinTracing) {
   TraceWrapperMember<Mixin> mixin_handle = mixin;
   EXPECT_TRUE(base_header->IsWrapperHeaderMarked());
   EXPECT_FALSE(visitor->MarkingDeque()->IsEmpty());
-  EXPECT_TRUE(visitor->MarkingDequeContains(mixin));
+  EXPECT_TRUE(visitor->MarkingDequeContains(base));
 
   visitor->AdvanceTracing(
       0, v8::EmbedderHeapTracer::AdvanceTracingActions(
