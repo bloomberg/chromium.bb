@@ -14,6 +14,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/discardable_memory.h"
+#include "base/memory/memory_pressure_listener.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/discardable_memory/client/client_discardable_shared_memory_manager.h"
@@ -22,6 +23,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "gpu/ipc/client/gpu_memory_buffer_impl.h"
 #include "ui/gfx/buffer_format_util.h"
@@ -136,6 +138,34 @@ IN_PROC_BROWSER_TEST_F(RenderThreadImplDiscardableMemoryBrowserTest,
   }
 
   EXPECT_LT(base::TimeTicks::Now(), end);
+}
+
+IN_PROC_BROWSER_TEST_F(RenderThreadImplDiscardableMemoryBrowserTest,
+                       ReleaseFreeMemory) {
+  const size_t kSize = 1024 * 1024;  // 1MiB.
+
+  std::unique_ptr<base::DiscardableMemory> memory =
+      child_discardable_shared_memory_manager()
+          ->AllocateLockedDiscardableMemory(kSize);
+
+  EXPECT_TRUE(memory);
+  memory.reset();
+
+  EXPECT_GE(BrowserMainLoop::GetInstance()
+                ->discardable_shared_memory_manager()
+                ->GetBytesAllocated(),
+            kSize);
+
+  // Call RenderThreadImpl::ReleaseFreeMemory through a fake memory pressure
+  // notification.
+  base::MemoryPressureListener::SimulatePressureNotification(
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
+  base::RunLoop().RunUntilIdle();
+  RunAllTasksUntilIdle();
+
+  EXPECT_EQ(0U, BrowserMainLoop::GetInstance()
+                    ->discardable_shared_memory_manager()
+                    ->GetBytesAllocated());
 }
 
 }  // namespace

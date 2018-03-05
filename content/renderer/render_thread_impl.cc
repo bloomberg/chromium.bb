@@ -2437,10 +2437,8 @@ void RenderThreadImpl::OnMemoryPressure(
         static_cast<blink::WebMemoryPressureLevel>(memory_pressure_level));
   }
   if (memory_pressure_level ==
-      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL) {
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL)
     ReleaseFreeMemory();
-    ClearMemory();
-  }
 }
 
 void RenderThreadImpl::OnMemoryStateChange(base::MemoryState state) {
@@ -2465,7 +2463,6 @@ void RenderThreadImpl::OnPurgeMemory() {
 
   OnTrimMemoryImmediately();
   ReleaseFreeMemory();
-  ClearMemory();
   if (blink_platform_impl_)
     blink::WebMemoryCoordinator::OnPurgeMemory();
 }
@@ -2480,14 +2477,6 @@ void RenderThreadImpl::RecordPurgeMemory(RendererMemoryMetrics before) {
     mbytes = 0;
   UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Experimental.Renderer.PurgedMemory",
                                 mbytes);
-}
-
-void RenderThreadImpl::ClearMemory() {
-  // Do not call into blink if it is not initialized.
-  if (blink_platform_impl_) {
-    // Purge Skia font cache, resource cache, and image filter.
-    SkGraphics::PurgeAllCaches();
-  }
 }
 
 scoped_refptr<base::TaskRunner> RenderThreadImpl::GetFileThreadTaskRunner() {
@@ -2607,8 +2596,12 @@ void RenderThreadImpl::ReleaseFreeMemory() {
   base::allocator::ReleaseFreeMemory();
   discardable_shared_memory_manager_->ReleaseFreeMemory();
 
-  if (blink_platform_impl_)
+  // Do not call into blink if it is not initialized.
+  if (blink_platform_impl_) {
+    // Purge Skia font cache, resource cache, and image filter.
+    SkGraphics::PurgeAllCaches();
     blink::DecommitFreeableMemory();
+  }
 }
 
 RenderThreadImpl::PendingFrameCreate::PendingFrameCreate(

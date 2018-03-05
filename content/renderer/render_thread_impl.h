@@ -564,8 +564,6 @@ class CONTENT_EXPORT RenderThreadImpl
 
   void RecordPurgeMemory(RendererMemoryMetrics before);
 
-  void ClearMemory();
-
   void Init(
       const scoped_refptr<base::SingleThreadTaskRunner>& resource_task_queue);
 
