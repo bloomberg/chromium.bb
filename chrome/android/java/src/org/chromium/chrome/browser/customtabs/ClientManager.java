@@ -27,7 +27,6 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.IntentHandler;
-import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.OriginVerifier;
 import org.chromium.chrome.browser.browserservices.OriginVerifier.OriginVerificationListener;
 import org.chromium.chrome.browser.browserservices.PostMessageHandler;
@@ -360,13 +359,13 @@ class ClientManager {
     }
 
     /**
-     * See {@link PostMessageHandler#initializeWithPostMessageUri(Uri)}.
+     * See {@link PostMessageHandler#initializeWithOrigin(Uri)}.
      */
     public synchronized void initializeWithPostMessageOriginForSession(
             CustomTabsSessionToken session, Uri origin) {
         SessionParams params = mSessionParams.get(session);
         if (params == null) return;
-        params.postMessageHandler.initializeWithPostMessageUri(origin);
+        params.postMessageHandler.initializeWithOrigin(origin);
     }
 
     public synchronized boolean validateRelationship(
@@ -375,7 +374,7 @@ class ClientManager {
     }
 
     /**
-     * Validates the link between the client and the origin.
+     * See {@link PostMessageHandler#verifyAndInitializeWithOrigin(Uri, int)}.
      */
     public synchronized void verifyAndInitializeWithPostMessageOriginForSession(
             CustomTabsSessionToken session, Uri origin, @Relation int relation) {
@@ -392,7 +391,7 @@ class ClientManager {
         OriginVerificationListener listener = null;
         if (initializePostMessageChannel) listener = params.postMessageHandler;
         params.originVerifier = new OriginVerifier(listener, params.getPackageName(), relation);
-        ThreadUtils.runOnUiThread(() -> { params.originVerifier.start(new Origin(origin)); });
+        ThreadUtils.runOnUiThread(() -> { params.originVerifier.start(origin); });
         if (relation == CustomTabsService.RELATION_HANDLE_ALL_URLS
                 && InstalledAppProviderImpl.isAppInstalledAndAssociatedWithOrigin(
                            params.getPackageName(), URI.create(origin.toString()),
@@ -425,7 +424,7 @@ class ClientManager {
         if (!isAppAssociatedWithOrigin) return false;
 
         // Split path from the given Uri to get only the origin before web->native verification.
-        Origin origin = new Origin(url);
+        Uri origin = new Uri.Builder().scheme(url.getScheme()).authority(url.getHost()).build();
         if (OriginVerifier.isValidOrigin(
                     packageName, origin, CustomTabsService.RELATION_HANDLE_ALL_URLS)) {
             return true;
@@ -445,7 +444,7 @@ class ClientManager {
     synchronized Uri getPostMessageOriginForSessionForTesting(CustomTabsSessionToken session) {
         SessionParams params = mSessionParams.get(session);
         if (params == null) return null;
-        return params.postMessageHandler.getPostMessageUriForTesting();
+        return params.postMessageHandler.getOriginForTesting();
     }
 
     /**
@@ -615,8 +614,8 @@ class ClientManager {
      */
     public synchronized boolean isFirstPartyOriginForSession(
             CustomTabsSessionToken session, Uri origin) {
-        return OriginVerifier.isValidOrigin(getClientPackageNameForSession(session),
-                new Origin(origin), CustomTabsService.RELATION_USE_AS_ORIGIN);
+        return OriginVerifier.isValidOrigin(getClientPackageNameForSession(session), origin,
+                CustomTabsService.RELATION_USE_AS_ORIGIN);
     }
 
     /** Tries to bind to a client to keep it alive, and returns true for success. */
