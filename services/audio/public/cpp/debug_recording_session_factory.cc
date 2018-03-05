@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/files/file_path.h"
-#include "media/audio/audio_debug_recording_session_impl.h"
+#include "services/audio/public/cpp/debug_recording_session.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace audio {
@@ -18,8 +18,8 @@ CreateAudioDebugRecordingSession(
     std::unique_ptr<service_manager::Connector> connector) {
   DCHECK(connector);
 
-  return std::make_unique<media::AudioDebugRecordingSessionImpl>(
-      debug_recording_file_path);
+  return std::make_unique<audio::DebugRecordingSession>(
+      debug_recording_file_path, std::move(connector));
 }
 
 }  // namespace audio
