@@ -77,9 +77,6 @@ class EventDispatcherDelegate {
                                           const ui::Event& event,
                                           Accelerator* accelerator) = 0;
 
-  // Starts processing the next event in the event queue.
-  virtual void ProcessNextAvailableEvent() = 0;
-
   // Returns the id of the client to send events to. |in_nonclient_area| is
   // true if the event occurred in the non-client area of the window.
   virtual ClientSpecificId GetEventTargetClientId(const ServerWindow* window,

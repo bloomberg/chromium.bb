@@ -22,10 +22,6 @@ class EventTargeterDelegate {
   // event_dispatcher_delegate.h for details.
   virtual ServerWindow* GetRootWindowForDisplay(int64_t display_id) = 0;
 
-  // Calls EventDispatcherDelegate::ProcessNextAvailableEvent, see
-  // event_dispatcher_delegate.h for details.
-  virtual void ProcessNextAvailableEvent() = 0;
-
   // Returns null if there's no display with |display_id|.
   virtual viz::HitTestQuery* GetHitTestQueryForDisplay(int64_t display_id) = 0;
 

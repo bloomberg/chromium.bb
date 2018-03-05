@@ -341,10 +341,6 @@ ServerWindow* EventDispatcher::GetRootWindowForDisplay(int64_t display_id) {
   return delegate_->GetRootWindowForDisplay(display_id);
 }
 
-void EventDispatcher::ProcessNextAvailableEvent() {
-  delegate_->ProcessNextAvailableEvent();
-}
-
 viz::HitTestQuery* EventDispatcher::GetHitTestQueryForDisplay(
     int64_t display_id) {
   return delegate_->GetHitTestQueryForDisplay(display_id);

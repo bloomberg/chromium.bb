@@ -167,9 +167,11 @@ class WindowTreeTest : public testing::Test {
                : nullptr;
   }
 
+  // Simulates an event coming from the system. The event is not acked
+  // immediately, use AckPreviousEvent() to do that.
   void DispatchEventWithoutAck(const ui::Event& event) {
     std::unique_ptr<Event> tmp = ui::Event::Clone(event);
-    DisplayTestApi(display()).OnEvent(tmp.get());
+    display()->ProcessEvent(tmp.get());
   }
 
   void set_window_manager_internal(WindowTree* tree,

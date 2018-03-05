@@ -174,7 +174,6 @@ class TestEventDispatcherDelegate : public EventDispatcherDelegate {
     details->accelerator = accelerator;
     dispatched_event_queue_.push(std::move(details));
   }
-  void ProcessNextAvailableEvent() override {}
   ClientSpecificId GetEventTargetClientId(const ServerWindow* window,
                                           bool in_nonclient_area) override {
     return in_nonclient_area ? kNonclientAreaId : kClientAreaId;

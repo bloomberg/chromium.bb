@@ -117,10 +117,12 @@ WindowManagerState::InFlightEventDispatchDetails::
 
 class WindowManagerState::ProcessedEventTarget {
  public:
-  ProcessedEventTarget(ServerWindow* window,
+  ProcessedEventTarget(WindowServer* window_server,
+                       ServerWindow* window,
                        ClientSpecificId client_id,
                        Accelerator* accelerator)
-      : client_id_(client_id) {
+      : window_server_(window_server), client_id_(client_id) {
+    DCHECK(window_server_);
     tracker_.Add(window);
     if (accelerator)
       accelerator_ = accelerator->GetWeakPtr();
@@ -130,11 +132,12 @@ class WindowManagerState::ProcessedEventTarget {
 
   // Return true if the event is still valid. The event becomes invalid if
   // the window is destroyed while waiting to dispatch.
-  bool IsValid() const { return !tracker_.windows().empty(); }
+  bool IsValid() {
+    return window() && window_server_->GetTreeWithId(client_id_);
+  }
 
   ServerWindow* window() {
-    DCHECK(IsValid());
-    return tracker_.windows().front();
+    return tracker_.windows().empty() ? nullptr : tracker_.windows().front();
   }
 
   ClientSpecificId client_id() const { return client_id_; }
@@ -142,6 +145,7 @@ class WindowManagerState::ProcessedEventTarget {
   base::WeakPtr<Accelerator> accelerator() { return accelerator_; }
 
  private:
+  WindowServer* window_server_;
   ServerWindowTracker tracker_;
   const ClientSpecificId client_id_;
   base::WeakPtr<Accelerator> accelerator_;
@@ -156,13 +160,46 @@ bool WindowManagerState::DebugAccelerator::Matches(
          !event.is_char();
 }
 
-struct WindowManagerState::QueuedEvent {
-  QueuedEvent() = default;
-  ~QueuedEvent() = default;
+// Contains data used for event processing that needs to happen. See enum for
+// details.
+struct WindowManagerState::EventTask {
+  enum class Type {
+    // ProcessEvent() was called while waiting on a client or EventDispatcher
+    // to complete processing. |event| is non-null and |processed_target| is
+    // null.
+    kEvent,
+
+    // In certain situations EventDispatcher::ProcessEvent() generates more than
+    // one event. When that happens, |kProcessedEvent| is used for all events
+    // after the first. For example, a move may result in an exit for one
+    // Window and and an enter for another Window. The event generated for the
+    // enter results in an EventTask of type |kProcessedEvent|. In this case
+    // both |event| and |processed_target| are valid.
+    kProcessedEvent,
+
+    // ScheduleCallbackWhenDoneProcessingEvents() is called while waiting on
+    // a client or EventDispatcher. |event| and |processed_target| are null.
+    kClosure
+  };
+
+  EventTask() = default;
+  ~EventTask() = default;
+
+  Type type() const {
+    if (done_closure)
+      return Type::kClosure;
+    if (processed_target) {
+      DCHECK(event);
+      return Type::kProcessedEvent;
+    }
+    DCHECK(event);
+    return Type::kEvent;
+  }
 
   std::unique_ptr<Event> event;
   std::unique_ptr<ProcessedEventTarget> processed_target;
   EventLocation event_location;
+  base::OnceClosure done_closure;
 };
 
 WindowManagerState::WindowManagerState(WindowTree* window_tree)
@@ -322,21 +359,41 @@ void WindowManagerState::ProcessEvent(ui::Event* event, int64_t display_id) {
   }
 
   // If this is still waiting for an ack from a previously sent event, then
-  // queue up the event to be dispatched once the ack is received.
-  if (event_dispatcher_.IsProcessingEvent() ||
-      in_flight_event_dispatch_details_) {
-    if (!event_queue_.empty() && !event_queue_.back()->processed_target &&
-        CanEventsBeCoalesced(*event_queue_.back()->event, *event)) {
-      event_queue_.back()->event = CoalesceEvents(
-          std::move(event_queue_.back()->event), ui::Event::Clone(*event));
-      event_queue_.back()->event_location = event_location;
+  // queue the event so it's dispatched once the ack is received.
+  if (IsProcessingEvent()) {
+    if (!event_tasks_.empty() &&
+        event_tasks_.back()->type() == EventTask::Type::kEvent &&
+        CanEventsBeCoalesced(*event_tasks_.back()->event, *event)) {
+      event_tasks_.back()->event = CoalesceEvents(
+          std::move(event_tasks_.back()->event), ui::Event::Clone(*event));
+      event_tasks_.back()->event_location = event_location;
       return;
     }
     QueueEvent(*event, nullptr, event_location);
     return;
   }
 
-  ProcessEventImpl(*event, event_location);
+  QueueEvent(*event, nullptr, event_location);
+  ProcessEventTasks();
+}
+
+bool WindowManagerState::IsProcessingEvent() const {
+  return in_flight_event_dispatch_details_ ||
+         event_dispatcher_.IsProcessingEvent();
+}
+
+void WindowManagerState::ScheduleCallbackWhenDoneProcessingEvents(
+    base::OnceClosure closure) {
+  DCHECK(closure);
+  if (!IsProcessingEvent()) {
+    std::move(closure).Run();
+    return;
+  }
+
+  // TODO(sky): use make_unique (presubmit check fails on make_unique).
+  std::unique_ptr<EventTask> event_task(new EventTask());
+  event_task->done_closure = std::move(closure);
+  event_tasks_.push(std::move(event_task));
 }
 
 void WindowManagerState::OnAcceleratorAck(
@@ -361,7 +418,7 @@ void WindowManagerState::OnAcceleratorAck(
     // We don't do this first to ensure we don't send an event twice to clients.
     window_server()->SendToPointerWatchers(*details->event, nullptr, nullptr,
                                            details->display_id);
-    ProcessNextAvailableEvent();
+    ProcessEventTasks();
   }
 }
 
@@ -426,7 +483,7 @@ void WindowManagerState::OnEventAck(mojom::WindowTree* tree,
                   *details->event, AcceleratorPhase::POST);
   }
 
-  ProcessNextAvailableEvent();
+  ProcessEventTasks();
 }
 
 void WindowManagerState::OnEventAckTimeout(ClientSpecificId client_id) {
@@ -456,11 +513,11 @@ void WindowManagerState::QueueEvent(
     const ui::Event& event,
     std::unique_ptr<ProcessedEventTarget> processed_event_target,
     const EventLocation& event_location) {
-  std::unique_ptr<QueuedEvent> queued_event(new QueuedEvent);
+  std::unique_ptr<EventTask> queued_event(new EventTask);
   queued_event->event = ui::Event::Clone(event);
   queued_event->processed_target = std::move(processed_event_target);
   queued_event->event_location = event_location;
-  event_queue_.push(std::move(queued_event));
+  event_tasks_.push(std::move(queued_event));
 }
 
 // TODO(riajiang): We might want to do event targeting for the next event while
@@ -758,11 +815,10 @@ void WindowManagerState::DispatchInputEventToWindow(
     const EventLocation& event_location,
     const ui::Event& event,
     Accelerator* accelerator) {
-  // TODO(sky): this needs to see if another wms has capture and if so forward
-  // to it.
   if (in_flight_event_dispatch_details_) {
-    std::unique_ptr<ProcessedEventTarget> processed_event_target(
-        new ProcessedEventTarget(target, client_id, accelerator));
+    std::unique_ptr<ProcessedEventTarget> processed_event_target =
+        std::make_unique<ProcessedEventTarget>(window_server(), target,
+                                               client_id, accelerator);
     QueueEvent(event, std::move(processed_event_target), event_location);
     return;
   }
@@ -774,30 +830,28 @@ void WindowManagerState::DispatchInputEventToWindow(
                                  weak_accelerator);
 }
 
-void WindowManagerState::ProcessNextAvailableEvent() {
-  // Loop through |event_queue_| stopping after dispatching the first valid
+void WindowManagerState::ProcessEventTasks() {
+  // Loop through |event_tasks_| stopping after dispatching the first valid
   // event.
-  while (!event_queue_.empty()) {
-    if (in_flight_event_dispatch_details_)
-      return;
+  while (!event_tasks_.empty() && !IsProcessingEvent()) {
+    std::unique_ptr<EventTask> task = std::move(event_tasks_.front());
+    event_tasks_.pop();
 
-    if (!event_queue_.front()->processed_target &&
-        event_dispatcher_.IsProcessingEvent())
-      return;
-
-    std::unique_ptr<QueuedEvent> queued_event = std::move(event_queue_.front());
-    event_queue_.pop();
-    if (!queued_event->processed_target) {
-      ProcessEventImpl(*queued_event->event, queued_event->event_location);
-      return;
-    }
-    if (queued_event->processed_target->IsValid()) {
-      DispatchInputEventToWindowImpl(
-          queued_event->processed_target->window(),
-          queued_event->processed_target->client_id(),
-          queued_event->event_location, *queued_event->event,
-          queued_event->processed_target->accelerator());
-      return;
+    switch (task->type()) {
+      case EventTask::Type::kClosure:
+        std::move(task->done_closure).Run();
+        break;
+      case EventTask::Type::kEvent:
+        ProcessEventImpl(*task->event, task->event_location);
+        break;
+      case EventTask::Type::kProcessedEvent:
+        if (task->processed_target->IsValid()) {
+          DispatchInputEventToWindowImpl(task->processed_target->window(),
+                                         task->processed_target->client_id(),
+                                         task->event_location, *task->event,
+                                         task->processed_target->accelerator());
+        }
+        break;
     }
   }
 }

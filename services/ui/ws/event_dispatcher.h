@@ -170,7 +170,6 @@ class EventDispatcher : public ServerWindowDrawnTrackerObserver,
 
   // EventTargeterDelegate:
   ServerWindow* GetRootWindowForDisplay(int64_t display_id) override;
-  void ProcessNextAvailableEvent() override;
   viz::HitTestQuery* GetHitTestQueryForDisplay(int64_t display_id) override;
   ServerWindow* GetWindowFromFrameSinkId(
       const viz::FrameSinkId& frame_sink_id) override;

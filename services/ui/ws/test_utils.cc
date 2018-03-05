@@ -170,11 +170,6 @@ void WindowTreeTestApi::StopPointerWatcher() {
   tree_->StopPointerWatcher();
 }
 
-// DisplayTestApi  ------------------------------------------------------------
-
-DisplayTestApi::DisplayTestApi(Display* display) : display_(display) {}
-DisplayTestApi::~DisplayTestApi() {}
-
 // EventDispatcherTestApi  ----------------------------------------------------
 
 bool EventDispatcherTestApi::IsWindowPointerTarget(

@@ -269,7 +269,9 @@ void WindowTree::AddRootForWindowManager(const ServerWindow* root) {
       root->parent()->IsDrawn(), root->current_local_surface_id());
 }
 
-void WindowTree::OnWindowDestroyingTreeImpl(WindowTree* tree) {
+void WindowTree::OnWillDestroyTree(WindowTree* tree) {
+  DCHECK_NE(tree, this);  // This function is not called for |this|.
+
   if (event_source_wms_ && event_source_wms_->window_tree() == tree)
     event_source_wms_ = nullptr;
 
@@ -279,6 +281,9 @@ void WindowTree::OnWindowDestroyingTreeImpl(WindowTree* tree) {
     if (owns_tree_root)
       client()->OnEmbeddedAppDisconnected(TransportIdForWindow(tree_root));
   }
+
+  if (window_manager_state_)
+    window_manager_state_->OnWillDestroyTree(tree);
 }
 
 void WindowTree::OnWmDisplayModified(const display::Display& display) {

@@ -83,6 +83,7 @@ struct Change {
   gfx::Rect bounds2;
   viz::FrameSinkId frame_sink_id;
   base::Optional<viz::LocalSurfaceId> local_surface_id;
+  // TODO(sky): rename, this is Event::event_type.
   int32_t event_action;
   bool matches_pointer_watcher;
   std::string embed_url;

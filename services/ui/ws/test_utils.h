@@ -167,21 +167,6 @@ class WindowTreeTestApi {
 
 // -----------------------------------------------------------------------------
 
-class DisplayTestApi {
- public:
-  explicit DisplayTestApi(Display* display);
-  ~DisplayTestApi();
-
-  void OnEvent(ui::Event* event) { display_->OnEventFromSource(event); }
-
- private:
-  Display* display_;
-
-  DISALLOW_COPY_AND_ASSIGN(DisplayTestApi);
-};
-
-// -----------------------------------------------------------------------------
-
 class EventDispatcherTestApi {
  public:
   explicit EventDispatcherTestApi(EventDispatcher* ed) : ed_(ed) {}
@@ -280,7 +265,7 @@ class WindowManagerStateTestApi {
                : nullptr;
   }
 
-  bool is_event_queue_empty() const { return wms_->event_queue_.empty(); }
+  bool is_event_tasks_empty() const { return wms_->event_tasks_.empty(); }
 
   const std::vector<std::unique_ptr<WindowManagerDisplayRoot>>&
   window_manager_display_roots() const {

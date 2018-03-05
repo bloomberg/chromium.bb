@@ -168,7 +168,7 @@ class WindowTree : public mojom::WindowTree,
   void AddRootForWindowManager(const ServerWindow* root);
 
   // Invoked when a tree is about to be destroyed.
-  void OnWindowDestroyingTreeImpl(WindowTree* tree);
+  void OnWillDestroyTree(WindowTree* tree);
 
   // Sends updated display information.
   void OnWmDisplayModified(const display::Display& display);

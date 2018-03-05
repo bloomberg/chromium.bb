@@ -292,6 +292,23 @@ ServerWindow* Display::GetActiveRootWindow() {
   return nullptr;
 }
 
+void Display::ProcessEvent(ui::Event* event,
+                           base::OnceClosure event_processed_callback) {
+  if (window_manager_display_root_) {
+    WindowManagerState* wm_state =
+        window_manager_display_root_->window_manager_state();
+    wm_state->ProcessEvent(event, GetId());
+    if (event_processed_callback) {
+      wm_state->ScheduleCallbackWhenDoneProcessingEvents(
+          std::move(event_processed_callback));
+    }
+  } else if (event_processed_callback) {
+    std::move(event_processed_callback).Run();
+  }
+
+  window_server_->user_activity_monitor()->OnUserActivity();
+}
+
 void Display::OnActivationChanged(ServerWindow* old_active_window,
                                   ServerWindow* new_active_window) {
   // Don't do anything here. We assume the window manager handles restacking. If
@@ -371,13 +388,7 @@ void Display::OnWindowManagerWindowTreeFactoryReady(
 }
 
 EventDispatchDetails Display::OnEventFromSource(Event* event) {
-  if (window_manager_display_root_) {
-    WindowManagerState* wm_state =
-        window_manager_display_root_->window_manager_state();
-    wm_state->ProcessEvent(event, GetId());
-  }
-
-  window_server_->user_activity_monitor()->OnUserActivity();
+  ProcessEvent(event);
   return EventDispatchDetails();
 }
 

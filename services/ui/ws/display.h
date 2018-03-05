@@ -11,6 +11,7 @@
 #include <queue>
 #include <set>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
@@ -143,6 +144,14 @@ class Display : public PlatformDisplayDelegate,
 
   // Returns the root window of the active user.
   ServerWindow* GetActiveRootWindow();
+
+  // Processes an event. |event_processed_callback| is run once the appropriate
+  // client processes the event.
+  // TODO(sky): move event processing code into standalone classes. Display
+  // shouldn't have logic like this.
+  void ProcessEvent(
+      ui::Event* event,
+      base::OnceClosure event_processed_callback = base::OnceClosure());
 
  private:
   friend class test::DisplayTestApi;
