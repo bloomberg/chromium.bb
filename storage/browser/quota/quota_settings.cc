@@ -51,9 +51,8 @@ base::Optional<storage::QuotaSettings> CalculateNominalDynamicSettings(
     return settings;
   }
 
-  // The fraction of the device's storage the browser is willing to
-  // use for temporary storage, this is applied after adjusting the
-  // total to take os_accomodation into account.
+// The fraction of the device's storage the browser is willing to
+// use for temporary storage.
 #if defined(OS_CHROMEOS)
   // Chrome OS is given a larger fraction, as web content is the considered
   // the primary use of the platform. Chrome OS itself maintains free space by
@@ -87,21 +86,6 @@ base::Optional<storage::QuotaSettings> CalculateNominalDynamicSettings(
   const double kSessionOnlyHostQuotaRatio = 0.1;  // 10%
   const int64_t kMaxSessionOnlyHostQuota = 300 * kMBytes;
 
-  // os_accomodation is an estimate of how much storage is needed for
-  // the os and essential application code outside of the browser.
-  const int64_t kDefaultOSAccomodation =
-#if defined(OS_ANDROID)
-      1000 * kMBytes;
-#elif defined(OS_CHROMEOS)
-      1000 * kMBytes;
-#elif defined(OS_FUCHSIA)
-      1000 * kMBytes;
-#elif defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
-      10000 * kMBytes;
-#else
-#error "Port: Need to define an OS accomodation value for unknown OS."
-#endif
-
   storage::QuotaSettings settings;
 
   int64_t total = base::SysInfo::AmountOfTotalDiskSpace(partition_path);
@@ -110,15 +94,7 @@ base::Optional<storage::QuotaSettings> CalculateNominalDynamicSettings(
     return base::nullopt;
   }
 
-  // If our hardcoded OS accomodation is too large for the volume size, define
-  // the value as a fraction of the total volume size instead.
-  int64_t os_accomodation =
-      std::min(kDefaultOSAccomodation, static_cast<int64_t>(total * 0.8));
-  UMA_HISTOGRAM_MBYTES("Quota.OSAccomodationDelta",
-                       kDefaultOSAccomodation - os_accomodation);
-
-  int64_t adjusted_total = total - os_accomodation;
-  int64_t pool_size = adjusted_total * kTemporaryPoolSizeRatio;
+  int64_t pool_size = total * kTemporaryPoolSizeRatio;
 
   settings.pool_size = pool_size;
   settings.should_remain_available = kShouldRemainAvailable;
