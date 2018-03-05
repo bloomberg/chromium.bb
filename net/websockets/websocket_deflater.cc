@@ -27,7 +27,7 @@ WebSocketDeflater::~WebSocketDeflater() {
 
 bool WebSocketDeflater::Initialize(int window_bits) {
   DCHECK(!stream_);
-  stream_.reset(new z_stream);
+  stream_ = std::make_unique<z_stream>();
 
   DCHECK_LE(8, window_bits);
   DCHECK_GE(15, window_bits);
@@ -123,7 +123,7 @@ scoped_refptr<IOBufferWithSize> WebSocketDeflater::GetOutput(size_t size) {
   base::circular_deque<char>::iterator begin = buffer_.begin();
   base::circular_deque<char>::iterator end = begin + length_to_copy;
 
-  scoped_refptr<IOBufferWithSize> result = new IOBufferWithSize(length_to_copy);
+  auto result = base::MakeRefCounted<IOBufferWithSize>(length_to_copy);
   std::copy(begin, end, result->data());
   buffer_.erase(begin, end);
   return result;

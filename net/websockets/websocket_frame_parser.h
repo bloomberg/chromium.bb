@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "net/base/net_export.h"
 #include "net/websockets/websocket_errors.h"
 #include "net/websockets/websocket_frame.h"

@@ -4,7 +4,6 @@
 
 #include "net/websockets/websocket_handshake_stream_create_helper.h"
 
-#include <memory>
 #include <utility>
 
 #include "base/logging.h"

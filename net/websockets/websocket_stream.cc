@@ -119,7 +119,7 @@ class WebSocketStreamRequestImpl : public WebSocketStreamRequest {
       const std::string& additional_headers,
       std::unique_ptr<WebSocketStream::ConnectDelegate> connect_delegate,
       std::unique_ptr<WebSocketHandshakeStreamCreateHelper> create_helper)
-      : delegate_(new Delegate(this)),
+      : delegate_(std::make_unique<Delegate>(this)),
         url_request_(context->CreateRequest(url,
                                             DEFAULT_PRIORITY,
                                             delegate_.get(),
@@ -390,9 +390,7 @@ void Delegate::OnSSLCertificateError(URLRequest* request,
                                      const SSLInfo& ssl_info,
                                      bool fatal) {
   owner_->connect_delegate()->OnSSLCertificateError(
-      std::unique_ptr<WebSocketEventInterface::SSLErrorCallbacks>(
-          new SSLErrorCallbacks(request)),
-      ssl_info, fatal);
+      std::make_unique<SSLErrorCallbacks>(request), ssl_info, fatal);
 }
 
 void Delegate::OnReadCompleted(URLRequest* request, int bytes_read) {
@@ -417,12 +415,11 @@ std::unique_ptr<WebSocketStreamRequest> WebSocketStream::CreateAndConnectStream(
     URLRequestContext* url_request_context,
     const NetLogWithSource& net_log,
     std::unique_ptr<ConnectDelegate> connect_delegate) {
-  std::unique_ptr<WebSocketStreamRequestImpl> request(
-      new WebSocketStreamRequestImpl(socket_url, url_request_context, origin,
-                                     site_for_cookies, additional_headers,
-                                     std::move(connect_delegate),
-                                     std::move(create_helper)));
-  request->Start(std::unique_ptr<base::Timer>(new base::Timer(false, false)));
+  auto request = std::make_unique<WebSocketStreamRequestImpl>(
+      socket_url, url_request_context, origin, site_for_cookies,
+      additional_headers, std::move(connect_delegate),
+      std::move(create_helper));
+  request->Start(std::make_unique<base::Timer>(false, false));
   return std::move(request);
 }
 
@@ -437,11 +434,10 @@ WebSocketStream::CreateAndConnectStreamForTesting(
     const NetLogWithSource& net_log,
     std::unique_ptr<WebSocketStream::ConnectDelegate> connect_delegate,
     std::unique_ptr<base::Timer> timer) {
-  std::unique_ptr<WebSocketStreamRequestImpl> request(
-      new WebSocketStreamRequestImpl(socket_url, url_request_context, origin,
-                                     site_for_cookies, additional_headers,
-                                     std::move(connect_delegate),
-                                     std::move(create_helper)));
+  auto request = std::make_unique<WebSocketStreamRequestImpl>(
+      socket_url, url_request_context, origin, site_for_cookies,
+      additional_headers, std::move(connect_delegate),
+      std::move(create_helper));
   request->Start(std::move(timer));
   return std::move(request);
 }

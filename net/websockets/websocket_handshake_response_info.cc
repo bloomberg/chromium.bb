@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "net/http/http_response_headers.h"
 #include "url/gurl.h"

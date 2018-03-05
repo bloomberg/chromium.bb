@@ -19,6 +19,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_piece.h"
@@ -239,7 +240,7 @@ class WebSocketEndToEndTest : public ::testing::Test {
  protected:
   WebSocketEndToEndTest()
       : event_interface_(),
-        proxy_delegate_(new TestProxyDelegateWithProxyInfo),
+        proxy_delegate_(std::make_unique<TestProxyDelegateWithProxyInfo>()),
         context_(true),
         channel_(),
         initialised_context_(false) {}
@@ -262,8 +263,8 @@ class WebSocketEndToEndTest : public ::testing::Test {
     url::Origin origin = url::Origin::Create(GURL("http://localhost"));
     GURL site_for_cookies("http://localhost/");
     event_interface_ = new ConnectTestingEventInterface;
-    channel_.reset(
-        new WebSocketChannel(base::WrapUnique(event_interface_), &context_));
+    channel_ = std::make_unique<WebSocketChannel>(
+        base::WrapUnique(event_interface_), &context_);
     channel_->SendAddChannelRequest(GURL(socket_url), sub_protocols_, origin,
                                     site_for_cookies, "");
     event_interface_->WaitForResponse();

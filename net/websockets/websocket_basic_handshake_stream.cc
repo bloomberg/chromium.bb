@@ -361,8 +361,8 @@ int WebSocketBasicHandshakeStream::SendRequest(
       ComputeSecWebSocketAccept(handshake_challenge);
 
   DCHECK(connect_delegate_);
-  std::unique_ptr<WebSocketHandshakeRequestInfo> request(
-      new WebSocketHandshakeRequestInfo(url_, base::Time::Now()));
+  auto request =
+      std::make_unique<WebSocketHandshakeRequestInfo>(url_, base::Time::Now());
   request->headers.CopyFrom(enriched_headers);
   connect_delegate_->OnStartOpeningHandshake(std::move(request));
 
@@ -497,10 +497,9 @@ std::unique_ptr<WebSocketStream> WebSocketBasicHandshakeStream::Upgrade() {
         extension_params_->deflate_parameters.client_context_take_over_mode(),
         WebSocketDeflater::NUM_CONTEXT_TAKEOVER_MODE_TYPES);
 
-    return std::unique_ptr<WebSocketStream>(new WebSocketDeflateStream(
+    return std::make_unique<WebSocketDeflateStream>(
         std::move(basic_stream), extension_params_->deflate_parameters,
-        std::unique_ptr<WebSocketDeflatePredictor>(
-            new WebSocketDeflatePredictorImpl)));
+        std::make_unique<WebSocketDeflatePredictorImpl>());
   } else {
     return basic_stream;
   }
@@ -585,7 +584,7 @@ int WebSocketBasicHandshakeStream::ValidateResponse(int rv) {
 
 int WebSocketBasicHandshakeStream::ValidateUpgradeResponse(
     const HttpResponseHeaders* headers) {
-  extension_params_.reset(new WebSocketExtensionParams);
+  extension_params_ = std::make_unique<WebSocketExtensionParams>();
   std::string failure_message;
   if (ValidateUpgrade(headers, &failure_message) &&
       ValidateSecWebSocketAccept(

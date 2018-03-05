@@ -15,7 +15,8 @@
 #include "base/bind.h"
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/ptr_util.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/test/mock_callback.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
@@ -54,7 +55,7 @@ const size_t kChunkSize = 4 * 1024;
 const int kWindowBits = 15;
 
 scoped_refptr<IOBuffer> ToIOBuffer(const std::string& s) {
-  scoped_refptr<IOBuffer> buffer = new IOBuffer(s.size());
+  auto buffer = base::MakeRefCounted<IOBuffer>(s.size());
   memcpy(buffer->data(), s.data(), s.size());
   return buffer;
 }
@@ -88,7 +89,7 @@ void AppendTo(std::vector<std::unique_ptr<WebSocketFrame>>* frames,
               WebSocketFrameHeader::OpCode opcode,
               FrameFlag flag,
               const std::string& data) {
-  std::unique_ptr<WebSocketFrame> frame(new WebSocketFrame(opcode));
+  auto frame = std::make_unique<WebSocketFrame>(opcode);
   frame->header.final = (flag & kFinal);
   frame->header.reserved1 = (flag & kReserved1);
   frame->data = ToIOBuffer(data);
@@ -99,7 +100,7 @@ void AppendTo(std::vector<std::unique_ptr<WebSocketFrame>>* frames,
 void AppendTo(std::vector<std::unique_ptr<WebSocketFrame>>* frames,
               WebSocketFrameHeader::OpCode opcode,
               FrameFlag flag) {
-  std::unique_ptr<WebSocketFrame> frame(new WebSocketFrame(opcode));
+  auto frame = std::make_unique<WebSocketFrame>(opcode);
   frame->header.final = (flag & kFinal);
   frame->header.reserved1 = (flag & kReserved1);
   frames->push_back(std::move(frame));
@@ -245,9 +246,9 @@ class WebSocketDeflateStreamTest : public ::testing::Test {
     parameters.SetClientMaxWindowBits(window_bits);
     mock_stream_ = new testing::StrictMock<MockWebSocketStream>;
     predictor_ = new WebSocketDeflatePredictorMock;
-    deflate_stream_.reset(new WebSocketDeflateStream(
-        std::unique_ptr<WebSocketStream>(mock_stream_), parameters,
-        std::unique_ptr<WebSocketDeflatePredictor>(predictor_)));
+    deflate_stream_ = std::make_unique<WebSocketDeflateStream>(
+        base::WrapUnique(mock_stream_), parameters,
+        base::WrapUnique(predictor_));
   }
 
   std::unique_ptr<WebSocketDeflateStream> deflate_stream_;

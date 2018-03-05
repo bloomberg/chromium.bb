@@ -6,13 +6,12 @@
 
 #include <algorithm>
 #include <limits>
-#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/big_endian.h"
 #include "base/logging.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "net/base/io_buffer.h"
 #include "net/websockets/websocket_frame.h"
 
@@ -158,7 +157,7 @@ void WebSocketFrameParser::DecodeFrameHeader() {
     std::fill(masking_key_.key, masking_key_.key + kMaskingKeyLength, '\0');
   }
 
-  current_frame_header_.reset(new WebSocketFrameHeader(opcode));
+  current_frame_header_ = std::make_unique<WebSocketFrameHeader>(opcode);
   current_frame_header_->final = final;
   current_frame_header_->reserved1 = reserved1;
   current_frame_header_->reserved2 = reserved2;
@@ -177,13 +176,14 @@ std::unique_ptr<WebSocketFrameChunk> WebSocketFrameParser::DecodeFramePayload(
       std::min(static_cast<uint64_t>(buffer_.size() - current_read_pos_),
                current_frame_header_->payload_length - frame_offset_));
 
-  std::unique_ptr<WebSocketFrameChunk> frame_chunk(new WebSocketFrameChunk);
+  auto frame_chunk = std::make_unique<WebSocketFrameChunk>();
   if (first_chunk) {
     frame_chunk->header = current_frame_header_->Clone();
   }
   frame_chunk->final_chunk = false;
   if (next_size) {
-    frame_chunk->data = new IOBufferWithSize(static_cast<int>(next_size));
+    frame_chunk->data =
+        base::MakeRefCounted<IOBufferWithSize>(static_cast<int>(next_size));
     char* io_data = frame_chunk->data->data();
     memcpy(io_data, &buffer_.front() + current_read_pos_, next_size);
     if (current_frame_header_->masked) {

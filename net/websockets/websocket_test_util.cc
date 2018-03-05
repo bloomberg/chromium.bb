@@ -150,8 +150,7 @@ struct WebSocketMockClientSocketFactoryMaker::Detail {
 };
 
 WebSocketMockClientSocketFactoryMaker::WebSocketMockClientSocketFactoryMaker()
-    : detail_(new Detail) {
-}
+    : detail_(std::make_unique<Detail>()) {}
 
 WebSocketMockClientSocketFactoryMaker::
     ~WebSocketMockClientSocketFactoryMaker() = default;
@@ -182,8 +181,8 @@ void WebSocketMockClientSocketFactoryMaker::SetExpectations(
                           kHttpStreamParserBufferSize),
                  sequence++));
   }
-  std::unique_ptr<SequencedSocketData> socket_data(new SequencedSocketData(
-      detail_->reads.data(), detail_->reads.size(), &detail_->write, 1));
+  auto socket_data = std::make_unique<SequencedSocketData>(
+      detail_->reads.data(), detail_->reads.size(), &detail_->write, 1);
   socket_data->set_connect_data(MockConnect(SYNCHRONOUS, OK));
   AddRawExpectations(std::move(socket_data));
 }
