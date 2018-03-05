@@ -39,7 +39,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeActionModeCallback;
@@ -1700,10 +1699,6 @@ public class Tab
         mIsTabStateDirty = true;
         updateTitle();
         updateFullscreenEnabledState();
-        if (!isNativePage()) {
-            RecordHistogram.recordBooleanHistogram(
-                    "Navigation.IsMobileOptimized", mContentViewCore.getIsMobileOptimizedHint());
-        }
 
         // Reset the succressiveRefresh counter after successfully loading a page.
         mSadTabSuccessiveRefreshCounter = 0;

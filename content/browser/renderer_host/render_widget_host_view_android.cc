@@ -1282,7 +1282,7 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
       frame_metadata.min_page_scale_factor,
       frame_metadata.max_page_scale_factor, root_layer_size_dip,
       scrollable_viewport_size_dip, top_content_offset_dip, top_shown_pix,
-      top_changed, is_mobile_optimized);
+      top_changed);
 
   EvictFrameIfNecessary();
 }
