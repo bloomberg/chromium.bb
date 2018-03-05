@@ -29,6 +29,7 @@
 #include "av1/common/entropymode.h"
 
 #define SPACES_PER_TAB 2
+#define CDF_MAX_SIZE 16
 
 typedef unsigned int aom_count_type;
 // A log file recording parsed counts
@@ -147,8 +148,8 @@ static void optimize_entropy_table(aom_count_type *counts,
 
 static void counts_to_cdf(const aom_count_type *counts, aom_cdf_prob *cdf,
                           int modes) {
-  int64_t csum[16];
-  assert(modes <= 16);
+  int64_t csum[CDF_MAX_SIZE];
+  assert(modes <= CDF_MAX_SIZE);
 
   csum[0] = counts[0] + 1;
   for (int i = 1; i < modes; ++i) csum[i] = counts[i] + 1 + csum[i - 1];
@@ -173,15 +174,11 @@ static int parse_counts_for_cdf_opt(aom_count_type **ct_ptr,
     fprintf(stderr, "The dimension of a counts vector should be at least 1!\n");
     return 1;
   }
+  const int total_modes = cts_each_dim[0];
   if (dim_of_cts == 1) {
-    const int total_modes = cts_each_dim[0];
+    assert(total_modes <= CDF_MAX_SIZE);
+    aom_cdf_prob cdfs[CDF_MAX_SIZE];
     aom_count_type *counts1d = *ct_ptr;
-    aom_cdf_prob *cdfs = aom_malloc(sizeof(*cdfs) * total_modes);
-
-    if (cdfs == NULL) {
-      fprintf(stderr, "Allocating cdf array failed!\n");
-      return 1;
-    }
 
     counts_to_cdf(counts1d, cdfs, total_modes);
     (*ct_ptr) += total_modes;
@@ -194,7 +191,7 @@ static int parse_counts_for_cdf_opt(aom_count_type **ct_ptr,
     }
     fprintf(probsfile, " )");
   } else {
-    for (int k = 0; k < cts_each_dim[0]; ++k) {
+    for (int k = 0; k < total_modes; ++k) {
       int tabs_next_level;
 
       if (dim_of_cts == 2)
@@ -209,19 +206,18 @@ static int parse_counts_for_cdf_opt(aom_count_type **ct_ptr,
       }
 
       if (dim_of_cts == 2) {
-        if (k == cts_each_dim[0] - 1)
+        if (k == total_modes - 1)
           fprintf(probsfile, "}\n");
         else
           fprintf(probsfile, "},\n");
       } else {
-        if (k == cts_each_dim[0] - 1)
+        if (k == total_modes - 1)
           fprintf(probsfile, "%*c}\n", tabs * SPACES_PER_TAB, ' ');
         else
           fprintf(probsfile, "%*c},\n", tabs * SPACES_PER_TAB, ' ');
       }
     }
   }
-
   return 0;
 }
 
