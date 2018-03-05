@@ -3399,3 +3399,6 @@ crbug.com/806249 virtual/unified-autoplay/external/wpt/feature-policy/picture-in
 crbug.com/806249 virtual/unified-autoplay/external/wpt/feature-policy/picture-in-picture-allowed-by-feature-policy-attribute.https.sub.html [ Skip ]
 crbug.com/806249 virtual/unified-autoplay/external/wpt/feature-policy/picture-in-picture-allowed-by-feature-policy.https.sub.html [ Skip ]
 crbug.com/806249 virtual/unified-autoplay/external/wpt/feature-policy/picture-in-picture-default-feature-policy.https.sub.html [ Skip ]
+
+# Sheriff 2018-03-05
+crbug.com/818650 [ Linux ] fast/speech/scripted/speechrecognition-restart-onend.html [ Crash Pass ]
