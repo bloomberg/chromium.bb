@@ -68,10 +68,10 @@ class PLATFORM_EXPORT ScaleTransformOperation final
            type == kScaleZ || type == kScale3D;
   }
 
- private:
   OperationType GetType() const override { return type_; }
   OperationType PrimitiveType() const final { return kScale3D; }
 
+ private:
   bool operator==(const TransformOperation& o) const override {
     if (!IsSameType(o))
       return false;
