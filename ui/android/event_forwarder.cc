@@ -188,13 +188,43 @@ bool EventForwarder::OnGestureEvent(JNIEnv* env,
       scale, 0, 0, 0, 0, false, false));
 }
 
-void EventForwarder::OnStartFling(JNIEnv* env,
-                                  const JavaParamRef<jobject>& jobj,
-                                  jlong time_ms,
-                                  jfloat velocity_x,
-                                  jfloat velocity_y,
-                                  jboolean synthetic_scroll) {
-  OnCancelFling(env, jobj, time_ms);
+void EventForwarder::Scroll(JNIEnv* env,
+                            const JavaParamRef<jobject>& jobj,
+                            jlong time_ms,
+                            jfloat delta_x,
+                            jfloat delta_y) {
+  float dip_scale = view_->GetDipScale();
+  float delta_xdip = delta_x / dip_scale;
+  float delta_ydip = delta_y / dip_scale;
+  view_->OnGestureEvent(GestureEventAndroid(
+      GESTURE_EVENT_TYPE_SCROLL_START, gfx::PointF(), gfx::PointF(), time_ms, 0,
+      -delta_xdip, -delta_ydip, 0, 0, true, false));
+  view_->OnGestureEvent(GestureEventAndroid(
+      GESTURE_EVENT_TYPE_SCROLL_BY, gfx::PointF(), gfx::PointF(), time_ms, 0,
+      -delta_xdip, -delta_ydip, 0, 0, true, false));
+  view_->OnGestureEvent(GestureEventAndroid(
+      GESTURE_EVENT_TYPE_SCROLL_END, gfx::PointF(), gfx::PointF(), time_ms, 0,
+      -delta_xdip, -delta_ydip, 0, 0, true, false));
+}
+
+void EventForwarder::DoubleTap(JNIEnv* env,
+                               const JavaParamRef<jobject>& jobj,
+                               jlong time_ms,
+                               jint x,
+                               jint y) {
+  float dip_scale = view_->GetDipScale();
+  view_->OnGestureEvent(GestureEventAndroid(
+      GESTURE_EVENT_TYPE_DOUBLE_TAP, gfx::PointF(x / dip_scale, y / dip_scale),
+      gfx::PointF(), time_ms, 0, 0, 0, 0, 0, true, false));
+}
+
+void EventForwarder::StartFling(JNIEnv* env,
+                                const JavaParamRef<jobject>& jobj,
+                                jlong time_ms,
+                                jfloat velocity_x,
+                                jfloat velocity_y,
+                                jboolean synthetic_scroll) {
+  CancelFling(env, jobj, time_ms);
   if (velocity_x == 0 && velocity_y == 0)
     return;
   // Use velocity as delta in scroll event.
@@ -206,9 +236,9 @@ void EventForwarder::OnStartFling(JNIEnv* env,
       0, 0, velocity_x, velocity_y, true, synthetic_scroll));
 }
 
-void EventForwarder::OnCancelFling(JNIEnv* env,
-                                   const JavaParamRef<jobject>& jobj,
-                                   jlong time_ms) {
+void EventForwarder::CancelFling(JNIEnv* env,
+                                 const JavaParamRef<jobject>& jobj,
+                                 jlong time_ms) {
   view_->OnGestureEvent(
       GestureEventAndroid(GESTURE_EVENT_TYPE_FLING_CANCEL, gfx::PointF(),
                           gfx::PointF(), time_ms, 0, 0, 0, 0, 0, false, false));

@@ -1179,11 +1179,20 @@ std::unique_ptr<WebGestureEvent> CreateWebGestureEventFromGestureEventAndroid(
     case GESTURE_EVENT_TYPE_SCROLL_START:
       event_type = WebInputEvent::kGestureScrollBegin;
       break;
+    case GESTURE_EVENT_TYPE_SCROLL_BY:
+      event_type = WebInputEvent::kGestureScrollUpdate;
+      break;
+    case GESTURE_EVENT_TYPE_SCROLL_END:
+      event_type = WebInputEvent::kGestureScrollEnd;
+      break;
     case GESTURE_EVENT_TYPE_FLING_START:
       event_type = WebInputEvent::kGestureFlingStart;
       break;
     case GESTURE_EVENT_TYPE_FLING_CANCEL:
       event_type = WebInputEvent::kGestureFlingCancel;
+      break;
+    case GESTURE_EVENT_TYPE_DOUBLE_TAP:
+      event_type = WebInputEvent::kGestureDoubleTap;
       break;
     default:
       NOTREACHED() << "Unknown gesture event type";
@@ -1207,6 +1216,9 @@ std::unique_ptr<WebGestureEvent> CreateWebGestureEventFromGestureEventAndroid(
     web_event->data.scroll_begin.delta_x_hint = event.delta_x();
     web_event->data.scroll_begin.delta_y_hint = event.delta_y();
     web_event->data.scroll_begin.target_viewport = event.target_viewport();
+  } else if (event_type == WebInputEvent::kGestureScrollUpdate) {
+    web_event->data.scroll_update.delta_x = event.delta_x();
+    web_event->data.scroll_update.delta_y = event.delta_y();
   } else if (event_type == WebInputEvent::kGestureFlingStart) {
     web_event->data.fling_start.velocity_x = event.velocity_x();
     web_event->data.fling_start.velocity_y = event.velocity_y();
@@ -1215,6 +1227,11 @@ std::unique_ptr<WebGestureEvent> CreateWebGestureEventFromGestureEventAndroid(
     web_event->data.fling_cancel.prevent_boosting = true;
     if (event.synthetic_scroll())
       web_event->data.fling_cancel.target_viewport = true;
+  } else if (event_type == WebInputEvent::kGestureDoubleTap) {
+    // Set the tap count to 1 even for DoubleTap, in order to be consistent with
+    // double tap behavior on a mobile viewport. See https://crbug.com/234986
+    // for context.
+    web_event->data.tap.tap_count = 1;
   }
 
   return web_event;

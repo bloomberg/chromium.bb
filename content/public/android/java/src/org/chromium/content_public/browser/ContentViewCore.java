@@ -328,9 +328,6 @@ public interface ContentViewCore {
     @VisibleForTesting
     int getTopControlsShrinkBlinkHeightForTesting();
 
-    @VisibleForTesting
-    void sendDoubleTapForTest(long timeMs, int x, int y);
-
     /**
      * @return {@code true} if select popup is being shown.
      */

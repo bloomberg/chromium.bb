@@ -3322,7 +3322,8 @@ public class AwSettingsTest {
         final int y = (webView.getBottom() - webView.getTop()) / 2;
         final AwContents awContents = webView.getAwContents();
         InstrumentationRegistry.getInstrumentation().runOnMainSync(
-                () -> awContents.getContentViewCore().sendDoubleTapForTest(
-                        SystemClock.uptimeMillis(), x, y));
+                ()
+                        -> awContents.getWebContents().getEventForwarder().doubleTapForTest(
+                                SystemClock.uptimeMillis(), x, y));
     }
 }

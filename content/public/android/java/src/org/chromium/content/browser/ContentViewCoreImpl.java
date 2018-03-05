@@ -469,13 +469,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
         getSelectionPopupController().setScrollInProgress(touchScrollInProgress, scrollInProgress);
     }
 
-    @VisibleForTesting
-    @Override
-    public void sendDoubleTapForTest(long timeMs, int x, int y) {
-        if (mNativeContentViewCore == 0) return;
-        nativeDoubleTap(mNativeContentViewCore, timeMs, x, y);
-    }
-
     @Override
     public void onShow() {
         assert mWebContents != null;
@@ -717,24 +710,19 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
 
     @Override
     public void scrollBy(float dxPix, float dyPix) {
-        if (mNativeContentViewCore == 0) return;
         if (dxPix == 0 && dyPix == 0) return;
         long time = SystemClock.uptimeMillis();
         // It's a very real (and valid) possibility that a fling may still
         // be active when programatically scrolling. Cancelling the fling in
         // such cases ensures a consistent gesture event stream.
         if (getGestureListenerManager().hasPotentiallyActiveFling()) {
-            getEventForwarder().onCancelFling(time);
+            getEventForwarder().cancelFling(time);
         }
-        // x/y represents starting location of scroll.
-        nativeScrollBegin(mNativeContentViewCore, time, 0f, 0f, -dxPix, -dyPix, true, false);
-        nativeScrollBy(mNativeContentViewCore, time, 0f, 0f, dxPix, dyPix);
-        nativeScrollEnd(mNativeContentViewCore, time);
+        getEventForwarder().scroll(time, dxPix, dyPix);
     }
 
     @Override
     public void scrollTo(float xPix, float yPix) {
-        if (mNativeContentViewCore == 0) return;
         final float xCurrentPix = mRenderCoordinates.getScrollXPix();
         final float yCurrentPix = mRenderCoordinates.getScrollYPix();
         final float dxPix = xPix - xCurrentPix;
@@ -983,12 +971,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
             long nativeContentViewCore);
     private native void nativeSendOrientationChangeEvent(
             long nativeContentViewCore, int orientation);
-    private native void nativeScrollBegin(long nativeContentViewCore, long timeMs, float x, float y,
-            float hintX, float hintY, boolean targetViewport, boolean fromGamepad);
-    private native void nativeScrollEnd(long nativeContentViewCore, long timeMs);
-    private native void nativeScrollBy(
-            long nativeContentViewCore, long timeMs, float x, float y, float deltaX, float deltaY);
-    private native void nativeDoubleTap(long nativeContentViewCore, long timeMs, float x, float y);
     private native void nativeSetTextHandlesTemporarilyHidden(
             long nativeContentViewCore, boolean hidden);
     private native void nativeResetGestureDetection(long nativeContentViewCore);
