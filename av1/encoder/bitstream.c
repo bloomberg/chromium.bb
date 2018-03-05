@@ -487,7 +487,7 @@ static void write_segment_id(AV1_COMP *cpi, const MB_MODE_INFO *const mbmi,
   }
 
   int coded_id =
-      neg_interleave(mbmi->segment_id, pred, cm->last_active_segid + 1);
+      neg_interleave(mbmi->segment_id, pred, seg->last_active_segid + 1);
 
   aom_cdf_prob *pred_cdf = segp->spatial_pred_seg_cdf[cdf_num];
   aom_write_symbol(w, coded_id, pred_cdf, 8);
@@ -948,9 +948,9 @@ static void write_inter_segment_id(AV1_COMP *cpi, aom_writer *w,
   if (seg->update_map) {
 #if CONFIG_SPATIAL_SEGMENTATION
     if (preskip) {
-      if (!cm->preskip_segid) return;
+      if (!seg->preskip_segid) return;
     } else {
-      if (cm->preskip_segid) return;
+      if (seg->preskip_segid) return;
       if (skip) {
         write_segment_id(cpi, mbmi, w, seg, segp, mi_row, mi_col, 1);
         if (seg->temporal_update) ((MB_MODE_INFO *)mbmi)->seg_id_predicted = 0;
@@ -1273,7 +1273,7 @@ static void write_mb_modes_kf(AV1_COMP *cpi, MACROBLOCKD *xd,
   const PREDICTION_MODE mode = mbmi->mode;
 
 #if CONFIG_SPATIAL_SEGMENTATION
-  if (cm->preskip_segid && seg->update_map)
+  if (seg->preskip_segid && seg->update_map)
     write_segment_id(cpi, mbmi, w, seg, segp, mi_row, mi_col, 0);
 #else
   if (seg->update_map) write_segment_id(w, seg, segp, mbmi->segment_id);
@@ -1282,7 +1282,7 @@ static void write_mb_modes_kf(AV1_COMP *cpi, MACROBLOCKD *xd,
   const int skip = write_skip(cm, xd, mbmi->segment_id, mi, w);
 
 #if CONFIG_SPATIAL_SEGMENTATION
-  if (!cm->preskip_segid && seg->update_map)
+  if (!seg->preskip_segid && seg->update_map)
     write_segment_id(cpi, mbmi, w, seg, segp, mi_row, mi_col, skip);
 #endif
 
@@ -2156,7 +2156,7 @@ static void encode_quantization(const AV1_COMMON *const cm,
 static void encode_segmentation(AV1_COMMON *cm, MACROBLOCKD *xd,
                                 struct aom_write_bit_buffer *wb) {
   int i, j;
-  const struct segmentation *seg = &cm->seg;
+  struct segmentation *seg = &cm->seg;
 
   aom_wb_write_bit(wb, seg->enabled);
   if (!seg->enabled) return;
@@ -2180,7 +2180,7 @@ static void encode_segmentation(AV1_COMMON *cm, MACROBLOCKD *xd,
   }
 
 #if CONFIG_SPATIAL_SEGMENTATION
-  cm->preskip_segid = 0;
+  seg->preskip_segid = 0;
 #endif
 
   // Segmentation data
@@ -2192,8 +2192,8 @@ static void encode_segmentation(AV1_COMMON *cm, MACROBLOCKD *xd,
         aom_wb_write_bit(wb, active);
         if (active) {
 #if CONFIG_SPATIAL_SEGMENTATION
-          cm->preskip_segid |= j >= SEG_LVL_REF_FRAME;
-          cm->last_active_segid = i;
+          seg->preskip_segid |= j >= SEG_LVL_REF_FRAME;
+          seg->last_active_segid = i;
 #endif
           const int data_max = av1_seg_feature_data_max(j);
           const int data_min = -data_max;

@@ -48,6 +48,10 @@ struct segmentation {
 
   int16_t feature_data[MAX_SEGMENTS][SEG_LVL_MAX];
   unsigned int feature_mask[MAX_SEGMENTS];
+#if CONFIG_SPATIAL_SEGMENTATION
+  int last_active_segid;
+  int preskip_segid;
+#endif
 };
 
 struct segmentation_probs {

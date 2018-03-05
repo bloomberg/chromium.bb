@@ -833,7 +833,7 @@ static void setup_segmentation(AV1_COMMON *const cm,
   }
 
 #if CONFIG_SPATIAL_SEGMENTATION
-  cm->preskip_segid = 0;
+  seg->preskip_segid = 0;
 #endif
 
   // Segmentation data update
@@ -847,8 +847,8 @@ static void setup_segmentation(AV1_COMMON *const cm,
         const int feature_enabled = aom_rb_read_bit(rb);
         if (feature_enabled) {
 #if CONFIG_SPATIAL_SEGMENTATION
-          cm->preskip_segid |= j >= SEG_LVL_REF_FRAME;
-          cm->last_active_segid = i;
+          seg->preskip_segid |= j >= SEG_LVL_REF_FRAME;
+          seg->last_active_segid = i;
 #endif
           av1_enable_segfeature(seg, i, j);
 

@@ -280,6 +280,7 @@ static int neg_deinterleave(int diff, int ref, int max) {
 static int read_segment_id(AV1_COMMON *const cm, MACROBLOCKD *const xd,
                            int mi_row, int mi_col, aom_reader *r, int skip) {
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
+  struct segmentation *const seg = &cm->seg;
   struct segmentation_probs *const segp = &ec_ctx->seg;
   int prev_ul = -1; /* Top left segment_id */
   int prev_l = -1;  /* Current left segment_id */
@@ -305,9 +306,9 @@ static int read_segment_id(AV1_COMMON *const cm, MACROBLOCKD *const xd,
   aom_cdf_prob *pred_cdf = segp->spatial_pred_seg_cdf[cdf_num];
   int coded_id = aom_read_symbol(r, pred_cdf, 8, ACCT_STR);
 
-  int segment_id = neg_deinterleave(coded_id, pred, cm->last_active_segid + 1);
+  int segment_id = neg_deinterleave(coded_id, pred, seg->last_active_segid + 1);
 
-  if (segment_id < 0 || segment_id > cm->last_active_segid) {
+  if (segment_id < 0 || segment_id > seg->last_active_segid) {
     aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                        "Corrupted segment_ids");
   }
@@ -411,9 +412,9 @@ static int read_inter_segment_id(AV1_COMMON *const cm, MACROBLOCKD *const xd,
 
 #if CONFIG_SPATIAL_SEGMENTATION
   if (preskip) {
-    if (!cm->preskip_segid) return 0;
+    if (!seg->preskip_segid) return 0;
   } else {
-    if (cm->preskip_segid) return mbmi->segment_id;
+    if (seg->preskip_segid) return mbmi->segment_id;
     if (mbmi->skip) {
       if (seg->temporal_update) {
         mbmi->seg_id_predicted = 0;
@@ -767,13 +768,16 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
   const MODE_INFO *above_mi = xd->above_mi;
   const MODE_INFO *left_mi = xd->left_mi;
   const BLOCK_SIZE bsize = mbmi->sb_type;
+#if CONFIG_SPATIAL_SEGMENTATION
+  struct segmentation *const seg = &cm->seg;
+#endif
 
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
 
 #if !CONFIG_SPATIAL_SEGMENTATION
   mbmi->segment_id = read_intra_segment_id(cm, xd, mi_row, mi_col, bsize, r, 0);
 #else
-  if (cm->preskip_segid)
+  if (seg->preskip_segid)
     mbmi->segment_id =
         read_intra_segment_id(cm, xd, mi_row, mi_col, bsize, r, 0);
 #endif
@@ -781,7 +785,7 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
   mbmi->skip = read_skip(cm, xd, mbmi->segment_id, r);
 
 #if CONFIG_SPATIAL_SEGMENTATION
-  if (!cm->preskip_segid)
+  if (!seg->preskip_segid)
     mbmi->segment_id =
         read_intra_segment_id(cm, xd, mi_row, mi_col, bsize, r, mbmi->skip);
 #endif
