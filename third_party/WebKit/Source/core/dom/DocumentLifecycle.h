@@ -188,12 +188,7 @@ class CORE_EXPORT DocumentLifecycle {
         : document_lifecycle_(document_lifecycle) {
       document_lifecycle_.SetLifecyclePostponed();
     }
-    ~PostponeTransitionScope() {}
-
-    void SetLifecyclePostponed() {
-      document_lifecycle_.SetLifecyclePostponed();
-    }
-    void ResetLifecyclePostponed() {
+    ~PostponeTransitionScope() {
       document_lifecycle_.ResetLifecyclePostponed();
     }
 

@@ -10,18 +10,14 @@
 
 namespace blink {
 class MainThreadDebuggerTest : public PageTestBase {
- public:
-  MainThreadDebugger* GetMainThreadDebugger() {
-    return MainThreadDebugger::Instance();
-  }
-
- private:
 };
 
 TEST_F(MainThreadDebuggerTest, HitBreakPointDuringLifecycle) {
-  MainThreadDebugger* debugger = GetMainThreadDebugger();
   Document& document = GetDocument();
-  debugger->SetPostponeTransitionScopeForTesting(document);
+  std::unique_ptr<DocumentLifecycle::PostponeTransitionScope>
+      postponed_transition_scope =
+          std::make_unique<DocumentLifecycle::PostponeTransitionScope>(
+              document.Lifecycle());
   EXPECT_TRUE(document.Lifecycle().LifecyclePostponed());
 
   // The following steps would cause either style update or layout, it should
@@ -31,7 +27,7 @@ TEST_F(MainThreadDebuggerTest, HitBreakPointDuringLifecycle) {
   document.UpdateStyleAndLayoutIgnorePendingStylesheets();
   document.UpdateStyleAndLayoutTree();
 
-  debugger->ResetPostponeTransitionScopeForTesting();
+  postponed_transition_scope.reset();
   EXPECT_FALSE(document.Lifecycle().LifecyclePostponed());
 }
 

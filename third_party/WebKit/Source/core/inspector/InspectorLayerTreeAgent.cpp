@@ -437,13 +437,10 @@ Response InspectorLayerTreeAgent::makeSnapshot(const String& layer_id,
   // If we hit a devtool break point in the middle of document lifecycle, for
   // example, https://crbug.com/788219, this will prevent crash when clicking
   // the "layer" panel.
-  if (inspected_frames_->Root()->View()->GetFrame().GetDocument() &&
-      inspected_frames_->Root()
-          ->View()
-          ->GetFrame()
-          .GetDocument()
-          ->Lifecycle()
-          .LifecyclePostponed())
+  if (inspected_frames_->Root()->GetDocument() && inspected_frames_->Root()
+                                                      ->GetDocument()
+                                                      ->Lifecycle()
+                                                      .LifecyclePostponed())
     return Response::Error("Layer does not draw content");
 
   inspected_frames_->Root()->View()->UpdateAllLifecyclePhasesExceptPaint();

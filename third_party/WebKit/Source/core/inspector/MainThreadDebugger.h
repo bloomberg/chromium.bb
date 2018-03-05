@@ -78,9 +78,6 @@ class CORE_EXPORT MainThreadDebugger final : public ThreadDebugger {
   void ContextWillBeDestroyed(ScriptState*);
   void ExceptionThrown(ExecutionContext*, ErrorEvent*);
 
-  void SetPostponeTransitionScopeForTesting(Document&);
-  void ResetPostponeTransitionScopeForTesting();
-
  private:
   void ReportConsoleMessage(ExecutionContext*,
                             MessageSource,
