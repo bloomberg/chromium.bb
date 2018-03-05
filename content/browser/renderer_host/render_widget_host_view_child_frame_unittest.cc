@@ -147,10 +147,6 @@ class RenderWidgetHostViewChildFrameTest : public testing::Test {
     return view_->last_received_local_surface_id_;
   }
 
-  void ClearCompositorSurfaceIfNecessary() {
-    view_->ClearCompositorSurfaceIfNecessary();
-  }
-
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
@@ -234,41 +230,6 @@ TEST_F(RenderWidgetHostViewChildFrameTest, SwapCompositorFrame) {
     EXPECT_EQ(viz::SurfaceInfo(id, scale_factor, view_size),
               test_frame_connector_->last_surface_info_);
   }
-}
-
-// Check that the same local surface id can be used after frame eviction.
-TEST_F(RenderWidgetHostViewChildFrameTest, FrameEviction) {
-  // TODO: fix for mash.
-  if (base::FeatureList::IsEnabled(features::kMash))
-    return;
-
-  gfx::Size view_size(100, 100);
-  gfx::Rect view_rect(view_size);
-  float scale_factor = 1.f;
-
-  view_->SetSize(view_size);
-  view_->Show();
-
-  // Submit a frame.
-  view_->SubmitCompositorFrame(
-      kArbitraryLocalSurfaceId,
-      CreateDelegatedFrame(scale_factor, view_size, view_rect), nullptr);
-
-  EXPECT_EQ(kArbitraryLocalSurfaceId, GetLocalSurfaceId());
-  EXPECT_TRUE(view_->has_frame());
-
-  // Evict the frame. has_frame() should return false.
-  ClearCompositorSurfaceIfNecessary();
-  EXPECT_EQ(kArbitraryLocalSurfaceId, GetLocalSurfaceId());
-  EXPECT_FALSE(view_->has_frame());
-
-  // Submit another frame with the same local surface id. The same id should be
-  // usable.
-  view_->SubmitCompositorFrame(
-      kArbitraryLocalSurfaceId,
-      CreateDelegatedFrame(scale_factor, view_size, view_rect), nullptr);
-  EXPECT_EQ(kArbitraryLocalSurfaceId, GetLocalSurfaceId());
-  EXPECT_TRUE(view_->has_frame());
 }
 
 // Tests that the viewport intersection rect is dispatched to the RenderWidget

@@ -375,23 +375,6 @@ void RenderWidgetHostViewGuest::SendSurfaceInfoToEmbedderImpl(
     guest_->SetChildFrameSurface(surface_info);
 }
 
-void RenderWidgetHostViewGuest::SubmitCompositorFrame(
-    const viz::LocalSurfaceId& local_surface_id,
-    viz::CompositorFrame frame,
-    viz::mojom::HitTestRegionListPtr hit_test_region_list) {
-  TRACE_EVENT0("content", "RenderWidgetHostViewGuest::OnSwapCompositorFrame");
-
-  last_scroll_offset_ = frame.metadata.root_scroll_offset;
-  ProcessCompositorFrame(local_surface_id, std::move(frame),
-                         std::move(hit_test_region_list));
-
-  // If after detaching we are sent a frame, we should finish processing it, and
-  // then we should clear the surface so that we are not holding resources we
-  // no longer need.
-  if (!guest_ || !guest_->attached())
-    ClearCompositorSurfaceIfNecessary();
-}
-
 void RenderWidgetHostViewGuest::OnAttached() {
   RegisterFrameSinkId();
 #if defined(USE_AURA)
