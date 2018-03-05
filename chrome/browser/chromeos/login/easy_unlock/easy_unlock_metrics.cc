@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/signin/easy_unlock_metrics.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_metrics.h"
 
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+
+namespace chromeos {
 
 void RecordEasyUnlockDidUserManuallyUnlockPhone(bool did_unlock) {
   UMA_HISTOGRAM_BOOLEAN("EasyUnlock.AuthEvent.DidUserManuallyUnlockPhone",
@@ -34,7 +36,8 @@ void RecordEasyUnlockScreenUnlockEvent(EasyUnlockAuthEvent event) {
 
 void RecordEasyUnlockTrialRunEvent(EasyUnlockTrialRunEvent event) {
   DCHECK_LT(event, EASY_UNLOCK_TRIAL_RUN_EVENT_COUNT);
-  UMA_HISTOGRAM_ENUMERATION("EasyUnlock.TrialRun.Events",
-                            event,
+  UMA_HISTOGRAM_ENUMERATION("EasyUnlock.TrialRun.Events", event,
                             EASY_UNLOCK_TRIAL_RUN_EVENT_COUNT);
 }
+
+}  // namespace chromeos

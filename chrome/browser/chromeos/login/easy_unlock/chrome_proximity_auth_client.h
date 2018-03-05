@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SIGNIN_CHROME_PROXIMITY_AUTH_CLIENT_H_
-#define CHROME_BROWSER_SIGNIN_CHROME_PROXIMITY_AUTH_CLIENT_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_EASY_UNLOCK_CHROME_PROXIMITY_AUTH_CLIENT_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_EASY_UNLOCK_CHROME_PROXIMITY_AUTH_CLIENT_H_
 
 #include "base/macros.h"
 #include "components/proximity_auth/proximity_auth_client.h"
@@ -51,4 +51,4 @@ class ChromeProximityAuthClient : public proximity_auth::ProximityAuthClient {
   DISALLOW_COPY_AND_ASSIGN(ChromeProximityAuthClient);
 };
 
-#endif  // CHROME_BROWSER_SIGNIN_CHROME_PROXIMITY_AUTH_CLIENT_H_
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_EASY_UNLOCK_CHROME_PROXIMITY_AUTH_CLIENT_H_

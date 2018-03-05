@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SIGNIN_EASY_UNLOCK_SERVICE_OBSERVER_H_
-#define CHROME_BROWSER_SIGNIN_EASY_UNLOCK_SERVICE_OBSERVER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_EASY_UNLOCK_EASY_UNLOCK_SERVICE_OBSERVER_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_EASY_UNLOCK_EASY_UNLOCK_SERVICE_OBSERVER_H_
 
 #include "components/proximity_auth/screenlock_state.h"
+
+namespace chromeos {
 
 class EasyUnlockServiceObserver {
  public:
@@ -13,11 +15,13 @@ class EasyUnlockServiceObserver {
   virtual void OnTurnOffOperationStatusChanged() {}
 
   // Invoked when screenlock state changes.
-  virtual void OnScreenlockStateChanged(
-      proximity_auth::ScreenlockState state) {}
+  virtual void OnScreenlockStateChanged(proximity_auth::ScreenlockState state) {
+  }
 
  protected:
   virtual ~EasyUnlockServiceObserver() {}
 };
 
-#endif  // CHROME_BROWSER_SIGNIN_EASY_UNLOCK_SERVICE_OBSERVER_H_
+}  // namespace chromeos
+
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_EASY_UNLOCK_EASY_UNLOCK_SERVICE_OBSERVER_H_

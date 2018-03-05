@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SIGNIN_EASY_UNLOCK_SERVICE_REGULAR_H_
-#define CHROME_BROWSER_SIGNIN_EASY_UNLOCK_SERVICE_REGULAR_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_EASY_UNLOCK_EASY_UNLOCK_SERVICE_REGULAR_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_EASY_UNLOCK_EASY_UNLOCK_SERVICE_REGULAR_H_
 
 #include <memory>
 #include <string>
@@ -12,8 +12,8 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/browser/chromeos/login/easy_unlock/short_lived_user_context.h"
-#include "chrome/browser/signin/easy_unlock_service.h"
 #include "components/cryptauth/cryptauth_device_manager.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/proximity_auth/screenlock_bridge.h"
@@ -21,7 +21,7 @@
 namespace base {
 class DictionaryValue;
 class ListValue;
-}
+}  // namespace base
 
 namespace cryptauth {
 class CryptAuthClient;
@@ -30,15 +30,18 @@ class CryptAuthEnrollmentManager;
 class LocalDeviceDataProvider;
 class RemoteDeviceLoader;
 class ToggleEasyUnlockResponse;
-}
+}  // namespace cryptauth
 
 namespace proximity_auth {
 class PromotionManager;
 class ProximityAuthProfilePrefManager;
-}
+}  // namespace proximity_auth
+
+class Profile;
+
+namespace chromeos {
 
 class EasyUnlockNotificationController;
-class Profile;
 
 // EasyUnlockService instance that should be used for regular, non-signin
 // profiles.
@@ -105,10 +108,9 @@ class EasyUnlockServiceRegular
 
   // CryptAuthDeviceManager::Observer:
   void OnSyncStarted() override;
-  void OnSyncFinished(
-      cryptauth::CryptAuthDeviceManager::SyncResult sync_result,
-      cryptauth::CryptAuthDeviceManager::DeviceChangeResult
-          device_change_result) override;
+  void OnSyncFinished(cryptauth::CryptAuthDeviceManager::SyncResult sync_result,
+                      cryptauth::CryptAuthDeviceManager::DeviceChangeResult
+                          device_change_result) override;
 
   // proximity_auth::ScreenlockBridge::Observer implementation:
   void OnScreenDidLock(proximity_auth::ScreenlockBridge::LockHandler::ScreenType
@@ -210,4 +212,6 @@ class EasyUnlockServiceRegular
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockServiceRegular);
 };
 
-#endif  // CHROME_BROWSER_SIGNIN_EASY_UNLOCK_SERVICE_REGULAR_H_
+}  // namespace chromeos
+
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_EASY_UNLOCK_EASY_UNLOCK_SERVICE_REGULAR_H_

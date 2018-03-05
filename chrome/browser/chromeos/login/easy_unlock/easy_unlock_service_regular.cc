@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/signin/easy_unlock_service_regular.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service_regular.h"
 
 #include <stdint.h>
 
@@ -22,15 +22,15 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/login/easy_unlock/chrome_proximity_auth_client.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_key_manager.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_notification_controller.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_reauth.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/cryptauth/chrome_cryptauth_service_factory.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/chrome_proximity_auth_client.h"
-#include "chrome/browser/signin/easy_unlock_notification_controller.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/chrome_features.h"
@@ -68,6 +68,8 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
+
+namespace chromeos {
 
 namespace {
 
@@ -420,7 +422,7 @@ void EasyUnlockServiceRegular::ResetTurnOffFlow() {
 }
 
 EasyUnlockService::TurnOffFlowStatus
-    EasyUnlockServiceRegular::GetTurnOffFlowStatus() const {
+EasyUnlockServiceRegular::GetTurnOffFlowStatus() const {
   return turn_off_flow_status_;
 }
 
@@ -463,9 +465,8 @@ void EasyUnlockServiceRegular::StartAutoPairing(
       extension_misc::kEasyUnlockAppId, std::move(event));
 }
 
-void EasyUnlockServiceRegular::SetAutoPairingResult(
-    bool success,
-    const std::string& error) {
+void EasyUnlockServiceRegular::SetAutoPairingResult(bool success,
+                                                    const std::string& error) {
   DCHECK(!auto_pairing_callback_.is_null());
 
   auto_pairing_callback_.Run(success, error);
@@ -584,10 +585,10 @@ void EasyUnlockServiceRegular::OnSyncFinished(
   if (public_keys_before_sync == public_keys_after_sync)
     return;
 
-// Show the appropriate notification if an unlock key is first synced or if it
-// changes an existing key.
-// Note: We do not show a notification when EasyUnlock is disabled by sync nor
-// if EasyUnlock was enabled through the setup app.
+  // Show the appropriate notification if an unlock key is first synced or if it
+  // changes an existing key.
+  // Note: We do not show a notification when EasyUnlock is disabled by sync nor
+  // if EasyUnlock was enabled through the setup app.
   bool is_setup_fresh =
       short_lived_user_context_ && short_lived_user_context_->user_context();
 
@@ -750,3 +751,5 @@ void EasyUnlockServiceRegular::RefreshCryptohomeKeysIfPossible() {
     CheckCryptohomeKeysAndMaybeHardlock();
   }
 }
+
+}  // namespace chromeos

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/signin/easy_unlock_service.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service.h"
 
 #include <utility>
 
@@ -22,17 +22,17 @@
 #include "base/version.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/login/easy_unlock/chrome_proximity_auth_client.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_app_manager.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_key_manager.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service_factory.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service_observer.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager_factory.h"
 #include "chrome/browser/chromeos/login/easy_unlock/secure_message_delegate_chromeos.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/chrome_proximity_auth_client.h"
-#include "chrome/browser/signin/easy_unlock_app_manager.h"
-#include "chrome/browser/signin/easy_unlock_service_factory.h"
-#include "chrome/browser/signin/easy_unlock_service_observer.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/chrome_switches.h"
@@ -66,6 +66,8 @@
 
 using proximity_auth::ScreenlockState;
 
+namespace chromeos {
+
 namespace {
 
 PrefService* GetLocalState() {
@@ -93,8 +95,7 @@ class EasyUnlockService::BluetoothDetector
       public apps::AppLifetimeMonitor::Observer {
  public:
   explicit BluetoothDetector(EasyUnlockService* service)
-      : service_(service),
-        weak_ptr_factory_(this) {
+      : service_(service), weak_ptr_factory_(this) {
     apps::AppLifetimeMonitorFactory::GetForBrowserContext(service_->profile())
         ->AddObserver(this);
   }
@@ -169,16 +170,14 @@ class EasyUnlockService::PowerMonitor
     : public chromeos::PowerManagerClient::Observer {
  public:
   explicit PowerMonitor(EasyUnlockService* service)
-      : service_(service),
-        waking_up_(false),
-        weak_ptr_factory_(this) {
-    chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
-        AddObserver(this);
+      : service_(service), waking_up_(false), weak_ptr_factory_(this) {
+    chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
+        this);
   }
 
   ~PowerMonitor() override {
-    chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
-        RemoveObserver(this);
+    chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
+        this);
   }
 
   // Called when the remote device has been authenticated to record the time
@@ -187,9 +186,8 @@ class EasyUnlockService::PowerMonitor
   void RecordStartUpTime() {
     if (wake_up_time_.is_null())
       return;
-    UMA_HISTOGRAM_MEDIUM_TIMES(
-        "EasyUnlock.StartupTimeFromSuspend",
-        base::Time::Now() - wake_up_time_);
+    UMA_HISTOGRAM_MEDIUM_TIMES("EasyUnlock.StartupTimeFromSuspend",
+                               base::Time::Now() - wake_up_time_);
     wake_up_time_ = base::Time();
   }
 
@@ -233,11 +231,9 @@ EasyUnlockService::EasyUnlockService(Profile* profile)
       bluetooth_detector_(new BluetoothDetector(this)),
       shut_down_(false),
       tpm_key_checked_(false),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
-EasyUnlockService::~EasyUnlockService() {
-}
+EasyUnlockService::~EasyUnlockService() {}
 
 // static
 void EasyUnlockService::RegisterProfilePrefs(
@@ -357,9 +353,8 @@ bool EasyUnlockService::GetPersistedHardlockState(
   const base::DictionaryValue* dict =
       local_state->GetDictionary(prefs::kEasyUnlockHardlockState);
   int state_int;
-  if (dict &&
-      dict->GetIntegerWithoutPathExpansion(account_id.GetUserEmail(),
-                                           &state_int)) {
+  if (dict && dict->GetIntegerWithoutPathExpansion(account_id.GetUserEmail(),
+                                                   &state_int)) {
     *state =
         static_cast<EasyUnlockScreenlockStateHandler::HardlockState>(state_int);
     return true;
@@ -369,7 +364,7 @@ bool EasyUnlockService::GetPersistedHardlockState(
 }
 
 EasyUnlockScreenlockStateHandler*
-    EasyUnlockService::GetScreenlockStateHandler() {
+EasyUnlockService::GetScreenlockStateHandler() {
   if (!IsAllowed())
     return NULL;
   if (!screenlock_state_handler_) {
@@ -589,9 +584,8 @@ void EasyUnlockService::UpdateAppState() {
     // If the service is not allowed due to bluetooth not being detected just
     // after system suspend is done, give bluetooth more time to be detected
     // before disabling the app (and resetting screenlock state).
-    bluetooth_waking_up =
-        power_monitor_.get() && power_monitor_->waking_up() &&
-        !bluetooth_detector_->IsPresent();
+    bluetooth_waking_up = power_monitor_.get() && power_monitor_->waking_up() &&
+                          !bluetooth_detector_->IsPresent();
 
     if (!bluetooth_waking_up) {
       app_manager_->DisableAppIfLoaded();
@@ -815,9 +809,10 @@ void EasyUnlockService::EnsureTpmKeyPresentIfNeeded() {
 
   // TODO(tbarzic): Set check_private_key only if previous sign-in attempt
   // failed.
-  EasyUnlockTpmKeyManagerFactory::GetInstance()->Get(profile_)
-      ->PrepareTpmKey(true /* check_private_key */,
-                      base::Closure());
+  EasyUnlockTpmKeyManagerFactory::GetInstance()->Get(profile_)->PrepareTpmKey(
+      true /* check_private_key */, base::Closure());
 
   tpm_key_checked_ = true;
 }
+
+}  // namespace chromeos

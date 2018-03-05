@@ -140,7 +140,7 @@
 #include "extensions/browser/api/runtime/runtime_api.h"
 #include "extensions/browser/extension_prefs.h"
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/signin/easy_unlock_service.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service.h"
 #endif
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
@@ -384,7 +384,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS) and defined(OS_CHROMEOS)
-  EasyUnlockService::RegisterPrefs(registry);
+  chromeos::EasyUnlockService::RegisterPrefs(registry);
 #endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)

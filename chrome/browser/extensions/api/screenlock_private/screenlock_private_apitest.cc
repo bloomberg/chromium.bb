@@ -9,12 +9,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/browser/extensions/api/screenlock_private/screenlock_private_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "components/proximity_auth/screenlock_bridge.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -80,7 +80,8 @@ class ScreenlockPrivateApiTest : public ExtensionApiTest,
       proximity_auth::ScreenlockBridge::Get()->lock_handler()->SetAuthType(
           test_account_id_, proximity_auth::mojom::AuthType::USER_CLICK,
           base::string16());
-      EasyUnlockService::Get(profile())->AttemptAuth(test_account_id_);
+      chromeos::EasyUnlockService::Get(profile())->AttemptAuth(
+          test_account_id_);
     }
   }
 

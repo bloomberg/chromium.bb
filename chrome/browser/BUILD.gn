@@ -3622,33 +3622,6 @@ jumbo_split_static_library("browser") {
       "//media/cast:net",
       "//services/device/public/mojom",
     ]
-
-    if (is_chromeos) {
-      sources += [
-        "signin/chrome_proximity_auth_client.cc",
-        "signin/chrome_proximity_auth_client.h",
-        "signin/easy_unlock_app_manager.cc",
-        "signin/easy_unlock_app_manager.h",
-        "signin/easy_unlock_auth_attempt.cc",
-        "signin/easy_unlock_auth_attempt.h",
-        "signin/easy_unlock_metrics.cc",
-        "signin/easy_unlock_metrics.h",
-        "signin/easy_unlock_notification_controller.cc",
-        "signin/easy_unlock_notification_controller.h",
-        "signin/easy_unlock_notification_controller_chromeos.cc",
-        "signin/easy_unlock_notification_controller_chromeos.h",
-        "signin/easy_unlock_screenlock_state_handler.cc",
-        "signin/easy_unlock_screenlock_state_handler.h",
-        "signin/easy_unlock_service.cc",
-        "signin/easy_unlock_service.h",
-        "signin/easy_unlock_service_factory.cc",
-        "signin/easy_unlock_service_factory.h",
-        "signin/easy_unlock_service_regular.cc",
-        "signin/easy_unlock_service_regular.h",
-        "signin/easy_unlock_service_signin_chromeos.cc",
-        "signin/easy_unlock_service_signin_chromeos.h",
-      ]
-    }
   }
 
   if (enable_mdns) {

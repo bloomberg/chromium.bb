@@ -2,18 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/signin/easy_unlock_auth_attempt.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_auth_attempt.h"
 
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "build/build_config.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_app_manager.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_key_manager.h"
-#include "chrome/browser/signin/easy_unlock_app_manager.h"
 #include "components/proximity_auth/screenlock_bridge.h"
 #include "components/proximity_auth/switches.h"
 #include "crypto/encryptor.h"
 #include "crypto/symmetric_key.h"
+
+namespace chromeos {
 
 namespace {
 
@@ -186,3 +188,5 @@ void EasyUnlockAuthAttempt::Cancel(const AccountId& account_id) {
   finalized_callback_.Run(type_, kFailure, account_id, std::string(),
                           std::string());
 }
+
+}  // namespace chromeos

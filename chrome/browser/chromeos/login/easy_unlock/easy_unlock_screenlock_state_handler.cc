@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/signin/easy_unlock_screenlock_state_handler.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_screenlock_state_handler.h"
 
 #include <stddef.h>
 
@@ -10,12 +10,14 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "chrome/browser/signin/easy_unlock_metrics.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_metrics.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/devicetype_utils.h"
 
 using proximity_auth::ScreenlockState;
+
+namespace chromeos {
 
 namespace {
 
@@ -384,3 +386,5 @@ void EasyUnlockScreenlockStateHandler::UpdateScreenlockAuthType() {
         base::string16());
   }
 }
+
+}  // namespace chromeos

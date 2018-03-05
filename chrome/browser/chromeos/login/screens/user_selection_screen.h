@@ -23,10 +23,10 @@
 #include "ui/base/user_activity/user_activity_observer.h"
 
 class AccountId;
-class EasyUnlockService;
 
 namespace chromeos {
 
+class EasyUnlockService;
 class LoginDisplayWebUIHandler;
 class UserBoardView;
 

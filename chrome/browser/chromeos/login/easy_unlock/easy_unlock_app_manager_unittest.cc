@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/signin/easy_unlock_app_manager.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_app_manager.h"
 
 #include <stddef.h>
 
@@ -214,7 +214,7 @@ class EasyUnlockAppManagerTest : public testing::Test {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         proximity_auth::switches::kForceLoadEasyUnlockAppInTests);
     extensions::ExtensionSystem* extension_system = SetUpExtensionSystem();
-    app_manager_ = EasyUnlockAppManager::Create(
+    app_manager_ = chromeos::EasyUnlockAppManager::Create(
         extension_system, IDR_EASY_UNLOCK_MANIFEST, GetAppPath());
   }
 
@@ -267,14 +267,14 @@ class EasyUnlockAppManagerTest : public testing::Test {
     event_router_->AddEventObserver(&event_consumer_);
     event_router_->set_expected_extension_id(extension_misc::kEasyUnlockAppId);
 
-    extension_service_->component_loader()->
-        set_ignore_whitelist_for_testing(true);
+    extension_service_->component_loader()->set_ignore_whitelist_for_testing(
+        true);
 
     return test_extension_system;
   }
 
  protected:
-  std::unique_ptr<EasyUnlockAppManager> app_manager_;
+  std::unique_ptr<chromeos::EasyUnlockAppManager> app_manager_;
 
   // Needed by extension system.
   content::TestBrowserThreadBundle thread_bundle_;

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SIGNIN_EASY_UNLOCK_SERVICE_FACTORY_H_
-#define CHROME_BROWSER_SIGNIN_EASY_UNLOCK_SERVICE_FACTORY_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_EASY_UNLOCK_EASY_UNLOCK_SERVICE_FACTORY_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_EASY_UNLOCK_EASY_UNLOCK_SERVICE_FACTORY_H_
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
@@ -14,8 +14,11 @@ class BrowserContext;
 }
 
 namespace base {
-template <typename T> struct DefaultSingletonTraits;
+template <typename T>
+struct DefaultSingletonTraits;
 }
+
+namespace chromeos {
 
 class EasyUnlockService;
 
@@ -52,4 +55,6 @@ class EasyUnlockServiceFactory : public BrowserContextKeyedServiceFactory {
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockServiceFactory);
 };
 
-#endif  // CHROME_BROWSER_SIGNIN_EASY_UNLOCK_SERVICE_FACTORY_H_
+}  // namespace chromeos
+
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_EASY_UNLOCK_EASY_UNLOCK_SERVICE_FACTORY_H_

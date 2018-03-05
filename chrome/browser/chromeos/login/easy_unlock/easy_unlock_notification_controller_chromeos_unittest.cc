@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/signin/easy_unlock_notification_controller_chromeos.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_notification_controller_chromeos.h"
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
@@ -16,7 +16,7 @@ namespace {
 const char kPhoneName[] = "Nexus 6";
 
 class TestableNotificationController
-    : public EasyUnlockNotificationControllerChromeOS {
+    : public chromeos::EasyUnlockNotificationControllerChromeOS {
  public:
   explicit TestableNotificationController(Profile* profile)
       : EasyUnlockNotificationControllerChromeOS(profile) {}

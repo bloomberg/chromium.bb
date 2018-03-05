@@ -119,8 +119,8 @@
 #include "chrome/browser/ui/webui/snippets_internals_ui.h"
 #include "chrome/browser/ui/webui/webapks_ui.h"
 #else
-#include "chrome/browser/signin/easy_unlock_service.h"
-#include "chrome/browser/signin/easy_unlock_service_factory.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service_factory.h"
 #include "chrome/browser/ui/webui/devtools_ui.h"
 #include "chrome/browser/ui/webui/inspect_ui.h"
 #include "chrome/browser/ui/webui/md_bookmarks/md_bookmarks_ui.h"
@@ -242,8 +242,9 @@ WebUIController* NewWebUI<proximity_auth::ProximityAuthUI>(WebUI* web_ui,
   content::BrowserContext* browser_context =
       web_ui->GetWebContents()->GetBrowserContext();
   return new proximity_auth::ProximityAuthUI(
-      web_ui, EasyUnlockServiceFactory::GetForBrowserContext(browser_context)
-                  ->proximity_auth_client());
+      web_ui,
+      chromeos::EasyUnlockServiceFactory::GetForBrowserContext(browser_context)
+          ->proximity_auth_client());
 }
 #endif
 

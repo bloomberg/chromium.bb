@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/signin/easy_unlock_app_manager.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_app_manager.h"
 
 #include <utility>
 
@@ -23,6 +23,8 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/one_shot_event.h"
+
+namespace chromeos {
 
 namespace {
 
@@ -64,11 +66,9 @@ EasyUnlockAppManagerImpl::EasyUnlockAppManagerImpl(
     : extension_system_(extension_system),
       app_id_(extension_misc::kEasyUnlockAppId),
       manifest_id_(manifest_id),
-      app_path_(app_path) {
-}
+      app_path_(app_path) {}
 
-EasyUnlockAppManagerImpl::~EasyUnlockAppManagerImpl() {
-}
+EasyUnlockAppManagerImpl::~EasyUnlockAppManagerImpl() {}
 
 void EasyUnlockAppManagerImpl::EnsureReady(
     const base::Closure& ready_callback) {
@@ -188,8 +188,7 @@ bool EasyUnlockAppManagerImpl::SendAuthAttemptEvent() {
 
 }  // namespace
 
-EasyUnlockAppManager::~EasyUnlockAppManager() {
-}
+EasyUnlockAppManager::~EasyUnlockAppManager() {}
 
 // static
 std::unique_ptr<EasyUnlockAppManager> EasyUnlockAppManager::Create(
@@ -199,3 +198,5 @@ std::unique_ptr<EasyUnlockAppManager> EasyUnlockAppManager::Create(
   return std::unique_ptr<EasyUnlockAppManager>(
       new EasyUnlockAppManagerImpl(extension_system, manifest_id, app_path));
 }
+
+}  // namespace chromeos

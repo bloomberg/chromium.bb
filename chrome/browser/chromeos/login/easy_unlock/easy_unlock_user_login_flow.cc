@@ -4,8 +4,10 @@
 
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_user_login_flow.h"
 
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/signin/easy_unlock_service.h"
+
+namespace chromeos {
 
 EasyUnlockUserLoginFlow::EasyUnlockUserLoginFlow(const AccountId& account_id)
     : chromeos::ExtendedUserFlow(account_id) {}
@@ -61,3 +63,5 @@ void EasyUnlockUserLoginFlow::LaunchExtraSteps(Profile* profile) {}
 bool EasyUnlockUserLoginFlow::SupportsEarlyRestartToApplyFlags() {
   return true;
 }
+
+}  // namespace chromeos

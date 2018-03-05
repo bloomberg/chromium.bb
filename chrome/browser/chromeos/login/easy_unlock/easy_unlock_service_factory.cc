@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/signin/easy_unlock_service_factory.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service_factory.h"
 
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
 #include "build/build_config.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_app_manager.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service_regular.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service_signin_chromeos.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/cryptauth/chrome_cryptauth_service_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/easy_unlock_app_manager.h"
-#include "chrome/browser/signin/easy_unlock_service.h"
-#include "chrome/browser/signin/easy_unlock_service_regular.h"
-#include "chrome/browser/signin/easy_unlock_service_signin_chromeos.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/browser_resources.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -23,6 +23,8 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
+
+namespace chromeos {
 
 namespace {
 
@@ -68,8 +70,7 @@ EasyUnlockServiceFactory::EasyUnlockServiceFactory()
   DependsOn(EasyUnlockTpmKeyManagerFactory::GetInstance());
 }
 
-EasyUnlockServiceFactory::~EasyUnlockServiceFactory() {
-}
+EasyUnlockServiceFactory::~EasyUnlockServiceFactory() {}
 
 KeyedService* EasyUnlockServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
@@ -113,7 +114,7 @@ void EasyUnlockServiceFactory::RegisterProfilePrefs(
 }
 
 content::BrowserContext* EasyUnlockServiceFactory::GetBrowserContextToUse(
-      content::BrowserContext* context) const {
+    content::BrowserContext* context) const {
   if (chromeos::ProfileHelper::IsSigninProfile(
           Profile::FromBrowserContext(context))) {
     return chrome::GetBrowserContextOwnInstanceInIncognito(context);
@@ -132,3 +133,5 @@ bool EasyUnlockServiceFactory::ServiceIsNULLWhileTesting() const {
   // a MessageLoop that does not exit in many unit_tests cases.
   return true;
 }
+
+}  // namespace chromeos

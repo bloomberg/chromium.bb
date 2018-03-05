@@ -12,6 +12,8 @@
 
 class AccountId;
 
+namespace chromeos {
+
 // Handler for login flow initiazted by Easy Signin login attempt.
 // The only difference to the default login flow is hanlding of the auth
 // failure.
@@ -36,5 +38,7 @@ class EasyUnlockUserLoginFlow : public chromeos::ExtendedUserFlow {
 
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockUserLoginFlow);
 };
+
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_EASY_UNLOCK_EASY_UNLOCK_USER_LOGIN_FLOW_H_

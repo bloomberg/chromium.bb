@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/signin/easy_unlock_service.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service.h"
 
 #include <stddef.h>
 
@@ -15,12 +15,12 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_app_manager.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_notification_controller.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service_factory.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service_regular.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/signin/easy_unlock_app_manager.h"
-#include "chrome/browser/signin/easy_unlock_notification_controller.h"
-#include "chrome/browser/signin/easy_unlock_service_factory.h"
-#include "chrome/browser/signin/easy_unlock_service_regular.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
@@ -54,7 +54,7 @@ const char kTestUserSecondary[] = "secondary_user@nowhere.com";
 const char kSecondaryGaiaId[] = "2222222222";
 
 class MockEasyUnlockNotificationController
-    : public EasyUnlockNotificationController {
+    : public chromeos::EasyUnlockNotificationController {
  public:
   MockEasyUnlockNotificationController() {}
   ~MockEasyUnlockNotificationController() override {}
@@ -71,7 +71,7 @@ class MockEasyUnlockNotificationController
 
 // App manager to be used in EasyUnlockService tests.
 // This effectivelly abstracts the extension system from the tests.
-class TestAppManager : public EasyUnlockAppManager {
+class TestAppManager : public chromeos::EasyUnlockAppManager {
  public:
   TestAppManager()
       : state_(STATE_NOT_LOADED),
@@ -202,14 +202,14 @@ std::unique_ptr<KeyedService> CreateEasyUnlockServiceForTest(
   if (!app_manager_factory)
     return nullptr;
 
-  std::unique_ptr<EasyUnlockAppManager> app_manager =
+  std::unique_ptr<chromeos::EasyUnlockAppManager> app_manager =
       app_manager_factory->Create(context);
   EXPECT_TRUE(app_manager.get());
   if (!app_manager.get())
     return nullptr;
 
-  std::unique_ptr<EasyUnlockServiceRegular> service(
-      new EasyUnlockServiceRegular(
+  std::unique_ptr<chromeos::EasyUnlockServiceRegular> service(
+      new chromeos::EasyUnlockServiceRegular(
           Profile::FromBrowserContext(context),
           std::make_unique<MockEasyUnlockNotificationController>()));
   service->Initialize(std::move(app_manager));
@@ -246,8 +246,8 @@ class EasyUnlockServiceTest : public testing::Test {
     ON_CALL(*mock_user_manager_, IsCurrentUserNonCryptohomeDataEphemeral())
         .WillByDefault(Return(false));
 
-    SetUpProfile(&profile_, AccountId::FromUserEmailGaiaId(
-        kTestUserPrimary, kPrimaryGaiaId));
+    SetUpProfile(&profile_, AccountId::FromUserEmailGaiaId(kTestUserPrimary,
+                                                           kPrimaryGaiaId));
   }
 
   void TearDown() override {
@@ -291,9 +291,9 @@ class EasyUnlockServiceTest : public testing::Test {
   }
 
   void SetUpSecondaryProfile() {
-    SetUpProfile(&secondary_profile_,
-                 AccountId::FromUserEmailGaiaId(kTestUserSecondary,
-                 kSecondaryGaiaId));
+    SetUpProfile(
+        &secondary_profile_,
+        AccountId::FromUserEmailGaiaId(kTestUserSecondary, kSecondaryGaiaId));
   }
 
  private:
@@ -304,7 +304,7 @@ class EasyUnlockServiceTest : public testing::Test {
     ASSERT_FALSE(profile->get());
 
     TestingProfile::Builder builder;
-    builder.AddTestingFactory(EasyUnlockServiceFactory::GetInstance(),
+    builder.AddTestingFactory(chromeos::EasyUnlockServiceFactory::GetInstance(),
                               &CreateEasyUnlockServiceForTest);
     *profile = builder.Build();
 
@@ -343,7 +343,8 @@ TEST_F(EasyUnlockServiceTest, NoBluetoothNoService) {
   // This should start easy unlock service initialization.
   SetAppManagerReady(profile_.get());
 
-  EasyUnlockService* service = EasyUnlockService::Get(profile_.get());
+  chromeos::EasyUnlockService* service =
+      chromeos::EasyUnlockService::Get(profile_.get());
   ASSERT_TRUE(service);
 
   EXPECT_FALSE(service->IsAllowed());
@@ -355,7 +356,8 @@ TEST_F(EasyUnlockServiceTest, DisabledOnSuspend) {
   // This should start easy unlock service initialization.
   SetAppManagerReady(profile_.get());
 
-  EasyUnlockService* service = EasyUnlockService::Get(profile_.get());
+  chromeos::EasyUnlockService* service =
+      chromeos::EasyUnlockService::Get(profile_.get());
   ASSERT_TRUE(service);
 
   EXPECT_TRUE(service->IsAllowed());
@@ -375,7 +377,8 @@ TEST_F(EasyUnlockServiceTest, DisabledOnSuspend) {
 TEST_F(EasyUnlockServiceTest, NotAllowedForSecondaryProfile) {
   SetAppManagerReady(profile_.get());
 
-  EasyUnlockService* primary_service = EasyUnlockService::Get(profile_.get());
+  chromeos::EasyUnlockService* primary_service =
+      chromeos::EasyUnlockService::Get(profile_.get());
   ASSERT_TRUE(primary_service);
 
   // A sanity check for the test to confirm that the primary profile service
@@ -385,8 +388,8 @@ TEST_F(EasyUnlockServiceTest, NotAllowedForSecondaryProfile) {
   SetUpSecondaryProfile();
   SetAppManagerReady(secondary_profile_.get());
 
-  EasyUnlockService* secondary_service =
-      EasyUnlockService::Get(secondary_profile_.get());
+  chromeos::EasyUnlockService* secondary_service =
+      chromeos::EasyUnlockService::Get(secondary_profile_.get());
   ASSERT_TRUE(secondary_service);
 
   EXPECT_FALSE(secondary_service->IsAllowed());
@@ -399,19 +402,20 @@ TEST_F(EasyUnlockServiceTest, NotAllowedForEphemeralAccounts) {
       .WillByDefault(Return(true));
 
   SetAppManagerReady(profile_.get());
-  EXPECT_FALSE(EasyUnlockService::Get(profile_.get())->IsAllowed());
+  EXPECT_FALSE(chromeos::EasyUnlockService::Get(profile_.get())->IsAllowed());
   EXPECT_TRUE(
       EasyUnlockAppInState(profile_.get(), TestAppManager::STATE_NOT_LOADED));
 }
 
 TEST_F(EasyUnlockServiceTest, GetAccountId) {
   EXPECT_EQ(AccountId::FromUserEmailGaiaId(kTestUserPrimary, kPrimaryGaiaId),
-            EasyUnlockService::Get(profile_.get())->GetAccountId());
+            chromeos::EasyUnlockService::Get(profile_.get())->GetAccountId());
 
   SetUpSecondaryProfile();
-  EXPECT_EQ(AccountId::FromUserEmailGaiaId(kTestUserSecondary,
-                                           kSecondaryGaiaId),
-            EasyUnlockService::Get(secondary_profile_.get())->GetAccountId());
+  EXPECT_EQ(
+      AccountId::FromUserEmailGaiaId(kTestUserSecondary, kSecondaryGaiaId),
+      chromeos::EasyUnlockService::Get(secondary_profile_.get())
+          ->GetAccountId());
 }
 
 }  // namespace
