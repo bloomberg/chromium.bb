@@ -5,6 +5,7 @@
 import("//build/config/android/rules.gni")
 import("//device/vr/features/features.gni")
 import("//testing/test.gni")
+import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
 
 # Mark all targets as test only.
 testonly = true
@@ -71,8 +72,8 @@ android_assets("android_webview_apk_assets") {
   deps = [
     "//android_webview:pak_file_assets",
     "//third_party/icu:icu_assets",
-    "//v8:v8_external_startup_data_assets",
   ]
+
   sources = [
     "shell/assets/asset_file.html",
     "shell/assets/asset_icon.png",
@@ -92,6 +93,12 @@ android_assets("android_webview_apk_assets") {
     "shell/assets/visual_state_waits_for_js_test.html",
     "shell/assets/webvr_not_functional_test.html",
   ]
+
+  if (use_v8_context_snapshot) {
+    deps += [ "//tools/v8_context_snapshot:v8_context_snapshot_assets" ]
+  } else {
+    deps += [ "//v8:v8_external_startup_data_assets" ]
+  }
 }
 
 shared_library("libstandalonelibwebviewchromium") {
