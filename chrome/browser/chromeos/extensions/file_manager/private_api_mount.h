@@ -58,6 +58,36 @@ class FileManagerPrivateRemoveMountFunction
   bool RunAsync() override;
 };
 
+// Implements chrome.fileManagerPrivate.markCacheAsMounted method.
+// Marks a cached file as mounted or unmounted.
+class FileManagerPrivateMarkCacheAsMountedFunction
+    : public LoggedAsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.markCacheAsMounted",
+                             FILEMANAGERPRIVATE_MARKCACHEASMOUNTED)
+
+ protected:
+  ~FileManagerPrivateMarkCacheAsMountedFunction() override {}
+
+  // AsyncExtensionFunction overrides.
+  bool RunAsync() override;
+
+ private:
+  // Part of Run(). Called after GetFile for Drive File System.
+  void RunAfterGetDriveFile(const base::FilePath& drive_path,
+                            bool isMounted,
+                            drive::FileError error,
+                            const base::FilePath& cache_path,
+                            std::unique_ptr<drive::ResourceEntry> entry);
+
+  // Part of Run(). Called after MarkCacheFielAsMounted for Drive File System.
+  void RunAfterMarkCacheFileAsMounted(drive::FileError error,
+                                      const base::FilePath& file_path);
+
+  // Part of Run(). Called after MarkCacheFielAsUnmounted for Drive File System.
+  void RunAfterMarkCacheFileAsUnmounted(drive::FileError error);
+};
+
 // Implements chrome.fileManagerPrivate.getVolumeMetadataList method.
 class FileManagerPrivateGetVolumeMetadataListFunction
     : public LoggedAsyncExtensionFunction {

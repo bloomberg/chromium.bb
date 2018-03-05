@@ -570,41 +570,56 @@ unpacker.app = {
    */
   unmountVolume: function(fileSystemId, opt_forceUnmount) {
     return new Promise(function(fulfill, reject) {
-      var volume = unpacker.app.volumes[fileSystemId];
-      console.assert(
-          volume || opt_forceUnmount,
-          'Unmount that is not forced must not be called for ',
-          'volumes that are not restored.');
+             chrome.fileManagerPrivate.markCacheAsMounted(
+                 fileSystemId, false /* isMounted */, function() {
+                   if (chrome.runtime.lastError) {
+                     console.error(
+                         'Unmount error: ' + chrome.runtime.lastError.message +
+                         '.');
+                     reject('FAILED');
+                     return;
+                   }
+                   fulfill();
+                 });
+           })
+        .then(function() {
+          return new Promise(function(fulfill, reject) {
+            var volume = unpacker.app.volumes[fileSystemId];
+            console.assert(
+                volume || opt_forceUnmount,
+                'Unmount that is not forced must not be called for ',
+                'volumes that are not restored.');
 
-      if (!opt_forceUnmount && volume.inUse()) {
-        reject('IN_USE');
-        return;
-      }
+            if (!opt_forceUnmount && volume.inUse()) {
+              reject('IN_USE');
+              return;
+            }
 
-      var options = {fileSystemId: fileSystemId};
-      chrome.fileSystemProvider.unmount(options, function() {
-        if (chrome.runtime.lastError) {
-          console.error(
-              'Unmount error: ' + chrome.runtime.lastError.message + '.');
-          reject('FAILED');
-          return;
-        }
+            var options = {fileSystemId: fileSystemId};
+            chrome.fileSystemProvider.unmount(options, function() {
+              if (chrome.runtime.lastError) {
+                console.error(
+                    'Unmount error: ' + chrome.runtime.lastError.message + '.');
+                reject('FAILED');
+                return;
+              }
 
-        // In case of forced unmount volume can be undefined due to not being
-        // restored. An unmount that is not forced will be called only after
-        // restoring state. In the case of forced unmount when volume is not
-        // restored, we will not do a normal cleanup, but just remove the load
-        // volume promise to allow further mounts.
-        if (opt_forceUnmount)
-          delete unpacker.app.volumeLoadedPromises[fileSystemId];
-        else
-          unpacker.app.cleanupVolume(fileSystemId);
+              // In case of forced unmount volume can be undefined due to not
+              // being restored. An unmount that is not forced will be called
+              // only after restoring state. In the case of forced unmount when
+              // volume is not restored, we will not do a normal cleanup, but
+              // just remove the load volume promise to allow further mounts.
+              if (opt_forceUnmount)
+                delete unpacker.app.volumeLoadedPromises[fileSystemId];
+              else
+                unpacker.app.cleanupVolume(fileSystemId);
 
-        // Remove volume from local storage.
-        unpacker.app.removeState_(fileSystemId);
-        fulfill();
-      });
-    });
+              // Remove volume from local storage.
+              unpacker.app.removeState_(fileSystemId);
+              fulfill();
+            });
+          });
+        });
   },
 
   /**
@@ -867,7 +882,8 @@ unpacker.app = {
           launchData.items.forEach(function(item) {
             unpacker.app.mountProcessCounter++;
             chrome.fileSystem.getDisplayPath(
-                item.entry, function(entry, fileSystemId) {
+                item.entry, function(entry, displayPath) {
+                  const fileSystemId = displayPath;
                   // If loading takes significant amount of time, then show a
                   // notification about scanning in progress.
                   var deferredNotificationTimer = setTimeout(function() {
@@ -941,6 +957,18 @@ unpacker.app = {
                   loadPromise
                       .then(function() {
                         unpacker.app.volumeLoadFinished[fileSystemId] = true;
+                        return new Promise(function(fulfill, reject) {
+                          chrome.fileManagerPrivate.markCacheAsMounted(
+                              displayPath, true /* isMounted */, function() {
+                                if (chrome.runtime.lastError) {
+                                  reject(chrome.runtime.lastError);
+                                  return;
+                                }
+                                fulfill();
+                              });
+                        });
+                      })
+                      .then(function() {
                         // Mount the volume and save its information in local
                         // storage in order to be able to recover the metadata
                         // in case of restarts, system crashes, etc.

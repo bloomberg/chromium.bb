@@ -14777,6 +14777,7 @@ Called by update_net_error_codes.py.-->
   <int value="1221"
       label="ENTERPRISE_DEVICEATTRIBUTES_GETDEVICEANNOTATEDLOCATION"/>
   <int value="1222" label="PASSWORDSPRIVATE_CANCELEXPORTPASSWORDS"/>
+  <int value="1223" label="FILEMANAGERPRIVATE_MARKCACHEASMOUNTED"/>
 </enum>
 
 <enum name="ExtensionIconState">
