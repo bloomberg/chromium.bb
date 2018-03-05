@@ -26,6 +26,11 @@ class UnzipperImpl : public mojom::Unzipper {
              filesystem::mojom::DirectoryPtr output_dir,
              UnzipCallback callback) override;
 
+  void UnzipWithFilter(base::File zip_file,
+                       filesystem::mojom::DirectoryPtr output_dir,
+                       mojom::UnzipFilterPtr filter,
+                       UnzipWithFilterCallback callback) override;
+
   const std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
 
   DISALLOW_COPY_AND_ASSIGN(UnzipperImpl);

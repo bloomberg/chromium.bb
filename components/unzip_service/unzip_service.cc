@@ -4,6 +4,7 @@
 
 #include "components/unzip_service/unzip_service.h"
 
+#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "components/unzip_service/unzipper_impl.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -26,7 +27,7 @@ UnzipService::UnzipService() = default;
 UnzipService::~UnzipService() = default;
 
 std::unique_ptr<service_manager::Service> UnzipService::CreateService() {
-  return std::make_unique<UnzipService>();
+  return base::WrapUnique(new UnzipService());
 }
 
 void UnzipService::OnStart() {

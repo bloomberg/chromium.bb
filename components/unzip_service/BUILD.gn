@@ -26,6 +26,37 @@ source_set("lib") {
   ]
 }
 
+bundle_data("unit_tests_bundle_data") {
+  visibility = [ ":unit_tests" ]
+  testonly = true
+  sources = [
+    "//components/test/data/unzip_service/bad_archive.zip",
+    "//components/test/data/unzip_service/good_archive.zip",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/" +
+        "{{source_root_relative_dir}}/{{source_file_part}}",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [
+    "public/cpp/unzip_unittest.cc",
+  ]
+
+  deps = [
+    ":lib",
+    ":unit_tests_bundle_data",
+    "//base",
+    "//base/test:test_support",
+    "//components/unzip_service/public/cpp",
+    "//services/service_manager/public/cpp/test:test_support",
+    "//testing/gtest",
+  ]
+}
+
 service_manifest("manifest") {
   name = "unzip_service"
   source = "manifest.json"
