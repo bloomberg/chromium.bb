@@ -716,19 +716,24 @@ const CSSSelector* CSSSelector::SerializeCompound(
         case kPseudoNthLastOfType: {
           builder.Append('(');
 
-          // http://dev.w3.org/csswg/css-syntax/#serializing-anb
+          // https://drafts.csswg.org/css-syntax/#serializing-anb
           int a = simple_selector->data_.rare_data_->NthAValue();
           int b = simple_selector->data_.rare_data_->NthBValue();
-          if (a == 0 && b == 0)
-            builder.Append('0');
-          else if (a == 0)
+          if (a == 0) {
             builder.Append(String::Number(b));
-          else if (b == 0)
-            builder.Append(String::Format("%dn", a));
-          else if (b < 0)
-            builder.Append(String::Format("%dn%d", a, b));
-          else
-            builder.Append(String::Format("%dn+%d", a, b));
+          } else {
+            if (a == 1)
+              builder.Append('n');
+            else if (a == -1)
+              builder.Append("-n");
+            else
+              builder.Append(String::Format("%dn", a));
+
+            if (b < 0)
+              builder.Append(String::Number(b));
+            else if (b > 0)
+              builder.Append(String::Format("+%d", b));
+          }
 
           builder.Append(')');
           break;
