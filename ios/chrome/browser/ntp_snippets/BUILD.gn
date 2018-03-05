@@ -29,6 +29,7 @@ source_set("ntp_snippets") {
     "//ios/chrome/browser/history",
     "//ios/chrome/browser/reading_list",
     "//ios/chrome/browser/signin",
+    "//ios/chrome/browser/ui:ui_util",
     "//ios/chrome/common",
     "//ios/web",
     "//net",
