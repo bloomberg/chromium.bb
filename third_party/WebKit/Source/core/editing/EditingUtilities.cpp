@@ -1272,9 +1272,9 @@ bool IsTableCell(const Node* node) {
 
 HTMLElement* CreateDefaultParagraphElement(Document& document) {
   switch (document.GetFrame()->GetEditor().DefaultParagraphSeparator()) {
-    case kEditorParagraphSeparatorIsDiv:
+    case EditorParagraphSeparator::kIsDiv:
       return HTMLDivElement::Create(document);
-    case kEditorParagraphSeparatorIsP:
+    case EditorParagraphSeparator::kIsP:
       return HTMLParagraphElement::Create(document);
   }
 

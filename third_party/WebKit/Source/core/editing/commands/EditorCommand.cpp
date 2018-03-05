@@ -949,13 +949,15 @@ static bool ExecuteDefaultParagraphSeparator(LocalFrame& frame,
                                              Event*,
                                              EditorCommandSource,
                                              const String& value) {
-  if (DeprecatedEqualIgnoringCase(value, "div"))
+  if (DeprecatedEqualIgnoringCase(value, "div")) {
     frame.GetEditor().SetDefaultParagraphSeparator(
-        kEditorParagraphSeparatorIsDiv);
-  else if (DeprecatedEqualIgnoringCase(value, "p"))
+        EditorParagraphSeparator::kIsDiv);
+    return true;
+  }
+  if (DeprecatedEqualIgnoringCase(value, "p")) {
     frame.GetEditor().SetDefaultParagraphSeparator(
-        kEditorParagraphSeparatorIsP);
-
+        EditorParagraphSeparator::kIsP);
+  }
   return true;
 }
 
@@ -2926,9 +2928,9 @@ static String ValueDefaultParagraphSeparator(const EditorInternalCommand&,
                                              LocalFrame& frame,
                                              Event*) {
   switch (frame.GetEditor().DefaultParagraphSeparator()) {
-    case kEditorParagraphSeparatorIsDiv:
+    case EditorParagraphSeparator::kIsDiv:
       return divTag.LocalName();
-    case kEditorParagraphSeparatorIsP:
+    case EditorParagraphSeparator::kIsP:
       return pTag.LocalName();
   }
 

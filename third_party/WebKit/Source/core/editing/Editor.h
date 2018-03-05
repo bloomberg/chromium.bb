@@ -60,12 +60,9 @@ enum class DeleteDirection;
 enum class DeleteMode { kSimple, kSmart };
 enum class InsertMode { kSimple, kSmart };
 enum class DragSourceType { kHTMLSource, kPlainTextSource };
+enum class EditorParagraphSeparator { kIsDiv, kIsP };
 
 enum EditorCommandSource { kCommandFromMenuOrKeyBinding, kCommandFromDOM };
-enum EditorParagraphSeparator {
-  kEditorParagraphSeparatorIsDiv,
-  kEditorParagraphSeparatorIsP
-};
 
 class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
  public:
