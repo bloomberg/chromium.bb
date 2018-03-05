@@ -21,9 +21,9 @@
 #include "services/preferences/public/mojom/preferences.mojom.h"
 #include "services/preferences/tracked/hash_store_contents.h"
 #include "services/preferences/tracked/interceptable_pref_filter.h"
+#include "services/preferences/tracked/pref_hash_store.h"
 #include "services/preferences/tracked/tracked_preference.h"
 
-class PrefHashStore;
 class PrefService;
 
 namespace base {
