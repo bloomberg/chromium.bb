@@ -21,7 +21,6 @@
 #include "components/prefs/pref_store.h"
 #include "services/preferences/public/cpp/tracked/pref_names.h"
 #include "services/preferences/tracked/dictionary_hash_store_contents.h"
-#include "services/preferences/tracked/pref_hash_store.h"
 #include "services/preferences/tracked/pref_hash_store_transaction.h"
 #include "services/preferences/tracked/tracked_atomic_preference.h"
 #include "services/preferences/tracked/tracked_split_preference.h"
