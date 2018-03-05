@@ -8,9 +8,9 @@
 #import <CoreGraphics/CoreGraphics.h>
 #import <Foundation/Foundation.h>
 
-#import "remoting/client/display/sys_opengl.h"
+#import <memory>
 
-#include "base/memory/ptr_util.h"
+#import "remoting/client/display/sys_opengl.h"
 
 namespace remoting {
 

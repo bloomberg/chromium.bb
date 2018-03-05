@@ -4,6 +4,7 @@
 
 #include "chromeos/components/tether/keep_alive_operation.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/default_clock.h"
 #include "chromeos/components/tether/message_wrapper.h"

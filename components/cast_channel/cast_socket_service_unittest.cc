@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/cast_channel/cast_socket_service.h"
+#include "base/memory/ptr_util.h"
 #include "base/test/mock_callback.h"
 #include "base/test/test_simple_task_runner.h"
 #include "components/cast_channel/cast_test_util.h"

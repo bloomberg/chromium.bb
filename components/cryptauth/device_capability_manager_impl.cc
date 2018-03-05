@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
 
 namespace cryptauth {

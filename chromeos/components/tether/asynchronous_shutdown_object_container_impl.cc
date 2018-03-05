@@ -4,6 +4,7 @@
 
 #include "chromeos/components/tether/asynchronous_shutdown_object_container_impl.h"
 
+#include "base/memory/ptr_util.h"
 #include "chromeos/components/tether/ad_hoc_ble_advertiser_impl.h"
 #include "chromeos/components/tether/ble_advertisement_device_queue.h"
 #include "chromeos/components/tether/ble_advertiser_impl.h"

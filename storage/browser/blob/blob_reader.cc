@@ -15,6 +15,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/debug/stack_trace.h"
+#include "base/memory/ptr_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"

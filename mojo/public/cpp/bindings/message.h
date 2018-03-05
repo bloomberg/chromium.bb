@@ -17,6 +17,7 @@
 #include "base/compiler_specific.h"
 #include "base/component_export.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "mojo/public/cpp/bindings/lib/buffer.h"
 #include "mojo/public/cpp/bindings/lib/message_internal.h"
 #include "mojo/public/cpp/bindings/lib/unserialized_message_context.h"

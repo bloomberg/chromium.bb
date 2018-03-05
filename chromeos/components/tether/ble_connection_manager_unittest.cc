@@ -4,6 +4,7 @@
 
 #include "chromeos/components/tether/ble_connection_manager.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "base/timer/mock_timer.h"

@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/memory/ptr_util.h"
 #include "chromeos/components/tether/asynchronous_shutdown_object_container_impl.h"
 #include "chromeos/components/tether/crash_recovery_manager_impl.h"
 #include "chromeos/components/tether/fake_active_host.h"

@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/views/overlay/overlay_window_views.h"
 
+#include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/display/manager/display_manager.h"

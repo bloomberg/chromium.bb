@@ -5,7 +5,8 @@
 #ifndef CHROME_BROWSER_UI_OVERLAY_OVERLAY_WINDOW_H_
 #define CHROME_BROWSER_UI_OVERLAY_OVERLAY_WINDOW_H_
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "ui/gfx/native_widget_types.h"
 
 namespace gfx {

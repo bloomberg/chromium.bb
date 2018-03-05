@@ -7,6 +7,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/memory/ptr_util.h"
 #include "base/timer/mock_timer.h"
 #include "chromeos/components/tether/device_id_tether_network_guid_map.h"
 #include "chromeos/components/tether/fake_active_host.h"

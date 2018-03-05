@@ -32,7 +32,6 @@ class CppConverterWriter(writer.CodeWriter):
     assert [] == proto_file.GetDependencies()
 
     self.Output('// base dependencies')
-    self.Output('#include "base/memory/ptr_util.h"')
     self.Output('#include "base/values.h"')
     self.Output('')
     self.Output('#include <memory>')

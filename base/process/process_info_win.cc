@@ -5,6 +5,7 @@
 #include "base/process/process_info.h"
 
 #include <windows.h>
+#include <memory>
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"

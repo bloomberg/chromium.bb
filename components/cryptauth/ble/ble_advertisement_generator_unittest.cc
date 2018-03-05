@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback_forward.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "components/cryptauth/mock_foreground_eid_generator.h"
 #include "components/cryptauth/mock_local_device_data_provider.h"
