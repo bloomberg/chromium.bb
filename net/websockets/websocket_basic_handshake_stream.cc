@@ -342,8 +342,8 @@ int WebSocketBasicHandshakeStream::SendRequest(
   HttpRequestHeaders enriched_headers;
   enriched_headers.CopyFrom(headers);
   std::string handshake_challenge;
-  if (handshake_challenge_for_testing_) {
-    handshake_challenge = *handshake_challenge_for_testing_;
+  if (handshake_challenge_for_testing_.has_value()) {
+    handshake_challenge = handshake_challenge_for_testing_.value();
     handshake_challenge_for_testing_.reset();
   } else {
     handshake_challenge = GenerateHandshakeChallenge();
@@ -508,7 +508,7 @@ std::unique_ptr<WebSocketStream> WebSocketBasicHandshakeStream::Upgrade() {
 
 void WebSocketBasicHandshakeStream::SetWebSocketKeyForTesting(
     const std::string& key) {
-  handshake_challenge_for_testing_.reset(new std::string(key));
+  handshake_challenge_for_testing_ = key;
 }
 
 void WebSocketBasicHandshakeStream::ReadResponseHeadersCallback(

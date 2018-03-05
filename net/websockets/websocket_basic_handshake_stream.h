@@ -13,6 +13,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/net_export.h"
 #include "net/http/http_basic_state.h"
@@ -122,7 +123,7 @@ class NET_EXPORT_PRIVATE WebSocketBasicHandshakeStream
 
   // The key to be sent in the next Sec-WebSocket-Key header. Usually NULL (the
   // key is generated on the fly).
-  std::unique_ptr<std::string> handshake_challenge_for_testing_;
+  base::Optional<std::string> handshake_challenge_for_testing_;
 
   // The required value for the Sec-WebSocket-Accept header.
   std::string handshake_challenge_response_;
