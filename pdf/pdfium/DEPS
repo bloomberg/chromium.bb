@@ -1,9 +1,6 @@
 include_rules = [
   "+gin/array_buffer.h",
   "+gin/public",
-  "+printing/pdf_transform.h",
-  "+printing/units.h",
   "+third_party/pdfium/public",
   "+ui/gfx/codec/jpeg_codec.h",
-  "+ui/gfx/geometry/rect.h",
 ]

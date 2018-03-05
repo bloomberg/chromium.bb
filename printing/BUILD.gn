@@ -229,13 +229,6 @@ component("printing") {
       "printing_context_linux.h",
     ]
   }
-
-  if (!is_android) {
-    sources += [
-      "pdf_transform.cc",
-      "pdf_transform.h",
-    ]
-  }
 }
 
 static_library("test_support") {
@@ -288,10 +281,6 @@ test("printing_unittests") {
     "//ui/gfx:test_support",
     "//ui/gfx/geometry",
   ]
-
-  if (!is_android) {
-    sources += [ "pdf_transform_unittest.cc" ]
-  }
 
   if (is_win || is_mac) {
     sources += [ "printed_document_unittest.cc" ]

@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "printing/pdf_transform.h"
+#include "pdf/pdf_transform.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/logging.h"
 #include "ui/gfx/geometry/rect.h"
 
-namespace printing {
+namespace chrome_pdf {
 
 namespace {
 
@@ -33,10 +34,10 @@ double CalculateScaleFactor(const gfx::Rect& content_rect,
 
   double actual_source_page_width = rotated ? src_height : src_width;
   double actual_source_page_height = rotated ? src_width : src_height;
-  double ratio_x = static_cast<double>(content_rect.width()) /
-                   actual_source_page_width;
-  double ratio_y = static_cast<double>(content_rect.height()) /
-                   actual_source_page_height;
+  double ratio_x =
+      static_cast<double>(content_rect.width()) / actual_source_page_width;
+  double ratio_y =
+      static_cast<double>(content_rect.height()) / actual_source_page_height;
   return std::min(ratio_x, ratio_y);
 }
 
@@ -135,4 +136,4 @@ void CalculateNonScaledClipBoxOffset(const gfx::Rect& content_rect,
   }
 }
 
-}  // namespace printing
+}  // namespace chrome_pdf

@@ -52,6 +52,8 @@ if (enable_pdf) {
       "pdf_engine.h",
       "pdf_ppapi.cc",
       "pdf_ppapi.h",
+      "pdf_transform.cc",
+      "pdf_transform.h",
       "preview_mode_client.cc",
       "preview_mode_client.h",
       "range_set.cc",
@@ -102,6 +104,7 @@ if (enable_pdf) {
     sources = [
       "chunk_stream_unittest.cc",
       "document_loader_unittest.cc",
+      "pdf_transform_unittest.cc",
       "range_set_unittest.cc",
       "run_all_unittests.cc",
     ]
