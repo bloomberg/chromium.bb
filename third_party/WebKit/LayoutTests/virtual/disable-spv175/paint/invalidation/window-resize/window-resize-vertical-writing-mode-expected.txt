@@ -18,24 +18,34 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "Scrolling Contents Layer",
+          "object": "LayoutView #document",
           "rect": [0, 0, 939, 235],
-          "reason": "paint property change"
+          "reason": "background on scrolling contents layer"
         },
         {
-          "object": "LayoutBlockFlow HTML",
+          "object": "LayoutBlockFlow BODY",
+          "rect": [8, 8, 923, 219],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
           "rect": [10, 7, 920, 213],
-          "reason": "paint property change"
+          "reason": "geometry"
         },
         {
-          "object": "Scrolling Contents Layer",
-          "rect": [0, 0, 600, 235],
-          "reason": "paint property change"
+          "object": "LayoutView #document",
+          "rect": [339, 0, 600, 500],
+          "reason": "background on scrolling contents layer"
         },
         {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [168, 8, 423, 227],
-          "reason": "paint property change"
+          "object": "LayoutBlockFlow BODY",
+          "rect": [505, 8, 426, 484],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [507, 8, 423, 482],
+          "reason": "geometry"
         }
       ],
       "transform": 1
@@ -64,10 +74,6 @@
     },
     {
       "object": "LayoutView #document",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow HTML",
       "reason": "geometry"
     },
     {
@@ -156,14 +162,34 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "Scrolling Contents Layer",
-          "rect": [0, 0, 939, 235],
-          "reason": "paint property change"
+          "object": "LayoutView #document",
+          "rect": [200, 0, 939, 235],
+          "reason": "background on scrolling contents layer"
         },
         {
-          "object": "LayoutBlockFlow HTML",
+          "object": "LayoutView #document",
+          "rect": [0, 0, 939, 235],
+          "reason": "background on scrolling contents layer"
+        },
+        {
+          "object": "LayoutBlockFlow BODY",
+          "rect": [208, 8, 923, 219],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutBlockFlow BODY",
+          "rect": [8, 8, 923, 219],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [210, 7, 920, 213],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
           "rect": [10, 7, 920, 213],
-          "reason": "paint property change"
+          "reason": "geometry"
         }
       ],
       "transform": 1
@@ -192,10 +218,6 @@
     },
     {
       "object": "LayoutView #document",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow HTML",
       "reason": "geometry"
     },
     {
@@ -284,24 +306,34 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "Scrolling Contents Layer",
+          "object": "LayoutView #document",
+          "rect": [-539, 0, 939, 235],
+          "reason": "background on scrolling contents layer"
+        },
+        {
+          "object": "LayoutBlockFlow BODY",
+          "rect": [-531, 8, 923, 219],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [-529, 7, 920, 213],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutView #document",
           "rect": [0, 0, 400, 600],
-          "reason": "paint property change"
+          "reason": "background on scrolling contents layer"
         },
         {
-          "object": "Scrolling Contents Layer",
-          "rect": [0, 0, 400, 235],
-          "reason": "paint property change"
+          "object": "LayoutBlockFlow BODY",
+          "rect": [37, 8, 355, 584],
+          "reason": "geometry"
         },
         {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [10, 7, 390, 213],
-          "reason": "paint property change"
-        },
-        {
-          "object": "LayoutBlockFlow HTML",
+          "object": "LayoutText #text",
           "rect": [39, 7, 352, 563],
-          "reason": "paint property change"
+          "reason": "geometry"
         }
       ]
     }
@@ -317,10 +349,6 @@
     },
     {
       "object": "LayoutView #document",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow HTML",
       "reason": "geometry"
     },
     {
@@ -377,57 +405,27 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "Scrolling Contents Layer",
+          "object": "LayoutView #document",
           "rect": [400, 0, 400, 600],
-          "reason": "incremental"
+          "reason": "background on scrolling contents layer"
         },
         {
-          "object": "InlineTextBox 'AAAA BBBB CCCC'",
+          "object": "LayoutBlockFlow BODY",
+          "rect": [437, 8, 355, 584],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutBlockFlow BODY",
+          "rect": [37, 8, 355, 584],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
           "rect": [439, 7, 352, 563],
           "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'DDDD EEEE FFFF'",
-          "rect": [439, 7, 352, 563],
-          "reason": "geometry"
-        },
-        {
-          "object": "InlineTextBox 'GGGG HHHH IIII JJJJ'",
-          "rect": [439, 7, 352, 563],
-          "reason": "geometry"
-        },
-        {
-          "object": "InlineTextBox 'KKKK LLLL MMMM'",
-          "rect": [439, 7, 352, 563],
-          "reason": "geometry"
-        },
-        {
-          "object": "InlineTextBox 'NNNN'",
-          "rect": [439, 7, 352, 563],
-          "reason": "geometry"
-        },
-        {
-          "object": "InlineTextBox 'AAAA BBBB CCCC'",
-          "rect": [39, 7, 352, 563],
-          "reason": "geometry"
-        },
-        {
-          "object": "InlineTextBox 'DDDD EEEE FFFF'",
-          "rect": [39, 7, 352, 563],
-          "reason": "geometry"
-        },
-        {
-          "object": "InlineTextBox 'GGGG HHHH IIII JJJJ'",
-          "rect": [39, 7, 352, 563],
-          "reason": "geometry"
-        },
-        {
-          "object": "InlineTextBox 'KKKK LLLL MMMM'",
-          "rect": [39, 7, 352, 563],
-          "reason": "geometry"
-        },
-        {
-          "object": "InlineTextBox 'NNNN'",
+          "object": "LayoutText #text",
           "rect": [39, 7, 352, 563],
           "reason": "geometry"
         }
@@ -437,15 +435,11 @@
   "objectPaintInvalidations": [
     {
       "object": "Scrolling Contents Layer",
-      "reason": "incremental"
+      "reason": "background on scrolling contents layer"
     },
     {
       "object": "LayoutView #document",
       "reason": "incremental"
-    },
-    {
-      "object": "LayoutBlockFlow HTML",
-      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow BODY",
