@@ -45,6 +45,7 @@ import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.browserservices.BrowserSessionContentHandler;
 import org.chromium.chrome.browser.browserservices.BrowserSessionContentUtils;
 import org.chromium.chrome.browser.browserservices.BrowserSessionDataProvider;
+import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.OriginVerifier;
 import org.chromium.chrome.browser.browserservices.OriginVerifier.OriginVerificationListener;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
@@ -175,18 +176,12 @@ public class WebappActivity extends SingleTabActivity {
         void verifyRelationship() {
             mOriginVerifier = new OriginVerifier(mTrustedWebContentProvider,
                     getNativeClientPackageName(), CustomTabsService.RELATION_HANDLE_ALL_URLS);
-            // Split path from the url to get only the origin.
-            Uri origin = new Uri.Builder()
-                                 .scheme(mWebappInfo.uri().getScheme())
-                                 .authority(mWebappInfo.uri().getHost())
-                                 .build();
-            mOriginVerifier.start(origin);
+            mOriginVerifier.start(new Origin(mWebappInfo.uri()));
         }
 
         @Override
-        public void onOriginVerified(String packageName, Uri origin, boolean verified) {
+        public void onOriginVerified(String packageName, Origin origin, boolean verified) {
             mVerificationFailed = !verified;
-            mOriginVerifier.cleanUp();
             mOriginVerifier = null;
             if (mVerificationFailed) getFullscreenManager().setPositionsForTabToNonFullscreen();
         }
