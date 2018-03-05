@@ -2568,4 +2568,9 @@ const char kSitePerProcess[] = "site_isolation.site_per_process";
 const char kWebDriverOverridesIncompatiblePolicies[] =
     "webdriver.override_incompatible_policy";
 
+#if !defined(OS_ANDROID)
+// Boolean that specifies whether media (audio/video) autoplay is allowed.
+const char kAutoplayAllowed[] = "media.autoplay_allowed";
+#endif  // !defined(OS_ANDROID)
+
 }  // namespace prefs

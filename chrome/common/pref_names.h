@@ -919,6 +919,10 @@ extern const char kIsolateOrigins[];
 extern const char kSitePerProcess[];
 extern const char kWebDriverOverridesIncompatiblePolicies[];
 
+#if !defined(OS_ANDROID)
+extern const char kAutoplayAllowed[];
+#endif
+
 }  // namespace prefs
 
 #endif  // CHROME_COMMON_PREF_NAMES_H_

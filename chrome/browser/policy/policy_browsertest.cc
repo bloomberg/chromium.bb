@@ -158,6 +158,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/common/web_preferences.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/mock_notification_observer.h"
@@ -5043,5 +5044,32 @@ IN_PROC_BROWSER_TEST_F(NoteTakingOnLockScreenPolicyTest,
 }
 
 #endif  // defined(OS_CHROMEOS)
+
+#if !defined(OS_ANDROID)
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, AutoplayAllowedByPolicy) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Check that autoplay was not allowed.
+  EXPECT_EQ(
+      web_contents->GetRenderViewHost()->GetWebkitPreferences().autoplay_policy,
+      content::AutoplayPolicy::kDocumentUserActivationRequired);
+
+  // Update policy to allow autoplay.
+  PolicyMap policies;
+  SetPolicy(&policies, key::kAutoplayAllowed,
+            std::make_unique<base::Value>(true));
+  UpdateProviderPolicy(policies);
+
+  // Check that autoplay was allowed by policy.
+  web_contents->GetRenderViewHost()->OnWebkitPreferencesChanged();
+  EXPECT_EQ(
+      web_contents->GetRenderViewHost()->GetWebkitPreferences().autoplay_policy,
+      content::AutoplayPolicy::kNoUserGestureRequired);
+}
+
+#endif  // !defined(OS_ANDROID)
 
 }  // namespace policy

@@ -12632,6 +12632,7 @@ Called by update_net_error_codes.py.-->
   <int value="427" label="DeviceRollbackToTargetVersion"/>
   <int value="428" label="MachineLevelUserCloudPolicyEnrollmentToken"/>
   <int value="429" label="SafeBrowsingExtendedReportingEnabled"/>
+  <int value="430" label="AutoplayAllowed"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
