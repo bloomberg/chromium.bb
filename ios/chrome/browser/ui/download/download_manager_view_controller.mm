@@ -68,6 +68,9 @@ NSString* GetSizeString(long long size_in_bytes) {
 @property(nonatomic, readonly) UIView* downloadControlsRow;
 @property(nonatomic, readonly) UIView* installDriveControlsRow;
 
+// Grey line which separates downloadControlsRow and installDriveControlsRow.
+@property(nonatomic, readonly) UIView* horizontalLine;
+
 // Represents constraint for self.view.bottomAnchor, which can either be
 // constrained to installDriveControlsRow's bottomAnchor or to
 // downloadControlsRow's bottomAnchor. Stored in a property to allow
@@ -83,6 +86,7 @@ NSString* GetSizeString(long long size_in_bytes) {
 @synthesize background = _background;
 @synthesize downloadControlsRow = _downloadControlsRow;
 @synthesize installDriveControlsRow = _installDriveControlsRow;
+@synthesize horizontalLine = _horizontalLine;
 @synthesize bottomConstraint = _bottomConstraint;
 
 #pragma mark - UIViewController overrides
@@ -99,6 +103,7 @@ NSString* GetSizeString(long long size_in_bytes) {
   [self.downloadControlsRow addSubview:self.statusLabel];
   [self.downloadControlsRow addSubview:self.actionButton];
   [self.installDriveControlsRow addSubview:self.installDriveButton];
+  [self.installDriveControlsRow addSubview:self.horizontalLine];
 
   AddNamedGuide(kActionButtonGuide, self.view);
   ConstrainNamedGuideToView(kActionButtonGuide, self.actionButton);
@@ -130,42 +135,37 @@ NSString* GetSizeString(long long size_in_bytes) {
 
   // download controls row constraints.
   UIView* downloadRow = self.downloadControlsRow;
-  UIButton* actionButton = self.actionButton;
+  UIButton* closeButton = self.closeButton;
   // Account for bottom white pixel on shadow image.
   CGFloat shadowHeight = CGRectGetHeight(shadow.frame) - 1;
   [NSLayoutConstraint activateConstraints:@[
-    [downloadRow.leadingAnchor
-        constraintEqualToAnchor:view.layoutMarginsGuide.leadingAnchor],
-    [downloadRow.trailingAnchor
-        constraintEqualToAnchor:view.layoutMarginsGuide.trailingAnchor],
-    [downloadRow.topAnchor
-        constraintEqualToAnchor:view.layoutMarginsGuide.topAnchor
-                       constant:shadowHeight],
-    [downloadRow.heightAnchor
-        constraintEqualToAnchor:actionButton.heightAnchor],
+    [downloadRow.leadingAnchor constraintEqualToAnchor:view.leadingAnchor],
+    [downloadRow.trailingAnchor constraintEqualToAnchor:view.trailingAnchor],
+    [downloadRow.topAnchor constraintEqualToAnchor:view.topAnchor
+                                          constant:shadowHeight],
+    [downloadRow.layoutMarginsGuide.heightAnchor
+        constraintEqualToAnchor:closeButton.heightAnchor],
   ]];
 
   // install drive controls row constraints.
   UIView* installDriveRow = self.installDriveControlsRow;
   UIButton* installDriveButton = self.installDriveButton;
   [NSLayoutConstraint activateConstraints:@[
-    [installDriveRow.leadingAnchor
-        constraintEqualToAnchor:view.layoutMarginsGuide.leadingAnchor],
+    [installDriveRow.leadingAnchor constraintEqualToAnchor:view.leadingAnchor],
     [installDriveRow.trailingAnchor
-        constraintEqualToAnchor:view.layoutMarginsGuide.trailingAnchor],
+        constraintEqualToAnchor:view.trailingAnchor],
     [installDriveRow.topAnchor
         constraintEqualToAnchor:downloadRow.bottomAnchor],
     [installDriveRow.heightAnchor
-        constraintEqualToAnchor:installDriveButton.heightAnchor],
+        constraintEqualToAnchor:downloadRow.heightAnchor],
   ]];
 
   // close button constraints.
-  UIButton* closeButton = self.closeButton;
   [NSLayoutConstraint activateConstraints:@[
     [closeButton.centerYAnchor
         constraintEqualToAnchor:downloadRow.centerYAnchor],
     [closeButton.trailingAnchor
-        constraintEqualToAnchor:downloadRow.trailingAnchor],
+        constraintEqualToAnchor:downloadRow.layoutMarginsGuide.trailingAnchor],
   ]];
 
   // status icon constraints.
@@ -174,11 +174,12 @@ NSString* GetSizeString(long long size_in_bytes) {
     [statusIcon.centerYAnchor
         constraintEqualToAnchor:downloadRow.centerYAnchor],
     [statusIcon.leadingAnchor
-        constraintEqualToAnchor:downloadRow.leadingAnchor],
+        constraintEqualToAnchor:downloadRow.layoutMarginsGuide.leadingAnchor],
   ]];
 
   // status label constraints.
   UILabel* statusLabel = self.statusLabel;
+  UIButton* actionButton = self.actionButton;
   [NSLayoutConstraint activateConstraints:@[
     [statusLabel.centerYAnchor
         constraintEqualToAnchor:downloadRow.centerYAnchor],
@@ -205,6 +206,18 @@ NSString* GetSizeString(long long size_in_bytes) {
     [installDriveButton.trailingAnchor
         constraintEqualToAnchor:closeButton.leadingAnchor
                        constant:-kElementMargin],
+  ]];
+
+  // constraint line which separates download controls and install drive rows.
+  UIView* horizontalLine = self.horizontalLine;
+  [NSLayoutConstraint activateConstraints:@[
+    [horizontalLine.heightAnchor constraintEqualToConstant:1],
+    [horizontalLine.topAnchor
+        constraintEqualToAnchor:installDriveRow.topAnchor],
+    [horizontalLine.leadingAnchor
+        constraintEqualToAnchor:installDriveRow.leadingAnchor],
+    [horizontalLine.trailingAnchor
+        constraintEqualToAnchor:installDriveRow.trailingAnchor],
   ]];
 }
 
@@ -361,6 +374,15 @@ NSString* GetSizeString(long long size_in_bytes) {
         forState:UIControlStateNormal];
   }
   return _installDriveButton;
+}
+
+- (UIView*)horizontalLine {
+  if (!_horizontalLine) {
+    _horizontalLine = [[UIView alloc] init];
+    _horizontalLine.translatesAutoresizingMaskIntoConstraints = NO;
+    _horizontalLine.backgroundColor = [MDCPalette greyPalette].tint300;
+  }
+  return _horizontalLine;
 }
 
 #pragma mark - Actions
