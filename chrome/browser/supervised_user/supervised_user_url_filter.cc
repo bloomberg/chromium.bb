@@ -368,7 +368,7 @@ SupervisedUserURLFilter::GetFilteringBehaviorForURL(
 
   // Allow navigations to whitelisted origins (currently families.google.com).
   static const base::NoDestructor<base::flat_set<GURL>> kWhitelistedOrigins(
-      {GURL(kFamiliesUrl).GetOrigin()});
+      base::flat_set<GURL>({GURL(kFamiliesUrl).GetOrigin()}));
   if (base::ContainsKey(*kWhitelistedOrigins, effective_url.GetOrigin()))
     return ALLOW;
 
