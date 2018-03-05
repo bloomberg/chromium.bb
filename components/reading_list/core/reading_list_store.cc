@@ -367,7 +367,7 @@ void ReadingListStore::GetData(StorageKeyList storage_keys,
     }
   }
 
-  callback.Run(std::move(batch));
+  std::move(callback).Run(std::move(batch));
 }
 
 void ReadingListStore::GetAllData(DataCallback callback) {
@@ -379,7 +379,7 @@ void ReadingListStore::GetAllData(DataCallback callback) {
     AddEntryToBatch(batch.get(), *entry);
   }
 
-  callback.Run(std::move(batch));
+  std::move(callback).Run(std::move(batch));
 }
 
 void ReadingListStore::AddEntryToBatch(syncer::MutableDataBatch* batch,

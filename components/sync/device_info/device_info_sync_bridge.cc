@@ -214,7 +214,7 @@ void DeviceInfoSyncBridge::GetData(StorageKeyList storage_keys,
       batch->Put(key, CopyToEntityData(*iter->second));
     }
   }
-  callback.Run(std::move(batch));
+  std::move(callback).Run(std::move(batch));
 }
 
 void DeviceInfoSyncBridge::GetAllData(DataCallback callback) {
@@ -222,7 +222,7 @@ void DeviceInfoSyncBridge::GetAllData(DataCallback callback) {
   for (const auto& kv : all_data_) {
     batch->Put(kv.first, CopyToEntityData(*kv.second));
   }
-  callback.Run(std::move(batch));
+  std::move(callback).Run(std::move(batch));
 }
 
 std::string DeviceInfoSyncBridge::GetClientTag(const EntityData& entity_data) {

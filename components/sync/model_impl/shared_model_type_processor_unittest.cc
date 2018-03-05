@@ -90,8 +90,7 @@ class TestModelTypeSyncBridge : public FakeModelTypeSyncBridge {
 
   void OnPendingCommitDataLoaded() {
     ASSERT_TRUE(data_callback_);
-    data_callback_.Run();
-    data_callback_.Reset();
+    std::move(data_callback_).Run();
   }
 
   void InitializeToReadyState() {
@@ -133,11 +132,11 @@ class TestModelTypeSyncBridge : public FakeModelTypeSyncBridge {
   void GetData(StorageKeyList keys, DataCallback callback) override {
     if (synchronous_data_callback_) {
       synchronous_data_callback_ = false;
-      FakeModelTypeSyncBridge::GetData(keys, callback);
+      FakeModelTypeSyncBridge::GetData(keys, std::move(callback));
     } else {
       FakeModelTypeSyncBridge::GetData(
-          keys, base::Bind(&TestModelTypeSyncBridge::CaptureDataCallback,
-                           base::Unretained(this), callback));
+          keys, base::BindOnce(&TestModelTypeSyncBridge::CaptureDataCallback,
+                               base::Unretained(this), std::move(callback)));
     }
   }
 
@@ -145,7 +144,7 @@ class TestModelTypeSyncBridge : public FakeModelTypeSyncBridge {
   void CaptureDataCallback(DataCallback callback,
                            std::unique_ptr<DataBatch> data) {
     EXPECT_FALSE(data_callback_);
-    data_callback_ = base::Bind(callback, base::Passed(std::move(data)));
+    data_callback_ = base::BindOnce(std::move(callback), std::move(data));
   }
 
   // The number of times MergeSyncData has been called.
@@ -154,7 +153,7 @@ class TestModelTypeSyncBridge : public FakeModelTypeSyncBridge {
   int get_storage_key_call_count_ = 0;
 
   // Stores the data callback between GetData() and OnPendingCommitDataLoaded().
-  base::Closure data_callback_;
+  base::OnceClosure data_callback_;
 
   // Whether to return GetData results synchronously. Overrides the default
   // callback capture behavior if set to true.

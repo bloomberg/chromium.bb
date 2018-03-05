@@ -382,7 +382,7 @@ void AutocompleteSyncBridge::AutocompleteSyncBridge::GetData(
       batch->Put(key, CreateEntityData(entry));
     }
   }
-  callback.Run(std::move(batch));
+  std::move(callback).Run(std::move(batch));
 }
 
 void AutocompleteSyncBridge::GetAllData(DataCallback callback) {
@@ -399,7 +399,7 @@ void AutocompleteSyncBridge::GetAllData(DataCallback callback) {
   for (const AutofillEntry& entry : entries) {
     batch->Put(GetStorageKeyFromModel(entry.key()), CreateEntityData(entry));
   }
-  callback.Run(std::move(batch));
+  std::move(callback).Run(std::move(batch));
 }
 
 void AutocompleteSyncBridge::ActOnLocalChanges(

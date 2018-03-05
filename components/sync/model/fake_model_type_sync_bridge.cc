@@ -314,7 +314,7 @@ void FakeModelTypeSyncBridge::GetData(StorageKeyList keys,
     DCHECK(db_->HasData(key)) << "No data for " << key;
     batch->Put(key, CopyEntityData(db_->GetData(key)));
   }
-  callback.Run(std::move(batch));
+  std::move(callback).Run(std::move(batch));
 }
 
 void FakeModelTypeSyncBridge::GetAllData(DataCallback callback) {
@@ -328,7 +328,7 @@ void FakeModelTypeSyncBridge::GetAllData(DataCallback callback) {
   for (const auto& kv : db_->all_data()) {
     batch->Put(kv.first, CopyEntityData(*kv.second));
   }
-  callback.Run(std::move(batch));
+  std::move(callback).Run(std::move(batch));
 }
 
 std::string FakeModelTypeSyncBridge::GetClientTag(

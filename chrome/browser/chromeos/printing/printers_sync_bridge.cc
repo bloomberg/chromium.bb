@@ -252,7 +252,7 @@ void PrintersSyncBridge::GetData(StorageKeyList storage_keys,
       }
     }
   }
-  callback.Run(std::move(batch));
+  std::move(callback).Run(std::move(batch));
 }
 
 void PrintersSyncBridge::GetAllData(DataCallback callback) {
@@ -263,7 +263,7 @@ void PrintersSyncBridge::GetAllData(DataCallback callback) {
       batch->Put(entry.first, CopyToEntityData(*entry.second));
     }
   }
-  callback.Run(std::move(batch));
+  std::move(callback).Run(std::move(batch));
 }
 
 std::string PrintersSyncBridge::GetClientTag(const EntityData& entity_data) {
