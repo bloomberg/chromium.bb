@@ -53,23 +53,23 @@ class CSSPropertiesWriter(CSSPropertyBaseWriter):
             property_['namespace_group'] = namespace_group
             class_data = self.get_class(property_)
             self.calculate_apply_functions_to_declare(property_)
-            self._outputs[class_data.filename + '.h'] = (
+            self._outputs[class_data.classname + '.h'] = (
                 self.generate_property_h_builder(
-                    class_data.classname, class_data.filename, property_))
+                    class_data.classname, property_))
             if 'should_implement_apply_functions_in_cpp' in property_:
-                self._outputs[class_data.filename + '.cc'] = (
+                self._outputs[class_data.classname + '.cpp'] = (
                     self.generate_property_cpp_builder(
-                        class_data.filename, property_))
+                        class_data.classname, property_))
         for property_ in self.css_properties.aliases:
             if ('shorthands' in output_dir and property_['longhands']) or \
                ('longhands' in output_dir and not property_['longhands']):
                 class_data = self.get_class(property_)
                 property_['namespace_group'] = namespace_group
-                self._outputs[class_data.filename + '.h'] = (
+                self._outputs[class_data.classname + '.h'] = (
                     self.generate_property_h_builder(
-                        class_data.classname, class_data.filename, property_))
+                        class_data.classname, property_))
 
-    def generate_property_h_builder(self, property_classname, property_filename, property_):
+    def generate_property_h_builder(self, property_classname, property_):
         @template_expander.use_jinja(
             'core/css/properties/templates/CSSPropertySubclass.h.tmpl',
             template_cache=self.template_cache)
@@ -77,20 +77,19 @@ class CSSPropertiesWriter(CSSPropertyBaseWriter):
             return {
                 'input_files': self._input_files,
                 'property_classname': property_classname,
-                'property_filename': property_filename,
                 'property': property_,
                 'includes': sorted(list(self.h_includes(property_)))
             }
         return generate_property_h
 
-    def generate_property_cpp_builder(self, property_filename, property_):
+    def generate_property_cpp_builder(self, property_classname, property_):
         @template_expander.use_jinja(
             'core/css/properties/templates/CSSPropertySubclass.cpp.tmpl',
             template_cache=self.template_cache)
         def generate_property_cpp():
             return {
                 'input_files': self._input_files,
-                'property_filename': property_filename,
+                'property_classname': property_classname,
                 'property': property_,
                 'includes': sorted(list(self.cpp_includes(property_)))
             }

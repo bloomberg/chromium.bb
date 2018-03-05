@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/properties/longhands/scroll_snap_align.h"
+#include "core/css/properties/longhands/ScrollSnapAlign.h"
 
 #include "core/css/CSSValuePair.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"

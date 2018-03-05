@@ -9,23 +9,23 @@
 #include "core/css/properties/CSSUnresolvedProperty.h"
 
 #include "core/css/properties/longhands/Variable.h"
-{% for property_filename in longhand_property_filenames %}
-  {% if property_filename != "longhand" %}
-#include "core/css/properties/longhands/{{property_filename}}.h"
+{% for property_class in longhand_property_classnames %}
+  {% if property_class != "Longhand" %}
+#include "core/css/properties/longhands/{{property_class}}.h"
   {% endif %}
 {% endfor %}
-{% for property_filename in shorthand_property_filenames %}
-#include "core/css/properties/shorthands/{{property_filename}}.h"
+{% for property_class in shorthand_property_classnames %}
+#include "core/css/properties/shorthands/{{property_class}}.h"
 {% endfor %}
 
 namespace blink {
 namespace {
 
 static constexpr Variable property_csspropertyvariable;
-{% for _, property_id, classname, namespace_group, _ in property_classes_by_property_id %}
+{% for _, property_id, classname, namespace_group in property_classes_by_property_id %}
 static constexpr CSS{{namespace_group}}::{{classname}} property_{{property_id.lower()}};
 {% endfor %}
-{% for _, property_id, classname, namespace_group, _ in alias_classes_by_property_id %}
+{% for _, property_id, classname, namespace_group in alias_classes_by_property_id %}
 static constexpr CSS{{namespace_group}}::{{classname}} property_{{property_id.lower()}};
 {% endfor %}
 

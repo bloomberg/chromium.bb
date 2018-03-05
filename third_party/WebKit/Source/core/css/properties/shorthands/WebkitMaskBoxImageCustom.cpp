@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/properties/shorthands/webkit_mask_box_image.h"
+#include "core/css/properties/shorthands/WebkitMaskBoxImage.h"
 
 #include "core/css/CSSInitialValue.h"
 #include "core/css/parser/CSSParserContext.h"

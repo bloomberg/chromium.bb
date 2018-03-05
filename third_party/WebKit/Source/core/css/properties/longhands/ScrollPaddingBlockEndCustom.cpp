@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/properties/longhands/scroll_padding_block_end.h"
+#include "core/css/properties/longhands/ScrollPaddingBlockEnd.h"
 
 #include "core/StylePropertyShorthand.h"
 #include "core/css/parser/CSSParserContext.h"
