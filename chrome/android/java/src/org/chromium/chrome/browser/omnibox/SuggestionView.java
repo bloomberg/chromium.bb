@@ -878,11 +878,9 @@ class SuggestionView extends ViewGroup {
             }
 
             if (isRTL) {
-                mTextLine1.layout(0, t, mTextRight - mSuggestionViewStartOffset, b);
-                mAnswerImage.layout(
-                        mTextRight - imageWidth, t, mTextRight - mSuggestionViewStartOffset, b);
-                mTextLine2.layout(0, t,
-                        mTextRight - (imageWidth + imageSpacing) - mSuggestionViewStartOffset, b);
+                mTextLine1.layout(0, t, mTextRight, b);
+                mAnswerImage.layout(mTextRight - imageWidth, t, mTextRight, b);
+                mTextLine2.layout(0, t, mTextRight - (imageWidth + imageSpacing), b);
             } else {
                 mTextLine1.layout(mTextLeft + mSuggestionViewStartOffset, t, r - l, b);
                 mAnswerImage.layout(
