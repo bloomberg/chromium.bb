@@ -177,8 +177,11 @@ IN_PROC_BROWSER_TEST_F(SecurityStatePageLoadMetricsBrowserTest, Simple_Http) {
       SecurityStatePageLoadMetricsObserver::
           GetEngagementDeltaHistogramNameForTesting(security_state::SECURE),
       0);
-  // UKM data should not be collected for non-HTTPS sites.
-  EXPECT_EQ(0u, CountUkmEntries());
+  EXPECT_EQ(1u, CountUkmEntries());
+  ExpectMetricForUrl(url, UkmEntry::kInitialSecurityLevelName,
+                     security_state::NONE);
+  ExpectMetricForUrl(url, UkmEntry::kFinalSecurityLevelName,
+                     security_state::NONE);
 }
 
 IN_PROC_BROWSER_TEST_F(SecurityStatePageLoadMetricsBrowserTest, ReloadPage) {
