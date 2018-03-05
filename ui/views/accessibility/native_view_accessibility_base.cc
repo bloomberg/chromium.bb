@@ -61,6 +61,9 @@ ui::AXPlatformNode* FromNativeWindow(gfx::NativeWindow native_window) {
 
 }  // namespace
 
+// static
+int32_t NativeViewAccessibilityBase::fake_focus_view_id_ = 0;
+
 NativeViewAccessibilityBase::NativeViewAccessibilityBase(View* view)
     : ViewAccessibility(view) {
   ax_node_ = ui::AXPlatformNode::Create(this);
@@ -226,10 +229,31 @@ gfx::NativeViewAccessible NativeViewAccessibilityBase::HitTestSync(int x,
   return GetNativeObject();
 }
 
+void NativeViewAccessibilityBase::OnAutofillShown() {
+  // When the autofill is shown, treat it and the currently selected item as
+  // focused, even though the actual focus is in the browser's currently
+  // focused textfield.
+  DCHECK(!fake_focus_view_id_) << "Cannot have more that one fake focus.";
+  fake_focus_view_id_ = GetUniqueId().Get();
+  ui::AXPlatformNode::OnAutofillShown();
+}
+
+void NativeViewAccessibilityBase::OnAutofillHidden() {
+  DCHECK(fake_focus_view_id_ == GetUniqueId().Get())
+      << "Cannot clear fake focus on an object that did not have fake focus.";
+  fake_focus_view_id_ = 0;
+  ui::AXPlatformNode::OnAutofillHidden();
+}
+
 gfx::NativeViewAccessible NativeViewAccessibilityBase::GetFocus() {
   FocusManager* focus_manager = view()->GetFocusManager();
   View* focused_view =
       focus_manager ? focus_manager->GetFocusedView() : nullptr;
+  if (fake_focus_view_id_) {
+    ui::AXPlatformNode* ax_node = GetFromNodeID(fake_focus_view_id_);
+    if (ax_node)
+      return ax_node->GetNativeViewAccessible();
+  }
   return focused_view ? focused_view->GetNativeViewAccessible() : nullptr;
 }
 

@@ -53,6 +53,10 @@ class AX_EXPORT AXPlatformNode {
   // the addition of an AXMode flag.
   static void NotifyAddAXModeFlags(AXMode mode_flags);
 
+  static void OnAutofillShown();
+  static void OnAutofillHidden();
+  static bool IsAutofillShown();
+
   // Call Destroy rather than deleting this, because the subclass may
   // use reference counting.
   virtual void Destroy();
@@ -83,6 +87,8 @@ class AX_EXPORT AXPlatformNode {
 
   static base::LazyInstance<NativeWindowHandlerCallback>::Leaky
       native_window_handler_;
+
+  static bool is_autofill_shown_;
 
   DISALLOW_COPY_AND_ASSIGN(AXPlatformNode);
 };

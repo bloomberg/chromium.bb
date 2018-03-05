@@ -16,6 +16,10 @@ namespace autofill {
 
 class AutofillPopupController;
 
+namespace {
+class AutofillPopupChildView;
+}
+
 // Views toolkit implementation for AutofillPopupView.
 class AutofillPopupViewViews : public AutofillPopupBaseView,
                                public AutofillPopupView {
@@ -48,6 +52,8 @@ class AutofillPopupViewViews : public AutofillPopupBaseView,
   // child views are used for accessibility events only. We need child views to
   // populate the correct |AXNodeData| when user selects a suggestion.
   void CreateChildViews();
+
+  AutofillPopupChildView* GetChildRow(size_t child_index) const;
 
   AutofillPopupController* controller_;  // Weak reference.
 
