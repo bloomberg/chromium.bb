@@ -14,6 +14,7 @@ var unsupportedMajorProtocolVersion = "100.0";
 
 var SILENT_FLAG_REQUIRED = "Cannot attach to this target unless " +
     "'silent-debugger-extension-api' flag is enabled.";
+var DETACHED_WHILE_HANDLING = "Detached while handling command.";
 
 chrome.test.runTests([
 
@@ -114,6 +115,57 @@ chrome.test.runTests([
       chrome.debugger.attach(debuggee, protocolVersion,
           fail("Cannot access a chrome:// URL"));
       chrome.tabs.remove(tab.id);
+    });
+  },
+
+  function navigateToWebUI() {
+    chrome.tabs.create({url:"inspected.html"}, function(tab) {
+      var debuggee = {tabId: tab.id};
+      chrome.debugger.attach(debuggee, protocolVersion, function() {
+        var responded = false;
+
+        function onResponse() {
+          chrome.test.assertLastError(DETACHED_WHILE_HANDLING);
+          responded = true;
+        }
+
+        function onDetach(from, reason) {
+          chrome.debugger.onDetach.removeListener(onDetach);
+          chrome.test.assertTrue(responded);
+          chrome.test.assertEq(debuggee.tabId, from.tabId);
+          chrome.test.assertEq("target_closed", reason);
+          chrome.test.succeed();
+        }
+
+        chrome.test.assertNoLastError();
+        chrome.debugger.onDetach.addListener(onDetach);
+        chrome.debugger.sendCommand(
+          debuggee, "Page.navigate", {url: "chrome://version"}, onResponse);
+      });
+    });
+  },
+
+  function detachDuringCommand() {
+    chrome.tabs.create({url:"inspected.html"}, function(tab) {
+      var debuggee = {tabId: tab.id};
+      chrome.debugger.attach(debuggee, protocolVersion, function() {
+        var responded = false;
+
+        function onResponse() {
+          chrome.test.assertLastError(DETACHED_WHILE_HANDLING);
+          responded = true;
+        }
+
+        function onDetach() {
+          chrome.debugger.onDetach.removeListener(onDetach);
+          chrome.test.assertTrue(responded);
+          chrome.test.succeed();
+        }
+
+        chrome.test.assertNoLastError();
+        chrome.debugger.sendCommand(debuggee, "command", null, onResponse);
+        chrome.debugger.detach(debuggee, onDetach);
+      });
     });
   },
 

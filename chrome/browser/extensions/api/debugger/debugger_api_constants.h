@@ -20,6 +20,8 @@ extern const char kInvalidTargetError[];
 extern const char kNotAttachedError[];
 extern const char kProtocolVersionNotSupportedError[];
 extern const char kSilentDebuggingRequired[];
+extern const char kRestrictedError[];
+extern const char kDetachedWhileHandlingError[];
 
 // Target types.
 extern const char kTabTargetType[];

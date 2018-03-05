@@ -104,8 +104,10 @@ class ExtensionDevToolsClientHost : public content::DevToolsAgentHostClient,
 
   ~ExtensionDevToolsClientHost() override;
 
+  bool Attach();
   const std::string& extension_id() { return extension_id_; }
   DevToolsAgentHost* agent_host() { return agent_host_.get(); }
+  void RespondDetachedToPendingRequests();
   void Close();
   void SendMessageToBackend(DebuggerSendCommandFunction* function,
                             const std::string& method,
@@ -138,6 +140,7 @@ class ExtensionDevToolsClientHost : public content::DevToolsAgentHostClient,
   Profile* profile_;
   scoped_refptr<DevToolsAgentHost> agent_host_;
   std::string extension_id_;
+  std::string extension_name_;
   Debuggee debuggee_;
   content::NotificationRegistrar registrar_;
   int last_request_id_;
@@ -161,6 +164,7 @@ ExtensionDevToolsClientHost::ExtensionDevToolsClientHost(
     : profile_(profile),
       agent_host_(agent_host),
       extension_id_(extension_id),
+      extension_name_(extension_name),
       last_request_id_(0),
       infobar_(nullptr),
       detach_reason_(api::debugger::DETACH_REASON_TARGET_CLOSED),
@@ -178,27 +182,34 @@ ExtensionDevToolsClientHost::ExtensionDevToolsClientHost(
   // Disconnect explicitly to make sure that |this| observer is not leaked.
   registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
                  content::NotificationService::AllSources());
+}
 
+bool ExtensionDevToolsClientHost::Attach() {
   // Attach to debugger and tell it we are ready.
-  agent_host_->AttachClient(this);
+  if (!agent_host_->AttachRestrictedClient(this))
+    return false;
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           ::switches::kSilentDebuggerExtensionAPI)) {
-    return;
+    return true;
   }
 
   // We allow policy-installed extensions to circumvent the normal
   // infobar warning. See crbug.com/693621.
   const Extension* extension =
-      ExtensionRegistry::Get(profile)->enabled_extensions().GetByID(
-          extension_id);
+      ExtensionRegistry::Get(profile_)->enabled_extensions().GetByID(
+          extension_id_);
+  // TODO(dgozman): null-checking |extension| below is sketchy.
+  // We probably should not allow debugging in this case. Or maybe
+  // it's never null?
   if (extension && Manifest::IsPolicyLocation(extension->location()))
-    return;
+    return true;
 
   infobar_ = ExtensionDevToolsInfoBar::Create(
-      extension_id, extension_name, this,
+      extension_id_, extension_name_, this,
       base::Bind(&ExtensionDevToolsClientHost::InfoBarDismissed,
                  base::Unretained(this)));
+  return true;
 }
 
 ExtensionDevToolsClientHost::~ExtensionDevToolsClientHost() {
@@ -211,6 +222,7 @@ ExtensionDevToolsClientHost::~ExtensionDevToolsClientHost() {
 void ExtensionDevToolsClientHost::AgentHostClosed(
     DevToolsAgentHost* agent_host) {
   DCHECK(agent_host == agent_host_.get());
+  RespondDetachedToPendingRequests();
   SendDetachedEvent();
   delete this;
 }
@@ -241,8 +253,15 @@ void ExtensionDevToolsClientHost::SendMessageToBackend(
 
 void ExtensionDevToolsClientHost::InfoBarDismissed() {
   detach_reason_ = api::debugger::DETACH_REASON_CANCELED_BY_USER;
+  RespondDetachedToPendingRequests();
   SendDetachedEvent();
   Close();
+}
+
+void ExtensionDevToolsClientHost::RespondDetachedToPendingRequests() {
+  for (const auto& it : pending_requests_)
+    it.second->SendDetachedError();
+  pending_requests_.clear();
 }
 
 void ExtensionDevToolsClientHost::SendDetachedEvent() {
@@ -447,9 +466,16 @@ bool DebuggerAttachFunction::RunAsync() {
     return false;
   }
 
-  new ExtensionDevToolsClientHost(GetProfile(), agent_host_.get(),
-                                  extension()->id(), extension()->name(),
-                                  debuggee_);
+  auto host = std::make_unique<ExtensionDevToolsClientHost>(
+      GetProfile(), agent_host_.get(), extension()->id(), extension()->name(),
+      debuggee_);
+
+  if (!host->Attach()) {
+    FormatErrorMessage(keys::kRestrictedError);
+    return false;
+  }
+
+  host.release();  // An attached client host manages its own lifetime.
   SendResponse(true);
   return true;
 }
@@ -471,6 +497,7 @@ bool DebuggerDetachFunction::RunAsync() {
   if (!InitClientHost())
     return false;
 
+  client_host_->RespondDetachedToPendingRequests();
   client_host_->Close();
   SendResponse(true);
   return true;
@@ -517,6 +544,10 @@ void DebuggerSendCommandFunction::SendResponseBody(
   SendResponse(true);
 }
 
+void DebuggerSendCommandFunction::SendDetachedError() {
+  error_ = keys::kDetachedWhileHandlingError;
+  SendResponse(false);
+}
 
 // DebuggerGetTargetsFunction -------------------------------------------------
 

@@ -115,7 +115,7 @@ ServiceWorkerDevToolsAgentHost::~ServiceWorkerDevToolsAgentHost() {
   ServiceWorkerDevToolsManager::GetInstance()->AgentHostDestroyed(this);
 }
 
-void ServiceWorkerDevToolsAgentHost::AttachSession(DevToolsSession* session) {
+bool ServiceWorkerDevToolsAgentHost::AttachSession(DevToolsSession* session) {
   if (state_ == WORKER_READY) {
     if (sessions().size() == 1) {
       BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
@@ -128,6 +128,7 @@ void ServiceWorkerDevToolsAgentHost::AttachSession(DevToolsSession* session) {
   session->AddHandler(base::WrapUnique(new protocol::InspectorHandler()));
   session->AddHandler(base::WrapUnique(new protocol::NetworkHandler(GetId())));
   session->AddHandler(base::WrapUnique(new protocol::SchemaHandler()));
+  return true;
 }
 
 void ServiceWorkerDevToolsAgentHost::DetachSession(DevToolsSession* session) {

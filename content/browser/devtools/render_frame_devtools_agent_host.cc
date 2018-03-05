@@ -342,7 +342,9 @@ WebContents* RenderFrameDevToolsAgentHost::GetWebContents() {
   return web_contents();
 }
 
-void RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session) {
+bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session) {
+  if (session->restricted() && !IsFrameHostAllowedForRestrictedSessions())
+    return false;
   session->SetRenderer(frame_host_ ? frame_host_->GetProcess()->GetID()
                                    : ChildProcessHost::kInvalidUniqueID,
                        frame_host_);
@@ -381,6 +383,7 @@ void RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session) {
     GetWakeLock()->RequestWakeLock();
 #endif
   }
+  return true;
 }
 
 void RenderFrameDevToolsAgentHost::DetachSession(DevToolsSession* session) {
@@ -487,13 +490,19 @@ void RenderFrameDevToolsAgentHost::UpdateFrameHost(
 
   if (IsAttached())
     RevokePolicy();
+
   frame_host_ = frame_host;
   agent_ptr_.reset();
+
+  if (!IsFrameHostAllowedForRestrictedSessions())
+    ForceDetachRestrictedSessions();
+
   if (!render_frame_alive_) {
     render_frame_alive_ = true;
     for (auto* inspector : protocol::InspectorHandler::ForAgentHost(this))
       inspector->TargetReloadedAfterCrash();
   }
+
   if (IsAttached()) {
     GrantPolicy();
     for (DevToolsSession* session : sessions()) {
@@ -587,7 +596,7 @@ void RenderFrameDevToolsAgentHost::DestroyOnRenderFrameGone() {
   scoped_refptr<RenderFrameDevToolsAgentHost> protect(this);
   if (IsAttached())
     RevokePolicy();
-  ForceDetachAllClients();
+  ForceDetachAllSessions();
   frame_host_ = nullptr;
   agent_ptr_.reset();
   SetFrameTreeNode(nullptr);
@@ -846,6 +855,11 @@ bool RenderFrameDevToolsAgentHost::EnsureAgent() {
 
 bool RenderFrameDevToolsAgentHost::IsChildFrame() {
   return frame_tree_node_ && frame_tree_node_->parent();
+}
+
+bool RenderFrameDevToolsAgentHost::IsFrameHostAllowedForRestrictedSessions() {
+  return !frame_host_ ||
+         (!frame_host_->web_ui() && !frame_host_->pending_web_ui());
 }
 
 }  // namespace content

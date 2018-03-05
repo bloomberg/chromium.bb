@@ -17,6 +17,8 @@ const char kProtocolVersionNotSupportedError[] =
     "Requested protocol version is not supported: *.";
 const char kSilentDebuggingRequired[] =
     "Cannot attach to this target unless '*' flag is enabled.";
+const char kRestrictedError[] = "Cannot attach to this target.";
+const char kDetachedWhileHandlingError[] = "Detached while handling command.";
 
 const char kTabTargetType[] = "tab";
 const char kBackgroundPageTargetType[] = "background page";

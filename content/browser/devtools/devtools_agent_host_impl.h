@@ -37,6 +37,7 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
 
   // DevToolsAgentHost implementation.
   void AttachClient(DevToolsAgentHostClient* client) override;
+  bool AttachRestrictedClient(DevToolsAgentHostClient* client) override;
   void ForceAttachClient(DevToolsAgentHostClient* client) override;
   bool DetachClient(DevToolsAgentHostClient* client) override;
   bool DispatchProtocolMessage(DevToolsAgentHostClient* client,
@@ -63,14 +64,16 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
 
   static bool ShouldForceCreation();
 
-  virtual void AttachSession(DevToolsSession* session);
+  // Returning |false| will block the attach.
+  virtual bool AttachSession(DevToolsSession* session);
   virtual void DetachSession(DevToolsSession* session);
   virtual void DispatchProtocolMessage(DevToolsSession* session,
                                        const std::string& message);
 
   void NotifyCreated();
   void NotifyNavigated();
-  void ForceDetachAllClients();
+  void ForceDetachAllSessions();
+  void ForceDetachRestrictedSessions();
   DevToolsIOContext* GetIOContext() { return &io_context_; }
 
   base::flat_set<DevToolsSession*>& sessions() { return sessions_; }
@@ -78,7 +81,7 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
  private:
   friend class DevToolsAgentHost; // for static methods
   friend class DevToolsSession;
-  void InnerAttachClient(DevToolsAgentHostClient* client);
+  bool InnerAttachClient(DevToolsAgentHostClient* client, bool restricted);
   void InnerDetachClient(DevToolsAgentHostClient* client);
   void NotifyAttached();
   void NotifyDetached();
