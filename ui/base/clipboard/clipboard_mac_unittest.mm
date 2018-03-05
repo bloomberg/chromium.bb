@@ -58,7 +58,7 @@ class ClipboardMacTest : public PlatformTest {
   }
 };
 
-#if defined(MEMORY_SANITIZER)
+#if defined(MEMORY_SANITIZER) || defined(ADDRESS_SANITIZER)
 #define MAYBE_ReadImageRetina DISABLED_ReadImageRetina
 #else
 #define MAYBE_ReadImageRetina ReadImageRetina
@@ -79,7 +79,7 @@ TEST_F(ClipboardMacTest, MAYBE_ReadImageRetina) {
   EXPECT_EQ(2 * height, bitmap.height());
 }
 
-#if defined(MEMORY_SANITIZER)
+#if defined(MEMORY_SANITIZER) || defined(ADDRESS_SANITIZER)
 #define MAYBE_ReadImageNonRetina DISABLED_ReadImageNonRetina
 #else
 #define MAYBE_ReadImageNonRetina ReadImageNonRetina
