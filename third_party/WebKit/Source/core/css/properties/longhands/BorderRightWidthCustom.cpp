@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/properties/longhands/BorderRightWidth.h"
+#include "core/css/properties/longhands/border_right_width.h"
 
 #include "core/css/ZoomAdjustedPixelValue.h"
 #include "core/css/properties/CSSParsingUtils.h"

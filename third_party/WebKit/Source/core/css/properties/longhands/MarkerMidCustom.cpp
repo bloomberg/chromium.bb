@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/properties/longhands/MarkerMid.h"
+#include "core/css/properties/longhands/marker_mid.h"
 
 #include "core/css/CSSURIValue.h"
 #include "core/css/parser/CSSParserTokenRange.h"

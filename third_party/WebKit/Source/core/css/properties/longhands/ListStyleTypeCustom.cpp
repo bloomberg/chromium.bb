@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/properties/longhands/ListStyleType.h"
+#include "core/css/properties/longhands/list_style_type.h"
 
 namespace blink {
 namespace CSSLonghand {

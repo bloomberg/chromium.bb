@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/properties/longhands/WebkitTextEmphasisPosition.h"
+#include "core/css/properties/longhands/webkit_text_emphasis_position.h"
 
 #include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSValueList.h"
