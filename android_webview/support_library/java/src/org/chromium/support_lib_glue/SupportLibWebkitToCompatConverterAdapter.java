@@ -8,8 +8,8 @@ import android.webkit.WebSettings;
 
 import com.android.webview.chromium.WebkitToSharedGlueConverter;
 
-import org.chromium.support_lib_boundary.BoundaryInterfaceReflectionUtil;
 import org.chromium.support_lib_boundary.WebkitToCompatConverterBoundaryInterface;
+import org.chromium.support_lib_boundary.util.BoundaryInterfaceReflectionUtil;
 
 import java.lang.reflect.InvocationHandler;
 

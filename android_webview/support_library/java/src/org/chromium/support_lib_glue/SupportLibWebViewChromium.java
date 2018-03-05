@@ -7,9 +7,9 @@ package org.chromium.support_lib_glue;
 import com.android.webview.chromium.SharedWebViewChromium;
 
 import org.chromium.android_webview.AwContents;
-import org.chromium.support_lib_boundary.BoundaryInterfaceReflectionUtil;
 import org.chromium.support_lib_boundary.VisualStateCallbackBoundaryInterface;
 import org.chromium.support_lib_boundary.WebViewProviderBoundaryInterface;
+import org.chromium.support_lib_boundary.util.BoundaryInterfaceReflectionUtil;
 
 import java.lang.reflect.InvocationHandler;
 
