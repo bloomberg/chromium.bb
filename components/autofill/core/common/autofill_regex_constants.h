@@ -55,6 +55,7 @@ extern const char kPhoneSuffixSeparatorRe[];
 extern const char kPhonePrefixRe[];
 extern const char kPhoneSuffixRe[];
 extern const char kPhoneExtensionRe[];
+extern const char kSearchTermRe[];
 
 // Used to match field data that might be a UPI Virtual Payment Address.
 // See:

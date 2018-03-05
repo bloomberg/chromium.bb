@@ -919,6 +919,7 @@ FormGroup* AutofillProfile::MutableFormGroupForType(const AutofillType& type) {
     case PASSWORD_FIELD:
     case USERNAME_FIELD:
     case TRANSACTION:
+    case UNFILLABLE:
       return nullptr;
   }
 

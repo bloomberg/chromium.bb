@@ -90,6 +90,8 @@ std::unique_ptr<FormField> AddressField::Parse(AutofillScanner* scanner) {
       }
 
       continue;
+    } else if (address_field->ParseSearchTerm(scanner)) {
+      continue;
     } else {
       // No field found.
       break;
@@ -111,7 +113,6 @@ std::unique_ptr<FormField> AddressField::Parse(AutofillScanner* scanner) {
     // Don't slurp non-labeled fields at the end into the address.
     if (has_trailing_non_labeled_fields)
       scanner->RewindTo(begin_trailing_non_labeled_fields);
-
     return std::move(address_field);
   }
 
@@ -129,7 +130,8 @@ AddressField::AddressField()
       state_(nullptr),
       zip_(nullptr),
       zip4_(nullptr),
-      country_(nullptr) {}
+      country_(nullptr),
+      search_term_(nullptr) {}
 
 void AddressField::AddClassifications(
     FieldCandidatesMap* field_candidates) const {
@@ -158,6 +160,15 @@ void AddressField::AddClassifications(
                     field_candidates);
   AddClassification(country_, ADDRESS_HOME_COUNTRY, kBaseAddressParserScore,
                     field_candidates);
+  AddClassification(search_term_, SEARCH_TERM, kBaseAddressParserScore,
+                    field_candidates);
+}
+
+bool AddressField::ParseSearchTerm(AutofillScanner* scanner) {
+  if (search_term_ && !search_term_->IsEmpty())
+    return false;
+
+  return ParseField(scanner, UTF8ToUTF16(kSearchTermRe), &search_term_);
 }
 
 bool AddressField::ParseCompany(AutofillScanner* scanner) {

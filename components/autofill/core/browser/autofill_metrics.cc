@@ -52,6 +52,7 @@ enum FieldTypeGroupForMetrics {
   GROUP_USERNAME,
   GROUP_STREET_ADDRESS,
   GROUP_CREDIT_CARD_VERIFICATION,
+  GROUP_UNFILLABLE,
   NUM_FIELD_TYPE_GROUPS_FOR_METRICS
 };
 
@@ -208,6 +209,10 @@ int GetFieldTypeGroupMetric(ServerFieldType field_type,
 
     case USERNAME_FIELD:
       group = GROUP_USERNAME;
+      break;
+
+    case UNFILLABLE:
+      group = GROUP_UNFILLABLE;
       break;
 
     case TRANSACTION:
