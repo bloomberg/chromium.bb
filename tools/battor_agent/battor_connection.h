@@ -54,6 +54,8 @@ class BattOrConnection {
   virtual void Open() = 0;
   // Closes the serial connection and releases any handles being held.
   virtual void Close() = 0;
+  // Returns true if the connection is currently open.
+  virtual bool IsOpen() = 0;
   // Flushes the serial connection by reading and throwing away bytes until the
   // serial connection remains quiet for a sufficiently long time.
   virtual void Flush() = 0;

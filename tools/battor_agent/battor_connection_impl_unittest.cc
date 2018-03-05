@@ -90,6 +90,8 @@ class BattOrConnectionImplTest : public testing::Test,
     task_runner_->RunUntilIdle();
   }
 
+  bool IsConnectionOpen() { return connection_->IsOpen(); }
+
   void CloseConnection() { connection_->Close(); }
 
   void ReadMessage(BattOrMessageType type) {
@@ -171,6 +173,18 @@ TEST_F(BattOrConnectionImplTest, OpenConnectionSucceedsImmediately) {
   OpenConnection();
   ASSERT_TRUE(IsOpenComplete());
   ASSERT_TRUE(GetOpenSuccess());
+  ASSERT_TRUE(IsConnectionOpen());
+}
+
+TEST_F(BattOrConnectionImplTest, IsOpenFalseAfterClosingConnection) {
+  OpenConnection();
+  ASSERT_TRUE(IsOpenComplete());
+  ASSERT_TRUE(GetOpenSuccess());
+  ASSERT_TRUE(IsConnectionOpen());
+
+  CloseConnection();
+
+  ASSERT_FALSE(IsConnectionOpen());
 }
 
 TEST_F(BattOrConnectionImplTest, FlushConnectionSucceedsOnlyAfterTimeout) {

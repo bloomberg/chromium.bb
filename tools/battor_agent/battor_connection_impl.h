@@ -43,6 +43,7 @@ class BattOrConnectionImpl
 
   void Open() override;
   void Close() override;
+  bool IsOpen() override;
   void SendBytes(BattOrMessageType type,
                  const void* buffer,
                  size_t bytes_to_send) override;
@@ -105,6 +106,9 @@ class BattOrConnectionImpl
 
   // The path of the BattOr.
   std::string path_;
+
+  // Indicates whether the connection is currently open.
+  bool is_open_;
 
   // All bytes that have already been read from the serial stream, but have not
   // yet been given to the listener as a complete message.
