@@ -340,17 +340,6 @@ inline bool IsCollapsibleWhitespace(UChar c) {
   return c == ' ' || c == '\n';
 }
 
-inline bool IsAmbiguousBoundaryCharacter(UChar character) {
-  // These are characters that can behave as word boundaries, but can appear
-  // within words. If they are just typed, i.e. if they are immediately followed
-  // by a caret, we want to delay text checking until the next character has
-  // been typed.
-  // FIXME: this is required until 6853027 is fixed and text checking can do
-  // this for us.
-  return character == '\'' || character == kRightSingleQuotationMarkCharacter ||
-         character == kHebrewPunctuationGershayimCharacter;
-}
-
 String StringWithRebalancedWhitespace(const String&,
                                       bool start_is_start_of_paragraph,
                                       bool should_emit_nbs_pbefore_end);

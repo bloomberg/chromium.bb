@@ -66,6 +66,17 @@ static bool IsWhiteSpaceOrPunctuation(UChar c) {
   return IsSpaceOrNewline(c) || WTF::Unicode::IsPunct(c);
 }
 
+bool IsAmbiguousBoundaryCharacter(UChar character) {
+  // These are characters that can behave as word boundaries, but can appear
+  // within words. If they are just typed, i.e. if they are immediately followed
+  // by a caret, we want to delay text checking until the next character has
+  // been typed.
+  // FIXME: this is required until 6853027 is fixed and text checking can do
+  // this for us.
+  return character == '\'' || character == kRightSingleQuotationMarkCharacter ||
+         character == kHebrewPunctuationGershayimCharacter;
+}
+
 }  // namespace
 
 SpellChecker* SpellChecker::Create(LocalFrame& frame) {
