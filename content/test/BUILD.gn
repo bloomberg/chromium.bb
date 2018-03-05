@@ -17,6 +17,7 @@ import("//services/catalog/public/tools/catalog.gni")
 import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
 import("//third_party/WebKit/public/public_features.gni")
+import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
 import("//v8/gni/v8.gni")
 
 # Use a static library here because many test binaries depend on this but don't
@@ -1976,8 +1977,13 @@ test("content_unittests") {
       "//media/capture/content/android",
       "//media/capture/content/android:screen_capture_java",
       "//ui/android:android",
-      "//v8:v8_external_startup_data_assets",
     ]
+
+    if (use_v8_context_snapshot) {
+      deps += [ "//tools/v8_context_snapshot:v8_context_snapshot_assets" ]
+    } else {
+      deps += [ "//v8:v8_external_startup_data_assets" ]
+    }
 
     defines += [ "APPCACHE_USE_SIMPLE_CACHE" ]
   } else {
