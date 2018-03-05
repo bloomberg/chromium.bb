@@ -19,7 +19,7 @@
 Polymer({
   is: 'settings-incompatible-applications-page',
 
-  behaviors: [I18nBehavior],
+  behaviors: [I18nBehavior, WebUIListenerBehavior],
 
   properties: {
     /**
@@ -38,6 +38,15 @@ Polymer({
      * @private {Array<settings.IncompatibleApplication>}
      */
     applications_: Array,
+
+    /**
+     * Determines if the user has finished with this page.
+     * @private
+     */
+    isDone_: {
+      type: Boolean,
+      computed: 'computeIsDone_(applications_.*)',
+    },
 
     /**
      * The text for the subtitle of the subpage.
@@ -70,12 +79,39 @@ Polymer({
 
   /** @override */
   ready: function() {
+    this.addWebUIListener(
+        'incompatible-application-removed',
+        this.onIncompatibleApplicationRemoved_.bind(this));
+
     settings.IncompatibleApplicationsBrowserProxyImpl.getInstance()
         .requestIncompatibleApplicationsList()
         .then(list => {
           this.applications_ = list;
           this.updatePluralStrings_();
         });
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  computeIsDone_: function() {
+    return this.applications_.length === 0;
+  },
+
+  /**
+   * Removes a single incompatible application from the |applications_| list.
+   * @private
+   */
+  onIncompatibleApplicationRemoved_: function(applicationName) {
+    // Find the index of the element.
+    let index = this.applications_.findIndex(function(application) {
+      return application.name == applicationName;
+    });
+
+    assert(index !== -1);
+
+    this.splice('applications_', index, 1);
   },
 
   /**

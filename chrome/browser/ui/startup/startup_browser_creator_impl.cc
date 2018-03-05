@@ -620,9 +620,7 @@ void StartupBrowserCreatorImpl::DetermineURLsAndLaunch(
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
   if (is_post_crash_launch) {
     // Check if there are any incompatible applications cached from the last
-    // Chrome run. The TrimCache() function removes any invalid cached entries
-    // first.
-    ProblematicProgramsUpdater::TrimCache();
+    // Chrome run.
     has_incompatible_applications =
         ProblematicProgramsUpdater::HasCachedPrograms();
   }
