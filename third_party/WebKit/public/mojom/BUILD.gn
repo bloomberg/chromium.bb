@@ -34,6 +34,7 @@ mojom("mojom_platform") {
     "service_worker/service_worker_registration.mojom",
     "service_worker/service_worker_state.mojom",
     "service_worker/service_worker_stream_handle.mojom",
+    "shared_worker/shared_worker_creation_context_type.mojom",
   ]
 
   public_deps = [

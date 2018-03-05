@@ -31,8 +31,8 @@
 #ifndef WebSharedWorkerConnectListener_h
 #define WebSharedWorkerConnectListener_h
 
-#include "public/platform/web_feature.mojom-shared.h"
-#include "public/web/shared_worker_creation_context_type.mojom-shared.h"
+#include "third_party/WebKit/public/mojom/shared_worker/shared_worker_creation_context_type.mojom-shared.h"
+#include "third_party/WebKit/public/platform/web_feature.mojom-shared.h"
 
 namespace blink {
 
