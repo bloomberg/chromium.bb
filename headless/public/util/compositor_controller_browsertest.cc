@@ -236,27 +236,6 @@ class CompositorControllerBrowserTest
     EXPECT_SCOPED(ExpectAdditionalFrameCounts(1, 1));
   }
 
-  void CaptureDoubleScreenshot(
-      const base::RepeatingCallback<void(const std::string&)>&
-          screenshot_captured_callback) {
-    compositor_controller_->CaptureScreenshot(
-        headless_experimental::ScreenshotParamsFormat::PNG, 100,
-        base::BindRepeating(
-            &CompositorControllerBrowserTest::OnFirstScreenshotCaptured,
-            base::Unretained(this), screenshot_captured_callback));
-  }
-
-  void OnFirstScreenshotCaptured(
-      const base::RepeatingCallback<void(const std::string&)>&
-          screenshot_captured_callback,
-      const std::string& screenshot_data) {
-    // Ignore result of first screenshot because of crbug.com/817364.
-    // TODO(crbug.com/817364): Remove the second screenshot once bug is fixed.
-    compositor_controller_->CaptureScreenshot(
-        headless_experimental::ScreenshotParamsFormat::PNG, 100,
-        screenshot_captured_callback);
-  }
-
   void FinishCompositorControllerTest() {
     render_frame_submission_observer_.reset();
     FinishAsynchronousTest();
@@ -339,14 +318,15 @@ class CompositorControllerRafBrowserTest
 
     EXPECT_EQ(kNumFrames, result->GetResult()->GetValue()->GetInt());
 
-    CaptureDoubleScreenshot(
+    compositor_controller_->CaptureScreenshot(
+        headless_experimental::ScreenshotParamsFormat::PNG, 100,
         base::BindRepeating(&CompositorControllerRafBrowserTest::OnScreenshot,
                             base::Unretained(this)));
   }
 
   void OnScreenshot(const std::string& screenshot_data) {
-    // Screenshot should have incurred two new CompositorFrames from renderer.
-    EXPECT_SCOPED(ExpectAdditionalFrameCounts(2, 2));
+    // Screenshot should have incurred a new CompositorFrame from renderer.
+    EXPECT_SCOPED(ExpectAdditionalFrameCounts(1, 1));
     EXPECT_LT(0U, screenshot_data.length());
 
     if (screenshot_data.length()) {
@@ -356,8 +336,8 @@ class CompositorControllerRafBrowserTest
       EXPECT_EQ(800, result_bitmap.width());
       EXPECT_EQ(600, result_bitmap.height());
       SkColor actual_color = result_bitmap.getColor(200, 200);
-      // Screenshot was the fifth frame, so background color should be #500.
-      SkColor expected_color = SkColorSetRGB(0x55, 0x00, 0x00);
+      // Screenshot was the forth frame, so background color should be #400.
+      SkColor expected_color = SkColorSetRGB(0x44, 0x00, 0x00);
       EXPECT_EQ(expected_color, actual_color);
     }
 
@@ -426,16 +406,16 @@ class CompositorControllerImageAnimationBrowserTest
     // first screenshot is taken.
     EXPECT_SCOPED(ExpectAdditionalFrameCounts(kNumFramesFirstIteration, 0));
 
-    CaptureDoubleScreenshot(
+    compositor_controller_->CaptureScreenshot(
+        headless_experimental::ScreenshotParamsFormat::PNG, 100,
         base::BindRepeating(&CompositorControllerImageAnimationBrowserTest::
                                 OnScreenshotAfterFirstIteration,
                             base::Unretained(this)));
   }
 
   void OnScreenshotAfterFirstIteration(const std::string& screenshot_data) {
-    // Screenshot should have incurred one new CompositorFrame from renderer,
-    // but two new BeginFrames.
-    EXPECT_SCOPED(ExpectAdditionalFrameCounts(2, 1));
+    // Screenshot should have incurred a new CompositorFrame from renderer.
+    EXPECT_SCOPED(ExpectAdditionalFrameCounts(1, 1));
     EXPECT_LT(0U, screenshot_data.length());
 
     if (screenshot_data.length()) {
@@ -469,16 +449,16 @@ class CompositorControllerImageAnimationBrowserTest
     EXPECT_SCOPED(
         ExpectAdditionalFrameCounts(kNumFramesSecondIteration - 1, 0));
 
-    CaptureDoubleScreenshot(
+    compositor_controller_->CaptureScreenshot(
+        headless_experimental::ScreenshotParamsFormat::PNG, 100,
         base::BindRepeating(&CompositorControllerImageAnimationBrowserTest::
                                 OnScreenshotAfterSecondIteration,
                             base::Unretained(this)));
   }
 
   void OnScreenshotAfterSecondIteration(const std::string& screenshot_data) {
-    // Screenshot should have incurred one new CompositorFrame from renderer,
-    // but two new BeginFrames.
-    EXPECT_SCOPED(ExpectAdditionalFrameCounts(2, 1));
+    // Screenshot should have incurred a new CompositorFrame from renderer.
+    EXPECT_SCOPED(ExpectAdditionalFrameCounts(1, 1));
 
     EXPECT_LT(0U, screenshot_data.length());
 
@@ -512,7 +492,8 @@ class CompositorControllerImageAnimationBrowserTest
     // the first animation frame is skipped because of the prior screenshot.
     EXPECT_SCOPED(ExpectAdditionalFrameCounts(kNumFramesThirdIteration - 1, 0));
 
-    CaptureDoubleScreenshot(
+    compositor_controller_->CaptureScreenshot(
+        headless_experimental::ScreenshotParamsFormat::PNG, 100,
         base::BindRepeating(&CompositorControllerImageAnimationBrowserTest::
                                 OnScreenshotAfterThirdIteration,
                             base::Unretained(this)));
@@ -520,8 +501,8 @@ class CompositorControllerImageAnimationBrowserTest
 
   void OnScreenshotAfterThirdIteration(const std::string& screenshot_data) {
     // Screenshot should have incurred no new CompositorFrame from renderer
-    // since animation frame didn't change, but two new BeginFrames.
-    EXPECT_SCOPED(ExpectAdditionalFrameCounts(2, 0));
+    // since animation frame didn't change, but a new BeginFrame.
+    EXPECT_SCOPED(ExpectAdditionalFrameCounts(1, 0));
     EXPECT_LT(0U, screenshot_data.length());
 
     if (screenshot_data.length()) {
