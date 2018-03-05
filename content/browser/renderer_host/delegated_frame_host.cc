@@ -287,7 +287,7 @@ void DelegatedFrameHost::WasResized(
       current_frame_size_in_dip_ = pending_surface_dip_size_;
 
       viz::SurfaceId surface_id(frame_sink_id_, pending_local_surface_id_);
-#if defined(OS_WIN) || defined(OS_LINUX)
+#if defined(OS_WIN) || defined(USE_X11)
       // On Windows and Linux, we would like to produce new content as soon as
       // possible or the OS will create an additional black gutter. Until we can
       // block resize on surface synchronization on these platforms, we will not
