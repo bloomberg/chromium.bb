@@ -46134,6 +46134,14 @@ Full version information for the fingerprint enum values:
   <int value="3251925547" label="chrome://offline-internals/"/>
 </enum>
 
+<enum name="WebURLRequestPriority">
+  <int value="0" label="VeryLow"/>
+  <int value="1" label="Low"/>
+  <int value="2" label="Medium"/>
+  <int value="3" label="High"/>
+  <int value="4" label="VeryHigh"/>
+</enum>
+
 <enum name="WebUsbChooserClosed">
   <int value="0" label="User cancelled"/>
   <int value="1" label="User cancelled, no devices available"/>
