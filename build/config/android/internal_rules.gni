@@ -1652,18 +1652,6 @@ if (enable_java_templates) {
         ]
       }
 
-      if (defined(invoker.density_splits) && invoker.density_splits != []) {
-        args += [ "--create-density-splits" ]
-        foreach(_density, invoker.density_splits) {
-          outputs += [ "${invoker.output}_${_density}" ]
-        }
-      }
-      if (defined(invoker.language_splits) && invoker.language_splits != []) {
-        args += [ "--language-splits=${invoker.language_splits}" ]
-        foreach(_language, invoker.language_splits) {
-          outputs += [ "${invoker.output}_${_language}" ]
-        }
-      }
       if (defined(invoker.aapt_locale_whitelist)) {
         args += [ "--locale-whitelist=${invoker.aapt_locale_whitelist}" ]
       }
@@ -1928,6 +1916,7 @@ if (enable_java_templates) {
       _dex_path = invoker.dex_path
     }
     _load_library_from_apk = invoker.load_library_from_apk
+    assert(_load_library_from_apk || true)
 
     _deps = []
     if (defined(invoker.deps)) {
@@ -2069,8 +2058,7 @@ if (enable_java_templates) {
       packaged_resources_path = _incremental_packaged_resources_path
     }
 
-    _finalize_apk_rule_name = "${target_name}__finalize"
-    finalize_apk(_finalize_apk_rule_name) {
+    finalize_apk(target_name) {
       input_apk_path = _packaged_apk_path
       output_apk_path = _final_apk_path
       keystore_path = _keystore_path
@@ -2083,8 +2071,7 @@ if (enable_java_templates) {
       ]
     }
 
-    _incremental_finalize_apk_rule_name = "${target_name}_incremental__finalize"
-    finalize_apk(_incremental_finalize_apk_rule_name) {
+    finalize_apk("${target_name}_incremental") {
       input_apk_path = _incremental_packaged_apk_path
       output_apk_path = _incremental_final_apk_path
       keystore_path = _keystore_path
@@ -2094,48 +2081,6 @@ if (enable_java_templates) {
       public_deps = [
         ":$_incremental_package_target",
       ]
-    }
-
-    _split_deps = []
-
-    template("finalize_split") {
-      finalize_apk(target_name) {
-        _config = invoker.split_config
-        _type = invoker.split_type
-        input_apk_path = "${_packaged_resources_path}_${_config}"
-        _output_paths = process_file_template(
-                [ _final_apk_path ],
-                "{{source_dir}}/{{source_name_part}}-${_type}-${_config}.apk")
-        output_apk_path = _output_paths[0]
-        keystore_path = _keystore_path
-        keystore_name = _keystore_name
-        keystore_password = _keystore_password
-        deps = _deps
-      }
-    }
-
-    foreach(_split, invoker.density_splits) {
-      _split_rule = "${target_name}__finalize_${_split}_split"
-      finalize_split(_split_rule) {
-        split_type = "density"
-        split_config = _split
-      }
-      _split_deps += [ ":$_split_rule" ]
-    }
-    foreach(_split, invoker.language_splits) {
-      _split_rule = "${target_name}__finalize_${_split}_split"
-      finalize_split(_split_rule) {
-        split_type = "lang"
-        split_config = _split
-      }
-      _split_deps += [ ":$_split_rule" ]
-    }
-
-    group(target_name) {
-      public_deps = [ ":${_finalize_apk_rule_name}" ] + _split_deps
-    }
-    group("${target_name}_incremental") {
-      public_deps = [ ":${_incremental_finalize_apk_rule_name}" ] + _split_deps
     }
   }
 
@@ -2690,60 +2635,6 @@ if (enable_java_templates) {
         }
         data_deps += [ ":${_main_target_name}__analysis" ]
       }
-    }
-  }
-
-  # Creates an AndroidManifest.xml for an APK split.
-  template("generate_split_manifest") {
-    assert(defined(invoker.main_manifest))
-    assert(defined(invoker.out_manifest))
-    assert(defined(invoker.split_name))
-
-    action(target_name) {
-      forward_variables_from(invoker,
-                             [
-                               "deps",
-                               "testonly",
-                             ])
-      depfile = "$target_gen_dir/$target_name.d"
-      args = [
-        "--main-manifest",
-        rebase_path(invoker.main_manifest, root_build_dir),
-        "--out-manifest",
-        rebase_path(invoker.out_manifest, root_build_dir),
-        "--split",
-        invoker.split_name,
-      ]
-      if (defined(invoker.version_code)) {
-        args += [
-          "--version-code",
-          invoker.version_code,
-        ]
-      }
-      if (defined(invoker.version_name)) {
-        args += [
-          "--version-name",
-          invoker.version_name,
-        ]
-      }
-      if (defined(invoker.has_code)) {
-        args += [
-          "--has-code",
-          invoker.has_code,
-        ]
-      }
-      args += [
-        "--depfile",
-        rebase_path(depfile, root_build_dir),
-      ]
-
-      script = "//build/android/gyp/generate_split_manifest.py"
-      outputs = [
-        invoker.out_manifest,
-      ]
-      inputs = [
-        invoker.main_manifest,
-      ]
     }
   }
 

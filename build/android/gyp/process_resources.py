@@ -59,54 +59,6 @@ _CHROME_TO_ANDROID_LOCALE_MAP = {
     'zh-TW': 'zh-rTW',
 }
 
-# List is generated from the chrome_apk.apk_intermediates.ap_ via:
-#     unzip -l $FILE_AP_ | cut -c31- | grep res/draw | cut -d'/' -f 2 | sort \
-#     | uniq | grep -- -tvdpi- | cut -c10-
-# and then manually sorted.
-# Note that we can't just do a cross-product of dimensions because the filenames
-# become too big and aapt fails to create the files.
-# This leaves all default drawables (mdpi) in the main apk. Android gets upset
-# though if any drawables are missing from the default drawables/ directory.
-_DENSITY_SPLITS = {
-    'hdpi': (
-        'hdpi-v4', # Order matters for output file names.
-        'ldrtl-hdpi-v4',
-        'sw600dp-hdpi-v13',
-        'ldrtl-hdpi-v17',
-        'ldrtl-sw600dp-hdpi-v17',
-        'hdpi-v21',
-    ),
-    'xhdpi': (
-        'xhdpi-v4',
-        'ldrtl-xhdpi-v4',
-        'sw600dp-xhdpi-v13',
-        'ldrtl-xhdpi-v17',
-        'ldrtl-sw600dp-xhdpi-v17',
-        'xhdpi-v21',
-    ),
-    'xxhdpi': (
-        'xxhdpi-v4',
-        'ldrtl-xxhdpi-v4',
-        'sw600dp-xxhdpi-v13',
-        'ldrtl-xxhdpi-v17',
-        'ldrtl-sw600dp-xxhdpi-v17',
-        'xxhdpi-v21',
-    ),
-    'xxxhdpi': (
-        'xxxhdpi-v4',
-        'ldrtl-xxxhdpi-v4',
-        'sw600dp-xxxhdpi-v13',
-        'ldrtl-xxxhdpi-v17',
-        'ldrtl-sw600dp-xxxhdpi-v17',
-        'xxxhdpi-v21',
-    ),
-    'tvdpi': (
-        'tvdpi-v4',
-        'sw600dp-tvdpi-v13',
-        'ldrtl-sw600dp-tvdpi-v17',
-    ),
-}
-
 # Pngs that we shouldn't convert to webp. Please add rationale when updating.
 _PNG_WEBP_BLACKLIST_PATTERN = re.compile('|'.join([
     # Crashes on Galaxy S5 running L (https://crbug.com/807059).
@@ -215,13 +167,6 @@ def _ParseArgs(args):
   parser.add_option('--version-name', help='Version name for apk.')
   parser.add_option('--no-compress', help='disables compression for the '
                     'given comma separated list of extensions')
-  parser.add_option(
-      '--create-density-splits',
-      action='store_true',
-      help='Enables density splits')
-  parser.add_option('--language-splits',
-                    default='[]',
-                    help='GN list of languages to create splits for')
   parser.add_option('--locale-whitelist',
                     default='[]',
                     help='GN list of languages to include. All other language '
@@ -261,7 +206,6 @@ def _ParseArgs(args):
   options.dependencies_res_zips = (
       build_utils.ParseGnList(options.dependencies_res_zips))
 
-  options.language_splits = build_utils.ParseGnList(options.language_splits)
   options.locale_whitelist = build_utils.ParseGnList(options.locale_whitelist)
   options.xxxhdpi_whitelist = build_utils.ParseGnList(options.xxxhdpi_whitelist)
 
@@ -556,41 +500,6 @@ def _MoveImagesToNonMdpiFolders(res_root):
       shutil.move(src_file, dst_file)
 
 
-def _GenerateDensitySplitPaths(apk_path):
-  for density, config in _DENSITY_SPLITS.iteritems():
-    src_path = '%s_%s' % (apk_path, '_'.join(config))
-    dst_path = '%s_%s' % (apk_path, density)
-    yield src_path, dst_path
-
-
-def _GenerateLanguageSplitOutputPaths(apk_path, languages):
-  for lang in languages:
-    yield '%s_%s' % (apk_path, lang)
-
-
-def _RenameDensitySplits(apk_path):
-  """Renames all density splits to have shorter / predictable names."""
-  for src_path, dst_path in _GenerateDensitySplitPaths(apk_path):
-    shutil.move(src_path, dst_path)
-
-
-def _CheckForMissedConfigs(apk_path, check_density, languages):
-  """Raises an exception if apk_path contains any unexpected configs."""
-  triggers = []
-  if check_density:
-    triggers.extend(re.compile('-%s' % density) for density in _DENSITY_SPLITS)
-  if languages:
-    triggers.extend(re.compile(r'-%s\b' % lang) for lang in languages)
-  with zipfile.ZipFile(apk_path) as main_apk_zip:
-    for name in main_apk_zip.namelist():
-      for trigger in triggers:
-        if trigger.search(name) and not 'mipmap-' in name:
-          raise Exception(('Found config in main apk that should have been ' +
-                           'put into a split: %s\nYou need to update ' +
-                           'package_resources.py to include this new ' +
-                           'config (trigger=%s)') % (name, trigger.pattern))
-
-
 def _CreateLinkApkArgs(options):
   link_command = [
     options.aapt_path + '2',
@@ -614,14 +523,6 @@ def _CreateLinkApkArgs(options):
 
   if options.shared_resources:
     link_command.append('--shared-lib')
-
-  if options.create_density_splits:
-    for config in _DENSITY_SPLITS.itervalues():
-      link_command.extend(('--split', ','.join(config)))
-
-  if options.language_splits:
-    for lang in options.language_splits:
-      link_command.extend(('--split', lang))
 
   if options.locale_whitelist:
     aapt_locales = _ToAaptLocales(
@@ -778,13 +679,6 @@ def _PackageApk(options, dep_subdirs, temp_dir, gen_dir, r_txt_path):
   build_utils.CheckOutput(
       link_command, print_stdout=False, print_stderr=False)
 
-  if options.create_density_splits or options.language_splits:
-    _CheckForMissedConfigs(options.apk_path, options.create_density_splits,
-                          options.language_splits)
-
-  if options.create_density_splits:
-    _RenameDensitySplits(options.apk_path)
-
 
 # _PackageLibrary uses aapt rather than aapt2 because aapt2 compile does not
 # support outputting an R.txt file.
@@ -923,14 +817,6 @@ def main(args):
     options.proguard_file_main_dex,
   ]
   output_paths = [x for x in possible_output_paths if x]
-
-  if options.apk_path and options.create_density_splits:
-    for _, dst_path in _GenerateDensitySplitPaths(options.apk_path):
-      output_paths.append(dst_path)
-  if options.apk_path and options.language_splits:
-    output_paths.extend(
-        _GenerateLanguageSplitOutputPaths(options.apk_path,
-                                          options.language_splits))
 
   # List python deps in input_strings rather than input_paths since the contents
   # of them does not change what gets written to the depsfile.
