@@ -497,14 +497,13 @@ CSSValue* ComputedStyleUtils::ValueForReflection(
 CSSValue* ComputedStyleUtils::MinWidthOrMinHeightAuto(
     Node* styled_node,
     const ComputedStyle& style) {
-  if (styled_node) {
-    Node* parent = styled_node->parentNode();
-    const ComputedStyle* ensured_style =
-        parent ? parent->EnsureComputedStyle() : nullptr;
-    if (ensured_style && ensured_style->IsDisplayFlexibleOrGridBox())
-      return CSSIdentifierValue::Create(CSSValueAuto);
+  LayoutObject* layout_object =
+      styled_node ? styled_node->GetLayoutObject() : nullptr;
+  if (layout_object && layout_object->IsBox() &&
+      (ToLayoutBox(layout_object)->IsFlexItem() ||
+       ToLayoutBox(layout_object)->IsGridItem())) {
+    return CSSIdentifierValue::Create(CSSValueAuto);
   }
-
   return ZoomAdjustedPixelValue(0, style);
 }
 
