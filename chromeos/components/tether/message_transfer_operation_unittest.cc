@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/memory/ptr_util.h"
 #include "base/test/histogram_tester.h"
 #include "base/timer/mock_timer.h"
 #include "chromeos/components/tether/connection_reason.h"

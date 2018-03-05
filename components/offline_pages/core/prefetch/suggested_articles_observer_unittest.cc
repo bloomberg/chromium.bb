@@ -4,6 +4,7 @@
 
 #include "components/offline_pages/core/prefetch/suggested_articles_observer.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_simple_task_runner.h"

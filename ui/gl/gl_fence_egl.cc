@@ -4,6 +4,7 @@
 
 #include "ui/gl/gl_fence_egl.h"
 
+#include "base/memory/ptr_util.h"
 #include "ui/gl/egl_util.h"
 #include "ui/gl/gl_bindings.h"
 

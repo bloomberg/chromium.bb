@@ -4,6 +4,7 @@
 
 #include "chromeos/components/tether/ble_connection_manager.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/default_clock.h"
 #include "chromeos/components/tether/ad_hoc_ble_advertiser.h"

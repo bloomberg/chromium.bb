@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/time/time.h"
 #include "components/rappor/log_uploader.h"

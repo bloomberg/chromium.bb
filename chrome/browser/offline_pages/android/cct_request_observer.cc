@@ -7,6 +7,7 @@
 #include "base/android/callback_android.h"
 #include "base/android/jni_int_wrapper.h"
 #include "base/android/jni_string.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/android/app_hooks.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/offline_page_feature.h"

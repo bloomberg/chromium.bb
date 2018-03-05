@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "components/cryptauth/cryptauth_enroller.h"
 #include "components/cryptauth/fake_cryptauth_device_manager.h"
 #include "components/cryptauth/fake_cryptauth_enrollment_manager.h"

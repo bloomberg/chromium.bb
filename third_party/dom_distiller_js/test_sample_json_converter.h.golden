@@ -3,7 +3,6 @@
 #include "test_sample.pb.h"
 
 // base dependencies
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 
 #include <memory>

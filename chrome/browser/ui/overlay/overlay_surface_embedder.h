@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_OVERLAY_OVERLAY_SURFACE_EMBEDDER_H_
 #define CHROME_BROWSER_UI_OVERLAY_OVERLAY_SURFACE_EMBEDDER_H_
 
+#include <memory>
+
 #include "chrome/browser/ui/overlay/overlay_window.h"
 
 namespace viz {

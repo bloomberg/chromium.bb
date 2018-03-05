@@ -4,6 +4,7 @@
 
 #include "cc/animation/worklet_animation.h"
 
+#include "base/memory/ptr_util.h"
 #include "cc/animation/scroll_timeline.h"
 #include "cc/test/animation_test_common.h"
 #include "cc/test/animation_timelines_test_common.h"

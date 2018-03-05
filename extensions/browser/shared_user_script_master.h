@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_BROWSER_SHARED_USER_SCRIPT_MASTER_H_
 #define EXTENSIONS_BROWSER_SHARED_USER_SCRIPT_MASTER_H_
 
+#include <memory>
 #include <set>
 
 #include "base/macros.h"

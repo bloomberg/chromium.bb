@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/base64.h"
+#include "base/memory/ptr_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/timer/mock_timer.h"
 #include "chromeos/components/tether/connection_reason.h"

@@ -4,6 +4,7 @@
 
 #include "ui/gl/gl_fence_android_native_fence_sync.h"
 
+#include "base/memory/ptr_util.h"
 #include "ui/gfx/gpu_fence_handle.h"
 #include "ui/gl/gl_surface_egl.h"
 
