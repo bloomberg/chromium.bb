@@ -7,13 +7,9 @@
 -AppBackgroundPageNaClTest.BackgroundKeepaliveActive
 -BackgroundXhrTest.HttpAuth
 -BackgroundXhrTest.TlsClientAuth
--BrowserTest.InterstitialCancelsGuestViewDialogs
 -BrowsingDataRemoverBrowserTest.CookieDeletion
 -ChromeSecurityExploitBrowserTest.CreateFilesystemURLInExtensionOrigin
 -ChromeSitePerProcessTest.LaunchExternalProtocolFromSubframe
-# DeclarativeContentApiTest.EnabledForSplitIncognito is flaky.
--DeclarativeContentApiTest.EnabledForSplitIncognito
--DeclarativeContentApiTest.UninstallWhileActivePageAction
 -DevToolsSanityTest.TestRawHeadersWithRedirectAndHSTS
 -DisabledSignInIsolationBrowserTest.SyntheticTrial
 -DomainReliabilityBrowserTest.Upload
@@ -68,15 +64,10 @@
 -TaskManagerBrowserTest.SentDataObserved
 -TaskManagerBrowserTest.TotalSentDataObserved
 -TaskManagerUtilityProcessBrowserTest.UtilityJSHeapMemory
-# This test is flaky.
--WebRtcRtpBrowserTest.TrackAddedToSecondStream
--WebRtcRtpBrowserTest.TrackSwitchingStream
 -WebSocketBrowserTest.WebSocketAppliesHSTS
 -WebSocketBrowserTest.WebSocketBasicAuthInHTTPSURL
 -WebSocketBrowserTest.WebSocketBasicAuthInHTTPURL
 -WebstoreInstallerBrowserTest.SimultaneousInstall
--WebViewTests/WebViewPluginTest.TestLoadPluginInternalResource/0
--WebViewTests/WebViewPluginTest.TestLoadPluginInternalResource/1
 -WebViewTests/WebViewTest.ClearData/0
 -WebViewTests/WebViewTest.ClearData/1
 -WebViewTests/WebViewTest.ClearDataCache/0
@@ -130,8 +121,6 @@
 -DownloadExtensionTest.DownloadExtensionTest_Download_FileSystemURL
 -LoadImageBrowserTest.LoadImage
 -MimeHandlerViewTests/MimeHandlerViewTest.SingleRequest/0
-# Test flakes, don't renable without debugging.
--SessionRestoreTest.RestoreForeignTab
 -PolicyTest.CertificateTransparencyEnforcementDisabledForUrls
 -PolicyTest.ExtensionInstallSources
 -PolicyTest.ForceGoogleSafeSearch
@@ -178,7 +167,6 @@
 # http://crbug.com/783990
 # Add support for http auth.
 -DownloadExtensionTest.DownloadExtensionTest_Download_AuthBasic_Fail
--LoginPromptBrowserTest.BlockCrossdomainPromptForSubresources
 -LoginPromptBrowserTest.CancelLoginInterstitialOnRedirect
 -LoginPromptBrowserTest.NoLoginPromptForFavicon
 -LoginPromptBrowserTest.NoLoginPromptForXHRWithBadCredentials
@@ -385,29 +373,3 @@
 
 # Flakes https://logs.chromium.org/v/?s=chromium%2Fbb%2Fchromium.linux%2FLinux_Tests%2F65817%2F%2B%2Frecipes%2Fsteps%2Fnetwork_service_browser_tests%2F0%2Flogs%2FRestartTest.CookiesClearedOnExit%2F0
 -RestartTest.CookiesClearedOnExit
-
-# Flakes https://logs.chromium.org/v/?s=chromium%2Fbb%2Fchromium.linux%2FLinux_Tests%2F65814%2F%2B%2Frecipes%2Fsteps%2Fnetwork_service_browser_tests%2F0%2Flogs%2FDeclarativeContentApiTest.NotBookmarkedRulesEvaluatedOnBookmarkEvents%2F0
--DeclarativeContentApiTest.NotBookmarkedRulesEvaluatedOnBookmarkEvents
-
-# Flakes https://logs.chromium.org/v/?s=chromium%2Fbb%2Fchromium.linux%2FLinux_Tests%2F65815%2F%2B%2Frecipes%2Fsteps%2Fnetwork_service_browser_tests%2F0%2Flogs%2FDeclarativeContentApiTest.RulesAddedFromManifest%2F0
--DeclarativeContentApiTest.RulesAddedFromManifest
-
-#Flakes https://logs.chromium.org/v/?s=chromium%2Fbb%2Fchromium.linux%2FLinux_Tests%2F65829%2F%2B%2Frecipes%2Fsteps%2Fnetwork_service_browser_tests%2F0%2Flogs%2FDeclarativeContentApiTest.RulesPersistence%2F0
--DeclarativeContentApiTest.RulesPersistence
-
-# Flakes https://logs.chromium.org/v/?s=chromium%2Fbb%2Fchromium.linux%2FLinux_Tests%2F65817%2F%2B%2Frecipes%2Fsteps%2Fnetwork_service_browser_tests%2F0%2Flogs%2FDeclarativeContentApiTest.IsBookmarkedRulesEvaluatedOnBookmarkEvents%2F0
--DeclarativeContentApiTest.IsBookmarkedRulesEvaluatedOnBookmarkEvents
-
-# Flakes https://logs.chromium.org/v/?s=chromium%2Fbb%2Fchromium.linux%2FLinux_Tests%2F65816%2F%2B%2Frecipes%2Fsteps%2Fnetwork_service_browser_tests%2F0%2Flogs%2FNoStatePrefetchBrowserTest__x2f_NoStatePrefetchBrowserTest.ServiceWorkerIntercept__x2f_0%2F0
--NoStatePrefetchBrowserTest/NoStatePrefetchBrowserTest.ServiceWorkerIntercept/*
-
-# Flakes https://logs.chromium.org/v/?s=chromium%2Fbb%2Fchromium.linux%2FLinux_Tests%2F65816%2F%2B%2Frecipes%2Fsteps%2Fnetwork_service_browser_tests%2F0%2Flogs%2FDeclarativeContentApiTest.IsBookmarkedRulesEvaluatedOnBookmarkEvents%2F0
--DeclarativeContentApiTest.IsBookmarkedRulesEvaluatedOnBookmarkEvents
-
-# Flakes due to ExtensionBrowserTest::NavigateInRenderer(), crbug.com/798969
--DeclarativeContentApiTest.DisabledForSpanningIncognito
--DeclarativeContentApiTest.DisabledForSplitIncognito
--DeclarativeContentApiTest.EnabledForSpanningIncognito
--DeclarativeContentApiTest.EnabledForSpanningIncognito
--SetIconAPITest.Overview
-
