@@ -332,17 +332,7 @@ cr.define('print_preview_test', function() {
 
   suite(suiteName, function() {
     suiteSetup(function() {
-      function CloudPrintInterfaceStub() {
-        cr.EventTarget.call(this);
-      }
-      CloudPrintInterfaceStub.prototype = {
-        __proto__: cr.EventTarget.prototype,
-        search: function(isRecent) {}
-      };
-      const oldCpInterfaceEventType = cloudprint.CloudPrintInterfaceEventType;
-      cloudprint.CloudPrintInterface = CloudPrintInterfaceStub;
-      cloudprint.CloudPrintInterfaceEventType = oldCpInterfaceEventType;
-
+      cloudprint.CloudPrintInterface = print_preview.CloudPrintInterfaceStub;
       print_preview.PreviewArea.prototype.checkPluginCompatibility_ =
           function() {
         return true;
@@ -413,13 +403,6 @@ cr.define('print_preview_test', function() {
     test('PrinterListCloudEmpty', function() {
       return setupSettingsAndDestinationsWithCapabilities().then(function() {
         cr.webUIListenerCallback('use-cloud-print', 'cloudprint url', false);
-        const searchDoneEvent =
-            new Event(cloudprint.CloudPrintInterfaceEventType.SEARCH_DONE);
-        searchDoneEvent.printers = [];
-        searchDoneEvent.isRecent = true;
-        searchDoneEvent.email = 'foo@chromium.org';
-        printPreview.cloudPrintInterface_.dispatchEvent(searchDoneEvent);
-
         const recentList =
             $('destination-search').querySelector('.recent-list ul');
         const printList =
@@ -1471,6 +1454,104 @@ cr.define('print_preview_test', function() {
                 mediaDefault.height_microns, ticket.mediaSize.height_microns);
             return nativeLayer.whenCalled('dialogClose');
           });
+    });
+
+    // Test that GCP invalid certificate printers disable the print preview when
+    // selected and display an error and that the preview dialog can be
+    // recovered by selecting a new destination.
+    test('InvalidCertificateError', function() {
+      const fooPrinter = new print_preview.Destination(
+          'FooDevice',
+          print_preview.DestinationType.GOOGLE,
+          print_preview.DestinationOrigin.COOKIES,
+          'FooName',
+          true /* isRecent */,
+          print_preview.DestinationConnectionStatus.ONLINE,
+          {
+            certificateStatus: print_preview.DestinationCertificateStatus.NO,
+          }
+      );
+      const barPrinter = new print_preview.Destination(
+          'BarDevice',
+          print_preview.DestinationType.GOOGLE,
+          print_preview.DestinationOrigin.COOKIES,
+          'BarName',
+          true /* isRecent */,
+          print_preview.DestinationConnectionStatus.ONLINE,
+          {
+            certificateStatus:
+                print_preview.DestinationCertificateStatus.UNKNOWN,
+          }
+      );
+      initialSettings.printerName = '';
+      initialSettings.serializedAppStateStr = JSON.stringify({
+        version: 2,
+        recentDestinations: [
+            print_preview.makeRecentDestination(fooPrinter),
+            print_preview.makeRecentDestination(barPrinter),
+        ],
+      });
+
+      nativeLayer.setInitialSettings(initialSettings);
+      localDestinationInfos = [];
+      nativeLayer.setLocalDestinations(localDestinationInfos);
+      printPreview.userInfo_.setUsers(
+          'foo@chromium.org', ['foo@chromium.org']);
+      printPreview.initialize();
+      cr.webUIListenerCallback('use-cloud-print', 'cloudprint url', false);
+      printPreview.cloudPrintInterface_.setPrinter('FooDevice', fooPrinter);
+      printPreview.cloudPrintInterface_.setPrinter('BarDevice', barPrinter);
+
+      // Get references to a few elements for testing.
+      const printButton = $('print-header').querySelector('button.print');
+      const previewAreaEl = $('preview-area');
+      const overlayEl = previewAreaEl.getElementsByClassName(
+          'preview-area-overlay-layer')[0];
+      const cloudPrintMessageEl =
+          previewAreaEl.
+          getElementsByClassName('preview-area-unsupported-cloud-printer')[0];
+
+      return nativeLayer.whenCalled('getInitialSettings').then(function() {
+        printPreview.destinationStore_.startLoadCloudDestinations();
+
+        // FooDevice will be selected since it is the most recently used
+        // printer, so the invalid certificate error should be shown.
+        // The overlay must be visible for the message to be seen.
+        expectFalse(overlayEl.classList.contains('invisible'));
+
+        // Verify that the correct message is shown.
+        expectFalse(cloudPrintMessageEl.hidden);
+        const expectedMessageStart = 'The selected Google Cloud Print device '
+            + 'is no longer supported. Try setting up the printer in your '
+            + 'computer\'s system settings.';
+        expectTrue(cloudPrintMessageEl.textContent.includes(
+            expectedMessageStart));
+
+        // Verify that the print button is disabled
+        checkElementDisplayed(printButton, true);
+        expectTrue(printButton.disabled);
+
+        // Reset
+        nativeLayer.reset();
+
+        // Select a new, valid cloud destination.
+        printPreview.destinationStore_.selectDestination(barPrinter);
+        return nativeLayer.whenCalled('getPreview');
+      }).then(function() {
+        // Pretend that the plugin has loaded.
+        printPreview.previewArea_.onPluginLoad_();
+        // Has active print button, indicating recovery from error state.
+        expectFalse(printButton.disabled);
+
+        // Note: because in the test it is generally true that the preview
+        // request is resolved before the 200ms timeout to show the loading
+        // message expires, the message element may not be hidden. It will be
+        // hidden the next time a different message, e.g. 'Loading...', is shown
+        // in the overlay. However, if this is the case, the overlay should not
+        // be visible, so that the message is no longer visible to the user.
+        expectTrue(cloudPrintMessageEl.hidden ||
+                   overlayEl.classList.contains('invisible'));
+      });
     });
 
     // Test the preview generator to make sure the generate draft parameter is

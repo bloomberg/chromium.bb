@@ -51,6 +51,7 @@ PrintPreviewUIBrowserTest.prototype = {
 
   extraLibraries: [
     ROOT_PATH + 'ui/webui/resources/js/cr.js',
+    ROOT_PATH + 'ui/webui/resources/js/cr/event_target.js',
     ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js',
     ROOT_PATH + 'third_party/mocha/mocha.js',
     ROOT_PATH + 'chrome/test/data/webui/mocha_adapter.js',
@@ -58,6 +59,7 @@ PrintPreviewUIBrowserTest.prototype = {
     ROOT_PATH + 'chrome/test/data/webui/test_browser_proxy.js',
     'print_preview_tests.js',
     'native_layer_stub.js',
+    'cloud_print_interface_stub.js',
     'plugin_stub.js',
     'print_preview_test_utils.js',
   ],
@@ -118,6 +120,12 @@ PrintPreviewUIBrowserTest.prototype = {
     this.accessibilityIssuesAreErrors = false;
     runMochaTest(print_preview_test.suiteName, testName);
   });
+});
+
+TEST_F('PrintPreviewUIBrowserTest', 'InvalidCertificateError', function() {
+  loadTimeData.overrideValues({isEnterpriseManaged: false});
+  this.accessibilityIssuesAreErrors = false;
+  runMochaTest(print_preview_test.suiteName, 'InvalidCertificateError');
 });
 
 GEN('#if !defined(OS_CHROMEOS)');
