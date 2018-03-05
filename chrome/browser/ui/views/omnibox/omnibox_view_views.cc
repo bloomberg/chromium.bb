@@ -522,15 +522,20 @@ void OmniboxViewViews::ClearAccessibilityLabel() {
   friendly_suggestion_text_prefix_length_ = 0;
 }
 
-bool OmniboxViewViews::UnapplySteadyStateElisions() {
+bool OmniboxViewViews::UnapplySteadyStateElisions(bool home_key_pressed) {
   if (!base::FeatureList::IsEnabled(
           omnibox::kUIExperimentHideSteadyStateUrlSchemeAndSubdomains)) {
     return false;
   }
 
-  // No need to update the text if the user is already inputting text or if
-  // everything is selected.
-  if (model()->user_input_in_progress() || IsSelectAll())
+  // No need to update the text if the user is already inputting text.
+  if (model()->user_input_in_progress())
+    return false;
+
+  // If everything is selected, the user likely does not intend to edit the URL.
+  // But if the Home key is pressed, the user probably does want to interact
+  // with the beginning of the URL - in which case we unelide.
+  if (IsSelectAll() && !home_key_pressed)
     return false;
 
   model()->SetInputInProgress(true);
@@ -587,7 +592,7 @@ bool OmniboxViewViews::OnAfterPossibleChange(bool allow_keyword_ui_change) {
   // keystroke, tap gesture, and caret placement. Ignore selection changes while
   // the mouse is down, as we generally defer handling that until mouse release.
   if (state_changes.selection_differs && !is_mouse_pressed_ &&
-      UnapplySteadyStateElisions()) {
+      UnapplySteadyStateElisions(false)) {
     something_changed = true;
     state_changes.text_differs = true;
   }
@@ -714,7 +719,7 @@ bool OmniboxViewViews::OnMousePressed(const ui::MouseEvent& event) {
   // This ensures that when the user makes a double-click partial select, we
   // perform the unelision at the same time as we make the partial selection,
   // which is on mousedown.
-  if (!select_all_on_mouse_release_ && UnapplySteadyStateElisions())
+  if (!select_all_on_mouse_release_ && UnapplySteadyStateElisions(false))
     TextChanged();
 
   return handled;
@@ -748,7 +753,7 @@ void OmniboxViewViews::OnMouseReleased(const ui::MouseEvent& event) {
   // Make an unelision check on mouse release. This handles the drag selection
   // case, in which we defer uneliding until mouse release.
   is_mouse_pressed_ = false;
-  if (UnapplySteadyStateElisions())
+  if (UnapplySteadyStateElisions(false))
     TextChanged();
 }
 
@@ -1087,14 +1092,18 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
                                : WindowOpenDisposition::CURRENT_TAB,
                            false);
       return true;
+
     case ui::VKEY_ESCAPE:
       return model()->OnEscapeKeyPressed();
+
     case ui::VKEY_CONTROL:
       model()->OnControlKeyChanged(true);
       break;
+
     case ui::VKEY_SHIFT:
       OnShiftKeyChanged(true);
       break;
+
     case ui::VKEY_DELETE:
       if (shift && model()->popup_model()->IsOpen())
         model()->popup_model()->TryDeletingCurrentItem();
@@ -1102,28 +1111,33 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
       delete_at_end_pressed_ = (!event.IsAltDown() && !HasSelection() &&
                                 GetCursorPosition() == text().length());
       break;
+
     case ui::VKEY_UP:
       if (IsTextEditCommandEnabled(ui::TextEditCommand::MOVE_UP)) {
         ExecuteTextEditCommand(ui::TextEditCommand::MOVE_UP);
         return true;
       }
       break;
+
     case ui::VKEY_DOWN:
       if (IsTextEditCommandEnabled(ui::TextEditCommand::MOVE_DOWN)) {
         ExecuteTextEditCommand(ui::TextEditCommand::MOVE_DOWN);
         return true;
       }
       break;
+
     case ui::VKEY_PRIOR:
       if (control || alt || shift)
         return false;
       model()->OnUpOrDownKeyPressed(-1 * model()->result().size());
       return true;
+
     case ui::VKEY_NEXT:
       if (control || alt || shift)
         return false;
       model()->OnUpOrDownKeyPressed(model()->result().size());
       return true;
+
     case ui::VKEY_V:
       if (control && !alt &&
           IsTextEditCommandEnabled(ui::TextEditCommand::PASTE)) {
@@ -1131,6 +1145,7 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
         return true;
       }
       break;
+
     case ui::VKEY_INSERT:
       if (shift && !control &&
           IsTextEditCommandEnabled(ui::TextEditCommand::PASTE)) {
@@ -1138,6 +1153,7 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
         return true;
       }
       break;
+
     case ui::VKEY_BACK:
       // No extra handling is needed in keyword search mode, if there is a
       // non-empty selection, or if the cursor is not leading the text.
@@ -1146,6 +1162,27 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
         return false;
       model()->ClearKeyword();
       return true;
+
+    case ui::VKEY_HOME:
+      // The Home key indicates that the user wants to move the cursor to the
+      // beginning of the full URL, so it should always trigger an unelide.
+      if (UnapplySteadyStateElisions(true)) {
+        if (shift) {
+          // After uneliding, we need to move the end of the selection range
+          // to the beginning of the full unelided URL.
+          size_t start, end;
+          GetSelectionBounds(&start, &end);
+          SelectRange(gfx::Range(start, 0));
+        } else {
+          // After uneliding, move the caret to the beginning of the full
+          // unelided URL.
+          SetCaretPos(0);
+        }
+
+        TextChanged();
+        return true;
+      }
+      break;
 
     default:
       break;
