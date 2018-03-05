@@ -701,7 +701,6 @@
     'remove_from': [
       # chromium.android
       'KitKat Phone Tester (dbg)',
-      'KitKat Phone Tester (rel)',
       'KitKat Tablet Tester',
       'Lollipop Tablet Tester',
       'Marshmallow Tablet Tester',
@@ -722,6 +721,16 @@
       'Android CFI',
     ],
     'modifications': {
+      'KitKat Phone Tester (rel)': {
+        'args': [
+          '--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_cardboard_skipdon_setupcomplete.json',
+          '--additional-apk=//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk',
+        ],
+        'experiement_percentage': 100,
+        'swarming': {
+          'hard_timeout': 1920,
+        },
+      },
       'Lollipop Phone Tester': {
         'args': [
           '--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_cardboard_skipdon_setupcomplete.json',
