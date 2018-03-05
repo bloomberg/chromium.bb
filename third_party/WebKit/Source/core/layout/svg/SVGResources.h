@@ -22,6 +22,7 @@
 
 #include <memory>
 #include "base/macros.h"
+#include "core/layout/svg/LayoutSVGResourceContainer.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/HashSet.h"
 #include "platform/wtf/PtrUtil.h"
@@ -32,7 +33,6 @@ class ComputedStyle;
 class Element;
 class LayoutObject;
 class LayoutSVGResourceClipper;
-class LayoutSVGResourceContainer;
 class LayoutSVGResourceFilter;
 class LayoutSVGResourceMarker;
 class LayoutSVGResourceMasker;
@@ -99,7 +99,8 @@ class SVGResources {
   // Methods operating on all cached resources
   void RemoveClientFromCache(LayoutObject&,
                              bool mark_for_invalidation = true) const;
-  unsigned RemoveClientFromCacheAffectingObjectBounds(LayoutObject&) const;
+  InvalidationModeMask RemoveClientFromCacheAffectingObjectBounds(
+      LayoutObject&) const;
   void ResourceDestroyed(LayoutSVGResourceContainer*);
   void ClearReferencesTo(LayoutSVGResourceContainer*);
 

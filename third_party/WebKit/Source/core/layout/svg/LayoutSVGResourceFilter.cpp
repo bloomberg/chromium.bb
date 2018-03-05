@@ -68,9 +68,9 @@ void LayoutSVGResourceFilter::RemoveAllClientsFromCache(
   // all clients through markAllClientsForInvalidation so no explicit
   // display item invalidation is needed here.
   DisposeFilterMap();
-  MarkAllClientsForInvalidation(mark_for_invalidation
-                                    ? kLayoutAndBoundariesInvalidation
-                                    : kParentOnlyInvalidation);
+  MarkAllClientsForInvalidation(
+      mark_for_invalidation ? kLayoutInvalidation | kBoundariesInvalidation
+                            : kParentOnlyInvalidation);
 }
 
 bool LayoutSVGResourceFilter::RemoveClientFromCache(LayoutObject& client) {

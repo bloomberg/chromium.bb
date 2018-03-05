@@ -38,9 +38,9 @@ void LayoutSVGResourceMasker::RemoveAllClientsFromCache(
     bool mark_for_invalidation) {
   cached_paint_record_.reset();
   mask_content_boundaries_ = FloatRect();
-  MarkAllClientsForInvalidation(mark_for_invalidation
-                                    ? kLayoutAndBoundariesInvalidation
-                                    : kParentOnlyInvalidation);
+  MarkAllClientsForInvalidation(
+      mark_for_invalidation ? kLayoutInvalidation | kBoundariesInvalidation
+                            : kParentOnlyInvalidation);
 }
 
 sk_sp<const PaintRecord> LayoutSVGResourceMasker::CreatePaintRecord(

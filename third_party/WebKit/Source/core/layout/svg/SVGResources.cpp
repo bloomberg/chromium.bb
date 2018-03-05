@@ -327,11 +327,11 @@ void SVGResources::LayoutIfNeeded() {
     linked_resource_->LayoutIfNeeded();
 }
 
-unsigned SVGResources::RemoveClientFromCacheAffectingObjectBounds(
+InvalidationModeMask SVGResources::RemoveClientFromCacheAffectingObjectBounds(
     LayoutObject& client) const {
   if (!clipper_filter_masker_data_)
     return 0;
-  unsigned invalidation_flags = 0;
+  InvalidationModeMask invalidation_flags = 0;
   if (LayoutSVGResourceClipper* clipper = clipper_filter_masker_data_->clipper)
     clipper->RemoveClientFromCache(client);
   if (LayoutSVGResourceFilter* filter = clipper_filter_masker_data_->filter) {
@@ -363,7 +363,7 @@ void SVGResources::RemoveClientFromCache(LayoutObject& client,
     return;
   }
 
-  unsigned invalidation_flags =
+  InvalidationModeMask invalidation_flags =
       RemoveClientFromCacheAffectingObjectBounds(client);
 
   if (marker_data_) {
