@@ -49,10 +49,10 @@ class PLATFORM_EXPORT WorkQueue {
   void AsValueInto(base::TimeTicks now,
                    base::trace_event::TracedValue* state) const;
 
-  // Returns true if the |work_queue_| is empty. This method ignores any fences.
-  bool Empty() const { return work_queue_.empty(); }
+  // Returns true if the |tasks_| is empty. This method ignores any fences.
+  bool Empty() const { return tasks_.empty(); }
 
-  // If the |work_queue_| isn't empty and a fence hasn't been reached,
+  // If the |tasks_| isn't empty and a fence hasn't been reached,
   // |enqueue_order| gets set to the enqueue order of the front task and the
   // function returns true. Otherwise the function returns false.
   bool GetFrontTaskEnqueueOrder(EnqueueOrder* enqueue_order) const;
@@ -65,23 +65,23 @@ class PLATFORM_EXPORT WorkQueue {
   // method ignores any fences.
   const TaskQueueImpl::Task* GetBackTask() const;
 
-  // Pushes the task onto the |work_queue_| and if a fence hasn't been reached
+  // Pushes the task onto the |tasks_| and if a fence hasn't been reached
   // it informs the WorkQueueSets if the head changed.
   void Push(TaskQueueImpl::Task task);
 
-  // Pushes the task onto the front of the |work_queue_| and if it's before any
+  // Pushes the task onto the front of the |tasks_| and if it's before any
   // fence it informs the WorkQueueSets the head changed. Use with caution this
   // API can easily lead to task starvation if misused.
   void PushNonNestableTaskToFront(TaskQueueImpl::Task task);
 
-  // Reloads the empty |work_queue_| with
+  // Reloads the empty |tasks_| with
   // |task_queue_->TakeImmediateIncomingQueue| and if a fence hasn't been
   // reached it informs the WorkQueueSets if the head changed.
   void ReloadEmptyImmediateQueue();
 
-  size_t Size() const { return work_queue_.size(); }
+  size_t Size() const { return tasks_.size(); }
 
-  // Pulls a task off the |work_queue_| and informs the WorkQueueSets.  If the
+  // Pulls a task off the |tasks_| and informs the WorkQueueSets.  If the
   // task removed had an enqueue order >= the current fence then WorkQueue
   // pretends to be empty as far as the WorkQueueSets is concerned.
   TaskQueueImpl::Task TakeTaskFromWorkQueue();
@@ -137,7 +137,7 @@ class PLATFORM_EXPORT WorkQueue {
  private:
   bool InsertFenceImpl(EnqueueOrder fence);
 
-  TaskQueueImpl::TaskDeque work_queue_;
+  TaskQueueImpl::TaskDeque tasks_;
   WorkQueueSets* work_queue_sets_ = nullptr;  // NOT OWNED.
   TaskQueueImpl* const task_queue_;           // NOT OWNED.
   size_t work_queue_set_index_ = 0;
