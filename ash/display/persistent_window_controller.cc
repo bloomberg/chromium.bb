@@ -36,7 +36,7 @@ bool ShouldProcessWindowList() {
   }
 
   // Window cycle list exists in active user session only.
-  if (Shell::Get()->session_controller()->IsUserSessionBlocked())
+  if (!Shell::Get()->session_controller()->IsActiveUserSessionStarted())
     return false;
 
   if (GetDisplayManager()->IsInMirrorMode())
