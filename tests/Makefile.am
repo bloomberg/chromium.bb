@@ -184,6 +184,7 @@ dist_braille_specs_TESTS =				  \
 	braille-specs/sk-g1_harness.yaml		  \
 	braille-specs/sr-g1_harness.yaml		  \
 	braille-specs/ta-ta-g1_harness.yaml		  \
+	braille-specs/uk.yaml				  \
 	braille-specs/vi-g1_backward.yaml		  \
 	braille-specs/vi-g1_harness.yaml		  \
 	braille-specs/zh-chn.yaml
@@ -219,6 +220,7 @@ dist_yaml_TESTS =			  \
 	yaml/multipass-backward.yaml	  \
 	yaml/multipass-forward.yaml	  \
 	yaml/multipass.yaml		  \
+	yaml/multipass-negation.yaml	  \
 	yaml/new_emph.yaml		  \
 	yaml/nocross_harness.yaml	  \
 	yaml/noletsignafter.yaml	  \

@@ -309,6 +309,7 @@ table_files = \
 	ru-litbrl.ctb \
 	ru-ru.dis \
 	ru-ru-g1.utb \
+	ru-unicode.dis \
 	ru.tbl \
 	sa-in-g1.utb \
 	sa.tbl \
@@ -348,6 +349,7 @@ table_files = \
 	tr-g1.ctb \
 	tr.tbl \
 	tsn-za-g1.ctb \
+	uk.utb \
 	ukchardefs.cti \
 	ukmaths.ctb \
 	ukmaths_edit.ctb \

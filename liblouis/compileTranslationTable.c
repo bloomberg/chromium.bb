@@ -4018,10 +4018,13 @@ doOpcode:
 				ok = 0;
 		}
 		if (getToken(nested, &token, "character class name", &lastToken)) {
-			if ((class = findCharacterClass(&token, *characterClasses))) {
-				compileError(nested, "character class already defined.");
-			} else if ((class = addCharacterClass(nested, &token.chars[0], token.length,
-								characterClasses, characterClassAttribute))) {
+			class = findCharacterClass(&token, *characterClasses);
+			if (!class)
+				// no class with that name: create one
+				class = addCharacterClass(nested, &token.chars[0], token.length,
+						characterClasses, characterClassAttribute);
+			if (class) {
+				// there is a class with that name or a new class was successfully created
 				if (getCharacters(nested, &characters, &lastToken)) {
 					int index;
 					for (index = 0; index < characters.length; ++index) {

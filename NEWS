@@ -5,12 +5,17 @@ For a detailed list of all the changes refer to [[https://github.com/liblouis/li
 issues]].
 
 ** New features
+- The same name can now be used in more than one ~class~ rule. The
+  effect is that both set of characters become part of that one class.
 
 ** Bug fixes
 - Fix a regression in inputPositions thanks to Bert Frees
 - Treat characters within the range ~compbrlStart~ and ~compbrlEnd~ as
   a special case. This fixes many if not most of the problems with
   cursor position and the ~compbrlAtCursor~ mode. Thanks to Dave Mielke.
+- Fix ~swapdd~ opcode thanks to Bert Frees
+- Fix negation of attribute matcher in multipass expressions thanks to
+  Bert Frees
 
 ** Braille table improvements
 - Add a display table that maps braille dots to brl/brf character set.
@@ -34,6 +39,7 @@ issues]].
 - Minor updates to the Danish tables thanks to Bue Vester-Andersen
 - Fix back translation of numbers in Dutch, Finnish and Canadian
   French, thanks to Leonard de Ruijter.
+- New table for Ukrainian thanks to Sergiy Moskalets.
 
 ** Other changes
 *** Improved documentation
@@ -78,6 +84,7 @@ liblouis. Thanks to Bert Frees.
 *** New
 - IPA-unicode-range.uti
 - mn-MN-g2.ctb
+- uk.utb
 *** Renamed
 - mn-MN.utb -> mn-MN-g1.utb
 *** Removed

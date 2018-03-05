@@ -808,8 +808,9 @@ main(int argc, char *argv[]) {
 	// FIXME: problem with this is that
 	// LOUIS_TABLEPATH=$(top_srcdir)/tables,... does not work anymore because
 	// $(top_srcdir) == .. (not an absolute path)
-	if (chdir(dir_name))
-		error(EXIT_FAILURE, EIO, "Cannot change directory to %s", dir_name);
+	if (i > 0)
+		if (chdir(dir_name))
+			error(EXIT_FAILURE, EIO, "Cannot change directory to %s", dir_name);
 
 	// register custom table resolver
 	lou_registerTableResolver(&customTableResolver);
