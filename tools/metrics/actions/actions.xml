@@ -15981,6 +15981,30 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="RelaunchRequiredShown">
+  <owner>grt@chromium.org</owner>
+  <description>
+    A dialog was shown to the user to indicate that their administrator requires
+    that Chrome be relaunched.
+  </description>
+</action>
+
+<action name="RelaunchRequired_Accept">
+  <owner>grt@chromium.org</owner>
+  <description>
+    The user accepted to relaunch Chrome in response to a dialog indicating that
+    their administrator required that Chrome be relaunched.
+  </description>
+</action>
+
+<action name="RelaunchRequired_Close">
+  <owner>grt@chromium.org</owner>
+  <description>
+    The dialog indicating to the user that their administrator requires a
+    browser relaunch was closed by the user.
+  </description>
+</action>
+
 <action name="Reload">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

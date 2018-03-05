@@ -496,6 +496,17 @@ base::TimeDelta UpgradeDetectorImpl::GetHighAnnoyanceLevelDelta() {
   return high_threshold_ - elevated_threshold_;
 }
 
+base::TimeTicks UpgradeDetectorImpl::GetHighAnnoyanceDeadline() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  InitializeThresholds();
+  const base::TimeTicks detected_time = upgrade_detected_time();
+  if (detected_time.is_null())
+    return detected_time;
+  // While dev and canary will never reach high annoyance (see comment in
+  // NotifyOnUpgradeWithTimePassed), they do obey its default deadline.
+  return detected_time + high_threshold_;
+}
+
 // static
 UpgradeDetector* UpgradeDetector::GetInstance() {
   return UpgradeDetectorImpl::GetInstance();
