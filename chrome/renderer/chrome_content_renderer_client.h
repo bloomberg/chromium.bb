@@ -193,6 +193,7 @@ class ChromeContentRendererClient
   bool IsPluginAllowedToUseCompositorAPI(const GURL& url) override;
   content::BrowserPluginDelegate* CreateBrowserPluginDelegate(
       content::RenderFrame* render_frame,
+      const content::WebPluginInfo& info,
       const std::string& mime_type,
       const GURL& original_url) override;
   void RecordRappor(const std::string& metric,

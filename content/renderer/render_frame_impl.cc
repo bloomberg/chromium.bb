@@ -2844,7 +2844,7 @@ blink::WebPlugin* RenderFrameImpl::CreatePlugin(
     // |delegate| deletes itself.
     BrowserPluginDelegate* delegate =
         GetContentClient()->renderer()->CreateBrowserPluginDelegate(
-            this, params.mime_type.Utf8(), GURL(params.url));
+            this, info, params.mime_type.Utf8(), GURL(params.url));
     return BrowserPluginManager::Get()->CreateBrowserPlugin(
         this, delegate->GetWeakPtr());
   }
@@ -3458,7 +3458,7 @@ blink::WebPlugin* RenderFrameImpl::CreatePlugin(
     // |delegate| deletes itself.
     BrowserPluginDelegate* delegate =
         GetContentClient()->renderer()->CreateBrowserPluginDelegate(
-            this, kBrowserPluginMimeType, GURL(params.url));
+            this, WebPluginInfo(), kBrowserPluginMimeType, GURL(params.url));
     return BrowserPluginManager::Get()->CreateBrowserPlugin(
         this, delegate->GetWeakPtr());
   }

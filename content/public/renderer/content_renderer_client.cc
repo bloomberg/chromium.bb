@@ -236,6 +236,7 @@ bool ContentRendererClient::IsPluginAllowedToUseDevChannelAPIs() {
 
 BrowserPluginDelegate* ContentRendererClient::CreateBrowserPluginDelegate(
     RenderFrame* render_frame,
+    const WebPluginInfo& info,
     const std::string& mime_type,
     const GURL& original_url) {
   return nullptr;

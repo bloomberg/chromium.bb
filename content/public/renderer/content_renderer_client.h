@@ -66,6 +66,7 @@ class BrowserPluginDelegate;
 class MediaStreamRendererFactory;
 class RenderFrame;
 class RenderView;
+struct WebPluginInfo;
 
 // Embedder API for participating in renderer logic.
 class CONTENT_EXPORT ContentRendererClient {
@@ -107,6 +108,7 @@ class CONTENT_EXPORT ContentRendererClient {
   // Creates a delegate for browser plugin.
   virtual BrowserPluginDelegate* CreateBrowserPluginDelegate(
       RenderFrame* render_frame,
+      const WebPluginInfo& info,
       const std::string& mime_type,
       const GURL& original_url);
 

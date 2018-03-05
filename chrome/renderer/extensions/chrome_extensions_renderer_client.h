@@ -25,6 +25,7 @@ class WebURL;
 namespace content {
 class BrowserPluginDelegate;
 class RenderFrame;
+struct WebPluginInfo;
 }
 
 namespace extensions {
@@ -73,6 +74,7 @@ class ChromeExtensionsRendererClient
                          bool* send_referrer);
   static content::BrowserPluginDelegate* CreateBrowserPluginDelegate(
       content::RenderFrame* render_frame,
+      const content::WebPluginInfo& info,
       const std::string& mime_type,
       const GURL& original_url);
   static blink::WebFrame* FindFrame(blink::WebLocalFrame* relative_to_frame,

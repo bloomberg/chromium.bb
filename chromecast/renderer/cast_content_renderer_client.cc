@@ -174,6 +174,7 @@ void CastContentRendererClient::RenderFrameCreated(
 content::BrowserPluginDelegate*
 CastContentRendererClient::CreateBrowserPluginDelegate(
     content::RenderFrame* render_frame,
+    const content::WebPluginInfo& info,
     const std::string& mime_type,
     const GURL& original_url) {
 #if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)

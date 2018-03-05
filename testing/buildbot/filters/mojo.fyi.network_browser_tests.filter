@@ -218,39 +218,20 @@
 
 # http://crbug.com/705114
 # Remove streams concept from code and replace with data pipe passing.
--ChromeAcceptHeaderTest.Check
--ChromeSitePerProcessPDFTest.EmbeddedPDFInsideCrossOriginFrame
--ExecuteScriptApiTest/DestructiveScriptTest.MacrotaskRemoval/0
--ExecuteScriptApiTest/DestructiveScriptTest.MicrotaskRemoval/0
--ExecuteScriptApiTest/DestructiveScriptTest.SynchronousRemoval/0
--ExtensionApiTest.TemporaryAddressSpoof
 -MimeHandlerViewTests/MimeHandlerViewTest.Abort/0
 -MimeHandlerViewTests/MimeHandlerViewTest.Abort/1
 -MimeHandlerViewTests/MimeHandlerViewTest.DataUrl/0
 -MimeHandlerViewTests/MimeHandlerViewTest.DataUrl/1
--MimeHandlerViewTests/MimeHandlerViewTest.Embedded/0
--MimeHandlerViewTests/MimeHandlerViewTest.Embedded/1
 -MimeHandlerViewTests/MimeHandlerViewTest.EmbeddedDataUrlEmbed/0
 -MimeHandlerViewTests/MimeHandlerViewTest.EmbeddedDataUrlEmbed/1
 -MimeHandlerViewTests/MimeHandlerViewTest.EmbeddedDataUrlLong/0
 -MimeHandlerViewTests/MimeHandlerViewTest.EmbeddedDataUrlLong/1
 -MimeHandlerViewTests/MimeHandlerViewTest.EmbeddedDataUrlObject/0
 -MimeHandlerViewTests/MimeHandlerViewTest.EmbeddedDataUrlObject/1
--MimeHandlerViewTests/MimeHandlerViewTest.Iframe/0
--MimeHandlerViewTests/MimeHandlerViewTest.PostMessage/0
--MimeHandlerViewTests/MimeHandlerViewTest.PostMessage/1
--MimeHandlerViewTests/MimeHandlerViewTest.ResizeBeforeAttach/0
--MimeHandlerViewTests/MimeHandlerViewTest.ResizeBeforeAttach/1
 -MimeHandlerViewTests/MimeHandlerViewTest.SingleRequest/0
 -MimeHandlerViewTests/MimeHandlerViewTest.SingleRequest/1
--PDFExtensionTest.ContextMenuCoordinates
--PDFExtensionTest.EnsureCrossOriginRepliesBlocked
--PDFExtensionTest.PdfAccessibilityWordBoundaries
--PDFExtensionTest.PostMessageForZeroSizedEmbed
--PDFExtensionTest.TabTitleWithEmbeddedPdf
 -PrerenderBrowserTestWithExtensions.StreamsTest
 -SaveType/SavePageOriginalVsSavedComparisonTest.ObjectElementsViaFile/0
--SaveType/SavePageOriginalVsSavedComparisonTest.ObjectElementsViaHttp/0
 -StreamsPrivateApiTest.Abort
 -StreamsPrivateApiTest.FileURL
 -StreamsPrivateApiTest.Headers
