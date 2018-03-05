@@ -13,6 +13,8 @@
 namespace ui {
 namespace ws {
 
+// See comments in README.md (services/ui/ws/README.md) for details on ids.
+
 // A client id used to indicate no client. That is, no WindowTree ever gets this
 // id.
 const ClientSpecificId kInvalidClientId = 0;
