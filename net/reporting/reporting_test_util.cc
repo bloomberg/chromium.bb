@@ -124,9 +124,25 @@ bool TestReportingDelegate::CanQueueReport(const url::Origin& origin) const {
 void TestReportingDelegate::CanSendReports(
     std::set<url::Origin> origins,
     base::OnceCallback<void(std::set<url::Origin>)> result_callback) const {
+  if (pause_permissions_check_) {
+    saved_origins_ = std::move(origins);
+    permissions_check_callback_ = std::move(result_callback);
+    return;
+  }
+
   if (disallow_report_uploads_)
     origins.clear();
   std::move(result_callback).Run(std::move(origins));
+}
+
+bool TestReportingDelegate::PermissionsCheckPaused() const {
+  return !permissions_check_callback_.is_null();
+}
+
+void TestReportingDelegate::ResumePermissionsCheck() {
+  if (disallow_report_uploads_)
+    saved_origins_.clear();
+  std::move(permissions_check_callback_).Run(std::move(saved_origins_));
 }
 
 bool TestReportingDelegate::CanSetClient(const url::Origin& origin,

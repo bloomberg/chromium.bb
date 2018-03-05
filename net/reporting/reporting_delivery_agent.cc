@@ -6,6 +6,7 @@
 
 #include <map>
 #include <string>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -77,14 +78,13 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
  private:
   class Delivery {
    public:
-    Delivery(const GURL& endpoint,
-             const std::vector<const ReportingReport*>& reports)
-        : endpoint(endpoint), reports(reports) {}
+    Delivery(const GURL& endpoint, std::vector<const ReportingReport*> reports)
+        : endpoint(endpoint), reports(std::move(reports)) {}
 
     ~Delivery() = default;
 
     const GURL endpoint;
-    const std::vector<const ReportingReport*> reports;
+    std::vector<const ReportingReport*> reports;
   };
 
   using OriginGroup = std::pair<url::Origin, std::string>;
@@ -110,7 +110,12 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
 
   void SendReports() {
     std::vector<const ReportingReport*> reports;
-    cache()->GetReports(&reports);
+    cache()->GetNonpendingReports(&reports);
+
+    // Mark all of these reports as pending, so that they're not deleted out
+    // from under us while we're checking permissions (possibly on another
+    // thread).
+    cache()->SetReportsPending(reports);
 
     // First determine which origins we're allowed to upload reports about.
     std::set<url::Origin> origins;
@@ -125,26 +130,16 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
 
   void OnSendPermissionsChecked(std::vector<const ReportingReport*> reports,
                                 std::set<url::Origin> allowed_origins) {
-    std::vector<const ReportingReport*> disallowed_reports;
-
     // Sort reports into (origin, group) buckets.
     std::map<OriginGroup, std::vector<const ReportingReport*>>
         origin_group_reports;
     for (const ReportingReport* report : reports) {
       url::Origin origin = url::Origin::Create(report->url);
-      if (allowed_origins.find(origin) == allowed_origins.end()) {
-        disallowed_reports.push_back(report);
+      if (allowed_origins.find(origin) == allowed_origins.end())
         continue;
-      }
       OriginGroup origin_group(origin, report->group);
       origin_group_reports[origin_group].push_back(report);
     }
-
-    // Remove from the cache any reports that we're not allowed to upload.
-    cache()->RemoveReports(
-        disallowed_reports,
-        ReportingReport::Outcome::ERASED_NO_BACKGROUND_SYNC_PERMISSION);
-    disallowed_reports.clear();
 
     // Find endpoint for each (origin, group) bucket and sort reports into
     // endpoint buckets. Don't allow concurrent deliveries to the same (origin,
@@ -170,23 +165,34 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
       pending_origin_groups_.insert(origin_group);
     }
 
+    // Keep track of which of these reports we don't queue for delivery; we'll
+    // need to mark them as not-pending.
+    std::unordered_set<const ReportingReport*> undelivered_reports(
+        reports.begin(), reports.end());
+
     // Start a delivery to each endpoint.
     for (auto& it : endpoint_reports) {
       const GURL& endpoint = it.first;
       const std::vector<const ReportingReport*>& reports = it.second;
 
       endpoint_manager()->SetEndpointPending(endpoint);
-      cache()->SetReportsPending(reports);
 
       std::string json;
       SerializeReports(reports, tick_clock()->NowTicks(), &json);
 
+      for (const ReportingReport* report : reports)
+        undelivered_reports.erase(report);
+
       uploader()->StartUpload(
           endpoint, json,
-          base::BindOnce(&ReportingDeliveryAgentImpl::OnUploadComplete,
-                         weak_factory_.GetWeakPtr(),
-                         std::make_unique<Delivery>(endpoint, reports)));
+          base::BindOnce(
+              &ReportingDeliveryAgentImpl::OnUploadComplete,
+              weak_factory_.GetWeakPtr(),
+              std::make_unique<Delivery>(endpoint, std::move(reports))));
     }
+
+    cache()->ClearReportsPending(
+        {undelivered_reports.begin(), undelivered_reports.end()});
   }
 
   void OnUploadComplete(const std::unique_ptr<Delivery>& delivery,

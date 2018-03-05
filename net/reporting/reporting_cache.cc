@@ -100,6 +100,17 @@ class ReportingCacheImpl : public ReportingCache {
     }
   }
 
+  void GetNonpendingReports(
+      std::vector<const ReportingReport*>* reports_out) const override {
+    reports_out->clear();
+    for (const auto& it : reports_) {
+      if (!base::ContainsKey(pending_reports_, it.first) &&
+          !base::ContainsKey(doomed_reports_, it.first)) {
+        reports_out->push_back(it.second.get());
+      }
+    }
+  }
+
   void SetReportsPending(
       const std::vector<const ReportingReport*>& reports) override {
     for (const ReportingReport* report : reports) {

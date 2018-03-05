@@ -149,10 +149,10 @@ TEST_F(ReportingDeliveryAgentTest, DisallowedUpload) {
   // for this origin.
   EXPECT_TRUE(pending_uploads().empty());
 
-  // Disallowed reports should have been removed from the cache.
+  // Disallowed reports should NOT have been removed from the cache.
   std::vector<const ReportingReport*> reports;
   cache()->GetReports(&reports);
-  EXPECT_TRUE(reports.empty());
+  EXPECT_EQ(1u, reports.size());
 }
 
 TEST_F(ReportingDeliveryAgentTest, RemoveEndpointUpload) {
@@ -216,6 +216,47 @@ TEST_F(ReportingDeliveryAgentTest, ConcurrentRemove) {
   EXPECT_TRUE(cache()->IsReportDoomedForTesting(report));
 
   // Completing upload shouldn't crash, and report should still be gone.
+  pending_uploads()[0]->Complete(ReportingUploader::Outcome::SUCCESS);
+  cache()->GetReports(&reports);
+  EXPECT_TRUE(reports.empty());
+  // This is slightly sketchy since |report| has been freed, but it nonetheless
+  // should not be in the set of doomed reports.
+  EXPECT_FALSE(cache()->IsReportDoomedForTesting(report));
+}
+
+TEST_F(ReportingDeliveryAgentTest, ConcurrentRemoveDuringPermissionsCheck) {
+  // Pause the permissions check, so that we can try to remove some reports
+  // while we're in the middle of verifying that we can upload them.  (This is
+  // similar to the previous test, but removes the reports during a different
+  // part of the upload process.)
+  context()->test_delegate()->set_pause_permissions_check(true);
+
+  SetClient(kOrigin_, kEndpoint_, kGroup_);
+  cache()->AddReport(kUrl_, kGroup_, kType_,
+                     std::make_unique<base::DictionaryValue>(),
+                     tick_clock()->NowTicks(), 0);
+
+  EXPECT_TRUE(delivery_timer()->IsRunning());
+  delivery_timer()->Fire();
+  ASSERT_TRUE(context()->test_delegate()->PermissionsCheckPaused());
+
+  // Remove the report while the upload is running.
+  std::vector<const ReportingReport*> reports;
+  cache()->GetReports(&reports);
+  EXPECT_EQ(1u, reports.size());
+
+  const ReportingReport* report = reports[0];
+  EXPECT_FALSE(cache()->IsReportDoomedForTesting(report));
+
+  // Report should appear removed, even though the cache has doomed it.
+  cache()->RemoveReports(reports, ReportingReport::Outcome::UNKNOWN);
+  cache()->GetReports(&reports);
+  EXPECT_TRUE(reports.empty());
+  EXPECT_TRUE(cache()->IsReportDoomedForTesting(report));
+
+  // Completing upload shouldn't crash, and report should still be gone.
+  context()->test_delegate()->ResumePermissionsCheck();
+  ASSERT_EQ(1u, pending_uploads().size());
   pending_uploads()[0]->Complete(ReportingUploader::Outcome::SUCCESS);
   cache()->GetReports(&reports);
   EXPECT_TRUE(reports.empty());
