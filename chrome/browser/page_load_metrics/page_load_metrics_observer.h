@@ -187,9 +187,9 @@ struct PageLoadExtraInfo {
   // better abstraction. Note that this is an approximation.
   UserInitiatedInfo page_end_user_initiated_info;
 
-  // Total lifetime of the page from the user standoint, starting at navigation
-  // start. The page lifetime ends when the first of the following events
-  // happen:
+  // Total lifetime of the page from the user's standpoint, starting at
+  // navigation start. The page lifetime ends when the first of the following
+  // events happen:
   // * the load of the main resource fails
   // * the page load is stopped
   // * the tab hosting the page is closed
