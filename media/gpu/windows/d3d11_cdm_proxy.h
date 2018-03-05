@@ -18,6 +18,8 @@
 
 namespace media {
 
+class D3D11CdmContext;
+
 // This is a CdmProxy implementation that uses D3D11.
 class MEDIA_GPU_EXPORT D3D11CdmProxy : public CdmProxy {
  public:
@@ -37,12 +39,17 @@ class MEDIA_GPU_EXPORT D3D11CdmProxy : public CdmProxy {
                                       D3D_FEATURE_LEVEL*,
                                       ID3D11DeviceContext**)>;
 
-  // |crypto_type| is the ID that should be using to do crypto session
-  // operations. This includes creating a crypto session with
-  // ID3D11VideoDevice::CreateCryptoSession(). In other words this is the
-  // value passed to D3D11 functions that take 'pCryptoType'.
-  // |protocol| determines what protocol this is operating in. This value is
-  // passed to callbacks that require a protocol enum value.
+  // |crypto_type| is the ID that is used to do crypto session operations. This
+  // includes creating a crypto session with
+  // ID3D11VideoDevice::CreateCryptoSession(). This is "a GUID that specifies
+  // the type of encryption to use".
+  // https://msdn.microsoft.com/en-us/library/windows/desktop/hh447785(v=vs.85).aspx
+  // This is also used ot call
+  // ID3D11VideoDevice1::GetCryptoSessionPrivateDataSize(). It "Indicates the
+  // crypto type for which the private input and output size is queried."
+  // https://msdn.microsoft.com/en-us/library/windows/desktop/dn894143(v=vs.85).aspx
+  // |protocol| determines what protocol this is operating in. This
+  // value is passed to callbacks that require a protocol enum value.
   // |function_id_map| maps Function enum to an integer.
   D3D11CdmProxy(const GUID& crypto_type,
                 CdmProxy::Protocol protocol,
@@ -72,26 +79,11 @@ class MEDIA_GPU_EXPORT D3D11CdmProxy : public CdmProxy {
   template <typename T>
   using ComPtr = Microsoft::WRL::ComPtr<T>;
 
-  // A structure to keep the data passed to SetKey(). See documentation for
-  // SetKey() for what the fields mean.
-  // TODO(rkuroiwa): Move this to D3D11CdmContext (or whatever class that would
-  // be added) that this class will inherit to provide the key information to
-  // the decoder.
-  struct KeyInfo {
-    KeyInfo();
-    KeyInfo(uint32_t crypto_session_id,
-            std::vector<uint8_t> key_id,
-            std::vector<uint8_t> key_blob);
-    KeyInfo(const KeyInfo&);
-    ~KeyInfo();
-    uint32_t crypto_session_id;
-    std::vector<uint8_t> key_id;
-    std::vector<uint8_t> key_blob;
-  };
-
-  const GUID stream_id_;
+  const GUID crypto_type_;
   const CdmProxy::Protocol protocol_;
   const FunctionIdMap function_id_map_;
+
+  std::unique_ptr<D3D11CdmContext> cdm_context_;
 
   // Implmenenting this class does not require this to be a callback. But in
   // order to inject D3D11CreateDevice() function for testing, this member is
@@ -123,9 +115,6 @@ class MEDIA_GPU_EXPORT D3D11CdmProxy : public CdmProxy {
   // Used when calling NegotiateCryptoSessionKeyExchange.
   UINT private_input_size_ = 0;
   UINT private_output_size_ = 0;
-
-  // Maps key ID to KeyInfo.
-  std::map<std::vector<uint8_t>, KeyInfo> key_info_map_;
 
   DISALLOW_COPY_AND_ASSIGN(D3D11CdmProxy);
 };

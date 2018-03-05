@@ -9,36 +9,125 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "media/base/cdm_context.h"
+#include "media/base/cdm_proxy_context.h"
 
 namespace media {
 
-D3D11CdmProxy::KeyInfo::KeyInfo() = default;
+namespace {
 
-D3D11CdmProxy::KeyInfo::KeyInfo(uint32_t crypto_session_id,
-                                std::vector<uint8_t> key_id,
-                                std::vector<uint8_t> key_blob)
-    : crypto_session_id(crypto_session_id),
-      key_id(std::move(key_id)),
-      key_blob(std::move(key_blob)) {}
+class D3D11CdmProxyContext : public CdmProxyContext {
+ public:
+  explicit D3D11CdmProxyContext(const GUID& key_info_guid)
+      : key_info_guid_(key_info_guid) {}
+  ~D3D11CdmProxyContext() override = default;
 
-D3D11CdmProxy::KeyInfo::KeyInfo(const KeyInfo&) = default;
+  // The pointers are owned by the caller.
+  void SetKey(ID3D11CryptoSession* crypto_session,
+              const std::vector<uint8_t>& key_id,
+              const std::vector<uint8_t>& key_blob) {
+    std::string key_id_str(key_id.begin(), key_id.end());
+    KeyInfo key_info(crypto_session, key_blob);
+    // Note that this would overwrite an entry but it is completely valid, e.g.
+    // updating the keyblob due to a configuration change.
+    key_info_map_[key_id_str] = std::move(key_info);
+  }
 
-D3D11CdmProxy::KeyInfo::~KeyInfo() {}
+  void RemoveKey(ID3D11CryptoSession* crypto_session,
+                 const std::vector<uint8_t>& key_id) {
+    std::string key_id_str(key_id.begin(), key_id.end());
+    key_info_map_.erase(key_id_str);
+  }
 
-D3D11CdmProxy::D3D11CdmProxy(const GUID& stream_id,
+  // CdmProxyContext implementation.
+  base::Optional<D3D11DecryptContext> GetD3D11DecryptContext(
+      const std::string& key_id) override {
+    auto key_info_it = key_info_map_.find(key_id);
+    if (key_info_it == key_info_map_.end())
+      return base::nullopt;
+
+    auto& key_info = key_info_it->second;
+    D3D11DecryptContext context = {};
+    context.crypto_session = key_info.crypto_session;
+    context.key_blob = key_info.key_blob.data();
+    context.key_blob_size = key_info.key_blob.size();
+    context.key_info_guid = key_info_guid_;
+    return context;
+  }
+
+ private:
+  // A structure to keep the data passed to SetKey(). See documentation for
+  // SetKey() for what the fields mean.
+  struct KeyInfo {
+    KeyInfo() = default;
+    KeyInfo(ID3D11CryptoSession* crypto_session, std::vector<uint8_t> key_blob)
+        : crypto_session(crypto_session), key_blob(std::move(key_blob)) {}
+    KeyInfo(const KeyInfo&) = default;
+    ~KeyInfo() = default;
+    ID3D11CryptoSession* crypto_session;
+    std::vector<uint8_t> key_blob;
+  };
+
+  // Maps key ID to KeyInfo.
+  // The key ID's type is string, which is converted from |key_id| in
+  // SetKey(). It's better to use string here rather than convert
+  // vector<uint8_t> to string every time in GetD3D11DecryptContext() because
+  // in most cases it would be called more often than SetKey() and RemoveKey()
+  // combined.
+  std::map<std::string, KeyInfo> key_info_map_;
+
+  const GUID key_info_guid_;
+
+  DISALLOW_COPY_AND_ASSIGN(D3D11CdmProxyContext);
+};
+
+}  // namespace
+
+class D3D11CdmContext : public CdmContext {
+ public:
+  explicit D3D11CdmContext(const GUID& key_info_guid)
+      : cdm_proxy_context_(key_info_guid), weak_factory_(this) {}
+  ~D3D11CdmContext() override = default;
+
+  // The pointers are owned by the caller.
+  void SetKey(ID3D11CryptoSession* crypto_session,
+              const std::vector<uint8_t>& key_id,
+              const std::vector<uint8_t>& key_blob) {
+    cdm_proxy_context_.SetKey(crypto_session, key_id, key_blob);
+  }
+  void RemoveKey(ID3D11CryptoSession* crypto_session,
+                 const std::vector<uint8_t>& key_id) {
+    cdm_proxy_context_.RemoveKey(crypto_session, key_id);
+  }
+
+  base::WeakPtr<D3D11CdmContext> GetWeakPtr() {
+    return weak_factory_.GetWeakPtr();
+  }
+
+  // CdmContext implementation.
+  CdmProxyContext* GetCdmProxyContext() override { return &cdm_proxy_context_; }
+
+ private:
+  D3D11CdmProxyContext cdm_proxy_context_;
+
+  base::WeakPtrFactory<D3D11CdmContext> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(D3D11CdmContext);
+};
+
+D3D11CdmProxy::D3D11CdmProxy(const GUID& crypto_type,
                              CdmProxy::Protocol protocol,
                              const FunctionIdMap& function_id_map)
-    : stream_id_(stream_id),
+    : crypto_type_(crypto_type),
       protocol_(protocol),
       function_id_map_(function_id_map),
+      cdm_context_(std::make_unique<D3D11CdmContext>(crypto_type)),
       create_device_func_(base::BindRepeating(D3D11CreateDevice)) {}
 
 D3D11CdmProxy::~D3D11CdmProxy() {}
 
 base::WeakPtr<CdmContext> D3D11CdmProxy::GetCdmContext() {
-  // TODO(rkuroiwa): Implement CdmContext that returns the decrypt context
-  // thru GetDecryptContext().
-  return nullptr;
+  return cdm_context_->GetWeakPtr();
 }
 
 void D3D11CdmProxy::Initialize(Client* client, InitializeCB init_cb) {
@@ -106,7 +195,7 @@ void D3D11CdmProxy::Initialize(Client* client, InitializeCB init_cb) {
 
   Microsoft::WRL::ComPtr<ID3D11CryptoSession> csme_crypto_session;
   hresult = video_device_->CreateCryptoSession(
-      &stream_id_, &D3D11_DECODER_PROFILE_H264_VLD_NOFGT,
+      &crypto_type_, &D3D11_DECODER_PROFILE_H264_VLD_NOFGT,
       &D3D11_KEY_EXCHANGE_HW_PROTECTION, csme_crypto_session.GetAddressOf());
   if (FAILED(hresult)) {
     DLOG(ERROR) << "Failed to Create CryptoSession: " << hresult;
@@ -115,7 +204,7 @@ void D3D11CdmProxy::Initialize(Client* client, InitializeCB init_cb) {
   }
 
   hresult = video_device1_->GetCryptoSessionPrivateDataSize(
-      &stream_id_, &D3D11_DECODER_PROFILE_H264_VLD_NOFGT,
+      &crypto_type_, &D3D11_DECODER_PROFILE_H264_VLD_NOFGT,
       &D3D11_KEY_EXCHANGE_HW_PROTECTION, &private_input_size_,
       &private_output_size_);
   if (FAILED(hresult)) {
@@ -226,7 +315,7 @@ void D3D11CdmProxy::CreateMediaCryptoSession(
 
   Microsoft::WRL::ComPtr<ID3D11CryptoSession> media_crypto_session;
   HRESULT hresult = video_device_->CreateCryptoSession(
-      &stream_id_, &D3D11_DECODER_PROFILE_H264_VLD_NOFGT, &stream_id_,
+      &crypto_type_, &D3D11_DECODER_PROFILE_H264_VLD_NOFGT, &crypto_type_,
       media_crypto_session.GetAddressOf());
   if (FAILED(hresult)) {
     DLOG(ERROR) << "Failed to create a crypto session: " << hresult;
@@ -269,15 +358,24 @@ void D3D11CdmProxy::CreateMediaCryptoSession(
 void D3D11CdmProxy::SetKey(uint32_t crypto_session_id,
                            const std::vector<uint8_t>& key_id,
                            const std::vector<uint8_t>& key_blob) {
-  KeyInfo key_info(crypto_session_id, key_id, key_blob);
-  // Note that this would overwrite an entry but it is completely valid, e.g.
-  // updating the keyblob due to a configuration change.
-  key_info_map_[key_id] = std::move(key_info);
+  auto crypto_session_it = crypto_session_map_.find(crypto_session_id);
+  if (crypto_session_it == crypto_session_map_.end()) {
+    DLOG(WARNING) << crypto_session_id
+                  << " did not map to a crypto session instance.";
+    return;
+  }
+  cdm_context_->SetKey(crypto_session_it->second.Get(), key_id, key_blob);
 }
 
 void D3D11CdmProxy::RemoveKey(uint32_t crypto_session_id,
                               const std::vector<uint8_t>& key_id) {
-  key_info_map_.erase(key_id);
+  auto crypto_session_it = crypto_session_map_.find(crypto_session_id);
+  if (crypto_session_it == crypto_session_map_.end()) {
+    DLOG(WARNING) << crypto_session_id
+                  << " did not map to a crypto session instance.";
+    return;
+  }
+  cdm_context_->RemoveKey(crypto_session_it->second.Get(), key_id);
 }
 
 void D3D11CdmProxy::SetCreateDeviceCallbackForTesting(CreateDeviceCB callback) {
