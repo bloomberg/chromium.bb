@@ -192,6 +192,10 @@ const char kHistogramFirstForeground[] =
 const char kHistogramFailedProvisionalLoad[] =
     "PageLoad.PageTiming.NavigationToFailedProvisionalLoad";
 
+const char kHistogramUserGestureNavigationToForwardBack[] =
+    "PageLoad.PageTiming.ForegroundDuration.PageEndReason."
+    "ForwardBackNavigation.UserGesture";
+
 const char kHistogramForegroundToFirstPaint[] =
     "PageLoad.PaintTiming.ForegroundToFirstPaint";
 const char kHistogramForegroundToFirstContentfulPaint[] =
@@ -777,6 +781,14 @@ void CorePageLoadMetricsObserver::RecordForegroundDurationHistograms(
     PAGE_LOAD_LONG_HISTOGRAM(
         internal::kHistogramPageTimingForegroundDurationNoCommit,
         foreground_duration.value());
+  }
+
+  if (info.page_end_reason == page_load_metrics::END_FORWARD_BACK &&
+      info.user_initiated_info.user_gesture &&
+      !info.user_initiated_info.browser_initiated &&
+      info.page_end_time <= foreground_duration) {
+    PAGE_LOAD_HISTOGRAM(internal::kHistogramUserGestureNavigationToForwardBack,
+                        info.page_end_time.value());
   }
 }
 
