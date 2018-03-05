@@ -4,12 +4,16 @@
 
 #include "services/audio/public/cpp/debug_recording_session.h"
 
+#include <limits>
 #include <memory>
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/test/gtest_util.h"
 #include "base/test/scoped_task_environment.h"
+#include "build/build_config.h"
 #include "media/audio/audio_debug_recording_test.h"
 #include "media/audio/mock_audio_debug_recording_manager.h"
 #include "media/audio/mock_audio_manager.h"
@@ -23,13 +27,17 @@ namespace audio {
 
 namespace {
 
+#if defined(OS_WIN)
+#define IntToStringType base::IntToString16
+#else
+#define IntToStringType base::IntToString
+#endif
+
 const base::FilePath::CharType kBaseFileName[] =
     FILE_PATH_LITERAL("debug_recording");
 const base::FilePath::CharType kWavExtension[] = FILE_PATH_LITERAL("wav");
-const base::FilePath::CharType kValidSuffix[] = FILE_PATH_LITERAL("output.1");
-const base::FilePath::CharType kEmptySuffix[] = FILE_PATH_LITERAL("");
-const base::FilePath::CharType kInvalidSuffix[] =
-    FILE_PATH_LITERAL("/../invalid");
+const base::FilePath::CharType kInput[] = FILE_PATH_LITERAL("input");
+const base::FilePath::CharType kOutput[] = FILE_PATH_LITERAL("output");
 
 }  // namespace
 
@@ -49,8 +57,11 @@ class DebugRecordingFileProviderTest : public testing::Test {
 
   void TearDown() override { file_provider_.reset(); }
 
-  base::FilePath GetFileName(base::FilePath suffix) {
-    return file_path_.AddExtension(suffix.value()).AddExtension(kWavExtension);
+  base::FilePath GetFileName(const base::FilePath::StringType& stream_type,
+                             uint32_t id) {
+    return file_path_.AddExtension(stream_type)
+        .AddExtension(IntToStringType(id))
+        .AddExtension(kWavExtension);
   }
 
   MOCK_METHOD1(OnFileCreated, void(bool));
@@ -109,42 +120,68 @@ class DebugRecordingSessionTest : public media::AudioDebugRecordingTest {
   DISALLOW_COPY_AND_ASSIGN(DebugRecordingSessionTest);
 };
 
-TEST_F(DebugRecordingFileProviderTest, CreateWithValidSuffixReturnsValidFile) {
-  base::FilePath suffix(kValidSuffix);
+TEST_F(DebugRecordingFileProviderTest, CreateFileForInputStream) {
+  const uint32_t id = 1;
   EXPECT_CALL(*this, OnFileCreated(true));
   file_provider_ptr_->CreateWavFile(
-      suffix, base::BindOnce(&DebugRecordingFileProviderTest::FileCreated,
-                             base::Unretained(this)));
+      media::AudioDebugRecordingStreamType::kInput, id,
+      base::BindOnce(&DebugRecordingFileProviderTest::FileCreated,
+                     base::Unretained(this)));
   scoped_task_environment_.RunUntilIdle();
 
-  base::FilePath file_name(GetFileName(suffix));
+  base::FilePath file_name(GetFileName(kInput, id));
   EXPECT_TRUE(base::PathExists(file_name));
   ASSERT_TRUE(base::DeleteFile(file_name, false));
 }
 
-TEST_F(DebugRecordingFileProviderTest, CreateWithEmptySuffixReturnsValidFile) {
-  base::FilePath suffix(kEmptySuffix);
+TEST_F(DebugRecordingFileProviderTest, CreateFileForOutputStream) {
+  const uint32_t id = 1;
   EXPECT_CALL(*this, OnFileCreated(true));
   file_provider_ptr_->CreateWavFile(
-      suffix, base::BindOnce(&DebugRecordingFileProviderTest::FileCreated,
-                             base::Unretained(this)));
+      media::AudioDebugRecordingStreamType::kOutput, id,
+      base::BindOnce(&DebugRecordingFileProviderTest::FileCreated,
+                     base::Unretained(this)));
   scoped_task_environment_.RunUntilIdle();
 
-  base::FilePath file_name(GetFileName(suffix));
+  base::FilePath file_name(GetFileName(kOutput, id));
   EXPECT_TRUE(base::PathExists(file_name));
   ASSERT_TRUE(base::DeleteFile(file_name, false));
+}
+
+TEST_F(DebugRecordingFileProviderTest, CreateFilesForVariousIds) {
+  uint32_t ids[]{std::numeric_limits<uint32_t>::min(),
+                 std::numeric_limits<uint32_t>::max()};
+  EXPECT_CALL(*this, OnFileCreated(true)).Times(2);
+  for (uint32_t id : ids) {
+    file_provider_ptr_->CreateWavFile(
+        media::AudioDebugRecordingStreamType::kOutput, id,
+        base::BindOnce(&DebugRecordingFileProviderTest::FileCreated,
+                       base::Unretained(this)));
+  }
+  scoped_task_environment_.RunUntilIdle();
+
+  for (uint32_t id : ids) {
+    base::FilePath file_name(GetFileName(kOutput, id));
+    EXPECT_TRUE(base::PathExists(file_name));
+    EXPECT_TRUE(base::DeleteFile(file_name, false));
+  }
 }
 
 TEST_F(DebugRecordingFileProviderTest,
-       CreateWithInvalidSuffixReturnsInvalidFile) {
-  base::FilePath suffix(kInvalidSuffix);
-  EXPECT_CALL(*this, OnFileCreated(false));
-  file_provider_ptr_->CreateWavFile(
-      suffix, base::BindOnce(&DebugRecordingFileProviderTest::FileCreated,
-                             base::Unretained(this)));
+       CreateFileWithInvalidStreamTypeDoesNotCreateFile) {
+  const uint32_t invalid_stream_type = 7;
+  const uint32_t id = 1;
+  EXPECT_CALL(*this, OnFileCreated(true)).Times(0);
+  EXPECT_DCHECK_DEATH(file_provider_ptr_->CreateWavFile(
+      static_cast<media::AudioDebugRecordingStreamType>(invalid_stream_type),
+      id,
+      base::BindOnce(&DebugRecordingFileProviderTest::FileCreated,
+                     base::Unretained(this))));
   scoped_task_environment_.RunUntilIdle();
 
-  EXPECT_FALSE(base::PathExists(GetFileName(suffix)));
+  base::FilePath file_name(
+      GetFileName(IntToStringType(invalid_stream_type), id));
+  EXPECT_FALSE(base::PathExists(file_name));
 }
 
 TEST_F(DebugRecordingSessionTest,

@@ -18,11 +18,9 @@ class MockAudioDebugRecordingManager : public AudioDebugRecordingManager {
 
   ~MockAudioDebugRecordingManager() override;
 
-  MOCK_METHOD1(
-      EnableDebugRecording,
-      void(base::RepeatingCallback<void(const base::FilePath&,
-                                        base::OnceCallback<void(base::File)>)>
-               create_file_callback));
+  MOCK_METHOD1(EnableDebugRecording,
+               void(AudioDebugRecordingManager::CreateWavFileCallback
+                        create_file_callback));
   MOCK_METHOD0(DisableDebugRecording, void());
 
  private:

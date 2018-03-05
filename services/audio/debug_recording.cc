@@ -59,10 +59,11 @@ void DebugRecording::Disable() {
 }
 
 void DebugRecording::CreateWavFile(
-    const base::FilePath& file_suffix,
+    media::AudioDebugRecordingStreamType stream_type,
+    uint32_t id,
     mojom::DebugRecordingFileProvider::CreateWavFileCallback reply_callback) {
   DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
-  file_provider_->CreateWavFile(file_suffix, std::move(reply_callback));
+  file_provider_->CreateWavFile(stream_type, id, std::move(reply_callback));
 }
 
 bool DebugRecording::IsEnabled() {

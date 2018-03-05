@@ -7,15 +7,21 @@ module audio.mojom;
 import "mojo/common/file.mojom";
 import "mojo/common/file_path.mojom";
 
+enum DebugRecordingStreamType {
+  kInput = 0,
+  kOutput = 1,
+};
+
 // Creates audio debug recording files. Requires a base file path at binding.
 // All files are created in the path defined in implementation, to which
-// ".|suffix|" and ".wav" extension are appended. E.g.: from base file path
-// "/path/base_name" and suffix "output.1", "/path/base_name.output.1.wav" will
-// be created. This interface is called by audio service from implementation of
+// ".output" or ".input" (depending on |stream_type|), ".|id|" and ".wav"
+// extension are appended. E.g.: from base file path "/path/base_name", stream
+// type kOutput and id = 1, "/path/base_name.output.1.wav" will be created.
+// This interface is called by audio service from implementation of
 // DebugRecording interface defined below.
 interface DebugRecordingFileProvider {
   // Returns invalid file in case of failure.
-  CreateWavFile(mojo.common.mojom.FilePath suffix)
+  CreateWavFile(DebugRecordingStreamType stream_type, uint32 id)
   => (mojo.common.mojom.File? file);
 };
 

@@ -302,7 +302,7 @@ AudioInputStream* AudioManagerBase::MakeAudioInputStream(
           base::BindRepeating(
               &AudioDebugRecordingManager::RegisterDebugRecordingSource,
               base::Unretained(debug_recording_manager_.get()),
-              FILE_PATH_LITERAL("input"), params),
+              AudioDebugRecordingStreamType::kInput, params),
           stream);
     }
 #endif  // BUILDFLAG(ENABLE_WEBRTC)
@@ -424,7 +424,7 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStreamProxy(
             ? base::BindRepeating(
                   &AudioDebugRecordingManager::RegisterDebugRecordingSource,
                   base::Unretained(debug_recording_manager_.get()),
-                  FILE_PATH_LITERAL("output"))
+                  AudioDebugRecordingStreamType::kOutput)
             : base::BindRepeating(&GetNullptrAudioDebugRecorder));
   } else {
     dispatcher = std::make_unique<AudioOutputDispatcherImpl>(

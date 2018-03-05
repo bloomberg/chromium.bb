@@ -8,10 +8,7 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/files/file_path.h"
-#include "base/logging.h"
 #include "base/single_thread_task_runner.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "media/audio/audio_debug_recording_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -19,18 +16,13 @@
 
 using testing::_;
 
-#if defined(OS_WIN)
-#define IntToStringType base::IntToString16
-#else
-#define IntToStringType base::IntToString
-#endif
-
 namespace media {
 
 namespace {
 
 // The stream type expected to be added to file name.
-const base::FilePath::CharType kStreamType[] = FILE_PATH_LITERAL("output");
+const AudioDebugRecordingStreamType kStreamType(
+    AudioDebugRecordingStreamType::kOutput);
 
 // Used to be able to set call expectations in the MockAudioDebugRecordingHelper
 // ctor. See also comment on the test EnableRegisterDisable.
@@ -51,7 +43,8 @@ struct ScopedExpectEnableAfterCreateHelper {
 
 // Function bound and passed to AudioDebugRecordingManager::EnableDebugRecording
 // as AudioDebugRecordingManager::CreateWavFileCallback.
-void CreateWavFile(const base::FilePath& file_path,
+void CreateWavFile(AudioDebugRecordingStreamType stream_type,
+                   uint32_t id,
                    base::OnceCallback<void(base::File)>) {}
 
 }  // namespace
@@ -68,7 +61,7 @@ class MockAudioDebugRecordingHelper : public AudioDebugRecordingHelper {
                                   base::OnceClosure()),
         on_destruction_closure_in_mock_(std::move(on_destruction_closure)) {
     if (g_expect_enable_after_create_helper)
-      EXPECT_CALL(*this, DoEnableDebugRecording(_));
+      EXPECT_CALL(*this, DoEnableDebugRecording(_, _));
   }
 
   ~MockAudioDebugRecordingHelper() override {
@@ -76,11 +69,13 @@ class MockAudioDebugRecordingHelper : public AudioDebugRecordingHelper {
       std::move(on_destruction_closure_in_mock_).Run();
   }
 
-  MOCK_METHOD1(DoEnableDebugRecording, void(const base::FilePath&));
-  void EnableDebugRecording(const base::FilePath& file_name_suffix,
+  MOCK_METHOD2(DoEnableDebugRecording,
+               void(AudioDebugRecordingStreamType, uint32_t));
+  void EnableDebugRecording(AudioDebugRecordingStreamType stream_type,
+                            uint32_t id,
                             AudioDebugRecordingHelper::CreateWavFileCallback
                                 create_file_callback) override {
-    DoEnableDebugRecording(file_name_suffix);
+    DoEnableDebugRecording(stream_type, id);
   }
 
   MOCK_METHOD0(DisableDebugRecording, void());
@@ -139,13 +134,13 @@ class AudioDebugRecordingManagerTest : public ::testing::Test {
   // The expected next source id the manager will assign. It's static since the
   // manager uses a global running id, thus doesn't restart at each
   // instantiation.
-  static int expected_next_source_id_;
+  static uint32_t expected_next_source_id_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AudioDebugRecordingManagerTest);
 };
 
-int AudioDebugRecordingManagerTest::expected_next_source_id_ = 1;
+uint32_t AudioDebugRecordingManagerTest::expected_next_source_id_ = 1;
 
 // Shouldn't do anything but store the CreateWavFileCallback, i.e. no calls to
 // recorders.
@@ -176,7 +171,7 @@ TEST_F(AudioDebugRecordingManagerTest, RegisterAutomaticUnregisterAtDelete) {
 TEST_F(AudioDebugRecordingManagerTest, RegisterEnableDisable) {
   // Store away the extected id for the next source to use after registering all
   // sources.
-  int expected_id = expected_next_source_id_;
+  uint32_t expected_id = expected_next_source_id_;
 
   const AudioParameters params;
   std::vector<std::unique_ptr<AudioDebugRecorder>> recorders;
@@ -189,11 +184,8 @@ TEST_F(AudioDebugRecordingManagerTest, RegisterEnableDisable) {
   for (const auto& recorder : recorders) {
     MockAudioDebugRecordingHelper* mock_recording_helper =
         static_cast<MockAudioDebugRecordingHelper*>(recorder.get());
-    base::FilePath expected_file_path =
-        base::FilePath(kStreamType)
-            .AddExtension(IntToStringType(expected_id++));
     EXPECT_CALL(*mock_recording_helper,
-                DoEnableDebugRecording(expected_file_path));
+                DoEnableDebugRecording(kStreamType, expected_id++));
     EXPECT_CALL(*mock_recording_helper, DisableDebugRecording());
   }
 

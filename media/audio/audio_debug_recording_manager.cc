@@ -7,33 +7,16 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/task_runner_util.h"
 
 namespace media {
 
 namespace {
-
 // Running id recording sources.
-int g_next_stream_id = 1;
-
-#if defined(OS_WIN)
-#define IntToStringType base::IntToString16
-#else
-#define IntToStringType base::IntToString
-#endif
-
-// Returns file name suffix created by appending |id| to |stream_type|.
-base::FilePath GetDebugRecordingFileNameSuffix(
-    const base::FilePath::StringType& stream_type,
-    int id) {
-  return base::FilePath(stream_type).AddExtension(IntToStringType(id));
+uint32_t g_next_stream_id = 1;
 }
-
-}  // namespace
 
 AudioDebugRecordingManager::AudioDebugRecordingManager(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
@@ -48,12 +31,11 @@ void AudioDebugRecordingManager::EnableDebugRecording(
   create_file_callback_ = std::move(create_file_callback);
 
   for (const auto& it : debug_recording_helpers_) {
-    int id = it.first;
+    uint32_t id = it.first;
     AudioDebugRecordingHelper* recording_helper = it.second.first;
-    const base::FilePath::StringType& stream_type = it.second.second;
-    recording_helper->EnableDebugRecording(
-        GetDebugRecordingFileNameSuffix(stream_type, id),
-        create_file_callback_);
+    AudioDebugRecordingStreamType stream_type = it.second.second;
+    recording_helper->EnableDebugRecording(stream_type, id,
+                                           create_file_callback_);
   }
 }
 
@@ -69,11 +51,11 @@ void AudioDebugRecordingManager::DisableDebugRecording() {
 
 std::unique_ptr<AudioDebugRecorder>
 AudioDebugRecordingManager::RegisterDebugRecordingSource(
-    const base::FilePath::StringType& stream_type,
+    AudioDebugRecordingStreamType stream_type,
     const AudioParameters& params) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  const int id = g_next_stream_id++;
+  const uint32_t id = g_next_stream_id++;
 
   // Normally, the manager will outlive the one who registers and owns the
   // returned recorder. But to not require this we use a weak pointer.
@@ -85,9 +67,8 @@ AudioDebugRecordingManager::RegisterDebugRecordingSource(
               weak_factory_.GetWeakPtr(), id));
 
   if (IsDebugRecordingEnabled()) {
-    recording_helper->EnableDebugRecording(
-        GetDebugRecordingFileNameSuffix(stream_type, id),
-        create_file_callback_);
+    recording_helper->EnableDebugRecording(stream_type, id,
+                                           create_file_callback_);
   }
 
   debug_recording_helpers_[id] =
@@ -96,7 +77,7 @@ AudioDebugRecordingManager::RegisterDebugRecordingSource(
   return base::WrapUnique<AudioDebugRecorder>(recording_helper.release());
 }
 
-void AudioDebugRecordingManager::UnregisterDebugRecordingSource(int id) {
+void AudioDebugRecordingManager::UnregisterDebugRecordingSource(uint32_t id) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   auto it = debug_recording_helpers_.find(id);
   DCHECK(it != debug_recording_helpers_.end());

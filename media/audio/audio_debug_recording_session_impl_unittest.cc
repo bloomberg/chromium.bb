@@ -9,7 +9,9 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_task_environment.h"
+#include "build/build_config.h"
 #include "media/audio/audio_debug_recording_test.h"
 #include "media/audio/mock_audio_debug_recording_manager.h"
 #include "media/audio/mock_audio_manager.h"
@@ -19,13 +21,18 @@ namespace media {
 
 namespace {
 
+#if defined(OS_WIN)
+#define IntToStringType base::IntToString16
+#else
+#define IntToStringType base::IntToString
+#endif
+
 const base::FilePath::CharType kBaseFileName[] =
     FILE_PATH_LITERAL("debug_recording");
+const base::FilePath::CharType kInput[] = FILE_PATH_LITERAL("input");
+const base::FilePath::CharType kOutput[] = FILE_PATH_LITERAL("output");
+const int kId = 1;
 const base::FilePath::CharType kWavExtension[] = FILE_PATH_LITERAL("wav");
-const base::FilePath::CharType kInputFileNameSuffix[] =
-    FILE_PATH_LITERAL("input.1");
-const base::FilePath::CharType kOutputFileNameSuffix[] =
-    FILE_PATH_LITERAL("output.1");
 
 void OnFileCreated(base::File debug_file) {}
 
@@ -35,9 +42,9 @@ void OnFileCreated(base::File debug_file) {}
 void CreateInputOutputDebugRecordingFiles(
     const AudioDebugRecordingManager::CreateWavFileCallback&
         create_file_callback) {
-  create_file_callback.Run(base::FilePath(kInputFileNameSuffix),
+  create_file_callback.Run(AudioDebugRecordingStreamType::kInput, kId,
                            base::BindOnce(&OnFileCreated));
-  create_file_callback.Run(base::FilePath(kOutputFileNameSuffix),
+  create_file_callback.Run(AudioDebugRecordingStreamType::kOutput, kId,
                            base::BindOnce(&OnFileCreated));
 }
 
@@ -45,7 +52,10 @@ void CreateInputOutputDebugRecordingFiles(
 
 class AudioDebugRecordingSessionImplTest : public AudioDebugRecordingTest {
  public:
-  AudioDebugRecordingSessionImplTest() { SetBaseFilePath(); }
+  AudioDebugRecordingSessionImplTest() {
+    CHECK(temp_dir_.CreateUniqueTempDir());
+    base_file_path_ = temp_dir_.GetPath().Append(base::FilePath(kBaseFileName));
+  }
 
  protected:
   void CreateDebugRecordingSession() {
@@ -58,14 +68,16 @@ class AudioDebugRecordingSessionImplTest : public AudioDebugRecordingTest {
     audio_debug_recording_session_impl_.reset();
   }
 
+  base::FilePath GetFileName(const base::FilePath::StringType& stream_type,
+                             uint32_t id) {
+    return base_file_path_.AddExtension(stream_type)
+        .AddExtension(IntToStringType(id))
+        .AddExtension(kWavExtension);
+  }
+
   base::FilePath base_file_path_;
 
  private:
-  void SetBaseFilePath() {
-    CHECK(temp_dir_.CreateUniqueTempDir());
-    base_file_path_ = temp_dir_.GetPath().Append(base::FilePath(kBaseFileName));
-  }
-
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<AudioDebugRecordingSessionImpl>
       audio_debug_recording_session_impl_;
@@ -116,12 +128,8 @@ TEST_F(AudioDebugRecordingSessionImplTest, CreateWavFileCreatesExpectedFiles) {
   scoped_task_environment_.RunUntilIdle();
 
   // Check that expected files were created.
-  base::FilePath input_recording_filename(
-      base_file_path_.AddExtension(kInputFileNameSuffix)
-          .AddExtension(kWavExtension));
-  base::FilePath output_recording_filename(
-      base_file_path_.AddExtension(kOutputFileNameSuffix)
-          .AddExtension(kWavExtension));
+  base::FilePath input_recording_filename(GetFileName(kInput, kId));
+  base::FilePath output_recording_filename(GetFileName(kOutput, kId));
   EXPECT_TRUE(base::PathExists(output_recording_filename));
   EXPECT_TRUE(base::PathExists(input_recording_filename));
 

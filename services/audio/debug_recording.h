@@ -7,12 +7,14 @@
 
 #include <utility>
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/audio/public/mojom/debug_recording.mojom.h"
 
 namespace media {
 class AudioManager;
+enum class AudioDebugRecordingStreamType;
 }
 
 namespace audio {
@@ -30,11 +32,14 @@ class DebugRecording : public mojom::DebugRecording {
   void Enable(mojom::DebugRecordingFileProviderPtr file_provider) override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(DebugRecordingTest,
+                           CreateWavFileCallsFileProviderCreateWavFile);
   // Called on binding connection error.
   void Disable();
 
   void CreateWavFile(
-      const base::FilePath& file_suffix,
+      media::AudioDebugRecordingStreamType stream_type,
+      uint32_t id,
       mojom::DebugRecordingFileProvider::CreateWavFileCallback reply_callback);
   bool IsEnabled();
 

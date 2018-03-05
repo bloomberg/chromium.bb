@@ -31,14 +31,15 @@ AudioDebugRecordingHelper::~AudioDebugRecordingHelper() {
 }
 
 void AudioDebugRecordingHelper::EnableDebugRecording(
-    const base::FilePath& file_name_suffix,
+    AudioDebugRecordingStreamType stream_type,
+    uint32_t id,
     CreateWavFileCallback create_file_callback) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!debug_writer_);
 
   debug_writer_ = CreateAudioDebugFileWriter(params_);
   std::move(create_file_callback)
-      .Run(file_name_suffix,
+      .Run(stream_type, id,
            base::BindOnce(&AudioDebugRecordingHelper::StartDebugRecordingToFile,
                           weak_factory_.GetWeakPtr()));
 }

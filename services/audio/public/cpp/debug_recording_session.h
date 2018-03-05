@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "media/audio/audio_debug_recording_helper.h"
 #include "media/audio/audio_debug_recording_session.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/audio/public/mojom/debug_recording.mojom.h"
@@ -36,8 +37,11 @@ class DebugRecordingSession : public media::AudioDebugRecordingSession {
                                const base::FilePath& file_name_base);
     ~DebugRecordingFileProvider() override;
 
-    // Creates file with name "|file_name_base_|.|file_suffix|.wav".
-    void CreateWavFile(const base::FilePath& file_suffix,
+    // Creates file with name "|file_name_base_|.<stream_type_str>.|id|.wav",
+    // where <stream_type_str> is "input" or "output" depending on |stream_type|
+    // value.
+    void CreateWavFile(media::AudioDebugRecordingStreamType stream_type,
+                       uint32_t id,
                        CreateWavFileCallback reply_callback) override;
 
    private:

@@ -18,13 +18,14 @@
 
 namespace base {
 class File;
-class FilePath;
 class SingleThreadTaskRunner;
 }
 
 namespace media {
 
 class AudioBus;
+
+enum class AudioDebugRecordingStreamType { kInput = 0, kOutput = 1 };
 
 // Interface for feeding data to a recorder.
 class AudioDebugRecorder {
@@ -51,7 +52,8 @@ class AudioDebugRecorder {
 class MEDIA_EXPORT AudioDebugRecordingHelper : public AudioDebugRecorder {
  public:
   using CreateWavFileCallback = base::OnceCallback<void(
-      const base::FilePath&,
+      AudioDebugRecordingStreamType stream_type,
+      uint32_t id,
       base::OnceCallback<void(base::File)> reply_callback)>;
 
   AudioDebugRecordingHelper(
@@ -62,7 +64,8 @@ class MEDIA_EXPORT AudioDebugRecordingHelper : public AudioDebugRecorder {
 
   // Enable debug recording. Creates |debug_writer_| and runs
   // |create_file_callback| to create debug recording file.
-  virtual void EnableDebugRecording(const base::FilePath& file_name_suffix,
+  virtual void EnableDebugRecording(AudioDebugRecordingStreamType stream_type,
+                                    uint32_t id,
                                     CreateWavFileCallback create_file_callback);
 
   // Disable debug recording. Destroys |debug_writer_|.
