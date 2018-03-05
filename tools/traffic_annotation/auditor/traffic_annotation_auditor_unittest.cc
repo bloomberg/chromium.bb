@@ -47,12 +47,6 @@ const base::FilePath kClangToolPath =
     base::FilePath(FILE_PATH_LITERAL("tools"))
         .Append(FILE_PATH_LITERAL("traffic_annotation/bin"));
 
-const base::FilePath kDownstreamUnittests =
-    base::FilePath(FILE_PATH_LITERAL("tools"))
-        .Append(FILE_PATH_LITERAL("traffic_annotation"))
-        .Append(FILE_PATH_LITERAL("scripts"))
-        .Append(FILE_PATH_LITERAL("annotations_xml_downstream_caller.py"));
-
 const std::set<int> kDummyDeprecatedIDs = {100, 101, 102};
 }  // namespace
 
@@ -917,22 +911,6 @@ TEST_F(TrafficAnnotationAuditorTest, AnnotationsXML) {
 
   EXPECT_TRUE(exporter.LoadAnnotationsXML());
   EXPECT_TRUE(exporter.CheckArchivedAnnotations());
-}
-
-// Tests if downstream files depending on of Annotations.xml are updated.
-TEST_F(TrafficAnnotationAuditorTest, AnnotationsDownstreamUnittests) {
-  base::CommandLine cmdline(source_path().Append(kDownstreamUnittests));
-  cmdline.AppendSwitch("test");
-
-  int tests_result;
-#if defined(OS_WIN)
-  cmdline.PrependWrapper(L"python");
-  tests_result =
-      system(base::UTF16ToASCII(cmdline.GetCommandLineString()).c_str());
-#else
-  tests_result = system(cmdline.GetCommandLineString().c_str());
-#endif
-  EXPECT_EQ(0, tests_result);
 }
 
 // Tests if 'annotations.xml' is read and has at least one item.

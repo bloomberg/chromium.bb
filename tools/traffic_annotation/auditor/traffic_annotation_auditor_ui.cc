@@ -52,9 +52,7 @@ Options:
   --test-only         Optional flag to request just running tests and not
                       updating any file. If not specified,
                       'tools/traffic_annotation/summary/annotations.xml' might
-                      get updated and if it does, 'tools/traffic_annotation/
-                      scripts/annotations_xml_downstream_updater.py will
-                      be called to update downstream files.
+                      get updated.
   --no-missing-error  Optional argument, resulting in just issuing a warning for
                       functions that miss annotation and not an error.
   --summary-file      Optional path to the output file with all annotations.
@@ -72,37 +70,9 @@ Example:
   traffic_annotation_auditor --build-path=out/Release
 )";
 
-const base::FilePath kDownstreamUpdater =
-    base::FilePath(FILE_PATH_LITERAL("tools"))
-        .Append(FILE_PATH_LITERAL("traffic_annotation"))
-        .Append(FILE_PATH_LITERAL("scripts"))
-        .Append(FILE_PATH_LITERAL("annotations_xml_downstream_caller.py"));
-
 const std::string kCodeSearchLink("https://cs.chromium.org/chromium/src/");
 
 }  // namespace
-
-// Calls |kDownstreamUpdater| script to update files that depend on
-// annotations.xml.
-bool RunAnnotationDownstreamUpdater(const base::FilePath& source_path) {
-  base::CommandLine cmdline(source_path.Append(kDownstreamUpdater));
-  int exit_code;
-
-#if defined(OS_WIN)
-  cmdline.PrependWrapper(L"python");
-  exit_code =
-      system(base::UTF16ToASCII(cmdline.GetCommandLineString()).c_str());
-#else
-  exit_code = system(cmdline.GetCommandLineString().c_str());
-#endif
-
-  if (exit_code) {
-    LOG(ERROR) << "Running " << kDownstreamUpdater.MaybeAsASCII()
-               << " failed with exit code: " << exit_code;
-    return false;
-  }
-  return true;
-}
 
 // Writes a summary of annotations, calls, and errors.
 bool WriteSummaryFile(const base::FilePath& filepath,
@@ -470,9 +440,8 @@ int main(int argc, char* argv[]) {
   // Update annotations.xml if everything else is OK and the auditor is not
   // run in test-only mode.
   if (errors.empty() && !test_only && auditor.exporter().modified()) {
-    if (!auditor.exporter().SaveAnnotationsXML() ||
-        !RunAnnotationDownstreamUpdater(source_path)) {
-      LOG(ERROR) << "Could not update annotations XML or downstream files.";
+    if (!auditor.exporter().SaveAnnotationsXML()) {
+      LOG(ERROR) << "Could not update annotations XML.";
       return error_value;
     }
   }
