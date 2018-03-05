@@ -102,7 +102,6 @@ CONTENT_EXPORT extern const base::Feature kUseFeaturePolicyForPermissions;
 CONTENT_EXPORT extern const base::Feature kUseMojoAudioInputStreamFactory;
 CONTENT_EXPORT extern const base::Feature kUseMojoAudioOutputStreamFactory;
 CONTENT_EXPORT extern const base::Feature kUserActivationV2;
-CONTENT_EXPORT extern const base::Feature kV8BackgroundCompile;
 CONTENT_EXPORT extern const base::Feature kV8ContextSnapshot;
 CONTENT_EXPORT extern const base::Feature kV8VmFuture;
 CONTENT_EXPORT extern const base::Feature kVibrateRequiresUserGesture;
