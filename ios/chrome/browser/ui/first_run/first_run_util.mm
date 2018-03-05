@@ -82,36 +82,38 @@ bool CreateSentinel() {
 }
 
 // Helper function for recording first run metrics. Takes an additional
-// |to_record| argument which is the returned value from CreateSentinel().
+// |sentinel_created| argument which is the returned value from
+// CreateSentinel().
 void RecordFirstRunMetricsInternal(ios::ChromeBrowserState* browserState,
                                    bool sign_in_attempted,
                                    bool has_sso_accounts,
-                                   bool to_record) {
-  // |to_record| is false if the sentinel file was not created which indicates
-  // that the sentinel already exists and metrics were already recorded.
+                                   bool sentinel_created) {
+  first_run::SignInStatus sign_in_status;
+  // |sentinel_created| is false if the sentinel file was not created which
+  // indicates that the sentinel already exists and metrics were already
+  // recorded.
   // Note: If the user signs in and then signs out during first run, it will be
   // recorded as a successful sign in.
-  if (!to_record)
-    return;
-
-  bool user_signed_in =
-      ios::SigninManagerFactory::GetForBrowserState(browserState)
-          ->IsAuthenticated();
-  first_run::SignInStatus sign_in_status;
-
-  if (user_signed_in) {
-    sign_in_status = has_sso_accounts
-                         ? first_run::HAS_SSO_ACCOUNT_SIGNIN_SUCCESSFUL
-                         : first_run::SIGNIN_SUCCESSFUL;
+  if (!sentinel_created) {
+    sign_in_status = first_run::SENTINEL_CREATION_FAILED;
   } else {
-    if (sign_in_attempted) {
+    bool user_signed_in =
+        ios::SigninManagerFactory::GetForBrowserState(browserState)
+            ->IsAuthenticated();
+    if (user_signed_in) {
       sign_in_status = has_sso_accounts
-                           ? first_run::HAS_SSO_ACCOUNT_SIGNIN_SKIPPED_GIVEUP
-                           : first_run::SIGNIN_SKIPPED_GIVEUP;
+                           ? first_run::HAS_SSO_ACCOUNT_SIGNIN_SUCCESSFUL
+                           : first_run::SIGNIN_SUCCESSFUL;
     } else {
-      sign_in_status = has_sso_accounts
-                           ? first_run::HAS_SSO_ACCOUNT_SIGNIN_SKIPPED_QUICK
-                           : first_run::SIGNIN_SKIPPED_QUICK;
+      if (sign_in_attempted) {
+        sign_in_status = has_sso_accounts
+                             ? first_run::HAS_SSO_ACCOUNT_SIGNIN_SKIPPED_GIVEUP
+                             : first_run::SIGNIN_SKIPPED_GIVEUP;
+      } else {
+        sign_in_status = has_sso_accounts
+                             ? first_run::HAS_SSO_ACCOUNT_SIGNIN_SKIPPED_QUICK
+                             : first_run::SIGNIN_SKIPPED_QUICK;
+      }
     }
   }
   UMA_HISTOGRAM_ENUMERATION("FirstRun.SignIn", sign_in_status,
