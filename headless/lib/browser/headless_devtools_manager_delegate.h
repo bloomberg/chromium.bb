@@ -118,6 +118,12 @@ class HeadlessDevToolsManagerDelegate
       int command_id,
       const base::DictionaryValue* params);
 
+  std::unique_ptr<base::DictionaryValue> EnterDeterministicMode(
+      content::DevToolsAgentHost* agent_host,
+      content::DevToolsAgentHostClient* client,
+      int command_id,
+      const base::DictionaryValue* params);
+
   void SetNetworkConditions(
       std::vector<HeadlessBrowserContext*> browser_contexts,
       HeadlessNetworkConditions conditions);
