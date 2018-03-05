@@ -18984,6 +18984,7 @@ Called by update_net_error_codes.py.-->
   <int value="3" label="Have SSO account, Skipped Immediately"/>
   <int value="4" label="Have SSO account, Successful"/>
   <int value="5" label="Have SSO account, Gave Up"/>
+  <int value="6" label="Could not create FirstRun Sentinel"/>
 </enum>
 
 <enum name="FirstUserActionType">
