@@ -124,9 +124,8 @@ class ExtensionApiFrameIdMap {
   // If |rfh| is nullptr, then the map is not modified.
   FrameData GetFrameData(content::RenderFrameHost* rfh) WARN_UNUSED_RESULT;
 
-  // Called when a render frame is created. Caches the FrameData for the given
-  // render frame.
-  void OnRenderFrameCreated(content::RenderFrameHost* rfh);
+  // Initializes the FrameData for the given |rfh|.
+  void InitializeRenderFrameData(content::RenderFrameHost* rfh);
 
   // Called when a render frame is deleted. Removes the FrameData mapping for
   // the given render frame.
@@ -139,6 +138,8 @@ class ExtensionApiFrameIdMap {
 
   // Returns whether frame data for |rfh| is cached.
   bool HasCachedFrameDataForTesting(content::RenderFrameHost* rfh) const;
+
+  size_t GetFrameDataCountForTesting() const;
 
  protected:
   friend struct base::LazyInstanceTraitsBase<ExtensionApiFrameIdMap>;

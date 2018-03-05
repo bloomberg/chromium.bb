@@ -91,7 +91,7 @@ void ExtensionWebContentsObserver::RenderFrameCreated(
   // Optimization: Look up the extension API frame ID to force the mapping to be
   // cached. This minimizes the number of IO->UI->IO thread hops when the ID is
   // looked up again on the IO thread for the webRequest API.
-  ExtensionApiFrameIdMap::Get()->OnRenderFrameCreated(render_frame_host);
+  ExtensionApiFrameIdMap::Get()->InitializeRenderFrameData(render_frame_host);
 
   const Extension* extension = GetExtensionFromFrame(render_frame_host, false);
   if (!extension)
@@ -134,6 +134,17 @@ void ExtensionWebContentsObserver::RenderFrameDeleted(
   ProcessManager::Get(browser_context_)
       ->UnregisterRenderFrameHost(render_frame_host);
   ExtensionApiFrameIdMap::Get()->OnRenderFrameDeleted(render_frame_host);
+}
+
+void ExtensionWebContentsObserver::RenderFrameHostChanged(
+    content::RenderFrameHost* old_host,
+    content::RenderFrameHost* new_host) {
+  // TODO(karandeepb): The |new_host| here may correspond to a RenderFrameHost
+  // we haven't seen yet, which means it might also need some other
+  // initialization. See crbug.com/817205.
+  if (new_host->IsRenderFrameLive()) {
+    ExtensionApiFrameIdMap::Get()->InitializeRenderFrameData(new_host);
+  }
 }
 
 void ExtensionWebContentsObserver::DidFinishNavigation(
@@ -253,7 +264,7 @@ void ExtensionWebContentsObserver::InitializeFrameHelper(
   if (render_frame_host->IsRenderFrameLive()) {
     // Initialize the FrameData for this frame here since we didn't receive the
     // RenderFrameCreated notification for it.
-    ExtensionApiFrameIdMap::Get()->OnRenderFrameCreated(render_frame_host);
+    ExtensionApiFrameIdMap::Get()->InitializeRenderFrameData(render_frame_host);
     InitializeRenderFrame(render_frame_host);
   }
 }
