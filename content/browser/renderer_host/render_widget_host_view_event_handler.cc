@@ -140,7 +140,7 @@ RenderWidgetHostViewEventHandler::RenderWidgetHostViewEventHandler(
       popup_child_event_handler_(nullptr),
       delegate_(delegate),
       window_(nullptr),
-      mouse_wheel_phase_handler_(host, host_view) {}
+      mouse_wheel_phase_handler_(host_view) {}
 
 RenderWidgetHostViewEventHandler::~RenderWidgetHostViewEventHandler() {}
 
