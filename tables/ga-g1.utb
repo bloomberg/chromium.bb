@@ -1,6 +1,8 @@
 # liblouis: Irish Gaeilge Braille Grade 1 Table
 #
 # -----------
+#-display-name: Irish uncontracted braille
+#
 #+locale:ga
 #+type:literary
 #+contraction:no

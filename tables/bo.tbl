@@ -1,3 +1,5 @@
+#-display-name: Tibetan computer braille
+
 #+locale:bo
 #+type:computer
 #+dots:8

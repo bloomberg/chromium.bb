@@ -1,3 +1,6 @@
+#-name: U.S. English grade 2 (EBAE)
+#-display-name: U.S. English (EBAE) contracted braille
+
 #+locale:en-US
 #+type:literary
 #+contraction:full

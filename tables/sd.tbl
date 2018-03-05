@@ -1,3 +1,5 @@
+#-display-name: Sindhi braille
+
 #+locale:sd
 #+type:literary
 #+grade:1

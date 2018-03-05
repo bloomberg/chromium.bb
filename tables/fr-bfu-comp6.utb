@@ -4,14 +4,12 @@
 #+dots:6
 #+system:bfu
 
-#-display-name: Unified French 6 dots
-#-authors:
-# - The BRLTTY Team <http://brltty.com/>
-# - André-Abush Clause <dev@andreabc.net>
-# - Ludovic Oger <oger.ludovic@gmail.com>
-# - Nicolas Pitre <nico@fluxnic.net>
-# - Michel Such <michel.such@free.fr>
-#
+#-display-name: Unified French 6 dots braille
+#-author: Michel Such <michel.such@free.fr>
+#-author: André-Abush CLAUSE <dev@andreabc.net>
+#-author: Ludovic Oger <oger.ludovic@gmail.com>
+#-author: Nicolas Pitre <nico@cam.org>
+#-author: The BRLTTY Team <http://brltty.com/>
 #-license: LGPLv2.1
 #-updated: 2018-03-04
 

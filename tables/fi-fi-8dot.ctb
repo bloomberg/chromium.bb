@@ -1,6 +1,8 @@
 # liblouis: Finnish 8 dot braille table
 #
 # -----------
+#-display-name: Finnish computer braille
+#
 #+locale:fi
 #+type:computer
 #+dots:8

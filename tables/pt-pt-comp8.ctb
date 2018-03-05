@@ -1,4 +1,6 @@
 # -----------
+#-display-name: Portuguese computer braille
+#
 #+locale:pt
 #+type:computer
 #+dots:8

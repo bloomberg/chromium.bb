@@ -1,3 +1,5 @@
+#-display-name: Dravidian computer braille
+
 #+locale:dra
 #+type:computer
 #+dots:8

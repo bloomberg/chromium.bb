@@ -27,6 +27,9 @@
 
 ### Table Metadata
 
+#-name: Dansk forkortet 8-punkt
+#-display-name: Danish 8-dot fully contracted braille
+
 #+locale: da
 #+type: literary
 #+contraction: full

@@ -2,6 +2,8 @@
 # liblouis: Hawaiian Braille Table
 #
 # -----------
+#-display-name: Hawaiian braille
+#
 #+locale:haw
 #+type:literary
 #+contraction:no

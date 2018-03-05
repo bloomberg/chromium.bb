@@ -1,6 +1,8 @@
 # liblouis: Norwegian 8-dot braille table with fallback to uncontracted 6-dot
 #
 # -----------
+#-display-name: Norwegian computer braille
+#
 #+locale:no
 #+type:computer
 #+contraction:no

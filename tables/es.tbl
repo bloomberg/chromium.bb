@@ -1,3 +1,5 @@
+#-display-name: Spanish braille
+
 #+locale:es
 #+type:literary
 #+grade:1

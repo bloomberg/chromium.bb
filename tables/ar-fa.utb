@@ -1,6 +1,8 @@
 # liblouis: Generic Farsi Grade 1 table
 #
 # ------------
+#-display-name: Persian braille
+#
 #+locale:fa
 #+type:literary
 #+contraction:no

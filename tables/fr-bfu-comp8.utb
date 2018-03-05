@@ -3,12 +3,10 @@
 #+dots:8
 #+system:bfu
 
-#-display-name: Unified French 8 dots
-#-authors:
-# - The BRLTTY Team <http://brltty.com/>
-# - André-Abush CLAUSE <dev@andreabc.net>
-# - Michel Such <michel.such@free.fr>
-#
+#-display-name: Unified French 8 dots braille
+#-author: André-Abush CLAUSE <dev@andreabc.net>
+#-author: Michel Such <michel.such@free.fr>
+#-author: The BRLTTY Team <http://brltty.com/>
 #-license: LGPLv2.1
 #-reference-name: TABLE BRAILLE INFORMATIQUE FRANÇAISE « TBFR2007 »
 #-reference-url: https://www.avh.asso.fr/sites/default/files/table_braille_informatique_tbfr2007_final_0.doc

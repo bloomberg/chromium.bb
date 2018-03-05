@@ -1,6 +1,8 @@
 # liblouis: Korean Grade 2 (Contracted, 2006 edition)
 #
 # -----------
+#-display-name: Korean contracted braille (2006 standard)
+#
 #+locale:ko
 #+type:literary
 #+contraction:full
