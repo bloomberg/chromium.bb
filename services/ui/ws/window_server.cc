@@ -206,6 +206,10 @@ WindowTree* WindowServer::EmbedAtWindow(
     mojom::WindowTreeClientPtr client,
     uint32_t flags,
     std::unique_ptr<AccessPolicy> access_policy) {
+  // TODO(sky): I suspect this code needs to reset the FrameSinkId to the
+  // ClientWindowId that was used at the time the window was created. As
+  // currently if there is a reembed the FrameSinkId from the last embedding
+  // is incorrectly used.
   const bool is_for_embedding = true;
   std::unique_ptr<WindowTree> tree_ptr = std::make_unique<WindowTree>(
       this, is_for_embedding, root, std::move(access_policy));
@@ -229,7 +233,7 @@ WindowTree* WindowServer::EmbedAtWindow(
 
   AddTree(std::move(tree_ptr), std::move(binding), std::move(window_tree_ptr));
   OnTreeMessagedClient(tree->id());
-  root->UpdateFrameSinkId(ClientWindowId(tree->id(), 0));
+  root->UpdateFrameSinkId(viz::FrameSinkId(tree->id(), 0));
   return tree;
 }
 

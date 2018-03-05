@@ -387,9 +387,8 @@ interface WindowTreeClient {
   // change.
   OnCaptureChanged(uint64 new_capture, uint64 old_capture);
 
-  // This is called on the owner of a window when it embeds a client in it,
-  // which includes the window manager creating a new window at the request of
-  // another client.
+  // This is called after the client calls Embed() with |window|.
+  // |frame_sink_id| gives the new FrameSinkId of |window|.
   OnFrameSinkIdAllocated(uint64 window, viz.mojom.FrameSinkId frame_sink_id);
 
   // Called in response to NewTopLevelWindow() successfully completing.
