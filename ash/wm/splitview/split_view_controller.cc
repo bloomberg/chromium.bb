@@ -128,6 +128,16 @@ bool IsPrimaryScreenOrientation(
          screen_orientation == blink::kWebScreenOrientationLockPortraitPrimary;
 }
 
+// Returns the minimum size of the window according to the screen orientation.
+int GetMinimumWindowSize(aura::Window* window, bool is_landscape) {
+  int minimum_width = 0;
+  if (window && window->delegate()) {
+    gfx::Size minimum_size = window->delegate()->GetMinimumSize();
+    minimum_width = is_landscape ? minimum_size.width() : minimum_size.height();
+  }
+  return minimum_width;
+};
+
 }  // namespace
 
 SplitViewController::SplitViewController() {
@@ -302,19 +312,9 @@ gfx::Rect SplitViewController::GetSnappedWindowBoundsInScreen(
   if (snap_position == NONE)
     return work_area_bounds_in_screen;
 
-  // |divide_position_| might not be properly initialized yet.
-  divider_position_ = (divider_position_ < 0)
-                          ? GetDefaultDividerPosition(window)
-                          : divider_position_;
-  const gfx::Rect divider_bounds = SplitViewDivider::GetDividerBoundsInScreen(
-      work_area_bounds_in_screen, screen_orientation_, divider_position_,
-      false /* is_dragging */);
-
-  gfx::Rect left_or_top_rect;
-  gfx::Rect right_or_bottom_rect;
-  SplitRect(work_area_bounds_in_screen, divider_bounds,
-            IsCurrentScreenOrientationLandscape(), &left_or_top_rect,
-            &right_or_bottom_rect);
+  gfx::Rect left_or_top_rect, right_or_bottom_rect;
+  GetSnappedWindowBoundsInScreenInternal(window, &left_or_top_rect,
+                                         &right_or_bottom_rect);
 
   // Adjust the bounds for |left_or_top_rect| and |right_or_bottom_rect| if the
   // desired bound is smaller than the minimum bounds of the window.
@@ -381,6 +381,9 @@ void SplitViewController::Resize(const gfx::Point& location_in_screen) {
   // Update the snapped window/windows and divider's position.
   UpdateSnappedWindowsAndDividerBounds();
 
+  // Apply window transform if necessary.
+  SetWindowsTransformDuringResizing();
+
   previous_event_location_ = modified_location_in_screen;
 }
 
@@ -397,6 +400,7 @@ void SplitViewController::EndResize(const gfx::Point& location_in_screen) {
   UpdateDividerPosition(modified_location_in_screen);
   MoveDividerToClosestFixedPosition();
   NotifyDividerPositionChanged();
+  RestoreWindowsTransformAfterResizing();
 
   if (smooth_resize_window_) {
     // Update snapped window/windows bounds before sending OnCompleteDrag() for
@@ -819,6 +823,26 @@ void SplitViewController::UpdateDividerPosition(
   divider_position_ = std::max(0, divider_position_);
 }
 
+void SplitViewController::GetSnappedWindowBoundsInScreenInternal(
+    aura::Window* window,
+    gfx::Rect* left_or_top_rect,
+    gfx::Rect* right_or_bottom_rect) {
+  const gfx::Rect work_area_bounds_in_screen =
+      GetDisplayWorkAreaBoundsInScreen(window);
+
+  // |divide_position_| might not be properly initialized yet.
+  divider_position_ = (divider_position_ < 0)
+                          ? GetDefaultDividerPosition(window)
+                          : divider_position_;
+  const gfx::Rect divider_bounds = SplitViewDivider::GetDividerBoundsInScreen(
+      work_area_bounds_in_screen, screen_orientation_, divider_position_,
+      false /* is_dragging */);
+
+  SplitRect(work_area_bounds_in_screen, divider_bounds,
+            IsCurrentScreenOrientationLandscape(), left_or_top_rect,
+            right_or_bottom_rect);
+}
+
 void SplitViewController::SplitRect(const gfx::Rect& work_area_rect,
                                     const gfx::Rect& divider_rect,
                                     const bool is_split_vertically,
@@ -930,33 +954,25 @@ void SplitViewController::AdjustSnappedWindowBounds(
   aura::Window* right_or_bottom_window =
       IsCurrentScreenOrientationPrimary() ? right_window_ : left_window_;
 
-  auto get_minimum_size = [](aura::Window* window, bool is_landscape) -> int {
-    int minimum_width = 0;
-    if (window && window->delegate()) {
-      gfx::Size minimum_size = window->delegate()->GetMinimumSize();
-      minimum_width =
-          is_landscape ? minimum_size.width() : minimum_size.height();
-    }
-    return minimum_width;
-  };
-
-  bool is_landscape = IsCurrentScreenOrientationLandscape();
-  int left_minimum_width = get_minimum_size(left_or_top_window, is_landscape);
-  int right_minimum_width =
-      get_minimum_size(right_or_bottom_window, is_landscape);
+  const bool is_landscape = IsCurrentScreenOrientationLandscape();
+  const int left_minimum_width =
+      GetMinimumWindowSize(left_or_top_window, is_landscape);
+  const int right_minimum_width =
+      GetMinimumWindowSize(right_or_bottom_window, is_landscape);
 
   if (!is_landscape) {
     TransposeRect(left_or_top_rect);
     TransposeRect(right_or_bottom_rect);
   }
 
-  if (left_or_top_rect->width() < left_minimum_width) {
-    left_or_top_rect->set_x(left_or_top_rect->x() -
-                            (left_minimum_width - left_or_top_rect->width()));
+  if (left_or_top_rect->width() < left_minimum_width)
     left_or_top_rect->set_width(left_minimum_width);
-  }
-  if (right_or_bottom_rect->width() < right_minimum_width)
+  if (right_or_bottom_rect->width() < right_minimum_width) {
+    right_or_bottom_rect->set_x(
+        right_or_bottom_rect->x() -
+        (right_minimum_width - right_or_bottom_rect->width()));
     right_or_bottom_rect->set_width(right_minimum_width);
+  }
 
   if (!is_landscape) {
     TransposeRect(left_or_top_rect);
@@ -1098,6 +1114,70 @@ void SplitViewController::RestoreAndActivateSnappedWindow(
       (window == left_window_) ? right_window_ : left_window_;
   if (stacking_target)
     window->parent()->StackChildBelow(stacking_target, window);
+}
+
+void SplitViewController::SetWindowsTransformDuringResizing() {
+  DCHECK(IsSplitViewModeActive());
+  const bool is_landscape = IsCurrentScreenOrientationLandscape();
+  aura::Window* left_or_top_window =
+      IsCurrentScreenOrientationPrimary() ? left_window_ : right_window_;
+  aura::Window* right_or_bottom_window =
+      IsCurrentScreenOrientationPrimary() ? right_window_ : left_window_;
+
+  gfx::Rect left_or_top_rect, right_or_bottom_rect;
+  GetSnappedWindowBoundsInScreenInternal(
+      GetDefaultSnappedWindow(), &left_or_top_rect, &right_or_bottom_rect);
+
+  gfx::Transform left_or_top_transform;
+  if (left_or_top_window) {
+    const int left_size =
+        is_landscape ? left_or_top_rect.width() : left_or_top_rect.height();
+    const int left_minimum_size =
+        GetMinimumWindowSize(left_or_top_window, is_landscape);
+    const int distance = left_size - left_minimum_size;
+    if (distance < 0) {
+      left_or_top_transform.Translate(is_landscape ? distance : 0,
+                                      is_landscape ? 0 : distance);
+    }
+    SetTransform(left_or_top_window, left_or_top_transform);
+  }
+
+  gfx::Transform right_or_bottom_transform;
+  if (right_or_bottom_window) {
+    const int right_size = is_landscape ? right_or_bottom_rect.width()
+                                        : right_or_bottom_rect.height();
+    const int right_minimum_size =
+        GetMinimumWindowSize(right_or_bottom_window, is_landscape);
+    const int distance = right_size - right_minimum_size;
+    if (distance < 0) {
+      right_or_bottom_transform.Translate(is_landscape ? -distance : 0,
+                                          is_landscape ? 0 : -distance);
+    }
+    SetTransform(right_or_bottom_window, right_or_bottom_transform);
+  }
+
+  if (black_scrim_layer_.get()) {
+    black_scrim_layer_->SetTransform(left_or_top_transform.IsIdentity()
+                                         ? right_or_bottom_transform
+                                         : left_or_top_transform);
+  }
+}
+
+void SplitViewController::RestoreWindowsTransformAfterResizing() {
+  DCHECK(IsSplitViewModeActive());
+  if (left_window_)
+    SetTransform(left_window_, gfx::Transform());
+  if (right_window_)
+    SetTransform(right_window_, gfx::Transform());
+  if (black_scrim_layer_.get())
+    black_scrim_layer_->SetTransform(gfx::Transform());
+}
+
+void SplitViewController::SetTransform(aura::Window* window,
+                                       const gfx::Transform& transform) {
+  DCHECK(window);
+  for (auto* window_iter : wm::GetTransientTreeIterator(window))
+    window_iter->SetTransform(transform);
 }
 
 void SplitViewController::StartOverview() {
