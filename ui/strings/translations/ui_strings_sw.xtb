@@ -8,6 +8,7 @@
 <translation id="1243314992276662751">Pakia</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">PROGRAMU ZINAZOPENDEKEZWA</translation>
+<translation id="1368832886055348810">Kushoto hadi Kulia</translation>
 <translation id="1398853756734560583">Tanua</translation>
 <translation id="1413622004203049571">Zima arifa kutoka <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{Dakika 1 na }other{Dakika # na }}</translation>
@@ -21,6 +22,7 @@
 <translation id="1812519734428420144">Ukadiriaji wa nyota <ph name="RATING_SCORE" /></translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{Saa 1 na }other{Saa # na }}</translation>
 <translation id="1842960171412779397">chagua</translation>
+<translation id="1859234291848436338">Mwelekeo wa Maandishi</translation>
 <translation id="1860796786778352021">Funga arifa</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
@@ -122,6 +124,7 @@
 <translation id="6917971086528278418">{YEARS,plural, =1{Umesalia mwaka 1}other{Imesalia miaka #}}</translation>
 <translation id="6945221475159498467">Chagua</translation>
 <translation id="6965382102122355670">Sawa</translation>
+<translation id="6974053822202609517">Kulia hadi Kushoto</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">UNAZOWEZA KUBOFYA SANA</translation>
 <translation id="7222373446505536781">F11</translation>
@@ -155,6 +158,7 @@
 <translation id="8725488761726303204">+<ph name="NUMBER" /> zaidi</translation>
 <translation id="8730621377337864115">Nimemaliza</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{Saa 1}other{Saa #}}</translation>
+<translation id="8798099450830957504">Chaguo Msingi</translation>
 <translation id="8806053966018712535">Folda ya <ph name="FOLDER_NAME" /></translation>
 <translation id="883911313571074303">Eleza kuhusu picha</translation>
 <translation id="8901569739625249689">KB <ph name="QUANTITY" /></translation>

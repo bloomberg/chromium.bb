@@ -534,10 +534,8 @@
 <translation id="5809361687334836369">{HOURS,plural, =1{قبل ساعة واحدة (#)}zero{قبل # ساعة}two{قبل ساعتين (#)}few{قبل # ساعات}many{قبل # ساعة}other{قبل # ساعة}}</translation>
 <translation id="5817918615728894473">إقران</translation>
 <translation id="583281660410589416">غير معروف</translation>
-<translation id="5832934273103296195">تم التوسيع - انقر للتصغير</translation>
 <translation id="5833984609253377421">مشاركة الرابط</translation>
 <translation id="583891442612896534">‏لا يمكن لمتصفح Chrome الوصول إلى خوادم Google لضغط البيانات. قد تكون خيارات توفير البيانات محدودة.</translation>
-<translation id="584615158992327102">الوصول إلى التنزيلات والإشارات المرجعية والسجل.</translation>
 <translation id="5854790677617711513">مرّ عليها أكثر من 30 يومًا</translation>
 <translation id="5858741533101922242">‏يتعذر على Chrome تشغيل محوّل البلوتوث</translation>
 <translation id="5860033963881614850">إيقاف</translation>
@@ -555,7 +553,6 @@
 <translation id="5962718611393537961">النقر للتصغير</translation>
 <translation id="5974562976030145789">سيتم نقل "التنزيلات". في المرة القادمة، اسحب شريط العناوين للأعلى.</translation>
 <translation id="6000066717592683814">‏الاستمرار في استخدام محرك Google</translation>
-<translation id="6031101910111098835">تم التصغير - انقر للتوسيع</translation>
 <translation id="6039379616847168523">الانتقال السريع إلى علامة التبويب التالية</translation>
 <translation id="6040143037577758943">إغلاق</translation>
 <translation id="6042308850641462728">المزيد</translation>
@@ -601,7 +598,6 @@
 <translation id="6404511346730675251">تعديل إشارة مرجعية</translation>
 <translation id="6406506848690869874">المزامنة</translation>
 <translation id="6409731863280057959">النوافذ المنبثقة</translation>
-<translation id="6411957228448379013">شريط العناوين. مرّر للأعلى للاطلاع على التنزيلات والإشارات المرجعية والسّجل.</translation>
 <translation id="641643625718530986">طباعة…</translation>
 <translation id="6416782512398055893">تم التنزيل بحجم <ph name="MBS" /> ميغابايت</translation>
 <translation id="6433501201775827830">اختيار محرك البحث</translation>
@@ -642,6 +638,7 @@
 <translation id="6701279291835318271">تقارير الأمان</translation>
 <translation id="6710213216561001401">السابق</translation>
 <translation id="6738867403308150051">جارٍ التنزيل…</translation>
+<translation id="6746124502594467657">الانتقال إلى أسفل</translation>
 <translation id="6762156594045689028">لتغيير هذا الإعداد، يمكنك <ph name="BEGIN_LINK" />إعادة تعيين المزامنة<ph name="END_LINK" /></translation>
 <translation id="6770414673596662518">‏سيتم استخدام نظام التصفح الآمن من Chrome أيضًا في اكتشاف الصفحات الضارة وحمايتك من التصيّد، والبرامج الضارة، والتنزيلات التي تلحق أذى بالجهاز.</translation>
 <translation id="6776813977906306442">يمكنك تنزيل مقاطع فيديو لمشاهدتها لاحقًا باستخدام زر "التنزيل"</translation>
@@ -834,6 +831,7 @@
 <translation id="857509777403223202">ستظهر المزيد من المقالات قريبًا. استمتع بليلتك!</translation>
 <translation id="857943718398505171">مسموح به (موصى به)</translation>
 <translation id="8583805026567836021">محو بيانات الحساب</translation>
+<translation id="8609465669617005112">التحريك إلى أعلى</translation>
 <translation id="8616006591992756292">‏قد يتضمن حسابك في Google نماذج أخرى من سجل التصفح في <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="8617240290563765734">‏هل تريد فتح عنوان URL المقترح والمحدد في المحتوى الذي تم تنزيله؟</translation>
 <translation id="862875433388403934">قد لا يكون المحتوى (أفلام، موسيقى، وما إلى ذلك) الذي تم تنزيله في تطبيقات أخرى قابلاً للتشغيل حتى تُعيد هذه التطبيقات الحصول على التراخيص استنادًا إلى بيانات اعتماد الجهاز الجديدة.

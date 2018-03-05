@@ -533,13 +533,6 @@
           Denne retningslinjen tas til etterretning bare hvis retningslinjen DefaultSearchProviderEnabled er aktivert.</translation>
 <translation id="2682225790874070339">Deaktiverer Google Disk i Filer-appen for <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="268577405881275241">Aktiver proxy-tjenerfunksjonen for datakomprimering</translation>
-<translation id="2726613915126661822">Lar deg styre om virtuelle maskiner kan kjøre i Chrome OS.
-
-      Hvis regelen er angitt som True (sann), kan enheten kjøre virtuelle maskiner.
-      Hvis regelen er angitt som False (usann), kan ikke enheten kjøre virtuelle maskiner.
-      Når denne regelen endres til False (usann), gjelder det for nye virtuelle maskiner. Virtuelle maskiner som allerede kjører, blir imidlertid ikke slått av.
-      Når denne regelen ikke er angitt på en administrert enhet, kan ikke enheten kjøre virtuelle maskiner.
-      Ikke-administrerte enheter kan ikke kjøre virtuelle maskiner.</translation>
 <translation id="2731627323327011390">Slå av bruken av <ph name="PRODUCT_OS_NAME" />-sertifikater for ARC-apper</translation>
 <translation id="2742843273354638707">Skjul Chrome Nettmarked-appen og linken fra ny fane-siden og <ph name="PRODUCT_OS_NAME" /> OS-appvelgeren.
 
@@ -604,6 +597,12 @@
 <translation id="2893546967669465276">Send systemlogger til administrasjonstjeneren</translation>
 <translation id="2899002520262095963">Android-apper kan bruke nettverkskonfigurasjoner og CA-sertifikater som angis via denne regelen, men de har ikke tilgang til alle konfigurasjonsalternativene.</translation>
 <translation id="2906874737073861391">Liste over AppPack-utvidelser</translation>
+<translation id="2907992746861405243">Styrer hvilke av skriverne fra <ph name="BULK_PRINTERS_POLICY" /> som er tilgjengelige for brukerne.
+
+      Angir hvilken tilgangsregel som brukes til å konfigurere flere skrivere om gangen. Hvis <ph name="PRINTERS_ALLOW_ALL" /> er valgt, vises alle skriverne. Hvis <ph name="PRINTERS_BLACKLIST" /> er valgt, brukes <ph name="BULK_PRINTERS_BLACKLIST" /> til å begrense tilgangen til de angitte skriverne. Hvis <ph name="PRINTERS_WHITELIST" /> er valgt, angir <ph name="BULK_PRINTERS_WHITELIST" /> bare hvilke skrivere som kan velges.
+
+      Hvis regelen ikke er angitt, brukes <ph name="PRINTERS_ALLOW_ALL" />.
+      </translation>
 <translation id="2908277604670530363">Maksimalt antall samtidige tilkoblinger til proxytjeneren</translation>
 <translation id="2956777931324644324">Denne innstillingen har ikke vært tilgjengelig siden <ph name="PRODUCT_NAME" />-versjon 36.
 
@@ -625,9 +624,6 @@
           Innstillingsverdien må spesifiseres i millisekunder. Verdien er låst til å være lavere enn eller samsvarende med forsinkelsen for å slå av skjermen (hvis den er konfigurert) og inaktivitetsforsinkelsen.</translation>
 <translation id="2987155890997901449">Slå på ARC</translation>
 <translation id="2987227569419001736">Kontrollér bruken av Web Bluetooth API</translation>
-<translation id="3001534538097271560">Hvis denne regelen settes til «false» (usann), kan ikke brukerne velge å sende enkelte typer systeminformasjon og sideinnhold til Google-tjenere. Hvis denne regelen settes til «true» (sann) eller ikke konfigureres, kan brukerne sende enkelte typer systeminformasjon og sideinnhold til Safe Browsing for å bidra til å oppdage farlige apper og nettsteder.
-
-      Gå til https://developers.google.com/safe-browsing for å få mer informasjon om Safe Browsing.</translation>
 <translation id="3016255526521614822">Godkjenn notatapper for å tillate dem på låseskjermen for <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3030000825273123558">Aktiver rapportering av beregninger</translation>
 <translation id="3034580675120919256">Gjør at du kan angi om nettsteder får kjøre JavaScript. Kjøring av JavaScript kan tillates for alle nettsteder, eller nektes for alle nettsteder.
@@ -731,6 +727,9 @@
 
       Hvis denne regelen brukes, blir bare skriverne med ID-er som samsvarer med verdiene i denne regelen, tilgjengelige for brukeren. ID-ene må samsvare med oppføringene i filen spesifisert i <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>
+<translation id="3414260318408232239">Hvis denne regelen ikke er konfigurert, bruker <ph name="PRODUCT_NAME" /> en standard minimumsversjon, som er TLS 1.0.
+
+      Ellers kan den angis som en av de følgende verdiene: «tls1», «tls1.1» eller «tls1.2». Når den er angitt, bruker ikke <ph name="PRODUCT_NAME" /> lavere SSL/TLS-versjoner enn den angitte versjonen. Ukjente verdier blir ignorert.</translation>
 <translation id="3417418267404583991">Hvis denne retningslinjen er angitt som Sann eller ikke er konfigurert, aktiverer <ph name="PRODUCT_OS_NAME" /> gjestepålogging. Gjestepålogginger er anonyme brukerøkter og krever ikke passord.
 
       Hvis denne retningslinjen er angitt som Usann, tillater ikke <ph name="PRODUCT_OS_NAME" /> at gjesteøkter startes.</translation>
@@ -840,6 +839,13 @@
 
           Hvis denne innstillingen ikke angis, blir skjermtastaturet i utgangspunktet slått av, men kan slås på av brukeren når som helst.</translation>
 <translation id="382476126209906314">Konfigurer TalkGadget-prefikset for verter med ekstern adgang</translation>
+<translation id="3831376478177535007">Når denne innstillingen er aktivert, tillater <ph name="PRODUCT_NAME" /> at sertifikater utstedt av Symantec Corporations eldre PKI-operasjoner kan brukes hvis de ellers godkjennes og er koblet til et gjenkjent CA-sertifikat.
+
+      Merk at denne regelen avhenger av at operativsystemet fremdeles gjenkjenner sertifikater fra Symantecs eldre infrastruktur. Hvis en oppdatering av operativsystemet endrer operativsystemets håndtering av slike sertifikater, gjelder ikke denne regelen lenger. Videre er denne regelen ment som en midlertidig løsning for å gi selskaper mer tid på å gå bort fra eldre Symantec-sertifikater. Denne regelen fjernes på eller rundt 1. januar 2019. 
+
+      Hvis denne regelen ikke er angitt, eller hvis den er angitt som usann, følger <ph name="PRODUCT_NAME" /> den offentlig kunngjorte tidsplanen for avvikling.
+
+      Du finner mer informasjon om denne avviklingen på https://g.co/chrome/symantecpkicerts.</translation>
 <translation id="383466854578875212">Lar deg spesifisere hvilke innebygde meldingsverter som ikke er underlagt svartelisten.
 
           Svartelisteverdien * betyr at alle innebygde meldingsverter er svartelistet, og bare de innebygde meldingsvertene som er registrert som godkjente, blir lastet inn.
@@ -999,7 +1005,6 @@
 
     Hvis regelen ikke angis, innfører den ikke noen begrensinger for hvilke apper brukeren kan aktivere på låseskjermen.</translation>
 <translation id="4309640770189628899">Definerer om DHE-chifferserier i TLS er slått på</translation>
-<translation id="4320376026953250541">Microsoft Windows XP SP2 eller nyere</translation>
 <translation id="4322842393287974810">La den automatisk startede kioskappen uten forsinkelse kontrollere <ph name="PRODUCT_OS_NAME" />-versjonen</translation>
 <translation id="4325690621216251241">Legg til en avloggingsknapp for systemstatusfeltet</translation>
 <translation id="4346674324214534449">Lar deg angi om annonser skal blokkeres på nettsteder med forstyrrende annonser.

@@ -31,7 +31,6 @@
 <translation id="1175364870820465910">인쇄(&amp;P)</translation>
 <translation id="1181037720776840403">삭제</translation>
 <translation id="1184214524891303587">발생 가능성이 있는 보안 문제의 세부정보를 Google에 <ph name="BEGIN_WHITEPAPER_LINK" />자동으로 보고<ph name="END_WHITEPAPER_LINK" />합니다. <ph name="PRIVACY_PAGE_LINK" /></translation>
-<translation id="1193706408197842297">결제가 완료되지 않음</translation>
 <translation id="1201402288615127009">다음</translation>
 <translation id="1201895884277373915">이 사이트에서 더보기</translation>
 <translation id="1206967143813997005">잘못된 초기 서명</translation>
@@ -495,7 +494,6 @@
 <translation id="4708268264240856090">연결이 끊김</translation>
 <translation id="471880041731876836">이 사이트에 방문할 수 있는 권한이 없습니다.</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Windows 네트워크 진단 프로그램 실행<ph name="END_LINK" /></translation>
-<translation id="472349245089439925">내 결제</translation>
 <translation id="4726672564094551039">정책 새로고침</translation>
 <translation id="4728558894243024398">플랫폼</translation>
 <translation id="4736825316280949806">Chromium 다시 시작</translation>
@@ -722,7 +720,6 @@
 <translation id="6446608382365791566">자세한 정보 추가</translation>
 <translation id="6447842834002726250">쿠키</translation>
 <translation id="6451458296329894277">양식 다시 제출 확인</translation>
-<translation id="6456339708790392414">결제</translation>
 <translation id="647261751007945333">기기 정책</translation>
 <translation id="6477321094435799029">Chrome이 이 페이지에서 비정상적인 코드를 감지했으며 개인정보(예: 비밀번호, 전화번호, 신용카드) 보호를 위해 차단했습니다.</translation>
 <translation id="6489534406876378309">비정상 종료 업로드 시작하기</translation>

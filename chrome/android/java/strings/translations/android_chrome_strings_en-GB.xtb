@@ -533,10 +533,8 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
 <translation id="5809361687334836369">{HOURS,plural, =1{# hour ago}other{# hours ago}}</translation>
 <translation id="5817918615728894473">Pair</translation>
 <translation id="583281660410589416">Unknown</translation>
-<translation id="5832934273103296195">Expanded – Click to collapse</translation>
 <translation id="5833984609253377421">Share link</translation>
 <translation id="583891442612896534">Chrome is unable to reach Google servers for data compression. Your data savings may be limited.</translation>
-<translation id="584615158992327102">access downloads, bookmarks and history.</translation>
 <translation id="5854790677617711513">Older than 30 days</translation>
 <translation id="5858741533101922242">Chrome is unable to turn on Bluetooth adaptor</translation>
 <translation id="5860033963881614850">Off</translation>
@@ -554,7 +552,6 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
 <translation id="5962718611393537961">Tap to collapse</translation>
 <translation id="5974562976030145789">'Downloads' is moving. Next time, pull the address bar up.</translation>
 <translation id="6000066717592683814">Keep Google</translation>
-<translation id="6031101910111098835">Collapsed – Click to expand</translation>
 <translation id="6039379616847168523">Jump to the next tab</translation>
 <translation id="6040143037577758943">Close</translation>
 <translation id="6042308850641462728">More</translation>
@@ -600,7 +597,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6404511346730675251">Edit bookmark</translation>
 <translation id="6406506848690869874">Sync</translation>
 <translation id="6409731863280057959">Pop-ups</translation>
-<translation id="6411957228448379013">Address bar. Swipe up to see downloads, bookmarks and history.</translation>
 <translation id="641643625718530986">Print…</translation>
 <translation id="6416782512398055893">Downloaded <ph name="MBS" /> MB</translation>
 <translation id="6433501201775827830">Choose your search engine</translation>
@@ -641,6 +637,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6701279291835318271">Security Reports</translation>
 <translation id="6710213216561001401">Previous</translation>
 <translation id="6738867403308150051">Downloading…</translation>
+<translation id="6746124502594467657">Move down</translation>
 <translation id="6762156594045689028">To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" /></translation>
 <translation id="6770414673596662518">Chrome’s Safe Browsing system will also be used to detect malicious pages and protect you from phishing, malware and harmful downloads.</translation>
 <translation id="6776813977906306442">Download videos to watch later using the Download button</translation>
@@ -833,6 +830,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="857509777403223202">More articles will appear soon. Enjoy your evening!</translation>
 <translation id="857943718398505171">Allowed (recommended)</translation>
 <translation id="8583805026567836021">Clearing account data</translation>
+<translation id="8609465669617005112">Move up</translation>
 <translation id="8616006591992756292">Your Google account may have other forms of browsing history at <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="8617240290563765734">Open the suggested URL specified in the downloaded content?</translation>
 <translation id="862875433388403934">Content (films, music, etc.) downloaded in other applications may no longer be playable until those applications re-acquire licences based on a new device credential. To obtain new licences, connect to the Internet and play your downloaded content.</translation>

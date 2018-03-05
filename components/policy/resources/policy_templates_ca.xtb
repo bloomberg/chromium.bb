@@ -516,13 +516,6 @@
 <translation id="267596348720209223">Especifica les codificacions de caràcters que admet el proveïdor de cerca. Les codificacions són noms de pàgines de codi com ara UTF-8, GB2312 i ISO-8859-1. Es proven per ordre. Aquesta política és opcional. Si no es defineix, s'utilitzarà el valor predeterminat, que és UTF-8. Aquesta política només es respecta si la política "DefaultSearchProviderEnabled" està activada.</translation>
 <translation id="2682225790874070339">Desactiva Drive a l'aplicació Fitxers de <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="268577405881275241">Activa la funció del servidor intermediari de compressió de dades</translation>
-<translation id="2726613915126661822">Et permet controlar si es poden executar ordinadors virtuals a Chrome OS.
-
-      Si la política es defineix en "true", el dispositiu pot executar ordinadors virtuals.
-      Si la política es defineix en "false", el dispositiu no pot executar ordinadors virtuals.
-      Quan la política es canvia a "false", afecta l'execució d'ordinadors virtuals nous, però no apaga els que ja s'estan executant.
-      Quan la política no es defineix en un dispositiu gestionat, el dispositiu no té permís per executar ordinadors virtuals.
-      Els dispositius no gestionats tenen permís per executar ordinadors virtuals.</translation>
 <translation id="2731627323327011390">Desactiva l'ús de certificats de <ph name="PRODUCT_OS_NAME" /> a les aplicacions ARC</translation>
 <translation id="2742843273354638707">Amaga l'aplicació Chrome Web Store i l'enllaç de la part inferior de la pàgina a la pàgina Pestanya nova i al Menú d'aplicacions de <ph name="PRODUCT_OS_NAME" />.
 
@@ -587,6 +580,12 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
 <translation id="2893546967669465276">Envia registres del sistema al servidor de gestió</translation>
 <translation id="2899002520262095963">Les aplicacions per a Android poden utilitzar les configuracions de xarxa i els certificats de CA establerts a través d'aquesta política, però no tenen accés a algunes opcions de configuració.</translation>
 <translation id="2906874737073861391">Llista d'extensions d'AppPack</translation>
+<translation id="2907992746861405243">Controla quines impressores de la política <ph name="BULK_PRINTERS_POLICY" /> tenen disponibles els usuaris.
+
+      Determina quina política d'accés s'utilitza per a la configuració massiva d'impressores. Si se selecciona <ph name="PRINTERS_ALLOW_ALL" />, es mostren totes les impressores. Si se selecciona <ph name="PRINTERS_BLACKLIST" />, s'utilitza <ph name="BULK_PRINTERS_BLACKLIST" /> per restringir l'accés a les impressores especificades. Si se selecciona <ph name="PRINTERS_WHITELIST" />, <ph name="BULK_PRINTERS_WHITELIST" /> només mostra les impressores disponibles.
+
+      Si aquesta política no es defineix, es pressuposa que s'aplica <ph name="PRINTERS_ALLOW_ALL" />.
+      </translation>
 <translation id="2908277604670530363">Nombre màxim de connexions paral·leles al servidor intermediari</translation>
 <translation id="2956777931324644324">Aquesta política s'ha retirat a partir de <ph name="PRODUCT_NAME" />, versió 36.
 
@@ -608,9 +607,6 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
           El valor de la política s'ha d'indicar en mil·lisegons i es limita perquè sigui inferior o igual al retard de desactivació (si s'ha definit) i al retard d'inactivitat.</translation>
 <translation id="2987155890997901449">Activa ARC</translation>
 <translation id="2987227569419001736">Controla l'ús de l'API Web Bluetooth</translation>
-<translation id="3001534538097271560">Si s'estableix aquesta política en "false", els usuaris no poden decidir si volen que algunes dades del sistema i contingut de les pàgines s'enviïn als servidors de Google. Si aquesta opció de configuració s'estableix en "true" o no s'estableix, els usuaris poden enviar aquestes dades a Navegació segura per ajudar a detectar les aplicacions i els llocs perillosos.
-
-      Per obtenir més informació sobre Navegació segura, consulta https://developers.google.com/safe-browsing.</translation>
 <translation id="3016255526521614822">Afegeix a la llista blanca les aplicacions per prendre notes que es permeten a la pantalla de bloqueig de <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3030000825273123558">Activa la creació d'informes de mètriques</translation>
 <translation id="3034580675120919256">Us permet definir si els llocs web poden executar JavaScript. L'execució de JavaScript es pot autoritzar o denegar per a tots els llocs web. Si no es defineix aquesta política, s'utilitzarà el paràmetre "AllowJavaScript" i l'usuari podrà canviar-lo.</translation>
@@ -720,6 +716,9 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 
       Si s'utilitza, l'usuari només tindrà a la seva disposició les impressores amb identificadors que coincideixin amb els valors d'aquesta política. Els identificadors han de correspondre amb les entrades del fitxer especificat a <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>
+<translation id="3414260318408232239">Si aquesta política no es configura, <ph name="PRODUCT_NAME" /> utilitzarà TLS 1.0 com a versió mínima predeterminada.
+
+      També es pot definir en un dels valors següents: "tls1", "tls1.1" o "tls1.2". Quan s'hagi definit, <ph name="PRODUCT_NAME" /> no utilitzarà versions SSL/TLS inferiors a la versió especificada. Els valors que no es reconeguin s'ignoraran.</translation>
 <translation id="3417418267404583991">Si aquesta política es defineix a «true» (cert) o no es configura, <ph name="PRODUCT_OS_NAME" /> permetrà els inicis de sessió de convidat. Aquests inicis de sessió són sessions d'usuari anònimes i no cal introduir cap contrasenya.
 
       Si aquesta política es defineix a «false» (fals), <ph name="PRODUCT_OS_NAME" /> no permetrà que s'iniciïn les sessions de convidat.</translation>
@@ -825,6 +824,13 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 
           Si aquesta política es deixa sense configurar, el teclat en pantalla es desactivarà inicialment, però l'usuari el podrà activar en qualsevol moment.</translation>
 <translation id="382476126209906314">Configuració del prefix TalkGadget per als amfitrions d'accés remot</translation>
+<translation id="3831376478177535007">Quan s'activa aquesta opció de configuració, <ph name="PRODUCT_NAME" /> permet que es confiï en els certificats emesos per les operacions de PKI heretades de Symantec Corporation, sempre que puguin validar correctament un certificat de CA reconegut i s'hi puguin encadenar.
+
+      Tingues en compte que aquesta política depèn que el sistema operatiu continuï reconeixent certificats de la infraestructura heretada de Symantec. Si una actualització del sistema operatiu canvia la gestió d'aquest tipus de certificats, aquesta política deixarà de tenir efecte. A més, aquesta política és una solució temporal per donar més temps a les empreses per desvincular-se dels certificats de Symantec heretats i se suprimirà l'1 de gener del 2019 o un dia proper a aquesta data.
+
+      Si aquesta política no s'estableix o s'estableix en "false", <ph name="PRODUCT_NAME" /> seguirà el programa de desactivació anunciat públicament.
+
+      Consulta https://g.co/chrome/symantecpkicerts per obtenir més informació sobre aquesta desactivació.</translation>
 <translation id="383466854578875212">Us permet especificar quins amfitrions de missatgeria nativa no s'han d'incloure a la llista negra.
 
           Un valor de llista negra de "*" significa que tots els amfitrions de missatgeria nativa són a la llista negra i que només es carregaran els que s'indiquin a la llista blanca.
@@ -979,7 +985,6 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 
       Si la política no es defineix, no imposarà cap restricció al conjunt d'aplicacions que l'usuari pot activar a la pantalla de bloqueig.</translation>
 <translation id="4309640770189628899">Si els sistemes de xifratge DHE de TLS estan activats</translation>
-<translation id="4320376026953250541">Microsoft Windows XP SP2 o una versió posterior</translation>
 <translation id="4322842393287974810">Permet que l'aplicació de quiosc d'inici automàtic sense retards controli la versió de <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Afegeix un botó de tancament de sessió a la safata del sistema</translation>
 <translation id="4346674324214534449">Et permet definir si s'han de bloquejar els anuncis als llocs web amb anuncis intrusius.
@@ -993,7 +998,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
           Si s'estableix en "false" o no s'estableix, el proveïdor de contingut no ofereix informació.</translation>
 <translation id="435461861920493948">Conté una llista dels patrons que s'utilitzen per controlar la visibilitat dels comptes a <ph name="PRODUCT_NAME" />.
 
-      Per determinar-ne la visibilitat a <ph name="PRODUCT_NAME" />, cada compte de Google que hi hagi al dispositiu es compararà amb els patrons emmagatzemats en aquesta política. Si el nom d'un compte coincideix amb algun dels patrons de la llista, es podrà veure. En cas contrari, s'amagarà.
+      Per determinar-ne la visibilitat a <ph name="PRODUCT_NAME" />, cada compte de Google que hi hagi al dispositiu es compararà amb els patrons emmagatzemats en aquesta política. Si el nom d'un compte coincideix amb algun dels patrons de la llista, el compte es podrà veure. En cas contrari, s'amagarà.
 
       Utilitza el caràcter comodí "*" per cercar coincidències amb zero o més caràcters arbitraris. El caràcter d'escapada és "\", per tant, col·loca'l davant de "*" o "\" per obtenir instàncies reals d'aquests caràcters.
 

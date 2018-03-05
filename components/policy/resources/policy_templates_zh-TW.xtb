@@ -519,13 +519,6 @@
 <translation id="267596348720209223">指定搜尋引擎支援的字元編碼。編碼就是 UTF-8、GB2312 和 ISO-8859-1 等字碼頁名稱。系統會以提供的順序來測試。這項政策是選擇性的，如果未設定，預設會使用的是 UTF-8。只有在啟用「DefaultSearchProviderEnabled」政策時，系統才會遵循這項政策。</translation>
 <translation id="2682225790874070339">停用 <ph name="PRODUCT_OS_NAME" />「檔案」應用程式中的雲端硬碟</translation>
 <translation id="268577405881275241">啟用資料壓縮 Proxy 功能</translation>
-<translation id="2726613915126661822">讓你控制虛擬機器能否在 Chrome 作業系統上運作。
-
-      如果將這項政策設為 True，裝置將可以執行虛擬機器。
-      如果將這項政策設為 False，裝置將無法執行虛擬機器。
-      當這項政策變更為 False 時，會禁止裝置啟動新的虛擬機器，但不會關閉已在執行中的虛擬機器。
-      在受管理的裝置上，如果不設定這項政策，裝置將無法執行虛擬機器。
-      未受管理的裝置則可執行虛擬機器。</translation>
 <translation id="2731627323327011390">禁止 ARC 應用程式使用「<ph name="PRODUCT_OS_NAME" />」憑證</translation>
 <translation id="2742843273354638707">在新分頁和 <ph name="PRODUCT_OS_NAME" />應用程式啟動畫面中隱藏 Chrome 線上應用程式商店和底端連結。
 
@@ -590,6 +583,12 @@
 <translation id="2893546967669465276">將系統紀錄傳送到管理伺服器</translation>
 <translation id="2899002520262095963">Android 應用程式可以使用透過這項政策指定的網路設定和 CA 憑證，但無法存取部分設定選項。</translation>
 <translation id="2906874737073861391">AppPack 擴充功能清單</translation>
+<translation id="2907992746861405243">根據 <ph name="BULK_PRINTERS_POLICY" /> 設定哪些印表機是可供使用的。
+
+      指派用於大量印表機設定的存取權政策。如果選取 <ph name="PRINTERS_ALLOW_ALL" />，系統會顯示所有印表機。如果選取 <ph name="PRINTERS_BLACKLIST" />，系統會使用 <ph name="BULK_PRINTERS_BLACKLIST" /> 限制對特定印表機的存取權。如果選取 <ph name="PRINTERS_WHITELIST" />，<ph name="BULK_PRINTERS_WHITELIST" /> 只會指派可選取的印表機。
+
+      如果未設定這項政策，系統會自動採用 <ph name="PRINTERS_ALLOW_ALL" />。
+      </translation>
 <translation id="2908277604670530363">Proxy 伺服器的並行連線數量上限</translation>
 <translation id="2956777931324644324">我們已於 <ph name="PRODUCT_NAME" /> 版本 36 中移除這項政策。
 
@@ -611,9 +610,6 @@
           指定政策值時需以毫秒為單位。該值需小於或等於螢幕關閉延遲時間 (如有設定) 和閒置延遲時間。</translation>
 <translation id="2987155890997901449">啟用 ARC</translation>
 <translation id="2987227569419001736">控制 Web Bluetooth API 使用權限</translation>
-<translation id="3001534538097271560">如果將此政策設為 False，使用者將無法選擇向 Google 伺服器傳送一些系統資訊和網頁內容；如果設為 True 或未設定，使用者就可以向「安全瀏覽」服務傳送一些系統資訊和網頁內容，協助我們偵測危險的應用程式和網站。
-
-      如需進一步瞭解「安全瀏覽」功能，請參閱 https://developers.google.com/safe-browsing。</translation>
 <translation id="3016255526521614822">將「<ph name="PRODUCT_OS_NAME" />」螢幕鎖定畫面允許的筆記應用程式加入許可清單</translation>
 <translation id="3030000825273123558">啟用計量報告</translation>
 <translation id="3034580675120919256">允許你設定是否要讓網站執行 JavaScript。你可以允許或禁止所有網站執行 JavaScript。如果未設定這項政策，系統會使用「AllowJavaScript」，不過使用者可以變更設定。</translation>
@@ -722,6 +718,9 @@
 
       一旦設定了這項政策，使用者就只能使用 ID 符合本政策值的印表機，且 ID 必須和 <ph name="DEVICE_PRINTERS_POLICY" /> 中指定的檔案項目相符。
       </translation>
+<translation id="3414260318408232239">如果未設定這項政策，<ph name="PRODUCT_NAME" /> 會使用預設最低版本 TLS 1.0。
+
+      這項政策可使用的設定值包括：「tls1」、「tls1.1」或「tls1.2」。設定後，<ph name="PRODUCT_NAME" /> 就不會使用低於指定版本的 SSL/TLS 版本。系統會忽略無法辨識的值。</translation>
 <translation id="3417418267404583991">如果這項政策設為 True 或未設定，<ph name="PRODUCT_OS_NAME" /> 會啟用訪客登入。訪客登入是匿名的使用者工作階段，並且不需要密碼。
 
       如果這項政策設為 False，<ph name="PRODUCT_OS_NAME" /> 不會允許開啟訪客工作階段。</translation>
@@ -829,6 +828,13 @@
 
           如未設定這項政策，螢幕小鍵盤將預設為停用，但使用者可以隨時啟用這項功能。</translation>
 <translation id="382476126209906314">為遠端存取主機設定 TalkGadget 前置詞</translation>
+<translation id="3831376478177535007">啟用這項設定時，如果賽門鐵克公司的舊版 PKI 作業核發的憑證成功通過驗證並鏈結至已辨識的 CA 憑證，就會受到 <ph name="PRODUCT_NAME" /> 信任。
+
+      請注意，這項政策的效力取決於作業系統是否仍可辨識來自賽門鐵克公司舊版基礎架構的憑證。如果作業系統更新變更了作業系統對這類憑證的處理方式，這項政策就會失效。此外，這項政策是暫時性的解決方案，目的是讓使用舊版賽門鐵克公司憑證的企業有更多時間尋找其他解決方案。我們將於 2019 年 1 月 1 日左右移除這項政策。
+
+      如果未設定這項政策，或是將這項政策設為 false，<ph name="PRODUCT_NAME" /> 將會按照公開宣佈的淘汰時間表。
+
+      如要進一步瞭解這項淘汰作業，請參閱 https://g.co/chrome/symantecpkicerts。</translation>
 <translation id="383466854578875212">讓你指定不列入黑名單的內建訊息傳遞主機。
 
           如果黑名單的值指定為 *，表示將所有內建訊息傳遞主機列入黑名單，只載入許可清單中列出的內建訊息傳遞主機。
@@ -984,7 +990,6 @@
 
       如未設定政策，使用者可在螢幕鎖定畫面中啟用的應用程式集就不會受到任何政策限制。</translation>
 <translation id="4309640770189628899">是否在 TLS 中啟用 DHE 加密套件</translation>
-<translation id="4320376026953250541">Microsoft Windows XP SP2 或更新版本</translation>
 <translation id="4322842393287974810">允許使用無延遲資訊站應用程式的自動啟動功能來控制 <ph name="PRODUCT_OS_NAME" /> 版本</translation>
 <translation id="4325690621216251241">在系統列顯示登出按鈕</translation>
 <translation id="4346674324214534449">讓你設定是否禁止含侵入式廣告的網站顯示廣告。
@@ -2330,7 +2335,7 @@
 
       這項政策不會影響到使用者在個別裝置上設定印表機的權限，其目的是為了讓個別使用者指定的印表機設定更為完善。
       </translation>
-<translation id="8934944553121392674">控制 <ph name="DEVICE_PRINTERS_POLICY" /> 中哪些印表機可供使用。
+<translation id="8934944553121392674">根據 <ph name="DEVICE_PRINTERS_POLICY" /> 設定哪些印表機是可供使用的。
 
       指派用於大量印表機設定的存取權政策。如果選取 <ph name="PRINTERS_ALLOW_ALL" />，系統會顯示所有印表機。如果選取 <ph name="PRINTERS_BLACKLIST" />，系統會使用 <ph name="DEVICE_PRINTERS_BLACKLIST" /> 限制對特定印表機的存取權。如果選取 <ph name="PRINTERS_WHITELIST" />，<ph name="DEVICE_PRINTERS_WHITELIST" /> 只會指派可選取的印表機。
 

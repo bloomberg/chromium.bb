@@ -25,6 +25,7 @@
 <translation id="1525508553941733066">ΑΠΟΡΡΙΨΗ</translation>
 <translation id="15373452373711364">Μεγάλος δείκτης ποντικιού</translation>
 <translation id="1550523713251050646">Κάντε κλικ για περισσότερες επιλογές</translation>
+<translation id="1608626060424371292">Κατάργηση αυτού του χρήστη</translation>
 <translation id="1621499497873603021">Χρόνος που απομένει μέχρι να αδειάσει η μπαταρία, <ph name="TIME_LEFT" /></translation>
 <translation id="1658406695958299976">Λυπούμαστε, η επαλήθευση του κωδικού πρόσβασης εξακολουθεί να μην είναι δυνατή. Σημείωση: Εάν έχετε αλλάξει πρόσφατα τον κωδικό πρόσβασης, ο νέος κωδικός πρόσβασης θα τεθεί σε ισχύ αφού αποσυνδεθείτε. Χρησιμοποιήστε εδώ τον παλιό κωδικό πρόσβασης.</translation>
 <translation id="1677472565718498478">Απομένουν <ph name="TIME" /></translation>
@@ -74,7 +75,6 @@
 <translation id="2653659639078652383">Υποβολή</translation>
 <translation id="2675319268637823299">Ένας διαχειριστής δεν επιτρέπει τη σύνδεση σε πολλούς λογαριασμούς για τον χρήστη <ph name="USER_EMAIL" />.
     Όλοι οι χρήστες πρέπει να αποσυνδεθούν για να συνεχίσετε.</translation>
-<translation id="2700058918926273959">Η περίοδος σύνδεσης λήγει σε <ph name="SESSION_TIME_REMAINING" />. Θα αποσυνδεθείτε.</translation>
 <translation id="2727977024730340865">Σύνδεση με φορτιστή χαμηλής ισχύος. Η φόρτιση της μπαταρίας ενδέχεται να μη γίνεται με αξιόπιστο τρόπο.</translation>
 <translation id="2761704814324807722">Δίσκος κατάστασης, ώρα <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Επανασύνδεση στο δίκτυο <ph name="NAME" /></translation>
@@ -97,6 +97,7 @@
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">Κάτω</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
+<translation id="3112378005171663295">Σύμπτυξη</translation>
 <translation id="3126069444801937830">Επανεκκίνηση για ενημέρωση</translation>
 <translation id="3147142846278915599">Εφαρμογή εκκίνησης (συγχρονισμός εφαρμογών…)</translation>
 <translation id="315116470104423982">Δεδομένα κινητής τηλεφωνίας</translation>
@@ -209,6 +210,7 @@
 <translation id="607652042414456612">Ο υπολογιστής σας μπορεί να εντοπιστεί από κοντινές συσκευές Bluetooth και θα εμφανίζεται ως "<ph name="NAME" />" με διεύθυνση <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">Φόρτιση <ph name="POWER_SOURCE" /></translation>
 <translation id="615957422585914272">Εμφάνιση πληκτρολογίου οθόνης</translation>
+<translation id="6164005077879661055">Όλα τα αρχεία και τα τοπικά δεδομένα που σχετίζονται με το χρήστη υπό επίβλεψη θα διαγραφούν οριστικά μόλις καταργηθεί ο χρήστης υπό επίβλεψη. Οι ιστοσελίδες που έχει επισκεφτεί και οι ρυθμίσεις που έχει επιλέξει ενδεχομένως να εξακολουθούν να εμφανίζονται στο διαχειριστή στη διεύθυνση <ph name="MANAGEMENT_URL" /> .</translation>
 <translation id="6165508094623778733">Μάθετε περισσότερα</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Ενεργοποίηση…</translation>
 <translation id="6284232397434400372">Η ανάλυση άλλαξε</translation>
@@ -243,6 +245,7 @@
 <translation id="6857811139397017780">Ενεργοποίηση <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Συμμετοχή σε άλλο…</translation>
 <translation id="6981982820502123353">Προσβασιμότητα</translation>
+<translation id="698231206551913481">Όλα τα αρχεία και τα τοπικά δεδομένα που σχετίζονται με τον χρήστη θα διαγραφούν οριστικά μόλις καταργηθεί ο χρήστης.</translation>
 <translation id="7029814467594812963">Έξοδος από συνεδρία</translation>
 <translation id="7034339000180558234">Μετάδοση <ph name="TAB_NAME" /> σε <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Ορισμός ταπετσαρίας...</translation>

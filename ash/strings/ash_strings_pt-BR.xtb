@@ -25,6 +25,7 @@
 <translation id="1525508553941733066">DISPENSAR</translation>
 <translation id="15373452373711364">Cursor grande do mouse</translation>
 <translation id="1550523713251050646">Clique para ver mais opções</translation>
+<translation id="1608626060424371292">Remover este usuário</translation>
 <translation id="1621499497873603021">O tempo restante até que a bateria se esgote é de <ph name="TIME_LEFT" /></translation>
 <translation id="1658406695958299976">Ainda não foi possível confirmar sua senha. Observação: se você alterou sua senha recentemente, a nova senha será aplicada depois que você sair da conta. Use a senha antiga aqui.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> restante(s)</translation>
@@ -74,7 +75,6 @@
 <translation id="2653659639078652383">Enviar</translation>
 <translation id="2675319268637823299">Um administrador desativou o login múltiplo para <ph name="USER_EMAIL" />.
     Todos os usuários precisam sair para continuar.</translation>
-<translation id="2700058918926273959">A sessão termina em <ph name="SESSION_TIME_REMAINING" />. Você será desconectado.</translation>
 <translation id="2727977024730340865">Conectado a um carregador de baixa potência. O carregamento da bateria pode não ser confiável.</translation>
 <translation id="2761704814324807722">Bandeja de status, tempo <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Reconectando-se a <ph name="NAME" /></translation>
@@ -97,6 +97,7 @@
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">Parte inferior</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
+<translation id="3112378005171663295">Recolher</translation>
 <translation id="3126069444801937830">Reiniciar para atualizar</translation>
 <translation id="3147142846278915599">Tela de início (sincronizando aplicativos...)</translation>
 <translation id="315116470104423982">Dados do celular</translation>
@@ -210,6 +211,8 @@
 <translation id="607652042414456612">Seu computador pode ser detectado por dispositivos Bluetooth próximos e aparecerá como "<ph name="NAME" />", com o endereço <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">Carregando <ph name="POWER_SOURCE" /></translation>
 <translation id="615957422585914272">Mostrar teclado na tela</translation>
+<translation id="6164005077879661055">Todos os arquivos e dados locais associados ao usuário supervisionado serão
+permanentemente excluídos assim que esse usuário for removido. Os websites visitados por esse usuário supervisionado e suas configurações ainda poderão ser vistos pelo administrador em <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Saiba mais</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Ativando...</translation>
 <translation id="6284232397434400372">Resolução alterada</translation>
@@ -244,6 +247,7 @@ Use esse recurso somente com contas nas quais você confia.</translation>
 <translation id="6857811139397017780">Ativar <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Conectar-se a outra...</translation>
 <translation id="6981982820502123353">Acessibilidade</translation>
+<translation id="698231206551913481">Todos os arquivos e dados locais associados a este usuário serão excluídos permanentemente quando o usuário for removido.</translation>
 <translation id="7029814467594812963">Sair da sessão</translation>
 <translation id="7034339000180558234">Transmitindo <ph name="TAB_NAME" /> para <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Definir plano de fundo...</translation>

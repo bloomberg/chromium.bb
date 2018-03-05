@@ -15,17 +15,21 @@
 <translation id="2576842806987913196">Ja hi ha un fitxer CRX amb aquest nom.</translation>
 <translation id="2753617847762399167">Camí il·legal (absolut o relatiu amb ".."): "<ph name="IMAGE_PATH" />"</translation>
 <translation id="27822970480436970">Aquesta extensió no ha pogut modificar una sol·licitud de xarxa perquè la modificació està en conflicte amb una altra extensió.</translation>
+<translation id="2785530881066938471">No s'ha pogut carregar el fitxer "<ph name="RELATIVE_PATH" />" per a l'script de contingut. No està codificat com a UTF-8.</translation>
 <translation id="2903070246402204397">L'administrador ha bloquejat l'extensió <ph name="EXTENSION_NAME" /> (amb l'identificador <ph name="EXTENSION_ID" />). <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">No s'ha pogut instal·lar el paquet: "<ph name="ERROR_CODE" />"</translation>
+<translation id="3097628171361913691">Instal·lador de fitxers zip</translation>
 <translation id="3115238746683532089">Producte desconegut <ph name="PRODUCT_ID" /> del proveïdor <ph name="VENDOR_ID" /> (número de sèrie <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3144135466825225871">No s'ha pogut substituir el fitxer crx. Comproveu si el fitxer s'està utilitzant.</translation>
 <translation id="3163201441334626963">Producte desconegut <ph name="PRODUCT_ID" /> del proveïdor <ph name="VENDOR_ID" /></translation>
+<translation id="3302709122321372472">No s'ha pogut carregar el CSS "<ph name="RELATIVE_PATH" />" per a l'script de contingut.</translation>
 <translation id="3369521687965833290">No es pot desempaquetar l'extensió. Per desempaquetar l'extensió amb seguretat, cal un camí al directori del perfil que comenci amb la lletra d'una unitat i no contingui cap unió, punt de muntatge o enllaç simbòlic. No hi ha cap camí d'aquestes característiques al vostre perfil.</translation>
 <translation id="3393440416772303020"><ph name="PRODUCT_NAME" /> (número de sèrie <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME" /> del proveïdor <ph name="VENDOR_ID" /> (número de sèrie <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3561217442734750519">El valor d'entrada per a la clau privada ha de ser un camí vàlid.</translation>
 <translation id="388442998277590542">No s'ha pogut carregar la pàgina d'opcions "<ph name="OPTIONS_PAGE" />".</translation>
 <translation id="3984413272403535372">S'ha produït un error en signar l'extensió.</translation>
+<translation id="39964277676607559">No s'ha pogut carregar el JavaScript "<ph name="RELATIVE_PATH" />" per a l'script de contingut.</translation>
 <translation id="4115165561519362854">L'administrador d'aquest ordinador requereix que <ph name="EXTENSION_NAME" /> tingui com a mínim la versió <ph name="EXTENSION_VERSION" />. No es pot activar fins que no s'hagi actualitzat a aquesta versió (o posterior).</translation>
 <translation id="4233778200880751280">No s'ha pogut carregar la pàgina d'informació "<ph name="ABOUT_PAGE" />".</translation>
 <translation id="471800408830181311">No s'ha pogut generar la clau privada.</translation>

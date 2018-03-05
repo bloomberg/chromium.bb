@@ -25,6 +25,7 @@
 <translation id="1525508553941733066">ZATVORIŤ</translation>
 <translation id="15373452373711364">Veľký kurzor myši</translation>
 <translation id="1550523713251050646">Kliknutím zobrazíte ďalšie možnosti</translation>
+<translation id="1608626060424371292">Odstrániť tohto používateľa</translation>
 <translation id="1621499497873603021">Čas zostávajúci do vybitia batérie: <ph name="TIME_LEFT" /></translation>
 <translation id="1658406695958299976">Je nám to ľúto, ale vaše heslo sa stále nedarí overiť. Poznámka: Ak ste ho nedávno zmenili, nové heslo sa použije až po odhlásení. Tu použite staré heslo.</translation>
 <translation id="1677472565718498478">Zostávajúci čas: <ph name="TIME" /></translation>
@@ -74,7 +75,6 @@
 <translation id="2653659639078652383">Odoslať</translation>
 <translation id="2675319268637823299">Správca zakázal viacnásobné prihlásenie pre používateľa <ph name="USER_EMAIL" />.
 Všetci používatelia sa musia odhlásiť a až potom môžu pokračovať.</translation>
-<translation id="2700058918926273959">Relácia sa skončí o <ph name="SESSION_TIME_REMAINING" />. Následne budete odhlásený/-á.</translation>
 <translation id="2727977024730340865">Batéria je zapojená do nabíjačky s nízkym výkonom. Nabíjanie batérie nemusí byť spoľahlivé.</translation>
 <translation id="2761704814324807722">Stavový panel, čas <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Prebieha opätovné pripájanie k sieti <ph name="NAME" /></translation>
@@ -97,6 +97,7 @@ Všetci používatelia sa musia odhlásiť a až potom môžu pokračovať.</tr
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">Spodok</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
+<translation id="3112378005171663295">Zbaliť</translation>
 <translation id="3126069444801937830">Reštartovaním vykonáte aktualizáciu</translation>
 <translation id="3147142846278915599">Spúšťač (synchronizujú sa aplikácie...)</translation>
 <translation id="315116470104423982">Mobilné dátové prenosy</translation>
@@ -209,6 +210,7 @@ Všetci používatelia sa musia odhlásiť a až potom môžu pokračovať.</tr
 <translation id="607652042414456612">Váš počítač je viditeľný pre zariadenia Bluetooth v blízkosti a zobrazí sa ako <ph name="NAME" /> s adresou <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">Nabíja sa zariadenie <ph name="POWER_SOURCE" /></translation>
 <translation id="615957422585914272">Zobraziť klávesnicu na obrazovke</translation>
+<translation id="6164005077879661055">Všetky súbory a miestne údaje spojené s týmto kontrolovaným používateľom budú po jeho odstránení natrvalo odstránené. Správca bude môcť naďalej zobraziť navštívené webové stránky a nastavenia tohto používateľa na adrese <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Ďalšie informácie</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Aktivuje sa...</translation>
 <translation id="6284232397434400372">Rozlíšenie sa zmenilo</translation>
@@ -243,6 +245,7 @@ Túto funkciu používajte iba s dôveryhodnými účtami.</translation>
 <translation id="6857811139397017780">Aktivovať zariadenie <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Pripojiť k ďalšej...</translation>
 <translation id="6981982820502123353">Dostupnosť</translation>
+<translation id="698231206551913481">Všetky súbory a miestne údaje priradené k tomuto používateľovi budú po jeho odstránení natrvalo vymazané.</translation>
 <translation id="7029814467594812963">Ukončiť reláciu</translation>
 <translation id="7034339000180558234">Prenášanie karty <ph name="TAB_NAME" /> do zariadenia <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Nastavenie tapety...</translation>

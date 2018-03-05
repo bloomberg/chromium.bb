@@ -543,13 +543,6 @@
           이 정책은 'DefaultSearchProviderEnabled' 정책을 사용하도록 설정한 경우에만 적용됩니다.</translation>
 <translation id="2682225790874070339"><ph name="PRODUCT_OS_NAME" /> 파일 앱에서 Google 드라이브 사용 중지</translation>
 <translation id="268577405881275241">데이터 압축 프록시 기능 사용</translation>
-<translation id="2726613915126661822">Chrome OS에서 가상 머신 실행을 허용할지 여부를 설정할 수 있습니다.
-
-      정책을 True로 설정하면 기기에서 가상 머신을 실행할 수 있습니다.
-      정책을 False로 설정하면 기기에서 가상 머신을 실행할 수 없습니다.
-      이 정책을 False로 변경하면 새로운 가상 머신을 실행할 수 없지만 이미 실행 중인 가상 머신이 종료되지는 않습니다.
-      관리 대상 기기에 이 정책을 설정하지 않으면 기기에서 가상 머신을 실행할 수 없습니다.
-      관리 대상이 아닌 기기에서는 가상 머신을 실행할 수 있습니다.</translation>
 <translation id="2731627323327011390">ARC 앱에서 <ph name="PRODUCT_OS_NAME" /> 인증서를 사용하지 않도록 설정</translation>
 <translation id="2742843273354638707">새 탭 페이지 및 <ph name="PRODUCT_OS_NAME" /> 앱 런처에서 Chrome 웹 스토어 앱과 바닥글 링크가 표시되지 않도록 숨깁니다.
 
@@ -614,6 +607,12 @@
 <translation id="2893546967669465276">시스템 로그를 관리 서버로 전송합니다.</translation>
 <translation id="2899002520262095963">Android 앱은 이 정책을 통해 설정된 네트워크 구성 및 CA 인증서를 사용할 수 있지만 일부 구성 옵션에는 액세스할 권한이 없습니다.</translation>
 <translation id="2906874737073861391">AppPack 확장 프로그램 목록</translation>
+<translation id="2907992746861405243"><ph name="BULK_PRINTERS_POLICY" />에 명시된 프린터 중 어떤 프린터를 사용자에게 제공할지 관리합니다.
+
+      일괄 프린터 설정에 사용할 액세스 정책을 지정합니다. <ph name="PRINTERS_ALLOW_ALL" />을(를) 선택하면 모든 프린터가 표시됩니다. <ph name="PRINTERS_BLACKLIST" />을(를) 선택하면 <ph name="BULK_PRINTERS_BLACKLIST" />이(가) 사용되어 특정 프린터에 관한 액세스 권한이 제한됩니다. <ph name="PRINTERS_WHITELIST" />을(를) 선택하면 <ph name="BULK_PRINTERS_WHITELIST" />이(가) 사용되어 선택 가능한 프린터만 지정됩니다.
+
+      이 정책이 설정되어 있지 않으면 <ph name="PRINTERS_ALLOW_ALL" />이(가) 기본적으로 사용됩니다.
+      </translation>
 <translation id="2908277604670530363">프록시 서버에 대한 최대 동시 연결 수</translation>
 <translation id="2956777931324644324">이 정책은 <ph name="PRODUCT_NAME" /> 버전 36을 기준으로 지원 중단되었습니다.
 
@@ -635,9 +634,6 @@
           정책 값은 밀리초 단위로 지정해야 하며, 화면 꺼짐 지연 시간(설정된 경우) 및 유휴 지연 시간보다 작거나 같도록 값이 잘립니다.</translation>
 <translation id="2987155890997901449">ARC 사용</translation>
 <translation id="2987227569419001736">Web Bluetooth API 사용 조정</translation>
-<translation id="3001534538097271560">이 정책을 false로 설정하면 사용자가 일부 시스템 정보 및 페이지 콘텐츠를 Google 서버로 전송하지 못하지 못하게 됩니다. 이 설정이 true로 설정되거나 설정되지 않으면 사용자는 위험한 앱 및 사이트를 감지하기 위해 일부 시스템 정보와 페이지 콘텐츠를 세이프 브라우징으로 전송할 수 있습니다.
-
-      세이프 브라우징에 관해 자세히 알아보려면 https://developers.google.com/safe-browsing을 참조하세요.</translation>
 <translation id="3016255526521614822"><ph name="PRODUCT_OS_NAME" /> 잠금 화면에서 사용 설정된 메모 앱을 허용 목록에 추가</translation>
 <translation id="3030000825273123558">통계 보고 사용</translation>
 <translation id="3034580675120919256">웹사이트에서 자바스크립트를 실행하도록 허용할지 여부를 설정할 수 있습니다. 자바스크립트 실행은 모든 웹사이트에서 허용 또는 거부하도록 할 수 있습니다.
@@ -752,6 +748,9 @@
 
       이 정책을 사용하면 이 정책에 있는 값과 ID가 일치하는 프린터만 사용자에게 제공됩니다. 이 ID는 <ph name="DEVICE_PRINTERS_POLICY" />에 명시된 파일 내 항목과 일치해야 합니다.
       </translation>
+<translation id="3414260318408232239">이 정책을 설정하지 않으면 <ph name="PRODUCT_NAME" />에서 기본 최소 버전인 TLS 1.0이 사용됩니다.
+
+      정책을 설정하는 경우 'tls1', 'tls1.1', 'tls1.2' 중 하나로 설정할 수 있으며, 버전을 설정하면 <ph name="PRODUCT_NAME" />에서 지정된 버전보다 낮은 SSL/TLS 버전은 사용되지 않습니다. 인식할 수 없는 값은 무시됩니다.</translation>
 <translation id="3417418267404583991">이 정책을 true로 설정하거나 구성하지 않으면 <ph name="PRODUCT_OS_NAME" />은(는) 손님 로그인을 사용합니다. 손님 로그인은 익명 사용자 세션이며 비밀번호가 필요없습니다.
 
       이 정책을 false로 설정하면, <ph name="PRODUCT_OS_NAME" />은(는) 손님 세션을 시작하지 않습니다.</translation>
@@ -859,6 +858,13 @@
 
           이 정책을 설정하지 않으면 처음에는 터치 키보드를 사용하지 않도록 설정되지만 사용자가 언제든지 사용하도록 설정할 수 있습니다.</translation>
 <translation id="382476126209906314">원격 액세스 호스트에 대한 TalkGadget 프리픽스 구성</translation>
+<translation id="3831376478177535007">이 설정이 사용 설정되어 있으면 Symantec Corporation의 이전 PKI 작업에서 발급한 인증서가 별도로 확인되었고 인식할 수 있는 CA 인증서에 체인이 구축되어있을 시 <ph name="PRODUCT_NAME" />에서 이 인증서를 신뢰할 수 있도록 허용합니다.
+
+      이 정책을 사용하려면 여전히 이전 Symantec 인프라의 인증서를 인식하고 있는 운영체제가 필요합니다. OS 업데이트로 인해 이 인증서의 OS 처리가 변경되면 이 정책은 더 이상 적용되지 않습니다. 또한 이 정책은 기업에서 이전 Symantec 인증서에서 전환할 시간을 주기 위해 사용되는 임시 해결 방법입니다. 이 정책은 2019년 1월 1일경에 중단됩니다.
+
+      이 정책이 설정되어 있지 않거나 false로 설정되어 있으면 <ph name="PRODUCT_NAME" />에서 공개 발표된 지원 중단 일정을 따릅니다.
+
+      지원 중단에 관한 자세한 정보는 https://g.co/chrome/symantecpkicerts를 확인하세요.</translation>
 <translation id="383466854578875212">차단 목록에 적용되지 않는 기본 메시지 호스트를 지정하도록 허용합니다.
 
           차단 목록 * 값은 모든 기본 메시지 호스트가 차단되며 허용 목록에 표시된 기본 메시지 호스트만 로드됨을 나타냅니다.
@@ -1019,7 +1025,6 @@
 
       정책을 설정하지 않은 상태로 두면 사용자가 잠금 화면에서 사용 설정할 수 있는 앱 집합에 이 정책에 따른 제한이 적용되지 않습니다.</translation>
 <translation id="4309640770189628899">TLS DHE 암호화 기술 사용 설정 여부</translation>
-<translation id="4320376026953250541">Microsoft Windows XP SP2 이상</translation>
 <translation id="4322842393287974810">지연 없이 자동 실행된 키오스크 앱에서 <ph name="PRODUCT_OS_NAME" /> 버전을 제어하도록 허용합니다.</translation>
 <translation id="4325690621216251241">작업 표시줄에 로그아웃 버튼 추가</translation>
 <translation id="4346674324214534449">방해가 되는 광고가 포함된 사이트에서 광고를 차단할지 설정할 수 있습니다.
@@ -2464,7 +2469,7 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
 
       이 정책은 사용자가 개별 기기에서 프린터를 설정할 수 있는지에 영향을 미치지 않습니다. 이 정책은 개별 사용자의 프린터 설정을 보완하기 위한 것입니다.
       </translation>
-<translation id="8934944553121392674"><ph name="DEVICE_PRINTERS_POLICY" />에 명시된 프린터 중 어떤 프린터가 사용자에게 제공될지 관리합니다.
+<translation id="8934944553121392674"><ph name="DEVICE_PRINTERS_POLICY" />에 명시된 프린터 중 어떤 프린터를 사용자에게 제공할지 관리합니다.
 
       일괄 프린터 설정에 사용할 액세스 정책을 지정합니다. <ph name="PRINTERS_ALLOW_ALL" />을(를) 선택하면 모든 프린터가 표시됩니다. <ph name="PRINTERS_BLACKLIST" />을(를) 선택하면 <ph name="DEVICE_PRINTERS_BLACKLIST" />이(가) 사용되어 특정 프린터에 관한 액세스 권한이 제한됩니다. <ph name="PRINTERS_WHITELIST" />을(를) 선택하면 <ph name="DEVICE_PRINTERS_WHITELIST" />이(가) 사용되어 선택 가능한 프린터만 지정됩니다.
 

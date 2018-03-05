@@ -543,13 +543,6 @@
           Dasar ini hanya dihormati jika dasar 'DefaultSearchProviderEnabled' didayakan.</translation>
 <translation id="2682225790874070339">Melumpuhkan Drive dalam apl Fail <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="268577405881275241">Dayakan ciri proksi pemampatan data</translation>
-<translation id="2726613915126661822">Membolehkan anda mengawal sama ada mesin maya dibenarkan untuk dijalankan pada OS Chrome.
-
-      Jika dasar ditetapkan kepada Benar, peranti dibenarkan untuk menjalankan mesin maya.
-      Jika dasar ditetapkan kepada Palsu, peranti tidak akan dibenarkan untuk menjalankan mesin maya.
-      Apabila dasar ini ditukar kepada Palsu, dasar ini diguna pakai pada mesin maya baharu tetapi tidak mematikan mesin maya yang sudah dijalankan.
-      Apabila dasar ini tidak ditetapkan pada peranti terurus, peranti tidak akan dibenarkan untuk menjalankan mesin maya.
-      Peranti yang tidak diurus dibenarkan untuk menjalankan mesin maya.</translation>
 <translation id="2731627323327011390">Lumpuhkan penggunaan sijil <ph name="PRODUCT_OS_NAME" /> pada apl ARC</translation>
 <translation id="2742843273354638707">Sembunyikan apl Gedung Web Chrome dan pautan pembawah daripada Halaman Tab Baharu dan pelancar apl <ph name="PRODUCT_OS_NAME" />.
 
@@ -641,9 +634,6 @@
           Nilai dasar ini harus ditetapkan dalam milisaat. Nilai diapit supaya kurang daripada atau sama dengan kelewatan pemadaman skrin (jika ditetapkan) dan kelewatan melahu.</translation>
 <translation id="2987155890997901449">Dayakan ARC</translation>
 <translation id="2987227569419001736">Kawal penggunaan API Bluetooth Web</translation>
-<translation id="3001534538097271560">Penetapan dasar ini kepada palsu akan menghentikan pengguna daripada memilih untuk menghantar beberapa maklumat sistem dan kandungan halaman kepada pelayan Google. Jika tetapan ini benar atau tidak dikonfigurasikan, maka pengguna akan dibenarkan menghantar beberapa maklumat sistem dan kandungan halaman kepada Penyemakan Imbas Selamat untuk mengesan apl dan tapak yang berbahaya.
-
-      Lihat https://developers.google.com/safe-browsing untuk mendapatkan maklumat tentang Penyemakan Imbas Selamat.</translation>
 <translation id="3016255526521614822">Apl pencatatan nota senarai putih dibenarkan pada skrin kunci <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3030000825273123558">Dayakan laporan metrik</translation>
 <translation id="3034580675120919256">Membolehkan anda menetapkan sama ada laman web dibenarkan untuk menjalankan JavaScript. Menjalankan JavaScript boleh dibenarkan untuk semua tapak web atau dinafikan untuk semua tapak web.
@@ -873,7 +863,7 @@
 
           Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan pada mulanya tetapi boleh didayakan oleh pengguna pada bila-bila masa.</translation>
 <translation id="382476126209906314">Konfigurasi awalan TalkGadget untuk hos akses jauh</translation>
-<translation id="3831376478177535007">Apabila tetapan ini didayakan, <ph name="PRODUCT_NAME" /> membenarkan sijil yang dikeluarkan oleh operasi PKI lama Symantec Corporation untuk dipercayai jika sijil ini berjaya disahkan dan dikaitkan dengan sijil CA yang dicam.
+<translation id="3831376478177535007">Apabila tetapan ini didayakan, <ph name="PRODUCT_NAME" /> membenarkan sijil yang dikeluarkan oleh operasi PKI Lama Symantec Corporation untuk dipercayai jika sijil ini berjaya disahkan dan dikaitkan dengan sijil CA yang dicam.
 
       Sila ambil perhatian bahawa dasar ini bergantung pada sistem pengendalian untuk terus mengecam sijil daripada infrastruktur lama Symantec. Jika kemas kini OS mengubah cara pengendalian OS terhadap sijil tersebut, dasar ini tidak berkuat kuasa lagi.  Selain itu, dasar ini bertujuan digunakan sebagai penyelesaian sementara bagi memberikan pihak syarikat lebih masa untuk beralih daripada sijil Symantec lama.  Dasar ini akan dialih keluar pada atau kira-kira 1 Januari 2019.
 
@@ -1040,7 +1030,6 @@
 
       Jika dasar dibiarkan tanpa ditetapkan, tiada sekatan pada set apl yang boleh didayakan oleh pengguna pada skrin kunci yang dikenakan oleh dasar.</translation>
 <translation id="4309640770189628899">Sama ada suit sifer DHE dalam TLS didayakan</translation>
-<translation id="4320376026953250541">Microsoft Windows XP SP2 atau lebih baharu</translation>
 <translation id="4322842393287974810">Benarkan apl kios kelewatan sifar yang dilancarkan secara automatik untuk mengawal versi <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Tambahkan butang log keluar pada dulang sistem</translation>
 <translation id="4346674324214534449">Membenarkan anda menetapkan sama ada iklan harus disekat pada tapak yang mengandungi iklan yang mengganggu.

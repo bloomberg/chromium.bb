@@ -540,13 +540,6 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
           Para que se aplique esta política, se debe habilitar la política DefaultSearchProviderEnabled.</translation>
 <translation id="2682225790874070339">Inhabilita Drive en aplicación Archivos de <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="268577405881275241">Habilitar la función del proxy de compresión de datos</translation>
-<translation id="2726613915126661822">Te permite controlar si se pueden utilizar máquinas virtuales en Chrome OS.
-
-      Si se le asigna el valor "True" a la política, el dispositivo puede utilizar máquinas virtuales.
-      Si se le asigna el valor "False" a la política, el dispositivo no puede utilizar máquinas virtuales.
-      Si el valor asignado a esta política se cambia a "False", se aplica a las máquinas virtuales nuevas, pero no afecta a las antiguas que ya se estén utilizando.
-      Si no se le asigna ningún valor en un dispositivo gestionado, este no puede utilizar máquinas virtuales.
-      Los dispositivos no gestionados pueden utilizar máquinas virtuales.</translation>
 <translation id="2731627323327011390">Inhabilitar el uso de certificados de <ph name="PRODUCT_OS_NAME" /> a las aplicaciones ARC</translation>
 <translation id="2742843273354638707">Permite ocultar la aplicación Chrome Web Store y el enlace de la parte inferior de la página en la página Nueva pestaña y en el menú de aplicaciones de <ph name="PRODUCT_OS_NAME" />.
 
@@ -638,9 +631,6 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
           El valor de la política se debe especificar en milisegundos. Los valores están establecidos para ser inferiores o iguales al retraso de desconexión de pantalla (si está establecido) y al retraso de inactividad.</translation>
 <translation id="2987155890997901449">Habilitar ARC</translation>
 <translation id="2987227569419001736">Controlar el uso de la API Bluetooth web</translation>
-<translation id="3001534538097271560">Si se asigna el valor false a esta política, los usuarios no podrán elegir si quieren enviar información y contenido de las páginas a los servidores de Google. Si se le asigna el valor true o no se configura, los usuarios podrán enviar información del sistema y contenido de las páginas a la función Navegación Segura para que detecte aplicaciones y sitios web peligrosos.
-
-      Consulta la página https://developers.google.com/safe-browsing para obtener más información sobre la función Navegación Segura.</translation>
 <translation id="3016255526521614822">Aplicaciones para tomar notas incluidas en la lista blanca que están permitidas en la pantalla de bloqueo de <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3030000825273123558">Habilitar los informes estadísticos</translation>
 <translation id="3034580675120919256">Permite establecer si los sitios web pueden utilizar o no JavaScript. La ejecución de JavaScript se permite o se deniega a todos los sitios web.
@@ -1034,7 +1024,6 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
 
       Si la política no se configura, esta no restringirá el conjunto de aplicaciones que el usuario puede habilitar en la pantalla de bloqueo.</translation>
 <translation id="4309640770189628899">Indica si se han habilitado los conjuntos de cifrado DHE en TLS</translation>
-<translation id="4320376026953250541">Microsoft Windows XP SP2 o posterior</translation>
 <translation id="4322842393287974810">Permite que la aplicación de kiosco sin retardo con inicio automático controle la versión de <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Añadir un botón para cerrar sesión en la bandeja del sistema</translation>
 <translation id="4346674324214534449">Te permite decidir si se deberían bloquear los anuncios en los sitios web con anuncios invasivos.
@@ -1050,7 +1039,7 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
 
       Cada cuenta de Google del dispositivo se comparará con los patrones almacenados en esta política para determinar la visibilidad de la cuenta en <ph name="PRODUCT_NAME" />. La cuenta podrá verse si su nombre coincide con alguno de los patrones de la lista. Si no, se ocultará.
 
-      El carácter comodín "*" se puede utilizar para buscar coincidencias con cero o más caracteres arbitrarios. El carácter de escape es "\" y, por tanto, se puede escribir antes de "*" o "\" para obtener coincidencias con los propios caracteres.
+      El carácter comodín "*" se puede utilizar para buscar coincidencias con cero o más caracteres arbitrarios. El carácter de escape es "\" y, por tanto, se tiene que escribir antes de "*" o "\" para obtener coincidencias con estos caracteres.
 
       Si esta política no se configura, todas las cuentas de Google del dispositivo podrán verse en <ph name="PRODUCT_NAME" />.</translation>
 <translation id="436581050240847513">Permite informar de interfaces de red del dispositivo</translation>
@@ -2329,13 +2318,13 @@ Te recomendamos que utilices GPO para configurar la política en Windows, aunque
 <translation id="8424255554404582727">Establecer rotación de pantalla predeterminada y volver a aplicarla cada vez que se reinicie el dispositivo</translation>
 <translation id="8426231401662877819">Rotar la pantalla 90 grados hacia la derecha</translation>
 <translation id="8451988835943702790">Utilizar página Nueva pestaña como página principal</translation>
-<translation id="8459216513698220096">Especifica si la política del usuario del GPO del equipo se procesa o no y cómo lo hace.
+<translation id="8459216513698220096">Especifica si la política del usuario del GPO del ordenador se procesa o no y cómo lo hace.
 
-      Si se le asigna el valor "Predeterminado" a la política o no se le asigna ningún valor, la política del usuario solo podrá consultarse desde los GPO del usuario (se ignorarán los GPO del equipo).
+      Si se le asigna el valor "Predeterminado" a la política o no se le asigna ningún valor, la política del usuario solo podrá consultarse desde los GPO del usuario (se ignorarán los GPO del ordenador).
 
-      Si se le asigna el valor "Combinar" a la política, la política del usuario de los GPO del usuario se combinará con la política del usuario de los GPO del equipo (los GPO del equipo tienen preferencia).
+      Si se le asigna el valor "Combinar" a la política, la política del usuario de los GPO del usuario se combinará con la política del usuario de los GPO del ordenador (los GPO del ordenador tienen preferencia).
 
-      Si se le asigna el valor "Sustituir" a la política, la política del usuario de los GPO del usuario se sustituirá por la política del usuario de los GPO del equipo (se ignorarán los GPO del usuario).</translation>
+      Si se le asigna el valor "Sustituir" a la política, la política del usuario de los GPO del usuario se sustituirá por la política del usuario de los GPO del ordenador (se ignorarán los GPO del usuario).</translation>
 <translation id="8465065632133292531">Parámetros para URL instantánea que utiliza POST</translation>
 <translation id="847472800012384958">No permitir que ningún sitio muestre pop-ups</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>

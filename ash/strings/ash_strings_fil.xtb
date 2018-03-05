@@ -25,6 +25,7 @@
 <translation id="1525508553941733066">I-DISMISS</translation>
 <translation id="15373452373711364">Malaking mouse cursor</translation>
 <translation id="1550523713251050646">Mag-click para sa higit pang mga opsyon</translation>
+<translation id="1608626060424371292">Alisin ang user na ito</translation>
 <translation id="1621499497873603021">Natitirang oras bago maubos ang baterya, <ph name="TIME_LEFT" /></translation>
 <translation id="1658406695958299976">Paumanhin, hindi pa rin ma-verify ang iyong password. Tandaan: kung pinalitan mo kamakailan ang iyong password, malalapat ang bago mong password kapag nag-sign out ka, pakigamit ang lumang password dito.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> na lang ang natitira</translation>
@@ -74,7 +75,6 @@
 <translation id="2653659639078652383">Isumite</translation>
 <translation id="2675319268637823299">Hindi pinayagan ng administrator ang maraming pag-sign in para sa <ph name="USER_EMAIL" />.
 Dapat mag-sign out ang lahat ng user upang magpatuloy.</translation>
-<translation id="2700058918926273959">Matatapos ang session pagkalipas ng <ph name="SESSION_TIME_REMAINING" />. Masa-sign out ka.</translation>
 <translation id="2727977024730340865">Naka-saksak sa isang low-power charger. Maaaring hindi maging tiyak ang pag-charge ng baterya.</translation>
 <translation id="2761704814324807722">Status tray, oras <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Muling kumokonekta sa <ph name="NAME" /></translation>
@@ -97,6 +97,7 @@ Dapat mag-sign out ang lahat ng user upang magpatuloy.</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">Sa ilalim</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
+<translation id="3112378005171663295">Tiklupin</translation>
 <translation id="3126069444801937830">I-restart upang mag-update</translation>
 <translation id="3147142846278915599">Launcher (nagsi-sync ng mga app...)</translation>
 <translation id="315116470104423982">Data sa mobile</translation>
@@ -209,6 +210,7 @@ Dapat mag-sign out ang lahat ng user upang magpatuloy.</translation>
 <translation id="607652042414456612">Ang iyong computer ay katuklas-tuklas sa mga kalapit na Bluetooth device at lalabas bilang "<ph name="NAME" />" na may address na <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">China-charge ang <ph name="POWER_SOURCE" /></translation>
 <translation id="615957422585914272">Ipakita ang on-screen na keyboard</translation>
+<translation id="6164005077879661055">Permanenteng matatanggal ang lahat ng file at lokal na data na kaugnay ng pinangangasiwaang user sa oras na alisin ang pinangangasiwaang user na ito. Maaari pa ring makita ng manager ang mga nabisitang website at setting para sa pinangangasiwaang user na ito sa <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Matuto nang higit pa</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Ina-activate...</translation>
 <translation id="6284232397434400372">Binago ang resolution</translation>
@@ -243,6 +245,7 @@ Gamitin lang ang feature na ito sa mga account na iyong pinagkakatiwalaan.</tran
 <translation id="6857811139397017780">I-activate <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Sumali sa iba...</translation>
 <translation id="6981982820502123353">Pagiging Maa-access</translation>
+<translation id="698231206551913481">Permanenteng made-delete ang lahat ng file at lokal na data na nauugnay sa user na ito kapag inalis na ang user na ito.</translation>
 <translation id="7029814467594812963">Lumabas sa session</translation>
 <translation id="7034339000180558234">Kina-cast ang <ph name="TAB_NAME" /> sa <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Magtakda ng wallpaper...</translation>

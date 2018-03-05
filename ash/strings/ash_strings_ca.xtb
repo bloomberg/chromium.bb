@@ -25,6 +25,7 @@
 <translation id="1525508553941733066">IGNORA</translation>
 <translation id="15373452373711364">Cursor del ratolí gran</translation>
 <translation id="1550523713251050646">Feu clic per veure més opcions</translation>
+<translation id="1608626060424371292">Suprimeix aquest usuari</translation>
 <translation id="1621499497873603021">Temps que queda fins que no s'esgoti la bateria: <ph name="TIME_LEFT" /></translation>
 <translation id="1658406695958299976">Encara no s'ha pogut verificar la contrasenya. Nota: si fa poc que has canviat la contrasenya, la nova s'aplicarà un cop hagis tancat la sessió. Fes servir la contrasenya anterior aquí.</translation>
 <translation id="1677472565718498478">Temps restant: <ph name="TIME" /></translation>
@@ -74,7 +75,6 @@
 <translation id="2653659639078652383">Envia</translation>
 <translation id="2675319268637823299">Un administrador ha desactivat l'inici de sessió múltiple per a <ph name="USER_EMAIL" />.
     Tots els usuaris han de tancar la sessió per continuar.</translation>
-<translation id="2700058918926273959">La sessió finalitzarà d'aquí a <ph name="SESSION_TIME_REMAINING" /> i es tancarà.</translation>
 <translation id="2727977024730340865">S'ha connectat a un carregador de baix consum. És possible que la càrrega de la bateria no sigui fiable.</translation>
 <translation id="2761704814324807722">Safata d'estat. Hora: <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">S'està tornant a connectar a la xarxa <ph name="NAME" /></translation>
@@ -97,6 +97,7 @@
 <translation id="3077734595579995578">maj</translation>
 <translation id="3087734570205094154">Part inferior</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
+<translation id="3112378005171663295">Redueix</translation>
 <translation id="3126069444801937830">Reinicia per actualitzar</translation>
 <translation id="3147142846278915599">Launcher (s'estan sincronitzant les aplicacions...)</translation>
 <translation id="315116470104423982">Dades mòbils</translation>
@@ -209,6 +210,7 @@
 <translation id="607652042414456612">El vostre ordinador està visible als dispositius Bluetooth propers i apareixerà com a "<ph name="NAME" />" amb l'adreça <ph name="ADDRESS" />.</translation>
 <translation id="6106745654298855237">S'està carregant: <ph name="POWER_SOURCE" /></translation>
 <translation id="615957422585914272">Mostra el teclat en pantalla</translation>
+<translation id="6164005077879661055">Tots els fitxers i les dades locals associats amb l'usuari supervisat se suprimiran permanentment quan aquest usuari supervisat se suprimeixi. És possible que el gestor encara pugui veure els llocs web visitats i la configuració d'aquest usuari supervisat a la pàgina <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Més informació</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: s'està activant...</translation>
 <translation id="6284232397434400372">S'ha canviat la resolució</translation>
@@ -243,6 +245,7 @@ Utilitza aquesta funció només amb comptes de confiança.</translation>
 <translation id="6857811139397017780">Activa <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Connecta't a una altra xarxa...</translation>
 <translation id="6981982820502123353">Accessibilitat</translation>
+<translation id="698231206551913481">Tots els fitxers i les dades locals associats amb aquest usuari se suprimiran definitivament quan aquest usuari se suprimeixi.</translation>
 <translation id="7029814467594812963">Tanca la sessió</translation>
 <translation id="7034339000180558234">S'està emetent <ph name="TAB_NAME" /> a <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Estableix fons de pantalla...</translation>

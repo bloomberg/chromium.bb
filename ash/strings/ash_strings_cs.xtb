@@ -25,6 +25,7 @@
 <translation id="1525508553941733066">ZAVŘÍT</translation>
 <translation id="15373452373711364">Velký kurzor myši</translation>
 <translation id="1550523713251050646">Kliknutím zobrazíte další možnosti</translation>
+<translation id="1608626060424371292">Odebrat tohoto uživatele</translation>
 <translation id="1621499497873603021">Čas zbývající do vybití baterie: <ph name="TIME_LEFT" /></translation>
 <translation id="1658406695958299976">Je nám líto, vaše heslo se stále nedaří ověřit. Poznámka: Pokud jste heslo nedávno změnili, bude nové heslo možné použít až po odhlášení. Zde použijte staré heslo.</translation>
 <translation id="1677472565718498478">Zbývající čas: <ph name="TIME" /></translation>
@@ -74,7 +75,6 @@
 <translation id="2653659639078652383">Odeslat</translation>
 <translation id="2675319268637823299">Administrátor vícenásobné přihlášení pro účet <ph name="USER_EMAIL" /> zakázal.
     Všichni uživatelé se před pokračováním musejí odhlásit.</translation>
-<translation id="2700058918926273959">Relace skončí za <ph name="SESSION_TIME_REMAINING" />. Poté budete odhlášeni.</translation>
 <translation id="2727977024730340865">Byla připojena nabíječka s nízkým výkonem. Nabíjení baterie nemusí probíhat spolehlivě.</translation>
 <translation id="2761704814324807722">Systémový panel, čas <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Obnovování připojení k síti <ph name="NAME" /></translation>
@@ -97,6 +97,7 @@
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">Až dolů</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
+<translation id="3112378005171663295">Sbalit</translation>
 <translation id="3126069444801937830">Restartovat a aktualizovat</translation>
 <translation id="3147142846278915599">Spouštěč (synchronizace aplikací...)</translation>
 <translation id="315116470104423982">Mobilní datové přenosy</translation>
@@ -209,6 +210,7 @@
 <translation id="607652042414456612">Váš počítač mohou objevit okolní zařízení Bluetooth, ve kterých se bude zobrazovat s názvem „<ph name="NAME" />“ a adresou <ph name="ADDRESS" />.</translation>
 <translation id="6106745654298855237"><ph name="POWER_SOURCE" /> – nabíjení</translation>
 <translation id="615957422585914272">Zobrazit softwarovou klávesnici</translation>
+<translation id="6164005077879661055">Po odebrání dozorovaného uživatele budou trvale smazány všechny soubory a místní data, která jsou k němu přiřazena. Navštívené weby a nastavení tohoto dozorovaného uživatele může správce i nadále zobrazit na adrese <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Další informace</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Probíhá aktivace...</translation>
 <translation id="6284232397434400372">Rozlišení se změnilo</translation>
@@ -243,6 +245,7 @@ Tuto funkci používejte pouze s účty, kterým důvěřujete.</translation>
 <translation id="6857811139397017780">Aktivovat: <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Připojit k jiné...</translation>
 <translation id="6981982820502123353">Usnadnění</translation>
+<translation id="698231206551913481">Po odebrání tohoto uživatele budou trvale smazány všechny soubory a místní data, která jsou k němu přiřazena.</translation>
 <translation id="7029814467594812963">Ukončit relaci</translation>
 <translation id="7034339000180558234">Odesílání karty <ph name="TAB_NAME" /> do zařízení <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Nastavení tapety...</translation>

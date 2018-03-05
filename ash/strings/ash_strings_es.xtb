@@ -25,6 +25,7 @@
 <translation id="1525508553941733066">IGNORAR</translation>
 <translation id="15373452373711364">Cursor del ratón grande</translation>
 <translation id="1550523713251050646">Haz clic aquí para obtener más opciones</translation>
+<translation id="1608626060424371292">Eliminar este usuario</translation>
 <translation id="1621499497873603021">Tiempo restante hasta que se agote la batería: <ph name="TIME_LEFT" /></translation>
 <translation id="1658406695958299976">Aún no se ha podido verificar tu contraseña. Nota: Si has cambiado la contraseña recientemente, la nueva contraseña se aplicará una vez que hayas cerrado sesión. Utiliza la antigua contraseña aquí.</translation>
 <translation id="1677472565718498478">Queda: <ph name="TIME" /></translation>
@@ -74,7 +75,6 @@
 <translation id="2653659639078652383">Enviar</translation>
 <translation id="2675319268637823299">Un administrador ha inhabilitado el inicio de sesión múltiple para <ph name="USER_EMAIL" />.
     Todos los usuarios deben cerrar sesión para continuar.</translation>
-<translation id="2700058918926273959">La sesión finalizará dentro de <ph name="SESSION_TIME_REMAINING" />. Se cerrará tu sesión.</translation>
 <translation id="2727977024730340865">Conectado a un cargador de baja potencia. Es posible que la carga de la batería no sea fiable.</translation>
 <translation id="2761704814324807722">Bandeja de estado, hora <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Volviendo a conectar con <ph name="NAME" /></translation>
@@ -97,6 +97,7 @@
 <translation id="3077734595579995578">mayús</translation>
 <translation id="3087734570205094154">Inferior</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
+<translation id="3112378005171663295">Contraer</translation>
 <translation id="3126069444801937830">Reinicia el sistema para actualizarlo.</translation>
 <translation id="3147142846278915599">Menú de aplicaciones (sincronizando aplicaciones...)</translation>
 <translation id="315116470104423982">Redes móviles</translation>
@@ -209,6 +210,7 @@
 <translation id="607652042414456612">Tu ordenador es visible para dispositivos Bluetooth cercanos y aparecerá como "<ph name="NAME" />" con la dirección <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">Cargando <ph name="POWER_SOURCE" /></translation>
 <translation id="615957422585914272">Mostrar teclado en pantalla</translation>
+<translation id="6164005077879661055">Todos los archivos y datos locales asociados al usuario supervisado se eliminarán de forma permanente una vez que se haya eliminado este usuario supervisado. Es posible que el administrador pueda seguir viendo la configuración y los sitios web visitados de este usuario supervisado en la página <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Más información</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Activando...</translation>
 <translation id="6284232397434400372">Se ha cambiado la resolución</translation>
@@ -243,6 +245,7 @@ Solo debes usar esta función con las cuentas de confianza.</translation>
 <translation id="6857811139397017780">Activar <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Conectarse a otra red...</translation>
 <translation id="6981982820502123353">Accesibilidad</translation>
+<translation id="698231206551913481">Una vez que se haya quitado este usuario, todos los archivos y datos asociados a él se eliminarán de forma permanente.</translation>
 <translation id="7029814467594812963">Cerrar sesión</translation>
 <translation id="7034339000180558234">Enviando <ph name="TAB_NAME" /> a <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Establecer fondo de pantalla...</translation>

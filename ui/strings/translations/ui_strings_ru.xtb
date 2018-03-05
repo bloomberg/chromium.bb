@@ -8,6 +8,7 @@
 <translation id="1243314992276662751">Загрузить</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">РЕКОМЕНДУЕМЫЕ ПРИЛОЖЕНИЯ</translation>
+<translation id="1368832886055348810">Слева направо</translation>
 <translation id="1398853756734560583">Развернуть</translation>
 <translation id="1413622004203049571">Отключить уведомления от <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 минута }one{# минута }few{# минуты }many{# минут }other{# минуты }}</translation>
@@ -21,6 +22,7 @@
 <translation id="1812519734428420144">Оценка: <ph name="RATING_SCORE" /></translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 час }one{# час }few{# часа }many{# часов }other{# часа }}</translation>
 <translation id="1842960171412779397">выбрать</translation>
+<translation id="1859234291848436338">Направление письма</translation>
 <translation id="1860796786778352021">Закрыть уведомление</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" />%</translation>
@@ -122,6 +124,7 @@
 <translation id="6917971086528278418">{YEARS,plural, =1{остался 1 год}one{остался # год}few{осталось # года}many{осталось # лет}other{осталось # года}}</translation>
 <translation id="6945221475159498467">Выбрать</translation>
 <translation id="6965382102122355670">ОК</translation>
+<translation id="6974053822202609517">Справа налево</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">САМЫЕ ПОДХОДЯЩИЕ</translation>
 <translation id="7222373446505536781">F11</translation>
@@ -155,6 +158,7 @@
 <translation id="8725488761726303204">Ещё <ph name="NUMBER" /></translation>
 <translation id="8730621377337864115">Готово</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{1 ч.}one{# ч.}few{# ч.}many{# ч.}other{# ч.}}</translation>
+<translation id="8798099450830957504">По умолчанию</translation>
 <translation id="8806053966018712535">Папка <ph name="FOLDER_NAME" />.</translation>
 <translation id="883911313571074303">Добавить примечание к изображению</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> КБ</translation>

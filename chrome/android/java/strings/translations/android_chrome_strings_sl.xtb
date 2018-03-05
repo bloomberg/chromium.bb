@@ -533,10 +533,8 @@ Kljub temu niste nevidni. Če uporabljate način brez beleženja zgodovine, ne s
 <translation id="5809361687334836369">{HOURS,plural, =1{Pred # uro}one{Pred # uro}two{Pred # urama}few{Pred # urami}other{Pred # urami}}</translation>
 <translation id="5817918615728894473">Seznani</translation>
 <translation id="583281660410589416">Neznano</translation>
-<translation id="5832934273103296195">Razširjeno – kliknite, če želite strniti</translation>
 <translation id="5833984609253377421">Deli povezavo z drugimi</translation>
 <translation id="583891442612896534">Chrome ne more dostopati do Googlovih strežnikov za stiskanje podatkov. Prihranek podatkov bo morda omejen.</translation>
-<translation id="584615158992327102">dostop do prenosov, zaznamkov in zgodovine</translation>
 <translation id="5854790677617711513">Starejše od 30 dni</translation>
 <translation id="5858741533101922242">Chrome ne more vklopiti vmesnika za Bluetooth</translation>
 <translation id="5860033963881614850">Izklopljeno</translation>
@@ -554,7 +552,6 @@ Kljub temu niste nevidni. Če uporabljate način brez beleženja zgodovine, ne s
 <translation id="5962718611393537961">Dotik za strnitev</translation>
 <translation id="5974562976030145789">»Prenosi« bodo premaknjeni. Naslednjič povlecite naslovno vrstico navzgor.</translation>
 <translation id="6000066717592683814">Ohrani Google</translation>
-<translation id="6031101910111098835">Strnjeno – kliknite, če želite razširiti</translation>
 <translation id="6039379616847168523">Premik na naslednji zavihek</translation>
 <translation id="6040143037577758943">Zapri</translation>
 <translation id="6042308850641462728">Več</translation>
@@ -600,7 +597,6 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="6404511346730675251">Uredi zaznamek</translation>
 <translation id="6406506848690869874">Sinhronizacija</translation>
 <translation id="6409731863280057959">Pojavna okna</translation>
-<translation id="6411957228448379013">Naslovna vrstica. Povlecite gor, če si želite ogledati zaznamke, prenose in zgodovino.</translation>
 <translation id="641643625718530986">Tiskanje …</translation>
 <translation id="6416782512398055893">Preneseno <ph name="MBS" /> MB</translation>
 <translation id="6433501201775827830">Izbira iskalnika</translation>
@@ -641,6 +637,7 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="6701279291835318271">Varnostna poročila</translation>
 <translation id="6710213216561001401">Nazaj</translation>
 <translation id="6738867403308150051">Prenašanje ...</translation>
+<translation id="6746124502594467657">Premakni dol</translation>
 <translation id="6762156594045689028">Če želite spremeniti to nastavitev, <ph name="BEGIN_LINK" />ponastavite sinhronizacijo<ph name="END_LINK" /></translation>
 <translation id="6770414673596662518">Chromov sistem varnega brskanja bo uporabljen za odkrivanje strani z zlonamerno vsebino in zaščito pred lažnim predstavljanjem, zlonamerno programsko opremo in škodljivimi prenosi.</translation>
 <translation id="6776813977906306442">Z gumbom za prenos lahko prenesete videoposnetke za poznejši ogled</translation>
@@ -833,6 +830,7 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="857509777403223202">Kmalu bo prikazanih več člankov. Prijeten večer.</translation>
 <translation id="857943718398505171">Dovoljeno (priporočeno)</translation>
 <translation id="8583805026567836021">Brisanje podatkov računa</translation>
+<translation id="8609465669617005112">Premakni navzgor</translation>
 <translation id="8616006591992756292">V Google Računu so morda druge vrste zgodovine brskanja na <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="8617240290563765734">Želite odpreti predlagani URL, naveden v preneseni vsebini?</translation>
 <translation id="862875433388403934">Prenesene vsebine (filmov, glasbe ipd.) morda ne bo mogoče več predvajati v drugih aplikacijah, dokler te znova ne pridobijo licenc na podlagi nove poverilnice naprave.

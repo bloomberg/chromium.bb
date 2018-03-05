@@ -519,13 +519,6 @@
 <translation id="267596348720209223">Određuje kodiranje znakova koje podržava davatelj usluga pretraživanja. Kodiranja su nazivi kodnih stranica poput UTF-8, GB2312 i ISO-8859-1. Isprobavaju se navedenim redoslijedom. Ovo je pravilo izborno. Ako nije postavljeno, upotrebljavat će se zadana stranica UTF-8. Ovo će se pravilo poštovati samo ako je omogućeno pravilo "DefaultSearchProviderEnabled".</translation>
 <translation id="2682225790874070339">Onemogućuje Disk u aplikaciji Datoteke za <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="268577405881275241">Omogući značajku proxyja za kompresiju podataka</translation>
-<translation id="2726613915126661822">Omogućuje vam da odredite je li virtualnim računalima dopušteno pokretanje na OS-u Chrome.
-
-      Ako je pravilo postavljeno na True, uređaju je dopušteno pokretanje virtualnih računala.
-      Ako je pravilo postavljeno na False, uređaju nije dopušteno pokretanje virtualnih računala.
-      Kada se ovo pravilo promijeni na False, primjenjuje se na pokretanje novih virtualnih računala, ali ne isključuje virtualna računala koja su već pokrenuta.
-      Kada ovo pravilo nije postavljeno na upravljanom uređaju, uređaju nije dopušteno pokretanje virtualnih računala.
-      Neupravljanim je uređajima dopušteno pokretanje virtualnih računala.</translation>
 <translation id="2731627323327011390">Onemogući upotrebu <ph name="PRODUCT_OS_NAME" /> certifikata za ARC aplikacije</translation>
 <translation id="2742843273354638707">Skrivanje aplikacije Chrome web-trgovine i veze u podnožju na web-stranici nove kartice i pokretača aplikacija za <ph name="PRODUCT_OS_NAME" />.
 
@@ -590,6 +583,12 @@
 <translation id="2893546967669465276">Šalji zapisinike sustava poslužitelju za upravljanje</translation>
 <translation id="2899002520262095963">Android aplikacije mogu upotrebljavati mrežne konfiguracije i CA certifikate postavljene putem tog pravila, no nemaju pristup nekim opcijama konfiguracije.</translation>
 <translation id="2906874737073861391">Popis proširenja AppPack</translation>
+<translation id="2907992746861405243">Određuje koji su pisači iz pravila <ph name="BULK_PRINTERS_POLICY" /> dostupni korisnicima.
+
+      Određuje koje se pravilo za pristup upotrebljava za skupnu konfiguraciju pisača. Ako se odabere <ph name="PRINTERS_ALLOW_ALL" />, prikazuju se svi pisači. Ako se odabere <ph name="PRINTERS_BLACKLIST" />, <ph name="BULK_PRINTERS_BLACKLIST" /> upotrebljava se za ograničenje pristupa navedenim pisačima. Ako se odabere <ph name="PRINTERS_WHITELIST" />, <ph name="BULK_PRINTERS_WHITELIST" /> određuje samo one pisače koji se mogu odabrati.
+
+      Ako se to pravilo ne postavi, pretpostavlja se da vrijedi <ph name="PRINTERS_ALLOW_ALL" />.
+      </translation>
 <translation id="2908277604670530363">Maksimalan broj istodobnih veza na proxy poslužitelju</translation>
 <translation id="2956777931324644324">To je pravilo ukinuto od verzije <ph name="PRODUCT_NAME" /> 36.
 
@@ -611,9 +610,6 @@
           Vrijednost pravila treba navesti u milisekundama. Vrijednosti su ograničene na vrijeme kraće od odgode isključivanja zaslona i odgode neaktivnosti ili jednako tom vremenu (ako je postavljeno).</translation>
 <translation id="2987155890997901449">Omogući ARC</translation>
 <translation id="2987227569419001736">Upravljanje upotrebom API-ja Web Bluetooth</translation>
-<translation id="3001534538097271560">Ako se to pravilo postavi na "false", korisnici neće moći odabrati slanje nekih informacija sustava i sadržaja stranice Googleovim poslužiteljima. Ako se ta postavka postavi na "true" ili se ne konfigurira, korisnici će moći slati neke informacije sustava i sadržaj stranice Sigurnom pregledavanju radi boljeg otkrivanja opasnih aplikacija i web-lokacija.
-
-      Više informacija o Sigurnom pregledavanju potražite na stranici https://developers.google.com/safe-browsing.</translation>
 <translation id="3016255526521614822">Aplikacije za izradu bilježaka dopuštene na zaključanom zaslonu uređaja sa sustavom <ph name="PRODUCT_OS_NAME" /> stavi na popis dopuštenih</translation>
 <translation id="3030000825273123558">Omogući izvješće o metrici</translation>
 <translation id="3034580675120919256">Omogućuje da postavite smiju li web-lokacije pokretati JavaScript. Pokretanje JavaScripta može biti dopušteno za sve web-lokacije ili odbijeno za sve web-lokacije. Ako ovo pravilo nije postavljeno, upotrebljavat će se pravilo "AllowJavaScript", a korisnik će to moći promijeniti.</translation>
@@ -718,6 +714,9 @@
 
       Ako se to pravilo upotrebljava, korisniku su dostupni samo pisači s ID-ovima podudarnim s vrijednostima u tom pravilu. ID-ovi se moraju podudarati s unosima u datoteci navedenoj u pravilu <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>
+<translation id="3414260318408232239">Ako se to pravilo ne konfigurira, <ph name="PRODUCT_NAME" /> upotrebljava zadanu minimalnu verziju, a to je TLS 1.0.
+
+      U suprotnom se može postaviti na jednu od sljedećih vrijednosti: "tls1", "tls1.1" ili "tls1.2". Kad se to pravilo postavi, <ph name="PRODUCT_NAME" /> neće upotrebljavati verzije SSL-a/TLS-a manje od navedene verzije. Vrijednost koja se ne prepozna ignorirat će se.</translation>
 <translation id="3417418267404583991">Ako je to pravilo postavljeno na "istinito" ili ako nije konfigurirano, sustav <ph name="PRODUCT_OS_NAME" /> omogućit će prijave gostiju. Prijave gostiju predstavljaju sesije anonimnih korisnika i zaporka nije potrebna.
 
       Ako je to pravilo postavljeno na "lažno", sustav <ph name="PRODUCT_OS_NAME" /> neće dopustiti pokretanje gostujućih sesija.</translation>
@@ -826,6 +825,13 @@
 
           Ako ne postavite ovo pravilo, tipkovnica na zaslonu u početku je onemogućena, ali je korisnici mogu omogućiti u bilo kojem trenutku.</translation>
 <translation id="382476126209906314">Konfiguriraj prefiks TalkGadget za hostove daljinskog pristupa</translation>
+<translation id="3831376478177535007">Kada se ta postavka omogući, <ph name="PRODUCT_NAME" /> dopušta da se certifikati izdani u okviru Legacy PKI operacija tvrtke Symantec Corporation smatraju pouzdanima ako se inače mogu uspješno potvrditi i ulančavati s priznatim CA certifikatom.
+
+      Napominjemo da ovo pravilo ovisi o tome hoće li operativni sustav još prepoznati certifikate Symantecove stare infrastrukture. Ako ažuriranje OS-a promijeni način na koji operativni sustav rukuje takvim certifikatima, to pravilo više neće imati utjecaja. Osim toga, to je pravilo predviđeno kao privremeno zaobilazno rješenje koje organizacijama omogućuje više vremena za prijelaz sa starih Symantecovih certifikata. To će se pravilo ukloniti u razdoblju oko 1. siječnja 2019.
+
+      Ako se to pravilo ne postavi ili se postavi na netočno, <ph name="PRODUCT_NAME" /> pridržava se javno objavljenog rasporeda obustavljanja.
+
+      Više pojedinosti o obustavljanju dostupno je na https://g.co/chrome/symantecpkicerts.</translation>
 <translation id="383466854578875212">Omogućuje vam da odredite koji hostovi za lokalno slanje poruka neće biti podložni zabrani.
 
           Vrijednost "*" na popisu nedopuštenih znači da su svi hostovi za lokalno slanje poruka zabranjeni i da će se učitati samo hostovi za lokalno slanje poruka koji su navedeni na popisu dopuštenih.
@@ -982,7 +988,6 @@
 
       Ako se to pravilo ne postavi, pravila neće nametati ograničenja za skup aplikacija koje korisnik može omogućiti na zaključanom zaslonu.</translation>
 <translation id="4309640770189628899">Omogući DHE pakete šifri u TLS-u</translation>
-<translation id="4320376026953250541">Microsoft Windows XP SP2 ili noviji</translation>
 <translation id="4322842393287974810">Dopusti kiosk aplikaciji pokrenutoj automatski bez odgode da upravlja verzijom proizvoda <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Dodaj gumb za odjavu na programsku traku</translation>
 <translation id="4346674324214534449">Omogućuje vam da postavite hoće li se oglasi blokirati na web-lokacijama s ometajućim oglasima.

@@ -533,10 +533,8 @@
 <translation id="5809361687334836369">{HOURS,plural, =1{# 小时前}other{# 小时前}}</translation>
 <translation id="5817918615728894473">配对</translation>
 <translation id="583281660410589416">未知</translation>
-<translation id="5832934273103296195">已展开 - 点击即可收起</translation>
 <translation id="5833984609253377421">分享链接</translation>
 <translation id="583891442612896534">Chrome 无法连接到 Google 服务器来进行数据压缩，因此您节省的数据流量可能有限。</translation>
-<translation id="584615158992327102">访问“下载内容”、“书签”和“历史记录”。</translation>
 <translation id="5854790677617711513">30 天之前的</translation>
 <translation id="5858741533101922242">Chrome 无法开启蓝牙适配器</translation>
 <translation id="5860033963881614850">关闭</translation>
@@ -554,7 +552,6 @@
 <translation id="5962718611393537961">点按即可收起</translation>
 <translation id="5974562976030145789">“下载内容”的位置即将变更。下次只需上拉地址栏即可查看下载内容。</translation>
 <translation id="6000066717592683814">继续使用 Google</translation>
-<translation id="6031101910111098835">已收起 - 点击即可展开</translation>
 <translation id="6039379616847168523">跳转到下一个标签页</translation>
 <translation id="6040143037577758943">关闭</translation>
 <translation id="6042308850641462728">更多</translation>
@@ -600,7 +597,6 @@
 <translation id="6404511346730675251">修改书签</translation>
 <translation id="6406506848690869874">同步</translation>
 <translation id="6409731863280057959">弹出式窗口</translation>
-<translation id="6411957228448379013">地址栏。向上滑动即可查看下载内容、书签和历史记录。</translation>
 <translation id="641643625718530986">打印…</translation>
 <translation id="6416782512398055893">已下载 <ph name="MBS" /> MB</translation>
 <translation id="6433501201775827830">选择您的搜索引擎</translation>
@@ -641,6 +637,7 @@
 <translation id="6701279291835318271">安全报告</translation>
 <translation id="6710213216561001401">上一个</translation>
 <translation id="6738867403308150051">即将开始下载…</translation>
+<translation id="6746124502594467657">下移</translation>
 <translation id="6762156594045689028">要更改此设置，请<ph name="BEGIN_LINK" />重置同步设置<ph name="END_LINK" /></translation>
 <translation id="6770414673596662518">Chrome 的安全浏览系统也将用于检测恶意网页，保护您免受网上诱骗、恶意软件和有害下载内容的侵害。</translation>
 <translation id="6776813977906306442">您可使用“下载”按钮下载视频以供日后观看</translation>
@@ -833,6 +830,7 @@
 <translation id="857509777403223202">我们很快将会为您奉上更多文章，伴您度过美好的夜晚时光！</translation>
 <translation id="857943718398505171">已允许（推荐）</translation>
 <translation id="8583805026567836021">清除帐号数据</translation>
+<translation id="8609465669617005112">上移</translation>
 <translation id="8616006591992756292">您的 Google 帐号在 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> 上可能有其他形式的浏览记录。</translation>
 <translation id="8617240290563765734">要打开下载的内容中指定的建议网址吗？</translation>
 <translation id="862875433388403934">其他应用中下载的内容（例如电影、音乐等）将无法再播放，除非这些应用根据新的设备凭据重新获得许可。

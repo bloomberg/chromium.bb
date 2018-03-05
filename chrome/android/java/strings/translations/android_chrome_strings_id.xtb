@@ -533,10 +533,8 @@ Namun demikian, bukan berarti Anda sama sekali tidak terlihat. Menggunakan mode 
 <translation id="5809361687334836369">{HOURS,plural, =1{# jam yang lalu}other{# jam yang lalu}}</translation>
 <translation id="5817918615728894473">Sandingkan</translation>
 <translation id="583281660410589416">Tidak dikenal</translation>
-<translation id="5832934273103296195">Diperluas - Klik untuk menciutkan</translation>
 <translation id="5833984609253377421">Bagikan link</translation>
 <translation id="583891442612896534">Chrome tidak dapat menjangkau server Google untuk mengompresi data. Penyimpanan data Anda mungkin dibatasi.</translation>
-<translation id="584615158992327102">akses hasil download, bookmark, dan histori.</translation>
 <translation id="5854790677617711513">Lebih dari 30 hari</translation>
 <translation id="5858741533101922242">Chrome tidak dapat mengaktifkan adaptor Bluetooth</translation>
 <translation id="5860033963881614850">Nonaktif</translation>
@@ -554,7 +552,6 @@ Namun demikian, bukan berarti Anda sama sekali tidak terlihat. Menggunakan mode 
 <translation id="5962718611393537961">Tap untuk menciutkan</translation>
 <translation id="5974562976030145789">Fitur “Download” sedang dipindahkan. Selanjutnya, tarik kolom URL ke atas untuk mengaksesnya.</translation>
 <translation id="6000066717592683814">Tetap menggunakan Google</translation>
-<translation id="6031101910111098835">Diciutkan - Klik untuk memperluas</translation>
 <translation id="6039379616847168523">Beralih ke tab berikutnya</translation>
 <translation id="6040143037577758943">Tutup</translation>
 <translation id="6042308850641462728">Lainnya</translation>
@@ -600,7 +597,6 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="6404511346730675251">Edit bookmark</translation>
 <translation id="6406506848690869874">Sinkronisasi</translation>
 <translation id="6409731863280057959">Pop-up</translation>
-<translation id="6411957228448379013">Kolom URL. Geser ke atas untuk melihat download, bookmark, dan histori.</translation>
 <translation id="641643625718530986">Cetak...</translation>
 <translation id="6416782512398055893">Terdownload <ph name="MBS" /> MB</translation>
 <translation id="6433501201775827830">Pilih mesin telusur Anda</translation>
@@ -641,6 +637,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="6701279291835318271">Laporan keamanan</translation>
 <translation id="6710213216561001401">Sebelumnya</translation>
 <translation id="6738867403308150051">Mendownload…</translation>
+<translation id="6746124502594467657">Berpindah ke bawah</translation>
 <translation id="6762156594045689028">Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph name="END_LINK" /></translation>
 <translation id="6770414673596662518">Sistem Safe Browsing Chrome juga dapat digunakan untuk mendeteksi halaman berbahaya dan melindungi Anda dari phishing, software perusak, dan download berbahaya.</translation>
 <translation id="6776813977906306442">Download video untuk ditonton nanti menggunakan tombol Download</translation>
@@ -833,6 +830,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="857509777403223202">Artikel lainnya akan segera muncul. Nikmati malam Anda!</translation>
 <translation id="857943718398505171">Diizinkan (disarankan)</translation>
 <translation id="8583805026567836021">Menghapus data akun</translation>
+<translation id="8609465669617005112">Berpindah ke atas</translation>
 <translation id="8616006591992756292">Akun Google Anda mungkin memiliki bentuk histori browsing lainnya di <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="8617240290563765734">Buka URL yang disarankan yang ditentukan di konten download?</translation>
 <translation id="862875433388403934">Konten (film, musik, dsb.) yang didownload di aplikasi lain mungkin tidak dapat diputar lagi hingga aplikasi tersebut mendapatkan kembali lisensi berdasarkan kredensial perangkat yang baru.

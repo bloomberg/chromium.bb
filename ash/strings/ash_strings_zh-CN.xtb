@@ -25,6 +25,7 @@
 <translation id="1525508553941733066">关闭</translation>
 <translation id="15373452373711364">大号鼠标光标</translation>
 <translation id="1550523713251050646">点击即可查看更多选项</translation>
+<translation id="1608626060424371292">移除此用户</translation>
 <translation id="1621499497873603021">电池电量将在 <ph name="TIME_LEFT" />后耗尽</translation>
 <translation id="1658406695958299976">抱歉，系统仍然无法验证您的密码。注意：如果您最近更改了密码，新密码将在您退出后生效。目前请在此处输入旧密码。</translation>
 <translation id="1677472565718498478">电量尚余 <ph name="TIME" /></translation>
@@ -74,7 +75,6 @@
 <translation id="2653659639078652383">提交</translation>
 <translation id="2675319268637823299">管理员已禁止 <ph name="USER_EMAIL" /> 使用多帐号登录功能。
     所有用户都必须先退出帐号才能继续。</translation>
-<translation id="2700058918926273959">会话将在<ph name="SESSION_TIME_REMAINING" />后结束，到时您将自动退出。</translation>
 <translation id="2727977024730340865">已插入低功率充电器；可能无法保证充电成功。</translation>
 <translation id="2761704814324807722">状态栏，时间为<ph name="TIME" />，<ph name="BATTERY" /></translation>
 <translation id="277257480934873581">正在重新连接到 <ph name="NAME" /></translation>
@@ -97,6 +97,7 @@
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">底部</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" />（蓝牙）</translation>
+<translation id="3112378005171663295">收起</translation>
 <translation id="3126069444801937830">重新启动以进行更新</translation>
 <translation id="3147142846278915599">启动器（正在同步应用…）</translation>
 <translation id="315116470104423982">移动数据</translation>
@@ -210,6 +211,7 @@
 <translation id="607652042414456612">附近的蓝牙设备可检测到您的计算机（名称将显示为“<ph name="NAME" />”，地址为<ph name="ADDRESS" />）</translation>
 <translation id="6106745654298855237">正在为“<ph name="POWER_SOURCE" />”充电</translation>
 <translation id="615957422585914272">显示屏幕键盘</translation>
+<translation id="6164005077879661055">删除该受监管用户后，与其相关联的所有文件和本地数据都会被永久删除，但管理员仍可以在 <ph name="MANAGEMENT_URL" /> 上查看该用户的设置和访问过的网站。</translation>
 <translation id="6165508094623778733">了解详情</translation>
 <translation id="6267036997247669271"><ph name="NAME" />：正在激活…</translation>
 <translation id="6284232397434400372">分辨率已更改</translation>
@@ -244,6 +246,7 @@
 <translation id="6857811139397017780">激活 <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">连接其他网络...</translation>
 <translation id="6981982820502123353">无障碍</translation>
+<translation id="698231206551913481">移除该用户后，与其关联的所有文件和本地数据都会被永久删除。</translation>
 <translation id="7029814467594812963">退出会话</translation>
 <translation id="7034339000180558234">正在将“<ph name="TAB_NAME" />”投射到“<ph name="RECEIVER_NAME" />”</translation>
 <translation id="7052914147756339792">设置壁纸...</translation>

@@ -15,17 +15,21 @@
 <translation id="2576842806987913196">इस नाम वाली CRX फ़ाइल पहले से ही मौजूद है.</translation>
 <translation id="2753617847762399167">गलत पथ (पूर्ण या '..' से संबंधित): '<ph name="IMAGE_PATH" />'</translation>
 <translation id="27822970480436970">य‍ह एक्‍सटेंशन, नेटवर्क अनुरोध संशोधित करने में विफल रहा क्‍योंकि संशोधन का अन्‍य एक्‍सटेंशन के साथ विरोध हुआ.</translation>
+<translation id="2785530881066938471">सामग्री स्क्रिप्ट के लिए '<ph name="RELATIVE_PATH" />' फ़ाइल लोड नहीं कर सका. यह UTF-8 एनकोड नहीं है.</translation>
 <translation id="2903070246402204397"><ph name="EXTENSION_NAME" /> (एक्सटेंशन आईडी "<ph name="EXTENSION_ID" />") को व्यवस्थापक ने अवरोधित किया है. <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">पैकेज इंस्टॉल नहीं कर सका: '<ph name="ERROR_CODE" />'</translation>
+<translation id="3097628171361913691">ज़िप फ़ाइल इंस्‍टॉलर</translation>
 <translation id="3115238746683532089"><ph name="VENDOR_ID" /> (क्रमांक <ph name="SERIAL_NUMBER" />) विक्रेता की ओर से <ph name="PRODUCT_ID" /> अज्ञात उत्पाद</translation>
 <translation id="3144135466825225871">crx फ़ाइल बदलने में विफल. यह देखने के लिए जाँच करें कि क्या फ़ाइल उपयोग में है.</translation>
 <translation id="3163201441334626963"><ph name="VENDOR_ID" /> की ओर से अज्ञात <ph name="PRODUCT_ID" /> उत्पाद</translation>
+<translation id="3302709122321372472">सामग्री स्क्रिप्ट के लिए css '<ph name="RELATIVE_PATH" />' लोड नहीं कर सका.</translation>
 <translation id="3369521687965833290">एक्सटेंशन को अनपैक नहीं कर सका.  किसी एक्सटेंशन को सुरक्षित रूप से अनपैक करने के लिए आपकी प्रोफ़ाइल निर्देशिका में एक ऐसा पथ होना आवश्यक है, जिसमें कोई सिमलिंक न हो.  ऐसा कोई भी पथ आपकी प्रोफ़ाइल के लिए मौजूद नहीं है.</translation>
 <translation id="3393440416772303020"><ph name="PRODUCT_NAME" /> (क्रमांक <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3466070586188012397"><ph name="VENDOR_ID" /> (क्रमांक <ph name="SERIAL_NUMBER" />) विक्रेता की ओर से <ph name="PRODUCT_NAME" /></translation>
 <translation id="3561217442734750519">निजी कुंजी के लिए इनपुट मान एक मान्य पथ होना चाहिए.</translation>
 <translation id="388442998277590542">विकल्‍प पेज '<ph name="OPTIONS_PAGE" />' लोड नहीं कर सका.</translation>
 <translation id="3984413272403535372">एक्सटेंशन हस्ताक्षरित करते समय गड़बड़ी आई.</translation>
+<translation id="39964277676607559">सामग्री स्क्रिप्ट के लिए javascript '<ph name="RELATIVE_PATH" />' लोड नहीं कर सका.</translation>
 <translation id="4115165561519362854">इस मशीन का नियंत्रक चाहता है कि <ph name="EXTENSION_NAME" /> के पास <ph name="EXTENSION_VERSION" /> का एक न्‍यूनतम वर्शन हो. इसे तब तक सक्षम नहीं किया जा सकता जब तक कि उसे उस वर्शन (या बाद वाले वर्शन) में अपडेट ना कर दिया गया हो.</translation>
 <translation id="4233778200880751280">संक्षिप्त विवरण पेज '<ph name="ABOUT_PAGE" />' लोड नहीं हो सका.</translation>
 <translation id="471800408830181311">निजी कुंजी आउटपुट करने में विफल.</translation>

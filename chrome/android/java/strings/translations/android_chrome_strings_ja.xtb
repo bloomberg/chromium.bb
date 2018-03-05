@@ -533,10 +533,8 @@
 <translation id="5809361687334836369">{HOURS,plural, =1{# 時間前}other{# 時間前}}</translation>
 <translation id="5817918615728894473">ペア設定</translation>
 <translation id="583281660410589416">不明</translation>
-<translation id="5832934273103296195">展開状態 - クリックして折りたたみ</translation>
 <translation id="5833984609253377421">リンクを共有</translation>
 <translation id="583891442612896534">データ圧縮のために Chrome から Google サーバーにアクセスすることができません。データ使用量をあまり削減できない可能性があります。</translation>
-<translation id="584615158992327102">ダウンロード、ブックマーク、履歴にアクセスします。</translation>
 <translation id="5854790677617711513">30 日以上経過</translation>
 <translation id="5858741533101922242">Chrome から Bluetooth アダプタをオンにできません</translation>
 <translation id="5860033963881614850">オフ</translation>
@@ -554,7 +552,6 @@
 <translation id="5962718611393537961">タップして折りたたむ</translation>
 <translation id="5974562976030145789">[ダウンロード] は移動しました。次回からはアドレスバーを上にスワイプしてください。</translation>
 <translation id="6000066717592683814">Google のままにする</translation>
-<translation id="6031101910111098835">折りたたみ状態 - クリックして展開</translation>
 <translation id="6039379616847168523">次のタブに移動する</translation>
 <translation id="6040143037577758943">閉じる</translation>
 <translation id="6042308850641462728">もっと見る</translation>
@@ -600,7 +597,6 @@
 <translation id="6404511346730675251">ブックマークを編集</translation>
 <translation id="6406506848690869874">同期</translation>
 <translation id="6409731863280057959">ポップアップ</translation>
-<translation id="6411957228448379013">アドレスバーです。ダウンロード、ブックマーク、履歴を表示するには上にスワイプします。</translation>
 <translation id="641643625718530986">印刷...</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> MB をダウンロード済み</translation>
 <translation id="6433501201775827830">検索エンジンを選択</translation>
@@ -641,6 +637,7 @@
 <translation id="6701279291835318271">セキュリティ レポート</translation>
 <translation id="6710213216561001401">前へ</translation>
 <translation id="6738867403308150051">ダウンロードしています…</translation>
+<translation id="6746124502594467657">下に移動</translation>
 <translation id="6762156594045689028">この設定を変更するには、<ph name="BEGIN_LINK" />同期をリセット<ph name="END_LINK" />します</translation>
 <translation id="6770414673596662518">また、Chrome のセーフ ブラウジング システムにより悪意のあるページが検出され、フィッシング、不正なソフトウェア、有害なダウンロードからユーザーを保護します。</translation>
 <translation id="6776813977906306442">動画をダウンロードして後で見るには、[ダウンロード] をクリックします</translation>
@@ -833,6 +830,7 @@
 <translation id="857509777403223202">記事は随時更新されます。また後でご覧ください。</translation>
 <translation id="857943718398505171">許可（推奨）</translation>
 <translation id="8583805026567836021">アカウント データをクリア中</translation>
+<translation id="8609465669617005112">上に移動</translation>
 <translation id="8616006591992756292">お使いの Google アカウントの <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> に、他の形式の閲覧履歴が記録されている場合があります。</translation>
 <translation id="8617240290563765734">ダウンロード コンテンツに指定されている URL を開きますか？</translation>
 <translation id="862875433388403934">他のアプリケーションでダウンロードしたコンテンツ（映画、音楽など）は再生できなくなっている可能性があります。再生するには、該当のアプリケーションで新しいデバイス認証情報に基づくライセンスを再取得する必要があります。

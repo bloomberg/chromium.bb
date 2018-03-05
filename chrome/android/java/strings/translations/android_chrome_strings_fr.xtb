@@ -533,10 +533,8 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode navigation pr
 <translation id="5809361687334836369">{HOURS,plural, =1{Il y a # heure}one{Il y a # heure}other{Il y a # heures}}</translation>
 <translation id="5817918615728894473">Associer</translation>
 <translation id="583281660410589416">Inconnu</translation>
-<translation id="5832934273103296195">Développé – Cliquer pour réduire</translation>
 <translation id="5833984609253377421">Partager le lien</translation>
 <translation id="583891442612896534">Impossible de se connecter aux serveurs de Google dans Chrome pour la compression de données. Les sauvegardes de données peuvent être limitées.</translation>
-<translation id="584615158992327102">accéder aux téléchargements, aux favoris et à l'historique.</translation>
 <translation id="5854790677617711513">Datant de plus de 30 jours</translation>
 <translation id="5858741533101922242">Impossible d'activer l'adaptateur Bluetooth dans Chrome</translation>
 <translation id="5860033963881614850">Désactivé</translation>
@@ -554,7 +552,6 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode navigation pr
 <translation id="5962718611393537961">Appuyer pour réduire</translation>
 <translation id="5974562976030145789">La section "Téléchargements" va être déplacée. La prochaine fois, tirez la barre d'adresse vers le haut pour y accéder.</translation>
 <translation id="6000066717592683814">Conserver Google</translation>
-<translation id="6031101910111098835">Réduit – Cliquer pour développer</translation>
 <translation id="6039379616847168523">Accéder à l'onglet suivant</translation>
 <translation id="6040143037577758943">Fermer</translation>
 <translation id="6042308850641462728">Plus</translation>
@@ -600,7 +597,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6404511346730675251">Modifier le favori</translation>
 <translation id="6406506848690869874">Synchronisation</translation>
 <translation id="6409731863280057959">Fenêtres pop-up</translation>
-<translation id="6411957228448379013">Barre d'adresse. Balayez l'écran vers le haut pour voir les téléchargements, les favoris et l'historique.</translation>
 <translation id="641643625718530986">Imprimer…</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> Mo téléchargé(s)</translation>
 <translation id="6433501201775827830">Sélectionner votre moteur de recherche</translation>
@@ -641,6 +637,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6701279291835318271">Rapports relatifs à la sécurité</translation>
 <translation id="6710213216561001401">Précédent</translation>
 <translation id="6738867403308150051">Téléchargement en cours…</translation>
+<translation id="6746124502594467657">Descendre</translation>
 <translation id="6762156594045689028">Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchronisation<ph name="END_LINK" />.</translation>
 <translation id="6770414673596662518">Nous utilisons également le système de navigation sécurisée de Chrome pour détecter les pages nuisibles tout en vous protégeant de l'hameçonnage, des logiciels malveillants et des téléchargements dangereux.</translation>
 <translation id="6776813977906306442">Téléchargez des vidéos à regarder plus tard à l'aide du bouton "Télécharger"</translation>
@@ -833,6 +830,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="857509777403223202">D'autres articles vous seront bientôt proposés. Bonne soirée !</translation>
 <translation id="857943718398505171">Autorisé (recommandé)</translation>
 <translation id="8583805026567836021">Suppression des données du compte</translation>
+<translation id="8609465669617005112">Monter</translation>
 <translation id="8616006591992756292">Votre compte Google conserve peut-être d'autres formes d'historique de navigation sur la page <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="8617240290563765734">Ouvrir l'URL suggérée indiquée dans le contenu téléchargé ?</translation>
 <translation id="862875433388403934">Il se peut que le contenu (films, musique, etc.) téléchargé dans d'autres applications ne soit plus lisible tant que ces applications n'ont pas obtenu de nouvelles licences sur la base d'un nouvel identifiant d'appareil.

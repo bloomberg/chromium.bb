@@ -522,13 +522,6 @@
 <translation id="267596348720209223">Specifică codificările de caractere acceptate de furnizorul de căutare. Codificările reprezintă nume ale paginilor cu coduri cum ar fi UTF-8, GB2312 și ISO-8859-1. Acestea sunt încercate în ordinea furnizată. Politica este opțională. Dacă nu este setată, va fi utilizată codificarea standard, care este UTF-8. Această politică este urmată numai în cazul în care este activată politica „DefaultSearchProviderEnabled”.</translation>
 <translation id="2682225790874070339">Dezactivează Drive în aplicația Fișiere din <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="268577405881275241">Activează funcția proxy de comprimare a datelor</translation>
-<translation id="2726613915126661822">Îți permite să controlezi dacă mașinile virtuale au permisiunea de a rula în sistemul de operare Chrome.
-
-      Dacă politica este setată la True, dispozitivul are permisiunea de a rula mașini virtuale.
-      Dacă politica este setată la False, dispozitivul nu are permisiunea de a rula mașini virtuale.
-      Când este schimbată la False, politica se aplică pentru noile mașini virtuale, dar nu închide mașinile virtuale care rulează deja.
-      Când această politică nu este setată pe un dispozitiv gestionat, dispozitivul nu avea permisiunea să ruleze mașini virtuale.
-      Dispozitivele care nu sunt gestionate au permisiunea de a rula mașini virtuale.</translation>
 <translation id="2731627323327011390">Dezactivează folosirea certificatelor <ph name="PRODUCT_OS_NAME" /> pentru aplicațiile ARC</translation>
 <translation id="2742843273354638707">Ascunde aplicația Magazin web Chrome și linkul notei de subsol din pagina Filă nouă și din lansatorul de aplicații pentru <ph name="PRODUCT_OS_NAME" />.
 
@@ -620,9 +613,6 @@
           Valoarea politicii trebuie specificată în milisecunde. Valorile trebuie să fie mai mici sau egale cu intervalul pentru oprirea ecranului (dacă este setat) și cu intervalul de inactivitate.</translation>
 <translation id="2987155890997901449">Activează ARC</translation>
 <translation id="2987227569419001736">Controlează folosirea API-ului Web Bluetooth</translation>
-<translation id="3001534538097271560">Dacă dezactivezi această politică, utilizatorii nu vor mai putea trimite unele informații de sistem și conținutul paginii la serverele Google. Dacă această setare este activată sau nu este configurată, utilizatorii au permisiunea să trimită unele informații de sistem și conținutul paginii la Navigarea sigură pentru detectarea aplicațiilor și a site-urilor periculoase.
-
-      Consultă https://developers.google.com/safe-browsing pentru mai multe informații despre Navigarea sigură.</translation>
 <translation id="3016255526521614822">Trece în lista albă aplicațiile pentru creat note permise pe ecranul de blocare din <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3030000825273123558">Activați raportarea statisticilor</translation>
 <translation id="3034580675120919256">Vă permite să setați dacă site-urile web au permisiunea de a rula JavaScript. Rularea JavaScript poate fi permisă sau refuzată în bloc pentru toate site-urile web. Dacă această politică este lăsată nesetată, va fi utilizată politica „AllowJavaScript”, dar utilizatorul va putea să o schimbe.</translation>
@@ -851,7 +841,7 @@
 
       Reține că această politică depinde de recunoașterea certificatelor din infrastructura veche Symantec de către sistemul de operare. Dacă o actualizare a sistemului de operare modifică modul în care sistemul de operare gestionează aceste certificate, această politică nu se mai aplică. Mai mult, această politică are rolul de soluție temporară, pentru a le oferi companiilor mai mult timp să renunțe la certificatele Symantec vechi. Această politică va fi eliminată în data de 1 ianuarie 2019 sau în jurul acestei date.
 
-      Dacă această politică nu este setată sau nu este activată, <ph name="PRODUCT_NAME" /> urmează programul anunțat public de renunțare.
+      Dacă această politică nu este setată sau nu este activată, <ph name="PRODUCT_NAME" /> urmează programul de renunțare anunțat public.
 
       Accesați https://g.co/chrome/symantecpkicerts pentru mai multe detalii despre această renunțare.</translation>
 <translation id="383466854578875212">Vă permite să specificați gazdele de mesagerie nativă care nu sunt introduse în lista neagră.
@@ -1010,7 +1000,6 @@
 
       Dacă politica nu este configurată, nu vor exista restricții impuse de politică privind setul de aplicații pe care utilizatorul le poate activa pe ecranul de blocare.</translation>
 <translation id="4309640770189628899">Specifică dacă suitele de codificare DHE din TLS sunt activate</translation>
-<translation id="4320376026953250541">Microsoft Windows XP SP2 sau o versiune ulterioară</translation>
 <translation id="4322842393287974810">Permite aplicației chioșc lansate automat fără nicio întârziere să controleze versiunea <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Adăugați un buton de deconectare în bara de sistem</translation>
 <translation id="4346674324214534449">Îți permite să setezi dacă anunțurile trebuie blocate pe site-urile cu anunțuri deranjante.
@@ -1026,7 +1015,7 @@
 
       Fiecare cont Google de pe dispozitiv va fi comparat cu modelele stocate în această politică pentru a determina vizibilitatea contului în <ph name="PRODUCT_NAME" />. Contul va fi vizibil dacă numele acestuia corespunde cu un model din listă. Altfel, contul va fi ascuns.
 
-      Folosește metacaracterul „*” pentru a crea corespondențe cu zero caractere sau cu un număr arbitrar de caractere. Caracterul escape este „\”, astfel încât pentru a realiza corespondența cu caracterele „*” sau „\”, poți plasa „\” în fața acestora.
+      Folosește metacaracterul „*” pentru a crea corespondențe cu zero sau mai multe caractere arbitrare. Caracterul escape este „\”, astfel încât pentru caracterele „*” sau „\” propriu-zise, poți plasa „\” în fața acestora.
 
       Dacă această politică nu este configurată, toate conturile Google de pe dispozitiv vor fi vizibile în <ph name="PRODUCT_NAME" />.</translation>
 <translation id="436581050240847513">Raportează interfețele de rețea pentru dispozitiv</translation>

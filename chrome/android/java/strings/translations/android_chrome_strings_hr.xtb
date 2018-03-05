@@ -533,10 +533,8 @@ Međutim, niste nevidljivi. Anonimni način neće sakriti vaše pregledavanje od
 <translation id="5809361687334836369">{HOURS,plural, =1{prije # sata}one{prije # sata}few{prije # sata}other{prije # sati}}</translation>
 <translation id="5817918615728894473">Upari</translation>
 <translation id="583281660410589416">Nepoznato</translation>
-<translation id="5832934273103296195">Prošireno – kliknite za sažimanje</translation>
 <translation id="5833984609253377421">Dijeli vezu</translation>
 <translation id="583891442612896534">Chrome ne može pristupiti Googleovim poslužiteljima za kompresiju podataka. Ušteda na prijenosu podataka može biti ograničena.</translation>
-<translation id="584615158992327102">pristup preuzimanjima, oznakama i povijesti.</translation>
 <translation id="5854790677617711513">Starije od 30 dana</translation>
 <translation id="5858741533101922242">Chrome ne može uključiti Bluetooth adapter</translation>
 <translation id="5860033963881614850">Isključeno</translation>
@@ -554,7 +552,6 @@ Međutim, niste nevidljivi. Anonimni način neće sakriti vaše pregledavanje od
 <translation id="5962718611393537961">Dodirnite da biste saželi</translation>
 <translation id="5974562976030145789">“Preuzimanja” se premještaju. Sljedeći put povucite adresnu traku prema gore.</translation>
 <translation id="6000066717592683814">Zadrži Google</translation>
-<translation id="6031101910111098835">Sažeto – kliknite za proširivanje</translation>
 <translation id="6039379616847168523">Preskakanje na sljedeću karticu</translation>
 <translation id="6040143037577758943">Zatvori</translation>
 <translation id="6042308850641462728">Više</translation>
@@ -600,7 +597,6 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="6404511346730675251">Uredi oznaku</translation>
 <translation id="6406506848690869874">Sinkronizacija</translation>
 <translation id="6409731863280057959">Skočni prozori</translation>
-<translation id="6411957228448379013">Adresna traka. Prijeđite prstom prema gore da biste vidjeli oznake, preuzimanja i povijest.</translation>
 <translation id="641643625718530986">Ispis…</translation>
 <translation id="6416782512398055893">Preuzeto <ph name="MBS" /> MB</translation>
 <translation id="6433501201775827830">Odaberite tražilicu</translation>
@@ -641,6 +637,7 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="6701279291835318271">Sigurnosna izvješća</translation>
 <translation id="6710213216561001401">Prethodno</translation>
 <translation id="6738867403308150051">Preuzimanje...</translation>
+<translation id="6746124502594467657">Pomakni dolje</translation>
 <translation id="6762156594045689028">Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizaciju<ph name="END_LINK" /></translation>
 <translation id="6770414673596662518">Chromeov sustav Sigurno pregledavanje upotrebljavat će se i za otkrivanje zlonamjernih stranica i zaštitu od krađe identiteta, zlonamjernog softvera i štetnih preuzimanja.</translation>
 <translation id="6776813977906306442">Preuzmite videozapise za kasnije gledanje pomoću gumba Preuzmi</translation>
@@ -833,6 +830,7 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="857509777403223202">Uskoro će se prikazati više članaka. Želimo vam ugodnu večer!</translation>
 <translation id="857943718398505171">Dopušteno (preporučeno)</translation>
 <translation id="8583805026567836021">Brisanje podataka računa</translation>
+<translation id="8609465669617005112">Premjesti gore</translation>
 <translation id="8616006591992756292">Na vašem Google računu možda postoje drugi oblici povijesti pregledavanja na stranici <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="8617240290563765734">Želite li otvoriti predloženi URL naveden u preuzetom sadržaju?</translation>
 <translation id="862875433388403934">Preuzeti sadržaj (filmovi, glazba itd.) u drugim aplikacijama možda se više neće moći reproducirati dok te aplikacije ponovo ne dobiju licence na temelju nove vjerodajnice uređaja.

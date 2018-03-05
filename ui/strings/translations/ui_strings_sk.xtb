@@ -8,6 +8,7 @@
 <translation id="1243314992276662751">Nahrať</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">ODPORÚČANÉ APLIKÁCIE</translation>
+<translation id="1368832886055348810">Zľava doprava</translation>
 <translation id="1398853756734560583">Maximalizovať</translation>
 <translation id="1413622004203049571">Zakázať upozornenia od <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minúta a }few{# minúty a }many{# minúty a }other{# minút a }}</translation>
@@ -21,6 +22,7 @@
 <translation id="1812519734428420144">Hodnotenie: <ph name="RATING_SCORE" /> hviezd.</translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{Pred 1 hodinou a }few{Pred # hodinami a }many{Pred # hodinou a }other{Pred # hodinami a }}</translation>
 <translation id="1842960171412779397">vybrať</translation>
+<translation id="1859234291848436338">Smer písania</translation>
 <translation id="1860796786778352021">Zavrieť upozornenie</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
@@ -122,6 +124,7 @@
 <translation id="6917971086528278418">{YEARS,plural, =1{zostáva 1 rok}few{zostávajú # roky}many{zostáva # roka}other{zostáva # rokov}}</translation>
 <translation id="6945221475159498467">Vybrať</translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="6974053822202609517">Sprava doľava</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">S NAJVÄČŠOU PRAVDEPODOBNOSŤOU</translation>
 <translation id="7222373446505536781">F11</translation>
@@ -155,6 +158,7 @@
 <translation id="8725488761726303204">ďalšie (<ph name="NUMBER" />)</translation>
 <translation id="8730621377337864115">Hotovo</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{1 h}few{# h}many{# h}other{# h}}</translation>
+<translation id="8798099450830957504">Predvolené</translation>
 <translation id="8806053966018712535">Priečinok <ph name="FOLDER_NAME" /></translation>
 <translation id="883911313571074303">Pridať k obrázku poznámku</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> kB</translation>

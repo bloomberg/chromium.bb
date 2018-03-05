@@ -31,7 +31,6 @@
 <translation id="1175364870820465910">&amp;मुद्रण...</translation>
 <translation id="1181037720776840403">काढा</translation>
 <translation id="1184214524891303587">Google कडे संभाव्य सुरक्षितता घटनांच्या तपशीलांचा <ph name="BEGIN_WHITEPAPER_LINK" />स्वयंचलितपणे अहवाल द्या.<ph name="END_WHITEPAPER_LINK" /> <ph name="PRIVACY_PAGE_LINK" /></translation>
-<translation id="1193706408197842297">पेमेंट पूर्ण झाले नाही</translation>
 <translation id="1201402288615127009">पुढील</translation>
 <translation id="1201895884277373915">या साइटकडून अधिक</translation>
 <translation id="1206967143813997005">खराब प्रारंभिक स्वाक्षरी</translation>
@@ -495,7 +494,6 @@
 <translation id="4708268264240856090">आपल्या कनेक्शनमध्ये व्यत्यय आला</translation>
 <translation id="471880041731876836">या साइटला भेट देण्याची तुम्हाला परवानगी नाही</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Windows नेटवर्क निदान चालविणे<ph name="END_LINK" /></translation>
-<translation id="472349245089439925">आपले पेमेंट</translation>
 <translation id="4726672564094551039">धोरणे रीलोड करा</translation>
 <translation id="4728558894243024398">प्लॅटफॉर्म</translation>
 <translation id="4736825316280949806">Chromium रीस्टार्ट करा</translation>
@@ -566,7 +564,7 @@
 <translation id="522700295135997067">या साइटने कदाचित तुमचा पासवर्ड चोरला असेल</translation>
 <translation id="5230733896359313003">पाठविण्याचा पत्ता</translation>
 <translation id="5251803541071282808">क्लाउड</translation>
-<translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />सॉफ्टवेअर तात्पुरते बंद करून ठेवण्यासाठी खालील पायर्‍यांचे अनुसरण करा, ज्यामुळे तुम्ही वेबशी कनेक्ट होऊ शकाल. तुम्हाला प्रशासकीय हक्क असणे आवश्यक असेल.<ph name="END_PARAGRAPH" />
+<translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />सॉफ्टवेअर तात्पुरते बंद करून ठेवण्यासाठी खालील पायर्‍यांचे फॉलो करा, ज्यामुळे तुम्ही वेबशी कनेक्ट होऊ शकाल. तुम्हाला प्रशासकीय हक्क असणे आवश्यक असेल.<ph name="END_PARAGRAPH" />
 
     <ph name="BEGIN_LIST" />
     <ph name="LIST_ITEM" />सुरुवात<ph name="BEGIN_BOLD" /> करा<ph name="END_BOLD" /> वर क्लिक करा, त्यानंतर<ph name="BEGIN_BOLD" />"स्थानिक सेवा पहा"<ph name="END_BOLD" /> शोधा आणि निवडा
@@ -723,7 +721,6 @@
 <translation id="6446608382365791566">अधिक माहिती जोडा</translation>
 <translation id="6447842834002726250">कुकीज</translation>
 <translation id="6451458296329894277">फॉर्म रीसबमिशनची पुष्टी करा</translation>
-<translation id="6456339708790392414">आपले पेमेंट</translation>
 <translation id="647261751007945333">डीव्हाइस धोरणे</translation>
 <translation id="6477321094435799029">Chrome ला या पृष्‍ठावर असमान्य कोड सापडला आहे आणि आपली वैयक्तिक माहिती (उदा, पासवर्ड, फोन नंबर आणि क्रेडिट कार्ड) संरक्षित करण्‍यासाठी अवरोधित केला आहे.</translation>
 <translation id="6489534406876378309">क्रॅश अपलोड करणे प्रारंभ करा</translation>

@@ -533,10 +533,8 @@ Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din intern
 <translation id="5809361687334836369">{HOURS,plural, =1{för # timme sedan}other{för # timmar sedan}}</translation>
 <translation id="5817918615728894473">Koppla</translation>
 <translation id="583281660410589416">Okänd</translation>
-<translation id="5832934273103296195">Gruppvyn har expanderats. Komprimera vyn genom att klicka.</translation>
 <translation id="5833984609253377421">Dela länk</translation>
 <translation id="583891442612896534">Chrome kan inte nå Googles servrar för datakomprimeringen. Du kanske inte sparar data i någon större utsträckning.</translation>
-<translation id="584615158992327102">åtkomst till nedladdningar, bokmärken och historik.</translation>
 <translation id="5854790677617711513">Äldre än 30 dagar</translation>
 <translation id="5858741533101922242">Det gick inte att aktivera Bluetooth-adaptern i Chrome</translation>
 <translation id="5860033963881614850">Av</translation>
@@ -554,7 +552,6 @@ Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din intern
 <translation id="5962718611393537961">Tryck här om du vill komprimera</translation>
 <translation id="5974562976030145789">Nedladdade filer har flyttat. Dra uppåt på adressfältet nästa gång.</translation>
 <translation id="6000066717592683814">Behåll Google</translation>
-<translation id="6031101910111098835">Gruppvyn har komprimerats. Expandera vyn genom att klicka.</translation>
 <translation id="6039379616847168523">Hoppa till nästa flik</translation>
 <translation id="6040143037577758943">Stäng</translation>
 <translation id="6042308850641462728">Mer</translation>
@@ -600,7 +597,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6404511346730675251">Redigera bokmärke</translation>
 <translation id="6406506848690869874">Synkronisera</translation>
 <translation id="6409731863280057959">Popup-fönster</translation>
-<translation id="6411957228448379013">Adressfält. Om du sveper uppåt visas bokmärken, nedladdningar och historik.</translation>
 <translation id="641643625718530986">Skriv ut …</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> MB har laddats ned</translation>
 <translation id="6433501201775827830">Välj sökmotor</translation>
@@ -641,6 +637,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6701279291835318271">Säkerhetsrapporter</translation>
 <translation id="6710213216561001401">Föregående</translation>
 <translation id="6738867403308150051">Laddar ned …</translation>
+<translation id="6746124502594467657">Flytta ned</translation>
 <translation id="6762156594045689028"><ph name="BEGIN_LINK" />Återställ synkroniseringen<ph name="END_LINK" /> om du vill ändra den här inställningen.</translation>
 <translation id="6770414673596662518">Säker webbsökning i Chrome används dessutom för att identifiera skadliga sidor och skydda dig från nätfiske, skadlig programvara och skadliga filnedladdningar.</translation>
 <translation id="6776813977906306442">Ladda ned videor att titta på senare med knappen Ladda ned.</translation>
@@ -833,6 +830,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="857509777403223202">Fler artiklar visas snart. Trevlig kväll!</translation>
 <translation id="857943718398505171">Tillåten (rekommenderas)</translation>
 <translation id="8583805026567836021">Rensar kontouppgifter</translation>
+<translation id="8609465669617005112">Flytta upp</translation>
 <translation id="8616006591992756292">Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="8617240290563765734">Vill du öppna den föreslagna webbadressen i det nedladdade innehållet?</translation>
 <translation id="862875433388403934">Det kan hända att det inte går att spela upp innehåll (t.ex. filmer och musik) som har hämtats i andra appar förrän dessa appar får nya licenser som baseras på nya användaruppgifter för enheten.

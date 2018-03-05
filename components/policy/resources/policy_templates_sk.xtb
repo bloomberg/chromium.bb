@@ -537,13 +537,6 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
           Toto pravidlo bude dodržané len v prípade, ak je povolené pravidlo „DefaultSearchProviderEnabled“.</translation>
 <translation id="2682225790874070339">Zakázať v aplikácii Súbory systému <ph name="PRODUCT_OS_NAME" /> službu Disk Google</translation>
 <translation id="268577405881275241">Povoliť funkciu servera proxy na kompresiu údajov</translation>
-<translation id="2726613915126661822">Umožňuje ovládať, či sa môžu v systéme Chrome OS spúšťať virtuálne počítače.
-
-      Ak toto pravidlo nastavíte na hodnotu True, zariadenie bude mať povolené spúšťať virtuálne počítače.
-      Ak toto pravidlo nastavíte na hodnotu False, zariadenie nebude mať povolené spúšťať virtuálne počítače.
-      Keď zmeníte hodnotu tohto pravidla na False, bude platiť pre nové virtuálne počítače, ale nevypne žiadne virtuálne počítače, ktoré už sú spustené.
-      Keď toto pravidlo nie je nastavené v spravovanom zariadení, zariadenie nebude môcť spúšťať virtuálne počítače.
-      Nespravované zariadenia môžu spúšťať virtuálne počítače.</translation>
 <translation id="2731627323327011390">Zakázať použitie certifikátov systému <ph name="PRODUCT_OS_NAME" /> v aplikáciách ARC</translation>
 <translation id="2742843273354638707">Skryje na stránke Nová karta a v spúšťači systému <ph name="PRODUCT_OS_NAME" /> aplikáciu Internetový obchod Chrome a odkaz na pätu stránky.
 
@@ -608,10 +601,9 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 <translation id="2893546967669465276">Odosielanie denníkov systému na správcovský server</translation>
 <translation id="2899002520262095963">Aplikácie pre Android môžu používať konfigurácie siete a certifikáty CA nastavené prostredníctvom tohto pravidla, nemajú však prístup k rovnakým možnostiam konfigurácie.</translation>
 <translation id="2906874737073861391">Zoznam rozšírení AppPack</translation>
-<translation id="2907992746861405243">Umožňuje ovládať, ktoré tlačiarne z pravidla <ph name="BULK_PRINTERS_POLICY" /> 
-majú používatelia k dispozícii.
+<translation id="2907992746861405243">Umožňuje ovládať, ktoré tlačiarne z pravidla <ph name="BULK_PRINTERS_POLICY" /> majú používatelia k dispozícii.
 
-      Označuje, ktoré pravidlo pre prístup sa použije na hromadnú konfiguráciu tlačiarní. Ak vyberiete možnosť <ph name="PRINTERS_ALLOW_ALL" />, zobrazia sa všetky tlačiarne. Ak vyberiete <ph name="PRINTERS_BLACKLIST" />, na obmedzenie prístupu určených tlačiarní sa použije pravidlo <ph name="BULK_PRINTERS_BLACKLIST" />.  Ak vyberiete možnosť <ph name="PRINTERS_WHITELIST" />, <ph name="BULK_PRINTERS_WHITELIST" /> označuje iba tie tlačiarne, ktoré sa dajú vybrať.
+      Označuje, ktoré pravidlo pre prístup sa použije na hromadnú konfiguráciu tlačiarní. Ak vyberiete možnosť <ph name="PRINTERS_ALLOW_ALL" />, zobrazia sa všetky tlačiarne. Ak vyberiete <ph name="PRINTERS_BLACKLIST" />, na obmedzenie prístupu špecifikovaných tlačiarní sa použije pravidlo <ph name="BULK_PRINTERS_BLACKLIST" />. Ak vyberiete možnosť <ph name="PRINTERS_WHITELIST" />, <ph name="BULK_PRINTERS_WHITELIST" /> označuje iba tie tlačiarne, ktoré sa dajú vybrať.
 
       Ak toto pravidlo nenastavíte, bude platiť možnosť <ph name="PRINTERS_ALLOW_ALL" />.
       </translation>
@@ -636,9 +628,6 @@ majú používatelia k dispozícii.
           Hodnota pravidla by mala byť uvedená v milisekundách. Hodnoty musia byť nižšie alebo rovnaké ako oneskorenie vypnutia obrazovky (pokiaľ je nastavené) a oneskorenie režimu nečinnosti.</translation>
 <translation id="2987155890997901449">Povoliť funkciu ARC</translation>
 <translation id="2987227569419001736">Ovládať používanie rozhrania Web Bluetooth API</translation>
-<translation id="3001534538097271560">Nastavením tohto pravidla na možnosť False zabránite používateľom odosielať niektoré systémové informácie a obsah stránok na servery Google. Ak je nastavené na možnosť True alebo nie je nakonfigurované, používatelia budú môcť odosielať niektoré systémové informácie a obsah stránok do Bezpečného prehliadania a pomôcť tak rozpoznať nebezpečné aplikácie a weby.
-
-      Ďalšie informácie o Bezpečnom prehliadaní získate na adrese https://developers.google.com/safe-browsing.</translation>
 <translation id="3016255526521614822">Pridať na bielu listinu aplikácie na písanie poznámok, ktoré sú povolené na uzamknutej obrazovke systému <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3030000825273123558">Povoliť hlásenia o metrikách</translation>
 <translation id="3034580675120919256">Umožní nastaviť, či môžu webové stránky spúšťať kód JavaScript. Spúšťanie kódu JavaScript sa dá pre všetky webové stránky buď umožniť, alebo naopak zamietnuť.
@@ -752,7 +741,7 @@ majú používatelia k dispozícii.
 
       Ak toto pravidlo použijete, používateľ bude mať k dispozícii iba tlačiarne s identifikátormi, ktoré sa zhodujú s hodnotami v tomto pravidle. Identifikátory sa musia zhodovať so zadanými údajmi v súbore určenom v pravidle <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>
-<translation id="3414260318408232239">Ak toto pravidlo nenastavíte, prehliadač <ph name="PRODUCT_NAME" />použije predvolenú minimálnu verziu, teda TLS 1.0.
+<translation id="3414260318408232239">Ak toto pravidlo nenastavíte, <ph name="PRODUCT_NAME" /> použije predvolenú minimálnu verziu, teda TLS 1.0.
 
       V opačnom prípade ho môžete nastaviť na jednu z nasledujúcich hodnôt: „tls1“, „tls1.1“ alebo „tls1.2“. Ak túto hodnotu nastavíte, <ph name="PRODUCT_NAME" /> nepoužije protokol SSL alebo TLS v nižšej ako zadanej verzii. Nerozpoznaná hodnota sa bude ignorovať.</translation>
 <translation id="3417418267404583991">Ak je toto pravidlo nastavené na hodnotu true alebo je nenakonfigurované, systém <ph name="PRODUCT_OS_NAME" /> povolí prihlásenie hostí. Prihlásenia hostí predstavujú relácie anonymných používateľov a nevyžadujú heslo.
@@ -864,7 +853,7 @@ majú používatelia k dispozícii.
 <translation id="382476126209906314">Konfigurácia predpony TalkGadget pre hostiteľov vzdialeného prístupu</translation>
 <translation id="3831376478177535007">Keď zapnete toto nastavenie, <ph name="PRODUCT_NAME" /> povolí certifikáty vydané operáciami starej infraštruktúry PKI spoločnosti Symantec Corporation za predpokladu, že sú inak úspešne overené a prepojené s uznávaným certifikátom CA.
 
-      Upozorňujeme, že toto pravidlo závisí od toho, či príslušný operačný systém stále rozpoznáva certifikáty zo starej infraštruktúry spoločnosti Symantec. Ak aktualizácia operačného systému zmení spracovávanie týchto certifikátov operačným systémom, toto pravidlo neplatí. Slúži ako dočasné riešenie, pomocou ktorého získajú podniky viac času na prechod zo starých certifikátov Symantec. Bude odstránené okolo 1. januára 2019.
+      Upozorňujeme, že toto pravidlo závisí od toho, či príslušný operačný systém stále rozpoznáva certifikáty zo starej infraštruktúry spoločnosti Symantec. Ak aktualizácia operačného systému zmení spracovávanie týchto certifikátov operačným systémom, toto pravidlo neplatí.  Slúži ako dočasné riešenie, pomocou ktorého získajú podniky viac času na prechod zo starých certifikátov Symantec.  Bude odstránené okolo 1. januára 2019.
 
       Ak toto pravidlo nenastavíte alebo nastavíte na hodnotu False, <ph name="PRODUCT_NAME" /> bude nasledovať zverejnený rozvrh ukončenia podpory.
 
@@ -1029,7 +1018,6 @@ majú používatelia k dispozícii.
 
       Ak pravidlo ponecháte nenastavené, nebudú existovať žiadne obmedzenia skupiny aplikácií, ktoré používateľ môže povoliť na uzamknutej obrazovke na základe tohto pravidla.</translation>
 <translation id="4309640770189628899">Ovláda, či sú v protokole TLS povolené šifrovacie súpravy DHE</translation>
-<translation id="4320376026953250541">Microsoft Windows XP SP2 alebo novší</translation>
 <translation id="4322842393287974810">Povoliť verejnej aplikácii, ktorá sa spúšťa automaticky s nulovým oneskorením, ovládať verziu systému <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Pridať do oblasti oznámení tlačidlo odhlásenia</translation>
 <translation id="4346674324214534449">Umožňuje nastaviť, či by mali byť reklamy blokované na weboch s obťažujúcimi reklamami.
@@ -2475,7 +2463,7 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je prostredníctv
       </translation>
 <translation id="8934944553121392674">Umožňuje ovládať, ktoré tlačiarne z pravidla <ph name="DEVICE_PRINTERS_POLICY" /> majú používatelia k dispozícii.
 
-      Označuje, ktoré pravidlo pre prístup sa použije na hromadnú konfiguráciu tlačiarní. Ak vyberiete možnosť <ph name="PRINTERS_ALLOW_ALL" />, zobrazia sa všetky tlačiarne. Ak vyberiete <ph name="PRINTERS_BLACKLIST" />, na obmedzenie prístupu určených tlačiarní sa použije pravidlo <ph name="DEVICE_PRINTERS_BLACKLIST" />. Ak vyberiete možnosť <ph name="PRINTERS_WHITELIST" />, <ph name="DEVICE_PRINTERS_WHITELIST" /> označuje iba tie tlačiarne, ktoré sa dajú vybrať.
+      Označuje, ktoré pravidlo pre prístup sa použije na hromadnú konfiguráciu tlačiarní. Ak vyberiete možnosť <ph name="PRINTERS_ALLOW_ALL" />, zobrazia sa všetky tlačiarne. Ak vyberiete <ph name="PRINTERS_BLACKLIST" />, na obmedzenie prístupu špecifikovaných tlačiarní sa použije pravidlo <ph name="DEVICE_PRINTERS_BLACKLIST" />. Ak vyberiete možnosť <ph name="PRINTERS_WHITELIST" />, <ph name="DEVICE_PRINTERS_WHITELIST" /> označuje iba tie tlačiarne, ktoré sa dajú vybrať.
 
       Ak toto pravidlo nenastavíte, bude platiť možnosť <ph name="PRINTERS_ALLOW_ALL" />.
       </translation>

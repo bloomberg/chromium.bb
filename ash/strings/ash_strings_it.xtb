@@ -25,6 +25,7 @@
 <translation id="1525508553941733066">IGNORA</translation>
 <translation id="15373452373711364">Puntatore del mouse grande</translation>
 <translation id="1550523713251050646">Fai clic per visualizzare altre opzioni</translation>
+<translation id="1608626060424371292">Rimuovi questo utente</translation>
 <translation id="1621499497873603021">Tempo rimanente all'esaurimento della batteria: <ph name="TIME_LEFT" /></translation>
 <translation id="1658406695958299976">Non è stato ancora possibile verificare la password. Nota: se l'hai modificata di recente, la nuova password verrà applicata quando esci dall'account. Utilizza qui la tua vecchia password.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> rimanenti</translation>
@@ -74,7 +75,6 @@
 <translation id="2653659639078652383">Invia</translation>
 <translation id="2675319268637823299">Un amministratore ha vietato l'accesso simultaneo per <ph name="USER_EMAIL" />.
     Per continuare, devono disconnettersi tutti gli utenti.</translation>
-<translation id="2700058918926273959">La sessione terminerà tra <ph name="SESSION_TIME_REMAINING" />. Verrà eseguita la disconnessione.</translation>
 <translation id="2727977024730340865">Collegato a un caricabatterie a basso consumo. La carica della batteria potrebbe non essere affidabile.</translation>
 <translation id="2761704814324807722">Barra di stato, ora: <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Riconnessione a <ph name="NAME" /> in corso</translation>
@@ -97,6 +97,7 @@
 <translation id="3077734595579995578">maiusc</translation>
 <translation id="3087734570205094154">In basso</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
+<translation id="3112378005171663295">Comprimi</translation>
 <translation id="3126069444801937830">Riavvia per aggiornare</translation>
 <translation id="3147142846278915599">Avvio applicazioni (sincronizzazione delle app...)</translation>
 <translation id="315116470104423982">Dati mobili</translation>
@@ -209,6 +210,7 @@
 <translation id="607652042414456612">Il tuo computer è rilevabile per i dispositivi Bluetooth nelle vicinanze e verrà visualizzato come "<ph name="NAME" />" con l'indirizzo <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">In carica: <ph name="POWER_SOURCE" /></translation>
 <translation id="615957422585914272">Mostra tastiera sullo schermo</translation>
+<translation id="6164005077879661055">Tutti i file e i dati locali associati all'utente controllato verranno eliminati definitivamente in seguito alla rimozione dell'utente. Le impostazioni e i siti web visitati relativi all'utente controllato potrebbero essere ancora visibili al gestore all'indirizzo <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Ulteriori informazioni</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: attivazione in corso...</translation>
 <translation id="6284232397434400372">Risoluzione modificata</translation>
@@ -243,6 +245,7 @@ Utilizza questa funzione solo con gli account che consideri attendibili.</transl
 <translation id="6857811139397017780">Attiva <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Connetti a un'altra...</translation>
 <translation id="6981982820502123353">Accessibilità</translation>
+<translation id="698231206551913481">Tutti i file e i dati locali associati a questo utente verranno eliminati definitivamente in seguito alla rimozione dell'utente.</translation>
 <translation id="7029814467594812963">Esci da sessione</translation>
 <translation id="7034339000180558234">Trasmissione di <ph name="TAB_NAME" /> a <ph name="RECEIVER_NAME" /> in corso</translation>
 <translation id="7052914147756339792">Imposta sfondo...</translation>

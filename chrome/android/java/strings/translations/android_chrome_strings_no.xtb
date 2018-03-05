@@ -533,10 +533,8 @@ Du er imidlertid ikke usynlig. Inkognito-modusen skjuler ikke surfingen din for 
 <translation id="5809361687334836369">{HOURS,plural, =1{for # time siden}other{for # timer siden}}</translation>
 <translation id="5817918615728894473">Koble sammen</translation>
 <translation id="583281660410589416">Ukjent</translation>
-<translation id="5832934273103296195">Utvidet – klikk for å skjule</translation>
 <translation id="5833984609253377421">Del en link</translation>
 <translation id="583891442612896534">Chrome kunne ikke kontakte Google-tjenerne for datakomprimering. Det kan hende at du bare oppnår begrenset datasparing.</translation>
-<translation id="584615158992327102">få tilgang til nedlastinger, bokmerker og loggen.</translation>
 <translation id="5854790677617711513">Eldre enn 30 dager</translation>
 <translation id="5858741533101922242">Chrome kan ikke slå på Bluetooth-adapteren</translation>
 <translation id="5860033963881614850">Av</translation>
@@ -554,7 +552,6 @@ Du er imidlertid ikke usynlig. Inkognito-modusen skjuler ikke surfingen din for 
 <translation id="5962718611393537961">Trykk for å skjule</translation>
 <translation id="5974562976030145789">«Nedlastinger» flyttes. Trekk opp adressefeltet neste gang.</translation>
 <translation id="6000066717592683814">Behold Google</translation>
-<translation id="6031101910111098835">Skjult – klikk for å vise</translation>
 <translation id="6039379616847168523">Gå til den neste fanen</translation>
 <translation id="6040143037577758943">Lukk</translation>
 <translation id="6042308850641462728">Mer</translation>
@@ -600,7 +597,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6404511346730675251">Rediger bokmerket</translation>
 <translation id="6406506848690869874">Synkroniser</translation>
 <translation id="6409731863280057959">Forgrunnsvinduer</translation>
-<translation id="6411957228448379013">Adressefeltet. Sveip opp for å se nedlastinger, bokmerker og loggen.</translation>
 <translation id="641643625718530986">Skriv ut</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> MB er lastet ned</translation>
 <translation id="6433501201775827830">Velg søkemotor</translation>
@@ -641,6 +637,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6701279291835318271">Sikkerhetsrapporter</translation>
 <translation id="6710213216561001401">Forrige</translation>
 <translation id="6738867403308150051">Laster ned …</translation>
+<translation id="6746124502594467657">Flytt ned</translation>
 <translation id="6762156594045689028">For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkroniseringen<ph name="END_LINK" /></translation>
 <translation id="6770414673596662518">Safe Browsing-systemet («sikker surfing») i Chrome brukes også til å oppdage skadelige sider og beskytte deg mot nettfisking, skadelig programvare og skadelige nedlastinger.</translation>
 <translation id="6776813977906306442">Last ned videoer du vil se senere, med Last ned-knappen</translation>
@@ -833,6 +830,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="857509777403223202">Flere artikler kommer snart. Ha en fin kveld.</translation>
 <translation id="857943718398505171">Tillatt (anbefales)</translation>
 <translation id="8583805026567836021">Fjerner kontodata …</translation>
+<translation id="8609465669617005112">Flytt opp</translation>
 <translation id="8616006591992756292">Det kan hende Google-kontoen din har andre typer nettlesingslogger på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="8617240290563765734">Vil du åpne den foreslåtte nettadressen som er spesifisert i det nedlastede innholdet?</translation>
 <translation id="862875433388403934">Innhold (filmer, musikk osv.) som er lastet ned i andre apper, kan kanskje ikke spilles av lenger, før appene får nye lisenser basert på ny enhetslegitimasjon.
