@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SIGNIN_EASY_UNLOCK_AUTH_ATTEMPT_H_
-#define CHROME_BROWSER_SIGNIN_EASY_UNLOCK_AUTH_ATTEMPT_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_EASY_UNLOCK_EASY_UNLOCK_AUTH_ATTEMPT_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_EASY_UNLOCK_EASY_UNLOCK_AUTH_ATTEMPT_H_
 
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "components/signin/core/account_id/account_id.h"
+
+namespace chromeos {
 
 class EasyUnlockAppManager;
 
@@ -23,10 +25,7 @@ class EasyUnlockAppManager;
 class EasyUnlockAuthAttempt {
  public:
   // The auth type.
-  enum Type {
-    TYPE_UNLOCK,
-    TYPE_SIGNIN
-  };
+  enum Type { TYPE_UNLOCK, TYPE_SIGNIN };
 
   // A callback to be invoked after the auth attempt is finalized. |success|
   // indicates whether the attempt is successful or not. |account_id| is the
@@ -36,7 +35,8 @@ class EasyUnlockAuthAttempt {
                               bool success,
                               const AccountId& account_id,
                               const std::string& key_secret,
-                              const std::string& key_label)> FinalizedCallback;
+                              const std::string& key_label)>
+      FinalizedCallback;
 
   EasyUnlockAuthAttempt(EasyUnlockAppManager* app_manager,
                         const AccountId& account_id,
@@ -64,11 +64,7 @@ class EasyUnlockAuthAttempt {
 
  private:
   // The internal attempt state.
-  enum State {
-    STATE_IDLE,
-    STATE_RUNNING,
-    STATE_DONE
-  };
+  enum State { STATE_IDLE, STATE_RUNNING, STATE_DONE };
 
   // Cancels the attempt.
   void Cancel(const AccountId& account_id);
@@ -83,4 +79,6 @@ class EasyUnlockAuthAttempt {
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockAuthAttempt);
 };
 
-#endif  // CHROME_BROWSER_SIGNIN_EASY_UNLOCK_AUTH_ATTEMPT_H_
+}  // namespace chromeos
+
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_EASY_UNLOCK_EASY_UNLOCK_AUTH_ATTEMPT_H_

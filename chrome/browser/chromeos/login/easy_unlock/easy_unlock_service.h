@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SIGNIN_EASY_UNLOCK_SERVICE_H_
-#define CHROME_BROWSER_SIGNIN_EASY_UNLOCK_SERVICE_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_EASY_UNLOCK_EASY_UNLOCK_SERVICE_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_EASY_UNLOCK_EASY_UNLOCK_SERVICE_H_
 
 #include <memory>
 #include <set>
@@ -14,11 +14,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "build/build_config.h"
+#include "chrome/browser/chromeos/login/easy_unlock/chrome_proximity_auth_client.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_auth_attempt.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_metrics.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_screenlock_state_handler.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_types.h"
-#include "chrome/browser/signin/chrome_proximity_auth_client.h"
-#include "chrome/browser/signin/easy_unlock_auth_attempt.h"
-#include "chrome/browser/signin/easy_unlock_metrics.h"
-#include "chrome/browser/signin/easy_unlock_screenlock_state_handler.h"
 #include "components/cryptauth/remote_device.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/proximity_auth/screenlock_state.h"
@@ -28,11 +28,7 @@ class AccountId;
 namespace base {
 class DictionaryValue;
 class ListValue;
-}
-
-namespace chromeos {
-class UserContext;
-}
+}  // namespace base
 
 namespace user_manager {
 class User;
@@ -45,12 +41,16 @@ class PrefRegistrySyncable;
 namespace proximity_auth {
 class ProximityAuthPrefManager;
 class ProximityAuthSystem;
-}
+}  // namespace proximity_auth
+
+class Profile;
+class PrefRegistrySimple;
+
+namespace chromeos {
 
 class EasyUnlockAppManager;
 class EasyUnlockServiceObserver;
-class Profile;
-class PrefRegistrySimple;
+class UserContext;
 
 class EasyUnlockService : public KeyedService {
  public:
@@ -60,10 +60,7 @@ class EasyUnlockService : public KeyedService {
     FAIL,
   };
 
-  enum Type {
-    TYPE_REGULAR,
-    TYPE_SIGNIN
-  };
+  enum Type { TYPE_REGULAR, TYPE_SIGNIN };
 
   // Gets EasyUnlockService instance.
   static EasyUnlockService* Get(Profile* profile);
@@ -373,4 +370,6 @@ class EasyUnlockService : public KeyedService {
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockService);
 };
 
-#endif  // CHROME_BROWSER_SIGNIN_EASY_UNLOCK_SERVICE_H_
+}  // namespace chromeos
+
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_EASY_UNLOCK_EASY_UNLOCK_SERVICE_H_

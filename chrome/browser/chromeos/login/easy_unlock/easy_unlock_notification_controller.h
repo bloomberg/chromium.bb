@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SIGNIN_EASY_UNLOCK_NOTIFICATION_CONTROLLER_H_
-#define CHROME_BROWSER_SIGNIN_EASY_UNLOCK_NOTIFICATION_CONTROLLER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_EASY_UNLOCK_EASY_UNLOCK_NOTIFICATION_CONTROLLER_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_EASY_UNLOCK_EASY_UNLOCK_NOTIFICATION_CONTROLLER_H_
 
 #include <memory>
 #include <string>
@@ -12,6 +12,8 @@
 #include "components/proximity_auth/notification_controller.h"
 
 class Profile;
+
+namespace chromeos {
 
 // Responsible for displaying all notifications for EasyUnlock.
 class EasyUnlockNotificationController
@@ -32,4 +34,6 @@ class EasyUnlockNotificationController
   void ShowPromotionNotification() override = 0;
 };
 
-#endif  // CHROME_BROWSER_SIGNIN_EASY_UNLOCK_NOTIFICATION_CONTROLLER_H_
+}  // namespace chromeos
+
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_EASY_UNLOCK_EASY_UNLOCK_NOTIFICATION_CONTROLLER_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SIGNIN_EASY_UNLOCK_SERVICE_SIGNIN_CHROMEOS_H_
-#define CHROME_BROWSER_SIGNIN_EASY_UNLOCK_SERVICE_SIGNIN_CHROMEOS_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_EASY_UNLOCK_EASY_UNLOCK_SERVICE_SIGNIN_CHROMEOS_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_EASY_UNLOCK_EASY_UNLOCK_SERVICE_SIGNIN_CHROMEOS_H_
 
 #include <map>
 #include <memory>
@@ -13,18 +13,18 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_types.h"
-#include "chrome/browser/signin/easy_unlock_service.h"
 #include "chromeos/login/login_state.h"
 #include "components/proximity_auth/screenlock_bridge.h"
-
-namespace chromeos {
-class EasyUnlockChallengeWrapper;
-}
 
 namespace proximity_auth {
 class ProximityAuthLocalStatePrefManager;
 }
+
+namespace chromeos {
+
+class EasyUnlockChallengeWrapper;
 
 // EasyUnlockService instance that should be used for signin profile.
 class EasyUnlockServiceSignin
@@ -171,4 +171,6 @@ class EasyUnlockServiceSignin
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockServiceSignin);
 };
 
-#endif  // CHROME_BROWSER_SIGNIN_EASY_UNLOCK_SERVICE_SIGNIN_CHROMEOS_H_
+}  // namespace chromeos
+
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_EASY_UNLOCK_EASY_UNLOCK_SERVICE_SIGNIN_CHROMEOS_H_

@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_EASY_UNLOCK_SETTINGS_HANDLER_H_
 
 #include "base/macros.h"
-#include "chrome/browser/signin/easy_unlock_service_observer.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service_observer.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "components/prefs/pref_change_registrar.h"
 

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/signin/easy_unlock_auth_attempt.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_auth_attempt.h"
 
 #include <stddef.h>
 
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_app_manager.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_key_manager.h"
-#include "chrome/browser/signin/easy_unlock_app_manager.h"
 #include "components/proximity_auth/screenlock_bridge.h"
 #include "components/proximity_auth/switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,21 +21,18 @@ namespace {
 const char kTestUser1[] = "user1";
 const char kTestUser2[] = "user2";
 
-const unsigned char kSecret[] = {
-    0x7c, 0x85, 0x82, 0x7d, 0x00, 0x1f, 0x6a, 0x29, 0x2f, 0xc4, 0xb5, 0x60,
-    0x08, 0x9b, 0xb0, 0x5b
-};
+const unsigned char kSecret[] = {0x7c, 0x85, 0x82, 0x7d, 0x00, 0x1f,
+                                 0x6a, 0x29, 0x2f, 0xc4, 0xb5, 0x60,
+                                 0x08, 0x9b, 0xb0, 0x5b};
 
-const unsigned char kSessionKey[] = {
-    0xc3, 0xd9, 0x83, 0x16, 0x52, 0xde, 0x99, 0xd7, 0x4e, 0x60, 0xf9, 0xec,
-    0xa8, 0x9c, 0x0e, 0xbe
-};
+const unsigned char kSessionKey[] = {0xc3, 0xd9, 0x83, 0x16, 0x52, 0xde,
+                                     0x99, 0xd7, 0x4e, 0x60, 0xf9, 0xec,
+                                     0xa8, 0x9c, 0x0e, 0xbe};
 
 const unsigned char kWrappedSecret[] = {
-    0x3a, 0xea, 0x51, 0xd9, 0x64, 0x64, 0xe1, 0xcd, 0xd8, 0xee, 0x99, 0xf5,
-    0xb1, 0xd4, 0x9f, 0xc4, 0x28, 0xd6, 0xfd, 0x69, 0x0b, 0x9e, 0x06, 0x21,
-    0xfc, 0x40, 0x1f, 0xeb, 0x75, 0x64, 0x52, 0xd8
-};
+    0x3a, 0xea, 0x51, 0xd9, 0x64, 0x64, 0xe1, 0xcd, 0xd8, 0xee, 0x99,
+    0xf5, 0xb1, 0xd4, 0x9f, 0xc4, 0x28, 0xd6, 0xfd, 0x69, 0x0b, 0x9e,
+    0x06, 0x21, 0xfc, 0x40, 0x1f, 0xeb, 0x75, 0x64, 0x52, 0xd8};
 
 std::string GetSecret() {
   return std::string(reinterpret_cast<const char*>(kSecret),
@@ -54,7 +51,7 @@ std::string GetSessionKey() {
 
 // Fake app manager used by the EasyUnlockAuthAttempt during tests.
 // It tracks screenlockPrivate.onAuthAttempted events.
-class FakeAppManager : public EasyUnlockAppManager {
+class FakeAppManager : public chromeos::EasyUnlockAppManager {
  public:
   FakeAppManager()
       : auth_attempt_count_(0u), auth_attempt_should_fail_(false) {}
@@ -209,10 +206,10 @@ class EasyUnlockAuthAttemptUnlockTest : public testing::Test {
 
   void SetUp() override {
     app_manager_.reset(new FakeAppManager());
-    auth_attempt_.reset(
-        new EasyUnlockAuthAttempt(app_manager_.get(), test_account_id1_,
-                                  EasyUnlockAuthAttempt::TYPE_UNLOCK,
-                                  EasyUnlockAuthAttempt::FinalizedCallback()));
+    auth_attempt_.reset(new chromeos::EasyUnlockAuthAttempt(
+        app_manager_.get(), test_account_id1_,
+        chromeos::EasyUnlockAuthAttempt::TYPE_UNLOCK,
+        chromeos::EasyUnlockAuthAttempt::FinalizedCallback()));
   }
 
   void TearDown() override {
@@ -228,7 +225,7 @@ class EasyUnlockAuthAttemptUnlockTest : public testing::Test {
         lock_handler_.get());
   }
 
-  std::unique_ptr<EasyUnlockAuthAttempt> auth_attempt_;
+  std::unique_ptr<chromeos::EasyUnlockAuthAttempt> auth_attempt_;
   std::unique_ptr<FakeAppManager> app_manager_;
   std::unique_ptr<TestLockHandler> lock_handler_;
 
@@ -368,10 +365,10 @@ class EasyUnlockAuthAttemptSigninTest : public testing::Test {
 
   void SetUp() override {
     app_manager_.reset(new FakeAppManager());
-    auth_attempt_.reset(
-        new EasyUnlockAuthAttempt(app_manager_.get(), test_account_id1_,
-                                  EasyUnlockAuthAttempt::TYPE_SIGNIN,
-                                  EasyUnlockAuthAttempt::FinalizedCallback()));
+    auth_attempt_.reset(new chromeos::EasyUnlockAuthAttempt(
+        app_manager_.get(), test_account_id1_,
+        chromeos::EasyUnlockAuthAttempt::TYPE_SIGNIN,
+        chromeos::EasyUnlockAuthAttempt::FinalizedCallback()));
   }
 
   void TearDown() override {
@@ -387,7 +384,7 @@ class EasyUnlockAuthAttemptSigninTest : public testing::Test {
         lock_handler_.get());
   }
 
-  std::unique_ptr<EasyUnlockAuthAttempt> auth_attempt_;
+  std::unique_ptr<chromeos::EasyUnlockAuthAttempt> auth_attempt_;
   std::unique_ptr<FakeAppManager> app_manager_;
   std::unique_ptr<TestLockHandler> lock_handler_;
 

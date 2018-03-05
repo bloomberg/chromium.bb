@@ -9,9 +9,9 @@
 
 #include "base/lazy_instance.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/login/easy_unlock/chrome_proximity_auth_client.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/chrome_proximity_auth_client.h"
-#include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/common/extensions/api/screenlock_private.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "components/proximity_auth/screenlock_bridge.h"
@@ -69,7 +69,8 @@ bool ScreenlockPrivateSetLockedFunction::RunAsync() {
   std::unique_ptr<screenlock::SetLocked::Params> params(
       screenlock::SetLocked::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
-  EasyUnlockService* service = EasyUnlockService::Get(GetProfile());
+  chromeos::EasyUnlockService* service =
+      chromeos::EasyUnlockService::Get(GetProfile());
   if (params->locked) {
     if (extension()->id() == extension_misc::kEasyUnlockAppId &&
         AppWindowRegistry::Get(browser_context())
@@ -102,7 +103,8 @@ ScreenlockPrivateAcceptAuthAttemptFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
-  EasyUnlockService* service = EasyUnlockService::Get(profile);
+  chromeos::EasyUnlockService* service =
+      chromeos::EasyUnlockService::Get(profile);
   if (service)
     service->FinalizeUnlock(params->accept);
   return RespondNow(NoArguments());

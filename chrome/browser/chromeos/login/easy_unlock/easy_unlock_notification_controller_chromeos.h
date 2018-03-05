@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SIGNIN_EASY_UNLOCK_NOTIFICATION_CONTROLLER_CHROMEOS_H_
-#define CHROME_BROWSER_SIGNIN_EASY_UNLOCK_NOTIFICATION_CONTROLLER_CHROMEOS_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_EASY_UNLOCK_EASY_UNLOCK_NOTIFICATION_CONTROLLER_CHROMEOS_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_EASY_UNLOCK_EASY_UNLOCK_NOTIFICATION_CONTROLLER_CHROMEOS_H_
 
 #include <memory>
 #include <string>
@@ -11,11 +11,13 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/signin/easy_unlock_notification_controller.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_notification_controller.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_delegate.h"
 
 class Profile;
+
+namespace chromeos {
 
 // Implementation of EasyUnlockNotificationController for ChromeOS.
 class EasyUnlockNotificationControllerChromeOS
@@ -71,4 +73,6 @@ class EasyUnlockNotificationControllerChromeOS
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockNotificationControllerChromeOS);
 };
 
-#endif  // CHROME_BROWSER_SIGNIN_EASY_UNLOCK_NOTIFICATION_CONTROLLER_CHROMEOS_H_
+}  // namespace chromeos
+
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_EASY_UNLOCK_EASY_UNLOCK_NOTIFICATION_CONTROLLER_CHROMEOS_H_

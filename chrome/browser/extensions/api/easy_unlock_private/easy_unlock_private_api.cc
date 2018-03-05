@@ -20,14 +20,14 @@
 #include "base/timer/timer.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_screenlock_state_handler.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service_regular.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager_factory.h"
 #include "chrome/browser/extensions/api/easy_unlock_private/easy_unlock_private_connection_manager.h"
 #include "chrome/browser/extensions/api/easy_unlock_private/easy_unlock_private_crypto_delegate.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/easy_unlock_screenlock_state_handler.h"
-#include "chrome/browser/signin/easy_unlock_service.h"
-#include "chrome/browser/signin/easy_unlock_service_regular.h"
 #include "chrome/browser/ui/proximity_auth/proximity_auth_error_bubble.h"
 #include "chrome/common/extensions/api/easy_unlock_private.h"
 #include "chrome/grit/generated_resources.h"
@@ -519,7 +519,7 @@ EasyUnlockPrivateUpdateScreenlockStateFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
-  if (EasyUnlockService::Get(profile)->UpdateScreenlockState(
+  if (chromeos::EasyUnlockService::Get(profile)->UpdateScreenlockState(
           ToScreenlockState(params->state))) {
     return RespondNow(NoArguments());
   }
@@ -541,8 +541,8 @@ EasyUnlockPrivateSetPermitAccessFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
-  EasyUnlockService::Get(profile)
-      ->SetPermitAccess(*params->permit_access.ToValue());
+  chromeos::EasyUnlockService::Get(profile)->SetPermitAccess(
+      *params->permit_access.ToValue());
   return RespondNow(NoArguments());
 }
 
@@ -563,7 +563,7 @@ EasyUnlockPrivateGetPermitAccessFunction::Run() {
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
   const base::DictionaryValue* permit_value =
-      EasyUnlockService::Get(profile)->GetPermitAccess();
+      chromeos::EasyUnlockService::Get(profile)->GetPermitAccess();
 
   if (permit_value) {
     std::unique_ptr<easy_unlock_private::PermitRecord> permit =
@@ -580,7 +580,7 @@ void EasyUnlockPrivateGetPermitAccessFunction::GetKeyPairForExperiment(
     std::string* user_private_key) {
   Profile* profile = Profile::FromBrowserContext(browser_context());
   cryptauth::CryptAuthEnrollmentManager* enrollment_manager =
-      EasyUnlockService::Get(profile)
+      chromeos::EasyUnlockService::Get(profile)
           ->proximity_auth_client()
           ->GetCryptAuthEnrollmentManager();
   base::Base64UrlEncode(enrollment_manager->GetUserPublicKey(),
@@ -595,8 +595,10 @@ ExtensionFunction::ResponseAction
 EasyUnlockPrivateGetPermitAccessFunction::GetPermitAccessForExperiment() {
   // Check that we are inside a user session.
   Profile* profile = Profile::FromBrowserContext(browser_context());
-  EasyUnlockService* easy_unlock_service = EasyUnlockService::Get(profile);
-  if (easy_unlock_service->GetType() != EasyUnlockService::TYPE_REGULAR) {
+  chromeos::EasyUnlockService* easy_unlock_service =
+      chromeos::EasyUnlockService::Get(profile);
+  if (easy_unlock_service->GetType() !=
+      chromeos::EasyUnlockService::TYPE_REGULAR) {
     return RespondNow(
         Error("This function must be called inside a user session."));
   }
@@ -633,7 +635,7 @@ EasyUnlockPrivateClearPermitAccessFunction::
 ExtensionFunction::ResponseAction
 EasyUnlockPrivateClearPermitAccessFunction::Run() {
   Profile* profile = Profile::FromBrowserContext(browser_context());
-  EasyUnlockService::Get(profile)->ClearPermitAccess();
+  chromeos::EasyUnlockService::Get(profile)->ClearPermitAccess();
   return RespondNow(NoArguments());
 }
 
@@ -659,9 +661,9 @@ EasyUnlockPrivateSetRemoteDevicesFunction::Run() {
   // Store the BLE device if we are trying out the BLE experiment.
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           proximity_auth::switches::kDisableBluetoothLowEnergyDiscovery)) {
-    EasyUnlockService::Get(profile)->SetRemoteBleDevices(devices);
+    chromeos::EasyUnlockService::Get(profile)->SetRemoteBleDevices(devices);
   } else {
-    EasyUnlockService::Get(profile)->SetRemoteDevices(devices);
+    chromeos::EasyUnlockService::Get(profile)->SetRemoteDevices(devices);
   }
 
   return RespondNow(NoArguments());
@@ -684,7 +686,7 @@ bool EasyUnlockPrivateGetRemoteDevicesFunction::RunAsync() {
   } else {
     Profile* profile = Profile::FromBrowserContext(browser_context());
     const base::ListValue* devices =
-        EasyUnlockService::Get(profile)->GetRemoteDevices();
+        chromeos::EasyUnlockService::Get(profile)->GetRemoteDevices();
     SetResult(devices ? devices->CreateDeepCopy()
                       : std::make_unique<base::ListValue>());
     SendResponse(true);
@@ -696,7 +698,7 @@ bool EasyUnlockPrivateGetRemoteDevicesFunction::RunAsync() {
 std::string EasyUnlockPrivateGetRemoteDevicesFunction::GetUserPrivateKey() {
   Profile* profile = Profile::FromBrowserContext(browser_context());
   proximity_auth::ProximityAuthClient* client =
-      EasyUnlockService::Get(profile)->proximity_auth_client();
+      chromeos::EasyUnlockService::Get(profile)->proximity_auth_client();
   cryptauth::CryptAuthEnrollmentManager* enrollment_manager =
       client->GetCryptAuthEnrollmentManager();
   return enrollment_manager->GetUserPrivateKey();
@@ -706,7 +708,7 @@ std::vector<cryptauth::ExternalDeviceInfo>
 EasyUnlockPrivateGetRemoteDevicesFunction::GetUnlockKeys() {
   Profile* profile = Profile::FromBrowserContext(browser_context());
   proximity_auth::ProximityAuthClient* client =
-      EasyUnlockService::Get(profile)->proximity_auth_client();
+      chromeos::EasyUnlockService::Get(profile)->proximity_auth_client();
   cryptauth::CryptAuthDeviceManager* device_manager =
       client->GetCryptAuthDeviceManager();
   return device_manager->GetUnlockKeys();
@@ -715,8 +717,10 @@ EasyUnlockPrivateGetRemoteDevicesFunction::GetUnlockKeys() {
 void EasyUnlockPrivateGetRemoteDevicesFunction::ReturnDevicesForExperiment() {
   // Check that we are inside a user profile.
   Profile* profile = Profile::FromBrowserContext(browser_context());
-  EasyUnlockService* easy_unlock_service = EasyUnlockService::Get(profile);
-  if (easy_unlock_service->GetType() != EasyUnlockService::TYPE_REGULAR) {
+  chromeos::EasyUnlockService* easy_unlock_service =
+      chromeos::EasyUnlockService::Get(profile);
+  if (easy_unlock_service->GetType() !=
+      chromeos::EasyUnlockService::TYPE_REGULAR) {
     SetError("This function must be called inside a user session.");
     SendResponse(true);
     return;
@@ -814,7 +818,7 @@ bool EasyUnlockPrivateGetSignInChallengeFunction::RunAsync() {
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
   const std::string challenge =
-      EasyUnlockService::Get(profile)->GetChallenge();
+      chromeos::EasyUnlockService::Get(profile)->GetChallenge();
   if (!challenge.empty() && !params->nonce.empty()) {
     EasyUnlockTpmKeyManager* key_manager =
         EasyUnlockTpmKeyManagerFactory::GetInstance()->Get(profile);
@@ -823,7 +827,7 @@ bool EasyUnlockPrivateGetSignInChallengeFunction::RunAsync() {
       return false;
     }
     key_manager->SignUsingTpmKey(
-        EasyUnlockService::Get(profile)->GetAccountId(),
+        chromeos::EasyUnlockService::Get(profile)->GetAccountId(),
         std::string(params->nonce.begin(), params->nonce.end()),
         base::Bind(&EasyUnlockPrivateGetSignInChallengeFunction::OnDone, this,
                    challenge));
@@ -857,7 +861,7 @@ EasyUnlockPrivateTrySignInSecretFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
-  EasyUnlockService::Get(profile)->FinalizeSignin(std::string(
+  chromeos::EasyUnlockService::Get(profile)->FinalizeSignin(std::string(
       params->sign_in_secret.begin(), params->sign_in_secret.end()));
   return RespondNow(NoArguments());
 }
@@ -869,18 +873,19 @@ EasyUnlockPrivateGetUserInfoFunction::~EasyUnlockPrivateGetUserInfoFunction() {
 }
 
 ExtensionFunction::ResponseAction EasyUnlockPrivateGetUserInfoFunction::Run() {
-  EasyUnlockService* service =
-      EasyUnlockService::Get(Profile::FromBrowserContext(browser_context()));
+  chromeos::EasyUnlockService* service = chromeos::EasyUnlockService::Get(
+      Profile::FromBrowserContext(browser_context()));
   std::vector<easy_unlock_private::UserInfo> users;
   const AccountId& account_id = service->GetAccountId();
   if (account_id.is_valid()) {
     easy_unlock_private::UserInfo user;
     user.user_id = account_id.GetUserEmail();
-    user.logged_in = service->GetType() == EasyUnlockService::TYPE_REGULAR;
+    user.logged_in =
+        service->GetType() == chromeos::EasyUnlockService::TYPE_REGULAR;
     user.data_ready = user.logged_in || service->GetRemoteDevices() != NULL;
 
     user.device_user_id = cryptauth::CalculateDeviceUserId(
-        EasyUnlockService::GetDeviceId(), account_id.GetUserEmail());
+        chromeos::EasyUnlockService::GetDeviceId(), account_id.GetUserEmail());
 
     user.ble_discovery_enabled =
         !base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -1012,8 +1017,8 @@ EasyUnlockPrivateSetAutoPairingResultFunction::Run() {
     error_message = *params->result.error_message;
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
-  EasyUnlockService::Get(profile)
-      ->SetAutoPairingResult(params->result.success, error_message);
+  chromeos::EasyUnlockService::Get(profile)->SetAutoPairingResult(
+      params->result.success, error_message);
 
   return RespondNow(NoArguments());
 }

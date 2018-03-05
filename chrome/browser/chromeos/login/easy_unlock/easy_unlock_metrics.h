@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SIGNIN_EASY_UNLOCK_METRICS_H_
-#define CHROME_BROWSER_SIGNIN_EASY_UNLOCK_METRICS_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_EASY_UNLOCK_EASY_UNLOCK_METRICS_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_EASY_UNLOCK_EASY_UNLOCK_METRICS_H_
 
 namespace base {
 class TimeDelta;
 }
+
+namespace chromeos {
 
 // Tracking login events for Easy unlock metrics.
 // This enum is used to define the buckets for an enumerated UMA histogram.
@@ -87,4 +89,6 @@ void RecordEasyUnlockScreenUnlockDuration(const base::TimeDelta& duration);
 void RecordEasyUnlockScreenUnlockEvent(EasyUnlockAuthEvent event);
 void RecordEasyUnlockTrialRunEvent(EasyUnlockTrialRunEvent event);
 
-#endif  // CHROME_BROWSER_SIGNIN_EASY_UNLOCK_METRICS_H_
+}  // namespace chromeos
+
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_EASY_UNLOCK_EASY_UNLOCK_METRICS_H_

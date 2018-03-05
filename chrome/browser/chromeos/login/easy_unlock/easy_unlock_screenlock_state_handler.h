@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SIGNIN_EASY_UNLOCK_SCREENLOCK_STATE_HANDLER_H_
-#define CHROME_BROWSER_SIGNIN_EASY_UNLOCK_SCREENLOCK_STATE_HANDLER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_EASY_UNLOCK_EASY_UNLOCK_SCREENLOCK_STATE_HANDLER_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_EASY_UNLOCK_EASY_UNLOCK_SCREENLOCK_STATE_HANDLER_H_
 
 #include <string>
 
@@ -12,6 +12,8 @@
 #include "components/proximity_auth/screenlock_bridge.h"
 #include "components/proximity_auth/screenlock_state.h"
 #include "components/signin/core/account_id/account_id.h"
+
+namespace chromeos {
 
 // Profile specific class responsible for updating screenlock UI for the user
 // associated with the profile when their Easy Unlock state changes.
@@ -113,4 +115,6 @@ class EasyUnlockScreenlockStateHandler
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockScreenlockStateHandler);
 };
 
-#endif  // CHROME_BROWSER_SIGNIN_EASY_UNLOCK_SCREENLOCK_STATE_HANDLER_H_
+}  // namespace chromeos
+
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_EASY_UNLOCK_EASY_UNLOCK_SCREENLOCK_STATE_HANDLER_H_

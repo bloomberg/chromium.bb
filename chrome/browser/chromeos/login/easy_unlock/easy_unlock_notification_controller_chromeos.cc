@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/signin/easy_unlock_notification_controller_chromeos.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_notification_controller_chromeos.h"
 
 #include "base/guid.h"
 #include "base/memory/ptr_util.h"
@@ -16,6 +16,8 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/chromeos/devicetype_utils.h"
 #include "ui/message_center/public/cpp/notification_types.h"
+
+namespace chromeos {
 
 namespace {
 
@@ -200,3 +202,5 @@ void EasyUnlockNotificationControllerChromeOS::NotificationDelegate::
     }
   }
 }
+
+}  // namespace chromeos

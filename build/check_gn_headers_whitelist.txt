@@ -41,6 +41,7 @@ chrome/browser/chromeos/certificate_provider/certificate_requests.h
 chrome/browser/chromeos/certificate_provider/pin_dialog_manager.h
 chrome/browser/chromeos/certificate_provider/sign_requests.h
 chrome/browser/chromeos/certificate_provider/thread_safe_certificate_map.h
+chrome/browser/chromeos/login/easy_unlock/easy_unlock_service_observer.h
 chrome/browser/chromeos/login/signin/oauth2_login_manager.h
 chrome/browser/chromeos/login/signin/oauth2_login_verifier.h
 chrome/browser/chromeos/login/signin/oauth2_token_fetcher.h
@@ -62,7 +63,6 @@ chrome/browser/notifications/displayed_notifications_dispatch_callback.h
 chrome/browser/permissions/permission_queue_controller.h
 chrome/browser/prefs/active_profile_pref_service.h
 chrome/browser/rlz/chrome_rlz_tracker_delegate.h
-chrome/browser/signin/easy_unlock_service_observer.h
 chrome/browser/ui/android/content_settings/subresource_filter_infobar_delegate.h
 chrome/browser/ui/app_icon_loader_delegate.h
 chrome/browser/ui/app_list/app_list_syncable_service_factory.h

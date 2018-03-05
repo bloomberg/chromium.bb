@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/signin/easy_unlock_service_signin_chromeos.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service_signin_chromeos.h"
 
 #include <stdint.h>
 
@@ -17,13 +17,13 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_app_manager.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_challenge_wrapper.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_key_manager.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_metrics.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager_factory.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
-#include "chrome/browser/signin/easy_unlock_app_manager.h"
-#include "chrome/browser/signin/easy_unlock_metrics.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/login/auth/user_context.h"
 #include "chromeos/tpm/tpm_token_loader.h"
@@ -33,6 +33,8 @@
 #include "components/proximity_auth/switches.h"
 
 using proximity_auth::ScreenlockState;
+
+namespace chromeos {
 
 namespace {
 
@@ -156,8 +158,7 @@ std::vector<cryptauth::BeaconSeed> DeserializeBeaconSeeds(
 }  // namespace
 
 EasyUnlockServiceSignin::UserData::UserData()
-    : state(EasyUnlockServiceSignin::USER_DATA_STATE_INITIAL) {
-}
+    : state(EasyUnlockServiceSignin::USER_DATA_STATE_INITIAL) {}
 
 EasyUnlockServiceSignin::UserData::~UserData() {}
 
@@ -167,8 +168,7 @@ EasyUnlockServiceSignin::EasyUnlockServiceSignin(Profile* profile)
       user_pod_last_focused_timestamp_(base::TimeTicks::Now()),
       weak_ptr_factory_(this) {}
 
-EasyUnlockServiceSignin::~EasyUnlockServiceSignin() {
-}
+EasyUnlockServiceSignin::~EasyUnlockServiceSignin() {}
 
 void EasyUnlockServiceSignin::SetCurrentUser(const AccountId& account_id) {
   OnFocusedUserChanged(account_id);
@@ -244,8 +244,7 @@ const base::ListValue* EasyUnlockServiceSignin::GetRemoteDevices() const {
   return &data->remote_devices_value;
 }
 
-void EasyUnlockServiceSignin::SetRemoteDevices(
-    const base::ListValue& devices) {
+void EasyUnlockServiceSignin::SetRemoteDevices(const base::ListValue& devices) {
   NOTREACHED();
 }
 
@@ -263,7 +262,7 @@ void EasyUnlockServiceSignin::ResetTurnOffFlow() {
 }
 
 EasyUnlockService::TurnOffFlowStatus
-    EasyUnlockServiceSignin::GetTurnOffFlowStatus() const {
+EasyUnlockServiceSignin::GetTurnOffFlowStatus() const {
   return EasyUnlockService::IDLE;
 }
 
@@ -292,11 +291,11 @@ void EasyUnlockServiceSignin::RecordEasySignInOutcome(
       << "GetAccountId()=" << GetAccountId().Serialize()
       << " != account_id=" << account_id.Serialize();
 
-  RecordEasyUnlockSigninEvent(
-      success ? EASY_UNLOCK_SUCCESS : EASY_UNLOCK_FAILURE);
+  RecordEasyUnlockSigninEvent(success ? EASY_UNLOCK_SUCCESS
+                                      : EASY_UNLOCK_FAILURE);
   if (success) {
-    RecordEasyUnlockSigninDuration(
-        base::TimeTicks::Now() - user_pod_last_focused_timestamp_);
+    RecordEasyUnlockSigninDuration(base::TimeTicks::Now() -
+                                   user_pod_last_focused_timestamp_);
   }
   DVLOG(1) << "Easy sign-in " << (success ? "success" : "failure");
 }
@@ -321,9 +320,8 @@ void EasyUnlockServiceSignin::StartAutoPairing(
   NOTREACHED();
 }
 
-void EasyUnlockServiceSignin::SetAutoPairingResult(
-    bool success,
-    const std::string& error) {
+void EasyUnlockServiceSignin::SetAutoPairingResult(bool success,
+                                                   const std::string& error) {
   NOTREACHED();
 }
 
@@ -402,7 +400,7 @@ void EasyUnlockServiceSignin::OnScreenDidLock(
   // In production code, the screen type should always be the signin screen; but
   // in tests, the screen type might be different.
   if (screen_type !=
-          proximity_auth::ScreenlockBridge::LockHandler::SIGNIN_SCREEN)
+      proximity_auth::ScreenlockBridge::LockHandler::SIGNIN_SCREEN)
     return;
 
   // Update initial UI is when the account picker on login screen is ready.
@@ -415,7 +413,7 @@ void EasyUnlockServiceSignin::OnScreenDidUnlock(
   // In production code, the screen type should always be the signin screen; but
   // in tests, the screen type might be different.
   if (screen_type !=
-          proximity_auth::ScreenlockBridge::LockHandler::SIGNIN_SCREEN)
+      proximity_auth::ScreenlockBridge::LockHandler::SIGNIN_SCREEN)
     return;
 
   DisableAppWithoutResettingScreenlockState();
@@ -516,8 +514,7 @@ void EasyUnlockServiceSignin::OnUserDataLoaded(
     // CheckCryptohomeKeysAndMaybeHardlock finishes. Set NO_PAIRING state
     // and update UI to remove the confusing spinner in this case.
     EasyUnlockScreenlockStateHandler::HardlockState hardlock_state;
-    if (devices.empty() &&
-        GetPersistedHardlockState(&hardlock_state) &&
+    if (devices.empty() && GetPersistedHardlockState(&hardlock_state) &&
         hardlock_state == EasyUnlockScreenlockStateHandler::NO_HARDLOCK) {
       SetHardlockStateForUser(account_id,
                               EasyUnlockScreenlockStateHandler::NO_PAIRING);
@@ -583,7 +580,7 @@ void EasyUnlockServiceSignin::OnUserDataLoaded(
 }
 
 const EasyUnlockServiceSignin::UserData*
-    EasyUnlockServiceSignin::FindLoadedDataForCurrentUser() const {
+EasyUnlockServiceSignin::FindLoadedDataForCurrentUser() const {
   if (!account_id_.is_valid())
     return nullptr;
 
@@ -613,3 +610,5 @@ void EasyUnlockServiceSignin::ShowInitialUserPodState() {
     UpdateScreenlockState(ScreenlockState::BLUETOOTH_CONNECTING);
   }
 }
+
+}  // namespace chromeos

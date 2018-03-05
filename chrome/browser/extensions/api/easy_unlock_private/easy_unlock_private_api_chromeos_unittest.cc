@@ -13,14 +13,14 @@
 #include "base/macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_app_manager.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service_factory.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service_regular.h"
 #include "chrome/browser/extensions/extension_api_unittest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/easy_unlock_app_manager.h"
-#include "chrome/browser/signin/easy_unlock_service_factory.h"
-#include "chrome/browser/signin/easy_unlock_service_regular.h"
 #include "chrome/common/extensions/api/easy_unlock_private.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -467,11 +467,12 @@ struct AutoPairingResult {
 // Test factory to register EasyUnlockService.
 std::unique_ptr<KeyedService> BuildTestEasyUnlockService(
     content::BrowserContext* context) {
-  std::unique_ptr<EasyUnlockServiceRegular> service(
-      new EasyUnlockServiceRegular(Profile::FromBrowserContext(context)));
-  service->Initialize(
-      EasyUnlockAppManager::Create(extensions::ExtensionSystem::Get(context),
-                                   -1 /* manifest id */, base::FilePath()));
+  std::unique_ptr<chromeos::EasyUnlockServiceRegular> service(
+      new chromeos::EasyUnlockServiceRegular(
+          Profile::FromBrowserContext(context)));
+  service->Initialize(chromeos::EasyUnlockAppManager::Create(
+      extensions::ExtensionSystem::Get(context), -1 /* manifest id */,
+      base::FilePath()));
   return std::move(service);
 }
 
@@ -480,13 +481,14 @@ TEST_F(EasyUnlockPrivateApiTest, AutoPairing) {
       extensions::CreateAndUseTestEventRouter(profile());
   event_router->set_expected_extension_id(extension_misc::kEasyUnlockAppId);
 
-  EasyUnlockServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+  chromeos::EasyUnlockServiceFactory::GetInstance()->SetTestingFactoryAndUse(
       profile(), &BuildTestEasyUnlockService);
 
   AutoPairingResult result;
 
   // Dispatch OnStartAutoPairing event on EasyUnlockService::StartAutoPairing.
-  EasyUnlockService* service = EasyUnlockService::Get(profile());
+  chromeos::EasyUnlockService* service =
+      chromeos::EasyUnlockService::Get(profile());
   service->StartAutoPairing(base::Bind(&AutoPairingResult::SetResult,
                                        base::Unretained(&result)));
   EXPECT_EQ(1,
@@ -516,7 +518,7 @@ TEST_F(EasyUnlockPrivateApiTest, AutoPairing) {
 // Checks that the chrome.easyUnlockPrivate.getRemoteDevices API returns the
 // stored value if the kEnableBluetoothLowEnergyDiscovery switch is not set.
 TEST_F(EasyUnlockPrivateApiTest, GetRemoteDevicesNonExperimental) {
-  EasyUnlockServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+  chromeos::EasyUnlockServiceFactory::GetInstance()->SetTestingFactoryAndUse(
       profile(), &BuildTestEasyUnlockService);
 
   scoped_refptr<TestableGetRemoteDevicesFunction> function(
@@ -534,7 +536,7 @@ TEST_F(EasyUnlockPrivateApiTest, GetRemoteDevicesNonExperimental) {
 // Checks that the chrome.easyUnlockPrivate.getPermitAccess API returns the
 // stored value if the kEnableBluetoothLowEnergyDiscovery switch is not set.
 TEST_F(EasyUnlockPrivateApiTest, GetPermitAccessNonExperimental) {
-  EasyUnlockServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+  chromeos::EasyUnlockServiceFactory::GetInstance()->SetTestingFactoryAndUse(
       profile(), &BuildTestEasyUnlockService);
 
   scoped_refptr<TestableGetPermitAccessFunction> function(

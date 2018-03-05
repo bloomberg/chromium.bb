@@ -140,7 +140,7 @@
 #include "extensions/browser/api/networking_private/networking_private_delegate_factory.h"
 #include "extensions/browser/browser_context_keyed_service_factories.h"
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/signin/easy_unlock_service_factory.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service_factory.h"
 #endif
 #endif
 
@@ -244,7 +244,7 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   DownloadServiceFactory::GetInstance();
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #if defined(OS_CHROMEOS)
-  EasyUnlockServiceFactory::GetInstance();
+  chromeos::EasyUnlockServiceFactory::GetInstance();
 #endif
   EnhancedBookmarkKeyServiceFactory::GetInstance();
 #endif
