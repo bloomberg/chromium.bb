@@ -194,9 +194,9 @@ class AdmxGenerator(object):
     definitions_elem = self._AddElement(supported_on_elem, 'definitions')
     definition_elem = self._AddElement(definitions_elem, 'definition')
     self._SetAttribute(definition_elem, 'displayName',
-                       'Microsoft Windows XP SP2 or later',
-                       'SUPPORTED_WINXPSP2')
-    self._SetAttribute(definition_elem, 'name', 'SUPPORTED_WINXPSP2')
+                       'Microsoft Windows 7 or later',
+                       'SUPPORTED_WIN7')
+    self._SetAttribute(definition_elem, 'name', 'SUPPORTED_WIN7')
 
     categories_elem = self._AddElement(root_elem, 'categories')
     self._AddCategory(categories_elem,
@@ -229,7 +229,7 @@ class AdmxGenerator(object):
     self._SetAttribute(parent_category_elem, 'ref', 'extension')
 
     supported_on_elem = self._AddElement(policy_elem, 'supportedOn')
-    self._SetAttribute(supported_on_elem, 'ref', 'SUPPORTED_WINXPSP2')
+    self._SetAttribute(supported_on_elem, 'ref', 'SUPPORTED_WIN7')
 
     if 'id' in policy_schema:
       # Keep id map for referenced schema.

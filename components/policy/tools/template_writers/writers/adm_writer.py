@@ -95,7 +95,7 @@ class AdmWriter(template_writer.TemplateWriter):
 
   def _WriteSupported(self, builder):
     builder.AddLine('#if version >= 4', 1)
-    builder.AddLine('SUPPORTED !!SUPPORTED_WINXPSP2')
+    builder.AddLine('SUPPORTED !!SUPPORTED_WIN7')
     builder.AddLine('#endif', -1)
 
   def _WritePart(self, policy, key_name, builder):
@@ -219,7 +219,7 @@ class AdmWriter(template_writer.TemplateWriter):
       self.WriteComment(self.config['build'] + ' version: ' + \
           self._GetChromiumVersionString())
     self._AddGuiString(self.config['win_supported_os'],
-                       self.messages['win_supported_winxpsp2']['text'])
+                       self.messages['win_supported_win7']['text'])
     categories = self.winconfig['mandatory_category_path'] + \
                  self.winconfig['recommended_category_path']
     strings = self.winconfig['category_path_strings'].copy()

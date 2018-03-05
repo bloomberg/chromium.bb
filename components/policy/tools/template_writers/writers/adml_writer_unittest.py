@@ -47,7 +47,7 @@ class AdmlWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
     }
     self.writer = self._GetWriter(config)
     self.writer.messages = {
-      'win_supported_winxpsp2': {
+      'win_supported_win7': {
         'text': 'Supported on Test OS or higher',
         'desc': 'blah'
       },

@@ -11508,9 +11508,9 @@
 
   'messages': {
     # Messages that are not associated to any policies.
-    'win_supported_winxpsp2': {
+    'win_supported_win7': {
       'desc': '''A label specifying the oldest possible compatible version of Windows. This text will appear right next to a label containing the text 'Supported on:'.''',
-      'text': '''Microsoft Windows XP SP2 or later'''
+      'text': '''Microsoft Windows 7 or later'''
     },
     'mac_chrome_preferences': {
       'desc': '''A text indicating in Mac OS X Workgroup Manager, that currently the preferences of Chromium are being edited''',

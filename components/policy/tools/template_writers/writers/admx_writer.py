@@ -158,8 +158,8 @@ class ADMXWriter(xml_formatted_writer.XMLFormattedWriter):
 
     <supportedOn>
       <definitions>
-        <definition name="SUPPORTED_WINXPSP2"
-                    displayName="$(string.SUPPORTED_WINXPSP2)"/>
+        <definition name="SUPPORTED_WIN7"
+                    displayName="$(string.SUPPORTED_WIN7)"/>
         </definitions>
         ...
     </supportedOn>

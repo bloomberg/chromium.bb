@@ -20,12 +20,6 @@ class TemplateWriter(object):
           'branding': 'Google Chrome' or 'Chromium'
           'mac_bundle_id': The Mac bundle id of Chrome. (Only set when building
             for Mac.)
-      messages: List of all the message strings from the grd file. Most of them
-        are also present in the policy data structures that are passed to
-        methods. That is the preferred way of accessing them, this should only
-        be used in exceptional cases. An example for its use is the
-        IDS_POLICY_WIN_SUPPORTED_WINXPSP2 message in ADM files, because that
-        cannot be associated with any policy or group.
     '''
     self.platforms = platforms
     self.config = config
