@@ -31,6 +31,7 @@
 #include "gin/public/gin_embedders.h"
 #include "gin/public/isolate_holder.h"
 #include "pdf/draw_utils.h"
+#include "pdf/pdf_transform.h"
 #include "pdf/pdfium/pdfium_api_string_buffer_adapter.h"
 #include "pdf/pdfium/pdfium_mem_buffer_file_read.h"
 #include "pdf/pdfium/pdfium_mem_buffer_file_write.h"
@@ -48,7 +49,6 @@
 #include "ppapi/cpp/url_response_info.h"
 #include "ppapi/cpp/var.h"
 #include "ppapi/cpp/var_dictionary.h"
-#include "printing/pdf_transform.h"
 #include "printing/units.h"
 #include "third_party/pdfium/public/cpp/fpdf_deleters.h"
 #include "third_party/pdfium/public/fpdf_annot.h"
@@ -3792,35 +3792,33 @@ void PDFiumEngine::TransformPDFPageForPrinting(
   const gfx::Rect gfx_content_rect(content_rect.x(), content_rect.y(),
                                    content_rect.width(), content_rect.height());
   const double scale_factor =
-      fit_to_page
-          ? printing::CalculateScaleFactor(gfx_content_rect, src_page_width,
-                                           src_page_height, rotated)
-          : 1.0;
+      fit_to_page ? CalculateScaleFactor(gfx_content_rect, src_page_width,
+                                         src_page_height, rotated)
+                  : 1.0;
 
   // Calculate positions for the clip box.
-  printing::PdfRectangle media_box;
-  printing::PdfRectangle crop_box;
+  PdfRectangle media_box;
+  PdfRectangle crop_box;
   bool has_media_box =
       !!FPDFPage_GetMediaBox(page, &media_box.left, &media_box.bottom,
                              &media_box.right, &media_box.top);
   bool has_crop_box = !!FPDFPage_GetCropBox(
       page, &crop_box.left, &crop_box.bottom, &crop_box.right, &crop_box.top);
-  printing::CalculateMediaBoxAndCropBox(rotated, has_media_box, has_crop_box,
-                                        &media_box, &crop_box);
-  printing::PdfRectangle source_clip_box =
-      printing::CalculateClipBoxBoundary(media_box, crop_box);
-  printing::ScalePdfRectangle(scale_factor, &source_clip_box);
+  CalculateMediaBoxAndCropBox(rotated, has_media_box, has_crop_box, &media_box,
+                              &crop_box);
+  PdfRectangle source_clip_box = CalculateClipBoxBoundary(media_box, crop_box);
+  ScalePdfRectangle(scale_factor, &source_clip_box);
 
   // Calculate the translation offset values.
   double offset_x = 0;
   double offset_y = 0;
   if (fit_to_page) {
-    printing::CalculateScaledClipBoxOffset(gfx_content_rect, source_clip_box,
-                                           &offset_x, &offset_y);
+    CalculateScaledClipBoxOffset(gfx_content_rect, source_clip_box, &offset_x,
+                                 &offset_y);
   } else {
-    printing::CalculateNonScaledClipBoxOffset(
-        gfx_content_rect, src_page_rotation, actual_page_width,
-        actual_page_height, source_clip_box, &offset_x, &offset_y);
+    CalculateNonScaledClipBoxOffset(gfx_content_rect, src_page_rotation,
+                                    actual_page_width, actual_page_height,
+                                    source_clip_box, &offset_x, &offset_y);
   }
 
   // Reset the media box and crop box. When the page has crop box and media box,

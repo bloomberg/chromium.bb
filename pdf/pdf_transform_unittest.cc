@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "printing/pdf_transform.h"
+#include "pdf/pdf_transform.h"
 
 #include "printing/units.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/rect.h"
 
-namespace printing {
+namespace chrome_pdf {
 
 namespace {
 
-const float kDefaultWidth = 8.5 * kPointsPerInch;
-const float kDefaultHeight = 11.0 * kPointsPerInch;
+const float kDefaultWidth = 8.5 * printing::kPointsPerInch;
+const float kDefaultHeight = 11.0 * printing::kPointsPerInch;
 const float kDefaultRatio = kDefaultWidth / kDefaultHeight;
 const double kTolerance = 0.0001;
 
@@ -217,40 +217,40 @@ TEST(PdfTransformTest, CalculateNonScaledClipBoxOffset) {
 
   // |rect|, page size and |clip_box| are the same.
   InitializeBoxToDefaultPortraitValues(&clip_box);
-  CalculateNonScaledClipBoxOffset(
-      rect, 0, page_width, page_height, clip_box, &offset_x, &offset_y);
+  CalculateNonScaledClipBoxOffset(rect, 0, page_width, page_height, clip_box,
+                                  &offset_x, &offset_y);
   EXPECT_DOUBLE_EQ(0, offset_x);
   EXPECT_DOUBLE_EQ(0, offset_y);
-  CalculateNonScaledClipBoxOffset(
-      rect, 1, page_width, page_height, clip_box, &offset_x, &offset_y);
+  CalculateNonScaledClipBoxOffset(rect, 1, page_width, page_height, clip_box,
+                                  &offset_x, &offset_y);
   EXPECT_DOUBLE_EQ(0, offset_x);
   EXPECT_DOUBLE_EQ(0, offset_y);
-  CalculateNonScaledClipBoxOffset(
-      rect, 2, page_width, page_height, clip_box, &offset_x, &offset_y);
+  CalculateNonScaledClipBoxOffset(rect, 2, page_width, page_height, clip_box,
+                                  &offset_x, &offset_y);
   EXPECT_DOUBLE_EQ(0, offset_x);
   EXPECT_DOUBLE_EQ(0, offset_y);
-  CalculateNonScaledClipBoxOffset(
-      rect, 3, page_width, page_height, clip_box, &offset_x, &offset_y);
+  CalculateNonScaledClipBoxOffset(rect, 3, page_width, page_height, clip_box,
+                                  &offset_x, &offset_y);
   EXPECT_DOUBLE_EQ(180, offset_x);
   EXPECT_DOUBLE_EQ(-180, offset_y);
 
   // Smaller |clip_box|.
   clip_box.top /= 4;
   clip_box.right /= 2;
-  CalculateNonScaledClipBoxOffset(
-      rect, 0, page_width, page_height, clip_box, &offset_x, &offset_y);
+  CalculateNonScaledClipBoxOffset(rect, 0, page_width, page_height, clip_box,
+                                  &offset_x, &offset_y);
   EXPECT_DOUBLE_EQ(0, offset_x);
   EXPECT_DOUBLE_EQ(594, offset_y);
-  CalculateNonScaledClipBoxOffset(
-      rect, 1, page_width, page_height, clip_box, &offset_x, &offset_y);
+  CalculateNonScaledClipBoxOffset(rect, 1, page_width, page_height, clip_box,
+                                  &offset_x, &offset_y);
   EXPECT_DOUBLE_EQ(0, offset_x);
   EXPECT_DOUBLE_EQ(0, offset_y);
-  CalculateNonScaledClipBoxOffset(
-      rect, 2, page_width, page_height, clip_box, &offset_x, &offset_y);
+  CalculateNonScaledClipBoxOffset(rect, 2, page_width, page_height, clip_box,
+                                  &offset_x, &offset_y);
   EXPECT_DOUBLE_EQ(306, offset_x);
   EXPECT_DOUBLE_EQ(0, offset_y);
-  CalculateNonScaledClipBoxOffset(
-      rect, 3, page_width, page_height, clip_box, &offset_x, &offset_y);
+  CalculateNonScaledClipBoxOffset(rect, 3, page_width, page_height, clip_box,
+                                  &offset_x, &offset_y);
   EXPECT_DOUBLE_EQ(486, offset_x);
   EXPECT_DOUBLE_EQ(414, offset_y);
 
@@ -258,20 +258,20 @@ TEST(PdfTransformTest, CalculateNonScaledClipBoxOffset) {
   InitializeBoxToDefaultPortraitValues(&clip_box);
   page_width += 10;
   page_height += 20;
-  CalculateNonScaledClipBoxOffset(
-      rect, 0, page_width, page_height, clip_box, &offset_x, &offset_y);
+  CalculateNonScaledClipBoxOffset(rect, 0, page_width, page_height, clip_box,
+                                  &offset_x, &offset_y);
   EXPECT_DOUBLE_EQ(0, offset_x);
   EXPECT_DOUBLE_EQ(20, offset_y);
-  CalculateNonScaledClipBoxOffset(
-      rect, 1, page_width, page_height, clip_box, &offset_x, &offset_y);
+  CalculateNonScaledClipBoxOffset(rect, 1, page_width, page_height, clip_box,
+                                  &offset_x, &offset_y);
   EXPECT_DOUBLE_EQ(0, offset_x);
   EXPECT_DOUBLE_EQ(0, offset_y);
-  CalculateNonScaledClipBoxOffset(
-      rect, 2, page_width, page_height, clip_box, &offset_x, &offset_y);
+  CalculateNonScaledClipBoxOffset(rect, 2, page_width, page_height, clip_box,
+                                  &offset_x, &offset_y);
   EXPECT_DOUBLE_EQ(10, offset_x);
   EXPECT_DOUBLE_EQ(0, offset_y);
-  CalculateNonScaledClipBoxOffset(
-      rect, 3, page_width, page_height, clip_box, &offset_x, &offset_y);
+  CalculateNonScaledClipBoxOffset(rect, 3, page_width, page_height, clip_box,
+                                  &offset_x, &offset_y);
   EXPECT_DOUBLE_EQ(200, offset_x);
   EXPECT_DOUBLE_EQ(-170, offset_y);
 }
@@ -332,4 +332,4 @@ TEST(PdfTransformTest, ReversedMediaBox) {
   EXPECT_DOUBLE_EQ(0, offset_y);
 }
 
-}  // namespace printing
+}  // namespace chrome_pdf

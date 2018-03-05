@@ -2,20 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PRINTING_PDF_TRANSFORM_H_
-#define PRINTING_PDF_TRANSFORM_H_
-
-#include "printing/printing_export.h"
+#ifndef PDF_PDF_TRANSFORM_H_
+#define PDF_PDF_TRANSFORM_H_
 
 namespace gfx {
 class Rect;
 }
 
-namespace printing {
+namespace chrome_pdf {
 
 // A rect struct for use with FPDF bounding box functions.
 // With PDFs, origin is bottom-left.
-struct PRINTING_EXPORT PdfRectangle {
+struct PdfRectangle {
   float left;
   float bottom;
   float right;
@@ -30,25 +28,25 @@ struct PRINTING_EXPORT PdfRectangle {
 // |src_width| specifies the source page width in points.
 // |src_height| specifies the source page height in points.
 // |rotated| True if source page is rotated 90 degree or 270 degree.
-PRINTING_EXPORT double CalculateScaleFactor(const gfx::Rect& content_rect,
-                                            double src_width,
-                                            double src_height,
-                                            bool rotated);
+double CalculateScaleFactor(const gfx::Rect& content_rect,
+                            double src_width,
+                            double src_height,
+                            bool rotated);
 
 // Make the default size to be letter size (8.5" X 11"). We are just following
 // the PDFium way of handling these corner cases. PDFium always consider
 // US-Letter as the default page size.
-PRINTING_EXPORT void SetDefaultClipBox(bool rotated, PdfRectangle* clip_box);
+void SetDefaultClipBox(bool rotated, PdfRectangle* clip_box);
 
 // Set the media box and/or crop box as needed. If both boxes are there, then
 // nothing needs to be done. If one box is missing, then fill it with the value
 // from the other box. If both boxes are missing, then they both get the default
 // value from SetDefaultClipBox(), based on |rotated|.
-PRINTING_EXPORT void CalculateMediaBoxAndCropBox(bool rotated,
-                                                 bool has_media_box,
-                                                 bool has_crop_box,
-                                                 PdfRectangle* media_box,
-                                                 PdfRectangle* crop_box);
+void CalculateMediaBoxAndCropBox(bool rotated,
+                                 bool has_media_box,
+                                 bool has_crop_box,
+                                 PdfRectangle* media_box,
+                                 PdfRectangle* crop_box);
 
 // Compute source clip box boundaries based on the crop box / media box of
 // source page and scale factor.
@@ -56,12 +54,11 @@ PRINTING_EXPORT void CalculateMediaBoxAndCropBox(bool rotated,
 //
 // |media_box| The PDF's media box.
 // |crop_box| The PDF's crop box.
-PRINTING_EXPORT PdfRectangle CalculateClipBoxBoundary(
-    const PdfRectangle& media_box,
-    const PdfRectangle& crop_box);
+PdfRectangle CalculateClipBoxBoundary(const PdfRectangle& media_box,
+                                      const PdfRectangle& crop_box);
 
 // Scale |box| by |scale_factor|.
-PRINTING_EXPORT void ScalePdfRectangle(double scale_factor, PdfRectangle* rect);
+void ScalePdfRectangle(double scale_factor, PdfRectangle* rect);
 
 // Calculate the clip box translation offset for a page that does need to be
 // scaled. All parameters are in points.
@@ -72,11 +69,10 @@ PRINTING_EXPORT void ScalePdfRectangle(double scale_factor, PdfRectangle* rect);
 // origin at left-bottom.
 // |offset_x| and |offset_y| will contain the final translation offsets for the
 // source clip box, relative to origin at left-bottom.
-PRINTING_EXPORT void CalculateScaledClipBoxOffset(
-    const gfx::Rect& content_rect,
-    const PdfRectangle& source_clip_box,
-    double* offset_x,
-    double* offset_y);
+void CalculateScaledClipBoxOffset(const gfx::Rect& content_rect,
+                                  const PdfRectangle& source_clip_box,
+                                  double* offset_x,
+                                  double* offset_y);
 
 // Calculate the clip box offset for a page that does not need to be scaled.
 // All parameters are in points.
@@ -91,15 +87,14 @@ PRINTING_EXPORT void CalculateScaledClipBoxOffset(
 // at left-bottom.
 // |offset_x| and |offset_y| will contain the final translation offsets for the
 // source clip box, relative to origin at left-bottom.
-PRINTING_EXPORT void CalculateNonScaledClipBoxOffset(
-    const gfx::Rect& content_rect,
-    int rotation,
-    int page_width,
-    int page_height,
-    const PdfRectangle& source_clip_box,
-    double* offset_x,
-    double* offset_y);
+void CalculateNonScaledClipBoxOffset(const gfx::Rect& content_rect,
+                                     int rotation,
+                                     int page_width,
+                                     int page_height,
+                                     const PdfRectangle& source_clip_box,
+                                     double* offset_x,
+                                     double* offset_y);
 
-}  // namespace printing
+}  // namespace chrome_pdf
 
-#endif  // PRINTING_PDF_TRANSFORM_H_
+#endif  // PDF_PDF_TRANSFORM_H_
