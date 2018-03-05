@@ -11,7 +11,6 @@
 #include <utility>
 
 #include "base/callback.h"
-#include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -20,7 +19,6 @@
 #include "media/base/media_export.h"
 
 namespace base {
-class FilePath;
 class SingleThreadTaskRunner;
 }
 
@@ -58,7 +56,8 @@ namespace media {
 class MEDIA_EXPORT AudioDebugRecordingManager {
  public:
   using CreateWavFileCallback = base::RepeatingCallback<void(
-      const base::FilePath&,
+      AudioDebugRecordingStreamType stream_type,
+      uint32_t id,
       base::OnceCallback<void(base::File)> reply_callback)>;
 
   AudioDebugRecordingManager(
@@ -72,7 +71,7 @@ class MEDIA_EXPORT AudioDebugRecordingManager {
   // Registers a source and returns a wrapped recorder. |stream_type| is added
   // to the base filename, along with a unique running ID.
   std::unique_ptr<AudioDebugRecorder> RegisterDebugRecordingSource(
-      const base::FilePath::StringType& stream_type,
+      AudioDebugRecordingStreamType stream_type,
       const AudioParameters& params);
 
  protected:
@@ -97,11 +96,11 @@ class MEDIA_EXPORT AudioDebugRecordingManager {
 
   // Map type from source id to recorder and stream type (input/output).
   using DebugRecordingHelperMap = std::map<
-      int,
-      std::pair<AudioDebugRecordingHelper*, base::FilePath::StringType>>;
+      uint32_t,
+      std::pair<AudioDebugRecordingHelper*, AudioDebugRecordingStreamType>>;
 
   // Unregisters a source.
-  void UnregisterDebugRecordingSource(int id);
+  void UnregisterDebugRecordingSource(uint32_t id);
 
   bool IsDebugRecordingEnabled();
 

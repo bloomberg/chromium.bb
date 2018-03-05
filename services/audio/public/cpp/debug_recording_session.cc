@@ -7,6 +7,8 @@
 #include <utility>
 
 #include "base/files/file_path.h"
+#include "base/strings/string_number_conversions.h"
+#include "build/build_config.h"
 #include "media/audio/audio_debug_recording_manager.h"
 #include "media/audio/audio_manager.h"
 #include "services/audio/public/mojom/constants.mojom.h"
@@ -15,8 +17,26 @@
 namespace audio {
 
 namespace {
-const base::FilePath::CharType kWavExtension[] = FILE_PATH_LITERAL("wav");
+
+#if defined(OS_WIN)
+#define IntToStringType base::IntToString16
+#else
+#define IntToStringType base::IntToString
+#endif
+
+const base::FilePath::CharType* StreamTypeToStringType(
+    media::AudioDebugRecordingStreamType stream_type) {
+  switch (stream_type) {
+    case media::AudioDebugRecordingStreamType::kInput:
+      return FILE_PATH_LITERAL("input");
+    case media::AudioDebugRecordingStreamType::kOutput:
+      return FILE_PATH_LITERAL("output");
+  }
+  NOTREACHED();
+  return FILE_PATH_LITERAL("output");
 }
+
+}  // namespace
 
 DebugRecordingSession::DebugRecordingFileProvider::DebugRecordingFileProvider(
     mojom::DebugRecordingFileProviderRequest request,
@@ -27,7 +47,8 @@ DebugRecordingSession::DebugRecordingFileProvider::
     ~DebugRecordingFileProvider() = default;
 
 void DebugRecordingSession::DebugRecordingFileProvider::CreateWavFile(
-    const base::FilePath& file_name_suffix,
+    media::AudioDebugRecordingStreamType stream_type,
+    uint32_t id,
     CreateWavFileCallback reply_callback) {
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE,
@@ -38,8 +59,9 @@ void DebugRecordingSession::DebugRecordingFileProvider::CreateWavFile(
             return base::File(file_name, base::File::FLAG_CREATE_ALWAYS |
                                              base::File::FLAG_WRITE);
           },
-          file_name_base_.AddExtension(file_name_suffix.value())
-              .AddExtension(kWavExtension)),
+          file_name_base_.AddExtension(StreamTypeToStringType(stream_type))
+              .AddExtension(IntToStringType(id))
+              .AddExtension(FILE_PATH_LITERAL("wav"))),
       std::move(reply_callback));
 }
 
