@@ -450,7 +450,6 @@ source_set("blink_headers") {
     "web/WebApplyConstraintsRequest.h",
     "web/WebArrayBuffer.h",
     "web/WebArrayBufferConverter.h",
-    "web/WebArrayBufferView.h",
     "web/WebAssociatedURLLoader.h",
     "web/WebAssociatedURLLoaderClient.h",
     "web/WebAssociatedURLLoaderOptions.h",
