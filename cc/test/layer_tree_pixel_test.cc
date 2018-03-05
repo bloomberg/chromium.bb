@@ -46,9 +46,10 @@ LayerTreePixelTest::CreateLayerTreeFrameSink(
   scoped_refptr<TestInProcessContextProvider> compositor_context_provider;
   scoped_refptr<TestInProcessContextProvider> worker_context_provider;
   if (test_type_ == PIXEL_TEST_GL) {
-    compositor_context_provider = new TestInProcessContextProvider(nullptr);
-    worker_context_provider =
-        new TestInProcessContextProvider(compositor_context_provider.get());
+    compositor_context_provider =
+        new TestInProcessContextProvider(nullptr, false);
+    worker_context_provider = new TestInProcessContextProvider(
+        compositor_context_provider.get(), false);
   }
   constexpr bool disable_display_vsync = false;
   bool synchronous_composite =
@@ -78,7 +79,7 @@ LayerTreePixelTest::CreateDisplayOutputSurfaceOnThread(
     // mimic texture transport from the renderer process to the Display
     // compositor.
     auto display_context_provider =
-        base::MakeRefCounted<TestInProcessContextProvider>(nullptr);
+        base::MakeRefCounted<TestInProcessContextProvider>(nullptr, false);
     display_context_provider->BindToCurrentThread();
 
     bool flipped_output_surface = false;

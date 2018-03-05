@@ -10,9 +10,12 @@
 #include "cc/base/region.h"
 #include "cc/layers/recording_source.h"
 #include "cc/paint/display_item_list.h"
+#include "cc/paint/paint_image_builder.h"
+#include "cc/raster/playback_image_provider.h"
 #include "cc/raster/raster_source.h"
 #include "cc/test/pixel_test_utils.h"
 #include "cc/test/test_in_process_context_provider.h"
+#include "cc/tiles/gpu_image_decode_cache.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/raster_implementation_gles.h"
@@ -44,22 +47,6 @@ scoped_refptr<DisplayItemList> MakeNoopDisplayItemList() {
   return display_item_list;
 }
 
-class NoOpImageProvider : public ImageProvider {
- public:
-  ~NoOpImageProvider() override = default;
-
-  ScopedDecodedDrawImage GetDecodedDrawImage(
-      const DrawImage& draw_image) override {
-    SkBitmap bitmap;
-    bitmap.allocPixelsFlags(SkImageInfo::MakeN32Premul(10, 10),
-                            SkBitmap::kZeroPixels_AllocFlag);
-    sk_sp<SkImage> image = SkImage::MakeFromBitmap(bitmap);
-    return ScopedDecodedDrawImage(DecodedDrawImage(image, SkSize::Make(10, 10),
-                                                   SkSize::Make(1, 1),
-                                                   kLow_SkFilterQuality, true));
-  }
-};
-
 class OopPixelTest : public testing::Test {
  public:
   void SetUp() override {
@@ -72,50 +59,26 @@ class OopPixelTest : public testing::Test {
           switches::kEnableOOPRasterization);
     }
 
-    // Setup a GL context for reading back pixels.
-    bool is_offscreen = true;
-    gpu::ContextCreationAttribs attribs;
-    attribs.alpha_size = -1;
-    attribs.depth_size = 24;
-    attribs.stencil_size = 8;
-    attribs.samples = 0;
-    attribs.sample_buffers = 0;
-    attribs.fail_if_major_perf_caveat = false;
-    attribs.bind_generates_resource = false;
-
-    context_ = gpu::GLInProcessContext::CreateWithoutInit();
-    auto result = context_->Initialize(
-        nullptr, nullptr, is_offscreen, gpu::kNullSurfaceHandle, nullptr,
-        attribs, gpu::SharedMemoryLimits(), &gpu_memory_buffer_manager_,
-        &image_factory_, nullptr, base::ThreadTaskRunnerHandle::Get());
-
-    ASSERT_EQ(result, gpu::ContextResult::kSuccess);
-
-    // Setup a second context with OOP rasterization enabled and a
-    // RasterInterface on top of it.
-    attribs.enable_oop_rasterization = true;
-
-    raster_context_ = gpu::GLInProcessContext::CreateWithoutInit();
-    result = raster_context_->Initialize(
-        nullptr, nullptr, is_offscreen, gpu::kNullSurfaceHandle, nullptr,
-        attribs, gpu::SharedMemoryLimits(), &gpu_memory_buffer_manager_,
-        &image_factory_, nullptr, base::ThreadTaskRunnerHandle::Get());
-    ASSERT_EQ(result, gpu::ContextResult::kSuccess);
-    ASSERT_TRUE(raster_context_->GetCapabilities().supports_oop_raster);
-    raster_implementation_ =
-        std::make_unique<gpu::raster::RasterImplementationGLES>(
-            raster_context_->GetImplementation(),
-            raster_context_->GetImplementation(),
-            raster_context_->GetCapabilities());
+    context_provider_ =
+        base::MakeRefCounted<TestInProcessContextProvider>(nullptr, true);
+    oop_image_cache_.reset(new GpuImageDecodeCache(context_provider_.get(),
+                                                   true, kRGBA_8888_SkColorType,
+                                                   kWorkingSetSize));
+    gpu_image_cache_.reset(
+        new GpuImageDecodeCache(context_provider_.get(), false,
+                                kRGBA_8888_SkColorType, kWorkingSetSize));
   }
 
-  void TearDown() override {
-    raster_implementation_.reset();
-    raster_context_.reset();
-    context_.reset();
-  }
+  class RasterOptions {
+   public:
+    RasterOptions() = default;
+    explicit RasterOptions(const gfx::Size& playback_size) {
+      resource_size = playback_size;
+      content_size = resource_size;
+      full_raster_rect = gfx::Rect(playback_size);
+      playback_rect = gfx::Rect(playback_size);
+    }
 
-  struct RasterOptions {
     SkColor background_color = SK_ColorBLACK;
     int msaa_sample_count = 0;
     bool use_lcd_text = false;
@@ -131,66 +94,71 @@ class OopPixelTest : public testing::Test {
     bool requires_clear = false;
     bool preclear = false;
     SkColor preclear_color;
+    ImageDecodeCache* image_cache = nullptr;
   };
 
   SkBitmap Raster(scoped_refptr<DisplayItemList> display_item_list,
                   const gfx::Size& playback_size) {
-    RasterOptions options;
-    options.resource_size = playback_size;
-    options.content_size = options.resource_size;
-    options.full_raster_rect = gfx::Rect(playback_size);
-    options.playback_rect = gfx::Rect(playback_size);
+    RasterOptions options(playback_size);
     return Raster(display_item_list, options);
   }
 
   SkBitmap Raster(scoped_refptr<DisplayItemList> display_item_list,
                   const RasterOptions& options) {
-    gpu::gles2::GLES2Interface* gl = context_->GetImplementation();
+    TestInProcessContextProvider::ScopedRasterContextLock lock(
+        context_provider_.get());
+
+    PlaybackImageProvider image_provider(oop_image_cache_.get(),
+                                         options.color_space,
+                                         PlaybackImageProvider::Settings());
+
+    gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();
     int width = options.resource_size.width();
     int height = options.resource_size.height();
 
     // Create and allocate a texture on the raster interface.
     GLuint raster_texture_id;
-    raster_texture_id = raster_implementation_->CreateTexture(
+    auto* raster_implementation = context_provider_->RasterInterface();
+    raster_texture_id = raster_implementation->CreateTexture(
         false, gfx::BufferUsage::GPU_READ, viz::ResourceFormat::RGBA_8888);
-    raster_implementation_->TexStorage2D(raster_texture_id, 1, width, height);
-    raster_implementation_->TexParameteri(raster_texture_id,
-                                          GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    raster_implementation->TexStorage2D(raster_texture_id, 1, width, height);
+    raster_implementation->TexParameteri(raster_texture_id,
+                                         GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-    EXPECT_EQ(raster_implementation_->GetError(),
+    EXPECT_EQ(raster_implementation->GetError(),
               static_cast<unsigned>(GL_NO_ERROR));
 
     RasterColorSpace color_space(options.color_space, ++color_space_id_);
 
     if (options.preclear) {
-      raster_implementation_->BeginRasterCHROMIUM(
+      raster_implementation->BeginRasterCHROMIUM(
           raster_texture_id, options.preclear_color, options.msaa_sample_count,
           options.use_lcd_text, options.use_distance_field_text,
           options.color_type, color_space);
-      raster_implementation_->EndRasterCHROMIUM();
+      raster_implementation->EndRasterCHROMIUM();
     }
 
     // "Out of process" raster! \o/
 
-    raster_implementation_->BeginRasterCHROMIUM(
+    raster_implementation->BeginRasterCHROMIUM(
         raster_texture_id, options.background_color, options.msaa_sample_count,
         options.use_lcd_text, options.use_distance_field_text,
         options.color_type, color_space);
-    raster_implementation_->RasterCHROMIUM(
-        display_item_list.get(), &image_provider_, options.content_size,
+    raster_implementation->RasterCHROMIUM(
+        display_item_list.get(), &image_provider, options.content_size,
         options.full_raster_rect, options.playback_rect, options.post_translate,
         options.post_scale, options.requires_clear);
-    raster_implementation_->EndRasterCHROMIUM();
+    raster_implementation->EndRasterCHROMIUM();
 
     // Produce a mailbox and insert an ordering barrier (assumes the raster
     // interface and gl are on the same scheduling group).
     gpu::Mailbox mailbox;
-    raster_implementation_->GenMailbox(mailbox.name);
-    raster_implementation_->ProduceTextureDirect(raster_texture_id,
-                                                 mailbox.name);
-    raster_implementation_->OrderingBarrierCHROMIUM();
+    raster_implementation->GenMailbox(mailbox.name);
+    raster_implementation->ProduceTextureDirect(raster_texture_id,
+                                                mailbox.name);
+    raster_implementation->OrderingBarrierCHROMIUM();
 
-    EXPECT_EQ(raster_implementation_->GetError(),
+    EXPECT_EQ(raster_implementation->GetError(),
               static_cast<unsigned>(GL_NO_ERROR));
 
     // Import the texture in gl, create an fbo and bind the texture to it.
@@ -210,7 +178,7 @@ class OopPixelTest : public testing::Test {
     gl->DeleteFramebuffers(1, &fbo_id);
 
     gl->OrderingBarrierCHROMIUM();
-    raster_implementation_->DeleteTextures(1, &raster_texture_id);
+    raster_implementation->DeleteTextures(1, &raster_texture_id);
 
     // Swizzle rgba->bgra if needed.
     std::vector<SkPMColor> colors;
@@ -236,16 +204,17 @@ class OopPixelTest : public testing::Test {
   SkBitmap RasterExpectedBitmap(
       scoped_refptr<DisplayItemList> display_item_list,
       const gfx::Size& playback_size) {
-    RasterOptions options;
-    options.resource_size = playback_size;
-    options.full_raster_rect = gfx::Rect(playback_size);
-    options.playback_rect = gfx::Rect(playback_size);
+    RasterOptions options(playback_size);
     return RasterExpectedBitmap(display_item_list, options);
   }
 
   SkBitmap RasterExpectedBitmap(
       scoped_refptr<DisplayItemList> display_item_list,
       const RasterOptions& options) {
+    TestInProcessContextProvider::ScopedRasterContextLock lock(
+        context_provider_.get());
+    context_provider_->GrContext()->resetContext();
+
     // Generate bitmap via the "in process" raster path.  This verifies
     // that the preamble setup in RasterSource::PlaybackToCanvas matches
     // the same setup done in GLES2Implementation::RasterCHROMIUM.
@@ -259,10 +228,14 @@ class OopPixelTest : public testing::Test {
                                           layer_rect);
     recording.SetRequiresClear(options.requires_clear);
 
+    PlaybackImageProvider image_provider(gpu_image_cache_.get(),
+                                         options.color_space,
+                                         PlaybackImageProvider::Settings());
+
     auto raster_source = recording.CreateRasterSource();
     RasterSource::PlaybackSettings settings;
     settings.use_lcd_text = options.use_lcd_text;
-    // TODO(enne): add a fake image provider here.
+    settings.image_provider = &image_provider;
 
     uint32_t flags = options.use_distance_field_text
                          ? SkSurfaceProps::kUseDistanceFieldFonts_Flag
@@ -272,18 +245,9 @@ class OopPixelTest : public testing::Test {
       surface_props =
           SkSurfaceProps(flags, SkSurfaceProps::kLegacyFontHost_InitType);
     }
-    gpu::Capabilities capabilities;
-    gpu::gles2::GLES2Interface* gl = context_->GetImplementation();
-    size_t max_resource_cache_bytes;
-    size_t max_glyph_cache_texture_bytes;
-    skia_bindings::GrContextForGLES2Interface::DefaultCacheLimitsForTests(
-        &max_resource_cache_bytes, &max_glyph_cache_texture_bytes);
-    skia_bindings::GrContextForGLES2Interface scoped_grcontext(
-        gl, capabilities, max_resource_cache_bytes,
-        max_glyph_cache_texture_bytes);
     SkImageInfo image_info = SkImageInfo::MakeN32Premul(
         options.resource_size.width(), options.resource_size.height());
-    auto surface = SkSurface::MakeRenderTarget(scoped_grcontext.get(),
+    auto surface = SkSurface::MakeRenderTarget(context_provider_->GrContext(),
                                                SkBudgeted::kYes, image_info);
     SkCanvas* canvas = surface->getCanvas();
     if (options.preclear)
@@ -299,7 +263,8 @@ class OopPixelTest : public testing::Test {
         options.full_raster_rect, options.playback_rect, raster_transform,
         settings);
     surface->prepareForExternalIO();
-    EXPECT_EQ(gl->GetError(), static_cast<unsigned>(GL_NO_ERROR));
+    EXPECT_EQ(context_provider_->ContextGL()->GetError(),
+              static_cast<unsigned>(GL_NO_ERROR));
 
     SkBitmap bitmap;
     SkImageInfo info = SkImageInfo::Make(
@@ -308,7 +273,8 @@ class OopPixelTest : public testing::Test {
     bitmap.allocPixels(info, options.resource_size.width() * 4);
     bool success = surface->readPixels(bitmap, 0, 0);
     CHECK(success);
-    EXPECT_EQ(gl->GetError(), static_cast<unsigned>(GL_NO_ERROR));
+    EXPECT_EQ(context_provider_->ContextGL()->GetError(),
+              static_cast<unsigned>(GL_NO_ERROR));
     return bitmap;
   }
 
@@ -329,14 +295,13 @@ class OopPixelTest : public testing::Test {
     }
   }
 
- private:
-  viz::TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
-  TestImageFactory image_factory_;
-  std::unique_ptr<gpu::GLInProcessContext> context_;
-  std::unique_ptr<gpu::GLInProcessContext> raster_context_;
-  std::unique_ptr<gpu::raster::RasterImplementationGLES> raster_implementation_;
+ protected:
+  enum { kWorkingSetSize = 64 * 1024 * 1024 };
+  scoped_refptr<TestInProcessContextProvider> context_provider_;
+  std::unique_ptr<GpuImageDecodeCache> gpu_image_cache_;
+  std::unique_ptr<GpuImageDecodeCache> oop_image_cache_;
   gl::DisableNullDrawGLBindings enable_pixel_output_;
-  NoOpImageProvider image_provider_;
+  std::unique_ptr<ImageProvider> image_provider_;
   int color_space_id_ = 0;
 };
 
@@ -401,6 +366,39 @@ TEST_F(OopPixelTest, DrawRect) {
       SkImageInfo::MakeN32Premul(rect.width(), rect.height()),
       expected_pixels.data(), rect.width() * sizeof(SkPMColor));
   ExpectEquals(actual, expected);
+}
+
+TEST_F(OopPixelTest, DrawImage) {
+  gfx::Rect rect(10, 10);
+
+  SkBitmap bitmap;
+  bitmap.allocPixelsFlags(
+      SkImageInfo::MakeN32Premul(rect.width(), rect.height()),
+      SkBitmap::kZeroPixels_AllocFlag);
+
+  SkCanvas canvas(bitmap);
+  canvas.drawColor(SK_ColorMAGENTA);
+  SkPaint green;
+  green.setColor(SK_ColorGREEN);
+  canvas.drawRect(SkRect::MakeXYWH(1, 2, 3, 4), green);
+
+  sk_sp<SkImage> image = SkImage::MakeFromBitmap(bitmap);
+  const PaintImage::Id kSomeId = 32;
+  auto builder =
+      PaintImageBuilder::WithDefault().set_image(image, 0).set_id(kSomeId);
+  auto paint_image = builder.TakePaintImage();
+
+  auto display_item_list = base::MakeRefCounted<DisplayItemList>();
+  display_item_list->StartPaint();
+  display_item_list->push<DrawImageOp>(paint_image, 0.f, 0.f, nullptr);
+  display_item_list->EndPaintOfUnpaired(rect);
+  display_item_list->Finalize();
+
+  auto actual = Raster(display_item_list, rect.size());
+  ExpectEquals(actual, bitmap);
+
+  auto expected = RasterExpectedBitmap(display_item_list, rect.size());
+  ExpectEquals(expected, bitmap);
 }
 
 TEST_F(OopPixelTest, Preclear) {

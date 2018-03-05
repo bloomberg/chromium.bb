@@ -42,7 +42,8 @@ class TestInProcessContextProvider
       public viz::RasterContextProvider {
  public:
   explicit TestInProcessContextProvider(
-      TestInProcessContextProvider* shared_context);
+      TestInProcessContextProvider* shared_context,
+      bool enable_oop_rasterization);
 
   // viz::ContextProvider / viz::RasterContextProvider implementation.
   void AddRef() const override;
@@ -71,7 +72,7 @@ class TestInProcessContextProvider
   viz::TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
   TestImageFactory image_factory_;
   std::unique_ptr<gpu::GLInProcessContext> context_;
-  std::unique_ptr<gpu::raster::RasterInterface> raster_context_;
+  std::unique_ptr<gpu::raster::RasterInterface> raster_implementation_;
   std::unique_ptr<skia_bindings::GrContextForGLES2Interface> gr_context_;
   std::unique_ptr<viz::ContextCacheController> cache_controller_;
   base::Lock context_lock_;

@@ -151,7 +151,7 @@ TEST_F(LayerTreeHostScrollbarsPixelTest, HugeTransformScale) {
   background->AddChild(layer);
 
   scoped_refptr<TestInProcessContextProvider> context(
-      new TestInProcessContextProvider(nullptr));
+      new TestInProcessContextProvider(nullptr, false));
   context->BindToCurrentThread();
   int max_texture_size = 0;
   context->ContextGL()->GetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
