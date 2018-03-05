@@ -213,12 +213,11 @@ void StylePropertyMap::append(const ExecutionContext* execution_context,
 
   const CSSValue* result =
       CoerceStyleValuesOrStrings(property, values, *execution_context);
-  if (!result) {
+  if (!result || !result->IsValueList()) {
     exception_state.ThrowTypeError("Invalid type for property");
     return;
   }
 
-  DCHECK(result->IsValueList());
   for (const auto& value : *ToCSSValueList(result)) {
     current_value->Append(*value);
   }
