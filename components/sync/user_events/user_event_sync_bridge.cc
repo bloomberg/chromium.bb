@@ -125,13 +125,15 @@ base::Optional<ModelError> UserEventSyncBridge::ApplySyncChanges(
 
 void UserEventSyncBridge::GetData(StorageKeyList storage_keys,
                                   DataCallback callback) {
-  store_->ReadData(storage_keys, base::Bind(&UserEventSyncBridge::OnReadData,
-                                            base::AsWeakPtr(this), callback));
+  store_->ReadData(storage_keys,
+                   base::BindOnce(&UserEventSyncBridge::OnReadData,
+                                  base::AsWeakPtr(this), std::move(callback)));
 }
 
 void UserEventSyncBridge::GetAllData(DataCallback callback) {
-  store_->ReadAllData(base::Bind(&UserEventSyncBridge::OnReadAllData,
-                                 base::AsWeakPtr(this), callback));
+  store_->ReadAllData(base::BindOnce(&UserEventSyncBridge::OnReadAllData,
+                                     base::AsWeakPtr(this),
+                                     std::move(callback)));
 }
 
 std::string UserEventSyncBridge::GetClientTag(const EntityData& entity_data) {
@@ -144,8 +146,8 @@ std::string UserEventSyncBridge::GetStorageKey(const EntityData& entity_data) {
 
 void UserEventSyncBridge::DisableSync() {
   // No data should be retained through sign out.
-  store_->ReadAllData(base::Bind(&UserEventSyncBridge::OnReadAllDataToDelete,
-                                 base::AsWeakPtr(this)));
+  store_->ReadAllData(base::BindOnce(
+      &UserEventSyncBridge::OnReadAllDataToDelete, base::AsWeakPtr(this)));
 }
 
 void UserEventSyncBridge::RecordUserEvent(
@@ -234,7 +236,7 @@ void UserEventSyncBridge::OnReadData(DataCallback callback,
                                      const base::Optional<ModelError>& error,
                                      std::unique_ptr<RecordList> data_records,
                                      std::unique_ptr<IdList> missing_id_list) {
-  OnReadAllData(callback, error, std::move(data_records));
+  OnReadAllData(std::move(callback), error, std::move(data_records));
 }
 
 void UserEventSyncBridge::OnReadAllData(
@@ -258,7 +260,7 @@ void UserEventSyncBridge::OnReadAllData(
       return;
     }
   }
-  callback.Run(std::move(batch));
+  std::move(callback).Run(std::move(batch));
 }
 
 void UserEventSyncBridge::OnReadAllDataToDelete(

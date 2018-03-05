@@ -288,7 +288,7 @@ void TypedURLSyncBridge::GetData(StorageKeyList storage_keys,
     batch->Put(key, std::move(entity_data));
   }
 
-  callback.Run(std::move(batch));
+  std::move(callback).Run(std::move(batch));
 }
 
 void TypedURLSyncBridge::GetAllData(DataCallback callback) {
@@ -318,7 +318,7 @@ void TypedURLSyncBridge::GetAllData(DataCallback callback) {
     batch->Put(GetStorageKeyFromURLRow(url), std::move(entity_data));
   }
 
-  callback.Run(std::move(batch));
+  std::move(callback).Run(std::move(batch));
 }
 
 // Must be exactly the value of GURL::spec() for backwards comparability with

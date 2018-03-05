@@ -34,7 +34,7 @@ class MetadataChangeList;
 // ReportError() method should be called instead of ModelReadyToSync().
 class ModelTypeSyncBridge : public base::SupportsWeakPtr<ModelTypeSyncBridge> {
  public:
-  using DataCallback = base::Callback<void(std::unique_ptr<DataBatch>)>;
+  using DataCallback = base::OnceCallback<void(std::unique_ptr<DataBatch>)>;
   using StorageKeyList = std::vector<std::string>;
   using ChangeProcessorFactory = base::RepeatingCallback<std::unique_ptr<
       ModelTypeChangeProcessor>(ModelType type, ModelTypeSyncBridge* bridge)>;
