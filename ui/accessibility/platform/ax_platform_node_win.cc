@@ -3410,8 +3410,13 @@ int AXPlatformNodeWin::MSAAState() {
   if (ShouldNodeHaveFocusableState(data))
     msaa_state |= STATE_SYSTEM_FOCUSABLE;
 
-  if (data.HasState(ax::mojom::State::kHaspopup))
+  // Note: autofill is special-cased here because there is no way for the
+  // browser to know when the autofill popup is shown.
+  if (data.HasState(ax::mojom::State::kHaspopup) ||
+      (IsAutofillShown() && data.role == ax::mojom::Role::kTextField &&
+       delegate_->GetFocus() == GetNativeViewAccessible())) {
     msaa_state |= STATE_SYSTEM_HASPOPUP;
+  }
 
   // TODO(dougt) unhandled ux::ax::mojom::State::kHorizontal
 
@@ -3503,6 +3508,22 @@ int AXPlatformNodeWin::MSAAState() {
   gfx::NativeViewAccessible focus = delegate_->GetFocus();
   if (focus == GetNativeViewAccessible())
     msaa_state |= STATE_SYSTEM_FOCUSED;
+
+  // In focused single selection UI menus and listboxes, mirror item selection
+  // to focus. This helps NVDA read the selected option as it changes.
+  if ((data.role == ax::mojom::Role::kListBoxOption ||
+       data.role == ax::mojom::Role::kMenuItem) &&
+      data.HasState(ax::mojom::State::kSelected)) {
+    AXPlatformNodeBase* container = FromNativeViewAccessible(GetParent());
+    if (container && container->GetParent() == focus) {
+      ui::AXNodeData container_data = container->GetData();
+      if ((container_data.role == ax::mojom::Role::kListBox ||
+           container_data.role == ax::mojom::Role::kMenu) &&
+          !container_data.HasState(ax::mojom::State::kMultiselectable)) {
+        msaa_state |= STATE_SYSTEM_FOCUSED;
+      }
+    }
+  }
 
   // On Windows, the "focus" bit should be set on certain containers, like
   // menu bars, when visible.

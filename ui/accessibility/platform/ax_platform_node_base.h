@@ -134,6 +134,8 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   // that might send notifications.
   bool IsLeaf();
 
+  bool HasFocus();
+
   virtual base::string16 GetText();
 
   virtual base::string16 GetValue();

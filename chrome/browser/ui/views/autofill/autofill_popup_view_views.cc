@@ -22,6 +22,7 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/text_utils.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/border.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -34,21 +35,55 @@ namespace {
 // by |AutofillPopupViewViews|.
 class AutofillPopupChildView : public views::View {
  public:
-  explicit AutofillPopupChildView(const Suggestion& suggestion)
-      : suggestion_(suggestion) {
-    SetFocusBehavior(FocusBehavior::ALWAYS);
+  explicit AutofillPopupChildView(const Suggestion& suggestion,
+                                  int32_t set_size,
+                                  int32_t pos_in_set)
+      : suggestion_(suggestion),
+        is_selected_(false),
+        set_size_(set_size),
+        pos_in_set_(pos_in_set) {
+    SetFocusBehavior(suggestion.frontend_id == POPUP_ITEM_ID_SEPARATOR
+                         ? FocusBehavior::NEVER
+                         : FocusBehavior::ALWAYS);
   }
+
+  void OnSelected() { is_selected_ = true; }
+
+  void OnUnselected() { is_selected_ = false; }
 
  private:
   ~AutofillPopupChildView() override {}
 
   // views::Views implementation
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
-    node_data->role = ax::mojom::Role::kMenuItem;
     node_data->SetName(suggestion_.value);
+
+    bool is_separator = suggestion_.frontend_id == POPUP_ITEM_ID_SEPARATOR;
+    if (is_separator) {
+      // Separators are not selectable.
+      node_data->role = ax::mojom::Role::kSplitter;
+    } else {
+      // Options are selectable.
+      node_data->role = ax::mojom::Role::kMenuItem;
+      if (is_selected_) {
+        node_data->AddState(ax::mojom::State::kSelected);
+      }
+      node_data->AddState(ax::mojom::State::kSelectable);
+    }
+
+    node_data->AddIntAttribute(ax::mojom::IntAttribute::kSetSize, set_size_);
+    node_data->AddIntAttribute(ax::mojom::IntAttribute::kPosInSet, pos_in_set_);
   }
 
   const Suggestion& suggestion_;
+
+  bool is_selected_;
+
+  // Total number of suggestions.
+  const int32_t set_size_;
+
+  // Position of suggestion in list (1-based index).
+  const int32_t pos_in_set_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillPopupChildView);
 };
@@ -68,12 +103,13 @@ AutofillPopupViewViews::~AutofillPopupViewViews() {}
 
 void AutofillPopupViewViews::Show() {
   DoShow();
-  NotifyAccessibilityEvent(ax::mojom::Event::kMenuStart, true);
+  GetViewAccessibility().OnAutofillShown();
 }
 
 void AutofillPopupViewViews::Hide() {
   // The controller is no longer valid after it hides us.
   controller_ = NULL;
+  GetViewAccessibility().OnAutofillHidden();
   DoHide();
   NotifyAccessibilityEvent(ax::mojom::Event::kMenuEnd, true);
 }
@@ -111,15 +147,34 @@ void AutofillPopupViewViews::OnPaint(gfx::Canvas* canvas) {
   }
 }
 
+AutofillPopupChildView* AutofillPopupViewViews::GetChildRow(
+    size_t child_index) const {
+  DCHECK_LT(child_index, static_cast<size_t>(child_count()));
+  return static_cast<AutofillPopupChildView*>(
+      const_cast<views::View*>(child_at(child_index)));
+}
+
 void AutofillPopupViewViews::OnSelectedRowChanged(
     base::Optional<int> previous_row_selection,
     base::Optional<int> current_row_selection) {
   SchedulePaint();
 
+  if (previous_row_selection) {
+    GetChildRow(*previous_row_selection)->OnUnselected();
+  } else {
+    // Fire this the first time a row is selected. By firing this and the
+    // matching kMenuEnd event, we are telling screen readers that the focus
+    // is only changing temporarily, and the screen reader will restore the
+    // focus back to the appropriate textfield when the menu closes.
+    // This is deferred until the first focus so that the screen reader doesn't
+    // treat the textfield as unfocused while the user edits, just because
+    // autofill options are visible.
+    NotifyAccessibilityEvent(ax::mojom::Event::kMenuStart, true);
+  }
   if (current_row_selection) {
-    DCHECK_LT(*current_row_selection, child_count());
-    child_at(*current_row_selection)
-        ->NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
+    AutofillPopupChildView* current_row = GetChildRow(*current_row_selection);
+    current_row->OnSelected();
+    current_row->NotifyAccessibilityEvent(ax::mojom::Event::kFocus, true);
   }
 }
 
@@ -251,8 +306,10 @@ void AutofillPopupViewViews::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 void AutofillPopupViewViews::CreateChildViews() {
   RemoveAllChildViews(true /* delete_children */);
 
-  for (int i = 0; i < controller_->GetLineCount(); ++i) {
-    AddChildView(new AutofillPopupChildView(controller_->GetSuggestionAt(i)));
+  int set_size = controller_->GetLineCount();
+  for (int i = 0; i < set_size; ++i) {
+    AddChildView(new AutofillPopupChildView(controller_->GetSuggestionAt(i),
+                                            set_size, i + 1));
   }
 }
 

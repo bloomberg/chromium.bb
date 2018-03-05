@@ -37,6 +37,8 @@ class VIEWS_EXPORT NativeViewAccessibilityBase
   // ViewAccessibility:
   gfx::NativeViewAccessible GetNativeObject() override;
   void NotifyAccessibilityEvent(ax::mojom::Event event_type) override;
+  void OnAutofillShown() override;
+  void OnAutofillHidden() override;
 
   // ui::AXPlatformNodeDelegate
   const ui::AXNodeData& GetData() const override;
@@ -76,6 +78,11 @@ class VIEWS_EXPORT NativeViewAccessibilityBase
   ui::AXPlatformNode* ax_node_;
 
   mutable ui::AXNodeData data_;
+
+  // This allows UI popups like autofill to act as if they are focused in the
+  // exposed platform accessibility API, even though true focus remains in
+  // underlying content.
+  static int32_t fake_focus_view_id_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeViewAccessibilityBase);
 };

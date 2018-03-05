@@ -51,6 +51,9 @@ class VIEWS_EXPORT ViewAccessibility {
   void OverrideDescription(const std::string& description);
   void OverrideIsLeaf();  // Force this node to be treated as a leaf node.
 
+  virtual void OnAutofillShown(){};
+  virtual void OnAutofillHidden(){};
+
   virtual gfx::NativeViewAccessible GetNativeObject();
   virtual void NotifyAccessibilityEvent(ax::mojom::Event event_type) {}
 
