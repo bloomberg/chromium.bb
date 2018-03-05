@@ -1062,7 +1062,9 @@ nofor before wordlimit begword være 345
 # Ensure that we have letsign between a digit and "st"
 # and nd after a digit is not contracted
 noback context _$d["st"]!$l @6-234-2345
+noback context _$d["st"]~ @6-234-2345
 noback context _$d["nd"]!$l @1345-145
+noback context _$d["nd"]~ @1345-145
 # The following lines are to ensure that we get a letsign between a digit and a single letter.
 noback context $d[]$l!$l @6
 noback context $d[]$l~ @6

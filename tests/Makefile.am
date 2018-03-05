@@ -219,6 +219,7 @@ dist_yaml_TESTS =			  \
 	yaml/multipass-backward.yaml	  \
 	yaml/multipass-forward.yaml	  \
 	yaml/multipass.yaml		  \
+	yaml/multipass-negation.yaml	  \
 	yaml/new_emph.yaml		  \
 	yaml/nocross_harness.yaml	  \
 	yaml/noletsignafter.yaml	  \

@@ -23,6 +23,7 @@ EXTRA_DIST =					\
 	multipass-backward.yaml			\
 	multipass-forward.yaml			\
 	multipass.yaml				\
+	multipass-negation.yaml			\
 	new_emph.yaml				\
 	nocross_harness.yaml			\
 	noletsignafter.yaml			\

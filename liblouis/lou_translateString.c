@@ -541,13 +541,15 @@ doPassSearch(const TranslationTableHeader *table, InString input,
 				for (k = 0; k < passInstructions[*searchIC + 3]; k++) {
 					if (input.chars[*searchPos] == ENDSEGMENT)
 						itsTrue = 0;
-					else
+					else {
 						itsTrue = ((findCharOrDots(input.chars[(*searchPos)++],
 											passCharDots,
 											table)->attributes &
 										   attributes)
 										? 1
 										: 0);
+						if (not) itsTrue = !itsTrue;
+					}
 					if (!itsTrue) break;
 				}
 				if (itsTrue) {
@@ -559,11 +561,14 @@ doPassSearch(const TranslationTableHeader *table, InString input,
 						}
 						if (!(findCharOrDots(input.chars[*searchPos], passCharDots,
 									  table)->attributes &
-									attributes))
+									attributes)) {
+							if (!not) break;
+						} else if (not)
 							break;
 						(*searchPos)++;
 					}
 				}
+				not = 0;
 				*searchIC += 5;
 				break;
 			case pass_groupstart:
@@ -688,10 +693,15 @@ passDoTest(const TranslationTableHeader *table, int pos, InString input, int tra
 				}
 				if (!(findCharOrDots(input.chars[pos], *passCharDots, table)->attributes &
 							attributes)) {
+					if (!not) {
+						itsTrue = 0;
+						break;
+					}
+				} else if (not) {
 					itsTrue = 0;
 					break;
 				}
-				pos += 1;
+				pos++;
 			}
 			if (itsTrue) {
 				for (k = (*passInstructions)[*passIC + 3];
@@ -703,11 +713,13 @@ passDoTest(const TranslationTableHeader *table, int pos, InString input, int tra
 					if (!(findCharOrDots(input.chars[pos], *passCharDots,
 								  table)->attributes &
 								attributes)) {
+						if (!not) break;
+					} else if (not)
 						break;
-					}
-					pos += 1;
+					pos++;
 				}
 			}
+			not = 0;
 			*passIC += 5;
 			break;
 		case pass_groupstart:

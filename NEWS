@@ -12,6 +12,8 @@ issues]].
   a special case. This fixes many if not most of the problems with
   cursor position and the ~compbrlAtCursor~ mode. Thanks to Dave Mielke.
 - Fix ~swapdd~ opcode thanks to Bert Frees
+- Fix negation of attribute matcher in multipass expressions thanks to
+  Bert Frees
 
 ** Braille table improvements
 - Improvements to Unified French Grade 2 thanks to André-Abush Clause
