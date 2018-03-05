@@ -28536,6 +28536,13 @@ Called by update_use_counter_css.py.-->
   <int value="21" label="Gesture requirement overridden by play method."/>
 </enum>
 
+<enum name="MediaEngagementClearReason">
+  <int value="0" label="Data (all)"/>
+  <int value="1" label="Data (range)"/>
+  <int value="2" label="History (all)"/>
+  <int value="3" label="History (range)"/>
+</enum>
+
 <enum name="MediaEngagementSessionEvent">
   <int value="0" label="Created"/>
   <int value="1" label="Significant Playback"/>

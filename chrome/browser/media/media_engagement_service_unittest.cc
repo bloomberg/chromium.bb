@@ -114,6 +114,8 @@ class MediaEngagementServiceTest : public ChromeRenderViewHostTestHarness {
     service_ = base::WrapUnique(StartNewMediaEngagementService());
   }
 
+  MediaEngagementService* service() const { return service_.get(); }
+
   MediaEngagementService* StartNewMediaEngagementService() {
     MediaEngagementService* service =
         new MediaEngagementService(profile(), &test_clock_);
@@ -459,6 +461,11 @@ TEST_F(MediaEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
         MediaEngagementService::kHistogramURLsDeletedScoreReductionName, 5, 2);
     histogram_tester.ExpectBucketCount(
         MediaEngagementService::kHistogramURLsDeletedScoreReductionName, 4, 1);
+
+    histogram_tester.ExpectTotalCount(
+        MediaEngagementService::kHistogramClearName, 1);
+    histogram_tester.ExpectBucketCount(
+        MediaEngagementService::kHistogramClearName, 3, 1);
   }
 
   {
@@ -488,6 +495,11 @@ TEST_F(MediaEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
         MediaEngagementService::kHistogramURLsDeletedScoreReductionName, 1);
     histogram_tester.ExpectBucketCount(
         MediaEngagementService::kHistogramURLsDeletedScoreReductionName, 5, 1);
+
+    histogram_tester.ExpectTotalCount(
+        MediaEngagementService::kHistogramClearName, 1);
+    histogram_tester.ExpectBucketCount(
+        MediaEngagementService::kHistogramClearName, 3, 1);
   }
 
   {
@@ -519,12 +531,148 @@ TEST_F(MediaEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
         MediaEngagementService::kHistogramURLsDeletedScoreReductionName, 1);
     histogram_tester.ExpectBucketCount(
         MediaEngagementService::kHistogramURLsDeletedScoreReductionName, 0, 1);
+
+    histogram_tester.ExpectTotalCount(
+        MediaEngagementService::kHistogramClearName, 1);
+    histogram_tester.ExpectBucketCount(
+        MediaEngagementService::kHistogramClearName, 3, 1);
+  }
+}
+
+TEST_F(MediaEngagementServiceTest, CleanUpDatabaseWhenHistoryIsDeleted) {
+  GURL origin1("http://www.google.com/");
+  GURL origin1a("http://www.google.com/search?q=asdf");
+  GURL origin1b("http://www.google.com/maps/search?q=asdf");
+  GURL origin2("https://drive.google.com/");
+  GURL origin3("http://deleted.com/");
+  GURL origin3a("http://deleted.com/test");
+  GURL origin4("http://notdeleted.com");
+
+  // origin1 will have a score that is high enough to not return zero
+  // and we will ensure it has the same score. origin2 will have a score
+  // that is zero and will remain zero. origin3 will have a score
+  // and will be cleared. origin4 will have a normal score.
+  SetScores(origin1, MediaEngagementScore::GetScoreMinVisits() + 2, 14);
+  SetScores(origin2, 2, 1);
+  SetScores(origin3, 2, 1);
+  SetScores(origin4, MediaEngagementScore::GetScoreMinVisits(), 10);
+
+  base::Time today = GetReferenceTime();
+  base::Time yesterday_afternoon = GetReferenceTime() -
+                                   base::TimeDelta::FromDays(1) +
+                                   base::TimeDelta::FromHours(4);
+  base::Time yesterday_week = GetReferenceTime() - base::TimeDelta::FromDays(8);
+  SetNow(today);
+
+  history::HistoryService* history = HistoryServiceFactory::GetForProfile(
+      profile(), ServiceAccessType::IMPLICIT_ACCESS);
+
+  history->AddPage(origin1, yesterday_afternoon, history::SOURCE_BROWSED);
+  history->AddPage(origin1a, yesterday_afternoon, history::SOURCE_BROWSED);
+  history->AddPage(origin1b, yesterday_week, history::SOURCE_BROWSED);
+  history->AddPage(origin2, yesterday_afternoon, history::SOURCE_BROWSED);
+  history->AddPage(origin3, yesterday_week, history::SOURCE_BROWSED);
+  history->AddPage(origin3a, yesterday_afternoon, history::SOURCE_BROWSED);
+
+  // Check that the scores are valid at the beginning.
+  ExpectScores(origin1, 7.0 / 11.0,
+               MediaEngagementScore::GetScoreMinVisits() + 2, 14, TimeNotSet());
+  EXPECT_EQ(14.0 / 22.0, GetActualScore(origin1));
+  ExpectScores(origin2, 0.05, 2, 1, TimeNotSet());
+  EXPECT_EQ(1 / 20.0, GetActualScore(origin2));
+  ExpectScores(origin3, 0.05, 2, 1, TimeNotSet());
+  EXPECT_EQ(1 / 20.0, GetActualScore(origin3));
+  ExpectScores(origin4, 0.5, MediaEngagementScore::GetScoreMinVisits(), 10,
+               TimeNotSet());
+  EXPECT_EQ(0.5, GetActualScore(origin4));
+
+  {
+    base::HistogramTester histogram_tester;
+
+    base::RunLoop run_loop;
+    base::CancelableTaskTracker task_tracker;
+    // Clear all history.
+    history->ExpireHistoryBetween(std::set<GURL>(), base::Time(), base::Time(),
+                                  run_loop.QuitClosure(), &task_tracker);
+    run_loop.Run();
+
+    // origin1 should have a score that is not zero and is the same as the old
+    // score (sometimes it may not match exactly due to rounding). origin2
+    // should have a score that is zero but it's visits and playbacks should
+    // have decreased. origin3 should have had a decrease in the number of
+    // visits. origin4 should have the old score.
+    ExpectScores(origin1, 0.0, 0, 0, TimeNotSet());
+    EXPECT_EQ(0, GetActualScore(origin1));
+    ExpectScores(origin2, 0.0, 0, 0, TimeNotSet());
+    EXPECT_EQ(0, GetActualScore(origin2));
+    ExpectScores(origin3, 0.0, 0, 0, TimeNotSet());
+    ExpectScores(origin4, 0.0, 0, 0, TimeNotSet());
+
+    histogram_tester.ExpectTotalCount(
+        MediaEngagementService::kHistogramURLsDeletedScoreReductionName, 0);
+
+    histogram_tester.ExpectTotalCount(
+        MediaEngagementService::kHistogramClearName, 1);
+    histogram_tester.ExpectBucketCount(
+        MediaEngagementService::kHistogramClearName, 2, 1);
+  }
+}
+
+TEST_F(MediaEngagementServiceTest, HistoryExpirationIsNoOp) {
+  GURL origin1("http://www.google.com/");
+  GURL origin1a("http://www.google.com/search?q=asdf");
+  GURL origin1b("http://www.google.com/maps/search?q=asdf");
+  GURL origin2("https://drive.google.com/");
+  GURL origin3("http://deleted.com/");
+  GURL origin3a("http://deleted.com/test");
+  GURL origin4("http://notdeleted.com");
+
+  SetScores(origin1, MediaEngagementScore::GetScoreMinVisits() + 2, 14);
+  SetScores(origin2, 2, 1);
+  SetScores(origin3, 2, 1);
+  SetScores(origin4, MediaEngagementScore::GetScoreMinVisits(), 10);
+
+  ExpectScores(origin1, 7.0 / 11.0,
+               MediaEngagementScore::GetScoreMinVisits() + 2, 14, TimeNotSet());
+  EXPECT_EQ(14.0 / 22.0, GetActualScore(origin1));
+  ExpectScores(origin2, 0.05, 2, 1, TimeNotSet());
+  EXPECT_EQ(1 / 20.0, GetActualScore(origin2));
+  ExpectScores(origin3, 0.05, 2, 1, TimeNotSet());
+  EXPECT_EQ(1 / 20.0, GetActualScore(origin3));
+  ExpectScores(origin4, 0.5, MediaEngagementScore::GetScoreMinVisits(), 10,
+               TimeNotSet());
+  EXPECT_EQ(0.5, GetActualScore(origin4));
+
+  {
+    base::HistogramTester histogram_tester;
+
+    service()->OnURLsDeleted(nullptr, false, true, history::URLRows(),
+                             std::set<GURL>());
+
+    // Same as above, nothing should have changed.
+    ExpectScores(origin1, 7.0 / 11.0,
+                 MediaEngagementScore::GetScoreMinVisits() + 2, 14,
+                 TimeNotSet());
+    EXPECT_EQ(14.0 / 22.0, GetActualScore(origin1));
+    ExpectScores(origin2, 0.05, 2, 1, TimeNotSet());
+    EXPECT_EQ(1 / 20.0, GetActualScore(origin2));
+    ExpectScores(origin3, 0.05, 2, 1, TimeNotSet());
+    EXPECT_EQ(1 / 20.0, GetActualScore(origin3));
+    ExpectScores(origin4, 0.5, MediaEngagementScore::GetScoreMinVisits(), 10,
+                 TimeNotSet());
+    EXPECT_EQ(0.5, GetActualScore(origin4));
+
+    histogram_tester.ExpectTotalCount(
+        MediaEngagementService::kHistogramURLsDeletedScoreReductionName, 0);
+    histogram_tester.ExpectTotalCount(
+        MediaEngagementService::kHistogramClearName, 0);
   }
 }
 
 TEST_F(MediaEngagementServiceTest,
        CleanupDataOnSiteDataCleanup_OutsideBoundary) {
   GURL origin("https://www.google.com");
+  base::HistogramTester histogram_tester;
 
   base::Time today = GetReferenceTime();
   SetNow(today);
@@ -535,12 +683,18 @@ TEST_F(MediaEngagementServiceTest,
   ClearDataBetweenTime(today - base::TimeDelta::FromDays(2),
                        today - base::TimeDelta::FromDays(1));
   ExpectScores(origin, 0.05, 1, 1, today);
+
+  histogram_tester.ExpectTotalCount(MediaEngagementService::kHistogramClearName,
+                                    1);
+  histogram_tester.ExpectBucketCount(
+      MediaEngagementService::kHistogramClearName, 1, 1);
 }
 
 TEST_F(MediaEngagementServiceTest,
        CleanupDataOnSiteDataCleanup_WithinBoundary) {
   GURL origin1("https://www.google.com");
   GURL origin2("https://www.google.co.uk");
+  base::HistogramTester histogram_tester;
 
   base::Time today = GetReferenceTime();
   base::Time yesterday = today - base::TimeDelta::FromDays(1);
@@ -555,10 +709,16 @@ TEST_F(MediaEngagementServiceTest,
   ClearDataBetweenTime(two_days_ago, yesterday);
   ExpectScores(origin1, 0, 0, 0, TimeNotSet());
   ExpectScores(origin2, 0, 0, 0, TimeNotSet());
+
+  histogram_tester.ExpectTotalCount(MediaEngagementService::kHistogramClearName,
+                                    1);
+  histogram_tester.ExpectBucketCount(
+      MediaEngagementService::kHistogramClearName, 1, 1);
 }
 
 TEST_F(MediaEngagementServiceTest, CleanupDataOnSiteDataCleanup_NoTimeSet) {
   GURL origin("https://www.google.com");
+  base::HistogramTester histogram_tester;
 
   base::Time today = GetReferenceTime();
 
@@ -568,6 +728,11 @@ TEST_F(MediaEngagementServiceTest, CleanupDataOnSiteDataCleanup_NoTimeSet) {
   ClearDataBetweenTime(today - base::TimeDelta::FromDays(2),
                        today - base::TimeDelta::FromDays(1));
   ExpectScores(origin, 0.0, 1, 0, TimeNotSet());
+
+  histogram_tester.ExpectTotalCount(MediaEngagementService::kHistogramClearName,
+                                    1);
+  histogram_tester.ExpectBucketCount(
+      MediaEngagementService::kHistogramClearName, 1, 1);
 }
 
 TEST_F(MediaEngagementServiceTest, LogScoresOnStartupToHistogram) {
@@ -597,6 +762,31 @@ TEST_F(MediaEngagementServiceTest, LogScoresOnStartupToHistogram) {
       MediaEngagementService::kHistogramScoreAtStartupName, 50, 1);
   histogram_tester.ExpectBucketCount(
       MediaEngagementService::kHistogramScoreAtStartupName, 83, 1);
+}
+
+TEST_F(MediaEngagementServiceTest, CleanupDataOnSiteDataCleanup_All) {
+  GURL origin1("https://www.google.com");
+  GURL origin2("https://www.google.co.uk");
+  base::HistogramTester histogram_tester;
+
+  base::Time today = GetReferenceTime();
+  base::Time yesterday = today - base::TimeDelta::FromDays(1);
+  base::Time two_days_ago = today - base::TimeDelta::FromDays(2);
+  SetNow(today);
+
+  SetScores(origin1, 1, 1);
+  SetScores(origin2, 1, 1);
+  SetLastMediaPlaybackTime(origin1, yesterday);
+  SetLastMediaPlaybackTime(origin2, two_days_ago);
+
+  ClearDataBetweenTime(base::Time(), base::Time::Max());
+  ExpectScores(origin1, 0, 0, 0, TimeNotSet());
+  ExpectScores(origin2, 0, 0, 0, TimeNotSet());
+
+  histogram_tester.ExpectTotalCount(MediaEngagementService::kHistogramClearName,
+                                    1);
+  histogram_tester.ExpectBucketCount(
+      MediaEngagementService::kHistogramClearName, 0, 1);
 }
 
 TEST_F(MediaEngagementServiceTest, HasHighEngagement) {
