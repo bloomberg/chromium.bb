@@ -1,6 +1,9 @@
 display: unicode.dis
-table: [fr-bfu-g2.ctb]
-flags: {testmode: forward}
+table:
+  locale: fr
+  grade: 2
+  system: bfu
+  __assert-match: fr-bfu-g2.ctb
 tests:
     - - Isolated letters (lower)
       - a b c d e f g h i j k l m n o p q r s t u v w x y z à ç
@@ -1095,7 +1098,11 @@ tests:
     - ["complémentaire", "⠤⠫⠍⠗"]
     - ["[(1+1)-(34+14)]", "⠠⠷⠦⠡⠖⠡⠴⠤⠦⠩⠹⠖⠡⠹⠴⠾"]
 
-table: [fr-bfu-g2.ctb]
+table:
+  locale: fr
+  grade: 2
+  system: bfu
+  __assert-match: fr-bfu-g2.ctb
 flags: {testmode: backward}
 tests:
     - ["⠨⠁⠠⠡ ⠰⠃⠠⠱ ⠠⠡⠣⠼⠼⠨⠺ ⠨⠁⠠⠡⠱⠫⠫ ⠰⠨⠉⠠⠣⠨⠊",

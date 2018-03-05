@@ -1,6 +1,10 @@
 display: unicode.dis
-table: [fr-bfu-comp6.utb]
-flags: {testmode: forward}
+table:
+  locale: fr
+  type: literary
+  dots: 6
+  system: bfu
+  __assert-match: fr-bfu-comp6.utb
 tests:
   - - a b c d e f g h i j k l m n o p q r s t u v w x y z
     - ⠁ ⠃ ⠉ ⠙ ⠑ ⠋ ⠛ ⠓ ⠊ ⠚ ⠅ ⠇ ⠍ ⠝ ⠕ ⠏ ⠟ ⠗ ⠎ ⠞ ⠥ ⠧ ⠺ ⠭ ⠽ ⠵
@@ -45,7 +49,12 @@ tests:
   - ["McDonald", "⠨⠍⠉⠨⠙⠕⠝⠁⠇⠙"]
   - ["L’Europe", "⠨⠇⠄⠨⠑⠥⠗⠕⠏⠑"]
 
-table: [fr-bfu-comp6.utb]
+table:
+  locale: fr
+  type: literary
+  dots: 6
+  system: bfu
+  __assert-match: fr-bfu-comp6.utb
 flags: {testmode: backward}
 tests:
   - - ⠠⠡ ⠠⠣ ⠠⠩ ⠠⠹ ⠠⠱ ⠠⠫ ⠠⠻ ⠠⠳ ⠠⠪ ⠠⠼ ⠠⠹⠣ ⠠⠡⠣⠩⠹

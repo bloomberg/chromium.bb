@@ -1,6 +1,10 @@
 display: unicode.dis
-table: [fr-bfu-comp8.utb]
-flags: {testmode: forward}
+table:
+  locale: fr
+  type: computer
+  dots: 8
+  system: bfu
+  __assert-match: fr-bfu-comp8.utb
 tests:
   - - abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ
     - ⠁⠃⠉⠙⠑⠋⠛⠓⠊⠚⠅⠇⠍⠝⠕⠏⠟⠗⠎⠞⠥⠧⠺⠭⠽⠵ ⡁⡃⡉⡙⡑⡋⡛⡓⡊⡚⡅⡇⡍⡝⡕⡏⡟⡗⡎⡞⡥⡧⡺⡭⡽⡵
@@ -36,7 +40,12 @@ tests:
       cursorPos: [7,7]
   - ["ƒŠšŽžŸÿµÃãÅÅÆæÌìÐðÒòÕõØøÝýÞþ", "⢋⣮⢮⣵⢵⣹⢲⡒⣁⢁⡂⡂⡜⢜⣊⢊⣃⢃⣕⢕⣅⣨⣼⢰⣽⢽⣚⢚"]
 
-table: [fr-bfu-comp8.utb]
+table:
+  locale: fr
+  type: computer
+  dots: 8
+  system: bfu
+  __assert-match: fr-bfu-comp8.utb
 flags: {testmode: backward}
 tests:
   - - ⠁⠃⠉⠙⠑⠋⠛⠓⠊⠚⠅⠇⠍⠝⠕⠏⠟⠗⠎⠞⠥⠧⠺⠭⠽⠵ ⡁⡃⡉⡙⡑⡋⡛⡓⡊⡚⡅⡇⡍⡝⡕⡏⡟⡗⡎⡞⡥⡧⡺⡭⡽⡵
