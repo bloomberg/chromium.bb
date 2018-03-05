@@ -8,7 +8,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/time/default_clock.h"
-#include "chrome/browser/media/router/discovery/dial/dial_app_info_fetcher.h"
+#include "chrome/browser/media/router/discovery/dial/dial_url_fetcher.h"
 #include "chrome/browser/media/router/discovery/dial/safe_dial_app_info_parser.h"
 #include "net/http/http_status_code.h"
 #include "url/gurl.h"
@@ -62,13 +62,12 @@ void DialAppDiscoveryService::FetchDialAppInfo(const MediaSinkInternal& sink,
   GURL app_url = GetAppUrl(sink, app_name);
   DVLOG(2) << "Fetch DIAL app info from: " << app_url.spec();
 
-  std::unique_ptr<DialAppInfoFetcher> fetcher =
-      std::make_unique<DialAppInfoFetcher>(
-          app_url,
-          base::BindOnce(&DialAppDiscoveryService::OnDialAppInfoFetchComplete,
-                         base::Unretained(this), sink_id, app_name),
-          base::BindOnce(&DialAppDiscoveryService::OnDialAppInfoFetchError,
-                         base::Unretained(this), sink_id, app_name));
+  std::unique_ptr<DialURLFetcher> fetcher = std::make_unique<DialURLFetcher>(
+      app_url,
+      base::BindOnce(&DialAppDiscoveryService::OnDialAppInfoFetchComplete,
+                     base::Unretained(this), sink_id, app_name),
+      base::BindOnce(&DialAppDiscoveryService::OnDialAppInfoFetchError,
+                     base::Unretained(this), sink_id, app_name));
   fetcher->Start();
   pending_fetcher_map_.emplace(request_id, std::move(fetcher));
 }
