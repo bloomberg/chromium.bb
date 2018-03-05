@@ -6,10 +6,15 @@
 
 #import "base/logging.h"
 #import "ios/chrome/browser/ui/tab_grid/top_aligned_image_view.h"
+#include "ios/chrome/grit/ios_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+NSString* const kGridCellCloseButtonAccessibilityID =
+    @"GridCellCloseButtonAccessibilityID";
 
 namespace {
 // Height of the top bar containing the icon, title, and close button.
@@ -99,6 +104,23 @@ const CGFloat kBorderWidth = 6.0f;
   // NO-OP to disable highlighting and only allow selection.
 }
 
+#pragma mark - Accessibility
+
+- (BOOL)isAccessibilityElement {
+  // This makes the whole cell tappable in VoiceOver rather than the individual
+  // title and close button.
+  return YES;
+}
+
+- (NSArray*)accessibilityCustomActions {
+  // Each cell has 2 custom actions, which is accessible through swiping. The
+  // default is to select the cell. Another is to close the cell.
+  return @[ [[UIAccessibilityCustomAction alloc]
+      initWithName:l10n_util::GetNSString(IDS_IOS_TAB_SWITCHER_CLOSE_TAB)
+            target:self
+          selector:@selector(closeButtonTapped:)] ];
+}
+
 #pragma mark - Public
 
 // Updates the theme to either dark or light. Updating is only done if the
@@ -152,6 +174,7 @@ const CGFloat kBorderWidth = 6.0f;
 
 - (void)setTitle:(NSString*)title {
   self.titleLabel.text = title;
+  self.accessibilityLabel = title;
   _title = title;
 }
 
@@ -182,6 +205,7 @@ const CGFloat kBorderWidth = 6.0f;
   [closeButton addTarget:self
                   action:@selector(closeButtonTapped:)
         forControlEvents:UIControlEventTouchUpInside];
+  closeButton.accessibilityIdentifier = kGridCellCloseButtonAccessibilityID;
 
   [topBar addSubview:iconView];
   [topBar addSubview:titleLabel];
