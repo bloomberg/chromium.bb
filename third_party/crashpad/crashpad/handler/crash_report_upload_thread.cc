@@ -45,44 +45,6 @@
 
 namespace crashpad {
 
-namespace {
-
-// Calls CrashReportDatabase::RecordUploadAttempt() with |successful| set to
-// false upon destruction unless disarmed by calling Fire() or Disarm(). Fire()
-// triggers an immediate call. Armed upon construction.
-class CallRecordUploadAttempt {
- public:
-  CallRecordUploadAttempt(CrashReportDatabase* database,
-                          const CrashReportDatabase::Report* report)
-      : database_(database),
-        report_(report) {
-  }
-
-  ~CallRecordUploadAttempt() {
-    Fire();
-  }
-
-  void Fire() {
-    if (report_) {
-      database_->RecordUploadAttempt(report_, false, std::string());
-    }
-
-    Disarm();
-  }
-
-  void Disarm() {
-    report_ = nullptr;
-  }
-
- private:
-  CrashReportDatabase* database_;  // weak
-  const CrashReportDatabase::Report* report_;  // weak
-
-  DISALLOW_COPY_AND_ASSIGN(CallRecordUploadAttempt);
-};
-
-}  // namespace
-
 CrashReportUploadThread::CrashReportUploadThread(CrashReportDatabase* database,
                                                  const std::string& url,
                                                  const Options& options)
@@ -96,9 +58,16 @@ CrashReportUploadThread::CrashReportUploadThread(CrashReportDatabase* database,
                                             : WorkerThread::kIndefiniteWait,
               this),
       known_pending_report_uuids_(),
-      database_(database) {}
+      database_(database) {
+  DCHECK(!url_.empty());
+}
 
 CrashReportUploadThread::~CrashReportUploadThread() {
+}
+
+void CrashReportUploadThread::ReportPending(const UUID& report_uuid) {
+  known_pending_report_uuids_.PushBack(report_uuid);
+  thread_.DoWorkNow();
 }
 
 void CrashReportUploadThread::Start() {
@@ -108,11 +77,6 @@ void CrashReportUploadThread::Start() {
 
 void CrashReportUploadThread::Stop() {
   thread_.Stop();
-}
-
-void CrashReportUploadThread::ReportPending(const UUID& report_uuid) {
-  known_pending_report_uuids_.PushBack(report_uuid);
-  thread_.DoWorkNow();
 }
 
 void CrashReportUploadThread::ProcessPendingReports() {
@@ -178,9 +142,8 @@ void CrashReportUploadThread::ProcessPendingReport(
   Settings* const settings = database_->GetSettings();
 
   bool uploads_enabled;
-  if (url_.empty() ||
-      (!report.upload_explicitly_requested &&
-       (!settings->GetUploadsEnabled(&uploads_enabled) || !uploads_enabled))) {
+  if (!report.upload_explicitly_requested &&
+      (!settings->GetUploadsEnabled(&uploads_enabled) || !uploads_enabled)) {
     // Don’t attempt an upload if there’s no URL to upload to. Allow upload if
     // it has been explicitly requested by the user, otherwise, respect the
     // upload-enabled state stored in the database’s settings.
@@ -229,7 +192,7 @@ void CrashReportUploadThread::ProcessPendingReport(
     }
   }
 
-  const CrashReportDatabase::Report* upload_report;
+  std::unique_ptr<const CrashReportDatabase::UploadReport> upload_report;
   CrashReportDatabase::OperationStatus status =
       database_->GetReportForUploading(report.uuid, &upload_report);
   switch (status) {
@@ -256,18 +219,16 @@ void CrashReportUploadThread::ProcessPendingReport(
       return;
   }
 
-  CallRecordUploadAttempt call_record_upload_attempt(database_, upload_report);
-
   std::string response_body;
-  UploadResult upload_result = UploadReport(upload_report, &response_body);
+  UploadResult upload_result =
+      UploadReport(upload_report.get(), &response_body);
   switch (upload_result) {
     case UploadResult::kSuccess:
-      call_record_upload_attempt.Disarm();
-      database_->RecordUploadAttempt(upload_report, true, response_body);
+      database_->RecordUploadComplete(std::move(upload_report), response_body);
       break;
     case UploadResult::kPermanentFailure:
     case UploadResult::kRetry:
-      call_record_upload_attempt.Fire();
+      upload_report.reset();
 
       // TODO(mark): Deal with retries properly: don’t call SkipReportUplaod()
       // if the result was kRetry and the report hasn’t already been retried
@@ -279,17 +240,18 @@ void CrashReportUploadThread::ProcessPendingReport(
 }
 
 CrashReportUploadThread::UploadResult CrashReportUploadThread::UploadReport(
-    const CrashReportDatabase::Report* report,
+    const CrashReportDatabase::UploadReport* report,
     std::string* response_body) {
+#if defined(OS_ANDROID)
+  // TODO(jperaza): This method can be enabled on Android after HTTPTransport is
+  // implemented and Crashpad takes over upload responsibilty on Android.
+  NOTREACHED();
+  return UploadResult::kPermanentFailure;
+#else
   std::map<std::string, std::string> parameters;
 
-  FileReader minidump_file_reader;
-  if (!minidump_file_reader.Open(report->file_path)) {
-    // If the minidump file can’t be opened, all hope is lost.
-    return UploadResult::kPermanentFailure;
-  }
-
-  FileOffset start_offset = minidump_file_reader.SeekGet();
+  FileReader* reader = report->Reader();
+  FileOffset start_offset = reader->SeekGet();
   if (start_offset < 0) {
     return UploadResult::kPermanentFailure;
   }
@@ -299,12 +261,12 @@ CrashReportUploadThread::UploadResult CrashReportUploadThread::UploadReport(
   // parameters, but as long as there’s a dump file, the server can decide what
   // to do with it.
   ProcessSnapshotMinidump minidump_process_snapshot;
-  if (minidump_process_snapshot.Initialize(&minidump_file_reader)) {
+  if (minidump_process_snapshot.Initialize(reader)) {
     parameters =
         BreakpadHTTPFormParametersFromMinidump(&minidump_process_snapshot);
   }
 
-  if (!minidump_file_reader.SeekSet(start_offset)) {
+  if (!reader->SeekSet(start_offset)) {
     return UploadResult::kPermanentFailure;
   }
 
@@ -322,15 +284,10 @@ CrashReportUploadThread::UploadResult CrashReportUploadThread::UploadReport(
     }
   }
 
-  http_multipart_builder.SetFileAttachment(
-      kMinidumpKey,
-#if defined(OS_WIN)
-      base::UTF16ToUTF8(report->file_path.BaseName().value()),
-#else
-      report->file_path.BaseName().value(),
-#endif
-      &minidump_file_reader,
-      "application/octet-stream");
+  http_multipart_builder.SetFileAttachment(kMinidumpKey,
+                                           report->uuid.ToString() + ".dmp",
+                                           reader,
+                                           "application/octet-stream");
 
   std::unique_ptr<HTTPTransport> http_transport(HTTPTransport::Create());
   HTTPHeaders content_headers;
@@ -372,6 +329,7 @@ CrashReportUploadThread::UploadResult CrashReportUploadThread::UploadReport(
   }
 
   return UploadResult::kSuccess;
+#endif  // OS_ANDROID
 }
 
 void CrashReportUploadThread::DoWork(const WorkerThread* thread) {

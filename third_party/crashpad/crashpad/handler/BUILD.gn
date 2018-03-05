@@ -18,6 +18,8 @@ static_library("handler") {
   sources = [
     "crash_report_upload_thread.cc",
     "crash_report_upload_thread.h",
+    "handler_main.cc",
+    "handler_main.h",
     "minidump_to_upload_parameters.cc",
     "minidump_to_upload_parameters.h",
     "prune_crash_reports_thread.cc",
@@ -39,13 +41,10 @@ static_library("handler") {
 
   if (crashpad_is_linux || crashpad_is_android) {
     sources += [
+      "linux/crash_report_exception_handler.cc",
+      "linux/crash_report_exception_handler.h",
       "linux/exception_handler_server.cc",
       "linux/exception_handler_server.h",
-    ]
-  } else {
-    sources += [
-      "handler_main.cc",
-      "handler_main.h",
     ]
   }
 
@@ -147,8 +146,15 @@ executable("crashpad_handler") {
   }
 
   if (crashpad_is_win) {
-    configs -= [ "//build/config/win:console" ]
-    configs += [ "//build/config/win:windowed" ]
+    if (crashpad_is_in_chromium) {
+      configs -= [ "//build/config/win:console" ]
+      configs += [ "//build/config/win:windowed" ]
+    } else {
+      configs -=
+          [ "//third_party/mini_chromium/mini_chromium/build:win_console" ]
+      configs +=
+          [ "//third_party/mini_chromium/mini_chromium/build:win_windowed" ]
+    }
   }
 }
 
@@ -198,5 +204,109 @@ if (crashpad_is_win) {
     outputs = [
       "$root_out_dir/crashpad_handler.com",
     ]
+  }
+
+  executable("crash_other_program") {
+    testonly = true
+
+    sources = [
+      "win/crash_other_program.cc",
+    ]
+
+    deps = [
+      "../client",
+      "../test",
+      "../third_party/gtest:gtest",
+      "../third_party/mini_chromium:base",
+    ]
+  }
+
+  executable("crashy_program") {
+    testonly = true
+
+    sources = [
+      "win/crashy_test_program.cc",
+    ]
+
+    deps = [
+      "../client",
+      "../third_party/mini_chromium:base",
+    ]
+  }
+
+  executable("crashy_signal") {
+    testonly = true
+
+    sources = [
+      "win/crashy_signal.cc",
+    ]
+
+    cflags = [ "/wd4702" ]  # Unreachable code.
+
+    deps = [
+      "../client",
+      "../third_party/mini_chromium:base",
+    ]
+  }
+
+  executable("fake_handler_that_crashes_at_startup") {
+    testonly = true
+
+    sources = [
+      "win/fake_handler_that_crashes_at_startup.cc",
+    ]
+  }
+
+  executable("hanging_program") {
+    testonly = true
+
+    sources = [
+      "win/hanging_program.cc",
+    ]
+
+    deps = [
+      "../client",
+      "../third_party/mini_chromium:base",
+    ]
+  }
+
+  loadable_module("loader_lock_dll") {
+    testonly = true
+
+    sources = [
+      "win/loader_lock_dll.cc",
+    ]
+  }
+
+  executable("self_destroying_program") {
+    testonly = true
+
+    sources = [
+      "win/self_destroying_test_program.cc",
+    ]
+
+    deps = [
+      "../client",
+      "../compat",
+      "../snapshot",
+      "../third_party/mini_chromium:base",
+    ]
+  }
+
+  if (current_cpu == "x86") {
+    # Cannot create an x64 DLL with embedded debug info.
+    executable("crashy_z7_loader") {
+      testonly = true
+
+      sources = [
+        "win/crashy_test_z7_loader.cc",
+      ]
+
+      deps = [
+        "../client",
+        "../test",
+        "../third_party/mini_chromium:base",
+      ]
+    }
   }
 }
