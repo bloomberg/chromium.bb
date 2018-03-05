@@ -34,12 +34,9 @@ class FFmpegCdmAudioDecoder {
  public:
   explicit FFmpegCdmAudioDecoder(CdmHostProxy* cdm_host_proxy);
   ~FFmpegCdmAudioDecoder();
-  bool Initialize(const cdm::AudioDecoderConfig& config);
+  bool Initialize(const cdm::AudioDecoderConfig_2& config);
   void Deinitialize();
   void Reset();
-
-  // Returns true when |config| is a valid audio decoder configuration.
-  static bool IsValidConfig(const cdm::AudioDecoderConfig& config);
 
   // Decodes |compressed_buffer|. Returns |cdm::kSuccess| after storing
   // output in |decoded_frames| when output is available. Returns

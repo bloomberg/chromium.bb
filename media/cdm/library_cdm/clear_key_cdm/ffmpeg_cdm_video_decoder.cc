@@ -41,44 +41,42 @@ static AVPixelFormat CdmVideoFormatToAVPixelFormat(
   return AV_PIX_FMT_NONE;
 }
 
-static AVCodecID CdmVideoCodecToCodecID(
-    cdm::VideoDecoderConfig::VideoCodec video_codec) {
+static AVCodecID CdmVideoCodecToCodecID(cdm::VideoCodec video_codec) {
   switch (video_codec) {
-    case cdm::VideoDecoderConfig::kCodecVp8:
+    case cdm::kCodecVp8:
       return AV_CODEC_ID_VP8;
-    case cdm::VideoDecoderConfig::kCodecH264:
+    case cdm::kCodecH264:
       return AV_CODEC_ID_H264;
-    case cdm::VideoDecoderConfig::kCodecVp9:
+    case cdm::kCodecVp9:
       return AV_CODEC_ID_VP9;
-    case cdm::VideoDecoderConfig::kUnknownVideoCodec:
+    case cdm::kUnknownVideoCodec:
     default:
       NOTREACHED() << "Unsupported cdm::VideoCodec: " << video_codec;
       return AV_CODEC_ID_NONE;
   }
 }
 
-static int CdmVideoCodecProfileToProfileID(
-    cdm::VideoDecoderConfig::VideoCodecProfile profile) {
+static int CdmVideoCodecProfileToProfileID(cdm::VideoCodecProfile profile) {
   switch (profile) {
-    case cdm::VideoDecoderConfig::kProfileNotNeeded:
+    case cdm::kProfileNotNeeded:
       // For codecs that do not need a profile (e.g. VP8/VP9), does not define
       // an FFmpeg profile.
       return FF_PROFILE_UNKNOWN;
-    case cdm::VideoDecoderConfig::kH264ProfileBaseline:
+    case cdm::kH264ProfileBaseline:
       return FF_PROFILE_H264_BASELINE;
-    case cdm::VideoDecoderConfig::kH264ProfileMain:
+    case cdm::kH264ProfileMain:
       return FF_PROFILE_H264_MAIN;
-    case cdm::VideoDecoderConfig::kH264ProfileExtended:
+    case cdm::kH264ProfileExtended:
       return FF_PROFILE_H264_EXTENDED;
-    case cdm::VideoDecoderConfig::kH264ProfileHigh:
+    case cdm::kH264ProfileHigh:
       return FF_PROFILE_H264_HIGH;
-    case cdm::VideoDecoderConfig::kH264ProfileHigh10:
+    case cdm::kH264ProfileHigh10:
       return FF_PROFILE_H264_HIGH_10;
-    case cdm::VideoDecoderConfig::kH264ProfileHigh422:
+    case cdm::kH264ProfileHigh422:
       return FF_PROFILE_H264_HIGH_422;
-    case cdm::VideoDecoderConfig::kH264ProfileHigh444Predictive:
+    case cdm::kH264ProfileHigh444Predictive:
       return FF_PROFILE_H264_HIGH_444_PREDICTIVE;
-    case cdm::VideoDecoderConfig::kUnknownVideoCodecProfile:
+    case cdm::kUnknownVideoCodecProfile:
     default:
       NOTREACHED() << "Unknown cdm::VideoCodecProfile: " << profile;
       return FF_PROFILE_UNKNOWN;
@@ -86,7 +84,7 @@ static int CdmVideoCodecProfileToProfileID(
 }
 
 static void CdmVideoDecoderConfigToAVCodecContext(
-    const cdm::VideoDecoderConfig& config,
+    const cdm::VideoDecoderConfig_2& config,
     AVCodecContext* codec_context) {
   codec_context->codec_type = AVMEDIA_TYPE_VIDEO;
   codec_context->codec_id = CdmVideoCodecToCodecID(config.codec);
@@ -133,7 +131,8 @@ FFmpegCdmVideoDecoder::~FFmpegCdmVideoDecoder() {
   ReleaseFFmpegResources();
 }
 
-bool FFmpegCdmVideoDecoder::Initialize(const cdm::VideoDecoderConfig& config) {
+bool FFmpegCdmVideoDecoder::Initialize(
+    const cdm::VideoDecoderConfig_2& config) {
   DVLOG(1) << "Initialize()";
 
   if (!IsValidOutputConfig(config.format, config.coded_size)) {

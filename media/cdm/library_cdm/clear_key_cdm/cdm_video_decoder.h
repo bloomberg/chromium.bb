@@ -18,7 +18,7 @@ class CdmHostProxy;
 class CdmVideoDecoder {
  public:
   virtual ~CdmVideoDecoder() {}
-  virtual bool Initialize(const cdm::VideoDecoderConfig& config) = 0;
+  virtual bool Initialize(const cdm::VideoDecoderConfig_2& config) = 0;
   virtual void Deinitialize() = 0;
   virtual void Reset() = 0;
   virtual bool is_initialized() const = 0;
@@ -41,7 +41,7 @@ class CdmVideoDecoder {
 // CdmVideoDecoder pointer upon success.
 std::unique_ptr<CdmVideoDecoder> CreateVideoDecoder(
     CdmHostProxy* cdm_host_proxy,
-    const cdm::VideoDecoderConfig& config);
+    const cdm::VideoDecoderConfig_2& config);
 
 }  // namespace media
 

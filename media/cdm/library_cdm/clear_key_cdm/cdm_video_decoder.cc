@@ -16,12 +16,11 @@ namespace media {
 
 std::unique_ptr<CdmVideoDecoder> CreateVideoDecoder(
     CdmHostProxy* cdm_host_proxy,
-    const cdm::VideoDecoderConfig& config) {
+    const cdm::VideoDecoderConfig_2& config) {
   std::unique_ptr<CdmVideoDecoder> video_decoder;
 
 #if defined(CLEAR_KEY_CDM_USE_LIBVPX_DECODER)
-  if (config.codec == cdm::VideoDecoderConfig::kCodecVp8 ||
-      config.codec == cdm::VideoDecoderConfig::kCodecVp9) {
+  if (config.codec == cdm::kCodecVp8 || config.codec == cdm::kCodecVp9) {
     video_decoder.reset(new LibvpxCdmVideoDecoder(cdm_host_proxy));
 
     if (!video_decoder->Initialize(config))
