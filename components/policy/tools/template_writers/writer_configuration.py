@@ -112,7 +112,7 @@ def GetConfigurationForBuild(defines):
     raise Exception('Unknown build')
   if 'version' in defines:
     config['version'] = defines['version']
-  config['win_supported_os'] = 'SUPPORTED_WINXPSP2'
+  config['win_supported_os'] = 'SUPPORTED_WIN7'
   if 'mac_bundle_id' in defines:
     config['mac_bundle_id'] = defines['mac_bundle_id']
   config['android_webview_restriction_prefix'] = 'com.android.browser:'

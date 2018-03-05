@@ -48,7 +48,7 @@ class AdmWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         'policy_definitions': [],
         'placeholders': [],
         'messages': {
-          'win_supported_winxpsp2': {
+          'win_supported_win7': {
             'text': 'At least "Windows 3.11', 'desc': 'blah'
           },
           'doc_recommended': {
@@ -71,7 +71,7 @@ class AdmWriterUnittest(writer_unittest_common.WriterUnittestCommon):
 
 
 ''', '''[Strings]
-SUPPORTED_WINXPSP2="At least "Windows 3.11"
+SUPPORTED_WIN7="At least "Windows 3.11"
 chromium="Chromium"
 chromium_recommended="Chromium - Recommended"''')
     self.CompareOutputs(output, expected_output)
@@ -83,7 +83,7 @@ chromium_recommended="Chromium - Recommended"''')
         'policy_definitions': [],
         'placeholders': [],
         'messages': {
-          'win_supported_winxpsp2': {
+          'win_supported_win7': {
             'text': 'At least "Windows 3.11', 'desc': 'blah'
           },
           'doc_recommended': {
@@ -107,7 +107,7 @@ chromium_recommended="Chromium - Recommended"''')
 
 
 ''', '''[Strings]
-SUPPORTED_WINXPSP2="At least "Windows 3.11"
+SUPPORTED_WIN7="At least "Windows 3.11"
 chromium="Chromium"
 chromium_recommended="Chromium - Recommended"''')
     self.CompareOutputs(output, expected_output)
@@ -128,7 +128,7 @@ chromium_recommended="Chromium - Recommended"''')
         ],
         'placeholders': [],
         'messages': {
-          'win_supported_winxpsp2': {
+          'win_supported_win7': {
             'text': 'At least Windows 3.12', 'desc': 'blah'
           },
           'doc_recommended': {
@@ -145,7 +145,7 @@ chromium_recommended="Chromium - Recommended"''')
 
       POLICY !!MainPolicy_Policy
         #if version >= 4
-          SUPPORTED !!SUPPORTED_WINXPSP2
+          SUPPORTED !!SUPPORTED_WIN7
         #endif
         EXPLAIN !!MainPolicy_Explain
         VALUENAME "MainPolicy"
@@ -162,7 +162,7 @@ chromium_recommended="Chromium - Recommended"''')
 
       POLICY !!MainPolicy_Policy
         #if version >= 4
-          SUPPORTED !!SUPPORTED_WINXPSP2
+          SUPPORTED !!SUPPORTED_WIN7
         #endif
         EXPLAIN !!MainPolicy_Explain
         VALUENAME "MainPolicy"
@@ -175,7 +175,7 @@ chromium_recommended="Chromium - Recommended"''')
 
 
 ''', '''[Strings]
-SUPPORTED_WINXPSP2="At least Windows 3.12"
+SUPPORTED_WIN7="At least Windows 3.12"
 Google:Cat_Google="Google"
 googlechrome="Google Chrome"
 googlechrome_recommended="Google Chrome - Recommended"
@@ -202,7 +202,7 @@ MainPolicy_Explain="Description of main."''')
         ],
         'placeholders': [],
         'messages': {
-          'win_supported_winxpsp2': {
+          'win_supported_win7': {
             'text': 'At least Windows 3.12', 'desc': 'blah'
           },
           'doc_recommended': {
@@ -226,7 +226,7 @@ MainPolicy_Explain="Description of main."''')
 
       POLICY !!MainPolicy_Policy
         #if version >= 4
-          SUPPORTED !!SUPPORTED_WINXPSP2
+          SUPPORTED !!SUPPORTED_WIN7
         #endif
         EXPLAIN !!MainPolicy_Explain
         VALUENAME "MainPolicy"
@@ -239,7 +239,7 @@ MainPolicy_Explain="Description of main."''')
 
 
 ''', '''[Strings]
-SUPPORTED_WINXPSP2="At least Windows 3.12"
+SUPPORTED_WIN7="At least Windows 3.12"
 Google:Cat_Google="Google"
 googlechrome="Google Chrome"
 googlechrome_recommended="Google Chrome - Recommended"
@@ -264,7 +264,7 @@ With a newline.""",
         ],
         'placeholders': [],
         'messages': {
-          'win_supported_winxpsp2': {
+          'win_supported_win7': {
             'text': 'At least Windows 3.13', 'desc': 'blah'
           },
           'doc_recommended': {
@@ -280,7 +280,7 @@ With a newline.""",
 
     POLICY !!StringPolicy_Policy
       #if version >= 4
-        SUPPORTED !!SUPPORTED_WINXPSP2
+        SUPPORTED !!SUPPORTED_WIN7
       #endif
       EXPLAIN !!StringPolicy_Explain
 
@@ -297,7 +297,7 @@ With a newline.""",
 
     POLICY !!StringPolicy_Policy
       #if version >= 4
-        SUPPORTED !!SUPPORTED_WINXPSP2
+        SUPPORTED !!SUPPORTED_WIN7
       #endif
       EXPLAIN !!StringPolicy_Explain
 
@@ -311,7 +311,7 @@ With a newline.""",
 
 
 ''', '''[Strings]
-SUPPORTED_WINXPSP2="At least Windows 3.13"
+SUPPORTED_WIN7="At least Windows 3.13"
 chromium="Chromium"
 chromium_recommended="Chromium - Recommended"
 StringPolicy_Policy="Caption of policy."
@@ -336,7 +336,7 @@ StringPolicy_Part="Caption of policy."
         ],
         'placeholders': [],
         'messages': {
-          'win_supported_winxpsp2': {
+          'win_supported_win7': {
             'text': 'At least Windows 3.13', 'desc': 'blah'
           },
           'doc_recommended': {
@@ -352,7 +352,7 @@ StringPolicy_Part="Caption of policy."
 
     POLICY !!IntPolicy_Policy
       #if version >= 4
-        SUPPORTED !!SUPPORTED_WINXPSP2
+        SUPPORTED !!SUPPORTED_WIN7
       #endif
       EXPLAIN !!IntPolicy_Explain
 
@@ -369,7 +369,7 @@ StringPolicy_Part="Caption of policy."
 
     POLICY !!IntPolicy_Policy
       #if version >= 4
-        SUPPORTED !!SUPPORTED_WINXPSP2
+        SUPPORTED !!SUPPORTED_WIN7
       #endif
       EXPLAIN !!IntPolicy_Explain
 
@@ -383,7 +383,7 @@ StringPolicy_Part="Caption of policy."
 
 
 ''', '''[Strings]
-SUPPORTED_WINXPSP2="At least Windows 3.13"
+SUPPORTED_WIN7="At least Windows 3.13"
 chromium="Chromium"
 chromium_recommended="Chromium - Recommended"
 IntPolicy_Policy="Caption of policy."
@@ -420,7 +420,7 @@ IntPolicy_Part="Caption of policy."
         ],
         'placeholders': [],
         'messages': {
-          'win_supported_winxpsp2': {
+          'win_supported_win7': {
             'text': 'At least Windows 3.14', 'desc': 'blah'
           },
           'doc_recommended': {
@@ -437,7 +437,7 @@ IntPolicy_Part="Caption of policy."
 
       POLICY !!EnumPolicy_Policy
         #if version >= 4
-          SUPPORTED !!SUPPORTED_WINXPSP2
+          SUPPORTED !!SUPPORTED_WIN7
         #endif
         EXPLAIN !!EnumPolicy_Explain
 
@@ -459,7 +459,7 @@ IntPolicy_Part="Caption of policy."
 
       POLICY !!EnumPolicy_Policy
         #if version >= 4
-          SUPPORTED !!SUPPORTED_WINXPSP2
+          SUPPORTED !!SUPPORTED_WIN7
         #endif
         EXPLAIN !!EnumPolicy_Explain
 
@@ -477,7 +477,7 @@ IntPolicy_Part="Caption of policy."
 
 
 ''', '''[Strings]
-SUPPORTED_WINXPSP2="At least Windows 3.14"
+SUPPORTED_WIN7="At least Windows 3.14"
 Google:Cat_Google="Google"
 googlechrome="Google Chrome"
 googlechrome_recommended="Google Chrome - Recommended"
@@ -511,7 +511,7 @@ ProxyServerAutoDetect_DropDown="Option2"
         ],
         'placeholders': [],
         'messages': {
-          'win_supported_winxpsp2': {
+          'win_supported_win7': {
             'text': 'At least Windows 3.14', 'desc': 'blah'
           },
           'doc_recommended': {
@@ -528,7 +528,7 @@ ProxyServerAutoDetect_DropDown="Option2"
 
       POLICY !!EnumPolicy_Policy
         #if version >= 4
-          SUPPORTED !!SUPPORTED_WINXPSP2
+          SUPPORTED !!SUPPORTED_WIN7
         #endif
         EXPLAIN !!EnumPolicy_Explain
 
@@ -550,7 +550,7 @@ ProxyServerAutoDetect_DropDown="Option2"
 
       POLICY !!EnumPolicy_Policy
         #if version >= 4
-          SUPPORTED !!SUPPORTED_WINXPSP2
+          SUPPORTED !!SUPPORTED_WIN7
         #endif
         EXPLAIN !!EnumPolicy_Explain
 
@@ -568,7 +568,7 @@ ProxyServerAutoDetect_DropDown="Option2"
 
 
 ''', '''[Strings]
-SUPPORTED_WINXPSP2="At least Windows 3.14"
+SUPPORTED_WIN7="At least Windows 3.14"
 Google:Cat_Google="Google"
 googlechrome="Google Chrome"
 googlechrome_recommended="Google Chrome - Recommended"
@@ -598,7 +598,7 @@ With a newline.""",
         ],
         'placeholders': [],
         'messages': {
-          'win_supported_winxpsp2': {
+          'win_supported_win7': {
             'text': 'At least Windows 3.15', 'desc': 'blah'
           },
           'doc_recommended': {
@@ -614,7 +614,7 @@ With a newline.""",
 
     POLICY !!ListPolicy_Policy
       #if version >= 4
-        SUPPORTED !!SUPPORTED_WINXPSP2
+        SUPPORTED !!SUPPORTED_WIN7
       #endif
       EXPLAIN !!ListPolicy_Explain
 
@@ -631,7 +631,7 @@ With a newline.""",
 
     POLICY !!ListPolicy_Policy
       #if version >= 4
-        SUPPORTED !!SUPPORTED_WINXPSP2
+        SUPPORTED !!SUPPORTED_WIN7
       #endif
       EXPLAIN !!ListPolicy_Explain
 
@@ -645,7 +645,7 @@ With a newline.""",
 
 
 ''', '''[Strings]
-SUPPORTED_WINXPSP2="At least Windows 3.15"
+SUPPORTED_WIN7="At least Windows 3.15"
 chromium="Chromium"
 chromium_recommended="Chromium - Recommended"
 ListPolicy_Policy="Caption of list policy."
@@ -678,7 +678,7 @@ With a newline.""",
         ],
         'placeholders': [],
         'messages': {
-          'win_supported_winxpsp2': {
+          'win_supported_win7': {
             'text': 'At least Windows 3.15', 'desc': 'blah'
           },
           'doc_recommended': {
@@ -694,7 +694,7 @@ With a newline.""",
 
     POLICY !!ListPolicy_Policy
       #if version >= 4
-        SUPPORTED !!SUPPORTED_WINXPSP2
+        SUPPORTED !!SUPPORTED_WIN7
       #endif
       EXPLAIN !!ListPolicy_Explain
 
@@ -711,7 +711,7 @@ With a newline.""",
 
     POLICY !!ListPolicy_Policy
       #if version >= 4
-        SUPPORTED !!SUPPORTED_WINXPSP2
+        SUPPORTED !!SUPPORTED_WIN7
       #endif
       EXPLAIN !!ListPolicy_Explain
 
@@ -725,7 +725,7 @@ With a newline.""",
 
 
 ''', '''[Strings]
-SUPPORTED_WINXPSP2="At least Windows 3.15"
+SUPPORTED_WIN7="At least Windows 3.15"
 chromium="Chromium"
 chromium_recommended="Chromium - Recommended"
 ListPolicy_Policy="Caption of list policy."
@@ -750,7 +750,7 @@ ListPolicy_Part="Label of list policy."
         ],
         'placeholders': [],
         'messages': {
-          'win_supported_winxpsp2': {
+          'win_supported_win7': {
             'text': 'At least Windows 3.13', 'desc': 'blah'
           },
           'doc_recommended': {
@@ -766,7 +766,7 @@ ListPolicy_Part="Label of list policy."
 
     POLICY !!DictionaryPolicy_Policy
       #if version >= 4
-        SUPPORTED !!SUPPORTED_WINXPSP2
+        SUPPORTED !!SUPPORTED_WIN7
       #endif
       EXPLAIN !!DictionaryPolicy_Explain
 
@@ -783,7 +783,7 @@ ListPolicy_Part="Label of list policy."
 
     POLICY !!DictionaryPolicy_Policy
       #if version >= 4
-        SUPPORTED !!SUPPORTED_WINXPSP2
+        SUPPORTED !!SUPPORTED_WIN7
       #endif
       EXPLAIN !!DictionaryPolicy_Explain
 
@@ -797,7 +797,7 @@ ListPolicy_Part="Label of list policy."
 
 
 ''', '''[Strings]
-SUPPORTED_WINXPSP2="At least Windows 3.13"
+SUPPORTED_WIN7="At least Windows 3.13"
 chromium="Chromium"
 chromium_recommended="Chromium - Recommended"
 DictionaryPolicy_Policy="Caption of policy."
@@ -822,7 +822,7 @@ DictionaryPolicy_Part="Caption of policy."
         ],
         'placeholders': [],
         'messages': {
-          'win_supported_winxpsp2': {
+          'win_supported_win7': {
             'text': 'At least Windows 3.13', 'desc': 'blah'
           },
           'doc_recommended': {
@@ -838,7 +838,7 @@ DictionaryPolicy_Part="Caption of policy."
 
     POLICY !!ExternalPolicy_Policy
       #if version >= 4
-        SUPPORTED !!SUPPORTED_WINXPSP2
+        SUPPORTED !!SUPPORTED_WIN7
       #endif
       EXPLAIN !!ExternalPolicy_Explain
 
@@ -855,7 +855,7 @@ DictionaryPolicy_Part="Caption of policy."
 
     POLICY !!ExternalPolicy_Policy
       #if version >= 4
-        SUPPORTED !!SUPPORTED_WINXPSP2
+        SUPPORTED !!SUPPORTED_WIN7
       #endif
       EXPLAIN !!ExternalPolicy_Explain
 
@@ -869,7 +869,7 @@ DictionaryPolicy_Part="Caption of policy."
 
 
 ''', '''[Strings]
-SUPPORTED_WINXPSP2="At least Windows 3.13"
+SUPPORTED_WIN7="At least Windows 3.13"
 chromium="Chromium"
 chromium_recommended="Chromium - Recommended"
 ExternalPolicy_Policy="Caption of policy."
@@ -901,7 +901,7 @@ ExternalPolicy_Part="Caption of policy."
         ],
         'placeholders': [],
         'messages': {
-          'win_supported_winxpsp2': {
+          'win_supported_win7': {
             'text': 'At least Windows 3.16', 'desc': 'blah'
           },
           'doc_recommended': {
@@ -924,7 +924,7 @@ ExternalPolicy_Part="Caption of policy."
 
 
 ''', '''[Strings]
-SUPPORTED_WINXPSP2="At least Windows 3.16"
+SUPPORTED_WIN7="At least Windows 3.16"
 chromium="Chromium"
 chromium_recommended="Chromium - Recommended"
 ''')
@@ -945,7 +945,7 @@ chromium_recommended="Chromium - Recommended"
         ],
         'placeholders': [],
         'messages': {
-          'win_supported_winxpsp2': {
+          'win_supported_win7': {
             'text': 'At least Windows 3.12', 'desc': 'blah'
           },
           'doc_recommended': {
@@ -962,7 +962,7 @@ chromium_recommended="Chromium - Recommended"
 
       POLICY !!MainPolicy_Policy
         #if version >= 4
-          SUPPORTED !!SUPPORTED_WINXPSP2
+          SUPPORTED !!SUPPORTED_WIN7
         #endif
         EXPLAIN !!MainPolicy_Explain
         VALUENAME "MainPolicy"
@@ -982,7 +982,7 @@ chromium_recommended="Chromium - Recommended"
 
 
 ''', '''[Strings]
-SUPPORTED_WINXPSP2="At least Windows 3.12"
+SUPPORTED_WIN7="At least Windows 3.12"
 Google:Cat_Google="Google"
 googlechrome="Google Chrome"
 googlechrome_recommended="Google Chrome - Recommended"
@@ -1022,7 +1022,7 @@ With a newline."""
         ],
         'placeholders': [],
         'messages': {
-          'win_supported_winxpsp2': {
+          'win_supported_win7': {
             'text': 'At least Windows 3.16', 'desc': 'blah'
           },
           'doc_recommended': {
@@ -1039,7 +1039,7 @@ With a newline."""
     CATEGORY !!Group1_Category
       POLICY !!Policy1_Policy
         #if version >= 4
-          SUPPORTED !!SUPPORTED_WINXPSP2
+          SUPPORTED !!SUPPORTED_WIN7
         #endif
         EXPLAIN !!Policy1_Explain
 
@@ -1051,7 +1051,7 @@ With a newline."""
 
       POLICY !!Policy2_Policy
         #if version >= 4
-          SUPPORTED !!SUPPORTED_WINXPSP2
+          SUPPORTED !!SUPPORTED_WIN7
         #endif
         EXPLAIN !!Policy2_Explain
 
@@ -1071,7 +1071,7 @@ With a newline."""
     CATEGORY !!Group1_Category
       POLICY !!Policy1_Policy
         #if version >= 4
-          SUPPORTED !!SUPPORTED_WINXPSP2
+          SUPPORTED !!SUPPORTED_WIN7
         #endif
         EXPLAIN !!Policy1_Explain
 
@@ -1087,7 +1087,7 @@ With a newline."""
 
 
 ''', '''[Strings]
-SUPPORTED_WINXPSP2="At least Windows 3.16"
+SUPPORTED_WIN7="At least Windows 3.16"
 chromium="Chromium"
 chromium_recommended="Chromium - Recommended"
 Group1_Category="Caption of group."
@@ -1129,7 +1129,7 @@ Policy2_Part="Caption of policy2."
         ],
         'placeholders': [],
         'messages': {
-          'win_supported_winxpsp2': {
+          'win_supported_win7': {
             'text': 'At least Windows 3.14', 'desc': 'blah'
           },
           'doc_recommended': {
@@ -1146,7 +1146,7 @@ Policy2_Part="Caption of policy2."
 
       POLICY !!EnumPolicy_A_Policy
         #if version >= 4
-          SUPPORTED !!SUPPORTED_WINXPSP2
+          SUPPORTED !!SUPPORTED_WIN7
         #endif
         EXPLAIN !!EnumPolicy_A_Explain
 
@@ -1160,7 +1160,7 @@ Policy2_Part="Caption of policy2."
 
       POLICY !!EnumPolicy_B_Policy
         #if version >= 4
-          SUPPORTED !!SUPPORTED_WINXPSP2
+          SUPPORTED !!SUPPORTED_WIN7
         #endif
         EXPLAIN !!EnumPolicy_B_Explain
 
@@ -1184,7 +1184,7 @@ Policy2_Part="Caption of policy2."
 
 
 ''', '''[Strings]
-SUPPORTED_WINXPSP2="At least Windows 3.14"
+SUPPORTED_WIN7="At least Windows 3.14"
 Google:Cat_Google="Google"
 googlechrome="Google Chrome"
 googlechrome_recommended="Google Chrome - Recommended"
