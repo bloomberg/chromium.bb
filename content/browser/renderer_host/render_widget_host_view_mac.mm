@@ -5,10 +5,6 @@
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
 
 #import <Carbon/Carbon.h>
-#import <objc/runtime.h>
-#include <OpenGL/gl.h>
-#include <QuartzCore/QuartzCore.h>
-#include <stdint.h>
 
 #include <limits>
 #include <utility>
@@ -20,31 +16,23 @@
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/numerics/safe_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/sys_info.h"
-#include "base/threading/thread_task_runner_handle.h"
-#include "base/trace_event/trace_event.h"
 #import "content/browser/accessibility/browser_accessibility_cocoa.h"
 #import "content/browser/accessibility/browser_accessibility_mac.h"
 #include "content/browser/accessibility/browser_accessibility_manager_mac.h"
 #import "content/browser/cocoa/system_hotkey_helper_mac.h"
 #import "content/browser/cocoa/system_hotkey_map.h"
-#include "content/browser/frame_host/frame_tree.h"
-#include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
-#include "content/browser/gpu/compositor_util.h"
 #include "content/browser/renderer_host/cursor_manager.h"
 #import "content/browser/renderer_host/input/synthetic_gesture_target_mac.h"
 #include "content/browser/renderer_host/input/web_input_event_builders_mac.h"
+#include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
@@ -52,19 +40,15 @@
 #import "content/browser/renderer_host/render_widget_host_view_mac_dictionary_helper.h"
 #import "content/browser/renderer_host/render_widget_host_view_mac_editcommand_helper.h"
 #import "content/browser/renderer_host/text_input_client_mac.h"
-#include "content/common/accessibility_messages.h"
 #include "content/common/edit_command.h"
-#include "content/common/input_messages.h"
 #include "content/common/text_input_state.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_plugin_guest_manager.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/render_widget_host.h"
 #import "content/public/browser/render_widget_host_view_mac_delegate.h"
 #include "content/public/browser/web_contents.h"
-#include "gpu/ipc/common/gpu_messages.h"
 #include "skia/ext/platform_canvas.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
@@ -73,9 +57,6 @@
 #import "ui/base/cocoa/appkit_utils.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/cocoa/fullscreen_window_manager.h"
-#import "ui/base/cocoa/underlay_opengl_hosting_window.h"
-#include "ui/compositor/compositor.h"
-#include "ui/compositor/layer.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/base_event_utils.h"
@@ -85,17 +66,13 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
-#include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 #include "ui/gl/gl_switches.h"
 
 using content::BrowserAccessibility;
 using content::BrowserAccessibilityManager;
 using content::EditCommand;
-using content::FrameTreeNode;
 using content::NativeWebKeyboardEvent;
-using content::RenderFrameHost;
 using content::RenderViewHost;
-using content::RenderViewHostImpl;
 using content::RenderWidgetHostImpl;
 using content::RenderWidgetHostView;
 using content::RenderWidgetHostViewMac;
@@ -172,7 +149,7 @@ RenderWidgetHostView* GetRenderWidgetHostViewToUse(
 // A window subclass that allows the fullscreen window to become main and gain
 // keyboard focus. This is only used for pepper flash. Normal fullscreen is
 // handled by the browser.
-@interface PepperFlashFullscreenWindow : UnderlayOpenGLHostingWindow
+@interface PepperFlashFullscreenWindow : NSWindow
 @end
 
 @implementation PepperFlashFullscreenWindow
@@ -318,26 +295,13 @@ void DisablePasswordInput() {
   TSMRemoveDocumentProperty(0, kTSMDocumentEnabledInputSourcesPropertyTag);
 }
 
-// Calls to [NSScreen screens], required by FlipYFromRectToScreen and
-// FlipNSRectToRectScreen, can take several milliseconds. Only re-compute this
-// value when screen info changes.
-// TODO(ccameron): An observer on every RWHVCocoa will set this to false
-// on NSApplicationDidChangeScreenParametersNotification. Only one observer
-// is necessary.
-bool g_screen_info_up_to_date = false;
-
 float FlipYFromRectToScreen(float y, float rect_height) {
   TRACE_EVENT0("browser", "FlipYFromRectToScreen");
-  static CGFloat screen_zero_height = 0;
-  if (!g_screen_info_up_to_date) {
-    if ([[NSScreen screens] count] > 0) {
-      screen_zero_height =
-          [[[NSScreen screens] firstObject] frame].size.height;
-      g_screen_info_up_to_date = true;
-    } else {
-      return y;
-    }
-  }
+  display::Screen* screen = display::Screen::GetScreen();
+  display::Display display = screen->GetPrimaryDisplay();
+  CGFloat screen_zero_height = display.bounds().height();
+  if (screen_zero_height == 0.f)
+    return y;
   return screen_zero_height - y - rect_height;
 }
 
@@ -1799,17 +1763,6 @@ Class GetRenderWidgetHostViewCocoaClassForTesting() {
     canBeKeyView_ = YES;
     pinchHasReachedZoomThreshold_ = false;
     isStylusEnteringProximity_ = false;
-
-    // OpenGL support:
-    if ([self respondsToSelector:
-        @selector(setWantsBestResolutionOpenGLSurface:)]) {
-      [self setWantsBestResolutionOpenGLSurface:YES];
-    }
-    [[NSNotificationCenter defaultCenter]
-        addObserver:self
-           selector:@selector(didChangeScreenParameters:)
-               name:NSApplicationDidChangeScreenParametersNotification
-             object:nil];
   }
   return self;
 }
@@ -1839,10 +1792,6 @@ Class GetRenderWidgetHostViewCocoaClassForTesting() {
                     : "text input no longer held on");
 
   [super dealloc];
-}
-
-- (void)didChangeScreenParameters:(NSNotification*)notify {
-  g_screen_info_up_to_date = false;
 }
 
 - (void)setResponderDelegate:

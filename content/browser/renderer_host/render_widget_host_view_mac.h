@@ -6,16 +6,9 @@
 #define CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_MAC_H_
 
 #import <Cocoa/Cocoa.h>
-#include <IOSurface/IOSurface.h>
-#include <stddef.h>
-#include <stdint.h>
 
-#include <list>
-#include <map>
-#include <memory>
 #include <set>
 #include <string>
-#include <utility>
 #include <vector>
 
 #include "base/mac/scoped_nsobject.h"
@@ -47,7 +40,6 @@ class RenderWidgetHostImpl;
 class RenderWidgetHostViewMac;
 class RenderWidgetHostViewMacEditCommandHelper;
 class WebContents;
-struct TextInputState;
 }
 
 @class FullscreenWindowManager;
