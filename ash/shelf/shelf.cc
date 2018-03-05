@@ -90,7 +90,6 @@ void Shelf::CreateShelfWidget(aura::Window* root) {
 }
 
 void Shelf::ShutdownShelfWidget() {
-  // May be called multiple times during shutdown.
   if (shelf_widget_)
     shelf_widget_->Shutdown();
 }
