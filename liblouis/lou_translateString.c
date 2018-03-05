@@ -379,6 +379,13 @@ swapReplace(int start, int end, const TranslationTableHeader *table, InString in
 		int test;
 		int k;
 		if (swapRule->opcode == CTO_SwapDd) {
+			// A sequence of dot patterns is encoded as the length of the first dot
+			// pattern (single widechar) followed by the contents of the first dot pattern
+			// (one widechar per cell) followed by the length of the second dot pattern,
+			// etc. See the function `compileSwapDots'. Because the third operand of a
+			// swapdd rule can only contain single-cell dot patterns, the elements at
+			// index 0, 2, ... are "1" and the elements at index 1, 3, ... are the dot
+			// patterns.
 			for (test = 0; test * 2 + 1 < swapRule->charslen; test++)
 				if (input.chars[p] == swapRule->charsdots[test * 2 + 1]) break;
 			if (test * 2 == swapRule->charslen) continue;
@@ -493,7 +500,7 @@ doPassSearch(const TranslationTableHeader *table, InString input,
 		TranslationTableRule *groupingRule, widechar groupingOp) {
 	int level = 0;
 	int k, kk;
-	int not = 0;
+	int not = 0;  // whether next operand should be reversed
 	TranslationTableOffset ruleOffset;
 	TranslationTableRule *rule;
 	TranslationTableCharacterAttributes attributes;
@@ -501,7 +508,7 @@ doPassSearch(const TranslationTableHeader *table, InString input,
 		*searchIC = passIC + 1;
 		*searchPos = pos;
 		while (*searchIC < transRule->dotslen) {
-			int itsTrue = 1;
+			int itsTrue = 1;  // whether we have a match or not
 			if (*searchPos > input.length) return 0;
 			switch (passInstructions[*searchIC]) {
 			case pass_lookback:
@@ -628,7 +635,7 @@ passDoTest(const TranslationTableHeader *table, int pos, InString input, int tra
 		TranslationTableRule **groupingRule, widechar *groupingOp) {
 	int searchIC, searchPos;
 	int k;
-	int not = 0;
+	int not = 0;  // whether next operand should be reversed
 	TranslationTableOffset ruleOffset = 0;
 	TranslationTableRule *rule = NULL;
 	TranslationTableCharacterAttributes attributes = 0;
@@ -642,7 +649,7 @@ passDoTest(const TranslationTableHeader *table, int pos, InString input, int tra
 	else
 		*passCharDots = 1;
 	while (*passIC < transRule->dotslen) {
-		int itsTrue = 1;
+		int itsTrue = 1;  // whether we have a match or not
 		if (pos > input.length) return 0;
 		switch ((*passInstructions)[*passIC]) {
 		case pass_first:
