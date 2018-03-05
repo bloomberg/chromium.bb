@@ -175,6 +175,21 @@ QuicString QuicUtils::AddressChangeTypeToString(AddressChangeType type) {
   return "INVALID_ADDRESS_CHANGE_TYPE";
 }
 
+const char* QuicUtils::SentPacketStateToString(SentPacketState state) {
+  switch (state) {
+    RETURN_STRING_LITERAL(OUTSTANDING);
+    RETURN_STRING_LITERAL(NEVER_SENT);
+    RETURN_STRING_LITERAL(ACKED);
+    RETURN_STRING_LITERAL(UNACKABLE);
+    RETURN_STRING_LITERAL(HANDSHAKE_RETRANSMITTED);
+    RETURN_STRING_LITERAL(LOST);
+    RETURN_STRING_LITERAL(TLP_RETRANSMITTED);
+    RETURN_STRING_LITERAL(RTO_RETRANSMITTED);
+    RETURN_STRING_LITERAL(PROBE_RETRANSMITTED);
+  }
+  return "INVALID_SENT_PACKET_STATE";
+}
+
 // static
 AddressChangeType QuicUtils::DetermineAddressChangeType(
     const QuicSocketAddress& old_address,

@@ -828,7 +828,8 @@ bool QuicConnection::OnAckFrameStart(QuicPacketNumber largest_acked,
     return false;
   }
 
-  sent_packet_manager_.OnAckFrameStart(largest_acked, ack_delay_time);
+  sent_packet_manager_.OnAckFrameStart(largest_acked, ack_delay_time,
+                                       time_of_last_received_packet_);
   return true;
 }
 
@@ -845,11 +846,11 @@ bool QuicConnection::OnAckRange(QuicPacketNumber start,
     return true;
   }
 
-  sent_packet_manager_.OnAckRange(start, end, last_range,
-                                  time_of_last_received_packet_);
+  sent_packet_manager_.OnAckRange(start, end);
   if (!last_range) {
     return true;
   }
+  sent_packet_manager_.OnAckFrameEnd(time_of_last_received_packet_);
   if (send_alarm_->IsSet()) {
     send_alarm_->Cancel();
   }

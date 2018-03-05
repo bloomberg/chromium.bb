@@ -183,9 +183,9 @@ QuicFramer::QuicFramer(const ParsedQuicVersionVector& supported_versions,
       last_timestamp_(QuicTime::Delta::Zero()),
       data_producer_(nullptr),
       use_incremental_ack_processing_(
-          GetQuicReloadableFlag(quic_use_incremental_ack_processing)) {
+          GetQuicReloadableFlag(quic_use_incremental_ack_processing2)) {
   if (use_incremental_ack_processing_) {
-    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_use_incremental_ack_processing);
+    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_use_incremental_ack_processing2);
   }
   DCHECK(!supported_versions.empty());
   version_ = supported_versions_[0];
@@ -1091,7 +1091,7 @@ bool QuicFramer::ProcessFrameData(QuicDataReader* reader,
            ((frame_type & kQuicFrameTypeSpecialMask) ==
             kQuicFrameTypeAckMask))) {
         // TODO(fayang): Remove frame when deprecating
-        // quic_reloadable_flag_quic_use_incremental_ack_processing.
+        // quic_reloadable_flag_quic_use_incremental_ack_processing2.
         QuicAckFrame frame;
         if (!ProcessAckFrame(reader, frame_type, &frame)) {
           return RaiseError(QUIC_INVALID_ACK_DATA);
