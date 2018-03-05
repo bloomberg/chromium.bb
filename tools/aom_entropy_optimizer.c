@@ -35,117 +35,6 @@ typedef unsigned int aom_count_type;
 // A log file recording parsed counts
 static FILE *logfile;  // TODO(yuec): make it a command line option
 
-static INLINE uint8_t get_binary_prob_new(unsigned int n0, unsigned int n1) {
-  // The "+1" will prevent this function from generating extreme probability
-  // when both n0 and n1 are small
-  const unsigned int den = n0 + 1 + n1 + 1;
-  return get_prob(n0 + 1, den);
-}
-
-static int parse_stats(aom_count_type **ct_ptr, FILE *const probsfile, int tabs,
-                       int dim_of_cts, int *cts_each_dim,
-                       int flatten_last_dim) {
-  if (dim_of_cts < 1) {
-    fprintf(stderr, "The dimension of a counts vector should be at least 1!\n");
-    return 1;
-  }
-  if (dim_of_cts == 1) {
-    const int total_modes = cts_each_dim[0];
-    aom_count_type *counts1d = *ct_ptr;
-    uint8_t *probs = aom_malloc(sizeof(*probs) * (total_modes - 1));
-
-    if (probs == NULL) {
-      fprintf(stderr, "Allocating prob array failed!\n");
-      return 1;
-    }
-
-    (*ct_ptr) += total_modes;
-    assert(total_modes == 2);
-    probs[0] = get_binary_prob_new(counts1d[0], counts1d[1]);
-    if (tabs > 0) fprintf(probsfile, "%*c", tabs * SPACES_PER_TAB, ' ');
-    for (int k = 0; k < total_modes - 1; ++k) {
-      if (k == total_modes - 2)
-        fprintf(probsfile, " %3d ", probs[k]);
-      else
-        fprintf(probsfile, " %3d,", probs[k]);
-      fprintf(logfile, "%d ", counts1d[k]);
-    }
-    fprintf(logfile, "%d\n", counts1d[total_modes - 1]);
-  } else if (dim_of_cts == 2 && flatten_last_dim) {
-    assert(cts_each_dim[1] == 2);
-
-    for (int k = 0; k < cts_each_dim[0]; ++k) {
-      if (k == cts_each_dim[0] - 1) {
-        fprintf(probsfile, " %3d ",
-                get_binary_prob_new((*ct_ptr)[0], (*ct_ptr)[1]));
-      } else {
-        fprintf(probsfile, " %3d,",
-                get_binary_prob_new((*ct_ptr)[0], (*ct_ptr)[1]));
-      }
-      fprintf(logfile, "%d %d\n", (*ct_ptr)[0], (*ct_ptr)[1]);
-      (*ct_ptr) += 2;
-    }
-  } else {
-    for (int k = 0; k < cts_each_dim[0]; ++k) {
-      int tabs_next_level;
-      if (dim_of_cts == 2 || (dim_of_cts == 3 && flatten_last_dim)) {
-        fprintf(probsfile, "%*c{", tabs * SPACES_PER_TAB, ' ');
-        tabs_next_level = 0;
-      } else {
-        fprintf(probsfile, "%*c{\n", tabs * SPACES_PER_TAB, ' ');
-        tabs_next_level = tabs + 1;
-      }
-      if (parse_stats(ct_ptr, probsfile, tabs_next_level, dim_of_cts - 1,
-                      cts_each_dim + 1, flatten_last_dim)) {
-        return 1;
-      }
-      if (dim_of_cts == 2 || (dim_of_cts == 3 && flatten_last_dim)) {
-        if (k == cts_each_dim[0] - 1)
-          fprintf(probsfile, "}\n");
-        else
-          fprintf(probsfile, "},\n");
-      } else {
-        if (k == cts_each_dim[0] - 1)
-          fprintf(probsfile, "%*c}\n", tabs * SPACES_PER_TAB, ' ');
-        else
-          fprintf(probsfile, "%*c},\n", tabs * SPACES_PER_TAB, ' ');
-      }
-    }
-  }
-  return 0;
-}
-
-// This function parses the stats of a syntax, either binary or multi-symbol,
-// in different contexts, and writes the optimized probability table to
-// probsfile.
-//   counts: pointer of the first count element in counts array
-//   probsfile: output file
-//   dim_of_cts: number of dimensions of counts array
-//   cts_each_dim: an array storing size of each dimension of counts array
-//   flatten_last_dim: for a binary syntax, if flatten_last_dim is 0, probs in
-//                     different contexts will be written separately, e.g.,
-//                     {{p1}, {p2}, ...};
-//                     otherwise will be grouped together at the second last
-//                     dimension, i.e.,
-//                     {p1, p2, ...}.
-//   prefix: declaration header for the entropy table
-static void optimize_entropy_table(aom_count_type *counts,
-                                   FILE *const probsfile, int dim_of_cts,
-                                   int *cts_each_dim, int flatten_last_dim,
-                                   char *prefix) {
-  aom_count_type *ct_ptr = counts;
-
-  assert(!flatten_last_dim || cts_each_dim[dim_of_cts - 1] == 2);
-
-  fprintf(probsfile, "%s = {\n", prefix);
-  if (parse_stats(&ct_ptr, probsfile, 1, dim_of_cts, cts_each_dim,
-                  flatten_last_dim)) {
-    fprintf(probsfile, "Optimizer failed!\n");
-  }
-  fprintf(probsfile, "};\n\n");
-  fprintf(logfile, "\n");
-}
-
 static void counts_to_cdf(const aom_count_type *counts, aom_cdf_prob *cdf,
                           int modes) {
   int64_t csum[CDF_MAX_SIZE];
@@ -344,27 +233,18 @@ int main(int argc, const char **argv) {
   /* Motion vector referencing */
   cts_each_dim[0] = NEWMV_MODE_CONTEXTS;
   cts_each_dim[1] = 2;
-  optimize_entropy_table(
-      &fc.newmv_mode[0][0], probsfile, 2, cts_each_dim, 1,
-      "static const aom_prob default_newmv_prob[NEWMV_MODE_CONTEXTS]");
   optimize_cdf_table(&fc.newmv_mode[0][0], probsfile, 2, cts_each_dim,
                      "static const aom_cdf_prob "
                      "default_newmv_cdf[NEWMV_MODE_CONTEXTS][CDF_SIZE(2)]");
 
   cts_each_dim[0] = GLOBALMV_MODE_CONTEXTS;
   cts_each_dim[1] = 2;
-  optimize_entropy_table(
-      &fc.zeromv_mode[0][0], probsfile, 2, cts_each_dim, 1,
-      "static const aom_prob default_zeromv_prob[GLOBALMV_MODE_CONTEXTS]");
   optimize_cdf_table(&fc.zeromv_mode[0][0], probsfile, 2, cts_each_dim,
                      "static const aom_cdf_prob "
                      "default_zeromv_cdf[GLOBALMV_MODE_CONTEXTS][CDF_SIZE(2)]");
 
   cts_each_dim[0] = REFMV_MODE_CONTEXTS;
   cts_each_dim[1] = 2;
-  optimize_entropy_table(
-      &fc.refmv_mode[0][0], probsfile, 2, cts_each_dim, 1,
-      "static const aom_prob default_refmv_prob[REFMV_MODE_CONTEXTS]");
   optimize_cdf_table(&fc.refmv_mode[0][0], probsfile, 2, cts_each_dim,
                      "static const aom_cdf_prob "
                      "default_refmv_cdf[REFMV_MODE_CONTEXTS][CDF_SIZE(2)]");
@@ -529,23 +409,10 @@ int main(int argc, const char **argv) {
   cts_each_dim[0] = TX_SIZES;
   cts_each_dim[1] = TXB_SKIP_CONTEXTS;
   cts_each_dim[2] = 2;
-  optimize_entropy_table(
-      &fc.txb_skip[0][0][0], probsfile, 3, cts_each_dim, 1,
-      "static const aom_prob "
-      "default_txk_skip[TX_SIZES][PLANE_TYPES][SIG_COEF_CONTEXTS]");
   optimize_cdf_table(&fc.txb_skip[0][0][0], probsfile, 3, cts_each_dim,
                      "static const aom_cdf_prob "
                      "default_nz_map_cdf[TX_SIZES][PLANE_TYPES][SIG_COEF_"
                      "CONTEXTS][CDF_SIZE(2)]");
-
-  cts_each_dim[0] = TX_SIZES;
-  cts_each_dim[1] = PLANE_TYPES;
-  cts_each_dim[2] = EOB_COEF_CONTEXTS;
-  cts_each_dim[3] = 2;
-  optimize_entropy_table(
-      &fc.eob_flag[0][0][0][0], probsfile, 4, cts_each_dim, 1,
-      "static const aom_prob "
-      "default_eob_flag[TX_SIZES][PLANE_TYPES][EOB_COEF_CONTEXTS]");
 
   cts_each_dim[0] = TX_SIZES;
   cts_each_dim[1] = PLANE_TYPES;
@@ -608,16 +475,6 @@ int main(int argc, const char **argv) {
 
   cts_each_dim[0] = TX_SIZES;
   cts_each_dim[1] = PLANE_TYPES;
-  cts_each_dim[2] = BR_CDF_SIZE - 1;
-  cts_each_dim[3] = LEVEL_CONTEXTS;
-  cts_each_dim[4] = 2;
-  optimize_entropy_table(&fc.coeff_lps[0][0][0][0][0], probsfile, 5,
-                         cts_each_dim, 1,
-                         "static const aom_prob "
-                         "default_coeff_lps[TX_SIZES][PLANE_TYPES][BR_CDF_SIZE-"
-                         "1][LEVEL_CONTEXTS]");
-  cts_each_dim[0] = TX_SIZES;
-  cts_each_dim[1] = PLANE_TYPES;
   cts_each_dim[2] = LEVEL_CONTEXTS;
   cts_each_dim[3] = BR_CDF_SIZE;
   optimize_cdf_table(&fc.coeff_lps_multi[0][0][0][0], probsfile, 4,
@@ -649,9 +506,6 @@ int main(int argc, const char **argv) {
   /* Skip mode flag */
   cts_each_dim[0] = SKIP_MODE_CONTEXTS;
   cts_each_dim[1] = 2;
-  optimize_entropy_table(
-      &fc.skip_mode[0][0], probsfile, 2, cts_each_dim, 1,
-      "static const aom_prob default_skip_mode_probs[SKIP_MODE_CONTEXTS]");
   optimize_cdf_table(&fc.skip_mode[0][0], probsfile, 2, cts_each_dim,
                      "static const aom_cdf_prob "
                      "default_skip_mode_cdfs[SKIP_MODE_CONTEXTS][CDF_SIZE(2)]");
