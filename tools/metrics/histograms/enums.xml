@@ -44096,8 +44096,7 @@ Full version information for the fingerprint enum values:
 </enum>
 
 <enum name="URLRequestAnnotationType">
-<!-- Generated from tools/traffic_annotation/summary/annotations.xml.
-Called by update_traffic_annotation_histograms.py.-->
+<!-- Not updated since 3/4/2018 as histogram is obsolete.-->
 
   <int value="485305" label="data_reduction_proxy_config"/>
   <int value="516551" label="socket_bio_adapter"/>
