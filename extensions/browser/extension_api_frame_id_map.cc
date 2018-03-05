@@ -316,9 +316,11 @@ ExtensionApiFrameIdMap::FrameData ExtensionApiFrameIdMap::GetFrameData(
   return LookupFrameDataOnUI(key, false /* is_from_io */);
 }
 
-void ExtensionApiFrameIdMap::OnRenderFrameCreated(
+void ExtensionApiFrameIdMap::InitializeRenderFrameData(
     content::RenderFrameHost* rfh) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(rfh);
+  DCHECK(rfh->IsRenderFrameLive());
 
   const RenderFrameIdKey key(rfh->GetProcess()->GetID(), rfh->GetRoutingID());
   CacheFrameData(key);
@@ -351,6 +353,7 @@ void ExtensionApiFrameIdMap::UpdateTabAndWindowId(
     iter->second.tab_id = tab_id;
     iter->second.window_id = window_id;
   } else {
+    DCHECK(!rfh->IsRenderFrameLive());
     // TODO(crbug.com/817205): Remove this branch. We should only maintain frame
     // data for tracked live render frames. Most probably this is causing a
     // memory leak.
@@ -367,6 +370,11 @@ bool ExtensionApiFrameIdMap::HasCachedFrameDataForTesting(
 
   const RenderFrameIdKey key(rfh->GetProcess()->GetID(), rfh->GetRoutingID());
   return frame_data_map_.find(key) != frame_data_map_.end();
+}
+
+size_t ExtensionApiFrameIdMap::GetFrameDataCountForTesting() const {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  return frame_data_map_.size();
 }
 
 void ExtensionApiFrameIdMap::RemoveFrameData(const RenderFrameIdKey& key) {

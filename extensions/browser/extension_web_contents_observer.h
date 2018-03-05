@@ -83,6 +83,8 @@ class ExtensionWebContentsObserver
   // content::WebContentsObserver overrides.
   void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
   void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
+  void RenderFrameHostChanged(content::RenderFrameHost* old_host,
+                              content::RenderFrameHost* new_host) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
 

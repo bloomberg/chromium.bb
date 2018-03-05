@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/devtools/devtools_window.h"
+#include "chrome/browser/devtools/devtools_window_testing.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -47,6 +49,39 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WebContents) {
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
       GetActiveWebContents(browser()), "testTabsAPI()", &result));
   EXPECT_TRUE(result);
+}
+
+// Test that the frame data for the Devtools main frame is cached. Regression
+// test for crbug.com/817075.
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DevToolsMainFrameIsCached) {
+  auto test_devtools_main_frame_cached = [](Browser* browser, bool is_docked) {
+    SCOPED_TRACE(base::StringPrintf("Testing a %s devtools window",
+                                    is_docked ? "docked" : "undocked"));
+    const auto* api_frame_id_map = extensions::ExtensionApiFrameIdMap::Get();
+    size_t prior_count = api_frame_id_map->GetFrameDataCountForTesting();
+
+    // Open a devtools window.
+    DevToolsWindow* devtools_window =
+        DevToolsWindowTesting::OpenDevToolsWindowSync(browser, is_docked);
+
+    // Ensure that frame data for its main frame is cached.
+    content::WebContents* devtools_web_contents =
+        DevToolsWindow::GetInTabWebContents(
+            devtools_window->GetInspectedWebContents(), nullptr);
+    ASSERT_TRUE(devtools_web_contents);
+    EXPECT_TRUE(api_frame_id_map->HasCachedFrameDataForTesting(
+        devtools_web_contents->GetMainFrame()));
+    EXPECT_GT(api_frame_id_map->GetFrameDataCountForTesting(), prior_count);
+
+    DevToolsWindowTesting::CloseDevToolsWindowSync(devtools_window);
+
+    // Ensure that the frame data for the devtools main frame, which might have
+    // been destroyed by now, is deleted.
+    EXPECT_EQ(prior_count, api_frame_id_map->GetFrameDataCountForTesting());
+  };
+
+  test_devtools_main_frame_cached(browser(), true /*is_docked*/);
+  test_devtools_main_frame_cached(browser(), false /*is_docked*/);
 }
 
 // Test that we cache frame data for all frames on creation. Regression test for
