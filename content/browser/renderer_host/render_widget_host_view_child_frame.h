@@ -73,7 +73,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
 
   // This functions registers single-use callbacks that want to be notified when
   // the next frame is swapped. The callback is triggered by
-  // ProcessCompositorFrame, which is the appropriate time to request pixel
+  // SubmitCompositorFrame, which is the appropriate time to request pixel
   // readback for the frame that is about to be drawn. Once called, the callback
   // pointer is released.
   // TODO(crbug.com/787941): This should be removed because it doesn't work when
@@ -247,11 +247,6 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   // Sets |parent_frame_sink_id_| and registers frame sink hierarchy. If the
   // parent was already set then it also unregisters hierarchy.
   void SetParentFrameSinkId(const viz::FrameSinkId& parent_frame_sink_id);
-
-  void ProcessCompositorFrame(
-      const viz::LocalSurfaceId& local_surface_id,
-      viz::CompositorFrame frame,
-      viz::mojom::HitTestRegionListPtr hit_test_region_list);
 
   void SendSurfaceInfoToEmbedder();
 

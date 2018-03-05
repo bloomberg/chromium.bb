@@ -580,31 +580,6 @@ void RenderWidgetHostViewChildFrame::SetParentFrameSinkId(
   }
 }
 
-void RenderWidgetHostViewChildFrame::ProcessCompositorFrame(
-    const viz::LocalSurfaceId& local_surface_id,
-    viz::CompositorFrame frame,
-    viz::mojom::HitTestRegionListPtr hit_test_region_list) {
-  current_surface_size_ = frame.size_in_pixels();
-  current_surface_scale_factor_ = frame.device_scale_factor();
-
-  support_->SubmitCompositorFrame(local_surface_id, std::move(frame),
-                                  std::move(hit_test_region_list));
-  has_frame_ = true;
-
-  if (last_received_local_surface_id_ != local_surface_id ||
-      HasEmbedderChanged()) {
-    last_received_local_surface_id_ = local_surface_id;
-    SendSurfaceInfoToEmbedder();
-  }
-
-  if (selection_controller_client_) {
-    selection_controller_client_->UpdateSelectionBoundsIfNeeded(
-        frame.metadata.selection, current_device_scale_factor_);
-  }
-
-  ProcessFrameSwappedCallbacks();
-}
-
 void RenderWidgetHostViewChildFrame::SendSurfaceInfoToEmbedder() {
   if (base::FeatureList::IsEnabled(features::kMash))
     return;
@@ -628,10 +603,25 @@ void RenderWidgetHostViewChildFrame::SubmitCompositorFrame(
   TRACE_EVENT0("content",
                "RenderWidgetHostViewChildFrame::OnSwapCompositorFrame");
   last_scroll_offset_ = frame.metadata.root_scroll_offset;
-  if (!frame_connector_)
-    return;
-  ProcessCompositorFrame(local_surface_id, std::move(frame),
-                         std::move(hit_test_region_list));
+  current_surface_size_ = frame.size_in_pixels();
+  current_surface_scale_factor_ = frame.device_scale_factor();
+
+  support_->SubmitCompositorFrame(local_surface_id, std::move(frame),
+                                  std::move(hit_test_region_list));
+  has_frame_ = true;
+
+  if (last_received_local_surface_id_ != local_surface_id ||
+      HasEmbedderChanged()) {
+    last_received_local_surface_id_ = local_surface_id;
+    SendSurfaceInfoToEmbedder();
+  }
+
+  if (selection_controller_client_) {
+    selection_controller_client_->UpdateSelectionBoundsIfNeeded(
+        frame.metadata.selection, current_device_scale_factor_);
+  }
+
+  ProcessFrameSwappedCallbacks();
 }
 
 void RenderWidgetHostViewChildFrame::OnDidNotProduceFrame(
@@ -1027,13 +1017,6 @@ RenderWidgetHostViewChildFrame::ResizeDueToAutoResize(
       &RenderWidgetHostViewChildFrame::OnResizeDueToAutoResizeComplete,
       weak_factory_.GetWeakPtr(), new_size, sequence_number);
   return viz::ScopedSurfaceIdAllocator(std::move(allocation_task));
-}
-
-void RenderWidgetHostViewChildFrame::ClearCompositorSurfaceIfNecessary() {
-  if (!support_)
-    return;
-  support_->EvictLastActivatedSurface();
-  has_frame_ = false;
 }
 
 void RenderWidgetHostViewChildFrame::CreateCompositorFrameSinkSupport() {

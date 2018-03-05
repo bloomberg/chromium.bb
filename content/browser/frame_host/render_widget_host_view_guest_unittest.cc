@@ -295,13 +295,6 @@ TEST_F(RenderWidgetHostViewGuestSurfaceTest, TestGuestSurface) {
 
   browser_plugin_guest_->set_attached(false);
   browser_plugin_guest_->ResetTestData();
-
-  view_->SubmitCompositorFrame(
-      local_surface_id,
-      CreateDelegatedFrame(scale_factor, view_size, view_rect), nullptr);
-  // Since guest is not attached, the CompositorFrame must be processed but the
-  // frame must be evicted to return the resources immediately.
-  EXPECT_FALSE(view_->has_frame());
 }
 
 }  // namespace content
