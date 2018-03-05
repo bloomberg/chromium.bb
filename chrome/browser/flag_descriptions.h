@@ -99,9 +99,6 @@ extern const char kBypassAppBannerEngagementChecksDescription[];
 extern const char kCommittedInterstitialsName[];
 extern const char kCommittedInterstitialsDescription[];
 
-extern const char kCaptureThumbnailOnNavigatingAwayName[];
-extern const char kCaptureThumbnailOnNavigatingAwayDescription[];
-
 extern const char kCastStreamingHwEncodingName[];
 extern const char kCastStreamingHwEncodingDescription[];
 

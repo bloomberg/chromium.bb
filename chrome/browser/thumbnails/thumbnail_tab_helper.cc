@@ -59,16 +59,13 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(ThumbnailTabHelper);
 // StartThumbnailCaptureIfNecessary(), which updates the thumbnail for the
 // current tab if needed. The heuristics to judge whether to update the
 // thumbnail are implemented in ThumbnailService::ShouldAcquirePageThumbnail().
-// There are several triggers that can start the process:
+// There are two triggers that can start the process:
 // - When a renderer is about to be hidden (this usually occurs when the current
 //   tab is closed or another tab is clicked).
-// - If features::kCaptureThumbnailOnNavigatingAway is enabled: Just before
-//   navigating away from the current page.
+// - Just before navigating away from the current page.
 
 ThumbnailTabHelper::ThumbnailTabHelper(content::WebContents* contents)
     : content::WebContentsObserver(contents),
-      capture_on_navigating_away_(base::FeatureList::IsEnabled(
-          features::kCaptureThumbnailOnNavigatingAway)),
       did_navigation_finish_(false),
       has_received_document_since_navigation_finished_(false),
       has_painted_since_document_received_(false),
@@ -118,12 +115,10 @@ void ThumbnailTabHelper::DidStartNavigation(
     return;
   }
 
-  if (capture_on_navigating_away_) {
-    // At this point, the new navigation has just been started, but the
-    // WebContents still shows the previous page. Grab a thumbnail before it
-    // goes away.
-    StartThumbnailCaptureIfNecessary(TriggerReason::NAVIGATING_AWAY);
-  }
+  // At this point, the new navigation has just been started, but the
+  // WebContents still shows the previous page. Grab a thumbnail before it
+  // goes away.
+  StartThumbnailCaptureIfNecessary(TriggerReason::NAVIGATING_AWAY);
 
   // Now reset navigation-related state. It's important that this happens after
   // calling StartThumbnailCaptureIfNecessary.
