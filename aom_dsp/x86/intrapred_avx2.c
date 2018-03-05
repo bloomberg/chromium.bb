@@ -44,6 +44,16 @@ static INLINE void row_store_32xh(const __m256i *r, int height, uint8_t *dst,
   }
 }
 
+static INLINE void row_store_32x2xh(const __m256i *r0, const __m256i *r1,
+                                    int height, uint8_t *dst,
+                                    ptrdiff_t stride) {
+  for (int i = 0; i < height; ++i) {
+    _mm256_storeu_si256((__m256i *)dst, *r0);
+    _mm256_storeu_si256((__m256i *)(dst + 32), *r1);
+    dst += stride;
+  }
+}
+
 static INLINE void row_store_64xh(const __m256i *r, int height, uint8_t *dst,
                                   ptrdiff_t stride) {
   for (int i = 0; i < height; ++i) {
@@ -433,6 +443,37 @@ void aom_v_predictor_32x16_avx2(uint8_t *dst, ptrdiff_t stride,
   const __m256i row = _mm256_loadu_si256((const __m256i *)above);
   (void)left;
   row_store_32xh(&row, 16, dst, stride);
+}
+
+void aom_v_predictor_32x64_avx2(uint8_t *dst, ptrdiff_t stride,
+                                const uint8_t *above, const uint8_t *left) {
+  const __m256i row = _mm256_loadu_si256((const __m256i *)above);
+  (void)left;
+  row_store_32xh(&row, 64, dst, stride);
+}
+
+void aom_v_predictor_64x64_avx2(uint8_t *dst, ptrdiff_t stride,
+                                const uint8_t *above, const uint8_t *left) {
+  const __m256i row0 = _mm256_loadu_si256((const __m256i *)above);
+  const __m256i row1 = _mm256_loadu_si256((const __m256i *)(above + 32));
+  (void)left;
+  row_store_32x2xh(&row0, &row1, 64, dst, stride);
+}
+
+void aom_v_predictor_64x32_avx2(uint8_t *dst, ptrdiff_t stride,
+                                const uint8_t *above, const uint8_t *left) {
+  const __m256i row0 = _mm256_loadu_si256((const __m256i *)above);
+  const __m256i row1 = _mm256_loadu_si256((const __m256i *)(above + 32));
+  (void)left;
+  row_store_32x2xh(&row0, &row1, 32, dst, stride);
+}
+
+void aom_v_predictor_64x16_avx2(uint8_t *dst, ptrdiff_t stride,
+                                const uint8_t *above, const uint8_t *left) {
+  const __m256i row0 = _mm256_loadu_si256((const __m256i *)above);
+  const __m256i row1 = _mm256_loadu_si256((const __m256i *)(above + 32));
+  (void)left;
+  row_store_32x2xh(&row0, &row1, 16, dst, stride);
 }
 
 // -----------------------------------------------------------------------------

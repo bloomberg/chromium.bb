@@ -665,6 +665,66 @@ void aom_v_predictor_32x16_sse2(uint8_t *dst, ptrdiff_t stride,
   }
 }
 
+void aom_v_predictor_32x64_sse2(uint8_t *dst, ptrdiff_t stride,
+                                const uint8_t *above, const uint8_t *left) {
+  const __m128i row0 = _mm_load_si128((__m128i const *)above);
+  const __m128i row1 = _mm_load_si128((__m128i const *)(above + 16));
+  (void)left;
+  for (int i = 0; i < 64; ++i) {
+    _mm_store_si128((__m128i *)dst, row0);
+    _mm_store_si128((__m128i *)(dst + 16), row1);
+    dst += stride;
+  }
+}
+
+void aom_v_predictor_64x64_sse2(uint8_t *dst, ptrdiff_t stride,
+                                const uint8_t *above, const uint8_t *left) {
+  const __m128i row0 = _mm_load_si128((__m128i const *)above);
+  const __m128i row1 = _mm_load_si128((__m128i const *)(above + 16));
+  const __m128i row2 = _mm_load_si128((__m128i const *)(above + 32));
+  const __m128i row3 = _mm_load_si128((__m128i const *)(above + 48));
+  (void)left;
+  for (int i = 0; i < 64; ++i) {
+    _mm_store_si128((__m128i *)dst, row0);
+    _mm_store_si128((__m128i *)(dst + 16), row1);
+    _mm_store_si128((__m128i *)(dst + 32), row2);
+    _mm_store_si128((__m128i *)(dst + 48), row3);
+    dst += stride;
+  }
+}
+
+void aom_v_predictor_64x32_sse2(uint8_t *dst, ptrdiff_t stride,
+                                const uint8_t *above, const uint8_t *left) {
+  const __m128i row0 = _mm_load_si128((__m128i const *)above);
+  const __m128i row1 = _mm_load_si128((__m128i const *)(above + 16));
+  const __m128i row2 = _mm_load_si128((__m128i const *)(above + 32));
+  const __m128i row3 = _mm_load_si128((__m128i const *)(above + 48));
+  (void)left;
+  for (int i = 0; i < 32; ++i) {
+    _mm_store_si128((__m128i *)dst, row0);
+    _mm_store_si128((__m128i *)(dst + 16), row1);
+    _mm_store_si128((__m128i *)(dst + 32), row2);
+    _mm_store_si128((__m128i *)(dst + 48), row3);
+    dst += stride;
+  }
+}
+
+void aom_v_predictor_64x16_sse2(uint8_t *dst, ptrdiff_t stride,
+                                const uint8_t *above, const uint8_t *left) {
+  const __m128i row0 = _mm_load_si128((__m128i const *)above);
+  const __m128i row1 = _mm_load_si128((__m128i const *)(above + 16));
+  const __m128i row2 = _mm_load_si128((__m128i const *)(above + 32));
+  const __m128i row3 = _mm_load_si128((__m128i const *)(above + 48));
+  (void)left;
+  for (int i = 0; i < 16; ++i) {
+    _mm_store_si128((__m128i *)dst, row0);
+    _mm_store_si128((__m128i *)(dst + 16), row1);
+    _mm_store_si128((__m128i *)(dst + 32), row2);
+    _mm_store_si128((__m128i *)(dst + 48), row3);
+    dst += stride;
+  }
+}
+
 // -----------------------------------------------------------------------------
 // H_PRED
 
