@@ -1576,20 +1576,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   scroll_observer.Wait();
 }
 
-class SitePerProcessDisableThreadedScrollingBrowserTest
-    : public SitePerProcessBrowserTest {
- protected:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    SitePerProcessBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kDisableThreadedScrolling);
-  }
-};
-
 // Ensure that the scrollability of a local subframe in an OOPIF is considered
 // when acknowledging GestureScrollBegin events sent to OOPIFs.
-// TODO(mcnee): Figure out why DisableThreadedScrolling is necessary here.
-IN_PROC_BROWSER_TEST_F(SitePerProcessDisableThreadedScrollingBrowserTest,
-                       ScrollLocalSubframeInOOPIF) {
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollLocalSubframeInOOPIF) {
   ui::GestureConfiguration::GetInstance()->set_scroll_debounce_interval_in_ms(
       0);
 
@@ -1640,7 +1629,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDisableThreadedScrollingBrowserTest,
                state == content::INPUT_EVENT_ACK_STATE_CONSUMED;
       }));
 
-  // Now scroll the inner frame downward,
+  // Wait until renderer's compositor thread is synced. Otherwise the non fast
+  // scrollable regions won't be set when the event arrives.
+  MainThreadFrameObserver observer(rwhv_child->GetRenderWidgetHost());
+  observer.Wait();
+
+  // Now scroll the inner frame downward.
   blink::WebMouseWheelEvent scroll_event(
       blink::WebInputEvent::kMouseWheel, blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests());
