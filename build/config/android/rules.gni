@@ -1982,36 +1982,11 @@ if (enable_java_templates) {
     }
 
     _rebased_build_config = rebase_path(_build_config, root_build_dir)
-    _create_abi_split =
-        defined(invoker.create_abi_split) && invoker.create_abi_split
-    _create_density_splits =
-        defined(invoker.create_density_splits) && invoker.create_density_splits
-    _create_language_splits =
-        defined(invoker.language_splits) && invoker.language_splits != []
-
-    _density_splits = []
-    if (_create_density_splits) {
-      _density_splits = [
-        "hdpi",
-        "xhdpi",
-        "xxhdpi",
-        "xxxhdpi",
-        "tvdpi",
-      ]
-    }
-
-    _language_splits = []
-    if (_create_language_splits) {
-      _language_splits = invoker.language_splits
-    }
 
     _generate_buildconfig_java = !defined(invoker.apk_under_test)
     if (defined(invoker.generate_buildconfig_java)) {
       _generate_buildconfig_java = invoker.generate_buildconfig_java
     }
-
-    # Help GN understand that _create_abi_split is not unused (bug in GN).
-    assert(_create_abi_split || true)
 
     _proguard_enabled =
         defined(invoker.proguard_enabled) && invoker.proguard_enabled
@@ -2067,8 +2042,6 @@ if (enable_java_templates) {
         proguard_file_main_dex = _generated_proguard_main_dex_config
       }
       output = _packaged_resources_path
-      density_splits = _density_splits
-      language_splits = _language_splits
 
       build_config = _build_config
       deps = _deps + [
@@ -2432,8 +2405,6 @@ if (enable_java_templates) {
                                "write_asset_list",
                              ])
       packaged_resources_path = _packaged_resources_path
-      density_splits = _density_splits
-      language_splits = _language_splits
       apk_path = _final_apk_path
       android_manifest = _android_manifest
       assets_build_config = _build_config
@@ -2463,9 +2434,8 @@ if (enable_java_templates) {
                ":$_process_resources_target",
              ]
 
-      if ((_native_libs_deps != [] ||
-           _extra_native_libs_even_when_incremental != []) &&
-          !_create_abi_split) {
+      if (_native_libs_deps != [] ||
+          _extra_native_libs_even_when_incremental != []) {
         deps += _native_libs_deps + _extra_native_libs_deps +
                 [ _native_libs_file_arg_dep ]
         native_libs_filearg = _native_libs_file_arg
@@ -2474,7 +2444,7 @@ if (enable_java_templates) {
             _extra_native_libs_even_when_incremental
       }
 
-      if (_secondary_abi_native_libs_deps != [] && !_create_abi_split) {
+      if (_secondary_abi_native_libs_deps != []) {
         deps += _secondary_abi_native_libs_deps +
                 [ _secondary_abi_native_libs_file_arg_dep ]
         secondary_abi_native_libs_filearg = _secondary_abi_native_libs_file_arg
@@ -2483,61 +2453,6 @@ if (enable_java_templates) {
       # Placeholders necessary for some older devices.
       # http://crbug.com/395038
       forward_variables_from(invoker, [ "native_lib_placeholders" ])
-    }
-
-    if ((_native_libs_deps != [] ||
-         _extra_native_libs_even_when_incremental != []) && _create_abi_split) {
-      _apk_rule = "${_template_name}__split_apk_abi_${android_app_abi}"
-      _final_deps += [ ":$_apk_rule" ]
-      _split_manifest_path =
-          "$_gen_dir/splits/${android_app_abi}/AndroidManifest.xml"
-      _split_packaged_resources_path = "$_gen_dir/splits/${android_app_abi}.ap_"
-
-      generate_split_manifest("${_apk_rule}__generate_manifest") {
-        main_manifest = _android_manifest
-        out_manifest = _split_manifest_path
-        split_name = "abi_${android_app_abi}"
-        deps = [
-          ":$_merge_manifest_target",
-        ]
-      }
-
-      process_resources("${_apk_rule}__process_resources") {
-        deps = [
-          ":${_apk_rule}__generate_manifest",
-        ]
-        android_manifest = _split_manifest_path
-        version_code = _version_code
-        version_name = _version_name
-        output = _split_packaged_resources_path
-      }
-      create_apk(_apk_rule) {
-        apk_path = "${_final_apk_path_no_ext}-abi-${android_app_abi}.apk"
-        base_path = "$_gen_dir/$_apk_rule"
-
-        android_manifest = _split_manifest_path
-        load_library_from_apk = _load_library_from_apk
-        packaged_resources_path = _split_packaged_resources_path
-
-        keystore_name = _keystore_name
-        keystore_path = _keystore_path
-        keystore_password = _keystore_password
-
-        forward_variables_from(invoker,
-                               [
-                                 "alternative_android_sdk_jar",
-                                 "native_lib_placeholders",
-                                 "public_deps",
-                               ])
-
-        incremental_deps = _deps + [ ":$_split_manifest_rule" ]
-        deps = incremental_deps + _native_libs_deps + _extra_native_libs_deps +
-               [ _native_libs_file_arg_dep ]
-        native_libs_filearg = _native_libs_file_arg
-        native_libs = _extra_native_libs
-        native_libs_even_when_incremental =
-            _extra_native_libs_even_when_incremental
-      }
     }
 
     _write_installer_json_rule_name = "${_template_name}__incremental_json"
@@ -2577,12 +2492,6 @@ if (enable_java_templates) {
         _rebased_extra_native_libs =
             rebase_path(_extra_native_libs, root_build_dir)
         args += [ "--native-libs=$_rebased_extra_native_libs" ]
-      }
-      if (_create_density_splits) {
-        args += [ "--split=${_rebased_apk_path_no_ext}-density-*.apk" ]
-      }
-      if (_create_language_splits) {
-        args += [ "--split=${_rebased_apk_path_no_ext}-language-*.apk" ]
       }
       if (_load_library_from_apk) {
         args += [ "--dont-even-try=Incremental builds do not work with load_library_from_apk. Try setting is_component_build=true in your GN args." ]
