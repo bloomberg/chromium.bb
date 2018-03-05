@@ -718,6 +718,5 @@ AC_MSG_RESULT([
 	LCMS2 Support			${have_lcms}
 	libjpeg Support			${have_jpeglib}
 	libwebp Support			${have_webp}
-	libunwind Support		${have_libunwind}
 	VA H.264 encoding Support	${have_libva}
 ])
