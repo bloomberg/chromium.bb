@@ -286,6 +286,15 @@ class TestTextfield : public views::Textfield {
     event_flags_ = 0;
   }
 
+  void OnAccessibilityEvent(ax::mojom::Event event_type) override {
+    if (event_type == ax::mojom::Event::kTextSelectionChanged)
+      ++accessibility_selection_fired_count_;
+  }
+
+  int GetAccessibilitySelectionFiredCount() {
+    return accessibility_selection_fired_count_;
+  }
+
  private:
   // views::View override:
   void OnKeyEvent(ui::KeyEvent* event) override {
@@ -310,6 +319,7 @@ class TestTextfield : public views::Textfield {
   bool key_handled_ = false;
   bool key_received_ = false;
   int event_flags_ = 0;
+  int accessibility_selection_fired_count_ = 0;
 
   base::WeakPtrFactory<TestTextfield> weak_ptr_factory_{this};
 
@@ -3437,5 +3447,29 @@ TEST_F(TextfieldTest, TextServicesContextMenuTextDirectionTest) {
       base::i18n::TextDirection::RIGHT_TO_LEFT));
 }
 #endif  // defined(OS_MACOSX)
+
+TEST_F(TextfieldTest, AccessibilitySelectionEvents) {
+  const std::string& kText = "abcdef";
+  InitTextfield();
+  textfield_->SetText(ASCIIToUTF16(kText));
+  EXPECT_TRUE(textfield_->HasFocus());
+  int previous_selection_fired_count =
+      textfield_->GetAccessibilitySelectionFiredCount();
+  textfield_->SelectAll(false);
+  EXPECT_LT(previous_selection_fired_count,
+            textfield_->GetAccessibilitySelectionFiredCount());
+  previous_selection_fired_count =
+      textfield_->GetAccessibilitySelectionFiredCount();
+
+  // No selection event when textfield blurred, even though text is
+  // deselected.
+  widget_->GetFocusManager()->ClearFocus();
+  EXPECT_FALSE(textfield_->HasFocus());
+  textfield_->ClearSelection();
+  EXPECT_FALSE(textfield_->HasSelection());
+  // Has not changed.
+  EXPECT_EQ(previous_selection_fired_count,
+            textfield_->GetAccessibilitySelectionFiredCount());
+}
 
 }  // namespace views

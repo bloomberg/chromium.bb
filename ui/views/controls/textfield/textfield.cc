@@ -2080,7 +2080,9 @@ void Textfield::OnCaretBoundsChanged() {
     GetInputMethod()->OnCaretBoundsChanged(this);
   if (touch_selection_controller_)
     touch_selection_controller_->SelectionChanged();
-  NotifyAccessibilityEvent(ax::mojom::Event::kTextSelectionChanged, true);
+  // Screen reader users don't expect notifications about unfocused textfields.
+  if (HasFocus())
+    NotifyAccessibilityEvent(ax::mojom::Event::kTextSelectionChanged, true);
 }
 
 void Textfield::OnBeforeUserAction() {
