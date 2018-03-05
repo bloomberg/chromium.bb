@@ -26,10 +26,10 @@ class OmniboxPopupContentsView;
 namespace gfx {
 class Canvas;
 class Image;
-class RenderText;
 }
 
 class OmniboxTabSwitchButton;
+class OmniboxTextView;
 
 class OmniboxResultView : public views::View,
                           private gfx::AnimationDelegate {
@@ -93,50 +93,8 @@ class OmniboxResultView : public views::View,
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 
  private:
-  enum RenderTextType {
-    CONTENTS = 0,
-    SEPARATOR,
-    DESCRIPTION,
-    NUM_TYPES
-  };
-
   // Returns the height of the text portion of the result view.
   int GetTextHeight() const;
-
-  // Paints the given |match| using the RenderText instances |contents| and
-  // |description| at offset |x| in the bounds of this view.
-  void PaintMatch(const AutocompleteMatch& match,
-                  gfx::RenderText* contents,
-                  gfx::RenderText* description,
-                  gfx::Canvas* canvas,
-                  int x) const;
-
-  // Draws given |render_text| on |canvas| at given location (|x|, |y|).
-  // |contents| indicates if the |render_text| is for the match contents,
-  // separator, or description.  Additional properties from |match| are used to
-  // render tail suggestions correctly.  If |max_width| is a non-negative
-  // number, the text will be elided to fit within |max_width|.  Returns the x
-  // position to the right of the string.
-  int DrawRenderText(const AutocompleteMatch& match,
-                     gfx::RenderText* render_text,
-                     RenderTextType render_text_type,
-                     gfx::Canvas* canvas,
-                     int x,
-                     int y,
-                     int max_width) const;
-
-  // Creates a RenderText with given |text| and rendering defaults.
-  std::unique_ptr<gfx::RenderText> CreateRenderText(
-      const base::string16& text) const;
-
-  // Creates a RenderText with default rendering for the given |text|. The
-  // |classifications| and |force_dim| are used to style the text.
-  std::unique_ptr<gfx::RenderText> CreateClassifiedRenderText(
-      const base::string16& text,
-      const ACMatchClassifications& classifications,
-      bool force_dim) const;
-
-  const gfx::Rect& text_bounds() const { return text_bounds_; }
 
   gfx::Image GetIcon() const;
 
@@ -147,37 +105,11 @@ class OmniboxResultView : public views::View,
   // the keyword match will hide even the icon of the regular match.
   bool ShowOnlyKeywordMatch() const;
 
-  // Initializes |contents_rendertext_| if it is NULL.
-  void InitContentsRenderTextIfNecessary() const;
-
-  // Returns the font to use for the description section of answer suggestions.
-  const gfx::FontList& GetAnswerFont() const;
-
   // Returns the height of the the description section of answer suggestions.
   int GetAnswerHeight() const;
 
   // Returns the margin that should appear at the top and bottom of the result.
   int GetVerticalMargin() const;
-
-  // Creates a RenderText with text and styling from the image line.
-  std::unique_ptr<gfx::RenderText> CreateAnswerText(
-      const SuggestionAnswer::ImageLine& line,
-      const gfx::FontList& font_list) const;
-
-  // Adds |text| to |destination|.  |text_type| is an index into the
-  // kTextStyles constant defined in the .cc file and is used to style the text,
-  // including setting the font size, color, and baseline style.  See the
-  // TextStyle struct in the .cc file for more.
-  void AppendAnswerText(gfx::RenderText* destination,
-                        const base::string16& text,
-                        int text_type) const;
-
-  // AppendAnswerText will break up the |text| into bold and non-bold pieces
-  // and pass each to this helper with the correct |is_bold| value.
-  void AppendAnswerTextHelper(gfx::RenderText* destination,
-                              const base::string16& text,
-                              int text_type,
-                              bool is_bold) const;
 
   // Sets the hovered state of this result.
   void SetHovered(bool hovered);
@@ -198,20 +130,14 @@ class OmniboxResultView : public views::View,
   // Whether this view is in the hovered state.
   bool is_hovered_;
 
-  // Font settings for this view.
-  const gfx::FontList font_list_;
+  // Cache the font height as a minor optimization.
   int font_height_;
-
-  // A context used for mirroring regions.
-  class MirroringContext;
-  std::unique_ptr<MirroringContext> mirroring_context_;
 
   AutocompleteMatch match_;
 
-  gfx::Rect text_bounds_;
+  gfx::Rect answer_icon_bounds_;
   gfx::Rect icon_bounds_;
 
-  gfx::Rect keyword_text_bounds_;
   std::unique_ptr<views::ImageView> keyword_icon_;
   std::unique_ptr<OmniboxTabSwitchButton> tab_switch_button_;
 
@@ -220,15 +146,12 @@ class OmniboxResultView : public views::View,
   // If the answer has an icon, cache the image.
   gfx::ImageSkia answer_image_;
 
-  // We preserve these RenderTexts so that we won't recreate them on every call
-  // to OnPaint().
-  mutable std::unique_ptr<gfx::RenderText> contents_rendertext_;
-  mutable std::unique_ptr<gfx::RenderText> description_rendertext_;
-  mutable std::unique_ptr<gfx::RenderText> separator_rendertext_;
-  mutable std::unique_ptr<gfx::RenderText> keyword_contents_rendertext_;
-  mutable std::unique_ptr<gfx::RenderText> keyword_description_rendertext_;
-
-  mutable int separator_width_;
+  // Weak pointers for easy reference.
+  OmniboxTextView* content_view_;
+  OmniboxTextView* description_view_;
+  OmniboxTextView* keyword_content_view_;
+  OmniboxTextView* keyword_description_view_;
+  OmniboxTextView* separator_view_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxResultView);
 };
