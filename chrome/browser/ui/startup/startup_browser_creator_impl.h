@@ -148,7 +148,7 @@ class StartupBrowserCreatorImpl {
                                    bool process_startup,
                                    bool is_ephemeral_profile,
                                    bool is_post_crash_launch,
-                                   bool has_problem_applications,
+                                   bool has_incompatible_applications,
                                    bool are_startup_urls_managed);
 
   // Begins an asynchronous session restore if current state allows it (e.g.,

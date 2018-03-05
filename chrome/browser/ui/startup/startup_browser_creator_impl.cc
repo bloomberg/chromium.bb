@@ -686,22 +686,18 @@ StartupTabs StartupBrowserCreatorImpl::DetermineStartupTabs(
     bool has_incompatible_applications,
     bool are_startup_urls_managed) {
   // Only the New Tab Page or command line URLs may be shown in incognito mode.
-  if (is_incognito_or_guest) {
-    if (!cmd_line_tabs.empty())
-      return cmd_line_tabs;
-
-    return StartupTabs({StartupTab(GURL(chrome::kChromeUINewTabURL), false)});
-  }
-
   // A similar policy exists for crash recovery launches, to prevent getting the
   // user stuck in a crash loop.
-  if (is_post_crash_launch) {
+  if (is_incognito_or_guest || is_post_crash_launch) {
     if (!cmd_line_tabs.empty())
       return cmd_line_tabs;
 
-    StartupTabs tabs = provider.GetPostCrashTabs(has_incompatible_applications);
-    if (!tabs.empty())
-      return tabs;
+    if (is_post_crash_launch) {
+      const StartupTabs tabs =
+          provider.GetPostCrashTabs(has_incompatible_applications);
+      if (!tabs.empty())
+        return tabs;
+    }
 
     return StartupTabs({StartupTab(GURL(chrome::kChromeUINewTabURL), false)});
   }
