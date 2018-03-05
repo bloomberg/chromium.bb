@@ -1233,16 +1233,9 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, CancelAtRelease) {
   EXPECT_EQ(download::DownloadItem::COMPLETE, items[0]->GetState());
 }
 
-#if defined(OS_ANDROID)
-// Flaky on android: https://crbug.com/324525
-#define MAYBE_ShutdownInProgress DISABLED_ShutdownInProgress
-#else
-#define MAYBE_ShutdownInProgress ShutdownInProgress
-#endif
-
 // Try to shutdown with a download in progress to make sure shutdown path
 // works properly.
-IN_PROC_BROWSER_TEST_F(DownloadContentTest, MAYBE_ShutdownInProgress) {
+IN_PROC_BROWSER_TEST_F(DownloadContentTest, ShutdownInProgress) {
   // Create a download that won't complete.
   download::DownloadItem* download = StartDownloadAndReturnItem(
       shell(), embedded_test_server()->GetURL(
