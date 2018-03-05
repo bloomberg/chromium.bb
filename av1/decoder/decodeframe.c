@@ -1482,7 +1482,7 @@ static void read_tile_info_max_tile(AV1_COMMON *const cm,
     int start_sb;
     for (i = 0, start_sb = 0; width_sb > 0 && i < MAX_TILE_COLS; i++) {
       const int size_sb =
-          1 + rb_read_uniform(rb, AOMMIN(width_sb, MAX_TILE_WIDTH_SB));
+          1 + rb_read_uniform(rb, AOMMIN(width_sb, cm->max_tile_width_sb));
       cm->tile_col_start_sb[i] = start_sb;
       start_sb += size_sb;
       width_sb -= size_sb;

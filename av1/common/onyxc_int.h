@@ -476,12 +476,12 @@ typedef struct AV1Common {
   int boundary_info_alloc_size;
 
 #if CONFIG_MAX_TILE
+  int max_tile_width_sb;
   int min_log2_tile_cols;
   int max_log2_tile_cols;
   int max_log2_tile_rows;
   int min_log2_tile_rows;
   int min_log2_tiles;
-  int max_tile_width_sb;
   int max_tile_height_sb;
   int uniform_tile_spacing_flag;
   int log2_tile_cols;                        // only valid for uniform tiles

@@ -846,7 +846,7 @@ static void set_tile_info_max_tile(AV1_COMP *cpi) {
       cm->tile_col_start_sb[i] = start_sb;
       size_sb = cpi->oxcf.tile_widths[j++];
       if (j >= cpi->oxcf.tile_width_count) j = 0;
-      start_sb += AOMMIN(size_sb, MAX_TILE_WIDTH_SB);
+      start_sb += AOMMIN(size_sb, cm->max_tile_width_sb);
     }
     cm->tile_cols = i;
     cm->tile_col_start_sb[i] = sb_cols;

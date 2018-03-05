@@ -2303,7 +2303,8 @@ static void write_tile_info_max_tile(const AV1_COMMON *const cm,
     // columns
     for (i = 0; i < cm->tile_cols; i++) {
       size_sb = cm->tile_col_start_sb[i + 1] - cm->tile_col_start_sb[i];
-      wb_write_uniform(wb, AOMMIN(width_sb, MAX_TILE_WIDTH_SB), size_sb - 1);
+      wb_write_uniform(wb, AOMMIN(width_sb, cm->max_tile_width_sb),
+                       size_sb - 1);
       width_sb -= size_sb;
     }
     assert(width_sb == 0);

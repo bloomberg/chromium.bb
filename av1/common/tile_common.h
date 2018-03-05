@@ -67,10 +67,8 @@ int av1_disable_loopfilter_on_tile_boundary(const struct AV1Common *cm);
 // Define tile maximum width and area
 // There is no maximum height since height is limited by area and width limits
 // The minimum tile width or height is fixed at one superblock
-#define MAX_TILE_WIDTH (4096)  // Max Tile width in pixels
-#define MAX_TILE_WIDTH_SB (MAX_TILE_WIDTH >> MAX_SB_SIZE_LOG2)
+#define MAX_TILE_WIDTH (4096)        // Max Tile width in pixels
 #define MAX_TILE_AREA (4096 * 2304)  // Maximum tile area in pixels
-#define MAX_TILE_AREA_SB (MAX_TILE_AREA >> (2 * MAX_SB_SIZE_LOG2))
 
 void av1_get_tile_limits(struct AV1Common *const cm);
 void av1_calculate_tile_cols(struct AV1Common *const cm);

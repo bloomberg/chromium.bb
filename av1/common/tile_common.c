@@ -61,10 +61,14 @@ void av1_get_tile_limits(AV1_COMMON *const cm) {
   int sb_cols = mi_cols >> cm->seq_params.mib_size_log2;
   int sb_rows = mi_rows >> cm->seq_params.mib_size_log2;
 
-  cm->min_log2_tile_cols = tile_log2(MAX_TILE_WIDTH_SB, sb_cols);
+  int sb_size_log2 = cm->seq_params.mib_size_log2 + MI_SIZE_LOG2;
+  cm->max_tile_width_sb = MAX_TILE_WIDTH >> sb_size_log2;
+  int max_tile_area_sb = MAX_TILE_AREA >> (2 * sb_size_log2);
+
+  cm->min_log2_tile_cols = tile_log2(cm->max_tile_width_sb, sb_cols);
   cm->max_log2_tile_cols = tile_log2(1, AOMMIN(sb_cols, MAX_TILE_COLS));
   cm->max_log2_tile_rows = tile_log2(1, AOMMIN(sb_rows, MAX_TILE_ROWS));
-  cm->min_log2_tiles = tile_log2(MAX_TILE_AREA_SB, sb_cols * sb_rows);
+  cm->min_log2_tiles = tile_log2(max_tile_area_sb, sb_cols * sb_rows);
   cm->min_log2_tiles = AOMMAX(cm->min_log2_tiles, cm->min_log2_tile_cols);
   // TODO(dominic.symes@arm.com):
   // Add in levelMinLog2Tiles as a lower limit when levels are defined
@@ -92,16 +96,16 @@ void av1_calculate_tile_cols(AV1_COMMON *const cm) {
     cm->max_tile_height_sb = sb_rows >> cm->min_log2_tile_rows;
   } else {
     int max_tile_area_sb = (sb_rows * sb_cols);
-    int max_tile_width_sb = 1;
+    int widest_tile_sb = 1;
     cm->log2_tile_cols = tile_log2(1, cm->tile_cols);
     for (i = 0; i < cm->tile_cols; i++) {
       int size_sb = cm->tile_col_start_sb[i + 1] - cm->tile_col_start_sb[i];
-      max_tile_width_sb = AOMMAX(max_tile_width_sb, size_sb);
+      widest_tile_sb = AOMMAX(widest_tile_sb, size_sb);
     }
     if (cm->min_log2_tiles) {
       max_tile_area_sb >>= (cm->min_log2_tiles + 1);
     }
-    cm->max_tile_height_sb = AOMMAX(max_tile_area_sb / max_tile_width_sb, 1);
+    cm->max_tile_height_sb = AOMMAX(max_tile_area_sb / widest_tile_sb, 1);
   }
 }
 
