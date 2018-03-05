@@ -378,9 +378,15 @@ swapReplace(int start, int end, const TranslationTableHeader *table, InString in
 		int rep;
 		int test;
 		int k;
-		for (test = 0; test < swapRule->charslen; test++)
-			if (input.chars[p] == swapRule->charsdots[test]) break;
-		if (test == swapRule->charslen) continue;
+		if (swapRule->opcode == CTO_SwapDd) {
+			for (test = 0; test * 2 + 1 < swapRule->charslen; test++)
+				if (input.chars[p] == swapRule->charsdots[test * 2 + 1]) break;
+			if (test * 2 == swapRule->charslen) continue;
+		} else {
+			for (test = 0; test < swapRule->charslen; test++)
+				if (input.chars[p] == swapRule->charsdots[test]) break;
+			if (test == swapRule->charslen) continue;
+		}
 		k = 0;
 		for (rep = 0; rep < test; rep++)
 			if (swapRule->opcode == CTO_SwapCc)
