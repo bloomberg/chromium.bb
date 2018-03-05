@@ -57,24 +57,18 @@ bool EntryMatches(Iterator begin,
 
 // This list must be sorted according to CompareEntry.
 const UsbBlocklist::Entry kStaticEntries[] = {
-    // Yubikey NEO - OTP and CCID
-    {0x1050, 0x0111, kMaxVersion},
-    // Yubikey NEO - CCID only
-    {0x1050, 0x0112, kMaxVersion},
-    // Yubikey NEO - U2F and CCID
-    {0x1050, 0x0115, kMaxVersion},
-    // Yubikey NEO - OTP, U2F and CCID
-    {0x1050, 0x0116, kMaxVersion},
-    // Google Gnubby (WinUSB firmware)
-    {0x1050, 0x0211, kMaxVersion},
-    // Yubikey 4 - CCID only
-    {0x1050, 0x0404, kMaxVersion},
-    // Yubikey 4 - OTP and CCID
-    {0x1050, 0x0405, kMaxVersion},
-    // Yubikey 4 - U2F and CCID
-    {0x1050, 0x0406, kMaxVersion},
-    // Yubikey 4 - OTP, U2F and CCID
-    {0x1050, 0x0407, kMaxVersion},
+    // Yubikey devices. https://crbug.com/818807
+    {0x1050, 0x0010, kMaxVersion}, {0x1050, 0x0018, kMaxVersion},
+    {0x1050, 0x0030, kMaxVersion}, {0x1050, 0x0110, kMaxVersion},
+    {0x1050, 0x0111, kMaxVersion}, {0x1050, 0x0112, kMaxVersion},
+    {0x1050, 0x0113, kMaxVersion}, {0x1050, 0x0114, kMaxVersion},
+    {0x1050, 0x0115, kMaxVersion}, {0x1050, 0x0116, kMaxVersion},
+    {0x1050, 0x0120, kMaxVersion}, {0x1050, 0x0200, kMaxVersion},
+    {0x1050, 0x0211, kMaxVersion}, {0x1050, 0x0401, kMaxVersion},
+    {0x1050, 0x0402, kMaxVersion}, {0x1050, 0x0403, kMaxVersion},
+    {0x1050, 0x0404, kMaxVersion}, {0x1050, 0x0405, kMaxVersion},
+    {0x1050, 0x0406, kMaxVersion}, {0x1050, 0x0407, kMaxVersion},
+    {0x1050, 0x0410, kMaxVersion},
 };
 
 }  // namespace
