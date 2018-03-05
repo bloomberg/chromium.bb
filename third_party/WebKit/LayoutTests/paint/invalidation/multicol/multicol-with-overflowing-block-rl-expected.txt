@@ -29,7 +29,7 @@
         },
         {
           "object": "LayoutBlockFlow DIV id='elm'",
-          "rect": [8, 174, 500, 168],
+          "rect": [8, 175, 500, 166],
           "reason": "style change"
         }
       ]
