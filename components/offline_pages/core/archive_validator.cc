@@ -12,6 +12,10 @@
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/content_uri_utils.h"
+#endif
+
 namespace offline_pages {
 
 ArchiveValidator::ArchiveValidator() {
@@ -32,24 +36,43 @@ std::string ArchiveValidator::Finish() {
 
 // static
 std::string ArchiveValidator::ComputeDigest(const base::FilePath& file_path) {
-  base::File file(file_path, base::File::FLAG_OPEN | base::File::FLAG_READ);
+  std::pair<int64_t, std::string> result = GetSizeAndComputeDigest(file_path);
+  return result.second;
+}
+
+// static
+std::pair<int64_t, std::string> ArchiveValidator::GetSizeAndComputeDigest(
+    const base::FilePath& file_path) {
+  base::File file;
+#if defined(OS_ANDROID)
+  if (file_path.IsContentUri()) {
+    file = base::OpenContentUriForRead(file_path);
+  } else {
+#endif  // defined(OS_ANDROID)
+    file.Initialize(file_path, base::File::FLAG_OPEN | base::File::FLAG_READ);
+#if defined(OS_ANDROID)
+  }
+#endif  // defined(OS_ANDROID)
   if (!file.IsValid())
-    return std::string();
+    return std::make_pair(0LL, std::string());
 
   ArchiveValidator archive_validator;
 
   const int kMaxBufferSize = 1024;
   std::vector<char> buffer(kMaxBufferSize);
+  int64_t total_read = 0LL;
   int bytes_read;
   do {
     bytes_read = file.ReadAtCurrentPos(buffer.data(), kMaxBufferSize);
-    if (bytes_read > 0)
+    if (bytes_read > 0) {
+      total_read += bytes_read;
       archive_validator.Update(buffer.data(), bytes_read);
+    }
   } while (bytes_read > 0);
   if (bytes_read < 0)
-    return std::string();
+    return std::make_pair(0LL, std::string());
 
-  return archive_validator.Finish();
+  return std::make_pair(total_read, archive_validator.Finish());
 }
 
 // static
