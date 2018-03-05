@@ -543,13 +543,6 @@
           ይህ መመሪያ የ«DefaultSearchProviderEnabled» መመሪያ ከነቃ ብቻ ነው የሚከበረው።</translation>
 <translation id="2682225790874070339">በ<ph name="PRODUCT_OS_NAME" /> ፋይሎች መተግበሪያ ውስጥ Driveን ያሰናክለዋል</translation>
 <translation id="268577405881275241">የውሂብ መጭመቂያ ተኪ ባህሪን ያንቁ</translation>
-<translation id="2726613915126661822">ምናባዊ ማሽኖች በChrome OS ላይ ማሄድ ይፈቀድላቸው እንደሆነ እንዲቆጣጠሩ ያስችልዎታል።
-
-      መመሪያው ወደ እውነተ ከተዋቀረ መሣሪያው ምናባዊ ማሽኖችን እንዲያሄድ ይፈቀድለታል።
-      መመሪያው ወደ ሐሰት ከተዋቀረ መሣሪያው ምናባዊ ማሽኖችን እንዲያሄድ አይፈቀድለትም።
-      ይህ መመሪያ ወደ ሐሰት ሲቀየር አዲስ የሚጀመሩ ምናባዊ ማሽኖች ላይ ይተገበራል፣ ነገር ግን አስቀድመው እያሄዱ ያባሉ ምናባዊ ማሽኖችን አይዘጋም።
-      ይህ መመሪያ በሚተዳደር መሣሪያ ላይ ካልተዋቀረ መሣሪያው ምናባዊ ማሽኖችን እንዲያሄድ አይፈቀድለትም።
-      የማይተዳደሩ መሣሪያዎች ምናባዊ ማሽኖችን እንዲያሄዱ ይፈቀድላቸዋል።</translation>
 <translation id="2731627323327011390">በኤአርሲ መተግበሪያዎች ላይ የ<ph name="PRODUCT_OS_NAME" /> እውቅና ማረጋገጫዎችን መጠቀም አሰናክል</translation>
 <translation id="2742843273354638707">የChrome የድር መደብሩንና ግርጌ አገናኙን ከአዲስ ትር ገጹ እና የ<ph name="PRODUCT_OS_NAME" /> መተግበሪያ አስጀማሪ ይደብቁ።
 
@@ -616,7 +609,7 @@
 <translation id="2906874737073861391">የAppPack ቅጥያዎች ዝርዝር</translation>
 <translation id="2907992746861405243">የትኛዎቹ የ<ph name="BULK_PRINTERS_POLICY" /> አታሚዎች ለተጠቃሚዎች የሚገኙ እንደሚሆኑ ይቆጣጠራል።
 
-      የትኛው የመዳረሻ መመሪያ ለጅምላ አታሚ ውቅረት ስራ ላይ እንደሚውል ይሰይማል። <ph name="PRINTERS_ALLOW_ALL" /> ከተመረጠ ሁሉም አታሚዎች ይታያሉ። <ph name="PRINTERS_BLACKLIST" /> ከተመረጠ <ph name="BULK_PRINTERS_BLACKLIST" /> የተገለጹ አታሚዎች መዳረሻን ለመገደብ ስራ ላይ ይውላል። <ph name="PRINTERS_WHITELIST" /> ከተመረጠ <ph name="BULK_PRINTERS_WHITELIST" /> ሊመረጡ የሚችሉ አታሚዎችን ብቻ ይሰይማል።
+      የትኛው የመዳረሻ መመሪያ ለጅምላ አታሚ ውቅረት ሥራ ላይ እንደሚውል ይሰይማል። <ph name="PRINTERS_ALLOW_ALL" /> ከተመረጠ ሁሉም አታሚዎች ይታያሉ። <ph name="PRINTERS_BLACKLIST" /> ከተመረጠ <ph name="BULK_PRINTERS_BLACKLIST" /> የተገለጹ አታሚዎች መዳረሻን ለመገደብ ሥራ ላይ ይውላል። <ph name="PRINTERS_WHITELIST" /> ከተመረጠ <ph name="BULK_PRINTERS_WHITELIST" /> ሊመረጡ የሚችሉ አታሚዎችን ብቻ ይሰይማል።
 
       ይህ መመሪያ ካልተዋቀረ <ph name="PRINTERS_ALLOW_ALL" /> እንደሆነ ይገመታል።
       </translation>
@@ -641,9 +634,6 @@
           የመመሪያ ዋጋው በሚሊሰከንዶች ነው መገለጽ ያለበት። ዋጋዎች ከማያ ገጽ መጥፋት መዘግየት (ከተዋቀረ) እና ስራ ፈትቶ መዘግየት ያነሱ ወይም እኩል ነው የሚሆኑት።</translation>
 <translation id="2987155890997901449">ARCን ያንቁ</translation>
 <translation id="2987227569419001736">የድር ብሉቱዝ ኤፒአይን አጠቃቀም ይቆጣጠሩ</translation>
-<translation id="3001534538097271560">ይህን ቅንብር ወደ ሐሰት ማዋቀር ተጠቃሚዎች የሆነ የስርዓት መረጃ እና የገጽ ይዘት ወደ የGoogle አገልጋዮች ለመላክ እንዳይመርጡ ያቆማቸዋል። ይህ ቅንብር ወደ እውነት ከተዋቀረ ወይም ካልተዋቀረ አደገኛ መተግበሪያዎችን እና ጣቢያዎችን እንዲገኙ ለማገዝ ተጠቃሚዎች የተወሰነ የስርዓት መረጃ እና የገጽ ይዘት ወደ የጥንቃቄ አሰሳ እንዲልኩ ይፈቀድላቸዋል።
-
-      በSafeBrowsing ላይ ተጨማሪ መረጃ ለማግኘት https://developers.google.com/safe-browsing ን ይመልከቱ።</translation>
 <translation id="3016255526521614822">በ<ph name="PRODUCT_OS_NAME" /> ማያ ገጽ ቁልፍ ላይ የተፈቀዱ ማስታወሻ የሚወስዱ መተግበሪያዎች በተፈቀደላቸው ዝርዝር ውስጥ ያስገቡ</translation>
 <translation id="3030000825273123558">ሜትሪክስ ሪፖርት ማድረግን ያንቁ</translation>
 <translation id="3034580675120919256">ድር ጣቢያዎች JavaScriptን እንዲያሂዱ የሚፈቀድላቸው እንደሆነ እንዲያዋቅሩ ያስችልዎታል። JavaScriptን ማሄድ ለሁሉም ጣቢያዎች ሊፈቀድ ወይም ሊከለከል ይችላል።
@@ -1039,7 +1029,6 @@
 
       መተግበሪያው እንዳልተዋቀረ ከተተወ ተጠቃሚው በማያ ገጽ ላይ ለማብራት የሚችላቸው የመተግበሪያዎች ስብስብ ላይ በመመሪያው የሚቀመጡ ምንም ዓይነት ገደቦች አይኖሩም።</translation>
 <translation id="4309640770189628899">በTLS ውስጥ ያሉት የDHE ስነ መሰውር ስብስቦች ነቅተው ከሆነ</translation>
-<translation id="4320376026953250541">Microsoft Windows XP SP2 ወይም ከዚያ በኋላ</translation>
 <translation id="4322842393287974810">የ<ph name="PRODUCT_OS_NAME" /> ስሪትን ለመቆጣጠር ከዜሮ መዘግየት kiosk መተግበሪያ ጋር አብሮ የተጀመረውን ራስ-ሰር ፍቀድ</translation>
 <translation id="4325690621216251241">የመውጫ አዝራር በስርዓቱ መሣቢያ ላይ ያሳያል</translation>
 <translation id="4346674324214534449">የሚረብሹ ማስታወቂያዎች ባሉባቸው ጣቢያዎች ላይ ማስታወቂያዎች ይታገዱ እንደሆነ እንዲያዋቅሩ ያስችልዎታል።

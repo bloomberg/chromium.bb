@@ -8,6 +8,7 @@
 <translation id="1243314992276662751">Отпреми</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">ПРЕПОРУЧЕНЕ АПЛИКАЦИЈЕ</translation>
+<translation id="1368832886055348810">Слева надесно</translation>
 <translation id="1398853756734560583">Увећај</translation>
 <translation id="1413622004203049571">Онемогући обавештења од <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 минут и }one{# минут и }few{# минута и }other{# минута и }}</translation>
@@ -21,6 +22,7 @@
 <translation id="1812519734428420144">Оцена у звездицама: <ph name="RATING_SCORE" /></translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 сат и }one{# сат и }few{# сата и }other{# сати и }}</translation>
 <translation id="1842960171412779397">изабери</translation>
+<translation id="1859234291848436338">Writing Direction (Смер писања)</translation>
 <translation id="1860796786778352021">Затвори обавештење</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" />%</translation>
@@ -122,6 +124,7 @@
 <translation id="6917971086528278418">{YEARS,plural, =1{Још 1 година}one{Још # година}few{Још # године}other{Још # година}}</translation>
 <translation id="6945221475159498467">Изабери</translation>
 <translation id="6965382102122355670">Потврди</translation>
+<translation id="6974053822202609517">Здесна налево</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">НАЈВЕРОВАТНИЈЕ</translation>
 <translation id="7222373446505536781">F11</translation>
@@ -155,6 +158,7 @@
 <translation id="8725488761726303204">и још <ph name="NUMBER" /></translation>
 <translation id="8730621377337864115">Готово</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{1 с}one{# с}few{# с}other{# с}}</translation>
+<translation id="8798099450830957504">Подразумевано</translation>
 <translation id="8806053966018712535">Директоријум <ph name="FOLDER_NAME" /></translation>
 <translation id="883911313571074303">Додај напомену у слику</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>

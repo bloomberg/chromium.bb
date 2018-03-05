@@ -533,10 +533,8 @@
 <translation id="5809361687334836369">{HOURS,plural, =1{# годину тому}one{# годину тому}few{# години тому}many{# годин тому}other{# години тому}}</translation>
 <translation id="5817918615728894473">Підключити</translation>
 <translation id="583281660410589416">Невідомий</translation>
-<translation id="5832934273103296195">Розгорнуто – натисніть, щоб згорнути</translation>
 <translation id="5833984609253377421">Поділитися посиланням</translation>
 <translation id="583891442612896534">Chrome не може зв’язатись із серверами Google для стиснення даних. Можливо, у вас обмежене заощадження даних.</translation>
-<translation id="584615158992327102">доступ до завантажень, закладок та історії.</translation>
 <translation id="5854790677617711513">Понад 30 днів тому</translation>
 <translation id="5858741533101922242">Chrome не може ввімкнути адаптер Bluetooth</translation>
 <translation id="5860033963881614850">Вимк.</translation>
@@ -554,7 +552,6 @@
 <translation id="5962718611393537961">Торкніться, щоб згорнути</translation>
 <translation id="5974562976030145789">Розділ меню "Завантаження" переміщено. Наступного разу потягніть адресний рядок угору.</translation>
 <translation id="6000066717592683814">Залишити Google</translation>
-<translation id="6031101910111098835">Згорнуто – натисніть, щоб розгорнути</translation>
 <translation id="6039379616847168523">Перейти до наступної вкладки</translation>
 <translation id="6040143037577758943">Закрити</translation>
 <translation id="6042308850641462728">Більше</translation>
@@ -600,7 +597,6 @@
 <translation id="6404511346730675251">Редагувати закладку</translation>
 <translation id="6406506848690869874">Синхронізація</translation>
 <translation id="6409731863280057959">Спливаючі вікна</translation>
-<translation id="6411957228448379013">Адресний рядок. Проведіть пальцем угору, щоб побачити завантаження, закладки й історію.</translation>
 <translation id="641643625718530986">Друк…</translation>
 <translation id="6416782512398055893">Завантажено <ph name="MBS" /> МБ</translation>
 <translation id="6433501201775827830">Виберіть пошукову систему</translation>
@@ -641,6 +637,7 @@
 <translation id="6701279291835318271">Звіти про безпеку</translation>
 <translation id="6710213216561001401">Попереднє</translation>
 <translation id="6738867403308150051">Завантаження…</translation>
+<translation id="6746124502594467657">Вниз</translation>
 <translation id="6762156594045689028">Щоб змінити це налаштування, <ph name="BEGIN_LINK" />скиньте синхронізацію<ph name="END_LINK" /></translation>
 <translation id="6770414673596662518">Система Безпечного перегляду Chrome також використовується для виявлення шкідливих сторінок і захисту від фішингу, зловмисного програмного забезпечення та небезпечних завантажень.</translation>
 <translation id="6776813977906306442">Завантажити відео за допомогою відповідної кнопки, щоб переглянути їх пізніше</translation>
@@ -833,6 +830,7 @@
 <translation id="857509777403223202">Згодом тут з’являться інші статті. Гарного вечора.</translation>
 <translation id="857943718398505171">Дозволено (рекомендується)</translation>
 <translation id="8583805026567836021">Очищення даних облікового запису</translation>
+<translation id="8609465669617005112">Угору</translation>
 <translation id="8616006591992756292">У вашому обліковому записі Google на сторінці <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> можуть бути інші форми історії веб-перегляду.</translation>
 <translation id="8617240290563765734">Перейти за URL-адресою, указаною в завантаженому вмісті?</translation>
 <translation id="862875433388403934">Завантажений в інші додатки вміст (фільми, музика тощо) може не відтворюватися, доки ці додатки самі не отримають ліцензії на основі нових облікових даних пристрою.

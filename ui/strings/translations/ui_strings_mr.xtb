@@ -8,6 +8,7 @@
 <translation id="1243314992276662751">अपलोड करा</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">शिफारस केलेले अ‍ॅप्स</translation>
+<translation id="1368832886055348810">डावीकडून उजवीकडे</translation>
 <translation id="1398853756734560583">वाढवा</translation>
 <translation id="1413622004203049571"><ph name="NOTIFIER_NAME" /> वरील सूचना अक्षम करा</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 मिनिट आणि }one{# मिनिट आणि }other{# मिनिटे आणि }}</translation>
@@ -21,6 +22,7 @@
 <translation id="1812519734428420144"><ph name="RATING_SCORE" /> तारे रेटिंग</translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 तास आणि }one{# तास आणि }other{# तास आणि }}</translation>
 <translation id="1842960171412779397">निवडा</translation>
+<translation id="1859234291848436338">लिहिण्याची दिशा</translation>
 <translation id="1860796786778352021">सूचना बंद</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
@@ -122,6 +124,7 @@
 <translation id="6917971086528278418">{YEARS,plural, =1{1 वर्ष राहिले}one{# वर्ष राहिले}other{# वर्षे राहिली}}</translation>
 <translation id="6945221475159498467">निवडा</translation>
 <translation id="6965382102122355670">ठीक आहे</translation>
+<translation id="6974053822202609517">उजवीकडून डावीकडे</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">सर्वाधिक शक्यता</translation>
 <translation id="7222373446505536781">F11</translation>
@@ -155,6 +158,7 @@
 <translation id="8725488761726303204">+आणखी <ph name="NUMBER" /></translation>
 <translation id="8730621377337864115">पूर्ण झाले</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{1ता}one{#ता}other{#ता}}</translation>
+<translation id="8798099450830957504">डीफॉल्ट</translation>
 <translation id="8806053966018712535"><ph name="FOLDER_NAME" /> फोल्डर</translation>
 <translation id="883911313571074303">प्रतिमेवर भाष्य करा</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>

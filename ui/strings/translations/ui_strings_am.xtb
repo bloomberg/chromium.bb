@@ -8,6 +8,7 @@
 <translation id="1243314992276662751">ስቀል</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">የሚመከሩ መተግበሪያዎች</translation>
+<translation id="1368832886055348810">ከግራ ወደ ቀኝ</translation>
 <translation id="1398853756734560583">አስፋ</translation>
 <translation id="1413622004203049571">ከ<ph name="NOTIFIER_NAME" /> የሚመጡ ማሳወቂያዎችን አሰናክል</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 ደቂቃ እና }one{# ደቂቃዎች እና }other{# ደቂቃዎች እና }}</translation>
@@ -21,6 +22,7 @@
 <translation id="1812519734428420144">የኮከብ ደረጃ <ph name="RATING_SCORE" /></translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 ሰዓት እና }one{# ሰዓቶች እና }other{# ሰዓቶች እና }}</translation>
 <translation id="1842960171412779397">ምረጥ</translation>
+<translation id="1859234291848436338">የአፃፃፍ አቅጣጫ</translation>
 <translation id="1860796786778352021">ማሳወቂያ ዝጋ</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
@@ -122,6 +124,7 @@
 <translation id="6917971086528278418">{YEARS,plural, =1{1 ዓመት ቀርቷል}one{# ዓመቶች ቀርተዋል}other{# ዓመቶች ቀርተዋል}}</translation>
 <translation id="6945221475159498467">ይምረጡ</translation>
 <translation id="6965382102122355670">እሺ</translation>
+<translation id="6974053822202609517">ከቀኝ ወደ ግራ</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">የመሆን ዕድላቸው ከፍ ያለ ነው</translation>
 <translation id="7222373446505536781">F11</translation>
@@ -155,6 +158,7 @@
 <translation id="8725488761726303204">+<ph name="NUMBER" /> ተጨማሪ</translation>
 <translation id="8730621377337864115">ተከናውኗል</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{1ሰ}one{#ሰ}other{#ሰ}}</translation>
+<translation id="8798099450830957504">እንደወረደ</translation>
 <translation id="8806053966018712535">አቃፊ <ph name="FOLDER_NAME" /></translation>
 <translation id="883911313571074303">ምስልን አብራራ</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> ኪባ</translation>

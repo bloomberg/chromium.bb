@@ -25,6 +25,7 @@
 <translation id="1525508553941733066">ОТХВЪРЛЯНЕ</translation>
 <translation id="15373452373711364">Голям курсор на мишката</translation>
 <translation id="1550523713251050646">Кликнете за още опции</translation>
+<translation id="1608626060424371292">Премахване на този потребител</translation>
 <translation id="1621499497873603021">Оставащо време до изразходването на батерията: <ph name="TIME_LEFT" /></translation>
 <translation id="1658406695958299976">За съжаление, паролата ви пак не можа да бъде потвърдена. Забележка: Ако наскоро сте я променили, новата ще влезе в сила, след като излезете от профила си. Моля, използвайте старата парола тук.</translation>
 <translation id="1677472565718498478">Оставащо време: <ph name="TIME" /></translation>
@@ -74,7 +75,6 @@
 <translation id="2653659639078652383">Изпращане</translation>
 <translation id="2675319268637823299">Администратор е деактивирал централизирания вход за <ph name="USER_EMAIL" />.
 За да продължите, всички потребители трябва да излязат.</translation>
-<translation id="2700058918926273959">Сесията приключва след <ph name="SESSION_TIME_REMAINING" />. Ще излезете от профила.</translation>
 <translation id="2727977024730340865">Използва се зарядно устройство с малка мощност. Зареждането на батерията може да не е надеждно.</translation>
 <translation id="2761704814324807722">Област за състоянието, часът е <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Установява се повторна връзка с мрежата „<ph name="NAME" />“</translation>
@@ -97,6 +97,7 @@
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">Най-долу</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
+<translation id="3112378005171663295">Свиване</translation>
 <translation id="3126069444801937830">Рестартирайте, за да актуализирате</translation>
 <translation id="3147142846278915599">Стартов панел (приложенията се синхронизират...)</translation>
 <translation id="315116470104423982">Мобилни данни</translation>
@@ -209,6 +210,7 @@
 <translation id="607652042414456612">Компютърът ви е откриваем за устройства с Bluetooth наблизо и ще се показва като „<ph name="NAME" />“ с адрес <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">Зарежда се <ph name="POWER_SOURCE" /></translation>
 <translation id="615957422585914272">Показване на екранната клавиатура</translation>
+<translation id="6164005077879661055">Всички файлове и локални данни, свързани с контролирания потребител, ще бъдат изтрити за постоянно, щом той бъде премахнат. Посетените уебсайтове и настройките за него може все още да се виждат от мениджъра на адрес <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Научете повече</translation>
 <translation id="6267036997247669271">„<ph name="NAME" />“: Активира се...</translation>
 <translation id="6284232397434400372">Разделителната способност е променена</translation>
@@ -243,6 +245,7 @@
 <translation id="6857811139397017780">Активиране на <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Присъединяване другаде...</translation>
 <translation id="6981982820502123353">Достъпност</translation>
+<translation id="698231206551913481">След като този потребител бъде премахнат, всички свързани с него файлове и локални данни ще се изтрият за постоянно.</translation>
 <translation id="7029814467594812963">Изход от сесията</translation>
 <translation id="7034339000180558234">„<ph name="TAB_NAME" />“ се предава към „<ph name="RECEIVER_NAME" />“</translation>
 <translation id="7052914147756339792">Задаване на тапет...</translation>

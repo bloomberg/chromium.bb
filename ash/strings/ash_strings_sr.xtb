@@ -25,6 +25,7 @@
 <translation id="1525508553941733066">ОДБАЦИ</translation>
 <translation id="15373452373711364">Велики курсор</translation>
 <translation id="1550523713251050646">Кликните за више опција</translation>
+<translation id="1608626060424371292">Уклони овог корисника</translation>
 <translation id="1621499497873603021">Време које је преостало док се батерија не испразни, <ph name="TIME_LEFT" /></translation>
 <translation id="1658406695958299976">Жао нам је, верификација лозинке још увек није успела. Напомена: ако сте недавно променили лозинку, нова лозинка ће се применити када се одјавите. Овде користите стару лозинку.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> је преостало</translation>
@@ -74,7 +75,6 @@
 <translation id="2653659639078652383">Пошаљи</translation>
 <translation id="2675319268637823299">Администратор је забранио вишеструко пријављивање за <ph name="USER_EMAIL" />.
     Сви корисници морају да се одјаве да бисмо наставили са сесијом.</translation>
-<translation id="2700058918926273959">Сесија се завршава за <ph name="SESSION_TIME_REMAINING" />. Бићете одјављени.</translation>
 <translation id="2727977024730340865">Уређај је укључен у пуњач мале снаге. Пуњење батерије можда неће бити поуздано.</translation>
 <translation id="2761704814324807722">Статусна трака, време <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Поново се повезујете са мрежом <ph name="NAME" /></translation>
@@ -97,6 +97,7 @@
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">Дно</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
+<translation id="3112378005171663295">Скупите</translation>
 <translation id="3126069444801937830">Покрените поново да бисте ажурирали</translation>
 <translation id="3147142846278915599">Покретач (апликације се синхронизују...)</translation>
 <translation id="315116470104423982">Мобилни подаци</translation>
@@ -209,6 +210,7 @@
 <translation id="607652042414456612">Оближњи Bluetooth уређаји могу да открију рачунар и он ће се приказивати као „<ph name="NAME" />“ са адресом <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">Пуњење уређаја <ph name="POWER_SOURCE" /></translation>
 <translation id="615957422585914272">Прикажи тастатуру на екрану</translation>
+<translation id="6164005077879661055">Све датотеке и локални подаци повезани са корисником под надзором ће бити трајно избрисани када уклоните овог корисника под надзором. Менаџер ће можда и даље моћи да види посећене веб-сајтове и подешавања за овог корисника под надзором на <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Сазнајте више</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Активирање...</translation>
 <translation id="6284232397434400372">Резолуција је промењена</translation>
@@ -243,6 +245,7 @@
 <translation id="6857811139397017780">Активирај <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Придружи ме другој...</translation>
 <translation id="6981982820502123353">Приступачност</translation>
+<translation id="698231206551913481">Све датотеке и локални подаци повезани са овим корисником ће бити трајно избрисани када уклоните овог корисника.</translation>
 <translation id="7029814467594812963">Изађи из сесије</translation>
 <translation id="7034339000180558234"><ph name="TAB_NAME" /> се пребацује на <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Подеси позадину...</translation>

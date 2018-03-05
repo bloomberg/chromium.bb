@@ -8,6 +8,7 @@
 <translation id="1243314992276662751">อัปโหลด</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">แอปแนะนำ</translation>
+<translation id="1368832886055348810">ซ้ายไปขวา</translation>
 <translation id="1398853756734560583">ย่อ</translation>
 <translation id="1413622004203049571">ปิดการแจ้งเตือนจาก <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 นาทีกับอีก }other{# นาทีกับอีก }}</translation>
@@ -21,6 +22,7 @@
 <translation id="1812519734428420144">เริ่มให้คะแนน <ph name="RATING_SCORE" /></translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 ชั่วโมงกับอีก }other{# ชั่วโมงกับอีก }}</translation>
 <translation id="1842960171412779397">เลือก</translation>
+<translation id="1859234291848436338">การเขียนเส้นทาง</translation>
 <translation id="1860796786778352021">ปิดการแจ้งเตือน</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
@@ -122,6 +124,7 @@
 <translation id="6917971086528278418">{YEARS,plural, =1{เหลือ 1 ปี}other{เหลือ # ปี}}</translation>
 <translation id="6945221475159498467">เลือก</translation>
 <translation id="6965382102122355670">ตกลง</translation>
+<translation id="6974053822202609517">ขวาไปซ้าย</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">น่าจะใช้มากที่สุด</translation>
 <translation id="7222373446505536781">F11</translation>
@@ -155,6 +158,7 @@
 <translation id="8725488761726303204">และอีก <ph name="NUMBER" /> รายการ</translation>
 <translation id="8730621377337864115">เสร็จสิ้น</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{1 ชม.}other{# ชม.}}</translation>
+<translation id="8798099450830957504">ค่าเริ่มต้น</translation>
 <translation id="8806053966018712535">โฟลเดอร์ <ph name="FOLDER_NAME" /></translation>
 <translation id="883911313571074303">ใส่หมายเหตุในรูปภาพ</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>

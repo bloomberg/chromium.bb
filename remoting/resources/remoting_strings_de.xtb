@@ -12,7 +12,7 @@
 <translation id="1297009705180977556">Fehler beim Herstellen der Verbindung mit <ph name="HOSTNAME" /></translation>
 <translation id="1300633907480909701">So greifen Sie sicher von Ihrem Android-Gerät auf Ihre Computer zu:
 
-• Richten Sie mithilfe der Chrome Remote Desktop App aus dem Chrome Web Store auf jedem Ihrer Computer den Remote-Zugriff ein: https://chrome.google.com/remotedesktop.
+• Richten Sie mithilfe der Chrome Remote Desktop App aus dem Chrome Web Store auf jedem Ihrer Computer den Remotezugriff ein: https://chrome.google.com/remotedesktop.
 • Öffnen Sie die App auf Ihrem Android-Gerät und tippen Sie auf einen der online befindlichen Computer, um eine Verbindung herzustellen.
 
 Auf Remote-Computern mit einem anderen Tastaturlayout als "Englisch (USA)" kann die Texteingabe Fehler enthalten. Wir fügen in Kürze Unterstützung für andere Tastaturlayouts hinzu!
@@ -49,7 +49,7 @@ Informationen zum Datenschutz finden Sie in der Google-Datenschutzerklärung (ht
 <translation id="2089514346391228378">Die Remote-Verbindungen für diesen Computer wurden aktiviert.</translation>
 <translation id="2118549242412205620">So greifen Sie sicher von Ihrem Android-Gerät auf Ihre Computer zu:
 
-• Richten Sie mithilfe der Chrome Remote Desktop App aus dem Chrome Web Store auf jedem Ihrer Computer den Remote-Zugriff ein: https://chrome.google.com/remotedesktop.
+• Richten Sie mithilfe der Chrome Remote Desktop App aus dem Chrome Web Store auf jedem Ihrer Computer den Remotezugriff ein: https://chrome.google.com/remotedesktop.
 • Öffnen Sie die App auf Ihrem Android-Gerät und tippen Sie auf einen der online befindlichen Computer, um eine Verbindung herzustellen.
 
 Informationen zum Datenschutz finden Sie in der Google-Datenschutzerklärung (http://goo.gl/SyrVzj) und der Chrome-Datenschutzerklärung (http://goo.gl/0uXE5d).</translation>
@@ -87,7 +87,7 @@ Informationen zum Datenschutz finden Sie in der Google-Datenschutzerklärung (ht
 <translation id="2888969873284818612">Ein Netzwerkfehler ist aufgetreten. Die App wird neu gestartet, wenn Ihr Gerät wieder online ist.</translation>
 <translation id="289405675947420287">Sicherer Zugriff auf Ihren Computer über Ihr iOS-Gerät. Schnell, einfach und kostenlos.
 
-• Laden Sie die Chrome Remote Desktop App aus dem Chrome Web Store auf den Computer herunter, für den Sie den Remote-Zugriff einrichten möchten.
+• Laden Sie die Chrome Remote Desktop App aus dem Chrome Web Store auf den Computer herunter, für den Sie den Remotezugriff einrichten möchten.
 • Installieren Sie die Chrome Remote Desktop-Software und folgen Sie der Anleitung, um die Einrichtung abzuschließen.
 • Öffnen Sie die App auf Ihrem iOS-Gerät und tippen Sie auf einen Ihrer Computer mit Onlinestatus, um eine Verbindung herzustellen.</translation>
 <translation id="2894654864775534701">Dieser Computer ist derzeit über ein anderes Konto freigegeben.</translation>
@@ -121,7 +121,6 @@ Informationen zum Datenschutz finden Sie in der Google-Datenschutzerklärung (ht
 <translation id="3581045510967524389">Es konnte keine Verbindung zum Netzwerk hergestellt werden. Überprüfen Sie, ob Ihr Gerät online ist.</translation>
 <translation id="3596628256176442606">Dieser Dienst ermöglicht eingehende Verbindungen von Chromoting-Clients.</translation>
 <translation id="3606997049964069799">Sie sind nicht in Chromium angemeldet. Melden Sie sich an und versuchen Sie es erneut.</translation>
-<translation id="3608841044971751032">Für einen sicheren Zugriff auf Ihren Computer</translation>
 <translation id="3649256019230929621">Fenster minimieren</translation>
 <translation id="369442766917958684">Offline</translation>
 <translation id="3695446226812920698">Weitere Informationen</translation>
@@ -189,7 +188,7 @@ pc</translation>
 <translation id="492843737083352574">Ich habe Probleme mit meiner Tastatur oder meiner Maus.</translation>
 <translation id="4973800994433240357">Indem Sie das Chromoting Host-Installationsprogramm herunterladen, erklären Sie sich mit den <ph name="LINK_BEGIN" />Nutzungsbedingungen von Google<ph name="LINK_END" /> einverstanden.</translation>
 <translation id="4974476491460646149">Verbindung zwischen Client und <ph name="HOSTNAME" /> getrennt</translation>
-<translation id="4985296110227979402">Richten Sie zuerst Ihren Computer für den Remote-Zugriff ein</translation>
+<translation id="4985296110227979402">Richten Sie zuerst Ihren Computer für den Remotezugriff ein</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>
 <translation id="5070121137485264635">Der Remote-Host verlangt, dass Sie sich über eine Drittanbieter-Website authentifizieren. Um fortfahren zu können, geben Sie Chrome Remote Desktop zusätzliche Berechtigungen für den Zugriff auf die folgende Adresse:</translation>
 <translation id="507204348399810022">Möchten Sie die Remote-Verbindungen zu <ph name="HOSTNAME" /> wirklich deaktivieren?</translation>
@@ -218,7 +217,7 @@ pc</translation>
 <translation id="5773590752998175013">Datum der Kopplung</translation>
 <translation id="579702532610384533">Erneut verbinden</translation>
 <translation id="5810269635982033450">Bildschirm funktioniert wie ein Touchpad</translation>
-<translation id="5823658491130719298">Öffnen Sie Chrome auf dem Computer, für den Sie den Remote-Zugriff einrichten möchten, und rufen Sie <ph name="INSTALLATION_LINK" /> auf</translation>
+<translation id="5823658491130719298">Öffnen Sie Chrome auf dem Computer, für den Sie den Remotezugriff einrichten möchten, und rufen Sie <ph name="INSTALLATION_LINK" /> auf</translation>
 <translation id="5841343754884244200">Anzeigeoptionen</translation>
 <translation id="5843054235973879827">Warum ist dieser Vorgang sicher?</translation>
 <translation id="5859141382851488196">Neues Fenster...</translation>
@@ -311,7 +310,7 @@ pc</translation>
 <translation id="809687642899217504">Meine Computer</translation>
 <translation id="811307782653349804">Greifen Sie von überall aus auf Ihren Computer zu.</translation>
 <translation id="8116630183974937060">Ein Netzwerkfehler ist aufgetreten. Bitte überprüfen Sie, ob das Gerät online ist, und versuchen Sie es erneut.</translation>
-<translation id="8178433417677596899">Die Bildschirmfreigabe für Nutzer eignet sich besonders für technischen Support per Remote-Zugriff.</translation>
+<translation id="8178433417677596899">Die Bildschirmfreigabe für Nutzer eignet sich besonders für technischen Support per Remotezugriff.</translation>
 <translation id="8187079423890319756">Copyright 2013 Die Chromium-Autoren. Alle Rechte vorbehalten</translation>
 <translation id="8196755618196986400">Damit wir für weitere Informationen mit Ihnen Kontakt aufnehmen können, wird bei jedem von Ihnen gesendeten Feedback Ihre E-Mail-Adresse mitgesendet.</translation>
 <translation id="8244400547700556338">Weitere Informationen</translation>

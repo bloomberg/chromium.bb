@@ -25,6 +25,7 @@
 <translation id="1525508553941733066">סגור</translation>
 <translation id="15373452373711364">סמן עכבר גדול</translation>
 <translation id="1550523713251050646">לחץ לקבלת אפשרויות נוספות</translation>
+<translation id="1608626060424371292">הסר את המשתמש הזה</translation>
 <translation id="1621499497873603021">הזמן שנותר עד להתרוקנות הסוללה, <ph name="TIME_LEFT" /></translation>
 <translation id="1658406695958299976">מצטערים, עדיין אי אפשר לאמת את הסיסמה שלך. חשוב לדעת: אם שינית לאחרונה את הסיסמה, הסיסמה החדשה תיכנס לתוקף רק אחרי יציאה מהחשבון. צריך להשתמש כאן בסיסמה הישנה.</translation>
 <translation id="1677472565718498478">זמן נותר - <ph name="TIME" /></translation>
@@ -74,7 +75,6 @@
 <translation id="2653659639078652383">שלח</translation>
 <translation id="2675319268637823299">מנהל מערכת ביטל את ההרשאה של <ph name="USER_EMAIL" /> לכניסה עם מספר חשבונות.
     כדי להמשיך, כל המשתמשים חייבים לבצע יציאה.</translation>
-<translation id="2700058918926273959">הפעילות באתר תסתיים בעוד <ph name="SESSION_TIME_REMAINING" />. תנותק מהחשבון.</translation>
 <translation id="2727977024730340865">מחובר למטען בעל מתח נמוך. ייתכן שטעינת הסוללה לא תהיה אמינה.</translation>
 <translation id="2761704814324807722">מגש מערכת, שעה <ph name="TIME" />‏, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">מתחבר מחדש אל <ph name="NAME" /></translation>
@@ -97,6 +97,7 @@
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">תחתית</translation>
 <translation id="3105990244222795498">‏<ph name="DEVICE_NAME" />‏ (Bluetooth)</translation>
+<translation id="3112378005171663295">כווץ</translation>
 <translation id="3126069444801937830">הפעל מחדש כדי לעדכן</translation>
 <translation id="3147142846278915599">מפעיל היישומים (מסנכרן יישומים...)</translation>
 <translation id="315116470104423982">נתוני נייד</translation>
@@ -209,6 +210,7 @@
 <translation id="607652042414456612">‏מכשירי Bluetooth קרובים יכולים לאתר את המחשב שלך, והוא יופיע כ-"<ph name="NAME" />" עם הכתובת <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">טעינה של <ph name="POWER_SOURCE" /></translation>
 <translation id="615957422585914272">הצג מקלדת במסך</translation>
+<translation id="6164005077879661055">כל הקבצים והנתונים המקומיים המשויכים למשתמש בפיקוח יימחקו לצמיתות לאחר שמשתמש בפיקוח זה יוסר. המנהל עדיין יוכל לראות את האתרים שבהם משתמש בפיקוח זה ביקר, ואת ההגדרות שלו, בכתובת <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">למידע נוסף</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: מפעיל...</translation>
 <translation id="6284232397434400372">הרזולוציה השתנתה</translation>
@@ -243,6 +245,7 @@
 <translation id="6857811139397017780">הפעל את <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">הצטרף לרשת אחרת...</translation>
 <translation id="6981982820502123353">נגישות</translation>
+<translation id="698231206551913481">כל הקבצים והנתונים המשויכים למשתמש זה יימחקו לצמיתות ברגע שהמשתמש יוסר.</translation>
 <translation id="7029814467594812963">צא מההפעלה</translation>
 <translation id="7034339000180558234">מעביר את <ph name="TAB_NAME" /> אל <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">הגדר טפט...</translation>

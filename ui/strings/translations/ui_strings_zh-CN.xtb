@@ -8,6 +8,7 @@
 <translation id="1243314992276662751">上传</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">推荐的应用</translation>
+<translation id="1368832886055348810">从左向右</translation>
 <translation id="1398853756734560583">最大化</translation>
 <translation id="1413622004203049571">停用来自“<ph name="NOTIFIER_NAME" />”的通知</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 分钟 }other{# 分钟 }}</translation>
@@ -21,6 +22,7 @@
 <translation id="1812519734428420144">星级：<ph name="RATING_SCORE" /></translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 小时 }other{# 小时 }}</translation>
 <translation id="1842960171412779397">选中</translation>
+<translation id="1859234291848436338">书写方向</translation>
 <translation id="1860796786778352021">关闭通知</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
@@ -122,6 +124,7 @@
 <translation id="6917971086528278418">{YEARS,plural, =1{还有 1 年的时间}other{还有 # 年的时间}}</translation>
 <translation id="6945221475159498467">选择</translation>
 <translation id="6965382102122355670">确定</translation>
+<translation id="6974053822202609517">从右向左</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">很可能会点击的应用</translation>
 <translation id="7222373446505536781">F11</translation>
@@ -155,6 +158,7 @@
 <translation id="8725488761726303204">+ 另外 <ph name="NUMBER" /> 项</translation>
 <translation id="8730621377337864115">完成</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{1 小时}other{# 小时}}</translation>
+<translation id="8798099450830957504">默认</translation>
 <translation id="8806053966018712535">文件夹“<ph name="FOLDER_NAME" />”</translation>
 <translation id="883911313571074303">为图片添加注释</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>

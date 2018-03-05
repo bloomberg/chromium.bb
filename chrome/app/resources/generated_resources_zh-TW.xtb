@@ -42,7 +42,6 @@
 <translation id="1056775291175587022">沒有網路</translation>
 <translation id="1056898198331236512">警告</translation>
 <translation id="1058262162121953039">PUK</translation>
-<translation id="106001083577824516">無法移除有害軟體</translation>
 <translation id="1062407476771304334">取代</translation>
 <translation id="1062866675591297858">前往<ph name="BEGIN_LINK" />受監管的使用者資訊主頁<ph name="END_LINK" />管理你的受監管使用者。</translation>
 <translation id="1064835277883315402">加入私人網路</translation>
@@ -239,7 +238,6 @@
 <translation id="1367951781824006909">選擇檔案</translation>
 <translation id="136802136832547685">沒有受監管的使用者可以新增至這部裝置。</translation>
 <translation id="1368265273904755308">回報問題</translation>
-<translation id="1368832886055348810">由左至右</translation>
 <translation id="1370646789215800222">是否移除使用者？</translation>
 <translation id="1372681413396468867">{NUM_ITEMS,plural, =1{將移除 1 個項目}other{將移除 # 個項目}}</translation>
 <translation id="1372841398847029212">同步到你的帳戶</translation>
@@ -403,7 +401,6 @@
 <translation id="1608626060424371292">移除這位使用者</translation>
 <translation id="1609170755653088773">將這組密碼在 iPhone 上保持同步</translation>
 <translation id="1609862759711084604">上一位使用者</translation>
-<translation id="1611557582955786626">登入即可享有個人化瀏覽體驗，各項設定在所有裝置都能保持同步</translation>
 <translation id="1611584202130317952">佈建作業中斷。請再試一次，或是與裝置擁有者或管理員聯絡。</translation>
 <translation id="1611649489706141841">往前</translation>
 <translation id="1611704746353331382">將書籤匯出為 HTML 檔案...</translation>
@@ -571,7 +568,6 @@
 <translation id="1856715684130786728">新增位置...</translation>
 <translation id="1856813161013948396">輕觸指紋感應器即可略過螢幕鎖定。按一下以進行設定。</translation>
 <translation id="1858585891038687145">信任這個用於識別軟體製造商的憑證</translation>
-<translation id="1859234291848436338">文字方向</translation>
 <translation id="1861262398884155592">這個資料夾是空的</translation>
 <translation id="1864111464094315414">登入</translation>
 <translation id="1864400682872660285">冷色調</translation>
@@ -1133,7 +1129,6 @@
 <translation id="2737363922397526254">收合...</translation>
 <translation id="2737492745329609575">開始設定</translation>
 <translation id="2738771556149464852">此日期之前：</translation>
-<translation id="2739046699559178272">儲存並繼續</translation>
 <translation id="2739191690716947896">偵錯</translation>
 <translation id="2739240477418971307">變更你的協助工具設定</translation>
 <translation id="2740393541869613458">查看受監管使用者瀏覽過的網站；以及</translation>
@@ -1159,7 +1154,6 @@
 <translation id="2783298271312924866">已下載</translation>
 <translation id="2783661497142353826">管理 Kiosk 應用程式</translation>
 <translation id="2784407158394623927">正在啟用行動數據服務</translation>
-<translation id="2785530881066938471">無法載入內容指令碼的「<ph name="RELATIVE_PATH" />」檔案，因為該檔案未使用 UTF-8 編碼。</translation>
 <translation id="2785873697295365461">檔案描述元</translation>
 <translation id="2787047795752739979">覆寫原始檔案</translation>
 <translation id="2788135150614412178">+</translation>
@@ -1245,7 +1239,6 @@
 <translation id="2889925978073739256">繼續封鎖無沙箱防護的外掛程式</translation>
 <translation id="2890678560483811744">參照的網頁超出範圍</translation>
 <translation id="2893168226686371498">預設瀏覽器</translation>
-<translation id="2893453364759632532">視窗靠下</translation>
 <translation id="289644616180464099">SIM 卡已鎖定</translation>
 <translation id="289695669188700754">金鑰識別碼：<ph name="KEY_ID" /></translation>
 <translation id="2897878306272793870">你確定要開啟 <ph name="TAB_COUNT" /> 分頁嗎？</translation>
@@ -1358,7 +1351,6 @@
 <translation id="304567287000691532">正在分享螢幕畫面</translation>
 <translation id="3046910703532196514">完整的網頁</translation>
 <translation id="304826556400666995">開啟多個分頁音訊</translation>
-<translation id="3051523411789012618">視窗靠上</translation>
 <translation id="3053013834507634016">憑證金鑰用途</translation>
 <translation id="3057861065630527966">備份您的相片和影片</translation>
 <translation id="3060379269883947824">啟用隨選朗讀功能</translation>
@@ -1388,7 +1380,6 @@
 <translation id="3090193911106258841">正在存取音訊和視訊輸入</translation>
 <translation id="3090819949319990166">無法將外部 crx 檔案複製到 <ph name="TEMP_CRX_FILE" />。</translation>
 <translation id="3090871774332213558">「<ph name="DEVICE_NAME" />」已配對</translation>
-<translation id="3097628171361913691">壓縮檔安裝程式</translation>
 <translation id="3100609564180505575">模組數 (<ph name="TOTAL_COUNT" />) - 已知衝突數目：<ph name="BAD_COUNT" />，可疑衝突數目：<ph name="SUSPICIOUS_COUNT" /></translation>
 <translation id="3101709781009526431">日期與時間</translation>
 <translation id="3108967419958202225">選擇...</translation>
@@ -1510,7 +1501,6 @@
 <translation id="3300394989536077382">簽署者</translation>
 <translation id="33022249435934718">GDI 控制代碼</translation>
 <translation id="3302340765592941254">下載完成通知</translation>
-<translation id="3302709122321372472">無法載入內容指令碼的 css「<ph name="RELATIVE_PATH" />」。</translation>
 <translation id="3303260552072730022">某個擴充功能啟用了全螢幕。</translation>
 <translation id="3303818374450886607">份數</translation>
 <translation id="3303855915957856445">找不到相符的搜尋結果</translation>
@@ -1891,7 +1881,6 @@
 <translation id="3856800405688283469">選取時區</translation>
 <translation id="3856921555429624101">已停止監測數據用量</translation>
 <translation id="3857228364945137633">當手機在適當距離範圍內時，不需密碼即可使用 Smart Lock 為你的 <ph name="DEVICE_TYPE" /> 解鎖。</translation>
-<translation id="3857732810083914482">個人化功能已關閉。你可以前往 myaccount.google.com 進行變更。</translation>
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
 <translation id="3860381078714302691">歡迎使用 Hangouts Meet</translation>
 <translation id="3862134173397075045">歡迎在 Chrome 中體驗 Cast 服務！</translation>
@@ -1981,7 +1970,6 @@
 <translation id="399179161741278232">已匯入</translation>
 <translation id="3994374631886003300">解除手機的鎖定狀態，並且讓你的手機與 <ph name="DEVICE_TYPE" /> 更靠近，即可進入解鎖模式。</translation>
 <translation id="3994878504415702912">縮放(&amp;Z)</translation>
-<translation id="39964277676607559">無法載入內容指令碼的 javascript「<ph name="RELATIVE_PATH" />」。</translation>
 <translation id="4002066346123236978">標題</translation>
 <translation id="40027638859996362">文字移動</translation>
 <translation id="4005817994523282006">時區偵測方法</translation>
@@ -2160,7 +2148,6 @@
 <translation id="4336032328163998280">複製作業失敗，<ph name="ERROR_MESSAGE" /></translation>
 <translation id="4336979451636460645">如需網路紀錄，請查看：<ph name="DEVICE_LOG_LINK" /></translation>
 <translation id="4337028641069424358">如要下載並使用 Android 應用程式，請先安裝更新。在更新期間，你無法使用裝置。安裝完成後，<ph name="DEVICE_TYPE" /> 將會重新啟動。</translation>
-<translation id="4338683191474220626">視窗靠左</translation>
 <translation id="4340515029017875942"><ph name="ORIGIN" /> 要求與「<ph name="EXTENSION_NAME" />」應用程式通訊</translation>
 <translation id="4342311272543222243">糟糕，發生 TPM 錯誤。</translation>
 <translation id="4345587454538109430">設定...</translation>
@@ -2312,7 +2299,6 @@
 <translation id="4615586811063744755">未選取任何 Cookie</translation>
 <translation id="4617270414136722281">擴充功能選項</translation>
 <translation id="4619615317237390068">在其他裝置上開啟的分頁</translation>
-<translation id="4620809267248568679">這項設定是由擴充功能執行。</translation>
 <translation id="4624768044135598934">已成功匯入！</translation>
 <translation id="4625078469366263107">啟用應用程式</translation>
 <translation id="4627427111733173920">已封鎖 Cookie</translation>
@@ -2533,7 +2519,6 @@
 <translation id="496226124210045887">你選取的資料夾包含敏感檔案。你確定要將這個資料夾的讀取權限永久授予「$1」嗎？</translation>
 <translation id="4964455510556214366">排列</translation>
 <translation id="4964673849688379040">檢查中...</translation>
-<translation id="4965682129423310439">Chrome 在你的電腦上找到有害軟體，並可將它移除及還原相關設定，讓你的瀏覽器恢復正常運作。</translation>
 <translation id="4965808351167763748">你確定要設定這個裝置以執行 Hangouts Meet 嗎？</translation>
 <translation id="4967749818080339523">請選取帳戶</translation>
 <translation id="496888482094675990">「檔案」應用程式可供快速存取你存放在 Google 雲端硬碟、外部儲存空間或 Chrome 作業系統裝置中的檔案。</translation>
@@ -3306,10 +3291,8 @@
 <translation id="6169666352732958425">無法投放桌面。</translation>
 <translation id="6171948306033499786">暫停列印</translation>
 <translation id="6175314957787328458">Microsoft 網域 GUID</translation>
-<translation id="6176032031541598434">使用中的視窗已移至畫面下方</translation>
 <translation id="6178664161104547336">選取憑證</translation>
 <translation id="6181431612547969857">下載遭封鎖</translation>
-<translation id="6181803575025675566">你可以在「<ph name="LINK_START" />設定<ph name="LINK_END" />」頁面中管理這項功能的運作方式。</translation>
 <translation id="6185132558746749656">裝置位置</translation>
 <translation id="6185696379715117369">Page Up 鍵</translation>
 <translation id="6189412234224385711">使用「<ph name="EXTENSION_NAME" />」開啟</translation>
@@ -3656,11 +3639,9 @@
 <translation id="6736045498964449756">糟糕，密碼不符！</translation>
 <translation id="6736243959894955139">位址</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
-<translation id="673970589316422346">雖然你無法再使用舊的設定檔，但可將其移除。</translation>
 <translation id="6739923123728562974">顯示桌面捷徑</translation>
 <translation id="6740234557573873150">已暫停下載 <ph name="FILE_NAME" /></translation>
 <translation id="6742339027238151589">可透過指令碼存取</translation>
-<translation id="6743841972744298686">同步處理設定</translation>
 <translation id="6745592621698551453">立即更新</translation>
 <translation id="6746124502594467657">下移</translation>
 <translation id="674632704103926902">啟用輕觸拖曳</translation>
@@ -3790,7 +3771,6 @@
 <translation id="6970856801391541997">列印特定網頁</translation>
 <translation id="6972180789171089114">音效/影片</translation>
 <translation id="6973630695168034713">資料夾</translation>
-<translation id="6974053822202609517">由右至左</translation>
 <translation id="6976108581241006975">JavaScript 控制台</translation>
 <translation id="6977381486153291903">韌體版本</translation>
 <translation id="6978121630131642226">搜尋引擎</translation>
@@ -3889,7 +3869,6 @@
 <translation id="7108338896283013870">隱藏</translation>
 <translation id="7108634116785509031"><ph name="HOST" /> 要求使用攝影機</translation>
 <translation id="7108668606237948702">輸入</translation>
-<translation id="7112978678959880812">個人化功能已開啟。你可以前往 myaccount.google.com 進行變更。</translation>
 <translation id="7113502843173351041">存取你的電子郵件地址</translation>
 <translation id="7114054701490058191">密碼不符</translation>
 <translation id="7117228822971127758">請稍後再試</translation>
@@ -3954,7 +3933,6 @@
 <translation id="7221869452894271364">重新載入此頁</translation>
 <translation id="7222232353993864120">電子郵件地址</translation>
 <translation id="7222373446505536781">F11</translation>
-<translation id="722363467515709460">啟用畫面放大鏡</translation>
 <translation id="7223775956298141902">唉... 你沒有任何擴充程式 :-(</translation>
 <translation id="7225179976675429563">找不到網路類型</translation>
 <translation id="7228479291753472782">控制可指定網站能否使用地理位置、麥克風、攝影機等功能的設定。</translation>
@@ -4207,7 +4185,6 @@
 <translation id="7639178625568735185">我瞭解了！</translation>
 <translation id="764017888128728"><ph name="PASSWORD_MANAGER_BRAND" /> 會使用您儲存的密碼，讓您自動登入符合資格的網站。</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (擁有者)</translation>
-<translation id="7647231681210854996">使用中的視窗已移至畫面右側</translation>
 <translation id="7648992873808071793">在這個裝置上儲存檔案</translation>
 <translation id="7649070708921625228">說明</translation>
 <translation id="7650511557061837441">「<ph name="TRIGGERING_EXTENSION_NAME" />」要求移除「<ph name="EXTENSION_NAME" />」。</translation>
@@ -4667,7 +4644,6 @@
 <translation id="8371695176452482769">請說話</translation>
 <translation id="8372369524088641025">WEP 金鑰有誤</translation>
 <translation id="8373553483208508744">關閉多個分頁音訊</translation>
-<translation id="8377870760189106701">視窗靠右</translation>
 <translation id="8378285435971754261">讓 Google 的定位服務協助應用程式快速找到您的準確位置，減少耗電量。系統會傳送匿名位置資料給 Google (即使未執行任何應用程式)。<ph name="BEGIN_LINK1" />瞭解詳情<ph name="END_LINK1" /></translation>
 <translation id="8381179624334829711">管理攝影機設定...</translation>
 <translation id="8382913212082956454">複製電子郵件地址(&amp;E)</translation>
@@ -4787,7 +4763,6 @@
 <translation id="8581809080475256101">按下即可繼續，內容選單會顯示歷史紀錄</translation>
 <translation id="8584280235376696778">在新分頁中開啟影片(&amp;O)</translation>
 <translation id="8588866096426746242">顯示設定檔統計資料</translation>
-<translation id="8589652987924574405">你的書籤、歷史紀錄、密碼和其他設定都會在你的 Google 帳戶中保持同步，讓你在所有個人裝置上使用。日後你隨時可以在設定中變更這項設定。</translation>
 <translation id="8590375307970699841">設定自動更新</translation>
 <translation id="8594908476761052472">錄影</translation>
 <translation id="8596540852772265699">自訂檔</translation>
@@ -4803,7 +4778,6 @@
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />：<ph name="ERROR" /></translation>
 <translation id="8620617069779373398">漫遊狀態</translation>
 <translation id="8620765578342452535">設定網路連線</translation>
-<translation id="8620790565535071193">掃描失敗</translation>
 <translation id="8624205858755890468">允許個人助理向你顯示相關資訊、應用程式和操作。</translation>
 <translation id="862542460444371744">擴充功能(&amp;E)</translation>
 <translation id="8627151598708688654">選取來源</translation>
@@ -4881,7 +4855,6 @@
 <translation id="871476437400413057">Google 儲存的密碼</translation>
 <translation id="8714838604780058252">背景圖形</translation>
 <translation id="8719653885894320876">「<ph name="PLUGIN_NAME" />」下載失敗</translation>
-<translation id="8721669057562068233">使用中的視窗已移至畫面上方</translation>
 <translation id="8723829621484579639">無痕模式子頁框：<ph name="PARENT_SITE" /></translation>
 <translation id="8724859055372736596">在資料夾中顯示(&amp;S)</translation>
 <translation id="8725066075913043281">再試一次</translation>
@@ -4925,7 +4898,6 @@
 <translation id="8785622406424941542">觸控筆</translation>
 <translation id="8787254343425541995">允許共用網路使用 Proxy</translation>
 <translation id="8791534160414513928">將「不追蹤」要求與瀏覽流量一併送出</translation>
-<translation id="8792609692701651064">使用中的視窗已移至畫面左側</translation>
 <translation id="8794025342371547160">受限 IP</translation>
 <translation id="879413103056696865">無線基地台開啟時，你的「<ph name="PHONE_NAME" />」會：</translation>
 <translation id="8795916974678578410">開新視窗</translation>
@@ -5062,7 +5034,6 @@
 <translation id="9024127637873500333">在新分頁中開啟(&amp;O)</translation>
 <translation id="9024331582947483881">全螢幕鍵</translation>
 <translation id="9025098623496448965">確定，返回登入畫面</translation>
-<translation id="902659348151742535">Google 可能會使用您的瀏覽紀錄，為您提供個人化的搜尋服務、廣告內容和其他各項 Google 服務。</translation>
 <translation id="9026731007018893674">下載</translation>
 <translation id="9027146684281895941">監管這位使用者，以控制及查看該使用者透過您的 Google 帳戶造訪的網站。</translation>
 <translation id="9027459031423301635">在新分頁中開啟連結(T)</translation>

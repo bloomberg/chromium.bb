@@ -8,6 +8,7 @@
 <translation id="1243314992276662751">Yükle</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">ÖNERİLEN UYGULAMALAR</translation>
+<translation id="1368832886055348810">Soldan Sağa</translation>
 <translation id="1398853756734560583">Büyüt</translation>
 <translation id="1413622004203049571"><ph name="NOTIFIER_NAME" /> bildirimlerini devre dışı bırak</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 dakika ve }other{# dakika ve }}</translation>
@@ -21,6 +22,7 @@
 <translation id="1812519734428420144">Yıldız puanı <ph name="RATING_SCORE" /></translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 saat }other{# saat ve }}</translation>
 <translation id="1842960171412779397">seç</translation>
+<translation id="1859234291848436338">Yazma Yönü</translation>
 <translation id="1860796786778352021">Bildirimi kapat</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652">%<ph name="NUMBER" /></translation>
@@ -122,6 +124,7 @@
 <translation id="6917971086528278418">{YEARS,plural, =1{1 yıl kaldı}other{# yıl kaldı}}</translation>
 <translation id="6945221475159498467">Seç</translation>
 <translation id="6965382102122355670">Tamam</translation>
+<translation id="6974053822202609517">Sağdan Sola</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">BÜYÜK İHTİMALLE</translation>
 <translation id="7222373446505536781">F11</translation>
@@ -155,6 +158,7 @@
 <translation id="8725488761726303204"><ph name="NUMBER" /> öğe daha</translation>
 <translation id="8730621377337864115">Bitti</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{1 sa.}other{# sa.}}</translation>
+<translation id="8798099450830957504">Varsayılan</translation>
 <translation id="8806053966018712535"><ph name="FOLDER_NAME" /> klasörü</translation>
 <translation id="883911313571074303">Resme açıklama ekle</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>

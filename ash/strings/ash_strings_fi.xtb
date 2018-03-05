@@ -25,6 +25,7 @@
 <translation id="1525508553941733066">HYLKÄÄ</translation>
 <translation id="15373452373711364">Suuri hiiren osoitin</translation>
 <translation id="1550523713251050646">Näet lisävaihtoehtoja klikkaamalla tätä.</translation>
+<translation id="1608626060424371292">Poista tämä käyttäjä</translation>
 <translation id="1621499497873603021">Akku on tyhjä <ph name="TIME_LEFT" /> kuluttua</translation>
 <translation id="1658406695958299976">Salasanan vahvistaminen ei onnistunut vieläkään. Huom. Jos vaihdoit salasanasi äskettäin, uusi salasana otetaan käyttöön kirjauduttuasi ulos. Käytä tässä vanhaa salasanaasi.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> jäljellä</translation>
@@ -74,7 +75,6 @@
 <translation id="2653659639078652383">Lähetä</translation>
 <translation id="2675319268637823299">Järjestelmänvalvoja on kieltänyt käyttäjää <ph name="USER_EMAIL" /> kirjautumasta sisään useille tileille.
     Kaikkien käyttäjien on kirjauduttava ulos jatkaakseen käyttöä.</translation>
-<translation id="2700058918926273959">Istunnon loppumiseen on <ph name="SESSION_TIME_REMAINING" />. Sinut kirjataan ulos.</translation>
 <translation id="2727977024730340865">Pienitehoinen laturi kytketty. Akku ei ehkä lataudu luotettavasti.</translation>
 <translation id="2761704814324807722">Tila-alue, aika <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Yhdistetään uudelleen verkkoon <ph name="NAME" /></translation>
@@ -97,6 +97,7 @@
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">Alaosa</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
+<translation id="3112378005171663295">Tiivistä</translation>
 <translation id="3126069444801937830">Päivitä käynnistämällä uudelleen</translation>
 <translation id="3147142846278915599">Käynnistysohjelma (synkronoidaan sovelluksia…)</translation>
 <translation id="315116470104423982">Mobiilitiedonsiirto</translation>
@@ -210,6 +211,9 @@
 <translation id="607652042414456612">Lähellä olevat Bluetooth-laitteet voivat löytää tietokoneesi. Tietokoneesi nimi on <ph name="NAME" /> ja osoite <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">Ladataan laitetta <ph name="POWER_SOURCE" /></translation>
 <translation id="615957422585914272">Näytä ruutunäppäimistö</translation>
+<translation id="6164005077879661055">Kaikki valvottuun käyttäjään yhdistetyt tiedostot ja paikalliset tiedot poistetaan
+ pysyvästi, kun tämä valvottu käyttäjä poistetaan. Vieraillut verkkosivustot ja
+ valvotun käyttäjän asetukset saattavat silti vielä näkyä hallinnoijalle osoitteessa <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Lisätietoja</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: aktivoidaan…</translation>
 <translation id="6284232397434400372">Resoluutio vaihdettu</translation>
@@ -244,6 +248,7 @@ Käytä tätä ominaisuutta vain luotettavien tilien kanssa.</translation>
 <translation id="6857811139397017780">Aktivoi <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Liity muuhun verkkoon...</translation>
 <translation id="6981982820502123353">Esteettömyys</translation>
+<translation id="698231206551913481">Kun käyttäjä poistetaan, kaikki kyseiseen käyttäjään yhdistetyt tiedostot ja paikalliset tiedot poistetaan pysyvästi.</translation>
 <translation id="7029814467594812963">Sulje käyttökerta</translation>
 <translation id="7034339000180558234">Välilehti <ph name="TAB_NAME" /> peilataan kohteeseen <ph name="RECEIVER_NAME" />.</translation>
 <translation id="7052914147756339792">Aseta taustakuva...</translation>

@@ -533,10 +533,8 @@
 <translation id="5809361687334836369">{HOURS,plural, =1{#시간 전}other{#시간 전}}</translation>
 <translation id="5817918615728894473">페어링</translation>
 <translation id="583281660410589416">알 수 없음</translation>
-<translation id="5832934273103296195">펼쳐짐 - 접으려면 클릭</translation>
 <translation id="5833984609253377421">링크 공유</translation>
 <translation id="583891442612896534">Chrome이 Google 서버에 접속할 수 없어 데이터를 압축하지 못했습니다. 데이터 절약이 제한적일 수 있습니다.</translation>
-<translation id="584615158992327102">다운로드 항목, 북마크, 방문 기록 액세스</translation>
 <translation id="5854790677617711513">30일 이상 전</translation>
 <translation id="5858741533101922242">Chrome에서 블루투스 어댑터를 사용 설정할 수 없습니다.</translation>
 <translation id="5860033963881614850">사용 안함</translation>
@@ -554,7 +552,6 @@
 <translation id="5962718611393537961">탭하여 접기</translation>
 <translation id="5974562976030145789">'다운로드'의 위치가 변경됩니다. 다음에는 검색주소창을 위로 당기세요.</translation>
 <translation id="6000066717592683814">계속 Google 사용</translation>
-<translation id="6031101910111098835">접힘 - 펼치려면 클릭</translation>
 <translation id="6039379616847168523">다음 탭으로 이동</translation>
 <translation id="6040143037577758943">닫기</translation>
 <translation id="6042308850641462728">더보기</translation>
@@ -600,7 +597,6 @@
 <translation id="6404511346730675251">북마크 수정</translation>
 <translation id="6406506848690869874">동기화</translation>
 <translation id="6409731863280057959">팝업</translation>
-<translation id="6411957228448379013">검색주소창입니다. 다운로드 항목, 북마크, 방문 기록을 보려면 위로 스와이프하세요.</translation>
 <translation id="641643625718530986">인쇄…</translation>
 <translation id="6416782512398055893"><ph name="MBS" />MB 다운로드됨</translation>
 <translation id="6433501201775827830">검색 엔진 선택</translation>
@@ -641,6 +637,7 @@
 <translation id="6701279291835318271">보안 보고서</translation>
 <translation id="6710213216561001401">이전</translation>
 <translation id="6738867403308150051">다운로드 중...</translation>
+<translation id="6746124502594467657">아래로 이동</translation>
 <translation id="6762156594045689028">이 설정을 변경하려면 <ph name="BEGIN_LINK" />동기화를 재설정<ph name="END_LINK" />합니다.</translation>
 <translation id="6770414673596662518">또한 Chrome의 세이프 브라우징 시스템이 악성 웹페이지를 탐지하여 피싱, 멀웨어, 유해한 다운로드로부터 사용자를 보호합니다.</translation>
 <translation id="6776813977906306442">다운로드 버튼을 사용하여 나중에 볼 동영상 다운로드</translation>
@@ -833,6 +830,7 @@
 <translation id="857509777403223202">더 많은 콘텐츠가 표시될 예정이니 기대해주세요. 즐거운 저녁 시간 보내세요.</translation>
 <translation id="857943718398505171">허용(권장)</translation>
 <translation id="8583805026567836021">계정 데이터 지우기</translation>
+<translation id="8609465669617005112">위로 이동</translation>
 <translation id="8616006591992756292">Google 계정의 내 활동(<ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />)에는 인터넷 사용 기록이 다른 형식으로 남아 있을 수도 있습니다.</translation>
 <translation id="8617240290563765734">다운로드한 콘텐츠에 지정된 추천 URL을 여시겠습니까?</translation>
 <translation id="862875433388403934">다른 애플리케이션에서 다운로드한 콘텐츠(영화, 음악 등)는 해당 애플리케이션이 새로운 기기 사용자 인증 정보를 기반으로 라이선스를 다시 취득해야 재생할 수 있습니다.

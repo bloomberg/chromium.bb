@@ -25,6 +25,7 @@
 <translation id="1525508553941733066">KETEPIKAN</translation>
 <translation id="15373452373711364">Kursor tetikus besar</translation>
 <translation id="1550523713251050646">Klik untuk mendapatkan lagi pilihan</translation>
+<translation id="1608626060424371292">Alih keluar pengguna ini</translation>
 <translation id="1621499497873603021">Masa yang tinggal sehingga bateri kosong, <ph name="TIME_LEFT" /></translation>
 <translation id="1658406695958299976">Maaf, kata laluan anda masih tidak dapat disahkan. Perhatian: jika anda menukar kata laluan anda baru-baru ini, kata laluan baharu anda akan digunakan apabila anda log keluar, sila gunakan kata laluan yang lama di sini.</translation>
 <translation id="1677472565718498478">Berbaki <ph name="TIME" /></translation>
@@ -74,7 +75,6 @@
 <translation id="2653659639078652383">Serah</translation>
 <translation id="2675319268637823299">Pentadbir telah melarang log masuk berbilang untuk <ph name="USER_EMAIL" />.
     Semua pengguna mesti log keluar untuk meneruskan.</translation>
-<translation id="2700058918926273959">Sesi tamat dalam <ph name="SESSION_TIME_REMAINING" />. Anda akan dilog keluar.</translation>
 <translation id="2727977024730340865">Dipalamkan pada pengecas berkuasa rendah. Pengecasan bateri mungkin tidak boleh diharapkan.</translation>
 <translation id="2761704814324807722">Dulang status, masa <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Menyambung semula ke <ph name="NAME" /></translation>
@@ -97,6 +97,7 @@
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">Bawah</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
+<translation id="3112378005171663295">Runtuhkan</translation>
 <translation id="3126069444801937830">Mulakan semula untuk mengemas kini</translation>
 <translation id="3147142846278915599">Pelancar (menyegerakkan apl...)</translation>
 <translation id="315116470104423982">Data mudah alih</translation>
@@ -209,6 +210,7 @@
 <translation id="607652042414456612">Komputer anda boleh ditemui oleh peranti Bluetooth yang berdekatan sebagai "<ph name="NAME" />" dengan alamat <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">Mengecas <ph name="POWER_SOURCE" /></translation>
 <translation id="615957422585914272">Paparkan papan kekunci pada skrin</translation>
+<translation id="6164005077879661055">Semua fail dan data setempat yang dikaitkan dengan pengguna diselia akan dipadamkan secara kekal apabila pengguna diselia ini dialih keluar. Tapak web yang dilawati dan tetapan untuk pengguna diselia ini masih boleh dilihat oleh pengurus di <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Ketahui lebih lanjut</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Mengaktifkan...</translation>
 <translation id="6284232397434400372">Peleraian ditukar</translation>
@@ -243,6 +245,7 @@ Gunakan ciri ini dengan akaun yang anda percaya sahaja.</translation>
 <translation id="6857811139397017780">Aktifkan <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Sertai yang lain...</translation>
 <translation id="6981982820502123353">Kebolehcapaian</translation>
+<translation id="698231206551913481">Semua fail dan data yang berkaitan dengan pengguna ini akan dipadamkan secara kekal selepas pengguna ini dialih keluar.</translation>
 <translation id="7029814467594812963">Keluar dari sesi</translation>
 <translation id="7034339000180558234">Menghantar <ph name="TAB_NAME" /> ke <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Tetapkan kertas dinding...</translation>

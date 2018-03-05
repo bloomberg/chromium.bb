@@ -25,6 +25,7 @@
 <translation id="1525508553941733066">IGNORERA</translation>
 <translation id="15373452373711364">Stor muspekare</translation>
 <translation id="1550523713251050646">Klicka här för fler alternativ</translation>
+<translation id="1608626060424371292">Ta bort den här användaren</translation>
 <translation id="1621499497873603021">Tid som återstår tills batteriet är tomt: <ph name="TIME_LEFT" /></translation>
 <translation id="1658406695958299976">Det gick inte att verifiera lösenordet. Obs! Om du nyligen har bytt lösenord börjar det nya lösenordet att gälla först när du loggar ut. Använd det gamla lösenordet här.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> kvar</translation>
@@ -74,7 +75,6 @@
 <translation id="2653659639078652383">Skicka</translation>
 <translation id="2675319268637823299">En administratör har förbjudit multiinloggning för <ph name="USER_EMAIL" />.
     Alla användare måste logga ut för att fortsätta.</translation>
-<translation id="2700058918926273959">Sessionen upphör om <ph name="SESSION_TIME_REMAINING" />. Du kommer att loggas ut.</translation>
 <translation id="2727977024730340865">Ansluten till en laddare med låg effekt. Batteriet kanske inte laddas ordentligt.</translation>
 <translation id="2761704814324807722">Statusfältet, tid <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Återansluter till <ph name="NAME" /></translation>
@@ -97,6 +97,7 @@
 <translation id="3077734595579995578">skift</translation>
 <translation id="3087734570205094154">Nederst</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
+<translation id="3112378005171663295">Komprimera</translation>
 <translation id="3126069444801937830">Starta om för att uppdatera</translation>
 <translation id="3147142846278915599">Översikt (appar synkroniseras …)</translation>
 <translation id="315116470104423982">Mobildata</translation>
@@ -209,6 +210,7 @@
 <translation id="607652042414456612">Din dator kan upptäckas av Bluetooth-enheter som finns i närheten och den visas som <ph name="NAME" /> med adressen <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">Laddar <ph name="POWER_SOURCE" /></translation>
 <translation id="615957422585914272">Visa skärmtangentbordet</translation>
+<translation id="6164005077879661055">Alla filer och lokala data som är kopplade till den hanterade användaren tas bort permanent när den hanterade användaren tas bort. Besökta webbplatser och inställningar för den hanterade användaren kan fortfarande vara synliga för den som hanterar användaren på <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Läs mer</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Aktiverar ...</translation>
 <translation id="6284232397434400372">Upplösningen har ändrats</translation>
@@ -243,6 +245,7 @@ Använd bara den här funktionen med konton som du litar på.</translation>
 <translation id="6857811139397017780">Aktivera <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Anslut till andra ...</translation>
 <translation id="6981982820502123353">Tillgänglighet</translation>
+<translation id="698231206551913481">Alla filer inklusive lokal data som tillhör den här användaren tas bort permanent när användaren tas bort.</translation>
 <translation id="7029814467594812963">Avsluta session</translation>
 <translation id="7034339000180558234">Castar <ph name="TAB_NAME" /> till <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Ange bakgrund ...</translation>

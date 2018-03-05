@@ -25,6 +25,7 @@
 <translation id="1525508553941733066">ЗАКРЫТЬ</translation>
 <translation id="15373452373711364">Большой курсор мыши</translation>
 <translation id="1550523713251050646">Чтобы изменить источник питания, нажмите здесь.</translation>
+<translation id="1608626060424371292">Удалить профиль</translation>
 <translation id="1621499497873603021">Оставшееся время работы от батареи: <ph name="TIME_LEFT" />.</translation>
 <translation id="1658406695958299976">Неверный пароль. Обратите внимание! Если вы недавно изменили пароль, но не выходили из системы, значит, новый пароль ещё не вступил в силу и необходимо указать старый.</translation>
 <translation id="1677472565718498478">Ещё <ph name="TIME" /></translation>
@@ -74,7 +75,6 @@
 <translation id="2653659639078652383">Отправить</translation>
 <translation id="2675319268637823299">Администратор отключил множественный вход для аккаунта <ph name="USER_EMAIL" />.
     Чтобы вы смогли войти в этот аккаунт, все остальные пользователи должны выйти из него.</translation>
-<translation id="2700058918926273959">Сеанс закончится через <ph name="SESSION_TIME_REMAINING" />. После этого будет выполнен выход.</translation>
 <translation id="2727977024730340865">Подключено маломощное зарядное устройство. Возможны проблемы при зарядке.</translation>
 <translation id="2761704814324807722">Строка состояния, время <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Повторное подключение к сети <ph name="NAME" />…</translation>
@@ -97,6 +97,7 @@
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">Снизу</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
+<translation id="3112378005171663295">Свернуть</translation>
 <translation id="3126069444801937830">Перезагрузите, чтобы обновить</translation>
 <translation id="3147142846278915599">Панель запуска (синхронизация приложений...)</translation>
 <translation id="315116470104423982">Мобильное подключение</translation>
@@ -209,6 +210,7 @@
 <translation id="607652042414456612">Расположенные поблизости устройства Bluetooth видят ваш компьютер под именем <ph name="NAME" /> с адресом <ph name="ADDRESS" />.</translation>
 <translation id="6106745654298855237"><ph name="POWER_SOURCE" /> заряжается</translation>
 <translation id="615957422585914272">Показывать экранную клавиатуру</translation>
+<translation id="6164005077879661055">После удаления контролируемого профиля все файлы и локальные данные, связанные с ним, будут удалены. Посещенные страницы и настройки этого профиля будут видны его менеджеру на странице: <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Подробнее...</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: выполняется активация...</translation>
 <translation id="6284232397434400372">Разрешение изменено</translation>
@@ -243,6 +245,7 @@
 <translation id="6857811139397017780">Активировать <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Подключиться к другой сети...</translation>
 <translation id="6981982820502123353">Специальные возможности</translation>
+<translation id="698231206551913481">После удаления пользователя все связанные с ним файлы и локальные данные также будут удалены.</translation>
 <translation id="7029814467594812963">Завершить сеанс</translation>
 <translation id="7034339000180558234">Трансляция вкладки "<ph name="TAB_NAME" />": <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Выбрать обои</translation>
