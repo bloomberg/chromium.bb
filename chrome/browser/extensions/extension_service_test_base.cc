@@ -94,7 +94,6 @@ ExtensionServiceTestBase::ExtensionServiceTestBase()
     return;
   }
   data_dir_ = test_data_dir.AppendASCII("extensions");
-  CrxInstaller::set_connector_for_test(test_data_decoder_service_.connector());
 }
 
 ExtensionServiceTestBase::~ExtensionServiceTestBase() {

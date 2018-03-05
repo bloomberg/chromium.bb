@@ -17,6 +17,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/prefs/pref_service.h"
+#include "components/unzip_service/unzip_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/service_manager_connection.h"
 #include "extensions/browser/extension_prefs.h"
@@ -30,6 +31,8 @@
 #include "extensions/browser/state_store.h"
 #include "extensions/browser/value_store/test_value_store_factory.h"
 #include "extensions/browser/value_store/testing_value_store.h"
+#include "services/data_decoder/data_decoder_service.h"
+#include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #if defined(OS_CHROMEOS)
 #include "components/user_manager/user_manager.h"
 #endif
@@ -74,11 +77,20 @@ ExtensionService* TestExtensionSystem::CreateExtensionService(
       profile_, command_line, install_directory, ExtensionPrefs::Get(profile_),
       Blacklist::Get(profile_), autoupdate_enabled, extensions_enabled,
       &ready_));
-  if (!test_data_decoder_service_) {
-    test_data_decoder_service_ =
-        std::make_unique<data_decoder::TestDataDecoderService>();
+
+  if (!connector_factory_) {
+    service_manager::TestConnectorFactory::NameToServiceMap services;
+    services.insert(std::make_pair(
+        "data_decoder", std::make_unique<data_decoder::DataDecoderService>()));
+    services.insert(std::make_pair("unzip_service",
+                                   std::make_unique<unzip::UnzipService>()));
+    connector_factory_ =
+        service_manager::TestConnectorFactory::CreateForServices(
+            std::move(services));
+    connector_ = connector_factory_->CreateConnector();
+    CrxInstaller::set_connector_for_test(connector_.get());
   }
-  CrxInstaller::set_connector_for_test(test_data_decoder_service_->connector());
+
   extension_service_->ClearProvidersForTesting();
   return extension_service_.get();
 }
