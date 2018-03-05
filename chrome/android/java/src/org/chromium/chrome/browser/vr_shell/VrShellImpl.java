@@ -682,16 +682,21 @@ public class VrShellImpl
 
         mCompositorView.onExitVr(mActivity.getWindowAndroid());
 
-        mActivity.getToolbarManager().setProgressBarEnabled(true);
+        if (mActivity.getToolbarManager() != null) {
+            mActivity.getToolbarManager().setProgressBarEnabled(true);
+        }
 
         // Since VSync was paused, control heights may not have been propagated. If we request to
         // show the controls before the old values have propagated we'll end up with the old values
         // (ie. the controls hidden). The values will have propagated with the next frame received
         // from the compositor, so we can tell the controls to show at that point.
-        mActivity.getCompositorViewHolder().getCompositorView().surfaceRedrawNeededAsync(() -> {
-            ChromeFullscreenManager manager = mActivity.getFullscreenManager();
-            manager.getBrowserVisibilityDelegate().showControlsTransient();
-        });
+        if (mActivity.getCompositorViewHolder() != null
+                && mActivity.getCompositorViewHolder().getCompositorView() != null) {
+            mActivity.getCompositorViewHolder().getCompositorView().surfaceRedrawNeededAsync(() -> {
+                ChromeFullscreenManager manager = mActivity.getFullscreenManager();
+                manager.getBrowserVisibilityDelegate().showControlsTransient();
+            });
+        }
 
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.VR_BROWSING_NATIVE_ANDROID_UI)) {
             mActivity.getModalDialogManager().cancelAllDialogs();
