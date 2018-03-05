@@ -184,7 +184,7 @@ bool SurfacelessSkiaRenderer::Initialize() {
       overlay_buffer_[i]->Initialize(gr_context_.get(),
                                      gfx::kNullAcceleratedWidget, overlay_size);
       SkCanvas* sk_canvas = overlay_buffer_[i]->sk_surface()->getCanvas();
-      sk_canvas->clear(SkColorSetARGB(255, 255 * i, 255, 0));
+      sk_canvas->clear(SkColorSetARGB(96, 255 * i, 255, 0));
     }
   }
 
