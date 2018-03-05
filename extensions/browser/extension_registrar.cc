@@ -5,6 +5,7 @@
 #include "extensions/browser/extension_registrar.h"
 
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -58,8 +59,25 @@ void ExtensionRegistrar::AddExtension(
     int version_compare_result = extension->version().CompareTo(old->version());
     is_extension_upgrade = version_compare_result > 0;
     // Other than for unpacked extensions, we should not be downgrading.
-    if (!Manifest::IsUnpackedLocation(extension->location()))
-      CHECK_GE(version_compare_result, 0);
+    if (!Manifest::IsUnpackedLocation(extension->location()) &&
+        version_compare_result < 0) {
+      UMA_HISTOGRAM_ENUMERATION(
+          "Extensions.AttemptedToDowngradeVersionLocation",
+          extension->location(), Manifest::NUM_LOCATIONS);
+      UMA_HISTOGRAM_ENUMERATION("Extensions.AttemptedToDowngradeVersionType",
+                                extension->GetType(), Manifest::NUM_LOAD_TYPES);
+
+      // TODO(https://crbug.com/810799): It would be awfully nice to CHECK this,
+      // but that's caused problems. There are apparently times when this
+      // happens that we aren't accounting for. We should track those down and
+      // fix them, but it can be tricky.
+      NOTREACHED() << "Attempted to downgrade extension."
+                   << "\nID: " << extension->id()
+                   << "\nOld Version: " << old->version()
+                   << "\nNew Version: " << extension->version()
+                   << "\nLocation: " << extension->location();
+      return;
+    }
   }
 
   // If the extension was disabled for a reload, we will enable it.
