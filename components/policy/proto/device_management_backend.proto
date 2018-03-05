@@ -1488,36 +1488,40 @@ message SystemState {
 message AppInstallReportLogEvent {
   // Enumerates the possible event types.
   enum EventType {
+    // Not used.
+    LOG_EVENT_TYPE_UNKNOWN = 0;
     // Request received by device
-    SERVER_REQUEST = 0;
+    SERVER_REQUEST = 1;
     // Request forwarded to CloudDPC
-    CLOUDDPC_REQUEST = 1;
+    CLOUDDPC_REQUEST = 2;
     // Request forwarded to CloudDPS
-    CLOUDDPS_REQUEST = 2;
+    CLOUDDPS_REQUEST = 3;
     // Response received from CloudDPS
-    CLOUDDPS_RESPONSE = 3;
+    CLOUDDPS_RESPONSE = 4;
     // Log line written by Phonesky
-    PHONESKY_LOG = 4;
+    PHONESKY_LOG = 5;
     // Install success
-    SUCCESS = 5;
+    SUCCESS = 6;
     // Request canceled
-    CANCELED = 6;
+    CANCELED = 7;
     // Connectivity state changed
-    CONNECTIVITY_CHANGE = 7;
+    CONNECTIVITY_CHANGE = 8;
     // Session state changed
-    SESSION_STATE_CHANGE = 8;
+    SESSION_STATE_CHANGE = 9;
   }
 
   // Enumerates the possible changes in session state.
   enum SessionStateChangeType {
+    // Not used.
+    SESSION_STATE_CHANGE_TYPE_UNKNOWN = 0;
     // Session starting
-    LOGIN = 0;
+    LOGIN = 1;
     // Session ending
-    LOGOUT = 1;
+    LOGOUT = 2;
     // Suspending
-    SUSPEND = 2;
+    SUSPEND = 3;
     // Resuming
-    RESUME = 3;
+    RESUME = 4;
   }
 
   // Timestamp, in milliseconds since epoch. Set for all log
@@ -1537,10 +1541,11 @@ message AppInstallReportLogEvent {
   // Log line written by Phonesky. Set for event type PHONESKY_LOG.
   optional string phonesky_log = 5;
 
-  // Network state. Set for SERVER_REQUEST and CONNECTIVITY_CHANGE.
-  optional NetworkState network_state = 6;
+  // Network state. Set for event type SESSION_STATE_CHANGE of type LOGIN and
+  // CONNECTIVITY_CHANGE.
+  optional bool online = 6;
 
-  // Type of session state change. Set for SESSION_STATE_CHANGE.
+  // Type of session state change. Set for event type SESSION_STATE_CHANGE.
   optional SessionStateChangeType session_state_change_type = 7;
 }
 
