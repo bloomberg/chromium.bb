@@ -36,5 +36,3 @@ gen-signedexchange \
   -privateKey /tmp/wildcard_example.org.private.pem \
   -o test.example.org_test.htxg \
   -miRecordSize=100
-
-
