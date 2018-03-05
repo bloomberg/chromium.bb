@@ -32,8 +32,8 @@
 #define WebSharedWorkerRepositoryClient_h
 
 #include <memory>
-#include "public/web/shared_worker_creation_context_type.mojom-shared.h"
 #include "third_party/WebKit/public/mojom/net/ip_address_space.mojom-shared.h"
+#include "third_party/WebKit/public/mojom/shared_worker/shared_worker_creation_context_type.mojom-shared.h"
 
 namespace blink {
 
