@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_DOWNLOAD_RESOURCE_DOWNLOADER_
 #define CONTENT_BROWSER_DOWNLOAD_RESOURCE_DOWNLOADER_
 
-#include "components/download/public/common/download_response_handler.h"
+#include "content/browser/download/download_response_handler.h"
 #include "content/browser/download/url_download_handler.h"
 #include "content/public/browser/ssl_status.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -18,7 +18,7 @@ class SharedURLLoaderFactory;
 
 // Class for handing the download of a url.
 class ResourceDownloader : public UrlDownloadHandler,
-                           public download::DownloadResponseHandler::Delegate {
+                           public DownloadResponseHandler::Delegate {
  public:
   // Called to start a download, must be called on IO thread.
   static std::unique_ptr<ResourceDownloader> BeginDownload(
@@ -56,7 +56,7 @@ class ResourceDownloader : public UrlDownloadHandler,
                      uint32_t download_id);
   ~ResourceDownloader() override;
 
-  // download::DownloadResponseHandler::Delegate
+  // DownloadResponseHandler::Delegate
   void OnResponseStarted(
       std::unique_ptr<download::DownloadCreateInfo> download_create_info,
       download::mojom::DownloadStreamHandlePtr stream_handle) override;

@@ -24,7 +24,6 @@ component("public") {
     "download_interrupt_reasons_utils.h",
     "download_item.h",
     "download_request_handle_interface.h",
-    "download_response_handler.h",
     "download_save_info.cc",
     "download_save_info.h",
     "download_source.h",
@@ -33,7 +32,6 @@ component("public") {
     "download_ukm_helper.h",
     "download_url_parameters.cc",
     "download_url_parameters.h",
-    "download_utils.h",
     "rate_estimator.h",
     "resume_mode.h",
   ]
@@ -42,7 +40,6 @@ component("public") {
 
   public_deps = [
     ":interfaces",
-    "//services/network/public/mojom",
   ]
 
   deps = [
