@@ -64,24 +64,11 @@ ImageDataBuffer::ImageDataBuffer(scoped_refptr<StaticBitmapImage> image) {
   if (!retained_image_->peekPixels(&pixmap_))
     return;
   is_valid_ = true;
-  uses_pixmap_ = true;
   size_ = IntSize(image->width(), image->height());
-}
-
-ImageDataBuffer::ImageDataBuffer(const IntSize& size,
-                                 const unsigned char* data,
-                                 const CanvasColorParams& color_params)
-    : data_(data),
-      color_params_(color_params),
-      uses_pixmap_(false),
-      is_valid_(true),
-      size_(size) {
-  is_valid_ = data && !size_.IsEmpty();
 }
 
 ImageDataBuffer::ImageDataBuffer(const SkPixmap& pixmap)
     : pixmap_(pixmap),
-      uses_pixmap_(true),
       size_(IntSize(pixmap.width(), pixmap.height())) {
   is_valid_ = pixmap_.addr() && !size_.IsEmpty();
 }
@@ -90,17 +77,6 @@ std::unique_ptr<ImageDataBuffer> ImageDataBuffer::Create(
     scoped_refptr<StaticBitmapImage> image) {
   std::unique_ptr<ImageDataBuffer> buffer =
       WTF::WrapUnique(new ImageDataBuffer(image));
-  if (!buffer->IsValid())
-    return nullptr;
-  return buffer;
-}
-
-std::unique_ptr<ImageDataBuffer> ImageDataBuffer::Create(
-    const IntSize& size,
-    const unsigned char* data,
-    const CanvasColorParams& color_params) {
-  std::unique_ptr<ImageDataBuffer> buffer =
-      WTF::WrapUnique(new ImageDataBuffer(size, data, color_params));
   if (!buffer->IsValid())
     return nullptr;
   return buffer;
@@ -117,27 +93,13 @@ std::unique_ptr<ImageDataBuffer> ImageDataBuffer::Create(
 
 const unsigned char* ImageDataBuffer::Pixels() const {
   DCHECK(is_valid_);
-  if (uses_pixmap_)
-    return static_cast<const unsigned char*>(pixmap_.addr());
-  return data_;
+  return static_cast<const unsigned char*>(pixmap_.addr());
 }
 
 bool ImageDataBuffer::EncodeImage(const String& mime_type,
                                   const double& quality,
                                   Vector<unsigned char>* encoded_image) const {
   DCHECK(is_valid_);
-  SkPixmap src;
-  if (uses_pixmap_) {
-    src = pixmap_;
-  } else {
-    SkColorType color_type = kRGBA_8888_SkColorType;
-    if (color_params_.GetSkColorType() != kN32_SkColorType)
-      color_type = kRGBA_F16_SkColorType;
-    SkImageInfo info = SkImageInfo::Make(size_.Width(), size_.Height(),
-                                         color_type, kUnpremul_SkAlphaType,
-                                         color_params_.GetSkColorSpace());
-    src.reset(info, data_, info.minRowBytes());
-  }
 
   if (mime_type == "image/jpeg") {
     SkJpegEncoder::Options options;
@@ -147,13 +109,13 @@ bool ImageDataBuffer::EncodeImage(const String& mime_type,
     if (options.fQuality == 100) {
       options.fDownsample = SkJpegEncoder::Downsample::k444;
     }
-    return ImageEncoder::Encode(encoded_image, src, options);
+    return ImageEncoder::Encode(encoded_image, pixmap_, options);
   }
 
   if (mime_type == "image/webp") {
     SkWebpEncoder::Options options = ImageEncoder::ComputeWebpOptions(
         quality, SkTransferFunctionBehavior::kIgnore);
-    return ImageEncoder::Encode(encoded_image, src, options);
+    return ImageEncoder::Encode(encoded_image, pixmap_, options);
   }
 
   DCHECK_EQ(mime_type, "image/png");
@@ -161,7 +123,7 @@ bool ImageDataBuffer::EncodeImage(const String& mime_type,
   options.fFilterFlags = SkPngEncoder::FilterFlag::kSub;
   options.fZLibLevel = 3;
   options.fUnpremulBehavior = SkTransferFunctionBehavior::kIgnore;
-  return ImageEncoder::Encode(encoded_image, src, options);
+  return ImageEncoder::Encode(encoded_image, pixmap_, options);
 }
 
 String ImageDataBuffer::ToDataURL(const String& mime_type,

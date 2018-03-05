@@ -45,10 +45,6 @@ class PLATFORM_EXPORT ImageDataBuffer {
  public:
   static std::unique_ptr<ImageDataBuffer> Create(
       scoped_refptr<StaticBitmapImage>);
-  static std::unique_ptr<ImageDataBuffer> Create(
-      const IntSize&,
-      const unsigned char*,
-      const CanvasColorParams& = CanvasColorParams());
   static std::unique_ptr<ImageDataBuffer> Create(const SkPixmap&);
 
   String ToDataURL(const String& mime_type, const double& quality) const;
@@ -69,11 +65,8 @@ class PLATFORM_EXPORT ImageDataBuffer {
 
   bool IsValid() { return is_valid_; }  // Only used by Create()
 
-  const unsigned char* data_;
-  const CanvasColorParams color_params_;
   sk_sp<SkImage> retained_image_;
   SkPixmap pixmap_;
-  bool uses_pixmap_ = false;
   bool is_valid_ = false;
   IntSize size_;
 };

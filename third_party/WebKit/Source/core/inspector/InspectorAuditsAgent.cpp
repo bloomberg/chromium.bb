@@ -49,8 +49,8 @@ bool EncodeAsImage(char* body,
   if (!image || !image->readPixels(pixmap, 0, 0))
     return false;
 
-  std::unique_ptr<ImageDataBuffer> image_to_encode = ImageDataBuffer::Create(
-      IntSize(bitmap.width(), bitmap.height()), pixel_storage.data());
+  std::unique_ptr<ImageDataBuffer> image_to_encode =
+      ImageDataBuffer::Create(pixmap);
   if (!image_to_encode)
     return false;
 
