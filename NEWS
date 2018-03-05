@@ -13,7 +13,11 @@ issues]].
   cursor position and the ~compbrlAtCursor~ mode. Thanks to Dave Mielke.
 
 ** Braille table improvements
-- Improvements to Unified French Grade 2 thanks to André-Abush Clause
+- Add a display table that maps braille dots to brl/brf character set.
+  For an in depth explanation see the corresponding [[https://github.com/liblouis/liblouis/issues/503][github issue]].
+  Thanks to Rimas Kudelis
+- Major Improvements to Unified French Grade 2 thanks to André-Abush
+  Clause
 - Fix braille number input for Greek Braille thanks to Dave Mielke
 - Add a fix for "phad" according to UEB Rule 10.7.3 thanks to Anthony
   Tibbs
