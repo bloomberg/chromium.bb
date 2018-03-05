@@ -633,6 +633,8 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   uint32_t content_source_id_;
   viz::LocalSurfaceId local_surface_id_;
+  // Used to detect surface invariant violations.
+  bool has_pushed_local_surface_id_ = false;
   bool defer_commits_ = false;
 
   SkColor background_color_ = SK_ColorWHITE;
