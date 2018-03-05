@@ -4,9 +4,9 @@
 
 package org.chromium.chrome.browser.webapps;
 
-import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.Context;
+import android.support.v4.app.NotificationCompat;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
@@ -67,7 +67,7 @@ public class WebApkDisclosureNotificationManager {
                 NotificationBuilderFactory.createChromeNotificationBuilder(
                         false /* preferCompat */, ChannelDefinitions.CHANNEL_ID_BROWSER);
         builder.setContentTitle(webappInfo.name())
-                .setPriority(Notification.PRIORITY_MIN)
+                .setPriorityBeforeO(NotificationCompat.PRIORITY_MIN)
                 .setSmallIcon(R.drawable.ic_chrome)
                 .setLargeIcon(webappInfo.icon())
                 .setDeleteIntent(WebApkDisclosureNotificationService.getDeleteIntent(

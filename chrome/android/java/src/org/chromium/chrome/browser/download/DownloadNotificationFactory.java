@@ -26,6 +26,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.app.NotificationCompat;
 
 import com.google.ipc.invalidation.util.Preconditions;
 
@@ -121,7 +122,7 @@ public final class DownloadNotificationFactory {
                 }
 
                 builder.setOngoing(true)
-                        .setPriority(Notification.PRIORITY_HIGH)
+                        .setPriorityBeforeO(NotificationCompat.PRIORITY_HIGH)
                         .setAutoCancel(false)
                         .setLargeIcon(downloadUpdate.getIcon())
                         .addAction(R.drawable.ic_pause_white_24dp,

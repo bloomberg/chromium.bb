@@ -154,8 +154,11 @@ public class NotificationBuilder implements ChromeNotificationBuilder {
     }
 
     @Override
-    public ChromeNotificationBuilder setPriority(int pri) {
-        mBuilder.setPriority(pri);
+    @SuppressWarnings("deprecation")
+    public ChromeNotificationBuilder setPriorityBeforeO(int pri) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            mBuilder.setPriority(pri);
+        }
         return this;
     }
 
