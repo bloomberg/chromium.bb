@@ -98,6 +98,8 @@ const char* ToString(ax::mojom::Event event) {
       return "selectionRemove";
     case ax::mojom::Event::kShow:
       return "show";
+    case ax::mojom::Event::kStateChanged:
+      return "stateChanged";
     case ax::mojom::Event::kTextChanged:
       return "textChanged";
     case ax::mojom::Event::kTextSelectionChanged:
