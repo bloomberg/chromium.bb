@@ -159,7 +159,6 @@ dist_braille_specs_TESTS =				  \
 	braille-specs/fr-bfu-comp8.yaml			  \
 	braille-specs/fr-bfu-g2.yaml			  \
 	braille-specs/fr-bfu-g2_harness.yaml		  \
-	braille-specs/fr-fr-g1.yaml			  \
 	braille-specs/ga-g1_harness.yaml		  \
 	braille-specs/ga-g2_harness.yaml		  \
 	braille-specs/hr-8dots_harness.yaml		  \

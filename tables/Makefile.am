@@ -136,11 +136,6 @@ table_files = \
 	fr-bfu-comp6.utb \
 	fr-bfu-comp8.utb \
 	fr-bfu-g2.ctb \
-	fr-ca-g1.utb \
-	Fr-Ca-g2.ctb \
-	fr_CA.tbl \
-	fr-fr-g1.utb \
-	Fr-Fr-g2.ctb \
 	fr.tbl \
 	ga-g1.utb \
 	ga-g2.ctb \
