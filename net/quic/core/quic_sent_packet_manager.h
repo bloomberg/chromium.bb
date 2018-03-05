@@ -218,13 +218,15 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
 
   // Called when an ack frame is initially parsed.
   void OnAckFrameStart(QuicPacketNumber largest_acked,
-                       QuicTime::Delta ack_delay_time);
+                       QuicTime::Delta ack_delay_time,
+                       QuicTime ack_receive_time);
 
-  // Called when ack range [start, end) is received.
-  void OnAckRange(QuicPacketNumber start,
-                  QuicPacketNumber end,
-                  bool last_range,
-                  QuicTime ack_receive_time);
+  // Called when ack range [start, end) is received. Populates packets_acked_
+  // with newly acked packets.
+  void OnAckRange(QuicPacketNumber start, QuicPacketNumber end);
+
+  // Called when an ack frame is parsed completely.
+  void OnAckFrameEnd(QuicTime ack_receive_time);
 
   // Called to enable/disable letting session decide what to write.
   void SetSessionDecideWhatToWrite(bool session_decides_what_to_write);
@@ -347,6 +349,13 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   void MarkForRetransmission(QuicPacketNumber packet_number,
                              TransmissionType transmission_type);
 
+  // Called after packets have been marked handled with last received ack frame.
+  void PostProcessAfterMarkingPacketHandled(
+      const QuicAckFrame& ack_frame,
+      QuicTime ack_receive_time,
+      bool rtt_updated,
+      QuicByteCount prior_bytes_in_flight);
+
   // Notify observers that packet with QuicTransmissionInfo |info| is a spurious
   // retransmission. It is caller's responsibility to guarantee the packet with
   // QuicTransmissionInfo |info| is a spurious retransmission before calling
@@ -460,6 +469,17 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
 
   // Latest received ack frame.
   QuicAckFrame last_ack_frame_;
+
+  // Record whether RTT gets updated by last largest acked. This is only used
+  // when quic_reloadable_flag_quic_use_incremental_ack_processing2 is true.
+  bool rtt_updated_;
+
+  // Packets that have been acked. This interval set only stores packets above
+  // least_unacked. This is only used when
+  // quic_reloadable_flag_quic_use_incremental_ack_processing2 is true.
+  // TODO(fayang): This is redundant with packets in last_ack_frame_. Remove
+  // this once we use optimized QuicIntervalSet in last_ack_frame.
+  QuicIntervalSet<QuicPacketNumber> all_packets_acked_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicSentPacketManager);
 };

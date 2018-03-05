@@ -612,7 +612,7 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   // owned. TODO(fayang): Consider add data producer to framer's constructor.
   QuicStreamFrameDataProducer* data_producer_;
 
-  // Latched value of quic_reloadable_flag_quic_use_incremental_ack_processing.
+  // Latched value of quic_reloadable_flag_quic_use_incremental_ack_processing2.
   const bool use_incremental_ack_processing_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicFramer);

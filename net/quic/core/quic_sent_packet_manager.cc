@@ -90,7 +90,8 @@ QuicSentPacketManager::QuicSentPacketManager(
       handshake_confirmed_(false),
       largest_packet_peer_knows_is_acked_(0),
       delayed_ack_time_(
-          QuicTime::Delta::FromMilliseconds(kDefaultDelayedAckTimeMs)) {
+          QuicTime::Delta::FromMilliseconds(kDefaultDelayedAckTimeMs)),
+      rtt_updated_(false) {
   SetSendAlgorithm(congestion_control_type);
 }
 
@@ -247,12 +248,22 @@ void QuicSentPacketManager::OnIncomingAck(const QuicAckFrame& ack_frame,
   unacked_packets_.IncreaseLargestObserved(LargestAcked(ack_frame));
 
   HandleAckForSentPackets(ack_frame);
+  PostProcessAfterMarkingPacketHandled(ack_frame, ack_receive_time, rtt_updated,
+                                       prior_in_flight);
+}
+
+void QuicSentPacketManager::PostProcessAfterMarkingPacketHandled(
+    const QuicAckFrame& ack_frame,
+    QuicTime ack_receive_time,
+    bool rtt_updated,
+    QuicByteCount prior_bytes_in_flight) {
   InvokeLossDetection(ack_receive_time);
   // Ignore losses in RTO mode.
   if (consecutive_rto_count_ > 0 && !use_new_rto_) {
     packets_lost_.clear();
   }
-  MaybeInvokeCongestionEvent(rtt_updated, prior_in_flight, ack_receive_time);
+  MaybeInvokeCongestionEvent(rtt_updated, prior_bytes_in_flight,
+                             ack_receive_time);
   unacked_packets_.RemoveObsoletePackets();
 
   sustained_bandwidth_recorder_.RecordEstimate(
@@ -1036,22 +1047,96 @@ void QuicSentPacketManager::OnConnectionMigration(AddressChangeType type) {
 }
 
 void QuicSentPacketManager::OnAckFrameStart(QuicPacketNumber largest_acked,
-                                            QuicTime::Delta ack_delay_time) {
-  last_ack_frame_.largest_acked = largest_acked;
+                                            QuicTime::Delta ack_delay_time,
+                                            QuicTime ack_receive_time) {
+  DCHECK(packets_acked_.empty());
+  DCHECK_LE(largest_acked, unacked_packets_.largest_sent_packet());
+  rtt_updated_ =
+      MaybeUpdateRTT(largest_acked, ack_delay_time, ack_receive_time);
+  DCHECK_GE(largest_acked, unacked_packets_.largest_observed());
   last_ack_frame_.ack_delay_time = ack_delay_time;
 }
 
 void QuicSentPacketManager::OnAckRange(QuicPacketNumber start,
-                                       QuicPacketNumber end,
-                                       bool last_range,
-                                       QuicTime ack_receive_time) {
-  last_ack_frame_.packets.AddRange(start, end);
-  if (!last_range) {
+                                       QuicPacketNumber end) {
+  if (end > last_ack_frame_.largest_acked + 1) {
+    // Optimization for the first range. We believe most newly acked packets are
+    // in the first ack range and larger than all previous acked packets.
+    QuicPacketNumber newly_acked_start =
+        std::max(start, last_ack_frame_.largest_acked + 1);
+    unacked_packets_.IncreaseLargestObserved(end - 1);
+    last_ack_frame_.largest_acked = end - 1;
+    all_packets_acked_.Add(newly_acked_start, end);
+    for (QuicPacketNumber acked = end - 1; acked >= newly_acked_start;
+         --acked) {
+      // Add sent packets in descending order.
+      packets_acked_.push_back(AckedPacket(acked, 0, QuicTime::Zero()));
+    }
+  }
+  QuicPacketNumber least_unacked = unacked_packets_.GetLeastUnacked();
+  // Exit if there are no newly acked packets in this ack range.
+  if (end <= least_unacked ||
+      all_packets_acked_.Contains(std::max(start, least_unacked), end)) {
     return;
   }
-  OnIncomingAck(last_ack_frame_, ack_receive_time);
-  // Clear last_ack_frame_.
-  last_ack_frame_.Clear();
+  // Execute the slow path if newly acked packets fill in existing holes.
+  QuicIntervalSet<QuicPacketNumber> newly_acked(std::max(start, least_unacked),
+                                                end);
+  newly_acked.Difference(all_packets_acked_);
+  all_packets_acked_.Add(newly_acked);
+  for (auto it = newly_acked.rbegin(); it != newly_acked.rend(); ++it) {
+    for (QuicPacketNumber acked = it->max() - 1; acked >= it->min(); --acked) {
+      // Add sent packets in descending order.
+      packets_acked_.push_back(AckedPacket(acked, 0, QuicTime::Zero()));
+    }
+  }
+}
+
+void QuicSentPacketManager::OnAckFrameEnd(QuicTime ack_receive_time) {
+  QuicByteCount prior_bytes_in_flight = unacked_packets_.bytes_in_flight();
+  // Reverse packets_acked_ so that it is in ascending order.
+  reverse(packets_acked_.begin(), packets_acked_.end());
+  for (AckedPacket& acked_packet : packets_acked_) {
+    QuicTransmissionInfo* info =
+        unacked_packets_.GetMutableTransmissionInfo(acked_packet.packet_number);
+    if (!QuicUtils::IsAckable(info->state)) {
+      if (info->state == ACKED) {
+        QUIC_BUG << "Trying to ack an already acked packet: "
+                 << acked_packet.packet_number;
+      } else {
+        QUIC_PEER_BUG << "Received ack for unackable packet: "
+                      << acked_packet.packet_number << " with state: "
+                      << QuicUtils::SentPacketStateToString(info->state);
+      }
+      continue;
+    }
+    QUIC_DVLOG(1) << ENDPOINT << "Got an ack for packet "
+                  << acked_packet.packet_number;
+    last_ack_frame_.packets.Add(acked_packet.packet_number);
+    if (info->largest_acked > 0) {
+      largest_packet_peer_knows_is_acked_ =
+          std::max(largest_packet_peer_knows_is_acked_, info->largest_acked);
+    }
+    // If data is associated with the most recent transmission of this
+    // packet, then inform the caller.
+    if (info->in_flight) {
+      acked_packet.bytes_acked = info->bytes_sent;
+    } else {
+      // Unackable packets are skipped earlier.
+      largest_newly_acked_ = acked_packet.packet_number;
+    }
+    MarkPacketHandled(acked_packet.packet_number, info,
+                      last_ack_frame_.ack_delay_time);
+  }
+
+  PostProcessAfterMarkingPacketHandled(last_ack_frame_, ack_receive_time,
+                                       rtt_updated_, prior_bytes_in_flight);
+  // TODO(fayang): Move these two lines to PostProcessAfterMarkingPacketHandled
+  // when deprecating quic_reloadable_flag_quic_use_incremental_ack_processing2.
+  // Remove packets below least unacked from all_packets_acked_ and
+  // last_ack_frame_.
+  last_ack_frame_.packets.RemoveUpTo(unacked_packets_.GetLeastUnacked());
+  all_packets_acked_.Difference(0, unacked_packets_.GetLeastUnacked());
 }
 
 void QuicSentPacketManager::SetDebugDelegate(DebugDelegate* debug_delegate) {
