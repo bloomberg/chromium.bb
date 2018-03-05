@@ -11,6 +11,9 @@
 
 @class GridCell;
 
+// The accessibility label for the close button for use in test automation.
+extern NSString* const kGridCellCloseButtonAccessibilityID;
+
 // Informs the receiver of actions on the cell.
 @protocol GridCellDelegate
 - (void)closeButtonTappedForCell:(GridCell*)cell;

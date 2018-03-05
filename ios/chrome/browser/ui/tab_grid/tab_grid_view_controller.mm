@@ -31,7 +31,7 @@ UIAlertController* NotImplementedAlert() {
 }  // namespace
 
 @interface TabGridViewController ()<GridViewControllerDelegate,
-                                    UIScrollViewDelegate>
+                                    UIScrollViewAccessibilityDelegate>
 // Child view controllers.
 @property(nonatomic, strong) GridViewController* regularTabsViewController;
 @property(nonatomic, strong) GridViewController* incognitoTabsViewController;
@@ -122,6 +122,21 @@ UIAlertController* NotImplementedAlert() {
   float fractionalPage = scrollView.contentOffset.x / pageWidth;
   NSUInteger page = lround(fractionalPage);
   self.currentPage = static_cast<TabGridPage>(page);
+}
+
+#pragma mark - UIScrollViewAccessibilityDelegate
+
+- (NSString*)accessibilityScrollStatusForScrollView:(UIScrollView*)scrollView {
+  // TODO(crbug.com/818699) : Localize strings.
+  // This reads the new page whenever the user scrolls in VoiceOver.
+  switch (self.currentPage) {
+    case TabGridPageIncognitoTabs:
+      return @"Incognito Tabs page";
+    case TabGridPageRegularTabs:
+      return @"Regular Tabs page";
+    case TabGridPageRemoteTabs:
+      return @"Remote Tabs page";
+  }
 }
 
 #pragma mark - TabGridTransitionStateProvider properties
@@ -341,6 +356,7 @@ UIAlertController* NotImplementedAlert() {
 - (void)setupTopToolbarButtons {
   self.doneButton = self.topToolbar.leadingButton;
   self.closeAllButton = self.topToolbar.trailingButton;
+  // TODO(crbug.com/818699) : Localize strings.
   [self.doneButton setTitle:@"Done" forState:UIControlStateNormal];
   [self.closeAllButton setTitle:@"Close All" forState:UIControlStateNormal];
   [self.doneButton addTarget:self
@@ -353,6 +369,7 @@ UIAlertController* NotImplementedAlert() {
 
 // Adds the bottom toolbar buttons.
 - (void)setupBottomToolbarButtons {
+  // TODO(crbug.com/818699) : Localize strings.
   [self.bottomToolbar.leadingButton setTitle:@"Done"
                                     forState:UIControlStateNormal];
   [self.bottomToolbar.trailingButton setTitle:@"Close All"
@@ -405,8 +422,8 @@ UIAlertController* NotImplementedAlert() {
     case TabGridPageRegularTabs:
       [self.regularTabsDelegate closeAllItems];
       break;
-    default:
-      NOTREACHED() << "Invalid TabGridPage when Close All button was tapped.";
+    case TabGridPageRemoteTabs:
+      // No-op. It is invalid to call close all tabs on remote tabs.
       break;
   }
 }
