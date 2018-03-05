@@ -98,6 +98,7 @@ struct ColorScheme {
 
   ButtonColors back_button;
   SkColor url_bar_separator;
+  SkColor url_bar_hint;
 
   // These colors feed the URL origin texture.
   UrlBarColors url_bar;

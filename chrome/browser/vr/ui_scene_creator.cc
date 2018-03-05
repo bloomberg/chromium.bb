@@ -1752,7 +1752,7 @@ void UiSceneCreator::CreateUrlBar() {
   hint_text->SetAlignment(UiTexture::kTextAlignmentLeft);
   hint_text->SetText(l10n_util::GetStringUTF16(IDS_SEARCH_OR_TYPE_WEB_ADDRESS));
   VR_BIND_VISIBILITY(hint_text, !model->toolbar_state.should_display_url);
-  VR_BIND_COLOR(model_, hint_text.get(), &ColorScheme::omnibox_hint,
+  VR_BIND_COLOR(model_, hint_text.get(), &ColorScheme::url_bar_hint,
                 &Text::SetColor);
   EventHandlers event_handlers;
   event_handlers.button_up = url_click_callback;
