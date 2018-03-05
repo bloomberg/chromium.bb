@@ -774,6 +774,12 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kRelaunchNotificationPeriod,
     base::Value::Type::INTEGER },
 #endif  // !defined(OS_ANDROID)
+
+#if !defined(OS_ANDROID)
+  { key::kAutoplayAllowed,
+    prefs::kAutoplayAllowed,
+    base::Value::Type::BOOLEAN },
+#endif  // !defined(OS_ANDROID)
 };
 // clang-format on
 

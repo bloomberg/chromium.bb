@@ -3623,6 +3623,14 @@
     ]
   },
 
+  "AutoplayAllowed": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": { "AutoplayAllowed": false },
+    "pref_mappings": [
+      { "pref": "media.autoplay_allowed" }
+    ]
+  },
+
   "----- Chrome Frame policies -------------------------------------------": {},
 
   "ChromeFrameRendererSettings": {
