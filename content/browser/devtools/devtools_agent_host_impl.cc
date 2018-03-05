@@ -176,23 +176,37 @@ DevToolsSession* DevToolsAgentHostImpl::SessionByClient(
   return it == session_by_client_.end() ? nullptr : it->second.get();
 }
 
-void DevToolsAgentHostImpl::InnerAttachClient(DevToolsAgentHostClient* client) {
+bool DevToolsAgentHostImpl::InnerAttachClient(DevToolsAgentHostClient* client,
+                                              bool restricted) {
   scoped_refptr<DevToolsAgentHostImpl> protect(this);
-  DevToolsSession* session = new DevToolsSession(this, client);
+  DevToolsSession* session = new DevToolsSession(this, client, restricted);
   sessions_.insert(session);
   session_by_client_[client].reset(session);
-  AttachSession(session);
+  if (!AttachSession(session)) {
+    sessions_.erase(session);
+    session_by_client_.erase(client);
+    return false;
+  }
+
   if (sessions_.size() == 1)
     NotifyAttached();
   DevToolsManager* manager = DevToolsManager::GetInstance();
   if (manager->delegate())
     manager->delegate()->ClientAttached(this, client);
+  return true;
 }
 
 void DevToolsAgentHostImpl::AttachClient(DevToolsAgentHostClient* client) {
   if (SessionByClient(client))
     return;
-  InnerAttachClient(client);
+  InnerAttachClient(client, false /* restricted */);
+}
+
+bool DevToolsAgentHostImpl::AttachRestrictedClient(
+    DevToolsAgentHostClient* client) {
+  if (SessionByClient(client))
+    return false;
+  return InnerAttachClient(client, true /* restricted */);
 }
 
 void DevToolsAgentHostImpl::ForceAttachClient(DevToolsAgentHostClient* client) {
@@ -200,9 +214,9 @@ void DevToolsAgentHostImpl::ForceAttachClient(DevToolsAgentHostClient* client) {
     return;
   scoped_refptr<DevToolsAgentHostImpl> protect(this);
   if (!sessions_.empty())
-    ForceDetachAllClients();
+    ForceDetachAllSessions();
   DCHECK(sessions_.empty());
-  InnerAttachClient(client);
+  InnerAttachClient(client, false /* restricted */);
 }
 
 bool DevToolsAgentHostImpl::DetachClient(DevToolsAgentHostClient* client) {
@@ -298,16 +312,34 @@ bool DevToolsAgentHostImpl::Inspect() {
   return false;
 }
 
-void DevToolsAgentHostImpl::ForceDetachAllClients() {
+void DevToolsAgentHostImpl::ForceDetachAllSessions() {
   scoped_refptr<DevToolsAgentHostImpl> protect(this);
-  while (!session_by_client_.empty()) {
-    DevToolsAgentHostClient* client = session_by_client_.begin()->first;
-    InnerDetachClient(client);
+  while (!sessions_.empty()) {
+    DevToolsAgentHostClient* client = (*sessions_.begin())->client();
+    DetachClient(client);
     client->AgentHostClosed(this);
   }
 }
 
-void DevToolsAgentHostImpl::AttachSession(DevToolsSession* session) {}
+void DevToolsAgentHostImpl::ForceDetachRestrictedSessions() {
+  if (sessions_.empty())
+    return;
+  scoped_refptr<DevToolsAgentHostImpl> protect(this);
+  std::vector<DevToolsSession*> restricted;
+  for (DevToolsSession* session : sessions_) {
+    if (session->restricted())
+      restricted.push_back(session);
+  }
+  for (DevToolsSession* session : restricted) {
+    DevToolsAgentHostClient* client = session->client();
+    DetachClient(client);
+    client->AgentHostClosed(this);
+  }
+}
+
+bool DevToolsAgentHostImpl::AttachSession(DevToolsSession* session) {
+  return false;
+}
 
 void DevToolsAgentHostImpl::DetachSession(DevToolsSession* session) {}
 
@@ -325,7 +357,7 @@ void DevToolsAgentHost::DetachAllClients() {
   DevToolsMap copy = g_devtools_instances.Get();
   for (DevToolsMap::iterator it(copy.begin()); it != copy.end(); ++it) {
     DevToolsAgentHostImpl* agent_host = it->second;
-    agent_host->ForceDetachAllClients();
+    agent_host->ForceDetachAllSessions();
   }
 }
 

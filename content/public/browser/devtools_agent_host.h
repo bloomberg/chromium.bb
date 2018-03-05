@@ -115,6 +115,12 @@ class CONTENT_EXPORT DevToolsAgentHost
   // Attaches |client| to this agent host to start debugging.
   virtual void AttachClient(DevToolsAgentHostClient* client) = 0;
 
+  // Attaches |client| to this agent host to start debugging.
+  // This client will be restricted in certain ways. For example,
+  // it will be detached when attempting to debug WebUI pages.
+  // Returns |true| on success.
+  virtual bool AttachRestrictedClient(DevToolsAgentHostClient* client) = 0;
+
   // Attaches |client| to this agent host to start debugging. Disconnects
   // any existing clients.
   virtual void ForceAttachClient(DevToolsAgentHostClient* client) = 0;

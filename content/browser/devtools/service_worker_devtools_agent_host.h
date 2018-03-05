@@ -47,7 +47,7 @@ class ServiceWorkerDevToolsAgentHost : public DevToolsAgentHostImpl {
   bool Close() override;
 
   // DevToolsAgentHostImpl overrides.
-  void AttachSession(DevToolsSession* session) override;
+  bool AttachSession(DevToolsSession* session) override;
   void DetachSession(DevToolsSession* session) override;
   void DispatchProtocolMessage(DevToolsSession* session,
                                const std::string& message) override;

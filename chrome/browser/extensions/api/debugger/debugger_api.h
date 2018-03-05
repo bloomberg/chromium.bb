@@ -77,6 +77,7 @@ class DebuggerSendCommandFunction : public DebuggerFunction {
 
   DebuggerSendCommandFunction();
   void SendResponseBody(base::DictionaryValue* result);
+  void SendDetachedError();
 
  protected:
   ~DebuggerSendCommandFunction() override;

@@ -114,7 +114,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   ~RenderFrameDevToolsAgentHost() override;
 
   // DevToolsAgentHostImpl overrides.
-  void AttachSession(DevToolsSession* session) override;
+  bool AttachSession(DevToolsSession* session) override;
   void DetachSession(DevToolsSession* session) override;
   void InspectElement(RenderFrameHost* frame_host, int x, int y) override;
   void DispatchProtocolMessage(DevToolsSession* session,
@@ -135,6 +135,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   void DidReceiveCompositorFrame() override;
 
   bool IsChildFrame();
+  bool IsFrameHostAllowedForRestrictedSessions();
 
   void OnSwapCompositorFrame(const IPC::Message& message);
   void DestroyOnRenderFrameGone();

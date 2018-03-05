@@ -17,6 +17,8 @@ class MockDevToolsAgentHost : public content::DevToolsAgentHost {
 
   // DevToolsAgentHost implementation.
   MOCK_METHOD1(AttachClient, void(content::DevToolsAgentHostClient* client));
+  MOCK_METHOD1(AttachRestrictedClient,
+               bool(content::DevToolsAgentHostClient* client));
   MOCK_METHOD1(ForceAttachClient,
                void(content::DevToolsAgentHostClient* client));
   MOCK_METHOD1(DetachClient, bool(content::DevToolsAgentHostClient* client));
