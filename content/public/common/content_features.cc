@@ -559,10 +559,6 @@ const base::Feature kMacV2Sandbox{"MacV2Sandbox",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_MACOSX)
 
-// Enables V8 background compilation
-const base::Feature kV8BackgroundCompile{"V8BackgroundCompile",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables to use a snapshot file in creating V8 contexts.
 const base::Feature kV8ContextSnapshot{"V8ContextSnapshot",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
