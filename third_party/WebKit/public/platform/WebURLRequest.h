@@ -56,6 +56,8 @@ class WebURL;
 
 class WebURLRequest {
  public:
+  // The enum values should remain synchronized with the enum
+  // WebURLRequestPriority in tools/metrics/histograms.enums.xml.
   enum class Priority {
     kUnresolved = -1,
     kVeryLow,
