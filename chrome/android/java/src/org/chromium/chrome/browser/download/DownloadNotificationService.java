@@ -501,6 +501,7 @@ public class DownloadNotificationService extends Service {
     @VisibleForTesting
     @TargetApi(Build.VERSION_CODES.N)
     void stopForegroundInternal(boolean killNotification) {
+        Log.w(TAG, "stopForegroundInternal killNotification: " + killNotification);
         if (!useForegroundService()) return;
         stopForeground(killNotification ? STOP_FOREGROUND_REMOVE : STOP_FOREGROUND_DETACH);
     }
@@ -511,6 +512,7 @@ public class DownloadNotificationService extends Service {
      */
     @VisibleForTesting
     void startForegroundInternal() {
+        Log.w(TAG, "startForegroundInternal");
         if (!useForegroundService()) return;
         Notification notification =
                 buildSummaryNotification(getApplicationContext(), mNotificationManager);
@@ -570,6 +572,7 @@ public class DownloadNotificationService extends Service {
      * @param id The {@link ContentId} of the download that has been started and should be tracked.
      */
     private void startTrackingInProgressDownload(ContentId id) {
+        Log.w(TAG, "startTrackingInProgressDownload");
         if (mDownloadsInProgress.size() == 0) startForegroundInternal();
         if (!mDownloadsInProgress.contains(id)) mDownloadsInProgress.add(id);
     }
@@ -586,6 +589,7 @@ public class DownloadNotificationService extends Service {
      *                            potentially bad state where we cannot dismiss the notification.
      */
     private void stopTrackingInProgressDownload(ContentId id, boolean allowStopForeground) {
+        Log.w(TAG, "stopTrackingInProgressDownload");
         mDownloadsInProgress.remove(id);
         if (allowStopForeground && mDownloadsInProgress.size() == 0) stopForegroundInternal(false);
     }
@@ -630,6 +634,7 @@ public class DownloadNotificationService extends Service {
      */
     @SuppressLint("NewApi") // useForegroundService guards StatusBarNotification.getNotification
     boolean hideSummaryNotificationIfNecessary(int notificationIdToIgnore) {
+        Log.w(TAG, "hideSummaryNotificationIfNecessary id: " + notificationIdToIgnore);
         if (mDownloadsInProgress.size() > 0) return false;
 
         if (useForegroundService()) {

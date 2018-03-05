@@ -20,6 +20,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ServiceCompat;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.AppHooks;
 
@@ -27,6 +28,7 @@ import org.chromium.chrome.browser.AppHooks;
  * Keep-alive foreground service for downloads.
  */
 public class DownloadForegroundService extends Service {
+    private static final String TAG = "DownloadFg";
     private static final String KEY_PERSISTED_NOTIFICATION_ID = "PersistedNotificationId";
     private final IBinder mBinder = new LocalBinder();
 
@@ -73,6 +75,9 @@ public class DownloadForegroundService extends Service {
      */
     public void startOrUpdateForegroundService(int newNotificationId, Notification newNotification,
             int oldNotificationId, Notification oldNotification) {
+        Log.w(TAG,
+                "startOrUpdateForegroundService new: " + newNotificationId
+                        + ", old: " + oldNotificationId);
         // Handle notifications and start foreground.
         if (oldNotificationId == INVALID_NOTIFICATION_ID && oldNotification == null) {
             // If there is no old notification or old notification id, just start foreground.
@@ -118,6 +123,9 @@ public class DownloadForegroundService extends Service {
     public boolean stopDownloadForegroundService(
             @StopForegroundNotification int stopForegroundNotification, int pinnedNotificationId,
             Notification pinnedNotification) {
+        Log.w(TAG,
+                "stopDownloadForegroundService status: " + stopForegroundNotification
+                        + ", id: " + pinnedNotificationId);
         // Record when stopping foreground.
         DownloadNotificationUmaHelper.recordForegroundServiceLifecycleHistogram(
                 DownloadNotificationUmaHelper.ForegroundLifecycle.STOP);
@@ -190,8 +198,10 @@ public class DownloadForegroundService extends Service {
             // Alert observers that the service restarted with null intent.
             // Pass along the id of the notification that was pinned to the service when it died so
             // that the observers can do any corrections (ie. relaunch notification) if needed.
+            int persistedNotificationId = getPersistedNotificationId();
+            Log.w(TAG, "onStartCommand intent: " + null + ", id: " + persistedNotificationId);
             DownloadForegroundServiceObservers.alertObserversServiceRestarted(
-                    getPersistedNotificationId());
+                    persistedNotificationId);
             clearPersistedNotificationId();
 
             // Allow observers to restart service on their own, if needed.
@@ -280,11 +290,13 @@ public class DownloadForegroundService extends Service {
 
     @VisibleForTesting
     void startForegroundInternal(int notificationId, Notification notification) {
+        Log.w(TAG, "startForegroundInternal id: " + notificationId);
         startForeground(notificationId, notification);
     }
 
     @VisibleForTesting
     void stopForegroundInternal(int flags) {
+        Log.w(TAG, "stopForegroundInternal flags: " + flags);
         ServiceCompat.stopForeground(this, flags);
     }
 
