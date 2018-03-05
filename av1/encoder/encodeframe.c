@@ -797,18 +797,7 @@ static void sum_intra_stats(FRAME_COUNTS *counts, MACROBLOCKD *xd,
                            xd->plane[AOM_PLANE_U].subsampling_x,
                            xd->plane[AOM_PLANE_U].subsampling_y))
     return;
-  if (av1_is_directional_mode(get_uv_mode(mbmi->uv_mode)) &&
-      av1_use_angle_delta(bsize)) {
-#if CONFIG_ENTROPY_STATS
-    ++counts->angle_delta[mbmi->uv_mode - V_PRED]
-                         [mbmi->angle_delta[PLANE_TYPE_UV] + MAX_ANGLE_DELTA];
-#endif
-    if (allow_update_cdf) {
-      update_cdf(fc->angle_delta_cdf[mbmi->uv_mode - V_PRED],
-                 mbmi->angle_delta[PLANE_TYPE_UV] + MAX_ANGLE_DELTA,
-                 2 * MAX_ANGLE_DELTA + 1);
-    }
-  }
+
 #if CONFIG_ENTROPY_STATS
   ++counts->uv_mode[is_cfl_allowed(mbmi)][y_mode][uv_mode];
 #endif  // CONFIG_ENTROPY_STATS
@@ -816,6 +805,46 @@ static void sum_intra_stats(FRAME_COUNTS *counts, MACROBLOCKD *xd,
     const CFL_ALLOWED_TYPE cfl_allowed = is_cfl_allowed(mbmi);
     update_cdf(fc->uv_mode_cdf[cfl_allowed][y_mode], uv_mode,
                UV_INTRA_MODES - !cfl_allowed);
+  }
+  if (uv_mode == UV_CFL_PRED) {
+    const int joint_sign = mbmi->cfl_alpha_signs;
+    const int idx = mbmi->cfl_alpha_idx;
+
+#if CONFIG_ENTROPY_STATS
+    ++counts->cfl_sign[joint_sign];
+#endif
+    if (allow_update_cdf)
+      update_cdf(fc->cfl_sign_cdf, joint_sign, CFL_JOINT_SIGNS);
+    if (CFL_SIGN_U(joint_sign) != CFL_SIGN_ZERO) {
+      aom_cdf_prob *cdf_u = fc->cfl_alpha_cdf[CFL_CONTEXT_U(joint_sign)];
+
+#if CONFIG_ENTROPY_STATS
+      ++counts->cfl_alpha[CFL_CONTEXT_U(joint_sign)][CFL_IDX_U(idx)];
+#endif
+      if (allow_update_cdf)
+        update_cdf(cdf_u, CFL_IDX_U(idx), CFL_ALPHABET_SIZE);
+    }
+    if (CFL_SIGN_V(joint_sign) != CFL_SIGN_ZERO) {
+      aom_cdf_prob *cdf_v = fc->cfl_alpha_cdf[CFL_CONTEXT_V(joint_sign)];
+
+#if CONFIG_ENTROPY_STATS
+      ++counts->cfl_alpha[CFL_CONTEXT_V(joint_sign)][CFL_IDX_V(idx)];
+#endif
+      if (allow_update_cdf)
+        update_cdf(cdf_v, CFL_IDX_V(idx), CFL_ALPHABET_SIZE);
+    }
+  }
+  if (av1_is_directional_mode(get_uv_mode(uv_mode)) &&
+      av1_use_angle_delta(bsize)) {
+#if CONFIG_ENTROPY_STATS
+    ++counts->angle_delta[uv_mode - UV_V_PRED]
+                         [mbmi->angle_delta[PLANE_TYPE_UV] + MAX_ANGLE_DELTA];
+#endif
+    if (allow_update_cdf) {
+      update_cdf(fc->angle_delta_cdf[uv_mode - UV_V_PRED],
+                 mbmi->angle_delta[PLANE_TYPE_UV] + MAX_ANGLE_DELTA,
+                 2 * MAX_ANGLE_DELTA + 1);
+    }
   }
 }
 

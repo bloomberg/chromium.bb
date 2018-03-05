@@ -210,6 +210,18 @@ int main(int argc, const char **argv) {
                    "default_uv_mode_cdf[CFL_ALLOWED_TYPES][INTRA_MODES]"
                    "[CDF_SIZE(UV_INTRA_MODES)]");
 
+  /* Chroma from Luma */
+  cts_each_dim[0] = CFL_JOINT_SIGNS;
+  optimize_cdf_table(&fc.cfl_sign[0], probsfile, 1, cts_each_dim,
+                     "static const aom_cdf_prob\n"
+                     "default_cfl_sign_cdf[CDF_SIZE(CFL_JOINT_SIGNS)]");
+  cts_each_dim[0] = CFL_ALPHA_CONTEXTS;
+  cts_each_dim[1] = CFL_ALPHABET_SIZE;
+  optimize_cdf_table(&fc.cfl_alpha[0][0], probsfile, 2, cts_each_dim,
+                     "static const aom_cdf_prob\n"
+                     "default_cfl_alpha_cdf[CFL_ALPHA_CONTEXTS]"
+                     "[CDF_SIZE(CFL_ALPHABET_SIZE)]");
+
   /* Partition */
   cts_each_dim[0] = PARTITION_CONTEXTS;
   cts_each_dim[1] = EXT_PARTITION_TYPES;

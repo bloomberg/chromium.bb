@@ -184,6 +184,8 @@ typedef struct FRAME_COUNTS {
   unsigned int angle_delta[DIRECTIONAL_MODES][2 * MAX_ANGLE_DELTA + 1];
   unsigned int y_mode[BLOCK_SIZE_GROUPS][INTRA_MODES];
   unsigned int uv_mode[CFL_ALLOWED_TYPES][INTRA_MODES][UV_INTRA_MODES];
+  unsigned int cfl_sign[CFL_JOINT_SIGNS];
+  unsigned int cfl_alpha[CFL_ALPHA_CONTEXTS][CFL_ALPHABET_SIZE];
 #endif  // CONFIG_ENTROPY_STATS
   unsigned int partition[PARTITION_CONTEXTS][EXT_PARTITION_TYPES];
   unsigned int switchable_interp[SWITCHABLE_FILTER_CONTEXTS]
