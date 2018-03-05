@@ -437,11 +437,11 @@ void ExtensionHost::RequestMediaAccessPermission(
 }
 
 bool ExtensionHost::CheckMediaAccessPermission(
-    content::WebContents* web_contents,
+    content::RenderFrameHost* render_frame_host,
     const GURL& security_origin,
     content::MediaStreamType type) {
   return delegate_->CheckMediaAccessPermission(
-      web_contents, security_origin, type, extension());
+      render_frame_host, security_origin, type, extension());
 }
 
 bool ExtensionHost::IsNeverVisible(content::WebContents* web_contents) {

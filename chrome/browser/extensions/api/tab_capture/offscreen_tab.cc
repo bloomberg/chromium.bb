@@ -347,10 +347,11 @@ void OffscreenTab::RequestMediaAccessPermission(
 }
 
 bool OffscreenTab::CheckMediaAccessPermission(
-    WebContents* contents,
+    content::RenderFrameHost* render_frame_host,
     const GURL& security_origin,
     content::MediaStreamType type) {
-  DCHECK_EQ(offscreen_tab_web_contents_.get(), contents);
+  DCHECK_EQ(offscreen_tab_web_contents_.get(),
+            content::WebContents::FromRenderFrameHost(render_frame_host));
   return type == content::MEDIA_TAB_AUDIO_CAPTURE ||
       type == content::MEDIA_TAB_VIDEO_CAPTURE;
 }

@@ -555,11 +555,11 @@ void WebUILoginView::RequestMediaAccessPermission(
 }
 
 bool WebUILoginView::CheckMediaAccessPermission(
-    content::WebContents* web_contents,
+    content::RenderFrameHost* render_frame_host,
     const GURL& security_origin,
     content::MediaStreamType type) {
   return MediaCaptureDevicesDispatcher::GetInstance()
-      ->CheckMediaAccessPermission(web_contents, security_origin, type);
+      ->CheckMediaAccessPermission(render_frame_host, security_origin, type);
 }
 
 bool WebUILoginView::PreHandleGestureEvent(

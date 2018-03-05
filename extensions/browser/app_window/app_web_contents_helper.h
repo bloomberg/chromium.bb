@@ -14,6 +14,7 @@ class WebGestureEvent;
 
 namespace content {
 class BrowserContext;
+class RenderFrameHost;
 struct OpenURLParams;
 class WebContents;
 }
@@ -50,7 +51,8 @@ class AppWebContentsHelper {
 
   // Checks permission to use the camera or microphone. See
   // WebContentsDelegate.
-  bool CheckMediaAccessPermission(const GURL& security_origin,
+  bool CheckMediaAccessPermission(content::RenderFrameHost* render_frame_host,
+                                  const GURL& security_origin,
                                   content::MediaStreamType type) const;
 
  private:

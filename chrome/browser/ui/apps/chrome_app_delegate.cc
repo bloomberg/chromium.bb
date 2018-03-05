@@ -272,13 +272,13 @@ void ChromeAppDelegate::RequestMediaAccessPermission(
 }
 
 bool ChromeAppDelegate::CheckMediaAccessPermission(
-    content::WebContents* web_contents,
+    content::RenderFrameHost* render_frame_host,
     const GURL& security_origin,
     content::MediaStreamType type,
     const extensions::Extension* extension) {
   return MediaCaptureDevicesDispatcher::GetInstance()
-      ->CheckMediaAccessPermission(
-          web_contents, security_origin, type, extension);
+      ->CheckMediaAccessPermission(render_frame_host, security_origin, type,
+                                   extension);
 }
 
 int ChromeAppDelegate::PreferredIconSize() const {

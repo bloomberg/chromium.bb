@@ -14,6 +14,7 @@
 #include "chrome/common/url_constants.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
+#include "content/public/browser/render_frame_host.h"
 #include "url/gurl.h"
 
 ChromeOSLoginMediaAccessHandler::ChromeOSLoginMediaAccessHandler() {}
@@ -36,7 +37,7 @@ bool ChromeOSLoginMediaAccessHandler::SupportsStreamType(
 }
 
 bool ChromeOSLoginMediaAccessHandler::CheckMediaAccessPermission(
-    content::WebContents* web_contents,
+    content::RenderFrameHost* render_frame_host,
     const GURL& security_origin,
     content::MediaStreamType type,
     const extensions::Extension* extension) {
@@ -87,9 +88,11 @@ void ChromeOSLoginMediaAccessHandler::HandleRequest(
   bool audio_allowed = false;
   bool video_allowed =
       request.video_type == content::MEDIA_DEVICE_VIDEO_CAPTURE &&
-      CheckMediaAccessPermission(web_contents, request.security_origin,
-                                 content::MEDIA_DEVICE_VIDEO_CAPTURE,
-                                 extension);
+      CheckMediaAccessPermission(
+          content::RenderFrameHost::FromID(request.render_process_id,
+                                           request.render_frame_id),
+          request.security_origin, content::MEDIA_DEVICE_VIDEO_CAPTURE,
+          extension);
 
   CheckDevicesAndRunCallback(web_contents, request, callback, audio_allowed,
                              video_allowed);

@@ -39,8 +39,8 @@ MediaDevicesManager::BoolDeviceTypes DoCheckPermissionsOnUIThread(
 
   RenderFrameHostDelegate* delegate = frame_host->delegate();
   url::Origin origin = frame_host->GetLastCommittedOrigin();
-  bool audio_permission =
-      delegate->CheckMediaAccessPermission(origin, MEDIA_DEVICE_AUDIO_CAPTURE);
+  bool audio_permission = delegate->CheckMediaAccessPermission(
+      frame_host, origin, MEDIA_DEVICE_AUDIO_CAPTURE);
   bool mic_feature_policy = true;
   bool camera_feature_policy = true;
   if (base::FeatureList::IsEnabled(features::kUseFeaturePolicyForPermissions)) {
@@ -66,7 +66,7 @@ MediaDevicesManager::BoolDeviceTypes DoCheckPermissionsOnUIThread(
   // Camera.
   result[MEDIA_DEVICE_TYPE_VIDEO_INPUT] =
       requested_device_types[MEDIA_DEVICE_TYPE_VIDEO_INPUT] &&
-      delegate->CheckMediaAccessPermission(origin,
+      delegate->CheckMediaAccessPermission(frame_host, origin,
                                            MEDIA_DEVICE_VIDEO_CAPTURE) &&
       camera_feature_policy;
 

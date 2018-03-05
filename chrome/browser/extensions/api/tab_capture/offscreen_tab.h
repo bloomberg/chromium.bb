@@ -170,7 +170,7 @@ class OffscreenTab : protected content::WebContentsDelegate,
       content::WebContents* contents,
       const content::MediaStreamRequest& request,
       const content::MediaResponseCallback& callback) final;
-  bool CheckMediaAccessPermission(content::WebContents* contents,
+  bool CheckMediaAccessPermission(content::RenderFrameHost* render_frame_host,
                                   const GURL& security_origin,
                                   content::MediaStreamType type) final;
 

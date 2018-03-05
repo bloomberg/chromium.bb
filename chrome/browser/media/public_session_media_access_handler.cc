@@ -32,12 +32,12 @@ bool PublicSessionMediaAccessHandler::SupportsStreamType(
 }
 
 bool PublicSessionMediaAccessHandler::CheckMediaAccessPermission(
-    content::WebContents* web_contents,
+    content::RenderFrameHost* render_frame_host,
     const GURL& security_origin,
     content::MediaStreamType type,
     const extensions::Extension* extension) {
   return extension_media_access_handler_.CheckMediaAccessPermission(
-      web_contents, security_origin, type, extension);
+      render_frame_host, security_origin, type, extension);
 }
 
 void PublicSessionMediaAccessHandler::HandleRequest(

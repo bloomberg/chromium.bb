@@ -1448,20 +1448,24 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, TestLoginMediaPermission) {
   // Mic should always be blocked.
   EXPECT_FALSE(
       MediaCaptureDevicesDispatcher::GetInstance()->CheckMediaAccessPermission(
-          web_contents, url1, content::MEDIA_DEVICE_AUDIO_CAPTURE));
+          web_contents->GetMainFrame(), url1,
+          content::MEDIA_DEVICE_AUDIO_CAPTURE));
 
   // Camera should be allowed if allowed by the whitelist, otherwise blocked.
   EXPECT_TRUE(
       MediaCaptureDevicesDispatcher::GetInstance()->CheckMediaAccessPermission(
-          web_contents, url1, content::MEDIA_DEVICE_VIDEO_CAPTURE));
+          web_contents->GetMainFrame(), url1,
+          content::MEDIA_DEVICE_VIDEO_CAPTURE));
 
   EXPECT_TRUE(
       MediaCaptureDevicesDispatcher::GetInstance()->CheckMediaAccessPermission(
-          web_contents, url2, content::MEDIA_DEVICE_VIDEO_CAPTURE));
+          web_contents->GetMainFrame(), url2,
+          content::MEDIA_DEVICE_VIDEO_CAPTURE));
 
   EXPECT_FALSE(
       MediaCaptureDevicesDispatcher::GetInstance()->CheckMediaAccessPermission(
-          web_contents, url3, content::MEDIA_DEVICE_VIDEO_CAPTURE));
+          web_contents->GetMainFrame(), url3,
+          content::MEDIA_DEVICE_VIDEO_CAPTURE));
 
   // Camera should be blocked in the login screen, even if it's allowed via
   // content setting.
@@ -1474,7 +1478,8 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, TestLoginMediaPermission) {
 
   EXPECT_FALSE(
       MediaCaptureDevicesDispatcher::GetInstance()->CheckMediaAccessPermission(
-          web_contents, url3, content::MEDIA_DEVICE_VIDEO_CAPTURE));
+          web_contents->GetMainFrame(), url3,
+          content::MEDIA_DEVICE_VIDEO_CAPTURE));
 }
 
 }  // namespace chromeos

@@ -303,11 +303,11 @@ void TabWebContentsDelegateAndroid::RequestMediaAccessPermission(
 }
 
 bool TabWebContentsDelegateAndroid::CheckMediaAccessPermission(
-    content::WebContents* web_contents,
+    content::RenderFrameHost* render_frame_host,
     const GURL& security_origin,
     content::MediaStreamType type) {
   return MediaCaptureDevicesDispatcher::GetInstance()
-      ->CheckMediaAccessPermission(web_contents, security_origin, type);
+      ->CheckMediaAccessPermission(render_frame_host, security_origin, type);
 }
 
 void TabWebContentsDelegateAndroid::SetOverlayMode(bool use_overlay_mode) {

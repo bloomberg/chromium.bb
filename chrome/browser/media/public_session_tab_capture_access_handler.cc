@@ -31,12 +31,12 @@ bool PublicSessionTabCaptureAccessHandler::SupportsStreamType(
 }
 
 bool PublicSessionTabCaptureAccessHandler::CheckMediaAccessPermission(
-    content::WebContents* web_contents,
+    content::RenderFrameHost* render_frame_host,
     const GURL& security_origin,
     content::MediaStreamType type,
     const extensions::Extension* extension) {
   return tab_capture_access_handler_.CheckMediaAccessPermission(
-      web_contents, security_origin, type, extension);
+      render_frame_host, security_origin, type, extension);
 }
 
 void PublicSessionTabCaptureAccessHandler::HandleRequest(

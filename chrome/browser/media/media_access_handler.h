@@ -10,6 +10,7 @@
 #include "content/public/common/media_stream_request.h"
 
 namespace content {
+class RenderFrameHost;
 class WebContents;
 }
 
@@ -31,7 +32,7 @@ class MediaAccessHandler {
   // Check media access permission. |extension| is set to NULL if request was
   // made from a drive-by page.
   virtual bool CheckMediaAccessPermission(
-      content::WebContents* web_contents,
+      content::RenderFrameHost* render_frame_host,
       const GURL& security_origin,
       content::MediaStreamType type,
       const extensions::Extension* extension) = 0;

@@ -26,7 +26,7 @@ class TestWebContentsDelegate : public content::WebContentsDelegate {
  public:
   ~TestWebContentsDelegate() override {}
 
-  bool CheckMediaAccessPermission(WebContents* web_contents,
+  bool CheckMediaAccessPermission(RenderFrameHost* render_Frame_host,
                                   const GURL& security_origin,
                                   MediaStreamType type) override {
     return true;

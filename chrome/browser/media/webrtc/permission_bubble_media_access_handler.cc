@@ -72,10 +72,12 @@ bool PermissionBubbleMediaAccessHandler::SupportsStreamType(
 }
 
 bool PermissionBubbleMediaAccessHandler::CheckMediaAccessPermission(
-    content::WebContents* web_contents,
+    content::RenderFrameHost* render_frame_host,
     const GURL& security_origin,
     content::MediaStreamType type,
     const extensions::Extension* extension) {
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(render_frame_host);
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   ContentSettingsType content_settings_type =
@@ -87,8 +89,8 @@ bool PermissionBubbleMediaAccessHandler::CheckMediaAccessPermission(
   GURL embedding_origin = web_contents->GetLastCommittedURL().GetOrigin();
   PermissionManager* permission_manager = PermissionManager::Get(profile);
   return permission_manager
-             ->GetPermissionStatus(content_settings_type, security_origin,
-                                   embedding_origin)
+             ->GetPermissionStatusForFrame(content_settings_type,
+                                           render_frame_host, security_origin)
              .content_setting == CONTENT_SETTING_ALLOW;
 }
 
