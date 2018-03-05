@@ -110,7 +110,7 @@ struct LayoutBoxRareData {
   // layout overflow rect after the last paint invalidation. They are valid if
   // m_hasPreviousContentBoxSizeAndLayoutOverflowRect is true.
   LayoutSize previous_content_box_size_;
-  LayoutRect previous_layout_overflow_rect_;
+  LayoutRect previous_physical_layout_overflow_rect_;
 
   // Used by LocalFrameView::ScrollIntoView. When the scroll is sequenced
   // rather than instantly performed, we need the pending_offset_to_scroll
@@ -465,6 +465,11 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   LayoutRect NoOverflowRect() const;
   LayoutRect LayoutOverflowRect() const {
     return overflow_ ? overflow_->LayoutOverflowRect() : NoOverflowRect();
+  }
+  LayoutRect PhysicalLayoutOverflowRect() const {
+    LayoutRect overflow_rect = LayoutOverflowRect();
+    FlipForWritingMode(overflow_rect);
+    return overflow_rect;
   }
   IntRect PixelSnappedLayoutOverflowRect() const {
     return PixelSnappedIntRect(LayoutOverflowRect());
@@ -1393,11 +1398,11 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
                ? rare_data_->previous_content_box_size_
                : PreviousSize();
   }
-  LayoutRect PreviousLayoutOverflowRect() const {
+  LayoutRect PreviousPhysicalLayoutOverflowRect() const {
     return rare_data_ &&
                    rare_data_
                        ->has_previous_content_box_size_and_layout_overflow_rect_
-               ? rare_data_->previous_layout_overflow_rect_
+               ? rare_data_->previous_physical_layout_overflow_rect_
                : LayoutRect(LayoutPoint(), PreviousSize());
   }
 

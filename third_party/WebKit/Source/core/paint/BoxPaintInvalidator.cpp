@@ -236,8 +236,8 @@ bool BoxPaintInvalidator::ViewBackgroundShouldFullyInvalidate() const {
       if (document_background && document_background->IsBox()) {
         const auto* document_background_box = ToLayoutBox(document_background);
         if (ShouldFullyInvalidateBackgroundOnLayoutOverflowChange(
-                document_background_box->PreviousLayoutOverflowRect(),
-                document_background_box->LayoutOverflowRect())) {
+                document_background_box->PreviousPhysicalLayoutOverflowRect(),
+                document_background_box->PhysicalLayoutOverflowRect())) {
           return true;
         }
       }
@@ -261,8 +261,9 @@ BoxPaintInvalidator::ComputeBackgroundInvalidation() {
   if (!layout_overflow_change_causes_invalidation)
     return BackgroundInvalidationType::kNone;
 
-  const LayoutRect& old_layout_overflow = box_.PreviousLayoutOverflowRect();
-  LayoutRect new_layout_overflow = box_.LayoutOverflowRect();
+  const LayoutRect& old_layout_overflow =
+      box_.PreviousPhysicalLayoutOverflowRect();
+  LayoutRect new_layout_overflow = box_.PhysicalLayoutOverflowRect();
   if (ShouldFullyInvalidateBackgroundOnLayoutOverflowChange(
           old_layout_overflow, new_layout_overflow))
     return BackgroundInvalidationType::kFull;
@@ -293,8 +294,9 @@ void BoxPaintInvalidator::InvalidateScrollingContentsBackground(
     // to let ObjectPaintInvalidator::SetBackingNeedsPaintInvalidationInRect()
     // know we are invalidating on the scrolling contents backing.
     reason = PaintInvalidationReason::kBackgroundOnScrollingContentsLayer;
-    const LayoutRect& old_layout_overflow = box_.PreviousLayoutOverflowRect();
-    LayoutRect new_layout_overflow = box_.LayoutOverflowRect();
+    const LayoutRect& old_layout_overflow =
+        box_.PreviousPhysicalLayoutOverflowRect();
+    LayoutRect new_layout_overflow = box_.PhysicalLayoutOverflowRect();
     if (background_invalidation_type == BackgroundInvalidationType::kFull) {
       ObjectPaintInvalidatorWithContext(box_, context_)
           .FullyInvalidatePaint(reason, old_layout_overflow,

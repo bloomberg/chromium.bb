@@ -3363,15 +3363,6 @@ crbug.com/807110 external/wpt/media-source/mediasource-is-type-supported.html [ 
 crbug.com/807110 external/wpt/media-source/mediasource-sequencemode-append-buffer.html [ Failure Pass ]
 crbug.com/807110 external/wpt/media-source/mediasource-sourcebuffer-mode-timestamps.html [ Failure Pass ]
 
-################################################################################
-# Root Layer Scrolling expectations
-
-crbug.com/417782 paint/invalidation/window-resize/window-resize-vertical-writing-mode.html [ Crash ]
-crbug.com/417782 virtual/disable-spv175/paint/invalidation/window-resize/window-resize-vertical-writing-mode.html [ Skip ]
-
-# End of Root Layer Scrolling expectations
-################################################################################
-
 crbug.com/794338 media/video-rotation.html [ Skip ]
 crbug.com/811605 media/video-poster-after-loadedmetadata.html [ Failure Pass ]
 
