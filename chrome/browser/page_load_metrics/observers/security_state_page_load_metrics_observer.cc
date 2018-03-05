@@ -171,18 +171,12 @@ void SecurityStatePageLoadMetricsObserver::OnComplete(
     double final_engagement_score =
         engagement_service_->GetScore(extra_info.url);
 
-    // HTTPS UI Indicator Study (https://crbug.com/803501): Only collect UKM
-    // data for EV_SECURE or SECURE sites (which are potentially affected by the
-    // experimental UI).
-    if (initial_security_level_ == security_state::EV_SECURE ||
-        initial_security_level_ == security_state::SECURE) {
-      ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
-      ukm::builders::Security_SiteEngagement(source_id_)
-          .SetInitialSecurityLevel(initial_security_level_)
-          .SetFinalSecurityLevel(current_security_level_)
-          .SetScoreDelta(final_engagement_score - initial_engagement_score_)
-          .Record(ukm_recorder);
-    }
+    ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
+    ukm::builders::Security_SiteEngagement(source_id_)
+        .SetInitialSecurityLevel(initial_security_level_)
+        .SetFinalSecurityLevel(current_security_level_)
+        .SetScoreDelta(final_engagement_score - initial_engagement_score_)
+        .Record(ukm_recorder);
 
     // Get the change in Site Engagement score and transform it into the range
     // [0, 100] so it can be logged in an EXACT_LINEAR histogram.
