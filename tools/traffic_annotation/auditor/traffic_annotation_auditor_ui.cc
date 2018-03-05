@@ -439,7 +439,7 @@ int main(int argc, char* argv[]) {
 
   // Update annotations.xml if everything else is OK and the auditor is not
   // run in test-only mode.
-  if (errors.empty() && !test_only && auditor.exporter().modified()) {
+  if (errors.empty() && !test_only) {
     if (!auditor.exporter().SaveAnnotationsXML()) {
       LOG(ERROR) << "Could not update annotations XML.";
       return error_value;
