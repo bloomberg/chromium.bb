@@ -59,6 +59,14 @@ class NET_EXPORT ReportingCache {
   virtual void GetReports(
       std::vector<const ReportingReport*>* reports_out) const = 0;
 
+  // Gets all reports in the cache that aren't pending. The returned pointers
+  // are valid as long as either no calls to |RemoveReports| have happened or
+  // the reports' |pending| flag has been set to true using |SetReportsPending|.
+  //
+  // (Clears any existing data in |*reports_out|.)
+  virtual void GetNonpendingReports(
+      std::vector<const ReportingReport*>* reports_out) const = 0;
+
   // Marks a set of reports as pending. |reports| must not already be marked as
   // pending.
   virtual void SetReportsPending(

@@ -98,11 +98,18 @@ class TestReportingDelegate : public ReportingDelegate {
     disallow_report_uploads_ = disallow_report_uploads;
   }
 
+  void set_pause_permissions_check(bool pause_permissions_check) {
+    pause_permissions_check_ = pause_permissions_check;
+  }
+
   bool CanQueueReport(const url::Origin& origin) const override;
 
   void CanSendReports(std::set<url::Origin> origins,
                       base::OnceCallback<void(std::set<url::Origin>)>
                           result_callback) const override;
+
+  bool PermissionsCheckPaused() const;
+  void ResumePermissionsCheck();
 
   bool CanSetClient(const url::Origin& origin,
                     const GURL& endpoint) const override;
@@ -118,6 +125,11 @@ class TestReportingDelegate : public ReportingDelegate {
   std::unique_ptr<TestURLRequestContext> test_request_context_;
   std::unique_ptr<ReportingDelegate> real_delegate_;
   bool disallow_report_uploads_ = false;
+  bool pause_permissions_check_ = false;
+
+  mutable std::set<url::Origin> saved_origins_;
+  mutable base::OnceCallback<void(std::set<url::Origin>)>
+      permissions_check_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TestReportingDelegate);
 };
