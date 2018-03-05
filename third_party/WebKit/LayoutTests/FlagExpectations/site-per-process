@@ -12,19 +12,11 @@ crbug.com/794631 virtual/unified-autoplay/external/wpt/feature-policy/autoplay-a
 # https://crbug.com/793127: Crash related to frame consolidation CL.
 crbug.com/793127 http/tests/security/upgrade-insecure-requests/iframe-upgrade.https.html [ Crash ]
 
-# https://crbug.com/789781: Document blocking should skip these cases.
-crbug.com/789781 http/tests/xmlhttprequest/origin-whitelisting-exact-match.html [ Failure ]
-crbug.com/789781 http/tests/xmlhttprequest/origin-whitelisting-removal.html [ Failure ]
-crbug.com/789781 http/tests/xmlhttprequest/origin-whitelisting-subdomains.html [ Failure ]
-crbug.com/789781 http/tests/xmlhttprequest/xmlhttprequest-allowed-with-disabled-web-security.html [ Failure ]
-crbug.com/789781 http/tests/xmlhttprequest/workers/xmlhttprequest-allowed-with-disabled-web-security.html [ Failure ]
-
 # https://crbug.com/769502: PlzNavigate-related, not-yet-investigated timeout.
 crbug.com/769502 fast/loader/recursive-before-unload-crash.html [ Timeout ]
 
 # https://crbug.com/769508: PlzNavigate-related, not-yet-investigated failures.
 crbug.com/769508 fast/css/acid2.html [ Failure ]
-crbug.com/769508 fast/css/acid2-pixel.html [ Failure ]
 
 # https://crbug.com/765779: unique name trouble with PlzNavigate
 crbug.com/765779 http/tests/loading/bad-server-subframe.html [ Failure ]
@@ -40,9 +32,6 @@ crbug.com/697111 svg/dom/getScreenCTM-ancestor-transform.html [ Failure ]
 
 # https://crbug.com/669083: console messages mismatch (origin-only VS full-URI)
 crbug.com/669083 http/tests/security/frameNavigation/xss-DENIED-top-navigation-without-user-gesture.html [ Failure ]
-
-# https://crbug.com/661725 - Propagating user gesture via postMessage doesn't work for OOPIFs
-crbug.com/661725 http/tests/security/frameNavigation/xss-ALLOWED-top-navigation-after-postMessage.html [ Failure Timeout ]
 
 # https://crbug.com/582245 - no exception, b/c BindingSecurity::shouldAllowAccessTo exits early when |!target|.
 crbug.com/582245 external/wpt/x-frame-options/deny.sub.html [ Failure ]
@@ -82,9 +71,6 @@ crbug.com/606594 http/tests/local/serviceworker/fetch-request-body-file.html [ S
 # https://crbug.com/607991 - MockWebClipboardImpl not replicated across OOPIFs.
 crbug.com/607991 http/tests/misc/copy-resolves-urls.html [ Failure ]
 
-# https://crbug.com/611232 - CSP checks from remote parent frame do not properly report violations
-crbug.com/611232 http/tests/security/contentSecurityPolicy/frame-src-child-frame-navigates-to-blocked-origin.html [ Timeout ]
-
 # https://crbug.com/616626 - allow_universal_access_from_file_urls doesn't work with --site-per-process.
 # https://crbug.com/665058 - EventSender drag-and-drop simulation doesn't support OOPIFs.
 crbug.com/665058 http/tests/local/drag-over-remote-content.html [ Crash ]
@@ -118,9 +104,6 @@ crbug.com/24182 http/tests/perf/large-inlined-script.html [ Timeout Pass ]
 # This test needs to be modified to not rely on EventSender passing mouse events directly to an OOPIF.
 crbug.com/650348 http/tests/webaudio/autoplay-crossorigin.html [ Timeout ]
 
-# https://crbug.com/745881: Image diff in test due to font rendering issues.
-crbug.com/745881 [ Win ] fast/text/ellipsis-in-relative-inline.html [ Failure ]
-
 # https://crbug.com/778372: Unique name conflict with old entries?
 crbug.com/778372 external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Crash ]
 
@@ -139,7 +122,6 @@ Bug(none) external/wpt/html/browsers/origin/relaxing-the-same-origin-restriction
 Bug(none) external/wpt/FileAPI/url/multi-global-origin-serialization.sub.html [ Failure ]
 Bug(none) external/wpt/IndexedDB/interleaved-cursors.html [ Timeout ]
 Bug(none) external/wpt/xhr/xmlhttprequest-sync-default-feature-policy.sub.html [ Timeout ]
-Bug(none) external/wpt/content-security-policy/frame-ancestors/frame-ancestors-nested-cross-in-cross-none-block.html [ Timeout ]
 Bug(none) external/wpt/content-security-policy/frame-ancestors/frame-ancestors-nested-cross-in-cross-star-allow.html [ Timeout ]
 Bug(none) external/wpt/content-security-policy/frame-ancestors/frame-ancestors-nested-cross-in-same-star-allow.html [ Timeout ]
 Bug(none) external/wpt/content-security-policy/securitypolicyviolation/upgrade-insecure-requests-reporting.https.html [ Crash ]
@@ -149,10 +131,7 @@ Bug(none) external/wpt/dom/events/EventListener-incumbent-global-1.sub.html [ Ti
 Bug(none) external/wpt/dom/events/EventListener-incumbent-global-2.sub.html [ Timeout ]
 Bug(none) external/wpt/dom/nodes/Element-matches.html [ Failure ]
 Bug(none) external/wpt/encrypted-media/encrypted-media-default-feature-policy.https.sub.html [ Timeout ]
-Bug(none) external/wpt/feature-policy/payment-allowed-by-feature-policy-attribute-redirect-on-load.https.sub.html [ Timeout ]
-Bug(none) external/wpt/feature-policy/payment-allowed-by-feature-policy-attribute.https.sub.html [ Timeout ]
 Bug(none) external/wpt/feature-policy/payment-allowed-by-feature-policy.https.sub.html [ Timeout ]
-Bug(none) external/wpt/feature-policy/payment-default-feature-policy.https.sub.html [ Timeout ]
 Bug(none) external/wpt/feature-policy/payment-disabled-by-feature-policy.https.sub.html [ Timeout ]
 Bug(none) external/wpt/fetch/api/basic/keepalive.html [ Timeout ]
 Bug(none) external/wpt/fetch/api/redirect/redirect-location-worker.html [ Timeout ]
@@ -165,7 +144,6 @@ Bug(none) external/wpt/html/browsers/history/the-location-interface/allow_protot
 Bug(none) external/wpt/html/browsers/history/the-location-interface/location-origin-idna.sub.window.html [ Timeout ]
 Bug(none) external/wpt/html/browsers/history/the-location-interface/location-prototype-setting-same-origin-domain.sub.html [ Failure ]
 Bug(none) external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects-on-new-window.html [ Failure ]
-Bug(none) external/wpt/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/open-features-non-integer-top.html [ Crash ]
 Bug(none) external/wpt/html/browsers/the-windowproxy-exotic-object/windowproxy-prototype-setting-same-origin-domain.sub.html [ Failure ]
 Bug(none) external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-domain-success.sub.html [ Timeout ]
 Bug(none) external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-similar-but-cross-origin-success.sub.html [ Timeout ]
@@ -243,13 +221,8 @@ Bug(none) external/wpt/webmessaging/event.origin.sub.htm [ Failure ]
 Bug(none) external/wpt/webmessaging/postMessage_asterisk_xorigin.sub.htm [ Failure ]
 Bug(none) external/wpt/webmessaging/with-ports/021.html [ Failure ]
 Bug(none) external/wpt/webmessaging/without-ports/020.html [ Failure ]
-Bug(none) external/wpt/webusb/usb-allowed-by-feature-policy-attribute-redirect-on-load.https.sub.html [ Timeout ]
-Bug(none) external/wpt/webusb/usb-default-feature-policy.https.sub.html [ Timeout ]
 Bug(none) external/wpt/webusb/usb-disabled-by-feature-policy.https.sub.html [ Timeout ]
-Bug(none) external/wpt/webvr/webvr-disabled-by-feature-policy.https.sub.html [ Timeout ]
 Bug(none) external/wpt/webvr/webvr-enabled-by-feature-policy-attribute-redirect-on-load.https.sub.html [ Timeout ]
-Bug(none) external/wpt/webvr/webvr-enabled-on-self-origin-by-feature-policy.https.sub.html [ Timeout ]
-Bug(none) external/wpt/x-frame-options/invalid.sub.html [ Timeout ]
 Bug(none) jquery/manipulation.html [ Timeout ]
 Bug(none) storage/indexeddb/blob-valid-after-deletion.html [ Failure ]
 Bug(none) storage/indexeddb/blob-valid-before-commit.html [ Failure ]
@@ -263,7 +236,6 @@ crbug.com/801992 external/wpt/content-security-policy/frame-ancestors/frame-ance
 crbug.com/801992 external/wpt/content-security-policy/frame-ancestors/frame-ancestors-nested-same-in-cross-star-allow.html [ Pass Timeout ]
 crbug.com/801992 external/wpt/content-security-policy/frame-ancestors/frame-ancestors-nested-same-in-cross-url-allow.html [ Pass Timeout ]
 crbug.com/801992 external/wpt/content-security-policy/frame-ancestors/frame-ancestors-star-allow-crossorigin.html [ Pass Timeout ]
-crbug.com/801992 external/wpt/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/open-features-non-integer-width.html [ Crash ]
 crbug.com/801992 external/wpt/html/browsers/the-window-object/security-window/window-security.html [ Pass Timeout ]
 crbug.com/801992 http/tests/misc/iframe-script-modify-attr.html [ Pass Crash ]
 
