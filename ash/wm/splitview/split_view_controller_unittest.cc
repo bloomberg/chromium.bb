@@ -931,8 +931,8 @@ TEST_F(SplitViewControllerTest, SnapWindowWithMinimumSizeTest) {
   EXPECT_FALSE(split_view_controller()->CanSnap(window1.get()));
 }
 
-// Tests that the left or top snapped window can be moved outside of work area
-// when its minimum size is larger than its current bounds.
+// Tests that the snapped window can not be moved outside of work area when its
+// minimum size is larger than its current desired resizing bounds.
 TEST_F(SplitViewControllerTest, ResizingSnappedWindowWithMinimumSizeTest) {
   int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
   display::DisplayManager* display_manager = Shell::Get()->display_manager();
@@ -958,6 +958,7 @@ TEST_F(SplitViewControllerTest, ResizingSnappedWindowWithMinimumSizeTest) {
   split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
   delegate1->set_minimum_size(
       gfx::Size(display_bounds.width() * 0.4f, display_bounds.height()));
+  EXPECT_TRUE(window1->layer()->GetTargetTransform().IsIdentity());
 
   gfx::Rect divider_bounds =
       split_view_divider()->GetDividerBoundsInScreen(false);
@@ -968,9 +969,11 @@ TEST_F(SplitViewControllerTest, ResizingSnappedWindowWithMinimumSizeTest) {
   gfx::Rect snapped_window_bounds =
       split_view_controller()->GetSnappedWindowBoundsInScreen(
           window1.get(), SplitViewController::LEFT);
-  EXPECT_LT(snapped_window_bounds.x(), display_bounds.x());
+  // The snapped window bounds can't be pushed outside of the display area.
+  EXPECT_EQ(snapped_window_bounds.x(), display_bounds.x());
   EXPECT_EQ(snapped_window_bounds.width(),
             window1->delegate()->GetMinimumSize().width());
+  EXPECT_FALSE(window1->layer()->GetTargetTransform().IsIdentity());
   EndSplitView();
 
   // Rotate the screen by 270 degree.
@@ -985,6 +988,7 @@ TEST_F(SplitViewControllerTest, ResizingSnappedWindowWithMinimumSizeTest) {
       gfx::Size(display_bounds.width(), display_bounds.height() * 0.4f));
   EXPECT_TRUE(split_view_controller()->CanSnap(window1.get()));
   split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
+  EXPECT_TRUE(window1->layer()->GetTargetTransform().IsIdentity());
   divider_bounds = split_view_divider()->GetDividerBoundsInScreen(false);
   split_view_controller()->StartResize(divider_bounds.CenterPoint());
   resize_point.SetPoint(0, display_bounds.height() * 0.33f);
@@ -993,9 +997,10 @@ TEST_F(SplitViewControllerTest, ResizingSnappedWindowWithMinimumSizeTest) {
   snapped_window_bounds =
       split_view_controller()->GetSnappedWindowBoundsInScreen(
           window1.get(), SplitViewController::LEFT);
-  EXPECT_LT(snapped_window_bounds.y(), display_bounds.y());
+  EXPECT_EQ(snapped_window_bounds.y(), display_bounds.y());
   EXPECT_EQ(snapped_window_bounds.height(),
             window1->delegate()->GetMinimumSize().height());
+  EXPECT_FALSE(window1->layer()->GetTargetTransform().IsIdentity());
   EndSplitView();
 
   // Rotate the screen by 180 degree.
@@ -1011,6 +1016,7 @@ TEST_F(SplitViewControllerTest, ResizingSnappedWindowWithMinimumSizeTest) {
   EXPECT_TRUE(split_view_controller()->CanSnap(window1.get()));
   split_view_controller()->SnapWindow(window1.get(),
                                       SplitViewController::RIGHT);
+  EXPECT_TRUE(window1->layer()->GetTargetTransform().IsIdentity());
 
   divider_bounds = split_view_divider()->GetDividerBoundsInScreen(false);
   split_view_controller()->StartResize(divider_bounds.CenterPoint());
@@ -1020,9 +1026,10 @@ TEST_F(SplitViewControllerTest, ResizingSnappedWindowWithMinimumSizeTest) {
   snapped_window_bounds =
       split_view_controller()->GetSnappedWindowBoundsInScreen(
           window1.get(), SplitViewController::RIGHT);
-  EXPECT_LT(snapped_window_bounds.x(), display_bounds.x());
+  EXPECT_EQ(snapped_window_bounds.x(), display_bounds.x());
   EXPECT_EQ(snapped_window_bounds.width(),
             window1->delegate()->GetMinimumSize().width());
+  EXPECT_FALSE(window1->layer()->GetTargetTransform().IsIdentity());
   EndSplitView();
 
   // Rotate the screen by 90 degree.
@@ -1038,6 +1045,7 @@ TEST_F(SplitViewControllerTest, ResizingSnappedWindowWithMinimumSizeTest) {
   EXPECT_TRUE(split_view_controller()->CanSnap(window1.get()));
   split_view_controller()->SnapWindow(window1.get(),
                                       SplitViewController::RIGHT);
+  EXPECT_TRUE(window1->layer()->GetTargetTransform().IsIdentity());
 
   divider_bounds = split_view_divider()->GetDividerBoundsInScreen(false);
   split_view_controller()->StartResize(divider_bounds.CenterPoint());
@@ -1047,9 +1055,10 @@ TEST_F(SplitViewControllerTest, ResizingSnappedWindowWithMinimumSizeTest) {
   snapped_window_bounds =
       split_view_controller()->GetSnappedWindowBoundsInScreen(
           window1.get(), SplitViewController::RIGHT);
-  EXPECT_LT(snapped_window_bounds.y(), display_bounds.y());
+  EXPECT_EQ(snapped_window_bounds.y(), display_bounds.y());
   EXPECT_EQ(snapped_window_bounds.height(),
             window1->delegate()->GetMinimumSize().height());
+  EXPECT_FALSE(window1->layer()->GetTargetTransform().IsIdentity());
   EndSplitView();
 }
 

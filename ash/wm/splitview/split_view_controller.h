@@ -195,6 +195,13 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
   // resizing.
   void UpdateDividerPosition(const gfx::Point& location_in_screen);
 
+  // Get the window bounds for left_or_top and right_or_bottom snapped windows.
+  // Note the bounds returned by this function doesn't take the snapped windows
+  // minimum sizes into account.
+  void GetSnappedWindowBoundsInScreenInternal(aura::Window* window,
+                                              gfx::Rect* left_or_top_rect,
+                                              gfx::Rect* right_or_bottom_rect);
+
   // Splits the |work_area_rect| by |divider_rect| and outputs the two halves.
   // |left_or_top_rect|, |divider_rect| and |right_or_bottom_rect| should align
   // vertically or horizontally depending on |is_split_vertically|.
@@ -229,8 +236,8 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
 
   // If the desired bounds of the snapped windows bounds |left_or_top_rect| and
   // |right_or_bottom_rect| are smaller than the minimum bounds of the snapped
-  // windows, adjust the desired bounds to the minimum bounds by pushing the
-  // snapped windows out of the work area display area.
+  // windows, adjust the desired bounds to the minimum bounds. Note the snapped
+  // windows can't be pushed out of the work area display area.
   void AdjustSnappedWindowBounds(gfx::Rect* left_or_top_rect,
                                  gfx::Rect* right_or_bottom_rect);
 
@@ -261,6 +268,17 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
   // two snapped windows are always the top two windows when split view mode is
   // active.
   void RestoreAndActivateSnappedWindow(aura::Window* window);
+
+  // During resizing, it's possible that the resizing bounds of the snapped
+  // window is smaller than its minimum bounds, in this case we apply a
+  // translation to the snapped window to make it visually be placed outside of
+  // the workspace area.
+  void SetWindowsTransformDuringResizing();
+  // Restore the snapped windows transform to identity transform after resizing.
+  void RestoreWindowsTransformAfterResizing();
+
+  // Set |transform| for |window| and its transient descendants.
+  void SetTransform(aura::Window* window, const gfx::Transform& transform);
 
   // Starts/Ends overview mode if the overview mode is inactive/active.
   void StartOverview();
