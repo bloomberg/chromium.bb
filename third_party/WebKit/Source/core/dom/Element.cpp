@@ -4494,6 +4494,10 @@ StylePropertyMap* Element::attributeStyleMap() {
   return &EnsureElementRareData().EnsureInlineStylePropertyMap(this);
 }
 
+StylePropertyMapReadOnly* Element::ComputedStyleMap() {
+  return GetDocument().ComputedStyleMap(this);
+}
+
 MutableCSSPropertyValueSet& Element::EnsureMutableInlineStyle() {
   DCHECK(IsStyledElement());
   Member<CSSPropertyValueSet>& inline_style =

@@ -79,6 +79,7 @@ class SpaceSplitString;
 class StringOrTrustedHTML;
 class StringOrTrustedScriptURL;
 class StylePropertyMap;
+class StylePropertyMapReadOnly;
 class V0CustomElementDefinition;
 class V8ScrollStateCallback;
 
@@ -318,6 +319,7 @@ class CORE_EXPORT Element : public ContainerNode {
 
   CSSStyleDeclaration* style();
   StylePropertyMap* attributeStyleMap();
+  StylePropertyMapReadOnly* ComputedStyleMap();
 
   const QualifiedName& TagQName() const { return tag_name_; }
   String tagName() const { return nodeName(); }

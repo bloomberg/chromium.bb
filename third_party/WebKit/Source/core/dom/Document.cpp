@@ -54,6 +54,7 @@
 #include "core/css/StyleEngine.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/css/StyleSheetList.h"
+#include "core/css/cssom/ComputedStylePropertyMap.h"
 #include "core/css/invalidation/StyleInvalidator.h"
 #include "core/css/parser/CSSParser.h"
 #include "core/css/properties/CSSProperty.h"
@@ -7176,6 +7177,28 @@ const AtomicString& Document::RequiredCSP() {
   return Loader() ? Loader()->RequiredCSP() : g_null_atom;
 }
 
+StylePropertyMapReadOnly* Document::ComputedStyleMap(Element* element) {
+  ElementComputedStyleMap::AddResult add_result =
+      element_computed_style_map_.insert(element, nullptr);
+  if (add_result.is_new_entry)
+    add_result.stored_value->value = ComputedStylePropertyMap::Create(element);
+  return add_result.stored_value->value;
+}
+
+void Document::AddComputedStyleMapItem(
+    Element* element,
+    StylePropertyMapReadOnly* computed_style) {
+  element_computed_style_map_.insert(element, computed_style);
+}
+
+StylePropertyMapReadOnly* Document::RemoveComputedStyleMapItem(
+    Element* element) {
+  StylePropertyMapReadOnly* computed_style =
+      element_computed_style_map_.at(element);
+  element_computed_style_map_.erase(element);
+  return computed_style;
+}
+
 void Document::Trace(blink::Visitor* visitor) {
   visitor->Trace(imports_controller_);
   visitor->Trace(doc_type_);
@@ -7202,6 +7225,7 @@ void Document::Trace(blink::Visitor* visitor) {
   visitor->Trace(style_engine_);
   visitor->Trace(form_controller_);
   visitor->Trace(visited_link_state_);
+  visitor->Trace(element_computed_style_map_);
   visitor->Trace(frame_);
   visitor->Trace(dom_window_);
   visitor->Trace(fetcher_);
