@@ -398,6 +398,9 @@ std::string GetFragmentShaderSource(const gl::GLVersionInfo& gl_version_info,
       case GL_TEXTURE_EXTERNAL_OES:
         source += "#define TextureLookup texture2D\n";
         break;
+      case GL_TEXTURE_RECTANGLE_ARB:
+        source += "#define TextureLookup texture2DRect\n";
+        break;
       default:
         NOTREACHED();
         break;
