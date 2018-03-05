@@ -43,7 +43,7 @@ TestConfigurator::TestConfigurator()
   services.insert(
       std::make_pair("patch_service", std::make_unique<patch::PatchService>()));
   services.insert(
-      std::make_pair("unzip_service", std::make_unique<unzip::UnzipService>()));
+      std::make_pair("unzip_service", unzip::UnzipService::CreateService()));
   connector_factory_ = service_manager::TestConnectorFactory::CreateForServices(
       std::move(services));
   connector_ = connector_factory_->CreateConnector();

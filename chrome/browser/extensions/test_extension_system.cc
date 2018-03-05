@@ -82,8 +82,8 @@ ExtensionService* TestExtensionSystem::CreateExtensionService(
     service_manager::TestConnectorFactory::NameToServiceMap services;
     services.insert(std::make_pair(
         "data_decoder", std::make_unique<data_decoder::DataDecoderService>()));
-    services.insert(std::make_pair("unzip_service",
-                                   std::make_unique<unzip::UnzipService>()));
+    services.insert(
+        std::make_pair("unzip_service", unzip::UnzipService::CreateService()));
     connector_factory_ =
         service_manager::TestConnectorFactory::CreateForServices(
             std::move(services));

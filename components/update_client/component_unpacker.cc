@@ -82,7 +82,7 @@ bool ComponentUnpacker::BeginUnzipping() {
     return false;
   }
   VLOG(1) << "Unpacking in: " << destination.value();
-  unzip::Unzip(connector_.get(), path_, destination,
+  unzip::Unzip(connector_->Clone(), path_, destination,
                base::BindOnce(&ComponentUnpacker::EndUnzipping, this));
   return true;
 }

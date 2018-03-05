@@ -85,6 +85,13 @@ bool FilterNoFiles(const base::FilePath& unused) {
   return true;
 }
 
+bool FilterWithFilterPtr(mojom::UnzipFilterPtr* filter,
+                         const base::FilePath& path) {
+  bool result = false;
+  (*filter)->ShouldUnzipFile(path, &result);
+  return result;
+}
+
 }  // namespace
 
 UnzipperImpl::UnzipperImpl(
@@ -101,7 +108,26 @@ void UnzipperImpl::Unzip(base::File zip_file,
       zip_file.GetPlatformFile(),
       base::BindRepeating(&MakeFileWriterDelegate, &output_dir),
       base::BindRepeating(&CreateDirectory, &output_dir),
-      base::BindRepeating(&FilterNoFiles), false));
+      base::BindRepeating(&FilterNoFiles), /*log_skipped_files=*/false));
+}
+
+void UnzipperImpl::UnzipWithFilter(base::File zip_file,
+                                   filesystem::mojom::DirectoryPtr output_dir,
+                                   mojom::UnzipFilterPtr filter,
+                                   UnzipCallback callback) {
+  DCHECK(zip_file.IsValid());
+
+  // Note that we pass a pointer to |filter| below, as it is a repeating
+  // callback and transferring its value would cause the callback to fail when
+  // called more than once. It is safe to pass a pointer as
+  // UnzipWithFilterAndWriters is synchronous, so |filter| won't be used when
+  // the method returns.
+  std::move(callback).Run(zip::UnzipWithFilterAndWriters(
+      zip_file.GetPlatformFile(),
+      base::BindRepeating(&MakeFileWriterDelegate, &output_dir),
+      base::BindRepeating(&CreateDirectory, &output_dir),
+      base::BindRepeating(&FilterWithFilterPtr, &filter),
+      /*log_skipped_files=*/false));
 }
 
 }  // namespace unzip
