@@ -399,7 +399,7 @@ static std::unique_ptr<KeyPath> KeyPathFromIDBKeyPath(
     case IDBKeyPath::kStringType:
       key_path = KeyPath::create()
                      .setType(KeyPath::TypeEnum::String)
-                     .setString(idb_key_path.String())
+                     .setString(idb_key_path.GetString())
                      .build();
       break;
     case IDBKeyPath::kArrayType: {

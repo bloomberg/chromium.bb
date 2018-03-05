@@ -118,7 +118,7 @@ void CheckKeyPathStringValue(v8::Isolate* isolate,
       CheckKeyFromValueAndKeyPathInternal(isolate, value, key_path);
   ASSERT_TRUE(idb_key);
   ASSERT_EQ(IDBKey::kStringType, idb_key->GetType());
-  ASSERT_TRUE(expected == idb_key->String());
+  ASSERT_TRUE(expected == idb_key->GetString());
 }
 
 void CheckKeyPathNumberValue(v8::Isolate* isolate,

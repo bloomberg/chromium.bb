@@ -106,7 +106,7 @@ class MODULES_EXPORT IDBKey {
     return binary_;
   }
 
-  const String& String() const {
+  const String& GetString() const {
     DCHECK_EQ(type_, kStringType);
     return string_;
   }
