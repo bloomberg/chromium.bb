@@ -118,3 +118,6 @@ Current patches:
   libavformat/mov.c
     mov_build_index(): Initialize the allocated new ctts_data when constructing
     the normalized 1-1 version.  https://crbug.com/816787
+
+  libavformat/oggparseflac.c
+    flac_header(): Free extradata before reallocating. https://crbug.com/789835

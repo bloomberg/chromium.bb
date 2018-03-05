@@ -61,6 +61,7 @@ flac_header (AVFormatContext * s, int idx)
         st->codecpar->codec_id = AV_CODEC_ID_FLAC;
         st->need_parsing = AVSTREAM_PARSE_HEADERS;
 
+        av_freep(&st->codecpar->extradata);
         if (ff_alloc_extradata(st->codecpar, FLAC_STREAMINFO_SIZE) < 0)
             return AVERROR(ENOMEM);
         memcpy(st->codecpar->extradata, streaminfo_start, st->codecpar->extradata_size);
