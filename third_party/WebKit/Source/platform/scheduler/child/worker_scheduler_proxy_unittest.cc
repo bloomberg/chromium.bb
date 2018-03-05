@@ -125,12 +125,12 @@ TEST_F(WorkerSchedulerProxyTest, VisibilitySignalReceived) {
   DCHECK(worker_thread->GetWorkerScheduler()->throttling_state() ==
          WebFrameScheduler::ThrottlingState::kNotThrottled);
 
-  frame_scheduler_->SetPageVisible(false);
+  web_view_scheduler_->SetPageVisible(false);
   throtting_state_changed.Wait();
   DCHECK(worker_thread->GetWorkerScheduler()->throttling_state() ==
          WebFrameScheduler::ThrottlingState::kThrottled);
 
-  frame_scheduler_->SetPageVisible(true);
+  web_view_scheduler_->SetPageVisible(true);
   throtting_state_changed.Wait();
   DCHECK(worker_thread->GetWorkerScheduler()->throttling_state() ==
          WebFrameScheduler::ThrottlingState::kNotThrottled);
@@ -152,7 +152,7 @@ TEST_F(WorkerSchedulerProxyTest, FrameSchedulerDestroyed) {
   DCHECK(worker_thread->GetWorkerScheduler()->throttling_state() ==
          WebFrameScheduler::ThrottlingState::kNotThrottled);
 
-  frame_scheduler_->SetPageVisible(false);
+  web_view_scheduler_->SetPageVisible(false);
   throtting_state_changed.Wait();
   DCHECK(worker_thread->GetWorkerScheduler()->throttling_state() ==
          WebFrameScheduler::ThrottlingState::kThrottled);
@@ -177,7 +177,7 @@ TEST_F(WorkerSchedulerProxyTest, ThreadDestroyed) {
   DCHECK(worker_thread->GetWorkerScheduler()->throttling_state() ==
          WebFrameScheduler::ThrottlingState::kNotThrottled);
 
-  frame_scheduler_->SetPageVisible(false);
+  web_view_scheduler_->SetPageVisible(false);
   throtting_state_changed.Wait();
   DCHECK(worker_thread->GetWorkerScheduler()->throttling_state() ==
          WebFrameScheduler::ThrottlingState::kThrottled);
@@ -186,7 +186,7 @@ TEST_F(WorkerSchedulerProxyTest, ThreadDestroyed) {
   proxy.reset();
   mock_main_thread_task_runner_->RunUntilIdle();
 
-  frame_scheduler_->SetPageVisible(true);
+  web_view_scheduler_->SetPageVisible(true);
   mock_main_thread_task_runner_->RunUntilIdle();
 
   frame_scheduler_.reset();

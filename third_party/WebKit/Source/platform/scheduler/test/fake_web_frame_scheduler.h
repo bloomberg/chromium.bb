@@ -109,7 +109,6 @@ class FakeWebFrameScheduler : public WebFrameScheduler {
   }
   void SetFrameVisible(bool) override {}
   bool IsFrameVisible() const override { return is_frame_visible_; }
-  void SetPageVisible(bool) override {}
   bool IsPageVisible() const override { return is_page_visible_; }
   void SetPaused(bool) override {}
   void SetCrossOrigin(bool) override {}

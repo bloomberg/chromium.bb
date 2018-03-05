@@ -61,7 +61,6 @@ class PLATFORM_EXPORT WebFrameSchedulerImpl : public WebFrameScheduler {
       Observer*) override;
   void SetFrameVisible(bool frame_visible) override;
   bool IsFrameVisible() const override;
-  void SetPageVisible(bool page_visible) override;
   bool IsPageVisible() const override;
   void SetPaused(bool frame_paused) override;
   void SetPageFrozen(bool) override;
@@ -83,6 +82,7 @@ class PLATFORM_EXPORT WebFrameSchedulerImpl : public WebFrameScheduler {
   bool IsExemptFromBudgetBasedThrottling() const override;
 
   scoped_refptr<TaskQueue> ControlTaskQueue();
+  void SetPageVisibility(PageVisibilityState page_visibility);
 
   bool has_active_connection() const { return active_connection_count_; }
 

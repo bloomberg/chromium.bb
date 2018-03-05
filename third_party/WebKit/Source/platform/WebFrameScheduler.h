@@ -76,10 +76,9 @@ class WebFrameScheduler {
   virtual void SetFrameVisible(bool) = 0;
   virtual bool IsFrameVisible() const = 0;
 
-  // Tells the scheduler that the page this frame belongs to is not visible.
+  // Query the page visibility state for the page associated with this frame.
   // The scheduler may throttle tasks associated with pages that are not
   // visible.
-  virtual void SetPageVisible(bool) = 0;
   virtual bool IsPageVisible() const = 0;
 
   // Set whether this frame is suspended. Only unthrottledTaskRunner tasks are

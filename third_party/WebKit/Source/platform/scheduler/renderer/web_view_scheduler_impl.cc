@@ -100,7 +100,7 @@ WebViewSchedulerImpl::WebViewSchedulerImpl(
     bool disable_background_timer_throttling)
     : intervention_reporter_(intervention_reporter),
       renderer_scheduler_(renderer_scheduler),
-      page_visible_(kDefaultPageVisibility == PageVisibilityState::kVisible),
+      page_visibility_(kDefaultPageVisibility),
       disable_background_timer_throttling_(disable_background_timer_throttling),
       is_audio_playing_(false),
       reported_background_throttling_since_navigation_(false),
@@ -125,10 +125,15 @@ WebViewSchedulerImpl::~WebViewSchedulerImpl() {
 }
 
 void WebViewSchedulerImpl::SetPageVisible(bool page_visible) {
-  if (disable_background_timer_throttling_ || page_visible_ == page_visible)
+  PageVisibilityState page_visibility = page_visible
+                                            ? PageVisibilityState::kVisible
+                                            : PageVisibilityState::kHidden;
+
+  if (disable_background_timer_throttling_ ||
+      page_visibility_ == page_visibility)
     return;
 
-  page_visible_ = page_visible;
+  page_visibility_ = page_visibility;
 
   UpdateBackgroundThrottlingState();
 }
@@ -148,7 +153,7 @@ WebViewSchedulerImpl::CreateWebFrameSchedulerImpl(
   std::unique_ptr<WebFrameSchedulerImpl> frame_scheduler(
       new WebFrameSchedulerImpl(renderer_scheduler_, this, blame_context,
                                 frame_type));
-  frame_scheduler->SetPageVisible(page_visible_);
+  frame_scheduler->SetPageVisibility(page_visibility_);
   frame_schedulers_.insert(frame_scheduler.get());
   return frame_scheduler;
 }
@@ -257,7 +262,8 @@ void WebViewSchedulerImpl::OnTraceLogEnabled() {
 
 void WebViewSchedulerImpl::AsValueInto(
     base::trace_event::TracedValue* state) const {
-  state->SetBoolean("page_visible", page_visible_);
+  state->SetBoolean("page_visible",
+                    page_visibility_ == PageVisibilityState::kVisible);
   state->SetBoolean("disable_background_timer_throttling",
                     disable_background_timer_throttling_);
   state->SetBoolean("is_audio_playing", is_audio_playing_);
@@ -330,7 +336,7 @@ void WebViewSchedulerImpl::OnThrottlingReported(
 
 void WebViewSchedulerImpl::UpdateBackgroundThrottlingState() {
   for (WebFrameSchedulerImpl* frame_scheduler : frame_schedulers_)
-    frame_scheduler->SetPageVisible(page_visible_);
+    frame_scheduler->SetPageVisibility(page_visibility_);
   UpdateBackgroundBudgetPoolThrottlingState();
 }
 
@@ -339,7 +345,8 @@ void WebViewSchedulerImpl::UpdateBackgroundBudgetPoolThrottlingState() {
     return;
 
   LazyNow lazy_now(renderer_scheduler_->tick_clock());
-  if (page_visible_ || has_active_connection_) {
+  if (page_visibility_ == PageVisibilityState::kVisible ||
+      has_active_connection_) {
     background_time_budget_pool_->DisableThrottling(&lazy_now);
   } else {
     background_time_budget_pool_->EnableThrottling(&lazy_now);
