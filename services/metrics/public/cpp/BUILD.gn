@@ -37,6 +37,20 @@ component("metrics_cpp") {
   ]
 }
 
+source_set("tests") {
+  testonly = true
+
+  sources = [
+    "metrics_utils_unittest.cc",
+  ]
+
+  deps = [
+    ":metrics_cpp",
+    "//base",
+    "//testing/gtest",
+  ]
+}
+
 action("gen_ukm_builders") {
   script = "//tools/metrics/ukm/gen_builders.py"
 

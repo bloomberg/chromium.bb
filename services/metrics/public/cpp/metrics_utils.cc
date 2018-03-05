@@ -4,9 +4,10 @@
 
 #include "services/metrics/public/cpp/metrics_utils.h"
 
-#include <math.h>
-
 #include <cmath>
+
+#include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
 
 namespace ukm {
 
@@ -19,6 +20,24 @@ int64_t GetExponentialBucketMin(int64_t sample, double bucket_spacing) {
   // end of the specific bucket for network and cached bytes.
   return std::ceil(std::pow(
       bucket_spacing, std::floor(std::log(sample) / std::log(bucket_spacing))));
+}
+
+int64_t GetLinearBucketMin(int64_t sample, int32_t bucket_size) {
+  DCHECK(bucket_size > 0);
+  // Round down to the nearest multiple of |bucket_size| (for negative samples,
+  // this rounds away from zero).
+  int64_t remainder = sample % bucket_size;
+  if (remainder < 0)
+    return sample - (remainder + bucket_size);
+  return sample - remainder;
+}
+
+int64_t GetLinearBucketMin(double sample, int32_t bucket_size) {
+  int64_t val = GetLinearBucketMin(
+      base::saturated_cast<int64_t>(std::floor(sample)), bucket_size);
+  // Ensure that |sample| can't get put into a bucket higher than itself.
+  DCHECK(val <= sample);
+  return val;
 }
 
 }  // namespace ukm
