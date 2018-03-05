@@ -983,16 +983,16 @@ public class VrShellDelegate
     }
 
     private void onVrIntent() {
+        mNeedsAnimationCancel = true;
+        mInVrAtChromeLaunch = true;
         if (mInVr) return;
 
-        mNeedsAnimationCancel = true;
         mEnterVrOnStartup = true;
 
         // TODO(mthiesse): Assuming we've gone through DON flow saves ~2 seconds on VR entry. See
         // the comments in enterVr(). This may not always be the case in the future, but for now
         // it's a reasonable assumption.
         mDonSucceeded = true;
-        mInVrAtChromeLaunch = true;
 
         if (!mPaused) enterVrAfterDon();
     }
@@ -1374,24 +1374,23 @@ public class VrShellDelegate
             });
         }
 
+        mCancellingEntryAnimation = false;
+
         if (mEnterVrOnStartup) {
             // This means that Chrome was started with a VR intent, so we should enter VR.
             // TODO(crbug.com/776235): VR intents are dispatched to ChromeActivity via a launcher
             // which should handle the DON flow to simplify the logic in VrShellDelegate.
             assert !mProbablyInDon;
             if (DEBUG_LOGS) Log.i(TAG, "onResume: entering VR mode for VR intent");
-            mCancellingEntryAnimation = false;
             if (enterVrInternal() == ENTER_VR_CANCELLED) {
                 cancelPendingVrEntry();
             }
         } else if (mDonSucceeded) {
-            mCancellingEntryAnimation = false;
             handleDonFlowSuccess();
         } else {
             if (mProbablyInDon) {
                 // This means the user backed out of the DON flow, and we won't be entering VR.
                 maybeSetPresentResult(false, mDonSucceeded);
-
                 shutdownVr(true, false);
             }
             // If we were resumed at the wrong density, we need to trigger activity recreation.
@@ -1438,10 +1437,6 @@ public class VrShellDelegate
         // are safe.
         if (mInVr) mVrShell.pause();
         if (mShowingDaydreamDoff || mProbablyInDon) return;
-
-        // TODO(mthiesse): When the user resumes Chrome in a 2D context, we don't want to tear down
-        // VR UI, so for now, exit VR.
-        shutdownVr(true /* disableVrMode */, false /* stayingInChrome */);
     }
 
     protected void onPause() {
@@ -1451,10 +1446,6 @@ public class VrShellDelegate
         mExpectPauseOrDonSucceeded.removeCallbacksAndMessages(null);
         unregisterDaydreamIntent(mVrDaydreamApi);
         if (mVrSupportLevel == VrSupportLevel.VR_NOT_AVAILABLE) return;
-
-        // TODO(ymalik): We should be able to remove this if we handle it for multi-window in
-        // {@link onMultiWindowModeChanged} since we're calling it in onStop.
-        if (!mInVr && !mProbablyInDon) cancelPendingVrEntry();
 
         // When the active web page has a vrdisplayactivate event handler,
         // mListeningForWebVrActivate should be set to true, which means a vrdisplayactive event
@@ -1474,12 +1465,12 @@ public class VrShellDelegate
     private void onStart() {
         mStopped = false;
         if (mDonSucceeded) setWindowModeForVr();
+        if (mInVr && !mVrDaydreamApi.isInVrSession()) shutdownVr(true, false);
     }
 
     private void onStop() {
         if (DEBUG_LOGS) Log.i(TAG, "onStop");
         mStopped = true;
-        if (!mProbablyInDon) cancelPendingVrEntry();
         assert !mCancellingEntryAnimation;
     }
 
