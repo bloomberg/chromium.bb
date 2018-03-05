@@ -219,6 +219,108 @@ bool FileManagerPrivateRemoveMountFunction::RunAsync() {
   return true;
 }
 
+bool FileManagerPrivateMarkCacheAsMountedFunction::RunAsync() {
+  using file_manager_private::MarkCacheAsMounted::Params;
+  const std::unique_ptr<Params> params(Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  const base::FilePath path(params->source_path);
+  bool isMounted = params->is_mounted;
+
+  if (path.empty())
+    return false;
+
+  if (!drive::util::IsUnderDriveMountPoint(path)) {
+    // Ignore non-drive files. Treated as success.
+    SendResponse(true);
+    return true;
+  }
+
+  drive::FileSystemInterface* file_system =
+      drive::util::GetFileSystemByProfile(GetProfile());
+  if (!file_system)
+    return false;
+
+  // Ensure that the cache file exists.
+  const base::FilePath drive_path = drive::util::ExtractDrivePath(path);
+  file_system->GetFile(
+      drive_path,
+      base::Bind(
+          &FileManagerPrivateMarkCacheAsMountedFunction::RunAfterGetDriveFile,
+          this, drive_path, isMounted));
+  return true;
+}
+
+void FileManagerPrivateMarkCacheAsMountedFunction::RunAfterGetDriveFile(
+    const base::FilePath& drive_path,
+    bool isMounted,
+    drive::FileError error,
+    const base::FilePath& cache_path,
+    std::unique_ptr<drive::ResourceEntry> entry) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  if (error != drive::FILE_ERROR_OK) {
+    SetError(FileErrorToString(error));
+    SendResponse(false);
+    return;
+  }
+
+  drive::FileSystemInterface* const file_system =
+      drive::util::GetFileSystemByProfile(GetProfile());
+  if (!file_system) {
+    SendResponse(false);
+    return;
+  }
+
+  // TODO(yamaguchi): Check if the current status of the file.
+  // Currently calling this method twice will result in error, although it
+  // doesn't give bad side effect.
+  if (isMounted) {
+    file_system->MarkCacheFileAsMounted(
+        drive_path, base::Bind(&FileManagerPrivateMarkCacheAsMountedFunction::
+                                   RunAfterMarkCacheFileAsMounted,
+                               this));
+  } else {
+    file_system->MarkCacheFileAsUnmounted(
+        cache_path, base::Bind(&FileManagerPrivateMarkCacheAsMountedFunction::
+                                   RunAfterMarkCacheFileAsUnmounted,
+                               this));
+  }
+}
+
+void FileManagerPrivateMarkCacheAsMountedFunction::
+    RunAfterMarkCacheFileAsMounted(drive::FileError error,
+                                   const base::FilePath& file_path) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  switch (error) {
+    case drive::FILE_ERROR_INVALID_OPERATION:
+    // The file was already marked as mounted. Ignore and treat as success.
+    case drive::FILE_ERROR_OK:
+      SendResponse(true);
+      break;
+    default:
+      SetError(FileErrorToString(error));
+      SendResponse(false);
+  }
+}
+
+void FileManagerPrivateMarkCacheAsMountedFunction::
+    RunAfterMarkCacheFileAsUnmounted(drive::FileError error) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  switch (error) {
+    case drive::FILE_ERROR_INVALID_OPERATION:
+    // The file was already marked as unmounted. Ignore and treat as success.
+    case drive::FILE_ERROR_OK:
+      SendResponse(true);
+      break;
+    default:
+      SetError(FileErrorToString(error));
+      SendResponse(false);
+  }
+}
+
 bool FileManagerPrivateGetVolumeMetadataListFunction::RunAsync() {
   if (args_->GetSize())
     return false;
