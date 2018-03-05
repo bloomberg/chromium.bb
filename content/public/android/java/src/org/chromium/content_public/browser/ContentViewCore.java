@@ -319,13 +319,6 @@ public interface ContentViewCore {
      */
     void preserveSelectionOnNextLossOfFocus();
 
-    /**
-     * @return Whether the current page seems to be mobile-optimized. This hint is based upon
-     *         rendered frames and may return different values when called multiple times for the
-     *         same page (particularly during page load).
-     */
-    boolean getIsMobileOptimizedHint();
-
     // Test-only methods
 
     /**

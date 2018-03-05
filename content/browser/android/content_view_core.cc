@@ -295,8 +295,7 @@ void ContentViewCore::UpdateFrameInfo(const gfx::Vector2dF& scroll_offset,
                                       const gfx::SizeF& viewport_size,
                                       const float content_offset,
                                       const float top_shown_pix,
-                                      bool top_changed,
-                                      bool is_mobile_optimized_hint) {
+                                      bool top_changed) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null() || !GetWindowAndroid())
@@ -316,8 +315,8 @@ void ContentViewCore::UpdateFrameInfo(const gfx::Vector2dF& scroll_offset,
   Java_ContentViewCoreImpl_updateFrameInfo(
       env, obj, scroll_offset.x(), scroll_offset.y(), page_scale_factor,
       min_page_scale, max_page_scale, content_width, content_height,
-      viewport_size.width(), viewport_size.height(), top_shown_pix, top_changed,
-      is_mobile_optimized_hint);
+      viewport_size.width(), viewport_size.height(), top_shown_pix,
+      top_changed);
 }
 
 void ContentViewCore::RequestDisallowInterceptTouchEvent() {

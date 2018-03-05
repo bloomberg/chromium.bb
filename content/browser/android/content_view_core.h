@@ -171,8 +171,7 @@ class ContentViewCore : public WebContentsObserver {
                        const gfx::SizeF& viewport_size,
                        const float top_content_offset,
                        const float top_shown_pix,
-                       bool top_changed,
-                       bool is_mobile_optimized_hint);
+                       bool top_changed);
 
   void RequestDisallowInterceptTouchEvent();
 

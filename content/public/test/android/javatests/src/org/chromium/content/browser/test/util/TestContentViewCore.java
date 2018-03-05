@@ -189,11 +189,6 @@ public class TestContentViewCore implements ContentViewCore {
     }
 
     @Override
-    public boolean getIsMobileOptimizedHint() {
-        return false;
-    }
-
-    @Override
     public int getTopControlsShrinkBlinkHeightForTesting() {
         return 0;
     }

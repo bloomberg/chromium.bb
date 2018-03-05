@@ -89,7 +89,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
         private void resetPopupsAndInput() {
             ContentViewCoreImpl contentViewCore = mWeakContentViewCore.get();
             if (contentViewCore == null) return;
-            contentViewCore.mIsMobileOptimizedHint = false;
             contentViewCore.hidePopupsAndClearSelection();
             contentViewCore.resetScrollInProgress();
         }
@@ -154,8 +153,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
 
     // Cached copy of all positions and scales as reported by the renderer.
     private RenderCoordinates mRenderCoordinates;
-
-    private boolean mIsMobileOptimizedHint;
 
     private boolean mPreserveSelectionOnNextLossOfFocus;
 
@@ -833,9 +830,8 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
     private void updateFrameInfo(float scrollOffsetX, float scrollOffsetY, float pageScaleFactor,
             float minPageScaleFactor, float maxPageScaleFactor, float contentWidth,
             float contentHeight, float viewportWidth, float viewportHeight, float topBarShownPix,
-            boolean topBarChanged, boolean isMobileOptimizedHint) {
+            boolean topBarChanged) {
         TraceEvent.begin("ContentViewCore:updateFrameInfo");
-        mIsMobileOptimizedHint = isMobileOptimizedHint;
         final boolean contentSizeChanged = contentWidth != mRenderCoordinates.getContentWidthCss()
                 || contentHeight != mRenderCoordinates.getContentHeightCss();
         final boolean scaleLimitsChanged =
@@ -911,11 +907,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
                 settings.getTextTrackFontStyle(), settings.getTextTrackFontVariant(),
                 settings.getTextTrackTextColor(), settings.getTextTrackTextShadow(),
                 settings.getTextTrackTextSize());
-    }
-
-    @Override
-    public boolean getIsMobileOptimizedHint() {
-        return mIsMobileOptimizedHint;
     }
 
     /**
