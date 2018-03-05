@@ -65,7 +65,7 @@ class MODULES_EXPORT IDBKeyPath {
     return array_;
   }
 
-  const String& String() const {
+  const String& GetString() const {
     DCHECK_EQ(type_, kStringType);
     return string_;
   }

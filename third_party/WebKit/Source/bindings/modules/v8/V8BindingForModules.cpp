@@ -68,7 +68,7 @@ v8::Local<v8::Value> ToV8(const IDBKeyPath& value,
     case IDBKeyPath::kNullType:
       return v8::Null(isolate);
     case IDBKeyPath::kStringType:
-      return V8String(isolate, value.String());
+      return V8String(isolate, value.GetString());
     case IDBKeyPath::kArrayType:
       return ToV8(value.Array(), creation_context, isolate);
   }
@@ -97,7 +97,7 @@ v8::Local<v8::Value> ToV8(const IDBKey* key,
     case IDBKey::kNumberType:
       return v8::Number::New(isolate, key->Number());
     case IDBKey::kStringType:
-      return V8String(isolate, key->String());
+      return V8String(isolate, key->GetString());
     case IDBKey::kBinaryType:
       // https://w3c.github.io/IndexedDB/#convert-a-value-to-a-key
       return ToV8(DOMArrayBuffer::Create(key->Binary()), creation_context,
@@ -375,7 +375,7 @@ static std::unique_ptr<IDBKey> CreateIDBKeyFromValueAndKeyPath(
   }
 
   DCHECK_EQ(key_path.GetType(), IDBKeyPath::kStringType);
-  return CreateIDBKeyFromValueAndKeyPath(isolate, value, key_path.String(),
+  return CreateIDBKeyFromValueAndKeyPath(isolate, value, key_path.GetString(),
                                          exception_state);
 }
 
@@ -479,7 +479,7 @@ bool InjectV8KeyIntoV8Value(v8::Isolate* isolate,
   DCHECK(isolate->InContext());
 
   DCHECK_EQ(key_path.GetType(), IDBKeyPath::kStringType);
-  Vector<String> key_path_elements = ParseKeyPath(key_path.String());
+  Vector<String> key_path_elements = ParseKeyPath(key_path.GetString());
 
   // The conbination of a key generator and an empty key path is forbidden by
   // spec.
@@ -565,7 +565,7 @@ bool CanInjectIDBKeyIntoScriptValue(v8::Isolate* isolate,
                                     const IDBKeyPath& key_path) {
   IDB_TRACE("canInjectIDBKeyIntoScriptValue");
   DCHECK_EQ(key_path.GetType(), IDBKeyPath::kStringType);
-  Vector<String> key_path_elements = ParseKeyPath(key_path.String());
+  Vector<String> key_path_elements = ParseKeyPath(key_path.GetString());
 
   if (!key_path_elements.size())
     return false;

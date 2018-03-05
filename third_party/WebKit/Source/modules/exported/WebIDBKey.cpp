@@ -56,7 +56,7 @@ WebData WebIDBKeyView::Binary() const {
 }
 
 WebString WebIDBKeyView::String() const {
-  return private_->String();
+  return private_->GetString();
 }
 
 double WebIDBKeyView::Date() const {

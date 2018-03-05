@@ -297,7 +297,7 @@ IDBObjectStore* IDBDatabase::createObjectStore(
   }
 
   if (auto_increment && ((key_path.GetType() == IDBKeyPath::kStringType &&
-                          key_path.String().IsEmpty()) ||
+                          key_path.GetString().IsEmpty()) ||
                          key_path.GetType() == IDBKeyPath::kArrayType)) {
     exception_state.ThrowDOMException(
         kInvalidAccessError,
