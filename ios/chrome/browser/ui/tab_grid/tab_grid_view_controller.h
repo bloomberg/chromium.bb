@@ -10,8 +10,8 @@
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_transition_state_provider.h"
 
 @protocol GridConsumer;
+@protocol GridCommands;
 @protocol GridImageDataSource;
-@protocol GridViewControllerDelegate;
 
 // Page enumerates the kinds of grouped tabs.
 typedef NS_ENUM(NSUInteger, TabGridPage) {
@@ -40,8 +40,8 @@ typedef NS_ENUM(NSUInteger, TabGridPage) {
 @property(nonatomic, readonly) id<GridConsumer> incognitoTabsConsumer;
 
 // Delegates send updates from the UI layer to the model layer.
-@property(nonatomic, weak) id<GridViewControllerDelegate> regularTabsDelegate;
-@property(nonatomic, weak) id<GridViewControllerDelegate> incognitoTabsDelegate;
+@property(nonatomic, weak) id<GridCommands> regularTabsDelegate;
+@property(nonatomic, weak) id<GridCommands> incognitoTabsDelegate;
 
 // Data sources provide lazy access to heavy-weight resources.
 @property(nonatomic, weak) id<GridImageDataSource> regularTabsImageDataSource;

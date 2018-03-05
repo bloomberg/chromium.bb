@@ -4,6 +4,7 @@
 
 #import "ios/showcase/tab_grid/sc_tab_grid_coordinator.h"
 
+#import "ios/chrome/browser/ui/tab_grid/grid_commands.h"
 #import "ios/chrome/browser/ui/tab_grid/grid_consumer.h"
 #import "ios/chrome/browser/ui/tab_grid/grid_item.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_view_controller.h"
@@ -24,14 +25,14 @@
 @synthesize alerter = _alerter;
 
 - (void)start {
-  self.alerter = [[ProtocolAlerter alloc]
-      initWithProtocols:@[ @protocol(GridViewControllerDelegate) ]];
+  self.alerter =
+      [[ProtocolAlerter alloc] initWithProtocols:@[ @protocol(GridCommands) ]];
   self.viewController = [[TabGridViewController alloc] init];
   self.alerter.baseViewController = self.viewController;
   self.viewController.incognitoTabsDelegate =
-      static_cast<id<GridViewControllerDelegate>>(self.alerter);
+      static_cast<id<GridCommands>>(self.alerter);
   self.viewController.regularTabsDelegate =
-      static_cast<id<GridViewControllerDelegate>>(self.alerter);
+      static_cast<id<GridCommands>>(self.alerter);
   self.viewController.title = @"Full TabGrid UI";
   self.baseViewController.delegate = self;
   self.baseViewController.hidesBarsOnSwipe = YES;
