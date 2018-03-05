@@ -113,13 +113,28 @@ crbug.com/788390 http/tests/media/autoplay/document-user-activation-cross-origin
 crbug.com/788390 http/tests/media/autoplay/document-user-activation-feature-policy-alternating.html [ Timeout ]
 crbug.com/788390 http/tests/media/autoplay/document-user-activation-feature-policy-iframe-no-gesture.html [ Timeout ]
 
-# The tests below are inherently incompatible with isolating same-site, cross-origin
-# frames into separate processes (which is how Site Isolation bots treat
-# www1.web-platform.test, www2.web-platform.test, etc).
+# The tests below set document.domain.  Such tests are skipped, because they
+# cannot work when same-site WPT origins are isolated from each other via
+# --isolate-origins cmdline flag (which is how bots run the
+# |site_per_process_webkit_layout_tests| step).  Note that
+# https://crbug.com/783416 tracks adding a WPT origin that is cross-site, but
+# even after this bug is fixed we may decide to keep the current
+# --isolate-origins coverage and therefore the tests might end up being skipped
+# for the foreseeable future.
 Bug(none) external/wpt/html/browsers/origin/relaxing-the-same-origin-restriction [ Skip ]
+Bug(none) external/wpt/FileAPI/url/multi-global-origin-serialization.sub.html [ Skip ]
+Bug(none) external/wpt/dom/events/EventListener-incumbent-global-1.sub.html [ Skip ]
+Bug(none) external/wpt/dom/events/EventListener-incumbent-global-2.sub.html [ Skip ]
+Bug(none) external/wpt/html/browsers/history/the-location-interface/allow_prototype_cycle_through_location.sub.html [ Skip ]
+Bug(none) external/wpt/html/browsers/history/the-location-interface/location-prototype-setting-same-origin-domain.sub.html [ Skip ]
+Bug(none) external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects-on-new-window.html [ Skip ]
+Bug(none) external/wpt/html/browsers/the-windowproxy-exotic-object/windowproxy-prototype-setting-same-origin-domain.sub.html [ Skip ]
+Bug(none) external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-domain-success.sub.html [ Skip ]
+Bug(none) external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-similar-but-cross-origin-success.sub.html [ Skip ]
+Bug(none) virtual/sharedarraybuffer/external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-domain-success.sub.html [ Skip ]
+Bug(none) virtual/sharedarraybuffer/external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-similar-but-cross-origin-success.sub.html [ Skip ]
 
 # TODO(lukasza, alexmos): Triage these failures.
-Bug(none) external/wpt/FileAPI/url/multi-global-origin-serialization.sub.html [ Failure ]
 Bug(none) external/wpt/IndexedDB/interleaved-cursors.html [ Timeout ]
 Bug(none) external/wpt/xhr/xmlhttprequest-sync-default-feature-policy.sub.html [ Timeout ]
 Bug(none) external/wpt/content-security-policy/frame-ancestors/frame-ancestors-nested-cross-in-cross-star-allow.html [ Timeout ]
@@ -127,8 +142,6 @@ Bug(none) external/wpt/content-security-policy/frame-ancestors/frame-ancestors-n
 Bug(none) external/wpt/content-security-policy/securitypolicyviolation/upgrade-insecure-requests-reporting.https.html [ Crash ]
 Bug(none) external/wpt/credential-management/credentialscontainer-create-basics.https.html [ Crash ]
 Bug(none) external/wpt/css-fonts/font-display/font-display.html [ Crash ]
-Bug(none) external/wpt/dom/events/EventListener-incumbent-global-1.sub.html [ Timeout ]
-Bug(none) external/wpt/dom/events/EventListener-incumbent-global-2.sub.html [ Timeout ]
 Bug(none) external/wpt/dom/nodes/Element-matches.html [ Failure ]
 Bug(none) external/wpt/encrypted-media/encrypted-media-default-feature-policy.https.sub.html [ Timeout ]
 Bug(none) external/wpt/feature-policy/payment-allowed-by-feature-policy.https.sub.html [ Timeout ]
@@ -140,15 +153,7 @@ Bug(none) external/wpt/fetch/api/request/request-cache-default-conditional.html 
 Bug(none) external/wpt/fullscreen/api/element-ready-check-allowed-cross-origin-manual.sub.html [ Failure ]
 Bug(none) external/wpt/fullscreen/api/element-ready-check-not-allowed-cross-origin-manual.sub.html [ Failure ]
 Bug(none) external/wpt/html/browsers/browsing-the-web/navigating-across-documents/004.html [ Timeout ]
-Bug(none) external/wpt/html/browsers/history/the-location-interface/allow_prototype_cycle_through_location.sub.html [ Failure ]
 Bug(none) external/wpt/html/browsers/history/the-location-interface/location-origin-idna.sub.window.html [ Timeout ]
-Bug(none) external/wpt/html/browsers/history/the-location-interface/location-prototype-setting-same-origin-domain.sub.html [ Failure ]
-Bug(none) external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects-on-new-window.html [ Failure ]
-Bug(none) external/wpt/html/browsers/the-windowproxy-exotic-object/windowproxy-prototype-setting-same-origin-domain.sub.html [ Failure ]
-Bug(none) external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-domain-success.sub.html [ Timeout ]
-Bug(none) external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-similar-but-cross-origin-success.sub.html [ Timeout ]
-Bug(none) virtual/sharedarraybuffer/external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-domain-success.sub.html [ Timeout ]
-Bug(none) virtual/sharedarraybuffer/external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-similar-but-cross-origin-success.sub.html [ Timeout ]
 Bug(none) external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/windows-1251.html [ Crash ]
 Bug(none) external/wpt/html/semantics/embedded-content/media-elements/error-codes/error.html [ Timeout ]
 Bug(none) external/wpt/html/semantics/embedded-content/media-elements/ready-states/autoplay.html [ Timeout ]
