@@ -219,7 +219,6 @@ struct CONTENT_EXPORT WebPreferences {
   bool force_enable_zoom;
   bool fullscreen_supported;
   bool double_tap_to_zoom_enabled;
-  bool picture_in_picture_enabled;
   std::string media_playback_gesture_whitelist_scope;
   GURL default_video_poster_url;
   bool support_deprecated_target_density_dpi;
@@ -289,6 +288,9 @@ struct CONTENT_EXPORT WebPreferences {
   // Network quality threshold below which resources from iframes are assigned
   // lowest priority.
   net::EffectiveConnectionType low_priority_iframes_threshold;
+
+  // Whether Picture-in-Picture is enabled.
+  bool picture_in_picture_enabled;
 
   // We try to keep the default values the same as the default values in
   // chrome, except for the cases where it would require lots of extra work for

@@ -227,6 +227,7 @@
 #include "google_apis/google_api_keys.h"
 #include "gpu/config/gpu_switches.h"
 #include "media/audio/audio_manager.h"
+#include "media/base/media_switches.h"
 #include "media/media_features.h"
 #include "media/mojo/features.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
@@ -2722,13 +2723,16 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
       web_prefs->embedded_media_experience_enabled =
           tab_android->ShouldEnableEmbeddedMediaExperience();
 
-      web_prefs->picture_in_picture_enabled =
-          tab_android->IsPictureInPictureEnabled();
-
       if (base::FeatureList::IsEnabled(
               features::kAllowAutoplayUnmutedInWebappManifestScope)) {
         web_prefs->media_playback_gesture_whitelist_scope =
             tab_android->GetWebappManifestScope();
+      }
+
+      if (base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideo) &&
+          base::FeatureList::IsEnabled(media::kPictureInPicture)) {
+        web_prefs->picture_in_picture_enabled =
+            tab_android->IsPictureInPictureEnabled();
       }
     }
   }
