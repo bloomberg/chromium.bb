@@ -136,7 +136,6 @@ TEST(StartupBrowserCreatorImplTest, DetermineStartupTabs_Incognito) {
                base::CommandLine(base::CommandLine::NO_PROGRAM),
                chrome::startup::IS_FIRST_RUN);
 
-  // Incognito case:
   StartupTabs output = impl.DetermineStartupTabs(provider, StartupTabs(), true,
                                                  true, false, false, false);
   ASSERT_EQ(1U, output.size());

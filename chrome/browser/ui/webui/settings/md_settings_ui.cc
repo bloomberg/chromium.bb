@@ -55,6 +55,7 @@
 #include "chrome/browser/ui/webui/settings/chrome_cleanup_handler.h"
 #if defined(GOOGLE_CHROME_BUILD)
 #include "chrome/browser/conflicts/problematic_programs_updater_win.h"
+#include "chrome/browser/conflicts/token_util_win.h"
 #include "chrome/browser/ui/webui/settings/incompatible_applications_handler_win.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #endif
@@ -232,8 +233,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
       ProblematicProgramsUpdater::HasCachedPrograms();
   html_source->AddBoolean("showIncompatibleApplications",
                           has_incompatible_applications);
-  // TODO(pmonette): Implement a function to determine hasAdminRights.
-  html_source->AddBoolean("hasAdminRights", true);
+  html_source->AddBoolean("hasAdminRights", HasAdminRights());
 
   if (has_incompatible_applications)
     AddSettingsPageUIHandler(

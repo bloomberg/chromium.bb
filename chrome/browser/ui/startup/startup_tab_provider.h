@@ -56,7 +56,7 @@ class StartupTabProvider {
                                         Profile* profile) const = 0;
 
   // Returns the Incompatible Applications settings subpage if any incompatible
-  // applications exists.
+  // applications exist.
   virtual StartupTabs GetPostCrashTabs(
       bool has_incompatible_applications) const = 0;
 };
