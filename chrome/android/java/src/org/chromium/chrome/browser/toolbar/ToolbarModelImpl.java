@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.toolbar;
 
 import android.content.Context;
-import android.os.Build;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
@@ -118,8 +117,6 @@ public class ToolbarModelImpl
 
     @Override
     public String getText() {
-        if (clearUrlForBottomSheetOpen()) return "";
-
         String displayText = super.getText();
 
         if (!hasTab() || mTab.isFrozen()) return displayText;
@@ -234,20 +231,13 @@ public class ToolbarModelImpl
         boolean isShownInRegularNtp = ntp != null && ntp.isLocationBarShownInNTP()
                 && ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_SHOW_GOOGLE_G_IN_OMNIBOX);
 
-        boolean isShownInBottomSheet = mBottomSheet != null && mBottomSheet.isSheetOpen()
-                && TextUtils.isEmpty(urlBarText)
-                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_CLEAR_URL_ON_OPEN)
-                && ChromeFeatureList.isEnabled(
-                           ChromeFeatureList.CHROME_HOME_SHOW_GOOGLE_G_WHEN_URL_CLEARED);
-
-        return (isShownInRegularNtp || isShownInBottomSheet)
+        return isShownInRegularNtp
                 && TemplateUrlService.getInstance().isDefaultSearchEngineGoogle();
     }
 
     @Override
     public boolean shouldShowSecurityIcon() {
-        return !clearUrlForBottomSheetOpen() && getSecurityIconResource() != 0;
+        return getSecurityIconResource() != 0;
     }
 
     @Override
@@ -255,7 +245,7 @@ public class ToolbarModelImpl
         // Because is offline page is cleared a bit slower, we also ensure that connection security
         // level is NONE or HTTP_SHOW_WARNING (http://crbug.com/671453).
         int securityLevel = getSecurityLevel();
-        return !clearUrlForBottomSheetOpen() && isOfflinePage()
+        return isOfflinePage()
                 && (securityLevel == ConnectionSecurityLevel.NONE
                            || securityLevel == ConnectionSecurityLevel.HTTP_SHOW_WARNING);
     }
@@ -308,14 +298,6 @@ public class ToolbarModelImpl
                 assert false;
         }
         return 0;
-    }
-
-    private boolean clearUrlForBottomSheetOpen() {
-        return mBottomSheet != null && mBottomSheet.isSheetOpen()
-                && mBottomSheet.getTargetSheetState() != BottomSheet.SHEET_STATE_PEEK
-                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT
-                && ChromeFeatureList.isInitialized()
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_CLEAR_URL_ON_OPEN);
     }
 
     @Override

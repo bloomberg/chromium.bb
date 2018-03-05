@@ -12,18 +12,11 @@
 #include "base/metrics/field_trial.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
-#include "components/prefs/testing_pref_service.h"
 #include "components/search/search.h"
 #include "components/variations/entropy_provider.h"
 #include "components/variations/variations_associated_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
-
-#if defined(OS_ANDROID)
-#include "base/test/scoped_feature_list.h"
-#include "components/omnibox/browser/omnibox_pref_names.h"
-#include "components/prefs/pref_registry_simple.h"
-#endif
 
 using metrics::OmniboxEventProto;
 
@@ -31,13 +24,7 @@ class OmniboxFieldTrialTest : public testing::Test {
  public:
   OmniboxFieldTrialTest() {
     ResetFieldTrialList();
-#if defined(OS_ANDROID)
-    pref_service_.registry()->RegisterBooleanPref(
-        omnibox::kZeroSuggestChromeHomePersonalized, false);
-#endif
   }
-
-  PrefService* GetPrefs() { return &pref_service_; }
 
   void ResetFieldTrialList() {
     // Destroy the existing FieldTrialList before creating a new one to avoid
@@ -83,7 +70,6 @@ class OmniboxFieldTrialTest : public testing::Test {
 
  private:
   std::unique_ptr<base::FieldTrialList> field_trial_list_;
-  TestingPrefServiceSimple pref_service_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxFieldTrialTest);
 };
@@ -203,11 +189,9 @@ TEST_F(OmniboxFieldTrialTest, ZeroSuggestFieldTrial) {
     base::FieldTrialList::CreateFieldTrial(
         OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
 #if defined(OS_ANDROID) || defined(OS_IOS)
-    EXPECT_TRUE(
-        OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial(GetPrefs()));
+    EXPECT_TRUE(OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial());
 #else
-    EXPECT_FALSE(
-        OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial(GetPrefs()));
+    EXPECT_FALSE(OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial());
 #endif
 
     ResetFieldTrialList();
@@ -217,8 +201,7 @@ TEST_F(OmniboxFieldTrialTest, ZeroSuggestFieldTrial) {
         OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params));
     base::FieldTrialList::CreateFieldTrial(
         OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
-    EXPECT_TRUE(
-        OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial(GetPrefs()));
+    EXPECT_TRUE(OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial());
 
     ResetFieldTrialList();
     params.erase(std::string(OmniboxFieldTrial::kZeroSuggestVariantRule));
@@ -227,48 +210,11 @@ TEST_F(OmniboxFieldTrialTest, ZeroSuggestFieldTrial) {
     ASSERT_TRUE(variations::AssociateVariationParams(
         OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params));
 #if defined(OS_ANDROID) || defined(OS_IOS)
-    EXPECT_TRUE(
-        OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial(GetPrefs()));
+    EXPECT_TRUE(OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial());
 #else
-    EXPECT_FALSE(
-        OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial(GetPrefs()));
+    EXPECT_FALSE(OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial());
 #endif
   }
-#if defined(OS_ANDROID)
-  {
-    SCOPED_TRACE("Chrome Home personalized suggestions.");
-    ResetFieldTrialList();
-    std::map<std::string, std::string> params;
-    ASSERT_TRUE(variations::AssociateVariationParams(
-        OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params));
-    base::FieldTrialList::CreateFieldTrial(
-        OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
-    EXPECT_TRUE(
-        OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial(GetPrefs()));
-    EXPECT_FALSE(
-        OmniboxFieldTrial::InZeroSuggestPersonalizedFieldTrial(GetPrefs()));
-
-    GetPrefs()->SetBoolean(omnibox::kZeroSuggestChromeHomePersonalized, true);
-    EXPECT_TRUE(
-        OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial(GetPrefs()));
-    EXPECT_FALSE(
-        OmniboxFieldTrial::InZeroSuggestPersonalizedFieldTrial(GetPrefs()));
-
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeature(
-        omnibox::kAndroidChromeHomePersonalizedSuggestions);
-    EXPECT_FALSE(
-        OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial(GetPrefs()));
-    EXPECT_TRUE(
-        OmniboxFieldTrial::InZeroSuggestPersonalizedFieldTrial(GetPrefs()));
-
-    GetPrefs()->SetBoolean(omnibox::kZeroSuggestChromeHomePersonalized, false);
-    EXPECT_TRUE(
-        OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial(GetPrefs()));
-    EXPECT_FALSE(
-        OmniboxFieldTrial::InZeroSuggestPersonalizedFieldTrial(GetPrefs()));
-  }
-#endif
 }
 
 TEST_F(OmniboxFieldTrialTest, GetDemotionsByTypeWithFallback) {

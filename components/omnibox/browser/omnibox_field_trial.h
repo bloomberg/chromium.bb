@@ -14,23 +14,14 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "build/build_config.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
-
-class PrefService;
 
 namespace base {
 struct Feature;
 class TimeDelta;
 }
-
-#if defined(OS_ANDROID)
-namespace user_prefs {
-class PrefRegistrySyncable;
-}
-#endif
 
 namespace omnibox {
 
@@ -40,7 +31,6 @@ extern const base::Feature kOmniboxTailSuggestions;
 extern const char kOmniboxTabSwitchSuggestionsFlag[];
 extern const char kOmniboxTabSwitchWithButton[];
 extern const base::Feature kEnableClipboardProvider;
-extern const base::Feature kAndroidChromeHomePersonalizedSuggestions;
 extern const base::Feature kSearchProviderWarmUpOnFocus;
 extern const base::Feature kZeroSuggestRedirectToChrome;
 extern const base::Feature kZeroSuggestSwapTitleAndUrl;
@@ -169,10 +159,6 @@ class OmniboxFieldTrial {
     EMPHASIZE_NEVER = 3
   };
 
-#if defined(OS_ANDROID)
-  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
-#endif
-
   // ---------------------------------------------------------
   // For any experiment that's part of the bundled omnibox field trial.
 
@@ -207,16 +193,16 @@ class OmniboxFieldTrial {
   // Returns whether the user is in a ZeroSuggest field trial, which shows
   // most visited URLs. This is true for both "MostVisited" and
   // "MostVisitedWithoutSERP" trials.
-  static bool InZeroSuggestMostVisitedFieldTrial(PrefService* prefs);
+  static bool InZeroSuggestMostVisitedFieldTrial();
 
   // Returns whether the user is in ZeroSuggest field trial showing most
   // visited URLs except it doesn't show suggestions on Google search result
   // pages.
-  static bool InZeroSuggestMostVisitedWithoutSerpFieldTrial(PrefService* prefs);
+  static bool InZeroSuggestMostVisitedWithoutSerpFieldTrial();
 
   // Returns whether the user is in a ZeroSuggest field trial, but should
   // show recently searched-for queries instead.
-  static bool InZeroSuggestPersonalizedFieldTrial(PrefService* prefs);
+  static bool InZeroSuggestPersonalizedFieldTrial();
 
   // ---------------------------------------------------------
   // For the Zero Suggest Redirect to Chrome field trial.
@@ -554,12 +540,6 @@ class OmniboxFieldTrial {
   static std::string GetValueForRuleInContext(
       const std::string& rule,
       metrics::OmniboxEventProto::PageClassification page_classification);
-
-#if defined(OS_ANDROID)
-  // Checks whether Chrome Home personalized omnibox suggestions on focus are
-  // enabled.
-  static bool InChromeHomePersonalizedZeroSuggest(PrefService* pref);
-#endif
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(OmniboxFieldTrial);
 };

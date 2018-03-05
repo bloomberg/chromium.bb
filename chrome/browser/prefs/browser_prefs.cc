@@ -185,7 +185,6 @@
 #include "components/ntp_snippets/offline_pages/recent_tab_suggestions_provider.h"
 #include "components/ntp_snippets/physical_web_pages/physical_web_page_suggestions_provider.h"
 #include "components/ntp_tiles/popular_sites_impl.h"
-#include "components/omnibox/browser/omnibox_field_trial.h"
 #else
 #include "chrome/browser/gcm/gcm_product_util.h"
 #include "chrome/browser/metrics/tab_stats_tracker.h"
@@ -604,7 +603,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
       registry);
   ntp_snippets::RecentTabSuggestionsProvider::RegisterProfilePrefs(registry);
   ntp_snippets::SubscriptionManagerImpl::RegisterProfilePrefs(registry);
-  OmniboxFieldTrial::RegisterProfilePrefs(registry);
   OomInterventionDecider::RegisterProfilePrefs(registry);
 #endif  // defined(OS_ANDROID)
 

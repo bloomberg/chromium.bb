@@ -1809,10 +1809,6 @@ const char kChromeHomeBottomNavLabelsName[] =
 const char kChromeHomeBottomNavLabelsDescription[] =
     "Enables text labels for Chrome Home bottom navigation menu items.";
 
-const char kChromeHomeClearUrlOnOpenName[] = "Chrome Home clear url on open";
-const char kChromeHomeClearUrlOnOpenDescription[] =
-    "Clear omnibox URL when the bottom sheet is opened.";
-
 const char kChromeHomeEnableSurveyName[] = "Enable Chrome Home survey";
 const char kChromeHomeEnableSurveyDescription[] =
     "If enabled, the survey process will allow surveys using sample "
@@ -1836,20 +1832,10 @@ const char kChromeHomePersistentIphDescription[] =
     "Wait to dismiss the Chrome Home IPH until the user inteacts with the "
     "toolbar or a timer expires.";
 
-const char kChromeHomePersonalizedOmniboxSuggestionsName[] =
-    "Chrome Home Personalized Omnibox Suggestions";
-const char kChromeHomePersonalizedOmniboxSuggestionsDescription[] =
-    "Enable personalized omnibox suggestions on focus for Chrome Home.";
-
 const char kChromeHomePullToRefreshIphAtTopName[] =
     "Chrome Home Pull-To-Refresh Iph At Top";
 const char kChromeHomePullToRefreshIphAtTopDescription[] =
     "Show the Chrome Home pull-to-refresh help bubble at the top of the screen";
-
-const char kChromeHomeShowGoogleGName[] = "Chrome Home Show Google G";
-const char kChromeHomeShowGoogleGDescription[] =
-    "Show the Google G when the url is cleared. The flag to clear the url "
-    "when the sheet is opened must also be set.";
 
 const char kChromeHomeSwipeLogicName[] = "Chrome Home Swipe Logic";
 const char kChromeHomeSwipeLogicDescription[] =

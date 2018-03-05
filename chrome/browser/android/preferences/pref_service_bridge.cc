@@ -42,7 +42,6 @@
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/metrics/metrics_pref_names.h"
-#include "components/omnibox/browser/omnibox_pref_names.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
@@ -1147,15 +1146,6 @@ static void JNI_PrefServiceBridge_SetSupervisedUserId(
     const JavaParamRef<jstring>& pref) {
   GetPrefService()->SetString(prefs::kSupervisedUserId,
                               ConvertJavaStringToUTF8(env, pref));
-}
-
-static void
-JNI_PrefServiceBridge_SetChromeHomePersonalizedOmniboxSuggestionsEnabled(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    jboolean is_enabled) {
-  GetPrefService()->SetBoolean(omnibox::kZeroSuggestChromeHomePersonalized,
-                               is_enabled);
 }
 
 static void JNI_PrefServiceBridge_GetChromeAcceptLanguages(

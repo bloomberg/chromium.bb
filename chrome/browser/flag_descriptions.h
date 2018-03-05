@@ -1107,9 +1107,6 @@ extern const char kChromeDuplexDescription[];
 extern const char kChromeHomeBottomNavLabelsName[];
 extern const char kChromeHomeBottomNavLabelsDescription[];
 
-extern const char kChromeHomeClearUrlOnOpenName[];
-extern const char kChromeHomeClearUrlOnOpenDescription[];
-
 extern const char kChromeHomeEnableSurveyName[];
 extern const char kChromeHomeEnableSurveyDescription[];
 
@@ -1122,14 +1119,8 @@ extern const char kChromeHomeMenuItemsDescription[];
 extern const char kChromeHomePersistentIphName[];
 extern const char kChromeHomePersistentIphDescription[];
 
-extern const char kChromeHomePersonalizedOmniboxSuggestionsName[];
-extern const char kChromeHomePersonalizedOmniboxSuggestionsDescription[];
-
 extern const char kChromeHomePullToRefreshIphAtTopName[];
 extern const char kChromeHomePullToRefreshIphAtTopDescription[];
-
-extern const char kChromeHomeShowGoogleGName[];
-extern const char kChromeHomeShowGoogleGDescription[];
 
 extern const char kChromeHomeSwipeLogicName[];
 extern const char kChromeHomeSwipeLogicDescription[];

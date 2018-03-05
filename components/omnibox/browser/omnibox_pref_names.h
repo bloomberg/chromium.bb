@@ -11,7 +11,6 @@ namespace omnibox {
 // Keep alphabetized, and document each in the .cc file.
 
 extern const char kZeroSuggestCachedResults[];
-extern const char kZeroSuggestChromeHomePersonalized[];
 
 }  // namespace omnibox
 
