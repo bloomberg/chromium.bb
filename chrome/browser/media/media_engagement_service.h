@@ -102,6 +102,10 @@ class MediaEngagementService : public KeyedService,
   // is cleared.
   static const char kHistogramURLsDeletedScoreReductionName[];
 
+  // The name of the histogram that records the reason why the engagement was
+  // cleared, either partially or fully.
+  static const char kHistogramClearName[];
+
  private:
   friend class MediaEngagementBrowserTest;
   friend class MediaEngagementContentsObserverTest;

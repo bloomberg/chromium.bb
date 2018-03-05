@@ -29,11 +29,23 @@ const char MediaEngagementService::kHistogramScoreAtStartupName[] =
 const char MediaEngagementService::kHistogramURLsDeletedScoreReductionName[] =
     "Media.Engagement.URLsDeletedScoreReduction";
 
+const char MediaEngagementService::kHistogramClearName[] =
+    "Media.Engagement.Clear";
+
 namespace {
 
 // The current schema version of the MEI data. If this value is higher
 // than the stored value, all MEI data will be wiped.
 static const int kSchemaVersion = 4;
+
+// Do not change the values of this enum as it is used for UMA.
+enum class MediaEngagementClearReason {
+  kDataAll = 0,
+  kDataRange = 1,
+  kHistoryAll = 2,
+  kHistoryRange = 3,
+  kCount
+};
 
 bool MediaEngagementFilterAdapter(
     const GURL& predicate,
@@ -64,6 +76,11 @@ void RecordURLsDeletedScoreReduction(double previous_score,
   UMA_HISTOGRAM_PERCENTAGE(
       MediaEngagementService::kHistogramURLsDeletedScoreReductionName,
       difference);
+}
+
+void RecordClear(MediaEngagementClearReason reason) {
+  UMA_HISTOGRAM_ENUMERATION(MediaEngagementService::kHistogramClearName, reason,
+                            MediaEngagementClearReason::kCount);
 }
 
 }  // namespace
@@ -149,6 +166,11 @@ void MediaEngagementService::SetSchemaVersion(int version) {
 void MediaEngagementService::ClearDataBetweenTime(
     const base::Time& delete_begin,
     const base::Time& delete_end) {
+  if (delete_begin == base::Time() && delete_end == base::Time::Max())
+    RecordClear(MediaEngagementClearReason::kDataAll);
+  else
+    RecordClear(MediaEngagementClearReason::kDataRange);
+
   HostContentSettingsMapFactory::GetForProfile(profile_)
       ->ClearSettingsForOneTypeWithPredicate(
           CONTENT_SETTINGS_TYPE_MEDIA_ENGAGEMENT, base::Time(),
@@ -177,6 +199,19 @@ void MediaEngagementService::OnURLsDeleted(
     bool expired,
     const history::URLRows& deleted_rows,
     const std::set<GURL>& favicon_urls) {
+  if (all_history) {
+    RecordClear(MediaEngagementClearReason::kHistoryAll);
+
+    HostContentSettingsMapFactory::GetForProfile(profile_)
+        ->ClearSettingsForOneType(CONTENT_SETTINGS_TYPE_MEDIA_ENGAGEMENT);
+    return;
+  }
+
+  // TODO(818153): history expiration currently has no effect on MEI but entries
+  // that no longer appear in history should be removed from the database.
+  if (expired)
+    return;
+
   std::map<GURL, int> origins;
   for (const history::URLRow& row : deleted_rows) {
     GURL origin = row.url().GetOrigin();
@@ -185,6 +220,9 @@ void MediaEngagementService::OnURLsDeleted(
     }
     origins[origin]++;
   }
+
+  if (!origins.empty())
+    RecordClear(MediaEngagementClearReason::kHistoryRange);
 
   for (auto const& kv : origins) {
     // Remove the number of visits consistent with the number
