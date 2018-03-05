@@ -401,6 +401,10 @@ void RenderWidgetHostViewMac::DidReceiveFirstFrameAfterNavigation() {
   render_widget_host_->DidReceiveFirstFrameAfterNavigation();
 }
 
+void RenderWidgetHostViewMac::DestroyCompositorForShutdown() {
+  browser_compositor_.reset();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // AcceleratedWidgetMacNSView, public:
 
@@ -729,7 +733,7 @@ RenderWidgetHostViewMac::GetFocusedRenderWidgetHostDelegate() {
 }
 
 void RenderWidgetHostViewMac::UpdateNSViewAndDisplayProperties() {
-  if (!render_widget_host_)
+  if (!browser_compositor_)
     return;
 
   // During auto-resize it is the responsibility of the caller to ensure that
@@ -1729,8 +1733,10 @@ void RenderWidgetHostViewMac::OnGetRenderedTextCompleted(
 }
 
 void RenderWidgetHostViewMac::PauseForPendingResizeOrRepaintsAndDraw() {
-  if (!render_widget_host_ || render_widget_host_->is_hidden())
+  if (!render_widget_host_ || !browser_compositor_ ||
+      render_widget_host_->is_hidden()) {
     return;
+  }
 
   // Pausing for one view prevents others from receiving frames.
   // This may lead to large delays, causing overlaps. See crbug.com/352020.
@@ -3483,6 +3489,12 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 }
 
 - (void)viewDidMoveToWindow {
+  // This can be called very late during shutdown, so it needs to be guarded by
+  // a check that DestroyCompositorForShutdown has not yet been called.
+  // https://crbug.com/805726
+  if (!renderWidgetHostView_->browser_compositor_)
+    return;
+
   if ([self window])
     [self updateScreenProperties];
   renderWidgetHostView_->browser_compositor_->SetNSViewAttachedToWindow(

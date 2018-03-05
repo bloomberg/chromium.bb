@@ -30,6 +30,7 @@ class BrowserCompositorMacClient {
   virtual void BrowserCompositorMacOnBeginFrame() = 0;
   virtual void OnFrameTokenChanged(uint32_t frame_token) = 0;
   virtual void DidReceiveFirstFrameAfterNavigation() = 0;
+  virtual void DestroyCompositorForShutdown() = 0;
 };
 
 // This class owns a DelegatedFrameHost, and will dynamically attach and

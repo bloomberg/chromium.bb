@@ -493,6 +493,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void BrowserCompositorMacOnBeginFrame() override;
   void OnFrameTokenChanged(uint32_t frame_token) override;
   void DidReceiveFirstFrameAfterNavigation() override;
+  void DestroyCompositorForShutdown() override;
 
   // AcceleratedWidgetMacNSView implementation.
   NSView* AcceleratedWidgetGetNSView() const override;

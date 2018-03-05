@@ -28,13 +28,15 @@ namespace content {
 
 namespace {
 
-// Set when no browser compositors should remain alive.
-bool g_has_shut_down = false;
-
-// The number of placeholder objects allocated. If this reaches zero, then
-// the RecyclableCompositorMac being held on to for recycling,
-// |g_spare_recyclable_compositors|, will be freed.
-uint32_t g_browser_compositor_count = 0;
+// Weak pointers to all BrowserCompositorMac instances, used to
+// - Determine if a spare RecyclableCompositorMac should be kept around (one
+//   should be only if there exists at least one BrowserCompositorMac).
+// - Force all ui::Compositors to be destroyed at shut-down (because the NSView
+//   signals to shut down will come in very late, long after things that the
+//   ui::Compositor depend on have been destroyed).
+//   https://crbug.com/805726
+base::LazyInstance<std::set<BrowserCompositorMac*>>::Leaky
+    g_browser_compositors;
 
 // A spare RecyclableCompositorMac kept around for recycling.
 base::LazyInstance<base::circular_deque<
@@ -46,7 +48,7 @@ void ReleaseSpareCompositors() {
   while (g_spare_recyclable_compositors.Get().size() > 1)
     g_spare_recyclable_compositors.Get().pop_front();
 
-  if (!g_browser_compositor_count)
+  if (g_browser_compositors.Get().empty())
     g_spare_recyclable_compositors.Get().clear();
 }
 
@@ -68,10 +70,6 @@ class RecyclableCompositorMac : public ui::CompositorObserver {
 
   // Delete a compositor, or allow it to be recycled.
   static void Recycle(std::unique_ptr<RecyclableCompositorMac> compositor);
-
-  // Indicate that the recyclable compositor should be destroyed, and no future
-  // compositors should be recycled.
-  static void DisableRecyclingForShutdown();
 
   ui::Compositor* compositor() { return &compositor_; }
   ui::AcceleratedWidgetMac* accelerated_widget_mac() {
@@ -153,11 +151,6 @@ std::unique_ptr<RecyclableCompositorMac> RecyclableCompositorMac::Create() {
 // static
 void RecyclableCompositorMac::Recycle(
     std::unique_ptr<RecyclableCompositorMac> compositor) {
-  // It is an error to have a browser compositor continue to exist after
-  // shutdown.
-  CHECK(!g_has_shut_down);
-  CHECK(compositor);
-  CHECK(content::ImageTransportFactory::GetInstance());
   content::ImageTransportFactory::GetInstance()
       ->SetCompositorSuspendedForRecycle(compositor->compositor(), true);
 
@@ -183,7 +176,7 @@ BrowserCompositorMac::BrowserCompositorMac(
     : client_(client),
       accelerated_widget_mac_ns_view_(accelerated_widget_mac_ns_view),
       weak_factory_(this) {
-  g_browser_compositor_count += 1;
+  g_browser_compositors.Get().insert(this);
 
   root_layer_.reset(new ui::Layer(ui::LAYER_SOLID_COLOR));
   delegated_frame_host_.reset(new DelegatedFrameHost(
@@ -206,12 +199,12 @@ BrowserCompositorMac::~BrowserCompositorMac() {
   delegated_frame_host_.reset();
   root_layer_.reset();
 
-  DCHECK_GT(g_browser_compositor_count, 0u);
-  g_browser_compositor_count -= 1;
+  size_t num_erased = g_browser_compositors.Get().erase(this);
+  DCHECK_EQ(1u, num_erased);
 
   // If there are no compositors allocated, destroy the recyclable
   // RecyclableCompositorMac.
-  if (!g_browser_compositor_count)
+  if (g_browser_compositors.Get().empty())
     g_spare_recyclable_compositors.Get().clear();
 }
 
@@ -411,7 +404,14 @@ void BrowserCompositorMac::TransitionToState(State new_state) {
 
 // static
 void BrowserCompositorMac::DisableRecyclingForShutdown() {
-  g_has_shut_down = true;
+  // Ensure that the client has destroyed its BrowserCompositorViewMac before
+  // it dependencies are destroyed.
+  // https://crbug.com/805726
+  while (!g_browser_compositors.Get().empty()) {
+    BrowserCompositorMac* browser_compositor =
+        *g_browser_compositors.Get().begin();
+    browser_compositor->client_->DestroyCompositorForShutdown();
+  }
   g_spare_recyclable_compositors.Get().clear();
 }
 
