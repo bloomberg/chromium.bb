@@ -98,7 +98,11 @@ void SpeechRecognitionDispatcherHost::OnStartRequest(
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(WebContentsImpl::FromRenderFrameHostID(
           render_process_id_, params.render_frame_id));
-  DCHECK(web_contents);
+  if (!web_contents) {
+    // The render frame id is renderer-provided. If it's invalid, don't crash.
+    DLOG(ERROR) << "SRDH::OnStartRequest, invalid frame";
+    return;
+  }
 
   // If the speech API request was from an inner WebContents or a guest, save
   // the context of the outer WebContents or the embedder since we will use it
