@@ -75,7 +75,9 @@ IN_PROC_BROWSER_TEST_F(VideoPlayerBrowserTest, MAYBE_OpenSingleVideoOnDrive) {
 #else
 #define MAYBE_CheckInitialElements CheckInitialElements
 #endif
-IN_PROC_BROWSER_TEST_F(VideoPlayerBrowserTest, MAYBE_CheckInitialElements) {
+// TODO(yamaguchi):Enable after removing root cause of the test flakiness.
+// https://crbug.com/804413.
+IN_PROC_BROWSER_TEST_F(VideoPlayerBrowserTest, DISABLED_CheckInitialElements) {
   set_test_case_name("checkInitialElements");
   StartTest();
 }
@@ -86,7 +88,9 @@ IN_PROC_BROWSER_TEST_F(VideoPlayerBrowserTest, MAYBE_CheckInitialElements) {
 #else
 #define MAYBE_ClickControlButtons ClickControlButtons
 #endif
-IN_PROC_BROWSER_TEST_F(VideoPlayerBrowserTest, MAYBE_ClickControlButtons) {
+// TODO(yamaguchi):Enable after removing root cause of the test flakiness.
+// https://crbug.com/804413.
+IN_PROC_BROWSER_TEST_F(VideoPlayerBrowserTest, DISABLED_ClickControlButtons) {
   set_test_case_name("clickControlButtons");
   StartTest();
 }

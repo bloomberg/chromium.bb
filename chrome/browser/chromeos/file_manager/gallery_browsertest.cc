@@ -124,7 +124,10 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTestInGuestMode,
 #else
 #define MAYBE_TraverseSlideImagesOnDrive TraverseSlideImagesOnDrive
 #endif
-IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, MAYBE_TraverseSlideImagesOnDrive) {
+// TODO(yamaguchi):Enable after removing root cause of the test flakiness.
+// https://crbug.com/804413.
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest,
+                       DISABLED_TraverseSlideImagesOnDrive) {
   set_test_case_name("traverseSlideImagesOnDrive");
   StartTest();
 }
@@ -162,7 +165,9 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTest,
   StartTest();
 }
 
-IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, RenameImageOnDownloads) {
+// TODO(yamaguchi):Enable after removing root cause of the test flakiness.
+// https://crbug.com/804413.
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, DISABLED_RenameImageOnDownloads) {
   set_test_case_name("renameImageOnDownloads");
   StartTest();
 }
@@ -297,7 +302,9 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTestInGuestMode, CropImageOnDownloads) {
 #else
 #define MAYBE_CropImageOnDrive CropImageOnDrive
 #endif
-IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, MAYBE_CropImageOnDrive) {
+// TODO(yamaguchi):Enable after removing root cause of the test flakiness.
+// https://crbug.com/804413.
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, DISABLED_CropImageOnDrive) {
   set_test_case_name("cropImageOnDrive");
   StartTest();
 }
