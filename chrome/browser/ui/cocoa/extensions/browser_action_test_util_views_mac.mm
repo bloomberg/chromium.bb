@@ -178,8 +178,7 @@ class ExtensionPopupTestManagerViews : public ExtensionPopupTestManager {
 };
 
 std::unique_ptr<ExtensionPopupTestManager> GetExtensionPopupTestManager() {
-  if (!chrome::ShowAllDialogsWithViewsToolkit() ||
-      !chrome::ShowExtensionPopupWithViewsToolkit()) {
+  if (!chrome::ShowAllDialogsWithViewsToolkit()) {
     return std::make_unique<ExtensionPopupTestManagerCocoa>();
   }
   return std::make_unique<ExtensionPopupTestManagerViews>();

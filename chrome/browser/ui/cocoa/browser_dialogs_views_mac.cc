@@ -45,12 +45,6 @@ bool ShowAllDialogsWithViewsToolkit() {
              features::kShowAllDialogsWithViewsToolkit);
 }
 
-bool ShowExtensionPopupWithViewsToolkit() {
-  // TODO(robliao): Remove after the views ExtensionPopup is harmonized with
-  // Cocoa's ExtensionPopup.
-  return false;
-}
-
 void ShowPageInfoBubbleViews(Browser* browser,
                              content::WebContents* web_contents,
                              const GURL& virtual_url,
