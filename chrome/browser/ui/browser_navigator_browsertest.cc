@@ -677,6 +677,21 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewWindow) {
   EXPECT_EQ(1, params.browser->tab_strip_model()->count());
 }
 
+// This test verifies that a source tab to the left of the target tab can
+// be switched away from and closed. It verifies that if we close the
+// earlier tab, that we don't use a stale index, and select the wrong tab.
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, OutOfOrderTabSwitchTest) {
+  GURL singleton_url("http://maps.google.com/");
+
+  NavigateHelper(singleton_url, browser(),
+                 WindowOpenDisposition::NEW_FOREGROUND_TAB);
+
+  browser()->tab_strip_model()->ActivateTabAt(0, true);
+
+  NavigateHelper(singleton_url, browser(),
+                 WindowOpenDisposition::SWITCH_TO_TAB);
+}
+
 // This test verifies that we're picking the correct browser and tab to
 // switch to. It verifies that we don't recommend the active tab, and that,
 // when switching, we don't mistakenly pick the current browser.
