@@ -1,6 +1,8 @@
 # liblouis: Canadian French Grade 1 Table
 
 # -----------
+#-display-name: Canadian French uncontracted braille
+#
 #+locale:fr-CA
 #+type:literary
 #+contraction:no

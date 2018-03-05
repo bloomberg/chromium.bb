@@ -1,6 +1,8 @@
 # Liblouis: Persian 8 dot computer Braille table
 #
 # -----------
+#-display-name: Persian computer braille
+#
 #+locale:fa-IR
 #+type:computer
 #+dots:8

@@ -1,4 +1,6 @@
 # -----------
+#-display-name: Slovenian computer braille
+#
 #+locale:sl
 #+type:computer
 #+dots:8

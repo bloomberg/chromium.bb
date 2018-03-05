@@ -1,3 +1,5 @@
+#-display-name: Czech braille
+
 #+locale:cs
 #+type:literary
 #+grade:1

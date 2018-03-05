@@ -1,4 +1,6 @@
 # -----------
+#-display-name: Tamil braille
+#
 #+locale:ta
 #+type:literary
 #+contraction:no

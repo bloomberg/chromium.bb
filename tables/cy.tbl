@@ -1,3 +1,5 @@
+#-display-name: Welsh contracted braille
+
 #+locale:cy
 #+type:literary
 #+contraction:full

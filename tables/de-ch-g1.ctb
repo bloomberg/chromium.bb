@@ -1,6 +1,9 @@
 # liblouis: Swiss German Grade 1 Braille
 #
 # -----------
+#-name: Schweizerdeutsche Vollschrift
+#-display-name: Swiss High German partially contracted braille
+#
 #+locale:de-CH
 #+type:literary
 #+contraction:partial

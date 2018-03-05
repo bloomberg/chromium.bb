@@ -2,6 +2,8 @@
 # liblouis: Cherokee Braille Table
 #
 # ------------
+#-display-name: Cherokee braille
+#
 #+locale:chr
 #+type:literary
 #+contraction:no

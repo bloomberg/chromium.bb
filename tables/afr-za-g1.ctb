@@ -3,6 +3,9 @@
 # liblouis: Afrikaans Braille Code (Grade 1)
 #
 # ------------
+#-name: Afrikaans ongekontrakteerde
+#-display-name: Afrikaans braille
+#
 #+locale:af
 #+type:literary
 #+contraction:no

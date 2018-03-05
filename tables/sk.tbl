@@ -1,3 +1,5 @@
+#-display-name: Slovak braille
+
 #+locale:sk
 #+type:literary
 #+grade:1

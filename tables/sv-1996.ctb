@@ -1,4 +1,6 @@
 # -----------
+#-display-name: Swedish computer braille (1996 standard)
+#
 #+locale:sv
 #+type:computer
 #+dots:8

@@ -28,6 +28,8 @@
 
 ### Table Metadata
 
+#-display-name: Danish 8-dot partially contracted braille
+
 #+locale: da
 #+type: literary
 #+contraction: partial
