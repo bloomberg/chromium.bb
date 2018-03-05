@@ -54,7 +54,7 @@
 #include "content/public/common/mojo_channel_switches.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
-#include "content/public/common/zygote_features.h"
+#include "content/public/common/zygote_buildflags.h"
 #include "ipc/ipc_channel.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "net/socket/socket_descriptor.h"

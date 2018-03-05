@@ -10,7 +10,7 @@
 #include "base/process/process.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
-#include "content/public/common/zygote_features.h"
+#include "content/public/common/zygote_buildflags.h"
 #include "services/service_manager/sandbox/sandbox_delegate.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 

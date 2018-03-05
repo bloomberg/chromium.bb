@@ -128,8 +128,8 @@ target(link_target_type, "renderer_sources") {
       "webrtc_log_message_delegate.h",
     ]
     deps += [
+      "//content/public/common:buildflags",
       "//content/public/common:feature_h264_with_openh264_ffmpeg",
-      "//content/public/common:features",
       "//third_party/webrtc_overrides",
     ]
   }
