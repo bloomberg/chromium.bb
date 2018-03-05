@@ -5,6 +5,8 @@ For a detailed list of all the changes refer to [[https://github.com/liblouis/li
 issues]].
 
 ** New features
+- The same name can now be used in more than one ~class~ rule. The
+  effect is that both set of characters become part of that one class.
 
 ** Bug fixes
 - Fix a regression in inputPositions thanks to Bert Frees
