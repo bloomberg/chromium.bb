@@ -22,25 +22,36 @@
 
 namespace media {
 
+namespace {
+
 // Maximum number of channels with defined layout in src/media.
 static const int kMaxChannels = 8;
 
-static AVCodecID CdmAudioCodecToCodecID(
-    cdm::AudioDecoderConfig::AudioCodec audio_codec) {
+bool IsValidConfig(const cdm::AudioDecoderConfig_2& config) {
+  // No need to check |encryption_scheme| as the buffers will always be
+  // decrypted before calling DecodeBuffer().
+  return config.codec != cdm::kUnknownAudioCodec && config.channel_count > 0 &&
+         config.channel_count <= kMaxChannels && config.bits_per_channel > 0 &&
+         config.bits_per_channel <= limits::kMaxBitsPerSample &&
+         config.samples_per_second > 0 &&
+         config.samples_per_second <= limits::kMaxSampleRate;
+}
+
+AVCodecID CdmAudioCodecToCodecID(cdm::AudioCodec audio_codec) {
   switch (audio_codec) {
-    case cdm::AudioDecoderConfig::kCodecVorbis:
+    case cdm::kCodecVorbis:
       return AV_CODEC_ID_VORBIS;
-    case cdm::AudioDecoderConfig::kCodecAac:
+    case cdm::kCodecAac:
       return AV_CODEC_ID_AAC;
-    case cdm::AudioDecoderConfig::kUnknownAudioCodec:
+    case cdm::kUnknownAudioCodec:
     default:
       NOTREACHED() << "Unsupported cdm::AudioCodec: " << audio_codec;
       return AV_CODEC_ID_NONE;
   }
 }
 
-static void CdmAudioDecoderConfigToAVCodecContext(
-    const cdm::AudioDecoderConfig& config,
+void CdmAudioDecoderConfigToAVCodecContext(
+    const cdm::AudioDecoderConfig_2& config,
     AVCodecContext* codec_context) {
   codec_context->codec_type = AVMEDIA_TYPE_AUDIO;
   codec_context->codec_id = CdmAudioCodecToCodecID(config.codec);
@@ -78,8 +89,7 @@ static void CdmAudioDecoderConfigToAVCodecContext(
   }
 }
 
-static cdm::AudioFormat AVSampleFormatToCdmAudioFormat(
-    AVSampleFormat sample_format) {
+cdm::AudioFormat AVSampleFormatToCdmAudioFormat(AVSampleFormat sample_format) {
   switch (sample_format) {
     case AV_SAMPLE_FMT_U8:
       return cdm::kAudioFormatU8;
@@ -99,10 +109,10 @@ static cdm::AudioFormat AVSampleFormatToCdmAudioFormat(
   return cdm::kUnknownAudioFormat;
 }
 
-static void CopySamples(cdm::AudioFormat cdm_format,
-                        int decoded_audio_size,
-                        const AVFrame& av_frame,
-                        uint8_t* output_buffer) {
+void CopySamples(cdm::AudioFormat cdm_format,
+                 int decoded_audio_size,
+                 const AVFrame& av_frame,
+                 uint8_t* output_buffer) {
   switch (cdm_format) {
     case cdm::kAudioFormatU8:
     case cdm::kAudioFormatS16:
@@ -127,6 +137,8 @@ static void CopySamples(cdm::AudioFormat cdm_format,
   }
 }
 
+}  // namespace
+
 FFmpegCdmAudioDecoder::FFmpegCdmAudioDecoder(CdmHostProxy* cdm_host_proxy)
     : cdm_host_proxy_(cdm_host_proxy) {}
 
@@ -134,7 +146,8 @@ FFmpegCdmAudioDecoder::~FFmpegCdmAudioDecoder() {
   ReleaseFFmpegResources();
 }
 
-bool FFmpegCdmAudioDecoder::Initialize(const cdm::AudioDecoderConfig& config) {
+bool FFmpegCdmAudioDecoder::Initialize(
+    const cdm::AudioDecoderConfig_2& config) {
   DVLOG(1) << "Initialize()";
   if (!IsValidConfig(config)) {
     LOG(ERROR) << "Initialize(): invalid audio decoder configuration.";
@@ -194,17 +207,6 @@ void FFmpegCdmAudioDecoder::Reset() {
   DVLOG(1) << "Reset()";
   avcodec_flush_buffers(codec_context_.get());
   ResetTimestampState();
-}
-
-// static
-bool FFmpegCdmAudioDecoder::IsValidConfig(
-    const cdm::AudioDecoderConfig& config) {
-  return config.codec != cdm::AudioDecoderConfig::kUnknownAudioCodec &&
-         config.channel_count > 0 && config.channel_count <= kMaxChannels &&
-         config.bits_per_channel > 0 &&
-         config.bits_per_channel <= limits::kMaxBitsPerSample &&
-         config.samples_per_second > 0 &&
-         config.samples_per_second <= limits::kMaxSampleRate;
 }
 
 cdm::Status FFmpegCdmAudioDecoder::DecodeBuffer(

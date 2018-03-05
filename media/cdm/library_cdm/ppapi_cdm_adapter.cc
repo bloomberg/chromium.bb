@@ -60,12 +60,12 @@ void CallOnMain(pp::CompletionCallback cb) {
     PostOnMain(cb);
 }
 
-// Configures a cdm::InputBuffer. |subsamples| must exist as long as
+// Configures a cdm::InputBuffer_2. |subsamples| must exist as long as
 // |input_buffer| is in use.
 void ConfigureInputBuffer(const pp::Buffer_Dev& encrypted_buffer,
                           const PP_EncryptedBlockInfo& encrypted_block_info,
                           std::vector<cdm::SubsampleEntry>* subsamples,
-                          cdm::InputBuffer* input_buffer) {
+                          cdm::InputBuffer_2* input_buffer) {
   PP_DCHECK(subsamples);
   PP_DCHECK(!encrypted_buffer.is_null());
 
@@ -97,6 +97,13 @@ void ConfigureInputBuffer(const pp::Buffer_Dev& encrypted_buffer,
   }
 
   input_buffer->timestamp = encrypted_block_info.tracking_info.timestamp;
+
+  // Pepper doesn't transfer encryption scheme info. So if |iv| is defined,
+  // the block is encrypted in 'cenc' mode. If not, it's unencrypted.
+  input_buffer->encryption_scheme = (encrypted_block_info.iv_size == 0)
+                                        ? cdm::EncryptionScheme::kUnencrypted
+                                        : cdm::EncryptionScheme::kCenc;
+  input_buffer->pattern = {0, 0};
 }
 
 cdm::HdcpVersion PpHdcpVersionToCdmHdcpVersion(PP_HdcpVersion hdcp_version) {
@@ -181,53 +188,50 @@ PP_DecryptedSampleFormat CdmAudioFormatToPpDecryptedSampleFormat(
   }
 }
 
-cdm::AudioDecoderConfig::AudioCodec PpAudioCodecToCdmAudioCodec(
-    PP_AudioCodec codec) {
+cdm::AudioCodec PpAudioCodecToCdmAudioCodec(PP_AudioCodec codec) {
   switch (codec) {
     case PP_AUDIOCODEC_VORBIS:
-      return cdm::AudioDecoderConfig::kCodecVorbis;
+      return cdm::kCodecVorbis;
     case PP_AUDIOCODEC_AAC:
-      return cdm::AudioDecoderConfig::kCodecAac;
+      return cdm::kCodecAac;
     default:
-      return cdm::AudioDecoderConfig::kUnknownAudioCodec;
+      return cdm::kUnknownAudioCodec;
   }
 }
 
-cdm::VideoDecoderConfig::VideoCodec PpVideoCodecToCdmVideoCodec(
-    PP_VideoCodec codec) {
+cdm::VideoCodec PpVideoCodecToCdmVideoCodec(PP_VideoCodec codec) {
   switch (codec) {
     case PP_VIDEOCODEC_VP8:
-      return cdm::VideoDecoderConfig::kCodecVp8;
+      return cdm::kCodecVp8;
     case PP_VIDEOCODEC_H264:
-      return cdm::VideoDecoderConfig::kCodecH264;
+      return cdm::kCodecH264;
     case PP_VIDEOCODEC_VP9:
-      return cdm::VideoDecoderConfig::kCodecVp9;
+      return cdm::kCodecVp9;
     default:
-      return cdm::VideoDecoderConfig::kUnknownVideoCodec;
+      return cdm::kUnknownVideoCodec;
   }
 }
 
-cdm::VideoDecoderConfig::VideoCodecProfile PpVCProfileToCdmVCProfile(
-    PP_VideoCodecProfile profile) {
+cdm::VideoCodecProfile PpVCProfileToCdmVCProfile(PP_VideoCodecProfile profile) {
   switch (profile) {
     case PP_VIDEOCODECPROFILE_NOT_NEEDED:
-      return cdm::VideoDecoderConfig::kProfileNotNeeded;
+      return cdm::kProfileNotNeeded;
     case PP_VIDEOCODECPROFILE_H264_BASELINE:
-      return cdm::VideoDecoderConfig::kH264ProfileBaseline;
+      return cdm::kH264ProfileBaseline;
     case PP_VIDEOCODECPROFILE_H264_MAIN:
-      return cdm::VideoDecoderConfig::kH264ProfileMain;
+      return cdm::kH264ProfileMain;
     case PP_VIDEOCODECPROFILE_H264_EXTENDED:
-      return cdm::VideoDecoderConfig::kH264ProfileExtended;
+      return cdm::kH264ProfileExtended;
     case PP_VIDEOCODECPROFILE_H264_HIGH:
-      return cdm::VideoDecoderConfig::kH264ProfileHigh;
+      return cdm::kH264ProfileHigh;
     case PP_VIDEOCODECPROFILE_H264_HIGH_10:
-      return cdm::VideoDecoderConfig::kH264ProfileHigh10;
+      return cdm::kH264ProfileHigh10;
     case PP_VIDEOCODECPROFILE_H264_HIGH_422:
-      return cdm::VideoDecoderConfig::kH264ProfileHigh422;
+      return cdm::kH264ProfileHigh422;
     case PP_VIDEOCODECPROFILE_H264_HIGH_444_PREDICTIVE:
-      return cdm::VideoDecoderConfig::kH264ProfileHigh444Predictive;
+      return cdm::kH264ProfileHigh444Predictive;
     default:
-      return cdm::VideoDecoderConfig::kUnknownVideoCodecProfile;
+      return cdm::kUnknownVideoCodecProfile;
   }
 }
 
@@ -555,7 +559,7 @@ void PpapiCdmAdapter::Decrypt(
   LinkedDecryptedBlock decrypted_block(new DecryptedBlockImpl());
 
   if (cdm_) {
-    cdm::InputBuffer input_buffer = {};
+    cdm::InputBuffer_2 input_buffer = {};
     std::vector<cdm::SubsampleEntry> subsamples;
     ConfigureInputBuffer(encrypted_buffer, encrypted_block_info, &subsamples,
                          &input_buffer);
@@ -577,7 +581,7 @@ void PpapiCdmAdapter::InitializeAudioDecoder(
   PP_DCHECK(deferred_audio_decoder_config_id_ == 0);
   cdm::Status status = cdm::kInitializationError;
   if (cdm_) {
-    cdm::AudioDecoderConfig cdm_decoder_config = {};
+    cdm::AudioDecoderConfig_2 cdm_decoder_config = {};
     cdm_decoder_config.codec =
         PpAudioCodecToCdmAudioCodec(decoder_config.codec);
     cdm_decoder_config.channel_count = decoder_config.channel_count;
@@ -586,6 +590,11 @@ void PpapiCdmAdapter::InitializeAudioDecoder(
     cdm_decoder_config.extra_data =
         static_cast<uint8_t*>(extra_data_buffer.data());
     cdm_decoder_config.extra_data_size = extra_data_buffer.size();
+    // Pepper only supports CDM8 and CDM9, which don't include the encryption
+    // scheme, so this value will be dropped. However, something should be
+    // specified, so indicate that the stream may be encrypted.
+    cdm_decoder_config.encryption_scheme = cdm::EncryptionScheme::kCenc;
+
     status = cdm_->InitializeAudioDecoder(cdm_decoder_config);
   }
 
@@ -607,7 +616,7 @@ void PpapiCdmAdapter::InitializeVideoDecoder(
   PP_DCHECK(deferred_video_decoder_config_id_ == 0);
   cdm::Status status = cdm::kInitializationError;
   if (cdm_) {
-    cdm::VideoDecoderConfig cdm_decoder_config = {};
+    cdm::VideoDecoderConfig_2 cdm_decoder_config = {};
     cdm_decoder_config.codec =
         PpVideoCodecToCdmVideoCodec(decoder_config.codec);
     cdm_decoder_config.profile =
@@ -619,6 +628,11 @@ void PpapiCdmAdapter::InitializeVideoDecoder(
     cdm_decoder_config.extra_data =
         static_cast<uint8_t*>(extra_data_buffer.data());
     cdm_decoder_config.extra_data_size = extra_data_buffer.size();
+    // Pepper only supports CDM8 and CDM9, which don't include the encryption
+    // scheme, so this value will be dropped. However, something should be
+    // specified, so indicate that the stream may be encrypted.
+    cdm_decoder_config.encryption_scheme = cdm::EncryptionScheme::kCenc;
+
     status = cdm_->InitializeVideoDecoder(cdm_decoder_config);
   }
 
@@ -663,7 +677,7 @@ void PpapiCdmAdapter::DecryptAndDecode(
   // Release a buffer that the caller indicated it is finished with.
   allocator_.Release(encrypted_block_info.tracking_info.buffer_id);
 
-  cdm::InputBuffer input_buffer = {};
+  cdm::InputBuffer_2 input_buffer = {};
   std::vector<cdm::SubsampleEntry> subsamples;
   if (cdm_ && !encrypted_buffer.is_null()) {
     ConfigureInputBuffer(encrypted_buffer, encrypted_block_info, &subsamples,
