@@ -587,8 +587,6 @@ test("headless_unittests") {
     "public/util/error_reporter_unittest.cc",
     "public/util/expedited_dispatcher_test.cc",
     "public/util/generic_url_request_job_test.cc",
-    "public/util/testing/generic_url_request_mocks.cc",
-    "public/util/testing/generic_url_request_mocks.h",
     "public/util/testing/test_in_memory_protocol_handler.cc",
     "public/util/testing/test_in_memory_protocol_handler.h",
     "public/util/throttled_dispatcher_test.cc",
@@ -723,8 +721,6 @@ test("headless_browsertests") {
     "public/util/compositor_controller_browsertest.cc",
     "public/util/testing/fake_managed_dispatch_url_request_job.cc",
     "public/util/testing/fake_managed_dispatch_url_request_job.h",
-    "public/util/testing/generic_url_request_mocks.cc",
-    "public/util/testing/generic_url_request_mocks.h",
     "public/util/testing/test_in_memory_protocol_handler.cc",
     "public/util/testing/test_in_memory_protocol_handler.h",
     "test/headless_browser_test.cc",
@@ -771,6 +767,7 @@ test("headless_browsertests") {
 
   deps = [
     ":headless_renderer",
+    ":headless_test_support",
     "//base",
     "//components/security_state/content",
     "//content/test:test_support",
