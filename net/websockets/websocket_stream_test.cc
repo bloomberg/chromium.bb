@@ -1268,11 +1268,13 @@ TEST_P(WebSocketStreamCreateTest, NoResponse) {
 }
 
 TEST_P(WebSocketStreamCreateTest, SelfSignedCertificateFailure) {
-  ssl_data_.push_back(std::make_unique<SSLSocketDataProvider>(
-      ASYNC, ERR_CERT_AUTHORITY_INVALID));
-  ssl_data_[0]->ssl_info.cert =
+  auto ssl_socket_data = std::make_unique<SSLSocketDataProvider>(
+      ASYNC, ERR_CERT_AUTHORITY_INVALID);
+  ssl_socket_data->ssl_info.cert =
       ImportCertFromFile(GetTestCertsDirectory(), "unittest.selfsigned.der");
-  ASSERT_TRUE(ssl_data_[0]->ssl_info.cert.get());
+  ASSERT_TRUE(ssl_socket_data->ssl_info.cert.get());
+  url_request_context_host_.AddSSLSocketDataProvider(
+      std::move(ssl_socket_data));
   std::unique_ptr<SequencedSocketData> raw_socket_data(BuildNullSocketData());
   CreateAndConnectRawExpectations("wss://www.example.org/", NoSubProtocols(),
                                   Origin(), Url(), "",
@@ -1288,12 +1290,15 @@ TEST_P(WebSocketStreamCreateTest, SelfSignedCertificateFailure) {
 }
 
 TEST_P(WebSocketStreamCreateTest, SelfSignedCertificateSuccess) {
-  ssl_data_.push_back(std::make_unique<SSLSocketDataProvider>(
-      ASYNC, ERR_CERT_AUTHORITY_INVALID));
-  ssl_data_[0]->ssl_info.cert =
+  auto ssl_socket_data = std::make_unique<SSLSocketDataProvider>(
+      ASYNC, ERR_CERT_AUTHORITY_INVALID);
+  ssl_socket_data->ssl_info.cert =
       ImportCertFromFile(GetTestCertsDirectory(), "unittest.selfsigned.der");
-  ASSERT_TRUE(ssl_data_[0]->ssl_info.cert.get());
-  ssl_data_.push_back(std::make_unique<SSLSocketDataProvider>(ASYNC, OK));
+  ASSERT_TRUE(ssl_socket_data->ssl_info.cert.get());
+  url_request_context_host_.AddSSLSocketDataProvider(
+      std::move(ssl_socket_data));
+  url_request_context_host_.AddSSLSocketDataProvider(
+      std::make_unique<SSLSocketDataProvider>(ASYNC, OK));
   url_request_context_host_.AddRawExpectations(BuildNullSocketData());
   CreateAndConnectStandard("wss://www.example.org/", "www.example.org", "/",
                            NoSubProtocols(), Origin(), Url(), {}, {}, {});
