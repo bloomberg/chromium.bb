@@ -8,9 +8,11 @@
 #include <utility>
 
 #include "base/base64.h"
+#include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "build/build_config.h"
+#include "cc/base/switches.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/switches.h"
 #include "content/public/browser/browser_thread.h"
@@ -18,10 +20,12 @@
 #include "content/public/browser/devtools_frontend_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_switches.h"
 #include "headless/grit/headless_lib_resources.h"
 #include "headless/lib/browser/headless_browser_context_impl.h"
 #include "headless/lib/browser/headless_browser_impl.h"
 #include "headless/lib/browser/headless_web_contents_impl.h"
+#include "headless/public/devtools/domains/headless_experimental.h"
 #include "headless/public/devtools/domains/target.h"
 #include "printing/units.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -285,43 +289,48 @@ HeadlessDevToolsManagerDelegate::HeadlessDevToolsManagerDelegate(
     : browser_(std::move(browser)) {
   // TODO(eseckler): Use third_party/inspector_protocol to generate harnesses
   // for commands, rather than binding commands here manually.
-  command_map_["Target.createTarget"] = base::Bind(
+  command_map_["Target.createTarget"] = base::BindRepeating(
       &HeadlessDevToolsManagerDelegate::CreateTarget, base::Unretained(this));
-  command_map_["Target.closeTarget"] = base::Bind(
+  command_map_["Target.closeTarget"] = base::BindRepeating(
       &HeadlessDevToolsManagerDelegate::CloseTarget, base::Unretained(this));
-  command_map_["Target.createBrowserContext"] =
-      base::Bind(&HeadlessDevToolsManagerDelegate::CreateBrowserContext,
-                 base::Unretained(this));
-  command_map_["Target.disposeBrowserContext"] =
-      base::Bind(&HeadlessDevToolsManagerDelegate::DisposeBrowserContext,
-                 base::Unretained(this));
-  command_map_["Browser.close"] = base::Bind(
+  command_map_["Target.createBrowserContext"] = base::BindRepeating(
+      &HeadlessDevToolsManagerDelegate::CreateBrowserContext,
+      base::Unretained(this));
+  command_map_["Target.disposeBrowserContext"] = base::BindRepeating(
+      &HeadlessDevToolsManagerDelegate::DisposeBrowserContext,
+      base::Unretained(this));
+  command_map_["Browser.close"] = base::BindRepeating(
       &HeadlessDevToolsManagerDelegate::Close, base::Unretained(this));
   command_map_["Browser.getWindowForTarget"] =
-      base::Bind(&HeadlessDevToolsManagerDelegate::GetWindowForTarget,
-                 base::Unretained(this));
+      base::BindRepeating(&HeadlessDevToolsManagerDelegate::GetWindowForTarget,
+                          base::Unretained(this));
   command_map_["Browser.getWindowBounds"] =
-      base::Bind(&HeadlessDevToolsManagerDelegate::GetWindowBounds,
-                 base::Unretained(this));
+      base::BindRepeating(&HeadlessDevToolsManagerDelegate::GetWindowBounds,
+                          base::Unretained(this));
   command_map_["Browser.setWindowBounds"] =
-      base::Bind(&HeadlessDevToolsManagerDelegate::SetWindowBounds,
-                 base::Unretained(this));
-  command_map_["HeadlessExperimental.enable"] =
-      base::Bind(&HeadlessDevToolsManagerDelegate::EnableHeadlessExperimental,
-                 base::Unretained(this));
-  command_map_["HeadlessExperimental.disable"] =
-      base::Bind(&HeadlessDevToolsManagerDelegate::DisableHeadlessExperimental,
-                 base::Unretained(this));
+      base::BindRepeating(&HeadlessDevToolsManagerDelegate::SetWindowBounds,
+                          base::Unretained(this));
+  command_map_["HeadlessExperimental.enterDeterministicMode"] =
+      base::BindRepeating(
+          &HeadlessDevToolsManagerDelegate::EnterDeterministicMode,
+          base::Unretained(this));
+  command_map_["HeadlessExperimental.enable"] = base::BindRepeating(
+      &HeadlessDevToolsManagerDelegate::EnableHeadlessExperimental,
+      base::Unretained(this));
+  command_map_["HeadlessExperimental.disable"] = base::BindRepeating(
+      &HeadlessDevToolsManagerDelegate::DisableHeadlessExperimental,
+      base::Unretained(this));
 
   unhandled_command_map_["Network.emulateNetworkConditions"] =
-      base::Bind(&HeadlessDevToolsManagerDelegate::EmulateNetworkConditions,
-                 base::Unretained(this));
-  unhandled_command_map_["Network.disable"] = base::Bind(
+      base::BindRepeating(
+          &HeadlessDevToolsManagerDelegate::EmulateNetworkConditions,
+          base::Unretained(this));
+  unhandled_command_map_["Network.disable"] = base::BindRepeating(
       &HeadlessDevToolsManagerDelegate::NetworkDisable, base::Unretained(this));
 
-  async_command_map_["Page.printToPDF"] = base::Bind(
+  async_command_map_["Page.printToPDF"] = base::BindRepeating(
       &HeadlessDevToolsManagerDelegate::PrintToPDF, base::Unretained(this));
-  async_command_map_["HeadlessExperimental.beginFrame"] = base::Bind(
+  async_command_map_["HeadlessExperimental.beginFrame"] = base::BindRepeating(
       &HeadlessDevToolsManagerDelegate::BeginFrame, base::Unretained(this));
 }
 
@@ -462,7 +471,7 @@ void HeadlessDevToolsManagerDelegate::PrintToPDF(
   }
   HeadlessPrintManager::FromWebContents(web_contents)
       ->GetPDFContents(rfh, settings,
-                       base::Bind(&PDFCreated, callback, command_id));
+                       base::BindRepeating(&PDFCreated, callback, command_id));
 #else
   callback.Run(CreateErrorResponse(command_id, kErrorServerError,
                                    "Printing is not enabled"));
@@ -578,6 +587,25 @@ HeadlessDevToolsManagerDelegate::CreateBrowserContext(
   std::unique_ptr<base::Value> result(
       target::CreateBrowserContextResult::Builder()
           .SetBrowserContextId(browser_context->Id())
+          .Build()
+          ->Serialize());
+  return CreateSuccessResponse(command_id, std::move(result));
+}
+
+std::unique_ptr<base::DictionaryValue>
+HeadlessDevToolsManagerDelegate::EnterDeterministicMode(
+    content::DevToolsAgentHost* agent_host,
+    content::DevToolsAgentHostClient* client,
+    int command_id,
+    const base::DictionaryValue* params) {
+  if (const base::Value* initial_date = params->FindKey("initialDate")) {
+    browser_->options()->initial_virtual_time =
+        base::Time::FromDoubleT(initial_date->GetDouble());
+  } else {
+    browser_->options()->initial_virtual_time = base::nullopt;
+  }
+  std::unique_ptr<base::Value> result(
+      headless_experimental::EnterDeterministicModeResult::Builder()
           .Build()
           ->Serialize());
   return CreateSuccessResponse(command_id, std::move(result));
@@ -963,10 +991,11 @@ void HeadlessDevToolsManagerDelegate::BeginFrame(
                     "single BeginFrame should be active at the same time.";
   }
 
-  headless_contents->BeginFrame(frame_timeticks, deadline, interval,
-                                no_display_updates, capture_screenshot,
-                                base::Bind(&OnBeginFrameFinished, command_id,
-                                           callback, encoding, quality));
+  headless_contents->BeginFrame(
+      frame_timeticks, deadline, interval, no_display_updates,
+      capture_screenshot,
+      base::BindRepeating(&OnBeginFrameFinished, command_id, callback, encoding,
+                          quality));
 }
 
 }  // namespace headless
