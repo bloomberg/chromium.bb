@@ -52,12 +52,6 @@ static_assert(std::is_standard_layout<CrashpadInfo>::value,
 // because it’s POD, no code should need to run to initialize this under
 // release-mode optimization.
 
-// Platforms that use ELF objects need to locate this structure via the dynamic
-// symbol table, so avoid name mangling.
-#if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_FUCHSIA)
-extern "C" {
-#endif
-
 #if defined(OS_POSIX)
 __attribute__((
 
@@ -65,10 +59,6 @@ __attribute__((
     // Put the structure in a well-known section name where it can be easily
     // found without having to consult the symbol table.
     section(SEG_DATA ",crashpad_info"),
-
-    // There's no need to expose this as a public symbol from the symbol table.
-    // All accesses from the outside can locate the well-known section name.
-    visibility("hidden"),
 #endif
 
 #if defined(ADDRESS_SANITIZER)
@@ -79,6 +69,10 @@ __attribute__((
     // greater than the red zone size, the red zone will be suppressed.
     aligned(64),
 #endif  // defined(ADDRESS_SANITIZER)
+
+    // There's no need to expose this as a public symbol from the symbol table.
+    // All accesses from the outside can locate the well-known section name.
+    visibility("hidden"),
 
     // The “used” attribute prevents the structure from being dead-stripped.
     used))
@@ -96,12 +90,19 @@ __declspec(allocate("CPADinfo"))
 
 CrashpadInfo g_crashpad_info;
 
-#if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_FUCHSIA)
-}  // extern "C"
-#endif
+extern "C" int* CRASHPAD_NOTE_REFERENCE;
 
 // static
 CrashpadInfo* CrashpadInfo::GetCrashpadInfo() {
+#if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_FUCHSIA)
+  // This otherwise-unused reference is used so that any module that
+  // references GetCrashpadInfo() will also include the note in the
+  // .note.crashpad.info section. That note in turn contains the address of
+  // g_crashpad_info. This allows the module reader to find the CrashpadInfo
+  // structure without requiring the use of the dynamic symbol table.
+  static volatile int* pointer_to_note_section = CRASHPAD_NOTE_REFERENCE;
+  (void)pointer_to_note_section;
+#endif
   return &g_crashpad_info;
 }
 

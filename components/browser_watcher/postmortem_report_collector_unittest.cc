@@ -75,7 +75,7 @@ class MockPostmortemReportCollector final : public PostmortemReportCollector {
                bool(StabilityReport* report,
                     const crashpad::UUID& client_id,
                     const crashpad::UUID& report_id,
-                    base::PlatformFile minidump_file));
+                    crashpad::FileWriterInterface* minidump_file));
 };
 
 class MockSystemSessionAnalyzer : public metrics::SystemSessionAnalyzer {
