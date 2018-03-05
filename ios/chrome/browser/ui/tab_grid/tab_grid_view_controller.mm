@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_view_controller.h"
 
 #import "base/logging.h"
+#import "ios/chrome/browser/ui/tab_grid/grid_commands.h"
 #import "ios/chrome/browser/ui/tab_grid/grid_consumer.h"
 #import "ios/chrome/browser/ui/tab_grid/grid_image_data_source.h"
 #import "ios/chrome/browser/ui/tab_grid/grid_view_controller.h"
@@ -15,7 +16,22 @@
 #error "This file requires ARC support."
 #endif
 
-@interface TabGridViewController ()
+namespace {
+// Temporary alert used while building this feature.
+UIAlertController* NotImplementedAlert() {
+  UIAlertController* alert =
+      [UIAlertController alertControllerWithTitle:@"Not implemented"
+                                          message:nil
+                                   preferredStyle:UIAlertControllerStyleAlert];
+  [alert addAction:[UIAlertAction actionWithTitle:@"OK"
+                                            style:UIAlertActionStyleCancel
+                                          handler:nil]];
+  return alert;
+}
+}  // namespace
+
+@interface TabGridViewController ()<GridViewControllerDelegate,
+                                    UIScrollViewDelegate>
 // Child view controllers.
 @property(nonatomic, strong) GridViewController* regularTabsViewController;
 @property(nonatomic, strong) GridViewController* incognitoTabsViewController;
@@ -98,6 +114,16 @@
   return UIStatusBarStyleLightContent;
 }
 
+#pragma mark - UIScrollViewDelegate
+
+- (void)scrollViewDidEndDecelerating:(UIScrollView*)scrollView {
+  // Bookkeeping for the current page.
+  CGFloat pageWidth = scrollView.frame.size.width;
+  float fractionalPage = scrollView.contentOffset.x / pageWidth;
+  NSUInteger page = lround(fractionalPage);
+  self.currentPage = static_cast<TabGridPage>(page);
+}
+
 #pragma mark - TabGridTransitionStateProvider properties
 
 - (BOOL)selectedTabVisible {
@@ -110,12 +136,6 @@
   return self.regularTabsViewController;
 }
 
-- (void)setRegularTabsDelegate:
-    (id<GridViewControllerDelegate>)regularTabsDelegate {
-  self.regularTabsViewController.delegate = regularTabsDelegate;
-  _regularTabsDelegate = regularTabsDelegate;
-}
-
 - (void)setRegularTabsImageDataSource:
     (id<GridImageDataSource>)regularTabsImageDataSource {
   self.regularTabsViewController.imageDataSource = regularTabsImageDataSource;
@@ -124,12 +144,6 @@
 
 - (id<GridConsumer>)incognitoTabsConsumer {
   return self.incognitoTabsViewController;
-}
-
-- (void)setIncognitoTabsDelegate:
-    (id<GridViewControllerDelegate>)incognitoTabsDelegate {
-  self.incognitoTabsViewController.delegate = incognitoTabsDelegate;
-  _incognitoTabsDelegate = incognitoTabsDelegate;
 }
 
 - (void)setIncognitoTabsImageDataSource:
@@ -147,6 +161,7 @@
   scrollView.translatesAutoresizingMaskIntoConstraints = NO;
   scrollView.scrollEnabled = YES;
   scrollView.pagingEnabled = YES;
+  scrollView.delegate = self;
   if (@available(iOS 11, *)) {
     // Ensures that scroll view does not add additional margins based on safe
     // areas.
@@ -186,6 +201,7 @@
   [contentView addSubview:viewController.view];
   [viewController didMoveToParentViewController:self];
   viewController.theme = GridThemeDark;
+  viewController.delegate = self;
   if (@available(iOS 11, *)) {
     // Adjustments are made in |-viewWillLayoutSubviews|. Automatic adjustments
     // do not work well with the scrollview.
@@ -215,6 +231,7 @@
   [contentView addSubview:viewController.view];
   [viewController didMoveToParentViewController:self];
   viewController.theme = GridThemeLight;
+  viewController.delegate = self;
   if (@available(iOS 11, *)) {
     // Adjustments are made in |-viewWillLayoutSubviews|. Automatic adjustments
     // do not work well with the scrollview.
@@ -353,6 +370,27 @@
                            forControlEvents:UIControlEventTouchUpInside];
 }
 
+#pragma mark - GridViewControllerDelegate
+
+- (void)gridViewController:(GridViewController*)gridViewController
+      didSelectItemAtIndex:(NSUInteger)index {
+  if (gridViewController == self.regularTabsViewController) {
+    [self.regularTabsDelegate selectItemAtIndex:index];
+  } else if (gridViewController == self.incognitoTabsViewController) {
+    [self.incognitoTabsDelegate selectItemAtIndex:index];
+  }
+  [self.tabPresentationDelegate showActiveTab];
+}
+
+- (void)gridViewController:(GridViewController*)gridViewController
+       didCloseItemAtIndex:(NSUInteger)index {
+  if (gridViewController == self.regularTabsViewController) {
+    [self.regularTabsDelegate closeItemAtIndex:index];
+  } else if (gridViewController == self.incognitoTabsViewController) {
+    [self.incognitoTabsDelegate closeItemAtIndex:index];
+  }
+}
+
 #pragma mark - Button actions
 
 - (void)doneButtonTapped:(id)sender {
@@ -360,11 +398,23 @@
 }
 
 - (void)closeAllButtonTapped:(id)sender {
-  // TODO(crbug.com/804503) : Placeholder alerts.
+  switch (self.currentPage) {
+    case TabGridPageIncognitoTabs:
+      [self.incognitoTabsDelegate closeAllItems];
+      break;
+    case TabGridPageRegularTabs:
+      [self.regularTabsDelegate closeAllItems];
+      break;
+    default:
+      NOTREACHED() << "Invalid TabGridPage when Close All button was tapped.";
+      break;
+  }
 }
 
 - (void)newTabButtonTapped:(id)sender {
-  // TODO(crbug.com/804503) : Placeholder alerts.
+  [self presentViewController:NotImplementedAlert()
+                     animated:YES
+                   completion:nil];
 }
 
 @end
