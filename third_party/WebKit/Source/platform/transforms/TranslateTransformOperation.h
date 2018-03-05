@@ -79,10 +79,10 @@ class PLATFORM_EXPORT TranslateTransformOperation final
 
   scoped_refptr<TranslateTransformOperation> ZoomTranslate(double factor);
 
- private:
   OperationType GetType() const override { return type_; }
   OperationType PrimitiveType() const final { return kTranslate3D; }
 
+ private:
   bool operator==(const TransformOperation& o) const override {
     if (!IsSameType(o))
       return false;
