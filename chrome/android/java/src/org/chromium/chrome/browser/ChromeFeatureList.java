@@ -162,7 +162,6 @@ public abstract class ChromeFeatureList {
     // TODO(mdjones): Remove CHROME_HOME completely.
     public static final String CHROME_HOME = "ChromeHome";
     public static final String CHROME_HOME_BOTTOM_NAV_LABELS = "ChromeHomeBottomNavLabels";
-    public static final String CHROME_HOME_CLEAR_URL_ON_OPEN = "ChromeHomeClearUrlOnOpen";
     public static final String CHROME_HOME_DESTROY_SUGGESTIONS = "ChromeHomeDestroySuggestions";
     public static final String CHROME_HOME_DROP_ALL_BUT_FIRST_THUMBNAIL =
             "ChromeHomeDropAllButFirstThumbnail";
@@ -171,12 +170,8 @@ public abstract class ChromeFeatureList {
     public static final String CHROME_HOME_MENU_ITEMS_EXPAND_SHEET =
             "ChromeHomeMenuItemsExpandSheet";
     public static final String CHROME_HOME_PERSISTENT_IPH = "ChromeHomePersistentIph";
-    public static final String CHROME_HOME_PERSONALIZED_OMNIBOX_SUGGESTIONS =
-            "ChromeHomePersonalizedOmniboxSuggestions";
     public static final String CHROME_HOME_PULL_TO_REFRESH_IPH_AT_TOP =
             "ChromeHomePullToRefreshIphAtTop";
-    public static final String CHROME_HOME_SHOW_GOOGLE_G_WHEN_URL_CLEARED =
-            "ChromeHomeShowGoogleGWhenUrlCleared";
     public static final String CHROME_HOME_SURVEY = "ChromeHomeSurvey";
     public static final String CHROME_HOME_SWIPE_VELOCITY_FEATURE = "ChromeHomeSwipeLogicVelocity";
     public static final String CHROME_MEMEX = "ChromeMemex";

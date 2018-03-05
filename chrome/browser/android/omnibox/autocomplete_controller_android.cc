@@ -618,8 +618,7 @@ static void JNI_AutocompleteController_PrefetchZeroSuggestResults(
   if (!profile)
     return;
 
-  if (!OmniboxFieldTrial::InZeroSuggestPersonalizedFieldTrial(
-          profile->GetPrefs()))
+  if (!OmniboxFieldTrial::InZeroSuggestPersonalizedFieldTrial())
     return;
 
   // ZeroSuggestPrefetcher deletes itself after it's done prefetching.

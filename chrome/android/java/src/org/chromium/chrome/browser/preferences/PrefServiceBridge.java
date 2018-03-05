@@ -931,10 +931,6 @@ public class PrefServiceBridge {
         return nativeGetSupervisedUserSecondCustodianProfileImageURL();
     }
 
-    public void setChromeHomePersonalizedOmniboxSuggestionsEnabled(boolean enabled) {
-        nativeSetChromeHomePersonalizedOmniboxSuggestionsEnabled(enabled);
-    }
-
     /**
      * @return A sorted list of LanguageItems representing the Chrome accept languages with details.
      *         Languages that are not supported on Android have been filtered out.
@@ -1198,7 +1194,6 @@ public class PrefServiceBridge {
     private native void nativeSetLatestVersionWhenClickedUpdateMenuItem(String version);
     private native String nativeGetLatestVersionWhenClickedUpdateMenuItem();
     private native void nativeSetSupervisedUserId(String supervisedUserId);
-    private native void nativeSetChromeHomePersonalizedOmniboxSuggestionsEnabled(boolean enabled);
     private native void nativeGetChromeAcceptLanguages(List<LanguageItem> list);
     private native void nativeGetUserAcceptLanguages(List<String> list);
     private native void nativeUpdateUserAcceptLanguages(String language, boolean add);
