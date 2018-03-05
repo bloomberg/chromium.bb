@@ -41,6 +41,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/features/features.h"
+#include "url/url_constants.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
@@ -667,20 +668,24 @@ void Navigate(NavigateParams* params) {
 
     // If the singleton tab isn't already selected, select it.
     if (params->source_contents != params->target_contents) {
+      // Use the index before the potential close below, because it could
+      // make the index refer to a different tab.
+      params->browser->tab_strip_model()->ActivateTabAt(singleton_index,
+                                                        user_initiated);
       if (params->disposition == WindowOpenDisposition::SWITCH_TO_TAB) {
-        // Close orphaned NTPs with no history when the user switches away from
-        // them.
+        // Close orphaned NTP (and the like) with no history when the user
+        // switches away from them.
         if (params->source_contents->GetController().CanGoBack() ||
             (params->source_contents->GetLastCommittedURL().spec() !=
                  chrome::kChromeUINewTabURL &&
              params->source_contents->GetLastCommittedURL().spec() !=
-                 chrome::kChromeSearchLocalNtpUrl))
+                 chrome::kChromeSearchLocalNtpUrl &&
+             params->source_contents->GetLastCommittedURL().spec() !=
+                 url::kAboutBlankURL))
           params->source_contents->Focus();
         else
           params->source_contents->Close();
       }
-      params->browser->tab_strip_model()->ActivateTabAt(singleton_index,
-                                                        user_initiated);
     }
   }
 
