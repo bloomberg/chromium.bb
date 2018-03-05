@@ -6,19 +6,29 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
+#include "chromeos/dbus/shill_service_client.h"
+#include "chromeos/network/network_handler.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace em = enterprise_management;
 
 namespace policy {
 
 namespace {
+
+constexpr char kEthernetServicePath[] = "/service/eth1";
+constexpr char kWifiServicePath[] = "/service/wifi1";
+
+constexpr char kPackageName[] = "com.example.app";
 
 class FakeAppInstallEventLogCollectorDelegate
     : public AppInstallEventLogCollector::Delegate {
@@ -56,7 +66,7 @@ class FakeAppInstallEventLogCollectorDelegate
 }  // namespace
 
 class AppInstallEventLogCollectorTest : public testing::Test {
- public:
+ protected:
   AppInstallEventLogCollectorTest() = default;
   ~AppInstallEventLogCollectorTest() override = default;
 
@@ -68,20 +78,63 @@ class AppInstallEventLogCollectorTest : public testing::Test {
         std::move(power_manager_client));
 
     chromeos::DBusThreadManager::Initialize();
+    chromeos::NetworkHandler::Initialize();
     profile_ = std::make_unique<TestingProfile>();
+    network_change_notifier_ =
+        base::WrapUnique(net::NetworkChangeNotifier::CreateMock());
+
+    service_test_ = chromeos::DBusThreadManager::Get()
+                        ->GetShillServiceClient()
+                        ->GetTestInterface();
+    service_test_->AddService(kEthernetServicePath, "eth1_guid", "eth1",
+                              shill::kTypeEthernet, shill::kStateOffline,
+                              true /* visible */);
+    service_test_->AddService(kWifiServicePath, "wifi1_guid", "wifi1",
+                              shill::kTypeEthernet, shill::kStateOffline,
+                              true /* visible */);
+    base::RunLoop().RunUntilIdle();
   }
 
   void TearDown() override {
     profile_.reset();
+    chromeos::NetworkHandler::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
   }
 
- protected:
+  void SetNetworkState(const std::string& service_path,
+                       const std::string& state) {
+    service_test_->SetServiceProperty(service_path, shill::kStateProperty,
+                                      base::Value(state));
+    base::RunLoop().RunUntilIdle();
+
+    net::NetworkChangeNotifier::ConnectionType connection_type =
+        net::NetworkChangeNotifier::CONNECTION_NONE;
+    std::string network_state;
+    service_test_->GetServiceProperties(kWifiServicePath)
+        ->GetString(shill::kStateProperty, &network_state);
+    if (network_state == shill::kStateOnline) {
+      connection_type = net::NetworkChangeNotifier::CONNECTION_WIFI;
+    }
+    service_test_->GetServiceProperties(kEthernetServicePath)
+        ->GetString(shill::kStateProperty, &network_state);
+    if (network_state == shill::kStateOnline) {
+      connection_type = net::NetworkChangeNotifier::CONNECTION_ETHERNET;
+    }
+    net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+        connection_type);
+    base::RunLoop().RunUntilIdle();
+  }
+
   TestingProfile* profile() { return profile_.get(); }
   FakeAppInstallEventLogCollectorDelegate* delegate() { return &delegate_; }
   chromeos::FakePowerManagerClient* power_manager_client() {
     return power_manager_client_;
   }
+
+  const std::set<std::string> packages_ = {kPackageName};
+
+  std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
+  chromeos::ShillServiceClient::TestInterface* service_test_ = nullptr;
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
@@ -96,12 +149,9 @@ class AppInstallEventLogCollectorTest : public testing::Test {
 // session. In this case no event is generated. This happens for example when
 // all apps are installed in context of the same user session.
 TEST_F(AppInstallEventLogCollectorTest, NoEventsByDefault) {
-  std::set<std::string> pending_packages;
-  pending_packages.insert("test");
-
   std::unique_ptr<AppInstallEventLogCollector> collector =
       std::make_unique<AppInstallEventLogCollector>(delegate(), profile(),
-                                                    pending_packages);
+                                                    packages_);
   collector.reset();
 
   EXPECT_EQ(0, delegate()->add_count());
@@ -109,12 +159,9 @@ TEST_F(AppInstallEventLogCollectorTest, NoEventsByDefault) {
 }
 
 TEST_F(AppInstallEventLogCollectorTest, LoginLogout) {
-  std::set<std::string> pending_packages;
-  pending_packages.insert("test");
-
   std::unique_ptr<AppInstallEventLogCollector> collector =
       std::make_unique<AppInstallEventLogCollector>(delegate(), profile(),
-                                                    pending_packages);
+                                                    packages_);
 
   EXPECT_EQ(0, delegate()->add_for_all_count());
 
@@ -124,6 +171,8 @@ TEST_F(AppInstallEventLogCollectorTest, LoginLogout) {
             delegate()->last_event().event_type());
   EXPECT_EQ(em::AppInstallReportLogEvent::LOGIN,
             delegate()->last_event().session_state_change_type());
+  EXPECT_TRUE(delegate()->last_event().has_online());
+  EXPECT_FALSE(delegate()->last_event().online());
 
   collector->AddLogoutEvent();
   EXPECT_EQ(2, delegate()->add_for_all_count());
@@ -131,6 +180,7 @@ TEST_F(AppInstallEventLogCollectorTest, LoginLogout) {
             delegate()->last_event().event_type());
   EXPECT_EQ(em::AppInstallReportLogEvent::LOGOUT,
             delegate()->last_event().session_state_change_type());
+  EXPECT_FALSE(delegate()->last_event().has_online());
 
   collector.reset();
 
@@ -139,18 +189,16 @@ TEST_F(AppInstallEventLogCollectorTest, LoginLogout) {
 }
 
 TEST_F(AppInstallEventLogCollectorTest, LoginTypes) {
-  std::set<std::string> pending_packages;
-  pending_packages.insert("test");
-
   {
-    AppInstallEventLogCollector collector(delegate(), profile(),
-                                          pending_packages);
+    AppInstallEventLogCollector collector(delegate(), profile(), packages_);
     collector.AddLoginEvent();
     EXPECT_EQ(1, delegate()->add_for_all_count());
     EXPECT_EQ(em::AppInstallReportLogEvent::SESSION_STATE_CHANGE,
               delegate()->last_event().event_type());
     EXPECT_EQ(em::AppInstallReportLogEvent::LOGIN,
               delegate()->last_event().session_state_change_type());
+    EXPECT_TRUE(delegate()->last_event().has_online());
+    EXPECT_FALSE(delegate()->last_event().online());
   }
 
   {
@@ -164,12 +212,9 @@ TEST_F(AppInstallEventLogCollectorTest, LoginTypes) {
 }
 
 TEST_F(AppInstallEventLogCollectorTest, SuspendResume) {
-  std::set<std::string> pending_packages;
-  pending_packages.insert("test");
-
   std::unique_ptr<AppInstallEventLogCollector> collector =
       std::make_unique<AppInstallEventLogCollector>(delegate(), profile(),
-                                                    pending_packages);
+                                                    packages_);
 
   power_manager_client()->SendSuspendImminent(
       power_manager::SuspendImminent_Reason_OTHER);
@@ -188,6 +233,56 @@ TEST_F(AppInstallEventLogCollectorTest, SuspendResume) {
 
   collector.reset();
 
+  EXPECT_EQ(0, delegate()->add_count());
+}
+
+// Connect to Ethernet. Start log collector. Verify that a login event with
+// network state online is recorded. Then, connect to WiFi and disconnect from
+// Ethernet, in this order. Verify that no event is recorded. Then, disconnect
+// from WiFi. Verify that a connectivity change event is recorded. Then, connect
+// to WiFi with a pending captive portal. Verify that no event is recorded.
+// Then, pass the captive portal. Verify that a connectivity change is recorded.
+TEST_F(AppInstallEventLogCollectorTest, ConnectivityChanges) {
+  SetNetworkState(kEthernetServicePath, shill::kStateOnline);
+
+  std::unique_ptr<AppInstallEventLogCollector> collector =
+      std::make_unique<AppInstallEventLogCollector>(delegate(), profile(),
+                                                    packages_);
+
+  EXPECT_EQ(0, delegate()->add_for_all_count());
+
+  collector->AddLoginEvent();
+  EXPECT_EQ(1, delegate()->add_for_all_count());
+  EXPECT_EQ(em::AppInstallReportLogEvent::SESSION_STATE_CHANGE,
+            delegate()->last_event().event_type());
+  EXPECT_EQ(em::AppInstallReportLogEvent::LOGIN,
+            delegate()->last_event().session_state_change_type());
+  EXPECT_TRUE(delegate()->last_event().online());
+
+  SetNetworkState(kWifiServicePath, shill::kStateOnline);
+  EXPECT_EQ(1, delegate()->add_for_all_count());
+
+  SetNetworkState(kEthernetServicePath, shill::kStateOffline);
+  EXPECT_EQ(1, delegate()->add_for_all_count());
+
+  SetNetworkState(kWifiServicePath, shill::kStateOffline);
+  EXPECT_EQ(2, delegate()->add_for_all_count());
+  EXPECT_EQ(em::AppInstallReportLogEvent::CONNECTIVITY_CHANGE,
+            delegate()->last_event().event_type());
+  EXPECT_FALSE(delegate()->last_event().online());
+
+  SetNetworkState(kWifiServicePath, shill::kStatePortal);
+  EXPECT_EQ(2, delegate()->add_for_all_count());
+
+  SetNetworkState(kWifiServicePath, shill::kStateOnline);
+  EXPECT_EQ(3, delegate()->add_for_all_count());
+  EXPECT_EQ(em::AppInstallReportLogEvent::CONNECTIVITY_CHANGE,
+            delegate()->last_event().event_type());
+  EXPECT_TRUE(delegate()->last_event().online());
+
+  collector.reset();
+
+  EXPECT_EQ(3, delegate()->add_for_all_count());
   EXPECT_EQ(0, delegate()->add_count());
 }
 

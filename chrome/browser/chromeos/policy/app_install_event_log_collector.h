@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/dbus/power_manager_client.h"
+#include "net/base/network_change_notifier.h"
 
 class Profile;
 
@@ -23,7 +24,8 @@ namespace policy {
 
 // Listens for and logs events related to app push-installs.
 class AppInstallEventLogCollector
-    : public chromeos::PowerManagerClient::Observer {
+    : public chromeos::PowerManagerClient::Observer,
+      public net::NetworkChangeNotifier::NetworkChangeObserver {
  public:
   // The delegate that events are forwarded to for inclusion in the log.
   class Delegate {
@@ -57,6 +59,7 @@ class AppInstallEventLogCollector
 
   // Called in case of login and pending apps.
   void AddLoginEvent();
+
   // Called in case of logout and pending apps.
   void AddLogoutEvent();
 
@@ -64,9 +67,16 @@ class AppInstallEventLogCollector
   void SuspendImminent(power_manager::SuspendImminent::Reason reason) override;
   void SuspendDone(const base::TimeDelta& sleep_duration) override;
 
+  // net::NetworkChangeNotifier::NetworkChangeObserver:
+  void OnNetworkChanged(
+      net::NetworkChangeNotifier::ConnectionType type) override;
+
  private:
   Delegate* const delegate_;
   Profile* const profile_;
+
+  // Whether the device is currently online.
+  bool online_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(AppInstallEventLogCollector);
 };

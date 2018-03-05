@@ -6,7 +6,12 @@
 #include "base/command_line.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/network/network_handler.h"
+#include "chromeos/network/network_state.h"
+#include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/network_type_pattern.h"
 #include "components/policy/proto/device_management_backend.pb.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace em = enterprise_management;
 
@@ -23,20 +28,37 @@ std::unique_ptr<em::AppInstallReportLogEvent> CreateSessionChangeEvent(
   return event;
 }
 
+bool GetOnlineState() {
+  chromeos::NetworkStateHandler::NetworkStateList network_state_list;
+  chromeos::NetworkHandler::Get()
+      ->network_state_handler()
+      ->GetNetworkListByType(
+          chromeos::NetworkTypePattern::Default(), true /* configured_only */,
+          false /* visible_only */, 0 /* limit */, &network_state_list);
+  for (const chromeos::NetworkState* network_state : network_state_list) {
+    if (network_state->connection_state() == shill::kStateOnline) {
+      return true;
+    }
+  }
+  return false;
+}
+
 }  // namespace
 
 AppInstallEventLogCollector::AppInstallEventLogCollector(
     Delegate* delegate,
     Profile* profile,
     const std::set<std::string>& pending_packages)
-    : delegate_(delegate), profile_(profile) {
+    : delegate_(delegate), profile_(profile), online_(GetOnlineState()) {
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
       this);
+  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
 }
 
 AppInstallEventLogCollector::~AppInstallEventLogCollector() {
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
       this);
+  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
 }
 
 void AppInstallEventLogCollector::OnPendingPackagesChanged(
@@ -51,8 +73,10 @@ void AppInstallEventLogCollector::AddLoginEvent() {
     return;
   }
 
-  delegate_->AddForAllPackages(
-      CreateSessionChangeEvent(em::AppInstallReportLogEvent::LOGIN));
+  std::unique_ptr<em::AppInstallReportLogEvent> event =
+      CreateSessionChangeEvent(em::AppInstallReportLogEvent::LOGIN);
+  event->set_online(online_);
+  delegate_->AddForAllPackages(std::move(event));
 }
 
 void AppInstallEventLogCollector::AddLogoutEvent() {
@@ -70,6 +94,21 @@ void AppInstallEventLogCollector::SuspendDone(
     const base::TimeDelta& sleep_duration) {
   delegate_->AddForAllPackages(
       CreateSessionChangeEvent(em::AppInstallReportLogEvent::RESUME));
+}
+
+void AppInstallEventLogCollector::OnNetworkChanged(
+    net::NetworkChangeNotifier::ConnectionType type) {
+  const bool currently_online = GetOnlineState();
+  if (currently_online == online_) {
+    return;
+  }
+  online_ = currently_online;
+
+  std::unique_ptr<em::AppInstallReportLogEvent> event =
+      std::make_unique<em::AppInstallReportLogEvent>();
+  event->set_event_type(em::AppInstallReportLogEvent::CONNECTIVITY_CHANGE);
+  event->set_online(online_);
+  delegate_->AddForAllPackages(std::move(event));
 }
 
 }  // namespace policy
