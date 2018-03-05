@@ -81,9 +81,6 @@ public class TestContentViewCore implements ContentViewCore {
     }
 
     @Override
-    public void sendDoubleTapForTest(long timeMs, int x, int y) {}
-
-    @Override
     public void onShow() {}
 
     @Override

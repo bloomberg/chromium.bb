@@ -700,7 +700,7 @@ public class AwContents implements SmartClipProvider {
 
         @Override
         public void cancelFling() {
-            mWebContents.getEventForwarder().onCancelFling(SystemClock.uptimeMillis());
+            mWebContents.getEventForwarder().cancelFling(SystemClock.uptimeMillis());
         }
     }
 
@@ -2273,7 +2273,7 @@ public class AwContents implements SmartClipProvider {
     public void flingScroll(int velocityX, int velocityY) {
         if (TRACE) Log.i(TAG, "%s flingScroll", this);
         if (isDestroyedOrNoOperation(WARN)) return;
-        mWebContents.getEventForwarder().onStartFling(
+        mWebContents.getEventForwarder().startFling(
                 SystemClock.uptimeMillis(), -velocityX, -velocityY, false);
     }
 

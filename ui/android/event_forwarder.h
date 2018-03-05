@@ -90,16 +90,28 @@ class EventForwarder {
                       jlong time_ms,
                       jfloat scale);
 
-  void OnStartFling(JNIEnv* env,
-                    const base::android::JavaParamRef<jobject>& jobj,
-                    jlong time_ms,
-                    jfloat velocity_x,
-                    jfloat velocity_y,
-                    jboolean synthetic_scroll);
+  void Scroll(JNIEnv* env,
+              const base::android::JavaParamRef<jobject>& jobj,
+              jlong time_ms,
+              jfloat delta_x,
+              jfloat delta_y);
 
-  void OnCancelFling(JNIEnv* env,
-                     const base::android::JavaParamRef<jobject>& jobj,
-                     jlong time_ms);
+  void DoubleTap(JNIEnv* env,
+                 const base::android::JavaParamRef<jobject>& jobj,
+                 jlong time_ms,
+                 jint x,
+                 jint y);
+
+  void StartFling(JNIEnv* env,
+                  const base::android::JavaParamRef<jobject>& jobj,
+                  jlong time_ms,
+                  jfloat velocity_x,
+                  jfloat velocity_y,
+                  jboolean synthetic_scroll);
+
+  void CancelFling(JNIEnv* env,
+                   const base::android::JavaParamRef<jobject>& jobj,
+                   jlong time_ms);
 
  private:
   friend class ViewAndroid;

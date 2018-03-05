@@ -25,7 +25,6 @@
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/media/media_web_contents_observer.h"
 #include "content/browser/renderer_host/compositor_impl_android.h"
-#include "content/browser/renderer_host/input/web_input_event_builders_android.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
@@ -412,78 +411,6 @@ void ContentViewCore::SendOrientationChangeEvent(
     device_orientation_ = orientation;
     SendOrientationChangeEventInternal();
   }
-}
-
-WebGestureEvent ContentViewCore::MakeGestureEvent(WebInputEvent::Type type,
-                                                  int64_t time_ms,
-                                                  float x,
-                                                  float y) const {
-  return WebGestureEventBuilder::Build(type, time_ms / 1000.0, x / dpi_scale(),
-                                       y / dpi_scale());
-}
-
-void ContentViewCore::SendGestureEvent(const blink::WebGestureEvent& event) {
-  RenderWidgetHostViewAndroid* rwhv = GetRenderWidgetHostViewAndroid();
-  if (rwhv)
-    rwhv->SendGestureEvent(event);
-}
-
-void ContentViewCore::ScrollBegin(JNIEnv* env,
-                                  const JavaParamRef<jobject>& obj,
-                                  jlong time_ms,
-                                  jfloat x,
-                                  jfloat y,
-                                  jfloat hintx,
-                                  jfloat hinty,
-                                  jboolean target_viewport,
-                                  jboolean from_gamepad) {
-  WebGestureEvent event =
-      MakeGestureEvent(WebInputEvent::kGestureScrollBegin, time_ms, x, y);
-  event.data.scroll_begin.delta_x_hint = hintx / dpi_scale();
-  event.data.scroll_begin.delta_y_hint = hinty / dpi_scale();
-  event.data.scroll_begin.target_viewport = target_viewport;
-
-  if (from_gamepad)
-    event.source_device = blink::kWebGestureDeviceSyntheticAutoscroll;
-
-  SendGestureEvent(event);
-}
-
-void ContentViewCore::ScrollEnd(JNIEnv* env,
-                                const JavaParamRef<jobject>& obj,
-                                jlong time_ms) {
-  WebGestureEvent event =
-      MakeGestureEvent(WebInputEvent::kGestureScrollEnd, time_ms, 0, 0);
-  SendGestureEvent(event);
-}
-
-void ContentViewCore::ScrollBy(JNIEnv* env,
-                               const JavaParamRef<jobject>& obj,
-                               jlong time_ms,
-                               jfloat x,
-                               jfloat y,
-                               jfloat dx,
-                               jfloat dy) {
-  WebGestureEvent event =
-      MakeGestureEvent(WebInputEvent::kGestureScrollUpdate, time_ms, x, y);
-  event.data.scroll_update.delta_x = -dx / dpi_scale();
-  event.data.scroll_update.delta_y = -dy / dpi_scale();
-
-  SendGestureEvent(event);
-}
-
-void ContentViewCore::DoubleTap(JNIEnv* env,
-                                const JavaParamRef<jobject>& obj,
-                                jlong time_ms,
-                                jfloat x,
-                                jfloat y) {
-  WebGestureEvent event =
-      MakeGestureEvent(WebInputEvent::kGestureDoubleTap, time_ms, x, y);
-  // Set the tap count to 1 even for DoubleTap, in order to be consistent with
-  // double tap behavior on a mobile viewport. See crbug.com/234986 for context.
-  event.data.tap.tap_count = 1;
-
-  SendGestureEvent(event);
 }
 
 void ContentViewCore::SetTextHandlesTemporarilyHidden(

@@ -84,30 +84,6 @@ class ContentViewCore : public WebContentsObserver {
                                jfloat ticks_x,
                                jfloat ticks_y,
                                jfloat pixels_per_tick);
-  void ScrollBegin(JNIEnv* env,
-                   const base::android::JavaParamRef<jobject>& obj,
-                   jlong time_ms,
-                   jfloat x,
-                   jfloat y,
-                   jfloat hintx,
-                   jfloat hinty,
-                   jboolean target_viewport,
-                   jboolean from_gamepad);
-  void ScrollEnd(JNIEnv* env,
-                 const base::android::JavaParamRef<jobject>& obj,
-                 jlong time_ms);
-  void ScrollBy(JNIEnv* env,
-                const base::android::JavaParamRef<jobject>& obj,
-                jlong time_ms,
-                jfloat x,
-                jfloat y,
-                jfloat dx,
-                jfloat dy);
-  void DoubleTap(JNIEnv* env,
-                 const base::android::JavaParamRef<jobject>& obj,
-                 jlong time_ms,
-                 jfloat x,
-                 jfloat y);
 
   void SetTextHandlesTemporarilyHidden(
       JNIEnv* env,
@@ -211,14 +187,7 @@ class ContentViewCore : public WebContentsObserver {
 
   RenderWidgetHostViewAndroid* GetRenderWidgetHostViewAndroid() const;
 
-  blink::WebGestureEvent MakeGestureEvent(blink::WebInputEvent::Type type,
-                                          int64_t time_ms,
-                                          float x,
-                                          float y) const;
-
   gfx::Size GetViewportSizePix() const;
-
-  void SendGestureEvent(const blink::WebGestureEvent& event);
 
   // Update focus state of the RenderWidgetHostView.
   void SetFocusInternal(bool focused);
