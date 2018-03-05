@@ -17,9 +17,7 @@ import contextlib
 import datetime
 import Queue
 import ssl
-
 from functools import wraps
-from collections import namedtuple
 
 from chromite.lib import cros_logging as logging
 
@@ -42,11 +40,11 @@ MESSAGE_QUEUE = None
 
 _MISSING = object()
 
-MetricCall = namedtuple(
-    'MetricCall',
-    'metric_name metric_args metric_kwargs '
-    'method method_args method_kwargs '
-    'reset_after')
+MetricCall = collections.namedtuple('MetricCall', [
+    'metric_name', 'metric_args', 'metric_kwargs',
+    'method', 'method_args', 'method_kwargs',
+    'reset_after'
+])
 
 
 def _FlushingProcessClosed():
@@ -295,6 +293,15 @@ def CumulativeDistributionMetric(name, reset_after=False, description=None,
   return ts_mon.CumulativeDistributionMetric(
       name, description=description, bucketer=bucketer, field_spec=field_spec)
 CumulativeDistribution = CumulativeDistributionMetric
+
+
+@_Metric
+def DistributionMetric(name, reset_after=False, description=None,
+                       bucketer=None, field_spec=_MISSING):
+  """Returns a metric handle for a distribution named |name|."""
+  return ts_mon.DistributionMetric(
+      name, description=description, bucketer=bucketer, field_spec=field_spec)
+Distribution = DistributionMetric
 
 
 @_Metric
