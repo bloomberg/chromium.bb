@@ -374,7 +374,8 @@ Status WebViewImpl::GetFrameByFunction(const std::string& frame,
 Status WebViewImpl::DispatchMouseEvents(const std::list<MouseEvent>& events,
                                         const std::string& frame) {
   WebView* target = GetTargetForFrame(this, frame);
-  if (target != nullptr && target != this)
+  bool needs_special_oopif_handling = browser_info_->major_version <= 65;
+  if (needs_special_oopif_handling && target != nullptr && target != this)
     return target->DispatchMouseEvents(events, frame);
 
   double page_scale_factor = 1.0;
