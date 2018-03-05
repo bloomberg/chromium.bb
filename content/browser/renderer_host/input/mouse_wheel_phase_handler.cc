@@ -11,10 +11,8 @@
 
 namespace content {
 MouseWheelPhaseHandler::MouseWheelPhaseHandler(
-    RenderWidgetHostImpl* const host,
     RenderWidgetHostViewBase* const host_view)
-    : host_(host),
-      host_view_(host_view),
+    : host_view_(host_view),
       mouse_wheel_end_dispatch_timeout_(kDefaultMouseWheelLatchingTransaction),
       scroll_phase_state_(SCROLL_STATE_UNKNOWN) {}
 
@@ -105,9 +103,14 @@ void MouseWheelPhaseHandler::ResetScrollSequence() {
 
 void MouseWheelPhaseHandler::SendWheelEndIfNeeded() {
   if (scroll_phase_state_ == SCROLL_IN_PROGRESS) {
-    DCHECK(host_);
+    RenderWidgetHostImpl* host = host_view_->GetRenderWidgetHostImpl();
+    if (!host) {
+      ResetScrollSequence();
+      return;
+    }
+
     bool should_route_event =
-        host_->delegate() && host_->delegate()->GetInputEventRouter();
+        host->delegate() && host->delegate()->GetInputEventRouter();
     SendSyntheticWheelEventWithPhaseEnded(should_route_event);
   }
 
@@ -132,7 +135,11 @@ void MouseWheelPhaseHandler::SendSyntheticWheelEventWithPhaseEnded(
       blink::WebInputEvent::DispatchType::kEventNonBlocking;
 
   if (should_route_event) {
-    host_->delegate()->GetInputEventRouter()->RouteMouseWheelEvent(
+    RenderWidgetHostImpl* host = host_view_->GetRenderWidgetHostImpl();
+    if (!host)
+      return;
+
+    host->delegate()->GetInputEventRouter()->RouteMouseWheelEvent(
         host_view_, &last_mouse_wheel_event_,
         ui::LatencyInfo(ui::SourceEventType::WHEEL));
   } else {

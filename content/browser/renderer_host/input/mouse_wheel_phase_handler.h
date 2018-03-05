@@ -10,7 +10,6 @@
 #include "third_party/WebKit/public/platform/WebMouseWheelEvent.h"
 
 namespace content {
-class RenderWidgetHostImpl;
 class RenderWidgetHostViewBase;
 
 // The duration after which a synthetic wheel with zero deltas and
@@ -42,8 +41,7 @@ enum ScrollPhaseState {
 
 class MouseWheelPhaseHandler {
  public:
-  MouseWheelPhaseHandler(RenderWidgetHostImpl* const host,
-                         RenderWidgetHostViewBase* const host_view);
+  MouseWheelPhaseHandler(RenderWidgetHostViewBase* const host_view);
   ~MouseWheelPhaseHandler() {}
 
   void AddPhaseIfNeededAndScheduleEndEvent(
@@ -71,7 +69,6 @@ class MouseWheelPhaseHandler {
                                         const base::TimeDelta timeout);
   bool IsWithinSlopRegion(blink::WebMouseWheelEvent wheel_event) const;
 
-  RenderWidgetHostImpl* const host_;
   RenderWidgetHostViewBase* const host_view_;
   base::OneShotTimer mouse_wheel_end_dispatch_timer_;
   base::TimeDelta mouse_wheel_end_dispatch_timeout_;

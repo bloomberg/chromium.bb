@@ -403,7 +403,7 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
                                                  bool is_guest_view_hack)
     : render_widget_host_(RenderWidgetHostImpl::From(widget)),
       page_at_minimum_scale_(true),
-      mouse_wheel_phase_handler_(RenderWidgetHostImpl::From(widget), this),
+      mouse_wheel_phase_handler_(this),
       is_loading_(false),
       allow_pause_for_resize_or_repaint_(true),
       is_guest_view_hack_(is_guest_view_hack),
