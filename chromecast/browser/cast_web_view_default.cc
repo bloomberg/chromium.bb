@@ -165,7 +165,7 @@ void CastWebViewDefault::ActivateContents(content::WebContents* contents) {
 }
 
 bool CastWebViewDefault::CheckMediaAccessPermission(
-    content::WebContents* web_contents,
+    content::RenderFrameHost* render_frame_host,
     const GURL& security_origin,
     content::MediaStreamType type) {
   if (!base::FeatureList::IsEnabled(kAllowUserMediaAccess) &&

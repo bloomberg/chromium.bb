@@ -980,11 +980,12 @@ void WebViewGuest::RequestMediaAccessPermission(
                                                             callback);
 }
 
-bool WebViewGuest::CheckMediaAccessPermission(WebContents* source,
-                                              const GURL& security_origin,
-                                              content::MediaStreamType type) {
+bool WebViewGuest::CheckMediaAccessPermission(
+    content::RenderFrameHost* render_frame_host,
+    const GURL& security_origin,
+    content::MediaStreamType type) {
   return web_view_permission_helper_->CheckMediaAccessPermission(
-      source, security_origin, type);
+      render_frame_host, security_origin, type);
 }
 
 void WebViewGuest::CanDownload(

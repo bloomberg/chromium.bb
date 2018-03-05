@@ -207,7 +207,7 @@ void WebViewPermissionHelper::RequestMediaAccessPermission(
 }
 
 bool WebViewPermissionHelper::CheckMediaAccessPermission(
-    content::WebContents* source,
+    content::RenderFrameHost* render_frame_host,
     const GURL& security_origin,
     content::MediaStreamType type) {
   if (!web_view_guest()->attached() ||
@@ -217,8 +217,7 @@ bool WebViewPermissionHelper::CheckMediaAccessPermission(
   return web_view_guest()
       ->embedder_web_contents()
       ->GetDelegate()
-      ->CheckMediaAccessPermission(
-          web_view_guest()->embedder_web_contents(), security_origin, type);
+      ->CheckMediaAccessPermission(render_frame_host, security_origin, type);
 }
 
 void WebViewPermissionHelper::OnMediaPermissionResponse(

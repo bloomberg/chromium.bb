@@ -223,7 +223,7 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest> {
       bool user_gesture,
       bool last_unlocked_by_target,
       const base::Callback<void(bool)>& callback) final;
-  bool CheckMediaAccessPermission(content::WebContents* source,
+  bool CheckMediaAccessPermission(content::RenderFrameHost* render_frame_host,
                                   const GURL& security_origin,
                                   content::MediaStreamType type) final;
   void CanDownload(const GURL& url,

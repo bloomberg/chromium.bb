@@ -188,24 +188,26 @@ void MediaCaptureDevicesDispatcher::ProcessMediaAccessRequest(
 }
 
 bool MediaCaptureDevicesDispatcher::CheckMediaAccessPermission(
-    content::WebContents* web_contents,
+    content::RenderFrameHost* render_frame_host,
     const GURL& security_origin,
     content::MediaStreamType type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return CheckMediaAccessPermission(web_contents, security_origin, type,
+  return CheckMediaAccessPermission(render_frame_host, security_origin, type,
                                     nullptr);
 }
 
 bool MediaCaptureDevicesDispatcher::CheckMediaAccessPermission(
-    content::WebContents* web_contents,
+    content::RenderFrameHost* render_frame_host,
     const GURL& security_origin,
     content::MediaStreamType type,
     const extensions::Extension* extension) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   for (const auto& handler : media_access_handlers_) {
-    if (handler->SupportsStreamType(web_contents, type, extension)) {
-      return handler->CheckMediaAccessPermission(web_contents, security_origin,
-                                                 type, extension);
+    if (handler->SupportsStreamType(
+            content::WebContents::FromRenderFrameHost(render_frame_host), type,
+            extension)) {
+      return handler->CheckMediaAccessPermission(
+          render_frame_host, security_origin, type, extension);
     }
   }
   return false;

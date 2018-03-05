@@ -94,6 +94,7 @@ void AppWebContentsHelper::RequestMediaAccessPermission(
 }
 
 bool AppWebContentsHelper::CheckMediaAccessPermission(
+    content::RenderFrameHost* render_frame_host,
     const GURL& security_origin,
     content::MediaStreamType type) const {
   const Extension* extension = GetExtension();
@@ -101,7 +102,7 @@ bool AppWebContentsHelper::CheckMediaAccessPermission(
     return false;
 
   return app_delegate_->CheckMediaAccessPermission(
-      web_contents_, security_origin, type, extension);
+      render_frame_host, security_origin, type, extension);
 }
 
 const Extension* AppWebContentsHelper::GetExtension() const {

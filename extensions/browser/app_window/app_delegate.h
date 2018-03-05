@@ -65,10 +65,11 @@ class AppDelegate {
       const content::MediaStreamRequest& request,
       const content::MediaResponseCallback& callback,
       const Extension* extension) = 0;
-  virtual bool CheckMediaAccessPermission(content::WebContents* web_contents,
-                                          const GURL& security_origin,
-                                          content::MediaStreamType type,
-                                          const Extension* extension) = 0;
+  virtual bool CheckMediaAccessPermission(
+      content::RenderFrameHost* render_frame_host,
+      const GURL& security_origin,
+      content::MediaStreamType type,
+      const Extension* extension) = 0;
   virtual int PreferredIconSize() const = 0;
 
   // Web contents modal dialog support.
