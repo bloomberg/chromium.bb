@@ -1,17 +1,15 @@
 <!DOCTYPE html>
 <title>media controls picture in picture button</title>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
-<script src="../media-file.js"></script>
-<script src="../media-controls.js"></script>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script src="../../media-file.js"></script>
+<script src="../../media-controls.js"></script>
 <body>
 <script>
 async_test(t => {
-    enablePictureInPictureForTest(t);
-
     var video = document.createElement('video');
     video.setAttribute('controls', '');
-    video.src = '../content/test.ogv';
+    video.src = '../../content/test.ogv';
     document.body.appendChild(video);
 
     video.onloadedmetadata = t.step_func_done(function() {
