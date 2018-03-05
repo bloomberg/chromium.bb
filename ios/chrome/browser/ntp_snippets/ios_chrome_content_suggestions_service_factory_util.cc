@@ -44,6 +44,7 @@
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
+#include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/common/channel_info.h"
 #include "ios/web/public/browser_state.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -139,6 +140,10 @@ std::unique_ptr<KeyedService> CreateChromeContentSuggestionsService(
 
 void RegisterReadingListProvider(ContentSuggestionsService* service,
                                  web::BrowserState* browser_state) {
+  // Prevent loading any reading list items for refresh.
+  if (IsUIRefreshPhase1Enabled())
+    return;
+
   ios::ChromeBrowserState* chrome_browser_state =
       ios::ChromeBrowserState::FromBrowserState(browser_state);
 
