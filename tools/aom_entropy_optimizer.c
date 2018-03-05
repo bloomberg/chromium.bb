@@ -145,19 +145,16 @@ static void optimize_entropy_table(aom_count_type *counts,
   fprintf(logfile, "\n");
 }
 
-static int counts_to_cdf(const aom_count_type *counts, aom_cdf_prob *cdf,
-                         int modes) {
-  int64_t *csum = aom_malloc(sizeof(*csum) * modes);
+static void counts_to_cdf(const aom_count_type *counts, aom_cdf_prob *cdf,
+                          int modes) {
+  int64_t csum[16];
+  assert(modes <= 16);
 
-  if (csum == NULL) {
-    fprintf(stderr, "Allocating csum array failed!\n");
-    return 1;
-  }
   csum[0] = counts[0] + 1;
   for (int i = 1; i < modes; ++i) csum[i] = counts[i] + 1 + csum[i - 1];
 
   int64_t sum = csum[modes - 1];
-  int64_t round_shift = sum >> 1;
+  const int64_t round_shift = sum >> 1;
   for (int i = 0; i < modes; ++i) {
     if (sum <= 0) {
       cdf[i] = CDF_PROB_TOP - modes + i + 1;
@@ -167,9 +164,6 @@ static int counts_to_cdf(const aom_count_type *counts, aom_cdf_prob *cdf,
       cdf[i] = (i == 0) ? AOMMAX(cdf[i], 4) : AOMMAX(cdf[i], cdf[i - 1] + 4);
     }
   }
-  // if (sum <= 0) cdf[0] = CDF_PROB_TOP - 1;
-
-  return 0;
 }
 
 static int parse_counts_for_cdf_opt(aom_count_type **ct_ptr,
