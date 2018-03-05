@@ -101,8 +101,6 @@ class ThumbnailTabHelper
 
   static void LogThumbnailingOutcome(TriggerReason trigger, Outcome outcome);
 
-  const bool capture_on_navigating_away_;
-
   content::NotificationRegistrar registrar_;
 
   bool did_navigation_finish_;

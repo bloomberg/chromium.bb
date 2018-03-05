@@ -10,7 +10,6 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/thumbnails/thumbnail_service.h"
@@ -18,8 +17,6 @@
 #include "chrome/browser/thumbnails/thumbnailing_context.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/chrome_features.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -173,9 +170,6 @@ class ThumbnailTest : public InProcessBrowserTest {
   }
 
   void SetUpInProcessBrowserTestFixture() override {
-    feature_list_.InitAndEnableFeature(
-        features::kCaptureThumbnailOnNavigatingAway);
-
     will_create_browser_context_services_subscription_ =
         BrowserContextDependencyManager::GetInstance()
             ->RegisterWillCreateBrowserContextServicesCallbackForTesting(
@@ -193,8 +187,6 @@ class ThumbnailTest : public InProcessBrowserTest {
     ThumbnailServiceFactory::GetInstance()->SetTestingFactory(
         context, &ThumbnailTest::CreateThumbnailService);
   }
-
-  base::test::ScopedFeatureList feature_list_;
 
   std::unique_ptr<
       base::CallbackList<void(content::BrowserContext*)>::Subscription>

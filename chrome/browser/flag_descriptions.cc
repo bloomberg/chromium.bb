@@ -117,13 +117,6 @@ const char kCommittedInterstitialsDescription[] =
     "Use committed error pages instead of transient navigation entries "
     "for interstitial error pages (e.g. certificate errors).";
 
-const char kCaptureThumbnailOnNavigatingAwayName[] =
-    "Capture page thumbnail on navigating away";
-const char kCaptureThumbnailOnNavigatingAwayDescription[] =
-    "Capture a page thumbnail (for use on the New Tab page) when navigating "
-    "away from the current page, in addition to other times a thumbnail may be "
-    "captured.";
-
 const char kCastStreamingHwEncodingName[] =
     "Cast Streaming hardware video encoding";
 const char kCastStreamingHwEncodingDescription[] =
