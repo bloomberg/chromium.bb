@@ -17,7 +17,7 @@ WorkQueue::WorkQueue(TaskQueueImpl* task_queue,
 
 void WorkQueue::AsValueInto(base::TimeTicks now,
                             base::trace_event::TracedValue* state) const {
-  for (const TaskQueueImpl::Task& task : work_queue_) {
+  for (const TaskQueueImpl::Task& task : tasks_) {
     TaskQueueImpl::TaskAsValueInto(task, now, state);
   }
 }
@@ -28,15 +28,15 @@ WorkQueue::~WorkQueue() {
 }
 
 const TaskQueueImpl::Task* WorkQueue::GetFrontTask() const {
-  if (work_queue_.empty())
+  if (tasks_.empty())
     return nullptr;
-  return &work_queue_.front();
+  return &tasks_.front();
 }
 
 const TaskQueueImpl::Task* WorkQueue::GetBackTask() const {
-  if (work_queue_.empty())
+  if (tasks_.empty())
     return nullptr;
-  return &work_queue_.back();
+  return &tasks_.back();
 }
 
 bool WorkQueue::BlockedByFence() const {
@@ -46,33 +46,31 @@ bool WorkQueue::BlockedByFence() const {
   // If the queue is empty then any future tasks will have a higher enqueue
   // order and will be blocked. The queue is also blocked if the head is past
   // the fence.
-  return work_queue_.empty() || work_queue_.front().enqueue_order() >= fence_;
+  return tasks_.empty() || tasks_.front().enqueue_order() >= fence_;
 }
 
 bool WorkQueue::GetFrontTaskEnqueueOrder(EnqueueOrder* enqueue_order) const {
-  if (work_queue_.empty() || BlockedByFence())
+  if (tasks_.empty() || BlockedByFence())
     return false;
   // Quick sanity check.
-  DCHECK_LE(work_queue_.front().enqueue_order(),
-            work_queue_.back().enqueue_order())
+  DCHECK_LE(tasks_.front().enqueue_order(), tasks_.back().enqueue_order())
       << task_queue_->GetName() << " : " << work_queue_sets_->GetName() << " : "
       << name_;
-  *enqueue_order = work_queue_.front().enqueue_order();
+  *enqueue_order = tasks_.front().enqueue_order();
   return true;
 }
 
 void WorkQueue::Push(TaskQueueImpl::Task task) {
-  bool was_empty = work_queue_.empty();
+  bool was_empty = tasks_.empty();
 #ifndef NDEBUG
   DCHECK(task.enqueue_order_set());
 #endif
 
   // Make sure the |enqueue_order()| is monotonically increasing.
-  DCHECK(was_empty ||
-         work_queue_.rbegin()->enqueue_order() < task.enqueue_order());
+  DCHECK(was_empty || tasks_.rbegin()->enqueue_order() < task.enqueue_order());
 
   // Amoritized O(1).
-  work_queue_.push_back(std::move(task));
+  tasks_.push_back(std::move(task));
 
   if (!was_empty)
     return;
@@ -85,7 +83,7 @@ void WorkQueue::Push(TaskQueueImpl::Task task) {
 void WorkQueue::PushNonNestableTaskToFront(TaskQueueImpl::Task task) {
   DCHECK(task.nestable == base::Nestable::kNonNestable);
 
-  bool was_empty = work_queue_.empty();
+  bool was_empty = tasks_.empty();
   bool was_blocked = BlockedByFence();
 #ifndef NDEBUG
   DCHECK(task.enqueue_order_set());
@@ -93,13 +91,13 @@ void WorkQueue::PushNonNestableTaskToFront(TaskQueueImpl::Task task) {
 
   if (!was_empty) {
     // Make sure the |enqueue_order()| is monotonically increasing.
-    DCHECK_LE(task.enqueue_order(), work_queue_.front().enqueue_order())
+    DCHECK_LE(task.enqueue_order(), tasks_.front().enqueue_order())
         << task_queue_->GetName() << " : " << work_queue_sets_->GetName()
         << " : " << name_;
   }
 
   // Amoritized O(1).
-  work_queue_.push_front(std::move(task));
+  tasks_.push_front(std::move(task));
 
   if (!work_queue_sets_)
     return;
@@ -117,10 +115,10 @@ void WorkQueue::PushNonNestableTaskToFront(TaskQueueImpl::Task task) {
 }
 
 void WorkQueue::ReloadEmptyImmediateQueue() {
-  DCHECK(work_queue_.empty());
+  DCHECK(tasks_.empty());
 
-  work_queue_ = task_queue_->TakeImmediateIncomingQueue();
-  if (work_queue_.empty())
+  tasks_ = task_queue_->TakeImmediateIncomingQueue();
+  if (tasks_.empty())
     return;
 
   // If we hit the fence, pretend to WorkQueueSets that we're empty.
@@ -130,13 +128,13 @@ void WorkQueue::ReloadEmptyImmediateQueue() {
 
 TaskQueueImpl::Task WorkQueue::TakeTaskFromWorkQueue() {
   DCHECK(work_queue_sets_);
-  DCHECK(!work_queue_.empty());
+  DCHECK(!tasks_.empty());
 
-  TaskQueueImpl::Task pending_task = work_queue_.TakeFirst();
+  TaskQueueImpl::Task pending_task = tasks_.TakeFirst();
   // NB immediate tasks have a different pipeline to delayed ones.
-  if (queue_type_ == QueueType::kImmediate && work_queue_.empty()) {
+  if (queue_type_ == QueueType::kImmediate && tasks_.empty()) {
     // Short-circuit the queue reload so that OnPopQueue does the right thing.
-    work_queue_ = task_queue_->TakeImmediateIncomingQueue();
+    tasks_ = task_queue_->TakeImmediateIncomingQueue();
   }
   // OnPopQueue calls GetFrontTaskEnqueueOrder which checks BlockedByFence() so
   // we don't need to here.
@@ -148,16 +146,16 @@ TaskQueueImpl::Task WorkQueue::TakeTaskFromWorkQueue() {
 bool WorkQueue::RemoveAllCanceledTasksFromFront() {
   DCHECK(work_queue_sets_);
   bool task_removed = false;
-  while (!work_queue_.empty() && (!work_queue_.front().task ||
-                                  work_queue_.front().task.IsCancelled())) {
-    work_queue_.pop_front();
+  while (!tasks_.empty() &&
+         (!tasks_.front().task || tasks_.front().task.IsCancelled())) {
+    tasks_.pop_front();
     task_removed = true;
   }
   if (task_removed) {
     // NB immediate tasks have a different pipeline to delayed ones.
-    if (queue_type_ == QueueType::kImmediate && work_queue_.empty()) {
+    if (queue_type_ == QueueType::kImmediate && tasks_.empty()) {
       // Short-circuit the queue reload so that OnPopQueue does the right thing.
-      work_queue_ = task_queue_->TakeImmediateIncomingQueue();
+      tasks_ = task_queue_->TakeImmediateIncomingQueue();
     }
     work_queue_sets_->OnPopQueue(this);
     task_queue_->TraceQueueSize();
@@ -191,7 +189,7 @@ bool WorkQueue::InsertFence(EnqueueOrder fence) {
   bool was_blocked_by_fence = InsertFenceImpl(fence);
 
   // Moving the fence forward may unblock some tasks.
-  if (work_queue_sets_ && !work_queue_.empty() && was_blocked_by_fence &&
+  if (work_queue_sets_ && !tasks_.empty() && was_blocked_by_fence &&
       !BlockedByFence()) {
     work_queue_sets_->OnTaskPushedToEmptyQueue(this);
     return true;
@@ -205,7 +203,7 @@ bool WorkQueue::InsertFence(EnqueueOrder fence) {
 bool WorkQueue::RemoveFence() {
   bool was_blocked_by_fence = BlockedByFence();
   fence_ = 0;
-  if (work_queue_sets_ && !work_queue_.empty() && was_blocked_by_fence) {
+  if (work_queue_sets_ && !tasks_.empty() && was_blocked_by_fence) {
     work_queue_sets_->OnTaskPushedToEmptyQueue(this);
     return true;
   }
@@ -213,8 +211,8 @@ bool WorkQueue::RemoveFence() {
 }
 
 bool WorkQueue::ShouldRunBefore(const WorkQueue* other_queue) const {
-  DCHECK(!work_queue_.empty());
-  DCHECK(!other_queue->work_queue_.empty());
+  DCHECK(!tasks_.empty());
+  DCHECK(!other_queue->tasks_.empty());
   EnqueueOrder enqueue_order = 0;
   EnqueueOrder other_enqueue_order = 0;
   bool have_task = GetFrontTaskEnqueueOrder(&enqueue_order);
@@ -226,9 +224,9 @@ bool WorkQueue::ShouldRunBefore(const WorkQueue* other_queue) const {
 }
 
 void WorkQueue::PopTaskForTesting() {
-  if (work_queue_.empty())
+  if (tasks_.empty())
     return;
-  work_queue_.pop_front();
+  tasks_.pop_front();
 }
 
 }  // namespace internal
