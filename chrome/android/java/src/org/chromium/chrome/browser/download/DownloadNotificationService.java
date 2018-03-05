@@ -30,6 +30,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.service.notification.StatusBarNotification;
+import android.support.v4.app.NotificationCompat;
 import android.text.TextUtils;
 import android.util.Pair;
 
@@ -778,7 +779,7 @@ public class DownloadNotificationService extends Service {
                                       : android.R.drawable.stat_sys_download;
         ChromeNotificationBuilder builder = buildNotification(resId, fileName, contentText);
         builder.setOngoing(true);
-        builder.setPriority(Notification.PRIORITY_HIGH);
+        builder.setPriorityBeforeO(NotificationCompat.PRIORITY_HIGH);
 
         // Avoid animations while the download isn't progressing.
         if (!isDownloadPending) {

@@ -126,7 +126,7 @@ public class NotificationCompatBuilder implements ChromeNotificationBuilder {
     }
 
     @Override
-    public ChromeNotificationBuilder setPriority(int pri) {
+    public ChromeNotificationBuilder setPriorityBeforeO(int pri) {
         mBuilder.setPriority(pri);
         return this;
     }

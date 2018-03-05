@@ -182,7 +182,7 @@ public class ContentSuggestionsNotifier {
                         .setContentTitle(title)
                         .setContentText(text)
                         .setGroup(NOTIFICATION_TAG)
-                        .setPriority(priority)
+                        .setPriorityBeforeO(priority)
                         .setLargeIcon(image)
                         .setSmallIcon(R.drawable.ic_chrome);
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
