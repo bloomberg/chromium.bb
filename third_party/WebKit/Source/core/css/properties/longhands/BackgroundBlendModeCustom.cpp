@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/properties/longhands/background_blend_mode.h"
+#include "core/css/properties/longhands/BackgroundBlendMode.h"
 
 #include "core/css/properties/CSSParsingUtils.h"
 #include "core/style/ComputedStyle.h"

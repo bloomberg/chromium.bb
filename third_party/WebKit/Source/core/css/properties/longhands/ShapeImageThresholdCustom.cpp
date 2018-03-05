@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/properties/longhands/shape_image_threshold.h"
+#include "core/css/properties/longhands/ShapeImageThreshold.h"
 
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "core/style/ComputedStyle.h"

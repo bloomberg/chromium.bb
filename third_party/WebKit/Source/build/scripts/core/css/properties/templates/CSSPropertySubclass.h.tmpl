@@ -6,8 +6,8 @@
 {% from 'core/css/properties/templates/style_builder_functions.tmpl' import style_builder_functions %}
 {{source_files_for_generated_file(template_file, input_files)}}
 
-#ifndef GEN_BLINK_CORE_CSS_PROPERTIES_{{property.namespace_group.upper()}}_{{property_filename|upper}}_H_
-#define GEN_BLINK_CORE_CSS_PROPERTIES_{{property.namespace_group.upper()}}_{{property_filename|upper}}_H_
+#ifndef GEN_BLINK_CORE_CSS_PROPERTIES_{{property.namespace_group.upper()}}_{{property_classname}}_h
+#define GEN_BLINK_CORE_CSS_PROPERTIES_{{property.namespace_group.upper()}}_{{property_classname}}_h
 
 {% for include in includes %}
 #include "{{include}}"
@@ -126,4 +126,4 @@ class {{property_classname}} final : public {{property.namespace_group}} {
 }  // namespace CSS{{property.namespace_group}}
 }  // namespace blink
 
-#endif  // GEN_BLINK_CORE_CSS_PROPERTIES_{{property.namespace_group.upper()}}_{{property_filename|upper}}_H_
+#endif  // GEN_BLINK_CORE_CSS_PROPERTIES_{{property.namespace_group.upper()}}_{{property_classname}}_h
