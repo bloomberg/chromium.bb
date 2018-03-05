@@ -484,7 +484,7 @@ CORB should have no observable impact on stylesheets.
 
 Examples:
 
-*  **Anything not labeled as text/css**
+* **Anything not labeled as text/css**
   * Examples of resources used in a `<link rel="stylesheet" href="...">` tag:
     * Body: an HTML document OR a simple, valid stylesheet OR a polyglot
       HTML/CSS stylesheet
@@ -513,7 +513,7 @@ Examples:
     `fetch/corb/style-css-mislabeled-as-html.sub.html`,
     `fetch/corb/style-html-correctly-labeled.sub.html`
 
-*  **Anything not labeled as text/css (nosniff)**
+* **Anything not labeled as text/css (nosniff)**
   * Resource used in a `<link rel="stylesheet" href="...">` tag:
     * Body: a simple stylesheet
     * `Content-Type: text/html`
