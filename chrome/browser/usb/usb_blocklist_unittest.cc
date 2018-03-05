@@ -108,30 +108,34 @@ TEST_F(UsbBlocklistTest, StringsWithOneValidEntry) {
 }
 
 TEST_F(UsbBlocklistTest, StaticEntries) {
+  // Yubikey devices. https://crbug.com/818807
+  //
   // The specific versions of these devices that we want to block are unknown.
   // The device versions listed here are abitrary chosen to test that any device
   // will be matched.
-
-  // Yubikey NEO - OTP and CCID
+  EXPECT_TRUE(list().IsExcluded({0x1050, 0x0010, 0x0100}));
+  EXPECT_TRUE(list().IsExcluded({0x1050, 0x0018, 0x0100}));
+  EXPECT_TRUE(list().IsExcluded({0x1050, 0x0030, 0x0100}));
+  EXPECT_TRUE(list().IsExcluded({0x1050, 0x0110, 0x0100}));
   EXPECT_TRUE(list().IsExcluded({0x1050, 0x0111, 0x0100}));
-  // Yubikey NEO - CCID only
   EXPECT_TRUE(list().IsExcluded({0x1050, 0x0112, 0x0100}));
-  // Yubikey NEO - U2F and CCID
+  EXPECT_TRUE(list().IsExcluded({0x1050, 0x0113, 0x0100}));
+  EXPECT_TRUE(list().IsExcluded({0x1050, 0x0114, 0x0100}));
   EXPECT_TRUE(list().IsExcluded({0x1050, 0x0115, 0x0100}));
-  // Yubikey NEO - OTP, U2F and CCID
   EXPECT_TRUE(list().IsExcluded({0x1050, 0x0116, 0x0100}));
-  // Google Gnubby (WinUSB firmware)
+  EXPECT_TRUE(list().IsExcluded({0x1050, 0x0120, 0x0100}));
+  EXPECT_TRUE(list().IsExcluded({0x1050, 0x0200, 0x0100}));
   EXPECT_TRUE(list().IsExcluded({0x1050, 0x0211, 0x0100}));
-  // Yubikey 4 - CCID only
+  EXPECT_TRUE(list().IsExcluded({0x1050, 0x0401, 0x0100}));
+  EXPECT_TRUE(list().IsExcluded({0x1050, 0x0402, 0x0100}));
+  EXPECT_TRUE(list().IsExcluded({0x1050, 0x0403, 0x0100}));
   EXPECT_TRUE(list().IsExcluded({0x1050, 0x0404, 0x0100}));
-  // Yubikey 4 - OTP and CCID
   EXPECT_TRUE(list().IsExcluded({0x1050, 0x0405, 0x0100}));
-  // Yubikey 4 - U2F and CCID
   EXPECT_TRUE(list().IsExcluded({0x1050, 0x0406, 0x0100}));
-  // Yubikey 4 - OTP, U2F and CCID
   EXPECT_TRUE(list().IsExcluded({0x1050, 0x0407, 0x0100}));
+  EXPECT_TRUE(list().IsExcluded({0x1050, 0x0410, 0x0100}));
 
-  // The non-WinUSB version of the Google Gnubby firmware is not in the static
-  // list. Check that it is not matched despite a similar product ID.
-  EXPECT_FALSE(list().IsExcluded({0x1050, 0x0200, 0x0100}));
+  // Check that various devices around the Yubikey range are not blocked.
+  EXPECT_FALSE(list().IsExcluded({0x104F, 0x0200, 0x0100}));
+  EXPECT_FALSE(list().IsExcluded({0x1051, 0x0200, 0x0100}));
 }
