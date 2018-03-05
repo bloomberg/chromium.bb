@@ -81,6 +81,7 @@ void InitializeColorSchemes() {
   normal_scheme.back_button.foreground = normal_scheme.element_foreground;
   normal_scheme.back_button.foreground_disabled = 0x33333333;
   normal_scheme.url_bar_separator = 0xFF9E9E9E;
+  normal_scheme.url_bar_hint = 0xFF5A5A5A;
   normal_scheme.url_bar.deemphasized = 0xFF5A5A5A;
   normal_scheme.url_bar.emphasized = SK_ColorBLACK;
   normal_scheme.url_bar.default_icon = 0xFF535353;
@@ -215,6 +216,7 @@ void InitializeColorSchemes() {
   incognito_scheme.back_button.foreground = incognito_scheme.element_foreground;
   incognito_scheme.back_button.foreground_disabled = 0x33E6E6E6;
   incognito_scheme.url_bar_separator = 0x1FFFFFFF;
+  incognito_scheme.url_bar_hint = 0xCCFFFFFF;
   incognito_scheme.url_bar.deemphasized = 0xCCFFFFFF;
   incognito_scheme.url_bar.emphasized = SK_ColorWHITE;
   incognito_scheme.url_bar.default_icon = SK_ColorWHITE;
@@ -238,10 +240,10 @@ void InitializeColorSchemes() {
   incognito_scheme.omnibox_icon = 0xCCFFFFFF;
   incognito_scheme.omnibox_text = 0xCCFFFFFF;
   incognito_scheme.omnibox_hint = 0x80FFFFFF;
-  incognito_scheme.omnibox_text_selection =
-      normal_scheme.omnibox_text_selection;
   incognito_scheme.omnibox_text_selection.foreground =
       incognito_scheme.omnibox_text;
+  incognito_scheme.omnibox_text_selection.background =
+      incognito_scheme.omnibox_text_selection.cursor;
   incognito_scheme.suggestion_text = 0xCCFFFFFF;
   incognito_scheme.suggestion_dim_text = 0x88FFFFFF;
   incognito_scheme.suggestion_url_text = 0xFF5595FE;
@@ -340,8 +342,9 @@ void ColorScheme::UpdateForComponent(const base::Version& component_version) {
     normal_scheme.button_colors.background = 0xCCEEEEEE;
     normal_scheme.button_colors.foreground_disabled = 0x33000000;
     normal_scheme.url_bar_separator = 0xFFD0D0D0;
-    normal_scheme.url_bar.emphasized = 0xFF333333;
+    normal_scheme.url_bar_hint = 0x61333333;
     normal_scheme.url_bar.deemphasized = 0x61333333;
+    normal_scheme.url_bar.emphasized = 0xFF333333;
 
     normal_scheme.back_button.background = normal_scheme.element_background;
     normal_scheme.back_button.background_down =
@@ -372,6 +375,7 @@ void ColorScheme::UpdateForComponent(const base::Version& component_version) {
     incognito_scheme.element_background_hover = 0xCC404A50;
     incognito_scheme.element_background_down = 0xCC212B31;
     incognito_scheme.url_bar_separator = 0xFF445056;
+    incognito_scheme.url_bar_hint = 0x80FFFFFF;
     incognito_scheme.url_bar.deemphasized = 0x80FFFFFF;
     incognito_scheme.url_bar.emphasized = 0xCCFFFFFF;
     incognito_scheme.url_bar.separator = 0xFF445056;
