@@ -145,8 +145,9 @@ class OmniboxViewViews : public OmniboxView,
   void ClearAccessibilityLabel();
 
   // Returns true if the user text was updated with the full URL (without
-  // steady-state elisions).
-  bool UnapplySteadyStateElisions();
+  // steady-state elisions). |home_key_pressed| is true if we are uneliding
+  // because the user has pressed the Home key.
+  bool UnapplySteadyStateElisions(bool home_key_pressed);
 
   // OmniboxView:
   void SetWindowTextAndCaretPos(const base::string16& text,
