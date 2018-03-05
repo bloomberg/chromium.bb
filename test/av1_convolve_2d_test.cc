@@ -255,6 +255,9 @@ INSTANTIATE_TEST_CASE_P(AVX2, AV1HighbdJntConvolve2DTest,
 INSTANTIATE_TEST_CASE_P(AVX2_X, AV1HighbdJntConvolve2DTest,
                         libaom_test::AV1HighbdConvolve2D::BuildParams(
                             av1_highbd_jnt_convolve_x_avx2, 1, 0, 1));
+INSTANTIATE_TEST_CASE_P(AVX2_Y, AV1HighbdJntConvolve2DTest,
+                        libaom_test::AV1HighbdConvolve2D::BuildParams(
+                            av1_highbd_jnt_convolve_y_avx2, 0, 1, 1));
 #endif
 #endif
 #endif
