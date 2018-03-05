@@ -304,16 +304,6 @@ const base::Feature kLowDelayVideoRenderingOnLiveStream{
     "low-delay-video-rendering-on-live-stream",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables Media Engagement Index recording. The data from which will
-// be used to bypass autoplay policies.
-const base::Feature kRecordMediaEngagementScores{
-    "RecordMediaEngagementScores", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables the Media Engagement Index to override autoplay policies if an
-// origins engagement score is high enough.
-const base::Feature kMediaEngagementBypassAutoplayPolicies{
-    "MediaEngagementBypassAutoplayPolicies", base::FEATURE_ENABLED_BY_DEFAULT};
-
 #if defined(OS_ANDROID)
 // Lock the screen orientation when a video goes fullscreen.
 const base::Feature kVideoFullscreenOrientationLock{
@@ -385,12 +375,26 @@ const base::Feature kOverflowIconsForMediaControls{
 const base::Feature kUseModernMediaControls{"UseModernMediaControls",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Allows Media Engagement to use preloaded data to decide whether an origin has
-// a high media engagement.
+// Enables Media Engagement Index recording. This data will be used to determine
+// when to bypass autoplay policies. This is recorded on all platforms.
+const base::Feature kRecordMediaEngagementScores{
+    "RecordMediaEngagementScores", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// The following Media Engagement flags are not enabled on mobile platforms:
+// - MediaEngagementBypassAutoplayPolicies: enables the Media Engagement Index
+//   data to be esude to override autoplay policies. An origin with a high MEI
+//   will be allowed to autoplay.
+// - PreloadMediaEngagementData: enables a list of origins to be considered as
+//   having a high MEI until there is enough local data to determine the user's
+//   preferred behaviour.
 #if defined(OS_ANDROID) || defined(OS_IOS)
+const base::Feature kMediaEngagementBypassAutoplayPolicies{
+    "MediaEngagementBypassAutoplayPolicies", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kPreloadMediaEngagementData{
     "PreloadMediaEngagementData", base::FEATURE_DISABLED_BY_DEFAULT};
 #else
+const base::Feature kMediaEngagementBypassAutoplayPolicies{
+    "MediaEngagementBypassAutoplayPolicies", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kPreloadMediaEngagementData{
     "PreloadMediaEngagementData", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
