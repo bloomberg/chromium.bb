@@ -18,7 +18,9 @@ AudioManagerFuchsia::AudioManagerFuchsia(
     : AudioManagerBase(std::move(audio_thread), audio_log_factory),
       fuchsia_audio_manager_(fuchsia_audio_manager_create()) {}
 
-AudioManagerFuchsia::~AudioManagerFuchsia() {}
+AudioManagerFuchsia::~AudioManagerFuchsia() {
+  fuchsia_audio_manager_free(fuchsia_audio_manager_);
+}
 
 bool AudioManagerFuchsia::HasAudioOutputDevices() {
   return fuchsia_audio_manager_get_output_devices(fuchsia_audio_manager_,
