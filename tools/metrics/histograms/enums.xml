@@ -9044,6 +9044,10 @@ Called by update_net_error_codes.py.-->
   <int value="78" label="Web Share Target Picker"/>
   <int value="79" label="Zoom"/>
   <int value="80" label="Lock Screen Note App Toast"/>
+  <int value="81" label="PWA Confirmation"/>
+  <int value="82" label="Relaunch Recommended Bubble"/>
+  <int value="83" label="Crostini Installer"/>
+  <int value="84" label="Relaunch Required Dialog"/>
 </enum>
 
 <enum name="DialogOriginRelationship">

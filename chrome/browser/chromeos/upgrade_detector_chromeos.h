@@ -34,6 +34,7 @@ class UpgradeDetectorChromeos : public UpgradeDetector,
 
   // UpgradeDetector:
   base::TimeDelta GetHighAnnoyanceLevelDelta() override;
+  base::TimeTicks GetHighAnnoyanceDeadline() override;
 
  private:
   friend struct base::DefaultSingletonTraits<UpgradeDetectorChromeos>;

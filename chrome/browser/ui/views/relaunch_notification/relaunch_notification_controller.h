@@ -76,20 +76,28 @@ class RelaunchNotificationController : public UpgradeObserver,
   // recommended notification is also stopped.
   void CloseRelaunchNotification();
 
+  // Starts a timer to periodically re-show the relaunch recommended bubble.
+  void StartReshowTimer();
+
+  // Run on a timer once high annoyance has been reached to re-show the relaunch
+  // recommended bubble.
+  void OnReshowRelaunchRecommendedBubble();
+
   // The following methods, which are invoked by the controller to show or close
   // notifications, are virtual for the sake of testing.
 
   // Shows the relaunch recommended bubble if it is not already open.
   virtual void ShowRelaunchRecommendedBubble();
 
-  // Closes the relaunch recommended bubble if it is still open.
-  virtual void CloseRelaunchRecommendedBubble();
-
   // Shows the relaunch required dialog if it is not already open.
   virtual void ShowRelaunchRequiredDialog();
 
-  // Closes the relaunch required dialog if it is still open.
-  virtual void CloseRelaunchRequiredDialog();
+  // Closes the bubble or dialog if either is still open.
+  virtual void CloseWidget();
+
+  // Run to relaunch the browser once the relaunch deadline is reached when
+  // relaunches are required by policy.
+  virtual void OnRelaunchDeadlineExpired();
 
   // The process-wide upgrade detector.
   UpgradeDetector* const upgrade_detector_;
@@ -110,13 +118,14 @@ class RelaunchNotificationController : public UpgradeObserver,
   // when a notification has been shown.
   UpgradeDetector::UpgradeNotificationAnnoyanceLevel last_level_;
 
-  // The widget hosting the relaunch recommended bubble, or null if the bubble
-  // is not currently shown.
-  views::Widget* recommended_widget_;
+  // The widget hosting the bubble or dialog, or null if neither is is currently
+  // shown.
+  views::Widget* widget_;
 
-  // A repeating timer started once high annoyance level is reached that causes
-  // the relaunch recommended bubble to be reshown.
-  base::RepeatingTimer reshow_bubble_timer_;
+  // A timer used either to repeatedly reshow the relaunch recommended bubble
+  // once the high annoyance level has been reached, or to trigger browser
+  // relaunch once the relaunch required dialog's deadline is reached.
+  base::OneShotTimer timer_;
 
   DISALLOW_COPY_AND_ASSIGN(RelaunchNotificationController);
 };

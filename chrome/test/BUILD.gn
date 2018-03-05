@@ -1454,7 +1454,10 @@ test("browser_tests") {
         ]
       }
       if (!is_chromeos) {
-        sources += [ "../browser/ui/views/relaunch_notification/relaunch_recommended_bubble_view_browsertest.cc" ]
+        sources += [
+          "../browser/ui/views/relaunch_notification/relaunch_recommended_bubble_view_browsertest.cc",
+          "../browser/ui/views/relaunch_notification/relaunch_required_dialog_view_browsertest.cc",
+        ]
       }
     }
 
@@ -4172,7 +4175,10 @@ test("unit_tests") {
     if (is_chromeos) {
       sources += [ "../browser/ui/views/ime_driver/input_method_bridge_chromeos_unittest.cc" ]
     } else {
-      sources += [ "../browser/ui/views/relaunch_notification/relaunch_notification_controller_unittest.cc" ]
+      sources += [
+        "../browser/ui/views/relaunch_notification/relaunch_notification_controller_unittest.cc",
+        "../browser/ui/views/relaunch_notification/relaunch_required_dialog_view_unittest.cc",
+      ]
     }
     if (!is_chromeos && (!is_mac || mac_views_browser)) {
       sources += [

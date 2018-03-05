@@ -3319,6 +3319,8 @@ split_static_library("ui") {
         "views/relaunch_notification/relaunch_notification_controller.h",
         "views/relaunch_notification/relaunch_recommended_bubble_view.cc",
         "views/relaunch_notification/relaunch_recommended_bubble_view.h",
+        "views/relaunch_notification/relaunch_required_dialog_view.cc",
+        "views/relaunch_notification/relaunch_required_dialog_view.h",
       ]
       if (is_mac) {
         sources += [

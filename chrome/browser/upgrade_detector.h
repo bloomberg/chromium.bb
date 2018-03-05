@@ -97,6 +97,10 @@ class UpgradeDetector {
   // Returns the delta between "elevated" and "high" annoyance levels.
   virtual base::TimeDelta GetHighAnnoyanceLevelDelta() = 0;
 
+  // Returns the tick count at which "high" annoyance level will be (or was)
+  // reached, or a null tick count if an upgrade has not yet been detected.
+  virtual base::TimeTicks GetHighAnnoyanceDeadline() = 0;
+
   void AddObserver(UpgradeObserver* observer);
 
   void RemoveObserver(UpgradeObserver* observer);

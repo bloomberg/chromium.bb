@@ -98,6 +98,13 @@ base::TimeDelta UpgradeDetectorChromeos::GetHighAnnoyanceLevelDelta() {
   return base::TimeDelta::FromDays(kHighDaysThreshold - kElevatedDaysThreshold);
 }
 
+base::TimeTicks UpgradeDetectorChromeos::GetHighAnnoyanceDeadline() {
+  const base::TimeTicks detected_time = upgrade_detected_time();
+  if (detected_time.is_null())
+    return detected_time;
+  return detected_time + base::TimeDelta::FromDays(kHighDaysThreshold);
+}
+
 void UpgradeDetectorChromeos::UpdateStatusChanged(
     const UpdateEngineClient::Status& status) {
   if (status.status == UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT) {
