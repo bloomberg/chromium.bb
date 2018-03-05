@@ -46,10 +46,7 @@ void RemoteEventDispatcherImpl::DispatchEvent(int64_t display_id,
     if (event->IsMousePointerEvent())
       display->platform_display()->MoveCursorTo(located_event->location());
   }
-  ignore_result(static_cast<PlatformDisplayDelegate*>(display)
-                    ->GetEventSink()
-                    ->OnEventFromSource(event.get()));
-  cb.Run(true);
+  display->ProcessEvent(event.get(), base::BindRepeating(cb, true));
 }
 
 }  // namespace ws

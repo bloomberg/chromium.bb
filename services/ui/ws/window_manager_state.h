@@ -102,6 +102,14 @@ class WindowManagerState : public EventDispatcherDelegate,
   // |event|, but it may modify it.
   void ProcessEvent(ui::Event* event, int64_t display_id);
 
+  // Returns true if actively processing an event. This includes waiting for a
+  // client to ack an event.
+  bool IsProcessingEvent() const;
+
+  // Notifies |closure| once done processing currently queued events. This
+  // notifies |closure| immediately if IsProcessingEvent() returns false.
+  void ScheduleCallbackWhenDoneProcessingEvents(base::OnceClosure closure);
+
  private:
   class ProcessedEventTarget;
   friend class Display;
@@ -135,15 +143,7 @@ class WindowManagerState : public EventDispatcherDelegate,
     TARGET,
   };
 
-  // There are two types of events that may be queued, both occur only when
-  // waiting for an ack from a client.
-  // . We get an event from the PlatformDisplay. This results in |event| being
-  //   set, but |processed_target| is null.
-  // . We get an event from the EventDispatcher. In this case both |event| and
-  //   |processed_target| are valid.
-  // The second case happens if EventDispatcher generates more than one event
-  // at a time.
-  struct QueuedEvent;
+  struct EventTask;
 
   // Tracks state associated with an event being dispatched to a client.
   struct InFlightEventDispatchDetails {
@@ -228,6 +228,10 @@ class WindowManagerState : public EventDispatcherDelegate,
                                  const Event& event,
                                  EventDispatchPhase phase);
 
+  // Processes queued event tasks until there are no more, or we're waiting on
+  // a client or the EventDisptacher to complete processing.
+  void ProcessEventTasks();
+
   // Helper function to convert |point| to be in screen coordinates. |point| as
   // the input should be in display-physical-pixel space, and the output is in
   // screen-dip space. Returns true if the |point| is successfully converted,
@@ -261,10 +265,6 @@ class WindowManagerState : public EventDispatcherDelegate,
                                   const EventLocation& event_location,
                                   const Event& event,
                                   Accelerator* accelerator) override;
-  // Processes the next valid event in |event_queue_|. If the event has already
-  // been processed it is dispatched, otherwise the event is passed to the
-  // EventDispatcher for processing.
-  void ProcessNextAvailableEvent() override;
   ClientSpecificId GetEventTargetClientId(const ServerWindow* window,
                                           bool in_nonclient_area) override;
   ServerWindow* GetRootWindowForDisplay(int64_t display_id) override;
@@ -292,9 +292,10 @@ class WindowManagerState : public EventDispatcherDelegate,
   bool got_frame_decoration_values_ = false;
   mojom::FrameDecorationValuesPtr frame_decoration_values_;
 
-  // Events can go into this queue if there's a hit-test in flight in
-  // EventDispatcher or if we are actively dispatching an event.
-  base::queue<std::unique_ptr<QueuedEvent>> event_queue_;
+  // Used for any event related tasks that need to be processed. Tasks are added
+  // to the queue anytime work comes in while waiting for a client to respond,
+  // or waiting for async hit-testing processing to complete.
+  base::queue<std::unique_ptr<EventTask>> event_tasks_;
 
   std::vector<DebugAccelerator> debug_accelerators_;
 

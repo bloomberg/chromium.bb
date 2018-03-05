@@ -12,8 +12,8 @@ import "ui/events/mojo/event.mojom";
 // process, along with testing.
 interface RemoteEventDispatcher {
   // Takes an event and dispatches it as if it came from the native platform.
-  // Returns false on bad |display_id| or |event|; returns true if it reaches
-  // the event dispatch phase.
+  // Returns false on bad |display_id| or bad |event|; returns true once the
+  // target client has completed processing the event.
   DispatchEvent(int64 display_id, ui.mojom.Event event)
       => (bool result);
 };

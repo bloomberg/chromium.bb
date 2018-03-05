@@ -283,7 +283,7 @@ void WindowServer::DestroyTree(WindowTree* tree) {
 
   // Notify remaining connections so that they can cleanup.
   for (auto& pair : tree_map_)
-    pair.second->OnWindowDestroyingTreeImpl(tree);
+    pair.second->OnWillDestroyTree(tree);
 
   if (window_manager_window_tree_factory_->window_tree() == tree)
     window_manager_window_tree_factory_->OnTreeDestroyed();
