@@ -630,12 +630,15 @@ Status ScrollElementRegionIntoView(
       "  return document.evaluate(xpath, document, null,"
       "      XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;"
       "}";
+  bool needs_special_oopif_handling =
+      !session->chrome->GetBrowserInfo()->is_android &&
+      session->chrome->GetBrowserInfo()->major_version <= 65;
   bool has_saved_region_offset = false;
   WebPoint saved_region_offset;
   for (std::list<FrameInfo>::reverse_iterator rit = session->frames.rbegin();
        rit != session->frames.rend(); ++rit) {
-    if (!session->chrome->GetBrowserInfo()->is_android &&
-        !has_saved_region_offset && web_view->IsOOPIF(rit->frame_id)) {
+    if (needs_special_oopif_handling && !has_saved_region_offset &&
+        web_view->IsOOPIF(rit->frame_id)) {
       saved_region_offset = region_offset;
       has_saved_region_offset = true;
     }
