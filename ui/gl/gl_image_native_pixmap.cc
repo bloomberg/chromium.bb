@@ -9,6 +9,7 @@
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gl/egl_util.h"
 #include "ui/gl/gl_context.h"
+#include "ui/gl/gl_enums.h"
 #include "ui/gl/gl_surface_egl.h"
 
 #define FOURCC(a, b, c, d)                                        \
@@ -160,7 +161,8 @@ bool GLImageNativePixmap::Initialize(gfx::NativePixmap* pixmap,
     }
 
     if (!ValidInternalFormat(internalformat_, format)) {
-      LOG(ERROR) << "Invalid internalformat: " << internalformat_
+      LOG(ERROR) << "Invalid internalformat: "
+                 << GLEnums::GetStringEnum(internalformat_)
                  << " for format: " << gfx::BufferFormatToString(format);
       return false;
     }
@@ -269,7 +271,7 @@ gfx::NativePixmapHandle GLImageNativePixmap::ExportHandle() {
   if (num_planes > 0 && static_cast<size_t>(num_planes) !=
                             gfx::NumberOfPlanesForBufferFormat(format)) {
     LOG(ERROR) << "Invalid number of planes: " << num_planes
-               << " for format: " << static_cast<int>(format);
+               << " for format: " << gfx::BufferFormatToString(format);
     return gfx::NativePixmapHandle();
   }
 
@@ -278,8 +280,9 @@ gfx::NativePixmapHandle GLImageNativePixmap::ExportHandle() {
     // This can happen if RGBX is implemented using RGBA. Otherwise there is
     // a real mistake from the user and we have to fail.
     if (internalformat_ == GL_RGB && format != gfx::BufferFormat::RGBA_8888) {
-      LOG(ERROR) << "Invalid internalformat: 0x" << std::hex << internalformat_
-                 << " for format: " << static_cast<int>(format);
+      LOG(ERROR) << "Invalid internalformat: "
+                 << GLEnums::GetStringEnum(internalformat_)
+                 << " for format: " << gfx::BufferFormatToString(format);
       return gfx::NativePixmapHandle();
     }
   }
