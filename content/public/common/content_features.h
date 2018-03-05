@@ -130,7 +130,6 @@ CONTENT_EXPORT extern const base::Feature kWorkStealingInScriptRunner;
 #if defined(OS_ANDROID)
 CONTENT_EXPORT extern const base::Feature kAndroidAutofillAccessibility;
 CONTENT_EXPORT extern const base::Feature kHideIncorrectlySizedFullscreenFrames;
-CONTENT_EXPORT extern const base::Feature kImeThread;
 CONTENT_EXPORT extern const base::Feature kWebNfc;
 CONTENT_EXPORT extern const base::Feature kWebXrRenderPath;
 CONTENT_EXPORT extern const char kWebXrRenderPathParamName[];
