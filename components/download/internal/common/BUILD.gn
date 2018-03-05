@@ -16,6 +16,7 @@ source_set("internal") {
     "download_create_info.cc",
     "download_interrupt_reasons_impl.cc",
     "download_interrupt_reasons_utils.cc",
+    "download_response_handler.cc",
     "download_stats.cc",
     "download_task_runner.cc",
     "download_ukm_helper.cc",
