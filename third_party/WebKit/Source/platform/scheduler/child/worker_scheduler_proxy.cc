@@ -16,12 +16,12 @@ WorkerSchedulerProxy::WorkerSchedulerProxy(WebFrameScheduler* frame_scheduler) {
 }
 
 WorkerSchedulerProxy::~WorkerSchedulerProxy() {
-  DCHECK(WTF::IsMainThread());
+  DCHECK(IsMainThread());
 }
 
 void WorkerSchedulerProxy::OnWorkerSchedulerCreated(
     base::WeakPtr<WorkerSchedulerImpl> worker_scheduler) {
-  DCHECK(!WTF::IsMainThread())
+  DCHECK(!IsMainThread())
       << "OnWorkerSchedulerCreated should be called from the worker thread";
   DCHECK(!worker_scheduler_) << "OnWorkerSchedulerCreated is called twice";
   DCHECK(worker_scheduler) << "WorkerScheduler is expected to exist";
@@ -32,7 +32,7 @@ void WorkerSchedulerProxy::OnWorkerSchedulerCreated(
 
 void WorkerSchedulerProxy::OnThrottlingStateChanged(
     WebFrameScheduler::ThrottlingState throttling_state) {
-  DCHECK(WTF::IsMainThread());
+  DCHECK(IsMainThread());
   if (throttling_state_ == throttling_state)
     return;
   throttling_state_ = throttling_state;

@@ -76,7 +76,6 @@ class EmptyFrameScheduler : public WebFrameScheduler {
   }
   void SetFrameVisible(bool) override {}
   bool IsFrameVisible() const override { return false; }
-  void SetPageVisible(bool) override {}
   bool IsPageVisible() const override { return false; }
   void SetPaused(bool) override {}
   void SetCrossOrigin(bool) override {}

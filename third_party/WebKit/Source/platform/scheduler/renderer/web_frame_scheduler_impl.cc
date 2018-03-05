@@ -103,7 +103,7 @@ WebFrameSchedulerImpl::WebFrameSchedulerImpl(
                      &tracing_controller_,
                      VisibilityStateToString),
       page_visibility_(kDefaultPageVisibility,
-                       "WebFrameScheduler.PageVisible",
+                       "WebFrameScheduler.PageVisibility",
                        this,
                        &tracing_controller_,
                        PageVisibilityStateToString),
@@ -481,11 +481,9 @@ void WebFrameSchedulerImpl::AsValueInto(
   }
 }
 
-void WebFrameSchedulerImpl::SetPageVisible(bool page_visible) {
+void WebFrameSchedulerImpl::SetPageVisibility(
+    PageVisibilityState page_visibility) {
   DCHECK(parent_web_view_scheduler_);
-  PageVisibilityState page_visibility = page_visible
-                                            ? PageVisibilityState::kVisible
-                                            : PageVisibilityState::kHidden;
   if (page_visibility_ == page_visibility)
     return;
   bool was_throttled = ShouldThrottleTimers();

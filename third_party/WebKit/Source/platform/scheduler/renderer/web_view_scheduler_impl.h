@@ -14,6 +14,7 @@
 #include "base/observer_list.h"
 #include "platform/PlatformExport.h"
 #include "platform/scheduler/base/task_queue.h"
+#include "platform/scheduler/child/page_visibility_state.h"
 #include "platform/scheduler/child/web_scheduler.h"
 #include "platform/scheduler/renderer/task_queue_throttler.h"
 #include "platform/scheduler/renderer/web_view_scheduler.h"
@@ -112,7 +113,7 @@ class PLATFORM_EXPORT WebViewSchedulerImpl : public WebViewScheduler {
   WebScheduler::InterventionReporter* intervention_reporter_;  // Not owned.
   RendererSchedulerImpl* renderer_scheduler_;
 
-  bool page_visible_;
+  PageVisibilityState page_visibility_;
   bool disable_background_timer_throttling_;
   bool is_audio_playing_;
   bool reported_background_throttling_since_navigation_;
