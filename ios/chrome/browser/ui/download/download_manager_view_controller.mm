@@ -347,7 +347,7 @@ NSString* GetSizeString(long long size_in_bytes) {
     _actionButton = [UIButton buttonWithType:UIButtonTypeCustom];
     _actionButton.translatesAutoresizingMaskIntoConstraints = NO;
     _actionButton.exclusiveTouch = YES;
-    [_actionButton setTitleColor:[MDCPalette bluePalette].tint500
+    [_actionButton setTitleColor:[MDCPalette bluePalette].tint600
                         forState:UIControlStateNormal];
 
     [_actionButton addTarget:self
@@ -363,7 +363,7 @@ NSString* GetSizeString(long long size_in_bytes) {
     _installDriveButton = [UIButton buttonWithType:UIButtonTypeCustom];
     _installDriveButton.translatesAutoresizingMaskIntoConstraints = NO;
     _installDriveButton.exclusiveTouch = YES;
-    [_installDriveButton setTitleColor:[MDCPalette bluePalette].tint500
+    [_installDriveButton setTitleColor:[MDCPalette bluePalette].tint600
                               forState:UIControlStateNormal];
 
     [_installDriveButton addTarget:self
