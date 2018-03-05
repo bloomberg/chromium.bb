@@ -78,7 +78,11 @@ liblouis. Thanks to Bert Frees.
 - Support for the ~pass1Only~ flag has now been removed. Thanks to Bue
   Vester-Andersen.
 - The old UEB tables ~UEBC-g1.ctb~ and ~UEBC-g2.ctb~ have been removed
-  as the have been superseded by ~en-ueb-g1.ctb~ and ~en-ueb-g2.ctb~
+  as the have been superseded by ~en-ueb-g1.ctb~ and ~en-ueb-g2.ctb~.
+- The french tables ~fr-2007.ctb~, ~fr-fr-g1.utb~, ~fr-fr-g2.ctb~,
+  ~fr-ca-g1.utb~ and ~fr-ca-g2.ctb~ have been removed. Use
+  ~fr-bfu-comp6.utb~ for 6 dots literary, ~fr-bfu-comp8.utb~ for 8
+  dots computer and ~fr-bfu-g2.ctb~ for contracted braille instead.
 
 ** New, renamed or removed tables
 *** New
