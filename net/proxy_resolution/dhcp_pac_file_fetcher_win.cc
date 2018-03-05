@@ -25,6 +25,33 @@
 
 namespace net {
 
+namespace {
+
+// Returns true if |adapter| should be considered when probing for WPAD via
+// DHCP.
+bool IsDhcpCapableAdapter(IP_ADAPTER_ADDRESSES* adapter) {
+  if (adapter->IfType == IF_TYPE_SOFTWARE_LOOPBACK)
+    return false;
+  if ((adapter->Flags & IP_ADAPTER_DHCP_ENABLED) == 0)
+    return false;
+
+  // Don't probe interfaces which are not up and ready to pass packets.
+  //
+  // This is a speculative fix for https://crbug.com/770201, in case calling
+  // dhcpsvc!DhcpRequestParams on interfaces that aren't ready yet blocks for
+  // a long time.
+  //
+  // Since ProxyResolutionService restarts WPAD probes in response to other
+  // network level changes, this will likely get called again once the
+  // interface is up.
+  if (adapter->OperStatus != IfOperStatusUp)
+    return false;
+
+  return true;
+}
+
+}  // namespace
+
 // This struct contains logging information describing how
 // GetCandidateAdapterNames() performed, for output to NetLog.
 struct DhcpAdapterNamesLoggingInfo {
@@ -202,9 +229,8 @@ std::unique_ptr<base::Value> NetLogGetAdaptersDoneCallback(
     SetInt("TunnelType", adapter->TunnelType, &adapter_value);
 
     // "skipped" means the adapter was not ultimately chosen as a candidate for
-    // testing WPAD. This replicates the logic in GetAdapterNames().
-    bool skipped = (adapter->IfType == IF_TYPE_SOFTWARE_LOOPBACK) ||
-                   ((adapter->Flags & IP_ADAPTER_DHCP_ENABLED) == 0);
+    // testing WPAD.
+    bool skipped = !IsDhcpCapableAdapter(adapter);
     adapter_value.SetKey("skipped", base::Value(skipped));
 
     adapters_value.GetList().push_back(std::move(adapter_value));
@@ -564,13 +590,10 @@ bool DhcpProxyScriptFetcherWin::GetCandidateAdapterNames(
 
   IP_ADAPTER_ADDRESSES* adapter = NULL;
   for (adapter = adapters.get(); adapter; adapter = adapter->Next) {
-    if (adapter->IfType == IF_TYPE_SOFTWARE_LOOPBACK)
-      continue;
-    if ((adapter->Flags & IP_ADAPTER_DHCP_ENABLED) == 0)
-      continue;
-
-    DCHECK(adapter->AdapterName);
-    adapter_names->insert(adapter->AdapterName);
+    if (IsDhcpCapableAdapter(adapter)) {
+      DCHECK(adapter->AdapterName);
+      adapter_names->insert(adapter->AdapterName);
+    }
   }
 
   // Transfer the buffer containing the adapters, so it can be used later for
