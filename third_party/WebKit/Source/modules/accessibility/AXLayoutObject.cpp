@@ -1010,9 +1010,7 @@ String AXLayoutObject::ImageDataUrl(const IntSize& max_size) const {
     return String();
 
   // Encode as a PNG and return as a data url.
-  std::unique_ptr<ImageDataBuffer> buffer = ImageDataBuffer::Create(
-      IntSize(width, height),
-      reinterpret_cast<const unsigned char*>(pixel_storage.data()));
+  std::unique_ptr<ImageDataBuffer> buffer = ImageDataBuffer::Create(pixmap);
 
   if (!buffer)
     return String();
