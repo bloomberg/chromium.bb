@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/properties/longhands/WebkitHyphenateCharacter.h"
+#include "core/css/properties/longhands/webkit_hyphenate_character.h"
 
 #include "core/css/CSSStringValue.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"

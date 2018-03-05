@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/properties/longhands/FontFeatureSettings.h"
+#include "core/css/properties/longhands/font_feature_settings.h"
 
 #include "core/css/CSSFontFeatureValue.h"
 #include "core/css/properties/CSSParsingUtils.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/properties/longhands/ColumnSpan.h"
+#include "core/css/properties/longhands/column_span.h"
 
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 
