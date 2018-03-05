@@ -24,6 +24,7 @@
 #include "headless/public/headless_devtools_client.h"
 #include "headless/public/util/virtual_time_controller.h"
 #include "headless/test/headless_browser_test.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -160,8 +161,9 @@ class CompositorControllerBrowserTest
 
   void CustomizeHeadlessBrowserContext(
       HeadlessBrowserContext::Builder& builder) override {
-    // Set an arbitrary initial time to enable base::Time/TimeTicks overrides.
-    builder.SetInitialVirtualTime(base::Time::Now());
+    // Set an initial time to enable base::Time/TimeTicks overrides and ensure
+    // deterministic timestamps.
+    builder.SetInitialVirtualTime(base::Time::FromJsTime(100000.0));
   }
 
   bool GetEnableBeginFrameControl() override { return true; }
@@ -361,10 +363,7 @@ INSTANTIATE_TEST_CASE_P(CompositorControllerRafBrowserTests,
 // - animate_only BeginFrames don't produce CompositorFrames,
 // - first screenshot starts the GIF animation,
 // - animation is advanced according to virtual time.
-//
-// TODO(eseckler): Also verify that image animation frame times are not
-// re-synced after the first iteration. This requires adding an flag/setting to
-// disable such resyncs.
+// - the animation is not resynced after the first iteration.
 class CompositorControllerImageAnimationBrowserTest
     : public CompositorControllerBrowserTest {
  private:
@@ -543,6 +542,154 @@ HEADLESS_ASYNC_DEVTOOLED_TEST_P(CompositorControllerImageAnimationBrowserTest);
 // Instantiate test case for both software and gpu compositing modes.
 INSTANTIATE_TEST_CASE_P(CompositorControllerImageAnimationBrowserTests,
                         CompositorControllerImageAnimationBrowserTest,
+                        ::testing::Bool());
+
+// Loads a CSS animation and verifies that:
+// - animate_only BeginFrames don't produce CompositorFrames,
+// - animate_only BeginFrames advance animations and trigger itersection events,
+// - animation is advanced according to virtual time.
+class CompositorControllerCssAnimationBrowserTest
+    : public CompositorControllerBrowserTest,
+      public runtime::Observer {
+ private:
+  base::TimeDelta GetAnimationFrameInterval() const override {
+    return base::TimeDelta::FromMilliseconds(500);
+  }
+
+  std::string GetTestFile() const override {
+    // Animates opacity of a blue 100px square on red blackground over 4
+    // seconds (100% -> 0% -> 100% four times). Logs events to console.
+    //
+    // Timeline:
+    //      0 ms:  --- animation starts at 500ms ---
+    //    500 ms:  100% opacity  -> blue background.
+    //   1000 ms:    0% opacity  ->  red background.
+    //   1500 ms:  100% opacity  -> blue background.
+    //   2000 ms:    0% opacity  ->  red background.
+    //   2500 ms:  100% opacity  -> blue background.
+    //   3000 ms:    0% opacity  ->  red background.
+    //   3500 ms:  100% opacity  -> blue background.
+    //   4000 ms:    0% opacity  ->  red background.
+    //   4500 ms:  100% opacity  -> blue background.
+    //
+    // The animation will start with the first BeginFrame after load.
+    return "/css_animation.html";
+  }
+
+  void OnFirstBeginFrameComplete() override {
+    CompositorControllerBrowserTest::OnFirstBeginFrameComplete();
+
+    // First frame advanced one BeginFrame interval.
+    elapsed_time_ += GetAnimationFrameInterval();
+
+    // First BeginFrame advanced by one interval.
+    devtools_client_->GetRuntime()->AddObserver(this);
+    devtools_client_->GetRuntime()->Enable(base::BindRepeating(
+        &CompositorControllerCssAnimationBrowserTest::RuntimeEnabled,
+        base::Unretained(this)));
+  }
+
+  void RuntimeEnabled() {
+    // Animation starts with the first BeginFrame of this budget. Advance five
+    // frames to reach 3000ms, at which point the background should be red.
+    GrantBudget(GetAnimationFrameInterval() * 5);
+  }
+
+  void GrantBudget(base::TimeDelta budget) {
+    // Grant the budget in two halves, with screenshots at the end of each.
+    // AdditionalVirtualTimeBudget will self delete.
+    new AdditionalVirtualTimeBudget(
+        virtual_time_controller_.get(),
+        AdditionalVirtualTimeBudget::StartPolicy::START_IMMEDIATELY, budget,
+        base::BindOnce(
+            &CompositorControllerCssAnimationBrowserTest::OnBudgetExpired,
+            base::Unretained(this), budget));
+  }
+
+  void OnBudgetExpired(base::TimeDelta budget) {
+    elapsed_time_ += budget;
+
+    EXPECT_THAT(
+        elapsed_time_,
+        testing::AnyOf(testing::Eq(base::TimeDelta::FromMilliseconds(3000)),
+                       testing::Eq(base::TimeDelta::FromMilliseconds(4500))));
+
+    if (elapsed_time_ == base::TimeDelta::FromMilliseconds(3000)) {
+      // We should have advanced five BeginFrames. No CompositorFrames from
+      // renderer because update_display_for_animations is false.
+      EXPECT_SCOPED(ExpectAdditionalFrameCounts(5, 0));
+    } else {
+      // We should have advanced two more BeginFrames since the second budget
+      // was preceded by a screenshot. No CompositorFrames from renderer
+      // because update_display_for_animations is false.
+      EXPECT_SCOPED(ExpectAdditionalFrameCounts(2, 0));
+    }
+
+    compositor_controller_->CaptureScreenshot(
+        headless_experimental::ScreenshotParamsFormat::PNG, 100,
+        base::BindRepeating(
+            &CompositorControllerCssAnimationBrowserTest::OnScreenshot,
+            base::Unretained(this)));
+  }
+
+  void OnScreenshot(const std::string& screenshot_data) {
+    // Screenshot should have incurred a new CompositorFrame from renderer.
+    EXPECT_SCOPED(ExpectAdditionalFrameCounts(1, 1));
+    EXPECT_LT(0U, screenshot_data.length());
+
+    if (screenshot_data.length()) {
+      SkBitmap result_bitmap;
+      EXPECT_TRUE(DecodePNG(screenshot_data, &result_bitmap));
+
+      EXPECT_EQ(800, result_bitmap.width());
+      EXPECT_EQ(600, result_bitmap.height());
+      SkColor actual_color = result_bitmap.getColor(50, 50);
+
+      // First screenshot should be red, because box is not visible.
+      SkColor expected_color = SkColorSetRGB(0xff, 0x00, 0x00);
+      if (elapsed_time_ == base::TimeDelta::FromMilliseconds(4500)) {
+        // Box is visible in second screenshot, so it should be blue.
+        expected_color = SkColorSetRGB(0x00, 0x00, 0xff);
+      }
+
+      EXPECT_EQ(expected_color, actual_color);
+    }
+
+    if (elapsed_time_ == base::TimeDelta::FromMilliseconds(3000)) {
+      // Advance to the end of the animation.
+      GrantBudget(base::TimeDelta::FromMilliseconds(1500));
+    } else {
+      EXPECT_THAT(log_, testing::ElementsAre(
+                            // Animation actually started at 500ms, but the
+                            // event is executed a BeginFrame later.
+                            "event animationstart at 101000ms",
+                            "event animationiteration at 101500ms",
+                            "event animationiteration at 102500ms",
+                            "event animationiteration at 103500ms",
+                            "event animationend at 104500ms"));
+      FinishCompositorControllerTest();
+    }
+  }
+
+  // runtime::Observer implementation:
+  void OnConsoleAPICalled(
+      const runtime::ConsoleAPICalledParams& params) override {
+    // We expect the arguments always to be a single string.
+    const std::vector<std::unique_ptr<runtime::RemoteObject>>& args =
+        *params.GetArgs();
+    if (args.size() == 1u && args[0]->HasValue())
+      log_.push_back(args[0]->GetValue()->GetString());
+  }
+
+  base::TimeDelta elapsed_time_;
+  std::vector<std::string> log_;
+};
+
+HEADLESS_ASYNC_DEVTOOLED_TEST_P(CompositorControllerCssAnimationBrowserTest);
+
+// Instantiate test case for both software and gpu compositing modes.
+INSTANTIATE_TEST_CASE_P(CompositorControllerCssAnimationBrowserTests,
+                        CompositorControllerCssAnimationBrowserTest,
                         ::testing::Bool());
 
 #endif  // !defined(OS_MACOSX)
