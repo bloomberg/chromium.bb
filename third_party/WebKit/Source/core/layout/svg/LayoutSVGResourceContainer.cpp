@@ -43,7 +43,7 @@ SVGResource* ResourceForContainer(
 LayoutSVGResourceContainer::LayoutSVGResourceContainer(SVGElement* node)
     : LayoutSVGHiddenContainer(node),
       is_in_layout_(false),
-      invalidation_mask_(0),
+      completed_invalidations_mask_(0),
       is_invalidating_(false) {}
 
 LayoutSVGResourceContainer::~LayoutSVGResourceContainer() = default;
@@ -110,19 +110,22 @@ void LayoutSVGResourceContainer::MakeClientsPending(SVGResource& resource) {
 }
 
 void LayoutSVGResourceContainer::MarkAllClientsForInvalidation(
-    InvalidationMode mode) {
+    InvalidationModeMask invalidation_mask) {
   if (is_invalidating_)
     return;
   SVGElementProxySet* proxy_set = ElementProxySet();
   if (clients_.IsEmpty() && (!proxy_set || proxy_set->IsEmpty()))
     return;
-  if (invalidation_mask_ & mode)
+  // Remove modes for which invalidations have already been
+  // performed. If no modes remain we are done.
+  invalidation_mask &= ~completed_invalidations_mask_;
+  if (invalidation_mask == 0)
     return;
+  completed_invalidations_mask_ |= invalidation_mask;
 
-  invalidation_mask_ |= mode;
   is_invalidating_ = true;
-  bool needs_layout = mode == kLayoutAndBoundariesInvalidation;
-  bool mark_for_invalidation = mode != kParentOnlyInvalidation;
+  bool needs_layout = invalidation_mask & kLayoutInvalidation;
+  bool mark_for_invalidation = invalidation_mask & ~kParentOnlyInvalidation;
 
   // Invalidate clients registered on the this object (via SVGResources).
   for (auto* client : clients_) {
@@ -134,7 +137,7 @@ void LayoutSVGResourceContainer::MarkAllClientsForInvalidation(
     }
 
     if (mark_for_invalidation)
-      MarkClientForInvalidation(*client, mode);
+      MarkClientForInvalidation(*client, invalidation_mask);
 
     MarkForLayoutAndParentResourceInvalidation(*client, needs_layout);
   }
@@ -147,7 +150,7 @@ void LayoutSVGResourceContainer::MarkAllClientsForInvalidation(
 
 void LayoutSVGResourceContainer::MarkClientForInvalidation(
     LayoutObject& client,
-    unsigned invalidation_mask) {
+    InvalidationModeMask invalidation_mask) {
   if (invalidation_mask & kPaintInvalidation) {
     // Since LayoutSVGInlineTexts don't have SVGResources (they use their
     // parent's), they will not be notified of changes to paint servers. So
@@ -161,10 +164,7 @@ void LayoutSVGResourceContainer::MarkClientForInvalidation(
     client.SetNeedsPaintPropertyUpdate();
   }
 
-  // kLayoutAndBoundariesInvalidation and kBoundariesInvalidation are
-  // handled in the same way.
-  if (invalidation_mask &
-      (kBoundariesInvalidation | kLayoutAndBoundariesInvalidation))
+  if (invalidation_mask & kBoundariesInvalidation)
     client.SetNeedsBoundariesUpdate();
 }
 
@@ -203,7 +203,7 @@ static inline void RemoveFromCacheAndInvalidateDependencies(
     bool needs_layout) {
   if (SVGResources* resources =
           SVGResourcesCache::CachedResourcesForLayoutObject(object)) {
-    if (unsigned invalidation_mask =
+    if (InvalidationModeMask invalidation_mask =
             resources->RemoveClientFromCacheAffectingObjectBounds(object)) {
       LayoutSVGResourceContainer::MarkClientForInvalidation(object,
                                                             invalidation_mask);

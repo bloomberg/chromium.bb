@@ -37,6 +37,8 @@ enum LayoutSVGResourceType {
   kClipperResourceType
 };
 
+typedef unsigned InvalidationModeMask;
+
 class LayoutSVGResourceContainer : public LayoutSVGHiddenContainer {
  public:
   explicit LayoutSVGResourceContainer(SVGElement*);
@@ -78,20 +80,18 @@ class LayoutSVGResourceContainer : public LayoutSVGHiddenContainer {
 
   // When adding modes, make sure we don't overflow m_invalidationMask below.
   enum InvalidationMode {
-    kLayoutAndBoundariesInvalidation = 1 << 0,
+    kLayoutInvalidation = 1 << 0,
     kBoundariesInvalidation = 1 << 1,
     kPaintInvalidation = 1 << 2,
     kParentOnlyInvalidation = 1 << 3
   };
-  static void MarkClientForInvalidation(LayoutObject&,
-                                        unsigned invalidation_mask);
+  static void MarkClientForInvalidation(LayoutObject&, InvalidationModeMask);
 
-  void ClearInvalidationMask() { invalidation_mask_ = 0; }
+  void ClearInvalidationMask() { completed_invalidations_mask_ = 0; }
 
  protected:
-  // Used from the invalidateClient/invalidateClients methods from classes,
-  // inheriting from us.
-  void MarkAllClientsForInvalidation(InvalidationMode);
+  // Used from RemoveAllClientsFromCache methods.
+  void MarkAllClientsForInvalidation(InvalidationModeMask);
 
   void NotifyContentChanged();
   SVGElementProxySet* ElementProxySet();
@@ -107,7 +107,7 @@ class LayoutSVGResourceContainer : public LayoutSVGHiddenContainer {
 
   // Track global (markAllClientsForInvalidation) invalidations to avoid
   // redundant crawls.
-  unsigned invalidation_mask_ : 8;
+  unsigned completed_invalidations_mask_ : 8;
 
   unsigned is_invalidating_ : 1;
   // 23 padding bits available

@@ -113,9 +113,9 @@ void LayoutSVGResourceClipper::RemoveAllClientsFromCache(
   clip_content_path_.Clear();
   cached_paint_record_.reset();
   local_clip_bounds_ = FloatRect();
-  MarkAllClientsForInvalidation(mark_for_invalidation
-                                    ? kLayoutAndBoundariesInvalidation
-                                    : kParentOnlyInvalidation);
+  MarkAllClientsForInvalidation(
+      mark_for_invalidation ? kLayoutInvalidation | kBoundariesInvalidation
+                            : kParentOnlyInvalidation);
 }
 
 Optional<Path> LayoutSVGResourceClipper::AsPath() {
