@@ -255,7 +255,6 @@ jumbo_source_set("common_sources") {
   public_deps = [
     ":interfaces",
     ":service_names",
-    ":zygote_buildflags",
     "//content/common",
     "//ipc",
     "//media/capture:capture_base",
@@ -275,6 +274,7 @@ jumbo_source_set("common_sources") {
   ]
   deps = [
     ":content_descriptor_keys",
+    ":zygote_features",
 
     # This looks needless as we have //content/common in public_deps, but it's
     # needed because of allow_circular_includes_from.
@@ -332,14 +332,14 @@ jumbo_source_set("common_sources") {
   }
 }
 
-buildflag_header("buildflags") {
-  header = "buildflags.h"
+buildflag_header("features") {
+  header = "features.h"
   flags = [ "RTC_USE_H264=$rtc_use_h264" ]
 }
 
 source_set("feature_h264_with_openh264_ffmpeg") {
   deps = [
-    ":buildflags",
+    ":features",
     "//base",
     "//media:media_features",
   ]
@@ -349,8 +349,8 @@ source_set("feature_h264_with_openh264_ffmpeg") {
   ]
 }
 
-buildflag_header("zygote_buildflags") {
-  header = "zygote_buildflags.h"
+buildflag_header("zygote_features") {
+  header = "zygote_features.h"
   flags = [ "USE_ZYGOTE_HANDLE=$use_zygote_handle" ]
 }
 

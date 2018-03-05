@@ -930,7 +930,7 @@ test("browser_tests") {
       "//components/strings",
       "//components/sync",
       "//components/translate/core/common",
-      "//content/public/common:buildflags",
+      "//content/public/common:features",
       "//content/test:test_support",
       "//crypto:platform",
       "//crypto:test_support",

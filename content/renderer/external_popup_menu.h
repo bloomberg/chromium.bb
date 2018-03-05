@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "content/common/buildflags.h"
+#include "content/common/features.h"
 #include "third_party/WebKit/public/web/WebExternalPopupMenu.h"
 #include "third_party/WebKit/public/web/WebPopupMenuInfo.h"
 #include "ui/gfx/geometry/point_f.h"
