@@ -82,4 +82,20 @@ std::unique_ptr<net::test_server::HttpResponse> GetResponse(
       assertWithMatcher:grey_notNil()];
 }
 
+// Tests cancelling download UI.
+- (void)testCancellingDownload {
+  [ChromeEarlGrey loadURL:self.testServer->GetURL("/")];
+  [ChromeEarlGrey waitForWebViewContainingText:"Download"];
+  [ChromeEarlGrey tapWebViewElementWithID:@"download"];
+
+  [[EarlGrey selectElementWithMatcher:DownloadButton()]
+      assertWithMatcher:grey_notNil()];
+
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::CloseButton()]
+      performAction:grey_tap()];
+
+  [[EarlGrey selectElementWithMatcher:DownloadButton()]
+      assertWithMatcher:grey_nil()];
+}
+
 @end

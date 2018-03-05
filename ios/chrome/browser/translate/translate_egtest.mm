@@ -616,9 +616,8 @@ using translate::LanguageDetectionController;
       selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
                                    IDS_TRANSLATE_INFOBAR_ACCEPT)]
       assertWithMatcher:grey_notNil()];
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
-                                   IDS_CLOSE)] assertWithMatcher:grey_notNil()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::CloseButton()]
+      assertWithMatcher:grey_notNil()];
 
   // Open the language picker.
   NSString* kFrench = @"French";
@@ -877,9 +876,7 @@ using translate::LanguageDetectionController;
       selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
                                    IDS_TRANSLATE_INFOBAR_REVERT)]
       assertWithMatcher:grey_sufficientlyVisible()];
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
-                                   IDS_CLOSE)]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::CloseButton()]
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
