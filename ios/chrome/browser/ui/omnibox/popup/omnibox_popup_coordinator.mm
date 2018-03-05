@@ -7,10 +7,10 @@
 #import "components/image_fetcher/ios/ios_image_data_fetcher_wrapper.h"
 #include "components/omnibox/browser/autocomplete_result.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#import "ios/chrome/browser/ui/omnibox/omnibox_popup_mediator.h"
-#import "ios/chrome/browser/ui/omnibox/omnibox_popup_presenter.h"
-#import "ios/chrome/browser/ui/omnibox/omnibox_popup_view_controller.h"
-#include "ios/chrome/browser/ui/omnibox/omnibox_popup_view_ios.h"
+#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_mediator.h"
+#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_presenter.h"
+#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_view_controller.h"
+#include "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_view_ios.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

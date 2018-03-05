@@ -6,12 +6,53 @@ source_set("popup") {
   sources = [
     "omnibox_popup_coordinator.h",
     "omnibox_popup_coordinator.mm",
+    "omnibox_popup_mediator.h",
+    "omnibox_popup_mediator.mm",
+    "omnibox_popup_positioner.h",
+    "omnibox_popup_presenter.h",
+    "omnibox_popup_presenter.mm",
+    "omnibox_popup_provider.h",
+    "omnibox_popup_view_controller.h",
+    "omnibox_popup_view_controller.mm",
+    "omnibox_popup_view_ios.h",
+    "omnibox_popup_view_ios.mm",
+    "omnibox_popup_view_suggestions_delegate.h",
+  ]
+  deps = [
+    ":popup_internal",
+    "//base",
+    "//components/image_fetcher/ios",
+    "//components/omnibox/browser",
+    "//components/open_from_clipboard",
+    "//ios/chrome/browser",
+    "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/ui:ui",
+    "//ios/chrome/browser/ui:ui_util",
+    "//ios/chrome/browser/ui/omnibox:omnibox_popup_shared",
+    "//ios/chrome/browser/ui/omnibox:omnibox_util",
+    "//ios/chrome/browser/ui/toolbar/public:public",
+    "//ios/chrome/browser/ui/toolbar/public:toolbar_base_feature",
+    "//ios/chrome/browser/ui/util:util",
+    "//ios/web/public:public",
+    "//net",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("popup_internal") {
+  sources = [
+    "omnibox_popup_row.h",
+    "omnibox_popup_row.mm",
   ]
   deps = [
     "//base",
     "//components/image_fetcher/ios",
     "//components/omnibox/browser",
+    "//ios/chrome/app/theme:theme",
     "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/ui:ui_util",
+    "//ios/chrome/browser/ui/omnibox:omnibox_popup_shared",
+    "//ios/chrome/browser/ui/util:util",
     "//net",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]

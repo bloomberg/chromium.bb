@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/ui/omnibox/omnibox_popup_view_ios.h"
+#include "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_view_ios.h"
 
 #import <QuartzCore/QuartzCore.h>
 
@@ -18,9 +18,9 @@
 #include "components/open_from_clipboard/clipboard_recent_content.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/experimental_flags.h"
-#import "ios/chrome/browser/ui/omnibox/omnibox_popup_mediator.h"
-#include "ios/chrome/browser/ui/omnibox/omnibox_popup_view_suggestions_delegate.h"
 #include "ios/chrome/browser/ui/omnibox/omnibox_util.h"
+#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_mediator.h"
+#include "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_view_suggestions_delegate.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
