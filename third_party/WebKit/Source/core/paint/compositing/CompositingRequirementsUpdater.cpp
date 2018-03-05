@@ -173,38 +173,38 @@ static CompositingReasons SubtreeReasonsForCompositing(
     bool has_composited_descendants,
     bool has3d_transformed_descendants) {
   CompositingReasons subtree_reasons = CompositingReason::kNone;
+  if (!has_composited_descendants)
+    return subtree_reasons;
 
   // When a layer has composited descendants, some effects, like 2d transforms,
   // filters, masks etc must be implemented via compositing so that they also
   // apply to those composited descendants.
-  if (has_composited_descendants) {
-    subtree_reasons |= layer->PotentialCompositingReasonsFromStyle() &
-                       CompositingReason::kComboCompositedDescendants;
+  subtree_reasons |= layer->PotentialCompositingReasonsFromStyle() &
+                     CompositingReason::kComboCompositedDescendants;
 
-    if (layer->ShouldIsolateCompositedDescendants()) {
-      DCHECK(layer->StackingNode()->IsStackingContext());
-      subtree_reasons |= CompositingReason::kIsolateCompositedDescendants;
-    }
+  if (layer->ShouldIsolateCompositedDescendants()) {
+    DCHECK(layer->StackingNode()->IsStackingContext());
+    subtree_reasons |= CompositingReason::kIsolateCompositedDescendants;
+  }
 
-    // FIXME: This should move into
-    // CompositingReasonFinder::potentialCompositingReasonsFromStyle, but theres
-    // a poor interaction with LayoutTextControlSingleLine, which sets this
-    // hasOverflowClip directly.
-    if (layer->GetLayoutObject().HasClipRelatedProperty())
-      subtree_reasons |= CompositingReason::kClipsCompositingDescendants;
+  // FIXME: This should move into
+  // CompositingReasonFinder::potentialCompositingReasonsFromStyle, but theres
+  // a poor interaction with LayoutTextControlSingleLine, which sets this
+  // hasOverflowClip directly.
+  if (layer->GetLayoutObject().HasClipRelatedProperty())
+    subtree_reasons |= CompositingReason::kClipsCompositingDescendants;
 
-    // We ignore LCD text here because we are required to composite
-    // scroll-dependant fixed position elements with composited descendants for
-    // correctness - even if we lose LCD.
-    //
-    // TODO(smcgruer): Only composite fixed if needed (http://crbug.com/742213)
-    const bool ignore_lcd_text = true;
-    if (layer->GetLayoutObject().Style()->GetPosition() == EPosition::kFixed ||
-        compositing_reason_finder.RequiresCompositingForScrollDependentPosition(
-            layer, ignore_lcd_text)) {
-      subtree_reasons |=
-          CompositingReason::kPositionFixedOrStickyWithCompositedDescendants;
-    }
+  // We ignore LCD text here because we are required to composite
+  // scroll-dependant fixed position elements with composited descendants for
+  // correctness - even if we lose LCD.
+  //
+  // TODO(smcgruer): Only composite fixed if needed (http://crbug.com/742213)
+  const bool ignore_lcd_text = true;
+  if (layer->GetLayoutObject().Style()->GetPosition() == EPosition::kFixed ||
+      compositing_reason_finder.RequiresCompositingForScrollDependentPosition(
+          layer, ignore_lcd_text)) {
+    subtree_reasons |=
+        CompositingReason::kPositionFixedOrStickyWithCompositedDescendants;
   }
 
   // A layer with preserve-3d or perspective only needs to be composited if
