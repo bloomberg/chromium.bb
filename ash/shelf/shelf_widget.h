@@ -143,8 +143,6 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
 
   ScopedSessionObserver scoped_session_observer_;
 
-  bool did_shutdown_ = false;
-
   DISALLOW_COPY_AND_ASSIGN(ShelfWidget);
 };
 

@@ -723,6 +723,8 @@ Shell::~Shell() {
 
   toast_manager_.reset();
 
+  for (aura::Window* root : GetAllRootWindows())
+    Shelf::ForWindow(root)->ShutdownShelfWidget();
   tray_bluetooth_helper_.reset();
 
   // Accesses root window containers.
