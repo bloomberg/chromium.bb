@@ -392,7 +392,8 @@ class CONTENT_EXPORT RenderViewImpl : public RenderWidget,
                  scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   void Initialize(mojom::CreateViewParamsPtr params,
-                  const RenderWidget::ShowCallback& show_callback);
+                  const RenderWidget::ShowCallback& show_callback,
+                  scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   void SetScreenMetricsEmulationParameters(
       bool enabled,
       const blink::WebDeviceEmulationParams& params) override;

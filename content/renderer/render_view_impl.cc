@@ -505,7 +505,8 @@ RenderViewImpl::RenderViewImpl(
 
 void RenderViewImpl::Initialize(
     mojom::CreateViewParamsPtr params,
-    const RenderWidget::ShowCallback& show_callback) {
+    const RenderWidget::ShowCallback& show_callback,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   bool was_created_by_renderer = !show_callback.is_null();
 #if defined(OS_ANDROID)
   // TODO(sgurun): crbug.com/325351 Needed only for android webview's deprecated
@@ -622,6 +623,9 @@ void RenderViewImpl::Initialize(
   GetContentClient()->renderer()->RenderViewCreated(this);
 
   page_zoom_level_ = params->page_zoom_level;
+
+  nav_state_sync_timer_.SetTaskRunner(task_runner);
+  check_preferred_size_timer_.SetTaskRunner(std::move(task_runner));
 }
 
 RenderViewImpl::~RenderViewImpl() {
@@ -994,7 +998,8 @@ RenderViewImpl* RenderViewImpl::Create(
   else
     render_view = new RenderViewImpl(compositor_deps, *params, task_runner);
 
-  render_view->Initialize(std::move(params), show_callback);
+  render_view->Initialize(std::move(params), show_callback,
+                          std::move(task_runner));
   return render_view;
 }
 
