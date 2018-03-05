@@ -44,10 +44,8 @@ class URLRequestDataJobFuzzerHarness : public net::URLRequest::Delegate {
     read_lengths_.clear();
 
     // Allocate an IOBuffer with fuzzed size.
-    uint32_t buf_size = provider.ConsumeUint32InRange(1, 127);  // 7 bits.
-    scoped_refptr<net::IOBuffer> buf(
-        new net::IOBuffer(static_cast<size_t>(buf_size)));
-    buf_.swap(buf);
+    int buf_size = provider.ConsumeUint32InRange(1, 127);  // 7 bits.
+    buf_ = base::MakeRefCounted<net::IOBufferWithSize>(buf_size);
 
     // Generate a range header, and a bool determining whether to use it.
     // Generate the header regardless of the bool value to keep the data URL and
@@ -56,9 +54,12 @@ class URLRequestDataJobFuzzerHarness : public net::URLRequest::Delegate {
     bool use_range = provider.ConsumeBool();
     std::string range(provider.ConsumeBytes(kMaxLengthForFuzzedRange));
 
-    // Generate a sequence of reads sufficient to read the entire data URL.
+    // Generate a sequence of reads sufficient to read the entire data URL,
+    // capping it at 20000 reads, to avoid hangs. Once the limit is reached,
+    // all subsequent reads will be 32k.
     size_t simulated_bytes_read = 0;
-    while (simulated_bytes_read < provider.remaining_bytes()) {
+    while (simulated_bytes_read < provider.remaining_bytes() &&
+           read_lengths_.size() < 20000u) {
       size_t read_length = provider.ConsumeUint32InRange(1, buf_size);
       read_lengths_.push_back(read_length);
       simulated_bytes_read += read_length;
@@ -100,14 +101,14 @@ class URLRequestDataJobFuzzerHarness : public net::URLRequest::Delegate {
   void ReadFromRequest(net::URLRequest* request) {
     int bytes_read = 0;
     do {
-      // If possible, pop the next read size. If none exists, then this should
-      // be the last call to Read.
-      bool using_populated_read = read_lengths_.size() > 0;
-      size_t read_size = 1;
-      if (using_populated_read) {
+      size_t read_size = 32 * 1024;
+      // If possible, pop the next read size.
+      if (read_lengths_.size() > 0) {
         read_size = read_lengths_.back();
         read_lengths_.pop_back();
       }
+      if (read_size > static_cast<size_t>(buf_->size()))
+        buf_ = base::MakeRefCounted<net::IOBufferWithSize>(read_size);
 
       bytes_read = request->Read(buf_.get(), read_size);
     } while (bytes_read > 0);
@@ -159,8 +160,8 @@ class URLRequestDataJobFuzzerHarness : public net::URLRequest::Delegate {
   net::TestURLRequestContext context_;
   net::URLRequestJobFactoryImpl job_factory_;
   std::vector<size_t> read_lengths_;
-  scoped_refptr<net::IOBuffer> buf_;
-  base::RunLoop* read_loop_;
+  scoped_refptr<net::IOBufferWithSize> buf_;
+  base::RunLoop* read_loop_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestDataJobFuzzerHarness);
 };
