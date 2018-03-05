@@ -24,6 +24,7 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.MetricsUtils;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.IntentHandler;
+import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.OriginVerifier;
 import org.chromium.chrome.browser.browserservices.PostMessageHandler;
 import org.chromium.content.browser.test.NativeLibraryTestRule;
@@ -185,7 +186,7 @@ public class ClientManagerTest {
 
                 // If there is a prepopulated origin, we should get a synchronous verification.
                 OriginVerifier.addVerifiedOriginForPackage(
-                        ContextUtils.getApplicationContext().getPackageName(), Uri.parse(URL),
+                        ContextUtils.getApplicationContext().getPackageName(), new Origin(URL),
                         CustomTabsService.RELATION_USE_AS_ORIGIN);
                 cm.verifyAndInitializeWithPostMessageOriginForSession(
                         mSession, Uri.parse(URL), CustomTabsService.RELATION_USE_AS_ORIGIN);
@@ -229,7 +230,7 @@ public class ClientManagerTest {
         ThreadUtils.runOnUiThreadBlocking(() -> {
             // Prepopulated origins should depend on the relation used.
             OriginVerifier.addVerifiedOriginForPackage(
-                    ContextUtils.getApplicationContext().getPackageName(), Uri.parse(URL),
+                    ContextUtils.getApplicationContext().getPackageName(), new Origin(URL),
                     CustomTabsService.RELATION_HANDLE_ALL_URLS);
             // This uses CustomTabsService.RELATION_USE_AS_ORIGIN by default.
             Assert.assertFalse(cm.isFirstPartyOriginForSession(mSession, Uri.parse(URL)));
@@ -269,7 +270,7 @@ public class ClientManagerTest {
                 // Even if there is a prepopulated origin, non-https origins should get an early
                 // return with false.
                 OriginVerifier.addVerifiedOriginForPackage(
-                        ContextUtils.getApplicationContext().getPackageName(), uri,
+                        ContextUtils.getApplicationContext().getPackageName(), new Origin(uri),
                         CustomTabsService.RELATION_USE_AS_ORIGIN);
                 cm.verifyAndInitializeWithPostMessageOriginForSession(
                         mSession, uri, CustomTabsService.RELATION_USE_AS_ORIGIN);
