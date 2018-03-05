@@ -1100,7 +1100,7 @@ test("content_browsertests") {
       "../browser/webrtc/webrtc_webcam_browsertest.h",
     ]
     deps += [
-      "//content/public/common:features",
+      "//content/public/common:buildflags",
       "//testing/perf",
     ]
   }
