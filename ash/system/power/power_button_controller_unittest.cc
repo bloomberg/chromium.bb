@@ -59,6 +59,14 @@ class PowerButtonControllerTest : public PowerButtonTestBase {
   }
 
  protected:
+  bool GetLockedState() {
+    // LockScreen is an async mojo call.
+    SessionController* const session_controller =
+        Shell::Get()->session_controller();
+    session_controller->FlushMojoForTest();
+    return session_controller->IsScreenLocked();
+  }
+
   bool GetGlobalTouchscreenEnabled() const {
     return Shell::Get()->touch_devices_controller()->GetTouchscreenEnabled(
         TouchscreenEnabledSource::GLOBAL);
@@ -104,6 +112,34 @@ class PowerButtonControllerTest : public PowerButtonTestBase {
 
   DISALLOW_COPY_AND_ASSIGN(PowerButtonControllerTest);
 };
+
+TEST_F(PowerButtonControllerTest, LockScreenIfRequired) {
+  Initialize(ButtonType::NORMAL, LoginStatus::USER);
+  SetShouldLockScreenAutomatically(true);
+  ASSERT_FALSE(GetLockedState());
+
+  // On User logged in status, power-button-press-release should lock screen if
+  // automatic screen-locking was requested.
+  PressPowerButton();
+  ReleasePowerButton();
+  EXPECT_TRUE(GetLockedState());
+
+  // On locked state, power-button-press-release should do nothing.
+  PressPowerButton();
+  ReleasePowerButton();
+  EXPECT_TRUE(GetLockedState());
+
+  // Unlock the sceen.
+  UnlockScreen();
+  ASSERT_FALSE(GetLockedState());
+
+  // power-button-press-release should not lock the screen if automatic
+  // screen-locking wasn't requested.
+  SetShouldLockScreenAutomatically(false);
+  PressPowerButton();
+  ReleasePowerButton();
+  EXPECT_FALSE(GetLockedState());
+}
 
 // Tests that tapping power button of a clamshell device.
 TEST_F(PowerButtonControllerTest, TappingPowerButtonOfClamshell) {
