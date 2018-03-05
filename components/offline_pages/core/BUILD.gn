@@ -146,6 +146,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "archive_manager_unittest.cc",
+    "archive_validator_unittest.cc",
     "client_policy_controller_unittest.cc",
     "file_existence_checker_unittest.cc",
     "model/add_page_task_unittest.cc",
