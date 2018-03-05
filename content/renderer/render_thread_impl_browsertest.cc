@@ -20,7 +20,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "build/build_config.h"
 #include "content/app/mojo/mojo_init.h"
 #include "content/common/in_process_child_thread_params.h"
 #include "content/common/service_manager/child_connection.h"
@@ -37,10 +36,8 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_content_client_initializer.h"
 #include "content/public/test/test_launcher.h"
-#include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_service_manager_context.h"
 #include "content/renderer/render_process_impl.h"
-#include "content/shell/browser/shell.h"
 #include "content/test/mock_render_process.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
@@ -50,11 +47,9 @@
 #include "ipc/ipc_channel_mojo.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/outgoing_broker_client_invitation.h"
-#include "net/dns/mock_host_resolver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/scheduler/renderer/renderer_scheduler.h"
 #include "third_party/WebKit/public/platform/scheduler/test/renderer_scheduler_test_support.h"
-#include "third_party/skia/include/core/SkGraphics.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/buffer_format_util.h"
 
@@ -418,38 +413,5 @@ INSTANTIATE_TEST_CASE_P(
                                          gfx::BufferFormat::RGBA_8888,
                                          gfx::BufferFormat::BGRA_8888,
                                          gfx::BufferFormat::YVU_420)));
-
-class RenderThreadImplClearMemoryBrowserTest : public ContentBrowserTest {
- protected:
-  void SetUpOnMainThread() override {
-    host_resolver()->AddRule("*", "127.0.0.1");
-    ASSERT_TRUE(embedded_test_server()->Start());
-  }
-};
-
-#if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(IS_CHROMECAST)
-#define MAYBE_ClearMemory DISABLED_ClearMemory
-#else
-#define MAYBE_ClearMemory ClearMemory
-#endif
-
-IN_PROC_BROWSER_TEST_F(RenderThreadImplClearMemoryBrowserTest,
-                       MAYBE_ClearMemory) {
-  TestNavigationObserver observer(shell()->web_contents());
-  GURL url(embedded_test_server()->GetURL("/simple_page.html"));
-  NavigateToURL(shell(), url);
-
-  EXPECT_GT(static_cast<int>(SkGraphics::GetFontCacheUsed()), 0);
-  EXPECT_GT(SkGraphics::GetFontCacheCountUsed(), 0);
-
-  // TODO(gyuyoung): How to call RenderThreadImpl::ClearMemory() from here?
-  // Instead we call same function that RenderThreadImpl::ClearMemory() calls at
-  // the moment.
-  SkGraphics::PurgeAllCaches();
-
-  EXPECT_EQ(static_cast<int>(SkGraphics::GetFontCacheUsed()), 0);
-  EXPECT_EQ(SkGraphics::GetFontCacheCountUsed(), 0);
-}
-
 }  // namespace
 }  // namespace content
