@@ -848,7 +848,7 @@ class ProxyResolutionService::Request
     user_callback_.Reset();
     results_ = NULL;
 
-    net_log_.EndEvent(NetLogEventType::PROXY_SERVICE);
+    net_log_.EndEvent(NetLogEventType::PROXY_RESOLUTION_SERVICE);
   }
 
   // Returns true if Cancel() has been called.
@@ -1039,7 +1039,7 @@ int ProxyResolutionService::ResolveProxyHelper(
     const NetLogWithSource& net_log) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  net_log.BeginEvent(NetLogEventType::PROXY_SERVICE);
+  net_log.BeginEvent(NetLogEventType::PROXY_RESOLUTION_SERVICE);
 
   // Notify our polling-based dependencies that a resolve is taking place.
   // This way they can schedule their polls in response to network activity.
@@ -1078,7 +1078,7 @@ int ProxyResolutionService::ResolveProxyHelper(
       return req->QueryDidComplete(rv);
   } else {
     req->net_log()->BeginEvent(
-        NetLogEventType::PROXY_SERVICE_WAITING_FOR_INIT_PAC);
+        NetLogEventType::PROXY_RESOLUTION_SERVICE_WAITING_FOR_INIT_PAC);
   }
 
   DCHECK_EQ(ERR_IO_PENDING, rv);
@@ -1152,7 +1152,7 @@ void ProxyResolutionService::SuspendAllPendingRequests() {
       req->CancelResolveJob();
 
       req->net_log()->BeginEvent(
-          NetLogEventType::PROXY_SERVICE_WAITING_FOR_INIT_PAC);
+          NetLogEventType::PROXY_RESOLUTION_SERVICE_WAITING_FOR_INIT_PAC);
     }
   }
 }
@@ -1172,7 +1172,7 @@ void ProxyResolutionService::SetReady() {
     Request* req = it->get();
     if (!req->is_started() && !req->was_cancelled()) {
       req->net_log()->EndEvent(
-          NetLogEventType::PROXY_SERVICE_WAITING_FOR_INIT_PAC);
+          NetLogEventType::PROXY_RESOLUTION_SERVICE_WAITING_FOR_INIT_PAC);
 
       // Note that we re-check for synchronous completion, in case we are
       // no longer using a ProxyResolver (can happen if we fell-back to manual).
@@ -1328,20 +1328,22 @@ int ProxyResolutionService::DidFinishResolvingProxy(
     if (proxy_delegate)
       proxy_delegate->OnResolveProxy(url, method, proxy_retry_info_, result);
 
-    net_log.AddEvent(NetLogEventType::PROXY_SERVICE_RESOLVED_PROXY_LIST,
-                     base::Bind(&NetLogFinishedResolvingProxyCallback, result));
+    net_log.AddEvent(
+        NetLogEventType::PROXY_RESOLUTION_SERVICE_RESOLVED_PROXY_LIST,
+        base::Bind(&NetLogFinishedResolvingProxyCallback, result));
 
     // This check is done to only log the NetLog event when necessary, it's
     // not a performance optimization.
     if (!proxy_retry_info_.empty()) {
       result->DeprioritizeBadProxies(proxy_retry_info_);
       net_log.AddEvent(
-          NetLogEventType::PROXY_SERVICE_DEPRIORITIZED_BAD_PROXIES,
+          NetLogEventType::PROXY_RESOLUTION_SERVICE_DEPRIORITIZED_BAD_PROXIES,
           base::Bind(&NetLogFinishedResolvingProxyCallback, result));
     }
   } else {
     net_log.AddEventWithNetErrorCode(
-        NetLogEventType::PROXY_SERVICE_RESOLVED_PROXY_LIST, result_code);
+        NetLogEventType::PROXY_RESOLUTION_SERVICE_RESOLVED_PROXY_LIST,
+        result_code);
 
     bool reset_config = result_code == ERR_PAC_SCRIPT_TERMINATED;
     if (!config_->pac_mandatory()) {
@@ -1372,7 +1374,7 @@ int ProxyResolutionService::DidFinishResolvingProxy(
     }
   }
 
-  net_log.EndEvent(NetLogEventType::PROXY_SERVICE);
+  net_log.EndEvent(NetLogEventType::PROXY_RESOLUTION_SERVICE);
   return result_code;
 }
 
