@@ -194,8 +194,8 @@ TEST_F(WebThreadImplForRendererSchedulerTest, TestNestedRunLoop) {
   }
 
   message_loop_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&EnterRunLoop, base::Unretained(&message_loop_),
-                            base::Unretained(thread_.get())));
+      FROM_HERE, base::BindOnce(&EnterRunLoop, base::Unretained(&message_loop_),
+                                base::Unretained(thread_.get())));
   base::RunLoop().RunUntilIdle();
   thread_->RemoveTaskObserver(&observer);
 }

@@ -1055,8 +1055,8 @@ void ReentrantTestTask(scoped_refptr<base::SingleThreadTaskRunner> runner,
                        std::vector<EnqueueOrder>* out_result) {
   out_result->push_back(countdown);
   if (--countdown) {
-    runner->PostTask(FROM_HERE,
-                     Bind(&ReentrantTestTask, runner, countdown, out_result));
+    runner->PostTask(
+        FROM_HERE, BindOnce(&ReentrantTestTask, runner, countdown, out_result));
   }
 }
 
@@ -1066,8 +1066,8 @@ TEST_F(TaskQueueManagerTest, ReentrantPosting) {
   Initialize(1u);
 
   std::vector<EnqueueOrder> run_order;
-  runners_[0]->PostTask(FROM_HERE,
-                        Bind(&ReentrantTestTask, runners_[0], 3, &run_order));
+  runners_[0]->PostTask(
+      FROM_HERE, BindOnce(&ReentrantTestTask, runners_[0], 3, &run_order));
 
   test_task_runner_->RunUntilIdle();
   EXPECT_THAT(run_order, ElementsAre(3, 2, 1));
@@ -1110,8 +1110,9 @@ TEST_F(TaskQueueManagerTest, PostFromThread) {
 void RePostingTestTask(scoped_refptr<base::SingleThreadTaskRunner> runner,
                        int* run_count) {
   (*run_count)++;
-  runner->PostTask(FROM_HERE, Bind(&RePostingTestTask,
-                                   base::Unretained(runner.get()), run_count));
+  runner->PostTask(
+      FROM_HERE,
+      BindOnce(&RePostingTestTask, base::Unretained(runner.get()), run_count));
 }
 
 TEST_F(TaskQueueManagerTest, DoWorkCantPostItselfMultipleTimes) {
@@ -3430,19 +3431,17 @@ TEST_F(TaskQueueManagerTest, TaskQueueUsedInTaskDestructorAfterShutdown) {
   manager_.reset();
 
   thread->task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](scoped_refptr<base::SingleThreadTaskRunner> task_queue,
-             std::unique_ptr<PostTaskInDestructor> test_object,
-             base::WaitableEvent* test_executed) {
-            task_queue->PostTask(
-                FROM_HERE,
-                base::BindOnce(&PostTaskInDestructor::Do,
-                               base::Passed(std::move(test_object))));
-            test_executed->Signal();
-          },
-          main_tq, std::make_unique<PostTaskInDestructor>(main_tq),
-          &test_executed));
+      FROM_HERE, base::BindOnce(
+                     [](scoped_refptr<base::SingleThreadTaskRunner> task_queue,
+                        std::unique_ptr<PostTaskInDestructor> test_object,
+                        base::WaitableEvent* test_executed) {
+                       task_queue->PostTask(
+                           FROM_HERE, base::BindOnce(&PostTaskInDestructor::Do,
+                                                     std::move(test_object)));
+                       test_executed->Signal();
+                     },
+                     main_tq, std::make_unique<PostTaskInDestructor>(main_tq),
+                     &test_executed));
   test_executed.Wait();
 }
 

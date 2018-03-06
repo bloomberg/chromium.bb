@@ -280,8 +280,8 @@ void TaskQueueImpl::PushOntoDelayedIncomingQueueLocked(Task pending_task) {
   // TODO(altimin): Add a copy method to Task to capture metadata here.
   PushOntoImmediateIncomingQueueLocked(
       Task(TaskQueue::PostedTask(
-               base::Bind(&TaskQueueImpl::ScheduleDelayedWorkTask,
-                          base::Unretained(this), base::Passed(&pending_task)),
+               base::BindOnce(&TaskQueueImpl::ScheduleDelayedWorkTask,
+                              base::Unretained(this), std::move(pending_task)),
                FROM_HERE, base::TimeDelta(), base::Nestable::kNonNestable,
                pending_task.task_type()),
            base::TimeTicks(), thread_hop_task_sequence_number,

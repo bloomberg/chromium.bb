@@ -78,9 +78,9 @@ TEST_F(BlobBytesProviderTest, RequestAsReply) {
   auto provider = std::make_unique<BlobBytesProvider>(test_data1_);
   Vector<uint8_t> received_bytes;
   provider->RequestAsReply(
-      base::Bind([](Vector<uint8_t>* bytes_out,
-                    const Vector<uint8_t>& bytes) { *bytes_out = bytes; },
-                 &received_bytes));
+      base::BindOnce([](Vector<uint8_t>* bytes_out,
+                        const Vector<uint8_t>& bytes) { *bytes_out = bytes; },
+                     &received_bytes));
   EXPECT_EQ(test_bytes1_, received_bytes);
 
   received_bytes.clear();
@@ -88,9 +88,9 @@ TEST_F(BlobBytesProviderTest, RequestAsReply) {
   provider->AppendData(test_data2_);
   provider->AppendData(test_data3_);
   provider->RequestAsReply(
-      base::Bind([](Vector<uint8_t>* bytes_out,
-                    const Vector<uint8_t>& bytes) { *bytes_out = bytes; },
-                 &received_bytes));
+      base::BindOnce([](Vector<uint8_t>* bytes_out,
+                        const Vector<uint8_t>& bytes) { *bytes_out = bytes; },
+                     &received_bytes));
   EXPECT_EQ(combined_bytes_, received_bytes);
 }
 
@@ -129,7 +129,7 @@ class RequestAsFile : public BlobBytesProviderTest,
         source_offset, source_length,
         base::File(path, base::File::FLAG_OPEN | base::File::FLAG_WRITE),
         file_offset,
-        base::Bind(
+        base::BindOnce(
             [](WTF::Optional<WTF::Time>* received_modified,
                WTF::Optional<WTF::Time> modified) {
               *received_modified = modified;
@@ -206,7 +206,7 @@ TEST_P(RequestAsFile, OffsetInNonEmptyFile) {
   test_provider_->RequestAsFile(
       test.offset, test.size,
       base::File(path, base::File::FLAG_OPEN | base::File::FLAG_WRITE),
-      file_offset, base::Bind([](WTF::Optional<WTF::Time> last_modified) {
+      file_offset, base::BindOnce([](WTF::Optional<WTF::Time> last_modified) {
         EXPECT_TRUE(last_modified);
       }));
 
@@ -252,7 +252,7 @@ TEST_F(BlobBytesProviderTest, RequestAsFile_MultipleChunks) {
     provider->RequestAsFile(
         i, 16, base::File(path, base::File::FLAG_OPEN | base::File::FLAG_WRITE),
         combined_bytes_.size() - i - 16,
-        base::Bind([](WTF::Optional<WTF::Time> last_modified) {
+        base::BindOnce([](WTF::Optional<WTF::Time> last_modified) {
           EXPECT_TRUE(last_modified);
         }));
     expected_data.insert(0, combined_bytes_.data() + i, 16);
@@ -276,7 +276,7 @@ TEST_F(BlobBytesProviderTest, RequestAsFile_InvaldFile) {
 
   provider->RequestAsFile(
       0, 16, base::File(), 0,
-      base::Bind([](WTF::Optional<WTF::Time> last_modified) {
+      base::BindOnce([](WTF::Optional<WTF::Time> last_modified) {
         EXPECT_FALSE(last_modified);
       }));
 }
@@ -288,7 +288,7 @@ TEST_F(BlobBytesProviderTest, RequestAsFile_UnwritableFile) {
   base::CreateTemporaryFile(&path);
   provider->RequestAsFile(
       0, 16, base::File(path, base::File::FLAG_OPEN | base::File::FLAG_READ), 0,
-      base::Bind([](WTF::Optional<WTF::Time> last_modified) {
+      base::BindOnce([](WTF::Optional<WTF::Time> last_modified) {
         EXPECT_FALSE(last_modified);
       }));
 
@@ -313,7 +313,7 @@ TEST_F(BlobBytesProviderTest, RequestAsStream) {
                               mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC);
   watcher.Watch(
       pipe.consumer_handle.get(), MOJO_HANDLE_SIGNAL_READABLE,
-      base::Bind(
+      base::BindRepeating(
           [](mojo::DataPipeConsumerHandle pipe, base::Closure quit_closure,
              Vector<uint8_t>* bytes_out, MojoResult result) {
             if (result == MOJO_RESULT_CANCELLED ||

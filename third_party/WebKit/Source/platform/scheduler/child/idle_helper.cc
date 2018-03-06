@@ -30,9 +30,9 @@ IdleHelper::IdleHelper(
       is_shutdown_(false),
       weak_factory_(this) {
   weak_idle_helper_ptr_ = weak_factory_.GetWeakPtr();
-  enable_next_long_idle_period_closure_.Reset(
-      base::Bind(&IdleHelper::EnableLongIdlePeriod, weak_idle_helper_ptr_));
-  on_idle_task_posted_closure_.Reset(base::Bind(
+  enable_next_long_idle_period_closure_.Reset(base::BindRepeating(
+      &IdleHelper::EnableLongIdlePeriod, weak_idle_helper_ptr_));
+  on_idle_task_posted_closure_.Reset(base::BindRepeating(
       &IdleHelper::OnIdleTaskPostedOnMainThread, weak_idle_helper_ptr_));
 
   idle_task_runner_ =

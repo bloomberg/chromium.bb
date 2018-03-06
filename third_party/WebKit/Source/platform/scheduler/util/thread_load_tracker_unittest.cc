@@ -31,7 +31,8 @@ TEST(ThreadLoadTrackerTest, RecordTasks) {
   std::vector<std::pair<base::TimeTicks, double>> result;
 
   ThreadLoadTracker thread_load_tracker(
-      SecondsToTime(1), base::Bind(&AddToVector, base::Unretained(&result)),
+      SecondsToTime(1),
+      base::BindRepeating(&AddToVector, base::Unretained(&result)),
       base::TimeDelta::FromSeconds(1));
   thread_load_tracker.Resume(SecondsToTime(1));
 
@@ -66,7 +67,8 @@ TEST(ThreadLoadTrackerTest, PauseAndResume) {
   std::vector<std::pair<base::TimeTicks, double>> result;
 
   ThreadLoadTracker thread_load_tracker(
-      SecondsToTime(1), base::Bind(&AddToVector, base::Unretained(&result)),
+      SecondsToTime(1),
+      base::BindRepeating(&AddToVector, base::Unretained(&result)),
       base::TimeDelta::FromSeconds(1));
   thread_load_tracker.Resume(SecondsToTime(1));
 
@@ -102,7 +104,8 @@ TEST(ThreadLoadTrackerTest, PauseAndResume) {
 TEST(ThreadLoadTrackerTest, DisabledByDefault) {
   std::vector<std::pair<base::TimeTicks, double>> result;
   ThreadLoadTracker thread_load_tracker(
-      SecondsToTime(1), base::Bind(&AddToVector, base::Unretained(&result)),
+      SecondsToTime(1),
+      base::BindRepeating(&AddToVector, base::Unretained(&result)),
       base::TimeDelta::FromSeconds(1));
 
   // ThreadLoadTracker should be disabled and these tasks should be
@@ -121,7 +124,8 @@ TEST(ThreadLoadTrackerTest, DisabledByDefault) {
 TEST(ThreadLoadTrackerTest, Reset) {
   std::vector<std::pair<base::TimeTicks, double>> result;
   ThreadLoadTracker thread_load_tracker(
-      SecondsToTime(1), base::Bind(&AddToVector, base::Unretained(&result)),
+      SecondsToTime(1),
+      base::BindRepeating(&AddToVector, base::Unretained(&result)),
       base::TimeDelta::FromSeconds(1));
 
   thread_load_tracker.Resume(SecondsToTime(1));

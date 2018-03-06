@@ -102,9 +102,9 @@ MainThreadTaskQueue::MainThreadTaskQueue(
       web_frame_scheduler_(nullptr) {
   if (GetTaskQueueImpl()) {
     // TaskQueueImpl may be null for tests.
-    GetTaskQueueImpl()->SetOnTaskStartedHandler(base::Bind(
+    GetTaskQueueImpl()->SetOnTaskStartedHandler(base::BindRepeating(
         &MainThreadTaskQueue::OnTaskStarted, base::Unretained(this)));
-    GetTaskQueueImpl()->SetOnTaskCompletedHandler(base::Bind(
+    GetTaskQueueImpl()->SetOnTaskCompletedHandler(base::BindRepeating(
         &MainThreadTaskQueue::OnTaskCompleted, base::Unretained(this)));
   }
 }

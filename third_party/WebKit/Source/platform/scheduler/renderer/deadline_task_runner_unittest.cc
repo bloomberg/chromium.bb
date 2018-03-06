@@ -24,7 +24,8 @@ class DeadlineTaskRunnerTest : public ::testing::Test {
     clock_->Advance(base::TimeDelta::FromMicroseconds(5000));
     mock_task_runner_ = new cc::OrderedSimpleTaskRunner(clock_.get(), true);
     deadline_task_runner_.reset(new DeadlineTaskRunner(
-        base::Bind(&DeadlineTaskRunnerTest::TestTask, base::Unretained(this)),
+        base::BindRepeating(&DeadlineTaskRunnerTest::TestTask,
+                            base::Unretained(this)),
         mock_task_runner_));
     run_times_.clear();
   }

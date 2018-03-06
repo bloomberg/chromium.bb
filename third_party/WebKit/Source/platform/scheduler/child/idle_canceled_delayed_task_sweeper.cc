@@ -25,8 +25,8 @@ IdleCanceledDelayedTaskSweeper::IdleCanceledDelayedTaskSweeper(
 void IdleCanceledDelayedTaskSweeper::PostIdleTask() {
   idle_task_runner_->PostDelayedIdleTask(
       FROM_HERE, base::TimeDelta::FromSeconds(kDelayedTaskSweepIntervalSeconds),
-      base::Bind(&IdleCanceledDelayedTaskSweeper::SweepIdleTask,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&IdleCanceledDelayedTaskSweeper::SweepIdleTask,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void IdleCanceledDelayedTaskSweeper::SweepIdleTask(base::TimeTicks deadline) {

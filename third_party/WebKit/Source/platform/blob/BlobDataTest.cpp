@@ -159,7 +159,7 @@ class BlobDataHandleTest : public ::testing::Test {
         Vector<uint8_t> received_bytes;
         mojom::blink::BytesProviderPtr data(
             std::move(actual->get_bytes()->data));
-        data->RequestAsReply(base::Bind(
+        data->RequestAsReply(base::BindOnce(
             [](base::Closure quit_closure, Vector<uint8_t>* bytes_out,
                const Vector<uint8_t>& bytes) {
               *bytes_out = bytes;
@@ -196,7 +196,7 @@ class BlobDataHandleTest : public ::testing::Test {
         base::RunLoop loop;
         String received_uuid;
         mojom::blink::BlobPtr blob(std::move(actual->get_blob()->blob));
-        blob->GetInternalUUID(base::Bind(
+        blob->GetInternalUUID(base::BindOnce(
             [](base::Closure quit_closure, String* uuid_out,
                const String& uuid) {
               *uuid_out = uuid;

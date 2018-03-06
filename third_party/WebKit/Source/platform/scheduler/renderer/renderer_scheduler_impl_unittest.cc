@@ -63,10 +63,10 @@ void AppendToVectorReentrantTask(base::SingleThreadTaskRunner* task_runner,
                                  int max_reentrant_count) {
   vector->push_back((*reentrant_count)++);
   if (*reentrant_count < max_reentrant_count) {
-    task_runner->PostTask(
-        FROM_HERE,
-        base::Bind(AppendToVectorReentrantTask, base::Unretained(task_runner),
-                   vector, reentrant_count, max_reentrant_count));
+    task_runner->PostTask(FROM_HERE,
+                          base::BindOnce(AppendToVectorReentrantTask,
+                                         base::Unretained(task_runner), vector,
+                                         reentrant_count, max_reentrant_count));
   }
 }
 
@@ -84,8 +84,9 @@ void RepostingIdleTestTask(SingleThreadIdleTaskRunner* idle_task_runner,
                            base::TimeTicks deadline) {
   if ((*run_count + 1) < g_max_idle_task_reposts) {
     idle_task_runner->PostIdleTask(
-        FROM_HERE, base::Bind(&RepostingIdleTestTask,
-                              base::Unretained(idle_task_runner), run_count));
+        FROM_HERE,
+        base::BindOnce(&RepostingIdleTestTask,
+                       base::Unretained(idle_task_runner), run_count));
   }
   (*run_count)++;
 }
@@ -99,9 +100,9 @@ void RepostingUpdateClockIdleTestTask(
     base::TimeTicks deadline) {
   if ((*run_count + 1) < g_max_idle_task_reposts) {
     idle_task_runner->PostIdleTask(
-        FROM_HERE, base::Bind(&RepostingUpdateClockIdleTestTask,
-                              base::Unretained(idle_task_runner), run_count,
-                              clock, advance_time, deadlines));
+        FROM_HERE, base::BindOnce(&RepostingUpdateClockIdleTestTask,
+                                  base::Unretained(idle_task_runner), run_count,
+                                  clock, advance_time, deadlines));
   }
   deadlines->push_back(deadline);
   (*run_count)++;
@@ -131,7 +132,7 @@ void PostingYieldingTestTask(RendererSchedulerImpl* scheduler,
                              bool* should_yield_before,
                              bool* should_yield_after) {
   *should_yield_before = scheduler->ShouldYieldForHighPriorityWork();
-  task_runner->PostTask(FROM_HERE, base::Bind(NullTask));
+  task_runner->PostTask(FROM_HERE, base::BindOnce(NullTask));
   if (simulate_input) {
     scheduler->DidHandleInputEventOnCompositorThread(
         FakeInputEvent(blink::WebInputEvent::kTouchMove),
@@ -267,14 +268,14 @@ class RendererSchedulerImplTest : public ::testing::Test {
   using UseCase = RendererSchedulerImpl::UseCase;
 
   RendererSchedulerImplTest()
-      : fake_task_(TaskQueue::PostedTask(base::Bind([] {}), FROM_HERE),
+      : fake_task_(TaskQueue::PostedTask(base::BindOnce([] {}), FROM_HERE),
                    base::TimeTicks()) {
     feature_list_.InitAndEnableFeature(kHighPriorityInput);
     clock_.Advance(base::TimeDelta::FromMicroseconds(5000));
   }
 
   RendererSchedulerImplTest(base::MessageLoop* message_loop)
-      : fake_task_(TaskQueue::PostedTask(base::Bind([] {}), FROM_HERE),
+      : fake_task_(TaskQueue::PostedTask(base::BindOnce([] {}), FROM_HERE),
                    base::TimeTicks()),
         message_loop_(message_loop) {
     clock_.Advance(base::TimeDelta::FromMicroseconds(5000));
@@ -380,10 +381,10 @@ class RendererSchedulerImplTest : public ::testing::Test {
 
     // Simulate a bunch of expensive tasks
     for (int i = 0; i < 10; i++) {
-      task_runner->PostTask(FROM_HERE,
-                            base::Bind(&base::SimpleTestTickClock::Advance,
-                                       base::Unretained(&clock_),
-                                       base::TimeDelta::FromMilliseconds(500)));
+      task_runner->PostTask(
+          FROM_HERE, base::BindOnce(&base::SimpleTestTickClock::Advance,
+                                    base::Unretained(&clock_),
+                                    base::TimeDelta::FromMilliseconds(500)));
     }
 
     RunUntilIdle();
@@ -606,9 +607,9 @@ class RendererSchedulerImplTest : public ::testing::Test {
     // slow and thus compositor tasks will not be prioritized.
     compositor_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&RendererSchedulerImplTest::SimulateMainThreadCompositorTask,
-                   base::Unretained(this),
-                   base::TimeDelta::FromMilliseconds(1000)));
+        base::BindOnce(
+            &RendererSchedulerImplTest::SimulateMainThreadCompositorTask,
+            base::Unretained(this), base::TimeDelta::FromMilliseconds(1000)));
     RunUntilIdle();
   }
 
@@ -632,36 +633,43 @@ class RendererSchedulerImplTest : public ::testing::Test {
       switch (task[0]) {
         case 'D':
           default_task_runner_->PostTask(
-              FROM_HERE, base::Bind(&AppendToVectorTestTask, run_order, task));
+              FROM_HERE,
+              base::BindOnce(&AppendToVectorTestTask, run_order, task));
           break;
         case 'C':
           compositor_task_runner_->PostTask(
-              FROM_HERE, base::Bind(&AppendToVectorTestTask, run_order, task));
+              FROM_HERE,
+              base::BindOnce(&AppendToVectorTestTask, run_order, task));
           break;
         case 'P':
           input_task_runner_->PostTask(
-              FROM_HERE, base::Bind(&AppendToVectorTestTask, run_order, task));
+              FROM_HERE,
+              base::BindOnce(&AppendToVectorTestTask, run_order, task));
           break;
         case 'L':
           loading_task_runner_->PostTask(
-              FROM_HERE, base::Bind(&AppendToVectorTestTask, run_order, task));
+              FROM_HERE,
+              base::BindOnce(&AppendToVectorTestTask, run_order, task));
           break;
         case 'M':
           loading_control_task_runner_->PostTask(
-              FROM_HERE, base::Bind(&AppendToVectorTestTask, run_order, task));
+              FROM_HERE,
+              base::BindOnce(&AppendToVectorTestTask, run_order, task));
           break;
         case 'I':
           idle_task_runner_->PostIdleTask(
               FROM_HERE,
-              base::Bind(&AppendToVectorIdleTestTask, run_order, task));
+              base::BindOnce(&AppendToVectorIdleTestTask, run_order, task));
           break;
         case 'T':
           timer_task_runner_->PostTask(
-              FROM_HERE, base::Bind(&AppendToVectorTestTask, run_order, task));
+              FROM_HERE,
+              base::BindOnce(&AppendToVectorTestTask, run_order, task));
           break;
         case 'V':
           v8_task_runner_->PostTask(
-              FROM_HERE, base::Bind(&AppendToVectorTestTask, run_order, task));
+              FROM_HERE,
+              base::BindOnce(&AppendToVectorTestTask, run_order, task));
           break;
         default:
           NOTREACHED();
@@ -773,9 +781,9 @@ TEST_F(RendererSchedulerImplTest, TestRentrantTask) {
   int count = 0;
   std::vector<int> run_order;
   default_task_runner_->PostTask(
-      FROM_HERE, base::Bind(AppendToVectorReentrantTask,
-                            base::RetainedRef(default_task_runner_), &run_order,
-                            &count, 5));
+      FROM_HERE, base::BindOnce(AppendToVectorReentrantTask,
+                                base::RetainedRef(default_task_runner_),
+                                &run_order, &count, 5));
   RunUntilIdle();
 
   EXPECT_THAT(run_order, ::testing::ElementsAre(0, 1, 2, 3, 4));
@@ -789,7 +797,7 @@ TEST_F(RendererSchedulerImplTest, TestPostIdleTask) {
 
   clock_.Advance(base::TimeDelta::FromMilliseconds(100));
   idle_task_runner_->PostIdleTask(
-      FROM_HERE, base::Bind(&IdleTestTask, &run_count, &deadline_in_task));
+      FROM_HERE, base::BindOnce(&IdleTestTask, &run_count, &deadline_in_task));
 
   RunUntilIdle();
   EXPECT_EQ(0, run_count);  // Shouldn't run yet as no WillBeginFrame.
@@ -822,8 +830,9 @@ TEST_F(RendererSchedulerImplTest, TestRepostingIdleTask) {
 
   g_max_idle_task_reposts = 2;
   idle_task_runner_->PostIdleTask(
-      FROM_HERE, base::Bind(&RepostingIdleTestTask,
-                            base::RetainedRef(idle_task_runner_), &run_count));
+      FROM_HERE,
+      base::BindOnce(&RepostingIdleTestTask,
+                     base::RetainedRef(idle_task_runner_), &run_count));
   EnableIdleTasks();
   RunUntilIdle();
   EXPECT_EQ(1, run_count);
@@ -844,10 +853,10 @@ TEST_F(RendererSchedulerImplTest, TestIdleTaskExceedsDeadline) {
   // Post two UpdateClockToDeadlineIdleTestTask tasks.
   idle_task_runner_->PostIdleTask(
       FROM_HERE,
-      base::Bind(&UpdateClockToDeadlineIdleTestTask, &clock_, &run_count));
+      base::BindOnce(&UpdateClockToDeadlineIdleTestTask, &clock_, &run_count));
   idle_task_runner_->PostIdleTask(
       FROM_HERE,
-      base::Bind(&UpdateClockToDeadlineIdleTestTask, &clock_, &run_count));
+      base::BindOnce(&UpdateClockToDeadlineIdleTestTask, &clock_, &run_count));
 
   EnableIdleTasks();
   RunUntilIdle();
@@ -865,7 +874,7 @@ TEST_F(RendererSchedulerImplTest, TestDelayedEndIdlePeriodCanceled) {
 
   base::TimeTicks deadline_in_task;
   idle_task_runner_->PostIdleTask(
-      FROM_HERE, base::Bind(&IdleTestTask, &run_count, &deadline_in_task));
+      FROM_HERE, base::BindOnce(&IdleTestTask, &run_count, &deadline_in_task));
 
   // Trigger the beginning of an idle period for 1000ms.
   scheduler_->WillBeginFrame(viz::BeginFrameArgs::Create(
@@ -892,7 +901,7 @@ TEST_F(RendererSchedulerImplTest, TestDelayedEndIdlePeriodCanceled) {
 
   // Post a task which simulates running until after the previous end idle
   // period delayed task was scheduled for
-  scheduler_->DefaultTaskQueue()->PostTask(FROM_HERE, base::Bind(NullTask));
+  scheduler_->DefaultTaskQueue()->PostTask(FROM_HERE, base::BindOnce(NullTask));
   clock_.Advance(base::TimeDelta::FromMilliseconds(300));
 
   RunUntilIdle();
@@ -1644,7 +1653,7 @@ TEST_F(RendererSchedulerImplTest,
   PostTestTasks(&run_order, "D1 C1");
 
   for (int i = 0; i < 20; i++) {
-    compositor_task_runner_->PostTask(FROM_HERE, base::Bind(&NullTask));
+    compositor_task_runner_->PostTask(FROM_HERE, base::BindOnce(&NullTask));
   }
   PostTestTasks(&run_order, "C2");
 
@@ -1743,9 +1752,9 @@ TEST_F(RendererSchedulerImplTest, TestIsHighPriorityWorkAnticipated) {
 
   scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
   default_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&AnticipationTestTask, scheduler_.get(),
-                            SimulateInputType::kNone, &is_anticipated_before,
-                            &is_anticipated_after));
+      FROM_HERE, base::BindOnce(&AnticipationTestTask, scheduler_.get(),
+                                SimulateInputType::kNone,
+                                &is_anticipated_before, &is_anticipated_after));
   RunUntilIdle();
   // In its default state, without input receipt, the scheduler should indicate
   // that no high-priority is anticipated.
@@ -1753,21 +1762,21 @@ TEST_F(RendererSchedulerImplTest, TestIsHighPriorityWorkAnticipated) {
   EXPECT_FALSE(is_anticipated_after);
 
   default_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&AnticipationTestTask, scheduler_.get(),
-                            SimulateInputType::kTouchStart,
-                            &is_anticipated_before, &is_anticipated_after));
+      FROM_HERE, base::BindOnce(&AnticipationTestTask, scheduler_.get(),
+                                SimulateInputType::kTouchStart,
+                                &is_anticipated_before, &is_anticipated_after));
   bool dummy;
   default_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&AnticipationTestTask, scheduler_.get(),
-                            SimulateInputType::kTouchEnd, &dummy, &dummy));
+      FROM_HERE, base::BindOnce(&AnticipationTestTask, scheduler_.get(),
+                                SimulateInputType::kTouchEnd, &dummy, &dummy));
   default_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&AnticipationTestTask, scheduler_.get(),
-                 SimulateInputType::kGestureScrollBegin, &dummy, &dummy));
+      base::BindOnce(&AnticipationTestTask, scheduler_.get(),
+                     SimulateInputType::kGestureScrollBegin, &dummy, &dummy));
   default_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&AnticipationTestTask, scheduler_.get(),
-                 SimulateInputType::kGestureScrollEnd, &dummy, &dummy));
+      base::BindOnce(&AnticipationTestTask, scheduler_.get(),
+                     SimulateInputType::kGestureScrollEnd, &dummy, &dummy));
 
   RunUntilIdle();
   // When input is received, the scheduler should indicate that high-priority
@@ -1777,9 +1786,9 @@ TEST_F(RendererSchedulerImplTest, TestIsHighPriorityWorkAnticipated) {
 
   clock_.Advance(priority_escalation_after_input_duration() * 2);
   default_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&AnticipationTestTask, scheduler_.get(),
-                            SimulateInputType::kNone, &is_anticipated_before,
-                            &is_anticipated_after));
+      FROM_HERE, base::BindOnce(&AnticipationTestTask, scheduler_.get(),
+                                SimulateInputType::kNone,
+                                &is_anticipated_before, &is_anticipated_after));
   RunUntilIdle();
   // Without additional input, the scheduler should go into NONE
   // use case but with scrolling expected where high-priority work is still
@@ -1791,9 +1800,9 @@ TEST_F(RendererSchedulerImplTest, TestIsHighPriorityWorkAnticipated) {
 
   clock_.Advance(subsequent_input_expected_after_input_duration() * 2);
   default_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&AnticipationTestTask, scheduler_.get(),
-                            SimulateInputType::kNone, &is_anticipated_before,
-                            &is_anticipated_after));
+      FROM_HERE, base::BindOnce(&AnticipationTestTask, scheduler_.get(),
+                                SimulateInputType::kNone,
+                                &is_anticipated_before, &is_anticipated_after));
   RunUntilIdle();
   // Eventually the scheduler should go into the default use case where
   // high-priority work is no longer anticipated.
@@ -1808,27 +1817,29 @@ TEST_F(RendererSchedulerImplTest, TestShouldYield) {
   bool should_yield_after = false;
 
   default_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&PostingYieldingTestTask, scheduler_.get(),
-                            base::RetainedRef(default_task_runner_), false,
-                            &should_yield_before, &should_yield_after));
+      FROM_HERE, base::BindOnce(&PostingYieldingTestTask, scheduler_.get(),
+                                base::RetainedRef(default_task_runner_), false,
+                                &should_yield_before, &should_yield_after));
   RunUntilIdle();
   // Posting to default runner shouldn't cause yielding.
   EXPECT_FALSE(should_yield_before);
   EXPECT_FALSE(should_yield_after);
 
   default_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&PostingYieldingTestTask, scheduler_.get(),
-                            base::RetainedRef(compositor_task_runner_), false,
-                            &should_yield_before, &should_yield_after));
+      FROM_HERE,
+      base::BindOnce(&PostingYieldingTestTask, scheduler_.get(),
+                     base::RetainedRef(compositor_task_runner_), false,
+                     &should_yield_before, &should_yield_after));
   RunUntilIdle();
   // Posting while not mainthread scrolling shouldn't cause yielding.
   EXPECT_FALSE(should_yield_before);
   EXPECT_FALSE(should_yield_after);
 
   default_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&PostingYieldingTestTask, scheduler_.get(),
-                            base::RetainedRef(compositor_task_runner_), true,
-                            &should_yield_before, &should_yield_after));
+      FROM_HERE,
+      base::BindOnce(&PostingYieldingTestTask, scheduler_.get(),
+                     base::RetainedRef(compositor_task_runner_), true,
+                     &should_yield_before, &should_yield_after));
   RunUntilIdle();
   // We should be able to switch to compositor priority mid-task.
   EXPECT_FALSE(should_yield_before);
@@ -2138,24 +2149,26 @@ TEST_F(RendererSchedulerImplWithMessageLoopTest,
   std::vector<std::string> order;
   idle_task_runner_->PostIdleTask(
       FROM_HERE,
-      base::Bind(&AppendToVectorIdleTestTask, &order, std::string("1")));
+      base::BindOnce(&AppendToVectorIdleTestTask, &order, std::string("1")));
   idle_task_runner_->PostIdleTask(
       FROM_HERE,
-      base::Bind(&AppendToVectorIdleTestTask, &order, std::string("2")));
+      base::BindOnce(&AppendToVectorIdleTestTask, &order, std::string("2")));
 
   std::vector<std::pair<SingleThreadIdleTaskRunner::IdleTask, bool>>
       tasks_to_post_from_nested_loop;
   tasks_to_post_from_nested_loop.push_back(std::make_pair(
-      base::Bind(&AppendToVectorIdleTestTask, &order, std::string("3")),
+      base::BindOnce(&AppendToVectorIdleTestTask, &order, std::string("3")),
       false));
   tasks_to_post_from_nested_loop.push_back(std::make_pair(
-      base::Bind(&AppendToVectorIdleTestTask, &order, std::string("4")), true));
+      base::BindOnce(&AppendToVectorIdleTestTask, &order, std::string("4")),
+      true));
   tasks_to_post_from_nested_loop.push_back(std::make_pair(
-      base::Bind(&AppendToVectorIdleTestTask, &order, std::string("5")), true));
+      base::BindOnce(&AppendToVectorIdleTestTask, &order, std::string("5")),
+      true));
 
   default_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &RendererSchedulerImplWithMessageLoopTest::PostFromNestedRunloop,
           base::Unretained(this),
           base::Unretained(&tasks_to_post_from_nested_loop)));
@@ -2175,7 +2188,7 @@ TEST_F(RendererSchedulerImplTest, TestBeginMainFrameNotExpectedUntil) {
   int run_count = 0;
 
   idle_task_runner_->PostIdleTask(
-      FROM_HERE, base::Bind(&IdleTestTask, &run_count, &deadline_in_task));
+      FROM_HERE, base::BindOnce(&IdleTestTask, &run_count, &deadline_in_task));
 
   RunUntilIdle();
   EXPECT_EQ(0, run_count);  // Shouldn't run yet as no idle period.
@@ -2197,7 +2210,7 @@ TEST_F(RendererSchedulerImplTest, TestLongIdlePeriod) {
   int run_count = 0;
 
   idle_task_runner_->PostIdleTask(
-      FROM_HERE, base::Bind(&IdleTestTask, &run_count, &deadline_in_task));
+      FROM_HERE, base::BindOnce(&IdleTestTask, &run_count, &deadline_in_task));
 
   RunUntilIdle();
   EXPECT_EQ(0, run_count);  // Shouldn't run yet as no idle period.
@@ -2215,8 +2228,8 @@ TEST_F(RendererSchedulerImplTest, TestLongIdlePeriodWithPendingDelayedTask) {
   int run_count = 0;
 
   idle_task_runner_->PostIdleTask(
-      FROM_HERE, base::Bind(&IdleTestTask, &run_count, &deadline_in_task));
-  default_task_runner_->PostDelayedTask(FROM_HERE, base::Bind(&NullTask),
+      FROM_HERE, base::BindOnce(&IdleTestTask, &run_count, &deadline_in_task));
+  default_task_runner_->PostDelayedTask(FROM_HERE, base::BindOnce(&NullTask),
                                         pending_task_delay);
 
   scheduler_->BeginFrameNotExpectedSoon();
@@ -2231,7 +2244,7 @@ TEST_F(RendererSchedulerImplTest,
   base::TimeTicks deadline_in_task;
   int run_count = 0;
 
-  default_task_runner_->PostDelayedTask(FROM_HERE, base::Bind(&NullTask),
+  default_task_runner_->PostDelayedTask(FROM_HERE, base::BindOnce(&NullTask),
                                         pending_task_delay);
 
   // Advance clock until after delayed task was meant to be run.
@@ -2241,7 +2254,7 @@ TEST_F(RendererSchedulerImplTest,
   // period. Since there is a late pending delayed task this shouldn't actually
   // start an idle period.
   idle_task_runner_->PostIdleTask(
-      FROM_HERE, base::Bind(&IdleTestTask, &run_count, &deadline_in_task));
+      FROM_HERE, base::BindOnce(&IdleTestTask, &run_count, &deadline_in_task));
   scheduler_->BeginFrameNotExpectedSoon();
   RunUntilIdle();
   EXPECT_EQ(0, run_count);
@@ -2261,9 +2274,10 @@ TEST_F(RendererSchedulerImplTest, TestLongIdlePeriodRepeating) {
   base::TimeTicks clock_before(clock_.NowTicks());
   base::TimeDelta idle_task_runtime(base::TimeDelta::FromMilliseconds(10));
   idle_task_runner_->PostIdleTask(
-      FROM_HERE, base::Bind(&RepostingUpdateClockIdleTestTask,
-                            base::RetainedRef(idle_task_runner_), &run_count,
-                            &clock_, idle_task_runtime, &actual_deadlines));
+      FROM_HERE,
+      base::BindOnce(&RepostingUpdateClockIdleTestTask,
+                     base::RetainedRef(idle_task_runner_), &run_count, &clock_,
+                     idle_task_runtime, &actual_deadlines));
   scheduler_->BeginFrameNotExpectedSoon();
   RunUntilIdle();
   EXPECT_EQ(3, run_count);
@@ -2277,13 +2291,14 @@ TEST_F(RendererSchedulerImplTest, TestLongIdlePeriodRepeating) {
   // new BeginMainFrame.
   g_max_idle_task_reposts = 5;
   idle_task_runner_->PostIdleTask(
-      FROM_HERE, base::Bind(&RepostingUpdateClockIdleTestTask,
-                            base::RetainedRef(idle_task_runner_), &run_count,
-                            &clock_, idle_task_runtime, &actual_deadlines));
-  idle_task_runner_->PostIdleTask(
       FROM_HERE,
-      base::Bind(&WillBeginFrameIdleTask, base::Unretained(scheduler_.get()),
-                 next_begin_frame_number_++, &clock_));
+      base::BindOnce(&RepostingUpdateClockIdleTestTask,
+                     base::RetainedRef(idle_task_runner_), &run_count, &clock_,
+                     idle_task_runtime, &actual_deadlines));
+  idle_task_runner_->PostIdleTask(
+      FROM_HERE, base::BindOnce(&WillBeginFrameIdleTask,
+                                base::Unretained(scheduler_.get()),
+                                next_begin_frame_number_++, &clock_));
   RunUntilIdle();
   EXPECT_EQ(4, run_count);
 }
@@ -2294,7 +2309,7 @@ TEST_F(RendererSchedulerImplTest, TestLongIdlePeriodInTouchStartPolicy) {
   int run_count = 0;
 
   idle_task_runner_->PostIdleTask(
-      FROM_HERE, base::Bind(&IdleTestTask, &run_count, &deadline_in_task));
+      FROM_HERE, base::BindOnce(&IdleTestTask, &run_count, &deadline_in_task));
 
   // Observation of touchstart should defer the start of the long idle period.
   scheduler_->DidHandleInputEventOnCompositorThread(
@@ -2328,8 +2343,8 @@ TEST_F(RendererSchedulerImplTest, CanExceedIdleDeadlineIfRequired) {
   // Should return false for short idle periods.
   idle_task_runner_->PostIdleTask(
       FROM_HERE,
-      base::Bind(&TestCanExceedIdleDeadlineIfRequiredTask, scheduler_.get(),
-                 &can_exceed_idle_deadline, &run_count));
+      base::BindOnce(&TestCanExceedIdleDeadlineIfRequiredTask, scheduler_.get(),
+                     &can_exceed_idle_deadline, &run_count));
   EnableIdleTasks();
   RunUntilIdle();
   EXPECT_EQ(1, run_count);
@@ -2337,12 +2352,12 @@ TEST_F(RendererSchedulerImplTest, CanExceedIdleDeadlineIfRequired) {
 
   // Should return false for a long idle period which is shortened due to a
   // pending delayed task.
-  default_task_runner_->PostDelayedTask(FROM_HERE, base::Bind(&NullTask),
+  default_task_runner_->PostDelayedTask(FROM_HERE, base::BindOnce(&NullTask),
                                         base::TimeDelta::FromMilliseconds(10));
   idle_task_runner_->PostIdleTask(
       FROM_HERE,
-      base::Bind(&TestCanExceedIdleDeadlineIfRequiredTask, scheduler_.get(),
-                 &can_exceed_idle_deadline, &run_count));
+      base::BindOnce(&TestCanExceedIdleDeadlineIfRequiredTask, scheduler_.get(),
+                     &can_exceed_idle_deadline, &run_count));
   scheduler_->BeginFrameNotExpectedSoon();
   RunUntilIdle();
   EXPECT_EQ(2, run_count);
@@ -2353,8 +2368,8 @@ TEST_F(RendererSchedulerImplTest, CanExceedIdleDeadlineIfRequired) {
   clock_.Advance(maximum_idle_period_duration());
   idle_task_runner_->PostIdleTask(
       FROM_HERE,
-      base::Bind(&TestCanExceedIdleDeadlineIfRequiredTask, scheduler_.get(),
-                 &can_exceed_idle_deadline, &run_count));
+      base::BindOnce(&TestCanExceedIdleDeadlineIfRequiredTask, scheduler_.get(),
+                     &can_exceed_idle_deadline, &run_count));
   RunUntilIdle();
   EXPECT_EQ(3, run_count);
   EXPECT_TRUE(can_exceed_idle_deadline);
@@ -2375,8 +2390,9 @@ TEST_F(RendererSchedulerImplTest, TestRendererHiddenIdlePeriod) {
 
   g_max_idle_task_reposts = 2;
   idle_task_runner_->PostIdleTask(
-      FROM_HERE, base::Bind(&RepostingIdleTestTask,
-                            base::RetainedRef(idle_task_runner_), &run_count));
+      FROM_HERE,
+      base::BindOnce(&RepostingIdleTestTask,
+                     base::RetainedRef(idle_task_runner_), &run_count));
 
   // Renderer should start in visible state.
   RunUntilIdle();
@@ -2393,8 +2409,9 @@ TEST_F(RendererSchedulerImplTest, TestRendererHiddenIdlePeriod) {
   // idle tasks when hidden (plus some slack) - idle period should have ended.
   g_max_idle_task_reposts = 3;
   idle_task_runner_->PostIdleTask(
-      FROM_HERE, base::Bind(&RepostingIdleTestTask,
-                            base::RetainedRef(idle_task_runner_), &run_count));
+      FROM_HERE,
+      base::BindOnce(&RepostingIdleTestTask,
+                     base::RetainedRef(idle_task_runner_), &run_count));
   clock_.Advance(end_idle_when_hidden_delay() +
                  base::TimeDelta::FromMilliseconds(10));
   RunUntilIdle();
@@ -3015,14 +3032,15 @@ TEST_F(RendererSchedulerImplTest, ModeratelyExpensiveTimer_NotBlocked) {
     scheduler_->WillBeginFrame(begin_frame_args);
 
     compositor_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&RendererSchedulerImplTest::
-                                  SimulateMainThreadInputHandlingCompositorTask,
-                              base::Unretained(this),
-                              base::TimeDelta::FromMilliseconds(8)));
+        FROM_HERE,
+        base::BindOnce(&RendererSchedulerImplTest::
+                           SimulateMainThreadInputHandlingCompositorTask,
+                       base::Unretained(this),
+                       base::TimeDelta::FromMilliseconds(8)));
     timer_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&RendererSchedulerImplTest::SimulateTimerTask,
-                              base::Unretained(this),
-                              base::TimeDelta::FromMilliseconds(4)));
+        FROM_HERE, base::BindOnce(&RendererSchedulerImplTest::SimulateTimerTask,
+                                  base::Unretained(this),
+                                  base::TimeDelta::FromMilliseconds(4)));
 
     RunUntilIdle();
     EXPECT_TRUE(simulate_timer_task_ran_) << " i = " << i;
@@ -3056,13 +3074,13 @@ TEST_F(RendererSchedulerImplTest,
 
     compositor_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&RendererSchedulerImplTest::SimulateMainThreadCompositorTask,
-                   base::Unretained(this),
-                   base::TimeDelta::FromMilliseconds(8)));
+        base::BindOnce(
+            &RendererSchedulerImplTest::SimulateMainThreadCompositorTask,
+            base::Unretained(this), base::TimeDelta::FromMilliseconds(8)));
     timer_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&RendererSchedulerImplTest::SimulateTimerTask,
-                              base::Unretained(this),
-                              base::TimeDelta::FromMilliseconds(40)));
+        FROM_HERE, base::BindOnce(&RendererSchedulerImplTest::SimulateTimerTask,
+                                  base::Unretained(this),
+                                  base::TimeDelta::FromMilliseconds(40)));
 
     RunUntilIdle();
     EXPECT_TRUE(simulate_timer_task_ran_) << " i = " << i;
@@ -3096,14 +3114,15 @@ TEST_F(RendererSchedulerImplTest,
     scheduler_->WillBeginFrame(begin_frame_args);
 
     compositor_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&RendererSchedulerImplTest::
-                                  SimulateMainThreadInputHandlingCompositorTask,
-                              base::Unretained(this),
-                              base::TimeDelta::FromMilliseconds(8)));
+        FROM_HERE,
+        base::BindOnce(&RendererSchedulerImplTest::
+                           SimulateMainThreadInputHandlingCompositorTask,
+                       base::Unretained(this),
+                       base::TimeDelta::FromMilliseconds(8)));
     timer_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&RendererSchedulerImplTest::SimulateTimerTask,
-                              base::Unretained(this),
-                              base::TimeDelta::FromMilliseconds(10)));
+        FROM_HERE, base::BindOnce(&RendererSchedulerImplTest::SimulateTimerTask,
+                                  base::Unretained(this),
+                                  base::TimeDelta::FromMilliseconds(10)));
 
     RunUntilIdle();
     EXPECT_EQ(RendererSchedulerImpl::UseCase::kMainThreadCustomInputHandling,
@@ -3162,9 +3181,10 @@ TEST_F(RendererSchedulerImplTest,
 
   compositor_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&RendererSchedulerImplTest::
-                     SimulateMainThreadInputHandlingCompositorTask,
-                 base::Unretained(this), base::TimeDelta::FromMilliseconds(5)));
+      base::BindOnce(&RendererSchedulerImplTest::
+                         SimulateMainThreadInputHandlingCompositorTask,
+                     base::Unretained(this),
+                     base::TimeDelta::FromMilliseconds(5)));
 
   RunUntilIdle();
   EXPECT_EQ(UseCase::kMainThreadGesture, CurrentUseCase());
@@ -3186,9 +3206,10 @@ TEST_F(
 
   compositor_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&RendererSchedulerImplTest::
-                     SimulateMainThreadInputHandlingCompositorTask,
-                 base::Unretained(this), base::TimeDelta::FromMilliseconds(5)));
+      base::BindOnce(&RendererSchedulerImplTest::
+                         SimulateMainThreadInputHandlingCompositorTask,
+                     base::Unretained(this),
+                     base::TimeDelta::FromMilliseconds(5)));
 
   RunUntilIdle();
   EXPECT_EQ(UseCase::kMainThreadCustomInputHandling, CurrentUseCase());
@@ -3211,8 +3232,9 @@ TEST_F(RendererSchedulerImplTest,
 
   compositor_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&RendererSchedulerImplTest::SimulateMainThreadCompositorTask,
-                 base::Unretained(this), base::TimeDelta::FromMilliseconds(5)));
+      base::BindOnce(
+          &RendererSchedulerImplTest::SimulateMainThreadCompositorTask,
+          base::Unretained(this), base::TimeDelta::FromMilliseconds(5)));
 
   RunUntilIdle();
   EXPECT_EQ(UseCase::kSynchronizedGesture, CurrentUseCase());
@@ -3249,8 +3271,9 @@ void SlowCountingTask(size_t* count,
                       scoped_refptr<base::SingleThreadTaskRunner> timer_queue) {
   clock->Advance(base::TimeDelta::FromMilliseconds(task_duration));
   if (++(*count) < 500) {
-    timer_queue->PostTask(FROM_HERE, base::Bind(SlowCountingTask, count, clock,
-                                                task_duration, timer_queue));
+    timer_queue->PostTask(
+        FROM_HERE, base::BindOnce(SlowCountingTask, count, clock, task_duration,
+                                  timer_queue));
   }
 }
 }
@@ -3283,13 +3306,13 @@ TEST_F(RendererSchedulerImplTest,
     simulate_compositor_task_ran_ = false;
     compositor_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&RendererSchedulerImplTest::SimulateMainThreadCompositorTask,
-                   base::Unretained(this),
-                   base::TimeDelta::FromMilliseconds(10)));
+        base::BindOnce(
+            &RendererSchedulerImplTest::SimulateMainThreadCompositorTask,
+            base::Unretained(this), base::TimeDelta::FromMilliseconds(10)));
 
-    mock_task_runner_->RunTasksWhile(
-        base::Bind(&RendererSchedulerImplTest::SimulatedCompositorTaskPending,
-                   base::Unretained(this)));
+    mock_task_runner_->RunTasksWhile(base::BindRepeating(
+        &RendererSchedulerImplTest::SimulatedCompositorTaskPending,
+        base::Unretained(this)));
     EXPECT_EQ(UseCase::kSynchronizedGesture, CurrentUseCase()) << "i = " << i;
 
     // We expect the queue to get throttled on the second iteration which is
@@ -3347,13 +3370,13 @@ TEST_F(RendererSchedulerImplTest,
     simulate_compositor_task_ran_ = false;
     compositor_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&RendererSchedulerImplTest::SimulateMainThreadCompositorTask,
-                   base::Unretained(this),
-                   base::TimeDelta::FromMilliseconds(10)));
+        base::BindOnce(
+            &RendererSchedulerImplTest::SimulateMainThreadCompositorTask,
+            base::Unretained(this), base::TimeDelta::FromMilliseconds(10)));
 
-    mock_task_runner_->RunTasksWhile(
-        base::Bind(&RendererSchedulerImplTest::SimulatedCompositorTaskPending,
-                   base::Unretained(this)));
+    mock_task_runner_->RunTasksWhile(base::BindRepeating(
+        &RendererSchedulerImplTest::SimulatedCompositorTaskPending,
+        base::Unretained(this)));
     EXPECT_EQ(UseCase::kSynchronizedGesture, CurrentUseCase()) << "i = " << i;
 
     // Before the policy is updated the queue will be enabled. Subsequently it
@@ -3403,13 +3426,13 @@ TEST_F(RendererSchedulerImplTest,
     simulate_compositor_task_ran_ = false;
     compositor_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&RendererSchedulerImplTest::SimulateMainThreadCompositorTask,
-                   base::Unretained(this),
-                   base::TimeDelta::FromMilliseconds(10)));
+        base::BindOnce(
+            &RendererSchedulerImplTest::SimulateMainThreadCompositorTask,
+            base::Unretained(this), base::TimeDelta::FromMilliseconds(10)));
 
-    mock_task_runner_->RunTasksWhile(
-        base::Bind(&RendererSchedulerImplTest::SimulatedCompositorTaskPending,
-                   base::Unretained(this)));
+    mock_task_runner_->RunTasksWhile(base::BindRepeating(
+        &RendererSchedulerImplTest::SimulatedCompositorTaskPending,
+        base::Unretained(this)));
     EXPECT_EQ(UseCase::kSynchronizedGesture, CurrentUseCase()) << "i = " << i;
     EXPECT_TRUE(timer_task_runner_->IsQueueEnabled()) << "i = " << i;
   }
@@ -3505,13 +3528,13 @@ TEST_F(RendererSchedulerImplTest, SYNCHRONIZED_GESTURE_CompositingExpensive) {
     simulate_compositor_task_ran_ = false;
     compositor_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&RendererSchedulerImplTest::SimulateMainThreadCompositorTask,
-                   base::Unretained(this),
-                   base::TimeDelta::FromMilliseconds(20)));
+        base::BindOnce(
+            &RendererSchedulerImplTest::SimulateMainThreadCompositorTask,
+            base::Unretained(this), base::TimeDelta::FromMilliseconds(20)));
 
-    mock_task_runner_->RunTasksWhile(
-        base::Bind(&RendererSchedulerImplTest::SimulatedCompositorTaskPending,
-                   base::Unretained(this)));
+    mock_task_runner_->RunTasksWhile(base::BindRepeating(
+        &RendererSchedulerImplTest::SimulatedCompositorTaskPending,
+        base::Unretained(this)));
     EXPECT_EQ(UseCase::kSynchronizedGesture, CurrentUseCase()) << "i = " << i;
   }
 
@@ -3547,13 +3570,13 @@ TEST_F(RendererSchedulerImplTest, MAIN_THREAD_CUSTOM_INPUT_HANDLING) {
     simulate_compositor_task_ran_ = false;
     compositor_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&RendererSchedulerImplTest::SimulateMainThreadCompositorTask,
-                   base::Unretained(this),
-                   base::TimeDelta::FromMilliseconds(20)));
+        base::BindOnce(
+            &RendererSchedulerImplTest::SimulateMainThreadCompositorTask,
+            base::Unretained(this), base::TimeDelta::FromMilliseconds(20)));
 
-    mock_task_runner_->RunTasksWhile(
-        base::Bind(&RendererSchedulerImplTest::SimulatedCompositorTaskPending,
-                   base::Unretained(this)));
+    mock_task_runner_->RunTasksWhile(base::BindRepeating(
+        &RendererSchedulerImplTest::SimulatedCompositorTaskPending,
+        base::Unretained(this)));
     EXPECT_EQ(UseCase::kMainThreadCustomInputHandling, CurrentUseCase())
         << "i = " << i;
   }
@@ -3591,13 +3614,13 @@ TEST_F(RendererSchedulerImplTest, MAIN_THREAD_GESTURE) {
     simulate_compositor_task_ran_ = false;
     compositor_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&RendererSchedulerImplTest::SimulateMainThreadCompositorTask,
-                   base::Unretained(this),
-                   base::TimeDelta::FromMilliseconds(20)));
+        base::BindOnce(
+            &RendererSchedulerImplTest::SimulateMainThreadCompositorTask,
+            base::Unretained(this), base::TimeDelta::FromMilliseconds(20)));
 
-    mock_task_runner_->RunTasksWhile(
-        base::Bind(&RendererSchedulerImplTest::SimulatedCompositorTaskPending,
-                   base::Unretained(this)));
+    mock_task_runner_->RunTasksWhile(base::BindRepeating(
+        &RendererSchedulerImplTest::SimulatedCompositorTaskPending,
+        base::Unretained(this)));
     EXPECT_EQ(UseCase::kMainThreadGesture, CurrentUseCase()) << "i = " << i;
   }
 
@@ -3696,11 +3719,11 @@ TEST_F(RendererSchedulerImplTest, UnthrottledTaskRunner) {
   size_t timer_count = 0;
   size_t unthrottled_count = 0;
   timer_task_runner_->PostTask(
-      FROM_HERE, base::Bind(SlowCountingTask, &timer_count, &clock_, 7,
-                            timer_task_runner_));
+      FROM_HERE, base::BindOnce(SlowCountingTask, &timer_count, &clock_, 7,
+                                timer_task_runner_));
   unthrottled_task_runner->PostTask(
-      FROM_HERE, base::Bind(SlowCountingTask, &unthrottled_count, &clock_, 7,
-                            unthrottled_task_runner));
+      FROM_HERE, base::BindOnce(SlowCountingTask, &unthrottled_count, &clock_,
+                                7, unthrottled_task_runner));
   auto handle = scheduler_->PauseRenderer();
 
   for (int i = 0; i < 1000; i++) {
@@ -3717,13 +3740,13 @@ TEST_F(RendererSchedulerImplTest, UnthrottledTaskRunner) {
     simulate_compositor_task_ran_ = false;
     compositor_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&RendererSchedulerImplTest::SimulateMainThreadCompositorTask,
-                   base::Unretained(this),
-                   base::TimeDelta::FromMilliseconds(10)));
+        base::BindOnce(
+            &RendererSchedulerImplTest::SimulateMainThreadCompositorTask,
+            base::Unretained(this), base::TimeDelta::FromMilliseconds(10)));
 
-    mock_task_runner_->RunTasksWhile(
-        base::Bind(&RendererSchedulerImplTest::SimulatedCompositorTaskPending,
-                   base::Unretained(this)));
+    mock_task_runner_->RunTasksWhile(base::BindRepeating(
+        &RendererSchedulerImplTest::SimulatedCompositorTaskPending,
+        base::Unretained(this)));
     EXPECT_EQ(UseCase::kSynchronizedGesture, CurrentUseCase()) << "i = " << i;
   }
 
@@ -3928,7 +3951,7 @@ TEST_F(RendererSchedulerImplTest,
   std::vector<base::TimeTicks> run_times;
 
   timer_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&RecordingTimeTestTask, &run_times, &clock_));
+      FROM_HERE, base::BindOnce(&RecordingTimeTestTask, &run_times, &clock_));
 
   mock_task_runner_->RunUntilTime(base::TimeTicks() +
                                   base::TimeDelta::FromMilliseconds(1100));
@@ -3939,7 +3962,7 @@ TEST_F(RendererSchedulerImplTest,
   run_times.clear();
 
   timer_task_runner_->PostDelayedTask(
-      FROM_HERE, base::Bind(&RecordingTimeTestTask, &run_times, &clock_),
+      FROM_HERE, base::BindOnce(&RecordingTimeTestTask, &run_times, &clock_),
       base::TimeDelta::FromMilliseconds(200));
 
   scheduler_->SetRendererBackgrounded(false);

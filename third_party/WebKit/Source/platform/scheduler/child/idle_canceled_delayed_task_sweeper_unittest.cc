@@ -90,28 +90,28 @@ TEST_F(IdleCanceledDelayedTaskSweeperTest, TestSweep) {
   // Post one task we won't cancel.
   default_task_queue_->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&TestClass::NopTask, class1.weak_factory_.GetWeakPtr()),
+      base::BindOnce(&TestClass::NopTask, class1.weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromSeconds(100));
 
   // And a bunch we will.
   default_task_queue_->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&TestClass::NopTask, class2.weak_factory_.GetWeakPtr()),
+      base::BindOnce(&TestClass::NopTask, class2.weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromSeconds(101));
 
   default_task_queue_->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&TestClass::NopTask, class2.weak_factory_.GetWeakPtr()),
+      base::BindOnce(&TestClass::NopTask, class2.weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromSeconds(102));
 
   default_task_queue_->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&TestClass::NopTask, class2.weak_factory_.GetWeakPtr()),
+      base::BindOnce(&TestClass::NopTask, class2.weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromSeconds(103));
 
   default_task_queue_->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&TestClass::NopTask, class2.weak_factory_.GetWeakPtr()),
+      base::BindOnce(&TestClass::NopTask, class2.weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromSeconds(104));
 
   // Cancel the last four tasks.

@@ -144,12 +144,13 @@ class WorkerSchedulerImplTest : public ::testing::Test {
       switch (task[0]) {
         case 'D':
           default_task_runner_->PostTask(
-              FROM_HERE, base::Bind(&AppendToVectorTestTask, run_order, task));
+              FROM_HERE,
+              base::BindOnce(&AppendToVectorTestTask, run_order, task));
           break;
         case 'I':
           idle_task_runner_->PostIdleTask(
               FROM_HERE,
-              base::Bind(&AppendToVectorIdleTestTask, run_order, task));
+              base::BindOnce(&AppendToVectorIdleTestTask, run_order, task));
           break;
         default:
           NOTREACHED();
@@ -216,7 +217,7 @@ TEST_F(WorkerSchedulerImplTest, TestPostDefaultDelayedAndIdleTasks) {
   PostTestTasks(&run_order, "I1 D2 D3 D4");
 
   default_task_runner_->PostDelayedTask(
-      FROM_HERE, base::Bind(&AppendToVectorTestTask, &run_order, "DELAYED"),
+      FROM_HERE, base::BindOnce(&AppendToVectorTestTask, &run_order, "DELAYED"),
       base::TimeDelta::FromMilliseconds(1000));
 
   RunUntilIdle();
@@ -234,13 +235,14 @@ TEST_F(WorkerSchedulerImplTest, TestIdleTaskWhenIsNotQuiescent) {
   timeline.push_back("Post default task");
   // Post a delayed task timed to occur mid way during the long idle period.
   default_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&RecordTimelineTask, base::Unretained(&timeline),
-                            base::Unretained(&clock_)));
+      FROM_HERE,
+      base::BindOnce(&RecordTimelineTask, base::Unretained(&timeline),
+                     base::Unretained(&clock_)));
   RunUntilIdle();
 
   timeline.push_back("Post idle task");
-  idle_task_runner_->PostIdleTask(FROM_HERE,
-                                  base::Bind(&TimelineIdleTestTask, &timeline));
+  idle_task_runner_->PostIdleTask(
+      FROM_HERE, base::BindOnce(&TimelineIdleTestTask, &timeline));
 
   RunUntilIdle();
 
@@ -264,11 +266,11 @@ TEST_F(WorkerSchedulerImplTest, TestIdleDeadlineWithPendingDelayedTask) {
   // Post a delayed task timed to occur mid way during the long idle period.
   default_task_runner_->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&RecordTimelineTask, base::Unretained(&timeline),
-                 base::Unretained(&clock_)),
+      base::BindOnce(&RecordTimelineTask, base::Unretained(&timeline),
+                     base::Unretained(&clock_)),
       base::TimeDelta::FromMilliseconds(20));
-  idle_task_runner_->PostIdleTask(FROM_HERE,
-                                  base::Bind(&TimelineIdleTestTask, &timeline));
+  idle_task_runner_->PostIdleTask(
+      FROM_HERE, base::BindOnce(&TimelineIdleTestTask, &timeline));
 
   RunUntilIdle();
 
@@ -291,11 +293,11 @@ TEST_F(WorkerSchedulerImplTest,
   // Post a delayed task timed to occur well after the long idle period.
   default_task_runner_->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&RecordTimelineTask, base::Unretained(&timeline),
-                 base::Unretained(&clock_)),
+      base::BindOnce(&RecordTimelineTask, base::Unretained(&timeline),
+                     base::Unretained(&clock_)),
       base::TimeDelta::FromMilliseconds(500));
-  idle_task_runner_->PostIdleTask(FROM_HERE,
-                                  base::Bind(&TimelineIdleTestTask, &timeline));
+  idle_task_runner_->PostIdleTask(
+      FROM_HERE, base::BindOnce(&TimelineIdleTestTask, &timeline));
 
   RunUntilIdle();
 
@@ -312,7 +314,8 @@ TEST_F(WorkerSchedulerImplTest, TestPostIdleTaskAfterRunningUntilIdle) {
   Init();
 
   default_task_runner_->PostDelayedTask(
-      FROM_HERE, base::Bind(&NopTask), base::TimeDelta::FromMilliseconds(1000));
+      FROM_HERE, base::BindOnce(&NopTask),
+      base::TimeDelta::FromMilliseconds(1000));
   RunUntilIdle();
 
   std::vector<std::string> run_order;
@@ -330,8 +333,8 @@ void PostIdleTask(std::vector<std::string>* timeline,
   timeline->push_back(base::StringPrintf("run PostIdleTask @ %d",
                                          TimeTicksToIntMs(clock->NowTicks())));
 
-  idle_task_runner->PostIdleTask(FROM_HERE,
-                                 base::Bind(&TimelineIdleTestTask, timeline));
+  idle_task_runner->PostIdleTask(
+      FROM_HERE, base::BindOnce(&TimelineIdleTestTask, timeline));
 }
 
 TEST_F(WorkerSchedulerImplTest, TestLongIdlePeriodTimeline) {
@@ -358,22 +361,23 @@ TEST_F(WorkerSchedulerImplTest, TestLongIdlePeriodTimeline) {
   // the idle task run.
   default_task_runner_->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&PostIdleTask, base::Unretained(&timeline),
-                 base::Unretained(&clock_),
-                 base::Unretained(idle_task_runner_.get())),
+      base::BindOnce(&PostIdleTask, base::Unretained(&timeline),
+                     base::Unretained(&clock_),
+                     base::Unretained(idle_task_runner_.get())),
       base::TimeDelta::FromMilliseconds(30));
 
   timeline.push_back("PostFirstIdleTask");
-  idle_task_runner_->PostIdleTask(FROM_HERE,
-                                  base::Bind(&TimelineIdleTestTask, &timeline));
+  idle_task_runner_->PostIdleTask(
+      FROM_HERE, base::BindOnce(&TimelineIdleTestTask, &timeline));
   RunUntilIdle();
   new_idle_period_deadline = scheduler_->CurrentIdleTaskDeadlineForTesting();
 
   // Running a normal task will mark the system as non-quiescent.
   timeline.push_back("Post RecordTimelineTask");
   default_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&RecordTimelineTask, base::Unretained(&timeline),
-                            base::Unretained(&clock_)));
+      FROM_HERE,
+      base::BindOnce(&RecordTimelineTask, base::Unretained(&timeline),
+                     base::Unretained(&clock_)));
   RunUntilIdle();
 
   std::string expected_timeline[] = {"RunUntilIdle begin @ 55",

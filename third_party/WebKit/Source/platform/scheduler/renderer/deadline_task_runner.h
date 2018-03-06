@@ -18,7 +18,7 @@ namespace scheduler {
 // Runs a posted task at latest by a given deadline, but possibly sooner.
 class PLATFORM_EXPORT DeadlineTaskRunner {
  public:
-  DeadlineTaskRunner(const base::Closure& callback,
+  DeadlineTaskRunner(const base::RepeatingClosure& callback,
                      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   ~DeadlineTaskRunner();
@@ -38,7 +38,7 @@ class PLATFORM_EXPORT DeadlineTaskRunner {
   void RunInternal();
 
   CancelableClosureHolder cancelable_run_internal_;
-  base::Closure callback_;
+  base::RepeatingClosure callback_;
   base::TimeTicks deadline_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 

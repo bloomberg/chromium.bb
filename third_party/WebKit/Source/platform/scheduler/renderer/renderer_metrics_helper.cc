@@ -47,18 +47,20 @@ RendererMetricsHelper::RendererMetricsHelper(
       renderer_scheduler_(renderer_scheduler),
       main_thread_load_tracker(
           now,
-          base::Bind(&RendererMetricsHelper::RecordMainThreadTaskLoad,
-                     base::Unretained(this)),
+          base::BindRepeating(&RendererMetricsHelper::RecordMainThreadTaskLoad,
+                              base::Unretained(this)),
           kThreadLoadTrackerReportingInterval),
       background_main_thread_load_tracker(
           now,
-          base::Bind(&RendererMetricsHelper::RecordBackgroundMainThreadTaskLoad,
-                     base::Unretained(this)),
+          base::BindRepeating(
+              &RendererMetricsHelper::RecordBackgroundMainThreadTaskLoad,
+              base::Unretained(this)),
           kThreadLoadTrackerReportingInterval),
       foreground_main_thread_load_tracker(
           now,
-          base::Bind(&RendererMetricsHelper::RecordForegroundMainThreadTaskLoad,
-                     base::Unretained(this)),
+          base::BindRepeating(
+              &RendererMetricsHelper::RecordForegroundMainThreadTaskLoad,
+              base::Unretained(this)),
           kThreadLoadTrackerReportingInterval),
       per_queue_type_task_duration_reporter(
           DURATION_PER_QUEUE_TYPE_METRIC_NAME),
