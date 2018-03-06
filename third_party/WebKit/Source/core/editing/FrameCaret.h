@@ -39,7 +39,6 @@ namespace blink {
 
 class CaretDisplayItemClient;
 class DisplayItemClient;
-class Document;
 class FrameCaret;
 class GraphicsContext;
 class LayoutBlock;
@@ -99,7 +98,6 @@ class CORE_EXPORT FrameCaret final
 
   bool ShouldBlinkCaret() const;
   void CaretBlinkTimerFired(TimerBase*);
-  bool CaretPositionIsValidForDocument(const Document&) const;
   void UpdateAppearance();
 
   const Member<const SelectionEditor> selection_editor_;
