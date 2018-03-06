@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/memory/ptr_util.h"
+#include "base/numerics/ranges.h"
 #include "content/browser/media/session/audio_focus_delegate.h"
 #include "content/browser/media/session/media_session_controller.h"
 #include "content/browser/media/session/media_session_player_observer.h"
@@ -29,8 +30,8 @@ using MediaSessionUserAction = MediaSessionUmaHelper::MediaSessionUserAction;
 
 namespace {
 
-const double kDefaultVolumeMultiplier = 1.0;
-const double kDuckingVolumeMultiplier = 0.2;
+const double kUnduckedVolumeMultiplier = 1.0;
+const double kDefaultDuckingVolumeMultiplier = 0.2;
 
 using MapRenderFrameHostToDepth = std::map<RenderFrameHost*, size_t>;
 
@@ -423,6 +424,10 @@ bool MediaSessionImpl::IsActuallyPaused() const {
   return !IsActive();
 }
 
+void MediaSessionImpl::SetDuckingVolumeMultiplier(double multiplier) {
+  ducking_volume_multiplier_ = base::ClampToRange(multiplier, 0.0, 1.0);
+}
+
 void MediaSessionImpl::StartDucking() {
   if (is_ducking_)
     return;
@@ -445,7 +450,7 @@ void MediaSessionImpl::UpdateVolumeMultiplier() {
 }
 
 double MediaSessionImpl::GetVolumeMultiplier() const {
-  return is_ducking_ ? kDuckingVolumeMultiplier : kDefaultVolumeMultiplier;
+  return is_ducking_ ? ducking_volume_multiplier_ : kUnduckedVolumeMultiplier;
 }
 
 bool MediaSessionImpl::IsActive() const {
@@ -532,7 +537,8 @@ void MediaSessionImpl::OnSuspendInternal(SuspendType suspend_type,
   }
 
   for (const auto& it : pepper_players_)
-    it.observer->OnSetVolumeMultiplier(it.player_id, kDuckingVolumeMultiplier);
+    it.observer->OnSetVolumeMultiplier(it.player_id,
+                                       ducking_volume_multiplier_);
 
   NotifyAboutStateChange();
 }
@@ -558,6 +564,7 @@ MediaSessionImpl::MediaSessionImpl(WebContents* web_contents)
       audio_focus_type_(
           AudioFocusManager::AudioFocusType::GainTransientMayDuck),
       is_ducking_(false),
+      ducking_volume_multiplier_(kDefaultDuckingVolumeMultiplier),
       routed_service_(nullptr) {
 #if defined(OS_ANDROID)
   session_android_.reset(new MediaSessionAndroid(this));
@@ -713,7 +720,7 @@ void MediaSessionImpl::DidReceiveAction(
     for (const auto& player : pepper_players_) {
       if (player.observer->render_frame_host() != rfh_of_routed_service) {
         player.observer->OnSetVolumeMultiplier(player.player_id,
-                                               kDuckingVolumeMultiplier);
+                                               ducking_volume_multiplier_);
       }
     }
     for (const auto& player : one_shot_players_) {
