@@ -136,6 +136,14 @@ class RemoteObjectImpl implements RemoteObject {
             callback.call(makeErrorResult(RemoteInvocationError.OBJECT_GET_CLASS_BLOCKED));
             return;
         }
+        if (method.getReturnType().isArray()) {
+            // LIVECONNECT_COMPLIANCE: Existing behavior is to not call methods that
+            // return arrays. Spec requires calling the method and converting the
+            // result to a JavaScript array.
+            RemoteInvocationResult result = new RemoteInvocationResult();
+            callback.call(result);
+            return;
+        }
 
         Class<?>[] parameterTypes = method.getParameterTypes();
         Object[] args = new Object[numArguments];
