@@ -26,7 +26,7 @@ import android.widget.CheckedTextView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import org.chromium.base.BuildInfo;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeStringConstants;
@@ -195,7 +195,7 @@ public class PassphraseTypeDialogFragment extends DialogFragment implements
                     public void onClick(View view) {
                         Uri syncDashboardUrl = Uri.parse(ChromeStringConstants.SYNC_DASHBOARD_URL);
                         Intent intent = new Intent(Intent.ACTION_VIEW, syncDashboardUrl);
-                        intent.setPackage(BuildInfo.getPackageName());
+                        intent.setPackage(ContextUtils.getApplicationContext().getPackageName());
                         IntentUtils.safePutBinderExtra(
                                 intent, CustomTabsIntent.EXTRA_SESSION, null);
                         context.startActivity(intent);

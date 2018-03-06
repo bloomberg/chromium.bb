@@ -989,7 +989,7 @@ static ScopedJavaLocalRef<jobject> JNI_PrefServiceBridge_GetAboutVersionStrings(
 
   base::android::BuildInfo* android_build_info =
         base::android::BuildInfo::GetInstance();
-  std::string application(android_build_info->package_label());
+  std::string application(android_build_info->host_package_label());
   application.append(" ");
   application.append(version_info::GetVersionNumber());
 

@@ -551,8 +551,9 @@ void DevToolsHttpHandler::OnJsonRequest(
         kTargetWebSocketDebuggerUrlField,
         base::StringPrintf("ws://%s%s", host.c_str(), browser_guid_.c_str()));
 #if defined(OS_ANDROID)
-    version.SetString("Android-Package",
-        base::android::BuildInfo::GetInstance()->package_name());
+    version.SetString(
+        "Android-Package",
+        base::android::BuildInfo::GetInstance()->host_package_name());
 #endif
     SendJson(connection_id, net::HTTP_OK, &version, std::string());
     return;

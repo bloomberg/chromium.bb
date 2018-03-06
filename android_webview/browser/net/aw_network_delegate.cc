@@ -53,7 +53,7 @@ int AwNetworkDelegate::OnBeforeStartTransaction(
   DCHECK(headers);
   headers->SetHeaderIfMissing(
       "X-Requested-With",
-      base::android::BuildInfo::GetInstance()->package_name());
+      base::android::BuildInfo::GetInstance()->host_package_name());
   return net::OK;
 }
 

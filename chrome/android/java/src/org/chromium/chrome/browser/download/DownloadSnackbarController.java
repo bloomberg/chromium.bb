@@ -94,7 +94,7 @@ public class DownloadSnackbarController implements SnackbarManager.SnackbarContr
         if (getSnackbarManager() == null) return;
         Snackbar snackbar;
         if (getActivity() instanceof CustomTabActivity) {
-            String packageLabel = BuildInfo.getPackageLabel();
+            String packageLabel = BuildInfo.getInstance().hostPackageLabel;
             snackbar = Snackbar.make(mContext.getString(R.string.download_succeeded_message,
                     downloadInfo.getFileName(), packageLabel),
                     this, Snackbar.TYPE_NOTIFICATION, Snackbar.UMA_DOWNLOAD_SUCCEEDED);

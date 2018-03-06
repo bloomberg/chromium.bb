@@ -82,16 +82,18 @@ class BASE_EXPORT BuildInfo {
     return gms_version_code_;
   }
 
+  const char* host_package_name() const { return host_package_name_; }
+
+  const char* host_version_code() const { return host_version_code_; }
+
+  const char* host_package_label() const { return host_package_label_; }
+
   const char* package_version_code() const {
     return package_version_code_;
   }
 
   const char* package_version_name() const {
     return package_version_name_;
-  }
-
-  const char* package_label() const {
-    return package_label_;
   }
 
   const char* package_name() const {
@@ -139,7 +141,9 @@ class BASE_EXPORT BuildInfo {
   const char* const model_;
   const int sdk_int_;
   const char* const build_type_;
-  const char* const package_label_;
+  const char* const host_package_name_;
+  const char* const host_version_code_;
+  const char* const host_package_label_;
   const char* const package_name_;
   const char* const package_version_code_;
   const char* const package_version_name_;
