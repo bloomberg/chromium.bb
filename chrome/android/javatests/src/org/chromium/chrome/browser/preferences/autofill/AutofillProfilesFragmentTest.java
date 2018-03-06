@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.preferences.autofill;
 import android.preference.PreferenceFragment;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
+import android.view.KeyEvent;
+import android.widget.EditText;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -22,7 +24,11 @@ import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesTest;
+import org.chromium.content.browser.test.util.Criteria;
+import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.ui.UiUtils;
 
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
@@ -227,5 +233,60 @@ public class AutofillProfilesFragmentTest {
                 (AutofillProfileEditorPreference) fragment.findPreference("John Doe");
         Assert.assertTrue(oldProfile == null);
         activity.finish();
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"Preferences"})
+    public void testKeyboardShownOnDpadCenter() {
+        Preferences activity =
+                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
+                        AutofillProfilesFragment.class.getName());
+
+        PreferenceFragment fragment = (PreferenceFragment) activity.getFragmentForTest();
+        AutofillProfileEditorPreference addProfile =
+                (AutofillProfileEditorPreference) fragment.findPreference(
+                        AutofillProfilesFragment.PREF_NEW_PROFILE);
+        Assert.assertNotNull(addProfile);
+
+        // Open AutofillProfileEditorPreference.
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            PreferencesTest.clickPreference(fragment, addProfile);
+            rule.setEditorDialog(addProfile.getEditorDialog());
+        });
+        // The keyboard is shown as soon as AutofillProfileEditorPreference comes into view.
+        waitForKeyboardStatus(true, activity);
+
+        // Hide the keyboard.
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            List<EditText> fields = addProfile.getEditorDialog().getEditableTextFieldsForTest();
+            UiUtils.hideKeyboard(fields.get(0));
+        });
+        // Check that the keyboard is hidden.
+        waitForKeyboardStatus(false, activity);
+
+        // Send a d-pad key event to one of the text fields
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            try {
+                rule.sendKeycodeToTextFieldInEditorAndWait(KeyEvent.KEYCODE_DPAD_CENTER, 0);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        });
+        // Check that the keyboard was shown.
+        waitForKeyboardStatus(true, activity);
+        activity.finish();
+    }
+
+    private void waitForKeyboardStatus(final boolean keyboardVisible, final Preferences activity) {
+        CriteriaHelper.pollUiThread(
+                new Criteria("Keyboard was not " + (keyboardVisible ? "shown." : "hidden.")) {
+                    @Override
+                    public boolean isSatisfied() {
+                        return keyboardVisible
+                                == UiUtils.isKeyboardShowing(
+                                           activity, activity.findViewById(android.R.id.content));
+                    }
+                });
     }
 }

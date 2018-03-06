@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.preferences.autofill;
 
+import android.view.KeyEvent;
 import android.widget.EditText;
 
 import org.chromium.base.ThreadUtils;
@@ -60,6 +61,18 @@ class AutofillTestRule extends ChromeBrowserTestRule implements EditorObserverFo
         ThreadUtils.runOnUiThreadBlocking(
                 (Runnable) () -> mEditorDialog.findViewById(resourceId).performClick());
         mValidationUpdate.waitForCallback(callCount);
+    }
+
+    protected void sendKeycodeToTextFieldInEditorAndWait(final int keycode,
+            final int textFieldIndex) throws InterruptedException, TimeoutException {
+        int callCount = mClickUpdate.getCallCount();
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            List<EditText> fields = mEditorDialog.getEditableTextFieldsForTest();
+            fields.get(textFieldIndex)
+                    .dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, keycode));
+            fields.get(textFieldIndex).dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, keycode));
+        });
+        mClickUpdate.waitForCallback(callCount);
     }
 
     protected void waitForThePreferenceUpdate() throws InterruptedException, TimeoutException {
