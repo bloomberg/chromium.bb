@@ -790,13 +790,18 @@ class _BuilderRunBase(object):
     """
     verinfo = self.GetVersionInfo()
     release_tag = self.attrs.release_tag
+
+    # Use a default of zero, in case we are a local tryjob or other build
+    # without a CIDB id.
+    build_id = self.attrs.metadata.GetValueWithDefault('build_id', 0)
+
     if release_tag:
       calc_version = 'R%s-%s' % (verinfo.chrome_branch, release_tag)
     else:
       # Non-versioned builds need the build number to uniquify the image.
       calc_version = 'R%s-%s-b%s' % (verinfo.chrome_branch,
                                      verinfo.VersionString(),
-                                     self.buildnumber)
+                                     build_id)
 
     return calc_version
 

@@ -374,7 +374,7 @@ class GetVersionTest(_BuilderRunTestCase):
     result = run.GetVersionInfo()
     self.assertEquals(verinfo, result)
 
-  def _TestGetVersionReleaseTag(self, release_tag):
+  def _TestGetVersionReleaseTag(self, release_tag, cidb_id=None):
     with mock.patch.object(cbuildbot_run._BuilderRunBase,
                            'GetVersionInfo') as m:
       verinfo_mock = mock.Mock()
@@ -385,6 +385,9 @@ class GetVersionTest(_BuilderRunTestCase):
       # Prepare a real BuilderRun object with a release tag.
       run = self._NewBuilderRun()
       run.attrs.release_tag = release_tag
+      if cidb_id:
+        run.attrs.metadata.UpdateWithDict(
+            {'build_id': cidb_id})
 
       # Run the test return the result.
       result = run.GetVersion()
@@ -399,9 +402,16 @@ class GetVersionTest(_BuilderRunTestCase):
     self.assertEquals('R%s-%s' % (DEFAULT_CHROME_BRANCH, 'RT'), result)
 
   def testGetVersionNoReleaseTag(self):
+    cidb_id = 12345678
+    result = self._TestGetVersionReleaseTag(None, cidb_id)
+    expected_result = ('R%s-%s-b%s' %
+                       (DEFAULT_CHROME_BRANCH, 'VS', cidb_id))
+    self.assertEquals(result, expected_result)
+
+  def testGetVersionNoReleaseTagNoCidb(self):
     result = self._TestGetVersionReleaseTag(None)
     expected_result = ('R%s-%s-b%s' %
-                       (DEFAULT_CHROME_BRANCH, 'VS', DEFAULT_BUILDNUMBER))
+                       (DEFAULT_CHROME_BRANCH, 'VS', 0))
     self.assertEquals(result, expected_result)
 
 
