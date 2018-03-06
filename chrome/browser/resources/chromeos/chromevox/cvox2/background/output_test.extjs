@@ -190,12 +190,11 @@ TEST_F('OutputE2ETest', 'Headings', function() {
         var letter = String.fromCharCode('a'.charCodeAt(0) + i -1);
         assertEqualsJSON({string_: letter + '|Heading ' + i, 'spans_': [
           // Attributes.
-          {value: 'name', start: 0, end: 1}
+          {value: 'nameOrDescendants', start: 0, end: 1}
         ]}, o.speechOutputForTest);
         checkBrailleOutput(
             letter + ' h' + i,
             [
-              {value: new Output.NodeSpan(el.firstChild), start: 0, end: 1},
               {value: new Output.NodeSpan(el), start: 0, end: 4}
             ],
             o);
@@ -624,7 +623,7 @@ TEST_F('OutputE2ETest', 'AuralStyledHeadings', function() {
           {value: {'relativePitch': toFixed(-0.1 * i)}, start: 0, end: 0},
 
           // Attributes.
-          {value: 'name', start: 0, end: 1},
+          {value: 'nameOrDescendants', start: 0, end: 1},
 
           {value: {'relativePitch': -0.2}, start: 2, end: 2}
         ]}, o.speechOutputForTest);

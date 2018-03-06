@@ -1083,12 +1083,19 @@ Output.prototype = {
           options.annotation.push('name');
           this.append_(buff, node.name || '', options);
         } else if (token == 'nameOrDescendants') {
+          // This token is similar to nameOrTextContent except it gathers rich
+          // output for descendants. It also lets name from contents override
+          // the descendants text if |node| has only static text children.
           options.annotation.push(token);
           if (node.name &&
-              node.nameFrom != chrome.automation.NameFromType.CONTENTS)
+              (node.nameFrom != 'contents' ||
+               node.children.every(function(child) {
+                 return child.role == RoleType.STATIC_TEXT;
+               }))) {
             this.append_(buff, node.name || '', options);
-          else
+          } else {
             this.format_(node, '$descendants', buff);
+          }
         } else if (token == 'description') {
           if (node.name == node.description || node.value == node.description)
             return;
@@ -1280,7 +1287,7 @@ Output.prototype = {
             }
           }
         } else if (token == 'nameOrTextContent') {
-          if (node.name) {
+          if (node.name && node.nameFrom != 'contents') {
             this.format_(node, '$name', buff);
             return;
           }
