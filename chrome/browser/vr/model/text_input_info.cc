@@ -143,7 +143,13 @@ TextEdits EditedText::GetDiff() const {
                          previous.CommittedTextBeforeCursor());
   bool had_composition =
       previous.CompositionSize() > 0 && current.CompositionSize() == 0;
-  if (had_composition) {
+  // If the composition changes while there was a composition previously, we
+  // first finish the previous composition by clearing then commiting it, then
+  // we set the new composition.
+  bool new_composition =
+      previous.composition_start != current.composition_start &&
+      previous.CompositionSize() > 0;
+  if (had_composition || new_composition) {
     edits.push_back(TextEditAction(TextEditActionType::CLEAR_COMPOSING_TEXT));
   }
 
@@ -151,7 +157,9 @@ TextEdits EditedText::GetDiff() const {
   // We only want to delete text if the was no selection previously. In the case
   // where there was a selection, its the editor's responsibility to ensure that
   // the selected text gets modified when a new edit occurs.
-  if (previous.SelectionSize() == 0) {
+  bool had_selection =
+      previous.SelectionSize() > 0 && current.SelectionSize() == 0;
+  if (!had_selection) {
     to_delete =
         previous.CommittedTextBeforeCursor().size() - common_prefix_length;
     if (to_delete > 0) {
@@ -163,7 +171,7 @@ TextEdits EditedText::GetDiff() const {
 
   int to_commit =
       current.CommittedTextBeforeCursor().size() - common_prefix_length;
-  if (to_commit > 0) {
+  if (to_commit > 0 || had_selection) {
     DCHECK(to_delete == 0);
     edits.push_back(TextEditAction(TextEditActionType::COMMIT_TEXT,
                                    current.CommittedTextBeforeCursor().substr(
@@ -171,10 +179,10 @@ TextEdits EditedText::GetDiff() const {
                                    to_commit));
   }
   if (current.CompositionSize() > 0) {
-    DCHECK(to_commit <= 0);
-    int cursor = previous.CompositionSize() > 0
-                     ? current.CompositionSize() - previous.CompositionSize()
-                     : current.CompositionSize();
+    int cursor = current.CompositionSize();
+    if (!new_composition) {
+      cursor = current.CompositionSize() - previous.CompositionSize();
+    }
     edits.push_back(TextEditAction(TextEditActionType::SET_COMPOSING_TEXT,
                                    current.ComposingText(), cursor));
   }
