@@ -411,7 +411,10 @@ void AXEventGenerator::FireRelationSourceEvents(AXTree* tree,
         return;
 
       source_nodes.insert(source_node);
-      AddEvent(source_node, Event::RELATED_NODE_CHANGED);
+
+      // GCC < 6.4 requires this pointer when calling a member
+      // function in anonymous function
+      this->AddEvent(source_node, Event::RELATED_NODE_CHANGED);
     });
   };
 
