@@ -20,7 +20,6 @@
 #include "extensions/common/permissions/api_permission_set.h"
 #include "extensions/common/url_pattern.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
-#include "net/base/url_util.h"
 #include "url/gurl.h"
 
 namespace rcd = net::registry_controlled_domains;
@@ -128,11 +127,6 @@ std::unique_ptr<ExternallyConnectableInfo> ExternallyConnectableInfo::FromValue(
           (pattern.host().empty() &&
            pattern.match_subdomains());  // e.g., https://*/*
 
-      // TODO(devlin): We should use URLPattern methods here instead, since we
-      // already have some instrumentation there to look up if something matches
-      // all urls or TLD-like structs. But there's some differences here, too -
-      // this method canonicalizes the host, and includes unknown domains. We
-      // should consolidate.
       if (allow_all_urls && matches_all_hosts) {
         matches.AddPattern(pattern);
         continue;
@@ -149,30 +143,10 @@ std::unique_ptr<ExternallyConnectableInfo> ExternallyConnectableInfo::FromValue(
         continue;
       }
 
-      url::CanonHostInfo host_info;
-      std::string canonical_host =
-          net::CanonicalizeHost(pattern.host(), &host_info);
-      if (canonical_host.empty()) {
-        // CanonicalizeHost returns empty string on error. The URL parsing
-        // combined with host().empty() should have caught this above.
-        *error = ErrorUtils::FormatErrorMessageUTF16(
-            externally_connectable_errors::kErrorInvalidMatchPattern, *it);
-        return std::unique_ptr<ExternallyConnectableInfo>();
-      }
-
-      // Wildcards on subdomains of a TLD are not allowed.
-      bool has_registry = rcd::HostHasRegistryControlledDomain(
-          canonical_host,
-          // This means that things that look like TLDs - the foobar in
-          // http://google.foobar - count as TLDs.
-          rcd::INCLUDE_UNKNOWN_REGISTRIES,
-          // This means that effective TLDs like appspot.com count as TLDs;
-          // codereview.appspot.com and evil.appspot.com are different.
-          rcd::INCLUDE_PRIVATE_REGISTRIES);
-
       // Broad match patterns like "*.com", "*.co.uk", and even "*.appspot.com"
       // are not allowed. However just "appspot.com" is ok.
-      if (!has_registry && pattern.match_subdomains()) {
+      if (pattern.MatchesEffectiveTld(rcd::INCLUDE_PRIVATE_REGISTRIES,
+                                      rcd::INCLUDE_UNKNOWN_REGISTRIES)) {
         // Warning not error for forwards compatibility.
         install_warnings->push_back(InstallWarning(
             ErrorUtils::FormatErrorMessage(
