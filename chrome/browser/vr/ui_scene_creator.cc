@@ -906,6 +906,7 @@ void UiSceneCreator::CreateContentQuad() {
   auto shadow = Create<Shadow>(kContentQuadShadow, kPhaseForeground);
   shadow->set_intensity(kContentShadowIntesity);
   shadow->SetTranslate(0, 0, -kContentShadowOffset);
+  shadow->set_corner_radius(kContentCornerRadius);
 
   auto main_content = std::make_unique<ContentElement>(
       content_input_delegate_,
@@ -1507,7 +1508,7 @@ void UiSceneCreator::CreateContentRepositioningAffordance() {
       float, Model, model_,
       model->reposition_window_enabled() ? kRepositionContentOpacity : 1.0f,
       UiElement, content_toggle.get(), SetOpacity));
-  scene_->AddParentUiElement(kContentQuad, std::move(content_toggle));
+  scene_->AddParentUiElement(kContentQuadShadow, std::move(content_toggle));
 
   auto hit_plane =
       Create<InvisibleHitTarget>(kContentRepositionHitPlane, kPhaseForeground);

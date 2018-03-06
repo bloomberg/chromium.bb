@@ -51,6 +51,8 @@ GLuint CompileShader(GLenum shader_type,
       glDeleteShader(shader_handle);
       shader_handle = 0;
     }
+  } else {
+    error = "Could not create a shader handle (did not attempt compilation).";
   }
 
   return shader_handle;
