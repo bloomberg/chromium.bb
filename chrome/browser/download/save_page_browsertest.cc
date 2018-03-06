@@ -20,6 +20,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/test_file_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
@@ -46,6 +47,7 @@
 #include "components/history/core/browser/download_row.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
+#include "components/security_state/core/security_state.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -683,6 +685,17 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, CleanFilenameFromPageTitle) {
   EXPECT_TRUE(base::DieFileDie(dir, true));
 }
 #endif
+
+// Tests that the SecurityLevel histograms are logged for save page downloads.
+IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SecurityLevelHistogram) {
+  base::HistogramTester histogram_tester;
+  GURL url = NavigateToMockURL("a");
+  base::FilePath full_file_name, dir;
+  SaveCurrentTab(url, content::SAVE_PAGE_TYPE_AS_ONLY_HTML, "a", 1, &dir,
+                 &full_file_name);
+  histogram_tester.ExpectUniqueSample("Security.SecurityLevel.DownloadStarted",
+                                      security_state::NONE, 1);
+}
 
 class SavePageAsMHTMLBrowserTest : public SavePageBrowserTest {
  public:

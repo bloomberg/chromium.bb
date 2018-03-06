@@ -32,6 +32,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/test_file_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
@@ -89,6 +90,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/proto/csd.pb.h"
+#include "components/security_state/core/security_state.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_request_utils.h"
 #include "content/public/browser/notification_source.h"
@@ -3445,6 +3447,37 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_GZipWithNoContent) {
   // the network.
   DownloadAndWait(browser(), url);
   DownloadAndWait(browser(), url);
+}
+
+// Test that the SecurityLevel of the initiating page is used for the histogram
+// rather than the SecurityLevel of the download URL, and that downloads in new
+// tabs are not tracked.
+IN_PROC_BROWSER_TEST_F(DownloadTest, SecurityLevels) {
+  base::HistogramTester histogram_tester;
+  net::EmbeddedTestServer http_server(net::EmbeddedTestServer::TYPE_HTTP);
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  http_server.ServeFilesFromDirectory(GetTestDataDirectory());
+  https_server.ServeFilesFromDirectory(GetTestDataDirectory());
+  ASSERT_TRUE(http_server.Start());
+  ASSERT_TRUE(https_server.Start());
+
+  ui_test_utils::NavigateToURL(browser(), http_server.GetURL("/simple.html"));
+  DownloadAndWait(browser(), https_server.GetURL("/downloads/a_zip_file.zip"));
+  histogram_tester.ExpectBucketCount("Security.SecurityLevel.DownloadStarted",
+                                     security_state::NONE, 1);
+
+  ui_test_utils::NavigateToURL(browser(), https_server.GetURL("/simple.html"));
+  DownloadAndWait(browser(), http_server.GetURL("/downloads/a_zip_file.zip"));
+  histogram_tester.ExpectBucketCount("Security.SecurityLevel.DownloadStarted",
+                                     security_state::SECURE, 1);
+
+  ui_test_utils::NavigateToURL(browser(), http_server.GetURL("/simple.html"));
+  DownloadAndWaitWithDisposition(
+      browser(), https_server.GetURL("/downloads/a_zip_file.zip"),
+      WindowOpenDisposition::NEW_BACKGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
+  histogram_tester.ExpectTotalCount("Security.SecurityLevel.DownloadStarted",
+                                    2);
 }
 
 #if defined(FULL_SAFE_BROWSING)
