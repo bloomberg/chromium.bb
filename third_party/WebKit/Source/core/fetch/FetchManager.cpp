@@ -200,6 +200,7 @@ class FetchManager::Loader final
                 FetchManager::Loader* loader,
                 String integrity_metadata,
                 const KURL& url,
+                network::mojom::FetchResponseType response_type,
                 scoped_refptr<base::SingleThreadTaskRunner> task_runner)
         : handle_(std::move(handle)),
           updater_(updater),
@@ -207,6 +208,7 @@ class FetchManager::Loader final
           loader_(loader),
           integrity_metadata_(integrity_metadata),
           url_(url),
+          response_type_(response_type),
           finished_(false) {
       reader_ = handle_->ObtainReader(this, std::move(task_runner));
     }
@@ -239,11 +241,23 @@ class FetchManager::Loader final
       finished_ = true;
       if (r == WebDataConsumerHandle::kDone) {
         SubresourceIntegrity::ReportInfo report_info;
-        bool check_result = SubresourceIntegrity::CheckSubresourceIntegrity(
-            integrity_metadata_,
-            SubresourceIntegrityHelper::GetFeatures(
-                loader_->GetExecutionContext()),
-            buffer_.data(), buffer_.size(), url_, report_info);
+        bool check_result = true;
+        if (response_type_ != network::mojom::FetchResponseType::kBasic &&
+            response_type_ != network::mojom::FetchResponseType::kCORS &&
+            response_type_ != network::mojom::FetchResponseType::kDefault) {
+          report_info.AddConsoleErrorMessage(
+              "Subresource Integrity: The resource '" + url_.ElidedString() +
+              "' has an integrity attribute, but the response is not "
+              "eligible for integrity validation.");
+          check_result = false;
+        }
+        if (check_result) {
+          check_result = SubresourceIntegrity::CheckSubresourceIntegrity(
+              integrity_metadata_,
+              SubresourceIntegrityHelper::GetFeatures(
+                  loader_->GetExecutionContext()),
+              buffer_.data(), buffer_.size(), url_, report_info);
+        }
         SubresourceIntegrityHelper::DoReport(*loader_->GetExecutionContext(),
                                              report_info);
         if (check_result) {
@@ -284,6 +298,7 @@ class FetchManager::Loader final
     Member<FetchManager::Loader> loader_;
     String integrity_metadata_;
     KURL url_;
+    const network::mojom::FetchResponseType response_type_;
     std::unique_ptr<WebDataConsumerHandle::Reader> reader_;
     Vector<char> buffer_;
     bool finished_;
@@ -521,7 +536,7 @@ void FetchManager::Loader::DidReceiveResponse(
     DCHECK(!integrity_verifier_);
     integrity_verifier_ = new SRIVerifier(
         std::move(handle), sri_consumer, r, this, request_->Integrity(),
-        response.Url(),
+        response.Url(), r->GetResponse()->GetType(),
         resolver_->GetExecutionContext()->GetTaskRunner(TaskType::kNetworking));
   }
 }
