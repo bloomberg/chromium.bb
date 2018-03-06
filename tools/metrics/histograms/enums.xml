@@ -37268,6 +37268,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="18" label="QUIC_STREAM_ACKED_UNSENT_FIN"/>
   <int value="19" label="QUIC_STREAM_ACKED_UNSENT_FIN"/>
   <int value="20" label="QUIC_STREAM_SEQUENCER_BUFFER"/>
+  <int value="21" label="QUIC_CHROMIUM_CLIENT_SESSION_CLOSE_SESSION_ON_ERROR"/>
 </enum>
 
 <enum name="QuickofficeErrorTypes">
