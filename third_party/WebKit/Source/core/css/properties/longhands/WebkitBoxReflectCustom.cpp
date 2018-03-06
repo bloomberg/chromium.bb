@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/properties/longhands/WebkitBoxReflect.h"
+#include "core/css/properties/longhands/webkit_box_reflect.h"
 
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSReflectValue.h"
