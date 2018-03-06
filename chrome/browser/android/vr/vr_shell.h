@@ -224,7 +224,6 @@ class VrShell : device::GvrGamepadDataProvider,
 
   void OnVoiceResults(const base::string16& result) override;
 
-  void LoadAssets();
   void OnAssetsLoaded(AssetsLoadStatus status,
                       std::unique_ptr<Assets> assets,
                       const base::Version& component_version);
@@ -248,6 +247,7 @@ class VrShell : device::GvrGamepadDataProvider,
 
   content::WebContents* GetNonNativePageWebContents() const;
 
+  void LoadAssets();
   void OnAssetsComponentReady();
   void OnAssetsComponentWaitTimeout();
 

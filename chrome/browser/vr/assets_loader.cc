@@ -12,6 +12,7 @@
 #include "base/values.h"
 #include "chrome/browser/vr/metrics_helper.h"
 #include "chrome/browser/vr/model/assets.h"
+#include "chrome/browser/vr/vr_features.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/jpeg_codec.h"
@@ -52,6 +53,15 @@ AssetsLoader* AssetsLoader::GetInstance() {
 // static
 base::Version AssetsLoader::MinVersionWithGradients() {
   return base::Version(kMinVersionWithGradients);
+}
+
+// static
+bool AssetsLoader::AssetsSupported() {
+#if BUILDFLAG(USE_VR_ASSETS_COMPONENT)
+  return true;
+#else   // BUILDFLAG(USE_VR_ASSETS_COMPONENT)
+  return false;
+#endif  // BUILDFLAG(USE_VR_ASSETS_COMPONENT)
 }
 
 void AssetsLoader::OnComponentReady(

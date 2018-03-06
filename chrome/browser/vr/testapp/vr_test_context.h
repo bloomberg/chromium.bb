@@ -54,7 +54,6 @@ class VrTestContext : public vr::UiBrowserInterface {
   void StartAutocomplete(const AutocompleteRequest& request) override;
   void StopAutocomplete() override;
   void Navigate(GURL gurl) override;
-  void LoadAssets() override;
 
   void set_window_size(const gfx::Size& size) { window_size_ = size; }
 
@@ -69,6 +68,7 @@ class VrTestContext : public vr::UiBrowserInterface {
   gfx::Transform ViewProjectionMatrix() const;
   ControllerModel UpdateController(const RenderInfo& render_info);
   gfx::Point3F LaserOrigin() const;
+  void LoadAssets();
 
   std::unique_ptr<Ui> ui_;
   gfx::Size window_size_;

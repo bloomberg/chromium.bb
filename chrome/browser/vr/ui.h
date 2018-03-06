@@ -40,8 +40,7 @@ struct UiInitialState {
   bool browsing_disabled = false;
   bool has_or_can_request_audio_permission = true;
   bool skips_redraw_when_not_dirty = false;
-  // TODO(tiborg): Remove this flag.
-  bool assets_available = false;
+  bool assets_supported = false;
   bool supports_selection = true;
   bool needs_keyboard_update = false;
 };
@@ -94,13 +93,11 @@ class Ui : public BrowserUiInterface, public KeyboardUiInterface {
   void OnSpeechRecognitionStateChanged(int new_state) override;
   void SetOmniboxSuggestions(
       std::unique_ptr<OmniboxSuggestions> suggestions) override;
-  void OnAssetsComponentReady() override;
   void OnAssetsLoaded(AssetsLoadStatus status,
                       std::unique_ptr<Assets> assets,
                       const base::Version& component_version) override;
   void OnAssetsUnavailable() override;
 
-  void OnAssetsLoading();
   // TODO(ymalik): We expose this to stop sending VSync to the WebVR page until
   // the splash screen has been visible for its minimum duration. The visibility
   // logic currently lives in the UI, and it'd be much cleaner if the UI didn't
