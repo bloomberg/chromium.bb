@@ -8,83 +8,67 @@
 
 namespace blink {
 
-bool NumberPropertyFunctions::GetInitialNumber(const CSSProperty& property,
-                                               double& result) {
-  return GetNumber(property, ComputedStyle::InitialStyle(), result);
+Optional<double> NumberPropertyFunctions::GetInitialNumber(
+    const CSSProperty& property) {
+  return GetNumber(property, ComputedStyle::InitialStyle());
 }
 
-bool NumberPropertyFunctions::GetNumber(const CSSProperty& property,
-                                        const ComputedStyle& style,
-                                        double& result) {
+Optional<double> NumberPropertyFunctions::GetNumber(
+    const CSSProperty& property,
+    const ComputedStyle& style) {
   switch (property.PropertyID()) {
     case CSSPropertyFillOpacity:
-      result = style.FillOpacity();
-      return true;
+      return style.FillOpacity();
     case CSSPropertyFlexGrow:
-      result = style.FlexGrow();
-      return true;
+      return style.FlexGrow();
     case CSSPropertyFlexShrink:
-      result = style.FlexShrink();
-      return true;
+      return style.FlexShrink();
     case CSSPropertyFloodOpacity:
-      result = style.FloodOpacity();
-      return true;
+      return style.FloodOpacity();
     case CSSPropertyOpacity:
-      result = style.Opacity();
-      return true;
+      return style.Opacity();
     case CSSPropertyOrder:
-      result = style.Order();
-      return true;
+      return style.Order();
     case CSSPropertyOrphans:
-      result = style.Orphans();
-      return true;
+      return style.Orphans();
     case CSSPropertyShapeImageThreshold:
-      result = style.ShapeImageThreshold();
-      return true;
+      return style.ShapeImageThreshold();
     case CSSPropertyStopOpacity:
-      result = style.StopOpacity();
-      return true;
+      return style.StopOpacity();
     case CSSPropertyStrokeMiterlimit:
-      result = style.StrokeMiterLimit();
-      return true;
+      return style.StrokeMiterLimit();
     case CSSPropertyStrokeOpacity:
-      result = style.StrokeOpacity();
-      return true;
+      return style.StrokeOpacity();
     case CSSPropertyWidows:
-      result = style.Widows();
-      return true;
+      return style.Widows();
 
     case CSSPropertyFontSizeAdjust:
       if (!style.HasFontSizeAdjust())
-        return false;
-      result = style.FontSizeAdjust();
-      return true;
+        return Optional<double>();
+      return style.FontSizeAdjust();
     case CSSPropertyColumnCount:
       if (style.HasAutoColumnCount())
-        return false;
-      result = style.ColumnCount();
-      return true;
+        return Optional<double>();
+      return style.ColumnCount();
     case CSSPropertyZIndex:
       if (style.HasAutoZIndex())
-        return false;
-      result = style.ZIndex();
-      return true;
+        return Optional<double>();
+      return style.ZIndex();
 
     case CSSPropertyLineHeight: {
       const Length& length = style.SpecifiedLineHeight();
       // Numbers are represented by percentages.
       if (length.GetType() != kPercent)
-        return false;
+        return Optional<double>();
       double value = length.Value();
       // -100% represents the keyword "normal".
       if (value == -100)
-        return false;
-      result = value / 100;
-      return true;
+        return Optional<double>();
+      return value / 100;
     }
 
     default:
-      return false;
+      return Optional<double>();
   }
 }
 
