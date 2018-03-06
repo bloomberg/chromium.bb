@@ -7,7 +7,6 @@ package org.chromium.device.vr;
 import android.content.Context;
 import android.os.StrictMode;
 import android.view.Display;
-import android.view.Surface;
 import android.view.WindowManager;
 
 import com.google.vr.cardboard.DisplaySynchronizer;
@@ -16,7 +15,6 @@ import com.google.vr.ndk.base.GvrApi;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.ui.display.DisplayAndroid;
 
 /**
  * Creates an active GvrContext from a GvrApi created from the Application Context. This GvrContext
@@ -24,9 +22,10 @@ import org.chromium.ui.display.DisplayAndroid;
  * parameters.
  */
 @JNINamespace("device")
-public class NonPresentingGvrContext implements DisplayAndroid.DisplayAndroidObserver {
+public class NonPresentingGvrContext {
     private GvrApi mGvrApi;
-    private DisplayAndroid mDisplayAndroid;
+    private DisplaySynchronizer mDisplaySynchronizer;
+    private boolean mResumed;
 
     private long mNativeGvrDevice;
 
@@ -36,18 +35,22 @@ public class NonPresentingGvrContext implements DisplayAndroid.DisplayAndroidObs
         WindowManager windowManager =
                 (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         Display display = windowManager.getDefaultDisplay();
-        DisplaySynchronizer synchronizer = new DisplaySynchronizer(context, display);
+        mDisplaySynchronizer = new DisplaySynchronizer(context, display) {
+            @Override
+            public void onConfigurationChanged() {
+                super.onConfigurationChanged();
+                onDisplayConfigurationChanged();
+            }
+        };
 
         // Creating the GvrApi can sometimes create the Daydream config file.
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
         try {
-            mGvrApi = new GvrApi(context, synchronizer);
+            mGvrApi = new GvrApi(context, mDisplaySynchronizer);
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
         }
-        mDisplayAndroid = DisplayAndroid.getNonMultiDisplay(context);
-        mDisplayAndroid.addObserver(this);
-        onRotationChanged(mDisplayAndroid.getRotation());
+        resume();
     }
 
     @CalledByNative
@@ -65,40 +68,30 @@ public class NonPresentingGvrContext implements DisplayAndroid.DisplayAndroidObs
     }
 
     @CalledByNative
+    private void pause() {
+        if (!mResumed) return;
+        mResumed = false;
+        mDisplaySynchronizer.onPause();
+    }
+
+    @CalledByNative
+    private void resume() {
+        if (mResumed) return;
+        mResumed = true;
+        mDisplaySynchronizer.onResume();
+    }
+
+    @CalledByNative
     private void shutdown() {
+        mDisplaySynchronizer.shutdown();
         mGvrApi.shutdown();
-        mDisplayAndroid.removeObserver(this);
         mNativeGvrDevice = 0;
     }
 
-    private int rotationToDegrees(int rotation) {
-        switch (rotation) {
-            case Surface.ROTATION_0:
-                return 0;
-            case Surface.ROTATION_90:
-                return 90;
-            case Surface.ROTATION_180:
-                return 180;
-            case Surface.ROTATION_270:
-                return 270;
-        }
-        assert false;
-        return 0;
-    }
-
-    @Override
-    public void onRotationChanged(int rotation) {
-        if (mNativeGvrDevice != 0) {
-            nativeOnRotationChanged(mNativeGvrDevice, rotationToDegrees(rotation));
-        }
-    }
-
-    @Override
-    public void onDIPScaleChanged(float dipScale) {
+    public void onDisplayConfigurationChanged() {
         mGvrApi.refreshDisplayMetrics();
-        if (mNativeGvrDevice != 0) nativeOnDIPScaleChanged(mNativeGvrDevice);
+        if (mNativeGvrDevice != 0) nativeOnDisplayConfigurationChanged(mNativeGvrDevice);
     }
 
-    private native void nativeOnDIPScaleChanged(long nativeGvrDevice);
-    private native void nativeOnRotationChanged(long nativeGvrDevice, int rotationDegrees);
+    private native void nativeOnDisplayConfigurationChanged(long nativeGvrDevice);
 }
