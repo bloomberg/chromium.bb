@@ -127,7 +127,7 @@ function ListContainer(element, table, grid) {
   util.isTouchModeEnabled().then(function(enabled) {
     if (!enabled)
       return;
-    this.disableContextMenuByLongTap_();
+    this.disableContextMenuByLongTapDuringCheckSelect_();
   }.bind(this));
 }
 
@@ -246,10 +246,12 @@ ListContainer.prototype.setCurrentListType = function(listType) {
 };
 
 /**
- * Disables context menu by long-tap but not two-finger tap.
+ * Disables context menu by long-tap when at least one file/folder is selected,
+ * while still enabling two-finger tap.
  * @private
  */
-ListContainer.prototype.disableContextMenuByLongTap_ = function() {
+ListContainer.prototype.disableContextMenuByLongTapDuringCheckSelect_ =
+    function() {
   this.element.addEventListener('touchstart', function(e) {
     if (e.touches.length > 1) {
       this.allowContextMenuByTouch_ = true;
@@ -265,9 +267,9 @@ ListContainer.prototype.disableContextMenuByLongTap_ = function() {
   }.bind(this));
   this.element.addEventListener('contextmenu', function(e) {
     // Block context menu triggered by touch event unless it is right after
-    // multi-touch.
-    if (!this.allowContextMenuByTouch_ && e.sourceCapabilities &&
-        e.sourceCapabilities.firesTouchEvents) {
+    // multi-touch, or we are currently selecting a file.
+    if (this.currentList.selectedItem && !this.allowContextMenuByTouch_ &&
+        e.sourceCapabilities && e.sourceCapabilities.firesTouchEvents) {
       e.stopPropagation();
     }
   }.bind(this), true);
