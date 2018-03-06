@@ -409,17 +409,39 @@ public class ExternalNavigationHandlerTest {
 
         int transitionTypeIncomingIntent = PageTransition.LINK
                 | PageTransition.FROM_API;
-        String url = "http://m.youtube.com/watch?v=1234&pairingCode=5678";
+        final String[] goodUrls = {"http://m.youtube.com/watch?v=1234&pairingCode=5678",
+                "youtube.com?pairingCode=xyz", "youtube.com/tv?pairingCode=xyz",
+                "youtube.com/watch?v=1234&version=3&autohide=1&pairingCode=xyz",
+                "youtube.com/watch?v=1234&pairingCode=xyz&version=3&autohide=1"};
+        final String[] badUrls = {"youtube.com.foo.com/tv?pairingCode=xyz",
+                "youtube.com.foo.com?pairingCode=xyz",
+                "youtube.com/watch?v=tEsT&version=3&autohide=1&pairingCode=",
+                "youtube.com&pairingCode=xyz",
+                "youtube.com/watch?v=tEsT?version=3&pairingCode=&autohide=1"};
 
-        // http://crbug/386600 - it makes no sense to switch activities for pairing code URLs.
-        checkUrl(url)
-                .withIsRedirect(true)
-                .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
+        // Make sure we don't override when faced with valid pairing code URLs.
+        for (String url : goodUrls) {
+            // http://crbug/386600 - it makes no sense to switch activities for pairing code URLs.
+            checkUrl(url).withIsRedirect(true).expecting(
+                    OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
 
-        checkUrl(url)
-                .withPageTransition(transitionTypeIncomingIntent)
-                .withIsRedirect(true)
-                .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
+            checkUrl(url)
+                    .withPageTransition(transitionTypeIncomingIntent)
+                    .withIsRedirect(true)
+                    .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
+        }
+
+        // The pairing code URL regex shouldn't cause NO_OVERRIDE on invalid URLs.
+        for (String url : badUrls) {
+            checkUrl(url).withIsRedirect(true).expecting(
+                    OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT, START_OTHER_ACTIVITY);
+
+            checkUrl(url)
+                    .withPageTransition(transitionTypeIncomingIntent)
+                    .withIsRedirect(true)
+                    .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                            START_OTHER_ACTIVITY);
+        }
     }
 
     @Test
