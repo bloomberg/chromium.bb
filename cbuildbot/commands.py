@@ -947,6 +947,9 @@ def _GetRunSuiteArgs(
   Returns:
     A list of args for run_suite
   """
+
+  # HACK(pwang): Delete this once better solution is out.
+  board = board.replace('-arcnext', '')
   args = ['--build', build, '--board', board]
 
   if model:
