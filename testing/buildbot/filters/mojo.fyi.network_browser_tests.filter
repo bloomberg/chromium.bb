@@ -326,16 +326,6 @@
 -ContentFaviconDriverTest.ReloadBypassingCache
 -ContentFaviconDriverTest.MixedContentSecureFaviconAllowed
 
-
-# Failing NoStatePrefetch tests
-# https://crbug.com/792776
-#
-# Crashing.
--NoStatePrefetchBrowserTest/NoStatePrefetchBrowserTest.PrefetchCookie/1
--NoStatePrefetchBrowserTest/NoStatePrefetchBrowserTest.PrefetchCookie/0
--NoStatePrefetchBrowserTest/NoStatePrefetchBrowserTest.PrefetchCookieCrossDomain/0
--NoStatePrefetchBrowserTest/NoStatePrefetchBrowserTest.PrefetchCookieCrossDomain/1
-
 # Add support of download_to_file for URLLoader.
 # http://crbug.com/791702
 -OutOfProcessPPAPITest.FileRef1

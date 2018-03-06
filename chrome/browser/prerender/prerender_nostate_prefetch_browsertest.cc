@@ -47,59 +47,12 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using prerender::test_utils::DestructionWaiter;
 using prerender::test_utils::RequestCounter;
 using prerender::test_utils::TestPrerender;
-
-namespace {
-
-// Helper method that verifies cookies for PrefetchCookies* tests. When the
-// cookies expected from loading test/data/prerender/cookie.{js,html}. |loop| is
-// notified when the cookies are found; if the cookies are not found this will
-// wait forever.
-void CheckCookiesForPrefetchCookieTest(base::RunLoop* loop,
-                                       GURL url,
-                                       net::CookieStore* cookie_store,
-                                       const net::CookieList& cookies) {
-  bool found_chocolate = false;
-  bool found_oatmeal = false;
-  for (const auto& c : cookies) {
-    if (c.Name() == "chocolate-chip") {
-      EXPECT_EQ("the-best", c.Value());
-      found_chocolate = true;
-    }
-    if (c.Name() == "oatmeal") {
-      EXPECT_EQ("sublime", c.Value());
-      found_oatmeal = true;
-    }
-  }
-  if (found_oatmeal && found_chocolate) {
-    loop->Quit();
-  } else {
-    content::BrowserThread::PostDelayedTask(
-        content::BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&net::CookieStore::GetAllCookiesForURLAsync,
-                       base::Unretained(cookie_store), url,
-                       base::BindOnce(CheckCookiesForPrefetchCookieTest, loop,
-                                      url, cookie_store)),
-        base::TimeDelta::FromMilliseconds(250));
-  }
-}
-
-// Launches the CheckCookiesForPrefetchCookieTest from the IO thread.
-void LaunchPrefetchCookieTestFromIO(content::StoragePartition* storage,
-                                    base::RunLoop* loop,
-                                    GURL url) {
-  net::CookieStore* cookie_store =
-      storage->GetURLRequestContext()->GetURLRequestContext()->cookie_store();
-  cookie_store->GetAllCookiesForURLAsync(
-      url, base::BindOnce(CheckCookiesForPrefetchCookieTest, loop, url,
-                          cookie_store));
-}
-
-}  // namespace
 
 namespace prerender {
 
@@ -276,6 +229,24 @@ IN_PROC_BROWSER_TEST_P(NoStatePrefetchBrowserTest, PrefetchSimple) {
   WaitForRequestCount(src_server()->GetURL(kPrefetchScript2), 0);
 }
 
+void GetCookieCallback(base::RepeatingClosure callback,
+                       const net::CookieList& cookie_list) {
+  bool found_chocolate = false;
+  bool found_oatmeal = false;
+  for (const auto& c : cookie_list) {
+    if (c.Name() == "chocolate-chip") {
+      EXPECT_EQ("the-best", c.Value());
+      found_chocolate = true;
+    }
+    if (c.Name() == "oatmeal") {
+      EXPECT_EQ("sublime", c.Value());
+      found_oatmeal = true;
+    }
+  }
+  CHECK(found_chocolate && found_oatmeal);
+  callback.Run();
+}
+
 // Check cookie loading for prefetched pages.
 IN_PROC_BROWSER_TEST_P(NoStatePrefetchBrowserTest, PrefetchCookie) {
   GURL url = src_server()->GetURL(kPrefetchCookiePage);
@@ -285,13 +256,11 @@ IN_PROC_BROWSER_TEST_P(NoStatePrefetchBrowserTest, PrefetchCookie) {
   content::StoragePartition* storage_partition =
       content::BrowserContext::GetStoragePartitionForSite(
           current_browser()->profile(), url, false);
+  net::CookieOptions options;
   base::RunLoop loop;
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::BindOnce(LaunchPrefetchCookieTestFromIO, storage_partition, &loop,
-                     url));
+  storage_partition->GetCookieManagerForBrowserProcess()->GetCookieList(
+      url, options, base::BindOnce(GetCookieCallback, loop.QuitClosure()));
   loop.Run();
-  // Will timeout if cookies aren't found.
 }
 
 // Check cookie loading for a cross-domain prefetched pages.
@@ -307,13 +276,12 @@ IN_PROC_BROWSER_TEST_P(NoStatePrefetchBrowserTest, PrefetchCookieCrossDomain) {
   content::StoragePartition* storage_partition =
       content::BrowserContext::GetStoragePartitionForSite(
           current_browser()->profile(), cross_domain_url, false);
+  net::CookieOptions options;
   base::RunLoop loop;
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::BindOnce(LaunchPrefetchCookieTestFromIO, storage_partition, &loop,
-                     cross_domain_url));
+  storage_partition->GetCookieManagerForBrowserProcess()->GetCookieList(
+      cross_domain_url, options,
+      base::BindOnce(GetCookieCallback, loop.QuitClosure()));
   loop.Run();
-  // Will timeout if cookies aren't found.
 }
 
 // Check that the LOAD_PREFETCH flag is set.
