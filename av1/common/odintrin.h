@@ -71,8 +71,6 @@ extern uint32_t OD_DIVU_SMALL_CONSTS[OD_DIVU_DMAX][2];
 #define OD_ARG_NONNULL(x)
 #endif
 
-#define OD_ASSERT(_cond) assert(_cond)
-
 /** Copy n elements of memory from src to dst. The 0* term provides
     compile-time type checking  */
 #if !defined(OVERRIDE_OD_COPY)

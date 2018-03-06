@@ -13,6 +13,7 @@
 #include "./config.h"
 #endif
 
+#include <assert.h>
 #include "aom_dsp/entdec.h"
 #include "aom_dsp/prob.h"
 
@@ -88,7 +89,7 @@ static void od_ec_dec_refill(od_ec_dec *dec) {
   end = dec->end;
   s = OD_EC_WINDOW_SIZE - 9 - (cnt + 15);
   for (; s >= 0 && bptr < end; s -= 8, bptr++) {
-    OD_ASSERT(s <= OD_EC_WINDOW_SIZE - 8);
+    assert(s <= OD_EC_WINDOW_SIZE - 8);
     dif ^= (od_ec_window)bptr[0] << s;
     cnt += 8;
   }
@@ -112,7 +113,7 @@ static void od_ec_dec_refill(od_ec_dec *dec) {
 static int od_ec_dec_normalize(od_ec_dec *dec, od_ec_window dif, unsigned rng,
                                int ret) {
   int d;
-  OD_ASSERT(rng <= 65535U);
+  assert(rng <= 65535U);
   d = 16 - OD_ILOG_NZ(rng);
   dec->cnt -= d;
   /*This is equivalent to shifting in 1's instead of 0's.*/
@@ -151,12 +152,12 @@ int od_ec_decode_bool_q15(od_ec_dec *dec, unsigned f) {
   unsigned r_new;
   unsigned v;
   int ret;
-  OD_ASSERT(0 < f);
-  OD_ASSERT(f < 32768U);
+  assert(0 < f);
+  assert(f < 32768U);
   dif = dec->dif;
   r = dec->rng;
-  OD_ASSERT(dif >> (OD_EC_WINDOW_SIZE - 16) < r);
-  OD_ASSERT(32768U <= r);
+  assert(dif >> (OD_EC_WINDOW_SIZE - 16) < r);
+  assert(32768U <= r);
   v = ((r >> 8) * (uint32_t)(f >> EC_PROB_SHIFT) >> (7 - EC_PROB_SHIFT));
   v += EC_MIN_PROB;
   vw = (od_ec_window)v << (OD_EC_WINDOW_SIZE - 16);
@@ -191,10 +192,10 @@ int od_ec_decode_cdf_q15(od_ec_dec *dec, const uint16_t *icdf, int nsyms) {
   r = dec->rng;
   const int N = nsyms - 1;
 
-  OD_ASSERT(dif >> (OD_EC_WINDOW_SIZE - 16) < r);
-  OD_ASSERT(icdf[nsyms - 1] == OD_ICDF(CDF_PROB_TOP));
-  OD_ASSERT(32768U <= r);
-  OD_ASSERT(7 - EC_PROB_SHIFT - CDF_SHIFT >= 0);
+  assert(dif >> (OD_EC_WINDOW_SIZE - 16) < r);
+  assert(icdf[nsyms - 1] == OD_ICDF(CDF_PROB_TOP));
+  assert(32768U <= r);
+  assert(7 - EC_PROB_SHIFT - CDF_SHIFT >= 0);
   c = (unsigned)(dif >> (OD_EC_WINDOW_SIZE - 16));
   v = r;
   ret = -1;
@@ -204,8 +205,8 @@ int od_ec_decode_cdf_q15(od_ec_dec *dec, const uint16_t *icdf, int nsyms) {
          (7 - EC_PROB_SHIFT - CDF_SHIFT));
     v += EC_MIN_PROB * (N - ret);
   } while (c < v);
-  OD_ASSERT(v < u);
-  OD_ASSERT(u <= r);
+  assert(v < u);
+  assert(u <= r);
   r = u - v;
   dif -= (od_ec_window)v << (OD_EC_WINDOW_SIZE - 16);
   return od_ec_dec_normalize(dec, dif, r, ret);

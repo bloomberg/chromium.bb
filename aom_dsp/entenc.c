@@ -16,6 +16,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <assert.h>
 #include "aom_dsp/entenc.h"
 #include "aom_dsp/prob.h"
 
@@ -62,7 +63,7 @@ static void od_ec_enc_normalize(od_ec_enc *enc, od_ec_window low,
   int c;
   int s;
   c = enc->cnt;
-  OD_ASSERT(rng <= 65535U);
+  assert(rng <= 65535U);
   d = 16 - OD_ILOG_NZ(rng);
   s = c + d;
   /*TODO: Right now we flush every time we have at least one byte available.
@@ -92,13 +93,13 @@ static void od_ec_enc_normalize(od_ec_enc *enc, od_ec_window low,
     c += 16;
     m = (1 << c) - 1;
     if (s >= 8) {
-      OD_ASSERT(offs < storage);
+      assert(offs < storage);
       buf[offs++] = (uint16_t)(low >> c);
       low &= m;
       c -= 8;
       m >>= 8;
     }
-    OD_ASSERT(offs < storage);
+    assert(offs < storage);
     buf[offs++] = (uint16_t)(low >> c);
     s = c + d - 24;
     low &= m;
@@ -166,10 +167,10 @@ static void od_ec_encode_q15(od_ec_enc *enc, unsigned fl, unsigned fh, int s,
   unsigned v;
   l = enc->low;
   r = enc->rng;
-  OD_ASSERT(32768U <= r);
-  OD_ASSERT(fh <= fl);
-  OD_ASSERT(fl <= 32768U);
-  OD_ASSERT(7 - EC_PROB_SHIFT - CDF_SHIFT >= 0);
+  assert(32768U <= r);
+  assert(fh <= fl);
+  assert(fl <= 32768U);
+  assert(7 - EC_PROB_SHIFT - CDF_SHIFT >= 0);
   const int N = nsyms - 1;
   if (fl < CDF_PROB_TOP) {
     u = ((r >> 8) * (uint32_t)(fl >> EC_PROB_SHIFT) >>
@@ -199,11 +200,11 @@ void od_ec_encode_bool_q15(od_ec_enc *enc, int val, unsigned f) {
   od_ec_window l;
   unsigned r;
   unsigned v;
-  OD_ASSERT(0 < f);
-  OD_ASSERT(f < 32768U);
+  assert(0 < f);
+  assert(f < 32768U);
   l = enc->low;
   r = enc->rng;
-  OD_ASSERT(32768U <= r);
+  assert(32768U <= r);
   v = ((r >> 8) * (uint32_t)(f >> EC_PROB_SHIFT) >> (7 - EC_PROB_SHIFT));
   v += EC_MIN_PROB;
   if (val) l += r - v;
@@ -226,9 +227,9 @@ void od_ec_encode_bool_q15(od_ec_enc *enc, int val, unsigned f) {
 void od_ec_encode_cdf_q15(od_ec_enc *enc, int s, const uint16_t *icdf,
                           int nsyms) {
   (void)nsyms;
-  OD_ASSERT(s >= 0);
-  OD_ASSERT(s < nsyms);
-  OD_ASSERT(icdf[nsyms - 1] == OD_ICDF(CDF_PROB_TOP));
+  assert(s >= 0);
+  assert(s < nsyms);
+  assert(icdf[nsyms - 1] == OD_ICDF(CDF_PROB_TOP));
   od_ec_encode_q15(enc, s > 0 ? icdf[s - 1] : OD_ICDF(0), icdf[s], s, nsyms);
 }
 
@@ -249,9 +250,9 @@ void od_ec_encode_cdf_q15(od_ec_enc *enc, int s, const uint16_t *icdf,
 void od_ec_enc_patch_initial_bits(od_ec_enc *enc, unsigned val, int nbits) {
   int shift;
   unsigned mask;
-  OD_ASSERT(nbits >= 0);
-  OD_ASSERT(nbits <= 8);
-  OD_ASSERT(val < 1U << nbits);
+  assert(nbits >= 0);
+  assert(nbits <= 8);
+  assert(val < 1U << nbits);
   shift = 8 - nbits;
   mask = ((1U << nbits) - 1) << shift;
   if (enc->offs > 0) {
@@ -334,7 +335,7 @@ unsigned char *od_ec_enc_done(od_ec_enc *enc, uint32_t *nbytes) {
     }
     n = (1 << (c + 16)) - 1;
     do {
-      OD_ASSERT(offs < storage);
+      assert(offs < storage);
       buf[offs++] = (uint16_t)(e >> (c + 16));
       e &= n;
       s -= 8;
@@ -364,14 +365,14 @@ unsigned char *od_ec_enc_done(od_ec_enc *enc, uint32_t *nbytes) {
   }
   /*If we have buffered raw bits, flush them as well.*/
   while (nend_bits > s) {
-    OD_ASSERT(end_offs < storage);
+    assert(end_offs < storage);
     out[storage - ++end_offs] = (unsigned char)e;
     e >>= 8;
     nend_bits -= 8;
   }
   *nbytes = offs + end_offs;
   /*Perform carry propagation.*/
-  OD_ASSERT(offs + end_offs <= storage);
+  assert(offs + end_offs <= storage);
   out = out + storage - (offs + end_offs);
   c = 0;
   end_offs = offs;
@@ -383,7 +384,7 @@ unsigned char *od_ec_enc_done(od_ec_enc *enc, uint32_t *nbytes) {
   }
   /*Add any remaining raw bits to the last byte.
     There is guaranteed to be enough room, because nend_bits <= s.*/
-  OD_ASSERT(nend_bits <= 0 || end_offs > 0);
+  assert(nend_bits <= 0 || end_offs > 0);
   if (nend_bits > 0) out[end_offs - 1] |= (unsigned char)e;
   /*Note: Unless there's an allocation error, if you keep encoding into the
      current buffer and call this function again later, everything will work
@@ -441,8 +442,8 @@ void od_ec_enc_rollback(od_ec_enc *dst, const od_ec_enc *src) {
   uint32_t storage;
   uint16_t *precarry_buf;
   uint32_t precarry_storage;
-  OD_ASSERT(dst->storage >= src->storage);
-  OD_ASSERT(dst->precarry_storage >= src->precarry_storage);
+  assert(dst->storage >= src->storage);
+  assert(dst->precarry_storage >= src->precarry_storage);
   buf = dst->buf;
   storage = dst->storage;
   precarry_buf = dst->precarry_buf;
