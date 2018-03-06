@@ -1,0 +1,8 @@
+rootWebArea
+++genericContainer
+++++staticText name='State'
+++++++inlineTextBox name='State'
+++textFieldWithComboBox haspopup autoComplete='list' name='State' activedescendantId=listBoxOption restriction=readOnly
+++listBox
+++++listBoxOption selectable name='Alabama'
+++++listBoxOption selectable selected name='Alaska'

@@ -2,7 +2,7 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 
-<div id="contenteditable-textbox" role="textbox" contenteditable="true"
+<div id="contenteditable-combobox" role="combobox" contenteditable="true"
     aria-expanded="true" aria-haspopup="true" aria-autocomplete="list"
     aria-activedescendant="list1-option1">
     <ul id="list1" role="listbox" style="display: none;">
@@ -12,7 +12,7 @@
     </ul>
 </div>
 
-<input id="input-textbox" role="textbox" type="text" aria-expanded="true"
+<input id="input-combobox" role="combobox" type="text" aria-expanded="true"
     aria-haspopup="true" aria-autocomplete="list"
     aria-activedescendant="list2-option1" aria-owns="list2">
 
@@ -22,7 +22,7 @@
     <li id="list2-option3" role="option">Option 3</li>
 </ul>
 
-<input id="input-combobox" role="combobox" type="search" aria-expanded="true"
+<input id="input-searchbox" role="combobox" type="search" aria-expanded="true"
     aria-haspopup="true" aria-autocomplete="list"
     aria-activedescendant="list3-option1" aria-owns="list3">
 
@@ -32,7 +32,7 @@
     <li id="list3-option3" role="option">Option 3</li>
 </ul>
 
-<textarea id="textarea-searchbox" role="searchbox" aria-expanded="true"
+<textarea id="textarea-combobox" role="combobox" aria-expanded="true"
     aria-haspopup="true" aria-autocomplete="list"
     aria-activedescendant="list4-option1" aria-owns="list4"></textarea>
 
@@ -42,78 +42,83 @@
     <li id="list4-option3" role="option">Option 3</li>
 </ul>
 
-<script>
-    function testExpectations(widgetId, listboxId)
-    {
-        var listbox = document.getElementById(listboxId);
-        listbox.style.display = "block";
-        var widget = document.getElementById(widgetId);
-        widget.focus();
+<div id="combobox-composite-widget" role="combobox" aria-expanded="true"
+    aria-haspopup="true" aria-autocomplete="list">
+  <input id="input-type-text"  type="text" aria-controls="list5"
+      aria-activedescendant="list5-option1">
+</div>
 
-        var axWidget = accessibilityController.accessibleElementById(widgetId);
-        var axListbox = accessibilityController.accessibleElementById(listboxId);
-        var option1 = accessibilityController.accessibleElementById(listboxId + "-option1");
-        var option2 = accessibilityController.accessibleElementById(listboxId + "-option2");
-        var option3 = accessibilityController.accessibleElementById(listboxId + "-option3");
+<ul id="list5" role="listbox" style="display: none;">
+    <li id="list5-option1" role="option">Option 1</li>
+    <li id="list5-option2" role="option">Option 2</li>
+    <li id="list5-option3" role="option">Option 3</li>
+</ul>
+
+<script>
+function testExpectations(widgetId, textboxId, listboxId) {
+  var listbox = document.getElementById(listboxId);
+  listbox.style.display = "block";
+  var textbox = document.getElementById(textboxId);
+  textbox.focus();
+  var widget = document.getElementById(widgetId);
+
+  var axWidget = accessibilityController.accessibleElementById(widgetId);
+  var axTextbox = accessibilityController.accessibleElementById(textboxId);
+  var axListbox = accessibilityController.accessibleElementById(listboxId);
+  var option1 = accessibilityController.accessibleElementById(listboxId + "-option1");
+  var option2 = accessibilityController.accessibleElementById(listboxId + "-option2");
+  var option3 = accessibilityController.accessibleElementById(listboxId + "-option3");
 
         assert_true(axWidget.isExpanded, widgetId + ".isExpanded");
-        assert_true(axWidget.hasPopup, widgetId + ".hasPopup");
-        // According to the ARIA Spec, the presence of aria-activedescendant
-        // should make all children with a valid ID focusable.
-        assert_true(axListbox.isFocusable, listboxId + ".isFocusable");
-        assert_true(option1.isFocusable, listboxId + "-option1.isFocusable");
-        assert_true(option1.isSelectable, listboxId + "-option1.isSelectable");
-        assert_true(option2.isFocusable, listboxId + "-option2.isFocusable");
-        assert_true(option2.isSelectable, listboxId + "-option2.isSelectable");
-        assert_true(option3.isFocusable, listboxId + "-option3.isFocusable");
-        assert_true(option3.isSelectable, listboxId + "-option3.isSelectable");
+  assert_true(axWidget.hasPopup, widgetId + ".hasPopup");
 
-        assert_true(axWidget.isFocused, widgetId + ".isFocused");
-        assert_true(option1.isSelected, listboxId + "-option1.isSelected");
+  assert_true(option1.isFocusable, listboxId + "-option1.isFocusable");
+  assert_true(option1.isSelectable, listboxId + "-option1.isSelectable");
+  assert_true(option2.isFocusable, listboxId + "-option2.isFocusable");
+  assert_true(option2.isSelectable, listboxId + "-option2.isSelectable");
+  assert_true(option3.isFocusable, listboxId + "-option3.isFocusable");
+  assert_true(option3.isSelectable, listboxId + "-option3.isSelectable");
 
-        widget.setAttribute("aria-activedescendant", listboxId + "-option2");
-        assert_false(option1.isSelected, listboxId + "-option1.isSelected");
-        assert_true(axWidget.isFocused, widgetId + ".isFocused");
-        assert_true(option2.isSelected, listboxId + "-option2.isSelected");
+  assert_true(axTextbox.isFocused, widgetId + ".isFocused");
+  assert_true(option1.isSelected, listboxId + "-option1.isSelected");
 
-        widget.setAttribute("aria-activedescendant", listboxId + "-option3");
-        assert_false(option2.isSelected, listboxId + "-option2.isSelected");
-        assert_true(axWidget.isFocused, widgetId + ".isFocused");
-        assert_true(option3.isSelected, listboxId + "-option3.isSelected");
+  textbox.setAttribute("aria-activedescendant", listboxId + "-option2");
+  assert_false(option1.isSelected, listboxId + "-option1.isSelected");
+  assert_true(axTextbox.isFocused, widgetId + ".isFocused");
+  assert_true(option2.isSelected, listboxId + "-option2.isSelected");
 
-        widget.removeAttribute("aria-activedescendant");
-        assert_true(axWidget.isFocused, widgetId + ".isFocused");
-        assert_false(option3.isSelected, listboxId + "-option3.isSelected");
+  textbox.setAttribute("aria-activedescendant", listboxId + "-option3");
+  assert_false(option2.isSelected, listboxId + "-option2.isSelected");
+  assert_true(axTextbox.isFocused, widgetId + ".isFocused");
+  assert_true(option3.isSelected, listboxId + "-option3.isSelected");
 
-        listbox.style.display = "none";
-        widget.style.display = "none";
-    }
+  textbox.removeAttribute("aria-activedescendant");
+  assert_true(axTextbox.isFocused, widgetId + ".isFocused");
+  assert_false(option3.isSelected, listboxId + "-option3.isSelected");
+
+  listbox.style.display = "none";
+  widget.style.display = "none";
+}
 </script>
 
 <script>
-    test(function()
-    {
-        testExpectations("contenteditable-textbox", "list1");
-    }, "Changing active descendant on a content editable.");
-</script>
+test(() => {
+  testExpectations('contenteditable-combobox', 'contenteditable-combobox', 'list1');
+}, 'Changing active descendant on a content editable.');
 
-<script>
-    test(function()
-    {
-        testExpectations("input-textbox", "list2");
-    }, "Changing active descendant on an input with role=textbox.");
-</script>
+test(() => {
+  testExpectations('input-combobox', 'input-combobox', 'list2');
+}, 'Changing active descendant on an input with role=combobox.');
 
-<script>
-    test(function()
-    {
-        testExpectations("input-combobox", "list3");
-    }, "Changing active descendant on an input of type=search with role=combobox.");
-</script>
+test(() => {
+  testExpectations('input-searchbox', 'input-searchbox', 'list3');
+}, 'Changing active descendant on an input of type=search with role=combobox.');
 
-<script>
-    test(function()
-    {
-        testExpectations("textarea-searchbox", "list4");
-    }, "Changing active descendant on a textarea with role=searchbox.");
+test(() => {
+  testExpectations('textarea-combobox', 'textarea-combobox', 'list4');
+}, 'Changing active descendant on a textarea with role=combobox.');
+
+test(() => {
+  testExpectations('combobox-composite-widget', 'input-type-text', 'list5');
+}, 'Changing active descendant on an ARIA 1.1 combo box composite widget.');
 </script>

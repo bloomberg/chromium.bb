@@ -361,7 +361,6 @@ AXObject::AXObject(AXObjectCacheImpl& ax_object_cache)
       cached_is_descendant_of_leaf_node_(false),
       cached_is_descendant_of_disabled_node_(false),
       cached_has_inherited_presentational_role_(false),
-      cached_ancestor_exposes_active_descendant_(false),
       cached_is_editable_root_(false),
       cached_live_region_root_(nullptr),
       ax_object_cache_(&ax_object_cache) {
@@ -742,9 +741,6 @@ void AXObject::UpdateCachedAttributeValuesIfNeeded() const {
           ? const_cast<AXObject*>(this)
           : (ParentObjectIfExists() ? ParentObjectIfExists()->LiveRegionRoot()
                                     : nullptr);
-  cached_ancestor_exposes_active_descendant_ =
-      ComputeAncestorExposesActiveDescendant();
-
   // TODO(dmazzoni): remove this const_cast.
   if (cached_is_ignored_ != LastKnownIsIgnoredValue()) {
     const_cast<AXObject*>(this)->ChildrenChanged();
@@ -1013,7 +1009,7 @@ bool AXObject::CanReceiveAccessibilityFocus() const {
     return true;
 
   // aria-activedescendant focus
-  return elem->FastHasAttribute(idAttr) && AncestorExposesActiveDescendant();
+  return elem->FastHasAttribute(idAttr) && CanBeActiveDescendant();
 }
 
 bool AXObject::CanSetValueAttribute() const {
@@ -1047,8 +1043,9 @@ bool AXObject::CanSetFocusAttribute() const {
   // Children of elements with an aria-activedescendant attribute should be
   // focusable if they have a (non-presentational) ARIA role.
   if (!IsPresentational() && AriaRoleAttribute() != kUnknownRole &&
-      AncestorExposesActiveDescendant())
+      CanBeActiveDescendant()) {
     return true;
+  }
 
   // NOTE: It would be more accurate to ask the document whether
   // setFocusedNode() would do anything. For example, setFocusedNode() will do
@@ -1066,12 +1063,58 @@ bool AXObject::CanSetFocusAttribute() const {
   return node->IsElementNode() && ToElement(node)->SupportsFocus();
 }
 
-bool AXObject::AncestorExposesActiveDescendant() const {
-  UpdateCachedAttributeValuesIfNeeded();
-  return cached_ancestor_exposes_active_descendant_;
+// From ARIA 1.1.
+// 1. The value of aria-activedescendant refers to an element that is either a
+// descendant of the element with DOM focus or is a logical descendant as
+// indicated by the aria-owns attribute. 2. The element with DOM focus is a
+// textbox with aria-controls referring to an element that supports
+// aria-activedescendant, and the value of aria-activedescendant specified for
+// the textbox refers to either a descendant of the element controlled by the
+// textbox or is a logical descendant of that controlled element as indicated by
+// the aria-owns attribute.
+bool AXObject::CanBeActiveDescendant() const {
+  return IsARIAControlledByTextboxWithActiveDescendant() ||
+         AncestorExposesActiveDescendant();
 }
 
-bool AXObject::ComputeAncestorExposesActiveDescendant() const {
+bool AXObject::IsARIAControlledByTextboxWithActiveDescendant() const {
+  // This situation should mostly arise when using an active descendant on a
+  // textbox inside an ARIA 1.1 combo box widget, which points to the selected
+  // option in a list. In such situations, the active descendant is useful only
+  // when the textbox is focused. Therefore, we don't currently need to keep
+  // track of all aria-controls relationships.
+  const AXObject* focused_object = AXObjectCache().FocusedObject();
+  if (!focused_object || !focused_object->IsTextControl())
+    return false;
+
+  if (!focused_object->GetAOMPropertyOrARIAAttribute(
+          AOMRelationProperty::kActiveDescendant)) {
+    return false;
+  }
+
+  HeapVector<Member<Element>> controlled_by_elements;
+  if (!focused_object->HasAOMPropertyOrARIAAttribute(
+          AOMRelationListProperty::kControls, controlled_by_elements)) {
+    return false;
+  }
+
+  for (const auto& controlled_by_element : controlled_by_elements) {
+    const AXObject* controlled_by_object =
+        AXObjectCache().GetOrCreate(controlled_by_element);
+    if (!controlled_by_object)
+      continue;
+
+    const AXObject* object = this;
+    while (object && object != controlled_by_object)
+      object = object->ParentObjectUnignored();
+    if (object)
+      return true;
+  }
+
+  return false;
+}
+
+bool AXObject::AncestorExposesActiveDescendant() const {
   const AXObject* parent = ParentObjectUnignored();
   if (!parent)
     return false;

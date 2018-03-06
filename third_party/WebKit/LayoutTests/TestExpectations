@@ -1495,8 +1495,6 @@ crbug.com/619978 fast/css/giant-stylesheet-crash.html [ Skip ]
 
 crbug.com/624430 [ Win10 ] fast/text/font-features/caps-casemapping.html [ Failure ]
 
-crbug.com/620432 accessibility/aria-activedescendant.html [ Failure ]
-
 crbug.com/399507 virtual/threaded/http/tests/devtools/tracing/timeline-paint/layer-tree.js [ Skip ]
 
 crbug.com/636424 [ Win7 Debug ] editing/selection/modify_move/move-by-word-visually-crash-test-5.html [ Pass Timeout ]
