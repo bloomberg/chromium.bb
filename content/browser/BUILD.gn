@@ -79,10 +79,10 @@ jumbo_source_set("browser") {
     "//content/browser/service_worker:service_worker_proto",
     "//content/browser/speech/proto",
     "//content/common",
-    "//content/common:features",
+    "//content/common:buildflags",
     "//content/common:mojo_bindings",
     "//content/public/common:common_sources",
-    "//content/public/common:zygote_features",
+    "//content/public/common:zygote_buildflags",
     "//crypto",
     "//device/bluetooth",
     "//device/fido",
@@ -203,7 +203,7 @@ jumbo_source_set("browser") {
   ]
 
   public_deps = [
-    ":accessibility_flags",
+    ":accessibility_buildflags",
     "//ipc",
     "//media/mojo/interfaces:remoting",
     "//third_party/WebKit/public:media_devices_mojo_bindings",
@@ -2366,8 +2366,8 @@ jumbo_source_set("browser") {
   }
 }
 
-buildflag_header("accessibility_flags") {
-  header = "accessibility_flags.h"
+buildflag_header("accessibility_buildflags") {
+  header = "accessibility_buildflags.h"
   header_dir = "content/browser/accessibility"
   flags = [ "USE_ATK=$use_atk" ]
 }

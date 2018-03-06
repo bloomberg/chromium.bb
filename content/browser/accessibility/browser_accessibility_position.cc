@@ -6,7 +6,7 @@
 
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
-#include "content/browser/accessibility/accessibility_flags.h"
+#include "content/browser/accessibility/accessibility_buildflags.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "ui/accessibility/ax_enums.mojom.h"
