@@ -36,6 +36,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.TimeUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.metrics.RecordHistogram;
@@ -83,6 +84,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Note: This class is meant to be package private, and is public to be
  * accessible from {@link ChromeApplication}.
  */
+@JNINamespace("customtabs")
 public class CustomTabsConnection {
     private static final String TAG = "ChromeConnection";
     private static final String LOG_SERVICE_REQUESTS = "custom-tabs-log-service-requests";
@@ -935,6 +937,43 @@ public class CustomTabsConnection {
                 Profile.getLastUsedProfile(), redirectEndpoint.toString());
     }
 
+    /** @return Whether {@code session} can create a parallel request for a given {@code origin}. */
+    @VisibleForTesting
+    boolean canDoParallelRequest(CustomTabsSessionToken session, String origin) {
+        ThreadUtils.assertOnUiThread();
+        // The restrictions are:
+        // - Native initialization: Required to get the profile, and the feature state.
+        // - Feature check
+        // - The origin is allowed.
+        //
+        // TODO(lizeb): Relax the restrictions.
+        return ChromeBrowserInitializer.getInstance(mContext).hasNativeInitializationCompleted()
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_PARALLEL_REQUEST)
+                && mClientManager.isFirstPartyOriginForSession(session, Uri.parse(origin));
+    }
+
+    /**
+     * Starts a parallel request.
+     *
+     * @param session Calling context session.
+     * @param url URL to send the request to.
+     * @param origin Origin to use.
+     * @return Whether the request started. False if the session is not authorized to use the
+     *         provided origin, if Chrome hasn't been initialized, or the feature is disabled.
+     *         Also fails if the URL is neither HTTPS not HTTP.
+     */
+    @VisibleForTesting
+    boolean startParallelRequest(CustomTabsSessionToken session, String url, String origin) {
+        ThreadUtils.assertOnUiThread();
+        if (TextUtils.isEmpty(url) || !isValid(Uri.parse(url))
+                || !canDoParallelRequest(session, origin)) {
+            return false;
+        }
+
+        nativeCreateAndStartDetachedResourceRequest(Profile.getLastUsedProfile(), url, origin);
+        return true;
+    }
+
     /** See {@link ClientManager#getReferrerForSession(CustomTabsSessionToken)} */
     public Referrer getReferrerForSession(CustomTabsSessionToken session) {
         return mClientManager.getReferrerForSession(session);
@@ -1495,4 +1534,7 @@ public class CustomTabsConnection {
         RecordHistogram.recordEnumeratedHistogram(
                 "CustomTabs.SpeculationStatusOnSwap", status, SPECULATION_STATUS_ON_SWAP_MAX);
     }
+
+    private static native void nativeCreateAndStartDetachedResourceRequest(
+            Profile profile, String url, String origin);
 }
