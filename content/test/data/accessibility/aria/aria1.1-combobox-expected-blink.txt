@@ -1,0 +1,14 @@
+rootWebArea
+++genericContainer
+++++staticText name='State'
+++++++inlineTextBox name='State'
+++comboBoxGrouping haspopup name='State'
+++++textField activedescendantId=listBoxOption controlsIds=listBox
+++listBox
+++++listBoxOption selectable name='Alabama'
+++++listBoxOption selectable selected name='Alaska'
+++comboBoxGrouping haspopup name='State'
+++++textField activedescendantId=listBoxOption controlsIds=listBox
+++listBox
+++++listBoxOption selectable name='Alabama'
+++++listBoxOption selectable name='Alaska'
