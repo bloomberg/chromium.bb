@@ -231,6 +231,21 @@ void AppBannerManagerAndroid::OnAppIconFetched(const SkBitmap& bitmap) {
   }
 
   primary_icon_ = bitmap;
+
+  // We will not reach this point if the app is already installed since querying
+  // for native app details will return nothing.
+  if (IsExperimentalAppBannersEnabled())
+    ShowAmbientBadge(false /*is_installed*/);
+
+  // If we triggered the installability check on page load, then it's possible
+  // we don't have enough engagement yet. If that's the case, return here but
+  // don't call Terminate(). We wait for OnEngagementEvent to tell us that we
+  // should trigger.
+  if (!HasSufficientEngagement()) {
+    UpdateState(State::PENDING_ENGAGEMENT);
+    return;
+  }
+
   SendBannerPromptRequest();
 }
 
