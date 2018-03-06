@@ -731,6 +731,8 @@ Shell::~Shell() {
   logout_confirmation_controller_.reset();
 
   // Drag-and-drop must be canceled prior to close all windows.
+  for (aura::Window* root : GetAllRootWindows())
+    aura::client::SetDragDropClient(root, nullptr);
   drag_drop_controller_.reset();
 
   // Controllers who have WindowObserver added must be deleted
