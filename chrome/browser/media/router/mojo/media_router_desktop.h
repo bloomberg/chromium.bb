@@ -8,6 +8,7 @@
 #include "base/gtest_prod_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/media/router/mojo/media_router_mojo_impl.h"
+#include "chrome/browser/media/router/mojo/media_sink_service_status.h"
 #include "chrome/browser/media/router/providers/cast/dual_media_sink_service.h"
 #include "chrome/browser/media/router/providers/extension/extension_media_route_provider_proxy.h"
 
@@ -71,6 +72,12 @@ class MediaRouterDesktop : public MediaRouterMojoImpl {
       MediaRouteProviderId provider_id,
       mojom::MediaRouteProviderPtr media_route_provider_ptr,
       mojom::MediaRouter::RegisterMediaRouteProviderCallback callback) override;
+  void OnSinksReceived(MediaRouteProviderId provider_id,
+                       const std::string& media_source,
+                       const std::vector<MediaSinkInternal>& internal_sinks,
+                       const std::vector<url::Origin>& origins) override;
+  void GetMediaSinkServiceStatus(
+      mojom::MediaRouter::GetMediaSinkServiceStatusCallback callback) override;
 
   // Registers a Mojo pointer to the extension MRP with
   // |extension_provider_proxy_| and does initializations specific to the
@@ -127,6 +134,10 @@ class MediaRouterDesktop : public MediaRouterMojoImpl {
   // A flag to ensure that we record the provider version once, during the
   // initial event page wakeup attempt.
   bool provider_version_was_recorded_ = false;
+
+  // A status object that keeps track of sinks discovered by media sink
+  // services.
+  MediaSinkServiceStatus media_sink_service_status_;
 
 #if defined(OS_WIN)
   // A flag to ensure that mDNS discovery is only enabled on Windows when there

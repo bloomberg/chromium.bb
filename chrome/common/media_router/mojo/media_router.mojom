@@ -438,7 +438,9 @@ interface MediaRouteProvider {
 };
 
 // Interface for a service which observes MediaRouteProviders for state changes
-// across media sources, sinks, and issues.
+// across media sources, sinks, and issues. This interface is implemented at
+// browser side. Component extension uses this interface to invoke browser side
+// functions.
 interface MediaRouter {
 
   // Represents overall media sink availability states.
@@ -523,4 +525,7 @@ interface MediaRouter {
   // receive the updates/messages from MediaRemoter.
   OnMediaRemoterCreated(int32 tab_id, media.mojom.MirrorServiceRemoter remoter,
       media.mojom.MirrorServiceRemotingSource& remoting_source);
+
+  // Returns current status of media sink service in JSON format.
+  GetMediaSinkServiceStatus() => (string status);
 };
