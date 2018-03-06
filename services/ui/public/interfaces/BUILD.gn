@@ -17,11 +17,6 @@ mojom("interfaces") {
   sources = [
     # TODO: if adding a new mojom add it to interfaces_tmp below.
     "remote_event_dispatcher.mojom",
-    "user_activity_monitor.mojom",
-    "video_detector.mojom",
-    "window_manager.mojom",
-    "window_manager_window_tree_factory.mojom",
-    "window_server_test.mojom",
     "window_tree.mojom",
     "window_tree_host.mojom",
     "window_tree_host_factory.mojom",
@@ -72,7 +67,12 @@ mojom("interfaces_tmp") {
     "event_matcher.mojom",
     "gpu.mojom",
     "mus_constants.mojom",
+    "user_activity_monitor.mojom",
+    "video_detector.mojom",
+    "window_manager.mojom",
     "window_manager_constants.mojom",
+    "window_manager_window_tree_factory.mojom",
+    "window_server_test.mojom",
     "window_tree_constants.mojom",
   ]
 

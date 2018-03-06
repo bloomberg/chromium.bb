@@ -1946,16 +1946,11 @@ void WindowTreeClient::WmBuildDragImage(const gfx::Point& screen_location,
                                                drag_image_offset, source);
 }
 
-void WindowTreeClient::WmMoveDragImage(
-    const gfx::Point& screen_location,
-    const WmMoveDragImageCallback& callback) {
-  if (!window_manager_delegate_) {
-    callback.Run();
-    return;
-  }
-
-  window_manager_delegate_->OnWmMoveDragImage(screen_location);
-  callback.Run();
+void WindowTreeClient::WmMoveDragImage(const gfx::Point& screen_location,
+                                       WmMoveDragImageCallback callback) {
+  if (window_manager_delegate_)
+    window_manager_delegate_->OnWmMoveDragImage(screen_location);
+  std::move(callback).Run();
 }
 
 void WindowTreeClient::WmDestroyDragImage() {

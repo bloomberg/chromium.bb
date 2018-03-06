@@ -40,7 +40,7 @@ class TestWindowManagerClient : public ui::mojom::WindowManagerClient {
       const gfx::Insets& mouse_insets,
       const gfx::Insets& touch_insets) override;
   void AddAccelerators(std::vector<ui::mojom::WmAcceleratorPtr> accelerators,
-                       const AddAcceleratorsCallback& callback) override;
+                       AddAcceleratorsCallback callback) override;
   void RemoveAccelerator(uint32_t id) override;
   void SetKeyEventsThatDontHideCursor(
       std::vector<::ui::mojom::EventMatcherPtr> dont_hide_cursor_list) override;
@@ -49,20 +49,20 @@ class TestWindowManagerClient : public ui::mojom::WindowManagerClient {
                       bool is_primary_display,
                       ui::Id window_id,
                       const std::vector<display::Display>& mirrors,
-                      const SetDisplayRootCallback& callback) override;
+                      SetDisplayRootCallback callback) override;
   void SetDisplayConfiguration(
       const std::vector<display::Display>& displays,
       std::vector<::ui::mojom::WmViewportMetricsPtr> viewport_metrics,
       int64_t primary_display_id,
       int64_t internal_display_id,
       const std::vector<display::Display>& mirrors,
-      const SetDisplayConfigurationCallback& callback) override;
+      SetDisplayConfigurationCallback callback) override;
   void SwapDisplayRoots(int64_t display_id1,
                         int64_t display_id2,
-                        const SwapDisplayRootsCallback& callback) override;
+                        SwapDisplayRootsCallback callback) override;
   void SetBlockingContainers(
       std::vector<ui::mojom::BlockingContainersPtr> blocking_containers,
-      const SetBlockingContainersCallback& callback) override;
+      SetBlockingContainersCallback callback) override;
   void WmResponse(uint32_t change_id, bool response) override;
   void WmSetBoundsResponse(uint32_t change_id) override;
   void WmRequestClose(ui::Id transport_window_id) override;
