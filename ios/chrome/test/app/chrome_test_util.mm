@@ -114,9 +114,19 @@ id<BrowserCommands> BrowserCommandDispatcherForMainBVC() {
 UIViewController* GetActiveViewController() {
   UIWindow* main_window = [[UIApplication sharedApplication] keyWindow];
   DCHECK([main_window isKindOfClass:[ChromeOverlayWindow class]]);
-  id<ViewControllerSwapping> main_view_controller =
-      static_cast<id<ViewControllerSwapping>>([main_window rootViewController]);
-  return main_view_controller.activeViewController;
+  UIViewController* main_view_controller = main_window.rootViewController;
+  if ([main_view_controller
+          conformsToProtocol:@protocol(ViewControllerSwapping)]) {
+    // This is either the stack_view or the iPad tab_switcher, in which case it
+    // is best to call |-activeViewController|.
+    return [static_cast<id<ViewControllerSwapping>>(main_view_controller)
+        activeViewController];
+  }
+  // The active view controller is either the TabGridViewController or its
+  // presented BVC.
+  return main_view_controller.presentedViewController
+             ? main_view_controller.presentedViewController
+             : main_view_controller;
 }
 
 id<ApplicationCommands, BrowserCommands> DispatcherForActiveViewController() {
@@ -125,10 +135,15 @@ id<ApplicationCommands, BrowserCommands> DispatcherForActiveViewController() {
   if (bvc)
     return bvc.dispatcher;
   if ([vc conformsToProtocol:@protocol(TabSwitcher)]) {
+    // In stack_view and the iPad tab switcher, the view controller has a
+    // dispatcher.
     id<TabSwitcher> tabSwitcher = static_cast<id<TabSwitcher>>(vc);
     return tabSwitcher.dispatcher;
   }
-  return nil;
+  // In tab grid, the TabSwitcher object is not in the view hierarchy so it must
+  // be gotten through the MainController.
+  return static_cast<id<ApplicationCommands, BrowserCommands>>(
+      GetMainController().tabSwitcher.dispatcher);
 }
 
 void RemoveAllInfoBars() {

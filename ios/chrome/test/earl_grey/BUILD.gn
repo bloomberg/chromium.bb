@@ -19,6 +19,7 @@ group("all_tests") {
     ":ios_chrome_reading_list_egtests",
     ":ios_chrome_settings_egtests",
     ":ios_chrome_smoke_egtests",
+    ":ios_chrome_tab_grid_egtests",
     ":ios_chrome_ui_egtests",
     ":ios_chrome_web_egtests",
   ]
@@ -72,6 +73,14 @@ chrome_ios_eg_test("ios_chrome_settings_egtests") {
   deps = [
     "//ios/chrome/browser/ui/settings:eg_tests",
   ]
+}
+
+chrome_ios_eg_test("ios_chrome_tab_grid_egtests") {
+  deps = [
+    ":test_support",
+    "//ios/chrome/browser/ui/tab_grid:eg_tests",
+  ]
+  hooks_target = "//ios/chrome/browser/ui/tab_grid:hooks"
 }
 
 chrome_ios_eg_test("ios_chrome_ui_egtests") {

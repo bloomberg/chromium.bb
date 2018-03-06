@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_coordinator.h"
 
+#include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
@@ -205,6 +206,15 @@
 #pragma mark - BrowserCommands
 
 - (void)openNewTab:(OpenNewTabCommand*)command {
+  TabModel* activeTabModel =
+      command.incognito ? self.incognitoTabModel : self.regularTabModel;
+  // TODO(crbug.com/804587) : It is better to use the mediator to insert a
+  // webState and show the active tab.
+  [self.tabSwitcher
+      dismissWithNewTabAnimationToModel:activeTabModel
+                                withURL:GURL(kChromeUINewTabURL)
+                                atIndex:NSNotFound
+                             transition:ui::PAGE_TRANSITION_TYPED];
 }
 
 - (void)closeAllTabs {

@@ -63,7 +63,10 @@ bool IsUIRefreshPhase1Enabled() {
   return base::FeatureList::IsEnabled(kUIRefreshPhase1);
 }
 
+// TODO(crbug.com/818560) : Remove this flag.
 bool IsTabSwitcherTabGridEnabled() {
+  if (tests_hook::ForceTabSwitcherTabGrid())
+    return true;
   return base::FeatureList::IsEnabled(kTabSwitcherTabGrid);
 }
 
