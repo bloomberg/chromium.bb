@@ -1667,6 +1667,7 @@ crbug.com/803200 external/wpt/websockets/opening-handshake/005.html?wss [ Pass F
 crbug.com/805463 external/wpt/acid/acid3/numbered-tests.html [ Skip ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/css-writing-modes/available-size-019.html [ Failure ]
 crbug.com/626703 external/wpt/payment-request/change-shipping-option-select-last-manual.https.html [ Skip ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/css/css-text/word-break/word-break-break-all-004.html [ Failure ]
 crbug.com/626703 [ Android ] external/wpt/bluetooth/requestDevice/canonicalizeFilter/no-arguments.https.html [ Crash ]
