@@ -141,6 +141,8 @@ void SecurityHandler::SetRenderer(int process_host_id,
 
 void SecurityHandler::DidChangeVisibleSecurityState() {
   DCHECK(enabled_);
+  if (!web_contents()->GetDelegate())
+    return;
 
   SecurityStyleExplanations security_style_explanations;
   blink::WebSecurityStyle security_style =
