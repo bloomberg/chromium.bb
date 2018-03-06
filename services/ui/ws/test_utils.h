@@ -411,7 +411,7 @@ class TestWindowManager : public mojom::WindowManager {
                         const gfx::Vector2d& drag_image_offset,
                         ui::mojom::PointerKind source) override;
   void WmMoveDragImage(const gfx::Point& screen_location,
-                       WmMoveDragImageCallback callback) override;
+                       const WmMoveDragImageCallback& callback) override;
   void WmDestroyDragImage() override;
   void WmPerformMoveLoop(uint32_t change_id,
                          Id window_id,
