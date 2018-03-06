@@ -127,6 +127,7 @@ class InputHandler : public DevToolsDomainHandler, public Input::Backend {
   class InputInjector;
 
   void SynthesizeRepeatingScroll(
+      base::WeakPtr<RenderWidgetHostImpl> widget_host,
       SyntheticSmoothScrollGestureParams gesture_params,
       int repeat_count,
       base::TimeDelta repeat_delay,
@@ -135,6 +136,7 @@ class InputHandler : public DevToolsDomainHandler, public Input::Backend {
       std::unique_ptr<SynthesizeScrollGestureCallback> callback);
 
   void OnScrollFinished(
+      base::WeakPtr<RenderWidgetHostImpl> widget_host,
       SyntheticSmoothScrollGestureParams gesture_params,
       int repeat_count,
       base::TimeDelta repeat_delay,
