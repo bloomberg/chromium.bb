@@ -66,8 +66,8 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget,
     return status_area_widget_delegate_;
   }
   SystemTray* system_tray() { return system_tray_.get(); }
-  UnifiedSystemTray* system_tray_unified() {
-    return system_tray_unified_.get();
+  UnifiedSystemTray* unified_system_tray() {
+    return unified_system_tray_.get();
   }
   WebNotificationTray* web_notification_tray() {
     return web_notification_tray_.get();
@@ -117,7 +117,7 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget,
 
   std::unique_ptr<OverviewButtonTray> overview_button_tray_;
   std::unique_ptr<SystemTray> system_tray_;
-  std::unique_ptr<UnifiedSystemTray> system_tray_unified_;
+  std::unique_ptr<UnifiedSystemTray> unified_system_tray_;
   std::unique_ptr<WebNotificationTray> web_notification_tray_;
   std::unique_ptr<LogoutButtonTray> logout_button_tray_;
   std::unique_ptr<PaletteTray> palette_tray_;

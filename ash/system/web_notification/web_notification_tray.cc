@@ -17,7 +17,6 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/status_area_widget.h"
-#include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/tray_bubble_wrapper.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_container.h"
@@ -283,16 +282,13 @@ class WebNotificationLabel : public WebNotificationItem {
 };
 
 WebNotificationTray::WebNotificationTray(Shelf* shelf,
-                                         aura::Window* status_area_window,
-                                         SystemTray* system_tray)
+                                         aura::Window* status_area_window)
     : TrayBackgroundView(shelf),
       status_area_window_(status_area_window),
-      system_tray_(system_tray),
       show_message_center_on_unlock_(false),
       should_update_tray_content_(false) {
   DCHECK(shelf);
   DCHECK(status_area_window_);
-  DCHECK(system_tray_);
 
   SetInkDropMode(InkDropMode::ON);
   gfx::ImageSkia bell_image =
@@ -621,8 +617,6 @@ void WebNotificationTray::UpdateTrayContent() {
   PreferredSizeChanged();
   Layout();
   SchedulePaint();
-  if (ShouldShowMessageCenter())
-    system_tray_->SetNextFocusableView(this);
 }
 
 void WebNotificationTray::ClickedOutsideBubble() {

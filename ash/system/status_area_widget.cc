@@ -50,13 +50,13 @@ void StatusAreaWidget::Initialize() {
   status_area_widget_delegate_->AddChildView(system_tray_.get());
 
   if (features::IsSystemTrayUnifiedEnabled()) {
-    system_tray_unified_ = std::make_unique<UnifiedSystemTray>(shelf_);
-    status_area_widget_delegate_->AddChildView(system_tray_unified_.get());
+    unified_system_tray_ = std::make_unique<UnifiedSystemTray>(shelf_);
+    status_area_widget_delegate_->AddChildView(unified_system_tray_.get());
   }
 
   // Must happen after the widget is initialized so the native window exists.
-  web_notification_tray_ = std::make_unique<WebNotificationTray>(
-      shelf_, GetNativeWindow(), system_tray_.get());
+  web_notification_tray_ =
+      std::make_unique<WebNotificationTray>(shelf_, GetNativeWindow());
   status_area_widget_delegate_->AddChildView(web_notification_tray_.get());
 
   palette_tray_ = std::make_unique<PaletteTray>(shelf_);
@@ -99,7 +99,7 @@ StatusAreaWidget::~StatusAreaWidget() {
   web_notification_tray_.reset();
   // Must be destroyed after |web_notification_tray_|.
   system_tray_.reset();
-  system_tray_unified_.reset();
+  unified_system_tray_.reset();
   ime_menu_tray_.reset();
   virtual_keyboard_tray_.reset();
   palette_tray_.reset();
