@@ -8950,8 +8950,12 @@ bool GLES2DecoderImpl::VerifyMultisampleRenderbufferIntegrity(
   // These formats have been selected because they are very common or are known
   // to be used by the WebGL backbuffer. If problems are observed with other
   // color formats they can be added here.
+  GLenum pixel_format = GL_RGBA;
+  GLenum pixel_type = GL_UNSIGNED_BYTE;
   switch (format) {
     case GL_RGB8:
+      pixel_format = GL_RGB;
+      break;
     case GL_RGBA8:
       break;
     default:
@@ -8980,7 +8984,8 @@ bool GLES2DecoderImpl::VerifyMultisampleRenderbufferIntegrity(
 
     // Texture only needs to be 1x1.
     api()->glBindTextureFn(GL_TEXTURE_2D, validation_texture);
-    api()->glTexStorage2DEXTFn(GL_TEXTURE_2D, 1, format, 1, 1);
+    api()->glTexImage2DFn(GL_TEXTURE_2D, 0, format, 1, 1, 0, pixel_format,
+                          pixel_type, NULL);
   } else {
     validation_texture = iter->second;
   }
