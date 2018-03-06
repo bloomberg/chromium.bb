@@ -128,24 +128,20 @@ void CheckToolbarButtonVisibility(UITraitCollection* traitCollection) {
     // Split toolbar.
 
     // Test the visibility of the primary toolbar buttons.
-    [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
-        assertWithMatcher:VisibleInPrimaryToolbar()];
-    [[EarlGrey selectElementWithMatcher:chrome_test_util::ForwardButton()]
-        assertWithMatcher:VisibleInPrimaryToolbar()];
     [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
         assertWithMatcher:VisibleInPrimaryToolbar()];
 
     // Test the visibility of the secondary toolbar buttons.
-    [[EarlGrey selectElementWithMatcher:chrome_test_util::
-                                            ButtonWithAccessibilityLabelId(
-                                                IDS_IOS_TOOLBAR_SHOW_TABS)]
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
         assertWithMatcher:VisibleInSecondaryToolbar()];
-    [[EarlGrey selectElementWithMatcher:ShareButton()]
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::ForwardButton()]
         assertWithMatcher:VisibleInSecondaryToolbar()];
     [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
                                             kToolbarOmniboxButtonIdentifier)]
         assertWithMatcher:VisibleInSecondaryToolbar()];
-    [[EarlGrey selectElementWithMatcher:BookmarkButton()]
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::
+                                            ButtonWithAccessibilityLabelId(
+                                                IDS_IOS_TOOLBAR_SHOW_TABS)]
         assertWithMatcher:VisibleInSecondaryToolbar()];
     [[EarlGrey selectElementWithMatcher:chrome_test_util::
                                             ButtonWithAccessibilityLabelId(
@@ -203,14 +199,8 @@ void CheckToolbarButtonVisibilityWithOmniboxFocused(
                                   IDS_CANCEL),
                               VisibleInPrimaryToolbar(), nil)]
         assertWithMatcher:grey_notNil()];
-
-    // Check that controls are faded out.
-    [[EarlGrey selectElementWithMatcher:chrome_test_util::ForwardButton()]
-        assertWithMatcher:grey_not(grey_sufficientlyVisible())];
-    [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
-        assertWithMatcher:grey_not(grey_sufficientlyVisible())];
   } else {
-    // Check that the cancel button is shown.
+    // Check that the cancel button is hidden.
     [[EarlGrey
         selectElementWithMatcher:
             grey_allOf(
@@ -236,6 +226,12 @@ void CheckToolbarButtonVisibilityWithOmniboxFocused(
 
 // Tests that bookmarks button is selected for the bookmarked pages.
 - (void)testBookmarkButton {
+  if (!IsIPadIdiom()) {
+    // If this test is run on an iPhone, rotate it to have the unsplit toolbar.
+    [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationLandscapeLeft
+                             errorOrNil:nil];
+  }
+
   // Setup the bookmarks.
   [ChromeEarlGrey waitForBookmarksToFinishLoading];
   GREYAssert(chrome_test_util::ClearBookmarks(),
@@ -270,6 +266,12 @@ void CheckToolbarButtonVisibilityWithOmniboxFocused(
   // Clean the bookmarks
   GREYAssert(chrome_test_util::ClearBookmarks(),
              @"Not all bookmarks were removed.");
+
+  if (!IsIPadIdiom()) {
+    // Cancel rotation.
+    [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait
+                             errorOrNil:nil];
+  }
 }
 
 // Tests that tapping a button cancels the focus on the omnibox.
@@ -469,20 +471,28 @@ void CheckToolbarButtonVisibilityWithOmniboxFocused(
 
 // Tests share button is enabled only on pages that can be shared.
 - (void)testShareButton {
+  if (!IsIPadIdiom()) {
+    // If this test is run on an iPhone, rotate it to have the unsplit toolbar.
+    [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationLandscapeLeft
+                             errorOrNil:nil];
+  }
+
   // Setup the server.
   self.testServer->RegisterRequestHandler(
       base::BindRepeating(&StandardResponse));
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
   const GURL pageURL = self.testServer->GetURL(kPageURL);
 
-  // The button is disabled on the NTP.
-  [[EarlGrey selectElementWithMatcher:ShareButton()]
-      assertWithMatcher:grey_not(grey_enabled())];
-
   // Navigate to another page and check that the share button is enabled.
   [ChromeEarlGrey loadURL:pageURL];
   [[EarlGrey selectElementWithMatcher:ShareButton()]
       assertWithMatcher:grey_interactable()];
+
+  if (!IsIPadIdiom()) {
+    // Cancel rotation.
+    [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait
+                             errorOrNil:nil];
+  }
 }
 
 // Verifies the existence and state of toolbar UI elements.

@@ -19,7 +19,8 @@
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_configuration.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_constants.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_tools_menu_button.h"
-#include "ios/chrome/browser/ui/ui_util.h"
+#import "ios/chrome/browser/ui/ui_util.h"
+#import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/third_party/material_components_ios/src/components/ProgressView/src/MaterialProgressView.h"
 
@@ -98,14 +99,12 @@
 
   // Adds the layout guide to the buttons.
   self.view.toolsMenuButton.guideName = kTabSwitcherGuide;
-  self.view.forwardLeadingButton.guideName = kForwardButtonGuide;
-  self.view.forwardTrailingButton.guideName = kForwardButtonGuide;
+  self.view.forwardButton.guideName = kForwardButtonGuide;
   self.view.backButton.guideName = kBackButtonGuide;
 
   // Add navigation popup menu triggers.
   [self addLongPressGestureToView:self.view.backButton];
-  [self addLongPressGestureToView:self.view.forwardLeadingButton];
-  [self addLongPressGestureToView:self.view.forwardTrailingButton];
+  [self addLongPressGestureToView:self.view.forwardButton];
 }
 
 - (void)didMoveToParentViewController:(UIViewController*)parent {
@@ -148,15 +147,13 @@
   if (buttonType == ToolbarButtonTypeBack) {
     self.view.backButton.selected = YES;
   } else {
-    self.view.forwardLeadingButton.selected = YES;
-    self.view.forwardTrailingButton.selected = YES;
+    self.view.forwardButton.selected = YES;
   }
 }
 
 - (void)updateUIForTabHistoryWasDismissed {
   self.view.backButton.selected = NO;
-  self.view.forwardLeadingButton.selected = NO;
-  self.view.forwardTrailingButton.selected = NO;
+  self.view.forwardButton.selected = NO;
 }
 
 #pragma mark - FullscreenUIElement
@@ -207,14 +204,19 @@
 #pragma mark - ToolbarAnimatee
 
 - (void)expandLocationBar {
-  [NSLayoutConstraint deactivateConstraints:self.view.unfocusedConstraints];
-  [NSLayoutConstraint activateConstraints:self.view.focusedConstraints];
+  [self deactivateViewLocationBarConstraints];
+  [NSLayoutConstraint activateConstraints:self.view.expandedConstraints];
   [self.view layoutIfNeeded];
 }
 
 - (void)contractLocationBar {
-  [NSLayoutConstraint deactivateConstraints:self.view.focusedConstraints];
-  [NSLayoutConstraint activateConstraints:self.view.unfocusedConstraints];
+  [self deactivateViewLocationBarConstraints];
+  if (IsSplitToolbarMode(self)) {
+    [NSLayoutConstraint
+        activateConstraints:self.view.contractedNoMarginConstraints];
+  } else {
+    [NSLayoutConstraint activateConstraints:self.view.contractedConstraints];
+  }
   [self.view layoutIfNeeded];
 }
 
@@ -240,6 +242,14 @@
 
 #pragma mark - Private
 
+// Deactivates the constraints on the location bar positioning.
+- (void)deactivateViewLocationBarConstraints {
+  [NSLayoutConstraint deactivateConstraints:self.view.contractedConstraints];
+  [NSLayoutConstraint
+      deactivateConstraints:self.view.contractedNoMarginConstraints];
+  [NSLayoutConstraint deactivateConstraints:self.view.expandedConstraints];
+}
+
 // Adds a LongPressGesture to the |view|, with target on -|handleLongPress:|.
 - (void)addLongPressGestureToView:(UIView*)view {
   UILongPressGestureRecognizer* navigationHistoryLongPress =
@@ -256,8 +266,7 @@
 
   if (gesture.view == self.view.backButton) {
     [self.dispatcher showTabHistoryPopupForBackwardHistory];
-  } else if (gesture.view == self.view.forwardLeadingButton ||
-             gesture.view == self.view.forwardTrailingButton) {
+  } else if (gesture.view == self.view.forwardButton) {
     [self.dispatcher showTabHistoryPopupForForwardHistory];
   }
 }

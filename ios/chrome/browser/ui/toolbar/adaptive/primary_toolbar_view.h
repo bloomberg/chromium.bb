@@ -46,12 +46,18 @@
 // Button to cancel the edit of the location bar.
 @property(nonatomic, strong, readonly) UIButton* cancelButton;
 
-// Constraints to be activated when the location bar is focused.
+// Constraints to be activated when the location bar is expanded and positioned
+// relatively to the cancel button.
 @property(nonatomic, strong, readonly)
-    NSMutableArray<NSLayoutConstraint*>* focusedConstraints;
-// Constraints to be activated when the location bar is unfocused.
+    NSMutableArray<NSLayoutConstraint*>* expandedConstraints;
+// Constraints to be activated when the location bar is contracted with large
+// padding between the location bar and the controls.
 @property(nonatomic, strong, readonly)
-    NSMutableArray<NSLayoutConstraint*>* unfocusedConstraints;
+    NSMutableArray<NSLayoutConstraint*>* contractedConstraints;
+// Constraints to be activated when the location bar is expanded without cancel
+// button.
+@property(nonatomic, strong, readonly)
+    NSMutableArray<NSLayoutConstraint*>* contractedNoMarginConstraints;
 
 // Constraint for the bottom of the location bar.
 @property(nonatomic, strong, readwrite)
