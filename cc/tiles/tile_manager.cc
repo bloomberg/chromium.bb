@@ -885,14 +885,10 @@ void TileManager::PartitionImagesForCheckering(
   WhichTree tree = tile->tiling()->tree();
 
   for (const auto* original_draw_image : images_in_tile) {
-    size_t frame_index = original_draw_image->paint_image().frame_index();
-    if (tile_manager_settings_.enable_image_animations) {
-      const auto& image = original_draw_image->paint_image();
-      frame_index = client_->GetFrameIndexForImage(image, tree);
-      if (image_to_frame_index) {
-        (*image_to_frame_index)[image.stable_id()] = frame_index;
-      }
-    }
+    const auto& image = original_draw_image->paint_image();
+    size_t frame_index = client_->GetFrameIndexForImage(image, tree);
+    if (image_to_frame_index)
+      (*image_to_frame_index)[image.stable_id()] = frame_index;
 
     DrawImage draw_image(*original_draw_image, tile->raster_transform().scale(),
                          frame_index, raster_color_space);
@@ -915,11 +911,8 @@ void TileManager::AddCheckeredImagesToDecodeQueue(
   WhichTree tree = tile->tiling()->tree();
 
   for (const auto* original_draw_image : images_in_tile) {
-    size_t frame_index = original_draw_image->paint_image().frame_index();
-    if (tile_manager_settings_.enable_image_animations) {
-      frame_index = client_->GetFrameIndexForImage(
-          original_draw_image->paint_image(), tree);
-    }
+    size_t frame_index = client_->GetFrameIndexForImage(
+        original_draw_image->paint_image(), tree);
     DrawImage draw_image(*original_draw_image, tile->raster_transform().scale(),
                          frame_index, raster_color_space);
     if (checker_image_tracker_.ShouldCheckerImage(draw_image, tree)) {

@@ -140,8 +140,7 @@ scoped_refptr<Image> StyleFetchedImage::GetImage(
 
 bool StyleFetchedImage::KnownToBeOpaque(const Document&,
                                         const ComputedStyle&) const {
-  return image_->GetImage()->CurrentFrameKnownToBeOpaque(
-      Image::kPreCacheMetadata);
+  return image_->GetImage()->CurrentFrameKnownToBeOpaque();
 }
 
 void StyleFetchedImage::Trace(blink::Visitor* visitor) {

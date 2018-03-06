@@ -29,7 +29,6 @@ CONTENT_EXPORT extern const base::Feature kCheckerImaging;
 CONTENT_EXPORT extern const base::Feature kCodeCacheAfterExecute;
 CONTENT_EXPORT extern const base::Feature kCompositeOpaqueFixedPosition;
 CONTENT_EXPORT extern const base::Feature kCompositeOpaqueScrollers;
-CONTENT_EXPORT extern const base::Feature kCompositorImageAnimation;
 CONTENT_EXPORT extern const base::Feature kCompositorTouchAction;
 CONTENT_EXPORT extern const base::Feature kCrossSiteDocumentBlockingAlways;
 CONTENT_EXPORT extern const base::Feature kCrossSiteDocumentBlockingIfIsolating;

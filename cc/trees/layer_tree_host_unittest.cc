@@ -8483,10 +8483,6 @@ class LayerTreeHostTestImageAnimation : public LayerTreeHostTest {
  public:
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->enable_image_animations = true;
-  }
-
   void SetupTree() override {
     gfx::Size layer_size(1000, 500);
     content_layer_client_.set_bounds(layer_size);

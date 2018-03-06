@@ -2455,9 +2455,6 @@ static void AppendCompositorCommandLineFlags(base::CommandLine* command_line) {
   if (IsCheckerImagingEnabled())
     command_line->AppendSwitch(cc::switches::kEnableCheckerImaging);
 
-  if (IsCompositorImageAnimationEnabled())
-    command_line->AppendSwitch(switches::kEnableCompositorImageAnimations);
-
   // Slimming Paint v2 implies layer lists in the renderer.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableSlimmingPaintV2)) {

@@ -22,7 +22,7 @@ class PLATFORM_EXPORT MailboxTextureHolder final : public TextureHolder {
   bool IsSkiaTextureHolder() final { return false; }
   bool IsMailboxTextureHolder() final { return true; }
   IntSize Size() const final { return size_; }
-  bool CurrentFrameKnownToBeOpaque(Image::MetadataMode) final { return false; }
+  bool CurrentFrameKnownToBeOpaque() final { return false; }
   bool IsValid() const final;
 
   const gpu::Mailbox& GetMailbox() const final { return mailbox_; }

@@ -56,10 +56,7 @@ class PLATFORM_EXPORT GeneratedImage : public Image {
                    const FloatSize& repeat_spacing) final;
 
   // FIXME: Implement this to be less conservative.
-  bool CurrentFrameKnownToBeOpaque(
-      MetadataMode = kUseCurrentMetadata) override {
-    return false;
-  }
+  bool CurrentFrameKnownToBeOpaque() override { return false; }
 
   GeneratedImage(const FloatSize& size) : size_(size) {}
 

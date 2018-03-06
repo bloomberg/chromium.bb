@@ -139,10 +139,7 @@ class CORE_EXPORT SVGImage final : public Image {
   void DestroyDecodedData() override {}
 
   // FIXME: Implement this to be less conservative.
-  bool CurrentFrameKnownToBeOpaque(
-      MetadataMode = kUseCurrentMetadata) override {
-    return false;
-  }
+  bool CurrentFrameKnownToBeOpaque() override { return false; }
 
   void Draw(PaintCanvas*,
             const PaintFlags&,

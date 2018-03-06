@@ -128,12 +128,6 @@ class Internals final : public ScriptWrappable {
   void disableCompositedAnimation(Animation*);
   void disableCSSAdditiveAnimations();
 
-  // Modifies m_desiredFrameStartTime in BitmapImage to advance the next frame
-  // time for testing whether animated images work properly.
-  void advanceTimeForImage(Element* image,
-                           double delta_time_in_seconds,
-                           ExceptionState&);
-
   // Advances an animated image. For BitmapImage (e.g., animated gifs) this
   // will advance to the next frame. For SVGImage, this will trigger an
   // animation update for CSS and advance the SMIL timeline by one frame.

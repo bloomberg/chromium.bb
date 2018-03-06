@@ -71,7 +71,7 @@ UnacceleratedStaticBitmapImage::MakeAccelerated(
       std::move(gpu_skimage), std::move(context_wrapper));
 }
 
-bool UnacceleratedStaticBitmapImage::CurrentFrameKnownToBeOpaque(MetadataMode) {
+bool UnacceleratedStaticBitmapImage::CurrentFrameKnownToBeOpaque() {
   return paint_image_.GetSkImage()->isOpaque();
 }
 
