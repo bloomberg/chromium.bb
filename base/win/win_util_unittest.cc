@@ -7,6 +7,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/scoped_native_library.h"
+#include "base/stl_util.h"
 #include "base/win/win_client_metrics.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -67,8 +68,7 @@ TEST(BaseWinUtilTest, TestGetLoadedModulesSnapshot) {
   ASSERT_NE(static_cast<HMODULE>(NULL), new_dll.get());
   ASSERT_TRUE(GetLoadedModulesSnapshot(::GetCurrentProcess(), &snapshot));
   ASSERT_GT(snapshot.size(), original_snapshot_size);
-  ASSERT_NE(snapshot.end(),
-            std::find(snapshot.begin(), snapshot.end(), new_dll.get()));
+  ASSERT_TRUE(base::ContainsValue(snapshot, new_dll.get()));
 }
 
 TEST(BaseWinUtilTest, TestUint32ToInvalidHandle) {
