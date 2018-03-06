@@ -253,10 +253,9 @@ void TestWindowManager::WmBuildDragImage(const gfx::Point& screen_location,
                                          const gfx::Vector2d& drag_image_offset,
                                          ui::mojom::PointerKind source) {}
 
-void TestWindowManager::WmMoveDragImage(
-    const gfx::Point& screen_location,
-    const WmMoveDragImageCallback& callback) {
-  callback.Run();
+void TestWindowManager::WmMoveDragImage(const gfx::Point& screen_location,
+                                        WmMoveDragImageCallback callback) {
+  std::move(callback).Run();
 }
 
 void TestWindowManager::WmDestroyDragImage() {}
@@ -450,22 +449,21 @@ void TestWindowTreeClient::OnDragEnter(Id window,
                                        uint32_t key_state,
                                        const gfx::Point& position,
                                        uint32_t effect_bitmask,
-                                       const OnDragEnterCallback& callback) {}
+                                       OnDragEnterCallback callback) {}
 
 void TestWindowTreeClient::OnDragOver(Id window,
                                       uint32_t key_state,
                                       const gfx::Point& position,
                                       uint32_t effect_bitmask,
-                                      const OnDragOverCallback& callback) {}
+                                      OnDragOverCallback callback) {}
 
 void TestWindowTreeClient::OnDragLeave(Id window) {}
 
-void TestWindowTreeClient::OnCompleteDrop(
-    Id window,
-    uint32_t key_state,
-    const gfx::Point& position,
-    uint32_t effect_bitmask,
-    const OnCompleteDropCallback& callback) {}
+void TestWindowTreeClient::OnCompleteDrop(Id window,
+                                          uint32_t key_state,
+                                          const gfx::Point& position,
+                                          uint32_t effect_bitmask,
+                                          OnCompleteDropCallback callback) {}
 
 void TestWindowTreeClient::OnPerformDragDropCompleted(uint32_t change_id,
                                                       bool success,

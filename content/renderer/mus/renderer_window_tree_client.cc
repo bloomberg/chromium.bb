@@ -336,27 +336,26 @@ void RendererWindowTreeClient::OnWindowSurfaceChanged(
 void RendererWindowTreeClient::OnDragDropStart(
     const std::unordered_map<std::string, std::vector<uint8_t>>& mime_data) {}
 
-void RendererWindowTreeClient::OnDragEnter(
-    ui::Id window_id,
-    uint32_t event_flags,
-    const gfx::Point& position,
-    uint32_t effect_bitmask,
-    const OnDragEnterCallback& callback) {}
+void RendererWindowTreeClient::OnDragEnter(ui::Id window_id,
+                                           uint32_t event_flags,
+                                           const gfx::Point& position,
+                                           uint32_t effect_bitmask,
+                                           OnDragEnterCallback callback) {}
 
 void RendererWindowTreeClient::OnDragOver(ui::Id window_id,
                                           uint32_t event_flags,
                                           const gfx::Point& position,
                                           uint32_t effect_bitmask,
-                                          const OnDragOverCallback& callback) {}
+                                          OnDragOverCallback callback) {}
 
 void RendererWindowTreeClient::OnDragLeave(ui::Id window_id) {}
 
-void RendererWindowTreeClient::OnCompleteDrop(
-    ui::Id window_id,
-    uint32_t event_flags,
-    const gfx::Point& position,
-    uint32_t effect_bitmask,
-    const OnCompleteDropCallback& callback) {}
+void RendererWindowTreeClient::OnCompleteDrop(ui::Id window_id,
+                                              uint32_t event_flags,
+                                              const gfx::Point& position,
+                                              uint32_t effect_bitmask,
+                                              OnCompleteDropCallback callback) {
+}
 
 void RendererWindowTreeClient::OnPerformDragDropCompleted(
     uint32_t change_id,

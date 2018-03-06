@@ -187,8 +187,7 @@ class TestWindowTree : public ui::mojom::WindowTree {
                      ui::Id window_id,
                      ui::Id relative_window_id,
                      ui::mojom::OrderDirection direction) override;
-  void GetWindowTree(ui::Id window_id,
-                     const GetWindowTreeCallback& callback) override;
+  void GetWindowTree(ui::Id window_id, GetWindowTreeCallback callback) override;
   void SetCapture(uint32_t change_id, ui::Id window_id) override;
   void ReleaseCapture(uint32_t change_id, ui::Id window_id) override;
   void StartPointerWatcher(bool want_moves) override;
@@ -196,13 +195,13 @@ class TestWindowTree : public ui::mojom::WindowTree {
   void Embed(ui::Id window_id,
              ui::mojom::WindowTreeClientPtr client,
              uint32_t flags,
-             const EmbedCallback& callback) override;
+             EmbedCallback callback) override;
   void ScheduleEmbed(ui::mojom::WindowTreeClientPtr client,
-                     const ScheduleEmbedCallback& callback) override;
+                     ScheduleEmbedCallback callback) override;
   void EmbedUsingToken(ui::Id window_id,
                        const base::UnguessableToken& token,
                        uint32_t embed_flags,
-                       const EmbedUsingTokenCallback& callback) override;
+                       EmbedUsingTokenCallback callback) override;
   void SetFocus(uint32_t change_id, ui::Id window_id) override;
   void SetCanFocus(ui::Id window_id, bool can_focus) override;
   void SetEventTargetingPolicy(ui::Id window_id,
@@ -227,7 +226,7 @@ class TestWindowTree : public ui::mojom::WindowTree {
       mojo::AssociatedInterfaceRequest<ui::mojom::WindowManagerClient> internal)
       override;
   void GetCursorLocationMemory(
-      const GetCursorLocationMemoryCallback& callback) override;
+      GetCursorLocationMemoryCallback callback) override;
   void PerformDragDrop(
       uint32_t change_id,
       ui::Id source_window_id,

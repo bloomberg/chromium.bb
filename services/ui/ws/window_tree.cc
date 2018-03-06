@@ -1694,12 +1694,10 @@ void WindowTree::ReorderWindow(uint32_t change_id,
   client()->OnChangeCompleted(change_id, success);
 }
 
-void WindowTree::GetWindowTree(
-    Id window_id,
-    const base::Callback<void(std::vector<mojom::WindowDataPtr>)>& callback) {
+void WindowTree::GetWindowTree(Id window_id, GetWindowTreeCallback callback) {
   std::vector<const ServerWindow*> windows(
       GetWindowTree(MakeClientWindowId(window_id)));
-  callback.Run(WindowsToWindowDatas(windows));
+  std::move(callback).Run(WindowsToWindowDatas(windows));
 }
 
 void WindowTree::SetCapture(uint32_t change_id, Id window_id) {
@@ -1994,31 +1992,31 @@ void WindowTree::SetCanAcceptDrops(Id window_id, bool accepts_drops) {
 void WindowTree::Embed(Id transport_window_id,
                        mojom::WindowTreeClientPtr client,
                        uint32_t flags,
-                       const EmbedCallback& callback) {
-  callback.Run(
+                       EmbedCallback callback) {
+  std::move(callback).Run(
       Embed(MakeClientWindowId(transport_window_id), std::move(client), flags));
 }
 
 void WindowTree::ScheduleEmbed(mojom::WindowTreeClientPtr client,
-                               const ScheduleEmbedCallback& callback) {
+                               ScheduleEmbedCallback callback) {
   const base::UnguessableToken token = base::UnguessableToken::Create();
   scheduled_embeds_[token] = std::move(client);
-  callback.Run(token);
+  std::move(callback).Run(token);
 }
 
 void WindowTree::EmbedUsingToken(Id transport_window_id,
                                  const base::UnguessableToken& token,
                                  uint32_t flags,
-                                 const EmbedUsingTokenCallback& callback) {
+                                 EmbedUsingTokenCallback callback) {
   mojom::WindowTreeClientPtr client =
       GetAndRemoveScheduledEmbedWindowTreeClient(token);
   if (!client) {
     DVLOG(1) << "EmbedUsingToken failed, no ScheduleEmbed(), token="
              << token.ToString();
-    callback.Run(false);
+    std::move(callback).Run(false);
     return;
   }
-  Embed(transport_window_id, std::move(client), flags, callback);
+  Embed(transport_window_id, std::move(client), flags, std::move(callback));
 }
 
 void WindowTree::SetFocus(uint32_t change_id, Id transport_window_id) {
@@ -2255,8 +2253,8 @@ void WindowTree::GetWindowManagerClient(
 }
 
 void WindowTree::GetCursorLocationMemory(
-    const GetCursorLocationMemoryCallback& callback) {
-  callback.Run(
+    GetCursorLocationMemoryCallback callback) {
+  std::move(callback).Run(
       display_manager()->cursor_location_manager()->GetCursorLocationMemory());
 }
 
@@ -2424,7 +2422,7 @@ void WindowTree::CancelWindowMove(Id window_id) {
 
 void WindowTree::AddAccelerators(
     std::vector<mojom::WmAcceleratorPtr> accelerators,
-    const AddAcceleratorsCallback& callback) {
+    AddAcceleratorsCallback callback) {
   DCHECK(window_manager_state_);
 
   bool success = true;
@@ -2433,7 +2431,7 @@ void WindowTree::AddAccelerators(
             iter->get()->id, std::move(iter->get()->event_matcher)))
       success = false;
   }
-  callback.Run(success);
+  std::move(callback).Run(success);
 }
 
 void WindowTree::RemoveAccelerator(uint32_t id) {
@@ -2490,16 +2488,16 @@ void WindowTree::SetDisplayRoot(const display::Display& display,
                                 bool is_primary_display,
                                 Id window_id,
                                 const std::vector<display::Display>& mirrors,
-                                const SetDisplayRootCallback& callback) {
+                                SetDisplayRootCallback callback) {
   ServerWindow* display_root = ProcessSetDisplayRoot(
       display, TransportMetricsToDisplayMetrics(*viewport_metrics),
       is_primary_display, MakeClientWindowId(window_id), mirrors);
   if (!display_root) {
-    callback.Run(false);
+    std::move(callback).Run(false);
     return;
   }
   display_root->parent()->SetVisible(true);
-  callback.Run(true);
+  std::move(callback).Run(true);
 }
 
 void WindowTree::SetDisplayConfiguration(
@@ -2508,26 +2506,27 @@ void WindowTree::SetDisplayConfiguration(
     int64_t primary_display_id,
     int64_t internal_display_id,
     const std::vector<display::Display>& mirrors,
-    const SetDisplayConfigurationCallback& callback) {
+    SetDisplayConfigurationCallback callback) {
   std::vector<display::ViewportMetrics> metrics;
   for (auto& transport_ptr : transport_metrics)
     metrics.push_back(TransportMetricsToDisplayMetrics(*transport_ptr));
-  callback.Run(display_manager()->SetDisplayConfiguration(
+  std::move(callback).Run(display_manager()->SetDisplayConfiguration(
       displays, metrics, primary_display_id, internal_display_id, mirrors));
 }
 
 void WindowTree::SwapDisplayRoots(int64_t display_id1,
                                   int64_t display_id2,
-                                  const SwapDisplayRootsCallback& callback) {
+                                  SwapDisplayRootsCallback callback) {
   DCHECK(window_manager_state_);  // Only applicable to the window manager.
-  callback.Run(ProcessSwapDisplayRoots(display_id1, display_id2));
+  std::move(callback).Run(ProcessSwapDisplayRoots(display_id1, display_id2));
 }
 
 void WindowTree::SetBlockingContainers(
     std::vector<::ui::mojom::BlockingContainersPtr> blocking_containers,
-    const SetBlockingContainersCallback& callback) {
+    SetBlockingContainersCallback callback) {
   DCHECK(window_manager_state_);  // Only applicable to the window manager.
-  callback.Run(ProcessSetBlockingContainers(std::move(blocking_containers)));
+  std::move(callback).Run(
+      ProcessSetBlockingContainers(std::move(blocking_containers)));
 }
 
 void WindowTree::WmResponse(uint32_t change_id, bool response) {

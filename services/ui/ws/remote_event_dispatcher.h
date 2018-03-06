@@ -21,7 +21,7 @@ class RemoteEventDispatcherImpl : public mojom::RemoteEventDispatcher {
   // mojom::RemoteEventDispatcher:
   void DispatchEvent(int64_t display_id,
                      std::unique_ptr<ui::Event> event,
-                     const DispatchEventCallback& cb) override;
+                     DispatchEventCallback cb) override;
 
   WindowServer* window_server_;
 
