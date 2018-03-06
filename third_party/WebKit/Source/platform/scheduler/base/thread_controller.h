@@ -20,7 +20,7 @@ namespace blink {
 namespace scheduler {
 namespace internal {
 
-class Sequence;
+class SequencedTaskSource;
 
 // Interface for TaskQueueManager to schedule work to be run.
 class PLATFORM_EXPORT ThreadController {
@@ -63,9 +63,10 @@ class PLATFORM_EXPORT ThreadController {
   // |run_time| and previously scheduled callbacks should be cancelled.
   virtual void CancelDelayedWork(base::TimeTicks run_time) = 0;
 
-  // Sets the sequence from which to take tasks after a Schedule*Work() call is
-  // made. Must be called before the first call to Schedule*Work().
-  virtual void SetSequence(Sequence*) = 0;
+  // Sets the sequenced task source from which to take tasks after
+  // a Schedule*Work() call is made.
+  // Must be called before the first call to Schedule*Work().
+  virtual void SetSequencedTaskSource(SequencedTaskSource*) = 0;
 
   // TODO(altimin): Get rid of the methods below.
   // These methods exist due to current integration of TaskQueueManager

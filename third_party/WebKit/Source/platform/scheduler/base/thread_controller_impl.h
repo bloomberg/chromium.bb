@@ -15,7 +15,7 @@
 #include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
 #include "platform/PlatformExport.h"
-#include "platform/scheduler/base/sequence.h"
+#include "platform/scheduler/base/sequenced_task_source.h"
 
 namespace base {
 class MessageLoop;
@@ -43,7 +43,7 @@ class PLATFORM_EXPORT ThreadControllerImpl
   void ScheduleDelayedWork(base::TimeTicks now,
                            base::TimeTicks run_timy) override;
   void CancelDelayedWork(base::TimeTicks run_time) override;
-  void SetSequence(Sequence* sequence) override;
+  void SetSequencedTaskSource(SequencedTaskSource* sequence) override;
   bool RunsTasksInCurrentSequence() override;
   base::TickClock* GetClock() override;
   void SetDefaultTaskRunner(
@@ -69,7 +69,7 @@ class PLATFORM_EXPORT ThreadControllerImpl
   base::RunLoop::NestingObserver* nesting_observer_ = nullptr;
 
  private:
-  void DoWork(Sequence::WorkType work_type);
+  void DoWork(SequencedTaskSource::WorkType work_type);
 
   struct AnySequence {
     AnySequence() = default;
@@ -117,7 +117,7 @@ class PLATFORM_EXPORT ThreadControllerImpl
   base::RepeatingClosure immediate_do_work_closure_;
   base::RepeatingClosure delayed_do_work_closure_;
   base::CancelableClosure cancelable_delayed_do_work_closure_;
-  Sequence* sequence_ = nullptr;  // NOT OWNED
+  SequencedTaskSource* sequence_ = nullptr;  // NOT OWNED
   base::debug::TaskAnnotator task_annotator_;
 
   base::WeakPtrFactory<ThreadControllerImpl> weak_factory_;

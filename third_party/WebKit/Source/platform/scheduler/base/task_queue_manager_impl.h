@@ -22,7 +22,7 @@
 #include "platform/scheduler/base/enqueue_order.h"
 #include "platform/scheduler/base/graceful_queue_shutdown_helper.h"
 #include "platform/scheduler/base/moveable_auto_lock.h"
-#include "platform/scheduler/base/sequence.h"
+#include "platform/scheduler/base/sequenced_task_source.h"
 #include "platform/scheduler/base/task_queue_impl.h"
 #include "platform/scheduler/base/task_queue_manager.h"
 #include "platform/scheduler/base/task_queue_selector.h"
@@ -69,7 +69,7 @@ class TimeDomain;
 //
 class PLATFORM_EXPORT TaskQueueManagerImpl
     : public TaskQueueManager,
-      public internal::Sequence,
+      public internal::SequencedTaskSource,
       public internal::TaskQueueSelector::Observer,
       public base::RunLoop::NestingObserver {
  public:
@@ -109,7 +109,7 @@ class PLATFORM_EXPORT TaskQueueManagerImpl
   size_t GetNumberOfPendingTasks() const override;
   bool HasImmediateWorkForTesting() const override;
 
-  // Implementation of Sequence:
+  // Implementation of SequencedTaskSource:
   base::Optional<base::PendingTask> TakeTask() override;
   void DidRunTask() override;
   base::TimeDelta DelayTillNextTask(LazyNow* lazy_now) override;

@@ -13,7 +13,7 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "platform/scheduler/base/enqueue_order.h"
 #include "platform/scheduler/base/intrusive_heap.h"
-#include "platform/scheduler/base/sequence.h"
+#include "platform/scheduler/base/sequenced_task_source.h"
 #include "platform/scheduler/base/task_queue_impl.h"
 
 namespace blink {
@@ -33,7 +33,7 @@ class WorkQueueSets;
 // throttling mechanisms.
 class PLATFORM_EXPORT WorkQueue {
  public:
-  using QueueType = Sequence::WorkType;
+  using QueueType = SequencedTaskSource::WorkType;
 
   // Note |task_queue| can be null if queue_type is kNonNestable.
   WorkQueue(TaskQueueImpl* task_queue, const char* name, QueueType queue_type);

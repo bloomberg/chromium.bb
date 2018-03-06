@@ -72,7 +72,7 @@ TaskQueueManagerImpl::TaskQueueManagerImpl(
 
   RegisterTimeDomain(main_thread_only().real_time_domain.get());
 
-  controller_->SetSequence(this);
+  controller_->SetSequencedTaskSource(this);
   controller_->AddNestingObserver(this);
 }
 

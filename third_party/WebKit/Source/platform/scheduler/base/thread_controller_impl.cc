@@ -11,7 +11,6 @@
 #include "base/time/tick_clock.h"
 #include "base/trace_event/trace_event.h"
 #include "platform/scheduler/base/lazy_now.h"
-#include "platform/scheduler/base/sequence.h"
 
 namespace blink {
 namespace scheduler {
@@ -29,10 +28,10 @@ ThreadControllerImpl::ThreadControllerImpl(
       weak_factory_(this) {
   immediate_do_work_closure_ = base::BindRepeating(
       &ThreadControllerImpl::DoWork, weak_factory_.GetWeakPtr(),
-      Sequence::WorkType::kImmediate);
-  delayed_do_work_closure_ = base::BindRepeating(&ThreadControllerImpl::DoWork,
-                                                 weak_factory_.GetWeakPtr(),
-                                                 Sequence::WorkType::kDelayed);
+      SequencedTaskSource::WorkType::kImmediate);
+  delayed_do_work_closure_ = base::BindRepeating(
+      &ThreadControllerImpl::DoWork, weak_factory_.GetWeakPtr(),
+      SequencedTaskSource::WorkType::kDelayed);
 }
 
 ThreadControllerImpl::~ThreadControllerImpl() = default;
@@ -44,7 +43,8 @@ std::unique_ptr<ThreadControllerImpl> ThreadControllerImpl::Create(
       message_loop, message_loop->task_runner(), time_source));
 }
 
-void ThreadControllerImpl::SetSequence(Sequence* sequence) {
+void ThreadControllerImpl::SetSequencedTaskSource(
+    SequencedTaskSource* sequence) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(sequence);
   DCHECK(!sequence_);
@@ -138,13 +138,13 @@ void ThreadControllerImpl::DidQueueTask(const base::PendingTask& pending_task) {
   task_annotator_.DidQueueTask("TaskQueueManager::PostTask", pending_task);
 }
 
-void ThreadControllerImpl::DoWork(Sequence::WorkType work_type) {
+void ThreadControllerImpl::DoWork(SequencedTaskSource::WorkType work_type) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(sequence_);
 
   {
     base::AutoLock lock(any_sequence_lock_);
-    if (work_type == Sequence::WorkType::kImmediate)
+    if (work_type == SequencedTaskSource::WorkType::kImmediate)
       any_sequence().immediate_do_work_posted = false;
     any_sequence().do_work_running_count++;
   }
