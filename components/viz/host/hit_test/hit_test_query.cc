@@ -95,7 +95,7 @@ bool HitTestQuery::FindTargetInRegionForLocation(
     AggregatedHitTestRegion* region,
     Target* target) const {
   gfx::PointF location_transformed(location_in_parent);
-  region->transform.TransformPoint(&location_transformed);
+  region->transform().TransformPoint(&location_transformed);
   if (!gfx::RectF(region->rect).Contains(location_transformed))
     return false;
 
@@ -152,7 +152,7 @@ bool HitTestQuery::TransformLocationForTargetRecursively(
     return false;
   }
 
-  region->transform.TransformPoint(location_in_target);
+  region->transform().TransformPoint(location_in_target);
   location_in_target->Offset(-region->rect.x(), -region->rect.y());
   if (!target_ancestor)
     return true;

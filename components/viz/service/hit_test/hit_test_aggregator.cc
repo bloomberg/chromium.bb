@@ -18,17 +18,6 @@ constexpr uint32_t kInitialSize = 1024;
 constexpr uint32_t kIncrementalSize = 1024;
 constexpr uint32_t kMaxSize = 100 * 1024;
 
-void PrepareTransformForReadOnlySharedMemory(gfx::Transform* transform) {
-  // |transform| is going to be shared in read-only memory to HitTestQuery.
-  // However, if HitTestQuery tries to operate on it, then it is possible that
-  // it will attempt to perform write on the underlying SkMatrix44 [1], causing
-  // invalid memory write in read-only memory.
-  // [1]
-  // https://cs.chromium.org/chromium/src/third_party/skia/include/core/SkMatrix44.h?l=133
-  // Explicitly calling getType() to compute the type-mask in SkMatrix44.
-  transform->matrix().getType();
-}
-
 }  // namespace
 
 HitTestAggregator::HitTestAggregator(const HitTestManager* hit_test_manager,
@@ -190,10 +179,8 @@ void HitTestAggregator::SetRegionAt(size_t index,
   element->frame_sink_id = frame_sink_id;
   element->flags = flags;
   element->rect = rect;
-  element->transform = transform;
   element->child_count = child_count;
-
-  PrepareTransformForReadOnlySharedMemory(&element->transform);
+  element->set_transform(transform);
 }
 
 void HitTestAggregator::MarkEndAt(size_t index) {

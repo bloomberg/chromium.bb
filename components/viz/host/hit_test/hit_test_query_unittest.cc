@@ -34,7 +34,9 @@ class HitTestQueryTest : public testing::Test {
         mojo::SharedBufferHandle::Create(num_bytes);
     active_buffer_ = active_handle->Map(num_bytes);
     hit_test_query_.OnAggregatedHitTestRegionListUpdated(
-        std::move(active_handle), handle_size, std::move(idle_handle),
+        active_handle->Clone(mojo::SharedBufferHandle::AccessMode::READ_ONLY),
+        handle_size,
+        idle_handle->Clone(mojo::SharedBufferHandle::AccessMode::READ_ONLY),
         handle_size);
   }
   void TearDown() override {}
