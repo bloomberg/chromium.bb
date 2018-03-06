@@ -50,7 +50,8 @@ Editor::Command GetCommand(Document* document, const String& command_name) {
     return Editor::Command();
 
   document->UpdateStyleAndLayoutTree();
-  return frame->GetEditor().CreateCommand(command_name, kCommandFromDOM);
+  return frame->GetEditor().CreateCommand(command_name,
+                                          EditorCommandSource::kDOM);
 }
 
 }  // namespace

@@ -316,10 +316,10 @@ static bool ApplyCommandToFrame(LocalFrame& frame,
   // FIXME: We don't call shouldApplyStyle when the source is DOM; is there a
   // good reason for that?
   switch (source) {
-    case kCommandFromMenuOrKeyBinding:
+    case EditorCommandSource::kMenuOrKeyBinding:
       ApplyStyleToSelection(frame, style, input_type);
       return true;
-    case kCommandFromDOM:
+    case EditorCommandSource::kDOM:
       ApplyStyle(frame, style, input_type);
       return true;
   }
@@ -443,10 +443,10 @@ static bool ExecuteApplyParagraphStyle(LocalFrame& frame,
   // FIXME: We don't call shouldApplyStyle when the source is DOM; is there a
   // good reason for that?
   switch (source) {
-    case kCommandFromMenuOrKeyBinding:
+    case EditorCommandSource::kMenuOrKeyBinding:
       frame.GetEditor().ApplyParagraphStyleToSelection(style, input_type);
       return true;
-    case kCommandFromDOM:
+    case EditorCommandSource::kDOM:
       frame.GetEditor().ApplyParagraphStyle(style, input_type);
       return true;
   }
@@ -739,7 +739,7 @@ static bool ExecuteBackColor(LocalFrame& frame,
 }
 
 static bool CanWriteClipboard(LocalFrame& frame, EditorCommandSource source) {
-  if (source == kCommandFromMenuOrKeyBinding)
+  if (source == EditorCommandSource::kMenuOrKeyBinding)
     return true;
   Settings* settings = frame.GetSettings();
   bool default_value =
@@ -756,7 +756,8 @@ static Element* FindEventTargetForClipboardEvent(LocalFrame& frame,
   //  "Set target to be the element that contains the start of the selection in
   //   document order, or the body element if there is no selection or cursor."
   // We treat hidden selections as "no selection or cursor".
-  if (source == kCommandFromMenuOrKeyBinding && frame.Selection().IsHidden())
+  if (source == EditorCommandSource::kMenuOrKeyBinding &&
+      frame.Selection().IsHidden())
     return frame.Selection().GetDocument().body();
 
   return FindEventTargetFrom(
@@ -838,7 +839,8 @@ static bool ExecuteCopy(LocalFrame& frame,
   // Since copy is a read-only operation it succeeds anytime a selection
   // is *visible*. In contrast to cut or paste, the selection does not
   // need to be focused - being visible is enough.
-  if (source == kCommandFromMenuOrKeyBinding && frame.Selection().IsHidden())
+  if (source == EditorCommandSource::kMenuOrKeyBinding &&
+      frame.Selection().IsHidden())
     return true;
 
   // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
@@ -911,7 +913,7 @@ static bool ExecuteCut(LocalFrame& frame,
   // before we obtain the selection.
   frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
-  if (source == kCommandFromMenuOrKeyBinding &&
+  if (source == EditorCommandSource::kMenuOrKeyBinding &&
       !frame.Selection().SelectionHasFocus())
     return true;
 
@@ -928,7 +930,7 @@ static bool ExecuteCut(LocalFrame& frame,
     WriteSelectionToPasteboard(frame);
   }
 
-  if (source == kCommandFromMenuOrKeyBinding) {
+  if (source == EditorCommandSource::kMenuOrKeyBinding) {
     if (DispatchBeforeInputDataTransfer(
             FindEventTargetForClipboardEvent(frame, source),
             InputEvent::InputType::kDeleteByCut,
@@ -987,12 +989,12 @@ static bool ExecuteDelete(LocalFrame& frame,
                           EditorCommandSource source,
                           const String&) {
   switch (source) {
-    case kCommandFromMenuOrKeyBinding: {
+    case EditorCommandSource::kMenuOrKeyBinding: {
       // Doesn't modify the text if the current selection isn't a range.
       PerformDelete(frame);
       return true;
     }
-    case kCommandFromDOM:
+    case EditorCommandSource::kDOM:
       // If the current selection is a caret, delete the preceding character. IE
       // performs forwardDelete, but we currently side with Firefox. Doesn't
       // scroll to make the selection visible, or modify the kill ring (this
@@ -1251,11 +1253,11 @@ static bool ExecuteForwardDelete(LocalFrame& frame,
                                  const String&) {
   EditingState editing_state;
   switch (source) {
-    case kCommandFromMenuOrKeyBinding:
+    case EditorCommandSource::kMenuOrKeyBinding:
       DeleteWithDirection(frame, DeleteDirection::kForward,
                           TextGranularity::kCharacter, false, true);
       return true;
-    case kCommandFromDOM:
+    case EditorCommandSource::kDOM:
       // Doesn't scroll to make the selection visible, or modify the kill ring.
       // ForwardDelete is not implemented in IE or Firefox, so this behavior is
       // only needed for backward compatibility with ourselves, and for
@@ -1334,11 +1336,11 @@ static bool ExecuteInsertLineBreak(LocalFrame& frame,
                                    EditorCommandSource source,
                                    const String&) {
   switch (source) {
-    case kCommandFromMenuOrKeyBinding:
+    case EditorCommandSource::kMenuOrKeyBinding:
       return TargetFrame(frame, event)
           ->GetEventHandler()
           .HandleTextInputEvent("\n", event, kTextEventInputLineBreak);
-    case kCommandFromDOM:
+    case EditorCommandSource::kDOM:
       // Doesn't scroll to make the selection visible, or modify the kill ring.
       // InsertLineBreak is not implemented in IE or Firefox, so this behavior
       // is only needed for backward compatibility with ourselves, and for
@@ -2025,7 +2027,7 @@ static bool ExecuteToggleOverwrite(LocalFrame& frame,
 }
 
 static bool CanReadClipboard(LocalFrame& frame, EditorCommandSource source) {
-  if (source == kCommandFromMenuOrKeyBinding)
+  if (source == EditorCommandSource::kMenuOrKeyBinding)
     return true;
   Settings* settings = frame.GetSettings();
   bool default_value = settings &&
@@ -2130,7 +2132,7 @@ static void Paste(LocalFrame& frame, EditorCommandSource source) {
   // before we obtain the selection.
   frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
-  if (source == kCommandFromMenuOrKeyBinding &&
+  if (source == EditorCommandSource::kMenuOrKeyBinding &&
       !frame.Selection().SelectionHasFocus())
     return;
 
@@ -2140,7 +2142,7 @@ static void Paste(LocalFrame& frame, EditorCommandSource source) {
   const PasteMode paste_mode =
       frame.GetEditor().CanEditRichly() ? kAllMimeTypes : kPlainTextOnly;
 
-  if (source == kCommandFromMenuOrKeyBinding) {
+  if (source == EditorCommandSource::kMenuOrKeyBinding) {
     DataTransfer* data_transfer =
         DataTransfer::Create(DataTransfer::kCopyAndPaste, kDataTransferReadable,
                              DataObject::CreateFromPasteboard(paste_mode));
@@ -2191,7 +2193,7 @@ static bool ExecutePasteGlobalSelection(LocalFrame& frame,
     return false;
   if (!frame.GetEditor().Behavior().SupportsGlobalSelection())
     return false;
-  DCHECK_EQ(source, kCommandFromMenuOrKeyBinding);
+  DCHECK_EQ(source, EditorCommandSource::kMenuOrKeyBinding);
 
   bool old_selection_mode = Pasteboard::GeneralPasteboard()->IsSelectionMode();
   Pasteboard::GeneralPasteboard()->SetSelectionMode(true);
@@ -2215,7 +2217,7 @@ static bool ExecutePasteAndMatchStyle(LocalFrame& frame,
   // before we obtain the selection.
   frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
-  if (source == kCommandFromMenuOrKeyBinding &&
+  if (source == EditorCommandSource::kMenuOrKeyBinding &&
       !frame.Selection().SelectionHasFocus())
     return false;
 
@@ -2304,9 +2306,10 @@ static bool ExecuteSelectAll(LocalFrame& frame,
                              Event*,
                              EditorCommandSource source,
                              const String&) {
-  const SetSelectionBy set_selection_by = source == kCommandFromMenuOrKeyBinding
-                                              ? SetSelectionBy::kUser
-                                              : SetSelectionBy::kSystem;
+  const SetSelectionBy set_selection_by =
+      source == EditorCommandSource::kMenuOrKeyBinding
+          ? SetSelectionBy::kUser
+          : SetSelectionBy::kSystem;
   frame.Selection().SelectAll(set_selection_by);
   return true;
 }
@@ -2635,7 +2638,7 @@ static bool EnabledVisibleSelection(LocalFrame& frame,
                                     EditorCommandSource source) {
   frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
-  if (source == kCommandFromMenuOrKeyBinding &&
+  if (source == EditorCommandSource::kMenuOrKeyBinding &&
       !frame.Selection().SelectionHasFocus())
     return false;
 
@@ -2652,7 +2655,7 @@ static bool EnabledVisibleSelectionAndMark(LocalFrame& frame,
                                            EditorCommandSource source) {
   frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
-  if (source == kCommandFromMenuOrKeyBinding &&
+  if (source == EditorCommandSource::kMenuOrKeyBinding &&
       !frame.Selection().SelectionHasFocus())
     return false;
 
@@ -2668,7 +2671,7 @@ static bool EnableCaretInEditableText(LocalFrame& frame,
                                       EditorCommandSource source) {
   frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
-  if (source == kCommandFromMenuOrKeyBinding &&
+  if (source == EditorCommandSource::kMenuOrKeyBinding &&
       !frame.Selection().SelectionHasFocus())
     return false;
   const VisibleSelection& selection =
@@ -2692,7 +2695,7 @@ static bool EnabledCopy(LocalFrame& frame, Event*, EditorCommandSource source) {
 static bool EnabledCut(LocalFrame& frame, Event*, EditorCommandSource source) {
   if (!CanWriteClipboard(frame, source))
     return false;
-  if (source == kCommandFromMenuOrKeyBinding &&
+  if (source == EditorCommandSource::kMenuOrKeyBinding &&
       !frame.Selection().SelectionHasFocus())
     return false;
   return !DispatchCopyOrCutEvent(frame, source, EventTypeNames::beforecut) ||
@@ -2703,7 +2706,7 @@ static bool EnabledInEditableText(LocalFrame& frame,
                                   Event* event,
                                   EditorCommandSource source) {
   frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
-  if (source == kCommandFromMenuOrKeyBinding &&
+  if (source == EditorCommandSource::kMenuOrKeyBinding &&
       !frame.Selection().SelectionHasFocus())
     return false;
   const SelectionInDOMTree selection =
@@ -2716,10 +2719,10 @@ static bool EnabledDelete(LocalFrame& frame,
                           Event* event,
                           EditorCommandSource source) {
   switch (source) {
-    case kCommandFromMenuOrKeyBinding:
+    case EditorCommandSource::kMenuOrKeyBinding:
       return frame.Selection().SelectionHasFocus() &&
              frame.GetEditor().CanDelete();
-    case kCommandFromDOM:
+    case EditorCommandSource::kDOM:
       // "Delete" from DOM is like delete/backspace keypress, affects selected
       // range if non-empty, otherwise removes a character
       return EnabledInEditableText(frame, event, source);
@@ -2732,7 +2735,7 @@ static bool EnabledInRichlyEditableText(LocalFrame& frame,
                                         Event*,
                                         EditorCommandSource source) {
   frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
-  if (source == kCommandFromMenuOrKeyBinding &&
+  if (source == EditorCommandSource::kMenuOrKeyBinding &&
       !frame.Selection().SelectionHasFocus())
     return false;
   const VisibleSelection& selection =
@@ -2746,7 +2749,7 @@ static bool EnabledPaste(LocalFrame& frame,
                          EditorCommandSource source) {
   if (!CanReadClipboard(frame, source))
     return false;
-  if (source == kCommandFromMenuOrKeyBinding &&
+  if (source == EditorCommandSource::kMenuOrKeyBinding &&
       !frame.Selection().SelectionHasFocus())
     return false;
   return frame.GetEditor().CanPaste();
@@ -2756,7 +2759,7 @@ static bool EnabledRangeInEditableText(LocalFrame& frame,
                                        Event*,
                                        EditorCommandSource source) {
   frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
-  if (source == kCommandFromMenuOrKeyBinding &&
+  if (source == EditorCommandSource::kMenuOrKeyBinding &&
       !frame.Selection().SelectionHasFocus())
     return false;
   return frame.Selection()
@@ -2771,7 +2774,7 @@ static bool EnabledRangeInRichlyEditableText(LocalFrame& frame,
                                              Event*,
                                              EditorCommandSource source) {
   frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
-  if (source == kCommandFromMenuOrKeyBinding &&
+  if (source == EditorCommandSource::kMenuOrKeyBinding &&
       !frame.Selection().SelectionHasFocus())
     return false;
   const VisibleSelection& selection =
@@ -2812,7 +2815,8 @@ static bool EnabledSelectAll(LocalFrame& frame,
     return true;
   // Hidden selection appears as no selection to users, in which case user-
   // triggered SelectAll should be enabled and act as if there is no selection.
-  if (source == kCommandFromMenuOrKeyBinding && frame.Selection().IsHidden())
+  if (source == EditorCommandSource::kMenuOrKeyBinding &&
+      frame.Selection().IsHidden())
     return true;
   if (Node* root = HighestEditableRoot(selection.Start())) {
     if (!root->hasChildren())
@@ -3471,8 +3475,8 @@ static const EditorInternalCommand* InternalCommand(
 }
 
 Editor::Command Editor::CreateCommand(const String& command_name) {
-  return Command(InternalCommand(command_name), kCommandFromMenuOrKeyBinding,
-                 frame_);
+  return Command(InternalCommand(command_name),
+                 EditorCommandSource::kMenuOrKeyBinding, frame_);
 }
 
 Editor::Command Editor::CreateCommand(const String& command_name,
@@ -3569,7 +3573,7 @@ bool Editor::Command::Execute(const String& parameter,
       return false;
   }
 
-  if (source_ == kCommandFromMenuOrKeyBinding) {
+  if (source_ == EditorCommandSource::kMenuOrKeyBinding) {
     InputEvent::InputType input_type =
         InputTypeFromCommandType(command_->command_type, *frame_);
     if (input_type != InputEvent::InputType::kNone) {
@@ -3598,9 +3602,9 @@ bool Editor::Command::IsSupported() const {
   if (!command_)
     return false;
   switch (source_) {
-    case kCommandFromMenuOrKeyBinding:
+    case EditorCommandSource::kMenuOrKeyBinding:
       return true;
-    case kCommandFromDOM:
+    case EditorCommandSource::kDOM:
       return command_->is_supported_from_dom(frame_.Get());
   }
   NOTREACHED();
