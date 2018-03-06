@@ -129,17 +129,21 @@ public class WebVrTransitionTest {
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                Bitmap bmpCurrentScreen = InstrumentationRegistry.getInstrumentation()
-                                                  .getUiAutomation()
-                                                  .takeScreenshot();
+                Bitmap screenshot = InstrumentationRegistry.getInstrumentation()
+                                            .getUiAutomation()
+                                            .takeScreenshot();
 
-                if (bmpCurrentScreen != null) {
+                if (screenshot != null) {
                     // Calculate center of eye coordinates.
-                    int iheight = uiDevice.getDisplayHeight() / 2;
-                    int iwidth = uiDevice.getDisplayWidth() / 4;
+                    int height = uiDevice.getDisplayHeight() / 2;
+                    int width = uiDevice.getDisplayWidth() / 4;
 
                     // Verify screen is blue.
-                    return Color.BLUE == bmpCurrentScreen.getPixel(iwidth, iheight);
+                    int pixel = screenshot.getPixel(width, height);
+                    // Workaround for the immersive mode popup sometimes being rendered over the
+                    // screen on K, which causes the pure blue to be darkened to (0, 0, 127).
+                    // TODO(https://crbug.com/819021): Only check pure blue.
+                    return pixel == Color.BLUE || pixel == Color.rgb(0, 0, 127);
                 }
                 return false;
             }
