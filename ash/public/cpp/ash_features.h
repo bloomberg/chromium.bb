@@ -29,6 +29,9 @@ ASH_PUBLIC_EXPORT extern const base::Feature kNewOverviewAnimations;
 // Enables new system menu.
 ASH_PUBLIC_EXPORT extern const base::Feature kSystemTrayUnified;
 
+// Enables notifications on the lock screen.
+ASH_PUBLIC_EXPORT extern const base::Feature kLockScreenNotifications;
+
 ASH_PUBLIC_EXPORT bool IsDockedMagnifierEnabled();
 
 ASH_PUBLIC_EXPORT bool IsKeyboardShortcutViewerEnabled();
@@ -36,6 +39,8 @@ ASH_PUBLIC_EXPORT bool IsKeyboardShortcutViewerEnabled();
 ASH_PUBLIC_EXPORT bool IsNewOverviewAnimationsEnabled();
 
 ASH_PUBLIC_EXPORT bool IsSystemTrayUnifiedEnabled();
+
+ASH_PUBLIC_EXPORT bool IsLockScreenNotificationsEnabled();
 
 }  // namespace features
 }  // namespace ash

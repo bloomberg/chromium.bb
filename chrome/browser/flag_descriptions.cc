@@ -2683,6 +2683,10 @@ const char kInputViewDescription[] =
     "Enable IME extensions to supply custom views for user input such as "
     "virtual keyboards.";
 
+const char kLockScreenNotificationName[] = "Lock screen notification";
+const char kLockScreenNotificationDescription[] =
+    "Enable notifications on the lock screen.";
+
 const char kMemoryPressureThresholdName[] =
     "Memory discard strategy for advanced pressure handling";
 const char kMemoryPressureThresholdDescription[] =

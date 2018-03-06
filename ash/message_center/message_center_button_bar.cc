@@ -6,6 +6,7 @@
 
 #include "ash/message_center/message_center_style.h"
 #include "ash/message_center/message_center_view.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/tray_popup_utils.h"
@@ -35,7 +36,6 @@
 #include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/menu/menu_runner.h"
-#include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/painter.h"
@@ -112,14 +112,15 @@ MessageCenterButtonBar::MessageCenterButtonBar(
       notification_label_(nullptr),
       button_container_(nullptr),
       close_all_button_(nullptr),
-      settings_button_(nullptr),
-      quiet_mode_button_(nullptr) {
+      quiet_mode_button_(nullptr),
+      settings_button_(nullptr) {
   SetPaintToLayer();
   SetBackground(
       views::CreateSolidBackground(message_center_style::kBackgroundColor));
   SetBorder(views::CreateEmptyBorder(kButtonBarBorder));
 
-  notification_label_ = new views::Label(GetTitle(locked));
+  notification_label_ = new views::Label(
+      GetTitle(!locked || features::IsLockScreenNotificationsEnabled()));
   notification_label_->SetAutoColorReadabilityEnabled(false);
   notification_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   notification_label_->SetEnabledColor(kTextColor);
@@ -148,7 +149,8 @@ MessageCenterButtonBar::MessageCenterButtonBar(
   close_all_button_->SetTooltipText(l10n_util::GetStringUTF16(
       IDS_ASH_MESSAGE_CENTER_CLEAR_ALL_BUTTON_TOOLTIP));
   button_container_->AddChildView(close_all_button_);
-  button_container_->AddChildView(CreateVerticalSeparator());
+  separator_1_ = CreateVerticalSeparator();
+  button_container_->AddChildView(separator_1_);
 
   quiet_mode_button_ = new MessageCenterButton(this);
   quiet_mode_button_->SetImage(
@@ -166,7 +168,18 @@ MessageCenterButtonBar::MessageCenterButtonBar(
       IDS_ASH_MESSAGE_CENTER_QUIET_MODE_BUTTON_TOOLTIP));
   SetQuietModeState(message_center->IsQuietMode());
   button_container_->AddChildView(quiet_mode_button_);
-  button_container_->AddChildView(CreateVerticalSeparator());
+  separator_2_ = CreateVerticalSeparator();
+  button_container_->AddChildView(separator_2_);
+
+  settings_button_ = new MessageCenterButton(this);
+  settings_button_->SetImage(
+      views::Button::STATE_NORMAL,
+      gfx::CreateVectorIcon(kNotificationCenterSettingsIcon,
+                            message_center_style::kActionIconSize,
+                            message_center_style::kActiveButtonColor));
+  settings_button_->SetTooltipText(l10n_util::GetStringUTF16(
+      IDS_ASH_MESSAGE_CENTER_SETTINGS_BUTTON_TOOLTIP));
+  button_container_->AddChildView(settings_button_);
 
   collapse_button_ = new MessageCenterButton(this);
   collapse_button_->SetVisible(false);
@@ -181,16 +194,6 @@ MessageCenterButtonBar::MessageCenterButtonBar(
   collapse_button_->SetTooltipText(l10n_util::GetStringUTF16(
       IDS_ASH_MESSAGE_CENTER_COLLAPSE_BUTTON_TOOLTIP));
   AddChildView(collapse_button_);
-
-  settings_button_ = new MessageCenterButton(this);
-  settings_button_->SetImage(
-      views::Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(kNotificationCenterSettingsIcon,
-                            message_center_style::kActionIconSize,
-                            message_center_style::kActiveButtonColor));
-  settings_button_->SetTooltipText(l10n_util::GetStringUTF16(
-      IDS_ASH_MESSAGE_CENTER_SETTINGS_BUTTON_TOOLTIP));
-  button_container_->AddChildView(settings_button_);
 
   AddChildView(button_container_);
 
@@ -274,32 +277,36 @@ void MessageCenterButtonBar::OnImplicitAnimationsCompleted() {
 }
 
 void MessageCenterButtonBar::SetIsLocked(bool locked) {
-  SetButtonsVisible(!locked);
-  UpdateLabel(locked);
+  SetButtonsVisible(locked);
+  UpdateLabel(!locked || features::IsLockScreenNotificationsEnabled());
 }
 
-base::string16 MessageCenterButtonBar::GetTitle(bool locked) const {
-  return locked
-             ? l10n_util::GetStringUTF16(
-                   IDS_ASH_MESSAGE_CENTER_FOOTER_LOCKSCREEN)
-             : l10n_util::GetStringUTF16(IDS_ASH_MESSAGE_CENTER_FOOTER_TITLE);
+base::string16 MessageCenterButtonBar::GetTitle(
+    bool message_center_visible) const {
+  return message_center_visible
+             ? l10n_util::GetStringUTF16(IDS_ASH_MESSAGE_CENTER_FOOTER_TITLE)
+             : l10n_util::GetStringUTF16(
+                   IDS_ASH_MESSAGE_CENTER_FOOTER_LOCKSCREEN);
 }
 
-void MessageCenterButtonBar::UpdateLabel(bool locked) {
-  notification_label_->SetText(GetTitle(locked));
+void MessageCenterButtonBar::UpdateLabel(bool message_center_visible) {
+  notification_label_->SetText(GetTitle(message_center_visible));
   // On lock screen button bar label contains hint for user to unlock device to
   // view notifications. Making it focusable will invoke ChromeVox spoken
   // feedback when shown.
-  notification_label_->SetFocusBehavior(locked ? FocusBehavior::ALWAYS
-                                               : FocusBehavior::NEVER);
+  notification_label_->SetFocusBehavior(
+      message_center_visible ? FocusBehavior::ALWAYS : FocusBehavior::NEVER);
 }
 
-void MessageCenterButtonBar::SetButtonsVisible(bool visible) {
-  settings_button_->SetVisible(visible);
-  quiet_mode_button_->SetVisible(visible);
-
+void MessageCenterButtonBar::SetButtonsVisible(bool locked) {
+  bool message_center_visible =
+      !locked || features::IsLockScreenNotificationsEnabled();
   if (close_all_button_)
-    close_all_button_->SetVisible(visible);
+    close_all_button_->SetVisible(message_center_visible);
+  separator_1_->SetVisible(message_center_visible);
+  quiet_mode_button_->SetVisible(message_center_visible);
+  separator_2_->SetVisible(!locked);
+  settings_button_->SetVisible(!locked);
 
   Layout();
 }

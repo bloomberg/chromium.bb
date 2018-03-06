@@ -19,6 +19,9 @@ const base::Feature kNewOverviewAnimations{"NewOverviewAnimations",
 const base::Feature kSystemTrayUnified{"SystemTrayUnified",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kLockScreenNotifications{"LockScreenNotifications",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool IsDockedMagnifierEnabled() {
   return base::FeatureList::IsEnabled(kDockedMagnifier);
 }
@@ -33,6 +36,10 @@ bool IsNewOverviewAnimationsEnabled() {
 
 bool IsSystemTrayUnifiedEnabled() {
   return base::FeatureList::IsEnabled(kSystemTrayUnified);
+}
+
+bool IsLockScreenNotificationsEnabled() {
+  return base::FeatureList::IsEnabled(kLockScreenNotifications);
 }
 
 }  // namespace features
