@@ -532,8 +532,9 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
             pending_update_.NewTransitions().end() &&
         !animation->Limited()) {
       retargeted_compositor_transitions.insert(
-          property, std::pair<KeyframeEffectReadOnly*, double>(
-                        effect, animation->StartTimeInternal()));
+          property,
+          std::pair<KeyframeEffectReadOnly*, double>(
+              effect, animation->StartTimeInternal().value_or(NullValue())));
     }
     animation->cancel();
     // after cancelation, transitions must be downgraded or they'll fail
