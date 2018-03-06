@@ -47,7 +47,7 @@ class HoverButton : public views::LabelButton {
 
   ~HoverButton() override;
 
-  // views::View:
+  // views::LabelButton:
   void SetBorder(std::unique_ptr<views::Border> b) override;
 
   // Updates the title text, and applies the secondary style to the text
