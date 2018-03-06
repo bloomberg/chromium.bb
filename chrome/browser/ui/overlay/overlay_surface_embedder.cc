@@ -13,9 +13,14 @@ OverlaySurfaceEmbedder::OverlaySurfaceEmbedder(OverlayWindow* window)
   surface_layer_->SetMasksToBounds(true);
 
   // The frame provided by the parent window's layer needs to show through
-  // the surface layer.
+  // |surface_layer_|.
   surface_layer_->SetFillsBoundsOpaquely(false);
-  surface_layer_->SetBounds(window_->GetBounds());
+  // |surface_layer_| bounds are set with the (0, 0) origin point. The
+  // positioning of |window_| is dictated by itself.
+  // TODO(apacible): Update |surface_layer_| size when the window is resized.
+  // http://crbug.com/726621
+  surface_layer_->SetBounds(
+      gfx::Rect(gfx::Point(0, 0), window_->GetBounds().size()));
   window_->GetLayer()->Add(surface_layer_.get());
 }
 
