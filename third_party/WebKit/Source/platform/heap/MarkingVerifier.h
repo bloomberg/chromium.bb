@@ -49,11 +49,15 @@ class MarkingVerifier final : public Visitor {
   }
 
   // Unused overrides.
-  void RegisterBackingStoreReference(void* slot) final {}
+  void VisitBackingStoreStrongly(void* object,
+                                 void** object_slot,
+                                 TraceDescriptor desc) final {}
+  void VisitBackingStoreWeakly(void* object,
+                               void** object_slot,
+                               TraceDescriptor desc) final {}
   void RegisterBackingStoreCallback(void* backing_store,
                                     MovingObjectCallback,
                                     void* callback_data) final {}
-  void RegisterDelayedMarkNoTracing(const void* pointer) final {}
   void RegisterWeakCallback(void* closure, WeakCallback) final {}
 
  private:

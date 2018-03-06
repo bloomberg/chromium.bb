@@ -181,12 +181,6 @@ class PLATFORM_EXPORT HeapAllocator {
   }
 
   template <typename VisitorDispatcher>
-  static void RegisterDelayedMarkNoTracing(VisitorDispatcher visitor,
-                                           const void* object) {
-    visitor->RegisterDelayedMarkNoTracing(object);
-  }
-
-  template <typename VisitorDispatcher>
   static void RegisterWeakMembers(VisitorDispatcher visitor,
                                   const void* closure,
                                   WeakCallback callback) {
@@ -209,12 +203,6 @@ class PLATFORM_EXPORT HeapAllocator {
     return visitor->WeakTableRegistered(closure);
   }
 #endif
-
-  template <typename T, typename VisitorDispatcher>
-  static void RegisterBackingStoreReference(VisitorDispatcher visitor,
-                                            T** slot) {
-    visitor->RegisterBackingStoreReference(slot);
-  }
 
   template <typename T, typename VisitorDispatcher>
   static void RegisterBackingStoreCallback(VisitorDispatcher visitor,
@@ -282,22 +270,31 @@ class PLATFORM_EXPORT HeapAllocator {
 #endif  // BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)
   }
 
-  template <typename T, typename VisitorDispatcher>
-  static void TraceVectorBacking(VisitorDispatcher visitor,
+  template <typename T>
+  static void TraceVectorBacking(Visitor* visitor,
                                  T* backing,
                                  T** backing_slot) {
-    HeapVectorBacking<T>* vector_backing =
-        reinterpret_cast<HeapVectorBacking<T>*>(backing);
-    visitor->RegisterBackingStoreReference(backing_slot);
-    visitor->Trace(vector_backing);
+    visitor->TraceBackingStoreStrongly(
+        reinterpret_cast<HeapVectorBacking<T>*>(backing),
+        reinterpret_cast<HeapVectorBacking<T>**>(backing_slot));
   }
 
-  template <typename T, typename HashTable, typename VisitorDispatcher>
-  static void TraceHashTableBacking(VisitorDispatcher visitor, T* backing) {
-    HeapHashTableBacking<HashTable>* hashtable_backing =
-        reinterpret_cast<HeapHashTableBacking<HashTable>*>(backing);
-    // Backing store reference is registered by the caller.
-    visitor->Trace(hashtable_backing);
+  template <typename T, typename HashTable>
+  static void TraceHashTableBackingStrongly(Visitor* visitor,
+                                            T* backing,
+                                            T** backing_slot) {
+    visitor->TraceBackingStoreStrongly(
+        reinterpret_cast<HeapHashTableBacking<HashTable>*>(backing),
+        reinterpret_cast<HeapHashTableBacking<HashTable>**>(backing_slot));
+  }
+
+  template <typename T, typename HashTable>
+  static void TraceHashTableBackingWeakly(Visitor* visitor,
+                                          T* backing,
+                                          T** backing_slot) {
+    visitor->TraceBackingStoreWeakly(
+        reinterpret_cast<HeapHashTableBacking<HashTable>*>(backing),
+        reinterpret_cast<HeapHashTableBacking<HashTable>**>(backing_slot));
   }
 
  private:

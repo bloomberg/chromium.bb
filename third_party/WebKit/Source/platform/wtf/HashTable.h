@@ -2102,14 +2102,11 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
   if (!table_)
     return;
 
-  // Backing store can be moved during compaction.
-  Allocator::RegisterBackingStoreReference(visitor, &table_);
-
   if (Traits::kWeakHandlingFlag == kNoWeakHandling) {
     // Strong HashTable.
     DCHECK(IsTraceableInCollectionTrait<Traits>::value);
-    Allocator::template TraceHashTableBacking<ValueType, HashTable>(visitor,
-                                                                    table_);
+    Allocator::template TraceHashTableBackingStrongly<ValueType, HashTable>(
+        visitor, table_, &table_);
   } else {
     // Weak HashTable. The HashTable may be held alive strongly from somewhere
     // else, e.g., an iterator.
@@ -2117,7 +2114,9 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
     // Marking of the table is delayed because the backing store is potentially
     // held alive strongly by other objects. Delayed marking happens after
     // regular marking.
-    Allocator::RegisterDelayedMarkNoTracing(visitor, table_);
+    Allocator::template TraceHashTableBackingWeakly<ValueType, HashTable>(
+        visitor, table_, &table_);
+
     // It is safe to register the table multiple times.
     Allocator::RegisterWeakMembers(
         visitor, this,
