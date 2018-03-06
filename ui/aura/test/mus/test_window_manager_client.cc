@@ -43,7 +43,7 @@ void TestWindowManagerClient::SetExtendedHitRegionForChildren(
 
 void TestWindowManagerClient::AddAccelerators(
     std::vector<ui::mojom::WmAcceleratorPtr> accelerators,
-    AddAcceleratorsCallback callback) {}
+    const AddAcceleratorsCallback& callback) {}
 
 void TestWindowManagerClient::RemoveAccelerator(uint32_t id) {}
 
@@ -56,7 +56,7 @@ void TestWindowManagerClient::SetDisplayRoot(
     bool is_primary_display,
     ui::Id window_id,
     const std::vector<display::Display>& mirrors,
-    SetDisplayRootCallback callback) {}
+    const SetDisplayRootCallback& callback) {}
 
 void TestWindowManagerClient::SetDisplayConfiguration(
     const std::vector<display::Display>& displays,
@@ -64,7 +64,7 @@ void TestWindowManagerClient::SetDisplayConfiguration(
     int64_t primary_display_id,
     int64_t internal_display_id,
     const std::vector<display::Display>& mirrors,
-    SetDisplayConfigurationCallback callback) {
+    const SetDisplayConfigurationCallback& callback) {
   last_internal_display_id_ = internal_display_id;
   changes_.push_back(WindowManagerClientChangeType::SET_DISPLAY_CONFIGURATION);
 }
@@ -72,11 +72,11 @@ void TestWindowManagerClient::SetDisplayConfiguration(
 void TestWindowManagerClient::SwapDisplayRoots(
     int64_t display_id1,
     int64_t display_id2,
-    SwapDisplayRootsCallback callback) {}
+    const SwapDisplayRootsCallback& callback) {}
 
 void TestWindowManagerClient::SetBlockingContainers(
     std::vector<ui::mojom::BlockingContainersPtr> blocking_containers,
-    SetBlockingContainersCallback callback) {}
+    const SetBlockingContainersCallback& callback) {}
 
 void TestWindowManagerClient::WmResponse(uint32_t change_id, bool response) {}
 

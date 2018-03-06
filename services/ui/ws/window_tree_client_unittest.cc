@@ -521,8 +521,8 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
                         const gfx::Vector2d& drag_image_offset,
                         ui::mojom::PointerKind source) override {}
   void WmMoveDragImage(const gfx::Point& screen_location,
-                       WmMoveDragImageCallback callback) override {
-    std::move(callback).Run();
+                       const WmMoveDragImageCallback& callback) override {
+    callback.Run();
   }
   void WmDestroyDragImage() override {}
   void WmPerformMoveLoop(uint32_t change_id,

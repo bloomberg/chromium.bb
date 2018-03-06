@@ -2424,7 +2424,7 @@ void WindowTree::CancelWindowMove(Id window_id) {
 
 void WindowTree::AddAccelerators(
     std::vector<mojom::WmAcceleratorPtr> accelerators,
-    AddAcceleratorsCallback callback) {
+    const AddAcceleratorsCallback& callback) {
   DCHECK(window_manager_state_);
 
   bool success = true;
@@ -2433,7 +2433,7 @@ void WindowTree::AddAccelerators(
             iter->get()->id, std::move(iter->get()->event_matcher)))
       success = false;
   }
-  std::move(callback).Run(success);
+  callback.Run(success);
 }
 
 void WindowTree::RemoveAccelerator(uint32_t id) {
@@ -2490,16 +2490,16 @@ void WindowTree::SetDisplayRoot(const display::Display& display,
                                 bool is_primary_display,
                                 Id window_id,
                                 const std::vector<display::Display>& mirrors,
-                                SetDisplayRootCallback callback) {
+                                const SetDisplayRootCallback& callback) {
   ServerWindow* display_root = ProcessSetDisplayRoot(
       display, TransportMetricsToDisplayMetrics(*viewport_metrics),
       is_primary_display, MakeClientWindowId(window_id), mirrors);
   if (!display_root) {
-    std::move(callback).Run(false);
+    callback.Run(false);
     return;
   }
   display_root->parent()->SetVisible(true);
-  std::move(callback).Run(true);
+  callback.Run(true);
 }
 
 void WindowTree::SetDisplayConfiguration(
@@ -2508,27 +2508,26 @@ void WindowTree::SetDisplayConfiguration(
     int64_t primary_display_id,
     int64_t internal_display_id,
     const std::vector<display::Display>& mirrors,
-    SetDisplayConfigurationCallback callback) {
+    const SetDisplayConfigurationCallback& callback) {
   std::vector<display::ViewportMetrics> metrics;
   for (auto& transport_ptr : transport_metrics)
     metrics.push_back(TransportMetricsToDisplayMetrics(*transport_ptr));
-  std::move(callback).Run(display_manager()->SetDisplayConfiguration(
+  callback.Run(display_manager()->SetDisplayConfiguration(
       displays, metrics, primary_display_id, internal_display_id, mirrors));
 }
 
 void WindowTree::SwapDisplayRoots(int64_t display_id1,
                                   int64_t display_id2,
-                                  SwapDisplayRootsCallback callback) {
+                                  const SwapDisplayRootsCallback& callback) {
   DCHECK(window_manager_state_);  // Only applicable to the window manager.
-  std::move(callback).Run(ProcessSwapDisplayRoots(display_id1, display_id2));
+  callback.Run(ProcessSwapDisplayRoots(display_id1, display_id2));
 }
 
 void WindowTree::SetBlockingContainers(
     std::vector<::ui::mojom::BlockingContainersPtr> blocking_containers,
-    SetBlockingContainersCallback callback) {
+    const SetBlockingContainersCallback& callback) {
   DCHECK(window_manager_state_);  // Only applicable to the window manager.
-  std::move(callback).Run(
-      ProcessSetBlockingContainers(std::move(blocking_containers)));
+  callback.Run(ProcessSetBlockingContainers(std::move(blocking_containers)));
 }
 
 void WindowTree::WmResponse(uint32_t change_id, bool response) {

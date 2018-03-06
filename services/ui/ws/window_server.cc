@@ -549,12 +549,12 @@ void WindowServer::SendToPointerWatchers(const ui::Event& event,
   }
 }
 
-void WindowServer::SetSurfaceActivationCallback(
-    base::OnceCallback<void(ServerWindow*)> callback) {
-  DCHECK(delegate_->IsTestConfig()) << "Surface activation callbacks are "
-                                    << "expensive, and allowed only in tests.";
-  DCHECK(surface_activation_callback_.is_null() || callback.is_null());
-  surface_activation_callback_ = std::move(callback);
+void WindowServer::SetPaintCallback(
+    const base::Callback<void(ServerWindow*)>& callback) {
+  DCHECK(delegate_->IsTestConfig()) << "Paint callbacks are expensive, and "
+                                    << "allowed only in tests.";
+  DCHECK(window_paint_callback_.is_null() || callback.is_null());
+  window_paint_callback_ = callback;
 }
 
 void WindowServer::StartMoveLoop(uint32_t change_id,
@@ -668,8 +668,8 @@ void WindowServer::OnFirstSurfaceActivation(
   DCHECK(host_frame_sink_manager_);
   // This is only used for testing to observe that a window has a
   // CompositorFrame.
-  if (surface_activation_callback_)
-    std::move(surface_activation_callback_).Run(window);
+  if (!window_paint_callback_.is_null())
+    window_paint_callback_.Run(window);
 
   Display* display = display_manager_->GetDisplayContaining(window);
   if (IsWindowConsideredWindowManagerRoot(display, window)) {

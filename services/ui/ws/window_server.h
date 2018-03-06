@@ -212,11 +212,9 @@ class WindowServer : public ServerWindowDelegate,
                              WindowTree* ignore_tree,
                              int64_t display_id);
 
-  // Sets a callback to be called whenever a surface is activated. This
-  // corresponds a client submitting a new CompositorFrame for a Window. This
-  // should only be called in a test configuration.
-  void SetSurfaceActivationCallback(
-      base::OnceCallback<void(ServerWindow*)> callback);
+  // Sets a callback to be called whenever a ServerWindow is scheduled for
+  // a [re]paint. This should only be called in a test configuration.
+  void SetPaintCallback(const base::Callback<void(ServerWindow*)>& callback);
 
   void StartMoveLoop(uint32_t change_id,
                      ServerWindow* window,
@@ -386,7 +384,7 @@ class WindowServer : public ServerWindowDelegate,
   uint32_t next_wm_change_id_;
 
   std::unique_ptr<GpuHost> gpu_host_;
-  base::OnceCallback<void(ServerWindow*)> surface_activation_callback_;
+  base::Callback<void(ServerWindow*)> window_paint_callback_;
 
   std::unique_ptr<UserActivityMonitor> user_activity_monitor_;
 
