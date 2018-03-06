@@ -228,7 +228,7 @@ CSSStyleValueVector StyleValueFactory::FromString(
     return result;
   }
 
-  if (property_id == CSSPropertyVariable ||
+  if ((property_id == CSSPropertyVariable && !tokens.IsEmpty()) ||
       CSSVariableParser::ContainsValidVariableReferences(range)) {
     const auto variable_data =
         CSSVariableData::Create(range, false /* is_animation_tainted */,
