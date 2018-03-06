@@ -3911,8 +3911,8 @@
     </message>
     <message name="IDS_SETTINGS_INCOMPATIBLE_APPLICATIONS_SUBPAGE_SUBTITLE" desc="The subtitle shown in the subpage for incompatible applications.">
       {NUM_APPLICATIONS, plural,
-        =1 {The following application could be preventing Chrome from working properly.}
-        other {The following applications could be preventing Chrome from working properly.}}
+        =1 {This application could prevent Chrome from working properly.}
+        other {These applications could prevent Chrome from working properly.}}
     </message>
     <message name="IDS_SETTINGS_INCOMPATIBLE_APPLICATIONS_SUBPAGE_SUBTITLE_NO_ADMIN_RIGHTS" desc="The subtitle shown in the subpage for incompatible applications, when the user does not have administrator rights. This means that these users are incapable of updating or removing incompatible applications by themselves.">
       {NUM_APPLICATIONS, plural,
