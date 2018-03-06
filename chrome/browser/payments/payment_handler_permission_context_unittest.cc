@@ -95,7 +95,7 @@ TEST_F(PaymentHandlerPermissionContextTests, TestInsecureRequestingUrl) {
           ->GetContentSetting(url.GetOrigin(), url.GetOrigin(),
                               CONTENT_SETTINGS_TYPE_PAYMENT_HANDLER,
                               std::string());
-  EXPECT_EQ(CONTENT_SETTING_ASK, setting);
+  EXPECT_EQ(CONTENT_SETTING_ALLOW, setting);
 }
 
 // PaymentHandler permission status should be denied for insecure origin.
@@ -105,17 +105,17 @@ TEST_F(PaymentHandlerPermissionContextTests, TestInsecureQueryingUrl) {
   GURL secure_url("https://www.example.com");
 
   // Check that there is no saved content settings.
-  EXPECT_EQ(CONTENT_SETTING_ASK,
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
             HostContentSettingsMapFactory::GetForProfile(profile())
                 ->GetContentSetting(
                     insecure_url.GetOrigin(), insecure_url.GetOrigin(),
                     CONTENT_SETTINGS_TYPE_PAYMENT_HANDLER, std::string()));
-  EXPECT_EQ(CONTENT_SETTING_ASK,
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
             HostContentSettingsMapFactory::GetForProfile(profile())
                 ->GetContentSetting(
                     secure_url.GetOrigin(), insecure_url.GetOrigin(),
                     CONTENT_SETTINGS_TYPE_PAYMENT_HANDLER, std::string()));
-  EXPECT_EQ(CONTENT_SETTING_ASK,
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
             HostContentSettingsMapFactory::GetForProfile(profile())
                 ->GetContentSetting(
                     insecure_url.GetOrigin(), secure_url.GetOrigin(),
