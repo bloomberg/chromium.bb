@@ -8,7 +8,6 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/values.h"
-#include "build/build_config.h"
 #include "components/consent_auditor/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -111,14 +110,10 @@ void ConsentAuditor::RecordGaiaConsent(
   // FakeUserEventService doesn't have a sync bridge.
   // TODO(crbug.com/709094, crbug.com/761485): Remove this check when the store
   // initializes synchronously and is instantly ready to receive data.
-#if !defined(OS_IOS)
-  // TODO(crbug.com/819176): On iOS the sync is may not be ready if the user
-  // taps on "OK GOT IT" button too fast.
   DCHECK(!user_event_service_->GetSyncBridge() ||
          user_event_service_->GetSyncBridge()
              ->change_processor()
              ->IsTrackingMetadata());
-#endif
   user_event_service_->RecordUserEvent(std::move(specifics));
 }
 
