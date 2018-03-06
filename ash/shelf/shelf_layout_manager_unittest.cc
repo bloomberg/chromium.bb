@@ -31,6 +31,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/wm_event.h"
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -1484,12 +1485,20 @@ TEST_F(ShelfLayoutManagerTest,
   Shell* shell = Shell::Get();
   shell->tablet_mode_controller()->EnableTabletModeWindowManager(true);
   Shelf* shelf = GetPrimaryShelf();
+  GetShelfLayoutManager()->LayoutShelf();
   EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM, shelf->alignment());
   EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
 
-  // Note: A window must be visible in order to hide the shelf.
-  views::Widget* widget = CreateTestWidget();
+  // Note: A window must be visible in order to hide the shelf. The test will
+  // make the window fullscreened, so make the window resizeable and
+  // maximizable.
+  std::unique_ptr<aura::Window> window(
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400)));
+  window->SetProperty(aura::client::kResizeBehaviorKey,
+                      ui::mojom::kResizeBehaviorCanResize |
+                          ui::mojom::kResizeBehaviorCanMaximize);
+  wm::ActivateWindow(window.get());
 
   ui::test::EventGenerator& generator(GetEventGenerator());
   constexpr base::TimeDelta kTimeDelta = base::TimeDelta::FromMilliseconds(100);
@@ -1527,35 +1536,51 @@ TEST_F(ShelfLayoutManagerTest,
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckVisibility(false);
   GetAppListTestHelper()->CheckState(app_list::AppListViewState::CLOSED);
+  GetShelfLayoutManager()->UpdateVisibilityState();
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
 
-  // Swiping down on the shelf should hide it.
+  // Swiping down on the shelf should do nothing as tablet mode disables auto
+  // hiding the shelf by swiping down.
   end = start + delta;
   generator.GestureScrollSequence(start, end, kTimeDelta, kNumScrollSteps);
+  EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
+
+  // Verify that the shelf can still enter auto hide if the window requests to
+  // be fullscreened.
+  wm::WindowState* window_state = wm::GetWindowState(window.get());
+  const wm::WMEvent event(wm::WM_EVENT_TOGGLE_FULLSCREEN);
+  window_state->OnWMEvent(&event);
+  window_state->SetHideShelfWhenFullscreen(false);
+  window_state->SetInImmersiveFullscreen(true);
+  GetShelfLayoutManager()->UpdateVisibilityState();
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
-  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
 
   // Swiping up should show the shelf but not the app list if shelf is hidden.
   generator.GestureScrollSequence(end, start, kTimeDelta, kNumScrollSteps);
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckVisibility(false);
   GetAppListTestHelper()->CheckState(app_list::AppListViewState::CLOSED);
-  EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
   EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
 
   // Swiping down should hide the shelf.
   generator.GestureScrollSequence(start, end, kTimeDelta, kNumScrollSteps);
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
-  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
+
+  // Verify that after toggling fullscreen to off, the shelf is visible.
+  window_state->OnWMEvent(&event);
+  EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
 
   // Minimize the visible window, the shelf should be shown if there are no
   // visible windows, even in auto-hide mode.
-  widget->Minimize();
-  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
-  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
-  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
+  window_state->Minimize();
+  EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
 
   // Swiping up on the shelf in this state should open the app list.
   delta.set_y(ShelfLayoutManager::kAppListDragSnapToFullscreenThreshold + 10);
