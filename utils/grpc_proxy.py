@@ -8,6 +8,7 @@ import logging
 import os
 import re
 import time
+import types
 import urlparse
 from utils import net
 
@@ -153,11 +154,22 @@ class Proxy(object):
   def call_unary(self, name, request):
     """Calls a method, waiting if the service is not available.
 
+    Note that it stores the request of generator type into a list for future
+    retries, so it is not memory-friendly for streaming requests of large size.
+
     Usage: proto_output = proxy.call_unary('MyMethod', proto_input)
     """
+    # If the request is a generator, store it to a list which can be reused in
+    # retries.
+    is_generator = False
+    if isinstance(request, types.GeneratorType):
+      request = list(request)
+      is_generator = True
+
     for attempt in range(1, MAX_GRPC_ATTEMPTS+1):
       try:
-        return self.call_no_retries(name, request)
+        return self.call_no_retries(name, request
+                                    if not is_generator else iter(request))
       except grpc.RpcError as g:
         if g.code() is not grpc.StatusCode.UNAVAILABLE:
           raise
