@@ -31,6 +31,9 @@ namespace blink {
 
 class ContainerNode;
 
+// Encapsulates the context for matching against a single style sheet by
+// ElementRuleCollector. Carries the RuleSet, scope (a ContainerNode) and
+// CSSStyleSheet.
 class MatchRequest {
   STACK_ALLOCATED();
 

@@ -42,8 +42,10 @@ namespace blink {
 class PageRuleCollector;
 class StyleSheetContents;
 
-// This class selects a ComputedStyle for a given element based on a collection
-// of stylesheets.
+// ScopedStyleResolver collects the style sheets that occur within a TreeScope
+// and provides methods to collect the rules that apply to a given element,
+// broken down by what kind of scope they apply to (e.g. shadow host,
+// tree-boundary-crossing, etc).
 class ScopedStyleResolver final
     : public GarbageCollectedFinalized<ScopedStyleResolver> {
 

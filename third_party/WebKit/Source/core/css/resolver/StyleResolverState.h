@@ -43,6 +43,9 @@ namespace blink {
 class ComputedStyle;
 class FontDescription;
 
+// A per-element object which wraps an ElementResolveContext. It collects state
+// throughout the process of computing the style. It also gives convenient
+// access to other element-related information.
 class CORE_EXPORT StyleResolverState {
   STACK_ALLOCATED();
 

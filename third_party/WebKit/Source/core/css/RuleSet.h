@@ -73,6 +73,12 @@ WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::MinimalRuleData);
 
 namespace blink {
 
+// This is a wrapper around a StyleRule, pointing to one of the N complex
+// selectors in the StyleRule. This allows us to treat each selector
+// independently but still tie them back to the original StyleRule. If multiple
+// selectors from a single rule match the same element we can see that as one
+// match for the rule. It computes some information about the wrapped selector
+// and makes it accessible cheaply.
 class CORE_EXPORT RuleData {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
@@ -155,6 +161,13 @@ struct SameSizeAsRuleData {
 static_assert(sizeof(RuleData) == sizeof(SameSizeAsRuleData),
               "RuleData should stay small");
 
+// Holds RuleData objects. It partitions them into various indexed groups,
+// e.g. it stores separately rules that match against id, class, tag, shadow
+// host, etc. It indexes these by some key where possible, e.g. rules that match
+// against tag name are indexed by that tag. Rules that don't fall into a
+// specific group are appended to the "universal" rules. The grouping is done to
+// optimize finding what rules apply to an element under consideration by
+// ElementRuleCollector::CollectMatchingRules.
 class CORE_EXPORT RuleSet : public GarbageCollectedFinalized<RuleSet> {
  public:
   static RuleSet* Create() { return new RuleSet; }

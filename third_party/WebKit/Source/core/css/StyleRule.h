@@ -92,6 +92,9 @@ class CORE_EXPORT StyleRuleBase
   unsigned type_ : 5;
 };
 
+// A single rule from a stylesheet. Contains a selector list (one or more
+// complex selectors) and a collection of style properties to be applied where
+// those selectors match. These are output by CSSParserImpl.
 class CORE_EXPORT StyleRule : public StyleRuleBase {
  public:
   // Adopts the selector list
