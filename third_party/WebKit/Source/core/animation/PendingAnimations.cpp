@@ -76,14 +76,14 @@ bool PendingAnimations::Update(
         animation->HasActiveAnimationsOnCompositor();
     // Animations with a start time do not participate in compositor start-time
     // grouping.
-    if (animation->PreCommit(animation->HasStartTime() ? 1 : compositor_group,
+    if (animation->PreCommit(animation->startTime() ? 1 : compositor_group,
                              composited_element_ids, start_on_compositor)) {
       if (animation->HasActiveAnimationsOnCompositor() &&
           !had_compositor_animation) {
         started_synchronized_on_compositor = true;
       }
 
-      if (animation->Playing() && !animation->HasStartTime() &&
+      if (animation->Playing() && !animation->startTime() &&
           animation->TimelineInternal() &&
           animation->TimelineInternal()->IsActive()) {
         waiting_for_start_time.push_back(animation.Get());
@@ -98,13 +98,13 @@ bool PendingAnimations::Update(
   // start time. Otherwise they may start immediately.
   if (started_synchronized_on_compositor) {
     for (auto& animation : waiting_for_start_time) {
-      if (!animation->HasStartTime()) {
+      if (!animation->startTime()) {
         waiting_for_compositor_animation_start_.push_back(animation);
       }
     }
   } else {
     for (auto& animation : waiting_for_start_time) {
-      if (!animation->HasStartTime()) {
+      if (!animation->startTime()) {
         animation->NotifyCompositorStartTime(
             animation->TimelineInternal()->CurrentTimeInternal());
       }
@@ -148,7 +148,7 @@ void PendingAnimations::NotifyCompositorAnimationStarted(
   animations.swap(waiting_for_compositor_animation_start_);
 
   for (auto animation : animations) {
-    if (animation->HasStartTime() ||
+    if (animation->startTime() ||
         animation->PlayStateInternal() != Animation::kPending ||
         !animation->TimelineInternal() ||
         !animation->TimelineInternal()->IsActive()) {

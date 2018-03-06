@@ -254,8 +254,8 @@ Response InspectorAnimationAgent::getCurrentTime(const String& id,
     *current_time = animation->currentTime();
   } else {
     // Use startTime where possible since currentTime is limited.
-    *current_time =
-        animation->TimelineInternal()->currentTime() - animation->startTime();
+    *current_time = animation->TimelineInternal()->currentTime() -
+                    animation->startTime().value_or(NullValue());
   }
   return Response::OK();
 }
@@ -274,8 +274,8 @@ Response InspectorAnimationAgent::setPaused(
       return Response::Error("Failed to clone detached animation");
     if (paused && !clone->Paused()) {
       // Ensure we restore a current time if the animation is limited.
-      double current_time =
-          clone->TimelineInternal()->currentTime() - clone->startTime();
+      double current_time = clone->TimelineInternal()->currentTime() -
+                            clone->startTime().value_or(NullValue());
       clone->pause();
       clone->setCurrentTime(current_time, false);
     } else if (!paused && clone->Paused()) {
@@ -323,7 +323,7 @@ blink::Animation* InspectorAnimationAgent::AnimationClone(
     id_to_animation_clone_.Set(id, clone);
     id_to_animation_.Set(String::Number(clone->SequenceNumber()), clone);
     clone->play();
-    clone->setStartTime(animation->startTime(), false);
+    clone->setStartTime(animation->startTime().value_or(NullValue()), false);
 
     animation->SetEffectSuppressed(true);
   }
@@ -551,12 +551,14 @@ DocumentTimeline& InspectorAnimationAgent::ReferenceTimeline() {
 double InspectorAnimationAgent::NormalizedStartTime(
     blink::Animation& animation) {
   if (ReferenceTimeline().PlaybackRate() == 0) {
-    return animation.startTime() + ReferenceTimeline().currentTime() -
+    return animation.startTime().value_or(NullValue()) +
+           ReferenceTimeline().currentTime() -
            animation.TimelineInternal()->currentTime();
   }
-  return animation.startTime() + (animation.TimelineInternal()->ZeroTime() -
-                                  ReferenceTimeline().ZeroTime()) *
-                                     1000 * ReferenceTimeline().PlaybackRate();
+  return animation.startTime().value_or(NullValue()) +
+         (animation.TimelineInternal()->ZeroTime() -
+          ReferenceTimeline().ZeroTime()) *
+             1000 * ReferenceTimeline().PlaybackRate();
 }
 
 void InspectorAnimationAgent::Trace(blink::Visitor* visitor) {
