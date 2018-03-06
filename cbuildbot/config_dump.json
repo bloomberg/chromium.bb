@@ -7073,9 +7073,6 @@
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
         "vm_tests": [
-            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"vmtest-informational1\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 43200\n}",
-            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"vmtest-informational2\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 43200\n}",
-            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"vmtest-informational3\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 43200\n}",
             "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"vmtest-informational4\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 43200\n}",
             "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"arc-gts\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 43200\n}"
         ]
@@ -7460,9 +7457,6 @@
         "overlays": "both",
         "vm_test_report_to_dashboards": true,
         "vm_tests": [
-            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"vmtest-informational1\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 43200\n}",
-            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"vmtest-informational2\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 43200\n}",
-            "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"vmtest-informational3\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 43200\n}",
             "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"vmtest-informational4\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 43200\n}",
             "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": \"arc-gts\",\n    \"test_type\": \"vm_suite\",\n    \"timeout\": 43200\n}"
         ]

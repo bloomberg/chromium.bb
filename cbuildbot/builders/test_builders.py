@@ -7,7 +7,6 @@
 
 from __future__ import print_function
 
-import functools
 
 from chromite.lib import cros_logging as logging
 from chromite.lib import parallel
@@ -146,11 +145,6 @@ class VMInformationalBuilder(simple_builders.SimpleBuilder):
 
     parallel_stages = [
         lambda: self._RunDebugSymbolStages(self._run, board),
-    ] + [
-        functools.partial(
-            functools.partial(self._RunStage, vm_test_stages.VMTestStage,
-                              board, ssh_port=9228+index, vm_tests=[config],
-                              test_basename=config.test_suite)
-        ) for index, config in enumerate(self._run.config.vm_tests)
+        lambda: self._RunStage(vm_test_stages.VMTestStage, board)
     ]
     parallel.RunParallelSteps(parallel_stages)
