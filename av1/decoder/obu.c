@@ -72,6 +72,7 @@ static int valid_obu_type(int obu_type) {
     case OBU_TEMPORAL_DELIMITER:
     case OBU_FRAME_HEADER:
     case OBU_TILE_GROUP:
+    case OBU_FRAME:
     case OBU_METADATA:
     case OBU_PADDING: valid_type = 1; break;
     default: break;
@@ -323,6 +324,7 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
     struct aom_read_bit_buffer rb;
     size_t payload_size = 0;
     size_t decoded_payload_size = 0;
+    size_t obu_payload_offset = 0;
     const size_t bytes_available = data_end - data;
 
     if (bytes_available < 1) {
@@ -401,6 +403,9 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
           decoded_payload_size = seq_header_size;
         }
         break;
+#if CONFIG_OBU_FRAME
+      case OBU_FRAME:
+#endif  // CONFIG_OBU_FRAME
       case OBU_FRAME_HEADER:
         // Only decode first frame header received
         if (!frame_header_received) {
@@ -409,16 +414,25 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
           frame_header_received = 1;
         }
         decoded_payload_size = frame_header_size;
-        if (cm->show_existing_frame) frame_decoding_finished = 1;
+        if (cm->show_existing_frame) {
+          frame_decoding_finished = 1;
+          break;
+        }
+#if CONFIG_OBU_FRAME
+        if (obu_header.type == OBU_FRAME_HEADER) break;
+        obu_payload_offset = frame_header_size;
+        AOM_FALLTHROUGH_INTENDED;  // fall through to read tile group.
+#else
         break;
+#endif  // CONFIG_OBU_FRAME
       case OBU_TILE_GROUP:
         if (!frame_header_received) {
           cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
           return;
         }
-        decoded_payload_size = read_one_tile_group_obu(
-            pbi, &rb, is_first_tg_obu_received, data, data + payload_size,
-            p_data_end, &frame_decoding_finished);
+        decoded_payload_size += read_one_tile_group_obu(
+            pbi, &rb, is_first_tg_obu_received, data + obu_payload_offset,
+            data + payload_size, p_data_end, &frame_decoding_finished);
         is_first_tg_obu_received = 0;
         break;
       case OBU_METADATA:
