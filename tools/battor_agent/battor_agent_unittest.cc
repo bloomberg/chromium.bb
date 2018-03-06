@@ -84,11 +84,11 @@ class MockBattOrConnection : public BattOrConnection {
 class TestableBattOrAgent : public BattOrAgent {
  public:
   TestableBattOrAgent(BattOrAgent::Listener* listener,
-                      std::unique_ptr<base::TickClock> tick_clock)
+                      base::TickClock* tick_clock)
       : BattOrAgent("/dev/test", listener, nullptr) {
     connection_ =
         std::unique_ptr<BattOrConnection>(new MockBattOrConnection(this));
-    tick_clock_ = std::move(tick_clock);
+    tick_clock_ = tick_clock;
   }
 
   MockBattOrConnection* GetConnection() {
@@ -149,8 +149,8 @@ class BattOrAgentTest : public testing::Test, public BattOrAgent::Listener {
 
  protected:
   void SetUp() override {
-    agent_.reset(
-        new TestableBattOrAgent(this, task_runner_->GetMockTickClock()));
+    tick_clock_ = task_runner_->GetMockTickClock();
+    agent_.reset(new TestableBattOrAgent(this, tick_clock_.get()));
     task_runner_->ClearPendingTasks();
     is_command_complete_ = false;
     command_error_ = BATTOR_ERROR_NONE;
@@ -346,6 +346,11 @@ class BattOrAgentTest : public testing::Test, public BattOrAgent::Listener {
 
  private:
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
+
+  // TODO(tzik): Remove |tick_clock_| after updating GetMockTickClock to own the
+  // instance.
+  std::unique_ptr<base::TickClock> tick_clock_;
+
   // Needed to support ThreadTaskRunnerHandle::Get() in code under test.
   base::ThreadTaskRunnerHandle thread_task_runner_handle_;
 

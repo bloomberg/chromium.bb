@@ -31,9 +31,9 @@ namespace battor {
 class TestableBattOrConnection : public BattOrConnectionImpl {
  public:
   TestableBattOrConnection(BattOrConnection::Listener* listener,
-                           std::unique_ptr<base::TickClock> tick_clock)
+                           base::TickClock* tick_clock)
       : BattOrConnectionImpl("/dev/test", listener, nullptr) {
-    tick_clock_ = std::move(tick_clock);
+    tick_clock_ = tick_clock;
   }
   scoped_refptr<device::SerialIoHandler> CreateIoHandler() override {
     return device::TestSerialIoHandler::Create();
@@ -73,8 +73,8 @@ class BattOrConnectionImplTest : public testing::Test,
 
  protected:
   void SetUp() override {
-    connection_.reset(
-        new TestableBattOrConnection(this, task_runner_->GetMockTickClock()));
+    tick_clock_ = task_runner_->GetMockTickClock();
+    connection_.reset(new TestableBattOrConnection(this, tick_clock_.get()));
     task_runner_->ClearPendingTasks();
   }
 
@@ -149,10 +149,14 @@ class BattOrConnectionImplTest : public testing::Test,
   std::vector<char>* GetReadMessage() { return read_bytes_.get(); }
 
  private:
-  std::unique_ptr<TestableBattOrConnection> connection_;
+  // TODO(tzik): Remove |tick_clock_| after updating GetMockTickClock to own the
+  // instance.
+  std::unique_ptr<base::TickClock> tick_clock_;
 
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle thread_task_runner_handle_;
+
+  std::unique_ptr<TestableBattOrConnection> connection_;
 
   // Result from the last connect command.
   bool open_success_;
