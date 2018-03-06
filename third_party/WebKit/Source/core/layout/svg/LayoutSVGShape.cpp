@@ -428,15 +428,15 @@ LayoutSVGShapeRareData& LayoutSVGShape::EnsureRareData() const {
   return *rare_data_.get();
 }
 
-LayoutUnit LayoutSVGShape::VisualRectOutsetForRasterEffects() const {
+float LayoutSVGShape::VisualRectOutsetForRasterEffects() const {
   // Account for raster expansions due to SVG stroke hairline raster effects.
   if (StyleRef().SvgStyle().HasVisibleStroke()) {
-    LayoutUnit outset(0.5f);
+    float outset = 0.5f;
     if (StyleRef().SvgStyle().CapStyle() != kButtCap)
       outset += 0.5f;
     return outset;
   }
-  return LayoutUnit();
+  return 0;
 }
 
 }  // namespace blink

@@ -6,6 +6,7 @@
 #define DisplayItem_h
 
 #include "platform/PlatformExport.h"
+#include "platform/geometry/FloatRect.h"
 #include "platform/graphics/ContiguousContainer.h"
 #include "platform/graphics/paint/DisplayItemClient.h"
 #include "platform/runtime_enabled_features.h"
@@ -21,7 +22,7 @@
 namespace blink {
 
 class GraphicsContext;
-class LayoutSize;
+class FloatSize;
 enum class PaintPhase;
 class WebDisplayItemList;
 
@@ -231,16 +232,14 @@ class PLATFORM_EXPORT DisplayItem {
   // This equals to Client().VisualRect() as long as the client is alive and is
   // not invalidated. Otherwise it saves the previous visual rect of the client.
   // See DisplayItemClient::VisualRect() about its coordinate space.
-  const LayoutRect& VisualRect() const { return visual_rect_; }
-  LayoutUnit OutsetForRasterEffects() const {
-    return outset_for_raster_effects_;
-  }
+  const FloatRect& VisualRect() const { return visual_rect_; }
+  float OutsetForRasterEffects() const { return outset_for_raster_effects_; }
 
   // Visual rect can change without needing invalidation of the client, e.g.
   // when ancestor clip changes. This is called from PaintController::
   // UseCachedDrawingIfPossible() to update the visual rect of a cached display
   // item.
-  void UpdateVisualRect() { visual_rect_ = client_->VisualRect(); }
+  void UpdateVisualRect() { visual_rect_ = FloatRect(client_->VisualRect()); }
 
   Type GetType() const { return static_cast<Type>(type_); }
 
@@ -267,7 +266,7 @@ class PLATFORM_EXPORT DisplayItem {
   // |visual_rect_offset| is the offset between the space of the GraphicsLayer
   // which owns the display item and the coordinate space of VisualRect().
   // TODO(wangxianzhu): Remove the parameter for slimming paint v2.
-  virtual void AppendToWebDisplayItemList(const LayoutSize& visual_rect_offset,
+  virtual void AppendToWebDisplayItemList(const FloatSize& visual_rect_offset,
                                           WebDisplayItemList*) const {}
 
 // See comments of enum Type for usage of the following macros.
@@ -385,8 +384,8 @@ class PLATFORM_EXPORT DisplayItem {
   DisplayItem() : is_tombstone_(true) {}
 
   const DisplayItemClient* client_;
-  LayoutRect visual_rect_;
-  LayoutUnit outset_for_raster_effects_;
+  FloatRect visual_rect_;
+  float outset_for_raster_effects_;
 
   static_assert(kTypeLast < (1 << 8), "DisplayItem::Type should fit in 8 bits");
   unsigned type_ : 8;

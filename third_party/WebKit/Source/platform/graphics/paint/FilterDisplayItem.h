@@ -28,7 +28,7 @@ class PLATFORM_EXPORT BeginFilterDisplayItem final
         origin_(origin) {}
 
   void Replay(GraphicsContext&) const override;
-  void AppendToWebDisplayItemList(const LayoutSize&,
+  void AppendToWebDisplayItemList(const FloatSize&,
                                   WebDisplayItemList*) const override;
   bool DrawsContent() const override;
 
@@ -61,7 +61,7 @@ class PLATFORM_EXPORT EndFilterDisplayItem final : public PairedEndDisplayItem {
       : PairedEndDisplayItem(client, kEndFilter, sizeof(*this)) {}
 
   void Replay(GraphicsContext&) const override;
-  void AppendToWebDisplayItemList(const LayoutSize&,
+  void AppendToWebDisplayItemList(const FloatSize&,
                                   WebDisplayItemList*) const override;
 
  private:

@@ -297,7 +297,7 @@ void PaintController::ProcessNewItem(DisplayItem& display_item) {
 
     last_chunk.outset_for_raster_effects =
         std::max(last_chunk.outset_for_raster_effects,
-                 display_item.OutsetForRasterEffects().ToFloat());
+                 display_item.OutsetForRasterEffects());
   }
 
 #if DCHECK_IS_ON()
@@ -541,7 +541,8 @@ void PaintController::CopyCachedSubsequence(size_t begin_index,
     // Visual rect change should not happen in a cached subsequence.
     // However, because of different method of pixel snapping in different
     // paths, there are false positives. Just log an error.
-    if (cached_item->VisualRect() != cached_item->Client().VisualRect()) {
+    if (cached_item->VisualRect() !=
+        FloatRect(cached_item->Client().VisualRect())) {
       LOG(ERROR) << "Visual rect changed in a cached subsequence: "
                  << cached_item->Client().DebugName()
                  << " old=" << cached_item->VisualRect().ToString()
@@ -845,7 +846,7 @@ void PaintController::GenerateRasterInvalidationsComparingChunks(
           PaintChunk& moved_to_chunk =
               new_paint_chunks_.FindChunkByDisplayItemIndex(moved_to_index);
           AddRasterInvalidation(new_item.Client(), moved_to_chunk,
-                                FloatRect(new_item.VisualRect()),
+                                new_item.VisualRect(),
                                 PaintInvalidationReason::kAppeared);
           // And invalidate the old visual rect in this chunk.
           client_to_invalidate_old_visual_rect = &new_item.Client();
@@ -894,7 +895,7 @@ void PaintController::GenerateRasterInvalidation(
     const DisplayItem* new_item) {
   if (!new_item || new_item->VisualRect().IsEmpty()) {
     if (old_item && !old_item->VisualRect().IsEmpty()) {
-      AddRasterInvalidation(client, chunk, FloatRect(old_item->VisualRect()),
+      AddRasterInvalidation(client, chunk, old_item->VisualRect(),
                             PaintInvalidationReason::kDisappeared);
     }
     return;
@@ -902,7 +903,7 @@ void PaintController::GenerateRasterInvalidation(
 
   DCHECK(&client == &new_item->Client());
   if (!old_item || old_item->VisualRect().IsEmpty()) {
-    AddRasterInvalidation(client, chunk, FloatRect(new_item->VisualRect()),
+    AddRasterInvalidation(client, chunk, new_item->VisualRect(),
                           PaintInvalidationReason::kAppeared);
     return;
   }
@@ -910,9 +911,9 @@ void PaintController::GenerateRasterInvalidation(
   if (client.IsJustCreated()) {
     // The old client has been deleted and the new client happens to be at the
     // same address. They have no relationship.
-    AddRasterInvalidation(client, chunk, FloatRect(old_item->VisualRect()),
+    AddRasterInvalidation(client, chunk, old_item->VisualRect(),
                           PaintInvalidationReason::kDisappeared);
-    AddRasterInvalidation(client, chunk, FloatRect(new_item->VisualRect()),
+    AddRasterInvalidation(client, chunk, new_item->VisualRect(),
                           PaintInvalidationReason::kAppeared);
     return;
   }
@@ -1025,19 +1026,15 @@ void PaintController::ShowUnderInvalidationError(
 
 #ifndef NDEBUG
   const PaintRecord* new_record = nullptr;
-  LayoutRect new_bounds;
   if (new_item.IsDrawing()) {
     new_record =
         static_cast<const DrawingDisplayItem&>(new_item).GetPaintRecord().get();
-    new_bounds = static_cast<const DrawingDisplayItem&>(new_item).VisualRect();
   }
   const PaintRecord* old_record = nullptr;
-  LayoutRect old_bounds;
   if (old_item->IsDrawing()) {
     old_record = static_cast<const DrawingDisplayItem*>(old_item)
                      ->GetPaintRecord()
                      .get();
-    old_bounds = static_cast<const DrawingDisplayItem&>(new_item).VisualRect();
   }
   LOG(INFO) << "new record:\n"
             << (new_record ? RecordAsDebugString(*new_record).Utf8().data()

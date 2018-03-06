@@ -57,15 +57,15 @@ TEST_F(DrawingDisplayItemTest, VisualRectAndDrawingBounds) {
 
   DrawingDisplayItem item(client_, DisplayItem::Type::kDocumentBackground,
                           CreateRectRecord(record_bounds));
-  EXPECT_EQ(drawing_bounds, item.VisualRect());
+  EXPECT_EQ(FloatRect(drawing_bounds), item.VisualRect());
 
   MockWebDisplayItemList list1;
   WebRect expected_rect = EnclosingIntRect(drawing_bounds);
   EXPECT_CALL(list1, AppendDrawingItem(expected_rect, _)).Times(1);
-  item.AppendToWebDisplayItemList(LayoutSize(), &list1);
+  item.AppendToWebDisplayItemList(FloatSize(), &list1);
 
-  LayoutSize offset(LayoutUnit(2.1), LayoutUnit(3.6));
-  LayoutRect visual_rect_with_offset = drawing_bounds;
+  FloatSize offset(2.1, 3.6);
+  FloatRect visual_rect_with_offset(drawing_bounds);
   visual_rect_with_offset.Move(-offset);
   WebRect expected_visual_rect = EnclosingIntRect(visual_rect_with_offset);
   MockWebDisplayItemList list2;

@@ -36,7 +36,7 @@ class PLATFORM_EXPORT ScrollHitTestDisplayItem final : public DisplayItem {
 
   // DisplayItem
   void Replay(GraphicsContext&) const override;
-  void AppendToWebDisplayItemList(const LayoutSize&,
+  void AppendToWebDisplayItemList(const FloatSize&,
                                   WebDisplayItemList*) const override;
   bool Equals(const DisplayItem&) const override;
 #if DCHECK_IS_ON()

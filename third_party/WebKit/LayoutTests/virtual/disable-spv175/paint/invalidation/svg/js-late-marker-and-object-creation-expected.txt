@@ -18,17 +18,17 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
+          "object": "LayoutSVGContainer g id='content'",
+          "rect": [190, 198, 137, 137],
+          "reason": "appeared"
+        },
+        {
           "object": "LayoutSVGPath path",
-          "rect": [189, 197, 139, 139],
+          "rect": [190, 198, 137, 137],
           "reason": "full"
         },
         {
           "object": "LayoutSVGPath path",
-          "rect": [189, 197, 139, 139],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutSVGContainer g id='content'",
           "rect": [190, 198, 137, 137],
           "reason": "appeared"
         }

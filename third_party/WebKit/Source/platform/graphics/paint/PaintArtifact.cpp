@@ -24,18 +24,15 @@ void ComputeChunkBoundsAndOpaqueness(const DisplayItemList& display_items,
     FloatRect bounds;
     SkRegion known_to_be_opaque_region;
     for (const DisplayItem& item : display_items.ItemsInPaintChunk(chunk)) {
-      bounds.Unite(FloatRect(item.Client().VisualRect()));
+      bounds.Unite(item.VisualRect());
       if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
           !item.IsDrawing())
         continue;
       const auto& drawing = static_cast<const DrawingDisplayItem&>(item);
       if (drawing.GetPaintRecord() && drawing.KnownToBeOpaque()) {
-        // TODO(wkorman): Confirm the visual rect is in the right
-        // space. It looks correct now, and was perhaps incorrect
-        // previously?
-        LayoutRect visual_rect = drawing.VisualRect();
-        known_to_be_opaque_region.op(SkIRect(IntRect(visual_rect)),
-                                     SkRegion::kUnion_Op);
+        known_to_be_opaque_region.op(
+            SkIRect(EnclosedIntRect(drawing.VisualRect())),
+            SkRegion::kUnion_Op);
       }
     }
     chunk.bounds = bounds;
@@ -113,7 +110,7 @@ void PaintArtifact::Replay(PaintCanvas& canvas,
 
 DISABLE_CFI_PERF
 void PaintArtifact::AppendToWebDisplayItemList(
-    const LayoutSize& visual_rect_offset,
+    const FloatSize& visual_rect_offset,
     WebDisplayItemList* list) const {
   TRACE_EVENT0("blink,benchmark", "PaintArtifact::appendToWebDisplayItemList");
   for (const DisplayItem& item : display_item_list_)
