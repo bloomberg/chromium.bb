@@ -161,7 +161,11 @@ void TabLifecycleUnitSource::TabChangedAt(content::WebContents* contents,
   if (change_type != TabChangeType::kAll)
     return;
   auto it = tabs_.find(contents);
-  DCHECK(it != tabs_.end());
+  // The WebContents destructor might cause this function to be called, at this
+  // point TabClosingAt has already been called and so this WebContents has
+  // been removed from |tabs_|.
+  if (it == tabs_.end())
+    return;
   TabLifecycleUnit* lifecycle_unit = it->second.get();
   lifecycle_unit->SetRecentlyAudible(contents->WasRecentlyAudible());
 }
