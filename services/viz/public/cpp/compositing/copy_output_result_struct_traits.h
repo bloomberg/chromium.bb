@@ -20,73 +20,32 @@ template <>
 struct EnumTraits<viz::mojom::CopyOutputResultFormat,
                   viz::CopyOutputResult::Format> {
   static viz::mojom::CopyOutputResultFormat ToMojom(
-      viz::CopyOutputResult::Format format) {
-    switch (format) {
-      case viz::CopyOutputResult::Format::RGBA_BITMAP:
-        return viz::mojom::CopyOutputResultFormat::RGBA_BITMAP;
-      case viz::CopyOutputResult::Format::RGBA_TEXTURE:
-        return viz::mojom::CopyOutputResultFormat::RGBA_TEXTURE;
-      case viz::CopyOutputResult::Format::I420_PLANES:
-        break;  // Not intended for transport across service boundaries.
-    }
-    NOTREACHED();
-    return viz::mojom::CopyOutputResultFormat::RGBA_BITMAP;
-  }
+      viz::CopyOutputResult::Format format);
 
   static bool FromMojom(viz::mojom::CopyOutputResultFormat input,
-                        viz::CopyOutputResult::Format* out) {
-    switch (input) {
-      case viz::mojom::CopyOutputResultFormat::RGBA_BITMAP:
-        *out = viz::CopyOutputResult::Format::RGBA_BITMAP;
-        return true;
-      case viz::mojom::CopyOutputResultFormat::RGBA_TEXTURE:
-        *out = viz::CopyOutputResult::Format::RGBA_TEXTURE;
-        return true;
-    }
-    return false;
-  }
+                        viz::CopyOutputResult::Format* out);
 };
 
 template <>
 struct StructTraits<viz::mojom::CopyOutputResultDataView,
                     std::unique_ptr<viz::CopyOutputResult>> {
   static viz::CopyOutputResult::Format format(
-      const std::unique_ptr<viz::CopyOutputResult>& result) {
-    return result->format();
-  }
+      const std::unique_ptr<viz::CopyOutputResult>& result);
 
   static const gfx::Rect& rect(
-      const std::unique_ptr<viz::CopyOutputResult>& result) {
-    return result->rect();
-  }
+      const std::unique_ptr<viz::CopyOutputResult>& result);
 
   static const SkBitmap& bitmap(
-      const std::unique_ptr<viz::CopyOutputResult>& result) {
-    // This will return a non-drawable bitmap if the result was not
-    // RGBA_BITMAP or if the result is empty.
-    return result->AsSkBitmap();
-  }
+      const std::unique_ptr<viz::CopyOutputResult>& result);
 
   static base::Optional<gpu::Mailbox> mailbox(
-      const std::unique_ptr<viz::CopyOutputResult>& result) {
-    if (result->format() != viz::CopyOutputResult::Format::RGBA_TEXTURE)
-      return base::nullopt;
-    return result->GetTextureResult()->mailbox;
-  }
+      const std::unique_ptr<viz::CopyOutputResult>& result);
 
   static base::Optional<gpu::SyncToken> sync_token(
-      const std::unique_ptr<viz::CopyOutputResult>& result) {
-    if (result->format() != viz::CopyOutputResult::Format::RGBA_TEXTURE)
-      return base::nullopt;
-    return result->GetTextureResult()->sync_token;
-  }
+      const std::unique_ptr<viz::CopyOutputResult>& result);
 
   static base::Optional<gfx::ColorSpace> color_space(
-      const std::unique_ptr<viz::CopyOutputResult>& result) {
-    if (result->format() != viz::CopyOutputResult::Format::RGBA_TEXTURE)
-      return base::nullopt;
-    return result->GetTextureResult()->color_space;
-  }
+      const std::unique_ptr<viz::CopyOutputResult>& result);
 
   static viz::mojom::TextureReleaserPtr releaser(
       const std::unique_ptr<viz::CopyOutputResult>& result);
