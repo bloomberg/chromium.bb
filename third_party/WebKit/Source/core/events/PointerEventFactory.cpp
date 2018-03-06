@@ -241,9 +241,7 @@ PointerEvent* PointerEventFactory::Create(
   if (type == EventTypeNames::pointermove) {
     HeapVector<Member<PointerEvent>> coalesced_pointer_events;
     for (const auto& coalesced_event : coalesced_events) {
-      // TODO(crbug.com/733774): Disabled the DCHECK on the id of the events
-      // because it failed on some versions of Mac OS.
-      // DCHECK_EQ(web_pointer_event.id, coalesced_event.id);
+      DCHECK_EQ(web_pointer_event.id, coalesced_event.id);
       DCHECK_EQ(web_pointer_event.GetType(), coalesced_event.GetType());
       DCHECK_EQ(web_pointer_event.pointer_type, coalesced_event.pointer_type);
 
