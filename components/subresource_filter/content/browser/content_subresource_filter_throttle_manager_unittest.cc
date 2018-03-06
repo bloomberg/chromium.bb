@@ -138,8 +138,8 @@ class ContentSubresourceFilterThrottleManagerTest
     // tasks while waiting for throttle checks to finish.
     dealer_handle_ = std::make_unique<VerifiedRulesetDealer::Handle>(
         base::MessageLoop::current()->task_runner());
-    dealer_handle_->SetRulesetFile(
-        testing::TestRuleset::Open(test_ruleset_pair_.indexed));
+    dealer_handle_->TryOpenAndSetRulesetFile(test_ruleset_pair_.indexed.path,
+                                             base::DoNothing());
 
     throttle_manager_ =
         std::make_unique<ContentSubresourceFilterThrottleManager>(

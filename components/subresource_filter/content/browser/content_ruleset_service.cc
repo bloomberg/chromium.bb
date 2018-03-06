@@ -75,13 +75,15 @@ void ContentRulesetService::PostAfterStartupTask(base::Closure task) {
       task);
 }
 
+void ContentRulesetService::TryOpenAndSetRulesetFile(
+    const base::FilePath& file_path,
+    base::OnceCallback<void(base::File)> callback) {
+  ruleset_dealer_->TryOpenAndSetRulesetFile(file_path, std::move(callback));
+}
+
 void ContentRulesetService::PublishNewRulesetVersion(base::File ruleset_data) {
   DCHECK(ruleset_data.IsValid());
   CloseFileOnFileThread(&ruleset_data_);
-
-  // Will not perform verification until the ruleset is retrieved the first
-  // time.
-  ruleset_dealer_->SetRulesetFile(ruleset_data.Duplicate());
 
   ruleset_data_ = std::move(ruleset_data);
   for (auto it = content::RenderProcessHost::AllHostsIterator(); !it.IsAtEnd();

@@ -136,7 +136,7 @@ class LoadPolicyCallbackReceiver {
 }  // namespace
 
 TEST_F(AsyncDocumentSubresourceFilterTest, ActivationStateIsReported) {
-  dealer_handle()->SetRulesetFile(testing::TestRuleset::Open(ruleset()));
+  dealer_handle()->TryOpenAndSetRulesetFile(ruleset().path, base::DoNothing());
   auto ruleset_handle = CreateRulesetHandle();
 
   AsyncDocumentSubresourceFilter::InitializationParams params(
@@ -152,7 +152,7 @@ TEST_F(AsyncDocumentSubresourceFilterTest, ActivationStateIsReported) {
 }
 
 TEST_F(AsyncDocumentSubresourceFilterTest, ActivationStateIsComputedCorrectly) {
-  dealer_handle()->SetRulesetFile(testing::TestRuleset::Open(ruleset()));
+  dealer_handle()->TryOpenAndSetRulesetFile(ruleset().path, base::DoNothing());
   auto ruleset_handle = CreateRulesetHandle();
 
   AsyncDocumentSubresourceFilter::InitializationParams params(
@@ -173,7 +173,7 @@ TEST_F(AsyncDocumentSubresourceFilterTest, ActivationStateIsComputedCorrectly) {
 
 TEST_F(AsyncDocumentSubresourceFilterTest, DisabledForCorruptRuleset) {
   testing::TestRuleset::CorruptByFilling(ruleset(), 0, 100, 0xFF);
-  dealer_handle()->SetRulesetFile(testing::TestRuleset::Open(ruleset()));
+  dealer_handle()->TryOpenAndSetRulesetFile(ruleset().path, base::DoNothing());
 
   auto ruleset_handle = CreateRulesetHandle();
 
@@ -190,7 +190,7 @@ TEST_F(AsyncDocumentSubresourceFilterTest, DisabledForCorruptRuleset) {
 }
 
 TEST_F(AsyncDocumentSubresourceFilterTest, GetLoadPolicyForSubdocument) {
-  dealer_handle()->SetRulesetFile(testing::TestRuleset::Open(ruleset()));
+  dealer_handle()->TryOpenAndSetRulesetFile(ruleset().path, base::DoNothing());
   auto ruleset_handle = CreateRulesetHandle();
 
   AsyncDocumentSubresourceFilter::InitializationParams params(
@@ -213,7 +213,7 @@ TEST_F(AsyncDocumentSubresourceFilterTest, GetLoadPolicyForSubdocument) {
 }
 
 TEST_F(AsyncDocumentSubresourceFilterTest, FirstDisallowedLoadIsReported) {
-  dealer_handle()->SetRulesetFile(testing::TestRuleset::Open(ruleset()));
+  dealer_handle()->TryOpenAndSetRulesetFile(ruleset().path, base::DoNothing());
   auto ruleset_handle = CreateRulesetHandle();
 
   TestCallbackReceiver first_disallowed_load_receiver;

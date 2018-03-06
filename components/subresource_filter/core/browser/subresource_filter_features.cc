@@ -18,7 +18,6 @@
 #include "base/strings/string_util.h"
 #include "base/synchronization/lock.h"
 #include "base/trace_event/trace_event_argument.h"
-#include "components/variations/variations_associated_data.h"
 
 namespace subresource_filter {
 

@@ -1265,7 +1265,7 @@ void BrowserProcessImpl::CreateSubresourceFilterRulesetService() {
           blocking_task_runner);
   subresource_filter_ruleset_service_->set_ruleset_service(
       std::make_unique<subresource_filter::RulesetService>(
-          local_state(), blocking_task_runner, background_task_runner,
+          local_state(), background_task_runner,
           subresource_filter_ruleset_service_.get(), indexed_ruleset_base_dir));
 }
 

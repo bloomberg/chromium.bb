@@ -90,6 +90,7 @@ source_set("unit_tests") {
     ":browser",
     ":test_support",
     "//base/test:test_support",
+    "//components/prefs:test_support",
     "//components/safe_browsing/db:util",
     "//components/subresource_filter/content/common",
     "//components/subresource_filter/core/browser",

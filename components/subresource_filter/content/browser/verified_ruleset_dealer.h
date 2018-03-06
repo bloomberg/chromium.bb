@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/callback_forward.h"
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
@@ -49,6 +50,12 @@ class VerifiedRulesetDealer : public RulesetDealer {
   void SetRulesetFile(base::File ruleset_file) override;
   scoped_refptr<const MemoryMappedRuleset> GetRuleset() override;
 
+  // Opens file and use it as ruleset file on success. Returns valid
+  // |base::File| in the case of file opened and set. Returns invalid
+  // |base::File| in the case of file open error. In the case of error
+  // ruleset dealer continues to use the previous file (if any).
+  base::File OpenAndSetRulesetFile(const base::FilePath& file_path);
+
   // For tests only.
   RulesetVerificationStatus status() const { return status_; }
 
@@ -77,9 +84,12 @@ class VerifiedRulesetDealer::Handle {
   // at least until the callback returns.
   void GetDealerAsync(base::Callback<void(VerifiedRulesetDealer*)> callback);
 
-  // Sets the ruleset |file| that the VerifiedRulesetDealer should distribute
-  // from now on.
-  void SetRulesetFile(base::File file);
+  // Schedules file open to use as a new ruleset file. In the case of success,
+  // the new and valid |base::File| is passed to |callback|. In the case of
+  // error an invalid |base::File| is passed to |callback| and dealer continues
+  // to use previous ruleset file (if any).
+  void TryOpenAndSetRulesetFile(const base::FilePath& path,
+                                base::OnceCallback<void(base::File)> callback);
 
  private:
   // Note: Raw pointer, |dealer_| already holds a reference to |task_runner_|.

@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_enumerator.h"
-#include "base/files/file_proxy.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
@@ -214,12 +213,10 @@ decltype(&base::ReplaceFile) RulesetService::g_replace_file_func =
 
 RulesetService::RulesetService(
     PrefService* local_state,
-    scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
     scoped_refptr<base::SequencedTaskRunner> background_task_runner,
     RulesetServiceDelegate* delegate,
     const base::FilePath& indexed_ruleset_base_dir)
     : local_state_(local_state),
-      blocking_task_runner_(std::move(blocking_task_runner)),
       background_task_runner_(std::move(background_task_runner)),
       delegate_(delegate),
       is_after_startup_(false),
@@ -473,38 +470,26 @@ void RulesetService::OnWrittenRuleset(
 
 void RulesetService::OpenAndPublishRuleset(
     const IndexedRulesetVersion& version) {
-  ruleset_data_.reset(new base::FileProxy(blocking_task_runner_.get()));
-  // On Windows, open the file with FLAG_SHARE_DELETE to allow deletion while
-  // there are handles to it still open. Note that creating a new file at the
-  // same path would still be impossible until after the last handle is closed.
-  ruleset_data_->CreateOrOpen(
+  const base::FilePath file_path =
       IndexedRulesetLocator::GetRulesetDataFilePath(
           IndexedRulesetLocator::GetSubdirectoryPathForVersion(
-              indexed_ruleset_base_dir_, version)),
-      base::File::FLAG_OPEN | base::File::FLAG_READ |
-          base::File::FLAG_SHARE_DELETE,
-      base::Bind(&RulesetService::OnOpenedRuleset, AsWeakPtr()));
+              indexed_ruleset_base_dir_, version));
+
+  delegate_->TryOpenAndSetRulesetFile(
+      file_path, base::BindOnce(&RulesetService::OnRulesetSet, AsWeakPtr()));
 }
 
-void RulesetService::OnOpenedRuleset(base::File::Error error) {
+void RulesetService::OnRulesetSet(base::File file) {
   // The file has just been successfully written, so a failure here is unlikely
   // unless |indexed_ruleset_base_dir_| has been tampered with or there are disk
   // errors. Still, restore the invariant that a valid version in preferences
   // always points to an existing version of disk by invalidating the prefs.
-  if (error != base::File::FILE_OK) {
+  if (!file.IsValid()) {
     IndexedRulesetVersion().SaveToPrefs(local_state_);
     return;
   }
 
-  // A second call to OpenAndPublishRuleset() may have reset |ruleset_data_| to
-  // a new instance that is in the process of calling CreateOrOpen() on a newer
-  // version. Bail out.
-  DCHECK(ruleset_data_);
-  if (!ruleset_data_->IsValid())
-    return;
-
-  DCHECK_EQ(error, base::File::Error::FILE_OK);
-  delegate_->PublishNewRulesetVersion(ruleset_data_->DuplicateFile());
+  delegate_->PublishNewRulesetVersion(std::move(file));
 }
 
 }  // namespace subresource_filter

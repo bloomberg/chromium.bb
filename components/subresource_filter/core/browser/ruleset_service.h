@@ -25,7 +25,6 @@ class PrefService;
 class PrefRegistrySimple;
 
 namespace base {
-class FileProxy;
 class SequencedTaskRunner;
 }  // namespace base
 
@@ -143,11 +142,8 @@ class IndexedRulesetLocator {
 // version pointed to by preferences, if valid, will exist on disk at any point
 // in time.
 //
-// Ruleset file opening is a critical for user experience operation. It is
-// posted to |blocking_task_runner|. Obsolete files deletion and rulesets
-// indexing are not critical for user experience. These tasks are posted to
-// |background_task_runner|. Since the two task runners are distinct you cannot
-// make guarantees about task ordering between them.
+// Obsolete files deletion and rulesets indexing are posted to
+// |background_task_runner|.
 class RulesetService : public base::SupportsWeakPtr<RulesetService> {
  public:
   // Enumerates the possible outcomes of indexing a ruleset and writing it to
@@ -176,7 +172,6 @@ class RulesetService : public base::SupportsWeakPtr<RulesetService> {
   // See class comments for details of arguments.
   RulesetService(
       PrefService* local_state,
-      scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner,
       RulesetServiceDelegate* delegate,
       const base::FilePath& indexed_ruleset_base_dir);
@@ -199,6 +194,8 @@ class RulesetService : public base::SupportsWeakPtr<RulesetService> {
 
  private:
   friend class SubresourceFilteringRulesetServiceTest;
+  FRIEND_TEST_ALL_PREFIXES(SubresourceFilterContentRulesetServiceTest,
+                           PublishesRulesetInOnePostTask);
   FRIEND_TEST_ALL_PREFIXES(SubresourceFilteringRulesetServiceTest,
                            NewRuleset_WriteFailure);
   FRIEND_TEST_ALL_PREFIXES(SubresourceFilteringRulesetServiceDeathTest,
@@ -255,17 +252,11 @@ class RulesetService : public base::SupportsWeakPtr<RulesetService> {
                         const IndexedRulesetVersion& version);
 
   void OpenAndPublishRuleset(const IndexedRulesetVersion& version);
-  void OnOpenedRuleset(base::File::Error error);
+  void OnRulesetSet(base::File file);
 
   PrefService* const local_state_;
 
-  // Task runner for tasks critical for user experience. The current ruleset
-  // file opening should be done on this task runner so as it throttles the
-  // first page load.
-  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
-
-  // Task runner for tasks that don't influence user experience. Obsolete files
-  // deletion and ruleset indexing should be done on this task runner.
+  // Obsolete files deletion and indexing should be done on this runner.
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
 
   // Must outlive |this| object.
@@ -275,7 +266,6 @@ class RulesetService : public base::SupportsWeakPtr<RulesetService> {
   bool is_after_startup_;
 
   const base::FilePath indexed_ruleset_base_dir_;
-  std::unique_ptr<base::FileProxy> ruleset_data_;
 
   DISALLOW_COPY_AND_ASSIGN(RulesetService);
 };

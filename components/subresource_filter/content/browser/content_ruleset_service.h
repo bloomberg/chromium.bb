@@ -57,7 +57,7 @@ struct UnindexedRulesetInfo;
 class ContentRulesetService : public RulesetServiceDelegate,
                               content::NotificationObserver {
  public:
-  ContentRulesetService(
+  explicit ContentRulesetService(
       scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
   ~ContentRulesetService() override;
 
@@ -65,6 +65,10 @@ class ContentRulesetService : public RulesetServiceDelegate,
 
   // RulesetServiceDelegate:
   void PostAfterStartupTask(base::Closure task) override;
+  void TryOpenAndSetRulesetFile(
+      const base::FilePath& file_path,
+      base::OnceCallback<void(base::File)> callback) override;
+
   void PublishNewRulesetVersion(base::File ruleset_data) override;
 
   void set_ruleset_service(std::unique_ptr<RulesetService> ruleset_service);
