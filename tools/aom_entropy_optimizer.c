@@ -46,13 +46,9 @@ static void counts_to_cdf(const aom_count_type *counts, aom_cdf_prob *cdf,
   int64_t sum = csum[modes - 1];
   const int64_t round_shift = sum >> 1;
   for (int i = 0; i < modes; ++i) {
-    if (sum <= 0) {
-      cdf[i] = CDF_PROB_TOP - modes + i + 1;
-    } else {
-      cdf[i] = (csum[i] * CDF_PROB_TOP + round_shift) / sum;
-      cdf[i] = AOMMIN(cdf[i], CDF_PROB_TOP - (modes - 1 + i) * 4);
-      cdf[i] = (i == 0) ? AOMMAX(cdf[i], 4) : AOMMAX(cdf[i], cdf[i - 1] + 4);
-    }
+    cdf[i] = (csum[i] * CDF_PROB_TOP + round_shift) / sum;
+    cdf[i] = AOMMIN(cdf[i], CDF_PROB_TOP - (modes - 1 + i) * 4);
+    cdf[i] = (i == 0) ? AOMMAX(cdf[i], 4) : AOMMAX(cdf[i], cdf[i - 1] + 4);
   }
 }
 
