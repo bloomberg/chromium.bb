@@ -83,7 +83,7 @@ BattOrConnectionImpl::BattOrConnectionImpl(
     serial_log_.open(serial_log_path.c_str(),
                      std::fstream::out | std::fstream::trunc);
   }
-  tick_clock_ = std::make_unique<base::DefaultTickClock>();
+  tick_clock_ = base::DefaultTickClock::GetInstance();
 }
 
 BattOrConnectionImpl::~BattOrConnectionImpl() = default;

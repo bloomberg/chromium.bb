@@ -93,7 +93,7 @@ BattOrAgent::BattOrAgent(
     Listener* listener,
     scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner)
     : connection_(new BattOrConnectionImpl(path, this, ui_thread_task_runner)),
-      tick_clock_(std::make_unique<base::DefaultTickClock>()),
+      tick_clock_(base::DefaultTickClock::GetInstance()),
       listener_(listener),
       last_action_(Action::INVALID),
       command_(Command::INVALID),
