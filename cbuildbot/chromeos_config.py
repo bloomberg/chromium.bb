@@ -2469,7 +2469,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'veyron_rialto',
       'veyron_speedy',
       'veyron_tiger',
-      'whirlwind',
       'winky',
       'wizpig',
       'wolf',
@@ -2508,6 +2507,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'romer', # contact:michaelho@
       'tatl', # Still volatile - contact:smbarber@ - crbug.com/705598
       'terra', # contact:yunlian@ (Testing thinlto)
+      'whirlwind', # contact:mxt@ (crbug.com/794242)
       'wooten', # contact:icoolidge@
   ])
 
