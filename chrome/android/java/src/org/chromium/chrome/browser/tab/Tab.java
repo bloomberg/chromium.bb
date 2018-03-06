@@ -2596,8 +2596,8 @@ public class Tab
         int originalWidth = 0;
         int originalHeight = 0;
         if (mContentViewCore != null) {
-            originalWidth = mContentViewCore.getViewportWidthPix();
-            originalHeight = mContentViewCore.getViewportHeightPix();
+            originalWidth = mContentView.getWidth();
+            originalHeight = mContentView.getHeight();
             mContentViewCore.onHide();
         }
 

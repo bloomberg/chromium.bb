@@ -422,15 +422,13 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
         return mNativeContentViewCore != 0;
     }
 
-    @Override
     @CalledByNative
-    public int getViewportWidthPix() {
+    private int getViewportWidthPix() {
         return mContainerView.getWidth();
     }
 
-    @Override
     @CalledByNative
-    public int getViewportHeightPix() {
+    private int getViewportHeightPix() {
         return mContainerView.getHeight();
     }
 
