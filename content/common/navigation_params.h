@@ -268,6 +268,11 @@ struct CONTENT_EXPORT RequestNavigationParams {
   int current_history_list_offset = -1;
   int current_history_list_length = 0;
 
+  // Indicates that the tab was previously discarded.
+  // wasDiscarded is exposed on Document after discard, see:
+  // https://github.com/WICG/web-lifecycle
+  bool was_discarded = false;
+
   // Indicates whether the navigation is to a view-source:// scheme or not.
   // It is a separate boolean as the view-source scheme is stripped from the
   // URL before it is sent to the renderer process and the RenderFrame needs

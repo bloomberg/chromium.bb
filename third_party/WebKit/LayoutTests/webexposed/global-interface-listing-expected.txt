@@ -1637,6 +1637,7 @@ interface Document : Node
     getter title
     getter visibilityState
     getter vlinkColor
+    getter wasDiscarded
     getter webkitCurrentFullScreenElement
     getter webkitFullscreenElement
     getter webkitFullscreenEnabled

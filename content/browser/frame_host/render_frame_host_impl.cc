@@ -495,6 +495,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
       render_frame_created_(false),
       is_waiting_for_beforeunload_ack_(false),
       unload_ack_is_for_navigation_(false),
+      was_discarded_(false),
       is_loading_(false),
       pending_commit_(false),
       nav_entry_id_(0),
@@ -1391,7 +1392,7 @@ void RenderFrameHostImpl::OnCreateChildFrame(
                         std::move(new_interface_provider_provider_request),
                         scope, frame_name, frame_unique_name,
                         is_created_by_script, devtools_frame_token,
-                        frame_policy, frame_owner_properties);
+                        frame_policy, frame_owner_properties, was_discarded_);
 }
 
 void RenderFrameHostImpl::DidNavigate(
@@ -1568,6 +1569,9 @@ void RenderFrameHostImpl::DidCommitProvisionalLoad(
   TRACE_EVENT2("navigation", "RenderFrameHostImpl::DidCommitProvisionalLoad",
                "frame_tree_node", frame_tree_node_->frame_tree_node_id(), "url",
                validated_params->url.possibly_invalid_spec());
+
+  if (navigation_request_)
+    was_discarded_ = navigation_request_->request_params().was_discarded;
 
   // Notify the resource scheduler of the navigation committing.
   NotifyResourceSchedulerOfNavigation(process->GetID(), *validated_params);
@@ -2732,6 +2736,7 @@ void RenderFrameHostImpl::OnDidStopLoading() {
   if (!is_loading_)
     return;
 
+  was_discarded_ = false;
   is_loading_ = false;
   navigation_request_.reset();
 

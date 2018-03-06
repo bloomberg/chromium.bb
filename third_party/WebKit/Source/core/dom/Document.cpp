@@ -620,6 +620,7 @@ Document::Document(const DocumentInit& initializer,
           this,
           &Document::UpdateFocusAppearanceTimerFired),
       css_target_(nullptr),
+      was_discarded_(false),
       load_event_progress_(kLoadEventCompleted),
       start_time_(CurrentTime()),
       script_runner_(ScriptRunner::Create(this)),
@@ -1701,6 +1702,14 @@ String Document::visibilityState() const {
 
 bool Document::hidden() const {
   return GetPageVisibilityState() != mojom::PageVisibilityState::kVisible;
+}
+
+bool Document::wasDiscarded() const {
+  return was_discarded_;
+}
+
+void Document::SetWasDiscarded(bool was_discarded) {
+  was_discarded_ = was_discarded;
 }
 
 void Document::DidChangeVisibilityState() {

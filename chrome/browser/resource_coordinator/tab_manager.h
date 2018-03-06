@@ -220,6 +220,7 @@ class TabManager : public LifecycleUnitSourceObserver,
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, ProtectRecentlyUsedTabs);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, ProtectVideoTabs);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, TabManagerBasics);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, TabManagerWasDiscarded);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, MaybeThrottleNavigation);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, OnDidFinishNavigation);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, OnTabIsLoaded);

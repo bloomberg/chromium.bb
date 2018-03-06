@@ -12,6 +12,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
+#include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
 #include "chrome/browser/resource_coordinator/tab_manager_web_contents_data.h"
 #include "chrome/browser/resource_coordinator/time.h"
@@ -25,6 +26,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
@@ -32,6 +34,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "url/gurl.h"
 
@@ -45,6 +48,7 @@ namespace resource_coordinator {
 namespace {
 
 constexpr base::TimeDelta kShortDelay = base::TimeDelta::FromSeconds(1);
+static constexpr char kBlinkPageLifecycleFeature[] = "PageLifecycle";
 
 class TabManagerTest : public InProcessBrowserTest {
  public:
@@ -52,6 +56,11 @@ class TabManagerTest : public InProcessBrowserTest {
     // Start with a non-null TimeTicks, as there is no discard protection for
     // a tab with a null focused timestamp.
     test_clock_.Advance(kShortDelay);
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
+                                    kBlinkPageLifecycleFeature);
   }
 
   void OpenTwoTabs(const GURL& first_url, const GURL& second_url) {
@@ -791,6 +800,40 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest,
 #endif  // OS_CHROMEOS
   tester.ExpectUniqueSample(
       "TabManager.Discarding.DiscardedTabCouldFastShutdown", false, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(TabManagerTest, TabManagerWasDiscarded) {
+  const char kDiscardedStateJS[] =
+      "window.domAutomationController.send("
+      "window.document.wasDiscarded);";
+
+  GURL test_page(ui_test_utils::GetTestUrl(
+      base::FilePath(), base::FilePath(FILE_PATH_LITERAL("simple.html"))));
+  ui_test_utils::NavigateToURL(browser(), test_page);
+
+  // document.wasDiscarded is false initially.
+  bool not_discarded_result;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      browser()->tab_strip_model()->GetWebContentsAt(0), kDiscardedStateJS,
+      &not_discarded_result));
+  EXPECT_FALSE(not_discarded_result);
+
+  // Discard the tab. This simulates a tab discard.
+  content::WebContents* content =
+      browser()->tab_strip_model()->GetWebContentsAt(0);
+  auto* lifecycle_unit = TabLifecycleUnitExternal::FromWebContents(content);
+  lifecycle_unit->DiscardTab();
+
+  // Here we simulate re-focussing the tab causing reload with navigation,
+  // the navigation will reload the tab.
+  ui_test_utils::NavigateToURL(browser(), test_page);
+
+  // document.wasDiscarded is true on navigate after discard.
+  bool discarded_result;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      browser()->tab_strip_model()->GetWebContentsAt(0), kDiscardedStateJS,
+      &discarded_result));
+  EXPECT_TRUE(discarded_result);
 }
 
 namespace {

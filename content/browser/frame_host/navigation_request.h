@@ -161,6 +161,8 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
     associated_site_instance_type_ = type;
   }
 
+  void set_was_discarded() { request_params_.was_discarded = true; }
+
   NavigationHandleImpl* navigation_handle() const {
     return navigation_handle_.get();
   }

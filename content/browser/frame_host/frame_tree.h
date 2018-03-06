@@ -141,7 +141,8 @@ class CONTENT_EXPORT FrameTree {
                 bool is_created_by_script,
                 const base::UnguessableToken& devtools_frame_token,
                 const blink::FramePolicy& frame_policy,
-                const FrameOwnerProperties& frame_owner_properties);
+                const FrameOwnerProperties& frame_owner_properties,
+                bool was_discarded);
 
   // Removes a frame from the frame tree. |child|, its children, and objects
   // owned by their RenderFrameHostManagers are immediately deleted. The root

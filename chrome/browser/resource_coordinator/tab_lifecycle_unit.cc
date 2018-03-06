@@ -249,6 +249,10 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::Discard(
   tab_strip_model_->ReplaceWebContentsAt(index, null_contents);
   DCHECK_EQ(GetWebContents(), null_contents);
 
+  // This ensures that on reload after discard, the document has
+  // "wasDiscarded" set to true.
+  null_contents->SetWasDiscarded(true);
+
   // Discard the old tab's renderer.
   // TODO(jamescook): This breaks script connections with other tabs. Find a
   // different approach that doesn't do that, perhaps based on

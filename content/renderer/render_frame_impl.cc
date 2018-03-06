@@ -466,6 +466,7 @@ WebURLRequest CreateURLRequestForNavigation(
   extra_data->set_navigation_initiated_by_renderer(
       request_params.nav_entry_id == 0);
   request.SetExtraData(std::move(extra_data));
+  request.SetWasDiscarded(request_params.was_discarded);
 
   // Set the ui timestamp for this navigation. Currently the timestamp here is
   // only non empty when the navigation was triggered by an Android intent. The

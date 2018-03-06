@@ -308,6 +308,9 @@ class WebURLRequest {
   BLINK_PLATFORM_EXPORT bool CheckForBrowserSideNavigation() const;
   BLINK_PLATFORM_EXPORT void SetCheckForBrowserSideNavigation(bool);
 
+  BLINK_PLATFORM_EXPORT bool WasDiscarded() const;
+  BLINK_PLATFORM_EXPORT void SetWasDiscarded(bool);
+
   // This is used to report navigation metrics starting from the UI action
   // that triggered the navigation (which can be different from the navigation
   // start time used in the Navigation Timing API).
