@@ -1791,6 +1791,40 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   WaitForElementValue("username_id", "temp");
 }
 
+// Test that if the same dynamic form is created multiple times then all of them
+// are autofilled and no unnecessary PasswordStore requests are fired.
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
+                       DuplicateFormsGetFilled) {
+  // At first let us save a credential to the password store.
+  scoped_refptr<password_manager::TestPasswordStore> password_store =
+      static_cast<password_manager::TestPasswordStore*>(
+          PasswordStoreFactory::GetForProfile(
+              browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS)
+              .get());
+  autofill::PasswordForm signin_form;
+  signin_form.signon_realm = embedded_test_server()->base_url().spec();
+  signin_form.origin = embedded_test_server()->base_url();
+  signin_form.action = embedded_test_server()->base_url();
+  signin_form.username_value = base::ASCIIToUTF16("temp");
+  signin_form.password_value = base::ASCIIToUTF16("random");
+  password_store->AddLogin(signin_form);
+
+  NavigateToFile("/password/recurring_dynamic_form.html");
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), "addForm();"));
+  // Wait until the username is filled, to make sure autofill kicked in.
+  WaitForJsElementValue("document.body.children[0].children[0]", "temp");
+  WaitForJsElementValue("document.body.children[0].children[1]", "random");
+
+  // It's a trick. There should be no second request to the password store since
+  // the existing PasswordFormManager will manage the new form.
+  password_store->Clear();
+  // Add one more form.
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), "addForm();"));
+  // Wait until the username is filled, to make sure autofill kicked in.
+  WaitForJsElementValue("document.body.children[1].children[0]", "temp");
+  WaitForJsElementValue("document.body.children[1].children[1]", "random");
+}
+
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
                        PromptForPushStateWhenFormDisappears) {
   NavigateToFile("/password/password_push_state.html");

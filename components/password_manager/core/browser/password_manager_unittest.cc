@@ -2257,6 +2257,8 @@ TEST_F(PasswordManagerTest, CertErrorReported) {
   };
 
   const std::vector<PasswordForm> observed = {PasswordForm()};
+  // PasswordStore requested only once for the same form.
+  EXPECT_CALL(*store_, GetLogins(_, _));
 
   for (const auto& test_case : kCases) {
     SCOPED_TRACE(testing::Message("index of test_case = ")
@@ -2264,7 +2266,6 @@ TEST_F(PasswordManagerTest, CertErrorReported) {
     EXPECT_CALL(client_, GetMainFrameCertStatus())
         .WillRepeatedly(Return(test_case.cert_status));
     base::HistogramTester histogram_tester;
-    EXPECT_CALL(*store_, GetLogins(_, _));
     manager()->OnPasswordFormsParsed(&driver_, observed);
     histogram_tester.ExpectUniqueSample(
         "PasswordManager.CertificateErrorsWhileSeeingForms",

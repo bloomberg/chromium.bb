@@ -175,6 +175,11 @@ class PasswordManagerBrowserTestBase : public CertVerifierBrowserTest {
                            size_t element_index,
                            const std::string& expected_value);
 
+  // Same as above except the element is selected with |element_selector| JS
+  // expression.
+  void WaitForJsElementValue(const std::string& element_selector,
+                             const std::string& expected_value);
+
   // Make sure that the password store processed all the previous calls which
   // are executed on another thread.
   void WaitForPasswordStore();
