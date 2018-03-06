@@ -31,11 +31,16 @@ class InteractionMediaQueriesDynamicTest : public ContentBrowserTest {
     (defined(OS_ANDROID) && !defined(ADDRESS_SANITIZER))
 IN_PROC_BROWSER_TEST_F(InteractionMediaQueriesDynamicTest,
                        PointerMediaQueriesDynamic) {
+  RenderViewHost* rvh = shell()->web_contents()->GetRenderViewHost();
+  ui::SetAvailablePointerAndHoverTypesForTesting(ui::POINTER_TYPE_NONE,
+                                                 ui::HOVER_TYPE_NONE);
+  rvh->OnWebkitPreferencesChanged();
+
   GURL test_url = GetTestUrl("", "interaction-mq-dynamic.html");
   const base::string16 kSuccessTitle(base::ASCIIToUTF16("SUCCESS"));
   TitleWatcher title_watcher(shell()->web_contents(), kSuccessTitle);
   NavigateToURL(shell(), test_url);
-  RenderViewHost* rvh = shell()->web_contents()->GetRenderViewHost();
+
   ui::SetAvailablePointerAndHoverTypesForTesting(ui::POINTER_TYPE_COARSE,
                                                  ui::HOVER_TYPE_HOVER);
   rvh->OnWebkitPreferencesChanged();
