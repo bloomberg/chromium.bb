@@ -92,6 +92,12 @@ TEST_F(TextInputInfoTest, CommitDiffWithSelection) {
   EXPECT_EQ(edits.size(), 1u);
   EXPECT_EQ(edits[0], TextEditAction(TextEditActionType::COMMIT_TEXT,
                                      base::UTF8ToUTF16("ha"), 2));
+
+  // There was a selection and backspace was pressed.
+  edits = EditedText(Text(" text", 0, 0), Text("short text", 0, 5)).GetDiff();
+  EXPECT_EQ(edits.size(), 1u);
+  EXPECT_EQ(edits[0], TextEditAction(TextEditActionType::COMMIT_TEXT,
+                                     base::UTF8ToUTF16(""), 0));
 }
 
 TEST_F(TextInputInfoTest, CompositionDiff) {
@@ -141,6 +147,32 @@ TEST_F(TextInputInfoTest, CompositionDiff) {
   EXPECT_EQ(edits.size(), 2u);
   EXPECT_EQ(edits[0], TextEditAction(TextEditActionType::CLEAR_COMPOSING_TEXT));
   EXPECT_EQ(edits[1], TextEditAction(TextEditActionType::COMMIT_TEXT,
+                                     base::UTF8ToUTF16("hi"), 2));
+
+  // A new composition without finishing the previous composition. This could
+  // happen when we get coalesced events from the keyboard. For example, when
+  // the user presses the spacebar and a key right after while there is already
+  // an ongoing composition, the keyboard may give us a new composition without
+  // finishing the previous composition.
+  edits =
+      EditedText(Text("hii hello", 3, 3, 2, 3), Text("hi hello", 2, 2, 0, 2))
+          .GetDiff();
+  EXPECT_EQ(edits.size(), 3u);
+  EXPECT_EQ(edits[0], TextEditAction(TextEditActionType::CLEAR_COMPOSING_TEXT));
+  EXPECT_EQ(edits[1], TextEditAction(TextEditActionType::COMMIT_TEXT,
+                                     base::UTF8ToUTF16("hi"), 2));
+  EXPECT_EQ(edits[2], TextEditAction(TextEditActionType::SET_COMPOSING_TEXT,
+                                     base::UTF8ToUTF16("i"), 1));
+  // Same as above, but the new composition happens by deleting the current
+  // composition.
+  edits =
+      EditedText(Text("hi hello", 2, 2, 0, 2), Text("hii hello", 3, 3, 2, 3))
+          .GetDiff();
+  EXPECT_EQ(edits.size(), 3u);
+  EXPECT_EQ(edits[0], TextEditAction(TextEditActionType::CLEAR_COMPOSING_TEXT));
+  EXPECT_EQ(edits[1], TextEditAction(TextEditActionType::DELETE_TEXT,
+                                     base::UTF8ToUTF16(""), -2));
+  EXPECT_EQ(edits[2], TextEditAction(TextEditActionType::SET_COMPOSING_TEXT,
                                      base::UTF8ToUTF16("hi"), 2));
 }
 
