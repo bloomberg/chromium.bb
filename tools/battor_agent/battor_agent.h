@@ -186,6 +186,10 @@ class BattOrAgent : public BattOrConnection::Listener,
   // Sets and restarts the action timeout timer.
   void SetActionTimeout(uint16_t timeout_seconds);
 
+  // Returns the first action for the specified command (excluding connection
+  // actions).
+  Action GetFirstAction(Command command);
+
   // The listener that handles the commands' results. It must outlive the agent.
   Listener* listener_;
 
