@@ -44,15 +44,13 @@ using testing::WithoutArgs;
 
 namespace syncer {
 
-using sync_pb::GetUpdatesCallerInfo;
-
 class MockSyncer : public Syncer {
  public:
   MockSyncer();
   MOCK_METHOD3(NormalSyncShare, bool(ModelTypeSet, NudgeTracker*, SyncCycle*));
   MOCK_METHOD3(ConfigureSyncShare,
                bool(const ModelTypeSet&,
-                    sync_pb::GetUpdatesCallerInfo::GetUpdatesSource,
+                    sync_pb::SyncEnums::GetUpdatesOrigin,
                     SyncCycle*));
   MOCK_METHOD2(PollSyncShare, bool(ModelTypeSet, SyncCycle*));
 };
@@ -388,7 +386,7 @@ TEST_F(SyncSchedulerImplTest, Config) {
   CallbackCounter ready_counter;
   CallbackCounter retry_counter;
   ConfigurationParams params(
-      GetUpdatesCallerInfo::RECONFIGURATION, model_types,
+      sync_pb::SyncEnums::RECONFIGURATION, model_types,
       base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)),
       base::Bind(&CallbackCounter::Callback, base::Unretained(&retry_counter)));
   scheduler()->ScheduleConfiguration(params);
@@ -416,7 +414,7 @@ TEST_F(SyncSchedulerImplTest, ConfigWithBackingOff) {
   CallbackCounter ready_counter;
   CallbackCounter retry_counter;
   ConfigurationParams params(
-      GetUpdatesCallerInfo::RECONFIGURATION, model_types,
+      sync_pb::SyncEnums::RECONFIGURATION, model_types,
       base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)),
       base::Bind(&CallbackCounter::Callback, base::Unretained(&retry_counter)));
   scheduler()->ScheduleConfiguration(params);
@@ -461,7 +459,7 @@ TEST_F(SyncSchedulerImplTest, ConfigWithStop) {
   CallbackCounter ready_counter;
   CallbackCounter retry_counter;
   ConfigurationParams params(
-      GetUpdatesCallerInfo::RECONFIGURATION, model_types,
+      sync_pb::SyncEnums::RECONFIGURATION, model_types,
       base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)),
       base::Bind(&CallbackCounter::Callback, base::Unretained(&retry_counter)));
   scheduler()->ScheduleConfiguration(params);
@@ -482,7 +480,7 @@ TEST_F(SyncSchedulerImplTest, ConfigNoAuthToken) {
   CallbackCounter ready_counter;
   CallbackCounter retry_counter;
   ConfigurationParams params(
-      GetUpdatesCallerInfo::RECONFIGURATION, model_types,
+      sync_pb::SyncEnums::RECONFIGURATION, model_types,
       base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)),
       base::Bind(&CallbackCounter::Callback, base::Unretained(&retry_counter)));
   scheduler()->ScheduleConfiguration(params);
@@ -509,7 +507,7 @@ TEST_F(SyncSchedulerImplTest, ConfigNoAuthTokenLocalSync) {
   CallbackCounter ready_counter;
   CallbackCounter retry_counter;
   ConfigurationParams params(
-      GetUpdatesCallerInfo::RECONFIGURATION, model_types,
+      sync_pb::SyncEnums::RECONFIGURATION, model_types,
       base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)),
       base::Bind(&CallbackCounter::Callback, base::Unretained(&retry_counter)));
   scheduler()->ScheduleConfiguration(params);
@@ -536,7 +534,7 @@ TEST_F(SyncSchedulerImplTest, NudgeWithConfigWithBackingOff) {
   CallbackCounter ready_counter;
   CallbackCounter retry_counter;
   ConfigurationParams params(
-      GetUpdatesCallerInfo::RECONFIGURATION, model_types,
+      sync_pb::SyncEnums::RECONFIGURATION, model_types,
       base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)),
       base::Bind(&CallbackCounter::Callback, base::Unretained(&retry_counter)));
   scheduler()->ScheduleConfiguration(params);
@@ -797,7 +795,7 @@ TEST_F(SyncSchedulerImplTest, ThrottlingDoesThrottle) {
   CallbackCounter ready_counter;
   CallbackCounter retry_counter;
   ConfigurationParams params(
-      GetUpdatesCallerInfo::RECONFIGURATION, types,
+      sync_pb::SyncEnums::RECONFIGURATION, types,
       base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)),
       base::Bind(&CallbackCounter::Callback, base::Unretained(&retry_counter)));
   scheduler()->ScheduleConfiguration(params);
@@ -881,7 +879,7 @@ TEST_F(SyncSchedulerImplTest, ThrottlingExpiresFromConfigure) {
   CallbackCounter ready_counter;
   CallbackCounter retry_counter;
   ConfigurationParams params(
-      GetUpdatesCallerInfo::RECONFIGURATION, types,
+      sync_pb::SyncEnums::RECONFIGURATION, types,
       base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)),
       base::Bind(&CallbackCounter::Callback, base::Unretained(&retry_counter)));
   scheduler()->ScheduleConfiguration(params);
@@ -1214,7 +1212,7 @@ TEST_F(SyncSchedulerImplTest, ConfigurationMode) {
   CallbackCounter ready_counter;
   CallbackCounter retry_counter;
   ConfigurationParams params(
-      GetUpdatesCallerInfo::RECONFIGURATION, config_types,
+      sync_pb::SyncEnums::RECONFIGURATION, config_types,
       base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)),
       base::Bind(&CallbackCounter::Callback, base::Unretained(&retry_counter)));
   scheduler()->ScheduleConfiguration(params);
@@ -1306,7 +1304,7 @@ TEST_F(BackoffTriggersSyncSchedulerImplTest, FailGetEncryptionKey) {
   CallbackCounter ready_counter;
   CallbackCounter retry_counter;
   ConfigurationParams params(
-      GetUpdatesCallerInfo::RECONFIGURATION, types,
+      sync_pb::SyncEnums::RECONFIGURATION, types,
       base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)),
       base::Bind(&CallbackCounter::Callback, base::Unretained(&retry_counter)));
   scheduler()->ScheduleConfiguration(params);
@@ -1355,7 +1353,7 @@ TEST_F(SyncSchedulerImplTest, BackoffDropsJobs) {
   CallbackCounter ready_counter;
   CallbackCounter retry_counter;
   ConfigurationParams params(
-      GetUpdatesCallerInfo::RECONFIGURATION, types,
+      sync_pb::SyncEnums::RECONFIGURATION, types,
       base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)),
       base::Bind(&CallbackCounter::Callback, base::Unretained(&retry_counter)));
   scheduler()->ScheduleConfiguration(params);
@@ -1614,7 +1612,7 @@ TEST_F(SyncSchedulerImplTest, DoubleCanaryInConfigure) {
   CallbackCounter ready_counter;
   CallbackCounter retry_counter;
   ConfigurationParams params(
-      GetUpdatesCallerInfo::RECONFIGURATION, model_types,
+      sync_pb::SyncEnums::RECONFIGURATION, model_types,
       base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)),
       base::Bind(&CallbackCounter::Callback, base::Unretained(&retry_counter)));
   scheduler()->ScheduleConfiguration(params);

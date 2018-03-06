@@ -527,10 +527,8 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
   }
 
   if (snapshot.is_initialized()) {
-    if (snapshot.legacy_updates_source() !=
-        sync_pb::GetUpdatesCallerInfo::UNKNOWN) {
-      session_source.SetValue(
-          ProtoEnumToString(snapshot.legacy_updates_source()));
+    if (snapshot.get_updates_origin() != sync_pb::SyncEnums::UNKNOWN_ORIGIN) {
+      session_source.SetValue(ProtoEnumToString(snapshot.get_updates_origin()));
     }
     get_key_result.SetValue(GetSyncerErrorString(
         snapshot.model_neutral_state().last_get_key_result));

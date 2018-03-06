@@ -547,8 +547,7 @@ bool MockConnectionManager::ProcessGetUpdates(
   EXPECT_FALSE(gu.has_requested_types());
 
   if (fail_non_periodic_get_updates_) {
-    EXPECT_EQ(sync_pb::GetUpdatesCallerInfo::PERIODIC,
-              gu.caller_info().source());
+    EXPECT_EQ(sync_pb::SyncEnums::PERIODIC, gu.get_updates_origin());
   }
 
   // Verify that the items we're about to send back to the client are of

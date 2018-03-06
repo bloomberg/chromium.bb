@@ -152,7 +152,6 @@ void InitDownloadUpdatesContext(SyncCycle* cycle,
   bool need_encryption_key = ShouldRequestEncryptionKey(cycle->context());
   get_updates->set_need_encryption_key(need_encryption_key);
 
-  // Set legacy GetUpdatesMessage.GetUpdatesCallerInfo information.
   get_updates->mutable_caller_info()->set_notifications_enabled(
       cycle->context()->notifications_enabled());
 }
