@@ -13,6 +13,8 @@ assert(enable_cros_assistant)
 source_set("lib") {
   sources = [
     "assistant_manager_service.h",
+    "fake_assistant_manager_service_impl.cc",
+    "fake_assistant_manager_service_impl.h",
     "service.cc",
     "service.h",
   ]
@@ -61,11 +63,6 @@ source_set("lib") {
       "//libassistant/contrib",
       "//libassistant/shared",
     ]
-  } else {
-    sources += [
-      "fake_assistant_manager_service_impl.cc",
-      "fake_assistant_manager_service_impl.h",
-    ]
   }
 }
 
@@ -81,12 +78,15 @@ source_set("tests") {
     "//base",
     "//base/test:test_support",
     "//mojo/public/cpp/bindings:bindings",
+    "//services/identity/public/mojom",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp:service_test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]
-  sources = []
+  sources = [
+    "service_unittest.cc",
+  ]
 
   if (enable_cros_libassistant) {
     sources += [ "platform/system_provider_impl_unittest.cc" ]

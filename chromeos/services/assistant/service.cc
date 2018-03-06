@@ -9,6 +9,7 @@
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/timer/timer.h"
 #include "build/buildflag.h"
 #include "chromeos/assistant/buildflags.h"
 #include "chromeos/services/assistant/assistant_manager_service.h"
@@ -35,9 +36,26 @@ constexpr char kScopeAssistant[] =
 
 }  // namespace
 
-Service::Service() : session_observer_binding_(this), weak_factory_(this) {}
+Service::Service()
+    : session_observer_binding_(this),
+      token_refresh_timer_(std::make_unique<base::OneShotTimer>()),
+      weak_factory_(this) {}
 
 Service::~Service() = default;
+
+void Service::SetIdentityManagerForTesting(
+    identity::mojom::IdentityManagerPtr identity_manager) {
+  identity_manager_ = std::move(identity_manager);
+}
+
+void Service::SetAssistantManagerForTesting(
+    std::unique_ptr<AssistantManagerService> assistant_manager_service) {
+  assistant_manager_service_ = std::move(assistant_manager_service);
+}
+
+void Service::SetTimerForTesting(std::unique_ptr<base::OneShotTimer> timer) {
+  token_refresh_timer_ = std::move(timer);
+}
 
 void Service::OnStart() {
   RequestAccessToken();
@@ -84,7 +102,6 @@ void Service::GetPrimaryAccountInfoCallback(
       base::BindOnce(&Service::GetAccessTokenCallback, base::Unretained(this)));
 }
 
-// TODO: Handle |expiration_time| and token refreshing.
 void Service::GetAccessTokenCallback(const base::Optional<std::string>& token,
                                      base::Time expiration_time,
                                      const GoogleServiceAuthError& error) {
@@ -106,6 +123,9 @@ void Service::GetAccessTokenCallback(const base::Optional<std::string>& token,
   } else {
     assistant_manager_service_->SetAccessToken(token.value());
   }
+
+  token_refresh_timer_->Start(FROM_HERE, expiration_time - base::Time::Now(),
+                              this, &Service::RequestAccessToken);
 }
 
 void Service::AddAshSessionObserver() {
