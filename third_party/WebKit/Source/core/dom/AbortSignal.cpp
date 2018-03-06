@@ -44,6 +44,28 @@ void AbortSignal::SignalAbort() {
   DispatchEvent(Event::Create(EventTypeNames::abort));
 }
 
+void AbortSignal::Follow(AbortSignal* parentSignal) {
+  if (aborted_flag_)
+    return;
+  if (parentSignal->aborted_flag_)
+    SignalAbort();
+
+  // Unlike the usual practice for AddAlgorithm(), we don't use a weak pointer
+  // here. To see why, consider the following object graph:
+  //
+  // controller --owns--> signal1 -?-> signal2 -?-> signal3 <--owns-- request
+  //
+  // It's easy to create chained signals like this using the Request
+  // constructor. If the -?-> pointers were weak, then |signal2| could be
+  // collected even though |controller| and |request| were still
+  // referenced. This would prevent controller.abort() from working. So the
+  // pointers need to be strong. This won't artificially extend the lifetime of
+  // |request|, because the pointer to it in the closure held by |signal3| is
+  // still weak.
+  parentSignal->AddAlgorithm(
+      WTF::Bind(&AbortSignal::SignalAbort, WrapPersistent(this)));
+}
+
 void AbortSignal::Trace(Visitor* visitor) {
   visitor->Trace(execution_context_);
   EventTargetWithInlineData::Trace(visitor);
