@@ -720,7 +720,7 @@ cr.define('print_preview', function() {
                   (caps) => this.onCapabilitiesSet_(
                       destination.origin, destination.id, caps),
                   () => this.onGetCapabilitiesFail_(
-                      destination.origin, destination.origin));
+                      destination.origin, destination.id));
         } else {
           assert(
               this.cloudPrintInterface_ != null,
