@@ -14,4 +14,13 @@ CastExtensionWebContentsObserver::CastExtensionWebContentsObserver(
 
 CastExtensionWebContentsObserver::~CastExtensionWebContentsObserver() {}
 
+void CastExtensionWebContentsObserver::CreateForWebContents(
+    content::WebContents* web_contents) {
+  content::WebContentsUserData<
+      CastExtensionWebContentsObserver>::CreateForWebContents(web_contents);
+
+  // Initialize this instance if necessary.
+  FromWebContents(web_contents)->Initialize();
+}
+
 }  // namespace extensions

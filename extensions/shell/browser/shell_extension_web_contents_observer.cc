@@ -17,4 +17,13 @@ ShellExtensionWebContentsObserver::ShellExtensionWebContentsObserver(
 ShellExtensionWebContentsObserver::~ShellExtensionWebContentsObserver() {
 }
 
+void ShellExtensionWebContentsObserver::CreateForWebContents(
+    content::WebContents* web_contents) {
+  content::WebContentsUserData<
+      ShellExtensionWebContentsObserver>::CreateForWebContents(web_contents);
+
+  // Initialize this instance if necessary.
+  FromWebContents(web_contents)->Initialize();
+}
+
 }  // namespace extensions
