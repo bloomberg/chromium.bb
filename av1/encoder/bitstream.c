@@ -3164,8 +3164,10 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
         break;
       }
     }
-    assert(updated_fb >= 0);
-    cm->fb_of_context_type[cm->frame_context_idx] = updated_fb;
+    // large scale tile sometimes won't refresh any fbs
+    if (updated_fb >= 0) {
+      cm->fb_of_context_type[cm->frame_context_idx] = updated_fb;
+    }
 #endif
 
     if (!cpi->refresh_frame_mask) {
