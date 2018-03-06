@@ -358,12 +358,13 @@ TEST_F(ProxyServiceTest, Direct) {
   log.GetEntries(&entries);
 
   EXPECT_EQ(3u, entries.size());
-  EXPECT_TRUE(
-      LogContainsBeginEvent(entries, 0, NetLogEventType::PROXY_SERVICE));
+  EXPECT_TRUE(LogContainsBeginEvent(entries, 0,
+                                    NetLogEventType::PROXY_RESOLUTION_SERVICE));
   EXPECT_TRUE(LogContainsEvent(
-      entries, 1, NetLogEventType::PROXY_SERVICE_RESOLVED_PROXY_LIST,
+      entries, 1, NetLogEventType::PROXY_RESOLUTION_SERVICE_RESOLVED_PROXY_LIST,
       NetLogEventPhase::NONE));
-  EXPECT_TRUE(LogContainsEndEvent(entries, 2, NetLogEventType::PROXY_SERVICE));
+  EXPECT_TRUE(LogContainsEndEvent(entries, 2,
+                                  NetLogEventType::PROXY_RESOLUTION_SERVICE));
 }
 
 TEST_F(ProxyServiceTest, OnResolveProxyCallbackAddProxy) {
@@ -521,13 +522,16 @@ TEST_F(ProxyServiceTest, PAC) {
   log.GetEntries(&entries);
 
   EXPECT_EQ(5u, entries.size());
-  EXPECT_TRUE(
-      LogContainsBeginEvent(entries, 0, NetLogEventType::PROXY_SERVICE));
+  EXPECT_TRUE(LogContainsBeginEvent(entries, 0,
+                                    NetLogEventType::PROXY_RESOLUTION_SERVICE));
   EXPECT_TRUE(LogContainsBeginEvent(
-      entries, 1, NetLogEventType::PROXY_SERVICE_WAITING_FOR_INIT_PAC));
+      entries, 1,
+      NetLogEventType::PROXY_RESOLUTION_SERVICE_WAITING_FOR_INIT_PAC));
   EXPECT_TRUE(LogContainsEndEvent(
-      entries, 2, NetLogEventType::PROXY_SERVICE_WAITING_FOR_INIT_PAC));
-  EXPECT_TRUE(LogContainsEndEvent(entries, 4, NetLogEventType::PROXY_SERVICE));
+      entries, 2,
+      NetLogEventType::PROXY_RESOLUTION_SERVICE_WAITING_FOR_INIT_PAC));
+  EXPECT_TRUE(LogContainsEndEvent(entries, 4,
+                                  NetLogEventType::PROXY_RESOLUTION_SERVICE));
 }
 
 // Test that the proxy resolver does not see the URL's username/password
@@ -2072,15 +2076,17 @@ TEST_F(ProxyServiceTest, CancelWhilePACFetching) {
 
   // Check the NetLog for request 1 (which was cancelled) got filled properly.
   EXPECT_EQ(4u, entries1.size());
-  EXPECT_TRUE(
-      LogContainsBeginEvent(entries1, 0, NetLogEventType::PROXY_SERVICE));
+  EXPECT_TRUE(LogContainsBeginEvent(entries1, 0,
+                                    NetLogEventType::PROXY_RESOLUTION_SERVICE));
   EXPECT_TRUE(LogContainsBeginEvent(
-      entries1, 1, NetLogEventType::PROXY_SERVICE_WAITING_FOR_INIT_PAC));
-  // Note that PROXY_SERVICE_WAITING_FOR_INIT_PAC is never completed before
-  // the cancellation occured.
+      entries1, 1,
+      NetLogEventType::PROXY_RESOLUTION_SERVICE_WAITING_FOR_INIT_PAC));
+  // Note that PROXY_RESOLUTION_SERVICE_WAITING_FOR_INIT_PAC is never completed
+  // before the cancellation occured.
   EXPECT_TRUE(LogContainsEvent(entries1, 2, NetLogEventType::CANCELLED,
                                NetLogEventPhase::NONE));
-  EXPECT_TRUE(LogContainsEndEvent(entries1, 3, NetLogEventType::PROXY_SERVICE));
+  EXPECT_TRUE(LogContainsEndEvent(entries1, 3,
+                                  NetLogEventType::PROXY_RESOLUTION_SERVICE));
 }
 
 // Test that if auto-detect fails, we fall-back to the custom pac.
