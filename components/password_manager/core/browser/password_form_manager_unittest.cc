@@ -1893,24 +1893,18 @@ TEST_F(PasswordFormManagerTest, FormsMatchIfSignaturesMatch) {
                 PasswordFormManager::RESULT_SIGNATURE_MATCH);
 }
 
-TEST_F(PasswordFormManagerTest, NoMatchForEmptyNames) {
-  // If two forms have no name, it's not evidence for a match.
+TEST_F(PasswordFormManagerTest, FormWithEmptyActionAndNameMatchesItself) {
+  observed_form()->form_data.name.clear();
+  observed_form()->action = GURL::EmptyGURL();
+  PasswordFormManager form_manager(
+      password_manager(), client(), client()->driver(), *observed_form(),
+      std::make_unique<NiceMock<MockFormSaver>>(), fake_form_fetcher());
+  form_manager.Init(nullptr);
+  // Any form should match itself regardless of missing properties. Otherwise,
+  // a PasswordFormManager instance is created for the same form multiple times.
   PasswordForm other_form(*observed_form());
-  const_cast<PasswordForm&>(form_manager()->observed_form())
-      .form_data.name.clear();
-  other_form.form_data.name.clear();
-  EXPECT_EQ(0, form_manager()->DoesManage(other_form, nullptr) &
-                   PasswordFormManager::RESULT_FORM_NAME_MATCH);
-}
-
-TEST_F(PasswordFormManagerTest, NoMatchForEmtpyActions) {
-  // If two forms have no actions, it's not evidence for a match.
-  PasswordForm other_form(*observed_form());
-  const_cast<PasswordForm&>(form_manager()->observed_form()).form_data.action =
-      GURL::EmptyGURL();
-  other_form.action = GURL::EmptyGURL();
-  EXPECT_EQ(0, form_manager()->DoesManage(other_form, nullptr) &
-                   PasswordFormManager::RESULT_ACTION_MATCH);
+  EXPECT_EQ(PasswordFormManager::RESULT_COMPLETE_MATCH,
+            form_manager.DoesManage(other_form, nullptr));
 }
 
 // Test that if multiple credentials with the same username are stored, and the
