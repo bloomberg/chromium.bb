@@ -1667,11 +1667,11 @@ camera.views.Camera.prototype.takePicture_ = function() {
   toggleRecord.disabled = true;
   document.querySelector('#take-picture').disabled = true;
 
-  var tickCounter = toggleTimer.checked ? 6 : 1;
+  var tickCounter = (!toggleTimer.hidden && toggleTimer.checked) ? 6 : 1;
   var onTimerTick = function() {
     tickCounter--;
     if (tickCounter == 0) {
-      var multiEnabled = !recordEnabled && toggleMulti.checked;
+      var multiEnabled = !toggleMulti.hidden && toggleMulti.checked;
       var multiShotCounter = 3;
       var takePicture = function() {
         if (recordEnabled) {
