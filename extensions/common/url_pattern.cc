@@ -501,7 +501,8 @@ bool URLPattern::MatchesHost(const GURL& test) const {
 }
 
 bool URLPattern::MatchesEffectiveTld(
-    net::registry_controlled_domains::PrivateRegistryFilter private_filter)
+    net::registry_controlled_domains::PrivateRegistryFilter private_filter,
+    net::registry_controlled_domains::UnknownRegistryFilter unknown_filter)
     const {
   // Check if it matches all urls or is a pattern like http://*/*.
   if (match_all_urls_ || (match_subdomains_ && host_.empty()))
@@ -510,11 +511,6 @@ bool URLPattern::MatchesEffectiveTld(
   // If this doesn't even match subdomains, it can't possibly be a TLD wildcard.
   if (!match_subdomains_)
     return false;
-
-  // We exclude unknown registries so that *.notatld isn't considered matching
-  // an effective TLD.
-  net::registry_controlled_domains::UnknownRegistryFilter unknown_filter =
-      net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES;
 
   // If there was more than just a TLD in the host (e.g., *.foobar.com), it
   // doesn't match all hosts in an effective TLD.

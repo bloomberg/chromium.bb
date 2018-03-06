@@ -194,7 +194,9 @@ class URLPattern {
   // cached.
   bool MatchesEffectiveTld(
       net::registry_controlled_domains::PrivateRegistryFilter private_filter =
-          net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES) const;
+          net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES,
+      net::registry_controlled_domains::UnknownRegistryFilter unknown_filter =
+          net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES) const;
 
   // Returns true if the pattern only matches a single origin. The pattern may
   // include a path.
