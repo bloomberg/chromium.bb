@@ -10,7 +10,7 @@
 #include "base/files/scoped_file.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
-#include "content/public/common/zygote_features.h"
+#include "content/public/common/zygote_buildflags.h"
 
 #if !BUILDFLAG(USE_ZYGOTE_HANDLE)
 #error "Can not use zygote handles without USE_ZYGOTE_HANDLE"
