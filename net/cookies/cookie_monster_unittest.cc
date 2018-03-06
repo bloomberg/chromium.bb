@@ -3117,6 +3117,48 @@ TEST_F(CookieMonsterTest, EquivalentCookies) {
   EXPECT_FALSE(SetCookie(cm.get(), http_url, "A=D; domain=foo.com"));
 }
 
+TEST_F(CookieMonsterTest, SetCanonicalCookieDoesNotBlockForLoadAll) {
+  scoped_refptr<MockPersistentCookieStore> persistent_store =
+      base::MakeRefCounted<MockPersistentCookieStore>();
+  // Collect load commands so we have control over their execution.
+  persistent_store->set_store_load_commands(true);
+  CookieMonster cm(persistent_store.get());
+
+  // Start of a canonical cookie set.
+  ResultSavingCookieCallback<bool> callback_set;
+  cm.SetCanonicalCookieAsync(
+      CanonicalCookie::Create(GURL("http://a.com/"), "A=B", base::Time::Now(),
+                              CookieOptions()),
+      false /* secure_source */, false /* modify_httponly */,
+      base::BindOnce(&ResultSavingCookieCallback<bool>::Run,
+                     base::Unretained(&callback_set)));
+
+  // Get cookies for a different URL.
+  GetCookieListCallback callback_get;
+  cm.GetCookieListWithOptionsAsync(
+      GURL("http://b.com/"), CookieOptions(),
+      base::BindOnce(&GetCookieListCallback::Run,
+                     base::Unretained(&callback_get)));
+
+  // Now go through the store commands, and execute individual loads.
+  for (const CookieStoreCommand& command : persistent_store->commands()) {
+    if (command.type == CookieStoreCommand::LOAD_COOKIES_FOR_KEY)
+      command.loaded_callback.Run(
+          std::vector<std::unique_ptr<CanonicalCookie>>());
+  }
+
+  // This should be enough for both individual commands.
+  callback_set.WaitUntilDone();
+  callback_get.WaitUntilDone();
+
+  // Now execute full-store loads as well.
+  for (const CookieStoreCommand& command : persistent_store->commands()) {
+    if (command.type == CookieStoreCommand::LOAD)
+      command.loaded_callback.Run(
+          std::vector<std::unique_ptr<CanonicalCookie>>());
+  }
+}
+
 class CookieMonsterNotificationTest : public CookieMonsterTest {
  public:
   CookieMonsterNotificationTest()

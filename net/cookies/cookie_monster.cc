@@ -56,6 +56,7 @@
 #include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -414,17 +415,16 @@ void CookieMonster::SetCanonicalCookieAsync(
     SetCookiesCallback callback) {
   DCHECK(cookie->IsCanonical());
 
-  // TODO(rdsmith): Switch to DoCookieCallbackForURL (or the equivalent).
-  // This is tricky because we don't have the scheme in this routine
-  // and DoCookieCallbackForURL uses
-  // cookie_util::GetEffectiveDomain(scheme, host)
-  // to generate the database key to block behind.
-  DoCookieCallback(base::BindOnce(
-      // base::Unretained is safe as DoCookieCallbackForURL stores
-      // the callback on |*this|, so the callback will not outlive
-      // the object.
-      &CookieMonster::SetCanonicalCookie, base::Unretained(this),
-      std::move(cookie), secure_source, modify_http_only, std::move(callback)));
+  std::string domain = cookie->Domain();
+  DoCookieCallbackForHostOrDomain(
+      base::BindOnce(
+          // base::Unretained is safe as DoCookieCallbackForURL stores
+          // the callback on |*this|, so the callback will not outlive
+          // the object.
+          &CookieMonster::SetCanonicalCookie, base::Unretained(this),
+          std::move(cookie), secure_source, modify_http_only,
+          std::move(callback)),
+      domain);
 }
 
 void CookieMonster::SetCookieWithOptionsAsync(const GURL& url,
@@ -1052,7 +1052,7 @@ void CookieMonster::FindCookiesForHostAndDomain(
   RecordPeriodicStats(current_time);
 
   // Can just dispatch to FindCookiesForKey
-  const std::string key(GetKey(url.host()));
+  const std::string key(GetKey(url.host_piece()));
   FindCookiesForKey(key, url, options, current_time, cookies);
 }
 
@@ -1623,9 +1623,9 @@ size_t CookieMonster::GarbageCollectLeastRecentlyAccessed(
 }
 
 // A wrapper around registry_controlled_domains::GetDomainAndRegistry
-// to make clear we're creating a key for our local map.  Here and
-// in FindCookiesForHostAndDomain() are the only two places where
-// we need to conditionalize based on key type.
+// to make clear we're creating a key for our local map or for the persistent
+// store's use. Here and in FindCookiesForHostAndDomain() are the only two
+// places where we need to conditionalize based on key type.
 //
 // Note that this key algorithm explicitly ignores the scheme.  This is
 // because when we're entering cookies into the map from the backing store,
@@ -1645,14 +1645,14 @@ size_t CookieMonster::GarbageCollectLeastRecentlyAccessed(
 // thus restricting each scheme to a single cookie monster (which might
 // be worth it, but is still too much trouble to solve what is currently a
 // non-problem).
-std::string CookieMonster::GetKey(const std::string& domain) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
+//
+// static
+std::string CookieMonster::GetKey(base::StringPiece domain) {
   std::string effective_domain(
       registry_controlled_domains::GetDomainAndRegistry(
           domain, registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES));
   if (effective_domain.empty())
-    effective_domain = domain;
+    domain.CopyToString(&effective_domain);
 
   if (!effective_domain.empty() && effective_domain[0] == '.')
     return effective_domain.substr(1);
@@ -1782,6 +1782,12 @@ void CookieMonster::DoCookieCallback(base::OnceClosure callback) {
 
 void CookieMonster::DoCookieCallbackForURL(base::OnceClosure callback,
                                            const GURL& url) {
+  DoCookieCallbackForHostOrDomain(std::move(callback), url.host_piece());
+}
+
+void CookieMonster::DoCookieCallbackForHostOrDomain(
+    base::OnceClosure callback,
+    base::StringPiece host_or_domain) {
   MarkCookieStoreAsInitialized();
   FetchAllCookiesIfNecessary();
 
@@ -1798,7 +1804,7 @@ void CookieMonster::DoCookieCallbackForURL(base::OnceClosure callback,
     }
 
     // Checks if the domain key has been loaded.
-    std::string key(cookie_util::GetEffectiveDomain(url.scheme(), url.host()));
+    std::string key = GetKey(host_or_domain);
     if (keys_loaded_.find(key) == keys_loaded_.end()) {
       std::map<std::string, base::circular_deque<base::OnceClosure>>::iterator
           it = tasks_pending_for_key_.find(key);

@@ -25,8 +25,10 @@
 #include "base/time/time.h"
 #include "crypto/encryptor.h"
 #include "crypto/symmetric_key.h"
+#include "net/base/test_completion_callback.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_constants.h"
+#include "net/cookies/cookie_store_test_callbacks.h"
 #include "net/extras/sqlite/cookie_crypto_delegate.h"
 #include "net/test/net_test_suite.h"
 #include "sql/connection.h"
@@ -129,12 +131,16 @@ class SQLitePersistentCookieStoreTest : public testing::Test {
     NetTestSuite::GetScopedTaskEnvironment()->RunUntilIdle();
   }
 
-  void Create(bool crypt_cookies, bool restore_old_session_cookies) {
+  void Create(bool crypt_cookies,
+              bool restore_old_session_cookies,
+              bool use_current_thread) {
     if (crypt_cookies)
       cookie_crypto_delegate_.reset(new CookieCryptor());
 
     store_ = new SQLitePersistentCookieStore(
-        temp_dir_.GetPath().Append(kCookieFilename), client_task_runner_,
+        temp_dir_.GetPath().Append(kCookieFilename),
+        use_current_thread ? base::ThreadTaskRunnerHandle::Get()
+                           : client_task_runner_,
         background_task_runner_, restore_old_session_cookies,
         cookie_crypto_delegate_.get());
   }
@@ -142,7 +148,8 @@ class SQLitePersistentCookieStoreTest : public testing::Test {
   void CreateAndLoad(bool crypt_cookies,
                      bool restore_old_session_cookies,
                      CanonicalCookieVector* cookies) {
-    Create(crypt_cookies, restore_old_session_cookies);
+    Create(crypt_cookies, restore_old_session_cookies,
+           false /* use_current_thread */);
     Load(cookies);
   }
 
@@ -364,10 +371,8 @@ TEST_F(SQLitePersistentCookieStoreTest, TestLoadCookiesForKey) {
   // can't run. To allow precise control of |background_task_runner_| without
   // preventing client tasks to run, use base::ThreadTaskRunnerHandle::Get()
   // instead of |client_task_runner_| for this test.
-  store_ = new SQLitePersistentCookieStore(
-      temp_dir_.GetPath().Append(kCookieFilename),
-      base::ThreadTaskRunnerHandle::Get(), background_task_runner_, false,
-      nullptr);
+  Create(false /* crypt_cookies */, false /* restore_old_session_cookies */,
+         true /* use_current_thread */);
 
   // Posting a blocking task to db_thread_ makes sure that the DB thread waits
   // until both Load and LoadCookiesForKey have been posted to its task queue.
@@ -881,7 +886,7 @@ TEST_F(SQLitePersistentCookieStoreTest, EmptyLoadAfterClose) {
   DestroyStore();
 
   // Create the cookie store, but immediately close it.
-  Create(false, false);
+  Create(false, false, false);
   store_->Close(base::Closure());
 
   // Expect any attempt to call Load() to synchronously respond with an empty
@@ -1142,5 +1147,79 @@ TEST_F(SQLitePersistentCookieStoreTest, IdenticalCreationTimes) {
   EXPECT_EQ("example2.com", read_in_cookies[i]->Domain());
   EXPECT_EQ("/", read_in_cookies[i]->Path());
 }
+
+TEST_F(SQLitePersistentCookieStoreTest, KeyInconsistency) {
+  // Regression testcase for previous disagreement between CookieMonster
+  // and SQLitePersistentCookieStoreTest as to what keys to LoadCookiesForKey
+  // mean. The particular example doesn't, of course, represent an actual in-use
+  // scenario, but while the inconstancy could happen with chrome-extension
+  // URLs in real life, it was irrelevant for them in practice since their
+  // rows would get key = "" which would get sorted before actual domains,
+  // and therefore get loaded first by CookieMonster::FetchAllCookiesIfNecessary
+  // with the task runners involved ensuring that would finish before the
+  // incorrect LoadCookiesForKey got the chance to run.
+  //
+  // This test uses a URL that used to be treated differently by the two
+  // layers that also sorts after other rows to avoid this scenario.
+
+  // SQLitePersistentCookieStore will run its callbacks on what's passed to it
+  // as |client_task_runner|, and CookieMonster expects to get callbacks from
+  // its PersistentCookieStore on the same thread as its methods are invoked on;
+  // so to avoid needing to post every CookieMonster API call, this uses the
+  // current thread for SQLitePersistentCookieStore's |client_task_runner|.
+  Create(false, false, true /* use_current_thread */);
+
+  // Create a cookie on a scheme that doesn't handle cookies by default,
+  // and save it.
+  std::unique_ptr<CookieMonster> cookie_monster =
+      std::make_unique<CookieMonster>(store_.get());
+  cookie_monster->SetCookieableSchemes({"gopher", "http"});
+  ResultSavingCookieCallback<bool> set_cookie_callback;
+  cookie_monster->SetCookieWithOptionsAsync(
+      GURL("gopher://subdomain.gopheriffic.com/page"), "A=B; max-age=3600",
+      CookieOptions(),
+      base::BindOnce(&ResultSavingCookieCallback<bool>::Run,
+                     base::Unretained(&set_cookie_callback)));
+  set_cookie_callback.WaitUntilDone();
+  EXPECT_TRUE(set_cookie_callback.result());
+
+  // Also insert a whole bunch of cookies to slow down the background loading of
+  // all the cookies.
+  for (int i = 0; i < 50; ++i) {
+    ResultSavingCookieCallback<bool> set_cookie_callback2;
+    cookie_monster->SetCookieWithOptionsAsync(
+        GURL(base::StringPrintf("http://example%d.com/", i)),
+        "A=B; max-age=3600", CookieOptions(),
+        base::BindOnce(&ResultSavingCookieCallback<bool>::Run,
+                       base::Unretained(&set_cookie_callback2)));
+    set_cookie_callback2.WaitUntilDone();
+    EXPECT_TRUE(set_cookie_callback2.result());
+  }
+
+  net::TestClosure flush_closure;
+  cookie_monster->FlushStore(flush_closure.closure());
+  flush_closure.WaitForResult();
+  cookie_monster = nullptr;
+
+  // Re-create the PersistentCookieStore & CookieMonster. Note that the
+  // destroyed store's ops will happen on same runners as the previous
+  // instances, so they should complete before the new PersistentCookieStore
+  // starts looking at the state on disk.
+  Create(false, false, true /* want current thread to invoke cookie monster */);
+  cookie_monster = std::make_unique<CookieMonster>(store_.get());
+  cookie_monster->SetCookieableSchemes({"gopher", "http"});
+
+  // Now try to get the cookie back.
+  GetCookieListCallback get_callback;
+  cookie_monster->GetCookieListWithOptionsAsync(
+      GURL("gopher://subdomain.gopheriffic.com/page"), CookieOptions(),
+      base::BindOnce(&GetCookieListCallback::Run,
+                     base::Unretained(&get_callback)));
+  get_callback.WaitUntilDone();
+  ASSERT_EQ(1u, get_callback.cookies().size());
+  EXPECT_EQ("A", get_callback.cookies()[0].Name());
+  EXPECT_EQ("B", get_callback.cookies()[0].Value());
+  EXPECT_EQ("subdomain.gopheriffic.com", get_callback.cookies()[0].Domain());
+};
 
 }  // namespace net
