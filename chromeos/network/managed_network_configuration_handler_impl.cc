@@ -311,8 +311,8 @@ void ManagedNetworkConfigurationHandlerImpl::SetProperties(
     return;
   }
 
-  VLOG(2) << "SetProperties: Found GUID " << guid << " and profile "
-          << profile->ToDebugString();
+  NET_LOG(DEBUG) << "Set Managed Properties for GUID: " << guid
+                 << ". Profile: " << profile->ToDebugString();
 
   const Policies* policies = GetPoliciesForProfile(*profile);
   if (!policies) {
@@ -354,8 +354,8 @@ void ManagedNetworkConfigurationHandlerImpl::SetProperties(
 
   const base::DictionaryValue* network_policy =
       GetByGUID(policies->per_network_config, guid);
-  VLOG(2) << "This configuration is " << (network_policy ? "" : "not ")
-          << "managed.";
+  if (network_policy)
+    NET_LOG(DEBUG) << "Configuration is managed. GUID: " << guid;
 
   std::unique_ptr<base::DictionaryValue> shill_dictionary(
       policy_util::CreateShillConfiguration(
