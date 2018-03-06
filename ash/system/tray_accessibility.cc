@@ -92,7 +92,7 @@ uint32_t GetAccessibilityState() {
     state |= A11Y_HIGHLIGHT_KEYBOARD_FOCUS;
   if (controller->IsStickyKeysEnabled())
     state |= A11Y_STICKY_KEYS;
-  if (delegate->IsTapDraggingEnabled())
+  if (controller->IsTapDraggingEnabled())
     state |= A11Y_TAP_DRAGGING;
   if (controller->IsSelectToSpeakEnabled())
     state |= A11Y_SELECT_TO_SPEAK;
@@ -221,7 +221,7 @@ void AccessibilityDetailedView::OnAccessibilityStatusChanged() {
   TrayPopupUtils::UpdateCheckMarkVisibility(sticky_keys_view_,
                                             sticky_keys_enabled_);
 
-  tap_dragging_enabled_ = delegate->IsTapDraggingEnabled();
+  tap_dragging_enabled_ = controller->IsTapDraggingEnabled();
   TrayPopupUtils::UpdateCheckMarkVisibility(tap_dragging_view_,
                                             tap_dragging_enabled_);
 }
@@ -326,7 +326,7 @@ void AccessibilityDetailedView::AppendAccessibilityList() {
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ACCESSIBILITY_STICKY_KEYS),
       sticky_keys_enabled_);
 
-  tap_dragging_enabled_ = delegate->IsTapDraggingEnabled();
+  tap_dragging_enabled_ = controller->IsTapDraggingEnabled();
   tap_dragging_view_ = AddScrollListCheckableItem(
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ACCESSIBILITY_TAP_DRAGGING),
       tap_dragging_enabled_);
@@ -421,10 +421,11 @@ void AccessibilityDetailedView::HandleViewClicked(views::View* view) {
                      : UserMetricsAction("StatusArea_StickyKeysDisabled"));
     controller->SetStickyKeysEnabled(new_state);
   } else if (tap_dragging_view_ && view == tap_dragging_view_) {
-    RecordAction(delegate->IsTapDraggingEnabled()
-                     ? UserMetricsAction("StatusArea_TapDraggingDisabled")
-                     : UserMetricsAction("StatusArea_TapDraggingEnabled"));
-    delegate->SetTapDraggingEnabled(!delegate->IsTapDraggingEnabled());
+    bool new_state = !controller->IsTapDraggingEnabled();
+    RecordAction(new_state
+                     ? UserMetricsAction("StatusArea_TapDraggingEnabled")
+                     : UserMetricsAction("StatusArea_TapDraggingDisabled"));
+    controller->SetTapDraggingEnabled(new_state);
   }
 }
 

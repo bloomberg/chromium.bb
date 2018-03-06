@@ -153,6 +153,9 @@ const char kUserBluetoothAdapterEnabled[] =
 const char kSystemBluetoothAdapterEnabled[] =
     "ash.system.bluetooth.adapter_enabled";
 
+// A boolean pref which determines whether tap-dragging is enabled.
+const char kTapDraggingEnabled[] = "settings.touchpad.enable_tap_dragging";
+
 // Boolean prefs for the status of the touchscreen and the touchpad.
 const char kTouchpadEnabled[] = "events.touch_pad.enabled";
 const char kTouchscreenEnabled[] = "events.touch_screen.enabled";

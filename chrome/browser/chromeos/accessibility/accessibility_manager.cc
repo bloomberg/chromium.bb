@@ -40,7 +40,6 @@
 #include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/extensions/api/braille_display_private/stub_braille_controller.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -239,13 +238,12 @@ AccessibilityManager::AccessibilityManager()
           ash::prefs::kAccessibilityCursorHighlightEnabled),
       focus_highlight_pref_handler_(
           ash::prefs::kAccessibilityFocusHighlightEnabled),
-      tap_dragging_pref_handler_(prefs::kTapDraggingEnabled),
+      tap_dragging_pref_handler_(ash::prefs::kTapDraggingEnabled),
       select_to_speak_pref_handler_(
           ash::prefs::kAccessibilitySelectToSpeakEnabled),
       switch_access_pref_handler_(
           ash::prefs::kAccessibilitySwitchAccessEnabled),
       spoken_feedback_enabled_(false),
-      tap_dragging_enabled_(false),
       select_to_speak_enabled_(false),
       switch_access_enabled_(false),
       spoken_feedback_notification_(ash::A11Y_NOTIFICATION_NONE),
@@ -359,7 +357,7 @@ bool AccessibilityManager::ShouldShowAccessibilityMenu() {
         prefs->GetBoolean(ash::prefs::kAccessibilityCaretHighlightEnabled) ||
         prefs->GetBoolean(ash::prefs::kAccessibilityCursorHighlightEnabled) ||
         prefs->GetBoolean(ash::prefs::kAccessibilityFocusHighlightEnabled) ||
-        prefs->GetBoolean(prefs::kTapDraggingEnabled))
+        prefs->GetBoolean(ash::prefs::kTapDraggingEnabled))
       return true;
   }
   return false;
@@ -756,31 +754,20 @@ void AccessibilityManager::EnableTapDragging(bool enabled) {
     return;
 
   PrefService* pref_service = profile_->GetPrefs();
-  pref_service->SetBoolean(prefs::kTapDraggingEnabled, enabled);
+  pref_service->SetBoolean(ash::prefs::kTapDraggingEnabled, enabled);
   pref_service->CommitPendingWrite();
 }
 
 bool AccessibilityManager::IsTapDraggingEnabled() const {
-  return tap_dragging_enabled_;
+  return profile_ &&
+         profile_->GetPrefs()->GetBoolean(ash::prefs::kTapDraggingEnabled);
 }
 
-void AccessibilityManager::UpdateTapDraggingFromPref() {
-  if (!profile_)
-    return;
-
-  const bool enabled =
-      profile_->GetPrefs()->GetBoolean(prefs::kTapDraggingEnabled);
-
-  if (tap_dragging_enabled_ == enabled)
-    return;
-  tap_dragging_enabled_ = enabled;
-
+void AccessibilityManager::OnTapDraggingChanged() {
   AccessibilityStatusEventDetails details(ACCESSIBILITY_TOGGLE_TAP_DRAGGING,
-                                          enabled, ash::A11Y_NOTIFICATION_NONE);
+                                          IsTapDraggingEnabled(),
+                                          ash::A11Y_NOTIFICATION_NONE);
   NotifyAccessibilityStatusChanged(details);
-
-  system::TouchpadSettings touchpad_settings;
-  touchpad_settings.SetTapDragging(enabled);
 }
 
 void AccessibilityManager::SetSelectToSpeakEnabled(bool enabled) {
@@ -1011,8 +998,8 @@ void AccessibilityManager::SetProfile(Profile* profile) {
         base::Bind(&AccessibilityManager::OnFocusHighlightChanged,
                    base::Unretained(this)));
     pref_change_registrar_->Add(
-        prefs::kTapDraggingEnabled,
-        base::Bind(&AccessibilityManager::UpdateTapDraggingFromPref,
+        ash::prefs::kTapDraggingEnabled,
+        base::Bind(&AccessibilityManager::OnTapDraggingChanged,
                    base::Unretained(this)));
     pref_change_registrar_->Add(
         ash::prefs::kAccessibilitySelectToSpeakEnabled,
@@ -1063,7 +1050,6 @@ void AccessibilityManager::SetProfile(Profile* profile) {
   else
     UpdateBrailleImeState();
   UpdateAlwaysShowMenuFromPref();
-  UpdateTapDraggingFromPref();
   UpdateSwitchAccessFromPref();
 
   // TODO(warx): reconcile to ash once the prefs registration above is moved to
@@ -1107,8 +1093,7 @@ void AccessibilityManager::NotifyAccessibilityStatusChanged(
   // Update system tray menu visibility. Prefs tracked inside ash handle their
   // own updates to avoid race conditions (pref updates are asynchronous between
   // chrome and ash).
-  if (details.notification_type == ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER ||
-      details.notification_type == ACCESSIBILITY_TOGGLE_TAP_DRAGGING) {
+  if (details.notification_type == ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER) {
     ash::Shell::Get()->system_tray_notifier()->NotifyAccessibilityStatusChanged(
         details.notify);
   }

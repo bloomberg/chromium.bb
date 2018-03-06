@@ -10,6 +10,7 @@
 #include "ash/ash_export.h"
 #include "ash/session/session_observer.h"
 
+class AccountId;
 class PrefChangeRegistrar;
 class PrefRegistrySimple;
 class PrefService;
@@ -31,7 +32,11 @@ class ASH_EXPORT TouchDevicesController : public SessionObserver {
   TouchDevicesController();
   ~TouchDevicesController() override;
 
-  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test);
+
+  // Gets/Sets tap dragging enabled.
+  void SetTapDraggingEnabled(bool enabled);
+  bool GetTapDraggingEnabled() const;
 
   // Toggles the status of touchpad between enabled and disabled.
   void ToggleTouchpad();
@@ -47,13 +52,19 @@ class ASH_EXPORT TouchDevicesController : public SessionObserver {
   void SetTouchscreenEnabled(bool enabled, TouchscreenEnabledSource source);
 
  private:
+  class ScopedUmaRecorder;
+
   // Overridden from SessionObserver:
+  void OnUserSessionAdded(const AccountId& account_id) override;
   void OnSigninScreenPrefServiceInitialized(PrefService* prefs) override;
   void OnActiveUserPrefServiceChanged(PrefService* prefs) override;
 
   // Observes either the signin screen prefs or active user prefs and loads
   // initial state.
   void ObservePrefs(PrefService* prefs);
+
+  // Updates tap dragging enabled state from prefs.
+  void UpdateTapDraggingEnabled();
 
   // Updates the actual enabled/disabled status of the touchpad.
   void UpdateTouchpadEnabled();
@@ -62,12 +73,18 @@ class ASH_EXPORT TouchDevicesController : public SessionObserver {
   // is enabled if all the touchscreen enabled sources are enabled.
   void UpdateTouchscreenEnabled();
 
+  // Saves the tap dragging enabled state from prefs.
+  bool tap_dragging_enabled_ = false;
+
   // The touchscreen state which is associated with the global touchscreen
   // enabled source.
   bool global_touchscreen_enabled_ = true;
 
   // Observes user profile prefs for touch devices.
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
+
+  // Used to record pref started UMA.
+  std::unique_ptr<ScopedUmaRecorder> scoped_uma_recorder_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchDevicesController);
 };

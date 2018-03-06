@@ -27,12 +27,6 @@ class ASH_EXPORT AccessibilityDelegate {
   // Returns true if the screen magnifier is enabled.
   virtual bool IsMagnifierEnabled() const = 0;
 
-  // Invoked to enable or disable tap dragging.
-  virtual void SetTapDraggingEnabled(bool enabled) = 0;
-
-  // Returns if tap dragging is enabled.
-  virtual bool IsTapDraggingEnabled() const = 0;
-
   // Returns true when the accessibility menu should be shown.
   virtual bool ShouldShowAccessibilityMenu() const = 0;
 

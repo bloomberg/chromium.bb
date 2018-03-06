@@ -115,7 +115,6 @@ class Preferences : public sync_preferences::PrefServiceSyncableObserver,
 
   BooleanPrefMember performance_tracing_enabled_;
   BooleanPrefMember tap_to_click_enabled_;
-  BooleanPrefMember tap_dragging_enabled_;
   BooleanPrefMember three_finger_click_enabled_;
   BooleanPrefMember unified_desktop_enabled_by_default_;
   BooleanPrefMember natural_scroll_;

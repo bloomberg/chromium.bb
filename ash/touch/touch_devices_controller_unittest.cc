@@ -12,7 +12,9 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/command_line.h"
+#include "base/test/histogram_tester.h"
 #include "components/prefs/pref_service.h"
+#include "components/prefs/testing_pref_service.h"
 
 namespace ash {
 
@@ -37,10 +39,10 @@ bool GetGlobalTouchscreenEnabled() {
       TouchscreenEnabledSource::GLOBAL);
 }
 
-class TouchDevicesControllerTest : public NoSessionAshTestBase {
+class TouchDevicesControllerSigninTest : public NoSessionAshTestBase {
  public:
-  TouchDevicesControllerTest() = default;
-  ~TouchDevicesControllerTest() override = default;
+  TouchDevicesControllerSigninTest() = default;
+  ~TouchDevicesControllerSigninTest() override = default;
 
   // NoSessionAshTestBase:
   void SetUp() override {
@@ -67,11 +69,35 @@ class TouchDevicesControllerTest : public NoSessionAshTestBase {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TouchDevicesControllerTest);
+  DISALLOW_COPY_AND_ASSIGN(TouchDevicesControllerSigninTest);
 };
 
+TEST_F(TouchDevicesControllerSigninTest, PrefsAreRegistered) {
+  PrefService* prefs =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  EXPECT_TRUE(prefs->FindPreference(prefs::kTapDraggingEnabled));
+  EXPECT_TRUE(prefs->FindPreference(prefs::kTouchpadEnabled));
+  EXPECT_TRUE(prefs->FindPreference(prefs::kTouchscreenEnabled));
+}
+
+TEST_F(TouchDevicesControllerSigninTest, SetTapDraggingEnabled) {
+  auto* controller = Shell::Get()->touch_devices_controller();
+  ASSERT_FALSE(controller->GetTapDraggingEnabled());
+  controller->SetTapDraggingEnabled(true);
+  EXPECT_TRUE(controller->GetTapDraggingEnabled());
+
+  // Switch to user 2 and switch back.
+  SwitchActiveUser(kUser2Email);
+  EXPECT_FALSE(controller->GetTapDraggingEnabled());
+  SwitchActiveUser(kUser1Email);
+  EXPECT_TRUE(controller->GetTapDraggingEnabled());
+
+  controller->SetTapDraggingEnabled(false);
+  EXPECT_FALSE(controller->GetTapDraggingEnabled());
+}
+
 // Tests that touchpad enabled user pref works properly under debug accelerator.
-TEST_F(TouchDevicesControllerTest, ToggleTouchpad) {
+TEST_F(TouchDevicesControllerSigninTest, ToggleTouchpad) {
   ASSERT_TRUE(GetTouchpadEnabled());
   debug::PerformDebugActionIfEnabled(DEBUG_TOGGLE_TOUCH_PAD);
   EXPECT_FALSE(GetTouchpadEnabled());
@@ -88,7 +114,7 @@ TEST_F(TouchDevicesControllerTest, ToggleTouchpad) {
 
 // Tests that touchscreen enabled user pref works properly under debug
 // accelerator.
-TEST_F(TouchDevicesControllerTest, SetTouchscreenEnabled) {
+TEST_F(TouchDevicesControllerSigninTest, SetTouchscreenEnabled) {
   ASSERT_TRUE(GetGlobalTouchscreenEnabled());
   ASSERT_TRUE(GetUserPrefTouchscreenEnabled());
 
@@ -113,6 +139,43 @@ TEST_F(TouchDevicesControllerTest, SetTouchscreenEnabled) {
   EXPECT_FALSE(GetGlobalTouchscreenEnabled());
   SwitchActiveUser(kUser2Email);
   EXPECT_FALSE(GetGlobalTouchscreenEnabled());
+}
+
+using TouchDevicesControllerPrefsTest = NoSessionAshTestBase;
+
+// Tests that "Touchpad.TapDragging.Started" is recorded on user session added
+// and pref service is ready and "Touchpad.TapDragging.Changed" is recorded each
+// time pref changes.
+TEST_F(TouchDevicesControllerPrefsTest, RecordUma) {
+  auto* controller = Shell::Get()->touch_devices_controller();
+  ASSERT_FALSE(controller->GetTapDraggingEnabled());
+
+  TestSessionControllerClient* session = GetSessionControllerClient();
+  // Disable auto-provision of PrefService.
+  constexpr bool kEnableSettings = true;
+  constexpr bool kProvidePrefService = false;
+  // Add and switch to |kUser1Email|, but user pref service is not ready.
+  session->AddUserSession(kUser1Email, user_manager::USER_TYPE_REGULAR,
+                          kEnableSettings, kProvidePrefService);
+  const AccountId kUserAccount1 = AccountId::FromUserEmail(kUser1Email);
+  session->SwitchActiveUser(kUserAccount1);
+
+  base::HistogramTester histogram_tester;
+  histogram_tester.ExpectTotalCount("Touchpad.TapDragging.Started", 0);
+  histogram_tester.ExpectTotalCount("Touchpad.TapDragging.Changed", 0);
+
+  // Simulate active user pref service is changed.
+  auto pref_service = std::make_unique<TestingPrefServiceSimple>();
+  Shell::RegisterProfilePrefs(pref_service->registry(), true /* for_test */);
+  Shell::Get()->session_controller()->ProvideUserPrefServiceForTest(
+      kUserAccount1, std::move(pref_service));
+  histogram_tester.ExpectTotalCount("Touchpad.TapDragging.Started", 1);
+  histogram_tester.ExpectTotalCount("Touchpad.TapDragging.Changed", 0);
+
+  EXPECT_FALSE(controller->GetTapDraggingEnabled());
+  controller->SetTapDraggingEnabled(true);
+  histogram_tester.ExpectTotalCount("Touchpad.TapDragging.Started", 1);
+  histogram_tester.ExpectTotalCount("Touchpad.TapDragging.Changed", 1);
 }
 
 }  // namespace
