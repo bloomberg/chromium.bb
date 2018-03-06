@@ -279,6 +279,8 @@ if (is_android) {
   android_library("base_java") {
     java_src_dir = "//chromecast/base/java/src"
     java_files = [
+      "$java_src_dir/org/chromium/chromecast/base/BiConsumer.java",
+      "$java_src_dir/org/chromium/chromecast/base/BiFunction.java",
       "$java_src_dir/org/chromium/chromecast/base/Both.java",
       "$java_src_dir/org/chromium/chromecast/base/CircularBuffer.java",
       "$java_src_dir/org/chromium/chromecast/base/Controller.java",
@@ -286,7 +288,6 @@ if (is_android) {
       "$java_src_dir/org/chromium/chromecast/base/Function.java",
       "$java_src_dir/org/chromium/chromecast/base/Itertools.java",
       "$java_src_dir/org/chromium/chromecast/base/Observable.java",
-      "$java_src_dir/org/chromium/chromecast/base/ReactiveUtils.java",
       "$java_src_dir/org/chromium/chromecast/base/ScopeFactories.java",
       "$java_src_dir/org/chromium/chromecast/base/ScopeFactory.java",
       "$java_src_dir/org/chromium/chromecast/base/Unit.java",
@@ -312,7 +313,6 @@ if (is_android) {
       "$java_test_dir/org/chromium/chromecast/base/CircularBufferTest.java",
       "$java_test_dir/org/chromium/chromecast/base/ItertoolsTest.java",
       "$java_test_dir/org/chromium/chromecast/base/ObservableAndControllerTest.java",
-      "$java_test_dir/org/chromium/chromecast/base/ReactiveUtilsTest.java",
       "$java_test_dir/org/chromium/chromecast/base/ScopeFactoriesTest.java",
       "$java_test_dir/org/chromium/chromecast/base/TestUtils.java",
       "$java_test_dir/org/chromium/chromecast/base/UnitTest.java",

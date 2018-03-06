@@ -134,4 +134,67 @@ public class ScopeFactoriesTest {
                 contains("enter Derived", "enter and ignore data", "exit and ignore data",
                         "exit Derived"));
     }
+
+    @Test
+    public void testWatchBothWithStrings() {
+        Controller<String> controllerA = new Controller<>();
+        Controller<String> controllerB = new Controller<>();
+        List<String> result = new ArrayList<>();
+        controllerA.and(controllerB).watch(ScopeFactories.both((String a, String b) -> {
+            result.add("enter: " + a + ", " + b);
+            return () -> result.add("exit: " + a + ", " + b);
+        }));
+        controllerA.set("A");
+        controllerB.set("B");
+        controllerA.set("AA");
+        controllerB.set("BB");
+        assertThat(result,
+                contains("enter: A, B", "exit: A, B", "enter: AA, B", "exit: AA, B",
+                        "enter: AA, BB"));
+    }
+
+    @Test
+    public void testWatchBothWithSuperclassAsScopeFactoryParameters() {
+        Controller<Derived> controllerA = new Controller<>();
+        Controller<Derived> controllerB = new Controller<>();
+        List<String> result = new ArrayList<>();
+        // Compile error if generics are wrong.
+        controllerA.and(controllerB).watch(ScopeFactories.both((Base a, Base b) -> {
+            result.add("enter: " + a + ", " + b);
+            return () -> result.add("exit: " + a + ", " + b);
+        }));
+        controllerA.set(new Derived());
+        controllerB.set(new Derived());
+        assertThat(result, contains("enter: Derived, Derived"));
+    }
+
+    @Test
+    public void testWatchBothOnEnter() {
+        Controller<String> controllerA = new Controller<>();
+        Controller<String> controllerB = new Controller<>();
+        List<String> result = new ArrayList<>();
+        controllerA.and(controllerB).watch(ScopeFactories.onEnter((String a, String b) -> {
+            result.add("enter: " + a + ", " + b);
+        }));
+        controllerA.set("A");
+        controllerB.set("B");
+        controllerA.set("AA");
+        controllerB.set("BB");
+        assertThat(result, contains("enter: A, B", "enter: AA, B", "enter: AA, BB"));
+    }
+
+    @Test
+    public void testWatchBothOnExit() {
+        Controller<String> controllerA = new Controller<>();
+        Controller<String> controllerB = new Controller<>();
+        List<String> result = new ArrayList<>();
+        controllerA.and(controllerB).watch(ScopeFactories.onExit((String a, String b) -> {
+            result.add("exit: " + a + ", " + b);
+        }));
+        controllerA.set("A");
+        controllerB.set("B");
+        controllerA.set("AA");
+        controllerB.set("BB");
+        assertThat(result, contains("exit: A, B", "exit: AA, B"));
+    }
 }
