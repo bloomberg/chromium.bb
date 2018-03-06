@@ -151,8 +151,6 @@ static_library("browser") {
     "validation.h",
     "webdata/autocomplete_sync_bridge.cc",
     "webdata/autocomplete_sync_bridge.h",
-    "webdata/autocomplete_syncable_service.cc",
-    "webdata/autocomplete_syncable_service.h",
     "webdata/autofill_change.cc",
     "webdata/autofill_change.h",
     "webdata/autofill_data_type_controller.cc",

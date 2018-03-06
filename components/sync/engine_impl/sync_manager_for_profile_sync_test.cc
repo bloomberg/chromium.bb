@@ -12,8 +12,8 @@ namespace syncer {
 
 SyncManagerForProfileSyncTest::SyncManagerForProfileSyncTest(
     std::string name,
-    base::Closure init_callback)
-    : SyncManagerImpl(name), init_callback_(init_callback) {}
+    base::OnceClosure init_callback)
+    : SyncManagerImpl(name), init_callback_(std::move(init_callback)) {}
 
 SyncManagerForProfileSyncTest::~SyncManagerForProfileSyncTest() {}
 
@@ -22,7 +22,7 @@ void SyncManagerForProfileSyncTest::NotifyInitializationSuccess() {
   syncable::Directory* directory = user_share->directory.get();
 
   if (!init_callback_.is_null())
-    init_callback_.Run();
+    std::move(init_callback_).Run();
 
   ModelTypeSet early_download_types;
   early_download_types.PutAll(ControlTypes());
