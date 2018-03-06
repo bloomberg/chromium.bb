@@ -889,7 +889,16 @@ void InputHandler::SynthesizePinchGesture(
     return;
   }
 
-  host_->GetRenderWidgetHost()->QueueSyntheticGesture(
+  gfx::PointF transformed;
+  RenderWidgetHostImpl* widget_host =
+      FindTargetWidgetHost(gesture_params.anchor, &transformed);
+  gesture_params.anchor = transformed;
+  if (!widget_host) {
+    callback->sendFailure(Response::InternalError());
+    return;
+  }
+
+  widget_host->QueueSyntheticGesture(
       SyntheticGesture::Create(gesture_params),
       base::BindOnce(&SendSynthesizePinchGestureResponse, std::move(callback)));
 }
@@ -947,34 +956,50 @@ void InputHandler::SynthesizeScrollGesture(
     return;
   }
 
+  gfx::PointF transformed;
+  RenderWidgetHostImpl* widget_host =
+      FindTargetWidgetHost(gesture_params.anchor, &transformed);
+  gesture_params.anchor = transformed;
+  if (!widget_host) {
+    callback->sendFailure(Response::InternalError());
+    return;
+  }
+
   SynthesizeRepeatingScroll(
-      gesture_params, repeat_count.fromMaybe(0),
+      widget_host->GetWeakPtr(), gesture_params, repeat_count.fromMaybe(0),
       base::TimeDelta::FromMilliseconds(repeat_delay_ms.fromMaybe(250)),
       interaction_marker_name.fromMaybe(""), ++last_id_, std::move(callback));
 }
 
 void InputHandler::SynthesizeRepeatingScroll(
+    base::WeakPtr<RenderWidgetHostImpl> widget_host,
     SyntheticSmoothScrollGestureParams gesture_params,
     int repeat_count,
     base::TimeDelta repeat_delay,
     std::string interaction_marker_name,
     int id,
     std::unique_ptr<SynthesizeScrollGestureCallback> callback) {
+  if (!widget_host) {
+    callback->sendFailure(Response::Error("Frame was detached"));
+    return;
+  }
+
   if (!interaction_marker_name.empty()) {
     // TODO(alexclarke): Can we move this elsewhere? It doesn't really fit here.
     TRACE_EVENT_COPY_ASYNC_BEGIN0("benchmark", interaction_marker_name.c_str(),
                                   id);
   }
 
-  host_->GetRenderWidgetHost()->QueueSyntheticGesture(
+  widget_host->QueueSyntheticGesture(
       SyntheticGesture::Create(gesture_params),
       base::BindOnce(&InputHandler::OnScrollFinished,
-                     weak_factory_.GetWeakPtr(), gesture_params, repeat_count,
-                     repeat_delay, interaction_marker_name, id,
+                     weak_factory_.GetWeakPtr(), widget_host, gesture_params,
+                     repeat_count, repeat_delay, interaction_marker_name, id,
                      std::move(callback)));
 }
 
 void InputHandler::OnScrollFinished(
+    base::WeakPtr<RenderWidgetHostImpl> widget_host,
     SyntheticSmoothScrollGestureParams gesture_params,
     int repeat_count,
     base::TimeDelta repeat_delay,
@@ -991,7 +1016,7 @@ void InputHandler::OnScrollFinished(
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&InputHandler::SynthesizeRepeatingScroll,
-                       weak_factory_.GetWeakPtr(), gesture_params,
+                       weak_factory_.GetWeakPtr(), widget_host, gesture_params,
                        repeat_count - 1, repeat_delay, interaction_marker_name,
                        id, std::move(callback)),
         repeat_delay);
@@ -1038,10 +1063,19 @@ void InputHandler::SynthesizeTapGesture(
     return;
   }
 
+  gfx::PointF transformed;
+  RenderWidgetHostImpl* widget_host =
+      FindTargetWidgetHost(gesture_params.position, &transformed);
+  gesture_params.position = transformed;
+  if (!widget_host) {
+    callback->sendFailure(Response::InternalError());
+    return;
+  }
+
   TapGestureResponse* response =
       new TapGestureResponse(std::move(callback), count);
   for (int i = 0; i < count; i++) {
-    host_->GetRenderWidgetHost()->QueueSyntheticGesture(
+    widget_host->QueueSyntheticGesture(
         SyntheticGesture::Create(gesture_params),
         base::BindOnce(&TapGestureResponse::OnGestureResult,
                        base::Unretained(response)));
