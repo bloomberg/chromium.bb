@@ -66,6 +66,7 @@ class CC_PAINT_EXPORT PaintOpReader {
   void Read(SkMatrix* matrix);
   void Read(SkColorType* color_type);
   void Read(SkImageInfo* info);
+  void Read(sk_sp<SkColorSpace>* color_space);
 
   void Read(SkClipOp* op) {
     uint8_t value = 0u;

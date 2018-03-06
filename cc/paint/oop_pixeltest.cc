@@ -257,7 +257,6 @@ class OopPixelTest : public testing::Test {
 
     gfx::AxisTransform2d raster_transform(options.post_scale,
                                           options.post_translate);
-    gfx::ColorSpace target_color_space;
     raster_source->PlaybackToCanvas(
         canvas, options.color_space, options.content_size,
         options.full_raster_rect, options.playback_rect, raster_transform,
@@ -305,6 +304,18 @@ class OopPixelTest : public testing::Test {
   int color_space_id_ = 0;
 };
 
+class OopImagePixelTest : public OopPixelTest,
+                          public ::testing::WithParamInterface<bool> {
+ public:
+  bool UseTooLargeImage() { return GetParam(); }
+  gfx::Size GetImageSize() {
+    const int kMaxSize = 20000;
+    DCHECK_GT(kMaxSize,
+              context_provider_->GrContext()->caps()->maxTextureSize());
+    return UseTooLargeImage() ? gfx::Size(10, kMaxSize) : gfx::Size(10, 10);
+  }
+};
+
 TEST_F(OopPixelTest, DrawColor) {
   gfx::Rect rect(10, 10);
   auto display_item_list = base::MakeRefCounted<DisplayItemList>();
@@ -313,14 +324,39 @@ TEST_F(OopPixelTest, DrawColor) {
   display_item_list->EndPaintOfUnpaired(rect);
   display_item_list->Finalize();
 
-  auto actual = Raster(std::move(display_item_list), rect.size());
   std::vector<SkPMColor> expected_pixels(rect.width() * rect.height(),
                                          SkPreMultiplyARGB(255, 0, 0, 255));
   SkBitmap expected;
   expected.installPixels(
       SkImageInfo::MakeN32Premul(rect.width(), rect.height()),
       expected_pixels.data(), rect.width() * sizeof(SkColor));
+
+  auto actual_oop = Raster(display_item_list, rect.size());
+  ExpectEquals(actual_oop, expected, "oop");
+
+  auto actual_gpu = RasterExpectedBitmap(display_item_list, rect.size());
+  ExpectEquals(actual_gpu, expected, "gpu");
+}
+
+TEST_F(OopPixelTest, DrawColorWithTargetColorSpace) {
+  gfx::Rect rect(10, 10);
+  auto display_item_list = base::MakeRefCounted<DisplayItemList>();
+  display_item_list->StartPaint();
+  display_item_list->push<DrawColorOp>(SK_ColorBLUE, SkBlendMode::kSrc);
+  display_item_list->EndPaintOfUnpaired(rect);
+  display_item_list->Finalize();
+
+  gfx::ColorSpace target_color_space = gfx::ColorSpace::CreateXYZD50();
+
+  RasterOptions options(rect.size());
+  options.color_space = target_color_space;
+
+  auto actual = Raster(display_item_list, options);
+  auto expected = RasterExpectedBitmap(display_item_list, options);
   ExpectEquals(actual, expected);
+
+  // Verify conversion.
+  EXPECT_EQ(SkColorSetARGB(255, 38, 15, 221), expected.getColor(0, 0));
 }
 
 TEST_F(OopPixelTest, DrawRect) {
@@ -368,12 +404,13 @@ TEST_F(OopPixelTest, DrawRect) {
   ExpectEquals(actual, expected);
 }
 
-TEST_F(OopPixelTest, DrawImage) {
+TEST_P(OopImagePixelTest, DrawImage) {
   gfx::Rect rect(10, 10);
+  gfx::Size image_size = GetImageSize();
 
   SkBitmap bitmap;
   bitmap.allocPixelsFlags(
-      SkImageInfo::MakeN32Premul(rect.width(), rect.height()),
+      SkImageInfo::MakeN32Premul(image_size.width(), image_size.height()),
       SkBitmap::kZeroPixels_AllocFlag);
 
   SkCanvas canvas(bitmap);
@@ -395,10 +432,126 @@ TEST_F(OopPixelTest, DrawImage) {
   display_item_list->Finalize();
 
   auto actual = Raster(display_item_list, rect.size());
-  ExpectEquals(actual, bitmap);
-
   auto expected = RasterExpectedBitmap(display_item_list, rect.size());
-  ExpectEquals(expected, bitmap);
+  ExpectEquals(actual, expected);
+
+  EXPECT_EQ(actual.getColor(0, 0), SK_ColorMAGENTA);
+}
+
+TEST_P(OopImagePixelTest, DrawImageWithTargetColorSpace) {
+  gfx::Rect rect(10, 10);
+  gfx::Size image_size = GetImageSize();
+
+  SkBitmap bitmap;
+  bitmap.allocPixelsFlags(
+      SkImageInfo::MakeN32Premul(image_size.width(), image_size.height()),
+      SkBitmap::kZeroPixels_AllocFlag);
+
+  SkCanvas canvas(bitmap);
+  canvas.drawColor(SK_ColorMAGENTA);
+  SkPaint green;
+  green.setColor(SK_ColorGREEN);
+  canvas.drawRect(SkRect::MakeXYWH(1, 2, 3, 4), green);
+
+  sk_sp<SkImage> image = SkImage::MakeFromBitmap(bitmap);
+  const PaintImage::Id kSomeId = 32;
+  auto builder =
+      PaintImageBuilder::WithDefault().set_image(image, 0).set_id(kSomeId);
+  auto paint_image = builder.TakePaintImage();
+
+  auto display_item_list = base::MakeRefCounted<DisplayItemList>();
+  display_item_list->StartPaint();
+  display_item_list->push<DrawImageOp>(paint_image, 0.f, 0.f, nullptr);
+  display_item_list->EndPaintOfUnpaired(rect);
+  display_item_list->Finalize();
+
+  RasterOptions options(rect.size());
+  options.color_space = gfx::ColorSpace::CreateDisplayP3D65();
+
+  auto actual = Raster(display_item_list, options);
+  auto expected = RasterExpectedBitmap(display_item_list, options);
+  ExpectEquals(actual, expected);
+
+  // Verify some conversion occurred here and that actual != bitmap.
+  EXPECT_NE(actual.getColor(0, 0), SK_ColorMAGENTA);
+}
+
+TEST_P(OopImagePixelTest, DrawImageWithSourceColorSpace) {
+  gfx::Rect rect(10, 10);
+  gfx::Size image_size = GetImageSize();
+
+  auto color_space = gfx::ColorSpace::CreateDisplayP3D65().ToSkColorSpace();
+  SkBitmap bitmap;
+  bitmap.allocPixelsFlags(
+      SkImageInfo::MakeN32Premul(image_size.width(), image_size.height(),
+                                 color_space),
+      SkBitmap::kZeroPixels_AllocFlag);
+
+  SkCanvas canvas(bitmap);
+  canvas.drawColor(SK_ColorMAGENTA);
+  SkPaint green;
+  green.setColor(SK_ColorGREEN);
+  canvas.drawRect(SkRect::MakeXYWH(1, 2, 3, 4), green);
+
+  sk_sp<SkImage> image = SkImage::MakeFromBitmap(bitmap);
+  const PaintImage::Id kSomeId = 32;
+  auto builder =
+      PaintImageBuilder::WithDefault().set_image(image, 0).set_id(kSomeId);
+  auto paint_image = builder.TakePaintImage();
+  EXPECT_EQ(paint_image.color_space(), color_space.get());
+
+  auto display_item_list = base::MakeRefCounted<DisplayItemList>();
+  display_item_list->StartPaint();
+  display_item_list->push<DrawImageOp>(paint_image, 0.f, 0.f, nullptr);
+  display_item_list->EndPaintOfUnpaired(rect);
+  display_item_list->Finalize();
+
+  RasterOptions options(rect.size());
+
+  auto actual = Raster(display_item_list, options);
+  auto expected = RasterExpectedBitmap(display_item_list, options);
+  ExpectEquals(actual, expected);
+
+  // Colors get converted when being drawn to the bitmap.
+  EXPECT_NE(bitmap.getColor(0, 0), SK_ColorMAGENTA);
+}
+
+TEST_P(OopImagePixelTest, DrawImageWithSourceAndTargetColorSpace) {
+  gfx::Rect rect(10, 10);
+
+  gfx::Size image_size = GetImageSize();
+  auto color_space = gfx::ColorSpace::CreateXYZD50().ToSkColorSpace();
+  SkBitmap bitmap;
+  bitmap.allocPixelsFlags(
+      SkImageInfo::MakeN32Premul(image_size.width(), image_size.height(),
+                                 color_space),
+      SkBitmap::kZeroPixels_AllocFlag);
+
+  SkCanvas canvas(bitmap);
+  canvas.drawColor(SK_ColorMAGENTA);
+  SkPaint green;
+  green.setColor(SK_ColorGREEN);
+  canvas.drawRect(SkRect::MakeXYWH(1, 2, 3, 4), green);
+
+  sk_sp<SkImage> image = SkImage::MakeFromBitmap(bitmap);
+  const PaintImage::Id kSomeId = 32;
+  auto builder =
+      PaintImageBuilder::WithDefault().set_image(image, 0).set_id(kSomeId);
+  auto paint_image = builder.TakePaintImage();
+  EXPECT_EQ(paint_image.color_space(), color_space.get());
+
+  auto display_item_list = base::MakeRefCounted<DisplayItemList>();
+  display_item_list->StartPaint();
+  display_item_list->push<DrawImageOp>(paint_image, 0.f, 0.f, nullptr);
+  display_item_list->EndPaintOfUnpaired(rect);
+  display_item_list->Finalize();
+
+  RasterOptions options(rect.size());
+  options.color_space = gfx::ColorSpace::CreateDisplayP3D65();
+
+  auto actual = Raster(display_item_list, options);
+  auto expected = RasterExpectedBitmap(display_item_list, options);
+  ExpectEquals(actual, expected);
 }
 
 TEST_F(OopPixelTest, Preclear) {
@@ -897,6 +1050,8 @@ TEST_F(OopPixelTest, DrawRectColorSpace) {
   auto expected = RasterExpectedBitmap(display_item_list, options);
   ExpectEquals(actual, expected);
 }
+
+INSTANTIATE_TEST_CASE_P(P, OopImagePixelTest, ::testing::Values(false, true));
 
 }  // namespace
 }  // namespace cc

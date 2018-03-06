@@ -15,7 +15,15 @@ namespace cc {
 ClientImageTransferCacheEntry::ClientImageTransferCacheEntry(
     const SkPixmap* pixmap,
     const SkColorSpace* target_color_space)
-    : id_(s_next_id_.GetNext()), pixmap_(pixmap) {
+    : id_(s_next_id_.GetNext()),
+      pixmap_(pixmap),
+      target_color_space_(target_color_space) {
+  size_t target_color_space_size =
+      target_color_space ? target_color_space->writeToMemory(nullptr) : 0u;
+  size_t pixmap_color_space_size =
+      pixmap_->colorSpace() ? pixmap_->colorSpace()->writeToMemory(nullptr)
+                            : 0u;
+
   // Compute and cache the size of the data.
   // We write the following:
   // - Image color type (uint32_t)
@@ -30,9 +38,11 @@ ClientImageTransferCacheEntry::ClientImageTransferCacheEntry(
   safe_size += sizeof(size_t);    // pixels size
   safe_size += pixmap_->computeByteSize();
   safe_size += PaintOpWriter::HeaderBytes();
+  safe_size += target_color_space_size + sizeof(size_t);
+  safe_size += pixmap_color_space_size + sizeof(size_t);
   size_ = safe_size.ValueOrDie();
-  // TODO(ericrk): Handle colorspace.
 }
+
 ClientImageTransferCacheEntry::~ClientImageTransferCacheEntry() = default;
 
 // static
@@ -55,9 +65,10 @@ bool ClientImageTransferCacheEntry::Serialize(base::span<uint8_t> data) const {
   writer.Write(pixmap_->height());
   size_t pixmap_size = pixmap_->computeByteSize();
   writer.WriteSize(pixmap_size);
+  // TODO(enne): we should consider caching these in some form.
+  writer.Write(pixmap_->colorSpace());
+  writer.Write(target_color_space_);
   writer.WriteData(pixmap_size, pixmap_->addr());
-  // TODO(ericrk): Handle colorspace.
-
   if (writer.size() != data.size())
     return false;
 
@@ -88,12 +99,16 @@ bool ServiceImageTransferCacheEntry::Deserialize(GrContext* context,
   size_t pixel_size;
   reader.ReadSize(&pixel_size);
   size_ = data.size();
+  sk_sp<SkColorSpace> pixmap_color_space;
+  reader.Read(&pixmap_color_space);
+  sk_sp<SkColorSpace> target_color_space;
+  reader.Read(&target_color_space);
+
   if (!reader.valid())
     return false;
-  // TODO(ericrk): Handle colorspace.
 
-  SkImageInfo image_info =
-      SkImageInfo::Make(width, height, color_type, kPremul_SkAlphaType);
+  SkImageInfo image_info = SkImageInfo::Make(
+      width, height, color_type, kPremul_SkAlphaType, pixmap_color_space);
   const volatile void* pixel_data = reader.ExtractReadableMemory(pixel_size);
   if (!reader.valid())
     return false;
@@ -110,12 +125,35 @@ bool ServiceImageTransferCacheEntry::Deserialize(GrContext* context,
   bool fits_on_gpu = width <= max_size && height <= max_size;
   if (fits_on_gpu) {
     sk_sp<SkImage> image = SkImage::MakeFromRaster(pixmap, nullptr, nullptr);
-    DCHECK(image);
+    if (!image)
+      return false;
     image_ = image->makeTextureImage(context, nullptr);
+    if (!image)
+      return false;
+    if (target_color_space) {
+      image_ = image_->makeColorSpace(target_color_space,
+                                      SkTransferFunctionBehavior::kIgnore);
+    }
   } else {
-    image_ = SkImage::MakeRasterCopy(pixmap);
+    sk_sp<SkImage> original =
+        SkImage::MakeFromRaster(pixmap, [](const void*, void*) {}, nullptr);
+    if (!original)
+      return false;
+    if (target_color_space) {
+      image_ = original->makeColorSpace(target_color_space,
+                                        SkTransferFunctionBehavior::kIgnore);
+      // If color space conversion is a noop, use original data.
+      if (image_ == original)
+        image_ = SkImage::MakeRasterCopy(pixmap);
+    } else {
+      // No color conversion to do, use original data.
+      image_ = SkImage::MakeRasterCopy(pixmap);
+    }
   }
 
+  // TODO(enne): consider adding in the DeleteSkImageAndPreventCaching
+  // optimization from GpuImageDecodeCache where we forcefully remove the
+  // intermediate from Skia's cache.
   return image_;
 }
 

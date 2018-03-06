@@ -1351,9 +1351,9 @@ void GpuImageDecodeCache::DecodeImageIfNecessary(const DrawImage& draw_image,
                     image_info.minRowBytes());
 
     // Set |pixmap| to the desired colorspace to decode into.
-    if (image_data->mode == DecodedDataMode::kCpu) {
-      // If this is a kCpu image, we want to handle color conversion during
-      // decode, so set the target colorspace here.
+    if (!SupportsColorSpaceConversion()) {
+      pixmap.setColorSpace(nullptr);
+    } else if (image_data->mode == DecodedDataMode::kCpu) {
       pixmap.setColorSpace(draw_image.target_color_space().ToSkColorSpace());
     } else {
       // For kGpu or kTransferCache images color conversion is handled during
@@ -1420,7 +1420,11 @@ void GpuImageDecodeCache::UploadImageIfNecessary(const DrawImage& draw_image,
     if (!image_data->decode.image()->peekPixels(&pixmap))
       return;
 
-    ClientImageTransferCacheEntry image_entry(&pixmap, nullptr);
+    sk_sp<SkColorSpace> color_space =
+        SupportsColorSpaceConversion()
+            ? draw_image.target_color_space().ToSkColorSpace()
+            : nullptr;
+    ClientImageTransferCacheEntry image_entry(&pixmap, color_space.get());
     size_t size = image_entry.SerializedSize();
     void* data = context_->ContextSupport()->MapTransferCacheEntry(size);
     // TODO(piman): handle error (failed to allocate/map shm)
@@ -1449,7 +1453,7 @@ void GpuImageDecodeCache::UploadImageIfNecessary(const DrawImage& draw_image,
     uploaded_image =
         uploaded_image->makeTextureImage(context_->GrContext(), nullptr);
 
-    if (uploaded_image && SupportsColorSpaces() &&
+    if (uploaded_image && SupportsColorSpaceConversion() &&
         draw_image.target_color_space().IsValid()) {
       TRACE_EVENT0("cc", "GpuImageDecodeCache::UploadImage - color conversion");
       sk_sp<SkImage> pre_converted_image = uploaded_image;
@@ -1763,7 +1767,7 @@ void GpuImageDecodeCache::OnPurgeMemory() {
   EnsureCapacity(0);
 }
 
-bool GpuImageDecodeCache::SupportsColorSpaces() const {
+bool GpuImageDecodeCache::SupportsColorSpaceConversion() const {
   switch (color_type_) {
     case kRGBA_8888_SkColorType:
     case kBGRA_8888_SkColorType:

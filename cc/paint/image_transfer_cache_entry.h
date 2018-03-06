@@ -37,6 +37,7 @@ class CC_PAINT_EXPORT ClientImageTransferCacheEntry
  private:
   uint32_t id_;
   const SkPixmap* const pixmap_;
+  const SkColorSpace* const target_color_space_;
   size_t size_ = 0;
   static base::AtomicSequenceNumber s_next_id_;
 };

@@ -230,6 +230,25 @@ void PaintOpWriter::Write(const sk_sp<SkData>& data) {
   }
 }
 
+void PaintOpWriter::Write(const SkColorSpace* color_space) {
+  if (!color_space) {
+    WriteSize(static_cast<size_t>(0));
+    return;
+  }
+  size_t size = color_space->writeToMemory(nullptr);
+  WriteSize(size);
+
+  EnsureBytes(size);
+  if (!valid_)
+    return;
+
+  size_t written = color_space->writeToMemory(memory_);
+  CHECK_EQ(written, size);
+
+  memory_ += written;
+  remaining_bytes_ -= written;
+}
+
 void PaintOpWriter::Write(const sk_sp<SkTextBlob>& blob) {
   auto data = blob->serialize(&TypefaceCataloger, transfer_cache_);
   Write(data);

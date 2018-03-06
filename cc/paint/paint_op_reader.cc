@@ -359,6 +359,29 @@ void PaintOpReader::Read(sk_sp<SkData>* data) {
   remaining_bytes_ -= bytes;
 }
 
+void PaintOpReader::Read(sk_sp<SkColorSpace>* color_space) {
+  size_t size = 0;
+  ReadSize(&size);
+  if (remaining_bytes_ < size)
+    valid_ = false;
+  if (!valid_ || size == 0)
+    return;
+
+  // To avoid TOCTOU issues, make a copy of this prior to turning it
+  // into an SkColorSpace.  SkColorSpace::Deserialize reads header
+  // fields multiple times, so is not safe to pass memory_ to directly.
+  std::unique_ptr<char[]> data(new char[size]);
+  memcpy(data.get(), const_cast<const char*>(memory_), size);
+
+  *color_space = SkColorSpace::Deserialize(data.get(), size);
+  // If this had non-zero bytes, it should be a valid color space.
+  if (!color_space)
+    SetInvalid();
+
+  memory_ += size;
+  remaining_bytes_ -= size;
+}
+
 void PaintOpReader::Read(scoped_refptr<PaintTextBlob>* paint_blob) {
   sk_sp<SkData> data;
   Read(&data);

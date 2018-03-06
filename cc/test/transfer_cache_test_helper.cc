@@ -26,6 +26,8 @@ void TransferCacheTestHelper::CreateEntryDirect(const EntryKey& key,
   bool success = service_entry->Deserialize(context_, data);
   DCHECK(success);
 
+  last_added_entry_ = key;
+
   // Put things into the cache.
   entries_.emplace(key, std::move(service_entry));
   locked_entries_.insert(key);
