@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "platform/PlatformExport.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 namespace scheduler {
@@ -80,9 +81,77 @@ class TraceableVariable {
 // of category. Hence, we need distinct version for each category in order to
 // prevent unintended leak of state.
 
-template <typename T, const char* category>
-class TraceableState : public TraceableVariable {
+template <const char* category>
+class StateTracer {
  public:
+  StateTracer(const char* name, const void* object)
+      : name_(name), object_(object), slice_is_open_(false) {
+    internal::ValidateTracingCategory(category);
+  }
+
+  ~StateTracer() {
+    if (slice_is_open_)
+      TRACE_EVENT_ASYNC_END0(category, name_, object_);
+  }
+
+  // String will be copied before leaving this function.
+  void TraceString(const String& state) {
+    TraceImpl(state.Utf8().data(), true);
+  }
+
+  // Trace compile-time defined const string, so no copy needed.
+  // Null may be passed to indicate the absence of state.
+  void TraceCompileTimeString(const char* state) {
+    TraceImpl(state, false);
+  }
+
+ protected:
+  bool is_enabled() const {
+    bool result = false;
+    TRACE_EVENT_CATEGORY_GROUP_ENABLED(category, &result);  // Cached.
+    return result;
+  }
+
+ private:
+  void TraceImpl(const char* state, bool need_copy) {
+    if (slice_is_open_) {
+      TRACE_EVENT_ASYNC_END0(category, name_, object_);
+      slice_is_open_ = false;
+    }
+    if (!state || !is_enabled())
+      return;
+
+    // Trace viewer logic relies on subslice starting at the exact same time
+    // as the async event.
+    base::TimeTicks now = TRACE_TIME_TICKS_NOW();
+    TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP0(category, name_, object_, now);
+    if (need_copy) {
+      TRACE_EVENT_ASYNC_STEP_INTO_WITH_TIMESTAMP0(category, name_, object_,
+                                                  TRACE_STR_COPY(state), now);
+    } else {
+      TRACE_EVENT_ASYNC_STEP_INTO_WITH_TIMESTAMP0(category, name_, object_,
+                                                  state, now);
+    }
+    slice_is_open_ = true;
+  }
+
+  const char* const name_;    // Not owned.
+  const void* const object_;  // Not owned.
+
+  // We have to track whether slice is open to avoid confusion since assignment,
+  // "absent" state and OnTraceLogEnabled can happen anytime.
+  bool slice_is_open_;
+
+  DISALLOW_COPY_AND_ASSIGN(StateTracer);
+};
+
+// TODO(kraynov): Rename to something less generic and reflecting
+// the enum nature of such variables.
+template <typename T, const char* category>
+class TraceableState : public TraceableVariable, private StateTracer<category> {
+ public:
+  // Converter must return compile-time defined const strings because tracing
+  // will not make a copy of them.
   using ConverterFuncPtr = const char* (*)(T);
 
   TraceableState(T initial_state,
@@ -91,19 +160,13 @@ class TraceableState : public TraceableVariable {
                  TraceableVariableController* controller,
                  ConverterFuncPtr converter)
       : TraceableVariable(controller),
-        name_(name),
-        object_(object),
+        StateTracer<category>(name, object),
         converter_(converter),
-        state_(initial_state),
-        slice_is_open_(false) {
-    internal::ValidateTracingCategory(category);
+        state_(initial_state) {
     Trace();
   }
 
-  ~TraceableState() override {
-    if (slice_is_open_)
-      TRACE_EVENT_ASYNC_END0(category, name_, object_);
-  }
+  ~TraceableState() override = default;
 
   TraceableState& operator =(const T& value) {
     Assign(value);
@@ -142,40 +205,19 @@ class TraceableState : public TraceableVariable {
       return;
     }
 
-    if (slice_is_open_) {
-      TRACE_EVENT_ASYNC_END0(category, name_, object_);
-      slice_is_open_ = false;
+    // Null state string means the absence of state.
+    const char* state_str = nullptr;
+    if (StateTracer<category>::is_enabled()) {
+      state_str = converter_(state_);
     }
-    if (!is_enabled())
-      return;
-    // Converter returns nullptr to indicate the absence of state.
-    const char* state_str = converter_(state_);
-    if (!state_str)
-      return;
 
-    // Trace viewer logic relies on subslice starting at the exact same time
-    // as the async event.
-    base::TimeTicks now = TRACE_TIME_TICKS_NOW();
-    TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP0(category, name_, object_, now);
-    TRACE_EVENT_ASYNC_STEP_INTO_WITH_TIMESTAMP0(category, name_, object_,
-                                                state_str, now);
-    slice_is_open_ = true;
+    // We have to be explicit to deal with two-phase name lookup in templates:
+    // http://blog.llvm.org/2009/12/dreaded-two-phase-name-lookup.html
+    StateTracer<category>::TraceCompileTimeString(state_str);
   }
 
-  bool is_enabled() const {
-    bool result = false;
-    TRACE_EVENT_CATEGORY_GROUP_ENABLED(category, &result);  // Cached.
-    return result;
-  }
-
-  const char* const name_;  // Not owned.
-  const void* const object_;  // Not owned.
   const ConverterFuncPtr converter_;
-
   T state_;
-  // We have to track whether slice is open to avoid confusion since assignment,
-  // "absent" state and OnTraceLogEnabled can happen anytime.
-  bool slice_is_open_;
 
   DISALLOW_COPY(TraceableState);
 };

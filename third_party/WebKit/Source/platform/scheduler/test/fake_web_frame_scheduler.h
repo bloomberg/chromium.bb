@@ -113,6 +113,7 @@ class FakeWebFrameScheduler : public WebFrameScheduler {
   void SetPaused(bool) override {}
   void SetCrossOrigin(bool) override {}
   bool IsCrossOrigin() const override { return is_cross_origin_; }
+  void TraceUrlChange(const String&) override {}
   WebFrameScheduler::FrameType GetFrameType() const override {
     return frame_type_;
   }

@@ -122,6 +122,7 @@ WebFrameSchedulerImpl::WebFrameSchedulerImpl(
                     this,
                     &tracing_controller_,
                     CrossOriginStateToString),
+      url_tracer_("WebFrameScheduler.URL", this),
       frame_type_(frame_type),
       active_connection_count_(0),
       weak_factory_(this) {
@@ -226,6 +227,10 @@ void WebFrameSchedulerImpl::SetCrossOrigin(bool cross_origin) {
 
 bool WebFrameSchedulerImpl::IsCrossOrigin() const {
   return cross_origin_;
+}
+
+void WebFrameSchedulerImpl::TraceUrlChange(const String& url) {
+  url_tracer_.TraceString(url);
 }
 
 WebFrameScheduler::FrameType WebFrameSchedulerImpl::GetFrameType() const {
