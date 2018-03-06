@@ -5229,4 +5229,18 @@ TEST_P(PaintPropertyTreeBuilderTest, SVGRootWithMask) {
   EXPECT_TRUE(root.FirstFragment().PaintProperties()->Mask());
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, SVGRootWithCSSMask) {
+  // SPv1 has no effect tree.
+  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
+    return;
+  SetBodyInnerHTML(R"HTML(
+    <svg id="svg" width="16" height="16" style="-webkit-mask-image: url(fake);">
+    </svg>
+  )HTML");
+
+  const LayoutSVGRoot& root =
+      *ToLayoutSVGRoot(GetLayoutObjectByElementId("svg"));
+  EXPECT_TRUE(root.FirstFragment().PaintProperties()->Mask());
+}
+
 }  // namespace blink

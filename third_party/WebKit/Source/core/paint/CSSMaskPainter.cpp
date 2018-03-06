@@ -22,10 +22,12 @@ Optional<IntRect> CSSMaskPainter::MaskBoundingBox(
     SVGResources* resources =
         SVGResourcesCache::CachedResourcesForLayoutObject(object);
     LayoutSVGResourceMasker* masker = resources ? resources->Masker() : nullptr;
-    if (!masker)
-      return WTF::nullopt;
-    return EnclosingIntRect(masker->ResourceBoundingBox(&object));
+    if (masker)
+      return EnclosingIntRect(masker->ResourceBoundingBox(&object));
   }
+
+  if (object.IsSVGChild())
+    return WTF::nullopt;
 
   const ComputedStyle& style = object.StyleRef();
   if (!style.HasMask())
