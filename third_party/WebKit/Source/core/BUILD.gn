@@ -764,7 +764,7 @@ css_properties("make_core_generated_css_longhand_property_classes") {
     "$blink_core_output_dir/css/properties/longhands/pointer_events.h",
     "$blink_core_output_dir/css/properties/longhands/position.h",
     "$blink_core_output_dir/css/properties/longhands/quotes.h",
-    "$blink_core_output_dir/css/properties/longhands/R.h",
+    "$blink_core_output_dir/css/properties/longhands/r.h",
     "$blink_core_output_dir/css/properties/longhands/resize.h",
     "$blink_core_output_dir/css/properties/longhands/right.h",
     "$blink_core_output_dir/css/properties/longhands/rotate.h",
