@@ -16,6 +16,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.FrameLayout;
@@ -66,6 +67,19 @@ public class EditorTextField extends FrameLayout implements EditorFieldView, Vie
         mInput.setText(fieldModel.getValue());
         mInput.setContentDescription(label);
         mInput.setOnEditorActionListener(mEditorActionListener);
+        // AutoCompleteTextView requires and explicit onKeyListener to show the OSK upon receiving
+        // a KEYCODE_DPAD_CENTER.
+        mInput.setOnKeyListener((v, keyCode, event) -> {
+            if (!(keyCode == KeyEvent.KEYCODE_DPAD_CENTER
+                        && event.getAction() == KeyEvent.ACTION_UP)) {
+                return false;
+            }
+            InputMethodManager imm = (InputMethodManager) v.getContext().getSystemService(
+                    Context.INPUT_METHOD_SERVICE);
+            imm.viewClicked(v);
+            imm.showSoftInput(v, 0);
+            return true;
+        });
 
         mIconsLayer = findViewById(R.id.icons_layer);
         mIconsLayer.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
