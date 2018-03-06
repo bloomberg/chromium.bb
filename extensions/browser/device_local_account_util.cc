@@ -25,6 +25,7 @@ const char* const kPublicSessionWhitelist[] = {
     "pmnllmkmjilbojkpgplbdmckghmaocjh",  // Scan app by François Beaufort
     "haeblkpifdemlfnkogkipmghfcbonief",  // Charismathics Smart Card Middleware
     "mpnkhdpphjiihmlmkcamhpogecnnfffa",  // Service NSW Kiosk Utility
+    "npilppbicblkkgjfnbmibmhhgjhobpll",  // QwickACCESS
 
     // Libraries:
     "aclofikceldphonlfmghmimkodjdmhck",  // Ancoris login component
