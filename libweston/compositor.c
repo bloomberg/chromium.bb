@@ -2495,8 +2495,6 @@ weston_output_finish_frame(struct weston_output *output,
 	struct timespec now;
 	int64_t msec_rel;
 
-	TL_POINT("core_repaint_finished", TLP_OUTPUT(output),
-		 TLP_VBLANK(stamp), TLP_END);
 
 	assert(output->repaint_status == REPAINT_AWAITING_COMPLETION);
 	assert(stamp || (presented_flags & WP_PRESENTATION_FEEDBACK_INVALID));
@@ -2510,6 +2508,9 @@ weston_output_finish_frame(struct weston_output *output,
 		output->next_repaint = now;
 		goto out;
 	}
+
+	TL_POINT("core_repaint_finished", TLP_OUTPUT(output),
+		 TLP_VBLANK(stamp), TLP_END);
 
 	refresh_nsec = millihz_to_nsec(output->current_mode->refresh);
 	weston_presentation_feedback_present_list(&output->feedback_list,
