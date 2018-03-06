@@ -109,8 +109,10 @@ void AccountChooserDialogView::ShowAccountChooser() {
 }
 
 void AccountChooserDialogView::ControllerGone() {
-  controller_ = nullptr;
+  // During Widget::Close() phase some accessibility event may occur. Thus,
+  // |controller_| should be kept around.
   GetWidget()->Close();
+  controller_ = nullptr;
 }
 
 ui::ModalType AccountChooserDialogView::GetModalType() const {
@@ -170,15 +172,22 @@ base::string16 AccountChooserDialogView::GetDialogButtonLabel(
 void AccountChooserDialogView::StyledLabelLinkClicked(views::StyledLabel* label,
                                                       const gfx::Range& range,
                                                       int event_flags) {
-  controller_->OnSmartLockLinkClicked();
+  // On Mac the button click event may be dispatched after the dialog was
+  // hidden. Thus, the controller can be NULL.
+  if (controller_)
+    controller_->OnSmartLockLinkClicked();
 }
 
 void AccountChooserDialogView::ButtonPressed(views::Button* sender,
                                              const ui::Event& event) {
   CredentialsItemView* view = static_cast<CredentialsItemView*>(sender);
-  controller_->OnChooseCredentials(
-      *view->form(),
-      password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD);
+  // On Mac the button click event may be dispatched after the dialog was
+  // hidden. Thus, the controller can be NULL.
+  if (controller_) {
+    controller_->OnChooseCredentials(
+        *view->form(),
+        password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD);
+  }
 }
 
 void AccountChooserDialogView::InitWindow() {
