@@ -425,12 +425,9 @@ void XSSAuditor::Init(Document* document,
          xss_protection_header == kBlockReflectedXSS) &&
         !report_url.IsEmpty()) {
       xss_protection_report_url = document->CompleteURL(report_url);
-      // Note: Because violation reports may now only be sent same-origin,
-      // we no longer need to check for a mixed-content report URL.
-      if (!SecurityOrigin::Create(xss_protection_report_url)
-               ->IsSameSchemeHostPort(document->GetSecurityOrigin())) {
-        error_details =
-            "reporting URL is not same scheme, host, and port as page";
+      if (MixedContentChecker::IsMixedContent(document->GetSecurityOrigin(),
+                                              xss_protection_report_url)) {
+        error_details = "insecure reporting URL for secure page";
         xss_protection_header = kReflectedXSSInvalid;
         xss_protection_report_url = KURL();
       }
