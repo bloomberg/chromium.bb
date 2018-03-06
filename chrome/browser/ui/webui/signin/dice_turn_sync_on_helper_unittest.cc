@@ -428,6 +428,7 @@ TEST_F(DiceTurnSyncOnHelperTest, CanOfferSigninErrorKeepAccount) {
   // Signin flow.
   CreateDiceTurnOnSyncHelper(
       DiceTurnSyncOnHelper::SigninAbortedMode::KEEP_ACCOUNT);
+  base::RunLoop().RunUntilIdle();
   // Check expectations.
   EXPECT_FALSE(signin_manager()->IsAuthenticated());
   EXPECT_TRUE(token_service()->RefreshTokenIsAvailable(account_id()));
@@ -443,6 +444,7 @@ TEST_F(DiceTurnSyncOnHelperTest, CanOfferSigninErrorRemoveAccount) {
   // Signin flow.
   CreateDiceTurnOnSyncHelper(
       DiceTurnSyncOnHelper::SigninAbortedMode::REMOVE_ACCOUNT);
+  base::RunLoop().RunUntilIdle();
   // Check expectations.
   EXPECT_FALSE(signin_manager()->IsAuthenticated());
   EXPECT_FALSE(token_service()->RefreshTokenIsAvailable(account_id()));
