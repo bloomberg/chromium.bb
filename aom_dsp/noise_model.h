@@ -17,6 +17,7 @@ extern "C" {
 #endif  // __cplusplus
 
 #include <stdint.h>
+#include "aom_dsp/grain_synthesis.h"
 
 /*!\brief Wrapper of data required to represent linear system of eqns and soln.
  */
@@ -107,10 +108,12 @@ int aom_noise_strength_solver_solve(aom_noise_strength_solver_t *solver);
 
 /*!\brief Fits a reduced piecewise linear lut to the internal solution
  *
+ * \param[in] max_num_points  The maximum number of output points
  * \param[out] lut  The output piecewise linear lut.
  */
 int aom_noise_strength_solver_fit_piecewise(
-    const aom_noise_strength_solver_t *solver, aom_noise_strength_lut_t *lut);
+    const aom_noise_strength_solver_t *solver, int max_num_points,
+    aom_noise_strength_lut_t *lut);
 
 /*!\brief Helper for holding precomputed data for finding flat blocks.
  *
@@ -222,6 +225,16 @@ aom_noise_status_t aom_noise_model_update(
     aom_noise_model_t *const noise_model, const uint8_t *const data[3],
     const uint8_t *const denoised[3], int w, int h, int strides[3],
     int chroma_sub_log2[2], const uint8_t *const flat_blocks, int block_size);
+
+/*!\brief Converts the noise_model parameters to the corresponding
+ *    grain_parameters.
+ *
+ * The noise structs in this file are suitable for estimation (e.g., using
+ * floats), but the grain parameters in the bitstream are quantized. This
+ * function does the conversion by selecting the correct quantization levels.
+ */
+int aom_noise_model_get_grain_parameters(aom_noise_model_t *const noise_model,
+                                         aom_film_grain_t *film_grain);
 
 #ifdef __cplusplus
 }  // extern "C"

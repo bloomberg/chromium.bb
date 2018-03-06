@@ -173,13 +173,17 @@ double aom_noise_strength_lut_eval(const aom_noise_strength_lut_t *lut,
   return lut->points[lut->num_points - 1][1];
 }
 
+static double noise_strength_solver_get_bin_index(
+    const aom_noise_strength_solver_t *solver, double value) {
+  const double val =
+      fclamp(value, solver->min_intensity, solver->max_intensity);
+  const double range = solver->max_intensity - solver->min_intensity;
+  return (solver->num_bins - 1) * (val - solver->min_intensity) / range;
+}
+
 void aom_noise_strength_solver_add_measurement(
     aom_noise_strength_solver_t *solver, double block_mean, double noise_std) {
-  const double val =
-      AOMMIN(AOMMAX(block_mean, solver->min_intensity), solver->max_intensity);
-  const double range = solver->max_intensity - solver->min_intensity;
-  const double bin =
-      (solver->num_bins - 1) * (val - solver->min_intensity) / range;
+  const double bin = noise_strength_solver_get_bin_index(solver, block_mean);
   const int bin_i0 = (int)floor(bin);
   const int bin_i1 = AOMMIN(solver->num_bins - 1, bin_i0 + 1);
   const double a = bin - bin_i0;
@@ -256,70 +260,81 @@ double aom_noise_strength_solver_get_center(
   return ((double)i) / (n - 1) * range + solver->min_intensity;
 }
 
-int aom_noise_strength_solver_fit_piecewise(
-    const aom_noise_strength_solver_t *solver, aom_noise_strength_lut_t *lut) {
-  const double kTolerance = 0.1;
-  int low_point = 0;
-  aom_equation_system_t sys;
-  if (!equation_system_init(&sys, 2)) {
-    fprintf(stderr, "Failed to init equation system\n");
-    return 0;
+// Computes the residual if a point were to be removed from the lut. This is
+// calculated as the area between the output of the solver and the line segment
+// that would be formed between [x_{i - 1}, x_{i + 1}).
+static void update_piecewise_linear_residual(
+    const aom_noise_strength_solver_t *solver,
+    const aom_noise_strength_lut_t *lut, double *residual, int start, int end) {
+  const double dx =
+      (solver->max_intensity - solver->min_intensity) / solver->num_bins;
+  for (int i = AOMMAX(start, 1); i < AOMMIN(end, lut->num_points - 1); ++i) {
+    const int lower = AOMMAX(0, (int)floor(noise_strength_solver_get_bin_index(
+                                    solver, lut->points[i - 1][0])));
+    const int upper = AOMMIN(solver->num_bins - 1,
+                             (int)ceil(noise_strength_solver_get_bin_index(
+                                 solver, lut->points[i + 1][0])));
+    double r = 0;
+    for (int j = lower; j <= upper; ++j) {
+      const double x = aom_noise_strength_solver_get_center(solver, j);
+      if (x < lut->points[i - 1][0]) continue;
+      if (x >= lut->points[i + 1][0]) continue;
+      const double y = solver->eqns.x[j];
+      const double a = (x - lut->points[i - 1][0]) /
+                       (lut->points[i + 1][0] - lut->points[i - 1][0]);
+      const double estimate_y =
+          lut->points[i - 1][1] * (1.0 - a) + lut->points[i + 1][1] * a;
+      r += fabs(y - estimate_y);
+    }
+    residual[i] = r * dx;
   }
+}
 
-  if (!aom_noise_strength_lut_init(lut, solver->num_bins + 1)) {
+int aom_noise_strength_solver_fit_piecewise(
+    const aom_noise_strength_solver_t *solver, int max_output_points,
+    aom_noise_strength_lut_t *lut) {
+  const double kTolerance = 0.00625;
+  if (!aom_noise_strength_lut_init(lut, solver->num_bins)) {
     fprintf(stderr, "Failed to init lut\n");
     return 0;
   }
+  for (int i = 0; i < solver->num_bins; ++i) {
+    lut->points[i][0] = aom_noise_strength_solver_get_center(solver, i);
+    lut->points[i][1] = solver->eqns.x[i];
+  }
+  if (max_output_points < 0) {
+    max_output_points = solver->num_bins;
+  }
 
-  lut->points[0][0] = aom_noise_strength_solver_get_center(solver, 0);
-  lut->points[0][1] = solver->eqns.x[0];
-  lut->num_points = 1;
+  double *residual = aom_malloc(solver->num_bins * sizeof(*residual));
+  memset(residual, 0, sizeof(*residual) * solver->num_bins);
 
-  while (low_point < solver->num_bins - 1) {
-    int i = low_point;
-    equation_system_clear(&sys);
-    for (; i < solver->num_bins; ++i) {
-      int x = i - low_point;
-      double b = 1;
-      sys.A[0 * 2 + 0] += x * x;
-      sys.A[0 * 2 + 1] += x * b;
-      sys.A[1 * 2 + 0] += x * b;
-      sys.A[1 * 2 + 1] += b * b;
-      sys.b[0] += x * solver->eqns.x[i];
-      sys.b[1] += b * solver->eqns.x[i];
+  update_piecewise_linear_residual(solver, lut, residual, 0, solver->num_bins);
 
-      if (x > 1) {
-        double res = 0;
-        int k;
-        equation_system_solve(&sys);
-
-        for (k = low_point; k <= i; ++k) {
-          double y;
-          x = k - low_point;
-          y = sys.x[0] * x + sys.x[1];
-          y -= solver->eqns.x[k];
-          res += y * y;
-        }
-        const int n = i - low_point + 1;
-        if (sqrt(res / n) > kTolerance) {
-          low_point = i - 1;
-
-          lut->points[lut->num_points][0] =
-              aom_noise_strength_solver_get_center(solver, i - 1);
-          lut->points[lut->num_points][1] = solver->eqns.x[i - 1];
-          lut->num_points++;
-        }
+  // Greedily remove points if there are too many or if it doesn't hurt local
+  // approximation (never remove the end points)
+  while (lut->num_points > 2) {
+    int min_index = 1;
+    for (int j = 1; j < lut->num_points - 1; ++j) {
+      if (residual[j] < residual[min_index]) {
+        min_index = j;
       }
     }
-    if (i == solver->num_bins) {
-      lut->points[lut->num_points][0] =
-          aom_noise_strength_solver_get_center(solver, i - 1);
-      lut->points[lut->num_points][1] = solver->eqns.x[i - 1];
-      lut->num_points++;
+    double dx = lut->points[min_index + 1][0] - lut->points[min_index - 1][0];
+    double avg_residual = residual[min_index] / dx;
+    if (lut->num_points <= max_output_points && avg_residual > kTolerance) {
       break;
     }
+
+    const int num_remaining = lut->num_points - min_index - 1;
+    memmove(lut->points + min_index, lut->points + min_index + 1,
+            sizeof(lut->points[0]) * num_remaining);
+    lut->num_points--;
+
+    update_piecewise_linear_residual(solver, lut, residual, min_index - 1,
+                                     min_index + 1);
   }
-  equation_system_free(&sys);
+  aom_free(residual);
   return 1;
 }
 
@@ -846,4 +861,98 @@ aom_noise_status_t aom_noise_model_update(
 
   return y_model_different ? AOM_NOISE_STATUS_DIFFERENT_NOISE_TYPE
                            : AOM_NOISE_STATUS_OK;
+}
+
+int aom_noise_model_get_grain_parameters(aom_noise_model_t *const noise_model,
+                                         aom_film_grain_t *film_grain) {
+  if (noise_model->params.lag > 3) {
+    fprintf(stderr, "params.lag = %d > 3\n", noise_model->params.lag);
+    return 0;
+  }
+  memset(film_grain, 0, sizeof(*film_grain));
+  film_grain->ar_coeff_lag = noise_model->params.lag;
+
+  // Convert the scaling functions to 8 bit values
+  aom_noise_strength_lut_t scaling_points[3];
+  aom_noise_strength_solver_fit_piecewise(
+      &noise_model->combined_state[0].strength_solver, 14, scaling_points + 0);
+  aom_noise_strength_solver_fit_piecewise(
+      &noise_model->combined_state[1].strength_solver, 10, scaling_points + 1);
+  aom_noise_strength_solver_fit_piecewise(
+      &noise_model->combined_state[2].strength_solver, 10, scaling_points + 2);
+
+  double max_scaling_value = 1e-4;
+  for (int c = 0; c < 3; ++c) {
+    for (int i = 0; i < scaling_points[c].num_points; ++i) {
+      max_scaling_value =
+          AOMMAX(scaling_points[c].points[i][1], max_scaling_value);
+    }
+  }
+
+  // Scaling_shift values are in the range [8,11]
+  const int max_scaling_value_log2 =
+      clamp((int)floor(log2(max_scaling_value) + 1), 2, 5);
+  film_grain->scaling_shift = 5 + (8 - max_scaling_value_log2);
+  const double scale_factor = 1 << (8 - max_scaling_value_log2);
+  film_grain->num_y_points = scaling_points[0].num_points;
+  film_grain->num_cb_points = scaling_points[1].num_points;
+  film_grain->num_cr_points = scaling_points[2].num_points;
+
+  int(*film_grain_scaling[3])[2] = {
+    film_grain->scaling_points_y,
+    film_grain->scaling_points_cb,
+    film_grain->scaling_points_cr,
+  };
+  for (int c = 0; c < 3; c++) {
+    for (int i = 0; i < scaling_points[c].num_points; ++i) {
+      film_grain_scaling[c][i][0] = (int)(scaling_points[c].points[i][0] + 0.5);
+      film_grain_scaling[c][i][1] = clamp(
+          (int)(scale_factor * scaling_points[c].points[i][1] + 0.5), 0, 255);
+    }
+  }
+  aom_noise_strength_lut_free(scaling_points + 0);
+  aom_noise_strength_lut_free(scaling_points + 1);
+  aom_noise_strength_lut_free(scaling_points + 2);
+
+  // Convert the ar_coeffs into 8-bit values
+  double max_coeff = 1e-4, min_coeff = -1e-4;
+  for (int c = 0; c < 3; c++) {
+    aom_equation_system_t *eqns = &noise_model->combined_state[c].eqns;
+    for (int i = 0; i < eqns->n; ++i) {
+      max_coeff = AOMMAX(max_coeff, eqns->x[i]);
+      min_coeff = AOMMIN(min_coeff, eqns->x[i]);
+    }
+  }
+  // Shift value: AR coeffs range (values 6-9)
+  // 6: [-2, 2),  7: [-1, 1), 8: [-0.5, 0.5), 9: [-0.25, 0.25)
+  film_grain->ar_coeff_shift =
+      clamp(7 - (int)AOMMAX(1 + floor(log2(max_coeff)), ceil(log2(-min_coeff))),
+            6, 9);
+  double scale_ar_coeff = 1 << film_grain->ar_coeff_shift;
+  int *ar_coeffs[3] = {
+    film_grain->ar_coeffs_y,
+    film_grain->ar_coeffs_cb,
+    film_grain->ar_coeffs_cr,
+  };
+  for (int c = 0; c < 3; ++c) {
+    aom_equation_system_t *eqns = &noise_model->combined_state[c].eqns;
+    for (int i = 0; i < eqns->n; ++i) {
+      ar_coeffs[c][i] =
+          clamp((int)round(scale_ar_coeff * eqns->x[i]), -128, 127);
+    }
+  }
+
+  // At the moment, the noise modeling code assumes that the chroma scaling
+  // functions are a function of luma.
+  film_grain->cb_mult = 128;       // 8 bits
+  film_grain->cb_luma_mult = 192;  // 8 bits
+  film_grain->cb_offset = 256;     // 9 bits
+
+  film_grain->cr_mult = 128;       // 8 bits
+  film_grain->cr_luma_mult = 192;  // 8 bits
+  film_grain->cr_offset = 256;     // 9 bits
+
+  film_grain->chroma_scaling_from_luma = 0;
+  film_grain->grain_scale_shift = 0;
+  return 1;
 }
