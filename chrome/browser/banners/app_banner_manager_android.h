@@ -33,6 +33,12 @@ class AppBannerUiDelegateAndroid;
 // Otherwise, if no related applications were detected, or their manifest
 // entries were invalid, this class falls back to trying to verify if a web app
 // banner is suitable.
+//
+// The code path forks in PerformInstallableCheck(); for a native app, it will
+// eventually call to OnAppIconFetched(), while a web app calls through to
+// OnDidPerformInstallableCheck(). Each of these methods then calls
+// SendBannerPromptRequest(), which combines the forked code paths back
+// together.
 class AppBannerManagerAndroid
     : public AppBannerManager,
       public content::WebContentsUserData<AppBannerManagerAndroid> {

@@ -102,7 +102,7 @@ public class AppBannerUiDelegateAndroid
         createInstallerDelegate(this);
         mDialog = new AddToHomescreenDialog(mTab.getActivity(), this);
         mDialog.show();
-        mDialog.onUserTitleAvailable(title, appData.rating());
+        mDialog.onUserTitleAvailable(title, appData.installButtonText(), appData.rating());
         mDialog.onIconAvailable(iconBitmap);
         return true;
     }
