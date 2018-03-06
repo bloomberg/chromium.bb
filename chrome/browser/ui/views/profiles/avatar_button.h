@@ -45,10 +45,8 @@ class AvatarButton : public views::MenuButton,
   gfx::Size CalculatePreferredSize() const override;
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override;
-  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
-#if defined(OS_MACOSX)
   SkColor GetInkDropBaseColor() const override;
-#endif
+  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
 
  protected:
   // views::LabelButton:

@@ -128,18 +128,6 @@ gfx::Size BrowserNonClientFrameViewMac::GetMinimumSize() const {
 // BrowserNonClientFrameViewMac, protected:
 
 // views::View:
-void BrowserNonClientFrameViewMac::OnPaint(gfx::Canvas* canvas) {
-  if (!browser_view()->IsBrowserTypeNormal())
-    return;
-
-  canvas->DrawColor(GetFrameColor());
-
-  if (!GetThemeProvider()->UsingSystemTheme())
-    PaintThemedFrame(canvas);
-
-  if (browser_view()->IsToolbarVisible())
-    PaintToolbarBackground(canvas);
-}
 
 void BrowserNonClientFrameViewMac::Layout() {
   DCHECK(browser_view());
@@ -164,6 +152,19 @@ void BrowserNonClientFrameViewMac::Layout() {
                                      button_size.height());
   }
   BrowserNonClientFrameView::Layout();
+}
+
+void BrowserNonClientFrameViewMac::OnPaint(gfx::Canvas* canvas) {
+  if (!browser_view()->IsBrowserTypeNormal())
+    return;
+
+  canvas->DrawColor(GetFrameColor());
+
+  if (!GetThemeProvider()->UsingSystemTheme())
+    PaintThemedFrame(canvas);
+
+  if (browser_view()->IsToolbarVisible())
+    PaintToolbarBackground(canvas);
 }
 
 // BrowserNonClientFrameView:
