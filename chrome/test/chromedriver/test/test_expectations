@@ -293,6 +293,7 @@ _OS_NEGATIVE_FILTER['android:chromium'] = (
         'ElementAttributeTest.testCanRetrieveTheCurrentValueOfATextFormField_emailInput',
         'ElementAttributeTest.testShouldReturnTrueForPresentBooleanAttributes',
         'ElementAttributeTest.testShouldReturnValueOfOnClickAttribute',
+        'ElementAttributeTest.testCanRetrieveTheCurrentValueOfATextFormField_textInput',
         'JavascriptEnabledDriverTest.testShouldBeAbleToFindElementAfterJavascriptCausesANewPageToLoad',
         'JavascriptEnabledDriverTest.testShouldBeAbleToSwitchToFocusedElement',
         'JavascriptEnabledDriverTest.testShouldBeAbleToDetermineTheLocationOfAnElement',
