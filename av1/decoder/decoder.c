@@ -245,13 +245,9 @@ static void swap_frame_buffers(AV1Decoder *pbi) {
   pbi->hold_ref_buf = 0;
   cm->frame_to_show = get_frame_new_buffer(cm);
 
-  // TODO(zoeliu): To fix the ref frame buffer update for the scenario of
-  //               cm->frame_parellel_decode == 1
-  if (!cm->frame_parallel_decode || !cm->show_frame) {
-    lock_buffer_pool(pool);
-    --frame_bufs[cm->new_fb_idx].ref_count;
-    unlock_buffer_pool(pool);
-  }
+  lock_buffer_pool(pool);
+  --frame_bufs[cm->new_fb_idx].ref_count;
+  unlock_buffer_pool(pool);
 
   // Invalidate these references until the next frame starts.
   for (ref_index = 0; ref_index < INTER_REFS_PER_FRAME; ref_index++) {
@@ -291,8 +287,7 @@ int av1_receive_compressed_data(AV1Decoder *pbi, size_t size,
 
   // Check if the previous frame was a frame without any references to it.
   // Release frame buffer if not decoding in frame parallel mode.
-  if (!cm->frame_parallel_decode && cm->new_fb_idx >= 0 &&
-      frame_bufs[cm->new_fb_idx].ref_count == 0)
+  if (cm->new_fb_idx >= 0 && frame_bufs[cm->new_fb_idx].ref_count == 0)
     pool->release_fb_cb(pool->cb_priv,
                         &frame_bufs[cm->new_fb_idx].raw_frame_buffer);
 
@@ -304,18 +299,7 @@ int av1_receive_compressed_data(AV1Decoder *pbi, size_t size,
   cm->cur_frame = &pool->frame_bufs[cm->new_fb_idx];
 
   pbi->hold_ref_buf = 0;
-  if (cm->frame_parallel_decode) {
-    AVxWorker *const worker = pbi->frame_worker_owner;
-    av1_frameworker_lock_stats(worker);
-    frame_bufs[cm->new_fb_idx].frame_worker_owner = worker;
-    // Reset decoding progress.
-    pbi->cur_buf = &frame_bufs[cm->new_fb_idx];
-    pbi->cur_buf->row = -1;
-    pbi->cur_buf->col = -1;
-    av1_frameworker_unlock_stats(worker);
-  } else {
-    pbi->cur_buf = &frame_bufs[cm->new_fb_idx];
-  }
+  pbi->cur_buf = &frame_bufs[cm->new_fb_idx];
 
   if (setjmp(cm->error.jmp)) {
     const AVxWorkerInterface *const winterface = aom_get_worker_interface();
@@ -402,7 +386,7 @@ int av1_receive_compressed_data(AV1Decoder *pbi, size_t size,
     // NOTE: It is not supposed to ref to any frame not used as reference
     if (cm->is_reference_frame) cm->prev_frame = cm->cur_frame;
 
-    if (cm->seg.enabled && !cm->frame_parallel_decode) {
+    if (cm->seg.enabled) {
 #if CONFIG_SEGMENT_PRED_LAST
       if (cm->prev_frame && (cm->mi_rows == cm->prev_frame->mi_rows) &&
           (cm->mi_cols == cm->prev_frame->mi_cols)) {
@@ -417,28 +401,12 @@ int av1_receive_compressed_data(AV1Decoder *pbi, size_t size,
   }
 
   // Update progress in frame parallel decode.
-  if (cm->frame_parallel_decode) {
-    // Need to lock the mutex here as another thread may
-    // be accessing this buffer.
-    AVxWorker *const worker = pbi->frame_worker_owner;
-    FrameWorkerData *const frame_worker_data = worker->data1;
-    av1_frameworker_lock_stats(worker);
-
-    if (cm->show_frame) {
-      cm->current_video_frame++;
-    }
-    frame_worker_data->frame_decoded = 1;
-    frame_worker_data->frame_context_ready = 1;
-    av1_frameworker_signal_stats(worker);
-    av1_frameworker_unlock_stats(worker);
-  } else {
-    cm->last_width = cm->width;
-    cm->last_height = cm->height;
-    cm->last_tile_cols = cm->tile_cols;
-    cm->last_tile_rows = cm->tile_rows;
-    if (cm->show_frame) {
-      cm->current_video_frame++;
-    }
+  cm->last_width = cm->width;
+  cm->last_height = cm->height;
+  cm->last_tile_cols = cm->tile_cols;
+  cm->last_tile_rows = cm->tile_rows;
+  if (cm->show_frame) {
+    cm->current_video_frame++;
   }
 
   cm->error.setjmp = 0;

@@ -440,7 +440,6 @@ typedef struct AV1Common {
   struct loopfilter lf;
   struct segmentation seg;
   int all_lossless;
-  int frame_parallel_decode;  // frame-based threading.
 
   int reduced_tx_set_used;
 

@@ -62,8 +62,6 @@ struct aom_codec_alg_priv {
   int decode_tile_col;
   unsigned int tile_mode;
 
-  // Frame parallel related.
-  int frame_parallel_decode;  // frame-based threading.
   AVxWorker *frame_workers;
   int num_frame_workers;
   int next_submit_worker_id;
@@ -107,12 +105,7 @@ static aom_codec_err_t decoder_init(aom_codec_ctx_t *ctx,
     ctx->priv = (aom_codec_priv_t *)priv;
     ctx->priv->init_flags = ctx->init_flags;
     priv->flushed = 0;
-    // Only do frame parallel decode when threads > 1.
-    priv->frame_parallel_decode =
-        (ctx->config.dec && (ctx->config.dec->threads > 1) &&
-         (ctx->init_flags & AOM_CODEC_USE_FRAME_THREADING))
-            ? 1
-            : 0;
+
     // TODO(tdaede): this should not be exposed to the API
     priv->cfg.allow_lowbitdepth = CONFIG_LOWBITDEPTH;
     if (ctx->config.dec) {
@@ -304,25 +297,7 @@ static int frame_worker_hook(void *arg1, void *arg2) {
       frame_worker_data->pbi, frame_worker_data->data_size, &data);
   frame_worker_data->data_end = data;
 
-  if (frame_worker_data->pbi->common.frame_parallel_decode) {
-    // In frame parallel decoding, a worker thread must successfully decode all
-    // the compressed data.
-    if (frame_worker_data->result != 0 ||
-        frame_worker_data->data + frame_worker_data->data_size - 1 > data) {
-      AVxWorker *const worker = frame_worker_data->pbi->frame_worker_owner;
-      BufferPool *const pool = frame_worker_data->pbi->common.buffer_pool;
-      // Signal all the other threads that are waiting for this frame.
-      av1_frameworker_lock_stats(worker);
-      frame_worker_data->frame_context_ready = 1;
-      lock_buffer_pool(pool);
-      frame_worker_data->pbi->cur_buf->buf.corrupted = 1;
-      unlock_buffer_pool(pool);
-      frame_worker_data->pbi->need_resync = 1;
-      av1_frameworker_signal_stats(worker);
-      av1_frameworker_unlock_stats(worker);
-      return 0;
-    }
-  } else if (frame_worker_data->result != 0) {
+  if (frame_worker_data->result != 0) {
     // Check decode result in serial decode.
     frame_worker_data->pbi->cur_buf->buf.corrupted = 1;
     frame_worker_data->pbi->need_resync = 1;
@@ -342,8 +317,7 @@ static aom_codec_err_t init_decoder(aom_codec_alg_priv_t *ctx) {
   ctx->frame_cache_write = 0;
   ctx->num_cache_frames = 0;
   ctx->need_resync = 1;
-  ctx->num_frame_workers =
-      (ctx->frame_parallel_decode == 1) ? ctx->cfg.threads : 1;
+  ctx->num_frame_workers = 1;
   if (ctx->num_frame_workers > MAX_DECODE_THREADS)
     ctx->num_frame_workers = MAX_DECODE_THREADS;
   ctx->available_threads = ctx->num_frame_workers;
@@ -403,11 +377,8 @@ static aom_codec_err_t init_decoder(aom_codec_alg_priv_t *ctx) {
 
     // If decoding in serial mode, FrameWorker thread could create tile worker
     // thread or loopfilter thread.
-    frame_worker_data->pbi->max_threads =
-        (ctx->frame_parallel_decode == 0) ? ctx->cfg.threads : 0;
+    frame_worker_data->pbi->max_threads = ctx->cfg.threads;
     frame_worker_data->pbi->inv_tile_order = ctx->invert_tile_order;
-    frame_worker_data->pbi->common.frame_parallel_decode =
-        ctx->frame_parallel_decode;
     frame_worker_data->pbi->common.large_scale_tile = ctx->tile_mode;
     frame_worker_data->pbi->dec_tile_row = ctx->decode_tile_row;
     frame_worker_data->pbi->dec_tile_col = ctx->decode_tile_col;
@@ -453,75 +424,32 @@ static aom_codec_err_t decode_one(aom_codec_alg_priv_t *ctx,
     if (!ctx->si.is_kf && !is_intra_only) return AOM_CODEC_ERROR;
   }
 
-  if (!ctx->frame_parallel_decode) {
-    AVxWorker *const worker = ctx->frame_workers;
-    FrameWorkerData *const frame_worker_data = (FrameWorkerData *)worker->data1;
-    frame_worker_data->data = *data;
-    frame_worker_data->data_size = data_sz;
-    frame_worker_data->user_priv = user_priv;
-    frame_worker_data->received_frame = 1;
+  AVxWorker *const worker = ctx->frame_workers;
+  FrameWorkerData *const frame_worker_data = (FrameWorkerData *)worker->data1;
+  frame_worker_data->data = *data;
+  frame_worker_data->data_size = data_sz;
+  frame_worker_data->user_priv = user_priv;
+  frame_worker_data->received_frame = 1;
 
 #if CONFIG_INSPECTION
-    frame_worker_data->pbi->inspect_cb = ctx->inspect_cb;
-    frame_worker_data->pbi->inspect_ctx = ctx->inspect_ctx;
+  frame_worker_data->pbi->inspect_cb = ctx->inspect_cb;
+  frame_worker_data->pbi->inspect_ctx = ctx->inspect_ctx;
 #endif
 
-    frame_worker_data->pbi->common.large_scale_tile = ctx->tile_mode;
-    frame_worker_data->pbi->dec_tile_row = ctx->decode_tile_row;
-    frame_worker_data->pbi->dec_tile_col = ctx->decode_tile_col;
+  frame_worker_data->pbi->common.large_scale_tile = ctx->tile_mode;
+  frame_worker_data->pbi->dec_tile_row = ctx->decode_tile_row;
+  frame_worker_data->pbi->dec_tile_col = ctx->decode_tile_col;
 
-    worker->had_error = 0;
-    winterface->execute(worker);
+  worker->had_error = 0;
+  winterface->execute(worker);
 
-    // Update data pointer after decode.
-    *data = frame_worker_data->data_end;
+  // Update data pointer after decode.
+  *data = frame_worker_data->data_end;
 
-    if (worker->had_error)
-      return update_error_state(ctx, &frame_worker_data->pbi->common.error);
+  if (worker->had_error)
+    return update_error_state(ctx, &frame_worker_data->pbi->common.error);
 
-    check_resync(ctx, frame_worker_data->pbi);
-  } else {
-    AVxWorker *const worker = &ctx->frame_workers[ctx->next_submit_worker_id];
-    FrameWorkerData *const frame_worker_data = (FrameWorkerData *)worker->data1;
-    // Copy context from last worker thread to next worker thread.
-    if (ctx->next_submit_worker_id != ctx->last_submit_worker_id)
-      av1_frameworker_copy_context(
-          &ctx->frame_workers[ctx->next_submit_worker_id],
-          &ctx->frame_workers[ctx->last_submit_worker_id]);
-
-    frame_worker_data->pbi->ready_for_new_data = 0;
-    // Copy the compressed data into worker's internal buffer.
-    // TODO(hkuang): Will all the workers allocate the same size
-    // as the size of the first intra frame be better? This will
-    // avoid too many deallocate and allocate.
-    if (frame_worker_data->scratch_buffer_size < data_sz) {
-      aom_free(frame_worker_data->scratch_buffer);
-      frame_worker_data->scratch_buffer = (uint8_t *)aom_malloc(data_sz);
-      if (frame_worker_data->scratch_buffer == NULL) {
-        set_error_detail(ctx, "Failed to reallocate scratch buffer");
-        return AOM_CODEC_MEM_ERROR;
-      }
-      frame_worker_data->scratch_buffer_size = data_sz;
-    }
-    frame_worker_data->data_size = data_sz;
-    memcpy(frame_worker_data->scratch_buffer, *data, data_sz);
-
-    frame_worker_data->frame_decoded = 0;
-    frame_worker_data->frame_context_ready = 0;
-    frame_worker_data->received_frame = 1;
-    frame_worker_data->data = frame_worker_data->scratch_buffer;
-    frame_worker_data->user_priv = user_priv;
-
-    if (ctx->next_submit_worker_id != ctx->last_submit_worker_id)
-      ctx->last_submit_worker_id =
-          (ctx->last_submit_worker_id + 1) % ctx->num_frame_workers;
-
-    ctx->next_submit_worker_id =
-        (ctx->next_submit_worker_id + 1) % ctx->num_frame_workers;
-    --ctx->available_threads;
-    worker->had_error = 0;
-    winterface->launch(worker);
-  }
+  check_resync(ctx, frame_worker_data->pbi);
 
   return AOM_CODEC_OK;
 }
@@ -579,102 +507,39 @@ static aom_codec_err_t decoder_decode(aom_codec_alg_priv_t *ctx,
     res = init_decoder(ctx);
     if (res != AOM_CODEC_OK) return res;
   }
-  if (ctx->frame_parallel_decode) {
-    // Decode in frame parallel mode. When decoding in this mode, the frame
-    // passed to the decoder must be either a normal frame or a superframe with
-    // superframe index so the decoder could get each frame's start position
-    // in the superframe.
-    if (frame_count > 0) {
-      int i;
+  // Decode in serial mode.
+  if (frame_count > 0) {
+    int i;
 
-      for (i = 0; i < frame_count; ++i) {
-        const uint8_t *data_start_copy = data_start;
-        const uint32_t frame_size = frame_sizes[i];
-        if (data_start < data ||
-            frame_size > (uint32_t)(data_end - data_start)) {
-          set_error_detail(ctx, "Invalid frame size in index");
-          return AOM_CODEC_CORRUPT_FRAME;
-        }
-
-        if (ctx->available_threads == 0) {
-          // No more threads for decoding. Wait until the next output worker
-          // finishes decoding. Then copy the decoded frame into cache.
-          if (ctx->num_cache_frames < FRAME_CACHE_SIZE) {
-            wait_worker_and_cache_frame(ctx);
-          } else {
-            // TODO(hkuang): Add unit test to test this path.
-            set_error_detail(ctx, "Frame output cache is full.");
-            return AOM_CODEC_ERROR;
-          }
-        }
-
-        res = decode_one(ctx, &data_start_copy, frame_size, user_priv);
-        if (res != AOM_CODEC_OK) return res;
-        data_start += frame_size;
-      }
-    } else {
-      if (ctx->available_threads == 0) {
-        // No more threads for decoding. Wait until the next output worker
-        // finishes decoding. Then copy the decoded frame into cache.
-        if (ctx->num_cache_frames < FRAME_CACHE_SIZE) {
-          wait_worker_and_cache_frame(ctx);
-        } else {
-          // TODO(hkuang): Add unit test to test this path.
-          set_error_detail(ctx, "Frame output cache is full.");
-          return AOM_CODEC_ERROR;
-        }
+    for (i = 0; i < frame_count; ++i) {
+      const uint8_t *data_start_copy = data_start;
+      const uint32_t frame_size = frame_sizes[i];
+      if (data_start < data || frame_size > (uint32_t)(data_end - data_start)) {
+        set_error_detail(ctx, "Invalid frame size in index");
+        return AOM_CODEC_CORRUPT_FRAME;
       }
 
-      res = decode_one(ctx, &data, data_sz, user_priv);
+      res = decode_one(ctx, &data_start_copy, frame_size, user_priv);
       if (res != AOM_CODEC_OK) return res;
+
+      data_start += frame_size;
     }
   } else {
-    // Decode in serial mode.
-    if (frame_count > 0) {
-      int i;
+    while (data_start < data_end) {
+      const uint32_t frame_size = (uint32_t)(data_end - data_start);
+      res = decode_one(ctx, &data_start, frame_size, user_priv);
+      if (res != AOM_CODEC_OK) return res;
 
-      for (i = 0; i < frame_count; ++i) {
-        const uint8_t *data_start_copy = data_start;
-        const uint32_t frame_size = frame_sizes[i];
-        if (data_start < data ||
-            frame_size > (uint32_t)(data_end - data_start)) {
-          set_error_detail(ctx, "Invalid frame size in index");
-          return AOM_CODEC_CORRUPT_FRAME;
-        }
-
-        res = decode_one(ctx, &data_start_copy, frame_size, user_priv);
-        if (res != AOM_CODEC_OK) return res;
-
-        data_start += frame_size;
-      }
-    } else {
+      // Account for suboptimal termination by the encoder.
       while (data_start < data_end) {
-        const uint32_t frame_size = (uint32_t)(data_end - data_start);
-        res = decode_one(ctx, &data_start, frame_size, user_priv);
-        if (res != AOM_CODEC_OK) return res;
-
-        // Account for suboptimal termination by the encoder.
-        while (data_start < data_end) {
-          const uint8_t marker = data_start[0];
-          if (marker) break;
-          ++data_start;
-        }
+        const uint8_t marker = data_start[0];
+        if (marker) break;
+        ++data_start;
       }
     }
   }
 
   return res;
-}
-
-static void release_last_output_frame(aom_codec_alg_priv_t *ctx) {
-  RefCntBuffer *const frame_bufs = ctx->buffer_pool->frame_bufs;
-  // Decrease reference count of last output frame in frame parallel mode.
-  if (ctx->frame_parallel_decode && ctx->last_show_frame >= 0) {
-    BufferPool *const pool = ctx->buffer_pool;
-    lock_buffer_pool(pool);
-    decrease_ref_count(ctx->last_show_frame, frame_bufs, pool);
-    unlock_buffer_pool(pool);
-  }
 }
 
 #if CONFIG_FILM_GRAIN
@@ -703,16 +568,8 @@ static aom_image_t *decoder_get_frame(aom_codec_alg_priv_t *ctx,
                                       aom_codec_iter_t *iter) {
   aom_image_t *img = NULL;
 
-  // Only return frame when all the cpu are busy or
-  // application fluhsed the decoder in frame parallel decode.
-  if (ctx->frame_parallel_decode && ctx->available_threads > 0 &&
-      !ctx->flushed) {
-    return NULL;
-  }
-
   // Output the frames in the cache first.
   if (ctx->num_cache_frames > 0) {
-    release_last_output_frame(ctx);
     ctx->last_show_frame = ctx->frame_cache[ctx->frame_cache_read].fb_idx;
     if (ctx->need_resync) return NULL;
     img = &ctx->frame_cache[ctx->frame_cache_read].img;
@@ -749,7 +606,6 @@ static aom_image_t *decoder_get_frame(aom_codec_alg_priv_t *ctx,
         if (av1_get_raw_frame(frame_worker_data->pbi, &sd) == 0) {
           AV1_COMMON *const cm = &frame_worker_data->pbi->common;
           RefCntBuffer *const frame_bufs = cm->buffer_pool->frame_bufs;
-          release_last_output_frame(ctx);
           ctx->last_show_frame = frame_worker_data->pbi->common.new_fb_idx;
           if (ctx->need_resync) return NULL;
           yuvconfig2image(&ctx->img, &sd, frame_worker_data->user_priv);
@@ -837,12 +693,6 @@ static aom_codec_err_t ctrl_set_reference(aom_codec_alg_priv_t *ctx,
                                           va_list args) {
   av1_ref_frame_t *const data = va_arg(args, av1_ref_frame_t *);
 
-  // Only support this function in serial decode.
-  if (ctx->frame_parallel_decode) {
-    set_error_detail(ctx, "Not supported in frame parallel decode");
-    return AOM_CODEC_INCAPABLE;
-  }
-
   if (data) {
     av1_ref_frame_t *const frame = data;
     YV12_BUFFER_CONFIG sd;
@@ -859,13 +709,6 @@ static aom_codec_err_t ctrl_set_reference(aom_codec_alg_priv_t *ctx,
 static aom_codec_err_t ctrl_copy_reference(aom_codec_alg_priv_t *ctx,
                                            va_list args) {
   const av1_ref_frame_t *const frame = va_arg(args, av1_ref_frame_t *);
-
-  // Only support this function in serial decode.
-  if (ctx->frame_parallel_decode) {
-    set_error_detail(ctx, "Not supported in frame parallel decode");
-    return AOM_CODEC_INCAPABLE;
-  }
-
   if (frame) {
     YV12_BUFFER_CONFIG sd;
     AVxWorker *const worker = ctx->frame_workers;
@@ -880,13 +723,6 @@ static aom_codec_err_t ctrl_copy_reference(aom_codec_alg_priv_t *ctx,
 static aom_codec_err_t ctrl_get_reference(aom_codec_alg_priv_t *ctx,
                                           va_list args) {
   av1_ref_frame_t *data = va_arg(args, av1_ref_frame_t *);
-
-  // Only support this function in serial decode.
-  if (ctx->frame_parallel_decode) {
-    set_error_detail(ctx, "Not supported in frame parallel decode");
-    return AOM_CODEC_INCAPABLE;
-  }
-
   if (data) {
     YV12_BUFFER_CONFIG *fb;
     AVxWorker *const worker = ctx->frame_workers;
@@ -903,13 +739,6 @@ static aom_codec_err_t ctrl_get_reference(aom_codec_alg_priv_t *ctx,
 static aom_codec_err_t ctrl_get_new_frame_image(aom_codec_alg_priv_t *ctx,
                                                 va_list args) {
   aom_image_t *new_img = va_arg(args, aom_image_t *);
-
-  // Only support this function in serial decode.
-  if (ctx->frame_parallel_decode) {
-    set_error_detail(ctx, "Not supported in frame parallel decode");
-    return AOM_CODEC_INCAPABLE;
-  }
-
   if (new_img) {
     YV12_BUFFER_CONFIG new_frame;
     AVxWorker *const worker = ctx->frame_workers;
@@ -943,12 +772,6 @@ static aom_codec_err_t ctrl_set_dbg_options(aom_codec_alg_priv_t *ctx,
 static aom_codec_err_t ctrl_get_last_ref_updates(aom_codec_alg_priv_t *ctx,
                                                  va_list args) {
   int *const update_info = va_arg(args, int *);
-
-  // Only support this function in serial decode.
-  if (ctx->frame_parallel_decode) {
-    set_error_detail(ctx, "Not supported in frame parallel decode");
-    return AOM_CODEC_INCAPABLE;
-  }
 
   if (update_info) {
     if (ctx->frame_workers) {
@@ -1002,12 +825,6 @@ static aom_codec_err_t ctrl_get_frame_size(aom_codec_alg_priv_t *ctx,
                                            va_list args) {
   int *const frame_size = va_arg(args, int *);
 
-  // Only support this function in serial decode.
-  if (ctx->frame_parallel_decode) {
-    set_error_detail(ctx, "Not supported in frame parallel decode");
-    return AOM_CODEC_INCAPABLE;
-  }
-
   if (frame_size) {
     if (ctx->frame_workers) {
       AVxWorker *const worker = ctx->frame_workers;
@@ -1028,12 +845,6 @@ static aom_codec_err_t ctrl_get_frame_size(aom_codec_alg_priv_t *ctx,
 static aom_codec_err_t ctrl_get_render_size(aom_codec_alg_priv_t *ctx,
                                             va_list args) {
   int *const render_size = va_arg(args, int *);
-
-  // Only support this function in serial decode.
-  if (ctx->frame_parallel_decode) {
-    set_error_detail(ctx, "Not supported in frame parallel decode");
-    return AOM_CODEC_INCAPABLE;
-  }
 
   if (render_size) {
     if (ctx->frame_workers) {

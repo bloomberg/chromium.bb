@@ -810,7 +810,7 @@ static void setup_segmentation(AV1_COMMON *const cm,
     return;
   }
 #if CONFIG_SEGMENT_PRED_LAST
-  if (cm->seg.enabled && !cm->frame_parallel_decode && cm->prev_frame &&
+  if (cm->seg.enabled && cm->prev_frame &&
       (cm->mi_rows == cm->prev_frame->mi_rows) &&
       (cm->mi_cols == cm->prev_frame->mi_cols)) {
     cm->last_frame_seg_map = cm->prev_frame->seg_map;
@@ -2056,12 +2056,6 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
                              "Failed to decode tile data");
       }
     }
-
-    // After loopfiltering, the last 7 row pixels in each superblock row may
-    // still be changed by the longest loopfilter of the next superblock row.
-    if (cm->frame_parallel_decode)
-      av1_frameworker_broadcast(pbi->cur_buf,
-                                mi_row << cm->seq_params.mib_size_log2);
   }
 
   if (!(cm->allow_intrabc && NO_FILTER_FOR_IBC)) {
@@ -2081,8 +2075,6 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
         }
       }
   }
-  if (cm->frame_parallel_decode)
-    av1_frameworker_broadcast(pbi->cur_buf, INT_MAX);
 
   if (cm->large_scale_tile) {
     if (n_tiles == 1) {
@@ -2691,11 +2683,6 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     } else {
 #endif  // CONFIG_FWD_KF
       pbi->refresh_frame_flags = 0;
-
-      if (cm->frame_parallel_decode) {
-        for (int i = 0; i < REF_FRAMES; ++i)
-          cm->next_ref_frame_map[i] = cm->ref_frame_map[i];
-      }
 #if CONFIG_FWD_KF
     }
 #endif  // CONFIG_FWD_KF
@@ -3215,8 +3202,6 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 #ifdef NDEBUG
 #define debug_check_frame_counts(cm) (void)0
 #else   // !NDEBUG
-// Counts should only be incremented when frame_parallel_decoding_mode and
-// error_resilient_mode are disabled.
 static void debug_check_frame_counts(const AV1_COMMON *const cm) {
   FRAME_COUNTS zero_counts;
   av1_zero(zero_counts);
@@ -3412,29 +3397,6 @@ static void setup_frame_info(AV1Decoder *pbi) {
       cm->rst_info[2].frame_restoration_type != RESTORE_NONE) {
     av1_alloc_restoration_buffers(cm);
   }
-
-  // If encoded in frame parallel mode, frame context is ready after decoding
-  // the frame header.
-  if (cm->frame_parallel_decode &&
-      cm->refresh_frame_context != REFRESH_FRAME_CONTEXT_BACKWARD) {
-    AVxWorker *const worker = pbi->frame_worker_owner;
-    FrameWorkerData *const frame_worker_data = worker->data1;
-    if (cm->refresh_frame_context == REFRESH_FRAME_CONTEXT_DISABLED) {
-#if CONFIG_NO_FRAME_CONTEXT_SIGNALING
-      cm->frame_contexts[cm->new_fb_idx] = *cm->fc;
-#else
-      cm->frame_contexts[cm->frame_context_idx] = *cm->fc;
-#endif  // CONFIG_NO_FRAME_CONTEXT_SIGNALING
-    }
-    av1_frameworker_lock_stats(worker);
-    pbi->cur_buf->row = -1;
-    pbi->cur_buf->col = -1;
-    frame_worker_data->frame_context_ready = 1;
-    // Signal the main thread that context is ready.
-    av1_frameworker_signal_stats(worker);
-    av1_frameworker_unlock_stats(worker);
-  }
-
   dec_setup_frame_boundary_info(cm);
 }
 
@@ -3537,16 +3499,11 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
 
   // Non frame parallel update frame context here.
   if (!cm->large_scale_tile) {
-    // TODO(yunqingwang): If cm->frame_parallel_decode = 0, then the following
-    // update always happens. Seems it is done more than necessary.
-    if (!cm->frame_parallel_decode ||
-        cm->refresh_frame_context != REFRESH_FRAME_CONTEXT_DISABLED) {
 #if CONFIG_NO_FRAME_CONTEXT_SIGNALING
-      cm->frame_contexts[cm->new_fb_idx] = *cm->fc;
+    cm->frame_contexts[cm->new_fb_idx] = *cm->fc;
 #else
-      if (!cm->error_resilient_mode)
-        cm->frame_contexts[cm->frame_context_idx] = *cm->fc;
+    if (!cm->error_resilient_mode)
+      cm->frame_contexts[cm->frame_context_idx] = *cm->fc;
 #endif
-    }
   }
 }

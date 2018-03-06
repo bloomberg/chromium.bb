@@ -1220,7 +1220,7 @@ void av1_setup_past_independence(AV1_COMMON *cm) {
 #endif
 
 #if !CONFIG_SEGMENT_PRED_LAST
-  if (cm->last_frame_seg_map && !cm->frame_parallel_decode)
+  if (cm->last_frame_seg_map)
     memset(cm->last_frame_seg_map, 0, (cm->mi_rows * cm->mi_cols));
 #endif
 
@@ -1243,7 +1243,7 @@ void av1_setup_past_independence(AV1_COMMON *cm) {
   av1_setup_frame_contexts(cm);
 
   // prev_mip will only be allocated in encoder.
-  if (frame_is_intra_only(cm) && cm->prev_mip && !cm->frame_parallel_decode)
+  if (frame_is_intra_only(cm) && cm->prev_mip)
     memset(cm->prev_mip, 0,
            cm->mi_stride * cm->mi_rows * sizeof(*cm->prev_mip));
 #if !CONFIG_NO_FRAME_CONTEXT_SIGNALING

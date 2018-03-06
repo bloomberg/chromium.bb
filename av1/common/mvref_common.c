@@ -1126,16 +1126,6 @@ static void find_mv_refs_idx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 
   if (refmv_count >= MAX_MV_REF_CANDIDATES) goto Done;
 
-// TODO(hkuang): Remove this sync after fixing pthread_cond_broadcast
-// on windows platform. The sync here is unncessary if use_perv_frame_mvs
-// is 0. But after removing it, there will be hang in the unit test on windows
-// due to several threads waiting for a thread's signal.
-#if defined(_WIN32) && !HAVE_PTHREAD_H
-  if (cm->frame_parallel_decode && sync != NULL) {
-    sync(data, mi_row);
-  }
-#endif
-
   // Since we couldn't find 2 mvs from the same reference frame
   // go back through the neighbors and find motion vectors from
   // different reference frames.
