@@ -23,6 +23,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/strings/string_piece.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
@@ -50,11 +51,12 @@ class CookieChangeDispatcher;
 // backing store. Otherwise, callbacks may be invoked immediately.
 //
 // A cookie task is either pending loading of the entire cookie store, or
-// loading of cookies for a specific domain key(eTLD+1). In the former case, the
-// cookie callback will be queued in tasks_pending_ while PersistentCookieStore
-// chain loads the cookie store on DB thread. In the latter case, the cookie
-// callback will be queued in tasks_pending_for_key_ while PermanentCookieStore
-// loads cookies for the specified domain key(eTLD+1) on DB thread.
+// loading of cookies for a specific domain key (GetKey(), roughly eTLD+1). In
+// the former case, the cookie callback will be queued in tasks_pending_ while
+// PersistentCookieStore chain loads the cookie store on DB thread. In the
+// latter case, the cookie callback will be queued in tasks_pending_for_key_
+// while PermanentCookieStore loads cookies for the specified domain key on DB
+// thread.
 //
 // TODO(deanm) Implement CookieMonster, the cookie database.
 //  - Verify that our domain enforcement and non-dotted handling is correct
@@ -204,6 +206,12 @@ class NET_EXPORT CookieMonster : public CookieStore {
   static const int kDefaultCookieableSchemesCount;
 
   bool IsEphemeral() override;
+
+  // Find a key based on the given domain, which will be used to find all
+  // cookies potentially relevant to it. This is used for lookup in cookies_ as
+  // well as for PersistentCookieStore::LoadCookiesForKey. See comment on keys
+  // before the CookieMap typedef.
+  static std::string GetKey(base::StringPiece domain);
 
  private:
   CookieMonster(PersistentCookieStore* store,
@@ -417,9 +425,9 @@ class NET_EXPORT CookieMonster : public CookieStore {
 
   // Stores cookies loaded from the backing store and invokes the deferred
   // task(s) pending loading of cookies associated with the domain key
-  // (eTLD+1). Called when all cookies for the domain key(eTLD+1) have been
-  // loaded from DB. See PersistentCookieStore::Load for details on the contents
-  // of cookies.
+  // (GetKey, roughly eTLD+1). Called when all cookies for the domain key have
+  // been loaded from DB. See PersistentCookieStore::Load for details on the
+  // contents of cookies.
   void OnKeyLoaded(const std::string& key,
                    std::vector<std::unique_ptr<CanonicalCookie>> cookies);
 
@@ -545,10 +553,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
                                              CookieItVector cookie_its,
                                              base::Time* earliest_time);
 
-  // Find the key (for lookup in cookies_) based on the given domain.
-  // See comment on keys before the CookieMap typedef.
-  std::string GetKey(const std::string& domain) const;
-
   bool HasCookieableScheme(const GURL& url);
 
   // Statistics support
@@ -565,13 +569,19 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // ugly and increment when we've seen the same time twice.
   base::Time CurrentTime();
 
-  // Runs the callback if, or defers the callback until, the full cookie
-  // database is loaded.
+  // Defers the callback until the full coookie database has been loaded. If
+  // it's already been loaded, runs the callback synchronously.
   void DoCookieCallback(base::OnceClosure callback);
 
-  // Runs the callback if, or defers the callback until, the cookies for the
-  // given URL are loaded.
+  // Defers the callback until the cookies relevant to given URL have been
+  // loaded. If they've already been loaded, runs the callback synchronously.
   void DoCookieCallbackForURL(base::OnceClosure callback, const GURL& url);
+
+  // Defers the callback until the cookies relevant to given host or domain
+  // have been loaded. If they've already been loaded, runs the callback
+  // synchronously.
+  void DoCookieCallbackForHostOrDomain(base::OnceClosure callback,
+                                       base::StringPiece host_or_domain);
 
   // Histogram variables; see CookieMonster::InitializeHistograms() in
   // cookie_monster.cc for details.

@@ -23,7 +23,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
-#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_util.h"
@@ -718,9 +717,7 @@ bool SQLitePersistentCookieStore::Backend::InitializeDatabase() {
   // Build a map of domain keys (always eTLD+1) to domains.
   for (size_t idx = 0; idx < host_keys.size(); ++idx) {
     const std::string& domain = host_keys[idx];
-    std::string key = registry_controlled_domains::GetDomainAndRegistry(
-        domain, registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
-
+    std::string key = CookieMonster::GetKey(domain);
     keys_to_load_[key].insert(domain);
   }
 
