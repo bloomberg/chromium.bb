@@ -319,9 +319,16 @@ Textfield::~Textfield() {
   }
 }
 
-void Textfield::SetAssociatedLabel(Label* label) {
-  label_ax_id_ = label->GetViewAccessibility().GetUniqueId().Get();
-  accessible_name_ = label->text();
+void Textfield::SetAssociatedLabel(View* labelling_view) {
+  DCHECK(labelling_view);
+  label_ax_id_ = labelling_view->GetViewAccessibility().GetUniqueId().Get();
+  ui::AXNodeData node_data;
+  labelling_view->GetAccessibleNodeData(&node_data);
+  // TODO(aleventhal) automatically handle setting the name from the related
+  // label in view_accessibility and have it update the name if the text of the
+  // associated label changes.
+  SetAccessibleName(
+      node_data.GetString16Attribute(ax::mojom::StringAttribute::kName));
 }
 
 void Textfield::SetReadOnly(bool read_only) {
