@@ -147,7 +147,7 @@ void DelegatedFrameHostAndroid::CopyFromCompositingSurface(
         gfx::Vector2d(output_size.width(), output_size.height()));
   }
 
-  support_->RequestCopyOfSurface(std::move(request));
+  support_->RequestCopyOfOutput(std::move(request));
 }
 
 bool DelegatedFrameHostAndroid::CanCopyFromCompositingSurface() const {

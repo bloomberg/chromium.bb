@@ -639,7 +639,7 @@ TEST_F(CompositorFrameSinkSupportTest, DuplicateCopyRequest) {
       base::BindOnce(&CopyRequestTestCallback, &called1));
   request->set_source(kArbitrarySourceId1);
 
-  support_->RequestCopyOfSurface(std::move(request));
+  support_->RequestCopyOfOutput(std::move(request));
   GetSurfaceForId(surface_id)->OnWillBeDrawn();
   EXPECT_FALSE(called1);
 
@@ -649,7 +649,7 @@ TEST_F(CompositorFrameSinkSupportTest, DuplicateCopyRequest) {
       base::BindOnce(&CopyRequestTestCallback, &called2));
   request->set_source(kArbitrarySourceId2);
 
-  support_->RequestCopyOfSurface(std::move(request));
+  support_->RequestCopyOfOutput(std::move(request));
   GetSurfaceForId(surface_id)->OnWillBeDrawn();
   // Callbacks have different sources so neither should be called.
   EXPECT_FALSE(called1);
@@ -661,7 +661,7 @@ TEST_F(CompositorFrameSinkSupportTest, DuplicateCopyRequest) {
       base::BindOnce(&CopyRequestTestCallback, &called3));
   request->set_source(kArbitrarySourceId1);
 
-  support_->RequestCopyOfSurface(std::move(request));
+  support_->RequestCopyOfOutput(std::move(request));
   GetSurfaceForId(surface_id)->OnWillBeDrawn();
   // Two callbacks are from source1, so the first should be called.
   EXPECT_TRUE(called1);
@@ -831,7 +831,7 @@ TEST_F(CompositorFrameSinkSupportTest,
   auto request = std::make_unique<CopyOutputRequest>(
       CopyOutputRequest::ResultFormat::RGBA_BITMAP,
       base::BindOnce(StubResultCallback));
-  support_->RequestCopyOfSurface(std::move(request));
+  support_->RequestCopyOfOutput(std::move(request));
 
   // Both surfaces should report that they have a CopyOutputRequest.
   EXPECT_TRUE(GetSurfaceForId(id1)->HasCopyOutputRequests());
@@ -870,7 +870,7 @@ TEST_F(CompositorFrameSinkSupportTest,
   auto request = std::make_unique<CopyOutputRequest>(
       CopyOutputRequest::ResultFormat::RGBA_BITMAP,
       base::BindOnce(StubResultCallback));
-  support_->RequestCopyOfSurface(std::move(request));
+  support_->RequestCopyOfOutput(std::move(request));
 
   // Create the second surface.
   support_->SubmitCompositorFrame(local_surface_id2,
@@ -915,7 +915,7 @@ TEST_F(CompositorFrameSinkSupportTest, FirstSurfaceTakesCopyRequest) {
   auto request = std::make_unique<CopyOutputRequest>(
       CopyOutputRequest::ResultFormat::RGBA_BITMAP,
       base::BindOnce(StubResultCallback));
-  support_->RequestCopyOfSurface(std::move(request));
+  support_->RequestCopyOfOutput(std::move(request));
 
   // Both surfaces should report that they have a CopyOutputRequest.
   EXPECT_TRUE(GetSurfaceForId(id1)->HasCopyOutputRequests());
@@ -957,7 +957,7 @@ TEST_F(CompositorFrameSinkSupportTest, SecondSurfaceTakesCopyRequest) {
   auto request = std::make_unique<CopyOutputRequest>(
       CopyOutputRequest::ResultFormat::RGBA_BITMAP,
       base::BindOnce(StubResultCallback));
-  support_->RequestCopyOfSurface(std::move(request));
+  support_->RequestCopyOfOutput(std::move(request));
 
   // Create the second surface.
   support_->SubmitCompositorFrame(local_surface_id2,

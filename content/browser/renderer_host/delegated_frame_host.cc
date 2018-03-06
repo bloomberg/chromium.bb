@@ -154,12 +154,8 @@ void DelegatedFrameHost::CopyFromCompositingSurface(
     request->set_area(src_subrect);
   }
 
-  // If VIZ display compositing is disabled, the request will be issued directly
-  // to CompositorFrameSinkSupport, which requires Surface pixel coordinates.
-  if (!enable_viz_) {
-    request->set_area(
-        gfx::ScaleToRoundedRect(request->area(), active_device_scale_factor_));
-  }
+  request->set_area(
+      gfx::ScaleToRoundedRect(request->area(), active_device_scale_factor_));
 
   if (!output_size.IsEmpty()) {
     request->set_result_selection(gfx::Rect(output_size));
@@ -168,12 +164,8 @@ void DelegatedFrameHost::CopyFromCompositingSurface(
         gfx::Vector2d(output_size.width(), output_size.height()));
   }
 
-  if (enable_viz_) {
-    client_->DelegatedFrameHostGetLayer()->RequestCopyOfOutput(
-        std::move(request));
-  } else {
-    support_->RequestCopyOfSurface(std::move(request));
-  }
+  GetHostFrameSinkManager()->RequestCopyOfOutput(frame_sink_id_,
+                                                 std::move(request));
 }
 
 bool DelegatedFrameHost::CanCopyFromCompositingSurface() const {

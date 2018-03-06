@@ -54,7 +54,7 @@ class CapturableFrameSink {
   virtual gfx::Size GetActiveFrameSize() = 0;
 
   // Issues a request for a copy of the next composited frame.
-  virtual void RequestCopyOfSurface(
+  virtual void RequestCopyOfOutput(
       std::unique_ptr<CopyOutputRequest> request) = 0;
 };
 

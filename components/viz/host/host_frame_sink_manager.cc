@@ -248,6 +248,12 @@ void HostFrameSinkManager::EvictSurfaces(
   frame_sink_manager_->EvictSurfaces(surface_ids);
 }
 
+void HostFrameSinkManager::RequestCopyOfOutput(
+    const FrameSinkId& frame_sink_id,
+    std::unique_ptr<CopyOutputRequest> request) {
+  frame_sink_manager_->RequestCopyOfOutput(frame_sink_id, std::move(request));
+}
+
 std::unique_ptr<CompositorFrameSinkSupport>
 HostFrameSinkManager::CreateCompositorFrameSinkSupport(
     mojom::CompositorFrameSinkClient* client,

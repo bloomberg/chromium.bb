@@ -174,7 +174,7 @@ void TestLayerTreeFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
   support_->SubmitCompositorFrame(local_surface_id_, std::move(frame));
 
   for (auto& copy_request : copy_requests_)
-    support_->RequestCopyOfSurface(std::move(copy_request));
+    support_->RequestCopyOfOutput(std::move(copy_request));
   copy_requests_.clear();
 
   if (!display_->has_scheduler()) {

@@ -127,8 +127,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   void AttachCaptureClient(CapturableFrameSink::Client* client) override;
   void DetachCaptureClient(CapturableFrameSink::Client* client) override;
   gfx::Size GetActiveFrameSize() override;
-  void RequestCopyOfSurface(
-      std::unique_ptr<CopyOutputRequest> request) override;
+  void RequestCopyOfOutput(std::unique_ptr<CopyOutputRequest> request) override;
 
   HitTestAggregator* GetHitTestAggregator();
 
