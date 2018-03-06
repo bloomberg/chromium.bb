@@ -17,7 +17,6 @@
 #include "platform/scheduler/child/page_visibility_state.h"
 #include "platform/scheduler/child/worker_scheduler_proxy.h"
 #include "platform/scheduler/util/tracing_helper.h"
-#include "platform/wtf/HashSet.h"
 
 namespace base {
 namespace trace_event {
@@ -67,6 +66,7 @@ class PLATFORM_EXPORT WebFrameSchedulerImpl : public WebFrameScheduler {
 
   void SetCrossOrigin(bool cross_origin) override;
   bool IsCrossOrigin() const override;
+  void TraceUrlChange(const String& url) override;
   WebFrameScheduler::FrameType GetFrameType() const override;
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType) override;
   WebViewScheduler* GetWebViewScheduler() const override;
@@ -166,6 +166,7 @@ class PLATFORM_EXPORT WebFrameSchedulerImpl : public WebFrameScheduler {
   TraceableState<bool, kTracingCategoryNameInfo> page_frozen_;
   TraceableState<bool, kTracingCategoryNameInfo> frame_paused_;
   TraceableState<bool, kTracingCategoryNameInfo> cross_origin_;
+  StateTracer<kTracingCategoryNameInfo> url_tracer_;
   WebFrameScheduler::FrameType frame_type_;
   int active_connection_count_;
 

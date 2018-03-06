@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/TaskType.h"
 #include "public/platform/WebScopedVirtualTimePauser.h"
 
@@ -94,6 +95,7 @@ class WebFrameScheduler {
   // frames.
   virtual void SetCrossOrigin(bool) = 0;
   virtual bool IsCrossOrigin() const = 0;
+  virtual void TraceUrlChange(const String&) = 0;
 
   // Returns the frame type, which currently determines whether this frame is
   // the top level frame, i.e. a main frame.

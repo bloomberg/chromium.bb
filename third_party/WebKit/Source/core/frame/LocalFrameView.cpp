@@ -5459,6 +5459,8 @@ void LocalFrameView::UpdateRenderThrottlingStatus(
   if (frame_->FrameScheduler()) {
     frame_->FrameScheduler()->SetFrameVisible(!hidden_for_throttling_);
     frame_->FrameScheduler()->SetCrossOrigin(frame_->IsCrossOriginSubframe());
+    frame_->FrameScheduler()->TraceUrlChange(
+        frame_->GetDocument()->Url().GetString());
   }
 
 #if DCHECK_IS_ON()

@@ -80,6 +80,7 @@ class EmptyFrameScheduler : public WebFrameScheduler {
   void SetPaused(bool) override {}
   void SetCrossOrigin(bool) override {}
   bool IsCrossOrigin() const override { return false; }
+  void TraceUrlChange(const String&) override {}
   WebFrameScheduler::FrameType GetFrameType() const override {
     return WebFrameScheduler::FrameType::kSubframe;
   }
