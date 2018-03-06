@@ -32,15 +32,12 @@ bool WindowSizer::GetBrowserBoundsAsh(gfx::Rect* bounds,
       if (!GetSavedWindowBounds(bounds, show_state))
         *bounds = GetDefaultWindowBoundsAsh(GetTargetDisplay(gfx::Rect()));
       determined = true;
-    } else {
+    } else if (state_provider_) {
       // In Ash, prioritize the last saved |show_state|. If you have questions
       // or comments about this behavior please contact oshima@chromium.org.
-      if (state_provider_) {
-        gfx::Rect ignored_bounds, ignored_work_area;
-        state_provider_->GetPersistentState(&ignored_bounds,
-                                            &ignored_work_area,
-                                            show_state);
-      }
+      gfx::Rect ignored_bounds, ignored_work_area;
+      state_provider_->GetPersistentState(&ignored_bounds, &ignored_work_area,
+                                          show_state);
     }
   } else if (browser_->is_type_popup() && bounds->origin().IsOrigin()) {
     // In case of a popup with an 'unspecified' location in ash, we are

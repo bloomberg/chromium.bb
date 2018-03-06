@@ -34,9 +34,6 @@ const int kWindowAutoMoveDurationMS = 125;
 // WindowPositioner::SetIgnoreActivations().
 static bool disable_auto_positioning = false;
 
-// If set to true, by default the first window in ASH will be maximized.
-static bool maximize_first_window = false;
-
 // Check if any management should be performed (with a given |window|).
 bool UseAutoWindowManager(const aura::Window* window) {
   if (disable_auto_positioning)
@@ -240,7 +237,6 @@ void WindowPositioner::GetBoundsAndShowStateForNewWindow(
       // We want to always open maximized on "small screens" or when policy
       // tells us to.
       const bool set_maximized =
-          maximize_first_window ||
           ((work_area.width() <= GetForceMaximizedWidthLimit() ||
             maximize_first_window_on_first_run) &&
            (!new_window || !wm::GetWindowState(new_window)->IsFullscreen()));
@@ -412,11 +408,6 @@ gfx::Rect WindowPositioner::GetPopupPosition(const gfx::Size& popup_size) {
     return AlignPopupPosition(result, work_area);
 
   return NormalPopupPosition(popup_size, work_area);
-}
-
-// static
-void WindowPositioner::SetMaximizeFirstWindow(bool maximize) {
-  maximize_first_window = maximize;
 }
 
 gfx::Rect WindowPositioner::NormalPopupPosition(const gfx::Size& popup_size,

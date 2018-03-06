@@ -172,10 +172,10 @@ WindowSizer::WindowSizer(
     std::unique_ptr<StateProvider> state_provider,
     std::unique_ptr<TargetDisplayProvider> target_display_provider,
     const Browser* browser)
-    : state_provider_(std::move(state_provider)),
-      target_display_provider_(std::move(target_display_provider)),
-      screen_(display::Screen::GetScreen()),
-      browser_(browser) {}
+    : WindowSizer(std::move(state_provider),
+                  std::move(target_display_provider),
+                  display::Screen::GetScreen(),
+                  browser) {}
 
 WindowSizer::WindowSizer(
     std::unique_ptr<StateProvider> state_provider,
@@ -189,8 +189,7 @@ WindowSizer::WindowSizer(
   DCHECK(screen_);
 }
 
-WindowSizer::~WindowSizer() {
-}
+WindowSizer::~WindowSizer() {}
 
 // static
 void WindowSizer::GetBrowserWindowBoundsAndShowState(
@@ -404,25 +403,18 @@ ui::WindowShowState WindowSizer::GetWindowDefaultShowState() const {
   if (!browser_)
     return ui::SHOW_STATE_DEFAULT;
 
-  // Only tabbed browsers use the command line or preference state, with the
-  // exception of devtools.
-  bool show_state = !browser_->is_type_tabbed() && !browser_->is_devtools();
+  // Only tabbed browsers and dev tools use the command line.
+  bool use_command_line = browser_->is_type_tabbed() || browser_->is_devtools();
 
 #if defined(USE_AURA)
-  // We use the apps save state on aura.
-  show_state &= !browser_->is_app();
+  // We use the apps save state as well on aura.
+  use_command_line = use_command_line || browser_->is_app();
 #endif
 
-  if (show_state)
-    return browser_->initial_show_state();
-
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kStartMaximized))
+  if (use_command_line && base::CommandLine::ForCurrentProcess()->HasSwitch(
+                              switches::kStartMaximized)) {
     return ui::SHOW_STATE_MAXIMIZED;
+  }
 
-  if (browser_->initial_show_state() != ui::SHOW_STATE_DEFAULT)
-    return browser_->initial_show_state();
-
-  // Otherwise we use the default which can be overridden later on.
-  return ui::SHOW_STATE_DEFAULT;
+  return browser_->initial_show_state();
 }
