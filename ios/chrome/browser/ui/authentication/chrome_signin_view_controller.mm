@@ -18,10 +18,12 @@
 #import "base/strings/sys_string_conversions.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/timer/timer.h"
+#include "components/consent_auditor/consent_auditor.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
+#include "ios/chrome/browser/consent_auditor/consent_auditor_factory.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/chrome_identity_service_observer_bridge.h"
@@ -229,6 +231,15 @@ enum AuthenticationState {
 
 - (void)acceptSignInAndShowAccountsSettings:(BOOL)showAccountsSettings {
   signin_metrics::LogSigninAccessPointCompleted(_accessPoint, _promoAction);
+  DCHECK(_confirmationVC);
+  const std::vector<int>& consent_text_ids = _confirmationVC.consentStringIds;
+  int consent_confirmation_id = showAccountsSettings
+                                    ? _confirmationVC.openSettingsStringId
+                                    : [self acceptSigninButtonStringId];
+  ConsentAuditorFactory::GetForBrowserState(_browserState)
+      ->RecordGaiaConsent(consent_auditor::Feature::CHROME_SYNC,
+                          consent_text_ids, consent_confirmation_id,
+                          consent_auditor::ConsentStatus::GIVEN);
   _didAcceptSignIn = YES;
   if (!_didFinishSignIn) {
     _didFinishSignIn = YES;
@@ -285,9 +296,12 @@ enum AuthenticationState {
   return l10n_util::GetNSString(IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_TITLE);
 }
 
+- (int)acceptSigninButtonStringId {
+  return IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_OK_BUTTON;
+}
+
 - (NSString*)acceptSigninButtonTitle {
-  return l10n_util::GetNSString(
-      IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_OK_BUTTON);
+  return l10n_util::GetNSString([self acceptSigninButtonStringId]);
 }
 
 - (NSString*)skipSigninButtonTitle {
