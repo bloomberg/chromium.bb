@@ -87,6 +87,10 @@ public class CastAudioManager {
         return mAudioManager.abandonAudioFocus(l);
     }
 
+    public int getStreamMaxVolume(int streamType) {
+        return mAudioManager.getStreamMaxVolume(streamType);
+    }
+
     // TODO(sanfin): Do not expose this. All needed AudioManager methods can be adapted with
     // CastAudioManager.
     public AudioManager getInternal() {
