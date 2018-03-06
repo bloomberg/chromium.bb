@@ -3417,22 +3417,22 @@ void WebContentsImpl::DragSourceEndedAt(float client_x,
 }
 
 void WebContentsImpl::LoadStateChanged(
-    const GURL& url,
+    const std::string& host,
     const net::LoadStateWithParam& load_state,
     uint64_t upload_position,
     uint64_t upload_size) {
-  base::string16 host = url_formatter::IDNToUnicode(url.host());
+  base::string16 host16 = url_formatter::IDNToUnicode(host);
   // Drop no-op updates.
   if (load_state_.state == load_state.state &&
       load_state_.param == load_state.param &&
       upload_position_ == upload_position && upload_size_ == upload_size &&
-      load_state_host_ == host) {
+      load_state_host_ == host16) {
     return;
   }
   load_state_ = load_state;
   upload_position_ = upload_position;
   upload_size_ = upload_size;
-  load_state_host_ = host;
+  load_state_host_ = host16;
   if (load_state_.state == net::LOAD_STATE_READING_RESPONSE)
     SetNotWaitingForResponse();
   if (IsLoading()) {
