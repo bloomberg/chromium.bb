@@ -158,16 +158,6 @@ public interface ContentViewCore {
     boolean isAlive();
 
     /**
-     * @return Viewport width in physical pixels as set from onSizeChanged.
-     */
-    int getViewportWidthPix();
-
-    /**
-     * @return Viewport height in physical pixels as set from onSizeChanged.
-     */
-    int getViewportHeightPix();
-
-    /**
      * @return Whether a scroll targeting web content is in progress.
      */
     boolean isScrollInProgress();

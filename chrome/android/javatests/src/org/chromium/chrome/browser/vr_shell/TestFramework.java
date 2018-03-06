@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.vr_shell;
 
 import android.support.annotation.IntDef;
+import android.view.View;
 
 import org.junit.Assert;
 
@@ -73,6 +74,7 @@ public class TestFramework {
     private ChromeActivityTestRule mRule;
     private WebContents mFirstTabWebContents;
     private ContentViewCore mFirstTabCvc;
+    private View mFirstTabContentView;
 
     /**
      * Must be constructed after the rule has been applied (e.g. in whatever method is
@@ -82,6 +84,7 @@ public class TestFramework {
         mRule = rule;
         mFirstTabWebContents = mRule.getActivity().getActivityTab().getWebContents();
         mFirstTabCvc = mRule.getActivity().getActivityTab().getContentViewCore();
+        mFirstTabContentView = mRule.getActivity().getActivityTab().getContentView();
         Assert.assertFalse("Test did not start in VR", VrShellDelegate.isInVr());
     }
 
@@ -91,6 +94,10 @@ public class TestFramework {
 
     public ContentViewCore getFirstTabCvc() {
         return mFirstTabCvc;
+    }
+
+    public View getFirstTabContentView() {
+        return mFirstTabContentView;
     }
 
     public ChromeActivityTestRule getRule() {

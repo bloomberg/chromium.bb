@@ -66,16 +66,6 @@ public class TestContentViewCore implements ContentViewCore {
     }
 
     @Override
-    public int getViewportWidthPix() {
-        return 0;
-    }
-
-    @Override
-    public int getViewportHeightPix() {
-        return 0;
-    }
-
-    @Override
     public boolean isScrollInProgress() {
         return false;
     }

@@ -218,9 +218,8 @@ public class WebVrInputTest {
         // Wait to enter VR
         VrTransitionUtils.enterPresentationAndWait(
                 mVrTestFramework.getFirstTabCvc(), mVrTestFramework.getFirstTabWebContents());
-        int x = mVrTestFramework.getFirstTabCvc().getViewportHeightPix() / 2;
-        int y = mVrTestFramework.getFirstTabCvc().getViewportWidthPix() / 2;
-
+        int x = mVrTestFramework.getFirstTabContentView().getWidth() / 2;
+        int y = mVrTestFramework.getFirstTabContentView().getHeight() / 2;
         // TODO(mthiesse, crbug.com/758374): Injecting touch events into the root GvrLayout
         // (VrShellImpl) is flaky. Sometimes the events just don't get routed to the presentation
         // view for no apparent reason. We should figure out why this is and see if it's fixable.
