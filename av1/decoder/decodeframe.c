@@ -2255,20 +2255,81 @@ void av1_read_bitdepth_colorspace_sampling(AV1_COMMON *cm,
 
 void av1_read_timing_info_header(AV1_COMMON *cm,
                                  struct aom_read_bit_buffer *rb) {
+#if !CONFIG_BUFFER_MODEL
   cm->timing_info_present = aom_rb_read_bit(rb);  // timing info present flag
 
   if (cm->timing_info_present) {
-    cm->num_units_in_tick =
-        aom_rb_read_unsigned_literal(rb, 32);  // Number of units in tick
-    cm->time_scale = aom_rb_read_unsigned_literal(rb, 32);  // Time scale
-    cm->equal_picture_interval =
+#endif
+#if CONFIG_BUFFER_MODEL
+    cm->timing_info.num_units_in_display_tick = aom_rb_read_unsigned_literal(
+        rb, 32);  // Number of units in a display tick
+    cm->timing_info.time_scale =
+        aom_rb_read_unsigned_literal(rb, 32);  // Time scale
+    cm->timing_info.equal_picture_interval =
         aom_rb_read_bit(rb);  // Equal picture interval bit
-    if (cm->equal_picture_interval) {
-      cm->num_ticks_per_picture =
+    if (cm->timing_info.equal_picture_interval) {
+      cm->timing_info.num_ticks_per_picture =
           aom_rb_read_uvlc(rb) + 1;  // ticks per picture
+#else
+  cm->num_units_in_tick =
+      aom_rb_read_unsigned_literal(rb, 32);  // Number of units in tick
+  cm->time_scale = aom_rb_read_unsigned_literal(rb, 32);  // Time scale
+  cm->equal_picture_interval =
+      aom_rb_read_bit(rb);  // Equal picture interval bit
+  if (cm->equal_picture_interval) {
+    cm->num_ticks_per_picture = aom_rb_read_uvlc(rb) + 1;  // ticks per picture
+#endif
     }
+#if !CONFIG_BUFFER_MODEL
   }
+#endif
 }
+
+#if CONFIG_BUFFER_MODEL
+void av1_read_decoder_model_info(AV1_COMMON *cm,
+                                 struct aom_read_bit_buffer *rb) {
+  cm->buffer_model.bitrate_scale = aom_rb_read_literal(rb, 4);
+  cm->buffer_model.buffer_size_scale = aom_rb_read_literal(rb, 4);
+  cm->buffer_model.encoder_decoder_buffer_delay_length =
+      aom_rb_read_literal(rb, 5) + 1;
+  cm->buffer_model.num_units_in_decoding_tick = aom_rb_read_unsigned_literal(
+      rb, 32);  // Number of units in a decoding tick
+  cm->buffer_model.buffer_removal_delay_length = aom_rb_read_literal(rb, 5) + 1;
+  cm->buffer_model.frame_presentation_delay_length =
+      aom_rb_read_literal(rb, 5) + 1;
+}
+
+void av1_read_op_parameters_info(AV1_COMMON *const cm,
+                                 struct aom_read_bit_buffer *rb, int op_num) {
+  if (op_num > MAX_NUM_OPERATING_POINTS)
+    aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
+                       "AV1 does not support %d decoder model operating points",
+                       op_num + 1);
+
+  //  cm->op_params[op_num].has_parameters = aom_rb_read_bit(rb);
+  //  if (!cm->op_params[op_num].has_parameters) return;
+
+  cm->op_params[op_num].bitrate = aom_rb_read_uvlc(rb) + 1;
+
+  cm->op_params[op_num].buffer_size = aom_rb_read_uvlc(rb) + 1;
+
+  cm->op_params[op_num].cbr_flag = aom_rb_read_bit(rb);
+
+  cm->op_params[op_num].decoder_buffer_delay = aom_rb_read_literal(
+      rb, cm->buffer_model.encoder_decoder_buffer_delay_length);
+
+  cm->op_params[op_num].encoder_buffer_delay = aom_rb_read_literal(
+      rb, cm->buffer_model.encoder_decoder_buffer_delay_length);
+
+  cm->op_params[op_num].low_delay_mode_flag = aom_rb_read_bit(rb);
+}
+
+static void av1_read_tu_pts_info(AV1_COMMON *const cm,
+                                 struct aom_read_bit_buffer *rb) {
+  cm->tu_presentation_delay =
+      aom_rb_read_literal(rb, cm->buffer_model.frame_presentation_delay_length);
+}
+#endif
 
 void read_sequence_header(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   SequenceHeader *seq_params = &cm->seq_params;
@@ -2566,6 +2627,12 @@ static int read_uncompressed_header(AV1Decoder *pbi,
       // Show an existing frame directly.
       const int existing_frame_idx = aom_rb_read_literal(rb, 3);
       const int frame_to_show = cm->ref_frame_map[existing_frame_idx];
+#if CONFIG_BUFFER_MODEL
+      if (cm->decoder_model_info_present_flag &&
+          cm->timing_info.equal_picture_interval == 0) {
+        av1_read_tu_pts_info(cm, rb);
+      }
+#endif
       if (cm->seq_params.frame_id_numbers_present_flag) {
         int frame_id_length = cm->seq_params.frame_id_length;
         int display_frame_id = aom_rb_read_literal(rb, frame_id_length);
@@ -2610,7 +2677,15 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     cm->frame_type = (FRAME_TYPE)aom_rb_read_literal(rb, 2);  // 2 bits
     cm->show_frame = aom_rb_read_bit(rb);
     cm->showable_frame = 0;
+#if CONFIG_BUFFER_MODEL
+    if (cm->show_frame) {
+      if (cm->decoder_model_info_present_flag &&
+          cm->timing_info.equal_picture_interval == 0)
+        av1_read_tu_pts_info(cm, rb);
+    } else {
+#else
     if (!cm->show_frame) {
+#endif
       // See if this frame can be used as show_existing_frame in future
       cm->showable_frame = aom_rb_read_bit(rb);
     }
@@ -2700,6 +2775,27 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     }
   }
 
+#if CONFIG_BUFFER_MODEL
+  if (cm->decoder_model_info_present_flag) {
+    cm->buffer_removal_delay_present = aom_rb_read_bit(rb);
+    if (cm->buffer_removal_delay_present) {
+      for (int op_num = 0; op_num < cm->operating_points_decoder_model_cnt;
+           op_num++) {
+        if (((cm->op_params[op_num].decoder_model_operating_point_idc >>
+              cm->temporal_layer_id) &
+                 0x1 &&
+             (cm->op_params[op_num].decoder_model_operating_point_idc >>
+              (cm->enhancement_layer_id + 8)) &
+                 0x1) ||
+            cm->op_params[op_num].decoder_model_operating_point_idc == 0) {
+          cm->op_frame_timing[op_num].buffer_removal_delay =
+              aom_rb_read_literal(rb,
+                                  cm->buffer_model.buffer_removal_delay_length);
+        }
+      }
+    }
+  }
+#endif
   if (cm->frame_type == KEY_FRAME) {
     if (!cm->show_frame)  // unshown keyframe (forward keyframe)
       pbi->refresh_frame_flags = aom_rb_read_literal(rb, REF_FRAMES);

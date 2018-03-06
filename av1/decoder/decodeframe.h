@@ -47,6 +47,12 @@ void av1_read_bitdepth_colorspace_sampling(AV1_COMMON *cm,
                                            int allow_lowbitdepth);
 void av1_read_timing_info_header(AV1_COMMON *cm,
                                  struct aom_read_bit_buffer *rb);
+#if CONFIG_BUFFER_MODEL
+void av1_read_decoder_model_info(AV1_COMMON *cm,
+                                 struct aom_read_bit_buffer *rb);
+void av1_read_op_parameters_info(AV1_COMMON *const cm,
+                                 struct aom_read_bit_buffer *rb, int op_num);
+#endif
 
 struct aom_read_bit_buffer *av1_init_read_bit_buffer(
     struct AV1Decoder *pbi, struct aom_read_bit_buffer *rb, const uint8_t *data,

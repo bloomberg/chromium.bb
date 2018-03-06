@@ -27,6 +27,9 @@
 #include "av1/common/quant_common.h"
 #include "av1/common/restoration.h"
 #include "av1/common/tile_common.h"
+#if CONFIG_BUFFER_MODEL
+#include "av1/common/timing.h"
+#endif
 #include "av1/common/odintrin.h"
 #include "av1/encoder/hash_motion.h"
 #include "aom_dsp/grain_synthesis.h"
@@ -226,9 +229,11 @@ typedef struct SequenceHeader {
   int operating_point_idc[MAX_NUM_OPERATING_POINTS];
   int level[MAX_NUM_OPERATING_POINTS];
   int decoder_rate_model_param_present_flag[MAX_NUM_OPERATING_POINTS];
+#if !CONFIG_BUFFER_MODEL
   int decode_to_display_rate_ratio[MAX_NUM_OPERATING_POINTS];
   int initial_display_delay[MAX_NUM_OPERATING_POINTS];
   int extra_frame_buffers[MAX_NUM_OPERATING_POINTS];
+#endif
 } SequenceHeader;
 
 typedef struct AV1Common {
@@ -245,10 +250,22 @@ typedef struct AV1Common {
   int last_width;
   int last_height;
   int timing_info_present;
+#if !CONFIG_BUFFER_MODEL
   uint32_t num_units_in_tick;
   uint32_t time_scale;
   int equal_picture_interval;
   uint32_t num_ticks_per_picture;
+#else
+  aom_timing_info_t timing_info;
+  int operating_points_decoder_model_cnt;
+  int decoder_model_info_present_flag;
+  int buffer_removal_delay_present;
+  aom_dec_model_info_t buffer_model;
+  aom_dec_model_op_parameters_t op_params[MAX_NUM_OPERATING_POINTS + 1];
+  aom_op_timing_info_t op_frame_timing[MAX_NUM_OPERATING_POINTS + 1];
+  int tu_presentation_delay_flag;
+  int64_t tu_presentation_delay;
+#endif
 
   // TODO(jkoleszar): this implies chroma ss right now, but could vary per
   // plane. Revisit as part of the future change to YV12_BUFFER_CONFIG to

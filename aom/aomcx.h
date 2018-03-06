@@ -824,7 +824,7 @@ enum aome_enc_control_id {
    * bitstream. \note Valid ranges: 0..1, default is "UNKNOWN". 0 = UNKNOWN, 1 =
    * EQUAL
    */
-  AV1E_SET_TIMING_INFO,
+  AV1E_SET_TIMING_INFO_TYPE,
 
   /*!\brief Codec control function to add film grain parameters (one of several
    * preset types) info in the bitstream.
@@ -906,8 +906,12 @@ typedef enum {
   AOM_CONTENT_INVALID
 } aom_tune_content;
 
-/*!brief AV1 encoder timing info signaling */
-typedef enum { AOM_TIMING_UNSPECIFIED, AOM_TIMING_EQUAL } aom_timing_info_t;
+/*!brief AV1 encoder timing info type signaling */
+typedef enum {
+  AOM_TIMING_UNSPECIFIED,
+  AOM_TIMING_EQUAL,
+  AOM_TIMING_DEC_MODEL
+} aom_timing_info_type_t;
 
 /*!\brief Model tuning parameters
  *
@@ -1031,8 +1035,8 @@ AOM_CTRL_USE_TYPE(AV1E_SET_NUM_TG, unsigned int)
 AOM_CTRL_USE_TYPE(AV1E_SET_MTU, unsigned int)
 #define AOM_CTRL_AV1E_SET_MTU
 
-AOM_CTRL_USE_TYPE(AV1E_SET_TIMING_INFO, aom_timing_info_t)
-#define AOM_CTRL_AV1E_SET_TIMING_INFO
+AOM_CTRL_USE_TYPE(AV1E_SET_TIMING_INFO_TYPE, aom_timing_info_type_t)
+#define AOM_CTRL_AV1E_SET_TIMING_INFO_TYPE
 
 AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_DF, unsigned int)
 #define AOM_CTRL_AV1E_SET_ENABLE_DF

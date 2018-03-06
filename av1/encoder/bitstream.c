@@ -2498,20 +2498,89 @@ static void write_bitdepth_colorspace_sampling(
 
 static void write_timing_info_header(AV1_COMMON *const cm,
                                      struct aom_write_bit_buffer *wb) {
+#if !CONFIG_BUFFER_MODEL
   aom_wb_write_bit(wb, cm->timing_info_present);  // timing info present flag
 
   if (cm->timing_info_present) {
-    aom_wb_write_unsigned_literal(wb, cm->num_units_in_tick,
+#endif
+#if CONFIG_BUFFER_MODEL
+    aom_wb_write_unsigned_literal(wb, cm->timing_info.num_units_in_display_tick,
                                   32);  // Number of units in tick
-    aom_wb_write_unsigned_literal(wb, cm->time_scale, 32);  // Time scale
-    aom_wb_write_bit(wb,
-                     cm->equal_picture_interval);  // Equal picture interval bit
-    if (cm->equal_picture_interval) {
-      aom_wb_write_uvlc(wb,
-                        cm->num_ticks_per_picture - 1);  // ticks per picture
+    aom_wb_write_unsigned_literal(wb, cm->timing_info.time_scale,
+                                  32);  // Time scale
+    aom_wb_write_bit(
+        wb,
+        cm->timing_info.equal_picture_interval);  // Equal picture interval bit
+    if (cm->timing_info.equal_picture_interval) {
+      aom_wb_write_uvlc(
+          wb,
+          cm->timing_info.num_ticks_per_picture - 1);  // ticks per picture
+#else
+  aom_wb_write_unsigned_literal(wb, cm->num_units_in_tick,
+                                32);  // Number of units in tick
+  aom_wb_write_unsigned_literal(wb, cm->time_scale, 32);  // Time scale
+  aom_wb_write_bit(wb,
+                   cm->equal_picture_interval);  // Equal picture interval bit
+  if (cm->equal_picture_interval) {
+    aom_wb_write_uvlc(wb,
+                      cm->num_ticks_per_picture - 1);  // ticks per picture
+#endif
     }
+#if !CONFIG_BUFFER_MODEL
   }
+#endif
 }
+
+#if CONFIG_BUFFER_MODEL
+static void write_decoder_model_info(AV1_COMMON *const cm,
+                                     struct aom_write_bit_buffer *wb) {
+  aom_wb_write_literal(wb, cm->buffer_model.bitrate_scale, 4);
+  aom_wb_write_literal(wb, cm->buffer_model.buffer_size_scale, 4);
+  aom_wb_write_literal(
+      wb, cm->buffer_model.encoder_decoder_buffer_delay_length - 1, 5);
+  aom_wb_write_unsigned_literal(wb, cm->buffer_model.num_units_in_decoding_tick,
+                                32);  // Number of units in decoding tick
+  aom_wb_write_literal(wb, cm->buffer_model.buffer_removal_delay_length - 1, 5);
+  aom_wb_write_literal(wb, cm->buffer_model.frame_presentation_delay_length - 1,
+                       5);
+}
+
+static void write_dec_model_op_parameters(AV1_COMMON *const cm,
+                                          struct aom_write_bit_buffer *wb,
+                                          int op_num) {
+  if (op_num > MAX_NUM_OPERATING_POINTS)
+    aom_internal_error(
+        &cm->error, AOM_CODEC_UNSUP_BITSTREAM,
+        "Encoder does not support %d decoder model operating points", op_num);
+
+  //  aom_wb_write_bit(wb, cm->op_params[op_num].has_parameters);
+  //  if (!cm->op_params[op_num].has_parameters) return;
+
+  aom_wb_write_uvlc(wb, cm->op_params[op_num].bitrate - 1);
+
+  aom_wb_write_uvlc(wb, cm->op_params[op_num].buffer_size - 1);
+
+  aom_wb_write_bit(wb, cm->op_params[op_num].cbr_flag);
+
+  aom_wb_write_literal(wb, cm->op_params[op_num].decoder_buffer_delay,
+                       cm->buffer_model.encoder_decoder_buffer_delay_length);
+
+  aom_wb_write_literal(wb, cm->op_params[op_num].encoder_buffer_delay,
+                       cm->buffer_model.encoder_decoder_buffer_delay_length);
+
+  aom_wb_write_bit(wb, cm->op_params[op_num].low_delay_mode_flag);
+
+  cm->op_frame_timing[op_num].buffer_removal_delay =
+      0;  // reset the decoded frame counter
+}
+
+static void write_tu_pts_info(AV1_COMMON *const cm,
+                              struct aom_write_bit_buffer *wb) {
+  aom_wb_write_unsigned_literal(
+      wb, (uint32_t)cm->tu_presentation_delay,
+      cm->buffer_model.frame_presentation_delay_length);
+}
+#endif
 
 static void write_film_grain_params(AV1_COMP *cpi,
                                     struct aom_write_bit_buffer *wb) {
@@ -2846,6 +2915,12 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
       aom_wb_write_bit(wb, 1);  // show_existing_frame
       aom_wb_write_literal(wb, cpi->existing_fb_idx_to_show, 3);
 
+#if CONFIG_BUFFER_MODEL
+      if (cm->decoder_model_info_present_flag &&
+          cm->timing_info.equal_picture_interval == 0) {
+        write_tu_pts_info(cm, wb);
+      }
+#endif
       if (cm->seq_params.frame_id_numbers_present_flag) {
         int frame_id_len = cm->seq_params.frame_id_length;
         int display_frame_id = cm->ref_frame_id[cpi->existing_fb_idx_to_show];
@@ -2870,7 +2945,15 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
     if (cm->intra_only) cm->frame_type = INTRA_ONLY_FRAME;
 
     aom_wb_write_bit(wb, cm->show_frame);
+#if CONFIG_BUFFER_MODEL
+    if (cm->show_frame) {
+      if (cm->decoder_model_info_present_flag &&
+          cm->timing_info.equal_picture_interval == 0)
+        write_tu_pts_info(cm, wb);
+    } else {
+#else
     if (!cm->show_frame) {
+#endif
       aom_wb_write_bit(wb, cm->showable_frame);
     }
     if (frame_is_sframe(cm)) {
@@ -2932,6 +3015,28 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
     }
   }
 
+#if CONFIG_BUFFER_MODEL
+  if (cm->decoder_model_info_present_flag) {
+    aom_wb_write_bit(wb, cm->buffer_removal_delay_present);
+    if (cm->buffer_removal_delay_present) {
+      for (int op_num = 0; op_num < cm->operating_points_decoder_model_cnt;
+           op_num++) {
+        if (((cm->op_params[op_num].decoder_model_operating_point_idc >>
+              cm->temporal_layer_id) &
+                 0x1 &&
+             (cm->op_params[op_num].decoder_model_operating_point_idc >>
+              (cm->enhancement_layer_id + 8)) &
+                 0x1) ||
+            cm->op_params[op_num].decoder_model_operating_point_idc == 0) {
+          aom_wb_write_literal(
+              wb, (uint32_t)cm->op_frame_timing[op_num].buffer_removal_delay,
+              cm->buffer_model.buffer_removal_delay_length);
+          cm->op_frame_timing[op_num].buffer_removal_delay++;
+        }
+      }
+    }
+  }
+#endif
   if (cm->frame_type == KEY_FRAME) {
     write_frame_size(cm, frame_size_override_flag, wb);
     assert(av1_superres_unscaled(cm) ||
@@ -3360,19 +3465,54 @@ static uint32_t write_sequence_header_obu(AV1_COMP *cpi, uint8_t *const dst,
     for (i = 0; i < operating_points_minus1_cnt + 1; i++) {
       aom_wb_write_literal(&wb, 0, 12);  // operating_point_idc[i]
       aom_wb_write_literal(&wb, 0, 4);   // level[i]
-      aom_wb_write_literal(&wb, 0, 1);   // decoder_rate_model_present_flag[i]
+#if !CONFIG_BUFFER_MODEL
+      aom_wb_write_literal(&wb, 0, 1);  // decoder_rate_model_present_flag[i]
+#endif
     }
   }
-
   write_sequence_header(cpi, &wb);
 
   // color_config
   write_bitdepth_colorspace_sampling(cm, &wb);
 
+#if !CONFIG_BUFFER_MODEL
   // timing_info
   if (!cm->seq_params.reduced_still_picture_hdr)
     write_timing_info_header(cm, &wb);
+#else
+  if (!cm->seq_params.reduced_still_picture_hdr)
+    aom_wb_write_bit(&wb, cm->timing_info_present);  // timing info present flag
 
+  if (cm->timing_info_present) {
+    // timing_info
+    write_timing_info_header(cm, &wb);
+    aom_wb_write_bit(&wb, cm->decoder_model_info_present_flag);
+    if (cm->decoder_model_info_present_flag) write_decoder_model_info(cm, &wb);
+  }
+
+  if (cm->operating_points_decoder_model_cnt > 0) {
+    aom_wb_write_bit(&wb, 1);
+    aom_wb_write_literal(&wb, cm->operating_points_decoder_model_cnt - 1, 5);
+  } else {
+    aom_wb_write_bit(&wb, 0);
+  }
+  for (int op_num = 0; op_num < cm->operating_points_decoder_model_cnt;
+       ++op_num) {
+    aom_wb_write_literal(
+        &wb, cm->op_params[op_num].decoder_model_operating_point_idc, 12);
+    aom_wb_write_bit(&wb,
+                     cm->op_params[op_num].display_model_param_present_flag);
+    if (cm->op_params[op_num].display_model_param_present_flag)
+      aom_wb_write_literal(&wb, cm->op_params[op_num].initial_display_delay - 1,
+                           4);
+    if (cm->decoder_model_info_present_flag) {
+      aom_wb_write_bit(&wb,
+                       cm->op_params[op_num].decoder_model_param_present_flag);
+      if (cm->op_params[op_num].decoder_model_param_present_flag)
+        write_dec_model_op_parameters(cm, &wb, op_num);
+    }
+  }
+#endif
   aom_wb_write_bit(&wb, cm->film_grain_params_present);
 
   add_trailing_bits(&wb);

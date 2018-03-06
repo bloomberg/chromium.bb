@@ -22,6 +22,9 @@
 #include "av1/common/thread_common.h"
 #include "av1/common/onyxc_int.h"
 #include "av1/common/resize.h"
+#if CONFIG_BUFFER_MODEL
+#include "av1/common/timing.h"
+#endif
 #include "av1/encoder/aq_cyclicrefresh.h"
 #include "av1/encoder/av1_quantize.h"
 #include "av1/encoder/context_tree.h"
@@ -268,12 +271,22 @@ typedef struct AV1EncoderConfig {
   int color_range;
   int render_width;
   int render_height;
-  aom_timing_info_t timing_info;
+  aom_timing_info_type_t timing_info_type;
   int timing_info_present;
+#if !CONFIG_BUFFER_MODEL
   uint32_t num_units_in_tick;
   uint32_t time_scale;
   int equal_picture_interval;
   uint32_t num_ticks_per_picture;
+#else
+  aom_timing_info_t timing_info;
+  int decoder_model_info_present_flag;
+  int buffer_removal_delay_present;
+  int operating_points_decoder_model_cnt;
+  aom_dec_model_info_t buffer_model;
+  aom_dec_model_op_parameters_t op_params[MAX_NUM_OPERATING_POINTS + 1];
+  aom_op_timing_info_t op_frame_timing[MAX_NUM_OPERATING_POINTS + 1];
+#endif
   int film_grain_test_vector;
   const char *film_grain_table_filename;
 
@@ -596,9 +609,16 @@ int av1_receive_raw_frame(AV1_COMP *cpi, aom_enc_frame_flags_t frame_flags,
                           YV12_BUFFER_CONFIG *sd, int64_t time_stamp,
                           int64_t end_time_stamp);
 
+#if CONFIG_BUFFER_MODEL
+int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
+                            size_t *size, uint8_t *dest, int64_t *time_stamp,
+                            int64_t *time_end, int flush,
+                            const aom_rational_t *timebase);
+#else
 int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
                             size_t *size, uint8_t *dest, int64_t *time_stamp,
                             int64_t *time_end, int flush);
+#endif
 
 int av1_get_preview_raw_frame(AV1_COMP *cpi, YV12_BUFFER_CONFIG *dest);
 
@@ -624,6 +644,11 @@ int av1_set_internal_size(AV1_COMP *cpi, AOM_SCALING horiz_mode,
 int av1_get_quantizer(struct AV1_COMP *cpi);
 
 int av1_convert_sect5obus_to_annexb(uint8_t *buffer, size_t *input_size);
+
+#if CONFIG_BUFFER_MODEL
+int64_t timebase_units_to_ticks(const aom_rational_t *timebase, int64_t n);
+int64_t ticks_to_timebase_units(const aom_rational_t *timebase, int64_t n);
+#endif
 
 static INLINE int frame_is_kf_gf_arf(const AV1_COMP *cpi) {
   return frame_is_intra_only(&cpi->common) || cpi->refresh_alt_ref_frame ||

@@ -61,7 +61,8 @@ struct av1_extracfg {
 #endif
   unsigned int num_tg;
   unsigned int mtu_size;
-  aom_timing_info_t timing_info;
+
+  aom_timing_info_type_t timing_info_type;
   unsigned int frame_parallel_decoding_mode;
   int use_dual_filter;
   AQ_MODE aq_mode;
@@ -371,7 +372,13 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
   RANGE_CHECK(extra_cfg, tuning, AOM_TUNE_PSNR, AOM_TUNE_SSIM);
 #endif
 
-  RANGE_CHECK(extra_cfg, timing_info, AOM_TIMING_UNSPECIFIED, AOM_TIMING_EQUAL);
+#if CONFIG_BUFFER_MODEL
+  RANGE_CHECK(extra_cfg, timing_info_type, AOM_TIMING_UNSPECIFIED,
+              AOM_TIMING_DEC_MODEL);
+#else
+  RANGE_CHECK(extra_cfg, timing_info_type, AOM_TIMING_UNSPECIFIED,
+              AOM_TIMING_EQUAL);
+#endif
 
   RANGE_CHECK(extra_cfg, film_grain_test_vector, 0, 16);
 
@@ -456,15 +463,52 @@ static aom_codec_err_t set_encoder_config(
   oxcf->input_bit_depth = cfg->g_input_bit_depth;
   // guess a frame rate if out of whack, use 30
   oxcf->init_framerate = (double)cfg->g_timebase.den / cfg->g_timebase.num;
-  if (extra_cfg->timing_info == AOM_TIMING_EQUAL) {
+#if CONFIG_BUFFER_MODEL
+  if (extra_cfg->timing_info_type == AOM_TIMING_EQUAL ||
+      extra_cfg->timing_info_type == AOM_TIMING_DEC_MODEL) {
+#else
+  if (extra_cfg->timing_info_type == AOM_TIMING_EQUAL) {
+#endif
     oxcf->timing_info_present = 1;
+#if CONFIG_BUFFER_MODEL
+    oxcf->timing_info.num_units_in_display_tick = cfg->g_timebase.num;
+    oxcf->timing_info.time_scale = cfg->g_timebase.den;
+    oxcf->timing_info.num_ticks_per_picture = 1;
+#else
     oxcf->num_units_in_tick = cfg->g_timebase.num;
     oxcf->time_scale = cfg->g_timebase.den;
     oxcf->equal_picture_interval = 1;
     oxcf->num_ticks_per_picture = 1;
+#endif
   } else {
     oxcf->timing_info_present = 0;
+#if CONFIG_BUFFER_MODEL
+    oxcf->operating_points_decoder_model_cnt = 0;
+#endif
   }
+#if CONFIG_BUFFER_MODEL
+  if (extra_cfg->timing_info_type == AOM_TIMING_EQUAL) {
+    oxcf->timing_info.equal_picture_interval = 1;
+    oxcf->decoder_model_info_present_flag = 0;
+    oxcf->operating_points_decoder_model_cnt = 0;
+  } else if (extra_cfg->timing_info_type == AOM_TIMING_DEC_MODEL) {
+    //    if( extra_cfg->arnr_strength > 0 )
+    //    {
+    //      printf("Only --arnr-strength=0 can currently be used with
+    //      --timing-info=model."); return AOM_CODEC_INVALID_PARAM;
+    //    }
+    //    if( extra_cfg->enable_superres)
+    //    {
+    //      printf("Only --superres-mode=0 can currently be used with
+    //      --timing-info=model."); return AOM_CODEC_INVALID_PARAM;
+    //    }
+    oxcf->buffer_model.num_units_in_decoding_tick = cfg->g_timebase.num;
+    oxcf->timing_info.equal_picture_interval = 0;
+    oxcf->decoder_model_info_present_flag = 1;
+    oxcf->buffer_removal_delay_present = 1;
+    oxcf->operating_points_decoder_model_cnt = 1;
+  }
+#endif
   if (oxcf->init_framerate > 180) {
     oxcf->init_framerate = 30;
     oxcf->timing_info_present = 0;
@@ -925,10 +969,10 @@ static aom_codec_err_t ctrl_set_mtu(aom_codec_alg_priv_t *ctx, va_list args) {
   extra_cfg.mtu_size = CAST(AV1E_SET_MTU, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
-static aom_codec_err_t ctrl_set_timing_info(aom_codec_alg_priv_t *ctx,
-                                            va_list args) {
+static aom_codec_err_t ctrl_set_timing_info_type(aom_codec_alg_priv_t *ctx,
+                                                 va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
-  extra_cfg.timing_info = CAST(AV1E_SET_TIMING_INFO, args);
+  extra_cfg.timing_info_type = CAST(AV1E_SET_TIMING_INFO_TYPE, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
@@ -1136,6 +1180,7 @@ static aom_codec_err_t encoder_destroy(aom_codec_alg_priv_t *ctx) {
 // Turn on to test if supplemental superframe data breaks decoding
 #define TEST_SUPPLEMENTAL_SUPERFRAME_DATA 0
 
+#if !CONFIG_BUFFER_MODEL
 // av1 uses 10,000,000 ticks/second as time stamp
 #define TICKS_PER_SEC 10000000LL
 
@@ -1149,7 +1194,7 @@ static int64_t ticks_to_timebase_units(const aom_rational_t *timebase,
   const int64_t round = TICKS_PER_SEC * timebase->num / 2 - 1;
   return (n * timebase->den + round) / timebase->num / TICKS_PER_SEC;
 }
-
+#endif
 static aom_codec_frame_flags_t get_frame_pkt_flags(const AV1_COMP *cpi,
                                                    unsigned int lib_flags) {
   aom_codec_frame_flags_t flags = lib_flags << 16;
@@ -1271,9 +1316,15 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
     // invisible frames get packed with the next visible frame
     while (cx_data_sz - index_size >= ctx->cx_data_sz / 2 &&
            !is_frame_visible &&
+#if CONFIG_BUFFER_MODEL
+           -1 != av1_get_compressed_data(cpi, &lib_flags, &frame_size, cx_data,
+                                         &dst_time_stamp, &dst_end_time_stamp,
+                                         !img, timebase)) {
+#else
            -1 != av1_get_compressed_data(cpi, &lib_flags, &frame_size, cx_data,
                                          &dst_time_stamp, &dst_end_time_stamp,
                                          !img)) {
+#endif
       if (cpi->common.seq_params.frame_id_numbers_present_flag) {
         if (cpi->common.invalid_delta_frame_id_minus1) {
           ctx->base.err_detail = "Invalid delta_frame_id_minus1";
@@ -1660,7 +1711,7 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
 #endif
   { AV1E_SET_NUM_TG, ctrl_set_num_tg },
   { AV1E_SET_MTU, ctrl_set_mtu },
-  { AV1E_SET_TIMING_INFO, ctrl_set_timing_info },
+  { AV1E_SET_TIMING_INFO_TYPE, ctrl_set_timing_info_type },
   { AV1E_SET_FRAME_PARALLEL_DECODING, ctrl_set_frame_parallel_decoding_mode },
   { AV1E_SET_ERROR_RESILIENT_MODE, ctrl_set_error_resilient_mode },
   { AV1E_SET_S_FRAME_MODE, ctrl_set_s_frame_mode },

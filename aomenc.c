@@ -458,11 +458,16 @@ static const arg_def_t mtu_size =
 static const struct arg_enum_list timing_info_enum[] = {
   { "unspecified", AOM_TIMING_UNSPECIFIED },
   { "constant", AOM_TIMING_EQUAL },
+#if CONFIG_BUFFER_MODEL
+  { "model", AOM_TIMING_DEC_MODEL },
+#endif
   { NULL, 0 }
 };
 static const arg_def_t timing_info =
     ARG_DEF_ENUM(NULL, "timing-info", 1,
-                 "Signal timing info in the bitstream:", timing_info_enum);
+                 "Signal timing info in the bitstream (model unly works for no "
+                 "hidden frames, no super-res yet):",
+                 timing_info_enum);
 static const arg_def_t film_grain_test =
     ARG_DEF(NULL, "film-grain-test", 1,
             "Film grain test vectors (0: none (default), 1: test-1  2: test-2, "
@@ -698,7 +703,7 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
                                         AV1E_SET_SUPERBLOCK_SIZE,
                                         AV1E_SET_NUM_TG,
                                         AV1E_SET_MTU,
-                                        AV1E_SET_TIMING_INFO,
+                                        AV1E_SET_TIMING_INFO_TYPE,
                                         AV1E_SET_FILM_GRAIN_TEST_VECTOR,
                                         AV1E_SET_FILM_GRAIN_TABLE,
                                         AV1E_SET_ENABLE_REF_FRAME_MVS,
