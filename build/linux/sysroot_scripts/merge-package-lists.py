@@ -6,10 +6,9 @@
 """Merge package entries from different package lists.
 """
 
-# This is used for replacing packages in eg. stretch with those in
-# stretch-updates.  The updated packages are ABI compatible, but
-# include security patches, so we should use those instead in our
-# sysroots.
+# This is used for replacing packages in eg. sid with those in experimental.
+# The updated packages are ABI compatible, but include security patches, so we
+# should use those instead in our sysroots.
 
 import sys
 
