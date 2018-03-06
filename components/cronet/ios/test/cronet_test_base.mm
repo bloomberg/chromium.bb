@@ -6,13 +6,13 @@
 
 #include "base/location.h"
 #include "base/threading/thread.h"
-#include "components/grpc_support/test/quic_test_server.h"
 #include "crypto/sha2.h"
 #include "net/base/net_errors.h"
 #include "net/cert/asn1_util.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/cert/x509_util.h"
 #include "net/test/cert_test_util.h"
+#include "net/test/quic_simple_test_server.h"
 #include "net/test/test_data_directory.h"
 
 #pragma mark
@@ -200,12 +200,12 @@ namespace cronet {
 
 void CronetTestBase::SetUp() {
   ::testing::Test::SetUp();
-  grpc_support::StartQuicTestServer();
+  net::QuicSimpleTestServer::Start();
   delegate_ = [[TestDelegate alloc] init];
 }
 
 void CronetTestBase::TearDown() {
-  grpc_support::ShutdownQuicTestServer();
+  net::QuicSimpleTestServer::Shutdown();
   ::testing::Test::TearDown();
 }
 

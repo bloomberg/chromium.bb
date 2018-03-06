@@ -9,12 +9,13 @@
 #include "components/cronet/ios/test/cronet_test_base.h"
 #include "components/cronet/ios/test/start_cronet.h"
 #include "components/cronet/test/test_server.h"
-#include "components/grpc_support/test/quic_test_server.h"
 #include "net/base/mac/url_conversions.h"
+#include "net/test/quic_simple_test_server.h"
 #include "testing/gtest_mac.h"
 #include "url/gurl.h"
 
 namespace cronet {
+
 class PrefsTest : public CronetTestBase {
  protected:
   void SetUp() override {
@@ -97,10 +98,10 @@ TEST_F(PrefsTest, HttpSeverProperties) {
   [Cronet setExperimentalOptions:options];
 
   // Start Cronet Engine
-  StartCronet(grpc_support::GetQuicTestServerPort());
+  StartCronet(net::QuicSimpleTestServer::GetPort());
 
   // Start the request
-  NSURL* url = net::NSURLWithGURL(GURL(grpc_support::kTestServerSimpleUrl));
+  NSURL* url = net::NSURLWithGURL(net::QuicSimpleTestServer::GetSimpleURL());
   NSURLSessionDataTask* task = [session_ dataTaskWithURL:url];
   StartDataTaskAndWaitForCompletion(task);
 
