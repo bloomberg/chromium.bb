@@ -39,7 +39,7 @@ class APP_LIST_MODEL_EXPORT AppListItem {
   virtual ~AppListItem();
 
   void SetIcon(const gfx::ImageSkia& icon);
-  const gfx::ImageSkia& icon() const { return icon_; }
+  const gfx::ImageSkia& icon() const { return metadata_->icon; }
 
   const std::string& GetDisplayName() const {
     return short_name_.empty() ? name() : short_name_;
@@ -130,8 +130,6 @@ class APP_LIST_MODEL_EXPORT AppListItem {
   friend class AppListModelTest;
 
   ash::mojom::AppListItemMetadataPtr metadata_;
-
-  gfx::ImageSkia icon_;
 
   // A shortened name for the item, used for display.
   std::string short_name_;

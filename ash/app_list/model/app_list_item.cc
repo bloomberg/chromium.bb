@@ -15,7 +15,8 @@ AppListItem::AppListItem(const std::string& id)
                                                      std::string(),
                                                      std::string(),
                                                      syncer::StringOrdinal(),
-                                                     false)),
+                                                     false,
+                                                     gfx::ImageSkia())),
       highlighted_(false),
       is_installing_(false),
       percent_downloaded_(-1) {}
@@ -26,8 +27,8 @@ AppListItem::~AppListItem() {
 }
 
 void AppListItem::SetIcon(const gfx::ImageSkia& icon) {
-  icon_ = icon;
-  icon_.EnsureRepsForSupportedScales();
+  metadata_->icon = icon;
+  metadata_->icon.EnsureRepsForSupportedScales();
   for (auto& observer : observers_)
     observer.ItemIconChanged();
 }

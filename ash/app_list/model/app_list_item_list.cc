@@ -217,6 +217,13 @@ void AppListItemList::DeleteItemAt(size_t index) {
   // |item| will be deleted on destruction.
 }
 
+void AppListItemList::DeleteAllItems() {
+  if (app_list_items_.empty())
+    return;
+  for (size_t index = app_list_items_.size() - 1; index >= 0; --index)
+    DeleteItemAt(index);
+}
+
 void AppListItemList::EnsureValidItemPosition(AppListItem* item) {
   syncer::StringOrdinal position = item->position();
   if (position.IsValid())

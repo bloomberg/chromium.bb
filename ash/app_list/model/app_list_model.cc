@@ -276,6 +276,10 @@ void AppListModel::DeleteUninstalledItem(const std::string& id) {
   }
 }
 
+void AppListModel::DeleteAllItems() {
+  top_level_item_list_->DeleteAllItems();
+}
+
 // Private methods
 
 void AppListModel::OnListItemMoved(size_t from_index,

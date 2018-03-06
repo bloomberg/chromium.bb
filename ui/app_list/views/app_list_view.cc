@@ -195,7 +195,8 @@ class StateAnimationMetricsReporter : public ui::AnimationMetricsReporter {
 // An animation observer to decide whether to ignore scroll events.
 class ScrollAnimationObserver : public ui::ImplicitAnimationObserver {
  public:
-  ScrollAnimationObserver(base::WeakPtr<AppListView> view) : view_(view) {}
+  explicit ScrollAnimationObserver(base::WeakPtr<AppListView> view)
+      : view_(view) {}
   ~ScrollAnimationObserver() override = default;
 
  private:

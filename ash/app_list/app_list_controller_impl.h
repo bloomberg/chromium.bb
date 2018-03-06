@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "ash/app_list/app_list_view_delegate_mash.h"
 #include "ash/app_list/model/app_list_model.h"
@@ -65,6 +66,8 @@ class ASH_EXPORT AppListControllerImpl : public mojom::AppListController,
   void SetItemIsInstalling(const std::string& id, bool is_installing) override;
   void SetItemPercentDownloaded(const std::string& id,
                                 int32_t percent_downloaded) override;
+  void SetModelData(std::vector<AppListItemMetadataPtr> apps,
+                    bool is_search_engine_google) override;
 
   void GetIdToAppListIndexMap(GetIdToAppListIndexMapCallback callback) override;
   void FindOrCreateOemFolder(
