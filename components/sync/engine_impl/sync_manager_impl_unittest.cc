@@ -2710,7 +2710,7 @@ TEST_F(SyncManagerTestWithMockScheduler, BasicConfiguration) {
                  base::Unretained(&retry_task_counter)));
   EXPECT_EQ(0, ready_task_counter.times_called());
   EXPECT_EQ(0, retry_task_counter.times_called());
-  EXPECT_EQ(sync_pb::GetUpdatesCallerInfo::RECONFIGURATION, params.source);
+  EXPECT_EQ(sync_pb::SyncEnums::RECONFIGURATION, params.origin);
   EXPECT_EQ(types_to_download, params.types_to_download);
 }
 
