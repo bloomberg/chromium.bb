@@ -86,6 +86,12 @@ bool IsAppListWindow(const aura::Window* window) {
   return parent && parent->id() == kShellWindowId_AppListContainer;
 }
 
+bool IsTabletModeEnabled() {
+  return Shell::Get()
+      ->tablet_mode_controller()
+      ->IsTabletModeWindowManagerEnabled();
+}
+
 }  // namespace
 
 // ShelfLayoutManager::UpdateShelfObserver -------------------------------------
@@ -1192,7 +1198,7 @@ void ShelfLayoutManager::CompleteGestureDrag(
   // behavior if there is at least one window visible.
   gesture_drag_status_ = GESTURE_DRAG_COMPLETE_IN_PROGRESS;
   if (shelf_->auto_hide_behavior() != new_auto_hide_behavior &&
-      HasVisibleWindow()) {
+      HasVisibleWindow() && !IsTabletModeEnabled()) {
     shelf_->SetAutoHideBehavior(new_auto_hide_behavior);
   } else {
     UpdateVisibilityState();
@@ -1221,9 +1227,7 @@ void ShelfLayoutManager::CompleteAppListDrag(
   } else {
     // Snap the app list to corresponding state according to the snapping
     // thresholds.
-    if (Shell::Get()
-            ->tablet_mode_controller()
-            ->IsTabletModeWindowManagerEnabled()) {
+    if (IsTabletModeEnabled()) {
       app_list_state = launcher_above_shelf_bottom_amount_ >
                                kAppListDragSnapToFullscreenThreshold
                            ? AppListState::FULLSCREEN_ALL_APPS
