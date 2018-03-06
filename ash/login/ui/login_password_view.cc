@@ -9,12 +9,12 @@
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/public/cpp/login_constants.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/user/button_from_view.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_node_data.h"
-#include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/event_constants.h"
@@ -359,7 +359,9 @@ void LoginPasswordView::TestApi::set_immediately_hover_easy_unlock_icon() {
   view_->easy_unlock_icon_->set_immediately_hover_for_test();
 }
 
-LoginPasswordView::LoginPasswordView() : ime_keyboard_observer_(this) {
+LoginPasswordView::LoginPasswordView() {
+  Shell::Get()->ime_controller()->AddObserver(this);
+
   auto root_layout =
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical);
   root_layout->set_main_axis_alignment(
@@ -444,19 +446,16 @@ LoginPasswordView::LoginPasswordView() : ime_keyboard_observer_(this) {
   // Make sure the textfield always starts with focus.
   textfield_->RequestFocus();
 
-  // Input method manager may be null in tests.
-  if (chromeos::input_method::InputMethodManager::Get()) {
-    chromeos::input_method::ImeKeyboard* keyboard =
-        chromeos::input_method::InputMethodManager::Get()->GetImeKeyboard();
-    ime_keyboard_observer_.Add(keyboard);
-    OnCapsLockChanged(keyboard->CapsLockIsEnabled());
-  }
+  // Initialize with the initial state of caps lock.
+  OnCapsLockChanged(Shell::Get()->ime_controller()->IsCapsLockEnabled());
 
   // Make sure the UI start with the correct states.
   UpdateUiState();
 }
 
-LoginPasswordView::~LoginPasswordView() = default;
+LoginPasswordView::~LoginPasswordView() {
+  Shell::Get()->ime_controller()->RemoveObserver(this);
+}
 
 void LoginPasswordView::Init(
     const OnPasswordSubmit& on_submit,
