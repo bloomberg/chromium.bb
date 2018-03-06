@@ -393,6 +393,9 @@ class AndroidProfileTool(object):
       cyglog_dir = os.path.join(self._host_cyglog_dir, 'cyglog')
       files = os.listdir(cyglog_dir)
 
+    if len(files) == 0:
+      raise NoCyglogDataError('No cyglog data was collected')
+
     return [os.path.join(cyglog_dir, x) for x in files]
 
 

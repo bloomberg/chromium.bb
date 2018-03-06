@@ -13,7 +13,6 @@ import logging
 import multiprocessing
 import os
 import re
-import string
 import sys
 import tempfile
 
@@ -123,6 +122,7 @@ class ObjectFileProcessor(object):
     symbol_infos_nested = pool.map(
         symbol_extractor.SymbolInfosFromBinary, obj_files)
     pool.close()
+    pool.join()
     result = []
     for symbol_infos in symbol_infos_nested:
       result += symbol_infos
@@ -201,47 +201,6 @@ class OffsetOrderfileGenerator(object):
       raise _SymbolNotFoundException(offset)
 
 
-def _ParseLogLines(log_file_lines):
-  """Parses a merged cyglog produced by mergetraces.py.
-
-  Args:
-    log_file_lines: array of lines in log file produced by profiled run
-
-    Below is an example of a small log file:
-    5086e000-52e92000 r-xp 00000000 b3:02 51276      libchromeview.so
-    secs       usecs      pid:threadid    func
-    START
-    1314897086 795828     3587:1074648168 0x509e105c
-    1314897086 795874     3587:1074648168 0x509e0eb4
-    1314897086 796326     3587:1074648168 0x509e0e3c
-    1314897086 796552     3587:1074648168 0x509e07bc
-    END
-
-  Returns:
-    An ordered list of callee offsets.
-  """
-  call_lines = []
-  vm_start = 0
-  line = log_file_lines[0]
-  assert 'r-xp' in line
-  end_index = line.find('-')
-  vm_start = int(line[:end_index], 16)
-  for line in log_file_lines[3:]:
-    fields = line.split()
-    if len(fields) == 4:
-      call_lines.append(fields)
-    else:
-      assert fields[0] == 'END'
-  # Convert strings to int in fields.
-  call_info = []
-  for call_line in call_lines:
-    addr = int(call_line[3], 16)
-    if vm_start < addr:
-      addr -= vm_start
-      call_info.append(addr)
-  return call_info
-
-
 def _WarnAboutDuplicates(offsets):
   """Warns about duplicate offsets.
 
@@ -275,9 +234,7 @@ def _CreateArgumentParser():
   parser.add_argument('--target-arch', required=False,
                       choices=['arm', 'arm64', 'x86', 'x86_64', 'x64', 'mips'],
                       help='The target architecture for libchrome.so')
-  parser.add_argument('--merged-cyglog', type=str, required=False,
-                      help='Path to the merged cyglog')
-  parser.add_argument('--reached-offsets', type=str, required=False,
+  parser.add_argument('--reached-offsets', type=str, required=True,
                       help='Path to the reached offsets')
   parser.add_argument('--native-library', type=str, required=True,
                       help='Path to the unstripped instrumented library')
@@ -290,20 +247,13 @@ def main():
   parser = _CreateArgumentParser()
   args = parser.parse_args()
 
-  assert bool(args.merged_cyglog) ^ bool(args.reached_offsets)
-
   if not args.target_arch:
     args.arch = cygprofile_utils.DetectArchitecture()
   symbol_extractor.SetArchitecture(args.target_arch)
 
   obj_dir = cygprofile_utils.GetObjDir(args.native_library)
 
-  offsets = []
-  if args.merged_cyglog:
-    log_file_lines = map(string.rstrip, open(args.merged_cyglog).readlines())
-    offsets = _ParseLogLines(log_file_lines)
-  else:
-    offsets = _ReadReachedOffsets(args.reached_offsets)
+  offsets = _ReadReachedOffsets(args.reached_offsets)
   assert offsets
   _WarnAboutDuplicates(offsets)
 
