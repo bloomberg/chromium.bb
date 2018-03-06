@@ -349,11 +349,13 @@ void AlsaVolumeControl::RefreshMixerFds(ScopedAlsaMixer* mixer) {
 }
 
 void AlsaVolumeControl::OnFileCanReadWithoutBlocking(int fd) {
-  alsa_->MixerHandleEvents(volume_mixer_->mixer);
-  if (mute_mixer_) {
+  if (volume_mixer_->mixer) {
+    alsa_->MixerHandleEvents(volume_mixer_->mixer);
+  }
+  if (mute_mixer_ && mute_mixer_->mixer) {
     alsa_->MixerHandleEvents(mute_mixer_->mixer);
   }
-  if (amp_mixer_) {
+  if (amp_mixer_ && amp_mixer_->mixer) {
     // amixer locks up if we don't call this for unknown reasons.
     alsa_->MixerHandleEvents(amp_mixer_->mixer);
   }
