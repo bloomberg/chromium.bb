@@ -18,8 +18,8 @@ FAIL [[OwnPropertyKeys]] should not reorder where 'then' appears if it's a named
 PASS A and B jointly observe the same identity for cross-origin Window and Location
 PASS Cross-origin functions get local Function.prototype
 FAIL Cross-origin Window accessors get local Function.prototype Cannot read property 'name' of undefined
-FAIL Same-origin observers get different functions for cross-origin objects assert_true: same-origin Window functions get their own object expected true got false
-FAIL Same-origin observers get different accessors for cross-origin Window assert_true: different Window accessors per-incumbent script settings object expected true got false
+FAIL Same-origin observers get different functions for cross-origin objects assert_not_equals: same-origin Window functions get their own object got disallowed value function "function () { [native code] }"
+FAIL Same-origin observers get different accessors for cross-origin Window assert_not_equals: different Window accessors per-incumbent script settings object got disallowed value undefined
 FAIL Same-origin observers get different accessors for cross-origin Location Blocked a frame with origin "http://web-platform.test:8001" from accessing a cross-origin frame.
 FAIL {}.toString.call() does the right thing on cross-origin objects assert_equals: expected "[object Object]" but got "[object Location]"
 PASS Resolving a promise with a cross-origin window without a 'then' subframe should work.
