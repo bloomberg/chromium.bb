@@ -219,31 +219,16 @@ template <typename STRING_TYPE> class BasicStringPiece {
     length_ = str ? STRING_TYPE::traits_type::length(str) : 0;
   }
 
-  constexpr value_type operator[](size_type i) const {
-    CHECK(i < length_);
-    return ptr_[i];
-  }
-
-  value_type front() const {
-    CHECK_NE(0UL, length_);
-    return ptr_[0];
-  }
-
-  value_type back() const {
-    CHECK_NE(0UL, length_);
-    return ptr_[length_ - 1];
-  }
+  constexpr value_type operator[](size_type i) const { return ptr_[i]; }
+  value_type front() const { return ptr_[0]; }
+  value_type back() const { return ptr_[length_ - 1]; }
 
   constexpr void remove_prefix(size_type n) {
-    CHECK(n <= length_);
     ptr_ += n;
     length_ -= n;
   }
 
-  constexpr void remove_suffix(size_type n) {
-    CHECK(n <= length_);
-    length_ -= n;
-  }
+  constexpr void remove_suffix(size_type n) { length_ -= n; }
 
   int compare(const BasicStringPiece<STRING_TYPE>& x) const {
     int r = wordmemcmp(
@@ -372,7 +357,7 @@ template <typename STRING_TYPE> class BasicStringPiece {
 
  protected:
   const value_type* ptr_;
-  size_type length_;
+  size_type     length_;
 };
 
 template <typename STRING_TYPE>
