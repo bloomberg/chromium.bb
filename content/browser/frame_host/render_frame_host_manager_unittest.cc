@@ -2198,12 +2198,12 @@ TEST_F(RenderFrameHostManagerTest, TraverseComplexOpenerChain) {
                   TestRenderFrameHost::CreateStubInterfaceProviderRequest(),
                   blink::WebTreeScopeType::kDocument, std::string(),
                   "uniqueName0", false, base::UnguessableToken::Create(),
-                  blink::FramePolicy(), FrameOwnerProperties());
+                  blink::FramePolicy(), FrameOwnerProperties(), false);
   tree1->AddFrame(root1, process_id, 13,
                   TestRenderFrameHost::CreateStubInterfaceProviderRequest(),
                   blink::WebTreeScopeType::kDocument, std::string(),
                   "uniqueName1", false, base::UnguessableToken::Create(),
-                  blink::FramePolicy(), FrameOwnerProperties());
+                  blink::FramePolicy(), FrameOwnerProperties(), false);
 
   std::unique_ptr<TestWebContents> tab2(
       TestWebContents::Create(browser_context(), nullptr));
@@ -2215,12 +2215,12 @@ TEST_F(RenderFrameHostManagerTest, TraverseComplexOpenerChain) {
                   TestRenderFrameHost::CreateStubInterfaceProviderRequest(),
                   blink::WebTreeScopeType::kDocument, std::string(),
                   "uniqueName2", false, base::UnguessableToken::Create(),
-                  blink::FramePolicy(), FrameOwnerProperties());
+                  blink::FramePolicy(), FrameOwnerProperties(), false);
   tree2->AddFrame(root2, process_id, 23,
                   TestRenderFrameHost::CreateStubInterfaceProviderRequest(),
                   blink::WebTreeScopeType::kDocument, std::string(),
                   "uniqueName3", false, base::UnguessableToken::Create(),
-                  blink::FramePolicy(), FrameOwnerProperties());
+                  blink::FramePolicy(), FrameOwnerProperties(), false);
 
   std::unique_ptr<TestWebContents> tab3(
       TestWebContents::Create(browser_context(), nullptr));
@@ -2237,7 +2237,7 @@ TEST_F(RenderFrameHostManagerTest, TraverseComplexOpenerChain) {
                   TestRenderFrameHost::CreateStubInterfaceProviderRequest(),
                   blink::WebTreeScopeType::kDocument, std::string(),
                   "uniqueName4", false, base::UnguessableToken::Create(),
-                  blink::FramePolicy(), FrameOwnerProperties());
+                  blink::FramePolicy(), FrameOwnerProperties(), false);
 
   root1->child_at(1)->SetOpener(root1->child_at(1));
   root1->SetOpener(root2->child_at(1));

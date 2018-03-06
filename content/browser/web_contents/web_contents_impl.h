@@ -343,6 +343,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   uint64_t GetUploadSize() const override;
   uint64_t GetUploadPosition() const override;
   const std::string& GetEncoding() const override;
+  void SetWasDiscarded(bool was_discarded) override;
   void IncrementCapturerCount(const gfx::Size& capture_size) override;
   void DecrementCapturerCount() override;
   bool IsBeingCaptured() const override;

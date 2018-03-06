@@ -412,6 +412,9 @@ class CORE_EXPORT Document : public ContainerNode,
   bool hidden() const;
   void DidChangeVisibilityState();
 
+  bool wasDiscarded() const;
+  void SetWasDiscarded(bool);
+
   // If the document is "prefetch only", it will not be fully contstructed,
   // and should never be displayed. Only a few resources will be loaded and
   // scanned, in order to warm up caches.
@@ -1667,6 +1670,8 @@ class CORE_EXPORT Document : public ContainerNode,
   TaskRunnerTimer<Document> update_focus_appearance_timer_;
 
   Member<Element> css_target_;
+
+  bool was_discarded_;
 
   LoadEventProgress load_event_progress_;
 

@@ -361,6 +361,13 @@ void WebURLRequest::SetCheckForBrowserSideNavigation(bool check) {
   resource_request_->SetCheckForBrowserSideNavigation(check);
 }
 
+bool WebURLRequest::WasDiscarded() const {
+  return resource_request_->WasDiscarded();
+}
+void WebURLRequest::SetWasDiscarded(bool was_discarded) {
+  resource_request_->SetWasDiscarded(was_discarded);
+}
+
 double WebURLRequest::UiStartTime() const {
   return resource_request_->UiStartTime();
 }

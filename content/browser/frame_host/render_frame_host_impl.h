@@ -1232,6 +1232,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // to OnBeforeUnloadACK(), or until the timeout triggers.
   std::unique_ptr<TimeoutMonitor> beforeunload_timeout_;
 
+  // Returns whether the tab was previously discarded.
+  // This is passed to RequestNavigationParams in NavigationRequest.
+  bool was_discarded_;
+
   // Indicates whether this RenderFrameHost is in the process of loading a
   // document or not.
   bool is_loading_;

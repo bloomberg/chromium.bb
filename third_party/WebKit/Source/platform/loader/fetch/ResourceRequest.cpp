@@ -73,6 +73,7 @@ ResourceRequest::ResourceRequest(const KURL& url)
       referrer_policy_(kReferrerPolicyDefault),
       did_set_http_referrer_(false),
       check_for_browser_side_navigation_(true),
+      was_discarded_(false),
       ui_start_time_(0),
       is_external_request_(false),
       cors_preflight_policy_(
@@ -160,6 +161,7 @@ std::unique_ptr<ResourceRequest> ResourceRequest::CreateRedirectRequest(
   if (request->HttpMethod() == HttpMethod())
     request->SetHTTPBody(HttpBody());
   request->SetCheckForBrowserSideNavigation(CheckForBrowserSideNavigation());
+  request->SetWasDiscarded(WasDiscarded());
   request->SetCORSPreflightPolicy(CORSPreflightPolicy());
 
   return request;

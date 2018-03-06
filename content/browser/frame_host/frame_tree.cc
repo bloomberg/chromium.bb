@@ -183,7 +183,8 @@ bool FrameTree::AddFrame(
     bool is_created_by_script,
     const base::UnguessableToken& devtools_frame_token,
     const blink::FramePolicy& frame_policy,
-    const FrameOwnerProperties& frame_owner_properties) {
+    const FrameOwnerProperties& frame_owner_properties,
+    bool was_discarded) {
   CHECK_NE(new_routing_id, MSG_ROUTING_NONE);
 
   // A child frame always starts with an initial empty document, which means
@@ -206,6 +207,9 @@ bool FrameTree::AddFrame(
   // RenderFrameProxy objects when the RenderFrameHost is created.
   new_node->SetPendingFramePolicy(frame_policy);
   new_node->CommitPendingFramePolicy();
+
+  if (was_discarded)
+    new_node->set_was_discarded();
 
   // Add the new node to the FrameTree, creating the RenderFrameHost.
   FrameTreeNode* added_node =

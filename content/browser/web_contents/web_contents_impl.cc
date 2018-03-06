@@ -1315,6 +1315,10 @@ const std::string& WebContentsImpl::GetEncoding() const {
   return canonical_encoding_;
 }
 
+void WebContentsImpl::SetWasDiscarded(bool was_discarded) {
+  GetFrameTree()->root()->set_was_discarded();
+}
+
 void WebContentsImpl::IncrementCapturerCount(const gfx::Size& capture_size) {
   DCHECK(!is_being_destroyed_);
   ++capturer_count_;

@@ -370,6 +370,14 @@ class CONTENT_EXPORT FrameTreeNode {
     return replication_state_.has_received_user_gesture;
   }
 
+  // When a tab is discarded, WebContents sets was_discarded on its
+  // root FrameTreeNode.
+  // In addition, when a child frame is created, this bit is passed on from
+  // parent to child.
+  // When a navigation request is created, was_discarded is passed on to the
+  // request and reset to false in FrameTreeNode.
+  void set_was_discarded() { was_discarded_ = true; }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessFeaturePolicyBrowserTest,
                            ContainerPolicyDynamic);
@@ -476,6 +484,8 @@ class CONTENT_EXPORT FrameTreeNode {
   base::ObserverList<Observer> observers_;
 
   base::TimeTicks last_focus_time_;
+
+  bool was_discarded_;
 
   // A helper for tracing the snapshots of this FrameTreeNode and attributing
   // browser process activities to this node (when possible).  It is unrelated

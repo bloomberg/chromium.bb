@@ -201,6 +201,7 @@ typedef (HTMLScriptElement or SVGScriptElement) HTMLOrSVGScriptElement;
     // https://w3c.github.io/page-visibility/#extensions-to-the-document-interface
     readonly attribute boolean hidden;
     readonly attribute VisibilityState visibilityState;
+    [RuntimeEnabled=PageLifecycle] readonly attribute boolean wasDiscarded;
 
     // CORS and RFC1918
     // https://wicg.github.io/cors-rfc1918/#feature-detect

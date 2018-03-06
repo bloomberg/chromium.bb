@@ -150,6 +150,12 @@ class RenderFrameHostManagerTest : public ContentBrowserTest {
         original_file_path, replacement_text, replacement_path);
   }
 
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    const char kBlinkPageLifecycleFeature[] = "PageLifecycle";
+    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
+                                    kBlinkPageLifecycleFeature);
+  }
+
   void SetUpOnMainThread() override {
     // Support multiple sites on the test server.
     host_resolver()->AddRule("*", "127.0.0.1");
@@ -1479,6 +1485,31 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerSpoofingTest,
   // The visible entry should be null, resulting in about:blank in the address
   // bar.
   EXPECT_FALSE(contents->GetController().GetVisibleEntry());
+}
+
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
+                       WasDiscardedWhenNavigationInterruptsReload) {
+  EXPECT_TRUE(embedded_test_server()->Start());
+  GURL discarded_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), discarded_url));
+  // Discard the page.
+  shell()->web_contents()->SetWasDiscarded(true);
+  // Reload the discarded page, but pretend that it's slow to commit.
+  TestNavigationManager first_reload(shell()->web_contents(), discarded_url);
+  shell()->web_contents()->GetController().Reload(
+      ReloadType::ORIGINAL_REQUEST_URL, false);
+  EXPECT_TRUE(first_reload.WaitForRequestStart());
+  // Before the response is received, simulate user navigating to another URL.
+  GURL second_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  TestNavigationManager second_navigation(shell()->web_contents(), second_url);
+  shell()->LoadURL(second_url);
+  second_navigation.WaitForNavigationFinished();
+  const char kDiscardedStateJS[] =
+      "window.domAutomationController.send(window.document.wasDiscarded);";
+  bool discarded_result;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(shell(), kDiscardedStateJS,
+                                                   &discarded_result));
+  EXPECT_FALSE(discarded_result);
 }
 
 // Ensures that a pending navigation's URL  is no longer visible after the
