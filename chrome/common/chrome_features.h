@@ -32,9 +32,6 @@ extern const base::Feature kAllowAutoplayUnmutedInWebappManifestScope;
 #if defined(OS_MACOSX)
 extern const base::Feature kAppleScriptExecuteJavaScriptMenuItem;
 extern const base::Feature kShow10_9ObsoleteInfobar;
-#if BUILDFLAG(MAC_VIEWS_BROWSER)
-extern const base::Feature kViewsBrowserWindows;
-#endif
 extern const base::Feature kViewsProfileChooser;
 extern const base::Feature kViewsTaskManager;
 #endif  // defined(OS_MACOSX)
