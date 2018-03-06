@@ -5,26 +5,29 @@
 #include "core/svg/SVGResource.h"
 
 #include "core/dom/Element.h"
+#include "core/dom/IdTargetObserver.h"
 #include "core/dom/TreeScope.h"
 #include "core/layout/svg/LayoutSVGResourceContainer.h"
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
 #include "core/svg/SVGElement.h"
+#include "core/svg/SVGURIReference.h"
 
 namespace blink {
 
 SVGResource::SVGResource(TreeScope& tree_scope, const AtomicString& id)
-    : IdTargetObserver(tree_scope.GetIdTargetObserverRegistry(), id),
-      tree_scope_(tree_scope),
-      target_(tree_scope.getElementById(id)) {}
-
-SVGResource::~SVGResource() = default;
+    : tree_scope_(tree_scope) {
+  target_ = SVGURIReference::ObserveTarget(
+      id_observer_, tree_scope, id,
+      WTF::BindRepeating(&SVGResource::TargetChanged, WrapWeakPersistent(this),
+                         id));
+}
 
 void SVGResource::Trace(Visitor* visitor) {
   visitor->Trace(tree_scope_);
   visitor->Trace(target_);
+  visitor->Trace(id_observer_);
   visitor->Trace(pending_clients_);
-  IdTargetObserver::Trace(visitor);
 }
 
 void SVGResource::AddWatch(SVGElement& element) {
@@ -39,6 +42,10 @@ void SVGResource::RemoveWatch(SVGElement& element) {
 bool SVGResource::IsEmpty() const {
   LayoutSVGResourceContainer* container = ResourceContainer();
   return (!container || !container->HasClients()) && pending_clients_.IsEmpty();
+}
+
+void SVGResource::Unregister() {
+  SVGURIReference::UnobserveTarget(id_observer_);
 }
 
 void SVGResource::NotifyResourceClients() {
@@ -60,8 +67,8 @@ LayoutSVGResourceContainer* SVGResource::ResourceContainer() const {
   return ToLayoutSVGResourceContainer(layout_object);
 }
 
-void SVGResource::IdTargetChanged() {
-  Element* new_target = tree_scope_->getElementById(Id());
+void SVGResource::TargetChanged(const AtomicString& id) {
+  Element* new_target = tree_scope_->getElementById(id);
   if (new_target == target_)
     return;
   // Detach clients from the old resource, moving them to the pending list
