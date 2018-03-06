@@ -14,6 +14,7 @@ class Datatype(object):
   HTML = 'html'
   IMAGE = 'image'
   TEXT = 'text'
+  JSON = 'json'
 
 
 class OutputManager(object):
