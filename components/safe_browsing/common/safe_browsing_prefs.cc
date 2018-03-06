@@ -526,6 +526,8 @@ void CanonicalizeDomainList(
 bool IsURLWhitelistedByPolicy(const GURL& url,
                               StringListPrefMember* pref_member) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  if (!pref_member)
+    return false;
   std::vector<std::string> sb_whitelist_domains = pref_member->GetValue();
   return std::find_if(sb_whitelist_domains.begin(), sb_whitelist_domains.end(),
                       [&url](const std::string& domain) {

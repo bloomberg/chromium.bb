@@ -12,6 +12,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -35,6 +36,8 @@ class SafeBrowsingPrefsTest : public ::testing::Test {
     prefs_.registry()->RegisterListPref(prefs::kPasswordProtectionLoginURLs);
     prefs_.registry()->RegisterBooleanPref(
         prefs::kSafeBrowsingExtendedReportingOptInAllowed, true);
+    prefs_.registry()->RegisterListPref(prefs::kSafeBrowsingWhitelistDomains);
+
     ResetExperiments(/*can_show_scout=*/false);
   }
 
@@ -112,6 +115,7 @@ class SafeBrowsingPrefsTest : public ::testing::Test {
 
  private:
   std::unique_ptr<base::test::ScopedFeatureList> feature_list_;
+  content::TestBrowserThreadBundle thread_bundle_;
 };
 
 // This test ensures that we correctly select between SBER and Scout as the
@@ -422,4 +426,23 @@ TEST_F(SafeBrowsingPrefsTest, IsExtendedReportingPolicyManaged) {
   EXPECT_TRUE(IsExtendedReportingOptInAllowed(prefs_));
 }
 
+TEST_F(SafeBrowsingPrefsTest, VerifyIsURLWhitelistedByPolicy) {
+  GURL target_url("https://www.foo.com");
+  // When PrefMember is null, URL is not whitelisted.
+  EXPECT_FALSE(IsURLWhitelistedByPolicy(target_url, nullptr));
+
+  EXPECT_FALSE(prefs_.HasPrefPath(prefs::kSafeBrowsingWhitelistDomains));
+  base::ListValue whitelisted_domains;
+  whitelisted_domains.AppendString("foo.com");
+  prefs_.Set(prefs::kSafeBrowsingWhitelistDomains, whitelisted_domains);
+  StringListPrefMember string_list_pref;
+  string_list_pref.Init(prefs::kSafeBrowsingWhitelistDomains, &prefs_);
+  EXPECT_TRUE(IsURLWhitelistedByPolicy(target_url, prefs_));
+  EXPECT_TRUE(IsURLWhitelistedByPolicy(target_url, &string_list_pref));
+
+  GURL not_whitelisted_url("https://www.bar.com");
+  EXPECT_FALSE(IsURLWhitelistedByPolicy(not_whitelisted_url, prefs_));
+  EXPECT_FALSE(
+      IsURLWhitelistedByPolicy(not_whitelisted_url, &string_list_pref));
+}
 }  // namespace safe_browsing
