@@ -195,9 +195,6 @@ void VrTestContext::HandleInput(ui::Event* event) {
         CycleOrigin();
         model_->can_navigate_back = !model_->can_navigate_back;
         break;
-      case ui::DomCode::US_C:
-        model_->can_apply_new_background = true;
-        break;
       case ui::DomCode::US_P:
         model_->toggle_mode(kModeRepositionWindow);
         break;
@@ -581,22 +578,6 @@ void VrTestContext::CycleOrigin() {
   state = (state + 1) % states.size();
 }
 
-void VrTestContext::LoadAssets() {
-  base::Version assets_component_version(VR_ASSETS_COMPONENT_VERSION);
-  auto assets = std::make_unique<Assets>();
-  if (!(LoadPng(IDR_VR_BACKGROUND_IMAGE, &assets->background) &&
-        LoadPng(IDR_VR_NORMAL_GRADIENT_IMAGE, &assets->normal_gradient) &&
-        LoadPng(IDR_VR_INCOGNITO_GRADIENT_IMAGE, &assets->incognito_gradient) &&
-        LoadPng(IDR_VR_FULLSCREEN_GRADIENT_IMAGE,
-                &assets->fullscreen_gradient))) {
-    ui_->OnAssetsLoaded(AssetsLoadStatus::kInvalidContent, nullptr,
-                        assets_component_version);
-    return;
-  }
-  ui_->OnAssetsLoaded(AssetsLoadStatus::kSuccess, std::move(assets),
-                      assets_component_version);
-}
-
 RenderInfo VrTestContext::GetRenderInfo() const {
   RenderInfo render_info;
   render_info.head_pose = head_pose_;
@@ -615,6 +596,22 @@ gfx::Point3F VrTestContext::LaserOrigin() const {
     origin.set_x(-origin.x());
   }
   return origin;
+}
+
+void VrTestContext::LoadAssets() {
+  base::Version assets_component_version(VR_ASSETS_COMPONENT_VERSION);
+  auto assets = std::make_unique<Assets>();
+  if (!(LoadPng(IDR_VR_BACKGROUND_IMAGE, &assets->background) &&
+        LoadPng(IDR_VR_NORMAL_GRADIENT_IMAGE, &assets->normal_gradient) &&
+        LoadPng(IDR_VR_INCOGNITO_GRADIENT_IMAGE, &assets->incognito_gradient) &&
+        LoadPng(IDR_VR_FULLSCREEN_GRADIENT_IMAGE,
+                &assets->fullscreen_gradient))) {
+    ui_->OnAssetsLoaded(AssetsLoadStatus::kInvalidContent, nullptr,
+                        assets_component_version);
+    return;
+  }
+  ui_->OnAssetsLoaded(AssetsLoadStatus::kSuccess, std::move(assets),
+                      assets_component_version);
 }
 
 }  // namespace vr

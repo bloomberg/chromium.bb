@@ -201,10 +201,6 @@ void Ui::SetOmniboxSuggestions(
   model_->omnibox_suggestions = suggestions->suggestions;
 }
 
-void Ui::OnAssetsComponentReady() {
-  model_->can_apply_new_background = true;
-}
-
 bool Ui::CanSendWebVrVSync() {
   return model_->web_vr_enabled() &&
          !model_->web_vr.awaiting_min_splash_screen_duration();
@@ -389,10 +385,6 @@ void Ui::Dump(bool include_bindings) {
 #endif
 }
 
-void Ui::OnAssetsLoading() {
-  model_->can_apply_new_background = false;
-}
-
 void Ui::OnAssetsLoaded(AssetsLoadStatus status,
                         std::unique_ptr<Assets> assets,
                         const base::Version& component_version) {
@@ -444,7 +436,7 @@ void Ui::InitializeModel(const UiInitialState& ui_initial_state) {
   model_->browsing_disabled = ui_initial_state.browsing_disabled;
   model_->skips_redraw_when_not_dirty =
       ui_initial_state.skips_redraw_when_not_dirty;
-  model_->waiting_for_background = ui_initial_state.assets_available;
+  model_->waiting_for_background = ui_initial_state.assets_supported;
   model_->supports_selection = ui_initial_state.supports_selection;
   model_->needs_keyboard_update = ui_initial_state.needs_keyboard_update;
 }

@@ -44,7 +44,6 @@ class BrowserUiInterface {
   virtual void OnSpeechRecognitionStateChanged(int new_state) = 0;
   virtual void SetOmniboxSuggestions(
       std::unique_ptr<OmniboxSuggestions> suggestions) = 0;
-  virtual void OnAssetsComponentReady() = 0;
   virtual void OnAssetsLoaded(AssetsLoadStatus status,
                               std::unique_ptr<Assets> assets,
                               const base::Version& component_version) = 0;

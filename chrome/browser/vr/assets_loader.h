@@ -47,6 +47,7 @@ class AssetsLoader {
   static AssetsLoader* GetInstance();
 
   static base::Version MinVersionWithGradients();
+  static bool AssetsSupported();
 
   // Tells VR assets that a new VR assets component version is ready for use.
   void OnComponentReady(const base::Version& version,

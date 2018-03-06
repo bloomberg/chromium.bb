@@ -1803,21 +1803,7 @@ void UiSceneCreator::CreateSnackbars() {
       kDownloadedSnackbar, model_, kFileDownloadDoneIcon,
       l10n_util::GetStringUTF16(IDS_VR_COMPONENT_UPDATE_READY),
       base::i18n::ToUpper(l10n_util::GetStringUTF16(IDS_VR_COMPONENT_APPLY)),
-      base::BindRepeating(
-          [](UiBrowserInterface* browser, Ui* ui) {
-            ui->OnAssetsLoading();
-            browser->LoadAssets();
-          },
-          base::Unretained(browser_), base::Unretained(ui_)));
-  snackbar->AddBinding(std::make_unique<Binding<bool>>(
-      VR_BIND_LAMBDA([](Model* m) { return m->can_apply_new_background; },
-                     base::Unretained(model_)),
-      VR_BIND_LAMBDA(
-          [](UiElement* s, const bool& value) {
-            s->SetVisible(value);
-            s->SetRotate(1, 0, 0, value ? 0 : kSnackbarMoveInAngle);
-          },
-          base::Unretained(snackbar.get()))));
+      base::DoNothing());
   snackbar->SetVisible(false);
   snackbar->SetRotate(1, 0, 0, kSnackbarMoveInAngle);
   snackbar->SetTransitionedProperties({OPACITY, TRANSFORM});

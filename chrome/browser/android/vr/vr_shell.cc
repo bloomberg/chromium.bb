@@ -1012,11 +1012,6 @@ void VrShell::OnVoiceResults(const base::string16& result) {
       base::android::ConvertUTF8ToJavaString(env, url.spec()));
 }
 
-void VrShell::LoadAssets() {
-  AssetsLoader::GetInstance()->Load(
-      base::BindOnce(&VrShell::OnAssetsLoaded, base::Unretained(this)));
-}
-
 void VrShell::OnAssetsLoaded(AssetsLoadStatus status,
                              std::unique_ptr<Assets> assets,
                              const base::Version& component_version) {
@@ -1032,12 +1027,18 @@ void VrShell::OnAssetsLoaded(AssetsLoadStatus status,
       status, component_version);
 }
 
+void VrShell::LoadAssets() {
+  AssetsLoader::GetInstance()->Load(
+      base::BindOnce(&VrShell::OnAssetsLoaded, base::Unretained(this)));
+}
+
 void VrShell::OnAssetsComponentReady() {
+  // We don't apply updates after the timer expires because that would lead to
+  // replacing the user's environment. New updates will be applied when
+  // re-entering VR.
   if (waiting_for_assets_component_timer_.IsRunning()) {
     waiting_for_assets_component_timer_.Stop();
     LoadAssets();
-  } else {
-    ui_->OnAssetsComponentReady();
   }
 }
 
@@ -1082,7 +1083,7 @@ jlong JNI_VrShellImpl_Init(JNIEnv* env,
       has_or_can_request_audio_permission;
   ui_initial_state.skips_redraw_when_not_dirty =
       base::FeatureList::IsEnabled(features::kVrBrowsingExperimentalRendering);
-  ui_initial_state.assets_available = true;
+  ui_initial_state.assets_supported = AssetsLoader::AssetsSupported();
 
   return reinterpret_cast<intptr_t>(new VrShell(
       env, obj, ui_initial_state,

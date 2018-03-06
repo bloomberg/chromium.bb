@@ -25,7 +25,6 @@ import("//rlz/features/features.gni")
 import("//sandbox/features.gni")
 import("//third_party/protobuf/proto_library.gni")
 import("//ui/base/ui_features.gni")
-import("//build/buildflag_header.gni")
 
 # //build/config/android/rules.gni imports //tools/grit/grit_rule.gni, which
 # produces a conflict for the "grit" template so we have to only include one.
@@ -33,10 +32,6 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 } else {
   import("//tools/grit/grit_rule.gni")
-}
-
-if (enable_vr) {
-  import("//chrome/browser/vr/features.gni")
 }
 
 additional_modules_list_file =
@@ -58,13 +53,6 @@ if (is_win) {
       "/DELAYLOAD:ndfapi.dll",
       "/DELAYLOAD:pdh.dll",  # The task manager is rarely used.
     ]
-  }
-}
-
-if (enable_vr) {
-  buildflag_header("vr_build_features") {
-    header = "vr_features.h"
-    flags = [ "USE_VR_ASSETS_COMPONENT=$use_vr_assets_component" ]
   }
 }
 
@@ -4098,12 +4086,8 @@ jumbo_split_static_library("browser") {
     sources += [
       "component_updater/vr_assets_component_installer.cc",
       "component_updater/vr_assets_component_installer.h",
-      "vr_features.h",
     ]
-    deps += [
-      ":vr_build_features",
-      "//chrome/browser/vr:vr_common",
-    ]
+    deps += [ "//chrome/browser/vr:vr_common" ]
   }
 
   if (enable_wayland_server) {

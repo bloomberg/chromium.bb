@@ -276,12 +276,6 @@ void VrGLThread::StopAutocomplete() {
       FROM_HERE, base::BindOnce(&VrShell::StopAutocomplete, weak_vr_shell_));
 }
 
-void VrGLThread::LoadAssets() {
-  DCHECK(OnGlThread());
-  main_thread_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&VrShell::LoadAssets, weak_vr_shell_));
-}
-
 void VrGLThread::SetFullscreen(bool enabled) {
   DCHECK(OnMainThread());
   task_runner()->PostTask(FROM_HERE,
@@ -411,13 +405,6 @@ void VrGLThread::SetOmniboxSuggestions(
       FROM_HERE,
       base::BindOnce(&BrowserUiInterface::SetOmniboxSuggestions,
                      weak_browser_ui_, base::Passed(std::move(suggestions))));
-}
-
-void VrGLThread::OnAssetsComponentReady() {
-  DCHECK(OnMainThread());
-  task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&BrowserUiInterface::OnAssetsComponentReady,
-                                weak_browser_ui_));
 }
 
 void VrGLThread::OnAssetsLoaded(AssetsLoadStatus status,
