@@ -17,35 +17,44 @@ WindowServerTestImpl::WindowServerTestImpl(WindowServer* window_server)
 
 WindowServerTestImpl::~WindowServerTestImpl() {}
 
-void WindowServerTestImpl::OnWindowPaint(
+void WindowServerTestImpl::OnSurfaceActivated(
     const std::string& name,
-    const EnsureClientHasDrawnWindowCallback& cb,
+    EnsureClientHasDrawnWindowCallback cb,
     ServerWindow* window) {
+  // This api is used to detect when a client has painted once, which is
+  // dictated by whether there is a CompositorFrameSink.
   WindowTree* tree = window_server_->GetTreeWithClientName(name);
-  if (!tree)
-    return;
-  if (tree->HasRoot(window) && window->has_created_compositor_frame_sink()) {
-    cb.Run(true);
-    window_server_->SetPaintCallback(base::Callback<void(ServerWindow*)>());
+  if (tree && tree->HasRoot(window) &&
+      window->has_created_compositor_frame_sink()) {
+    std::move(cb).Run(true);
+  } else {
+    // No tree with the given name, or it hasn't painted yet. Install a callback
+    // for the next time a client creates a CompositorFramesink.
+    InstallCallback(name, std::move(cb));
   }
+}
+
+void WindowServerTestImpl::InstallCallback(
+    const std::string& client_name,
+    EnsureClientHasDrawnWindowCallback cb) {
+  window_server_->SetSurfaceActivationCallback(
+      base::BindOnce(&WindowServerTestImpl::OnSurfaceActivated,
+                     base::Unretained(this), client_name, std::move(cb)));
 }
 
 void WindowServerTestImpl::EnsureClientHasDrawnWindow(
     const std::string& client_name,
-    const EnsureClientHasDrawnWindowCallback& callback) {
+    EnsureClientHasDrawnWindowCallback callback) {
   WindowTree* tree = window_server_->GetTreeWithClientName(client_name);
   if (tree) {
     for (const ServerWindow* window : tree->roots()) {
       if (window->has_created_compositor_frame_sink()) {
-        callback.Run(true);
+        std::move(callback).Run(true);
         return;
       }
     }
   }
-
-  window_server_->SetPaintCallback(
-      base::Bind(&WindowServerTestImpl::OnWindowPaint, base::Unretained(this),
-                 client_name, std::move(callback)));
+  InstallCallback(client_name, std::move(callback));
 }
 
 }  // namespace ws

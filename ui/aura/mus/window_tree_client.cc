@@ -337,11 +337,10 @@ void WindowTreeClient::SetHitTestMask(
   tree_->SetHitTestMask(window->server_id(), out_rect);
 }
 
-void WindowTreeClient::Embed(
-    Window* window,
-    ui::mojom::WindowTreeClientPtr client,
-    uint32_t flags,
-    const ui::mojom::WindowTree::EmbedCallback& callback) {
+void WindowTreeClient::Embed(Window* window,
+                             ui::mojom::WindowTreeClientPtr client,
+                             uint32_t flags,
+                             ui::mojom::WindowTree::EmbedCallback callback) {
   DCHECK(tree_);
   // Window::Init() must be called before Embed() (otherwise the server hasn't
   // been told about the window).
@@ -350,12 +349,12 @@ void WindowTreeClient::Embed(
     // The window server removes all children before embedding. In other words,
     // it's generally an error to Embed() with existing children. So, fail
     // early.
-    callback.Run(false);
+    std::move(callback).Run(false);
     return;
   }
 
   tree_->Embed(WindowMus::Get(window)->server_id(), std::move(client), flags,
-               callback);
+               std::move(callback));
 }
 
 void WindowTreeClient::ScheduleEmbed(
@@ -1667,8 +1666,8 @@ void WindowTreeClient::OnDragEnter(ui::Id window_id,
                                    uint32_t key_state,
                                    const gfx::Point& position,
                                    uint32_t effect_bitmask,
-                                   const OnDragEnterCallback& callback) {
-  callback.Run(drag_drop_controller_->OnDragEnter(
+                                   OnDragEnterCallback callback) {
+  std::move(callback).Run(drag_drop_controller_->OnDragEnter(
       GetWindowByServerId(window_id), key_state, position, effect_bitmask));
 }
 
@@ -1676,8 +1675,8 @@ void WindowTreeClient::OnDragOver(ui::Id window_id,
                                   uint32_t key_state,
                                   const gfx::Point& position,
                                   uint32_t effect_bitmask,
-                                  const OnDragOverCallback& callback) {
-  callback.Run(drag_drop_controller_->OnDragOver(
+                                  OnDragOverCallback callback) {
+  std::move(callback).Run(drag_drop_controller_->OnDragOver(
       GetWindowByServerId(window_id), key_state, position, effect_bitmask));
 }
 
@@ -1693,8 +1692,8 @@ void WindowTreeClient::OnCompleteDrop(ui::Id window_id,
                                       uint32_t key_state,
                                       const gfx::Point& position,
                                       uint32_t effect_bitmask,
-                                      const OnCompleteDropCallback& callback) {
-  callback.Run(drag_drop_controller_->OnCompleteDrop(
+                                      OnCompleteDropCallback callback) {
+  std::move(callback).Run(drag_drop_controller_->OnCompleteDrop(
       GetWindowByServerId(window_id), key_state, position, effect_bitmask));
 }
 
@@ -1946,16 +1945,11 @@ void WindowTreeClient::WmBuildDragImage(const gfx::Point& screen_location,
                                                drag_image_offset, source);
 }
 
-void WindowTreeClient::WmMoveDragImage(
-    const gfx::Point& screen_location,
-    const WmMoveDragImageCallback& callback) {
-  if (!window_manager_delegate_) {
-    callback.Run();
-    return;
-  }
-
-  window_manager_delegate_->OnWmMoveDragImage(screen_location);
-  callback.Run();
+void WindowTreeClient::WmMoveDragImage(const gfx::Point& screen_location,
+                                       WmMoveDragImageCallback callback) {
+  if (window_manager_delegate_)
+    window_manager_delegate_->OnWmMoveDragImage(screen_location);
+  std::move(callback).Run();
 }
 
 void WindowTreeClient::WmDestroyDragImage() {

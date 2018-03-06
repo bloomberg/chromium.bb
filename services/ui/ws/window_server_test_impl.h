@@ -13,20 +13,27 @@ namespace ws {
 class ServerWindow;
 class WindowServer;
 
+// Used to detect when a client (as identified by a name) has drawn at least
+// once to screen.
 class WindowServerTestImpl : public mojom::WindowServerTest {
  public:
   explicit WindowServerTestImpl(WindowServer* server);
   ~WindowServerTestImpl() override;
 
  private:
-  void OnWindowPaint(const std::string& name,
-                     const EnsureClientHasDrawnWindowCallback& cb,
-                     ServerWindow* window);
+  void OnSurfaceActivated(const std::string& name,
+                          EnsureClientHasDrawnWindowCallback cb,
+                          ServerWindow* window);
+
+  // Installs a callback that calls OnSurfaceActivated() the next time a client
+  // creates a compositor frame.
+  void InstallCallback(const std::string& name,
+                       EnsureClientHasDrawnWindowCallback cb);
 
   // mojom::WindowServerTest:
   void EnsureClientHasDrawnWindow(
       const std::string& client_name,
-      const EnsureClientHasDrawnWindowCallback& callback) override;
+      EnsureClientHasDrawnWindowCallback callback) override;
 
   WindowServer* window_server_;
 

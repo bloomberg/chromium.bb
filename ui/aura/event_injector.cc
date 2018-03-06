@@ -61,7 +61,7 @@ ui::EventDispatchDetails EventInjector::Inject(WindowTreeHost* host,
   }
   remote_event_dispatcher_->DispatchEvent(
       host->GetDisplayId(), MapEvent(*event),
-      base::Bind([](bool result) { DCHECK(result); }));
+      base::BindOnce([](bool result) { DCHECK(result); }));
   return ui::EventDispatchDetails();
 }
 

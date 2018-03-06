@@ -18,18 +18,18 @@ RemoteEventDispatcherImpl::~RemoteEventDispatcherImpl() {}
 
 void RemoteEventDispatcherImpl::DispatchEvent(int64_t display_id,
                                               std::unique_ptr<ui::Event> event,
-                                              const DispatchEventCallback& cb) {
+                                              DispatchEventCallback cb) {
   DisplayManager* manager = window_server_->display_manager();
   if (!manager) {
     DVLOG(1) << "No display manager in DispatchEvent.";
-    cb.Run(false);
+    std::move(cb).Run(false);
     return;
   }
 
   Display* display = manager->GetDisplayById(display_id);
   if (!display) {
     DVLOG(1) << "Invalid display_id in DispatchEvent.";
-    cb.Run(false);
+    std::move(cb).Run(false);
     return;
   }
 
@@ -37,7 +37,7 @@ void RemoteEventDispatcherImpl::DispatchEvent(int64_t display_id,
     LocatedEvent* located_event = event->AsLocatedEvent();
     if (located_event->root_location_f() != located_event->location_f()) {
       DVLOG(1) << "RemoteEventDispatcher::DispatchEvent locations must match";
-      cb.Run(false);
+      std::move(cb).Run(false);
       return;
     }
 
@@ -46,7 +46,7 @@ void RemoteEventDispatcherImpl::DispatchEvent(int64_t display_id,
     if (event->IsMousePointerEvent())
       display->platform_display()->MoveCursorTo(located_event->location());
   }
-  display->ProcessEvent(event.get(), base::BindRepeating(cb, true));
+  display->ProcessEvent(event.get(), base::BindOnce(std::move(cb), true));
 }
 
 }  // namespace ws

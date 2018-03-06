@@ -96,11 +96,11 @@ void WindowPortMus::SetHitTestMask(const base::Optional<gfx::Rect>& rect) {
   window_tree_client_->SetHitTestMask(this, rect);
 }
 
-void WindowPortMus::Embed(
-    ui::mojom::WindowTreeClientPtr client,
-    uint32_t flags,
-    const ui::mojom::WindowTree::EmbedCallback& callback) {
-  window_tree_client_->Embed(window_, std::move(client), flags, callback);
+void WindowPortMus::Embed(ui::mojom::WindowTreeClientPtr client,
+                          uint32_t flags,
+                          ui::mojom::WindowTree::EmbedCallback callback) {
+  window_tree_client_->Embed(window_, std::move(client), flags,
+                             std::move(callback));
 }
 
 std::unique_ptr<viz::ClientLayerTreeFrameSink>
