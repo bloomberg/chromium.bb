@@ -1149,6 +1149,12 @@
       ],
       'test': 'content_browsertests',
     },
+    'network_service_components_browsertests': {
+      'args': [
+        '--enable-features=NetworkService',
+      ],
+      'test': 'components_browsertests',
+    },
   },
 
   'linux_chromeos_rel_specific_gtests': {
