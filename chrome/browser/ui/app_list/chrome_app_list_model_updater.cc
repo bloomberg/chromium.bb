@@ -12,6 +12,7 @@
 #include "ash/app_list/model/app_list_model.h"
 #include "ash/app_list/model/app_list_model_observer.h"
 #include "ash/app_list/model/search/search_model.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
 #include "extensions/common/constants.h"
 #include "ui/base/models/menu_model.h"
@@ -248,7 +249,27 @@ void ChromeAppListModelUpdater::ContextMenuItemSelected(const std::string& id,
 
 app_list::SearchResult* ChromeAppListModelUpdater::FindSearchResult(
     const std::string& result_id) {
-  return search_model_->FindSearchResult(result_id);
+  return search_model_ ? search_model_->FindSearchResult(result_id) : nullptr;
+}
+
+app_list::SearchResult* ChromeAppListModelUpdater::GetResultByTitle(
+    const std::string& title) {
+  if (!search_model_)
+    return nullptr;
+
+  base::string16 target_title = base::ASCIIToUTF16(title);
+  // TODO(hejq): Currently we use a search result's type and diaplay type to
+  //             check whether it's a result of uninstalled result. We might
+  //             have an attribute to do this when we refactor SearchResult.
+  for (const auto& result : *search_model_->results()) {
+    if (result->title() == target_title &&
+        result->result_type() == app_list::SearchResult::RESULT_INSTALLED_APP &&
+        result->display_type() !=
+            app_list::SearchResult::DISPLAY_RECOMMENDATION) {
+      return result.get();
+    }
+  }
+  return nullptr;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

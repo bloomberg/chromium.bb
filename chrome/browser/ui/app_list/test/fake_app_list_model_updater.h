@@ -57,6 +57,7 @@ class FakeAppListModelUpdater : public AppListModelUpdater {
   bool SearchEngineIsGoogle() override;
   app_list::SearchResult* FindSearchResult(
       const std::string& result_id) override;
+  app_list::SearchResult* GetResultByTitle(const std::string& title) override;
   const std::vector<std::unique_ptr<app_list::SearchResult>>& search_results()
       const {
     return search_results_;

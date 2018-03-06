@@ -4,8 +4,6 @@
 
 #include <stddef.h>
 
-#include "ash/app_list/model/search/search_model.h"
-#include "ash/app_list/model/search/search_result.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/path_service.h"
@@ -15,6 +13,7 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
+#include "chrome/browser/ui/app_list/app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/app_list/test/chrome_app_list_test_support.h"
 #include "chrome/browser/ui/browser.h"
@@ -26,11 +25,10 @@
 #include "chromeos/chromeos_switches.h"
 #include "components/user_manager/user_names.h"
 #include "ui/app_list/app_list_switches.h"
-#include "ui/base/models/list_model_observer.h"
 
 // Browser Test for AppListController that runs on all platforms supporting
 // app_list.
-typedef InProcessBrowserTest AppListControllerBrowserTest;
+using AppListControllerBrowserTest = InProcessBrowserTest;
 
 // Test the CreateNewWindow function of the controller delegate.
 IN_PROC_BROWSER_TEST_F(AppListControllerBrowserTest, CreateNewWindow) {
@@ -51,59 +49,7 @@ IN_PROC_BROWSER_TEST_F(AppListControllerBrowserTest, CreateNewWindow) {
 }
 
 // Browser Test for AppListController that observes search result changes.
-class AppListControllerSearchResultsBrowserTest
-    : public ExtensionBrowserTest,
-      public ui::ListModelObserver {
- public:
-  AppListControllerSearchResultsBrowserTest()
-      : observed_result_(nullptr), observed_results_list_(nullptr) {}
-
-  void WatchResultsLookingForItem(
-      app_list::SearchModel::SearchResults* search_results,
-      const std::string& extension_name) {
-    EXPECT_FALSE(observed_results_list_);
-    observed_results_list_ = search_results;
-    observed_results_list_->AddObserver(this);
-    item_to_observe_ = base::ASCIIToUTF16(extension_name);
-  }
-
-  void StopWatchingResults() {
-    EXPECT_TRUE(observed_results_list_);
-    observed_results_list_->RemoveObserver(this);
-  }
-
- protected:
-  void AttemptToLocateItem() {
-    observed_result_ = nullptr;
-
-    for (size_t i = 0; i < observed_results_list_->item_count(); ++i) {
-      if (observed_results_list_->GetItemAt(i)->title() != item_to_observe_)
-        continue;
-
-      // Ensure there is at most one.
-      EXPECT_FALSE(observed_result_);
-      observed_result_ = observed_results_list_->GetItemAt(i);
-    }
-  }
-
-  // Overridden from ui::ListModelObserver:
-  void ListItemsAdded(size_t start, size_t count) override {
-    AttemptToLocateItem();
-  }
-  void ListItemsRemoved(size_t start, size_t count) override {
-    AttemptToLocateItem();
-  }
-  void ListItemMoved(size_t index, size_t target_index) override {}
-  void ListItemsChanged(size_t start, size_t count) override {}
-
-  app_list::SearchResult* observed_result_;
-
- private:
-  base::string16 item_to_observe_;
-  app_list::SearchModel::SearchResults* observed_results_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(AppListControllerSearchResultsBrowserTest);
-};
+using AppListControllerSearchResultsBrowserTest = ExtensionBrowserTest;
 
 // Test showing search results, and uninstalling one of them while displayed.
 IN_PROC_BROWSER_TEST_F(AppListControllerSearchResultsBrowserTest,
@@ -113,36 +59,39 @@ IN_PROC_BROWSER_TEST_F(AppListControllerSearchResultsBrowserTest,
   test_extension_path = test_extension_path.AppendASCII("extensions")
       .AppendASCII("platform_apps")
       .AppendASCII("minimal");
-  const extensions::Extension* extension =
-      InstallExtension(test_extension_path,
-                       1 /* expected_change: new install */);
-  ASSERT_TRUE(extension);
 
   AppListService* service = AppListService::Get();
   ASSERT_TRUE(service);
+  AppListModelUpdater* model_updater = test::GetModelUpdater(service);
+  ASSERT_TRUE(model_updater);
+
+  // Install the extension.
+  const extensions::Extension* extension = InstallExtension(
+      test_extension_path, 1 /* expected_change: new install */);
+  ASSERT_TRUE(extension);
+
+  const std::string title = extension->name();
+
+  // Show the app list first, otherwise we won't have a search box to update.
   service->ShowForProfile(browser()->profile());
-
-  app_list::SearchModel* model = test::GetSearchModel(service);
-  ASSERT_TRUE(model);
-  WatchResultsLookingForItem(model->results(), extension->name());
-
-  // Ensure a search finds the extension.
-  EXPECT_FALSE(observed_result_);
-  model->search_box()->Update(base::ASCIIToUTF16("minimal"),
-                              true /* initiated_by_user */);
-  EXPECT_TRUE(observed_result_);
-
-  // Ensure the UI is updated. This is via PostTask in views.
   base::RunLoop().RunUntilIdle();
 
-  // Now uninstall and ensure this browser test observes it.
+  // Currently the search box is empty, so we have no result.
+  EXPECT_FALSE(model_updater->GetResultByTitle(title));
+
+  // Now a search finds the extension.
+  model_updater->UpdateSearchBox(base::ASCIIToUTF16(title),
+                                 true /* initiated_by_user */);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(model_updater->GetResultByTitle(title));
+
+  // Uninstall the extension.
   UninstallExtension(extension->id());
-
-  // Allow async AppSearchProvider::UpdateResults to run.
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_FALSE(observed_result_);
-  StopWatchingResults();
+  // We cannot find the extension any more.
+  EXPECT_FALSE(model_updater->GetResultByTitle(title));
+
   service->DismissAppList();
 }
 
