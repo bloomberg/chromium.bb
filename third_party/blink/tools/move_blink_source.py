@@ -473,7 +473,7 @@ Bug: 768828
             files = self._fs.files_under(
                 dirname, file_filter=lambda fs, _, basename: basename.endswith(
                     ('.h', '.cc', '.cpp', '.mm', '.cc.tmpl', '.cpp.tmpl',
-                     '.h.tmpl', 'XPathGrammar.y', '.gperf')))
+                     '.h.tmpl', 'xpath_grammar.y', '.gperf')))
             for file_path in files:
                 posix_file_path = file_path.replace('\\', '/')
                 original_content = self._fs.read_text_file(file_path)
