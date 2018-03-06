@@ -150,13 +150,9 @@ SessionsSyncManager::SessionsSyncManager(
           &favicon_cache_,
           base::BindRepeating(&SessionsSyncManager::DeleteForeignSessionFromUI,
                               base::Unretained(this))),
-      local_session_event_handler_(/*delegate=*/this,
-                                   sessions_client,
-                                   &session_tracker_),
       local_tab_pool_out_of_sync_(true),
       sync_prefs_(sync_prefs),
       local_device_(local_device),
-      current_device_type_(sync_pb::SyncEnums_DeviceType_TYPE_OTHER),
       local_session_header_node_id_(TabNodePool::kInvalidTabNodeID),
       stale_session_threshold_days_(kDefaultStaleSessionThresholdDays),
       local_event_router_(router),
@@ -179,6 +175,7 @@ syncer::SyncMergeResult SessionsSyncManager::MergeDataAndStartSyncing(
     std::unique_ptr<syncer::SyncErrorFactory> error_handler) {
   syncer::SyncMergeResult merge_result(type);
   DCHECK(session_tracker_.Empty());
+  DCHECK(!local_session_event_handler_);
 
   error_handler_ = std::move(error_handler);
   sync_processor_ = std::move(sync_processor);
@@ -194,7 +191,6 @@ syncer::SyncMergeResult SessionsSyncManager::MergeDataAndStartSyncing(
   }
 
   current_session_name_ = local_device_info->client_name();
-  current_device_type_ = local_device_info->device_type();
 
   // It's possible(via RebuildAssociations) for lost_navigations_recorder_ to
   // persist between sync being stopped and started. If it did persist, it's
@@ -214,7 +210,8 @@ syncer::SyncMergeResult SessionsSyncManager::MergeDataAndStartSyncing(
     InitializeCurrentMachineTag(local_device_->GetLocalSyncCacheGUID());
   }
 
-  session_tracker_.SetLocalSessionTag(current_machine_tag());
+  session_tracker_.InitLocalSession(current_machine_tag_, current_session_name_,
+                                    local_device_info->device_type());
 
   // TODO(crbug.com/681921): Revisit the somewhat ugly use below of
   // SyncChangeListWriteBatch. Ideally InitFromSyncModel() could use the
@@ -229,7 +226,7 @@ syncer::SyncMergeResult SessionsSyncManager::MergeDataAndStartSyncing(
     specifics->set_session_tag(current_machine_tag());
     sync_pb::SessionHeader* header_s = specifics->mutable_header();
     header_s->set_client_name(current_session_name_);
-    header_s->set_device_type(current_device_type_);
+    header_s->set_device_type(local_device_info->device_type());
     batch.Add(std::move(specifics));
   }
 
@@ -241,15 +238,14 @@ syncer::SyncMergeResult SessionsSyncManager::MergeDataAndStartSyncing(
 #endif
 
   // Check if anything has changed on the local client side.
-  local_session_event_handler_.AssociateWindowsAndTabs(
-      current_machine_tag_, current_session_name_, current_device_type_,
-      &batch);
+  local_session_event_handler_ = std::make_unique<LocalSessionEventHandlerImpl>(
+      /*delegate=*/this, sessions_client_, &session_tracker_, &batch);
   local_tab_pool_out_of_sync_ = false;
 
   merge_result.set_error(sync_processor_->ProcessSyncChanges(
       FROM_HERE, *batch.sync_change_list()));
 
-  local_event_router_->StartRoutingTo(&local_session_event_handler_);
+  local_event_router_->StartRoutingTo(local_session_event_handler_.get());
   return merge_result;
 }
 
@@ -268,6 +264,7 @@ bool SessionsSyncManager::RebuildAssociations() {
 
 void SessionsSyncManager::StopSyncing(syncer::ModelType type) {
   local_event_router_->Stop();
+  local_session_event_handler_.reset();
   if (sync_processor_.get() && lost_navigations_recorder_.get()) {
     sync_processor_->RemoveLocalChangeObserver(
         lost_navigations_recorder_.get());
@@ -604,6 +601,11 @@ SessionsSyncManager::CreateLocalSessionWriteBatch() {
                      base::AsWeakPtr(this)));
 }
 
+void SessionsSyncManager::TrackLocalNavigationId(base::Time timestamp,
+                                                 int unique_id) {
+  global_id_mapper_.TrackNavigationId(timestamp, unique_id);
+}
+
 void SessionsSyncManager::OnPageFaviconUpdated(const GURL& page_url) {
   favicon_cache_.OnPageFaviconUpdated(page_url, base::Time::Now());
 }
@@ -618,7 +620,7 @@ FaviconCache* SessionsSyncManager::GetFaviconCache() {
 }
 
 SessionsGlobalIdMapper* SessionsSyncManager::GetGlobalIdMapper() {
-  return local_session_event_handler_.GetGlobalIdMapper();
+  return &global_id_mapper_;
 }
 
 OpenTabsUIDelegate* SessionsSyncManager::GetOpenTabsUIDelegate() {

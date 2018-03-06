@@ -13,7 +13,6 @@
 #include "base/strings/stringprintf.h"
 #include "components/sync/model/sync_change.h"
 #include "components/sync/protocol/sync.pb.h"
-#include "components/sync_sessions/sessions_global_id_mapper.h"
 #include "components/sync_sessions/sync_sessions_client.h"
 #include "components/sync_sessions/synced_session_tracker.h"
 #include "components/sync_sessions/synced_tab_delegate.h"
@@ -105,35 +104,23 @@ LocalSessionEventHandlerImpl::Delegate::~Delegate() = default;
 LocalSessionEventHandlerImpl::LocalSessionEventHandlerImpl(
     Delegate* delegate,
     SyncSessionsClient* sessions_client,
-    SyncedSessionTracker* session_tracker)
+    SyncedSessionTracker* session_tracker,
+    WriteBatch* initial_batch)
     : delegate_(delegate),
       sessions_client_(sessions_client),
       session_tracker_(session_tracker) {
   DCHECK(delegate);
   DCHECK(sessions_client);
   DCHECK(session_tracker);
+  DCHECK(initial_batch);
+
+  current_session_tag_ = session_tracker_->GetLocalSessionTag();
+  DCHECK(!current_session_tag_.empty());
+
+  AssociateWindows(RELOAD_TABS, ScanForTabbedWindow(), initial_batch);
 }
 
 LocalSessionEventHandlerImpl::~LocalSessionEventHandlerImpl() {}
-
-void LocalSessionEventHandlerImpl::AssociateWindowsAndTabs(
-    const std::string& session_tag,
-    const std::string& session_name,
-    sync_pb::SyncEnums::DeviceType device_type,
-    WriteBatch* change_output) {
-  SyncedSession* current_session = session_tracker_->GetSession(session_tag);
-  current_session->session_name = session_name;
-  current_session->device_type = device_type;
-  current_session->session_tag = session_tag;
-
-  current_session_tag_ = session_tag;
-
-  AssociateWindows(RELOAD_TABS, ScanForTabbedWindow(), change_output);
-}
-
-SessionsGlobalIdMapper* LocalSessionEventHandlerImpl::GetGlobalIdMapper() {
-  return &global_id_mapper_;
-}
 
 void LocalSessionEventHandlerImpl::SetSessionTabFromDelegateForTest(
     const SyncedTabDelegate& tab_delegate,
@@ -144,7 +131,7 @@ void LocalSessionEventHandlerImpl::SetSessionTabFromDelegateForTest(
 
 void LocalSessionEventHandlerImpl::AssociateWindows(ReloadTabsOption option,
                                                     bool has_tabbed_window,
-                                                    WriteBatch* change_output) {
+                                                    WriteBatch* batch) {
   // Note that |current_session| is a pointer owned by |session_tracker_|.
   // |session_tracker_| will continue to update |current_session| under
   // the hood so care must be taken accessing it. In particular, invoking
@@ -190,7 +177,7 @@ void LocalSessionEventHandlerImpl::AssociateWindows(ReloadTabsOption option,
         }
         DVLOG(1) << "Rewriting tab node " << sync_id << " with tab id "
                  << tab->tab_id.id();
-        AppendChangeForExistingTab(sync_id, *tab, change_output);
+        AppendChangeForExistingTab(sync_id, *tab, batch);
       }
     }
   }
@@ -253,12 +240,12 @@ void LocalSessionEventHandlerImpl::AssociateWindows(ReloadTabsOption option,
         // as it could have changed after a session restore.
         if (synced_tab->GetSyncId() > TabNodePool::kInvalidTabNodeID) {
           AssociateRestoredPlaceholderTab(*synced_tab, tab_id, window_id,
-                                          change_output);
+                                          batch);
         } else {
           DVLOG(1) << "Placeholder tab " << tab_id << " has no sync id.";
         }
       } else if (RELOAD_TABS == option) {
-        AssociateTab(synced_tab, has_tabbed_window, change_output);
+        AssociateTab(synced_tab, has_tabbed_window, batch);
       }
 
       // If the tab was syncable, it would have been added to the tracker
@@ -302,7 +289,7 @@ void LocalSessionEventHandlerImpl::AssociateWindows(ReloadTabsOption option,
   std::set<int> deleted_tab_node_ids;
   session_tracker_->CleanupLocalTabs(&deleted_tab_node_ids);
   for (int tab_node_id : deleted_tab_node_ids) {
-    change_output->Delete(tab_node_id);
+    batch->Delete(tab_node_id);
   }
 
   // Always update the header.  Sync takes care of dropping this update
@@ -311,13 +298,13 @@ void LocalSessionEventHandlerImpl::AssociateWindows(ReloadTabsOption option,
   auto specifics = std::make_unique<sync_pb::SessionSpecifics>();
   specifics->set_session_tag(current_session_tag_);
   current_session->ToSessionHeaderProto().Swap(specifics->mutable_header());
-  change_output->Update(std::move(specifics));
+  batch->Update(std::move(specifics));
 }
 
 void LocalSessionEventHandlerImpl::AssociateTab(
     SyncedTabDelegate* const tab_delegate,
     bool has_tabbed_window,
-    WriteBatch* change_output) {
+    WriteBatch* batch) {
   DCHECK(!tab_delegate->IsPlaceholderTab());
 
   if (tab_delegate->IsBeingDestroyed()) {
@@ -379,9 +366,9 @@ void LocalSessionEventHandlerImpl::AssociateTab(
       .Swap(specifics.get());
   WriteTasksIntoSpecifics(specifics->mutable_tab());
   if (existing_tab_node) {
-    change_output->Update(std::move(specifics));
+    batch->Update(std::move(specifics));
   } else {
-    change_output->Add(std::move(specifics));
+    batch->Add(std::move(specifics));
   }
 
   int current_index = tab_delegate->GetCurrentEntryIndex();
@@ -446,8 +433,7 @@ void LocalSessionEventHandlerImpl::OnLocalTabModified(
   sessions::SerializedNavigationEntry current;
   modified_tab->GetSerializedNavigationAtIndex(
       modified_tab->GetCurrentEntryIndex(), &current);
-  global_id_mapper_.TrackNavigationIds(current.timestamp(),
-                                       current.unique_id());
+  delegate_->TrackLocalNavigationId(current.timestamp(), current.unique_id());
 
   bool found_tabbed_window = ScanForTabbedWindow();
   std::unique_ptr<WriteBatch> batch = delegate_->CreateLocalSessionWriteBatch();
@@ -474,7 +460,7 @@ void LocalSessionEventHandlerImpl::AssociateRestoredPlaceholderTab(
     const SyncedTabDelegate& tab_delegate,
     SessionID::id_type new_tab_id,
     SessionID::id_type new_window_id,
-    WriteBatch* change_output) {
+    WriteBatch* batch) {
   DCHECK_NE(tab_delegate.GetSyncId(), TabNodePool::kInvalidTabNodeID);
 
   // It's possible the placeholder tab is associated with a tab node that's
@@ -495,20 +481,19 @@ void LocalSessionEventHandlerImpl::AssociateRestoredPlaceholderTab(
       session_tracker_->GetTab(current_session_tag_, new_tab_id);
   local_tab->window_id.set_id(new_window_id);
 
-  AppendChangeForExistingTab(tab_delegate.GetSyncId(), *local_tab,
-                             change_output);
+  AppendChangeForExistingTab(tab_delegate.GetSyncId(), *local_tab, batch);
 }
 
 void LocalSessionEventHandlerImpl::AppendChangeForExistingTab(
     int sync_id,
     const sessions::SessionTab& tab,
-    WriteBatch* change_output) const {
+    WriteBatch* batch) const {
   // Rewrite the specifics based on the reassociated SessionTab to preserve
   // the new tab and window ids.
   auto specifics = std::make_unique<sync_pb::SessionSpecifics>();
   SessionTabToSpecifics(tab, current_session_tag_, sync_id)
       .Swap(specifics.get());
-  change_output->Update(std::move(specifics));
+  batch->Update(std::move(specifics));
 }
 
 void LocalSessionEventHandlerImpl::SetSessionTabFromDelegate(

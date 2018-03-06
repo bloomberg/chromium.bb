@@ -23,10 +23,10 @@ const base::Time kTime5 = base::Time::FromInternalValue(150);
 TEST(SessionsGlobalIdMapperTest, GetLatestGlobalId) {
   SessionsGlobalIdMapper mapper;
 
-  mapper.TrackNavigationIds(kTime1, /*unique_id=*/1);
-  mapper.TrackNavigationIds(kTime2, /*unique_id=*/2);
-  mapper.TrackNavigationIds(kTime3, /*unique_id=*/2);
-  mapper.TrackNavigationIds(kTime4, /*unique_id=*/2);
+  mapper.TrackNavigationId(kTime1, /*unique_id=*/1);
+  mapper.TrackNavigationId(kTime2, /*unique_id=*/2);
+  mapper.TrackNavigationId(kTime3, /*unique_id=*/2);
+  mapper.TrackNavigationId(kTime4, /*unique_id=*/2);
 
   EXPECT_EQ(kTime1.ToInternalValue(),
             mapper.GetLatestGlobalId(kTime1.ToInternalValue()));
@@ -47,12 +47,12 @@ TEST(SessionsGlobalIdMapperTest, Cleanup) {
   SessionsGlobalIdMapper mapper;
 
   base::Time current_time = kTime1;
-  mapper.TrackNavigationIds(current_time, /*unique_id=*/1);
+  mapper.TrackNavigationId(current_time, /*unique_id=*/1);
 
   for (int i = 0; i < 105; i++) {
     current_time =
         base::Time::FromInternalValue(current_time.ToInternalValue() + 1);
-    mapper.TrackNavigationIds(current_time, /*unique_id=*/1);
+    mapper.TrackNavigationId(current_time, /*unique_id=*/1);
   }
 
   // Threshold is 100, kTime1 should be dropped, kTime1+10 should not.
@@ -67,7 +67,7 @@ TEST(SessionsGlobalIdMapperTest, Cleanup) {
 TEST(SessionsGlobalIdMapperTest, AddObserver) {
   SessionsGlobalIdMapper mapper;
 
-  mapper.TrackNavigationIds(kTime1, /*unique_id=*/1);
+  mapper.TrackNavigationId(kTime1, /*unique_id=*/1);
 
   base::MockCallback<syncer::GlobalIdChange> mock_callback;
   EXPECT_CALL(mock_callback, Run(_, _)).Times(0);

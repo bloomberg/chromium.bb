@@ -156,9 +156,14 @@ class SyncedSessionTracker {
 
   // **** Methods specific to the local session. ****
 
-  // Set the local session tag. Must be called before any other local session
-  // methods are invoked.
-  void SetLocalSessionTag(const std::string& local_session_tag);
+  // Set the local session information. Must be called before any other local
+  // session methods are invoked.
+  void InitLocalSession(const std::string& local_session_tag,
+                        const std::string& local_session_name,
+                        sync_pb::SyncEnums::DeviceType local_device_type);
+
+  // Gets the session tag previously set with InitLocalSession().
+  const std::string& GetLocalSessionTag() const;
 
   // Similar to CleanupForeignSession, but also marks any unmapped tabs as free
   // in the tab node pool and fills |deleted_node_ids| with the set of locally

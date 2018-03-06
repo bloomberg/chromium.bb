@@ -150,6 +150,8 @@ class MockDelegate : public LocalSessionEventHandlerImpl::Delegate {
 
   MOCK_METHOD0(CreateLocalSessionWriteBatch,
                std::unique_ptr<LocalSessionEventHandlerImpl::WriteBatch>());
+  MOCK_METHOD2(TrackLocalNavigationId,
+               void(base::Time timestamp, int unique_id));
   MOCK_METHOD1(OnPageFaviconUpdated, void(const GURL& page_url));
   MOCK_METHOD2(OnFaviconVisited,
                void(const GURL& page_url, const GURL& favicon_url));
@@ -158,14 +160,24 @@ class MockDelegate : public LocalSessionEventHandlerImpl::Delegate {
 class LocalSessionEventHandlerImplTest : public testing::Test {
  public:
   LocalSessionEventHandlerImplTest()
-      : session_tracker_(&mock_sync_sessions_client_),
-        handler_(&mock_delegate_,
-                 &mock_sync_sessions_client_,
-                 &session_tracker_) {
+      : session_tracker_(&mock_sync_sessions_client_) {
     ON_CALL(mock_sync_sessions_client_, GetSyncedWindowDelegatesGetter())
         .WillByDefault(testing::Return(&window_getter_));
 
-    session_tracker_.SetLocalSessionTag(kSessionTag);
+    session_tracker_.InitLocalSession(kSessionTag, kSessionName,
+                                      sync_pb::SyncEnums_DeviceType_TYPE_PHONE);
+  }
+
+  void InitHandler(LocalSessionEventHandlerImpl::WriteBatch* initial_batch) {
+    handler_ = std::make_unique<LocalSessionEventHandlerImpl>(
+        &mock_delegate_, &mock_sync_sessions_client_, &session_tracker_,
+        initial_batch);
+    window_getter_.router()->StartRoutingTo(handler_.get());
+  }
+
+  void InitHandler() {
+    NiceMock<MockWriteBatch> initial_batch;
+    InitHandler(&initial_batch);
   }
 
   TestSyncedWindowDelegate* AddWindow(
@@ -194,7 +206,7 @@ class LocalSessionEventHandlerImplTest : public testing::Test {
   testing::NiceMock<MockSyncSessionsClient> mock_sync_sessions_client_;
   SyncedSessionTracker session_tracker_;
   TestSyncedWindowDelegatesGetter window_getter_;
-  LocalSessionEventHandlerImpl handler_;
+  std::unique_ptr<LocalSessionEventHandlerImpl> handler_;
 };
 
 // Populate the mock tab delegate with some data and navigation
@@ -220,7 +232,9 @@ TEST_F(LocalSessionEventHandlerImplTest, SetSessionTabFromDelegate) {
       SerializedNavigationEntryTestHelper::CreateNavigation(
           "http://www.example.com", "Example"));
   session_tab.session_storage_persistent_id = "persistent id";
-  handler_.SetSessionTabFromDelegateForTest(*tab, kTime4, &session_tab);
+
+  InitHandler();
+  handler_->SetSessionTabFromDelegateForTest(*tab, kTime4, &session_tab);
 
   EXPECT_EQ(tab->GetWindowId(), session_tab.window_id.id());
   EXPECT_EQ(tab->GetSessionId(), session_tab.tab_id.id());
@@ -260,8 +274,10 @@ TEST_F(LocalSessionEventHandlerImplTest,
   }
   tab->set_current_entry_index(kNavs - 2);
 
+  InitHandler();
+
   sessions::SessionTab session_tab;
-  handler_.SetSessionTabFromDelegateForTest(*tab, kTime6, &session_tab);
+  handler_->SetSessionTabFromDelegateForTest(*tab, kTime6, &session_tab);
 
   EXPECT_EQ(6, session_tab.current_navigation_index);
   ASSERT_EQ(8u, session_tab.navigations.size());
@@ -281,8 +297,10 @@ TEST_F(LocalSessionEventHandlerImplTest,
   tab->Navigate(kBar2, kTime3);
   tab->set_current_entry_index(1);
 
+  InitHandler();
+
   sessions::SessionTab session_tab;
-  handler_.SetSessionTabFromDelegateForTest(*tab, kTime6, &session_tab);
+  handler_->SetSessionTabFromDelegateForTest(*tab, kTime6, &session_tab);
 
   EXPECT_EQ(2, session_tab.current_navigation_index);
   ASSERT_EQ(3u, session_tab.navigations.size());
@@ -325,7 +343,9 @@ TEST_F(LocalSessionEventHandlerImplTest, BlockedNavigations) {
       SerializedNavigationEntryTestHelper::CreateNavigation(
           "http://www.example.com", "Example"));
   session_tab.session_storage_persistent_id = "persistent id";
-  handler_.SetSessionTabFromDelegateForTest(*tab, kTime4, &session_tab);
+
+  InitHandler();
+  handler_->SetSessionTabFromDelegateForTest(*tab, kTime4, &session_tab);
 
   EXPECT_EQ(tab->GetWindowId(), session_tab.window_id.id());
   EXPECT_EQ(tab->GetSessionId(), session_tab.tab_id.id());
@@ -362,9 +382,7 @@ TEST_F(LocalSessionEventHandlerImplTest, AssociateWindowsAndTabsIfEmpty) {
   EXPECT_CALL(mock_batch, DoUpdate(MatchesHeader(kSessionTag, /*num_windows=*/0,
                                                  /*num_tabs=*/0)));
 
-  handler_.AssociateWindowsAndTabs(kSessionTag, kSessionName,
-                                   sync_pb::SyncEnums_DeviceType_TYPE_PHONE,
-                                   &mock_batch);
+  InitHandler(&mock_batch);
 }
 
 // Tests that calling AssociateWindowsAndTabs() reflects the open tabs in a) the
@@ -395,20 +413,14 @@ TEST_F(LocalSessionEventHandlerImplTest, AssociateWindowsAndTabs) {
               DoAdd(MatchesTab(kSessionTag, kWindowId2, kTabId3,
                                std::vector<std::string>{kBar2, kBaz1})));
 
-  handler_.AssociateWindowsAndTabs(kSessionTag, kSessionName,
-                                   sync_pb::SyncEnums_DeviceType_TYPE_PHONE,
-                                   &mock_batch);
+  InitHandler(&mock_batch);
 }
 
 TEST_F(LocalSessionEventHandlerImplTest, PropagateNewNavigation) {
   AddWindow(kWindowId1);
   TestSyncedTabDelegate* tab = AddTab(kWindowId1, kFoo1, kTabId1);
 
-  NiceMock<MockWriteBatch> initial_mock_batch;
-  handler_.AssociateWindowsAndTabs(kSessionTag, kSessionName,
-                                   sync_pb::SyncEnums_DeviceType_TYPE_PHONE,
-                                   &initial_mock_batch);
-  window_getter_.router()->StartRoutingTo(&handler_);
+  InitHandler();
 
   auto update_mock_batch = std::make_unique<StrictMock<MockWriteBatch>>();
   // Note that the header is reported again, although it hasn't changed. This is
@@ -431,11 +443,7 @@ TEST_F(LocalSessionEventHandlerImplTest, PropagateNewTab) {
   AddWindow(kWindowId1);
   AddTab(kWindowId1, kFoo1, kTabId1);
 
-  NiceMock<MockWriteBatch> initial_mock_batch;
-  handler_.AssociateWindowsAndTabs(kSessionTag, kSessionName,
-                                   sync_pb::SyncEnums_DeviceType_TYPE_PHONE,
-                                   &initial_mock_batch);
-  window_getter_.router()->StartRoutingTo(&handler_);
+  InitHandler();
 
   // Tab creation triggers an update event due to the tab parented notification,
   // so the event handler issues two commits as well (one for tab creation, one
@@ -468,11 +476,7 @@ TEST_F(LocalSessionEventHandlerImplTest, PropagateNewWindow) {
   AddTab(kWindowId1, kFoo1, kTabId1);
   AddTab(kWindowId1, kBar1, kTabId2);
 
-  NiceMock<MockWriteBatch> initial_mock_batch;
-  handler_.AssociateWindowsAndTabs(kSessionTag, kSessionName,
-                                   sync_pb::SyncEnums_DeviceType_TYPE_PHONE,
-                                   &initial_mock_batch);
-  window_getter_.router()->StartRoutingTo(&handler_);
+  InitHandler();
 
   // Window creation triggers an update event due to the tab parented
   // notification, so the event handler issues two commits as well (one for

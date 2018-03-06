@@ -29,6 +29,7 @@
 #include "components/sync_sessions/local_session_event_router.h"
 #include "components/sync_sessions/lost_navigations_recorder.h"
 #include "components/sync_sessions/open_tabs_ui_delegate_impl.h"
+#include "components/sync_sessions/sessions_global_id_mapper.h"
 #include "components/sync_sessions/synced_session.h"
 #include "components/sync_sessions/synced_session_tracker.h"
 
@@ -76,6 +77,7 @@ class SessionsSyncManager : public syncer::SyncableService,
   // LocalSessionEventHandlerImpl::Delegate implementation.
   std::unique_ptr<LocalSessionEventHandlerImpl::WriteBatch>
   CreateLocalSessionWriteBatch() override;
+  void TrackLocalNavigationId(base::Time timestamp, int unique_id) override;
   void OnPageFaviconUpdated(const GURL& page_url) override;
   void OnFaviconVisited(const GURL& page_url, const GURL& favicon_url) override;
 
@@ -167,9 +169,12 @@ class SessionsSyncManager : public syncer::SyncableService,
   SyncSessionsClient* const sessions_client_;
 
   SyncedSessionTracker session_tracker_;
+  SessionsGlobalIdMapper global_id_mapper_;
   FaviconCache favicon_cache_;
   OpenTabsUIDelegateImpl open_tabs_ui_delegate_;
-  LocalSessionEventHandlerImpl local_session_event_handler_;
+
+  // Instantiated when sync is enabled.
+  std::unique_ptr<LocalSessionEventHandlerImpl> local_session_event_handler_;
 
   // Tracks whether our local representation of which sync nodes map to what
   // tabs (belonging to the current local session) is inconsistent.  This can
@@ -191,9 +196,8 @@ class SessionsSyncManager : public syncer::SyncableService,
   // Unique client tag.
   std::string current_machine_tag_;
 
-  // User-visible machine name and device type to populate header.
+  // User-visible machine name to populate header.
   std::string current_session_name_;
-  sync_pb::SyncEnums::DeviceType current_device_type_;
 
   // SyncID for the sync node containing all the window information for this
   // client.

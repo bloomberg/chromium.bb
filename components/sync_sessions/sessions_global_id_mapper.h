@@ -23,7 +23,7 @@ class SessionsGlobalIdMapper : public syncer::GlobalIdMapper {
   void AddGlobalIdChangeObserver(syncer::GlobalIdChange callback) override;
   int64_t GetLatestGlobalId(int64_t global_id) override;
 
-  void TrackNavigationIds(const base::Time& timestamp, int unique_id);
+  void TrackNavigationId(const base::Time& timestamp, int unique_id);
 
  private:
   void CleanupNavigationTracking();

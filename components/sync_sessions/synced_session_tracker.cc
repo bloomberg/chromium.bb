@@ -132,11 +132,22 @@ SyncedSessionTracker::~SyncedSessionTracker() {
   Clear();
 }
 
-void SyncedSessionTracker::SetLocalSessionTag(
-    const std::string& local_session_tag) {
+void SyncedSessionTracker::InitLocalSession(
+    const std::string& local_session_tag,
+    const std::string& local_session_name,
+    sync_pb::SyncEnums::DeviceType local_device_type) {
   DCHECK(local_session_tag_.empty());
   DCHECK(!local_session_tag.empty());
   local_session_tag_ = local_session_tag;
+
+  SyncedSession* local_session = GetSession(local_session_tag);
+  local_session->session_name = local_session_name;
+  local_session->device_type = local_device_type;
+  local_session->session_tag = local_session_tag;
+}
+
+const std::string& SyncedSessionTracker::GetLocalSessionTag() const {
+  return local_session_tag_;
 }
 
 bool SyncedSessionTracker::LookupAllForeignSessions(

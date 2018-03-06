@@ -21,6 +21,9 @@ namespace sync_sessions {
 namespace {
 
 const char kValidUrl[] = "http://www.example.com";
+const char kSessionName[] = "sessionname";
+const sync_pb::SyncEnums::DeviceType kDeviceType =
+    sync_pb::SyncEnums_DeviceType_TYPE_PHONE;
 const char kTag[] = "tag";
 const char kTag2[] = "tag2";
 const char kTag3[] = "tag3";
@@ -442,7 +445,7 @@ TEST_F(SyncedSessionTrackerTest, CleanupLocalTabs) {
   std::set<int> free_node_ids;
   int tab_node_id = TabNodePool::kInvalidTabNodeID;
 
-  GetTracker()->SetLocalSessionTag(kTag);
+  GetTracker()->InitLocalSession(kTag, kSessionName, kDeviceType);
 
   // Start with two restored tab nodes.
   GetTracker()->ReassociateLocalTab(kTabNode1, kTab1);
@@ -500,7 +503,7 @@ TEST_F(SyncedSessionTrackerTest, ReassociateTabMapped) {
   std::set<int> free_node_ids;
 
   // First create the tab normally.
-  GetTracker()->SetLocalSessionTag(kTag);
+  GetTracker()->InitLocalSession(kTag, kSessionName, kDeviceType);
   EXPECT_FALSE(GetTracker()->IsLocalTabNodeAssociated(kTabNode1));
   GetTracker()->ReassociateLocalTab(kTabNode1, kTab1);
   ASSERT_TRUE(VerifyTabIntegrity(kTag));
@@ -551,7 +554,7 @@ TEST_F(SyncedSessionTrackerTest, ReassociateTabMappedTwice) {
   std::set<int> free_node_ids;
 
   // First create the tab normally.
-  GetTracker()->SetLocalSessionTag(kTag);
+  GetTracker()->InitLocalSession(kTag, kSessionName, kDeviceType);
   EXPECT_FALSE(GetTracker()->IsLocalTabNodeAssociated(kTabNode1));
   GetTracker()->ReassociateLocalTab(kTabNode1, kTab1);
   ASSERT_TRUE(VerifyTabIntegrity(kTag));
@@ -616,7 +619,7 @@ TEST_F(SyncedSessionTrackerTest, ReassociateTabUnmapped) {
   std::set<int> free_node_ids;
 
   // First create the old tab in an unmapped state.
-  GetTracker()->SetLocalSessionTag(kTag);
+  GetTracker()->InitLocalSession(kTag, kSessionName, kDeviceType);
   EXPECT_FALSE(GetTracker()->IsLocalTabNodeAssociated(kTabNode1));
   GetTracker()->ReassociateLocalTab(kTabNode1, kTab1);
   ASSERT_TRUE(VerifyTabIntegrity(kTag));
@@ -652,7 +655,7 @@ TEST_F(SyncedSessionTrackerTest, ReassociateTabOldUnmappedNewMapped) {
   std::set<int> free_node_ids;
 
   // First create the old tab in an unmapped state.
-  GetTracker()->SetLocalSessionTag(kTag);
+  GetTracker()->InitLocalSession(kTag, kSessionName, kDeviceType);
   EXPECT_FALSE(GetTracker()->IsLocalTabNodeAssociated(kTabNode1));
   GetTracker()->ReassociateLocalTab(kTabNode1, kTab1);
   ASSERT_TRUE(VerifyTabIntegrity(kTag));
@@ -690,7 +693,7 @@ TEST_F(SyncedSessionTrackerTest, ReassociateTabSameTabId) {
   std::set<int> free_node_ids;
 
   // First create the tab normally.
-  GetTracker()->SetLocalSessionTag(kTag);
+  GetTracker()->InitLocalSession(kTag, kSessionName, kDeviceType);
   EXPECT_FALSE(GetTracker()->IsLocalTabNodeAssociated(kTabNode1));
   GetTracker()->ReassociateLocalTab(kTabNode1, kTab1);
   ASSERT_TRUE(VerifyTabIntegrity(kTag));
@@ -740,7 +743,7 @@ TEST_F(SyncedSessionTrackerTest, ReassociateTabOldMappedNewUnmapped) {
   std::set<int> free_node_ids;
 
   // First create an unmapped tab.
-  GetTracker()->SetLocalSessionTag(kTag);
+  GetTracker()->InitLocalSession(kTag, kSessionName, kDeviceType);
   EXPECT_FALSE(GetTracker()->IsLocalTabNodeAssociated(kTabNode1));
   GetTracker()->ReassociateLocalTab(kTabNode1, kTab1);
   ASSERT_TRUE(VerifyTabIntegrity(kTag));
