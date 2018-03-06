@@ -87,6 +87,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
   UIImageView* _imageView;
   UILabel* _titleLabel;
   UILabel* _emailLabel;
+  // List of string ids used for the user consent. The string ids order matches
+  // the way they appear on the screen.
+  std::vector<int> _consentStringIds;
 }
 @end
 
@@ -111,6 +114,14 @@ typedef NS_ENUM(NSInteger, ItemType) {
       0, self.collectionView.contentSize.height -
              self.collectionView.bounds.size.height + kContentViewBottomInset);
   [self.collectionView setContentOffset:bottomOffset animated:YES];
+}
+
+- (const std::vector<int>&)consentStringIds {
+  return _consentStringIds;
+}
+
+- (int)openSettingsStringId {
+  return IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_OPEN_SETTINGS;
 }
 
 #pragma mark - UIViewController
@@ -253,10 +264,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (CollectionViewItem*)syncItem {
   AccountControlItem* item =
       [[AccountControlItem alloc] initWithType:ItemTypeSync];
-  item.text = l10n_util::GetNSString(
-      IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_SYNC_TITLE);
-  item.detailText = l10n_util::GetNSString(
-      IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_SYNC_DESCRIPTION);
+  item.text = [self localizedConsentStringWithId:
+                        IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_SYNC_TITLE];
+  item.detailText =
+      [self localizedConsentStringWithId:
+                IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_SYNC_DESCRIPTION];
   item.image = ios::GetChromeBrowserProvider()
                    ->GetBrandedImageProvider()
                    ->GetSigninConfirmationSyncSettingsImage();
@@ -266,10 +278,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (CollectionViewItem*)googleServicesItem {
   AccountControlItem* item =
       [[AccountControlItem alloc] initWithType:ItemTypeGoogleServices];
-  item.text = l10n_util::GetNSString(
-      IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_SERVICES_TITLE);
-  item.detailText = l10n_util::GetNSString(
-      IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_SERVICES_DESCRIPTION);
+  item.text =
+      [self localizedConsentStringWithId:
+                IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_SERVICES_TITLE];
+  item.detailText =
+      [self localizedConsentStringWithId:
+                IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_SERVICES_DESCRIPTION];
   item.image = ios::GetChromeBrowserProvider()
                    ->GetBrandedImageProvider()
                    ->GetSigninConfirmationPersonalizeServicesImage();
@@ -279,8 +293,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (CollectionViewItem*)openSettingsItem {
   CollectionViewFooterItem* item =
       [[CollectionViewFooterItem alloc] initWithType:ItemTypeFooter];
-  item.text = l10n_util::GetNSString(
-      IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_OPEN_SETTINGS);
+  item.text = [self localizedConsentStringWithId:self.openSettingsStringId];
   item.linkURL = google_util::AppendGoogleLocaleParam(
       GURL("internal://settings-sync"),
       GetApplicationContext()->GetApplicationLocale());
@@ -302,6 +315,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
     return YES;
   }
   return NO;
+}
+
+// Adds the string id to the list of string for the user consent, and returns
+// the NSString related to the string id.
+- (NSString*)localizedConsentStringWithId:(int)stringId {
+  _consentStringIds.push_back(stringId);
+  return l10n_util::GetNSString(stringId);
 }
 
 #pragma mark - ChromeIdentityServiceObserver

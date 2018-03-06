@@ -12,6 +12,7 @@
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/bookmarks/startup_task_runner_service_factory.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remover_factory.h"
+#include "ios/chrome/browser/consent_auditor/consent_auditor_factory.h"
 #include "ios/chrome/browser/content_settings/cookie_settings_factory.h"
 #include "ios/chrome/browser/desktop_promotion/desktop_promotion_sync_service_factory.h"
 #include "ios/chrome/browser/dom_distiller/dom_distiller_service_factory.h"
@@ -103,6 +104,7 @@ void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
   BrowserListFactory::GetInstance();
   BrowserListSessionServiceFactory::GetInstance();
   BrowsingDataRemoverFactory::GetInstance();
+  ConsentAuditorFactory::GetInstance();
   DesktopPromotionSyncServiceFactory::GetInstance();
   feature_engagement::TrackerFactory::GetInstance();
   IOSChromeGCMProfileServiceFactory::GetInstance();
