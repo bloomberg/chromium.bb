@@ -1,162 +1,141 @@
 {
     "archives": {
-        "ESPN": {
+        "espn": {
             "DEFAULT": "key_mobile_sites_012.wprgo"
         },
-        "Twitter": {
+        "twitter": {
             "DEFAULT": "key_mobile_sites_011.wprgo"
         },
-        "Wikipedia_(1_tab)": {
+        "wikipedia": {
             "DEFAULT": "key_mobile_sites_009.wprgo"
         },
-        "Wikipedia_(1_tab)-delayed_scroll_start": {
+        "wikipedia_delayed_scroll_start": {
             "DEFAULT": "key_mobile_sites_009.wprgo"
         },
-        "http://answers.yahoo.com/question/index?qid=20110117024343AAopj8f": {
+        "yahoo_answers": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "http://cuteoverload.com": {
+        "cuteoverload": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "http://digg.com": {
+        "digg": {
             "DEFAULT": "key_mobile_sites_014.wprgo"
         },
-        "http://en.blog.wordpress.com/2012/09/04/freshly-pressed-editors-picks-for-august-2012/": {
+        "wordpress": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "http://en.wikipedia.org/wiki/Wikipedia": {
-            "DEFAULT": "key_mobile_sites_000.wprgo"
-        },
-        "http://forecast.io": {
+        "forecast.io": {
             "DEFAULT": "key_mobile_sites_013.wprgo"
         },
-        "http://ftw.usatoday.com/2014/05/spelling-bee-rules-shenanigans": {
+        "usatoday": {
             "DEFAULT": "key_mobile_sites_007.wprgo"
         },
-        "http://googlewebmastercentral.blogspot.com/": {
+        "blogspot": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "http://groupcloned.com": {
+        "gsp.ro": {
+            "DEFAULT": "key_mobile_sites_000.wprgo"
+        },
+        "capitolvolkswagen": {
+            "DEFAULT": "key_mobile_sites_000.wprgo"
+        },
+        "youtube": {
+            "DEFAULT": "key_mobile_sites_000.wprgo"
+        },
+        "mlb": {
             "DEFAULT": "key_mobile_sites_002.wprgo"
         },
-        "http://groupcloned.com/test/list-images-variable/index.html": {
-            "DEFAULT": "key_mobile_sites_004.wprgo"
-        },
-        "http://gsp.ro": {
-            "DEFAULT": "key_mobile_sites_000.wprgo"
-        },
-        "http://iphone.capitolvolkswagen.com/index.htm#new-inventory_p_2Fsb-new_p_2Ehtm_p_3Freset_p_3DInventoryListing": {
-            "DEFAULT": "key_mobile_sites_000.wprgo"
-        },
-        "http://m.espn.go.com/nhl/rankings": {
-            "DEFAULT": "key_mobile_sites_008.wprgo"
-        },
-        "http://m.youtube.com/watch?v=9hBpF_Zj4OA": {
-            "DEFAULT": "key_mobile_sites_000.wprgo"
-        },
-        "http://mlb.com/": {
-            "DEFAULT": "key_mobile_sites_002.wprgo"
-        },
-        "http://mlb.mlb.com/index.jsp": {
-            "DEFAULT": "key_mobile_sites_000.wprgo"
-        },
-        "http://mobile-news.sandbox.google.com/news/p#2": {
-            "DEFAULT": "key_mobile_sites_001.wprgo"
-        },
-        "http://mobile-news.sandbox.google.com/news/pt0": {
-            "DEFAULT": "key_mobile_sites_005.wprgo"
-        },
-        "http://mobile-news.sandbox.google.com/news/pt1": {
+        "google_news": {
             "DEFAULT": "key_mobile_sites_006.wprgo"
         },
-        "http://news.yahoo.com": {
+        "yahoo_news": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "http://nytimes.com/": {
+        "nytimes": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "http://online.wsj.com/home-page": {
+        "wsj": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "http://pinterest.com": {
+        "pinterest": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "http://shop.mobileweb.ebay.com/searchresults?kw=viking+helmet": {
+        "ebay": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "http://slashdot.org/": {
+        "slashdot": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "http://sports.yahoo.com/": {
+        "yahoo_sports": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "http://techcrunch.com": {
+        "techcrunch": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "http://theverge.com": {
+        "theverge": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "http://worldjournal.com/": {
+        "worldjournal": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "http://www.amazon.com/gp/aw/s/ref=is_box_?k=nicolas+cage": {
+        "amazon": {
             "DEFAULT": "key_mobile_sites_015.wprgo"
         },
-        "http://www.androidpolice.com/2012/10/03/rumor-evidence-mounts-that-an-lg-optimus-g-nexus-is-coming-along-with-a-nexus-phone-certification-program/": {
+        "androidpolice": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "http://www.baidu.com/s?wd=barack+obama&rsv_bp=0&rsv_spt=3&rsv_sug3=9&rsv_sug=0&rsv_sug4=3824&rsv_sug1=3&inputT=4920": {
+        "baidu": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "http://www.bing.com/search?q=sloths": {
+        "bing": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "http://www.boingboing.net": {
+        "boingboing": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "http://www.booking.com/searchresults.html?src=searchresults&latitude=65.0500&longitude=25.4667": {
+        "booking.com": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "http://www.cnn.com": {
+        "cnn": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "http://www.cnn.com/2012/10/03/politics/michelle-obama-debate/index.html": {
+        "cnn_article": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "http://www.deviantart.com/": {
+        "deviantart": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "http://www.latimes.com": {
+        "latimes": {
             "DEFAULT": "key_mobile_sites_007.wprgo"
         },
-        "http://www.reddit.com/r/programming/comments/1g96ve": {
+        "reddit": {
             "DEFAULT": "key_mobile_sites_010.wprgo"
         },
-        "http://www.sfgate.com/": {
+        "sfgate": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "http://www.theverge.com/2012/10/28/3568746/amazon-7-inch-fire-hd-ipad-mini-ad-ballsy": {
+        "theverge_article": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "http://www.wowwiki.com/World_of_Warcraft:_Mists_of_Pandaria": {
+        "wowwiki": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "https://facebook.com/barackobama": {
+        "facebook": {
             "DEFAULT": "key_mobile_sites_003.wprgo"
         },
-        "https://mail.google.com/mail/": {
+        "gmail": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "https://plus.google.com/app/basic/110031535020051778989/posts?source=apppromo": {
+        "google_plus": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "https://www.google.co.uk/search?hl=en&q=barack+obama&cad=h": {
+        "google_web_search": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "https://www.google.com/calendar/": {
+        "google_calendar": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "https://www.linkedin.com/in/linustorvalds": {
+        "linkedin": {
             "DEFAULT": "key_mobile_sites_002.wprgo"
         }
     },
