@@ -18,10 +18,12 @@ fd_bo_from_dmabuf
 fd_bo_from_fbdev
 fd_bo_from_handle
 fd_bo_from_name
+fd_bo_get_iova
 fd_bo_get_name
 fd_bo_handle
 fd_bo_map
 fd_bo_new
+fd_bo_put_iova
 fd_bo_ref
 fd_bo_size
 fd_device_del
