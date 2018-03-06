@@ -70,6 +70,9 @@ enum InvalidationScope { kInvalidateCurrentScope, kInvalidateAllScopes };
 
 using StyleSheetKey = AtomicString;
 
+// The StyleEngine class manages style-related state for the document. There is
+// a 1-1 relationship of Document to StyleEngine. The document calls the
+// StyleEngine when the the document is updated in a way that impacts styles.
 class CORE_EXPORT StyleEngine final
     : public GarbageCollectedFinalized<StyleEngine>,
       public FontSelectorClient,

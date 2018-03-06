@@ -93,6 +93,8 @@ class SelectorChecker {
         scrollbar_(init.scrollbar),
         scrollbar_part_(init.scrollbar_part) {}
 
+  // Wraps the current element and a CSSSelector and stores some other state of
+  // the selector matching process.
   struct SelectorCheckingContext {
     STACK_ALLOCATED();
 
@@ -148,6 +150,9 @@ class SelectorChecker {
   static bool MatchesFocusVisiblePseudoClass(const Element&);
 
  private:
+  // Does the work of checking whether the simple selector and element pointed
+  // to by the context are a match. Delegates most of the work to the Check*
+  // methods below.
   bool CheckOne(const SelectorCheckingContext&, MatchResult&) const;
 
   enum MatchStatus {
@@ -157,6 +162,23 @@ class SelectorChecker {
     kSelectorFailsCompletely
   };
 
+  // MatchSelector is the core of the recursive selector matching process. It
+  // calls through to the Match* methods below and Match above.
+  //
+  // At each level of the recursion the context (which selector and element we
+  // are considering) is represented by a SelectorCheckingContext. A context may
+  // also contain a scope, this can limit the matching to occur within a
+  // specific shadow tree (and its descendants). As the recursion proceeds, new
+  // `SelectorCheckingContext` objects are created by copying a previous one and
+  // changing the selector and/or the element being matched
+  //
+  // MatchSelector uses CheckOne to determine what element matches the current
+  // selector. If CheckOne succeeds we recurse with a new context pointing to
+  // the next selector (in a selector list, we proceed leftwards through the
+  // compound selectors). If CheckOne fails we may try again with a different
+  // element or we may fail the match entirely. In both cases, the next element
+  // to try (e.g. same element, parent, sibling) depends on the combinators in
+  // the selectors.
   MatchStatus MatchSelector(const SelectorCheckingContext&, MatchResult&) const;
   MatchStatus MatchForSubSelector(const SelectorCheckingContext&,
                                   MatchResult&) const;

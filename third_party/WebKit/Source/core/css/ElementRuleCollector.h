@@ -96,6 +96,10 @@ namespace blink {
 
 using StyleRuleList = HeapVector<Member<StyleRule>>;
 
+// Manages the process of finding what rules in a RuleSet apply to a given
+// Element. These tend to be used several times in different contexts and should
+// have ClearMatchedRules called before use.
+//
 // ElementRuleCollector is designed to be used as a stack object.
 // Create one, ask what rules the ElementResolveContext matches
 // and then let it go out of scope.

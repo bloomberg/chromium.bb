@@ -33,8 +33,8 @@ class Document;
 class Element;
 class ComputedStyle;
 
-// ElementResolveContext is immutable and serves as an input to the style
-// resolve process.
+// Wraps an Element for use by ElementRuleCollector. Computes various values
+// from the element for quick access during style calculation. It is immutable.
 class CORE_EXPORT ElementResolveContext {
   STACK_ALLOCATED();
 

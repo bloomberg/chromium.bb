@@ -56,8 +56,9 @@ class CSSVariableResolver;
 
 enum RuleMatchingBehavior { kMatchAllRules, kMatchAllRulesExcludingSMIL };
 
-// This class selects a ComputedStyle for a given element based on a collection
-// of stylesheets.
+// This class selects a ComputedStyle for a given element in a document based on
+// the document's collection of stylesheets (user styles, author styles, UA
+// style). There is a 1-1 relationship of StyleResolver and Document.
 class CORE_EXPORT StyleResolver final
     : public GarbageCollectedFinalized<StyleResolver> {
 
