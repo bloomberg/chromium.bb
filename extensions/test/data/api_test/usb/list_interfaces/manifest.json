@@ -1,5 +1,6 @@
 {
   "name": "USB List Interfaces",
+  "manifest_version": 2,
   "version": "0.1",
   "app": {
     "background": {

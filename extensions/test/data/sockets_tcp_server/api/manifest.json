@@ -1,5 +1,6 @@
 {
   "name": "chrome.sockets.tcpServer extension",
+  "manifest_version": 2,
   "version": "0.1",
   "description": "end-to-end browser test for chrome.sockets.tcpServer API",
   "app": {

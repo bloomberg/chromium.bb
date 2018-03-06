@@ -1,5 +1,6 @@
 {
   "name": "chrome.hid",
+  "manifest_version": 2,
   "version": "0.1",
   "description": "end-to-end browser tests for chrome.hid API",
   "app": {

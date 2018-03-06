@@ -1,5 +1,6 @@
 {
   "name": "<webview> visibility checking tests.",
+  "manifest_version": 2,
   "version": "1",
   "permissions": [
     "webview"

@@ -1,5 +1,6 @@
 {
   "name": "chrome.experimental.dns",
+  "manifest_version": 2,
   "version": "0.1",
   "description": "end-to-end browser test for chrome.experimental.dns API",
   "app": {

@@ -1,5 +1,6 @@
 {
   "name": "chrome.usb.onDeviceAdded",
+  "manifest_version": 2,
   "version": "0.1",
   "description": "browser test for chrome.usb.onDeviceAdded event",
   "app": {
