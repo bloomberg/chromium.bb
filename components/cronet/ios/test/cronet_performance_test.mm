@@ -13,10 +13,10 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/cronet/ios/test/cronet_test_base.h"
 #include "components/cronet/test/test_server.h"
-#include "components/grpc_support/test/quic_test_server.h"
 #include "net/base/mac/url_conversions.h"
 #include "net/base/net_errors.h"
 #include "net/cert/mock_cert_verifier.h"
+#include "net/test/quic_simple_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "url/gurl.h"
@@ -138,7 +138,7 @@ class PerfTest : public CronetTestBase,
     NSString* rules = base::SysUTF8ToNSString(
         base::StringPrintf("MAP test.example.com 127.0.0.1:%d,"
                            "MAP notfound.example.com ~NOTFOUND",
-                           grpc_support::GetQuicTestServerPort()));
+                           net::QuicSimpleTestServer::GetPort()));
     [Cronet setHostResolverRulesForTesting:rules];
     // This is the end of the behavior normally performed by StartCronet()
 

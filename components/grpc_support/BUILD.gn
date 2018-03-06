@@ -22,7 +22,6 @@ source_set("bidirectional_stream_unittest") {
   deps = [
     ":grpc_support",
     "//base",
-    "//components/grpc_support/test:quic_test_server",
     "//net",
     "//net:test_support",
   ]

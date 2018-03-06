@@ -7,9 +7,9 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/cronet/ios/test/cronet_test_base.h"
-#include "components/grpc_support/test/quic_test_server.h"
 #include "net/base/mac/url_conversions.h"
 #include "net/cert/mock_cert_verifier.h"
+#include "net/test/quic_simple_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "url/gurl.h"
@@ -38,7 +38,7 @@ class QuicTest : public CronetTestBase {
     }];
 
     // QUIC Server simple URL.
-    simple_url_ = net::NSURLWithGURL(GURL(grpc_support::kTestServerSimpleUrl));
+    simple_url_ = net::NSURLWithGURL(net::QuicSimpleTestServer::GetSimpleURL());
   }
 
   void TearDown() override {
@@ -54,7 +54,7 @@ class QuicTest : public CronetTestBase {
     NSString* rules = base::SysUTF8ToNSString(
         base::StringPrintf("MAP test.example.com 127.0.0.1:%d,"
                            "MAP notfound.example.com ~NOTFOUND",
-                           grpc_support::GetQuicTestServerPort()));
+                           net::QuicSimpleTestServer::GetPort()));
     [Cronet setHostResolverRulesForTesting:rules];
 
     // Prepare a session.
@@ -98,7 +98,7 @@ TEST_F(QuicTest, RequestWithSocketOptimizationEnabled) {
 
   // Check that a successful response was received using QUIC.
   EXPECT_EQ(nil, [delegate_ error]);
-  EXPECT_EQ(grpc_support::kSimpleBodyValue,
+  EXPECT_EQ(net::QuicSimpleTestServer::GetSimpleBodyValue(),
             base::SysNSStringToUTF8(delegate_.responseBody));
   if (@available(iOS 10, *)) {
     NSURLSessionTaskTransactionMetrics* metrics =

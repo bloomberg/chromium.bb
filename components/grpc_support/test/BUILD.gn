@@ -5,26 +5,10 @@ source_set("unit_tests") {
   ]
 
   deps = [
-    ":quic_test_server",
     "//base",
     "//components/grpc_support",
     "//components/grpc_support:bidirectional_stream_unittest",
     "//net",
-    "//net:test_support",
-  ]
-}
-
-source_set("quic_test_server") {
-  testonly = true
-  sources = [
-    "quic_test_server.cc",
-    "quic_test_server.h",
-  ]
-
-  deps = [
-    "//base",
-    "//net",
-    "//net:simple_quic_tools",
     "//net:test_support",
   ]
 }

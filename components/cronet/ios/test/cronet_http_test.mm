@@ -16,10 +16,10 @@
 #include "components/cronet/ios/test/cronet_test_base.h"
 #include "components/cronet/ios/test/start_cronet.h"
 #include "components/cronet/test/test_server.h"
-#include "components/grpc_support/test/quic_test_server.h"
 #include "net/base/mac/url_conversions.h"
 #include "net/base/net_errors.h"
 #include "net/cert/mock_cert_verifier.h"
+#include "net/test/quic_simple_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 
@@ -112,7 +112,7 @@ class HttpTest : public CronetTestBase {
     [Cronet setRequestFilterBlock:^(NSURLRequest* request) {
       return YES;
     }];
-    StartCronet(grpc_support::GetQuicTestServerPort());
+    StartCronet(net::QuicSimpleTestServer::GetPort());
     [Cronet registerHttpProtocolHandler];
     NSURLSessionConfiguration* config =
         [NSURLSessionConfiguration ephemeralSessionConfiguration];
@@ -151,7 +151,7 @@ TEST_F(HttpTest, CreateSslKeyLogFile) {
               [NSString stringWithFormat:@"{\"ssl_key_log_file\":\"%@\"}",
                                          ssl_key_log_file]];
 
-  StartCronet(grpc_support::GetQuicTestServerPort());
+  StartCronet(net::QuicSimpleTestServer::GetPort());
 
   bool ssl_file_created =
       [[NSFileManager defaultManager] fileExistsAtPath:ssl_key_log_file];
@@ -165,7 +165,7 @@ TEST_F(HttpTest, CreateSslKeyLogFile) {
 }
 
 TEST_F(HttpTest, NSURLSessionReceivesData) {
-  NSURL* url = net::NSURLWithGURL(GURL(grpc_support::kTestServerSimpleUrl));
+  NSURL* url = net::NSURLWithGURL(net::QuicSimpleTestServer::GetSimpleURL());
   __block BOOL block_used = NO;
   NSURLSessionDataTask* task = [session_ dataTaskWithURL:url];
   [Cronet setRequestFilterBlock:^(NSURLRequest* request) {
@@ -176,19 +176,18 @@ TEST_F(HttpTest, NSURLSessionReceivesData) {
   StartDataTaskAndWaitForCompletion(task);
   EXPECT_TRUE(block_used);
   EXPECT_EQ(nil, [delegate_ error]);
-  EXPECT_STREQ(grpc_support::kSimpleBodyValue,
-               base::SysNSStringToUTF8([delegate_ responseBody]).c_str());
+  EXPECT_EQ(net::QuicSimpleTestServer::GetSimpleBodyValue(),
+            base::SysNSStringToUTF8([delegate_ responseBody]));
 }
 
 TEST_F(HttpTest, GetGlobalMetricsDeltas) {
   NSData* delta1 = [Cronet getGlobalMetricsDeltas];
-
-  NSURL* url = net::NSURLWithGURL(GURL(grpc_support::kTestServerSimpleUrl));
+  NSURL* url = net::NSURLWithGURL(net::QuicSimpleTestServer::GetSimpleURL());
   NSURLSessionDataTask* task = [session_ dataTaskWithURL:url];
   StartDataTaskAndWaitForCompletion(task);
   EXPECT_EQ(nil, [delegate_ error]);
-  EXPECT_STREQ(grpc_support::kSimpleBodyValue,
-               base::SysNSStringToUTF8([delegate_ responseBody]).c_str());
+  EXPECT_EQ(net::QuicSimpleTestServer::GetSimpleBodyValue(),
+            base::SysNSStringToUTF8([delegate_ responseBody]));
 
   NSData* delta2 = [Cronet getGlobalMetricsDeltas];
   EXPECT_FALSE([delta2 isEqualToData:delta1]);
@@ -423,7 +422,7 @@ TEST_F(HttpTest, BrotliAdvertisedTest) {
 
   [Cronet setBrotliEnabled:YES];
 
-  StartCronet(grpc_support::GetQuicTestServerPort());
+  StartCronet(net::QuicSimpleTestServer::GetPort());
 
   NSURL* url =
       net::NSURLWithGURL(GURL(TestServer::GetEchoHeaderURL("Accept-Encoding")));
@@ -438,7 +437,7 @@ TEST_F(HttpTest, BrotliNotAdvertisedTest) {
 
   [Cronet setBrotliEnabled:NO];
 
-  StartCronet(grpc_support::GetQuicTestServerPort());
+  StartCronet(net::QuicSimpleTestServer::GetPort());
 
   NSURL* url =
       net::NSURLWithGURL(GURL(TestServer::GetEchoHeaderURL("Accept-Encoding")));
@@ -453,7 +452,7 @@ TEST_F(HttpTest, BrotliHandleDecoding) {
 
   [Cronet setBrotliEnabled:YES];
 
-  StartCronet(grpc_support::GetQuicTestServerPort());
+  StartCronet(net::QuicSimpleTestServer::GetPort());
 
   NSURL* url =
       net::NSURLWithGURL(GURL(TestServer::GetUseEncodingURL("brotli")));
@@ -679,7 +678,7 @@ TEST_F(HttpTest, MAYBE_ChangeThreadPriorityBeforeStart) {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 TEST_F(HttpTest, LegacyApi) {
-  NSURL* url = net::NSURLWithGURL(GURL(grpc_support::kTestServerSimpleUrl));
+  NSURL* url = net::NSURLWithGURL(net::QuicSimpleTestServer::GetSimpleURL());
 
   __block BOOL block_used = NO;
   [Cronet setRequestFilterBlock:^(NSURLRequest* request) {

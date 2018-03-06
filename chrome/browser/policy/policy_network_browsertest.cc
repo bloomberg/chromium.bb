@@ -18,7 +18,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "components/grpc_support/test/quic_test_server.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
@@ -34,6 +33,7 @@
 #include "net/cert/test_root_certs.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_transaction_factory.h"
+#include "net/test/quic_simple_test_server.h"
 #include "net/test/test_data_directory.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -76,10 +76,8 @@ bool IsQuicEnabled(
 }
 
 bool IsQuicEnabled(network::mojom::NetworkContext* network_context) {
-  GURL url =
-      GURL(std::string("https://") + grpc_support::kTestServerHost + ":" +
-           base::NumberToString(grpc_support::GetQuicTestServerPort()) +
-           grpc_support::kHelloPath);
+  GURL url = net::QuicSimpleTestServer::GetFileURL(
+      net::QuicSimpleTestServer::GetHelloPath());
   int rv = content::LoadBasicRequest(network_context, url);
   return rv == net::OK;
 }
@@ -138,7 +136,7 @@ class QuicTestBase : public InProcessBrowserTest {
     net::TestRootCerts* root_certs = net::TestRootCerts::GetInstance();
     root_certs->AddFromFile(
         net::GetTestCertsDirectory().AppendASCII("quic-root.pem"));
-    grpc_support::StartQuicTestServer();
+    net::QuicSimpleTestServer::Start();
     host_resolver()->AddRule("*", "127.0.0.1");
   }
 };

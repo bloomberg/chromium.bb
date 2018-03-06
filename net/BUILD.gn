@@ -2649,6 +2649,8 @@ static_library("test_support") {
     "test/keychain_test_util_mac.h",
     "test/net_test_suite.cc",
     "test/net_test_suite.h",
+    "test/quic_simple_test_server.cc",
+    "test/quic_simple_test_server.h",
     "test/scoped_disable_exit_on_dfatal.cc",
     "test/scoped_disable_exit_on_dfatal.h",
     "test/tcp_socket_proxy.cc",
@@ -2688,6 +2690,7 @@ static_library("test_support") {
   ]
 
   deps = [
+    ":simple_quic_tools",
     "//third_party/zlib",
   ]
 

@@ -7,7 +7,7 @@
 
 #include "components/cronet/ios/test/cronet_test_base.h"
 #include "components/cronet/ios/test/start_cronet.h"
-#include "components/grpc_support/test/quic_test_server.h"
+#include "net/test/quic_simple_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cronet {
@@ -17,7 +17,7 @@ class NetLogTest : public ::testing::Test {
   NetLogTest() {}
   ~NetLogTest() override {}
 
-  void SetUp() override { StartCronet(grpc_support::GetQuicTestServerPort()); }
+  void SetUp() override { StartCronet(net::QuicSimpleTestServer::GetPort()); }
 
   void TearDown() override {
     [Cronet stopNetLog];
@@ -112,7 +112,7 @@ TEST_F(NetLogTest, ExperimentalOptions) {
       setExperimentalOptions:
           @"{ \"QUIC\" : {\"max_server_configs_stored_in_properties\" : 8} }"];
 
-  StartCronet(grpc_support::GetQuicTestServerPort());
+  StartCronet(net::QuicSimpleTestServer::GetPort());
   bool netlog_started =
       [Cronet startNetLogToFile:@"cronet_netlog.json" logBytes:NO];
   ASSERT_TRUE(netlog_started);
