@@ -253,10 +253,9 @@ void TestWindowManager::WmBuildDragImage(const gfx::Point& screen_location,
                                          const gfx::Vector2d& drag_image_offset,
                                          ui::mojom::PointerKind source) {}
 
-void TestWindowManager::WmMoveDragImage(
-    const gfx::Point& screen_location,
-    const WmMoveDragImageCallback& callback) {
-  callback.Run();
+void TestWindowManager::WmMoveDragImage(const gfx::Point& screen_location,
+                                        WmMoveDragImageCallback callback) {
+  std::move(callback).Run();
 }
 
 void TestWindowManager::WmDestroyDragImage() {}

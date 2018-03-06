@@ -14,9 +14,9 @@
 
 namespace ash {
 
-void RunCallback(bool* success, const base::Closure& callback, bool result) {
+void RunCallback(bool* success, base::RepeatingClosure callback, bool result) {
   *success = result;
-  callback.Run();
+  std::move(callback).Run();
 }
 
 class AppLaunchTest : public service_manager::test::ServiceTest {
@@ -46,7 +46,7 @@ TEST_F(AppLaunchTest, TestQuickLaunch) {
   bool success = false;
   test_interface->EnsureClientHasDrawnWindow(
       quick_launch::mojom::kServiceName,
-      base::Bind(&RunCallback, &success, run_loop.QuitClosure()));
+      base::BindOnce(&RunCallback, &success, run_loop.QuitClosure()));
   run_loop.Run();
   EXPECT_TRUE(success);
 }
