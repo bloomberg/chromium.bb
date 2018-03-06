@@ -113,6 +113,34 @@ class PLATFORM_EXPORT Visitor {
               const_cast<void*>(reinterpret_cast<const void*>(t))));
   }
 
+  template <typename T>
+  void TraceBackingStoreStrongly(T* backing_store, T** backing_store_slot) {
+    static_assert(sizeof(T), "T must be fully defined");
+    static_assert(IsGarbageCollectedType<T>::value,
+                  "T needs to be a garbage collected object");
+
+    if (!backing_store)
+      return;
+    VisitBackingStoreStrongly(reinterpret_cast<void*>(backing_store),
+                              reinterpret_cast<void**>(backing_store_slot),
+                              TraceTrait<T>::GetTraceDescriptor(
+                                  reinterpret_cast<void*>(backing_store)));
+  }
+
+  template <typename T>
+  void TraceBackingStoreWeakly(T* backing_store, T** backing_store_slot) {
+    static_assert(sizeof(T), "T must be fully defined");
+    static_assert(IsGarbageCollectedType<T>::value,
+                  "T needs to be a garbage collected object");
+
+    if (!backing_store)
+      return;
+    VisitBackingStoreWeakly(reinterpret_cast<void*>(backing_store),
+                            reinterpret_cast<void**>(backing_store_slot),
+                            TraceTrait<T>::GetTraceDescriptor(
+                                reinterpret_cast<void*>(backing_store)));
+  }
+
   // WeakMember version of the templated trace method. It doesn't keep
   // the traced thing alive, but will write null to the WeakMember later
   // if the pointed-to object is dead. It's lying for this to be const,
@@ -174,20 +202,15 @@ class PLATFORM_EXPORT Visitor {
   // Visits an object through a strong reference.
   virtual void Visit(void*, TraceDescriptor) = 0;
 
+  // Visitors for collection backing stores.
+  virtual void VisitBackingStoreStrongly(void*, void**, TraceDescriptor) = 0;
+  virtual void VisitBackingStoreWeakly(void*, void**, TraceDescriptor) = 0;
+
   // Registers backing store pointers so that they can be moved and properly
   // updated.
-  virtual void RegisterBackingStoreReference(void* slot) = 0;
   virtual void RegisterBackingStoreCallback(void* backing_store,
                                             MovingObjectCallback,
                                             void* callback_data) = 0;
-
-  // Used to delay the marking of objects until the usual marking including
-  // ephemeron iteration is done. This is used to delay the marking of
-  // collection backing stores until we know if they are reachable from
-  // locations other than the collection front object. If collection backings
-  // are reachable from other locations we strongify them to avoid issues with
-  // iterators and weak processing.
-  virtual void RegisterDelayedMarkNoTracing(const void* pointer) = 0;
 
   // Used to register ephemeron callbacks.
   virtual bool RegisterWeakTable(const void* closure,

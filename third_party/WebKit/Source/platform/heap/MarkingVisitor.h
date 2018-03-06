@@ -96,11 +96,30 @@ class PLATFORM_EXPORT MarkingVisitor final : public Visitor {
     Mark(desc.base_object_payload, desc.callback);
   }
 
-  void RegisterBackingStoreReference(void* slot) final;
+  void VisitBackingStoreStrongly(void* object,
+                                 void** object_slot,
+                                 TraceDescriptor desc) final {
+    RegisterBackingStoreReference(object_slot);
+    Visit(object, desc);
+  }
+
+  // Used to delay the marking of objects until the usual marking including
+  // ephemeron iteration is done. This is used to delay the marking of
+  // collection backing stores until we know if they are reachable from
+  // locations other than the collection front object. If collection backings
+  // are reachable from other locations we strongify them to avoid issues with
+  // iterators and weak processing.
+  void VisitBackingStoreWeakly(void* object,
+                               void** object_slot,
+                               TraceDescriptor desc) final {
+    DCHECK(GetMarkingMode() != kWeakProcessing);
+    RegisterBackingStoreReference(object_slot);
+    Heap().PushPostMarkingCallback(object, &MarkNoTracingCallback);
+  }
+
   void RegisterBackingStoreCallback(void* backing_store,
                                     MovingObjectCallback,
                                     void* callback_data) final;
-  void RegisterDelayedMarkNoTracing(const void* pointer) final;
   bool RegisterWeakTable(const void* closure,
                          EphemeronCallback iteration_callback,
                          EphemeronCallback iteration_done_callback) final;
@@ -111,6 +130,8 @@ class PLATFORM_EXPORT MarkingVisitor final : public Visitor {
 
  private:
   static void MarkNoTracingCallback(Visitor*, void*);
+
+  void RegisterBackingStoreReference(void* slot);
 
   const MarkingMode marking_mode_;
 };
@@ -146,13 +167,6 @@ inline void MarkingVisitor::Mark(const void* object_pointer,
 
 inline void MarkingVisitor::MarkHeaderNoTracing(HeapObjectHeader* header) {
   MarkHeader(header, reinterpret_cast<TraceCallback>(0));
-}
-
-inline void MarkingVisitor::RegisterDelayedMarkNoTracing(
-    const void* object_pointer) {
-  DCHECK(GetMarkingMode() != kWeakProcessing);
-  Heap().PushPostMarkingCallback(const_cast<void*>(object_pointer),
-                                 &MarkNoTracingCallback);
 }
 
 inline bool MarkingVisitor::EnsureMarked(const void* object_pointer) {
