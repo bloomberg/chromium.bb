@@ -101,7 +101,8 @@ public class SyncPreference extends Preference {
 
         if (profileSyncService.getProtocolErrorClientAction()
                 == ProtocolErrorClientAction.UPGRADE_CLIENT) {
-            return res.getString(R.string.sync_error_upgrade_client, BuildInfo.getPackageLabel());
+            return res.getString(
+                    R.string.sync_error_upgrade_client, BuildInfo.getInstance().hostPackageLabel);
         }
 
         if (profileSyncService.hasUnrecoverableError()) {

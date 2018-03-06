@@ -241,11 +241,11 @@ void AwMainDelegate::PreSandboxStartup() {
 
   static ::crash_reporter::CrashKeyString<64> app_name_key(
       crash_keys::kAppPackageName);
-  app_name_key.Set(android_build_info->package_name());
+  app_name_key.Set(android_build_info->host_package_name());
 
   static ::crash_reporter::CrashKeyString<64> app_version_key(
       crash_keys::kAppPackageVersionCode);
-  app_version_key.Set(android_build_info->package_version_code());
+  app_version_key.Set(android_build_info->host_version_code());
 
   static ::crash_reporter::CrashKeyString<8> sdk_int_key(
       crash_keys::kAndroidSdkInt);

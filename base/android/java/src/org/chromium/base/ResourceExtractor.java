@@ -64,7 +64,7 @@ public class ResourceExtractor {
 
             // Use a suffix for extracted files in order to guarantee that the version of the file
             // on disk matches up with the version of the APK.
-            String extractSuffix = BuildInfo.getExtractedFileSuffix();
+            String extractSuffix = BuildInfo.getInstance().extractedFileSuffix;
             String[] existingFileNames = outputDir.list();
             boolean allFilesExist = existingFileNames != null;
             if (allFilesExist) {

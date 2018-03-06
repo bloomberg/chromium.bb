@@ -31,6 +31,7 @@ import android.view.ViewGroup;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.BuildInfo;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
@@ -679,7 +680,8 @@ public class SyncCustomizationFragment extends PreferenceFragment
             case SYNC_AUTH_ERROR:
                 return res.getString(R.string.hint_sync_auth_error);
             case SYNC_CLIENT_OUT_OF_DATE:
-                return res.getString(R.string.hint_client_out_of_date, BuildInfo.getPackageLabel());
+                return res.getString(
+                        R.string.hint_client_out_of_date, BuildInfo.getInstance().hostPackageLabel);
             case SYNC_OTHER_ERRORS:
                 return res.getString(R.string.hint_other_sync_errors);
             case SYNC_PASSPHRASE_REQUIRED:
@@ -716,7 +718,8 @@ public class SyncCustomizationFragment extends PreferenceFragment
         if (mCurrentSyncError == SYNC_CLIENT_OUT_OF_DATE) {
             // Opens the client in play store for update.
             Intent intent = new Intent(Intent.ACTION_VIEW);
-            intent.setData(Uri.parse("market://details?id=" + BuildInfo.getPackageName()));
+            intent.setData(Uri.parse("market://details?id="
+                    + ContextUtils.getApplicationContext().getPackageName()));
             startActivity(intent);
             return;
         }

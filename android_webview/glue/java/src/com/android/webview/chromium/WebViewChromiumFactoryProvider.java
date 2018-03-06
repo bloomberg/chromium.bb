@@ -36,6 +36,7 @@ import org.chromium.android_webview.AwBrowserProcess;
 import org.chromium.android_webview.ResourcesContextWrapperFactory;
 import org.chromium.android_webview.WebViewChromiumRunQueue;
 import org.chromium.android_webview.command_line.CommandLineUtil;
+import org.chromium.base.BuildInfo;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.PackageUtils;
@@ -202,10 +203,11 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         }
 
         ThreadUtils.setWillOverrideUiThread();
+        final PackageInfo packageInfo = WebViewFactory.getLoadedPackageInfo();
+        BuildInfo.setBrowserPackageInfo(packageInfo);
+
         // Load chromium library.
         AwBrowserProcess.loadLibrary(mWebViewDelegate.getDataDirectorySuffix());
-
-        final PackageInfo packageInfo = WebViewFactory.getLoadedPackageInfo();
 
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
         try {

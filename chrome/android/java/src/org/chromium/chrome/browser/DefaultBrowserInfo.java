@@ -92,8 +92,8 @@ public final class DefaultBrowserInfo {
                         Context context = ContextUtils.getApplicationContext();
                         ArrayList<String> menuTitles = new ArrayList<String>(2);
                         // Store the package label of current application.
-                        menuTitles.add(
-                                getTitleFromPackageLabel(context, BuildInfo.getPackageLabel()));
+                        menuTitles.add(getTitleFromPackageLabel(
+                                context, BuildInfo.getInstance().hostPackageLabel));
 
                         PackageManager pm = context.getPackageManager();
                         ResolveInfo info = getResolveInfoForViewIntent(pm);

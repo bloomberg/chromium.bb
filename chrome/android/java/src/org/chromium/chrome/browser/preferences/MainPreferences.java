@@ -12,7 +12,7 @@ import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.provider.Settings;
 
-import org.chromium.base.BuildInfo;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -103,7 +103,8 @@ public class MainPreferences extends PreferenceFragment
             notifications.setOnPreferenceClickListener(preference -> {
                 Intent intent = new Intent();
                 intent.setAction(Settings.ACTION_APP_NOTIFICATION_SETTINGS);
-                intent.putExtra(Settings.EXTRA_APP_PACKAGE, BuildInfo.getPackageName());
+                intent.putExtra(Settings.EXTRA_APP_PACKAGE,
+                        ContextUtils.getApplicationContext().getPackageName());
                 startActivity(intent);
                 // We handle the click so the default action (opening NotificationsPreference)
                 // isn't triggered.
