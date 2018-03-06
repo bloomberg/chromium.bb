@@ -5,11 +5,13 @@
 #include "chrome/browser/ui/webui/signin/dice_turn_sync_on_helper.h"
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/cloud/user_policy_signin_service.h"
 #include "chrome/browser/policy/cloud/user_policy_signin_service_factory.h"
@@ -71,7 +73,10 @@ DiceTurnSyncOnHelper::DiceTurnSyncOnHelper(
   DCHECK(!signin_util::IsForceSigninEnabled());
 
   if (HasCanOfferSigninError()) {
-    AbortAndDelete();
+    // Do not self-destruct synchronously in the constructor.
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&DiceTurnSyncOnHelper::AbortAndDelete,
+                                  base::Unretained(this)));
     return;
   }
 
