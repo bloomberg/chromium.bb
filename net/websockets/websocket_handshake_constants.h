@@ -56,14 +56,6 @@ extern const char kUpgrade[];
 // RFC6455.
 extern const char NET_EXPORT kWebSocketGuid[];
 
-// Some parts of the code require lowercase versions of the header names in
-// order to do case-insensitive comparisons, or because of HTTP/2.
-// "sec-websocket-protocol"
-extern const char kSecWebSocketProtocolLowercase[];
-
-// "sec-websocket-extensions"
-extern const char kSecWebSocketExtensionsLowercase[];
-
 // "websocket", as used in the "Upgrade:" header. This is always lowercase
 // (except in obsolete versions of the protocol).
 extern const char kWebSocketLowercase[];
