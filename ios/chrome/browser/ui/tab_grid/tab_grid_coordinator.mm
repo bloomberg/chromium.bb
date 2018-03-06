@@ -93,6 +93,7 @@
   self.adaptor.adaptedDispatcher =
       static_cast<id<ApplicationCommands, BrowserCommands, OmniboxFocuser,
                      ToolbarCommands>>(self.dispatcher);
+  self.adaptor.tabGridPager = mainViewController;
 
   self.regularTabsMediator = [[TabGridMediator alloc]
       initWithConsumer:mainViewController.regularTabsConsumer];

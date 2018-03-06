@@ -49,6 +49,7 @@ source_set("tab_grid_ui") {
     "grid_view_controller.mm",
     "tab_grid_bottom_toolbar.h",
     "tab_grid_bottom_toolbar.mm",
+    "tab_grid_paging.h",
     "tab_grid_top_toolbar.h",
     "tab_grid_top_toolbar.mm",
     "tab_grid_transition_handler.h",

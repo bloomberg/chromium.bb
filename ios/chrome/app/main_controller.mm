@@ -2486,6 +2486,11 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
         << " Main coordinator not created when tab switcher needed.";
     TabGridCoordinator* tabGridCoordinator =
         base::mac::ObjCCastStrict<TabGridCoordinator>(self.mainCoordinator);
+    // Call -restoreInternalState so that the grid shows the correct panel.
+    [tabGridCoordinator.tabSwitcher
+        restoreInternalStateWithMainTabModel:self.mainTabModel
+                                 otrTabModel:self.otrTabModel
+                              activeTabModel:self.currentTabModel];
     return tabGridCoordinator.tabSwitcher;
   } else {
     if (IsIPadIdiom()) {

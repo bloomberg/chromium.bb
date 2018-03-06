@@ -6,6 +6,8 @@
 
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/main/view_controller_swapping.h"
+#import "ios/chrome/browser/ui/tab_grid/tab_grid_paging.h"
+
 #import "ios/web/public/navigation_manager.h"
 
 #import "base/logging.h"
@@ -21,6 +23,7 @@
 // Public properties
 @synthesize tabGridViewController = _tabGridViewController;
 @synthesize adaptedDispatcher = _adaptedDispatcher;
+@synthesize tabGridPager = _tabGridPager;
 @synthesize incognitoMediator = _incognitoMediator;
 
 #pragma mark - TabSwitcher
@@ -41,7 +44,13 @@
 - (void)restoreInternalStateWithMainTabModel:(TabModel*)mainModel
                                  otrTabModel:(TabModel*)otrModel
                               activeTabModel:(TabModel*)activeModel {
-  // This is a no-op, but it will be called frequently.
+  // The only action here is to signal to the tab grid which panel should be
+  // active.
+  if (activeModel == otrModel) {
+    self.tabGridPager.currentPage = TabGridPageIncognitoTabs;
+  } else {
+    self.tabGridPager.currentPage = TabGridPageRegularTabs;
+  }
 }
 
 - (void)prepareForDisplayAtSize:(CGSize)size {
