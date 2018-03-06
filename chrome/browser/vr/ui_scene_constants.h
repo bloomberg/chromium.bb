@@ -34,7 +34,7 @@ static constexpr float kContentVerticalOffset =
     kContentVerticalOffsetDMM * kContentDistance;
 static constexpr float kContentCornerRadius = 0.005f * kContentWidth;
 static constexpr float kContentShadowOffset = 0.09f;
-static constexpr float kContentShadowIntesity = 0.3f;
+static constexpr float kContentShadowIntesity = 0.4f;
 static constexpr float kBackplaneSize = 1000.0f;
 static constexpr float kBackgroundDistanceMultiplier = 1.414f;
 
@@ -209,7 +209,7 @@ static constexpr float kOmniboxCloseButtonDiameterDMM = kButtonDiameterDMM;
 static constexpr float kOmniboxCloseButtonVerticalOffsetDMM = -0.75f;
 static constexpr float kOmniboxCornerRadiusDMM = 0.006f;
 static constexpr float kOmniboxCloseButtonDepthOffset = -0.35f;
-static constexpr float kOmniboxShadowOffset = 0.015f;
+static constexpr float kOmniboxShadowOffset = 0.07f;
 static constexpr float kOmniboxShadowIntensity = 0.4f;
 static constexpr int kOmniboxTransitionMs = 300;
 

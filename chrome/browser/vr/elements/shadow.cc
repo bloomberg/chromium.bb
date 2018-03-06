@@ -115,7 +115,7 @@ static constexpr float kPaddingScaleFactor = 0.2f;
 // This value adjust how the shadow translates due to depth changes. Increasing
 // this number effectively makes the faked light sounce appear higher (the
 // shadow descends more quickly).
-static constexpr float kYShadowOffset = 0.06f;
+static constexpr float kYShadowOffset = 0.03f;
 
 }  // namespace
 
