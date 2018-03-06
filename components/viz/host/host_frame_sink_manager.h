@@ -141,6 +141,12 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
   // Marks the given SurfaceIds for destruction.
   void EvictSurfaces(const std::vector<SurfaceId>& surface_ids);
 
+  // Takes a snapshot of |frame_sink_id|. Next time a display frame is
+  // generated, the snapshot will be taken from the Surface belonging to
+  // |frame_sink_id| that is reachable from the root Surface.
+  void RequestCopyOfOutput(const FrameSinkId& frame_sink_id,
+                           std::unique_ptr<CopyOutputRequest> request);
+
   // CompositorFrameSinkSupportManager:
   std::unique_ptr<CompositorFrameSinkSupport> CreateCompositorFrameSinkSupport(
       mojom::CompositorFrameSinkClient* client,

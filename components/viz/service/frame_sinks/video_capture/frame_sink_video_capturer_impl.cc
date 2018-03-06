@@ -531,7 +531,7 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
   // damage over all the frames that weren't captured.
   request->set_result_selection(gfx::Rect(content_rect.size()));
   dirty_rect_ = gfx::Rect();
-  resolved_target_->RequestCopyOfSurface(std::move(request));
+  resolved_target_->RequestCopyOfOutput(std::move(request));
 }
 
 void FrameSinkVideoCapturerImpl::DidCopyFrame(

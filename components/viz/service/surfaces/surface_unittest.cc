@@ -91,7 +91,7 @@ TEST(SurfaceTest, CopyRequestLifetime) {
   ASSERT_TRUE(!!surface);
 
   bool copy_called = false;
-  support->RequestCopyOfSurface(std::make_unique<CopyOutputRequest>(
+  support->RequestCopyOfOutput(std::make_unique<CopyOutputRequest>(
       CopyOutputRequest::ResultFormat::RGBA_BITMAP,
       base::BindOnce(&TestCopyResultCallback, &copy_called)));
   surface->OnWillBeDrawn();

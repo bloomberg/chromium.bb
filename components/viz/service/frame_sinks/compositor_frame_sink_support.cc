@@ -488,7 +488,7 @@ gfx::Size CompositorFrameSinkSupport::GetActiveFrameSize() {
   return gfx::Size();
 }
 
-void CompositorFrameSinkSupport::RequestCopyOfSurface(
+void CompositorFrameSinkSupport::RequestCopyOfOutput(
     std::unique_ptr<CopyOutputRequest> copy_request) {
   if (!last_activated_surface_id_.is_valid())
     return;

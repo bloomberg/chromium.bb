@@ -874,7 +874,8 @@ void RenderWidgetHostViewChildFrame::CopyFromSurface(
         gfx::Vector2d(output_size.width(), output_size.height()));
   }
 
-  support_->RequestCopyOfSurface(std::move(request));
+  GetHostFrameSinkManager()->RequestCopyOfOutput(frame_sink_id_,
+                                                 std::move(request));
 }
 
 void RenderWidgetHostViewChildFrame::ReclaimResources(
