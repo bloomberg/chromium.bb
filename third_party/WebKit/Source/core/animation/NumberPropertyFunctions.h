@@ -6,6 +6,7 @@
 #define NumberPropertyFunctions_h
 
 #include "core/CSSPropertyNames.h"
+#include "platform/wtf/Optional.h"
 
 namespace blink {
 
@@ -14,10 +15,8 @@ class CSSProperty;
 
 class NumberPropertyFunctions {
  public:
-  static bool GetInitialNumber(const CSSProperty&, double& result);
-  static bool GetNumber(const CSSProperty&,
-                        const ComputedStyle&,
-                        double& result);
+  static Optional<double> GetInitialNumber(const CSSProperty&);
+  static Optional<double> GetNumber(const CSSProperty&, const ComputedStyle&);
   static double ClampNumber(const CSSProperty&, double);
   static bool SetNumber(const CSSProperty&, ComputedStyle&, double);
 };

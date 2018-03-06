@@ -8,6 +8,7 @@
 #include "core/animation/NumberPropertyFunctions.h"
 #include "core/css/resolver/StyleBuilder.h"
 #include "core/css/resolver/StyleResolverState.h"
+#include "platform/wtf/Optional.h"
 #include "platform/wtf/PtrUtil.h"
 
 namespace blink {
@@ -17,25 +18,23 @@ class InheritedNumberChecker
  public:
   static std::unique_ptr<InheritedNumberChecker> Create(
       const CSSProperty& property,
-      double number) {
+      Optional<double> number) {
     return WTF::WrapUnique(new InheritedNumberChecker(property, number));
   }
 
  private:
-  InheritedNumberChecker(const CSSProperty& property, double number)
+  InheritedNumberChecker(const CSSProperty& property, Optional<double> number)
       : property_(property), number_(number) {}
 
   bool IsValid(const StyleResolverState& state,
                const InterpolationValue& underlying) const final {
-    double parent_number;
-    if (!NumberPropertyFunctions::GetNumber(property_, *state.ParentStyle(),
-                                            parent_number))
-      return false;
-    return parent_number == number_;
+    Optional<double> parent_number =
+        NumberPropertyFunctions::GetNumber(property_, *state.ParentStyle());
+    return number_ == parent_number;
   }
 
   const CSSProperty& property_;
-  const double number_;
+  const Optional<double> number_;
 };
 
 const CSSValue* CSSNumberInterpolationType::CreateCSSValue(
@@ -61,10 +60,11 @@ InterpolationValue CSSNumberInterpolationType::MaybeConvertNeutral(
 InterpolationValue CSSNumberInterpolationType::MaybeConvertInitial(
     const StyleResolverState&,
     ConversionCheckers& conversion_checkers) const {
-  double initial_number;
-  if (!NumberPropertyFunctions::GetInitialNumber(CssProperty(), initial_number))
+  Optional<double> initial_number =
+      NumberPropertyFunctions::GetInitialNumber(CssProperty());
+  if (!initial_number)
     return nullptr;
-  return CreateNumberValue(initial_number);
+  return CreateNumberValue(*initial_number);
 }
 
 InterpolationValue CSSNumberInterpolationType::MaybeConvertInherit(
@@ -72,13 +72,13 @@ InterpolationValue CSSNumberInterpolationType::MaybeConvertInherit(
     ConversionCheckers& conversion_checkers) const {
   if (!state.ParentStyle())
     return nullptr;
-  double inherited_number;
-  if (!NumberPropertyFunctions::GetNumber(CssProperty(), *state.ParentStyle(),
-                                          inherited_number))
-    return nullptr;
+  Optional<double> inherited =
+      NumberPropertyFunctions::GetNumber(CssProperty(), *state.ParentStyle());
   conversion_checkers.push_back(
-      InheritedNumberChecker::Create(CssProperty(), inherited_number));
-  return CreateNumberValue(inherited_number);
+      InheritedNumberChecker::Create(CssProperty(), inherited));
+  if (!inherited)
+    return nullptr;
+  return CreateNumberValue(*inherited);
 }
 
 InterpolationValue CSSNumberInterpolationType::MaybeConvertValue(
@@ -93,11 +93,11 @@ InterpolationValue CSSNumberInterpolationType::MaybeConvertValue(
 InterpolationValue
 CSSNumberInterpolationType::MaybeConvertStandardPropertyUnderlyingValue(
     const ComputedStyle& style) const {
-  double underlying_number;
-  if (!NumberPropertyFunctions::GetNumber(CssProperty(), style,
-                                          underlying_number))
+  Optional<double> underlying_number =
+      NumberPropertyFunctions::GetNumber(CssProperty(), style);
+  if (!underlying_number)
     return nullptr;
-  return CreateNumberValue(underlying_number);
+  return CreateNumberValue(*underlying_number);
 }
 
 void CSSNumberInterpolationType::ApplyStandardPropertyValue(
