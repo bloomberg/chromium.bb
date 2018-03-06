@@ -23,14 +23,6 @@ bool DefaultAccessibilityDelegate::IsMagnifierEnabled() const {
   return screen_magnifier_enabled_;
 }
 
-void DefaultAccessibilityDelegate::SetTapDraggingEnabled(bool enabled) {
-  tap_dragging_enabled_ = enabled;
-}
-
-bool DefaultAccessibilityDelegate::IsTapDraggingEnabled() const {
-  return tap_dragging_enabled_;
-}
-
 bool DefaultAccessibilityDelegate::ShouldShowAccessibilityMenu() const {
   AccessibilityController* controller =
       Shell::Get()->accessibility_controller();

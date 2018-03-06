@@ -77,6 +77,9 @@ class ASH_EXPORT AccessibilityController
   void SetStickyKeysEnabled(bool enabled);
   bool IsStickyKeysEnabled() const;
 
+  void SetTapDraggingEnabled(bool enabled);
+  bool IsTapDraggingEnabled() const;
+
   void SetVirtualKeyboardEnabled(bool enabled);
   bool IsVirtualKeyboardEnabled() const;
 

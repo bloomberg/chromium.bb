@@ -104,16 +104,6 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
     return chromeos::MagnificationManager::Get()->IsMagnifierEnabled();
   }
 
-  void SetTapDraggingEnabled(bool enabled) override {
-    DCHECK(AccessibilityManager::Get());
-    return AccessibilityManager::Get()->EnableTapDragging(enabled);
-  }
-
-  bool IsTapDraggingEnabled() const override {
-    DCHECK(AccessibilityManager::Get());
-    return AccessibilityManager::Get()->IsTapDraggingEnabled();
-  }
-
   bool ShouldShowAccessibilityMenu() const override {
     DCHECK(AccessibilityManager::Get());
     return AccessibilityManager::Get()->ShouldShowAccessibilityMenu();

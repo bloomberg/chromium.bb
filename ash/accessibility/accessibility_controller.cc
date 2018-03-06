@@ -21,6 +21,7 @@
 #include "ash/system/power/backlights_forced_off_setter.h"
 #include "ash/system/power/scoped_backlights_forced_off.h"
 #include "ash/system/tray/system_tray_notifier.h"
+#include "ash/touch/touch_devices_controller.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -642,6 +643,14 @@ void AccessibilityController::UpdateStickyKeysFromPref() {
   NotifyAccessibilityStatusChanged(A11Y_NOTIFICATION_NONE);
 
   Shell::Get()->sticky_keys_controller()->Enable(enabled);
+}
+
+void AccessibilityController::SetTapDraggingEnabled(bool enabled) {
+  Shell::Get()->touch_devices_controller()->SetTapDraggingEnabled(enabled);
+}
+
+bool AccessibilityController::IsTapDraggingEnabled() const {
+  return Shell::Get()->touch_devices_controller()->GetTapDraggingEnabled();
 }
 
 void AccessibilityController::UpdateVirtualKeyboardFromPref() {

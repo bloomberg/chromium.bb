@@ -4,11 +4,15 @@
 
 #include "ash/touch/touch_devices_controller.h"
 
+#include "ash/public/cpp/accessibility_types.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
+#include "ash/system/tray/system_tray_notifier.h"
+#include "base/metrics/histogram_macros.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -35,9 +39,38 @@ PrefService* GetActivePrefService() {
 
 }  // namespace
 
+// Used to record pref started UMA. It is created on user session added and
+// destroyed on active user pref changed, which is a point of pref started.
+class TouchDevicesController::ScopedUmaRecorder {
+ public:
+  ScopedUmaRecorder() = default;
+  ~ScopedUmaRecorder() {
+    PrefService* prefs = GetActivePrefService();
+    if (!prefs)
+      return;
+    UMA_HISTOGRAM_BOOLEAN("Touchpad.TapDragging.Started",
+                          prefs->GetBoolean(prefs::kTapDraggingEnabled));
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ScopedUmaRecorder);
+};
+
 // static
-void TouchDevicesController::RegisterProfilePrefs(
-    PrefRegistrySimple* registry) {
+void TouchDevicesController::RegisterProfilePrefs(PrefRegistrySimple* registry,
+                                                  bool for_test) {
+  if (for_test) {
+    // In tests there is no remote pref service. Make ash own the prefs.
+    registry->RegisterBooleanPref(
+        prefs::kTapDraggingEnabled, false,
+        user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF |
+            PrefRegistry::PUBLIC);
+  } else {
+    // In production the prefs are owned by chrome.
+    // TODO: Move ownership to ash.
+    registry->RegisterForeignPref(prefs::kTapDraggingEnabled);
+  }
+
   registry->RegisterBooleanPref(prefs::kTouchpadEnabled, PrefRegistry::PUBLIC);
   registry->RegisterBooleanPref(prefs::kTouchscreenEnabled,
                                 PrefRegistry::PUBLIC);
@@ -49,6 +82,18 @@ TouchDevicesController::TouchDevicesController() {
 
 TouchDevicesController::~TouchDevicesController() {
   Shell::Get()->session_controller()->RemoveObserver(this);
+}
+
+void TouchDevicesController::SetTapDraggingEnabled(bool enabled) {
+  PrefService* prefs = GetActivePrefService();
+  if (!prefs)
+    return;
+  prefs->SetBoolean(prefs::kTapDraggingEnabled, enabled);
+  prefs->CommitPendingWrite();
+}
+
+bool TouchDevicesController::GetTapDraggingEnabled() const {
+  return tap_dragging_enabled_;
 }
 
 void TouchDevicesController::ToggleTouchpad() {
@@ -85,6 +130,10 @@ void TouchDevicesController::SetTouchscreenEnabled(
   prefs->SetBoolean(prefs::kTouchscreenEnabled, enabled);
 }
 
+void TouchDevicesController::OnUserSessionAdded(const AccountId& account_id) {
+  scoped_uma_recorder_ = std::make_unique<ScopedUmaRecorder>();
+}
+
 void TouchDevicesController::OnSigninScreenPrefServiceInitialized(
     PrefService* prefs) {
   ObservePrefs(prefs);
@@ -92,6 +141,7 @@ void TouchDevicesController::OnSigninScreenPrefServiceInitialized(
 
 void TouchDevicesController::OnActiveUserPrefServiceChanged(
     PrefService* prefs) {
+  scoped_uma_recorder_.reset();
   ObservePrefs(prefs);
 }
 
@@ -99,6 +149,10 @@ void TouchDevicesController::ObservePrefs(PrefService* prefs) {
   // Watch for pref updates.
   pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
   pref_change_registrar_->Init(prefs);
+  pref_change_registrar_->Add(
+      prefs::kTapDraggingEnabled,
+      base::Bind(&TouchDevicesController::UpdateTapDraggingEnabled,
+                 base::Unretained(this)));
   pref_change_registrar_->Add(
       prefs::kTouchpadEnabled,
       base::Bind(&TouchDevicesController::UpdateTouchpadEnabled,
@@ -108,18 +162,39 @@ void TouchDevicesController::ObservePrefs(PrefService* prefs) {
       base::Bind(&TouchDevicesController::UpdateTouchscreenEnabled,
                  base::Unretained(this)));
   // Load current state.
+  UpdateTapDraggingEnabled();
   UpdateTouchpadEnabled();
   UpdateTouchscreenEnabled();
+}
+
+void TouchDevicesController::UpdateTapDraggingEnabled() {
+  PrefService* prefs = GetActivePrefService();
+  const bool enabled = prefs->GetBoolean(prefs::kTapDraggingEnabled);
+
+  if (tap_dragging_enabled_ == enabled)
+    return;
+
+  tap_dragging_enabled_ = enabled;
+
+  UMA_HISTOGRAM_BOOLEAN("Touchpad.TapDragging.Changed", enabled);
+
+  // Tap dragging is listed as a11y feature, so notifying a11y status changed.
+  // TODO(warx): tap dragging is considered to be removed from a11y feature.
+  // https://crbug.com/164273, https://crbug.com/724501.
+  Shell::Get()->system_tray_notifier()->NotifyAccessibilityStatusChanged(
+      A11Y_NOTIFICATION_NONE);
+
+  if (!GetInputDeviceControllerClient())
+    return;  // Happens in tests.
+
+  GetInputDeviceControllerClient()->SetTapDragging(enabled);
 }
 
 void TouchDevicesController::UpdateTouchpadEnabled() {
   if (!GetInputDeviceControllerClient())
     return;  // Happens in tests.
 
-  PrefService* prefs =
-      Shell::Get()->session_controller()->GetActivePrefService();
-  if (!prefs)
-    return;
+  PrefService* prefs = GetActivePrefService();
 
   GetInputDeviceControllerClient()->SetInternalTouchpadEnabled(
       prefs->GetBoolean(prefs::kTouchpadEnabled),

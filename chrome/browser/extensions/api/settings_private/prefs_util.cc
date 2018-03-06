@@ -316,7 +316,7 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[::prefs::kLanguagePreferredLanguages] =
       settings_api::PrefType::PREF_TYPE_STRING;
-  (*s_whitelist)[::prefs::kTapDraggingEnabled] =
+  (*s_whitelist)[ash::prefs::kTapDraggingEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[chromeos::kStatsReportingPref] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;

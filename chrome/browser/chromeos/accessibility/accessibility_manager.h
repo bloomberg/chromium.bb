@@ -319,7 +319,7 @@ class AccessibilityManager
   void OnCaretHighlightChanged();
   void OnCursorHighlightChanged();
   void OnFocusHighlightChanged();
-  void UpdateTapDraggingFromPref();
+  void OnTapDraggingChanged();
   void OnSelectToSpeakChanged();
   void UpdateSwitchAccessFromPref();
 
@@ -385,7 +385,6 @@ class AccessibilityManager
   PrefHandler switch_access_pref_handler_;
 
   bool spoken_feedback_enabled_;
-  bool tap_dragging_enabled_;
   bool select_to_speak_enabled_;
   bool switch_access_enabled_;
 

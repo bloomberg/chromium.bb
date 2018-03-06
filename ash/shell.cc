@@ -392,7 +392,7 @@ void Shell::RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
   PaletteTray::RegisterProfilePrefs(registry);
   PaletteWelcomeBubble::RegisterProfilePrefs(registry);
   ShelfController::RegisterProfilePrefs(registry);
-  TouchDevicesController::RegisterProfilePrefs(registry);
+  TouchDevicesController::RegisterProfilePrefs(registry, for_test);
   TrayCapsLock::RegisterProfilePrefs(registry, for_test);
 }
 
