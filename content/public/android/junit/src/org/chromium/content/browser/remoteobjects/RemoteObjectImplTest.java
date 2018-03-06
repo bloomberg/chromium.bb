@@ -282,6 +282,23 @@ public final class RemoteObjectImplTest {
     }
 
     @Test
+    public void testMethodReturningArrayIgnored() {
+        Object target = new Object() {
+            @TestJavascriptInterface
+            public int[] returnsIntArray() {
+                Assert.fail("Method returning array should not be called.");
+                return null;
+            }
+        };
+
+        RemoteObject remoteObject = new RemoteObjectImpl(target, TestJavascriptInterface.class);
+        RemoteObject.InvokeMethodResponse response = mock(RemoteObject.InvokeMethodResponse.class);
+        remoteObject.invokeMethod("returnsIntArray", new RemoteInvocationArgument[] {}, response);
+
+        verify(response).call(resultIsOk());
+    }
+
+    @Test
     public void testInvocationTargetException() {
         Object target = new Object() {
             @TestJavascriptInterface
