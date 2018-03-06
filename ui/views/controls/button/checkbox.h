@@ -45,6 +45,9 @@ class VIEWS_EXPORT Checkbox : public LabelButton {
   // an accessible name can be used, e.g. a Label, StyledLabel or Link.
   void SetAssociatedLabel(View* labelling_view);
 
+  // LabelButton:
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+
  protected:
   // Returns whether MD is enabled. Returns true if |force_md| in the
   // constructor or --secondary-ui-md flag is set.
@@ -52,7 +55,6 @@ class VIEWS_EXPORT Checkbox : public LabelButton {
 
   // LabelButton:
   const char* GetClassName() const override;
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void OnFocus() override;
   void OnBlur() override;
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
