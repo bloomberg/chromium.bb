@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "ash/ime/ime_controller.h"
 #include "ash/login/login_screen_controller.h"
 #include "ash/login/ui/layout_util.h"
 #include "ash/login/ui/lock_contents_view.h"
@@ -18,7 +19,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "mojo/common/values_struct_traits.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
-#include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/view.h"
@@ -318,9 +318,8 @@ void LockDebugView::ButtonPressed(views::Button* sender,
 
   // Enable or disable caps lock.
   if (sender == toggle_caps_lock_) {
-    chromeos::input_method::ImeKeyboard* keyboard =
-        chromeos::input_method::InputMethodManager::Get()->GetImeKeyboard();
-    keyboard->SetCapsLockEnabled(!keyboard->CapsLockIsEnabled());
+    ImeController* ime_controller = Shell::Get()->ime_controller();
+    ime_controller->SetCapsLockFromTray(!ime_controller->IsCapsLockEnabled());
     return;
   }
 

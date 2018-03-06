@@ -6,6 +6,7 @@
 #define ASH_LOGIN_UI_LOGIN_PASSWORD_VIEW_H_
 
 #include "ash/ash_export.h"
+#include "ash/ime/ime_controller.h"
 #include "ash/login/ui/animated_rounded_image_view.h"
 #include "ash/public/interfaces/login_user_info.mojom.h"
 #include "ash/public/interfaces/user_info.mojom.h"
@@ -36,11 +37,10 @@ class LoginButton;
 //
 //   * * * * * *   =>
 //  ------------------
-class ASH_EXPORT LoginPasswordView
-    : public views::View,
-      public views::ButtonListener,
-      public views::TextfieldController,
-      public chromeos::input_method::ImeKeyboard::Observer {
+class ASH_EXPORT LoginPasswordView : public views::View,
+                                     public views::ButtonListener,
+                                     public views::TextfieldController,
+                                     public ImeController::Observer {
  public:
   // TestApi is used for tests to get internal implementation details.
   class ASH_EXPORT TestApi {
@@ -116,9 +116,8 @@ class ASH_EXPORT LoginPasswordView
   void ContentsChanged(views::Textfield* sender,
                        const base::string16& new_contents) override;
 
-  // chromeos::input_method::ImeKeyboard::Observer:
+  // ImeController::Observer:
   void OnCapsLockChanged(bool enabled) override;
-  void OnLayoutChanging(const std::string& layout_name) override {}
 
  private:
   class EasyUnlockIcon;
@@ -143,10 +142,6 @@ class ASH_EXPORT LoginPasswordView
   views::Separator* separator_ = nullptr;
   EasyUnlockIcon* easy_unlock_icon_ = nullptr;
   views::View* easy_unlock_right_margin_ = nullptr;
-
-  ScopedObserver<chromeos::input_method::ImeKeyboard,
-                 chromeos::input_method::ImeKeyboard::Observer>
-      ime_keyboard_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginPasswordView);
 };
