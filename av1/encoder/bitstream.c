@@ -901,9 +901,12 @@ static void write_cfl_alphas(FRAME_CONTEXT *const ec_ctx, int idx,
 
 static void write_cdef(AV1_COMMON *cm, aom_writer *w, int skip, int mi_col,
                        int mi_row) {
-  if (cm->all_lossless) return;
-  if (cm->allow_intrabc && NO_FILTER_FOR_IBC) {
-    assert(cm->cdef_bits == 0);
+  if (cm->all_lossless || (cm->allow_intrabc && NO_FILTER_FOR_IBC)) {
+    // Initialize to indicate no CDEF for safety.
+    cm->cdef_bits = 0;
+    cm->cdef_strengths[0] = 0;
+    cm->nb_cdef_strengths = 1;
+    cm->cdef_uv_strengths[0] = 0;
     return;
   }
 
