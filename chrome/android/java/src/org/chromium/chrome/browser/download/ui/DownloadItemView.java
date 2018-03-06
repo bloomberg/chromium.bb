@@ -31,7 +31,10 @@ import org.chromium.chrome.browser.widget.MaterialProgressBar;
 import org.chromium.chrome.browser.widget.ThumbnailProvider;
 import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.chrome.browser.widget.selection.SelectableItemView;
+import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.OfflineItem.Progress;
+import org.chromium.components.offline_items_collection.OfflineItemVisuals;
+import org.chromium.components.offline_items_collection.VisualsCallback;
 import org.chromium.components.variations.VariationsAssociatedData;
 import org.chromium.ui.UiUtils;
 
@@ -232,7 +235,9 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
         // immediately if the thumbnail is cached or asynchronously if it has to be fetched from a
         // remote source.
         mThumbnailBitmap = null;
-        if (fileType == DownloadFilter.FILTER_IMAGE && item.isComplete()) {
+        if (item.isOfflinePage()) {
+            requestVisualsFromProvider(item);
+        } else if (fileType == DownloadFilter.FILTER_IMAGE && item.isComplete()) {
             thumbnailProvider.getThumbnail(this);
         } else {
             // TODO(dfalcantara): Get thumbnails for audio and video files when possible.
@@ -304,12 +309,21 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
         setLongClickable(item.isComplete());
     }
 
-    /**
-     * @param thumbnail The Bitmap to use for the icon ImageView.
-     */
-    public void setThumbnailBitmap(Bitmap thumbnail) {
+    private void setThumbnailBitmap(Bitmap thumbnail) {
         mThumbnailBitmap = thumbnail;
         updateIconView();
+    }
+
+    private void requestVisualsFromProvider(DownloadHistoryItemWrapper item) {
+        item.requestVisualsFromProvider(new VisualsCallback() {
+            @Override
+            public void onVisualsAvailable(ContentId id, OfflineItemVisuals visuals) {
+                if (visuals == null) return;
+
+                mThumbnailBitmap = visuals.icon;
+                updateIconView();
+            }
+        });
     }
 
     @Override
