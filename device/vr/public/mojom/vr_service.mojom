@@ -9,6 +9,56 @@ import "gpu/ipc/common/mailbox_holder.mojom";
 import "gpu/ipc/common/sync_token.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/gfx/mojo/gpu_fence_handle.mojom";
+import "ui/gfx/mojo/transform.mojom";
+
+//
+// WebXR interfaces
+//
+
+enum XRHandedness {
+  NONE = 0,
+  LEFT = 1,
+  RIGHT = 2
+};
+
+enum XRPointerOrigin {
+  HEAD = 1,
+  HAND = 2,
+  SCREEN = 3
+};
+
+struct XRInputSourceDescription {
+  XRPointerOrigin pointer_origin;
+  XRHandedness handedness;
+  bool emulated_position;
+
+  // Transform from the grip matrix to the pointer's origin and orientation.
+  gfx.mojom.Transform? pointer_offset;
+};
+
+struct XRInputSourceState {
+  uint32 source_id;
+
+  // Description of this input source's behavior. Should be mostly static, only
+  // need periodic updates.
+  XRInputSourceDescription? description;
+
+  // Transform to the controllers grip (users palm) from start space origin.
+  gfx.mojom.Transform? grip;
+
+  // Describes the current state of the primary input.
+  bool primary_input_pressed;
+
+  // Indicates if the input's primary input has been released (clicked) since
+  // the last report. May indicate that the button was pressed and released in
+  // the space of a single frame, so it may not have been preceeded by a
+  // primary_input_pressed = true;
+  bool primary_input_clicked;
+};
+
+//
+// WebVR/WebXR shared interfaces
+//
 
 // A field of view, given by 4 degrees describing the view from a center point.
 struct VRFieldOfView {
@@ -27,6 +77,10 @@ struct VRPose {
   array<float, 3>? linearVelocity;
   array<float, 3>? angularAcceleration;
   array<float, 3>? linearAcceleration;
+
+  // For WebXR sessions only, reports the state of all active input devices
+  // synced with the head pose.
+  array<XRInputSourceState>? input_state;
 };
 
 struct VRDisplayCapabilities {
@@ -66,6 +120,8 @@ struct VRRequestPresentOptions {
   // If true, must use a render path that can preserve drawing buffer
   // contents across frames. If false, each frame is drawn independently.
   bool preserve_drawing_buffer;
+  // If true, indicates that WebXR input poses should be reported on VSync.
+  bool webxr_input;
 };
 
 // Frame transport method from the Renderer's point of view.

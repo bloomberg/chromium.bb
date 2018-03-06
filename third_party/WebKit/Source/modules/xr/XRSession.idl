@@ -26,5 +26,7 @@
   long requestAnimationFrame(XRFrameRequestCallback callback);
   void cancelAnimationFrame(long handle);
 
+  FrozenArray<XRInputSource> getInputSources();
+
   [CallWith=ScriptState] Promise<void> end();
 };

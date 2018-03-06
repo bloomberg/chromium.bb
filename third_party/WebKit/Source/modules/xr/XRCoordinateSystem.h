@@ -28,6 +28,9 @@ class XRCoordinateSystem : public ScriptWrappable {
 
   virtual std::unique_ptr<TransformationMatrix> TransformBasePose(
       const TransformationMatrix& base_pose) = 0;
+  virtual std::unique_ptr<TransformationMatrix> TransformBaseInputPose(
+      const TransformationMatrix& base_input_pose,
+      const TransformationMatrix& base_pose) = 0;
 
   virtual void Trace(blink::Visitor*);
 

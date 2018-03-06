@@ -105,6 +105,7 @@ void XRFrameProvider::BeginExclusiveSession(XRSession* session,
     device::mojom::blink::VRRequestPresentOptionsPtr options =
         device::mojom::blink::VRRequestPresentOptions::New();
     options->preserve_drawing_buffer = false;
+    options->webxr_input = true;
 
     device_->xrDisplayHostPtr()->RequestPresent(
         frame_transport_->GetSubmitFrameClient(),
@@ -284,6 +285,11 @@ void XRFrameProvider::ProcessScheduledFrame(double timestamp) {
                frame_id_);
 
   if (exclusive_session_) {
+    if (frame_pose_ && frame_pose_->input_state.has_value()) {
+      exclusive_session_->OnInputStateChange(frame_id_,
+                                             frame_pose_->input_state.value());
+    }
+
     // If there's an exclusive session active only process it's frame.
     std::unique_ptr<TransformationMatrix> pose_matrix =
         getPoseMatrix(frame_pose_);
@@ -298,6 +304,12 @@ void XRFrameProvider::ProcessScheduledFrame(double timestamp) {
     // Inform sessions with a pending request of the new frame
     for (unsigned i = 0; i < processing_sessions.size(); ++i) {
       XRSession* session = processing_sessions.at(i).Get();
+
+      if (frame_pose_ && frame_pose_->input_state.has_value()) {
+        session->OnInputStateChange(frame_id_,
+                                    frame_pose_->input_state.value());
+      }
+
       std::unique_ptr<TransformationMatrix> pose_matrix =
           getPoseMatrix(frame_pose_);
       session->OnFrame(std::move(pose_matrix));

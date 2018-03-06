@@ -11,3 +11,20 @@ var VALID_POSE = {
   angularVelocity: [1.1, 2.1, 3.1],
   angularAcceleration: [1.0, 2.0, 3.0]
 }
+
+// A valid input grip matrix for  when we don't care about specific values
+var VALID_GRIP = [1, 0, 0, 0,
+                  0, 1, 0, 0,
+                  0, 0, 1, 0,
+                  4, 3, 2, 1];
+
+// A valid input pointer offset for  when we don't care about specific values
+var VALID_POINTER_OFFSET = [1, 0, 0, 0,
+                            0, 1, 0, 0,
+                            0, 0, 1, 0,
+                            0, 0, 1, 1];
+
+var VALID_GRIP_WITH_POINTER_OFFSET = [1, 0, 0, 0,
+                                      0, 1, 0, 0,
+                                      0, 0, 1, 0,
+                                      4, 3, 3, 1];

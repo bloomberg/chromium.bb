@@ -81,6 +81,42 @@ std::unique_ptr<TransformationMatrix> XRFrameOfReference::TransformBasePose(
   return nullptr;
 }
 
+// Serves the same purpose as TransformBasePose, but for input poses. Needs to
+// know the head pose so that cases like the headModel frame of reference can
+// properly adjust the input's relative position.
+std::unique_ptr<TransformationMatrix>
+XRFrameOfReference::TransformBaseInputPose(
+    const TransformationMatrix& base_input_pose,
+    const TransformationMatrix& base_pose) {
+  switch (type_) {
+    case kTypeHeadModel: {
+      std::unique_ptr<TransformationMatrix> head_model_pose(
+          TransformBasePose(base_pose));
+
+      // Get the positional delta between the base pose and the head model pose.
+      float dx = head_model_pose->M41() - base_pose.M41();
+      float dy = head_model_pose->M42() - base_pose.M42();
+      float dz = head_model_pose->M43() - base_pose.M43();
+
+      // Translate the controller by the same delta so that it shows up in the
+      // right relative position.
+      std::unique_ptr<TransformationMatrix> pose(
+          TransformationMatrix::Create(base_input_pose));
+      pose->SetM41(pose->M41() + dx);
+      pose->SetM42(pose->M42() + dy);
+      pose->SetM43(pose->M43() + dz);
+
+      return pose;
+    } break;
+    case kTypeEyeLevel:
+    case kTypeStage:
+      return TransformBasePose(base_input_pose);
+      break;
+  }
+
+  return nullptr;
+}
+
 void XRFrameOfReference::Trace(blink::Visitor* visitor) {
   visitor->Trace(bounds_);
   XRCoordinateSystem::Trace(visitor);

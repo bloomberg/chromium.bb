@@ -6,6 +6,8 @@
 
 #include "modules/xr/XRCoordinateSystem.h"
 #include "modules/xr/XRDevicePose.h"
+#include "modules/xr/XRInputPose.h"
+#include "modules/xr/XRInputSource.h"
 #include "modules/xr/XRSession.h"
 #include "modules/xr/XRView.h"
 
@@ -41,9 +43,82 @@ XRDevicePose* XRPresentationFrame::getDevicePose(
   return new XRDevicePose(session(), std::move(pose));
 }
 
-void XRPresentationFrame::UpdateBasePose(
-    std::unique_ptr<TransformationMatrix> base_pose_matrix) {
-  base_pose_matrix_ = std::move(base_pose_matrix);
+XRInputPose* XRPresentationFrame::getInputPose(
+    XRInputSource* input_source,
+    XRCoordinateSystem* coordinate_system) const {
+  if (!input_source || !coordinate_system) {
+    return nullptr;
+  }
+
+  // Must use an input source and coordinate system from the same session.
+  if (input_source->session() != session_ ||
+      coordinate_system->session() != session_) {
+    return nullptr;
+  }
+
+  switch (input_source->pointer_origin_) {
+    case XRInputSource::kOriginScreen: {
+      // If the pointer origin is the screen we need the head's base pose and
+      // the pointer transform matrix to continue. The pointer transform will
+      // represent the point the canvas was clicked as an offset from the view.
+      if (!base_pose_matrix_ || !input_source->pointer_transform_matrix_) {
+        return nullptr;
+      }
+
+      // Multiply the head pose and pointer transform to get the final pointer.
+      std::unique_ptr<TransformationMatrix> pointer_pose =
+          coordinate_system->TransformBasePose(*base_pose_matrix_);
+      pointer_pose->Multiply(*(input_source->pointer_transform_matrix_));
+
+      return new XRInputPose(std::move(pointer_pose), nullptr);
+    }
+    case XRInputSource::kOriginHead: {
+      // If the pointer origin is the users head, this is a gaze cursor and the
+      // returned pointer is based on the device pose. If we don't have a valid
+      // base pose (most common when tracking is lost) return null.
+      if (!base_pose_matrix_) {
+        return nullptr;
+      }
+
+      // Just return the head pose as the pointer pose.
+      std::unique_ptr<TransformationMatrix> pointer_pose =
+          coordinate_system->TransformBasePose(*base_pose_matrix_);
+
+      return new XRInputPose(std::move(pointer_pose), nullptr,
+                             input_source->emulatedPosition());
+    }
+    case XRInputSource::kOriginHand: {
+      // If the input source doesn't have a base pose return null;
+      if (!input_source->base_pose_matrix_) {
+        return nullptr;
+      }
+
+      std::unique_ptr<TransformationMatrix> grip_pose =
+          coordinate_system->TransformBaseInputPose(
+              *(input_source->base_pose_matrix_), *base_pose_matrix_);
+
+      if (!grip_pose) {
+        return nullptr;
+      }
+
+      std::unique_ptr<TransformationMatrix> pointer_pose(
+          TransformationMatrix::Create(*grip_pose));
+
+      if (input_source->pointer_transform_matrix_) {
+        pointer_pose->Multiply(*(input_source->pointer_transform_matrix_));
+      }
+
+      return new XRInputPose(std::move(pointer_pose), std::move(grip_pose),
+                             input_source->emulatedPosition());
+    }
+  }
+
+  return nullptr;
+}
+
+void XRPresentationFrame::SetBasePoseMatrix(
+    const TransformationMatrix& base_pose_matrix) {
+  base_pose_matrix_ = TransformationMatrix::Create(base_pose_matrix);
 }
 
 void XRPresentationFrame::Trace(blink::Visitor* visitor) {

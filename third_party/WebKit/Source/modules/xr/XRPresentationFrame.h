@@ -16,6 +16,8 @@ namespace blink {
 
 class XRCoordinateSystem;
 class XRDevicePose;
+class XRInputPose;
+class XRInputSource;
 class XRSession;
 class XRView;
 
@@ -29,8 +31,9 @@ class XRPresentationFrame final : public ScriptWrappable {
 
   const HeapVector<Member<XRView>>& views() const;
   XRDevicePose* getDevicePose(XRCoordinateSystem*) const;
+  XRInputPose* getInputPose(XRInputSource*, XRCoordinateSystem*) const;
 
-  void UpdateBasePose(std::unique_ptr<TransformationMatrix>);
+  void SetBasePoseMatrix(const TransformationMatrix&);
 
   virtual void Trace(blink::Visitor*);
 

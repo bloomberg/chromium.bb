@@ -27,6 +27,9 @@ class XRFrameOfReference final : public XRCoordinateSystem {
 
   std::unique_ptr<TransformationMatrix> TransformBasePose(
       const TransformationMatrix& base_pose) override;
+  std::unique_ptr<TransformationMatrix> TransformBaseInputPose(
+      const TransformationMatrix& base_input_pose,
+      const TransformationMatrix& base_pose) override;
 
   XRStageBounds* bounds() const { return bounds_; }
   double emulatedHeight() const { return emulatedHeight_; }

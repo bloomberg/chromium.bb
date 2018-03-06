@@ -7,7 +7,10 @@
 
 #include "bindings/core/v8/ScriptPromise.h"
 #include "core/dom/events/EventTarget.h"
+#include "device/vr/public/mojom/vr_service.mojom-blink.h"
 #include "modules/xr/XRFrameRequestCallbackCollection.h"
+#include "modules/xr/XRInputSource.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "platform/bindings/TraceWrapperMember.h"
 #include "platform/geometry/DoubleSize.h"
 #include "platform/heap/Handle.h"
@@ -21,6 +24,7 @@ class ResizeObserver;
 class V8XRFrameRequestCallback;
 class XRDevice;
 class XRFrameOfReferenceOptions;
+class XRInputSourceEvent;
 class XRLayer;
 class XRPresentationContext;
 class XRView;
@@ -52,12 +56,27 @@ class XRSession final : public EventTargetWithInlineData {
   DEFINE_ATTRIBUTE_EVENT_LISTENER(resetpose);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(end);
 
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(selectstart);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(selectend);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(select);
+
   ScriptPromise requestFrameOfReference(ScriptState*,
                                         const String& type,
                                         const XRFrameOfReferenceOptions&);
 
   int requestAnimationFrame(V8XRFrameRequestCallback*);
   void cancelAnimationFrame(int id);
+
+  using InputSourceMap =
+      HeapHashMap<uint32_t, TraceWrapperMember<XRInputSource>>;
+
+  HeapVector<Member<XRInputSource>> getInputSources() const {
+    HeapVector<Member<XRInputSource>> source_array;
+    for (const auto& input_source : input_sources_.Values()) {
+      source_array.push_back(input_source);
+    }
+    return source_array;
+  }
 
   // Called by JavaScript to manually end the session.
   ScriptPromise end(ScriptState*);
@@ -84,6 +103,9 @@ class XRSession final : public EventTargetWithInlineData {
   void OnFocus();
   void OnBlur();
   void OnFrame(std::unique_ptr<TransformationMatrix>);
+  void OnInputStateChange(
+      int16_t frame_id,
+      const WTF::Vector<device::mojom::blink::XRInputSourceStatePtr>&);
 
   const HeapVector<Member<XRView>>& views();
 
@@ -93,16 +115,28 @@ class XRSession final : public EventTargetWithInlineData {
  private:
   class XRSessionResizeObserverDelegate;
 
+  XRPresentationFrame* CreatePresentationFrame();
   void UpdateCanvasDimensions(Element*);
+
+  void UpdateInputSourceState(
+      XRInputSource*,
+      const device::mojom::blink::XRInputSourceStatePtr&);
+  void OnSelectStart(XRInputSource*);
+  void OnSelectEnd(XRInputSource*);
+  void OnSelect(XRInputSource*);
+  XRInputSourceEvent* CreateInputSourceEvent(const AtomicString&,
+                                             XRInputSource*);
 
   const Member<XRDevice> device_;
   const bool exclusive_;
   const Member<XRPresentationContext> output_context_;
   Member<XRLayer> base_layer_;
   HeapVector<Member<XRView>> views_;
+  InputSourceMap input_sources_;
   Member<ResizeObserver> resize_observer_;
 
   XRFrameRequestCallbackCollection callback_collection_;
+  std::unique_ptr<TransformationMatrix> base_pose_matrix_;
 
   double depth_near_ = 0.1;
   double depth_far_ = 1000.0;

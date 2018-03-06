@@ -17,6 +17,7 @@
 #include "modules/xr/XRFrameOfReference.h"
 #include "modules/xr/XRFrameOfReferenceOptions.h"
 #include "modules/xr/XRFrameProvider.h"
+#include "modules/xr/XRInputSourceEvent.h"
 #include "modules/xr/XRLayer.h"
 #include "modules/xr/XRPresentationContext.h"
 #include "modules/xr/XRPresentationFrame.h"
@@ -265,13 +266,14 @@ void XRSession::OnFrame(
   if (ended_)
     return;
 
+  base_pose_matrix_ = std::move(base_pose_matrix);
+
   // Don't allow frames to be processed if there's no layers attached to the
   // session. That would allow tracking with no associated visuals.
   if (!base_layer_)
     return;
 
-  XRPresentationFrame* presentation_frame = new XRPresentationFrame(this);
-  presentation_frame->UpdateBasePose(std::move(base_pose_matrix));
+  XRPresentationFrame* presentation_frame = CreatePresentationFrame();
 
   if (pending_frame_) {
     pending_frame_ = false;
@@ -288,6 +290,14 @@ void XRSession::OnFrame(
 
     frame_base_layer->OnFrameEnd();
   }
+}
+
+XRPresentationFrame* XRSession::CreatePresentationFrame() {
+  XRPresentationFrame* presentation_frame = new XRPresentationFrame(this);
+  if (base_pose_matrix_) {
+    presentation_frame->SetBasePoseMatrix(*base_pose_matrix_);
+  }
+  return presentation_frame;
 }
 
 // Called when the canvas element for this session's output context is resized.
@@ -307,6 +317,164 @@ void XRSession::UpdateCanvasDimensions(Element* element) {
   if (!exclusive_ && base_layer_) {
     base_layer_->OnResize();
   }
+}
+
+void XRSession::OnInputStateChange(
+    int16_t frame_id,
+    const WTF::Vector<device::mojom::blink::XRInputSourceStatePtr>&
+        input_states) {
+  bool devices_changed = false;
+
+  // Update any input sources with new state information. Any updated input
+  // sources are marked as active.
+  for (const auto& input_state : input_states) {
+    XRInputSource* input_source = input_sources_.at(input_state->source_id);
+    if (!input_source) {
+      input_source = new XRInputSource(this, input_state->source_id);
+      input_sources_.Set(input_state->source_id, input_source);
+      devices_changed = true;
+    }
+    input_source->active_frame_id = frame_id;
+    UpdateInputSourceState(input_source, input_state);
+  }
+
+  // Remove any input sources that are inactive..
+  std::vector<uint32_t> inactive_sources;
+  for (const auto& input_source : input_sources_.Values()) {
+    if (input_source->active_frame_id != frame_id) {
+      inactive_sources.push_back(input_source->source_id());
+      devices_changed = true;
+    }
+  }
+
+  if (inactive_sources.size()) {
+    for (uint32_t source_id : inactive_sources) {
+      input_sources_.erase(source_id);
+    }
+  }
+
+  if (devices_changed) {
+    DispatchEvent(
+        XRSessionEvent::Create(EventTypeNames::inputsourceschange, this));
+  }
+}
+
+void XRSession::OnSelectStart(XRInputSource* input_source) {
+  // Discard duplicate events
+  if (input_source->primary_input_pressed)
+    return;
+
+  input_source->primary_input_pressed = true;
+  input_source->selection_cancelled = false;
+
+  XRInputSourceEvent* event =
+      CreateInputSourceEvent(EventTypeNames::selectstart, input_source);
+  DispatchEvent(event);
+
+  if (event->defaultPrevented())
+    input_source->selection_cancelled = true;
+}
+
+void XRSession::OnSelectEnd(XRInputSource* input_source) {
+  // Discard duplicate events
+  if (!input_source->primary_input_pressed)
+    return;
+
+  input_source->primary_input_pressed = false;
+
+  LocalFrame* frame = device_->xr()->GetFrame();
+  if (!frame)
+    return;
+
+  std::unique_ptr<UserGestureIndicator> gesture_indicator =
+      LocalFrame::CreateUserGesture(frame);
+
+  XRInputSourceEvent* event =
+      CreateInputSourceEvent(EventTypeNames::selectend, input_source);
+  DispatchEvent(event);
+
+  if (event->defaultPrevented())
+    input_source->selection_cancelled = true;
+}
+
+void XRSession::OnSelect(XRInputSource* input_source) {
+  // If a select was fired but we had not previously started the selection it
+  // indictes a sub-frame or instantanous select event, and we should fire a
+  // selectstart prior to the selectend.
+  if (!input_source->primary_input_pressed) {
+    OnSelectStart(input_source);
+  }
+
+  // Make sure we end the selection prior to firing the select event.
+  OnSelectEnd(input_source);
+
+  if (!input_source->selection_cancelled) {
+    XRInputSourceEvent* event =
+        CreateInputSourceEvent(EventTypeNames::select, input_source);
+    DispatchEvent(event);
+  }
+}
+
+void XRSession::UpdateInputSourceState(
+    XRInputSource* input_source,
+    const device::mojom::blink::XRInputSourceStatePtr& state) {
+  if (!input_source || !state)
+    return;
+
+  // Update the input source's description if this state update
+  // includes them.
+  if (state->description) {
+    const device::mojom::blink::XRInputSourceDescriptionPtr& desc =
+        state->description;
+
+    input_source->SetPointerOrigin(
+        static_cast<XRInputSource::PointerOrigin>(desc->pointer_origin));
+
+    input_source->SetHandedness(
+        static_cast<XRInputSource::Handedness>(desc->handedness));
+
+    input_source->SetEmulatedPosition(desc->emulated_position);
+
+    if (desc->pointer_offset) {
+      const WTF::Vector<float>& m = desc->pointer_offset->matrix.value();
+      std::unique_ptr<TransformationMatrix> pointer_matrix =
+          TransformationMatrix::Create(m[0], m[1], m[2], m[3], m[4], m[5], m[6],
+                                       m[7], m[8], m[9], m[10], m[11], m[12],
+                                       m[13], m[14], m[15]);
+      input_source->SetPointerTransformMatrix(std::move(pointer_matrix));
+    }
+  }
+
+  if (state->grip) {
+    const Vector<float>& m = state->grip->matrix.value();
+    std::unique_ptr<TransformationMatrix> grip_matrix =
+        TransformationMatrix::Create(m[0], m[1], m[2], m[3], m[4], m[5], m[6],
+                                     m[7], m[8], m[9], m[10], m[11], m[12],
+                                     m[13], m[14], m[15]);
+    input_source->SetBasePoseMatrix(std::move(grip_matrix));
+  }
+
+  // Handle state change of the primary input, which may fire events
+  if (state->primary_input_clicked)
+    OnSelect(input_source);
+
+  if (state->primary_input_pressed) {
+    OnSelectStart(input_source);
+  } else if (input_source->primary_input_pressed) {
+    // May get here if the input source was previously pressed but now isn't,
+    // but the input source did not set primary_input_clicked to true. We will
+    // treat this as a cancelled selection, firing the selectend event so the
+    // page stays in sync with the controller state but won't fire the
+    // usual select event.
+    OnSelectEnd(input_source);
+  }
+}
+
+XRInputSourceEvent* XRSession::CreateInputSourceEvent(
+    const AtomicString& type,
+    XRInputSource* input_source) {
+  XRPresentationFrame* presentation_frame = CreatePresentationFrame();
+  return XRInputSourceEvent::Create(type, presentation_frame, input_source);
 }
 
 const HeapVector<Member<XRView>>& XRSession::views() {
@@ -359,6 +527,7 @@ void XRSession::Trace(blink::Visitor* visitor) {
   visitor->Trace(output_context_);
   visitor->Trace(base_layer_);
   visitor->Trace(views_);
+  visitor->Trace(input_sources_);
   visitor->Trace(resize_observer_);
   visitor->Trace(callback_collection_);
   EventTargetWithInlineData::Trace(visitor);
@@ -366,6 +535,9 @@ void XRSession::Trace(blink::Visitor* visitor) {
 
 void XRSession::TraceWrappers(
     const blink::ScriptWrappableVisitor* visitor) const {
+  for (const auto& input_source : input_sources_.Values())
+    visitor->TraceWrappers(input_source);
+
   visitor->TraceWrappers(callback_collection_);
   EventTargetWithInlineData::TraceWrappers(visitor);
 }

@@ -11,4 +11,6 @@
   readonly attribute FrozenArray<XRView> views;
 
   XRDevicePose? getDevicePose(XRCoordinateSystem coordinateSystem);
+  XRInputPose? getInputPose(XRInputSource inputSource,
+                            XRCoordinateSystem coordinateSystem);
 };
