@@ -17,7 +17,9 @@ class FeaturePodControllerBase {
   virtual ~FeaturePodControllerBase() {}
 
   // Create the view. Subclasses instantiate FeaturePodButton.
-  // The view will be onwed by views hierarchy.
+  // The view will be onwed by views hierarchy. The view will be always deleted
+  // after the controller is destructed (UnifiedSystemTrayBubble guarantees
+  // this).
   virtual FeaturePodButton* CreateButton() = 0;
 
   // Called when the feature pod button is clicked.

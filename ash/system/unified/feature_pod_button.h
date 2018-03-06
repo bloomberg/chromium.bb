@@ -34,6 +34,8 @@ class FeaturePodIconButton : public views::ImageButton {
       const override;
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
 
+  bool toggled() const { return toggled_; }
+
  private:
   // Ture if the button is currently toggled.
   bool toggled_ = false;
@@ -67,13 +69,15 @@ class FeaturePodButton : public views::View, public views::ButtonListener {
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
+  bool IsToggled() const { return icon_button_->toggled(); }
+
  private:
   // Unowned.
-  FeaturePodControllerBase* controller_;
+  FeaturePodControllerBase* const controller_;
 
   // Owned by views hierarchy.
-  FeaturePodIconButton* icon_button_ = nullptr;
-  views::Label* label_ = nullptr;
+  FeaturePodIconButton* const icon_button_;
+  views::Label* const label_;
   views::Label* sub_label_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(FeaturePodButton);

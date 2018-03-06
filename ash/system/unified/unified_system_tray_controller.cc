@@ -8,6 +8,7 @@
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
+#include "ash/system/rotation/rotation_lock_feature_pod_controller.h"
 #include "ash/system/tray/system_tray_controller.h"
 #include "ash/system/unified/feature_pod_controller_base.h"
 #include "ash/system/unified/quiet_mode_feature_pod_controller.h"
@@ -58,6 +59,7 @@ void UnifiedSystemTrayController::ToggleExpanded() {
 
 void UnifiedSystemTrayController::InitFeaturePods() {
   AddFeaturePodItem(std::make_unique<QuietModeFeaturePodController>());
+  AddFeaturePodItem(std::make_unique<RotationLockFeaturePodController>());
 
   // If you want to add a new feature pod item, add here.
 
