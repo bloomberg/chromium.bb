@@ -244,6 +244,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_MESSAGE_OUT_OF_USERS" desc="The error message when all the users are added into multi-profile session.">
         All available users have already been added to this session.
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_NIGHT_LIGHT_BUTTON_LABEL" desc="The shorter label used for the button in the status tray to toggle the Night Light feature (which controls the color temperature of the screen) on or off.">
+        Night Light
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_NIGHT_LIGHT" desc="The label used for the button in the status tray to toggle the Night Light feature (which controls the color temperature of the screen) on or off.">
         Night Light: <ph name="NIGHT_LIGHT_STATUS">$1<ex>On</ex></ph>
       </message>
