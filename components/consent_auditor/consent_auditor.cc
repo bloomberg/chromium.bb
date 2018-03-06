@@ -108,12 +108,19 @@ void ConsentAuditor::RecordGaiaConsent(
   // For real usage, UserEventSyncBridge should always be ready to receive
   // events when a consent gets recorded.
   // FakeUserEventService doesn't have a sync bridge.
-  // TODO(crbug.com/709094, crbug.com/761485): Remove this check when the store
-  // initializes synchronously and is instantly ready to receive data.
-  DCHECK(!user_event_service_->GetSyncBridge() ||
-         user_event_service_->GetSyncBridge()
-             ->change_processor()
-             ->IsTrackingMetadata());
+  // TODO(crbug.com/709094, crbug.com/761485): Remove this check and histogram
+  // when the store initializes synchronously and is instantly ready to receive
+  // data.
+  bool event_service_ready = !user_event_service_->GetSyncBridge() ||
+                             user_event_service_->GetSyncBridge()
+                                 ->change_processor()
+                                 ->IsTrackingMetadata();
+  // Although there is a DCHECK and we believe it should always be true,
+  // also record a histogram to verify this assumption.
+  UMA_HISTOGRAM_BOOLEAN("Privacy.ConsentAuditor.UserEventServiceReady",
+                        event_service_ready);
+  DCHECK(event_service_ready);
+
   user_event_service_->RecordUserEvent(std::move(specifics));
 }
 
