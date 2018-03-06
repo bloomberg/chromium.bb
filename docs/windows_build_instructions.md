@@ -244,7 +244,7 @@ Still, builds will take many hours on many machines.
 
 Many things can make builds slow, with Windows Defender slowing process startups
 being a frequent culprit. Have you ensured that the entire Chromium src
-directory is excluded from anti-virus scanning (on Google machines this means
+directory is excluded from antivirus scanning (on Google machines this means
 putting it in a ``src`` directory in the root of a drive)? Have you tried the
 different settings listed above, including different link settings and -j
 values? Have you asked on the chromium-dev mailing list to see if your build is
@@ -282,6 +282,12 @@ $ autoninja -C out\Default base
     86 build steps completed, average of 2.71/s
 ```
 
+You can also generate these reports by manually running the script after a build:
+
+```shell
+$ python depot_tools\post_build_ninja_summary.py -C out\Default
+```
+
 You can also get a visual report of the build performance with
 [ninjatracing](https://github.com/nico/ninjatracing). This converts the
 .ninja_log file into a .json file which can be loaded into chrome://tracing:
@@ -291,7 +297,7 @@ $ python ninjatracing out\Default\.ninja_log >build.json
 ```
 
 Finally, Ninja can report on its own overhead which can be helpful if, for
-instance, process creation is making builds slow, perhaps due to anti-virus
+instance, process creation is making builds slow, perhaps due to antivirus
 interference due to clang-cl not being in an excluded directory:
 
 ```shell
