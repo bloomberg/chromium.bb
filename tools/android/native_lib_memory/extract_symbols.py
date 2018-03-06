@@ -44,7 +44,7 @@ def GetSymbolNameToFilename(build_directory):
     of the output_directory part.
   """
   path = os.path.join(build_directory, 'obj')
-  object_filenames = cyglog_to_orderfile.GetObjectFileNames(path)
+  object_filenames = cyglog_to_orderfile.GetObjectFilenames(path)
   pool = multiprocessing.Pool()
   symbol_infos_filename = zip(
       pool.map(symbol_extractor.SymbolInfosFromBinary, object_filenames),

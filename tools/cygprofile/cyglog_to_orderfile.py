@@ -31,6 +31,17 @@ class _SymbolNotFoundException(Exception):
     return repr(self.value)
 
 
+def GetObjectFilenames(obj_dir):
+  """Returns all a list of .o files in a given directory tree."""
+  obj_files = []
+  # Scan _obj_dir recursively for .o files.
+  for (dirpath, _, filenames) in os.walk(obj_dir):
+    for file_name in filenames:
+      if file_name.endswith('.o'):
+        obj_files.append(os.path.join(dirpath, file_name))
+  return obj_files
+
+
 class ObjectFileProcessor(object):
   """Processes symbols found in the object file tree.
 
@@ -107,13 +118,7 @@ class ObjectFileProcessor(object):
             symbol_extractor.DemangleSymbol(symbol2))
 
   def _GetAllSymbolInfos(self):
-    obj_files = []
-    # Scan _obj_dir recursively for .o files.
-    for (dirpath, _, filenames) in os.walk(self._obj_dir):
-      for file_name in filenames:
-        if file_name.endswith('.o'):
-          obj_files.append(os.path.join(dirpath, file_name))
-
+    obj_files = GetObjectFilenames(self._obj_dir)
     pool = multiprocessing.Pool()
     # Hopefully the object files are in the page cache at this point as
     # typically the library has just been built before the object files are
