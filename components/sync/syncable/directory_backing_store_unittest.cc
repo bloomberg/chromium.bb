@@ -3984,8 +3984,6 @@ TEST_P(MigrationTest, ToCurrentVersion) {
   EXPECT_FALSE(it->second->ref(UNIQUE_POSITION).IsValid());
   EXPECT_FALSE(it->second->ref(SERVER_UNIQUE_POSITION).IsValid());
   EXPECT_TRUE(it->second->ref(UNIQUE_BOOKMARK_TAG).empty());
-  EXPECT_TRUE(it->second->ref(ATTACHMENT_METADATA).IsInitialized());
-  EXPECT_TRUE(it->second->ref(SERVER_ATTACHMENT_METADATA).IsInitialized());
 
   // Items 2, 4, and 5 were deleted.
   it = handles_map.find(2);
@@ -4007,8 +4005,6 @@ TEST_P(MigrationTest, ToCurrentVersion) {
   EXPECT_TRUE(it->second->ref(SERVER_UNIQUE_POSITION).IsValid());
   EXPECT_EQ(UniquePosition::kSuffixLength,
             it->second->ref(UNIQUE_BOOKMARK_TAG).length());
-  EXPECT_TRUE(it->second->ref(ATTACHMENT_METADATA).IsInitialized());
-  EXPECT_TRUE(it->second->ref(SERVER_ATTACHMENT_METADATA).IsInitialized());
 
   it = handles_map.find(7);
   ASSERT_EQ(7, it->second->ref(META_HANDLE));
@@ -4019,8 +4015,6 @@ TEST_P(MigrationTest, ToCurrentVersion) {
   EXPECT_FALSE(it->second->ref(UNIQUE_POSITION).IsValid());
   EXPECT_FALSE(it->second->ref(SERVER_UNIQUE_POSITION).IsValid());
   EXPECT_TRUE(it->second->ref(UNIQUE_BOOKMARK_TAG).empty());
-  EXPECT_TRUE(it->second->ref(ATTACHMENT_METADATA).IsInitialized());
-  EXPECT_TRUE(it->second->ref(SERVER_ATTACHMENT_METADATA).IsInitialized());
 
   it = handles_map.find(8);
   ASSERT_EQ(8, it->second->ref(META_HANDLE));
@@ -4032,8 +4026,6 @@ TEST_P(MigrationTest, ToCurrentVersion) {
   EXPECT_FALSE(it->second->ref(UNIQUE_POSITION).IsValid());
   EXPECT_FALSE(it->second->ref(SERVER_UNIQUE_POSITION).IsValid());
   EXPECT_TRUE(it->second->ref(UNIQUE_BOOKMARK_TAG).empty());
-  EXPECT_TRUE(it->second->ref(ATTACHMENT_METADATA).IsInitialized());
-  EXPECT_TRUE(it->second->ref(SERVER_ATTACHMENT_METADATA).IsInitialized());
 
   it = handles_map.find(9);
   ASSERT_EQ(9, it->second->ref(META_HANDLE));
@@ -4044,8 +4036,6 @@ TEST_P(MigrationTest, ToCurrentVersion) {
   EXPECT_FALSE(it->second->ref(UNIQUE_POSITION).IsValid());
   EXPECT_FALSE(it->second->ref(SERVER_UNIQUE_POSITION).IsValid());
   EXPECT_TRUE(it->second->ref(UNIQUE_BOOKMARK_TAG).empty());
-  EXPECT_TRUE(it->second->ref(ATTACHMENT_METADATA).IsInitialized());
-  EXPECT_TRUE(it->second->ref(SERVER_ATTACHMENT_METADATA).IsInitialized());
 
   it = handles_map.find(10);
   ASSERT_EQ(10, it->second->ref(META_HANDLE));
@@ -4060,14 +4050,10 @@ TEST_P(MigrationTest, ToCurrentVersion) {
   EXPECT_EQ("Other Bookmarks", it->second->ref(NON_UNIQUE_NAME));
   EXPECT_EQ("Other Bookmarks", it->second->ref(SERVER_NON_UNIQUE_NAME));
   ASSERT_EQ(it->second->ref(ID).value(), "s_ID_10");
-  EXPECT_TRUE(it->second->ref(ATTACHMENT_METADATA).IsInitialized());
-  EXPECT_TRUE(it->second->ref(SERVER_ATTACHMENT_METADATA).IsInitialized());
   // Make sure we didn't assign positions to server-created folders, either.
   EXPECT_FALSE(it->second->ref(UNIQUE_POSITION).IsValid());
   EXPECT_FALSE(it->second->ref(SERVER_UNIQUE_POSITION).IsValid());
   EXPECT_TRUE(it->second->ref(UNIQUE_BOOKMARK_TAG).empty());
-  EXPECT_TRUE(it->second->ref(ATTACHMENT_METADATA).IsInitialized());
-  EXPECT_TRUE(it->second->ref(SERVER_ATTACHMENT_METADATA).IsInitialized());
 
   it = handles_map.find(11);
   ASSERT_EQ(11, it->second->ref(META_HANDLE));
@@ -4089,7 +4075,6 @@ TEST_P(MigrationTest, ToCurrentVersion) {
   EXPECT_TRUE(it->second->ref(SERVER_UNIQUE_POSITION).IsValid());
   EXPECT_EQ(UniquePosition::kSuffixLength,
             it->second->ref(UNIQUE_BOOKMARK_TAG).length());
-  EXPECT_TRUE(it->second->ref(ATTACHMENT_METADATA).IsInitialized());
 
   it = handles_map.find(12);
   ASSERT_EQ(12, it->second->ref(META_HANDLE));
@@ -4107,8 +4092,6 @@ TEST_P(MigrationTest, ToCurrentVersion) {
   EXPECT_TRUE(it->second->ref(SERVER_UNIQUE_POSITION).IsValid());
   EXPECT_EQ(UniquePosition::kSuffixLength,
             it->second->ref(UNIQUE_BOOKMARK_TAG).length());
-  EXPECT_TRUE(it->second->ref(ATTACHMENT_METADATA).IsInitialized());
-  EXPECT_TRUE(it->second->ref(SERVER_ATTACHMENT_METADATA).IsInitialized());
 
   it = handles_map.find(13);
   ASSERT_EQ(13, it->second->ref(META_HANDLE));
@@ -4116,8 +4099,6 @@ TEST_P(MigrationTest, ToCurrentVersion) {
   EXPECT_TRUE(it->second->ref(SERVER_UNIQUE_POSITION).IsValid());
   EXPECT_EQ(UniquePosition::kSuffixLength,
             it->second->ref(UNIQUE_BOOKMARK_TAG).length());
-  EXPECT_TRUE(it->second->ref(ATTACHMENT_METADATA).IsInitialized());
-  EXPECT_TRUE(it->second->ref(SERVER_ATTACHMENT_METADATA).IsInitialized());
 
   it = handles_map.find(14);
   ASSERT_EQ(14, it->second->ref(META_HANDLE));
@@ -4125,8 +4106,6 @@ TEST_P(MigrationTest, ToCurrentVersion) {
   EXPECT_TRUE(it->second->ref(SERVER_UNIQUE_POSITION).IsValid());
   EXPECT_EQ(UniquePosition::kSuffixLength,
             it->second->ref(UNIQUE_BOOKMARK_TAG).length());
-  EXPECT_TRUE(it->second->ref(ATTACHMENT_METADATA).IsInitialized());
-  EXPECT_TRUE(it->second->ref(SERVER_ATTACHMENT_METADATA).IsInitialized());
 
   ASSERT_EQ(static_cast<size_t>(10), handles_map.size());
 

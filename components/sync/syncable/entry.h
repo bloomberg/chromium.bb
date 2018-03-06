@@ -206,16 +206,6 @@ class Entry {
     return kernel_->ref(UNIQUE_POSITION);
   }
 
-  const sync_pb::AttachmentMetadata& GetAttachmentMetadata() const {
-    DCHECK(kernel_);
-    return kernel_->ref(ATTACHMENT_METADATA);
-  }
-
-  const sync_pb::AttachmentMetadata& GetServerAttachmentMetadata() const {
-    DCHECK(kernel_);
-    return kernel_->ref(SERVER_ATTACHMENT_METADATA);
-  }
-
   bool GetSyncing() const;
   bool GetDirtySync() const;
 

@@ -84,12 +84,8 @@ const ColumnSpec g_metas_columns[] = {
     {"server_unique_position", "blob"},
     {"unique_position", "blob"},
     //////////////////////////////////////
-    // AttachmentMetadata is a proto that contains all the metadata associated
-    // with an entry's attachments.  Each entry has only one AttachmentMetadata
-    // proto.  We store a single proto per entry (as opposed to one for each
-    // attachment) because it simplifies the database schema and implementation
-    // of
-    // DirectoryBackingStore.
+    // TODO(crbug.com/758319): Attachment metadata is deprecated, remove it from
+    // the table and add migration code.
     {"attachment_metadata", "blob"},
     {"server_attachment_metadata", "blob"}};
 
@@ -133,8 +129,7 @@ void BindFields(const EntryKernel& entry,
     statement->BindBlob(index++, temp.data(), temp.length());
   }
   for (; i < ATTACHMENT_METADATA_FIELDS_END; ++i) {
-    std::string temp;
-    entry.ref(static_cast<AttachmentMetadataField>(i)).SerializeToString(&temp);
+    std::string temp = entry.ref(static_cast<AttachmentMetadataField>(i));
     statement->BindBlob(index++, temp.data(), temp.length());
   }
 }
@@ -220,10 +215,6 @@ std::unique_ptr<EntryKernel> UnpackEntry(sql::Statement* statement,
     kernel->mutable_ref(static_cast<UniquePositionField>(i)) =
         UniquePosition::FromProto(proto);
   }
-  int attachemnt_specifics_counts = 0;
-  UnpackProtoFields<sync_pb::AttachmentMetadata, AttachmentMetadataField>(
-      statement, kernel.get(), &i, ATTACHMENT_METADATA_FIELDS_END,
-      &attachemnt_specifics_counts);
 
   // Sanity check on positions.  We risk strange and rare crashes if our
   // assumptions about unique position values are broken.

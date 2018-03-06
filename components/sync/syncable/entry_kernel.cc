@@ -145,9 +145,10 @@ std::unique_ptr<base::Value> UniquePositionToValue(const UniquePosition& pos) {
   return std::make_unique<base::Value>(pos.ToDebugString());
 }
 
-std::unique_ptr<base::Value> AttachmentMetadataToValue(
-    const sync_pb::AttachmentMetadata& a) {
-  return std::make_unique<base::Value>(a.SerializeAsString());
+// TODO(crbug.com/758319): Remove this along with the attachment metadata
+// columns in directory_backing_store.cc.
+std::unique_ptr<base::Value> AttachmentMetadataToValue(const std::string& a) {
+  return std::make_unique<base::Value>(a);
 }
 
 // Estimates memory usage of ProtoValuePtr<T> arrays where consecutive
@@ -217,6 +218,8 @@ std::unique_ptr<base::DictionaryValue> EntryKernel::ToValue(
                  UNIQUE_POSITION_FIELDS_END - 1);
 
   // AttachmentMetadata fields
+  // TODO(crbug.com/758319): Remove this along with the attachment metadata
+  // columns in directory_backing_store.cc.
   SetFieldValues(*this, kernel_info.get(), &GetAttachmentMetadataFieldString,
                  &AttachmentMetadataToValue, ATTACHMENT_METADATA_FIELDS_BEGIN,
                  ATTACHMENT_METADATA_FIELDS_END - 1);
@@ -234,8 +237,7 @@ size_t EntryKernel::EstimateMemoryUsage() const {
     memory_usage_ = EstimateMemoryUsage(string_fields) +
                     EstimateSharedMemoryUsage(specifics_fields) +
                     EstimateMemoryUsage(id_fields) +
-                    EstimateMemoryUsage(unique_position_fields) +
-                    EstimateSharedMemoryUsage(attachment_metadata_fields);
+                    EstimateMemoryUsage(unique_position_fields);
   }
   return memory_usage_;
 }
@@ -292,12 +294,11 @@ std::ostream& operator<<(std::ostream& os, const EntryKernel& entry_kernel) {
        << kernel->ref(static_cast<UniquePositionField>(i)).ToDebugString()
        << ", ";
   }
+  // TODO(crbug.com/758319): Remove this along with the attachment metadata
+  // columns in directory_backing_store.cc.
   for (; i < ATTACHMENT_METADATA_FIELDS_END; ++i) {
-    std::string escaped_str = base::EscapeBytesAsInvalidJSONString(
-        kernel->ref(static_cast<AttachmentMetadataField>(i))
-            .SerializeAsString(),
-        false);
-    os << g_metas_columns[i].name << ": " << escaped_str << ", ";
+    os << g_metas_columns[i].name << ": "
+       << kernel->ref(static_cast<AttachmentMetadataField>(i)) << ", ";
   }
   os << "TempFlags: ";
   for (; i < BIT_TEMPS_END; ++i) {

@@ -9,7 +9,6 @@ sync_protocol_sources = [
   "//components/sync/protocol/app_list_specifics.proto",
   "//components/sync/protocol/arc_package_specifics.proto",
   "//components/sync/protocol/article_specifics.proto",
-  "//components/sync/protocol/attachments.proto",
   "//components/sync/protocol/autofill_specifics.proto",
   "//components/sync/protocol/bookmark_specifics.proto",
   "//components/sync/protocol/client_commands.proto",

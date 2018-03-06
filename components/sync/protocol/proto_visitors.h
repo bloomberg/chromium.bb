@@ -10,7 +10,6 @@
 #include "components/sync/protocol/app_setting_specifics.pb.h"
 #include "components/sync/protocol/app_specifics.pb.h"
 #include "components/sync/protocol/arc_package_specifics.pb.h"
-#include "components/sync/protocol/attachments.pb.h"
 #include "components/sync/protocol/autofill_specifics.pb.h"
 #include "components/sync/protocol/bookmark_specifics.pb.h"
 #include "components/sync/protocol/dictionary_specifics.pb.h"
@@ -144,19 +143,6 @@ VISIT_PROTO_FIELDS(const sync_pb::ArticleSpecifics& proto) {
   VISIT(entry_id);
   VISIT(title);
   VISIT_REP(pages);
-}
-
-VISIT_PROTO_FIELDS(const sync_pb::AttachmentIdProto& proto) {
-  VISIT(unique_id);
-}
-
-VISIT_PROTO_FIELDS(const sync_pb::AttachmentMetadata& proto) {
-  VISIT_REP(record);
-}
-
-VISIT_PROTO_FIELDS(const sync_pb::AttachmentMetadataRecord& proto) {
-  VISIT(id);
-  VISIT(is_on_server);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::AutofillCullingFlags& proto) {
