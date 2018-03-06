@@ -48,8 +48,8 @@ int64_t SessionsGlobalIdMapper::GetLatestGlobalId(int64_t global_id) {
   return global_id;
 }
 
-void SessionsGlobalIdMapper::TrackNavigationIds(const base::Time& timestamp,
-                                                int unique_id) {
+void SessionsGlobalIdMapper::TrackNavigationId(const base::Time& timestamp,
+                                               int unique_id) {
   // The expectation is that global_id will update for a given unique_id, which
   // should accurately and uniquely represent a single navigation. It is
   // theoretically possible for two unique_ids to map to the same global_id, but

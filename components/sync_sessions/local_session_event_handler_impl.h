@@ -14,7 +14,6 @@
 #include "components/sessions/core/session_id.h"
 #include "components/sessions/core/session_types.h"
 #include "components/sync_sessions/local_session_event_router.h"
-#include "components/sync_sessions/sessions_global_id_mapper.h"
 #include "components/sync_sessions/synced_session.h"
 #include "components/sync_sessions/task_tracker.h"
 
@@ -51,32 +50,25 @@ class LocalSessionEventHandlerImpl : public LocalSessionEventHandler {
    public:
     virtual ~Delegate();
     virtual std::unique_ptr<WriteBatch> CreateLocalSessionWriteBatch() = 0;
+    // Analogous to SessionsGlobalIdMapper.
+    virtual void TrackLocalNavigationId(base::Time timestamp,
+                                        int unique_id) = 0;
     // Analogous to the functions in FaviconCache.
     virtual void OnPageFaviconUpdated(const GURL& page_url) = 0;
     virtual void OnFaviconVisited(const GURL& page_url,
                                   const GURL& favicon_url) = 0;
   };
 
+  // Raw pointers must not be null and all pointees except |*initial_batch| must
+  // outlive this object. |*initial_batch| may or may not be initially empty
+  // (depending on whether the caller wants to bundle together other writes).
+  // This constructor populates |*initial_batch| to resync local window and tab
+  // information, but does *not* Commit() the batch.
   LocalSessionEventHandlerImpl(Delegate* delegate,
                                SyncSessionsClient* sessions_client,
-                               SyncedSessionTracker* session_tracker);
+                               SyncedSessionTracker* session_tracker,
+                               WriteBatch* initial_batch);
   ~LocalSessionEventHandlerImpl() override;
-
-  SessionsGlobalIdMapper* GetGlobalIdMapper();
-
-  // Resync local window and tab information. Updates the local sessions header
-  // node with the status of open windows and the order of tabs they contain.
-  // |change_output| must not be nullptr.
-  //
-  // Must be called before routing events to this class (typically a call to
-  // the router's StartRoutingTo()), that is, before using this object as
-  // LocalSessionEventHandler.
-  // TODO(crbug.com/681921): Revisit if this function can be merged with the
-  // constructor, since it's essentially a two-step initialization.
-  void AssociateWindowsAndTabs(const std::string& session_tag,
-                               const std::string& session_name,
-                               sync_pb::SyncEnums::DeviceType device_type,
-                               WriteBatch* change_output);
 
   // LocalSessionEventHandler implementation.
   void OnLocalTabModified(SyncedTabDelegate* modified_tab) override;
@@ -93,16 +85,15 @@ class LocalSessionEventHandlerImpl : public LocalSessionEventHandler {
   enum ReloadTabsOption { RELOAD_TABS, DONT_RELOAD_TABS };
   void AssociateWindows(ReloadTabsOption option,
                         bool has_tabbed_window,
-                        WriteBatch* change_output);
+                        WriteBatch* batch);
 
   // Loads and reassociates the local tab referenced in |tab|.
-  // |change_output| *must* be provided as a link to the SyncChange pipeline
-  // that exists in the caller's context. This function will append necessary
+  // |batch| must not be null. This function will append necessary
   // changes for processing later. Will only assign a new sync id if there is
   // a tabbed window, which results in failure for tabs without sync ids yet.
   void AssociateTab(SyncedTabDelegate* const tab,
                     bool has_tabbed_window,
-                    WriteBatch* change_output);
+                    WriteBatch* batch);
 
   // It's possible that when we associate windows, tabs aren't all loaded
   // into memory yet (e.g on android) and we don't have a WebContents. In this
@@ -113,13 +104,13 @@ class LocalSessionEventHandlerImpl : public LocalSessionEventHandler {
   void AssociateRestoredPlaceholderTab(const SyncedTabDelegate& tab_delegate,
                                        SessionID::id_type new_tab_id,
                                        SessionID::id_type new_window_id,
-                                       WriteBatch* change_output);
+                                       WriteBatch* batch);
 
-  // Appends an ACTION_UPDATE for a sync tab entity onto |change_output| to
+  // Appends an ACTION_UPDATE for a sync tab entity onto |batch| to
   // reflect the contents of |tab|, given the tab node id |sync_id|.
   void AppendChangeForExistingTab(int sync_id,
                                   const sessions::SessionTab& tab,
-                                  WriteBatch* change_output) const;
+                                  WriteBatch* batch) const;
 
   // Set |session_tab| from |tab_delegate| and |mtime|.
   void SetSessionTabFromDelegate(const SyncedTabDelegate& tab_delegate,
@@ -142,8 +133,6 @@ class LocalSessionEventHandlerImpl : public LocalSessionEventHandler {
   Delegate* const delegate_;
   SyncSessionsClient* const sessions_client_;
   SyncedSessionTracker* const session_tracker_;
-
-  SessionsGlobalIdMapper global_id_mapper_;
 
   // Tracks Chrome Tasks, which associates navigations, with tab and navigation
   // changes of current session.
