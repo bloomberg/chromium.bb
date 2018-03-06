@@ -1459,8 +1459,8 @@ void iadst4_new_sse2(const __m128i *input, __m128i *output, int8_t cos_bit) {
   const __m128i sinpi_p03_m04 = pair_set_epi16(sinpi[3], -sinpi[4]);
   const __m128i sinpi_p03_m03 = pair_set_epi16(sinpi[3], -sinpi[3]);
   const __m128i sinpi_0_p03 = pair_set_epi16(0, sinpi[3]);
-  const __m128i sinpi_0_p02 = pair_set_epi16(0, sinpi[2]);
-  const __m128i sinpi_p03_p04 = pair_set_epi16(sinpi[3], sinpi[4]);
+  const __m128i sinpi_p04_p02 = pair_set_epi16(sinpi[4], sinpi[2]);
+  const __m128i sinpi_m03_m01 = pair_set_epi16(-sinpi[3], -sinpi[1]);
   __m128i x0[4];
   x0[0] = input[0];
   x0[1] = input[1];
@@ -1486,26 +1486,20 @@ void iadst4_new_sse2(const __m128i *input, __m128i *output, int8_t cos_bit) {
   x1[9] = _mm_madd_epi16(u[1], sinpi_p03_m03);
   x1[10] = _mm_madd_epi16(u[2], sinpi_0_p03);  // x2*sin3
   x1[11] = _mm_madd_epi16(u[3], sinpi_0_p03);
-  x1[12] = _mm_madd_epi16(u[2], sinpi_0_p02);  // x3*sin2
-  x1[13] = _mm_madd_epi16(u[3], sinpi_0_p02);
-  x1[14] = _mm_madd_epi16(u[2], sinpi_p03_p04);  // x1*sin3 + x3*sin4
-  x1[15] = _mm_madd_epi16(u[3], sinpi_p03_p04);
+  x1[12] = _mm_madd_epi16(u[0], sinpi_p04_p02);  // x0*sin4 + x2*sin2
+  x1[13] = _mm_madd_epi16(u[1], sinpi_p04_p02);
+  x1[14] = _mm_madd_epi16(u[2], sinpi_m03_m01);  // -x1*sin3 - x3*sin1
+  x1[15] = _mm_madd_epi16(u[3], sinpi_m03_m01);
 
   __m128i x2[8];
-  x2[0] = _mm_add_epi32(x1[0], x1[4]);  // x0*sin1 + x2*sin4 + x1*sin3 + x3*sin2
+  x2[0] = _mm_add_epi32(x1[0], x1[4]);  // x0*sin1 +x2*sin4 +x1*sin3 +x3*sin2
   x2[1] = _mm_add_epi32(x1[1], x1[5]);
-  x2[2] = _mm_add_epi32(x1[2], x1[6]);  // x0*sin2 - x2*sin1 +x1*sin3 - x3*sin4
+  x2[2] = _mm_add_epi32(x1[2], x1[6]);  // x0*sin2 -x2*sin1 +x1*sin3 -x3*sin4
   x2[3] = _mm_add_epi32(x1[3], x1[7]);
-  x2[4] = _mm_add_epi32(x1[8], x1[10]);  // x0*sin3 - x2*sin3 +x3*sin3
+  x2[4] = _mm_add_epi32(x1[8], x1[10]);  // x0*sin3 -x2*sin3 +x3*sin3
   x2[5] = _mm_add_epi32(x1[9], x1[11]);
-  x2[6] = _mm_add_epi32(x1[0], x1[2]);  // x0*sin1 + x2*sin4 + x0*sin2 - x2*sin1
-  x2[7] = _mm_add_epi32(x1[1], x1[3]);
-  // x0*sin1 + x2*sin4 + x3*sin2 + x0*sin2 - x2*sin1
-  x2[6] = _mm_add_epi32(x2[6], x1[12]);
-  x2[7] = _mm_add_epi32(x2[7], x1[13]);
-  // x0*sin1 + x2*sin4 + x3*sin2 + x0*sin2 - x2*sin1
-  x2[6] = _mm_sub_epi32(x2[6], x1[14]);
-  x2[7] = _mm_sub_epi32(x2[7], x1[15]);
+  x2[6] = _mm_add_epi32(x1[12], x1[14]);  // x0*sin1 +x2*sin4 +x0*sin2 -x2*sin1
+  x2[7] = _mm_add_epi32(x1[13], x1[15]);
 
   const __m128i rounding = _mm_set1_epi32(1 << (INV_COS_BIT - 1));
   for (int i = 0; i < 4; ++i) {
@@ -1529,8 +1523,8 @@ void iadst4_w4_new_sse2(const __m128i *input, __m128i *output, int8_t cos_bit) {
   const __m128i sinpi_p03_m04 = pair_set_epi16(sinpi[3], -sinpi[4]);
   const __m128i sinpi_p03_m03 = pair_set_epi16(sinpi[3], -sinpi[3]);
   const __m128i sinpi_0_p03 = pair_set_epi16(0, sinpi[3]);
-  const __m128i sinpi_0_p02 = pair_set_epi16(0, sinpi[2]);
-  const __m128i sinpi_p03_p04 = pair_set_epi16(sinpi[3], sinpi[4]);
+  const __m128i sinpi_p04_p02 = pair_set_epi16(sinpi[4], sinpi[2]);
+  const __m128i sinpi_m03_m01 = pair_set_epi16(-sinpi[3], -sinpi[1]);
   __m128i x0[4];
   x0[0] = input[0];
   x0[1] = input[1];
@@ -1548,18 +1542,14 @@ void iadst4_w4_new_sse2(const __m128i *input, __m128i *output, int8_t cos_bit) {
   x1[3] = _mm_madd_epi16(u[1], sinpi_p03_m04);  // x1*sin3 - x3*sin4
   x1[4] = _mm_madd_epi16(u[0], sinpi_p03_m03);  // x0*sin3 - x2*sin3
   x1[5] = _mm_madd_epi16(u[1], sinpi_0_p03);    // x2*sin3
-  x1[6] = _mm_madd_epi16(u[1], sinpi_0_p02);    // x3*sin2
-  x1[7] = _mm_madd_epi16(u[1], sinpi_p03_p04);  // x1*sin3 + x3*sin4
+  x1[6] = _mm_madd_epi16(u[0], sinpi_p04_p02);  // x0*sin4 + x2*sin2
+  x1[7] = _mm_madd_epi16(u[1], sinpi_m03_m01);  // -x1*sin3 - x3*sin1
 
   __m128i x2[4];
   x2[0] = _mm_add_epi32(x1[0], x1[2]);  // x0*sin1 + x2*sin4 + x1*sin3 + x3*sin2
-  x2[1] = _mm_add_epi32(x1[1], x1[3]);  // x0*sin2 - x2*sin1 +x1*sin3 - x3*sin4
-  x2[2] = _mm_add_epi32(x1[4], x1[5]);  // x0*sin3 - x2*sin3 +x3*sin3
-  x2[3] = _mm_add_epi32(x1[0], x1[1]);  // x0*sin1 + x2*sin4 + x0*sin2 - x2*sin1
-  // x0*sin1 + x2*sin4 + x3*sin2 + x0*sin2 - x2*sin1
-  x2[3] = _mm_add_epi32(x2[3], x1[6]);
-  // x0*sin1 + x2*sin4 + x3*sin2 + x0*sin2 - x2*sin1
-  x2[3] = _mm_sub_epi32(x2[3], x1[7]);
+  x2[1] = _mm_add_epi32(x1[1], x1[3]);  // x0*sin2 - x2*sin1 + x1*sin3 - x3*sin4
+  x2[2] = _mm_add_epi32(x1[4], x1[5]);  // x0*sin3 - x2*sin3 + x3*sin3
+  x2[3] = _mm_add_epi32(x1[6], x1[7]);  // x0*sin4 + x2*sin2 - x1*sin3 - x3*sin1
 
   const __m128i rounding = _mm_set1_epi32(1 << (INV_COS_BIT - 1));
   for (int i = 0; i < 4; ++i) {
