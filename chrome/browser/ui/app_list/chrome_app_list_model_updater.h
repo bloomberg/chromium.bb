@@ -83,6 +83,7 @@ class ChromeAppListModelUpdater : public app_list::AppListModelObserver,
                                int event_flags) override;
   app_list::SearchResult* FindSearchResult(
       const std::string& result_id) override;
+  app_list::SearchResult* GetResultByTitle(const std::string& title) override;
 
   // Methods for AppListSyncableService:
   void AddItemToOemFolder(

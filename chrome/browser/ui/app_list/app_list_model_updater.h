@@ -120,6 +120,8 @@ class AppListModelUpdater {
   virtual bool SearchEngineIsGoogle() = 0;
   virtual app_list::SearchResult* FindSearchResult(
       const std::string& result_id) = 0;
+  virtual app_list::SearchResult* GetResultByTitle(
+      const std::string& title) = 0;
 
   virtual void SetDelegate(AppListModelUpdaterDelegate* delegate) = 0;
 };
