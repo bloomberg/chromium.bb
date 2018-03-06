@@ -537,6 +537,14 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   return [self layoutRightViewForBounds:bounds];
 }
 
+#pragma mark - UITextInput
+
+- (void)beginFloatingCursorAtPoint:(CGPoint)point {
+  // Exit preedit because it blocks the view of the textfield.
+  [self exitPreEditState];
+  [super beginFloatingCursorAtPoint:point];
+}
+
 #pragma mark - UIView
 
 - (void)layoutSubviews {
