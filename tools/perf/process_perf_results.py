@@ -90,21 +90,35 @@ def _process_perf_results(output_json, configuration_name,
       for f in listdir(join(task_output_dir, directory))
     ]
 
+  # We need to keep track of disabled benchmarks so we don't try to
+  # upload the results.
+  disabled_benchmarks = []
   test_results_list = []
   tmpfile_dir = tempfile.mkdtemp('resultscache')
   try:
     for directory in benchmark_directory_list:
-      if '.reference' in directory:
-        # We don't need to upload reference build data to the
-        # flakiness dashboard since we don't monitor the ref build
-        continue
       with open(join(directory, 'test_results.json')) as json_data:
-        test_results_list.append(json.load(json_data))
+        json_results = json.load(json_data)
+        if json_results.get('version') == 3:
+          # Non-telemetry tests don't have written json results but
+          # if they are executing then they are enabled and will generate
+          # chartjson results.
+          if not bool(json_results.get('tests')):
+            disabled_benchmarks.append(directory)
+        if '.reference' in directory:
+          # We don't need to upload reference build data to the
+          # flakiness dashboard since we don't monitor the ref build
+          continue
+        test_results_list.append(json_results)
     _merge_json_output(output_json, test_results_list)
 
     with oauth_api.with_access_token(service_account_file) as oauth_file:
       for directory in benchmark_directory_list:
         print 'Uploading perf results from %s benchmark' % directory
+        if directory in disabled_benchmarks:
+          # We don't upload disabled benchmarks
+          print 'Benchmark %s disabled' % directory
+          continue
         _upload_perf_results(join(directory, 'perf_results.json'),
             directory, configuration_name, build_properties,
             oauth_file, tmpfile_dir)
