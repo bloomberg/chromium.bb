@@ -1,5 +1,6 @@
 {
   "name": "overscan",
+  "manifest_version": 2,
   "version": "1.0",
   "description": "Test system.display.overscan* API",
   "permissions": ["system.display"],

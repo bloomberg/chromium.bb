@@ -1,5 +1,6 @@
 {
   "name": "chrome.hid.onDeviceRemoved",
+  "manifest_version": 2,
   "version": "0.1",
   "description": "browser test for chrome.hid.onDeviceRemoved event",
   "app": {
