@@ -149,10 +149,13 @@ FontPlatformData::FontPlatformData(const PaintTypeface& paint_tf,
   auto system_style = QuerySystemRenderStyle(
       family_, text_size_, paint_typeface_.ToSkTypeface()->fontStyle());
 
-  // In layout tests ignore system preference for subpixel positioning as it may
-  // be toggled by the tests.
+  // In layout tests, ignore system preference for subpixel positioning,
+  // or explicitly disable if requested.
   if (LayoutTestSupport::IsRunningLayoutTest()) {
-    system_style.use_subpixel_positioning = WebFontRenderStyle::kNoPreference;
+    system_style.use_subpixel_positioning =
+        LayoutTestSupport::IsTextSubpixelPositioningAllowedForTest()
+            ? WebFontRenderStyle::kNoPreference
+            : 0;
   }
 
   style_.OverrideWith(system_style);

@@ -46,6 +46,8 @@ class LayoutTestSupport {
   PLATFORM_EXPORT static void SetMockThemeEnabledForTest(bool);
   PLATFORM_EXPORT static bool IsFontAntialiasingEnabledForTest();
   PLATFORM_EXPORT static void SetFontAntialiasingEnabledForTest(bool);
+  PLATFORM_EXPORT static bool IsTextSubpixelPositioningAllowedForTest();
+  PLATFORM_EXPORT static void SetTextSubpixelPositioningAllowedForTest(bool);
 };
 
 }  // namespace blink
