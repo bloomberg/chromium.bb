@@ -351,8 +351,9 @@ static void update_global_motion_used(PREDICTION_MODE mode, BLOCK_SIZE bsize,
   }
 }
 
-static void reset_tx_size(MACROBLOCKD *xd, MB_MODE_INFO *mbmi,
+static void reset_tx_size(MACROBLOCK *x, MB_MODE_INFO *mbmi,
                           const TX_MODE tx_mode) {
+  MACROBLOCKD *const xd = &x->e_mbd;
   if (xd->lossless[mbmi->segment_id]) {
     mbmi->tx_size = TX_4X4;
   } else if (tx_mode != TX_MODE_SELECT) {
@@ -366,6 +367,9 @@ static void reset_tx_size(MACROBLOCKD *xd, MB_MODE_INFO *mbmi,
   if (is_inter_block(mbmi)) {
     memset(mbmi->inter_tx_size, mbmi->tx_size, sizeof(mbmi->inter_tx_size));
   }
+  memset(mbmi->txk_type, DCT_DCT, sizeof(mbmi->txk_type[0]) * TXK_TYPE_BUF_LEN);
+  av1_zero(x->blk_skip[0]);
+  x->skip = 0;
 }
 
 static void set_ref_and_pred_mvs(MACROBLOCK *const x, int_mv *const mi_pred_mv,
@@ -442,6 +446,13 @@ static void update_state(const AV1_COMP *const cpi, TileDataEnc *tile_data,
     set_ref_and_pred_mvs(x, mi->mbmi.pred_mv, rf_type);
   }
 
+  for (i = 0; i < 1; ++i) {
+    memcpy(x->blk_skip[i], ctx->blk_skip[i],
+           sizeof(uint8_t) * ctx->num_4x4_blk);
+  }
+
+  x->skip = ctx->skip;
+
   // If segmentation in use
   if (seg->enabled) {
     // For in frame complexity AQ copy the segment id from the segment map.
@@ -449,18 +460,14 @@ static void update_state(const AV1_COMP *const cpi, TileDataEnc *tile_data,
       const uint8_t *const map =
           seg->update_map ? cpi->segmentation_map : cm->last_frame_seg_map;
       mbmi->segment_id = get_segment_id(cm, map, bsize, mi_row, mi_col);
-      reset_tx_size(xd, mbmi, cm->tx_mode);
-      memset(mbmi->txk_type, DCT_DCT,
-             sizeof(mbmi->txk_type[0]) * TXK_TYPE_BUF_LEN);
+      reset_tx_size(x, mbmi, cm->tx_mode);
     }
     // Else for cyclic refresh mode update the segment map, set the segment id
     // and then update the quantizer.
     if (cpi->oxcf.aq_mode == CYCLIC_REFRESH_AQ) {
       av1_cyclic_refresh_update_segment(cpi, mbmi, mi_row, mi_col, bsize,
                                         ctx->rate, ctx->dist, x->skip);
-      reset_tx_size(xd, mbmi, cm->tx_mode);
-      memset(mbmi->txk_type, DCT_DCT,
-             sizeof(mbmi->txk_type[0]) * TXK_TYPE_BUF_LEN);
+      reset_tx_size(x, mbmi, cm->tx_mode);
     }
   }
 
@@ -487,12 +494,6 @@ static void update_state(const AV1_COMP *const cpi, TileDataEnc *tile_data,
 #else
   if (cpi->oxcf.aq_mode) av1_init_plane_quantizers(cpi, x, mbmi->segment_id);
 #endif
-
-  x->skip = ctx->skip;
-
-  for (i = 0; i < 1; ++i)
-    memcpy(x->blk_skip[i], ctx->blk_skip[i],
-           sizeof(uint8_t) * ctx->num_4x4_blk);
 
   if (dry_run) return;
 
