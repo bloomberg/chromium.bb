@@ -160,15 +160,6 @@ void FrameCaret::InvalidatePaint(const LayoutBlock& block,
   display_item_client_->InvalidatePaint(block, context);
 }
 
-bool FrameCaret::CaretPositionIsValidForDocument(
-    const Document& document) const {
-  if (!IsActive())
-    return true;
-
-  return CaretPosition().GetDocument() == document &&
-         !CaretPosition().IsOrphan();
-}
-
 static IntRect AbsoluteBoundsForLocalRect(Node* node, const LayoutRect& rect) {
   LayoutBlock* caret_painter = CaretDisplayItemClient::CaretLayoutBlock(node);
   if (!caret_painter)
