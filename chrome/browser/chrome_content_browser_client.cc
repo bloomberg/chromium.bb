@@ -3813,6 +3813,11 @@ void ChromeContentBrowserClient::
       extensions::ChromeExtensionWebContentsObserver::FromWebContents(
           web_contents);
 
+  // There is nothing to do if no ChromeExtensionWebContentsObserver is attached
+  // to the |web_contents|.
+  if (!web_observer)
+    return;
+
   const Extension* extension =
       web_observer->GetExtensionFromFrame(frame_host, false);
   if (!extension)
