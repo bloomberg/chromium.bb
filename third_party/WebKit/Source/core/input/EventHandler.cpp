@@ -661,7 +661,10 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
       WebInputEvent::kPointerDown, mev.InnerNode(), mev.CanvasRegionId(),
       mev.Event(), Vector<WebMouseEvent>());
 
-  if (event_result == WebInputEventResult::kNotHandled && frame_->View()) {
+  // Disabled form controls still need to resize the scrollable area.
+  if ((event_result == WebInputEventResult::kNotHandled ||
+       event_result == WebInputEventResult::kHandledSuppressed) &&
+      frame_->View()) {
     LocalFrameView* view = frame_->View();
     PaintLayer* layer =
         mev.InnerNode()->GetLayoutObject()
