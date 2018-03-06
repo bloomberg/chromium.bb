@@ -19,6 +19,7 @@
 #include "base/sys_info.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
+#include "components/viz/common/features.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -117,6 +118,11 @@ const GpuFeatureData GetGpuFeatureData(size_t index, bool* eof) {
        "Native GpuMemoryBuffers have been disabled, either via about:flags"
        " or command line.",
        true},
+      {"surface_synchronization", gpu::kGpuFeatureStatusEnabled,
+       !features::IsSurfaceSynchronizationEnabled(),
+       "Surface synchronization has been disabled by Finch trial or command "
+       "line.",
+       false},
       {"webgl2",
        manager->GetFeatureStatus(gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL2),
        (command_line.HasSwitch(switches::kDisableWebGL) ||
@@ -317,6 +323,10 @@ std::unique_ptr<base::DictionaryValue> GetFeatureStatus() {
         if (command_line.HasSwitch(cc::switches::kEnableCheckerImaging))
           status += "_force";
         status += "_on";
+      }
+      if (gpu_feature_data.name == "surface_synchronization") {
+        if (features::IsSurfaceSynchronizationEnabled())
+          status += "_on";
       }
     }
     feature_status_dict->SetString(gpu_feature_data.name, status);
