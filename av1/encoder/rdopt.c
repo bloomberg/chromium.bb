@@ -4087,8 +4087,6 @@ static int find_tx_size_rd_records(MACROBLOCK *x, BLOCK_SIZE bsize, int mi_row,
   int cur_tx_depth = 0;
   uint8_t parent_idx_buf[MAX_MIB_SIZE * MAX_MIB_SIZE] = { 0 };
   uint8_t child_idx_buf[MAX_MIB_SIZE * MAX_MIB_SIZE] = { 0 };
-  const int hash_dc_level = 1 << x->e_mbd.bd;
-
   TX_SIZE cur_tx_size = max_txsize_rect_lookup[bsize];
   while (cur_tx_depth <= MAX_VARTX_DEPTH) {
     const int cur_tx_bw = tx_size_wide[cur_tx_size];
@@ -4107,15 +4105,17 @@ static int find_tx_size_rd_records(MACROBLOCK *x, BLOCK_SIZE bsize, int mi_row,
           const int row_in_sb = (mi_row_in_sb + row) / cur_tx_bh;
           const int col_in_sb = (mi_col_in_sb + col) / cur_tx_bw;
 
-          // Compute FNV-1a hash for this TX block.
-          uint32_t hash = 2166136261;
+          int16_t hash_data[MAX_SB_SQUARE];
+          int16_t *cur_hash_row = hash_data;
+          const int16_t *cur_diff_row = diff + row * diff_stride + col;
           for (int i = 0; i < cur_tx_bh; i++) {
-            const int16_t *cur_diff_row = diff + (row + i) * diff_stride + col;
-            for (int j = 0; j < cur_tx_bw; j++) {
-              hash = hash ^ (cur_diff_row[j] + hash_dc_level);
-              hash = (uint32_t)((int64_t)hash * 16777619);
-            }
+            memcpy(cur_hash_row, cur_diff_row, sizeof(*hash_data) * cur_tx_bw);
+            cur_hash_row += cur_tx_bw;
+            cur_diff_row += diff_stride;
           }
+          const int hash = av1_get_crc_value(&x->tx_rd_record.crc_calculator,
+                                             (uint8_t *)hash_data,
+                                             2 * cur_tx_bw * cur_tx_bh);
 
           // Find corresponding RD info based on the hash value.
           const int rd_record_idx =
