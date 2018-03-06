@@ -883,10 +883,8 @@ crbug.com/441840 external/wpt/css/css-shapes/shape-outside/values/shape-outside-
 crbug.com/441840 external/wpt/css/css-shapes/shape-outside/values/shape-outside-polygon-004.html [ Failure ]
 crbug.com/441840 [ Linux Win ] external/wpt/css/css-shapes/shape-outside/values/shape-outside-shape-arguments-000.html [ Failure ]
 
-crbug.com/817804 [ Linux ] external/wpt/css/css-text/i18n/css3-text-line-break-opclns-004.html [ Failure ]
 crbug.com/817781 external/wpt/css/css-text/i18n/css3-text-line-break-opclns-013.html [ Failure ]
 crbug.com/817781 external/wpt/css/css-text/i18n/css3-text-line-break-opclns-048.html [ Failure ]
-crbug.com/817804 [ Linux ] external/wpt/css/css-text/i18n/css3-text-line-break-opclns-111.html [ Failure ]
 crbug.com/817778 external/wpt/css/css-text/i18n/css3-text-line-break-opclns-118.html [ Failure ]
 crbug.com/817778 external/wpt/css/css-text/i18n/css3-text-line-break-opclns-154.html [ Failure ]
 crbug.com/817778 external/wpt/css/css-text/i18n/css3-text-line-break-opclns-216.html [ Failure ]
