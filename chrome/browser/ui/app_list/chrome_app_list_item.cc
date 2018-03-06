@@ -53,7 +53,8 @@ ChromeAppListItem::ChromeAppListItem(Profile* profile,
                                                std::string() /* short_name */,
                                                std::string() /* folder_id */,
                                                syncer::StringOrdinal(),
-                                               false)),
+                                               false /* is_folder */,
+                                               gfx::ImageSkia() /* icon */)),
       profile_(profile) {}
 
 ChromeAppListItem::~ChromeAppListItem() {
@@ -142,11 +143,11 @@ void ChromeAppListItem::SetDefaultPositionIfApplicable() {
 }
 
 void ChromeAppListItem::SetIcon(const gfx::ImageSkia& icon) {
-  icon_ = icon;
-  icon_.EnsureRepsForSupportedScales();
+  metadata_->icon = icon;
+  metadata_->icon.EnsureRepsForSupportedScales();
   AppListModelUpdater* updater = model_updater();
   if (updater)
-    updater->SetItemIcon(id(), icon);
+    updater->SetItemIcon(id(), metadata_->icon);
 }
 
 void ChromeAppListItem::SetName(const std::string& name) {

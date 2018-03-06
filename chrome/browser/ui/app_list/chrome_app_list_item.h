@@ -56,7 +56,7 @@ class ChromeAppListItem {
   const syncer::StringOrdinal& position() const { return metadata_->position; }
   const std::string& name() const { return metadata_->name; }
   bool is_folder() const { return metadata_->is_folder; }
-  const gfx::ImageSkia& icon() const { return icon_; }
+  const gfx::ImageSkia& icon() const { return metadata_->icon; }
 
   void SetIsInstalling(bool is_installing);
   void SetPercentDownloaded(int32_t percent_downloaded);
@@ -131,7 +131,6 @@ class ChromeAppListItem {
  private:
   ash::mojom::AppListItemMetadataPtr metadata_;
   Profile* profile_;
-  gfx::ImageSkia icon_;
   AppListModelUpdater* model_updater_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeAppListItem);

@@ -98,4 +98,8 @@ SearchResult* SearchModel::FindSearchResult(const std::string& id) {
   return nullptr;
 }
 
+void SearchModel::DeleteAllResults() {
+  PublishResults(std::vector<std::unique_ptr<SearchResult>>());
+}
+
 }  // namespace app_list
