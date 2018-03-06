@@ -141,6 +141,9 @@ class MediaSessionImpl : public MediaSession,
   // MediaSessionService declared state and guessed state (audio_focus_state_).
   CONTENT_EXPORT bool IsActuallyPaused() const override;
 
+  // Set the volume multiplier applied during ducking.
+  CONTENT_EXPORT void SetDuckingVolumeMultiplier(double multiplier) override;
+
   // Let the media session start ducking such that the volume multiplier is
   // reduced.
   CONTENT_EXPORT void StartDucking() override;
@@ -301,6 +304,8 @@ class MediaSessionImpl : public MediaSession,
   // is set to |true| after StartDucking(), and will be set to |false| after
   // StopDucking().
   bool is_ducking_;
+
+  double ducking_volume_multiplier_;
 
   base::CallbackList<void(State)> media_session_state_listeners_;
 

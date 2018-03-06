@@ -44,6 +44,7 @@ namespace {
 
 const double kDefaultVolumeMultiplier = 1.0;
 const double kDuckingVolumeMultiplier = 0.2;
+const double kDifferentDuckingVolumeMultiplier = 0.018;
 
 class MockAudioFocusDelegate : public AudioFocusDelegate {
  public:
@@ -312,6 +313,23 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
   StartNewPlayer(player_observer.get(), media::MediaContentType::Persistent);
 
   EXPECT_EQ(kDefaultVolumeMultiplier, player_observer->GetVolumeMultiplier(2));
+}
+
+IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
+                       DuckingUsesConfiguredMultiplier) {
+  auto player_observer = std::make_unique<MockMediaSessionPlayerObserver>();
+
+  StartNewPlayer(player_observer.get(), media::MediaContentType::Persistent);
+  StartNewPlayer(player_observer.get(), media::MediaContentType::Persistent);
+  media_session_->SetDuckingVolumeMultiplier(kDifferentDuckingVolumeMultiplier);
+  SystemStartDucking();
+  EXPECT_EQ(kDifferentDuckingVolumeMultiplier,
+            player_observer->GetVolumeMultiplier(0));
+  EXPECT_EQ(kDifferentDuckingVolumeMultiplier,
+            player_observer->GetVolumeMultiplier(1));
+  SystemStopDucking();
+  EXPECT_EQ(kDefaultVolumeMultiplier, player_observer->GetVolumeMultiplier(0));
+  EXPECT_EQ(kDefaultVolumeMultiplier, player_observer->GetVolumeMultiplier(1));
 }
 
 IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest, AudioFocusInitialState) {
