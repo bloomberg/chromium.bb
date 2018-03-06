@@ -84,7 +84,7 @@ class RASTER_EXPORT RasterImplementationGLES : public RasterInterface {
 
   // Texture allocation and copying.
   void TexStorage2D(GLuint texture_id,
-                    GLint levels,
+                    GLsizei levels,
                     GLsizei width,
                     GLsizei height) override;
 

@@ -14,12 +14,14 @@
 #include "base/atomicops.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "components/viz/common/resources/resource_format.h"
 #include "gpu/command_buffer/common/bitfield_helpers.h"
 #include "gpu/command_buffer/common/cmd_buffer_common.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/gl2_types.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/common/raster_cmd_ids.h"
+#include "ui/gfx/buffer_types.h"
 
 namespace gpu {
 namespace raster {
@@ -29,6 +31,12 @@ namespace raster {
 static_assert(GPU_COMMAND_BUFFER_ENTRY_ALIGNMENT == 4,
               "pragma pack alignment must be equal to "
               "GPU_COMMAND_BUFFER_ENTRY_ALIGNMENT");
+
+namespace id_namespaces {
+
+enum class IdNamespaces { kQueries, kTextures };
+
+}  // namespace id_namespaces
 
 // Used for some glGetXXX commands that return a result through a pointer. We
 // need to know if the command succeeded or not and the size of the result. If

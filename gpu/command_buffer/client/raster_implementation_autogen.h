@@ -27,8 +27,6 @@ void ShallowFlushCHROMIUM() override;
 
 void OrderingBarrierCHROMIUM() override;
 
-void TexParameteri(GLenum target, GLenum pname, GLint param) override;
-
 void GenQueriesEXT(GLsizei n, GLuint* queries) override;
 
 void DeleteQueriesEXT(GLsizei n, const GLuint* queries) override;
@@ -74,5 +72,41 @@ void UnlockDiscardableTextureCHROMIUM(GLuint texture_id) override;
 bool LockDiscardableTextureCHROMIUM(GLuint texture_id) override;
 
 void EndRasterCHROMIUM() override;
+
+GLuint CreateTexture(bool use_buffer,
+                     gfx::BufferUsage buffer_usage,
+                     viz::ResourceFormat format) override;
+
+void SetColorSpaceMetadata(GLuint texture_id,
+                           GLColorSpace color_space) override;
+
+void GenMailbox(GLbyte* mailbox) override;
+
+void ProduceTextureDirect(GLuint texture, const GLbyte* mailbox) override;
+
+GLuint CreateAndConsumeTexture(bool use_buffer,
+                               gfx::BufferUsage buffer_usage,
+                               viz::ResourceFormat format,
+                               const GLbyte* mailbox) override;
+
+void TexParameteri(GLuint texture_id, GLenum pname, GLint param) override;
+
+void BindTexImage2DCHROMIUM(GLuint texture_id, GLint image_id) override;
+
+void ReleaseTexImage2DCHROMIUM(GLuint texture_id, GLint image_id) override;
+
+void TexStorage2D(GLuint texture_id,
+                  GLsizei levels,
+                  GLsizei width,
+                  GLsizei height) override;
+
+void CopySubTexture(GLuint source_id,
+                    GLuint dest_id,
+                    GLint xoffset,
+                    GLint yoffset,
+                    GLint x,
+                    GLint y,
+                    GLsizei width,
+                    GLsizei height) override;
 
 #endif  // GPU_COMMAND_BUFFER_CLIENT_RASTER_IMPLEMENTATION_AUTOGEN_H_

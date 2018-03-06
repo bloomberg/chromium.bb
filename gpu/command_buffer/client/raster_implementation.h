@@ -28,6 +28,7 @@
 #include "gpu/command_buffer/common/context_result.h"
 #include "gpu/command_buffer/common/debug_marker_manager.h"
 #include "gpu/command_buffer/common/id_allocator.h"
+#include "gpu/command_buffer/common/raster_cmd_format.h"
 #include "gpu/raster_export.h"
 
 namespace gpu {
@@ -99,39 +100,6 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
 #include "gpu/command_buffer/client/raster_implementation_autogen.h"
 
   // RasterInterface implementation.
-  // Texture objects.
-  GLuint CreateTexture(bool use_buffer,
-                       gfx::BufferUsage buffer_usage,
-                       viz::ResourceFormat format) override;
-  void SetColorSpaceMetadata(GLuint texture_id,
-                             GLColorSpace color_space) override;
-
-  // Mailboxes.
-  void GenMailbox(GLbyte* mailbox) override;
-  void ProduceTextureDirect(GLuint texture, const GLbyte* mailbox) override;
-  GLuint CreateAndConsumeTexture(bool use_buffer,
-                                 gfx::BufferUsage buffer_usage,
-                                 viz::ResourceFormat format,
-                                 const GLbyte* mailbox) override;
-
-  // Image objects.
-  void BindTexImage2DCHROMIUM(GLuint texture_id, GLint image_id) override;
-  void ReleaseTexImage2DCHROMIUM(GLuint texture_id, GLint image_id) override;
-
-  // Texture allocation and copying.
-  void TexStorage2D(GLuint texture_id,
-                    GLint levels,
-                    GLsizei width,
-                    GLsizei height) override;
-  void CopySubTexture(GLuint source_id,
-                      GLuint dest_id,
-                      GLint xoffset,
-                      GLint yoffset,
-                      GLint x,
-                      GLint y,
-                      GLsizei width,
-                      GLsizei height) override;
-
   void BeginRasterCHROMIUM(
       GLuint texture_id,
       GLuint sk_color,
@@ -180,7 +148,7 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
  private:
   friend class RasterImplementationTest;
 
-  using IdNamespaces = gles2::id_namespaces::IdNamespaces;
+  using IdNamespaces = raster::id_namespaces::IdNamespaces;
 
   struct TextureUnit {
     TextureUnit() : bound_texture_2d(0) {}

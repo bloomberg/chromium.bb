@@ -13,42 +13,6 @@
 
 #define GL_SCANOUT_CHROMIUM 0x6000
 
-struct BindTexture {
-  typedef BindTexture ValueType;
-  static const CommandId kCmdId = kBindTexture;
-  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
-
-  static uint32_t ComputeSize() {
-    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
-  }
-
-  void SetHeader() { header.SetCmd<ValueType>(); }
-
-  void Init(GLenum _target, GLuint _texture) {
-    SetHeader();
-    target = _target;
-    texture = _texture;
-  }
-
-  void* Set(void* cmd, GLenum _target, GLuint _texture) {
-    static_cast<ValueType*>(cmd)->Init(_target, _texture);
-    return NextCmdAddress<ValueType>(cmd);
-  }
-
-  gpu::CommandHeader header;
-  uint32_t target;
-  uint32_t texture;
-};
-
-static_assert(sizeof(BindTexture) == 12, "size of BindTexture should be 12");
-static_assert(offsetof(BindTexture, header) == 0,
-              "offset of BindTexture header should be 0");
-static_assert(offsetof(BindTexture, target) == 4,
-              "offset of BindTexture target should be 4");
-static_assert(offsetof(BindTexture, texture) == 8,
-              "offset of BindTexture texture should be 8");
-
 struct DeleteTexturesImmediate {
   typedef DeleteTexturesImmediate ValueType;
   static const CommandId kCmdId = kDeleteTexturesImmediate;
@@ -143,48 +107,6 @@ static_assert(sizeof(Flush) == 4, "size of Flush should be 4");
 static_assert(offsetof(Flush, header) == 0,
               "offset of Flush header should be 0");
 
-struct GenTexturesImmediate {
-  typedef GenTexturesImmediate ValueType;
-  static const CommandId kCmdId = kGenTexturesImmediate;
-  static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
-
-  static uint32_t ComputeDataSize(GLsizei _n) {
-    return static_cast<uint32_t>(sizeof(GLuint) * _n);  // NOLINT
-  }
-
-  static uint32_t ComputeSize(GLsizei _n) {
-    return static_cast<uint32_t>(sizeof(ValueType) +
-                                 ComputeDataSize(_n));  // NOLINT
-  }
-
-  void SetHeader(GLsizei _n) {
-    header.SetCmdByTotalSize<ValueType>(ComputeSize(_n));
-  }
-
-  void Init(GLsizei _n, GLuint* _textures) {
-    SetHeader(_n);
-    n = _n;
-    memcpy(ImmediateDataAddress(this), _textures, ComputeDataSize(_n));
-  }
-
-  void* Set(void* cmd, GLsizei _n, GLuint* _textures) {
-    static_cast<ValueType*>(cmd)->Init(_n, _textures);
-    const uint32_t size = ComputeSize(_n);
-    return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
-  }
-
-  gpu::CommandHeader header;
-  int32_t n;
-};
-
-static_assert(sizeof(GenTexturesImmediate) == 8,
-              "size of GenTexturesImmediate should be 8");
-static_assert(offsetof(GenTexturesImmediate, header) == 0,
-              "offset of GenTexturesImmediate header should be 0");
-static_assert(offsetof(GenTexturesImmediate, n) == 4,
-              "offset of GenTexturesImmediate n should be 4");
-
 struct GetError {
   typedef GetError ValueType;
   static const CommandId kCmdId = kGetError;
@@ -270,47 +192,6 @@ static_assert(offsetof(GetIntegerv, params_shm_id) == 8,
               "offset of GetIntegerv params_shm_id should be 8");
 static_assert(offsetof(GetIntegerv, params_shm_offset) == 12,
               "offset of GetIntegerv params_shm_offset should be 12");
-
-struct TexParameteri {
-  typedef TexParameteri ValueType;
-  static const CommandId kCmdId = kTexParameteri;
-  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
-
-  static uint32_t ComputeSize() {
-    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
-  }
-
-  void SetHeader() { header.SetCmd<ValueType>(); }
-
-  void Init(GLenum _target, GLenum _pname, GLint _param) {
-    SetHeader();
-    target = _target;
-    pname = _pname;
-    param = _param;
-  }
-
-  void* Set(void* cmd, GLenum _target, GLenum _pname, GLint _param) {
-    static_cast<ValueType*>(cmd)->Init(_target, _pname, _param);
-    return NextCmdAddress<ValueType>(cmd);
-  }
-
-  gpu::CommandHeader header;
-  uint32_t target;
-  uint32_t pname;
-  int32_t param;
-};
-
-static_assert(sizeof(TexParameteri) == 16,
-              "size of TexParameteri should be 16");
-static_assert(offsetof(TexParameteri, header) == 0,
-              "offset of TexParameteri header should be 0");
-static_assert(offsetof(TexParameteri, target) == 4,
-              "offset of TexParameteri target should be 4");
-static_assert(offsetof(TexParameteri, pname) == 8,
-              "offset of TexParameteri pname should be 8");
-static_assert(offsetof(TexParameteri, param) == 12,
-              "offset of TexParameteri param should be 12");
 
 struct GenQueriesEXTImmediate {
   typedef GenQueriesEXTImmediate ValueType;
@@ -1154,5 +1035,393 @@ static_assert(
 static_assert(
     offsetof(UnlockTransferCacheEntryINTERNAL, entry_id) == 8,
     "offset of UnlockTransferCacheEntryINTERNAL entry_id should be 8");
+
+struct CreateTexture {
+  typedef CreateTexture ValueType;
+  static const CommandId kCmdId = kCreateTexture;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(bool _use_buffer,
+            gfx::BufferUsage _buffer_usage,
+            viz::ResourceFormat _format,
+            uint32_t _client_id) {
+    SetHeader();
+    use_buffer = _use_buffer;
+    buffer_usage = static_cast<uint32_t>(_buffer_usage);
+    format = static_cast<uint32_t>(_format);
+    client_id = _client_id;
+  }
+
+  void* Set(void* cmd,
+            bool _use_buffer,
+            gfx::BufferUsage _buffer_usage,
+            viz::ResourceFormat _format,
+            uint32_t _client_id) {
+    static_cast<ValueType*>(cmd)->Init(_use_buffer, _buffer_usage, _format,
+                                       _client_id);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t use_buffer;
+  uint32_t buffer_usage;
+  uint32_t format;
+  uint32_t client_id;
+};
+
+static_assert(sizeof(CreateTexture) == 20,
+              "size of CreateTexture should be 20");
+static_assert(offsetof(CreateTexture, header) == 0,
+              "offset of CreateTexture header should be 0");
+static_assert(offsetof(CreateTexture, use_buffer) == 4,
+              "offset of CreateTexture use_buffer should be 4");
+static_assert(offsetof(CreateTexture, buffer_usage) == 8,
+              "offset of CreateTexture buffer_usage should be 8");
+static_assert(offsetof(CreateTexture, format) == 12,
+              "offset of CreateTexture format should be 12");
+static_assert(offsetof(CreateTexture, client_id) == 16,
+              "offset of CreateTexture client_id should be 16");
+
+struct SetColorSpaceMetadata {
+  typedef SetColorSpaceMetadata ValueType;
+  static const CommandId kCmdId = kSetColorSpaceMetadata;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLuint _texture_id,
+            GLuint _shm_id,
+            GLuint _shm_offset,
+            GLsizei _color_space_size) {
+    SetHeader();
+    texture_id = _texture_id;
+    shm_id = _shm_id;
+    shm_offset = _shm_offset;
+    color_space_size = _color_space_size;
+  }
+
+  void* Set(void* cmd,
+            GLuint _texture_id,
+            GLuint _shm_id,
+            GLuint _shm_offset,
+            GLsizei _color_space_size) {
+    static_cast<ValueType*>(cmd)->Init(_texture_id, _shm_id, _shm_offset,
+                                       _color_space_size);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t texture_id;
+  uint32_t shm_id;
+  uint32_t shm_offset;
+  int32_t color_space_size;
+};
+
+static_assert(sizeof(SetColorSpaceMetadata) == 20,
+              "size of SetColorSpaceMetadata should be 20");
+static_assert(offsetof(SetColorSpaceMetadata, header) == 0,
+              "offset of SetColorSpaceMetadata header should be 0");
+static_assert(offsetof(SetColorSpaceMetadata, texture_id) == 4,
+              "offset of SetColorSpaceMetadata texture_id should be 4");
+static_assert(offsetof(SetColorSpaceMetadata, shm_id) == 8,
+              "offset of SetColorSpaceMetadata shm_id should be 8");
+static_assert(offsetof(SetColorSpaceMetadata, shm_offset) == 12,
+              "offset of SetColorSpaceMetadata shm_offset should be 12");
+static_assert(offsetof(SetColorSpaceMetadata, color_space_size) == 16,
+              "offset of SetColorSpaceMetadata color_space_size should be 16");
+
+struct ProduceTextureDirectImmediate {
+  typedef ProduceTextureDirectImmediate ValueType;
+  static const CommandId kCmdId = kProduceTextureDirectImmediate;
+  static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
+
+  static uint32_t ComputeDataSize() {
+    return static_cast<uint32_t>(sizeof(GLbyte) * 16);
+  }
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType) + ComputeDataSize());
+  }
+
+  void SetHeader() { header.SetCmdByTotalSize<ValueType>(ComputeSize()); }
+
+  void Init(GLuint _texture, const GLbyte* _mailbox) {
+    SetHeader();
+    texture = _texture;
+    memcpy(ImmediateDataAddress(this), _mailbox, ComputeDataSize());
+  }
+
+  void* Set(void* cmd, GLuint _texture, const GLbyte* _mailbox) {
+    static_cast<ValueType*>(cmd)->Init(_texture, _mailbox);
+    const uint32_t size = ComputeSize();
+    return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t texture;
+};
+
+static_assert(sizeof(ProduceTextureDirectImmediate) == 8,
+              "size of ProduceTextureDirectImmediate should be 8");
+static_assert(offsetof(ProduceTextureDirectImmediate, header) == 0,
+              "offset of ProduceTextureDirectImmediate header should be 0");
+static_assert(offsetof(ProduceTextureDirectImmediate, texture) == 4,
+              "offset of ProduceTextureDirectImmediate texture should be 4");
+
+struct TexParameteri {
+  typedef TexParameteri ValueType;
+  static const CommandId kCmdId = kTexParameteri;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLuint _texture_id, GLenum _pname, GLint _param) {
+    SetHeader();
+    texture_id = _texture_id;
+    pname = _pname;
+    param = _param;
+  }
+
+  void* Set(void* cmd, GLuint _texture_id, GLenum _pname, GLint _param) {
+    static_cast<ValueType*>(cmd)->Init(_texture_id, _pname, _param);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t texture_id;
+  uint32_t pname;
+  int32_t param;
+};
+
+static_assert(sizeof(TexParameteri) == 16,
+              "size of TexParameteri should be 16");
+static_assert(offsetof(TexParameteri, header) == 0,
+              "offset of TexParameteri header should be 0");
+static_assert(offsetof(TexParameteri, texture_id) == 4,
+              "offset of TexParameteri texture_id should be 4");
+static_assert(offsetof(TexParameteri, pname) == 8,
+              "offset of TexParameteri pname should be 8");
+static_assert(offsetof(TexParameteri, param) == 12,
+              "offset of TexParameteri param should be 12");
+
+struct BindTexImage2DCHROMIUM {
+  typedef BindTexImage2DCHROMIUM ValueType;
+  static const CommandId kCmdId = kBindTexImage2DCHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLuint _texture_id, GLint _image_id) {
+    SetHeader();
+    texture_id = _texture_id;
+    image_id = _image_id;
+  }
+
+  void* Set(void* cmd, GLuint _texture_id, GLint _image_id) {
+    static_cast<ValueType*>(cmd)->Init(_texture_id, _image_id);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t texture_id;
+  int32_t image_id;
+};
+
+static_assert(sizeof(BindTexImage2DCHROMIUM) == 12,
+              "size of BindTexImage2DCHROMIUM should be 12");
+static_assert(offsetof(BindTexImage2DCHROMIUM, header) == 0,
+              "offset of BindTexImage2DCHROMIUM header should be 0");
+static_assert(offsetof(BindTexImage2DCHROMIUM, texture_id) == 4,
+              "offset of BindTexImage2DCHROMIUM texture_id should be 4");
+static_assert(offsetof(BindTexImage2DCHROMIUM, image_id) == 8,
+              "offset of BindTexImage2DCHROMIUM image_id should be 8");
+
+struct ReleaseTexImage2DCHROMIUM {
+  typedef ReleaseTexImage2DCHROMIUM ValueType;
+  static const CommandId kCmdId = kReleaseTexImage2DCHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLuint _texture_id, GLint _image_id) {
+    SetHeader();
+    texture_id = _texture_id;
+    image_id = _image_id;
+  }
+
+  void* Set(void* cmd, GLuint _texture_id, GLint _image_id) {
+    static_cast<ValueType*>(cmd)->Init(_texture_id, _image_id);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t texture_id;
+  int32_t image_id;
+};
+
+static_assert(sizeof(ReleaseTexImage2DCHROMIUM) == 12,
+              "size of ReleaseTexImage2DCHROMIUM should be 12");
+static_assert(offsetof(ReleaseTexImage2DCHROMIUM, header) == 0,
+              "offset of ReleaseTexImage2DCHROMIUM header should be 0");
+static_assert(offsetof(ReleaseTexImage2DCHROMIUM, texture_id) == 4,
+              "offset of ReleaseTexImage2DCHROMIUM texture_id should be 4");
+static_assert(offsetof(ReleaseTexImage2DCHROMIUM, image_id) == 8,
+              "offset of ReleaseTexImage2DCHROMIUM image_id should be 8");
+
+struct TexStorage2D {
+  typedef TexStorage2D ValueType;
+  static const CommandId kCmdId = kTexStorage2D;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLuint _texture_id,
+            GLsizei _levels,
+            GLsizei _width,
+            GLsizei _height) {
+    SetHeader();
+    texture_id = _texture_id;
+    levels = _levels;
+    width = _width;
+    height = _height;
+  }
+
+  void* Set(void* cmd,
+            GLuint _texture_id,
+            GLsizei _levels,
+            GLsizei _width,
+            GLsizei _height) {
+    static_cast<ValueType*>(cmd)->Init(_texture_id, _levels, _width, _height);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t texture_id;
+  int32_t levels;
+  int32_t width;
+  int32_t height;
+};
+
+static_assert(sizeof(TexStorage2D) == 20, "size of TexStorage2D should be 20");
+static_assert(offsetof(TexStorage2D, header) == 0,
+              "offset of TexStorage2D header should be 0");
+static_assert(offsetof(TexStorage2D, texture_id) == 4,
+              "offset of TexStorage2D texture_id should be 4");
+static_assert(offsetof(TexStorage2D, levels) == 8,
+              "offset of TexStorage2D levels should be 8");
+static_assert(offsetof(TexStorage2D, width) == 12,
+              "offset of TexStorage2D width should be 12");
+static_assert(offsetof(TexStorage2D, height) == 16,
+              "offset of TexStorage2D height should be 16");
+
+struct CopySubTexture {
+  typedef CopySubTexture ValueType;
+  static const CommandId kCmdId = kCopySubTexture;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLuint _source_id,
+            GLuint _dest_id,
+            GLint _xoffset,
+            GLint _yoffset,
+            GLint _x,
+            GLint _y,
+            GLsizei _width,
+            GLsizei _height) {
+    SetHeader();
+    source_id = _source_id;
+    dest_id = _dest_id;
+    xoffset = _xoffset;
+    yoffset = _yoffset;
+    x = _x;
+    y = _y;
+    width = _width;
+    height = _height;
+  }
+
+  void* Set(void* cmd,
+            GLuint _source_id,
+            GLuint _dest_id,
+            GLint _xoffset,
+            GLint _yoffset,
+            GLint _x,
+            GLint _y,
+            GLsizei _width,
+            GLsizei _height) {
+    static_cast<ValueType*>(cmd)->Init(_source_id, _dest_id, _xoffset, _yoffset,
+                                       _x, _y, _width, _height);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t source_id;
+  uint32_t dest_id;
+  int32_t xoffset;
+  int32_t yoffset;
+  int32_t x;
+  int32_t y;
+  int32_t width;
+  int32_t height;
+};
+
+static_assert(sizeof(CopySubTexture) == 36,
+              "size of CopySubTexture should be 36");
+static_assert(offsetof(CopySubTexture, header) == 0,
+              "offset of CopySubTexture header should be 0");
+static_assert(offsetof(CopySubTexture, source_id) == 4,
+              "offset of CopySubTexture source_id should be 4");
+static_assert(offsetof(CopySubTexture, dest_id) == 8,
+              "offset of CopySubTexture dest_id should be 8");
+static_assert(offsetof(CopySubTexture, xoffset) == 12,
+              "offset of CopySubTexture xoffset should be 12");
+static_assert(offsetof(CopySubTexture, yoffset) == 16,
+              "offset of CopySubTexture yoffset should be 16");
+static_assert(offsetof(CopySubTexture, x) == 20,
+              "offset of CopySubTexture x should be 20");
+static_assert(offsetof(CopySubTexture, y) == 24,
+              "offset of CopySubTexture y should be 24");
+static_assert(offsetof(CopySubTexture, width) == 28,
+              "offset of CopySubTexture width should be 28");
+static_assert(offsetof(CopySubTexture, height) == 32,
+              "offset of CopySubTexture height should be 32");
 
 #endif  // GPU_COMMAND_BUFFER_COMMON_RASTER_CMD_FORMAT_AUTOGEN_H_

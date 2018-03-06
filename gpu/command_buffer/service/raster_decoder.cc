@@ -25,8 +25,8 @@
 #include "gpu/command_buffer/service/decoder_client.h"
 #include "gpu/command_buffer/service/error_state.h"
 #include "gpu/command_buffer/service/feature_info.h"
-#include "gpu/command_buffer/service/gles2_cmd_validation.h"
 #include "gpu/command_buffer/service/logger.h"
+#include "gpu/command_buffer/service/raster_cmd_validation.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_version_info.h"
@@ -36,7 +36,7 @@
   ERRORSTATE_SET_GL_ERROR(state_.GetErrorState(), error, function_name, msg)
 #define LOCAL_SET_GL_ERROR_INVALID_ENUM(function_name, value, label)          \
   ERRORSTATE_SET_GL_ERROR_INVALID_ENUM(state_.GetErrorState(), function_name, \
-                                       value, label)
+                                       static_cast<uint32_t>(value), label)
 #define LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER(function_name)         \
   ERRORSTATE_COPY_REAL_GL_ERRORS_TO_WRAPPER(state_.GetErrorState(), \
                                             function_name)
@@ -182,10 +182,26 @@ class RasterDecoderImpl : public RasterDecoder, public gles2::ErrorStateClient {
   // false if pname is unknown.
   bool GetNumValuesReturnedForGLGet(GLenum pname, GLsizei* num_values);
 
-  void DoActiveTexture(GLenum texture_unit) { NOTIMPLEMENTED(); }
-  void DoBindTexture(GLenum target, GLuint texture);
+  GLuint DoCreateTexture(bool use_buffer,
+                         gfx::BufferUsage buffer_usage,
+                         viz::ResourceFormat resource_format) {
+    // Stubbed out enough for unittests. Need to take params into account.
+    NOTIMPLEMENTED();
+    GLuint service_id;
+    api()->glGenTexturesFn(1, &service_id);
+    return service_id;
+  }
+  void CreateTexture(GLuint client_id,
+                     GLuint service_id,
+                     bool use_buffer,
+                     gfx::BufferUsage buffer_usage,
+                     viz::ResourceFormat resource_format) {
+    // Stubbed out enough for unittests. Need to take params into account.
+    NOTIMPLEMENTED();
+    CreateTexture(client_id, service_id);
+  }
+
   void DeleteTexturesHelper(GLsizei n, const volatile GLuint* client_ids);
-  bool GenTexturesHelper(GLsizei n, const GLuint* client_ids);
   bool GenQueriesEXTHelper(GLsizei n, const GLuint* client_ids) {
     NOTIMPLEMENTED();
     return true;
@@ -196,35 +212,30 @@ class RasterDecoderImpl : public RasterDecoder, public gles2::ErrorStateClient {
   void DoFinish();
   void DoFlush();
   void DoGetIntegerv(GLenum pname, GLint* params, GLsizei params_size);
-  void DoTexParameteri(GLenum target, GLenum pname, GLint param);
-  void DoTexStorage2DEXT(GLenum target,
-                         GLsizei levels,
-                         GLenum internal_format,
-                         GLsizei width,
-                         GLsizei height) {
+  void DoTexParameteri(GLuint texture_id, GLenum pname, GLint param);
+  void DoBindTexImage2DCHROMIUM(GLuint texture_id, GLint image_id) {
     NOTIMPLEMENTED();
   }
-  void DoTexStorage2DImageCHROMIUM(GLenum target,
-                                   GLenum internal_format,
-                                   GLenum buffer_usage,
-                                   GLsizei width,
-                                   GLsizei height) {
+  void DoProduceTextureDirect(GLuint texture, const volatile GLbyte* mailbox) {
     NOTIMPLEMENTED();
   }
-  void DoCopySubTextureCHROMIUM(GLuint source_id,
-                                GLint source_level,
-                                GLenum dest_target,
-                                GLuint dest_id,
-                                GLint dest_level,
-                                GLint xoffset,
-                                GLint yoffset,
-                                GLint x,
-                                GLint y,
-                                GLsizei width,
-                                GLsizei height,
-                                GLboolean unpack_flip_y,
-                                GLboolean unpack_premultiply_alpha,
-                                GLboolean unpack_unmultiply_alpha) {
+  void DoReleaseTexImage2DCHROMIUM(GLuint texture_id, GLint image_id) {
+    NOTIMPLEMENTED();
+  }
+  void DoTexStorage2D(GLuint texture_id,
+                      GLint levels,
+                      GLsizei width,
+                      GLsizei height) {
+    NOTIMPLEMENTED();
+  }
+  void DoCopySubTexture(GLuint source_id,
+                        GLuint dest_id,
+                        GLint xoffset,
+                        GLint yoffset,
+                        GLint x,
+                        GLint y,
+                        GLsizei width,
+                        GLsizei height) {
     NOTIMPLEMENTED();
   }
   void DoCompressedCopyTextureCHROMIUM(GLuint source_id, GLuint dest_id) {
@@ -234,13 +245,6 @@ class RasterDecoderImpl : public RasterDecoder, public gles2::ErrorStateClient {
                                       const volatile GLbyte* key) {
     NOTIMPLEMENTED();
   }
-  void DoBindTexImage2DCHROMIUM(GLenum target, GLint image_id) {
-    NOTIMPLEMENTED();
-  }
-  void DoReleaseTexImage2DCHROMIUM(GLenum target, GLint image_id) {
-    NOTIMPLEMENTED();
-  }
-  void DoTraceEndCHROMIUM();
   void DoLoseContextCHROMIUM(GLenum current, GLenum other) { NOTIMPLEMENTED(); }
   void DoBeginRasterCHROMIUM(GLuint texture_id,
                              GLuint sk_color,
@@ -345,7 +349,7 @@ class RasterDecoderImpl : public RasterDecoder, public gles2::ErrorStateClient {
 
   // The ContextGroup for this decoder uses to track resources.
   scoped_refptr<gles2::ContextGroup> group_;
-  const gles2::Validators* validators_;
+  std::unique_ptr<Validators> validators_;
   scoped_refptr<gles2::FeatureInfo> feature_info_;
 
   // All the state for this context.
@@ -419,7 +423,7 @@ RasterDecoderImpl::RasterDecoderImpl(
       client_(client),
       logger_(&debug_marker_manager_, client),
       group_(group),
-      validators_(group_->feature_info()->validators()),
+      validators_(new Validators),
       feature_info_(group_->feature_info()),
       state_(group_->feature_info(), this, &logger_),
       service_logging_(
@@ -864,6 +868,13 @@ error::Error RasterDecoderImpl::HandleWaitSyncTokenCHROMIUM(
                                               : error::kNoError;
 }
 
+error::Error RasterDecoderImpl::HandleSetColorSpaceMetadata(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  NOTIMPLEMENTED();
+  return error::kNoError;
+}
+
 error::Error RasterDecoderImpl::HandleBeginQueryEXT(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
@@ -942,87 +953,44 @@ void RasterDecoderImpl::DeleteTexturesHelper(
   }
 }
 
-bool RasterDecoderImpl::GenTexturesHelper(GLsizei n, const GLuint* client_ids) {
-  for (GLsizei ii = 0; ii < n; ++ii) {
-    if (GetTexture(client_ids[ii])) {
-      return false;
-    }
-  }
-  std::unique_ptr<GLuint[]> service_ids(new GLuint[n]);
-  api()->glGenTexturesFn(n, service_ids.get());
-  for (GLsizei ii = 0; ii < n; ++ii) {
-    CreateTexture(client_ids[ii], service_ids[ii]);
-  }
-  return true;
-}
-
-void RasterDecoderImpl::DoTexParameteri(GLenum target,
+void RasterDecoderImpl::DoTexParameteri(GLuint texture_id,
                                         GLenum pname,
                                         GLint param) {
-  TextureRef* texture =
-      texture_manager()->GetTextureInfoForTarget(&state_, target);
+  TextureRef* texture = texture_manager()->GetTexture(texture_id);
   if (!texture) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glTexParameteri", "unknown texture");
     return;
   }
 
+  // TextureManager uses validators from the share group, which may include
+  // GLES2. Perform stronger validation here.
+  bool valid_param = true;
+  bool valid_pname = true;
+  switch (pname) {
+    case GL_TEXTURE_MIN_FILTER:
+      valid_param = validators_->texture_min_filter_mode.IsValid(param);
+      break;
+    case GL_TEXTURE_MAG_FILTER:
+      valid_param = validators_->texture_mag_filter_mode.IsValid(param);
+      break;
+    case GL_TEXTURE_WRAP_S:
+    case GL_TEXTURE_WRAP_T:
+      valid_param = validators_->texture_wrap_mode.IsValid(param);
+      break;
+    default:
+      valid_pname = false;
+  }
+  if (!valid_pname) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM("glTexParameteri", pname, "pname");
+    return;
+  }
+  if (!valid_param) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM("glTexParameteri", param, "pname");
+    return;
+  }
+
   texture_manager()->SetParameteri("glTexParameteri", GetErrorState(), texture,
                                    pname, param);
-}
-
-void RasterDecoderImpl::DoBindTexture(GLenum target, GLuint client_id) {
-  TextureRef* texture_ref = NULL;
-  GLuint service_id = 0;
-  if (client_id != 0) {
-    texture_ref = GetTexture(client_id);
-    if (!texture_ref) {
-      if (!group_->bind_generates_resource()) {
-        LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBindTexture",
-                           "id not generated by glGenTextures");
-        return;
-      }
-
-      // It's a new id so make a texture texture for it.
-      api()->glGenTexturesFn(1, &service_id);
-      DCHECK_NE(0u, service_id);
-      CreateTexture(client_id, service_id);
-      texture_ref = GetTexture(client_id);
-    }
-  } else {
-    texture_ref = texture_manager()->GetDefaultTextureInfo(target);
-  }
-
-  // Check the texture exists
-  if (texture_ref) {
-    Texture* texture = texture_ref->texture();
-    // Check that we are not trying to bind it to a different target.
-    if (texture->target() != 0 && texture->target() != target) {
-      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBindTexture",
-                         "texture bound to more than 1 target.");
-      return;
-    }
-    LogClientServiceForInfo(texture, client_id, "glBindTexture");
-    api()->glBindTextureFn(target, texture->service_id());
-    if (texture->target() == 0) {
-      texture_manager()->SetTarget(texture_ref, target);
-      if (!gl_version_info().BehavesLikeGLES() &&
-          gl_version_info().IsAtLeastGL(3, 2)) {
-        // In Desktop GL core profile and GL ES, depth textures are always
-        // sampled to the RED channel, whereas on Desktop GL compatibility
-        // proifle, they are sampled to RED, LUMINANCE, INTENSITY, or ALPHA
-        // channel, depending on the DEPTH_TEXTURE_MODE value.
-        // In theory we only need to apply this for depth textures, but it is
-        // simpler to apply to all textures.
-        api()->glTexParameteriFn(target, GL_DEPTH_TEXTURE_MODE, GL_RED);
-      }
-    }
-  } else {
-    api()->glBindTextureFn(target, 0);
-  }
-
-  TextureUnit& unit = state_.texture_units[state_.active_texture_unit];
-  unit.bind_target = target;
-  unit.SetInfoForTarget(target, texture_ref);
 }
 
 // Include the auto-generated part of this file. We split this because it means

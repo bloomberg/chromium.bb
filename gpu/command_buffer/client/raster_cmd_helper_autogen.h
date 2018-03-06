@@ -11,13 +11,6 @@
 #ifndef GPU_COMMAND_BUFFER_CLIENT_RASTER_CMD_HELPER_AUTOGEN_H_
 #define GPU_COMMAND_BUFFER_CLIENT_RASTER_CMD_HELPER_AUTOGEN_H_
 
-void BindTexture(GLenum target, GLuint texture) {
-  raster::cmds::BindTexture* c = GetCmdSpace<raster::cmds::BindTexture>();
-  if (c) {
-    c->Init(target, texture);
-  }
-}
-
 void DeleteTexturesImmediate(GLsizei n, const GLuint* textures) {
   const uint32_t size = raster::cmds::DeleteTexturesImmediate::ComputeSize(n);
   raster::cmds::DeleteTexturesImmediate* c =
@@ -42,15 +35,6 @@ void Flush() {
   }
 }
 
-void GenTexturesImmediate(GLsizei n, GLuint* textures) {
-  const uint32_t size = raster::cmds::GenTexturesImmediate::ComputeSize(n);
-  raster::cmds::GenTexturesImmediate* c =
-      GetImmediateCmdSpaceTotalSize<raster::cmds::GenTexturesImmediate>(size);
-  if (c) {
-    c->Init(n, textures);
-  }
-}
-
 void GetError(uint32_t result_shm_id, uint32_t result_shm_offset) {
   raster::cmds::GetError* c = GetCmdSpace<raster::cmds::GetError>();
   if (c) {
@@ -64,13 +48,6 @@ void GetIntegerv(GLenum pname,
   raster::cmds::GetIntegerv* c = GetCmdSpace<raster::cmds::GetIntegerv>();
   if (c) {
     c->Init(pname, params_shm_id, params_shm_offset);
-  }
-}
-
-void TexParameteri(GLenum target, GLenum pname, GLint param) {
-  raster::cmds::TexParameteri* c = GetCmdSpace<raster::cmds::TexParameteri>();
-  if (c) {
-    c->Init(target, pname, param);
   }
 }
 
@@ -242,6 +219,85 @@ void UnlockTransferCacheEntryINTERNAL(GLuint entry_type, GLuint entry_id) {
       GetCmdSpace<raster::cmds::UnlockTransferCacheEntryINTERNAL>();
   if (c) {
     c->Init(entry_type, entry_id);
+  }
+}
+
+void CreateTexture(bool use_buffer,
+                   gfx::BufferUsage buffer_usage,
+                   viz::ResourceFormat format,
+                   uint32_t client_id) {
+  raster::cmds::CreateTexture* c = GetCmdSpace<raster::cmds::CreateTexture>();
+  if (c) {
+    c->Init(use_buffer, buffer_usage, format, client_id);
+  }
+}
+
+void SetColorSpaceMetadata(GLuint texture_id,
+                           GLuint shm_id,
+                           GLuint shm_offset,
+                           GLsizei color_space_size) {
+  raster::cmds::SetColorSpaceMetadata* c =
+      GetCmdSpace<raster::cmds::SetColorSpaceMetadata>();
+  if (c) {
+    c->Init(texture_id, shm_id, shm_offset, color_space_size);
+  }
+}
+
+void ProduceTextureDirectImmediate(GLuint texture, const GLbyte* mailbox) {
+  const uint32_t size =
+      raster::cmds::ProduceTextureDirectImmediate::ComputeSize();
+  raster::cmds::ProduceTextureDirectImmediate* c =
+      GetImmediateCmdSpaceTotalSize<
+          raster::cmds::ProduceTextureDirectImmediate>(size);
+  if (c) {
+    c->Init(texture, mailbox);
+  }
+}
+
+void TexParameteri(GLuint texture_id, GLenum pname, GLint param) {
+  raster::cmds::TexParameteri* c = GetCmdSpace<raster::cmds::TexParameteri>();
+  if (c) {
+    c->Init(texture_id, pname, param);
+  }
+}
+
+void BindTexImage2DCHROMIUM(GLuint texture_id, GLint image_id) {
+  raster::cmds::BindTexImage2DCHROMIUM* c =
+      GetCmdSpace<raster::cmds::BindTexImage2DCHROMIUM>();
+  if (c) {
+    c->Init(texture_id, image_id);
+  }
+}
+
+void ReleaseTexImage2DCHROMIUM(GLuint texture_id, GLint image_id) {
+  raster::cmds::ReleaseTexImage2DCHROMIUM* c =
+      GetCmdSpace<raster::cmds::ReleaseTexImage2DCHROMIUM>();
+  if (c) {
+    c->Init(texture_id, image_id);
+  }
+}
+
+void TexStorage2D(GLuint texture_id,
+                  GLsizei levels,
+                  GLsizei width,
+                  GLsizei height) {
+  raster::cmds::TexStorage2D* c = GetCmdSpace<raster::cmds::TexStorage2D>();
+  if (c) {
+    c->Init(texture_id, levels, width, height);
+  }
+}
+
+void CopySubTexture(GLuint source_id,
+                    GLuint dest_id,
+                    GLint xoffset,
+                    GLint yoffset,
+                    GLint x,
+                    GLint y,
+                    GLsizei width,
+                    GLsizei height) {
+  raster::cmds::CopySubTexture* c = GetCmdSpace<raster::cmds::CopySubTexture>();
+  if (c) {
+    c->Init(source_id, dest_id, xoffset, yoffset, x, y, width, height);
   }
 }
 

@@ -12,32 +12,37 @@
 #define GPU_COMMAND_BUFFER_COMMON_RASTER_CMD_IDS_AUTOGEN_H_
 
 #define RASTER_COMMAND_LIST(OP)                      \
-  OP(BindTexture)                          /* 256 */ \
-  OP(DeleteTexturesImmediate)              /* 257 */ \
-  OP(Finish)                               /* 258 */ \
-  OP(Flush)                                /* 259 */ \
-  OP(GenTexturesImmediate)                 /* 260 */ \
-  OP(GetError)                             /* 261 */ \
-  OP(GetIntegerv)                          /* 262 */ \
-  OP(TexParameteri)                        /* 263 */ \
-  OP(GenQueriesEXTImmediate)               /* 264 */ \
-  OP(DeleteQueriesEXTImmediate)            /* 265 */ \
-  OP(BeginQueryEXT)                        /* 266 */ \
-  OP(EndQueryEXT)                          /* 267 */ \
-  OP(CompressedCopyTextureCHROMIUM)        /* 268 */ \
-  OP(LoseContextCHROMIUM)                  /* 269 */ \
-  OP(InsertFenceSyncCHROMIUM)              /* 270 */ \
-  OP(WaitSyncTokenCHROMIUM)                /* 271 */ \
-  OP(UnpremultiplyAndDitherCopyCHROMIUM)   /* 272 */ \
-  OP(InitializeDiscardableTextureCHROMIUM) /* 273 */ \
-  OP(UnlockDiscardableTextureCHROMIUM)     /* 274 */ \
-  OP(LockDiscardableTextureCHROMIUM)       /* 275 */ \
-  OP(BeginRasterCHROMIUM)                  /* 276 */ \
-  OP(RasterCHROMIUM)                       /* 277 */ \
-  OP(EndRasterCHROMIUM)                    /* 278 */ \
-  OP(CreateTransferCacheEntryINTERNAL)     /* 279 */ \
-  OP(DeleteTransferCacheEntryINTERNAL)     /* 280 */ \
-  OP(UnlockTransferCacheEntryINTERNAL)     /* 281 */
+  OP(DeleteTexturesImmediate)              /* 256 */ \
+  OP(Finish)                               /* 257 */ \
+  OP(Flush)                                /* 258 */ \
+  OP(GetError)                             /* 259 */ \
+  OP(GetIntegerv)                          /* 260 */ \
+  OP(GenQueriesEXTImmediate)               /* 261 */ \
+  OP(DeleteQueriesEXTImmediate)            /* 262 */ \
+  OP(BeginQueryEXT)                        /* 263 */ \
+  OP(EndQueryEXT)                          /* 264 */ \
+  OP(CompressedCopyTextureCHROMIUM)        /* 265 */ \
+  OP(LoseContextCHROMIUM)                  /* 266 */ \
+  OP(InsertFenceSyncCHROMIUM)              /* 267 */ \
+  OP(WaitSyncTokenCHROMIUM)                /* 268 */ \
+  OP(UnpremultiplyAndDitherCopyCHROMIUM)   /* 269 */ \
+  OP(InitializeDiscardableTextureCHROMIUM) /* 270 */ \
+  OP(UnlockDiscardableTextureCHROMIUM)     /* 271 */ \
+  OP(LockDiscardableTextureCHROMIUM)       /* 272 */ \
+  OP(BeginRasterCHROMIUM)                  /* 273 */ \
+  OP(RasterCHROMIUM)                       /* 274 */ \
+  OP(EndRasterCHROMIUM)                    /* 275 */ \
+  OP(CreateTransferCacheEntryINTERNAL)     /* 276 */ \
+  OP(DeleteTransferCacheEntryINTERNAL)     /* 277 */ \
+  OP(UnlockTransferCacheEntryINTERNAL)     /* 278 */ \
+  OP(CreateTexture)                        /* 279 */ \
+  OP(SetColorSpaceMetadata)                /* 280 */ \
+  OP(ProduceTextureDirectImmediate)        /* 281 */ \
+  OP(TexParameteri)                        /* 282 */ \
+  OP(BindTexImage2DCHROMIUM)               /* 283 */ \
+  OP(ReleaseTexImage2DCHROMIUM)            /* 284 */ \
+  OP(TexStorage2D)                         /* 285 */ \
+  OP(CopySubTexture)                       /* 286 */
 
 enum CommandId {
   kOneBeforeStartPoint =

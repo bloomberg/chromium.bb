@@ -143,8 +143,15 @@ RasterCmdHelper* RasterImplementation::helper() const {
 }
 
 IdAllocator* RasterImplementation::GetIdAllocator(IdNamespaces namespace_id) {
-  DCHECK_EQ(namespace_id, IdNamespaces::kQueries);
-  return &query_id_allocator_;
+  switch (namespace_id) {
+    case IdNamespaces::kQueries:
+      return &query_id_allocator_;
+    case IdNamespaces::kTextures:
+      return &texture_id_allocator_;
+    default:
+      DCHECK(false);
+      return nullptr;
+  }
 }
 
 void RasterImplementation::OnGpuControlLostContext() {
@@ -923,38 +930,6 @@ GLuint RasterImplementation::CreateAndConsumeTexture(
     const GLbyte* mailbox) {
   NOTIMPLEMENTED();
   return 0;
-}
-void RasterImplementation::BindTexImage2DCHROMIUM(GLenum target,
-                                                  GLint imageId) {
-  NOTIMPLEMENTED();
-}
-void RasterImplementation::ReleaseTexImage2DCHROMIUM(GLenum target,
-                                                     GLint imageId) {
-  NOTIMPLEMENTED();
-}
-
-GLuint RasterImplementation::CreateTexture(bool use_buffer,
-                                           gfx::BufferUsage buffer_usage,
-                                           viz::ResourceFormat format) {
-  NOTIMPLEMENTED();
-  return 0;
-}
-
-void RasterImplementation::TexStorage2D(GLuint texture_id,
-                                        GLint levels,
-                                        GLsizei width,
-                                        GLsizei height) {
-  NOTIMPLEMENTED();
-}
-void RasterImplementation::CopySubTexture(GLuint source_id,
-                                          GLuint dest_id,
-                                          GLint xoffset,
-                                          GLint yoffset,
-                                          GLint x,
-                                          GLint y,
-                                          GLsizei width,
-                                          GLsizei height) {
-  NOTIMPLEMENTED();
 }
 void RasterImplementation::BeginRasterCHROMIUM(
     GLuint texture_id,

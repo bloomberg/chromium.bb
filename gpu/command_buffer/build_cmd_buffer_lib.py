@@ -139,6 +139,7 @@ def SplitWords(input_string):
     # 'some_TEXT_' -> 'some TEXT'
     return input_string.replace('_', ' ').strip().split()
   else:
+    input_string = input_string.replace('::', ' ')
     if re.search('[A-Z]', input_string) and re.search('[a-z]', input_string):
       # mixed case.
       # look for capitalization to cut input_strings
@@ -152,6 +153,12 @@ def ToUnderscore(input_string):
   """converts CamelCase to camel_case."""
   words = SplitWords(input_string)
   return '_'.join([word.lower() for word in words])
+
+def ValidatorClassName(type_name):
+  """Converts some::namespace::TypeName to SomeNamespaceTypeNameValidator."""
+  words = SplitWords(type_name)
+  prefix = ''.join([word.title() for word in words])
+  return '%sValidator' % prefix
 
 def CachedStateName(item):
   if item.get('cached', False):
@@ -431,8 +438,8 @@ static_assert(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
     f.write("            cmd.header.command);\n")
     func.type_handler.WriteCmdSizeTest(func, f)
     for value, arg in enumerate(args):
-      f.write("  EXPECT_EQ(static_cast<%s>(%d), cmd.%s);\n" %
-                 (arg.type, value + 11, arg.GetArgAccessor()))
+      f.write("  EXPECT_EQ(static_cast<%s>(%d), %s);\n" %
+                 (arg.type, value + 11, arg.GetArgAccessor('cmd')))
     f.write("  CheckBytesWrittenMatchesExpectedSize(\n")
     f.write("      next_cmd, sizeof(cmd));\n")
     f.write("}\n")
@@ -1940,13 +1947,19 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     for arg in func.GetOriginalArgs():
       arg.WriteClientSideValidationCode(f, func)
     f.write("  GLuint client_id;\n")
-    if func.return_type == "GLsync":
-      f.write(
-          "  GetIdHandler(SharedIdNamespaces::kSyncs)->\n")
+    not_shared = func.GetInfo('not_shared')
+    if not_shared:
+      f.write('IdAllocator* id_allocator = GetIdAllocator(IdNamespaces::k%s);' %
+              func.GetInfo('resource_types'))
+      f.write('client_id = id_allocator->AllocateID();')
     else:
-      f.write(
-          "  GetIdHandler(SharedIdNamespaces::kProgramsAndShaders)->\n")
-    f.write("      MakeIds(this, 0, 1, &client_id);\n")
+      if func.return_type == "GLsync":
+        f.write(
+            "  GetIdHandler(SharedIdNamespaces::kSyncs)->\n")
+      else:
+        f.write(
+            "  GetIdHandler(SharedIdNamespaces::kProgramsAndShaders)->\n")
+      f.write("      MakeIds(this, 0, 1, &client_id);\n")
     f.write("  helper_->%s(%s);\n" %
                (func.name, func.MakeCmdArgString("")))
     f.write('  GPU_CLIENT_LOG("returned " << client_id);\n')
@@ -4271,9 +4284,9 @@ class Argument(object):
     """returns an invalid value and expected parse result by index."""
     return ("---ERROR0---", "---ERROR2---", None)
 
-  def GetArgAccessor(self):
+  def GetArgAccessor(self, cmd_struct_name):
     """Returns the name of the accessor for the argument within the struct."""
-    return self.name
+    return '%s.%s' % (cmd_struct_name, self.name)
 
   def GetLogArg(self):
     """Get argument appropriate for LOG macro."""
@@ -4335,6 +4348,33 @@ class Argument(object):
 
 
 class BoolArgument(Argument):
+  """class for C++ bool"""
+
+  def __init__(self, name, _type):
+    Argument.__init__(self, name, _type)
+
+  def GetValidArg(self, func):
+    """Gets a valid value for this argument."""
+    return 'true'
+
+  def GetValidClientSideArg(self, func):
+    """Gets a valid value for this argument."""
+    return 'true'
+
+  def GetValidClientSideCmdArg(self, func):
+    """Gets a valid value for this argument."""
+    return 'true'
+
+  def GetValidGLArg(self, func):
+    """Gets a valid GL value for this argument."""
+    return 'true'
+
+  def GetArgAccessor(self, struct_name):
+    """Returns the name of the accessor for the argument within the struct."""
+    return 'static_cast<bool>(%s.%s)' % (struct_name, self.name)
+
+
+class GLBooleanArgument(Argument):
   """class for GLboolean"""
 
   def __init__(self, name, _type):
@@ -4432,11 +4472,11 @@ class SizeNotNegativeArgument(SizeArgument):
 class EnumBaseArgument(Argument):
   """Base class for EnumArgument, IntArgument, and BitfieldArgument."""
 
-  def __init__(self, name, gl_type, arg_type, gl_error, named_type_info):
+  def __init__(self, name, gl_type, type_name, arg_type, gl_error,
+               named_type_info):
     Argument.__init__(self, name, gl_type)
 
     self.gl_error = gl_error
-    type_name = arg_type[len(gl_type):]
     self.type_name = type_name
     self.named_type = NamedType(named_type_info[type_name])
 
@@ -4532,13 +4572,34 @@ class EnumArgument(EnumBaseArgument):
   """A class that represents a GLenum argument"""
 
   def __init__(self, name, arg_type, named_type_info):
-    EnumBaseArgument.__init__(self, name, "GLenum", arg_type, "GL_INVALID_ENUM",
-                              named_type_info)
+    EnumBaseArgument.__init__(self, name, "GLenum", arg_type[len("GLenum"):],
+                              arg_type, "GL_INVALID_ENUM", named_type_info)
 
   def GetLogArg(self):
     """Overridden from Argument."""
     return ("GLES2Util::GetString%s(%s)" %
             (self.type_name, self.name))
+
+
+class EnumClassArgument(EnumBaseArgument):
+  """A class that represents a C++ enum argument encoded as uint32_t"""
+
+  def __init__(self, name, arg_type, named_type_info):
+    type_name = arg_type[len("EnumClass"):]
+    EnumBaseArgument.__init__(self, name, type_name, type_name, arg_type,
+                              "GL_INVALID_ENUM", named_type_info)
+
+  def GetArgAccessor(self, struct_name):
+    """Returns the name of the accessor for the argument within the struct."""
+    return 'static_cast<%s>(%s.%s)' % (self.type_name, struct_name, self.name)
+
+  def WriteSetCode(self, f, indent, var):
+    f.write("%s%s = static_cast<uint32_t>(%s);\n" %
+            (' ' * indent, self.name, var))
+
+  def GetLogArg(self):
+    return 'static_cast<uint32_t>(%s)' % self.name
+
 
 class IntArgument(EnumBaseArgument):
   """A class for a GLint argument that can only accept specific values.
@@ -4548,8 +4609,8 @@ class IntArgument(EnumBaseArgument):
   """
 
   def __init__(self, name, arg_type, named_type_info):
-    EnumBaseArgument.__init__(self, name, "GLint", arg_type, "GL_INVALID_VALUE",
-                              named_type_info)
+    EnumBaseArgument.__init__(self, name, "GLint", arg_type[len("GLint"):],
+                              arg_type, "GL_INVALID_VALUE", named_type_info)
 
 
 class BitFieldArgument(EnumBaseArgument):
@@ -4560,7 +4621,8 @@ class BitFieldArgument(EnumBaseArgument):
   """
 
   def __init__(self, name, arg_type, named_type_info):
-    EnumBaseArgument.__init__(self, name, "GLbitfield", arg_type,
+    EnumBaseArgument.__init__(self, name, "GLbitfield",
+                              arg_type[len("GLbitfield"):], arg_type,
                               "GL_INVALID_VALUE", named_type_info)
 
 
@@ -4805,7 +4867,7 @@ class ResourceIdArgument(Argument):
       my_type = "GLuint"
     else:
       my_type = self.type
-    f.write("  %s %s = c.%s;\n" % (my_type, self.name, self.GetArgAccessor()))
+    f.write("  %s %s = %s;\n" % (my_type, self.name, self.GetArgAccessor('c')))
 
   def GetValidArg(self, func):
     return "client_%s_id_" % self.resource_type.lower()
@@ -4849,7 +4911,8 @@ class ResourceIdZeroArgument(Argument):
 
   def WriteGetCode(self, f):
     """Overridden from Argument."""
-    f.write("  %s %s = c.%s;\n" % (self.type, self.name, self.GetArgAccessor()))
+    f.write("  %s %s = %s;\n" % (self.type, self.name,
+                                 self.GetArgAccessor('c')))
 
   def GetValidArg(self, func):
     return "client_%s_id_" % self.resource_type.lower()
@@ -4872,8 +4935,8 @@ class Int64Argument(Argument):
   def __init__(self, name, arg_type):
     Argument.__init__(self, name, arg_type)
 
-  def GetArgAccessor(self):
-    return "%s()" % self.name
+  def GetArgAccessor(self, cmd_struct_name):
+    return "%s.%s()" % (cmd_struct_name, self.name)
 
   def WriteArgAccessor(self, f):
     """Writes specialized accessor for compound members."""
@@ -5548,6 +5611,8 @@ def CreateArg(arg_string, named_type_info):
   # Is this a pointer argument?
   if arg_string.find('*') >= 0:
     return PointerArgument(arg_name, arg_type)
+  elif t.startswith('EnumClass'):
+    return EnumClassArgument(arg_name, arg_type, named_type_info)
   # Is this a resource argument? Must come after pointer check.
   elif t.startswith('GLidBind'):
     return ResourceIdBindArgument(arg_name, arg_type)
@@ -5560,12 +5625,14 @@ def CreateArg(arg_string, named_type_info):
   elif t.startswith('GLbitfield') and t != 'GLbitfield':
     return BitFieldArgument(arg_name, arg_type, named_type_info)
   elif t.startswith('GLboolean'):
-    return BoolArgument(arg_name, arg_type)
+    return GLBooleanArgument(arg_name, arg_type)
   elif t.startswith('GLintUniformLocation'):
     return UniformLocationArgument(arg_name)
   elif (t.startswith('GLint') and t != 'GLint' and
         not t.startswith('GLintptr')):
     return IntArgument(arg_name, arg_type, named_type_info)
+  elif t == 'bool':
+    return BoolArgument(arg_name, arg_type)
   elif t == 'GLsizeiNotNegative' or t == 'GLintptrNotNegative':
     return SizeNotNegativeArgument(arg_name, t.replace('NotNegative', ''))
   elif t.startswith('GLsize'):
@@ -6473,21 +6540,22 @@ extern const NameToFunc g_gles2_function_table[] = {
         named_type = NamedType(self.named_type_info[name])
         if not named_type.CreateValidator():
           continue
+        class_name = ValidatorClassName(name)
         if named_type.IsComplete():
-          f.write("""class %(name)sValidator {
+          f.write("""class %(class_name)s {
                       public:
                        bool IsValid(const %(type)s value) const;"""% {
-            'name': name,
+            'class_name': class_name,
             'type': named_type.GetType()
           })
           if named_type.HasES3Values():
-            f.write("""%sValidator();
+            f.write("""%s();
                        void SetIsES3(bool is_es3) { is_es3_ = is_es3; }
                       private:
-                       bool is_es3_;""" % name)
+                       bool is_es3_;""" % class_name)
           f.write("};\n")
-          f.write("%sValidator %s;\n\n" %
-                     (name, ToUnderscore(name)))
+          f.write("%s %s;\n\n" %
+                     (class_name, ToUnderscore(name)))
         else:
           f.write("ValueValidator<%s> %s;\n" %
                      (named_type.GetType(), ToUnderscore(name)))
@@ -6500,17 +6568,18 @@ extern const NameToFunc g_gles2_function_table[] = {
       names = sorted(self.named_type_info.keys())
       for name in names:
         named_type = NamedType(self.named_type_info[name])
+        class_name = ValidatorClassName(name)
         if not named_type.CreateValidator():
           continue
         if named_type.IsComplete():
           if named_type.HasES3Values():
-            f.write("""Validators::%(name)sValidator::%(name)sValidator()
-                         : is_es3_(false) {}""" % { 'name': name })
+            f.write("""Validators::%(class_name)s::%(class_name)s()
+                         : is_es3_(false) {}""" % { 'class_name': class_name })
 
-          f.write("""bool Validators::%(name)sValidator::IsValid(
+          f.write("""bool Validators::%(class_name)s::IsValid(
                          const %(type)s value) const {
                        switch(value) {\n""" % {
-            'name': name,
+            'class_name': class_name,
             'type': named_type.GetType()
           })
           if named_type.GetValidValues():
@@ -6568,41 +6637,42 @@ extern const NameToFunc g_gles2_function_table[] = {
       f.write(" {\n");
       f.write("}\n\n");
 
-      f.write("void Validators::UpdateValuesES3() {\n")
-      for name in names:
-        named_type = NamedType(self.named_type_info[name])
-        if not named_type.IsConstant() and named_type.IsComplete():
-          if named_type.HasES3Values():
-            f.write("  %(name)s.SetIsES3(true);" % {
-              'name': ToUnderscore(name),
-            })
-          continue
-        if named_type.GetDeprecatedValuesES3():
-          code = """  %(name)s.RemoveValues(
+      if _prefix != 'Raster':
+        f.write("void Validators::UpdateValuesES3() {\n")
+        for name in names:
+          named_type = NamedType(self.named_type_info[name])
+          if not named_type.IsConstant() and named_type.IsComplete():
+            if named_type.HasES3Values():
+              f.write("  %(name)s.SetIsES3(true);" % {
+                'name': ToUnderscore(name),
+              })
+            continue
+          if named_type.GetDeprecatedValuesES3():
+            code = """  %(name)s.RemoveValues(
       deprecated_%(name)s_table_es3, arraysize(deprecated_%(name)s_table_es3));
 """
-          f.write(code % {
-            'name': ToUnderscore(name),
-          })
-        if named_type.GetValidValuesES3():
-          code = """  %(name)s.AddValues(
+            f.write(code % {
+              'name': ToUnderscore(name),
+            })
+          if named_type.GetValidValuesES3():
+            code = """  %(name)s.AddValues(
       valid_%(name)s_table_es3, arraysize(valid_%(name)s_table_es3));
 """
-          f.write(code % {
-            'name': ToUnderscore(name),
-          })
-      f.write("}\n\n");
+            f.write(code % {
+              'name': ToUnderscore(name),
+            })
+        f.write("}\n\n");
 
-      f.write("void Validators::UpdateETCCompressedTextureFormats() {\n")
-      for name in ['CompressedTextureFormat', 'TextureInternalFormatStorage']:
-        for fmt in _ETC_COMPRESSED_TEXTURE_FORMATS:
-          code = """  %(name)s.AddValue(%(format)s);
+        f.write("void Validators::UpdateETCCompressedTextureFormats() {\n")
+        for name in ['CompressedTextureFormat', 'TextureInternalFormatStorage']:
+          for fmt in _ETC_COMPRESSED_TEXTURE_FORMATS:
+            code = """  %(name)s.AddValue(%(format)s);
 """
-          f.write(code % {
-            'name': ToUnderscore(name),
-            'format': fmt,
-          })
-      f.write("}\n\n");
+            f.write(code % {
+              'name': ToUnderscore(name),
+              'format': fmt,
+            })
+        f.write("}\n\n");
     self.generated_cpp_filenames.append(filename)
 
   def WriteCommonUtilsHeader(self, filename):
