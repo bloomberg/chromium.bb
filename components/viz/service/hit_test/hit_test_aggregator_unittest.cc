@@ -718,7 +718,7 @@ TEST_F(HitTestAggregatorTest, ClippedChildWithTabAndTransparentBackground) {
   EXPECT_EQ(region->child_count, 2);
 
   gfx::Point point(300, 300);
-  gfx::Transform transform(region->transform);
+  gfx::Transform transform(region->transform());
   transform.TransformPointReverse(&point);
   EXPECT_TRUE(point == gfx::Point(100, 200));
 

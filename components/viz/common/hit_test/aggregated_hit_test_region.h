@@ -32,8 +32,8 @@ struct AggregatedHitTestRegion {
       : frame_sink_id(frame_sink_id),
         flags(flags),
         rect(rect),
-        transform(transform),
-        child_count(child_count) {}
+        child_count(child_count),
+        transform_(transform) {}
 
   // The FrameSinkId corresponding to this region.  Events that match
   // are routed to this surface.
@@ -46,13 +46,30 @@ struct AggregatedHitTestRegion {
   // The rectangle that defines the region in parent region's coordinate space.
   gfx::Rect rect;
 
-  // The transform applied to the rect in parent region's coordinate space.
-  gfx::Transform transform;
-
   // The number of children including their children below this entry.
   // If this element is not matched then child_count elements can be skipped
   // to move to the next entry.
   int32_t child_count;
+
+  // gfx::Transform is backed by SkMatrix44. SkMatrix44 has a mutable attribute
+  // which can be changed even during a const function call (e.g.
+  // SkMatrix44::getType()). This means that when HitTestQuery reads the
+  // transform in the read-only shared memory segment created (and populated) by
+  // HitTestAggregator, if it attempts to perform any operation on the
+  // transform (e.g. use Transform::IsIdentity()), skia will attempt to write to
+  // the read-only shared memory segment, causing exception in HitTestQuery.
+  // For this reason, it is necessary for the HitTestQuery to make a copy of the
+  // transform before using it. To enforce this, the |transform_| attribute is
+  // made private here, and exposed through an accessor which always makes a
+  // copy.
+  gfx::Transform transform() const { return transform_; }
+  void set_transform(const gfx::Transform& transform) {
+    transform_ = transform;
+  }
+
+ private:
+  // The transform applied to the rect in parent region's coordinate space.
+  gfx::Transform transform_;
 };
 
 }  // namespace viz
