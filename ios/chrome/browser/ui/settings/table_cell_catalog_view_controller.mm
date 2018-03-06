@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/settings/table_cell_catalog_view_controller.h"
 
+#import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
@@ -21,6 +22,8 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
 
 typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeText = kItemTypeEnumZero,
+  ItemTypeTextHeader,
+  ItemTypeTextFooter,
   ItemTypeURLNoMetadata,
   ItemTypeURLWithTimestamp,
   ItemTypeURLWithSize,
@@ -40,6 +43,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   self.title = @"Table Cell Catalog";
   self.tableView.rowHeight = UITableViewAutomaticDimension;
   self.tableView.estimatedRowHeight = 56.0;
+  self.tableView.estimatedSectionHeaderHeight = 56.0;
+  self.tableView.estimatedSectionFooterHeight = 56.0;
 
   [self loadModel];
 }
@@ -51,11 +56,25 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model addSectionWithIdentifier:SectionIdentifierText];
   [model addSectionWithIdentifier:SectionIdentifierURL];
 
+  // SectionIdentifierText.
+  TableViewTextHeaderFooterItem* textHeaderFooterItem =
+      [[TableViewTextHeaderFooterItem alloc] initWithType:ItemTypeTextHeader];
+  textHeaderFooterItem.text = @"Simple Text Header";
+  [model setHeader:textHeaderFooterItem
+      forSectionWithIdentifier:SectionIdentifierText];
+
   TableViewTextItem* textItem =
       [[TableViewTextItem alloc] initWithType:ItemTypeText];
   textItem.text = @"Simple Text Cell";
   [model addItem:textItem toSectionWithIdentifier:SectionIdentifierText];
 
+  textHeaderFooterItem =
+      [[TableViewTextHeaderFooterItem alloc] initWithType:ItemTypeTextFooter];
+  textHeaderFooterItem.text = @"Simple Text Footer";
+  [model setFooter:textHeaderFooterItem
+      forSectionWithIdentifier:SectionIdentifierText];
+
+  // SectionIdentifierURL.
   TableViewURLItem* item =
       [[TableViewURLItem alloc] initWithType:ItemTypeURLNoMetadata];
   item.favicon = [UIImage imageNamed:@"default_favicon"];

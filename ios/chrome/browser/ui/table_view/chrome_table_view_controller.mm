@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
 
+#import "ios/chrome/browser/ui/table_view/cells/table_view_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_item.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
 
@@ -44,6 +45,40 @@
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView*)tableView {
   return [self.tableViewModel numberOfSections];
+}
+
+#pragma mark - UITableViewDelegate
+
+- (UIView*)tableView:(UITableView*)tableView
+    viewForHeaderInSection:(NSInteger)section {
+  TableViewHeaderFooterItem* item =
+      [self.tableViewModel headerForSection:section];
+  if (!item)
+    return [super tableView:self.tableView viewForHeaderInSection:section];
+  Class headerFooterClass = [item cellClass];
+  NSString* reuseIdentifier = NSStringFromClass(headerFooterClass);
+  [self.tableView registerClass:headerFooterClass
+      forHeaderFooterViewReuseIdentifier:reuseIdentifier];
+  UITableViewHeaderFooterView* view = [self.tableView
+      dequeueReusableHeaderFooterViewWithIdentifier:reuseIdentifier];
+  [item configureHeaderFooterView:view];
+  return view;
+}
+
+- (UIView*)tableView:(UITableView*)tableView
+    viewForFooterInSection:(NSInteger)section {
+  TableViewHeaderFooterItem* item =
+      [self.tableViewModel footerForSection:section];
+  if (!item)
+    return [super tableView:self.tableView viewForHeaderInSection:section];
+  Class headerFooterClass = [item cellClass];
+  NSString* reuseIdentifier = NSStringFromClass(headerFooterClass);
+  [self.tableView registerClass:headerFooterClass
+      forHeaderFooterViewReuseIdentifier:reuseIdentifier];
+  UITableViewHeaderFooterView* view = [self.tableView
+      dequeueReusableHeaderFooterViewWithIdentifier:reuseIdentifier];
+  [item configureHeaderFooterView:view];
+  return view;
 }
 
 @end
