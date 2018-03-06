@@ -9,8 +9,8 @@
 namespace syncer {
 
 SyncManagerFactoryForProfileSyncTest::SyncManagerFactoryForProfileSyncTest(
-    base::Closure init_callback)
-    : SyncManagerFactory(), init_callback_(init_callback) {}
+    base::OnceClosure init_callback)
+    : SyncManagerFactory(), init_callback_(std::move(init_callback)) {}
 
 SyncManagerFactoryForProfileSyncTest::~SyncManagerFactoryForProfileSyncTest() {}
 
@@ -18,7 +18,7 @@ std::unique_ptr<SyncManager>
 SyncManagerFactoryForProfileSyncTest::CreateSyncManager(
     const std::string& name) {
   return std::unique_ptr<SyncManager>(
-      new SyncManagerForProfileSyncTest(name, init_callback_));
+      new SyncManagerForProfileSyncTest(name, std::move(init_callback_)));
 }
 
 }  // namespace syncer

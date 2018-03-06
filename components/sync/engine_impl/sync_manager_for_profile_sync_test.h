@@ -17,12 +17,13 @@ namespace syncer {
 // Those tests try to test sync without instantiating a real backend.
 class SyncManagerForProfileSyncTest : public SyncManagerImpl {
  public:
-  SyncManagerForProfileSyncTest(std::string name, base::Closure init_callback);
+  SyncManagerForProfileSyncTest(std::string name,
+                                base::OnceClosure init_callback);
   ~SyncManagerForProfileSyncTest() override;
   void NotifyInitializationSuccess() override;
 
  private:
-  base::Closure init_callback_;
+  base::OnceClosure init_callback_;
 };
 
 }  // namespace syncer

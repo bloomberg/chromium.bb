@@ -53,7 +53,7 @@ class AbstractProfileSyncServiceTest : public testing::Test {
   // NotifyInitializationSuccess. |sync_client| is passed to the service. The
   // created service is stored in |sync_service_|.
   void CreateSyncService(std::unique_ptr<syncer::SyncClient> sync_client,
-                         const base::Closure& initialization_success_callback);
+                         base::OnceClosure initialization_success_callback);
 
   base::Thread* data_type_thread() { return &data_type_thread_; }
 
