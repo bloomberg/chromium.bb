@@ -9,4 +9,7 @@ traits_headers =
 deps = [
   "//cc/paint",
 ]
+sources = [
+  "//services/viz/public/cpp/compositing/paint_filter_struct_traits.cc",
+]
 type_mappings = [ "viz.mojom.PaintFilter=sk_sp<cc::PaintFilter>" ]
