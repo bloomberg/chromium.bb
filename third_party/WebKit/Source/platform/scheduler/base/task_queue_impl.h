@@ -21,7 +21,7 @@
 #include "platform/scheduler/base/enqueue_order.h"
 #include "platform/scheduler/base/graceful_queue_shutdown_helper.h"
 #include "platform/scheduler/base/intrusive_heap.h"
-#include "platform/scheduler/base/sequence.h"
+#include "platform/scheduler/base/sequenced_task_source.h"
 #include "platform/scheduler/base/task_queue.h"
 #include "platform/wtf/Deque.h"
 
@@ -245,7 +245,7 @@ class PLATFORM_EXPORT TaskQueueImpl {
   // Pushes |task| onto the front of the specified work queue. Caution must be
   // taken with this API because you could easily starve out other work.
   void RequeueDeferredNonNestableTask(TaskQueueImpl::Task&& task,
-                                      Sequence::WorkType work_type);
+                                      SequencedTaskSource::WorkType work_type);
 
   void PushImmediateIncomingTaskForTest(TaskQueueImpl::Task&& task);
   EnqueueOrder GetFenceForTest() const;

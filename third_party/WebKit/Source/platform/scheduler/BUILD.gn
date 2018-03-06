@@ -17,7 +17,7 @@ blink_platform_sources("scheduler") {
     "base/moveable_auto_lock.h",
     "base/real_time_domain.cc",
     "base/real_time_domain.h",
-    "base/sequence.h",
+    "base/sequenced_task_source.h",
     "base/task_queue.cc",
     "base/task_queue.h",
     "base/task_queue_impl.cc",

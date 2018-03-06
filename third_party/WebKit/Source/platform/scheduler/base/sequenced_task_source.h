@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_BASE_SEQUENCE_H_
-#define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_BASE_SEQUENCE_H_
+#ifndef THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_BASE_SEQUENCED_TASK_SOURCE_H_
+#define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_BASE_SEQUENCED_TASK_SOURCE_H_
 
 #include "base/optional.h"
 #include "base/pending_task.h"
@@ -16,8 +16,7 @@ namespace internal {
 
 // This is temporary interface for ThreadController to be able to run tasks
 // from TaskQueueManager.
-// TODO(alexclarke): Rename to SequencedTaskSource.
-class Sequence {
+class SequencedTaskSource {
  public:
   // TODO(alexclarke): Move this enum elsewhere.
   enum class WorkType { kImmediate, kDelayed };
@@ -38,4 +37,4 @@ class Sequence {
 }  // namespace scheduler
 }  // namespace blink
 
-#endif  // THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_BASE_SEQUENCE_H_
+#endif  // THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_BASE_SEQUENCED_TASK_SOURCE_H_
