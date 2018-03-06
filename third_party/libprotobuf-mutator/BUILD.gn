@@ -73,7 +73,7 @@ if (current_toolchain == host_toolchain) {
   #   generator_plugin_suffix = ".pb"
   #   # The plugin will generate cc, so don't ask for it to be done by protoc.
   #   generate_cc = false
-  #   deps = ["//third_party/libprotobuf-mutator:protoc_plugin"]
+  #   deps = ["//third_party/libprotobuf-mutator:override_lite_runtime_plugin"]
   # }
 }
 
