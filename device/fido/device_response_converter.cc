@@ -121,7 +121,7 @@ base::Optional<AuthenticatorGetAssertionResponse> ReadCTAPGetAssertionResponse(
     response.SetNumCredentials(it->second.GetUnsigned());
   }
 
-  return response;
+  return base::Optional<AuthenticatorGetAssertionResponse>(std::move(response));
 }
 
 base::Optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
@@ -241,7 +241,7 @@ base::Optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
     response.SetPinProtocols(std::move(supported_pin_protocols));
   }
 
-  return response;
+  return base::Optional<AuthenticatorGetInfoResponse>(std::move(response));
 }
 
 }  // namespace device
