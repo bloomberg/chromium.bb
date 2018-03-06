@@ -119,7 +119,12 @@ void BattOrAgent::StartTracing() {
   last_clock_sync_time_ = base::TimeTicks();
 
   command_ = Command::START_TRACING;
-  PerformAction(Action::REQUEST_CONNECTION);
+
+  if (connection_->IsOpen()) {
+    PerformAction(GetFirstAction(Command::START_TRACING));
+  } else {
+    PerformAction(Action::REQUEST_CONNECTION);
+  }
 }
 
 void BattOrAgent::StopTracing() {
@@ -128,7 +133,12 @@ void BattOrAgent::StopTracing() {
   connection_->LogSerial("Starting command StopTracing.");
 
   command_ = Command::STOP_TRACING;
-  PerformAction(Action::REQUEST_CONNECTION);
+
+  if (connection_->IsOpen()) {
+    PerformAction(GetFirstAction(Command::STOP_TRACING));
+  } else {
+    PerformAction(Action::REQUEST_CONNECTION);
+  }
 }
 
 void BattOrAgent::RecordClockSyncMarker(const std::string& marker) {
@@ -138,7 +148,12 @@ void BattOrAgent::RecordClockSyncMarker(const std::string& marker) {
 
   command_ = Command::RECORD_CLOCK_SYNC_MARKER;
   pending_clock_sync_marker_ = marker;
-  PerformAction(Action::REQUEST_CONNECTION);
+
+  if (connection_->IsOpen()) {
+    PerformAction(GetFirstAction(Command::RECORD_CLOCK_SYNC_MARKER));
+  } else {
+    PerformAction(Action::REQUEST_CONNECTION);
+  }
 }
 
 void BattOrAgent::GetFirmwareGitHash() {
@@ -147,7 +162,12 @@ void BattOrAgent::GetFirmwareGitHash() {
   connection_->LogSerial("Starting command GetFirmwareGitHash.");
 
   command_ = Command::GET_FIRMWARE_GIT_HASH;
-  PerformAction(Action::REQUEST_CONNECTION);
+
+  if (connection_->IsOpen()) {
+    PerformAction(GetFirstAction(Command::GET_FIRMWARE_GIT_HASH));
+  } else {
+    PerformAction(Action::REQUEST_CONNECTION);
+  }
 }
 
 void BattOrAgent::BeginConnect() {
@@ -172,23 +192,7 @@ void BattOrAgent::OnConnectionFlushed(bool success) {
   }
 
   if (last_action_ == Action::POST_CONNECT_FLUSH) {
-    switch (command_) {
-      case Command::START_TRACING:
-        PerformAction(Action::SEND_INIT);
-        return;
-      case Command::STOP_TRACING:
-        PerformAction(Action::SEND_EEPROM_REQUEST);
-        return;
-      case Command::RECORD_CLOCK_SYNC_MARKER:
-        PerformAction(Action::SEND_CURRENT_SAMPLE_REQUEST);
-        return;
-      case Command::GET_FIRMWARE_GIT_HASH:
-        PerformAction(Action::SEND_GIT_HASH_REQUEST);
-        return;
-      case Command::INVALID:
-        NOTREACHED();
-        return;
-    }
+    PerformAction(GetFirstAction(command_));
   } else if (last_action_ == Action::POST_READ_ERROR_FLUSH) {
     base::TimeDelta request_samples_delay =
         base::TimeDelta::FromMilliseconds(kFrameRetryDelayMilliseconds);
@@ -742,6 +746,23 @@ void BattOrAgent::SetActionTimeout(uint16_t timeout_seconds) {
   base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, timeout_callback_.callback(),
       base::TimeDelta::FromSeconds(timeout_seconds));
+}
+
+BattOrAgent::Action BattOrAgent::GetFirstAction(BattOrAgent::Command command) {
+  switch (command_) {
+    case Command::START_TRACING:
+      return Action::SEND_INIT;
+    case Command::STOP_TRACING:
+      return Action::SEND_EEPROM_REQUEST;
+    case Command::RECORD_CLOCK_SYNC_MARKER:
+      return Action::SEND_CURRENT_SAMPLE_REQUEST;
+    case Command::GET_FIRMWARE_GIT_HASH:
+      return Action::SEND_GIT_HASH_REQUEST;
+    case Command::INVALID:
+      NOTREACHED();
+  }
+
+  return Action::INVALID;
 }
 
 }  // namespace battor
