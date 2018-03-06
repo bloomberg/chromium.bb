@@ -2583,4 +2583,29 @@ TEST_P(CompositedLayerMappingTest, SquashingScroll) {
       squashed->GroupedMapping()->SquashingOffsetFromTransformedAncestor());
 }
 
+TEST_P(CompositedLayerMappingTest, SquashingScrollInterestRect) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    return;
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+      * { margin: 0 }
+    </style>
+    <div id=target
+        style='width: 200px; height: 200px; position: relative; will-change: transform'></div>
+    <div id=squashed
+        style='width: 200px; height: 6000px; top: -200px; position: relative;'></div>
+  )HTML");
+
+  auto* squashed =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("squashed"))->Layer();
+  EXPECT_EQ(kPaintsIntoGroupedBacking, squashed->GetCompositingState());
+
+  GetDocument().View()->LayoutViewportScrollableArea()->ScrollBy(
+      ScrollOffset(0, 5000), kUserScroll);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  EXPECT_EQ(IntRect(0, 1000, 200, 5000),
+            squashed->GroupedMapping()->SquashingLayer()->InterestRect());
+}
+
 }  // namespace blink

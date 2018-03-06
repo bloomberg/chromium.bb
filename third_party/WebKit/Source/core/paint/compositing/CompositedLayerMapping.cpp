@@ -3355,6 +3355,13 @@ IntRect CompositedLayerMapping::RecomputeInterestRect(
         &owning_layer_.TransformAncestorOrRoot().GetLayoutObject();
     offset_from_anchor_layout_object =
         ToFloatSize(FloatPoint(SquashingOffsetFromTransformedAncestor()));
+
+    // SquashingOffsetFromTransformedAncestor does not include scroll
+    // offset.
+    if (anchor_layout_object->UsesCompositedScrolling()) {
+      offset_from_anchor_layout_object -=
+          FloatSize(ToLayoutBox(anchor_layout_object)->ScrolledContentOffset());
+    }
   } else {
     DCHECK(graphics_layer == graphics_layer_.get() ||
            graphics_layer == scrolling_contents_layer_.get());
@@ -3363,7 +3370,6 @@ IntRect CompositedLayerMapping::RecomputeInterestRect(
     AdjustForCompositedScrolling(graphics_layer, offset);
     offset_from_anchor_layout_object = FloatSize(offset);
   }
-
   // Start with the bounds of the graphics layer in the space of the anchor
   // LayoutObject.
   FloatRect graphics_layer_bounds_in_object_space(graphics_layer_bounds);
