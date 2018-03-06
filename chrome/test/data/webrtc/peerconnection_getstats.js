@@ -129,6 +129,7 @@ var kRTCMediaStreamTrackStats = new RTCStats_(null, {
   framesPerSecond: 'number',
   framesCaptured: 'number',
   framesSent: 'number',
+  hugeFramesSent: 'number',
   framesReceived: 'number',
   framesDecoded: 'number',
   framesDropped: 'number',
