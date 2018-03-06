@@ -117,6 +117,7 @@ void FontPlatformData::SetupPaintFont(PaintFont* paint_font,
                                       const Font* font) const {
   bool should_smooth_fonts = true;
   bool should_antialias = true;
+  bool should_subpixel_position = true;
 
   if (font) {
     switch (font->GetFontDescription().FontSmoothing()) {
@@ -140,6 +141,8 @@ void FontPlatformData::SetupPaintFont(PaintFont* paint_font,
     should_smooth_fonts = false;
     should_antialias = should_antialias &&
                        LayoutTestSupport::IsFontAntialiasingEnabledForTest();
+    should_subpixel_position =
+        LayoutTestSupport::IsTextSubpixelPositioningAllowedForTest();
   }
 
   paint_font->SetAntiAlias(should_antialias);
@@ -150,7 +153,7 @@ void FontPlatformData::SetupPaintFont(PaintFont* paint_font,
   paint_font->SetFakeBoldText(synthetic_bold_);
   paint_font->SetTextSkewX(synthetic_italic_ ? -SK_Scalar1 / 4 : 0);
   paint_font->SetLcdRenderText(should_smooth_fonts);
-  paint_font->SetSubpixelText(true);
+  paint_font->SetSubpixelText(should_subpixel_position);
 
   // When rendering using CoreGraphics, disable hinting when
   // webkit-font-smoothing:antialiased or text-rendering:geometricPrecision is

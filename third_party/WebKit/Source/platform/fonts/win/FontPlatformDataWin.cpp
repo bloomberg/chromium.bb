@@ -72,6 +72,10 @@ void FontPlatformData::SetupPaintFont(PaintFont* font,
   if (text_flags & SkPaint::kAntiAlias_Flag)
     flags |= SkPaint::kSubpixelText_Flag;
 
+  if (LayoutTestSupport::IsRunningLayoutTest() &&
+      !LayoutTestSupport::IsTextSubpixelPositioningAllowedForTest())
+    flags &= ~SkPaint::kSubpixelText_Flag;
+
   SkASSERT(!(text_flags & ~kTextFlagsMask));
   flags |= text_flags;
 

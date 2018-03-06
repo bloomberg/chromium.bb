@@ -55,6 +55,7 @@ bool FontAntialiasingEnabledForTest() {
 static bool g_is_running_layout_test = false;
 static bool g_is_mock_theme_enabled = false;
 static bool g_is_font_antialiasing_enabled = false;
+static bool g_is_subpixel_positioning_allowed = true;
 
 bool LayoutTestSupport::IsRunningLayoutTest() {
   return g_is_running_layout_test;
@@ -79,6 +80,14 @@ bool LayoutTestSupport::IsFontAntialiasingEnabledForTest() {
 
 void LayoutTestSupport::SetFontAntialiasingEnabledForTest(bool value) {
   g_is_font_antialiasing_enabled = value;
+}
+
+bool LayoutTestSupport::IsTextSubpixelPositioningAllowedForTest() {
+  return g_is_subpixel_positioning_allowed;
+}
+
+void LayoutTestSupport::SetTextSubpixelPositioningAllowedForTest(bool value) {
+  g_is_subpixel_positioning_allowed = value;
 }
 
 }  // namespace blink

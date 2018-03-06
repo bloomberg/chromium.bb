@@ -85,9 +85,7 @@ static void FontCacheRegisteredFontsChangedNotificationCallback(
 }
 
 static bool UseHinting() {
-  // Enable hinting when subpixel font scaling is disabled or
-  // when running the set of standard non-subpixel layout tests,
-  // otherwise use subpixel glyph positioning.
+  // Enable hinting only when antialiasing is disabled in layout tests.
   return (LayoutTestSupport::IsRunningLayoutTest() &&
           !LayoutTestSupport::IsFontAntialiasingEnabledForTest());
 }
