@@ -22,6 +22,8 @@
 #include "ui/views/view.h"
 
 class OmniboxPopupContentsView;
+enum class OmniboxState;
+enum class OmniboxTint;
 
 namespace gfx {
 class Canvas;
@@ -36,6 +38,7 @@ class OmniboxResultView : public views::View,
  public:
   // Keep these ordered from least dominant (normal) to most dominant
   // (selected).
+  // TODO(tapted): Remove these: replace with OmniboxState.
   enum ResultViewState {
     NORMAL = 0,
     HOVERED,
@@ -44,7 +47,6 @@ class OmniboxResultView : public views::View,
   };
 
   enum ColorKind {
-    BACKGROUND = 0,
     TEXT,
     DIMMED_TEXT,
     URL,
@@ -72,6 +74,8 @@ class OmniboxResultView : public views::View,
   void OnSelected();
 
   ResultViewState GetState() const;
+  OmniboxState GetThemeState() const;
+  OmniboxTint GetTint() const;
 
   // Notification that the match icon has changed and schedules a repaint.
   void OnMatchIconUpdated();

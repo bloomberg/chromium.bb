@@ -23,6 +23,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/translate/translate_service.h"
 #include "chrome/browser/ui/autofill/save_card_bubble_controller_impl.h"
@@ -35,6 +36,7 @@
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/omnibox/chrome_omnibox_client.h"
+#include "chrome/browser/ui/omnibox/omnibox_theme.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/autofill/save_card_icon_view.h"
@@ -123,6 +125,16 @@ bool InTouchableMode() {
          ui::MaterialDesignController::MATERIAL_TOUCH_OPTIMIZED;
 }
 
+OmniboxTint GetTintForProfile(Profile* profile) {
+  if (ThemeServiceFactory::GetForProfile(profile)->UsingDefaultTheme()) {
+    return profile->GetProfileType() == Profile::INCOGNITO_PROFILE
+               ? OmniboxTint::DARK
+               : OmniboxTint::LIGHT;
+  }
+  // TODO(tapted): Infer a tint from theme colors?
+  return OmniboxTint::LIGHT;
+}
+
 }  // namespace
 
 // LocationBarView -----------------------------------------------------------
@@ -139,7 +151,8 @@ LocationBarView::LocationBarView(Browser* browser,
       ChromeOmniboxEditController(command_updater),
       browser_(browser),
       delegate_(delegate),
-      is_popup_mode_(is_popup_mode) {
+      is_popup_mode_(is_popup_mode),
+      tint_(GetTintForProfile(profile)) {
   edit_bookmarks_enabled_.Init(
       bookmarks::prefs::kEditBookmarksEnabled, profile->GetPrefs(),
       base::Bind(&LocationBarView::UpdateWithoutTabRestore,

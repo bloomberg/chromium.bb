@@ -6,6 +6,7 @@
 
 #include "build/build_config.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/omnibox/omnibox_theme.h"
 #include "chrome/browser/ui/views/location_bar/background_with_1_px_border.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "ui/compositor/layer.h"
@@ -57,8 +58,8 @@ RoundedOmniboxResultsFrame::RoundedOmniboxResultsFrame(
   contents_host_->layer()->SetFillsBoundsOpaquely(false);
 
   // Use a solid background. Note this is clipped to get rounded corners.
-  SkColor background_color = GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_ResultsTableNormalBackground);
+  SkColor background_color =
+      GetOmniboxColor(OmniboxPart::RESULTS_BACKGROUND, location_bar->tint());
   contents_host_->SetBackground(views::CreateSolidBackground(background_color));
 
   // Use a textured mask to clip contents. This doesn't work on Windows

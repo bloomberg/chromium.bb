@@ -22,6 +22,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/omnibox/omnibox_theme.h"
 #include "chrome/browser/ui/views/location_bar/background_with_1_px_border.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
@@ -74,12 +75,6 @@ struct TranslationTable {
   OmniboxResultView::ResultViewState state;
   OmniboxResultView::ColorKind kind;
 } static const kTranslationTable[] = {
-  { NativeTheme::kColorId_ResultsTableNormalBackground,
-    OmniboxResultView::NORMAL, OmniboxResultView::BACKGROUND },
-  { NativeTheme::kColorId_ResultsTableHoveredBackground,
-    OmniboxResultView::HOVERED, OmniboxResultView::BACKGROUND },
-  { NativeTheme::kColorId_ResultsTableSelectedBackground,
-    OmniboxResultView::SELECTED, OmniboxResultView::BACKGROUND },
   { NativeTheme::kColorId_ResultsTableNormalText,
     OmniboxResultView::NORMAL, OmniboxResultView::TEXT },
   { NativeTheme::kColorId_ResultsTableHoveredText,
@@ -231,7 +226,9 @@ void OmniboxResultView::Invalidate() {
   if (state == NORMAL) {
     SetBackground(nullptr);
   } else {
-    SetBackground(CreateBackgroundWithColor(GetColor(state, BACKGROUND)));
+    SkColor color = GetOmniboxColor(OmniboxPart::RESULTS_BACKGROUND, GetTint(),
+                                    GetThemeState());
+    SetBackground(CreateBackgroundWithColor(color));
   }
 
   if (match_.answer) {
@@ -276,6 +273,18 @@ OmniboxResultView::ResultViewState OmniboxResultView::GetState() const {
   if (model_->IsSelectedIndex(model_index_))
     return SELECTED;
   return is_hovered_ ? HOVERED : NORMAL;
+}
+
+OmniboxState OmniboxResultView::GetThemeState() const {
+  if (model_->IsSelectedIndex(model_index_)) {
+    return is_hovered_ ? OmniboxState::HOVERED_AND_SELECTED
+                       : OmniboxState::SELECTED;
+  }
+  return is_hovered_ ? OmniboxState::HOVERED : OmniboxState::NORMAL;
+}
+
+OmniboxTint OmniboxResultView::GetTint() const {
+  return model_->GetTint();
 }
 
 void OmniboxResultView::OnMatchIconUpdated() {

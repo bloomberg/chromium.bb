@@ -1,0 +1,27 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_THEME_H_
+#define CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_THEME_H_
+
+#include "third_party/skia/include/core/SkColor.h"
+
+// A part of the omnibox (location bar, location bar decoration, or dropdown).
+enum class OmniboxPart {
+  RESULTS_BACKGROUND,  // Background of the results dropdown.
+};
+
+// The tint of the omnibox theme. E.g. Incognito may use a DARK tint.
+enum class OmniboxTint { DARK, LIGHT };
+
+// An optional state for a given |OmniboxPart|.
+enum class OmniboxState { NORMAL, HOVERED, SELECTED, HOVERED_AND_SELECTED };
+
+// Returns the color for the given |part| and |tint|. An optional |state| can be
+// provided for OmniboxParts that support stateful colors.
+SkColor GetOmniboxColor(OmniboxPart part,
+                        OmniboxTint tint,
+                        OmniboxState state = OmniboxState::NORMAL);
+
+#endif  // CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_THEME_H_
