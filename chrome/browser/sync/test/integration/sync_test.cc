@@ -1206,16 +1206,6 @@ void SyncTest::TriggerXmppAuthError() {
   ui_test_utils::NavigateToURL(browser(), sync_server_.GetURL(path));
 }
 
-void SyncTest::TriggerCreateSyncedBookmarks() {
-  ASSERT_TRUE(ServerSupportsErrorTriggering());
-  std::string path = "chromiumsync/createsyncedbookmarks";
-  ui_test_utils::NavigateToURL(browser(), sync_server_.GetURL(path));
-  ASSERT_EQ("Synced Bookmarks",
-            base::UTF16ToASCII(
-                browser()->tab_strip_model()->GetActiveWebContents()->
-                    GetTitle()));
-}
-
 fake_server::FakeServer* SyncTest::GetFakeServer() const {
   return fake_server_.get();
 }

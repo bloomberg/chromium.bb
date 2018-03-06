@@ -28,6 +28,7 @@
 #include "components/policy/policy_constants.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
+#include "components/sync/engine_impl/loopback_server/persistent_permanent_entity.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/base/layout.h"
 
@@ -92,15 +93,6 @@ class TwoClientBookmarksSyncTest : public SyncTest {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TwoClientBookmarksSyncTest);
-};
-
-class LegacyTwoClientBookmarksSyncTest : public SyncTest {
- public:
-  LegacyTwoClientBookmarksSyncTest() : SyncTest(TWO_CLIENT_LEGACY) {}
-  ~LegacyTwoClientBookmarksSyncTest() override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(LegacyTwoClientBookmarksSyncTest);
 };
 
 IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, Sanity) {
@@ -1600,8 +1592,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, MC_DuplicateFolders) {
   ASSERT_FALSE(ContainsDuplicateBookmarks(0));
 }
 
-// This test fails when run with FakeServer and FakeServerInvalidationService.
-IN_PROC_BROWSER_TEST_F(LegacyTwoClientBookmarksSyncTest, MC_DeleteBookmark) {
+IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, MC_DeleteBookmark) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(GetClient(1)->DisableSyncForDatatype(syncer::BOOKMARKS));
 
@@ -1926,13 +1917,15 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, RacyPositionChanges) {
 
 // Trigger the server side creation of Synced Bookmarks. Ensure both clients
 // remain syncing afterwards. Add bookmarks to the synced bookmarks folder
-// and ensure both clients receive the boomkmark.
-IN_PROC_BROWSER_TEST_F(LegacyTwoClientBookmarksSyncTest,
-                       CreateSyncedBookmarks) {
+// and ensure both clients receive the bookmark.
+IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, CreateSyncedBookmarks) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllModelsMatchVerifier());
 
-  TriggerCreateSyncedBookmarks();
+  fake_server_->InjectEntity(syncer::PersistentPermanentEntity::CreateNew(
+      syncer::BOOKMARKS, "synced_bookmarks", "Synced Bookmarks",
+      "google_chrome_bookmarks"));
+  ASSERT_TRUE(BookmarksMatchChecker().Wait());
 
   // Add a bookmark on Client 0 and ensure it syncs over. This will also trigger
   // both clients downloading the new Synced Bookmarks folder.
