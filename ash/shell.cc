@@ -800,6 +800,8 @@ Shell::~Shell() {
   // AppListDelegateImpl depends upon AppList.
   app_list_delegate_impl_.reset();
 
+  app_list_controller_.reset();
+
   // These members access Shell in their destructors.
   wallpaper_controller_.reset();
   accessibility_controller_.reset();
