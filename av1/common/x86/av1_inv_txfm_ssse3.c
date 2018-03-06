@@ -2172,29 +2172,6 @@ static INLINE void lowbd_write_buffer_8xn_sse2(__m128i *in, uint8_t *output,
   }
 }
 
-// 1D itx types
-typedef enum ATTRIBUTE_PACKED {
-  IDCT_1D,
-  IADST_1D,
-  IFLIPADST_1D = IADST_1D,
-  IIDENTITY_1D,
-  ITX_TYPES_1D,
-} ITX_TYPE_1D;
-
-static const ITX_TYPE_1D vitx_1d_tab[TX_TYPES] = {
-  IDCT_1D,      IADST_1D,     IDCT_1D,      IADST_1D,
-  IFLIPADST_1D, IDCT_1D,      IFLIPADST_1D, IADST_1D,
-  IFLIPADST_1D, IIDENTITY_1D, IDCT_1D,      IIDENTITY_1D,
-  IADST_1D,     IIDENTITY_1D, IFLIPADST_1D, IIDENTITY_1D,
-};
-
-static const ITX_TYPE_1D hitx_1d_tab[TX_TYPES] = {
-  IDCT_1D,      IDCT_1D,      IADST_1D,     IADST_1D,
-  IDCT_1D,      IFLIPADST_1D, IFLIPADST_1D, IFLIPADST_1D,
-  IADST_1D,     IIDENTITY_1D, IIDENTITY_1D, IDCT_1D,
-  IIDENTITY_1D, IADST_1D,     IIDENTITY_1D, IFLIPADST_1D,
-};
-
 // 1D functions process process 8 pixels at one time.
 static const transform_1d_ssse3
     lowbd_txfm_all_1d_w8_arr[TX_SIZES][ITX_TYPES_1D] = {
