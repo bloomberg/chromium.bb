@@ -140,7 +140,11 @@ void BufferedSpdyFramer::OnSettings() {
   visitor_->OnSettings();
 }
 
-void BufferedSpdyFramer::OnSetting(SpdyKnownSettingsId id, uint32_t value) {
+void BufferedSpdyFramer::OnSettingOld(SpdyKnownSettingsId id, uint32_t value) {
+  visitor_->OnSetting(id, value);
+}
+
+void BufferedSpdyFramer::OnSetting(SpdySettingsId id, uint32_t value) {
   visitor_->OnSetting(id, value);
 }
 

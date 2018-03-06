@@ -153,7 +153,7 @@ enum PushedStreamVaryResponseHeaderValues ParseVaryInPushedResponse(
   return kVaryHasNoAcceptEncoding;
 }
 
-bool IsSpdySettingAtDefaultInitialValue(SpdyKnownSettingsId setting_id,
+bool IsSpdySettingAtDefaultInitialValue(SpdySettingsId setting_id,
                                         uint32_t value) {
   switch (setting_id) {
     case SETTINGS_HEADER_TABLE_SIZE:
@@ -253,7 +253,7 @@ std::unique_ptr<base::Value> NetLogSpdySendSettingsCallback(
   auto settings_list = std::make_unique<base::ListValue>();
   for (SettingsMap::const_iterator it = settings->begin();
        it != settings->end(); ++it) {
-    const SpdyKnownSettingsId id = it->first;
+    const SpdySettingsId id = it->first;
     const uint32_t value = it->second;
     settings_list->AppendString(SpdyStringPrintf(
         "[id:%u (%s) value:%u]", id, SettingsIdToString(id).c_str(), value));
@@ -263,7 +263,7 @@ std::unique_ptr<base::Value> NetLogSpdySendSettingsCallback(
 }
 
 std::unique_ptr<base::Value> NetLogSpdyRecvSettingCallback(
-    SpdyKnownSettingsId id,
+    SpdySettingsId id,
     uint32_t value,
     NetLogCaptureMode /* capture_mode */) {
   auto dict = std::make_unique<base::DictionaryValue>();
@@ -2903,7 +2903,7 @@ void SpdySession::OnSettingsAck() {
     net_log_.AddEvent(NetLogEventType::HTTP2_SESSION_RECV_SETTINGS_ACK);
 }
 
-void SpdySession::OnSetting(SpdyKnownSettingsId id, uint32_t value) {
+void SpdySession::OnSetting(SpdySettingsId id, uint32_t value) {
   CHECK(in_io_loop_);
 
   HandleSetting(id, value);

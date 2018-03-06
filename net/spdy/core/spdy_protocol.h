@@ -176,7 +176,7 @@ SPDY_EXPORT_PRIVATE std::ostream& operator<<(std::ostream& out,
 SPDY_EXPORT_PRIVATE std::ostream& operator<<(std::ostream& out,
                                              SpdyFrameType frame_type);
 
-using SettingsMap = std::map<SpdyKnownSettingsId, uint32_t>;
+using SettingsMap = std::map<SpdySettingsId, uint32_t>;
 
 // HTTP/2 error codes, RFC 7540 Section 7.
 enum SpdyErrorCode : uint32_t {
@@ -603,9 +603,7 @@ class SPDY_EXPORT_PRIVATE SpdySettingsIR : public SpdyFrameIR {
 
   // Overwrites as appropriate.
   const SettingsMap& values() const { return values_; }
-  void AddSetting(SpdyKnownSettingsId id, int32_t value) {
-    values_[id] = value;
-  }
+  void AddSetting(SpdySettingsId id, int32_t value) { values_[id] = value; }
 
   bool is_ack() const { return is_ack_; }
   void set_is_ack(bool is_ack) { is_ack_ = is_ack; }

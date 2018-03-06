@@ -183,3 +183,8 @@ QUIC_FLAG(bool,
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_use_incremental_ack_processing2,
           false)
+
+// If true, Http2FrameDecoderAdapter will pass decoded HTTP/2 SETTINGS through
+// the SpdyFramerVisitorInterface callback OnSetting(), which will also accept
+// unknown SETTINGS IDs.
+QUIC_FLAG(bool, FLAGS_quic_restart_flag_http2_propagate_unknown_settings, true)

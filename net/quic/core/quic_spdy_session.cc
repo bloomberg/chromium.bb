@@ -119,7 +119,50 @@ class QuicSpdySession::SpdyFramerVisitor
                     QUIC_INVALID_HEADERS_STREAM_DATA);
   }
 
-  void OnSetting(SpdyKnownSettingsId id, uint32_t value) override {
+  void OnSettingOld(SpdyKnownSettingsId id, uint32_t value) override {
+    QUIC_BUG_IF(GetQuicRestartFlag(http2_propagate_unknown_settings));
+    if (!GetQuicReloadableFlag(quic_respect_http2_settings_frame)) {
+      CloseConnection("SPDY SETTINGS frame received.",
+                      QUIC_INVALID_HEADERS_STREAM_DATA);
+      return;
+    }
+    switch (id) {
+      case SETTINGS_HEADER_TABLE_SIZE:
+        session_->UpdateHeaderEncoderTableSize(value);
+        break;
+      case SETTINGS_ENABLE_PUSH:
+        if (session_->perspective() == Perspective::IS_SERVER) {
+          // See rfc7540, Section 6.5.2.
+          if (value > 1) {
+            CloseConnection(
+                QuicStrCat("Invalid value for SETTINGS_ENABLE_PUSH: ", value),
+                QUIC_INVALID_HEADERS_STREAM_DATA);
+            return;
+          }
+          session_->UpdateEnableServerPush(value > 0);
+          break;
+        } else {
+          CloseConnection(
+              QuicStrCat("Unsupported field of HTTP/2 SETTINGS frame: ", id),
+              QUIC_INVALID_HEADERS_STREAM_DATA);
+        }
+        break;
+      // TODO(fayang): Need to support SETTINGS_MAX_HEADER_LIST_SIZE when
+      // clients are actually sending it.
+      case SETTINGS_MAX_HEADER_LIST_SIZE:
+        if (GetQuicReloadableFlag(quic_send_max_header_list_size)) {
+          break;
+        }
+        QUIC_FALLTHROUGH_INTENDED;
+      default:
+        CloseConnection(
+            QuicStrCat("Unsupported field of HTTP/2 SETTINGS frame: ", id),
+            QUIC_INVALID_HEADERS_STREAM_DATA);
+    }
+  }
+
+  void OnSetting(SpdySettingsId id, uint32_t value) override {
+    QUIC_BUG_IF(!GetQuicRestartFlag(http2_propagate_unknown_settings));
     if (!GetQuicReloadableFlag(quic_respect_http2_settings_frame)) {
       CloseConnection("SPDY SETTINGS frame received.",
                       QUIC_INVALID_HEADERS_STREAM_DATA);

@@ -16,6 +16,7 @@
 #include "net/spdy/core/spdy_frame_reader.h"
 #include "net/spdy/core/spdy_protocol.h"
 #include "net/spdy/core/spdy_test_utils.h"
+#include "net/spdy/platform/api/spdy_flags.h"
 #include "net/spdy/platform/api/spdy_ptr_util.h"
 #include "net/spdy/platform/api/spdy_string_piece.h"
 
@@ -164,7 +165,8 @@ class SpdyTestDeframerImpl : public SpdyTestDeframer,
                      SpdyStreamId promised_stream_id,
                      bool end) override;
   void OnRstStream(SpdyStreamId stream_id, SpdyErrorCode error_code) override;
-  void OnSetting(SpdyKnownSettingsId id, uint32_t value) override;
+  void OnSettingOld(SpdyKnownSettingsId id, uint32_t value) override;
+  void OnSetting(SpdySettingsId id, uint32_t value) override;
   void OnSettings() override;
   void OnSettingsAck() override;
   void OnSettingsEnd() override;
@@ -602,15 +604,30 @@ void SpdyTestDeframerImpl::OnRstStream(SpdyStreamId stream_id,
       SpdyMakeUnique<SpdyRstStreamIR>(stream_id, error_code));
 }
 
-// Called for an individual setting. There is no negotiation, the sender is
+// Called for an individual setting. There is no negotiation; the sender is
 // stating the value that the sender is using.
-void SpdyTestDeframerImpl::OnSetting(SpdyKnownSettingsId id, uint32_t value) {
-  DVLOG(1) << "OnSetting id: " << id << std::hex << "    value: " << value;
+void SpdyTestDeframerImpl::OnSettingOld(SpdyKnownSettingsId id,
+                                        uint32_t value) {
+  DVLOG(1) << "OnSettingOld id: " << id << std::hex << "    value: " << value;
   CHECK_EQ(frame_type_, SETTINGS) << "   frame_type_="
                                   << Http2FrameTypeToString(frame_type_);
   CHECK(settings_);
   settings_->push_back(std::make_pair(id, value));
   settings_ir_->AddSetting(id, value);
+}
+
+// Called for an individual setting. There is no negotiation; the sender is
+// stating the value that the sender is using.
+void SpdyTestDeframerImpl::OnSetting(SpdySettingsId id, uint32_t value) {
+  DVLOG(1) << "OnSetting id: " << id << std::hex << "    value: " << value;
+  CHECK_EQ(frame_type_, SETTINGS)
+      << "   frame_type_=" << Http2FrameTypeToString(frame_type_);
+  CHECK(settings_);
+  SpdyKnownSettingsId known_id;
+  if (ParseSettingsId(id, &known_id)) {
+    settings_->push_back(std::make_pair(known_id, value));
+    settings_ir_->AddSetting(known_id, value);
+  }
 }
 
 // Called at the start of a SETTINGS frame with setting entries, but not the

@@ -34,6 +34,7 @@
 #include "net/spdy/core/spdy_headers_handler_interface.h"
 #include "net/spdy/core/spdy_protocol.h"
 #include "net/spdy/platform/api/spdy_estimate_memory_usage.h"
+#include "net/spdy/platform/api/spdy_flags.h"
 #include "net/spdy/platform/api/spdy_ptr_util.h"
 #include "net/spdy/platform/api/spdy_string_utils.h"
 
@@ -474,16 +475,23 @@ void Http2DecoderAdapter::OnSettingsStart(const Http2FrameHeader& header) {
 void Http2DecoderAdapter::OnSetting(const Http2SettingFields& setting_fields) {
   DVLOG(1) << "OnSetting: " << setting_fields;
   const auto parameter = static_cast<SpdySettingsId>(setting_fields.parameter);
+  if (GetSpdyRestartFlag(http2_propagate_unknown_settings)) {
+    visitor()->OnSetting(parameter, setting_fields.value);
+    if (extension_ != nullptr) {
+      extension_->OnSetting(parameter, setting_fields.value);
+    }
+    return;
+  }
   SpdyKnownSettingsId setting_id;
   if (!ParseSettingsId(parameter, &setting_id)) {
     if (extension_ == nullptr) {
-      DVLOG(1) << "Ignoring unknown setting id: " << setting_fields;
+      DVLOG(1) << "No extension for unknown setting id: " << setting_fields;
     } else {
       extension_->OnSetting(parameter, setting_fields.value);
     }
     return;
   }
-  visitor()->OnSetting(setting_id, setting_fields.value);
+  visitor()->OnSettingOld(setting_id, setting_fields.value);
 }
 
 void Http2DecoderAdapter::OnSettingsEnd() {

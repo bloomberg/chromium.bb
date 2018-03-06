@@ -333,7 +333,12 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
     ++fin_frame_count_;
   }
 
-  void OnSetting(SpdyKnownSettingsId id, uint32_t value) override {
+  void OnSettingOld(SpdyKnownSettingsId id, uint32_t value) override {
+    VLOG(1) << "OnSetting(" << id << ", " << std::hex << value << ")";
+    ++setting_count_;
+  }
+
+  void OnSetting(SpdySettingsId id, uint32_t value) override {
     VLOG(1) << "OnSetting(" << id << ", " << std::hex << value << ")";
     ++setting_count_;
   }
@@ -3007,14 +3012,19 @@ TEST_P(SpdyFramerTest, ReadUnknownSettingsId) {
   TestSpdyVisitor visitor(SpdyFramer::DISABLE_COMPRESSION);
   visitor.SimulateInFramer(kH2FrameData, sizeof(kH2FrameData));
 
-  // In HTTP/2, we ignore unknown settings because of extensions.
-  EXPECT_EQ(0, visitor.setting_count_);
+  // In HTTP/2, we ignore unknown settings because of extensions. However, we
+  // pass the SETTINGS to the visitor, which can decide how to handle them.
+  if (GetSpdyRestartFlag(http2_propagate_unknown_settings)) {
+    EXPECT_EQ(1, visitor.setting_count_);
+  } else {
+    EXPECT_EQ(0, visitor.setting_count_);
+  }
   EXPECT_EQ(0, visitor.error_count_);
 }
 
-TEST_P(SpdyFramerTest, ReadUnknownSettingsWithExtension) {
+TEST_P(SpdyFramerTest, ReadKnownAndUnknownSettingsWithExtension) {
   const unsigned char kH2FrameData[] = {
-      0x00, 0x00, 0x0c,        // Length: 12
+      0x00, 0x00, 0x12,        // Length: 18
       0x04,                    //   Type: SETTINGS
       0x00,                    //  Flags: none
       0x00, 0x00, 0x00, 0x00,  // Stream: 0
@@ -3022,6 +3032,8 @@ TEST_P(SpdyFramerTest, ReadUnknownSettingsWithExtension) {
       0x00, 0x00, 0x00, 0x02,  //  Value: 2
       0x00, 0x5f,              //  Param: 95
       0x00, 0x01, 0x00, 0x02,  //  Value: 65538
+      0x00, 0x02,              //  Param: ENABLE_PUSH
+      0x00, 0x00, 0x00, 0x01,  //  Value: 1
   };
 
   TestSpdyVisitor visitor(SpdyFramer::DISABLE_COMPRESSION);
@@ -3029,13 +3041,26 @@ TEST_P(SpdyFramerTest, ReadUnknownSettingsWithExtension) {
   visitor.set_extension_visitor(&extension);
   visitor.SimulateInFramer(kH2FrameData, sizeof(kH2FrameData));
 
-  // In HTTP/2, we ignore unknown settings because of extensions.
-  EXPECT_EQ(0, visitor.setting_count_);
+  // In HTTP/2, we ignore unknown settings because of extensions. However, we
+  // pass the SETTINGS to the visitor, which can decide how to handle them.
+  if (GetSpdyRestartFlag(http2_propagate_unknown_settings)) {
+    EXPECT_EQ(3, visitor.setting_count_);
+  } else {
+    EXPECT_EQ(1, visitor.setting_count_);
+  }
   EXPECT_EQ(0, visitor.error_count_);
 
-  EXPECT_THAT(
-      extension.settings_received_,
-      testing::ElementsAre(testing::Pair(16, 2), testing::Pair(95, 65538)));
+  if (GetSpdyRestartFlag(http2_propagate_unknown_settings)) {
+    // The extension receives all SETTINGS, including the non-standard SETTINGS.
+    EXPECT_THAT(
+        extension.settings_received_,
+        testing::ElementsAre(testing::Pair(16, 2), testing::Pair(95, 65538),
+                             testing::Pair(2, 1)));
+  } else {
+    EXPECT_THAT(
+        extension.settings_received_,
+        testing::ElementsAre(testing::Pair(16, 2), testing::Pair(95, 65538)));
+  }
 }
 
 // Tests handling of SETTINGS frame with entries out of order.
@@ -3887,7 +3912,11 @@ TEST_P(SpdyFramerTest, SettingsFrameFlags) {
       EXPECT_CALL(visitor, OnError(_));
     } else {
       EXPECT_CALL(visitor, OnSettings());
-      EXPECT_CALL(visitor, OnSetting(SETTINGS_INITIAL_WINDOW_SIZE, 16));
+      if (GetSpdyRestartFlag(http2_propagate_unknown_settings)) {
+        EXPECT_CALL(visitor, OnSetting(SETTINGS_INITIAL_WINDOW_SIZE, 16));
+      } else {
+        EXPECT_CALL(visitor, OnSettingOld(SETTINGS_INITIAL_WINDOW_SIZE, 16));
+      }
       EXPECT_CALL(visitor, OnSettingsEnd());
     }
 

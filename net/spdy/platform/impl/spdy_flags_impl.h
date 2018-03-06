@@ -10,8 +10,13 @@
 namespace net {
 
 NET_EXPORT_PRIVATE extern bool http2_check_settings_id_007;
+NET_EXPORT_PRIVATE extern bool http2_propagate_unknown_settings;
 
 inline bool GetSpdyReloadableFlagImpl(bool flag) {
+  return flag;
+}
+
+inline bool GetSpdyRestartFlagImpl(bool flag) {
   return flag;
 }
 
