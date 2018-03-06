@@ -22,7 +22,7 @@
 #include "base/win/windows_version.h"
 #include "ui/base/win/hidden_window.h"
 #include "ui/base/win/osk_display_observer.h"
-#include "ui/display/win/dpi.h"
+#include "ui/display/win/screen_win.h"
 #include "ui/gfx/geometry/dip_util.h"
 
 namespace {
@@ -66,10 +66,13 @@ class OnScreenKeyboardDetector {
   void AddObserver(OnScreenKeyboardObserver* observer);
   void RemoveObserver(OnScreenKeyboardObserver* observer);
 
-  // Returns true if the osk is visible. Sets osk bounding rect if non-null
-  static bool IsKeyboardVisible(gfx::Rect* osk_bounding_rect);
+  // Returns true if the osk is visible.
+  static bool IsKeyboardVisible();
 
  private:
+  // Returns the occluded rect in dips.
+  gfx::Rect GetOccludedRect();
+
   // Executes as a task and detects if the on screen keyboard is displayed.
   // Once the keyboard is displayed it schedules the HideIfNecessary() task to
   // detect when the keyboard is or should be hidden.
@@ -82,7 +85,7 @@ class OnScreenKeyboardDetector {
   // Notifies observers that the keyboard was displayed.
   // A recurring task HideIfNecessary() is started to detect when the OSK
   // disappears.
-  void HandleKeyboardVisible();
+  void HandleKeyboardVisible(const gfx::Rect& occluded_rect);
 
   // Notifies observers that the keyboard was hidden.
   // The observer list is cleared out after this notification.
@@ -96,9 +99,6 @@ class OnScreenKeyboardDetector {
 
   // Tracks if the keyboard was displayed.
   bool osk_visible_notification_received_ = false;
-
-  // The keyboard dimensions in pixels.
-  gfx::Rect osk_rect_pixels_;
 
   // Set to true if a call to DetectKeyboard() was made.
   bool keyboard_detect_requested_ = false;
@@ -178,22 +178,39 @@ void OnScreenKeyboardDetector::RemoveObserver(
 }
 
 // static
-bool OnScreenKeyboardDetector::IsKeyboardVisible(gfx::Rect* osk_bounding_rect) {
+bool OnScreenKeyboardDetector::IsKeyboardVisible() {
   HWND osk = ::FindWindow(kOSKClassName, nullptr);
   if (!::IsWindow(osk))
     return false;
-  if (osk_bounding_rect) {
-    RECT osk_rect = {};
-    ::GetWindowRect(osk, &osk_rect);
-    *osk_bounding_rect = gfx::Rect(osk_rect);
-  }
   return ::IsWindowVisible(osk) && ::IsWindowEnabled(osk);
 }
 
+gfx::Rect OnScreenKeyboardDetector::GetOccludedRect() {
+  gfx::Rect occluded_rect;
+  HWND osk = ::FindWindow(kOSKClassName, nullptr);
+  if (!::IsWindow(osk) || !::IsWindowVisible(osk) || !::IsWindowEnabled(osk))
+    return occluded_rect;
+
+  RECT osk_rect = {};
+  RECT main_window_rect = {};
+  if (!::GetWindowRect(osk, &osk_rect) ||
+      !::GetWindowRect(main_window_, &main_window_rect)) {
+    return occluded_rect;
+  }
+
+  gfx::Rect gfx_osk_rect(osk_rect);
+  gfx::Rect gfx_main_window_rect(main_window_rect);
+
+  gfx_osk_rect.Intersect(gfx_main_window_rect);
+
+  return display::win::ScreenWin::ScreenToDIPRect(main_window_, gfx_osk_rect);
+}
+
 void OnScreenKeyboardDetector::CheckIfKeyboardVisible() {
-  if (IsKeyboardVisible(&osk_rect_pixels_)) {
+  gfx::Rect occluded_rect = GetOccludedRect();
+  if (!occluded_rect.IsEmpty()) {
     if (!osk_visible_notification_received_)
-      HandleKeyboardVisible();
+      HandleKeyboardVisible(occluded_rect);
   } else {
     DVLOG(1) << "OSK did not come up. Something wrong.";
   }
@@ -233,12 +250,13 @@ void OnScreenKeyboardDetector::HideIfNecessary() {
   }
 }
 
-void OnScreenKeyboardDetector::HandleKeyboardVisible() {
+void OnScreenKeyboardDetector::HandleKeyboardVisible(
+    const gfx::Rect& occluded_rect) {
   DCHECK(!osk_visible_notification_received_);
   osk_visible_notification_received_ = true;
 
   for (OnScreenKeyboardObserver& observer : observers_)
-    observer.OnKeyboardVisible(osk_rect_pixels_);
+    observer.OnKeyboardVisible(occluded_rect);
 
   // Now that the keyboard is visible, run the task to detect if it was hidden.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
@@ -251,7 +269,7 @@ void OnScreenKeyboardDetector::HandleKeyboardVisible() {
 void OnScreenKeyboardDetector::HandleKeyboardHidden() {
   osk_visible_notification_received_ = false;
   for (OnScreenKeyboardObserver& observer : observers_)
-    observer.OnKeyboardHidden(osk_rect_pixels_);
+    observer.OnKeyboardHidden();
   ClearObservers();
 }
 
@@ -368,7 +386,7 @@ bool OnScreenKeyboardDisplayManagerTabTip::GetOSKPath(
 }
 
 bool OnScreenKeyboardDisplayManagerTabTip::IsKeyboardVisible() const {
-  return OnScreenKeyboardDetector::IsKeyboardVisible(nullptr);
+  return OnScreenKeyboardDetector::IsKeyboardVisible();
 }
 
 }  // namespace ui

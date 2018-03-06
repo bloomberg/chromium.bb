@@ -17,10 +17,9 @@ class UI_BASE_EXPORT OnScreenKeyboardObserver {
  public:
   virtual ~OnScreenKeyboardObserver() {}
 
-  // The |keyboard_rect| parameter contains the bounds of the keyboard in
-  // pixels.
-  virtual void OnKeyboardVisible(const gfx::Rect& keyboard_rect_in_pixels) {}
-  virtual void OnKeyboardHidden(const gfx::Rect& keyboard_rect_in_pixels) {}
+  // The |keyboard_rect| parameter contains the bounds of the keyboard in dips.
+  virtual void OnKeyboardVisible(const gfx::Rect& keyboard_rect) {}
+  virtual void OnKeyboardHidden() {}
 };
 
 }  // namespace ui

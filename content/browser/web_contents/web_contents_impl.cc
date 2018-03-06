@@ -6093,16 +6093,10 @@ void WebContentsImpl::UpdateUrlForUkmSource(ukm::UkmRecorder* service,
 
 void WebContentsImpl::FocusedNodeTouched(bool editable) {
 #if defined(OS_WIN)
-  // We use the cursor position to determine where the touch occurred.
   RenderWidgetHostView* view = GetRenderWidgetHostView();
   if (!view)
     return;
-  POINT cursor_pos = {};
-  ::GetCursorPos(&cursor_pos);
-  float scale = GetScaleFactorForView(view);
-  gfx::Point location_dips_screen =
-      gfx::ConvertPointToDIP(scale, gfx::Point(cursor_pos));
-  view->FocusedNodeTouched(location_dips_screen, editable);
+  view->FocusedNodeTouched(editable);
 #endif
 }
 
