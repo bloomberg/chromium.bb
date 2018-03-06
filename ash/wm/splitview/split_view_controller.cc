@@ -128,6 +128,14 @@ bool IsPrimaryScreenOrientation(
          screen_orientation == blink::kWebScreenOrientationLockPortraitPrimary;
 }
 
+bool IsLandscapeOrientation(
+    blink::WebScreenOrientationLockType screen_orientation) {
+  return screen_orientation ==
+             blink::kWebScreenOrientationLockLandscapePrimary ||
+         screen_orientation ==
+             blink::kWebScreenOrientationLockLandscapeSecondary;
+}
+
 // Returns the minimum size of the window according to the screen orientation.
 int GetMinimumWindowSize(aura::Window* window, bool is_landscape) {
   int minimum_width = 0;
@@ -141,8 +149,6 @@ int GetMinimumWindowSize(aura::Window* window, bool is_landscape) {
 }  // namespace
 
 SplitViewController::SplitViewController() {
-  screen_orientation_ =
-      Shell::Get()->screen_orientation_controller()->GetCurrentOrientation();
   display::Screen::GetScreen()->AddObserver(this);
 }
 
@@ -193,15 +199,17 @@ bool SplitViewController::IsSplitViewModeActive() const {
   return state_ != NO_SNAP;
 }
 
+blink::WebScreenOrientationLockType
+SplitViewController::GetCurrentScreenOrientation() const {
+  return Shell::Get()->screen_orientation_controller()->GetCurrentOrientation();
+}
+
 bool SplitViewController::IsCurrentScreenOrientationLandscape() const {
-  return screen_orientation_ ==
-             blink::kWebScreenOrientationLockLandscapePrimary ||
-         screen_orientation_ ==
-             blink::kWebScreenOrientationLockLandscapeSecondary;
+  return IsLandscapeOrientation(GetCurrentScreenOrientation());
 }
 
 bool SplitViewController::IsCurrentScreenOrientationPrimary() const {
-  return IsPrimaryScreenOrientation(screen_orientation_);
+  return IsPrimaryScreenOrientation(GetCurrentScreenOrientation());
 }
 
 void SplitViewController::SnapWindow(aura::Window* window,
@@ -608,12 +616,11 @@ void SplitViewController::OnDisplayMetricsChanged(
   if (!display.IsInternal())
     return;
 
-  // We need update |screen_orientation_| even though split view mode is not
-  // active at the moment.
+  // We need update |previous_screen_orientation_| even though split view mode
+  // is not active at the moment.
   blink::WebScreenOrientationLockType previous_screen_orientation =
-      screen_orientation_;
-  screen_orientation_ =
-      Shell::Get()->screen_orientation_controller()->GetCurrentOrientation();
+      previous_screen_orientation_;
+  previous_screen_orientation_ = GetCurrentScreenOrientation();
 
   if (!IsSplitViewModeActive())
     return;
@@ -635,10 +642,11 @@ void SplitViewController::OnDisplayMetricsChanged(
   // Update |divider_position_| if the top/left window changes.
   if ((metrics & (display::DisplayObserver::DISPLAY_METRIC_ROTATION)) &&
       (IsPrimaryScreenOrientation(previous_screen_orientation) !=
-       IsPrimaryScreenOrientation(screen_orientation_))) {
+       IsCurrentScreenOrientationPrimary())) {
     const int work_area_long_length = GetDividerEndPosition();
     const gfx::Size divider_size = SplitViewDivider::GetDividerSize(
-        display.work_area(), screen_orientation_, false /* is_dragging */);
+        display.work_area(), GetCurrentScreenOrientation(),
+        false /* is_dragging */);
     const int divider_short_length =
         std::min(divider_size.width(), divider_size.height());
     divider_position_ =
@@ -696,7 +704,8 @@ int SplitViewController::GetDefaultDividerPosition(aura::Window* window) const {
   const gfx::Rect work_area_bounds_in_screen =
       GetDisplayWorkAreaBoundsInScreen(window);
   const gfx::Size divider_size = SplitViewDivider::GetDividerSize(
-      work_area_bounds_in_screen, screen_orientation_, false /* is_dragging */);
+      work_area_bounds_in_screen, GetCurrentScreenOrientation(),
+      false /* is_dragging */);
   if (IsCurrentScreenOrientationLandscape())
     return (work_area_bounds_in_screen.width() - divider_size.width()) * 0.5f;
   else
@@ -835,8 +844,8 @@ void SplitViewController::GetSnappedWindowBoundsInScreenInternal(
                           ? GetDefaultDividerPosition(window)
                           : divider_position_;
   const gfx::Rect divider_bounds = SplitViewDivider::GetDividerBoundsInScreen(
-      work_area_bounds_in_screen, screen_orientation_, divider_position_,
-      false /* is_dragging */);
+      work_area_bounds_in_screen, GetCurrentScreenOrientation(),
+      divider_position_, false /* is_dragging */);
 
   SplitRect(work_area_bounds_in_screen, divider_bounds,
             IsCurrentScreenOrientationLandscape(), left_or_top_rect,
@@ -874,7 +883,8 @@ void SplitViewController::MoveDividerToClosestFixedPosition() {
   const gfx::Rect work_area_bounds_in_screen =
       GetDisplayWorkAreaBoundsInScreen(GetDefaultSnappedWindow());
   const gfx::Size divider_size = SplitViewDivider::GetDividerSize(
-      work_area_bounds_in_screen, screen_orientation_, false /* is_dragging */);
+      work_area_bounds_in_screen, GetCurrentScreenOrientation(),
+      false /* is_dragging */);
   const int divider_thickness =
       std::min(divider_size.width(), divider_size.height());
 
@@ -1045,7 +1055,7 @@ aura::Window* SplitViewController::GetWindowForSmoothResize() {
 
 int SplitViewController::GetWindowComponentForResize(aura::Window* window) {
   if (window && (window == left_window_ || window == right_window_)) {
-    switch (screen_orientation_) {
+    switch (GetCurrentScreenOrientation()) {
       case blink::kWebScreenOrientationLockLandscapePrimary:
         return (window == left_window_) ? HTRIGHT : HTLEFT;
       case blink::kWebScreenOrientationLockLandscapeSecondary:
@@ -1071,7 +1081,7 @@ gfx::Point SplitViewController::GetEndDragLocationInScreen(
   const gfx::Rect bounds = (window == left_window_)
                                ? GetSnappedWindowBoundsInScreen(window, LEFT)
                                : GetSnappedWindowBoundsInScreen(window, RIGHT);
-  switch (screen_orientation_) {
+  switch (GetCurrentScreenOrientation()) {
     case blink::kWebScreenOrientationLockLandscapePrimary:
       end_location.set_x(window == left_window_ ? bounds.right() : bounds.x());
       break;

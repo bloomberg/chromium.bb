@@ -80,6 +80,8 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
   // Returns true if split view mode is active.
   bool IsSplitViewModeActive() const;
 
+  blink::WebScreenOrientationLockType GetCurrentScreenOrientation() const;
+
   // Returns true if |screen_orientation_| is a landscape orientation.
   bool IsCurrentScreenOrientationLandscape() const;
 
@@ -158,9 +160,6 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
   SnapPosition default_snap_position() const { return default_snap_position_; }
   SplitViewDivider* split_view_divider() { return split_view_divider_.get(); }
   bool is_resizing() const { return is_resizing_; }
-  blink::WebScreenOrientationLockType screen_orientation() const {
-    return screen_orientation_;
-  }
 
  private:
   friend class SplitViewControllerTest;
@@ -324,8 +323,8 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
   // versa.
   SnapPosition default_snap_position_ = NONE;
 
-  // The current orientation of the screen.
-  blink::WebScreenOrientationLockType screen_orientation_ =
+  // The previous orientation of the screen.
+  blink::WebScreenOrientationLockType previous_screen_orientation_ =
       blink::kWebScreenOrientationLockDefault;
 
   // If the divider is currently being dragging.

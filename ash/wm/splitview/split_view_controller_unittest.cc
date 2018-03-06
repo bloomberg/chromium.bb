@@ -84,7 +84,7 @@ class SplitViewControllerTest : public AshTestBase {
   }
 
   blink::WebScreenOrientationLockType screen_orientation() {
-    return split_view_controller()->screen_orientation();
+    return split_view_controller()->GetCurrentScreenOrientation();
   }
 
   int divider_position() { return split_view_controller()->divider_position(); }

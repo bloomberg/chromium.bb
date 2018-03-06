@@ -229,7 +229,7 @@ SplitViewController::SnapPosition OverviewWindowDragController::GetSnapPosition(
       screen_util::GetDisplayWorkAreaBoundsInParent(item_->GetWindow()));
   ::wm::ConvertRectToScreen(item_->GetWindow()->GetRootWindow(), &area);
 
-  switch (split_view_controller_->screen_orientation()) {
+  switch (split_view_controller_->GetCurrentScreenOrientation()) {
     case blink::kWebScreenOrientationLockLandscapePrimary:
     case blink::kWebScreenOrientationLockLandscapeSecondary: {
       // The window can be snapped if it reaches close enough to the screen

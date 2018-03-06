@@ -260,7 +260,7 @@ gfx::Rect SplitViewDivider::GetDividerBoundsInScreen(bool is_dragging) {
       controller_->GetDisplayWorkAreaBoundsInScreen(root_window);
   const int divider_position = controller_->divider_position();
   const blink::WebScreenOrientationLockType screen_orientation =
-      controller_->screen_orientation();
+      controller_->GetCurrentScreenOrientation();
   return GetDividerBoundsInScreen(work_area_bounds_in_screen,
                                   screen_orientation, divider_position,
                                   is_dragging);
