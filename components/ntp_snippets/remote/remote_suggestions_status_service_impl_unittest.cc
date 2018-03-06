@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
@@ -40,6 +41,15 @@ class RemoteSuggestionsStatusServiceImplTest : public ::testing::Test {
   // is enabled.
   std::unique_ptr<RemoteSuggestionsStatusServiceImpl> MakeService(
       bool list_hiding_enabled) {
+    // Enabling/disabling the feature.
+    if (list_hiding_enabled) {
+      feature_list_.InitAndEnableFeature(
+          ntp_snippets::kArticleSuggestionsExpandableHeader);
+    } else {
+      feature_list_.InitAndDisableFeature(
+          ntp_snippets::kArticleSuggestionsExpandableHeader);
+    }
+
     auto service = std::make_unique<RemoteSuggestionsStatusServiceImpl>(
         false, utils_.pref_service(),
         list_hiding_enabled ? std::string() : kTestPrefName);
@@ -57,6 +67,7 @@ class RemoteSuggestionsStatusServiceImplTest : public ::testing::Test {
     last_status_ = new_status;
   }
 
+  base::test::ScopedFeatureList feature_list_;
   RemoteSuggestionsStatus last_status_;
   test::RemoteSuggestionsTestUtils utils_;
   variations::testing::VariationParamsManager params_manager_;
@@ -162,6 +173,19 @@ TEST_F(RemoteSuggestionsStatusServiceImplTest,
   // When the user toggles the visibility of articles list in UI on, the service
   // should get enabled.
   utils_.pref_service()->SetBoolean(prefs::kArticlesListVisible, true);
+  EXPECT_EQ(RemoteSuggestionsStatus::ENABLED_AND_SIGNED_IN, last_status());
+}
+
+TEST_F(RemoteSuggestionsStatusServiceImplTest,
+       DisablingHidingFeatureWhenFolder) {
+  utils_.pref_service()->SetBoolean(prefs::kArticlesListVisible, false);
+  auto service = MakeService(/*list_hiding_enabled="*/ false);
+
+  // The state should be enabled when hiding is disabled.
+  EXPECT_EQ(RemoteSuggestionsStatus::ENABLED_AND_SIGNED_OUT, last_status());
+
+  // Signin should cause a state change.
+  service->OnSignInStateChanged(/*has_signed_in=*/true);
   EXPECT_EQ(RemoteSuggestionsStatus::ENABLED_AND_SIGNED_IN, last_status());
 }
 
