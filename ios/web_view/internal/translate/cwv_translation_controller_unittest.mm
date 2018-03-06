@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/strings/sys_string_conversions.h"
+#include "components/translate/core/browser/translate_prefs.h"
 #import "ios/web/public/test/fakes/crw_test_js_injection_receiver.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
@@ -17,6 +18,7 @@
 #import "ios/web_view/internal/translate/web_view_translate_client.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
 #import "ios/web_view/public/cwv_translation_controller_delegate.h"
+#import "ios/web_view/public/cwv_translation_policy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -31,6 +33,7 @@ namespace ios_web_view {
 namespace {
 NSString* const kTestFromLangCode = @"ja";
 NSString* const kTestToLangCode = @"en";
+NSString* const kTestPageHost = @"www.chromium.org";
 }  // namespace
 
 class CWVTranslationControllerTest : public PlatformTest {
@@ -47,6 +50,12 @@ class CWVTranslationControllerTest : public PlatformTest {
     translate_client_ = WebViewTranslateClient::FromWebState(&web_state_);
     translation_controller_ = [[CWVTranslationController alloc]
         initWithTranslateClient:translate_client_];
+    translate_prefs_ = translate_client_->GetTranslatePrefs();
+    translate_prefs_->ResetToDefaults();
+  }
+
+  ~CWVTranslationControllerTest() override {
+    translate_prefs_->ResetToDefaults();
   }
 
   // Checks if |lang_code| matches the OCMArg's CWVTranslationLanguage.
@@ -61,6 +70,7 @@ class CWVTranslationControllerTest : public PlatformTest {
   web::TestWebState web_state_;
   WebViewTranslateClient* translate_client_;
   CWVTranslationController* translation_controller_;
+  std::unique_ptr<translate::TranslatePrefs> translate_prefs_;
 };
 
 // Tests CWVTranslationController invokes can offer delegate method.
@@ -118,6 +128,51 @@ TEST_F(CWVTranslationControllerTest, DidFinishCallback) {
       /*triggered_from_menu=*/false);
 
   [delegate verify];
+}
+
+// Tests CWVTranslationController has at least one supported language.
+TEST_F(CWVTranslationControllerTest, HasSupportedLanguages) {
+  EXPECT_LT(0ul, translation_controller_.supportedLanguages.count);
+}
+
+// Tests CWVTranslationController properly sets language policies.
+TEST_F(CWVTranslationControllerTest, SetLanguagePolicy) {
+  CWVTranslationLanguage* lang =
+      [translation_controller_.supportedLanguages anyObject];
+  std::string lang_code = base::SysNSStringToUTF8(lang.languageCode);
+  CWVTranslationPolicy* policy = [CWVTranslationPolicy translationPolicyNever];
+  [translation_controller_ setTranslationPolicy:policy forPageLanguage:lang];
+  EXPECT_TRUE(translate_prefs_->IsBlockedLanguage(lang_code));
+}
+
+// Tests CWVTranslationController properly reads language policies.
+TEST_F(CWVTranslationControllerTest, ReadLanguagePolicy) {
+  CWVTranslationLanguage* lang =
+      [translation_controller_.supportedLanguages anyObject];
+  std::string lang_code = base::SysNSStringToUTF8(lang.languageCode);
+  translate_prefs_->AddToLanguageList(lang_code, /*force_blocked=*/true);
+  CWVTranslationPolicy* policy =
+      [translation_controller_ translationPolicyForPageLanguage:lang];
+  EXPECT_EQ(CWVTranslationPolicyNever, policy.type);
+  EXPECT_NSEQ(nil, policy.language);
+}
+
+// Tests CWVTranslationController properly sets page host policies.
+TEST_F(CWVTranslationControllerTest, PageHostPolicy) {
+  CWVTranslationPolicy* policy = [CWVTranslationPolicy translationPolicyNever];
+  [translation_controller_ setTranslationPolicy:policy
+                                    forPageHost:kTestPageHost];
+  EXPECT_TRUE(translate_prefs_->IsSiteBlacklisted(
+      base::SysNSStringToUTF8(kTestPageHost)));
+}
+
+// Tests CWVTranslationController properly reads page host policies.
+TEST_F(CWVTranslationControllerTest, ReadPageHostPolicy) {
+  translate_prefs_->BlacklistSite(base::SysNSStringToUTF8(kTestPageHost));
+  CWVTranslationPolicy* policy =
+      [translation_controller_ translationPolicyForPageHost:kTestPageHost];
+  EXPECT_EQ(CWVTranslationPolicyNever, policy.type);
+  EXPECT_NSEQ(nil, policy.language);
 }
 
 }  // namespace ios_web_view
