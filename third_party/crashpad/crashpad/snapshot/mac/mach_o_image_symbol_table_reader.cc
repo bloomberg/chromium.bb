@@ -39,7 +39,7 @@ namespace internal {
 class MachOImageSymbolTableReaderInitializer {
  public:
   MachOImageSymbolTableReaderInitializer(
-      ProcessReaderMac* process_reader,
+      ProcessReader* process_reader,
       const MachOImageSegmentReader* linkedit_segment,
       const std::string& module_info)
       : module_info_(module_info),
@@ -243,7 +243,7 @@ class MachOImageSymbolTableReaderInitializer {
 
   std::string module_info_;
   CheckedMachAddressRange linkedit_range_;
-  ProcessReaderMac* process_reader_;  // weak
+  ProcessReader* process_reader_;  // weak
   const MachOImageSegmentReader* linkedit_segment_;  // weak
 
   DISALLOW_COPY_AND_ASSIGN(MachOImageSymbolTableReaderInitializer);
@@ -259,7 +259,7 @@ MachOImageSymbolTableReader::~MachOImageSymbolTableReader() {
 }
 
 bool MachOImageSymbolTableReader::Initialize(
-    ProcessReaderMac* process_reader,
+    ProcessReader* process_reader,
     const process_types::symtab_command* symtab_command,
     const process_types::dysymtab_command* dysymtab_command,
     const MachOImageSegmentReader* linkedit_segment,

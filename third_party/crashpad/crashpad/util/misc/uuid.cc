@@ -84,10 +84,6 @@ bool UUID::InitializeFromString(const base::StringPiece& string) {
   return true;
 }
 
-bool UUID::InitializeFromString(const base::StringPiece16& string) {
-  return InitializeFromString(UTF16ToUTF8(string));
-}
-
 bool UUID::InitializeWithNew() {
 #if defined(OS_MACOSX)
   uuid_t uuid;

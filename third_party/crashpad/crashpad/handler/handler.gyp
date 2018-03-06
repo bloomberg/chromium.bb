@@ -39,8 +39,6 @@
         'crash_report_upload_thread.h',
         'handler_main.cc',
         'handler_main.h',
-        'linux/crash_report_exception_handler.cc',
-        'linux/crash_report_exception_handler.h',
         'linux/exception_handler_server.cc',
         'linux/exception_handler_server.h',
         'mac/crash_report_exception_handler.cc',
@@ -57,6 +55,13 @@
         'user_stream_data_source.h',
         'win/crash_report_exception_handler.cc',
         'win/crash_report_exception_handler.h',
+      ],
+      'conditions': [
+        ['OS=="linux" or OS=="android"', {
+          'sources!': [
+            'handler_main.cc',
+          ],
+        }],
       ],
       'target_conditions': [
         ['OS=="android"', {

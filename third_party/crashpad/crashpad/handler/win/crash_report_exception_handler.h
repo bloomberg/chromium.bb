@@ -37,8 +37,7 @@ class CrashReportExceptionHandler : public ExceptionHandlerServer::Delegate {
   //!
   //! \param[in] database The database to store crash reports in. Weak.
   //! \param[in] upload_thread The upload thread to notify when a new crash
-  //!     report is written into \a database. Report upload is skipped if this
-  //!     value is `nullptr`.
+  //!     report is written into \a database.
   //! \param[in] process_annotations A map of annotations to insert as
   //!     process-level annotations into each crash report that is written. Do
   //!     not confuse this with module-level annotations, which are under the
