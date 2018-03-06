@@ -7,18 +7,12 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/ui/tab_grid/tab_grid_paging.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_transition_state_provider.h"
 
 @protocol GridConsumer;
 @protocol GridCommands;
 @protocol GridImageDataSource;
-
-// Page enumerates the kinds of grouped tabs.
-typedef NS_ENUM(NSUInteger, TabGridPage) {
-  TabGridPageIncognitoTabs = 0,
-  TabGridPageRegularTabs = 1,
-  TabGridPageRemoteTabs = 2,
-};
 
 // Delegate protocol for an object that can handle presenting ("opening") tabs
 // from the tab grid.
@@ -30,7 +24,7 @@ typedef NS_ENUM(NSUInteger, TabGridPage) {
 // View controller representing a tab switcher.  The tab switcher has an
 // incognito tab grid, regular tab grid, and remote tabs.
 @interface TabGridViewController
-    : UIViewController<TabGridTransitionStateProvider>
+    : UIViewController<TabGridPaging, TabGridTransitionStateProvider>
 
 // Delegate for this view controller to handle presenting tab UI.
 @property(nonatomic, weak) id<TabPresentationDelegate> tabPresentationDelegate;
@@ -46,9 +40,6 @@ typedef NS_ENUM(NSUInteger, TabGridPage) {
 // Data sources provide lazy access to heavy-weight resources.
 @property(nonatomic, weak) id<GridImageDataSource> regularTabsImageDataSource;
 @property(nonatomic, weak) id<GridImageDataSource> incognitoTabsImageDataSource;
-
-// Current visible page.
-@property(nonatomic, assign) TabGridPage currentPage;
 
 @end
 

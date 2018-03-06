@@ -53,6 +53,7 @@ UIAlertController* NotImplementedAlert() {
 @synthesize incognitoTabsDelegate = _incognitoTabsDelegate;
 @synthesize regularTabsImageDataSource = _regularTabsImageDataSource;
 @synthesize incognitoTabsImageDataSource = _incognitoTabsImageDataSource;
+// TabGridPaging property.
 @synthesize currentPage = _currentPage;
 // Private properties.
 @synthesize regularTabsViewController = _regularTabsViewController;
@@ -89,6 +90,13 @@ UIAlertController* NotImplementedAlert() {
   [self setupBottomToolbarButtons];
 }
 
+- (void)viewWillAppear:(BOOL)animated {
+  // Call the current page setter to sync the scroll view offset to the current
+  // page value.
+  self.currentPage = _currentPage;
+  [super viewWillAppear:animated];
+}
+
 - (void)viewWillLayoutSubviews {
   [super viewWillLayoutSubviews];
   // The content inset of the tab grids must be modified so that the toolbars
@@ -121,7 +129,7 @@ UIAlertController* NotImplementedAlert() {
   CGFloat pageWidth = scrollView.frame.size.width;
   float fractionalPage = scrollView.contentOffset.x / pageWidth;
   NSUInteger page = lround(fractionalPage);
-  self.currentPage = static_cast<TabGridPage>(page);
+  _currentPage = static_cast<TabGridPage>(page);
 }
 
 #pragma mark - UIScrollViewAccessibilityDelegate
@@ -166,6 +174,31 @@ UIAlertController* NotImplementedAlert() {
   self.incognitoTabsViewController.imageDataSource =
       incognitoTabsImageDataSource;
   _incognitoTabsImageDataSource = incognitoTabsImageDataSource;
+}
+
+#pragma mark - TabGridPaging
+
+- (void)setCurrentPage:(TabGridPage)currentPage {
+  // This method should never early return if |currentPage| == |_currentPage|;
+  // the ivar may have been set before the scroll view could be updated. Calling
+  // this method should always update the scroll view's offset if possible.
+
+  // If the view isn't loaded yet, just do bookkeeping on _currentPage.
+  if (!self.viewLoaded) {
+    _currentPage = currentPage;
+    return;
+  }
+  CGFloat pageWidth = self.scrollView.frame.size.width;
+  NSUInteger page = static_cast<NSUInteger>(currentPage);
+  CGPoint offset = CGPointMake(page * pageWidth, 0);
+  // If the view is visible, animate the change. Otherwise don't.
+  if (self.view.window == nil) {
+    self.scrollView.contentOffset = offset;
+    _currentPage = currentPage;
+  } else {
+    [self.scrollView setContentOffset:offset animated:YES];
+    // _currentPage is set in scrollViewDidEndDecelerating:
+  }
 }
 
 #pragma mark - Private
