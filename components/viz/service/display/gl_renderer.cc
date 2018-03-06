@@ -1469,7 +1469,7 @@ void GLRenderer::UpdateRPDQUniforms(DrawRenderPassDrawQuadParams* params) {
     }
   }
 
-  SetShaderOpacity(params->quad);
+  SetShaderOpacity(params->quad->shared_quad_state->opacity);
   SetShaderQuadF(params->surface_quad);
 }
 
@@ -1964,7 +1964,7 @@ void GLRenderer::DrawContentQuadAA(const ContentDrawQuadBase* quad,
 
   // Blending is required for antialiasing.
   SetBlendEnabled(true);
-  SetShaderOpacity(quad);
+  SetShaderOpacity(quad->shared_quad_state->opacity);
 
   // Draw the quad with antialiasing.
   DrawQuadGeometryWithAA(quad, &local_quad, tile_rect);
@@ -2001,11 +2001,9 @@ void GLRenderer::DrawContentQuadNoAA(const ContentDrawQuadBase* quad,
   // the way to the edge and are using bilinear filtering.
   gfx::Size texture_size = quad->texture_size;
   bool fills_right_edge =
-      quad->shared_quad_state->quad_layer_rect.right() != quad->rect.right() ||
-      texture_size.width() == tex_coord_rect.right();
-  bool fills_bottom_edge = quad->shared_quad_state->quad_layer_rect.bottom() !=
-                               quad->rect.bottom() ||
-                           texture_size.height() == tex_coord_rect.bottom();
+      !quad->IsRightEdge() || texture_size.width() == tex_coord_rect.right();
+  bool fills_bottom_edge =
+      !quad->IsBottomEdge() || texture_size.height() == tex_coord_rect.bottom();
   bool has_tex_clamp_rect =
       filter == GL_LINEAR && (!fills_right_edge || !fills_bottom_edge);
   gfx::SizeF tex_clamp_size(texture_size);
@@ -2052,7 +2050,7 @@ void GLRenderer::DrawContentQuadNoAA(const ContentDrawQuadBase* quad,
 
   SetBlendEnabled(quad->ShouldDrawWithBlending());
 
-  SetShaderOpacity(quad);
+  SetShaderOpacity(quad->shared_quad_state->opacity);
 
   // Pass quad coordinates to the uniform in the same order as GeometryBinding
   // does, then vertices will match the texture mapping in the vertex buffer.
@@ -2236,7 +2234,7 @@ void GLRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
   // it. This is why this centered rect is used and not the original quad_rect.
   auto tile_rect = gfx::RectF(quad->rect);
 
-  SetShaderOpacity(quad);
+  SetShaderOpacity(quad->shared_quad_state->opacity);
   if (!clip_region) {
     DrawQuadGeometry(current_frame()->projection_matrix,
                      quad->shared_quad_state->quad_to_target_transform,
@@ -2280,7 +2278,7 @@ void GLRenderer::DrawStreamVideoQuad(const StreamVideoDrawQuad* quad,
   gl_->UniformMatrix4fvStreamTextureMatrixCHROMIUM(
       current_program_->tex_matrix_location(), false, gl_matrix);
 
-  SetShaderOpacity(quad);
+  SetShaderOpacity(quad->shared_quad_state->opacity);
   gfx::Size texture_size = lock.size();
   gfx::Vector2dF uv = quad->matrix.Scale2d();
   gfx::RectF uv_visible_rect(0, 0, uv.x(), uv.y());
@@ -2620,11 +2618,10 @@ void GLRenderer::SetShaderQuadF(const gfx::QuadF& quad) {
   gl_->Uniform2fv(current_program_->quad_location(), 4, gl_quad);
 }
 
-void GLRenderer::SetShaderOpacity(const DrawQuad* quad) {
+void GLRenderer::SetShaderOpacity(float opacity) {
   if (!current_program_ || current_program_->alpha_location() == -1)
     return;
-  gl_->Uniform1f(current_program_->alpha_location(),
-                 quad->shared_quad_state->opacity);
+  gl_->Uniform1f(current_program_->alpha_location(), opacity);
 }
 
 void GLRenderer::SetShaderMatrix(const gfx::Transform& transform) {
