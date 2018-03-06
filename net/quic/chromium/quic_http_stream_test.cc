@@ -420,6 +420,45 @@ class QuicHttpStreamTest
         spdy_headers_frame_length, offset);
   }
 
+  std::unique_ptr<QuicReceivedPacket>
+  ConstructRequestHeadersAndDataFramesPacket(
+      QuicPacketNumber packet_number,
+      QuicStreamId stream_id,
+      bool should_include_version,
+      bool fin,
+      RequestPriority request_priority,
+      QuicStreamId parent_stream_id,
+      QuicStreamOffset* offset,
+      size_t* spdy_headers_frame_length,
+      const std::vector<std::string>& data_writes) {
+    SpdyPriority priority =
+        ConvertRequestPriorityToQuicPriority(request_priority);
+    return client_maker_.MakeRequestHeadersAndMultipleDataFramesPacket(
+        packet_number, stream_id, should_include_version, fin, priority,
+        std::move(request_headers_), parent_stream_id, offset,
+        spdy_headers_frame_length, data_writes);
+  }
+
+  std::unique_ptr<QuicReceivedPacket> ConstructRequestAndRstPacket(
+      QuicPacketNumber packet_number,
+      QuicStreamId stream_id,
+      bool should_include_version,
+      bool fin,
+      RequestPriority request_priority,
+      QuicStreamId parent_stream_id,
+      size_t* spdy_headers_frame_length,
+      QuicStreamOffset* header_stream_offset,
+      QuicRstStreamErrorCode error_code,
+      size_t bytes_written) {
+    SpdyPriority priority =
+        ConvertRequestPriorityToQuicPriority(request_priority);
+    return client_maker_.MakeRequestHeadersAndRstPacket(
+        packet_number, stream_id, should_include_version, fin, priority,
+        std::move(request_headers_), parent_stream_id,
+        spdy_headers_frame_length, header_stream_offset, error_code,
+        bytes_written);
+  }
+
   std::unique_ptr<QuicReceivedPacket> ConstructRequestHeadersPacket(
       QuicPacketNumber packet_number,
       bool fin,
@@ -1141,12 +1180,13 @@ TEST_P(QuicHttpStreamTest, SendPostRequest) {
   size_t spdy_request_headers_frame_length;
   QuicStreamOffset header_stream_offset = 0;
   AddWrite(ConstructInitialSettingsPacket(&header_stream_offset));
-  AddWrite(InnerConstructRequestHeadersPacket(
-      2, GetNthClientInitiatedStreamId(0), kIncludeVersion, !kFin,
-      DEFAULT_PRIORITY, &spdy_request_headers_frame_length,
-      &header_stream_offset));
-  AddWrite(ConstructClientDataPacket(3, kIncludeVersion, kFin, 0, kUploadData));
-  AddWrite(ConstructClientAckPacket(4, 3, 1, 1));
+
+  AddWrite(ConstructRequestHeadersAndDataFramesPacket(
+      2, GetNthClientInitiatedStreamId(0), kIncludeVersion, kFin,
+      DEFAULT_PRIORITY, 0, &header_stream_offset,
+      &spdy_request_headers_frame_length, {kUploadData}));
+
+  AddWrite(ConstructClientAckPacket(3, 3, 1, 1));
 
   Initialize();
 
@@ -1212,12 +1252,11 @@ TEST_P(QuicHttpStreamTest, SendPostRequestAndReceiveSoloFin) {
   size_t spdy_request_headers_frame_length;
   QuicStreamOffset header_stream_offset = 0;
   AddWrite(ConstructInitialSettingsPacket(&header_stream_offset));
-  AddWrite(InnerConstructRequestHeadersPacket(
-      2, GetNthClientInitiatedStreamId(0), kIncludeVersion, !kFin,
-      DEFAULT_PRIORITY, &spdy_request_headers_frame_length,
-      &header_stream_offset));
-  AddWrite(ConstructClientDataPacket(3, kIncludeVersion, kFin, 0, kUploadData));
-  AddWrite(ConstructClientAckPacket(4, 3, 1, 1));
+  AddWrite(ConstructRequestHeadersAndDataFramesPacket(
+      2, GetNthClientInitiatedStreamId(0), kIncludeVersion, kFin,
+      DEFAULT_PRIORITY, 0, &header_stream_offset,
+      &spdy_request_headers_frame_length, {kUploadData}));
+  AddWrite(ConstructClientAckPacket(3, 3, 1, 1));
 
   Initialize();
 
@@ -1286,15 +1325,13 @@ TEST_P(QuicHttpStreamTest, SendChunkedPostRequest) {
   size_t spdy_request_headers_frame_length;
   QuicStreamOffset header_stream_offset = 0;
   AddWrite(ConstructInitialSettingsPacket(&header_stream_offset));
-  AddWrite(InnerConstructRequestHeadersPacket(
+  AddWrite(ConstructRequestHeadersAndDataFramesPacket(
       2, GetNthClientInitiatedStreamId(0), kIncludeVersion, !kFin,
-      DEFAULT_PRIORITY, &spdy_request_headers_frame_length,
-      &header_stream_offset));
-  AddWrite(
-      ConstructClientDataPacket(3, kIncludeVersion, !kFin, 0, kUploadData));
-  AddWrite(ConstructClientDataPacket(4, kIncludeVersion, kFin, chunk_size,
+      DEFAULT_PRIORITY, 0, &header_stream_offset,
+      &spdy_request_headers_frame_length, {kUploadData}));
+  AddWrite(ConstructClientDataPacket(3, kIncludeVersion, kFin, chunk_size,
                                      kUploadData));
-  AddWrite(ConstructClientAckPacket(5, 3, 1, 1));
+  AddWrite(ConstructClientAckPacket(4, 3, 1, 1));
   Initialize();
 
   upload_data_stream_ = std::make_unique<ChunkedUploadDataStream>(0);
@@ -1361,14 +1398,12 @@ TEST_P(QuicHttpStreamTest, SendChunkedPostRequestWithFinalEmptyDataPacket) {
   size_t spdy_request_headers_frame_length;
   QuicStreamOffset header_stream_offset = 0;
   AddWrite(ConstructInitialSettingsPacket(&header_stream_offset));
-  AddWrite(InnerConstructRequestHeadersPacket(
+  AddWrite(ConstructRequestHeadersAndDataFramesPacket(
       2, GetNthClientInitiatedStreamId(0), kIncludeVersion, !kFin,
-      DEFAULT_PRIORITY, &spdy_request_headers_frame_length,
-      &header_stream_offset));
-  AddWrite(
-      ConstructClientDataPacket(3, kIncludeVersion, !kFin, 0, kUploadData));
-  AddWrite(ConstructClientDataPacket(4, kIncludeVersion, kFin, chunk_size, ""));
-  AddWrite(ConstructClientAckPacket(5, 3, 1, 1));
+      DEFAULT_PRIORITY, 0, &header_stream_offset,
+      &spdy_request_headers_frame_length, {kUploadData}));
+  AddWrite(ConstructClientDataPacket(3, kIncludeVersion, kFin, chunk_size, ""));
+  AddWrite(ConstructClientAckPacket(4, 3, 1, 1));
   Initialize();
 
   upload_data_stream_ = std::make_unique<ChunkedUploadDataStream>(0);
@@ -1589,12 +1624,10 @@ TEST_P(QuicHttpStreamTest, SessionClosedDuringDoLoop) {
   size_t spdy_request_headers_frame_length;
   QuicStreamOffset header_stream_offset = 0;
   AddWrite(ConstructInitialSettingsPacket(&header_stream_offset));
-  AddWrite(InnerConstructRequestHeadersPacket(
+  AddWrite(ConstructRequestHeadersAndDataFramesPacket(
       2, GetNthClientInitiatedStreamId(0), kIncludeVersion, !kFin,
-      DEFAULT_PRIORITY, &spdy_request_headers_frame_length,
-      &header_stream_offset));
-  AddWrite(
-      ConstructClientDataPacket(3, kIncludeVersion, !kFin, 0, kUploadData));
+      DEFAULT_PRIORITY, 0, &header_stream_offset,
+      &spdy_request_headers_frame_length, {kUploadData}));
   // Second data write will result in a synchronous failure which will close
   // the session.
   AddWrite(SYNCHRONOUS, ERR_FAILED);
@@ -1618,11 +1651,16 @@ TEST_P(QuicHttpStreamTest, SessionClosedDuringDoLoop) {
   QuicHttpStream* stream = stream_.get();
   DeleteStreamCallback delete_stream_callback(std::move(stream_));
   // SendRequest() completes asynchronously after the final chunk is added.
+  // Error does not surface yet since packet write is triggered by a packet
+  // flusher that tries to bundle request body writes.
   ASSERT_EQ(ERR_IO_PENDING,
             stream->SendRequest(headers_, &response_, callback_.callback()));
   chunked_upload_stream->AppendData(kUploadData, chunk_size, true);
   int rv = callback_.WaitForResult();
-  EXPECT_EQ(ERR_QUIC_PROTOCOL_ERROR, rv);
+  EXPECT_EQ(OK, rv);
+  // Error will be surfaced once an attempt to read the response occurs.
+  ASSERT_EQ(ERR_QUIC_PROTOCOL_ERROR,
+            stream->ReadResponseHeaders(callback_.callback()));
 }
 
 TEST_P(QuicHttpStreamTest, SessionClosedBeforeSendHeadersComplete) {
@@ -1633,6 +1671,8 @@ TEST_P(QuicHttpStreamTest, SessionClosedBeforeSendHeadersComplete) {
   Initialize();
 
   upload_data_stream_ = std::make_unique<ChunkedUploadDataStream>(0);
+  auto* chunked_upload_stream =
+      static_cast<ChunkedUploadDataStream*>(upload_data_stream_.get());
 
   request_.method = "POST";
   request_.url = GURL("https://www.example.org/");
@@ -1643,8 +1683,48 @@ TEST_P(QuicHttpStreamTest, SessionClosedBeforeSendHeadersComplete) {
   ASSERT_EQ(OK,
             stream_->InitializeStream(&request_, false, DEFAULT_PRIORITY,
                                       net_log_.bound(), callback_.callback()));
-  ASSERT_EQ(ERR_QUIC_PROTOCOL_ERROR,
+  ASSERT_EQ(ERR_IO_PENDING,
             stream_->SendRequest(headers_, &response_, callback_.callback()));
+
+  // Error will be surfaced once |upload_data_stream| triggers the next write.
+  size_t chunk_size = strlen(kUploadData);
+  chunked_upload_stream->AppendData(kUploadData, chunk_size, true);
+  ASSERT_EQ(ERR_QUIC_PROTOCOL_ERROR, callback_.WaitForResult());
+
+  EXPECT_LE(0, stream_->GetTotalSentBytes());
+  EXPECT_EQ(0, stream_->GetTotalReceivedBytes());
+}
+
+TEST_P(QuicHttpStreamTest, SessionClosedBeforeSendHeadersCompleteReadResponse) {
+  SetRequest("POST", "/", DEFAULT_PRIORITY);
+  QuicStreamOffset header_stream_offset = 0;
+  AddWrite(ConstructInitialSettingsPacket(&header_stream_offset));
+  AddWrite(SYNCHRONOUS, ERR_FAILED);
+  Initialize();
+
+  upload_data_stream_ = std::make_unique<ChunkedUploadDataStream>(0);
+  auto* chunked_upload_stream =
+      static_cast<ChunkedUploadDataStream*>(upload_data_stream_.get());
+
+  request_.method = "POST";
+  request_.url = GURL("https://www.example.org/");
+  request_.upload_data_stream = upload_data_stream_.get();
+
+  size_t chunk_size = strlen(kUploadData);
+  chunked_upload_stream->AppendData(kUploadData, chunk_size, true);
+
+  ASSERT_EQ(OK, request_.upload_data_stream->Init(
+                    TestCompletionCallback().callback(), NetLogWithSource()));
+
+  ASSERT_EQ(OK,
+            stream_->InitializeStream(&request_, false, DEFAULT_PRIORITY,
+                                      net_log_.bound(), callback_.callback()));
+  ASSERT_EQ(OK,
+            stream_->SendRequest(headers_, &response_, callback_.callback()));
+
+  // Error will be surfaced once an attempt to read the response occurs.
+  ASSERT_EQ(ERR_QUIC_PROTOCOL_ERROR,
+            stream_->ReadResponseHeaders(callback_.callback()));
 
   EXPECT_LE(0, stream_->GetTotalSentBytes());
   EXPECT_EQ(0, stream_->GetTotalReceivedBytes());
@@ -1665,8 +1745,6 @@ TEST_P(QuicHttpStreamTest, SessionClosedBeforeSendBodyComplete) {
   upload_data_stream_ = std::make_unique<ChunkedUploadDataStream>(0);
   auto* chunked_upload_stream =
       static_cast<ChunkedUploadDataStream*>(upload_data_stream_.get());
-  size_t chunk_size = strlen(kUploadData);
-  chunked_upload_stream->AppendData(kUploadData, chunk_size, false);
 
   request_.method = "POST";
   request_.url = GURL("https://www.example.org/");
@@ -1677,8 +1755,65 @@ TEST_P(QuicHttpStreamTest, SessionClosedBeforeSendBodyComplete) {
   ASSERT_EQ(OK,
             stream_->InitializeStream(&request_, false, DEFAULT_PRIORITY,
                                       net_log_.bound(), callback_.callback()));
-  ASSERT_EQ(ERR_QUIC_PROTOCOL_ERROR,
+  ASSERT_EQ(ERR_IO_PENDING,
             stream_->SendRequest(headers_, &response_, callback_.callback()));
+
+  size_t chunk_size = strlen(kUploadData);
+  chunked_upload_stream->AppendData(kUploadData, chunk_size, true);
+  // Error does not surface yet since packet write is triggered by a packet
+  // flusher that tries to bundle request body writes.
+  ASSERT_EQ(OK, callback_.WaitForResult());
+  // Error will be surfaced once an attempt to read the response occurs.
+  ASSERT_EQ(ERR_QUIC_PROTOCOL_ERROR,
+            stream_->ReadResponseHeaders(callback_.callback()));
+
+  EXPECT_LE(0, stream_->GetTotalSentBytes());
+  EXPECT_EQ(0, stream_->GetTotalReceivedBytes());
+}
+
+TEST_P(QuicHttpStreamTest, SessionClosedBeforeSendBundledBodyComplete) {
+  SetRequest("POST", "/", DEFAULT_PRIORITY);
+  size_t spdy_request_headers_frame_length;
+  QuicStreamOffset header_stream_offset = 0;
+  AddWrite(ConstructInitialSettingsPacket(&header_stream_offset));
+  AddWrite(ConstructRequestHeadersAndDataFramesPacket(
+      2, GetNthClientInitiatedStreamId(0), kIncludeVersion, !kFin,
+      DEFAULT_PRIORITY, 0, &header_stream_offset,
+      &spdy_request_headers_frame_length, {kUploadData}));
+  AddWrite(SYNCHRONOUS, ERR_FAILED);
+  Initialize();
+
+  upload_data_stream_ = std::make_unique<ChunkedUploadDataStream>(0);
+  auto* chunked_upload_stream =
+      static_cast<ChunkedUploadDataStream*>(upload_data_stream_.get());
+
+  request_.method = "POST";
+  request_.url = GURL("https://www.example.org/");
+  request_.upload_data_stream = upload_data_stream_.get();
+
+  size_t chunk_size = strlen(kUploadData);
+  chunked_upload_stream->AppendData(kUploadData, chunk_size, false);
+
+  ASSERT_EQ(OK, request_.upload_data_stream->Init(
+                    TestCompletionCallback().callback(), NetLogWithSource()));
+
+  ASSERT_EQ(OK,
+            stream_->InitializeStream(&request_, false, DEFAULT_PRIORITY,
+                                      net_log_.bound(), callback_.callback()));
+  ASSERT_EQ(ERR_IO_PENDING,
+            stream_->SendRequest(headers_, &response_, callback_.callback()));
+
+  chunked_upload_stream->AppendData(kUploadData, chunk_size, true);
+
+  // Error does not surface yet since packet write is triggered by a packet
+  // flusher that tries to bundle request body writes.
+  ASSERT_EQ(OK, callback_.WaitForResult());
+  // Error will be surfaced once an attempt to read the response occurs.
+  ASSERT_EQ(ERR_QUIC_PROTOCOL_ERROR,
+            stream_->ReadResponseHeaders(callback_.callback()));
+
+  EXPECT_LE(0, stream_->GetTotalSentBytes());
+  EXPECT_EQ(0, stream_->GetTotalReceivedBytes());
 }
 
 TEST_P(QuicHttpStreamTest, ServerPushGetRequest) {
@@ -2164,11 +2299,10 @@ TEST_P(QuicHttpStreamTest, DataReadErrorSynchronous) {
   size_t spdy_request_headers_frame_length;
   QuicStreamOffset header_stream_offset = 0;
   AddWrite(ConstructInitialSettingsPacket(&header_stream_offset));
-  AddWrite(InnerConstructRequestHeadersPacket(
+  AddWrite(ConstructRequestAndRstPacket(
       2, GetNthClientInitiatedStreamId(0), kIncludeVersion, !kFin,
-      DEFAULT_PRIORITY, &spdy_request_headers_frame_length,
-      &header_stream_offset));
-  AddWrite(ConstructClientRstStreamErrorPacket(3, kIncludeVersion));
+      DEFAULT_PRIORITY, 0, &spdy_request_headers_frame_length,
+      &header_stream_offset, QUIC_ERROR_PROCESSING_STREAM, 0));
 
   Initialize();
 

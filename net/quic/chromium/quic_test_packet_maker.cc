@@ -452,6 +452,7 @@ QuicTestPacketMaker::MakeRequestHeadersAndMultipleDataFramesPacket(
   QuicStreamFrame frame(kHeadersStreamId, false, header_offset,
                         QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
   frames.push_back(QuicFrame(&frame));
+  DVLOG(1) << "Adding frame: " << frames.back();
   if (header_stream_offset != nullptr) {
     *header_stream_offset += spdy_frame.size();
   }
@@ -541,6 +542,45 @@ QuicTestPacketMaker::MakeRequestHeadersPacketAndSaveData(
 
     return MakePacket(header_, QuicFrame(&frame));
   }
+}
+
+std::unique_ptr<QuicReceivedPacket>
+QuicTestPacketMaker::MakeRequestHeadersAndRstPacket(
+    QuicPacketNumber packet_number,
+    QuicStreamId stream_id,
+    bool should_include_version,
+    bool fin,
+    SpdyPriority priority,
+    SpdyHeaderBlock headers,
+    QuicStreamId parent_stream_id,
+    size_t* spdy_headers_frame_length,
+    QuicStreamOffset* header_stream_offset,
+    QuicRstStreamErrorCode error_code,
+    size_t bytes_written) {
+  SpdySerializedFrame spdy_frame = MakeSpdyHeadersFrame(
+      stream_id, fin, priority, std::move(headers), parent_stream_id);
+  if (spdy_headers_frame_length) {
+    *spdy_headers_frame_length = spdy_frame.size();
+  }
+  QuicStreamOffset header_offset = 0;
+  if (header_stream_offset != nullptr) {
+    header_offset = *header_stream_offset;
+    *header_stream_offset += spdy_frame.size();
+  }
+  QuicStreamFrame headers_frame(
+      kHeadersStreamId, false, header_offset,
+      QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
+
+  QuicRstStreamFrame rst_frame(1, stream_id, error_code, bytes_written);
+
+  QuicFrames frames;
+  frames.push_back(QuicFrame(&headers_frame));
+  DVLOG(1) << "Adding frame: " << frames.back();
+  frames.push_back(QuicFrame(&rst_frame));
+  DVLOG(1) << "Adding frame: " << frames.back();
+
+  InitializeHeader(packet_number, should_include_version);
+  return MakeMultipleFramesPacket(header_, frames);
 }
 
 SpdySerializedFrame QuicTestPacketMaker::MakeSpdyHeadersFrame(
@@ -831,15 +871,13 @@ std::unique_ptr<QuicReceivedPacket> QuicTestPacketMaker::MakePriorityPacket(
 }
 
 std::unique_ptr<QuicReceivedPacket>
-QuicTestPacketMaker::MakeAckAndPriorityPacket(
+QuicTestPacketMaker::MakeAckAndMultiplePriorityFramesPacket(
     QuicPacketNumber packet_number,
     bool should_include_version,
     QuicPacketNumber largest_received,
     QuicPacketNumber smallest_received,
     QuicPacketNumber least_unacked,
-    QuicStreamId stream_id,
-    QuicStreamId parent_stream_id,
-    SpdyPriority spdy_priority,
+    const std::vector<Http2StreamDependency>& priority_frames,
     QuicStreamOffset* offset) {
   QuicAckFrame ack(MakeAckFrame(largest_received));
   ack.ack_delay_time = QuicTime::Delta::Zero();
@@ -858,22 +896,33 @@ QuicTestPacketMaker::MakeAckAndPriorityPacket(
   frames.push_back(QuicFrame(&stop_waiting));
   DVLOG(1) << "Adding frame: " << frames[1];
 
-  bool exclusive = client_headers_include_h2_stream_dependency_;
-  SpdyPriorityIR priority_frame(stream_id, parent_stream_id,
-                                Spdy3PriorityToHttp2Weight(spdy_priority),
-                                exclusive);
-  SpdySerializedFrame spdy_frame =
-      spdy_request_framer_.SerializeFrame(priority_frame);
+  const bool exclusive = client_headers_include_h2_stream_dependency_;
   QuicStreamOffset header_offset = 0;
-  if (offset != nullptr) {
-    header_offset = *offset;
-    *offset += spdy_frame.size();
+  if (offset == nullptr) {
+    offset = &header_offset;
   }
-  QuicStreamFrame priority(
-      kHeadersStreamId, false, header_offset,
-      QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
-  frames.push_back(QuicFrame(&priority));
-  DVLOG(1) << "Adding frame: " << frames[2];
+  // Keep SpdySerializedFrames alive until MakeMultipleFramesPacket is done.
+  // Keep StreamFrames alive until MakeMultipleFramesPacket is done.
+  std::vector<std::unique_ptr<SpdySerializedFrame>> spdy_frames;
+  std::vector<std::unique_ptr<QuicStreamFrame>> stream_frames;
+  for (const Http2StreamDependency& info : priority_frames) {
+    SpdyPriorityIR priority_frame(
+        info.stream_id, info.parent_stream_id,
+        Spdy3PriorityToHttp2Weight(info.spdy_priority), exclusive);
+
+    spdy_frames.push_back(std::make_unique<SpdySerializedFrame>(
+        spdy_request_framer_.SerializeFrame(priority_frame)));
+
+    SpdySerializedFrame* spdy_frame = spdy_frames.back().get();
+    stream_frames.push_back(std::make_unique<QuicStreamFrame>(
+        kHeadersStreamId, false, *offset,
+        QuicStringPiece(spdy_frame->data(), spdy_frame->size())));
+    *offset += spdy_frame->size();
+
+    frames.push_back(QuicFrame(stream_frames.back().get()));
+    DVLOG(1) << "Adding frame: " << frames.back();
+    ;
+  }
 
   InitializeHeader(packet_number, should_include_version);
   return MakeMultipleFramesPacket(header_, frames);
