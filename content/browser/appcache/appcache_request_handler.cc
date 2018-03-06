@@ -639,7 +639,7 @@ AppCacheRequestHandler::MaybeCreateSubresourceLoaderParams() {
 
   SubresourceLoaderParams params;
   params.loader_factory_info = factory_ptr.PassInterface();
-  return params;
+  return base::Optional<SubresourceLoaderParams>(std::move(params));
 }
 
 void AppCacheRequestHandler::MaybeCreateSubresourceLoader(
