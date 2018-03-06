@@ -16,6 +16,8 @@ source_set("download") {
     "legacy_download_manager_controller.mm",
     "pass_kit_coordinator.h",
     "pass_kit_coordinator.mm",
+    "radial_progress_view.h",
+    "radial_progress_view.mm",
   ]
   deps = [
     "resources:download_done",
