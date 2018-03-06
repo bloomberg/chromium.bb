@@ -66,6 +66,17 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
       content::NavigationHandle* navigation_handle) override;
   std::unique_ptr<content::NavigationUIData> GetNavigationUIData(
       content::NavigationHandle* navigation_handle) override;
+  void RegisterNonNetworkNavigationURLLoaderFactories(
+      content::RenderFrameHost* frame_host,
+      NonNetworkURLLoaderFactoryMap* factories) override;
+  void RegisterNonNetworkSubresourceURLLoaderFactories(
+      content::RenderFrameHost* frame_host,
+      const GURL& frame_url,
+      NonNetworkURLLoaderFactoryMap* factories) override;
+  bool WillCreateURLLoaderFactory(
+      content::RenderFrameHost* frame_host,
+      bool is_navigation,
+      network::mojom::URLLoaderFactoryRequest* factory_request) override;
 
  protected:
   // Subclasses may wish to provide their own ShellBrowserMainParts.

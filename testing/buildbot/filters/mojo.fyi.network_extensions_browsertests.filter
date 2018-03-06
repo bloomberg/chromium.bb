@@ -1,0 +1,5 @@
+# These tests currently fail when run with enablefeatures=NetworkService
+# See https://crbug.com/819248
+
+# http://crbug.com/706030
+-WebViewAPITest.TestNavigationToExternalProtocol

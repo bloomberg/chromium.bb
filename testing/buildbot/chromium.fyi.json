@@ -4925,6 +4925,22 @@
       },
       {
         "args": [
+          "--enable-features=NetworkService",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_extensions_browsertests.filter"
+        ],
+        "name": "network_service_extensions_browsertests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04"
+            }
+          ]
+        },
+        "test": "extensions_browsertests"
+      },
+      {
+        "args": [
           "--site-per-process"
         ],
         "name": "site_per_process_extensions_browsertests",
@@ -6217,6 +6233,17 @@
           "can_use_on_swarming_builders": true
         },
         "test": "content_browsertests"
+      },
+      {
+        "args": [
+          "--enable-features=NetworkService",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_extensions_browsertests.filter"
+        ],
+        "name": "network_service_extensions_browsertests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "extensions_browsertests"
       }
     ],
     "isolated_scripts": [

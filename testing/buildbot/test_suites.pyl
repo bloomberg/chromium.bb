@@ -1142,6 +1142,12 @@
       },
       'test': 'browser_tests',
     },
+    'network_service_components_browsertests': {
+      'args': [
+        '--enable-features=NetworkService',
+      ],
+      'test': 'components_browsertests',
+    },
     'network_service_content_browsertests': {
       'args': [
         '--enable-features=NetworkService',
@@ -1149,11 +1155,12 @@
       ],
       'test': 'content_browsertests',
     },
-    'network_service_components_browsertests': {
+    'network_service_extensions_browsertests': {
       'args': [
         '--enable-features=NetworkService',
+        '--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_extensions_browsertests.filter',
       ],
-      'test': 'components_browsertests',
+      'test': 'extensions_browsertests',
     },
   },
 

@@ -250,6 +250,7 @@ test("extensions_browsertests") {
   ]
 
   data_deps = [
+    "//testing/buildbot/filters:extensions_browsertests_filters",
     "//third_party/mesa:osmesa",
   ]
 }
