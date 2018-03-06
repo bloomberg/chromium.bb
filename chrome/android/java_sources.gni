@@ -34,7 +34,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/ChromeTabbedActivity2.java",
   "java/src/org/chromium/chrome/browser/ChromeVersionInfo.java",
   "java/src/org/chromium/chrome/browser/ChromeWindow.java",
-  "java/src/org/chromium/chrome/browser/ClassRegister.java",
   "java/src/org/chromium/chrome/browser/DefaultBrowserInfo.java",
   "java/src/org/chromium/chrome/browser/DeferredStartupHandler.java",
   "java/src/org/chromium/chrome/browser/DevToolsServer.java",

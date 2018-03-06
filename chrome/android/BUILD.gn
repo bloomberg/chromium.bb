@@ -40,8 +40,6 @@ chrome_sync_shell_jinja_variables =
     [ "manifest_package=org.chromium.chrome.sync_shell" ]
 
 app_hooks_impl = "java/src/org/chromium/chrome/browser/AppHooksImpl.java"
-class_register_impl =
-    "java/src/org/chromium/chrome/browser/ClassRegisterImpl.java"
 
 if (enable_resource_whitelist_generation) {
   monochrome_resource_whitelist =
@@ -167,13 +165,6 @@ java_strings_grd("chrome_strings_grd") {
 
 android_library("app_hooks_java") {
   java_files = [ app_hooks_impl ]
-  deps = [
-    ":chrome_java",
-  ]
-}
-
-android_library("class_register_java") {
-  java_files = [ class_register_impl ]
   deps = [
     ":chrome_java",
   ]
@@ -331,10 +322,7 @@ android_library("chrome_java") {
   android_manifest_for_lint = chrome_public_android_manifest
 
   # From java_sources.gni.
-  java_files = chrome_java_sources + [
-                 app_hooks_impl,
-                 class_register_impl,
-               ]
+  java_files = chrome_java_sources + [ app_hooks_impl ]
 
   if (enable_vr) {
     java_files += chrome_vr_java_sources
@@ -348,10 +336,7 @@ android_library("chrome_java") {
 
   # Add the actual implementation where necessary so that downstream targets
   # can provide their own implementations.
-  jar_excluded_patterns = [
-    "*/AppHooksImpl.class",
-    "*/ClassRegisterImpl.class",
-  ]
+  jar_excluded_patterns = [ "*/AppHooksImpl.class" ]
 }
 
 action("chrome_android_java_google_api_keys_srcjar") {
@@ -432,7 +417,6 @@ junit_binary("chrome_junit_tests") {
     ":app_hooks_java",
     ":chrome_java",
     ":chrome_java_resources",
-    ":class_register_java",
     ":partner_location_descriptor_proto_java",
     "$google_play_services_package:google_play_services_base_java",
     "$google_play_services_package:google_play_services_basement_java",
@@ -520,7 +504,6 @@ android_library("chrome_test_java") {
     "//base:base_java_test_support",
     "//chrome/android:app_hooks_java",
     "//chrome/android:chrome_java",
-    "//chrome/android:class_register_java",
     "//chrome/android/third_party/compositor_animator:compositor_animator_java",
     "//chrome/android/third_party/widget_bottomsheet_base:widget_bottomsheet_base_java",
     "//chrome/android/webapk/libs/client:client_java",
@@ -672,7 +655,6 @@ if (enable_vr) {
       "//base:base_java_test_support",
       "//chrome/android:app_hooks_java",
       "//chrome/android:chrome_java",
-      "//chrome/android:class_register_java",
       "//chrome/test/android:chrome_java_test_support",
       "//components/policy/android:policy_java",
       "//content/public/android:content_java",
@@ -1076,7 +1058,6 @@ template("chrome_public_apk_tmpl_shared") {
       ":chrome_public_apk_resources",
       ":chrome_public_non_pak_assets",
       ":chrome_public_pak_assets",
-      ":class_register_java",
       "//base:base_java",
     ]
   }
@@ -1143,7 +1124,6 @@ monochrome_public_apk_tmpl("monochrome_public_apk") {
     "//base:base_java",
     "//chrome/android:app_hooks_java",
     "//chrome/android:chrome_java",
-    "//chrome/android:class_register_java",
   ]
 }
 
@@ -1295,7 +1275,6 @@ instrumentation_test_apk("chrome_sync_shell_test_apk") {
     "//base:base_java_test_support",
     "//chrome/android:app_hooks_java",
     "//chrome/android:chrome_java",
-    "//chrome/android:class_register_java",
     "//chrome/test/android:chrome_java_test_support",
     "//components/bookmarks/common/android:bookmarks_java",
     "//components/policy/android:policy_java",
