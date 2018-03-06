@@ -728,20 +728,11 @@ TEST_P(WebSocketMultiProtocolStreamCreateTest, MultipleSubProtocolsInResponse) {
   WaitUntilConnectDone();
   EXPECT_FALSE(stream_);
   EXPECT_TRUE(has_failed());
-  if (stream_type_ == BASIC_HANDSHAKE_STREAM) {
-    EXPECT_EQ(
-        "Error during WebSocket handshake: "
-        "'Sec-WebSocket-Protocol' header must not appear "
-        "more than once in a response",
-        failure_message());
-  } else {
-    DCHECK_EQ(HTTP2_HANDSHAKE_STREAM, stream_type_);
-    EXPECT_EQ(
-        "Error during WebSocket handshake: "
-        "'sec-websocket-protocol' header must not appear "
-        "more than once in a response",
-        failure_message());
-  }
+  EXPECT_EQ(
+      "Error during WebSocket handshake: "
+      "'Sec-WebSocket-Protocol' header must not appear "
+      "more than once in a response",
+      failure_message());
 }
 
 // Unmatched sub-protocol should be rejected.

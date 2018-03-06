@@ -9,7 +9,6 @@
 #include <iterator>
 #include <set>
 #include <string>
-#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -42,7 +41,6 @@
 #include "net/websockets/websocket_deflate_predictor_impl.h"
 #include "net/websockets/websocket_deflate_stream.h"
 #include "net/websockets/websocket_deflater.h"
-#include "net/websockets/websocket_extension_parser.h"
 #include "net/websockets/websocket_handshake_challenge.h"
 #include "net/websockets/websocket_handshake_constants.h"
 #include "net/websockets/websocket_handshake_request_info.h"
@@ -57,13 +55,6 @@ const char kConnectionErrorStatusLine[] = "HTTP/1.1 503 Connection Error";
 
 }  // namespace
 
-// TODO(ricea): If more extensions are added, replace this with a more general
-// mechanism.
-struct WebSocketExtensionParams {
-  bool deflate_enabled = false;
-  WebSocketDeflateParameters deflate_parameters;
-};
-
 namespace {
 
 enum GetHeaderResult {
@@ -76,13 +67,6 @@ std::string MissingHeaderMessage(const std::string& header_name) {
   return std::string("'") + header_name + "' header is missing";
 }
 
-std::string MultipleHeaderValuesMessage(const std::string& header_name) {
-  return
-      std::string("'") +
-      header_name +
-      "' header must not appear more than once in a response";
-}
-
 std::string GenerateHandshakeChallenge() {
   std::string raw_challenge(websockets::kRawChallengeLength, '\0');
   crypto::RandBytes(base::string_as_array(&raw_challenge),
@@ -90,14 +74,6 @@ std::string GenerateHandshakeChallenge() {
   std::string encoded_challenge;
   base::Base64Encode(raw_challenge, &encoded_challenge);
   return encoded_challenge;
-}
-
-void AddVectorHeaderIfNonEmpty(const char* name,
-                               const std::vector<std::string>& value,
-                               HttpRequestHeaders* headers) {
-  if (value.empty())
-    return;
-  headers->SetHeader(name, base::JoinString(value, ", "));
 }
 
 GetHeaderResult GetSingleHeaderValue(const HttpResponseHeaders* headers,
@@ -122,7 +98,8 @@ bool ValidateHeaderHasSingleValue(GetHeaderResult result,
     return false;
   }
   if (result == GET_HEADER_MULTIPLE) {
-    *failure_message = MultipleHeaderValuesMessage(header_name);
+    *failure_message =
+        WebSocketHandshakeStreamBase::MultipleHeaderValuesMessage(header_name);
     return false;
   }
   DCHECK_EQ(result, GET_HEADER_OK);
@@ -179,111 +156,6 @@ bool ValidateConnection(const HttpResponseHeaders* headers,
     *failure_message = "'Connection' header value must contain 'Upgrade'";
     return false;
   }
-  return true;
-}
-
-bool ValidateSubProtocol(
-    const HttpResponseHeaders* headers,
-    const std::vector<std::string>& requested_sub_protocols,
-    std::string* sub_protocol,
-    std::string* failure_message) {
-  size_t iter = 0;
-  std::string value;
-  std::unordered_set<std::string> requested_set(requested_sub_protocols.begin(),
-                                                requested_sub_protocols.end());
-  int count = 0;
-  bool has_multiple_protocols = false;
-  bool has_invalid_protocol = false;
-
-  while (!has_invalid_protocol || !has_multiple_protocols) {
-    std::string temp_value;
-    if (!headers->EnumerateHeader(&iter, websockets::kSecWebSocketProtocol,
-                                  &temp_value))
-      break;
-    value = temp_value;
-    if (requested_set.count(value) == 0)
-      has_invalid_protocol = true;
-    if (++count > 1)
-      has_multiple_protocols = true;
-  }
-
-  if (has_multiple_protocols) {
-    *failure_message =
-        MultipleHeaderValuesMessage(websockets::kSecWebSocketProtocol);
-    return false;
-  } else if (count > 0 && requested_sub_protocols.size() == 0) {
-    *failure_message =
-        std::string("Response must not include 'Sec-WebSocket-Protocol' "
-                    "header if not present in request: ")
-        + value;
-    return false;
-  } else if (has_invalid_protocol) {
-    *failure_message =
-        "'Sec-WebSocket-Protocol' header value '" +
-        value +
-        "' in response does not match any of sent values";
-    return false;
-  } else if (requested_sub_protocols.size() > 0 && count == 0) {
-    *failure_message =
-        "Sent non-empty 'Sec-WebSocket-Protocol' header "
-        "but no response was received";
-    return false;
-  }
-  *sub_protocol = value;
-  return true;
-}
-
-bool ValidateExtensions(const HttpResponseHeaders* headers,
-                        std::string* accepted_extensions_descriptor,
-                        std::string* failure_message,
-                        WebSocketExtensionParams* params) {
-  size_t iter = 0;
-  std::string header_value;
-  std::vector<std::string> header_values;
-  // TODO(ricea): If adding support for additional extensions, generalise this
-  // code.
-  bool seen_permessage_deflate = false;
-  while (headers->EnumerateHeader(&iter, websockets::kSecWebSocketExtensions,
-                                  &header_value)) {
-    WebSocketExtensionParser parser;
-    if (!parser.Parse(header_value)) {
-      // TODO(yhirano) Set appropriate failure message.
-      *failure_message =
-          "'Sec-WebSocket-Extensions' header value is "
-          "rejected by the parser: " +
-          header_value;
-      return false;
-    }
-
-    const std::vector<WebSocketExtension>& extensions = parser.extensions();
-    for (const auto& extension : extensions) {
-      if (extension.name() == "permessage-deflate") {
-        if (seen_permessage_deflate) {
-          *failure_message = "Received duplicate permessage-deflate response";
-          return false;
-        }
-        seen_permessage_deflate = true;
-        auto& deflate_parameters = params->deflate_parameters;
-        if (!deflate_parameters.Initialize(extension, failure_message) ||
-            !deflate_parameters.IsValidAsResponse(failure_message)) {
-          *failure_message = "Error in permessage-deflate: " + *failure_message;
-          return false;
-        }
-        // Note that we don't have to check the request-response compatibility
-        // here because we send a request compatible with any valid responses.
-        // TODO(yhirano): Place a DCHECK here.
-
-        header_values.push_back(header_value);
-      } else {
-        *failure_message = "Found an unsupported extension '" +
-                           extension.name() +
-                           "' in 'Sec-WebSocket-Extensions' header";
-        return false;
-      }
-    }
-  }
-  *accepted_extensions_descriptor = base::JoinString(header_values, ", ");
-  params->deflate_enabled = seen_permessage_deflate;
   return true;
 }
 

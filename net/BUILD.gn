@@ -1802,6 +1802,7 @@ component("net") {
       "url_request/websocket_handshake_userdata_key.h",
       "websockets/websocket_handshake_request_info.h",
       "websockets/websocket_handshake_response_info.h",
+      "websockets/websocket_handshake_stream_base.cc",
       "websockets/websocket_handshake_stream_base.h",
       "websockets/websocket_stream.h",
     ]
