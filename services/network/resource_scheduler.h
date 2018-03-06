@@ -92,7 +92,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ResourceScheduler {
     // of non-delayable requests in-flight.
     double non_delayable_weight;
   };
-  typedef std::vector<ParamsForNetworkQuality> ParamsForNetworkQualityContainer;
+  using ParamsForNetworkQualityContainer = std::vector<ParamsForNetworkQuality>;
 
   explicit ResourceScheduler(bool enabled);
   ~ResourceScheduler();
@@ -250,9 +250,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ResourceScheduler {
         params_for_network_quality_container_;
   };
 
-  typedef int64_t ClientId;
-  typedef std::map<ClientId, Client*> ClientMap;
-  typedef std::set<ScheduledResourceRequestImpl*> RequestSet;
+  using ClientId = int64_t;
+  using ClientMap = std::map<ClientId, std::unique_ptr<Client>>;
+  using RequestSet = std::set<ScheduledResourceRequestImpl*>;
 
   // Called when a ScheduledResourceRequest is destroyed.
   void RemoveRequest(ScheduledResourceRequestImpl* request);

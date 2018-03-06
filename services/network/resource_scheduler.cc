@@ -173,8 +173,8 @@ struct ResourceScheduler::RequestPriorityParams {
 
 class ResourceScheduler::RequestQueue {
  public:
-  typedef std::multiset<ScheduledResourceRequestImpl*, ScheduledResourceSorter>
-      NetQueue;
+  using NetQueue =
+      std::multiset<ScheduledResourceRequestImpl*, ScheduledResourceSorter>;
 
   RequestQueue() : fifo_ordering_ids_(0) {}
   ~RequestQueue() {}
@@ -200,11 +200,11 @@ class ResourceScheduler::RequestQueue {
   }
 
   // Returns true if no requests are queued.
-  bool IsEmpty() const { return queue_.size() == 0; }
+  bool IsEmpty() const { return queue_.empty(); }
 
  private:
-  typedef std::map<ScheduledResourceRequestImpl*, NetQueue::iterator>
-      PointerMap;
+  using PointerMap =
+      std::map<ScheduledResourceRequestImpl*, NetQueue::iterator>;
 
   uint32_t MakeFifoOrderingId() {
     fifo_ordering_ids_ += 1;
@@ -1052,7 +1052,7 @@ ResourceScheduler::ScheduleRequest(int child_id,
     return std::move(request);
   }
 
-  Client* client = it->second;
+  Client* client = it->second.get();
   client->ScheduleRequest(*url_request, request.get());
   return std::move(request);
 }
@@ -1065,11 +1065,10 @@ void ResourceScheduler::RemoveRequest(ScheduledResourceRequestImpl* request) {
   }
 
   ClientMap::iterator client_it = client_map_.find(request->client_id());
-  if (client_it == client_map_.end()) {
+  if (client_it == client_map_.end())
     return;
-  }
 
-  Client* client = client_it->second;
+  Client* client = client_it->second.get();
   client->RemoveRequest(request);
 }
 
@@ -1081,8 +1080,8 @@ void ResourceScheduler::OnClientCreated(
   ClientId client_id = MakeClientId(child_id, route_id);
   DCHECK(!base::ContainsKey(client_map_, client_id));
 
-  Client* client = new Client(network_quality_estimator, this);
-  client_map_[client_id] = client;
+  client_map_[client_id] =
+      std::make_unique<Client>(network_quality_estimator, this);
 }
 
 void ResourceScheduler::OnClientDeleted(int child_id, int route_id) {
@@ -1091,7 +1090,7 @@ void ResourceScheduler::OnClientDeleted(int child_id, int route_id) {
   ClientMap::iterator it = client_map_.find(client_id);
   DCHECK(it != client_map_.end());
 
-  Client* client = it->second;
+  Client* client = it->second.get();
   // ResourceDispatcherHost cancels all requests except for cross-renderer
   // navigations, async revalidations and detachable requests after
   // OnClientDeleted() returns.
@@ -1101,7 +1100,6 @@ void ResourceScheduler::OnClientDeleted(int child_id, int route_id) {
     unowned_requests_.insert(*request_it);
   }
 
-  delete client;
   client_map_.erase(it);
 }
 
@@ -1123,7 +1121,7 @@ void ResourceScheduler::DeprecatedOnNavigate(int child_id, int route_id) {
     return;
   }
 
-  Client* client = it->second;
+  Client* client = it->second.get();
   client->DeprecatedOnNavigate();
 }
 
@@ -1137,7 +1135,7 @@ void ResourceScheduler::DeprecatedOnWillInsertBody(int child_id, int route_id) {
     return;
   }
 
-  Client* client = it->second;
+  Client* client = it->second.get();
   client->DeprecatedOnWillInsertBody();
 }
 
@@ -1147,11 +1145,10 @@ void ResourceScheduler::OnReceivedSpdyProxiedHttpResponse(int child_id,
   ClientId client_id = MakeClientId(child_id, route_id);
 
   ClientMap::iterator client_it = client_map_.find(client_id);
-  if (client_it == client_map_.end()) {
+  if (client_it == client_map_.end())
     return;
-  }
 
-  Client* client = client_it->second;
+  Client* client = client_it->second.get();
   client->OnReceivedSpdyProxiedHttpResponse();
 }
 
@@ -1167,10 +1164,9 @@ ResourceScheduler::Client* ResourceScheduler::GetClient(int child_id,
                                                         int route_id) {
   ClientId client_id = MakeClientId(child_id, route_id);
   ClientMap::iterator client_it = client_map_.find(client_id);
-  if (client_it == client_map_.end()) {
+  if (client_it == client_map_.end())
     return nullptr;
-  }
-  return client_it->second;
+  return client_it->second.get();
 }
 
 void ResourceScheduler::ReprioritizeRequest(net::URLRequest* request,
@@ -1208,7 +1204,7 @@ void ResourceScheduler::ReprioritizeRequest(net::URLRequest* request,
     return;
   }
 
-  Client* client = client_it->second;
+  Client* client = client_it->second.get();
   client->ReprioritizeRequest(scheduled_resource_request, old_priority_params,
                               new_priority_params);
 }
