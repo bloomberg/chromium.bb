@@ -37,3 +37,9 @@ $ git am --3way --message-id -p4 /tmp/patchdir
 Local Modifications:
  - codereview.settings has been excluded.
  - thread_log_messages.cc (using ThreadLocalStorage::Slot instead of StaticSlot)
+ - util/linux/memory_map.cc
+ - util/mach/symbolic_constants_mach.cc
+ - util/posix/symbolic_constants_posix.cc
+ - util/stdlib/string_number_conversion.h
+ - util/stdlib/string_number_conversion.cc
+ - util/stdlib/string_number_conversion_test.cc
