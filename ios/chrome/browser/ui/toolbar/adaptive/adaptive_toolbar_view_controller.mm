@@ -73,8 +73,7 @@
 #pragma mark - ToolbarConsumer
 
 - (void)setCanGoForward:(BOOL)canGoForward {
-  self.view.forwardLeadingButton.enabled = canGoForward;
-  self.view.forwardTrailingButton.enabled = canGoForward;
+  self.view.forwardButton.enabled = canGoForward;
 }
 
 - (void)setCanGoBack:(BOOL)canGoBack {
@@ -179,10 +178,12 @@
 
 // Records the use of a button.
 - (IBAction)recordUserMetrics:(id)sender {
+  if (!sender)
+    return;
+
   if (sender == self.view.backButton) {
     base::RecordAction(base::UserMetricsAction("MobileToolbarBack"));
-  } else if (sender == self.view.forwardLeadingButton ||
-             sender == self.view.forwardTrailingButton) {
+  } else if (sender == self.view.forwardButton) {
     base::RecordAction(base::UserMetricsAction("MobileToolbarForward"));
   } else if (sender == self.view.reloadButton) {
     base::RecordAction(base::UserMetricsAction("MobileToolbarReload"));

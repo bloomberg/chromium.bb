@@ -41,10 +41,8 @@
 
 // Back ToolbarButton.
 - (ToolbarButton*)backButton;
-// Forward ToolbarButton to be displayed on the leading side of the toolbar.
-- (ToolbarButton*)leadingForwardButton;
-// Forward ToolbarButton to be displayed on the trailing side of the toolbar.
-- (ToolbarButton*)trailingForwardButton;
+// Forward ToolbarButton.
+- (ToolbarButton*)forwardButton;
 // Tab Grid ToolbarButton.
 - (ToolbarTabGridButton*)tabGridButton;
 // Tab Switcher Strip ToolbarButton.

@@ -23,35 +23,25 @@
 - (ToolbarComponentVisibility)backButtonVisibility {
   switch (self.type) {
     case PRIMARY:
-      return ToolbarComponentVisibilityAlways;
+      return ToolbarComponentVisibilityAlways &
+             ~ToolbarComponentVisibilitySplit;
     case SECONDARY:
-      return ToolbarComponentVisibilityNone;
+      return ToolbarComponentVisibilitySplit;
     case LEGACY:
       return ToolbarComponentVisibilityAlways;
   }
 }
 
-- (ToolbarComponentVisibility)leadingForwardButtonVisibility {
+- (ToolbarComponentVisibility)forwardButtonVisibility {
   switch (self.type) {
     case PRIMARY:
       return ToolbarComponentVisibilityAlways &
-             ~self.trailingForwardButtonVisibility;
+             ~ToolbarComponentVisibilitySplit;
     case SECONDARY:
-      return ToolbarComponentVisibilityNone;
+      return ToolbarComponentVisibilitySplit;
     case LEGACY:
       return ToolbarComponentVisibilityOnlyWhenEnabled |
              ToolbarComponentVisibilityRegularWidthRegularHeight;
-  }
-}
-
-- (ToolbarComponentVisibility)trailingForwardButtonVisibility {
-  switch (self.type) {
-    case PRIMARY:
-      return ToolbarComponentVisibilityCompactWidthRegularHeight;
-    case SECONDARY:
-      return ToolbarComponentVisibilityNone;
-    case LEGACY:
-      return ToolbarComponentVisibilityNone;
   }
 }
 
@@ -85,7 +75,7 @@
       return ToolbarComponentVisibilityAlways &
              ~ToolbarComponentVisibilityCompactWidthRegularHeight;
     case SECONDARY:
-      return ToolbarComponentVisibilitySplit;
+      return ToolbarComponentVisibilityNone;
     case LEGACY:
       return ToolbarComponentVisibilityRegularWidthRegularHeight;
   }
@@ -119,7 +109,7 @@
       return ToolbarComponentVisibilityAlways &
              ~ToolbarComponentVisibilityCompactWidthRegularHeight;
     case SECONDARY:
-      return ToolbarComponentVisibilitySplit;
+      return ToolbarComponentVisibilityNone;
     case LEGACY:
       return ToolbarComponentVisibilityRegularWidthCompactHeight |
              ToolbarComponentVisibilityRegularWidthRegularHeight;
