@@ -427,6 +427,23 @@ void DeveloperPrivateEventRouter::OnProfilePrefChanged() {
       new Event(events::DEVELOPER_PRIVATE_ON_PROFILE_STATE_CHANGED,
                 developer::OnProfileStateChanged::kEventName, std::move(args)));
   event_router_->BroadcastEvent(std::move(event));
+
+  // The following properties are updated when dev mode is toggled.
+  //   - error_collection.is_enabled
+  //   - error_collection.is_active
+  //   - runtime_errors
+  //   - manifest_errors
+  //   - install_warnings
+  // An alternative approach would be to factor out the dev mode state from the
+  // above properties and allow the UI control what happens when dev mode
+  // changes. If the UI rendering performance is an issue, instead of replacing
+  // the entire extension info, a diff of the old and new extension info can be
+  // made by the UI and only perform a partial update of the extension info.
+  const ExtensionSet& extensions =
+      ExtensionRegistry::Get(profile_)->enabled_extensions();
+  for (const auto& extension : extensions)
+    BroadcastItemStateChanged(developer::EVENT_TYPE_PREFS_CHANGED,
+                              extension->id());
 }
 
 void DeveloperPrivateEventRouter::BroadcastItemStateChanged(
