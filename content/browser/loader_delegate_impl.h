@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_LOADER_DELEGATE_IMPL_H_
 #define CONTENT_BROWSER_LOADER_DELEGATE_IMPL_H_
 
+#include <string>
+
 #include "content/browser/loader/loader_delegate.h"
 #include "content/common/content_export.h"
 
@@ -15,12 +17,11 @@ class CONTENT_EXPORT LoaderDelegateImpl : public LoaderDelegate {
   ~LoaderDelegateImpl() override;
 
   // LoaderDelegate implementation:
-  void LoadStateChanged(
-      WebContents* web_contents,
-      const GURL& url,
-      const net::LoadStateWithParam& load_state,
-      uint64_t upload_position,
-      uint64_t upload_size) override;
+  void LoadStateChanged(WebContents* web_contents,
+                        const std::string& host,
+                        const net::LoadStateWithParam& load_state,
+                        uint64_t upload_position,
+                        uint64_t upload_size) override;
 };
 
 }  // namespace content

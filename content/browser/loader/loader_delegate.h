@@ -8,12 +8,11 @@
 #include <inttypes.h>
 
 #include <memory>
+#include <string>
 
 #include "content/common/content_export.h"
 #include "content/public/browser/resource_request_info.h"
 #include "net/base/load_states.h"
-
-class GURL;
 
 namespace content {
 
@@ -31,13 +30,11 @@ class CONTENT_EXPORT LoaderDelegate {
 
   // Notification that the load state for the given WebContents has changed.
   // NOTE: this method is called on the UI thread.
-  virtual void LoadStateChanged(
-      WebContents* web_contents,
-      const GURL& url,
-      const net::LoadStateWithParam& load_state,
-      uint64_t upload_position,
-      uint64_t upload_size) = 0;
-
+  virtual void LoadStateChanged(WebContents* web_contents,
+                                const std::string& host,
+                                const net::LoadStateWithParam& load_state,
+                                uint64_t upload_position,
+                                uint64_t upload_size) = 0;
 };
 
 }  // namespace content

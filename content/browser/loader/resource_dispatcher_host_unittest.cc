@@ -2346,24 +2346,24 @@ TEST_F(ResourceDispatcherHostTest, LoadInfo) {
   info.web_contents_getter = base::Bind(WebContentsBinder, wc1);
   info.load_state = net::LoadStateWithParam(net::LOAD_STATE_SENDING_REQUEST,
                                             base::string16());
-  info.url = GURL("test://1/");
+  info.host = "a.com";
   info.upload_position = 0;
   info.upload_size = 0;
   infos->push_back(info);
 
-  info.url = GURL("test://2/");
+  info.host = "b.com";
   info.load_state = net::LoadStateWithParam(net::LOAD_STATE_READING_RESPONSE,
                                             base::string16());
   infos->push_back(info);
 
-  info.url = GURL("test://3/");
+  info.host = "c.com";
 
   std::unique_ptr<LoadInfoMap> load_info_map =
       ResourceDispatcherHostImpl::PickMoreInterestingLoadInfos(
           std::move(infos));
   ASSERT_EQ(1u, load_info_map->size());
   ASSERT_TRUE(load_info_map->find(wc1) != load_info_map->end());
-  EXPECT_EQ(GURL("test://2/"), (*load_info_map)[wc1].url);
+  EXPECT_EQ("b.com", (*load_info_map)[wc1].host);
   EXPECT_EQ(net::LOAD_STATE_READING_RESPONSE,
             (*load_info_map)[wc1].load_state.state);
   EXPECT_EQ(0u, (*load_info_map)[wc1].upload_position);
@@ -2379,12 +2379,12 @@ TEST_F(ResourceDispatcherHostTest, LoadInfoSamePriority) {
   info.web_contents_getter = base::Bind(WebContentsBinder, wc1);
   info.load_state = net::LoadStateWithParam(net::LOAD_STATE_IDLE,
                                             base::string16());
-  info.url = GURL("test://1/");
+  info.host = "a.com";
   info.upload_position = 0;
   info.upload_size = 0;
   infos->push_back(info);
 
-  info.url = GURL("test://2/");
+  info.host = "b.com";
   infos->push_back(info);
 
   std::unique_ptr<LoadInfoMap> load_info_map =
@@ -2392,7 +2392,7 @@ TEST_F(ResourceDispatcherHostTest, LoadInfoSamePriority) {
           std::move(infos));
   ASSERT_EQ(1u, load_info_map->size());
   ASSERT_TRUE(load_info_map->find(wc1) != load_info_map->end());
-  EXPECT_EQ(GURL("test://1/"), (*load_info_map)[wc1].url);
+  EXPECT_EQ("a.com", (*load_info_map)[wc1].host);
   EXPECT_EQ(net::LOAD_STATE_IDLE, (*load_info_map)[wc1].load_state.state);
   EXPECT_EQ(0u, (*load_info_map)[wc1].upload_position);
   EXPECT_EQ(0u, (*load_info_map)[wc1].upload_size);
@@ -2406,7 +2406,7 @@ TEST_F(ResourceDispatcherHostTest, LoadInfoUploadProgress) {
   info.web_contents_getter = base::Bind(WebContentsBinder, wc1);
   info.load_state = net::LoadStateWithParam(net::LOAD_STATE_READING_RESPONSE,
                                             base::string16());
-  info.url = GURL("test://1/");
+  info.host = "a.com";
   info.upload_position = 0;
   info.upload_size = 0;
   infos->push_back(info);
@@ -2415,21 +2415,21 @@ TEST_F(ResourceDispatcherHostTest, LoadInfoUploadProgress) {
   info.upload_size = 1000;
   infos->push_back(info);
 
-  info.url = GURL("test://2/");
+  info.host = "b.com";
   info.load_state = net::LoadStateWithParam(net::LOAD_STATE_SENDING_REQUEST,
                                             base::string16());
   info.upload_position = 50;
   info.upload_size = 100;
   infos->push_back(info);
 
-  info.url = GURL("test://1/");
+  info.host = "a.com";
   info.load_state = net::LoadStateWithParam(net::LOAD_STATE_READING_RESPONSE,
                                             base::string16());
   info.upload_position = 1000;
   info.upload_size = 1000;
   infos->push_back(info);
 
-  info.url = GURL("test://3/");
+  info.host = "c.com";
   info.upload_position = 0;
   info.upload_size = 0;
   infos->push_back(info);
@@ -2439,7 +2439,7 @@ TEST_F(ResourceDispatcherHostTest, LoadInfoUploadProgress) {
           std::move(infos));
   ASSERT_EQ(1u, load_info_map->size());
   ASSERT_TRUE(load_info_map->find(wc1) != load_info_map->end());
-  EXPECT_EQ(GURL("test://2/"), (*load_info_map)[wc1].url);
+  EXPECT_EQ("b.com", (*load_info_map)[wc1].host);
   EXPECT_EQ(net::LOAD_STATE_SENDING_REQUEST,
             (*load_info_map)[wc1].load_state.state);
   EXPECT_EQ(50u, (*load_info_map)[wc1].upload_position);
@@ -2456,7 +2456,7 @@ TEST_F(ResourceDispatcherHostTest, LoadInfoTwoRenderViews) {
   info.web_contents_getter = base::Bind(WebContentsBinder, wc1);
   info.load_state = net::LoadStateWithParam(net::LOAD_STATE_CONNECTING,
                                             base::string16());
-  info.url = GURL("test://1/");
+  info.host = "a.com";
   info.upload_position = 0;
   info.upload_size = 0;
   infos->push_back(info);
@@ -2465,17 +2465,17 @@ TEST_F(ResourceDispatcherHostTest, LoadInfoTwoRenderViews) {
   info.web_contents_getter = base::Bind(WebContentsBinder, wc2);
   info.load_state = net::LoadStateWithParam(net::LOAD_STATE_IDLE,
                                             base::string16());
-  info.url = GURL("test://2/");
+  info.host = "b.com";
   infos->push_back(info);
 
   info.web_contents_getter = base::Bind(WebContentsBinder, wc1);
-  info.url = GURL("test://3/");
+  info.host = "c.com";
   infos->push_back(info);
 
   info.web_contents_getter = base::Bind(WebContentsBinder, wc2);
   info.load_state = net::LoadStateWithParam(net::LOAD_STATE_CONNECTING,
                                             base::string16());
-  info.url = GURL("test://4/");
+  info.host = "d.com";
   infos->push_back(info);
 
   std::unique_ptr<LoadInfoMap> load_info_map =
@@ -2484,14 +2484,14 @@ TEST_F(ResourceDispatcherHostTest, LoadInfoTwoRenderViews) {
   ASSERT_EQ(2u, load_info_map->size());
 
   ASSERT_TRUE(load_info_map->find(wc1) != load_info_map->end());
-  EXPECT_EQ(GURL("test://1/"), (*load_info_map)[wc1].url);
+  EXPECT_EQ("a.com", (*load_info_map)[wc1].host);
   EXPECT_EQ(net::LOAD_STATE_CONNECTING,
             (*load_info_map)[wc1].load_state.state);
   EXPECT_EQ(0u, (*load_info_map)[wc1].upload_position);
   EXPECT_EQ(0u, (*load_info_map)[wc1].upload_size);
 
   ASSERT_TRUE(load_info_map->find(wc2) != load_info_map->end());
-  EXPECT_EQ(GURL("test://4/"), (*load_info_map)[wc2].url);
+  EXPECT_EQ("d.com", (*load_info_map)[wc2].host);
   EXPECT_EQ(net::LOAD_STATE_CONNECTING,
             (*load_info_map)[wc2].load_state.state);
   EXPECT_EQ(0u, (*load_info_map)[wc2].upload_position);

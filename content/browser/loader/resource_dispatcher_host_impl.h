@@ -375,7 +375,11 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
     ~LoadInfo();
 
     ResourceRequestInfo::WebContentsGetter web_contents_getter;
-    GURL url;
+
+    // Comes directly from GURL::host() to avoid copying an entire GURL between
+    // threads.
+    std::string host;
+
     net::LoadStateWithParam load_state;
     uint64_t upload_position;
     uint64_t upload_size;

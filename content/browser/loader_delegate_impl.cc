@@ -20,13 +20,13 @@ LoaderDelegateImpl::~LoaderDelegateImpl() {}
 
 void LoaderDelegateImpl::LoadStateChanged(
     WebContents* web_contents,
-    const GURL& url,
+    const std::string& host,
     const net::LoadStateWithParam& load_state,
     uint64_t upload_position,
     uint64_t upload_size) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  static_cast<WebContentsImpl*>(web_contents)->LoadStateChanged(
-      url, load_state, upload_position, upload_size);
+  static_cast<WebContentsImpl*>(web_contents)
+      ->LoadStateChanged(host, load_state, upload_position, upload_size);
 }
 
 }  // namespace content

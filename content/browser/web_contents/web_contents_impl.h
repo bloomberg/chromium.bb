@@ -206,7 +206,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                          RenderWidgetHost* source_rwh);
 
   // Notification that the RenderViewHost's load state changed.
-  void LoadStateChanged(const GURL& url,
+  void LoadStateChanged(const std::string& host,
                         const net::LoadStateWithParam& load_state,
                         uint64_t upload_position,
                         uint64_t upload_size);
