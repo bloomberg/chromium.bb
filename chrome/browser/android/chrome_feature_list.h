@@ -19,6 +19,7 @@ extern const base::Feature kAndroidPayIntegrationV2;
 extern const base::Feature kAndroidPaymentApps;
 extern const base::Feature kCCTBackgroundTab;
 extern const base::Feature kCCTExternalLinkHandling;
+extern const base::Feature kCCTParallelRequest;
 extern const base::Feature kCCTPostMessageAPI;
 extern const base::Feature kCCTRedirectPreconnect;
 extern const base::Feature kChromeDuplexFeature;
