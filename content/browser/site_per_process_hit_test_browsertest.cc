@@ -601,20 +601,10 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessInternalsHitTestBrowserTest,
       &div_scroll_top_start));
   EXPECT_EQ(0.0, div_scroll_top_start);
 
-  // Wait until renderer's compositor thread is synced. Otherwise the event
-  // handler won't be installed when the event arrives.
-  MainThreadFrameObserver observer(rwhv_root->GetRenderWidgetHost());
+  // Wait until renderer's compositor thread is synced. Otherwise the non fast
+  // scrollable regions won't be set when the event arrives.
+  MainThreadFrameObserver observer(rwhv_nested->GetRenderWidgetHost());
   observer.Wait();
-  {
-    base::RunLoop run_loop;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitClosure(),
-        // tiny_timeout() is too small to run without flakes, but
-        // action_timeout() is 100 times bigger, which is overkill. We use a
-        // custom delay here to achieve a balance.
-        base::TimeDelta::FromMilliseconds(1000));
-    run_loop.Run();
-  }
 
   // Send a wheel to scroll the div.
   gfx::Point location(point_f.x(), point_f.y());
@@ -624,11 +614,11 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessInternalsHitTestBrowserTest,
                                2);  // This must be '2' or it gets silently
                                     // dropped.
   UpdateEventRootLocation(&scroll_event, rwhv_root);
-  rwhv_root->OnScrollEvent(&scroll_event);
 
   InputEventAckWaiter ack_observer(
       parent_iframe_node->current_frame_host()->GetRenderWidgetHost(),
       blink::WebInputEvent::kGestureScrollUpdate);
+  rwhv_root->OnScrollEvent(&scroll_event);
   ack_observer.Wait();
 
   // Check compositor layers.
@@ -759,21 +749,6 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessInternalsHitTestBrowserTest,
                                     &div_scroll_top_start));
   EXPECT_EQ(0.0, div_scroll_top_start);
 
-  // Wait until renderer's compositor thread is synced. Otherwise the event
-  // handler won't be installed when the event arrives.
-  MainThreadFrameObserver observer(rwhv_root->GetRenderWidgetHost());
-  observer.Wait();
-  {
-    base::RunLoop run_loop;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitClosure(),
-        // tiny_timeout() is too small to run without flakes, but
-        // action_timeout() is 100 times bigger, which is overkill. We use a
-        // custom delay here to achieve a balance.
-        base::TimeDelta::FromMilliseconds(1000));
-    run_loop.Run();
-  }
-
   // Send a wheel to scroll the parent containing the div.
   gfx::Point location(point_f.x(), point_f.y());
   ui::ScrollEvent scroll_event(ui::ET_SCROLL, location, ui::EventTimeForNow(),
@@ -782,12 +757,15 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessInternalsHitTestBrowserTest,
                                2);  // This must be '2' or it gets silently
                                     // dropped.
   UpdateEventRootLocation(&scroll_event, rwhv_root);
-  rwhv_root->OnScrollEvent(&scroll_event);
 
   InputEventAckWaiter ack_observer(
       parent_iframe_node->current_frame_host()->GetRenderWidgetHost(),
       blink::WebInputEvent::kGestureScrollUpdate);
+  rwhv_root->OnScrollEvent(&scroll_event);
   ack_observer.Wait();
+
+  MainThreadFrameObserver thread_observer(rwhv_parent->GetRenderWidgetHost());
+  thread_observer.Wait();
 
   // Check compositor layers.
   EXPECT_TRUE(ExecuteScriptAndExtractString(
