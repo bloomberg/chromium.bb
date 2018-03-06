@@ -55,6 +55,9 @@ class ExtensionWebContentsObserver
   static ExtensionWebContentsObserver* GetForWebContents(
       content::WebContents* web_contents);
 
+  // This must be called by clients directly after the EWCO has been created.
+  void Initialize();
+
   ExtensionFunctionDispatcher* dispatcher() { return &dispatcher_; }
 
   // Returns the extension associated with the given |render_frame_host|, or
@@ -69,6 +72,8 @@ class ExtensionWebContentsObserver
  protected:
   explicit ExtensionWebContentsObserver(content::WebContents* web_contents);
   ~ExtensionWebContentsObserver() override;
+
+  bool initialized() const { return initialized_; }
 
   content::BrowserContext* browser_context() { return browser_context_; }
 
@@ -111,14 +116,13 @@ class ExtensionWebContentsObserver
   void OnRequest(content::RenderFrameHost* render_frame_host,
                  const ExtensionHostMsg_Request_Params& params);
 
-  // A helper function for initializing render frames at the creation of the
-  // observer.
-  void InitializeFrameHelper(content::RenderFrameHost* render_frame_host);
-
   // The BrowserContext associated with the WebContents being observed.
   content::BrowserContext* browser_context_;
 
   ExtensionFunctionDispatcher dispatcher_;
+
+  // Whether this object has been initialized.
+  bool initialized_;
 
   service_manager::BinderRegistryWithArgs<content::RenderFrameHost*> registry_;
 

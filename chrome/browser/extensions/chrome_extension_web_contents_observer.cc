@@ -40,8 +40,19 @@ ChromeExtensionWebContentsObserver::ChromeExtensionWebContentsObserver(
 
 ChromeExtensionWebContentsObserver::~ChromeExtensionWebContentsObserver() {}
 
+// static
+void ChromeExtensionWebContentsObserver::CreateForWebContents(
+    content::WebContents* web_contents) {
+  content::WebContentsUserData<
+      ChromeExtensionWebContentsObserver>::CreateForWebContents(web_contents);
+
+  // Initialize this instance if necessary.
+  FromWebContents(web_contents)->Initialize();
+}
+
 void ChromeExtensionWebContentsObserver::RenderFrameCreated(
     content::RenderFrameHost* render_frame_host) {
+  DCHECK(initialized());
   ReloadIfTerminated(render_frame_host);
   ExtensionWebContentsObserver::RenderFrameCreated(render_frame_host);
 
@@ -82,12 +93,14 @@ void ChromeExtensionWebContentsObserver::RenderFrameCreated(
 
 void ChromeExtensionWebContentsObserver::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
+  DCHECK(initialized());
   ExtensionWebContentsObserver::DidFinishNavigation(navigation_handle);
 }
 
 bool ChromeExtensionWebContentsObserver::OnMessageReceived(
     const IPC::Message& message,
     content::RenderFrameHost* render_frame_host) {
+  DCHECK(initialized());
   if (ExtensionWebContentsObserver::OnMessageReceived(message,
                                                       render_frame_host)) {
     return true;
@@ -109,6 +122,7 @@ void ChromeExtensionWebContentsObserver::OnDetailedConsoleMessageAdded(
     const base::string16& source,
     const StackTrace& stack_trace,
     int32_t severity_level) {
+  DCHECK(initialized());
   if (!IsSourceFromAnExtension(source))
     return;
 
@@ -127,6 +141,7 @@ void ChromeExtensionWebContentsObserver::OnDetailedConsoleMessageAdded(
 
 void ChromeExtensionWebContentsObserver::InitializeRenderFrame(
     content::RenderFrameHost* render_frame_host) {
+  DCHECK(initialized());
   ExtensionWebContentsObserver::InitializeRenderFrame(render_frame_host);
   WindowController* controller = dispatcher()->GetExtensionWindowController();
   if (controller) {
@@ -137,6 +152,7 @@ void ChromeExtensionWebContentsObserver::InitializeRenderFrame(
 
 void ChromeExtensionWebContentsObserver::ReloadIfTerminated(
     content::RenderFrameHost* render_frame_host) {
+  DCHECK(initialized());
   std::string extension_id = GetExtensionIdFromFrame(render_frame_host);
   if (extension_id.empty())
     return;

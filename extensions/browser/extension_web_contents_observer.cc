@@ -4,6 +4,7 @@
 
 #include "extensions/browser/extension_web_contents_observer.h"
 
+#include "base/logging.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -34,14 +35,31 @@ ExtensionWebContentsObserver* ExtensionWebContentsObserver::GetForWebContents(
       web_contents);
 }
 
+void ExtensionWebContentsObserver::Initialize() {
+  if (initialized_)
+    return;
+
+  initialized_ = true;
+  for (content::RenderFrameHost* rfh : web_contents()->GetAllFrames()) {
+    // We only initialize the frame if the renderer counterpart is live;
+    // otherwise we wait for the RenderFrameCreated notification.
+    if (!rfh->IsRenderFrameLive())
+      continue;
+
+    // Initialize the FrameData for this frame here since we didn't receive the
+    // RenderFrameCreated notification for it.
+    ExtensionApiFrameIdMap::Get()->InitializeRenderFrameData(rfh);
+
+    InitializeRenderFrame(rfh);
+  }
+}
+
 ExtensionWebContentsObserver::ExtensionWebContentsObserver(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       browser_context_(web_contents->GetBrowserContext()),
-      dispatcher_(browser_context_) {
-  web_contents->ForEachFrame(
-      base::BindRepeating(&ExtensionWebContentsObserver::InitializeFrameHelper,
-                          base::Unretained(this)));
+      dispatcher_(browser_context_),
+      initialized_(false) {
   dispatcher_.set_delegate(this);
 }
 
@@ -50,6 +68,7 @@ ExtensionWebContentsObserver::~ExtensionWebContentsObserver() {
 
 void ExtensionWebContentsObserver::InitializeRenderFrame(
     content::RenderFrameHost* render_frame_host) {
+  DCHECK(initialized_);
   DCHECK(render_frame_host);
   DCHECK(render_frame_host->IsRenderFrameLive());
 
@@ -83,11 +102,13 @@ void ExtensionWebContentsObserver::InitializeRenderFrame(
 
 content::WebContents* ExtensionWebContentsObserver::GetAssociatedWebContents()
     const {
+  DCHECK(initialized_);
   return web_contents();
 }
 
 void ExtensionWebContentsObserver::RenderFrameCreated(
     content::RenderFrameHost* render_frame_host) {
+  DCHECK(initialized_);
   // Optimization: Look up the extension API frame ID to force the mapping to be
   // cached. This minimizes the number of IO->UI->IO thread hops when the ID is
   // looked up again on the IO thread for the webRequest API.
@@ -131,6 +152,7 @@ void ExtensionWebContentsObserver::RenderFrameCreated(
 
 void ExtensionWebContentsObserver::RenderFrameDeleted(
     content::RenderFrameHost* render_frame_host) {
+  DCHECK(initialized_);
   ProcessManager::Get(browser_context_)
       ->UnregisterRenderFrameHost(render_frame_host);
   ExtensionApiFrameIdMap::Get()->OnRenderFrameDeleted(render_frame_host);
@@ -149,6 +171,7 @@ void ExtensionWebContentsObserver::RenderFrameHostChanged(
 
 void ExtensionWebContentsObserver::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
+  DCHECK(initialized_);
   if (!navigation_handle->HasCommitted())
     return;
 
@@ -171,12 +194,14 @@ void ExtensionWebContentsObserver::OnInterfaceRequestFromFrame(
     content::RenderFrameHost* render_frame_host,
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle* interface_pipe) {
+  DCHECK(initialized_);
   registry_.TryBindInterface(interface_name, interface_pipe, render_frame_host);
 }
 
 bool ExtensionWebContentsObserver::OnMessageReceived(
     const IPC::Message& message,
     content::RenderFrameHost* render_frame_host) {
+  DCHECK(initialized_);
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(
       ExtensionWebContentsObserver, message, render_frame_host)
@@ -187,6 +212,7 @@ bool ExtensionWebContentsObserver::OnMessageReceived(
 }
 
 void ExtensionWebContentsObserver::PepperInstanceCreated() {
+  DCHECK(initialized_);
   if (GetViewType(web_contents()) == VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
     ProcessManager* const process_manager =
         ProcessManager::Get(browser_context_);
@@ -198,6 +224,7 @@ void ExtensionWebContentsObserver::PepperInstanceCreated() {
 }
 
 void ExtensionWebContentsObserver::PepperInstanceDeleted() {
+  DCHECK(initialized_);
   if (GetViewType(web_contents()) == VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
     ProcessManager* const process_manager =
         ProcessManager::Get(browser_context_);
@@ -210,6 +237,7 @@ void ExtensionWebContentsObserver::PepperInstanceDeleted() {
 
 std::string ExtensionWebContentsObserver::GetExtensionIdFromFrame(
     content::RenderFrameHost* render_frame_host) const {
+  DCHECK(initialized_);
   const GURL& site = render_frame_host->GetSiteInstance()->GetSiteURL();
   if (!site.SchemeIs(kExtensionScheme))
     return std::string();
@@ -220,6 +248,7 @@ std::string ExtensionWebContentsObserver::GetExtensionIdFromFrame(
 const Extension* ExtensionWebContentsObserver::GetExtensionFromFrame(
     content::RenderFrameHost* render_frame_host,
     bool verify_url) const {
+  DCHECK(initialized_);
   std::string extension_id = GetExtensionIdFromFrame(render_frame_host);
   if (extension_id.empty())
     return nullptr;
@@ -250,23 +279,9 @@ const Extension* ExtensionWebContentsObserver::GetExtensionFromFrame(
 void ExtensionWebContentsObserver::OnRequest(
     content::RenderFrameHost* render_frame_host,
     const ExtensionHostMsg_Request_Params& params) {
+  DCHECK(initialized_);
   dispatcher_.Dispatch(params, render_frame_host,
                        render_frame_host->GetProcess()->GetID());
-}
-
-void ExtensionWebContentsObserver::InitializeFrameHelper(
-    content::RenderFrameHost* render_frame_host) {
-  // Since this is called for all existing RenderFrameHosts during the
-  // ExtensionWebContentsObserver's creation, it's possible that not all hosts
-  // are ready.
-  // We only initialize the frame if the renderer counterpart is live; otherwise
-  // we wait for the RenderFrameCreated notification.
-  if (render_frame_host->IsRenderFrameLive()) {
-    // Initialize the FrameData for this frame here since we didn't receive the
-    // RenderFrameCreated notification for it.
-    ExtensionApiFrameIdMap::Get()->InitializeRenderFrameData(render_frame_host);
-    InitializeRenderFrame(render_frame_host);
-  }
 }
 
 }  // namespace extensions
