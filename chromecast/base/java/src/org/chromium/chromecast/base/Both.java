@@ -53,4 +53,18 @@ public class Both<A, B> {
         assert b != null;
         return new Both<>(a, b);
     }
+
+    /**
+     * Turns a function of two arguments into a function of a single Both argument.
+     */
+    public static <A, B, R> Function<Both<A, B>, R> adapt(BiFunction<A, B, R> function) {
+        return (Both<A, B> data) -> function.apply(data.first, data.second);
+    }
+
+    /**
+     * Turns a consumer of two arguments into a consumer of a single Both argument.
+     */
+    public static <A, B> Consumer<Both<A, B>> adapt(BiConsumer<A, B> consumer) {
+        return (Both<A, B> data) -> consumer.accept(data.first, data.second);
+    }
 }
