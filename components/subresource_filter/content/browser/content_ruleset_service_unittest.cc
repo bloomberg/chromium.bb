@@ -19,8 +19,12 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/run_loop.h"
 #include "base/task_runner.h"
+#include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/prefs/testing_pref_service.h"
 #include "components/subresource_filter/content/common/subresource_filter_messages.h"
+#include "components/subresource_filter/core/browser/ruleset_service.h"
+#include "components/subresource_filter/core/common/test_ruleset_creator.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_service.h"
@@ -189,6 +193,81 @@ TEST_F(SubresourceFilterContentRulesetServiceTest, PostAfterStartupTask) {
 
   EXPECT_CALL(mock_closure_target, Call()).Times(1);
   browser_client()->RunAfterStartupTask();
+}
+
+TEST_F(SubresourceFilterContentRulesetServiceTest,
+       PublishesRulesetInOnePostTask) {
+  // Regression test for crbug.com/817308. Test verifies that ruleset is
+  // published on browser startup via exactly one PostTask.
+
+  // Create a temporary directory for the indexed ruleset data.
+  base::ScopedTempDir scoped_temp_dir;
+  ASSERT_TRUE(scoped_temp_dir.CreateUniqueTempDir());
+  const base::FilePath base_dir =
+      scoped_temp_dir.GetPath().AppendASCII("Rules").AppendASCII("Indexed");
+
+  // Create a testing ruleset.
+  testing::TestRulesetPair ruleset;
+  ASSERT_NO_FATAL_FAILURE(
+      testing::TestRulesetCreator().CreateRulesetToDisallowURLsWithPathSuffix(
+          "foo", &ruleset));
+
+  // Create local state and save the ruleset version to emulate invariant that
+  // the version of the last indexed ruleset is stored in the local state.
+  TestingPrefServiceSimple prefs;
+  IndexedRulesetVersion::RegisterPrefs(prefs.registry());
+  IndexedRulesetVersion current_version(
+      "1.2.3.4", IndexedRulesetVersion::CurrentFormatVersion());
+  current_version.SaveToPrefs(&prefs);
+
+  // Create ruleset data on a disk.
+  const base::FilePath version_dir_path =
+      IndexedRulesetLocator::GetSubdirectoryPathForVersion(base_dir,
+                                                           current_version);
+  ASSERT_EQ(RulesetService::IndexAndWriteRulesetResult::SUCCESS,
+            RulesetService::WriteRuleset(version_dir_path,
+                                         /* license_path =*/base::FilePath(),
+                                         ruleset.indexed.contents.data(),
+                                         ruleset.indexed.contents.size()));
+
+  // Create a ruleset service and its harness.
+  scoped_refptr<base::TestSimpleTaskRunner> blocking_task_runner =
+      base::MakeRefCounted<base::TestSimpleTaskRunner>();
+  scoped_refptr<base::TestSimpleTaskRunner> background_task_runner =
+      base::MakeRefCounted<base::TestSimpleTaskRunner>();
+  NotifyingMockRenderProcessHost renderer_host(browser_context());
+  auto service = std::make_unique<ContentRulesetService>(blocking_task_runner);
+  base::RunLoop callback_waiter;
+  service->SetRulesetPublishedCallbackForTesting(callback_waiter.QuitClosure());
+
+  // |RulesetService| constructor should read the last indexed ruleset version
+  // and post ruleset setup on |blocking_task_runner|. (Yes, exactly
+  // |blocking_task_runner| via |ContentRulesetService| as its delegate).
+  ASSERT_EQ(0u, blocking_task_runner->NumPendingTasks());
+  service->set_ruleset_service(std::make_unique<RulesetService>(
+      &prefs, background_task_runner, service.get(), base_dir));
+
+  // The key test assertion is that ruleset data is published via exactly one
+  // post task on |blocking_task_runner|. It is important to run pending tasks
+  // only once here.
+  ASSERT_EQ(1u, blocking_task_runner->NumPendingTasks());
+  blocking_task_runner->RunPendingTasks();
+  callback_waiter.Run();
+
+  // Check that the ruleset data is delivered to the renderer.
+  EXPECT_EQ(1u, renderer_host.sink().message_count());
+  const std::string expected_data(ruleset.indexed.contents.begin(),
+                                  ruleset.indexed.contents.end());
+  ASSERT_NO_FATAL_FAILURE(AssertSetRulesetForProcessMessageWithContent(
+      renderer_host.sink().GetMessageAt(0), expected_data));
+
+  // |ContentRulesetService| destruction requires additional tricks. Its member
+  // |VerifiedRulesetDealer::Handle| posts task upon destruction on
+  // |blocking_task_runner|.
+  service.reset();
+  // Need to wait for |VerifiedRulesetDealer| destruction on the
+  // |blocking_task_runner|.
+  blocking_task_runner->RunPendingTasks();
 }
 
 }  // namespace subresource_filter

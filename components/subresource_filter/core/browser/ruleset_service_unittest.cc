@@ -13,6 +13,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/environment.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -21,6 +22,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task_runner_util.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_simple_task_runner.h"
@@ -86,7 +88,9 @@ std::vector<uint8_t> ReadFileContents(base::File* file) {
 
 class MockRulesetServiceDelegate : public RulesetServiceDelegate {
  public:
-  MockRulesetServiceDelegate() = default;
+  explicit MockRulesetServiceDelegate(
+      scoped_refptr<base::TestSimpleTaskRunner> blocking_task_runner)
+      : blocking_task_runner_(std::move(blocking_task_runner)) {}
   ~MockRulesetServiceDelegate() override = default;
 
   void SimulateStartupCompleted() {
@@ -103,6 +107,18 @@ class MockRulesetServiceDelegate : public RulesetServiceDelegate {
       after_startup_tasks_.push_back(task);
   }
 
+  void TryOpenAndSetRulesetFile(
+      const base::FilePath& path,
+      base::OnceCallback<void(base::File)> callback) override {
+    // Emulate |VerifiedRulesetDealer::Handle| behaviour:
+    //   1. Open file on task runner.
+    //   2. Reply with result on current thread runner.
+    base::PostTaskAndReplyWithResult(
+        blocking_task_runner_.get(), FROM_HERE,
+        base::BindOnce(&MockRulesetServiceDelegate::OpenRulesetFile, path),
+        std::move(callback));
+  }
+
   void PublishNewRulesetVersion(base::File ruleset_data) override {
     published_rulesets_.push_back(std::move(ruleset_data));
   }
@@ -110,9 +126,15 @@ class MockRulesetServiceDelegate : public RulesetServiceDelegate {
   std::vector<base::File>& published_rulesets() { return published_rulesets_; }
 
  private:
+  static base::File OpenRulesetFile(base::FilePath file_path) {
+    return base::File(file_path, base::File::FLAG_OPEN | base::File::FLAG_READ |
+                                     base::File::FLAG_SHARE_DELETE);
+  }
+
   bool is_after_startup_ = false;
   std::vector<base::Closure> after_startup_tasks_;
   std::vector<base::File> published_rulesets_;
+  scoped_refptr<base::TestSimpleTaskRunner> blocking_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(MockRulesetServiceDelegate);
 };
@@ -174,10 +196,11 @@ class SubresourceFilteringRulesetServiceTest : public ::testing::Test {
   }
 
   void ResetRulesetService() {
-    mock_delegate_ = std::make_unique<MockRulesetServiceDelegate>();
+    mock_delegate_ =
+        std::make_unique<MockRulesetServiceDelegate>(blocking_task_runner_);
     service_ = std::make_unique<RulesetService>(
-        &pref_service_, blocking_task_runner_, background_task_runner_,
-        mock_delegate_.get(), base_dir());
+        &pref_service_, background_task_runner_, mock_delegate_.get(),
+        base_dir());
   }
 
   void ClearRulesetService() {
@@ -1028,8 +1051,7 @@ TEST_F(SubresourceFilteringRulesetServiceTest, RulesetIsReadonly) {
       AssertReadonlyRulesetFile(&mock_delegate()->published_rulesets()[0]));
 }
 
-TEST_F(SubresourceFilteringRulesetServiceTest,
-       ParallelOpenOfTwoFilesPublishesOnlyLastOne) {
+TEST_F(SubresourceFilteringRulesetServiceTest, ParallelOpenOfTwoFiles) {
   // Test emulates bail out situation when ruleset file opening is cheduled
   // during another file opening.
   SimulateStartupCompletedAndWaitForTasks();
@@ -1052,11 +1074,12 @@ TEST_F(SubresourceFilteringRulesetServiceTest,
 
   // Process both respones.
   base::RunLoop().RunUntilIdle();
-
-  // Only the last one should fire callback.
-  ASSERT_EQ(1u, mock_delegate()->published_rulesets().size());
+  ASSERT_EQ(2u, mock_delegate()->published_rulesets().size());
   ASSERT_NO_FATAL_FAILURE(AssertValidRulesetFileWithContents(
       &mock_delegate()->published_rulesets()[0],
+      test_ruleset_1().indexed.contents));
+  ASSERT_NO_FATAL_FAILURE(AssertValidRulesetFileWithContents(
+      &mock_delegate()->published_rulesets()[1],
       test_ruleset_2().indexed.contents));
 }
 

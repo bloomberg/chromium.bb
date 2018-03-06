@@ -184,8 +184,8 @@ class SubresourceFilterSafeBrowsingActivationThrottleTest
         rules, &test_ruleset_pair_));
     auto ruleset_dealer = std::make_unique<VerifiedRulesetDealer::Handle>(
         base::MessageLoop::current()->task_runner());
-    ruleset_dealer->SetRulesetFile(
-        testing::TestRuleset::Open(test_ruleset_pair_.indexed));
+    ruleset_dealer->TryOpenAndSetRulesetFile(test_ruleset_pair_.indexed.path,
+                                             base::DoNothing());
     client_ =
         std::make_unique<::testing::NiceMock<MockSubresourceFilterClient>>();
     client_->set_ruleset_dealer(std::move(ruleset_dealer));

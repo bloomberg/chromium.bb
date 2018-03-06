@@ -16,7 +16,6 @@ static_library("browser") {
     "//base",
     "//components/prefs",
     "//components/subresource_filter/core/common",
-    "//components/variations",
     "//third_party/protobuf:protobuf_lite",
   ]
 }

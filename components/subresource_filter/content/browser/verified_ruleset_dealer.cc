@@ -11,6 +11,7 @@
 #include "base/files/file.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/task_runner_util.h"
 #include "base/trace_event/trace_event.h"
 #include "components/subresource_filter/core/common/indexed_ruleset.h"
 #include "components/subresource_filter/core/common/memory_mapped_ruleset.h"
@@ -21,6 +22,18 @@ namespace subresource_filter {
 
 VerifiedRulesetDealer::VerifiedRulesetDealer() = default;
 VerifiedRulesetDealer::~VerifiedRulesetDealer() = default;
+
+base::File VerifiedRulesetDealer::OpenAndSetRulesetFile(
+    const base::FilePath& file_path) {
+  DCHECK(CalledOnValidSequence());
+  // On Windows, open the file with FLAG_SHARE_DELETE to allow deletion while
+  // there are handles to it still open.
+  base::File file(file_path, base::File::FLAG_OPEN | base::File::FLAG_READ |
+                                 base::File::FLAG_SHARE_DELETE);
+  if (file.IsValid())
+    SetRulesetFile(file.Duplicate());
+  return file;
+}
 
 void VerifiedRulesetDealer::SetRulesetFile(base::File ruleset_file) {
   RulesetDealer::SetRulesetFile(std::move(ruleset_file));
@@ -77,12 +90,18 @@ void VerifiedRulesetDealer::Handle::GetDealerAsync(
                          base::Bind(std::move(callback), dealer_.get()));
 }
 
-void VerifiedRulesetDealer::Handle::SetRulesetFile(base::File file) {
+void VerifiedRulesetDealer::Handle::TryOpenAndSetRulesetFile(
+    const base::FilePath& path,
+    base::OnceCallback<void(base::File)> callback) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&VerifiedRulesetDealer::SetRulesetFile,
-                     base::Unretained(dealer_.get()), std::move(file)));
+  // |base::Unretained| is safe here because the |OpenAndSetRulesetFile| task
+  // will be posted before a task to delete the pointer upon destruction of
+  // |this| Handler.
+  base::PostTaskAndReplyWithResult(
+      task_runner_, FROM_HERE,
+      base::BindOnce(&VerifiedRulesetDealer::OpenAndSetRulesetFile,
+                     base::Unretained(dealer_.get()), path),
+      std::move(callback));
 }
 
 // VerifiedRuleset and its Handle. ---------------------------------------------
