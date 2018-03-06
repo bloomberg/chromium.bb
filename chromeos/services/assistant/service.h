@@ -21,6 +21,10 @@
 
 class GoogleServiceAuthError;
 
+namespace base {
+class OneShotTimer;
+}
+
 namespace chromeos {
 namespace assistant {
 
@@ -32,7 +36,16 @@ class Service : public service_manager::Service,
   Service();
   ~Service() override;
 
+  void SetIdentityManagerForTesting(
+      identity::mojom::IdentityManagerPtr identity_manager);
+
+  void SetAssistantManagerForTesting(
+      std::unique_ptr<AssistantManagerService> assistant_manager_service);
+
+  void SetTimerForTesting(std::unique_ptr<base::OneShotTimer> timer);
+
  private:
+  friend class ServiceTest;
   // service_manager::Service overrides
   void OnStart() override;
   void OnBindInterface(const service_manager::BindSourceInfo& source_info,
@@ -66,6 +79,8 @@ class Service : public service_manager::Service,
       session_observer_binding_;
 
   std::unique_ptr<AssistantManagerService> assistant_manager_service_;
+
+  std::unique_ptr<base::OneShotTimer> token_refresh_timer_;
 
   base::WeakPtrFactory<Service> weak_factory_;
 
