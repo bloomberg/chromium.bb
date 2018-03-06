@@ -193,13 +193,6 @@ void FolderHeaderView::Layout() {
   folder_name_view_->SetBoundsRect(text_bounds);
 }
 
-bool FolderHeaderView::OnKeyPressed(const ui::KeyEvent& event) {
-  if (event.key_code() == ui::VKEY_RETURN)
-    delegate_->GiveBackFocusToSearchBox();
-
-  return false;
-}
-
 void FolderHeaderView::ContentsChanged(views::Textfield* sender,
                                        const base::string16& new_contents) {
   // Temporarily remove from observer to ignore data change caused by us.
@@ -221,6 +214,11 @@ void FolderHeaderView::ContentsChanged(views::Textfield* sender,
 
 bool FolderHeaderView::HandleKeyEvent(views::Textfield* sender,
                                       const ui::KeyEvent& key_event) {
+  if (key_event.key_code() == ui::VKEY_RETURN &&
+      key_event.type() == ui::ET_KEY_PRESSED) {
+    delegate_->GiveBackFocusToSearchBox();
+    return true;
+  }
   if (!CanProcessLeftRightKeyTraversal(key_event))
     return false;
   return ProcessLeftRightKeyTraversalForTextfield(folder_name_view_, key_event);

@@ -524,6 +524,9 @@ void AppListView::InitializeFullscreen(gfx::NativeView parent,
 }
 
 void AppListView::HandleClickOrTap(ui::LocatedEvent* event) {
+  // Clear focus if the located event is not handled by any child view.
+  GetFocusManager()->ClearFocus();
+
   // No-op if app list is on fullscreen all apps state and the event location is
   // within apps grid view's bounds.
   if (app_list_state_ == AppListViewState::FULLSCREEN_ALL_APPS &&
