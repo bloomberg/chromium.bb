@@ -1571,7 +1571,7 @@ void VrShellGl::SendVSync(base::TimeTicks time, GetVSyncCallback callback) {
   gfx::Transform head_mat;
   device::mojom::VRPosePtr pose =
       device::GvrDelegate::GetVRPosePtrWithNeckModel(gvr_api_.get(), &head_mat,
-                                                     0, prediction_nanos);
+                                                     prediction_nanos);
 
   webvr_head_pose_[frame_index % kPoseRingBufferSize] = head_mat;
   webvr_frame_oustanding_[frame_index % kPoseRingBufferSize] = true;

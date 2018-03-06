@@ -188,8 +188,8 @@ void GvrDevice::ExitPresent() {
 
 void GvrDevice::OnMagicWindowPoseRequest(
     mojom::VRMagicWindowProvider::GetPoseCallback callback) {
-  std::move(callback).Run(GvrDelegate::GetVRPosePtrWithNeckModel(
-      gvr_api_.get(), nullptr, rotation_degrees_));
+  std::move(callback).Run(
+      GvrDelegate::GetVRPosePtrWithNeckModel(gvr_api_.get(), nullptr));
 }
 
 void GvrDevice::OnListeningForActivate(bool listening) {
@@ -201,10 +201,14 @@ void GvrDevice::OnListeningForActivate(bool listening) {
 
 void GvrDevice::PauseTracking() {
   gvr_api_->PauseTracking();
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_NonPresentingGvrContext_pause(env, non_presenting_context_);
 }
 
 void GvrDevice::ResumeTracking() {
   gvr_api_->ResumeTracking();
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_NonPresentingGvrContext_resume(env, non_presenting_context_);
 }
 
 GvrDelegateProvider* GvrDevice::GetGvrDelegateProvider() {
@@ -216,14 +220,9 @@ GvrDelegateProvider* GvrDevice::GetGvrDelegateProvider() {
   return delegate_provider;
 }
 
-void GvrDevice::OnDIPScaleChanged(JNIEnv* env, const JavaRef<jobject>& obj) {
+void GvrDevice::OnDisplayConfigurationChanged(JNIEnv* env,
+                                              const JavaRef<jobject>& obj) {
   SetVRDisplayInfo(CreateVRDisplayInfo(gvr_api_.get(), GetId()));
-}
-
-void GvrDevice::OnRotationChanged(JNIEnv* env,
-                                  const JavaRef<jobject>& obj,
-                                  jint rotation_degrees) {
-  rotation_degrees_ = rotation_degrees;
 }
 
 void GvrDevice::Activate(mojom::VRDisplayEventReason reason,

@@ -72,6 +72,12 @@ Java_com_google_vr_cardboard_DisplaySynchronizer_nativeUpdate(
     jlong syncTime,
     jint currentRotation);
 
+extern "C" __attribute__((visibility("default"))) void
+Java_com_google_vr_cardboard_DisplaySynchronizer_nativeOnMetricsChanged(
+    JNIEnv* env,
+    jobject obj,
+    jlong native_object);
+
 // Step 3: RegisterNatives.
 
 static const JNINativeMethod kMethodsDisplaySynchronizer[] = {
@@ -108,6 +114,13 @@ static const JNINativeMethod kMethodsDisplaySynchronizer[] = {
      "V",
      reinterpret_cast<void*>(
          Java_com_google_vr_cardboard_DisplaySynchronizer_nativeUpdate)},
+    {"nativeOnMetricsChanged",
+     "("
+     "J"
+     ")"
+     "V",
+     reinterpret_cast<void*>(
+         Java_com_google_vr_cardboard_DisplaySynchronizer_nativeOnMetricsChanged)},
 };
 
 static bool RegisterNativesImpl(JNIEnv* env) {

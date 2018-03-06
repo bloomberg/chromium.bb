@@ -33,12 +33,10 @@ class DEVICE_VR_EXPORT GvrDelegate {
   static mojom::VRPosePtr GetVRPosePtrWithNeckModel(
       gvr::GvrApi* gvr_api,
       gfx::Transform* head_mat_out,
-      int rotate_degrees,
       int64_t prediction_time);
   static mojom::VRPosePtr GetVRPosePtrWithNeckModel(
       gvr::GvrApi* gvr_api,
-      gfx::Transform* head_mat_out,
-      int rotate_degrees);
+      gfx::Transform* head_mat_out);
 };
 
 }  // namespace device
