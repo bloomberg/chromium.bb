@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,12 +35,12 @@ bool DisableUpdateService() {
 }
 
 bool ForceUIRefreshPhase1() {
-  return false;
+  return true;
 }
 
 // TODO(crbug.com/818560) : Remove this hook.
 bool ForceTabSwitcherTabGrid() {
-  return false;
+  return true;
 }
 
 void SetUpTestsIfPresent() {

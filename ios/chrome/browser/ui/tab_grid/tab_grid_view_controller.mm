@@ -16,6 +16,10 @@
 #error "This file requires ARC support."
 #endif
 
+// The accessibility label for the done button for use in test automation.
+NSString* const kTabGridDoneButtonAccessibilityID =
+    @"TabGridDoneButtonAccessibilityID";
+
 namespace {
 // Temporary alert used while building this feature.
 UIAlertController* NotImplementedAlert() {
@@ -389,6 +393,7 @@ UIAlertController* NotImplementedAlert() {
 - (void)setupTopToolbarButtons {
   self.doneButton = self.topToolbar.leadingButton;
   self.closeAllButton = self.topToolbar.trailingButton;
+  self.doneButton.accessibilityIdentifier = kTabGridDoneButtonAccessibilityID;
   // TODO(crbug.com/818699) : Localize strings.
   [self.doneButton setTitle:@"Done" forState:UIControlStateNormal];
   [self.closeAllButton setTitle:@"Close All" forState:UIControlStateNormal];
