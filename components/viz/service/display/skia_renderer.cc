@@ -816,7 +816,7 @@ gfx::Size SkiaRenderer::GetRenderPassBackingPixelSize(
   auto it = render_pass_backings_.find(render_pass_id);
   DCHECK(it != render_pass_backings_.end());
   SkSurface* texture = it->second.render_pass_surface.get();
-  return gfx::Size(texture->height(), texture->width());
+  return gfx::Size(texture->width(), texture->height());
 }
 
 }  // namespace viz
