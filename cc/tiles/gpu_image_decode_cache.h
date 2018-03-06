@@ -144,6 +144,8 @@ class CC_EXPORT GpuImageDecodeCache
                                   DecodeTaskType task_type);
   void OnImageUploadTaskCompleted(const DrawImage& image);
 
+  bool SupportsColorSpaceConversion() const;
+
   // For testing only.
   void SetWorkingSetLimitForTesting(size_t limit) {
     max_working_set_bytes_ = limit;
@@ -419,8 +421,6 @@ class CC_EXPORT GpuImageDecodeCache
   // were queued up during a time when the |context_| lock was unavailable.
   // These including deleting, unlocking, and locking textures.
   void RunPendingContextThreadOperations();
-
-  bool SupportsColorSpaces() const;
 
   void CheckContextLockAcquiredIfNecessary();
 

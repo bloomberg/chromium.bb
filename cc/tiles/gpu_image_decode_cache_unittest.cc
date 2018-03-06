@@ -299,7 +299,17 @@ class GpuImageDecodeCacheTest
     return draw_image;
   }
 
- private:
+  sk_sp<SkImage> GetLastTransferredImage() {
+    auto& key = transfer_cache_helper_.GetLastAddedEntry();
+    ServiceTransferCacheEntry* entry =
+        transfer_cache_helper_.GetEntryInternal(key.first, key.second);
+    if (!entry)
+      return nullptr;
+    CHECK_EQ(TransferCacheEntryType::kImage, entry->Type());
+    return static_cast<ServiceImageTransferCacheEntry*>(entry)->image();
+  }
+
+ protected:
   FakeDiscardableManager discardable_manager_;
   scoped_refptr<GPUImageDecodeTestMockContextProvider> context_provider_;
   TransferCacheTestHelper transfer_cache_helper_;
@@ -2198,13 +2208,81 @@ TEST_P(GpuImageDecodeCacheTest,
   DecodedDrawImage decoded_draw_image =
       cache->GetDecodedImageForDraw(draw_image);
 
-  sk_sp<SkImage> decoded_image = cache->GetSWImageDecodeForTesting(draw_image);
-  // Ensure that the "uploaded" image we get back is the same as the decoded
-  // image we've cached.
-  ExpectIfNotUsingTransferCache(decoded_image == decoded_draw_image.image());
-  // Ensure that the SW decoded image had colorspace conversion applied.
-  ExpectIfNotUsingTransferCache(decoded_image->colorSpace() ==
-                                color_space.ToSkColorSpace().get());
+  sk_sp<SkColorSpace> target_color_space = cache->SupportsColorSpaceConversion()
+                                               ? color_space.ToSkColorSpace()
+                                               : nullptr;
+
+  if (use_transfer_cache_) {
+    // If using the transfer cache, the color conversion should be applied
+    // there as well, even if it is a software image.
+    sk_sp<SkImage> service_image = GetLastTransferredImage();
+    ASSERT_TRUE(image);
+    EXPECT_FALSE(service_image->isTextureBacked());
+    EXPECT_EQ(image.width(), service_image->width());
+    EXPECT_EQ(image.height(), service_image->height());
+
+    // Color space should be logically equal to the original color space.
+    EXPECT_TRUE(SkColorSpace::Equals(service_image->colorSpace(),
+                                     target_color_space.get()));
+  } else {
+    sk_sp<SkImage> decoded_image =
+        cache->GetSWImageDecodeForTesting(draw_image);
+    // Ensure that the "uploaded" image we get back is the same as the decoded
+    // image we've cached.
+    EXPECT_TRUE(decoded_image == decoded_draw_image.image());
+    // Ensure that the SW decoded image had colorspace conversion applied.
+    EXPECT_TRUE(decoded_image->colorSpace() == target_color_space.get());
+  }
+
+  cache->DrawWithImageFinished(draw_image, decoded_draw_image);
+  cache->UnrefImage(draw_image);
+}
+
+TEST_P(GpuImageDecodeCacheTest,
+       ColorConversionDuringUploadForSmallImageNonSRGBColorSpace) {
+  auto cache = CreateCache();
+  bool is_decomposable = true;
+  SkFilterQuality quality = kHigh_SkFilterQuality;
+  gfx::ColorSpace color_space = gfx::ColorSpace::CreateDisplayP3D65();
+
+  PaintImage image = CreateDiscardablePaintImage(gfx::Size(11, 12));
+  DrawImage draw_image(image, SkIRect::MakeWH(image.width(), image.height()),
+                       quality,
+                       CreateMatrix(SkSize::Make(1.0f, 1.0f), is_decomposable),
+                       PaintImage::kDefaultFrameIndex, color_space);
+  ImageDecodeCache::TaskResult result =
+      cache->GetTaskForImageAndRef(draw_image, ImageDecodeCache::TracingInfo());
+  EXPECT_TRUE(result.need_unref);
+  EXPECT_TRUE(result.task);
+
+  TestTileTaskRunner::ProcessTask(result.task->dependencies()[0].get());
+  TestTileTaskRunner::ProcessTask(result.task.get());
+
+  viz::ContextProvider::ScopedContextLock context_lock(context_provider());
+  DecodedDrawImage decoded_draw_image =
+      cache->GetDecodedImageForDraw(draw_image);
+
+  sk_sp<SkColorSpace> target_color_space = cache->SupportsColorSpaceConversion()
+                                               ? color_space.ToSkColorSpace()
+                                               : nullptr;
+
+  if (use_transfer_cache_) {
+    // If using the transfer cache, the color conversion should be applied
+    // there during upload.
+    sk_sp<SkImage> service_image = GetLastTransferredImage();
+    ASSERT_TRUE(image);
+    EXPECT_TRUE(service_image->isTextureBacked());
+    EXPECT_EQ(image.width(), service_image->width());
+    EXPECT_EQ(image.height(), service_image->height());
+
+    // Color space should be logically equal to the original color space.
+    EXPECT_TRUE(SkColorSpace::Equals(service_image->colorSpace(),
+                                     target_color_space.get()));
+  } else {
+    // Ensure that the HW uploaded image had color space conversion applied.
+    EXPECT_TRUE(decoded_draw_image.image()->colorSpace() ==
+                target_color_space.get());
+  }
 
   cache->DrawWithImageFinished(draw_image, decoded_draw_image);
   cache->UnrefImage(draw_image);

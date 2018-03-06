@@ -60,6 +60,7 @@ class CC_PAINT_EXPORT PaintOpWriter {
   void Write(const PaintFlags& flags);
   void Write(const DrawImage& image);
   void Write(const sk_sp<SkData>& data);
+  void Write(const SkColorSpace* data);
   void Write(const PaintShader* shader);
   void Write(const PaintFilter* filter);
   void Write(const scoped_refptr<PaintTextBlob>& blob);
