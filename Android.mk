@@ -16,7 +16,6 @@ LOCAL_SHARED_LIBRARIES := \
 
 LOCAL_SRC_FILES := \
 	amdgpu.c \
-	amlogic.c \
 	cirrus.c \
 	drv.c \
 	evdi.c \
@@ -25,6 +24,7 @@ LOCAL_SRC_FILES := \
 	i915.c \
 	marvell.c \
 	mediatek.c \
+	meson.c \
 	msm.c \
 	nouveau.c \
 	rockchip.c \

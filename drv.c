@@ -23,9 +23,6 @@
 #ifdef DRV_AMDGPU
 extern const struct backend backend_amdgpu;
 #endif
-#ifdef DRV_AMLOGIC
-extern const struct backend backend_amlogic;
-#endif
 extern const struct backend backend_evdi;
 #ifdef DRV_EXYNOS
 extern const struct backend backend_exynos;
@@ -38,6 +35,9 @@ extern const struct backend backend_marvell;
 #endif
 #ifdef DRV_MEDIATEK
 extern const struct backend backend_mediatek;
+#endif
+#ifdef DRV_MESON
+extern const struct backend backend_meson;
 #endif
 #ifdef DRV_MSM
 extern const struct backend backend_msm;
@@ -73,9 +73,6 @@ static const struct backend *drv_get_backend(int fd)
 #ifdef DRV_AMDGPU
 		&backend_amdgpu,
 #endif
-#ifdef DRV_AMLOGIC
-		&backend_amlogic,
-#endif
 		&backend_evdi,
 #ifdef DRV_EXYNOS
 		&backend_exynos,
@@ -88,6 +85,9 @@ static const struct backend *drv_get_backend(int fd)
 #endif
 #ifdef DRV_MEDIATEK
 		&backend_mediatek,
+#endif
+#ifdef DRV_MESON
+		&backend_meson,
 #endif
 #ifdef DRV_MSM
 		&backend_msm,
