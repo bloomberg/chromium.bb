@@ -8,13 +8,13 @@
 #include <string>
 
 #include "base/containers/stack.h"
-#include "gpu/gpu_gles2_export.h"
+#include "gpu/gpu_export.h"
 
 namespace gpu {
 namespace gles2 {
 
 // Tracks debug marker.
-class GPU_GLES2_EXPORT DebugMarkerManager {
+class GPU_EXPORT DebugMarkerManager {
  public:
    DebugMarkerManager();
    ~DebugMarkerManager();
@@ -60,4 +60,3 @@ class GPU_GLES2_EXPORT DebugMarkerManager {
 }  // namespace gpu
 
 #endif  // GPU_COMMAND_BUFFER_SERVICE_DEBUG_MARKER_MANAGER_H_
-

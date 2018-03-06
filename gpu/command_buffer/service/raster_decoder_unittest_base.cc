@@ -173,7 +173,10 @@ void RasterDecoderTestBase::InitDecoderWithWorkarounds() {
   EXPECT_CALL(*gl_, GenTextures(_, _))
       .WillOnce(SetArgPointee<1>(kServiceTextureId))
       .RetiresOnSaturation();
-  GenHelper<cmds::GenTexturesImmediate>(client_texture_id_);
+  cmds::CreateTexture cmd;
+  cmd.Init(false /* use_buffer */, gfx::BufferUsage::GPU_READ,
+           viz::ResourceFormat::RGBA_8888, client_texture_id_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
@@ -262,22 +265,6 @@ void RasterDecoderTestBase::SetBucketAsCStrings(uint32_t bucket_id,
   cmd2.Init(bucket_id, 0, total_size, shared_memory_id_, kSharedMemoryOffset);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd2));
   ClearSharedMemory();
-}
-
-void RasterDecoderTestBase::DoBindTexture(GLenum target,
-                                          GLuint client_id,
-                                          GLuint service_id) {
-  EXPECT_CALL(*gl_, BindTexture(target, service_id))
-      .Times(1)
-      .RetiresOnSaturation();
-  if (!group_->feature_info()->gl_version_info().BehavesLikeGLES() &&
-      group_->feature_info()->gl_version_info().IsAtLeastGL(3, 2)) {
-    EXPECT_CALL(*gl_, TexParameteri(target, GL_DEPTH_TEXTURE_MODE, GL_RED))
-        .Times(AtMost(1));
-  }
-  cmds::BindTexture cmd;
-  cmd.Init(target, client_id);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 void RasterDecoderTestBase::DoDeleteTexture(GLuint client_id,

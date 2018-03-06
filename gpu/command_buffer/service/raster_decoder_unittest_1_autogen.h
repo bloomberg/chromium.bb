@@ -51,45 +51,6 @@ TEST_P(RasterDecoderTest1, FlushValidArgs) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_P(RasterDecoderTest1, GenTexturesImmediateValidArgs) {
-  EXPECT_CALL(*gl_, GenTextures(1, _))
-      .WillOnce(SetArgPointee<1>(kNewServiceId));
-  cmds::GenTexturesImmediate* cmd =
-      GetImmediateAs<cmds::GenTexturesImmediate>();
-  GLuint temp = kNewClientId;
-  SpecializedSetup<cmds::GenTexturesImmediate, 0>(true);
-  cmd->Init(1, &temp);
-  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(*cmd, sizeof(temp)));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  EXPECT_TRUE(GetTexture(kNewClientId) != NULL);
-}
-
-TEST_P(RasterDecoderTest1, GenTexturesImmediateDuplicateOrNullIds) {
-  EXPECT_CALL(*gl_, GenTextures(_, _)).Times(0);
-  cmds::GenTexturesImmediate* cmd =
-      GetImmediateAs<cmds::GenTexturesImmediate>();
-  GLuint temp[3] = {kNewClientId, kNewClientId + 1, kNewClientId};
-  SpecializedSetup<cmds::GenTexturesImmediate, 1>(true);
-  cmd->Init(3, temp);
-  EXPECT_EQ(error::kInvalidArguments, ExecuteImmediateCmd(*cmd, sizeof(temp)));
-  EXPECT_TRUE(GetTexture(kNewClientId) == NULL);
-  EXPECT_TRUE(GetTexture(kNewClientId + 1) == NULL);
-  GLuint null_id[2] = {kNewClientId, 0};
-  cmd->Init(2, null_id);
-  EXPECT_EQ(error::kInvalidArguments, ExecuteImmediateCmd(*cmd, sizeof(temp)));
-  EXPECT_TRUE(GetTexture(kNewClientId) == NULL);
-}
-
-TEST_P(RasterDecoderTest1, GenTexturesImmediateInvalidArgs) {
-  EXPECT_CALL(*gl_, GenTextures(_, _)).Times(0);
-  cmds::GenTexturesImmediate* cmd =
-      GetImmediateAs<cmds::GenTexturesImmediate>();
-  SpecializedSetup<cmds::GenTexturesImmediate, 0>(false);
-  cmd->Init(1, &client_texture_id_);
-  EXPECT_EQ(error::kInvalidArguments,
-            ExecuteImmediateCmd(*cmd, sizeof(&client_texture_id_)));
-}
-
 TEST_P(RasterDecoderTest1, GetErrorValidArgs) {
   EXPECT_CALL(*gl_, GetError());
   SpecializedSetup<cmds::GetError, 0>(true);
@@ -159,42 +120,5 @@ TEST_P(RasterDecoderTest1, GetIntegervInvalidArgs1_1) {
   cmd.Init(GL_ACTIVE_TEXTURE, shared_memory_id_, kInvalidSharedMemoryOffset);
   EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
   EXPECT_EQ(0u, result->size);
-}
-
-TEST_P(RasterDecoderTest1, TexParameteriValidArgs) {
-  EXPECT_CALL(*gl_,
-              TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
-  SpecializedSetup<cmds::TexParameteri, 0>(true);
-  cmds::TexParameteri cmd;
-  cmd.Init(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-}
-
-TEST_P(RasterDecoderTest1, TexParameteriInvalidArgs0_0) {
-  EXPECT_CALL(*gl_, TexParameteri(_, _, _)).Times(0);
-  SpecializedSetup<cmds::TexParameteri, 0>(false);
-  cmds::TexParameteri cmd;
-  cmd.Init(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
-}
-
-TEST_P(RasterDecoderTest1, TexParameteriInvalidArgs0_1) {
-  EXPECT_CALL(*gl_, TexParameteri(_, _, _)).Times(0);
-  SpecializedSetup<cmds::TexParameteri, 0>(false);
-  cmds::TexParameteri cmd;
-  cmd.Init(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
-}
-
-TEST_P(RasterDecoderTest1, TexParameteriInvalidArgs1_0) {
-  EXPECT_CALL(*gl_, TexParameteri(_, _, _)).Times(0);
-  SpecializedSetup<cmds::TexParameteri, 0>(false);
-  cmds::TexParameteri cmd;
-  cmd.Init(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_NEAREST);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
 #endif  // GPU_COMMAND_BUFFER_SERVICE_RASTER_DECODER_UNITTEST_1_AUTOGEN_H_

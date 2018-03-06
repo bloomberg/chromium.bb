@@ -345,7 +345,7 @@ void RasterImplementationGLES::DestroyImageCHROMIUM(GLuint image_id) {
 }
 
 void RasterImplementationGLES::TexStorage2D(GLuint texture_id,
-                                            GLint levels,
+                                            GLsizei levels,
                                             GLsizei width,
                                             GLsizei height) {
   Texture* texture = EnsureTextureBound(GetTexture(texture_id));

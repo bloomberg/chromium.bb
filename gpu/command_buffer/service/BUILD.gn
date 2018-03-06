@@ -183,6 +183,10 @@ target(link_target_type, "gles2_sources") {
     "program_manager.h",
     "query_manager.cc",
     "query_manager.h",
+    "raster_cmd_validation.cc",
+    "raster_cmd_validation.h",
+    "raster_cmd_validation_autogen.h",
+    "raster_cmd_validation_implementation_autogen.h",
     "raster_decoder.cc",
     "raster_decoder.h",
     "renderbuffer_manager.cc",
@@ -225,6 +229,7 @@ target(link_target_type, "gles2_sources") {
   public_deps = [
     "//gpu/command_buffer/common",
     "//gpu/command_buffer/common:gles2_sources",
+    "//gpu/command_buffer/common:raster_sources",
   ]
   deps = [
     ":disk_cache_proto",

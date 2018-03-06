@@ -56,17 +56,6 @@ TEST_F(RasterImplementationTest, GetIntegerv) {
   EXPECT_EQ(static_cast<ResultType>(1), result);
 }
 
-TEST_F(RasterImplementationTest, TexParameteri) {
-  struct Cmds {
-    cmds::TexParameteri cmd;
-  };
-  Cmds expected;
-  expected.cmd.Init(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-  gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
-}
-
 TEST_F(RasterImplementationTest, GenQueriesEXT) {
   GLuint ids[2] = {
       0,
@@ -130,6 +119,61 @@ TEST_F(RasterImplementationTest, EndRasterCHROMIUM) {
   expected.cmd.Init();
 
   gl_->EndRasterCHROMIUM();
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
+TEST_F(RasterImplementationTest, TexParameteri) {
+  struct Cmds {
+    cmds::TexParameteri cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init(1, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+  gl_->TexParameteri(1, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
+TEST_F(RasterImplementationTest, BindTexImage2DCHROMIUM) {
+  struct Cmds {
+    cmds::BindTexImage2DCHROMIUM cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init(1, 2);
+
+  gl_->BindTexImage2DCHROMIUM(1, 2);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
+TEST_F(RasterImplementationTest, ReleaseTexImage2DCHROMIUM) {
+  struct Cmds {
+    cmds::ReleaseTexImage2DCHROMIUM cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init(1, 2);
+
+  gl_->ReleaseTexImage2DCHROMIUM(1, 2);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
+TEST_F(RasterImplementationTest, TexStorage2D) {
+  struct Cmds {
+    cmds::TexStorage2D cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init(1, 2, 3, 4);
+
+  gl_->TexStorage2D(1, 2, 3, 4);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
+TEST_F(RasterImplementationTest, CopySubTexture) {
+  struct Cmds {
+    cmds::CopySubTexture cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init(1, 2, 3, 4, 5, 6, 7, 8);
+
+  gl_->CopySubTexture(1, 2, 3, 4, 5, 6, 7, 8);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 #endif  // GPU_COMMAND_BUFFER_CLIENT_RASTER_IMPLEMENTATION_UNITTEST_AUTOGEN_H_

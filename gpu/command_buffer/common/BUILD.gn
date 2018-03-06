@@ -31,6 +31,18 @@ group("gles2") {
   }
 }
 
+group("raster") {
+  if (is_component_build) {
+    public_deps = [
+      "//gpu:gles2",
+    ]
+  } else {
+    public_deps = [
+      ":raster_sources",
+    ]
+  }
+}
+
 source_set("common_sources") {
   visibility = [ "//gpu/*" ]
 
@@ -50,8 +62,11 @@ source_set("common_sources") {
     "context_creation_attribs.cc",
     "context_creation_attribs.h",
     "context_result.h",
+    "debug_marker_manager.cc",
+    "debug_marker_manager.h",
     "discardable_handle.cc",
     "discardable_handle.h",
+    "gl2_types.h",
     "gpu_memory_buffer_support.cc",
     "gpu_memory_buffer_support.h",
     "id_allocator.cc",
@@ -93,21 +108,11 @@ source_set("gles2_sources") {
   visibility = [ "//gpu/*" ]
 
   sources = [
-    "debug_marker_manager.cc",
-    "debug_marker_manager.h",
-    "gl2_types.h",
     "gles2_cmd_format.cc",
     "gles2_cmd_format.h",
     "gles2_cmd_format_autogen.h",
     "gles2_cmd_ids.h",
     "gles2_cmd_ids_autogen.h",
-
-    # TODO(backer): Separate into distinct raster target.
-    "raster_cmd_format.cc",
-    "raster_cmd_format.h",
-    "raster_cmd_format_autogen.h",
-    "raster_cmd_ids.h",
-    "raster_cmd_ids_autogen.h",
   ]
 
   configs += [ "//gpu:gpu_gles2_implementation" ]
@@ -118,6 +123,29 @@ source_set("gles2_sources") {
   ]
   public_deps = [
     ":common",
+  ]
+}
+
+source_set("raster_sources") {
+  visibility = [ "//gpu/*" ]
+
+  sources = [
+    "raster_cmd_format.cc",
+    "raster_cmd_format.h",
+    "raster_cmd_format_autogen.h",
+    "raster_cmd_ids.h",
+    "raster_cmd_ids_autogen.h",
+  ]
+
+  configs += [ "//gpu:raster_implementation" ]
+
+  deps = [
+    ":gles2_utils",
+    "//base",
+  ]
+  public_deps = [
+    ":common",
+    "//components/viz/common:resource_format",
   ]
 }
 
