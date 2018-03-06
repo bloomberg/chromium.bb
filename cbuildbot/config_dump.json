@@ -10342,6 +10342,7 @@
         "important": true,
         "useflags": [
             "-cros-debug",
+            "cfi",
             "chrome_internal",
             "thinlto"
         ],
@@ -10487,6 +10488,7 @@
         "push_image": false,
         "useflags": [
             "-cros-debug",
+            "cfi",
             "chrome_internal",
             "thinlto"
         ],
@@ -57399,6 +57401,7 @@
         "important": true,
         "useflags": [
             "-cros-debug",
+            "cfi",
             "chrome_internal",
             "thinlto"
         ],
@@ -57544,6 +57547,7 @@
         "push_image": false,
         "useflags": [
             "-cros-debug",
+            "cfi",
             "chrome_internal",
             "thinlto"
         ],

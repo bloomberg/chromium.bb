@@ -3706,11 +3706,11 @@ def ApplyCustomOverrides(site_config, ge_build_config):
       },
 
       'terra-release': {
-          'useflags': append_useflags(['thinlto']),
+          'useflags': append_useflags(['thinlto', 'cfi']),
       },
 
       'caroline-release': {
-          'useflags': append_useflags(['thinlto']),
+          'useflags': append_useflags(['thinlto', 'cfi']),
       },
 
       'chell-chrome-pfq': {
