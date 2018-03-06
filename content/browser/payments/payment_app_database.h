@@ -82,6 +82,7 @@ class CONTENT_EXPORT PaymentAppDatabase {
       int64_t registration_id,
       const std::string& instrument_key,
       const std::string& name,
+      const std::string& icon,
       const std::vector<std::string>& enabled_methods,
       SetPaymentAppInfoCallback callback);
 
@@ -205,6 +206,7 @@ class CONTENT_EXPORT PaymentAppDatabase {
   void DidFindRegistrationToSetPaymentApp(
       const std::string& instrument_key,
       const std::string& name,
+      const std::string& icon,
       const std::vector<std::string>& enabled_methods,
       SetPaymentAppInfoCallback callback,
       ServiceWorkerStatusCode status,

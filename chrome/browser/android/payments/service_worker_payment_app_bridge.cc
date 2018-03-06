@@ -461,12 +461,18 @@ static void JNI_ServiceWorkerPaymentAppBridge_InstallAndInvokePaymentApp(
     const JavaParamRef<jobjectArray>& jmodifiers,
     const JavaParamRef<jobject>& jcallback,
     const JavaParamRef<jstring>& japp_name,
+    const JavaParamRef<jobject>& jicon,
     const JavaParamRef<jstring>& jsw_js_url,
     const JavaParamRef<jstring>& jsw_scope,
     jboolean juse_cache,
     const JavaParamRef<jobjectArray>& jmethod_names) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(jweb_contents);
+
+  SkBitmap icon_bitmap;
+  if (jicon) {
+    icon_bitmap = gfx::CreateSkBitmapFromJavaBitmap(gfx::JavaBitmap(jicon));
+  }
 
   std::vector<std::string> enabled_methods;
   base::android::AppendJavaStringArrayToStringVector(env, jmethod_names,
@@ -476,7 +482,7 @@ static void JNI_ServiceWorkerPaymentAppBridge_InstallAndInvokePaymentApp(
       ConvertPaymentRequestEventDataFromJavaToNative(
           env, jtop_level_origin, jpayment_request_origin, jpayment_request_id,
           jmethod_data, jtotal, jmodifiers),
-      ConvertJavaStringToUTF8(env, japp_name),
+      ConvertJavaStringToUTF8(env, japp_name), icon_bitmap,
       ConvertJavaStringToUTF8(env, jsw_js_url),
       ConvertJavaStringToUTF8(env, jsw_scope), juse_cache, enabled_methods,
       base::BindOnce(&OnPaymentAppInvoked,

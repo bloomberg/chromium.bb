@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.payments;
 
-import android.graphics.drawable.Drawable;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Handler;
 import android.text.TextUtils;
 
@@ -114,7 +114,7 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
      */
     public ServiceWorkerPaymentApp(WebContents webContents, long registrationId, URI scope,
             @Nullable String name, @Nullable String userHint, String origin,
-            @Nullable Drawable icon, String[] methodNames, Capabilities[] capabilities,
+            @Nullable BitmapDrawable icon, String[] methodNames, Capabilities[] capabilities,
             String[] preferredRelatedApplicationIds) {
         // Do not display duplicate information.
         super(scope.toString(), TextUtils.isEmpty(name) ? origin : name, userHint,
@@ -161,7 +161,8 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
      * @param methodName  The supported method name.
      */
     public ServiceWorkerPaymentApp(WebContents webContents, @Nullable String name, String origin,
-            URI swUri, URI scope, boolean useCache, @Nullable Drawable icon, String methodName) {
+            URI swUri, URI scope, boolean useCache, @Nullable BitmapDrawable icon,
+            String methodName) {
         // Do not display duplicate information.
         super(scope.toString(), TextUtils.isEmpty(name) ? origin : name, null,
                 TextUtils.isEmpty(name) ? null : origin, icon);
@@ -322,10 +323,12 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
             PaymentItem total, List<PaymentItem> displayItems,
             Map<String, PaymentDetailsModifier> modifiers, InstrumentDetailsCallback callback) {
         if (mNeedsInstallation) {
+            BitmapDrawable icon = (BitmapDrawable) getDrawableIcon();
             ServiceWorkerPaymentAppBridge.installAndInvokePaymentApp(mWebContents, origin,
                     iframeOrigin, id, new HashSet<>(methodData.values()), total,
-                    new HashSet<>(modifiers.values()), callback, mAppName, mSwUri, mScope,
-                    mUseCache, mMethodNames);
+                    new HashSet<>(modifiers.values()), callback, mAppName,
+                    icon == null ? null : icon.getBitmap(), mSwUri, mScope, mUseCache,
+                    mMethodNames);
         } else {
             ServiceWorkerPaymentAppBridge.invokePaymentApp(mWebContents, mRegistrationId, origin,
                     iframeOrigin, id, new HashSet<>(methodData.values()), total,

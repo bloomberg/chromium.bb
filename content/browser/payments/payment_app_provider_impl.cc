@@ -4,6 +4,7 @@
 
 #include "content/browser/payments/payment_app_provider_impl.h"
 
+#include "base/base64.h"
 #include "base/strings/string_util.h"
 #include "content/browser/payments/payment_app_context_impl.h"
 #include "content/browser/payments/payment_app_installer.h"
@@ -17,6 +18,8 @@
 #include "content/public/browser/web_contents.h"
 #include "mojo/common/time.mojom.h"
 #include "third_party/WebKit/public/mojom/service_worker/service_worker_provider_type.mojom.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/image/image.h"
 
 namespace content {
 namespace {
@@ -401,6 +404,7 @@ void PaymentAppProviderImpl::InstallAndInvokePaymentApp(
     WebContents* web_contents,
     payments::mojom::PaymentRequestEventDataPtr event_data,
     const std::string& app_name,
+    const SkBitmap& app_icon,
     const std::string& sw_js_url,
     const std::string& sw_scope,
     bool sw_use_cache,
@@ -420,8 +424,19 @@ void PaymentAppProviderImpl::InstallAndInvokePaymentApp(
     return;
   }
 
+  std::string string_encoded_icon;
+  if (!app_icon.empty()) {
+    gfx::Image decoded_image = gfx::Image::CreateFrom1xBitmap(app_icon);
+    scoped_refptr<base::RefCountedMemory> raw_data =
+        decoded_image.As1xPNGBytes();
+    base::Base64Encode(
+        base::StringPiece(raw_data->front_as<char>(), raw_data->size()),
+        &string_encoded_icon);
+  }
+
   PaymentAppInstaller::Install(
-      web_contents, app_name, url, scope, sw_use_cache, enabled_methods,
+      web_contents, app_name, string_encoded_icon, url, scope, sw_use_cache,
+      enabled_methods,
       base::BindOnce(&OnInstallPaymentApp, std::move(event_data),
                      std::move(callback)));
 }
