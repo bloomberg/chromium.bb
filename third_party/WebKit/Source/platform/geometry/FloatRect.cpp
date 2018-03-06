@@ -219,18 +219,9 @@ FloatRect UnionRect(const Vector<FloatRect>& rects) {
   return result;
 }
 
-IntRect EnclosingIntRect(const FloatRect& rect) {
-  // Compute the enclosing rect using float types directly rather than
-  // FlooredIntPoint(...) et.c to avoid triggering integer overflows.
-  FloatPoint location(floorf(rect.X()), floorf(rect.Y()));
-  FloatPoint max_point(ceilf(rect.MaxX()), ceilf(rect.MaxY()));
-  FloatRect enclosing_rect(location, max_point - location);
-  return IntRect(enclosing_rect);
-}
-
 IntRect EnclosedIntRect(const FloatRect& rect) {
   // Compute the enclosed rect using float types directly rather than
-  // FlooredIntPoint(...) et.c to avoid triggering integer overflows.
+  // FlooredIntPoint(...) etc. to avoid triggering integer overflows.
   FloatPoint location(ceilf(rect.X()), ceilf(rect.Y()));
   FloatPoint max_point(floorf(rect.MaxX()), floorf(rect.MaxY()));
   FloatSize size = max_point - location;
