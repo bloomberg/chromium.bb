@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "ash/app_list/model/search/search_result.h"
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "chrome/browser/ui/app_list/app_context_menu_delegate.h"
 #include "components/arc/common/app.mojom.h"
@@ -19,6 +20,8 @@ class ArcPlayStoreAppContextMenu;
 class Profile;
 
 namespace app_list {
+
+class IconDecodeRequest;
 
 class ArcPlayStoreSearchResult : public SearchResult,
                                  public AppContextMenuDelegate {
@@ -44,8 +47,6 @@ class ArcPlayStoreSearchResult : public SearchResult,
   static void DisableSafeDecodingForTesting();
 
  private:
-  class IconDecodeRequest;
-
   const base::Optional<std::string>& install_intent_uri() const {
     return data_->install_intent_uri;
   }
@@ -68,6 +69,8 @@ class ArcPlayStoreSearchResult : public SearchResult,
   // until the service finishes.
   AppListControllerDelegate* const list_controller_;
   std::unique_ptr<ArcPlayStoreAppContextMenu> context_menu_;
+
+  base::WeakPtrFactory<ArcPlayStoreSearchResult> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcPlayStoreSearchResult);
 };
