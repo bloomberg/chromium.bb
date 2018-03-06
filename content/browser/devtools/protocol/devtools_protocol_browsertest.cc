@@ -2250,6 +2250,24 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolDeviceEmulationTest, MAYBE_DeviceSize) {
   EXPECT_EQ(original_size, GetViewSize());
 }
 
+// Setting frame size (through RWHV) is not supported on Android.
+#if defined(OS_ANDROID)
+#define MAYBE_RenderKillDoesNotCrashBrowser \
+  DISABLED_RenderKillDoesNotCrashBrowser
+#else
+#define MAYBE_RenderKillDoesNotCrashBrowser RenderKillDoesNotCrashBrowser
+#endif
+IN_PROC_BROWSER_TEST_F(DevToolsProtocolDeviceEmulationTest,
+                       MAYBE_RenderKillDoesNotCrashBrowser) {
+  NavigateToURLBlockUntilNavigationsComplete(shell(), GURL("about:blank"), 1);
+  Attach();
+  EmulateDeviceSize(gfx::Size(200, 200));
+  NavigateToURLBlockUntilNavigationsComplete(
+      shell(), GURL(content::kChromeUICrashURL), 1);
+  SendCommand("Emulation.clearDeviceMetricsOverride", nullptr);
+  // Should not crash at this point.
+}
+
 class DevToolsProtocolTouchTest : public DevToolsProtocolTest {
  public:
   ~DevToolsProtocolTouchTest() override {}

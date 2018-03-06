@@ -5983,9 +5983,10 @@ void WebContentsImpl::ClearDeviceEmulationSize() {
   // emulation.
   // TODO(jzfeng): Prohibit resizing RWHV through any other means (at least when
   // WebContentsView size changes).
-  if (!view_size_before_emulation_.IsEmpty() &&
-      rwhv->GetViewBounds().size() == device_emulation_size_)
+  if (!view_size_before_emulation_.IsEmpty() && rwhv &&
+      rwhv->GetViewBounds().size() == device_emulation_size_) {
     rwhv->SetSize(view_size_before_emulation_);
+  }
   device_emulation_size_ = gfx::Size();
   view_size_before_emulation_ = gfx::Size();
 }

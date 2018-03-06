@@ -265,8 +265,12 @@ Response EmulationHandler::SetDeviceMetricsOverride(
   device_emulation_enabled_ = true;
   device_emulation_params_ = params;
   UpdateDeviceEmulationState();
+
   // Renderer should answer after emulation params were updated, so that the
   // response is only sent to the client once updates were applied.
+  // Unless the renderer has crashed.
+  if (GetWebContents() && GetWebContents()->IsCrashed())
+    return Response::OK();
   return Response::FallThrough();
 }
 
@@ -282,6 +286,9 @@ Response EmulationHandler::ClearDeviceMetricsOverride() {
   UpdateDeviceEmulationState();
   // Renderer should answer after emulation was disabled, so that the response
   // is only sent to the client once updates were applied.
+  // Unless the renderer has crashed.
+  if (GetWebContents() && GetWebContents()->IsCrashed())
+    return Response::OK();
   return Response::FallThrough();
 }
 
