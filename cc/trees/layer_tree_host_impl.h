@@ -709,7 +709,7 @@ class CC_EXPORT LayerTreeHostImpl
   void ReleaseTileResources();
   void RecreateTileResources();
 
-  void AnimateInternal(bool active_tree);
+  void AnimateInternal();
 
   // The function is called to update state on the sync tree after a commit
   // finishes or after the sync tree was created to invalidate content on the

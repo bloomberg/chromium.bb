@@ -501,14 +501,18 @@ bool LayerTreeHostImpl::CanDraw() const {
 }
 
 void LayerTreeHostImpl::AnimatePendingTreeAfterCommit() {
-  AnimateInternal(false);
+  // Animate the pending tree layer animations to put them at initial positions
+  // and starting state. There is no need to run other animations on pending
+  // tree because they depend on user inputs so the state is identical to what
+  // the active tree has.
+  AnimateLayers(CurrentBeginFrameArgs().frame_time, /* is_active_tree */ false);
 }
 
 void LayerTreeHostImpl::Animate() {
-  AnimateInternal(true);
+  AnimateInternal();
 }
 
-void LayerTreeHostImpl::AnimateInternal(bool active_tree) {
+void LayerTreeHostImpl::AnimateInternal() {
   DCHECK(task_runner_provider_->IsImplThread());
   base::TimeTicks monotonic_time = CurrentBeginFrameArgs().frame_time;
 
@@ -533,19 +537,17 @@ void LayerTreeHostImpl::AnimateInternal(bool active_tree) {
   }
 
   did_animate |= AnimatePageScale(monotonic_time);
-  did_animate |= AnimateLayers(monotonic_time, active_tree);
+  did_animate |= AnimateLayers(monotonic_time, /* is_active_tree */ true);
   did_animate |= AnimateScrollbars(monotonic_time);
   did_animate |= AnimateBrowserControls(monotonic_time);
 
-  if (active_tree) {
     // Animating stuff can change the root scroll offset, so inform the
     // synchronous input handler.
-    UpdateRootLayerStateForSynchronousInputHandler();
-    if (did_animate) {
-      // If the tree changed, then we want to draw at the end of the current
-      // frame.
-      SetNeedsRedraw();
-    }
+  UpdateRootLayerStateForSynchronousInputHandler();
+  if (did_animate) {
+    // If the tree changed, then we want to draw at the end of the current
+    // frame.
+    SetNeedsRedraw();
   }
 }
 
