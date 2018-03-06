@@ -24,16 +24,31 @@ class ScrollPaintPropertyNode;
 class TransformPaintPropertyNode;
 
 // Returns the lowest common ancestor in the paint property tree.
-PLATFORM_EXPORT const ClipPaintPropertyNode& LowestCommonAncestor(
+template <typename NodeType>
+const NodeType& LowestCommonAncestor(const NodeType& a, const NodeType& b) {
+  // Fast path of common cases.
+  if (&a == &b || !a.Parent() || b.Parent() == &a) {
+    DCHECK(a.IsAncestorOf(b));
+    return a;
+  }
+  if (!b.Parent() || a.Parent() == &b) {
+    DCHECK(b.IsAncestorOf(a));
+    return b;
+  }
+
+  return LowestCommonAncestorInternal(a, b);
+}
+
+PLATFORM_EXPORT const ClipPaintPropertyNode& LowestCommonAncestorInternal(
     const ClipPaintPropertyNode&,
     const ClipPaintPropertyNode&);
-PLATFORM_EXPORT const EffectPaintPropertyNode& LowestCommonAncestor(
+PLATFORM_EXPORT const EffectPaintPropertyNode& LowestCommonAncestorInternal(
     const EffectPaintPropertyNode&,
     const EffectPaintPropertyNode&);
-PLATFORM_EXPORT const ScrollPaintPropertyNode& LowestCommonAncestor(
+PLATFORM_EXPORT const ScrollPaintPropertyNode& LowestCommonAncestorInternal(
     const ScrollPaintPropertyNode&,
     const ScrollPaintPropertyNode&);
-PLATFORM_EXPORT const TransformPaintPropertyNode& LowestCommonAncestor(
+PLATFORM_EXPORT const TransformPaintPropertyNode& LowestCommonAncestorInternal(
     const TransformPaintPropertyNode&,
     const TransformPaintPropertyNode&);
 

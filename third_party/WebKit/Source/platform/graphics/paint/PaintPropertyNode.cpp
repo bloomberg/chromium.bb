@@ -13,11 +13,17 @@ namespace blink {
 
 namespace {
 
+// Returns -1 if |maybe_ancestor| is found in the ancestor chain, or returns
+// the depth of the node from the root.
 template <typename NodeType>
-unsigned NodeDepth(const NodeType& node) {
-  unsigned depth = 0;
-  for (const NodeType* n = &node; n; n = n->Parent())
+int NodeDepthOrFoundAncestor(const NodeType& node,
+                             const NodeType& maybe_ancestor) {
+  int depth = 0;
+  for (const NodeType* n = &node; n; n = n->Parent()) {
+    if (n == &maybe_ancestor)
+      return -1;
     depth++;
+  }
   return depth;
 }
 
@@ -25,8 +31,12 @@ template <typename NodeType>
 const NodeType& LowestCommonAncestorTemplate(const NodeType& a,
                                              const NodeType& b) {
   // Measure both depths.
-  unsigned depth_a = NodeDepth(a);
-  unsigned depth_b = NodeDepth(b);
+  auto depth_a = NodeDepthOrFoundAncestor(a, b);
+  if (depth_a == -1)
+    return b;
+  auto depth_b = NodeDepthOrFoundAncestor(b, a);
+  if (depth_b == -1)
+    return a;
 
   const auto* a_ptr = &a;
   const auto* b_ptr = &b;
@@ -56,25 +66,25 @@ const NodeType& LowestCommonAncestorTemplate(const NodeType& a,
 
 }  // namespace
 
-const TransformPaintPropertyNode& LowestCommonAncestor(
+const TransformPaintPropertyNode& LowestCommonAncestorInternal(
     const TransformPaintPropertyNode& a,
     const TransformPaintPropertyNode& b) {
   return LowestCommonAncestorTemplate(a, b);
 }
 
-const ClipPaintPropertyNode& LowestCommonAncestor(
+const ClipPaintPropertyNode& LowestCommonAncestorInternal(
     const ClipPaintPropertyNode& a,
     const ClipPaintPropertyNode& b) {
   return LowestCommonAncestorTemplate(a, b);
 }
 
-const EffectPaintPropertyNode& LowestCommonAncestor(
+const EffectPaintPropertyNode& LowestCommonAncestorInternal(
     const EffectPaintPropertyNode& a,
     const EffectPaintPropertyNode& b) {
   return LowestCommonAncestorTemplate(a, b);
 }
 
-const ScrollPaintPropertyNode& LowestCommonAncestor(
+const ScrollPaintPropertyNode& LowestCommonAncestorInternal(
     const ScrollPaintPropertyNode& a,
     const ScrollPaintPropertyNode& b) {
   return LowestCommonAncestorTemplate(a, b);
