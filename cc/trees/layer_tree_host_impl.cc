@@ -257,6 +257,14 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       has_scrolled_by_touch_(false),
       touchpad_and_wheel_scroll_latching_enabled_(false),
       impl_thread_phase_(ImplThreadPhase::IDLE),
+      // It is safe to use base::Unretained here since we will outlive the
+      // ImageAnimationController.
+      image_animation_controller_(
+          GetTaskRunner(),
+          base::BindRepeating(
+              &LayerTreeHostImpl::RequestInvalidationForAnimatedImages,
+              base::Unretained(this)),
+          settings_.enable_image_animation_resync),
       default_color_space_id_(gfx::ColorSpace::GetNextId()),
       default_color_space_(gfx::ColorSpace::CreateSRGB()) {
   DCHECK(mutator_host_);
@@ -283,17 +291,6 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       settings.top_controls_hide_threshold);
 
   tile_manager_.SetDecodedImageTracker(&decoded_image_tracker_);
-
-  if (settings_.enable_image_animations) {
-    // It is safe to use base::Unretained here since we will outlive the
-    // ImageAnimationController.
-    base::Closure invalidation_callback =
-        base::Bind(&LayerTreeHostImpl::RequestInvalidationForAnimatedImages,
-                   base::Unretained(this));
-    image_animation_controller_.emplace(
-        GetTaskRunner(), std::move(invalidation_callback),
-        settings_.enable_image_animation_resync);
-  }
 }
 
 LayerTreeHostImpl::~LayerTreeHostImpl() {
@@ -418,13 +415,10 @@ void LayerTreeHostImpl::UpdateSyncTreeAfterCommitOrImplSideInvalidation() {
     if (ukm_manager_)
       ukm_manager_->AddCheckerboardedImages(images_to_invalidate.size());
 
-    if (image_animation_controller_.has_value()) {
-      const auto& animated_images =
-          image_animation_controller_.value().AnimateForSyncTree(
-              CurrentBeginFrameArgs().frame_time);
-      images_to_invalidate.insert(animated_images.begin(),
-                                  animated_images.end());
-    }
+    const auto& animated_images =
+        image_animation_controller_.AnimateForSyncTree(
+            CurrentBeginFrameArgs().frame_time);
+    images_to_invalidate.insert(animated_images.begin(), animated_images.end());
     sync_tree()->InvalidateRegionForImages(images_to_invalidate);
   }
 
@@ -1526,11 +1520,10 @@ void LayerTreeHostImpl::RequestImplSideInvalidationForCheckerImagedTiles() {
 
 size_t LayerTreeHostImpl::GetFrameIndexForImage(const PaintImage& paint_image,
                                                 WhichTree tree) const {
-  DCHECK(image_animation_controller_.has_value());
   if (!paint_image.ShouldAnimate())
     return paint_image.frame_index();
 
-  return image_animation_controller_->GetFrameIndexForImage(
+  return image_animation_controller_.GetFrameIndexForImage(
       paint_image.stable_id(), tree);
 }
 
@@ -2478,8 +2471,7 @@ void LayerTreeHostImpl::ActivateSyncTree() {
 }
 
 void LayerTreeHostImpl::ActivateStateForImages() {
-  if (image_animation_controller_)
-    image_animation_controller_->DidActivate();
+  image_animation_controller_.DidActivate();
   tile_manager_.DidActivateSyncTree();
 }
 
@@ -4820,8 +4812,6 @@ void LayerTreeHostImpl::ShowScrollbarsForImplScroll(ElementId element_id) {
 }
 
 void LayerTreeHostImpl::RequestInvalidationForAnimatedImages() {
-  DCHECK(image_animation_controller_);
-
   // If we are animating an image, we want at least one draw of the active tree
   // before a new tree is activated.
   bool needs_first_draw_on_activation = true;

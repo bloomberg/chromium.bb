@@ -595,8 +595,6 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
     settings.enable_latency_recovery = false;
   }
 
-  settings.enable_image_animations =
-      cmd.HasSwitch(switches::kEnableCompositorImageAnimations);
   settings.enable_image_animation_resync =
       !cmd.HasSwitch(switches::kDisableImageAnimationResync);
 

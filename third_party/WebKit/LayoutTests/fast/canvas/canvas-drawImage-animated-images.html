@@ -30,14 +30,8 @@ var sources = [
 function loaded(img, name, i) {
   // Advance the image away from frame 0 to a frame that has black,
   // white and gray pixels, viz., no color pixels.
-  if (window.internals) {
-    for (var frame = 0; frame < 10; ++frame)
-      window.internals.advanceImageAnimation(img);
-    runTest();
-  } else {  // Manual test.
-    var noColorFrameDelayInMS = 1500;
-    setTimeout(runTest, noColorFrameDelayInMS);
-  }
+  var noColorFrameDelayInMS = 1500;
+  setTimeout(runTest, noColorFrameDelayInMS);
 
   function runTest() {
     requestAnimationFrame(function test() {

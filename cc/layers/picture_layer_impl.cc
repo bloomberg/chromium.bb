@@ -1679,9 +1679,6 @@ void PictureLayerImpl::RegisterAnimatedImages() {
     return;
 
   auto* controller = layer_tree_impl()->image_animation_controller();
-  if (!controller)
-    return;
-
   const auto& metadata = raster_source_->GetDisplayItemList()
                              ->discardable_image_map()
                              .animated_images_metadata();
@@ -1698,9 +1695,6 @@ void PictureLayerImpl::UnregisterAnimatedImages() {
     return;
 
   auto* controller = layer_tree_impl()->image_animation_controller();
-  if (!controller)
-    return;
-
   const auto& metadata = raster_source_->GetDisplayItemList()
                              ->discardable_image_map()
                              .animated_images_metadata();

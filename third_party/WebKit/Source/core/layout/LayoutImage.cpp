@@ -250,8 +250,7 @@ bool LayoutImage::ForegroundIsKnownToBeOpaqueInRect(
   // Check for image with alpha.
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage",
                "data", InspectorPaintImageEvent::Data(this, *image_content));
-  return image_content->GetImage()->CurrentFrameKnownToBeOpaque(
-      Image::kPreCacheMetadata);
+  return image_content->GetImage()->CurrentFrameKnownToBeOpaque();
 }
 
 bool LayoutImage::ComputeBackgroundIsKnownToBeObscured() const {

@@ -17,7 +17,7 @@ class PLATFORM_EXPORT UnacceleratedStaticBitmapImage final
   static scoped_refptr<UnacceleratedStaticBitmapImage> Create(sk_sp<SkImage>);
   static scoped_refptr<UnacceleratedStaticBitmapImage> Create(PaintImage);
 
-  bool CurrentFrameKnownToBeOpaque(MetadataMode = kUseCurrentMetadata) override;
+  bool CurrentFrameKnownToBeOpaque() override;
   IntSize Size() const override;
   bool IsPremultiplied() const override;
   scoped_refptr<StaticBitmapImage> MakeAccelerated(

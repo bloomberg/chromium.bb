@@ -24,9 +24,7 @@ class PLATFORM_EXPORT SkiaTextureHolder final : public TextureHolder {
     return IntSize(image_->width(), image_->height());
   }
   bool IsValid() const final;
-  bool CurrentFrameKnownToBeOpaque(Image::MetadataMode) final {
-    return image_->isOpaque();
-  }
+  bool CurrentFrameKnownToBeOpaque() final { return image_->isOpaque(); }
   sk_sp<SkImage> GetSkImage() final { return image_; }
   void Abandon() final;
 

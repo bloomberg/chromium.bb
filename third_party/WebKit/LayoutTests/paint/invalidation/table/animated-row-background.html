@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <style>
 td { width: 100px; height: 100px }
-tr { background-image: url(../../../fast/backgrounds/resources/red-green-animated.gif) }
+tr { background-image: url(../svg/resources/animated-svg-fixed-size.svg) }
 </style>
 <table>
   <tr id="row">
@@ -24,6 +24,6 @@ onload = function() {
   // The image element ensures that the test runs just after the image
   // resource is loaded, and will be used in advanceImageAnimation().
   image.onload = runRepaintTest;
-  image.src="../../../fast/backgrounds/resources/red-green-animated.gif";
+  image.src="../svg/resources/animated-svg-fixed-size.svg";
 }
 </script>

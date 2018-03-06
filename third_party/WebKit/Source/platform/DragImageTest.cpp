@@ -63,10 +63,7 @@ class TestImage : public Image {
     return IntSize(image_->width(), image_->height());
   }
 
-  bool CurrentFrameKnownToBeOpaque(
-      MetadataMode = kUseCurrentMetadata) override {
-    return false;
-  }
+  bool CurrentFrameKnownToBeOpaque() override { return false; }
 
   void DestroyDecodedData() override {
     // Image pure virtual stub.

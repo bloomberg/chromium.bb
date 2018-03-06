@@ -44,10 +44,7 @@ class TestImage : public Image {
     return base::AdoptRef(new TestImage(size, opaque));
   }
 
-  bool CurrentFrameKnownToBeOpaque(
-      MetadataMode = kUseCurrentMetadata) override {
-    return image_->isOpaque();
-  }
+  bool CurrentFrameKnownToBeOpaque() override { return image_->isOpaque(); }
 
   IntSize Size() const override { return size_; }
 

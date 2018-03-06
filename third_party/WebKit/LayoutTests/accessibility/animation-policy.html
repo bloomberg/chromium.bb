@@ -20,11 +20,10 @@ function finishTest() {
 function imageLoaded() {
     if (!updated)
         return;
+    setTimeout(onTimeout, 0.5);
+}
 
-    var img = document.getElementById("target");
-    if (window.internals)
-        internals.advanceTimeForImage(img, 0.1);
-
+function onTimeout() {
     if (window.testRunner) {
         testRunner.layoutAndPaintAsyncThen(function () {
             window.requestAnimationFrame(finishTest);

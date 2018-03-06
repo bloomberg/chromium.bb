@@ -201,7 +201,7 @@ bool PlaceholderImage::CurrentFrameHasSingleSecurityOrigin() const {
   return true;
 }
 
-bool PlaceholderImage::CurrentFrameKnownToBeOpaque(MetadataMode) {
+bool PlaceholderImage::CurrentFrameKnownToBeOpaque() {
   // Placeholder images are translucent.
   return false;
 }

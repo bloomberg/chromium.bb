@@ -83,14 +83,7 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
   virtual bool IsStaticBitmapImage() const { return false; }
   virtual bool IsPlaceholderImage() const { return false; }
 
-  // To increase accuracy of currentFrameKnownToBeOpaque() it may,
-  // for applicable image types, be told to pre-cache metadata for
-  // the current frame. Since this may initiate a deferred image
-  // decoding, PreCacheMetadata requires a InspectorPaintImageEvent
-  // during call.
-  enum MetadataMode { kUseCurrentMetadata, kPreCacheMetadata };
-  virtual bool CurrentFrameKnownToBeOpaque(
-      MetadataMode = kUseCurrentMetadata) = 0;
+  virtual bool CurrentFrameKnownToBeOpaque() = 0;
 
   virtual bool CurrentFrameIsComplete() { return false; }
   virtual bool CurrentFrameIsLazyDecoded() { return false; }
@@ -153,7 +146,6 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
   virtual ImageAnimationPolicy AnimationPolicy() {
     return kImageAnimationPolicyAllowed;
   }
-  virtual void AdvanceTime(TimeDelta delta) {}
 
   // Advances an animated image. For BitmapImage (e.g., animated gifs) this
   // will advance to the next frame. For SVGImage, this will trigger an

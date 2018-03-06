@@ -272,9 +272,8 @@ void AcceleratedStaticBitmapImage::Transfer() {
   detach_thread_at_next_check_ = true;
 }
 
-bool AcceleratedStaticBitmapImage::CurrentFrameKnownToBeOpaque(
-    MetadataMode metadata_mode) {
-  return texture_holder_->CurrentFrameKnownToBeOpaque(metadata_mode);
+bool AcceleratedStaticBitmapImage::CurrentFrameKnownToBeOpaque() {
+  return texture_holder_->CurrentFrameKnownToBeOpaque();
 }
 
 void AcceleratedStaticBitmapImage::CheckThread() {

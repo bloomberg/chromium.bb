@@ -87,10 +87,7 @@ class SVGImageForContainer final : public Image {
             ImageDecodingMode) override;
 
   // FIXME: Implement this to be less conservative.
-  bool CurrentFrameKnownToBeOpaque(
-      MetadataMode = kUseCurrentMetadata) override {
-    return false;
-  }
+  bool CurrentFrameKnownToBeOpaque() override { return false; }
 
   PaintImage PaintImageForCurrentFrame() override;
 

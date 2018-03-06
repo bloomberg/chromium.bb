@@ -846,8 +846,6 @@ navigator_language/navigator_language.html
 netinfo/type-change-no-listener.html
 nfc/idl-NavigatorNFC.html
 paint/float/float-text-clip.html
-paint/invalidation/image/animated-gif-transformed-offscreen.html
-paint/invalidation/image/animated-png-offscreen.html
 paint/invalidation/button-inner-no-repaint.html
 paint/invalidation/compositing/should-not-repaint-composited-opacity.html
 paint/invalidation/table/display-table-row-crash.html

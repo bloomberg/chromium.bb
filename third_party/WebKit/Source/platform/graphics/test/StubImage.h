@@ -13,7 +13,7 @@ class StubImage : public Image {
  public:
   StubImage() = default;
 
-  bool CurrentFrameKnownToBeOpaque(MetadataMode) override { return false; }
+  bool CurrentFrameKnownToBeOpaque() override { return false; }
   IntSize Size() const override { return IntSize(10, 10); }
   void DestroyDecodedData() override {}
   PaintImage PaintImageForCurrentFrame() override { return PaintImage(); }

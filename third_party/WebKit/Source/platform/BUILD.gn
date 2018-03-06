@@ -958,8 +958,6 @@ jumbo_component("platform") {
     "graphics/DrawLooperBuilder.h",
     "graphics/FirstPaintInvalidationTracking.cpp",
     "graphics/FirstPaintInvalidationTracking.h",
-    "graphics/FrameData.cpp",
-    "graphics/FrameData.h",
     "graphics/GeneratedImage.cpp",
     "graphics/GeneratedImage.h",
     "graphics/GpuMemoryBufferImageCopy.cpp",

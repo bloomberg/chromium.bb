@@ -139,11 +139,8 @@ class CC_EXPORT LayerTreeSettings {
   // would have been used, out of process gpu raster will be used instead.
   bool enable_oop_rasterization = false;
 
-  // Whether images should be animated in the compositor.
-  bool enable_image_animations = false;
-
   // Whether image animations can be reset to the beginning to avoid skipping
-  // many frames. Only effective if |enable_image_animations| is true.
+  // many frames.
   bool enable_image_animation_resync = true;
 
   // Whether to use edge anti-aliasing for all layer types that supports it.

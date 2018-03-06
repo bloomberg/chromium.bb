@@ -353,10 +353,6 @@ const char kEnableBackgroundFetchPersistence[] =
 // features.
 const char kEnableBlinkFeatures[]           = "enable-blink-features";
 
-// Enable animating of images in the compositor instead of blink.
-const char kEnableCompositorImageAnimations[] =
-    "enable-compositor-image-animations";
-
 // Enable experimental canvas features, e.g. canvas 2D context attributes
 const char kEnableExperimentalCanvasFeatures[] =
     "enable-experimental-canvas-features";

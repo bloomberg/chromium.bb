@@ -562,45 +562,6 @@ void Internals::disableCSSAdditiveAnimations() {
   RuntimeEnabledFeatures::SetCSSAdditiveAnimationsEnabled(false);
 }
 
-void Internals::advanceTimeForImage(Element* image,
-                                    double delta_time_in_seconds,
-                                    ExceptionState& exception_state) {
-  DCHECK(image);
-  if (delta_time_in_seconds < 0) {
-    exception_state.ThrowDOMException(
-        kInvalidAccessError,
-        ExceptionMessages::IndexExceedsMinimumBound(
-            "deltaTimeInSeconds", delta_time_in_seconds, 0.0));
-    return;
-  }
-
-  ImageResourceContent* resource = nullptr;
-  if (auto* html_image = ToHTMLImageElementOrNull(*image)) {
-    resource = html_image->CachedImage();
-  } else if (auto* svg_image = ToSVGImageElementOrNull(*image)) {
-    resource = svg_image->CachedImage();
-  } else {
-    exception_state.ThrowDOMException(
-        kInvalidAccessError, "The element provided is not a image element.");
-    return;
-  }
-
-  if (!resource || !resource->HasImage()) {
-    exception_state.ThrowDOMException(kInvalidAccessError,
-                                      "The image resource is not available.");
-    return;
-  }
-
-  Image* image_data = resource->GetImage();
-  if (!image_data->IsBitmapImage()) {
-    exception_state.ThrowDOMException(
-        kInvalidAccessError, "The image resource is not a BitmapImage type.");
-    return;
-  }
-
-  image_data->AdvanceTime(TimeDelta::FromSecondsD(delta_time_in_seconds));
-}
-
 void Internals::advanceImageAnimation(Element* image,
                                       ExceptionState& exception_state) {
   DCHECK(image);

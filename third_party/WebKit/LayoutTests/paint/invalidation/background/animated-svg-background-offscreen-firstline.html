@@ -29,11 +29,11 @@ function targetImageOnload() {
 }
 
 onload = function() {
-    targetImage.style.background = "url(../../../fast/backgrounds/resources/red-green-animated.gif)";
+    targetImage.style.background = "url(../../../svg/as-image/resources/animated-rect-fixed-size-2.svg)";
 
     // Use a parallel image element as a hack to detect whether the image has loaded, and therefore
     // we'll get a frame.
     testTarget.onload = targetImageOnload;
-    testTarget.src = "../../../fast/backgrounds/resources/red-green-animated.gif";
+    testTarget.src = "../../../svg/as-image/resources/animated-rect-fixed-size-2.svg";
 }
 </script>

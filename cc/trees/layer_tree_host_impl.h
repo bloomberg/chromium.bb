@@ -452,9 +452,7 @@ class CC_EXPORT LayerTreeHostImpl
   ResourcePool* resource_pool() { return resource_pool_.get(); }
   ImageDecodeCache* image_decode_cache() { return image_decode_cache_.get(); }
   ImageAnimationController* image_animation_controller() {
-    if (!image_animation_controller_.has_value())
-      return nullptr;
-    return &image_animation_controller_.value();
+    return &image_animation_controller_;
   }
 
   virtual bool WillBeginImplFrame(const viz::BeginFrameArgs& args);
@@ -976,7 +974,7 @@ class CC_EXPORT LayerTreeHostImpl
 
   ImplThreadPhase impl_thread_phase_;
 
-  base::Optional<ImageAnimationController> image_animation_controller_;
+  ImageAnimationController image_animation_controller_;
 
   std::unique_ptr<UkmManager> ukm_manager_;
 

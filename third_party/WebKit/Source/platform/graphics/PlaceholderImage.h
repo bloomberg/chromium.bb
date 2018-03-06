@@ -62,7 +62,7 @@ class PLATFORM_EXPORT PlaceholderImage final : public Image {
 
   bool CurrentFrameHasSingleSecurityOrigin() const override;
 
-  bool CurrentFrameKnownToBeOpaque(MetadataMode) override;
+  bool CurrentFrameKnownToBeOpaque() override;
 
   void DrawPattern(GraphicsContext&,
                    const FloatRect& src_rect,
