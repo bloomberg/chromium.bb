@@ -101,12 +101,6 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
     // Initialization guarded by mAwInit.getLock()
     private Statics mStaticsAdapter;
 
-    // TODO(gsennton) remove this when downstream doesn't depend on it anymore
-    // Guards accees to adapters.
-    // This member is not private only because the downstream subclass needs to access it,
-    // it shouldn't be accessed from anywhere else.
-    /* package */ final Object mAdapterLock = new Object();
-
     /**
      * Thread-safe way to set the one and only WebViewChromiumFactoryProvider.
      */
