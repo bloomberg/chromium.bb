@@ -92,6 +92,14 @@ void PowerButtonMenuScreenView::Layout() {
   power_button_menu_view_->SetBoundsRect(menu_bounds);
 }
 
+bool PowerButtonMenuScreenView::OnMousePressed(const ui::MouseEvent& event) {
+  return true;
+}
+
+void PowerButtonMenuScreenView::OnMouseReleased(const ui::MouseEvent& event) {
+  ScheduleShowHideAnimation(false);
+}
+
 void PowerButtonMenuScreenView::OnGestureEvent(ui::GestureEvent* event) {
   // Dismisses the menu if tap anywhere on the background shield.
   if (event->type() == ui::ET_GESTURE_TAP_DOWN)
