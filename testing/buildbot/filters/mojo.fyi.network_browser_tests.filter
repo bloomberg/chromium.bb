@@ -211,14 +211,6 @@
 # Remove streams concept from code and replace with data pipe passing.
 -MimeHandlerViewTests/MimeHandlerViewTest.Abort/0
 -MimeHandlerViewTests/MimeHandlerViewTest.Abort/1
--MimeHandlerViewTests/MimeHandlerViewTest.DataUrl/0
--MimeHandlerViewTests/MimeHandlerViewTest.DataUrl/1
--MimeHandlerViewTests/MimeHandlerViewTest.EmbeddedDataUrlEmbed/0
--MimeHandlerViewTests/MimeHandlerViewTest.EmbeddedDataUrlEmbed/1
--MimeHandlerViewTests/MimeHandlerViewTest.EmbeddedDataUrlLong/0
--MimeHandlerViewTests/MimeHandlerViewTest.EmbeddedDataUrlLong/1
--MimeHandlerViewTests/MimeHandlerViewTest.EmbeddedDataUrlObject/0
--MimeHandlerViewTests/MimeHandlerViewTest.EmbeddedDataUrlObject/1
 -MimeHandlerViewTests/MimeHandlerViewTest.SingleRequest/0
 -MimeHandlerViewTests/MimeHandlerViewTest.SingleRequest/1
 -PrerenderBrowserTestWithExtensions.StreamsTest

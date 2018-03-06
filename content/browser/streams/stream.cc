@@ -87,15 +87,7 @@ void Stream::Abort() {
 
 void Stream::OnResponseStarted(const net::HttpResponseInfo& response_info) {
   DCHECK(!metadata_);
-  if (response_info.headers) {
-    metadata_.reset(new StreamMetadata(response_info));
-    return;
-  }
-  // Assume request wasn't backed by HTTP and produce fake "200 OK" response,
-  // as some consumers expect it for, say, data urls.
-  net::HttpResponseInfo fake_response_info = response_info;
-  fake_response_info.headers = new net::HttpResponseHeaders("HTTP/1.1 200 OK");
-  metadata_ = std::make_unique<StreamMetadata>(fake_response_info);
+  metadata_ = std::make_unique<StreamMetadata>(response_info);
 }
 
 void Stream::UpdateNetworkStats(int64_t raw_body_bytes, int64_t total_bytes) {
