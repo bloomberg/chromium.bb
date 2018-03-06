@@ -103,41 +103,41 @@
     "structures": [12010],
   },
   "chrome/browser/resources/quota_internals_resources.grd": {
-    "includes": [12110],
+    "includes": [12210],
   },
   "chrome/browser/resources/settings/settings_resources_vulcanized.grd": {
-    "includes": [12130],
+    "includes": [12230],
   },
   "chrome/browser/resources/settings/settings_resources.grd": {
-    "structures": [12140],
+    "structures": [12240],
   },
   "chrome/browser/resources/sync_file_system_internals_resources.grd": {
-    "includes": [12640],
+    "includes": [12740],
   },
   "chrome/browser/resources/task_scheduler_internals/resources.grd": {
-    "includes": [12670],
+    "includes": [12770],
   },
   "chrome/browser/resources/translate_internals_resources.grd": {
-    "includes": [12680],
+    "includes": [12780],
   },
   "chrome/browser/resources/webapks_ui_resources.grd": {
-    "includes": [12700],
+    "includes": [12800],
   },
   "chrome/browser/vr/testapp/vr_testapp_resources.grd": {
-    "includes": [12710],
+    "includes": [12810],
   },
   # END chrome/browser section.
 
   # START chrome/ miscellaneous section.
   "chrome/common/common_resources.grd": {
-    "includes": [12750],
+    "includes": [12850],
   },
   "chrome/renderer/resources/renderer_resources.grd": {
-    "includes": [12760],
-    "structures": [12840],
+    "includes": [12860],
+    "structures": [12940],
   },
   "chrome/test/data/webui_test_resources.grd": {
-    "includes": [12850],
+    "includes": [12950],
   },
   # END chrome/ miscellaneous section.
 
