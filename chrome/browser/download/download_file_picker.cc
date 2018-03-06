@@ -99,6 +99,8 @@ DownloadFilePicker::DownloadFilePicker(DownloadItem* item,
 }
 
 DownloadFilePicker::~DownloadFilePicker() {
+  if (select_file_dialog_)
+    select_file_dialog_->ListenerDestroyed();
 }
 
 void DownloadFilePicker::OnFileSelected(const base::FilePath& path) {
