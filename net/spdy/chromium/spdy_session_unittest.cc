@@ -1927,12 +1927,11 @@ TEST_F(SpdySessionTest, WaitingForWrongPing) {
 TEST_F(SpdySessionTest, OnSettings) {
   session_deps_.host_resolver->set_synchronous_mode(true);
 
-  const SpdyKnownSettingsId kSpdyKnownSettingsId =
-      SETTINGS_MAX_CONCURRENT_STREAMS;
+  const SpdySettingsId kSpdySettingsId = SETTINGS_MAX_CONCURRENT_STREAMS;
 
   SettingsMap new_settings;
   const uint32_t max_concurrent_streams = kInitialMaxConcurrentStreams + 1;
-  new_settings[kSpdyKnownSettingsId] = max_concurrent_streams;
+  new_settings[kSpdySettingsId] = max_concurrent_streams;
   SpdySerializedFrame settings_frame(
       spdy_util_.ConstructSpdySettings(new_settings));
   MockRead reads[] = {
@@ -2726,10 +2725,9 @@ TEST_F(SpdySessionTest, CloseTwoStalledCreateStream) {
   // TODO(rtenneti): Define a helper class/methods and move the common code in
   // this file.
   SettingsMap new_settings;
-  const SpdyKnownSettingsId kSpdyKnownSettingsId1 =
-      SETTINGS_MAX_CONCURRENT_STREAMS;
+  const SpdySettingsId kSpdySettingsId1 = SETTINGS_MAX_CONCURRENT_STREAMS;
   const uint32_t max_concurrent_streams = 1;
-  new_settings[kSpdyKnownSettingsId1] = max_concurrent_streams;
+  new_settings[kSpdySettingsId1] = max_concurrent_streams;
 
   SpdySerializedFrame settings_ack(spdy_util_.ConstructSpdySettingsAck());
   SpdySerializedFrame req1(spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST));
@@ -6024,15 +6022,15 @@ TEST_F(SendInitialSettingsOnNewSpdySessionTest, OverwriteValues) {
 // Unknown parameters should still be sent to the server.
 TEST_F(SendInitialSettingsOnNewSpdySessionTest, UnknownSettings) {
   // The following parameters are not defined in the HTTP/2 specification.
-  session_deps_.http2_settings[static_cast<SpdyKnownSettingsId>(7)] = 1234;
-  session_deps_.http2_settings[static_cast<SpdyKnownSettingsId>(25)] = 5678;
+  session_deps_.http2_settings[7] = 1234;
+  session_deps_.http2_settings[25] = 5678;
 
   SettingsMap expected_settings;
   expected_settings[SETTINGS_HEADER_TABLE_SIZE] = kSpdyMaxHeaderTableSize;
   expected_settings[SETTINGS_MAX_CONCURRENT_STREAMS] =
       kSpdyMaxConcurrentPushedStreams;
-  expected_settings[static_cast<SpdyKnownSettingsId>(7)] = 1234;
-  expected_settings[static_cast<SpdyKnownSettingsId>(25)] = 5678;
+  expected_settings[7] = 1234;
+  expected_settings[25] = 5678;
   RunInitialSettingsTest(expected_settings);
 }
 

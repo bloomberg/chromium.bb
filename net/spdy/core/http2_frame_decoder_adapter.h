@@ -396,7 +396,13 @@ class SPDY_EXPORT_PRIVATE SpdyFramerVisitorInterface {
 
   // Called when a complete setting within a SETTINGS frame has been parsed and
   // validated.
-  virtual void OnSetting(SpdyKnownSettingsId id, uint32_t value) = 0;
+  // TODO(diannahu): Remove with deprecation of
+  //     GetSpdyRestartFlag(http2_propagate_unknown_settings).
+  virtual void OnSettingOld(SpdyKnownSettingsId id, uint32_t value) = 0;
+
+  // Called when a complete setting within a SETTINGS frame has been parsed.
+  // Note that |id| may or may not be a SETTINGS ID defined in the HTTP/2 spec.
+  virtual void OnSetting(SpdySettingsId id, uint32_t value) = 0;
 
   // Called when a SETTINGS frame is received with the ACK flag set.
   virtual void OnSettingsAck() {}
@@ -485,7 +491,7 @@ class SPDY_EXPORT_PRIVATE ExtensionVisitorInterface {
  public:
   virtual ~ExtensionVisitorInterface() {}
 
-  // Called when non-standard SETTINGS are received.
+  // Called when SETTINGS are received, including non-standard SETTINGS.
   virtual void OnSetting(SpdySettingsId id, uint32_t value) = 0;
 
   // Called when non-standard frames are received.

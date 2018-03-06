@@ -8,5 +8,6 @@
 #include "net/spdy/platform/impl/spdy_flags_impl.h"
 
 #define GetSpdyReloadableFlag(flag) GetSpdyReloadableFlagImpl(flag)
+#define GetSpdyRestartFlag(flag) GetSpdyRestartFlagImpl(flag)
 
 #endif  // NET_SPDY_PLATFORM_API_SPDY_FLAGS_H_

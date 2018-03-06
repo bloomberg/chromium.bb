@@ -9,4 +9,9 @@ namespace net {
 // Consider SETTINGS identifier 0x07 as invalid.
 bool http2_check_settings_id_007 = true;
 
+// If true, Http2FrameDecoderAdapter will pass decoded HTTP/2 SETTINGS through
+// the SpdyFramerVisitorInterface callback OnSetting(), which will also accept
+// unknown SETTINGS IDs.
+bool http2_propagate_unknown_settings = true;
+
 }  // namespace net

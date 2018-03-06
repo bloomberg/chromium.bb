@@ -22,6 +22,7 @@
 #include "net/quic/http/decoder/quic_http_frame_decoder_listener.h"
 #include "net/quic/http/quic_http_constants.h"
 #include "net/quic/http/quic_http_structures.h"
+#include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/platform/api/quic_string_utils.h"
 #include "net/spdy/core/hpack/hpack_decoder_adapter.h"
@@ -450,7 +451,13 @@ void QuicHttpDecoderAdapter::OnSetting(
     }
     return;
   }
-  visitor()->OnSetting(setting_id, setting_fields.value);
+  // TODO(quic): Consider whether to add support for handling unknown SETTINGS
+  //     IDs, which currently cause a connection close.
+  if (GetQuicRestartFlag(http2_propagate_unknown_settings)) {
+    visitor()->OnSetting(setting_id, setting_fields.value);
+  } else {
+    visitor()->OnSettingOld(setting_id, setting_fields.value);
+  }
 }
 
 void QuicHttpDecoderAdapter::OnSettingsEnd() {
