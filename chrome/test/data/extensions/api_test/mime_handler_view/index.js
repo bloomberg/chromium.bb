@@ -38,12 +38,10 @@ function fetchUrl(url) {
 }
 
 function expectSuccessfulRead(response) {
-  chrome.test.assertEq(200, response.status);
   chrome.test.assertEq('content to read\n', response.data);
 }
 
 function expectSuccessfulReadLong(response) {
-  chrome.test.assertEq(200, response.status);
   chrome.test.assertTrue(response.data.startsWith('content to read\n'));
 }
 
