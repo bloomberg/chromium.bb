@@ -97,8 +97,8 @@ static const int kMinutesInTenYears = 10 * 365 * 24 * 60;
 
 namespace {
 
-void MayeRunDeleteCallback(base::WeakPtr<net::CookieMonster> cookie_monster,
-                           base::OnceClosure callback) {
+void MaybeRunDeleteCallback(base::WeakPtr<net::CookieMonster> cookie_monster,
+                            base::OnceClosure callback) {
   if (cookie_monster && callback)
     std::move(callback).Run();
 }
@@ -652,7 +652,7 @@ void CookieMonster::DeleteAllCreatedBetween(const Time& delete_begin,
   }
 
   FlushStore(
-      base::BindOnce(&MayeRunDeleteCallback, weak_ptr_factory_.GetWeakPtr(),
+      base::BindOnce(&MaybeRunDeleteCallback, weak_ptr_factory_.GetWeakPtr(),
                      callback ? base::BindOnce(std::move(callback), num_deleted)
                               : base::OnceClosure()));
 }
@@ -680,7 +680,7 @@ void CookieMonster::DeleteAllCreatedBetweenWithPredicate(
   }
 
   FlushStore(
-      base::BindOnce(&MayeRunDeleteCallback, weak_ptr_factory_.GetWeakPtr(),
+      base::BindOnce(&MaybeRunDeleteCallback, weak_ptr_factory_.GetWeakPtr(),
                      callback ? base::BindOnce(std::move(callback), num_deleted)
                               : base::OnceClosure()));
 }
@@ -749,7 +749,7 @@ void CookieMonster::DeleteCookie(const GURL& url,
     }
   }
 
-  FlushStore(base::BindOnce(&MayeRunDeleteCallback,
+  FlushStore(base::BindOnce(&MaybeRunDeleteCallback,
                             weak_ptr_factory_.GetWeakPtr(),
                             // No callback null check needed as BindOnce
                             // is not being called and MaybeRunDeleteCallback
@@ -772,7 +772,7 @@ void CookieMonster::DeleteCanonicalCookie(const CanonicalCookie& cookie,
     }
   }
   FlushStore(
-      base::BindOnce(&MayeRunDeleteCallback, weak_ptr_factory_.GetWeakPtr(),
+      base::BindOnce(&MaybeRunDeleteCallback, weak_ptr_factory_.GetWeakPtr(),
                      callback ? base::BindOnce(std::move(callback), result)
                               : base::OnceClosure()));
 }
@@ -794,7 +794,7 @@ void CookieMonster::DeleteSessionCookies(DeleteCallback callback) {
   }
 
   FlushStore(
-      base::BindOnce(&MayeRunDeleteCallback, weak_ptr_factory_.GetWeakPtr(),
+      base::BindOnce(&MaybeRunDeleteCallback, weak_ptr_factory_.GetWeakPtr(),
                      callback ? base::BindOnce(std::move(callback), num_deleted)
                               : base::OnceClosure()));
 }
