@@ -8,6 +8,7 @@
 #include "base/feature_list.h"
 #include "build/build_config.h"
 #include "ui/base/ui_base_export.h"
+#include "ui/base/ui_features.h"
 
 namespace features {
 
@@ -38,6 +39,14 @@ UI_BASE_EXPORT extern const base::Feature kMus;
 // NOTE: this returns true if either kMus or kMash is specified.
 // TODO(sky): rename this to IsWindowServiceEnabled().
 UI_BASE_EXPORT bool IsMusEnabled();
+
+#if defined(OS_MACOSX) && BUILDFLAG(MAC_VIEWS_BROWSER)
+UI_BASE_EXPORT extern const base::Feature kViewsBrowserWindows;
+
+// Returns whether a Views-capable browser build should use the Cocoa browser
+// UI.
+UI_BASE_EXPORT bool IsViewsBrowserCocoa();
+#endif  //  defined(OS_MACOSX) && BUILDFLAG(MAC_VIEWS_BROWSER)
 
 }  // namespace features
 
