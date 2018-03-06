@@ -13,6 +13,8 @@ class ChromeBrowserState;
 }
 
 @protocol ApplicationCommands;
+@protocol LegacyRecentTabsTableViewControllerDelegate;
+@protocol RecentTabsHandsetViewControllerCommand;
 @protocol UrlLoader;
 
 @interface RecentTabsTableViewController
@@ -23,6 +25,15 @@ class ChromeBrowserState;
 @property(nonatomic, weak) id<ApplicationCommands> dispatcher;
 // UrlLoader used by this ViewController.
 @property(nonatomic, weak) id<UrlLoader> loader;
+
+// RecentTabsTableViewControllerDelegate delegate.
+@property(nonatomic, weak) id<LegacyRecentTabsTableViewControllerDelegate>
+    delegate;
+
+// RecentTabsHandsetViewControllerCommand delegate.
+@property(nonatomic, weak) id<RecentTabsHandsetViewControllerCommand>
+    handsetCommandHandler;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_NTP_RECENT_TABS_RECENT_TABS_TABLE_VIEW_CONTROLLER_H_
