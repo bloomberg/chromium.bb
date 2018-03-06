@@ -7,15 +7,18 @@
 #include <utility>
 
 #include "base/callback.h"
+#include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_shelf.h"
+#include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "components/download/public/common/download_item.h"
+#include "components/security_state/core/security_state.h"
 #include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -133,6 +136,26 @@ DownloadUIController::~DownloadUIController() {
 
 void DownloadUIController::OnDownloadCreated(content::DownloadManager* manager,
                                              download::DownloadItem* item) {
+  // Record the security level of the page triggering the download. Only record
+  // when the download occurs in the WebContents that initiated the download
+  // (e.g., not downloads in new tabs or windows, which have a different
+  // WebContents).
+  content::WebContents* web_contents =
+      content::DownloadItemUtils::GetWebContents(item);
+  if (web_contents && (item->IsSavePackageDownload() ||
+                       (web_contents->GetURL() != item->GetOriginalUrl() &&
+                        web_contents->GetURL() != item->GetURL()))) {
+    auto* security_state_tab_helper =
+        SecurityStateTabHelper::FromWebContents(web_contents);
+    if (security_state_tab_helper) {
+      security_state::SecurityInfo security_info;
+      security_state_tab_helper->GetSecurityInfo(&security_info);
+      UMA_HISTOGRAM_ENUMERATION("Security.SecurityLevel.DownloadStarted",
+                                security_info.security_level,
+                                security_state::SECURITY_LEVEL_COUNT);
+    }
+  }
+
   // SavePackage downloads are created in a state where they can be shown in the
   // browser. Call OnDownloadUpdated() once to notify the UI immediately.
   OnDownloadUpdated(manager, item);
