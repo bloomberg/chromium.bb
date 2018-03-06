@@ -298,8 +298,7 @@ class GCETestStage(VMTestStage):
 
   config_name = 'gce_tests'
 
-  # TODO: We should revisit whether GCE tests should have their own configs.
-  TEST_TIMEOUT = 60 * 60
+  TEST_TIMEOUT = 90 * 60
 
   def __init__(self, builder_run, board, gce_tests=None, **kwargs):
     """Initiailization of the VMTestStage.
