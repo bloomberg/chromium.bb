@@ -63,6 +63,9 @@ void ContentElement::Render(UiElementRenderer* renderer,
 }
 
 void ContentElement::OnFocusChanged(bool focused) {
+  if (delegate_)
+    delegate_->OnFocusChanged(focused);
+
   focused_ = focused;
   if (event_handlers_.focus_change)
     event_handlers_.focus_change.Run(focused);

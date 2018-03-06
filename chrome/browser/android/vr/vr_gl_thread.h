@@ -69,6 +69,7 @@ class VrGLThread : public base::android::JavaHandlerThread,
   void ForwardEvent(std::unique_ptr<blink::WebInputEvent> event,
                     int content_id) override;
   void ForwardDialogEvent(std::unique_ptr<blink::WebInputEvent> event) override;
+  void ClearFocusedElement() override;
   void OnWebInputEdited(const TextEdits& edits) override;
   void SubmitWebInput() override;
   void RequestWebInputText(TextStateUpdateCallback callback) override;

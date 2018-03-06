@@ -38,6 +38,7 @@ class ContentInputForwarder {
       std::unique_ptr<blink::WebInputEvent> event) = 0;
 
   // Text input specific.
+  virtual void ClearFocusedElement() = 0;
   virtual void OnWebInputEdited(const TextEdits& edits) = 0;
   virtual void SubmitWebInput() = 0;
   virtual void RequestWebInputText(TextStateUpdateCallback callback) = 0;
@@ -59,6 +60,7 @@ class ContentInputDelegate {
   virtual void OnContentUp(const gfx::PointF& normalized_hit_point);
 
   // Text Input specific.
+  void OnFocusChanged(bool focused);
   void OnWebInputEdited(const EditedText& info, bool commit);
 
   // The following functions are virtual so that they may be overridden in the

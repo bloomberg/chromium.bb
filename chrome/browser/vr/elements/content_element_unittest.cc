@@ -48,6 +48,39 @@ class TestContentInputDelegate : public MockContentInputDelegate {
   TextInputInfo info_;
 };
 
+class TestContentInputForwarder : public ContentInputForwarder {
+ public:
+  TestContentInputForwarder() {}
+  ~TestContentInputForwarder() override {}
+
+  void ForwardEvent(std::unique_ptr<blink::WebInputEvent>, int) override {}
+  void ForwardDialogEvent(std::unique_ptr<blink::WebInputEvent>) override {}
+
+  void ClearFocusedElement() override { clear_focus_called_ = true; }
+  void OnWebInputEdited(const TextEdits& edits) override { edits_ = edits; }
+  void SubmitWebInput() override {}
+  void RequestWebInputText(TextStateUpdateCallback) override {
+    text_state_requested_ = true;
+  }
+
+  TextEdits edits() { return edits_; }
+  bool text_state_requested() { return text_state_requested_; }
+  bool clear_focus_called() { return clear_focus_called_; }
+
+  void Reset() {
+    edits_.clear();
+    text_state_requested_ = false;
+    clear_focus_called_ = false;
+  }
+
+ private:
+  TextEdits edits_;
+  bool text_state_requested_ = false;
+  bool clear_focus_called_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(TestContentInputForwarder);
+};
+
 class ContentElementSceneTest : public UiTest {
  public:
   void SetUp() override {
@@ -64,6 +97,10 @@ class ContentElementSceneTest : public UiTest {
     text_input_delegate_ =
         std::make_unique<StrictMock<MockTextInputDelegate>>();
 
+    input_forwarder_ = std::make_unique<TestContentInputForwarder>();
+    ui_->GetContentInputDelegateForTest()->SetContentInputForwarderForTest(
+        input_forwarder_.get());
+
     auto* content =
         static_cast<ContentElement*>(scene_->GetUiElementByName(kContentQuad));
     content->SetTextInputDelegate(text_input_delegate_.get());
@@ -72,6 +109,7 @@ class ContentElementSceneTest : public UiTest {
 
  protected:
   std::unique_ptr<StrictMock<MockTextInputDelegate>> text_input_delegate_;
+  std::unique_ptr<TestContentInputForwarder> input_forwarder_;
   testing::Sequence in_sequence_;
 };
 
@@ -120,36 +158,15 @@ TEST_F(ContentElementSceneTest, WebInputFocus) {
   EXPECT_CALL(*kb_delegate, SetTransform(_)).InSequence(in_sequence_);
   ui_->ShowSoftInput(false);
   EXPECT_TRUE(OnBeginFrame());
+
+  // Taking focus away from content should clear the delegate state.
+  EXPECT_CALL(*kb_delegate, OnBeginFrame()).InSequence(in_sequence_);
+  EXPECT_CALL(*kb_delegate, SetTransform(_)).InSequence(in_sequence_);
+  EXPECT_FALSE(input_forwarder_->clear_focus_called());
+  content->OnFocusChanged(false);
+  EXPECT_TRUE(input_forwarder_->clear_focus_called());
+  EXPECT_TRUE(OnBeginFrame());
 }
-
-class TestContentInputForwarder : public ContentInputForwarder {
- public:
-  TestContentInputForwarder() {}
-  ~TestContentInputForwarder() override {}
-
-  void ForwardEvent(std::unique_ptr<blink::WebInputEvent>, int) override {}
-  void ForwardDialogEvent(std::unique_ptr<blink::WebInputEvent>) override {}
-
-  void OnWebInputEdited(const TextEdits& edits) override { edits_ = edits; }
-  void SubmitWebInput() override {}
-  void RequestWebInputText(TextStateUpdateCallback) override {
-    text_state_requested_ = true;
-  }
-
-  TextEdits edits() { return edits_; }
-  bool text_state_requested() { return text_state_requested_; }
-
-  void Reset() {
-    edits_.clear();
-    text_state_requested_ = false;
-  }
-
- private:
-  TextEdits edits_;
-  bool text_state_requested_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(TestContentInputForwarder);
-};
 
 class ContentElementInputEditingTest : public UiTest {
  public:

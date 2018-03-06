@@ -918,6 +918,13 @@ void VrShell::SetHighAccuracyLocation(bool high_accuracy_location) {
   high_accuracy_location_ = high_accuracy_location;
 }
 
+void VrShell::ClearFocusedElement() {
+  if (!web_contents_)
+    return;
+
+  web_contents_->ClearFocusedElement();
+}
+
 void VrShell::ProcessContentGesture(std::unique_ptr<blink::WebInputEvent> event,
                                     int content_id) {
   // Block the events if they don't belong to the current content
