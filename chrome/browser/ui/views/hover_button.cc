@@ -125,8 +125,6 @@ HoverButton::HoverButton(views::ButtonListener* button_listener,
   if (combined_line_height > icon_height)
     remaining_vert_spacing = (total_height - combined_line_height) / 2;
 
-  SetBorder(CreateBorderWithVerticalSpacing(remaining_vert_spacing));
-
   views::GridLayout* grid_layout =
       SetLayoutManager(std::make_unique<views::GridLayout>(this));
   // Badging may make the icon slightly wider (but not taller). However, the
@@ -208,9 +206,7 @@ HoverButton::HoverButton(views::ButtonListener* button_listener,
   SetTooltipAndAccessibleName(this, title_, subtitle_, GetLocalBounds(),
                               taken_width_, auto_compute_tooltip_);
 
-  // Since this constructor doesn't use the |LabelButton|'s image / label Views,
-  // make sure the minimum size is correct according to the |grid_layout|.
-  SetMinSize(gfx::Size(grid_layout->GetPreferredSize(this)));
+  SetBorder(CreateBorderWithVerticalSpacing(remaining_vert_spacing));
 }
 
 HoverButton::~HoverButton() {}
