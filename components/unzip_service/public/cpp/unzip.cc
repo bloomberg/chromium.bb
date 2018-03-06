@@ -92,6 +92,7 @@ class UnzipParams : public base::RefCounted<UnzipParams> {
 
 void UnzipDone(scoped_refptr<UnzipParams> params, bool success) {
   params->InvokeCallback(success);
+  params->unzipper()->reset();
 }
 
 void DoUnzipWithFilter(
