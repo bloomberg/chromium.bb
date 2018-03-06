@@ -40,6 +40,8 @@ const char* GetProtoFieldString(ProtoField proto_field);
 
 const char* GetUniquePositionFieldString(UniquePositionField position_field);
 
+// TODO(crbug.com/758319): Remove this along with the attachment metadata
+// columns in directory_backing_store.cc.
 const char* GetAttachmentMetadataFieldString(
     AttachmentMetadataField attachment_metadata_field);
 

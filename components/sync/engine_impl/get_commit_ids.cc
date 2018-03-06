@@ -34,18 +34,6 @@ bool IsEntryInConflict(const Entry& entry) {
   return false;
 }
 
-// Return true if this entry has any attachments that haven't yet been uploaded
-// to the server.
-bool HasAttachmentNotOnServer(const Entry& entry) {
-  const sync_pb::AttachmentMetadata& metadata = entry.GetAttachmentMetadata();
-  for (int i = 0; i < metadata.record_size(); ++i) {
-    if (!metadata.record(i).is_on_server()) {
-      return true;
-    }
-  }
-  return false;
-}
-
 // An entry may not commit if any are true:
 // 1. It requires encryption (either the type is encrypted but a passphrase
 //    is missing from the cryptographer, or the entry itself wasn't properly
@@ -96,13 +84,6 @@ bool MayEntryCommit(ModelTypeSet requested_types,
 
   if (entry.IsRoot()) {
     NOTREACHED() << "Permanent item became unsynced " << entry;
-    return false;
-  }
-
-  if (HasAttachmentNotOnServer(entry)) {
-    // This entry is not ready to be sent to the server because it has one or
-    // more attachments that have not yet been uploaded to the server. The idea
-    // here is avoid propagating an entry with dangling attachment references.
     return false;
   }
 
@@ -463,9 +444,7 @@ void FilterUnreadyEntries(syncable::BaseTransaction* trans,
     Entry entry(trans, syncable::GET_BY_HANDLE, handle);
     // TODO(maniscalco): While we check if entry is ready to be committed, we
     // also need to check that all of its ancestors (parents, transitive) are
-    // ready to be committed. Once attachments can prevent an entry from being
-    // committable, this method must ensure all ancestors are ready for commit
-    // (crbug.com/356273).
+    // ready to be committed.
     if (MayEntryCommit(requested_types, encrypted_types, passphrase_missing,
                        entry)) {
       if (IsEntryInConflict(entry)) {

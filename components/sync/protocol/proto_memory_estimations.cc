@@ -121,7 +121,6 @@ size_t EstimateMemoryUsage(const P& proto) {
 #define INSTANTIATE(Proto) \
   template size_t EstimateMemoryUsage<Proto>(const Proto&);
 
-INSTANTIATE(AttachmentMetadata)
 INSTANTIATE(DataTypeContext)
 INSTANTIATE(DataTypeProgressMarker)
 INSTANTIATE(EntityMetadata)
