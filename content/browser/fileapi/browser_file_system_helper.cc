@@ -33,6 +33,7 @@
 #include "storage/browser/fileapi/file_system_url.h"
 #include "storage/browser/fileapi/isolated_context.h"
 #include "storage/browser/quota/quota_manager.h"
+#include "third_party/leveldatabase/leveldb_chrome.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
@@ -61,7 +62,11 @@ FileSystemOptions CreateBrowserFileSystemOptions(bool is_incognito) {
           switches::kAllowFileAccessFromFiles)) {
     additional_allowed_schemes.push_back(url::kFileScheme);
   }
-  return FileSystemOptions(profile_mode, additional_allowed_schemes, nullptr);
+  leveldb::Env* env_override = nullptr;
+  if (is_incognito)
+    env_override = leveldb_chrome::NewMemEnv(leveldb::Env::Default());
+  return FileSystemOptions(profile_mode, additional_allowed_schemes,
+                           env_override);
 }
 
 }  // namespace
