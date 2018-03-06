@@ -28,6 +28,7 @@ class CONTENT_EXPORT PaymentAppProviderImpl : public PaymentAppProvider {
       WebContents* web_contents,
       payments::mojom::PaymentRequestEventDataPtr event_data,
       const std::string& app_name,
+      const SkBitmap& app_icon,
       const std::string& sw_js_url,
       const std::string& sw_scope,
       bool sw_use_cache,

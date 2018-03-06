@@ -196,7 +196,11 @@ void ServiceWorkerPaymentInstrument::InvokePaymentApp(Delegate* delegate) {
   if (needs_installation_) {
     content::PaymentAppProvider::GetInstance()->InstallAndInvokePaymentApp(
         web_contents_, CreatePaymentRequestEventData(),
-        installable_web_app_info_->name, installable_web_app_info_->sw_js_url,
+        installable_web_app_info_->name,
+        installable_web_app_info_->icon == nullptr
+            ? SkBitmap()
+            : *(installable_web_app_info_->icon),
+        installable_web_app_info_->sw_js_url,
         installable_web_app_info_->sw_scope,
         installable_web_app_info_->sw_use_cache,
         std::vector<std::string>(1, installable_enabled_method_),

@@ -405,6 +405,7 @@ void PaymentAppDatabase::SetPaymentAppInfoForRegisteredServiceWorker(
     int64_t registration_id,
     const std::string& instrument_key,
     const std::string& name,
+    const std::string& icon,
     const std::vector<std::string>& enabled_methods,
     SetPaymentAppInfoCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -412,13 +413,14 @@ void PaymentAppDatabase::SetPaymentAppInfoForRegisteredServiceWorker(
   service_worker_context_->FindReadyRegistrationForIdOnly(
       registration_id,
       base::BindOnce(&PaymentAppDatabase::DidFindRegistrationToSetPaymentApp,
-                     weak_ptr_factory_.GetWeakPtr(), instrument_key, name,
+                     weak_ptr_factory_.GetWeakPtr(), instrument_key, name, icon,
                      enabled_methods, std::move(callback)));
 }
 
 void PaymentAppDatabase::DidFindRegistrationToSetPaymentApp(
     const std::string& instrument_key,
     const std::string& name,
+    const std::string& icon,
     const std::vector<std::string>& enabled_methods,
     SetPaymentAppInfoCallback callback,
     ServiceWorkerStatusCode status,
@@ -434,6 +436,7 @@ void PaymentAppDatabase::DidFindRegistrationToSetPaymentApp(
   payment_app_proto.set_registration_id(registration->id());
   payment_app_proto.set_scope(registration->pattern().spec());
   payment_app_proto.set_name(name);
+  payment_app_proto.set_icon(icon);
 
   std::string serialized_payment_app;
   bool success = payment_app_proto.SerializeToString(&serialized_payment_app);

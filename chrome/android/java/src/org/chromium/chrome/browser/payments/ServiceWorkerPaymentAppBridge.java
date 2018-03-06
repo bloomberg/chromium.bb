@@ -202,6 +202,7 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
      * @param modifiers        Payment method specific modifiers to the payment items and the total.
      * @param callback         Called after the payment app is finished running.
      * @param appName          The installable app name.
+     * @param appIcon          The installable app icon.
      * @param swUri            The URI to get the app's service worker js script.
      * @param scope            The scope of the service worker that should be registered.
      * @param useCache         Whether to use cache when registering the service worker.
@@ -210,13 +211,14 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
     public static void installAndInvokePaymentApp(WebContents webContents, String origin,
             String iframeOrigin, String paymentRequestId, Set<PaymentMethodData> methodData,
             PaymentItem total, Set<PaymentDetailsModifier> modifiers,
-            PaymentInstrument.InstrumentDetailsCallback callback, String appName, URI swUri,
-            URI scope, boolean useCache, Set<String> methodNames) {
+            PaymentInstrument.InstrumentDetailsCallback callback, String appName,
+            @Nullable Bitmap icon, URI swUri, URI scope, boolean useCache,
+            Set<String> methodNames) {
         ThreadUtils.assertOnUiThread();
 
         nativeInstallAndInvokePaymentApp(webContents, origin, iframeOrigin, paymentRequestId,
                 methodData.toArray(new PaymentMethodData[0]), total,
-                modifiers.toArray(new PaymentDetailsModifier[0]), callback, appName,
+                modifiers.toArray(new PaymentDetailsModifier[0]), callback, appName, icon,
                 swUri.toString(), scope.toString(), useCache, methodNames.toArray(new String[0]));
     }
 
@@ -422,8 +424,9 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
     private static native void nativeInstallAndInvokePaymentApp(WebContents webContents,
             String topLevelOrigin, String paymentRequestOrigin, String paymentRequestId,
             PaymentMethodData[] methodData, PaymentItem total, PaymentDetailsModifier[] modifiers,
-            PaymentInstrument.InstrumentDetailsCallback callback, String appName, String swUrl,
-            String scope, boolean useCache, String[] methodNames);
+            PaymentInstrument.InstrumentDetailsCallback callback, String appName,
+            @Nullable Bitmap icon, String swUrl, String scope, boolean useCache,
+            String[] methodNames);
 
     private static native void nativeAbortPaymentApp(
             WebContents webContents, long registrationId, PaymentInstrument.AbortCallback callback);

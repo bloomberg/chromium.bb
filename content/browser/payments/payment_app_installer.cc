@@ -28,12 +28,14 @@ class SelfDeleteInstaller
  public:
   SelfDeleteInstaller(WebContents* web_contents,
                       const std::string& app_name,
+                      const std::string& app_icon,
                       const GURL& sw_url,
                       const GURL& scope,
                       bool use_cache,
                       const std::vector<std::string>& enabled_methods,
                       PaymentAppInstaller::InstallPaymentAppCallback callback)
       : app_name_(app_name),
+        app_icon_(app_icon),
         sw_url_(sw_url),
         scope_(scope),
         callback_(std::move(callback)) {
@@ -135,7 +137,7 @@ class SelfDeleteInstaller
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(&SelfDeleteInstaller::SetPaymentAppInfoOnIO, this,
                        payment_app_context, registration_id_, scope_.spec(),
-                       app_name_, enabled_methods_));
+                       app_name_, app_icon_, enabled_methods_));
   }
 
   void SetPaymentAppInfoOnIO(
@@ -143,12 +145,13 @@ class SelfDeleteInstaller
       int64_t registration_id,
       const std::string& instrument_key,
       const std::string& name,
+      const std::string& app_icon,
       const std::vector<std::string>& enabled_methods) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
     payment_app_context->payment_app_database()
         ->SetPaymentAppInfoForRegisteredServiceWorker(
-            registration_id, instrument_key, name, enabled_methods,
+            registration_id, instrument_key, name, app_icon, enabled_methods,
             base::BindOnce(&SelfDeleteInstaller::OnSetPaymentAppInfo, this));
   }
 
@@ -186,6 +189,7 @@ class SelfDeleteInstaller
   }
 
   std::string app_name_;
+  std::string app_icon_;
   GURL sw_url_;
   GURL scope_;
   std::vector<std::string> enabled_methods_;
@@ -203,6 +207,7 @@ class SelfDeleteInstaller
 void PaymentAppInstaller::Install(
     WebContents* web_contents,
     const std::string& app_name,
+    const std::string& app_icon,
     const GURL& sw_url,
     const GURL& scope,
     bool use_cache,
@@ -210,8 +215,8 @@ void PaymentAppInstaller::Install(
     InstallPaymentAppCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  new SelfDeleteInstaller(web_contents, app_name, sw_url, scope, use_cache,
-                          enabled_methods, std::move(callback));
+  new SelfDeleteInstaller(web_contents, app_name, app_icon, sw_url, scope,
+                          use_cache, enabled_methods, std::move(callback));
 }
 
 }  // namespace content

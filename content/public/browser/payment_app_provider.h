@@ -15,6 +15,8 @@
 #include "content/public/browser/stored_payment_app.h"
 #include "third_party/WebKit/public/platform/modules/payments/payment_app.mojom.h"
 
+class SkBitmap;
+
 namespace content {
 
 class BrowserContext;
@@ -51,6 +53,7 @@ class CONTENT_EXPORT PaymentAppProvider {
       WebContents* web_contents,
       payments::mojom::PaymentRequestEventDataPtr event_data,
       const std::string& app_name,
+      const SkBitmap& app_icon,
       const std::string& sw_js_url,
       const std::string& sw_scope,
       bool sw_use_cache,

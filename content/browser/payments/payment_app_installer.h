@@ -27,6 +27,7 @@ class PaymentAppInstaller {
 
   // Installs the payment app.
   // |app_name| is the name of the payment app.
+  // |app_icon| is the icon of the payment app.
   // |sw_url| is the url to get the service worker js script.
   // |scope| is the registration scope.
   // |use_cache| indicates whether to use cache.
@@ -34,6 +35,7 @@ class PaymentAppInstaller {
   // |callback| to send back registeration result.
   static void Install(WebContents* web_contents,
                       const std::string& app_name,
+                      const std::string& app_icon,
                       const GURL& sw_url,
                       const GURL& scope,
                       bool use_cache,
