@@ -634,6 +634,12 @@ class GClientSmokeGIT(GClientSmokeBase):
             'hash2': self.githash('repo_2', 1)[:7],
           })
     self.check((out, '', 0), results)
+
+  def testRevInfoActual(self):
+    if not self.enabled:
+      return
+    self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
+    self.gclient(['sync', '--deps', 'mac'])
     results = self.gclient(['revinfo', '--deps', 'mac', '--actual'])
     out = ('src: %(base)srepo_1@%(hash1)s\n'
            'src/repo2: %(base)srepo_2@%(hash2)s\n'
@@ -643,6 +649,47 @@ class GClientSmokeGIT(GClientSmokeBase):
             'hash1': self.githash('repo_1', 2),
             'hash2': self.githash('repo_2', 1),
             'hash3': self.githash('repo_3', 2),
+          })
+    self.check((out, '', 0), results)
+
+  def testRevInfoFilterPath(self):
+    if not self.enabled:
+      return
+    self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
+    self.gclient(['sync', '--deps', 'mac'])
+    results = self.gclient(['revinfo', '--deps', 'mac', '--path', 'src'])
+    out = ('src: %(base)srepo_1\n' %
+          {
+            'base': self.git_base,
+          })
+    self.check((out, '', 0), results)
+
+  def testRevInfoFilterURL(self):
+    if not self.enabled:
+      return
+    self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
+    self.gclient(['sync', '--deps', 'mac'])
+    results = self.gclient(['revinfo', '--deps', 'mac',
+                            '--url', '%srepo_2' % self.git_base])
+    out = ('src/repo2: %(base)srepo_2@%(hash2)s\n' %
+          {
+            'base': self.git_base,
+            'hash2': self.githash('repo_2', 1)[:7],
+          })
+    self.check((out, '', 0), results)
+
+  def testRevInfoFilterURLOrPath(self):
+    if not self.enabled:
+      return
+    self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
+    self.gclient(['sync', '--deps', 'mac'])
+    results = self.gclient(['revinfo', '--deps', 'mac', '--path', 'src',
+                            '--url', '%srepo_2' % self.git_base])
+    out = ('src: %(base)srepo_1\n'
+           'src/repo2: %(base)srepo_2@%(hash2)s\n' %
+          {
+            'base': self.git_base,
+            'hash2': self.githash('repo_2', 1)[:7],
           })
     self.check((out, '', 0), results)
 

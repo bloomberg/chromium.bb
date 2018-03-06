@@ -1762,6 +1762,15 @@ it or fix the checkout.
         work_queue.enqueue(s)
     work_queue.flush({}, None, [], options=self._options)
 
+    def ShouldPrintRevision(path, rev):
+      if not self._options.path and not self._options.url:
+        return True
+      if self._options.path and path in self._options.path:
+        return True
+      if self._options.url and rev and rev.split('@')[0] in self._options.url:
+        return True
+      return False
+
     def GetURLAndRev(dep):
       """Returns the revision-qualified SCM url for a Dependency."""
       if dep.parsed_url is None:
@@ -1781,7 +1790,9 @@ it or fix the checkout.
         def GrabDeps(dep):
           """Recursively grab dependencies."""
           for d in dep.dependencies:
-            entries[d.name] = GetURLAndRev(d)
+            rev = GetURLAndRev(d)
+            if ShouldPrintRevision(d.name, rev):
+              entries[d.name] = rev
             GrabDeps(d)
         GrabDeps(d)
         custom_deps = []
@@ -1804,9 +1815,11 @@ it or fix the checkout.
       entries = {}
       for d in self.root.subtree(False):
         if self._options.actual:
-          entries[d.name] = GetURLAndRev(d)
+          rev = GetURLAndRev(d)
         else:
-          entries[d.name] = d.parsed_url
+          rev = d.parsed_url
+        if ShouldPrintRevision(d.name, rev):
+          entries[d.name] = rev
       keys = sorted(entries.keys())
       for x in keys:
         print('%s: %s' % (x, entries[x]))
@@ -2784,6 +2797,12 @@ def CMDrevinfo(parser, args):
                     help='creates a snapshot .gclient file of the current '
                          'version of all repositories to reproduce the tree, '
                          'implies -a')
+  parser.add_option('-u', '--url', action='append',
+                     help='Display revision information only for the specified '
+                          'URLs.')
+  parser.add_option('-p', '--path', action='append',
+                     help='Display revision information only for the specified '
+                          'paths.')
   (options, args) = parser.parse_args(args)
   client = GClient.LoadCurrentConfig(options)
   if not client:
