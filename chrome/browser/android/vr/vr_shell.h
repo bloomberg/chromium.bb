@@ -187,6 +187,7 @@ class VrShell : device::GvrGamepadDataProvider,
   void StopAutocomplete();
   bool HasAudioPermission();
 
+  void ClearFocusedElement();
   void ProcessContentGesture(std::unique_ptr<blink::WebInputEvent> event,
                              int content_id);
 

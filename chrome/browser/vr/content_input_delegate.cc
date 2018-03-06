@@ -59,6 +59,14 @@ void ContentInputDelegate::OnContentUp(
       MakeMouseEvent(blink::WebInputEvent::kMouseUp, normalized_hit_point));
 }
 
+void ContentInputDelegate::OnFocusChanged(bool focused) {
+  // The call below tells the renderer to clear the focused element. Note that
+  // we don't need to do anything when focused is true because the renderer
+  // already knows about the focused element.
+  if (!focused)
+    content_->ClearFocusedElement();
+}
+
 void ContentInputDelegate::OnWebInputEdited(const EditedText& info,
                                             bool commit) {
   if (!content_)

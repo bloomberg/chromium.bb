@@ -143,6 +143,12 @@ void VrGLThread::ForwardEvent(std::unique_ptr<blink::WebInputEvent> event,
                                 base::Passed(std::move(event)), content_id));
 }
 
+void VrGLThread::ClearFocusedElement() {
+  DCHECK(OnGlThread());
+  main_thread_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&VrShell::ClearFocusedElement, weak_vr_shell_));
+}
+
 void VrGLThread::OnWebInputEdited(const TextEdits& edits) {
   DCHECK(OnGlThread());
   DCHECK(weak_input_connection_);

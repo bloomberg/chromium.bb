@@ -294,18 +294,18 @@ void Ui::OnKeyboardHidden() {
 }
 
 void Ui::OnAppButtonClicked() {
-  // App button clicks should be a no-op when auto-presenting WebVR.
-  if (model_->web_vr_autopresentation_enabled()) {
+  // App button clicks should be a no-op when auto-presenting WebVR or if
+  // browsing mode is disabled.
+  if (model_->web_vr_autopresentation_enabled() || model_->browsing_disabled)
     return;
-  }
-
-  // If browsing mode is disabled, the app button should no-op.
-  if (model_->browsing_disabled) {
-    return;
-  }
 
   if (model_->reposition_window_enabled()) {
     model_->pop_mode(kModeRepositionWindow);
+    return;
+  }
+
+  if (model_->editing_web_input) {
+    ShowSoftInput(false);
     return;
   }
 

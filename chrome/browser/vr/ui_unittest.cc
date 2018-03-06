@@ -556,6 +556,18 @@ TEST_F(UiTest, WebInputEditingTriggersUnsupportedMode) {
   EXPECT_TRUE(scene_->GetUiElementByName(kUpdateKeyboardPrompt)->IsVisible());
 }
 
+TEST_F(UiTest, ExitWebInputEditingOnAppButtonClick) {
+  CreateScene(kNotInCct, kNotInWebVr);
+  EXPECT_FALSE(scene_->GetUiElementByName(kKeyboard)->IsVisible());
+  ui_->ShowSoftInput(true);
+  OnBeginFrame();
+  EXPECT_TRUE(scene_->GetUiElementByName(kKeyboard)->IsVisible());
+  ui_->OnAppButtonClicked();
+  OnBeginFrame();
+  // Clicking app button should hide the keyboard.
+  EXPECT_FALSE(scene_->GetUiElementByName(kKeyboard)->IsVisible());
+}
+
 TEST_F(UiTest, UiUpdatesForShowingExitPrompt) {
   CreateScene(kNotInCct, kNotInWebVr);
 
