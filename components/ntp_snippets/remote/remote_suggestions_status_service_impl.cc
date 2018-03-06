@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/feature_list.h"
 #include "components/ntp_snippets/content_suggestions_metrics.h"
 #include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/pref_names.h"
@@ -111,7 +112,9 @@ bool RemoteSuggestionsStatusServiceImpl::IsExplicitlyDisabled() const {
     return true;
   }
 
-  if (!list_visible_during_session_) {
+  if (base::FeatureList::IsEnabled(
+          ntp_snippets::kArticleSuggestionsExpandableHeader) &&
+      !list_visible_during_session_) {
     DVLOG(1) << "[GetStatusFromDeps] Disabled because articles list hidden.";
     return true;
   }
