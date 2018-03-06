@@ -870,8 +870,7 @@ sandbox::ResultCode SandboxWin::StartSandboxedProcess(
 
   // Post-startup mitigations.
   mitigations = sandbox::MITIGATION_STRICT_HANDLE_CHECKS |
-                sandbox::MITIGATION_DLL_SEARCH_ORDER |
-                sandbox::MITIGATION_IMAGE_LOAD_PREFER_SYS32;
+                sandbox::MITIGATION_DLL_SEARCH_ORDER;
   if (base::FeatureList::IsEnabled(
           service_manager::features::kWinSboxForceMsSigned) &&
       !cmd_line->HasSwitch(switches::kAllowThirdPartyModules)) {
