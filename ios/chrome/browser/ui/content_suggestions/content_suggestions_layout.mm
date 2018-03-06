@@ -24,7 +24,7 @@
   CGFloat minimumHeight = collectionViewHeight + headerHeight -
                           ntp_header::kScrolledToTopOmniboxBottomMargin;
   if (!IsIPadIdiom())
-    minimumHeight -= ntp_header::kToolbarHeight;
+    minimumHeight -= ntp_header::ToolbarHeight();
 
   CGSize contentSize = [super collectionViewContentSize];
   if (contentSize.height < minimumHeight) {

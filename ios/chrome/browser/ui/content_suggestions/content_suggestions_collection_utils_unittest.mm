@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/test/base/scoped_block_swizzler.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
@@ -84,9 +85,14 @@ TEST_F(ContentSuggestionsCollectionUtilsTest, doodleFrameIPad) {
   CGFloat topMarginNoToolbar = doodleTopMargin(NO);
 
   // Test.
-  EXPECT_EQ(120, height);
-  EXPECT_EQ(82, topMargin);
-  EXPECT_EQ(82, topMarginNoToolbar);
+  if (IsUIRefreshPhase1Enabled()) {
+    EXPECT_EQ(68, height);
+    EXPECT_EQ(48, topMargin);
+  } else {
+    EXPECT_EQ(120, height);
+    EXPECT_EQ(82, topMargin);
+    EXPECT_EQ(82, topMarginNoToolbar);
+  }
 }
 
 TEST_F(ContentSuggestionsCollectionUtilsTest, doodleFrameIPhonePortrait) {
@@ -101,10 +107,16 @@ TEST_F(ContentSuggestionsCollectionUtilsTest, doodleFrameIPhonePortrait) {
   CGFloat topMarginNoToolbar = doodleTopMargin(NO);
 
   // Test.
-  EXPECT_EQ(120, heightLogo);
-  EXPECT_EQ(60, heightNoLogo);
-  EXPECT_EQ(56, topMargin);
-  EXPECT_EQ(0, topMarginNoToolbar);
+  if (IsUIRefreshPhase1Enabled()) {
+    EXPECT_EQ(68, heightLogo);
+    EXPECT_EQ(60, heightNoLogo);
+    EXPECT_EQ(48, topMargin);
+  } else {
+    EXPECT_EQ(120, heightLogo);
+    EXPECT_EQ(60, heightNoLogo);
+    EXPECT_EQ(56, topMargin);
+    EXPECT_EQ(0, topMarginNoToolbar);
+  }
 }
 
 TEST_F(ContentSuggestionsCollectionUtilsTest, doodleFrameIPhoneLandscape) {
@@ -119,10 +131,16 @@ TEST_F(ContentSuggestionsCollectionUtilsTest, doodleFrameIPhoneLandscape) {
   CGFloat topMarginNoToolbar = doodleTopMargin(NO);
 
   // Test.
-  EXPECT_EQ(120, heightLogo);
-  EXPECT_EQ(60, heightNoLogo);
-  EXPECT_EQ(56, topMargin);
-  EXPECT_EQ(0, topMarginNoToolbar);
+  if (IsUIRefreshPhase1Enabled()) {
+    EXPECT_EQ(68, heightLogo);
+    EXPECT_EQ(60, heightNoLogo);
+    EXPECT_EQ(48, topMargin);
+  } else {
+    EXPECT_EQ(120, heightLogo);
+    EXPECT_EQ(60, heightNoLogo);
+    EXPECT_EQ(56, topMargin);
+    EXPECT_EQ(0, topMarginNoToolbar);
+  }
 }
 
 TEST_F(ContentSuggestionsCollectionUtilsTest, searchFieldFrameIPad) {
@@ -138,9 +156,15 @@ TEST_F(ContentSuggestionsCollectionUtilsTest, searchFieldFrameIPad) {
   CGFloat topMargin = searchFieldTopMargin();
 
   // Test.
-  EXPECT_EQ(82, topMargin);
-  EXPECT_EQ(width - 2 * margin, resultWidth);
-  EXPECT_EQ(largeIPadWidth - 400, resultWidthLargeIPad);
+  if (IsUIRefreshPhase1Enabled()) {
+    EXPECT_EQ(32, topMargin);
+    EXPECT_EQ(343, resultWidth);
+    EXPECT_EQ(343, resultWidthLargeIPad);
+  } else {
+    EXPECT_EQ(82, topMargin);
+    EXPECT_EQ(width - 2 * margin, resultWidth);
+    EXPECT_EQ(largeIPadWidth - 400, resultWidthLargeIPad);
+  }
 }
 
 TEST_F(ContentSuggestionsCollectionUtilsTest, searchFieldFrameIPhonePortrait) {
@@ -155,8 +179,13 @@ TEST_F(ContentSuggestionsCollectionUtilsTest, searchFieldFrameIPhonePortrait) {
   CGFloat topMargin = searchFieldTopMargin();
 
   // Test.
-  EXPECT_EQ(32, topMargin);
-  EXPECT_EQ(width - 2 * margin, resultWidth);
+  if (IsUIRefreshPhase1Enabled()) {
+    EXPECT_EQ(32, topMargin);
+    EXPECT_EQ(343, resultWidth);
+  } else {
+    EXPECT_EQ(32, topMargin);
+    EXPECT_EQ(width - 2 * margin, resultWidth);
+  }
 }
 
 TEST_F(ContentSuggestionsCollectionUtilsTest, searchFieldFrameIPhoneLandscape) {
@@ -171,8 +200,13 @@ TEST_F(ContentSuggestionsCollectionUtilsTest, searchFieldFrameIPhoneLandscape) {
   CGFloat topMargin = searchFieldTopMargin();
 
   // Test.
-  EXPECT_EQ(32, topMargin);
-  EXPECT_EQ(width - 2 * margin, resultWidth);
+  if (IsUIRefreshPhase1Enabled()) {
+    EXPECT_EQ(32, topMargin);
+    EXPECT_EQ(343, resultWidth);
+  } else {
+    EXPECT_EQ(32, topMargin);
+    EXPECT_EQ(width - 2 * margin, resultWidth);
+  }
 }
 
 TEST_F(ContentSuggestionsCollectionUtilsTest, heightForLogoHeaderIPad) {
@@ -180,10 +214,17 @@ TEST_F(ContentSuggestionsCollectionUtilsTest, heightForLogoHeaderIPad) {
   SetAsIPad();
 
   // Action, tests.
-  EXPECT_EQ(350, heightForLogoHeader(YES, YES, YES));
-  EXPECT_EQ(374, heightForLogoHeader(YES, NO, YES));
-  EXPECT_EQ(350, heightForLogoHeader(YES, YES, NO));
-  EXPECT_EQ(374, heightForLogoHeader(YES, NO, NO));
+  if (IsUIRefreshPhase1Enabled()) {
+    EXPECT_EQ(214, heightForLogoHeader(YES, YES, YES));
+    EXPECT_EQ(238, heightForLogoHeader(YES, NO, YES));
+    EXPECT_EQ(214, heightForLogoHeader(YES, YES, NO));
+    EXPECT_EQ(238, heightForLogoHeader(YES, NO, NO));
+  } else {
+    EXPECT_EQ(350, heightForLogoHeader(YES, YES, YES));
+    EXPECT_EQ(374, heightForLogoHeader(YES, NO, YES));
+    EXPECT_EQ(350, heightForLogoHeader(YES, YES, NO));
+    EXPECT_EQ(374, heightForLogoHeader(YES, NO, NO));
+  }
 }
 
 TEST_F(ContentSuggestionsCollectionUtilsTest, heightForLogoHeaderIPhone) {
@@ -191,10 +232,17 @@ TEST_F(ContentSuggestionsCollectionUtilsTest, heightForLogoHeaderIPhone) {
   SetAsIPhone();
 
   // Action, tests.
-  EXPECT_EQ(274, heightForLogoHeader(YES, YES, YES));
-  EXPECT_EQ(274, heightForLogoHeader(YES, NO, YES));
-  EXPECT_EQ(218, heightForLogoHeader(YES, YES, NO));
-  EXPECT_EQ(218, heightForLogoHeader(YES, NO, NO));
+  if (IsUIRefreshPhase1Enabled()) {
+    EXPECT_EQ(214, heightForLogoHeader(YES, YES, YES));
+    EXPECT_EQ(214, heightForLogoHeader(YES, NO, YES));
+    EXPECT_EQ(214, heightForLogoHeader(YES, YES, NO));
+    EXPECT_EQ(214, heightForLogoHeader(YES, NO, NO));
+  } else {
+    EXPECT_EQ(274, heightForLogoHeader(YES, YES, YES));
+    EXPECT_EQ(274, heightForLogoHeader(YES, NO, YES));
+    EXPECT_EQ(218, heightForLogoHeader(YES, YES, NO));
+    EXPECT_EQ(218, heightForLogoHeader(YES, NO, NO));
+  }
 }
 
 TEST_F(ContentSuggestionsCollectionUtilsTest, SizeIPhone6) {
@@ -210,7 +258,11 @@ TEST_F(ContentSuggestionsCollectionUtilsTest, SizeIPhone5) {
   SetAsIPhone();
 
   // Test.
-  EXPECT_EQ(3U, numberOfTilesForWidth(320));
+  if (IsUIRefreshPhase1Enabled()) {
+    EXPECT_EQ(4U, numberOfTilesForWidth(320));
+  } else {
+    EXPECT_EQ(3U, numberOfTilesForWidth(320));
+  }
 }
 
 // Test for iPad portrait and iPhone landscape.
@@ -224,7 +276,11 @@ TEST_F(ContentSuggestionsCollectionUtilsTest, SizeIPadSplit) {
   SetAsIPad();
 
   // Test.
-  EXPECT_EQ(3U, numberOfTilesForWidth(360));
+  if (IsUIRefreshPhase1Enabled()) {
+    EXPECT_EQ(4U, numberOfTilesForWidth(360));
+  } else {
+    EXPECT_EQ(3U, numberOfTilesForWidth(360));
+  }
 }
 
 TEST_F(ContentSuggestionsCollectionUtilsTest, NearestAncestor) {

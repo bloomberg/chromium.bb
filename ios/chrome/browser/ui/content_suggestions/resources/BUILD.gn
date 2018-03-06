@@ -21,3 +21,12 @@ imageset("content_suggestions_offline") {
     "content_suggestions_offline.imageset/content_suggestions_offline@3x.png",
   ]
 }
+
+imageset("ntp_search_icon") {
+  sources = [
+    "ntp_search_icon.imageset/Contents.json",
+    "ntp_search_icon.imageset/ntp_search_icon.png",
+    "ntp_search_icon.imageset/ntp_search_icon@2x.png",
+    "ntp_search_icon.imageset/ntp_search_icon@3x.png",
+  ]
+}

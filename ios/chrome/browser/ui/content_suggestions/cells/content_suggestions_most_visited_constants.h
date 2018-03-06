@@ -22,4 +22,7 @@ extern const CGFloat kSpaceIconTitle;
 // Size of a Most Visited cell.
 extern const CGSize kCellSize;
 
+// The alpha value for text.
+extern const CGFloat kTitleAlpha;
+
 #endif  // IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CELLS_CONTENT_SUGGESTIONS_MOST_VISITED_CONSTANTS_H_

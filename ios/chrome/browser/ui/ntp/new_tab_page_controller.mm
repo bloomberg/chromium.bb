@@ -27,6 +27,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/ntp/incognito_view_controller.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_bar_item.h"
+#import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_view.h"
 #import "ios/chrome/browser/ui/rtl_geometry.h"
 #include "ios/chrome/browser/ui/ui_util.h"
@@ -40,10 +41,6 @@
 #endif
 
 using base::UserMetricsAction;
-
-namespace {
-const CGFloat kToolbarHeight = 56;
-}
 
 @interface NewTabPageController () {
   ios::ChromeBrowserState* _browserState;  // weak.
@@ -377,7 +374,8 @@ const CGFloat kToolbarHeight = 56;
 - (CGFloat)toolbarHeight {
   // If the google landing controller is nil, there is no toolbar visible in the
   // native content view, finally there is no toolbar on iPad.
-  return self.headerController && !IsIPadIdiom() ? kToolbarHeight : 0.0;
+  return self.headerController && !IsIPadIdiom() ? ntp_header::ToolbarHeight()
+                                                 : 0.0;
 }
 
 #pragma mark - NewTabPagePanelControllerDelegate

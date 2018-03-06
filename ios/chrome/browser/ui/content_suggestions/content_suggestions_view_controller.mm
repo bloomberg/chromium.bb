@@ -583,7 +583,7 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
                    withVelocity:velocity
             targetContentOffset:targetContentOffset];
 
-  CGFloat toolbarHeight = ntp_header::kToolbarHeight;
+  CGFloat toolbarHeight = ntp_header::ToolbarHeight();
   CGFloat targetY = targetContentOffset->y;
 
   if (IsIPadIdiom() || targetY <= 0 || targetY >= toolbarHeight ||
@@ -620,7 +620,7 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
   if (direction == UIAccessibilityScrollDirectionDown) {
     CGFloat newYOffset = self.collectionView.contentOffset.y +
                          self.collectionView.bounds.size.height -
-                         ntp_header::kToolbarHeight;
+                         ntp_header::ToolbarHeight();
     newYOffset = MIN(self.collectionView.contentSize.height -
                          self.collectionView.bounds.size.height,
                      newYOffset);
@@ -629,7 +629,7 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
   } else if (direction == UIAccessibilityScrollDirectionUp) {
     CGFloat newYOffset = self.collectionView.contentOffset.y -
                          self.collectionView.bounds.size.height +
-                         ntp_header::kToolbarHeight;
+                         ntp_header::ToolbarHeight();
     newYOffset = MAX(0, newYOffset);
     self.collectionView.contentOffset =
         CGPointMake(self.collectionView.contentOffset.x, newYOffset);

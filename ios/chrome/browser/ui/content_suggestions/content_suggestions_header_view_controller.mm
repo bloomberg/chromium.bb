@@ -38,7 +38,6 @@ using base::UserMetricsAction;
 
 namespace {
 const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
-const CGFloat kHintLabelSidePadding = 12;
 }  // namespace
 
 @interface ContentSuggestionsHeaderViewController ()
@@ -65,7 +64,9 @@ const CGFloat kHintLabelSidePadding = 12;
 
 @property(nonatomic, strong) UIView<NTPHeaderViewAdapter>* headerView;
 @property(nonatomic, strong) UIButton* fakeOmnibox;
+@property(nonatomic, strong) UILabel* searchHintLabel;
 @property(nonatomic, strong) NSLayoutConstraint* hintLabelLeadingConstraint;
+@property(nonatomic, strong) NSLayoutConstraint* hintLabelWidthConstraint;
 @property(nonatomic, strong) NSLayoutConstraint* voiceTapTrailingConstraint;
 @property(nonatomic, strong) NSLayoutConstraint* doodleHeightConstraint;
 @property(nonatomic, strong) NSLayoutConstraint* doodleTopMarginConstraint;
@@ -81,6 +82,7 @@ const CGFloat kHintLabelSidePadding = 12;
 @synthesize dispatcher = _dispatcher;
 @synthesize delegate = _delegate;
 @synthesize commandHandler = _commandHandler;
+@synthesize searchHintLabel = _searchHintLabel;
 @synthesize collectionSynchronizer = _collectionSynchronizer;
 @synthesize readingListModel = _readingListModel;
 @synthesize toolbarDelegate = _toolbarDelegate;
@@ -95,6 +97,7 @@ const CGFloat kHintLabelSidePadding = 12;
 @synthesize headerView = _headerView;
 @synthesize fakeOmnibox = _fakeOmnibox;
 @synthesize hintLabelLeadingConstraint = _hintLabelLeadingConstraint;
+@synthesize hintLabelWidthConstraint = _hintLabelWidthConstraint;
 @synthesize voiceTapTrailingConstraint = _voiceTapTrailingConstraint;
 @synthesize doodleHeightConstraint = _doodleHeightConstraint;
 @synthesize doodleTopMarginConstraint = _doodleTopMarginConstraint;
@@ -118,6 +121,29 @@ const CGFloat kHintLabelSidePadding = 12;
 
 - (UIView*)toolBarView {
   return self.headerView.toolBarView;
+}
+
+- (void)willTransitionToTraitCollection:(UITraitCollection*)newCollection
+              withTransitionCoordinator:
+                  (id<UIViewControllerTransitionCoordinator>)coordinator {
+  [super willTransitionToTraitCollection:newCollection
+               withTransitionCoordinator:coordinator];
+  if (!IsUIRefreshPhase1Enabled())
+    return;
+
+  void (^transition)(id<UIViewControllerTransitionCoordinatorContext>) =
+      ^(id<UIViewControllerTransitionCoordinatorContext> context) {
+        // Ensure omnibox is reset when not a regular tablet.
+        if (IsCompactWidth(self) || IsCompactHeight(self)) {
+          [self.toolbarDelegate setScrollProgressForTabletOmnibox:1];
+        }
+
+        // Update the doodle top margin to the new -doodleTopMargin value.
+        self.doodleTopMarginConstraint.constant =
+            content_suggestions::doodleTopMargin(YES);
+      };
+
+  [coordinator animateAlongsideTransition:transition completion:nil];
 }
 
 #pragma mark - Property
@@ -146,6 +172,8 @@ const CGFloat kHintLabelSidePadding = 12;
   [self.headerView updateSearchFieldWidth:self.fakeOmniboxWidthConstraint
                                    height:self.fakeOmniboxHeightConstraint
                                 topMargin:self.fakeOmniboxTopMarginConstraint
+                                hintLabel:self.searchHintLabel
+                           hintLabelWidth:self.hintLabelWidthConstraint
                        subviewConstraints:constraints
                                 forOffset:offset
                               screenWidth:screenWidth
@@ -175,7 +203,7 @@ const CGFloat kHintLabelSidePadding = 12;
   CGFloat offsetY =
       headerHeight - ntp_header::kScrolledToTopOmniboxBottomMargin;
   if (!IsIPadIdiom())
-    offsetY -= ntp_header::kToolbarHeight;
+    offsetY -= ntp_header::ToolbarHeight();
 
   return offsetY;
 }
@@ -253,7 +281,7 @@ const CGFloat kHintLabelSidePadding = 12;
 // Initialize and add a search field tap target and a voice search button.
 - (void)addFakeOmnibox {
   self.fakeOmnibox = [[UIButton alloc] init];
-  if (IsIPadIdiom()) {
+  if (IsIPadIdiom() && !IsUIRefreshPhase1Enabled()) {
     UIImage* searchBoxImage = [[UIImage imageNamed:@"ntp_google_search_box"]
         resizableImageWithCapInsets:kSearchBoxStretchInsets];
     [self.fakeOmnibox setBackgroundImage:searchBoxImage
@@ -267,20 +295,28 @@ const CGFloat kHintLabelSidePadding = 12;
       ntp_home::FakeOmniboxAccessibilityID();
 
   // Set up fakebox hint label.
-  UILabel* searchHintLabel = [[UILabel alloc] init];
-  content_suggestions::configureSearchHintLabel(searchHintLabel,
+  _searchHintLabel = [[UILabel alloc] init];
+  content_suggestions::configureSearchHintLabel(_searchHintLabel,
                                                 self.fakeOmnibox);
 
-  self.hintLabelLeadingConstraint = [searchHintLabel.leadingAnchor
+  self.hintLabelLeadingConstraint = [_searchHintLabel.leadingAnchor
       constraintEqualToAnchor:[self.fakeOmnibox leadingAnchor]
-                     constant:kHintLabelSidePadding];
-  [_hintLabelLeadingConstraint setActive:YES];
+                     constant:ntp_header::kHintLabelSidePadding];
+  if (!IsUIRefreshPhase1Enabled())
+    self.hintLabelLeadingConstraint.constant =
+        ntp_header::kHintLabelSidePaddingLegacy;
+  [self.hintLabelLeadingConstraint setActive:YES];
+
+  if (IsUIRefreshPhase1Enabled()) {
+    self.hintLabelWidthConstraint =
+        [_searchHintLabel.widthAnchor constraintEqualToConstant:0];
+  }
 
   // Set a button the same size as the fake omnibox as the accessibility
   // element. If the hint is the only accessible element, when the fake omnibox
   // is taking the full width, there are few points that are not accessible and
   // allow to select the content below it.
-  searchHintLabel.isAccessibilityElement = NO;
+  _searchHintLabel.isAccessibilityElement = NO;
   UIButton* accessibilityButton = [[UIButton alloc] init];
   [accessibilityButton addTarget:self
                           action:@selector(fakeOmniboxTapped:)
@@ -299,11 +335,15 @@ const CGFloat kHintLabelSidePadding = 12;
 
   self.voiceTapTrailingConstraint = [voiceTapTarget.trailingAnchor
       constraintEqualToAnchor:[self.fakeOmnibox trailingAnchor]];
-  [NSLayoutConstraint activateConstraints:@[
-    [searchHintLabel.trailingAnchor
-        constraintEqualToAnchor:voiceTapTarget.leadingAnchor],
-    _voiceTapTrailingConstraint
-  ]];
+  if (IsUIRefreshPhase1Enabled()) {
+    [NSLayoutConstraint activateConstraints:@[ _voiceTapTrailingConstraint ]];
+  } else {
+    [NSLayoutConstraint activateConstraints:@[
+      [_searchHintLabel.trailingAnchor
+          constraintEqualToAnchor:voiceTapTarget.leadingAnchor],
+      _voiceTapTrailingConstraint
+    ]];
+  }
 
   if (self.voiceSearchIsEnabled) {
     [voiceTapTarget addTarget:self

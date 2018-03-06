@@ -110,6 +110,8 @@
 - (void)updateSearchFieldWidth:(NSLayoutConstraint*)widthConstraint
                         height:(NSLayoutConstraint*)heightConstraint
                      topMargin:(NSLayoutConstraint*)topMarginConstraint
+                     hintLabel:(UILabel*)hintLabel
+                hintLabelWidth:(NSLayoutConstraint*)hintLabelWidthConstraint
             subviewConstraints:(NSArray*)constraints
                      forOffset:(CGFloat)offset
                    screenWidth:(CGFloat)screenWidth
@@ -139,7 +141,7 @@
   CGFloat maxXInset = ui::AlignValueToUpperPixel(
       (searchFieldNormalWidth - screenWidth) / 2 - 1);
   CGFloat maxHeightDiff =
-      ntp_header::kToolbarHeight - content_suggestions::kSearchFieldHeight;
+      ntp_header::ToolbarHeight() - content_suggestions::kSearchFieldHeight;
 
   widthConstraint.constant = searchFieldNormalWidth - 2 * maxXInset * percent;
   topMarginConstraint.constant = -content_suggestions::searchFieldTopMargin() -
@@ -156,7 +158,8 @@
       percent * (ntp_header::kMaxHorizontalMarginDiff + safeAreaInsets.left);
   for (NSLayoutConstraint* constraint in constraints) {
     if (constraint.constant > 0)
-      constraint.constant = constantDiff + ntp_header::kHintLabelSidePadding;
+      constraint.constant =
+          constantDiff + ntp_header::kHintLabelSidePaddingLegacy;
     else
       constraint.constant = -constantDiff;
   }

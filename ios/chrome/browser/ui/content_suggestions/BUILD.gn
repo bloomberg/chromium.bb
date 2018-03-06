@@ -115,6 +115,7 @@ source_set("content_suggestions_ui") {
     ":content_suggestions_ui_util",
     "resources:content_suggestions_no_image",
     "resources:content_suggestions_offline",
+    "resources:ntp_search_icon",
     "//base",
     "//components/strings",
     "//ios/chrome/browser/ui",
