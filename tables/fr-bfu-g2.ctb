@@ -721,12 +721,10 @@ word (la 236-123-1
 ### 2. Mots représentés par un seul symbole
 ###
 
+word a 1
 word A 1
 word à 12356
 word À 12356
-word E 15
-word Y 13456
-
 word ai 34
 word au 13
 word aux 13-1346
@@ -799,6 +797,7 @@ word uns 136-234
 word vous 1236
 word vous) 1236-1256-356
 word y 13456
+word Y 13456
 
 before apost sufword c 14
 before apost sufword d 145
@@ -1317,6 +1316,8 @@ word douloureux		145-123-1346
 word doute		145-1256
 word doutes		145-1256-234
 word duquel		145-136-12345-123
+word e 15
+word E 15
 prfword effectif		15-124-124
 prfword effectifs		15-124-124-234
 prfword effective		15-124-1236
