@@ -49,6 +49,7 @@ class PatchParams : public base::RefCounted<PatchParams> {
 };
 
 void PatchDone(scoped_refptr<PatchParams> params, int result) {
+  params->file_patcher()->reset();
   PatchCallback cb = params->TakeCallback();
   if (!cb.is_null())
     std::move(cb).Run(result);
