@@ -20,7 +20,7 @@ void BeginFilterDisplayItem::Replay(GraphicsContext& context) const {
 }
 
 void BeginFilterDisplayItem::AppendToWebDisplayItemList(
-    const LayoutSize&,
+    const FloatSize&,
     WebDisplayItemList* list) const {
   list->AppendFilterItem(compositor_filter_operations_.AsCcFilterOperations(),
                          bounds_, origin_);
@@ -45,7 +45,7 @@ void EndFilterDisplayItem::Replay(GraphicsContext& context) const {
 }
 
 void EndFilterDisplayItem::AppendToWebDisplayItemList(
-    const LayoutSize&,
+    const FloatSize&,
     WebDisplayItemList* list) const {
   list->AppendEndFilterItem();
 }

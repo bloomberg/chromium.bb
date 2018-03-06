@@ -44,9 +44,7 @@ class PLATFORM_EXPORT DisplayItemClient {
   // The outset will be used to inflate visual rect after the visual rect is
   // mapped into the space of the composited layer, for any special raster
   // effects that might expand the rastered pixel area.
-  virtual LayoutUnit VisualRectOutsetForRasterEffects() const {
-    return LayoutUnit();
-  }
+  virtual float VisualRectOutsetForRasterEffects() const { return 0; }
 
   // The rect that needs to be invalidated partially in this client. It's in the
   // same coordinate space as VisualRect().

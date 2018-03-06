@@ -77,7 +77,7 @@ class PLATFORM_EXPORT PaintArtifact final {
               const IntPoint& offset = IntPoint()) const;
 
   // Writes the paint artifact into a WebDisplayItemList.
-  void AppendToWebDisplayItemList(const LayoutSize& visual_rect_offset,
+  void AppendToWebDisplayItemList(const FloatSize& visual_rect_offset,
                                   WebDisplayItemList*) const;
 
  private:

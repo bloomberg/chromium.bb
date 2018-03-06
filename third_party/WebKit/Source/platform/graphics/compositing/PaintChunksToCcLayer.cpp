@@ -468,7 +468,7 @@ void ConversionContext::Convert(const Vector<const PaintChunk*>& paint_chunks,
       if (record && record->size() != 0)
         cc_list_.push<cc::DrawRecordOp>(std::move(record));
       cc_list_.EndPaintOfUnpaired(PaintChunksToCcLayer::MapRectFromChunkToLayer(
-          FloatRect(item.VisualRect()), chunk, layer_state_, layer_offset_));
+          item.VisualRect(), chunk, layer_state_, layer_offset_));
     }
     if (transformed)
       AppendRestore(1);

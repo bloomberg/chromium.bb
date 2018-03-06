@@ -24,7 +24,7 @@
         },
         {
           "object": "LayoutSVGRect rect",
-          "rect": [6, 4, 788, 592],
+          "rect": [7, 5, 786, 590],
           "reason": "style change"
         },
         {

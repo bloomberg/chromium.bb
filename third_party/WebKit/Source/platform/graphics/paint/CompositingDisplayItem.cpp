@@ -16,7 +16,7 @@ void BeginCompositingDisplayItem::Replay(GraphicsContext& context) const {
 }
 
 void BeginCompositingDisplayItem::AppendToWebDisplayItemList(
-    const LayoutSize&,
+    const FloatSize&,
     WebDisplayItemList* list) const {
   SkRect bounds = bounds_;
   list->AppendCompositingItem(
@@ -40,7 +40,7 @@ void EndCompositingDisplayItem::Replay(GraphicsContext& context) const {
 }
 
 void EndCompositingDisplayItem::AppendToWebDisplayItemList(
-    const LayoutSize&,
+    const FloatSize&,
     WebDisplayItemList* list) const {
   list->AppendEndCompositingItem();
 }

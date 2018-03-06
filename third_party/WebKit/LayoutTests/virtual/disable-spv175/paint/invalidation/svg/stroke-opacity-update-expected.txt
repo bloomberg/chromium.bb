@@ -19,7 +19,7 @@
       "paintInvalidations": [
         {
           "object": "LayoutSVGEllipse circle",
-          "rect": [-1, -1, 204, 204],
+          "rect": [0, 0, 203, 203],
           "reason": "style change"
         }
       ]

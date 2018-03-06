@@ -16,7 +16,7 @@ void BeginTransformDisplayItem::Replay(GraphicsContext& context) const {
 }
 
 void BeginTransformDisplayItem::AppendToWebDisplayItemList(
-    const LayoutSize&,
+    const FloatSize&,
     WebDisplayItemList* list) const {
   list->AppendTransformItem(AffineTransformToSkMatrix(transform_));
 }
@@ -33,7 +33,7 @@ void EndTransformDisplayItem::Replay(GraphicsContext& context) const {
 }
 
 void EndTransformDisplayItem::AppendToWebDisplayItemList(
-    const LayoutSize&,
+    const FloatSize&,
     WebDisplayItemList* list) const {
   list->AppendEndTransformItem();
 }

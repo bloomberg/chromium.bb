@@ -39,7 +39,7 @@ class PLATFORM_EXPORT ForeignLayerDisplayItem final : public DisplayItem {
 
   // DisplayItem
   void Replay(GraphicsContext&) const override;
-  void AppendToWebDisplayItemList(const LayoutSize&,
+  void AppendToWebDisplayItemList(const FloatSize&,
                                   WebDisplayItemList*) const override;
   bool DrawsContent() const override;
   bool Equals(const DisplayItem&) const override;

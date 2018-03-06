@@ -17,7 +17,7 @@ void BeginClipPathDisplayItem::Replay(GraphicsContext& context) const {
 }
 
 void BeginClipPathDisplayItem::AppendToWebDisplayItemList(
-    const LayoutSize&,
+    const FloatSize&,
     WebDisplayItemList* list) const {
   list->AppendClipPathItem(clip_path_, true);
 }
@@ -27,7 +27,7 @@ void EndClipPathDisplayItem::Replay(GraphicsContext& context) const {
 }
 
 void EndClipPathDisplayItem::AppendToWebDisplayItemList(
-    const LayoutSize&,
+    const FloatSize&,
     WebDisplayItemList* list) const {
   list->AppendEndClipPathItem();
 }

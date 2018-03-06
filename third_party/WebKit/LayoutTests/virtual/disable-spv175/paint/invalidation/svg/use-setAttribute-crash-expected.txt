@@ -23,14 +23,14 @@
           "reason": "geometry"
         },
         {
-          "object": "LayoutSVGEllipse svg:circle id='circle'",
-          "rect": [32, 32, 52, 52],
-          "reason": "appeared"
-        },
-        {
           "object": "LayoutSVGContainer svg:use id='use'",
           "rect": [33, 33, 50, 50],
           "reason": "full"
+        },
+        {
+          "object": "LayoutSVGEllipse svg:circle id='circle'",
+          "rect": [33, 33, 50, 50],
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGRoot svg:svg id='svg'",
@@ -44,7 +44,7 @@
         },
         {
           "object": "LayoutSVGEllipse svg:circle id='circle'",
-          "rect": [52, 52, 12, 12],
+          "rect": [53, 53, 10, 10],
           "reason": "disappeared"
         },
         {

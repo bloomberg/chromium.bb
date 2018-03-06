@@ -1434,7 +1434,7 @@ void GraphicsLayer::PaintContents(WebDisplayItemList* web_display_item_list,
         *web_display_item_list->GetCcDisplayItemList());
   } else {
     paint_controller.GetPaintArtifact().AppendToWebDisplayItemList(
-        OffsetFromLayoutObjectWithSubpixelAccumulation(),
+        FloatSize(OffsetFromLayoutObjectWithSubpixelAccumulation()),
         web_display_item_list);
   }
 

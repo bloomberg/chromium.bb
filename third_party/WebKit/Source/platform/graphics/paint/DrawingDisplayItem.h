@@ -34,7 +34,7 @@ class PLATFORM_EXPORT DrawingDisplayItem final : public DisplayItem {
                      bool known_to_be_opaque);
 
   void Replay(GraphicsContext&) const override;
-  void AppendToWebDisplayItemList(const LayoutSize& visual_rect_offset,
+  void AppendToWebDisplayItemList(const FloatSize& visual_rect_offset,
                                   WebDisplayItemList*) const override;
   bool DrawsContent() const override;
 
