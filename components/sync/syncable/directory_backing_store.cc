@@ -82,15 +82,10 @@ const ColumnSpec g_metas_columns[] = {
     //////////////////////////////////////
     // Blobs (positions).
     {"server_unique_position", "blob"},
-    {"unique_position", "blob"},
-    //////////////////////////////////////
-    // TODO(crbug.com/758319): Attachment metadata is deprecated, remove it from
-    // the table and add migration code.
-    {"attachment_metadata", "blob"},
-    {"server_attachment_metadata", "blob"}};
+    {"unique_position", "blob"}};
 
 // Increment this version whenever updating DB tables.
-const int32_t kCurrentDBVersion = 91;
+const int32_t kCurrentDBVersion = 92;
 
 // The current database page size in Kilobytes.
 const int32_t kCurrentPageSizeKB = 32768;
@@ -126,10 +121,6 @@ void BindFields(const EntryKernel& entry,
   for ( ; i < UNIQUE_POSITION_FIELDS_END; ++i) {
     std::string temp;
     entry.ref(static_cast<UniquePositionField>(i)).SerializeToString(&temp);
-    statement->BindBlob(index++, temp.data(), temp.length());
-  }
-  for (; i < ATTACHMENT_METADATA_FIELDS_END; ++i) {
-    std::string temp = entry.ref(static_cast<AttachmentMetadataField>(i));
     statement->BindBlob(index++, temp.data(), temp.length());
   }
 }
@@ -626,6 +617,12 @@ bool DirectoryBackingStore::InitializeTables() {
   if (version_on_disk == 90) {
     if (MigrateVersion90To91())
       version_on_disk = 91;
+  }
+
+  // Version 92 migration removes attachment metadata from the metas table.
+  if (version_on_disk == 91) {
+    if (MigrateVersion91To92())
+      version_on_disk = 92;
   }
 
   // If one of the migrations requested it, drop columns that aren't current.
@@ -1558,6 +1555,16 @@ bool DirectoryBackingStore::MigrateVersion90To91() {
   }
 
   SetVersion(91);
+  return true;
+}
+
+bool DirectoryBackingStore::MigrateVersion91To92() {
+  // This change removed 2 columns from metas:
+  //   attachment_metadata
+  //   server_attachment_metadata
+  // No data migration is necessary, but we should do a column refresh.
+  SetVersion(92);
+  needs_metas_column_refresh_ = true;
   return true;
 }
 
