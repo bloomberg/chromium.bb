@@ -28,7 +28,7 @@ AutoOpenCloseEvent::~AutoOpenCloseEvent() {
 
 void AutoOpenCloseEvent::Begin() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  start_time_ = base::TimeTicks::Now();
+  start_time_ = TRACE_TIME_TICKS_NOW();
   TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP0(
       category_, event_name_, static_cast<void*>(this), start_time_);
 }

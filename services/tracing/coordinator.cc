@@ -347,7 +347,7 @@ void Coordinator::SendStartTracingToAgent(
                      weak_ptr_factory_.GetWeakPtr(),
                      base::Unretained(agent_entry), false));
   agent_entry->agent()->StartTracing(
-      config_, base::TimeTicks::Now(),
+      config_, TRACE_TIME_TICKS_NOW(),
       base::BindRepeating(&Coordinator::OnTracingStarted,
                           weak_ptr_factory_.GetWeakPtr(),
                           base::Unretained(agent_entry)));

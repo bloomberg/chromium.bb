@@ -312,9 +312,10 @@ bool NavigatorImpl::NavigateToEntry(
   // "Open link in new tab"). We need to keep it above RFHM::Navigate() call to
   // capture the time needed for the RenderFrameHost initialization.
   base::TimeTicks navigation_start = base::TimeTicks::Now();
+  base::TimeTicks tracing_navigation_start = TRACE_TIME_TICKS_NOW();
   TRACE_EVENT_INSTANT_WITH_TIMESTAMP0(
       "navigation,rail", "NavigationTiming navigationStart",
-      TRACE_EVENT_SCOPE_GLOBAL, navigation_start);
+      TRACE_EVENT_SCOPE_GLOBAL, tracing_navigation_start);
 
   // Determine if Previews should be used for the navigation.
   PreviewsState previews_state = PREVIEWS_UNSPECIFIED;
@@ -349,7 +350,7 @@ bool NavigatorImpl::NavigateToEntry(
     TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP1(
         "navigation", "Navigation timeToNetworkStack",
         frame_tree_node->navigation_request()->navigation_handle(),
-        navigation_start, "FrameTreeNode id",
+        tracing_navigation_start, "FrameTreeNode id",
         frame_tree_node->frame_tree_node_id());
   }
 

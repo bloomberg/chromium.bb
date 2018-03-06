@@ -239,7 +239,7 @@ TracingControllerImpl::GenerateMetadataDict() const {
       base::CommandLine::ForCurrentProcess()->GetCommandLineString());
 
   base::Time::Exploded ctime;
-  base::Time::Now().UTCExplode(&ctime);
+  TRACE_TIME_NOW().UTCExplode(&ctime);
   std::string time_string = base::StringPrintf(
       "%u-%u-%u %d:%d:%d", ctime.year, ctime.month, ctime.day_of_month,
       ctime.hour, ctime.minute, ctime.second);
