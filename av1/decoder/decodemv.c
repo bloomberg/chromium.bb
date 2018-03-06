@@ -44,14 +44,14 @@ static void read_cdef(AV1_COMMON *cm, aom_reader *r, MB_MODE_INFO *const mbmi,
     return;
   }
 
-  const int m = ~((1 << (6 - MI_SIZE_LOG2)) - 1);
   if (!(mi_col & (cm->seq_params.mib_size - 1)) &&
       !(mi_row & (cm->seq_params.mib_size - 1))) {  // Top left?
     cm->cdef_preset[0] = cm->cdef_preset[1] = cm->cdef_preset[2] =
         cm->cdef_preset[3] = -1;
   }
-  // Read CDEF param at first a non-skip coding block
-  const int mask = 1 << (6 - MI_SIZE_LOG2);
+  // Read CDEF param at the first non-skip coding block
+  const int mask = (1 << (6 - MI_SIZE_LOG2));
+  const int m = ~(mask - 1);
   const int index = cm->seq_params.sb_size == BLOCK_128X128
                         ? !!(mi_col & mask) + 2 * !!(mi_row & mask)
                         : 0;
