@@ -15,6 +15,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/ui/omnibox/omnibox_theme.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_result_view.h"
 #include "chrome/browser/ui/views/omnibox/rounded_omnibox_results_frame.h"
@@ -146,6 +147,8 @@ class OmniboxPopupContentsView::AutocompletePopupWidget
     : public ThemeCopyingWidget,
       public base::SupportsWeakPtr<AutocompletePopupWidget> {
  public:
+  // TODO(tapted): Remove |role_model| when the omnibox is completely decoupled
+  // from NativeTheme.
   explicit AutocompletePopupWidget(views::Widget* role_model)
       : ThemeCopyingWidget(role_model) {}
   ~AutocompletePopupWidget() override {}
@@ -240,6 +243,11 @@ gfx::Image OmniboxPopupContentsView::GetMatchIcon(
   return model_->GetMatchIcon(match, vector_icon_color);
 }
 
+OmniboxTint OmniboxPopupContentsView::GetTint() const {
+  // Use LIGHT in tests.
+  return location_bar_view_ ? location_bar_view_->tint() : OmniboxTint::LIGHT;
+}
+
 void OmniboxPopupContentsView::SetSelectedLine(size_t index) {
   DCHECK(HasMatchAt(index));
 
@@ -310,8 +318,8 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
 
   gfx::Rect new_target_bounds = UpdateMarginsAndGetTargetBounds();
   if (IsNarrow() && !IsRounded()) {
-    SkColor background_color = GetNativeTheme()->GetSystemColor(
-        ui::NativeTheme::kColorId_ResultsTableNormalBackground);
+    SkColor background_color =
+        GetOmniboxColor(OmniboxPart::RESULTS_BACKGROUND, GetTint());
     auto border = std::make_unique<views::BubbleBorder>(
         views::BubbleBorder::NONE, views::BubbleBorder::SMALL_SHADOW,
         background_color);
@@ -590,8 +598,8 @@ void OmniboxPopupContentsView::PaintChildren(
       paint_info.paint_recording_scale_y()));
   {
     ui::PaintRecorder recorder(paint_info.context(), size());
-    SkColor background_color = result_view_at(0)->GetColor(
-        OmniboxResultView::NORMAL, OmniboxResultView::BACKGROUND);
+    SkColor background_color =
+        GetOmniboxColor(OmniboxPart::RESULTS_BACKGROUND, GetTint());
     recorder.canvas()->DrawColor(background_color);
   }
   View::PaintChildren(paint_info);

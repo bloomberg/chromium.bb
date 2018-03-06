@@ -1396,6 +1396,8 @@ split_static_library("ui") {
       "omnibox/clipboard_utils.h",
       "omnibox/favicon_cache.cc",
       "omnibox/favicon_cache.h",
+      "omnibox/omnibox_theme.cc",
+      "omnibox/omnibox_theme.h",
       "overlay/overlay_surface_embedder.cc",
       "overlay/overlay_surface_embedder.h",
       "overlay/overlay_window.h",

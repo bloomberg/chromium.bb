@@ -40,6 +40,7 @@ class IntentPickerView;
 class KeywordHintView;
 class LocationIconView;
 class ManagePasswordsIconViews;
+enum class OmniboxTint;
 class Profile;
 class SelectedKeywordView;
 class StarView;
@@ -128,6 +129,9 @@ class LocationBarView : public LocationBar,
   // |security_level|.
   SkColor GetSecureTextColor(
       security_state::SecurityLevel security_level) const;
+
+  // Returns the theme color tint for the location bar and results.
+  OmniboxTint tint() const { return tint_; }
 
   // Returns the delegate.
   Delegate* delegate() const { return delegate_; }
@@ -421,6 +425,9 @@ class LocationBarView : public LocationBar,
   // Whether we're in popup mode. This value also controls whether the location
   // bar is read-only.
   const bool is_popup_mode_;
+
+  // The theme tint. Initialized based on the profile and theme settings.
+  const OmniboxTint tint_;
 
   // True if we should show a focus rect while the location entry field is
   // focused. Used when the toolbar is in full keyboard accessibility mode.

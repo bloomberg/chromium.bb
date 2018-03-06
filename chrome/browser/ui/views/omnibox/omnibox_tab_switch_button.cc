@@ -4,23 +4,37 @@
 
 #include "chrome/browser/ui/views/omnibox/omnibox_tab_switch_button.h"
 
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/omnibox/omnibox_theme.h"
+#include "chrome/browser/ui/views/location_bar/background_with_1_px_border.h"
+#include "chrome/browser/ui/views/omnibox/omnibox_result_view.h"
+#include "components/omnibox/browser/vector_icons.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/controls/button/label_button_border.h"
+
+OmniboxTabSwitchButton::OmniboxTabSwitchButton(OmniboxResultView* result_view)
+    : LabelButton(this, base::ASCIIToUTF16("Switch to open tab")),
+      result_view_(result_view) {
+  // TODO: SetTooltipText(text);
+  //       SetImageAlignment(ALIGN_CENTER, ALIGN_MIDDLE);
+  SetBackground(std::make_unique<BackgroundWith1PxBorder>(GetBackgroundColor(),
+                                                          SK_ColorBLACK));
+  SetImage(STATE_NORMAL,
+           gfx::CreateVectorIcon(omnibox::kSwitchIcon, 16, SK_ColorBLACK));
+}
 
 void OmniboxTabSwitchButton::SetPressed() {
-  const SkColor bg_color = result_view_->GetColor(
-      OmniboxResultView::SELECTED, OmniboxResultView::BACKGROUND);
   // Using transparent does nothing, since the result view is also selected.
-  const SkColor pressed_color =
-      color_utils::AlphaBlend(bg_color, SK_ColorBLACK, 0.8 * 255);
-  SetBackground(
-      std::make_unique<BackgroundWith1PxBorder>(pressed_color, SK_ColorBLACK));
+  background()->SetNativeControlColor(color_utils::AlphaBlend(
+      GetOmniboxColor(OmniboxPart::RESULTS_BACKGROUND, result_view_->GetTint()),
+      SK_ColorBLACK, 0.8 * 255));
   SchedulePaint();
 }
 
 void OmniboxTabSwitchButton::ClearState() {
-  // TODO: Consider giving this a non-transparent background.
-  SetBackground(nullptr);
+  background()->SetNativeControlColor(GetBackgroundColor());
   SchedulePaint();
 }
 
@@ -62,11 +76,12 @@ gfx::Size OmniboxTabSwitchButton::CalculatePreferredSize() const {
 }
 
 void OmniboxTabSwitchButton::StateChanged(ButtonState old_state) {
-  const SkColor bg_color = result_view_->GetColor(
-      state() == STATE_HOVERED ? OmniboxResultView::HOVERED
-                               : OmniboxResultView::NORMAL,
-      OmniboxResultView::BACKGROUND);
-  SetBackground(
-      std::make_unique<BackgroundWith1PxBorder>(bg_color, SK_ColorBLACK));
+  background()->SetNativeControlColor(GetBackgroundColor());
   LabelButton::StateChanged(old_state);
+}
+
+SkColor OmniboxTabSwitchButton::GetBackgroundColor() const {
+  return GetOmniboxColor(
+      OmniboxPart::RESULTS_BACKGROUND, result_view_->GetTint(),
+      state() == STATE_HOVERED ? OmniboxState::HOVERED : OmniboxState::NORMAL);
 }
