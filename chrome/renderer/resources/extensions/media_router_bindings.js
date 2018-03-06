@@ -975,6 +975,14 @@ MediaRouter.prototype.onMediaRemoterCreated = function(tabId, remoter,
 }
 
 /**
+ * Returns current status of media sink service in JSON format.
+ * @return {!Promise<!{status: string}>}
+ */
+MediaRouter.prototype.getMediaSinkServiceStatus = function() {
+  return this.service_.getMediaSinkServiceStatus();
+}
+
+/**
  * Object containing callbacks set by the provider manager.
  *
  * @constructor

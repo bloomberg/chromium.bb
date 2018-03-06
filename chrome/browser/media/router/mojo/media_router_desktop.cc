@@ -107,6 +107,22 @@ void MediaRouterDesktop::RegisterMediaRouteProvider(
   }
 }
 
+void MediaRouterDesktop::OnSinksReceived(
+    MediaRouteProviderId provider_id,
+    const std::string& media_source,
+    const std::vector<MediaSinkInternal>& internal_sinks,
+    const std::vector<url::Origin>& origins) {
+  media_sink_service_status_.UpdateAvailableSinks(provider_id, media_source,
+                                                  internal_sinks);
+  MediaRouterMojoImpl::OnSinksReceived(provider_id, media_source,
+                                       internal_sinks, origins);
+}
+
+void MediaRouterDesktop::GetMediaSinkServiceStatus(
+    mojom::MediaRouter::GetMediaSinkServiceStatusCallback callback) {
+  std::move(callback).Run(media_sink_service_status_.GetStatusAsJSONString());
+}
+
 void MediaRouterDesktop::RegisterExtensionMediaRouteProvider(
     mojom::MediaRouteProviderPtr extension_provider_ptr) {
   ProvideSinksToExtension();
@@ -170,6 +186,8 @@ void MediaRouterDesktop::ProvideSinks(
            << " devices...";
   media_route_providers_[MediaRouteProviderId::EXTENSION]->ProvideSinks(
       provider_name, sinks);
+
+  media_sink_service_status_.UpdateDiscoveredSinks(provider_name, sinks);
 }
 
 void MediaRouterDesktop::InitializeMediaRouteProviders() {

@@ -81,6 +81,8 @@ static_library("router") {
       "mojo/media_router_mojo_impl.h",
       "mojo/media_router_mojo_metrics.cc",
       "mojo/media_router_mojo_metrics.h",
+      "mojo/media_sink_service_status.cc",
+      "mojo/media_sink_service_status.h",
       "presentation/independent_otr_profile_manager.cc",
       "presentation/independent_otr_profile_manager.h",
       "presentation/presentation_navigation_policy.cc",

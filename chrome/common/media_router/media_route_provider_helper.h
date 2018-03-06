@@ -5,6 +5,8 @@
 #ifndef CHROME_COMMON_MEDIA_ROUTER_MEDIA_ROUTE_PROVIDER_HELPER_H_
 #define CHROME_COMMON_MEDIA_ROUTER_MEDIA_ROUTE_PROVIDER_HELPER_H_
 
+#include <string>
+
 namespace media_router {
 
 // Each MediaRouteProvider is associated with a unique ID. This enum must be
@@ -15,6 +17,8 @@ enum MediaRouteProviderId {
   WIRED_DISPLAY,
   UNKNOWN  // New values must be added above this value.
 };
+
+const char* ProviderIdToString(MediaRouteProviderId provider_id);
 
 }  // namespace media_router
 

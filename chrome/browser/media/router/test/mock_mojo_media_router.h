@@ -63,6 +63,13 @@ class MockMojoMediaRouter : public MockMediaRouter, public mojom::MediaRouter {
       void(int32_t tab_id,
            media::mojom::MirrorServiceRemoterPtr& remoter,
            media::mojom::MirrorServiceRemotingSourceRequest& source_request));
+  void GetMediaSinkServiceStatus(
+      mojom::MediaRouter::GetMediaSinkServiceStatusCallback callback) override {
+    GetMediaSinkServiceStatusInternal(callback);
+  }
+  MOCK_METHOD1(
+      GetMediaSinkServiceStatusInternal,
+      void(mojom::MediaRouter::GetMediaSinkServiceStatusCallback& callback));
 };
 
 }  // namespace media_router

@@ -127,6 +127,12 @@ class MediaRouterMojoImpl : public MediaRouterBase,
 
   content::BrowserContext* context() const { return context_; }
 
+  // mojom::MediaRouter implementation.
+  void OnSinksReceived(MediaRouteProviderId provider_id,
+                       const std::string& media_source,
+                       const std::vector<MediaSinkInternal>& internal_sinks,
+                       const std::vector<url::Origin>& origins) override;
+
   // Mojo pointers to media route providers. Providers are added via
   // RegisterMediaRouteProvider().
   base::flat_map<MediaRouteProviderId, mojom::MediaRouteProviderPtr>
@@ -327,10 +333,6 @@ class MediaRouterMojoImpl : public MediaRouterBase,
 
   // mojom::MediaRouter implementation.
   void OnIssue(const IssueInfo& issue) override;
-  void OnSinksReceived(MediaRouteProviderId provider_id,
-                       const std::string& media_source,
-                       const std::vector<MediaSinkInternal>& internal_sinks,
-                       const std::vector<url::Origin>& origins) override;
   void OnRoutesUpdated(
       MediaRouteProviderId provider_id,
       const std::vector<MediaRoute>& routes,
@@ -353,6 +355,8 @@ class MediaRouterMojoImpl : public MediaRouterBase,
       int32_t tab_id,
       media::mojom::MirrorServiceRemoterPtr remoter,
       media::mojom::MirrorServiceRemotingSourceRequest source_request) override;
+  void GetMediaSinkServiceStatus(
+      mojom::MediaRouter::GetMediaSinkServiceStatusCallback callback) override;
 
   // Result callback when Mojo TerminateRoute is invoked.
   // |route_id|: ID of MediaRoute passed to the TerminateRoute request.
