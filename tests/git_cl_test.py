@@ -3455,6 +3455,7 @@ class TestGitCl(TestCase):
     self.mock(git_cl._GitCookiesChecker, 'get_hosts_with_creds',
               lambda _, include_netrc=False: [])
     self.calls = [
+      ((['git', 'config', '--path', 'http.cookiefile'],), CERR1),
       ((['git', 'config', '--global', 'http.cookiefile'],), CERR1),
       (('os.path.exists', '~/.netrc'), True),
       (('ask_for_data', 'Press Enter to setup .gitcookies, '
@@ -3475,6 +3476,7 @@ class TestGitCl(TestCase):
     self.mock(git_cl._GitCookiesChecker, 'get_hosts_with_creds',
               lambda _, include_netrc=False: [])
     self.calls = [
+      ((['git', 'config', '--path', 'http.cookiefile'],), CERR1),
       ((['git', 'config', '--global', 'http.cookiefile'],),
        '/custom/.gitcookies'),
       (('os.path.exists', '/custom/.gitcookies'), False),
