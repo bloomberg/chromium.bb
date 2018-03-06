@@ -13,6 +13,7 @@
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 
@@ -83,17 +84,18 @@ std::unique_ptr<views::InkDropMask> FeaturePodIconButton::CreateInkDropMask()
 }
 
 FeaturePodButton::FeaturePodButton(FeaturePodControllerBase* controller)
-    : controller_(controller) {
-  auto layout = std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(), kUnifiedTopShortcutSpacing);
+    : controller_(controller),
+      icon_button_(new FeaturePodIconButton(this)),
+      label_(new views::Label()) {
+  auto layout = std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical);
   layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
   SetLayoutManager(std::move(layout));
 
-  icon_button_ = new FeaturePodIconButton(this);
   AddChildView(icon_button_);
 
-  label_ = new views::Label();
+  label_->SetBorder(
+      views::CreateEmptyBorder(kUnifiedTopShortcutSpacing, 0, 0, 0));
   label_->SetVisible(false);
   ConfigureFeaturePodLabel(label_);
   AddChildView(label_);
@@ -109,6 +111,8 @@ void FeaturePodButton::SetVectorIcon(const gfx::VectorIcon& icon) {
 void FeaturePodButton::SetLabel(const base::string16& label) {
   label_->SetVisible(true);
   label_->SetText(label);
+  Layout();
+  SchedulePaint();
 }
 
 void FeaturePodButton::SetSubLabel(const base::string16& sub_label) {
@@ -120,6 +124,8 @@ void FeaturePodButton::SetSubLabel(const base::string16& sub_label) {
   }
 
   sub_label_->SetText(sub_label);
+  Layout();
+  SchedulePaint();
 }
 
 void FeaturePodButton::SetToggled(bool toggled) {
