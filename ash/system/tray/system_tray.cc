@@ -581,7 +581,7 @@ bool SystemTray::PerformAction(const ui::Event& event) {
       LoginMetricsRecorder::TrayClickTarget::kSystemTray);
 
   if (features::IsSystemTrayUnifiedEnabled()) {
-    return shelf()->GetStatusAreaWidget()->system_tray_unified()->PerformAction(
+    return shelf()->GetStatusAreaWidget()->unified_system_tray()->PerformAction(
         event);
   }
 

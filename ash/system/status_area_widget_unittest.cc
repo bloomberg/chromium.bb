@@ -5,6 +5,7 @@
 #include "ash/system/status_area_widget.h"
 
 #include "ash/focus_cycler.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/session/session_controller.h"
 #include "ash/session/test_session_controller_client.h"
@@ -21,6 +22,7 @@
 #include "ash/system/web_notification/web_notification_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "base/command_line.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/session_manager/session_manager_types.h"
 
 using session_manager::SessionState;
@@ -203,6 +205,26 @@ TEST_F(StatusAreaWidgetPaletteTest, Basics) {
 
   // Auto-hidden shelf would not be forced to be visible.
   EXPECT_FALSE(status->ShouldShowShelf());
+}
+
+class UnifiedStatusAreaWidgetTest : public AshTestBase {
+ public:
+  UnifiedStatusAreaWidgetTest() = default;
+  ~UnifiedStatusAreaWidgetTest() override = default;
+
+  // AshTestBase:
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(features::kSystemTrayUnified);
+    AshTestBase::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+TEST_F(UnifiedStatusAreaWidgetTest, Basics) {
+  StatusAreaWidget* status = StatusAreaWidgetTestHelper::GetStatusAreaWidget();
+  EXPECT_TRUE(status->unified_system_tray());
 }
 
 }  // namespace ash
