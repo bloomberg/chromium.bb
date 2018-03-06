@@ -134,7 +134,10 @@ chrome.test.runTests([
           chrome.test.assertTrue(responded);
           chrome.test.assertEq(debuggee.tabId, from.tabId);
           chrome.test.assertEq("target_closed", reason);
-          chrome.test.succeed();
+          chrome.tabs.remove(tab.id, function() {
+            chrome.test.assertNoLastError();
+            chrome.test.succeed();
+          });
         }
 
         chrome.test.assertNoLastError();
@@ -159,7 +162,10 @@ chrome.test.runTests([
         function onDetach() {
           chrome.debugger.onDetach.removeListener(onDetach);
           chrome.test.assertTrue(responded);
-          chrome.test.succeed();
+          chrome.tabs.remove(tab.id, function() {
+            chrome.test.assertNoLastError();
+            chrome.test.succeed();
+          });
         }
 
         chrome.test.assertNoLastError();
