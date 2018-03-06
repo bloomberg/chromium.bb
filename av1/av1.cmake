@@ -169,7 +169,9 @@ set(AOM_AV1_COMMON_INTRIN_SSE4_1
 
 set(AOM_AV1_COMMON_INTRIN_AVX2
     "${AOM_ROOT}/av1/common/x86/highbd_inv_txfm_avx2.c"
-    "${AOM_ROOT}/av1/common/x86/hybrid_inv_txfm_avx2.c")
+    "${AOM_ROOT}/av1/common/x86/hybrid_inv_txfm_avx2.c"
+    "${AOM_ROOT}/av1/common/x86/av1_inv_txfm_avx2.h"
+    "${AOM_ROOT}/av1/common/x86/av1_inv_txfm_avx2.c")
 
 set(AOM_AV1_COMMON_INTRIN_MSA
     "${AOM_ROOT}/av1/common/mips/msa/av1_idct16x16_msa.c"
