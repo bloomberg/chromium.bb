@@ -27,6 +27,12 @@ namespace test {
 
 class QuicTestPacketMaker {
  public:
+  struct Http2StreamDependency {
+    QuicStreamId stream_id;
+    QuicStreamId parent_stream_id;
+    SpdyPriority spdy_priority;
+  };
+
   // |client_headers_include_h2_stream_dependency| affects the output of
   // the MakeRequestHeaders...() methods. If its value is true, then request
   // headers are constructed with the exclusive flag set to true and the parent
@@ -194,6 +200,19 @@ class QuicTestPacketMaker {
       QuicStreamOffset* offset,
       std::string* stream_data);
 
+  std::unique_ptr<QuicReceivedPacket> MakeRequestHeadersAndRstPacket(
+      QuicPacketNumber packet_number,
+      QuicStreamId stream_id,
+      bool should_include_version,
+      bool fin,
+      SpdyPriority priority,
+      SpdyHeaderBlock headers,
+      QuicStreamId parent_stream_id,
+      size_t* spdy_headers_frame_length,
+      QuicStreamOffset* header_stream_offset,
+      QuicRstStreamErrorCode error_code,
+      size_t bytes_written);
+
   // Convenience method for calling MakeRequestHeadersPacket with nullptr for
   // |spdy_headers_frame_length|.
   std::unique_ptr<QuicReceivedPacket>
@@ -268,15 +287,13 @@ class QuicTestPacketMaker {
       SpdyPriority priority,
       QuicStreamOffset* offset);
 
-  std::unique_ptr<QuicReceivedPacket> MakeAckAndPriorityPacket(
+  std::unique_ptr<QuicReceivedPacket> MakeAckAndMultiplePriorityFramesPacket(
       QuicPacketNumber packet_number,
       bool should_include_version,
       QuicPacketNumber largest_received,
       QuicPacketNumber smallest_received,
       QuicPacketNumber least_unacked,
-      QuicStreamId stream_id,
-      QuicStreamId parent_stream_id,
-      SpdyPriority spdy_priority,
+      const std::vector<Http2StreamDependency>& priority_frames,
       QuicStreamOffset* offset);
 
   SpdyHeaderBlock GetRequestHeaders(const std::string& method,

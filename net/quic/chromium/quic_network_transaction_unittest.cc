@@ -423,20 +423,19 @@ class QuicNetworkTransactionTest : public PlatformTest,
         ConvertRequestPriorityToQuicPriority(request_priority), offset);
   }
 
-  std::unique_ptr<QuicEncryptedPacket> ConstructClientAckAndPriorityPacket(
+  std::unique_ptr<QuicEncryptedPacket>
+  ConstructClientAckAndPriorityFramesPacket(
       QuicPacketNumber packet_number,
       bool should_include_version,
       QuicPacketNumber largest_received,
       QuicPacketNumber smallest_received,
       QuicPacketNumber least_unacked,
-      QuicStreamId stream_id,
-      QuicStreamId parent_stream_id,
-      RequestPriority request_priority,
+      const std::vector<QuicTestPacketMaker::Http2StreamDependency>&
+          priority_frames,
       QuicStreamOffset* offset) {
-    return client_maker_.MakeAckAndPriorityPacket(
+    return client_maker_.MakeAckAndMultiplePriorityFramesPacket(
         packet_number, should_include_version, largest_received,
-        smallest_received, least_unacked, stream_id, parent_stream_id,
-        ConvertRequestPriorityToQuicPriority(request_priority), offset);
+        smallest_received, least_unacked, priority_frames, offset);
   }
 
   // Uses default QuicTestPacketMaker.
@@ -566,6 +565,26 @@ class QuicNetworkTransactionTest : public PlatformTest,
     return client_maker_.MakeRequestHeadersPacketWithOffsetTracking(
         packet_number, stream_id, should_include_version, fin, priority,
         std::move(headers), parent_stream_id, offset);
+  }
+
+  std::unique_ptr<QuicReceivedPacket>
+  ConstructClientRequestHeadersAndDataFramesPacket(
+      QuicPacketNumber packet_number,
+      QuicStreamId stream_id,
+      bool should_include_version,
+      bool fin,
+      RequestPriority request_priority,
+      SpdyHeaderBlock headers,
+      QuicStreamId parent_stream_id,
+      QuicStreamOffset* offset,
+      size_t* spdy_headers_frame_length,
+      const std::vector<std::string>& data_writes) {
+    SpdyPriority priority =
+        ConvertRequestPriorityToQuicPriority(request_priority);
+    return client_maker_.MakeRequestHeadersAndMultipleDataFramesPacket(
+        packet_number, stream_id, should_include_version, fin, priority,
+        std::move(headers), parent_stream_id, offset, spdy_headers_frame_length,
+        data_writes);
   }
 
   std::unique_ptr<QuicEncryptedPacket> ConstructClientMultipleDataFramesPacket(
@@ -5278,14 +5297,10 @@ TEST_P(QuicNetworkTransactionTest, QuicForceHolBlocking) {
 
   QuicStreamOffset offset = 0;
   mock_quic_data.AddWrite(ConstructInitialSettingsPacket(1, &offset));
-  mock_quic_data.AddWrite(ConstructClientRequestHeadersPacket(
-      2, GetNthClientInitiatedStreamId(0), true, false,
-      GetRequestHeaders("POST", "https", "/"), &offset));
 
-  std::unique_ptr<QuicEncryptedPacket> packet;
-  packet = ConstructClientDataPacket(3, GetNthClientInitiatedStreamId(0), true,
-                                     true, 0, "1");
-  mock_quic_data.AddWrite(std::move(packet));
+  mock_quic_data.AddWrite(ConstructClientRequestHeadersAndDataFramesPacket(
+      2, GetNthClientInitiatedStreamId(0), true, true, DEFAULT_PRIORITY,
+      GetRequestHeaders("POST", "https", "/"), 0, &offset, nullptr, {"1"}));
 
   mock_quic_data.AddRead(ConstructServerResponseHeadersPacket(
       1, GetNthClientInitiatedStreamId(0), false, false,
@@ -5294,7 +5309,7 @@ TEST_P(QuicNetworkTransactionTest, QuicForceHolBlocking) {
   mock_quic_data.AddRead(ConstructServerDataPacket(
       2, GetNthClientInitiatedStreamId(0), false, true, 0, "hello!"));
 
-  mock_quic_data.AddWrite(ConstructClientAckPacket(4, 2, 1, 1));
+  mock_quic_data.AddWrite(ConstructClientAckPacket(3, 2, 1, 1));
 
   mock_quic_data.AddRead(ASYNC, ERR_IO_PENDING);  // No more data to read
   mock_quic_data.AddRead(ASYNC, 0);               // EOF
@@ -6068,13 +6083,11 @@ TEST_P(QuicNetworkTransactionTest, QuicServerPushMatchesRequestWithBody) {
       client_packet_number++, GetNthServerInitiatedStreamId(0),
       QUIC_STREAM_CANCELLED, 5, 5, 1));
   const char kBody[] = "1";
-  mock_quic_data.AddWrite(ConstructClientRequestHeadersPacket(
-      client_packet_number++, GetNthClientInitiatedStreamId(1), false, false,
-      GetRequestHeaders("GET", "https", "/pushed.jpg"),
-      GetNthServerInitiatedStreamId(0), &header_stream_offset));
-  mock_quic_data.AddWrite(ConstructClientMultipleDataFramesPacket(
+  mock_quic_data.AddWrite(ConstructClientRequestHeadersAndDataFramesPacket(
       client_packet_number++, GetNthClientInitiatedStreamId(1), false, true,
-      {kBody}, 0));
+      DEFAULT_PRIORITY, GetRequestHeaders("GET", "https", "/pushed.jpg"),
+      GetNthServerInitiatedStreamId(0), &header_stream_offset, nullptr,
+      {kBody}));
 
   // We see the same response as for the earlier pushed and cancelled
   // stream.
@@ -7004,8 +7017,10 @@ TEST_P(QuicNetworkTransactionTest, QuicServerPushUpdatesPriority) {
       4, client_stream_0, push_stream_0, false,
       GetRequestHeaders("GET", "https", "/pushed_0.jpg"), &server_header_offset,
       &server_maker_));
-  mock_quic_data.AddWrite(ConstructClientAckAndPriorityPacket(
-      6, false, 4, 3, 1, push_stream_0, client_stream_2, DEFAULT_PRIORITY,
+  mock_quic_data.AddWrite(ConstructClientAckAndPriorityFramesPacket(
+      6, false, 4, 3, 1,
+      {{push_stream_0, client_stream_2,
+        ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY)}},
       &header_stream_offset));
   mock_quic_data.AddRead(ConstructServerPushPromisePacket(
       5, client_stream_0, push_stream_1, false,
@@ -7027,29 +7042,30 @@ TEST_P(QuicNetworkTransactionTest, QuicServerPushUpdatesPriority) {
   // Request for "pushed_0.jpg" matches |push_stream_0|. |push_stream_0|'s
   // priority updates to match the request's priority. Client sends PRIORITY
   // frames to inform server of new HTTP/2 stream dependencies.
-  mock_quic_data.AddWrite(ConstructClientAckAndPriorityPacket(
-      9, false, 7, 7, 1, push_stream_1, client_stream_2, DEFAULT_PRIORITY,
+  mock_quic_data.AddWrite(ConstructClientAckAndPriorityFramesPacket(
+      9, false, 7, 7, 1,
+      {{push_stream_1, client_stream_2,
+        ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY)},
+       {push_stream_0, client_stream_0,
+        ConvertRequestPriorityToQuicPriority(HIGHEST)}},
       &header_stream_offset));
-  mock_quic_data.AddWrite(
-      ConstructClientPriorityPacket(10, false, push_stream_0, client_stream_0,
-                                    HIGHEST, &header_stream_offset));
 
   // Server sends data for the three requests and the two push promises.
   mock_quic_data.AddRead(ConstructServerDataPacket(8, client_stream_0, false,
                                                    true, 0, "hello 0!"));
   mock_quic_data.AddSynchronousRead(ConstructServerDataPacket(
       9, client_stream_1, false, true, 0, "hello 1!"));
-  mock_quic_data.AddWrite(ConstructClientAckPacket(11, 9, 8, 1));
+  mock_quic_data.AddWrite(ConstructClientAckPacket(10, 9, 8, 1));
   mock_quic_data.AddRead(ConstructServerDataPacket(10, client_stream_2, false,
                                                    true, 0, "hello 2!"));
   mock_quic_data.AddSynchronousRead(ConstructServerDataPacket(
       11, push_stream_0, false, true, 0, "and hello 0!"));
-  mock_quic_data.AddWrite(ConstructClientAckPacket(12, 11, 10, 1));
+  mock_quic_data.AddWrite(ConstructClientAckPacket(11, 11, 10, 1));
   mock_quic_data.AddRead(ConstructServerDataPacket(12, push_stream_1, false,
                                                    true, 0, "and hello 1!"));
 
   mock_quic_data.AddWrite(ConstructClientAckAndRstPacket(
-      13, push_stream_0, QUIC_RST_ACKNOWLEDGEMENT, 12, 12, 1));
+      12, push_stream_0, QUIC_RST_ACKNOWLEDGEMENT, 12, 12, 1));
 
   mock_quic_data.AddRead(ASYNC, ERR_IO_PENDING);  // No more data to read
   mock_quic_data.AddRead(ASYNC, 0);               // EOF
