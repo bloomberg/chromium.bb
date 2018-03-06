@@ -123,15 +123,20 @@ class IntegrationTest(unittest.TestCase):
     if cache_key not in IntegrationTest.cached_size_info:
       elf_path = _TEST_ELF_PATH if use_elf else None
       output_directory = _TEST_OUTPUT_DIR if use_output_directory else None
+      knobs = archive.SectionSizeKnobs()
+      # Override for testing. Lower the bar for compacting symbols, to allow
+      # smaller test cases to be created.
+      knobs.max_same_name_alias_count = 3
       if use_pak:
         section_sizes, raw_symbols = archive.CreateSectionSizesAndSymbols(
             map_path=_TEST_MAP_PATH, tool_prefix=_TEST_TOOL_PREFIX,
             elf_path=elf_path, output_directory=output_directory,
-            pak_files=[_TEST_PAK_PATH], pak_info_file=_TEST_PAK_INFO_PATH)
+            pak_files=[_TEST_PAK_PATH], pak_info_file=_TEST_PAK_INFO_PATH,
+            knobs=knobs)
       else:
         section_sizes, raw_symbols = archive.CreateSectionSizesAndSymbols(
             map_path=_TEST_MAP_PATH, tool_prefix=_TEST_TOOL_PREFIX,
-            elf_path=elf_path, output_directory=output_directory)
+            elf_path=elf_path, output_directory=output_directory, knobs=knobs)
       metadata = None
       if use_elf:
         with _AddMocksToPath():

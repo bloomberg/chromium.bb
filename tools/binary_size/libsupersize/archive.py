@@ -34,20 +34,27 @@ sys.path.insert(1, os.path.join(path_util.SRC_ROOT, 'tools', 'grit'))
 from grit.format import data_pack
 
 
-# Effect of _MAX_SAME_NAME_ALIAS_COUNT (as of Oct 2017, with min_pss = max):
-# 1: shared .text symbols = 1772874 bytes, file size = 9.43MiB (645476 symbols).
-# 2: shared .text symbols = 1065654 bytes, file size = 9.58MiB (669952 symbols).
-# 6: shared .text symbols = 464058 bytes, file size = 10.11MiB (782693 symbols).
-# 10: shared .text symbols = 365648 bytes, file size =10.24MiB (813758 symbols).
-# 20: shared .text symbols = 86202 bytes, file size = 10.38MiB (854548 symbols).
-# 40: shared .text symbols = 48424 bytes, file size = 10.50MiB (890396 symbols).
-# 50: shared .text symbols = 41860 bytes, file size = 10.54MiB (902304 symbols).
-# max: shared .text symbols = 0 bytes, file size = 11.10MiB (1235449 symbols).
-_MAX_SAME_NAME_ALIAS_COUNT = 40  # 50kb is basically negligable.
+# Tunable "knobs" for CreateSectionSizesAndSymbols().
+class SectionSizeKnobs(object):
+  def __init__(self):
+    # A limit on the number of symbols an address can have, before these symbols
+    # are compacted into shared symbols. Increasing this value causes more data
+    # to be stored .size files, but is also more expensive.
+    # Effect of max_same_name_alias_count (as of Oct 2017, with min_pss = max):
+    # 1: shared .text syms = 1772874 bytes, file size = 9.43MiB (645476 syms).
+    # 2: shared .text syms = 1065654 bytes, file size = 9.58MiB (669952 syms).
+    # 6: shared .text syms = 464058 bytes, file size = 10.11MiB (782693 syms).
+    # 10: shared .text syms = 365648 bytes, file size = 10.24MiB (813758 syms).
+    # 20: shared .text syms = 86202 bytes, file size = 10.38MiB (854548 syms).
+    # 40: shared .text syms = 48424 bytes, file size = 10.50MiB (890396 syms).
+    # 50: shared .text syms = 41860 bytes, file size = 10.54MiB (902304 syms).
+    # max: shared .text syms = 0 bytes, file size = 11.10MiB (1235449 syms).
+    self.max_same_name_alias_count = 40  # 50kb is basically negligable.
 
-# This is an estimate of pak translation compression ratio to make comparisons
-# between .size files reasonable. Otherwise this can differ every pak change.
-_PAK_COMPRESSION_RATIO = 0.33
+    # An estimate of pak translation compression ratio to make comparisons
+    # between .size files reasonable. Otherwise this can differ every pak
+    # change.
+    self.pak_compression_ratio = 0.33
 
 
 def _OpenMaybeGz(path):
@@ -239,7 +246,7 @@ def _ComputeAncestorPath(path_list, symbol_count):
   return os.path.join(os.path.dirname(prefix), '{shared}', symbol_count_str)
 
 
-def _CompactLargeAliasesIntoSharedSymbols(raw_symbols):
+def _CompactLargeAliasesIntoSharedSymbols(raw_symbols, knobs):
   """Converts symbols with large number of aliases into single symbols.
 
   The merged symbol's path fields are changed to common-ancestor paths in
@@ -256,7 +263,7 @@ def _CompactLargeAliasesIntoSharedSymbols(raw_symbols):
     raw_symbols[dst_cursor] = symbol
     dst_cursor += 1
     aliases = symbol.aliases
-    if aliases and len(aliases) > _MAX_SAME_NAME_ALIAS_COUNT:
+    if aliases and len(aliases) > knobs.max_same_name_alias_count:
       symbol.source_path = _ComputeAncestorPath(
           [s.source_path for s in aliases if s.source_path], len(aliases))
       symbol.object_path = _ComputeAncestorPath(
@@ -678,8 +685,6 @@ def _ParseElfInfo(map_path, elf_path, tool_prefix, output_directory,
             # is fast enough since len(merge_string_syms) < 10.
             raw_symbols[idx:idx + 1] = literal_syms
 
-  logging.debug('Connecting nm aliases')
-  _ConnectNmAliases(raw_symbols)
   return section_sizes, raw_symbols
 
 
@@ -810,7 +815,7 @@ def _ParseApkOtherSymbols(section_sizes, apk_path):
   return apk_symbols
 
 
-def _FindPakSymbolsFromApk(apk_path, output_directory):
+def _FindPakSymbolsFromApk(apk_path, output_directory, knobs):
   with zipfile.ZipFile(apk_path) as z:
     pak_zip_infos = (f for f in z.infolist() if f.filename.endswith('.pak'))
     apk_info_name = os.path.basename(apk_path) + '.pak.info'
@@ -825,7 +830,7 @@ def _FindPakSymbolsFromApk(apk_path, output_directory):
       if zip_info.compress_size < zip_info.file_size:
         total_compressed_size += zip_info.compress_size
         total_uncompressed_size += zip_info.file_size
-        compression_ratio = _PAK_COMPRESSION_RATIO
+        compression_ratio = knobs.pak_compression_ratio
       _ComputePakFileSymbols(
           os.path.relpath(zip_info.filename, output_directory), contents,
           res_info, symbols_by_id, compression_ratio=compression_ratio)
@@ -833,8 +838,9 @@ def _FindPakSymbolsFromApk(apk_path, output_directory):
       actual_ratio = (
           float(total_compressed_size) / total_uncompressed_size)
       logging.info('Pak Compression Ratio: %f Actual: %f Diff: %.0f',
-          _PAK_COMPRESSION_RATIO, actual_ratio,
-          (_PAK_COMPRESSION_RATIO - actual_ratio) * total_uncompressed_size)
+          knobs.pak_compression_ratio, actual_ratio,
+          (knobs.pak_compression_ratio - actual_ratio) *
+              total_uncompressed_size)
   return symbols_by_id
 
 
@@ -866,7 +872,8 @@ def _CalculateElfOverhead(section_sizes, elf_path):
 def CreateSectionSizesAndSymbols(
       map_path=None, tool_prefix=None, output_directory=None, elf_path=None,
       apk_path=None, track_string_literals=True, metadata=None,
-      apk_elf_result=None, pak_files=None, pak_info_file=None):
+      apk_elf_result=None, pak_files=None, pak_info_file=None,
+      knobs=SectionSizeKnobs()):
   """Creates sections sizes and symbols for a SizeInfo.
 
   Args:
@@ -899,7 +906,8 @@ def CreateSectionSizesAndSymbols(
 
   pak_symbols_by_id = None
   if apk_path:
-    pak_symbols_by_id = _FindPakSymbolsFromApk(apk_path, output_directory)
+    pak_symbols_by_id = _FindPakSymbolsFromApk(apk_path, output_directory,
+                                               knobs)
     section_sizes, elf_overhead_size = _ParseApkElfSectionSize(
         section_sizes, metadata, apk_elf_result)
     raw_symbols.extend(_ParseApkOtherSymbols(section_sizes, apk_path))
@@ -922,7 +930,9 @@ def CreateSectionSizesAndSymbols(
 
   _ExtractSourcePathsAndNormalizeObjectPaths(raw_symbols, source_mapper)
   logging.info('Converting excessive aliases into shared-path symbols')
-  _CompactLargeAliasesIntoSharedSymbols(raw_symbols)
+  _CompactLargeAliasesIntoSharedSymbols(raw_symbols, knobs)
+  logging.debug('Connecting nm aliases')
+  _ConnectNmAliases(raw_symbols)
   return section_sizes, raw_symbols
 
 
