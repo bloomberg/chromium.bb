@@ -45083,6 +45083,7 @@ Full version information for the fingerprint enum values:
   <int value="60" label="directory"/>
   <int value="61" label="no extension"/>
   <int value="62" label="unknown extension"/>
+  <int value="63" label=".mhtml"/>
 </enum>
 
 <enum name="VirtualKeyboardControllerState">
