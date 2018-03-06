@@ -54,6 +54,11 @@ class CORE_EXPORT AbortSignal final : public EventTargetWithInlineData {
   // event. Does nothing if called more than once.
   void SignalAbort();
 
+  // The "follow" algorithm from the standard:
+  // https://dom.spec.whatwg.org/#abortsignal-follow
+  // |this| is the followingSignal described in the standard.
+  void Follow(AbortSignal* parentSignal);
+
   virtual void Trace(Visitor*);
 
  private:

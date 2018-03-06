@@ -13,7 +13,6 @@
 #include "core/fileapi/PublicURLManager.h"
 #include "core/loader/ThreadableLoader.h"
 #include "platform/bindings/V8PrivateProperty.h"
-#include "platform/heap/Persistent.h"
 #include "platform/loader/cors/CORS.h"
 #include "platform/loader/fetch/FetchUtils.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
@@ -23,7 +22,6 @@
 #include "platform/runtime_enabled_features.h"
 #include "platform/weborigin/OriginAccessEntry.h"
 #include "platform/weborigin/Referrer.h"
-#include "platform/wtf/Functional.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
 
@@ -375,17 +373,9 @@ Request* Request::CreateRequestWithRequestOrString(
     // "Set |r|'s Headers object's guard to "request-no-cors"."
     r->getHeaders()->SetGuard(Headers::kRequestNoCORSGuard);
   }
-  // "If |signal| is not null, then add the following abort steps to signal:
-  //   1. Signal abort on r’s signal."
-  // TODO(ricea): Use the new "followingSignal ... is made to follow" algorithm
-  // that has been added to the DOM standard.
+  // "If |signal| is not null, then make |r|’s signal follow |signal|."
   if (signal) {
-    if (signal->aborted()) {
-      r->signal_->SignalAbort();
-    } else {
-      signal->AddAlgorithm(WTF::Bind(&AbortSignal::SignalAbort,
-                                     WrapWeakPersistent(r->signal_.Get())));
-    }
+    r->signal_->Follow(signal);
   }
   // "Fill |r|'s Headers object with |headers|. Rethrow any exceptions."
   if (!init.GetHeaders().IsNull()) {
@@ -746,12 +736,7 @@ Request* Request::clone(ScriptState* script_state,
   Headers* headers = Headers::Create(request->HeaderList());
   headers->SetGuard(headers_->GetGuard());
   auto* signal = new AbortSignal(ExecutionContext::From(script_state));
-  if (signal_->aborted()) {
-    signal->SignalAbort();
-  } else {
-    signal_->AddAlgorithm(
-        WTF::Bind(&AbortSignal::SignalAbort, WrapWeakPersistent(signal)));
-  }
+  signal->Follow(signal_);
   return new Request(script_state, request, headers, signal);
 }
 
