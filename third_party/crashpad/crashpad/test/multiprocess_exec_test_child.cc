@@ -23,9 +23,7 @@
 #include "build/build_config.h"
 
 #if defined(OS_POSIX)
-#if !defined(OS_FUCHSIA)
 #include <sys/resource.h>
-#endif  // !OS_FUCHSIA
 #include <unistd.h>
 #elif defined(OS_WIN)
 #include <windows.h>

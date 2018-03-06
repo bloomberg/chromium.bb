@@ -239,8 +239,7 @@ bool StringToException(const base::StringPiece& string,
   }
 
   if (options & kAllowNumber) {
-    return StringToNumber(std::string(string.data(), string.length()),
-                          reinterpret_cast<unsigned int*>(exception));
+    return StringToNumber(string, reinterpret_cast<unsigned int*>(exception));
   }
 
   return false;
@@ -353,7 +352,7 @@ bool StringToExceptionMask(const base::StringPiece& string,
   }
 
   if (options & kAllowNumber) {
-    return StringToNumber(std::string(string.data(), string.length()),
+    return StringToNumber(string,
                           reinterpret_cast<unsigned int*>(exception_mask));
   }
 
@@ -453,8 +452,7 @@ bool StringToExceptionBehavior(const base::StringPiece& string,
 
   if (options & kAllowNumber) {
     exception_behavior_t temp_behavior;
-    if (!StringToNumber(std::string(sp.data(), sp.length()),
-                        reinterpret_cast<unsigned int*>(&temp_behavior))) {
+    if (!StringToNumber(sp, reinterpret_cast<unsigned int*>(&temp_behavior))) {
       return false;
     }
     build_behavior |= temp_behavior;
@@ -541,8 +539,7 @@ bool StringToThreadStateFlavor(const base::StringPiece& string,
   }
 
   if (options & kAllowNumber) {
-    return StringToNumber(std::string(string.data(), string.length()),
-                          reinterpret_cast<unsigned int*>(flavor));
+    return StringToNumber(string, reinterpret_cast<unsigned int*>(flavor));
   }
 
   return false;

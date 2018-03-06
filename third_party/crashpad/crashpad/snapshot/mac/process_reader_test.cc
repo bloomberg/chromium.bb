@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "snapshot/mac/process_reader_mac.h"
+#include "snapshot/mac/process_reader.h"
 
 #include <AvailabilityMacros.h>
-#include <OpenCL/opencl.h>
 #include <mach-o/dyld.h>
 #include <mach-o/dyld_images.h>
 #include <mach/mach.h>
+#include <OpenCL/opencl.h>
 #include <string.h>
 #include <sys/stat.h>
 
@@ -48,8 +48,8 @@ namespace {
 
 constexpr char kDyldPath[] = "/usr/lib/dyld";
 
-TEST(ProcessReaderMac, SelfBasic) {
-  ProcessReaderMac process_reader;
+TEST(ProcessReader, SelfBasic) {
+  ProcessReader process_reader;
   ASSERT_TRUE(process_reader.Initialize(mach_task_self()));
 
 #if !defined(ARCH_CPU_64_BITS)
@@ -80,7 +80,7 @@ class ProcessReaderChild final : public MachMultiprocess {
 
  private:
   void MachMultiprocessParent() override {
-    ProcessReaderMac process_reader;
+    ProcessReader process_reader;
     ASSERT_TRUE(process_reader.Initialize(ChildTask()));
 
 #if !defined(ARCH_CPU_64_BITS)
@@ -116,7 +116,7 @@ class ProcessReaderChild final : public MachMultiprocess {
   DISALLOW_COPY_AND_ASSIGN(ProcessReaderChild);
 };
 
-TEST(ProcessReaderMac, ChildBasic) {
+TEST(ProcessReader, ChildBasic) {
   ProcessReaderChild process_reader_child;
   process_reader_child.Run();
 }
@@ -131,12 +131,11 @@ uint64_t PthreadToThreadID(pthread_t pthread) {
   return thread_id;
 }
 
-TEST(ProcessReaderMac, SelfOneThread) {
-  ProcessReaderMac process_reader;
+TEST(ProcessReader, SelfOneThread) {
+  ProcessReader process_reader;
   ASSERT_TRUE(process_reader.Initialize(mach_task_self()));
 
-  const std::vector<ProcessReaderMac::Thread>& threads =
-      process_reader.Threads();
+  const std::vector<ProcessReader::Thread>& threads = process_reader.Threads();
 
   // If other tests ran in this process previously, threads may have been
   // created and may still be running. This check must look for at least one
@@ -158,7 +157,8 @@ class TestThreadPool {
     int suspend_count;
   };
 
-  TestThreadPool() : thread_infos_() {}
+  TestThreadPool() : thread_infos_() {
+  }
 
   // Resumes suspended threads, signals each thread’s exit semaphore asking it
   // to exit, and joins each thread, blocking until they have all exited.
@@ -192,8 +192,10 @@ class TestThreadPool {
       thread_infos_.push_back(std::make_unique<ThreadInfo>());
       ThreadInfo* thread_info = thread_infos_.back().get();
 
-      int rv = pthread_create(
-          &thread_info->pthread, nullptr, ThreadMain, thread_info);
+      int rv = pthread_create(&thread_info->pthread,
+                              nullptr,
+                              ThreadMain,
+                              thread_info);
       ASSERT_EQ(rv, 0);
     }
 
@@ -208,7 +210,8 @@ class TestThreadPool {
          ++thread_index) {
       thread_t thread_port =
           pthread_mach_thread_np(thread_infos_[thread_index]->pthread);
-      for (size_t suspend_count = 0; suspend_count < thread_index;
+      for (size_t suspend_count = 0;
+           suspend_count < thread_index;
            ++suspend_count) {
         kern_return_t kr = thread_suspend(thread_port);
         EXPECT_EQ(kr, KERN_SUCCESS) << MachErrorMessage(kr, "thread_suspend");
@@ -219,7 +222,8 @@ class TestThreadPool {
     }
   }
 
-  uint64_t GetThreadInfo(size_t thread_index, ThreadExpectation* expectation) {
+  uint64_t GetThreadInfo(size_t thread_index,
+                         ThreadExpectation* expectation) {
     CHECK_LT(thread_index, thread_infos_.size());
 
     const auto& thread_info = thread_infos_[thread_index];
@@ -236,7 +240,8 @@ class TestThreadPool {
           stack_address(0),
           ready_semaphore(0),
           exit_semaphore(0),
-          suspend_count(0) {}
+          suspend_count(0) {
+    }
 
     ~ThreadInfo() {}
 
@@ -289,14 +294,14 @@ class TestThreadPool {
 
 using ThreadMap = std::map<uint64_t, TestThreadPool::ThreadExpectation>;
 
-// Verifies that all of the threads in |threads|, obtained from
-// ProcessReaderMac, agree with the expectation in |thread_map|. If
-// |tolerate_extra_threads| is true, |threads| is allowed to contain threads
-// that are not listed in |thread_map|. This is useful when testing situations
-// where code outside of the test’s control (such as system libraries) may start
-// threads, or may have started threads prior to a test’s execution.
+// Verifies that all of the threads in |threads|, obtained from ProcessReader,
+// agree with the expectation in |thread_map|. If |tolerate_extra_threads| is
+// true, |threads| is allowed to contain threads that are not listed in
+// |thread_map|. This is useful when testing situations where code outside of
+// the test’s control (such as system libraries) may start threads, or may have
+// started threads prior to a test’s execution.
 void ExpectSeveralThreads(ThreadMap* thread_map,
-                          const std::vector<ProcessReaderMac::Thread>& threads,
+                          const std::vector<ProcessReader::Thread>& threads,
                           const bool tolerate_extra_threads) {
   if (tolerate_extra_threads) {
     ASSERT_GE(threads.size(), thread_map->size());
@@ -305,7 +310,7 @@ void ExpectSeveralThreads(ThreadMap* thread_map,
   }
 
   for (size_t thread_index = 0; thread_index < threads.size(); ++thread_index) {
-    const ProcessReaderMac::Thread& thread = threads[thread_index];
+    const ProcessReader::Thread& thread = threads[thread_index];
     mach_vm_address_t thread_stack_region_end =
         thread.stack_region_address + thread.stack_region_size;
 
@@ -331,26 +336,26 @@ void ExpectSeveralThreads(ThreadMap* thread_map,
     // with any other thread’s. Each thread should have a unique value for its
     // ID and port, and each should have its own stack that doesn’t touch any
     // other thread’s stack.
-    for (size_t other_thread_index = 0; other_thread_index < threads.size();
+    for (size_t other_thread_index = 0;
+         other_thread_index < threads.size();
          ++other_thread_index) {
       if (other_thread_index == thread_index) {
         continue;
       }
 
-      const ProcessReaderMac::Thread& other_thread =
-          threads[other_thread_index];
+      const ProcessReader::Thread& other_thread = threads[other_thread_index];
 
       EXPECT_NE(other_thread.id, thread.id);
       EXPECT_NE(other_thread.port, thread.port);
 
       mach_vm_address_t other_thread_stack_region_end =
           other_thread.stack_region_address + other_thread.stack_region_size;
-      EXPECT_FALSE(thread.stack_region_address >=
-                       other_thread.stack_region_address &&
-                   thread.stack_region_address < other_thread_stack_region_end);
-      EXPECT_FALSE(thread_stack_region_end >
-                       other_thread.stack_region_address &&
-                   thread_stack_region_end <= other_thread_stack_region_end);
+      EXPECT_FALSE(
+          thread.stack_region_address >= other_thread.stack_region_address &&
+          thread.stack_region_address < other_thread_stack_region_end);
+      EXPECT_FALSE(
+          thread_stack_region_end > other_thread.stack_region_address &&
+          thread_stack_region_end <= other_thread_stack_region_end);
     }
   }
 
@@ -358,12 +363,12 @@ void ExpectSeveralThreads(ThreadMap* thread_map,
   EXPECT_TRUE(thread_map->empty());
 }
 
-TEST(ProcessReaderMac, SelfSeveralThreads) {
-  // Set up the ProcessReaderMac here, before any other threads are running.
-  // This tests that the threads it returns are lazily initialized as a snapshot
-  // of the threads at the time of the first call to Threads(), and not at the
+TEST(ProcessReader, SelfSeveralThreads) {
+  // Set up the ProcessReader here, before any other threads are running. This
+  // tests that the threads it returns are lazily initialized as a snapshot of
+  // the threads at the time of the first call to Threads(), and not at the
   // time the ProcessReader was created or initialized.
-  ProcessReaderMac process_reader;
+  ProcessReader process_reader;
   ASSERT_TRUE(process_reader.Initialize(mach_task_self()));
 
   TestThreadPool thread_pool;
@@ -387,8 +392,7 @@ TEST(ProcessReaderMac, SelfSeveralThreads) {
     thread_map[thread_id] = expectation;
   }
 
-  const std::vector<ProcessReaderMac::Thread>& threads =
-      process_reader.Threads();
+  const std::vector<ProcessReader::Thread>& threads = process_reader.Threads();
 
   // Other tests that have run previously may have resulted in the creation of
   // threads that still exist, so pass true for |tolerate_extra_threads|.
@@ -399,7 +403,7 @@ TEST(ProcessReaderMac, SelfSeveralThreads) {
   // shows up once.
   thread_t thread_self = MachThreadSelf();
   bool found_thread_self = false;
-  for (const ProcessReaderMac::Thread& thread : threads) {
+  for (const ProcessReader::Thread& thread : threads) {
     if (thread.port == thread_self) {
       EXPECT_FALSE(found_thread_self);
       found_thread_self = true;
@@ -412,13 +416,15 @@ TEST(ProcessReaderMac, SelfSeveralThreads) {
 class ProcessReaderThreadedChild final : public MachMultiprocess {
  public:
   explicit ProcessReaderThreadedChild(size_t thread_count)
-      : MachMultiprocess(), thread_count_(thread_count) {}
+      : MachMultiprocess(),
+        thread_count_(thread_count) {
+  }
 
   ~ProcessReaderThreadedChild() {}
 
  private:
   void MachMultiprocessParent() override {
-    ProcessReaderMac process_reader;
+    ProcessReader process_reader;
     ASSERT_TRUE(process_reader.Initialize(ChildTask()));
 
     FileHandle read_handle = ReadPipeHandle();
@@ -427,7 +433,8 @@ class ProcessReaderThreadedChild final : public MachMultiprocess {
     // addresses that should lie somewhere within each thread’s stack as values.
     // These IDs and addresses all come from the child process via the pipe.
     ThreadMap thread_map;
-    for (size_t thread_index = 0; thread_index < thread_count_ + 1;
+    for (size_t thread_index = 0;
+         thread_index < thread_count_ + 1;
          ++thread_index) {
       uint64_t thread_id;
       CheckedReadFileExactly(read_handle, &thread_id, sizeof(thread_id));
@@ -446,8 +453,7 @@ class ProcessReaderThreadedChild final : public MachMultiprocess {
       thread_map[thread_id] = expectation;
     }
 
-    const std::vector<ProcessReaderMac::Thread>& threads =
-        process_reader.Threads();
+    const std::vector<ProcessReader::Thread>& threads = process_reader.Threads();
 
     // The child shouldn’t have any threads other than its main thread and the
     // ones it created in its pool, so pass false for |tolerate_extra_threads|.
@@ -478,7 +484,8 @@ class ProcessReaderThreadedChild final : public MachMultiprocess {
                      sizeof(expectation.suspend_count));
 
     // Write an entry for everything in the thread pool.
-    for (size_t thread_index = 0; thread_index < thread_count_;
+    for (size_t thread_index = 0;
+         thread_index < thread_count_;
          ++thread_index) {
       uint64_t thread_id =
           thread_pool.GetThreadInfo(thread_index, &expectation);
@@ -502,14 +509,14 @@ class ProcessReaderThreadedChild final : public MachMultiprocess {
   DISALLOW_COPY_AND_ASSIGN(ProcessReaderThreadedChild);
 };
 
-TEST(ProcessReaderMac, ChildOneThread) {
+TEST(ProcessReader, ChildOneThread) {
   // The main thread plus zero child threads equals one thread.
   constexpr size_t kChildThreads = 0;
   ProcessReaderThreadedChild process_reader_threaded_child(kChildThreads);
   process_reader_threaded_child.Run();
 }
 
-TEST(ProcessReaderMac, ChildSeveralThreads) {
+TEST(ProcessReader, ChildSeveralThreads) {
   constexpr size_t kChildThreads = 64;
   ProcessReaderThreadedChild process_reader_threaded_child(kChildThreads);
   process_reader_threaded_child.Run();
@@ -530,7 +537,10 @@ TEST(ProcessReaderMac, ChildSeveralThreads) {
 class ScopedOpenCLNoOpKernel {
  public:
   ScopedOpenCLNoOpKernel()
-      : context_(nullptr), program_(nullptr), kernel_(nullptr) {}
+      : context_(nullptr),
+        program_(nullptr),
+        kernel_(nullptr) {
+  }
 
   ~ScopedOpenCLNoOpKernel() {
     if (kernel_) {
@@ -556,10 +566,10 @@ class ScopedOpenCLNoOpKernel {
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_10 && \
     MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_10
-// cl_device_id is really available in OpenCL.framework back to 10.5, but in
-// the 10.10 SDK and later, OpenCL.framework includes <OpenGL/CGLDevice.h>,
-// which has its own cl_device_id that was introduced in 10.10. That
-// triggers erroneous availability warnings.
+    // cl_device_id is really available in OpenCL.framework back to 10.5, but in
+    // the 10.10 SDK and later, OpenCL.framework includes <OpenGL/CGLDevice.h>,
+    // which has its own cl_device_id that was introduced in 10.10. That
+    // triggers erroneous availability warnings.
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunguarded-availability"
 #define DISABLED_WUNGUARDED_AVAILABILITY
@@ -632,16 +642,15 @@ bool ExpectCLKernels() {
 #endif
 }
 
-TEST(ProcessReaderMac, SelfModules) {
+TEST(ProcessReader, SelfModules) {
   ScopedOpenCLNoOpKernel ensure_cl_kernels;
   ASSERT_NO_FATAL_FAILURE(ensure_cl_kernels.SetUp());
 
-  ProcessReaderMac process_reader;
+  ProcessReader process_reader;
   ASSERT_TRUE(process_reader.Initialize(mach_task_self()));
 
   uint32_t dyld_image_count = _dyld_image_count();
-  const std::vector<ProcessReaderMac::Module>& modules =
-      process_reader.Modules();
+  const std::vector<ProcessReader::Module>& modules = process_reader.Modules();
 
   // There needs to be at least an entry for the main executable, for a dylib,
   // and for dyld.
@@ -709,10 +718,10 @@ class ProcessReaderModulesChild final : public MachMultiprocess {
 
  private:
   void MachMultiprocessParent() override {
-    ProcessReaderMac process_reader;
+    ProcessReader process_reader;
     ASSERT_TRUE(process_reader.Initialize(ChildTask()));
 
-    const std::vector<ProcessReaderMac::Module>& modules =
+    const std::vector<ProcessReader::Module>& modules =
         process_reader.Modules();
 
     // There needs to be at least an entry for the main executable, for a dylib,
@@ -820,7 +829,7 @@ class ProcessReaderModulesChild final : public MachMultiprocess {
   DISALLOW_COPY_AND_ASSIGN(ProcessReaderModulesChild);
 };
 
-TEST(ProcessReaderMac, ChildModules) {
+TEST(ProcessReader, ChildModules) {
   ScopedOpenCLNoOpKernel ensure_cl_kernels;
   ASSERT_NO_FATAL_FAILURE(ensure_cl_kernels.SetUp());
 

@@ -22,7 +22,7 @@
   .section __TEXT,__text,regular,pure_instructions
   .private_extern CAPTURECONTEXT_SYMBOL
   .globl CAPTURECONTEXT_SYMBOL
-  .balign 16, 0x90
+  .align 4, 0x90
 CAPTURECONTEXT_SYMBOL:
 
 #if defined(__i386__)

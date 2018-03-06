@@ -41,8 +41,8 @@ ModuleSnapshotMac::~ModuleSnapshotMac() {
 }
 
 bool ModuleSnapshotMac::Initialize(
-    ProcessReaderMac* process_reader,
-    const ProcessReaderMac::Module& process_reader_module) {
+    ProcessReader* process_reader,
+    const ProcessReader::Module& process_reader_module) {
   INITIALIZATION_STATE_SET_INITIALIZING(initialized_);
 
   process_reader_ = process_reader;

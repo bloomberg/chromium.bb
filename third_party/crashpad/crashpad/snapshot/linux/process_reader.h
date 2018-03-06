@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef CRASHPAD_SNAPSHOT_LINUX_PROCESS_READER_LINUX_H_
-#define CRASHPAD_SNAPSHOT_LINUX_PROCESS_READER_LINUX_H_
+#ifndef CRASHPAD_SNAPSHOT_LINUX_PROCESS_READER_H_
+#define CRASHPAD_SNAPSHOT_LINUX_PROCESS_READER_H_
 
 #include <sys/time.h>
 #include <sys/types.h>
@@ -38,7 +38,7 @@ namespace crashpad {
 
 //! \brief Accesses information about another process, identified by a process
 //!     ID.
-class ProcessReaderLinux {
+class ProcessReader {
  public:
   //! \brief Contains information about a thread that belongs to a process.
   struct Thread {
@@ -54,10 +54,10 @@ class ProcessReaderLinux {
     int nice_value;
 
    private:
-    friend class ProcessReaderLinux;
+    friend class ProcessReader;
 
     bool InitializePtrace(PtraceConnection* connection);
-    void InitializeStack(ProcessReaderLinux* reader);
+    void InitializeStack(ProcessReader* reader);
   };
 
   //! \brief Contains information about a module loaded into a process.
@@ -71,7 +71,7 @@ class ProcessReaderLinux {
     //! \brief An image reader for the module.
     //!
     //! The lifetime of this ElfImageReader is scoped to the lifetime of the
-    //! ProcessReaderLinux that created it.
+    //! ProcessReader that created it.
     //!
     //! This field may be `nullptr` if a reader could not be created for the
     //! module.
@@ -81,8 +81,8 @@ class ProcessReaderLinux {
     ModuleSnapshot::ModuleType type;
   };
 
-  ProcessReaderLinux();
-  ~ProcessReaderLinux();
+  ProcessReader();
+  ~ProcessReader();
 
   //! \brief Initializes this object.
   //!
@@ -152,9 +152,9 @@ class ProcessReaderLinux {
   bool initialized_modules_;
   InitializationStateDcheck initialized_;
 
-  DISALLOW_COPY_AND_ASSIGN(ProcessReaderLinux);
+  DISALLOW_COPY_AND_ASSIGN(ProcessReader);
 };
 
 }  // namespace crashpad
 
-#endif  // CRASHPAD_SNAPSHOT_LINUX_PROCESS_READER_LINUX_H_
+#endif  // CRASHPAD_SNAPSHOT_LINUX_PROCESS_READER_H_

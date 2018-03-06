@@ -12,19 +12,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#define NOTE_ALIGN 4
-  .section .note.crashpad.test,"a",%note
-  .balign NOTE_ALIGN
-  .type testnote, %object
-testnote:
-  .long name_end - name  // namesz
-  .long desc_end - desc  // descsz
-  .long 1  // type
-name:
-  .ascii "Crashpad\0"
-name_end:
-  .balign NOTE_ALIGN
-desc:
-  .long 42
-desc_end:
-  .size testnote, .-testnote
+#include "test/linux/scoped_pr_set_ptracer.h"
+
+#include <errno.h>
+#include <sys/prctl.h>
+
+#include "gtest/gtest.h"
+#include "test/errors.h"
+
+namespace crashpad {
+namespace test {
+
+ScopedPrSetPtracer::ScopedPrSetPtracer(pid_t pid) {
+  success_ = prctl(PR_SET_PTRACER, pid, 0, 0, 0) == 0;
+  if (!success_) {
+    EXPECT_EQ(errno, EINVAL) << ErrnoMessage("prctl");
+  }
+}
+
+ScopedPrSetPtracer::~ScopedPrSetPtracer() {
+  if (success_) {
+    EXPECT_EQ(prctl(PR_SET_PTRACER, 0, 0, 0, 0), 0) << ErrnoMessage("prctl");
+  }
+}
+
+}  // namespace test
+}  // namespace crashpad

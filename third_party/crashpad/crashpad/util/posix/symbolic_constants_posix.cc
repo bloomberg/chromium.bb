@@ -161,7 +161,7 @@ bool StringToSignal(const base::StringPiece& string,
   }
 
   if (options & kAllowNumber) {
-    return StringToNumber(std::string(string.data(), string.length()), signal);
+    return StringToNumber(string, signal);
   }
 
   return false;
