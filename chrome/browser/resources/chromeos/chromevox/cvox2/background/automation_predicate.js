@@ -237,6 +237,24 @@ AutomationPredicate.object = function(node) {
        AutomationPredicate.formField(node)))
     return true;
 
+  // Containers who have name from contents should be treated like objects if
+  // the contents is all static text and not large.
+  if (node.name && node.nameFrom == 'contents') {
+    var onlyStaticText = true;
+    var textLength = 0;
+    for (var i = 0, child; child = node.children[i]; i++) {
+      if (child.role != Role.STATIC_TEXT) {
+        onlyStaticText = false;
+        break;
+      }
+      textLength += child.name ? child.name.length + textLength : textLength;
+    }
+
+    if (onlyStaticText && textLength > 0 &&
+        textLength < constants.OBJECT_MAX_CHARCOUNT)
+      return true;
+  }
+
   // Otherwise, leaf or static text nodes that don't contain only whitespace
   // should be visited with the exception of non-text only nodes. This covers
   // cases where an author might make a link with a name of ' '.

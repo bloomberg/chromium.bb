@@ -175,6 +175,8 @@ TEST_F('BackgroundTest', 'ForwardBackwardNavigation', function() {
         .expectSpeech('foxtraut', 'Heading 2')
         .expectBraille('foxtraut h2');
     mockFeedback.call(doCmd('nextLine'))
+        .expectSpeech('foxtraut');
+    mockFeedback.call(doCmd('nextLine'))
         .expectSpeech('end', 'of test')
         .expectBraille('endof test');
 
