@@ -40,6 +40,7 @@
 #include "ios/chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
+#include "ios/chrome/browser/sync/ios_user_event_service_factory.h"
 
 namespace {
 
@@ -223,6 +224,10 @@ void ChromeBrowserStateManagerImpl::DoFinalInitForServices(
       ->SetupInvalidationsOnProfileLoad(invalidation_service);
   ios::AccountReconcilorFactory::GetForBrowserState(browser_state);
   DesktopPromotionSyncServiceFactory::GetForBrowserState(browser_state);
+  // TODO(crbug.com/709094), TODO(crbug.com/761485): Remove this following line
+  // when UserEventService will be initialized synchronously. Until then, the
+  // service has to be created as early as possible.
+  IOSUserEventServiceFactory::GetForBrowserState(browser_state);
 }
 
 void ChromeBrowserStateManagerImpl::AddBrowserStateToCache(
