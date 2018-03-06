@@ -34,6 +34,8 @@ class ASH_EXPORT PowerButtonMenuScreenView : public views::View,
 
   // views::View:
   void Layout() override;
+  bool OnMousePressed(const ui::MouseEvent& event) override;
+  void OnMouseReleased(const ui::MouseEvent& event) override;
 
   // ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override;

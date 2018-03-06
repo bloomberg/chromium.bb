@@ -712,10 +712,21 @@ TEST_F(PowerButtonControllerTest, A11yAlert) {
   ReleasePowerButton();
 }
 
-// Tests that tap outside of the menu bounds will dimiss the menu.
+// Tests that tap outside of the menu bounds should dismiss the menu.
 TEST_F(PowerButtonControllerTest, TapToDismissMenu) {
   OpenPowerButtonMenu();
   TapToDismissPowerButtonMenu();
+}
+
+// Test that mouse click outside of the menu bounds should dismiss the menu.
+TEST_F(PowerButtonControllerTest, MouseClickToDismissMenu) {
+  OpenPowerButtonMenu();
+  gfx::Rect menu_bounds = power_button_test_api_->GetMenuBoundsInScreen();
+  ui::test::EventGenerator& generator(GetEventGenerator());
+  generator.MoveMouseTo(gfx::Point(menu_bounds.x() - 5, menu_bounds.y() - 5));
+  generator.ClickLeftButton();
+  generator.ReleaseLeftButton();
+  EXPECT_FALSE(power_button_test_api_->IsMenuOpened());
 }
 
 // Tests the menu items according to the login status.
