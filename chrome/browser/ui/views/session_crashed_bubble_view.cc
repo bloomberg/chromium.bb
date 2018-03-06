@@ -222,13 +222,6 @@ void SessionCrashedBubbleView::Init() {
 views::View* SessionCrashedBubbleView::CreateUmaOptInView() {
   RecordBubbleHistogramValue(SESSION_CRASHED_BUBBLE_OPTIN_BAR_SHOWN);
 
-  // Checkbox for metric reporting setting.
-  // Since the text to the right of the checkbox can't be a simple string (needs
-  // a hyperlink in it), this checkbox contains an empty string as its label,
-  // and the real text will be added as a separate view.
-  uma_option_ = new views::Checkbox(base::string16());
-  uma_option_->SetChecked(false);
-
   // The text to the right of the checkbox.
   size_t offset;
   base::string16 link_text =
@@ -250,6 +243,11 @@ views::View* SessionCrashedBubbleView::CreateUmaOptInView() {
     uma_label->AddStyleRange(after_link_range, uma_style);
   // Shift the text down by 1px to align with the checkbox.
   uma_label->SetBorder(views::CreateEmptyBorder(1, 0, 0, 0));
+
+  // Checkbox for metric reporting setting.
+  uma_option_ = new views::Checkbox(base::string16());
+  uma_option_->SetChecked(false);
+  uma_option_->SetAssociatedLabel(uma_label);
 
   // Create a view to hold the checkbox and the text.
   views::View* uma_view = new views::View();

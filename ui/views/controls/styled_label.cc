@@ -13,6 +13,7 @@
 
 #include "base/i18n/rtl.h"
 #include "base/strings/string_util.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/gfx/text_utils.h"
@@ -223,6 +224,15 @@ gfx::Insets StyledLabel::GetInsets() const {
   }
 
   return insets;
+}
+
+void StyledLabel::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  if (text_context_ == style::CONTEXT_DIALOG_TITLE)
+    node_data->role = ax::mojom::Role::kTitleBar;
+  else
+    node_data->role = ax::mojom::Role::kStaticText;
+
+  node_data->SetName(text());
 }
 
 gfx::Size StyledLabel::CalculatePreferredSize() const {

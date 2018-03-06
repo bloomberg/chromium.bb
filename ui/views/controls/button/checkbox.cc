@@ -16,6 +16,7 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_ripple.h"
 #include "ui/views/controls/button/label_button_border.h"
@@ -76,6 +77,7 @@ const char Checkbox::kViewClassName[] = "Checkbox";
 Checkbox::Checkbox(const base::string16& label, bool force_md)
     : LabelButton(NULL, label),
       checked_(false),
+      label_ax_id_(0),
       use_md_(force_md ||
               ui::MaterialDesignController::IsSecondaryUiMaterial()) {
   SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -152,6 +154,18 @@ void Checkbox::SetMultiLine(bool multi_line) {
   label()->SetMultiLine(multi_line);
 }
 
+void Checkbox::SetAssociatedLabel(View* labelling_view) {
+  DCHECK(labelling_view);
+  label_ax_id_ = labelling_view->GetViewAccessibility().GetUniqueId().Get();
+  ui::AXNodeData node_data;
+  labelling_view->GetAccessibleNodeData(&node_data);
+  // TODO(aleventhal) automatically handle setting the name from the related
+  // label in view_accessibility and have it update the name if the text of the
+  // associated label changes.
+  SetAccessibleName(
+      node_data.GetString16Attribute(ax::mojom::StringAttribute::kName));
+}
+
 // TODO(tetsui): Remove this method and |use_md_| when MD for secondary UI
 // becomes default and IsSecondaryUiMaterial() is tautology.
 bool Checkbox::UseMd() const {
@@ -175,6 +189,10 @@ void Checkbox::GetAccessibleNodeData(ui::AXNodeData* node_data) {
     } else {
       node_data->SetDefaultActionVerb(ax::mojom::DefaultActionVerb::kCheck);
     }
+  }
+  if (label_ax_id_) {
+    node_data->AddIntListAttribute(ax::mojom::IntListAttribute::kLabelledbyIds,
+                                   {label_ax_id_});
   }
 }
 
