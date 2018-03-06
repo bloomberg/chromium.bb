@@ -69,7 +69,7 @@ class PLATFORM_EXPORT CPUTimeBudgetPool : public BudgetPool {
   // is throttled. Throttling duration (time until the queue is allowed
   // to run again) is passed as a parameter to callback.
   void SetReportingCallback(
-      base::Callback<void(base::TimeDelta)> reporting_callback);
+      base::RepeatingCallback<void(base::TimeDelta)> reporting_callback);
 
   // BudgetPool implementation:
   void RecordTaskRunTime(TaskQueue* queue,
@@ -122,7 +122,7 @@ class PLATFORM_EXPORT CPUTimeBudgetPool : public BudgetPool {
   base::TimeTicks last_checkpoint_;
   double cpu_percentage_;
 
-  base::Callback<void(base::TimeDelta)> reporting_callback_;
+  base::RepeatingCallback<void(base::TimeDelta)> reporting_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(CPUTimeBudgetPool);
 };

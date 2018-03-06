@@ -35,8 +35,8 @@ void WebThreadImplForWorkerScheduler::Init() {
       base::WaitableEvent::ResetPolicy::AUTOMATIC,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
   thread_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&WebThreadImplForWorkerScheduler::InitOnThread,
-                            base::Unretained(this), &completion));
+      FROM_HERE, base::BindOnce(&WebThreadImplForWorkerScheduler::InitOnThread,
+                                base::Unretained(this), &completion));
   completion.Wait();
 }
 
@@ -49,8 +49,8 @@ WebThreadImplForWorkerScheduler::~WebThreadImplForWorkerScheduler() {
         base::WaitableEvent::InitialState::NOT_SIGNALED);
     thread_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&WebThreadImplForWorkerScheduler::ShutdownOnThread,
-                   base::Unretained(this), &completion));
+        base::BindOnce(&WebThreadImplForWorkerScheduler::ShutdownOnThread,
+                       base::Unretained(this), &completion));
     completion.Wait();
   }
   thread_->Stop();

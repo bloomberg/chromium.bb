@@ -79,7 +79,7 @@ TEST_F(AutoAdvancingVirtualTimeDomainTest, VirtualTimeAdvances) {
 
   base::TimeDelta delay = base::TimeDelta::FromMilliseconds(10);
   bool task_run = false;
-  task_queue_->PostDelayedTask(FROM_HERE, base::Bind(NopTask, &task_run),
+  task_queue_->PostDelayedTask(FROM_HERE, base::BindOnce(NopTask, &task_run),
                                delay);
 
   EXPECT_CALL(mock_observer, OnVirtualTimeAdvanced());
@@ -99,7 +99,7 @@ TEST_F(AutoAdvancingVirtualTimeDomainTest, VirtualTimeDoesNotAdvance) {
 
   base::TimeDelta delay = base::TimeDelta::FromMilliseconds(10);
   bool task_run = false;
-  task_queue_->PostDelayedTask(FROM_HERE, base::Bind(NopTask, &task_run),
+  task_queue_->PostDelayedTask(FROM_HERE, base::BindOnce(NopTask, &task_run),
                                delay);
 
   auto_advancing_time_domain_->SetCanAdvanceVirtualTime(false);
@@ -123,7 +123,7 @@ void RepostingTask(scoped_refptr<TaskQueue> task_queue,
     return;
 
   task_queue->PostTask(
-      FROM_HERE, base::Bind(&RepostingTask, task_queue, max_count, count));
+      FROM_HERE, base::BindOnce(&RepostingTask, task_queue, max_count, count));
 }
 
 void DelayedTask(int* count_in, int* count_out) {
@@ -141,7 +141,8 @@ TEST_F(AutoAdvancingVirtualTimeDomainTest,
   int delayed_task_run_at_count = 0;
   RepostingTask(task_queue_, 1000, &count);
   task_queue_->PostDelayedTask(
-      FROM_HERE, base::Bind(DelayedTask, &count, &delayed_task_run_at_count),
+      FROM_HERE,
+      base::BindOnce(DelayedTask, &count, &delayed_task_run_at_count),
       base::TimeDelta::FromMilliseconds(10));
 
   mock_task_runner_->RunUntilIdle();
@@ -159,7 +160,8 @@ TEST_F(AutoAdvancingVirtualTimeDomainTest,
   int delayed_task_run_at_count = 0;
   RepostingTask(task_queue_, 1000, &count);
   task_queue_->PostDelayedTask(
-      FROM_HERE, base::Bind(DelayedTask, &count, &delayed_task_run_at_count),
+      FROM_HERE,
+      base::BindOnce(DelayedTask, &count, &delayed_task_run_at_count),
       base::TimeDelta::FromMilliseconds(10));
 
   mock_task_runner_->RunUntilIdle();

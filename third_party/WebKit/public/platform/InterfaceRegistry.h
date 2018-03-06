@@ -24,9 +24,10 @@ class SingleThreadTaskRunner;
 
 namespace blink {
 
-using InterfaceFactory = base::Callback<void(mojo::ScopedMessagePipeHandle)>;
+using InterfaceFactory =
+    base::RepeatingCallback<void(mojo::ScopedMessagePipeHandle)>;
 using AssociatedInterfaceFactory =
-    base::Callback<void(mojo::ScopedInterfaceEndpointHandle)>;
+    base::RepeatingCallback<void(mojo::ScopedInterfaceEndpointHandle)>;
 
 class BLINK_PLATFORM_EXPORT InterfaceRegistry {
  public:

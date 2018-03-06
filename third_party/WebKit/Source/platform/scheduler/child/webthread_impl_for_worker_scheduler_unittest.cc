@@ -79,21 +79,22 @@ class WebThreadImplForWorkerSchedulerTest : public ::testing::Test {
   }
 
   void RunOnWorkerThread(const base::Location& from_here,
-                         const base::Closure& task) {
+                         base::OnceClosure task) {
     base::WaitableEvent completion(
         base::WaitableEvent::ResetPolicy::AUTOMATIC,
         base::WaitableEvent::InitialState::NOT_SIGNALED);
     thread_->GetTaskRunner()->PostTask(
         from_here,
-        base::Bind(&WebThreadImplForWorkerSchedulerTest::RunOnWorkerThreadTask,
-                   base::Unretained(this), task, &completion));
+        base::BindOnce(
+            &WebThreadImplForWorkerSchedulerTest::RunOnWorkerThreadTask,
+            base::Unretained(this), std::move(task), &completion));
     completion.Wait();
   }
 
  protected:
-  void RunOnWorkerThreadTask(const base::Closure& task,
+  void RunOnWorkerThreadTask(base::OnceClosure task,
                              base::WaitableEvent* completion) {
-    task.Run();
+    std::move(task).Run();
     completion->Signal();
   }
 
@@ -163,12 +164,12 @@ TEST_F(WebThreadImplForWorkerSchedulerTest, TestTaskObserver) {
   TestObserver observer(&calls);
 
   RunOnWorkerThread(FROM_HERE,
-                    base::Bind(&AddTaskObserver, thread_.get(), &observer));
+                    base::BindOnce(&AddTaskObserver, thread_.get(), &observer));
   PostCrossThreadTask(
       *thread_->GetTaskRunner(), FROM_HERE,
       CrossThreadBind(&RunTestTask, WTF::CrossThreadUnretained(&calls)));
-  RunOnWorkerThread(FROM_HERE,
-                    base::Bind(&RemoveTaskObserver, thread_.get(), &observer));
+  RunOnWorkerThread(
+      FROM_HERE, base::BindOnce(&RemoveTaskObserver, thread_.get(), &observer));
 
   // We need to be careful what we test here.  We want to make sure the
   // observers are un in the expected order before and after the task.
@@ -186,7 +187,8 @@ TEST_F(WebThreadImplForWorkerSchedulerTest, TestShutdown) {
   EXPECT_CALL(task, Run()).Times(0);
   EXPECT_CALL(delayed_task, Run()).Times(0);
 
-  RunOnWorkerThread(FROM_HERE, base::Bind(&ShutdownOnThread, thread_.get()));
+  RunOnWorkerThread(FROM_HERE,
+                    base::BindOnce(&ShutdownOnThread, thread_.get()));
   PostCrossThreadTask(
       *thread_->GetTaskRunner(), FROM_HERE,
       CrossThreadBind(&MockTask::Run, WTF::CrossThreadUnretained(&task)));

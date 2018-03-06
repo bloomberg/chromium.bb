@@ -198,7 +198,7 @@ class PLATFORM_EXPORT TaskQueueThrottler : public TaskQueue::Observer,
                                                    TaskQueue* queue);
 
   TaskQueueMap queue_details_;
-  base::Callback<void(TaskQueue*, base::TimeTicks)>
+  base::RepeatingCallback<void(TaskQueue*, base::TimeTicks)>
       forward_immediate_work_callback_;
   scoped_refptr<TaskQueue> control_task_queue_;
   RendererSchedulerImpl* renderer_scheduler_;  // NOT OWNED

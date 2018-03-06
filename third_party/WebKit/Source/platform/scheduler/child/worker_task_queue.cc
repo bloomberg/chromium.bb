@@ -16,8 +16,8 @@ WorkerTaskQueue::WorkerTaskQueue(std::unique_ptr<internal::TaskQueueImpl> impl,
     : TaskQueue(std::move(impl), spec), worker_scheduler_(worker_scheduler) {
   if (GetTaskQueueImpl()) {
     // TaskQueueImpl may be null for tests.
-    GetTaskQueueImpl()->SetOnTaskCompletedHandler(
-        base::Bind(&WorkerTaskQueue::OnTaskCompleted, base::Unretained(this)));
+    GetTaskQueueImpl()->SetOnTaskCompletedHandler(base::BindRepeating(
+        &WorkerTaskQueue::OnTaskCompleted, base::Unretained(this)));
   }
 }
 

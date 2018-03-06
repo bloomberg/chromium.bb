@@ -59,7 +59,7 @@ WorkerSchedulerImpl::WorkerSchedulerImpl(
       idle_canceled_delayed_task_sweeper_(helper_.get(),
                                           idle_helper_.IdleTaskRunner()),
       load_tracker_(helper_->NowTicks(),
-                    base::Bind(&ReportWorkerTaskLoad),
+                    base::BindRepeating(&ReportWorkerTaskLoad),
                     kUnspecifiedWorkerThreadLoadTrackerReportingInterval),
       throttling_state_(
           proxy ? proxy->throttling_state()

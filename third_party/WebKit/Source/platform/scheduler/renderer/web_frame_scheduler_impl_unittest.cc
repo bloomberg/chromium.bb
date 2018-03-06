@@ -115,10 +115,10 @@ class MockThrottlingObserver final : public WebFrameScheduler::Observer {
 
 void RunRepeatingTask(scoped_refptr<TaskQueue> task_queue, int* run_count);
 
-base::Closure MakeRepeatingTask(scoped_refptr<TaskQueue> task_queue,
-                                int* run_count) {
-  return base::Bind(&RunRepeatingTask, base::Passed(std::move(task_queue)),
-                    base::Unretained(run_count));
+base::OnceClosure MakeRepeatingTask(scoped_refptr<TaskQueue> task_queue,
+                                    int* run_count) {
+  return base::BindOnce(&RunRepeatingTask, std::move(task_queue),
+                        base::Unretained(run_count));
 }
 
 void RunRepeatingTask(scoped_refptr<TaskQueue> task_queue, int* run_count) {
@@ -240,15 +240,15 @@ TEST_F(WebFrameSchedulerImplTest,
 TEST_F(WebFrameSchedulerImplTest, PauseAndResume) {
   int counter = 0;
   LoadingTaskQueue()->PostTask(
-      FROM_HERE, base::Bind(&IncrementCounter, base::Unretained(&counter)));
+      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
   ThrottleableTaskQueue()->PostTask(
-      FROM_HERE, base::Bind(&IncrementCounter, base::Unretained(&counter)));
+      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
   DeferrableTaskQueue()->PostTask(
-      FROM_HERE, base::Bind(&IncrementCounter, base::Unretained(&counter)));
+      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
   PausableTaskQueue()->PostTask(
-      FROM_HERE, base::Bind(&IncrementCounter, base::Unretained(&counter)));
+      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
   UnpausableTaskQueue()->PostTask(
-      FROM_HERE, base::Bind(&IncrementCounter, base::Unretained(&counter)));
+      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
 
   web_frame_scheduler_->SetPaused(true);
 

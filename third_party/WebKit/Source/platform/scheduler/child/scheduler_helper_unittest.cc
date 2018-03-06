@@ -39,10 +39,10 @@ void AppendToVectorReentrantTask(base::SingleThreadTaskRunner* task_runner,
                                  int max_reentrant_count) {
   vector->push_back((*reentrant_count)++);
   if (*reentrant_count < max_reentrant_count) {
-    task_runner->PostTask(
-        FROM_HERE,
-        base::Bind(AppendToVectorReentrantTask, base::Unretained(task_runner),
-                   vector, reentrant_count, max_reentrant_count));
+    task_runner->PostTask(FROM_HERE,
+                          base::BindOnce(AppendToVectorReentrantTask,
+                                         base::Unretained(task_runner), vector,
+                                         reentrant_count, max_reentrant_count));
   }
 }
 
@@ -93,13 +93,13 @@ class SchedulerHelperTest : public ::testing::Test {
 TEST_F(SchedulerHelperTest, TestPostDefaultTask) {
   std::vector<std::string> run_order;
   default_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&AppendToVectorTestTask, &run_order, "D1"));
+      FROM_HERE, base::BindOnce(&AppendToVectorTestTask, &run_order, "D1"));
   default_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&AppendToVectorTestTask, &run_order, "D2"));
+      FROM_HERE, base::BindOnce(&AppendToVectorTestTask, &run_order, "D2"));
   default_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&AppendToVectorTestTask, &run_order, "D3"));
+      FROM_HERE, base::BindOnce(&AppendToVectorTestTask, &run_order, "D3"));
   default_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&AppendToVectorTestTask, &run_order, "D4"));
+      FROM_HERE, base::BindOnce(&AppendToVectorTestTask, &run_order, "D4"));
 
   RunUntilIdle();
   EXPECT_THAT(run_order,
@@ -111,9 +111,9 @@ TEST_F(SchedulerHelperTest, TestRentrantTask) {
   int count = 0;
   std::vector<int> run_order;
   default_task_runner_->PostTask(
-      FROM_HERE, base::Bind(AppendToVectorReentrantTask,
-                            base::RetainedRef(default_task_runner_), &run_order,
-                            &count, 5));
+      FROM_HERE, base::BindOnce(AppendToVectorReentrantTask,
+                                base::RetainedRef(default_task_runner_),
+                                &run_order, &count, 5));
   RunUntilIdle();
 
   EXPECT_THAT(run_order, ::testing::ElementsAre(0, 1, 2, 3, 4));
@@ -129,11 +129,11 @@ TEST_F(SchedulerHelperTest, IsShutdown) {
 TEST_F(SchedulerHelperTest, GetNumberOfPendingTasks) {
   std::vector<std::string> run_order;
   scheduler_helper_->DefaultWorkerTaskQueue()->PostTask(
-      FROM_HERE, base::Bind(&AppendToVectorTestTask, &run_order, "D1"));
+      FROM_HERE, base::BindOnce(&AppendToVectorTestTask, &run_order, "D1"));
   scheduler_helper_->DefaultWorkerTaskQueue()->PostTask(
-      FROM_HERE, base::Bind(&AppendToVectorTestTask, &run_order, "D2"));
+      FROM_HERE, base::BindOnce(&AppendToVectorTestTask, &run_order, "D2"));
   scheduler_helper_->ControlWorkerTaskQueue()->PostTask(
-      FROM_HERE, base::Bind(&AppendToVectorTestTask, &run_order, "C1"));
+      FROM_HERE, base::BindOnce(&AppendToVectorTestTask, &run_order, "C1"));
   EXPECT_EQ(3U, scheduler_helper_->GetNumberOfPendingTasks());
   RunUntilIdle();
   EXPECT_EQ(0U, scheduler_helper_->GetNumberOfPendingTasks());
@@ -153,8 +153,8 @@ TEST_F(SchedulerHelperTest, ObserversNotifiedFor_DefaultTaskRunner) {
   MockTaskObserver observer;
   scheduler_helper_->AddTaskObserver(&observer);
 
-  scheduler_helper_->DefaultWorkerTaskQueue()->PostTask(FROM_HERE,
-                                                        base::Bind(&NopTask));
+  scheduler_helper_->DefaultWorkerTaskQueue()->PostTask(
+      FROM_HERE, base::BindOnce(&NopTask));
 
   EXPECT_CALL(observer, WillProcessTask(_)).Times(1);
   EXPECT_CALL(observer, DidProcessTask(_)).Times(1);
@@ -165,8 +165,8 @@ TEST_F(SchedulerHelperTest, ObserversNotNotifiedFor_ControlTaskQueue) {
   MockTaskObserver observer;
   scheduler_helper_->AddTaskObserver(&observer);
 
-  scheduler_helper_->ControlWorkerTaskQueue()->PostTask(FROM_HERE,
-                                                        base::Bind(&NopTask));
+  scheduler_helper_->ControlWorkerTaskQueue()->PostTask(
+      FROM_HERE, base::BindOnce(&NopTask));
 
   EXPECT_CALL(observer, WillProcessTask(_)).Times(0);
   EXPECT_CALL(observer, DidProcessTask(_)).Times(0);

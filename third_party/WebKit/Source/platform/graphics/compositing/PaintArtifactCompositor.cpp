@@ -193,8 +193,8 @@ PaintArtifactCompositor::ScrollHitTestLayerForPendingLayer(
   // does not scroll.
   scroll_layer->SetBounds(bounds);
   scroll_layer->set_did_scroll_callback(
-      base::Bind(&blink::WebLayerScrollClient::DidScroll,
-                 base::Unretained(&scroll_client_)));
+      base::BindRepeating(&blink::WebLayerScrollClient::DidScroll,
+                          base::Unretained(&scroll_client_)));
   return scroll_layer;
 }
 

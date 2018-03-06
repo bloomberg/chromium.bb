@@ -236,8 +236,8 @@ RendererSchedulerImpl::RendererSchedulerImpl(
       input_task_queue_enabled_voter_(
           input_task_queue_->CreateQueueEnabledVoter()),
       delayed_update_policy_runner_(
-          base::Bind(&RendererSchedulerImpl::UpdatePolicy,
-                     base::Unretained(this)),
+          base::BindRepeating(&RendererSchedulerImpl::UpdatePolicy,
+                              base::Unretained(this)),
           helper_.ControlMainThreadTaskQueue()),
       seqlock_queueing_time_estimator_(
           QueueingTimeEstimator(this, kQueueingTimeWindowDuration, 20)),
@@ -250,9 +250,9 @@ RendererSchedulerImpl::RendererSchedulerImpl(
       weak_factory_(this) {
   task_queue_throttler_.reset(
       new TaskQueueThrottler(this, &tracing_controller_));
-  update_policy_closure_ = base::Bind(&RendererSchedulerImpl::UpdatePolicy,
-                                      weak_factory_.GetWeakPtr());
-  end_renderer_hidden_idle_period_closure_.Reset(base::Bind(
+  update_policy_closure_ = base::BindRepeating(
+      &RendererSchedulerImpl::UpdatePolicy, weak_factory_.GetWeakPtr());
+  end_renderer_hidden_idle_period_closure_.Reset(base::BindRepeating(
       &RendererSchedulerImpl::EndIdlePeriod, weak_factory_.GetWeakPtr()));
 
   // Compositor task queue and default task queue should be managed by
@@ -1267,8 +1267,8 @@ void RendererSchedulerImpl::RunIdleTasksForTesting(
     const base::Closure& callback) {
   main_thread_only().in_idle_period_for_testing = true;
   IdleTaskRunner()->PostIdleTask(
-      FROM_HERE, base::Bind(&RendererSchedulerImpl::EndIdlePeriodForTesting,
-                            weak_factory_.GetWeakPtr(), callback));
+      FROM_HERE, base::BindOnce(&RendererSchedulerImpl::EndIdlePeriodForTesting,
+                                weak_factory_.GetWeakPtr(), callback));
   idle_helper_.EnableLongIdlePeriod();
 }
 

@@ -250,12 +250,12 @@ void TaskQueue::SetObserver(Observer* observer) {
   if (observer) {
     // Observer is guaranteed to outlive TaskQueue and TaskQueueImpl lifecycle
     // is controlled by |this|.
-    impl_->SetOnNextWakeUpChangedCallback(
-        base::Bind(&TaskQueue::Observer::OnQueueNextWakeUpChanged,
-                   base::Unretained(observer), base::Unretained(this)));
+    impl_->SetOnNextWakeUpChangedCallback(base::BindRepeating(
+        &TaskQueue::Observer::OnQueueNextWakeUpChanged,
+        base::Unretained(observer), base::Unretained(this)));
   } else {
     impl_->SetOnNextWakeUpChangedCallback(
-        base::Callback<void(base::TimeTicks)>());
+        base::RepeatingCallback<void(base::TimeTicks)>());
   }
 }
 

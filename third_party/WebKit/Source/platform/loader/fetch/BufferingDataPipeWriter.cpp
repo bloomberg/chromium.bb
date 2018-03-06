@@ -19,10 +19,10 @@ BufferingDataPipeWriter::BufferingDataPipeWriter(
     base::SingleThreadTaskRunner* runner)
     : handle_(std::move(handle)),
       watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL, runner) {
-  watcher_.Watch(
-      handle_.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
-      MOJO_WATCH_CONDITION_SATISFIED,
-      base::Bind(&BufferingDataPipeWriter::OnWritable, base::Unretained(this)));
+  watcher_.Watch(handle_.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
+                 MOJO_WATCH_CONDITION_SATISFIED,
+                 base::BindRepeating(&BufferingDataPipeWriter::OnWritable,
+                                     base::Unretained(this)));
 }
 
 bool BufferingDataPipeWriter::Write(const char* buffer, uint32_t num_bytes) {

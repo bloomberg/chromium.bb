@@ -72,7 +72,7 @@ void CPUTimeBudgetPool::GrantAdditionalBudget(base::TimeTicks now,
 }
 
 void CPUTimeBudgetPool::SetReportingCallback(
-    base::Callback<void(base::TimeDelta)> reporting_callback) {
+    base::RepeatingCallback<void(base::TimeDelta)> reporting_callback) {
   reporting_callback_ = reporting_callback;
 }
 

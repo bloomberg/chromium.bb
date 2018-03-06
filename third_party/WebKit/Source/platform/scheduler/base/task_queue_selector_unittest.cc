@@ -48,7 +48,8 @@ class TaskQueueSelectorForTest : public TaskQueueSelector {
 class TaskQueueSelectorTest : public ::testing::Test {
  public:
   TaskQueueSelectorTest()
-      : test_closure_(base::Bind(&TaskQueueSelectorTest::TestFunction)) {}
+      : test_closure_(
+            base::BindRepeating(&TaskQueueSelectorTest::TestFunction)) {}
   ~TaskQueueSelectorTest() override = default;
 
   TaskQueueSelectorForTest::PrioritizingSelector* prioritizing_selector() {
@@ -133,7 +134,7 @@ class TaskQueueSelectorTest : public ::testing::Test {
   }
 
   const size_t kTaskQueueCount = 5;
-  base::Closure test_closure_;
+  base::RepeatingClosure test_closure_;
   TaskQueueSelectorForTest selector_;
   std::unique_ptr<VirtualTimeDomain> virtual_time_domain_;
   std::vector<std::unique_ptr<TaskQueueImpl>> task_queues_;

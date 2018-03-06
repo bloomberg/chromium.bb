@@ -10,11 +10,11 @@ namespace blink {
 namespace scheduler {
 
 DeadlineTaskRunner::DeadlineTaskRunner(
-    const base::Closure& callback,
+    const base::RepeatingClosure& callback,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : callback_(callback), task_runner_(task_runner) {
-  cancelable_run_internal_.Reset(
-      base::Bind(&DeadlineTaskRunner::RunInternal, base::Unretained(this)));
+  cancelable_run_internal_.Reset(base::BindRepeating(
+      &DeadlineTaskRunner::RunInternal, base::Unretained(this)));
 }
 
 DeadlineTaskRunner::~DeadlineTaskRunner() = default;

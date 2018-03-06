@@ -144,7 +144,8 @@ class PLATFORM_EXPORT TaskQueueImpl {
     TaskQueue::PostedTask task;
   };
 
-  using OnNextWakeUpChangedCallback = base::Callback<void(base::TimeTicks)>;
+  using OnNextWakeUpChangedCallback =
+      base::RepeatingCallback<void(base::TimeTicks)>;
   using OnTaskStartedHandler =
       base::RepeatingCallback<void(const TaskQueue::Task&, base::TimeTicks)>;
   using OnTaskCompletedHandler =

@@ -126,8 +126,9 @@ class TaskQueueManagerPerfTest : public ::testing::Test {
       unsigned int delay =
           num_tasks_to_post_ % 2 ? 1 : (10 + num_tasks_to_post_ % 10);
       queues_[queue]->PostDelayedTask(
-          FROM_HERE, base::Bind(&TaskQueueManagerPerfTest::TestDelayedTask,
-                                base::Unretained(this)),
+          FROM_HERE,
+          base::BindOnce(&TaskQueueManagerPerfTest::TestDelayedTask,
+                         base::Unretained(this)),
           base::TimeDelta::FromMilliseconds(delay));
       num_tasks_in_flight_++;
       num_tasks_to_post_--;
@@ -141,7 +142,8 @@ class TaskQueueManagerPerfTest : public ::testing::Test {
     TestDelayedTask();
   }
 
-  void Benchmark(const std::string& trace, const base::Closure& test_task) {
+  void Benchmark(const std::string& trace,
+                 const base::RepeatingClosure& test_task) {
     base::ThreadTicks start = base::ThreadTicks::Now();
     base::ThreadTicks now;
     unsigned long long num_iterations = 0;
@@ -180,8 +182,9 @@ TEST_F(TaskQueueManagerPerfTest, RunTenThousandDelayedTasks_OneQueue) {
 
   max_tasks_in_flight_ = 200;
   Benchmark("run 10000 delayed tasks with one queue",
-            base::Bind(&TaskQueueManagerPerfTest::ResetAndCallTestDelayedTask,
-                       base::Unretained(this), 10000));
+            base::BindRepeating(
+                &TaskQueueManagerPerfTest::ResetAndCallTestDelayedTask,
+                base::Unretained(this), 10000));
 }
 
 TEST_F(TaskQueueManagerPerfTest, RunTenThousandDelayedTasks_FourQueues) {
@@ -191,8 +194,9 @@ TEST_F(TaskQueueManagerPerfTest, RunTenThousandDelayedTasks_FourQueues) {
 
   max_tasks_in_flight_ = 200;
   Benchmark("run 10000 delayed tasks with four queues",
-            base::Bind(&TaskQueueManagerPerfTest::ResetAndCallTestDelayedTask,
-                       base::Unretained(this), 10000));
+            base::BindRepeating(
+                &TaskQueueManagerPerfTest::ResetAndCallTestDelayedTask,
+                base::Unretained(this), 10000));
 }
 
 TEST_F(TaskQueueManagerPerfTest, RunTenThousandDelayedTasks_EightQueues) {
@@ -202,8 +206,9 @@ TEST_F(TaskQueueManagerPerfTest, RunTenThousandDelayedTasks_EightQueues) {
 
   max_tasks_in_flight_ = 200;
   Benchmark("run 10000 delayed tasks with eight queues",
-            base::Bind(&TaskQueueManagerPerfTest::ResetAndCallTestDelayedTask,
-                       base::Unretained(this), 10000));
+            base::BindRepeating(
+                &TaskQueueManagerPerfTest::ResetAndCallTestDelayedTask,
+                base::Unretained(this), 10000));
 }
 
 TEST_F(TaskQueueManagerPerfTest, RunTenThousandDelayedTasks_ThirtyTwoQueues) {
@@ -213,8 +218,9 @@ TEST_F(TaskQueueManagerPerfTest, RunTenThousandDelayedTasks_ThirtyTwoQueues) {
 
   max_tasks_in_flight_ = 200;
   Benchmark("run 10000 delayed tasks with eight queues",
-            base::Bind(&TaskQueueManagerPerfTest::ResetAndCallTestDelayedTask,
-                       base::Unretained(this), 10000));
+            base::BindRepeating(
+                &TaskQueueManagerPerfTest::ResetAndCallTestDelayedTask,
+                base::Unretained(this), 10000));
 }
 
 // TODO(alexclarke): Add additional tests with different mixes of non-delayed vs

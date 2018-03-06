@@ -21,7 +21,7 @@ namespace scheduler {
 class PLATFORM_EXPORT ThreadLoadTracker {
  public:
   // Callback is called with (current_time, load_level) parameters.
-  using Callback = base::Callback<void(base::TimeTicks, double)>;
+  using Callback = base::RepeatingCallback<void(base::TimeTicks, double)>;
 
   ThreadLoadTracker(base::TimeTicks now,
                     const Callback& callback,
