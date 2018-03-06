@@ -27,7 +27,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "FontMetrics.h"
+#include "platform/fonts/FontMetrics.h"
 
 #include "build/build_config.h"
 #include "platform/fonts/FontPlatformData.h"
