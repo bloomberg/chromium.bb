@@ -197,7 +197,7 @@ int main(int argc, const char* argv[]) {
         llvm::make_unique<PassedToMoveRewriter>(&replacements);
     match_finder.addMatcher(passed_to_move->GetMatcher(), passed_to_move.get());
     rewriter = std::move(passed_to_move);
-  } else if (rewriter_option == "bind_toBind_once") {
+  } else if (rewriter_option == "bind_to_bind_once") {
     auto bind_once = llvm::make_unique<BindOnceRewriter>(&replacements);
     match_finder.addMatcher(bind_once->GetMatcher(), bind_once.get());
     rewriter = std::move(bind_once);
