@@ -4690,6 +4690,21 @@
       },
       {
         "args": [
+          "--enable-features=NetworkService"
+        ],
+        "name": "network_service_components_browsertests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04"
+            }
+          ]
+        },
+        "test": "components_browsertests"
+      },
+      {
+        "args": [
           "--site-per-process"
         ],
         "name": "site_per_process_components_browsertests",
@@ -6181,6 +6196,16 @@
           "shards": 10
         },
         "test": "browser_tests"
+      },
+      {
+        "args": [
+          "--enable-features=NetworkService"
+        ],
+        "name": "network_service_components_browsertests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "components_browsertests"
       },
       {
         "args": [
