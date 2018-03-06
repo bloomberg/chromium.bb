@@ -1186,21 +1186,16 @@ static void set_default_lf_deltas(struct loopfilter *lf) {
 }
 
 void av1_setup_frame_contexts(AV1_COMMON *cm) {
-  int i;
 #if CONFIG_NO_FRAME_CONTEXT_SIGNALING
-  if (cm->frame_type == KEY_FRAME) {
-    // Reset all frame contexts, as all reference frames will be lost.
-    for (i = 0; i < FRAME_CONTEXTS; ++i) cm->frame_contexts[i] = *cm->fc;
-  } else if (frame_is_intra_only(cm) || cm->error_resilient_mode) {
-    // Store the frame context into a special slot (not associated with any
-    // reference buffer), so that we can set up cm->pre_fc correctly later
-    cm->frame_contexts[FRAME_CONTEXT_DEFAULTS] = *cm->fc;
-  }
+  assert(frame_is_intra_only(cm) || cm->error_resilient_mode);
+  // Store the frame context into a special slot (not associated with any
+  // reference buffer), so that we can set up cm->pre_fc correctly later
+  cm->frame_contexts[FRAME_CONTEXT_DEFAULTS] = *cm->fc;
 #else
   if (cm->frame_type == KEY_FRAME || cm->error_resilient_mode ||
       cm->reset_frame_context == RESET_FRAME_CONTEXT_ALL) {
     // Reset all frame contexts.
-    for (i = 0; i < FRAME_CONTEXTS; ++i) cm->frame_contexts[i] = *cm->fc;
+    for (int i = 0; i < FRAME_CONTEXTS; ++i) cm->frame_contexts[i] = *cm->fc;
   } else if (cm->reset_frame_context == RESET_FRAME_CONTEXT_CURRENT) {
     // Reset only the frame context specified in the frame header.
     cm->frame_contexts[cm->frame_context_idx] = *cm->fc;

@@ -2778,7 +2778,12 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 
   if (cm->frame_type == KEY_FRAME) {
     wrap_around_current_video_frame(pbi);
-    pbi->refresh_frame_flags = (1 << REF_FRAMES) - 1;
+#if CONFIG_FWD_KF
+    if (!cm->show_frame)  // unshown keyframe (forward keyframe)
+      pbi->refresh_frame_flags = aom_rb_read_literal(rb, REF_FRAMES);
+    else  // shown keyframe
+#endif    // CONFIG_FWD_KF
+      pbi->refresh_frame_flags = (1 << REF_FRAMES) - 1;
 
     for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
       cm->frame_refs[i].idx = INVALID_IDX;
