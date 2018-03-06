@@ -184,14 +184,7 @@ void vp9_iht8x8_64_add_c(const tran_low_t* input,
                          uint8_t* dest,
                          int stride,
                          int tx_type);
-void vp9_iht8x8_64_add_neon(const tran_low_t* input,
-                            uint8_t* dest,
-                            int stride,
-                            int tx_type);
-RTCD_EXTERN void (*vp9_iht8x8_64_add)(const tran_low_t* input,
-                                      uint8_t* dest,
-                                      int stride,
-                                      int tx_type);
+#define vp9_iht8x8_64_add vp9_iht8x8_64_add_c
 
 void vp9_quantize_fp_c(const tran_low_t* coeff_ptr,
                        intptr_t n_coeffs,
@@ -298,9 +291,6 @@ static void setup_rtcd_internal(void) {
   vp9_iht4x4_16_add = vp9_iht4x4_16_add_c;
   if (flags & HAS_NEON)
     vp9_iht4x4_16_add = vp9_iht4x4_16_add_neon;
-  vp9_iht8x8_64_add = vp9_iht8x8_64_add_c;
-  if (flags & HAS_NEON)
-    vp9_iht8x8_64_add = vp9_iht8x8_64_add_neon;
   vp9_quantize_fp = vp9_quantize_fp_c;
   if (flags & HAS_NEON)
     vp9_quantize_fp = vp9_quantize_fp_neon;

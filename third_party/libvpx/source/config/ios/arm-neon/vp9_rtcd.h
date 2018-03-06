@@ -159,11 +159,7 @@ void vp9_iht8x8_64_add_c(const tran_low_t* input,
                          uint8_t* dest,
                          int stride,
                          int tx_type);
-void vp9_iht8x8_64_add_neon(const tran_low_t* input,
-                            uint8_t* dest,
-                            int stride,
-                            int tx_type);
-#define vp9_iht8x8_64_add vp9_iht8x8_64_add_neon
+#define vp9_iht8x8_64_add vp9_iht8x8_64_add_c
 
 void vp9_quantize_fp_c(const tran_low_t* coeff_ptr,
                        intptr_t n_coeffs,
