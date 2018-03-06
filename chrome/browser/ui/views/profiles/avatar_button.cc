@@ -46,7 +46,9 @@
 
 namespace {
 
+#if !defined(OS_MACOSX)
 constexpr int kGenericAvatarIconSize = 16;
+#endif
 
 // TODO(emx): Calculate width based on caption button [http://crbug.com/716365]
 constexpr int kCondensibleButtonMinWidth = 46;
@@ -74,10 +76,6 @@ std::unique_ptr<views::Border> CreateThemedBorder(
 
   return std::move(border);
 }
-#endif
-
-#if defined(OS_MACOSX)
-constexpr int kHoverCornerRadius = 2;
 #endif
 
 // This class draws the border (and background) of the avatar button for
@@ -276,7 +274,7 @@ AvatarButton::AvatarButton(views::MenuButtonListener* listener,
 AvatarButton::~AvatarButton() {}
 
 void AvatarButton::SetupThemeColorButton() {
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN)
   if (IsCondensible()) {
     // TODO(bsep): This needs to also be called when the Windows accent color
     // updates, but there is currently no signal for that.
@@ -290,7 +288,13 @@ void AvatarButton::SetupThemeColorButton() {
     generic_avatar_ = gfx::CreateVectorIcon(kAccountCircleIcon,
                                             kGenericAvatarIconSize, icon_color);
   }
-#endif  // defined(OS_WIN) || defined(OS_MACOSX)
+#elif defined(OS_MACOSX)
+  const SkColor text_color = color_utils::IsDark(GetThemeProvider()->GetColor(
+                                 ThemeProperties::COLOR_FRAME))
+                                 ? SK_ColorWHITE
+                                 : SK_ColorBLACK;
+  SetEnabledTextColors(text_color);
+#endif
 }
 
 void AvatarButton::OnAvatarButtonPressed(const ui::Event* event) {
@@ -352,13 +356,17 @@ gfx::Size AvatarButton::CalculatePreferredSize() const {
 
 std::unique_ptr<views::InkDropMask> AvatarButton::CreateInkDropMask() const {
 #if defined(OS_MACOSX)
+  // On Mac, this looks and behaves like a regular MD button, so we need a hover
+  // background.
   // TODO (lgrey): Determine and set the correct insets.
+  constexpr int kHoverCornerRadius = 2;
   return std::make_unique<views::RoundRectInkDropMask>(size(), gfx::Insets(),
                                                        kHoverCornerRadius);
-#endif
+#else
   if (button_style_ == AvatarButtonStyle::THEMED)
     return AvatarButtonThemedBorder::CreateInkDropMask(size());
   return MenuButton::CreateInkDropMask();
+#endif
 }
 
 std::unique_ptr<views::InkDropHighlight> AvatarButton::CreateInkDropHighlight()
@@ -374,12 +382,14 @@ std::unique_ptr<views::InkDropHighlight> AvatarButton::CreateInkDropHighlight()
   return ink_drop_highlight;
 }
 
-#if defined(OS_MACOSX)
 SkColor AvatarButton::GetInkDropBaseColor() const {
+#if defined(OS_MACOSX)
   return GetThemeProvider()->GetColor(
       ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
-}
+#else
+  return MenuButton::GetInkDropBaseColor();
 #endif
+}
 
 bool AvatarButton::ShouldEnterPushedState(const ui::Event& event) {
   if (ProfileChooserView::IsShowing())
@@ -515,8 +525,9 @@ bool AvatarButton::ShouldApplyInkDrop() const {
   return true;
 #elif defined(OS_MACOSX)
   return true;
-#endif
+#else
   if (render_native_nav_buttons_)
     return false;
   return IsCondensible();
+#endif
 }
