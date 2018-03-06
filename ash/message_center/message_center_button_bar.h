@@ -10,6 +10,7 @@
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/separator.h"
 #include "ui/views/view.h"
 
 namespace views {
@@ -77,13 +78,13 @@ class MessageCenterButtonBar : public views::View,
     return message_center_;
   }
 
-  // Returns title for state specified by |locked|.
-  base::string16 GetTitle(bool locked) const;
+  // Returns title for state specified by |message_center_visible|.
+  base::string16 GetTitle(bool message_center_visible) const;
 
-  // Updates notification label for state specified by |locked|.
-  void UpdateLabel(bool locked);
+  // Updates notification label for state specified by |message_center_visible|.
+  void UpdateLabel(bool message_center_visible);
 
-  void SetButtonsVisible(bool visible);
+  void SetButtonsVisible(bool locked);
 
   MessageCenterView* message_center_view_;
   message_center::MessageCenter* message_center_;
@@ -92,8 +93,12 @@ class MessageCenterButtonBar : public views::View,
   views::Label* notification_label_;
   views::View* button_container_;
   views::ToggleImageButton* close_all_button_;
-  views::ToggleImageButton* settings_button_;
+  // A view of a separator between |close_all_button_| and |quiet_mode_button_|.
+  views::Separator* separator_1_;
   views::ToggleImageButton* quiet_mode_button_;
+  // A view of a separator between |quiet_mode_button_| and |settings_button_|.
+  views::Separator* separator_2_;
+  views::ToggleImageButton* settings_button_;
   views::ToggleImageButton* collapse_button_;
 
   bool collapse_button_visible_ = false;

@@ -1962,6 +1962,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-system-tray-unified", flag_descriptions::kSystemTrayUnifiedName,
      flag_descriptions::kSystemTrayUnifiedDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kSystemTrayUnified)},
+    {"enable-lock-screen-notification",
+     flag_descriptions::kLockScreenNotificationName,
+     flag_descriptions::kLockScreenNotificationDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kLockScreenNotifications)},
 #endif  // OS_CHROMEOS
     {"enable-message-center-new-style-notification",
      flag_descriptions::kMessageCenterNewStyleNotificationName,

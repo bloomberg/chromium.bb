@@ -1662,6 +1662,9 @@ extern const char kGestureTypingDescription[];
 extern const char kInputViewName[];
 extern const char kInputViewDescription[];
 
+extern const char kLockScreenNotificationName[];
+extern const char kLockScreenNotificationDescription[];
+
 extern const char kMemoryPressureThresholdName[];
 extern const char kMemoryPressureThresholdDescription[];
 extern const char kConservativeThresholds[];
