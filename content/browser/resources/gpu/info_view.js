@@ -113,6 +113,7 @@ cr.define('gpu', function() {
         'rasterization': 'Rasterization',
         'multiple_raster_threads': 'Multiple Raster Threads',
         'native_gpu_memory_buffers': 'Native GpuMemoryBuffers',
+        'surface_synchronization': 'Surface Synchronization',
         'vpx_decode': 'VPx Video Decode',
         'webgl2': 'WebGL2',
         'checker_imaging': 'CheckerImaging',
