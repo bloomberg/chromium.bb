@@ -9012,6 +9012,22 @@ interface XRFrameOfReference : XRCoordinateSystem
     getter bounds
     getter emulatedHeight
     method constructor
+interface XRInputPose
+    attribute @@toStringTag
+    getter emulatedPosition
+    getter gripMatrix
+    getter pointerMatrix
+    method constructor
+interface XRInputSource
+    attribute @@toStringTag
+    getter handedness
+    getter pointerOrigin
+    method constructor
+interface XRInputSourceEvent : Event
+    attribute @@toStringTag
+    getter frame
+    getter inputSource
+    method constructor
 interface XRLayer
     attribute @@toStringTag
     method constructor
@@ -9025,6 +9041,7 @@ interface XRPresentationFrame
     getter views
     method constructor
     method getDevicePose
+    method getInputPose
 interface XRSession : EventTarget
     attribute @@toStringTag
     getter baseLayer
@@ -9040,6 +9057,7 @@ interface XRSession : EventTarget
     method cancelAnimationFrame
     method constructor
     method end
+    method getInputSources
     method requestAnimationFrame
     method requestFrameOfReference
     setter baseLayer

@@ -11,7 +11,7 @@
 <script>
 let fakeDevices = fakeXRDevices();
 
-xr_session_promise_test( (session) =>  {
+xr_session_promise_test( (session, t) =>  {
   // Session must have a baseLayer or else frame requests will be ignored.
   session.baseLayer = new XRWebGLLayer(session, gl);
 
@@ -24,23 +24,27 @@ xr_session_promise_test( (session) =>  {
       function onFrame(time, vrFrame) {
         session.requestAnimationFrame(onFrame);
         if (counter == 0) {
-          // Expecting to not get a pose since none has been supplied
-          assert_equals(vrFrame.getDevicePose(frameOfRef), null);
+          t.step( () => {
+            // Expecting to not get a pose since none has been supplied
+            assert_equals(vrFrame.getDevicePose(frameOfRef), null);
 
-          setPose(expected_pose);
+            setPose(expected_pose);
 
-          // Check that pose does not update pose within the same frame.
-          assert_equals(vrFrame.getDevicePose(frameOfRef), null);
+            // Check that pose does not update pose within the same frame.
+            assert_equals(vrFrame.getDevicePose(frameOfRef), null);
+          });
         } else {
-          // Check that pose was updated.
-          let pose = vrFrame.getDevicePose(frameOfRef);
-          assert_not_equals(pose, null);
+          t.step( () => {
+            // Check that pose was updated.
+            let pose = vrFrame.getDevicePose(frameOfRef);
+            assert_not_equals(pose, null);
 
-          let poseMatrix = pose.poseModelMatrix;
-          assert_not_equals(poseMatrix, null);
+            let poseMatrix = pose.poseModelMatrix;
+            assert_not_equals(poseMatrix, null);
 
-          let expectedMatrix = matrixFrom11Pose(expected_pose);
-          assert_matrices_approx_equal(poseMatrix, expectedMatrix);
+            let expectedMatrix = matrixFrom11Pose(expected_pose);
+            assert_matrices_approx_equal(poseMatrix, expectedMatrix);
+          });
 
           // Finished.
           resolve();
