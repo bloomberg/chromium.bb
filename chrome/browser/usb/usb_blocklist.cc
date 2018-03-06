@@ -57,18 +57,50 @@ bool EntryMatches(Iterator begin,
 
 // This list must be sorted according to CompareEntry.
 const UsbBlocklist::Entry kStaticEntries[] = {
+    {0x096e, 0x0850, kMaxVersion},  // KEY-ID
+    {0x096e, 0x0852, kMaxVersion},  // Feitian
+    {0x096e, 0x0853, kMaxVersion},  // Feitian
+    {0x096e, 0x0854, kMaxVersion},  // Feitian
+    {0x096e, 0x0856, kMaxVersion},  // Feitian
+    {0x096e, 0x0858, kMaxVersion},  // Feitian USB+NFC
+    {0x096e, 0x085a, kMaxVersion},  // Feitian
+    {0x096e, 0x085b, kMaxVersion},  // Feitian
+    {0x096e, 0x0880, kMaxVersion},  // HyperFIDO
+
     // Yubikey devices. https://crbug.com/818807
-    {0x1050, 0x0010, kMaxVersion}, {0x1050, 0x0018, kMaxVersion},
-    {0x1050, 0x0030, kMaxVersion}, {0x1050, 0x0110, kMaxVersion},
-    {0x1050, 0x0111, kMaxVersion}, {0x1050, 0x0112, kMaxVersion},
-    {0x1050, 0x0113, kMaxVersion}, {0x1050, 0x0114, kMaxVersion},
-    {0x1050, 0x0115, kMaxVersion}, {0x1050, 0x0116, kMaxVersion},
-    {0x1050, 0x0120, kMaxVersion}, {0x1050, 0x0200, kMaxVersion},
-    {0x1050, 0x0211, kMaxVersion}, {0x1050, 0x0401, kMaxVersion},
-    {0x1050, 0x0402, kMaxVersion}, {0x1050, 0x0403, kMaxVersion},
-    {0x1050, 0x0404, kMaxVersion}, {0x1050, 0x0405, kMaxVersion},
-    {0x1050, 0x0406, kMaxVersion}, {0x1050, 0x0407, kMaxVersion},
+    {0x1050, 0x0010, kMaxVersion},
+    {0x1050, 0x0018, kMaxVersion},
+    {0x1050, 0x0030, kMaxVersion},
+    {0x1050, 0x0110, kMaxVersion},
+    {0x1050, 0x0111, kMaxVersion},
+    {0x1050, 0x0112, kMaxVersion},
+    {0x1050, 0x0113, kMaxVersion},
+    {0x1050, 0x0114, kMaxVersion},
+    {0x1050, 0x0115, kMaxVersion},
+    {0x1050, 0x0116, kMaxVersion},
+    {0x1050, 0x0120, kMaxVersion},
+    {0x1050, 0x0200, kMaxVersion},
+    {0x1050, 0x0211, kMaxVersion},
+    {0x1050, 0x0401, kMaxVersion},
+    {0x1050, 0x0402, kMaxVersion},
+    {0x1050, 0x0403, kMaxVersion},
+    {0x1050, 0x0404, kMaxVersion},
+    {0x1050, 0x0405, kMaxVersion},
+    {0x1050, 0x0406, kMaxVersion},
+    {0x1050, 0x0407, kMaxVersion},
     {0x1050, 0x0410, kMaxVersion},
+
+    {0x10c4, 0x8acf, kMaxVersion},  // U2F Zero
+    {0x18d1, 0x5026, kMaxVersion},  // Titan
+    {0x1a44, 0x00bb, kMaxVersion},  // VASCO
+    {0x1e0d, 0xf1ae, kMaxVersion},  // Keydo AES
+    {0x1e0d, 0xf1d0, kMaxVersion},  // Neowave Keydo
+    {0x1ea8, 0xf025, kMaxVersion},  // Thetis
+    {0x20a0, 0x4287, kMaxVersion},  // Nitrokey
+    {0x24dc, 0x0101, kMaxVersion},  // JaCarta
+    {0x2581, 0xf1d0, kMaxVersion},  // Happlink
+    {0x2abe, 0x1002, kMaxVersion},  // Bluink
+    {0x2ccf, 0x0880, kMaxVersion},  // Feitian USB, HyperFIDO
 };
 
 }  // namespace
