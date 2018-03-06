@@ -513,13 +513,13 @@ void NetworkConnectionHandlerImpl::VerifyConfiguredAndConnect(
 
     // User must be logged in to connect to a network requiring a certificate.
     if (!logged_in_ || !cert_loader_) {
-      NET_LOG_ERROR("User not logged in", "");
+      NET_LOG(ERROR) << "User not logged in for: " << service_path;
       ErrorCallbackForPendingRequest(service_path, kErrorCertificateRequired);
       return;
     }
     // If certificates have not been loaded yet, queue the connect request.
     if (!certificates_loaded_) {
-      NET_LOG_EVENT("Certificates not loaded", "");
+      NET_LOG(EVENT) << "Certificates not loaded for: " << service_path;
       QueueConnectRequest(service_path);
       return;
     }
@@ -529,6 +529,7 @@ void NetworkConnectionHandlerImpl::VerifyConfiguredAndConnect(
         onc::client_cert::kPattern) {
       if (!ClientCertResolver::ResolveCertificatePatternSync(
               client_cert_type, cert_config_from_policy, &config_properties)) {
+        NET_LOG(ERROR) << "Non matching certificate for: " << service_path;
         ErrorCallbackForPendingRequest(service_path, kErrorCertificateRequired);
         return;
       }
@@ -561,7 +562,7 @@ void NetworkConnectionHandlerImpl::VerifyConfiguredAndConnect(
   }
 
   if (!config_properties.empty()) {
-    NET_LOG_EVENT("Configuring Network", service_path);
+    NET_LOG(EVENT) << "Configuring Network: " << service_path;
     configuration_handler_->SetShillProperties(
         service_path, config_properties,
         NetworkConfigurationObserver::SOURCE_USER_ACTION,

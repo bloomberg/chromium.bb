@@ -294,6 +294,9 @@ void AddErrorLocalizedStrings(content::WebUIDataSource* html_source) {
       {"Error.PolicyControlled", IDS_NETWORK_ERROR_POLICY_CONTROLLED},
       {"networkErrorNoUserCertificate", IDS_NETWORK_ERROR_NO_USER_CERT},
       {"networkErrorUnknown", IDS_NETWORK_ERROR_UNKNOWN},
+      // TODO(stevenjb): Move this id to settings_strings.grdp:
+      {"networkErrorNotHardwareBacked",
+       IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_REQUIRE_HARDWARE_BACKED},
   };
   for (const auto& entry : localized_strings)
     html_source->AddLocalizedString(entry.name, entry.id);
