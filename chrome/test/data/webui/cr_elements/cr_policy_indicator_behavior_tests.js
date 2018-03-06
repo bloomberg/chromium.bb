@@ -55,6 +55,15 @@ suite('CrPolicyIndicatorBehavior', function() {
     assertEquals('extension: Extension name', indicator.indicatorTooltip);
   });
 
+  test('extension indicator without extension name', function() {
+    indicator.indicatorType = CrPolicyIndicatorType.EXTENSION;
+    indicator.indicatorSourceName = '';
+
+    assertTrue(indicator.indicatorVisible);
+    assertEquals('cr:extension', indicator.indicatorIcon);
+    assertEquals('extension', indicator.indicatorTooltip);
+  });
+
   if (cr.isChromeOS) {
     test('primary-user controlled indicator', function() {
       indicator.indicatorType = CrPolicyIndicatorType.PRIMARY_USER;

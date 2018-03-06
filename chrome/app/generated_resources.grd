@@ -6645,6 +6645,9 @@ I don't think this site should be blocked!
         <message name="IDS_CONTROLLED_SETTING_EXTENSION" desc="Text displayed in the controlled settings bubble when a setting's value is enforced by an extension.">
           This setting is enforced by the "<ph name="NAME">$1<ex>Google Cast</ex></ph>" extension.
         </message>
+        <message name="IDS_CONTROLLED_SETTING_EXTENSION_WITHOUT_NAME" desc="Text displayed in the controlled settings bubble when a setting's value is enforced by an extension.">
+          This setting is enforced by an extension.
+        </message>
         <message name="IDS_CONTROLLED_SETTING_RECOMMENDED" desc="Text displayed in the controlled settings bubble when a value is recommended for a setting through policy and the user has not overridden this recommendation.">
           You are following the administrator's recommendation for this setting.
         </message>
