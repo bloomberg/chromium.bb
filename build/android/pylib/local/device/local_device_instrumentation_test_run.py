@@ -321,22 +321,8 @@ class LocalDeviceInstrumentationTestRun(
 
       valgrind_tools.SetChromeTimeoutScale(dev, None)
 
-      if self._test_instance.ui_screenshot_dir:
-        pull_ui_screen_captures(dev)
-
       if self._replace_package_contextmanager:
         self._replace_package_contextmanager.__exit__(*sys.exc_info())
-
-    @trace_event.traced
-    def pull_ui_screen_captures(dev):
-      file_names = dev.ListDirectory(self._ui_capture_dir[dev])
-      target_path = self._test_instance.ui_screenshot_dir
-      if not os.path.exists(target_path):
-        os.makedirs(target_path)
-
-      for file_name in file_names:
-        dev.PullFile(posixpath.join(self._ui_capture_dir[dev], file_name),
-                     target_path)
 
     self._env.parallel_devices.pMap(individual_device_tear_down)
 
@@ -530,12 +516,41 @@ class LocalDeviceInstrumentationTestRun(
           device.RemovePath(render_tests_device_output_dir,
                             recursive=True, force=True)
 
+    def pull_ui_screen_captures():
+      screenshots = []
+      for filename in device.ListDirectory(self._ui_capture_dir[device]):
+        if filename.endswith('.json'):
+          screenshots.append(pull_ui_screenshot(filename))
+      if screenshots:
+        json_archive_name = 'ui_capture_%s_%s.json' % (
+            test_name.replace('#', '.'),
+            time.strftime('%Y%m%dT%H%M%S-UTC', time.gmtime()))
+        with self._env.output_manager.ArchivedTempfile(
+            json_archive_name, 'ui_capture', output_manager.Datatype.JSON
+            ) as json_archive:
+          json.dump(screenshots, json_archive)
+        for result in results:
+          result.SetLink('ui screenshot', json_archive.Link())
+
+    def pull_ui_screenshot(filename):
+      source_dir = self._ui_capture_dir[device]
+      json_path = posixpath.join(source_dir, filename)
+      json_data = json.loads(device.ReadFile(json_path))
+      image_file_path = posixpath.join(source_dir, json_data['location'])
+      with self._env.output_manager.ArchivedTempfile(
+          json_data['location'], 'ui_capture', output_manager.Datatype.IMAGE
+          ) as image_archive:
+        device.PullFile(image_file_path, image_archive.name)
+      json_data['image_link'] = image_archive.Link()
+      return json_data
+
     # While constructing the TestResult objects, we can parallelize several
     # steps that involve ADB. These steps should NOT depend on any info in
     # the results! Things such as whether the test CRASHED have not yet been
     # determined.
     post_test_steps = [restore_flags, restore_timeout_scale,
-                       handle_coverage_data, handle_render_test_data]
+                       handle_coverage_data, handle_render_test_data,
+                       pull_ui_screen_captures]
     if self._env.concurrent_adb:
       post_test_step_thread_group = reraiser_thread.ReraiserThreadGroup(
           reraiser_thread.ReraiserThread(f) for f in post_test_steps)
