@@ -9,7 +9,6 @@
 -BackgroundXhrTest.TlsClientAuth
 -BrowsingDataRemoverBrowserTest.CookieDeletion
 -ChromeSecurityExploitBrowserTest.CreateFilesystemURLInExtensionOrigin
--ChromeSitePerProcessTest.LaunchExternalProtocolFromSubframe
 -DevToolsSanityTest.TestRawHeadersWithRedirectAndHSTS
 -DisabledSignInIsolationBrowserTest.SyntheticTrial
 -DomainReliabilityBrowserTest.Upload
@@ -82,12 +81,15 @@
 -WebViewTests/WebViewTest.DownloadCookieIsolation/1
 -WebViewTests/WebViewTest.DownloadCookieIsolation_CrossSession/0
 -WebViewTests/WebViewTest.DownloadCookieIsolation_CrossSession/1
--WebViewTests/WebViewTest.Shim_TestNavigationToExternalProtocol/0
--WebViewTests/WebViewTest.Shim_TestNavigationToExternalProtocol/1
 -WebViewTests/WebViewTest.StoragePersistence/0
 -WebViewTests/WebViewTest.StoragePersistence/1
 -WebViewTests/WebViewTest.WebViewInBackgroundPage/0
 -WebViewTests/WebViewTest.WebViewInBackgroundPage/1
+
+# http://crbug.com/706030 handle external protocols
+-ChromeSitePerProcessTest.LaunchExternalProtocolFromSubframe
+-WebViewTests/WebViewTest.Shim_TestNavigationToExternalProtocol/0
+-WebViewTests/WebViewTest.Shim_TestNavigationToExternalProtocol/1
 
 # Need support for DoNotTrack:
 # https://crbug.com/808948
