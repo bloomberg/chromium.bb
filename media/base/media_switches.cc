@@ -235,9 +235,6 @@ const base::Feature kComplexityBasedVideoBuffering{
 const base::Feature kMemoryPressureBasedSourceBufferGC{
     "MemoryPressureBasedSourceBufferGC", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// On systems where pepper CDMs are enabled, use mojo CDM instead of PPAPI CDM.
-const base::Feature kMojoCdm{"MojoCdm", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enable MojoVideoDecoder.  Has no effect except on Android currently.
 const base::Feature kMojoVideoDecoder{"MojoVideoDecoder",
                                       base::FEATURE_DISABLED_BY_DEFAULT};

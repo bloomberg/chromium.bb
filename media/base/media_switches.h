@@ -116,7 +116,6 @@ MEDIA_EXPORT extern const base::Feature kMediaCastOverlayButton;
 MEDIA_EXPORT extern const base::Feature kRecordMediaEngagementScores;
 MEDIA_EXPORT extern const base::Feature kMediaEngagementBypassAutoplayPolicies;
 MEDIA_EXPORT extern const base::Feature kMemoryPressureBasedSourceBufferGC;
-MEDIA_EXPORT extern const base::Feature kMojoCdm;
 MEDIA_EXPORT extern const base::Feature kMojoVideoDecoder;
 MEDIA_EXPORT extern const base::Feature kMseBufferByPts;
 MEDIA_EXPORT extern const base::Feature kMseFlacInIsobmff;

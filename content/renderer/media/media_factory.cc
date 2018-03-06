@@ -74,11 +74,6 @@
 #include "media/remoting/renderer_controller.h"         // nogncheck
 #endif
 
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-#include "content/renderer/media/cdm/pepper_cdm_wrapper_impl.h"
-#include "content/renderer/media/cdm/render_cdm_factory.h"
-#endif
-
 namespace {
 class FrameFetchContext : public media::ResourceFetchContext {
  public:
@@ -520,25 +515,12 @@ media::mojom::RemoterFactory* MediaFactory::GetRemoterFactory() {
 #endif
 
 media::CdmFactory* MediaFactory::GetCdmFactory() {
-  blink::WebLocalFrame* web_frame = render_frame_->GetWebFrame();
-  DCHECK(web_frame);
-
   if (cdm_factory_)
     return cdm_factory_.get();
 
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-  static_assert(
-      BUILDFLAG(ENABLE_MOJO_CDM),
-      "Mojo CDM should always be enabled when library CDM is enabled");
-  if (base::FeatureList::IsEnabled(media::kMojoCdm)) {
-    cdm_factory_.reset(new media::MojoCdmFactory(GetMediaInterfaceFactory()));
-  } else {
-    cdm_factory_.reset(new RenderCdmFactory(
-        base::Bind(&PepperCdmWrapperImpl::Create, web_frame)));
-  }
-#elif BUILDFLAG(ENABLE_MOJO_CDM)
+#if BUILDFLAG(ENABLE_MOJO_CDM)
   cdm_factory_.reset(new media::MojoCdmFactory(GetMediaInterfaceFactory()));
-#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
+#endif  // BUILDFLAG(ENABLE_MOJO_CDM)
 
   return cdm_factory_.get();
 }

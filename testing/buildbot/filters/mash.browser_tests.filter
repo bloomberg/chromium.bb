@@ -175,9 +175,8 @@
 # OutputProtection problems:
 # interface_endpoint_client.cc(32) Check failed: !is_valid. The callback passed to OutputProtection::QueryStatus() was never run.
 # binder_registry.h(89) Failed to locate a binder for interface: display::mojom::OutputProtection
--Mojo/ECKEncryptedMediaTest.*
+-ECKEncryptedMediaTest.OutputProtectionTest
 -OutOfProcessPPAPITest.*
--Pepper/ECKEncryptedMediaTest.*
 
 # ash::FocusRingController::SetVisible() from LoginDisplayHostWebUI.
 -MultiAuthEnrollmentScreenTest.*

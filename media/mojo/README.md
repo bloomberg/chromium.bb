@@ -66,7 +66,8 @@ enable_mojo_media = true
 mojo_media_services = ["renderer", "cdm"]
 ```
 Note that you must set `enable_mojo_media` first.  Also, some remote media
-components are also controlled by run time features, e.g. `media::kMojoCdm`.
+components are also controlled by run time features, e.g.
+`media::kMojoVideoDecoder`.
 
 ### Media Mojo Interface Factory
 

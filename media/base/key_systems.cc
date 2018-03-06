@@ -356,9 +356,9 @@ static bool CanBlock(const KeySystemProperties& properties) {
   if (properties.UseAesDecryptor())
     return true;
 
-  // For External Clear Key, it is either implemented as a pepper CDM (Clear Key
-  // CDM), which is covered above, or by using AesDecryptor remotely, e.g. via
-  // MojoCdm. In both cases, we can block. This is only used for testing.
+  // For External Clear Key, it is either implemented as a library CDM (Clear
+  // Key CDM), which is covered above, or by using AesDecryptor remotely, e.g.
+  // via MojoCdm. In both cases, we can block. This is only used for testing.
   if (base::FeatureList::IsEnabled(media::kExternalClearKeyForTesting) &&
       IsExternalClearKey(properties.GetKeySystemName()))
     return true;
