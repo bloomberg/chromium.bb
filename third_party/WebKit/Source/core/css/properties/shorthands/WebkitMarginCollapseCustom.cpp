@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/properties/shorthands/WebkitMarginCollapse.h"
+#include "core/css/properties/shorthands/webkit_margin_collapse.h"
 
 #include "core/css/CSSIdentifierValue.h"
 #include "core/css/parser/CSSParserContext.h"

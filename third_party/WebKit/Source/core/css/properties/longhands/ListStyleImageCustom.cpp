@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/properties/longhands/ListStyleImage.h"
+#include "core/css/properties/longhands/list_style_image.h"
 
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "core/style/ComputedStyle.h"
