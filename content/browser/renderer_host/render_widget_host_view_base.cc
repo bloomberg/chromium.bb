@@ -308,7 +308,6 @@ RenderWidgetHostViewBase::CreateSyntheticGestureTarget() {
 }
 
 void RenderWidgetHostViewBase::FocusedNodeTouched(
-    const gfx::Point& location_dips_screen,
     bool editable) {
   DVLOG(1) << "FocusedNodeTouched: " << editable;
 }

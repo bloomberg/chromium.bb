@@ -148,14 +148,8 @@ namespace {
 // is obscured by the on screen keyboard.
 class WinScreenKeyboardObserver : public ui::OnScreenKeyboardObserver {
  public:
-  WinScreenKeyboardObserver(RenderWidgetHostViewAura* host_view,
-                            const gfx::Point& location_in_screen,
-                            float scale_factor,
-                            aura::Window* window)
-      : host_view_(host_view),
-        location_in_screen_(location_in_screen),
-        device_scale_factor_(scale_factor),
-        window_(window) {
+  WinScreenKeyboardObserver(RenderWidgetHostViewAura* host_view)
+      : host_view_(host_view) {
     host_view_->SetInsets(gfx::Insets());
   }
 
@@ -165,65 +159,18 @@ class WinScreenKeyboardObserver : public ui::OnScreenKeyboardObserver {
   }
 
   // base::win::OnScreenKeyboardObserver overrides.
-  void OnKeyboardVisible(const gfx::Rect& keyboard_rect_pixels) override {
-    gfx::Point location_in_pixels =
-        gfx::ConvertPointToPixel(device_scale_factor_, location_in_screen_);
-
-    // Restore the viewport.
-    host_view_->SetInsets(gfx::Insets());
-
-    if (keyboard_rect_pixels.Contains(location_in_pixels)) {
-      aura::client::ScreenPositionClient* screen_position_client =
-          aura::client::GetScreenPositionClient(window_->GetRootWindow());
-      if (!screen_position_client)
-        return;
-
-      DVLOG(1) << "OSK covering focus point.";
-      gfx::Rect keyboard_rect =
-          gfx::ConvertRectToDIP(device_scale_factor_, keyboard_rect_pixels);
-      gfx::Rect bounds_in_screen = window_->GetBoundsInScreen();
-
-      DCHECK(bounds_in_screen.bottom() > keyboard_rect.y());
-
-      // Set the viewport of the window to be just above the on screen
-      // keyboard.
-      int viewport_bottom = bounds_in_screen.bottom() - keyboard_rect.y();
-
-      // If the viewport is bigger than the view, then we cannot handle it
-      // with the current approach. Moving the window above the OSK is one way.
-      // That for a later patchset.
-      if (viewport_bottom > bounds_in_screen.height())
-        return;
-
-      host_view_->SetInsets(gfx::Insets(0, 0, viewport_bottom, 0));
-
-      gfx::Point origin(location_in_screen_);
-      screen_position_client->ConvertPointFromScreen(window_, &origin);
-
-      // TODO(ekaramad): We should support the case where the focused node is
-      // inside an OOPIF (https://crbug.com/676037).
-      // We want to scroll the node into a rectangle which originates from
-      // the touch point and a small offset (10) in either direction.
-      gfx::Rect node_rect(origin.x(), origin.y(), 10, 10);
-
-      host_view_->ScrollFocusedEditableNodeIntoRect(node_rect);
-    }
+  void OnKeyboardVisible(const gfx::Rect& keyboard_rect) override {
+    host_view_->SetInsets(gfx::Insets(
+        0, 0, keyboard_rect.IsEmpty() ? 0 : keyboard_rect.height(), 0));
   }
 
-  void OnKeyboardHidden(const gfx::Rect& keyboard_rect_pixels) override {
+  void OnKeyboardHidden() override {
     // Restore the viewport.
     host_view_->SetInsets(gfx::Insets());
   }
 
  private:
   RenderWidgetHostViewAura* host_view_;
-  // The location in DIPs where the touch occurred.
-  gfx::Point location_in_screen_;
-  // The current device scale factor.
-  float device_scale_factor_;
-
-  // The content Window.
-  aura::Window* window_;
 
   DISALLOW_COPY_AND_ASSIGN(WinScreenKeyboardObserver);
 };
@@ -811,15 +758,13 @@ void RenderWidgetHostViewAura::SetInsets(const gfx::Insets& insets) {
 }
 
 void RenderWidgetHostViewAura::FocusedNodeTouched(
-    const gfx::Point& location_dips_screen,
     bool editable) {
 #if defined(OS_WIN)
   ui::OnScreenKeyboardDisplayManager* osk_display_manager =
       ui::OnScreenKeyboardDisplayManager::GetInstance();
   DCHECK(osk_display_manager);
   if (editable && host_->GetView() && host_->delegate()) {
-    keyboard_observer_.reset(new WinScreenKeyboardObserver(
-        this, location_dips_screen, device_scale_factor_, window_));
+    keyboard_observer_.reset(new WinScreenKeyboardObserver(this));
     if (!osk_display_manager->DisplayVirtualKeyboard(keyboard_observer_.get()))
       keyboard_observer_.reset(nullptr);
     virtual_keyboard_requested_ = keyboard_observer_.get();

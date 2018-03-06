@@ -191,12 +191,9 @@ class CONTENT_EXPORT RenderWidgetHostView {
       base::OnceCallback<void(const SkBitmap&)> callback) = 0;
 
   // Notification that a node was touched.
-  // The |location_dips_screen| parameter contains the location where the touch
-  // occurred in DIPs in screen coordinates.
   // The |editable| parameter indicates if the node is editable, for e.g.
   // an input field, etc.
-  virtual void FocusedNodeTouched(const gfx::Point& location_dips_screen,
-                                  bool editable) = 0;
+  virtual void FocusedNodeTouched(bool editable) = 0;
 
   // Informs the view that its associated render widget has frames to draw and
   // wants to have BeginFrame messages sent to it.  This should only be called
