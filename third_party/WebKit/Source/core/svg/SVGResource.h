@@ -6,29 +6,30 @@
 #define SVGResource_h
 
 #include "base/macros.h"
-#include "core/dom/IdTargetObserver.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/HashSet.h"
 
 namespace blink {
 
 class Element;
+class IdTargetObserver;
 class LayoutSVGResourceContainer;
 class SVGElement;
 class TreeScope;
 
 // A class tracking a reference to an SVG resource (an element that constitutes
 // a paint server, mask, clip-path, filter et.c.)
-class SVGResource : public IdTargetObserver {
+class SVGResource : public GarbageCollected<SVGResource> {
  public:
   SVGResource(TreeScope&, const AtomicString& id);
-  ~SVGResource() override;
 
   Element* Target() const { return target_; }
   LayoutSVGResourceContainer* ResourceContainer() const;
 
   void AddWatch(SVGElement&);
   void RemoveWatch(SVGElement&);
+
+  void Unregister();
 
   bool IsEmpty() const;
 
@@ -37,10 +38,11 @@ class SVGResource : public IdTargetObserver {
   void NotifyResourceClients();
 
  private:
-  void IdTargetChanged() override;
+  void TargetChanged(const AtomicString& id);
 
   Member<TreeScope> tree_scope_;
   Member<Element> target_;
+  Member<IdTargetObserver> id_observer_;
   HeapHashSet<Member<SVGElement>> pending_clients_;
 
   DISALLOW_COPY_AND_ASSIGN(SVGResource);
