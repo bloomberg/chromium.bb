@@ -78,12 +78,6 @@ TEST_F(SyncableEnumConversionsTest, GetUniquePositionFieldString) {
                          UNIQUE_POSITION_FIELDS_END - 1);
 }
 
-TEST_F(SyncableEnumConversionsTest, GetAttachmentMetadataFieldString) {
-  TestEnumStringFunction(GetAttachmentMetadataFieldString,
-                         ATTACHMENT_METADATA_FIELDS_BEGIN,
-                         ATTACHMENT_METADATA_FIELDS_END - 1);
-}
-
 TEST_F(SyncableEnumConversionsTest, GetBitTempString) {
   TestEnumStringFunction(GetBitTempString, BIT_TEMPS_BEGIN, BIT_TEMPS_END - 1);
 }

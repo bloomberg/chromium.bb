@@ -145,12 +145,6 @@ std::unique_ptr<base::Value> UniquePositionToValue(const UniquePosition& pos) {
   return std::make_unique<base::Value>(pos.ToDebugString());
 }
 
-// TODO(crbug.com/758319): Remove this along with the attachment metadata
-// columns in directory_backing_store.cc.
-std::unique_ptr<base::Value> AttachmentMetadataToValue(const std::string& a) {
-  return std::make_unique<base::Value>(a);
-}
-
 // Estimates memory usage of ProtoValuePtr<T> arrays where consecutive
 // elements can share the same value.
 template <class T, size_t N>
@@ -216,13 +210,6 @@ std::unique_ptr<base::DictionaryValue> EntryKernel::ToValue(
   SetFieldValues(*this, kernel_info.get(), &GetUniquePositionFieldString,
                  &UniquePositionToValue, UNIQUE_POSITION_FIELDS_BEGIN,
                  UNIQUE_POSITION_FIELDS_END - 1);
-
-  // AttachmentMetadata fields
-  // TODO(crbug.com/758319): Remove this along with the attachment metadata
-  // columns in directory_backing_store.cc.
-  SetFieldValues(*this, kernel_info.get(), &GetAttachmentMetadataFieldString,
-                 &AttachmentMetadataToValue, ATTACHMENT_METADATA_FIELDS_BEGIN,
-                 ATTACHMENT_METADATA_FIELDS_END - 1);
 
   // Bit temps.
   SetFieldValues(*this, kernel_info.get(), &GetBitTempString, &BooleanToValue,
@@ -293,12 +280,6 @@ std::ostream& operator<<(std::ostream& os, const EntryKernel& entry_kernel) {
     os << g_metas_columns[i].name << ": "
        << kernel->ref(static_cast<UniquePositionField>(i)).ToDebugString()
        << ", ";
-  }
-  // TODO(crbug.com/758319): Remove this along with the attachment metadata
-  // columns in directory_backing_store.cc.
-  for (; i < ATTACHMENT_METADATA_FIELDS_END; ++i) {
-    os << g_metas_columns[i].name << ": "
-       << kernel->ref(static_cast<AttachmentMetadataField>(i)) << ", ";
   }
   os << "TempFlags: ";
   for (; i < BIT_TEMPS_END; ++i) {

@@ -160,23 +160,14 @@ enum UniquePositionField {
 
 enum {
   UNIQUE_POSITION_FIELDS_COUNT =
-      UNIQUE_POSITION_FIELDS_END - UNIQUE_POSITION_FIELDS_BEGIN,
-  ATTACHMENT_METADATA_FIELDS_BEGIN = UNIQUE_POSITION_FIELDS_END
-};
-
-// TODO(crbug.com/758319): Remove this along with the attachment metadata
-// columns in directory_backing_store.cc.
-enum AttachmentMetadataField {
-  ATTACHMENT_METADATA = ATTACHMENT_METADATA_FIELDS_BEGIN,
-  SERVER_ATTACHMENT_METADATA,
-  ATTACHMENT_METADATA_FIELDS_END
+      UNIQUE_POSITION_FIELDS_END - UNIQUE_POSITION_FIELDS_BEGIN
 };
 
 enum {
   // If FIELD_COUNT is changed then g_metas_columns must be updated.
-  FIELD_COUNT = ATTACHMENT_METADATA_FIELDS_END - BEGIN_FIELDS,
+  FIELD_COUNT = UNIQUE_POSITION_FIELDS_END - BEGIN_FIELDS,
   // Past this point we have temporaries, stored in memory only.
-  BEGIN_TEMPS = ATTACHMENT_METADATA_FIELDS_END,
+  BEGIN_TEMPS = UNIQUE_POSITION_FIELDS_END,
   BIT_TEMPS_BEGIN = BEGIN_TEMPS,
 };
 
@@ -312,11 +303,6 @@ struct EntryKernel {
   }
   inline const UniquePosition& ref(UniquePositionField field) const {
     return unique_position_fields[field - UNIQUE_POSITION_FIELDS_BEGIN];
-  }
-  // TODO(crbug.com/758319): Remove this along with the attachment metadata
-  // columns in directory_backing_store.cc.
-  inline std::string ref(AttachmentMetadataField field) const {
-    return std::string();
   }
   inline bool ref(BitTemp field) const {
     return bit_temps[field - BIT_TEMPS_BEGIN];
