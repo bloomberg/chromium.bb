@@ -76,7 +76,6 @@
 
 - (void)setScrollProgressForTabletOmnibox:(CGFloat)progress {
   [super setScrollProgressForTabletOmnibox:progress];
-  DCHECK(IsIPadIdiom());
   self.view.locationBarBottomConstraint.constant =
       -kLocationBarVerticalMargin * progress;
   self.view.locationBarContainer.alpha = progress;

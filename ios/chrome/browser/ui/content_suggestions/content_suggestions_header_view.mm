@@ -14,13 +14,22 @@
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_configuration.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_constants.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_snapshot_providing.h"
+#import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
+#import "ui/gfx/ios/NSString+CrStringDrawing.h"
 #import "ui/gfx/ios/uikit_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+namespace {
+
+// Left margin for search icon.
+const CGFloat kSearchIconLeftMargin = 9;
+
+}  // namespace
 
 @interface ContentSuggestionsHeaderView ()<ToolbarSnapshotProviding>
 
@@ -82,16 +91,17 @@
   UIView* backgroundContainer = [[UIView alloc] init];
   backgroundContainer.userInteractionEnabled = NO;
   backgroundContainer.backgroundColor =
-      [UIColor colorWithWhite:0 alpha:kAdaptiveLocationBarBackgroundAlpha];
+      UIColorFromRGB(content_suggestions::kSearchFieldBackgroundColor);
   backgroundContainer.layer.cornerRadius = kAdaptiveLocationBarCornerRadius;
-  [searchField addSubview:backgroundContainer];
+  [searchField insertSubview:backgroundContainer atIndex:1];
+
   backgroundContainer.translatesAutoresizingMaskIntoConstraints = NO;
   self.backgroundLeadingConstraint = [backgroundContainer.leadingAnchor
       constraintEqualToAnchor:searchField.leadingAnchor];
   self.backgroundTrailingConstraint = [backgroundContainer.trailingAnchor
       constraintEqualToAnchor:searchField.trailingAnchor];
-  self.backgroundHeightConstraint =
-      [backgroundContainer.heightAnchor constraintEqualToConstant:0];
+  self.backgroundHeightConstraint = [backgroundContainer.heightAnchor
+      constraintEqualToConstant:content_suggestions::kSearchFieldHeight];
   [NSLayoutConstraint activateConstraints:@[
     [backgroundContainer.centerYAnchor
         constraintEqualToAnchor:searchField.centerYAnchor],
@@ -100,7 +110,17 @@
     self.backgroundHeightConstraint,
   ]];
 
-  // TODO(crbug.com/805644) Update fake omnibox theme.
+  UIImage* search_icon = [UIImage imageNamed:@"ntp_search_icon"];
+  UIImageView* search_view = [[UIImageView alloc] initWithImage:search_icon];
+  [searchField addSubview:search_view];
+  search_view.translatesAutoresizingMaskIntoConstraints = NO;
+  [NSLayoutConstraint activateConstraints:@[
+    [search_view.centerYAnchor
+        constraintEqualToAnchor:backgroundContainer.centerYAnchor],
+    [search_view.leadingAnchor
+        constraintEqualToAnchor:backgroundContainer.leadingAnchor
+                       constant:kSearchIconLeftMargin],
+  ]];
 }
 
 - (CGFloat)searchFieldProgressForOffset:(CGFloat)offset {
@@ -121,6 +141,8 @@
 - (void)updateSearchFieldWidth:(NSLayoutConstraint*)widthConstraint
                         height:(NSLayoutConstraint*)heightConstraint
                      topMargin:(NSLayoutConstraint*)topMarginConstraint
+                     hintLabel:(UILabel*)hintLabel
+                hintLabelWidth:(NSLayoutConstraint*)hintLabelWidthConstraint
             subviewConstraints:(NSArray*)constraints
                      forOffset:(CGFloat)offset
                    screenWidth:(CGFloat)screenWidth
@@ -130,22 +152,26 @@
   if (screenWidth == 0 || contentWidth == 0)
     return;
 
-  CGFloat percent = [self searchFieldProgressForOffset:offset];
-
-  if (self.cr_widthSizeClass == REGULAR && self.cr_heightSizeClass == REGULAR) {
-    self.alpha = 1 - percent;
-    return;
-  }
-
   CGFloat searchFieldNormalWidth =
       content_suggestions::searchFieldWidth(contentWidth);
+
+  CGFloat percent = [self searchFieldProgressForOffset:offset];
+  if (self.cr_widthSizeClass == REGULAR && self.cr_heightSizeClass == REGULAR) {
+    self.alpha = 1 - percent;
+    widthConstraint.constant = searchFieldNormalWidth;
+    hintLabelWidthConstraint.active = NO;
+    return;
+  } else {
+    hintLabelWidthConstraint.active = YES;
+    self.alpha = 1;
+  }
 
   // Calculate the amount to grow the width and height of searchField so that
   // its frame covers the entire toolbar area.
   CGFloat maxXInset =
       ui::AlignValueToUpperPixel((searchFieldNormalWidth - screenWidth) / 2);
   CGFloat maxHeightDiff =
-      ntp_header::kToolbarHeight - content_suggestions::kSearchFieldHeight;
+      ntp_header::ToolbarHeight() - content_suggestions::kSearchFieldHeight;
 
   widthConstraint.constant = searchFieldNormalWidth - 2 * maxXInset * percent;
   topMarginConstraint.constant = -content_suggestions::searchFieldTopMargin() -
@@ -157,21 +183,28 @@
   // it's where the focused adapative toolbar focuses.
   self.backgroundLeadingConstraint.constant =
       (safeAreaInsets.left + kExpandedLocationBarHorizontalMargin) * percent;
-  // TODO(crbug.com/805636) Placeholder for specifications. For now using hard
-  // coded size of cancel button of 64pt.
-  CGFloat kCancelButtonWidth = 64;
   self.backgroundTrailingConstraint.constant =
-      -(safeAreaInsets.right + kExpandedLocationBarHorizontalMargin +
-        kCancelButtonWidth) *
-      percent;
-  // TODO(crbug.com/805636) Placeholder for specifications. For now using hard
-  // coded height of location bar, which is 42 or
-  // kToolbarHeight - 2 * kLocationBarVerticalMargin
-  CGFloat kLocationBarHeight = 42;
+      -(safeAreaInsets.right + kExpandedLocationBarHorizontalMargin) * percent;
+  // TODO(crbug.com/805645) This should take into account the actual location
+  // bar height in the toolbar. Update this once that's been updated for the
+  // refresh and remove |kLocationBarHeight|.
+  CGFloat kLocationBarHeight = 38;
   CGFloat minHeightDiff =
       kLocationBarHeight - content_suggestions::kSearchFieldHeight;
   self.backgroundHeightConstraint.constant =
       content_suggestions::kSearchFieldHeight + minHeightDiff * percent;
+
+  // TODO(crbug.com/805645) This should take into account the actual label width
+  // of the toolbar location omnibox box hint text. Update this once that's been
+  // updated for the refresh and remove |kHintShrinkWidth|.
+  CGFloat kHintShrinkWidth = 30;
+  CGFloat hintWidth =
+      [hintLabel.text
+          cr_boundingSizeWithSize:CGSizeMake(widthConstraint.constant, INFINITY)
+                             font:hintLabel.font]
+          .width;
+  hintLabelWidthConstraint.constant = hintWidth - kHintShrinkWidth * percent;
+  hintLabelWidthConstraint.active = YES;
 
   // Adjust the position of the search field's subviews by adjusting their
   // constraint constant value.

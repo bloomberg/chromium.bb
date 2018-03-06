@@ -11,6 +11,8 @@ namespace content_suggestions {
 
 extern const CGFloat kSearchFieldHeight;
 
+extern const int kSearchFieldBackgroundColor;
+
 // Returns the maximum number of tiles fitting in |availableWidth|, limited to
 // 4.
 NSUInteger numberOfTilesForWidth(CGFloat availableWidth);

@@ -31,14 +31,26 @@ const CGFloat kIconSizeLegacy = 48;
   self = [super initWithFrame:frame];
   if (self) {
     _titleLabel = [[UILabel alloc] init];
-    _titleLabel.textColor = [UIColor colorWithWhite:kLabelTextColor alpha:1.0];
-    _titleLabel.font = [MDCTypography captionFont];
+    if (IsUIRefreshPhase1Enabled()) {
+      _titleLabel.textColor = [UIColor colorWithWhite:0 alpha:kTitleAlpha];
+      _titleLabel.font =
+          [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
+    } else {
+      _titleLabel.textColor =
+          [UIColor colorWithWhite:kLabelTextColor alpha:1.0];
+      _titleLabel.font = [MDCTypography captionFont];
+    }
     _titleLabel.textAlignment = NSTextAlignmentCenter;
     _titleLabel.preferredMaxLayoutWidth = [[self class] defaultSize].width;
     _titleLabel.numberOfLines = kLabelNumLines;
 
     _faviconView = [[FaviconViewNew alloc] init];
-    _faviconView.font = [MDCTypography headlineFont];
+    if (IsUIRefreshPhase1Enabled()) {
+      _faviconView.font =
+          [UIFont preferredFontForTextStyle:UIFontTextStyleTitle2];
+    } else {
+      _faviconView.font = [MDCTypography headlineFont];
+    }
 
     _titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
     _faviconView.translatesAutoresizingMaskIntoConstraints = NO;
