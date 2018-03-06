@@ -59,26 +59,30 @@ class CC_PAINT_EXPORT DisplayItemList
 
   void Raster(SkCanvas* canvas, ImageProvider* image_provider = nullptr) const;
 
-  // TODO(vmpstr): This is only used to keep track of debugging info, so we can
-  // probably remove it? But it would be nice to delimit painting in a block
-  // somehow (RAII object maybe).
   void StartPaint() {
-    DCHECK(!in_painting_);
-    in_painting_ = true;
+#if DCHECK_IS_ON()
+    DCHECK(!IsPainting());
+    current_range_start_ = paint_op_buffer_.size();
+#endif
   }
 
   // Push functions construct a new op on the paint op buffer, while maintaining
   // bookkeeping information. Must be called after invoking StartPaint().
   template <typename T, typename... Args>
   void push(Args&&... args) {
-    DCHECK(in_painting_);
+#if DCHECK_IS_ON()
+    DCHECK(IsPainting());
+#endif
     if (usage_hint_ == kTopLevelDisplayItemList)
       offsets_.push_back(paint_op_buffer_.next_op_offset());
     paint_op_buffer_.push<T>(std::forward<Args>(args)...);
   }
 
   void EndPaintOfUnpaired(const gfx::Rect& visual_rect) {
-    in_painting_ = false;
+#if DCHECK_IS_ON()
+    DCHECK(IsPainting());
+    current_range_start_ = kNotPainting;
+#endif
     if (usage_hint_ == kToBeReleasedAsPaintOpBuffer)
       return;
 
@@ -88,26 +92,32 @@ class CC_PAINT_EXPORT DisplayItemList
   }
 
   void EndPaintOfPairedBegin(const gfx::Rect& visual_rect = gfx::Rect()) {
-    in_painting_ = false;
+#if DCHECK_IS_ON()
+    DCHECK(IsPainting());
+    DCHECK_LT(current_range_start_, paint_op_buffer_.size());
+    current_range_start_ = kNotPainting;
+#endif
     if (usage_hint_ == kToBeReleasedAsPaintOpBuffer)
       return;
-    DCHECK_NE(visual_rects_.size(), paint_op_buffer_.size());
+
+    DCHECK_LT(visual_rects_.size(), paint_op_buffer_.size());
     size_t count = paint_op_buffer_.size() - visual_rects_.size();
     for (size_t i = 0; i < count; ++i)
       visual_rects_.push_back(visual_rect);
     begin_paired_indices_.push_back(
         std::make_pair(visual_rects_.size() - 1, count));
-
-    in_paired_begin_count_++;
   }
 
   void EndPaintOfPairedEnd() {
-    in_painting_ = false;
+#if DCHECK_IS_ON()
+    DCHECK(IsPainting());
+    DCHECK_LT(current_range_start_, paint_op_buffer_.size());
+    current_range_start_ = kNotPainting;
+#endif
     if (usage_hint_ == kToBeReleasedAsPaintOpBuffer)
       return;
-    DCHECK_NE(current_range_start_, paint_op_buffer_.size());
-    DCHECK(in_paired_begin_count_);
 
+    DCHECK(begin_paired_indices_.size());
     size_t last_begin_index = begin_paired_indices_.back().first;
     size_t last_begin_count = begin_paired_indices_.back().second;
     DCHECK_GT(last_begin_count, 0u);
@@ -131,8 +141,6 @@ class CC_PAINT_EXPORT DisplayItemList
     // The block that ended needs to be included in the bounds of the enclosing
     // block.
     GrowCurrentBeginItemVisualRect(visual_rect);
-
-    in_paired_begin_count_--;
   }
 
   // Called after all items are appended, to process the items.
@@ -183,7 +191,11 @@ class CC_PAINT_EXPORT DisplayItemList
 
   // If we're currently within a paired display item block, unions the
   // given visual rect with the begin display item's visual rect.
-  void GrowCurrentBeginItemVisualRect(const gfx::Rect& visual_rect);
+  void GrowCurrentBeginItemVisualRect(const gfx::Rect& visual_rect) {
+    DCHECK_EQ(usage_hint_, kTopLevelDisplayItemList);
+    if (!begin_paired_indices_.empty())
+      visual_rects_[begin_paired_indices_.back().first].Union(visual_rect);
+  }
 
   // RTree stores indices into the paint op buffer.
   // TODO(vmpstr): Update the rtree to store offsets instead.
@@ -202,15 +214,14 @@ class CC_PAINT_EXPORT DisplayItemList
   // counts refer to the number of visual rects in that begin sequence that end
   // with the index.
   std::vector<std::pair<size_t, size_t>> begin_paired_indices_;
+
+#if DCHECK_IS_ON()
   // While recording a range of ops, this is the position in the PaintOpBuffer
   // where the recording started.
-  size_t current_range_start_ = 0;
-  // For debugging, tracks the number of currently nested visual rects being
-  // added.
-  int in_paired_begin_count_ = 0;
-  // For debugging, tracks if we're painting a visual rect range, to prevent
-  // nesting.
-  bool in_painting_ = false;
+  bool IsPainting() const { return current_range_start_ != kNotPainting; }
+  const size_t kNotPainting = static_cast<size_t>(-1);
+  size_t current_range_start_ = kNotPainting;
+#endif
 
   UsageHint usage_hint_;
 

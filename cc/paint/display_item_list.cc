@@ -56,21 +56,16 @@ void DisplayItemList::Raster(SkCanvas* canvas,
   paint_op_buffer_.Playback(canvas, PlaybackParams(image_provider), &offsets);
 }
 
-void DisplayItemList::GrowCurrentBeginItemVisualRect(
-    const gfx::Rect& visual_rect) {
-  DCHECK(usage_hint_ == kTopLevelDisplayItemList);
-  if (!begin_paired_indices_.empty())
-    visual_rects_[begin_paired_indices_.back().first].Union(visual_rect);
-}
-
 void DisplayItemList::Finalize() {
   TRACE_EVENT0("cc", "DisplayItemList::Finalize");
+#if DCHECK_IS_ON()
   // If this fails a call to StartPaint() was not ended.
-  DCHECK(!in_painting_);
+  DCHECK(!IsPainting());
   // If this fails we had more calls to EndPaintOfPairedBegin() than
   // to EndPaintOfPairedEnd().
-  DCHECK_EQ(0, in_paired_begin_count_);
+  DCHECK(begin_paired_indices_.empty());
   DCHECK_EQ(visual_rects_.size(), offsets_.size());
+#endif
 
   if (usage_hint_ == kTopLevelDisplayItemList) {
     rtree_.Build(visual_rects_,
@@ -164,8 +159,10 @@ void DisplayItemList::GenerateDiscardableImagesMetadata() {
 }
 
 void DisplayItemList::Reset() {
-  DCHECK(!in_painting_);
-  DCHECK_EQ(0, in_paired_begin_count_);
+#if DCHECK_IS_ON()
+  DCHECK(!IsPainting());
+  DCHECK(begin_paired_indices_.empty());
+#endif
 
   rtree_.Reset();
   image_map_.Reset();
@@ -176,9 +173,6 @@ void DisplayItemList::Reset() {
   offsets_.shrink_to_fit();
   begin_paired_indices_.clear();
   begin_paired_indices_.shrink_to_fit();
-  current_range_start_ = 0;
-  in_paired_begin_count_ = 0;
-  in_painting_ = false;
 }
 
 sk_sp<PaintRecord> DisplayItemList::ReleaseAsRecord() {
