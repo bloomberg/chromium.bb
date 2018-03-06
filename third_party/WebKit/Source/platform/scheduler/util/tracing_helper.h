@@ -155,7 +155,7 @@ class TraceableState : public TraceableVariable {
 
     // Trace viewer logic relies on subslice starting at the exact same time
     // as the async event.
-    base::TimeTicks now = base::TimeTicks::Now();
+    base::TimeTicks now = TRACE_TIME_TICKS_NOW();
     TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP0(category, name_, object_, now);
     TRACE_EVENT_ASYNC_STEP_INTO_WITH_TIMESTAMP0(category, name_, object_,
                                                 state_str, now);

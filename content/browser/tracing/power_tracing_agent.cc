@@ -158,7 +158,7 @@ void PowerTracingAgent::RequestClockSyncMarkerOnIOThread(
   }
 
   request_clock_sync_marker_callback_ = callback;
-  request_clock_sync_marker_start_time_ = base::TimeTicks::Now();
+  request_clock_sync_marker_start_time_ = TRACE_TIME_TICKS_NOW();
   battor_agent_->RecordClockSyncMarker(sync_id);
 }
 
@@ -167,7 +167,7 @@ void PowerTracingAgent::OnRecordClockSyncMarkerComplete(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   base::TimeTicks issue_start_ts = request_clock_sync_marker_start_time_;
-  base::TimeTicks issue_end_ts = base::TimeTicks::Now();
+  base::TimeTicks issue_end_ts = TRACE_TIME_TICKS_NOW();
 
   if (error != battor::BATTOR_ERROR_NONE)
     issue_start_ts = issue_end_ts = base::TimeTicks();

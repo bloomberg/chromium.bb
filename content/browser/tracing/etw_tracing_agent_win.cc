@@ -166,8 +166,8 @@ void EtwTracingAgent::ProcessEvent(EVENT_TRACE* event) {
 
 void EtwTracingAgent::AddSyncEventToBuffer() {
   // Sync the clocks.
-  base::Time walltime = base::Time::NowFromSystemTime();
-  base::TimeTicks now = base::TimeTicks::Now();
+  base::Time walltime = base::subtle::TimeNowFromSystemTimeIgnoringOverride();
+  base::TimeTicks now = TRACE_TIME_TICKS_NOW();
 
   LARGE_INTEGER walltime_in_us;
   walltime_in_us.QuadPart = walltime.ToInternalValue();

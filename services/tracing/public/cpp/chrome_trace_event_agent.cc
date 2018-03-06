@@ -65,7 +65,7 @@ void ChromeTraceEventAgent::StartTracing(const std::string& config,
   // NaCl and system times are offset by a bit, so subtract some time from
   // the captured timestamps. The value might be off by a bit due to messaging
   // latency.
-  base::TimeDelta time_offset = base::TimeTicks::Now() - coordinator_time;
+  base::TimeDelta time_offset = TRACE_TIME_TICKS_NOW() - coordinator_time;
   TraceLog::GetInstance()->SetTimeOffset(time_offset);
 #endif
   enabled_tracing_modes_ = base::trace_event::TraceLog::RECORDING_MODE;

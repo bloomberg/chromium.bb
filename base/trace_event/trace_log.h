@@ -17,6 +17,7 @@
 #include "base/containers/stack.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/time/time_override.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "base/trace_event/trace_config.h"
 #include "base/trace_event/trace_event_impl.h"
@@ -431,7 +432,10 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
   }
   void UseNextTraceBuffer();
 
-  TimeTicks OffsetNow() const { return OffsetTimestamp(TimeTicks::Now()); }
+  TimeTicks OffsetNow() const {
+    // This should be TRACE_TIME_TICKS_NOW but include order makes that hard.
+    return OffsetTimestamp(base::subtle::TimeTicksNowIgnoringOverride());
+  }
   TimeTicks OffsetTimestamp(const TimeTicks& timestamp) const {
     return timestamp - time_offset_;
   }
