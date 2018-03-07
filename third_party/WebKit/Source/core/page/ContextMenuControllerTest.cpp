@@ -16,9 +16,16 @@
 #include "public/web/WebContextMenuData.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::testing::Return;
+
 namespace blink {
 
 namespace {
+
+class MockWebMediaPlayerForContextMenu : public EmptyWebMediaPlayer {
+ public:
+  MOCK_CONST_METHOD0(HasVideo, bool());
+};
 
 class TestWebFrameClientImpl : public FrameTestHelpers::TestWebFrameClient {
  public:
@@ -32,7 +39,7 @@ class TestWebFrameClientImpl : public FrameTestHelpers::TestWebFrameClient {
                                     WebContentDecryptionModule*,
                                     const WebString& sink_id,
                                     WebLayerTreeView*) {
-    return new EmptyWebMediaPlayer();
+    return new MockWebMediaPlayerForContextMenu();
   }
 
   const WebContextMenuData& GetContextMenuData() const {
@@ -85,11 +92,19 @@ TEST_F(ContextMenuControllerTest, VideoNotLoaded) {
   ContextMenu context_menu;
   const char video_url[] = "https://example.com/foo.webm";
 
+  // Make sure Picture-in-Picture is enabled.
+  GetDocument()->GetSettings()->SetPictureInPictureEnabled(true);
+
   // Setup video element.
   Persistent<HTMLVideoElement> video = HTMLVideoElement::Create(*GetDocument());
   video->SetSrc(video_url);
   GetDocument()->body()->AppendChild(video);
   testing::RunPendingTasks();
+
+  EXPECT_CALL(*static_cast<MockWebMediaPlayerForContextMenu*>(
+                  video->GetWebMediaPlayer()),
+              HasVideo())
+      .WillRepeatedly(Return(false));
 
   // Simulate a hit test result.
   hit_test_result.SetInnerNode(video);
@@ -116,12 +131,123 @@ TEST_F(ContextMenuControllerTest, VideoNotLoaded) {
           {WebContextMenuData::kMediaControls, false},
           {WebContextMenuData::kMediaCanPrint, false},
           {WebContextMenuData::kMediaCanRotate, false},
+          {WebContextMenuData::kMediaCanPictureInPicture, false},
       };
 
   for (const auto& expected_media_flag : expected_media_flags) {
     EXPECT_EQ(expected_media_flag.second,
               !!(context_menu_data.media_flags & expected_media_flag.first))
-        << "Flag " << expected_media_flag.first;
+        << "Flag 0x" << std::hex << expected_media_flag.first;
+  }
+}
+
+TEST_F(ContextMenuControllerTest, PictureInPictureEnabledVideoLoaded) {
+  // Make sure Picture-in-Picture is enabled.
+  GetDocument()->GetSettings()->SetPictureInPictureEnabled(true);
+
+  ContextMenuAllowedScope context_menu_allowed_scope;
+  HitTestResult hit_test_result;
+  ContextMenu context_menu;
+  const char video_url[] = "https://example.com/foo.webm";
+
+  // Setup video element.
+  Persistent<HTMLVideoElement> video = HTMLVideoElement::Create(*GetDocument());
+  video->SetSrc(video_url);
+  GetDocument()->body()->AppendChild(video);
+  testing::RunPendingTasks();
+
+  EXPECT_CALL(*static_cast<MockWebMediaPlayerForContextMenu*>(
+                  video->GetWebMediaPlayer()),
+              HasVideo())
+      .WillRepeatedly(Return(true));
+
+  // Simulate a hit test result.
+  hit_test_result.SetInnerNode(video);
+  GetPage()->GetContextMenuController().SetHitTestResultForTests(
+      hit_test_result);
+
+  EXPECT_TRUE(ShowContextMenu(&context_menu, kMenuSourceMouse));
+
+  // Context menu info are sent to the WebFrameClient.
+  WebContextMenuData context_menu_data =
+      GetWebFrameClient().GetContextMenuData();
+  EXPECT_EQ(WebContextMenuData::kMediaTypeVideo, context_menu_data.media_type);
+  EXPECT_EQ(video_url, context_menu_data.src_url.GetString());
+
+  const std::vector<std::pair<WebContextMenuData::MediaFlags, bool>>
+      expected_media_flags = {
+          {WebContextMenuData::kMediaInError, false},
+          {WebContextMenuData::kMediaPaused, true},
+          {WebContextMenuData::kMediaMuted, false},
+          {WebContextMenuData::kMediaLoop, false},
+          {WebContextMenuData::kMediaCanSave, true},
+          {WebContextMenuData::kMediaHasAudio, false},
+          {WebContextMenuData::kMediaCanToggleControls, true},
+          {WebContextMenuData::kMediaControls, false},
+          {WebContextMenuData::kMediaCanPrint, false},
+          {WebContextMenuData::kMediaCanRotate, false},
+          {WebContextMenuData::kMediaCanPictureInPicture, true},
+      };
+
+  for (const auto& expected_media_flag : expected_media_flags) {
+    EXPECT_EQ(expected_media_flag.second,
+              !!(context_menu_data.media_flags & expected_media_flag.first))
+        << "Flag 0x" << std::hex << expected_media_flag.first;
+  }
+}
+
+TEST_F(ContextMenuControllerTest, PictureInPictureDisabledVideoLoaded) {
+  // Make sure Picture-in-Picture is enabled.
+  GetDocument()->GetSettings()->SetPictureInPictureEnabled(false);
+
+  ContextMenuAllowedScope context_menu_allowed_scope;
+  HitTestResult hit_test_result;
+  ContextMenu context_menu;
+  const char video_url[] = "https://example.com/foo.webm";
+
+  // Setup video element.
+  Persistent<HTMLVideoElement> video = HTMLVideoElement::Create(*GetDocument());
+  video->SetSrc(video_url);
+  GetDocument()->body()->AppendChild(video);
+  testing::RunPendingTasks();
+
+  EXPECT_CALL(*static_cast<MockWebMediaPlayerForContextMenu*>(
+                  video->GetWebMediaPlayer()),
+              HasVideo())
+      .WillRepeatedly(Return(true));
+
+  // Simulate a hit test result.
+  hit_test_result.SetInnerNode(video);
+  GetPage()->GetContextMenuController().SetHitTestResultForTests(
+      hit_test_result);
+
+  EXPECT_TRUE(ShowContextMenu(&context_menu, kMenuSourceMouse));
+
+  // Context menu info are sent to the WebFrameClient.
+  WebContextMenuData context_menu_data =
+      GetWebFrameClient().GetContextMenuData();
+  EXPECT_EQ(WebContextMenuData::kMediaTypeVideo, context_menu_data.media_type);
+  EXPECT_EQ(video_url, context_menu_data.src_url.GetString());
+
+  const std::vector<std::pair<WebContextMenuData::MediaFlags, bool>>
+      expected_media_flags = {
+          {WebContextMenuData::kMediaInError, false},
+          {WebContextMenuData::kMediaPaused, true},
+          {WebContextMenuData::kMediaMuted, false},
+          {WebContextMenuData::kMediaLoop, false},
+          {WebContextMenuData::kMediaCanSave, true},
+          {WebContextMenuData::kMediaHasAudio, false},
+          {WebContextMenuData::kMediaCanToggleControls, true},
+          {WebContextMenuData::kMediaControls, false},
+          {WebContextMenuData::kMediaCanPrint, false},
+          {WebContextMenuData::kMediaCanRotate, false},
+          {WebContextMenuData::kMediaCanPictureInPicture, false},
+      };
+
+  for (const auto& expected_media_flag : expected_media_flags) {
+    EXPECT_EQ(expected_media_flag.second,
+              !!(context_menu_data.media_flags & expected_media_flag.first))
+        << "Flag 0x" << std::hex << expected_media_flag.first;
   }
 }
 

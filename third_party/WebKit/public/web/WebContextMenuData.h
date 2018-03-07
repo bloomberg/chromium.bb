@@ -110,6 +110,7 @@ struct WebContextMenuData {
     kMediaControls = 0x80,
     kMediaCanPrint = 0x100,
     kMediaCanRotate = 0x200,
+    kMediaCanPictureInPicture = 0x400,
   };
 
   // Extra attributes describing media elements.

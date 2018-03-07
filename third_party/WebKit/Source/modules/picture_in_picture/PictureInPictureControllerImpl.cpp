@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/picture_in_picture/PictureInPictureController.h"
+#include "modules/picture_in_picture/PictureInPictureControllerImpl.h"
 
 #include "core/dom/Document.h"
 #include "core/frame/Settings.h"
@@ -12,33 +12,27 @@
 
 namespace blink {
 
-PictureInPictureController::PictureInPictureController(Document& document)
-    : Supplement<Document>(document) {}
-
-PictureInPictureController::~PictureInPictureController() = default;
+PictureInPictureControllerImpl::~PictureInPictureControllerImpl() = default;
 
 // static
-PictureInPictureController& PictureInPictureController::Ensure(
+PictureInPictureControllerImpl* PictureInPictureControllerImpl::Create(
     Document& document) {
-  PictureInPictureController* controller =
-      Supplement<Document>::From<PictureInPictureController>(document);
-  if (!controller) {
-    controller = new PictureInPictureController(document);
-    ProvideTo(document, controller);
-  }
-  return *controller;
+  return new PictureInPictureControllerImpl(document);
 }
 
 // static
-const char PictureInPictureController::kSupplementName[] =
-    "PictureInPictureController";
+PictureInPictureControllerImpl& PictureInPictureControllerImpl::From(
+    Document& document) {
+  return static_cast<PictureInPictureControllerImpl&>(
+      PictureInPictureController::From(document));
+}
 
-bool PictureInPictureController::PictureInPictureEnabled() const {
+bool PictureInPictureControllerImpl::PictureInPictureEnabled() const {
   return IsDocumentAllowed() == Status::kEnabled;
 }
 
 PictureInPictureController::Status
-PictureInPictureController::IsDocumentAllowed() const {
+PictureInPictureControllerImpl::IsDocumentAllowed() const {
   DCHECK(GetSupplementable());
 
   // If document has been detached from a frame, return kFrameDetached status.
@@ -64,8 +58,9 @@ PictureInPictureController::IsDocumentAllowed() const {
   return Status::kEnabled;
 }
 
-PictureInPictureController::Status PictureInPictureController::IsElementAllowed(
-    HTMLVideoElement& element) const {
+PictureInPictureController::Status
+PictureInPictureControllerImpl::IsElementAllowed(
+    const HTMLVideoElement& element) const {
   PictureInPictureController::Status status = IsDocumentAllowed();
   if (status != Status::kEnabled)
     return status;
@@ -76,16 +71,16 @@ PictureInPictureController::Status PictureInPictureController::IsElementAllowed(
   return Status::kEnabled;
 }
 
-void PictureInPictureController::SetPictureInPictureElement(
+void PictureInPictureControllerImpl::SetPictureInPictureElement(
     HTMLVideoElement& element) {
   picture_in_picture_element_ = &element;
 }
 
-void PictureInPictureController::UnsetPictureInPictureElement() {
+void PictureInPictureControllerImpl::UnsetPictureInPictureElement() {
   picture_in_picture_element_ = nullptr;
 }
 
-Element* PictureInPictureController::PictureInPictureElement(
+Element* PictureInPictureControllerImpl::PictureInPictureElement(
     TreeScope& scope) const {
   if (!picture_in_picture_element_)
     return nullptr;
@@ -94,8 +89,8 @@ Element* PictureInPictureController::PictureInPictureElement(
 }
 
 PictureInPictureWindow*
-PictureInPictureController::CreatePictureInPictureWindow(int width,
-                                                         int height) {
+PictureInPictureControllerImpl::CreatePictureInPictureWindow(int width,
+                                                             int height) {
   if (picture_in_picture_window_)
     picture_in_picture_window_->OnClose();
 
@@ -104,17 +99,21 @@ PictureInPictureController::CreatePictureInPictureWindow(int width,
   return picture_in_picture_window_;
 }
 
-void PictureInPictureController::OnClosePictureInPictureWindow() {
+void PictureInPictureControllerImpl::OnClosePictureInPictureWindow() {
   if (!picture_in_picture_window_)
     return;
 
   picture_in_picture_window_->OnClose();
 }
 
-void PictureInPictureController::Trace(blink::Visitor* visitor) {
+void PictureInPictureControllerImpl::Trace(blink::Visitor* visitor) {
   visitor->Trace(picture_in_picture_element_);
   visitor->Trace(picture_in_picture_window_);
   Supplement<Document>::Trace(visitor);
 }
+
+PictureInPictureControllerImpl::PictureInPictureControllerImpl(
+    Document& document)
+    : PictureInPictureController(document) {}
 
 }  // namespace blink

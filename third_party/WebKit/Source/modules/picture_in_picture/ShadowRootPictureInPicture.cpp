@@ -5,13 +5,13 @@
 #include "modules/picture_in_picture/ShadowRootPictureInPicture.h"
 
 #include "core/dom/Document.h"
-#include "modules/picture_in_picture/PictureInPictureController.h"
+#include "modules/picture_in_picture/PictureInPictureControllerImpl.h"
 
 namespace blink {
 
 // static
 Element* ShadowRootPictureInPicture::pictureInPictureElement(TreeScope& scope) {
-  return PictureInPictureController::Ensure(scope.GetDocument())
+  return PictureInPictureControllerImpl::From(scope.GetDocument())
       .PictureInPictureElement(scope);
 }
 

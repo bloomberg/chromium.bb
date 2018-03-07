@@ -26,6 +26,8 @@ class MODULES_EXPORT ModulesInitializer : public CoreInitializer {
   void ProvideIndexedDBClientToWorker(WorkerClients&) const override;
   MediaControls* CreateMediaControls(HTMLMediaElement&,
                                      ShadowRoot&) const override;
+  PictureInPictureController* CreatePictureInPictureController(
+      Document&) const override;
   void InitInspectorAgentSession(InspectorSession*,
                                  bool,
                                  InspectorDOMAgent*,
