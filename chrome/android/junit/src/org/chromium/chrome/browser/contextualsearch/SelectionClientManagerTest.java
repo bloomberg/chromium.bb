@@ -50,6 +50,9 @@ public class SelectionClientManagerTest {
         public void onSelectionEvent(int eventType, float posXPix, float posYPix) {}
 
         @Override
+        public void showUnhandledTapUIIfNeeded(int x, int y) {}
+
+        @Override
         public void selectWordAroundCaretAck(boolean didSelect, int startAdjust, int endAdjust) {}
 
         @Override
