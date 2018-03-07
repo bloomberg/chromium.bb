@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SAFE_BROWSING_MOCK_PERMISSION_REPORT_SENDER_H_
-#define CHROME_BROWSER_SAFE_BROWSING_MOCK_PERMISSION_REPORT_SENDER_H_
+#ifndef CHROME_BROWSER_SAFE_BROWSING_MOCK_REPORT_SENDER_H_
+#define CHROME_BROWSER_SAFE_BROWSING_MOCK_REPORT_SENDER_H_
 
 #include "net/url_request/report_sender.h"
 
@@ -11,11 +11,11 @@ namespace safe_browsing {
 
 // A mock ReportSender that keeps track of the last report sent and the number
 // of reports sent.
-class MockPermissionReportSender : public net::ReportSender {
+class MockReportSender : public net::ReportSender {
  public:
-  MockPermissionReportSender();
+  MockReportSender();
 
-  ~MockPermissionReportSender() override;
+  ~MockReportSender() override;
 
   void Send(const GURL& report_uri,
             base::StringPiece content_type,
@@ -43,9 +43,9 @@ class MockPermissionReportSender : public net::ReportSender {
 
   void NotifyReportSentOnUIThread();
 
-  DISALLOW_COPY_AND_ASSIGN(MockPermissionReportSender);
+  DISALLOW_COPY_AND_ASSIGN(MockReportSender);
 };
 
 }  // namespace safe_browsing
 
-#endif  // CHROME_BROWSER_SAFE_BROWSING_MOCK_PERMISSION_REPORT_SENDER_H_
+#endif  // CHROME_BROWSER_SAFE_BROWSING_MOCK_REPORT_SENDER_H_

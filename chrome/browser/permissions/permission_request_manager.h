@@ -18,10 +18,6 @@
 enum class PermissionAction;
 class PermissionRequest;
 
-namespace safe_browsing {
-class PermissionReporterBrowserTest;
-}
-
 namespace test {
 class PermissionRequestManagerTestApi;
 }
@@ -99,7 +95,6 @@ class PermissionRequestManager
   friend class MockPermissionPromptFactory;
   friend class PermissionContextBaseTests;
   friend class PermissionRequestManagerTest;
-  friend class safe_browsing::PermissionReporterBrowserTest;
   friend class content::WebContentsUserData<PermissionRequestManager>;
   FRIEND_TEST_ALL_PREFIXES(DownloadTest, TestMultipleDownloadsBubble);
 

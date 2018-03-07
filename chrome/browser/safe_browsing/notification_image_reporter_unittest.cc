@@ -8,7 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
-#include "chrome/browser/safe_browsing/mock_permission_report_sender.h"
+#include "chrome/browser/safe_browsing/mock_report_sender.h"
 #include "chrome/browser/safe_browsing/ping_manager.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -107,7 +107,7 @@ class NotificationImageReporterTest : public ::testing::Test {
   std::unique_ptr<TestingProfile> profile_;  // Written on UI, read on IO.
 
   // Owned by |notification_image_reporter_|.
-  MockPermissionReportSender* mock_report_sender_;
+  MockReportSender* mock_report_sender_;
 
   TestingNotificationImageReporter* notification_image_reporter_;
 
@@ -169,7 +169,7 @@ void NotificationImageReporterTest::TearDown() {
 void NotificationImageReporterTest::SetUpOnIO() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  mock_report_sender_ = new MockPermissionReportSender;
+  mock_report_sender_ = new MockReportSender;
   notification_image_reporter_ = new TestingNotificationImageReporter(
       base::WrapUnique(mock_report_sender_));
   safe_browsing_service_->ping_manager()->notification_image_reporter_ =

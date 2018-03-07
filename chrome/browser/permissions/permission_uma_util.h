@@ -22,8 +22,7 @@ class GURL;
 class PermissionRequest;
 class Profile;
 
-// This should stay in sync with the SourceUI enum in the permission report
-// protobuf (src/chrome/common/safe_browsing/permission_report.proto).
+// Any new values should be inserted immediately prior to NUM.
 enum class PermissionSourceUI {
   PROMPT = 0,
   OIB = 1,
@@ -53,28 +52,6 @@ enum class PermissionEmbargoStatus {
 
   // Keep this at the end.
   NUM,
-};
-
-// A bundle for the information sent in a PermissionReport.
-struct PermissionReportInfo {
-  PermissionReportInfo(
-      const GURL& origin,
-      ContentSettingsType permission,
-      PermissionAction action,
-      PermissionSourceUI source_ui,
-      PermissionRequestGestureType gesture_type,
-      int num_prior_dismissals,
-      int num_prior_ignores);
-
-  PermissionReportInfo(const PermissionReportInfo& other);
-
-  GURL origin;
-  ContentSettingsType permission;
-  PermissionAction action;
-  PermissionSourceUI source_ui;
-  PermissionRequestGestureType gesture_type;
-  int num_prior_dismissals;
-  int num_prior_ignores;
 };
 
 // Provides a convenient way of logging UMA for permission related operations.
@@ -127,14 +104,8 @@ class PermissionUmaUtil {
 
   static void RecordWithBatteryBucket(const std::string& histogram);
 
-  // Permission Action Reporting data is only sent in official, Chrome branded
-  // builds. This function allows this to be overridden for testing.
-  static void FakeOfficialBuildForTest();
-
  private:
   friend class PermissionUmaUtilTest;
-
-  static bool IsOptedIntoPermissionActionReporting(Profile* profile);
 
   // web_contents may be null when for recording non-prompt actions.
   static void RecordPermissionAction(ContentSettingsType permission,
