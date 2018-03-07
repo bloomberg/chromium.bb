@@ -163,8 +163,7 @@ bool ImmersiveModeControllerAsh::ShouldStayImmersiveAfterExitingFullscreen() {
     return false;
 
   return !browser_view_->IsBrowserTypeNormal() &&
-         TabletModeClient::Get()->tablet_mode_enabled() &&
-         TabletModeClient::Get()->auto_hide_title_bars();
+         TabletModeClient::Get()->tablet_mode_enabled();
 }
 
 views::Widget* ImmersiveModeControllerAsh::GetRevealWidget() {
@@ -179,8 +178,7 @@ void ImmersiveModeControllerAsh::OnWidgetActivationChanged(
 
   // TODO(crbug.com/760811): Support tablet mode in mash.
   if (ash_util::IsRunningInMash() ||
-      !(TabletModeClient::Get()->tablet_mode_enabled() &&
-        TabletModeClient::Get()->auto_hide_title_bars())) {
+      !TabletModeClient::Get()->tablet_mode_enabled()) {
     return;
   }
 

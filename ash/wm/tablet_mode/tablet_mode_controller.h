@@ -103,13 +103,10 @@ class ASH_EXPORT TabletModeController
   void AddObserver(TabletModeObserver* observer);
   void RemoveObserver(TabletModeObserver* observer);
 
-  // Checks if we should auto hide title bars in tablet mode. Returns true if
-  // the feature is enabled and we are in tablet mode. If |widget| is not null
-  // this also checks if the window associated with |widget| is in an auto hide
-  // state.
+  // Checks if we should auto hide title bars in tablet mode. If |widget| is not
+  // null this also checks if the window associated with |widget| is in an auto
+  // hide state.
   bool ShouldAutoHideTitlebars(views::Widget* widget);
-
-  bool auto_hide_title_bars() const { return auto_hide_title_bars_; }
 
   // Flushes the mojo message pipe to chrome.
   void FlushForTesting();
@@ -241,9 +238,6 @@ class ASH_EXPORT TabletModeController
 
   // Last computed lid angle.
   double lid_angle_ = 0.0f;
-
-  // Whether title bars should be shown be auto hidden in tablet mode.
-  const bool auto_hide_title_bars_ = false;
 
   // Tracks smoothed accelerometer data over time. This is done when the hinge
   // is approaching vertical to remove abrupt acceleration that can lead to
