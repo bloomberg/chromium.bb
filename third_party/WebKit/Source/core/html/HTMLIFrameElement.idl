@@ -52,6 +52,6 @@ interface HTMLIFrameElement : HTMLElement {
     [CEReactions, Reflect] attribute DOMString frameBorder;
     [CEReactions, Reflect, URL] attribute USVString longDesc;
 
-    [CEReactions, Reflect, TreatNullAs=EmptyString] attribute DOMString marginHeight;
-    [CEReactions, Reflect, TreatNullAs=EmptyString] attribute DOMString marginWidth;
+    [CEReactions, Reflect] attribute [TreatNullAs=EmptyString] DOMString marginHeight;
+    [CEReactions, Reflect] attribute [TreatNullAs=EmptyString] DOMString marginWidth;
 };

@@ -34,5 +34,5 @@ interface HTMLTableRowElement : HTMLElement {
     [CEReactions, Reflect=charoff] attribute DOMString chOff;
     [CEReactions, Reflect] attribute DOMString vAlign;
 
-    [CEReactions, Reflect, TreatNullAs=EmptyString] attribute DOMString bgColor;
+    [CEReactions, Reflect] attribute [TreatNullAs=EmptyString] DOMString bgColor;
 };

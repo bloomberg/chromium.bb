@@ -58,7 +58,7 @@
     [CEReactions, Reflect, URL] attribute DOMString codeBase;
     [CEReactions, Reflect] attribute DOMString codeType;
 
-    [CEReactions, Reflect, TreatNullAs=EmptyString] attribute DOMString border;
+    [CEReactions, Reflect] attribute [TreatNullAs=EmptyString] DOMString border;
 
     // TODO(foolip): These getters and setters are not in the spec.
     [Custom, NotEnumerable] getter Node (DOMString name);

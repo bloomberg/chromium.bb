@@ -62,7 +62,7 @@ enum SelectionMode { "select", "start", "end", "preserve" };
     [CEReactions, Reflect] attribute DOMString step;
     [CEReactions, CustomElementCallbacks] attribute DOMString type;
     [CEReactions, Reflect=value, CustomElementCallbacks] attribute DOMString defaultValue;
-    [CEReactions, TreatNullAs=EmptyString, RaisesException=Setter, CustomElementCallbacks] attribute DOMString value;
+    [CEReactions, RaisesException=Setter, CustomElementCallbacks] attribute [TreatNullAs=EmptyString] DOMString value;
     [CEReactions, RaisesException=Setter, CustomElementCallbacks] attribute Date? valueAsDate;
     [RaisesException=Setter, CustomElementCallbacks] attribute unrestricted double valueAsNumber;
     // Note: The spec has valueLow and valueHigh for two-valued range controls.
