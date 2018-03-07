@@ -656,8 +656,13 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['android', ('qualcomm', 'Adreno (TM) 418')], bug=793050)
     self.Flaky('conformance/ogles/GL/cos/cos_001_to_006.html',
         ['android', ('qualcomm', 'Adreno (TM) 418')], bug=793050)
+    self.Flaky('conformance/ogles/GL/dot/dot_001_to_006.html',
+        ['android', ('qualcomm', 'Adreno (TM) 418')], bug=818041)
     self.Flaky('conformance/ogles/GL/swizzlers/swizzlers_041_to_048.html',
         ['android', ('qualcomm', 'Adreno (TM) 418')], bug=793050)
+    self.Flaky('conformance/textures/image_bitmap_from_video/' +
+        'tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html',
+        ['android', ('qualcomm', 'Adreno (TM) 418')], bug=818041)
     self.Flaky('conformance/textures/image_bitmap_from_video/' +
         'tex-2d-luminance-luminance-unsigned_byte.html',
         ['android', ('qualcomm', 'Adreno (TM) 418')], bug=793050)
