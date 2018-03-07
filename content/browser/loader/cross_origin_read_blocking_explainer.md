@@ -385,12 +385,6 @@ web features that consume images: `/favicon.ico`, SVG's `<image>`,
 `background-image` in stylesheets, painting images onto (potentially tainted)
 HTML's `<canvas>`, etc.
 
-> [lukasza@chromium.org] TODO: Figure out if we can measure and share how many
-> of CORB-blocked responses are 1) for `<img>` tag, 2) `nosniff`, 3) 200-or-206
-> status code, 4) non-zero (or non-available) Content-Length.  Cursory manual
-> testing on major websites indicates that most CORB-blocked images are tracking
-> pixels and therefore blocking them won't have any observable effect.
-
 > [lukasza@chromium.org] Earlier attempts to block nosniff images with
 > incompatible MIME types
 > [failed](https://github.com/whatwg/fetch/issues/395).
@@ -592,111 +586,58 @@ CORB has no impact on the following scenarios:
 
 ### Quantifying CORB impact on existing websites
 
-Chromium has been instrumented to count how many responses are blocked by CORB
-(CORB is enabled in optional Site Isolation modes and field trials).
+CORB has been enabled in optional Site Isolation modes and field trials, and
+Chromium has been instrumented to count how many CORB-eligible responses are
+blocked.  (CORB-eligible responses exclude
+[navigation requests](https://fetch.spec.whatwg.org/#navigation-request) and
+downloads; see the "What kinds of requests are CORB-eligible?" section above.)
+Our analysis of the initial data from Chrome Canary in February 2018 shows a low
+upper bound on the number of cases observable to web pages, with possibilities
+to further lower the bounds.
 
-The analysis below focuses on the only 2 kinds of responses where observable
-CORB impact was identified in the "CORB and Web Compatibility" subsections above.
-The analysis uses the following terms:
-- "potentially disruptive" blocking refers to
-  the "Mislabeled image (nosniff)" example
-  in the "Observable CORB impact on images" section above.
-  The analysis covers images, but also other request contexts
-  (including but not limited to audio and video)
-  where this scenario carries a similar disruption risk.
-  The risk here is that CORB disrupts rendering of legitimate
-  images or multimedia.
-- "minimal disruption risk" blocking refers to the "Correctly-labeled HTML
-  document" example in the "Observable CORB impact on scripts" section above.
-  The risk here is that CORB prevents a script syntax error that would have
-  otherwise been trigerred by the blocked response.
+Overall, **0.961% of all CORB-eligible responses are blocked.**  However, over
+half of these are empty responses already (i.e., actually have a
+`Content-Length: 0` response header), and thus cause effectively no behavior
+change (i.e., only
+[non-safelisted](https://fetch.spec.whatwg.org/#cors-safelisted-response-header-name)
+headers would be affected).  Note that if sniffing were omitted, almost 20% of
+responses would be blocked, so sniffing is a clear necessity.
 
-The initial data gathered from nightly builds looks as follows:
+Looking closer, **0.456% of all CORB-eligible responses are non-empty and
+blocked.**  However, most of these cases fall into the non-observable categories
+described in the subsections above, such as HTML responses being delivered to
+image tags as tracking pixels.
 
-* **1.052% of all CORB-eligible responses are actually blocked by CORB.**
-  * "all CORB-eligible responses" here means responses from all requests that
-    are CORB-eligible (see the "What kinds of requests are CORB-eligible?"
-    section above).  Some specific examples of what is included or excluded:
-    - "all responses" excludes
-      [navigation requests](https://fetch.spec.whatwg.org/#navigation-request)
-      and downloads
-    - "all responses" includes responses to
-      all requests for web subresources (e.g. `<img>`, `<script>`, stylesheet, etc.),
-      requests initiated by browser (i.e. requests unrelated to rendering web content),
-      requests initiated by plugins and content-scripts
-  * Note that without confirmation sniffing this would be ~16 times higher
+We can focus on two groups of blocked responses which may have observable
+impact.
 
-* **0.488% of all CORB-eligible responses are actually blocked by CORB and are
-  non-empty.**
-  * "non-empty" means "do not have a `Content-Length: 0` response header"
-  * We believe that CORB-blocking an empty response is unlikely to be
-    disruptive (since the body of the response is not affected by CORB,
-    and only
-    [non-safelisted](https://fetch.spec.whatwg.org/#cors-safelisted-response-header-name)
-    headers are affected)
+* **0.115% of all CORB-eligible responses might have been observably blocked due
+  to a nosniff header or range request.**  This is specific to non-empty
+  responses with a status code other than 204, requested from a context that
+  doesn't otherwise ignore mislabeled nosniff content (e.g., as script tags
+  would).  Within this group:
+  * 95.16% of these are nosniff responses labeled as HTML requested by an image
+    tag.  These are blocked and could possibly contain real images.  However, we
+    expect many of these cases actually contained HTML and would not have
+    rendered in the image tag anyway (as we observed in one case).
 
-* **0.134% of all CORB-eligible responses are blocked by CORB and are potentially disruptive.**
-  * "potentially disruptive" means responses with *all* of the following
-    conditions met:
-    - non-empty response body
-    - 200 or 206 http status code
-    - no sniffing done by CORB
-      (either because of 206 or because of `X-Content-Type-Options: nosniff`)
-    - resource type excludes scripts and stylesheets
-    - resource type excludes xhr, prefetch, ping, csp-report
-  * Responses other than 200 or 206 can be excluded because:
-    - 204 responses have an empty body
-    - The data gathered shows that CORB didn't block other 2xx responses in
-      practice
-    - Blocking of 4xx and 5xx responses should be non-disruptive
-      (body of error responses is only rendered and shown to the user in
-      [navigation requests](https://fetch.spec.whatwg.org/#navigation-request)
-      which are exempt from CORB)
-  * Sniffed responses are excluded here, because here we focus on "potentially
-    disruptive" cases where nosniff image or multimedia responses are blocked
-    (see "Observable CORB impact on images" section above).  Sniffed responses
-    are covered separately, when focusing on "minimally disruptive risk".
-  * Scripts and stylesheets can be excluded, because
-    nosniff forces
-    [strict MIME type checking](https://fetch.spec.whatwg.org/#should-response-to-request-be-blocked-due-to-nosniff?)
-    for scripts and stylesheets and therefore the response
-    would have the same observable effects with and without CORB
-    (see also the "Mislabeled script (nosniff)" example
-    in the "Observable CORB impact on scripts" section above and
-    "Anything not labeled as text/css (nosniff)" example
-    in the "Observable CORB impact on stylesheets" section above)
-  * XHR, prefetch, ping, csp-response can be excluded, because
-    these web feature are not impacted by CORB
-    (see the "Observable CORB impact on other web platform features"
-    section above).
-  * The 0.134% responses blocked by CORB in a "potentially disruptive" way
-    can be broken further down as follows:
-    - 95.16% are: status=200,
-      [HTML MIME type](https://mimesniff.spec.whatwg.org/#html-mime-type),
-      requested from image context, nosniff, non-empty-body.
-      We've attempted to repro CORB-protection of this kind responses on top-10
-      sites exhibiting this specific flavour of CORB blocking.
-      The repro proved difficult - we only found one specific URI blocked by CORB;
-      blocking of this URI was non-disruptive (the blocked response really was a
-      HTML document, which wouldn’t have rendered in an `<img>` context).
-    - 3.76% are: status=206, `text/plain`, requested from media context, nosniff,
-      non-empty-body.  There is no known repro at this point.
+> [creis@chromium.org] We are considering lowering this bound further by
+> sniffing these responses to confirm how many might contain actual images.
 
-> [lukasza@chromium.org] We are trying to gather more data and are considering
-> relaxing CORB blocking for 206 responses if it turns out that legitimate
-> multimedia scenarios are disrupted.
+  * Another 3.76% of these are range requests for text/plain from a media
+    context.  We have not yet found examples in practice, but we are considering
+    allowing range request responses for text/plain to avoid disruption here.
 
-* **0.006% of all responses are blocked by CORB and have minimal disruption
-  risk.**
-  * "minimal disruption risk" covers responses with *all* of the following
-    conditions met:
-    - non-empty response body
-    - 200 or 206 http status code
-    - sniffed by CORB and confirmed to be HTML, XML or JSON
-    - request context is `<script>`
-  * "minimal disruption risk" covers scenarios where CORB blocking can hide a
-    `<script>` syntax error that would be visible without CORB
-    (see "Observable CORB impact on scripts" section above)
+* **0.014% of all CORB-eligible responses were invalid inputs to script tags**,
+  since CORB sniffing revealed they were HTML, XML, or JSON.  Again, this is
+  specific to non-empty responses that do not have a 204 status code.  These
+  cases should have minimal risk of disruption in practice (e.g., more than half
+  have error status codes and likely represent broken links), but it is
+  technically possible to observe a difference based on whether a syntax error
+  is reported.
+
+These numbers of affected cases are sufficiently low to suggest that CORB is
+promising from a web compatibility perspective.
 
 
 ## Appendix: Future work - protecting more resource types
