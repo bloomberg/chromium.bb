@@ -4,15 +4,17 @@
     <title>
       Test MessagePort in AudioWorkletNode and AudioWorkletProcessor
     </title>
-    <script src="../../resources/testharness.js"></script>
-    <script src="../../resources/testharnessreport.js"></script>
-    <script src="../../../webaudio-resources/audit.js"></script>
+    <script src="/resources/testharness.js"></script>
+    <script src="/resources/testharnessreport.js"></script>
+    <script src="/webaudio/resources/audit.js"></script>
   </head>
   <body>
     <script id="layout-test-code">
       let audit = Audit.createTaskRunner();
 
       let context = new AudioContext();
+
+      let filePath = 'processors/port-processor.js';
 
       // Creates an AudioWorkletNode and sets an EventHandler on MessagePort
       // object. The associated PortProcessor will post a message upon its
@@ -56,7 +58,7 @@
             porterWorkletNode.port.postMessage('hello');
           });
 
-      context.audioWorklet.addModule('port-processor.js').then(() => {
+      context.audioWorklet.addModule(filePath).then(() => {
         audit.run();
       });
     </script>

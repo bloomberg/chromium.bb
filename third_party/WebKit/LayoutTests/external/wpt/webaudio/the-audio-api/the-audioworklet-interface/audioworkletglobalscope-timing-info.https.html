@@ -4,9 +4,9 @@
     <title>
       Test currentTime and currentFrame in AudioWorkletGlobalScope
     </title>
-    <script src="../../resources/testharness.js"></script>
-    <script src="../../resources/testharnessreport.js"></script>
-    <script src="../../../webaudio-resources/audit.js"></script>
+    <script src="/resources/testharness.js"></script>
+    <script src="/resources/testharnessreport.js"></script>
+    <script src="/webaudio/resources/audit.js"></script>
   </head>
   <body>
     <script id="layout-test-code">
@@ -15,6 +15,8 @@
       let sampleRate = 48000;
       let renderLength = 512;
       let context = new OfflineAudioContext(1, renderLength, sampleRate);
+
+      let filePath = 'processors/timing-info-processor.js';
 
       audit.define(
           'Check the timing information from AudioWorkletProcessor',
@@ -47,7 +49,7 @@
             });
           });
 
-      context.audioWorklet.addModule('timing-info-processor.js').then(() => {
+      context.audioWorklet.addModule(filePath).then(() => {
         audit.run();
       });
     </script>
