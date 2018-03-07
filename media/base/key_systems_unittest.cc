@@ -25,7 +25,7 @@ namespace media {
 
 // These are the (fake) key systems that are registered for these tests.
 // kUsesAes uses the AesDecryptor like Clear Key.
-// kExternal uses an external CDM, such as Pepper-based or Android platform CDM.
+// kExternal uses an external CDM, such as library CDM or Android platform CDM.
 const char kUsesAes[] = "x-org.example.clear";
 const char kExternal[] = "x-com.example.test";
 
@@ -137,10 +137,6 @@ class ExternalKeySystemProperties : public TestKeySystemPropertiesBase {
 
   EmeFeatureSupport GetDistinctiveIdentifierSupport() const override {
     return EmeFeatureSupport::ALWAYS_ENABLED;
-  }
-
-  std::string GetPepperType() const override {
-    return "application/x-ppapi-external-cdm";
   }
 };
 
@@ -394,8 +390,6 @@ class KeySystemsTest : public testing::Test {
   TestMediaClient test_media_client_;
 };
 
-// TODO(ddorwin): Consider moving GetPepperType() calls out to their own test.
-
 TEST_F(KeySystemsTest, EmptyKeySystem) {
   EXPECT_FALSE(IsSupportedKeySystem(std::string()));
   EXPECT_EQ("Unknown", GetKeySystemNameForUMA(std::string()));
@@ -430,15 +424,6 @@ TEST_F(KeySystemsTest, Basic_UnrecognizedKeySystem) {
 
   EXPECT_EQ("Unknown", GetKeySystemNameForUMA(kUnrecognized));
   EXPECT_FALSE(CanUseAesDecryptor(kUnrecognized));
-
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-  std::string type;
-#if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
-  EXPECT_DEATH(type = GetPepperType(kUnrecognized),
-               "x-org.example.unrecognized is not a known system");
-#endif
-  EXPECT_TRUE(type.empty());
-#endif
 }
 
 TEST_F(KeySystemsTest, Basic_UsesAesDecryptor) {
@@ -450,14 +435,6 @@ TEST_F(KeySystemsTest, Basic_UsesAesDecryptor) {
   EXPECT_EQ("Unknown", GetKeySystemNameForUMA(kUsesAes));
 
   EXPECT_TRUE(CanUseAesDecryptor(kUsesAes));
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-  std::string type;
-#if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
-  EXPECT_DEATH(type = GetPepperType(kUsesAes),
-               "x-org.example.clear is not Pepper-based");
-#endif
-  EXPECT_TRUE(type.empty());
-#endif
 }
 
 TEST_F(KeySystemsTest,
@@ -559,7 +536,6 @@ TEST_F(KeySystemsTest,
       kVideoFoo, foovideo_and_fooaudio_codecs(), kUsesAes));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       kVideoFoo, fooaudio_codec(), kUsesAes));
-
   // Extended codecs fail because this is handled by SimpleWebMimeRegistryImpl.
   // They should really pass canPlayType().
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
@@ -607,9 +583,6 @@ TEST_F(KeySystemsTest, Basic_ExternalDecryptor) {
       kVideoWebM, no_codecs(), kExternal));
 
   EXPECT_FALSE(CanUseAesDecryptor(kExternal));
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-  EXPECT_EQ("application/x-ppapi-external-cdm", GetPepperType(kExternal));
-#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 }
 
 TEST_F(

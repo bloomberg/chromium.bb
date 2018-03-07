@@ -55,8 +55,6 @@ class MEDIA_EXPORT KeySystemProperties {
 
   // Returns whether AesDecryptor can be used for this key system.
   virtual bool UseAesDecryptor() const;
-
-  virtual std::string GetPepperType() const;
 };
 
 }  // namespace media

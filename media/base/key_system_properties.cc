@@ -19,11 +19,4 @@ bool KeySystemProperties::UseAesDecryptor() const {
   return false;
 }
 
-std::string KeySystemProperties::GetPepperType() const {
-#if !BUILDFLAG(ENABLE_LIBRARY_CDMS)
-  NOTREACHED();
-#endif
-  return "";
-}
-
 }  // namespace media
