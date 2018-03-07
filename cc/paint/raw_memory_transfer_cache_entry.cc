@@ -43,8 +43,9 @@ size_t ServiceRawMemoryTransferCacheEntry::CachedSize() const {
   return data_.size();
 }
 
-bool ServiceRawMemoryTransferCacheEntry::Deserialize(GrContext* context,
-                                                     base::span<uint8_t> data) {
+bool ServiceRawMemoryTransferCacheEntry::Deserialize(
+    GrContext* context,
+    base::span<const uint8_t> data) {
   data_ = std::vector<uint8_t>(data.begin(), data.end());
   return true;
 }

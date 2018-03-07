@@ -46,16 +46,17 @@ bool ServiceTransferCache::CreateLockedEntry(
     base::span<uint8_t> data) {
   auto key = std::make_pair(entry_type, entry_id);
   auto found = entries_.Peek(key);
-  if (found != entries_.end()) {
+  if (found != entries_.end())
     return false;
-  }
 
   std::unique_ptr<cc::ServiceTransferCacheEntry> entry =
       cc::ServiceTransferCacheEntry::Create(entry_type);
   if (!entry)
     return false;
 
-  entry->Deserialize(context, data);
+  if (!entry->Deserialize(context, data))
+    return false;
+
   total_size_ += entry->CachedSize();
   entries_.Put(key, CacheEntryInternal(handle, std::move(entry)));
   EnforceLimits();

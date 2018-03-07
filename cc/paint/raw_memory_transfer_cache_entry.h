@@ -37,7 +37,7 @@ class CC_PAINT_EXPORT ServiceRawMemoryTransferCacheEntry
   ServiceRawMemoryTransferCacheEntry();
   ~ServiceRawMemoryTransferCacheEntry() final;
   size_t CachedSize() const final;
-  bool Deserialize(GrContext* context, base::span<uint8_t> data) final;
+  bool Deserialize(GrContext* context, base::span<const uint8_t> data) final;
   const std::vector<uint8_t>& data() { return data_; }
 
  private:

@@ -46,8 +46,8 @@ size_t ServiceColorSpaceTransferCacheEntry::CachedSize() const {
 
 bool ServiceColorSpaceTransferCacheEntry::Deserialize(
     GrContext* context,
-    base::span<uint8_t> data) {
-  base::Pickle pickle(reinterpret_cast<char*>(data.data()), data.size());
+    base::span<const uint8_t> data) {
+  base::Pickle pickle(reinterpret_cast<const char*>(data.data()), data.size());
   base::PickleIterator iterator(pickle);
   if (!IPC::ParamTraits<gfx::ColorSpace>::Read(&pickle, &iterator,
                                                &color_space_))
