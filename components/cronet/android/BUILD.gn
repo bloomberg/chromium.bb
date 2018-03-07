@@ -508,6 +508,7 @@ shared_library("cronet_tests") {
     "//base:i18n",
     "//base/test:test_support",
     "//components/cronet:cronet_version_header",
+    "//components/cronet/test:test_support",
     "//components/prefs",
     "//net",
     "//net:simple_quic_tools",

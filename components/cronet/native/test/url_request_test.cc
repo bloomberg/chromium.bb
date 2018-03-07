@@ -17,6 +17,7 @@
 #include "cronet_c.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace {
 
@@ -240,6 +241,51 @@ TEST_F(UrlRequestTest, SimpleRequest) {
   Cronet_UrlRequestCallback_Destroy(callback);
   Cronet_Executor_Destroy(executor);
   Cronet_Engine_Destroy(engine);
+}
+
+TEST_F(UrlRequestTest, MultiRedirect) {
+  const std::string url = cronet::TestServer::GetMultiRedirectURL();
+  auto callback = StartAndWaitForComplete(url);
+  EXPECT_EQ(2, callback->redirect_count_);
+  EXPECT_EQ(200, callback->response_info_->http_status_code);
+  EXPECT_EQ(2ul, callback->redirect_response_info_list_.size());
+
+  // Check first redirect (multiredirect.html -> redirect.html).
+  cronet::test::TestUrlRequestCallback::UrlResponseInfo
+      first_expected_response_info(
+          std::vector<std::string>({url}), "Found", 302, 76,
+          std::vector<std::string>(
+              {"Location", GURL(cronet::TestServer::GetRedirectURL()).path(),
+               "redirect-header0", "header-value"}));
+  ExpectResponseInfoEquals(first_expected_response_info,
+                           *callback->redirect_response_info_list_.front());
+
+  // Check second redirect (redirect.html -> success.txt).
+  cronet::test::TestUrlRequestCallback::UrlResponseInfo
+      second_expected_response_info(
+          std::vector<std::string>({cronet::TestServer::GetMultiRedirectURL(),
+                                    cronet::TestServer::GetRedirectURL()}),
+          "Found", 302, 149,
+          std::vector<std::string>(
+              {"Location", GURL(cronet::TestServer::GetSuccessURL()).path(),
+               "redirect-header", "header-value"}));
+  ExpectResponseInfoEquals(second_expected_response_info,
+                           *callback->redirect_response_info_list_.back());
+  // Check final response (success.txt).
+  cronet::test::TestUrlRequestCallback::UrlResponseInfo
+      final_expected_response_info(
+          std::vector<std::string>({cronet::TestServer::GetMultiRedirectURL(),
+                                    cronet::TestServer::GetRedirectURL(),
+                                    cronet::TestServer::GetSuccessURL()}),
+          "OK", 200, 334,
+          std::vector<std::string>(
+              {"Content-Type", "text/plain", "Access-Control-Allow-Origin", "*",
+               "header-name", "header-value", "multi-header-name",
+               "header-value1", "multi-header-name", "header-value2"}));
+  ExpectResponseInfoEquals(final_expected_response_info,
+                           *callback->response_info_);
+  EXPECT_NE(0, callback->response_data_length_);
+  EXPECT_EQ(callback->ON_SUCCEEDED, callback->response_step_);
 }
 
 TEST_F(UrlRequestTest, CancelRequest) {

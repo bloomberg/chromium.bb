@@ -5,7 +5,6 @@
 #ifndef COMPONENTS_CRONET_NATIVE_TEST_TEST_URL_REQUEST_CALLBACK_H_
 #define COMPONENTS_CRONET_NATIVE_TEST_TEST_URL_REQUEST_CALLBACK_H_
 
-#include <list>
 #include <memory>
 #include <string>
 #include <utility>
@@ -69,8 +68,8 @@ class TestUrlRequestCallback {
     int64_t received_byte_count = 0;
   };
 
-  std::list<std::unique_ptr<UrlResponseInfo>> redirect_response_info_list_;
-  std::list<std::string> redirect_url_list_;
+  std::vector<std::unique_ptr<UrlResponseInfo>> redirect_response_info_list_;
+  std::vector<std::string> redirect_url_list_;
   std::unique_ptr<UrlResponseInfo> response_info_;
   // Owned by UrlRequest, only valid until UrlRequest is destroyed.
   Cronet_ErrorPtr last_error_ = nullptr;
