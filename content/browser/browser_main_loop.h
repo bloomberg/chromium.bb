@@ -105,11 +105,6 @@ class SwapMetricsDriver;
 class TracingControllerImpl;
 struct MainFunctionParams;
 
-#if BUILDFLAG(ENABLE_WEBRTC)
-class WebRTCInternals;
-class WebRtcEventLogManager;
-#endif
-
 #if defined(OS_ANDROID)
 class ScreenOrientationDelegate;
 #endif
@@ -379,11 +374,6 @@ class CONTENT_EXPORT BrowserMainLoop {
   std::unique_ptr<media::DeviceMonitorLinux> device_monitor_linux_;
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
   std::unique_ptr<media::DeviceMonitorMac> device_monitor_mac_;
-#endif
-
-#if BUILDFLAG(ENABLE_WEBRTC)
-  std::unique_ptr<WebRtcEventLogManager> webrtc_event_log_manager_;
-  std::unique_ptr<WebRTCInternals> webrtc_internals_;
 #endif
 
   std::unique_ptr<LoaderDelegateImpl> loader_delegate_;

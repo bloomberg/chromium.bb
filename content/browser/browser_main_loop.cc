@@ -1456,9 +1456,14 @@ int BrowserMainLoop::BrowserThreadsStarted() {
 #endif
 
 #if BUILDFLAG(ENABLE_WEBRTC)
-  webrtc_event_log_manager_.reset(
-      WebRtcEventLogManager::CreateSingletonInstance());
-  webrtc_internals_.reset(WebRTCInternals::CreateSingletonInstance());
+  // WebRtcEventLogManager must be instantiated before WebRTCInternals, since
+  // the latter uses the former. Both are instantiated once, here, then live
+  // forever. When Chrome shuts down, they are allowed to be leaked. This allows
+  // us to be confident that messages posted to the internal task queue of
+  // WebRtcEventLogManager with base::Unretained(this), are always OK, and that
+  // subobjects are similarly always alive.
+  WebRtcEventLogManager::CreateSingletonInstance();
+  WebRTCInternals::CreateSingletonInstance();
 #endif
 
   // RDH needs the IO thread to be created
