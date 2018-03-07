@@ -112,7 +112,7 @@ Response BrowserHandler::GetHistogram(
   return Response::OK();
 }
 
-Response BrowserHandler::GetCommandLine(
+Response BrowserHandler::GetBrowserCommandLine(
     std::unique_ptr<protocol::Array<String>>* arguments) {
   *arguments = protocol::Array<String>::create();
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();

@@ -11,7 +11,7 @@
         "options": [
             {
                 "domain": "Browser",
-                "include": ["getVersion", "getHistograms", "getHistogram", "getCommandLine"]
+                "include": ["getVersion", "getHistograms", "getHistogram", "getBrowserCommandLine"]
             },
             {
                 "domain": "DOM",
