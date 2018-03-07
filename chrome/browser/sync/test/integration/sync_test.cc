@@ -108,7 +108,6 @@ namespace switches {
 const char kPasswordFileForTest[] = "password-file-for-test";
 const char kSyncUserForTest[] = "sync-user-for-test";
 const char kSyncPasswordForTest[] = "sync-password-for-test";
-const char kSyncServerCommandLine[] = "sync-server-command-line";
 }
 
 namespace {
@@ -922,39 +921,27 @@ void SyncTest::DecideServerType() {
   // tests to explicitly set this value in each test class if needed.
   if (server_type_ == SERVER_TYPE_UNDECIDED) {
     base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
-    if (!cl->HasSwitch(switches::kSyncServiceURL) &&
-        !cl->HasSwitch(switches::kSyncServerCommandLine)) {
-      // If neither a sync server URL nor a sync server command line is
-      // provided, start up a local sync test server and point Chrome
-      // to its URL.  This is the most common configuration, and the only
-      // one that makes sense for most developers. FakeServer is the
-      // current solution but some scenarios are only supported by the
+    if (!cl->HasSwitch(switches::kSyncServiceURL)) {
+      // If no sync server URL is provided, start up a local sync test server
+      // and point Chrome to its URL. This is the most common configuration,
+      // and the only one that makes sense for most developers. FakeServer is
+      // the current solution but some scenarios are only supported by the
       // legacy python server.
       switch (test_type_) {
         case SINGLE_CLIENT:
         case TWO_CLIENT:
           server_type_ = IN_PROCESS_FAKE_SERVER;
           break;
-        default:
+        case SINGLE_CLIENT_LEGACY:
+        case TWO_CLIENT_LEGACY:
           server_type_ = LOCAL_PYTHON_SERVER;
       }
-    } else if (cl->HasSwitch(switches::kSyncServiceURL) &&
-               cl->HasSwitch(switches::kSyncServerCommandLine)) {
-      // If a sync server URL and a sync server command line are provided,
-      // start up a local sync server by running the command line. Chrome
-      // will connect to the server at the URL that was provided.
-      server_type_ = LOCAL_LIVE_SERVER;
-    } else if (cl->HasSwitch(switches::kSyncServiceURL) &&
-               !cl->HasSwitch(switches::kSyncServerCommandLine)) {
-      // If a sync server URL is provided, but not a server command line,
-      // it is assumed that the server is already running. Chrome will
-      // automatically connect to it at the URL provided. There is nothing
-      // to do here.
-      server_type_ = EXTERNAL_LIVE_SERVER;
+      DCHECK_NE(server_type_, SERVER_TYPE_UNDECIDED);
     } else {
-      // If a sync server command line is provided, but not a server URL,
-      // we flag an error.
-      LOG(FATAL) << "Can't figure out how to run a server.";
+      // If a sync server URL is provided, it is assumed that the server is
+      // already running. Chrome will automatically connect to it at the URL
+      // provided. There is nothing to do here.
+      server_type_ = EXTERNAL_LIVE_SERVER;
     }
   }
 }
@@ -968,12 +955,6 @@ void SyncTest::SetUpTestServerIfRequired() {
     if (!SetUpLocalPythonTestServer())
       LOG(FATAL) << "Failed to set up local python sync and XMPP servers";
     SetupMockGaiaResponses();
-  } else if (server_type_ == LOCAL_LIVE_SERVER) {
-    // Using mock gaia credentials requires the use of a mock XMPP server.
-    if (username_ == "user@gmail.com" && !SetUpLocalPythonTestServer())
-      LOG(FATAL) << "Failed to set up local python XMPP server";
-    if (!SetUpLocalTestServer())
-      LOG(FATAL) << "Failed to set up local test server";
   } else if (server_type_ == IN_PROCESS_FAKE_SERVER) {
     fake_server_ = std::make_unique<fake_server::FakeServer>();
     SetupMockGaiaResponses();
@@ -1017,35 +998,6 @@ bool SyncTest::SetUpLocalPythonTestServer() {
            << xmpp_host_port_pair.ToString();
 
   return true;
-}
-
-bool SyncTest::SetUpLocalTestServer() {
-  base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
-  base::CommandLine::StringType server_cmdline_string =
-      cl->GetSwitchValueNative(switches::kSyncServerCommandLine);
-  base::CommandLine::StringVector server_cmdline_vector = base::SplitString(
-      server_cmdline_string, FILE_PATH_LITERAL(" "),
-      base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  base::CommandLine server_cmdline(server_cmdline_vector);
-  base::LaunchOptions options;
-#if defined(OS_WIN)
-  options.start_hidden = true;
-#endif
-  test_server_ = base::LaunchProcess(server_cmdline, options);
-  if (!test_server_.IsValid())
-    LOG(ERROR) << "Could not launch local test server.";
-
-  const base::TimeDelta kMaxWaitTime = TestTimeouts::action_max_timeout();
-  const int kNumIntervals = 15;
-  if (WaitForTestServerToStart(kMaxWaitTime, kNumIntervals)) {
-    DVLOG(1) << "Started local test server at "
-             << cl->GetSwitchValueASCII(switches::kSyncServiceURL);
-    return true;
-  } else {
-    LOG(ERROR) << "Could not start local test server at "
-               << cl->GetSwitchValueASCII(switches::kSyncServiceURL);
-    return false;
-  }
 }
 
 bool SyncTest::TearDownLocalPythonTestServer() {
@@ -1209,12 +1161,6 @@ void SyncTest::TriggerMigrationDoneError(syncer::ModelTypeSet model_types) {
             base::UTF16ToASCII(
                 browser()->tab_strip_model()->GetActiveWebContents()->
                     GetTitle()));
-}
-
-void SyncTest::TriggerXmppAuthError() {
-  ASSERT_TRUE(ServerSupportsErrorTriggering());
-  std::string path = "chromiumsync/xmppcred";
-  ui_test_utils::NavigateToURL(browser(), sync_server_.GetURL(path));
 }
 
 fake_server::FakeServer* SyncTest::GetFakeServer() const {
