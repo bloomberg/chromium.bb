@@ -19,6 +19,7 @@
 #include "cc/raster/zero_copy_raster_buffer_provider.h"
 #include "cc/resources/resource_pool.h"
 #include "cc/resources/resource_provider.h"
+#include "cc/test/fake_layer_tree_frame_sink.h"
 #include "cc/test/fake_resource_provider.h"
 #include "cc/tiles/tile_task_manager.h"
 #include "components/viz/common/gpu/context_cache_controller.h"
@@ -27,7 +28,6 @@
 #include "components/viz/test/test_context_provider.h"
 #include "components/viz/test/test_context_support.h"
 #include "components/viz/test/test_gpu_memory_buffer_manager.h"
-#include "components/viz/test/test_shared_bitmap_manager.h"
 #include "gpu/command_buffer/client/raster_implementation_gles.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/config/gpu_feature_info.h"
@@ -334,6 +334,7 @@ class RasterBufferProviderPerfTestBase {
  protected:
   scoped_refptr<viz::ContextProvider> compositor_context_provider_;
   scoped_refptr<viz::RasterContextProvider> worker_context_provider_;
+  std::unique_ptr<FakeLayerTreeFrameSink> layer_tree_frame_sink_;
   std::unique_ptr<LayerTreeResourceProvider> resource_provider_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   std::unique_ptr<ResourcePool> resource_pool_;
@@ -388,7 +389,7 @@ class RasterBufferProviderPerfTest
       case RASTER_BUFFER_PROVIDER_TYPE_BITMAP:
         CreateSoftwareResourceProvider();
         raster_buffer_provider_ = std::make_unique<BitmapRasterBufferProvider>(
-            resource_provider_.get(), &shared_bitmap_manager_);
+            layer_tree_frame_sink_.get());
         resource_pool_ = std::make_unique<ResourcePool>(
             resource_provider_.get(), task_runner_,
             ResourcePool::kDefaultExpirationDelay,
@@ -527,8 +528,9 @@ class RasterBufferProviderPerfTest
   }
 
   void CreateSoftwareResourceProvider() {
+    layer_tree_frame_sink_ = FakeLayerTreeFrameSink::CreateSoftware();
     resource_provider_ = FakeResourceProvider::CreateLayerTreeResourceProvider(
-        nullptr, &shared_bitmap_manager_, nullptr);
+        nullptr, layer_tree_frame_sink_->shared_bitmap_manager(), nullptr);
   }
 
   std::string TestModifierString() const {
@@ -549,7 +551,6 @@ class RasterBufferProviderPerfTest
   std::unique_ptr<TileTaskManager> tile_task_manager_;
   std::unique_ptr<RasterBufferProvider> raster_buffer_provider_;
   viz::TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
-  viz::TestSharedBitmapManager shared_bitmap_manager_;
 };
 
 TEST_P(RasterBufferProviderPerfTest, ScheduleTasks) {

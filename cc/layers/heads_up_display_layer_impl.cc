@@ -19,6 +19,7 @@
 #include "cc/raster/scoped_gpu_raster.h"
 #include "cc/resources/memory_history.h"
 #include "cc/trees/frame_rate_counter.h"
+#include "cc/trees/layer_tree_frame_sink.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
@@ -26,7 +27,7 @@
 #include "components/viz/common/gpu/texture_allocation.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
-#include "components/viz/common/resources/shared_bitmap_manager.h"
+#include "components/viz/common/resources/bitmap_allocation.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "skia/ext/platform_canvas.h"
@@ -117,6 +118,20 @@ class HudGpuBacking : public ResourcePool::GpuBacking {
   GLuint texture_id;
 };
 
+class HudSoftwareBacking : public ResourcePool::SoftwareBacking {
+ public:
+  ~HudSoftwareBacking() override {
+    layer_tree_frame_sink->DidDeleteSharedBitmap(shared_bitmap_id);
+  }
+
+  base::UnguessableToken SharedMemoryGuid() override {
+    return shared_memory->mapped_id();
+  }
+
+  LayerTreeFrameSink* layer_tree_frame_sink;
+  std::unique_ptr<base::SharedMemory> shared_memory;
+};
+
 bool HeadsUpDisplayLayerImpl::WillDraw(
     DrawMode draw_mode,
     LayerTreeResourceProvider* resource_provider) {
@@ -155,6 +170,7 @@ void HeadsUpDisplayLayerImpl::AppendQuads(viz::RenderPass* render_pass,
 
 void HeadsUpDisplayLayerImpl::UpdateHudTexture(
     DrawMode draw_mode,
+    LayerTreeFrameSink* layer_tree_frame_sink,
     LayerTreeResourceProvider* resource_provider,
     bool gpu_raster,
     const viz::RenderPassList& list) {
@@ -228,13 +244,21 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
     }
   } else {
     DCHECK_EQ(draw_mode, DRAW_MODE_SOFTWARE);
-    viz::SharedBitmapManager* shared_bitmap_manager =
-        layer_tree_impl()->shared_bitmap_manager();
-    DCHECK(shared_bitmap_manager);
 
-    if (!pool_resource.shared_bitmap()) {
-      pool_resource.set_shared_bitmap(
-          shared_bitmap_manager->AllocateSharedBitmap(pool_resource.size()));
+    if (!pool_resource.software_backing()) {
+      auto backing = std::make_unique<HudSoftwareBacking>();
+      backing->layer_tree_frame_sink = layer_tree_frame_sink;
+      backing->shared_bitmap_id = viz::SharedBitmap::GenerateId();
+      backing->shared_memory =
+          viz::bitmap_allocation::AllocateMappedBitmap(pool_resource.size());
+
+      mojo::ScopedSharedBufferHandle handle =
+          viz::bitmap_allocation::DuplicateAndCloseMappedBitmap(
+              backing->shared_memory.get(), pool_resource.size());
+      layer_tree_frame_sink->DidAllocateSharedBitmap(std::move(handle),
+                                                     backing->shared_bitmap_id);
+
+      pool_resource.set_software_backing(std::move(backing));
     }
   }
 
@@ -298,12 +322,14 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
     // memory bitmap, wrapped in an SkSurface, that can be shared to the display
     // compositor.
     DCHECK_EQ(draw_mode, DRAW_MODE_SOFTWARE);
-    DCHECK(pool_resource.shared_bitmap());
+    DCHECK(pool_resource.software_backing());
 
     SkImageInfo info = SkImageInfo::MakeN32Premul(
         pool_resource.size().width(), pool_resource.size().height());
+    auto* backing =
+        static_cast<HudSoftwareBacking*>(pool_resource.software_backing());
     sk_sp<SkSurface> surface = SkSurface::MakeRasterDirect(
-        info, pool_resource.shared_bitmap()->pixels(), info.minRowBytes());
+        info, backing->shared_memory->memory(), info.minRowBytes());
 
     DrawHudContents(surface->getCanvas());
   }

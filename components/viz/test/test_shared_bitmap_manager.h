@@ -35,6 +35,7 @@ class TestSharedBitmapManager : public SharedBitmapManager {
  private:
   base::Lock lock_;
   std::map<SharedBitmapId, base::SharedMemory*> bitmap_map_;
+  std::map<SharedBitmapId, std::unique_ptr<base::SharedMemory>> owned_map_;
   std::set<SharedBitmapId> notified_set_;
 };
 

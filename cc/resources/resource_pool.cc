@@ -282,9 +282,9 @@ void ResourcePool::OnResourceReleased(size_t unique_id,
 void ResourcePool::PrepareForExport(const InUsePoolResource& resource) {
   // Exactly one of gpu or software backing should exist.
   DCHECK(resource.resource_->gpu_backing() ||
-         resource.resource_->shared_bitmap());
+         resource.resource_->software_backing());
   DCHECK(!resource.resource_->gpu_backing() ||
-         !resource.resource_->shared_bitmap());
+         !resource.resource_->software_backing());
   viz::TransferableResource transferable;
   if (resource.resource_->gpu_backing()) {
     transferable = viz::TransferableResource::MakeGLOverlay(
@@ -297,9 +297,10 @@ void ResourcePool::PrepareForExport(const InUsePoolResource& resource) {
         resource.resource_->gpu_backing()->wait_on_fence_required;
   } else {
     transferable = viz::TransferableResource::MakeSoftware(
-        resource.resource_->shared_bitmap()->id(),
-        resource.resource_->shared_bitmap()->sequence_number(),
-        resource.resource_->size());
+        resource.resource_->software_backing()->shared_bitmap_id,
+        // Not needed since this software resource's SharedBitmapId was
+        // notified to the display compositor through the CompositorFrameSink.
+        /*sequence_number=*/0, resource.resource_->size());
   }
   transferable.format = resource.resource_->format();
   transferable.buffer_format = viz::BufferFormat(transferable.format);
@@ -569,12 +570,11 @@ void ResourcePool::PoolResource::OnMemoryDump(
     bool is_free) const {
   base::UnguessableToken shm_guid;
   base::trace_event::MemoryAllocatorDumpGuid backing_guid;
-  if (shared_bitmap_) {
-    // If the SharedBitmap was allocated for cross-process use, then it has this
-    // |shm_guid|, else we fallback to the SharedBitmapGUID.
-    shm_guid = shared_bitmap_->GetCrossProcessGUID();
-    if (shm_guid.is_empty())
-      backing_guid = viz::GetSharedBitmapGUIDForTracing(shared_bitmap_->id());
+  if (software_backing_) {
+    // Software resources are allocated in shared memory for use cross-process
+    // in the display compositor. So we use the guid for the shared memory to
+    // identify them in tracing in all processes.
+    shm_guid = software_backing_->SharedMemoryGuid();
   } else if (gpu_backing_) {
     // We prefer the SharedMemoryGuid() if it exists, if the resource is backed
     // by shared memory.

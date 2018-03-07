@@ -26,6 +26,7 @@ struct SkRect;
 
 namespace cc {
 class FrameRateCounter;
+class LayerTreeFrameSink;
 class LayerTreeResourceProvider;
 
 class CC_EXPORT HeadsUpDisplayLayerImpl : public LayerImpl {
@@ -44,6 +45,7 @@ class CC_EXPORT HeadsUpDisplayLayerImpl : public LayerImpl {
   void AppendQuads(viz::RenderPass* render_pass,
                    AppendQuadsData* append_quads_data) override;
   void UpdateHudTexture(DrawMode draw_mode,
+                        LayerTreeFrameSink* frame_sink,
                         LayerTreeResourceProvider* resource_provider,
                         bool gpu_raster,
                         const viz::RenderPassList& list);

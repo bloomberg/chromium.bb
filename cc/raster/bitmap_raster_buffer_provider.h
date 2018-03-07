@@ -17,19 +17,14 @@ class ConvertableToTraceFormat;
 }
 }
 
-namespace viz {
-class SharedBitmapManager;
-}
-
 namespace cc {
-class LayerTreeResourceProvider;
+class LayerTreeFrameSink;
 
 class CC_EXPORT BitmapRasterBufferProvider : public RasterBufferProvider {
  public:
   ~BitmapRasterBufferProvider() override;
 
-  BitmapRasterBufferProvider(LayerTreeResourceProvider* resource_provider,
-                             viz::SharedBitmapManager* shared_bitmap_manager);
+  explicit BitmapRasterBufferProvider(LayerTreeFrameSink* frame_sink);
 
   // Overridden from RasterBufferProvider:
   std::unique_ptr<RasterBuffer> AcquireBufferForRaster(
@@ -52,8 +47,7 @@ class CC_EXPORT BitmapRasterBufferProvider : public RasterBufferProvider {
   std::unique_ptr<base::trace_event::ConvertableToTraceFormat> StateAsValue()
       const;
 
-  LayerTreeResourceProvider* const resource_provider_;
-  viz::SharedBitmapManager* const shared_bitmap_manager_;
+  LayerTreeFrameSink* const frame_sink_;
 
   DISALLOW_COPY_AND_ASSIGN(BitmapRasterBufferProvider);
 };
