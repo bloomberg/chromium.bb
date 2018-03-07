@@ -179,7 +179,6 @@ void Profile::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterStringPref(prefs::kApplicationLocaleBackup, std::string());
   registry->RegisterStringPref(prefs::kApplicationLocaleAccepted,
                                std::string());
-  registry->RegisterStringPref(prefs::kCurrentWallpaperAppName, std::string());
 #endif
 
 #if defined(OS_ANDROID)

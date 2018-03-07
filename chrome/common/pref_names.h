@@ -271,7 +271,6 @@ extern const char kFirstRunTutorialShown[];
 extern const char kSAMLOfflineSigninTimeLimit[];
 extern const char kSAMLLastGAIASignInTime[];
 extern const char kTimeOnOobe[];
-extern const char kCurrentWallpaperAppName[];
 extern const char kFileSystemProviderMounted[];
 extern const char kTouchVirtualKeyboardEnabled[];
 extern const char kWakeOnWifiDarkConnect[];

@@ -24,8 +24,6 @@
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/pref_names.h"
-#include "components/prefs/pref_service.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/wallpaper/wallpaper_info.h"
@@ -162,20 +160,6 @@ void WallpaperSetWallpaperFunction::OnWallpaperDecoded(
       account_id_, wallpaper_files_id_, params_->details.filename, layout,
       image, false /*preview_mode=*/);
   unsafe_wallpaper_decoder_ = NULL;
-
-  // Save current extension name. It will be displayed in the component
-  // wallpaper picker app. If current extension is the component wallpaper
-  // picker, set an empty string.
-  // TODO(xdai): This preference is unused now. For compatiblity concern, we
-  // need to keep it until it's safe to clean it up.
-  Profile* profile = Profile::FromBrowserContext(browser_context());
-  if (extension()->id() == extension_misc::kWallpaperManagerId) {
-    profile->GetPrefs()->SetString(prefs::kCurrentWallpaperAppName,
-                                   std::string());
-  } else {
-    profile->GetPrefs()->SetString(prefs::kCurrentWallpaperAppName,
-                                   extension()->name());
-  }
 
   if (!params_->details.thumbnail)
     SendResponse(true);
