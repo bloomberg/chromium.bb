@@ -21,6 +21,7 @@ class ChromiumBrandedImageProvider : public BrandedImageProvider {
   bool GetToolbarVoiceSearchButtonImageId(int* image_id) override;
   UIImage* GetWhatsNewIconImage(WhatsNewIcon type) override;
   UIImage* GetToolbarSearchButtonImage(SearchEngineIcon type) override;
+  UIImage* GetDownloadGoogleDriveImage() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromiumBrandedImageProvider);

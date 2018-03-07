@@ -8,6 +8,7 @@ source_set("images") {
     "chromium_branded_image_provider.mm",
   ]
   deps = [
+    "resources:download_drivium",
     "//base",
     "//ios/chrome/app/theme",
     "//ios/chrome/browser/ui/toolbar/buttons/resources:toolbar_search",
