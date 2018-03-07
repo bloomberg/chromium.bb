@@ -13,7 +13,8 @@ namespace sql {
 // Helper to capture any errors into a local variable for testing.
 // For instance:
 //   int error = SQLITE_OK;
-//   ScopedErrorCallback sec(db, base::Bind(&CaptureErrorCallback, &error));
+//   ScopedErrorCallback sec(db, base::BindRepeating(&CaptureErrorCallback,
+//                                                   &error));
 //   // Provoke SQLITE_CONSTRAINT on db.
 //   EXPECT_EQ(SQLITE_CONSTRAINT, error);
 void CaptureErrorCallback(int* error_pointer, int error, sql::Statement* stmt);

@@ -54,7 +54,7 @@ class SQLiteFeaturesTest : public sql::SQLTestBase {
     // The error delegate will set |error_| and |sql_text_| when any sqlite
     // statement operation returns an error code.
     db().set_error_callback(
-        base::Bind(&CaptureErrorCallback, &error_, &sql_text_));
+        base::BindRepeating(&CaptureErrorCallback, &error_, &sql_text_));
   }
 
   void TearDown() override {

@@ -166,7 +166,7 @@ class SQL_EXPORT Connection {
   //
   // If no callback is set, the default action is to crash in debug
   // mode or return failure in release mode.
-  typedef base::Callback<void(int, Statement*)> ErrorCallback;
+  typedef base::RepeatingCallback<void(int, Statement*)> ErrorCallback;
   void set_error_callback(const ErrorCallback& callback) {
     error_callback_ = callback;
   }
@@ -563,7 +563,7 @@ class SQL_EXPORT Connection {
 
   // Accessors for global error-expecter, for injecting behavior during tests.
   // See test/scoped_error_expecter.h.
-  typedef base::Callback<bool(int)> ErrorExpecterCallback;
+  typedef base::RepeatingCallback<bool(int)> ErrorExpecterCallback;
   static ErrorExpecterCallback* current_expecter_cb_;
   static void SetErrorExpecter(ErrorExpecterCallback* expecter);
   static void ResetErrorExpecter();
