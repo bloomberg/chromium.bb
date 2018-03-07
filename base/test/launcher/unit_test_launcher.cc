@@ -191,14 +191,14 @@ bool GetSwitchValueAsInt(const std::string& switch_name, int* result) {
   return true;
 }
 
-int LaunchUnitTestsInternal(const RunTestSuiteCallback& run_test_suite,
+int LaunchUnitTestsInternal(RunTestSuiteCallback run_test_suite,
                             size_t parallel_jobs,
                             int default_batch_limit,
                             bool use_job_objects,
-                            const Closure& gtest_init) {
+                            OnceClosure gtest_init) {
 #if defined(OS_ANDROID)
   // We can't easily fork on Android, just run the test suite directly.
-  return run_test_suite.Run();
+  return std::move(run_test_suite).Run();
 #else
   bool force_single_process = false;
   if (CommandLine::ForCurrentProcess()->HasSwitch(
@@ -222,7 +222,7 @@ int LaunchUnitTestsInternal(const RunTestSuiteCallback& run_test_suite,
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kTestChildProcess) ||
       force_single_process) {
-    return run_test_suite.Run();
+    return std::move(run_test_suite).Run();
   }
 #endif
 
@@ -233,7 +233,7 @@ int LaunchUnitTestsInternal(const RunTestSuiteCallback& run_test_suite,
 
   TimeTicks start_time(TimeTicks::Now());
 
-  gtest_init.Run();
+  std::move(gtest_init).Run();
   TestTimeouts::Initialize();
 
   int batch_limit = default_batch_limit;
@@ -567,23 +567,24 @@ void SerialUnitTestProcessLifetimeObserver::OnCompleted(
 
 int LaunchUnitTests(int argc,
                     char** argv,
-                    const RunTestSuiteCallback& run_test_suite) {
+                    RunTestSuiteCallback run_test_suite) {
   CommandLine::Init(argc, argv);
   size_t parallel_jobs = NumParallelJobs();
   if (parallel_jobs == 0U) {
     return 1;
   }
-  return LaunchUnitTestsInternal(run_test_suite, parallel_jobs,
+  return LaunchUnitTestsInternal(std::move(run_test_suite), parallel_jobs,
                                  kDefaultTestBatchLimit, true,
-                                 Bind(&InitGoogleTestChar, &argc, argv));
+                                 BindOnce(&InitGoogleTestChar, &argc, argv));
 }
 
 int LaunchUnitTestsSerially(int argc,
                             char** argv,
-                            const RunTestSuiteCallback& run_test_suite) {
+                            RunTestSuiteCallback run_test_suite) {
   CommandLine::Init(argc, argv);
-  return LaunchUnitTestsInternal(run_test_suite, 1U, kDefaultTestBatchLimit,
-                                 true, Bind(&InitGoogleTestChar, &argc, argv));
+  return LaunchUnitTestsInternal(std::move(run_test_suite), 1U,
+                                 kDefaultTestBatchLimit, true,
+                                 BindOnce(&InitGoogleTestChar, &argc, argv));
 }
 
 int LaunchUnitTestsWithOptions(int argc,
@@ -591,27 +592,27 @@ int LaunchUnitTestsWithOptions(int argc,
                                size_t parallel_jobs,
                                int default_batch_limit,
                                bool use_job_objects,
-                               const RunTestSuiteCallback& run_test_suite) {
+                               RunTestSuiteCallback run_test_suite) {
   CommandLine::Init(argc, argv);
-  return LaunchUnitTestsInternal(run_test_suite, parallel_jobs,
+  return LaunchUnitTestsInternal(std::move(run_test_suite), parallel_jobs,
                                  default_batch_limit, use_job_objects,
-                                 Bind(&InitGoogleTestChar, &argc, argv));
+                                 BindOnce(&InitGoogleTestChar, &argc, argv));
 }
 
 #if defined(OS_WIN)
 int LaunchUnitTests(int argc,
                     wchar_t** argv,
                     bool use_job_objects,
-                    const RunTestSuiteCallback& run_test_suite) {
+                    RunTestSuiteCallback run_test_suite) {
   // Windows CommandLine::Init ignores argv anyway.
   CommandLine::Init(argc, NULL);
   size_t parallel_jobs = NumParallelJobs();
   if (parallel_jobs == 0U) {
     return 1;
   }
-  return LaunchUnitTestsInternal(run_test_suite, parallel_jobs,
+  return LaunchUnitTestsInternal(std::move(run_test_suite), parallel_jobs,
                                  kDefaultTestBatchLimit, use_job_objects,
-                                 Bind(&InitGoogleTestWChar, &argc, argv));
+                                 BindOnce(&InitGoogleTestWChar, &argc, argv));
 }
 #endif  // defined(OS_WIN)
 
