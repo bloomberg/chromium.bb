@@ -50,3 +50,7 @@ UIImage* BrandedImageProvider::GetToolbarSearchButtonImage(
     SearchEngineIcon type) {
   return nil;
 }
+
+UIImage* BrandedImageProvider::GetDownloadGoogleDriveImage() {
+  return nil;
+}

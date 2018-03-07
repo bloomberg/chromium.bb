@@ -56,6 +56,10 @@ class BrandedImageProvider {
   // corresponding to the |type| search engine.
   virtual UIImage* GetToolbarSearchButtonImage(SearchEngineIcon type);
 
+  // Returns the 24pt x 24pt image to use for the "Download Google Drive" icon
+  // on Download Manager UI.
+  virtual UIImage* GetDownloadGoogleDriveImage();
+
  private:
   DISALLOW_COPY_AND_ASSIGN(BrandedImageProvider);
 };

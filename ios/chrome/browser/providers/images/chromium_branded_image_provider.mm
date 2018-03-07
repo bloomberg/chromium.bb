@@ -59,3 +59,7 @@ UIImage* ChromiumBrandedImageProvider::GetToolbarSearchButtonImage(
     SearchEngineIcon type) {
   return [UIImage imageNamed:@"toolbar_search"];
 }
+
+UIImage* ChromiumBrandedImageProvider::GetDownloadGoogleDriveImage() {
+  return [UIImage imageNamed:@"download_drivium"];
+}
