@@ -19,13 +19,15 @@ namespace syncer {
 
 namespace {
 
-SharedModelTypeProcessor* GetProcessorFromBridge(ModelTypeSyncBridge* bridge) {
+ClientTagBasedModelTypeProcessor* GetProcessorFromBridge(
+    ModelTypeSyncBridge* bridge) {
   ModelTypeChangeProcessor* processor = bridge->change_processor();
   if (processor == nullptr) {
-    LOG(WARNING) << "SharedModelTypeProcessor destroyed before debug info was "
-                    "retrieved.";
+    LOG(WARNING)
+        << "ClientTagBasedModelTypeProcessor destroyed before debug info was "
+           "retrieved.";
   }
-  return static_cast<SharedModelTypeProcessor*>(processor);
+  return static_cast<ClientTagBasedModelTypeProcessor*>(processor);
 }
 
 }  // namespace
@@ -35,7 +37,7 @@ void ModelTypeDebugInfo::GetAllNodes(
     const base::Callback<void(const ModelType, std::unique_ptr<ListValue>)>&
         callback,
     ModelTypeSyncBridge* bridge) {
-  SharedModelTypeProcessor* processor = GetProcessorFromBridge(bridge);
+  ClientTagBasedModelTypeProcessor* processor = GetProcessorFromBridge(bridge);
   if (processor) {
     bridge->GetAllData(base::Bind(&ModelTypeDebugInfo::MergeDataWithMetadata,
                                   base::Unretained(processor), callback));
@@ -46,7 +48,7 @@ void ModelTypeDebugInfo::GetAllNodes(
 void ModelTypeDebugInfo::GetStatusCounters(
     const base::Callback<void(ModelType, const StatusCounters&)>& callback,
     ModelTypeSyncBridge* bridge) {
-  SharedModelTypeProcessor* processor = GetProcessorFromBridge(bridge);
+  ClientTagBasedModelTypeProcessor* processor = GetProcessorFromBridge(bridge);
   if (processor) {
     StatusCounters counters;
     counters.num_entries_and_tombstones = processor->entities_.size();
@@ -62,7 +64,7 @@ void ModelTypeDebugInfo::GetStatusCounters(
 // static
 void ModelTypeDebugInfo::RecordMemoryUsageHistogram(
     ModelTypeSyncBridge* bridge) {
-  SharedModelTypeProcessor* processor = GetProcessorFromBridge(bridge);
+  ClientTagBasedModelTypeProcessor* processor = GetProcessorFromBridge(bridge);
   size_t memory_usage = processor->EstimateMemoryUsage();
   SyncRecordMemoryKbHistogram(kModelTypeMemoryHistogramPrefix, processor->type_,
                               memory_usage);
@@ -72,7 +74,7 @@ ModelTypeDebugInfo::ModelTypeDebugInfo() {}
 
 // static
 void ModelTypeDebugInfo::MergeDataWithMetadata(
-    SharedModelTypeProcessor* processor,
+    ClientTagBasedModelTypeProcessor* processor,
     const base::Callback<void(const ModelType, std::unique_ptr<ListValue>)>&
         callback,
     std::unique_ptr<DataBatch> batch) {

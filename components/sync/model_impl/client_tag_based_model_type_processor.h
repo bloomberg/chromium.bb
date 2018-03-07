@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNC_MODEL_IMPL_SHARED_MODEL_TYPE_PROCESSOR_H_
-#define COMPONENTS_SYNC_MODEL_IMPL_SHARED_MODEL_TYPE_PROCESSOR_H_
+#ifndef COMPONENTS_SYNC_MODEL_IMPL_CLIENT_TAG_BASED_MODEL_TYPE_PROCESSOR_H_
+#define COMPONENTS_SYNC_MODEL_IMPL_CLIENT_TAG_BASED_MODEL_TYPE_PROCESSOR_H_
 
 #include <map>
 #include <memory>
@@ -34,16 +34,17 @@ class ProcessorEntityTracker;
 
 // A sync component embedded on the model type's thread that tracks entity
 // metadata in the model store and coordinates communication between sync and
-// model type threads. See //docs/sync/uss/shared_model_type_processor.md for a
-// more thorough description.
-class SharedModelTypeProcessor : public ModelTypeProcessor,
-                                 public ModelTypeChangeProcessor {
+// model type threads. See
+// //docs/sync/uss/client_tag_based_model_type_processor.md for a more thorough
+// description.
+class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
+                                         public ModelTypeChangeProcessor {
  public:
-  SharedModelTypeProcessor(ModelType type,
-                           ModelTypeSyncBridge* bridge,
-                           const base::RepeatingClosure& dump_stack,
-                           bool commit_only);
-  ~SharedModelTypeProcessor() override;
+  ClientTagBasedModelTypeProcessor(ModelType type,
+                                   ModelTypeSyncBridge* bridge,
+                                   const base::RepeatingClosure& dump_stack,
+                                   bool commit_only);
+  ~ClientTagBasedModelTypeProcessor() override;
 
   // Whether the processor is allowing changes to its model type. If this is
   // false, the bridge should not allow any changes to its data.
@@ -84,7 +85,7 @@ class SharedModelTypeProcessor : public ModelTypeProcessor,
 
  private:
   friend class ModelTypeDebugInfo;
-  friend class SharedModelTypeProcessorTest;
+  friend class ClientTagBasedModelTypeProcessorTest;
 
   // Returns true if the model is ready or encountered an error.
   bool IsModelReadyOrError() const;
@@ -270,11 +271,11 @@ class SharedModelTypeProcessor : public ModelTypeProcessor,
   SEQUENCE_CHECKER(sequence_checker_);
 
   // WeakPtrFactory for this processor which will be sent to sync thread.
-  base::WeakPtrFactory<SharedModelTypeProcessor> weak_ptr_factory_;
+  base::WeakPtrFactory<ClientTagBasedModelTypeProcessor> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(SharedModelTypeProcessor);
+  DISALLOW_COPY_AND_ASSIGN(ClientTagBasedModelTypeProcessor);
 };
 
 }  // namespace syncer
 
-#endif  // COMPONENTS_SYNC_MODEL_IMPL_SHARED_MODEL_TYPE_PROCESSOR_H_
+#endif  // COMPONENTS_SYNC_MODEL_IMPL_CLIENT_TAG_BASED_MODEL_TYPE_PROCESSOR_H_

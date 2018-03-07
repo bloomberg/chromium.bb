@@ -11,14 +11,14 @@
 #include "base/values.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/model/model_type_sync_bridge.h"
-#include "components/sync/model_impl/shared_model_type_processor.h"
+#include "components/sync/model_impl/client_tag_based_model_type_processor.h"
 
 namespace syncer {
 
 // This class holds static functions used for extracting debug information for a
 // model type. They should be run on the model thread. These functions are
 // static so they can be posted to from the UI thread, and they live inside a
-// class because it is a friend class to SharedModelTypeProcessor.
+// class because it is a friend class to ClientTagBasedModelTypeProcessor.
 class ModelTypeDebugInfo {
  public:
   // Returns a ListValue representing all nodes for the type to |callback|.
@@ -46,7 +46,7 @@ class ModelTypeDebugInfo {
   // function will merge real data from |batch| with metadata extracted from
   // the |processor|, then pass it all to |callback|.
   static void MergeDataWithMetadata(
-      SharedModelTypeProcessor* processor,
+      ClientTagBasedModelTypeProcessor* processor,
       const base::Callback<void(const ModelType,
                                 std::unique_ptr<base::ListValue>)>& callback,
       std::unique_ptr<DataBatch> batch);
