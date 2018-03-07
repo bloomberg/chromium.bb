@@ -324,8 +324,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   SkColor GetThemeColor() const override;
   WebUI* GetWebUI() const override;
   WebUI* GetCommittedWebUI() const override;
-  void SetUserAgentOverride(const std::string& override) override;
+  void SetUserAgentOverride(const std::string& override,
+                            bool override_in_new_tabs) override;
   const std::string& GetUserAgentOverride() const override;
+  bool ShouldOverrideUserAgentInNewTabs() override;
   void EnableWebContentsOnlyAccessibilityMode() override;
   bool IsWebContentsOnlyAccessibilityModeForTesting() const override;
   bool IsFullAccessibilityModeForTesting() const override;
@@ -1687,6 +1689,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   // Helper variable for resolving races in UpdateTargetURL / ClearTargetURL.
   RenderViewHost* view_that_set_last_target_url_ = nullptr;
+
+  // Whether we should override user agent in new tabs.
+  bool should_override_user_agent_in_new_tabs_ = false;
 
   base::WeakPtrFactory<WebContentsImpl> loading_weak_factory_;
   base::WeakPtrFactory<WebContentsImpl> weak_factory_;

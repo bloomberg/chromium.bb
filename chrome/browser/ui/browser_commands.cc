@@ -1154,7 +1154,8 @@ void ToggleRequestTabletSite(Browser* browser) {
     entry->SetIsOverridingUserAgent(true);
     std::string product = version_info::GetProductNameAndVersionForUserAgent();
     current_tab->SetUserAgentOverride(content::BuildUserAgentFromOSAndProduct(
-        kOsOverrideForTabletSite, product));
+                                          kOsOverrideForTabletSite, product),
+                                      false);
   }
   controller.Reload(content::ReloadType::ORIGINAL_REQUEST_URL, true);
 }

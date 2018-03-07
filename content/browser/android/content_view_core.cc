@@ -138,7 +138,7 @@ ContentViewCore::ContentViewCore(JNIEnv* env,
   std::string product = content::GetContentClient()->GetProduct();
   std::string spoofed_ua =
       BuildUserAgentFromOSAndProduct(kLinuxInfoStr, product);
-  web_contents->SetUserAgentOverride(spoofed_ua);
+  web_contents->SetUserAgentOverride(spoofed_ua, false);
 
   InitWebContents();
 }

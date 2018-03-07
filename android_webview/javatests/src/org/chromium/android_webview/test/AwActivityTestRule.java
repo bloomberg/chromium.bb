@@ -53,6 +53,14 @@ public class AwActivityTestRule extends ActivityTestRule<AwTestRunnerActivity> {
 
     private static final Pattern MAYBE_QUOTED_STRING = Pattern.compile("^(\"?)(.*)\\1$");
 
+    /**
+     * An interface to call onCreateWindow(AwContents).
+     */
+    public interface OnCreateWindowHandler {
+        /** This will be called when a new window pops up from the current webview. */
+        public boolean onCreateWindow(AwContents awContents);
+    }
+
     private Description mCurrentTestDescription;
 
     // The browser context needs to be a process-wide singleton.
@@ -525,10 +533,11 @@ public class AwActivityTestRule extends ActivityTestRule<AwTestRunnerActivity> {
 
     /**
      * Supplies the popup window with AwContents then waits for the popup window to finish loading.
+     * @param parentAwContents Parent webview's AwContents.
      */
     public PopupInfo connectPendingPopup(AwContents parentAwContents) throws Exception {
         PopupInfo popupInfo = createPopupContents(parentAwContents);
-        loadPopupContents(parentAwContents, popupInfo);
+        loadPopupContents(parentAwContents, popupInfo, null);
         return popupInfo;
     }
 
@@ -548,12 +557,18 @@ public class AwActivityTestRule extends ActivityTestRule<AwTestRunnerActivity> {
 
     /**
      * Waits for the popup window to finish loading.
+     * @param parentAwContents Parent webview's AwContents.
+     * @param info The PopupInfo.
+     * @param onCreateWindowHandler An instance of OnCreateWindowHandler. null if there isn't.
      */
-    public void loadPopupContents(final AwContents parentAwContents, PopupInfo info)
-            throws Exception {
+    public void loadPopupContents(final AwContents parentAwContents, PopupInfo info,
+            OnCreateWindowHandler onCreateWindowHandler) throws Exception {
         TestAwContentsClient popupContentsClient = info.popupContentsClient;
         AwTestContainerView popupContainerView = info.popupContainerView;
         final AwContents popupContents = info.popupContents;
+
+        if (onCreateWindowHandler != null) onCreateWindowHandler.onCreateWindow(popupContents);
+
         ThreadUtils.runOnUiThreadBlocking(
                 () -> parentAwContents.supplyContentsForPopup(popupContents));
 

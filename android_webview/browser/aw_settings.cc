@@ -161,7 +161,7 @@ void AwSettings::UpdateUserAgentLocked(JNIEnv* env,
 
   if (ua_overidden) {
     std::string override = base::android::ConvertJavaStringToUTF8(str);
-    web_contents()->SetUserAgentOverride(override);
+    web_contents()->SetUserAgentOverride(override, true);
   }
 
   const content::NavigationController& controller =

@@ -97,6 +97,7 @@ class CONTENT_EXPORT InterstitialPageImpl : public InterstitialPage,
   // NavigatorDelegate implementation.
   WebContents* OpenURL(const OpenURLParams& params) override;
   const std::string& GetUserAgentOverride() const override;
+  bool ShouldOverrideUserAgentInNewTabs() override;
   bool ShowingInterstitialPage() const override;
 
  protected:
