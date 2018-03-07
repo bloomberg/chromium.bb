@@ -11,4 +11,5 @@ sources = [
 type_mappings = [
   "blink.mojom.MediaDeviceType=content::MediaDeviceType",
   "blink.mojom.MediaDeviceInfo=content::MediaDeviceInfo",
+  "blink.mojom.FacingMode=media::VideoFacingMode",
 ]

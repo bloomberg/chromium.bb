@@ -27,22 +27,16 @@
 namespace content {
 namespace {
 
-blink::mojom::FacingMode GetMojoFacingMode(
+media::VideoFacingMode GetVideoFacingMode(
     const blink::WebMediaStreamTrack::FacingMode facing_mode) {
   switch (facing_mode) {
     case blink::WebMediaStreamTrack::FacingMode::kUser:
-      return blink::mojom::FacingMode::USER;
+      return media::MEDIA_VIDEO_FACING_USER;
     case blink::WebMediaStreamTrack::FacingMode::kEnvironment:
-      return blink::mojom::FacingMode::ENVIRONMENT;
-    case blink::WebMediaStreamTrack::FacingMode::kLeft:
-      return blink::mojom::FacingMode::LEFT;
-    case blink::WebMediaStreamTrack::FacingMode::kRight:
-      return blink::mojom::FacingMode::RIGHT;
-    case blink::WebMediaStreamTrack::FacingMode::kNone:
-      return blink::mojom::FacingMode::NONE;
+      return media::MEDIA_VIDEO_FACING_ENVIRONMENT;
+    default:
+      return media::MEDIA_VIDEO_FACING_NONE;
   }
-  NOTREACHED();
-  return blink::mojom::FacingMode::NONE;
 }
 
 void RequestFailed(blink::WebApplyConstraintsRequest request,
@@ -263,7 +257,7 @@ VideoCaptureSettings ApplyConstraintsProcessor::SelectVideoSettings(
       blink::mojom::VideoInputDeviceCapabilities::New();
   device_capabilities->device_id =
       current_request_.Track().Source().Id().Ascii();
-  device_capabilities->facing_mode = GetMojoFacingMode(
+  device_capabilities->facing_mode = GetVideoFacingMode(
       GetCurrentVideoSource()
           ? ToWebFacingMode(GetCurrentVideoSource()->device().video_facing)
           : blink::WebMediaStreamTrack::FacingMode::kNone);
