@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "ios/chrome/browser/notification_promo.h"
-#include "ios/public/provider/chrome/browser/images/whats_new_icon.h"
+#include "ios/public/provider/chrome/browser/images/branded_image_icon_types.h"
 #include "url/gurl.h"
 
 namespace base {

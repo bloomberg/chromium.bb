@@ -6,11 +6,14 @@
 #define IOS_PUBLIC_PROVIDER_CHROME_BROWSER_IMAGES_BRANDED_IMAGE_PROVIDER_H_
 
 #include "base/macros.h"
-#include "ios/public/provider/chrome/browser/images/whats_new_icon.h"
+#include "ios/public/provider/chrome/browser/images/branded_image_icon_types.h"
 
 @class UIImage;
 
 // BrandedImageProvider vends images that contain embedder-specific branding.
+// When adding method to this class, do not forget to add Chromium specific
+// implementation to ChromiumBrandedImageProvider (the file may not be in the
+// Xcode project if you are using internal sources).
 class BrandedImageProvider {
  public:
   BrandedImageProvider();
@@ -45,8 +48,13 @@ class BrandedImageProvider {
   // Returns the 24pt x 24pt image corresponding to the given icon |type|.
   virtual UIImage* GetWhatsNewIconImage(WhatsNewIcon type);
 
-  // Returns the image to use for the "search the web" button.
+  // Returns the 38pt x 38pt image to use for the "search the web" button.
+  // Deprecated, instead use GetToolbarSearchButtonImage(SEARCH_ENGINE_GOOGLE).
   virtual UIImage* GetToolbarSearchButtonImage();
+
+  // Returns the 38pt x 38pt image to use for the "search the web" button
+  // corresponding to the |type| search engine.
+  virtual UIImage* GetToolbarSearchButtonImage(SearchEngineIcon type);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BrandedImageProvider);

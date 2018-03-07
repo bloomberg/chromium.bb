@@ -40,7 +40,6 @@ source_set("toolbar") {
     "//ios/chrome/browser/ui/omnibox/popup",
     "//ios/chrome/browser/ui/toolbar:toolbar_ui",
     "//ios/chrome/browser/ui/toolbar/buttons",
-    "//ios/chrome/browser/ui/toolbar/buttons/resources:toolbar_search",
     "//ios/chrome/browser/ui/toolbar/keyboard_assist",
     "//ios/chrome/browser/ui/toolbar/public",
     "//ios/chrome/browser/ui/tools_menu",
@@ -54,6 +53,10 @@ source_set("toolbar") {
     "//ios/public/provider/chrome/browser/voice",
     "//ios/third_party/material_components_ios",
     "//ios/web",
+
+    # Remove this dependency when the code uses the method
+    # GetToolbarSearchButtonImage(SearchEngineIcon) overload.
+    "//ios/chrome/browser/ui/toolbar/buttons/resources:toolbar_search",
   ]
 
   allow_circular_includes_from = [ "//ios/chrome/browser/ui/location_bar" ]

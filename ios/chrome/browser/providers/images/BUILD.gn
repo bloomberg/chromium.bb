@@ -10,6 +10,7 @@ source_set("images") {
   deps = [
     "//base",
     "//ios/chrome/app/theme",
+    "//ios/chrome/browser/ui/toolbar/buttons/resources:toolbar_search",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/images",
     "//ui/base",

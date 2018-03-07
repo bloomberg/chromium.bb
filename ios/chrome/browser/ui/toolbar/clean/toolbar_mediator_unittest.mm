@@ -72,20 +72,29 @@ class TestToolbarMediatorBrandedImageProvider
     : public TestBrandedImageProvider {
  public:
   TestToolbarMediatorBrandedImageProvider()
-      : google_search_icon_([[UIImage alloc] init]) {}
+      : google_search_icon_([[UIImage alloc] init]),
+        generic_search_icon_([[UIImage alloc] init]) {}
 
   ~TestToolbarMediatorBrandedImageProvider() override = default;
 
   // Getter for search engine images for unit test.
+  UIImage* generic_search_icon() { return generic_search_icon_; }
   UIImage* google_search_icon() { return google_search_icon_; }
 
   // BrandedImageProvider implementation.
-  UIImage* GetToolbarSearchButtonImage() override {
-    return google_search_icon_;
+  UIImage* GetToolbarSearchButtonImage(SearchEngineIcon type) override {
+    switch (type) {
+      case SEARCH_ENGINE_ICON_GOOGLE_SEARCH:
+        return google_search_icon_;
+
+      default:
+        return generic_search_icon_;
+    }
   }
 
  private:
   UIImage* google_search_icon_;
+  UIImage* generic_search_icon_;
 
   DISALLOW_COPY_AND_ASSIGN(TestToolbarMediatorBrandedImageProvider);
 };

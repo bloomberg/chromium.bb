@@ -16,7 +16,7 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/variations/variations_associated_data.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
-#include "ios/public/provider/chrome/browser/images/whats_new_icon.h"
+#include "ios/public/provider/chrome/browser/images/branded_image_icon_types.h"
 #include "testing/platform_test.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"

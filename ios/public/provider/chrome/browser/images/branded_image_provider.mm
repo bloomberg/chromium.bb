@@ -43,5 +43,10 @@ UIImage* BrandedImageProvider::GetWhatsNewIconImage(WhatsNewIcon type) {
 }
 
 UIImage* BrandedImageProvider::GetToolbarSearchButtonImage() {
+  return GetToolbarSearchButtonImage(SEARCH_ENGINE_ICON_GOOGLE_SEARCH);
+}
+
+UIImage* BrandedImageProvider::GetToolbarSearchButtonImage(
+    SearchEngineIcon type) {
   return nil;
 }
