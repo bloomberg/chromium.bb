@@ -20,6 +20,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "ui/base/accelerators/accelerator.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/widget/widget.h"
 
@@ -27,7 +28,10 @@ namespace {
 
 class TestDialog : public views::DialogDelegateView {
  public:
-  TestDialog() { SetFocusBehavior(FocusBehavior::ALWAYS); }
+  TestDialog() {
+    SetFocusBehavior(FocusBehavior::ALWAYS);
+    GetViewAccessibility().OverrideName("Test dialog");
+  }
   ~TestDialog() override {}
 
   views::View* GetInitiallyFocusedView() override { return this; }
