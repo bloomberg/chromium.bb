@@ -208,7 +208,8 @@ Polymer({
     // Set the Web Proxy Auto Discovery URL.
     var ipv4 =
         CrOnc.getIPConfigForType(this.networkProperties, CrOnc.IPType.IPV4);
-    this.WPAD_ = (ipv4 && ipv4.WebProxyAutoDiscoveryUrl) || '';
+    this.WPAD_ = (ipv4 && ipv4.WebProxyAutoDiscoveryUrl) ||
+        this.i18n('networkProxyWpadNone');
 
     this.setProxyAsync_(proxy);
   },
