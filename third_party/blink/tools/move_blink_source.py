@@ -529,7 +529,7 @@ Bug: 768828
         return '#%s "%s"' % (include_or_import, path)
 
     def _update_cpp_includes(self, content):
-        pattern = re.compile(r'#(include|import)\s+"((bindings|core|modules|platform|public|' +
+        pattern = re.compile(r'#(include|import)\s+"((bindings|controller||core|modules|platform|public|' +
                              r'third_party/WebKit/(Source|common|public))/[-_\w/.]+)"')
         return pattern.sub(self._replace_include_path, content)
 
