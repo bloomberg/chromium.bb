@@ -39,7 +39,6 @@
 #include "core/loader/ThreadableLoader.h"
 #include "core/loader/ThreadableLoaderClient.h"
 #include "core/typed_arrays/DOMArrayBuffer.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/wait.h"
 #include "platform/blob/BlobRegistry.h"
 #include "platform/blob/BlobURL.h"
@@ -58,45 +57,27 @@
 
 namespace blink {
 
-namespace {
+// static
+std::unique_ptr<FileReaderLoader> FileReaderLoader::Create(
+    ReadType read_type,
+    FileReaderLoaderClient* client) {
+  return std::make_unique<FileReaderLoader>(read_type, client);
+}
 
-class FileReaderLoaderMojo : public FileReaderLoader,
-                             public mojom::blink::BlobReaderClient {
- public:
-  FileReaderLoaderMojo(ReadType read_type, FileReaderLoaderClient* client)
-      : FileReaderLoader(read_type, client),
-        handle_watcher_(FROM_HERE,
-                        mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC),
-        binding_(this) {}
-  ~FileReaderLoaderMojo() override = default;
+FileReaderLoader::FileReaderLoader(ReadType read_type,
+                                   FileReaderLoaderClient* client)
+    : read_type_(read_type),
+      client_(client),
+      handle_watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC),
+      binding_(this) {}
 
-  void Start(ExecutionContext*, scoped_refptr<BlobDataHandle>) override;
+FileReaderLoader::~FileReaderLoader() {
+  Cleanup();
+  UnadjustReportedMemoryUsageToV8();
+}
 
-  // BlobReaderClient:
-  void OnCalculatedSize(uint64_t total_size,
-                        uint64_t expected_content_size) override;
-  void OnComplete(int32_t status, uint64_t data_length) override;
-
- private:
-  void Cleanup() override {
-    handle_watcher_.Cancel();
-    consumer_handle_.reset();
-
-    FileReaderLoader::Cleanup();
-  }
-
-  void OnDataPipeReadable(MojoResult);
-
-  mojo::ScopedDataPipeConsumerHandle consumer_handle_;
-  mojo::SimpleWatcher handle_watcher_;
-  mojo::Binding<mojom::blink::BlobReaderClient> binding_;
-  int64_t expected_content_size_ = -1;
-  bool received_all_data_ = false;
-  bool received_on_complete_ = false;
-};
-
-void FileReaderLoaderMojo::Start(ExecutionContext*,
-                                 scoped_refptr<BlobDataHandle> blob_data) {
+void FileReaderLoader::Start(ExecutionContext*,
+                             scoped_refptr<BlobDataHandle> blob_data) {
 #if DCHECK_IS_ON()
   DCHECK(!started_loading_) << "FileReaderLoader can only be used once";
   started_loading_ = true;
@@ -132,103 +113,74 @@ void FileReaderLoaderMojo::Start(ExecutionContext*,
   }
 }
 
-void FileReaderLoaderMojo::OnCalculatedSize(uint64_t total_size,
-                                            uint64_t expected_content_size) {
-  OnStartLoading(expected_content_size);
-  expected_content_size_ = expected_content_size;
-  if (expected_content_size_ == 0) {
-    received_all_data_ = true;
-    return;
-  }
-
-  if (IsSyncLoad()) {
-    OnDataPipeReadable(MOJO_RESULT_OK);
-  } else {
-    handle_watcher_.Watch(
-        consumer_handle_.get(), MOJO_HANDLE_SIGNAL_READABLE,
-        WTF::BindRepeating(&FileReaderLoaderMojo::OnDataPipeReadable,
-                           WTF::Unretained(this)));
-  }
-}
-
-void FileReaderLoaderMojo::OnComplete(int32_t status, uint64_t data_length) {
-  if (status != net::OK ||
-      data_length != static_cast<uint64_t>(expected_content_size_)) {
-    Failed(status == net::ERR_FILE_NOT_FOUND ? FileError::kNotFoundErr
-                                             : FileError::kNotReadableErr);
-    return;
-  }
-
-  received_on_complete_ = true;
-  if (received_all_data_)
-    OnFinishLoading();
-}
-
-void FileReaderLoaderMojo::OnDataPipeReadable(MojoResult result) {
-  if (result != MOJO_RESULT_OK) {
-    if (!received_all_data_)
-      Failed(FileError::kNotReadableErr);
-    return;
-  }
-
-  while (true) {
-    uint32_t num_bytes;
-    const void* buffer;
-    MojoResult result = consumer_handle_->BeginReadData(
-        &buffer, &num_bytes, MOJO_READ_DATA_FLAG_NONE);
-    if (result == MOJO_RESULT_SHOULD_WAIT) {
-      if (!IsSyncLoad())
-        return;
-
-      result = mojo::Wait(consumer_handle_.get(), MOJO_HANDLE_SIGNAL_READABLE);
-      if (result == MOJO_RESULT_OK)
-        continue;
-    }
-    if (result == MOJO_RESULT_FAILED_PRECONDITION) {
-      // Pipe closed.
-      if (!received_all_data_)
-        Failed(FileError::kNotReadableErr);
-      return;
-    }
-    if (result != MOJO_RESULT_OK) {
-      Failed(FileError::kNotReadableErr);
-      return;
-    }
-    OnReceivedData(static_cast<const char*>(buffer), num_bytes);
-    consumer_handle_->EndReadData(num_bytes);
-    if (BytesLoaded() >= expected_content_size_) {
-      received_all_data_ = true;
-      if (received_on_complete_)
-        OnFinishLoading();
-      return;
-    }
-  }
-}
-
-}  // namespace
-
-// static
-std::unique_ptr<FileReaderLoader> FileReaderLoader::Create(
-    ReadType read_type,
-    FileReaderLoaderClient* client) {
-  return std::make_unique<FileReaderLoaderMojo>(read_type, client);
-}
-
-FileReaderLoader::FileReaderLoader(ReadType read_type,
-                                   FileReaderLoaderClient* client)
-    : read_type_(read_type), client_(client) {}
-
-FileReaderLoader::~FileReaderLoader() {
-  Cleanup();
-  UnadjustReportedMemoryUsageToV8();
-}
-
 void FileReaderLoader::Cancel() {
   error_code_ = FileError::kAbortErr;
   Cleanup();
 }
 
+DOMArrayBuffer* FileReaderLoader::ArrayBufferResult() {
+  DCHECK_EQ(read_type_, kReadAsArrayBuffer);
+  if (array_buffer_result_)
+    return array_buffer_result_;
+
+  // If the loading is not started or an error occurs, return an empty result.
+  if (!raw_data_ || error_code_)
+    return nullptr;
+
+  DOMArrayBuffer* result = DOMArrayBuffer::Create(raw_data_->ToArrayBuffer());
+  if (finished_loading_) {
+    array_buffer_result_ = result;
+    AdjustReportedMemoryUsageToV8(
+        -1 * static_cast<int64_t>(raw_data_->ByteLength()));
+    raw_data_.reset();
+  }
+  return result;
+}
+
+String FileReaderLoader::StringResult() {
+  DCHECK_NE(read_type_, kReadAsArrayBuffer);
+  DCHECK_NE(read_type_, kReadByClient);
+
+  if (!raw_data_ || error_code_ || is_raw_data_converted_)
+    return string_result_;
+
+  switch (read_type_) {
+    case kReadAsArrayBuffer:
+      // No conversion is needed.
+      return string_result_;
+    case kReadAsBinaryString:
+      SetStringResult(raw_data_->ToString());
+      break;
+    case kReadAsText:
+      SetStringResult(ConvertToText());
+      break;
+    case kReadAsDataURL:
+      // Partial data is not supported when reading as data URL.
+      if (finished_loading_)
+        SetStringResult(ConvertToDataURL());
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  if (finished_loading_) {
+    DCHECK(is_raw_data_converted_);
+    AdjustReportedMemoryUsageToV8(
+        -1 * static_cast<int64_t>(raw_data_->ByteLength()));
+    raw_data_.reset();
+  }
+  return string_result_;
+}
+
+void FileReaderLoader::SetEncoding(const String& encoding) {
+  if (!encoding.IsEmpty())
+    encoding_ = WTF::TextEncoding(encoding);
+}
+
 void FileReaderLoader::Cleanup() {
+  handle_watcher_.Cancel();
+  consumer_handle_.reset();
+
   // If we get any error, we do not need to keep a buffer around.
   if (error_code_) {
     raw_data_.reset();
@@ -238,6 +190,16 @@ void FileReaderLoader::Cleanup() {
     array_buffer_result_ = nullptr;
     UnadjustReportedMemoryUsageToV8();
   }
+}
+
+void FileReaderLoader::Failed(FileError::ErrorCode error_code) {
+  // If an error was already reported, don't report this error again.
+  if (error_code_ != FileError::kOK)
+    return;
+  error_code_ = error_code;
+  Cleanup();
+  if (client_)
+    client_->DidFail(error_code_);
 }
 
 void FileReaderLoader::OnStartLoading(long long total_bytes) {
@@ -335,6 +297,79 @@ void FileReaderLoader::OnFinishLoading() {
     client_->DidFinishLoading();
 }
 
+void FileReaderLoader::OnCalculatedSize(uint64_t total_size,
+                                        uint64_t expected_content_size) {
+  OnStartLoading(expected_content_size);
+  expected_content_size_ = expected_content_size;
+  if (expected_content_size_ == 0) {
+    received_all_data_ = true;
+    return;
+  }
+
+  if (IsSyncLoad()) {
+    OnDataPipeReadable(MOJO_RESULT_OK);
+  } else {
+    handle_watcher_.Watch(
+        consumer_handle_.get(), MOJO_HANDLE_SIGNAL_READABLE,
+        WTF::BindRepeating(&FileReaderLoader::OnDataPipeReadable,
+                           WTF::Unretained(this)));
+  }
+}
+
+void FileReaderLoader::OnComplete(int32_t status, uint64_t data_length) {
+  if (status != net::OK ||
+      data_length != static_cast<uint64_t>(expected_content_size_)) {
+    Failed(status == net::ERR_FILE_NOT_FOUND ? FileError::kNotFoundErr
+                                             : FileError::kNotReadableErr);
+    return;
+  }
+
+  received_on_complete_ = true;
+  if (received_all_data_)
+    OnFinishLoading();
+}
+
+void FileReaderLoader::OnDataPipeReadable(MojoResult result) {
+  if (result != MOJO_RESULT_OK) {
+    if (!received_all_data_)
+      Failed(FileError::kNotReadableErr);
+    return;
+  }
+
+  while (true) {
+    uint32_t num_bytes;
+    const void* buffer;
+    MojoResult result = consumer_handle_->BeginReadData(
+        &buffer, &num_bytes, MOJO_READ_DATA_FLAG_NONE);
+    if (result == MOJO_RESULT_SHOULD_WAIT) {
+      if (!IsSyncLoad())
+        return;
+
+      result = mojo::Wait(consumer_handle_.get(), MOJO_HANDLE_SIGNAL_READABLE);
+      if (result == MOJO_RESULT_OK)
+        continue;
+    }
+    if (result == MOJO_RESULT_FAILED_PRECONDITION) {
+      // Pipe closed.
+      if (!received_all_data_)
+        Failed(FileError::kNotReadableErr);
+      return;
+    }
+    if (result != MOJO_RESULT_OK) {
+      Failed(FileError::kNotReadableErr);
+      return;
+    }
+    OnReceivedData(static_cast<const char*>(buffer), num_bytes);
+    consumer_handle_->EndReadData(num_bytes);
+    if (BytesLoaded() >= expected_content_size_) {
+      received_all_data_ = true;
+      if (received_on_complete_)
+        OnFinishLoading();
+      return;
+    }
+  }
+}
+
 void FileReaderLoader::AdjustReportedMemoryUsageToV8(int64_t usage) {
   if (!usage)
     return;
@@ -349,78 +384,6 @@ void FileReaderLoader::UnadjustReportedMemoryUsageToV8() {
   v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(
       -memory_usage_reported_to_v8_);
   memory_usage_reported_to_v8_ = 0;
-}
-
-void FileReaderLoader::Failed(FileError::ErrorCode error_code) {
-  // If an error was already reported, don't report this error again.
-  if (error_code_ != FileError::kOK)
-    return;
-  error_code_ = error_code;
-  Cleanup();
-  if (client_)
-    client_->DidFail(error_code_);
-}
-
-DOMArrayBuffer* FileReaderLoader::ArrayBufferResult() {
-  DCHECK_EQ(read_type_, kReadAsArrayBuffer);
-  if (array_buffer_result_)
-    return array_buffer_result_;
-
-  // If the loading is not started or an error occurs, return an empty result.
-  if (!raw_data_ || error_code_)
-    return nullptr;
-
-  DOMArrayBuffer* result = DOMArrayBuffer::Create(raw_data_->ToArrayBuffer());
-  if (finished_loading_) {
-    array_buffer_result_ = result;
-    AdjustReportedMemoryUsageToV8(
-        -1 * static_cast<int64_t>(raw_data_->ByteLength()));
-    raw_data_.reset();
-  }
-  return result;
-}
-
-String FileReaderLoader::StringResult() {
-  DCHECK_NE(read_type_, kReadAsArrayBuffer);
-  DCHECK_NE(read_type_, kReadByClient);
-
-  if (!raw_data_ || error_code_ || is_raw_data_converted_)
-    return string_result_;
-
-  switch (read_type_) {
-    case kReadAsArrayBuffer:
-      // No conversion is needed.
-      return string_result_;
-    case kReadAsBinaryString:
-      SetStringResult(raw_data_->ToString());
-      break;
-    case kReadAsText:
-      SetStringResult(ConvertToText());
-      break;
-    case kReadAsDataURL:
-      // Partial data is not supported when reading as data URL.
-      if (finished_loading_)
-        SetStringResult(ConvertToDataURL());
-      break;
-    default:
-      NOTREACHED();
-  }
-
-  if (finished_loading_) {
-    DCHECK(is_raw_data_converted_);
-    AdjustReportedMemoryUsageToV8(
-        -1 * static_cast<int64_t>(raw_data_->ByteLength()));
-    raw_data_.reset();
-  }
-  return string_result_;
-}
-
-void FileReaderLoader::SetStringResult(const String& result) {
-  AdjustReportedMemoryUsageToV8(
-      -1 * static_cast<int64_t>(string_result_.CharactersSizeInBytes()));
-  is_raw_data_converted_ = true;
-  string_result_ = result;
-  AdjustReportedMemoryUsageToV8(string_result_.CharactersSizeInBytes());
 }
 
 String FileReaderLoader::ConvertToText() {
@@ -467,9 +430,12 @@ String FileReaderLoader::ConvertToDataURL() {
   return builder.ToString();
 }
 
-void FileReaderLoader::SetEncoding(const String& encoding) {
-  if (!encoding.IsEmpty())
-    encoding_ = WTF::TextEncoding(encoding);
+void FileReaderLoader::SetStringResult(const String& result) {
+  AdjustReportedMemoryUsageToV8(
+      -1 * static_cast<int64_t>(string_result_.CharactersSizeInBytes()));
+  is_raw_data_converted_ = true;
+  string_result_ = result;
+  AdjustReportedMemoryUsageToV8(string_result_.CharactersSizeInBytes());
 }
 
 }  // namespace blink
