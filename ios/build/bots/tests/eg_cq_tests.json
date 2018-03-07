@@ -9,6 +9,11 @@
       "xctest": true
     },
     {
+      "app": "ios_chrome_ui_egtests",
+      "shard size": 8,
+      "xctest": true
+    },
+    {
       "app": "ios_web_shell_egtests",
       "shards": 2,
       "xctest": true
