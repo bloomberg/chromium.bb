@@ -44,17 +44,7 @@ editing.TextEditHandler = function(node) {
   this.node_ = node;
 
   chrome.automation.getDesktop(function(desktop) {
-    // A rich text field is one where selection gets placed on a DOM descendant
-    // to a root text field. This is one of:
-    // - content editables (detected via richly editable state)
-    // - role textbox without native text field support (i.e. not an input or
-    // textarea)
-    //
-    // For any of these, it must not be something from the desktop tree where we
-    // currently do not have rich text fields.
-    var useRichText = node.state[StateType.RICHLY_EDITABLE] ||
-        (node.htmlTag != 'input' && node.htmlTag != 'textarea' && node.root &&
-         node.root.role != RoleType.DESKTOP);
+    var useRichText = node.state[StateType.RICHLY_EDITABLE];
 
     /** @private {!AutomationEditableText} */
     this.editableText_ = useRichText ? new AutomationRichEditableText(node) :

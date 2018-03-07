@@ -440,8 +440,7 @@ DesktopAutomationHandler.prototype = {
       return;
 
     // Delegate to the edit text handler if this is an editable.
-    if (evt.target.state[StateType.EDITABLE] &&
-        !evt.target.state[StateType.RICHLY_EDITABLE]) {
+    if (evt.target.state[StateType.EDITABLE]) {
       this.onEditableChanged_(evt);
       return;
     }
