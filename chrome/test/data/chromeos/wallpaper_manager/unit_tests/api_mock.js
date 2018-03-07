@@ -274,7 +274,7 @@ var chrome = {
       });
     },
     setCustomWallpaper: function(
-        data, layout, isGenerateThumbnail, fileName, callback) {},
+        data, layout, generateThumbnail, fileName, previewMode, callback) {},
     getSyncSetting: function(callback) {
       var setting = {};
       setting.syncThemes = true;

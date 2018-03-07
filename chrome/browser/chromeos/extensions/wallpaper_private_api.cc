@@ -575,12 +575,9 @@ void WallpaperPrivateSetCustomWallpaperFunction::OnWallpaperDecoded(
       wallpaper_base::ToString(params->layout));
   wallpaper_api_util::RecordCustomWallpaperLayout(layout);
 
-  bool show_wallpaper =
-      account_id_ ==
-      user_manager::UserManager::Get()->GetActiveUser()->GetAccountId();
   WallpaperControllerClient::Get()->SetCustomWallpaper(
       account_id_, wallpaper_files_id_, params->file_name, layout, image,
-      show_wallpaper);
+      params->preview_mode);
   unsafe_wallpaper_decoder_ = NULL;
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
@@ -990,4 +987,28 @@ void WallpaperPrivateGetLocalImageDataFunction::OnReadImageDataComplete(
 
   Respond(ArgumentList(get_local_image_data::Results::Create(
       std::vector<char>(image_data->begin(), image_data->end()))));
+}
+
+WallpaperPrivateConfirmPreviewWallpaperFunction::
+    WallpaperPrivateConfirmPreviewWallpaperFunction() = default;
+
+WallpaperPrivateConfirmPreviewWallpaperFunction::
+    ~WallpaperPrivateConfirmPreviewWallpaperFunction() = default;
+
+ExtensionFunction::ResponseAction
+WallpaperPrivateConfirmPreviewWallpaperFunction::Run() {
+  WallpaperControllerClient::Get()->ConfirmPreviewWallpaper();
+  return RespondNow(NoArguments());
+}
+
+WallpaperPrivateCancelPreviewWallpaperFunction::
+    WallpaperPrivateCancelPreviewWallpaperFunction() = default;
+
+WallpaperPrivateCancelPreviewWallpaperFunction::
+    ~WallpaperPrivateCancelPreviewWallpaperFunction() = default;
+
+ExtensionFunction::ResponseAction
+WallpaperPrivateCancelPreviewWallpaperFunction::Run() {
+  WallpaperControllerClient::Get()->CancelPreviewWallpaper();
+  return RespondNow(NoArguments());
 }

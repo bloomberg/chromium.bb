@@ -712,7 +712,7 @@ WallpaperManager.prototype.setSelectedWallpaper_ = function(selectedItem) {
   switch (selectedItem.source) {
     case Constants.WallpaperSourceEnum.Custom:
       this.setSelectedCustomWallpaper_(
-          selectedItem, (imageData, thumbnailData) => {
+          selectedItem, (imageData, optThumbnailData) => {
             this.onWallpaperChanged_(selectedItem, selectedItem.baseURL);
             // Save the image data to the sync file system.
             WallpaperUtil.storeWallpaperToSyncFS(
@@ -768,24 +768,32 @@ WallpaperManager.prototype.setCustomWallpaperSelectedOnNewPicker_ = function(
   // Read the image data from |filePath| and set the wallpaper with the data.
   chrome.wallpaperPrivate.getLocalImageData(
       selectedItem.filePath, imageData => {
-        var onSetCustomWallpaperFailure = function() {
-          console.error('Setting custom wallpaper failed.');
+        var onPreviewCustomWallpaperFailure = function() {
+          console.error('The attempt to preview custom wallpaper failed.');
           // TODO(crbug.com/810892): Show an error message to user.
         };
 
         if (chrome.runtime.lastError || !imageData) {
-          onSetCustomWallpaperFailure();
+          onPreviewCustomWallpaperFailure();
           return;
         }
 
-        this.setCustomWallpaper(
+        chrome.wallpaperPrivate.setCustomWallpaper(
             imageData, selectedItem.layout, false /*generateThumbnail=*/,
-            selectedItem.baseURL, successCallback.bind(null, imageData),
-            onSetCustomWallpaperFailure);
+            selectedItem.baseURL, true /*previewMode=*/, optThumbnailData => {
+              if (chrome.runtime.lastError) {
+                onPreviewCustomWallpaperFailure();
+              } else {
+                this.onPreviewModeStarted_(successCallback.bind(
+                    null, imageData, null /*optThumbnailData=*/));
+              }
+            });
       });
 };
 
 /**
+ * TODO(crbug.com/787134): Delete the method after the old picker is deprecated.
+ *
  * Implementation of |setSelectedCustomWallpaper_| for the old wallpaper picker.
  * @param {Object} selectedItem The selected item in WallpaperThumbnailsGrid's
  *     data model.
@@ -804,7 +812,7 @@ WallpaperManager.prototype.setCustomWallpaperSelectedOnOldPicker_ = function(
         reader.addEventListener('load', e => {
           // The thumbnail already exists at this point. There's no need to
           // regenerate it.
-          this.setCustomWallpaper(
+          this.setCustomWallpaperSelectedOnOldPickerImpl_(
               e.target.result, selectedItem.layout,
               false /*generateThumbnail=*/, selectedItem.baseURL,
               successCallback.bind(null, e.target.result), errorHandler);
@@ -879,6 +887,38 @@ WallpaperManager.prototype.setSelectedOnlineWallpaper_ = function(
             wallpaperUrl, 'arraybuffer', onSuccess, onFailure,
             this.wallpaperRequest_);
       });
+};
+
+/**
+ * Handles the UI changes when the preview mode is started.
+ * @param {function} confirmPreviewWallpaperCallback The callback after preview
+ *     wallpaper is set.
+ * @private
+ */
+WallpaperManager.prototype.onPreviewModeStarted_ = function(
+    confirmPreviewWallpaperCallback) {
+  this.document_.body.classList.add('preview-mode');
+  // TODO(crbug.com/811619): Replace with i18n strings.
+  $('confirm-preview-wallpaper').textContent = 'Set Wallpaper';
+  $('cancel-preview-wallpaper').textContent = 'Cancel';
+
+  var onConfirmClicked = () => {
+    chrome.wallpaperPrivate.confirmPreviewWallpaper(() => {
+      confirmPreviewWallpaperCallback();
+      window.close();
+    });
+  };
+  $('confirm-preview-wallpaper').addEventListener('click', onConfirmClicked);
+
+  var onCancelClicked = () => {
+    $('confirm-preview-wallpaper')
+        .removeEventListener('click', onConfirmClicked);
+    $('cancel-preview-wallpaper').removeEventListener('click', onCancelClicked);
+    chrome.wallpaperPrivate.cancelPreviewWallpaper(() => {
+      this.document_.body.classList.remove('preview-mode');
+    });
+  };
+  $('cancel-preview-wallpaper').addEventListener('click', onCancelClicked);
 };
 
 /*
@@ -1133,8 +1173,9 @@ WallpaperManager.prototype.onFileSelectorChanged_ = function() {
             reader.readAsArrayBuffer(file);
             reader.addEventListener('error', errorHandler);
             reader.addEventListener('load', function(e) {
-              self.setCustomWallpaper(
-                  e.target.result, layout, true, fileName,
+              self.setCustomWallpaperSelectedOnOldPickerImpl_(
+                  e.target.result, layout, true /*generateThumbnail=*/,
+                  fileName,
                   function(thumbnail) {
                     onCustomWallpaperSuccess(thumbnail, e.target.result);
                   },
@@ -1184,7 +1225,9 @@ WallpaperManager.prototype.removeCustomWallpaper = function(fileName) {
 };
 
 /**
- * Sets current wallpaper and generate thumbnail if generateThumbnail is true.
+ * TODO(crbug.com/787134): Delete the method after the old picker is deprecated.
+ *
+ * Implementation of |setCustomWallpaperSelectedOnOldPicker_|.
  * @param {ArrayBuffer} wallpaper The binary representation of wallpaper.
  * @param {string} layout The user selected wallpaper layout.
  * @param {boolean} generateThumbnail True if need to generate thumbnail.
@@ -1194,14 +1237,14 @@ WallpaperManager.prototype.removeCustomWallpaper = function(fileName) {
  *     generated thumbnail.
  * @param {function(e):void} failure Failure callback. Called when there is an
  *     error from FileSystem.
+ * @private
  */
-WallpaperManager.prototype.setCustomWallpaper = function(
-    wallpaper, layout, generateThumbnail, fileName, success, failure) {
-  var self = this;
-  var onFinished = function(opt_thumbnail) {
+WallpaperManager.prototype.setCustomWallpaperSelectedOnOldPickerImpl_ =
+    function(wallpaper, layout, generateThumbnail, fileName, success, failure) {
+  var onFinished = opt_thumbnail => {
     if (chrome.runtime.lastError != undefined &&
         chrome.runtime.lastError.message != str('canceledWallpaper')) {
-      self.showError_(chrome.runtime.lastError.message);
+      this.showError_(chrome.runtime.lastError.message);
       $('set-wallpaper-layout').disabled = true;
       failure();
     } else {
@@ -1210,7 +1253,8 @@ WallpaperManager.prototype.setCustomWallpaper = function(
   };
 
   chrome.wallpaperPrivate.setCustomWallpaper(
-      wallpaper, layout, generateThumbnail, fileName, onFinished);
+      wallpaper, layout, generateThumbnail, fileName, false /*previewMode=*/,
+      onFinished);
 };
 
 /**

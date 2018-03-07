@@ -172,6 +172,11 @@
             "name": "fileName"
           },
           {
+            "type": "boolean",
+            "name": "previewMode",
+            "description": "If preview mode is desired."
+          },
+          {
             "type": "function",
             "name": "callback",
             "parameters": [
@@ -388,6 +393,34 @@
                 "name": "imageData"
               }
             ]
+          }
+        ]
+      },
+      {
+        "name": "confirmPreviewWallpaper",
+        "type": "function",
+        "description": "Confirm the wallpaper being previewed to be set as the actual user wallpaper.",
+        "nodoc": true,
+        "parameters": [
+          {
+            "type": "function",
+            "name": "callback",
+            "description": "Function called upon completion.",
+            "parameters": []
+          }
+        ]
+      },
+      {
+        "name": "cancelPreviewWallpaper",
+        "type": "function",
+        "description": "Cancel the wallpaper preview and revert to the user wallpaper.",
+        "nodoc": true,
+        "parameters": [
+          {
+            "type": "function",
+            "name": "callback",
+            "description": "Function called upon completion.",
+            "parameters": []
           }
         ]
       }

@@ -42,7 +42,7 @@ class TestWallpaperController : ash::mojom::WallpaperController {
                           const std::string& file_name,
                           wallpaper::WallpaperLayout layout,
                           const SkBitmap& image,
-                          bool show_wallpaper) override;
+                          bool preview_mode) override;
   void SetOnlineWallpaper(ash::mojom::WallpaperUserInfoPtr user_info,
                           const SkBitmap& image,
                           const std::string& url,
@@ -58,6 +58,8 @@ class TestWallpaperController : ash::mojom::WallpaperController {
                           const std::string& wallpaper_files_id,
                           const std::string& data) override;
   void SetDeviceWallpaperPolicyEnforced(bool enforced) override;
+  void ConfirmPreviewWallpaper() override;
+  void CancelPreviewWallpaper() override;
   void UpdateCustomWallpaperLayout(ash::mojom::WallpaperUserInfoPtr user_info,
                                    wallpaper::WallpaperLayout layout) override;
   void ShowUserWallpaper(ash::mojom::WallpaperUserInfoPtr user_info) override;

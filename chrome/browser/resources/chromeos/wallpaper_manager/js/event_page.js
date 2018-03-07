@@ -266,7 +266,8 @@ SurpriseWallpaper.prototype.setWallpaperFromRssItem_ = function(
   WallpaperUtil.fetchURL(url, 'arraybuffer', function(xhr) {
     if (xhr.response != null) {
       chrome.wallpaperPrivate.setCustomWallpaper(
-          xhr.response, layout, false, 'surprise_wallpaper', onSuccess);
+          xhr.response, layout, false /*generateThumbnail=*/,
+          'surprise_wallpaper', false /*previewMode=*/, onSuccess);
       WallpaperUtil.saveWallpaperInfo(
           url, layout, Constants.WallpaperSourceEnum.Daily, '');
       var dateString = new Date().toDateString();

@@ -47,14 +47,12 @@ chrome.test.getConfig(function(config) {
       });
     },
     function setCustomJpegWallpaper() {
-      chrome.wallpaperPrivate.setCustomWallpaper(wallpaperJpeg,
-                                                 'CENTER_CROPPED',
-                                                 true,
-                                                 '123',
-                                                 pass(function(thumbnail) {
-        chrome.wallpaperPrivate.setCustomWallpaperLayout('CENTER',
-                                                         pass(function() {}));
-      }));
+      chrome.wallpaperPrivate.setCustomWallpaper(
+          wallpaperJpeg, 'CENTER_CROPPED', true /*generateThumbnail=*/, '123',
+          false /*previewMode=*/, pass(function(thumbnail) {
+            chrome.wallpaperPrivate.setCustomWallpaperLayout(
+                'CENTER', pass(function() {}));
+          }));
     },
     function setCustomPngWallpaper() {
       var url = "http://a.com:PORT/extensions/api_test" +
@@ -63,15 +61,12 @@ chrome.test.getConfig(function(config) {
       requestImage(url, function(requestStatus, response) {
         if (requestStatus === 200) {
           wallpaperPng = response;
-          chrome.wallpaperPrivate.setCustomWallpaper(wallpaperPng,
-                                                     'CENTER_CROPPED',
-                                                     true,
-                                                     '123',
-                                                     pass(function(thumbnail) {
-            chrome.wallpaperPrivate.setCustomWallpaperLayout('CENTER',
-                                                             pass(function() {
-            }));
-          }));
+          chrome.wallpaperPrivate.setCustomWallpaper(
+              wallpaperPng, 'CENTER_CROPPED', true /*generateThumbnail=*/,
+              '123', false /*previewMode=*/, pass(function(thumbnail) {
+                chrome.wallpaperPrivate.setCustomWallpaperLayout(
+                    'CENTER', pass(function() {}));
+              }));
         } else {
           chrome.test.fail('Failed to load test.png from local server.');
         }
@@ -84,8 +79,15 @@ chrome.test.getConfig(function(config) {
       requestImage(url, function(requestStatus, response) {
         if (requestStatus === 200) {
           var badWallpaper = response;
-          chrome.wallpaperPrivate.setCustomWallpaper(badWallpaper,
-              'CENTER_CROPPED', false, '123',
+          // Attempt to set the bad wallpaper should fail.
+          chrome.wallpaperPrivate.setCustomWallpaper(
+              badWallpaper, 'CENTER_CROPPED', false /*generateThumbnail=*/,
+              '123', false /*previewMode=*/,
+              fail(wallpaperStrings.invalidWallpaper));
+          // Attempt to preview the bad wallpaper should also fail.
+          chrome.wallpaperPrivate.setCustomWallpaper(
+              badWallpaper, 'CENTER_CROPPED', false /*generateThumbnail=*/,
+              '123', true /*previewMode=*/,
               fail(wallpaperStrings.invalidWallpaper));
         } else {
           chrome.test.fail('Failed to load test_bad.jpg from local server.');

@@ -27,7 +27,7 @@ SkColor WallpaperControllerTestApi::ApplyColorProducingWallpaper() {
   wallpaper::WallpaperInfo info("", wallpaper::WALLPAPER_LAYOUT_CENTER,
                                 wallpaper::DEFAULT,
                                 base::Time::Now().LocalMidnight());
-  controller_->SetWallpaperImage(image, info);
+  controller_->ShowWallpaperImage(image, info, false /*preview_mode=*/);
 
   return expected_color;
 }

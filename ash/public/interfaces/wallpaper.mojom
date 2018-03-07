@@ -59,21 +59,22 @@ interface WallpaperController {
        mojo.common.mojom.FilePath chromeos_custom_wallpapers_path,
        bool is_device_wallpaper_policy_enforced);
 
-  // Sets wallpaper from a local file. Saves the custom wallpaper to file, posts
-  // task to generate thumbnail and updates local state.
+  // Sets wallpaper from a local file and updates the saved wallpaper info for
+  // the user.
   // |user_info|: The user's information related to wallpaper.
   // |wallpaper_files_id|: The file id for user_info.account_id.
   // |file_name|: The name of the wallpaper file.
   // |layout|: The layout of the wallpaper, used for wallpaper resizing.
   // |image|: The wallpaper image.
-  // |show_wallpaper|: If false, don't show the new wallpaper now but only
-  //                   update cache.
+  // |preview_mode|: If true, show the wallpaper immediately but doesn't change
+  //                 the user wallpaper info until |ConfirmPreviewWallpaper| is
+  //                 called.
   SetCustomWallpaper(WallpaperUserInfo user_info,
                      string wallpaper_files_id,
                      string file_name,
                      WallpaperLayout layout,
                      skia.mojom.Bitmap image,
-                     bool show_wallpaper);
+                     bool preview_mode);
 
   // Sets wallpaper from the wallpaper picker selection, i.e., the wallpaper
   // type is ONLINE.
@@ -125,6 +126,14 @@ interface WallpaperController {
   // Sets whether device wallpaper policy is enforced on this device. Updates/
   // clears the device policy controlled wallpaper if applicable.
   SetDeviceWallpaperPolicyEnforced(bool enforced);
+
+  // Confirms the wallpaper being previewed to be set as the actual user
+  // wallpaper. Must be called in preview mode.
+  ConfirmPreviewWallpaper();
+
+  // Cancels the wallpaper preview and reverts to the user wallpaper. Must be
+  // called in preview mode.
+  CancelPreviewWallpaper();
 
   // Updates the layout for the user's custom wallpaper and reloads the
   // wallpaper with the new layout.

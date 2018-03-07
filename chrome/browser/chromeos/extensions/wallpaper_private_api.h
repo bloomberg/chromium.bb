@@ -402,4 +402,38 @@ class WallpaperPrivateGetLocalImageDataFunction
   DISALLOW_COPY_AND_ASSIGN(WallpaperPrivateGetLocalImageDataFunction);
 };
 
+class WallpaperPrivateConfirmPreviewWallpaperFunction
+    : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("wallpaperPrivate.confirmPreviewWallpaper",
+                             WALLPAPERPRIVATE_CONFIRMPREVIEWWALLPAPER)
+  WallpaperPrivateConfirmPreviewWallpaperFunction();
+
+ protected:
+  ~WallpaperPrivateConfirmPreviewWallpaperFunction() override;
+
+  // UIThreadExtensionFunction:
+  ResponseAction Run() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WallpaperPrivateConfirmPreviewWallpaperFunction);
+};
+
+class WallpaperPrivateCancelPreviewWallpaperFunction
+    : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("wallpaperPrivate.cancelPreviewWallpaper",
+                             WALLPAPERPRIVATE_CANCELPREVIEWWALLPAPER)
+  WallpaperPrivateCancelPreviewWallpaperFunction();
+
+ protected:
+  ~WallpaperPrivateCancelPreviewWallpaperFunction() override;
+
+  // UIThreadExtensionFunction:
+  ResponseAction Run() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WallpaperPrivateCancelPreviewWallpaperFunction);
+};
+
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_WALLPAPER_PRIVATE_API_H_

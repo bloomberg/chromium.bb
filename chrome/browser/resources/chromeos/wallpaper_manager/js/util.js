@@ -244,7 +244,8 @@ WallpaperUtil.setCustomWallpaperFromSyncFS = function(
             var reader = new FileReader();
             reader.onloadend = function() {
               chrome.wallpaperPrivate.setCustomWallpaper(
-                  reader.result, wallpaperLayout, true, wallpaperFilename,
+                  reader.result, wallpaperLayout, true /*generateThumbnail=*/,
+                  wallpaperFilename, false /*previewMode=*/,
                   function(thumbnailData) {
                     // TODO(ranj): Ignore 'canceledWallpaper' error.
                     if (chrome.runtime.lastError) {
