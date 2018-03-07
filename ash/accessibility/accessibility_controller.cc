@@ -362,56 +362,62 @@ void AccessibilityController::ObservePrefs(PrefService* prefs) {
   pref_change_registrar_->Init(prefs);
   pref_change_registrar_->Add(
       prefs::kAccessibilityAutoclickEnabled,
-      base::Bind(&AccessibilityController::UpdateAutoclickFromPref,
-                 base::Unretained(this)));
+      base::BindRepeating(&AccessibilityController::UpdateAutoclickFromPref,
+                          base::Unretained(this)));
   pref_change_registrar_->Add(
       prefs::kAccessibilityAutoclickDelayMs,
-      base::Bind(&AccessibilityController::UpdateAutoclickDelayFromPref,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &AccessibilityController::UpdateAutoclickDelayFromPref,
+          base::Unretained(this)));
   pref_change_registrar_->Add(
       prefs::kAccessibilityCaretHighlightEnabled,
-      base::Bind(&AccessibilityController::UpdateCaretHighlightFromPref,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &AccessibilityController::UpdateCaretHighlightFromPref,
+          base::Unretained(this)));
   pref_change_registrar_->Add(
       prefs::kAccessibilityCursorHighlightEnabled,
-      base::Bind(&AccessibilityController::UpdateCursorHighlightFromPref,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &AccessibilityController::UpdateCursorHighlightFromPref,
+          base::Unretained(this)));
   pref_change_registrar_->Add(
       prefs::kAccessibilityFocusHighlightEnabled,
-      base::Bind(&AccessibilityController::UpdateFocusHighlightFromPref,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &AccessibilityController::UpdateFocusHighlightFromPref,
+          base::Unretained(this)));
   pref_change_registrar_->Add(
       prefs::kAccessibilityHighContrastEnabled,
-      base::Bind(&AccessibilityController::UpdateHighContrastFromPref,
-                 base::Unretained(this)));
+      base::BindRepeating(&AccessibilityController::UpdateHighContrastFromPref,
+                          base::Unretained(this)));
   pref_change_registrar_->Add(
       prefs::kAccessibilityLargeCursorEnabled,
-      base::Bind(&AccessibilityController::UpdateLargeCursorFromPref,
-                 base::Unretained(this)));
+      base::BindRepeating(&AccessibilityController::UpdateLargeCursorFromPref,
+                          base::Unretained(this)));
   pref_change_registrar_->Add(
       prefs::kAccessibilityLargeCursorDipSize,
-      base::Bind(&AccessibilityController::UpdateLargeCursorFromPref,
-                 base::Unretained(this)));
+      base::BindRepeating(&AccessibilityController::UpdateLargeCursorFromPref,
+                          base::Unretained(this)));
   pref_change_registrar_->Add(
       prefs::kAccessibilityMonoAudioEnabled,
-      base::Bind(&AccessibilityController::UpdateMonoAudioFromPref,
-                 base::Unretained(this)));
+      base::BindRepeating(&AccessibilityController::UpdateMonoAudioFromPref,
+                          base::Unretained(this)));
   pref_change_registrar_->Add(
       prefs::kAccessibilitySpokenFeedbackEnabled,
-      base::Bind(&AccessibilityController::UpdateSpokenFeedbackFromPref,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &AccessibilityController::UpdateSpokenFeedbackFromPref,
+          base::Unretained(this)));
   pref_change_registrar_->Add(
       prefs::kAccessibilitySelectToSpeakEnabled,
-      base::Bind(&AccessibilityController::UpdateSelectToSpeakFromPref,
-                 base::Unretained(this)));
+      base::BindRepeating(&AccessibilityController::UpdateSelectToSpeakFromPref,
+                          base::Unretained(this)));
   pref_change_registrar_->Add(
       prefs::kAccessibilityStickyKeysEnabled,
-      base::Bind(&AccessibilityController::UpdateStickyKeysFromPref,
-                 base::Unretained(this)));
+      base::BindRepeating(&AccessibilityController::UpdateStickyKeysFromPref,
+                          base::Unretained(this)));
   pref_change_registrar_->Add(
       prefs::kAccessibilityVirtualKeyboardEnabled,
-      base::Bind(&AccessibilityController::UpdateVirtualKeyboardFromPref,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &AccessibilityController::UpdateVirtualKeyboardFromPref,
+          base::Unretained(this)));
 
   // Load current state.
   UpdateAutoclickFromPref();

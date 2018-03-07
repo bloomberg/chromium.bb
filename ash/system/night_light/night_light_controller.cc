@@ -417,24 +417,24 @@ void NightLightController::StartWatchingPrefsChanges() {
   pref_change_registrar_->Init(active_user_pref_service_);
   pref_change_registrar_->Add(
       prefs::kNightLightEnabled,
-      base::Bind(&NightLightController::OnEnabledPrefChanged,
-                 base::Unretained(this)));
+      base::BindRepeating(&NightLightController::OnEnabledPrefChanged,
+                          base::Unretained(this)));
   pref_change_registrar_->Add(
       prefs::kNightLightTemperature,
-      base::Bind(&NightLightController::OnColorTemperaturePrefChanged,
-                 base::Unretained(this)));
+      base::BindRepeating(&NightLightController::OnColorTemperaturePrefChanged,
+                          base::Unretained(this)));
   pref_change_registrar_->Add(
       prefs::kNightLightScheduleType,
-      base::Bind(&NightLightController::OnScheduleTypePrefChanged,
-                 base::Unretained(this)));
+      base::BindRepeating(&NightLightController::OnScheduleTypePrefChanged,
+                          base::Unretained(this)));
   pref_change_registrar_->Add(
       prefs::kNightLightCustomStartTime,
-      base::Bind(&NightLightController::OnCustomSchedulePrefsChanged,
-                 base::Unretained(this)));
+      base::BindRepeating(&NightLightController::OnCustomSchedulePrefsChanged,
+                          base::Unretained(this)));
   pref_change_registrar_->Add(
       prefs::kNightLightCustomEndTime,
-      base::Bind(&NightLightController::OnCustomSchedulePrefsChanged,
-                 base::Unretained(this)));
+      base::BindRepeating(&NightLightController::OnCustomSchedulePrefsChanged,
+                          base::Unretained(this)));
 }
 
 void NightLightController::InitFromUserPrefs() {

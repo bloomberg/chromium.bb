@@ -86,12 +86,12 @@ void LogoutButtonTray::OnActiveUserPrefServiceChanged(PrefService* prefs) {
   pref_change_registrar_->Init(prefs);
   pref_change_registrar_->Add(
       prefs::kShowLogoutButtonInTray,
-      base::Bind(&LogoutButtonTray::UpdateShowLogoutButtonInTray,
-                 base::Unretained(this)));
+      base::BindRepeating(&LogoutButtonTray::UpdateShowLogoutButtonInTray,
+                          base::Unretained(this)));
   pref_change_registrar_->Add(
       prefs::kLogoutDialogDurationMs,
-      base::Bind(&LogoutButtonTray::UpdateLogoutDialogDuration,
-                 base::Unretained(this)));
+      base::BindRepeating(&LogoutButtonTray::UpdateLogoutDialogDuration,
+                          base::Unretained(this)));
 
   // Read the initial values.
   UpdateShowLogoutButtonInTray();
