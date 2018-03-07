@@ -25,8 +25,6 @@
 #include "media/base/pipeline_status.h"
 #include "media/base/renderer_client.h"
 #include "media/base/video_frame.h"
-#include "media/video/gpu_memory_buffer_video_frame_pool.h"
-#include "media/video/gpu_video_accelerator_factories.h"
 
 namespace media {
 
@@ -108,25 +106,20 @@ bool ShouldUseLowDelayMode(DemuxerStream* stream) {
 
 VideoRendererImpl::VideoRendererImpl(
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
-    const scoped_refptr<base::TaskRunner>& worker_task_runner,
     VideoRendererSink* sink,
     const CreateVideoDecodersCB& create_video_decoders_cb,
     bool drop_frames,
-    GpuVideoAcceleratorFactories* gpu_factories,
     MediaLog* media_log)
     : task_runner_(media_task_runner),
       sink_(sink),
       sink_started_(false),
       client_(nullptr),
-      gpu_memory_buffer_pool_(nullptr),
       media_log_(media_log),
       low_delay_(false),
       received_end_of_stream_(false),
       rendered_end_of_stream_(false),
       state_(kUninitialized),
       create_video_decoders_cb_(create_video_decoders_cb),
-      gpu_factories_(gpu_factories),
-      worker_task_runner_(worker_task_runner),
       pending_read_(false),
       drop_frames_(drop_frames),
       buffering_state_(BUFFERING_HAVE_NOTHING),
@@ -237,17 +230,6 @@ void VideoRendererImpl::Initialize(
       task_runner_, create_video_decoders_cb_, media_log_));
   video_frame_stream_->set_config_change_observer(base::Bind(
       &VideoRendererImpl::OnConfigChange, weak_factory_.GetWeakPtr()));
-
-  // Always re-initialize or reset the |gpu_memory_buffer_pool_| in case we are
-  // switching between video tracks with incompatible video formats (e.g. 8-bit
-  // H.264 to 10-bit H264 or vice versa).
-  if (gpu_factories_ &&
-      gpu_factories_->ShouldUseGpuMemoryBuffersForVideoFrames()) {
-    gpu_memory_buffer_pool_.reset(new GpuMemoryBufferVideoFramePool(
-        task_runner_, worker_task_runner_, gpu_factories_));
-  } else {
-    gpu_memory_buffer_pool_.reset();
-  }
 
   low_delay_ = ShouldUseLowDelayMode(stream);
 
@@ -399,11 +381,6 @@ void VideoRendererImpl::SetTickClockForTesting(base::TickClock* tick_clock) {
   tick_clock_ = tick_clock;
 }
 
-void VideoRendererImpl::SetGpuMemoryBufferVideoForTesting(
-    std::unique_ptr<GpuMemoryBufferVideoFramePool> gpu_memory_buffer_pool) {
-  gpu_memory_buffer_pool_.swap(gpu_memory_buffer_pool);
-}
-
 void VideoRendererImpl::OnTimeProgressing() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
@@ -467,22 +444,6 @@ void VideoRendererImpl::OnTimeStopped() {
       }
     }
   }
-}
-
-void VideoRendererImpl::FrameReadyForCopyingToGpuMemoryBuffers(
-    base::TimeTicks read_time,
-    VideoFrameStream::Status status,
-    const scoped_refptr<VideoFrame>& frame) {
-  if (status != VideoFrameStream::OK || IsBeforeStartTime(frame->timestamp())) {
-    VideoRendererImpl::FrameReady(read_time, status, frame);
-    return;
-  }
-
-  DCHECK(frame);
-  gpu_memory_buffer_pool_->MaybeCreateHardwareFrame(
-      frame,
-      base::Bind(&VideoRendererImpl::FrameReady,
-                 frame_callback_weak_factory_.GetWeakPtr(), read_time, status));
 }
 
 void VideoRendererImpl::FrameReady(base::TimeTicks read_time,
@@ -687,17 +648,9 @@ void VideoRendererImpl::AttemptRead_Locked() {
   switch (state_) {
     case kPlaying:
       pending_read_ = true;
-      if (gpu_memory_buffer_pool_) {
-        video_frame_stream_->Read(base::Bind(
-            &VideoRendererImpl::FrameReadyForCopyingToGpuMemoryBuffers,
-            frame_callback_weak_factory_.GetWeakPtr(),
-            tick_clock_->NowTicks()));
-      } else {
-        video_frame_stream_->Read(
-            base::Bind(&VideoRendererImpl::FrameReady,
-                       frame_callback_weak_factory_.GetWeakPtr(),
-                       tick_clock_->NowTicks()));
-      }
+      video_frame_stream_->Read(base::BindRepeating(
+          &VideoRendererImpl::FrameReady,
+          frame_callback_weak_factory_.GetWeakPtr(), tick_clock_->NowTicks()));
       return;
     case kUninitialized:
     case kInitializing:
