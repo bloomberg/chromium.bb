@@ -56,8 +56,8 @@ class UpdateClientImpl : public UpdateClient {
  private:
   ~UpdateClientImpl() override;
 
-  void RunTask(std::unique_ptr<Task> task);
-  void OnTaskComplete(Callback callback, Task* task, Error error);
+  void RunTask(scoped_refptr<Task> task);
+  void OnTaskComplete(Callback callback, scoped_refptr<Task> task, Error error);
 
   void NotifyObservers(Observer::Events event, const std::string& id);
 
@@ -72,14 +72,14 @@ class UpdateClientImpl : public UpdateClient {
   // only update tasks (background tasks) are queued up. These tasks are
   // pending while they are in this queue. They have not been picked up yet
   // by the update engine.
-  base::circular_deque<Task*> task_queue_;
+  base::circular_deque<scoped_refptr<Task>> task_queue_;
 
   // Contains all tasks in progress. These are the tasks that the update engine
   // is executing at one moment. Install tasks are run concurrently, update
   // tasks are always serialized, and update tasks are queued up if install
   // tasks are running. In addition, concurrent install tasks for the same id
   // are not allowed.
-  std::set<Task*> tasks_;
+  std::set<scoped_refptr<Task>> tasks_;
 
   // TODO(sorin): try to make the ping manager an observer of the service.
   scoped_refptr<PingManager> ping_manager_;

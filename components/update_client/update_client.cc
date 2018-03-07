@@ -96,12 +96,10 @@ void UpdateClientImpl::Install(const std::string& id,
 
   std::vector<std::string> ids = {id};
 
-  // Partially applies |callback| to OnTaskComplete, so this argument is
-  // available when the task completes, along with the task itself.
   // Install tasks are run concurrently and never queued up. They are always
   // considered foreground tasks.
   constexpr bool kIsForeground = true;
-  RunTask(std::make_unique<TaskUpdate>(
+  RunTask(base::MakeRefCounted<TaskUpdate>(
       update_engine_.get(), kIsForeground, ids, std::move(crx_data_callback),
       base::BindOnce(&UpdateClientImpl::OnTaskComplete, this,
                      std::move(callback))));
@@ -113,7 +111,7 @@ void UpdateClientImpl::Update(const std::vector<std::string>& ids,
                               Callback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  auto task = std::make_unique<TaskUpdate>(
+  auto task = base::MakeRefCounted<TaskUpdate>(
       update_engine_.get(), is_foreground, ids, std::move(crx_data_callback),
       base::BindOnce(&UpdateClientImpl::OnTaskComplete, this,
                      std::move(callback)));
@@ -121,21 +119,21 @@ void UpdateClientImpl::Update(const std::vector<std::string>& ids,
   // If no other tasks are running at the moment, run this update task.
   // Otherwise, queue the task up.
   if (tasks_.empty()) {
-    RunTask(std::move(task));
+    RunTask(task);
   } else {
-    task_queue_.push_back(task.release());
+    task_queue_.push_back(task);
   }
 }
 
-void UpdateClientImpl::RunTask(std::unique_ptr<Task> task) {
+void UpdateClientImpl::RunTask(scoped_refptr<Task> task) {
   DCHECK(thread_checker_.CalledOnValidThread());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&Task::Run, base::Unretained(task.get())));
-  tasks_.insert(task.release());
+  tasks_.insert(task);
 }
 
 void UpdateClientImpl::OnTaskComplete(Callback callback,
-                                      Task* task,
+                                      scoped_refptr<Task> task,
                                       Error error) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(task);
@@ -147,18 +145,15 @@ void UpdateClientImpl::OnTaskComplete(Callback callback,
   // the update engine can be in this data structure.
   tasks_.erase(task);
 
-  // Delete the completed task. A task can be completed because the update
-  // engine has run it or because it has been canceled but never run.
-  delete task;
-
   if (is_stopped_)
     return;
 
   // Pick up a task from the queue if the queue has pending tasks and no other
   // task is running.
   if (tasks_.empty() && !task_queue_.empty()) {
-    RunTask(std::unique_ptr<Task>(task_queue_.front()));
+    auto task = task_queue_.front();
     task_queue_.pop_front();
+    RunTask(task);
   }
 }
 
@@ -187,15 +182,15 @@ bool UpdateClientImpl::GetCrxUpdateState(const std::string& id,
 bool UpdateClientImpl::IsUpdating(const std::string& id) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  for (const auto* task : tasks_) {
-    const auto ids(task->GetIds());
+  for (const auto task : tasks_) {
+    const auto ids = task->GetIds();
     if (std::find(ids.begin(), ids.end(), id) != ids.end()) {
       return true;
     }
   }
 
-  for (const auto* task : task_queue_) {
-    const auto ids(task->GetIds());
+  for (const auto task : task_queue_) {
+    const auto ids = task->GetIds();
     if (std::find(ids.begin(), ids.end(), id) != ids.end()) {
       return true;
     }
@@ -223,7 +218,7 @@ void UpdateClientImpl::Stop() {
   // they have not picked up by the update engine, and not shared with any
   // task runner yet.
   while (!task_queue_.empty()) {
-    auto* task(task_queue_.front());
+    auto task = task_queue_.front();
     task_queue_.pop_front();
     task->Cancel();
   }
@@ -235,7 +230,7 @@ void UpdateClientImpl::SendUninstallPing(const std::string& id,
                                          Callback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  RunTask(std::make_unique<TaskSendUninstallPing>(
+  RunTask(base::MakeRefCounted<TaskSendUninstallPing>(
       update_engine_.get(), id, version, reason,
       base::BindOnce(&UpdateClientImpl::OnTaskComplete, base::Unretained(this),
                      std::move(callback))));

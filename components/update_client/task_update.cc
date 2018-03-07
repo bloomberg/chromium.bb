@@ -37,9 +37,8 @@ void TaskUpdate::Run() {
     return;
   }
 
-  update_engine_->Update(
-      is_foreground_, ids_, std::move(crx_data_callback_),
-      base::BindOnce(&TaskUpdate::TaskComplete, base::Unretained(this)));
+  update_engine_->Update(is_foreground_, ids_, std::move(crx_data_callback_),
+                         base::BindOnce(&TaskUpdate::TaskComplete, this));
 }
 
 void TaskUpdate::Cancel() {
@@ -56,7 +55,8 @@ void TaskUpdate::TaskComplete(Error error) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback_), this, error));
+      FROM_HERE, base::BindOnce(std::move(callback_),
+                                scoped_refptr<TaskUpdate>(this), error));
 }
 
 }  // namespace update_client
