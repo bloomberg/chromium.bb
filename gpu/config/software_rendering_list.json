@@ -131,6 +131,10 @@
         },
         {
           "driver_vendor": "swiftshader"
+        },
+        {
+          "vendor_id": "0xffff",
+          "device_id": ["0xfffe"]
         }
       ],
       "features": [
