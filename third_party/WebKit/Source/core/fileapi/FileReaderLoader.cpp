@@ -201,20 +201,8 @@ void FileReaderLoader::Failed(FileError::ErrorCode error_code) {
     client_->DidFail(error_code_);
 }
 
-void FileReaderLoader::OnStartLoading(long long total_bytes) {
-  // A negative value means that the content length wasn't specified.
+void FileReaderLoader::OnStartLoading(uint64_t total_bytes) {
   total_bytes_ = total_bytes;
-
-  long long initial_buffer_length = -1;
-
-  if (total_bytes_ >= 0) {
-    initial_buffer_length = total_bytes_;
-  } else {
-    // Nothing is known about the size of the resource. Normalize
-    // m_totalBytes to -1 and initialize the buffer for receiving with the
-    // default size.
-    total_bytes_ = -1;
-  }
 
   DCHECK(!raw_data_);
 
@@ -222,26 +210,17 @@ void FileReaderLoader::OnStartLoading(long long total_bytes) {
     // Check that we can cast to unsigned since we have to do
     // so to call ArrayBuffer's create function.
     // FIXME: Support reading more than the current size limit of ArrayBuffer.
-    if (initial_buffer_length > std::numeric_limits<unsigned>::max()) {
+    if (total_bytes > std::numeric_limits<unsigned>::max()) {
       Failed(FileError::kNotReadableErr);
       return;
     }
 
-    if (initial_buffer_length < 0)
-      raw_data_ = std::make_unique<ArrayBufferBuilder>();
-    else
-      raw_data_ = WTF::WrapUnique(
-          new ArrayBufferBuilder(static_cast<unsigned>(initial_buffer_length)));
-
-    if (!raw_data_ || !raw_data_->IsValid()) {
+    raw_data_ = std::make_unique<ArrayBufferBuilder>(total_bytes);
+    if (!raw_data_->IsValid()) {
       Failed(FileError::kNotReadableErr);
       return;
     }
-
-    if (initial_buffer_length >= 0) {
-      // Total size is known. Set m_rawData to ignore overflowed data.
-      raw_data_->SetVariableCapacity(false);
-    }
+    raw_data_->SetVariableCapacity(false);
   }
 
   if (client_)
@@ -284,11 +263,6 @@ void FileReaderLoader::OnFinishLoading() {
     is_raw_data_converted_ = false;
   }
 
-  if (total_bytes_ == -1) {
-    // Update m_totalBytes only when in dynamic buffer grow mode.
-    total_bytes_ = bytes_loaded_;
-  }
-
   finished_loading_ = true;
 
   Cleanup();
@@ -299,8 +273,7 @@ void FileReaderLoader::OnFinishLoading() {
 void FileReaderLoader::OnCalculatedSize(uint64_t total_size,
                                         uint64_t expected_content_size) {
   OnStartLoading(expected_content_size);
-  expected_content_size_ = expected_content_size;
-  if (expected_content_size_ == 0) {
+  if (expected_content_size == 0) {
     received_all_data_ = true;
     return;
   }
@@ -316,8 +289,7 @@ void FileReaderLoader::OnCalculatedSize(uint64_t total_size,
 }
 
 void FileReaderLoader::OnComplete(int32_t status, uint64_t data_length) {
-  if (status != net::OK ||
-      data_length != static_cast<uint64_t>(expected_content_size_)) {
+  if (status != net::OK || data_length != total_bytes_) {
     Failed(status == net::ERR_FILE_NOT_FOUND ? FileError::kNotFoundErr
                                              : FileError::kNotReadableErr);
     return;
@@ -360,7 +332,7 @@ void FileReaderLoader::OnDataPipeReadable(MojoResult result) {
     }
     OnReceivedData(static_cast<const char*>(buffer), num_bytes);
     consumer_handle_->EndReadData(num_bytes);
-    if (BytesLoaded() >= expected_content_size_) {
+    if (BytesLoaded() >= total_bytes_) {
       received_all_data_ = true;
       if (received_on_complete_)
         OnFinishLoading();

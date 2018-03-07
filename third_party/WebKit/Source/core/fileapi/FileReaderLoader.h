@@ -38,6 +38,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/Forward.h"
+#include "platform/wtf/Optional.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/TextEncoding.h"
 #include "platform/wtf/text/WTFString.h"
@@ -90,15 +91,11 @@ class CORE_EXPORT FileReaderLoader : public mojom::blink::BlobReaderClient {
   //
   // This value doesn't grow more than numeric_limits<unsigned> when
   // m_readType is not set to ReadByClient.
-  long long BytesLoaded() const { return bytes_loaded_; }
+  uint64_t BytesLoaded() const { return bytes_loaded_; }
 
-  // Before didReceiveResponse() is called: Returns -1.
-  // After didReceiveResponse() is called:
-  // - If the size of the resource is known (from
-  //   m_response.expectedContentLength() or once didFinishLoading() is
-  //   called), returns it.
-  // - Otherwise, returns -1.
-  long long TotalBytes() const { return total_bytes_; }
+  // Before OnCalculatedSize() is called: Returns nullopt.
+  // After OnCalculatedSize() is called: Returns the size of the resource.
+  Optional<uint64_t> TotalBytes() const { return total_bytes_; }
 
   FileError::ErrorCode GetErrorCode() const { return error_code_; }
 
@@ -111,7 +108,7 @@ class CORE_EXPORT FileReaderLoader : public mojom::blink::BlobReaderClient {
   void Cleanup();
   void Failed(FileError::ErrorCode);
 
-  void OnStartLoading(long long total_bytes);
+  void OnStartLoading(uint64_t total_bytes);
   void OnReceivedData(const char* data, unsigned data_length);
   void OnFinishLoading();
 
@@ -145,13 +142,11 @@ class CORE_EXPORT FileReaderLoader : public mojom::blink::BlobReaderClient {
   std::unique_ptr<TextResourceDecoder> decoder_;
 
   bool finished_loading_ = false;
-  long long bytes_loaded_ = 0;
-  // If the total size of the resource is unknown, m_totalBytes is set to -1
-  // until completion of loading, and the buffer for receiving data is set to
-  // dynamically grow. Otherwise, m_totalBytes is set to the total size and
-  // the buffer for receiving data of m_totalBytes is allocated and never grow
-  // even when extra data is appeneded.
-  long long total_bytes_ = -1;
+  uint64_t bytes_loaded_ = 0;
+  // total_bytes_ is set to the total size of the blob being loaded as soon as
+  // it is known, and  the buffer for receiving data of total_bytes_ is
+  // allocated and never grow even when extra data is appeneded.
+  Optional<uint64_t> total_bytes_;
   int64_t memory_usage_reported_to_v8_ = 0;
 
   FileError::ErrorCode error_code_ = FileError::kOK;
@@ -159,7 +154,6 @@ class CORE_EXPORT FileReaderLoader : public mojom::blink::BlobReaderClient {
   mojo::ScopedDataPipeConsumerHandle consumer_handle_;
   mojo::SimpleWatcher handle_watcher_;
   mojo::Binding<mojom::blink::BlobReaderClient> binding_;
-  int64_t expected_content_size_ = -1;
   bool received_all_data_ = false;
   bool received_on_complete_ = false;
 #if DCHECK_IS_ON()

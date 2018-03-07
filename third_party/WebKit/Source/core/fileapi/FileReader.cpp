@@ -462,12 +462,13 @@ void FileReader::FireEvent(const AtomicString& type) {
     return;
   }
 
-  if (loader_->TotalBytes() >= 0)
+  if (loader_->TotalBytes()) {
     DispatchEvent(ProgressEvent::Create(type, true, loader_->BytesLoaded(),
-                                        loader_->TotalBytes()));
-  else
+                                        *loader_->TotalBytes()));
+  } else {
     DispatchEvent(
         ProgressEvent::Create(type, false, loader_->BytesLoaded(), 0));
+  }
 }
 
 void FileReader::Trace(blink::Visitor* visitor) {
