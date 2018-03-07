@@ -198,7 +198,14 @@ TEST_F(OutOfMemoryReporterTest, NormalCrash_NoOOM) {
   EXPECT_EQ(0u, entries.size());
 }
 
-TEST_F(OutOfMemoryReporterTest, SubframeNavigation_IsNotLogged) {
+// Flaky on Android:  http://crbug.com/819592
+#if defined(OS_ANDROID)
+#define MAYBE_SubframeNavigation_IsNotLogged \
+  DISABLED_SubframeNavigation_IsNotLogged
+#else
+#define MAYBE_SubframeNavigation_IsNotLogged SubframeNavigation_IsNotLogged
+#endif
+TEST_F(OutOfMemoryReporterTest, MAYBE_SubframeNavigation_IsNotLogged) {
   const GURL url("https://example.test/");
   NavigateAndCommit(url);
 
@@ -215,7 +222,13 @@ TEST_F(OutOfMemoryReporterTest, SubframeNavigation_IsNotLogged) {
   CheckUkmMetricRecorded(url, 3000);
 }
 
-TEST_F(OutOfMemoryReporterTest, OOMOnPreviousPage) {
+// Flaky on Android:  http://crbug.com/819592
+#if defined(OS_ANDROID)
+#define MAYBE_OOMOnPreviousPage DISABLED_OOMOnPreviousPage
+#else
+#define MAYBE_OOMOnPreviousPage OOMOnPreviousPage
+#endif
+TEST_F(OutOfMemoryReporterTest, MAYBE_OOMOnPreviousPage) {
   const GURL url1("https://example.test1/");
   const GURL url2("https://example.test2/");
   const GURL url3("https://example.test2/");
