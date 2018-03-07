@@ -1,0 +1,10 @@
+# These tests currently fail when run with enablefeatures=NetworkService
+# See https://crbug.com/819249
+
+-LocalNTPUITest.FakeboxRedirectsToOmnibox
+-PasswordGenerationInteractiveTest.GenerationTriggeredInIFrame
+-PasswordGenerationInteractiveTest.PopupShownAndDismissed
+-PasswordGenerationInteractiveTest.PopupShownAndDismissedByScrolling
+-PasswordGenerationInteractiveTest.PopupShownAndPasswordSelected
+-WebViewInteractiveTests/WebViewNewWindowInteractiveTest.NewWindow_WebRequestRemoveElement/0
+-WebViewInteractiveTests/WebViewNewWindowInteractiveTest.NewWindow_WebRequestRemoveElement/1

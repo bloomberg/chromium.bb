@@ -1162,6 +1162,13 @@
       ],
       'test': 'extensions_browsertests',
     },
+    'network_service_interactive_ui_tests': {
+      'args': [
+        '--enable-features=NetworkService',
+        '--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_interactive_ui_tests.filter',
+      ],
+      'test': 'interactive_ui_tests',
+    },
   },
 
   'linux_chromeos_rel_specific_gtests': {
