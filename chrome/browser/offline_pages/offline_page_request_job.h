@@ -100,6 +100,12 @@ class OfflinePageRequestJob : public net::URLRequestJob {
     // Launched due to hitting the reload button or hitting enter in the
     // omnibox.
     RELOAD = 6,
+    // Launched due to clicking a notification.
+    NOTIFICATION = 7,
+    // Launched due to processing a file URL intent to view MHTML file.
+    FILE_URL_INTENT = 8,
+    // Launched due to processing a content URL intent to view MHTML content.
+    CONTENT_URL_INTENT = 9,
     COUNT
   };
 
@@ -206,11 +212,21 @@ class OfflinePageRequestJob : public net::URLRequestJob {
 
   const OfflinePageItem& GetCurrentOfflinePage() const;
 
+  bool IsProcessingFileOrContentUrlIntent() const;
+
   void OnTrustedOfflinePageFound();
   void VisitTrustedOfflinePage();
+  void SetOfflinePageNavigationUIData(bool is_offline_page);
   void Redirect(const GURL& redirected_url);
 
-  void OpenFile(const net::CompletionCallback& callback);
+  void OpenFile(const base::FilePath& file_path,
+                const net::CompletionCallback& callback);
+  void UpdateDigestOnBackground(
+      scoped_refptr<net::IOBuffer> buffer,
+      size_t len,
+      base::OnceCallback<void(void)> digest_updated_callback);
+  void FinalizeDigestOnBackground(
+      base::OnceCallback<void(const std::string&)> digest_finalized_callback);
 
   // All the work related to validations.
   void ValidateFile();
@@ -219,13 +235,16 @@ class OfflinePageRequestJob : public net::URLRequestJob {
   void DidOpenForValidation(int result);
   void ReadForValidation();
   void DidReadForValidation(int result);
-  void DidComputeActualDigest(const std::string& actual_digest);
+  void DidComputeActualDigestForValidation(const std::string& actual_digest);
   void OnFileValidationDone(FileValidationResult result);
 
   // All the work related to serving from the archive file.
   void DidOpenForServing(int result);
   void DidSeekForServing(int64_t result);
   void DidReadForServing(scoped_refptr<net::IOBuffer> buf, int result);
+  void NotifyReadRawDataComplete(int result);
+  void DidComputeActualDigestForServing(int result,
+                                        const std::string& actual_digest);
 
   std::unique_ptr<Delegate> delegate_;
 
@@ -252,7 +271,6 @@ class OfflinePageRequestJob : public net::URLRequestJob {
   // For the purpose of serving from the archive file.
   base::FilePath file_path_;
   std::unique_ptr<net::FileStream> stream_;
-  int64_t remaining_bytes_;
   bool has_range_header_;
 
   base::WeakPtrFactory<OfflinePageRequestJob> weak_ptr_factory_;

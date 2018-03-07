@@ -45,6 +45,7 @@
 #include "content/public/common/previews_state.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "net/base/filename_util.h"
 #include "net/http/http_request_headers.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
@@ -137,28 +138,32 @@ class OfflinePageRequestJobTestDelegate
 
 class TestURLRequestDelegate : public net::URLRequest::Delegate {
  public:
-  typedef base::Callback<void(const std::string&)> ReadCompletedCallback;
+  typedef base::Callback<void(const std::string&, int)> ReadCompletedCallback;
 
   explicit TestURLRequestDelegate(const ReadCompletedCallback& callback)
       : read_completed_callback_(callback),
-        buffer_(new net::IOBuffer(kBufSize)) {}
+        buffer_(new net::IOBuffer(kBufSize)),
+        request_status_(net::ERR_IO_PENDING) {}
 
   void OnResponseStarted(net::URLRequest* request, int net_error) override {
     DCHECK_NE(net::ERR_IO_PENDING, net_error);
     if (net_error != net::OK) {
-      OnReadCompleted(request, 0);
+      OnReadCompleted(request, net_error);
       return;
     }
     // Initiate the first read.
     int bytes_read = request->Read(buffer_.get(), kBufSize);
-    if (bytes_read >= 0)
+    if (bytes_read >= 0) {
       OnReadCompleted(request, bytes_read);
-    else if (bytes_read != net::ERR_IO_PENDING)
+    } else if (bytes_read != net::ERR_IO_PENDING) {
+      request_status_ = bytes_read;
       OnResponseCompleted();
+    }
   }
 
   void OnReadCompleted(net::URLRequest* request, int bytes_read) override {
-    data_received_.append(buffer_->data(), bytes_read);
+    if (bytes_read > 0)
+      data_received_.append(buffer_->data(), bytes_read);
 
     // If it was not end of stream, request to read more.
     while (bytes_read > 0) {
@@ -167,19 +172,23 @@ class TestURLRequestDelegate : public net::URLRequest::Delegate {
         data_received_.append(buffer_->data(), bytes_read);
     }
 
+    request_status_ = (bytes_read >= 0) ? net::OK : bytes_read;
     if (bytes_read != net::ERR_IO_PENDING)
       OnResponseCompleted();
   }
 
  private:
   void OnResponseCompleted() {
+    if (request_status_ != net::OK)
+      data_received_.clear();
     if (!read_completed_callback_.is_null())
-      read_completed_callback_.Run(data_received_);
+      read_completed_callback_.Run(data_received_, request_status_);
   }
 
   ReadCompletedCallback read_completed_callback_;
   scoped_refptr<net::IOBuffer> buffer_;
   std::string data_received_;
+  int request_status_;
 
   DISALLOW_COPY_AND_ASSIGN(TestURLRequestDelegate);
 };
@@ -417,6 +426,9 @@ class OfflinePageRequestJobTest : public testing::Test {
   // full header string.
   std::string UseOfflinePageHeader(OfflinePageHeader::Reason reason,
                                    int64_t offline_id);
+  std::string UseOfflinePageHeaderForIntent(OfflinePageHeader::Reason reason,
+                                            int64_t offline_id,
+                                            const GURL& intent_url);
 
   net::TestURLRequestContext* url_request_context() {
     return test_url_request_context_.get();
@@ -425,6 +437,7 @@ class OfflinePageRequestJobTest : public testing::Test {
   OfflinePageTabHelper* offline_page_tab_helper() const {
     return offline_page_tab_helper_;
   }
+  int request_status() const { return request_status_; }
   int bytes_read() const { return data_received_.length(); }
   const std::string& data_received() const { return data_received_; }
   bool is_offline_page_set_in_navigation_data() const {
@@ -453,6 +466,8 @@ class OfflinePageRequestJobTest : public testing::Test {
   static base::FilePath private_archives_dir_;
   static base::FilePath public_archives_dir_;
 
+  OfflinePageRequestJob::AccessEntryPoint GetExpectedAccessEntryPoint() const;
+
   void OnSavePageDone(SavePageResult result, int64_t offline_id);
   std::unique_ptr<net::URLRequest> CreateRequest(
       const GURL& url,
@@ -460,6 +475,7 @@ class OfflinePageRequestJobTest : public testing::Test {
       content::ResourceType resource_type);
   void OnGetPageByOfflineIdDone(const OfflinePageItem* pages);
   void ReadCompleted(const std::string& data_received,
+                     int request_status,
                      bool is_offline_page_set_in_navigation_data);
 
   // Runs on IO thread.
@@ -471,8 +487,9 @@ class OfflinePageRequestJobTest : public testing::Test {
                             const std::string& method,
                             const net::HttpRequestHeaders& extra_headers,
                             content::ResourceType resource_type);
-  void ReadCompletedOnIO(const std::string& data_received);
+  void ReadCompletedOnIO(const std::string& data_received, int request_status);
   void TearDownOnReadCompletedOnIO(const std::string& data_received,
+                                   int request_status,
                                    bool is_offline_page_set_in_navigation_data);
 
   content::TestBrowserThreadBundle thread_bundle_;
@@ -483,6 +500,7 @@ class OfflinePageRequestJobTest : public testing::Test {
   OfflinePageTabHelper* offline_page_tab_helper_;  // Not owned.
   int64_t last_offline_id_;
   std::string data_received_;
+  int request_status_;
   bool is_offline_page_set_in_navigation_data_;
   OfflinePageItem page_;
   OfflinePageHeader offline_page_header_;
@@ -504,6 +522,7 @@ class OfflinePageRequestJobTest : public testing::Test {
   base::ScopedTempDir public_archives_temp_base_dir_;
   base::ScopedTempDir temp_dir_;
   base::FilePath temp_file_path_;
+  int file_name_sequence_num_ = 0;
 
   bool async_operation_completed_ = false;
   base::Closure async_operation_completed_callback_;
@@ -515,6 +534,7 @@ OfflinePageRequestJobTest::OfflinePageRequestJobTest()
     : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD),
       profile_manager_(TestingBrowserProcess::GetGlobal()),
       last_offline_id_(0),
+      request_status_(net::ERR_IO_PENDING),
       is_offline_page_set_in_navigation_data_(false),
       network_change_notifier_(new TestNetworkChangeNotifier),
       test_previews_decider_(new TestPreviewsDecider) {}
@@ -604,8 +624,13 @@ void OfflinePageRequestJobTest::CreateFileWithContentOnIO(
     const base::Closure& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  temp_file_path_ = temp_dir_.GetPath().Append(FILE_PATH_LITERAL("test.mht"));
+  if (!temp_dir_.IsValid()) {
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+  }
+  std::string file_name("test");
+  file_name += base::IntToString(file_name_sequence_num_++);
+  file_name += ".mht";
+  temp_file_path_ = temp_dir_.GetPath().AppendASCII(file_name);
   ASSERT_TRUE(base::WriteFile(temp_file_path_, content.c_str(),
                               content.length()) != -1);
   callback.Run();
@@ -801,6 +826,7 @@ void OfflinePageRequestJobTest::ExpectOfflinePageServed(
     int64_t expected_offline_id,
     int expected_file_size,
     OfflinePageRequestJob::AggregatedRequestResult expected_request_result) {
+  EXPECT_EQ(net::OK, request_status_);
   EXPECT_EQ(expected_file_size, bytes_read());
   EXPECT_TRUE(is_offline_page_set_in_navigation_data());
   ASSERT_TRUE(offline_page_tab_helper()->GetOfflinePageForTest());
@@ -812,9 +838,7 @@ void OfflinePageRequestJobTest::ExpectOfflinePageServed(
     ExpectOneUniqueSampleForAggregatedRequestResult(expected_request_result);
   }
   OfflinePageRequestJob::AccessEntryPoint expected_entry_point =
-      is_connected_with_good_network()
-          ? OfflinePageRequestJob::AccessEntryPoint::DOWNLOADS
-          : OfflinePageRequestJob::AccessEntryPoint::LINK;
+      GetExpectedAccessEntryPoint();
   ExpectAccessEntryPoint(expected_entry_point);
   if (is_connected_with_good_network()) {
     ExpectOnlinePageSizeUniqueSample(expected_file_size / 1024, 1);
@@ -826,6 +850,22 @@ void OfflinePageRequestJobTest::ExpectOfflinePageServed(
   ExpectOfflinePageAccessCount(expected_offline_id, 1);
 }
 
+OfflinePageRequestJob::AccessEntryPoint
+OfflinePageRequestJobTest::GetExpectedAccessEntryPoint() const {
+  switch (offline_page_header_.reason) {
+    case OfflinePageHeader::Reason::DOWNLOAD:
+      return OfflinePageRequestJob::AccessEntryPoint::DOWNLOADS;
+    case OfflinePageHeader::Reason::NOTIFICATION:
+      return OfflinePageRequestJob::AccessEntryPoint::NOTIFICATION;
+    case OfflinePageHeader::Reason::FILE_URL_INTENT:
+      return OfflinePageRequestJob::AccessEntryPoint::FILE_URL_INTENT;
+    case OfflinePageHeader::Reason::CONTENT_URL_INTENT:
+      return OfflinePageRequestJob::AccessEntryPoint::CONTENT_URL_INTENT;
+    default:
+      return OfflinePageRequestJob::AccessEntryPoint::LINK;
+  }
+}
+
 std::string OfflinePageRequestJobTest::UseOfflinePageHeader(
     OfflinePageHeader::Reason reason,
     int64_t offline_id) {
@@ -833,6 +873,18 @@ std::string OfflinePageRequestJobTest::UseOfflinePageHeader(
   offline_page_header_.reason = reason;
   if (offline_id)
     offline_page_header_.id = base::Int64ToString(offline_id);
+  return offline_page_header_.GetCompleteHeaderString();
+}
+
+std::string OfflinePageRequestJobTest::UseOfflinePageHeaderForIntent(
+    OfflinePageHeader::Reason reason,
+    int64_t offline_id,
+    const GURL& intent_url) {
+  DCHECK_NE(OfflinePageHeader::Reason::NONE, reason);
+  DCHECK(offline_id);
+  offline_page_header_.reason = reason;
+  offline_page_header_.id = base::Int64ToString(offline_id);
+  offline_page_header_.intent_url = intent_url;
   return offline_page_header_.GetCompleteHeaderString();
 }
 
@@ -993,7 +1045,8 @@ void OfflinePageRequestJobTest::LoadPageWithHeaders(
 }
 
 void OfflinePageRequestJobTest::ReadCompletedOnIO(
-    const std::string& data_received) {
+    const std::string& data_received,
+    int request_status) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   bool is_offline_page_set_in_navigation_data = false;
@@ -1013,12 +1066,13 @@ void OfflinePageRequestJobTest::ReadCompletedOnIO(
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
       base::Bind(&OfflinePageRequestJobTest::TearDownOnReadCompletedOnIO,
-                 base::Unretained(this), data_received,
+                 base::Unretained(this), data_received, request_status,
                  is_offline_page_set_in_navigation_data));
 }
 
 void OfflinePageRequestJobTest::TearDownOnReadCompletedOnIO(
     const std::string& data_received,
+    int request_status,
     bool is_offline_page_set_in_navigation_data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
@@ -1027,16 +1081,18 @@ void OfflinePageRequestJobTest::TearDownOnReadCompletedOnIO(
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
       base::Bind(&OfflinePageRequestJobTest::ReadCompleted,
-                 base::Unretained(this), data_received,
+                 base::Unretained(this), data_received, request_status,
                  is_offline_page_set_in_navigation_data));
 }
 
 void OfflinePageRequestJobTest::ReadCompleted(
     const std::string& data_received,
+    int request_status,
     bool is_offline_page_set_in_navigation_data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   data_received_ = data_received;
+  request_status_ = request_status;
   is_offline_page_set_in_navigation_data_ =
       is_offline_page_set_in_navigation_data;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -1637,7 +1693,7 @@ TEST_F(OfflinePageRequestJobTest, LoadOtherPageOnDigestMismatch) {
 
   // There're 2 offline pages matching kUrl. The most recently created one
   // should fail on mistmatched digest. The second most recently created offline
-  // page (kTestClientId9) should be.
+  // page should work.
   LoadPage(kUrl);
 
   ExpectOfflinePageServed(offline_id1, kFileSize1,
@@ -1707,6 +1763,144 @@ TEST_F(OfflinePageRequestJobTest, BigFile) {
                           OfflinePageRequestJob::AggregatedRequestResult::
                               SHOW_OFFLINE_ON_DISCONNECTED_NETWORK);
   EXPECT_EQ(expected_data, data_received());
+}
+
+TEST_F(OfflinePageRequestJobTest, LoadFromFileUrlIntent) {
+  SimulateHasNetworkConnectivity(true);
+
+  std::string expected_data(MakeContentOfSize(2 * 1024));
+  ArchiveValidator archive_validator;
+  archive_validator.Update(expected_data.c_str(), expected_data.length());
+  std::string expected_digest = archive_validator.Finish();
+  int expected_size = expected_data.length();
+
+  // Create a file with unmodified data. The path to this file will be feed
+  // into "intent_url" of extra headers.
+  base::FilePath unmodified_file_path = CreateFileWithContent(expected_data);
+
+  // Create a file with modified data. An offline page is created to associate
+  // with this file, but with size and digest matching the unmodified version.
+  std::string modified_data(expected_data);
+  modified_data[10] = '@';
+  base::FilePath modified_file_path = CreateFileWithContent(modified_data);
+
+  int64_t offline_id = SavePublicPage(kUrl, GURL(), modified_file_path,
+                                      expected_size, expected_digest);
+
+  // Load an URL with custom header that contains "intent_url" pointing to
+  // unmodified file. Expect the file from the intent URL is fetched.
+  net::HttpRequestHeaders extra_headers;
+  extra_headers.AddHeaderFromString(UseOfflinePageHeaderForIntent(
+      OfflinePageHeader::Reason::FILE_URL_INTENT, offline_id,
+      net::FilePathToFileURL(unmodified_file_path)));
+  LoadPageWithHeaders(kUrl, extra_headers);
+
+  ExpectOfflinePageServed(offline_id, expected_size,
+                          OfflinePageRequestJob::AggregatedRequestResult::
+                              SHOW_OFFLINE_ON_CONNECTED_NETWORK);
+  EXPECT_EQ(expected_data, data_received());
+}
+
+TEST_F(OfflinePageRequestJobTest, IntentFileNotFound) {
+  SimulateHasNetworkConnectivity(true);
+
+  std::string expected_data(MakeContentOfSize(2 * 1024));
+  ArchiveValidator archive_validator;
+  archive_validator.Update(expected_data.c_str(), expected_data.length());
+  std::string expected_digest = archive_validator.Finish();
+  int expected_size = expected_data.length();
+
+  // Create a file with unmodified data. An offline page is created to associate
+  // with this file.
+  base::FilePath unmodified_file_path = CreateFileWithContent(expected_data);
+
+  // Get a path pointing to non-existing file. This path will be feed into
+  // "intent_url" of extra headers.
+  base::FilePath nonexistent_file_path =
+      unmodified_file_path.DirName().AppendASCII("nonexistent");
+
+  int64_t offline_id = SavePublicPage(kUrl, GURL(), unmodified_file_path,
+                                      expected_size, expected_digest);
+
+  // Load an URL with custom header that contains "intent_url" pointing to
+  // non-existent file. Expect the request fails.
+  net::HttpRequestHeaders extra_headers;
+  extra_headers.AddHeaderFromString(UseOfflinePageHeaderForIntent(
+      OfflinePageHeader::Reason::FILE_URL_INTENT, offline_id,
+      net::FilePathToFileURL(nonexistent_file_path)));
+  LoadPageWithHeaders(kUrl, extra_headers);
+
+  ExpectOpenFileErrorCode(net::ERR_FILE_NOT_FOUND);
+  EXPECT_EQ(net::ERR_FAILED, request_status());
+  EXPECT_EQ(0, bytes_read());
+  EXPECT_FALSE(is_offline_page_set_in_navigation_data());
+  EXPECT_FALSE(offline_page_tab_helper()->GetOfflinePageForTest());
+}
+
+TEST_F(OfflinePageRequestJobTest, IntentFileModifiedInTheMiddle) {
+  SimulateHasNetworkConnectivity(true);
+
+  std::string expected_data(MakeContentOfSize(2 * 1024));
+  ArchiveValidator archive_validator;
+  archive_validator.Update(expected_data.c_str(), expected_data.length());
+  std::string expected_digest = archive_validator.Finish();
+  int expected_size = expected_data.length();
+
+  // Create a file with modified data in the middle. An offline page is created
+  // to associate with this modified file, but with size and digest matching the
+  // unmodified version.
+  std::string modified_data(expected_data);
+  modified_data[10] = '@';
+  base::FilePath modified_file_path = CreateFileWithContent(modified_data);
+
+  int64_t offline_id = SavePublicPage(kUrl, GURL(), modified_file_path,
+                                      expected_size, expected_digest);
+
+  // Load an URL with custom header that contains "intent_url" pointing to
+  // modified file. Expect the request fails.
+  net::HttpRequestHeaders extra_headers;
+  extra_headers.AddHeaderFromString(UseOfflinePageHeaderForIntent(
+      OfflinePageHeader::Reason::FILE_URL_INTENT, offline_id,
+      net::FilePathToFileURL(modified_file_path)));
+  LoadPageWithHeaders(kUrl, extra_headers);
+
+  EXPECT_EQ(net::ERR_FAILED, request_status());
+  EXPECT_EQ(0, bytes_read());
+  EXPECT_FALSE(is_offline_page_set_in_navigation_data());
+  EXPECT_FALSE(offline_page_tab_helper()->GetOfflinePageForTest());
+}
+
+TEST_F(OfflinePageRequestJobTest, IntentFileModifiedWithMoreDataAppended) {
+  SimulateHasNetworkConnectivity(true);
+
+  std::string expected_data(MakeContentOfSize(2 * 1024));
+  ArchiveValidator archive_validator;
+  archive_validator.Update(expected_data.c_str(), expected_data.length());
+  std::string expected_digest = archive_validator.Finish();
+  int expected_size = expected_data.length();
+
+  // Create a file with more data appended. An offline page is created to
+  // associate with this modified file, but with size and digest matching the
+  // unmodified version.
+  std::string modified_data(expected_data);
+  modified_data += "foo";
+  base::FilePath modified_file_path = CreateFileWithContent(modified_data);
+
+  int64_t offline_id = SavePublicPage(kUrl, GURL(), modified_file_path,
+                                      expected_size, expected_digest);
+
+  // Load an URL with custom header that contains "intent_url" pointing to
+  // modified file. Expect the request fails.
+  net::HttpRequestHeaders extra_headers;
+  extra_headers.AddHeaderFromString(UseOfflinePageHeaderForIntent(
+      OfflinePageHeader::Reason::FILE_URL_INTENT, offline_id,
+      net::FilePathToFileURL(modified_file_path)));
+  LoadPageWithHeaders(kUrl, extra_headers);
+
+  EXPECT_EQ(net::ERR_FAILED, request_status());
+  EXPECT_EQ(0, bytes_read());
+  EXPECT_FALSE(is_offline_page_set_in_navigation_data());
+  EXPECT_FALSE(offline_page_tab_helper()->GetOfflinePageForTest());
 }
 
 }  // namespace offline_pages

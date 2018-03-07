@@ -33,6 +33,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/resource_type.h"
 #include "net/base/file_stream.h"
+#include "net/base/filename_util.h"
 #include "net/base/io_buffer.h"
 #include "net/base/network_change_notifier.h"
 #include "net/http/http_request_headers.h"
@@ -134,7 +135,7 @@ void GetFileSize(const base::FilePath& file_path, int64_t* file_size) {
 void UpdateDigest(
     const scoped_refptr<OfflinePageRequestJob::ThreadSafeArchiveValidator>&
         validator,
-    const scoped_refptr<net::IOBuffer>& buffer,
+    scoped_refptr<net::IOBuffer> buffer,
     size_t len) {
   validator->Update(buffer->data(), len);
 }
@@ -349,6 +350,11 @@ void ReportExistenceOfRangeHeader(bool has_range_header) {
                             has_range_header);
 }
 
+void ReportIntentDataChangedAfterValidation(bool changed) {
+  UMA_HISTOGRAM_BOOLEAN(
+      "OfflinePages.RequestJob.IntentDataChangedAfterValidation", changed);
+}
+
 OfflinePageModel* GetOfflinePageModel(
     content::ResourceRequestInfo::WebContentsGetter web_contents_getter) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -533,6 +539,24 @@ void VisitTrustedOfflinePageOnUI(
           OfflinePageRequestJob::NetworkState::PROHIBITIVELY_SLOW_NETWORK);
 }
 
+void ClearOfflinePageData(
+    content::ResourceRequestInfo::WebContentsGetter web_contents_getter) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  // |web_contents_getter| is passed from IO thread. We need to check if
+  // web contents is still valid.
+  content::WebContents* web_contents = web_contents_getter.Run();
+  if (!web_contents)
+    return;
+
+  // Save an cached copy of OfflinePageItem such that Tab code can get
+  // the loaded offline page immediately.
+  OfflinePageTabHelper* tab_helper =
+      OfflinePageTabHelper::FromWebContents(web_contents);
+  DCHECK(tab_helper);
+  tab_helper->ClearOfflinePage();
+}
+
 }  // namespace
 
 // static
@@ -590,7 +614,6 @@ OfflinePageRequestJob::OfflinePageRequestJob(
       delegate_(new DefaultOfflinePageRequestJobDelegate()),
       previews_decider_(previews_decider),
       candidate_index_(0),
-      remaining_bytes_(0),
       has_range_header_(false),
       weak_ptr_factory_(this) {}
 
@@ -634,26 +657,11 @@ void OfflinePageRequestJob::Kill() {
 
 int OfflinePageRequestJob::ReadRawData(net::IOBuffer* dest, int dest_size) {
   DCHECK_NE(dest_size, 0);
-  DCHECK_GE(remaining_bytes_, 0);
 
-  if (remaining_bytes_ < dest_size)
-    dest_size = remaining_bytes_;
-
-  // If we should copy zero bytes because |remaining_bytes_| is zero, short
-  // circuit here.
-  if (!dest_size)
-    return 0;
-
-  int result = stream_->Read(
+  return stream_->Read(
       dest, dest_size,
       base::Bind(&OfflinePageRequestJob::DidReadForServing,
                  weak_ptr_factory_.GetWeakPtr(), base::WrapRefCounted(dest)));
-  if (result >= 0) {
-    remaining_bytes_ -= result;
-    DCHECK_GE(remaining_bytes_, 0);
-  }
-
-  return result;
 }
 
 void OfflinePageRequestJob::GetResponseInfo(net::HttpResponseInfo* info) {
@@ -746,14 +754,24 @@ void OfflinePageRequestJob::OnTrustedOfflinePageFound() {
     return;
   }
 
-  // Open the file if the validation was skipped and the file was not opened
-  // yet.
+  // No need to open the file if it has already been opened for the validation.
   if (stream_) {
     DidOpenForServing(net::OK);
     return;
   }
-  OpenFile(base::Bind(&OfflinePageRequestJob::DidOpenForServing,
-                      weak_ptr_factory_.GetWeakPtr()));
+
+  // If a file:// or content:// intent is being processed, open the file:// or
+  // content:// denoted in the intent instead. Otherwise, open the archive file
+  // associated with the offline page.
+  base::FilePath file_path;
+  if (IsProcessingFileOrContentUrlIntent()) {
+    bool valid = net::FileURLToFilePath(offline_header_.intent_url, &file_path);
+    DCHECK(valid);
+  } else {
+    file_path = GetCurrentOfflinePage().file_path;
+  }
+  OpenFile(file_path, base::Bind(&OfflinePageRequestJob::DidOpenForServing,
+                                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void OfflinePageRequestJob::VisitTrustedOfflinePage() {
@@ -763,22 +781,27 @@ void OfflinePageRequestJob::VisitTrustedOfflinePage() {
   ReportOfflinePageSize(network_state_, GetCurrentOfflinePage());
   ReportExistenceOfRangeHeader(has_range_header_);
 
-  const content::ResourceRequestInfo* info =
-      content::ResourceRequestInfo::ForRequest(request());
-  ChromeNavigationUIData* navigation_data =
-      static_cast<ChromeNavigationUIData*>(info->GetNavigationUIData());
-  if (navigation_data) {
-    std::unique_ptr<OfflinePageNavigationUIData> offline_page_data =
-        std::make_unique<OfflinePageNavigationUIData>(true);
-    navigation_data->SetOfflinePageNavigationUIData(
-        std::move(offline_page_data));
-  }
+  SetOfflinePageNavigationUIData(true /*is_offline_page*/);
 
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
       base::BindOnce(&VisitTrustedOfflinePageOnUI, offline_header_,
                      network_state_, delegate_->GetWebContentsGetter(request()),
                      GetCurrentOfflinePage()));
+}
+
+void OfflinePageRequestJob::SetOfflinePageNavigationUIData(
+    bool is_offline_page) {
+  const content::ResourceRequestInfo* info =
+      content::ResourceRequestInfo::ForRequest(request());
+  ChromeNavigationUIData* navigation_data =
+      static_cast<ChromeNavigationUIData*>(info->GetNavigationUIData());
+  if (navigation_data) {
+    std::unique_ptr<OfflinePageNavigationUIData> offline_page_data =
+        std::make_unique<OfflinePageNavigationUIData>(is_offline_page);
+    navigation_data->SetOfflinePageNavigationUIData(
+        std::move(offline_page_data));
+  }
 }
 
 void OfflinePageRequestJob::Redirect(const GURL& redirected_url) {
@@ -816,12 +839,18 @@ OfflinePageRequestJob::GetAccessEntryPoint() const {
   if (!info)
     return AccessEntryPoint::UNKNOWN;
 
-  std::string offline_header_value;
-  request()->extra_request_headers().GetHeader(kOfflinePageHeader,
-                                               &offline_header_value);
-  OfflinePageHeader offline_header(offline_header_value);
-  if (offline_header.reason == OfflinePageHeader::Reason::DOWNLOAD)
-    return AccessEntryPoint::DOWNLOADS;
+  switch (offline_header_.reason) {
+    case OfflinePageHeader::Reason::DOWNLOAD:
+      return AccessEntryPoint::DOWNLOADS;
+    case OfflinePageHeader::Reason::NOTIFICATION:
+      return AccessEntryPoint::NOTIFICATION;
+    case OfflinePageHeader::Reason::FILE_URL_INTENT:
+      return AccessEntryPoint::FILE_URL_INTENT;
+    case OfflinePageHeader::Reason::CONTENT_URL_INTENT:
+      return AccessEntryPoint::CONTENT_URL_INTENT;
+    default:
+      break;
+  }
 
   ui::PageTransition transition = info->GetPageTransition();
   if (ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_LINK)) {
@@ -851,21 +880,57 @@ const OfflinePageItem& OfflinePageRequestJob::GetCurrentOfflinePage() const {
   return candidates_[candidate_index_].offline_page;
 }
 
-void OfflinePageRequestJob::OpenFile(const net::CompletionCallback& callback) {
+bool OfflinePageRequestJob::IsProcessingFileOrContentUrlIntent() const {
+  return offline_header_.reason == OfflinePageHeader::Reason::FILE_URL_INTENT ||
+         offline_header_.reason ==
+             OfflinePageHeader::Reason::CONTENT_URL_INTENT;
+}
+
+void OfflinePageRequestJob::OpenFile(const base::FilePath& file_path,
+                                     const net::CompletionCallback& callback) {
   if (!stream_)
     stream_ = std::make_unique<net::FileStream>(file_task_runner_);
 
   int flags = base::File::FLAG_OPEN | base::File::FLAG_READ |
               base::File::FLAG_EXCLUSIVE_READ | base::File::FLAG_ASYNC;
-  int result =
-      stream_->Open(GetCurrentOfflinePage().file_path, flags, callback);
+  int result = stream_->Open(file_path, flags, callback);
   if (result != net::ERR_IO_PENDING)
     callback.Run(result);
 }
 
+void OfflinePageRequestJob::UpdateDigestOnBackground(
+    scoped_refptr<net::IOBuffer> buffer,
+    size_t len,
+    base::OnceCallback<void(void)> digest_updated_callback) {
+  DCHECK_GT(len, 0u);
+
+  if (!archive_validator_)
+    archive_validator_ = new ThreadSafeArchiveValidator();
+
+  // Delegate to background task runner to update the hash since it is time
+  // consuming. Once it is done, |digest_updated_callback| will be called to
+  // continue the reading.
+  file_task_runner_->PostTaskAndReply(
+      FROM_HERE, base::BindOnce(&UpdateDigest, archive_validator_, buffer, len),
+      std::move(digest_updated_callback));
+}
+
+void OfflinePageRequestJob::FinalizeDigestOnBackground(
+    base::OnceCallback<void(const std::string&)> digest_finalized_callback) {
+  DCHECK(archive_validator_.get());
+
+  // Delegate to background task runner to finalize the hash to get the digest
+  // since it is time consuming. Once it is done, |digest_finalized_callback|
+  // will be called with the digest.
+  base::PostTaskAndReplyWithResult(
+      file_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&ThreadSafeArchiveValidator::Finish, archive_validator_),
+      std::move(digest_finalized_callback));
+}
+
 void OfflinePageRequestJob::ValidateFile() {
   // If the archive file is in internal directory, the offline page can be
-  // deemed as trust without going through valication.
+  // deemed as trusted without going through valication.
   if (candidates_[candidate_index_].archive_is_in_internal_dir) {
     OnTrustedOfflinePageFound();
     return;
@@ -875,6 +940,18 @@ void OfflinePageRequestJob::ValidateFile() {
   // the validation can fail immediately.
   if (GetCurrentOfflinePage().digest.empty()) {
     OnFileValidationDone(FileValidationResult::FILE_VALIDATION_FAILED);
+    return;
+  }
+
+  // If a file:// or content:// URL intent is being viewed, skip the validation.
+  // The digest for the file:// or content:// denoted in the intent was computed
+  // and used to find the offline page. However, we will not validate and read
+  // from the archive archive file assoicated with the offline page since it may
+  // not exist or even got modified. We will read from the file:// or content://
+  // denoted in the intent  and compute the digest of the read data to make sure
+  // it does not get changed.
+  if (IsProcessingFileOrContentUrlIntent()) {
+    OnFileValidationDone(FileValidationResult::FILE_VALIDATION_SUCCEEDED);
     return;
   }
 
@@ -904,7 +981,8 @@ void OfflinePageRequestJob::DidGetFileSizeForValidation(
   }
 
   // Open file to compute the digest.
-  OpenFile(base::Bind(&OfflinePageRequestJob::DidOpenForValidation,
+  OpenFile(GetCurrentOfflinePage().file_path,
+           base::Bind(&OfflinePageRequestJob::DidOpenForValidation,
                       weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -918,8 +996,6 @@ void OfflinePageRequestJob::DidOpenForValidation(int result) {
 
   if (!buffer_)
     buffer_ = new net::IOBuffer(kMaxBufferSizeForValidation);
-
-  archive_validator_ = new ThreadSafeArchiveValidator();
 
   ReadForValidation();
 }
@@ -942,29 +1018,21 @@ void OfflinePageRequestJob::DidReadForValidation(int result) {
   }
 
   if (result > 0) {
-    // Delegate to background task runner to update the hash since it is time
-    // consuming. Once it is done, ReadForValidation will be called to continue
-    // the reading.
-    file_task_runner_->PostTaskAndReply(
-        FROM_HERE,
-        base::BindOnce(&UpdateDigest, archive_validator_, buffer_, result),
+    UpdateDigestOnBackground(
+        buffer_, result,
         base::BindOnce(&OfflinePageRequestJob::ReadForValidation,
                        weak_ptr_factory_.GetWeakPtr()));
     return;
   }
 
   // When |result| is 0 (net::OK), it indicates EOF. We need to finalize the
-  // hash to get the actual digest. This is done by delegating to background
-  // task runner since it is time consuming. DidComputeActualDigest will be
-  // called with the actual digest.
-  base::PostTaskAndReplyWithResult(
-      file_task_runner_.get(), FROM_HERE,
-      base::BindOnce(&ThreadSafeArchiveValidator::Finish, archive_validator_),
-      base::BindOnce(&OfflinePageRequestJob::DidComputeActualDigest,
-                     weak_ptr_factory_.GetWeakPtr()));
+  // hash to get the actual digest.
+  FinalizeDigestOnBackground(base::BindOnce(
+      &OfflinePageRequestJob::DidComputeActualDigestForValidation,
+      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void OfflinePageRequestJob::DidComputeActualDigest(
+void OfflinePageRequestJob::DidComputeActualDigestForValidation(
     const std::string& actual_digest) {
   DCHECK(!GetCurrentOfflinePage().digest.empty());
   bool is_trusted = actual_digest == GetCurrentOfflinePage().digest;
@@ -1001,27 +1069,24 @@ void OfflinePageRequestJob::OnFileValidationDone(FileValidationResult result) {
 void OfflinePageRequestJob::DidOpenForServing(int result) {
   ReportOpenResult(result);
 
-  // If the file failed to open, fall back to the default handling.
+  // Handle the file opening failure.
   if (result != net::OK) {
     ReportRequestResult(RequestResult::FILE_NOT_FOUND, network_state_);
-    FallbackToDefault();
+
+    // If the file:// or content:// intent is being processed, don't fall
+    // back to the default handling. Instead, we should fail the request.
+    if (IsProcessingFileOrContentUrlIntent()) {
+      NotifyStartError(net::URLRequestStatus(net::URLRequestStatus::FAILED,
+                                             net::ERR_FAILED));
+    } else {
+      FallbackToDefault();
+    }
     return;
   }
 
   // Now we're going to read the archive file to serve the offline page. Do
   // all the necessary reporting and bookkeeping for using this offline page.
   VisitTrustedOfflinePage();
-
-  remaining_bytes_ = GetCurrentOfflinePage().file_size;
-  DCHECK_GE(remaining_bytes_, 0);
-
-  // We didn't need to call stream_->Seek() if there is no data to read, so we
-  // pass to DidSeekForServing() the value that would mean seek success. This
-  // way we skip the code handling seek failure.
-  if (remaining_bytes_ == 0) {
-    DidSeekForServing(0);
-    return;
-  }
 
   // Note that we always seek to the beginning of the file because the file may
   // have already been read for validation purpose.
@@ -1043,19 +1108,60 @@ void OfflinePageRequestJob::DidSeekForServing(int64_t result) {
     return;
   }
 
-  set_expected_content_size(remaining_bytes_);
+  set_expected_content_size(GetCurrentOfflinePage().file_size);
   NotifyHeadersComplete();
 }
 
 void OfflinePageRequestJob::DidReadForServing(scoped_refptr<net::IOBuffer> buf,
                                               int result) {
-  if (result >= 0) {
-    remaining_bytes_ -= result;
-    DCHECK_GE(remaining_bytes_, 0);
+  ReportReadResult(result);
+
+  if (result < 0 || !IsProcessingFileOrContentUrlIntent()) {
+    buf = nullptr;
+    NotifyReadRawDataComplete(result);
+    return;
   }
 
-  ReportReadResult(result);
-  buf = nullptr;
+  // At this point, we have result >= 0 && IsProcessingFileOrContentUrlIntent()
+  // which means the read succeeds for processing the file:// or content:// URL
+  // intent. We need to compute the digest to ensure that the file:// or
+  // content:// we read is not modified since the time we received the intent,
+  // validated the data provided by file:// or content:// URL, and decided to
+  // turn it into the corresponding http/https URL and let OfflinePageRequestJob
+  // handle it.
+  if (result > 0) {
+    UpdateDigestOnBackground(
+        buf, result,
+        base::BindOnce(&OfflinePageRequestJob::NotifyReadRawDataComplete,
+                       weak_ptr_factory_.GetWeakPtr(), result));
+
+  } else {
+    // When |result| is 0 (net::OK), it indicates EOF. We need to finalize the
+    // hash to get the actual digest.
+    FinalizeDigestOnBackground(
+        base::BindOnce(&OfflinePageRequestJob::DidComputeActualDigestForServing,
+                       weak_ptr_factory_.GetWeakPtr(), result));
+  }
+}
+
+void OfflinePageRequestJob::NotifyReadRawDataComplete(int result) {
+  ReadRawDataComplete(result);
+}
+
+void OfflinePageRequestJob::DidComputeActualDigestForServing(
+    int result,
+    const std::string& actual_digest) {
+  // If the actual digest does not match, fail the request job.
+  bool mismatch = actual_digest != GetCurrentOfflinePage().digest;
+  ReportIntentDataChangedAfterValidation(mismatch);
+  if (mismatch) {
+    SetOfflinePageNavigationUIData(false /*is_offline_page*/);
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::Bind(&ClearOfflinePageData,
+                   delegate_->GetWebContentsGetter(request())));
+    result = net::ERR_FAILED;
+  }
 
   ReadRawDataComplete(result);
 }

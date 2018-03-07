@@ -124,22 +124,22 @@ TEST_F(OfflinePageHeaderTest, Parse) {
   EXPECT_FALSE(ParseFromHeaderValue("intent_url=://foo/bar", &need_to_persist,
                                     &reason, &id, &intent_url));
 
-  EXPECT_TRUE(ParseFromHeaderValue("intent_url=file://foo/bar",
+  EXPECT_TRUE(ParseFromHeaderValue("intent_url=file://foo/Bar",
                                    &need_to_persist, &reason, &id,
                                    &intent_url));
   EXPECT_FALSE(need_to_persist);
   EXPECT_EQ(OfflinePageHeader::Reason::NONE, reason);
   EXPECT_EQ("", id);
-  EXPECT_EQ(GURL("file://foo/bar"), intent_url);
+  EXPECT_EQ(GURL("file://foo/Bar"), intent_url);
 
   // Parse multiple fields.
   EXPECT_TRUE(ParseFromHeaderValue(
-      "persist=1 reason=download id=a1b2 intent_url=file://foo/bar",
+      "persist=1 reason=download id=a1b2 intent_url=file://foo/Bar",
       &need_to_persist, &reason, &id, &intent_url));
   EXPECT_TRUE(need_to_persist);
   EXPECT_EQ(OfflinePageHeader::Reason::DOWNLOAD, reason);
   EXPECT_EQ("a1b2", id);
-  EXPECT_EQ(GURL("file://foo/bar"), intent_url);
+  EXPECT_EQ(GURL("file://foo/Bar"), intent_url);
 }
 
 TEST_F(OfflinePageHeaderTest, ToString) {
@@ -147,10 +147,10 @@ TEST_F(OfflinePageHeaderTest, ToString) {
   header.need_to_persist = true;
   header.reason = OfflinePageHeader::Reason::DOWNLOAD;
   header.id = "a1b2";
-  header.intent_url = GURL("file://foo/bar");
+  header.intent_url = GURL("file://foo/Bar");
   EXPECT_EQ(
       "X-Chrome-offline: persist=1 reason=download id=a1b2 "
-      "intent_url=file://foo/bar",
+      "intent_url=file://foo/Bar",
       header.GetCompleteHeaderString());
 }
 

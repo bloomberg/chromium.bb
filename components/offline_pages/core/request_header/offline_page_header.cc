@@ -41,26 +41,27 @@ bool ParseOfflineHeaderValue(const std::string& header_value,
     if (pos == std::string::npos)
       return false;
     std::string key = base::ToLowerASCII(pair.substr(0, pos));
-    std::string value = base::ToLowerASCII(pair.substr(pos + 1));
+    std::string value = pair.substr(pos + 1);
+    std::string lower_value = base::ToLowerASCII(value);
     if (key == kOfflinePageHeaderPersistKey) {
-      if (value == "1")
+      if (lower_value == "1")
         *need_to_persist = true;
-      else if (value == "0")
+      else if (lower_value == "0")
         *need_to_persist = false;
       else
         return false;
     } else if (key == kOfflinePageHeaderReasonKey) {
-      if (value == kOfflinePageHeaderReasonValueDueToNetError)
+      if (lower_value == kOfflinePageHeaderReasonValueDueToNetError)
         *reason = OfflinePageHeader::Reason::NET_ERROR;
-      else if (value == kOfflinePageHeaderReasonValueFromDownload)
+      else if (lower_value == kOfflinePageHeaderReasonValueFromDownload)
         *reason = OfflinePageHeader::Reason::DOWNLOAD;
-      else if (value == kOfflinePageHeaderReasonValueReload)
+      else if (lower_value == kOfflinePageHeaderReasonValueReload)
         *reason = OfflinePageHeader::Reason::RELOAD;
-      else if (value == kOfflinePageHeaderReasonValueFromNotification)
+      else if (lower_value == kOfflinePageHeaderReasonValueFromNotification)
         *reason = OfflinePageHeader::Reason::NOTIFICATION;
-      else if (value == kOfflinePageHeaderReasonFileUrlIntent)
+      else if (lower_value == kOfflinePageHeaderReasonFileUrlIntent)
         *reason = OfflinePageHeader::Reason::FILE_URL_INTENT;
-      else if (value == kOfflinePageHeaderReasonContentUrlIntent)
+      else if (lower_value == kOfflinePageHeaderReasonContentUrlIntent)
         *reason = OfflinePageHeader::Reason::CONTENT_URL_INTENT;
       else
         return false;

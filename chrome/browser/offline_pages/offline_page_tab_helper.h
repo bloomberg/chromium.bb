@@ -36,6 +36,8 @@ class OfflinePageTabHelper :
                       bool is_trusted,
                       bool is_offline_preview);
 
+  void ClearOfflinePage();
+
   const OfflinePageItem* offline_page() {
     return offline_info_.offline_page.get();
   }
