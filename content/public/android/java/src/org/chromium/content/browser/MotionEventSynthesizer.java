@@ -35,8 +35,9 @@ public class MotionEventSynthesizer {
      * @param x X coordinate of the point.
      * @param x Y coordinate of the point.
      * @param id Id property of the point.
+     * @param toolType ToolType property of the point.
      */
-    public void setPointer(int index, int x, int y, int id) {
+    public void setPointer(int index, int x, int y, int id, int toolType) {
         assert (0 <= index && index < MAX_NUM_POINTERS);
 
         PointerCoords coords = new PointerCoords();
@@ -47,7 +48,20 @@ public class MotionEventSynthesizer {
 
         PointerProperties properties = new PointerProperties();
         properties.id = id;
+        properties.toolType = toolType;
         mPointerProperties[index] = properties;
+    }
+
+    /**
+     * Sets the coordinate of the point at which a touch event takes place.
+     *
+     * @param index Index of the point when there are multiple points.
+     * @param x X coordinate of the point.
+     * @param x Y coordinate of the point.
+     * @param id Id property of the point.
+     */
+    public void setPointer(int index, int x, int y, int id) {
+        setPointer(index, x, y, id, MotionEvent.TOOL_TYPE_UNKNOWN);
     }
 
     /**
