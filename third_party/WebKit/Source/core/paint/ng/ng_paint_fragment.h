@@ -99,9 +99,16 @@ class CORE_EXPORT NGPaintFragment : public DisplayItemClient,
   // A range of fragments for |FragmentsFor()|.
   class FragmentRange {
    public:
-    explicit FragmentRange(NGPaintFragment* first) : first_(first) {}
+    explicit FragmentRange(
+        NGPaintFragment* first,
+        bool is_in_layout_ng_inline_formatting_context = true)
+        : first_(first),
+          is_in_layout_ng_inline_formatting_context_(
+              is_in_layout_ng_inline_formatting_context) {}
 
-    bool IsEmpty() const { return !first_; }
+    bool IsInLayoutNGInlineFormattingContext() const {
+      return is_in_layout_ng_inline_formatting_context_;
+    }
 
     class iterator {
      public:
@@ -129,6 +136,7 @@ class CORE_EXPORT NGPaintFragment : public DisplayItemClient,
 
    private:
     NGPaintFragment* first_;
+    bool is_in_layout_ng_inline_formatting_context_;
   };
 
   // Returns NGPaintFragment for the inline formatting context the LayoutObject
