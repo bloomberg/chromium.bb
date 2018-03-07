@@ -13,14 +13,6 @@
 
 namespace zucchini {
 
-// Projects targets in |old_targets| to a list of new targets using equivalences
-// in |equivalence_source|. Targets that cannot be projected have offset
-// assigned as |kUnusedIndex|. Returns the list of new targets in a new vector.
-// |old_targets| must be sorted in ascending order
-std::vector<offset_t> MakeNewTargetsFromPatch(
-    const std::vector<offset_t>& old_targets,
-    const EquivalenceSource& equivalence_source);
-
 // Reads equivalences from |patch_reader| to form preliminary |new_image|,
 // copying regions from |old_image| and writing extra data from |patch_reader|.
 bool ApplyEquivalenceAndExtraData(ConstBufferView old_image,
