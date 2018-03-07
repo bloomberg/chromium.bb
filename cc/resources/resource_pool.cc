@@ -570,11 +570,11 @@ void ResourcePool::PoolResource::OnMemoryDump(
   base::UnguessableToken shm_guid;
   base::trace_event::MemoryAllocatorDumpGuid backing_guid;
   if (shared_bitmap_) {
-    // Software resources are in shared memory but are kept closed to avoid
-    // holding an fd open. So there is no SharedMemoryHandle to get a guid
-    // from.
-    DCHECK(!shared_bitmap_->GetSharedMemoryHandle().IsValid());
-    backing_guid = viz::GetSharedBitmapGUIDForTracing(shared_bitmap_->id());
+    // If the SharedBitmap was allocated for cross-process use, then it has this
+    // |shm_guid|, else we fallback to the SharedBitmapGUID.
+    shm_guid = shared_bitmap_->GetCrossProcessGUID();
+    if (shm_guid.is_empty())
+      backing_guid = viz::GetSharedBitmapGUIDForTracing(shared_bitmap_->id());
   } else if (gpu_backing_) {
     // We prefer the SharedMemoryGuid() if it exists, if the resource is backed
     // by shared memory.

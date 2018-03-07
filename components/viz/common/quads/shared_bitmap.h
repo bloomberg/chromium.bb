@@ -16,7 +16,7 @@
 #include "ui/gfx/geometry/size.h"
 
 namespace base {
-class SharedMemoryHandle;
+class UnguessableToken;
 }
 
 namespace viz {
@@ -40,16 +40,15 @@ class VIZ_COMMON_EXPORT SharedBitmap {
   virtual ~SharedBitmap();
 
   uint8_t* pixels() { return pixels_; }
-
   const SharedBitmapId& id() { return id_; }
 
   // The sequence number that ClientSharedBitmapManager assigned to this
   // SharedBitmap.
   uint32_t sequence_number() const { return sequence_number_; }
 
-  // Returns the shared memory's handle when the back end is base::SharedMemory.
-  // Otherwise, this returns an invalid handle.
-  virtual base::SharedMemoryHandle GetSharedMemoryHandle() const = 0;
+  // Returns the GUID for tracing when the SharedBitmap supports cross-process
+  // use via shared memory. Otherwise, this returns empty.
+  virtual base::UnguessableToken GetCrossProcessGUID() const = 0;
 
   // Returns true if the size is valid and false otherwise.
   static bool SizeInBytes(const gfx::Size& size, size_t* size_in_bytes);

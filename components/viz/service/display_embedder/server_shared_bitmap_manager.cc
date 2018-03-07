@@ -22,7 +22,9 @@ namespace viz {
 class BitmapData : public base::RefCountedThreadSafe<BitmapData> {
  public:
   explicit BitmapData(size_t buffer_size) : buffer_size(buffer_size) {}
+  // For shm allocated and shared from a client out-of-process.
   std::unique_ptr<base::SharedMemory> memory;
+  // For memory allocated by the ServerSharedBitmapManager for in-process.
   std::unique_ptr<uint8_t[]> pixels;
   size_t buffer_size;
 
@@ -49,11 +51,13 @@ class ServerSharedBitmap : public SharedBitmap {
       manager_->FreeSharedMemoryFromMap(id());
   }
 
-  // SharedBitmap:
-  base::SharedMemoryHandle GetSharedMemoryHandle() const override {
-    if (!bitmap_data_->memory)
-      return base::SharedMemoryHandle();
-    return bitmap_data_->memory->handle();
+  // SharedBitmap implementation.
+  base::UnguessableToken GetCrossProcessGUID() const override {
+    if (!bitmap_data_->memory) {
+      // Locally allocated for in-process use.
+      return {};
+    }
+    return bitmap_data_->memory->mapped_id();
   }
 
  private:
@@ -151,7 +155,8 @@ bool ServerSharedBitmapManager::ChildAllocatedSharedBitmapForTest(
     const SharedBitmapId& id) {
   auto data = base::MakeRefCounted<BitmapData>(buffer_size);
   data->memory = std::make_unique<base::SharedMemory>(memory_handle, false);
-  data->memory->Map(data->buffer_size);
+  if (!data->memory->Map(data->buffer_size))
+    return false;
   data->memory->Close();
 
   base::AutoLock lock(lock_);
@@ -172,30 +177,32 @@ bool ServerSharedBitmapManager::OnMemoryDump(
     base::trace_event::ProcessMemoryDump* pmd) {
   base::AutoLock lock(lock_);
 
-  for (const auto& bitmap : handle_map_) {
+  for (const auto& pair : handle_map_) {
+    const SharedBitmapId& id = pair.first;
+    BitmapData* data = pair.second.get();
+
+    std::string dump_str = base::StringPrintf(
+        "sharedbitmap/%s", base::HexEncode(id.name, sizeof(id.name)).c_str());
     base::trace_event::MemoryAllocatorDump* dump =
-        pmd->CreateAllocatorDump(base::StringPrintf(
-            "sharedbitmap/%s",
-            base::HexEncode(bitmap.first.name, sizeof(bitmap.first.name))
-                .c_str()));
+        pmd->CreateAllocatorDump(dump_str);
     if (!dump)
       return false;
 
     dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
                     base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-                    bitmap.second->buffer_size);
+                    data->buffer_size);
 
-    if (bitmap.second->memory) {
-      base::UnguessableToken shared_memory_guid =
-          bitmap.second->memory->mapped_id();
-      if (!shared_memory_guid.is_empty()) {
-        pmd->CreateSharedMemoryOwnershipEdge(dump->guid(), shared_memory_guid,
-                                             0 /* importance*/);
-      }
+    if (data->memory) {
+      // Resources from a client have shared memory, and we use the guid from
+      // that.
+      base::UnguessableToken shared_memory_guid = data->memory->mapped_id();
+      DCHECK(!shared_memory_guid.is_empty());
+      pmd->CreateSharedMemoryOwnershipEdge(dump->guid(), shared_memory_guid,
+                                           0 /* importance*/);
     } else {
-      // Generate a global GUID used to share this allocation with renderer
-      // processes.
-      auto guid = GetSharedBitmapGUIDForTracing(bitmap.first);
+      // Otherwise, resources were allocated locally for in-process use, and
+      // there is no shared memory. Instead make up a GUID for them.
+      auto guid = GetSharedBitmapGUIDForTracing(id);
       pmd->CreateSharedGlobalAllocatorDump(guid);
       pmd->AddOwnershipEdge(dump->guid(), guid);
     }

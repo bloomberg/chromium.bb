@@ -207,7 +207,7 @@ bool ResourceProvider::OnMemoryDump(
         backing_memory_allocated = !!resource.gl_id;
         break;
       case viz::ResourceType::kBitmap:
-        backing_memory_allocated = resource.has_shared_bitmap_id;
+        backing_memory_allocated = !!resource.shared_bitmap;
         break;
     }
 
@@ -236,10 +236,16 @@ bool ResourceProvider::OnMemoryDump(
     base::UnguessableToken shared_memory_guid;
     switch (resource.type) {
       case viz::ResourceType::kGpuMemoryBuffer:
-        guid =
-            resource.gpu_memory_buffer->GetGUIDForTracing(tracing_process_id);
+        // GpuMemoryBuffers may be backed by shared memory, and in that case we
+        // use the guid from there to attribute for the global shared memory
+        // dumps. Otherwise, they may be backed by native structures, and we
+        // fall back to that with GetGUIDForTracing.
         shared_memory_guid =
             resource.gpu_memory_buffer->GetHandle().handle.GetGUID();
+        if (shared_memory_guid.is_empty()) {
+          guid =
+              resource.gpu_memory_buffer->GetGUIDForTracing(tracing_process_id);
+        }
         break;
       case viz::ResourceType::kTexture:
         DCHECK(resource.gl_id);
@@ -249,24 +255,28 @@ bool ResourceProvider::OnMemoryDump(
             resource.gl_id);
         break;
       case viz::ResourceType::kBitmap:
-        DCHECK(resource.has_shared_bitmap_id);
-        guid = viz::GetSharedBitmapGUIDForTracing(resource.shared_bitmap_id);
-        if (resource.shared_bitmap) {
-          shared_memory_guid =
-              resource.shared_bitmap->GetSharedMemoryHandle().GetGUID();
-        }
+        // If the resource comes from out of process, it will have this id,
+        // which we prefer. Otherwise, we fall back to the SharedBitmapGUID
+        // which can be generated for in-process bitmaps.
+        shared_memory_guid = resource.shared_bitmap->GetCrossProcessGUID();
+        if (shared_memory_guid.is_empty())
+          guid = viz::GetSharedBitmapGUIDForTracing(resource.shared_bitmap_id);
         break;
     }
 
-    DCHECK(!guid.empty());
+    DCHECK(!shared_memory_guid.is_empty() || !guid.empty());
 
-    const int kImportance = 2;
+    const int kImportanceForInteral = 2;
+    const int kImportanceForExternal = 1;
+    int importance = resource.origin == viz::internal::Resource::INTERNAL
+                         ? kImportanceForInteral
+                         : kImportanceForExternal;
     if (!shared_memory_guid.is_empty()) {
       pmd->CreateSharedMemoryOwnershipEdge(dump->guid(), shared_memory_guid,
-                                           kImportance);
+                                           importance);
     } else {
       pmd->CreateSharedGlobalAllocatorDump(guid);
-      pmd->AddOwnershipEdge(dump->guid(), guid, kImportance);
+      pmd->AddOwnershipEdge(dump->guid(), guid, importance);
     }
   }
 
