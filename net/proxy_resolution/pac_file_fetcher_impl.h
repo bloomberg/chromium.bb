@@ -26,20 +26,20 @@ namespace net {
 
 class URLRequestContext;
 
-// Implementation of ProxyScriptFetcher that downloads scripts using the
+// Implementation of PacFileFetcher that downloads scripts using the
 // specified request context.
-class NET_EXPORT ProxyScriptFetcherImpl : public ProxyScriptFetcher,
-                                          public URLRequest::Delegate {
+class NET_EXPORT PacFileFetcherImpl : public PacFileFetcher,
+                                      public URLRequest::Delegate {
  public:
-  // Creates a ProxyScriptFetcher that issues requests through
+  // Creates a PacFileFetcher that issues requests through
   // |url_request_context|. |url_request_context| must remain valid for the
-  // lifetime of ProxyScriptFetcherImpl.
+  // lifetime of PacFileFetcherImpl.
   // Note that while a request is in progress, we will be holding a reference
   // to |url_request_context|. Be careful not to create cycles between the
   // fetcher and the context; you can break such cycles by calling Cancel().
-  explicit ProxyScriptFetcherImpl(URLRequestContext* url_request_context);
+  explicit PacFileFetcherImpl(URLRequestContext* url_request_context);
 
-  ~ProxyScriptFetcherImpl() override;
+  ~PacFileFetcherImpl() override;
 
   // Used by unit-tests to modify the default limits.
   base::TimeDelta SetTimeoutConstraint(base::TimeDelta timeout);
@@ -47,7 +47,7 @@ class NET_EXPORT ProxyScriptFetcherImpl : public ProxyScriptFetcher,
 
   void OnResponseCompleted(URLRequest* request, int net_error);
 
-  // ProxyScriptFetcher methods:
+  // PacFileFetcher methods:
   int Fetch(const GURL& url,
             base::string16* text,
             const CompletionCallback& callback) override;
@@ -129,9 +129,9 @@ class NET_EXPORT ProxyScriptFetcherImpl : public ProxyScriptFetcher,
 
   // Factory for creating the time-out task. This takes care of revoking
   // outstanding tasks when |this| is deleted.
-  base::WeakPtrFactory<ProxyScriptFetcherImpl> weak_factory_;
+  base::WeakPtrFactory<PacFileFetcherImpl> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(ProxyScriptFetcherImpl);
+  DISALLOW_COPY_AND_ASSIGN(PacFileFetcherImpl);
 };
 
 }  // namespace net

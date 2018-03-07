@@ -277,7 +277,7 @@ public abstract class UrlRequest {
          * This state corresponds to a resource being blocked waiting for the
          * PAC script to be downloaded.
          */
-        public static final int DOWNLOADING_PROXY_SCRIPT = 5;
+        public static final int DOWNLOADING_PAC_FILE = 5;
         /**
          * This state corresponds to a resource load that is blocked waiting for a
          * proxy autoconfig script to return a proxy server to use.
@@ -288,7 +288,7 @@ public abstract class UrlRequest {
          * proxy autoconfig script to return a proxy server to use, but that proxy
          * script is busy resolving the IP address of a host.
          */
-        public static final int RESOLVING_HOST_IN_PROXY_SCRIPT = 7;
+        public static final int RESOLVING_HOST_IN_PAC_FILE = 7;
         /**
          * This state indicates that we're in the process of establishing a tunnel
          * through the proxy server.

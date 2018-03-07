@@ -17,12 +17,12 @@
 namespace network {
 
 URLRequestContextBuilderMojo::URLRequestContextBuilderMojo()
-    : dhcp_fetcher_factory_(new net::DhcpProxyScriptFetcherFactory()) {}
+    : dhcp_fetcher_factory_(new net::DhcpPacFileFetcherFactory()) {}
 
 URLRequestContextBuilderMojo::~URLRequestContextBuilderMojo() = default;
 
 void URLRequestContextBuilderMojo::SetDhcpFetcherFactory(
-    std::unique_ptr<net::DhcpProxyScriptFetcherFactory> dhcp_fetcher_factory) {
+    std::unique_ptr<net::DhcpPacFileFetcherFactory> dhcp_fetcher_factory) {
   dhcp_fetcher_factory_ = std::move(dhcp_fetcher_factory);
 }
 
@@ -52,14 +52,14 @@ URLRequestContextBuilderMojo::CreateProxyService(
 
 #if !defined(OS_IOS)
   if (mojo_proxy_resolver_factory_) {
-    std::unique_ptr<net::DhcpProxyScriptFetcher> dhcp_proxy_script_fetcher =
+    std::unique_ptr<net::DhcpPacFileFetcher> dhcp_pac_file_fetcher =
         dhcp_fetcher_factory_->Create(url_request_context);
-    std::unique_ptr<net::ProxyScriptFetcher> proxy_script_fetcher =
-        std::make_unique<net::ProxyScriptFetcherImpl>(url_request_context);
+    std::unique_ptr<net::PacFileFetcher> pac_file_fetcher =
+        std::make_unique<net::PacFileFetcherImpl>(url_request_context);
     return CreateProxyServiceUsingMojoFactory(
         std::move(mojo_proxy_resolver_factory_),
-        std::move(proxy_config_service), std::move(proxy_script_fetcher),
-        std::move(dhcp_proxy_script_fetcher), host_resolver, net_log,
+        std::move(proxy_config_service), std::move(pac_file_fetcher),
+        std::move(dhcp_pac_file_fetcher), host_resolver, net_log,
         network_delegate);
   }
 #endif

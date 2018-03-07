@@ -271,7 +271,7 @@ std::unique_ptr<base::Value> NetLogFetcherDoneCallback(
 
 }  // namespace
 
-DhcpProxyScriptFetcherWin::DhcpProxyScriptFetcherWin(
+DhcpPacFileFetcherWin::DhcpPacFileFetcherWin(
     URLRequestContext* url_request_context)
     : state_(STATE_START),
       num_pending_fetchers_(0),
@@ -281,15 +281,15 @@ DhcpProxyScriptFetcherWin::DhcpProxyScriptFetcherWin(
   DCHECK(url_request_context_);
 }
 
-DhcpProxyScriptFetcherWin::~DhcpProxyScriptFetcherWin() {
+DhcpPacFileFetcherWin::~DhcpPacFileFetcherWin() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // Count as user-initiated if we are not yet in STATE_DONE.
   Cancel();
 }
 
-int DhcpProxyScriptFetcherWin::Fetch(base::string16* utf16_text,
-                                     const CompletionCallback& callback,
-                                     const NetLogWithSource& net_log) {
+int DhcpPacFileFetcherWin::Fetch(base::string16* utf16_text,
+                                 const CompletionCallback& callback,
+                                 const NetLogWithSource& net_log) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (state_ != STATE_START && state_ != STATE_DONE) {
     NOTREACHED();
@@ -316,22 +316,21 @@ int DhcpProxyScriptFetcherWin::Fetch(base::string16* utf16_text,
 
   task_runner_->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(
-          &DhcpProxyScriptFetcherWin::AdapterQuery::GetCandidateAdapterNames,
-          last_query_.get()),
-      base::Bind(&DhcpProxyScriptFetcherWin::OnGetCandidateAdapterNamesDone,
+      base::Bind(&DhcpPacFileFetcherWin::AdapterQuery::GetCandidateAdapterNames,
+                 last_query_.get()),
+      base::Bind(&DhcpPacFileFetcherWin::OnGetCandidateAdapterNamesDone,
                  AsWeakPtr(), last_query_));
 
   return ERR_IO_PENDING;
 }
 
-void DhcpProxyScriptFetcherWin::Cancel() {
+void DhcpPacFileFetcherWin::Cancel() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   CancelImpl();
 }
 
-void DhcpProxyScriptFetcherWin::OnShutdown() {
+void DhcpPacFileFetcherWin::OnShutdown() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   // Back up callback, if there is one, as CancelImpl() will destroy it.
@@ -348,7 +347,7 @@ void DhcpProxyScriptFetcherWin::OnShutdown() {
     callback.Run(ERR_CONTEXT_SHUT_DOWN);
 }
 
-void DhcpProxyScriptFetcherWin::CancelImpl() {
+void DhcpPacFileFetcherWin::CancelImpl() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (state_ != STATE_DONE) {
@@ -366,7 +365,7 @@ void DhcpProxyScriptFetcherWin::CancelImpl() {
   }
 }
 
-void DhcpProxyScriptFetcherWin::OnGetCandidateAdapterNamesDone(
+void DhcpPacFileFetcherWin::OnGetCandidateAdapterNamesDone(
     scoped_refptr<AdapterQuery> query) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
@@ -401,31 +400,31 @@ void DhcpProxyScriptFetcherWin::OnGetCandidateAdapterNamesDone(
   }
 
   for (const std::string& adapter_name : adapter_names) {
-    std::unique_ptr<DhcpProxyScriptAdapterFetcher> fetcher(
+    std::unique_ptr<DhcpPacFileAdapterFetcher> fetcher(
         ImplCreateAdapterFetcher());
     size_t fetcher_index = fetchers_.size();
     fetcher->Fetch(adapter_name,
-                   base::Bind(&DhcpProxyScriptFetcherWin::OnFetcherDone,
+                   base::Bind(&DhcpPacFileFetcherWin::OnFetcherDone,
                               base::Unretained(this), fetcher_index));
     fetchers_.push_back(std::move(fetcher));
   }
   num_pending_fetchers_ = fetchers_.size();
 }
 
-std::string DhcpProxyScriptFetcherWin::GetFetcherName() const {
+std::string DhcpPacFileFetcherWin::GetFetcherName() const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return "win";
 }
 
-const GURL& DhcpProxyScriptFetcherWin::GetPacURL() const {
+const GURL& DhcpPacFileFetcherWin::GetPacURL() const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK_EQ(state_, STATE_DONE);
 
   return pac_url_;
 }
 
-void DhcpProxyScriptFetcherWin::OnFetcherDone(size_t fetcher_index,
-                                              int result) {
+void DhcpPacFileFetcherWin::OnFetcherDone(size_t fetcher_index,
+                                          int result) {
   DCHECK(state_ == STATE_NO_RESULTS || state_ == STATE_SOME_RESULTS);
 
   net_log_.AddEvent(
@@ -459,18 +458,18 @@ void DhcpProxyScriptFetcherWin::OnFetcherDone(size_t fetcher_index,
     state_ = STATE_SOME_RESULTS;
     net_log_.AddEvent(NetLogEventType::WPAD_DHCP_WIN_START_WAIT_TIMER);
     wait_timer_.Start(FROM_HERE,
-        ImplGetMaxWait(), this, &DhcpProxyScriptFetcherWin::OnWaitTimer);
+        ImplGetMaxWait(), this, &DhcpPacFileFetcherWin::OnWaitTimer);
   }
 }
 
-void DhcpProxyScriptFetcherWin::OnWaitTimer() {
+void DhcpPacFileFetcherWin::OnWaitTimer() {
   DCHECK_EQ(state_, STATE_SOME_RESULTS);
 
   net_log_.AddEvent(NetLogEventType::WPAD_DHCP_WIN_ON_WAIT_TIMER);
   TransitionToDone();
 }
 
-void DhcpProxyScriptFetcherWin::TransitionToDone() {
+void DhcpPacFileFetcherWin::TransitionToDone() {
   DCHECK(state_ == STATE_NO_RESULTS || state_ == STATE_SOME_RESULTS);
 
   int used_fetcher_index = -1;
@@ -520,33 +519,32 @@ void DhcpProxyScriptFetcherWin::TransitionToDone() {
   callback.Run(result);
 }
 
-int DhcpProxyScriptFetcherWin::num_pending_fetchers() const {
+int DhcpPacFileFetcherWin::num_pending_fetchers() const {
   return num_pending_fetchers_;
 }
 
-URLRequestContext* DhcpProxyScriptFetcherWin::url_request_context() const {
+URLRequestContext* DhcpPacFileFetcherWin::url_request_context() const {
   return url_request_context_;
 }
 
-scoped_refptr<base::TaskRunner> DhcpProxyScriptFetcherWin::GetTaskRunner() {
+scoped_refptr<base::TaskRunner> DhcpPacFileFetcherWin::GetTaskRunner() {
   return task_runner_;
 }
 
-DhcpProxyScriptAdapterFetcher*
-    DhcpProxyScriptFetcherWin::ImplCreateAdapterFetcher() {
-  return new DhcpProxyScriptAdapterFetcher(url_request_context_, task_runner_);
+DhcpPacFileAdapterFetcher* DhcpPacFileFetcherWin::ImplCreateAdapterFetcher() {
+  return new DhcpPacFileAdapterFetcher(url_request_context_, task_runner_);
 }
 
-DhcpProxyScriptFetcherWin::AdapterQuery*
-    DhcpProxyScriptFetcherWin::ImplCreateAdapterQuery() {
+DhcpPacFileFetcherWin::AdapterQuery*
+DhcpPacFileFetcherWin::ImplCreateAdapterQuery() {
   return new AdapterQuery();
 }
 
-base::TimeDelta DhcpProxyScriptFetcherWin::ImplGetMaxWait() {
+base::TimeDelta DhcpPacFileFetcherWin::ImplGetMaxWait() {
   return kMaxWaitAfterFirstResult;
 }
 
-bool DhcpProxyScriptFetcherWin::GetCandidateAdapterNames(
+bool DhcpPacFileFetcherWin::GetCandidateAdapterNames(
     std::set<std::string>* adapter_names,
     DhcpAdapterNamesLoggingInfo* info) {
   DCHECK(adapter_names);
@@ -603,10 +601,10 @@ bool DhcpProxyScriptFetcherWin::GetCandidateAdapterNames(
   return true;
 }
 
-DhcpProxyScriptFetcherWin::AdapterQuery::AdapterQuery()
+DhcpPacFileFetcherWin::AdapterQuery::AdapterQuery()
     : logging_info_(new DhcpAdapterNamesLoggingInfo()) {}
 
-void DhcpProxyScriptFetcherWin::AdapterQuery::GetCandidateAdapterNames() {
+void DhcpPacFileFetcherWin::AdapterQuery::GetCandidateAdapterNames() {
   logging_info_->error = ERROR_NO_DATA;
   logging_info_->adapters.reset();
   logging_info_->worker_thread_start_time = base::TimeTicks::Now();
@@ -617,18 +615,17 @@ void DhcpProxyScriptFetcherWin::AdapterQuery::GetCandidateAdapterNames() {
 }
 
 const std::set<std::string>&
-    DhcpProxyScriptFetcherWin::AdapterQuery::adapter_names() const {
+DhcpPacFileFetcherWin::AdapterQuery::adapter_names() const {
   return adapter_names_;
 }
 
-bool DhcpProxyScriptFetcherWin::AdapterQuery::ImplGetCandidateAdapterNames(
+bool DhcpPacFileFetcherWin::AdapterQuery::ImplGetCandidateAdapterNames(
     std::set<std::string>* adapter_names,
     DhcpAdapterNamesLoggingInfo* info) {
-  return DhcpProxyScriptFetcherWin::GetCandidateAdapterNames(adapter_names,
-                                                             info);
+  return DhcpPacFileFetcherWin::GetCandidateAdapterNames(adapter_names,
+                                                         info);
 }
 
-DhcpProxyScriptFetcherWin::AdapterQuery::~AdapterQuery() {
-}
+DhcpPacFileFetcherWin::AdapterQuery::~AdapterQuery() {}
 
 }  // namespace net

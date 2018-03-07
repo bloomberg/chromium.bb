@@ -30,41 +30,39 @@ namespace {
 
 const char kPacUrl[] = "http://pacserver/script.pac";
 
-// In net/proxy_resolution/dhcp_proxy_script_fetcher_win_unittest.cc there are
-// a few tests that exercise DhcpProxyScriptAdapterFetcher end-to-end along with
-// DhcpProxyScriptFetcherWin, i.e. it tests the end-to-end usage of Win32 APIs
+// In net/proxy_resolution/dhcp_pac_file_fetcher_win_unittest.cc there are
+// a few tests that exercise DhcpPacFileAdapterFetcher end-to-end along with
+// DhcpPacFileFetcherWin, i.e. it tests the end-to-end usage of Win32 APIs
 // and the network.  In this file we test only by stubbing out functionality.
 
-// Version of DhcpProxyScriptAdapterFetcher that mocks out dependencies
+// Version of DhcpPacFileAdapterFetcher that mocks out dependencies
 // to allow unit testing.
-class MockDhcpProxyScriptAdapterFetcher
-    : public DhcpProxyScriptAdapterFetcher {
+class MockDhcpPacFileAdapterFetcher : public DhcpPacFileAdapterFetcher {
  public:
-  explicit MockDhcpProxyScriptAdapterFetcher(
+  explicit MockDhcpPacFileAdapterFetcher(
       URLRequestContext* context,
       scoped_refptr<base::TaskRunner> task_runner)
-      : DhcpProxyScriptAdapterFetcher(context, task_runner),
+      : DhcpPacFileAdapterFetcher(context, task_runner),
         dhcp_delay_(base::TimeDelta::FromMilliseconds(1)),
         timeout_(TestTimeouts::action_timeout()),
         configured_url_(kPacUrl),
         fetcher_delay_ms_(1),
         fetcher_result_(OK),
-        pac_script_("bingo") {
-  }
+        pac_script_("bingo") {}
 
   void Cancel() override {
-    DhcpProxyScriptAdapterFetcher::Cancel();
+    DhcpPacFileAdapterFetcher::Cancel();
     fetcher_ = NULL;
   }
 
-  ProxyScriptFetcher* ImplCreateScriptFetcher() override {
+  PacFileFetcher* ImplCreateScriptFetcher() override {
     // We don't maintain ownership of the fetcher, it is transferred to
     // the caller.
-    fetcher_ = new MockProxyScriptFetcher();
+    fetcher_ = new MockPacFileFetcher();
     if (fetcher_delay_ms_ != -1) {
-      fetcher_timer_.Start(FROM_HERE,
-          base::TimeDelta::FromMilliseconds(fetcher_delay_ms_),
-          this, &MockDhcpProxyScriptAdapterFetcher::OnFetcherTimer);
+      fetcher_timer_.Start(
+          FROM_HERE, base::TimeDelta::FromMilliseconds(fetcher_delay_ms_), this,
+          &MockDhcpPacFileAdapterFetcher::OnFetcherTimer);
     }
     return fetcher_;
   }
@@ -108,11 +106,11 @@ class MockDhcpProxyScriptAdapterFetcher
 
   void OnFetcherTimer() {
     // Note that there is an assumption by this mock implementation that
-    // DhcpProxyScriptAdapterFetcher::Fetch will call ImplCreateScriptFetcher
+    // DhcpPacFileAdapterFetcher::Fetch will call ImplCreateScriptFetcher
     // and call Fetch on the fetcher before the message loop is re-entered.
     // This holds true today, but if you hit this DCHECK the problem can
     // possibly be resolved by having a separate subclass of
-    // MockProxyScriptFetcher that adds the delay internally (instead of
+    // MockPacFileFetcher that adds the delay internally (instead of
     // the simple approach currently used in ImplCreateScriptFetcher above).
     DCHECK(fetcher_ && fetcher_->has_pending_request());
     fetcher_->NotifyFetchCompletion(fetcher_result_, pac_script_);
@@ -138,7 +136,7 @@ class MockDhcpProxyScriptAdapterFetcher
   int fetcher_delay_ms_;
   int fetcher_result_;
   std::string pac_script_;
-  MockProxyScriptFetcher* fetcher_;
+  MockPacFileFetcher* fetcher_;
   base::OneShotTimer fetcher_timer_;
   scoped_refptr<DelayingDhcpQuery> dhcp_query_;
 };
@@ -147,7 +145,7 @@ class FetcherClient {
  public:
   FetcherClient()
       : url_request_context_(new TestURLRequestContext()),
-        fetcher_(new MockDhcpProxyScriptAdapterFetcher(
+        fetcher_(new MockDhcpPacFileAdapterFetcher(
             url_request_context_.get(),
             base::CreateSequencedTaskRunnerWithTraits(
                 {base::MayBlock(),
@@ -168,11 +166,11 @@ class FetcherClient {
 
   TestCompletionCallback callback_;
   std::unique_ptr<URLRequestContext> url_request_context_;
-  std::unique_ptr<MockDhcpProxyScriptAdapterFetcher> fetcher_;
+  std::unique_ptr<MockDhcpPacFileAdapterFetcher> fetcher_;
   base::string16 pac_text_;
 };
 
-TEST(DhcpProxyScriptAdapterFetcher, NormalCaseURLNotInDhcp) {
+TEST(DhcpPacFileAdapterFetcher, NormalCaseURLNotInDhcp) {
   FetcherClient client;
   client.fetcher_->configured_url_ = "";
   client.RunTest();
@@ -182,7 +180,7 @@ TEST(DhcpProxyScriptAdapterFetcher, NormalCaseURLNotInDhcp) {
   EXPECT_EQ(base::string16(L""), client.fetcher_->GetPacScript());
 }
 
-TEST(DhcpProxyScriptAdapterFetcher, NormalCaseURLInDhcp) {
+TEST(DhcpPacFileAdapterFetcher, NormalCaseURLInDhcp) {
   FetcherClient client;
   client.RunTest();
   client.WaitForResult(OK);
@@ -192,7 +190,7 @@ TEST(DhcpProxyScriptAdapterFetcher, NormalCaseURLInDhcp) {
   EXPECT_EQ(GURL(kPacUrl), client.fetcher_->GetPacURL());
 }
 
-TEST(DhcpProxyScriptAdapterFetcher, TimeoutDuringDhcp) {
+TEST(DhcpPacFileAdapterFetcher, TimeoutDuringDhcp) {
   // Does a Fetch() with a long enough delay on accessing DHCP that the
   // fetcher should time out.  This is to test a case manual testing found,
   // where under certain circumstances (e.g. adapter enabled for DHCP and
@@ -216,7 +214,7 @@ TEST(DhcpProxyScriptAdapterFetcher, TimeoutDuringDhcp) {
   client.FinishTestAllowCleanup();
 }
 
-TEST(DhcpProxyScriptAdapterFetcher, CancelWhileDhcp) {
+TEST(DhcpPacFileAdapterFetcher, CancelWhileDhcp) {
   FetcherClient client;
   client.RunTest();
   client.fetcher_->Cancel();
@@ -229,7 +227,7 @@ TEST(DhcpProxyScriptAdapterFetcher, CancelWhileDhcp) {
   client.FinishTestAllowCleanup();
 }
 
-TEST(DhcpProxyScriptAdapterFetcher, CancelWhileFetcher) {
+TEST(DhcpPacFileAdapterFetcher, CancelWhileFetcher) {
   FetcherClient client;
   // This causes the mock fetcher not to pretend the
   // fetcher finishes after a timeout.
@@ -251,7 +249,7 @@ TEST(DhcpProxyScriptAdapterFetcher, CancelWhileFetcher) {
   client.FinishTestAllowCleanup();
 }
 
-TEST(DhcpProxyScriptAdapterFetcher, CancelAtCompletion) {
+TEST(DhcpPacFileAdapterFetcher, CancelAtCompletion) {
   FetcherClient client;
   client.RunTest();
   client.WaitForResult(OK);
@@ -266,37 +264,35 @@ TEST(DhcpProxyScriptAdapterFetcher, CancelAtCompletion) {
 }
 
 // Does a real fetch on a mock DHCP configuration.
-class MockDhcpRealFetchProxyScriptAdapterFetcher
-    : public MockDhcpProxyScriptAdapterFetcher {
+class MockDhcpRealFetchPacFileAdapterFetcher
+    : public MockDhcpPacFileAdapterFetcher {
  public:
-  explicit MockDhcpRealFetchProxyScriptAdapterFetcher(
+  explicit MockDhcpRealFetchPacFileAdapterFetcher(
       URLRequestContext* context,
       scoped_refptr<base::TaskRunner> task_runner)
-      : MockDhcpProxyScriptAdapterFetcher(context, task_runner),
-        url_request_context_(context) {
-  }
+      : MockDhcpPacFileAdapterFetcher(context, task_runner),
+        url_request_context_(context) {}
 
-  // Returns a real proxy script fetcher.
-  ProxyScriptFetcher* ImplCreateScriptFetcher() override {
-    ProxyScriptFetcher* fetcher =
-        new ProxyScriptFetcherImpl(url_request_context_);
+  // Returns a real PAC file fetcher.
+  PacFileFetcher* ImplCreateScriptFetcher() override {
+    PacFileFetcher* fetcher = new PacFileFetcherImpl(url_request_context_);
     return fetcher;
   }
 
   URLRequestContext* url_request_context_;
 };
 
-TEST(DhcpProxyScriptAdapterFetcher, MockDhcpRealFetch) {
+TEST(DhcpPacFileAdapterFetcher, MockDhcpRealFetch) {
   EmbeddedTestServer test_server;
   test_server.ServeFilesFromSourceDirectory(
-      "net/data/proxy_script_fetcher_unittest");
+      "net/data/pac_file_fetcher_unittest");
   ASSERT_TRUE(test_server.Start());
 
   GURL configured_url = test_server.GetURL("/downloadable.pac");
 
   FetcherClient client;
   TestURLRequestContext url_request_context;
-  client.fetcher_.reset(new MockDhcpRealFetchProxyScriptAdapterFetcher(
+  client.fetcher_.reset(new MockDhcpRealFetchPacFileAdapterFetcher(
       &url_request_context,
       base::CreateTaskRunnerWithTraits(
           {base::MayBlock(),
@@ -314,23 +310,20 @@ TEST(DhcpProxyScriptAdapterFetcher, MockDhcpRealFetch) {
 
 #define BASE_URL "http://corpserver/proxy.pac"
 
-TEST(DhcpProxyScriptAdapterFetcher, SanitizeDhcpApiString) {
+TEST(DhcpPacFileAdapterFetcher, SanitizeDhcpApiString) {
   const size_t kBaseUrlLen = strlen(BASE_URL);
 
   // Default case.
-  EXPECT_EQ(BASE_URL,
-            DhcpProxyScriptAdapterFetcher::SanitizeDhcpApiString(
-                BASE_URL, kBaseUrlLen));
+  EXPECT_EQ(BASE_URL, DhcpPacFileAdapterFetcher::SanitizeDhcpApiString(
+                          BASE_URL, kBaseUrlLen));
 
   // Trailing \n and no null-termination.
-  EXPECT_EQ(BASE_URL,
-            DhcpProxyScriptAdapterFetcher::SanitizeDhcpApiString(
-                BASE_URL "\nblablabla", kBaseUrlLen + 1));
+  EXPECT_EQ(BASE_URL, DhcpPacFileAdapterFetcher::SanitizeDhcpApiString(
+                          BASE_URL "\nblablabla", kBaseUrlLen + 1));
 
   // Embedded NULLs.
-  EXPECT_EQ(BASE_URL,
-            DhcpProxyScriptAdapterFetcher::SanitizeDhcpApiString(
-                BASE_URL "\0foo\0blat", kBaseUrlLen + 9));
+  EXPECT_EQ(BASE_URL, DhcpPacFileAdapterFetcher::SanitizeDhcpApiString(
+                          BASE_URL "\0foo\0blat", kBaseUrlLen + 9));
 }
 
 #undef BASE_URL

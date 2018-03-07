@@ -21,22 +21,22 @@ class SingleThreadTaskRunner;
 namespace net {
 class URLRequestContext;
 class NetLogWithSource;
-class ProxyScriptFetcher;
+class PacFileFetcher;
 }
 
 namespace chromeos {
 
-// ChromeOS specific implementation of DhcpProxyScriptFetcher.
+// ChromeOS specific implementation of DhcpPacFileFetcher.
 // This looks up Service.WebProxyAutoDiscoveryUrl for the default network
-// from Shill and uses that to fetch the proxy script if available.
-class CHROMEOS_EXPORT DhcpProxyScriptFetcherChromeos
-    : public net::DhcpProxyScriptFetcher {
+// from Shill and uses that to fetch the PAC file if available.
+class CHROMEOS_EXPORT DhcpPacFileFetcherChromeos
+    : public net::DhcpPacFileFetcher {
  public:
-  explicit DhcpProxyScriptFetcherChromeos(
+  explicit DhcpPacFileFetcherChromeos(
       net::URLRequestContext* url_request_context);
-  ~DhcpProxyScriptFetcherChromeos() override;
+  ~DhcpPacFileFetcherChromeos() override;
 
-  // net::DhcpProxyScriptFetcher
+  // net::DhcpPacFileFetcher
   int Fetch(base::string16* utf16_text,
             const net::CompletionCallback& callback,
             const net::NetLogWithSource& net_log) override;
@@ -50,14 +50,14 @@ class CHROMEOS_EXPORT DhcpProxyScriptFetcherChromeos
                      net::CompletionCallback callback,
                      std::string pac_url);
 
-  std::unique_ptr<net::ProxyScriptFetcher> proxy_script_fetcher_;
+  std::unique_ptr<net::PacFileFetcher> pac_file_fetcher_;
   scoped_refptr<base::SingleThreadTaskRunner> network_handler_task_runner_;
 
   GURL pac_url_;
 
-  base::WeakPtrFactory<DhcpProxyScriptFetcherChromeos> weak_ptr_factory_;
+  base::WeakPtrFactory<DhcpPacFileFetcherChromeos> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(DhcpProxyScriptFetcherChromeos);
+  DISALLOW_COPY_AND_ASSIGN(DhcpPacFileFetcherChromeos);
 };
 
 }  // namespace chromeos

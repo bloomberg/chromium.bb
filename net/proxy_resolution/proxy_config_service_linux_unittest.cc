@@ -271,7 +271,7 @@ class MockSettingGetter : public ProxyConfigServiceLinux::SettingGetter {
 
 // This helper class runs ProxyConfigServiceLinux::GetLatestProxyConfig() on
 // the main TaskRunner and synchronously waits for the result.
-// Some code duplicated from proxy_script_fetcher_unittest.cc.
+// Some code duplicated from pac_file_fetcher_unittest.cc.
 class SyncConfigGetter : public ProxyConfigService::Observer {
  public:
   // Takes ownership of |config_service|.

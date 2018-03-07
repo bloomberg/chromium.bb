@@ -183,8 +183,7 @@ void RunLoopObserverCallBackFunc(CFRunLoopObserverRef observer,
 #pragma mark - ProxyResolverMac
 class ProxyResolverMac : public ProxyResolver {
  public:
-  explicit ProxyResolverMac(
-      const scoped_refptr<ProxyResolverScriptData>& script_data);
+  explicit ProxyResolverMac(const scoped_refptr<PacFileData>& script_data);
   ~ProxyResolverMac() override;
 
   // ProxyResolver methods:
@@ -195,13 +194,12 @@ class ProxyResolverMac : public ProxyResolver {
                      const NetLogWithSource& net_log) override;
 
  private:
-  const scoped_refptr<ProxyResolverScriptData> script_data_;
+  const scoped_refptr<PacFileData> script_data_;
 };
 
 ProxyResolverMac::ProxyResolverMac(
-    const scoped_refptr<ProxyResolverScriptData>& script_data)
-    : script_data_(script_data) {
-}
+    const scoped_refptr<PacFileData>& script_data)
+    : script_data_(script_data) {}
 
 ProxyResolverMac::~ProxyResolverMac() {}
 
@@ -219,7 +217,7 @@ int ProxyResolverMac::GetProxyForURL(const GURL& query_url,
   if (!query_url_ref.get())
     return ERR_FAILED;
   base::ScopedCFTypeRef<CFStringRef> pac_ref(base::SysUTF8ToCFStringRef(
-      script_data_->type() == ProxyResolverScriptData::TYPE_AUTO_DETECT
+      script_data_->type() == PacFileData::TYPE_AUTO_DETECT
           ? std::string()
           : script_data_->url().spec()));
   base::ScopedCFTypeRef<CFURLRef> pac_url_ref(
@@ -345,7 +343,7 @@ ProxyResolverFactoryMac::ProxyResolverFactoryMac()
 }
 
 int ProxyResolverFactoryMac::CreateProxyResolver(
-    const scoped_refptr<ProxyResolverScriptData>& pac_script,
+    const scoped_refptr<PacFileData>& pac_script,
     std::unique_ptr<ProxyResolver>* resolver,
     const CompletionCallback& callback,
     std::unique_ptr<Request>* request) {

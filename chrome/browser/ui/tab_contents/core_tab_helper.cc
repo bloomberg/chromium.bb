@@ -175,17 +175,17 @@ bool CoreTabHelper::GetStatusTextForWebContents(
       *status_text =
           l10n_util::GetStringUTF16(IDS_LOAD_STATE_ESTABLISHING_PROXY_TUNNEL);
       return true;
-    case net::LOAD_STATE_DOWNLOADING_PROXY_SCRIPT:
+    case net::LOAD_STATE_DOWNLOADING_PAC_FILE:
       *status_text =
-          l10n_util::GetStringUTF16(IDS_LOAD_STATE_DOWNLOADING_PROXY_SCRIPT);
+          l10n_util::GetStringUTF16(IDS_LOAD_STATE_DOWNLOADING_PAC_FILE);
       return true;
     case net::LOAD_STATE_RESOLVING_PROXY_FOR_URL:
       *status_text =
           l10n_util::GetStringUTF16(IDS_LOAD_STATE_RESOLVING_PROXY_FOR_URL);
       return true;
-    case net::LOAD_STATE_RESOLVING_HOST_IN_PROXY_SCRIPT:
-      *status_text = l10n_util::GetStringUTF16(
-          IDS_LOAD_STATE_RESOLVING_HOST_IN_PROXY_SCRIPT);
+    case net::LOAD_STATE_RESOLVING_HOST_IN_PAC_FILE:
+      *status_text =
+          l10n_util::GetStringUTF16(IDS_LOAD_STATE_RESOLVING_HOST_IN_PAC_FILE);
       return true;
     case net::LOAD_STATE_RESOLVING_HOST:
       *status_text = l10n_util::GetStringUTF16(IDS_LOAD_STATE_RESOLVING_HOST);

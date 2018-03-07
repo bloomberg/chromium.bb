@@ -676,7 +676,7 @@ interface UrlRequestStatusListener {
      * This state corresponds to a resource being blocked waiting for the
      * PAC script to be downloaded.
      */
-    DOWNLOADING_PROXY_SCRIPT = 5,
+    DOWNLOADING_PAC_FILE = 5,
 
     /**
      * This state corresponds to a resource load that is blocked waiting for a
@@ -689,7 +689,7 @@ interface UrlRequestStatusListener {
      * proxy autoconfig script to return a proxy server to use, but that proxy
      * script is busy resolving the IP address of a host.
      */
-    RESOLVING_HOST_IN_PROXY_SCRIPT = 7,
+    RESOLVING_HOST_IN_PAC_FILE = 7,
 
     /**
      * This state indicates that we're in the process of establishing a tunnel

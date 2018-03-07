@@ -38,15 +38,14 @@ class NET_EXPORT ProxyResolverFactory {
   // case of asynchronous completion |*request| is written to, and can be
   // deleted to cancel the request. All requests in progress are cancelled if
   // the ProxyResolverFactory is deleted.
-  virtual int CreateProxyResolver(
-      const scoped_refptr<ProxyResolverScriptData>& pac_script,
-      std::unique_ptr<ProxyResolver>* resolver,
-      const net::CompletionCallback& callback,
-      std::unique_ptr<Request>* request) = 0;
+  virtual int CreateProxyResolver(const scoped_refptr<PacFileData>& pac_script,
+                                  std::unique_ptr<ProxyResolver>* resolver,
+                                  const net::CompletionCallback& callback,
+                                  std::unique_ptr<Request>* request) = 0;
 
   // The PAC script backend can be specified to the ProxyResolverFactory either
   // via URL, or via the javascript text itself. If |expects_pac_bytes| is true,
-  // then the ProxyResolverScriptData passed to CreateProxyResolver() should
+  // then the PacFileData passed to CreateProxyResolver() should
   // contain the actual script bytes rather than just the URL.
   bool expects_pac_bytes() const { return expects_pac_bytes_; }
 

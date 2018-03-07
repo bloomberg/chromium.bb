@@ -87,11 +87,10 @@ class FailingProxyResolverFactory : public ProxyResolverFactory {
   FailingProxyResolverFactory() : ProxyResolverFactory(false) {}
 
   // ProxyResolverFactory override.
-  int CreateProxyResolver(
-      const scoped_refptr<ProxyResolverScriptData>& script_data,
-      std::unique_ptr<ProxyResolver>* result,
-      const CompletionCallback& callback,
-      std::unique_ptr<Request>* request) override {
+  int CreateProxyResolver(const scoped_refptr<PacFileData>& script_data,
+                          std::unique_ptr<ProxyResolver>* result,
+                          const CompletionCallback& callback,
+                          std::unique_ptr<Request>* request) override {
     return ERR_PAC_SCRIPT_FAILED;
   }
 };

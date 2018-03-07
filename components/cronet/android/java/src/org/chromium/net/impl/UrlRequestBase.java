@@ -6,13 +6,13 @@ package org.chromium.net.impl;
 import android.support.annotation.IntDef;
 
 import static org.chromium.net.UrlRequest.Status.CONNECTING;
-import static org.chromium.net.UrlRequest.Status.DOWNLOADING_PROXY_SCRIPT;
+import static org.chromium.net.UrlRequest.Status.DOWNLOADING_PAC_FILE;
 import static org.chromium.net.UrlRequest.Status.ESTABLISHING_PROXY_TUNNEL;
 import static org.chromium.net.UrlRequest.Status.IDLE;
 import static org.chromium.net.UrlRequest.Status.INVALID;
 import static org.chromium.net.UrlRequest.Status.READING_RESPONSE;
 import static org.chromium.net.UrlRequest.Status.RESOLVING_HOST;
-import static org.chromium.net.UrlRequest.Status.RESOLVING_HOST_IN_PROXY_SCRIPT;
+import static org.chromium.net.UrlRequest.Status.RESOLVING_HOST_IN_PAC_FILE;
 import static org.chromium.net.UrlRequest.Status.RESOLVING_PROXY_FOR_URL;
 import static org.chromium.net.UrlRequest.Status.SENDING_REQUEST;
 import static org.chromium.net.UrlRequest.Status.SSL_HANDSHAKE;
@@ -73,10 +73,9 @@ public abstract class UrlRequestBase extends ExperimentalUrlRequest {
      */
     @IntDef({
             INVALID, IDLE, WAITING_FOR_STALLED_SOCKET_POOL, WAITING_FOR_AVAILABLE_SOCKET,
-            WAITING_FOR_DELEGATE, WAITING_FOR_CACHE, DOWNLOADING_PROXY_SCRIPT,
-            RESOLVING_PROXY_FOR_URL, RESOLVING_HOST_IN_PROXY_SCRIPT, ESTABLISHING_PROXY_TUNNEL,
-            RESOLVING_HOST, CONNECTING, SSL_HANDSHAKE, SENDING_REQUEST, WAITING_FOR_RESPONSE,
-            READING_RESPONSE,
+            WAITING_FOR_DELEGATE, WAITING_FOR_CACHE, DOWNLOADING_PAC_FILE, RESOLVING_PROXY_FOR_URL,
+            RESOLVING_HOST_IN_PAC_FILE, ESTABLISHING_PROXY_TUNNEL, RESOLVING_HOST, CONNECTING,
+            SSL_HANDSHAKE, SENDING_REQUEST, WAITING_FOR_RESPONSE, READING_RESPONSE,
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface StatusValues {}
@@ -105,14 +104,14 @@ public abstract class UrlRequestBase extends ExperimentalUrlRequest {
             case (LoadState.WAITING_FOR_CACHE):
                 return WAITING_FOR_CACHE;
 
-            case (LoadState.DOWNLOADING_PROXY_SCRIPT):
-                return DOWNLOADING_PROXY_SCRIPT;
+            case (LoadState.DOWNLOADING_PAC_FILE):
+                return DOWNLOADING_PAC_FILE;
 
             case (LoadState.RESOLVING_PROXY_FOR_URL):
                 return RESOLVING_PROXY_FOR_URL;
 
-            case (LoadState.RESOLVING_HOST_IN_PROXY_SCRIPT):
-                return RESOLVING_HOST_IN_PROXY_SCRIPT;
+            case (LoadState.RESOLVING_HOST_IN_PAC_FILE):
+                return RESOLVING_HOST_IN_PAC_FILE;
 
             case (LoadState.ESTABLISHING_PROXY_TUNNEL):
                 return ESTABLISHING_PROXY_TUNNEL;

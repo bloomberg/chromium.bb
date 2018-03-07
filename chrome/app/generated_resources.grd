@@ -6218,10 +6218,10 @@ I don't think this site should be blocked!
       <message name="IDS_LOAD_STATE_RESOLVING_PROXY_FOR_URL">
         Resolving proxy...
       </message>
-      <message name="IDS_LOAD_STATE_RESOLVING_HOST_IN_PROXY_SCRIPT">
+      <message name="IDS_LOAD_STATE_RESOLVING_HOST_IN_PAC_FILE">
         Resolving host in proxy script...
       </message>
-      <message name="IDS_LOAD_STATE_DOWNLOADING_PROXY_SCRIPT">
+      <message name="IDS_LOAD_STATE_DOWNLOADING_PAC_FILE">
         Downloading proxy script...
       </message>
       <message name="IDS_LOAD_STATE_RESOLVING_HOST">

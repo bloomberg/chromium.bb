@@ -26,19 +26,19 @@ class TaskRunner;
 
 namespace net {
 
-class ProxyScriptFetcher;
+class PacFileFetcher;
 class URLRequestContext;
 
 // For a given adapter, this class takes care of first doing a DHCP lookup
 // to get the PAC URL, then if there is one, trying to fetch it.
-class NET_EXPORT_PRIVATE DhcpProxyScriptAdapterFetcher
-    : public base::SupportsWeakPtr<DhcpProxyScriptAdapterFetcher> {
+class NET_EXPORT_PRIVATE DhcpPacFileAdapterFetcher
+    : public base::SupportsWeakPtr<DhcpPacFileAdapterFetcher> {
  public:
-  // |url_request_context| must outlive DhcpProxyScriptAdapterFetcher.
+  // |url_request_context| must outlive DhcpPacFileAdapterFetcher.
   // |task_runner| will be used to post tasks to a thread.
-  DhcpProxyScriptAdapterFetcher(URLRequestContext* url_request_context,
-                                scoped_refptr<base::TaskRunner> task_runner);
-  virtual ~DhcpProxyScriptAdapterFetcher();
+  DhcpPacFileAdapterFetcher(URLRequestContext* url_request_context,
+                            scoped_refptr<base::TaskRunner> task_runner);
+  virtual ~DhcpPacFileAdapterFetcher();
 
   // Starts a fetch.  On completion (but not cancellation), |callback|
   // will be invoked with the network error indicating success or failure
@@ -47,7 +47,7 @@ class NET_EXPORT_PRIVATE DhcpProxyScriptAdapterFetcher
   // On completion, results can be obtained via |GetPacScript()|, |GetPacURL()|.
   //
   // You may only call Fetch() once on a given instance of
-  // DhcpProxyScriptAdapterFetcher.
+  // DhcpPacFileAdapterFetcher.
   virtual void Fetch(const std::string& adapter_name,
                      const CompletionCallback& callback);
 
@@ -93,9 +93,9 @@ class NET_EXPORT_PRIVATE DhcpProxyScriptAdapterFetcher
   //
   // In state WAIT_DHCP, if the DHCP query finishes and has no URL, it
   // moves to state FINISH.  If there is a URL, it starts a
-  // ProxyScriptFetcher to fetch it and moves to state WAIT_URL.
+  // PacFileFetcher to fetch it and moves to state WAIT_URL.
   //
-  // It goes from WAIT_URL->FINISH when the ProxyScriptFetcher completes.
+  // It goes from WAIT_URL->FINISH when the PacFileFetcher completes.
   //
   // In state FINISH, completion is indicated to the outer class, with
   // the results of the fetch if a PAC script was successfully fetched.
@@ -146,7 +146,7 @@ class NET_EXPORT_PRIVATE DhcpProxyScriptAdapterFetcher
   };
 
   // Virtual methods introduced to allow unit testing.
-  virtual ProxyScriptFetcher* ImplCreateScriptFetcher();
+  virtual PacFileFetcher* ImplCreateScriptFetcher();
   virtual DhcpQuery* ImplCreateDhcpQuery();
   virtual base::TimeDelta ImplGetTimeout() const;
 
@@ -177,7 +177,7 @@ class NET_EXPORT_PRIVATE DhcpProxyScriptAdapterFetcher
   CompletionCallback callback_;
 
   // Fetcher to retrieve PAC files once URL is known.
-  std::unique_ptr<ProxyScriptFetcher> script_fetcher_;
+  std::unique_ptr<PacFileFetcher> script_fetcher_;
 
   // Implements a timeout on the call to the Win32 DHCP API.
   base::OneShotTimer wait_timer_;
@@ -186,7 +186,7 @@ class NET_EXPORT_PRIVATE DhcpProxyScriptAdapterFetcher
 
   THREAD_CHECKER(thread_checker_);
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(DhcpProxyScriptAdapterFetcher);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(DhcpPacFileAdapterFetcher);
 };
 
 }  // namespace net

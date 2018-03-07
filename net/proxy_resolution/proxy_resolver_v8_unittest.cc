@@ -123,9 +123,8 @@ class ProxyResolverV8Test : public testing::Test {
     }
 
     // Create the ProxyResolver using the PAC script.
-    return ProxyResolverV8::Create(
-        ProxyResolverScriptData::FromUTF8(file_contents), bindings(),
-        &resolver_);
+    return ProxyResolverV8::Create(PacFileData::FromUTF8(file_contents),
+                                   bindings(), &resolver_);
   }
 
   ProxyResolverV8& resolver() {

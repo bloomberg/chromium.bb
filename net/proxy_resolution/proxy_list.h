@@ -70,7 +70,7 @@ class NET_EXPORT_PRIVATE ProxyList {
   // Returns all proxy servers in the list.
   const std::vector<ProxyServer>& GetAll() const;
 
-  // Sets the list by parsing the pac result |pac_string|.
+  // Sets the list by parsing the PAC result |pac_string|.
   // Some examples for |pac_string|:
   //   "DIRECT"
   //   "PROXY foopy1"

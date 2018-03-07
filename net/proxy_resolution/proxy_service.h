@@ -36,14 +36,14 @@ class TimeDelta;
 
 namespace net {
 
-class DhcpProxyScriptFetcher;
+class DhcpPacFileFetcher;
 class NetLog;
 class NetLogWithSource;
 class ProxyDelegate;
 class ProxyResolver;
 class ProxyResolverFactory;
-class ProxyResolverScriptData;
-class ProxyScriptFetcher;
+class PacFileData;
+class PacFileFetcher;
 
 // This class can be used to resolve the proxy server to use when loading a
 // HTTP(S) URL.  It uses the given ProxyResolver to handle the actual proxy
@@ -190,12 +190,12 @@ class NET_EXPORT ProxyResolutionService
   // Returns the LoadState for this |request| which must be non-NULL.
   LoadState GetLoadState(const Request* request) const;
 
-  // Sets the ProxyScriptFetcher and DhcpProxyScriptFetcher dependencies. This
+  // Sets the PacFileFetcher and DhcpPacFileFetcher dependencies. This
   // is needed if the ProxyResolver is of type ProxyResolverWithoutFetch.
-  void SetProxyScriptFetchers(
-      std::unique_ptr<ProxyScriptFetcher> proxy_script_fetcher,
-      std::unique_ptr<DhcpProxyScriptFetcher> dhcp_proxy_script_fetcher);
-  ProxyScriptFetcher* GetProxyScriptFetcher() const;
+  void SetPacFileFetchers(
+      std::unique_ptr<PacFileFetcher> pac_file_fetcher,
+      std::unique_ptr<DhcpPacFileFetcher> dhcp_pac_file_fetcher);
+  PacFileFetcher* GetPacFileFetcher() const;
 
   // Cancels all network requests, and prevents the service from creating new
   // ones.  Must be called before the URLRequestContext the
@@ -298,7 +298,7 @@ class NET_EXPORT ProxyResolutionService
   FRIEND_TEST_ALL_PREFIXES(ProxyServiceTest, UpdateConfigFromPACToDirect);
   friend class Request;
   class InitProxyResolver;
-  class ProxyScriptDeciderPoller;
+  class PacFileDeciderPoller;
 
   typedef std::set<scoped_refptr<Request>> PendingRequests;
 
@@ -371,10 +371,9 @@ class NET_EXPORT ProxyResolutionService
   void InitializeUsingLastFetchedConfig();
 
   // Start the initialization skipping past the "decision" phase.
-  void InitializeUsingDecidedConfig(
-      int decider_result,
-      ProxyResolverScriptData* script_data,
-      const ProxyConfig& effective_config);
+  void InitializeUsingDecidedConfig(int decider_result,
+                                    PacFileData* script_data,
+                                    const ProxyConfig& effective_config);
 
   // NetworkChangeNotifier::IPAddressObserver
   // When this is called, we re-fetch PAC scripts and re-run WPAD.
@@ -415,21 +414,21 @@ class NET_EXPORT ProxyResolutionService
   // The fetcher to use when downloading PAC scripts for the ProxyResolver.
   // This dependency can be NULL if our ProxyResolver has no need for
   // external PAC script fetching.
-  std::unique_ptr<ProxyScriptFetcher> proxy_script_fetcher_;
+  std::unique_ptr<PacFileFetcher> pac_file_fetcher_;
 
   // The fetcher to use when attempting to download the most appropriate PAC
   // script configured in DHCP, if any. Can be NULL if the ProxyResolver has
   // no need for DHCP PAC script fetching.
-  std::unique_ptr<DhcpProxyScriptFetcher> dhcp_proxy_script_fetcher_;
+  std::unique_ptr<DhcpPacFileFetcher> dhcp_pac_file_fetcher_;
 
   // Helper to download the PAC script (wpad + custom) and apply fallback rules.
   //
-  // Note that the declaration is important here: |proxy_script_fetcher_| and
+  // Note that the declaration is important here: |pac_file_fetcher_| and
   // |proxy_resolver_| must outlive |init_proxy_resolver_|.
   std::unique_ptr<InitProxyResolver> init_proxy_resolver_;
 
   // Helper to poll the PAC script for changes.
-  std::unique_ptr<ProxyScriptDeciderPoller> script_poller_;
+  std::unique_ptr<PacFileDeciderPoller> script_poller_;
 
   State current_state_;
 
@@ -448,7 +447,7 @@ class NET_EXPORT ProxyResolutionService
   // The amount of time to stall requests following IP address changes.
   base::TimeDelta stall_proxy_auto_config_delay_;
 
-  // Whether child ProxyScriptDeciders should use QuickCheck
+  // Whether child PacFileDeciders should use QuickCheck
   bool quick_check_enabled_;
 
   // The method to use for sanitizing URLs seen by the proxy resolver.

@@ -253,9 +253,9 @@ public class org.chromium.net.UrlRequest$Status {
   public static final int WAITING_FOR_AVAILABLE_SOCKET;
   public static final int WAITING_FOR_DELEGATE;
   public static final int WAITING_FOR_CACHE;
-  public static final int DOWNLOADING_PROXY_SCRIPT;
+  public static final int DOWNLOADING_PAC_FILE;
   public static final int RESOLVING_PROXY_FOR_URL;
-  public static final int RESOLVING_HOST_IN_PROXY_SCRIPT;
+  public static final int RESOLVING_HOST_IN_PAC_FILE;
   public static final int ESTABLISHING_PROXY_TUNNEL;
   public static final int RESOLVING_HOST;
   public static final int CONNECTING;

@@ -18,7 +18,7 @@ namespace net {
 class URLRequestContext;
 
 // Factory object for creating the appropriate concrete base class of
-// DhcpProxyScriptFetcher for your operating system and settings.
+// DhcpPacFileFetcher for your operating system and settings.
 //
 // You might think we could just implement a DHCP client at the protocol
 // level and have cross-platform support for retrieving PAC configuration
@@ -31,24 +31,24 @@ class URLRequestContext;
 //
 // Therefore, we have platform-specific implementations, and so we use
 // this factory to select the right one.
-class NET_EXPORT DhcpProxyScriptFetcherFactory {
+class NET_EXPORT DhcpPacFileFetcherFactory {
  public:
-  DhcpProxyScriptFetcherFactory();
+  DhcpPacFileFetcherFactory();
 
-  virtual ~DhcpProxyScriptFetcherFactory();
+  virtual ~DhcpPacFileFetcherFactory();
 
   // url_request_context must be valid and its lifetime must exceed that of the
-  // returned DhcpProxyScriptFetcher.
+  // returned DhcpPacFileFetcher.
   //
   // Note that while a request is in progress, the fetcher may be holding a
   // reference to |url_request_context|. Be careful not to create cycles
   // between the fetcher and the context; you can break such cycles by calling
   // Cancel().
-  virtual std::unique_ptr<DhcpProxyScriptFetcher> Create(
+  virtual std::unique_ptr<DhcpPacFileFetcher> Create(
       URLRequestContext* url_request_context);
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(DhcpProxyScriptFetcherFactory);
+  DISALLOW_COPY_AND_ASSIGN(DhcpPacFileFetcherFactory);
 };
 
 }  // namespace net

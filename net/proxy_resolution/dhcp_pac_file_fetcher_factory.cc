@@ -13,16 +13,16 @@
 
 namespace net {
 
-DhcpProxyScriptFetcherFactory::DhcpProxyScriptFetcherFactory() = default;
+DhcpPacFileFetcherFactory::DhcpPacFileFetcherFactory() = default;
 
-DhcpProxyScriptFetcherFactory::~DhcpProxyScriptFetcherFactory() = default;
+DhcpPacFileFetcherFactory::~DhcpPacFileFetcherFactory() = default;
 
-std::unique_ptr<DhcpProxyScriptFetcher> DhcpProxyScriptFetcherFactory::Create(
+std::unique_ptr<DhcpPacFileFetcher> DhcpPacFileFetcherFactory::Create(
     URLRequestContext* context) {
 #if defined(OS_WIN)
-  return std::make_unique<DhcpProxyScriptFetcherWin>(context);
+  return std::make_unique<DhcpPacFileFetcherWin>(context);
 #else
-  return std::make_unique<DoNothingDhcpProxyScriptFetcher>();
+  return std::make_unique<DoNothingDhcpPacFileFetcher>();
 #endif
 }
 

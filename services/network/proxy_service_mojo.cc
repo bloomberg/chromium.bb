@@ -20,14 +20,14 @@ namespace network {
 std::unique_ptr<net::ProxyResolutionService> CreateProxyServiceUsingMojoFactory(
     proxy_resolver::mojom::ProxyResolverFactoryPtr mojo_proxy_factory,
     std::unique_ptr<net::ProxyConfigService> proxy_config_service,
-    std::unique_ptr<net::ProxyScriptFetcher> proxy_script_fetcher,
-    std::unique_ptr<net::DhcpProxyScriptFetcher> dhcp_proxy_script_fetcher,
+    std::unique_ptr<net::PacFileFetcher> pac_file_fetcher,
+    std::unique_ptr<net::DhcpPacFileFetcher> dhcp_pac_file_fetcher,
     net::HostResolver* host_resolver,
     net::NetLog* net_log,
     net::NetworkDelegate* network_delegate) {
   DCHECK(proxy_config_service);
-  DCHECK(proxy_script_fetcher);
-  DCHECK(dhcp_proxy_script_fetcher);
+  DCHECK(pac_file_fetcher);
+  DCHECK(dhcp_pac_file_fetcher);
   DCHECK(host_resolver);
 
   std::unique_ptr<net::ProxyResolutionService> proxy_resolution_service(
@@ -41,8 +41,8 @@ std::unique_ptr<net::ProxyResolutionService> CreateProxyServiceUsingMojoFactory(
           net_log));
 
   // Configure fetchers to use for PAC script downloads and auto-detect.
-  proxy_resolution_service->SetProxyScriptFetchers(
-      std::move(proxy_script_fetcher), std::move(dhcp_proxy_script_fetcher));
+  proxy_resolution_service->SetPacFileFetchers(
+      std::move(pac_file_fetcher), std::move(dhcp_pac_file_fetcher));
 
   return proxy_resolution_service;
 }

@@ -44,11 +44,10 @@ class MockProxyResolverFactory : public ProxyResolverFactory {
   MockProxyResolverFactory()
       : ProxyResolverFactory(false), resolver_(nullptr) {}
 
-  int CreateProxyResolver(
-      const scoped_refptr<ProxyResolverScriptData>& pac_script,
-      std::unique_ptr<ProxyResolver>* resolver,
-      const CompletionCallback& callback,
-      std::unique_ptr<Request>* request) override {
+  int CreateProxyResolver(const scoped_refptr<PacFileData>& pac_script,
+                          std::unique_ptr<ProxyResolver>* resolver,
+                          const CompletionCallback& callback,
+                          std::unique_ptr<Request>* request) override {
     EXPECT_FALSE(resolver_);
     std::unique_ptr<MockAsyncProxyResolver> owned_resolver(
         new MockAsyncProxyResolver());

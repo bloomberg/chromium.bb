@@ -8,33 +8,33 @@
 
 namespace net {
 
-std::string DhcpProxyScriptFetcher::GetFetcherName() const {
+std::string DhcpPacFileFetcher::GetFetcherName() const {
   return std::string();
 }
 
-DhcpProxyScriptFetcher::DhcpProxyScriptFetcher() = default;
+DhcpPacFileFetcher::DhcpPacFileFetcher() = default;
 
-DhcpProxyScriptFetcher::~DhcpProxyScriptFetcher() = default;
+DhcpPacFileFetcher::~DhcpPacFileFetcher() = default;
 
-DoNothingDhcpProxyScriptFetcher::DoNothingDhcpProxyScriptFetcher() = default;
+DoNothingDhcpPacFileFetcher::DoNothingDhcpPacFileFetcher() = default;
 
-DoNothingDhcpProxyScriptFetcher::~DoNothingDhcpProxyScriptFetcher() = default;
+DoNothingDhcpPacFileFetcher::~DoNothingDhcpPacFileFetcher() = default;
 
-int DoNothingDhcpProxyScriptFetcher::Fetch(base::string16* utf16_text,
-                                           const CompletionCallback& callback,
-                                           const NetLogWithSource& net_log) {
+int DoNothingDhcpPacFileFetcher::Fetch(base::string16* utf16_text,
+                                       const CompletionCallback& callback,
+                                       const NetLogWithSource& net_log) {
   return ERR_NOT_IMPLEMENTED;
 }
 
-void DoNothingDhcpProxyScriptFetcher::Cancel() {}
+void DoNothingDhcpPacFileFetcher::Cancel() {}
 
-void DoNothingDhcpProxyScriptFetcher::OnShutdown() {}
+void DoNothingDhcpPacFileFetcher::OnShutdown() {}
 
-const GURL& DoNothingDhcpProxyScriptFetcher::GetPacURL() const {
+const GURL& DoNothingDhcpPacFileFetcher::GetPacURL() const {
   return gurl_;
 }
 
-std::string DoNothingDhcpProxyScriptFetcher::GetFetcherName() const {
+std::string DoNothingDhcpPacFileFetcher::GetFetcherName() const {
   return "do nothing";
 }
 

@@ -72,7 +72,7 @@ class NET_EXPORT ProxyResolverV8TracingFactory {
   virtual ~ProxyResolverV8TracingFactory() = default;
 
   virtual void CreateProxyResolverV8Tracing(
-      const scoped_refptr<ProxyResolverScriptData>& pac_script,
+      const scoped_refptr<PacFileData>& pac_script,
       std::unique_ptr<ProxyResolverV8Tracing::Bindings> bindings,
       std::unique_ptr<ProxyResolverV8Tracing>* resolver,
       const CompletionCallback& callback,

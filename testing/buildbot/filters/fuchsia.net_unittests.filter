@@ -5,7 +5,7 @@
 -DiskCacheBackendTest.SimpleCacheDeleteQuickly
 
 # Exceeds FD limit, ZX-1127.
--ProxyScriptFetcherImplTest.Priority
+-PacFileFetcherImplTest.Priority
 
 # base::MakeFileUnreadable() doesn't work. https://crbug.com/759853
 -HttpNetworkTransactionTest.UploadUnreadableFile

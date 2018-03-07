@@ -12,27 +12,27 @@
 #include "net/proxy_resolution/dhcp_pac_file_fetcher_factory.h"
 
 namespace net {
-class DhcpProxyScriptFetcher;
+class DhcpPacFileFetcher;
 class URLRequestContext;
 }
 
 namespace chromeos {
 
-// ChromeOS specific implementation of DhcpProxyScriptFetcherFactory.
+// ChromeOS specific implementation of DhcpPacFileFetcherFactory.
 // TODO(mmenke):  This won't work at all with an out-of-process network service.
 // Figure out a way forward there.
-class CHROMEOS_EXPORT DhcpProxyScriptFetcherFactoryChromeos
-    : public net::DhcpProxyScriptFetcherFactory {
+class CHROMEOS_EXPORT DhcpPacFileFetcherFactoryChromeos
+    : public net::DhcpPacFileFetcherFactory {
  public:
-  DhcpProxyScriptFetcherFactoryChromeos();
-  ~DhcpProxyScriptFetcherFactoryChromeos() override;
+  DhcpPacFileFetcherFactoryChromeos();
+  ~DhcpPacFileFetcherFactoryChromeos() override;
 
-  // net::DhcpProxyScriptFetcherFactory implementation.
-  std::unique_ptr<net::DhcpProxyScriptFetcher> Create(
+  // net::DhcpPacFileFetcherFactory implementation.
+  std::unique_ptr<net::DhcpPacFileFetcher> Create(
       net::URLRequestContext* url_request_context) override;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(DhcpProxyScriptFetcherFactoryChromeos);
+  DISALLOW_COPY_AND_ASSIGN(DhcpPacFileFetcherFactoryChromeos);
 };
 
 }  // namespace chromeos

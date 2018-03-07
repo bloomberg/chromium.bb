@@ -30,13 +30,13 @@ class Value;
 
 namespace net {
 
-class DhcpProxyScriptFetcher;
+class DhcpPacFileFetcher;
 class NetLog;
 class NetLogCaptureMode;
 class ProxyResolver;
-class ProxyScriptFetcher;
+class PacFileFetcher;
 
-// ProxyScriptDecider is a helper class used by ProxyResolutionService to
+// PacFileDecider is a helper class used by ProxyResolutionService to
 // determine which PAC script to use given our proxy configuration.
 //
 // This involves trying to use PAC scripts in this order:
@@ -52,19 +52,19 @@ class ProxyScriptFetcher;
 // On successful completion, the fetched PAC script data can be accessed using
 // script_data().
 //
-// Deleting ProxyScriptDecider while Init() is in progress, will
+// Deleting PacFileDecider while Init() is in progress, will
 // cancel the request.
 //
-class NET_EXPORT_PRIVATE ProxyScriptDecider {
+class NET_EXPORT_PRIVATE PacFileDecider {
  public:
-  // |proxy_script_fetcher|, |dhcp_proxy_script_fetcher| and
-  // |net_log| must remain valid for the lifespan of ProxyScriptDecider.
-  ProxyScriptDecider(ProxyScriptFetcher* proxy_script_fetcher,
-                     DhcpProxyScriptFetcher* dhcp_proxy_script_fetcher,
-                     NetLog* net_log);
+  // |pac_file_fetcher|, |dhcp_pac_file_fetcher| and
+  // |net_log| must remain valid for the lifespan of PacFileDecider.
+  PacFileDecider(PacFileFetcher* pac_file_fetcher,
+                 DhcpPacFileFetcher* dhcp_pac_file_fetcher,
+                 NetLog* net_log);
 
   // Aborts any in-progress request.
-  ~ProxyScriptDecider();
+  ~PacFileDecider();
 
   // Evaluates the effective proxy settings for |config|, and downloads the
   // associated PAC script.
@@ -82,12 +82,12 @@ class NET_EXPORT_PRIVATE ProxyScriptDecider {
             const CompletionCallback& callback);
 
   // Shuts down any in-progress DNS requests, and cancels any ScriptFetcher
-  // requests.  Does not call OnShutdown on the [Dhcp]ProxyScriptFetcher.
+  // requests.  Does not call OnShutdown on the [Dhcp]PacFileFetcher.
   void OnShutdown();
 
   const ProxyConfig& effective_config() const;
 
-  const scoped_refptr<ProxyResolverScriptData>& script_data() const;
+  const scoped_refptr<PacFileData>& script_data() const;
 
   void set_quick_check_enabled(bool enabled) { quick_check_enabled_ = enabled; }
 
@@ -164,8 +164,8 @@ class NET_EXPORT_PRIVATE ProxyScriptDecider {
   void DidComplete();
   void Cancel();
 
-  ProxyScriptFetcher* proxy_script_fetcher_;
-  DhcpProxyScriptFetcher* dhcp_proxy_script_fetcher_;
+  PacFileFetcher* pac_file_fetcher_;
+  DhcpPacFileFetcher* dhcp_pac_file_fetcher_;
 
   CompletionCallback callback_;
 
@@ -174,7 +174,7 @@ class NET_EXPORT_PRIVATE ProxyScriptDecider {
   // Filled when the PAC script fetch completes.
   base::string16 pac_script_;
 
-  // Flag indicating whether the caller requested a mandatory pac script
+  // Flag indicating whether the caller requested a mandatory PAC script
   // (i.e. fallback to direct connections are prohibited).
   bool pac_mandatory_;
 
@@ -196,14 +196,14 @@ class NET_EXPORT_PRIVATE ProxyScriptDecider {
 
   // Results.
   ProxyConfig effective_config_;
-  scoped_refptr<ProxyResolverScriptData> script_data_;
+  scoped_refptr<PacFileData> script_data_;
 
   AddressList wpad_addresses_;
   base::OneShotTimer quick_check_timer_;
   std::unique_ptr<HostResolver::Request> request_;
   base::Time quick_check_start_time_;
 
-  DISALLOW_COPY_AND_ASSIGN(ProxyScriptDecider);
+  DISALLOW_COPY_AND_ASSIGN(PacFileDecider);
 };
 
 }  // namespace net

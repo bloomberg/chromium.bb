@@ -58,14 +58,14 @@ using base::ASCIIToUTF16;
 
 // TODO(eroman):
 //   - Test canceling an outstanding request.
-//   - Test deleting ProxyScriptFetcher while a request is in progress.
+//   - Test deleting PacFileFetcher while a request is in progress.
 
 namespace net {
 
 namespace {
 
 const base::FilePath::CharType kDocRoot[] =
-    FILE_PATH_LITERAL("net/data/proxy_script_fetcher_unittest");
+    FILE_PATH_LITERAL("net/data/pac_file_fetcher_unittest");
 
 struct FetchResult {
   int code;
@@ -122,13 +122,13 @@ class RequestContext : public URLRequestContext {
 };
 
 #if !BUILDFLAG(DISABLE_FILE_SUPPORT)
-// Get a file:// url relative to net/data/proxy/proxy_script_fetcher_unittest.
+// Get a file:// url relative to net/data/proxy/pac_file_fetcher_unittest.
 GURL GetTestFileUrl(const std::string& relpath) {
   base::FilePath path;
   PathService::Get(base::DIR_SOURCE_ROOT, &path);
   path = path.AppendASCII("net");
   path = path.AppendASCII("data");
-  path = path.AppendASCII("proxy_script_fetcher_unittest");
+  path = path.AppendASCII("pac_file_fetcher_unittest");
   GURL base_url = FilePathToFileURL(path);
   return GURL(base_url.spec() + "/" + relpath);
 }
@@ -209,9 +209,9 @@ class BasicNetworkDelegate : public NetworkDelegateImpl {
   DISALLOW_COPY_AND_ASSIGN(BasicNetworkDelegate);
 };
 
-class ProxyScriptFetcherImplTest : public PlatformTest {
+class PacFileFetcherImplTest : public PlatformTest {
  public:
-  ProxyScriptFetcherImplTest() {
+  PacFileFetcherImplTest() {
     test_server_.AddDefaultHandlers(base::FilePath(kDocRoot));
     context_.set_network_delegate(&network_delegate_);
   }
@@ -223,8 +223,8 @@ class ProxyScriptFetcherImplTest : public PlatformTest {
 };
 
 #if !BUILDFLAG(DISABLE_FILE_SUPPORT)
-TEST_F(ProxyScriptFetcherImplTest, FileUrl) {
-  ProxyScriptFetcherImpl pac_fetcher(&context_);
+TEST_F(PacFileFetcherImplTest, FileUrl) {
+  PacFileFetcherImpl pac_fetcher(&context_);
 
   {  // Fetch a non-existent file.
     base::string16 text;
@@ -249,10 +249,10 @@ TEST_F(ProxyScriptFetcherImplTest, FileUrl) {
 
 // Note that all mime types are allowed for PAC file, to be consistent
 // with other browsers.
-TEST_F(ProxyScriptFetcherImplTest, HttpMimeType) {
+TEST_F(PacFileFetcherImplTest, HttpMimeType) {
   ASSERT_TRUE(test_server_.Start());
 
-  ProxyScriptFetcherImpl pac_fetcher(&context_);
+  PacFileFetcherImpl pac_fetcher(&context_);
 
   {  // Fetch a PAC with mime type "text/plain"
     GURL url(test_server_.GetURL("/pac.txt"));
@@ -283,10 +283,10 @@ TEST_F(ProxyScriptFetcherImplTest, HttpMimeType) {
   }
 }
 
-TEST_F(ProxyScriptFetcherImplTest, HttpStatusCode) {
+TEST_F(PacFileFetcherImplTest, HttpStatusCode) {
   ASSERT_TRUE(test_server_.Start());
 
-  ProxyScriptFetcherImpl pac_fetcher(&context_);
+  PacFileFetcherImpl pac_fetcher(&context_);
 
   {  // Fetch a PAC which gives a 500 -- FAIL
     GURL url(test_server_.GetURL("/500.pac"));
@@ -308,10 +308,10 @@ TEST_F(ProxyScriptFetcherImplTest, HttpStatusCode) {
   }
 }
 
-TEST_F(ProxyScriptFetcherImplTest, ContentDisposition) {
+TEST_F(PacFileFetcherImplTest, ContentDisposition) {
   ASSERT_TRUE(test_server_.Start());
 
-  ProxyScriptFetcherImpl pac_fetcher(&context_);
+  PacFileFetcherImpl pac_fetcher(&context_);
 
   // Fetch PAC scripts via HTTP with a Content-Disposition header -- should
   // have no effect.
@@ -325,10 +325,10 @@ TEST_F(ProxyScriptFetcherImplTest, ContentDisposition) {
 }
 
 // Verifies that PAC scripts are not being cached.
-TEST_F(ProxyScriptFetcherImplTest, NoCache) {
+TEST_F(PacFileFetcherImplTest, NoCache) {
   ASSERT_TRUE(test_server_.Start());
 
-  ProxyScriptFetcherImpl pac_fetcher(&context_);
+  PacFileFetcherImpl pac_fetcher(&context_);
 
   // Fetch a PAC script whose HTTP headers make it cacheable for 1 hour.
   GURL url(test_server_.GetURL("/cacheable_1hr.pac"));
@@ -358,10 +358,10 @@ TEST_F(ProxyScriptFetcherImplTest, NoCache) {
   }
 }
 
-TEST_F(ProxyScriptFetcherImplTest, TooLarge) {
+TEST_F(PacFileFetcherImplTest, TooLarge) {
   ASSERT_TRUE(test_server_.Start());
 
-  ProxyScriptFetcherImpl pac_fetcher(&context_);
+  PacFileFetcherImpl pac_fetcher(&context_);
 
   // Set the maximum response size to 50 bytes.
   int prev_size = pac_fetcher.SetSizeConstraint(50);
@@ -400,11 +400,11 @@ TEST_F(ProxyScriptFetcherImplTest, TooLarge) {
   }
 }
 
-// The ProxyScriptFetcher should be able to handle responses with an empty body.
-TEST_F(ProxyScriptFetcherImplTest, Empty) {
+// The PacFileFetcher should be able to handle responses with an empty body.
+TEST_F(PacFileFetcherImplTest, Empty) {
   ASSERT_TRUE(test_server_.Start());
 
-  ProxyScriptFetcherImpl pac_fetcher(&context_);
+  PacFileFetcherImpl pac_fetcher(&context_);
 
   GURL url(test_server_.GetURL("/empty"));
   base::string16 text;
@@ -415,10 +415,10 @@ TEST_F(ProxyScriptFetcherImplTest, Empty) {
   EXPECT_EQ(0u, text.size());
 }
 
-TEST_F(ProxyScriptFetcherImplTest, Hang) {
+TEST_F(PacFileFetcherImplTest, Hang) {
   ASSERT_TRUE(test_server_.Start());
 
-  ProxyScriptFetcherImpl pac_fetcher(&context_);
+  PacFileFetcherImpl pac_fetcher(&context_);
 
   // Set the timeout period to 0.5 seconds.
   base::TimeDelta prev_timeout =
@@ -450,13 +450,13 @@ TEST_F(ProxyScriptFetcherImplTest, Hang) {
   }
 }
 
-// The ProxyScriptFetcher should decode any content-codings
+// The PacFileFetcher should decode any content-codings
 // (like gzip, bzip, etc.), and apply any charset conversions to yield
 // UTF8.
-TEST_F(ProxyScriptFetcherImplTest, Encodings) {
+TEST_F(PacFileFetcherImplTest, Encodings) {
   ASSERT_TRUE(test_server_.Start());
 
-  ProxyScriptFetcherImpl pac_fetcher(&context_);
+  PacFileFetcherImpl pac_fetcher(&context_);
 
   // Test a response that is gzip-encoded -- should get inflated.
   {
@@ -482,8 +482,8 @@ TEST_F(ProxyScriptFetcherImplTest, Encodings) {
   }
 }
 
-TEST_F(ProxyScriptFetcherImplTest, DataURLs) {
-  ProxyScriptFetcherImpl pac_fetcher(&context_);
+TEST_F(PacFileFetcherImplTest, DataURLs) {
+  PacFileFetcherImpl pac_fetcher(&context_);
 
   const char kEncodedUrl[] =
       "data:application/x-ns-proxy-autoconfig;base64,ZnVuY3Rpb24gRmluZFByb3h5R"
@@ -520,8 +520,8 @@ TEST_F(ProxyScriptFetcherImplTest, DataURLs) {
 }
 
 // Makes sure that a request gets through when the socket pool is full, so
-// ProxyScriptFetcherImpl can use the same URLRequestContext as everything else.
-TEST_F(ProxyScriptFetcherImplTest, Priority) {
+// PacFileFetcherImpl can use the same URLRequestContext as everything else.
+TEST_F(PacFileFetcherImplTest, Priority) {
   // Enough requests to exceed the per-pool limit, which is also enough to
   // exceed the per-group limit.
   int num_requests = 10 + ClientSocketPoolManager::max_sockets_per_pool(
@@ -533,13 +533,13 @@ TEST_F(ProxyScriptFetcherImplTest, Priority) {
   test_server_.SetConnectionListener(&connection_listener);
   ASSERT_TRUE(test_server_.Start());
 
-  std::vector<std::unique_ptr<ProxyScriptFetcherImpl>> pac_fetchers;
+  std::vector<std::unique_ptr<PacFileFetcherImpl>> pac_fetchers;
 
   TestCompletionCallback callback;
   base::string16 text;
   for (int i = 0; i < num_requests; i++) {
-    std::unique_ptr<ProxyScriptFetcherImpl> pac_fetcher =
-        std::make_unique<ProxyScriptFetcherImpl>(&context_);
+    std::unique_ptr<PacFileFetcherImpl> pac_fetcher =
+        std::make_unique<PacFileFetcherImpl>(&context_);
     GURL url(test_server_.GetURL("/hung"));
     // Fine to use the same string and callback for all of these, as they should
     // all hang.
@@ -557,10 +557,10 @@ TEST_F(ProxyScriptFetcherImplTest, Priority) {
   EXPECT_TRUE(test_server_.ShutdownAndWaitUntilComplete());
 }
 
-TEST_F(ProxyScriptFetcherImplTest, OnShutdown) {
+TEST_F(PacFileFetcherImplTest, OnShutdown) {
   ASSERT_TRUE(test_server_.Start());
 
-  ProxyScriptFetcherImpl pac_fetcher(&context_);
+  PacFileFetcherImpl pac_fetcher(&context_);
   base::string16 text;
   TestCompletionCallback callback;
   int result = pac_fetcher.Fetch(test_server_.GetURL("/hung"), &text,
@@ -582,10 +582,10 @@ TEST_F(ProxyScriptFetcherImplTest, OnShutdown) {
   EXPECT_THAT(result, IsError(ERR_CONTEXT_SHUT_DOWN));
 }
 
-TEST_F(ProxyScriptFetcherImplTest, OnShutdownWithNoLiveRequest) {
+TEST_F(PacFileFetcherImplTest, OnShutdownWithNoLiveRequest) {
   ASSERT_TRUE(test_server_.Start());
 
-  ProxyScriptFetcherImpl pac_fetcher(&context_);
+  PacFileFetcherImpl pac_fetcher(&context_);
   pac_fetcher.OnShutdown();
 
   base::string16 text;

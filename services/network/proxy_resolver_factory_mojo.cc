@@ -206,9 +206,8 @@ ProxyResolverMojo::Job::Job(ProxyResolverMojo* resolver,
 ProxyResolverMojo::Job::~Job() {}
 
 net::LoadState ProxyResolverMojo::Job::GetLoadState() {
-  return dns_request_in_progress()
-             ? net::LOAD_STATE_RESOLVING_HOST_IN_PROXY_SCRIPT
-             : net::LOAD_STATE_RESOLVING_PROXY_FOR_URL;
+  return dns_request_in_progress() ? net::LOAD_STATE_RESOLVING_HOST_IN_PAC_FILE
+                                   : net::LOAD_STATE_RESOLVING_PROXY_FOR_URL;
 }
 
 void ProxyResolverMojo::Job::OnConnectionError() {
@@ -290,7 +289,7 @@ class ProxyResolverFactoryMojo::Job
       public ProxyResolverFactory::Request {
  public:
   Job(ProxyResolverFactoryMojo* factory,
-      const scoped_refptr<net::ProxyResolverScriptData>& pac_script,
+      const scoped_refptr<net::PacFileData>& pac_script,
       std::unique_ptr<net::ProxyResolver>* resolver,
       const net::CompletionCallback& callback,
       std::unique_ptr<net::ProxyResolverErrorObserver> error_observer)
@@ -356,14 +355,13 @@ ProxyResolverFactoryMojo::ProxyResolverFactoryMojo(
 ProxyResolverFactoryMojo::~ProxyResolverFactoryMojo() = default;
 
 int ProxyResolverFactoryMojo::CreateProxyResolver(
-    const scoped_refptr<net::ProxyResolverScriptData>& pac_script,
+    const scoped_refptr<net::PacFileData>& pac_script,
     std::unique_ptr<net::ProxyResolver>* resolver,
     const net::CompletionCallback& callback,
     std::unique_ptr<net::ProxyResolverFactory::Request>* request) {
   DCHECK(resolver);
   DCHECK(request);
-  if (pac_script->type() !=
-          net::ProxyResolverScriptData::TYPE_SCRIPT_CONTENTS ||
+  if (pac_script->type() != net::PacFileData::TYPE_SCRIPT_CONTENTS ||
       pac_script->utf16().empty()) {
     return net::ERR_PAC_SCRIPT_FAILED;
   }

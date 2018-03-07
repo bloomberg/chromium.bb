@@ -15,14 +15,14 @@ namespace net {
 
 class URLRequestContext;
 
-// A mock ProxyScriptFetcher. No result will be returned to the fetch client
+// A mock PacFileFetcher. No result will be returned to the fetch client
 // until we call NotifyFetchCompletion() to set the results.
-class MockProxyScriptFetcher : public ProxyScriptFetcher {
+class MockPacFileFetcher : public PacFileFetcher {
  public:
-  MockProxyScriptFetcher();
-  ~MockProxyScriptFetcher() override;
+  MockPacFileFetcher();
+  ~MockPacFileFetcher() override;
 
-  // ProxyScriptFetcher implementation.
+  // PacFileFetcher implementation.
   int Fetch(const GURL& url,
             base::string16* text,
             const CompletionCallback& callback) override;
