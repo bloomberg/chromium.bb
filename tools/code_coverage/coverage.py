@@ -123,6 +123,10 @@ FILE_VIEW_INDEX_FILE = os.extsep.join(['file_view_index', 'html'])
 # Used to extract a mapping between directories and components.
 COMPONENT_MAPPING_URL = 'https://storage.googleapis.com/chromium-owners/component_map.json'
 
+# Caches the results returned by _GetBuildArgs, don't use this variable
+# directly, call _GetBuildArgs instead.
+_BUILD_ARGS = None
+
 
 class _CoverageSummary(object):
   """Encapsulates coverage summary representation."""
@@ -326,7 +330,7 @@ def _GetTargetOS():
 
   Returns an empty string is target_os is not specified.
   """
-  build_args = _ParseArgsGnFile()
+  build_args = _GetBuildArgs()
   return build_args['target_os'] if 'target_os' in build_args else ''
 
 
@@ -734,7 +738,7 @@ def _BuildTargets(targets, jobs_count):
     Returns:
       A boolean indicates whether goma is configured for building or not.
     """
-    build_args = _ParseArgsGnFile()
+    build_args = _GetBuildArgs()
     return 'use_goma' in build_args and build_args['use_goma'] == 'true'
 
   logging.info('Building %s', str(targets))
@@ -1030,7 +1034,7 @@ def _VerifyTargetExecutablesAreInBuildDirectory(commands):
 
 def _ValidateBuildingWithClangCoverage():
   """Asserts that targets are built with Clang coverage enabled."""
-  build_args = _ParseArgsGnFile()
+  build_args = _GetBuildArgs()
 
   if (CLANG_COVERAGE_BUILD_ARG not in build_args or
       build_args[CLANG_COVERAGE_BUILD_ARG] != 'true'):
@@ -1051,19 +1055,23 @@ def _ValidateCurrentPlatformIsSupported():
   ], ('Coverage is only supported on linux, mac, chromeos and ios.')
 
 
-def _ParseArgsGnFile():
+def _GetBuildArgs():
   """Parses args.gn file and returns results as a dictionary.
 
   Returns:
     A dictionary representing the build args.
   """
+  global _BUILD_ARGS
+  if _BUILD_ARGS is not None:
+    return _BUILD_ARGS
+
+  _BUILD_ARGS = {}
   build_args_path = os.path.join(BUILD_DIR, 'args.gn')
   assert os.path.exists(build_args_path), ('"%s" is not a build directory, '
                                            'missing args.gn file.' % BUILD_DIR)
   with open(build_args_path) as build_args_file:
     build_args_lines = build_args_file.readlines()
 
-  build_args = {}
   for build_arg_line in build_args_lines:
     build_arg_without_comments = build_arg_line.split('#')[0]
     key_value_pair = build_arg_without_comments.split('=')
@@ -1075,9 +1083,9 @@ def _ParseArgsGnFile():
     # Values are wrapped within a pair of double-quotes, so remove the leading
     # and trailing double-quotes.
     value = key_value_pair[1].strip().strip('"')
-    build_args[key] = value
+    _BUILD_ARGS[key] = value
 
-  return build_args
+  return _BUILD_ARGS
 
 
 def _VerifyPathsAndReturnAbsolutes(paths):
