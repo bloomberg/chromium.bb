@@ -41,9 +41,8 @@ TEST_F(ShareTargetPrefHelperUnittest, AddMultipleShareTargets) {
   // Add a share target to prefs that wasn't previously stored.
   GURL manifest_url("https://www.sharetarget.com/manifest.json");
   content::Manifest::ShareTarget share_target;
-  std::string url_template = "share/?title={title}";
-  share_target.url_template =
-      base::NullableString16(base::ASCIIToUTF16(url_template), false);
+  std::string url_template = "https://www.sharetarget.com/share?title={title}";
+  share_target.url_template = GURL(url_template);
   content::Manifest manifest;
   manifest.share_target =
       base::Optional<content::Manifest::ShareTarget>(share_target);
@@ -85,13 +84,13 @@ TEST_F(ShareTargetPrefHelperUnittest, AddMultipleShareTargets) {
 
 TEST_F(ShareTargetPrefHelperUnittest, AddShareTargetTwice) {
   const char kManifestUrl[] = "https://www.sharetarget.com/manifest.json";
-  const char kUrlTemplate[] = "share/?title={title}";
+  const char kUrlTemplate[] =
+      "https://www.sharetarget.com/share/?title={title}";
 
   // Add a share target to prefs that wasn't previously stored.
   GURL manifest_url(kManifestUrl);
   content::Manifest::ShareTarget share_target;
-  share_target.url_template =
-      base::NullableString16(base::ASCIIToUTF16(kUrlTemplate), false);
+  share_target.url_template = GURL(kUrlTemplate);
   content::Manifest manifest;
   manifest.share_target =
       base::Optional<content::Manifest::ShareTarget>(share_target);
@@ -129,9 +128,8 @@ TEST_F(ShareTargetPrefHelperUnittest, UpdateShareTarget) {
   // Add a share target to prefs that wasn't previously stored.
   GURL manifest_url("https://www.sharetarget.com/manifest.json");
   content::Manifest::ShareTarget share_target;
-  std::string url_template = "share/?title={title}";
-  share_target.url_template =
-      base::NullableString16(base::ASCIIToUTF16(url_template), false);
+  std::string url_template = "https://www.sharetarget.com/share/?title={title}";
+  share_target.url_template = GURL(url_template);
   content::Manifest manifest;
   manifest.share_target =
       base::Optional<content::Manifest::ShareTarget>(share_target);
@@ -152,9 +150,8 @@ TEST_F(ShareTargetPrefHelperUnittest, UpdateShareTarget) {
 
   // Add same share target to prefs that was previously stored, with new
   // url_template_in_dict; should update the value.
-  url_template = "share/?title={title}&text={text}";
-  manifest.share_target.value().url_template =
-      base::NullableString16(base::ASCIIToUTF16(url_template), false);
+  url_template = "https://www.sharetarget.com/share/?title={title}&text={text}";
+  manifest.share_target.value().url_template = GURL(url_template);
 
   UpdateShareTargetInPrefs(manifest_url, manifest, pref_service());
 
@@ -189,9 +186,8 @@ TEST_F(ShareTargetPrefHelperUnittest, RemoveShareTarget) {
   // Add a share target to prefs that wasn't previously stored.
   GURL manifest_url("https://www.sharetarget.com/manifest.json");
   content::Manifest::ShareTarget share_target;
-  std::string url_template = "share/?title={title}";
-  share_target.url_template =
-      base::NullableString16(base::ASCIIToUTF16(url_template), false);
+  std::string url_template = "https://www.sharetarget.com/share/?title={title}";
+  share_target.url_template = GURL(url_template);
   content::Manifest manifest;
   manifest.share_target =
       base::Optional<content::Manifest::ShareTarget>(share_target);

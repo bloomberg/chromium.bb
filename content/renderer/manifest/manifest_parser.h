@@ -158,10 +158,8 @@ class CONTENT_EXPORT ManifestParser {
 
   // Parses the 'url_template' field of a Share Target, as defined in:
   // https://github.com/WICG/web-share-target/blob/master/docs/interface.md
-  // Returns the parsed string if any, or a null string if the field was not
-  // present, or didn't contain a string.
-  base::NullableString16 ParseShareTargetURLTemplate(
-      const base::DictionaryValue& share_target);
+  // Returns the parsed GURL if any, or an empty GURL if the parsing failed.
+  GURL ParseShareTargetURLTemplate(const base::DictionaryValue& share_target);
 
   // Parses the 'share_target' field of a Manifest, as defined in:
   // https://github.com/WICG/web-share-target/blob/master/docs/interface.md
@@ -178,7 +176,7 @@ class CONTENT_EXPORT ManifestParser {
 
   // Parses the 'url' field of a related application, as defined in:
   // https://w3c.github.io/manifest/#dfn-steps-for-processing-the-url-member-of-an-application
-  // Returns the paresed GURL if any, an empty GURL if the parsing failed.
+  // Returns the parsed GURL if any, an empty GURL if the parsing failed.
   GURL ParseRelatedApplicationURL(const base::DictionaryValue& application);
 
   // Parses the 'id' field of a related application, as defined in:

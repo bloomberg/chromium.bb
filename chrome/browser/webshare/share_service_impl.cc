@@ -164,8 +164,9 @@ ShareServiceImpl::GetTargetsWithSufficientEngagement() {
     std::string url_template;
     share_target_dict->GetString("url_template", &url_template);
 
-    sufficiently_engaged_targets.emplace_back(
-        std::move(manifest_url), std::move(name), std::move(url_template));
+    sufficiently_engaged_targets.emplace_back(std::move(manifest_url),
+                                              std::move(name),
+                                              GURL(std::move(url_template)));
   }
 
   return sufficiently_engaged_targets;
@@ -194,9 +195,13 @@ void ShareServiceImpl::OnPickerClosed(const std::string& title,
     return;
   }
 
+  // This will only replace placeholders found in the query and the fragment
+  // parts of the URL. This happens implicitly, because '{' and '}' found in the
+  // path will have been escaped during URL parsing, and thus won't be seen as
+  // placeholders by ReplacePlaceholders().
   std::string url_template_filled;
-  if (!ReplacePlaceholders(result->url_template(), title, text, share_url,
-                           &url_template_filled)) {
+  if (!ReplacePlaceholders(result->url_template().spec(), title, text,
+                           share_url, &url_template_filled)) {
     // TODO(mgiuca): This error should not be possible at share time, because
     // targets with invalid templates should not be chooseable. Fix
     // https://crbug.com/694380 and replace this with a DCHECK.
@@ -204,15 +209,10 @@ void ShareServiceImpl::OnPickerClosed(const std::string& title,
     return;
   }
 
-  // The template is relative to the manifest URL (minus the filename).
-  // Resolve it based on the manifest URL to make an absolute URL.
-  const GURL target = result->manifest_url().Resolve(url_template_filled);
-  // User should not be able to cause an invalid target URL. Possibilities are:
-  // - The base URL: can't be invalid since it's derived from the manifest URL.
-  // - The template: can only be invalid if it contains a NUL character or
-  //   invalid UTF-8 sequence (which it can't have).
-  // - The replaced pieces: these are escaped.
-  // If somehow we slip through this DCHECK, it will just open about:blank.
+  const GURL target(url_template_filled);
+  // User should not be able to cause an invalid target URL. The replaced pieces
+  // are escaped. If somehow we slip through this DCHECK, it will just open
+  // about:blank.
   DCHECK(target.is_valid());
   OpenTargetURL(target);
 

@@ -97,8 +97,8 @@ struct ManifestRelatedApplication {
 // Structure representing how a Web Share target handles an incoming share.
 struct ManifestShareTarget {
   // The URL template that contains placeholders to be replaced with shared
-  // data. Null if the parsing failed.
-  mojo_base.mojom.String16? url_template;
+  // data. Empty if the parsing failed.
+  url.mojom.Url? url_template;
 };
 
 // Debug information for a parsed manifest.

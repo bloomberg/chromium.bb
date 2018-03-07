@@ -16,10 +16,10 @@ void UpdateShareTargetInPrefs(const GURL& manifest_url,
   DictionaryPrefUpdate update(pref_service, prefs::kWebShareVisitedTargets);
   base::DictionaryValue* share_target_dict = update.Get();
 
-  // Manifest does not contain a share_target field, or it does but there is no
-  // url_template field.
+  // Manifest does not contain a share_target field, or it does but the
+  // url_template is invalid.
   if (!manifest.share_target.has_value() ||
-      manifest.share_target.value().url_template.is_null()) {
+      !manifest.share_target.value().url_template.is_valid()) {
     share_target_dict->RemoveWithoutPathExpansion(manifest_url.spec(), nullptr);
     return;
   }
@@ -29,9 +29,6 @@ void UpdateShareTargetInPrefs(const GURL& manifest_url,
   // be fixed before this feature is rolled out.
   DCHECK(manifest_url.is_valid());
 
-  std::string url_template =
-      base::UTF16ToUTF8(manifest.share_target.value().url_template.string());
-
   constexpr char kNameKey[] = "name";
   constexpr char kUrlTemplateKey[] = "url_template";
 
@@ -40,7 +37,8 @@ void UpdateShareTargetInPrefs(const GURL& manifest_url,
   if (!manifest.name.is_null()) {
     origin_dict->SetKey(kNameKey, base::Value(manifest.name.string()));
   }
-  origin_dict->SetKey(kUrlTemplateKey, base::Value(url_template));
+  origin_dict->SetKey(kUrlTemplateKey,
+                      base::Value(manifest.share_target->url_template.spec()));
 
   share_target_dict->SetWithoutPathExpansion(manifest_url.spec(),
                                              std::move(origin_dict));

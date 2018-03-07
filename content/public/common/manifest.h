@@ -66,8 +66,8 @@ struct CONTENT_EXPORT Manifest {
     ~ShareTarget();
 
     // The URL template that contains placeholders to be replaced with shared
-    // data. Null if the parsing failed.
-    base::NullableString16 url_template;
+    // data. Empty if the parsing failed.
+    GURL url_template;
   };
 
   // Structure representing a related application.

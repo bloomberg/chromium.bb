@@ -13,7 +13,9 @@
 // retrieved from the share_target field in the site's manifest.
 class WebShareTarget {
  public:
-  WebShareTarget(GURL manifest_url, std::string name, std::string url_template);
+  WebShareTarget(const GURL& manifest_url,
+                 const std::string& name,
+                 const GURL& url_template);
   ~WebShareTarget();
 
   // Move constructor
@@ -26,14 +28,14 @@ class WebShareTarget {
   const GURL& manifest_url() const { return manifest_url_; }
   // The URL template that contains placeholders to be replaced with shared
   // data.
-  const std::string& url_template() const { return url_template_; }
+  const GURL& url_template() const { return url_template_; }
 
   bool operator==(const WebShareTarget& other) const;
 
  private:
   GURL manifest_url_;
   std::string name_;
-  std::string url_template_;
+  GURL url_template_;
 
   DISALLOW_COPY_AND_ASSIGN(WebShareTarget);
 };

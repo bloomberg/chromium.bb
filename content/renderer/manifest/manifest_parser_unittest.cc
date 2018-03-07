@@ -1005,13 +1005,17 @@ TEST_F(ManifestParserTest, ShareTargetParseRules) {
 }
 
 TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
+  GURL manifest_url = GURL("https://foo.com/manifest.json");
+  GURL document_url = GURL("https://foo.com/index.html");
+
   // Contains share_target and url_template, but url_template is empty.
   {
-    Manifest manifest =
-        ParseManifest("{ \"share_target\": { \"url_template\": \"\" } }");
+    Manifest manifest = ParseManifestWithURLs(
+        "{ \"share_target\": { \"url_template\": \"\" } }", manifest_url,
+        document_url);
     ASSERT_TRUE(manifest.share_target.has_value());
-    EXPECT_TRUE(base::EqualsASCII(
-        manifest.share_target.value().url_template.string(), ""));
+    EXPECT_EQ(manifest.share_target.value().url_template.spec(),
+              manifest_url.spec());
     EXPECT_FALSE(manifest.IsEmpty());
     EXPECT_EQ(0u, GetErrorCount());
   }
@@ -1019,7 +1023,8 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
   // Don't parse if property isn't a string.
   {
     Manifest manifest =
-        ParseManifest("{ \"share_target\": { \"url_template\": {} } }");
+        ParseManifestWithURLs("{ \"share_target\": { \"url_template\": {} } }",
+                              manifest_url, document_url);
     EXPECT_FALSE(manifest.share_target.has_value());
     EXPECT_TRUE(manifest.IsEmpty());
     EXPECT_EQ(1u, GetErrorCount());
@@ -1030,7 +1035,8 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
   // Don't parse if property isn't a string.
   {
     Manifest manifest =
-        ParseManifest("{ \"share_target\": { \"url_template\": 42 } }");
+        ParseManifestWithURLs("{ \"share_target\": { \"url_template\": 42 } }",
+                              manifest_url, document_url);
     EXPECT_FALSE(manifest.share_target.has_value());
     EXPECT_TRUE(manifest.IsEmpty());
     EXPECT_EQ(1u, GetErrorCount());
@@ -1038,15 +1044,41 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
               errors()[0]);
   }
 
+  // Don't parse if property isn't a valid URL.
+  {
+    Manifest manifest = ParseManifestWithURLs(
+        "{ \"share_target\": { \"url_template\": \"https://foo.com:a\" } "
+        "}",
+        manifest_url, document_url);
+    EXPECT_FALSE(manifest.share_target.has_value());
+    EXPECT_TRUE(manifest.IsEmpty());
+    EXPECT_EQ(1u, GetErrorCount());
+    EXPECT_EQ("property 'url_template' ignored, URL is invalid.", errors()[0]);
+  }
+
+  // Fail parsing if url_template is at a different origin than the Web
+  // Manifest.
+  {
+    Manifest manifest = ParseManifestWithURLs(
+        "{ \"share_target\": { \"url_template\": \"https://foo2.com/\" } }",
+        manifest_url, document_url);
+    EXPECT_FALSE(manifest.share_target.has_value());
+    EXPECT_TRUE(manifest.IsEmpty());
+    EXPECT_EQ(1u, GetErrorCount());
+    EXPECT_EQ(
+        "property 'url_template' ignored, should be same origin as document.",
+        errors()[0]);
+  }
+
   // Smoke test: Contains share_target and url_template, and url_template is
   // valid template.
   {
-    Manifest manifest = ParseManifest(
-        "{ \"share_target\": {\"url_template\": \"share/?title={title}\" } }");
+    Manifest manifest = ParseManifestWithURLs(
+        "{ \"share_target\": {\"url_template\": \"share/?title={title}\" } }",
+        manifest_url, document_url);
     ASSERT_TRUE(manifest.share_target.has_value());
-    EXPECT_TRUE(
-        base::EqualsASCII(manifest.share_target.value().url_template.string(),
-                          "share/?title={title}"));
+    EXPECT_EQ(manifest.share_target.value().url_template.spec(),
+              "https://foo.com/share/?title={title}");
     EXPECT_FALSE(manifest.IsEmpty());
     EXPECT_EQ(0u, GetErrorCount());
   }
@@ -1054,12 +1086,41 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
   // Smoke test: Contains share_target and url_template, and url_template is
   // invalid template.
   {
-    Manifest manifest = ParseManifest(
-        "{ \"share_target\": {\"url_template\": \"share/?title={title\" } }");
+    Manifest manifest = ParseManifestWithURLs(
+        "{ \"share_target\": {\"url_template\": \"share/?title={title\" } }",
+        manifest_url, document_url);
     ASSERT_TRUE(manifest.share_target.has_value());
-    EXPECT_TRUE(
-        base::EqualsASCII(manifest.share_target.value().url_template.string(),
-                          "share/?title={title"));
+    EXPECT_EQ(manifest.share_target.value().url_template.spec(),
+              "https://foo.com/share/?title={title");
+    EXPECT_FALSE(manifest.IsEmpty());
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // Smoke test: Contains share_target and url_template, and url_template has
+  // '{' and '}' in path, query and fragment. Only '{' and '}' in path should be
+  // escaped.
+  {
+    Manifest manifest = ParseManifestWithURLs(
+        "{ \"share_target\": {\"url_template\": "
+        "\"share/a{text}/?title={title}#{frag}\" } }",
+        manifest_url, document_url);
+    ASSERT_TRUE(manifest.share_target.has_value());
+    EXPECT_EQ(manifest.share_target.value().url_template.spec(),
+              "https://foo.com/share/a%7Btext%7D/?title={title}#{frag}");
+    EXPECT_FALSE(manifest.IsEmpty());
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // Smoke test: Contains share_target and url_template. url_template is
+  // valid template and is absolute.
+  {
+    Manifest manifest = ParseManifestWithURLs(
+        "{ \"share_target\": { \"url_template\": \"https://foo.com/#{text}\" } "
+        "}",
+        manifest_url, document_url);
+    ASSERT_TRUE(manifest.share_target.has_value());
+    EXPECT_EQ(manifest.share_target.value().url_template.spec(),
+              "https://foo.com/#{text}");
     EXPECT_FALSE(manifest.IsEmpty());
     EXPECT_EQ(0u, GetErrorCount());
   }
