@@ -347,9 +347,10 @@ std::vector<Manifest::Icon> ManifestParser::ParseIcons(
   return icons;
 }
 
-base::NullableString16 ManifestParser::ParseShareTargetURLTemplate(
+GURL ManifestParser::ParseShareTargetURLTemplate(
     const base::DictionaryValue& share_target) {
-  return ParseString(share_target, "url_template", Trim);
+  return ParseURL(share_target, "url_template", manifest_url_,
+                  ParseURLOriginRestrictions::kSameOriginOnly);
 }
 
 base::Optional<Manifest::ShareTarget> ManifestParser::ParseShareTarget(
@@ -362,9 +363,8 @@ base::Optional<Manifest::ShareTarget> ManifestParser::ParseShareTarget(
   dictionary.GetDictionary("share_target", &share_target_dict);
   share_target.url_template = ParseShareTargetURLTemplate(*share_target_dict);
 
-  if (share_target.url_template.is_null()) {
+  if (share_target.url_template.is_empty())
     return base::nullopt;
-  }
   return base::Optional<Manifest::ShareTarget>(share_target);
 }
 

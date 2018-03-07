@@ -127,8 +127,8 @@ TEST_F(WebShareTargetPickerViewTest, EmptyListCancel) {
 // Table with 2 targets. Choose second target and share.
 TEST_F(WebShareTargetPickerViewTest, ChooseItem) {
   std::vector<WebShareTarget> targets;
-  targets.emplace_back(GURL(kUrl1), kAppName1, kTemplate);
-  targets.emplace_back(GURL(kUrl2), kAppName2, kTemplate);
+  targets.emplace_back(GURL(kUrl1), kAppName1, GURL(kTemplate));
+  targets.emplace_back(GURL(kUrl2), kAppName2, GURL(kTemplate));
 
   CreateView(std::move(targets));
   EXPECT_EQ(2, table()->RowCount());
@@ -154,13 +154,13 @@ TEST_F(WebShareTargetPickerViewTest, ChooseItem) {
 
   run_loop.Run();
 
-  EXPECT_EQ(WebShareTarget(GURL(kUrl2), kAppName2, kTemplate), *result());
+  EXPECT_EQ(WebShareTarget(GURL(kUrl2), kAppName2, GURL(kTemplate)), *result());
 }
 
 // Table with 1 target. Select using double-click.
 TEST_F(WebShareTargetPickerViewTest, ChooseItemWithDoubleClick) {
   std::vector<WebShareTarget> targets;
-  targets.emplace_back(GURL(kUrl1), kAppName1, kTemplate);
+  targets.emplace_back(GURL(kUrl1), kAppName1, GURL(kTemplate));
 
   CreateView(std::move(targets));
   EXPECT_EQ(1, table()->RowCount());
@@ -176,13 +176,13 @@ TEST_F(WebShareTargetPickerViewTest, ChooseItemWithDoubleClick) {
 
   run_loop.Run();
 
-  EXPECT_EQ(WebShareTarget(GURL(kUrl1), kAppName1, kTemplate), *result());
+  EXPECT_EQ(WebShareTarget(GURL(kUrl1), kAppName1, GURL(kTemplate)), *result());
 }
 
 // Table with 1 target. Select, share and GetText.
 TEST_F(WebShareTargetPickerViewTest, GetTextAfterAccept) {
   std::vector<WebShareTarget> targets;
-  targets.emplace_back(GURL(kUrl1), kAppName1, kTemplate);
+  targets.emplace_back(GURL(kUrl1), kAppName1, GURL(kTemplate));
 
   CreateView(std::move(targets));
   EXPECT_EQ(1, table()->RowCount());
@@ -201,5 +201,5 @@ TEST_F(WebShareTargetPickerViewTest, GetTextAfterAccept) {
   EXPECT_EQ(base::ASCIIToUTF16("App One (https://appone.com/)"),
             table()->model()->GetText(0, 0));
 
-  EXPECT_EQ(WebShareTarget(GURL(kUrl1), kAppName1, kTemplate), *result());
+  EXPECT_EQ(WebShareTarget(GURL(kUrl1), kAppName1, GURL(kTemplate)), *result());
 }

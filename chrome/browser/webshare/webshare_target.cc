@@ -9,12 +9,10 @@
 
 #include "base/strings/utf_string_conversions.h"
 
-WebShareTarget::WebShareTarget(GURL manifest_url,
-                               std::string name,
-                               std::string url_template)
-    : manifest_url_(std::move(manifest_url)),
-      name_(std::move(name)),
-      url_template_(std::move(url_template)) {}
+WebShareTarget::WebShareTarget(const GURL& manifest_url,
+                               const std::string& name,
+                               const GURL& url_template)
+    : manifest_url_(manifest_url), name_(name), url_template_(url_template) {}
 
 WebShareTarget::~WebShareTarget() {}
 

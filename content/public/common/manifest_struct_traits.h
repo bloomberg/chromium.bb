@@ -142,9 +142,8 @@ struct StructTraits<blink::mojom::ManifestRelatedApplicationDataView,
 template <>
 struct StructTraits<blink::mojom::ManifestShareTargetDataView,
                     content::Manifest::ShareTarget> {
-  static base::Optional<base::StringPiece16> url_template(
-      const content::Manifest::ShareTarget& m) {
-    return internal::TruncateNullableString16(m.url_template);
+  static const GURL& url_template(const content::Manifest::ShareTarget& m) {
+    return m.url_template;
   }
   static bool Read(blink::mojom::ManifestShareTargetDataView data,
                    content::Manifest::ShareTarget* out);

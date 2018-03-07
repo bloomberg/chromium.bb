@@ -29,7 +29,15 @@ constexpr char kText[] = "My text";
 constexpr char kUrlSpec[] = "https://www.google.com/";
 
 constexpr char kTargetName[] = "Share Target";
-constexpr char kUrlTemplate[] = "share?title={title}&text={text}&url={url}";
+constexpr char kUrlTemplateHigh[] =
+    "https://www.example-high.com/target/"
+    "share?title={title}&text={text}&url={url}";
+constexpr char kUrlTemplateLow[] =
+    "https://www.example-low.com/target/"
+    "share?title={title}&text={text}&url={url}";
+constexpr char kUrlTemplateMin[] =
+    "https://www.example-min.com/target/"
+    "share?title={title}&text={text}&url={url}";
 constexpr char kManifestUrlHigh[] =
     "https://www.example-high.com/target/manifest.json";
 constexpr char kManifestUrlLow[] =
@@ -183,12 +191,13 @@ class ShareServiceImplUnittest : public ChromeRenderViewHostTestHarness {
 // parameters.
 TEST_F(ShareServiceImplUnittest, ShareCallbackParams) {
   share_service_helper()->AddShareTargetToPrefs(kManifestUrlLow, kTargetName,
-                                                kUrlTemplate);
+                                                kUrlTemplateLow);
   share_service_helper()->AddShareTargetToPrefs(kManifestUrlHigh, kTargetName,
-                                                kUrlTemplate);
+                                                kUrlTemplateHigh);
   // Expect this invalid URL to be ignored (not crash);
   // https://crbug.com/762388.
-  share_service_helper()->AddShareTargetToPrefs("", kTargetName, kUrlTemplate);
+  share_service_helper()->AddShareTargetToPrefs("", kTargetName,
+                                                kUrlTemplateHigh);
 
   base::OnceCallback<void(blink::mojom::ShareError)> callback =
       base::BindOnce(&DidShare, blink::mojom::ShareError::OK);
@@ -203,9 +212,9 @@ TEST_F(ShareServiceImplUnittest, ShareCallbackParams) {
 
   std::vector<WebShareTarget> expected_targets;
   expected_targets.emplace_back(GURL(kManifestUrlHigh), kTargetName,
-                                kUrlTemplate);
+                                GURL(kUrlTemplateHigh));
   expected_targets.emplace_back(GURL(kManifestUrlLow), kTargetName,
-                                kUrlTemplate);
+                                GURL(kUrlTemplateLow));
   EXPECT_EQ(expected_targets, share_service_helper()->GetTargetsInPicker());
 
   // Pick example-low.com.
@@ -244,9 +253,9 @@ TEST_F(ShareServiceImplUnittest, ShareCancelNoTargets) {
 // Tests the result of cancelling the share in the picker UI, that has targets.
 TEST_F(ShareServiceImplUnittest, ShareCancelWithTargets) {
   share_service_helper()->AddShareTargetToPrefs(kManifestUrlHigh, kTargetName,
-                                                kUrlTemplate);
+                                                kUrlTemplateHigh);
   share_service_helper()->AddShareTargetToPrefs(kManifestUrlLow, kTargetName,
-                                                kUrlTemplate);
+                                                kUrlTemplateLow);
 
   // Expect an error message in response.
   base::OnceCallback<void(blink::mojom::ShareError)> callback =
@@ -262,9 +271,9 @@ TEST_F(ShareServiceImplUnittest, ShareCancelWithTargets) {
 
   std::vector<WebShareTarget> expected_targets;
   expected_targets.emplace_back(GURL(kManifestUrlHigh), kTargetName,
-                                kUrlTemplate);
+                                GURL(kUrlTemplateHigh));
   expected_targets.emplace_back(GURL(kManifestUrlLow), kTargetName,
-                                kUrlTemplate);
+                                GURL(kUrlTemplateLow));
   EXPECT_EQ(expected_targets, share_service_helper()->GetTargetsInPicker());
 
   // Cancel the dialog.
@@ -277,7 +286,8 @@ TEST_F(ShareServiceImplUnittest, ShareCancelWithTargets) {
 TEST_F(ShareServiceImplUnittest, ShareBrokenUrl) {
   // Invalid placeholders. Detailed tests for broken templates are in the
   // ReplacePlaceholders test; this just tests the share response.
-  constexpr char kBrokenUrlTemplate[] = "share?title={title";
+  constexpr char kBrokenUrlTemplate[] =
+      "http://webshare.com/share?title={title";
   share_service_helper()->AddShareTargetToPrefs(kManifestUrlHigh, kTargetName,
                                                 kBrokenUrlTemplate);
 
@@ -295,7 +305,7 @@ TEST_F(ShareServiceImplUnittest, ShareBrokenUrl) {
 
   std::vector<WebShareTarget> expected_targets;
   expected_targets.emplace_back(GURL(kManifestUrlHigh), kTargetName,
-                                kBrokenUrlTemplate);
+                                GURL(kBrokenUrlTemplate));
   EXPECT_EQ(expected_targets, share_service_helper()->GetTargetsInPicker());
 
   // Pick example-high.com.
@@ -307,9 +317,9 @@ TEST_F(ShareServiceImplUnittest, ShareBrokenUrl) {
 // Test to check that only targets with enough engagement were in picker.
 TEST_F(ShareServiceImplUnittest, ShareWithSomeInsufficientlyEngagedTargets) {
   share_service_helper()->AddShareTargetToPrefs(kManifestUrlMin, kTargetName,
-                                                kUrlTemplate);
+                                                kUrlTemplateMin);
   share_service_helper()->AddShareTargetToPrefs(kManifestUrlLow, kTargetName,
-                                                kUrlTemplate);
+                                                kUrlTemplateLow);
 
   base::OnceCallback<void(blink::mojom::ShareError)> callback =
       base::BindOnce(&DidShare, blink::mojom::ShareError::OK);
@@ -324,7 +334,7 @@ TEST_F(ShareServiceImplUnittest, ShareWithSomeInsufficientlyEngagedTargets) {
 
   std::vector<WebShareTarget> expected_targets;
   expected_targets.emplace_back(GURL(kManifestUrlLow), kTargetName,
-                                kUrlTemplate);
+                                GURL(kUrlTemplateLow));
   EXPECT_EQ(expected_targets, share_service_helper()->GetTargetsInPicker());
 
   // Pick example-low.com.
@@ -341,7 +351,7 @@ TEST_F(ShareServiceImplUnittest, ShareWithSomeInsufficientlyEngagedTargets) {
 // (https://crbug.com/690775).
 TEST_F(ShareServiceImplUnittest, ShareServiceDeletion) {
   share_service_helper()->AddShareTargetToPrefs(kManifestUrlLow, kTargetName,
-                                                kUrlTemplate);
+                                                kUrlTemplateLow);
 
   base::RunLoop run_loop;
   share_service_helper()->set_run_loop(&run_loop);
@@ -359,7 +369,7 @@ TEST_F(ShareServiceImplUnittest, ShareServiceDeletion) {
 
   std::vector<WebShareTarget> expected_targets;
   expected_targets.emplace_back(GURL(kManifestUrlLow), kTargetName,
-                                kUrlTemplate);
+                                GURL(kUrlTemplateLow));
   EXPECT_EQ(expected_targets, share_service_helper()->GetTargetsInPicker());
 
   chrome::WebShareTargetPickerCallback picker_callback =

@@ -147,11 +147,7 @@ bool StructTraits<blink::mojom::ManifestShareTargetDataView,
                   content::Manifest::ShareTarget>::
     Read(blink::mojom::ManifestShareTargetDataView data,
          content::Manifest::ShareTarget* out) {
-  TruncatedString16 string;
-  if (!data.ReadUrlTemplate(&string))
-    return false;
-  out->url_template = base::NullableString16(std::move(string.string));
-  return true;
+  return data.ReadUrlTemplate(&out->url_template);
 }
 
 }  // namespace mojo

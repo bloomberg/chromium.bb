@@ -219,10 +219,10 @@ std::unique_ptr<std::string> BuildProtoInBackground(
   std::string* scope = web_app_manifest->add_scopes();
   scope->assign(GetScope(shortcut_info).spec());
 
-  if (!shortcut_info.share_target_url_template.empty()) {
+  if (!shortcut_info.share_target_url_template.is_empty()) {
     webapk::ShareTarget* share_target = web_app_manifest->add_share_targets();
     share_target->set_url_template(
-        base::UTF16ToUTF8(shortcut_info.share_target_url_template));
+        shortcut_info.share_target_url_template.spec());
   }
 
   if (shortcut_info.best_primary_icon_url.is_empty()) {
