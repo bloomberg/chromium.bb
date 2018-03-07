@@ -15,9 +15,7 @@ class BookmarkModel;
 namespace web {
 class WebState;
 }
-class BrandedImageProvider;
 class TemplateURLService;
-class VoiceSearchProvider;
 class WebStateList;
 
 // A mediator object that provides the relevant properties of a web state
@@ -26,9 +24,6 @@ class WebStateList;
 
 // TemplateURLService used to check the default search engine.
 @property(nonatomic, assign) TemplateURLService* templateURLService;
-
-// Image provider for the branded images.
-@property(nonatomic, assign) BrandedImageProvider* imageProvider;
 
 // The WebStateList that this mediator listens for any changes on the total
 // number of Webstates.
@@ -40,9 +35,6 @@ class WebStateList;
 // The consumer for this object. This can change during the lifetime of this
 // object and may be nil.
 @property(nonatomic, strong) id<ToolbarConsumer> consumer;
-
-// The voice search provider for this mediator.
-@property(nonatomic, assign) VoiceSearchProvider* voiceSearchProvider;
 
 // Updates the consumer to conforms to |webState|.
 - (void)updateConsumerForWebState:(web::WebState*)webState;

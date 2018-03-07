@@ -201,8 +201,6 @@ initWithToolsMenuConfigurationProvider:
                         self.browserState)
       toolbarButton:self.toolbarViewController.toolsMenuButton];
 
-  self.mediator.voiceSearchProvider =
-      ios::GetChromeBrowserProvider()->GetVoiceSearchProvider();
   self.mediator.consumer = self.toolbarViewController;
   self.mediator.webStateList = self.webStateList;
   self.mediator.bookmarkModel =

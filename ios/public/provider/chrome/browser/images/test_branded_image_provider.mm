@@ -14,6 +14,3 @@ TestBrandedImageProvider::TestBrandedImageProvider() {}
 
 TestBrandedImageProvider::~TestBrandedImageProvider() {}
 
-UIImage* TestBrandedImageProvider::GetToolbarSearchButtonImage() {
-  return toolbar_search_button_image_;
-}
