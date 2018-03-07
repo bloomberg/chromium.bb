@@ -32,7 +32,7 @@ protocol::ProcessResourceUsage CurrentProcessStatsAgent::GetResourceUsage() {
 #if defined(OS_WIN)
   PROCESS_MEMORY_COUNTERS pmc;
   if (::GetProcessMemoryInfo(::GetCurrentProcess(), &pmc, sizeof(pmc))) {
-    current.set_working_set_size(pmc.PagefileUsage);
+    current.set_pagefile_size(pmc.PagefileUsage);
   }
 #endif
 
