@@ -18,7 +18,6 @@
 #include "base/supports_user_data.h"
 #include "net/base/net_export.h"
 #include "net/http/http_stream.h"
-#include "net/url_request/websocket_handshake_userdata_key.h"
 #include "net/websockets/websocket_deflate_parameters.h"
 #include "net/websockets/websocket_stream.h"
 
@@ -43,11 +42,6 @@ class NET_EXPORT WebSocketHandshakeStreamBase : public HttpStream {
   // WebSocket connection.
   class NET_EXPORT_PRIVATE CreateHelper : public base::SupportsUserData::Data {
    public:
-    // Returns a key to use to lookup this object in a URLRequest object. It is
-    // different from any other key that is supplied to
-    // URLRequest::SetUserData().
-    static const void* DataKey() { return kWebSocketHandshakeUserDataKey; }
-
     ~CreateHelper() override {}
 
     // Create a WebSocketBasicHandshakeStream. This is called after the

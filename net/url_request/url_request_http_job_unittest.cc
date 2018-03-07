@@ -39,7 +39,7 @@
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_test_util.h"
-#include "net/websockets/websocket_handshake_stream_base.h"
+#include "net/url_request/websocket_handshake_userdata_key.h"
 #include "net/websockets/websocket_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -1581,7 +1581,7 @@ TEST_F(URLRequestHttpJobWebSocketTest, CreateHelperPassedThrough) {
   auto websocket_stream_create_helper =
       std::make_unique<TestWebSocketHandshakeStreamCreateHelper>();
 
-  req_->SetUserData(WebSocketHandshakeStreamBase::CreateHelper::DataKey(),
+  req_->SetUserData(kWebSocketHandshakeUserDataKey,
                     std::move(websocket_stream_create_helper));
   req_->SetLoadFlags(LOAD_DISABLE_CACHE);
   req_->Start();
