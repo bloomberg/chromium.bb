@@ -64,8 +64,7 @@ ServiceWorkerDispatcherHost::ServiceWorkerDispatcherHost(
       weak_ptr_factory_(this) {}
 
 ServiceWorkerDispatcherHost::~ServiceWorkerDispatcherHost() {
-  // Temporary CHECK for debugging https://crbug.com/736203.
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (GetContext() && phase_ == Phase::kAddedToContext)
     GetContext()->RemoveDispatcherHost(render_process_id_);
 }
@@ -95,8 +94,7 @@ void ServiceWorkerDispatcherHost::Init(
 void ServiceWorkerDispatcherHost::OnFilterAdded(IPC::Channel* channel) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerDispatcherHost::OnFilterAdded");
-  // Temporary CHECK for debugging https://crbug.com/736203.
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   channel_ready_ = true;
   std::vector<std::unique_ptr<IPC::Message>> messages;
   messages.swap(pending_messages_);
@@ -106,8 +104,7 @@ void ServiceWorkerDispatcherHost::OnFilterAdded(IPC::Channel* channel) {
 }
 
 void ServiceWorkerDispatcherHost::OnFilterRemoved() {
-  // Temporary CHECK for debugging https://crbug.com/736203.
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   // Don't wait until the destructor to teardown since a new dispatcher host
   // for this process might be created before then.
   if (GetContext() && phase_ == Phase::kAddedToContext) {
@@ -420,8 +417,7 @@ void ServiceWorkerDispatcherHost::
 }
 
 ServiceWorkerContextCore* ServiceWorkerDispatcherHost::GetContext() {
-  // Temporary CHECK for debugging https://crbug.com/736203.
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!context_wrapper_.get())
     return nullptr;
   return context_wrapper_->context();
