@@ -1,97 +1,82 @@
 {
     "archives": {
-        "Docs_(1_open_document_tab)": {
+        "google_docs": {
             "DEFAULT": "top_25_009.wprgo"
         },
-        "Facebook": {
+        "facebook": {
             "DEFAULT": "top_25_003.wprgo"
         },
-        "Wikipedia_(1_tab)": {
+        "wikipedia": {
             "DEFAULT": "top_25_004.wprgo"
         },
-        "http://answers.yahoo.com": {
+        "yahoo_answers": {
             "DEFAULT": "top_25_000.wprgo"
         },
-        "http://booking.com": {
+        "booking.com": {
             "DEFAULT": "top_25_000.wprgo"
         },
-        "http://en.blog.wordpress.com/2012/09/04/freshly-pressed-editors-picks-for-august-2012/": {
+        "wordpress": {
             "DEFAULT": "top_25_000.wprgo"
         },
-        "http://en.wikipedia.org/wiki/Wikipedia": {
+        "espn": {
             "DEFAULT": "top_25_000.wprgo"
         },
-        "http://espn.go.com": {
+        "yahoo_games": {
             "DEFAULT": "top_25_000.wprgo"
         },
-        "http://games.yahoo.com": {
+        "blogspot": {
             "DEFAULT": "top_25_000.wprgo"
         },
-        "http://googlewebmastercentral.blogspot.com/": {
+        "yahoo_news": {
             "DEFAULT": "top_25_000.wprgo"
         },
-        "http://news.yahoo.com": {
+        "pinterest": {
             "DEFAULT": "top_25_000.wprgo"
         },
-        "http://pinterest.com": {
+        "yahoo_sports": {
             "DEFAULT": "top_25_000.wprgo"
         },
-        "http://sports.yahoo.com/": {
+        "techcrunch": {
             "DEFAULT": "top_25_000.wprgo"
         },
-        "http://techcrunch.com": {
+        "amazon": {
             "DEFAULT": "top_25_000.wprgo"
         },
-        "http://www.amazon.com": {
+        "cnn": {
             "DEFAULT": "top_25_000.wprgo"
         },
-        "http://www.cnn.com": {
+        "ebay": {
             "DEFAULT": "top_25_000.wprgo"
         },
-        "http://www.ebay.com": {
+        "linkedin": {
             "DEFAULT": "top_25_000.wprgo"
         },
-        "http://www.facebook.com/barackobama": {
+        "weather.com": {
             "DEFAULT": "top_25_000.wprgo"
         },
-        "http://www.linkedin.com/in/linustorvalds": {
-            "DEFAULT": "top_25_000.wprgo"
-        },
-        "http://www.weather.com/weather/right-now/Mountain+View+CA+94043": {
-            "DEFAULT": "top_25_000.wprgo"
-        },
-        "http://www.youtube.com": {
+        "youtube": {
             "DEFAULT": "top_25_011.wprgo"
         },
-        "https://docs.google.com/document/d/1X-IKNjtEnx-WW5JIKRLsyhz5sbsat3mfTpAPUSX3_s4/view": {
+        "google_drive": {
             "DEFAULT": "top_25_000.wprgo"
         },
-        "https://drive.google.com": {
-            "DEFAULT": "top_25_000.wprgo"
-        },
-        "https://mail.google.com/mail/": {
+        "gmail": {
             "DEFAULT": "top_25_006.wprgo"
         },
-        "https://plus.google.com/110031535020051778989/posts": {
+        "google_plus": {
             "DEFAULT": "top_25_010.wprgo"
         },
-        "https://twitter.com/katyperry": {
+        "twitter": {
             "DEFAULT": "top_25_000.wprgo"
         },
-        "https://www.google.com/#hl=en&q=barack+obama": {
+        "google_web_search": {
             "DEFAULT": "top_25_000.wprgo"
         },
-        "https://www.google.com/calendar/": {
+        "google_calendar": {
             "DEFAULT": "top_25_008.wprgo"
         },
-        "https://www.google.com/search?q=cats&tbm=isch": {
+        "google_image_search": {
             "DEFAULT": "top_25_007.wprgo"
-        },
-        "overview:js_poster_circle": {
-            "DEFAULT": "top_25_012.wprgo"
-        },
-        "overview:yahoo_news": {
-            "DEFAULT": "top_25_013.wprgo"
         }
     },
     "description": "Describes the Web Page Replay archives for a story set. Don't edit by hand! Use record_wpr for updating.",
