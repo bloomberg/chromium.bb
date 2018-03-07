@@ -9,43 +9,44 @@
 
  */
 
-goog.provide('mr.LogManager');
+goog.module('mr.LogManager');
+goog.module.declareLegacyNamespace();
 
-goog.require('mr.Config');
-goog.require('mr.FixedSizeQueue');
-goog.require('mr.Logger');
-goog.require('mr.PersistentData');
-goog.require('mr.PersistentDataManager');
+const Config = goog.require('mr.Config');
+const FixedSizeQueue = goog.require('mr.FixedSizeQueue');
+const Logger = goog.require('mr.Logger');
+const PersistentData = goog.require('mr.PersistentData');
+const PersistentDataManager = goog.require('mr.PersistentDataManager');
 
 
 /**
- * @implements {mr.PersistentData}
+ * @implements {PersistentData}
  */
-mr.LogManager = class {
+class LogManager {
   constructor() {
     /** @private @const */
-    this.buffer_ = new mr.FixedSizeQueue(mr.LogManager.BUFFER_SIZE);
+    this.buffer_ = new FixedSizeQueue(LogManager.BUFFER_SIZE);
 
     /** @private @const */
     this.startTime_ = Date.now();
   }
 
   /**
-   * @return {!mr.LogManager}
+   * @return {!LogManager}
    */
   static getInstance() {
-    if (mr.LogManager.instance_ == null) {
-      mr.LogManager.instance_ = new mr.LogManager();
+    if (LogManager.instance_ == null) {
+      LogManager.instance_ = new LogManager();
     }
-    return mr.LogManager.instance_;
+    return LogManager.instance_;
   }
 
   /**
    * Init
    */
   init() {
-    mr.Logger.level = this.getDefaultLogLevel_();
-    const browserLogger = mr.Logger.getInstance('browser');
+    Logger.level = this.getDefaultLogLevel_();
+    const browserLogger = Logger.getInstance('browser');
     const oldErrorHandler = window.onerror;
     /**
      * @param {string} message
@@ -60,37 +61,41 @@ mr.LogManager = class {
       }
       browserLogger.error(`Error: ${message} (${url} @ Line: ${line})`, error);
     };
-    mr.Logger.addHandler(this.onNewLog_.bind(this));
+    Logger.addHandler(this.onNewLog_.bind(this));
 
     // Override log level via localStorage setting
     const debugKey = 'debug.logs';
     const debugLevel = window.localStorage[debugKey];
     if (debugLevel) {
-      mr.Logger.level = mr.Logger.stringToLevel(
-          debugLevel.toUpperCase(), mr.Logger.Level.FINE);
-    } else if (!mr.Config.isPublicChannel) {
+      Logger.level =
+          Logger.stringToLevel(debugLevel.toUpperCase(), Logger.Level.FINE);
+    } else if (!Config.isPublicChannel) {
       // Record the default local level in local settings so developers can
       // easily change it without having to look up the name of the setting.
       window.localStorage[debugKey] =
-          mr.Logger.levelToString(mr.Logger.DEFAULT_LEVEL);
+          Logger.levelToString(Logger.DEFAULT_LEVEL);
     }
 
     const consoleKey = 'debug.console';
-    if (!mr.Config.isPublicChannel && window.localStorage[consoleKey] == null) {
-      // Enable console logging by default in internal builds.  Any value other
-      // than 'false' or '' is treated as true.
+    if (!Config.isUnitTest && !Config.isPublicChannel &&
+        window.localStorage[consoleKey] == null) {
+      // Enable console logging by default in internal builds, but not in unit
+      // tests.  Unit tests are excluded because logs written to the console
+      // make it hard to spot output from the test framework.
+      //
+      // Any value other than 'false' or '' is treated as true.
       window.localStorage[consoleKey] = 'true';
     }
     const consoleValue = window.localStorage[consoleKey];
     if (consoleValue && consoleValue.toLowerCase() != 'false') {
-      mr.Logger.addHandler(this.logToConsole_.bind(this));
+      Logger.addHandler(this.logToConsole_.bind(this));
     }
   }
 
   /**
    * Saves logs in the internal buffer.
    *
-   * @param {mr.Logger.Record} logRecord The log entry.
+   * @param {Logger.Record} logRecord The log entry.
    * @private
    */
   onNewLog_(logRecord) {
@@ -102,7 +107,7 @@ mr.LogManager = class {
   }
 
   /**
-   * @param {mr.Logger.Record} logRecord The log entry.
+   * @param {Logger.Record} logRecord The log entry.
    * @private
    */
   logToConsole_(logRecord) {
@@ -111,13 +116,13 @@ mr.LogManager = class {
       args.push(logRecord.exception);
     }
     switch (logRecord.level) {
-      case mr.Logger.Level.SEVERE:
+      case Logger.Level.SEVERE:
         console.error(...args);
         break;
-      case mr.Logger.Level.WARNING:
+      case Logger.Level.WARNING:
         console.warn(...args);
         break;
-      case mr.Logger.Level.INFO:
+      case Logger.Level.INFO:
         console.log(...args);
         break;
       default:
@@ -126,7 +131,7 @@ mr.LogManager = class {
   }
 
   /**
-   * @param {!mr.Logger.Record} record
+   * @param {!Logger.Record} record
    * @param {boolean} forConsole
    * @return {string}
    * @private
@@ -149,7 +154,7 @@ mr.LogManager = class {
           twoDigitStr(Math.floor(date.getMilliseconds() / 10)));
     }
     sb.push(
-        '][', mr.Logger.levelToString(record.level), '][', record.logger, '] ',
+        '][', Logger.levelToString(record.level), '][', record.logger, '] ',
         record.message);
     // Don't append the exception when logging to the console, because it will
     // be handled specially later.
@@ -182,19 +187,18 @@ mr.LogManager = class {
   }
 
   /**
-   * @return {!mr.Logger.Level} The default log level.
+   * @return {!Logger.Level} The default log level.
    * @private
    */
   getDefaultLogLevel_() {
-    return mr.Config.isPublicChannel ? mr.Logger.Level.INFO :
-                                       mr.Logger.Level.FINE;
+    return Config.isPublicChannel ? Logger.Level.INFO : Logger.Level.FINE;
   }
 
   /**
    * Registers with the data manager and loads any previous logs.
    */
   registerDataManager() {
-    mr.PersistentDataManager.register(this);
+    PersistentDataManager.register(this);
   }
 
   /**
@@ -217,20 +221,20 @@ mr.LogManager = class {
   loadSavedData() {
     const currentLogs = this.buffer_.getValues();
     this.buffer_.clear();
-    for (let log of mr.PersistentDataManager.getTemporaryData(this) || []) {
+    for (let log of PersistentDataManager.getTemporaryData(this) || []) {
       this.buffer_.enqueue(log);
     }
     for (let log of currentLogs) {
       this.buffer_.enqueue(log);
     }
   }
-};
+}
 
 
 /**
- * @private {mr.LogManager}
+ * @private {?LogManager}
  */
-mr.LogManager.instance_ = null;
+LogManager.instance_ = null;
 
 
 /**
@@ -238,4 +242,7 @@ mr.LogManager.instance_ = null;
  * is full.
  * @const
  */
-mr.LogManager.BUFFER_SIZE = 1000;
+LogManager.BUFFER_SIZE = 1000;
+
+
+exports = LogManager;

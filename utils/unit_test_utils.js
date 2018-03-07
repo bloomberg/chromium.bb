@@ -169,9 +169,13 @@ mr.UnitTestUtils.mockChromeApi = function() {
           jasmine.createSpy('chrome.networkingPrivate.onNetworksChanged spy')
     },
     gcm: {
+      register: jasmine.createSpy('chrome.gcm.register spy'),
       onMessage: {
         addListener: jasmine.createSpy('chrome.gcm.onMessage.addListener spy')
       }
+    },
+    tabs: {
+      get: jasmine.createSpy('chrome.tabs.get spy'),
     },
   };
 };

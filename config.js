@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview Configs.
+ * @fileoverview Information about the current build configuration.
  */
-
-goog.provide('mr.Config');
+goog.module('mr.Config');
+goog.module.declareLegacyNamespace();
 
 
 /**
@@ -14,7 +14,7 @@ goog.provide('mr.Config');
  * value defined here is only used in open-source builds.
  * @define {boolean} True if this extension was released through debug channel.
  */
-mr.Config.isDebugChannel = true;
+exports.isDebugChannel = true;
 
 
 /**
@@ -23,4 +23,13 @@ mr.Config.isDebugChannel = true;
  * open-source builds.
  * @define {boolean} True if this extension was released through public channel.
  */
-mr.Config.isPublicChannel = false;
+exports.isPublicChannel = false;
+
+
+/**
+ * Used to determine whether code is being executed as part of a unit test.
+ * This is used only to control logging configuration.  Don't use it for any
+ * other purpose!
+ * @const
+ */
+exports.isUnitTest = 'jasmine' in window;
