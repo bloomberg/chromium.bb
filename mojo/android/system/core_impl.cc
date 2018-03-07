@@ -156,14 +156,12 @@ static ScopedJavaLocalRef<jobject> JNI_CoreImpl_ReadMessage(
   void* buffer;
   uint32_t num_handles = 0;
   std::vector<MojoHandle> handles;
-  result = MojoGetSerializedMessageContents(
-      message->value(), &buffer, &num_bytes, nullptr, &num_handles,
-      MOJO_GET_SERIALIZED_MESSAGE_CONTENTS_FLAG_NONE);
+  result = MojoGetMessageData(message->value(), nullptr, &buffer, &num_bytes,
+                              nullptr, &num_handles);
   if (result == MOJO_RESULT_RESOURCE_EXHAUSTED) {
     handles.resize(num_handles);
-    result = MojoGetSerializedMessageContents(
-        message->value(), &buffer, &num_bytes, handles.data(), &num_handles,
-        MOJO_GET_SERIALIZED_MESSAGE_CONTENTS_FLAG_NONE);
+    result = MojoGetMessageData(message->value(), nullptr, &buffer, &num_bytes,
+                                handles.data(), &num_handles);
   }
 
   if (result != MOJO_RESULT_OK)

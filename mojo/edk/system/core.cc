@@ -506,64 +506,30 @@ MojoResult Core::SerializeMessage(MojoMessageHandle message_handle) {
       ->SerializeIfNecessary();
 }
 
-MojoResult Core::AttachSerializedMessageBuffer(MojoMessageHandle message_handle,
-                                               uint32_t payload_size,
-                                               const MojoHandle* handles,
-                                               uint32_t num_handles,
-                                               void** buffer,
-                                               uint32_t* buffer_size) {
-  if (!message_handle || (num_handles && !handles) || !buffer || !buffer_size)
+MojoResult Core::AppendMessageData(MojoMessageHandle message_handle,
+                                   uint32_t additional_payload_size,
+                                   const MojoHandle* handles,
+                                   uint32_t num_handles,
+                                   const MojoAppendMessageDataOptions* options,
+                                   void** buffer,
+                                   uint32_t* buffer_size) {
+  if (!message_handle || (num_handles && !handles))
     return MOJO_RESULT_INVALID_ARGUMENT;
+  if (options && options->struct_size != sizeof(*options))
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
   RequestContext request_context;
   auto* message = reinterpret_cast<ports::UserMessageEvent*>(message_handle)
                       ->GetMessage<UserMessageImpl>();
-  MojoResult rv = message->AttachSerializedMessageBuffer(payload_size, handles,
-                                                         num_handles);
+  MojoResult rv =
+      message->AppendData(additional_payload_size, handles, num_handles);
   if (rv != MOJO_RESULT_OK)
     return rv;
 
-  *buffer = message->user_payload();
-  *buffer_size = base::checked_cast<uint32_t>(message->user_payload_capacity());
-  return MOJO_RESULT_OK;
-}
-
-MojoResult Core::ExtendSerializedMessagePayload(
-    MojoMessageHandle message_handle,
-    uint32_t new_payload_size,
-    const MojoHandle* handles,
-    uint32_t num_handles,
-    void** new_buffer,
-    uint32_t* new_buffer_size) {
-  if (!message_handle || !new_buffer || !new_buffer_size)
-    return MOJO_RESULT_INVALID_ARGUMENT;
-  if (!handles && num_handles)
-    return MOJO_RESULT_INVALID_ARGUMENT;
-  auto* message = reinterpret_cast<ports::UserMessageEvent*>(message_handle)
-                      ->GetMessage<UserMessageImpl>();
-  MojoResult rv = message->ExtendSerializedMessagePayload(new_payload_size,
-                                                          handles, num_handles);
-  if (rv != MOJO_RESULT_OK)
-    return rv;
-
-  *new_buffer = message->user_payload();
-  *new_buffer_size =
-      base::checked_cast<uint32_t>(message->user_payload_capacity());
-  return MOJO_RESULT_OK;
-}
-
-MojoResult Core::CommitSerializedMessageContents(
-    MojoMessageHandle message_handle,
-    uint32_t final_payload_size,
-    void** buffer,
-    uint32_t* buffer_size) {
-  if (!message_handle)
-    return MOJO_RESULT_INVALID_ARGUMENT;
-  RequestContext request_context;
-  auto* message = reinterpret_cast<ports::UserMessageEvent*>(message_handle)
-                      ->GetMessage<UserMessageImpl>();
-  MojoResult rv = message->CommitSerializedContents(final_payload_size);
-  if (rv != MOJO_RESULT_OK)
-    return rv;
+  if (options && (options->flags & MOJO_APPEND_MESSAGE_DATA_FLAG_COMMIT_SIZE)) {
+    RequestContext request_context;
+    message->CommitSize();
+  }
 
   if (buffer)
     *buffer = message->user_payload();
@@ -574,14 +540,15 @@ MojoResult Core::CommitSerializedMessageContents(
   return MOJO_RESULT_OK;
 }
 
-MojoResult Core::GetSerializedMessageContents(
-    MojoMessageHandle message_handle,
-    void** buffer,
-    uint32_t* num_bytes,
-    MojoHandle* handles,
-    uint32_t* num_handles,
-    MojoGetSerializedMessageContentsFlags flags) {
+MojoResult Core::GetMessageData(MojoMessageHandle message_handle,
+                                const MojoGetMessageDataOptions* options,
+                                void** buffer,
+                                uint32_t* num_bytes,
+                                MojoHandle* handles,
+                                uint32_t* num_handles) {
   if (!message_handle || (num_handles && *num_handles && !handles))
+    return MOJO_RESULT_INVALID_ARGUMENT;
+  if (options && options->struct_size != sizeof(*options))
     return MOJO_RESULT_INVALID_ARGUMENT;
 
   auto* message = reinterpret_cast<ports::UserMessageEvent*>(message_handle)
@@ -602,6 +569,9 @@ MojoResult Core::GetSerializedMessageContents(
   } else if (buffer) {
     *buffer = nullptr;
   }
+
+  if (options && (options->flags & MOJO_GET_MESSAGE_DATA_FLAG_IGNORE_HANDLES))
+    return MOJO_RESULT_OK;
 
   uint32_t max_num_handles = 0;
   if (num_handles) {

@@ -97,14 +97,12 @@ void MojoHandle::readMessage(const MojoReadMessageFlags& flags_dict,
   uint32_t num_bytes = 0, num_handles = 0;
   void* bytes;
   Vector<::MojoHandle, kHandleVectorInlineCapacity> raw_handles;
-  result = MojoGetSerializedMessageContents(
-      message->value(), &bytes, &num_bytes, nullptr, &num_handles,
-      MOJO_GET_SERIALIZED_MESSAGE_CONTENTS_FLAG_NONE);
+  result = MojoGetMessageData(message->value(), nullptr, &bytes, &num_bytes,
+                              nullptr, &num_handles);
   if (result == MOJO_RESULT_RESOURCE_EXHAUSTED) {
     raw_handles.resize(num_handles);
-    result = MojoGetSerializedMessageContents(
-        message->value(), &bytes, &num_bytes, raw_handles.data(), &num_handles,
-        MOJO_GET_SERIALIZED_MESSAGE_CONTENTS_FLAG_NONE);
+    result = MojoGetMessageData(message->value(), nullptr, &bytes, &num_bytes,
+                                raw_handles.data(), &num_handles);
   }
 
   if (result != MOJO_RESULT_OK) {

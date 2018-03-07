@@ -188,47 +188,27 @@ MojoResult MojoSerializeMessage(MojoMessageHandle message) {
   return g_thunks.SerializeMessage(message);
 }
 
-MojoResult MojoAttachSerializedMessageBuffer(MojoMessageHandle message,
-                                             uint32_t payload_size,
-                                             const MojoHandle* handles,
-                                             uint32_t num_handles,
-                                             void** buffer,
-                                             uint32_t* buffer_size) {
-  assert(g_thunks.AttachSerializedMessageBuffer);
-  return g_thunks.AttachSerializedMessageBuffer(
-      message, payload_size, handles, num_handles, buffer, buffer_size);
+MojoResult MojoAppendMessageData(MojoMessageHandle message,
+                                 uint32_t payload_size,
+                                 const MojoHandle* handles,
+                                 uint32_t num_handles,
+                                 const MojoAppendMessageDataOptions* options,
+                                 void** buffer,
+                                 uint32_t* buffer_size) {
+  assert(g_thunks.AppendMessageData);
+  return g_thunks.AppendMessageData(message, payload_size, handles, num_handles,
+                                    options, buffer, buffer_size);
 }
 
-MojoResult MojoExtendSerializedMessagePayload(MojoMessageHandle message,
-                                              uint32_t new_payload_size,
-                                              const MojoHandle* handles,
-                                              uint32_t num_handles,
-                                              void** buffer,
-                                              uint32_t* buffer_size) {
-  assert(g_thunks.ExtendSerializedMessagePayload);
-  return g_thunks.ExtendSerializedMessagePayload(
-      message, new_payload_size, handles, num_handles, buffer, buffer_size);
-}
-
-MojoResult MojoCommitSerializedMessageContents(MojoMessageHandle message,
-                                               uint32_t final_payload_size,
-                                               void** buffer,
-                                               uint32_t* buffer_size) {
-  assert(g_thunks.CommitSerializedMessageContents);
-  return g_thunks.CommitSerializedMessageContents(message, final_payload_size,
-                                                  buffer, buffer_size);
-}
-
-MojoResult MojoGetSerializedMessageContents(
-    MojoMessageHandle message,
-    void** buffer,
-    uint32_t* num_bytes,
-    MojoHandle* handles,
-    uint32_t* num_handles,
-    MojoGetSerializedMessageContentsFlags flags) {
-  assert(g_thunks.GetSerializedMessageContents);
-  return g_thunks.GetSerializedMessageContents(message, buffer, num_bytes,
-                                               handles, num_handles, flags);
+MojoResult MojoGetMessageData(MojoMessageHandle message,
+                              const MojoGetMessageDataOptions* options,
+                              void** buffer,
+                              uint32_t* num_bytes,
+                              MojoHandle* handles,
+                              uint32_t* num_handles) {
+  assert(g_thunks.GetMessageData);
+  return g_thunks.GetMessageData(message, options, buffer, num_bytes, handles,
+                                 num_handles);
 }
 
 MojoResult MojoAttachMessageContext(MojoMessageHandle message,

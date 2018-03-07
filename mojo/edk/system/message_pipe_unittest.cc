@@ -61,9 +61,8 @@ class MessagePipeTest : public test::MojoTestBase {
 
     const uint32_t expected_num_bytes = *num_bytes;
     void* buffer;
-    rv = MojoGetSerializedMessageContents(
-        message_handle, &buffer, num_bytes, nullptr, nullptr,
-        MOJO_GET_SERIALIZED_MESSAGE_CONTENTS_FLAG_NONE);
+    rv = MojoGetMessageData(message_handle, nullptr, &buffer, num_bytes,
+                            nullptr, nullptr);
 
     if (rv == MOJO_RESULT_RESOURCE_EXHAUSTED) {
       CHECK(may_discard);

@@ -18,16 +18,15 @@ MojoResult WriteMessageRaw(MessagePipeHandle message_pipe,
   MojoResult rv = CreateMessage(&message_handle);
   DCHECK_EQ(MOJO_RESULT_OK, rv);
 
+  MojoAppendMessageDataOptions options;
+  options.struct_size = sizeof(options);
+  options.flags = MOJO_APPEND_MESSAGE_DATA_FLAG_COMMIT_SIZE;
   void* buffer;
   uint32_t buffer_size;
-  rv = MojoAttachSerializedMessageBuffer(
-      message_handle->value(), base::checked_cast<uint32_t>(num_bytes), handles,
-      base::checked_cast<uint32_t>(num_handles), &buffer, &buffer_size);
-  if (rv != MOJO_RESULT_OK)
-    return MOJO_RESULT_ABORTED;
-  rv = MojoCommitSerializedMessageContents(
-      message_handle->value(), base::checked_cast<uint32_t>(num_bytes), &buffer,
-      &buffer_size);
+  rv = MojoAppendMessageData(message_handle->value(),
+                             base::checked_cast<uint32_t>(num_bytes), handles,
+                             base::checked_cast<uint32_t>(num_handles),
+                             &options, &buffer, &buffer_size);
   if (rv != MOJO_RESULT_OK)
     return MOJO_RESULT_ABORTED;
 
@@ -55,16 +54,14 @@ MojoResult ReadMessageRaw(MessagePipeHandle message_pipe,
   void* buffer = nullptr;
   uint32_t num_bytes = 0;
   uint32_t num_handles = 0;
-  rv = MojoGetSerializedMessageContents(
-      message_handle->value(), &buffer, &num_bytes, nullptr, &num_handles,
-      MOJO_GET_SERIALIZED_MESSAGE_CONTENTS_FLAG_NONE);
+  rv = MojoGetMessageData(message_handle->value(), nullptr, &buffer, &num_bytes,
+                          nullptr, &num_handles);
   if (rv == MOJO_RESULT_RESOURCE_EXHAUSTED) {
     DCHECK(handles);
     handles->resize(num_handles);
-    rv = MojoGetSerializedMessageContents(
-        message_handle->value(), &buffer, &num_bytes,
-        reinterpret_cast<MojoHandle*>(handles->data()), &num_handles,
-        MOJO_GET_SERIALIZED_MESSAGE_CONTENTS_FLAG_NONE);
+    rv = MojoGetMessageData(
+        message_handle->value(), nullptr, &buffer, &num_bytes,
+        reinterpret_cast<MojoHandle*>(handles->data()), &num_handles);
   }
 
   if (num_bytes) {

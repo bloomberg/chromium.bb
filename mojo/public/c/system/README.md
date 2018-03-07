@@ -138,25 +138,38 @@ MojoResult result = MojoCreateMessage(&message);
 
 Note that we have a special `MojoMessageHandle` type for message objects.
 
-Messages may be serialized or unserialized. Unserialized messages may support
-lazy serialization, meaning they can be serialized if and only if necessary
-(e.g. if the message needs to cross a process boundary.)
+Messages may be serialized with attached data or unserialized with an
+opaque context value. Unserialized messages support lazy serialization, allowing
+custom serialization logic to be invoked only if and when serialization is
+required, e.g. when the message needs to cross a process or language boundary.
 
 To make a serialized message, you might write something like:
 
 ``` c
 void* buffer;
 uint32_t buffer_size;
-MojoResult result = MojoAttachSerializedMessageBuffer(
-    message, 6, nullptr, 0, &buffer, &buffer_size);
+MojoResult result = MojoAppendMessageData(message, nullptr, 6, nullptr, 0,
+                                          &buffer, &buffer_size);
+memcpy(buffer, "hello", 6);
 ```
 
-This attaches a serialized message buffer to `message` with at least `6` bytes
-of storage capacity. The results stored in `buffer` and `buffer_size` give more
-information about the payload's storage.
+This attaches a data buffer to `message` with at least `6` bytes of storage
+capacity. The outputs returned in `buffer` and `buffer_size` can be used by the
+caller to fill in the message contents.
 
-If you want to increase the size of the payload layer, you can use
-`MojoExtendSerializedMessagePayload`.
+Multiple calls to `MojoAppendMessageData` may be made on a single message
+object, and each call appends to any payload and handles accumulated so far.
+Before you can transmit a message carrying data you must commit to never calling
+`MojoAppendMessageData` again. You do this by passing the
+`MOJO_APPEND_MESSAGE_DATA_FLAG_COMMIT_SIZE` flag:
+
+``` c
+MojoAppendMessageDataOptions options;
+options.struct_size = sizeof(options);
+options.flags = MOJO_APPEND_MESSAGE_DATA_FLAG_COMMIT_SIZE;
+MojoResult result = MojoAppendMessageData(message, &options, 0, nullptr, 0,
+                                          &buffer, &buffer_size);
+```
 
 Creating lazily-serialized messages is also straightforward:
 
@@ -168,26 +181,28 @@ struct MyMessage {
 void SerializeMessage(MojoMessageHandle message, uintptr_t context) {
   struct MyMessage* my_message = (struct MyMessage*)context;
 
-  MojoResult result = MojoAttachSerializedMessageBuffer(message, ...);
+  MojoResult result = MojoAppendMessageData(message, ...);
   // Serialize however you like.
+}
 
-  free(my_message);
+void DestroyMessage(uintptr_t context) {
+  free((void*)context);
 }
 
 MyMessage* data = malloc(sizeof(MyMessage));
 // initialize *data...
 
-MojoResult result = MojoAttachMessageContext(message, (uintptr_t)data,
-                                             &SerializeMessage);
+MojoResult result = MojoAttachMessageContext(
+    message, (uintptr_t)data, &SerializeMessage, &DestroyMessage);
 ```
 
-If we change our mind and decide not to send a message, we can destroy it:
+If we change our mind and decide not to send the message, we can destroy it:
 
 ``` c
 MojoResult result = MojoDestroyMessage(message);
 ```
 
-Note that attempting to write a message transfers ownership of the message
+Note that attempting to write a message will transfer ownership of the message
 object (and any attached handles) into the message pipe, and there is therefore
 no need to subsequently call `MojoDestroyMessage` on that message.
 
@@ -225,14 +240,13 @@ MojoMessageHandle message;
 MojoResult result = MojoReadMessage(b, &message, MOJO_READ_MESSAGE_FLAG_NONE);
 ```
 
-and extract its serialized contents:
+and extract its data:
 
 ``` c
 void* buffer = NULL;
 uint32_t num_bytes;
-MojoResult result = MojoGetSerializedMessageContents(
-    message, &buffer, &num_bytes, nullptr, nullptr,
-    MOJO_GET_SERIALIZED_MESSAGE_CONTENTS_FLAG_NONE);
+MojoResult result = MojoGetMessageData(message, nullptr, &buffer, &num_bytes,
+                                       nullptr, nullptr);
 printf("Pipe says: %s", (const char*)buffer);
 ```
 
@@ -249,10 +263,11 @@ MojoResult result = MojoReadMessage(b, &message, MOJO_READ_MESSAGE_FLAG_NONE);
 We'll get a `result` of `MOJO_RESULT_SHOULD_WAIT`, indicating that the pipe is
 not yet readable.
 
-Note that message also may not have been serialized if they came from within the
-same process. In that case, `MojoGetSerializedMessageContents` will return
-`MOJO_RESULT_FAILED_PRECONDITION`. The message's unserialized context can
-instead be retrieved using `MojoGetMessageContext`.
+Note that message also may not have been serialized if it came from within the
+same process, in which case it may have no attached data and
+`MojoGetMessageData` will return `MOJO_RESULT_FAILED_PRECONDITION`. The
+message's unserialized context can instead be retrieved using
+`MojoGetMessageContext`.
 
 Messages read from a message pipe are owned by the caller and must be
 subsequently destroyed using `MojoDestroyMessage` (or, in theory, written to
@@ -281,43 +296,44 @@ MojoMessageHandle message;
 void* buffer;
 uint32_t buffer_size;
 MojoCreateMessage(&message);
-MojoAttachSerializedMessageBuffer(message, "hi", 2, &c, 1, &buffer,
-                                  &buffer_size);
+
+MojoAppendMessageDataOptions options;
+options.struct_size = sizeof(options);
+options.flags = MOJO_APPEND_MESSAGE_DATA_FLAG_COMMIT_SIZE;
+MojoAppendMessageData(message, &options, 2, &c, 1, &buffer, &buffer_size);
+memcpy(buffer, "hi", 2);
 MojoWriteMessage(a, message, MOJO_WRITE_MESSAGE_FLAG_NONE);
 
 // Some time later...
 MojoHandle e;
 uint32_t num_handles = 1;
 MojoReadMessage(b, &message, MOJO_READ_MESSAGE_FLAG_NONE);
-MojoGetSerializedMessageContents(
-    message, &buffer, &buffer_size, &e, &num_handles,
-    MOJO_GET_SERIALIZED_MESSAGE_CONTENTS_FLAG_NONE);
+MojoGetMessageData(message, nullptr, &buffer, &buffer_size, &e, &num_handles);
 ```
 
 At this point the handle in `e` is now referencing the same message pipe
 endpoint which was originally referenced by `c`.
 
 Note that `num_handles` above is initialized to 1 before we pass its address to
-`MojoGetSerializedMessageContents`. This is to indicate how much `MojoHandle`
-storage is available at the output buffer we gave it (`&e` above).
+`MojoGetMessageData`. This is to indicate how much `MojoHandle` storage is
+available at the output buffer we gave it (`&e` above).
 
 If we didn't know how many handles to expect in an incoming message -- which is
-often the case -- we can use `MojoGetSerializedMessageContents` to query for
-this information first:
+often the case -- we can use `MojoGetMessageData` to query for this information
+first:
 
 ``` c
 MojoMessageHandle message;
 void* buffer;
 uint32_t num_bytes = 0;
 uint32_t num_handles = 0;
-MojoResult result = MojoGetSerializedMessageContents(
-    message, &buffer, &num_bytes, NULL, &num_handles,
-    MOJO_GET_SERIALIZED_MESSAGE_CONTENTS_FLAG_NONE);
+MojoResult result = MojoGetMessageData(message, nullptr, &buffer, &num_bytes,
+                                       nullptr, &num_handles);
 ```
 
 If `message` has some non-zero number of handles, `result` will be
-`MOJO_RESULT_RESOURCE_EXHAUSTED`, and both `num_bytes` and `num_handles` would
-be updated to reflect the payload size and number of attached handles in the
+`MOJO_RESULT_RESOURCE_EXHAUSTED`, and both `num_bytes` and `num_handles` will be
+updated to reflect the payload size and number of attached handles in the
 message.
 
 ## Data Pipes
