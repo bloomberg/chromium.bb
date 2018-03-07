@@ -1,5 +1,5 @@
 /*
- * Copyright © 2011  Google, Inc.
+ * Copyright © 2018  Google, Inc.
  *
  *  This is part of HarfBuzz, a text shaping library.
  *
@@ -21,46 +21,42 @@
  * ON AN "AS IS" BASIS, AND THE COPYRIGHT HOLDER HAS NO OBLIGATION TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
  *
- * Google Author(s): Behdad Esfahbod
+ * Google Author(s): Garret Rieger, Roderick Sheeter
  */
 
-#ifndef HB_H_IN
-#error "Include <hb.h> instead."
-#endif
-
-#ifndef HB_VERSION_H
-#define HB_VERSION_H
-
-#include "hb-common.h"
-
-HB_BEGIN_DECLS
+#ifndef HB_SUBSET_PRIVATE_HH
+#define HB_SUBSET_PRIVATE_HH
 
 
-#define HB_VERSION_MAJOR 1
-#define HB_VERSION_MINOR 7
-#define HB_VERSION_MICRO 6
+#include "hb-private.hh"
 
-#define HB_VERSION_STRING "1.7.6"
+#include "hb-subset.h"
 
-#define HB_VERSION_ATLEAST(major,minor,micro) \
-	((major)*10000+(minor)*100+(micro) <= \
-	 HB_VERSION_MAJOR*10000+HB_VERSION_MINOR*100+HB_VERSION_MICRO)
+#include "hb-font-private.hh"
 
+typedef struct hb_subset_face_data_t hb_subset_face_data_t;
 
-HB_EXTERN void
-hb_version (unsigned int *major,
-	    unsigned int *minor,
-	    unsigned int *micro);
+struct hb_subset_input_t {
+  hb_object_header_t header;
+  ASSERT_POD ();
 
-HB_EXTERN const char *
-hb_version_string (void);
+  hb_set_t *unicodes;
+  hb_set_t *glyphs;
 
-HB_EXTERN hb_bool_t
-hb_version_atleast (unsigned int major,
-		    unsigned int minor,
-		    unsigned int micro);
+  hb_bool_t drop_hints;
+  /* TODO
+   *
+   * features
+   * lookups
+   * nameIDs
+   * ...
+   */
+};
 
+HB_INTERNAL hb_face_t *
+hb_subset_face_create (void);
 
-HB_END_DECLS
+HB_INTERNAL hb_bool_t
+hb_subset_face_add_table (hb_face_t *face, hb_tag_t tag, hb_blob_t *blob);
 
-#endif /* HB_VERSION_H */
+#endif /* HB_SUBSET_PRIVATE_HH */
