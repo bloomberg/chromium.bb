@@ -1159,6 +1159,9 @@ are declared in build/common.gypi.
       </message>
 
       <!-- Download Shelf-->
+      <message name="IDS_ACCNAME_DOWNLOADS_BAR" desc="Accessible name for the entire downloads bar, read to screen reader users when navigating into the grouping">
+        Downloads bar
+      </message>
       <if expr="use_titlecase">
         <message name="IDS_HIDE_DOWNLOADS" desc="Button label for screenreader users, for button at the corner of the download shelf that closes the download shelf (title case)">
           Close Downloads Bar

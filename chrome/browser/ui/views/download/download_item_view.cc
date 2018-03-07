@@ -494,6 +494,9 @@ void DownloadItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   } else {
     node_data->AddState(ax::mojom::State::kHaspopup);
   }
+  // Set the description to the empty string, otherwise the tooltip will be
+  // used, which is redundant with the accessible name.
+  node_data->SetDescription(base::string16());
 }
 
 void DownloadItemView::OnThemeChanged() {
