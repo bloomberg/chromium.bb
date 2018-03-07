@@ -69,69 +69,29 @@ void DecodeFailure(ImageMeta* image) {
   exit(3);
 }
 
-void DecodeImageData(SharedBuffer* data, size_t packet_size, ImageMeta* image) {
+void DecodeImageData(SharedBuffer* data, ImageMeta* image) {
   std::unique_ptr<ImageDecoder> decoder = ImageDecoder::Create(
       data, true, ImageDecoder::kAlphaPremultiplied, ColorBehavior::Ignore());
 
-  if (!packet_size) {
-    auto start = CurrentTimeTicks();
+  auto start = CurrentTimeTicks();
 
-    bool all_data_received = true;
-    decoder->SetData(data, all_data_received);
+  bool all_data_received = true;
+  decoder->SetData(data, all_data_received);
 
-    size_t frame_count = decoder->FrameCount();
-    for (size_t index = 0; index < frame_count; ++index) {
-      if (!decoder->DecodeFrameBufferAtIndex(index))
-        DecodeFailure(image);
-    }
-
-    image->time += (CurrentTimeTicks() - start).InSecondsF();
-    image->width = decoder->Size().Width();
-    image->height = decoder->Size().Height();
-    image->frames = frame_count;
-
-    if (!frame_count || decoder->Failed())
+  size_t frame_count = decoder->FrameCount();
+  for (size_t index = 0; index < frame_count; ++index) {
+    if (!decoder->DecodeFrameBufferAtIndex(index))
       DecodeFailure(image);
-    return;
   }
 
-  scoped_refptr<SharedBuffer> packet_data = SharedBuffer::Create();
-  size_t frame_count = 0;
-  size_t position = 0;
-  size_t index = 0;
+  image->time += (CurrentTimeTicks() - start).InSecondsF();
 
-  while (true) {
-    const char* packet;
-    size_t length = data->GetSomeData(packet, position);
-
-    length = std::min(length, packet_size);
-    packet_data->Append(packet, length);
-    position += length;
-
-    auto start = CurrentTimeTicks();
-
-    bool all_data_received = (position >= data->size());
-    decoder->SetData(packet_data.get(), all_data_received);
-
-    frame_count = decoder->FrameCount();
-    for (; index < frame_count; ++index) {
-      ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(index);
-      if (frame->GetStatus() != ImageFrame::kFrameComplete)
-        DecodeFailure(image);
-    }
-
-    image->time += (CurrentTimeTicks() - start).InSecondsF();
-
-    if (all_data_received || decoder->Failed())
-      break;
-  }
+  if (!frame_count || decoder->Failed())
+    DecodeFailure(image);
 
   image->width = decoder->Size().Width();
   image->height = decoder->Size().Height();
   image->frames = frame_count;
-
-  if (!frame_count || decoder->Failed())
-    DecodeFailure(image);
 }
 
 }  // namespace
@@ -141,11 +101,11 @@ int ImageDecodeBenchMain(int argc, char* argv[]) {
   const char* program = argv[0];
 
   if (argc < 2) {
-    fprintf(stderr, "Usage: %s file [iterations] [packetSize]\n", program);
+    fprintf(stderr, "Usage: %s file [iterations]\n", program);
     exit(1);
   }
 
-  // Control bench decode iterations and packet size.
+  // Control bench decode iterations.
 
   size_t decode_iterations = 1;
   if (argc >= 3) {
@@ -156,20 +116,6 @@ int ImageDecodeBenchMain(int argc, char* argv[]) {
               "Second argument should be number of iterations. "
               "The default is 1. You supplied %s\n",
               argv[2]);
-      exit(1);
-    }
-  }
-
-  size_t packet_size = 0;
-  if (argc >= 4) {
-    char* end = nullptr;
-    packet_size = strtol(argv[3], &end, 10);
-    if (*end != '\0') {
-      fprintf(stderr,
-              "Third argument should be packet size. Default is "
-              "0, meaning to decode the entire image in one packet. You "
-              "supplied %s\n",
-              argv[3]);
       exit(1);
     }
   }
@@ -195,14 +141,14 @@ int ImageDecodeBenchMain(int argc, char* argv[]) {
 
   ImageMeta image;
   image.name = argv[1];
-  DecodeImageData(data.get(), packet_size, &image);
+  DecodeImageData(data.get(), &image);
 
   // Image decode bench for decode_iterations.
 
   double total_time = 0.0;
   for (size_t i = 0; i < decode_iterations; ++i) {
     image.time = 0.0;
-    DecodeImageData(data.get(), packet_size, &image);
+    DecodeImageData(data.get(), &image);
     total_time += image.time;
   }
 
