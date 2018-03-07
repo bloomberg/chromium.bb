@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/media/single_client_video_capture_host.h"
+#include "components/mirroring/browser/single_client_video_capture_host.h"
 
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/web_contents_media_capture_id.h"
 #include "media/capture/video/video_capture_buffer_pool.h"
-#include "mojo/common/values_struct_traits.h"
 
-namespace media {
+using media::VideoFrameConsumerFeedbackObserver;
+
+namespace mirroring {
 
 namespace {
 
@@ -70,8 +71,8 @@ SingleClientVideoCaptureHost::~SingleClientVideoCaptureHost() {
 void SingleClientVideoCaptureHost::Start(
     int32_t device_id,
     int32_t session_id,
-    const media::VideoCaptureParams& params,
-    mojom::VideoCaptureObserverPtr observer) {
+    const VideoCaptureParams& params,
+    media::mojom::VideoCaptureObserverPtr observer) {
   DVLOG(1) << __func__;
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!observer_);
@@ -107,9 +108,9 @@ void SingleClientVideoCaptureHost::Stop(int32_t device_id) {
   for (const auto& entry : buffer_context_map_) {
     OnFinishedConsumingBuffer(
         entry.first,
-        VideoFrameConsumerFeedbackObserver::kNoUtilizationRecorded);
+        media::VideoFrameConsumerFeedbackObserver::kNoUtilizationRecorded);
   }
-  observer_->OnStateChanged(mojom::VideoCaptureState::ENDED);
+  observer_->OnStateChanged(media::mojom::VideoCaptureState::ENDED);
   observer_ = nullptr;
   weak_factory_.InvalidateWeakPtrs();
   launched_device_ = nullptr;
@@ -123,10 +124,9 @@ void SingleClientVideoCaptureHost::Pause(int32_t device_id) {
     launched_device_->MaybeSuspendDevice();
 }
 
-void SingleClientVideoCaptureHost::Resume(
-    int32_t device_id,
-    int32_t session_id,
-    const media::VideoCaptureParams& params) {
+void SingleClientVideoCaptureHost::Resume(int32_t device_id,
+                                          int32_t session_id,
+                                          const VideoCaptureParams& params) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (launched_device_)
     launched_device_->ResumeDevice();
@@ -154,7 +154,7 @@ void SingleClientVideoCaptureHost::GetDeviceSupportedFormats(
     GetDeviceSupportedFormatsCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   NOTIMPLEMENTED();
-  std::move(callback).Run(VideoCaptureFormats());
+  std::move(callback).Run(media::VideoCaptureFormats());
 }
 
 void SingleClientVideoCaptureHost::GetDeviceFormatsInUse(
@@ -163,7 +163,7 @@ void SingleClientVideoCaptureHost::GetDeviceFormatsInUse(
     GetDeviceFormatsInUseCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   NOTIMPLEMENTED();
-  std::move(callback).Run(VideoCaptureFormats());
+  std::move(callback).Run(media::VideoCaptureFormats());
 }
 
 void SingleClientVideoCaptureHost::OnNewBufferHandle(
@@ -172,7 +172,7 @@ void SingleClientVideoCaptureHost::OnNewBufferHandle(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(3) << __func__ << ": buffer_id=" << buffer_id;
   DCHECK(observer_);
-  DCHECK_NE(buffer_id, VideoCaptureBufferPool::kInvalidId);
+  DCHECK_NE(buffer_id, media::VideoCaptureBufferPool::kInvalidId);
   const auto insert_result =
       id_map_.emplace(std::make_pair(buffer_id, next_buffer_context_id_));
   DCHECK(insert_result.second);
@@ -185,7 +185,7 @@ void SingleClientVideoCaptureHost::OnFrameReadyInBuffer(
     int buffer_id,
     int frame_feedback_id,
     std::unique_ptr<Buffer::ScopedAccessPermission> buffer_read_permission,
-    mojom::VideoFrameInfoPtr frame_info) {
+    media::mojom::VideoFrameInfoPtr frame_info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(3) << __func__ << ": buffer_id=" << buffer_id;
   DCHECK(observer_);
@@ -223,7 +223,7 @@ void SingleClientVideoCaptureHost::OnError() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   VLOG(1) << __func__;
   if (observer_)
-    observer_->OnStateChanged(mojom::VideoCaptureState::FAILED);
+    observer_->OnStateChanged(media::mojom::VideoCaptureState::FAILED);
 }
 
 void SingleClientVideoCaptureHost::OnLog(const std::string& message) {
@@ -235,7 +235,7 @@ void SingleClientVideoCaptureHost::OnStarted() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(2) << __func__;
   DCHECK(observer_);
-  observer_->OnStateChanged(mojom::VideoCaptureState::STARTED);
+  observer_->OnStateChanged(media::mojom::VideoCaptureState::STARTED);
 }
 
 void SingleClientVideoCaptureHost::OnStartedUsingGpuDecode() {
@@ -279,8 +279,6 @@ void SingleClientVideoCaptureHost::OnFinishedConsumingBuffer(
           VideoFrameConsumerFeedbackObserver::kNoUtilizationRecorded) {
     feedback_observer->OnUtilizationReport(buffer_context_iter->second.first,
                                            consumer_resource_utilization);
-  } else {
-    DVLOG(1) << "Warning: Null VideoFrameConsumerFeedbackObserver.";
   }
   buffer_context_map_.erase(buffer_context_iter);
   const auto retired_iter = retired_buffers_.find(buffer_context_id);
@@ -290,4 +288,4 @@ void SingleClientVideoCaptureHost::OnFinishedConsumingBuffer(
   }
 }
 
-}  // namespace media
+}  // namespace mirroring

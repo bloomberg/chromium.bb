@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/media/cast_remoting_sender.h"
+#include "components/mirroring/browser/cast_remoting_sender.h"
 
 #include <algorithm>
 #include <map>
@@ -28,7 +28,9 @@ namespace {
 
 // Global map for looking-up CastRemotingSender instances by their
 // |rtp_stream_id|.
-using CastRemotingSenderMap = std::map<int32_t, cast::CastRemotingSender*>;
+// TODO(xjz): Remove this global look-up map when mirror service
+// refactoring is done. http://crbug.com/734672
+using CastRemotingSenderMap = std::map<int32_t, mirroring::CastRemotingSender*>;
 base::LazyInstance<CastRemotingSenderMap>::Leaky g_sender_map =
     LAZY_INSTANCE_INITIALIZER;
 
@@ -40,7 +42,7 @@ constexpr base::TimeDelta kReceiverProcessTime =
 
 }  // namespace
 
-namespace cast {
+namespace mirroring {
 
 class CastRemotingSender::RemotingRtcpClient final
     : public media::cast::RtcpObserver {
@@ -128,7 +130,7 @@ void CastRemotingSender::FindAndBind(
     int32_t rtp_stream_id,
     mojo::ScopedDataPipeConsumerHandle pipe,
     media::mojom::RemotingDataStreamSenderRequest request,
-    const base::Closure& error_callback) {
+    base::OnceClosure error_callback) {
   // CastRemotingSender lives entirely on the IO thread, so trampoline if
   // necessary.
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
@@ -139,7 +141,7 @@ void CastRemotingSender::FindAndBind(
             std::move(request),
             // Using media::BindToCurrentLoop() so the |error_callback|
             // is trampolined back to the original thread.
-            media::BindToCurrentLoop(error_callback)));
+            media::BindToCurrentLoop(std::move(error_callback))));
     return;
   }
 
@@ -150,7 +152,7 @@ void CastRemotingSender::FindAndBind(
   if (it == g_sender_map.Pointer()->end()) {
     DLOG(ERROR) << "Cannot find CastRemotingSender instance by ID: "
                 << rtp_stream_id;
-    error_callback.Run();
+    std::move(error_callback).Run();
     return;
   }
   CastRemotingSender* const sender = it->second;
@@ -159,24 +161,29 @@ void CastRemotingSender::FindAndBind(
   if (sender->binding_.is_bound()) {
     DLOG(ERROR) << "Attempt to bind to CastRemotingSender a second time (id="
                 << rtp_stream_id << ")!";
-    error_callback.Run();
+    std::move(error_callback).Run();
     return;
   }
 
   DCHECK(sender->error_callback_.is_null());
-  sender->error_callback_ = error_callback;
+  sender->error_callback_ = std::move(error_callback);
 
   sender->data_pipe_reader_ =
       std::make_unique<media::MojoDataPipeReader>(std::move(pipe));
   sender->binding_.Bind(std::move(request));
-  sender->binding_.set_connection_error_handler(sender->error_callback_);
+  sender->binding_.set_connection_error_handler(base::BindOnce(
+      [](CastRemotingSender* sender) {
+        if (!sender->error_callback_.is_null())
+          std::move(sender->error_callback_).Run();
+      },
+      sender));
 }
 
 void CastRemotingSender::OnReceivedRtt(base::TimeDelta round_trip_time) {
   DCHECK_GT(round_trip_time, base::TimeDelta());
   current_round_trip_time_ = round_trip_time;
   max_ack_delay_ = 2 * std::max(current_round_trip_time_, base::TimeDelta()) +
-      kReceiverProcessTime;
+                   kReceiverProcessTime;
   max_ack_delay_ = std::min(max_ack_delay_, kMaxAckDelay);
 }
 
@@ -396,7 +403,8 @@ void CastRemotingSender::OnFrameRead(bool success) {
 void CastRemotingSender::OnPipeError() {
   data_pipe_reader_.reset();
   binding_.Close();
-  error_callback_.Run();
+  if (!error_callback_.is_null())
+    std::move(error_callback_).Run();
 }
 
 void CastRemotingSender::TrySendFrame() {
@@ -494,11 +502,11 @@ void CastRemotingSender::TrySendFrame() {
 void CastRemotingSender::CancelInFlightData() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  // TODO(miu): The following code is something we want to do as an
-  // optimization. However, as-is, it's not quite correct. We can only cancel
-  // frames where no packets have actually hit the network yet. Said another
-  // way, we can only cancel frames the receiver has definitely not seen any
-  // part of (including kickstarting!). http://crbug.com/647423
+// TODO(miu): The following code is something we want to do as an
+// optimization. However, as-is, it's not quite correct. We can only cancel
+// frames where no packets have actually hit the network yet. Said another
+// way, we can only cancel frames the receiver has definitely not seen any
+// part of (including kickstarting!). http://crbug.com/647423
 #if 0
   if (latest_acked_frame_id_ < last_sent_frame_id_) {
     std::vector<media::cast::FrameId> frames_to_cancel;
@@ -561,4 +569,4 @@ void CastRemotingSender::SendRtcpReport() {
   ScheduleNextRtcpReport();
 }
 
-}  // namespace cast
+}  // namespace mirroring

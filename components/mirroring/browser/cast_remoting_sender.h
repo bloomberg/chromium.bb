@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_MEDIA_CAST_REMOTING_SENDER_H_
-#define CHROME_BROWSER_MEDIA_CAST_REMOTING_SENDER_H_
+#ifndef COMPONENTS_MIRRORING_BROWSER_CAST_REMOTING_SENDER_H_
+#define COMPONENTS_MIRRORING_BROWSER_CAST_REMOTING_SENDER_H_
 
 #include "base/callback_forward.h"
 #include "base/containers/queue.h"
@@ -19,12 +19,12 @@ namespace media {
 class MojoDataPipeReader;
 }  // namespace media
 
-namespace cast {
+namespace mirroring {
 
 // The callback that is used to send frame events to renderer process for
 // logging purpose.
 using FrameEventCallback =
-    base::Callback<void(const std::vector<media::cast::FrameEvent>&)>;
+    base::RepeatingCallback<void(const std::vector<media::cast::FrameEvent>&)>;
 
 // RTP sender for a single Cast Remoting RTP stream. The client calls Send() to
 // instruct the sender to read from a Mojo data pipe and transmit the data using
@@ -65,7 +65,7 @@ class CastRemotingSender : public media::mojom::RemotingDataStreamSender {
   static void FindAndBind(int32_t rtp_stream_id,
                           mojo::ScopedDataPipeConsumerHandle pipe,
                           media::mojom::RemotingDataStreamSenderRequest request,
-                          const base::Closure& error_callback);
+                          base::OnceClosure error_callback);
 
  private:
   // Friend class for unit tests.
@@ -155,7 +155,7 @@ class CastRemotingSender : public media::mojom::RemotingDataStreamSender {
   base::TickClock* clock_;
 
   // Callback that is run to notify when a fatal error occurs.
-  base::Closure error_callback_;
+  base::OnceClosure error_callback_;
 
   std::unique_ptr<media::MojoDataPipeReader> data_pipe_reader_;
 
@@ -222,6 +222,6 @@ class CastRemotingSender : public media::mojom::RemotingDataStreamSender {
   DISALLOW_COPY_AND_ASSIGN(CastRemotingSender);
 };
 
-}  // namespace cast
+}  // namespace mirroring
 
-#endif  // CHROME_BROWSER_MEDIA_CAST_REMOTING_SENDER_H_
+#endif  // COMPONENTS_MIRRORING_BROWSER_CAST_REMOTING_SENDER_H_
