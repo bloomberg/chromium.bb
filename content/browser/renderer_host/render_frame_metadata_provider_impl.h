@@ -25,13 +25,14 @@ class RenderFrameMetadataProviderImpl
     : public RenderFrameMetadataProvider,
       public mojom::RenderFrameMetadataObserverClient {
  public:
-  RenderFrameMetadataProviderImpl(
-      mojom::RenderFrameMetadataObserverClientRequest client_request,
-      mojom::RenderFrameMetadataObserverPtr observer);
+  RenderFrameMetadataProviderImpl();
   ~RenderFrameMetadataProviderImpl() override;
 
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
+
+  void Bind(mojom::RenderFrameMetadataObserverClientRequest client_request,
+            mojom::RenderFrameMetadataObserverPtr observer);
 
   // Notifies the renderer to begin sending a notification on all frame
   // submissions.
