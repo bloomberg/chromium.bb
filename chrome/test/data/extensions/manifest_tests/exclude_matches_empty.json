@@ -1,5 +1,6 @@
 {
   "name": "Empty Exclude Matches",
+  "manifest_version": 2,
   "version": "1",
   "content_scripts": [
     {
