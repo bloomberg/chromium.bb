@@ -54,21 +54,6 @@ class PLATFORM_EXPORT ShapeResultSpacing;
 class SimpleFontData;
 class TextRun;
 
-// There are two options for how OffsetForPosition behaves:
-// BreakGlyphs - only used if a text_run is provided, allows OffsetForPosition
-// to consider graphemes separations inside a glyph. It allows to return a point
-// inside a glyph (for example, in a ligature). If you have a text_run available
-// you probably want this on. The current exception for this is ellpsis space
-// calculation, where we don't want half glyph to be drawn.
-// IncludePartialGlyphs - decides what to do when the position hits more than
-// 50% of the glyph. If enabled, we count that glyph, if disable we don't.
-enum OffsetForPositionType {
-  FullGlyphsOnly,
-  BreakGlyphs,
-  IncludePartialGlyphs,
-  BreakAndIncludePartialGlyphs,
-};
-
 class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
  public:
   static scoped_refptr<ShapeResult> Create(const Font* font,
@@ -120,10 +105,7 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   unsigned NextSafeToBreakOffset(unsigned offset) const;
   unsigned PreviousSafeToBreakOffset(unsigned offset) const;
 
-  struct RunInfo;
-  unsigned OffsetForPosition(const TextRun*,
-                             float target_x,
-                             OffsetForPositionType) const;
+  unsigned OffsetForPosition(float target_x, bool include_partial_glyphs) const;
   float PositionForOffset(unsigned offset) const;
   LayoutUnit SnappedStartPositionForOffset(unsigned offset) const {
     return LayoutUnit::FromFloatFloor(PositionForOffset(offset));
@@ -148,6 +130,7 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   String ToString() const;
   void ToString(StringBuilder*) const;
 
+  struct RunInfo;
   RunInfo* InsertRunForTesting(unsigned start_index,
                                unsigned num_characters,
                                TextDirection,
@@ -187,11 +170,6 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   void InsertRun(std::unique_ptr<ShapeResult::RunInfo>);
   void InsertRunForIndex(unsigned start_character_index);
   void ReorderRtlRuns(unsigned run_size_before);
-  unsigned GetCharacterIndexForXPosition(const TextRun*,
-                                         float target_x,
-                                         bool include_partial_glyphs,
-                                         unsigned characters_so_far,
-                                         const ShapeResult::RunInfo*) const;
 
   float width_;
   FloatRect glyph_bounding_box_;

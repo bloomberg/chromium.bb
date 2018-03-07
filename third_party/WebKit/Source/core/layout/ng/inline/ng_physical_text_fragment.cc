@@ -90,8 +90,9 @@ unsigned NGPhysicalTextFragment::TextOffsetForPoint(
   DCHECK(TextShapeResult());
   const LayoutUnit& point_in_line_direction =
       Style().IsHorizontalWritingMode() ? point.left : point.top;
-  return TextShapeResult()->OffsetForPosition(
-             nullptr, point_in_line_direction.ToFloat(), IncludePartialGlyphs) +
+  const bool include_partial_glyphs = true;
+  return TextShapeResult()->OffsetForPosition(point_in_line_direction.ToFloat(),
+                                              include_partial_glyphs) +
          StartOffset();
 }
 

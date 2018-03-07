@@ -866,7 +866,7 @@ ALWAYS_INLINE bool BreakingContext::RewindToMidWordBreak(
   x_pos_to_break += LayoutUnit::Epsilon();
   if (run.Rtl())
     x_pos_to_break = word_measurement.width - x_pos_to_break;
-  len = font.OffsetForPosition(run, x_pos_to_break, BreakGlyphs);
+  len = font.OffsetForPosition(run, x_pos_to_break, false);
   int end = start + len;
   if (len) {
     end = break_iterator.PreviousBreakOpportunity(end, start);
@@ -907,7 +907,7 @@ ALWAYS_INLINE bool BreakingContext::Hyphenate(
   run.SetTabSize(!collapse_white_space_, style.GetTabSize());
   run.SetXPos(width_.CurrentWidth());
   unsigned max_prefix_length =
-      font.OffsetForPosition(run, max_prefix_width, BreakGlyphs);
+      font.OffsetForPosition(run, max_prefix_width, false);
   if (max_prefix_length < Hyphenation::kMinimumPrefixLength)
     return false;
 

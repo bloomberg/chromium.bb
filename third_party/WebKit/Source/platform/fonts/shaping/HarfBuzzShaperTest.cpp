@@ -492,15 +492,14 @@ TEST_F(HarfBuzzShaperTest, EmojiZWJSequence) {
 
 // A Value-Parameterized Test class to test OffsetForPosition() with
 // |include_partial_glyphs| parameter.
-class IncludePartialGlyphsTest : public HarfBuzzShaperTest,
-                                 public ::testing::WithParamInterface<bool> {};
+class IncludePartialGlyphs : public HarfBuzzShaperTest,
+                             public ::testing::WithParamInterface<bool> {};
 
 INSTANTIATE_TEST_CASE_P(OffsetForPositionTest,
-                        IncludePartialGlyphsTest,
+                        IncludePartialGlyphs,
                         ::testing::Bool());
 
-TEST_P(IncludePartialGlyphsTest,
-       OffsetForPositionMatchesPositionForOffsetLatin) {
+TEST_P(IncludePartialGlyphs, OffsetForPositionMatchesPositionForOffsetLatin) {
   String string = To16Bit("Hello World!", 12);
   TextDirection direction = TextDirection::kLtr;
 
@@ -508,39 +507,35 @@ TEST_P(IncludePartialGlyphsTest,
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
 
   bool include_partial_glyphs = GetParam();
-  OffsetForPositionType type =
-      include_partial_glyphs ? IncludePartialGlyphs : FullGlyphsOnly;
-
-  EXPECT_EQ(0u, result->OffsetForPosition(nullptr, result->PositionForOffset(0),
-                                          type));
-  EXPECT_EQ(1u, result->OffsetForPosition(nullptr, result->PositionForOffset(1),
-                                          type));
-  EXPECT_EQ(2u, result->OffsetForPosition(nullptr, result->PositionForOffset(2),
-                                          type));
-  EXPECT_EQ(3u, result->OffsetForPosition(nullptr, result->PositionForOffset(3),
-                                          type));
-  EXPECT_EQ(4u, result->OffsetForPosition(nullptr, result->PositionForOffset(4),
-                                          type));
-  EXPECT_EQ(5u, result->OffsetForPosition(nullptr, result->PositionForOffset(5),
-                                          type));
-  EXPECT_EQ(6u, result->OffsetForPosition(nullptr, result->PositionForOffset(6),
-                                          type));
-  EXPECT_EQ(7u, result->OffsetForPosition(nullptr, result->PositionForOffset(7),
-                                          type));
-  EXPECT_EQ(8u, result->OffsetForPosition(nullptr, result->PositionForOffset(8),
-                                          type));
-  EXPECT_EQ(9u, result->OffsetForPosition(nullptr, result->PositionForOffset(9),
-                                          type));
-  EXPECT_EQ(10u, result->OffsetForPosition(
-                     nullptr, result->PositionForOffset(10), type));
-  EXPECT_EQ(11u, result->OffsetForPosition(
-                     nullptr, result->PositionForOffset(11), type));
-  EXPECT_EQ(12u, result->OffsetForPosition(
-                     nullptr, result->PositionForOffset(12), type));
+  EXPECT_EQ(0u, result->OffsetForPosition(result->PositionForOffset(0),
+                                          include_partial_glyphs));
+  EXPECT_EQ(1u, result->OffsetForPosition(result->PositionForOffset(1),
+                                          include_partial_glyphs));
+  EXPECT_EQ(2u, result->OffsetForPosition(result->PositionForOffset(2),
+                                          include_partial_glyphs));
+  EXPECT_EQ(3u, result->OffsetForPosition(result->PositionForOffset(3),
+                                          include_partial_glyphs));
+  EXPECT_EQ(4u, result->OffsetForPosition(result->PositionForOffset(4),
+                                          include_partial_glyphs));
+  EXPECT_EQ(5u, result->OffsetForPosition(result->PositionForOffset(5),
+                                          include_partial_glyphs));
+  EXPECT_EQ(6u, result->OffsetForPosition(result->PositionForOffset(6),
+                                          include_partial_glyphs));
+  EXPECT_EQ(7u, result->OffsetForPosition(result->PositionForOffset(7),
+                                          include_partial_glyphs));
+  EXPECT_EQ(8u, result->OffsetForPosition(result->PositionForOffset(8),
+                                          include_partial_glyphs));
+  EXPECT_EQ(9u, result->OffsetForPosition(result->PositionForOffset(9),
+                                          include_partial_glyphs));
+  EXPECT_EQ(10u, result->OffsetForPosition(result->PositionForOffset(10),
+                                           include_partial_glyphs));
+  EXPECT_EQ(11u, result->OffsetForPosition(result->PositionForOffset(11),
+                                           include_partial_glyphs));
+  EXPECT_EQ(12u, result->OffsetForPosition(result->PositionForOffset(12),
+                                           include_partial_glyphs));
 }
 
-TEST_P(IncludePartialGlyphsTest,
-       OffsetForPositionMatchesPositionForOffsetArabic) {
+TEST_P(IncludePartialGlyphs, OffsetForPositionMatchesPositionForOffsetArabic) {
   UChar arabic_string[] = {0x628, 0x64A, 0x629};
   TextDirection direction = TextDirection::kRtl;
 
@@ -548,43 +543,36 @@ TEST_P(IncludePartialGlyphsTest,
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
 
   bool include_partial_glyphs = GetParam();
-  OffsetForPositionType type =
-      include_partial_glyphs ? IncludePartialGlyphs : FullGlyphsOnly;
-
-  EXPECT_EQ(0u, result->OffsetForPosition(nullptr, result->PositionForOffset(0),
-                                          type));
-  EXPECT_EQ(1u, result->OffsetForPosition(nullptr, result->PositionForOffset(1),
-                                          type));
-  EXPECT_EQ(2u, result->OffsetForPosition(nullptr, result->PositionForOffset(2),
-                                          type));
-  EXPECT_EQ(3u, result->OffsetForPosition(nullptr, result->PositionForOffset(3),
-                                          type));
+  EXPECT_EQ(0u, result->OffsetForPosition(result->PositionForOffset(0),
+                                          include_partial_glyphs));
+  EXPECT_EQ(1u, result->OffsetForPosition(result->PositionForOffset(1),
+                                          include_partial_glyphs));
+  EXPECT_EQ(2u, result->OffsetForPosition(result->PositionForOffset(2),
+                                          include_partial_glyphs));
+  EXPECT_EQ(3u, result->OffsetForPosition(result->PositionForOffset(3),
+                                          include_partial_glyphs));
 }
 
-TEST_P(IncludePartialGlyphsTest,
-       OffsetForPositionMatchesPositionForOffsetMixed) {
+TEST_P(IncludePartialGlyphs, OffsetForPositionMatchesPositionForOffsetMixed) {
   UChar mixed_string[] = {0x628, 0x64A, 0x629, 0xE20, 0x65E5, 0x62};
   HarfBuzzShaper shaper(mixed_string, 6);
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, TextDirection::kLtr);
 
   bool include_partial_glyphs = GetParam();
-  OffsetForPositionType type =
-      include_partial_glyphs ? IncludePartialGlyphs : FullGlyphsOnly;
-
-  EXPECT_EQ(0u, result->OffsetForPosition(nullptr, result->PositionForOffset(0),
-                                          type));
-  EXPECT_EQ(1u, result->OffsetForPosition(nullptr, result->PositionForOffset(1),
-                                          type));
-  EXPECT_EQ(2u, result->OffsetForPosition(nullptr, result->PositionForOffset(2),
-                                          type));
-  EXPECT_EQ(3u, result->OffsetForPosition(nullptr, result->PositionForOffset(3),
-                                          type));
-  EXPECT_EQ(4u, result->OffsetForPosition(nullptr, result->PositionForOffset(4),
-                                          type));
-  EXPECT_EQ(5u, result->OffsetForPosition(nullptr, result->PositionForOffset(5),
-                                          type));
-  EXPECT_EQ(6u, result->OffsetForPosition(nullptr, result->PositionForOffset(6),
-                                          type));
+  EXPECT_EQ(0u, result->OffsetForPosition(result->PositionForOffset(0),
+                                          include_partial_glyphs));
+  EXPECT_EQ(1u, result->OffsetForPosition(result->PositionForOffset(1),
+                                          include_partial_glyphs));
+  EXPECT_EQ(2u, result->OffsetForPosition(result->PositionForOffset(2),
+                                          include_partial_glyphs));
+  EXPECT_EQ(3u, result->OffsetForPosition(result->PositionForOffset(3),
+                                          include_partial_glyphs));
+  EXPECT_EQ(4u, result->OffsetForPosition(result->PositionForOffset(4),
+                                          include_partial_glyphs));
+  EXPECT_EQ(5u, result->OffsetForPosition(result->PositionForOffset(5),
+                                          include_partial_glyphs));
+  EXPECT_EQ(6u, result->OffsetForPosition(result->PositionForOffset(6),
+                                          include_partial_glyphs));
 }
 
 TEST_F(HarfBuzzShaperTest, PositionForOffsetMissingGlyph) {

@@ -41,7 +41,6 @@
 namespace blink {
 
 class SimpleFontData;
-class TextRun;
 
 struct HarfBuzzRunGlyphData {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
@@ -88,13 +87,9 @@ struct ShapeResult::RunInfo {
   CanvasRotationInVertical CanvasRotation() const { return canvas_rotation_; }
   unsigned NextSafeToBreakOffset(unsigned) const;
   unsigned PreviousSafeToBreakOffset(unsigned) const;
-  float XPositionForVisualOffset(const TextRun*,
-                                 unsigned,
-                                 AdjustMidCluster) const;
-  float XPositionForOffset(const TextRun*, unsigned, AdjustMidCluster) const;
-  int CharacterIndexForXPosition(const TextRun*,
-                                 float,
-                                 bool include_partial_glyphs) const;
+  float XPositionForVisualOffset(unsigned, AdjustMidCluster) const;
+  float XPositionForOffset(unsigned, AdjustMidCluster) const;
+  int CharacterIndexForXPosition(float, bool include_partial_glyphs) const;
   void SetGlyphAndPositions(unsigned index,
                             uint16_t glyph_id,
                             float advance,
@@ -214,47 +209,6 @@ struct ShapeResult::RunInfo {
           // Glyph in range; apply functor.
           return func(glyph_data, total_advance, character_index);
         });
-  }
-
-  void ExpandRangeToIncludePartialGlyphs(int& from, int& to) const {
-    int start = 0;
-    int end = num_characters_;
-    if (!Rtl()) {
-      for (unsigned i = 0; i < glyph_data_.size(); ++i) {
-        int index = glyph_data_[i].character_index;
-        if (start == index)
-          continue;
-
-        end = index;
-
-        if (end > from && start < to) {
-          from = std::min(from, start);
-          to = std::max(to, end);
-        }
-
-        start = index;
-        end = num_characters_;
-      }
-    } else {
-      start = end = num_characters_;
-      for (unsigned i = 0; i < glyph_data_.size(); ++i) {
-        int index = glyph_data_[i].character_index;
-        if (start == index)
-          continue;
-
-        if (end > from && start < to) {
-          from = std::min(from, start);
-          to = std::max(to, end);
-        }
-
-        end = start;
-        start = index;
-      }
-    }
-    if (end > from && start < to) {
-      from = std::min(from, start);
-      to = std::max(to, end);
-    }
   }
 
   scoped_refptr<SimpleFontData> font_data_;

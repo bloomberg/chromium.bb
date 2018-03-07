@@ -52,7 +52,9 @@ class PLATFORM_EXPORT CachingWordShaper final {
   float Width(const TextRun&,
               HashSet<const SimpleFontData*>* fallback_fonts,
               FloatRect* glyph_bounds);
-  int OffsetForPosition(const TextRun&, float target_x, OffsetForPositionType);
+  int OffsetForPosition(const TextRun&,
+                        float target_x,
+                        bool include_partial_glyphs);
 
   void FillResultBuffer(const TextRunPaintInfo&, ShapeResultBuffer*);
   CharacterRange GetCharacterRange(const TextRun&, unsigned from, unsigned to);

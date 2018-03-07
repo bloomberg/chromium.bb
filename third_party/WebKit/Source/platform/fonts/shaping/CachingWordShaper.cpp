@@ -81,11 +81,11 @@ static inline float ShapeResultsForRun(ShapeCache* shape_cache,
 
 int CachingWordShaper::OffsetForPosition(const TextRun& run,
                                          float target_x,
-                                         OffsetForPositionType type) {
+                                         bool include_partial_glyphs) {
   ShapeResultBuffer buffer;
   ShapeResultsForRun(GetShapeCache(), &font_, run, &buffer);
 
-  return buffer.OffsetForPosition(run, target_x, type);
+  return buffer.OffsetForPosition(run, target_x, include_partial_glyphs);
 }
 
 void CachingWordShaper::FillResultBuffer(const TextRunPaintInfo& run_info,
@@ -100,7 +100,7 @@ CharacterRange CachingWordShaper::GetCharacterRange(const TextRun& run,
   ShapeResultBuffer buffer;
   float total_width = ShapeResultsForRun(GetShapeCache(), &font_, run, &buffer);
 
-  return buffer.GetCharacterRange(run, total_width, from, to);
+  return buffer.GetCharacterRange(run.Direction(), total_width, from, to);
 }
 
 Vector<CharacterRange> CachingWordShaper::IndividualCharacterRanges(
