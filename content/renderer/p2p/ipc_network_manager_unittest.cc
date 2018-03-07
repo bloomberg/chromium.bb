@@ -104,9 +104,11 @@ TEST_F(IpcNetworkManagerTest, TestMergeNetworkList) {
   // IPs should be in the same order as the list passed into
   // OnNetworkListChanged.
   EXPECT_TRUE(rtc::IPFromString(kIPv6PublicAddrString1, &ip_address));
-  EXPECT_EQ((*network_with_two_ips)->GetIPs()[0], ip_address);
+  EXPECT_EQ((*network_with_two_ips)->GetIPs()[0],
+            rtc::InterfaceAddress(ip_address));
   EXPECT_TRUE(rtc::IPFromString(kIPv6PublicAddrString2, &ip_address));
-  EXPECT_EQ((*network_with_two_ips)->GetIPs()[1], ip_address);
+  EXPECT_EQ((*network_with_two_ips)->GetIPs()[1],
+            rtc::InterfaceAddress(ip_address));
   // Verify the network with prefix length of 48 has 1 IP address.
   auto network_with_one_ip = std::find_if(
       networks.begin(), networks.end(),
@@ -114,7 +116,8 @@ TEST_F(IpcNetworkManagerTest, TestMergeNetworkList) {
   ASSERT_NE(networks.end(), network_with_one_ip);
   EXPECT_EQ(1uL, (*network_with_one_ip)->GetIPs().size());
   EXPECT_TRUE(rtc::IPFromString(kIPv6PublicAddrString2, &ip_address));
-  EXPECT_EQ((*network_with_one_ip)->GetIPs()[0], ip_address);
+  EXPECT_EQ((*network_with_one_ip)->GetIPs()[0],
+            rtc::InterfaceAddress(ip_address));
 }
 
 // Test that IpcNetworkManager will guess a network type from the interface
