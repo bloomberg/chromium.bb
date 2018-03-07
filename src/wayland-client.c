@@ -1359,7 +1359,7 @@ queue_event(struct wl_display *display, int len)
 	if (!proxy || wl_object_is_zombie(&display->objects, id)) {
 		struct wl_zombie *zombie = wl_map_lookup(&display->objects, id);
 
-		if (zombie && zombie->fd_count[opcode]) {
+		if (zombie && zombie->fd_count[opcode])
 			wl_connection_close_fds_in(display->connection,
 						   zombie->fd_count[opcode]);
 
