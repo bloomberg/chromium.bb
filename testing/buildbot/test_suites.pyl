@@ -1077,6 +1077,10 @@
     'services_unittests': {},
   },
 
+  'monochrome_apk_checker_isolated_script': {
+    'monochrome_apk_checker': {},
+  },
+
   'linux_chromeos_rel_mus_specific_gtests': {
     'mus_ash_unittests': {
       'args': [
@@ -2255,6 +2259,11 @@
     'viz_gtests',
     'vr_platform_specific_non_clang_win_chromium_gtests',
     'win_specific_chromium_gtests',
+  ],
+
+  'marshmallow_isolated_scripts': [
+    'monochrome_apk_checker_isolated_script',
+    'telemetry_perf_unittests_isolated_scripts',
   ],
 
   'mojo_android_gtests': [

@@ -818,6 +818,21 @@
     "label": "//mojo/android:mojo_test_apk",
     "type": "console_test_launcher",
   },
+  "monochrome_apk_checker": {
+    "label": "//chrome/android/monochrome:monochrome_apk_checker",
+    "type": "script",
+    "script": "//chrome/android/monochrome/scripts/monochrome_apk_checker_wrapper.py",
+    "args": [
+      "--script",
+      "../../chrome/android/monochrome/scripts/monochrome_apk_checker.py",
+      "--chrome-apk",
+      "apks/ChromeModernPublic.apk",
+      "--system-webview-apk",
+      "apks/SystemWebView.apk",
+      "--monochrome-apk",
+      "apks/MonochromePublic.apk",
+    ],
+  },
   "monochrome_static_initializers": {
     "label": "//chrome/android:monochrome_static_initializers",
     "type": "additional_compile_target",
