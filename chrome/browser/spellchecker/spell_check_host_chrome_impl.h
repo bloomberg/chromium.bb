@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SPELLCHECKER_SPELL_CHECK_HOST_CHROME_IMPL_H_
 #define CHROME_BROWSER_SPELLCHECKER_SPELL_CHECK_HOST_CHROME_IMPL_H_
 
+#include "base/containers/unique_ptr_adapters.h"
 #include "build/build_config.h"
 #include "components/spellcheck/browser/spell_check_host_impl.h"
 #include "components/spellcheck/browser/spelling_service_client.h"
@@ -12,6 +13,7 @@
 
 class SpellcheckCustomDictionary;
 class SpellcheckService;
+class SpellingRequest;
 
 struct SpellCheckResult;
 
@@ -65,6 +67,9 @@ class SpellCheckHostChromeImpl : public SpellCheckHostImpl {
                         int route_id,
                         RequestTextCheckCallback callback) override;
 
+  // Clears a finished request from |requests_|. Exposed to SpellingRequest.
+  void OnRequestFinished(SpellingRequest* request);
+
   // Exposed to tests only.
   static void CombineResultsForTesting(
       std::vector<SpellCheckResult>* remote_results,
@@ -73,6 +78,10 @@ class SpellCheckHostChromeImpl : public SpellCheckHostImpl {
   int ToDocumentTag(int route_id);
   void RetireDocumentTag(int route_id);
   std::map<int, int> tag_map_;
+
+  // All pending requests.
+  std::set<std::unique_ptr<SpellingRequest>, base::UniquePtrComparator>
+      requests_;
 #endif  // defined(OS_MACOSX)
 
   // Returns the SpellcheckService of our |render_process_id_|. The return
