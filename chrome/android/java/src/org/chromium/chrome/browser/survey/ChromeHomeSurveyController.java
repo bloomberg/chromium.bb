@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.survey;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -110,14 +109,12 @@ public class ChromeHomeSurveyController implements InfoBarContainer.InfoBarAnima
 
     /**
      * Checks if the conditions to show the survey are met and starts the process if they are.
-     * @param context The current Android {@link Context}.
      * @param tabModelSelector The tab model selector to access the tab on which the survey will be
      *                         shown.
      */
-    public static void initialize(Context context, TabModelSelector tabModelSelector) {
+    public static void initialize(TabModelSelector tabModelSelector) {
         assert tabModelSelector != null;
-        assert context != null;
-        new StartDownloadIfEligibleTask(new ChromeHomeSurveyController(), context, tabModelSelector)
+        new StartDownloadIfEligibleTask(new ChromeHomeSurveyController(), tabModelSelector)
                 .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
@@ -475,22 +472,21 @@ public class ChromeHomeSurveyController implements InfoBarContainer.InfoBarAnima
     }
 
     static class StartDownloadIfEligibleTask extends AsyncTask<Void, Void, Boolean> {
-        final ChromeHomeSurveyController mController;
-        @SuppressLint("StaticFieldLeak") // TODO(crbug.com/807728): Remove and fix.
-        final Context mContext;
+        ChromeHomeSurveyController mController;
         final TabModelSelector mSelector;
 
-        public StartDownloadIfEligibleTask(ChromeHomeSurveyController controller, Context context,
-                TabModelSelector tabModelSelector) {
+        public StartDownloadIfEligibleTask(
+                ChromeHomeSurveyController controller, TabModelSelector tabModelSelector) {
             mController = controller;
-            mContext = context;
             mSelector = tabModelSelector;
         }
 
         @Override
         protected Boolean doInBackground(Void... params) {
             if (!mController.doesUserQualifyForSurvey()) return false;
-            if (SurveyController.getInstance().doesSurveyExist(mController.getSiteId(), mContext)) {
+
+            if (SurveyController.getInstance().doesSurveyExist(
+                        mController.getSiteId(), ContextUtils.getApplicationContext())) {
                 return true;
             } else {
                 boolean forceSurveyOn = false;
@@ -507,7 +503,7 @@ public class ChromeHomeSurveyController implements InfoBarContainer.InfoBarAnima
 
         @Override
         protected void onPostExecute(Boolean result) {
-            if (result) mController.startDownload(mContext, mSelector);
+            if (result) mController.startDownload(ContextUtils.getApplicationContext(), mSelector);
         }
     }
 
