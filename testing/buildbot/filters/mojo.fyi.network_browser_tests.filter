@@ -37,7 +37,6 @@
 -PKPModelClientTest.PKPEnforced
 -PlatformAppBrowserTest.AppWindowAdjustBoundsToBeVisibleOnScreen
 -PlatformAppBrowserTest.CreateAndCloseAppWindow
--PlatformAppBrowserTest.Isolation
 -PlatformAppDevToolsBrowserTest.ReOpenedWithID
 -PlatformAppDevToolsBrowserTest.ReOpenedWithURL
 -PolicyTest.DefaultCookiesSetting
