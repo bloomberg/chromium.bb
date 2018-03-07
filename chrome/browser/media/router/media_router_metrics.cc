@@ -54,7 +54,7 @@ const char MediaRouterMetrics::kHistogramMediaRouterFileFormat[] =
 const char MediaRouterMetrics::kHistogramMediaRouterFileSize[] =
     "MediaRouter.Source.LocalFileSize";
 const char MediaRouterMetrics::kHistogramMediaSinkType[] =
-    "MediaRouter.MediaSink.SelectedType";
+    "MediaRouter.Sink.SelectedType";
 const char MediaRouterMetrics::kHistogramPresentationUrlType[] =
     "MediaRouter.PresentationRequest.AvailabilityUrlType";
 const char MediaRouterMetrics::kHistogramRouteCreationOutcome[] =
