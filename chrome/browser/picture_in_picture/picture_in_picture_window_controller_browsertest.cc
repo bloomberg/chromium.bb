@@ -5,8 +5,8 @@
 #include "chrome/browser/picture_in_picture/picture_in_picture_window_controller.h"
 
 #include "build/build_config.h"
+#include "chrome/browser/overlay/overlay_window.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/overlay/overlay_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/web_contents.h"

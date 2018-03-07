@@ -4,8 +4,8 @@
 
 #include "chrome/browser/picture_in_picture/picture_in_picture_window_controller.h"
 
-#include "chrome/browser/ui/overlay/overlay_surface_embedder.h"
-#include "chrome/browser/ui/overlay/overlay_window.h"
+#include "chrome/browser/overlay/overlay_surface_embedder.h"
+#include "chrome/browser/overlay/overlay_window.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "content/public/browser/web_contents.h"
 

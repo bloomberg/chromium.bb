@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_OVERLAY_OVERLAY_SURFACE_EMBEDDER_H_
-#define CHROME_BROWSER_UI_OVERLAY_OVERLAY_SURFACE_EMBEDDER_H_
+#ifndef CHROME_BROWSER_OVERLAY_OVERLAY_SURFACE_EMBEDDER_H_
+#define CHROME_BROWSER_OVERLAY_OVERLAY_SURFACE_EMBEDDER_H_
 
 #include <memory>
 
-#include "chrome/browser/ui/overlay/overlay_window.h"
+#include "chrome/browser/overlay/overlay_window.h"
 
 namespace viz {
 class SurfaceId;
@@ -33,4 +33,4 @@ class OverlaySurfaceEmbedder {
   DISALLOW_COPY_AND_ASSIGN(OverlaySurfaceEmbedder);
 };
 
-#endif  // CHROME_BROWSER_UI_OVERLAY_OVERLAY_SURFACE_EMBEDDER_H_
+#endif  // CHROME_BROWSER_OVERLAY_OVERLAY_SURFACE_EMBEDDER_H_

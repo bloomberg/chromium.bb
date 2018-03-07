@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_OVERLAY_OVERLAY_WINDOW_VIEWS_H_
 #define CHROME_BROWSER_UI_VIEWS_OVERLAY_OVERLAY_WINDOW_VIEWS_H_
 
-#include "chrome/browser/ui/overlay/overlay_window.h"
+#include "chrome/browser/overlay/overlay_window.h"
 
 namespace views {
 class Widget;
