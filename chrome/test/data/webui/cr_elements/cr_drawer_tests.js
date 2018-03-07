@@ -7,49 +7,57 @@ suite('cr-drawer', function() {
     PolymerTest.clearBody();
   });
 
-  let createDrawer = (align) => {
+  function createDrawer(align) {
     document.body.innerHTML = `
-      <dialog is="cr-drawer" id="drawer" align="${align}">
+      <cr-drawer id="drawer" align="${align}">
         <div class="drawer-header">Test</div>
         <div class="drawer-content">Test content</div>
-      </dialog>
+      </cr-drawer>
     `;
     Polymer.dom.flush();
     return document.getElementById('drawer');
-  };
+  }
 
-  test('open and close', function(done) {
-    let drawer = createDrawer();
-    drawer.openDrawer('ltr');
-    assertTrue(drawer.open);
+  test('open and close', function() {
+    const drawer = createDrawer('ltr');
+    drawer.openDrawer();
 
-    listenOnce(drawer, 'transitionend', function() {
-      listenOnce(drawer, 'close', function() {
-        assertFalse(drawer.open);
-        done();
-      });
+    return test_util.eventToPromise('transitionend', drawer).then(() => {
+      assertTrue(drawer.open);
 
       // Clicking the content does not close the drawer.
       MockInteractions.tap(document.querySelector('.drawer-content'));
       assertFalse(drawer.classList.contains('closing'));
 
-      drawer.dispatchEvent(new MouseEvent('click', {
+      const whenClosed = test_util.eventToPromise('close', drawer);
+      drawer.$.dialog.dispatchEvent(new MouseEvent('click', {
         bubbles: true,
         cancelable: true,
         clientX: 300,  // Must be larger than the drawer width (256px).
         clientY: 300,
       }));
 
-      // Clicking outside the drawer does close it.
-      assertTrue(drawer.classList.contains('closing'));
+      return whenClosed;
+    }).then(() => {
+      assertFalse(drawer.open);
     });
   });
 
   test('align=ltr', function() {
-    assertNotEquals(getComputedStyle(createDrawer('ltr')).left, 'auto');
+    createDrawer('ltr').openDrawer();
+    return test_util.eventToPromise('transitionend', drawer).then(() => {
+      const rect = drawer.$.dialog.getBoundingClientRect();
+      assertEquals(0, rect.left);
+      assertNotEquals(0, rect.right);
+    });
   });
 
   test('align=rtl', function() {
-    assertEquals(getComputedStyle(createDrawer('rtl')).left, 'auto');
+    createDrawer('rtl').openDrawer();
+    return test_util.eventToPromise('transitionend', drawer).then(() => {
+      const rect = drawer.$.dialog.getBoundingClientRect();
+      assertNotEquals(0, rect.left);
+      assertEquals(window.innerWidth, rect.right);
+    });
   });
 });

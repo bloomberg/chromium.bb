@@ -1,10 +1,11 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
+
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 
 <dom-module id="cr-drawer">
   <template>
     <style>
-      :host {
+      :host dialog {
         --drawer-width: 256px;
         --transition-timing: 200ms ease;
         background-color: #fff;
@@ -20,27 +21,27 @@
         width: var(--drawer-width);
       }
 
-      :host,
+      :host dialog,
       #container {
         height: 100%;
         word-break: break-word;
       }
 
-      :host(.opening) {
+      :host(.opening) dialog {
         left: 0;
       }
 
-      :host([align=rtl]) {
+      :host([align=rtl]) dialog {
         left: auto;
         right: calc(-1 * var(--drawer-width));
         transition: right var(--transition-timing);
       }
 
-      :host(.opening[align=rtl]) {
+      :host(.opening[align=rtl]) dialog {
         right: 0;
       }
 
-      :host::backdrop {
+      :host dialog::backdrop {
         background: rgba(0, 0, 0, 0.5);
         bottom: 0;
         left: 0;
@@ -51,7 +52,7 @@
         transition: opacity var(--transition-timing);
       }
 
-      :host(.opening)::backdrop {
+      :host(.opening) dialog::backdrop {
         opacity: 1;
       }
 
@@ -70,10 +71,12 @@
         overflow: auto;
       }
     </style>
-    <div id="container" on-tap="onContainerTap_">
-      <div class="drawer-header" tabindex="-1">[[heading]]</div>
-      <slot></slot>
-    </div>
+    <dialog id="dialog" on-cancel="onDialogCancel_" on-tap="onDialogTap_">
+      <div id="container" on-tap="onContainerTap_">
+        <div class="drawer-header" tabindex="-1">[[heading]]</div>
+        <slot></slot>
+      </div>
+    </dialog>
   </template>
 </dom-module>
 <script src="cr_drawer.js"></script>

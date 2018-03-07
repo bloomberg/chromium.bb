@@ -129,8 +129,10 @@ CrElementsDrawerTest.prototype = {
   browsePreload: 'chrome://resources/cr_elements/cr_drawer/cr_drawer.html',
 
   /** @override */
-  extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat(
-      ['cr_drawer_tests.js', ROOT_PATH + 'ui/webui/resources/js/util.js']),
+  extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
+    '../settings/test_util.js',
+    'cr_drawer_tests.js',
+  ]),
 };
 
 TEST_F('CrElementsDrawerTest', 'All', function() {
