@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #import "chrome/browser/ui/cocoa/download/download_shelf_controller.h"
 #include "chrome/browser/ui/cocoa/test/cocoa_profile_test.h"
+#include "chrome/common/chrome_features.h"
 #include "content/public/test/mock_download_item.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -47,6 +48,8 @@ class DownloadItemControllerTest : public CocoaProfileTest {
     download_item_.reset(new ::testing::NiceMock<content::MockDownloadItem>);
     ON_CALL(*download_item_, GetState())
         .WillByDefault(Return(download::DownloadItem::IN_PROGRESS));
+    ON_CALL(*download_item_, GetFullPath())
+        .WillByDefault(ReturnRefOfCopy(base::FilePath()));
     ON_CALL(*download_item_, GetFileNameToReportUser())
         .WillByDefault(Return(base::FilePath()));
     ON_CALL(*download_item_, GetDangerType())
@@ -96,11 +99,19 @@ TEST_F(DownloadItemControllerTest, RemovesSelfWhenDownloadIsDestroyed) {
 }
 
 TEST_F(DownloadItemControllerTest, NormalDownload) {
+  // In MD, this is handled by the MDDownloadItemView.
+  if (base::FeatureList::IsEnabled(features::kMacMaterialDesignDownloadShelf))
+    return;
+
   [item_controller_ verifyProgressViewIsVisible:true];
   [item_controller_ verifyDangerousDownloadPromptIsVisible:false];
 }
 
 TEST_F(DownloadItemControllerTest, DangerousDownload) {
+  // In MD, this is handled by the MDDownloadItemView.
+  if (base::FeatureList::IsEnabled(features::kMacMaterialDesignDownloadShelf))
+    return;
+
   ON_CALL(*download_item_, GetDangerType())
       .WillByDefault(Return(download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE));
   ON_CALL(*download_item_, IsDangerous()).WillByDefault(Return(true));
@@ -112,6 +123,10 @@ TEST_F(DownloadItemControllerTest, DangerousDownload) {
 }
 
 TEST_F(DownloadItemControllerTest, NormalDownloadBecomesDangerous) {
+  // In MD, this is handled by the MDDownloadItemView.
+  if (base::FeatureList::IsEnabled(features::kMacMaterialDesignDownloadShelf))
+    return;
+
   [item_controller_ verifyProgressViewIsVisible:true];
   [item_controller_ verifyDangerousDownloadPromptIsVisible:false];
 
@@ -139,6 +154,10 @@ TEST_F(DownloadItemControllerTest, NormalDownloadBecomesDangerous) {
 }
 
 TEST_F(DownloadItemControllerTest, DismissesContextMenuWhenRemovedFromWindow) {
+  // In MD, this is handled by the MDDownloadItemView.
+  if (base::FeatureList::IsEnabled(features::kMacMaterialDesignDownloadShelf))
+    return;
+
   // showContextMenu: calls [NSMenu popUpContextMenu:...], which blocks until
   // the menu is dismissed. Use a block to cancel the menu while waiting for
   // [NSMenu popUpContextMenu:...] to return (this block will execute on the
