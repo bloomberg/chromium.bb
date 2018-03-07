@@ -110,8 +110,7 @@ BrowserViewRenderer::BrowserViewRenderer(
       max_page_scale_factor_(0.f),
       on_new_picture_enable_(false),
       clear_view_(false),
-      offscreen_pre_raster_(false),
-      allow_async_draw_(false) {}
+      offscreen_pre_raster_(false) {}
 
 BrowserViewRenderer::~BrowserViewRenderer() {
   DCHECK(compositor_map_.empty());
@@ -237,13 +236,13 @@ bool BrowserViewRenderer::OnDrawHardware() {
 
   scoped_refptr<content::SynchronousCompositor::FrameFuture> future; // Async.
   content::SynchronousCompositor::Frame frame; // Sync.
-  bool async = !sync_on_draw_hardware_ && allow_async_draw_;
-  if (async) {
-    future = compositor_->DemandDrawHwAsync(
-        size_, viewport_rect_for_tile_priority, transform_for_tile_priority);
-  } else {
+  if (sync_on_draw_hardware_) {
+    // TODO(boliu): Remove the synchronous call path here.
     frame = compositor_->DemandDrawHw(size_, viewport_rect_for_tile_priority,
                                       transform_for_tile_priority);
+  } else {
+    future = compositor_->DemandDrawHwAsync(
+        size_, viewport_rect_for_tile_priority, transform_for_tile_priority);
   }
 
   if (!frame.frame && !future) {
@@ -252,7 +251,6 @@ bool BrowserViewRenderer::OnDrawHardware() {
     return current_compositor_frame_consumer_->HasFrameOnUI();
   }
 
-  allow_async_draw_ = true;
   std::unique_ptr<ChildFrame> child_frame = std::make_unique<ChildFrame>(
       std::move(future), frame.layer_tree_frame_sink_id, std::move(frame.frame),
       compositor_id_, viewport_rect_for_tile_priority.IsEmpty(),

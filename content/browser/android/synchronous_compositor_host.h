@@ -123,6 +123,13 @@ class SynchronousCompositorHost : public SynchronousCompositor,
   size_t bytes_limit_;
   std::unique_ptr<SharedMemoryWithSize> software_draw_shm_;
 
+  // Make sure to send a synchronous IPC that succeeds first before sending
+  // asynchronous ones. This shouldn't be needed. However we may have come
+  // to rely on sending a synchronous message first on initialization. So
+  // with an abundance of caution, keep that behavior until we are sure this
+  // isn't required.
+  bool allow_async_draw_ = false;
+
   // Indicates the next draw needs to be synchronous
   bool compute_scroll_needs_synchronous_draw_ = false;
 

@@ -297,6 +297,9 @@ void RenderThreadManager::DrawGL(AwDrawGLInfo* draw_info) {
     return;
   }
 
+  // Force GL binding init if it's not yet initialized.
+  DeferredGpuCommandService::GetInstance();
+
   // kModeProcessNoContext should never happen because we tear down hardware
   // in onTrimMemory. However that guarantee is maintained outside of chromium
   // code. Not notifying shared state in kModeProcessNoContext can lead to
@@ -359,8 +362,6 @@ void RenderThreadManager::DeleteHardwareRendererOnUI() {
 
   // If the WebView gets onTrimMemory >= MODERATE twice in a row, the 2nd
   // onTrimMemory will result in an unnecessary Render Thread InvokeGL call.
-  // TODO(boliu): removing the requirement that the first frame be
-  // synchronous will require changing the following test.
   if (has_received_frame_) {
     // Receiving at least one frame is a precondition for
     // initialization (such as looing up GL bindings and constructing
