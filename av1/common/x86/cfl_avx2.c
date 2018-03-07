@@ -90,14 +90,15 @@ static INLINE __m256i predict_unclipped(const __m256i *input, __m256i alpha_q12,
   return _mm256_add_epi16(scaled_luma_q0, dc_q0);
 }
 
-static INLINE void cfl_predict_lbd_32_avx2(const int16_t *pred_buf_q3,
-                                           uint8_t *dst, int dst_stride,
-                                           TX_SIZE tx_size, int alpha_q3) {
+static INLINE void cfl_predict_lbd_avx2(const int16_t *pred_buf_q3,
+                                        uint8_t *dst, int dst_stride,
+                                        int alpha_q3, int width, int height) {
+  (void)width;
   const __m256i alpha_sign = _mm256_set1_epi16(alpha_q3);
   const __m256i alpha_q12 = _mm256_slli_epi16(_mm256_abs_epi16(alpha_sign), 9);
   const __m256i dc_q0 = _mm256_set1_epi16(*dst);
   __m256i *row = (__m256i *)pred_buf_q3;
-  const __m256i *row_end = row + tx_size_high[tx_size] * CFL_BUF_LINE_I256;
+  const __m256i *row_end = row + height * CFL_BUF_LINE_I256;
 
   do {
     __m256i res = predict_unclipped(row, alpha_q12, alpha_sign, dc_q0);
@@ -107,6 +108,37 @@ static INLINE void cfl_predict_lbd_32_avx2(const int16_t *pred_buf_q3,
     _mm256_storeu_si256((__m256i *)dst, res);
     dst += dst_stride;
   } while ((row += CFL_BUF_LINE_I256) < row_end);
+}
+
+CFL_PREDICT_X(avx2, 32, 8, lbd);
+CFL_PREDICT_X(avx2, 32, 16, lbd);
+CFL_PREDICT_X(avx2, 32, 32, lbd);
+
+cfl_predict_lbd_fn get_predict_lbd_fn_avx2(TX_SIZE tx_size) {
+  static const cfl_predict_lbd_fn pred[TX_SIZES_ALL] = {
+    predict_lbd_4x4_ssse3,   /* 4x4 */
+    predict_lbd_8x8_ssse3,   /* 8x8 */
+    predict_lbd_16x16_ssse3, /* 16x16 */
+    predict_lbd_32x32_avx2,  /* 32x32 */
+    cfl_predict_lbd_null,    /* 64x64 (invalid CFL size) */
+    predict_lbd_4x8_ssse3,   /* 4x8 */
+    predict_lbd_8x4_ssse3,   /* 8x4 */
+    predict_lbd_8x16_ssse3,  /* 8x16 */
+    predict_lbd_16x8_ssse3,  /* 16x8 */
+    predict_lbd_16x32_ssse3, /* 16x32 */
+    predict_lbd_32x16_avx2,  /* 32x16 */
+    cfl_predict_lbd_null,    /* 32x64 (invalid CFL size) */
+    cfl_predict_lbd_null,    /* 64x32 (invalid CFL size) */
+    predict_lbd_4x16_ssse3,  /* 4x16  */
+    predict_lbd_16x4_ssse3,  /* 16x4  */
+    predict_lbd_8x32_ssse3,  /* 8x32  */
+    predict_lbd_32x8_avx2,   /* 32x8  */
+    cfl_predict_lbd_null,    /* 16x64 (invalid CFL size) */
+    cfl_predict_lbd_null,    /* 64x16 (invalid CFL size) */
+  };
+  /* Modulo TX_SIZES_ALL to ensure that an attacker won't be able to
+              */ /* index the function pointer array out of bounds. */
+  return pred[tx_size % TX_SIZES_ALL];
 }
 
 static __m256i highbd_max_epi16(int bd) {
@@ -127,9 +159,10 @@ static INLINE void cfl_predict_hbd(__m256i *dst, __m256i *src,
                       highbd_clamp_epi16(res, _mm256_setzero_si256(), max));
 }
 
-static INLINE void cfl_predict_hbd_x(const int16_t *pred_buf_q3, uint16_t *dst,
-                                     int dst_stride, TX_SIZE tx_size,
-                                     int alpha_q3, int bd, int width) {
+static INLINE void cfl_predict_hbd_avx2(const int16_t *pred_buf_q3,
+                                        uint16_t *dst, int dst_stride,
+                                        int alpha_q3, int bd, int width,
+                                        int height) {
   // Use SSSE3 version for smaller widths
   assert(width == 16 || width == 32);
   const __m256i alpha_sign = _mm256_set1_epi16(alpha_q3);
@@ -138,7 +171,7 @@ static INLINE void cfl_predict_hbd_x(const int16_t *pred_buf_q3, uint16_t *dst,
   const __m256i max = highbd_max_epi16(bd);
 
   __m256i *row = (__m256i *)pred_buf_q3;
-  const __m256i *row_end = row + tx_size_high[tx_size] * CFL_BUF_LINE_I256;
+  const __m256i *row_end = row + height * CFL_BUF_LINE_I256;
   do {
     cfl_predict_hbd((__m256i *)dst, row, alpha_q12, alpha_sign, dc_q0, max);
     if (width == 32) {
@@ -149,24 +182,39 @@ static INLINE void cfl_predict_hbd_x(const int16_t *pred_buf_q3, uint16_t *dst,
   } while ((row += CFL_BUF_LINE_I256) < row_end);
 }
 
-CFL_PREDICT_HBD_X(16, avx2)
-CFL_PREDICT_HBD_X(32, avx2)
-
-cfl_predict_lbd_fn get_predict_lbd_fn_avx2(TX_SIZE tx_size) {
-  // Sizes 4, 8 and 16 reuse the SSSE3 version
-  static const cfl_predict_lbd_fn predict_lbd[4] = { cfl_predict_lbd_4_ssse3,
-                                                     cfl_predict_lbd_8_ssse3,
-                                                     cfl_predict_lbd_16_ssse3,
-                                                     cfl_predict_lbd_32_avx2 };
-  return predict_lbd[(tx_size_wide_log2[tx_size] - tx_size_wide_log2[0]) & 3];
-}
+CFL_PREDICT_X(avx2, 16, 4, hbd)
+CFL_PREDICT_X(avx2, 16, 8, hbd)
+CFL_PREDICT_X(avx2, 16, 16, hbd)
+CFL_PREDICT_X(avx2, 16, 32, hbd)
+CFL_PREDICT_X(avx2, 32, 8, hbd)
+CFL_PREDICT_X(avx2, 32, 16, hbd)
+CFL_PREDICT_X(avx2, 32, 32, hbd)
 
 cfl_predict_hbd_fn get_predict_hbd_fn_avx2(TX_SIZE tx_size) {
-  static const cfl_predict_hbd_fn predict_hbd[4] = { cfl_predict_hbd_4_ssse3,
-                                                     cfl_predict_hbd_8_ssse3,
-                                                     cfl_predict_hbd_16_avx2,
-                                                     cfl_predict_hbd_32_avx2 };
-  return predict_hbd[(tx_size_wide_log2[tx_size] - tx_size_wide_log2[0]) & 3];
+  static const cfl_predict_hbd_fn pred[TX_SIZES_ALL] = {
+    predict_hbd_4x4_ssse3,  /* 4x4 */
+    predict_hbd_8x8_ssse3,  /* 8x8 */
+    predict_hbd_16x16_avx2, /* 16x16 */
+    predict_hbd_32x32_avx2, /* 32x32 */
+    cfl_predict_hbd_null,   /* 64x64 (invalid CFL size) */
+    predict_hbd_4x8_ssse3,  /* 4x8 */
+    predict_hbd_8x4_ssse3,  /* 8x4 */
+    predict_hbd_8x16_ssse3, /* 8x16 */
+    predict_hbd_16x8_avx2,  /* 16x8 */
+    predict_hbd_16x32_avx2, /* 16x32 */
+    predict_hbd_32x16_avx2, /* 32x16 */
+    cfl_predict_hbd_null,   /* 32x64 (invalid CFL size) */
+    cfl_predict_hbd_null,   /* 64x32 (invalid CFL size) */
+    predict_hbd_4x16_ssse3, /* 4x16  */
+    predict_hbd_16x4_avx2,  /* 16x4  */
+    predict_hbd_8x32_ssse3, /* 8x32  */
+    predict_hbd_32x8_avx2,  /* 32x8  */
+    cfl_predict_hbd_null,   /* 16x64 (invalid CFL size) */
+    cfl_predict_hbd_null,   /* 64x16 (invalid CFL size) */
+  };
+  /* Modulo TX_SIZES_ALL to ensure that an attacker won't be able to
+    */ /* index the function pointer array out of bounds. */
+  return pred[tx_size % TX_SIZES_ALL];
 }
 
 // Returns a vector where all the (32-bits) elements are the sum of all the

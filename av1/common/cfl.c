@@ -155,11 +155,9 @@ static INLINE int cfl_idx_to_alpha(int alpha_idx, int joint_sign,
   return (alpha_sign == CFL_SIGN_POS) ? abs_alpha_q3 + 1 : -abs_alpha_q3 - 1;
 }
 
-static void cfl_build_prediction_lbd(const int16_t *pred_buf_q3, uint8_t *dst,
-                                     int dst_stride, TX_SIZE tx_size,
-                                     int alpha_q3) {
-  const int height = tx_size_high[tx_size];
-  const int width = tx_size_wide[tx_size];
+static INLINE void cfl_predict_lbd_c(const int16_t *pred_buf_q3, uint8_t *dst,
+                                     int dst_stride, int alpha_q3, int width,
+                                     int height) {
   for (int j = 0; j < height; j++) {
     for (int i = 0; i < width; i++) {
       dst[i] =
@@ -170,11 +168,21 @@ static void cfl_build_prediction_lbd(const int16_t *pred_buf_q3, uint8_t *dst,
   }
 }
 
-static void cfl_build_prediction_hbd(const int16_t *pred_buf_q3, uint16_t *dst,
-                                     int dst_stride, TX_SIZE tx_size,
-                                     int alpha_q3, int bit_depth) {
-  const int height = tx_size_high[tx_size];
-  const int width = tx_size_wide[tx_size];
+// Null function used for invalid tx_sizes
+void cfl_predict_lbd_null(const int16_t *pred_buf_q3, uint8_t *dst,
+                          int dst_stride, int alpha_q3) {
+  (void)pred_buf_q3;
+  (void)dst;
+  (void)dst_stride;
+  (void)alpha_q3;
+  assert(0);
+}
+
+CFL_PREDICT_FN(c, lbd)
+
+void cfl_predict_hbd_c(const int16_t *pred_buf_q3, uint16_t *dst,
+                       int dst_stride, int alpha_q3, int bit_depth, int width,
+                       int height) {
   for (int j = 0; j < height; j++) {
     for (int i = 0; i < width; i++) {
       dst[i] = clip_pixel_highbd(
@@ -185,6 +193,19 @@ static void cfl_build_prediction_hbd(const int16_t *pred_buf_q3, uint16_t *dst,
   }
 }
 
+// Null function used for invalid tx_sizes
+void cfl_predict_hbd_null(const int16_t *pred_buf_q3, uint16_t *dst,
+                          int dst_stride, int alpha_q3, int bd) {
+  (void)pred_buf_q3;
+  (void)dst;
+  (void)dst_stride;
+  (void)alpha_q3;
+  (void)bd;
+  assert(0);
+}
+
+CFL_PREDICT_FN(c, hbd)
+
 static void cfl_compute_parameters(MACROBLOCKD *const xd, TX_SIZE tx_size) {
   CFL_CTX *const cfl = &xd->cfl;
   // Do not call cfl_compute_parameters multiple time on the same values.
@@ -193,16 +214,6 @@ static void cfl_compute_parameters(MACROBLOCKD *const xd, TX_SIZE tx_size) {
   cfl_pad(cfl, tx_size_wide[tx_size], tx_size_high[tx_size]);
   get_subtract_average_fn(tx_size)(cfl->pred_buf_q3);
   cfl->are_parameters_computed = 1;
-}
-
-cfl_predict_lbd_fn get_predict_lbd_fn_c(TX_SIZE tx_size) {
-  (void)tx_size;
-  return cfl_build_prediction_lbd;
-}
-
-cfl_predict_hbd_fn get_predict_hbd_fn_c(TX_SIZE tx_size) {
-  (void)tx_size;
-  return cfl_build_prediction_hbd;
 }
 
 void cfl_predict_block(MACROBLOCKD *const xd, uint8_t *dst, int dst_stride,
@@ -219,12 +230,11 @@ void cfl_predict_block(MACROBLOCKD *const xd, uint8_t *dst, int dst_stride,
          CFL_BUF_SQUARE);
   if (get_bitdepth_data_path_index(xd)) {
     uint16_t *dst_16 = CONVERT_TO_SHORTPTR(dst);
-    get_predict_hbd_fn(tx_size)(cfl->pred_buf_q3, dst_16, dst_stride, tx_size,
-                                alpha_q3, xd->bd);
+    get_predict_hbd_fn(tx_size)(cfl->pred_buf_q3, dst_16, dst_stride, alpha_q3,
+                                xd->bd);
     return;
   }
-  get_predict_lbd_fn(tx_size)(cfl->pred_buf_q3, dst, dst_stride, tx_size,
-                              alpha_q3);
+  get_predict_lbd_fn(tx_size)(cfl->pred_buf_q3, dst, dst_stride, alpha_q3);
 }
 
 // Null function used for invalid tx_sizes

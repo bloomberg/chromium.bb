@@ -267,10 +267,9 @@ TEST_P(CFLSubsampleTest, DISABLED_SubsampleSpeedTest) {
 TEST_P(CFLPredictTest, PredictTest) {
   for (int it = 0; it < NUM_ITERATIONS; it++) {
     init(8);
-    fun_under_test(tx_size)(sub_luma_pels, chroma_pels, CFL_BUF_LINE, tx_size,
-                            alpha_q3);
+    fun_under_test(tx_size)(sub_luma_pels, chroma_pels, CFL_BUF_LINE, alpha_q3);
     get_predict_lbd_fn_c(tx_size)(sub_luma_pels_ref, chroma_pels_ref,
-                                  CFL_BUF_LINE, tx_size, alpha_q3);
+                                  CFL_BUF_LINE, alpha_q3);
 
     assert_eq<uint8_t>(chroma_pels, chroma_pels_ref, width, height);
   }
@@ -285,8 +284,7 @@ TEST_P(CFLPredictTest, DISABLED_PredictSpeedTest) {
   aom_usec_timer_start(&ref_timer);
 
   for (int k = 0; k < NUM_ITERATIONS_SPEED; k++) {
-    predict_impl(sub_luma_pels_ref, chroma_pels_ref, CFL_BUF_LINE, tx_size,
-                 alpha_q3);
+    predict_impl(sub_luma_pels_ref, chroma_pels_ref, CFL_BUF_LINE, alpha_q3);
   }
   aom_usec_timer_mark(&ref_timer);
   int ref_elapsed_time = (int)aom_usec_timer_elapsed(&ref_timer);
@@ -294,7 +292,7 @@ TEST_P(CFLPredictTest, DISABLED_PredictSpeedTest) {
   predict_impl = fun_under_test(tx_size);
   aom_usec_timer_start(&timer);
   for (int k = 0; k < NUM_ITERATIONS_SPEED; k++) {
-    predict_impl(sub_luma_pels, chroma_pels, CFL_BUF_LINE, tx_size, alpha_q3);
+    predict_impl(sub_luma_pels, chroma_pels, CFL_BUF_LINE, alpha_q3);
   }
   aom_usec_timer_mark(&timer);
   int elapsed_time = (int)aom_usec_timer_elapsed(&timer);
@@ -307,10 +305,10 @@ TEST_P(CFLPredictHBDTest, PredictHBDTest) {
   int bd = 12;
   for (int it = 0; it < NUM_ITERATIONS; it++) {
     init(bd);
-    fun_under_test(tx_size)(sub_luma_pels, chroma_pels, CFL_BUF_LINE, tx_size,
-                            alpha_q3, bd);
+    fun_under_test(tx_size)(sub_luma_pels, chroma_pels, CFL_BUF_LINE, alpha_q3,
+                            bd);
     get_predict_hbd_fn_c(tx_size)(sub_luma_pels_ref, chroma_pels_ref,
-                                  CFL_BUF_LINE, tx_size, alpha_q3, bd);
+                                  CFL_BUF_LINE, alpha_q3, bd);
 
     assert_eq<uint16_t>(chroma_pels, chroma_pels_ref, width, height);
   }
@@ -325,8 +323,8 @@ TEST_P(CFLPredictHBDTest, DISABLED_PredictHBDSpeedTest) {
   aom_usec_timer_start(&ref_timer);
 
   for (int k = 0; k < NUM_ITERATIONS_SPEED; k++) {
-    predict_impl(sub_luma_pels_ref, chroma_pels_ref, CFL_BUF_LINE, tx_size,
-                 alpha_q3, bd);
+    predict_impl(sub_luma_pels_ref, chroma_pels_ref, CFL_BUF_LINE, alpha_q3,
+                 bd);
   }
   aom_usec_timer_mark(&ref_timer);
   int ref_elapsed_time = (int)aom_usec_timer_elapsed(&ref_timer);
@@ -334,8 +332,7 @@ TEST_P(CFLPredictHBDTest, DISABLED_PredictHBDSpeedTest) {
   predict_impl = fun_under_test(tx_size);
   aom_usec_timer_start(&timer);
   for (int k = 0; k < NUM_ITERATIONS_SPEED; k++) {
-    predict_impl(sub_luma_pels, chroma_pels, CFL_BUF_LINE, tx_size, alpha_q3,
-                 bd);
+    predict_impl(sub_luma_pels, chroma_pels, CFL_BUF_LINE, alpha_q3, bd);
   }
   aom_usec_timer_mark(&timer);
   int elapsed_time = (int)aom_usec_timer_elapsed(&timer);
