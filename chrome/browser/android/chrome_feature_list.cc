@@ -15,6 +15,7 @@
 #include "chrome/common/chrome_features.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
+#include "components/feed/feed_feature_list.h"
 #include "components/ntp_snippets/features.h"
 #include "components/ntp_tiles/constants.h"
 #include "components/offline_pages/core/offline_page_feature.h"
@@ -53,6 +54,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &features::kSoundContentSetting,
     &features::kVrBrowsing,
     &features::kWebPayments,
+    &feed::kInterestFeedContentSuggestions,
     &kAdjustWebApkInstallationSpace,
     &kAllowReaderForAccessibility,
     &kAndroidPayIntegrationV1,

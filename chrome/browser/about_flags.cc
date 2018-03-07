@@ -52,6 +52,7 @@
 #include "components/favicon/core/features.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/public/feature_list.h"
+#include "components/feed/feed_feature_list.h"
 #include "components/flags_ui/feature_entry.h"
 #include "components/flags_ui/feature_entry_macros.h"
 #include "components/flags_ui/flags_storage.h"
@@ -2521,6 +2522,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableContentSuggestionsSettingsDescription,
      kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kContentSuggestionsSettings)},
+    {"interest-feed-content-suggestions",
+     flag_descriptions::kInterestFeedContentSuggestionsName,
+     flag_descriptions::kInterestFeedContentSuggestionsDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(feed::kInterestFeedContentSuggestions)},
     {"enable-ntp-article-suggestions-expandable-header",
      flag_descriptions::kEnableNtpArticleSuggestionsExpandableHeaderName,
      flag_descriptions::kEnableNtpArticleSuggestionsExpandableHeaderDescription,

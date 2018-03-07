@@ -12,3 +12,14 @@ buildflag_header("features") {
   header = "features.h"
   flags = [ "ENABLE_FEED_IN_CHROME=$enable_feed_in_chrome" ]
 }
+
+static_library("feature_list") {
+  sources = [
+    "feed_feature_list.cc",
+    "feed_feature_list.h",
+  ]
+
+  deps = [
+    "//base",
+  ]
+}

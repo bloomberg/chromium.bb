@@ -25703,6 +25703,7 @@ from previous Chrome versions.
       label="enable-zero-suggest-most-visited-without-serp"/>
   <int value="-1883170077" label="EnableHtmlBaseUsernameDetector:disabled"/>
   <int value="-1882330924" label="NTPArticleSuggestions:enabled"/>
+  <int value="-1881250251" label="InterestFeedContentSuggestions:disabled"/>
   <int value="-1880355454" label="disable-topchrome-md"/>
   <int value="-1876881908"
       label="disable-infobar-for-protected-media-identifier"/>
@@ -27104,6 +27105,7 @@ from previous Chrome versions.
   <int value="1536921097" label="NavigationMojoResponse:disabled"/>
   <int value="1538690515" label="OneGoogleBarOnLocalNtp:enabled"/>
   <int value="1541723759" label="ServiceWorkerNavigationPreload:disabled"/>
+  <int value="1544552792" label="InterestFeedContentSuggestions:enabled"/>
   <int value="1548776701" label="AllBookmarks:disabled"/>
   <int value="1548942246" label="PassiveDocumentEventListeners:disabled"/>
   <int value="1560188739" label="reader-mode-heuristics"/>

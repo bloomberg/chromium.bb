@@ -1247,6 +1247,9 @@ extern const char kEnableWebPaymentsSingleAppUiSkipDescription[];
 extern const char kGrantNotificationsToDSEName[];
 extern const char kGrantNotificationsToDSENameDescription[];
 
+extern const char kInterestFeedContentSuggestionsName[];
+extern const char kInterestFeedContentSuggestionsDescription[];
+
 extern const char kKeepPrefetchedContentSuggestionsName[];
 extern const char kKeepPrefetchedContentSuggestionsDescription[];
 
