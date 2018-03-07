@@ -3162,11 +3162,13 @@
   },
 
   "DeviceRollbackAllowedMilestones": {
-    "note": "Chrome OS device policy used by update_engine only, not used in Chrome. TODO(hunyadym): add os field when M67 in dev."
+    "os": ["chromeos"],
+    "note": "Chrome OS device policy used by update_engine only, not used in Chrome."
   },
 
   "DeviceRollbackToTargetVersion": {
-    "note": "Chrome OS device policy used by update_engine only, not used in Chrome. TODO(hunyadym): add os field when M67 in dev."
+    "os": ["chromeos"],
+    "note": "Chrome OS device policy used by update_engine only, not used in Chrome."
   },
 
   "DeviceTargetVersionPrefix": {
