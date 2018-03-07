@@ -129,13 +129,14 @@ struct CommonResourceObjects {
     resource2_ = viz::TransferableResource::MakeGL(
         mailbox_name2_, GL_LINEAR, arbitrary_target2, sync_token2_);
     gfx::Size size(128, 128);
-    shared_bitmap_ = manager->AllocateSharedBitmap(size);
+    shared_bitmap_ = manager->AllocateSharedBitmap(size, viz::RGBA_8888);
     DCHECK(shared_bitmap_);
     release_callback3_ =
         base::Bind(&MockReleaseCallback::Release2,
                    base::Unretained(&mock_callback_), shared_bitmap_.get());
     resource3_ = viz::TransferableResource::MakeSoftware(
-        shared_bitmap_->id(), shared_bitmap_->sequence_number(), size);
+        shared_bitmap_->id(), shared_bitmap_->sequence_number(), size,
+        viz::RGBA_8888);
   }
 
   using RepeatingReleaseCallback =

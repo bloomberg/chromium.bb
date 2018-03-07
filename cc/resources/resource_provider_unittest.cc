@@ -81,9 +81,10 @@ static void ReleaseSharedBitmapCallback(
 static std::unique_ptr<viz::SharedBitmap> CreateAndFillSharedBitmap(
     viz::SharedBitmapManager* manager,
     const gfx::Size& size,
+    viz::ResourceFormat format,
     uint32_t value) {
   std::unique_ptr<viz::SharedBitmap> shared_bitmap =
-      manager->AllocateSharedBitmap(size);
+      manager->AllocateSharedBitmap(size, format);
   CHECK(shared_bitmap);
   uint32_t* pixels = reinterpret_cast<uint32_t*>(shared_bitmap->pixels());
   CHECK(pixels);
@@ -469,7 +470,8 @@ class ResourceProviderTest : public testing::TestWithParam<bool> {
   viz::ResourceId CreateChildMailbox(gpu::SyncToken* release_sync_token,
                                      bool* lost_resource,
                                      bool* release_called,
-                                     gpu::SyncToken* sync_token) {
+                                     gpu::SyncToken* sync_token,
+                                     viz::ResourceFormat format) {
     if (use_gpu()) {
       unsigned texture = child_context_->createTexture();
       gpu::Mailbox gpu_mailbox;
@@ -483,14 +485,16 @@ class ResourceProviderTest : public testing::TestWithParam<bool> {
           viz::SingleReleaseCallback::Create(base::Bind(
               ReleaseSharedBitmapCallback, base::Passed(&shared_bitmap),
               release_called, release_sync_token, lost_resource));
-      return child_resource_provider_->ImportResource(
-          viz::TransferableResource::MakeGL(gpu_mailbox, GL_LINEAR,
-                                            GL_TEXTURE_2D, *sync_token),
-          std::move(callback));
+      viz::TransferableResource gl_resource = viz::TransferableResource::MakeGL(
+          gpu_mailbox, GL_LINEAR, GL_TEXTURE_2D, *sync_token);
+      gl_resource.format = format;
+      return child_resource_provider_->ImportResource(gl_resource,
+                                                      std::move(callback));
     } else {
       gfx::Size size(64, 64);
       std::unique_ptr<viz::SharedBitmap> shared_bitmap(
-          CreateAndFillSharedBitmap(shared_bitmap_manager_.get(), size, 0));
+          CreateAndFillSharedBitmap(shared_bitmap_manager_.get(), size, format,
+                                    0));
 
       viz::SharedBitmap* shared_bitmap_ptr = shared_bitmap.get();
       std::unique_ptr<viz::SingleReleaseCallback> callback =
@@ -500,7 +504,7 @@ class ResourceProviderTest : public testing::TestWithParam<bool> {
       return child_resource_provider_->ImportResource(
           viz::TransferableResource::MakeSoftware(
               shared_bitmap_ptr->id(), shared_bitmap_ptr->sequence_number(),
-              size),
+              size, format),
           std::move(callback));
     }
   }
@@ -552,8 +556,8 @@ TEST_P(ResourceProviderTest, Basic) {
 
   viz::ResourceId id;
   if (!use_gpu()) {
-    id =
-        child_resource_provider_->CreateBitmapResource(size, gfx::ColorSpace());
+    id = child_resource_provider_->CreateBitmapResource(size, gfx::ColorSpace(),
+                                                        format);
   } else {
     id = child_resource_provider_->CreateGpuTextureResource(
         size, viz::ResourceTextureHint::kDefault, format, gfx::ColorSpace());
@@ -606,10 +610,10 @@ TEST_P(ResourceProviderTest, SimpleUpload) {
         size, viz::ResourceTextureHint::kDefault, format, gfx::ColorSpace());
 
   } else {
-    id1 =
-        child_resource_provider_->CreateBitmapResource(size, gfx::ColorSpace());
-    id2 =
-        child_resource_provider_->CreateBitmapResource(size, gfx::ColorSpace());
+    id1 = child_resource_provider_->CreateBitmapResource(
+        size, gfx::ColorSpace(), format);
+    id2 = child_resource_provider_->CreateBitmapResource(
+        size, gfx::ColorSpace(), format);
   }
 
   uint8_t image[16] = {0};
@@ -1415,13 +1419,13 @@ TEST_P(ResourceProviderTest, TransferSoftwareResources) {
   size_t pixel_size = TextureSizeBytes(size, format);
   ASSERT_EQ(4U, pixel_size);
 
-  viz::ResourceId id1 =
-      child_resource_provider_->CreateBitmapResource(size, gfx::ColorSpace());
+  viz::ResourceId id1 = child_resource_provider_->CreateBitmapResource(
+      size, gfx::ColorSpace(), format);
   uint8_t data1[4] = { 1, 2, 3, 4 };
   child_resource_provider_->CopyToResource(id1, data1, size);
 
-  viz::ResourceId id2 =
-      child_resource_provider_->CreateBitmapResource(size, gfx::ColorSpace());
+  viz::ResourceId id2 = child_resource_provider_->CreateBitmapResource(
+      size, gfx::ColorSpace(), format);
   uint8_t data2[4] = { 5, 5, 5, 5 };
   child_resource_provider_->CopyToResource(id2, data2, size);
 
@@ -1641,8 +1645,8 @@ TEST_P(ResourceProviderTest, TransferInvalidSoftware) {
   size_t pixel_size = TextureSizeBytes(size, format);
   ASSERT_EQ(4U, pixel_size);
 
-  viz::ResourceId id1 =
-      child_resource_provider_->CreateBitmapResource(size, gfx::ColorSpace());
+  viz::ResourceId id1 = child_resource_provider_->CreateBitmapResource(
+      size, gfx::ColorSpace(), format);
   uint8_t data1[4] = { 1, 2, 3, 4 };
   child_resource_provider_->CopyToResource(id1, data1, size);
 
@@ -1697,10 +1701,10 @@ TEST_P(ResourceProviderTest, DeleteExportedResources) {
     id2 = child_resource_provider_->CreateGpuTextureResource(
         size, viz::ResourceTextureHint::kDefault, format, gfx::ColorSpace());
   } else {
-    id1 =
-        child_resource_provider_->CreateBitmapResource(size, gfx::ColorSpace());
-    id2 =
-        child_resource_provider_->CreateBitmapResource(size, gfx::ColorSpace());
+    id1 = child_resource_provider_->CreateBitmapResource(
+        size, gfx::ColorSpace(), format);
+    id2 = child_resource_provider_->CreateBitmapResource(
+        size, gfx::ColorSpace(), format);
   }
 
   uint8_t data1[4] = { 1, 2, 3, 4 };
@@ -1763,10 +1767,10 @@ TEST_P(ResourceProviderTest, DestroyChildWithExportedResources) {
     id2 = child_resource_provider_->CreateGpuTextureResource(
         size, viz::ResourceTextureHint::kDefault, format, gfx::ColorSpace());
   } else {
-    id1 =
-        child_resource_provider_->CreateBitmapResource(size, gfx::ColorSpace());
-    id2 =
-        child_resource_provider_->CreateBitmapResource(size, gfx::ColorSpace());
+    id1 = child_resource_provider_->CreateBitmapResource(
+        size, gfx::ColorSpace(), format);
+    id2 = child_resource_provider_->CreateBitmapResource(
+        size, gfx::ColorSpace(), format);
   }
 
   uint8_t data1[4] = {1, 2, 3, 4};
@@ -1820,8 +1824,8 @@ TEST_P(ResourceProviderTest, DeleteTransferredResources) {
     id = child_resource_provider_->CreateGpuTextureResource(
         size, viz::ResourceTextureHint::kDefault, format, gfx::ColorSpace());
   } else {
-    id =
-        child_resource_provider_->CreateBitmapResource(size, gfx::ColorSpace());
+    id = child_resource_provider_->CreateBitmapResource(size, gfx::ColorSpace(),
+                                                        format);
   }
 
   uint8_t data[4] = { 1, 2, 3, 4 };
@@ -2149,8 +2153,8 @@ TEST_P(ResourceProviderTest, LostResourceInParent) {
     id = child_resource_provider_->CreateGpuTextureResource(
         size, viz::ResourceTextureHint::kDefault, format, gfx::ColorSpace());
   } else {
-    id =
-        child_resource_provider_->CreateBitmapResource(size, gfx::ColorSpace());
+    id = child_resource_provider_->CreateBitmapResource(size, gfx::ColorSpace(),
+                                                        format);
   }
 
   child_resource_provider_->AllocateForTesting(id);
@@ -2208,8 +2212,9 @@ TEST_P(ResourceProviderTest, LostMailboxInParent) {
   bool lost_resource = false;
   bool release_called = false;
   gpu::SyncToken sync_token;
-  viz::ResourceId resource = CreateChildMailbox(
-      &release_sync_token, &lost_resource, &release_called, &sync_token);
+  viz::ResourceId resource =
+      CreateChildMailbox(&release_sync_token, &lost_resource, &release_called,
+                         &sync_token, viz::RGBA_8888);
 
   std::vector<viz::ReturnedResource> returned_to_child;
   int child_id =
@@ -2283,8 +2288,9 @@ TEST_P(ResourceProviderTest, Shutdown) {
     bool lost_resource = false;
     bool release_called = false;
     gpu::SyncToken sync_token;
-    viz::ResourceId id = CreateChildMailbox(&release_sync_token, &lost_resource,
-                                            &release_called, &sync_token);
+    viz::ResourceId id =
+        CreateChildMailbox(&release_sync_token, &lost_resource, &release_called,
+                           &sync_token, viz::RGBA_8888);
 
     if (i == kShutdownAfterExport || i == kShutdownAfterExportAndReturn ||
         i == kShutdownAfterExportAndReturnWithLostResource ||
@@ -2566,9 +2572,10 @@ TEST_P(ResourceProviderTest, ImportedResource_SharedMemory) {
     return;
 
   gfx::Size size(64, 64);
+  viz::ResourceFormat format = viz::RGBA_8888;
   const uint32_t kBadBeef = 0xbadbeef;
-  std::unique_ptr<viz::SharedBitmap> shared_bitmap(
-      CreateAndFillSharedBitmap(shared_bitmap_manager_.get(), size, kBadBeef));
+  std::unique_ptr<viz::SharedBitmap> shared_bitmap(CreateAndFillSharedBitmap(
+      shared_bitmap_manager_.get(), size, format, kBadBeef));
 
   auto resource_provider(std::make_unique<DisplayResourceProvider>(
       nullptr, shared_bitmap_manager_.get()));
@@ -2583,7 +2590,7 @@ TEST_P(ResourceProviderTest, ImportedResource_SharedMemory) {
       viz::SingleReleaseCallback::Create(
           base::Bind(&ReleaseCallback, &release_sync_token, &lost_resource));
   auto resource = viz::TransferableResource::MakeSoftware(
-      shared_bitmap->id(), shared_bitmap->sequence_number(), size);
+      shared_bitmap->id(), shared_bitmap->sequence_number(), size, format);
 
   viz::ResourceId resource_id =
       child_resource_provider->ImportResource(resource, std::move(callback));

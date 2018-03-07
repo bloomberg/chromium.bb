@@ -71,7 +71,8 @@ class CC_EXPORT LayerTreeResourceProvider : public ResourceProvider {
       gfx::BufferUsage usage,
       const gfx::ColorSpace& color_space);
   viz::ResourceId CreateBitmapResource(const gfx::Size& size,
-                                       const gfx::ColorSpace& color_space);
+                                       const gfx::ColorSpace& color_space,
+                                       viz::ResourceFormat format);
 
   void DeleteResource(viz::ResourceId id);
 

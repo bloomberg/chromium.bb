@@ -269,7 +269,7 @@ void TestPlugin::UpdateGeometry(
     mailbox_ = gpu::Mailbox();
     sync_token_ = gpu::SyncToken();
     shared_bitmap_ = delegate_->GetSharedBitmapManager()->AllocateSharedBitmap(
-        gfx::Rect(rect_).size());
+        gfx::Rect(rect_).size(), viz::RGBA_8888);
     DrawSceneSoftware(shared_bitmap_->pixels());
   }
 
@@ -301,7 +301,7 @@ bool TestPlugin::PrepareTransferableResource(
   } else if (shared_bitmap_) {
     *resource = viz::TransferableResource::MakeSoftware(
         shared_bitmap_->id(), shared_bitmap_->sequence_number(),
-        gfx::Size(rect_.width, rect_.height));
+        gfx::Size(rect_.width, rect_.height), viz::RGBA_8888);
     *release_callback = viz::SingleReleaseCallback::Create(
         base::BindOnce(&ReleaseSharedMemory, base::Passed(&shared_bitmap_)));
   }

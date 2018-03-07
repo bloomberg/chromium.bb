@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "components/viz/common/resources/resource_format.h"
 #include "components/viz/common/viz_common_export.h"
 #include "mojo/public/cpp/system/buffer.h"
 
@@ -26,7 +27,8 @@ namespace bitmap_allocation {
 // format. Crashes if allocation does not succeed. The returned SharedMemory
 // will be mapped.
 VIZ_COMMON_EXPORT std::unique_ptr<base::SharedMemory> AllocateMappedBitmap(
-    const gfx::Size& size);
+    const gfx::Size& size,
+    ResourceFormat format);
 
 // For a bitmap created with AllocateMappedBitmap(), this will duplicate the
 // handle to be passed to the display compositor, which can be in another
@@ -38,7 +40,8 @@ VIZ_COMMON_EXPORT std::unique_ptr<base::SharedMemory> AllocateMappedBitmap(
 // debugging assistance.
 VIZ_COMMON_EXPORT mojo::ScopedSharedBufferHandle DuplicateAndCloseMappedBitmap(
     base::SharedMemory* memory,
-    const gfx::Size& size);
+    const gfx::Size& size,
+    ResourceFormat format);
 
 }  // namespace bitmap_allocation
 

@@ -81,10 +81,12 @@ ServerSharedBitmapManager* ServerSharedBitmapManager::current() {
 }
 
 std::unique_ptr<SharedBitmap> ServerSharedBitmapManager::AllocateSharedBitmap(
-    const gfx::Size& size) {
+    const gfx::Size& size,
+    ResourceFormat format) {
+  DCHECK(IsBitmapFormatSupported(format));
   base::AutoLock lock(lock_);
   size_t bitmap_size;
-  if (!SharedBitmap::SizeInBytes(size, &bitmap_size))
+  if (!SharedBitmap::SizeInBytes(size, format, &bitmap_size))
     return nullptr;
 
   scoped_refptr<BitmapData> data(new BitmapData(bitmap_size));
@@ -100,6 +102,7 @@ std::unique_ptr<SharedBitmap> ServerSharedBitmapManager::AllocateSharedBitmap(
 
 std::unique_ptr<SharedBitmap> ServerSharedBitmapManager::GetSharedBitmapFromId(
     const gfx::Size& size,
+    ResourceFormat format,
     const SharedBitmapId& id) {
   base::AutoLock lock(lock_);
   auto it = handle_map_.find(id);
@@ -109,7 +112,7 @@ std::unique_ptr<SharedBitmap> ServerSharedBitmapManager::GetSharedBitmapFromId(
   BitmapData* data = it->second.get();
 
   size_t bitmap_size;
-  if (!SharedBitmap::SizeInBytes(size, &bitmap_size) ||
+  if (!SharedBitmap::SizeInBytes(size, format, &bitmap_size) ||
       bitmap_size > data->buffer_size)
     return nullptr;
 

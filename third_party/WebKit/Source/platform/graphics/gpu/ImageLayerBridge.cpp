@@ -139,7 +139,8 @@ bool ImageLayerBridge::PrepareTransferableResource(
     *out_resource = viz::TransferableResource::MakeSoftware(
         bitmap->id(), bitmap->sequence_number(),
         gfx::Size(image_for_compositor->width(),
-                  image_for_compositor->height()));
+                  image_for_compositor->height()),
+        viz::RGBA_8888);
     auto func = WTF::Bind(&ImageLayerBridge::ResourceReleasedSoftware,
                           WrapWeakPersistent(this), base::Passed(&bitmap),
                           image_for_compositor->Size());
@@ -165,7 +166,7 @@ std::unique_ptr<viz::SharedBitmap> ImageLayerBridge::CreateOrRecycleBitmap(
     DCHECK(recycled.size == size);
     return std::move(recycled.bitmap);
   }
-  return Platform::Current()->AllocateSharedBitmap(size);
+  return Platform::Current()->AllocateSharedBitmap(size, viz::RGBA_8888);
 }
 
 void ImageLayerBridge::ResourceReleasedGpu(

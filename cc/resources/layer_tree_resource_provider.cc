@@ -403,23 +403,25 @@ viz::ResourceId LayerTreeResourceProvider::CreateGpuMemoryBufferResource(
 
 viz::ResourceId LayerTreeResourceProvider::CreateBitmapResource(
     const gfx::Size& size,
-    const gfx::ColorSpace& color_space) {
+    const gfx::ColorSpace& color_space,
+    viz::ResourceFormat format) {
   DCHECK(!compositor_context_provider_);
   DCHECK(!size.IsEmpty());
+  DCHECK(viz::IsBitmapFormatSupported(format));
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   // TODO(danakj): Allocate this outside ResourceProvider.
   std::unique_ptr<viz::SharedBitmap> bitmap =
-      shared_bitmap_manager_->AllocateSharedBitmap(size);
+      shared_bitmap_manager_->AllocateSharedBitmap(size, format);
   DCHECK(bitmap);
   DCHECK(bitmap->pixels());
 
   viz::ResourceId id = next_id_++;
   viz::internal::Resource* resource = InsertResource(
-      id, viz::internal::Resource(size, viz::internal::Resource::INTERNAL,
-                                  viz::ResourceTextureHint::kDefault,
-                                  viz::ResourceType::kBitmap, viz::RGBA_8888,
-                                  color_space));
+      id,
+      viz::internal::Resource(size, viz::internal::Resource::INTERNAL,
+                              viz::ResourceTextureHint::kDefault,
+                              viz::ResourceType::kBitmap, format, color_space));
   resource->SetSharedBitmap(bitmap.get());
   resource->owned_shared_bitmap = std::move(bitmap);
   return id;

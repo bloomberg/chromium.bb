@@ -73,9 +73,10 @@ class SharedBitmapManagerAllocationCounter
     : public viz::TestSharedBitmapManager {
  public:
   std::unique_ptr<viz::SharedBitmap> AllocateSharedBitmap(
-      const gfx::Size& size) override {
+      const gfx::Size& size,
+      viz::ResourceFormat resource_format) override {
     ++allocation_count_;
-    return TestSharedBitmapManager::AllocateSharedBitmap(size);
+    return TestSharedBitmapManager::AllocateSharedBitmap(size, resource_format);
   }
 
   int AllocationCount() { return allocation_count_; }

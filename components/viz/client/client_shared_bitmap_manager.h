@@ -32,9 +32,11 @@ class VIZ_CLIENT_EXPORT ClientSharedBitmapManager : public SharedBitmapManager {
 
   // SharedBitmapManager implementation.
   std::unique_ptr<SharedBitmap> AllocateSharedBitmap(
-      const gfx::Size& size) override;
+      const gfx::Size&,
+      ResourceFormat format) override;
   std::unique_ptr<SharedBitmap> GetSharedBitmapFromId(
       const gfx::Size&,
+      ResourceFormat,
       const SharedBitmapId&) override;
   bool ChildAllocatedSharedBitmap(mojo::ScopedSharedBufferHandle buffer,
                                   const SharedBitmapId& id) override;

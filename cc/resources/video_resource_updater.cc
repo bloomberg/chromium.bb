@@ -249,8 +249,8 @@ VideoResourceUpdater::AllocateResource(const gfx::Size& plane_size,
   // ResourceProvider and stop using ResourceProvider in this class.
   if (software_resource) {
     DCHECK_EQ(format, viz::RGBA_8888);
-    resource_id =
-        resource_provider_->CreateBitmapResource(plane_size, color_space);
+    resource_id = resource_provider_->CreateBitmapResource(
+        plane_size, color_space, viz::RGBA_8888);
   } else {
     DCHECK(context_provider_);
 

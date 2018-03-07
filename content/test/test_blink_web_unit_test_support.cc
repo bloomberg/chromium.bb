@@ -238,9 +238,10 @@ blink::WebString TestBlinkWebUnitTestSupport::UserAgent() {
 }
 
 std::unique_ptr<viz::SharedBitmap>
-TestBlinkWebUnitTestSupport::AllocateSharedBitmap(const blink::WebSize& size) {
-  return shared_bitmap_manager_
-      ->AllocateSharedBitmap(gfx::Size(size.width, size.height));
+TestBlinkWebUnitTestSupport::AllocateSharedBitmap(const blink::WebSize& size,
+                                                  viz::ResourceFormat format) {
+  return shared_bitmap_manager_->AllocateSharedBitmap(
+      gfx::Size(size.width, size.height), format);
 }
 
 blink::WebString TestBlinkWebUnitTestSupport::QueryLocalizedString(
