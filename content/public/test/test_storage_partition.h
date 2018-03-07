@@ -59,6 +59,9 @@ class TestStoragePartition : public StoragePartition {
   scoped_refptr<SharedURLLoaderFactory> GetURLLoaderFactoryForBrowserProcess()
       override;
 
+  std::unique_ptr<SharedURLLoaderFactoryInfo>
+  GetURLLoaderFactoryForBrowserProcessIOThread() override;
+
   void set_cookie_manager_for_browser_process(
       network::mojom::CookieManager* cookie_manager_for_browser_process) {
     cookie_manager_for_browser_process_ = cookie_manager_for_browser_process;

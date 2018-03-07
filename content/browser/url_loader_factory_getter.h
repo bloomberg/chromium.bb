@@ -14,6 +14,7 @@
 
 namespace content {
 
+class SharedURLLoaderFactoryInfo;
 class SharedURLLoaderFactory;
 class StoragePartitionImpl;
 
@@ -40,6 +41,12 @@ class URLLoaderFactoryGetter
   // to the network service and supports auto-reconnect after crash.
   CONTENT_EXPORT scoped_refptr<SharedURLLoaderFactory> GetNetworkFactory();
 
+  // Called on the UI thread to get an info that holds a reference to this
+  // URLLoaderFactoryGetter, which can be used to construct a similar
+  // SharedURLLoaderFactory as returned from |GetNetworkFactory()| on IO thread.
+  CONTENT_EXPORT std::unique_ptr<SharedURLLoaderFactoryInfo>
+  GetNetworkFactoryInfo();
+
   // Called on the IO thread. Will clone the internal factory to the network
   // service which doesn't support auto-reconnect after crash. Useful for
   // one-off requests (e.g. A single navigation) to avoid additional mojo hop.
@@ -60,10 +67,10 @@ class URLLoaderFactoryGetter
     return &network_factory_;
   }
 
-  // When this global function is set, if GetNetworkFactory or
-  // CloneNetworkFactory is called and |test_factory_| is null, then the
-  // callback will be run. This method must be called either on the IO thread or
-  // before threads start. This callback is run on the IO thread.
+  // When this global function is set, if GetURLLoaderFactory is called and
+  // |test_factory_| is null, then the callback will be run. This method must be
+  // called either on the IO thread or before threads start. This callback is
+  // run on the IO thread.
   using GetNetworkFactoryCallback = base::RepeatingCallback<void(
       URLLoaderFactoryGetter* url_loader_factory_getter)>;
   CONTENT_EXPORT static void SetGetNetworkFactoryCallbackForTesting(
@@ -73,6 +80,7 @@ class URLLoaderFactoryGetter
   CONTENT_EXPORT void FlushNetworkInterfaceOnIOThreadForTesting();
 
  private:
+  class URLLoaderFactoryForIOThreadInfo;
   class URLLoaderFactoryForIOThread;
 
   friend class base::DeleteHelper<URLLoaderFactoryGetter>;

@@ -738,6 +738,11 @@ StoragePartitionImpl::GetURLLoaderFactoryForBrowserProcess() {
   return shared_url_loader_factory_for_browser_process_;
 }
 
+std::unique_ptr<SharedURLLoaderFactoryInfo>
+StoragePartitionImpl::GetURLLoaderFactoryForBrowserProcessIOThread() {
+  return url_loader_factory_getter_->GetNetworkFactoryInfo();
+}
+
 network::mojom::CookieManager*
 StoragePartitionImpl::GetCookieManagerForBrowserProcess() {
   // Create the CookieManager as needed.

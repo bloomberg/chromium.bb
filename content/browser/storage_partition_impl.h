@@ -93,6 +93,8 @@ class CONTENT_EXPORT StoragePartitionImpl
   network::mojom::NetworkContext* GetNetworkContext() override;
   scoped_refptr<SharedURLLoaderFactory> GetURLLoaderFactoryForBrowserProcess()
       override;
+  std::unique_ptr<SharedURLLoaderFactoryInfo>
+  GetURLLoaderFactoryForBrowserProcessIOThread() override;
   network::mojom::CookieManager* GetCookieManagerForBrowserProcess() override;
   storage::QuotaManager* GetQuotaManager() override;
   ChromeAppCacheService* GetAppCacheService() override;
