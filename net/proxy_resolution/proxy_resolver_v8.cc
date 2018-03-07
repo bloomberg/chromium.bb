@@ -89,12 +89,12 @@ const char kPacResourceName[] = "proxy-pac-script.js";
 const char kPacUtilityResourceName[] = "proxy-pac-utility-script.js";
 
 // External string wrapper so V8 can access the UTF16 string wrapped by
-// ProxyResolverScriptData.
+// PacFileData.
 class V8ExternalStringFromScriptData
     : public v8::String::ExternalStringResource {
  public:
   explicit V8ExternalStringFromScriptData(
-      const scoped_refptr<ProxyResolverScriptData>& script_data)
+      const scoped_refptr<PacFileData>& script_data)
       : script_data_(script_data) {}
 
   const uint16_t* data() const override {
@@ -104,7 +104,7 @@ class V8ExternalStringFromScriptData
   size_t length() const override { return script_data_->utf16().size(); }
 
  private:
-  const scoped_refptr<ProxyResolverScriptData> script_data_;
+  const scoped_refptr<PacFileData> script_data_;
   DISALLOW_COPY_AND_ASSIGN(V8ExternalStringFromScriptData);
 };
 
@@ -166,10 +166,11 @@ v8::Local<v8::String> ASCIIStringToV8String(v8::Isolate* isolate,
                                  s.size()).ToLocalChecked();
 }
 
-// Converts a UTF16 base::string16 (warpped by a ProxyResolverScriptData) to a
+// Converts a UTF16 base::string16 (wrapped by a PacFileData) to a
 // V8 string.
 v8::Local<v8::String> ScriptDataToV8String(
-    v8::Isolate* isolate, const scoped_refptr<ProxyResolverScriptData>& s) {
+    v8::Isolate* isolate,
+    const scoped_refptr<PacFileData>& s) {
   if (s->utf16().size() * 2 <= kMaxStringBytesForCopy) {
     return v8::String::NewFromTwoByte(
                isolate, reinterpret_cast<const uint16_t*>(s->utf16().data()),
@@ -492,7 +493,7 @@ class ProxyResolverV8::Context {
     return OK;
   }
 
-  int InitV8(const scoped_refptr<ProxyResolverScriptData>& pac_script,
+  int InitV8(const scoped_refptr<PacFileData>& pac_script,
              JSBindings* bindings) {
     base::AutoReset<JSBindings*> bindings_reset(&js_bindings_, bindings);
     v8::Locker locked(isolate_);
@@ -860,10 +861,9 @@ int ProxyResolverV8::GetProxyForURL(const GURL& query_url,
 }
 
 // static
-int ProxyResolverV8::Create(
-    const scoped_refptr<ProxyResolverScriptData>& script_data,
-    ProxyResolverV8::JSBindings* js_bindings,
-    std::unique_ptr<ProxyResolverV8>* resolver) {
+int ProxyResolverV8::Create(const scoped_refptr<PacFileData>& script_data,
+                            ProxyResolverV8::JSBindings* js_bindings,
+                            std::unique_ptr<ProxyResolverV8>* resolver) {
   DCHECK(script_data.get());
   DCHECK(js_bindings);
 

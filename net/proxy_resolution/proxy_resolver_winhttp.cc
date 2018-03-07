@@ -52,8 +52,7 @@ static Error WinHttpErrorToNetError(DWORD win_http_error) {
 
 class ProxyResolverWinHttp : public ProxyResolver {
  public:
-  ProxyResolverWinHttp(
-      const scoped_refptr<ProxyResolverScriptData>& script_data);
+  ProxyResolverWinHttp(const scoped_refptr<PacFileData>& script_data);
   ~ProxyResolverWinHttp() override;
 
   // ProxyResolver implementation:
@@ -76,12 +75,11 @@ class ProxyResolverWinHttp : public ProxyResolver {
 };
 
 ProxyResolverWinHttp::ProxyResolverWinHttp(
-    const scoped_refptr<ProxyResolverScriptData>& script_data)
+    const scoped_refptr<PacFileData>& script_data)
     : session_handle_(NULL),
-      pac_url_(script_data->type() == ProxyResolverScriptData::TYPE_AUTO_DETECT
+      pac_url_(script_data->type() == PacFileData::TYPE_AUTO_DETECT
                    ? GURL("http://wpad/wpad.dat")
-                   : script_data->url()) {
-}
+                   : script_data->url()) {}
 
 ProxyResolverWinHttp::~ProxyResolverWinHttp() {
   CloseWinHttpSession();
@@ -204,7 +202,7 @@ ProxyResolverFactoryWinHttp::ProxyResolverFactoryWinHttp()
 }
 
 int ProxyResolverFactoryWinHttp::CreateProxyResolver(
-    const scoped_refptr<ProxyResolverScriptData>& pac_script,
+    const scoped_refptr<PacFileData>& pac_script,
     std::unique_ptr<ProxyResolver>* resolver,
     const CompletionCallback& callback,
     std::unique_ptr<Request>* request) {

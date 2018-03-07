@@ -767,7 +767,7 @@ void IOThread::SetUpProxyService(
     network::URLRequestContextBuilderMojo* builder) const {
 #if defined(OS_CHROMEOS)
   builder->SetDhcpFetcherFactory(
-      std::make_unique<chromeos::DhcpProxyScriptFetcherFactoryChromeos>());
+      std::make_unique<chromeos::DhcpPacFileFetcherFactoryChromeos>());
 #endif
 
   builder->set_pac_quick_check_enabled(WpadQuickCheckEnabled());

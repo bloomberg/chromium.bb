@@ -82,8 +82,7 @@ void ConvertResponseToUTF16(const std::string& charset,
 
 }  // namespace
 
-ProxyScriptFetcherImpl::ProxyScriptFetcherImpl(
-    URLRequestContext* url_request_context)
+PacFileFetcherImpl::PacFileFetcherImpl(URLRequestContext* url_request_context)
     : url_request_context_(url_request_context),
       buf_(new IOBuffer(kBufSize)),
       next_id_(0),
@@ -96,26 +95,26 @@ ProxyScriptFetcherImpl::ProxyScriptFetcherImpl(
   DCHECK(url_request_context);
 }
 
-ProxyScriptFetcherImpl::~ProxyScriptFetcherImpl() {
+PacFileFetcherImpl::~PacFileFetcherImpl() {
   // The URLRequest's destructor will cancel the outstanding request, and
   // ensure that the delegate (this) is not called again.
 }
 
-base::TimeDelta ProxyScriptFetcherImpl::SetTimeoutConstraint(
+base::TimeDelta PacFileFetcherImpl::SetTimeoutConstraint(
     base::TimeDelta timeout) {
   base::TimeDelta prev = max_duration_;
   max_duration_ = timeout;
   return prev;
 }
 
-size_t ProxyScriptFetcherImpl::SetSizeConstraint(size_t size_bytes) {
+size_t PacFileFetcherImpl::SetSizeConstraint(size_t size_bytes) {
   size_t prev = max_response_bytes_;
   max_response_bytes_ = size_bytes;
   return prev;
 }
 
-void ProxyScriptFetcherImpl::OnResponseCompleted(URLRequest* request,
-                                                 int net_error) {
+void PacFileFetcherImpl::OnResponseCompleted(URLRequest* request,
+                                             int net_error) {
   DCHECK_EQ(request, cur_request_.get());
 
   // Use |result_code_| as the request's error if we have already set it to
@@ -126,9 +125,9 @@ void ProxyScriptFetcherImpl::OnResponseCompleted(URLRequest* request,
   FetchCompleted();
 }
 
-int ProxyScriptFetcherImpl::Fetch(const GURL& url,
-                                  base::string16* text,
-                                  const CompletionCallback& callback) {
+int PacFileFetcherImpl::Fetch(const GURL& url,
+                              base::string16* text,
+                              const CompletionCallback& callback) {
   // It is invalid to call Fetch() while a request is already in progress.
   DCHECK(!cur_request_.get());
   DCHECK(!callback.is_null());
@@ -212,7 +211,7 @@ int ProxyScriptFetcherImpl::Fetch(const GURL& url,
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&ProxyScriptFetcherImpl::OnTimeout, weak_factory_.GetWeakPtr(),
+      base::Bind(&PacFileFetcherImpl::OnTimeout, weak_factory_.GetWeakPtr(),
                  cur_request_id_),
       max_duration_);
 
@@ -221,17 +220,17 @@ int ProxyScriptFetcherImpl::Fetch(const GURL& url,
   return ERR_IO_PENDING;
 }
 
-void ProxyScriptFetcherImpl::Cancel() {
+void PacFileFetcherImpl::Cancel() {
   // ResetCurRequestState will free the URLRequest, which will cause
   // cancellation.
   ResetCurRequestState();
 }
 
-URLRequestContext* ProxyScriptFetcherImpl::GetRequestContext() const {
+URLRequestContext* PacFileFetcherImpl::GetRequestContext() const {
   return url_request_context_;
 }
 
-void ProxyScriptFetcherImpl::OnShutdown() {
+void PacFileFetcherImpl::OnShutdown() {
   url_request_context_ = nullptr;
 
   if (cur_request_) {
@@ -240,8 +239,8 @@ void ProxyScriptFetcherImpl::OnShutdown() {
   }
 }
 
-void ProxyScriptFetcherImpl::OnAuthRequired(URLRequest* request,
-                                            AuthChallengeInfo* auth_info) {
+void PacFileFetcherImpl::OnAuthRequired(URLRequest* request,
+                                        AuthChallengeInfo* auth_info) {
   DCHECK_EQ(request, cur_request_.get());
   // TODO(eroman): http://crbug.com/77366
   LOG(WARNING) << "Auth required to fetch PAC script, aborting.";
@@ -249,9 +248,9 @@ void ProxyScriptFetcherImpl::OnAuthRequired(URLRequest* request,
   request->CancelAuth();
 }
 
-void ProxyScriptFetcherImpl::OnSSLCertificateError(URLRequest* request,
-                                                   const SSLInfo& ssl_info,
-                                                   bool fatal) {
+void PacFileFetcherImpl::OnSSLCertificateError(URLRequest* request,
+                                               const SSLInfo& ssl_info,
+                                               bool fatal) {
   DCHECK_EQ(request, cur_request_.get());
   // Revocation check failures are not fatal.
   if (IsCertStatusMinorError(ssl_info.cert_status)) {
@@ -264,8 +263,7 @@ void ProxyScriptFetcherImpl::OnSSLCertificateError(URLRequest* request,
   request->Cancel();
 }
 
-void ProxyScriptFetcherImpl::OnResponseStarted(URLRequest* request,
-                                               int net_error) {
+void PacFileFetcherImpl::OnResponseStarted(URLRequest* request, int net_error) {
   DCHECK_EQ(request, cur_request_.get());
   DCHECK_NE(ERR_IO_PENDING, net_error);
 
@@ -300,8 +298,7 @@ void ProxyScriptFetcherImpl::OnResponseStarted(URLRequest* request,
   ReadBody(request);
 }
 
-void ProxyScriptFetcherImpl::OnReadCompleted(URLRequest* request,
-                                             int num_bytes) {
+void PacFileFetcherImpl::OnReadCompleted(URLRequest* request, int num_bytes) {
   DCHECK_NE(ERR_IO_PENDING, num_bytes);
 
   DCHECK_EQ(request, cur_request_.get());
@@ -311,7 +308,7 @@ void ProxyScriptFetcherImpl::OnReadCompleted(URLRequest* request,
   }
 }
 
-void ProxyScriptFetcherImpl::ReadBody(URLRequest* request) {
+void PacFileFetcherImpl::ReadBody(URLRequest* request) {
   // Read as many bytes as are available synchronously.
   while (true) {
     int num_bytes = request->Read(buf_.get(), kBufSize);
@@ -328,8 +325,7 @@ void ProxyScriptFetcherImpl::ReadBody(URLRequest* request) {
   }
 }
 
-bool ProxyScriptFetcherImpl::ConsumeBytesRead(URLRequest* request,
-                                              int num_bytes) {
+bool PacFileFetcherImpl::ConsumeBytesRead(URLRequest* request, int num_bytes) {
   if (fetch_time_to_first_byte_.is_null())
     fetch_time_to_first_byte_ = base::TimeTicks::Now();
 
@@ -351,9 +347,9 @@ bool ProxyScriptFetcherImpl::ConsumeBytesRead(URLRequest* request,
   return true;
 }
 
-void ProxyScriptFetcherImpl::FetchCompleted() {
+void PacFileFetcherImpl::FetchCompleted() {
   if (result_code_ == OK) {
-    // Calculate duration of time for proxy script fetch to complete.
+    // Calculate duration of time for PAC file fetch to complete.
     DCHECK(!fetch_start_time_.is_null());
     DCHECK(!fetch_time_to_first_byte_.is_null());
     UMA_HISTOGRAM_MEDIUM_TIMES("Net.ProxyScriptFetcher.SuccessDuration",
@@ -378,7 +374,7 @@ void ProxyScriptFetcherImpl::FetchCompleted() {
   callback.Run(result_code);
 }
 
-void ProxyScriptFetcherImpl::ResetCurRequestState() {
+void PacFileFetcherImpl::ResetCurRequestState() {
   cur_request_.reset();
   cur_request_id_ = 0;
   callback_.Reset();
@@ -388,7 +384,7 @@ void ProxyScriptFetcherImpl::ResetCurRequestState() {
   fetch_time_to_first_byte_ = base::TimeTicks();
 }
 
-void ProxyScriptFetcherImpl::OnTimeout(int id) {
+void PacFileFetcherImpl::OnTimeout(int id) {
   // Timeout tasks may outlive the URLRequest they reference. Make sure it
   // is still applicable.
   if (cur_request_id_ != id)

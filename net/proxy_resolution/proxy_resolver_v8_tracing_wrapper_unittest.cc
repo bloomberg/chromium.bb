@@ -51,7 +51,7 @@ class ProxyResolverV8TracingWrapperTest : public testing::Test {
   }
 };
 
-scoped_refptr<ProxyResolverScriptData> LoadScriptData(const char* filename) {
+scoped_refptr<PacFileData> LoadScriptData(const char* filename) {
   base::FilePath path;
   PathService::Get(base::DIR_SOURCE_ROOT, &path);
   path = path.AppendASCII("net");
@@ -67,7 +67,7 @@ scoped_refptr<ProxyResolverScriptData> LoadScriptData(const char* filename) {
   EXPECT_TRUE(ok) << "Failed to read file: " << path.value();
 
   // Load the PAC script into the ProxyResolver.
-  return ProxyResolverScriptData::FromUTF8(file_contents);
+  return PacFileData::FromUTF8(file_contents);
 }
 
 std::unique_ptr<ProxyResolverErrorObserver> ReturnErrorObserver(

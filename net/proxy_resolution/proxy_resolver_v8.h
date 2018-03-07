@@ -19,7 +19,7 @@ class GURL;
 
 namespace net {
 class ProxyInfo;
-class ProxyResolverScriptData;
+class PacFileData;
 
 // A synchronous ProxyResolver-like that uses V8 to evaluate PAC scripts.
 class NET_EXPORT_PRIVATE ProxyResolverV8 {
@@ -57,7 +57,7 @@ class NET_EXPORT_PRIVATE ProxyResolverV8 {
   };
 
   // Constructs a ProxyResolverV8.
-  static int Create(const scoped_refptr<ProxyResolverScriptData>& script_data,
+  static int Create(const scoped_refptr<PacFileData>& script_data,
                     JSBindings* bindings,
                     std::unique_ptr<ProxyResolverV8>* resolver);
 

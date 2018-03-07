@@ -13,16 +13,17 @@
 
 namespace net {
 
-MockProxyScriptFetcher::MockProxyScriptFetcher()
+MockPacFileFetcher::MockPacFileFetcher()
     : pending_request_text_(NULL),
       waiting_for_fetch_(false),
       is_shutdown_(false) {}
 
-MockProxyScriptFetcher::~MockProxyScriptFetcher() = default;
+MockPacFileFetcher::~MockPacFileFetcher() = default;
 
-// ProxyScriptFetcher implementation.
-int MockProxyScriptFetcher::Fetch(const GURL& url, base::string16* text,
-                                  const CompletionCallback& callback) {
+// PacFileFetcher implementation.
+int MockPacFileFetcher::Fetch(const GURL& url,
+                              base::string16* text,
+                              const CompletionCallback& callback) {
   DCHECK(!has_pending_request());
 
   if (waiting_for_fetch_)
@@ -39,37 +40,37 @@ int MockProxyScriptFetcher::Fetch(const GURL& url, base::string16* text,
   return ERR_IO_PENDING;
 }
 
-void MockProxyScriptFetcher::NotifyFetchCompletion(
-    int result, const std::string& ascii_text) {
+void MockPacFileFetcher::NotifyFetchCompletion(int result,
+                                               const std::string& ascii_text) {
   DCHECK(has_pending_request());
   *pending_request_text_ = base::ASCIIToUTF16(ascii_text);
   base::ResetAndReturn(&pending_request_callback_).Run(result);
 }
 
-void MockProxyScriptFetcher::Cancel() {
+void MockPacFileFetcher::Cancel() {
   pending_request_callback_.Reset();
 }
 
-void MockProxyScriptFetcher::OnShutdown() {
+void MockPacFileFetcher::OnShutdown() {
   is_shutdown_ = true;
   if (pending_request_callback_) {
     base::ResetAndReturn(&pending_request_callback_).Run(ERR_CONTEXT_SHUT_DOWN);
   }
 }
 
-URLRequestContext* MockProxyScriptFetcher::GetRequestContext() const {
+URLRequestContext* MockPacFileFetcher::GetRequestContext() const {
   return NULL;
 }
 
-const GURL& MockProxyScriptFetcher::pending_request_url() const {
+const GURL& MockPacFileFetcher::pending_request_url() const {
   return pending_request_url_;
 }
 
-bool MockProxyScriptFetcher::has_pending_request() const {
+bool MockPacFileFetcher::has_pending_request() const {
   return !pending_request_callback_.is_null();
 }
 
-void MockProxyScriptFetcher::WaitUntilFetch() {
+void MockPacFileFetcher::WaitUntilFetch() {
   DCHECK(!has_pending_request());
   waiting_for_fetch_ = true;
   base::RunLoop().Run();

@@ -10,43 +10,36 @@
 namespace net {
 
 // static
-scoped_refptr<ProxyResolverScriptData> ProxyResolverScriptData::FromUTF8(
-    const std::string& utf8) {
-  return new ProxyResolverScriptData(TYPE_SCRIPT_CONTENTS, GURL(),
-                                     base::UTF8ToUTF16(utf8));
+scoped_refptr<PacFileData> PacFileData::FromUTF8(const std::string& utf8) {
+  return new PacFileData(TYPE_SCRIPT_CONTENTS, GURL(), base::UTF8ToUTF16(utf8));
 }
 
 // static
-scoped_refptr<ProxyResolverScriptData> ProxyResolverScriptData::FromUTF16(
-    const base::string16& utf16) {
-  return new ProxyResolverScriptData(TYPE_SCRIPT_CONTENTS, GURL(), utf16);
+scoped_refptr<PacFileData> PacFileData::FromUTF16(const base::string16& utf16) {
+  return new PacFileData(TYPE_SCRIPT_CONTENTS, GURL(), utf16);
 }
 
 // static
-scoped_refptr<ProxyResolverScriptData> ProxyResolverScriptData::FromURL(
-    const GURL& url) {
-  return new ProxyResolverScriptData(TYPE_SCRIPT_URL, url, base::string16());
+scoped_refptr<PacFileData> PacFileData::FromURL(const GURL& url) {
+  return new PacFileData(TYPE_SCRIPT_URL, url, base::string16());
 }
 
 // static
-scoped_refptr<ProxyResolverScriptData>
-ProxyResolverScriptData::ForAutoDetect() {
-  return new ProxyResolverScriptData(TYPE_AUTO_DETECT, GURL(),
-                                     base::string16());
+scoped_refptr<PacFileData> PacFileData::ForAutoDetect() {
+  return new PacFileData(TYPE_AUTO_DETECT, GURL(), base::string16());
 }
 
-const base::string16& ProxyResolverScriptData::utf16() const {
+const base::string16& PacFileData::utf16() const {
   DCHECK_EQ(TYPE_SCRIPT_CONTENTS, type_);
   return utf16_;
 }
 
-const GURL& ProxyResolverScriptData::url() const {
+const GURL& PacFileData::url() const {
   DCHECK_EQ(TYPE_SCRIPT_URL, type_);
   return url_;
 }
 
-bool ProxyResolverScriptData::Equals(
-    const ProxyResolverScriptData* other) const {
+bool PacFileData::Equals(const PacFileData* other) const {
   if (type() != other->type())
     return false;
 
@@ -62,11 +55,11 @@ bool ProxyResolverScriptData::Equals(
   return false;  // Shouldn't be reached.
 }
 
-ProxyResolverScriptData::ProxyResolverScriptData(Type type,
-                                                 const GURL& url,
-                                                 const base::string16& utf16)
+PacFileData::PacFileData(Type type,
+                         const GURL& url,
+                         const base::string16& utf16)
     : type_(type), url_(url), utf16_(utf16) {}
 
-ProxyResolverScriptData::~ProxyResolverScriptData() = default;
+PacFileData::~PacFileData() = default;
 
 }  // namespace net

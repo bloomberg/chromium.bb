@@ -20,7 +20,7 @@ namespace net {
 class HostResolver;
 class NetLog;
 class ProxyResolverErrorObserver;
-class ProxyResolverScriptData;
+class PacFileData;
 }  // namespace net
 
 namespace network {
@@ -39,11 +39,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ProxyResolverFactoryMojo
   ~ProxyResolverFactoryMojo() override;
 
   // ProxyResolverFactory override.
-  int CreateProxyResolver(
-      const scoped_refptr<net::ProxyResolverScriptData>& pac_script,
-      std::unique_ptr<net::ProxyResolver>* resolver,
-      const net::CompletionCallback& callback,
-      std::unique_ptr<Request>* request) override;
+  int CreateProxyResolver(const scoped_refptr<net::PacFileData>& pac_script,
+                          std::unique_ptr<net::ProxyResolver>* resolver,
+                          const net::CompletionCallback& callback,
+                          std::unique_ptr<Request>* request) override;
 
  private:
   class Job;

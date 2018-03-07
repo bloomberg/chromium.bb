@@ -10,16 +10,16 @@
 
 namespace chromeos {
 
-DhcpProxyScriptFetcherFactoryChromeos::DhcpProxyScriptFetcherFactoryChromeos() =
+DhcpPacFileFetcherFactoryChromeos::DhcpPacFileFetcherFactoryChromeos() =
     default;
 
-DhcpProxyScriptFetcherFactoryChromeos::
-    ~DhcpProxyScriptFetcherFactoryChromeos() = default;
+DhcpPacFileFetcherFactoryChromeos::~DhcpPacFileFetcherFactoryChromeos() =
+    default;
 
-std::unique_ptr<net::DhcpProxyScriptFetcher>
-DhcpProxyScriptFetcherFactoryChromeos::Create(
+std::unique_ptr<net::DhcpPacFileFetcher>
+DhcpPacFileFetcherFactoryChromeos::Create(
     net::URLRequestContext* url_request_context) {
-  return std::make_unique<DhcpProxyScriptFetcherChromeos>(url_request_context);
+  return std::make_unique<DhcpPacFileFetcherChromeos>(url_request_context);
 }
 
 }  // namespace chromeos

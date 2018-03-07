@@ -963,9 +963,9 @@ TEST_F(ProxyServiceTest,
   EXPECT_EQ("foopy_valid:8080", info.proxy_server().ToURI());
 }
 
-TEST_F(ProxyServiceTest, ProxyScriptFetcherFailsDownloadingMandatoryPac) {
-  // Test what happens when the ProxyScriptResolver fails to download a
-  // mandatory PAC script.
+TEST_F(ProxyServiceTest, PacFileFetcherFailsDownloadingMandatoryPac) {
+  // Test what happens when the ProxyResolver fails to download a mandatory PAC
+  // script.
 
   ProxyConfig config(
       ProxyConfig::CreateFromCustomPacURL(GURL("http://foopy/proxy.pac")));
@@ -1026,10 +1026,9 @@ TEST_F(ProxyServiceTest, ProxyResolverFailsParsingJavaScriptMandatoryPac) {
   ProxyResolutionService service(base::WrapUnique(config_service),
                                  base::WrapUnique(factory), nullptr);
 
-  MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
-  service.SetProxyScriptFetchers(
-      base::WrapUnique(fetcher),
-      std::make_unique<DoNothingDhcpProxyScriptFetcher>());
+  MockPacFileFetcher* fetcher = new MockPacFileFetcher;
+  service.SetPacFileFetchers(base::WrapUnique(fetcher),
+                             std::make_unique<DoNothingDhcpPacFileFetcher>());
 
   // Start resolve request.
   GURL url("http://www.google.com/");
@@ -1050,7 +1049,7 @@ TEST_F(ProxyServiceTest, ProxyResolverFailsParsingJavaScriptMandatoryPac) {
   EXPECT_FALSE(fetcher->has_pending_request());
   ASSERT_EQ(0u, factory->pending_requests().size());
 
-  // Since ProxyScriptDecider failed to identify a valid PAC and PAC was
+  // Since PacFileDecider failed to identify a valid PAC and PAC was
   // mandatory for this configuration, the ProxyResolutionService must not
   // implicitly fall-back to DIRECT.
   EXPECT_EQ(ERR_MANDATORY_PROXY_CONFIGURATION_FAILED,
@@ -1834,10 +1833,9 @@ TEST_F(ProxyServiceTest, InitialPACScriptDownload) {
   ProxyResolutionService service(base::WrapUnique(config_service),
                                  base::WrapUnique(factory), nullptr);
 
-  MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
-  service.SetProxyScriptFetchers(
-      base::WrapUnique(fetcher),
-      std::make_unique<DoNothingDhcpProxyScriptFetcher>());
+  MockPacFileFetcher* fetcher = new MockPacFileFetcher;
+  service.SetPacFileFetchers(base::WrapUnique(fetcher),
+                             std::make_unique<DoNothingDhcpPacFileFetcher>());
 
   // Start 3 requests.
 
@@ -1870,15 +1868,12 @@ TEST_F(ProxyServiceTest, InitialPACScriptDownload) {
   // Nothing has been sent to the factory yet.
   EXPECT_TRUE(factory->pending_requests().empty());
 
-  EXPECT_EQ(LOAD_STATE_DOWNLOADING_PROXY_SCRIPT,
-            service.GetLoadState(request1));
-  EXPECT_EQ(LOAD_STATE_DOWNLOADING_PROXY_SCRIPT,
-            service.GetLoadState(request2));
-  EXPECT_EQ(LOAD_STATE_DOWNLOADING_PROXY_SCRIPT,
-            service.GetLoadState(request3));
+  EXPECT_EQ(LOAD_STATE_DOWNLOADING_PAC_FILE, service.GetLoadState(request1));
+  EXPECT_EQ(LOAD_STATE_DOWNLOADING_PAC_FILE, service.GetLoadState(request2));
+  EXPECT_EQ(LOAD_STATE_DOWNLOADING_PAC_FILE, service.GetLoadState(request3));
 
   // At this point the ProxyResolutionService should be waiting for the
-  // ProxyScriptFetcher to invoke its completion callback, notifying it of
+  // PacFileFetcher to invoke its completion callback, notifying it of
   // PAC script download completion.
   fetcher->NotifyFetchCompletion(OK, kValidPacScript1);
 
@@ -1928,7 +1923,7 @@ TEST_F(ProxyServiceTest, InitialPACScriptDownload) {
   EXPECT_LE(info3.proxy_resolve_start_time(), info3.proxy_resolve_end_time());
 }
 
-// Test changing the ProxyScriptFetcher while PAC download is in progress.
+// Test changing the PacFileFetcher while PAC download is in progress.
 TEST_F(ProxyServiceTest, ChangeScriptFetcherWhilePACDownloadInProgress) {
   const GURL url1("http://request1");
   const GURL url2("http://request2");
@@ -1942,10 +1937,9 @@ TEST_F(ProxyServiceTest, ChangeScriptFetcherWhilePACDownloadInProgress) {
   ProxyResolutionService service(base::WrapUnique(config_service),
                                  base::WrapUnique(factory), nullptr);
 
-  MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
-  service.SetProxyScriptFetchers(
-      base::WrapUnique(fetcher),
-      std::make_unique<DoNothingDhcpProxyScriptFetcher>());
+  MockPacFileFetcher* fetcher = new MockPacFileFetcher;
+  service.SetPacFileFetchers(base::WrapUnique(fetcher),
+                             std::make_unique<DoNothingDhcpPacFileFetcher>());
 
   // Start 2 jobs.
 
@@ -1967,16 +1961,15 @@ TEST_F(ProxyServiceTest, ChangeScriptFetcherWhilePACDownloadInProgress) {
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // At this point the ProxyResolutionService should be waiting for the
-  // ProxyScriptFetcher to invoke its completion callback, notifying it of
+  // PacFileFetcher to invoke its completion callback, notifying it of
   // PAC script download completion.
 
   // We now change out the ProxyResolutionService's script fetcher. We should
   // restart the initialization with the new fetcher.
 
-  fetcher = new MockProxyScriptFetcher;
-  service.SetProxyScriptFetchers(
-      base::WrapUnique(fetcher),
-      std::make_unique<DoNothingDhcpProxyScriptFetcher>());
+  fetcher = new MockPacFileFetcher;
+  service.SetPacFileFetchers(base::WrapUnique(fetcher),
+                             std::make_unique<DoNothingDhcpPacFileFetcher>());
 
   // Nothing has been sent to the factory yet.
   EXPECT_TRUE(factory->pending_requests().empty());
@@ -2004,10 +1997,9 @@ TEST_F(ProxyServiceTest, CancelWhilePACFetching) {
   ProxyResolutionService service(base::WrapUnique(config_service),
                                  base::WrapUnique(factory), nullptr);
 
-  MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
-  service.SetProxyScriptFetchers(
-      base::WrapUnique(fetcher),
-      std::make_unique<DoNothingDhcpProxyScriptFetcher>());
+  MockPacFileFetcher* fetcher = new MockPacFileFetcher;
+  service.SetPacFileFetchers(base::WrapUnique(fetcher),
+                             std::make_unique<DoNothingDhcpPacFileFetcher>());
 
   // Start 3 requests.
   ProxyInfo info1;
@@ -2046,7 +2038,7 @@ TEST_F(ProxyServiceTest, CancelWhilePACFetching) {
   service.CancelRequest(request2);
 
   // At this point the ProxyResolutionService should be waiting for the
-  // ProxyScriptFetcher to invoke its completion callback, notifying it of
+  // PacFileFetcher to invoke its completion callback, notifying it of
   // PAC script download completion.
   fetcher->NotifyFetchCompletion(OK, kValidPacScript1);
 
@@ -2105,10 +2097,9 @@ TEST_F(ProxyServiceTest, FallbackFromAutodetectToCustomPac) {
   ProxyResolutionService service(base::WrapUnique(config_service),
                                  base::WrapUnique(factory), nullptr);
 
-  MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
-  service.SetProxyScriptFetchers(
-      base::WrapUnique(fetcher),
-      std::make_unique<DoNothingDhcpProxyScriptFetcher>());
+  MockPacFileFetcher* fetcher = new MockPacFileFetcher;
+  service.SetPacFileFetchers(base::WrapUnique(fetcher),
+                             std::make_unique<DoNothingDhcpPacFileFetcher>());
 
   // Start 2 requests.
 
@@ -2189,10 +2180,9 @@ TEST_F(ProxyServiceTest, FallbackFromAutodetectToCustomPac2) {
   ProxyResolutionService service(base::WrapUnique(config_service),
                                  base::WrapUnique(factory), nullptr);
 
-  MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
-  service.SetProxyScriptFetchers(
-      base::WrapUnique(fetcher),
-      std::make_unique<DoNothingDhcpProxyScriptFetcher>());
+  MockPacFileFetcher* fetcher = new MockPacFileFetcher;
+  service.SetPacFileFetchers(base::WrapUnique(fetcher),
+                             std::make_unique<DoNothingDhcpPacFileFetcher>());
 
   // Start 2 requests.
 
@@ -2266,10 +2256,9 @@ TEST_F(ProxyServiceTest, FallbackFromAutodetectToCustomToManual) {
   ProxyResolutionService service(base::WrapUnique(config_service),
                                  base::WrapUnique(factory), nullptr);
 
-  MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
-  service.SetProxyScriptFetchers(
-      base::WrapUnique(fetcher),
-      std::make_unique<DoNothingDhcpProxyScriptFetcher>());
+  MockPacFileFetcher* fetcher = new MockPacFileFetcher;
+  service.SetPacFileFetchers(base::WrapUnique(fetcher),
+                             std::make_unique<DoNothingDhcpPacFileFetcher>());
 
   // Start 2 jobs.
 
@@ -2329,10 +2318,9 @@ TEST_F(ProxyServiceTest, BypassDoesntApplyToPac) {
   ProxyResolutionService service(base::WrapUnique(config_service),
                                  base::WrapUnique(factory), nullptr);
 
-  MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
-  service.SetProxyScriptFetchers(
-      base::WrapUnique(fetcher),
-      std::make_unique<DoNothingDhcpProxyScriptFetcher>());
+  MockPacFileFetcher* fetcher = new MockPacFileFetcher;
+  service.SetPacFileFetchers(base::WrapUnique(fetcher),
+                             std::make_unique<DoNothingDhcpPacFileFetcher>());
 
   // Start 1 requests.
 
@@ -2387,7 +2375,7 @@ TEST_F(ProxyServiceTest, BypassDoesntApplyToPac) {
 
 // Delete the ProxyResolutionService while InitProxyResolver has an outstanding
 // request to the script fetcher. When run under valgrind, should not
-// have any memory errors (used to be that the ProxyScriptFetcher was
+// have any memory errors (used to be that the PacFileFetcher was
 // being deleted prior to the InitProxyResolver).
 TEST_F(ProxyServiceTest, DeleteWhileInitProxyResolverHasOutstandingFetch) {
   ProxyConfig config =
@@ -2399,10 +2387,9 @@ TEST_F(ProxyServiceTest, DeleteWhileInitProxyResolverHasOutstandingFetch) {
   ProxyResolutionService service(base::WrapUnique(config_service),
                                  base::WrapUnique(factory), nullptr);
 
-  MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
-  service.SetProxyScriptFetchers(
-      base::WrapUnique(fetcher),
-      std::make_unique<DoNothingDhcpProxyScriptFetcher>());
+  MockPacFileFetcher* fetcher = new MockPacFileFetcher;
+  service.SetPacFileFetchers(base::WrapUnique(fetcher),
+                             std::make_unique<DoNothingDhcpPacFileFetcher>());
 
   // Start 1 request.
 
@@ -2416,7 +2403,7 @@ TEST_F(ProxyServiceTest, DeleteWhileInitProxyResolverHasOutstandingFetch) {
   // Check that nothing has been sent to the proxy resolver factory yet.
   ASSERT_EQ(0u, factory->pending_requests().size());
 
-  // InitProxyResolver should have issued a request to the ProxyScriptFetcher
+  // InitProxyResolver should have issued a request to the PacFileFetcher
   // and be waiting on that to complete.
   EXPECT_TRUE(fetcher->has_pending_request());
   EXPECT_EQ(GURL("http://foopy/proxy.pac"), fetcher->pending_request_url());
@@ -2497,7 +2484,7 @@ TEST_F(ProxyServiceTest, UpdateConfigFromPACToDirect) {
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // Successfully set the autodetect script.
-  EXPECT_EQ(ProxyResolverScriptData::TYPE_AUTO_DETECT,
+  EXPECT_EQ(PacFileData::TYPE_AUTO_DETECT,
             factory->pending_requests()[0]->script_data()->type());
   factory->pending_requests()[0]->CompleteNowWithForwarder(OK, &resolver);
 
@@ -2541,10 +2528,9 @@ TEST_F(ProxyServiceTest, NetworkChangeTriggersPacRefetch) {
   ProxyResolutionService service(base::WrapUnique(config_service),
                                  base::WrapUnique(factory), &log);
 
-  MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
-  service.SetProxyScriptFetchers(
-      base::WrapUnique(fetcher),
-      std::make_unique<DoNothingDhcpProxyScriptFetcher>());
+  MockPacFileFetcher* fetcher = new MockPacFileFetcher;
+  service.SetPacFileFetchers(base::WrapUnique(fetcher),
+                             std::make_unique<DoNothingDhcpPacFileFetcher>());
 
   // Disable the "wait after IP address changes" hack, so this unit-test can
   // complete quickly.
@@ -2567,7 +2553,7 @@ TEST_F(ProxyServiceTest, NetworkChangeTriggersPacRefetch) {
   EXPECT_TRUE(factory->pending_requests().empty());
 
   // At this point the ProxyResolutionService should be waiting for the
-  // ProxyScriptFetcher to invoke its completion callback, notifying it of
+  // PacFileFetcher to invoke its completion callback, notifying it of
   // PAC script download completion.
   fetcher->NotifyFetchCompletion(OK, kValidPacScript1);
 
@@ -2664,10 +2650,9 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterFailure) {
   ProxyResolutionService service(base::WrapUnique(config_service),
                                  base::WrapUnique(factory), nullptr);
 
-  MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
-  service.SetProxyScriptFetchers(
-      base::WrapUnique(fetcher),
-      std::make_unique<DoNothingDhcpProxyScriptFetcher>());
+  MockPacFileFetcher* fetcher = new MockPacFileFetcher;
+  service.SetPacFileFetchers(base::WrapUnique(fetcher),
+                             std::make_unique<DoNothingDhcpPacFileFetcher>());
 
   // Start 1 request.
 
@@ -2686,7 +2671,7 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterFailure) {
   EXPECT_TRUE(factory->pending_requests().empty());
 
   // At this point the ProxyResolutionService should be waiting for the
-  // ProxyScriptFetcher to invoke its completion callback, notifying it of
+  // PacFileFetcher to invoke its completion callback, notifying it of
   // PAC script download completion.
   //
   // We simulate a failed download attempt, the proxy service should now
@@ -2772,10 +2757,9 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterContentChange) {
   ProxyResolutionService service(base::WrapUnique(config_service),
                                  base::WrapUnique(factory), nullptr);
 
-  MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
-  service.SetProxyScriptFetchers(
-      base::WrapUnique(fetcher),
-      std::make_unique<DoNothingDhcpProxyScriptFetcher>());
+  MockPacFileFetcher* fetcher = new MockPacFileFetcher;
+  service.SetPacFileFetchers(base::WrapUnique(fetcher),
+                             std::make_unique<DoNothingDhcpPacFileFetcher>());
 
   // Start 1 request.
 
@@ -2794,7 +2778,7 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterContentChange) {
   EXPECT_TRUE(factory->pending_requests().empty());
 
   // At this point the ProxyResolutionService should be waiting for the
-  // ProxyScriptFetcher to invoke its completion callback, notifying it of
+  // PacFileFetcher to invoke its completion callback, notifying it of
   // PAC script download completion.
   fetcher->NotifyFetchCompletion(OK, kValidPacScript1);
 
@@ -2886,10 +2870,9 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterContentUnchanged) {
   ProxyResolutionService service(base::WrapUnique(config_service),
                                  base::WrapUnique(factory), nullptr);
 
-  MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
-  service.SetProxyScriptFetchers(
-      base::WrapUnique(fetcher),
-      std::make_unique<DoNothingDhcpProxyScriptFetcher>());
+  MockPacFileFetcher* fetcher = new MockPacFileFetcher;
+  service.SetPacFileFetchers(base::WrapUnique(fetcher),
+                             std::make_unique<DoNothingDhcpPacFileFetcher>());
 
   // Start 1 request.
 
@@ -2908,7 +2891,7 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterContentUnchanged) {
   EXPECT_TRUE(factory->pending_requests().empty());
 
   // At this point the ProxyResolutionService should be waiting for the
-  // ProxyScriptFetcher to invoke its completion callback, notifying it of
+  // PacFileFetcher to invoke its completion callback, notifying it of
   // PAC script download completion.
   fetcher->NotifyFetchCompletion(OK, kValidPacScript1);
 
@@ -2997,10 +2980,9 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterSuccess) {
   ProxyResolutionService service(base::WrapUnique(config_service),
                                  base::WrapUnique(factory), nullptr);
 
-  MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
-  service.SetProxyScriptFetchers(
-      base::WrapUnique(fetcher),
-      std::make_unique<DoNothingDhcpProxyScriptFetcher>());
+  MockPacFileFetcher* fetcher = new MockPacFileFetcher;
+  service.SetPacFileFetchers(base::WrapUnique(fetcher),
+                             std::make_unique<DoNothingDhcpPacFileFetcher>());
 
   // Start 1 request.
 
@@ -3019,7 +3001,7 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterSuccess) {
   EXPECT_TRUE(factory->pending_requests().empty());
 
   // At this point the ProxyResolutionService should be waiting for the
-  // ProxyScriptFetcher to invoke its completion callback, notifying it of
+  // PacFileFetcher to invoke its completion callback, notifying it of
   // PAC script download completion.
   fetcher->NotifyFetchCompletion(OK, kValidPacScript1);
 
@@ -3161,10 +3143,9 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterActivity) {
   ProxyResolutionService service(base::WrapUnique(config_service),
                                  base::WrapUnique(factory), nullptr);
 
-  MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
-  service.SetProxyScriptFetchers(
-      base::WrapUnique(fetcher),
-      std::make_unique<DoNothingDhcpProxyScriptFetcher>());
+  MockPacFileFetcher* fetcher = new MockPacFileFetcher;
+  service.SetPacFileFetchers(base::WrapUnique(fetcher),
+                             std::make_unique<DoNothingDhcpPacFileFetcher>());
 
   // Start 1 request.
 
@@ -3183,7 +3164,7 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterActivity) {
   EXPECT_TRUE(factory->pending_requests().empty());
 
   // At this point the ProxyResolutionService should be waiting for the
-  // ProxyScriptFetcher to invoke its completion callback, notifying it of
+  // PacFileFetcher to invoke its completion callback, notifying it of
   // PAC script download completion.
   fetcher->NotifyFetchCompletion(OK, kValidPacScript1);
 
@@ -3538,10 +3519,9 @@ TEST_F(ProxyServiceTest, OnShutdownWithLiveRequest) {
   ProxyResolutionService service(base::WrapUnique(config_service),
                                  base::WrapUnique(factory), nullptr);
 
-  MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
-  service.SetProxyScriptFetchers(
-      base::WrapUnique(fetcher),
-      std::make_unique<DoNothingDhcpProxyScriptFetcher>());
+  MockPacFileFetcher* fetcher = new MockPacFileFetcher;
+  service.SetPacFileFetchers(base::WrapUnique(fetcher),
+                             std::make_unique<DoNothingDhcpPacFileFetcher>());
 
   ProxyInfo info;
   TestCompletionCallback callback;
@@ -3572,10 +3552,9 @@ TEST_F(ProxyServiceTest, OnShutdownFollowedByRequest) {
   ProxyResolutionService service(base::WrapUnique(config_service),
                                  base::WrapUnique(factory), nullptr);
 
-  MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
-  service.SetProxyScriptFetchers(
-      base::WrapUnique(fetcher),
-      std::make_unique<DoNothingDhcpProxyScriptFetcher>());
+  MockPacFileFetcher* fetcher = new MockPacFileFetcher;
+  service.SetPacFileFetchers(base::WrapUnique(fetcher),
+                             std::make_unique<DoNothingDhcpPacFileFetcher>());
 
   service.OnShutdown();
 

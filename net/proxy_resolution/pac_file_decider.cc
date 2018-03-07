@@ -58,7 +58,7 @@ const char kWpadUrl[] = "http://wpad/wpad.dat";
 const int kQuickCheckDelayMs = 1000;
 };  // namespace
 
-std::unique_ptr<base::Value> ProxyScriptDecider::PacSource::NetLogCallback(
+std::unique_ptr<base::Value> PacFileDecider::PacSource::NetLogCallback(
     const GURL* effective_pac_url,
     NetLogCaptureMode /* capture_mode */) const {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
@@ -80,34 +80,33 @@ std::unique_ptr<base::Value> ProxyScriptDecider::PacSource::NetLogCallback(
   return std::move(dict);
 }
 
-ProxyScriptDecider::ProxyScriptDecider(
-    ProxyScriptFetcher* proxy_script_fetcher,
-    DhcpProxyScriptFetcher* dhcp_proxy_script_fetcher,
-    NetLog* net_log)
-    : proxy_script_fetcher_(proxy_script_fetcher),
-      dhcp_proxy_script_fetcher_(dhcp_proxy_script_fetcher),
+PacFileDecider::PacFileDecider(PacFileFetcher* pac_file_fetcher,
+                               DhcpPacFileFetcher* dhcp_pac_file_fetcher,
+                               NetLog* net_log)
+    : pac_file_fetcher_(pac_file_fetcher),
+      dhcp_pac_file_fetcher_(dhcp_pac_file_fetcher),
       current_pac_source_index_(0u),
       pac_mandatory_(false),
       next_state_(STATE_NONE),
-      net_log_(NetLogWithSource::Make(net_log,
-                                      NetLogSourceType::PROXY_SCRIPT_DECIDER)),
+      net_log_(
+          NetLogWithSource::Make(net_log, NetLogSourceType::PAC_FILE_DECIDER)),
       fetch_pac_bytes_(false),
       quick_check_enabled_(true) {}
 
-ProxyScriptDecider::~ProxyScriptDecider() {
+PacFileDecider::~PacFileDecider() {
   if (next_state_ != STATE_NONE)
     Cancel();
 }
 
-int ProxyScriptDecider::Start(const ProxyConfig& config,
-                              const base::TimeDelta wait_delay,
-                              bool fetch_pac_bytes,
-                              const CompletionCallback& callback) {
+int PacFileDecider::Start(const ProxyConfig& config,
+                          const base::TimeDelta wait_delay,
+                          bool fetch_pac_bytes,
+                          const CompletionCallback& callback) {
   DCHECK_EQ(STATE_NONE, next_state_);
   DCHECK(!callback.is_null());
   DCHECK(config.HasAutomaticSettings());
 
-  net_log_.BeginEvent(NetLogEventType::PROXY_SCRIPT_DECIDER);
+  net_log_.BeginEvent(NetLogEventType::PAC_FILE_DECIDER);
 
   fetch_pac_bytes_ = fetch_pac_bytes;
 
@@ -133,7 +132,7 @@ int ProxyScriptDecider::Start(const ProxyConfig& config,
   return rv;
 }
 
-void ProxyScriptDecider::OnShutdown() {
+void PacFileDecider::OnShutdown() {
   // Don't do anything if idle.
   if (next_state_ == STATE_NONE)
     return;
@@ -147,13 +146,12 @@ void ProxyScriptDecider::OnShutdown() {
     callback.Run(ERR_CONTEXT_SHUT_DOWN);
 }
 
-const ProxyConfig& ProxyScriptDecider::effective_config() const {
+const ProxyConfig& PacFileDecider::effective_config() const {
   DCHECK_EQ(STATE_NONE, next_state_);
   return effective_config_;
 }
 
-const scoped_refptr<ProxyResolverScriptData>& ProxyScriptDecider::script_data()
-    const {
+const scoped_refptr<PacFileData>& PacFileDecider::script_data() const {
   DCHECK_EQ(STATE_NONE, next_state_);
   return script_data_;
 }
@@ -162,8 +160,7 @@ const scoped_refptr<ProxyResolverScriptData>& ProxyScriptDecider::script_data()
 // (1) WPAD (DHCP).
 // (2) WPAD (DNS).
 // (3) Custom PAC URL.
-ProxyScriptDecider::PacSourceList
-ProxyScriptDecider::BuildPacSourcesFallbackList(
+PacFileDecider::PacSourceList PacFileDecider::BuildPacSourcesFallbackList(
     const ProxyConfig& config) const {
   PacSourceList pac_sources;
   if (config.auto_detect()) {
@@ -175,7 +172,7 @@ ProxyScriptDecider::BuildPacSourcesFallbackList(
   return pac_sources;
 }
 
-void ProxyScriptDecider::OnIOCompletion(int result) {
+void PacFileDecider::OnIOCompletion(int result) {
   DCHECK_NE(STATE_NONE, next_state_);
   int rv = DoLoop(result);
   if (rv != ERR_IO_PENDING) {
@@ -184,7 +181,7 @@ void ProxyScriptDecider::OnIOCompletion(int result) {
   }
 }
 
-int ProxyScriptDecider::DoLoop(int result) {
+int PacFileDecider::DoLoop(int result) {
   DCHECK_NE(next_state_, STATE_NONE);
   int rv = result;
   do {
@@ -228,13 +225,13 @@ int ProxyScriptDecider::DoLoop(int result) {
   return rv;
 }
 
-void ProxyScriptDecider::DoCallback(int result) {
+void PacFileDecider::DoCallback(int result) {
   DCHECK_NE(ERR_IO_PENDING, result);
   DCHECK(!callback_.is_null());
   callback_.Run(result);
 }
 
-int ProxyScriptDecider::DoWait() {
+int PacFileDecider::DoWait() {
   next_state_ = STATE_WAIT_COMPLETE;
 
   // If no waiting is required, continue on to the next state.
@@ -243,16 +240,16 @@ int ProxyScriptDecider::DoWait() {
 
   // Otherwise wait the specified amount of time.
   wait_timer_.Start(FROM_HERE, wait_delay_, this,
-                    &ProxyScriptDecider::OnWaitTimerFired);
-  net_log_.BeginEvent(NetLogEventType::PROXY_SCRIPT_DECIDER_WAIT);
+                    &PacFileDecider::OnWaitTimerFired);
+  net_log_.BeginEvent(NetLogEventType::PAC_FILE_DECIDER_WAIT);
   return ERR_IO_PENDING;
 }
 
-int ProxyScriptDecider::DoWaitComplete(int result) {
+int PacFileDecider::DoWaitComplete(int result) {
   DCHECK_EQ(OK, result);
   if (wait_delay_.ToInternalValue() != 0) {
-    net_log_.EndEventWithNetErrorCode(
-        NetLogEventType::PROXY_SCRIPT_DECIDER_WAIT, result);
+    net_log_.EndEventWithNetErrorCode(NetLogEventType::PAC_FILE_DECIDER_WAIT,
+                                      result);
   }
   if (quick_check_enabled_ && current_pac_source().type == PacSource::WPAD_DNS)
     next_state_ = STATE_QUICK_CHECK;
@@ -261,10 +258,10 @@ int ProxyScriptDecider::DoWaitComplete(int result) {
   return OK;
 }
 
-int ProxyScriptDecider::DoQuickCheck() {
+int PacFileDecider::DoQuickCheck() {
   DCHECK(quick_check_enabled_);
-  if (!proxy_script_fetcher_ || !proxy_script_fetcher_->GetRequestContext() ||
-      !proxy_script_fetcher_->GetRequestContext()->host_resolver()) {
+  if (!pac_file_fetcher_ || !pac_file_fetcher_->GetRequestContext() ||
+      !pac_file_fetcher_->GetRequestContext()->host_resolver()) {
     // If we have no resolver, skip QuickCheck altogether.
     next_state_ = GetStartState();
     return OK;
@@ -275,7 +272,7 @@ int ProxyScriptDecider::DoQuickCheck() {
   HostResolver::RequestInfo reqinfo(HostPortPair(host, 80));
   reqinfo.set_host_resolver_flags(HOST_RESOLVER_SYSTEM_ONLY);
   CompletionCallback callback =
-      base::Bind(&ProxyScriptDecider::OnIOCompletion, base::Unretained(this));
+      base::Bind(&PacFileDecider::OnIOCompletion, base::Unretained(this));
 
   next_state_ = STATE_QUICK_CHECK_COMPLETE;
   quick_check_timer_.Start(
@@ -283,14 +280,14 @@ int ProxyScriptDecider::DoQuickCheck() {
       base::Bind(callback, ERR_NAME_NOT_RESOLVED));
 
   HostResolver* host_resolver =
-      proxy_script_fetcher_->GetRequestContext()->host_resolver();
+      pac_file_fetcher_->GetRequestContext()->host_resolver();
 
   // We use HIGHEST here because proxy decision blocks doing any other requests.
   return host_resolver->Resolve(reqinfo, HIGHEST, &wpad_addresses_, callback,
                                 &request_, net_log_);
 }
 
-int ProxyScriptDecider::DoQuickCheckComplete(int result) {
+int PacFileDecider::DoQuickCheckComplete(int result) {
   DCHECK(quick_check_enabled_);
   base::TimeDelta delta = base::Time::Now() - quick_check_start_time_;
   if (result == OK)
@@ -305,7 +302,7 @@ int ProxyScriptDecider::DoQuickCheckComplete(int result) {
   return result;
 }
 
-int ProxyScriptDecider::DoFetchPacScript() {
+int PacFileDecider::DoFetchPacScript() {
   DCHECK(fetch_pac_bytes_);
 
   next_state_ = STATE_FETCH_PAC_SCRIPT_COMPLETE;
@@ -316,37 +313,37 @@ int ProxyScriptDecider::DoFetchPacScript() {
   DetermineURL(pac_source, &effective_pac_url);
 
   net_log_.BeginEvent(
-      NetLogEventType::PROXY_SCRIPT_DECIDER_FETCH_PAC_SCRIPT,
+      NetLogEventType::PAC_FILE_DECIDER_FETCH_PAC_SCRIPT,
       base::Bind(&PacSource::NetLogCallback, base::Unretained(&pac_source),
                  &effective_pac_url));
 
   if (pac_source.type == PacSource::WPAD_DHCP) {
-    if (!dhcp_proxy_script_fetcher_) {
-      net_log_.AddEvent(NetLogEventType::PROXY_SCRIPT_DECIDER_HAS_NO_FETCHER);
+    if (!dhcp_pac_file_fetcher_) {
+      net_log_.AddEvent(NetLogEventType::PAC_FILE_DECIDER_HAS_NO_FETCHER);
       return ERR_UNEXPECTED;
     }
 
-    return dhcp_proxy_script_fetcher_->Fetch(
+    return dhcp_pac_file_fetcher_->Fetch(
         &pac_script_,
-        base::Bind(&ProxyScriptDecider::OnIOCompletion, base::Unretained(this)),
+        base::Bind(&PacFileDecider::OnIOCompletion, base::Unretained(this)),
         net_log_);
   }
 
-  if (!proxy_script_fetcher_) {
-    net_log_.AddEvent(NetLogEventType::PROXY_SCRIPT_DECIDER_HAS_NO_FETCHER);
+  if (!pac_file_fetcher_) {
+    net_log_.AddEvent(NetLogEventType::PAC_FILE_DECIDER_HAS_NO_FETCHER);
     return ERR_UNEXPECTED;
   }
 
-  return proxy_script_fetcher_->Fetch(
+  return pac_file_fetcher_->Fetch(
       effective_pac_url, &pac_script_,
-      base::Bind(&ProxyScriptDecider::OnIOCompletion, base::Unretained(this)));
+      base::Bind(&PacFileDecider::OnIOCompletion, base::Unretained(this)));
 }
 
-int ProxyScriptDecider::DoFetchPacScriptComplete(int result) {
+int PacFileDecider::DoFetchPacScriptComplete(int result) {
   DCHECK(fetch_pac_bytes_);
 
   net_log_.EndEventWithNetErrorCode(
-      NetLogEventType::PROXY_SCRIPT_DECIDER_FETCH_PAC_SCRIPT, result);
+      NetLogEventType::PAC_FILE_DECIDER_FETCH_PAC_SCRIPT, result);
   if (result != OK)
     return TryToFallbackPacSource(result);
 
@@ -354,7 +351,7 @@ int ProxyScriptDecider::DoFetchPacScriptComplete(int result) {
   return result;
 }
 
-int ProxyScriptDecider::DoVerifyPacScript() {
+int PacFileDecider::DoVerifyPacScript() {
   next_state_ = STATE_VERIFY_PAC_SCRIPT_COMPLETE;
 
   // This is just a heuristic. Ideally we would try to parse the script.
@@ -364,7 +361,7 @@ int ProxyScriptDecider::DoVerifyPacScript() {
   return OK;
 }
 
-int ProxyScriptDecider::DoVerifyPacScriptComplete(int result) {
+int PacFileDecider::DoVerifyPacScriptComplete(int result) {
   if (result != OK)
     return TryToFallbackPacSource(result);
 
@@ -372,11 +369,11 @@ int ProxyScriptDecider::DoVerifyPacScriptComplete(int result) {
 
   // Extract the current script data.
   if (fetch_pac_bytes_) {
-    script_data_ = ProxyResolverScriptData::FromUTF16(pac_script_);
+    script_data_ = PacFileData::FromUTF16(pac_script_);
   } else {
     script_data_ = pac_source.type == PacSource::CUSTOM
-                       ? ProxyResolverScriptData::FromURL(pac_source.url)
-                       : ProxyResolverScriptData::ForAutoDetect();
+                       ? PacFileData::FromURL(pac_source.url)
+                       : PacFileData::ForAutoDetect();
   }
 
   // Let the caller know which automatic setting we ended up initializing the
@@ -391,7 +388,7 @@ int ProxyScriptDecider::DoVerifyPacScriptComplete(int result) {
 
       switch (current_pac_source().type) {
         case PacSource::WPAD_DHCP:
-          auto_detected_url = dhcp_proxy_script_fetcher_->GetPacURL();
+          auto_detected_url = dhcp_pac_file_fetcher_->GetPacURL();
           break;
 
         case PacSource::WPAD_DNS:
@@ -415,7 +412,7 @@ int ProxyScriptDecider::DoVerifyPacScriptComplete(int result) {
   return OK;
 }
 
-int ProxyScriptDecider::TryToFallbackPacSource(int error) {
+int PacFileDecider::TryToFallbackPacSource(int error) {
   DCHECK_LT(error, 0);
 
   if (current_pac_source_index_ + 1 >= pac_sources_.size()) {
@@ -427,7 +424,7 @@ int ProxyScriptDecider::TryToFallbackPacSource(int error) {
   ++current_pac_source_index_;
 
   net_log_.AddEvent(
-      NetLogEventType::PROXY_SCRIPT_DECIDER_FALLING_BACK_TO_NEXT_PAC_SOURCE);
+      NetLogEventType::PAC_FILE_DECIDER_FALLING_BACK_TO_NEXT_PAC_SOURCE);
   if (quick_check_enabled_ && current_pac_source().type == PacSource::WPAD_DNS)
     next_state_ = STATE_QUICK_CHECK;
   else
@@ -436,12 +433,12 @@ int ProxyScriptDecider::TryToFallbackPacSource(int error) {
   return OK;
 }
 
-ProxyScriptDecider::State ProxyScriptDecider::GetStartState() const {
+PacFileDecider::State PacFileDecider::GetStartState() const {
   return fetch_pac_bytes_ ? STATE_FETCH_PAC_SCRIPT : STATE_VERIFY_PAC_SCRIPT;
 }
 
-void ProxyScriptDecider::DetermineURL(const PacSource& pac_source,
-                                      GURL* effective_pac_url) {
+void PacFileDecider::DetermineURL(const PacSource& pac_source,
+                                  GURL* effective_pac_url) {
   DCHECK(effective_pac_url);
 
   switch (pac_source.type) {
@@ -456,21 +453,20 @@ void ProxyScriptDecider::DetermineURL(const PacSource& pac_source,
   }
 }
 
-const ProxyScriptDecider::PacSource& ProxyScriptDecider::current_pac_source()
-    const {
+const PacFileDecider::PacSource& PacFileDecider::current_pac_source() const {
   DCHECK_LT(current_pac_source_index_, pac_sources_.size());
   return pac_sources_[current_pac_source_index_];
 }
 
-void ProxyScriptDecider::OnWaitTimerFired() {
+void PacFileDecider::OnWaitTimerFired() {
   OnIOCompletion(OK);
 }
 
-void ProxyScriptDecider::DidComplete() {
-  net_log_.EndEvent(NetLogEventType::PROXY_SCRIPT_DECIDER);
+void PacFileDecider::DidComplete() {
+  net_log_.EndEvent(NetLogEventType::PAC_FILE_DECIDER);
 }
 
-void ProxyScriptDecider::Cancel() {
+void PacFileDecider::Cancel() {
   DCHECK_NE(STATE_NONE, next_state_);
 
   net_log_.AddEvent(NetLogEventType::CANCELLED);
@@ -483,7 +479,7 @@ void ProxyScriptDecider::Cancel() {
       wait_timer_.Stop();
       break;
     case STATE_FETCH_PAC_SCRIPT_COMPLETE:
-      proxy_script_fetcher_->Cancel();
+      pac_file_fetcher_->Cancel();
       break;
     default:
       break;
@@ -492,8 +488,8 @@ void ProxyScriptDecider::Cancel() {
   next_state_ = STATE_NONE;
 
   // This is safe to call in any state.
-  if (dhcp_proxy_script_fetcher_)
-    dhcp_proxy_script_fetcher_->Cancel();
+  if (dhcp_pac_file_fetcher_)
+    dhcp_pac_file_fetcher_->Cancel();
 
   DCHECK(!request_);
 

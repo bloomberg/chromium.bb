@@ -144,11 +144,10 @@ class BlockableProxyResolverFactory : public ProxyResolverFactory {
 
   ~BlockableProxyResolverFactory() override = default;
 
-  int CreateProxyResolver(
-      const scoped_refptr<ProxyResolverScriptData>& script_data,
-      std::unique_ptr<ProxyResolver>* result,
-      const CompletionCallback& callback,
-      std::unique_ptr<Request>* request) override {
+  int CreateProxyResolver(const scoped_refptr<PacFileData>& script_data,
+                          std::unique_ptr<ProxyResolver>* result,
+                          const CompletionCallback& callback,
+                          std::unique_ptr<Request>* request) override {
     BlockableProxyResolver* resolver = new BlockableProxyResolver;
     result->reset(resolver);
     base::AutoLock lock(lock_);
@@ -162,14 +161,14 @@ class BlockableProxyResolverFactory : public ProxyResolverFactory {
     return resolvers_;
   }
 
-  const std::vector<scoped_refptr<ProxyResolverScriptData>> script_data() {
+  const std::vector<scoped_refptr<PacFileData>> script_data() {
     base::AutoLock lock(lock_);
     return script_data_;
   }
 
  private:
   std::vector<BlockableProxyResolver*> resolvers_;
-  std::vector<scoped_refptr<ProxyResolverScriptData>> script_data_;
+  std::vector<scoped_refptr<PacFileData>> script_data_;
   base::Lock lock_;
 };
 
@@ -202,7 +201,7 @@ class MultiThreadedProxyResolverTest : public testing::Test {
     TestCompletionCallback ready_callback;
     std::unique_ptr<ProxyResolverFactory::Request> request;
     resolver_factory_->CreateProxyResolver(
-        ProxyResolverScriptData::FromUTF8("pac script bytes"), &resolver_,
+        PacFileData::FromUTF8("pac script bytes"), &resolver_,
         ready_callback.callback(), &request);
     EXPECT_TRUE(request);
     ASSERT_THAT(ready_callback.WaitForResult(), IsOk());
@@ -682,11 +681,10 @@ class FailingProxyResolverFactory : public ProxyResolverFactory {
   FailingProxyResolverFactory() : ProxyResolverFactory(false) {}
 
   // ProxyResolverFactory override.
-  int CreateProxyResolver(
-      const scoped_refptr<ProxyResolverScriptData>& script_data,
-      std::unique_ptr<ProxyResolver>* result,
-      const CompletionCallback& callback,
-      std::unique_ptr<Request>* request) override {
+  int CreateProxyResolver(const scoped_refptr<PacFileData>& script_data,
+                          std::unique_ptr<ProxyResolver>* result,
+                          const CompletionCallback& callback,
+                          std::unique_ptr<Request>* request) override {
     return ERR_PAC_SCRIPT_FAILED;
   }
 };
@@ -702,8 +700,8 @@ TEST_F(MultiThreadedProxyResolverTest, ProxyResolverFactoryError) {
   std::unique_ptr<ProxyResolver> resolver;
   EXPECT_EQ(ERR_IO_PENDING,
             resolver_factory.CreateProxyResolver(
-                ProxyResolverScriptData::FromUTF8("pac script bytes"),
-                &resolver, ready_callback.callback(), &request));
+                PacFileData::FromUTF8("pac script bytes"), &resolver,
+                ready_callback.callback(), &request));
   EXPECT_TRUE(request);
   EXPECT_THAT(ready_callback.WaitForResult(), IsError(ERR_PAC_SCRIPT_FAILED));
   EXPECT_FALSE(resolver);
@@ -721,10 +719,9 @@ TEST_F(MultiThreadedProxyResolverTest, CancelCreate) {
         kNumThreads, std::make_unique<BlockableProxyResolverFactory>());
     std::unique_ptr<ProxyResolverFactory::Request> request;
     std::unique_ptr<ProxyResolver> resolver;
-    EXPECT_EQ(ERR_IO_PENDING,
-              resolver_factory.CreateProxyResolver(
-                  ProxyResolverScriptData::FromUTF8("pac script bytes"),
-                  &resolver, base::Bind(&Fail), &request));
+    EXPECT_EQ(ERR_IO_PENDING, resolver_factory.CreateProxyResolver(
+                                  PacFileData::FromUTF8("pac script bytes"),
+                                  &resolver, base::Bind(&Fail), &request));
     EXPECT_TRUE(request);
     request.reset();
   }
@@ -751,9 +748,9 @@ TEST_F(MultiThreadedProxyResolverTest, DeleteRequestInFactoryCallback) {
   TestCompletionCallback callback;
   EXPECT_EQ(ERR_IO_PENDING,
             resolver_factory.CreateProxyResolver(
-                ProxyResolverScriptData::FromUTF8("pac script bytes"),
-                &resolver, base::Bind(&DeleteRequest, callback.callback(),
-                                      base::Unretained(&request)),
+                PacFileData::FromUTF8("pac script bytes"), &resolver,
+                base::Bind(&DeleteRequest, callback.callback(),
+                           base::Unretained(&request)),
                 &request));
   EXPECT_TRUE(request);
   EXPECT_THAT(callback.WaitForResult(), IsOk());
@@ -767,10 +764,9 @@ TEST_F(MultiThreadedProxyResolverTest, DestroyFactoryWithRequestsInProgress) {
   {
     SingleShotMultiThreadedProxyResolverFactory resolver_factory(
         kNumThreads, std::make_unique<BlockableProxyResolverFactory>());
-    EXPECT_EQ(ERR_IO_PENDING,
-              resolver_factory.CreateProxyResolver(
-                  ProxyResolverScriptData::FromUTF8("pac script bytes"),
-                  &resolver, base::Bind(&Fail), &request));
+    EXPECT_EQ(ERR_IO_PENDING, resolver_factory.CreateProxyResolver(
+                                  PacFileData::FromUTF8("pac script bytes"),
+                                  &resolver, base::Bind(&Fail), &request));
     EXPECT_TRUE(request);
   }
   // The factory destructor will block until the worker thread stops, but it may

@@ -18,8 +18,8 @@ namespace net {
 //
 // This is thread-safe so it can be used by multi-threaded implementations of
 // ProxyResolver to share the data between threads.
-class NET_EXPORT_PRIVATE ProxyResolverScriptData
-    : public base::RefCountedThreadSafe<ProxyResolverScriptData> {
+class NET_EXPORT_PRIVATE PacFileData
+    : public base::RefCountedThreadSafe<PacFileData> {
  public:
   enum Type {
     TYPE_SCRIPT_CONTENTS,
@@ -28,18 +28,16 @@ class NET_EXPORT_PRIVATE ProxyResolverScriptData
   };
 
   // Creates a script data given the UTF8 bytes of the content.
-  static scoped_refptr<ProxyResolverScriptData> FromUTF8(
-      const std::string& utf8);
+  static scoped_refptr<PacFileData> FromUTF8(const std::string& utf8);
 
   // Creates a script data given the UTF16 bytes of the content.
-  static scoped_refptr<ProxyResolverScriptData> FromUTF16(
-      const base::string16& utf16);
+  static scoped_refptr<PacFileData> FromUTF16(const base::string16& utf16);
 
   // Creates a script data given a URL to the PAC script.
-  static scoped_refptr<ProxyResolverScriptData> FromURL(const GURL& url);
+  static scoped_refptr<PacFileData> FromURL(const GURL& url);
 
   // Creates a script data for using an automatically detected PAC URL.
-  static scoped_refptr<ProxyResolverScriptData> ForAutoDetect();
+  static scoped_refptr<PacFileData> ForAutoDetect();
 
   Type type() const { return type_; }
 
@@ -52,14 +50,12 @@ class NET_EXPORT_PRIVATE ProxyResolverScriptData
   const GURL& url() const;
 
   // Returns true if |this| matches |other|.
-  bool Equals(const ProxyResolverScriptData* other) const;
+  bool Equals(const PacFileData* other) const;
 
  private:
-  friend class base::RefCountedThreadSafe<ProxyResolverScriptData>;
-  ProxyResolverScriptData(Type type,
-                          const GURL& url,
-                          const base::string16& utf16);
-  virtual ~ProxyResolverScriptData();
+  friend class base::RefCountedThreadSafe<PacFileData>;
+  PacFileData(Type type, const GURL& url, const base::string16& utf16);
+  virtual ~PacFileData();
 
   const Type type_;
   const GURL url_;

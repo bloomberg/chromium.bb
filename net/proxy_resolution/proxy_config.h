@@ -237,7 +237,7 @@ class NET_EXPORT ProxyConfig {
   // If non-empty, indicates the URL of the proxy auto-config file to use.
   GURL pac_url_;
 
-  // If true, blocks all traffic in case fetching the pac script from |pac_url_|
+  // If true, blocks all traffic in case fetching the PAC script from |pac_url_|
   // fails. Only valid if |pac_url_| is non-empty.
   bool pac_mandatory_;
 

@@ -11,20 +11,20 @@ namespace net {
 namespace {
 
 #if defined(OS_WIN)
-TEST(DhcpProxyScriptFetcherFactoryTest, WindowsFetcherOnWindows) {
-  DhcpProxyScriptFetcherFactory factory;
+TEST(DhcpPacFileFetcherFactoryTest, WindowsFetcherOnWindows) {
+  DhcpPacFileFetcherFactory factory;
   TestURLRequestContext context;
-  std::unique_ptr<DhcpProxyScriptFetcher> fetcher(factory.Create(&context));
+  std::unique_ptr<DhcpPacFileFetcher> fetcher(factory.Create(&context));
   ASSERT_TRUE(fetcher.get());
   EXPECT_EQ("win", fetcher->GetFetcherName());
 }
 
 #else  // !defined(OS_WIN)
 
-TEST(DhcpProxyScriptFetcherFactoryTest, ReturnNullOnUnsupportedPlatforms) {
-  DhcpProxyScriptFetcherFactory factory;
+TEST(DhcpPacFileFetcherFactoryTest, ReturnNullOnUnsupportedPlatforms) {
+  DhcpPacFileFetcherFactory factory;
   TestURLRequestContext context;
-  std::unique_ptr<DhcpProxyScriptFetcher> fetcher(factory.Create(&context));
+  std::unique_ptr<DhcpPacFileFetcher> fetcher(factory.Create(&context));
   ASSERT_TRUE(fetcher.get());
   EXPECT_EQ("do nothing", fetcher->GetFetcherName());
 }

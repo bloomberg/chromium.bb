@@ -21,7 +21,7 @@ namespace proxy_resolver {
 class ProxyResolverFactoryImpl::Job {
  public:
   Job(ProxyResolverFactoryImpl* parent,
-      const scoped_refptr<net::ProxyResolverScriptData>& pac_script,
+      const scoped_refptr<net::PacFileData>& pac_script,
       net::ProxyResolverV8TracingFactory* proxy_resolver_factory,
       mojo::InterfaceRequest<mojom::ProxyResolver> request,
       mojom::ProxyResolverFactoryRequestClientPtr client,
@@ -47,7 +47,7 @@ class ProxyResolverFactoryImpl::Job {
 
 ProxyResolverFactoryImpl::Job::Job(
     ProxyResolverFactoryImpl* factory,
-    const scoped_refptr<net::ProxyResolverScriptData>& pac_script,
+    const scoped_refptr<net::PacFileData>& pac_script,
     net::ProxyResolverV8TracingFactory* proxy_resolver_factory,
     mojo::InterfaceRequest<mojom::ProxyResolver> request,
     mojom::ProxyResolverFactoryRequestClientPtr client,
@@ -122,7 +122,7 @@ void ProxyResolverFactoryImpl::CreateResolver(
   // The Job will call RemoveJob on |this| when either the create request
   // finishes or |request| or |client| encounters a connection error.
   std::unique_ptr<Job> job = std::make_unique<Job>(
-      this, net::ProxyResolverScriptData::FromUTF8(pac_script),
+      this, net::PacFileData::FromUTF8(pac_script),
       proxy_resolver_impl_factory_.get(), std::move(request), std::move(client),
       service_ref_->Clone());
   Job* job_ptr = job.get();

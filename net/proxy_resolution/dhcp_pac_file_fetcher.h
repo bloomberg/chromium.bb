@@ -17,7 +17,7 @@ namespace net {
 
 class NetLogWithSource;
 
-// Interface for classes that can fetch a proxy script as configured via DHCP.
+// Interface for classes that can fetch a PAC file as configured via DHCP.
 //
 // The Fetch method on this interface tries to retrieve the most appropriate
 // PAC script configured via DHCP.
@@ -25,10 +25,10 @@ class NetLogWithSource;
 // Normally there are zero or one DHCP scripts configured, but in the
 // presence of multiple adapters with DHCP enabled, the fetcher resolves
 // which PAC script to use if one or more are available.
-class NET_EXPORT_PRIVATE DhcpProxyScriptFetcher {
+class NET_EXPORT_PRIVATE DhcpPacFileFetcher {
  public:
   // Destruction should cancel any outstanding requests.
-  virtual ~DhcpProxyScriptFetcher();
+  virtual ~DhcpPacFileFetcher();
 
   // Attempts to retrieve the most appropriate PAC script configured via DHCP,
   // and invokes |callback| on completion.
@@ -79,19 +79,19 @@ class NET_EXPORT_PRIVATE DhcpProxyScriptFetcher {
   virtual std::string GetFetcherName() const;
 
  protected:
-  DhcpProxyScriptFetcher();
+  DhcpPacFileFetcher();
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(DhcpProxyScriptFetcher);
+  DISALLOW_COPY_AND_ASSIGN(DhcpPacFileFetcher);
 };
 
 // A do-nothing retriever, always returns synchronously with
 // ERR_NOT_IMPLEMENTED result and empty text.
-class NET_EXPORT_PRIVATE DoNothingDhcpProxyScriptFetcher
-    : public DhcpProxyScriptFetcher {
+class NET_EXPORT_PRIVATE DoNothingDhcpPacFileFetcher
+    : public DhcpPacFileFetcher {
  public:
-  DoNothingDhcpProxyScriptFetcher();
-  ~DoNothingDhcpProxyScriptFetcher() override;
+  DoNothingDhcpPacFileFetcher();
+  ~DoNothingDhcpPacFileFetcher() override;
 
   int Fetch(base::string16* utf16_text,
             const CompletionCallback& callback,
@@ -103,7 +103,7 @@ class NET_EXPORT_PRIVATE DoNothingDhcpProxyScriptFetcher
 
  private:
   GURL gurl_;
-  DISALLOW_COPY_AND_ASSIGN(DoNothingDhcpProxyScriptFetcher);
+  DISALLOW_COPY_AND_ASSIGN(DoNothingDhcpPacFileFetcher);
 };
 
 }  // namespace net

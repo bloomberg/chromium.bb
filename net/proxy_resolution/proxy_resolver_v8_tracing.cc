@@ -99,10 +99,9 @@ class Job : public base::RefCountedThreadSafe<Job>,
       std::unique_ptr<ProxyResolverV8Tracing::Bindings> bindings);
 
   // Called from origin thread.
-  void StartCreateV8Resolver(
-      const scoped_refptr<ProxyResolverScriptData>& script_data,
-      std::unique_ptr<ProxyResolverV8>* resolver,
-      const CompletionCallback& callback);
+  void StartCreateV8Resolver(const scoped_refptr<PacFileData>& script_data,
+                             std::unique_ptr<ProxyResolverV8>* resolver,
+                             const CompletionCallback& callback);
 
   // Called from origin thread.
   void StartGetProxyForURL(const GURL& url,
@@ -246,7 +245,7 @@ class Job : public base::RefCountedThreadSafe<Job>,
   // State specific to CREATE_V8_RESOLVER.
   // -------------------------------------------------------
 
-  scoped_refptr<ProxyResolverScriptData> script_data_;
+  scoped_refptr<PacFileData> script_data_;
   std::unique_ptr<ProxyResolverV8>* resolver_out_;
 
   // -------------------------------------------------------
@@ -353,10 +352,9 @@ Job::Job(const Job::Params* params,
   CheckIsOnOriginThread();
 }
 
-void Job::StartCreateV8Resolver(
-    const scoped_refptr<ProxyResolverScriptData>& script_data,
-    std::unique_ptr<ProxyResolverV8>* resolver,
-    const CompletionCallback& callback) {
+void Job::StartCreateV8Resolver(const scoped_refptr<PacFileData>& script_data,
+                                std::unique_ptr<ProxyResolverV8>* resolver,
+                                const CompletionCallback& callback) {
   CheckIsOnOriginThread();
 
   resolver_out_ = resolver;
@@ -423,7 +421,7 @@ LoadState Job::GetLoadState() const {
   CheckIsOnOriginThread();
 
   if (pending_dns_)
-    return LOAD_STATE_RESOLVING_HOST_IN_PROXY_SCRIPT;
+    return LOAD_STATE_RESOLVING_HOST_IN_PAC_FILE;
 
   return LOAD_STATE_RESOLVING_PROXY_FOR_URL;
 }
@@ -986,7 +984,7 @@ class ProxyResolverV8TracingFactoryImpl : public ProxyResolverV8TracingFactory {
   ~ProxyResolverV8TracingFactoryImpl() override;
 
   void CreateProxyResolverV8Tracing(
-      const scoped_refptr<ProxyResolverScriptData>& pac_script,
+      const scoped_refptr<PacFileData>& pac_script,
       std::unique_ptr<ProxyResolverV8Tracing::Bindings> bindings,
       std::unique_ptr<ProxyResolverV8Tracing>* resolver,
       const CompletionCallback& callback,
@@ -1007,7 +1005,7 @@ class ProxyResolverV8TracingFactoryImpl::CreateJob
  public:
   CreateJob(ProxyResolverV8TracingFactoryImpl* factory,
             std::unique_ptr<ProxyResolverV8Tracing::Bindings> bindings,
-            const scoped_refptr<ProxyResolverScriptData>& pac_script,
+            const scoped_refptr<PacFileData>& pac_script,
             std::unique_ptr<ProxyResolverV8Tracing>* resolver_out,
             const CompletionCallback& callback)
       : factory_(factory),
@@ -1091,7 +1089,7 @@ ProxyResolverV8TracingFactoryImpl::~ProxyResolverV8TracingFactoryImpl() {
 }
 
 void ProxyResolverV8TracingFactoryImpl::CreateProxyResolverV8Tracing(
-    const scoped_refptr<ProxyResolverScriptData>& pac_script,
+    const scoped_refptr<PacFileData>& pac_script,
     std::unique_ptr<ProxyResolverV8Tracing::Bindings> bindings,
     std::unique_ptr<ProxyResolverV8Tracing>* resolver,
     const CompletionCallback& callback,

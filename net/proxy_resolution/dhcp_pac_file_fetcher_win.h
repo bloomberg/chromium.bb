@@ -26,21 +26,21 @@ class TaskRunner;
 namespace net {
 
 struct DhcpAdapterNamesLoggingInfo;
-class DhcpProxyScriptAdapterFetcher;
+class DhcpPacFileAdapterFetcher;
 class URLRequestContext;
 
 // Windows-specific implementation.
-class NET_EXPORT_PRIVATE DhcpProxyScriptFetcherWin
-    : public DhcpProxyScriptFetcher,
-      public base::SupportsWeakPtr<DhcpProxyScriptFetcherWin> {
+class NET_EXPORT_PRIVATE DhcpPacFileFetcherWin
+    : public DhcpPacFileFetcher,
+      public base::SupportsWeakPtr<DhcpPacFileFetcherWin> {
  public:
-  // Creates a DhcpProxyScriptFetcherWin that issues requests through
+  // Creates a DhcpPacFileFetcherWin that issues requests through
   // |url_request_context|. |url_request_context| must remain valid for
-  // the lifetime of DhcpProxyScriptFetcherWin.
-  explicit DhcpProxyScriptFetcherWin(URLRequestContext* url_request_context);
-  ~DhcpProxyScriptFetcherWin() override;
+  // the lifetime of DhcpPacFileFetcherWin.
+  explicit DhcpPacFileFetcherWin(URLRequestContext* url_request_context);
+  ~DhcpPacFileFetcherWin() override;
 
-  // DhcpProxyScriptFetcher implementation.
+  // DhcpPacFileFetcher implementation.
   int Fetch(base::string16* utf16_text,
             const CompletionCallback& callback,
             const NetLogWithSource& net_log) override;
@@ -100,7 +100,7 @@ class NET_EXPORT_PRIVATE DhcpProxyScriptFetcherWin
   };
 
   // Virtual methods introduced to allow unit testing.
-  virtual DhcpProxyScriptAdapterFetcher* ImplCreateAdapterFetcher();
+  virtual DhcpPacFileAdapterFetcher* ImplCreateAdapterFetcher();
   virtual AdapterQuery* ImplCreateAdapterQuery();
   virtual base::TimeDelta ImplGetMaxWait();
   virtual void ImplOnGetCandidateAdapterNamesDone() {}
@@ -115,7 +115,7 @@ class NET_EXPORT_PRIVATE DhcpProxyScriptFetcherWin
 
   // This is the outer state machine for fetching PAC configuration from
   // DHCP.  It relies for sub-states on the state machine of the
-  // DhcpProxyScriptAdapterFetcher class.
+  // DhcpPacFileAdapterFetcher class.
   //
   // The goal of the implementation is to the following work in parallel
   // for all network adapters that are using DHCP:
@@ -128,7 +128,7 @@ class NET_EXPORT_PRIVATE DhcpProxyScriptFetcherWin
   // The state machine goes from START->WAIT_ADAPTERS when it starts a
   // worker thread to get the list of adapters with DHCP enabled.
   // It then goes from WAIT_ADAPTERS->NO_RESULTS when it creates
-  // and starts an DhcpProxyScriptAdapterFetcher for each adapter.  It goes
+  // and starts an DhcpPacFileAdapterFetcher for each adapter.  It goes
   // from NO_RESULTS->SOME_RESULTS when it gets the first result; at this
   // point a wait timer is started.  It goes from SOME_RESULTS->DONE in
   // two cases: All results are known, or the wait timer expired.  A call
@@ -149,10 +149,9 @@ class NET_EXPORT_PRIVATE DhcpProxyScriptFetcherWin
   };
 
   // Vector, in Windows' network adapter preference order, of
-  // DhcpProxyScriptAdapterFetcher objects that are or were attempting
+  // DhcpPacFileAdapterFetcher objects that are or were attempting
   // to fetch a PAC file based on DHCP configuration.
-  using FetcherVector =
-      std::vector<std::unique_ptr<DhcpProxyScriptAdapterFetcher>>;
+  using FetcherVector = std::vector<std::unique_ptr<DhcpPacFileAdapterFetcher>>;
   FetcherVector fetchers_;
 
   // Current state of this state machine.
@@ -189,7 +188,7 @@ class NET_EXPORT_PRIVATE DhcpProxyScriptFetcherWin
 
   THREAD_CHECKER(thread_checker_);
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(DhcpProxyScriptFetcherWin);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(DhcpPacFileFetcherWin);
 };
 
 }  // namespace net

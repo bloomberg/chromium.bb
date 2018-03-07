@@ -100,11 +100,10 @@ class TestProxyResolverFactory : public net::ProxyResolverFactory {
   ~TestProxyResolverFactory() override = default;
 
   // net::ProxyResolverFactory:
-  int CreateProxyResolver(
-      const scoped_refptr<net::ProxyResolverScriptData>& pac_script,
-      std::unique_ptr<net::ProxyResolver>* resolver,
-      const net::CompletionCallback& callback,
-      std::unique_ptr<Request>* request) override {
+  int CreateProxyResolver(const scoped_refptr<net::PacFileData>& pac_script,
+                          std::unique_ptr<net::ProxyResolver>* resolver,
+                          const net::CompletionCallback& callback,
+                          std::unique_ptr<Request>* request) override {
     *resolver = std::make_unique<net::ForwardingProxyResolver>(resolver_);
     return net::OK;
   }

@@ -382,11 +382,10 @@ class FailingProxyResolverFactory : public ProxyResolverFactory {
   FailingProxyResolverFactory() : ProxyResolverFactory(false) {}
 
   // ProxyResolverFactory override.
-  int CreateProxyResolver(
-      const scoped_refptr<ProxyResolverScriptData>& script_data,
-      std::unique_ptr<ProxyResolver>* result,
-      const CompletionCallback& callback,
-      std::unique_ptr<Request>* request) override {
+  int CreateProxyResolver(const scoped_refptr<PacFileData>& script_data,
+                          std::unique_ptr<ProxyResolver>* result,
+                          const CompletionCallback& callback,
+                          std::unique_ptr<Request>* request) override {
     return ERR_PAC_SCRIPT_FAILED;
   }
 };
@@ -4638,11 +4637,10 @@ class SameProxyWithDifferentSchemesProxyResolverFactory
   SameProxyWithDifferentSchemesProxyResolverFactory()
       : ProxyResolverFactory(false) {}
 
-  int CreateProxyResolver(
-      const scoped_refptr<ProxyResolverScriptData>& pac_script,
-      std::unique_ptr<ProxyResolver>* resolver,
-      const CompletionCallback& callback,
-      std::unique_ptr<Request>* request) override {
+  int CreateProxyResolver(const scoped_refptr<PacFileData>& pac_script,
+                          std::unique_ptr<ProxyResolver>* resolver,
+                          const CompletionCallback& callback,
+                          std::unique_ptr<Request>* request) override {
     *resolver = std::make_unique<SameProxyWithDifferentSchemesProxyResolver>();
     return OK;
   }
@@ -12175,11 +12173,10 @@ class CapturingProxyResolverFactory : public ProxyResolverFactory {
   explicit CapturingProxyResolverFactory(CapturingProxyResolver* resolver)
       : ProxyResolverFactory(false), resolver_(resolver) {}
 
-  int CreateProxyResolver(
-      const scoped_refptr<ProxyResolverScriptData>& pac_script,
-      std::unique_ptr<ProxyResolver>* resolver,
-      const net::CompletionCallback& callback,
-      std::unique_ptr<Request>* request) override {
+  int CreateProxyResolver(const scoped_refptr<PacFileData>& pac_script,
+                          std::unique_ptr<ProxyResolver>* resolver,
+                          const net::CompletionCallback& callback,
+                          std::unique_ptr<Request>* request) override {
     *resolver = std::make_unique<ForwardingProxyResolver>(resolver_);
     return OK;
   }

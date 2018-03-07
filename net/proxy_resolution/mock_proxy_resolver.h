@@ -90,7 +90,7 @@ class MockAsyncProxyResolverFactory : public ProxyResolverFactory {
   ~MockAsyncProxyResolverFactory() override;
 
   int CreateProxyResolver(
-      const scoped_refptr<ProxyResolverScriptData>& pac_script,
+      const scoped_refptr<PacFileData>& pac_script,
       std::unique_ptr<ProxyResolver>* resolver,
       const CompletionCallback& callback,
       std::unique_ptr<ProxyResolverFactory::Request>* request) override;
@@ -111,13 +111,11 @@ class MockAsyncProxyResolverFactory::Request
     : public base::RefCounted<Request> {
  public:
   Request(MockAsyncProxyResolverFactory* factory,
-          const scoped_refptr<ProxyResolverScriptData>& script_data,
+          const scoped_refptr<PacFileData>& script_data,
           std::unique_ptr<ProxyResolver>* resolver,
           const CompletionCallback& callback);
 
-  const scoped_refptr<ProxyResolverScriptData>& script_data() const {
-    return script_data_;
-  }
+  const scoped_refptr<PacFileData>& script_data() const { return script_data_; }
 
   // Completes this request. A ForwardingProxyResolver that forwards to
   // |resolver| will be returned to the requester. |resolver| must not be
@@ -137,7 +135,7 @@ class MockAsyncProxyResolverFactory::Request
   void FactoryDestroyed();
 
   MockAsyncProxyResolverFactory* factory_;
-  const scoped_refptr<ProxyResolverScriptData> script_data_;
+  const scoped_refptr<PacFileData> script_data_;
   std::unique_ptr<ProxyResolver>* resolver_;
   CompletionCallback callback_;
 };

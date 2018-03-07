@@ -31,19 +31,18 @@ std::string GetPacUrlFromDefaultNetwork() {
 
 }  // namespace
 
-DhcpProxyScriptFetcherChromeos::DhcpProxyScriptFetcherChromeos(
+DhcpPacFileFetcherChromeos::DhcpPacFileFetcherChromeos(
     net::URLRequestContext* url_request_context)
     : weak_ptr_factory_(this) {
   DCHECK(url_request_context);
-  proxy_script_fetcher_.reset(
-      new net::ProxyScriptFetcherImpl(url_request_context));
+  pac_file_fetcher_.reset(new net::PacFileFetcherImpl(url_request_context));
   if (NetworkHandler::IsInitialized())
     network_handler_task_runner_ = NetworkHandler::Get()->task_runner();
 }
 
-DhcpProxyScriptFetcherChromeos::~DhcpProxyScriptFetcherChromeos() = default;
+DhcpPacFileFetcherChromeos::~DhcpPacFileFetcherChromeos() = default;
 
-int DhcpProxyScriptFetcherChromeos::Fetch(
+int DhcpPacFileFetcherChromeos::Fetch(
     base::string16* utf16_text,
     const net::CompletionCallback& callback,
     const net::NetLogWithSource& net_log) {
@@ -53,40 +52,39 @@ int DhcpProxyScriptFetcherChromeos::Fetch(
   base::PostTaskAndReplyWithResult(
       network_handler_task_runner_.get(), FROM_HERE,
       base::Bind(&GetPacUrlFromDefaultNetwork),
-      base::Bind(&DhcpProxyScriptFetcherChromeos::ContinueFetch,
+      base::Bind(&DhcpPacFileFetcherChromeos::ContinueFetch,
                  weak_ptr_factory_.GetWeakPtr(), utf16_text, callback));
   return net::ERR_IO_PENDING;
 }
 
-void DhcpProxyScriptFetcherChromeos::Cancel() {
-  proxy_script_fetcher_->Cancel();
+void DhcpPacFileFetcherChromeos::Cancel() {
+  pac_file_fetcher_->Cancel();
   // Invalidate any pending callbacks (i.e. calls to ContinueFetch).
   weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
-void DhcpProxyScriptFetcherChromeos::OnShutdown() {
-  proxy_script_fetcher_->OnShutdown();
+void DhcpPacFileFetcherChromeos::OnShutdown() {
+  pac_file_fetcher_->OnShutdown();
 }
 
-const GURL& DhcpProxyScriptFetcherChromeos::GetPacURL() const {
+const GURL& DhcpPacFileFetcherChromeos::GetPacURL() const {
   return pac_url_;
 }
 
-std::string DhcpProxyScriptFetcherChromeos::GetFetcherName() const {
+std::string DhcpPacFileFetcherChromeos::GetFetcherName() const {
   return "chromeos";
 }
 
-void DhcpProxyScriptFetcherChromeos::ContinueFetch(
-    base::string16* utf16_text,
-    net::CompletionCallback callback,
-    std::string pac_url) {
-  NET_LOG_EVENT("DhcpProxyScriptFetcher", pac_url);
+void DhcpPacFileFetcherChromeos::ContinueFetch(base::string16* utf16_text,
+                                               net::CompletionCallback callback,
+                                               std::string pac_url) {
+  NET_LOG_EVENT("DhcpPacFileFetcher", pac_url);
   pac_url_ = GURL(pac_url);
   if (pac_url_.is_empty()) {
     callback.Run(net::ERR_PAC_NOT_IN_DHCP);
     return;
   }
-  int res = proxy_script_fetcher_->Fetch(pac_url_, utf16_text, callback);
+  int res = pac_file_fetcher_->Fetch(pac_url_, utf16_text, callback);
   if (res != net::ERR_IO_PENDING)
     callback.Run(res);
 }

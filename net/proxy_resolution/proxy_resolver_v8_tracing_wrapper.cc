@@ -147,7 +147,7 @@ ProxyResolverFactoryV8TracingWrapper::~ProxyResolverFactoryV8TracingWrapper() =
     default;
 
 int ProxyResolverFactoryV8TracingWrapper::CreateProxyResolver(
-    const scoped_refptr<ProxyResolverScriptData>& pac_script,
+    const scoped_refptr<PacFileData>& pac_script,
     std::unique_ptr<ProxyResolver>* resolver,
     const CompletionCallback& callback,
     std::unique_ptr<Request>* request) {

@@ -52,7 +52,7 @@ LOAD_STATE(WAITING_FOR_APPCACHE, 6)
 
 // This state corresponds to a resource being blocked waiting for the
 // PAC script to be downloaded.
-LOAD_STATE(DOWNLOADING_PROXY_SCRIPT, 7)
+LOAD_STATE(DOWNLOADING_PAC_FILE, 7)
 
 // This state corresponds to a resource load that is blocked waiting for a
 // proxy autoconfig script to return a proxy server to use.
@@ -61,7 +61,7 @@ LOAD_STATE(RESOLVING_PROXY_FOR_URL, 8)
 // This state corresponds to a resource load that is blocked waiting for a
 // proxy autoconfig script to return a proxy server to use, but that proxy
 // script is busy resolving the IP address of a host.
-LOAD_STATE(RESOLVING_HOST_IN_PROXY_SCRIPT, 9)
+LOAD_STATE(RESOLVING_HOST_IN_PAC_FILE, 9)
 
 // This state indicates that we're in the process of establishing a tunnel
 // through the proxy server.

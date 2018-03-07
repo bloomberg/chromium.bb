@@ -130,13 +130,13 @@ class ProxyServiceMojoTest : public testing::Test {
   void SetUp() override {
     mock_host_resolver_.rules()->AddRule("example.com", "1.2.3.4");
 
-    fetcher_ = new net::MockProxyScriptFetcher;
+    fetcher_ = new net::MockPacFileFetcher;
     proxy_resolution_service_ = network::CreateProxyServiceUsingMojoFactory(
         test_mojo_proxy_resolver_factory_.CreateFactoryInterface(),
         std::make_unique<net::ProxyConfigServiceFixed>(
             net::ProxyConfig::CreateFromCustomPacURL(GURL(kPacUrl))),
         base::WrapUnique(fetcher_),
-        std::make_unique<net::DoNothingDhcpProxyScriptFetcher>(),
+        std::make_unique<net::DoNothingDhcpPacFileFetcher>(),
         &mock_host_resolver_, &net_log_, &network_delegate_);
   }
 
@@ -145,7 +145,7 @@ class ProxyServiceMojoTest : public testing::Test {
   TestNetworkDelegate network_delegate_;
   LoggingMockHostResolver mock_host_resolver_;
   // Owned by |proxy_resolution_service_|.
-  net::MockProxyScriptFetcher* fetcher_;
+  net::MockPacFileFetcher* fetcher_;
   net::TestNetLog net_log_;
   std::unique_ptr<net::ProxyResolutionService> proxy_resolution_service_;
 };
@@ -160,7 +160,7 @@ TEST_F(ProxyServiceMojoTest, Basic) {
                 &info, callback.callback(), nullptr,
                 nullptr, net::NetLogWithSource()));
 
-  // Proxy script fetcher should have a fetch triggered by the first
+  // PAC file fetcher should have a fetch triggered by the first
   // |ResolveProxy()| request.
   EXPECT_TRUE(fetcher_->has_pending_request());
   EXPECT_EQ(GURL(kPacUrl), fetcher_->pending_request_url());
@@ -182,7 +182,7 @@ TEST_F(ProxyServiceMojoTest, DnsResolution) {
                 &info, callback.callback(), nullptr,
                 nullptr, test_net_log.bound()));
 
-  // Proxy script fetcher should have a fetch triggered by the first
+  // PAC file fetcher should have a fetch triggered by the first
   // |ResolveProxy()| request.
   EXPECT_TRUE(fetcher_->has_pending_request());
   EXPECT_EQ(GURL(kPacUrl), fetcher_->pending_request_url());
@@ -215,7 +215,7 @@ TEST_F(ProxyServiceMojoTest, Error) {
                 &info, callback.callback(), nullptr,
                 nullptr, test_net_log.bound()));
 
-  // Proxy script fetcher should have a fetch triggered by the first
+  // PAC file fetcher should have a fetch triggered by the first
   // |ResolveProxy()| request.
   EXPECT_TRUE(fetcher_->has_pending_request());
   EXPECT_EQ(GURL(kPacUrl), fetcher_->pending_request_url());
@@ -245,7 +245,7 @@ TEST_F(ProxyServiceMojoTest, ErrorOnInitialization) {
                 &info, callback.callback(), nullptr,
                 nullptr, net::NetLogWithSource()));
 
-  // Proxy script fetcher should have a fetch triggered by the first
+  // PAC file fetcher should have a fetch triggered by the first
   // |ResolveProxy()| request.
   EXPECT_TRUE(fetcher_->has_pending_request());
   EXPECT_EQ(GURL(kPacUrl), fetcher_->pending_request_url());

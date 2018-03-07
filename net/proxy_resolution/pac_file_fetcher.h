@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// ProxyScriptFetcher is an async interface for fetching a proxy auto config
+// PacFileFetcher is an async interface for fetching a proxy auto config
 // script. It is specific to fetching a PAC script; enforces timeout, max-size,
 // status code.
 
@@ -21,10 +21,10 @@ class URLRequestContext;
 
 // Interface for downloading a PAC script. Implementations can enforce
 // timeouts, maximum size constraints, content encoding, etc..
-class NET_EXPORT_PRIVATE ProxyScriptFetcher {
+class NET_EXPORT_PRIVATE PacFileFetcher {
  public:
   // Destruction should cancel any outstanding requests.
-  virtual ~ProxyScriptFetcher() {}
+  virtual ~PacFileFetcher() {}
 
   // Downloads the given PAC URL, and invokes |callback| on completion.
   // Returns OK on success, otherwise the error code. If the return code is
