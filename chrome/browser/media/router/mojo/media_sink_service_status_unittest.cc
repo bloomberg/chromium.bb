@@ -34,7 +34,9 @@ void VerifyEqualJSONString(const std::string& expected_str,
   std::unique_ptr<base::Value> expected_value =
       DeserializeJSONString(expected_str);
   std::unique_ptr<base::Value> actual_value = DeserializeJSONString(str);
-  EXPECT_TRUE(*expected_value == *actual_value);
+  ASSERT_TRUE(expected_value);
+  ASSERT_TRUE(actual_value);
+  EXPECT_EQ(*expected_value, *actual_value);
 }
 
 }  // namespace
@@ -55,7 +57,7 @@ TEST(MediaSinkServiceStatusTest, TestGetStatusAsJSONStringEmptySinks) {
   const char expected_str[] = R"(
       {
         "available_sinks": {
-          "EXTENSION:dial:youtube" : ["3610", "id 2"]
+          "EXTENSION:dial:youtube" : ["3610", "id2"]
         },
         "discovered_sinks": { }
       })";
@@ -82,7 +84,7 @@ TEST(MediaSinkServiceStatusTest, TestGetStatusAsJSONStringEmptyAvailability) {
             {
               "app_url":"http://192.168.0.101/apps",
               "icon_type":7,
-              "id":"id 1",
+              "id":"id1",
               "ip_address":"192.168.0.101",
               "model_name":"model name 1",
               "name":"friendly name 1"
@@ -90,7 +92,7 @@ TEST(MediaSinkServiceStatusTest, TestGetStatusAsJSONStringEmptyAvailability) {
             {
               "app_url":"http://192.168.0.102/apps",
               "icon_type":7,
-              "id":"id 2",
+              "id":"id2",
               "ip_address":"192.168.0.102",
               "model_name":"model name 2",
               "name":"friendly name 2"
@@ -114,15 +116,15 @@ TEST(MediaSinkServiceStatusTest, TestGetStatusAsJSONStringMultipleProviders) {
   const char expected_str[] = R"(
       {
         "available_sinks": {
-          "EXTENSION:cast:netflix" : ["id 2"],
-          "EXTENSION:dial:youtube" : ["id 1"]
+          "EXTENSION:cast:netflix" : ["id2"],
+          "EXTENSION:dial:youtube" : ["id1"]
         },
         "discovered_sinks": {
           "dial": [
             {
               "app_url":"http://192.168.0.101/apps",
               "icon_type":7,
-              "id":"id 1",
+              "id":"id1",
               "ip_address":"192.168.0.101",
               "model_name":"model name 1",
               "name":"friendly name 1"
@@ -132,7 +134,7 @@ TEST(MediaSinkServiceStatusTest, TestGetStatusAsJSONStringMultipleProviders) {
             {
               "app_url":"http://192.168.0.102/apps",
               "icon_type":7,
-              "id":"id 2",
+              "id":"id2",
               "ip_address":"192.168.0.102",
               "model_name":"model name 2",
               "name":"friendly name 2"

@@ -13,14 +13,13 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/media/router/discovery/dial/dial_media_sink_service_impl.h"
+#include "chrome/browser/media/router/discovery/mdns/cast_media_sink_service_impl.h"
 #include "chrome/browser/media/router/discovery/mdns/dns_sd_delegate.h"
 #include "chrome/browser/media/router/discovery/mdns/dns_sd_registry.h"
 #include "chrome/common/media_router/discovery/media_sink_internal.h"
 #include "chrome/common/media_router/discovery/media_sink_service_util.h"
 
 namespace media_router {
-
-class CastMediaSinkServiceImpl;
 
 // A service which can be used to start background discovery and resolution of
 // Cast devices.
@@ -42,8 +41,11 @@ class CastMediaSinkService : public DnsSdRegistry::DnsSdObserver {
   // Starts Cast sink discovery. No-ops if already started.
   // |sink_discovery_cb|: Callback to invoke when the list of discovered sinks
   // has been updated.
+  // |observer|: Observer passed to |impl_|. Note that unlike the callback, the
+  // observer will be invoked on the sequence |impl_| runs on. Can be nullptr.
   // Marked virtual for tests.
-  virtual void Start(const OnSinksDiscoveredCallback& sinks_discovered_cb);
+  virtual void Start(const OnSinksDiscoveredCallback& sinks_discovered_cb,
+                     CastMediaSinkServiceImpl::Observer* observer);
 
   // Initiates discovery immediately in response to a user gesture
   // (i.e., opening the Media Router dialog).
@@ -53,7 +55,8 @@ class CastMediaSinkService : public DnsSdRegistry::DnsSdObserver {
 
   // Marked virtual for tests.
   virtual std::unique_ptr<CastMediaSinkServiceImpl, base::OnTaskRunnerDeleter>
-  CreateImpl(const OnSinksDiscoveredCallback& sinks_discovered_cb);
+  CreateImpl(const OnSinksDiscoveredCallback& sinks_discovered_cb,
+             CastMediaSinkServiceImpl::Observer* observer);
 
   // Registers with DnsSdRegistry to listen for Cast devices. Note that this is
   // called on |Start()| on all platforms except for Windows. On Windows, this

@@ -74,7 +74,8 @@ struct VirtualConnection {
 // message is sent. This makes the concept of VC transparent to the client.
 // This class currently provides only supports requesting app availability from
 // a device, but will be expanded to support additional types of messages.
-// This class must be run on the same sequence that CastSocketService runs on.
+// This class may be created on any sequence, but other methods (including
+// destructor) must be run on the same sequence that CastSocketService runs on.
 class CastMessageHandler : public CastSocket::Observer {
  public:
   explicit CastMessageHandler(CastSocketService* socket_service,
@@ -86,9 +87,9 @@ class CastMessageHandler : public CastSocket::Observer {
   // |callback| is always invoked asynchronously, and will be invoked when a
   // response is received, or if the request timed out. No-ops if there is
   // already a pending request with the same socket and app ID.
-  void RequestAppAvailability(CastSocket* socket,
-                              const std::string& app_id,
-                              GetAppAvailabilityCallback callback);
+  virtual void RequestAppAvailability(CastSocket* socket,
+                                      const std::string& app_id,
+                                      GetAppAvailabilityCallback callback);
 
   const std::string& sender_id() const { return sender_id_; }
 

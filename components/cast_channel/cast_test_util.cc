@@ -48,4 +48,10 @@ net::IPEndPoint CreateIPEndPointForTest() {
   return net::IPEndPoint(net::IPAddress(192, 168, 1, 1), 8009);
 }
 
+MockCastMessageHandler::MockCastMessageHandler(
+    MockCastSocketService* socket_service)
+    : CastMessageHandler(socket_service, "userAgent", "1.2.3.4") {}
+
+MockCastMessageHandler::~MockCastMessageHandler() = default;
+
 }  // namespace cast_channel

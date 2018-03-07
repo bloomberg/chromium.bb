@@ -35,6 +35,23 @@ class CastMediaSinkServiceImpl
       public cast_channel::CastSocket::Observer,
       public DiscoveryNetworkMonitor::Observer {
  public:
+  // Listens for sink updates in CastMediaSinkServiceImpl. All observer methods
+  // must run on the same sequence as CastMediaSinkServiceImpl.
+  class Observer {
+   public:
+    virtual ~Observer() {}
+
+    // Invoked when |sink| is added or updated. |socket| is a pointer to the
+    // CastSocket instance associated with |sink|, and is never nullptr.
+    // |socket| is only guaranteed to be valid for the duration of this call;
+    // the caller should not hold onto the pointer.
+    virtual void OnSinkAddedOrUpdated(const MediaSinkInternal& sink,
+                                      cast_channel::CastSocket* socket) = 0;
+
+    // Invoked when |sink| is removed.
+    virtual void OnSinkRemoved(const MediaSinkInternal& sink) = 0;
+  };
+
   using SinkSource = CastDeviceCountMetrics::SinkSource;
 
   // Default Cast control port to open Cast Socket from DIAL sink.
@@ -45,11 +62,13 @@ class CastMediaSinkServiceImpl
   static constexpr int kMaxDialSinkFailureCount = 10;
 
   // |callback|: Callback passed to MediaSinkServiceBase.
+  // |observer|: Observer to invoke on sink updates. Can be nullptr.
   // |cast_socket_service|: CastSocketService to use to open Cast channels to
   // discovered devices.
   // |network_monitor|: DiscoveryNetworkMonitor to use to listen for network
   // changes.
   CastMediaSinkServiceImpl(const OnSinksDiscoveredCallback& callback,
+                           Observer* observer,
                            cast_channel::CastSocketService* cast_socket_service,
                            DiscoveryNetworkMonitor* network_monitor);
   ~CastMediaSinkServiceImpl() override;
@@ -76,10 +95,6 @@ class CastMediaSinkServiceImpl
   void OpenChannelsWithRandomizedDelay(
       const std::vector<MediaSinkInternal>& cast_sinks,
       SinkSource sink_source);
-
-  // Attempts to resolve the given DIAL sink as a Cast sink. If successful,
-  // the resulting Cast sink is added to the service.
-  void OnDialSinkAdded(const MediaSinkInternal& sink);
 
   // Tries to open cast channels for sinks found by current round of mDNS
   // discovery, but without opened cast channels.
@@ -196,6 +211,10 @@ class CastMediaSinkServiceImpl
     static OpenParams GetFromFieldTrialParam();
   };
 
+  // Attempts to resolve the given DIAL sink as a Cast sink. If successful,
+  // the resulting Cast sink is added to the service.
+  void OnDialSinkAdded(const MediaSinkInternal& sink);
+
   // Marked virtual for testing.
   virtual void OpenChannels(const std::vector<MediaSinkInternal>& cast_sinks,
                             SinkSource sink_source);
@@ -216,7 +235,9 @@ class CastMediaSinkServiceImpl
   cast_channel::CastSocketOpenParams CreateCastSocketOpenParams(
       const net::IPEndPoint& ip_endpoint);
 
-  // Opens cast channel.
+  // Opens cast channel. This method will not open a channel if there is already
+  // a pending request for |ip_endpoint|, or if a channel for |ip_endpoint|
+  // already exists.
   // |ip_endpoint|: cast channel's target IP endpoint.
   // |cast_sink|: Cast sink created from mDNS service description or DIAL sink.
   // |backoff_entry|: backoff entry passed to |OnChannelOpened| callback.
@@ -290,6 +311,9 @@ class CastMediaSinkServiceImpl
 
   // Map of sinks with opened cast channels keyed by IP endpoint.
   MediaSinkInternalMap current_sinks_map_;
+
+  // Observer to notify when a sink is added, updated, or removed.
+  Observer* const observer_;
 
   // Raw pointer of leaky singleton CastSocketService, which manages adding and
   // removing Cast channels.

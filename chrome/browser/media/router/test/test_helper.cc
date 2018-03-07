@@ -83,7 +83,7 @@ net::IPEndPoint CreateIPEndPoint(int num) {
 
 MediaSinkInternal CreateDialSink(int num) {
   std::string friendly_name = base::StringPrintf("friendly name %d", num);
-  std::string unique_id = base::StringPrintf("id %d", num);
+  std::string unique_id = base::StringPrintf("dial:<id%d>", num);
   net::IPEndPoint ip_endpoint = CreateIPEndPoint(num);
 
   media_router::MediaSink sink(unique_id, friendly_name,
@@ -94,6 +94,22 @@ MediaSinkInternal CreateDialSink(int num) {
   extra_data.app_url =
       GURL(base::StringPrintf("http://192.168.0.10%d/apps", num));
   return media_router::MediaSinkInternal(sink, extra_data);
+}
+
+MediaSinkInternal CreateCastSink(int num) {
+  std::string friendly_name = base::StringPrintf("friendly name %d", num);
+  std::string unique_id = base::StringPrintf("cast:<id%d>", num);
+  net::IPEndPoint ip_endpoint = CreateIPEndPoint(num);
+
+  MediaSink sink(unique_id, friendly_name, SinkIconType::CAST);
+  CastSinkExtraData extra_data;
+  extra_data.ip_endpoint = ip_endpoint;
+  extra_data.port = ip_endpoint.port();
+  extra_data.model_name = base::StringPrintf("model name %d", num);
+  extra_data.cast_channel_id = num;
+  extra_data.capabilities = cast_channel::CastDeviceCapability::AUDIO_OUT |
+                            cast_channel::CastDeviceCapability::VIDEO_OUT;
+  return MediaSinkInternal(sink, extra_data);
 }
 
 }  // namespace media_router

@@ -20,6 +20,7 @@ bool MediaRouterEnabled(content::BrowserContext* context);
 
 extern const base::Feature kEnableDialSinkQuery;
 extern const base::Feature kEnableCastDiscovery;
+extern const base::Feature kCastMediaRouteProvider;
 extern const base::Feature kEnableCastLocalMedia;
 
 // Returns true if browser side DIAL sink query is enabled.
@@ -27,6 +28,10 @@ bool DialSinkQueryEnabled();
 
 // Returns true if browser side Cast discovery is enabled.
 bool CastDiscoveryEnabled();
+
+// Returns true if browser side Cast Media Route Provider and sink query are
+// enabled.
+bool CastMediaRouteProviderEnabled();
 
 // Returns true if local media casting is enabled.
 bool CastLocalMediaEnabled();

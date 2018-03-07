@@ -10,11 +10,12 @@
 namespace media_router {
 
 // Each MediaRouteProvider is associated with a unique ID. This enum must be
-// kept in sync with mojom::MediaRouteProvider::Id, except for |UNKNWON|, which
+// kept in sync with mojom::MediaRouteProvider::Id, except for |UNKNOWN|, which
 // is not present in the Mojo enum.
 enum MediaRouteProviderId {
   EXTENSION,
   WIRED_DISPLAY,
+  CAST,
   UNKNOWN  // New values must be added above this value.
 };
 

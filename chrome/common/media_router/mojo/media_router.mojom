@@ -92,7 +92,9 @@ enum RouteControllerType {
   kMirroring
 };
 
-// Should be kept in sync with media_route.h.
+// MediaRoute objects contain the status and metadata of a routing
+// operation.
+// This struct should be kept in sync with media_route.h.
 struct MediaRoute {
   // The ID of this media route, e.g. "r_PR1O_blkC9dsKp-tb1ti8qurOo".
   string media_route_id;
@@ -212,7 +214,7 @@ enum RouteRequestResultCode {
 };
 
 // Used to pass feature configuration data from the Browser to Media Route
-// Provider.
+// Provider. This object is used by the extension MRP only.
 struct MediaRouteProviderConfig {
   // If the MRP should enable DIAL discovery.
   bool enable_dial_discovery;
@@ -222,20 +224,30 @@ struct MediaRouteProviderConfig {
 
   // If the MRP should enable DIAL sink query.
   bool enable_dial_sink_query;
+
+  // If the MRP should enable Cast sink query.
+  bool enable_cast_sink_query;
 };
 
 // Modeled after the MediaRouter interface defined in
 // chrome/browser/media/router/media_router.h
 //
 // MediaRouteProvider is responsible for discovering MediaSinks, and managing
-// MediaRoutes associated with them. It notifies its observers (i.e.
-// MediaRouter) when there are changes related to sinks or routes.
+// MediaRoutes associated with them.
+// A MediaRouteProvider is associated with a MediaRouter. MediaRouter issues
+// commands to the MediaRouteProvider, such as observing MediaSinks or creating
+// a MediaRoute. In return, the MediaRouteProvider notifies the MediaRouter when
+// there are changes related to sinks or routes.
+// A MediaRouteProvider may live in the Media Router component extension, or
+// the browser (e.g. DIAL and Cast MediaRouteProviders will soon move to the
+// browser).
 interface MediaRouteProvider {
   // Each MediaRouteProvider is associated with a unique ID. This enum must be
   // kept in sync with MediaRouteProviderId in C++.
   enum Id {
     EXTENSION,
-    WIRED_DISPLAY
+    WIRED_DISPLAY,
+    CAST
   };
 
   // Creates a media route from |media_source| to the sink given by |sink_id|.
@@ -438,9 +450,8 @@ interface MediaRouteProvider {
 };
 
 // Interface for a service which observes MediaRouteProviders for state changes
-// across media sources, sinks, and issues. This interface is implemented at
-// browser side. Component extension uses this interface to invoke browser side
-// functions.
+// across media sources, sinks, and issues. The MediaRouter lives in the browser
+// process.
 interface MediaRouter {
 
   // Represents overall media sink availability states.

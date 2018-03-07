@@ -58,6 +58,7 @@ class CastMediaSource {
 
   // Returns |true| if |app_infos| contain |app_id|.
   bool ContainsApp(const std::string& app_id) const;
+  bool ContainsAnyAppFrom(const std::vector<std::string>& app_ids) const;
 
   const MediaSource::Id& source_id() const { return source_id_; }
   const std::vector<CastAppInfo>& app_infos() const { return app_infos_; }
