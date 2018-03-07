@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <ostream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -1317,6 +1318,13 @@ template <class AXPositionType, class AXNodeType>
 bool operator>=(const AXPosition<AXPositionType, AXNodeType>& first,
                 const AXPosition<AXPositionType, AXNodeType>& second) {
   return first == second || first > second;
+}
+
+template <class AXPositionType, class AXNodeType>
+std::ostream& operator<<(
+    std::ostream& stream,
+    const AXPosition<AXPositionType, AXNodeType>& position) {
+  return stream << position.ToString();
 }
 
 }  // namespace ui
