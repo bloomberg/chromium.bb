@@ -9,12 +9,12 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chromecast/public/media/media_pipeline_backend.h"
+#include "chromecast/media/cma/backend/video_decoder_for_mixer.h"
 
 namespace chromecast {
 namespace media {
 
-class VideoDecoderNull : public MediaPipelineBackend::VideoDecoder {
+class VideoDecoderNull : public VideoDecoderForMixer {
  public:
   VideoDecoderNull();
   ~VideoDecoderNull() override;
@@ -25,6 +25,15 @@ class VideoDecoderNull : public MediaPipelineBackend::VideoDecoder {
       CastDecoderBuffer* buffer) override;
   void GetStatistics(Statistics* statistics) override;
   bool SetConfig(const VideoConfig& config) override;
+
+  void Initialize() override;
+  bool Start(int64_t start_pts, bool need_avsync) override;
+  void Stop() override;
+  bool Pause() override;
+  bool Resume() override;
+  int64_t GetCurrentPts() const override;
+  bool SetPlaybackRate(float rate) override;
+  bool SetCurrentPts(int64_t pts) override;
 
  private:
   void OnEndOfStream();
