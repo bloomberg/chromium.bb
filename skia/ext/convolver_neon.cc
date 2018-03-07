@@ -23,7 +23,7 @@ AccumRemainder(const unsigned char* pixels_left,
     remainder[2] += coeff * pixels_left[i * 4 + 2];
     remainder[3] += coeff * pixels_left[i * 4 + 3];
   }
-  return {remainder[0], remainder[1], remainder[2], remainder[3]};
+  return vld1q_s32(remainder);
 }
 
 // Convolves horizontally along a single row. The row data is given in
