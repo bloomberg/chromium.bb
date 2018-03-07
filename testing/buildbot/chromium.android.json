@@ -2495,7 +2495,6 @@
           "--recover-devices",
           "--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_cardboard_skipdon_setupcomplete.json"
         ],
-        "experiement_percentage": 100,
         "merge": {
           "args": [
             "--bucket",
