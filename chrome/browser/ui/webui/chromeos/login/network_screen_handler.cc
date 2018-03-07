@@ -147,8 +147,6 @@ void NetworkScreenHandler::DeclareLocalizedValues(
     builder->Add("networkScreenGreeting", IDS_WELCOME_SCREEN_GREETING);
 
   builder->Add("networkScreenTitle", IDS_WELCOME_SCREEN_TITLE);
-  builder->Add("networkScreenAccessibleTitle",
-               IDS_NETWORK_SCREEN_ACCESSIBLE_TITLE);
   builder->Add("selectLanguage", IDS_LANGUAGE_SELECTION_SELECT);
   builder->Add("selectKeyboard", IDS_KEYBOARD_SELECTION_SELECT);
   builder->Add("selectNetwork", IDS_NETWORK_SELECTION_SELECT);

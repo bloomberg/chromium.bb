@@ -1470,9 +1470,6 @@
   <message name="IDS_OOBE_ADVANCED_OPTIONS_DEVICE_REQUISITION_SUBTITLE" desc="Subtitle of the button that trigers Device requisition device setup mode on the Chrome OS OOBE (first run UI) Advanced options screen">
     Add requisition ID to this device
   </message>
-  <message name="IDS_NETWORK_SCREEN_ACCESSIBLE_TITLE" desc="Text to be spoken on opening the OOBE network screen">
-    Welcome! Set your language and network
-  </message>
   <message name="IDS_EULA_SCREEN_TITLE" desc="Title of the OOBE EULA screen">
     The small print
   </message>
