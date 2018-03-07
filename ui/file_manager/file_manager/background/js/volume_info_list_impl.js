@@ -162,9 +162,8 @@ VolumeInfoListImpl.prototype.findByDevicePath = function(devicePath) {
  *
  * @param {string} volumeId
  * @return {VolumeInfo} The volume's information, or null if not found.
- * @private
  */
-VolumeInfoListImpl.prototype.findByVolumeId_ = function(volumeId) {
+VolumeInfoListImpl.prototype.findByVolumeId = function(volumeId) {
   var index = this.findIndex(volumeId);
   return (index !== -1) ?
       /** @type {VolumeInfo} */ (this.model_.item(index)) :
@@ -175,7 +174,7 @@ VolumeInfoListImpl.prototype.findByVolumeId_ = function(volumeId) {
 VolumeInfoListImpl.prototype.whenVolumeInfoReady = function(volumeId) {
   return new Promise(function(fulfill) {
     var handler = function() {
-      var info = this.findByVolumeId_(volumeId);
+      var info = this.findByVolumeId(volumeId);
       if (info) {
         fulfill(info);
         this.model_.removeEventListener('splice', handler);

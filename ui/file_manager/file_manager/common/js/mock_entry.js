@@ -234,6 +234,16 @@ MockFileEntry.prototype.getMetadata = function(onSuccess, onError) {
 };
 
 /**
+ * Returns a File that this represents.
+ *
+ * @param {function(!File)} onSuccess Function to take the file.
+ * @param {function(Error)} onError
+ */
+MockFileEntry.prototype.file = function(onSuccess, onError) {
+  onSuccess(new File([''], this.fullPath));
+};
+
+/**
  * @override
  */
 MockFileEntry.prototype.clone = function(path, opt_filesystem) {
