@@ -3629,11 +3629,17 @@ static uint32_t write_tile_group_header(uint8_t *const dst, int startTile,
   return size;
 }
 
+typedef struct {
+  uint8_t *frame_header;
+  size_t total_length;
+} FrameHeaderInfo;
+
 static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
                                        unsigned int *max_tile_size,
                                        unsigned int *max_tile_col_size,
                                        struct aom_write_bit_buffer *saved_wb,
-                                       uint8_t obu_extension_header) {
+                                       uint8_t obu_extension_header,
+                                       const FrameHeaderInfo *fh_info) {
   AV1_COMMON *const cm = &cpi->common;
   aom_writer mode_bc;
   int tile_row, tile_col;
@@ -3655,6 +3661,7 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
   uint8_t *data = dst;
   int new_tg = 1;
   const int have_tiles = tile_cols * tile_rows > 1;
+  int first_tg = 1;
 
   cm->largest_tile_id = 0;
   *max_tile_size = 0;
@@ -3806,6 +3813,7 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
 
       if (new_tg) {
         data = dst + total_size;
+
         // A new tile group begins at this tile.  Write the obu header and
         // tile group header
         curr_tg_data_size = write_obu_header(
@@ -3813,11 +3821,13 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
 #if CONFIG_OBU_SIZING
         obu_header_size = curr_tg_data_size;
 #endif  // CONFIG_OBU_SIZING
-        if (n_log2_tiles)
+
+        if (n_log2_tiles) {
           curr_tg_data_size += write_tile_group_header(
               data + curr_tg_data_size + PRE_OBU_SIZE_BYTES, tile_idx,
               AOMMIN(tile_idx + tg_size - 1, tile_cols * tile_rows - 1),
               n_log2_tiles);
+        }
         total_size += curr_tg_data_size + PRE_OBU_SIZE_BYTES;
         new_tg = 0;
         tile_count = 0;
@@ -3870,7 +3880,7 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
         // size of this tile
         mem_put_le32(buf->data, tile_size);
       } else {
-// write current tile group size
+      // write current tile group size
 #if CONFIG_OBU_SIZING
         const uint32_t obu_payload_size = curr_tg_data_size - obu_header_size;
         const size_t length_field_size =
@@ -3884,6 +3894,19 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
 #else
         mem_put_le32(data, curr_tg_data_size);
 #endif  // CONFIG_OBU_SIZING
+
+        if (!first_tg && cm->error_resilient_mode) {
+          // Make room for a duplicate Frame Header OBU.
+          memmove(data + fh_info->total_length, data, curr_tg_data_size);
+
+          // Insert a copy of the Frame Header OBU.
+          memcpy(data, fh_info->frame_header, fh_info->total_length);
+          data += fh_info->total_length;
+
+          curr_tg_data_size += fh_info->total_length;
+          total_size += fh_info->total_length;
+        }
+        first_tg = 0;
       }
 
       total_size += tile_size;
@@ -3900,6 +3923,7 @@ int av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dst, size_t *size) {
   AV1_COMMON *const cm = &cpi->common;
   uint32_t obu_header_size = 0;
   uint32_t obu_payload_size = 0;
+  FrameHeaderInfo fh_info;
 #if CONFIG_SCALABILITY
   const uint8_t enhancement_layers_cnt = cm->enhancement_layers_cnt;
   const uint8_t obu_extension_header =
@@ -3944,7 +3968,8 @@ int av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dst, size_t *size) {
 
   struct aom_write_bit_buffer saved_wb;
 
-  // write frame header obu, preceded by 4-byte size
+  // Write Frame Header OBU.
+  fh_info.frame_header = data;
   obu_header_size = write_obu_header(OBU_FRAME_HEADER, obu_extension_header,
                                      data + PRE_OBU_SIZE_BYTES);
   obu_payload_size = write_frame_header_obu(
@@ -3962,7 +3987,9 @@ int av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dst, size_t *size) {
   mem_put_le32(data, obu_header_size + obu_payload_size);
 #endif  // CONFIG_OBU_SIZING
 
-  data += obu_header_size + obu_payload_size + length_field_size;
+  fh_info.total_length = obu_header_size + obu_payload_size + length_field_size;
+  data += fh_info.total_length;
+
   // Since length_field_size is determined adaptively after frame header
   // encoding, saved_wb must be adjusted accordingly.
   saved_wb.bit_buffer += length_field_size;
@@ -3987,7 +4014,7 @@ int av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dst, size_t *size) {
     //  obu
     data_size =
         write_tiles_in_tg_obus(cpi, data, &max_tile_size, &max_tile_col_size,
-                               &saved_wb, obu_extension_header);
+                               &saved_wb, obu_extension_header, &fh_info);
   }
   data += data_size;
   *size = data - dst;
