@@ -4661,6 +4661,15 @@
   <message name="IDS_ARC_MIGRATE_ENCRYPTION_SUCCESS_MESSAGE" desc="Message of the toast shown on the first sign-in after the successfully completed migration needed for using Android apps.">
     You can now use Android apps.
   </message>
+  <message name="IDS_ARC_USB_PERMISSION_TITLE" desc="Titlebar of Android app USB permissions prompt window">
+    Confirm USB Permission
+  </message>
+  <message name="IDS_ARC_USB_SCAN_DEVICE_LIST_PERMISSION_HEADING" desc="Heading text in the content area of the Android app scan device list permission prompt. Tells the user the app will be able to scan attached USB device list if confirmed.">
+    Allow "<ph name="APP_NAME">$1<ex>Gmail Checker</ex></ph>" to get the list of your attached USB devices?
+  </message>
+  <message name="IDS_ARC_USB_ACCESS_PERMISSION_HEADING" desc="Heading text in the content area of the Android app USB device access permission prompt. Tells the user the app will be able to access the usb device if confirmed.">
+    Allow "<ph name="APP_NAME">$1<ex>Gmail Checker</ex></ph>" to access:
+  </message>
   <message name="IDS_VOICE_INTERACTION_VALUE_PROP_LOADING" desc="Loading message of the voice interaction value prop dialog.">
     Loading Google Assistant...
   </message>

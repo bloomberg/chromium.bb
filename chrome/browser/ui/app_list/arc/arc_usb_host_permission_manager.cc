@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_dialog.h"
 #include "chrome/browser/ui/app_list/arc/arc_usb_host_permission_manager_factory.h"
 #include "components/arc/usb/usb_host_bridge.h"
 #include "extensions/browser/api/device_permissions_manager.h"
@@ -254,7 +255,7 @@ void ArcUsbHostPermissionManager::MaybeProcessNextPermissionRequest() {
     if (HasUsbScanDeviceListPermission(current_requesting_package_)) {
       OnUsbPermissionReceived(std::move(current_request), true);
     } else {
-      ShowScanDeviceListPermissionDialog(
+      ShowUsbScanDeviceListPermissionDialog(
           profile_, app_id,
           base::BindOnce(&ArcUsbHostPermissionManager::OnUsbPermissionReceived,
                          weak_ptr_factory_.GetWeakPtr(),
@@ -265,7 +266,7 @@ void ArcUsbHostPermissionManager::MaybeProcessNextPermissionRequest() {
                                *current_request.usb_device_entry())) {
       OnUsbPermissionReceived(std::move(current_request), true);
     } else {
-      ShowAccessPermissionDialog(
+      ShowUsbAccessPermissionDialog(
           profile_, app_id, current_request.usb_device_entry()->device_name,
           base::BindOnce(&ArcUsbHostPermissionManager::OnUsbPermissionReceived,
                          weak_ptr_factory_.GetWeakPtr(),
