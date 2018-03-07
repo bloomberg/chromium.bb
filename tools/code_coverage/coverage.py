@@ -985,9 +985,12 @@ def _GetBinaryPath(command):
   2. Use xvfb.
     2.1. "python testing/xvfb.py out/coverage/url_unittests <arguments>"
     2.2. "testing/xvfb.py out/coverage/url_unittests <arguments>"
-  3. Use iossim to run tests on iOS platform.
+  3. Use iossim to run tests on iOS platform, please refer to testing/iossim.mm
+    for its usage.
     3.1. "out/Coverage-iphonesimulator/iossim
-          out/Coverage-iphonesimulator/url_unittests.app <arguments>"
+          <iossim_arguments> -c <app_arguments>
+          out/Coverage-iphonesimulator/url_unittests.app"
+
 
   Args:
     command: A command used to run a target.
@@ -1009,7 +1012,7 @@ def _GetBinaryPath(command):
   if _IsIOSCommand(command):
     # For a given application bundle, the binary resides in the bundle and has
     # the same name with the application without the .app extension.
-    app_path = command_parts[1]
+    app_path = command_parts[-1].rstrip(os.path.sep)
     app_name = os.path.splitext(os.path.basename(app_path))[0]
     return os.path.join(app_path, app_name)
 
