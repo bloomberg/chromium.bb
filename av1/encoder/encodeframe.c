@@ -1287,7 +1287,7 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
       } else {
         mode_ctx =
             av1_mode_context_analyzer(mbmi_ext->mode_context, mbmi->ref_frame);
-        update_inter_mode_stats(counts, mode, mode_ctx);
+        update_inter_mode_stats(fc, counts, mode, mode_ctx, allow_update_cdf);
       }
 #endif
 
