@@ -1558,6 +1558,11 @@ public class ToolbarPhone extends ToolbarLayout
                 || mLocationBar.useModernDesign()) {
             mToolbarShadow.setImageDrawable(getToolbarShadowDrawable());
         }
+        if (mLocationBar.useModernDesign()) {
+            mToolbarShadow.getLayoutParams().height =
+                    getResources().getDimensionPixelSize(R.dimen.toolbar_shadow_height);
+            mToolbarShadow.setScaleType(ImageView.ScaleType.FIT_XY);
+        }
     }
 
     /**
