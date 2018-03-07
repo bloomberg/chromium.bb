@@ -131,7 +131,7 @@ bool ServiceImageTransferCacheEntry::Deserialize(
     if (!image)
       return false;
     image_ = image->makeTextureImage(context, nullptr);
-    if (!image)
+    if (!image_)
       return false;
     if (target_color_space) {
       image_ = image_->makeColorSpace(target_color_space,
