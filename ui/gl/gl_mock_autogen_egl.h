@@ -52,7 +52,7 @@ MOCK_METHOD4(CreatePixmapSurface,
                         const EGLint* attrib_list));
 MOCK_METHOD2(CreateStreamKHR,
              EGLStreamKHR(EGLDisplay dpy, const EGLint* attrib_list));
-MOCK_METHOD3(CreateStreamProducerD3DTextureNV12ANGLE,
+MOCK_METHOD3(CreateStreamProducerD3DTextureANGLE,
              EGLBoolean(EGLDisplay dpy,
                         EGLStreamKHR stream,
                         EGLAttrib* attrib_list));
@@ -71,6 +71,18 @@ MOCK_METHOD2(DestroyStreamKHR, EGLBoolean(EGLDisplay dpy, EGLStreamKHR stream));
 MOCK_METHOD2(DestroySurface, EGLBoolean(EGLDisplay dpy, EGLSurface surface));
 MOCK_METHOD2(DestroySyncKHR, EGLBoolean(EGLDisplay dpy, EGLSyncKHR sync));
 MOCK_METHOD2(DupNativeFenceFDANDROID, EGLint(EGLDisplay dpy, EGLSyncKHR sync));
+MOCK_METHOD5(ExportDMABUFImageMESA,
+             EGLBoolean(EGLDisplay dpy,
+                        EGLImageKHR image,
+                        int* fds,
+                        EGLint* strides,
+                        EGLint* offsets));
+MOCK_METHOD5(ExportDMABUFImageQueryMESA,
+             EGLBoolean(EGLDisplay dpy,
+                        EGLImageKHR image,
+                        int* fourcc,
+                        int* num_planes,
+                        EGLuint64KHR* modifiers));
 MOCK_METHOD5(GetCompositorTimingANDROID,
              EGLBoolean(EGLDisplay dpy,
                         EGLSurface surface,
@@ -206,7 +218,7 @@ MOCK_METHOD2(StreamConsumerGLTextureExternalKHR,
              EGLBoolean(EGLDisplay dpy, EGLStreamKHR stream));
 MOCK_METHOD2(StreamConsumerReleaseKHR,
              EGLBoolean(EGLDisplay dpy, EGLStreamKHR stream));
-MOCK_METHOD4(StreamPostD3DTextureNV12ANGLE,
+MOCK_METHOD4(StreamPostD3DTextureANGLE,
              EGLBoolean(EGLDisplay dpy,
                         EGLStreamKHR stream,
                         void* texture,

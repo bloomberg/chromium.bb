@@ -55,9 +55,9 @@ Mock_eglCreatePixmapSurface(EGLDisplay dpy,
 static EGLStreamKHR GL_BINDING_CALL
 Mock_eglCreateStreamKHR(EGLDisplay dpy, const EGLint* attrib_list);
 static EGLBoolean GL_BINDING_CALL
-Mock_eglCreateStreamProducerD3DTextureNV12ANGLE(EGLDisplay dpy,
-                                                EGLStreamKHR stream,
-                                                EGLAttrib* attrib_list);
+Mock_eglCreateStreamProducerD3DTextureANGLE(EGLDisplay dpy,
+                                            EGLStreamKHR stream,
+                                            EGLAttrib* attrib_list);
 static EGLSyncKHR GL_BINDING_CALL
 Mock_eglCreateSyncKHR(EGLDisplay dpy, EGLenum type, const EGLint* attrib_list);
 static EGLSurface GL_BINDING_CALL
@@ -77,6 +77,18 @@ static EGLBoolean GL_BINDING_CALL Mock_eglDestroySyncKHR(EGLDisplay dpy,
                                                          EGLSyncKHR sync);
 static EGLint GL_BINDING_CALL Mock_eglDupNativeFenceFDANDROID(EGLDisplay dpy,
                                                               EGLSyncKHR sync);
+static EGLBoolean GL_BINDING_CALL
+Mock_eglExportDMABUFImageMESA(EGLDisplay dpy,
+                              EGLImageKHR image,
+                              int* fds,
+                              EGLint* strides,
+                              EGLint* offsets);
+static EGLBoolean GL_BINDING_CALL
+Mock_eglExportDMABUFImageQueryMESA(EGLDisplay dpy,
+                                   EGLImageKHR image,
+                                   int* fourcc,
+                                   int* num_planes,
+                                   EGLuint64KHR* modifiers);
 static EGLBoolean GL_BINDING_CALL
 Mock_eglGetCompositorTimingANDROID(EGLDisplay dpy,
                                    EGLSurface surface,
@@ -212,10 +224,10 @@ Mock_eglStreamConsumerGLTextureExternalKHR(EGLDisplay dpy, EGLStreamKHR stream);
 static EGLBoolean GL_BINDING_CALL
 Mock_eglStreamConsumerReleaseKHR(EGLDisplay dpy, EGLStreamKHR stream);
 static EGLBoolean GL_BINDING_CALL
-Mock_eglStreamPostD3DTextureNV12ANGLE(EGLDisplay dpy,
-                                      EGLStreamKHR stream,
-                                      void* texture,
-                                      const EGLAttrib* attrib_list);
+Mock_eglStreamPostD3DTextureANGLE(EGLDisplay dpy,
+                                  EGLStreamKHR stream,
+                                  void* texture,
+                                  const EGLAttrib* attrib_list);
 static EGLBoolean GL_BINDING_CALL Mock_eglSurfaceAttrib(EGLDisplay dpy,
                                                         EGLSurface surface,
                                                         EGLint attribute,
