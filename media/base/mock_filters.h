@@ -201,7 +201,7 @@ class MockVideoDecoder : public VideoDecoder {
   MOCK_METHOD2(Decode, void(const scoped_refptr<DecoderBuffer>& buffer,
                             const DecodeCB&));
   MOCK_METHOD1(Reset, void(const base::Closure&));
-  MOCK_CONST_METHOD0(HasAlpha, bool());
+  MOCK_CONST_METHOD0(GetMaxDecodeRequests, int());
   MOCK_CONST_METHOD0(CanReadWithoutStalling, bool());
 
  private:

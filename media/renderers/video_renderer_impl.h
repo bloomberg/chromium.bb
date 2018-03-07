@@ -28,13 +28,11 @@
 #include "media/filters/decoder_stream.h"
 #include "media/filters/video_renderer_algorithm.h"
 #include "media/renderers/default_renderer_factory.h"
-#include "media/video/gpu_memory_buffer_video_frame_pool.h"
-#include "media/video/gpu_video_accelerator_factories.h"
 
 namespace base {
 class SingleThreadTaskRunner;
 class TickClock;
-}
+}  // namespace base
 
 namespace media {
 
@@ -54,11 +52,9 @@ class MEDIA_EXPORT VideoRendererImpl
   // Setting |drop_frames_| to true causes the renderer to drop expired frames.
   VideoRendererImpl(
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
-      const scoped_refptr<base::TaskRunner>& worker_task_runner,
       VideoRendererSink* sink,
       const CreateVideoDecodersCB& create_video_decoders_cb,
       bool drop_frames,
-      GpuVideoAcceleratorFactories* gpu_factories,
       MediaLog* media_log);
   ~VideoRendererImpl() override;
 
@@ -74,8 +70,6 @@ class MEDIA_EXPORT VideoRendererImpl
   void OnTimeStopped() override;
 
   void SetTickClockForTesting(base::TickClock* tick_clock);
-  void SetGpuMemoryBufferVideoForTesting(
-      std::unique_ptr<GpuMemoryBufferVideoFramePool> gpu_memory_buffer_pool);
   size_t frames_queued_for_testing() const {
     return algorithm_->frames_queued();
   }
@@ -109,15 +103,6 @@ class MEDIA_EXPORT VideoRendererImpl
   // Called by the VideoFrameStream when a config change occurs. Will notify
   // RenderClient of the new config.
   void OnConfigChange(const VideoDecoderConfig& config);
-
-  // Callback for |video_frame_stream_| to deliver decoded video frames and
-  // report video decoding status. If a frame is available the planes will be
-  // copied asynchronously and FrameReady will be called once finished copying.
-  // |read_time| is the time at which this read was started.
-  void FrameReadyForCopyingToGpuMemoryBuffers(
-      base::TimeTicks read_time,
-      VideoFrameStream::Status status,
-      const scoped_refptr<VideoFrame>& frame);
 
   // Callback for |video_frame_stream_| to deliver decoded video frames and
   // report video decoding status. |read_time| is the time at which this read
@@ -227,11 +212,6 @@ class MEDIA_EXPORT VideoRendererImpl
   // Provides video frames to VideoRendererImpl.
   std::unique_ptr<VideoFrameStream> video_frame_stream_;
 
-  // Pool of GpuMemoryBuffers and resources used to create hardware frames.
-  // Ensure this is destructed after |algorithm_| for optimal memory release
-  // when a frames are still held by the compositor.
-  std::unique_ptr<GpuMemoryBufferVideoFramePool> gpu_memory_buffer_pool_;
-
   MediaLog* media_log_;
 
   // Flag indicating low-delay mode.
@@ -261,20 +241,12 @@ class MEDIA_EXPORT VideoRendererImpl
   //           |                            |
   //           |                            | Flush()
   //           `---------> kPlaying --------'
-  enum State {
-    kUninitialized,
-    kInitializing,
-    kFlushing,
-    kFlushed,
-    kPlaying
-  };
+  enum State { kUninitialized, kInitializing, kFlushing, kFlushed, kPlaying };
   State state_;
 
   // TODO(servolk): Consider using DecoderFactory here instead of the
   // CreateVideoDecodersCB.
   CreateVideoDecodersCB create_video_decoders_cb_;
-  GpuVideoAcceleratorFactories* gpu_factories_;
-  scoped_refptr<base::TaskRunner> worker_task_runner_;
 
   // Keep track of the outstanding read on the VideoFrameStream. Flushing can
   // only complete once the read has completed.
@@ -299,8 +271,8 @@ class MEDIA_EXPORT VideoRendererImpl
 
   // Algorithm for selecting which frame to render; manages frames and all
   // timing related information. Ensure this is destructed before
-  // |gpu_memory_buffer_pool_| for optimal memory release when a frames are
-  // still held by the compositor.
+  // |video_frame_stream_| for optimal memory release when a frames are still
+  // held by the compositor.
   std::unique_ptr<VideoRendererAlgorithm> algorithm_;
 
   // Indicates that Render() was called with |background_rendering| set to true,

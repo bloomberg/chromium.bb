@@ -459,12 +459,10 @@ std::unique_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer(
 
   // Disable frame dropping if hashing is enabled.
   std::unique_ptr<VideoRenderer> video_renderer(new VideoRendererImpl(
-      scoped_task_environment_.GetMainThreadTaskRunner(),
-      scoped_task_environment_.GetMainThreadTaskRunner().get(),
-      video_sink_.get(),
+      scoped_task_environment_.GetMainThreadTaskRunner(), video_sink_.get(),
       base::Bind(&CreateVideoDecodersForTest, &media_log_,
                  prepend_video_decoders_cb),
-      false, nullptr, &media_log_));
+      false, &media_log_));
 
   if (!clockless_playback_) {
     audio_sink_ =

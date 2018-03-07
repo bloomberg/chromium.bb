@@ -15,11 +15,13 @@
 #include "media/base/decoder_factory.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
+#include "media/filters/gpu_memory_buffer_decoder_wrapper.h"
 #include "media/filters/gpu_video_decoder.h"
 #include "media/media_features.h"
 #include "media/renderers/audio_renderer_impl.h"
 #include "media/renderers/renderer_impl.h"
 #include "media/renderers/video_renderer_impl.h"
+#include "media/video/gpu_memory_buffer_video_frame_pool.h"
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "third_party/libaom/av1_features.h"
 
@@ -40,6 +42,23 @@
 #endif
 
 namespace media {
+
+static std::unique_ptr<VideoDecoder> MaybeUseGpuMemoryBufferWrapper(
+    GpuVideoAcceleratorFactories* gpu_factories,
+    scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
+    scoped_refptr<base::TaskRunner> worker_task_runner,
+    std::unique_ptr<VideoDecoder> decoder) {
+  if (!gpu_factories ||
+      !gpu_factories->ShouldUseGpuMemoryBuffersForVideoFrames()) {
+    return decoder;
+  }
+
+  return std::make_unique<GpuMemoryBufferDecoderWrapper>(
+      std::make_unique<GpuMemoryBufferVideoFramePool>(
+          std::move(media_task_runner), std::move(worker_task_runner),
+          gpu_factories),
+      std::move(decoder));
+}
 
 DefaultRendererFactory::DefaultRendererFactory(
     MediaLog* media_log,
@@ -73,6 +92,7 @@ DefaultRendererFactory::CreateAudioDecoders(
 std::vector<std::unique_ptr<VideoDecoder>>
 DefaultRendererFactory::CreateVideoDecoders(
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
+    const scoped_refptr<base::TaskRunner>& worker_task_runner,
     const RequestOverlayInfoCB& request_overlay_info_cb,
     const gfx::ColorSpace& target_color_space,
     GpuVideoAcceleratorFactories* gpu_factories) {
@@ -105,16 +125,22 @@ DefaultRendererFactory::CreateVideoDecoders(
   }
 
 #if BUILDFLAG(ENABLE_LIBVPX)
-  video_decoders.push_back(std::make_unique<OffloadingVpxVideoDecoder>());
+  video_decoders.push_back(MaybeUseGpuMemoryBufferWrapper(
+      gpu_factories, media_task_runner, worker_task_runner,
+      std::make_unique<OffloadingVpxVideoDecoder>()));
 #endif
 
 #if BUILDFLAG(ENABLE_AV1_DECODER)
   if (base::FeatureList::IsEnabled(kAv1Decoder))
-    video_decoders.push_back(std::make_unique<AomVideoDecoder>(media_log_));
+    video_decoders.push_back(MaybeUseGpuMemoryBufferWrapper(
+        gpu_factories, media_task_runner, worker_task_runner,
+        std::make_unique<AomVideoDecoder>(media_log_)));
 #endif
 
 #if BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
-  video_decoders.push_back(std::make_unique<FFmpegVideoDecoder>(media_log_));
+  video_decoders.push_back(MaybeUseGpuMemoryBufferWrapper(
+      gpu_factories, media_task_runner, worker_task_runner,
+      std::make_unique<FFmpegVideoDecoder>(media_log_)));
 #endif
 
   return video_decoders;
@@ -146,7 +172,7 @@ std::unique_ptr<Renderer> DefaultRendererFactory::CreateRenderer(
     gpu_factories = get_gpu_factories_cb_.Run();
 
   std::unique_ptr<VideoRenderer> video_renderer(new VideoRendererImpl(
-      media_task_runner, worker_task_runner, video_renderer_sink,
+      media_task_runner, video_renderer_sink,
       // Unretained is safe here, because the RendererFactory is guaranteed to
       // outlive the RendererImpl. The RendererImpl is destroyed when WMPI
       // destructor calls pipeline_controller_.Stop() -> PipelineImpl::Stop() ->
@@ -154,9 +180,9 @@ std::unique_ptr<Renderer> DefaultRendererFactory::CreateRenderer(
       // RendererFactory is owned by WMPI and gets called after WMPI destructor
       // finishes.
       base::Bind(&DefaultRendererFactory::CreateVideoDecoders,
-                 base::Unretained(this), media_task_runner,
+                 base::Unretained(this), media_task_runner, worker_task_runner,
                  request_overlay_info_cb, target_color_space, gpu_factories),
-      true, gpu_factories, media_log_));
+      true, media_log_));
 
   return std::make_unique<RendererImpl>(
       media_task_runner, std::move(audio_renderer), std::move(video_renderer));
