@@ -26,7 +26,7 @@ namespace blink {
 
 ClipboardEvent::ClipboardEvent(const AtomicString& type,
                                DataTransfer* clipboard_data)
-    : Event(type, true, true, Event::ComposedMode::kComposed),
+    : Event(type, Bubbles::kYes, Cancelable::kYes, ComposedMode::kComposed),
       clipboard_data_(clipboard_data) {}
 
 ClipboardEvent::ClipboardEvent(const AtomicString& type,

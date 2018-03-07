@@ -1255,16 +1255,19 @@ static void DispatchChildInsertionEvents(Node& child) {
   Document* document = &child.GetDocument();
 
   if (c->parentNode() &&
-      document->HasListenerType(Document::kDOMNodeInsertedListener))
-    c->DispatchScopedEvent(MutationEvent::Create(
-        EventTypeNames::DOMNodeInserted, true, c->parentNode()));
+      document->HasListenerType(Document::kDOMNodeInsertedListener)) {
+    c->DispatchScopedEvent(
+        MutationEvent::Create(EventTypeNames::DOMNodeInserted,
+                              Event::Bubbles::kYes, c->parentNode()));
+  }
 
   // dispatch the DOMNodeInsertedIntoDocument event to all descendants
   if (c->isConnected() && document->HasListenerType(
                               Document::kDOMNodeInsertedIntoDocumentListener)) {
-    for (; c; c = NodeTraversal::Next(*c, &child))
+    for (; c; c = NodeTraversal::Next(*c, &child)) {
       c->DispatchScopedEvent(MutationEvent::Create(
-          EventTypeNames::DOMNodeInsertedIntoDocument, false));
+          EventTypeNames::DOMNodeInsertedIntoDocument, Event::Bubbles::kNo));
+    }
   }
 }
 
@@ -1287,17 +1290,18 @@ static void DispatchChildRemovalEvents(Node& child) {
   if (c->parentNode() &&
       document->HasListenerType(Document::kDOMNodeRemovedListener)) {
     NodeChildRemovalTracker scope(child);
-    c->DispatchScopedEvent(MutationEvent::Create(EventTypeNames::DOMNodeRemoved,
-                                                 true, c->parentNode()));
+    c->DispatchScopedEvent(MutationEvent::Create(
+        EventTypeNames::DOMNodeRemoved, Event::Bubbles::kYes, c->parentNode()));
   }
 
   // Dispatch the DOMNodeRemovedFromDocument event to all descendants.
   if (c->isConnected() && document->HasListenerType(
                               Document::kDOMNodeRemovedFromDocumentListener)) {
     NodeChildRemovalTracker scope(child);
-    for (; c; c = NodeTraversal::Next(*c, &child))
+    for (; c; c = NodeTraversal::Next(*c, &child)) {
       c->DispatchScopedEvent(MutationEvent::Create(
-          EventTypeNames::DOMNodeRemovedFromDocument, false));
+          EventTypeNames::DOMNodeRemovedFromDocument, Event::Bubbles::kNo));
+    }
   }
 }
 

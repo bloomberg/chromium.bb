@@ -67,8 +67,8 @@ TextEvent::TextEvent(AbstractView* view,
                      const String& data,
                      TextEventInputType input_type)
     : UIEvent(EventTypeNames::textInput,
-              true,
-              true,
+              Bubbles::kYes,
+              Cancelable::kYes,
               ComposedMode::kComposed,
               CurrentTimeTicks(),
               view,
@@ -86,8 +86,8 @@ TextEvent::TextEvent(AbstractView* view,
                      bool should_smart_replace,
                      bool should_match_style)
     : UIEvent(EventTypeNames::textInput,
-              true,
-              true,
+              Bubbles::kYes,
+              Cancelable::kYes,
               ComposedMode::kComposed,
               CurrentTimeTicks(),
               view,
@@ -102,14 +102,14 @@ TextEvent::TextEvent(AbstractView* view,
 TextEvent::~TextEvent() = default;
 
 void TextEvent::initTextEvent(const AtomicString& type,
-                              bool can_bubble,
+                              bool bubbles,
                               bool cancelable,
                               AbstractView* view,
                               const String& data) {
   if (IsBeingDispatched())
     return;
 
-  initUIEvent(type, can_bubble, cancelable, view, 0);
+  initUIEvent(type, bubbles, cancelable, view, 0);
 
   data_ = data;
 }

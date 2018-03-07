@@ -1502,8 +1502,7 @@ void RTCPeerConnection::DidGenerateICECandidate(
   DCHECK(web_candidate);
   RTCIceCandidate* ice_candidate =
       RTCIceCandidate::Create(std::move(web_candidate));
-  ScheduleDispatchEvent(
-      RTCPeerConnectionIceEvent::Create(false, false, ice_candidate));
+  ScheduleDispatchEvent(RTCPeerConnectionIceEvent::Create(ice_candidate));
 }
 
 void RTCPeerConnection::DidChangeSignalingState(SignalingState new_state) {
@@ -1662,8 +1661,8 @@ void RTCPeerConnection::DidAddRemoteDataChannel(
 
   RTCDataChannel* channel =
       RTCDataChannel::Create(GetExecutionContext(), base::WrapUnique(handler));
-  ScheduleDispatchEvent(RTCDataChannelEvent::Create(EventTypeNames::datachannel,
-                                                    false, false, channel));
+  ScheduleDispatchEvent(
+      RTCDataChannelEvent::Create(EventTypeNames::datachannel, channel));
   has_data_channels_ = true;
 }
 
@@ -1724,8 +1723,7 @@ void RTCPeerConnection::ChangeIceGatheringState(
     if (ice_gathering_state == kICEGatheringStateComplete) {
       // If ICE gathering is completed, generate a null ICE candidate, to
       // signal end of candidates.
-      ScheduleDispatchEvent(
-          RTCPeerConnectionIceEvent::Create(false, false, nullptr));
+      ScheduleDispatchEvent(RTCPeerConnectionIceEvent::Create(nullptr));
     }
   }
 }

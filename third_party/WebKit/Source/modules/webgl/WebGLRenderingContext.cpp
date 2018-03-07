@@ -101,9 +101,9 @@ CanvasRenderingContext* WebGLRenderingContext::Factory::Create(
   WebGLRenderingContext* rendering_context = new WebGLRenderingContext(
       host, std::move(context_provider), using_gpu_compositing, attrs);
   if (!rendering_context->GetDrawingBuffer()) {
-    host->HostDispatchEvent(WebGLContextEvent::Create(
-        EventTypeNames::webglcontextcreationerror, false, true,
-        "Could not create a WebGL context."));
+    host->HostDispatchEvent(
+        WebGLContextEvent::Create(EventTypeNames::webglcontextcreationerror,
+                                  "Could not create a WebGL context."));
     return nullptr;
   }
   rendering_context->InitializeNewContext();
@@ -115,7 +115,7 @@ CanvasRenderingContext* WebGLRenderingContext::Factory::Create(
 void WebGLRenderingContext::Factory::OnError(HTMLCanvasElement* canvas,
                                              const String& error) {
   canvas->DispatchEvent(WebGLContextEvent::Create(
-      EventTypeNames::webglcontextcreationerror, false, true, error));
+      EventTypeNames::webglcontextcreationerror, error));
 }
 
 WebGLRenderingContext::WebGLRenderingContext(

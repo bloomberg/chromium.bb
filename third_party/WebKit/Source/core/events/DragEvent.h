@@ -24,8 +24,8 @@ class CORE_EXPORT DragEvent final : public MouseEvent {
   }
 
   static DragEvent* Create(const AtomicString& type,
-                           bool can_bubble,
-                           bool cancelable,
+                           Bubbles,
+                           Cancelable,
                            AbstractView*,
                            int detail,
                            double screen_x,
@@ -62,8 +62,8 @@ class CORE_EXPORT DragEvent final : public MouseEvent {
   DragEvent();
   DragEvent(DataTransfer*);
   DragEvent(const AtomicString& type,
-            bool can_bubble,
-            bool cancelable,
+            Bubbles,
+            Cancelable,
             AbstractView*,
             int detail,
             double screen_x,

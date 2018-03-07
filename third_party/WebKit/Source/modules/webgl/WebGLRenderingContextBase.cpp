@@ -669,16 +669,16 @@ WebGLRenderingContextBase::CreateContextProviderInternal(
   }
   if (!context_provider || g_should_fail_context_creation_for_testing) {
     g_should_fail_context_creation_for_testing = false;
-    host->HostDispatchEvent(WebGLContextEvent::Create(
-        EventTypeNames::webglcontextcreationerror, false, true,
-        ExtractWebGLContextCreationError(gl_info)));
+    host->HostDispatchEvent(
+        WebGLContextEvent::Create(EventTypeNames::webglcontextcreationerror,
+                                  ExtractWebGLContextCreationError(gl_info)));
     return nullptr;
   }
   gpu::gles2::GLES2Interface* gl = context_provider->ContextGL();
   if (!String(gl->GetString(GL_EXTENSIONS))
            .Contains("GL_OES_packed_depth_stencil")) {
     host->HostDispatchEvent(WebGLContextEvent::Create(
-        EventTypeNames::webglcontextcreationerror, false, true,
+        EventTypeNames::webglcontextcreationerror,
         "OES_packed_depth_stencil support is required."));
     return nullptr;
   }
@@ -693,14 +693,14 @@ WebGLRenderingContextBase::CreateWebGraphicsContext3DProvider(
     bool* using_gpu_compositing) {
   if (host->IsWebGLBlocked()) {
     host->HostDispatchEvent(WebGLContextEvent::Create(
-        EventTypeNames::webglcontextcreationerror, false, true,
+        EventTypeNames::webglcontextcreationerror,
         "Web page caused context loss and was blocked"));
     return nullptr;
   }
   if ((webgl_version == 1 && !host->IsWebGL1Enabled()) ||
       (webgl_version == 2 && !host->IsWebGL2Enabled())) {
     host->HostDispatchEvent(WebGLContextEvent::Create(
-        EventTypeNames::webglcontextcreationerror, false, true,
+        EventTypeNames::webglcontextcreationerror,
         "disabled by enterprise policy or commandline switch"));
     return nullptr;
   }
@@ -7533,8 +7533,8 @@ bool WebGLRenderingContextBase::ValidateDrawElements(const char* function_name,
 }
 
 void WebGLRenderingContextBase::DispatchContextLostEvent(TimerBase*) {
-  WebGLContextEvent* event = WebGLContextEvent::Create(
-      EventTypeNames::webglcontextlost, false, true, "");
+  WebGLContextEvent* event =
+      WebGLContextEvent::Create(EventTypeNames::webglcontextlost, "");
   Host()->HostDispatchEvent(event);
   restore_allowed_ = event->defaultPrevented();
   if (restore_allowed_ && !is_hidden_) {
@@ -7623,8 +7623,8 @@ void WebGLRenderingContextBase::MaybeRestoreContext(TimerBase*) {
   SetupFlags();
   InitializeNewContext();
   MarkContextChanged(kCanvasContextChanged);
-  WebGLContextEvent* event = WebGLContextEvent::Create(
-      EventTypeNames::webglcontextrestored, false, true, "");
+  WebGLContextEvent* event =
+      WebGLContextEvent::Create(EventTypeNames::webglcontextrestored, "");
   Host()->HostDispatchEvent(event);
 }
 

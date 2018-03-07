@@ -27,14 +27,14 @@ namespace blink {
 MutationEvent::MutationEvent() : attr_change_(0) {}
 
 MutationEvent::MutationEvent(const AtomicString& type,
-                             bool can_bubble,
-                             bool cancelable,
+                             Bubbles bubbles,
+                             Cancelable cancelable,
                              Node* related_node,
                              const String& prev_value,
                              const String& new_value,
                              const String& attr_name,
                              unsigned short attr_change)
-    : Event(type, can_bubble, cancelable),
+    : Event(type, bubbles, cancelable),
       related_node_(related_node),
       prev_value_(prev_value),
       new_value_(new_value),
@@ -44,7 +44,7 @@ MutationEvent::MutationEvent(const AtomicString& type,
 MutationEvent::~MutationEvent() = default;
 
 void MutationEvent::initMutationEvent(const AtomicString& type,
-                                      bool can_bubble,
+                                      bool bubbles,
                                       bool cancelable,
                                       Node* related_node,
                                       const String& prev_value,
@@ -54,7 +54,7 @@ void MutationEvent::initMutationEvent(const AtomicString& type,
   if (IsBeingDispatched())
     return;
 
-  initEvent(type, can_bubble, cancelable);
+  initEvent(type, bubbles, cancelable);
 
   related_node_ = related_node;
   prev_value_ = prev_value;

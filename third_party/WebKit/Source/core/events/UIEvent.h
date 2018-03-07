@@ -48,12 +48,12 @@ class CORE_EXPORT UIEvent : public Event {
   ~UIEvent() override;
 
   void initUIEvent(const AtomicString& type,
-                   bool can_bubble,
+                   bool bubbles,
                    bool cancelable,
                    AbstractView*,
                    int detail);
   void InitUIEventInternal(const AtomicString& type,
-                           bool can_bubble,
+                           bool bubbles,
                            bool cancelable,
                            EventTarget* related_target,
                            AbstractView*,
@@ -76,8 +76,8 @@ class CORE_EXPORT UIEvent : public Event {
  protected:
   UIEvent();
   UIEvent(const AtomicString& type,
-          bool can_bubble,
-          bool cancelable,
+          Bubbles,
+          Cancelable,
           ComposedMode,
           TimeTicks platform_time_stamp,
           AbstractView*,

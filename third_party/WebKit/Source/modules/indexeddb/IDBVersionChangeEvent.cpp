@@ -38,7 +38,7 @@ IDBVersionChangeEvent::IDBVersionChangeEvent(
     const Optional<unsigned long long>& new_version,
     WebIDBDataLoss data_loss,
     const String& data_loss_message)
-    : Event(event_type, /*can_bubble=*/false, /*cancelable=*/false),
+    : Event(event_type, Bubbles::kNo, Cancelable::kNo),
       old_version_(old_version),
       new_version_(new_version),
       data_loss_(data_loss),
@@ -47,7 +47,7 @@ IDBVersionChangeEvent::IDBVersionChangeEvent(
 IDBVersionChangeEvent::IDBVersionChangeEvent(
     const AtomicString& event_type,
     const IDBVersionChangeEventInit& initializer)
-    : Event(event_type, /*can_bubble=*/false, /*cancelable=*/false),
+    : Event(event_type, Bubbles::kNo, Cancelable::kNo),
       old_version_(initializer.oldVersion()),
       data_loss_(kWebIDBDataLossNone) {
   if (initializer.hasNewVersion())

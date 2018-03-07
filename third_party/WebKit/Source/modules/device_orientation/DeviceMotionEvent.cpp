@@ -44,7 +44,7 @@ DeviceMotionEvent::DeviceMotionEvent(const AtomicString& event_type,
 
 DeviceMotionEvent::DeviceMotionEvent(const AtomicString& event_type,
                                      const DeviceMotionData* device_motion_data)
-    : Event(event_type, false, false),  // Can't bubble, not cancelable
+    : Event(event_type, Bubbles::kNo, Cancelable::kNo),
       device_motion_data_(device_motion_data) {}
 
 DeviceAcceleration* DeviceMotionEvent::acceleration() {

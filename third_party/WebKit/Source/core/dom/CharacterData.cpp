@@ -29,6 +29,7 @@
 #include "core/dom/MutationRecord.h"
 #include "core/dom/ProcessingInstruction.h"
 #include "core/dom/Text.h"
+#include "core/dom/events/Event.h"
 #include "core/editing/FrameSelection.h"
 #include "core/events/MutationEvent.h"
 #include "core/probe/CoreProbes.h"
@@ -213,10 +214,11 @@ void CharacterData::DidModifyData(const String& old_data, UpdateSource source) {
   // Spec: https://html.spec.whatwg.org/multipage/syntax.html#insert-a-character
   if (source != kUpdateFromParser && !IsInShadowTree()) {
     if (GetDocument().HasListenerType(
-            Document::kDOMCharacterDataModifiedListener))
-      DispatchScopedEvent(
-          MutationEvent::Create(EventTypeNames::DOMCharacterDataModified, true,
-                                nullptr, old_data, data_));
+            Document::kDOMCharacterDataModifiedListener)) {
+      DispatchScopedEvent(MutationEvent::Create(
+          EventTypeNames::DOMCharacterDataModified, Event::Bubbles::kYes,
+          nullptr, old_data, data_));
+    }
     DispatchSubtreeModifiedEvent();
   }
   probe::characterDataModified(this);

@@ -27,7 +27,7 @@ USBConnectionEvent::USBConnectionEvent(
 
 USBConnectionEvent::USBConnectionEvent(const AtomicString& type,
                                        USBDevice* device)
-    : Event(type, false, false), device_(device) {}
+    : Event(type, Bubbles::kNo, Cancelable::kNo), device_(device) {}
 
 void USBConnectionEvent::Trace(blink::Visitor* visitor) {
   visitor->Trace(device_);

@@ -19,7 +19,7 @@ BeforeInstallPromptEvent::BeforeInstallPromptEvent(
     mojom::blink::AppBannerServicePtr service_ptr,
     mojom::blink::AppBannerEventRequest event_request,
     const Vector<String>& platforms)
-    : Event(name, false, true),
+    : Event(name, Bubbles::kNo, Cancelable::kYes),
       ContextClient(&frame),
       banner_service_(std::move(service_ptr)),
       binding_(this, std::move(event_request)),

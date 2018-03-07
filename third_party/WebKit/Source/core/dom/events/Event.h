@@ -46,6 +46,16 @@ class CORE_EXPORT Event : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  enum class Bubbles {
+    kYes,
+    kNo,
+  };
+
+  enum class Cancelable {
+    kYes,
+    kNo,
+  };
+
   enum PhaseType {
     kNone = 0,
     kCapturingPhase = 1,
@@ -81,16 +91,16 @@ class CORE_EXPORT Event : public ScriptWrappable {
   static Event* Create() { return new Event; }
 
   static Event* Create(const AtomicString& type) {
-    return new Event(type, false, false);
+    return new Event(type, Bubbles::kNo, Cancelable::kNo);
   }
   static Event* CreateCancelable(const AtomicString& type) {
-    return new Event(type, false, true);
+    return new Event(type, Bubbles::kNo, Cancelable::kYes);
   }
   static Event* CreateBubble(const AtomicString& type) {
-    return new Event(type, true, false);
+    return new Event(type, Bubbles::kYes, Cancelable::kNo);
   }
   static Event* CreateCancelableBubble(const AtomicString& type) {
-    return new Event(type, true, true);
+    return new Event(type, Bubbles::kYes, Cancelable::kYes);
   }
 
   static Event* Create(const AtomicString& type, const EventInit& initializer) {
@@ -99,9 +109,9 @@ class CORE_EXPORT Event : public ScriptWrappable {
 
   virtual ~Event();
 
-  void initEvent(const AtomicString& type, bool can_bubble, bool cancelable);
+  void initEvent(const AtomicString& type, bool bubbles, bool cancelable);
   void initEvent(const AtomicString& event_type_arg,
-                 bool can_bubble_arg,
+                 bool bubbles_arg,
                  bool cancelable_arg,
                  EventTarget* related_target);
 
@@ -127,7 +137,7 @@ class CORE_EXPORT Event : public ScriptWrappable {
   unsigned short eventPhase() const { return event_phase_; }
   void SetEventPhase(unsigned short event_phase) { event_phase_ = event_phase; }
 
-  bool bubbles() const { return can_bubble_; }
+  bool bubbles() const { return bubbles_; }
   bool cancelable() const { return cancelable_; }
   bool composed() const { return composed_; }
   bool IsScopedInV0() const;
@@ -247,17 +257,17 @@ class CORE_EXPORT Event : public ScriptWrappable {
  protected:
   Event();
   Event(const AtomicString& type,
-        bool can_bubble,
-        bool cancelable,
+        Bubbles,
+        Cancelable,
         ComposedMode,
         TimeTicks platform_time_stamp);
   Event(const AtomicString& type,
-        bool can_bubble,
-        bool cancelable,
+        Bubbles,
+        Cancelable,
         TimeTicks platform_time_stamp);
   Event(const AtomicString& type,
-        bool can_bubble,
-        bool cancelable,
+        Bubbles,
+        Cancelable,
         ComposedMode = ComposedMode::kScoped);
   Event(const AtomicString& type,
         const EventInit&,
@@ -267,7 +277,7 @@ class CORE_EXPORT Event : public ScriptWrappable {
 
   virtual void ReceivedTarget();
 
-  void SetCanBubble(bool bubble) { can_bubble_ = bubble; }
+  void SetBubbles(bool bubble) { bubbles_ = bubble; }
 
   PassiveMode HandlingPassive() const { return handling_passive_; }
 
@@ -278,7 +288,7 @@ class CORE_EXPORT Event : public ScriptWrappable {
                                                EventPathMode) const;
 
   AtomicString type_;
-  unsigned can_bubble_ : 1;
+  unsigned bubbles_ : 1;
   unsigned cancelable_ : 1;
   unsigned composed_ : 1;
   unsigned is_event_type_scoped_in_v0_ : 1;

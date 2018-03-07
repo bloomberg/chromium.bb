@@ -109,11 +109,11 @@ void V8MessageEvent::initMessageEventMethodCustom(
 
   MessageEvent* event = V8MessageEvent::ToImpl(info.Holder());
   TOSTRING_VOID(V8StringResource<>, type_arg, info[0]);
-  bool can_bubble_arg = false;
+  bool bubbles_arg = false;
   bool cancelable_arg = false;
   if (!info[1]
            ->BooleanValue(info.GetIsolate()->GetCurrentContext())
-           .To(&can_bubble_arg) ||
+           .To(&bubbles_arg) ||
       !info[2]
            ->BooleanValue(info.GetIsolate()->GetCurrentContext())
            .To(&cancelable_arg))
@@ -133,7 +133,7 @@ void V8MessageEvent::initMessageEventMethodCustom(
       return;
   }
   event->initMessageEvent(
-      type_arg, can_bubble_arg, cancelable_arg,
+      type_arg, bubbles_arg, cancelable_arg,
       ScriptValue(ScriptState::Current(info.GetIsolate()), data_arg),
       origin_arg, last_event_id_arg, source_arg, port_array);
 }

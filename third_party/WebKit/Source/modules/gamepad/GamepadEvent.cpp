@@ -7,10 +7,10 @@
 namespace blink {
 
 GamepadEvent::GamepadEvent(const AtomicString& type,
-                           bool can_bubble,
-                           bool cancelable,
+                           Bubbles bubbles,
+                           Cancelable cancelable,
                            Gamepad* gamepad)
-    : Event(type, can_bubble, cancelable), gamepad_(gamepad) {}
+    : Event(type, bubbles, cancelable), gamepad_(gamepad) {}
 
 GamepadEvent::GamepadEvent(const AtomicString& type,
                            const GamepadEventInit& initializer)

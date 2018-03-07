@@ -26,6 +26,7 @@
 #include "modules/gamepad/NavigatorGamepad.h"
 
 #include "core/dom/Document.h"
+#include "core/dom/events/Event.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Navigator.h"
 #include "core/page/Page.h"
@@ -174,8 +175,8 @@ void NavigatorGamepad::DispatchOneEvent() {
   const AtomicString& event_name = gamepad->connected()
                                        ? EventTypeNames::gamepadconnected
                                        : EventTypeNames::gamepaddisconnected;
-  DomWindow()->DispatchEvent(
-      GamepadEvent::Create(event_name, false, true, gamepad));
+  DomWindow()->DispatchEvent(GamepadEvent::Create(
+      event_name, Event::Bubbles::kNo, Event::Cancelable::kYes, gamepad));
 
   if (!pending_events_.IsEmpty()) {
     DCHECK(dispatch_one_event_runner_);

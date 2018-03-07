@@ -63,7 +63,7 @@ class CORE_EXPORT TrackEvent final : public Event {
   TrackEvent(const AtomicString& type, const TrackEventInit& initializer);
   template <typename T>
   TrackEvent(const AtomicString& type, T* track)
-      : Event(type, false, false), track_(track) {}
+      : Event(type, Bubbles::kNo, Cancelable::kNo), track_(track) {}
 
   Member<TrackBase> track_;
 };

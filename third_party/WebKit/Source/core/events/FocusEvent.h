@@ -39,14 +39,13 @@ class FocusEvent final : public UIEvent {
   static FocusEvent* Create() { return new FocusEvent; }
 
   static FocusEvent* Create(const AtomicString& type,
-                            bool can_bubble,
-                            bool cancelable,
+                            Bubbles bubbles,
                             AbstractView* view,
                             int detail,
                             EventTarget* related_target,
                             InputDeviceCapabilities* source_capabilities) {
-    return new FocusEvent(type, can_bubble, cancelable, view, detail,
-                          related_target, source_capabilities);
+    return new FocusEvent(type, bubbles, view, detail, related_target,
+                          source_capabilities);
   }
 
   static FocusEvent* Create(const AtomicString& type,
@@ -69,8 +68,7 @@ class FocusEvent final : public UIEvent {
  private:
   FocusEvent();
   FocusEvent(const AtomicString& type,
-             bool can_bubble,
-             bool cancelable,
+             Bubbles,
              AbstractView*,
              int,
              EventTarget*,

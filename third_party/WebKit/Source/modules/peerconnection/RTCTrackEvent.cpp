@@ -29,7 +29,7 @@ RTCTrackEvent::RTCTrackEvent(const AtomicString& type,
 RTCTrackEvent::RTCTrackEvent(RTCRtpReceiver* receiver,
                              MediaStreamTrack* track,
                              const HeapVector<Member<MediaStream>>& streams)
-    : Event(EventTypeNames::track, false, false),
+    : Event(EventTypeNames::track, Bubbles::kNo, Cancelable::kNo),
       receiver_(receiver),
       track_(track),
       streams_(streams) {

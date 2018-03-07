@@ -67,8 +67,8 @@ class CORE_EXPORT UIEventWithKeyState : public UIEvent {
   UIEventWithKeyState() : modifiers_(0) {}
 
   UIEventWithKeyState(const AtomicString& type,
-                      bool can_bubble,
-                      bool cancelable,
+                      Bubbles,
+                      Cancelable,
                       AbstractView*,
                       int detail,
                       WebInputEvent::Modifiers,

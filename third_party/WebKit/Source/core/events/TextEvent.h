@@ -54,7 +54,7 @@ class TextEvent final : public UIEvent {
   ~TextEvent() override;
 
   void initTextEvent(const AtomicString& type,
-                     bool can_bubble,
+                     bool bubbles,
                      bool cancelable,
                      AbstractView*,
                      const String& data);

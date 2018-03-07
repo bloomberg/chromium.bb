@@ -17,15 +17,11 @@ class VRDisplayEvent final : public Event {
  public:
   static VRDisplayEvent* Create() { return new VRDisplayEvent; }
   static VRDisplayEvent* Create(const AtomicString& type,
-                                bool can_bubble,
-                                bool cancelable,
                                 VRDisplay* display,
                                 String reason) {
-    return new VRDisplayEvent(type, can_bubble, cancelable, display, reason);
+    return new VRDisplayEvent(type, display, reason);
   }
   static VRDisplayEvent* Create(const AtomicString& type,
-                                bool can_bubble,
-                                bool cancelable,
                                 VRDisplay*,
                                 device::mojom::blink::VRDisplayEventReason);
 
@@ -46,8 +42,6 @@ class VRDisplayEvent final : public Event {
  private:
   VRDisplayEvent();
   VRDisplayEvent(const AtomicString& type,
-                 bool can_bubble,
-                 bool cancelable,
                  VRDisplay*,
                  String);
   VRDisplayEvent(const AtomicString&, const VRDisplayEventInit&);

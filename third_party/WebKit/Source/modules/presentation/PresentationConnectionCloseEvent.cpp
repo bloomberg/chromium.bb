@@ -12,7 +12,7 @@ PresentationConnectionCloseEvent::PresentationConnectionCloseEvent(
     const AtomicString& event_type,
     const String& reason,
     const String& message)
-    : Event(event_type, false /* canBubble */, false /* cancelable */),
+    : Event(event_type, Bubbles::kNo, Cancelable::kNo),
       reason_(reason),
       message_(message) {}
 

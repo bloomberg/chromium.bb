@@ -66,7 +66,10 @@ class MIDIMessageEvent final : public Event {
 
  private:
   MIDIMessageEvent(base::TimeTicks time_stamp, DOMUint8Array* data)
-      : Event(EventTypeNames::midimessage, true, false, time_stamp),
+      : Event(EventTypeNames::midimessage,
+              Bubbles::kYes,
+              Cancelable::kNo,
+              time_stamp),
         data_(data) {}
 
   MIDIMessageEvent(const AtomicString& type,

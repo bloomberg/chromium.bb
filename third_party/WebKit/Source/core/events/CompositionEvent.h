@@ -52,7 +52,7 @@ class CompositionEvent final : public UIEvent {
   ~CompositionEvent() override;
 
   void initCompositionEvent(const AtomicString& type,
-                            bool can_bubble,
+                            bool bubbles,
                             bool cancelable,
                             AbstractView*,
                             const String& data);

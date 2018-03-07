@@ -85,7 +85,7 @@ MessageEvent::MessageEvent(const String& origin,
                            const String& last_event_id,
                            EventTarget* source,
                            MessagePortArray* ports)
-    : Event(EventTypeNames::message, false, false),
+    : Event(EventTypeNames::message, Bubbles::kNo, Cancelable::kNo),
       data_type_(kDataTypeScriptValue),
       origin_(origin),
       last_event_id_(last_event_id),
@@ -99,7 +99,7 @@ MessageEvent::MessageEvent(scoped_refptr<SerializedScriptValue> data,
                            const String& last_event_id,
                            EventTarget* source,
                            MessagePortArray* ports)
-    : Event(EventTypeNames::message, false, false),
+    : Event(EventTypeNames::message, Bubbles::kNo, Cancelable::kNo),
       data_type_(kDataTypeSerializedScriptValue),
       data_as_serialized_script_value_(
           SerializedScriptValue::Unpack(std::move(data))),
@@ -115,7 +115,7 @@ MessageEvent::MessageEvent(scoped_refptr<SerializedScriptValue> data,
                            const String& last_event_id,
                            EventTarget* source,
                            Vector<MessagePortChannel> channels)
-    : Event(EventTypeNames::message, false, false),
+    : Event(EventTypeNames::message, Bubbles::kNo, Cancelable::kNo),
       data_type_(kDataTypeSerializedScriptValue),
       data_as_serialized_script_value_(
           SerializedScriptValue::Unpack(std::move(data))),
@@ -127,19 +127,19 @@ MessageEvent::MessageEvent(scoped_refptr<SerializedScriptValue> data,
 }
 
 MessageEvent::MessageEvent(const String& data, const String& origin)
-    : Event(EventTypeNames::message, false, false),
+    : Event(EventTypeNames::message, Bubbles::kNo, Cancelable::kNo),
       data_type_(kDataTypeString),
       data_as_string_(data),
       origin_(origin) {}
 
 MessageEvent::MessageEvent(Blob* data, const String& origin)
-    : Event(EventTypeNames::message, false, false),
+    : Event(EventTypeNames::message, Bubbles::kNo, Cancelable::kNo),
       data_type_(kDataTypeBlob),
       data_as_blob_(data),
       origin_(origin) {}
 
 MessageEvent::MessageEvent(DOMArrayBuffer* data, const String& origin)
-    : Event(EventTypeNames::message, false, false),
+    : Event(EventTypeNames::message, Bubbles::kNo, Cancelable::kNo),
       data_type_(kDataTypeArrayBuffer),
       data_as_array_buffer_(data),
       origin_(origin) {}
@@ -158,7 +158,7 @@ MessageEvent* MessageEvent::Create(const AtomicString& type,
 }
 
 void MessageEvent::initMessageEvent(const AtomicString& type,
-                                    bool can_bubble,
+                                    bool bubbles,
                                     bool cancelable,
                                     ScriptValue data,
                                     const String& origin,
@@ -168,7 +168,7 @@ void MessageEvent::initMessageEvent(const AtomicString& type,
   if (IsBeingDispatched())
     return;
 
-  initEvent(type, can_bubble, cancelable);
+  initEvent(type, bubbles, cancelable);
 
   data_type_ = kDataTypeScriptValue;
   data_as_script_value_ = data;
@@ -180,7 +180,7 @@ void MessageEvent::initMessageEvent(const AtomicString& type,
 }
 
 void MessageEvent::initMessageEvent(const AtomicString& type,
-                                    bool can_bubble,
+                                    bool bubbles,
                                     bool cancelable,
                                     scoped_refptr<SerializedScriptValue> data,
                                     const String& origin,
@@ -190,7 +190,7 @@ void MessageEvent::initMessageEvent(const AtomicString& type,
   if (IsBeingDispatched())
     return;
 
-  initEvent(type, can_bubble, cancelable);
+  initEvent(type, bubbles, cancelable);
 
   data_type_ = kDataTypeSerializedScriptValue;
   data_as_serialized_script_value_ =
@@ -203,7 +203,7 @@ void MessageEvent::initMessageEvent(const AtomicString& type,
 }
 
 void MessageEvent::initMessageEvent(const AtomicString& type,
-                                    bool can_bubble,
+                                    bool bubbles,
                                     bool cancelable,
                                     const String& data,
                                     const String& origin,
@@ -213,7 +213,7 @@ void MessageEvent::initMessageEvent(const AtomicString& type,
   if (IsBeingDispatched())
     return;
 
-  initEvent(type, can_bubble, cancelable);
+  initEvent(type, bubbles, cancelable);
 
   data_type_ = kDataTypeString;
   data_as_string_ = data;

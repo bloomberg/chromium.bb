@@ -59,7 +59,7 @@ StorageEvent::StorageEvent(const AtomicString& type,
                            const String& new_value,
                            const String& url,
                            Storage* storage_area)
-    : Event(type, false, false),
+    : Event(type, Bubbles::kNo, Cancelable::kNo),
       key_(key),
       old_value_(old_value),
       new_value_(new_value),
@@ -82,7 +82,7 @@ StorageEvent::StorageEvent(const AtomicString& type,
 }
 
 void StorageEvent::initStorageEvent(const AtomicString& type,
-                                    bool can_bubble,
+                                    bool bubbles,
                                     bool cancelable,
                                     const String& key,
                                     const String& old_value,
@@ -92,7 +92,7 @@ void StorageEvent::initStorageEvent(const AtomicString& type,
   if (IsBeingDispatched())
     return;
 
-  initEvent(type, can_bubble, cancelable);
+  initEvent(type, bubbles, cancelable);
 
   key_ = key;
   old_value_ = old_value;

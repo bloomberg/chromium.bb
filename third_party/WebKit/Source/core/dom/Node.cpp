@@ -2270,8 +2270,8 @@ void Node::DispatchSubtreeModifiedEvent() {
   if (!GetDocument().HasListenerType(Document::kDOMSubtreeModifiedListener))
     return;
 
-  DispatchScopedEvent(
-      MutationEvent::Create(EventTypeNames::DOMSubtreeModified, true));
+  DispatchScopedEvent(MutationEvent::Create(EventTypeNames::DOMSubtreeModified,
+                                            Event::Bubbles::kYes));
 }
 
 DispatchEventResult Node::DispatchDOMActivateEvent(int detail,

@@ -16,10 +16,10 @@ class GamepadEvent final : public Event {
 
  public:
   static GamepadEvent* Create(const AtomicString& type,
-                              bool can_bubble,
-                              bool cancelable,
+                              Bubbles bubbles,
+                              Cancelable cancelable,
                               Gamepad* gamepad) {
-    return new GamepadEvent(type, can_bubble, cancelable, gamepad);
+    return new GamepadEvent(type, bubbles, cancelable, gamepad);
   }
   static GamepadEvent* Create(const AtomicString& type,
                               const GamepadEventInit& initializer) {
@@ -34,10 +34,7 @@ class GamepadEvent final : public Event {
   void Trace(blink::Visitor*) override;
 
  private:
-  GamepadEvent(const AtomicString& type,
-               bool can_bubble,
-               bool cancelable,
-               Gamepad*);
+  GamepadEvent(const AtomicString& type, Bubbles, Cancelable, Gamepad*);
   GamepadEvent(const AtomicString&, const GamepadEventInit&);
 
   Member<Gamepad> gamepad_;

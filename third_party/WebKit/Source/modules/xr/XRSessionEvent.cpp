@@ -9,8 +9,7 @@ namespace blink {
 XRSessionEvent::XRSessionEvent() = default;
 
 XRSessionEvent::XRSessionEvent(const AtomicString& type, XRSession* session)
-    : Event(type, false /* can_bubble */, true /* cancellable */),
-      session_(session) {}
+    : Event(type, Bubbles::kNo, Cancelable::kYes), session_(session) {}
 
 XRSessionEvent::XRSessionEvent(const AtomicString& type,
                                const XRSessionEventInit& initializer)

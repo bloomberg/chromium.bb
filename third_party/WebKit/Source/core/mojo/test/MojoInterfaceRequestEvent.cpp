@@ -17,11 +17,13 @@ void MojoInterfaceRequestEvent::Trace(blink::Visitor* visitor) {
 }
 
 MojoInterfaceRequestEvent::MojoInterfaceRequestEvent(MojoHandle* handle)
-    : Event(EventTypeNames::interfacerequest, false, false), handle_(handle) {}
+    : Event(EventTypeNames::interfacerequest, Bubbles::kNo, Cancelable::kNo),
+      handle_(handle) {}
 
 MojoInterfaceRequestEvent::MojoInterfaceRequestEvent(
     const AtomicString& type,
     const MojoInterfaceRequestEventInit& initializer)
-    : Event(type, false, false), handle_(initializer.handle()) {}
+    : Event(type, Bubbles::kNo, Cancelable::kNo),
+      handle_(initializer.handle()) {}
 
 }  // namespace blink

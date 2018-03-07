@@ -39,8 +39,6 @@ class RTCDataChannelEvent final : public Event {
   ~RTCDataChannelEvent() override;
 
   static RTCDataChannelEvent* Create(const AtomicString& type,
-                                     bool can_bubble,
-                                     bool cancelable,
                                      RTCDataChannel*);
 
   static RTCDataChannelEvent* Create(const AtomicString& type,
@@ -54,8 +52,6 @@ class RTCDataChannelEvent final : public Event {
 
  private:
   RTCDataChannelEvent(const AtomicString& type,
-                      bool can_bubble,
-                      bool cancelable,
                       RTCDataChannel*);
 
   RTCDataChannelEvent(const AtomicString& type, const RTCDataChannelEventInit&);

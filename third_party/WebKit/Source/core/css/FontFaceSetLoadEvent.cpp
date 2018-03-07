@@ -34,7 +34,7 @@ namespace blink {
 
 FontFaceSetLoadEvent::FontFaceSetLoadEvent(const AtomicString& type,
                                            const FontFaceArray& fontfaces)
-    : Event(type, false, false), fontfaces_(fontfaces) {}
+    : Event(type, Bubbles::kNo, Cancelable::kNo), fontfaces_(fontfaces) {}
 
 FontFaceSetLoadEvent::FontFaceSetLoadEvent(
     const AtomicString& type,

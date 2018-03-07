@@ -36,8 +36,8 @@ CompositionEvent::CompositionEvent(const AtomicString& type,
                                    AbstractView* view,
                                    const String& data)
     : UIEvent(type,
-              true,
-              true,
+              Bubbles::kYes,
+              Cancelable::kYes,
               ComposedMode::kComposed,
               CurrentTimeTicks(),
               view,
@@ -56,14 +56,14 @@ CompositionEvent::CompositionEvent(const AtomicString& type,
 CompositionEvent::~CompositionEvent() = default;
 
 void CompositionEvent::initCompositionEvent(const AtomicString& type,
-                                            bool can_bubble,
+                                            bool bubbles,
                                             bool cancelable,
                                             AbstractView* view,
                                             const String& data) {
   if (IsBeingDispatched())
     return;
 
-  initUIEvent(type, can_bubble, cancelable, view, 0);
+  initUIEvent(type, bubbles, cancelable, view, 0);
 
   data_ = data;
 }

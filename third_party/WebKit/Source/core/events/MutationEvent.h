@@ -40,18 +40,18 @@ class MutationEvent final : public Event {
   static MutationEvent* Create() { return new MutationEvent; }
 
   static MutationEvent* Create(const AtomicString& type,
-                               bool can_bubble,
+                               Bubbles bubbles,
                                Node* related_node = nullptr,
                                const String& prev_value = String(),
                                const String& new_value = String(),
                                const String& attr_name = String(),
                                unsigned short attr_change = 0) {
-    return new MutationEvent(type, can_bubble, false, related_node, prev_value,
-                             new_value, attr_name, attr_change);
+    return new MutationEvent(type, bubbles, Cancelable::kNo, related_node,
+                             prev_value, new_value, attr_name, attr_change);
   }
 
   void initMutationEvent(const AtomicString& type,
-                         bool can_bubble,
+                         bool bubbles,
                          bool cancelable,
                          Node* related_node,
                          const String& prev_value,
@@ -72,8 +72,8 @@ class MutationEvent final : public Event {
  private:
   MutationEvent();
   MutationEvent(const AtomicString& type,
-                bool can_bubble,
-                bool cancelable,
+                Bubbles,
+                Cancelable,
                 Node* related_node,
                 const String& prev_value,
                 const String& new_value,

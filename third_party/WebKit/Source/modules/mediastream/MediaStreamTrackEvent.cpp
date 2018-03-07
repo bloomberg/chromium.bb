@@ -35,7 +35,7 @@ MediaStreamTrackEvent* MediaStreamTrackEvent::Create(const AtomicString& type,
 
 MediaStreamTrackEvent::MediaStreamTrackEvent(const AtomicString& type,
                                              MediaStreamTrack* track)
-    : Event(type, false, false), track_(track) {
+    : Event(type, Bubbles::kNo, Cancelable::kNo), track_(track) {
   DCHECK(track_);
 }
 
