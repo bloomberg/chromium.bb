@@ -1075,6 +1075,14 @@ constexpr char kMidisInterfaceName[] = "org.chromium.Midis";
 constexpr char kBootstrapMojoConnectionMethod[] = "BootstrapMojoConnection";
 }  // namespace midis
 
+namespace ml {
+constexpr char kMlServiceName[] = "org.chromium.Ml";
+constexpr char kMlServicePath[] = "/org/chromium/Ml";
+constexpr char kMlInterfaceName[] = "org.chromium.Ml";
+// Methods
+constexpr char kBootstrapMojoConnectionMethod[] = "BootstrapMojoConnection";
+}  // namespace ml
+
 namespace virtual_file_provider {
 constexpr char kVirtualFileProviderServiceName[] =
     "org.chromium.VirtualFileProvider";
