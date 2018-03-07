@@ -93,7 +93,7 @@ class PLATFORM_EXPORT RendererSchedulerImpl
 
   // Don't use except for tracing.
   struct TaskDescriptionForTracing {
-    base::Optional<TaskType> task_type;
+    TaskType task_type;
     MainThreadTaskQueue::QueueType queue_type;
 
     // Required in order to wrap in TraceableState.

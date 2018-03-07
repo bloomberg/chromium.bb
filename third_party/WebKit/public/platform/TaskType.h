@@ -17,7 +17,9 @@ enum class TaskType : unsigned {
   // Speced tasks and related internal tasks should be posted to one of
   // the following task runners. These task runners may be throttled.
 
-  // 0 is reserved to represent that TaskType is not specified.
+  // This value is used as a default value in cases where TaskType
+  // isn't supported yet. Don't use outside platform/scheduler code.
+  kDeprecatedNone = 0,
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#generic-task-sources
   //

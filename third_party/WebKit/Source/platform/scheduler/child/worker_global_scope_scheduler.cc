@@ -31,6 +31,7 @@ void WorkerGlobalScopeScheduler::Dispose() {
 scoped_refptr<base::SingleThreadTaskRunner>
 WorkerGlobalScopeScheduler::GetTaskRunner(TaskType type) const {
   switch (type) {
+    case TaskType::kDeprecatedNone:
     case TaskType::kDOMManipulation:
     case TaskType::kUserInteraction:
     case TaskType::kNetworking:

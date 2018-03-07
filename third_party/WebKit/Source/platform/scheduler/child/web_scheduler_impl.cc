@@ -15,14 +15,15 @@
 namespace blink {
 namespace scheduler {
 
+// TODO(kraynov): Ditch kDeprecatedNone here.
 WebSchedulerImpl::WebSchedulerImpl(
     ChildScheduler* child_scheduler,
     scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner,
     scoped_refptr<TaskQueue> v8_task_runner)
     : child_scheduler_(child_scheduler),
       idle_task_runner_(idle_task_runner),
-      v8_task_runner_(
-          TaskRunnerImpl::Create(std::move(v8_task_runner), base::nullopt)) {}
+      v8_task_runner_(TaskRunnerImpl::Create(std::move(v8_task_runner),
+                                             TaskType::kDeprecatedNone)) {}
 
 WebSchedulerImpl::~WebSchedulerImpl() = default;
 

@@ -355,9 +355,8 @@ void RendererMetricsHelper::RecordTaskMetrics(
                               frame_status, FrameStatus::kCount);
   }
 
-  base::Optional<TaskType> task_type = task.task_type();
   per_task_type_duration_reporter.RecordTask(
-      task_type ? task_type.value() : static_cast<TaskType>(0), duration);
+      static_cast<TaskType>(task.task_type()), duration);
 }
 
 void RendererMetricsHelper::RecordMainThreadTaskLoad(base::TimeTicks time,

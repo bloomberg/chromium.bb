@@ -122,6 +122,8 @@ bool StopLoadingInBackgroundEnabled() {
 
 const char* TaskTypeToString(TaskType task_type) {
   switch (task_type) {
+    case TaskType::kDeprecatedNone:
+      return "None";
     case TaskType::kDOMManipulation:
       return "DOMManipultion";
     case TaskType::kUserInteraction:
@@ -195,8 +197,8 @@ const char* OptionalTaskDescriptionToString(
     base::Optional<RendererSchedulerImpl::TaskDescriptionForTracing> opt_desc) {
   if (!opt_desc)
     return nullptr;
-  if (opt_desc->task_type)
-    return TaskTypeToString(opt_desc->task_type.value());
+  if (opt_desc->task_type != TaskType::kDeprecatedNone)
+    return TaskTypeToString(opt_desc->task_type);
   return MainThreadTaskQueue::NameForQueueType(opt_desc->queue_type);
 }
 
@@ -2444,8 +2446,8 @@ void RendererSchedulerImpl::OnTaskStarted(MainThreadTaskQueue* queue,
   seqlock_queueing_time_estimator_.seqlock.WriteBegin();
   seqlock_queueing_time_estimator_.data.OnTopLevelTaskStarted(start, queue);
   seqlock_queueing_time_estimator_.seqlock.WriteEnd();
-  main_thread_only().task_description_for_tracing =
-      TaskDescriptionForTracing{task.task_type(), queue->queue_type()};
+  main_thread_only().task_description_for_tracing = TaskDescriptionForTracing{
+      static_cast<TaskType>(task.task_type()), queue->queue_type()};
 }
 
 void RendererSchedulerImpl::OnTaskCompleted(

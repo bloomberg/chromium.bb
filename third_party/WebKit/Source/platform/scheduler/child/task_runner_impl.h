@@ -10,7 +10,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "platform/PlatformExport.h"
@@ -24,7 +23,7 @@ class PLATFORM_EXPORT TaskRunnerImpl : public base::SingleThreadTaskRunner {
  public:
   static scoped_refptr<TaskRunnerImpl> Create(
       scoped_refptr<TaskQueue> task_queue,
-      base::Optional<TaskType> task_type);
+      TaskType task_type);
 
   // base::SingleThreadTaskRunner implementation:
   bool RunsTasksInCurrentSequence() const override;
@@ -40,12 +39,11 @@ class PLATFORM_EXPORT TaskRunnerImpl : public base::SingleThreadTaskRunner {
                                   base::TimeDelta) override;
 
  private:
-  TaskRunnerImpl(scoped_refptr<TaskQueue> task_queue,
-                 base::Optional<TaskType> task_type);
+  TaskRunnerImpl(scoped_refptr<TaskQueue> task_queue, TaskType task_type);
   ~TaskRunnerImpl() override;
 
   scoped_refptr<TaskQueue> task_queue_;
-  base::Optional<TaskType> task_type_;
+  TaskType task_type_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskRunnerImpl);
 };

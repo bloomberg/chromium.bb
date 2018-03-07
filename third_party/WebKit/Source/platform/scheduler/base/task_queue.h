@@ -16,7 +16,6 @@
 #include "platform/PlatformExport.h"
 #include "platform/scheduler/base/graceful_queue_shutdown_helper.h"
 #include "platform/scheduler/base/moveable_auto_lock.h"
-#include "public/platform/TaskType.h"
 
 namespace base {
 namespace trace_event {
@@ -62,13 +61,13 @@ class PLATFORM_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
                base::Location posted_from,
                base::TimeDelta delay = base::TimeDelta(),
                base::Nestable nestable = base::Nestable::kNestable,
-               base::Optional<TaskType> task_type = base::nullopt);
+               int task_type = 0);
 
     base::OnceClosure callback;
     base::Location posted_from;
     base::TimeDelta delay;
     base::Nestable nestable;
-    base::Optional<TaskType> task_type;
+    int task_type;
   };
 
   // Unregisters the task queue after which no tasks posted to it will run and
@@ -135,10 +134,10 @@ class PLATFORM_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
    public:
     Task(PostedTask posted_task, base::TimeTicks desired_run_time);
 
-    base::Optional<TaskType> task_type() const { return task_type_; }
+    int task_type() const { return task_type_; }
 
    private:
-    base::Optional<TaskType> task_type_;
+    int task_type_;
   };
 
   // An interface that lets the owner vote on whether or not the associated
