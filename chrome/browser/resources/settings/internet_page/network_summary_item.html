@@ -12,9 +12,9 @@
 
 <dom-module id="network-summary-item">
   <template>
-    <style include="internet-shared">
+    <style include="internet-shared iron-flex">
       network-siminfo {
-        padding: 0 var(--settings-box-row-padding);
+        -webkit-padding-start: var(--settings-box-row-padding);
       }
 
       #details {
@@ -34,40 +34,42 @@
         font-weight: 400;
       }
     </style>
-    <div actionable class="settings-box two-line" on-click="onShowDetailsTap_">
-      <div id="details" no-flex$="[[showSimInfo_(deviceState)]]">
-        <cr-network-icon network-state="[[activeNetworkState]]"
-            device-state="[[deviceState]]">
-        </cr-network-icon>
-        <div class="flex">
-          <div id="networkName">[[getNetworkName_(activeNetworkState)]]</div>
-          <div id="networkState">
-            [[getNetworkStateText_(activeNetworkState, deviceState)]]
+    <div class="settings-box two-line">
+      <div actionable class="flex layout horizontal"
+          on-click="onShowDetailsTap_">
+        <div id="details" no-flex$="[[showSimInfo_(deviceState)]]">
+          <cr-network-icon network-state="[[activeNetworkState]]"
+              device-state="[[deviceState]]">
+          </cr-network-icon>
+          <div class="flex">
+            <div id="networkName">[[getNetworkName_(activeNetworkState)]]</div>
+            <div id="networkState">
+              [[getNetworkStateText_(activeNetworkState, deviceState)]]
+            </div>
           </div>
         </div>
+
+        <template is="dom-if" if="[[showSimInfo_(deviceState)]]" restamp>
+          <network-siminfo editable on-click="doNothing_"
+              network-properties="[[getCellularState_(deviceState)]]"
+              networking-private="[[networkingPrivate]]">
+          </network-siminfo>
+        </template>
+
+        <template is="dom-if" if="[[showPolicyIndicator_(activeNetworkState)]]">
+          <cr-policy-indicator indicator-type="[[getIndicatorTypeForSource(
+              activeNetworkState.Source)]]" on-click="doNothing_">
+          </cr-policy-indicator>
+        </template>
+
+        <template is="dom-if" if="[[showDetailsIsVisible_(activeNetworkState,
+            deviceState, networkStateList)]]">
+          <button class="subpage-arrow" is="paper-icon-button-light"
+              aria-label$="[[getDetailsA11yString_(activeNetworkState,
+                  deviceState, networkStateList)]]">
+          </button>
+        </template>
       </div>
-
-      <template is="dom-if" if="[[showSimInfo_(deviceState)]]" restamp>
-        <network-siminfo editable on-click="doNothing_"
-            network-properties="[[getCellularState_(deviceState)]]"
-            networking-private="[[networkingPrivate]]">
-        </network-siminfo>
-      </template>
-
-      <template is="dom-if" if="[[showPolicyIndicator_(activeNetworkState)]]">
-        <cr-policy-indicator indicator-type="[[getIndicatorTypeForSource(
-            activeNetworkState.Source)]]"
-            on-click="doNothing_">
-        </cr-policy-indicator>
-      </template>
-
-      <template is="dom-if" if="[[showDetailsIsVisible_(activeNetworkState,
-          deviceState, networkStateList)]]">
-        <button class="subpage-arrow" is="paper-icon-button-light"
-            aria-label$="[[getDetailsA11yString_(activeNetworkState,
-                deviceState, networkStateList)]]">
-        </button>
-      </template>
 
       <template is="dom-if" if="[[enableToggleIsVisible_(deviceState)]]">
         <div class="separator"></div>

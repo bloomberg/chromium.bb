@@ -183,4 +183,13 @@ Polymer({
     this.fire('show-detail', state);
     event.stopPropagation();
   },
+
+  /**
+   * Make sure events in embedded components do not propagate to onDetailsTap_.
+   * @param {!Event} event
+   * @private
+   */
+  doNothing_: function(event) {
+    event.stopPropagation();
+  },
 });

@@ -8,7 +8,7 @@
 
 <dom-module id="settings-internet-known-networks-page">
   <template>
-    <style include="internet-shared">
+    <style include="internet-shared iron-flex">
       cr-policy-indicator {
         -webkit-margin-start: var(--settings-controlled-by-spacing);
       }
@@ -22,23 +22,25 @@
       <div class="secondary">$i18n{knownNetworksPreferred}</div>
     </div>
     <div class="list-frame vertical-list">
-      <div class="list-item"
-          hidden$="[[havePreferred_(networkStateList_)]]">
+      <div class="list-item" hidden$="[[havePreferred_(networkStateList_)]]">
         $i18n{internetNoNetworks}
       </div>
       <template is="dom-repeat" items="[[networkStateList_]]"
           filter="networkIsPreferred_">
         <div class="list-item">
-          <div class="start">[[item.Name]]</div>
-          <template is="dom-if" if="[[isPolicySource(item.Source))]]">
-            <cr-policy-indicator
-                indicator-type="[[getIndicatorTypeForSource(item.Source)]]">
-            </cr-policy-indicator>
-          </template>
-          <button class="subpage-arrow" is="paper-icon-button-light"
-              actionable on-click="fireShowDetails_" tabindex$="[[tabindex]]"
-              aria-label$="[[item.Name]]">
-          </button>
+          <div actionable class="flex layout horizontal"
+              on-click="fireShowDetails_">
+            <div class="flex">[[item.Name]]</div>
+            <template is="dom-if" if="[[isPolicySource(item.Source))]]">
+              <cr-policy-indicator on-click="doNothing_"
+                  indicator-type="[[getIndicatorTypeForSource(item.Source)]]">
+              </cr-policy-indicator>
+            </template>
+            <button class="subpage-arrow" is="paper-icon-button-light"
+                tabindex$="[[tabindex]]" aria-label$="[[item.Name]]">
+            </button>
+          </div>
+
           <div class="separator"></div>
           <button is="paper-icon-button-light" class="icon-more-vert"
               preferred tabindex$="[[tabindex]]" on-click="onMenuButtonTap_"
@@ -56,16 +58,19 @@
       <template is="dom-repeat" items="[[networkStateList_]]"
           filter="networkIsNotPreferred_">
         <div class="list-item">
-          <div class="start">[[item.Name]]</div>
-          <template is="dom-if" if="[[isPolicySource(item.Source))]]">
-            <cr-policy-indicator
-                indicator-type="[[getIndicatorTypeForSource(item.Source)]]">
-            </cr-policy-indicator>
-          </template>
-          <button class="subpage-arrow" is="paper-icon-button-light"
-              actionable on-click="fireShowDetails_" tabindex$="[[tabindex]]"
-              aria-label$="[[item.Name]]">
-          </button>
+          <div actionable class="flex layout horizontal"
+              on-click="fireShowDetails_">
+            <div class="flex">[[item.Name]]</div>
+            <template is="dom-if" if="[[isPolicySource(item.Source))]]">
+              <cr-policy-indicator on-click="doNothing_"
+                  indicator-type="[[getIndicatorTypeForSource(item.Source)]]">
+              </cr-policy-indicator>
+            </template>
+            <button class="subpage-arrow" is="paper-icon-button-light"
+                tabindex$="[[tabindex]]" aria-label$="[[item.Name]]">
+            </button>
+          </div>
+
           <div class="separator"></div>
           <button is="paper-icon-button-light" class="icon-more-vert"
               tabindex$="[[tabindex]]" on-click="onMenuButtonTap_"
