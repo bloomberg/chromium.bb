@@ -74,6 +74,11 @@ class PaymentsClientTest : public testing::Test,
         kAutofillSendBillingCustomerNumber);
   }
 
+  void DisableAutofillUpstreamSendDetectedValuesExperiment() {
+    scoped_feature_list_.InitAndDisableFeature(
+        kAutofillUpstreamSendDetectedValues);
+  }
+
   void EnableAutofillUpstreamSendDetectedValuesExperiment() {
     scoped_feature_list_.InitAndEnableFeature(
         kAutofillUpstreamSendDetectedValues);
@@ -303,6 +308,8 @@ TEST_F(PaymentsClientTest,
 
 TEST_F(PaymentsClientTest,
        GetDetailsDoesNotIncludeDetectedValuesInRequestIfExperimentOff) {
+  DisableAutofillUpstreamSendDetectedValuesExperiment();
+
   StartGettingUploadDetails();
 
   // Verify that the detected values were left out of the request.
