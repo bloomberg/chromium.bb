@@ -1364,8 +1364,10 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
     arc::ArcServiceLauncher::Get()->OnPrimaryUserProfilePrepared(profile);
 
 #if BUILDFLAG(ENABLE_CROS_ASSISTANT)
-    content::BrowserContext::GetConnectorFor(profile)->StartService(
-        chromeos::assistant::mojom::kServiceName);
+    if (chromeos::switches::IsAssistantEnabled()) {
+      content::BrowserContext::GetConnectorFor(profile)->StartService(
+          chromeos::assistant::mojom::kServiceName);
+    }
 #endif
 
     TetherService* tether_service = TetherService::Get(profile);

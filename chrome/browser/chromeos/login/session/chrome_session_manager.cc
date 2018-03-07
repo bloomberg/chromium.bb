@@ -125,8 +125,10 @@ void StartUserSession(Profile* user_profile, const std::string& login_user_id) {
     arc::ArcServiceLauncher::Get()->OnPrimaryUserProfilePrepared(user_profile);
 
 #if BUILDFLAG(ENABLE_CROS_ASSISTANT)
-    content::BrowserContext::GetConnectorFor(user_profile)
-        ->StartService(chromeos::assistant::mojom::kServiceName);
+    if (chromeos::switches::IsAssistantEnabled()) {
+      content::BrowserContext::GetConnectorFor(user_profile)
+          ->StartService(chromeos::assistant::mojom::kServiceName);
+    }
 #endif
 
     // Send the PROFILE_PREPARED notification and call SessionStarted()
