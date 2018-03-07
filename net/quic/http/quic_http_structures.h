@@ -249,7 +249,6 @@ QUIC_EXPORT_PRIVATE std::ostream& operator<<(
 struct QuicHttpPingFields {
   static constexpr size_t EncodedSize() { return 8; }
 
-  // TODO(jamessynge): Rename opaque_bytes to opaque_bytes.
   uint8_t opaque_bytes[8];
 };
 
