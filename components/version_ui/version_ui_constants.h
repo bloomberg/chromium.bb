@@ -33,7 +33,6 @@ extern const char kCommandLine[];
 extern const char kCommandLineName[];
 extern const char kCompany[];
 #if defined(OS_WIN)
-extern const char kCompiler[];
 extern const char kUpdateCohortName[];
 #endif
 extern const char kCopyright[];
