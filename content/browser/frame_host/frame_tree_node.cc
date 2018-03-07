@@ -603,7 +603,8 @@ bool FrameTreeNode::StopLoading() {
         expected_pending_nav_entry_id =
             navigation_request_->navigation_handle()->pending_nav_entry_id();
       }
-      navigator_->DiscardPendingEntryIfNeeded(expected_pending_nav_entry_id);
+      navigator_->DiscardPendingEntryIfNeeded(expected_pending_nav_entry_id,
+                                              false /* is_download */);
     }
     ResetNavigationRequest(false, true);
   }

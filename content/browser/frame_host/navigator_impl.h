@@ -106,7 +106,8 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
       const base::TimeTicks& renderer_before_unload_end_time) override;
   void CancelNavigation(FrameTreeNode* frame_tree_node,
                         bool inform_renderer) override;
-  void DiscardPendingEntryIfNeeded(int expected_pending_entry_id) override;
+  void DiscardPendingEntryIfNeeded(int expected_pending_entry_id,
+                                   bool is_download) override;
 
  private:
   // Holds data used to track browser side navigation metrics.

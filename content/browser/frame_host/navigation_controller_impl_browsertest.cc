@@ -8024,4 +8024,22 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest, DataURLSameDocumentNavigation) {
   EXPECT_TRUE(capturer.is_same_document());
 }
 
+IN_PROC_BROWSER_TEST_F(ContentBrowserTest, HideDownloadFromUnmodifiedNewTab) {
+  GURL url("data:application/octet-stream,");
+
+  const NavigationControllerImpl& controller =
+      static_cast<const NavigationControllerImpl&>(
+          shell()->web_contents()->GetController());
+
+  OpenURLParams params(url, Referrer(), WindowOpenDisposition::CURRENT_TAB,
+                       ui::PAGE_TRANSITION_LINK, true);
+  params.suggested_filename = std::string("foo");
+
+  shell()->web_contents()->OpenURL(params);
+  WaitForLoadStop(shell()->web_contents());
+
+  EXPECT_FALSE(controller.GetPendingEntry());
+  EXPECT_FALSE(controller.GetVisibleEntry());
+}
+
 }  // namespace content
