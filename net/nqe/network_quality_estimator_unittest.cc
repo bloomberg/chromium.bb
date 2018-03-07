@@ -2863,8 +2863,9 @@ TEST(NetworkQualityEstimatorTest,
   EXPECT_EQ(2u, rtt_observer.observations().size());
 
   // RTT observation with source
-  // NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_EXTERNAL_ESTIMATE should be removed
-  // from |estimator.rtt_ms_observations_| when a cached estimate is received.
+  // DEPRECATED_NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_EXTERNAL_ESTIMATE should
+  // be removed from |estimator.rtt_ms_observations_| when a cached estimate is
+  // received.
   EXPECT_EQ(1u, estimator.http_rtt_ms_observations_.Size());
   EXPECT_EQ(1u, estimator.transport_rtt_ms_observations_.Size());
 
@@ -2872,7 +2873,7 @@ TEST(NetworkQualityEstimatorTest,
   // estimate provider and platform must be discarded.
   estimator.AddAndNotifyObserversOfRTT(nqe::internal::Observation(
       1, base::TimeTicks::Now(), base::Optional<int32_t>(),
-      NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_EXTERNAL_ESTIMATE));
+      DEPRECATED_NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_EXTERNAL_ESTIMATE));
   estimator.AddAndNotifyObserversOfRTT(nqe::internal::Observation(
       1, base::TimeTicks::Now(), base::Optional<int32_t>(),
       NETWORK_QUALITY_OBSERVATION_SOURCE_DEFAULT_HTTP_FROM_PLATFORM));
@@ -2890,13 +2891,13 @@ TEST(NetworkQualityEstimatorTest,
   // external estimate provider and platform must be discarded.
   EXPECT_EQ(1u, throughput_observer.observations().size());
   // Throughput observation with source
-  // NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_EXTERNAL_ESTIMATE should be removed
-  // from |estimator.downstream_throughput_kbps_observations_| when a cached
-  // estimate is received.
+  // DEPRECATED_NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_EXTERNAL_ESTIMATE should
+  // be removed from |estimator.downstream_throughput_kbps_observations_| when a
+  // cached estimate is received.
   EXPECT_EQ(1u, estimator.http_downstream_throughput_kbps_observations_.Size());
   estimator.AddAndNotifyObserversOfThroughput(nqe::internal::Observation(
       1, base::TimeTicks::Now(), base::Optional<int32_t>(),
-      NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_EXTERNAL_ESTIMATE));
+      DEPRECATED_NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_EXTERNAL_ESTIMATE));
   estimator.AddAndNotifyObserversOfThroughput(nqe::internal::Observation(
       1, base::TimeTicks::Now(), base::Optional<int32_t>(),
       NETWORK_QUALITY_OBSERVATION_SOURCE_DEFAULT_HTTP_FROM_PLATFORM));

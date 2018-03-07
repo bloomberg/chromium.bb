@@ -35,7 +35,8 @@ enum NetworkQualityObservationSource {
 
   // The observation came from a Chromium-external source. The metric was
   // computed by the external source at the HTTP layer.
-  NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_EXTERNAL_ESTIMATE = 5,
+  // Deprecated since external estimate provider is not currently queried.
+  DEPRECATED_NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_EXTERNAL_ESTIMATE = 5,
 
   // The observation is a previously cached estimate of the metric. The metric
   // was computed at the transport layer.
