@@ -57,10 +57,6 @@ class WidevineKeySystemProperties : public media::KeySystemProperties {
   media::EmeFeatureSupport GetPersistentStateSupport() const override;
   media::EmeFeatureSupport GetDistinctiveIdentifierSupport() const override;
 
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-  std::string GetPepperType() const override;
-#endif
-
  private:
   const media::SupportedCodecs supported_codecs_;
 #if defined(OS_ANDROID)

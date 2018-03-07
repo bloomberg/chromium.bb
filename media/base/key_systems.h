@@ -83,12 +83,6 @@ MEDIA_EXPORT std::string GetKeySystemNameForUMA(const std::string& key_system);
 // Returns whether AesDecryptor can be used for the given |key_system|.
 MEDIA_EXPORT bool CanUseAesDecryptor(const std::string& key_system);
 
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-// Returns the Pepper MIME type for |key_system|.
-// Returns empty string if |key_system| is unknown or not Pepper-based.
-MEDIA_EXPORT std::string GetPepperType(const std::string& key_system);
-#endif
-
 #if defined(UNIT_TEST)
 // Helper functions to add container/codec types for testing purposes.
 // Call AddCodecMask() first to ensure the mask values passed to

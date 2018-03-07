@@ -10,10 +10,6 @@
 
 namespace cdm {
 
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-const char kExternalClearKeyPepperType[] = "application/x-ppapi-clearkey-cdm";
-#endif
-
 ExternalClearKeyProperties::ExternalClearKeyProperties(
     const std::string& key_system_name)
     : key_system_name_(key_system_name) {}
@@ -80,11 +76,5 @@ media::EmeFeatureSupport
 ExternalClearKeyProperties::GetDistinctiveIdentifierSupport() const {
   return media::EmeFeatureSupport::NOT_SUPPORTED;
 }
-
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-std::string ExternalClearKeyProperties::GetPepperType() const {
-  return kExternalClearKeyPepperType;
-}
-#endif
 
 }  // namespace cdm
