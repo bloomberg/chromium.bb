@@ -237,11 +237,13 @@ void NavigatorImpl::DidFailProvisionalLoadWithError(
   }
 
   // Discard the pending navigation entry if needed.
-  int expected_pending_entry_id =
-      render_frame_host->GetNavigationHandle()
-          ? render_frame_host->GetNavigationHandle()->pending_nav_entry_id()
-          : 0;
-  DiscardPendingEntryIfNeeded(expected_pending_entry_id);
+  int expected_pending_entry_id = 0;
+  if (render_frame_host->GetNavigationHandle()) {
+    expected_pending_entry_id =
+        render_frame_host->GetNavigationHandle()->pending_nav_entry_id();
+    DCHECK(!render_frame_host->GetNavigationHandle()->IsDownload());
+  }
+  DiscardPendingEntryIfNeeded(expected_pending_entry_id, false);
 }
 
 void NavigatorImpl::DidFailLoadWithError(
@@ -982,14 +984,15 @@ void NavigatorImpl::LogBeforeUnloadTime(
   }
 }
 
-void NavigatorImpl::DiscardPendingEntryIfNeeded(int expected_pending_entry_id) {
+void NavigatorImpl::DiscardPendingEntryIfNeeded(int expected_pending_entry_id,
+                                                bool is_download) {
   // Racy conditions can cause a fail message to arrive after its corresponding
   // pending entry has been replaced by another navigation. If
   // |DiscardPendingEntry| is called in this case, then the completely valid
   // entry for the new navigation would be discarded. See crbug.com/513742. To
   // catch this case, the current pending entry is compared against the current
   // navigation handle's entry id, which should correspond to the failed load.
-  NavigationEntry* pending_entry = controller_->GetPendingEntry();
+  NavigationEntryImpl* pending_entry = controller_->GetPendingEntry();
   bool pending_matches_fail_msg =
       pending_entry &&
       expected_pending_entry_id == pending_entry->GetUniqueID();
@@ -1010,9 +1013,13 @@ void NavigatorImpl::DiscardPendingEntryIfNeeded(int expected_pending_entry_id) {
   // allow the view to clear the pending entry and typed URL if the user
   // requests (e.g., hitting Escape with focus in the address bar).
   //
+  // Note that the pending entry does not need to be preserved for downloads,
+  // since the user is unlikely to try again.
+  //
   // Note: don't touch the transient entry, since an interstitial may exist.
-  bool should_preserve_entry = controller_->IsUnmodifiedBlankTab() ||
-                               delegate_->ShouldPreserveAbortedURLs();
+  bool should_preserve_entry = (controller_->IsUnmodifiedBlankTab() ||
+                                delegate_->ShouldPreserveAbortedURLs()) &&
+                               !is_download;
   if (pending_entry != controller_->GetVisibleEntry() ||
       !should_preserve_entry) {
     controller_->DiscardPendingEntry(true);

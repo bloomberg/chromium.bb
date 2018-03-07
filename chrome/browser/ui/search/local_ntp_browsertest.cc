@@ -297,8 +297,9 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, EmbeddedSearchAPIAfterDownload) {
   ui_test_utils::NavigateToURL(browser(), download_url);
   download_observer.WaitForFinished();
 
-  // This should have changed the visible URL, but not the last committed one.
-  ASSERT_EQ(download_url, active_tab->GetVisibleURL());
+  // This should neither have changed the visible URL, nor the last committed
+  // one.
+  ASSERT_EQ(GURL(chrome::kChromeUINewTabURL), active_tab->GetVisibleURL());
   ASSERT_EQ(GURL(chrome::kChromeUINewTabURL),
             active_tab->GetLastCommittedURL());
 

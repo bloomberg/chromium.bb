@@ -199,7 +199,8 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
   // With sufficiently bad interleaving of IPCs, this may no longer be the
   // pending NavigationEntry, in which case the pending NavigationEntry will not
   // be discarded.
-  virtual void DiscardPendingEntryIfNeeded(int expected_pending_entry_id) {}
+  virtual void DiscardPendingEntryIfNeeded(int expected_pending_entry_id,
+                                           bool is_download) {}
 
  protected:
   friend class base::RefCounted<Navigator>;

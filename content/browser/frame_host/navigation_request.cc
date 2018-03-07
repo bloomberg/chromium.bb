@@ -995,11 +995,15 @@ void NavigationRequest::OnRequestFailedInternal(
   if (navigation_handle_.get())
     navigation_handle_->set_net_error_code(static_cast<net::Error>(net_error));
 
-  int expected_pending_entry_id =
-      navigation_handle_.get() ? navigation_handle_->pending_nav_entry_id()
-                               : nav_entry_id_;
+  int expected_pending_entry_id = nav_entry_id_;
+  bool is_download = false;
+  if (navigation_handle_.get()) {
+    expected_pending_entry_id = navigation_handle_->pending_nav_entry_id();
+    is_download = navigation_handle_->IsDownload();
+  }
+
   frame_tree_node_->navigator()->DiscardPendingEntryIfNeeded(
-      expected_pending_entry_id);
+      expected_pending_entry_id, is_download);
 
   // If the request was canceled by the user do not show an error page.
   if (net_error == net::ERR_ABORTED) {
