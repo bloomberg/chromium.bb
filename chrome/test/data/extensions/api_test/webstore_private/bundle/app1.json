@@ -1,5 +1,6 @@
 {
   "name": "app.1",
+  "manifest_version": 2,
   "version": "1",
   "app": {
     "urls": [ "http://www.testapp.com" ],
