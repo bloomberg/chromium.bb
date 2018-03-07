@@ -11,7 +11,6 @@
 #include "ash/login_status.h"
 #include "ash/shell.h"
 #include "ash/shell/content/shell_content_state_impl.h"
-#include "ash/shell/example_app_list_presenter.h"
 #include "ash/shell/example_session_controller_client.h"
 #include "ash/shell/shell_delegate_impl.h"
 #include "ash/shell/shell_views_delegate.h"
@@ -106,11 +105,6 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
       &views::examples::ShowExamplesWindowWithContent,
       views::examples::DO_NOTHING_ON_CLOSE,
       ShellContentState::GetInstance()->GetActiveBrowserContext(), nullptr));
-
-  // Initialize the example app list presenter.
-  example_app_list_presenter_ = std::make_unique<ExampleAppListPresenter>();
-  Shell::Get()->app_list()->SetAppListPresenter(
-      example_app_list_presenter_->CreateInterfacePtrAndBind());
 
   ash::Shell::GetPrimaryRootWindow()->GetHost()->Show();
 }

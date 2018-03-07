@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SHELL_CONTENT_CLIENT_EXAMPLES_BROWSER_MAIN_PARTS_H_
-#define ASH_SHELL_CONTENT_CLIENT_EXAMPLES_BROWSER_MAIN_PARTS_H_
+#ifndef ASH_SHELL_CONTENT_CLIENT_SHELL_BROWSER_MAIN_PARTS_H_
+#define ASH_SHELL_CONTENT_CLIENT_SHELL_BROWSER_MAIN_PARTS_H_
 
 #include <memory>
 
@@ -30,7 +30,6 @@ class WMState;
 namespace ash {
 namespace shell {
 
-class ExampleAppListPresenter;
 class ExampleSessionControllerClient;
 class WindowWatcher;
 
@@ -57,7 +56,6 @@ class ShellBrowserMainParts : public content::BrowserMainParts {
   std::unique_ptr<views::ViewsDelegate> views_delegate_;
   std::unique_ptr<WindowWatcher> window_watcher_;
   std::unique_ptr<wm::WMState> wm_state_;
-  std::unique_ptr<ExampleAppListPresenter> example_app_list_presenter_;
   std::unique_ptr<ExampleSessionControllerClient>
       example_session_controller_client_;
 
@@ -67,4 +65,4 @@ class ShellBrowserMainParts : public content::BrowserMainParts {
 }  // namespace shell
 }  // namespace ash
 
-#endif  // ASH_SHELL_CONTENT_CLIENT_EXAMPLES_BROWSER_MAIN_PARTS_H_
+#endif  // ASH_SHELL_CONTENT_CLIENT_SHELL_BROWSER_MAIN_PARTS_H_

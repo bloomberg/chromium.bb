@@ -5,7 +5,6 @@
 #include <memory>
 
 #include "ash/shell.h"
-#include "ash/shell/example_app_list_presenter.h"
 #include "ash/shell/example_session_controller_client.h"
 #include "ash/shell/shell_delegate_impl.h"
 #include "ash/shell/shell_views_delegate.h"
@@ -20,7 +19,6 @@
 #include "services/service_manager/public/cpp/service_runner.h"
 #include "services/ui/public/cpp/input_devices/input_device_client.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
-#include "ui/app_list/presenter/app_list.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/views/examples/examples_window.h"
@@ -68,17 +66,10 @@ class ShellInit : public shell::ShellDelegateImpl, public ShellObserver {
     window_watcher_ = std::make_unique<shell::WindowWatcher>();
     shell::InitWindowTypeLauncher(base::Bind(&ShowViewsExamples));
 
-    // Initialize the example app list presenter.
-    example_app_list_presenter_ =
-        std::make_unique<shell::ExampleAppListPresenter>();
-    Shell::Get()->app_list()->SetAppListPresenter(
-        example_app_list_presenter_->CreateInterfacePtrAndBind());
-
     Shell::GetPrimaryRootWindow()->GetHost()->Show();
   }
 
  private:
-  std::unique_ptr<shell::ExampleAppListPresenter> example_app_list_presenter_;
   // Used to observe new windows and update the shelf accordingly.
   std::unique_ptr<shell::WindowWatcher> window_watcher_;
   std::unique_ptr<shell::ExampleSessionControllerClient>
