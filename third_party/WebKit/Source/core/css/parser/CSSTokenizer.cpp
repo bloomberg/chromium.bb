@@ -18,7 +18,7 @@ namespace blink {
 CSSTokenizer::CSSTokenizer(const String& string, size_t offset)
     : input_(string) {
   // According to the spec, we should perform preprocessing here.
-  // See: http://dev.w3.org/csswg/css-syntax/#input-preprocessing
+  // See: https://drafts.csswg.org/css-syntax/#input-preprocessing
   //
   // However, we can skip this step since:
   // * We're using HTML spaces (which accept \r and \f as a valid white space)
@@ -72,7 +72,7 @@ static bool IsNewLine(UChar cc) {
   return (cc == '\r' || cc == '\n' || cc == '\f');
 }
 
-// http://dev.w3.org/csswg/css-syntax/#check-if-two-code-points-are-a-valid-escape
+// https://drafts.csswg.org/css-syntax/#check-if-two-code-points-are-a-valid-escape
 static bool TwoCharsAreValidEscape(UChar first, UChar second) {
   return first == '\\' && !IsNewLine(second);
 }
@@ -370,7 +370,7 @@ CSSParserToken CSSTokenizer::ConsumeNumericToken() {
   return token;
 }
 
-// http://dev.w3.org/csswg/css-syntax/#consume-ident-like-token
+// https://drafts.csswg.org/css-syntax/#consume-ident-like-token
 CSSParserToken CSSTokenizer::ConsumeIdentLikeToken() {
   StringView name = ConsumeName();
   if (ConsumeIfNext('(')) {
@@ -387,7 +387,7 @@ CSSParserToken CSSTokenizer::ConsumeIdentLikeToken() {
   return CSSParserToken(kIdentToken, name);
 }
 
-// http://dev.w3.org/csswg/css-syntax/#consume-a-string-token
+// https://drafts.csswg.org/css-syntax/#consume-a-string-token
 CSSParserToken CSSTokenizer::ConsumeStringTokenUntil(UChar ending_code_point) {
   // Strings without escapes get handled without allocations
   for (unsigned size = 0;; size++) {
@@ -461,13 +461,13 @@ CSSParserToken CSSTokenizer::ConsumeUnicodeRange() {
   return CSSParserToken(kUnicodeRangeToken, start, end);
 }
 
-// http://dev.w3.org/csswg/css-syntax/#non-printable-code-point
+// https://drafts.csswg.org/css-syntax/#non-printable-code-point
 static bool IsNonPrintableCodePoint(UChar cc) {
   return (cc >= '\0' && cc <= '\x8') || cc == '\xb' ||
          (cc >= '\xe' && cc <= '\x1f') || cc == '\x7f';
 }
 
-// http://dev.w3.org/csswg/css-syntax/#consume-url-token
+// https://drafts.csswg.org/css-syntax/#consume-url-token
 CSSParserToken CSSTokenizer::ConsumeUrlToken() {
   input_.AdvanceUntilNonWhitespace();
 
@@ -515,7 +515,7 @@ CSSParserToken CSSTokenizer::ConsumeUrlToken() {
   return CSSParserToken(kBadUrlToken);
 }
 
-// http://dev.w3.org/csswg/css-syntax/#consume-the-remnants-of-a-bad-url
+// https://drafts.csswg.org/css-syntax/#consume-the-remnants-of-a-bad-url
 void CSSTokenizer::ConsumeBadUrlRemnants() {
   while (true) {
     UChar cc = Consume();
@@ -597,7 +597,7 @@ StringView CSSTokenizer::ConsumeName() {
   }
 }
 
-// http://dev.w3.org/csswg/css-syntax/#consume-an-escaped-code-point
+// https://drafts.csswg.org/css-syntax/#consume-an-escaped-code-point
 UChar32 CSSTokenizer::ConsumeEscape() {
   UChar cc = Consume();
   DCHECK(!IsNewLine(cc));
@@ -651,7 +651,7 @@ bool CSSTokenizer::NextCharsAreNumber() {
   return are_number;
 }
 
-// http://dev.w3.org/csswg/css-syntax/#would-start-an-identifier
+// https://drafts.csswg.org/css-syntax/#would-start-an-identifier
 bool CSSTokenizer::NextCharsAreIdentifier(UChar first) {
   UChar second = input_.PeekWithoutReplacement(0);
   if (IsNameStartCodePoint(first) || TwoCharsAreValidEscape(first, second))

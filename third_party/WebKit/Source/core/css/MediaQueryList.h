@@ -37,7 +37,7 @@ class MediaQueryMatcher;
 class MediaQuerySet;
 
 // MediaQueryList interface is specified at
-// http://dev.w3.org/csswg/cssom-view/#the-mediaquerylist-interface
+// https://drafts.csswg.org/cssom-view/#the-mediaquerylist-interface
 // The objects of this class are returned by window.matchMedia. They may be used
 // to retrieve the current value of the given media query and to add/remove
 // listeners that will be called whenever the value of the query changes.

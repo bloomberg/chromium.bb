@@ -37,7 +37,7 @@
 
 namespace blink {
 
-// http://dev.w3.org/csswg/cssom/#serialize-a-media-query
+// https://drafts.csswg.org/cssom/#serialize-a-media-query
 String MediaQuery::Serialize() const {
   StringBuilder result;
   switch (restrictor_) {
@@ -117,12 +117,12 @@ MediaQuery::MediaQuery(const MediaQuery& o)
 
 MediaQuery::~MediaQuery() = default;
 
-// http://dev.w3.org/csswg/cssom/#compare-media-queries
+// https://drafts.csswg.org/cssom/#compare-media-queries
 bool MediaQuery::operator==(const MediaQuery& other) const {
   return CssText() == other.CssText();
 }
 
-// http://dev.w3.org/csswg/cssom/#serialize-a-list-of-media-queries
+// https://drafts.csswg.org/cssom/#serialize-a-list-of-media-queries
 String MediaQuery::CssText() const {
   if (serialization_cache_.IsNull())
     const_cast<MediaQuery*>(this)->serialization_cache_ = Serialize();

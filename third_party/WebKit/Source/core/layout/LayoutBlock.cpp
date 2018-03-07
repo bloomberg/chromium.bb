@@ -1568,7 +1568,7 @@ void LayoutBlock::ComputeChildPreferredLogicalWidths(
       child.IsHorizontalWritingMode() != IsHorizontalWritingMode()) {
     // If the child is an orthogonal flow, child's height determines the width,
     // but the height is not available until layout.
-    // http://dev.w3.org/csswg/css-writing-modes-3/#orthogonal-shrink-to-fit
+    // https://drafts.csswg.org/css-writing-modes/#orthogonal-shrink-to-fit
     if (!child.NeedsLayout()) {
       min_preferred_logical_width = max_preferred_logical_width =
           ToLayoutBox(child).LogicalHeight();

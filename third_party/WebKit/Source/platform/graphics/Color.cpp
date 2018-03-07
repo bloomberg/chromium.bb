@@ -213,7 +213,7 @@ String Color::SerializedAsCSSComponentValue() const {
   if (color_has_alpha) {
     result.Append(", ");
     // See <alphavalue> section in
-    // http://dev.w3.org/csswg/cssom/#serializing-css-values
+    // https://drafts.csswg.org/cssom/#serializing-css-values
     int alphavalue = Alpha();
     float rounded = round(alphavalue * 100 / 255.0f) / 100;
     if (round(rounded * 255) == alphavalue) {

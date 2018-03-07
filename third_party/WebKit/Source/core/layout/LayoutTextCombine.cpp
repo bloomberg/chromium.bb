@@ -184,7 +184,7 @@ void LayoutTextCombine::UpdateFont() {
 
     // If width > ~1em, shrink to fit within ~1em, otherwise render without
     // scaling (no expansion).
-    // http://dev.w3.org/csswg/css-writing-modes-3/#text-combine-compression
+    // https://drafts.csswg.org/css-writing-modes/#text-combine-compression
     if (combined_text_width_ > em_width) {
       scale_x_ = em_width / combined_text_width_;
       combined_text_width_ = em_width;

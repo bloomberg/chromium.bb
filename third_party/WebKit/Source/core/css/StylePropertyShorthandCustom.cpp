@@ -32,7 +32,7 @@ const StylePropertyShorthand& animationShorthandForParsing() {
   // reconsidering their approach). This is covered by the animations spec
   // bug: https://www.w3.org/Bugs/Public/show_bug.cgi?id=14790
   // And in the spec (editor's draft) at:
-  // http://dev.w3.org/csswg/css3-animations/#animation-shorthand-property
+  // https://drafts.csswg.org/css-animations/#animation-shorthand-property
   static const CSSProperty* kAnimationPropertiesForParsing[] = {
       &GetCSSPropertyAnimationDuration(),
       &GetCSSPropertyAnimationTimingFunction(),

@@ -98,7 +98,7 @@ class PLATFORM_EXPORT Color {
   String Serialized() const;
 
   // Returns the color serialized according to CSSOM:
-  // http://dev.w3.org/csswg/cssom/#serialize-a-css-component-value
+  // https://drafts.csswg.org/cssom/#serialize-a-css-component-value
   String SerializedAsCSSComponentValue() const;
 
   // Returns the color serialized as either #RRGGBB or #RRGGBBAA. The latter

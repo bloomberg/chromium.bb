@@ -32,7 +32,7 @@
 namespace blink {
 
 // Common serializing methods. See:
-// http://dev.w3.org/csswg/cssom/#common-serializing-idioms
+// https://drafts.csswg.org/cssom/#common-serializing-idioms
 void SerializeIdentifier(const String& identifier,
                          StringBuilder& append_to,
                          bool skip_start_checks = false);

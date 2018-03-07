@@ -70,7 +70,7 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
   int MaxOverlapBetweenPages() const;
 
   // Convert a non-finite scroll value (Infinity, -Infinity, NaN) to 0 as
-  // per http://dev.w3.org/csswg/cssom-view/#normalize-non_finite-values.
+  // per https://drafts.csswg.org/cssom-view/#normalize-non-finite-values.
   static float NormalizeNonFiniteScroll(float value) {
     return std::isfinite(value) ? value : 0.0;
   }

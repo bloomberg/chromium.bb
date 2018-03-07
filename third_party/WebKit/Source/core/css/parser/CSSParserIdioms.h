@@ -41,13 +41,13 @@ inline bool IsCSSSpace(UChar c) {
   return c == ' ' || c == '\t' || c == '\n';
 }
 
-// http://dev.w3.org/csswg/css-syntax/#name-start-code-point
+// https://drafts.csswg.org/css-syntax/#name-start-code-point
 template <typename CharacterType>
 bool IsNameStartCodePoint(CharacterType c) {
   return IsASCIIAlpha(c) || c == '_' || !IsASCII(c);
 }
 
-// http://dev.w3.org/csswg/css-syntax/#name-code-point
+// https://drafts.csswg.org/css-syntax/#name-code-point
 template <typename CharacterType>
 bool IsNameCodePoint(CharacterType c) {
   return IsNameStartCodePoint(c) || IsASCIIDigit(c) || c == '-';

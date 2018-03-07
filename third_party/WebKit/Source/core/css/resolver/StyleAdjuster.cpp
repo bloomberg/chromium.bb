@@ -316,7 +316,7 @@ static void AdjustOverflow(ComputedStyle& style) {
   if (style.Display() == EDisplay::kTable ||
       style.Display() == EDisplay::kInlineTable) {
     // Tables only support overflow:hidden and overflow:visible and ignore
-    // anything else, see http://dev.w3.org/csswg/css2/visufx.html#overflow. As
+    // anything else, see https://drafts.csswg.org/css2/visufx.html#overflow. As
     // a table is not a block container box the rules for resolving conflicting
     // x and y values in CSS Overflow Module Level 3 do not apply. Arguably
     // overflow-x and overflow-y aren't allowed on tables but all UAs allow it.

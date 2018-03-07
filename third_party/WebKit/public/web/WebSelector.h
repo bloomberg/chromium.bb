@@ -37,7 +37,7 @@ namespace blink {
 
 class WebString;
 
-// Terminology from http://dev.w3.org/csswg/selectors4/#structure.
+// Terminology from https://drafts.csswg.org/selectors/#structure.
 enum WebSelectorType {
   kWebSelectorTypeComplex,
   kWebSelectorTypeCompound,

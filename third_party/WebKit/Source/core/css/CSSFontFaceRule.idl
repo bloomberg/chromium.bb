@@ -21,7 +21,7 @@
 // The CSSFontFaceRule interface was introduced in DOM Level 2 Style, but has
 // been replaced by an entirely different interface in CSS Fonts:
 // https://www.w3.org/TR/DOM-Level-2-Style/css.html#CSS-CSSFontFaceRule
-// https://dev.w3.org/csswg/css-fonts/#om-fontface
+// https://drafts.csswg.org/css-fonts/#om-fontface
 //
 // TODO(foolip): Make CSSFontFaceRule match new spec and/or change spec to match
 // what's implemented. https://crbug.com/709013

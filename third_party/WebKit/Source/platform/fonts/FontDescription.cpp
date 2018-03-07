@@ -246,7 +246,7 @@ void FontDescription::UpdateTypesettingFeatures() {
       break;
   }
 
-  // As per CSS (http://dev.w3.org/csswg/css-text-3/#letter-spacing-property),
+  // As per CSS (https://drafts.csswg.org/css-text/#letter-spacing-property),
   // When the effective letter-spacing between two characters is not zero (due
   // to either justification or non-zero computed letter-spacing), user agents
   // should not apply optional ligatures.

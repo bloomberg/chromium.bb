@@ -171,7 +171,7 @@ static inline void NotifyObserverEnteredObject(Observer* observer,
   const ComputedStyle& style = object.StyleRef();
   UnicodeBidi unicode_bidi = style.GetUnicodeBidi();
   if (unicode_bidi == UnicodeBidi::kNormal) {
-    // http://dev.w3.org/csswg/css3-writing-modes/#unicode-bidi
+    // https://drafts.csswg.org/css-writing-modes/#unicode-bidi
     // "The element does not open an additional level of embedding with respect
     // to the bidirectional algorithm."
     // Thus we ignore any possible dir= attribute on the span.

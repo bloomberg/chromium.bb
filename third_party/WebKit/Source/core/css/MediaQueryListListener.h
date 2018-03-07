@@ -26,7 +26,7 @@
 
 namespace blink {
 
-// See http://dev.w3.org/csswg/cssom-view/#the-mediaquerylist-interface
+// See https://drafts.csswg.org/cssom-view/#the-mediaquerylist-interface
 class CORE_EXPORT MediaQueryListListener
     : public GarbageCollected<MediaQueryListListener> {
  public:
