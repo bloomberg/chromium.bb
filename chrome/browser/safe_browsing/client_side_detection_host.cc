@@ -33,6 +33,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/frame_navigate_params.h"
+#include "content/public/common/subresource_load_info.mojom.h"
 #include "content/public/common/url_constants.h"
 #include "net/http/http_response_headers.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -445,13 +446,15 @@ void ClientSideDetectionHost::DidFinishNavigation(
 }
 
 void ClientSideDetectionHost::SubresourceResponseStarted(
-    const GURL& url,
-    const GURL& referrer,
-    const std::string& method,
-    content::ResourceType resource_type,
-    const std::string& ip) {
-  if (browse_info_.get() && should_extract_malware_features_ && url.is_valid())
-    UpdateIPUrlMap(ip, url.spec(), method, referrer.spec(), resource_type);
+    const content::mojom::SubresourceLoadInfoPtr& subresource_load_info) {
+  if (browse_info_.get() && should_extract_malware_features_ &&
+      subresource_load_info->url.is_valid()) {
+    UpdateIPUrlMap(subresource_load_info->ip->ToString(),
+                   subresource_load_info->url.spec(),
+                   subresource_load_info->method,
+                   subresource_load_info->referrer.spec(),
+                   subresource_load_info->resource_type);
+  }
 }
 
 void ClientSideDetectionHost::OnSafeBrowsingHit(

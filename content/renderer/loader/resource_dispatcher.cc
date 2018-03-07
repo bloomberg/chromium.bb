@@ -25,6 +25,7 @@
 #include "content/common/navigation_params.h"
 #include "content/common/throttling_url_loader.h"
 #include "content/public/common/resource_type.h"
+#include "content/public/common/subresource_load_info.mojom.h"
 #include "content/public/renderer/fixed_received_data.h"
 #include "content/public/renderer/request_peer.h"
 #include "content/public/renderer/resource_dispatcher_delegate.h"
@@ -73,20 +74,15 @@ void CheckSchemeForReferrerPolicy(const network::ResourceRequest& request) {
 void NotifySubresourceStarted(
     scoped_refptr<base::SingleThreadTaskRunner> thread_task_runner,
     int render_frame_id,
-    const GURL& url,
-    const GURL& referrer,
-    const std::string& method,
-    ResourceType resource_type,
-    const std::string& ip,
-    uint32_t cert_status) {
+    mojom::SubresourceLoadInfoPtr subresource_load_info) {
   if (!thread_task_runner)
     return;
 
   if (!thread_task_runner->BelongsToCurrentThread()) {
     thread_task_runner->PostTask(
-        FROM_HERE, base::BindOnce(NotifySubresourceStarted, thread_task_runner,
-                                  render_frame_id, url, referrer, method,
-                                  resource_type, ip, cert_status));
+        FROM_HERE,
+        base::BindOnce(NotifySubresourceStarted, thread_task_runner,
+                       render_frame_id, std::move(subresource_load_info)));
     return;
   }
 
@@ -96,7 +92,7 @@ void NotifySubresourceStarted(
     return;
 
   render_frame->GetFrameHost()->SubresourceResponseStarted(
-      url, referrer, method, resource_type, ip, cert_status);
+      std::move(subresource_load_info));
 }
 
 }  // namespace
@@ -154,12 +150,22 @@ void ResourceDispatcher::OnReceivedResponse(
   }
 
   if (!IsResourceTypeFrame(request_info->resource_type)) {
-    NotifySubresourceStarted(
-        RenderThreadImpl::DeprecatedGetMainTaskRunner(),
-        request_info->render_frame_id, request_info->response_url,
-        request_info->response_referrer, request_info->response_method,
-        request_info->resource_type, response_head.socket_address.host(),
-        response_head.cert_status);
+    mojom::SubresourceLoadInfoPtr subresource_load_info =
+        mojom::SubresourceLoadInfo::New();
+    subresource_load_info->url = request_info->response_url;
+    subresource_load_info->referrer = request_info->response_referrer;
+    subresource_load_info->method = request_info->response_method;
+    subresource_load_info->resource_type = request_info->resource_type;
+    if (!response_head.socket_address.host().empty()) {
+      subresource_load_info->ip = base::make_optional<net::IPAddress>();
+      bool result = subresource_load_info->ip->AssignFromIPLiteral(
+          response_head.socket_address.host());
+      DCHECK(result);
+    }
+    subresource_load_info->cert_status = response_head.cert_status;
+    NotifySubresourceStarted(RenderThreadImpl::DeprecatedGetMainTaskRunner(),
+                             request_info->render_frame_id,
+                             std::move(subresource_load_info));
   }
 
   network::ResourceResponseInfo renderer_response_info;
