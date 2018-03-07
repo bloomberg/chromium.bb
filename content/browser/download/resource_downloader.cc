@@ -130,7 +130,7 @@ void ResourceDownloader::Start(
   guid_ = download_url_parameters->guid();
 
   // Set up the URLLoaderClient.
-  url_loader_client_ = std::make_unique<DownloadResponseHandler>(
+  url_loader_client_ = std::make_unique<download::DownloadResponseHandler>(
       resource_request_.get(), this,
       std::make_unique<download::DownloadSaveInfo>(
           download_url_parameters->GetSaveInfo()),
@@ -172,7 +172,7 @@ void ResourceDownloader::InterceptResponse(
   auto save_info = std::make_unique<download::DownloadSaveInfo>();
   if (suggested_filename.has_value())
     save_info->suggested_name = base::UTF8ToUTF16(suggested_filename.value());
-  url_loader_client_ = std::make_unique<DownloadResponseHandler>(
+  url_loader_client_ = std::make_unique<download::DownloadResponseHandler>(
       resource_request_.get(), this, std::move(save_info), false, false, false,
       std::string(), download::DownloadSource::NAVIGATION,
       std::move(url_chain));
