@@ -117,6 +117,7 @@ class AV1HighbdConvolve2DSrTest
 
  protected:
   void RunCheckOutput(highbd_convolve_2d_func test_impl);
+  void RunSpeedTest(highbd_convolve_2d_func test_impl);
 
   libaom_test::ACMRandom rnd_;
 };

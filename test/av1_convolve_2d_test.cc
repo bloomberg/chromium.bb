@@ -195,6 +195,9 @@ INSTANTIATE_TEST_CASE_P(C_COPY, AV1HighbdConvolve2DTest,
                             av1_highbd_convolve_2d_copy_c, 0, 0, 1));
 
 TEST_P(AV1HighbdConvolve2DSrTest, CheckOutput) { RunCheckOutput(GET_PARAM(1)); }
+TEST_P(AV1HighbdConvolve2DSrTest, DISABLED_Speed) {
+  RunSpeedTest(GET_PARAM(1));
+}
 
 INSTANTIATE_TEST_CASE_P(C_X, AV1HighbdConvolve2DSrTest,
                         libaom_test::AV1HighbdConvolve2D::BuildParams(
@@ -207,6 +210,17 @@ INSTANTIATE_TEST_CASE_P(C_Y, AV1HighbdConvolve2DSrTest,
 INSTANTIATE_TEST_CASE_P(C_COPY, AV1HighbdConvolve2DSrTest,
                         libaom_test::AV1HighbdConvolve2D::BuildParams(
                             av1_highbd_convolve_2d_copy_sr_c, 0, 0, 0));
+
+#if HAVE_SSE2
+INSTANTIATE_TEST_CASE_P(SSE2_COPY, AV1HighbdConvolve2DSrTest,
+                        libaom_test::AV1HighbdConvolve2D::BuildParams(
+                            av1_highbd_convolve_2d_copy_sr_sse2, 0, 0, 0));
+#endif
+#if HAVE_SSSE3
+INSTANTIATE_TEST_CASE_P(SSSE3, AV1HighbdConvolve2DSrTest,
+                        libaom_test::AV1HighbdConvolve2D::BuildParams(
+                            av1_highbd_convolve_2d_sr_ssse3, 1, 1, 0));
+#endif
 #if HAVE_AVX2
 INSTANTIATE_TEST_CASE_P(AVX2, AV1HighbdConvolve2DSrTest,
                         libaom_test::AV1HighbdConvolve2D::BuildParams(
