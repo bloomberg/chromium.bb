@@ -1313,6 +1313,9 @@ int drmModeAtomicAddProperty(drmModeAtomicReqPtr req,
 	if (!req)
 		return -EINVAL;
 
+	if (object_id == 0 || property_id == 0)
+		return -EINVAL;
+
 	if (req->cursor >= req->size_items) {
 		drmModeAtomicReqItemPtr new;
 
