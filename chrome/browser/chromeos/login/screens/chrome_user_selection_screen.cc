@@ -36,7 +36,6 @@ namespace chromeos {
 ChromeUserSelectionScreen::ChromeUserSelectionScreen(
     const std::string& display_type)
     : UserSelectionScreen(display_type),
-      handler_initialized_(false),
       weak_factory_(this) {
   device_local_account_policy_service_ =
       g_browser_process->platform_part()
@@ -66,7 +65,7 @@ void ChromeUserSelectionScreen::Init(const user_manager::UserList& users) {
 
 void ChromeUserSelectionScreen::SendUserList() {
   UserSelectionScreen::SendUserList();
-  handler_initialized_ = true;
+  users_loaded_ = true;
 }
 
 void ChromeUserSelectionScreen::OnPolicyUpdated(const std::string& user_id) {
@@ -95,7 +94,7 @@ void ChromeUserSelectionScreen::CheckForPublicSessionDisplayNameChange(
 
   public_session_display_names_[account_id] = display_name;
 
-  if (!handler_initialized_)
+  if (!users_loaded_)
     return;
 
   if (!display_name.empty()) {
@@ -166,7 +165,7 @@ void ChromeUserSelectionScreen::SetPublicSessionDisplayName(
 void ChromeUserSelectionScreen::SetPublicSessionLocales(
     const AccountId& account_id,
     const std::vector<std::string>& recommended_locales) {
-  if (!handler_initialized_)
+  if (!users_loaded_)
     return;
 
   // Construct the list of available locales. This list consists of the

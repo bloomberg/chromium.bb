@@ -127,6 +127,7 @@ class UserSelectionScreen
 
   std::unique_ptr<base::ListValue> UpdateAndReturnUserListForWebUI();
   std::vector<ash::mojom::LoginUserInfoPtr> UpdateAndReturnUserListForMojo();
+  void SetUsersLoaded(bool loaded);
 
  protected:
   UserBoardView* view_ = nullptr;
@@ -134,6 +135,9 @@ class UserSelectionScreen
   // Map from public session account IDs to recommended locales set by policy.
   std::map<AccountId, std::vector<std::string>>
       public_session_recommended_locales_;
+
+  // Whether users have been sent to the UI(WebUI or Views).
+  bool users_loaded_ = false;
 
  private:
   class DircryptoMigrationChecker;

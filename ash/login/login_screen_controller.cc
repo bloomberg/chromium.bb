@@ -172,6 +172,24 @@ void LoginScreenController::IsReadyForPassword(
   std::move(callback).Run(LockScreen::IsShown() && !is_authenticating_);
 }
 
+void LoginScreenController::SetPublicSessionDisplayName(
+    const AccountId& account_id,
+    const std::string& display_name) {
+  if (DataDispatcher())
+    DataDispatcher()->SetPublicSessionDisplayName(account_id, display_name);
+}
+
+void LoginScreenController::SetPublicSessionLocales(
+    const AccountId& account_id,
+    std::unique_ptr<base::ListValue> locales,
+    const std::string& default_locale,
+    bool show_advanced_view) {
+  if (DataDispatcher()) {
+    DataDispatcher()->SetPublicSessionLocales(
+        account_id, std::move(locales), default_locale, show_advanced_view);
+  }
+}
+
 void LoginScreenController::AuthenticateUser(const AccountId& account_id,
                                              const std::string& password,
                                              bool authenticated_by_pin,

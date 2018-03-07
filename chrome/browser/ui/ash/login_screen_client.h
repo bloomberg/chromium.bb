@@ -94,6 +94,12 @@ class LoginScreenClient : public ash::mojom::LoginScreenClient {
                          const std::string& bluetooth_name);
   void IsReadyForPassword(
       ash::mojom::LoginScreen::IsReadyForPasswordCallback callback);
+  void SetPublicSessionDisplayName(const AccountId& account_id,
+                                   const std::string& display_name);
+  void SetPublicSessionLocales(const AccountId& account_id,
+                               std::unique_ptr<base::ListValue> locales,
+                               const std::string& default_locale,
+                               bool show_advanced_view);
 
   void SetDelegate(Delegate* delegate);
 

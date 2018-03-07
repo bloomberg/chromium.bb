@@ -196,6 +196,21 @@ void LoginScreenClient::IsReadyForPassword(
   login_screen_->IsReadyForPassword(std::move(callback));
 }
 
+void LoginScreenClient::SetPublicSessionDisplayName(
+    const AccountId& account_id,
+    const std::string& display_name) {
+  login_screen_->SetPublicSessionDisplayName(account_id, display_name);
+}
+
+void LoginScreenClient::SetPublicSessionLocales(
+    const AccountId& account_id,
+    std::unique_ptr<base::ListValue> locales,
+    const std::string& default_locale,
+    bool show_advanced_view) {
+  login_screen_->SetPublicSessionLocales(account_id, std::move(locales),
+                                         default_locale, show_advanced_view);
+}
+
 void LoginScreenClient::SetDelegate(Delegate* delegate) {
   delegate_ = delegate;
 }

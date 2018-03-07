@@ -481,6 +481,20 @@ void LockContentsView::OnDevChannelInfoChanged(
   LayoutTopHeader();
 }
 
+void LockContentsView::OnPublicSessionDisplayNameChanged(
+    const AccountId& account_id,
+    const std::string& display_name) {
+  NOTIMPLEMENTED();
+}
+
+void LockContentsView::OnPublicSessionLocalesChanged(
+    const AccountId& account_id,
+    const base::ListValue& locales,
+    const std::string& default_locale,
+    bool show_advanced_view) {
+  NOTIMPLEMENTED();
+}
+
 void LockContentsView::OnFocusLeavingLockScreenApps(bool reverse) {
   if (!reverse || lock_screen_apps_active_)
     FocusNextWidget(reverse);

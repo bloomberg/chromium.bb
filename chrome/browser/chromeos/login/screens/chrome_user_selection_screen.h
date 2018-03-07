@@ -55,8 +55,6 @@ class ChromeUserSelectionScreen
       const AccountId& account_id,
       const std::vector<std::string>& recommended_locales);
 
-  bool handler_initialized_;
-
   policy::DeviceLocalAccountPolicyService* device_local_account_policy_service_;
 
   // Map from public session account IDs to their display names set by policy.

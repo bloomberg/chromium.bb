@@ -8,6 +8,7 @@ import "ash/public/interfaces/login_user_info.mojom";
 import "components/password_manager/public/interfaces/sync_password_data.mojom";
 import "components/proximity_auth/public/interfaces/auth_type.mojom";
 import "components/signin/public/interfaces/account_id.mojom";
+import "mojo/common/values.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 
 // Allows clients (e.g. Chrome browser) to control the ash login/lock/user-add
@@ -82,6 +83,24 @@ interface LoginScreen {
 
   // Check if the login/lock screen is ready for a password.
   IsReadyForPassword() => (bool is_ready);
+
+  // Set the public session display name for user with |account_id|.
+  SetPublicSessionDisplayName(signin.mojom.AccountId account_id,
+                              string display_name);
+
+  // Set the public session locales for user with |account_id|.
+  // TODO: Use array<LocaleStruct> for |locales| instead of
+  // mojo.common.mojom.ListValue.
+  // |locales|: Available locales for this user.
+  //            Each entry is a base::DictionaryValue and it contains several
+  //            keys like displayName, nativeDisplayName, optionGroupName etc.
+  // |default_locale|: Default locale for this user.
+  // |show_advanced_view|: True if we should show the advanced expanded user
+  //                       view for the public session.
+  SetPublicSessionLocales(signin.mojom.AccountId account_id,
+                          mojo.common.mojom.ListValue locales,
+                          string default_locale,
+                          bool show_advanced_view);
 };
 
 // Allows ash lock screen to control a client (e.g. Chrome browser). Requests
