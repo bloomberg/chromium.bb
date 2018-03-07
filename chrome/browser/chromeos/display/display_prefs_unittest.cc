@@ -351,11 +351,6 @@ TEST_F(DisplayPrefsTest, BasicStores) {
   display_manager()->SetTouchCalibrationData(
       id2, point_pair_quad_2, touch_size_2, touch_device_identifier_2);
 
-  float zoom_factor_1 = 1.75f;
-  float zoom_factor_2 = 1.60f;
-  display_manager()->UpdateZoomFactor(id1, zoom_factor_1);
-  display_manager()->UpdateZoomFactor(id2, zoom_factor_2);
-
   const base::DictionaryValue* displays =
       local_state()->GetDictionary(prefs::kSecondaryDisplays);
   const base::DictionaryValue* layout_value = nullptr;
@@ -444,6 +439,10 @@ TEST_F(DisplayPrefsTest, BasicStores) {
                                    1.0 /* ui_scale */,
                                    1.25f /* device_scale_factor */);
   display_manager()->SetDisplayMode(id2, mode);
+  float zoom_factor_1 = 1.75f;
+  float zoom_factor_2 = 1.60f;
+  display_manager()->UpdateZoomFactor(id1, zoom_factor_1);
+  display_manager()->UpdateZoomFactor(id2, zoom_factor_2);
 
   window_tree_host_manager->SetPrimaryDisplayId(id2);
 

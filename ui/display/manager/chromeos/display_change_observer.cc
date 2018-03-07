@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "chromeos/chromeos_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/user_activity/user_activity_detector.h"
 #include "ui/display/display.h"
@@ -64,6 +65,10 @@ DisplayChangeObserver::GetInternalManagedDisplayModeList(
                                  ui_native_mode->refresh_rate(),
                                  ui_native_mode->is_interlaced(), true, 1.0,
                                  display_info.device_scale_factor());
+  // When display zoom option is available, we cannot change the mode for
+  // internal displays.
+  if (chromeos::switches::IsDisplayZoomSettingEnabled())
+    return ManagedDisplayInfo::ManagedDisplayModeList{native_mode};
   return CreateInternalManagedDisplayModeList(native_mode);
 }
 
@@ -86,13 +91,21 @@ DisplayChangeObserver::GetExternalManagedDisplayModeList(
       native_mode = display_mode;
 
     // Add the display mode if it isn't already present and override interlaced
-    // display modes with non-interlaced ones.
+    // display modes with non-interlaced ones. We prioritize having non
+    // interlaced mode over refresh rate. A mode having lower refresh rate
+    // but is not interlaced will be picked over a mode having high refresh
+    // rate but is interlaced.
     auto display_mode_it = display_mode_map.find(size);
-    if (display_mode_it == display_mode_map.end())
+    if (display_mode_it == display_mode_map.end()) {
       display_mode_map.insert(std::make_pair(size, display_mode));
-    else if (display_mode_it->second.is_interlaced() &&
-             !display_mode.is_interlaced())
+    } else if (display_mode_it->second.is_interlaced() &&
+               !display_mode.is_interlaced()) {
       display_mode_it->second = std::move(display_mode);
+    } else if (!display_mode.is_interlaced() &&
+               display_mode_it->second.refresh_rate() <
+                   display_mode.refresh_rate()) {
+      display_mode_it->second = std::move(display_mode);
+    }
   }
 
   ManagedDisplayInfo::ManagedDisplayModeList display_mode_list;
@@ -110,6 +123,11 @@ DisplayChangeObserver::GetExternalManagedDisplayModeList(
     if (!it->second.native())
       display_mode_list.push_back(native_mode);
   }
+
+  // If we are using display zoom mode, we no longer have to add additional
+  // display modes for ultra high resolution displays.
+  if (chromeos::switches::IsDisplayZoomSettingEnabled())
+    return display_mode_list;
 
   if (native_mode.size().width() >= kMinimumWidthFor4K) {
     for (size_t i = 0; i < arraysize(kAdditionalDeviceScaleFactorsFor4k); ++i) {

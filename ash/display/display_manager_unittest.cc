@@ -1271,7 +1271,7 @@ TEST_F(DisplayManagerTest, TouchCalibrationTest) {
 }
 
 TEST_F(DisplayManagerTest, UpdateDisplayZoomTest) {
-  // Initialize a display with 4 different resolution.
+  // Initialize a display pair.
   UpdateDisplay("1920x1080#1280x720|640x480%60, 600x400*2#600x400");
   reset();
 
@@ -1281,7 +1281,7 @@ TEST_F(DisplayManagerTest, UpdateDisplayZoomTest) {
   ASSERT_EQ(2u, display_manager()->GetNumDisplays());
   const display::ManagedDisplayInfo& info_1 = GetDisplayInfoAt(0);
 
-  // The display should have 4 display modes based on the initialization spec.
+  // The display should have 2 display modes based on the initialization spec.
   ASSERT_EQ(2u, info_1.display_modes().size());
 
   const display::ManagedDisplayInfo::ManagedDisplayModeList& modes =
@@ -1321,17 +1321,22 @@ TEST_F(DisplayManagerTest, UpdateDisplayZoomTest) {
                                       modes[1].size());
   display_manager()->UpdateDisplays();
 
-  // The new display being created should use the newly set display mode's
-  // zoom factor to compute the final effective device scale factor.
+  // Since the display mode was changed, the zoom factor for the display is
+  // reset to the default of 1.
   EXPECT_EQ(
       display_manager()->GetDisplayForId(info_1.id()).device_scale_factor(),
-      zoom_factor_2);
+      1.f);
 
   // When setting the display mode back to the old one, the final effective
   // device scale factor should be using the correct zoom factor.
   display::test::SetDisplayResolution(display_manager(), info_1.id(),
                                       modes[0].size());
   display_manager()->UpdateDisplays();
+
+  // Set the zoom factor back to |zoom_factor_2| for first display.
+  display_manager()->UpdateZoomFactor(info_1.id(), zoom_factor_2);
+  EXPECT_EQ(display_manager()->GetZoomFactorForDisplay(info_1.id()),
+            zoom_factor_2);
   EXPECT_EQ(
       display_manager()->GetDisplayForId(info_1.id()).device_scale_factor(),
       zoom_factor_2);
@@ -1362,7 +1367,10 @@ TEST_F(DisplayManagerTest, UpdateDisplayZoomTest) {
 
   EXPECT_EQ(
       display_manager()->GetDisplayForId(info_1.id()).device_scale_factor(),
-      zoom_factor_3);
+      1.f);
+  EXPECT_EQ(
+      display_manager()->GetDisplayForId(info_2.id()).device_scale_factor(),
+      zoom_factor_3 * display_2_dsf);
 }
 
 TEST_F(DisplayManagerTest, TestDeviceScaleOnlyChange) {

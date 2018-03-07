@@ -80,6 +80,7 @@ chrome.system.display.TouchCalibrationPairQuad;
  *   heightInNativePixels: number,
  *   uiScale: number,
  *   deviceScaleFactor: number,
+ *   refreshRate: number,
  *   isNative: boolean,
  *   isSelected: boolean
  * }}
