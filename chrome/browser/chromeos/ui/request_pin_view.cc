@@ -196,6 +196,7 @@ void RequestPinView::Init() {
   textfield_ = new PassphraseTextfield();
   textfield_->set_controller(this);
   textfield_->SetEnabled(true);
+  textfield_->SetAssociatedLabel(header_label_);
   layout->AddView(textfield_);
 
   layout->AddPaddingRow(0, related_vertical_spacing);
