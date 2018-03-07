@@ -245,7 +245,7 @@ cr.define('cr.ui', function() {
       var firstIndex =
           this.autoExpands ? 0 : this.getIndexForListOffset_(scrollTop);
       var columns = this.columns;
-      var count = this.autoExpands_ ?
+      var count = this.autoExpands ?
           this.dataModel.length :
           Math.max(
               columns * (Math.ceil(clientHeight / itemHeight) + 1),

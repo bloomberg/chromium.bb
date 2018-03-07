@@ -347,7 +347,7 @@ cr.define('cr.ui', function() {
 
     /**
      * @return {number} The height of default item, measuring it if necessary.
-     * @private
+     * @protected
      */
     getDefaultItemHeight_: function() {
       return this.getDefaultItemSize_().height;
@@ -377,7 +377,7 @@ cr.define('cr.ui', function() {
     /**
      * @return {{height: number, width: number}} The height and width
      *     of default item, measuring it if necessary.
-     * @private
+     * @protected
      */
     getDefaultItemSize_: function() {
       if (!this.measured_ || !this.measured_.height) {
@@ -878,7 +878,7 @@ cr.define('cr.ui', function() {
      * @param {number} offset The y offset in pixels to get the index of.
      * @return {number} The index of the list item. Returns the list size if
      *     given offset exceeds the height of list.
-     * @private
+     * @protected
      */
     getIndexForListOffset_: function(offset) {
       var itemHeight = this.getDefaultItemHeight_();
@@ -923,7 +923,7 @@ cr.define('cr.ui', function() {
      * @param {number} startIndex The index of the first visible item.
      * @param {number} endOffset The y offset in pixels of the end of the list.
      * @return {number} The number of list items visible.
-     * @private
+     * @protected
      */
     countItemsInRange_: function(startIndex, endOffset) {
       var endIndex = this.getIndexForListOffset_(endOffset);

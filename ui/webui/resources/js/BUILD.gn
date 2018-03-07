@@ -1,8 +1,36 @@
-# Copyright 2017 The Chromium Authors. All rights reserved.
+# Copyright 2018 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 import("//third_party/closure_compiler/compile_js.gni")
+
+group("closure_compile") {
+  deps = [
+    ":js_resources",
+    "cr:closure_compile",
+    "cr/ui:closure_compile",
+  ]
+}
+
+js_type_check("js_resources") {
+  deps = [
+    ":action_link",
+    ":assert",
+    ":cr",
+    ":event_tracker",
+    ":i18n_behavior",
+    ":i18n_template",
+    ":i18n_template_no_process",
+    ":icon",
+    ":load_time_data",
+    ":parse_html_subset",
+    ":promise_resolver",
+    ":search_highlight_utils",
+    ":util",
+    ":web_ui_listener_behavior",
+    ":webui_listener_tracker",
+  ]
+}
 
 js_library("action_link") {
 }
@@ -22,6 +50,12 @@ js_library("event_tracker") {
 }
 
 js_library("webui_listener_tracker") {
+  deps = [
+    ":cr",
+  ]
+}
+
+js_library("search_highlight_utils") {
   deps = [
     ":cr",
   ]
@@ -49,7 +83,6 @@ js_library("i18n_template") {
 js_library("i18n_behavior") {
   deps = [
     ":load_time_data",
-    ":parse_html_subset",
   ]
 }
 

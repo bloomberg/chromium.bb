@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import os
+
 def PostUploadHook(cl, change, output_api):
   return output_api.EnsureCQIncludeTrybotsAreAdded(
     cl,
@@ -18,6 +20,30 @@ def CheckChangeOnUpload(input_api, output_api):
 def CheckChangeOnCommit(input_api, output_api):
   return _CommonChecks(input_api, output_api)
 
+# For every modified gyp file, warn if the corresponding GN file is not updated.
+def _CheckForGNUpdate(input_api, output_api):
+  gyp_folders = set()
+  for f in input_api.AffectedFiles():
+    local_path = f.LocalPath()
+    if local_path.endswith('compiled_resources2.gyp'):
+      gyp_folders.add(os.path.dirname(local_path))
+
+  for f in input_api.AffectedFiles():
+    local_path = f.LocalPath()
+    dir_name = os.path.dirname(local_path)
+    if local_path.endswith('BUILD.gn') and dir_name in gyp_folders:
+      gyp_folders.remove(dir_name)
+
+  if not gyp_folders:
+    return []
+
+  return [output_api.PresubmitPromptWarning("""
+You may have forgotten to update the BUILD.gn Closure Compilation for the
+following folders:
+""" + "\n".join(["- " + x for x in gyp_folders]) + """
+
+Ping calamity@ or check go/closure-compile-gn for more details.
+""")]
 
 def _CheckForTranslations(input_api, output_api):
   shared_keywords = ['i18n(']
@@ -60,6 +86,7 @@ translation from the place using the shared code. For an example: see
 def _CommonChecks(input_api, output_api):
   results = []
   results += _CheckForTranslations(input_api, output_api)
+  results += _CheckForGNUpdate(input_api, output_api)
   results += input_api.canned_checks.CheckPatchFormatted(input_api, output_api,
                                                          check_js=True)
   try:
