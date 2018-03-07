@@ -16,7 +16,10 @@ cast_source_set("media_backend") {
   deps = [
     "//base",
     "//chromecast/base",
+    "//chromecast/media/cma/backend:audio_codec_support",
+    "//chromecast/media/cma/backend:av_sync_dummy",
     "//chromecast/media/cma/backend:for_mixer_audio",
+    "//chromecast/media/cma/backend:null_video",
     "//chromecast/public",
     "//chromecast/public/media",
     "//media",
