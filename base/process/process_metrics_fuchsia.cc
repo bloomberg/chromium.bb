@@ -30,11 +30,6 @@ double ProcessMetrics::GetPlatformIndependentCPUUsage() {
   return 0.0;
 }
 
-size_t ProcessMetrics::GetPagefileUsage() const {
-  NOTIMPLEMENTED();  // TODO(fuchsia): https://crbug.com/706592.
-  return 0;
-}
-
 size_t ProcessMetrics::GetWorkingSetSize() const {
   NOTIMPLEMENTED();  // TODO(fuchsia): https://crbug.com/706592.
   return 0;

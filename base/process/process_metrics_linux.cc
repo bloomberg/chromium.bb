@@ -211,12 +211,6 @@ std::unique_ptr<ProcessMetrics> ProcessMetrics::CreateProcessMetrics(
   return WrapUnique(new ProcessMetrics(process));
 }
 
-// On Linux, return vsize.
-size_t ProcessMetrics::GetPagefileUsage() const {
-  return internal::ReadProcStatsAndGetFieldAsSizeT(process_,
-                                                   internal::VM_VSIZE);
-}
-
 // On Linux, return the high water mark of vsize.
 size_t ProcessMetrics::GetPeakPagefileUsage() const {
   return ReadProcStatusAndGetFieldAsSizeT(process_, "VmPeak") * 1024;

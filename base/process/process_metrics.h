@@ -135,10 +135,6 @@ class BASE_EXPORT ProcessMetrics {
   // convenience wrapper for CreateProcessMetrics().
   static std::unique_ptr<ProcessMetrics> CreateCurrentProcessMetrics();
 
-  // Returns the current space allocated for the pagefile, in bytes (these pages
-  // may or may not be in memory).  On Linux, this returns the total virtual
-  // memory size.
-  size_t GetPagefileUsage() const;
   // Returns the peak space allocated for the pagefile, in bytes.
   size_t GetPeakPagefileUsage() const;
   // Returns the current working set size, in bytes.  On Linux, this returns

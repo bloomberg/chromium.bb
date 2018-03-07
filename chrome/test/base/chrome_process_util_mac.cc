@@ -92,13 +92,6 @@ static bool GetMemoryValuesHack(uint32_t process_id,
   return found_process;
 }
 
-size_t ChromeTestProcessMetrics::GetPagefileUsage() {
-  size_t virtual_size;
-  size_t working_set_size;
-  GetMemoryValuesHack(process_handle_, &virtual_size, &working_set_size);
-  return virtual_size;
-}
-
 size_t ChromeTestProcessMetrics::GetWorkingSetSize() {
   size_t virtual_size;
   size_t working_set_size;
