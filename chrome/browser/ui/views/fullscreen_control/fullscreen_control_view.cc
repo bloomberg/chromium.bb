@@ -8,8 +8,10 @@
 
 #include "base/callback.h"
 #include "cc/paint/paint_flags.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/vector_icons/vector_icons.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/point_f.h"
@@ -36,6 +38,7 @@ class CloseFullscreenButton : public views::Button {
         std::make_unique<views::ImageView>();
     close_image_view->SetImage(gfx::CreateVectorIcon(
         vector_icons::kCloseIcon, kCloseIconSize, SK_ColorWHITE));
+    SetAccessibleName(l10n_util::GetStringUTF16(IDS_EXIT_FULLSCREEN_MODE));
     AddChildView(close_image_view.release());
     SetLayoutManager(std::make_unique<views::FillLayout>());
   }
