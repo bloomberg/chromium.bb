@@ -1682,7 +1682,6 @@ test("browser_tests") {
         "../browser/ui/webui/signin/user_manager_ui_browsertest.cc",
       ]
       deps += [
-        ":test_support_applist_chromeos",
         "//ash:test_support_with_content",
         "//ash/public/interfaces:test_interfaces",
         "//chrome/browser/chromeos:arc_test_support",
@@ -4475,20 +4474,6 @@ if (!is_android) {
         "//ui/base:test_support",
         "//ui/resources:ui_test_pak",
         "//ui/web_dialogs:test_support",
-      ]
-    }
-
-    static_library("test_support_applist_chromeos") {
-      defines = []
-      testonly = true
-
-      sources = [
-        "../browser/ui/ash/app_list/test/app_list_service_ash_test_api.cc",
-        "../browser/ui/ash/app_list/test/app_list_service_ash_test_api.h",
-      ]
-      deps = [
-        "//chrome/browser/ui",
-        "//ui/app_list/presenter:test_support",
       ]
     }
   }

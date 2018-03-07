@@ -7,7 +7,6 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/ui/ash/app_list/app_list_controller_ash.h"
 #include "chrome/browser/ui/ash/app_list/app_list_service_ash.h"
-#include "chrome/browser/ui/ash/app_list/test/app_list_service_ash_test_api.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -26,39 +25,8 @@
 using AppListTest = InProcessBrowserTest;
 using AppListControllerDelegateAshTest = extensions::PlatformAppBrowserTest;
 
-// Test that clicking on app list context menus doesn't close the app list.
-IN_PROC_BROWSER_TEST_F(AppListTest, ClickingContextMenuDoesNotDismiss) {
-  // Show the app list on the primary display.
-  AppListServiceAsh* service = AppListServiceAsh::GetInstance();
-  app_list::AppListPresenterImpl* presenter = service->GetAppListPresenter();
-  presenter->Show(display::Screen::GetScreen()->GetPrimaryDisplay().id());
-  aura::Window* window = presenter->GetWindow();
-  ASSERT_TRUE(window);
-
-  // Show a context menu for the first app list item view.
-  AppListServiceAshTestApi test_api;
-  app_list::AppsGridView* grid_view = test_api.GetRootGridView();
-  app_list::AppListItemView* item_view = grid_view->GetItemViewAt(0);
-  item_view->ShowContextMenu(gfx::Point(), ui::MENU_SOURCE_MOUSE);
-
-  // Find the context menu as a transient child of the app list.
-  aura::Window* transient_parent =
-      chromeos::GetAshConfig() == ash::Config::MASH ? window->parent() : window;
-  const std::vector<aura::Window*>& transient_children =
-      wm::GetTransientChildren(transient_parent);
-  ASSERT_EQ(1u, transient_children.size());
-  aura::Window* menu = transient_children[0];
-
-  // Press the left mouse button on the menu window, AppListPresenterDelegateMus
-  // should not close the app list nor the context menu on this pointer event.
-  ui::test::EventGenerator menu_event_generator(menu);
-  menu_event_generator.set_current_location(menu->GetBoundsInScreen().origin());
-  menu_event_generator.PressLeftButton();
-
-  // Check that the window and the app list are still open.
-  ASSERT_EQ(window, presenter->GetWindow());
-  EXPECT_EQ(1u, wm::GetTransientChildren(transient_parent).size());
-}
+// TODO(crbug.com/759779, crbug.com/819386): Add back
+// |ClickingContextMenuDoesNotDismiss|.
 
 // Test AppListControllerDelegateAsh::IsAppOpen for extension apps.
 IN_PROC_BROWSER_TEST_F(AppListControllerDelegateAshTest, IsExtensionAppOpen) {
