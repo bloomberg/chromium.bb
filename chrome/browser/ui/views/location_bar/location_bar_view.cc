@@ -126,11 +126,18 @@ bool InTouchableMode() {
 }
 
 OmniboxTint GetTintForProfile(Profile* profile) {
-  if (ThemeServiceFactory::GetForProfile(profile)->UsingDefaultTheme()) {
+  ThemeService* theme_service = ThemeServiceFactory::GetForProfile(profile);
+  if (theme_service->UsingDefaultTheme()) {
     return profile->GetProfileType() == Profile::INCOGNITO_PROFILE
                ? OmniboxTint::DARK
                : OmniboxTint::LIGHT;
   }
+
+  // Check for GTK on Desktop Linux.
+  if (theme_service->IsSystemThemeDistinctFromDefaultTheme() &&
+      theme_service->UsingSystemTheme())
+    return OmniboxTint::NATIVE;
+
   // TODO(tapted): Infer a tint from theme colors?
   return OmniboxTint::LIGHT;
 }

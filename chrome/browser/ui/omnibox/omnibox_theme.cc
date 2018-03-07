@@ -14,6 +14,10 @@
 #include "ui/native_theme/native_theme_dark_aura.h"
 #endif
 
+#if defined(USE_X11)
+#include "ui/views/linux_ui/linux_ui.h"
+#endif
+
 namespace {
 
 constexpr ui::NativeTheme::ColorId kInvalidColorId =
@@ -53,11 +57,18 @@ ui::NativeTheme::ColorId GetLegacyColorId(OmniboxPart part,
 }
 
 SkColor GetLegacyColor(OmniboxPart part, OmniboxTint tint, OmniboxState state) {
-  ui::NativeTheme* native_theme = ui::NativeTheme::GetInstanceForNativeUi();
+  ui::NativeTheme* native_theme = nullptr;
 #if defined(USE_AURA)
   if (tint == OmniboxTint::DARK)
     native_theme = ui::NativeThemeDarkAura::instance();
 #endif
+#if defined(USE_X11)
+  // Note: passing null to GetNativeTheme() always returns the native GTK theme.
+  if (tint == OmniboxTint::NATIVE && views::LinuxUI::instance())
+    native_theme = views::LinuxUI::instance()->GetNativeTheme(nullptr);
+#endif
+  if (!native_theme)
+    native_theme = ui::NativeTheme::GetInstanceForNativeUi();
 
   ui::NativeTheme::ColorId color_id = GetLegacyColorId(part, state);
   return color_id == kInvalidColorId ? gfx::kPlaceholderColor
@@ -72,6 +83,8 @@ SkColor GetOmniboxColor(OmniboxPart part,
   if (!ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
     return GetLegacyColor(part, tint, state);
 
+  // Note this will use LIGHT for OmniboxTint::NATIVE.
+  // TODO(https://crbug.com/819452): Determine the role GTK should play in this.
   const bool dark = tint == OmniboxTint::DARK;
 
   switch (part) {

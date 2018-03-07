@@ -12,8 +12,9 @@ enum class OmniboxPart {
   RESULTS_BACKGROUND,  // Background of the results dropdown.
 };
 
-// The tint of the omnibox theme. E.g. Incognito may use a DARK tint.
-enum class OmniboxTint { DARK, LIGHT };
+// The tint of the omnibox theme. E.g. Incognito may use a DARK tint. NATIVE is
+// only used on Desktop Linux.
+enum class OmniboxTint { DARK, LIGHT, NATIVE };
 
 // An optional state for a given |OmniboxPart|.
 enum class OmniboxState { NORMAL, HOVERED, SELECTED, HOVERED_AND_SELECTED };
