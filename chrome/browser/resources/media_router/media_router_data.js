@@ -229,7 +229,6 @@ cr.define('media_router', function() {
 
   /**
    * @param {string} title The title of the route.
-   * @param {string} description A description for the route.
    * @param {boolean} canPlayPause Whether the route can be played/paused.
    * @param {boolean} canMute Whether the route can be muted/unmuted.
    * @param {boolean} canSetVolume Whether the route volume can be changed.
@@ -249,17 +248,14 @@ cr.define('media_router', function() {
    * @struct
    */
   var RouteStatus = function(
-      title = '', description = '', canPlayPause = false, canMute = false,
-      canSetVolume = false, canSeek = false,
-      playState = media_router.PlayState.PLAYING, isPaused = false,
-      isMuted = false, volume = 0, duration = 0, currentTime = 0,
-      hangoutsExtraData = undefined, mirroringExtraData = undefined) {
+      title = '', canPlayPause = false, canMute = false, canSetVolume = false,
+      canSeek = false, playState = media_router.PlayState.PLAYING,
+      isPaused = false, isMuted = false, volume = 0, duration = 0,
+      currentTime = 0, hangoutsExtraData = undefined,
+      mirroringExtraData = undefined) {
 
     /** @type {string} */
     this.title = title;
-
-    /** @type {string} */
-    this.description = description;
 
     /** @type {boolean} */
     this.canPlayPause = canPlayPause;

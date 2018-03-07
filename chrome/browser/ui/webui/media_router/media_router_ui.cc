@@ -1077,7 +1077,9 @@ void MediaRouterUI::OnUIInitialDataReceived() {
 }
 
 void MediaRouterUI::UpdateMaxDialogHeight(int height) {
-  handler_->UpdateMaxDialogHeight(height);
+  if (ui_initialized_) {
+    handler_->UpdateMaxDialogHeight(height);
+  }
 }
 
 MediaRouteController* MediaRouterUI::GetMediaRouteController() const {

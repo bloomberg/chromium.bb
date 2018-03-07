@@ -6,8 +6,9 @@
   <link rel="import" type="css" href="../../media_router_common.css">
   <link rel="import" type="css" href="route_details.css">
   <template>
-    <div class="ellipsis" id="route-description" title="[[routeDescription_]]"
-        hidden$="[[shouldShowWebUiControls_(route)]]">
+    <div class="ellipsis" id="route-description"
+         title="[[routeDescription_]]"
+         hidden$="[[shouldShowWebUiControls_(route)]]">
       [[routeDescription_]]
     </div>
     <template is="dom-if" if="[[shouldShowWebUiControls_(route)]]">

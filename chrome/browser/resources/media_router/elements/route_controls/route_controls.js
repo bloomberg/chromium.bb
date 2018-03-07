@@ -166,6 +166,15 @@ Polymer({
       type: Number,
       value: 0,
     },
+
+    /**
+     * Whether the controls should show the media title.
+     * @private {boolean}
+     */
+    shouldShowRouteStatusTitle_: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   behaviors: [
@@ -370,9 +379,6 @@ Polymer({
     if (this.shouldAcceptVolumeUpdates_()) {
       this.displayedVolume_ = Math.round(newRouteStatus.volume * 100) / 100;
     }
-    if (newRouteStatus.description !== '') {
-      this.routeDescription_ = newRouteStatus.description;
-    }
     if (!this.initialLoadTime_) {
       this.initialLoadTime_ = Date.now();
       media_router.browserApi.reportWebUIRouteControllerLoaded(
@@ -395,6 +401,9 @@ Polymer({
           this.FullscreenVideoOption_.REMOTE_SCREEN :
           this.FullscreenVideoOption_.BOTH_SCREENS;
     }
+    this.shouldShowRouteStatusTitle_ = newRouteStatus.title &&
+        newRouteStatus.title != '' &&
+        newRouteStatus.title != this.routeDescription_;
   },
 
   /**
@@ -407,7 +416,7 @@ Polymer({
     if (!route) {
       this.stopIncrementingCurrentTime_();
     }
-    if (route && this.routeStatus.description === '') {
+    if (route) {
       this.routeDescription_ = route.description;
     }
   },
