@@ -692,8 +692,8 @@ struct F2DOT14 : HBINT16
 /* 32-bit signed fixed-point number (16.16). */
 struct Fixed: HBINT32
 {
-  //inline float to_float (void) const { return ???; }
-  //inline void set_float (float f) { v.set (f * ???); }
+  inline float to_float (void) const { return ((int32_t) v) / 65536.0; }
+  inline void set_float (float f) { v.set (round (f * 65536.0)); }
   public:
   DEFINE_SIZE_STATIC (4);
 };
@@ -740,8 +740,6 @@ template <typename Type>
 struct Offset : Type
 {
   inline bool is_null (void) const { return 0 == *this; }
-  public:
-  DEFINE_SIZE_STATIC (sizeof(Type));
 
   inline void *serialize (hb_serialize_context_t *c, const void *base)
   {
@@ -749,6 +747,9 @@ struct Offset : Type
     this->set ((char *) t - (char *) base); /* TODO(serialize) Overflow? */
     return t;
   }
+
+  public:
+  DEFINE_SIZE_STATIC (sizeof(Type));
 };
 
 typedef Offset<HBUINT16> Offset16;
@@ -762,7 +763,8 @@ struct CheckSum : HBUINT32
   static inline uint32_t CalcTableChecksum (const HBUINT32 *Table, uint32_t Length)
   {
     uint32_t Sum = 0L;
-    const HBUINT32 *EndPtr = Table+((Length+3) & ~3) / HBUINT32::static_size;
+    assert (0 == (Length & 3));
+    const HBUINT32 *EndPtr = Table + Length / HBUINT32::static_size;
 
     while (Table < EndPtr)
       Sum += *Table++;
@@ -1113,7 +1115,9 @@ struct BinSearchHeader
     assert (len == v);
     entrySelectorZ.set (MAX (1u, _hb_bit_storage (v)) - 1);
     searchRangeZ.set (16 * (1u << entrySelectorZ));
-    rangeShiftZ.set (16 * MAX (0, (int) v - searchRangeZ));
+    rangeShiftZ.set (v * 16 > searchRangeZ
+                     ? 16 * v - searchRangeZ
+                     : 0);
   }
 
   protected:
