@@ -7,7 +7,7 @@ can be found in the [CanIUse] entry.
 Encoding video uses hardware accelerated capabilities where possible: check
 [Encode Accelerator Implementation Status] for the current situation.
 
-[W3C MediaStream Recording API]: https://w3c.github.io/mediacapture-record/MediaRecorder.html
+[W3C MediaStream Recording API]: https://w3c.github.io/mediacapture-record/
 [CanIUse]: http://caniuse.com/#feat=mediarecorder
 [Encode Accelerator Implementation Status]: https://github.com/yellowdoge/mediacapture-record-implementation-status/blob/master/chromium.md
 
@@ -48,7 +48,7 @@ cadence specified by the `timeslice`. If `timeslice` is unspecified, the buffer
 can be flushed using `requestData()` or `stop()`.  `event.data` contains the
 recorded `Blob`.
 
-[`MediaRecorderOptions`]: https://w3c.github.io/mediacapture-record/MediaRecorder.html#mediarecorderoptions-section
+[`MediaRecorderOptions`]: https://w3c.github.io/mediacapture-record/#mediarecorderoptions-section
 [isTypeSupported()]: https://chromium.googlesource.com/chromium/src/+/master/third_party/WebKit/LayoutTests/fast/mediarecorder/MediaRecorder-isTypeSupported.html
 
 ## Implementation in Chromium
@@ -61,8 +61,8 @@ the necessary resources to get the job done.  All this is illustrated in the
 [diagram] below.
 
 
-[MediaRecorder class]: https://w3c.github.io/mediacapture-record/MediaRecorder.html#mediarecorder-api
-[`MediaRecorder()`]: (https://w3c.github.io/mediacapture-record/MediaRecorder.html#mediarecorder-constructor)
+[MediaRecorder class]: https://w3c.github.io/mediacapture-record/#mediarecorder-api
+[`MediaRecorder()`]: (https://w3c.github.io/mediacapture-record/#mediarecorder-constructor)
 [`MediaRecorderHandler`]: (https://chromium.googlesource.com/chromium/src/+/master/content/renderer/media_recorder/media_recorder_handler.h)
 [`VideoTrackRecorder`]: https://chromium.googlesource.com/chromium/src/+/master/content/renderer/media_recorder/video_track_recorder.h
 [diagram]: http://ibb.co/mLK4Y5

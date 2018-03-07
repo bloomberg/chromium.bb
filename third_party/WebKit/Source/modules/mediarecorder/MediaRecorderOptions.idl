@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://w3c.github.io/mediacapture-record/MediaRecorder.html#MediaRecorderOptions
+// https://w3c.github.io/mediacapture-record/#mediarecorderoptions-section
 
 dictionary MediaRecorderOptions {
     DOMString mimeType;  // Encoding mimeType.

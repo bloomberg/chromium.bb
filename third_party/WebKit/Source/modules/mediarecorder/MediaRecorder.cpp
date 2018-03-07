@@ -298,7 +298,7 @@ bool MediaRecorder::isTypeSupported(ExecutionContext* context,
   // MediaRecorder implementation is capable of recording Blob objects for the
   // specified MIME type. Recording may still fail if sufficient resources are
   // not available to support the concrete media encoding.
-  // [1] https://w3c.github.io/mediacapture-record/MediaRecorder.html#methods
+  // https://w3c.github.io/mediacapture-record/#dom-mediarecorder-istypesupported
   ContentType content_type(type);
   return handler->CanSupportMimeType(content_type.GetType(),
                                      content_type.Parameter("codecs"));
