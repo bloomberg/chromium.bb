@@ -24,12 +24,11 @@ class DisplayProvider {
 
   // Creates a new Display for |surface_handle| with |frame_sink_id|. Will
   // also create BeginFrameSource and return it in |begin_frame_source|.
-  // If |force_software_compositing| is true, then the resulting display
-  // compositor will not use Gpu acceleration even if it would by default.
+  // Will return null if creating a Display failed.
   virtual std::unique_ptr<Display> CreateDisplay(
       const FrameSinkId& frame_sink_id,
       gpu::SurfaceHandle surface_handle,
-      bool force_software_compositing,
+      bool gpu_compositing,
       ExternalBeginFrameControllerImpl* external_begin_frame_controller,
       const RendererSettings& renderer_settings,
       std::unique_ptr<SyntheticBeginFrameSource>* out_begin_frame_source) = 0;

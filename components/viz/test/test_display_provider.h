@@ -13,7 +13,7 @@
 
 namespace viz {
 
-// Test implementation that creates a Display with a GL FakeOutputSurface.
+// Test implementation that creates a Display with a FakeOutputSurface.
 class TestDisplayProvider : public DisplayProvider {
  public:
   TestDisplayProvider();
@@ -23,7 +23,7 @@ class TestDisplayProvider : public DisplayProvider {
   std::unique_ptr<Display> CreateDisplay(
       const FrameSinkId& frame_sink_id,
       gpu::SurfaceHandle surface_handle,
-      bool force_software_compositing,
+      bool gpu_compositing,
       ExternalBeginFrameControllerImpl* external_begin_frame_controller,
       const RendererSettings& renderer_settings,
       std::unique_ptr<SyntheticBeginFrameSource>* out_begin_frame_source)
