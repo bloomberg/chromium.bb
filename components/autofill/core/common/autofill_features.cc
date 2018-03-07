@@ -15,7 +15,7 @@ const base::Feature kAutofillAddressNormalizer{
 // Controls whether the Autofill credit card dropdown shows Google Pay icon.
 const base::Feature kAutofillCreditCardDropdownGooglePayBranding{
     "AutofillCreditCardDropdownGooglePayBranding",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether or not a minimum number of fields is required before
 // heuristic field type prediction is run for a form.
@@ -55,11 +55,11 @@ const base::Feature kAutofillSkipComparingInferredLabels{
 // Controls whether the credit card upload bubble shows the Google Pay logo and
 // a shorter "Save card?" header message.
 const base::Feature kAutofillUpstreamUseGooglePayBranding{
-    "AutofillUpstreamUseGooglePayBranding", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AutofillUpstreamUseGooglePayBranding", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether to show new settings name in Autofill dropdown.
 const base::Feature kAutofillUseNewSettingsNameInDropdown{
-    "AutofillUseNewSettingsNameInDropdown", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AutofillUseNewSettingsNameInDropdown", base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace autofill
