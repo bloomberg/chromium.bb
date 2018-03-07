@@ -14,6 +14,7 @@
 #include <utility>
 
 #include "base/cfi_buildflags.h"
+#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/protected_memory.h"
 #include "build/build_config.h"
@@ -37,9 +38,7 @@ class UnsanitizedCfiCall {
   UnsanitizedCfiCall(UnsanitizedCfiCall&&) = default;
 
   template <typename... Args>
-#if !defined(COMPILER_MSVC)
-  __attribute__((no_sanitize("cfi-icall")))
-#endif  // !defined(COMPILER_MSVC)
+  NO_SANITIZE("cfi-icall")
   auto operator()(Args&&... args) {
     return function_(std::forward<Args>(args)...);
   }

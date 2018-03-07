@@ -18,27 +18,23 @@
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
 #include "base/posix/eintr_wrapper.h"
+#include "base/process/process_metrics.h"
 #include "base/synchronization/lock.h"
 #include "build/build_config.h"
 
 namespace base {
 
-#if !defined(COMPONENT_BUILD)
-PROTECTED_MEMORY_SECTION int AutoWritableMemory::writers = 0;
-#endif  // !defined(COMPONENT_BUILD)
+namespace {
 
-base::LazyInstance<Lock>::Leaky AutoWritableMemory::writers_lock =
-    LAZY_INSTANCE_INITIALIZER;
-
-static uintptr_t page_mask() {
-  return ~(static_cast<uintptr_t>(getpagesize()) - 1);
-}
-
-static bool SetMemory(void* start, void* end, int prot) {
-  const uintptr_t page_start = reinterpret_cast<uintptr_t>(start) & page_mask();
+bool SetMemory(void* start, void* end, int prot) {
+  DCHECK(end > start);
+  const uintptr_t page_mask = ~(base::GetPageSize() - 1);
+  const uintptr_t page_start = reinterpret_cast<uintptr_t>(start) & page_mask;
   return mprotect(reinterpret_cast<void*>(page_start),
                   reinterpret_cast<uintptr_t>(end) - page_start, prot) == 0;
 }
+
+}  // namespace
 
 bool AutoWritableMemory::SetMemoryReadWrite(void* start, void* end) {
   return SetMemory(start, end, PROT_READ | PROT_WRITE);
@@ -51,7 +47,8 @@ bool AutoWritableMemory::SetMemoryReadOnly(void* start, void* end) {
 #if defined(OS_LINUX)
 void AssertMemoryIsReadOnly(const void* ptr) {
 #if DCHECK_IS_ON()
-  const uintptr_t page_start = reinterpret_cast<uintptr_t>(ptr) & page_mask();
+  const uintptr_t page_mask = ~(base::GetPageSize() - 1);
+  const uintptr_t page_start = reinterpret_cast<uintptr_t>(ptr) & page_mask;
 
   // Note: We've casted away const here, which should not be meaningful since
   // if the memory is written to we will abort immediately.
