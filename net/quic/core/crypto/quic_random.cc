@@ -8,6 +8,7 @@
 #include "base/memory/singleton.h"
 #include "crypto/random.h"
 #include "net/quic/platform/api/quic_bug_tracker.h"
+#include "net/quic/platform/api/quic_singleton.h"
 
 namespace net {
 
@@ -26,12 +27,12 @@ class DefaultRandom : public QuicRandom {
   DefaultRandom() {}
   ~DefaultRandom() override {}
 
-  friend struct base::DefaultSingletonTraits<DefaultRandom>;
+  friend QuicSingletonFriend<DefaultRandom>;
   DISALLOW_COPY_AND_ASSIGN(DefaultRandom);
 };
 
 DefaultRandom* DefaultRandom::GetInstance() {
-  return base::Singleton<DefaultRandom>::get();
+  return QuicSingleton<DefaultRandom>::get();
 }
 
 void DefaultRandom::RandBytes(void* data, size_t len) {

@@ -10,6 +10,7 @@
 #include "base/memory/singleton.h"
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/platform/api/quic_arraysize.h"
+#include "net/quic/platform/api/quic_singleton.h"
 
 namespace net {
 
@@ -143,14 +144,14 @@ class CommonCertSetsQUIC : public CommonCertSets {
   }
 
   static CommonCertSetsQUIC* GetInstance() {
-    return base::Singleton<CommonCertSetsQUIC>::get();
+    return QuicSingleton<CommonCertSetsQUIC>::get();
   }
 
  private:
   CommonCertSetsQUIC() {}
   ~CommonCertSetsQUIC() override {}
 
-  friend struct base::DefaultSingletonTraits<CommonCertSetsQUIC>;
+  friend QuicSingletonFriend<CommonCertSetsQUIC>;
   DISALLOW_COPY_AND_ASSIGN(CommonCertSetsQUIC);
 };
 
