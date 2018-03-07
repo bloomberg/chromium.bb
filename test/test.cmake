@@ -301,6 +301,12 @@ if (NOT BUILD_SHARED_LIBS)
         "${AOM_ROOT}/test/superframe_test.cc"
         "${AOM_ROOT}/test/tile_independence_test.cc")
 
+  if (CONFIG_SPATIAL_SEGMENTATION)
+    set(AOM_UNIT_TEST_COMMON_SOURCES
+        ${AOM_UNIT_TEST_COMMON_SOURCES}
+        "${AOM_ROOT}/test/segment_binarization_sync.cc")
+  endif ()
+
     set(AOM_UNIT_TEST_COMMON_SOURCES
         ${AOM_UNIT_TEST_COMMON_SOURCES}
         "${AOM_ROOT}/test/binary_codes_test.cc"

@@ -255,7 +255,7 @@ static PREDICTION_MODE read_inter_compound_mode(MACROBLOCKD *xd, aom_reader *r,
 }
 
 #if CONFIG_SPATIAL_SEGMENTATION
-static int neg_deinterleave(int diff, int ref, int max) {
+int av1_neg_deinterleave(int diff, int ref, int max) {
   if (!ref) return diff;
   if (ref >= (max - 1)) return max - diff - 1;
   if (2 * ref < max) {
@@ -306,7 +306,8 @@ static int read_segment_id(AV1_COMMON *const cm, MACROBLOCKD *const xd,
   aom_cdf_prob *pred_cdf = segp->spatial_pred_seg_cdf[cdf_num];
   int coded_id = aom_read_symbol(r, pred_cdf, 8, ACCT_STR);
 
-  int segment_id = neg_deinterleave(coded_id, pred, seg->last_active_segid + 1);
+  int segment_id =
+      av1_neg_deinterleave(coded_id, pred, seg->last_active_segid + 1);
 
   if (segment_id < 0 || segment_id > seg->last_active_segid) {
     aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,

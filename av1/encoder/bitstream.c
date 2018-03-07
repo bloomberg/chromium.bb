@@ -426,7 +426,7 @@ static INLINE void set_spatial_segment_id(const AV1_COMMON *const cm,
       segment_ids[mi_offset + y * cm->mi_cols + x] = segment_id;
 }
 
-static int neg_interleave(int x, int ref, int max) {
+int av1_neg_interleave(int x, int ref, int max) {
   const int diff = x - ref;
   if (!ref) return x;
   if (ref >= (max - 1)) return -x + max - 1;
@@ -487,7 +487,7 @@ static void write_segment_id(AV1_COMP *cpi, const MB_MODE_INFO *const mbmi,
   }
 
   int coded_id =
-      neg_interleave(mbmi->segment_id, pred, seg->last_active_segid + 1);
+      av1_neg_interleave(mbmi->segment_id, pred, seg->last_active_segid + 1);
 
   aom_cdf_prob *pred_cdf = segp->spatial_pred_seg_cdf[cdf_num];
   aom_write_symbol(w, coded_id, pred_cdf, 8);
