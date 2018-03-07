@@ -29,20 +29,10 @@ class FilePath;
 namespace media {
 
 // Manages all CDM host files.
-
-// TODO(xhwang): Remove all functions suffixed with "WithAdapter" after CDM
-// adapter is deprecated.
-
 class MEDIA_EXPORT CdmHostFiles {
  public:
   CdmHostFiles();
   ~CdmHostFiles();
-
-  // Opens all common files and CDM specific files for the CDM adapter
-  // registered at |cdm_adapter_path|.
-  void InitializeWithAdapter(
-      const base::FilePath& cdm_adapter_path,
-      const std::vector<CdmHostFilePath>& cdm_host_file_paths);
 
   // Opens all common files and CDM specific files for the CDM at |cdm_path|.
   void Initialize(const base::FilePath& cdm_path,
@@ -63,9 +53,7 @@ class MEDIA_EXPORT CdmHostFiles {
   // by the CDM. If unexpected error happens, all files will be closed.
   // Otherwise, the PlatformFiles are passed to the CDM which will close the
   // files later.
-  // NOTE: Initialize*() must be called before calling this.
-  Status InitVerificationWithAdapter(base::NativeLibrary cdm_adapter_library,
-                                     const base::FilePath& cdm_adapter_path);
+  // NOTE: Initialize() must be called before calling this.
   Status InitVerification(base::NativeLibrary cdm_library);
 
   void CloseAllFiles();
@@ -73,9 +61,6 @@ class MEDIA_EXPORT CdmHostFiles {
  private:
   // Opens common CDM host files shared by all CDMs.
   void OpenCommonFiles(const std::vector<CdmHostFilePath>& cdm_host_file_paths);
-
-  // Opens the CDM file and the CDM adapter file.
-  void OpenCdmFileWithAdapter(const base::FilePath& cdm_adapter_path);
 
   // Opens the CDM file.
   void OpenCdmFile(const base::FilePath& cdm_path);
@@ -89,16 +74,11 @@ class MEDIA_EXPORT CdmHostFiles {
   // Files common to all CDM types, e.g. main executable.
   ScopedFileVector common_files_;
 
-  // Files specific to each CDM type. When the CDM is hosted by a CDM adapter,
-  // this includes both the CDM adapter and the CDM. Otherwise, this only
-  // includes the CDM.
+  // Files specific to each CDM type, e.g. the CDM binary.
   ScopedFileVector cdm_specific_files_;
 
   DISALLOW_COPY_AND_ASSIGN(CdmHostFiles);
 };
-
-// Returns whether the |cdm_adapter_path| corresponds to a known CDM.
-bool MEDIA_EXPORT IsCdm(const base::FilePath& cdm_adapter_path);
 
 }  // namespace media
 
