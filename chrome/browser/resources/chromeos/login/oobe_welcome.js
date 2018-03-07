@@ -126,6 +126,8 @@ Polymer({
           loadTimeData.getString('networkListItemConnectingTo'),
       networkListItemInitializing:
           loadTimeData.getString('networkListItemInitializing'),
+      networkListItemScanning:
+          loadTimeData.getString('networkListItemScanning'),
       networkListItemNotConnected:
           loadTimeData.getString('networkListItemNotConnected'),
       networkListItemNoNetwork:

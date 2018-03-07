@@ -149,6 +149,8 @@ Polymer({
     this.cellularDeviceState_ = deviceStates.find(function(device) {
       return device.Type == CrOnc.Type.CELLULAR;
     });
+    if (this.cellularDeviceState_)
+      this.ensureCellularNetwork_(networkStates);
     this.networkStateList_ = networkStates;
     var defaultNetwork;
     if (networkStates.length > 0) {
@@ -174,6 +176,30 @@ Polymer({
         /** @type {!CrOnc.NetworkStateProperties|undefined} */ (
             Object.assign({}, defaultNetwork));
     this.fire('default-network-changed', defaultNetwork);
+  },
+
+  /**
+   * Modifies |networkStates| to include a cellular network if none exists.
+   * @param {!Array<!CrOnc.NetworkStateProperties>} networkStates
+   * @private
+   */
+  ensureCellularNetwork_: function(networkStates) {
+    if (networkStates.find(function(network) {
+          return network.Type == CrOnc.Type.CELLULAR;
+        })) {
+      return;
+    }
+    // Add a Cellular network after the Ethernet network if it exists.
+    var idx = networkStates.length > 0 &&
+            networkStates[0].Type == CrOnc.Type.ETHERNET ?
+        1 :
+        0;
+    var cellular = {
+      GUID: '',
+      Type: CrOnc.Type.CELLULAR,
+      Cellular: {Scanning: this.cellularDeviceState_.Scanning}
+    };
+    networkStates.splice(idx, 0, cellular);
   },
 
   /**

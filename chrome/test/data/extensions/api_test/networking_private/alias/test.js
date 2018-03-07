@@ -44,7 +44,12 @@ chrome.test.runTests([
                 ModelID:"test_model_id",
                 NetworkTechnology: 'GSM',
                 RoamingState: 'Home',
-                SIMLockStatus: {LockEnabled: true, LockType: '', RetriesLeft: 3}
+                SIMLockStatus: {
+                  LockEnabled: true,
+                  LockType: '',
+                  RetriesLeft: 3,
+                },
+                Scanning: false,
               },
               ConnectionState: 'NotConnected',
               GUID: 'stub_cellular1_guid',
