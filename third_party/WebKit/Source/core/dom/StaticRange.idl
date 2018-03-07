@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://garykac.github.io/staticrange/#interface-staticrange
+// https://w3c.github.io/staticrange/#interface-staticrange
 
 interface StaticRange {
     readonly attribute Node startContainer;
