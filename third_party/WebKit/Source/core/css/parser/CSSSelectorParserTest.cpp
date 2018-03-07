@@ -571,6 +571,25 @@ TEST(CSSSelectorParserTest, ASCIILowerHTMLQuirks) {
   }
 }
 
+TEST(CSSSelectorParserTest, ShadowPartPseudoElementValid) {
+  const char* test_cases[] = {"::part(ident)",
+                              "host::part(ident)",
+                              "host::part(ident):hover"};
+
+  for (auto test_case : test_cases) {
+    SCOPED_TRACE(test_case);
+    CSSTokenizer tokenizer(test_case);
+    const auto tokens = tokenizer.TokenizeToEOF();
+    CSSParserTokenRange range(tokens);
+    CSSSelectorList list = CSSSelectorParser::ParseSelector(
+        range,
+        CSSParserContext::Create(kHTMLStandardMode,
+                                 SecureContextMode::kInsecureContext),
+        nullptr);
+    EXPECT_STREQ(test_case, list.SelectorsText().Ascii().data());
+  }
+}
+
 TEST(CSSSelectorParserTest, UseCountShadowPseudo) {
   std::unique_ptr<DummyPageHolder> dummy_holder =
       DummyPageHolder::Create(IntSize(500, 500));
