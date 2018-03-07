@@ -207,6 +207,7 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
       horizontal_scrollbar_mode_(kScrollbarAuto),
       vertical_scrollbar_mode_(kScrollbarAuto),
       scrollbars_suppressed_(false),
+      root_layer_did_scroll_(false),
       in_update_scrollbars_(false),
       frame_timing_requests_dirty_(true),
       hidden_for_throttling_(false),
@@ -1715,6 +1716,12 @@ bool LocalFrameView::ShouldSetCursor() const {
          page->VisibilityState() != mojom::PageVisibilityState::kHidden &&
          !frame_->GetEventHandler().IsMousePositionUnknown() &&
          page->GetFocusController().IsActive();
+}
+
+void LocalFrameView::NotifyFrameRectsChangedIfNeededRecursive() {
+  ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
+    frame_view.NotifyFrameRectsChangedIfNeeded();
+  });
 }
 
 void LocalFrameView::ScrollContentsIfNeededRecursive() {
@@ -3255,7 +3262,11 @@ bool LocalFrameView::UpdateLifecyclePhasesInternal(
       }
 
       if (target_state >= DocumentLifecycle::kCompositingClean) {
-        ScrollContentsIfNeededRecursive();
+        if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
+          NotifyFrameRectsChangedIfNeededRecursive();
+        } else {
+          ScrollContentsIfNeededRecursive();
+        }
 
         frame_->GetPage()->GlobalRootScrollerController().DidUpdateCompositing(
             *this);
@@ -4739,6 +4750,13 @@ void LocalFrameView::ScrollRectToVisibleInRemoteParent(
       WebRect(new_rect.X().ToInt(), new_rect.Y().ToInt(),
               new_rect.Width().ToInt(), new_rect.Height().ToInt()),
       params);
+}
+
+void LocalFrameView::NotifyFrameRectsChangedIfNeeded() {
+  if (root_layer_did_scroll_) {
+    root_layer_did_scroll_ = false;
+    FrameRectsChanged();
+  }
 }
 
 void LocalFrameView::ScrollContentsIfNeeded() {

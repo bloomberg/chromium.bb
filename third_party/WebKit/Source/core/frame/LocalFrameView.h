@@ -616,6 +616,9 @@ class CORE_EXPORT LocalFrameView final
   }
   bool ScrollbarsSuppressed() const { return scrollbars_suppressed_; }
 
+  // Indicates the root layer's scroll offset changed since the last frame
+  void SetRootLayerDidScroll() { root_layer_did_scroll_ = true; }
+
   // Methods for converting between this frame and other coordinate spaces.
   // For definitions and an explanation of the varous spaces, please see:
   // http://www.chromium.org/developers/design-documents/blink-coordinate-spaces
@@ -964,6 +967,7 @@ class CORE_EXPORT LocalFrameView final
   ScrollBehavior ScrollBehaviorStyle() const override;
 
   void ScrollContentsIfNeeded();
+  void NotifyFrameRectsChangedIfNeeded();
 
   enum ComputeScrollbarExistenceOption { kFirstPass, kIncremental };
   void ComputeScrollbarExistence(bool& new_has_horizontal_scrollbar,
@@ -1031,6 +1035,7 @@ class CORE_EXPORT LocalFrameView final
       DocumentLifecycle::LifecycleState target_state);
 
   void ScrollContentsIfNeededRecursive();
+  void NotifyFrameRectsChangedIfNeededRecursive();
   void UpdateStyleAndLayoutIfNeededRecursive();
   void PrePaint();
   void PaintTree();
@@ -1247,7 +1252,7 @@ class CORE_EXPORT LocalFrameView final
   IntSize layout_overflow_size_;
 
   bool scrollbars_suppressed_;
-
+  bool root_layer_did_scroll_;
   bool in_update_scrollbars_;
 
   std::unique_ptr<LayoutAnalyzer> analyzer_;
