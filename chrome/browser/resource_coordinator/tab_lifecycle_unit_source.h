@@ -53,6 +53,7 @@ class TabLifecycleUnitSource : public BrowserListObserver,
   friend class TabLifecycleUnitTest;
 
   class TabLifecycleUnit;
+  class TabLifecycleUnitWebContentsObserver;
 
   // Returns the TabStripModel of the focused browser window, if any.
   TabStripModel* GetFocusedTabStripModel() const;
@@ -71,9 +72,6 @@ class TabLifecycleUnitSource : public BrowserListObserver,
                      content::WebContents* contents,
                      int index,
                      bool foreground) override;
-  void TabClosingAt(TabStripModel* tab_strip_model,
-                    content::WebContents* contents,
-                    int index) override;
   void ActiveTabChanged(content::WebContents* old_contents,
                         content::WebContents* new_contents,
                         int index,
@@ -89,6 +87,8 @@ class TabLifecycleUnitSource : public BrowserListObserver,
   // BrowserListObserver:
   void OnBrowserSetLastActive(Browser* browser) override;
   void OnBrowserNoLongerActive(Browser* browser) override;
+
+  void OnWebContentsDestroyed(content::WebContents* contents);
 
   // Tracks the BrowserList and all TabStripModels.
   BrowserTabStripTracker browser_tab_strip_tracker_;
@@ -107,6 +107,12 @@ class TabLifecycleUnitSource : public BrowserListObserver,
   // Observers notified when the discarded or auto-discardable state of a tab
   // changes.
   base::ObserverList<TabLifecycleObserver> tab_lifecycle_observers_;
+
+  // Map from content::WebContents to TabLifecycleUnitWebContentsObserver,
+  // used to track the WebContents destruction.
+  base::flat_map<content::WebContents*,
+                 std::unique_ptr<TabLifecycleUnitWebContentsObserver>>
+      web_contents_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(TabLifecycleUnitSource);
 };
