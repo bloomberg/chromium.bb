@@ -4,6 +4,8 @@
 
 #include "chromecast/media/cma/backend/video_decoder_null.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -12,6 +14,11 @@
 
 namespace chromecast {
 namespace media {
+
+std::unique_ptr<VideoDecoderForMixer> VideoDecoderForMixer::Create(
+    const MediaPipelineDeviceParams& params) {
+  return std::make_unique<VideoDecoderNull>();
+}
 
 VideoDecoderNull::VideoDecoderNull()
     : delegate_(nullptr), weak_factory_(this) {}
@@ -43,6 +50,34 @@ bool VideoDecoderNull::SetConfig(const VideoConfig& config) {
 
 void VideoDecoderNull::OnEndOfStream() {
   delegate_->OnEndOfStream();
+}
+
+void VideoDecoderNull::Initialize() {}
+
+bool VideoDecoderNull::Start(int64_t start_pts, bool need_avsync) {
+  return true;
+}
+
+void VideoDecoderNull::Stop() {}
+
+bool VideoDecoderNull::Pause() {
+  return true;
+}
+
+bool VideoDecoderNull::Resume() {
+  return true;
+}
+
+int64_t VideoDecoderNull::GetCurrentPts() const {
+  return 0;
+}
+
+bool VideoDecoderNull::SetPlaybackRate(float rate) {
+  return true;
+}
+
+bool VideoDecoderNull::SetCurrentPts(int64_t pts) {
+  return true;
 }
 
 }  // namespace media
