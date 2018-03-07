@@ -679,6 +679,8 @@ void MediaRouterIntegrationBrowserTest::RunReconnectSessionTest() {
       "window.domAutomationController.send(reconnectedSession.id)",
       &reconnected_session_id));
   ASSERT_EQ(session_id, reconnected_session_id);
+
+  ExecuteJavaScriptAPI(web_contents, kTerminateSessionScript);
 }
 
 void MediaRouterIntegrationBrowserTest::RunReconnectSessionSameTabTest() {
