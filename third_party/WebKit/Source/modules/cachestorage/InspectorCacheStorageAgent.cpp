@@ -138,28 +138,6 @@ CString CacheStorageErrorString(mojom::CacheStorageError error) {
   return "";
 }
 
-ProtocolResponse GetExecutionContext(InspectedFrames* frames,
-                                     const String& cache_id,
-                                     ExecutionContext** context) {
-  String origin;
-  String id;
-  ProtocolResponse res = ParseCacheId(cache_id, &origin, &id);
-  if (!res.isSuccess())
-    return res;
-
-  LocalFrame* frame = frames->FrameWithSecurityOrigin(origin);
-  if (!frame)
-    return ProtocolResponse::Error("No frame with origin " + origin);
-
-  blink::Document* document = frame->GetDocument();
-  if (!document)
-    return ProtocolResponse::Error("No execution context found");
-
-  *context = document;
-
-  return ProtocolResponse::OK();
-}
-
 class RequestCacheNames
     : public WebServiceWorkerCacheStorage::CacheStorageKeysCallbacks {
   WTF_MAKE_NONCOPYABLE(RequestCacheNames);
@@ -484,10 +462,9 @@ class CachedResponseFileReaderLoaderClient final
   WTF_MAKE_NONCOPYABLE(CachedResponseFileReaderLoaderClient);
 
  public:
-  static void Load(ExecutionContext* context,
-                   scoped_refptr<BlobDataHandle> blob,
+  static void Load(scoped_refptr<BlobDataHandle> blob,
                    std::unique_ptr<RequestCachedResponseCallback> callback) {
-    new CachedResponseFileReaderLoaderClient(context, std::move(blob),
+    new CachedResponseFileReaderLoaderClient(std::move(blob),
                                              std::move(callback));
   }
 
@@ -515,14 +492,13 @@ class CachedResponseFileReaderLoaderClient final
 
  private:
   CachedResponseFileReaderLoaderClient(
-      ExecutionContext* context,
       scoped_refptr<BlobDataHandle>&& blob,
       std::unique_ptr<RequestCachedResponseCallback>&& callback)
       : loader_(
             FileReaderLoader::Create(FileReaderLoader::kReadByClient, this)),
         callback_(std::move(callback)),
         data_(SharedBuffer::Create()) {
-    loader_->Start(context, std::move(blob));
+    loader_->Start(std::move(blob));
   }
 
   ~CachedResponseFileReaderLoaderClient() = default;
@@ -539,10 +515,9 @@ class CachedResponseMatchCallback
   WTF_MAKE_NONCOPYABLE(CachedResponseMatchCallback);
 
  public:
-  CachedResponseMatchCallback(
-      ExecutionContext* context,
+  explicit CachedResponseMatchCallback(
       std::unique_ptr<RequestCachedResponseCallback> callback)
-      : callback_(std::move(callback)), context_(context) {}
+      : callback_(std::move(callback)) {}
 
   void OnSuccess(const WebServiceWorkerResponse& response) override {
     std::unique_ptr<protocol::DictionaryValue> headers =
@@ -553,8 +528,8 @@ class CachedResponseMatchCallback
                                  .build());
       return;
     }
-    CachedResponseFileReaderLoaderClient::Load(
-        context_, response.GetBlobDataHandle(), std::move(callback_));
+    CachedResponseFileReaderLoaderClient::Load(response.GetBlobDataHandle(),
+                                               std::move(callback_));
   }
 
   void OnError(mojom::CacheStorageError error) override {
@@ -565,7 +540,6 @@ class CachedResponseMatchCallback
 
  private:
   std::unique_ptr<RequestCachedResponseCallback> callback_;
-  Persistent<ExecutionContext> context_;
 };
 }  // namespace
 
@@ -671,13 +645,8 @@ void InspectorCacheStorageAgent::requestCachedResponse(
   }
   WebServiceWorkerRequest request;
   request.SetURL(KURL(request_url));
-  ExecutionContext* context = nullptr;
-  response = GetExecutionContext(frames_, cache_id, &context);
-  if (!response.isSuccess())
-    return callback->sendFailure(response);
-
-  cache->DispatchMatch(std::make_unique<CachedResponseMatchCallback>(
-                           context, std::move(callback)),
-                       request, WebServiceWorkerCache::QueryParams());
+  cache->DispatchMatch(
+      std::make_unique<CachedResponseMatchCallback>(std::move(callback)),
+      request, WebServiceWorkerCache::QueryParams());
 }
 }  // namespace blink

@@ -68,33 +68,28 @@ FileReaderSync::FileReaderSync(ExecutionContext* context) {
 }
 
 DOMArrayBuffer* FileReaderSync::readAsArrayBuffer(
-    ScriptState* script_state,
     Blob* blob,
     ExceptionState& exception_state) {
   DCHECK(blob);
 
   std::unique_ptr<FileReaderLoader> loader =
       FileReaderLoader::Create(FileReaderLoader::kReadAsArrayBuffer, nullptr);
-  StartLoading(ExecutionContext::From(script_state), *loader, *blob,
-               exception_state);
+  StartLoading(*loader, *blob, exception_state);
 
   return loader->ArrayBufferResult();
 }
 
-String FileReaderSync::readAsBinaryString(ScriptState* script_state,
-                                          Blob* blob,
+String FileReaderSync::readAsBinaryString(Blob* blob,
                                           ExceptionState& exception_state) {
   DCHECK(blob);
 
   std::unique_ptr<FileReaderLoader> loader =
       FileReaderLoader::Create(FileReaderLoader::kReadAsBinaryString, nullptr);
-  StartLoading(ExecutionContext::From(script_state), *loader, *blob,
-               exception_state);
+  StartLoading(*loader, *blob, exception_state);
   return loader->StringResult();
 }
 
-String FileReaderSync::readAsText(ScriptState* script_state,
-                                  Blob* blob,
+String FileReaderSync::readAsText(Blob* blob,
                                   const String& encoding,
                                   ExceptionState& exception_state) {
   DCHECK(blob);
@@ -102,29 +97,25 @@ String FileReaderSync::readAsText(ScriptState* script_state,
   std::unique_ptr<FileReaderLoader> loader =
       FileReaderLoader::Create(FileReaderLoader::kReadAsText, nullptr);
   loader->SetEncoding(encoding);
-  StartLoading(ExecutionContext::From(script_state), *loader, *blob,
-               exception_state);
+  StartLoading(*loader, *blob, exception_state);
   return loader->StringResult();
 }
 
-String FileReaderSync::readAsDataURL(ScriptState* script_state,
-                                     Blob* blob,
+String FileReaderSync::readAsDataURL(Blob* blob,
                                      ExceptionState& exception_state) {
   DCHECK(blob);
 
   std::unique_ptr<FileReaderLoader> loader =
       FileReaderLoader::Create(FileReaderLoader::kReadAsDataURL, nullptr);
   loader->SetDataType(blob->type());
-  StartLoading(ExecutionContext::From(script_state), *loader, *blob,
-               exception_state);
+  StartLoading(*loader, *blob, exception_state);
   return loader->StringResult();
 }
 
-void FileReaderSync::StartLoading(ExecutionContext* execution_context,
-                                  FileReaderLoader& loader,
+void FileReaderSync::StartLoading(FileReaderLoader& loader,
                                   const Blob& blob,
                                   ExceptionState& exception_state) {
-  loader.Start(execution_context, blob.GetBlobDataHandle());
+  loader.Start(blob.GetBlobDataHandle());
   if (loader.GetErrorCode())
     FileError::ThrowDOMException(exception_state, loader.GetErrorCode());
 }

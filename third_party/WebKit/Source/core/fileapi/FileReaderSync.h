@@ -42,7 +42,6 @@ class DOMArrayBuffer;
 class ExceptionState;
 class ExecutionContext;
 class FileReaderLoader;
-class ScriptState;
 
 class FileReaderSync final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
@@ -52,24 +51,18 @@ class FileReaderSync final : public ScriptWrappable {
     return new FileReaderSync(context);
   }
 
-  DOMArrayBuffer* readAsArrayBuffer(ScriptState*, Blob*, ExceptionState&);
-  String readAsBinaryString(ScriptState*, Blob*, ExceptionState&);
-  String readAsText(ScriptState* script_state, Blob* blob, ExceptionState& ec) {
-    return readAsText(script_state, blob, "", ec);
+  DOMArrayBuffer* readAsArrayBuffer(Blob*, ExceptionState&);
+  String readAsBinaryString(Blob*, ExceptionState&);
+  String readAsText(Blob* blob, ExceptionState& ec) {
+    return readAsText(blob, "", ec);
   }
-  String readAsText(ScriptState*,
-                    Blob*,
-                    const String& encoding,
-                    ExceptionState&);
-  String readAsDataURL(ScriptState*, Blob*, ExceptionState&);
+  String readAsText(Blob*, const String& encoding, ExceptionState&);
+  String readAsDataURL(Blob*, ExceptionState&);
 
  private:
   explicit FileReaderSync(ExecutionContext*);
 
-  void StartLoading(ExecutionContext*,
-                    FileReaderLoader&,
-                    const Blob&,
-                    ExceptionState&);
+  void StartLoading(FileReaderLoader&, const Blob&, ExceptionState&);
 };
 
 }  // namespace blink
