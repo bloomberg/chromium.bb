@@ -88,7 +88,7 @@ void MojoHandle::readMessage(const MojoReadMessageFlags& flags_dict,
     return;
   }
 
-  result = MojoSerializeMessage(message->value());
+  result = MojoSerializeMessage(message->value(), nullptr);
   if (result != MOJO_RESULT_OK && result != MOJO_RESULT_FAILED_PRECONDITION) {
     result_dict.setResult(MOJO_RESULT_ABORTED);
     return;

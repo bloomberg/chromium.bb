@@ -35,13 +35,13 @@ class TestMessageBase {
   static MojoMessageHandle MakeMessageHandle(
       std::unique_ptr<TestMessageBase> message) {
     MojoMessageHandle handle;
-    MojoResult rv = MojoCreateMessage(&handle);
+    MojoResult rv = MojoCreateMessage(nullptr, &handle);
     DCHECK_EQ(MOJO_RESULT_OK, rv);
 
-    rv = MojoAttachMessageContext(
+    rv = MojoSetMessageContext(
         handle, reinterpret_cast<uintptr_t>(message.release()),
         &TestMessageBase::SerializeMessageContext,
-        &TestMessageBase::DestroyMessageContext);
+        &TestMessageBase::DestroyMessageContext, nullptr);
     DCHECK_EQ(MOJO_RESULT_OK, rv);
 
     return handle;
@@ -53,8 +53,9 @@ class TestMessageBase {
     MojoMessageHandle handle = MOJO_HANDLE_INVALID;
     std::swap(handle, *message_handle);
     uintptr_t context;
-    MojoResult rv = MojoGetMessageContext(
-        handle, &context, MOJO_GET_MESSAGE_CONTEXT_FLAG_RELEASE);
+    MojoResult rv = MojoGetMessageContext(handle, nullptr, &context);
+    DCHECK_EQ(MOJO_RESULT_OK, rv);
+    rv = MojoSetMessageContext(handle, 0, nullptr, nullptr, nullptr);
     DCHECK_EQ(MOJO_RESULT_OK, rv);
     MojoDestroyMessage(handle);
     return base::WrapUnique(reinterpret_cast<T*>(context));
@@ -174,13 +175,13 @@ TEST_F(MessageTest, InvalidMessageObjects) {
                                nullptr, nullptr, nullptr));
 
   ASSERT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            MojoSerializeMessage(MOJO_MESSAGE_HANDLE_INVALID));
+            MojoSerializeMessage(MOJO_MESSAGE_HANDLE_INVALID, nullptr));
 
   MojoMessageHandle message_handle;
-  ASSERT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoCreateMessage(nullptr));
-  ASSERT_EQ(MOJO_RESULT_OK, MojoCreateMessage(&message_handle));
-  ASSERT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            MojoAttachMessageContext(message_handle, 0, nullptr, nullptr));
+  ASSERT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoCreateMessage(nullptr, nullptr));
+  ASSERT_EQ(MOJO_RESULT_OK, MojoCreateMessage(nullptr, &message_handle));
+  ASSERT_EQ(MOJO_RESULT_OK, MojoSetMessageContext(message_handle, 0, nullptr,
+                                                  nullptr, nullptr));
   ASSERT_EQ(MOJO_RESULT_OK, MojoDestroyMessage(message_handle));
 }
 
@@ -246,7 +247,7 @@ TEST_F(MessageTest, SerializeSimpleMessageNoHandlesWithContext) {
 TEST_F(MessageTest, SerializeDynamicallySizedMessage) {
   RunTestClient("ReceiveMessageNoHandles", [&](MojoHandle h) {
     MojoMessageHandle message;
-    EXPECT_EQ(MOJO_RESULT_OK, MojoCreateMessage(&message));
+    EXPECT_EQ(MOJO_RESULT_OK, MojoCreateMessage(nullptr, &message));
 
     void* buffer;
     uint32_t buffer_size;
@@ -389,7 +390,7 @@ TEST_F(MessageTest, GetMessageDataWithHandles) {
   CreateMessagePipe(&h[0], &h[1]);
 
   MojoMessageHandle message_handle;
-  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateMessage(&message_handle));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateMessage(nullptr, &message_handle));
 
   MojoAppendMessageDataOptions append_data_options;
   append_data_options.struct_size = sizeof(append_data_options);
@@ -478,8 +479,7 @@ TEST_F(MessageTest, ReadSerializedMessageAsMessageWithContext) {
             MojoReadMessage(b, &message_handle, MOJO_READ_MESSAGE_FLAG_NONE));
   uintptr_t context;
   EXPECT_EQ(MOJO_RESULT_NOT_FOUND,
-            MojoGetMessageContext(message_handle, &context,
-                                  MOJO_GET_MESSAGE_CONTEXT_FLAG_RELEASE));
+            MojoGetMessageContext(message_handle, nullptr, &context));
   MojoClose(a);
   MojoClose(b);
   EXPECT_EQ(MOJO_RESULT_OK, MojoDestroyMessage(message_handle));
@@ -493,7 +493,7 @@ TEST_F(MessageTest, ForceSerializeMessageWithContext) {
       base::Bind([](bool* was_destroyed) { *was_destroyed = true; },
                  &message_was_destroyed));
   auto message_handle = TestMessageBase::MakeMessageHandle(std::move(message));
-  EXPECT_EQ(MOJO_RESULT_OK, MojoSerializeMessage(message_handle));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoSerializeMessage(message_handle, nullptr));
   EXPECT_TRUE(message_was_destroyed);
   EXPECT_EQ(MOJO_RESULT_OK, MojoDestroyMessage(message_handle));
 
@@ -507,7 +507,7 @@ TEST_F(MessageTest, ForceSerializeMessageWithContext) {
   MessagePipe pipe1;
   message->AddMessagePipe(std::move(pipe1.handle0));
   message_handle = TestMessageBase::MakeMessageHandle(std::move(message));
-  EXPECT_EQ(MOJO_RESULT_OK, MojoSerializeMessage(message_handle));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoSerializeMessage(message_handle, nullptr));
   EXPECT_TRUE(message_was_destroyed);
   EXPECT_EQ(MOJO_RESULT_OK, MojoDestroyMessage(message_handle));
   EXPECT_EQ(MOJO_RESULT_OK, WaitForSignals(pipe1.handle1.get().value(),
@@ -522,7 +522,7 @@ TEST_F(MessageTest, ForceSerializeMessageWithContext) {
   MessagePipe pipe2;
   message->AddMessagePipe(std::move(pipe2.handle0));
   message_handle = TestMessageBase::MakeMessageHandle(std::move(message));
-  EXPECT_EQ(MOJO_RESULT_OK, MojoSerializeMessage(message_handle));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoSerializeMessage(message_handle, nullptr));
   EXPECT_TRUE(message_was_destroyed);
   uint32_t num_bytes = 0;
   void* buffer = nullptr;
@@ -560,10 +560,10 @@ TEST_F(MessageTest, DoubleSerialize) {
 
   // Ensure we can safely call |MojoSerializeMessage()| twice on the same
   // message handle.
-  EXPECT_EQ(MOJO_RESULT_OK, MojoSerializeMessage(message_handle));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoSerializeMessage(message_handle, nullptr));
   EXPECT_TRUE(message_was_destroyed);
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-            MojoSerializeMessage(message_handle));
+            MojoSerializeMessage(message_handle, nullptr));
 
   // And also check that we can call it again after we've written and read the
   // message object from a pipe.
@@ -577,14 +577,14 @@ TEST_F(MessageTest, DoubleSerialize) {
             MojoReadMessage(pipe.handle1->value(), &message_handle,
                             MOJO_READ_MESSAGE_FLAG_NONE));
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-            MojoSerializeMessage(message_handle));
+            MojoSerializeMessage(message_handle, nullptr));
 
   EXPECT_EQ(MOJO_RESULT_OK, MojoDestroyMessage(message_handle));
 }
 
 TEST_F(MessageTest, ExtendMessagePayload) {
   MojoMessageHandle message;
-  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateMessage(&message));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateMessage(nullptr, &message));
 
   const std::string kTestMessagePart1("hello i am message.");
   void* buffer;
@@ -640,7 +640,7 @@ TEST_F(MessageTest, ExtendMessagePayload) {
 
 TEST_F(MessageTest, ExtendMessageWithHandlesPayload) {
   MojoMessageHandle message;
-  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateMessage(&message));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateMessage(nullptr, &message));
 
   MojoHandle handles[2];
   CreateMessagePipe(&handles[0], &handles[1]);
@@ -690,7 +690,7 @@ TEST_F(MessageTest, ExtendMessagePayloadLarge) {
   constexpr size_t kTestChunkSizes[] = {1, 2, 3, 64, 509, 4096, 16384, 65535};
   for (const size_t kChunkSize : kTestChunkSizes) {
     MojoMessageHandle message;
-    EXPECT_EQ(MOJO_RESULT_OK, MojoCreateMessage(&message));
+    EXPECT_EQ(MOJO_RESULT_OK, MojoCreateMessage(nullptr, &message));
 
     MojoHandle handles[2];
     CreateMessagePipe(&handles[0], &handles[1]);
@@ -769,7 +769,7 @@ TEST_F(MessageTest, CorrectPayloadBufferBoundaries) {
   MojoMessageHandle message;
   void* buffer = nullptr;
   uint32_t buffer_size = 0;
-  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateMessage(&message));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateMessage(nullptr, &message));
   EXPECT_EQ(MOJO_RESULT_OK,
             MojoAppendMessageData(message, 0, nullptr, 0, nullptr, &buffer,
                                   &buffer_size));
@@ -794,7 +794,7 @@ TEST_F(MessageTest, CommitInvalidMessageContents) {
   // Regression test for https://crbug.com/755127. Ensures that we don't crash
   // if we attempt to commit the contents of an unserialized message.
   MojoMessageHandle message;
-  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateMessage(&message));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateMessage(nullptr, &message));
   EXPECT_EQ(MOJO_RESULT_OK, MojoAppendMessageData(message, 0, nullptr, 0,
                                                   nullptr, nullptr, nullptr));
   MojoHandle a, b;
@@ -831,7 +831,7 @@ TEST_F(MessageTest, ExtendPayloadWithHandlesAttached) {
   MojoMessageHandle message;
   void* buffer = nullptr;
   uint32_t buffer_size = 0;
-  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateMessage(&message));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateMessage(nullptr, &message));
   EXPECT_EQ(MOJO_RESULT_OK,
             MojoAppendMessageData(message, 0, handles, 5, nullptr, &buffer,
                                   &buffer_size));
@@ -881,7 +881,7 @@ TEST_F(MessageTest, ExtendPayloadWithHandlesAttachedViaExtension) {
   MojoMessageHandle message;
   void* buffer = nullptr;
   uint32_t buffer_size = 0;
-  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateMessage(&message));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateMessage(nullptr, &message));
   EXPECT_EQ(MOJO_RESULT_OK,
             MojoAppendMessageData(message, 0, handles, 1, nullptr, &buffer,
                                   &buffer_size));
@@ -926,7 +926,7 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReadMessageAndCheckPipe, MessageTest, h) {
 
 TEST_F(MessageTest, PartiallySerializedMessagesDontLeakHandles) {
   MojoMessageHandle message;
-  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateMessage(&message));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateMessage(nullptr, &message));
 
   MojoHandle handles[2];
   CreateMessagePipe(&handles[0], &handles[1]);

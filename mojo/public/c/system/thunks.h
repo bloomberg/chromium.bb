@@ -86,9 +86,12 @@ struct MojoSystemThunks {
                            MojoResult* ready_results,
                            MojoHandleSignalsState* ready_signals_states);
   MojoResult (*FuseMessagePipes)(MojoHandle handle0, MojoHandle handle1);
-  MojoResult (*CreateMessage)(MojoMessageHandle* message);
+  MojoResult (*CreateMessage)(const struct MojoCreateMessageOptions* options,
+                              MojoMessageHandle* message);
   MojoResult (*DestroyMessage)(MojoMessageHandle message);
-  MojoResult (*SerializeMessage)(MojoMessageHandle message);
+  MojoResult (*SerializeMessage)(
+      MojoMessageHandle message,
+      const struct MojoSerializeMessageOptions* options);
   MojoResult (*AppendMessageData)(
       MojoMessageHandle message,
       uint32_t additional_payload_size,
@@ -103,13 +106,16 @@ struct MojoSystemThunks {
                                uint32_t* num_bytes,
                                MojoHandle* handles,
                                uint32_t* num_handles);
-  MojoResult (*AttachMessageContext)(MojoMessageHandle message,
-                                     uintptr_t context,
-                                     MojoMessageContextSerializer serializer,
-                                     MojoMessageContextDestructor destructor);
-  MojoResult (*GetMessageContext)(MojoMessageHandle message,
-                                  uintptr_t* context,
-                                  MojoGetMessageContextFlags flags);
+  MojoResult (*SetMessageContext)(
+      MojoMessageHandle message,
+      uintptr_t context,
+      MojoMessageContextSerializer serializer,
+      MojoMessageContextDestructor destructor,
+      const struct MojoSetMessageContextOptions* options);
+  MojoResult (*GetMessageContext)(
+      MojoMessageHandle message,
+      const struct MojoGetMessageContextOptions* options,
+      uintptr_t* context);
   MojoResult (*WrapPlatformHandle)(
       const struct MojoPlatformHandle* platform_handle,
       MojoHandle* mojo_handle);

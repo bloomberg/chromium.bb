@@ -146,7 +146,7 @@ static ScopedJavaLocalRef<jobject> JNI_CoreImpl_ReadMessage(
     return Java_CoreImpl_newReadMessageResult(env, result, nullptr, nullptr);
   DCHECK(message.is_valid());
 
-  result = MojoSerializeMessage(message->value());
+  result = MojoSerializeMessage(message->value(), nullptr);
   if (result != MOJO_RESULT_OK && result != MOJO_RESULT_FAILED_PRECONDITION) {
     return Java_CoreImpl_newReadMessageResult(env, MOJO_RESULT_ABORTED, nullptr,
                                               nullptr);

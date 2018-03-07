@@ -98,10 +98,9 @@ TEST(CoreAPITest, BasicMessagePipe) {
 
   // Write to |h1|.
   const uintptr_t kTestMessageContext = 1234;
-  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateMessage(&message));
-  EXPECT_EQ(
-      MOJO_RESULT_OK,
-      MojoAttachMessageContext(message, kTestMessageContext, nullptr, nullptr));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateMessage(nullptr, &message));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoSetMessageContext(message, kTestMessageContext,
+                                                  nullptr, nullptr, nullptr));
   EXPECT_EQ(MOJO_RESULT_OK,
             MojoWriteMessage(h1, message, MOJO_WRITE_MESSAGE_FLAG_NONE));
 
@@ -121,9 +120,9 @@ TEST(CoreAPITest, BasicMessagePipe) {
   EXPECT_EQ(MOJO_RESULT_OK,
             MojoReadMessage(h0, &message, MOJO_READ_MESSAGE_FLAG_NONE));
   uintptr_t context;
+  EXPECT_EQ(MOJO_RESULT_OK, MojoGetMessageContext(message, nullptr, &context));
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoGetMessageContext(message, &context,
-                                  MOJO_GET_MESSAGE_CONTEXT_FLAG_RELEASE));
+            MojoSetMessageContext(message, 0, nullptr, nullptr, nullptr));
   EXPECT_EQ(MOJO_RESULT_OK, MojoDestroyMessage(message));
   EXPECT_EQ(kTestMessageContext, context);
 
