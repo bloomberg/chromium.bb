@@ -511,7 +511,7 @@
     },
 
     # Manually triggered internal builders running on LUCI.
-    'luci.infra-internal.triggered': {
+    'luci.infra-internal.prod': {
       'gn-builder-linux': 'gn_linux_upload',
       'gn-builder-mac': 'release_bot',
       'gn-builder-win': 'release_bot_x86_minimal_symbols',
