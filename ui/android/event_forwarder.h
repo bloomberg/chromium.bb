@@ -71,8 +71,7 @@ class EventForwarder {
                          jfloat x,
                          jfloat y,
                          jfloat ticks_x,
-                         jfloat ticks_y,
-                         jfloat pixels_per_tick);
+                         jfloat ticks_y);
 
   void OnDragEvent(JNIEnv* env,
                    const base::android::JavaParamRef<jobject>& jobj,

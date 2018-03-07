@@ -159,8 +159,6 @@ class ContentViewCore : public WebContentsObserver {
   // Methods called from native code
   // --------------------------------------------------------------------------
 
-  int GetMouseWheelMinimumGranularity() const;
-
   void UpdateCursor(const content::CursorInfo& info);
   void OnTouchDown(const base::android::ScopedJavaLocalRef<jobject>& event);
 

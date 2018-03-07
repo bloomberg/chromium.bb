@@ -20,6 +20,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Process;
 import android.util.SparseArray;
+import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -587,10 +588,28 @@ public class WindowAndroid {
     @CalledByNative
     private long getNativePointer() {
         if (mNativeWindowAndroid == 0) {
-            mNativeWindowAndroid = nativeInit(mDisplayAndroid.getDisplayId());
+            mNativeWindowAndroid =
+                    nativeInit(mDisplayAndroid.getDisplayId(), getMouseWheelScrollFactor());
             nativeSetVSyncPaused(mNativeWindowAndroid, mVSyncPaused);
         }
         return mNativeWindowAndroid;
+    }
+
+    /**
+     * Returns current wheel scroll factor (physical pixels per mouse scroll click).
+     * @return wheel scroll factor or zero if attr retrieval fails.
+     */
+    private float getMouseWheelScrollFactor() {
+        TypedValue outValue = new TypedValue();
+        Context context = getContext().get();
+        if (context != null
+                && context.getTheme().resolveAttribute(
+                           android.R.attr.listPreferredItemHeight, outValue, true)) {
+            // This is the same attribute used by Android Views to scale wheel
+            // event motion into scroll deltas.
+            return outValue.getDimension(context.getResources().getDisplayMetrics());
+        }
+        return 0;
     }
 
     /**
@@ -778,7 +797,7 @@ public class WindowAndroid {
         if (mNativeWindowAndroid != 0) nativeSetVSyncPaused(mNativeWindowAndroid, paused);
     }
 
-    private native long nativeInit(int displayId);
+    private native long nativeInit(int displayId, float scrollFactor);
     private native void nativeOnVSync(long nativeWindowAndroid,
                                       long vsyncTimeMicros,
                                       long vsyncPeriodMicros);
