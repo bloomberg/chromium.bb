@@ -2055,6 +2055,12 @@ const char kGrantNotificationsToDSENameDescription[] =
     "Automatically grant the notifications permission to the Default Search "
     "Engine";
 
+const char kInterestFeedContentSuggestionsDescription[] =
+    "Use the interest feed to render content suggestions. Currently content "
+    "suggestions are shown on the New Tab Page.";
+const char kInterestFeedContentSuggestionsName[] =
+    "Interest Feed Content Suggestions";
+
 const char kKeepPrefetchedContentSuggestionsName[] =
     "Keep prefetched content suggestions";
 const char kKeepPrefetchedContentSuggestionsDescription[] =
