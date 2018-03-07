@@ -207,11 +207,13 @@ const Registration = class {
    * @param {string} registrationData the registration response message,
    *     base64-encoded.
    * @param {string} appId the application identifier.
-   * @param {string=} opt_clientData the client data, base64-encoded.  This
-   *     field is not really optional; it is an error if it is empty or missing.
+   * @param {string} challenge the server-generated challenge parameter. This
+   *     is only used if opt_clientData is null and, in that case, is expected
+   *     to be a webSafeBase64-encoded, 32-byte value.
+   * @param {string=} opt_clientData the client data, base64-encoded.
    * @throws {Error}
    */
-  constructor(registrationData, appId, opt_clientData) {
+  constructor(registrationData, appId, challenge, opt_clientData) {
     var data = new ByteString(decodeWebSafeBase64ToArray(registrationData));
     var magic = data.getBytes(1);
     if (magic[0] != 5) {
@@ -231,12 +233,21 @@ const Registration = class {
       throw Error('extra trailing bytes');
     }
 
+    var challengeHash;
     if (!opt_clientData) {
-      throw Error('missing client data');
+      // U2F_V1 - deprecated
+      challengeHash = decodeWebSafeBase64ToArray(challenge);
+      if (challengeHash.length != 32) {
+        throw Error('bad challenge length for U2F_V1');
+      }
+    } else {
+      // U2F_V2
+      challengeHash =
+          sha256HashOfString(atob(webSafeBase64ToNormal(opt_clientData)));
     }
+
     /** @private {string} */
-    this.clientData_ = atob(webSafeBase64ToNormal(opt_clientData));
-    JSON.parse(this.clientData_);  // Just checking.
+    this.challengeHash_ = challengeHash;
 
     /** @private {string} */
     this.appId_ = appId;
@@ -262,7 +273,7 @@ const Registration = class {
     var tbs = new ByteBuilder();
     tbs.addBytesFromString('\0');
     tbs.addBytes(sha256HashOfString(this.appId_));
-    tbs.addBytes(sha256HashOfString(this.clientData_));
+    tbs.addBytes(this.challengeHash_);
     tbs.addBytes(this.keyHandle_);
     tbs.addBytes(this.publicKey_);
     return tbs.data;
@@ -380,7 +391,8 @@ function handleU2fEnrollRequest(messageSender, request, sendResponse) {
       return registrationData;
     }
 
-    const reg = new Registration(registrationData, appId, opt_clientData);
+    const reg = new Registration(
+        registrationData, appId, enrollChallenge['challenge'], opt_clientData);
     const keypair = await makeCertAndKey(reg.certificate);
     const signature = await reg.sign(keypair.privateKey);
     return reg.withReplacement(keypair.certDER, signature);
@@ -539,7 +551,7 @@ function isValidEnrollChallengeArray(enrollChallenges, appIdRequired) {
 }
 
 /**
- * Finds the enroll challenge of the given version in the enroll challlenge
+ * Finds the enroll challenge of the given version in the enroll challenge
  * array.
  * @param {Array<EnrollChallenge>} enrollChallenges The enroll challenges to
  *     search.
