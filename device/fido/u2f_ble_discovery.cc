@@ -33,6 +33,10 @@ U2fBleDiscovery::~U2fBleDiscovery() {
     OnStopped(true);
 }
 
+U2fTransportProtocol U2fBleDiscovery::GetTransportProtocol() const {
+  return U2fTransportProtocol::kBluetoothLowEnergy;
+}
+
 void U2fBleDiscovery::Start() {
   auto& factory = BluetoothAdapterFactory::Get();
   factory.GetAdapter(

@@ -20,7 +20,7 @@
 
 namespace service_manager {
 class Connector;
-};  // namespace service_manager
+}
 
 namespace device {
 
@@ -31,18 +31,13 @@ class U2fRequest : public U2fDiscovery::Observer {
   // TODO(https://crbug.com/769631): Remove the dependency on Connector once U2F
   // is servicified.
   U2fRequest(service_manager::Connector* connector,
-             const base::flat_set<U2fTransportProtocol>& protocols,
+             const base::flat_set<U2fTransportProtocol>& transports,
              std::vector<uint8_t> application_parameter,
              std::vector<uint8_t> challenge_digest,
              std::vector<std::vector<uint8_t>> registered_keys);
   ~U2fRequest() override;
 
   void Start();
-
-  // Enables the overriding of discoveries for testing. Useful for fakes such as
-  // MockU2fDiscovery.
-  void SetDiscoveriesForTesting(
-      std::vector<std::unique_ptr<U2fDiscovery>> discoveries);
 
   // Returns bogus application parameter and challenge to be used to verify user
   // presence.

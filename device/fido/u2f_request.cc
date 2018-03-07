@@ -13,18 +13,12 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "device/fido/u2f_apdu_command.h"
-#include "device/fido/u2f_ble_discovery.h"
 #include "services/service_manager/public/cpp/connector.h"
-
-// HID is not supported on Android.
-#if !defined(OS_ANDROID)
-#include "device/fido/u2f_hid_discovery.h"
-#endif  // !defined(OS_ANDROID)
 
 namespace device {
 
 U2fRequest::U2fRequest(service_manager::Connector* connector,
-                       const base::flat_set<U2fTransportProtocol>& protocols,
+                       const base::flat_set<U2fTransportProtocol>& transports,
                        std::vector<uint8_t> application_parameter,
                        std::vector<uint8_t> challenge_digest,
                        std::vector<std::vector<uint8_t>> registered_keys)
@@ -33,20 +27,8 @@ U2fRequest::U2fRequest(service_manager::Connector* connector,
       challenge_digest_(challenge_digest),
       registered_keys_(registered_keys),
       weak_factory_(this) {
-  for (const auto protocol : protocols) {
-    std::unique_ptr<U2fDiscovery> discovery;
-    switch (protocol) {
-      case U2fTransportProtocol::kUsbHumanInterfaceDevice:
-#if !defined(OS_ANDROID)
-        DCHECK(connector);
-        discovery = std::make_unique<U2fHidDiscovery>(connector);
-#endif  // !defined(OS_ANDROID)
-        break;
-      case U2fTransportProtocol::kBluetoothLowEnergy:
-        discovery = std::make_unique<U2fBleDiscovery>();
-        break;
-    }
-
+  for (const auto transport : transports) {
+    auto discovery = U2fDiscovery::Create(transport, connector);
     discovery->AddObserver(this);
     discoveries_.push_back(std::move(discovery));
   }
@@ -63,13 +45,6 @@ void U2fRequest::Start() {
     for (auto& discovery : discoveries_)
       discovery->Start();
   }
-}
-
-void U2fRequest::SetDiscoveriesForTesting(
-    std::vector<std::unique_ptr<U2fDiscovery>> discoveries) {
-  discoveries_ = std::move(discoveries);
-  for (auto& discovery : discoveries_)
-    discovery->AddObserver(this);
 }
 
 // static

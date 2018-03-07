@@ -15,14 +15,14 @@ namespace device {
 // static
 std::unique_ptr<U2fRequest> U2fRegister::TryRegistration(
     service_manager::Connector* connector,
-    const base::flat_set<U2fTransportProtocol>& protocols,
+    const base::flat_set<U2fTransportProtocol>& transports,
     std::vector<std::vector<uint8_t>> registered_keys,
     std::vector<uint8_t> challenge_digest,
     std::vector<uint8_t> application_parameter,
     bool individual_attestation_ok,
     RegisterResponseCallback completion_callback) {
   std::unique_ptr<U2fRequest> request = std::make_unique<U2fRegister>(
-      connector, protocols, std::move(registered_keys),
+      connector, transports, std::move(registered_keys),
       std::move(challenge_digest), std::move(application_parameter),
       individual_attestation_ok, std::move(completion_callback));
   request->Start();
@@ -30,14 +30,14 @@ std::unique_ptr<U2fRequest> U2fRegister::TryRegistration(
 }
 
 U2fRegister::U2fRegister(service_manager::Connector* connector,
-                         const base::flat_set<U2fTransportProtocol>& protocols,
+                         const base::flat_set<U2fTransportProtocol>& transports,
                          std::vector<std::vector<uint8_t>> registered_keys,
                          std::vector<uint8_t> challenge_digest,
                          std::vector<uint8_t> application_parameter,
                          bool individual_attestation_ok,
                          RegisterResponseCallback completion_callback)
     : U2fRequest(connector,
-                 protocols,
+                 transports,
                  std::move(application_parameter),
                  std::move(challenge_digest),
                  std::move(registered_keys)),

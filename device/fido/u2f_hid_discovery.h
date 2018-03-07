@@ -27,10 +27,11 @@ namespace device {
 
 class U2fHidDiscovery : public U2fDiscovery, device::mojom::HidManagerClient {
  public:
-  explicit U2fHidDiscovery(service_manager::Connector* connector);
+  explicit U2fHidDiscovery(::service_manager::Connector* connector);
   ~U2fHidDiscovery() override;
 
   // U2fDiscovery:
+  U2fTransportProtocol GetTransportProtocol() const override;
   void Start() override;
   void Stop() override;
 

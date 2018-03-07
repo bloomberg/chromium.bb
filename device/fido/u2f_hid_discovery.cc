@@ -13,13 +13,17 @@
 
 namespace device {
 
-U2fHidDiscovery::U2fHidDiscovery(service_manager::Connector* connector)
+U2fHidDiscovery::U2fHidDiscovery(::service_manager::Connector* connector)
     : connector_(connector), binding_(this), weak_factory_(this) {
   // TODO(piperc@): Give this constant a name.
   filter_.SetUsagePage(0xf1d0);
 }
 
 U2fHidDiscovery::~U2fHidDiscovery() = default;
+
+U2fTransportProtocol U2fHidDiscovery::GetTransportProtocol() const {
+  return U2fTransportProtocol::kUsbHumanInterfaceDevice;
+}
 
 void U2fHidDiscovery::Start() {
   DCHECK(connector_);

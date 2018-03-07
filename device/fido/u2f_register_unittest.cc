@@ -14,9 +14,9 @@
 #include "device/fido/attested_credential_data.h"
 #include "device/fido/authenticator_data.h"
 #include "device/fido/ec_public_key.h"
+#include "device/fido/fake_u2f_discovery.h"
 #include "device/fido/fido_attestation_statement.h"
 #include "device/fido/mock_u2f_device.h"
-#include "device/fido/mock_u2f_discovery.h"
 #include "device/fido/register_response_data.h"
 #include "device/fido/u2f_parsing_utils.h"
 #include "device/fido/u2f_response_test_data.h"
@@ -285,29 +285,6 @@ std::vector<uint8_t> GetTestAttestationObjectBytes() {
   return test_authenticator_object;
 }
 
-// Convenience functions for setting a mock discovery.
-MockU2fDiscovery* SetMockDiscovery(
-    U2fRequest* request,
-    std::unique_ptr<MockU2fDiscovery> discovery) {
-  auto* raw_discovery = discovery.get();
-  std::vector<std::unique_ptr<U2fDiscovery>> discoveries;
-  discoveries.push_back(std::move(discovery));
-  request->SetDiscoveriesForTesting(std::move(discoveries));
-  return raw_discovery;
-}
-
-}  // namespace
-
-class U2fRegisterTest : public ::testing::Test {
- public:
-  U2fRegisterTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
-
- protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
-};
-
 class TestRegisterCallback {
  public:
   TestRegisterCallback()
@@ -318,12 +295,11 @@ class TestRegisterCallback {
   void ReceivedCallback(U2fReturnCode status_code,
                         base::Optional<RegisterResponseData> response_data) {
     response_ = std::make_pair(status_code, std::move(response_data));
-    closure_.Run();
+    run_loop_.Quit();
   }
 
   const std::pair<U2fReturnCode, base::Optional<RegisterResponseData>>&
   WaitForCallback() {
-    closure_ = run_loop_.QuitClosure();
     run_loop_.Run();
     return response_;
   }
@@ -334,54 +310,87 @@ class TestRegisterCallback {
 
  private:
   std::pair<U2fReturnCode, base::Optional<RegisterResponseData>> response_;
-  base::Closure closure_;
   U2fRegister::RegisterResponseCallback callback_;
   base::RunLoop run_loop_;
 };
 
-TEST_F(U2fRegisterTest, TestCreateU2fRegisterCommand) {
-  base::flat_set<U2fTransportProtocol> protocols;
-  std::vector<std::vector<uint8_t>> registration_keys;
-  TestRegisterCallback cb;
+}  // namespace
 
+class U2fRegisterTest : public ::testing::Test {
+ public:
+  void ForgeNextHidDiscovery() {
+    discovery_ = scoped_fake_discovery_factory_.ForgeNextHidDiscovery();
+  }
+
+  std::unique_ptr<U2fRegister> CreateRegisterRequest() {
+    return CreateRegisterRequestWithRegisteredKeys(
+        std::vector<std::vector<uint8_t>>());
+  }
+
+  // Creates a U2F register request with `none` attestation, and the given
+  // previously |registered_keys|.
+  std::unique_ptr<U2fRegister> CreateRegisterRequestWithRegisteredKeys(
+      std::vector<std::vector<uint8_t>> registered_keys) {
+    ForgeNextHidDiscovery();
+    return std::make_unique<U2fRegister>(
+        nullptr /* connector */,
+        base::flat_set<U2fTransportProtocol>(
+            {U2fTransportProtocol::kUsbHumanInterfaceDevice}),
+        registered_keys, std::vector<uint8_t>(32), std::vector<uint8_t>(32),
+        kNoIndividualAttestation, register_callback_.callback());
+  }
+
+  test::FakeU2fDiscovery* discovery() const { return discovery_; }
+  TestRegisterCallback& register_callback() { return register_callback_; }
+
+ protected:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+
+  test::ScopedFakeU2fDiscoveryFactory scoped_fake_discovery_factory_;
+  test::FakeU2fDiscovery* discovery_;
+  TestRegisterCallback register_callback_;
+};
+
+TEST_F(U2fRegisterTest, TestCreateU2fRegisterCommand) {
   constexpr uint8_t kRegisterApduCommandWithoutAttestation[] = {
       0x00, 0x01, 0x03, 0x00, 0x00, 0x00, 0x40, 0x00, 0x01, 0x02, 0x03, 0x04,
       0x05, 0x06, 0x07, 0x08, 0x09, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06,
       0x07, 0x08, 0x09, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
       0x09, 0x00, 0x01, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
       0x09, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x00,
-      0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x00, 0x01};
+      0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x00, 0x01,
+  };
+
+  constexpr uint8_t kRegisterApduCommandWithAttestation[] = {
+      // CLA, INS, P1, P2 APDU instructions
+      0x00, 0x01, 0x83, 0x00,
+      // Data length in 3 bytes in big endian order
+      0x00, 0x00, 0x40,
+      // Application parameter
+      0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x00, 0x01,
+      0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x00, 0x01, 0x02, 0x03,
+      0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x00, 0x01,
+      // Challenge parameter
+      0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x00, 0x01,
+      0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x00, 0x01, 0x02, 0x03,
+      0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x00, 0x01,
+  };
 
   U2fRegister register_request(
-      nullptr, protocols, registration_keys,
+      nullptr /* connector */, {} /* transports */,
+      std::vector<std::vector<uint8_t>>() /* registered_keys */,
       std::vector<uint8_t>(std::begin(kChallengeDigest),
                            std::end(kChallengeDigest)),
       std::vector<uint8_t>(std::begin(kAppIdDigest), std::end(kAppIdDigest)),
-      kNoIndividualAttestation, cb.callback());
+      kNoIndividualAttestation, register_callback().callback());
 
   const auto register_command_without_individual_attestation =
       register_request.GetU2fRegisterApduCommand(kNoIndividualAttestation);
+
   ASSERT_TRUE(register_command_without_individual_attestation);
   EXPECT_THAT(
       register_command_without_individual_attestation->GetEncodedCommand(),
       ::testing::ElementsAreArray(kRegisterApduCommandWithoutAttestation));
-
-  constexpr uint8_t kRegisterApduCommandWithAttestation[] = {
-      // clang-format off
-  0x00, 0x01, 0x83, 0x00,  // CLA, INS, P1, P2 APDU instructions
-  0x00, 0x00, 0x40,  // Data length in 3 bytes in big endian order
-  // Application parameter
-  0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09,
-  0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09,
-  0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09,
-  0x00, 0x01,
-  // Challenge parameter
-  0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09,
-  0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09,
-  0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09,
-  0x00, 0x01
-      // clang-format on
-  };
 
   const auto register_command_with_individual_attestation =
       register_request.GetU2fRegisterApduCommand(kIndividualAttestation);
@@ -392,20 +401,9 @@ TEST_F(U2fRegisterTest, TestCreateU2fRegisterCommand) {
 }
 
 TEST_F(U2fRegisterTest, TestRegisterSuccess) {
-  base::flat_set<U2fTransportProtocol> protocols;
-  std::vector<std::vector<uint8_t>> registration_keys;
-  TestRegisterCallback cb;
-
-  auto request = std::make_unique<U2fRegister>(
-      nullptr, protocols, registration_keys, std::vector<uint8_t>(32),
-      std::vector<uint8_t>(32), kNoIndividualAttestation, cb.callback());
-
-  auto* discovery =
-      SetMockDiscovery(request.get(), std::make_unique<MockU2fDiscovery>());
-  EXPECT_CALL(*discovery, Start())
-      .WillOnce(
-          ::testing::Invoke(discovery, &MockU2fDiscovery::StartSuccessAsync));
+  auto request = CreateRegisterRequest();
   request->Start();
+  discovery()->WaitForCallToStartAndSimulateSuccess();
 
   auto device = std::make_unique<MockU2fDevice>();
   EXPECT_CALL(*device, GetId()).WillRepeatedly(::testing::Return("device"));
@@ -413,29 +411,17 @@ TEST_F(U2fRegisterTest, TestRegisterSuccess) {
       .WillOnce(::testing::Invoke(MockU2fDevice::NoErrorRegister));
   EXPECT_CALL(*device, TryWinkRef(_))
       .WillOnce(::testing::Invoke(MockU2fDevice::WinkDoNothing));
-  discovery->AddDevice(std::move(device));
+  discovery()->AddDevice(std::move(device));
 
-  const std::pair<U2fReturnCode, base::Optional<RegisterResponseData>>&
-      response = cb.WaitForCallback();
+  const auto& response = register_callback().WaitForCallback();
   EXPECT_EQ(U2fReturnCode::SUCCESS, std::get<0>(response));
   EXPECT_EQ(GetTestCredentialRawIdBytes(), std::get<1>(response)->raw_id());
 }
 
 TEST_F(U2fRegisterTest, TestDelayedSuccess) {
-  base::flat_set<U2fTransportProtocol> protocols;
-  std::vector<std::vector<uint8_t>> registration_keys;
-  TestRegisterCallback cb;
-
-  auto request = std::make_unique<U2fRegister>(
-      nullptr, protocols, registration_keys, std::vector<uint8_t>(32),
-      std::vector<uint8_t>(32), kNoIndividualAttestation, cb.callback());
-
-  auto* discovery =
-      SetMockDiscovery(request.get(), std::make_unique<MockU2fDiscovery>());
-  EXPECT_CALL(*discovery, Start())
-      .WillOnce(
-          ::testing::Invoke(discovery, &MockU2fDiscovery::StartSuccessAsync));
+  auto request = CreateRegisterRequest();
   request->Start();
+  discovery()->WaitForCallToStartAndSimulateSuccess();
 
   auto device = std::make_unique<MockU2fDevice>();
   EXPECT_CALL(*device, GetId()).WillRepeatedly(::testing::Return("device"));
@@ -446,28 +432,15 @@ TEST_F(U2fRegisterTest, TestDelayedSuccess) {
   EXPECT_CALL(*device, TryWinkRef(_))
       .Times(2)
       .WillRepeatedly(::testing::Invoke(MockU2fDevice::WinkDoNothing));
-  discovery->AddDevice(std::move(device));
+  discovery()->AddDevice(std::move(device));
 
-  const std::pair<U2fReturnCode, base::Optional<RegisterResponseData>>&
-      response = cb.WaitForCallback();
+  const auto& response = register_callback().WaitForCallback();
   EXPECT_EQ(U2fReturnCode::SUCCESS, std::get<0>(response));
   EXPECT_EQ(GetTestCredentialRawIdBytes(), std::get<1>(response)->raw_id());
 }
 
 TEST_F(U2fRegisterTest, TestMultipleDevices) {
-  base::flat_set<U2fTransportProtocol> protocols;
-  std::vector<std::vector<uint8_t>> registration_keys;
-  TestRegisterCallback cb;
-
-  auto request = std::make_unique<U2fRegister>(
-      nullptr, protocols, registration_keys, std::vector<uint8_t>(32),
-      std::vector<uint8_t>(32), kNoIndividualAttestation, cb.callback());
-
-  auto* discovery =
-      SetMockDiscovery(request.get(), std::make_unique<MockU2fDiscovery>());
-  EXPECT_CALL(*discovery, Start())
-      .WillOnce(
-          ::testing::Invoke(discovery, &MockU2fDiscovery::StartSuccessAsync));
+  auto request = CreateRegisterRequest();
   request->Start();
 
   auto device0 = std::make_unique<MockU2fDevice>();
@@ -477,7 +450,7 @@ TEST_F(U2fRegisterTest, TestMultipleDevices) {
   // One wink per device.
   EXPECT_CALL(*device0, TryWinkRef(_))
       .WillOnce(::testing::Invoke(MockU2fDevice::WinkDoNothing));
-  discovery->AddDevice(std::move(device0));
+  discovery()->AddDevice(std::move(device0));
 
   // Second device will have a successful touch.
   auto device1 = std::make_unique<MockU2fDevice>();
@@ -487,10 +460,10 @@ TEST_F(U2fRegisterTest, TestMultipleDevices) {
   // One wink per device.
   EXPECT_CALL(*device1, TryWinkRef(_))
       .WillOnce(::testing::Invoke(MockU2fDevice::WinkDoNothing));
-  discovery->AddDevice(std::move(device1));
+  discovery()->AddDevice(std::move(device1));
+  discovery()->WaitForCallToStartAndSimulateSuccess();
 
-  const std::pair<U2fReturnCode, base::Optional<RegisterResponseData>>&
-      response = cb.WaitForCallback();
+  const auto& response = register_callback().WaitForCallback();
   EXPECT_EQ(U2fReturnCode::SUCCESS, std::get<0>(response));
   EXPECT_EQ(GetTestCredentialRawIdBytes(),
             std::get<1>(response).value().raw_id());
@@ -500,24 +473,12 @@ TEST_F(U2fRegisterTest, TestMultipleDevices) {
 // is received with three unknown key handles. We expect that three check only
 // sign-in calls be processed before registration.
 TEST_F(U2fRegisterTest, TestSingleDeviceRegistrationWithExclusionList) {
-  base::flat_set<U2fTransportProtocol> protocols;
   // Simulate three unknown key handles.
-  std::vector<std::vector<uint8_t>> handles;
-  handles.emplace_back(32, 0xB);
-  handles.emplace_back(32, 0xC);
-  handles.emplace_back(32, 0xD);
-  TestRegisterCallback cb;
-
-  auto request = std::make_unique<U2fRegister>(
-      nullptr, protocols, handles, std::vector<uint8_t>(32),
-      std::vector<uint8_t>(32), kNoIndividualAttestation, cb.callback());
-
-  auto* discovery =
-      SetMockDiscovery(request.get(), std::make_unique<MockU2fDiscovery>());
-  EXPECT_CALL(*discovery, Start())
-      .WillOnce(
-          ::testing::Invoke(discovery, &MockU2fDiscovery::StartSuccessAsync));
+  auto request = CreateRegisterRequestWithRegisteredKeys(
+      {std::vector<uint8_t>(32, 0x0B), std::vector<uint8_t>(32, 0x0C),
+       std::vector<uint8_t>(32, 0x0D)});
   request->Start();
+  discovery()->WaitForCallToStartAndSimulateSuccess();
 
   auto device = std::make_unique<MockU2fDevice>();
   EXPECT_CALL(*device, GetId()).WillRepeatedly(::testing::Return("device"));
@@ -538,10 +499,9 @@ TEST_F(U2fRegisterTest, TestSingleDeviceRegistrationWithExclusionList) {
   EXPECT_CALL(*device, TryWinkRef(_))
       .WillOnce(::testing::Invoke(MockU2fDevice::WinkDoNothing))
       .WillOnce(::testing::Invoke(MockU2fDevice::WinkDoNothing));
-  discovery->AddDevice(std::move(device));
+  discovery()->AddDevice(std::move(device));
 
-  const std::pair<U2fReturnCode, base::Optional<RegisterResponseData>>&
-      response = cb.WaitForCallback();
+  const auto& response = register_callback().WaitForCallback();
   EXPECT_EQ(U2fReturnCode::SUCCESS, std::get<0>(response));
   EXPECT_EQ(GetTestCredentialRawIdBytes(), std::get<1>(response)->raw_id());
 }
@@ -550,23 +510,10 @@ TEST_F(U2fRegisterTest, TestSingleDeviceRegistrationWithExclusionList) {
 // received with three unknown key handles. We assume that user will proceed the
 // registration with second device, "device1".
 TEST_F(U2fRegisterTest, TestMultipleDeviceRegistrationWithExclusionList) {
-  base::flat_set<U2fTransportProtocol> protocols;
   // Simulate three unknown key handles.
-  std::vector<std::vector<uint8_t>> handles;
-  handles.emplace_back(32, 0xB);
-  handles.emplace_back(32, 0xC);
-  handles.emplace_back(32, 0xD);
-  TestRegisterCallback cb;
-
-  auto request = std::make_unique<U2fRegister>(
-      nullptr, protocols, handles, std::vector<uint8_t>(32),
-      std::vector<uint8_t>(32), kNoIndividualAttestation, cb.callback());
-
-  auto* discovery =
-      SetMockDiscovery(request.get(), std::make_unique<MockU2fDiscovery>());
-  EXPECT_CALL(*discovery, Start())
-      .WillOnce(
-          ::testing::Invoke(discovery, &MockU2fDiscovery::StartSuccessAsync));
+  auto request = CreateRegisterRequestWithRegisteredKeys(
+      {std::vector<uint8_t>(32, 0x0B), std::vector<uint8_t>(32, 0x0C),
+       std::vector<uint8_t>(32, 0x0D)});
   request->Start();
 
   auto device0 = std::make_unique<MockU2fDevice>();
@@ -585,7 +532,7 @@ TEST_F(U2fRegisterTest, TestMultipleDeviceRegistrationWithExclusionList) {
   EXPECT_CALL(*device0, TryWinkRef(_))
       .WillOnce(::testing::Invoke(MockU2fDevice::WinkDoNothing))
       .WillOnce(::testing::Invoke(MockU2fDevice::WinkDoNothing));
-  discovery->AddDevice(std::move(device0));
+  discovery()->AddDevice(std::move(device0));
 
   auto device1 = std::make_unique<MockU2fDevice>();
   EXPECT_CALL(*device1, GetId()).WillRepeatedly(::testing::Return("device1"));
@@ -602,10 +549,10 @@ TEST_F(U2fRegisterTest, TestMultipleDeviceRegistrationWithExclusionList) {
   EXPECT_CALL(*device1, TryWinkRef(_))
       .WillOnce(::testing::Invoke(MockU2fDevice::WinkDoNothing))
       .WillOnce(::testing::Invoke(MockU2fDevice::WinkDoNothing));
-  discovery->AddDevice(std::move(device1));
+  discovery()->AddDevice(std::move(device1));
+  discovery()->WaitForCallToStartAndSimulateSuccess();
 
-  const std::pair<U2fReturnCode, base::Optional<RegisterResponseData>>&
-      response = cb.WaitForCallback();
+  const auto& response = register_callback().WaitForCallback();
   EXPECT_EQ(U2fReturnCode::SUCCESS, std::get<0>(response));
   EXPECT_EQ(GetTestCredentialRawIdBytes(), std::get<1>(response)->raw_id());
 }
@@ -616,25 +563,12 @@ TEST_F(U2fRegisterTest, TestMultipleDeviceRegistrationWithExclusionList) {
 // after duplicate key handle is found, the process is expected to terminate
 // after calling bogus registration which checks for user presence.
 TEST_F(U2fRegisterTest, TestSingleDeviceRegistrationWithDuplicateHandle) {
-  base::flat_set<U2fTransportProtocol> protocols;
   // Simulate three unknown key handles followed by a duplicate key.
-  std::vector<std::vector<uint8_t>> handles;
-  handles.emplace_back(32, 0xB);
-  handles.emplace_back(32, 0xC);
-  handles.emplace_back(32, 0xD);
-  handles.emplace_back(32, 0xA);
-  TestRegisterCallback cb;
-
-  auto request = std::make_unique<U2fRegister>(
-      nullptr, protocols, handles, std::vector<uint8_t>(32),
-      std::vector<uint8_t>(32), kNoIndividualAttestation, cb.callback());
-
-  auto* discovery =
-      SetMockDiscovery(request.get(), std::make_unique<MockU2fDiscovery>());
-  EXPECT_CALL(*discovery, Start())
-      .WillOnce(
-          ::testing::Invoke(discovery, &MockU2fDiscovery::StartSuccessAsync));
+  auto request = CreateRegisterRequestWithRegisteredKeys(
+      {std::vector<uint8_t>(32, 0x0B), std::vector<uint8_t>(32, 0x0C),
+       std::vector<uint8_t>(32, 0x0D), std::vector<uint8_t>(32, 0x0A)});
   request->Start();
+  discovery()->WaitForCallToStartAndSimulateSuccess();
 
   auto device = std::make_unique<MockU2fDevice>();
   EXPECT_CALL(*device, GetId()).WillRepeatedly(::testing::Return("device"));
@@ -655,10 +589,9 @@ TEST_F(U2fRegisterTest, TestSingleDeviceRegistrationWithDuplicateHandle) {
   // invoked once.
   EXPECT_CALL(*device, TryWinkRef(_))
       .WillOnce(::testing::Invoke(MockU2fDevice::WinkDoNothing));
-  discovery->AddDevice(std::move(device));
+  discovery()->AddDevice(std::move(device));
 
-  const std::pair<U2fReturnCode, base::Optional<RegisterResponseData>>&
-      response = cb.WaitForCallback();
+  const auto& response = register_callback().WaitForCallback();
   EXPECT_EQ(U2fReturnCode::CONDITIONS_NOT_SATISFIED, std::get<0>(response));
   EXPECT_EQ(base::nullopt, std::get<1>(response));
 }
@@ -667,24 +600,10 @@ TEST_F(U2fRegisterTest, TestSingleDeviceRegistrationWithDuplicateHandle) {
 // a key handle provided in exclude list. We assume that duplicate key is the
 // fourth key handle provided in the exclude list.
 TEST_F(U2fRegisterTest, TestMultipleDeviceRegistrationWithDuplicateHandle) {
-  base::flat_set<U2fTransportProtocol> protocols;
   // Simulate three unknown key handles followed by a duplicate key.
-  std::vector<std::vector<uint8_t>> handles;
-  handles.emplace_back(32, 0xB);
-  handles.emplace_back(32, 0xC);
-  handles.emplace_back(32, 0xD);
-  handles.emplace_back(32, 0xA);
-  TestRegisterCallback cb;
-
-  auto request = std::make_unique<U2fRegister>(
-      nullptr, protocols, handles, std::vector<uint8_t>(32),
-      std::vector<uint8_t>(32), kNoIndividualAttestation, cb.callback());
-
-  auto* discovery =
-      SetMockDiscovery(request.get(), std::make_unique<MockU2fDiscovery>());
-  EXPECT_CALL(*discovery, Start())
-      .WillOnce(
-          ::testing::Invoke(discovery, &MockU2fDiscovery::StartSuccessAsync));
+  auto request = CreateRegisterRequestWithRegisteredKeys(
+      {std::vector<uint8_t>(32, 0x0B), std::vector<uint8_t>(32, 0x0C),
+       std::vector<uint8_t>(32, 0x0D), std::vector<uint8_t>(32, 0x0A)});
   request->Start();
 
   auto device0 = std::make_unique<MockU2fDevice>();
@@ -701,7 +620,7 @@ TEST_F(U2fRegisterTest, TestMultipleDeviceRegistrationWithDuplicateHandle) {
       .WillOnce(::testing::Invoke(MockU2fDevice::WrongData));
   EXPECT_CALL(*device0, TryWinkRef(_))
       .WillOnce(::testing::Invoke(MockU2fDevice::WinkDoNothing));
-  discovery->AddDevice(std::move(device0));
+  discovery()->AddDevice(std::move(device0));
 
   auto device1 = std::make_unique<MockU2fDevice>();
   EXPECT_CALL(*device1, GetId()).WillRepeatedly(::testing::Return("device1"));
@@ -720,10 +639,10 @@ TEST_F(U2fRegisterTest, TestMultipleDeviceRegistrationWithDuplicateHandle) {
       .WillOnce(::testing::Invoke(MockU2fDevice::NoErrorRegister));
   EXPECT_CALL(*device1, TryWinkRef(_))
       .WillOnce(::testing::Invoke(MockU2fDevice::WinkDoNothing));
-  discovery->AddDevice(std::move(device1));
+  discovery()->AddDevice(std::move(device1));
+  discovery()->WaitForCallToStartAndSimulateSuccess();
 
-  const std::pair<U2fReturnCode, base::Optional<RegisterResponseData>>&
-      response = cb.WaitForCallback();
+  const auto& response = register_callback().WaitForCallback();
   EXPECT_EQ(U2fReturnCode::CONDITIONS_NOT_SATISFIED, std::get<0>(response));
   EXPECT_EQ(base::nullopt, std::get<1>(response));
 }
@@ -838,20 +757,18 @@ TEST_F(U2fRegisterTest, TestIndividualAttestation) {
   for (const auto& individual_attestation : {false, true}) {
     SCOPED_TRACE(individual_attestation);
 
-    base::flat_set<U2fTransportProtocol> protocols;
-    std::vector<std::vector<uint8_t>> registration_keys;
+    ForgeNextHidDiscovery();
     TestRegisterCallback cb;
-
     auto request = std::make_unique<U2fRegister>(
-        nullptr, protocols, registration_keys, std::vector<uint8_t>(32),
-        std::vector<uint8_t>(32), individual_attestation, cb.callback());
-
-    auto* discovery =
-        SetMockDiscovery(request.get(), std::make_unique<MockU2fDiscovery>());
-    EXPECT_CALL(*discovery, Start())
-        .WillOnce(
-            ::testing::Invoke(discovery, &MockU2fDiscovery::StartSuccessAsync));
+        nullptr /* connector */,
+        base::flat_set<U2fTransportProtocol>(
+            {U2fTransportProtocol::kUsbHumanInterfaceDevice}) /* transports */,
+        std::vector<std::vector<uint8_t>>() /* registration_keys */,
+        std::vector<uint8_t>(32) /* challenge_digest */,
+        std::vector<uint8_t>(32) /* application_parameter */,
+        individual_attestation, cb.callback());
     request->Start();
+    discovery()->WaitForCallToStartAndSimulateSuccess();
 
     auto device = std::make_unique<MockU2fDevice>();
     EXPECT_CALL(*device, GetId()).WillRepeatedly(::testing::Return("device"));
@@ -861,10 +778,9 @@ TEST_F(U2fRegisterTest, TestIndividualAttestation) {
         .WillOnce(::testing::Invoke(MockU2fDevice::NoErrorRegister));
     EXPECT_CALL(*device, TryWinkRef(_))
         .WillOnce(::testing::Invoke(MockU2fDevice::WinkDoNothing));
-    discovery->AddDevice(std::move(device));
+    discovery()->AddDevice(std::move(device));
 
-    const std::pair<U2fReturnCode, base::Optional<RegisterResponseData>>&
-        response = cb.WaitForCallback();
+    const auto& response = cb.WaitForCallback();
     EXPECT_EQ(U2fReturnCode::SUCCESS, std::get<0>(response));
     EXPECT_EQ(GetTestCredentialRawIdBytes(), std::get<1>(response)->raw_id());
   }

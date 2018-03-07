@@ -24,6 +24,7 @@ class U2fBleDiscovery : public U2fDiscovery, BluetoothAdapter::Observer {
   ~U2fBleDiscovery() override;
 
   // U2fDiscovery:
+  U2fTransportProtocol GetTransportProtocol() const override;
   void Start() override;
   void Stop() override;
 
