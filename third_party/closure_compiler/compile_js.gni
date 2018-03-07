@@ -148,6 +148,7 @@ template("js_binary") {
                              "config_files",
                              "closure_flags",
                              "externs_list",
+                             "extra_deps",
                            ])
     args = [
       "--compiler",
@@ -205,6 +206,13 @@ template("js_binary") {
     if (defined(externs_list)) {
       args += rebase_path(externs_list, root_build_dir)
       sources += externs_list
+    }
+
+    if (defined(extra_deps)) {
+      if (!defined(deps)) {
+        deps = []
+      }
+      deps += extra_deps
     }
   }
 }
