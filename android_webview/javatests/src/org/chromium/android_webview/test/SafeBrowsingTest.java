@@ -982,6 +982,7 @@ public class SafeBrowsingTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
+    @DisabledTest(message = "crbug/819085")
     public void testSafeBrowsingClickLearnMoreLink() throws Throwable {
         loadInterstitialAndClickLink(PHISHING_HTML_PATH, "learn-more-link",
                 appendLocale("https://support.google.com/chrome/?p=cpn_safe_browsing_wv"));
@@ -990,6 +991,7 @@ public class SafeBrowsingTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
+    @DisabledTest(message = "crbug/819085")
     public void testSafeBrowsingClickReportErrorLink() throws Throwable {
         // Only phishing interstitials have the report-error-link
         loadInterstitialAndClickLink(PHISHING_HTML_PATH, "report-error-link",
