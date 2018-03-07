@@ -217,29 +217,6 @@ inline void AddEmphasisMark(ShapeResultBloberizer& bloberizer,
   }
 }
 
-inline unsigned CountGraphemesInCluster(const UChar* str,
-                                        unsigned str_length,
-                                        uint16_t start_index,
-                                        uint16_t end_index) {
-  if (start_index > end_index) {
-    uint16_t temp_index = start_index;
-    start_index = end_index;
-    end_index = temp_index;
-  }
-  uint16_t length = end_index - start_index;
-  DCHECK_LE(static_cast<unsigned>(start_index + length), str_length);
-  TextBreakIterator* cursor_pos_iterator =
-      CursorMovementIterator(&str[start_index], length);
-
-  int cursor_pos = cursor_pos_iterator->current();
-  int num_graphemes = -1;
-  while (0 <= cursor_pos) {
-    cursor_pos = cursor_pos_iterator->next();
-    num_graphemes++;
-  }
-  return std::max(0, num_graphemes);
-}
-
 }  // namespace
 
 template <typename TextContainerType>
@@ -256,7 +233,6 @@ float ShapeResultBloberizer::FillGlyphsForResult(const ShapeResult* result,
         total_advance, from, to, run_offset,
         [&](const HarfBuzzRunGlyphData& glyph_data, float total_advance,
             uint16_t character_index) -> bool {
-
           AddGlyphToBloberizer(*this, total_advance, run->direction_,
                                run->canvas_rotation_, run->font_data_.get(),
                                glyph_data, text, character_index);
@@ -395,8 +371,8 @@ float ShapeResultBloberizer::FillTextEmphasisGlyphsForRun(
             is_run_end ? run->start_index_ + run->num_characters_ + run_offset
                        : run->GlyphToCharacterIndex(i + 1) + run_offset);
       }
-      graphemes_in_cluster = CountGraphemesInCluster(
-          text.Characters16(), text_length, cluster_start, cluster_end);
+      graphemes_in_cluster =
+          NumCursorGraphemesClusters(text, cluster_start, cluster_end);
       if (!graphemes_in_cluster || !cluster_advance)
         continue;
 

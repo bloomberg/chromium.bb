@@ -24,10 +24,33 @@ CharacterRange ShapeResultBuffer::GetCharacterRange(
     unsigned to) {
   Vector<scoped_refptr<const ShapeResult>, 64> results;
   results.push_back(result);
-  return GetCharacterRangeInternal(results, direction, total_width, from, to);
+  return GetCharacterRangeInternal(nullptr, results, direction, total_width,
+                                   from, to);
+}
+
+float GetXPositionForRun(const TextRun* text_run,
+                         unsigned offset,
+                         unsigned total_num_characters,
+                         AdjustMidCluster adjust_mid_cluster,
+                         const ShapeResult::RunInfo* info) {
+  if (text_run) {
+    TextRun sub_run = text_run->SubRun(
+        total_num_characters + info->start_index_, info->num_characters_);
+    return info->XPositionForVisualOffset(&sub_run, offset, adjust_mid_cluster);
+  }
+  return info->XPositionForVisualOffset(nullptr, offset, adjust_mid_cluster);
+}
+
+CharacterRange ShapeResultBuffer::GetCharacterRange(const TextRun& text_run,
+                                                    float total_width,
+                                                    unsigned from,
+                                                    unsigned to) const {
+  return GetCharacterRangeInternal(&text_run, results_, text_run.Direction(),
+                                   total_width, from, to);
 }
 
 CharacterRange ShapeResultBuffer::GetCharacterRangeInternal(
+    const TextRun* text_run,
     const Vector<scoped_refptr<const ShapeResult>, 64>& results,
     TextDirection direction,
     float total_width,
@@ -70,16 +93,17 @@ CharacterRange ShapeResultBuffer::GetCharacterRangeInternal(
       DCHECK_EQ(direction == TextDirection::kRtl, result->runs_[i]->Rtl());
       int num_characters = result->runs_[i]->num_characters_;
       if (!found_from_x && from >= 0 && from < num_characters) {
-        from_x =
-            result->runs_[i]->XPositionForVisualOffset(from, kAdjustToStart) +
-            current_x;
+        from_x = GetXPositionForRun(text_run, from, total_num_characters,
+                                    kAdjustToStart, result->runs_[i].get()) +
+                 current_x;
         found_from_x = true;
       } else {
         from -= num_characters;
       }
 
       if (!found_to_x && to >= 0 && to < num_characters) {
-        to_x = result->runs_[i]->XPositionForVisualOffset(to, kAdjustToEnd) +
+        to_x = GetXPositionForRun(text_run, to, total_num_characters,
+                                  kAdjustToEnd, result->runs_[i].get()) +
                current_x;
         found_to_x = true;
       } else {
@@ -120,13 +144,6 @@ CharacterRange ShapeResultBuffer::GetCharacterRangeInternal(
   if (from_x < to_x)
     return CharacterRange(from_x, to_x, -min_y, max_y);
   return CharacterRange(to_x, from_x, -min_y, max_y);
-}
-
-CharacterRange ShapeResultBuffer::GetCharacterRange(TextDirection direction,
-                                                    float total_width,
-                                                    unsigned from,
-                                                    unsigned to) const {
-  return GetCharacterRangeInternal(results_, direction, total_width, from, to);
 }
 
 void ShapeResultBuffer::AddRunInfoRanges(const ShapeResult::RunInfo& run_info,
@@ -173,7 +190,7 @@ Vector<CharacterRange> ShapeResultBuffer::IndividualCharacterRanges(
 
 int ShapeResultBuffer::OffsetForPosition(const TextRun& run,
                                          float target_x,
-                                         bool include_partial_glyphs) const {
+                                         OffsetForPositionType type) const {
   unsigned total_offset;
   if (run.Rtl()) {
     total_offset = run.length();
@@ -184,7 +201,7 @@ int ShapeResultBuffer::OffsetForPosition(const TextRun& run,
       total_offset -= word_result->NumCharacters();
       if (target_x >= 0 && target_x <= word_result->Width()) {
         int offset_for_word =
-            word_result->OffsetForPosition(target_x, include_partial_glyphs);
+            word_result->OffsetForPosition(&run, target_x, type);
         return total_offset + offset_for_word;
       }
       target_x -= word_result->Width();
@@ -195,7 +212,7 @@ int ShapeResultBuffer::OffsetForPosition(const TextRun& run,
       if (!word_result)
         continue;
       int offset_for_word =
-          word_result->OffsetForPosition(target_x, include_partial_glyphs);
+          word_result->OffsetForPosition(&run, target_x, type);
       DCHECK_GE(offset_for_word, 0);
       total_offset += offset_for_word;
       if (target_x >= 0 && target_x <= word_result->Width())
@@ -204,6 +221,18 @@ int ShapeResultBuffer::OffsetForPosition(const TextRun& run,
     }
   }
   return total_offset;
+}
+
+void ShapeResultBuffer::ExpandRangeToIncludePartialGlyphs(int& from,
+                                                          int& to) const {
+  for (unsigned j = 0; j < results_.size(); j++) {
+    const scoped_refptr<const ShapeResult> result = results_[j];
+    for (unsigned i = 0; i < result->runs_.size(); i++) {
+      if (!result->runs_[i])
+        continue;
+      result->runs_[i]->ExpandRangeToIncludePartialGlyphs(from, to);
+    }
+  }
 }
 
 Vector<ShapeResultBuffer::RunFontData> ShapeResultBuffer::GetRunFontData()

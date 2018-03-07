@@ -141,17 +141,21 @@ class PLATFORM_EXPORT Font {
 
   int OffsetForPosition(const TextRun&,
                         float position,
-                        bool include_partial_glyphs) const;
+                        OffsetForPositionType) const;
   FloatRect SelectionRectForText(const TextRun&,
                                  const FloatPoint&,
                                  int h,
                                  int from = 0,
                                  int to = -1) const;
-  FloatRect BoundingBox(const TextRun&) const;
+  FloatRect BoundingBox(const TextRun&, int from = 0, int to = -1) const;
   CharacterRange GetCharacterRange(const TextRun&,
                                    unsigned from,
                                    unsigned to) const;
   Vector<CharacterRange> IndividualCharacterRanges(const TextRun&) const;
+
+  void ExpandRangeToIncludePartialGlyphs(const TextRun&,
+                                         int& from,
+                                         int& to) const;
 
   // Metrics that we query the FontFallbackList for.
   float SpaceWidth() const {

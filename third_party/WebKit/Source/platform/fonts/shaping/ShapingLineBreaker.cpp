@@ -238,7 +238,8 @@ scoped_refptr<ShapeResult> ShapingLineBreaker::ShapeLine(
                             FlipRtl(available_space, direction);
   DCHECK_GE(FlipRtl(end_position - start_position, direction), LayoutUnit(0));
   unsigned candidate_break =
-      result_->OffsetForPosition(end_position, false) + range_start;
+      result_->OffsetForPosition(nullptr, end_position, FullGlyphsOnly) +
+      range_start;
 
   unsigned first_safe =
       start_should_be_safe ? result_->NextSafeToBreakOffset(start) : start;

@@ -107,7 +107,8 @@ int WebFont::CalculateWidth(const WebTextRun& run) const {
 }
 
 int WebFont::OffsetForPosition(const WebTextRun& run, float position) const {
-  return private_->GetFont().OffsetForPosition(run, position, true);
+  return private_->GetFont().OffsetForPosition(run, position,
+                                               BreakAndIncludePartialGlyphs);
 }
 
 WebFloatRect WebFont::SelectionRectForText(const WebTextRun& run,

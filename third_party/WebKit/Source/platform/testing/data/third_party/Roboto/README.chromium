@@ -1,0 +1,12 @@
+Roboto Font:
+
+1. Source Origin
+Font Squirrel:
+    a) https://github.com/google/roboto/
+
+
+2. LICENSE AND OPENSOURCE
+	For license information, see the LICENSE.txt file
+
+3. Reason:
+We need a a latin font with ligatures. Roboto contains ffi and ff.

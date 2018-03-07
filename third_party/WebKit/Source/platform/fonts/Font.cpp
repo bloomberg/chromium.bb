@@ -379,19 +379,20 @@ FloatRect Font::SelectionRectForText(const TextRun& run,
       FloatRect(point.X() + range.start, point.Y(), range.Width(), height));
 }
 
-FloatRect Font::BoundingBox(const TextRun& run) const {
+FloatRect Font::BoundingBox(const TextRun& run, int from, int to) const {
+  to = (to == -1 ? run.length() : to);
   FontCachePurgePreventer purge_preventer;
   CachingWordShaper shaper(*this);
-  CharacterRange range = shaper.GetCharacterRange(run, 0, run.length());
+  CharacterRange range = shaper.GetCharacterRange(run, from, to);
   return FloatRect(range.start, -range.ascent, range.Width(), range.Height());
 }
 
 int Font::OffsetForPosition(const TextRun& run,
                             float x_float,
-                            bool include_partial_glyphs) const {
+                            OffsetForPositionType type) const {
   FontCachePurgePreventer purge_preventer;
   CachingWordShaper shaper(*this);
-  return shaper.OffsetForPosition(run, x_float, include_partial_glyphs);
+  return shaper.OffsetForPosition(run, x_float, type);
 }
 
 ShapeCache* Font::GetShapeCache() const {
@@ -502,6 +503,18 @@ Vector<CharacterRange> Font::IndividualCharacterRanges(
   // more popular platforms, and to protect users, we are using a CHECK here.
   CHECK_EQ(ranges.size(), run.length());
   return ranges;
+}
+
+void Font::ExpandRangeToIncludePartialGlyphs(const TextRun& text_run,
+                                             int& from,
+                                             int& to) const {
+  TextRunPaintInfo run_info(text_run);
+  run_info.from = from;
+  run_info.to = to;
+  CachingWordShaper word_shaper(*this);
+  ShapeResultBuffer buffer;
+  word_shaper.FillResultBuffer(run_info, &buffer);
+  buffer.ExpandRangeToIncludePartialGlyphs(from, to);
 }
 
 LayoutUnit Font::TabWidth(const TabSize& tab_size, LayoutUnit position) const {

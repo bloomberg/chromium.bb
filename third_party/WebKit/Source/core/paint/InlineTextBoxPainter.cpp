@@ -317,6 +317,9 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
                                      static_cast<unsigned>(selection_end)});
   selection_start = selection_offsets.start;
   selection_end = selection_offsets.end;
+  font.ExpandRangeToIncludePartialGlyphs(text_run, selection_start,
+                                         selection_end);
+
   if (inline_text_box_.Truncation() != kCNoTruncation) {
     // In a mixed-direction flow the ellipsis is at the start of the text
     // rather than at the end of it.
@@ -376,7 +379,6 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
       start_offset = selection_end;
       end_offset = selection_start;
     }
-
     text_painter.Paint(start_offset, end_offset, length, text_style);
 
     // Paint line-through decoration if needed.
@@ -390,7 +392,21 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
   if ((paint_selected_text_only || paint_selected_text_separately) &&
       selection_start < selection_end) {
     // paint only the text that is selected
-    text_painter.Paint(selection_start, selection_end, length, selection_style);
+    LayoutRect selection_rect =
+        GetSelectionRect<InlineTextBoxPainter::PaintOptions::kNormal>(
+            box_rect, style_to_use, font);
+
+    {
+      GraphicsContextStateSaver state_saver(context);
+      context.ClipOut(FloatRect(selection_rect));
+      text_painter.Paint(selection_start, selection_end, length, text_style);
+    }
+    {
+      GraphicsContextStateSaver state_saver(context);
+      context.Clip(FloatRect(selection_rect));
+      text_painter.Paint(selection_start, selection_end, length,
+                         selection_style);
+    }
   }
 
   if (paint_info.phase == PaintPhase::kForeground) {
@@ -891,6 +907,90 @@ void InlineTextBoxPainter::PaintDocumentMarker(GraphicsContext& context,
                      FloatPoint((box_origin.X() + start).ToFloat(),
                                 (box_origin.Y() + underline_offset).ToFloat()),
                      width.ToFloat(), marker.GetType(), style.EffectiveZoom());
+}
+
+template <InlineTextBoxPainter::PaintOptions options>
+LayoutRect InlineTextBoxPainter::GetSelectionRect(
+    const LayoutRect& box_rect,
+    const ComputedStyle& style,
+    const Font& font,
+    LayoutTextCombine* combined_text) {
+  // See if we have a selection to paint at all.
+  int s_pos, e_pos;
+  inline_text_box_.SelectionStartEnd(s_pos, e_pos);
+  if (s_pos >= e_pos)
+    return LayoutRect();
+
+  // If the text is truncated, let the thing being painted in the truncation
+  // draw its own highlight.
+  unsigned start = inline_text_box_.Start();
+  int length = inline_text_box_.Len();
+  bool ltr = inline_text_box_.IsLeftToRightDirection();
+  bool flow_is_ltr = inline_text_box_.GetLineLayoutItem()
+                         .ContainingBlock()
+                         .Style()
+                         ->IsLeftToRightDirection();
+  if (inline_text_box_.Truncation() != kCNoTruncation) {
+    // In a mixed-direction flow the ellipsis is at the start of the text
+    // so we need to start after it. Otherwise we just need to make sure
+    // the end of the text is where the ellipsis starts.
+    if (ltr != flow_is_ltr)
+      s_pos = std::max<int>(s_pos, inline_text_box_.Truncation());
+    else
+      length = inline_text_box_.Truncation();
+  }
+  StringView string(inline_text_box_.GetLineLayoutItem().GetText(), start,
+                    static_cast<unsigned>(length));
+
+  StringBuilder characters_with_hyphen;
+  bool respect_hyphen = e_pos == length && inline_text_box_.HasHyphen();
+  TextRun text_run = inline_text_box_.ConstructTextRun(
+      style, string,
+      inline_text_box_.GetLineLayoutItem().TextLength() -
+          inline_text_box_.Start(),
+      respect_hyphen ? &characters_with_hyphen : nullptr);
+  if (respect_hyphen)
+    e_pos = text_run.length();
+
+  if (options == InlineTextBoxPainter::PaintOptions::kCombinedText) {
+    DCHECK(combined_text);
+    return box_rect;
+  }
+
+  LayoutUnit selection_bottom = inline_text_box_.Root().SelectionBottom();
+  LayoutUnit selection_top = inline_text_box_.Root().SelectionTop();
+
+  int delta_y = RoundToInt(
+      inline_text_box_.GetLineLayoutItem().Style()->IsFlippedLinesWritingMode()
+          ? selection_bottom - inline_text_box_.LogicalBottom()
+          : inline_text_box_.LogicalTop() - selection_top);
+  int sel_height = std::max(0, RoundToInt(selection_bottom - selection_top));
+
+  FloatPoint local_origin(box_rect.X().ToFloat(),
+                          (box_rect.Y() - delta_y).ToFloat());
+  LayoutRect selection_rect = LayoutRect(font.SelectionRectForText(
+      text_run, local_origin, sel_height, s_pos, e_pos));
+  // For line breaks, just painting a selection where the line break itself
+  // is rendered is sufficient. Don't select it if there's an ellipsis
+  // there.
+  if (inline_text_box_.HasWrappedSelectionNewline() &&
+      inline_text_box_.Truncation() == kCNoTruncation &&
+      !inline_text_box_.IsLineBreak())
+    ExpandToIncludeNewlineForSelection(selection_rect);
+
+  // Line breaks report themselves as having zero width for layout purposes,
+  // and so will end up positioned at (0, 0), even though we paint their
+  // selection highlight with character width. For RTL then, we have to
+  // explicitly shift the selection rect over to paint in the right location.
+  if (!inline_text_box_.IsLeftToRightDirection() &&
+      inline_text_box_.IsLineBreak())
+    selection_rect.Move(-selection_rect.Width(), LayoutUnit());
+  if (!flow_is_ltr && !ltr && inline_text_box_.Truncation() != kCNoTruncation) {
+    selection_rect.Move(
+        inline_text_box_.LogicalWidth() - selection_rect.Width(), LayoutUnit());
+  }
+
+  return selection_rect;
 }
 
 template <InlineTextBoxPainter::PaintOptions options>
