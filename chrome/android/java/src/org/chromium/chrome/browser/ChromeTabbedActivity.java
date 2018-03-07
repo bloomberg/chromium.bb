@@ -1686,7 +1686,7 @@ public class ChromeTabbedActivity
 
             LauncherShortcutActivity.updateIncognitoShortcut(ChromeTabbedActivity.this);
 
-            ChromeHomeSurveyController.initialize(this, mTabModelSelectorImpl);
+            ChromeHomeSurveyController.initialize(mTabModelSelectorImpl);
         });
     }
 
