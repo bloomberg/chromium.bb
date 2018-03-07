@@ -419,8 +419,6 @@ WallpaperManager.prototype.postDownloadDomInit_ = function() {
           var localInfo = items[Constants.AccessLocalWallpaperInfoKey];
           if (localInfo && localInfo.hasOwnProperty('appName'))
             callback(localInfo.appName);
-          else if (loadTimeData.valueExists('wallpaperAppName'))
-            callback(str('wallpaperAppName'));
           else
             callback('');
         });
