@@ -13,6 +13,7 @@
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
@@ -31,7 +32,9 @@ const int kPopupSidePadding = 0;
 // Padding values and dimensions for rows.
 const int kRowHeight = 28;
 const int kRowTopBottomPadding = 0;
-const int kRowSidePadding = 16;
+// Used for padding on sides of rows, as well as minimum spacing between
+// items inside of rows.
+const int kRowHorizontalSpacing = 16;
 
 // Padding values specific to the separator row.
 const int kSeparatorTopBottomPadding = 4;
@@ -65,23 +68,31 @@ void AutofillPopupRowView::AcceptSelection() {
   controller_->AcceptSuggestion(line_number_);
 }
 
-void AutofillPopupRowView::SetStyle(bool is_selected) {
+void AutofillPopupRowView::SetSelected(bool is_selected) {
+  if (is_selected == is_selected_)
+    return;
+
+  is_selected_ = is_selected;
+  RefreshStyle();
+}
+
+void AutofillPopupRowView::RefreshStyle() {
   // Only content rows, not separators, can be highlighted/selected.
   DCHECK(!is_separator_);
 
   SetBackground(views::CreateThemedSolidBackground(
-      this, is_selected
+      this, is_selected_
                 ? ui::NativeTheme::kColorId_ResultsTableSelectedBackground
                 : ui::NativeTheme::kColorId_ResultsTableNormalBackground));
 
   if (text_label_) {
-    text_label_->SetEnabledColor(is_selected ? text_selected_color_
-                                             : text_color_);
+    text_label_->SetEnabledColor(is_selected_ ? text_selected_color_
+                                              : text_color_);
   }
 
   if (subtext_label_) {
-    subtext_label_->SetEnabledColor(is_selected ? subtext_selected_color_
-                                                : subtext_color_);
+    subtext_label_->SetEnabledColor(is_selected_ ? subtext_selected_color_
+                                                 : subtext_color_);
   }
 }
 
@@ -107,6 +118,9 @@ bool AutofillPopupRowView::OnMousePressed(const ui::MouseEvent& event) {
 }
 
 void AutofillPopupRowView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
+  if (is_separator_)
+    return;
+
   text_color_ = theme->GetSystemColor(
       is_warning_ ? ui::NativeTheme::kColorId_ResultsTableNegativeText
                   : ui::NativeTheme::kColorId_ResultsTableNormalText);
@@ -118,6 +132,8 @@ void AutofillPopupRowView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
       ui::NativeTheme::kColorId_ResultsTableNormalDimmedText);
   subtext_selected_color_ = theme->GetSystemColor(
       ui::NativeTheme::kColorId_ResultsTableSelectedDimmedText);
+
+  RefreshStyle();
 }
 
 void AutofillPopupRowView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
@@ -139,11 +155,21 @@ void AutofillPopupRowView::CreateContent() {
 
   auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal,
-      gfx::Insets(kRowTopBottomPadding, kRowSidePadding)));
+      gfx::Insets(kRowTopBottomPadding, kRowHorizontalSpacing)));
 
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
   layout->set_minimum_cross_axis_size(kRowHeight);
+
+  const gfx::ImageSkia icon =
+      controller_->layout_model().GetIconImage(line_number_);
+  if (!icon.isNull()) {
+    auto* image_view = new views::ImageView();
+    image_view->SetImage(icon);
+    image_view->SetBorder(
+        views::CreateEmptyBorder(0, 0, 0, kRowHorizontalSpacing / 2));
+    AddChildView(image_view);
+  }
 
   // TODO(tmartino): Remove elision, font list, and font color
   // responsibilities from controller.
@@ -154,7 +180,7 @@ void AutofillPopupRowView::CreateContent() {
   AddChildView(text_label_);
 
   auto* spacer = new views::View;
-  spacer->SetPreferredSize(gfx::Size(kRowSidePadding, 1));
+  spacer->SetPreferredSize(gfx::Size(kRowHorizontalSpacing, 1));
   AddChildView(spacer);
   layout->SetFlexForView(spacer, /*flex*/ 1);
 
@@ -211,10 +237,10 @@ void AutofillPopupViewNativeViews::OnSelectedRowChanged(
     base::Optional<int> previous_row_selection,
     base::Optional<int> current_row_selection) {
   if (previous_row_selection)
-    rows_[*previous_row_selection]->SetStyle(false);
+    rows_[*previous_row_selection]->SetSelected(false);
 
   if (current_row_selection)
-    rows_[*current_row_selection]->SetStyle(true);
+    rows_[*current_row_selection]->SetSelected(true);
 }
 
 void AutofillPopupViewNativeViews::OnSuggestionsChanged() {

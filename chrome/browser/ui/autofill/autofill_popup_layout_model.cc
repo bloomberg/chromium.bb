@@ -211,6 +211,9 @@ ui::NativeTheme::ColorId AutofillPopupLayoutModel::GetValueFontColorIDForRow(
 gfx::ImageSkia AutofillPopupLayoutModel::GetIconImage(size_t index) const {
   std::vector<autofill::Suggestion> suggestions = delegate_->GetSuggestions();
   const base::string16& icon_str = suggestions[index].icon;
+  if (icon_str.empty())
+    return gfx::ImageSkia();
+
   constexpr int kIconSize = 16;
 
   // For http warning message, get icon images from VectorIcon, which is the
