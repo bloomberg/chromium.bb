@@ -31,7 +31,8 @@ class AutofillPopupRowView : public views::View {
   ~AutofillPopupRowView() override {}
 
   void AcceptSelection();
-  void SetStyle(bool is_selected);
+  void SetSelected(bool is_selected);
+  void RefreshStyle();
 
   // views::View:
   // TODO(tmartino): Consolidate and deprecate code in AutofillPopupBaseView
@@ -48,9 +49,10 @@ class AutofillPopupRowView : public views::View {
   void CreateContent();
 
   AutofillPopupController* controller_;
-  int line_number_;
-  bool is_separator_;
-  bool is_warning_;
+  const int line_number_;
+  bool is_separator_ = false;  // overwritten in ctor
+  bool is_warning_ = false;    // overwritten in ctor
+  bool is_selected_ = false;
 
   views::Label* text_label_ = nullptr;
   views::Label* subtext_label_ = nullptr;

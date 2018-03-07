@@ -223,9 +223,8 @@ void AutofillPopupViewViews::DrawAutofillEntry(gfx::Canvas* canvas,
 
   // Draw the Autofill icon, if one exists
   int row_height = controller_->layout_model().GetRowBounds(index).height();
-  if (!controller_->GetSuggestionAt(index).icon.empty()) {
-    const gfx::ImageSkia image =
-        controller_->layout_model().GetIconImage(index);
+  const gfx::ImageSkia image = controller_->layout_model().GetIconImage(index);
+  if (!image.isNull()) {
     int icon_y = entry_rect.y() + (row_height - image.height()) / 2;
 
     int icon_x_align_left =
