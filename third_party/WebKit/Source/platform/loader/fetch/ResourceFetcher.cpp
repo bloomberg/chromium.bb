@@ -466,6 +466,7 @@ Resource* ResourceFetcher::ResourceForStaticData(
     resource->SetResourceBuffer(data);
   resource->SetIdentifier(CreateUniqueIdentifier());
   resource->SetCacheIdentifier(cache_identifier);
+  resource->SetSourceOrigin(GetSourceOrigin(params.Options()));
   resource->Finish(0.0, Context().GetLoadingTaskRunner().get());
 
   if (!substitute_data.IsValid())
@@ -482,6 +483,7 @@ Resource* ResourceFetcher::ResourceForBlockedRequest(
       params.GetResourceRequest(), params.Options(), params.DecoderOptions());
   resource->SetStatus(ResourceStatus::kPending);
   resource->NotifyStartLoad();
+  resource->SetSourceOrigin(GetSourceOrigin(params.Options()));
   resource->FinishAsError(ResourceError::CancelledDueToAccessCheckError(
                               params.Url(), blocked_reason),
                           Context().GetLoadingTaskRunner().get());
@@ -875,8 +877,6 @@ void ResourceFetcher::AddToMemoryCacheIfNeeded(const FetchParameters& params,
   if (!ShouldResourceBeAddedToMemoryCache(params, resource))
     return;
 
-  resource->SetSourceOrigin(GetSourceOrigin(params.Options()));
-
   GetMemoryCache()->Add(resource);
 }
 
@@ -898,6 +898,7 @@ Resource* ResourceFetcher::CreateResourceForLoading(
     resource->SetPreloadDiscoveryTime(params.PreloadDiscoveryTime());
   }
   resource->SetCacheIdentifier(cache_identifier);
+  resource->SetSourceOrigin(GetSourceOrigin(params.Options()));
 
   AddToMemoryCacheIfNeeded(params, resource);
   return resource;
@@ -1010,8 +1011,6 @@ void ResourceFetcher::InsertAsPreloadIfNecessary(Resource* resource,
   PreloadKey key(params.Url(), type);
   if (preloads_.find(key) != preloads_.end())
     return;
-
-  resource->SetSourceOrigin(GetSourceOrigin(params.Options()));
 
   preloads_.insert(key, resource);
   resource->MarkAsPreload();
