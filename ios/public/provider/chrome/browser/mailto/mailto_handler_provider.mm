@@ -13,6 +13,10 @@ MailtoHandlerProvider::MailtoHandlerProvider() {}
 MailtoHandlerProvider::~MailtoHandlerProvider() {}
 
 void MailtoHandlerProvider::PrepareMailtoHandling(
+    SignedInIdentityBlock signed_in_identity_block,
+    SignedInIdentitiesBlock signed_in_identities_block) {}
+
+void MailtoHandlerProvider::PrepareMailtoHandling(
     ios::ChromeIdentityService* identity_service,
     SignedInIdentityBlock signed_in_identity_block,
     SignedInIdentitiesBlock signed_in_identities_block) {}
