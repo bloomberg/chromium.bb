@@ -127,12 +127,17 @@ static INLINE void cfl_subtract_average_null(int16_t *pred_buf_q3) {
   assert(0);
 }
 
-#define CFL_SUB_AVG_X(arch, width, height, round_offset, num_pel_log2)        \
-  static void subtract_average_##width##x##height##_x(int16_t *pred_buf_q3) { \
-    subtract_average_##arch(pred_buf_q3, width, height, round_offset,         \
-                            num_pel_log2);                                    \
+// Declare a size-specific wrapper for the size-generic function. The compiler
+// will inline the size generic function in here, the advantage is that the size
+// will be constant allowing for loop unrolling and other constant propagated
+// goodness.
+#define CFL_SUB_AVG_X(arch, width, height, round_offset, num_pel_log2)      \
+  void subtract_average_##width##x##height##_##arch(int16_t *pred_buf_q3) { \
+    subtract_average_##arch(pred_buf_q3, width, height, round_offset,       \
+                            num_pel_log2);                                  \
   }
 
+// Declare size-specific wrappers for all valid CfL sizes.
 #define CFL_SUB_AVG_FN(arch)                                                \
   CFL_SUB_AVG_X(arch, 4, 4, 8, 4)                                           \
   CFL_SUB_AVG_X(arch, 4, 8, 16, 5)                                          \
@@ -150,25 +155,25 @@ static INLINE void cfl_subtract_average_null(int16_t *pred_buf_q3) {
   CFL_SUB_AVG_X(arch, 32, 32, 512, 10)                                      \
   cfl_subtract_average_fn get_subtract_average_fn_##arch(TX_SIZE tx_size) { \
     static const cfl_subtract_average_fn sub_avg[TX_SIZES_ALL] = {          \
-      subtract_average_4x4_x,    /* 4x4 */                                  \
-      subtract_average_8x8_x,    /* 8x8 */                                  \
-      subtract_average_16x16_x,  /* 16x16 */                                \
-      subtract_average_32x32_x,  /* 32x32 */                                \
-      cfl_subtract_average_null, /* 64x64 (invalid CFL size) */             \
-      subtract_average_4x8_x,    /* 4x8 */                                  \
-      subtract_average_8x4_x,    /* 8x4 */                                  \
-      subtract_average_8x16_x,   /* 8x16 */                                 \
-      subtract_average_16x8_x,   /* 16x8 */                                 \
-      subtract_average_16x32_x,  /* 16x32 */                                \
-      subtract_average_32x16_x,  /* 32x16 */                                \
-      cfl_subtract_average_null, /* 32x64 (invalid CFL size) */             \
-      cfl_subtract_average_null, /* 64x32 (invalid CFL size) */             \
-      subtract_average_4x16_x,   /* 4x16 (invalid CFL size) */              \
-      subtract_average_16x4_x,   /* 16x4 (invalid CFL size) */              \
-      subtract_average_8x32_x,   /* 8x32 (invalid CFL size) */              \
-      subtract_average_32x8_x,   /* 32x8 (invalid CFL size) */              \
-      cfl_subtract_average_null, /* 16x64 (invalid CFL size) */             \
-      cfl_subtract_average_null, /* 64x16 (invalid CFL size) */             \
+      subtract_average_4x4_##arch,   /* 4x4 */                              \
+      subtract_average_8x8_##arch,   /* 8x8 */                              \
+      subtract_average_16x16_##arch, /* 16x16 */                            \
+      subtract_average_32x32_##arch, /* 32x32 */                            \
+      cfl_subtract_average_null,     /* 64x64 (invalid CFL size) */         \
+      subtract_average_4x8_##arch,   /* 4x8 */                              \
+      subtract_average_8x4_##arch,   /* 8x4 */                              \
+      subtract_average_8x16_##arch,  /* 8x16 */                             \
+      subtract_average_16x8_##arch,  /* 16x8 */                             \
+      subtract_average_16x32_##arch, /* 16x32 */                            \
+      subtract_average_32x16_##arch, /* 32x16 */                            \
+      cfl_subtract_average_null,     /* 32x64 (invalid CFL size) */         \
+      cfl_subtract_average_null,     /* 64x32 (invalid CFL size) */         \
+      subtract_average_4x16_##arch,  /* 4x16 (invalid CFL size) */          \
+      subtract_average_16x4_##arch,  /* 16x4 (invalid CFL size) */          \
+      subtract_average_8x32_##arch,  /* 8x32 (invalid CFL size) */          \
+      subtract_average_32x8_##arch,  /* 32x8 (invalid CFL size) */          \
+      cfl_subtract_average_null,     /* 16x64 (invalid CFL size) */         \
+      cfl_subtract_average_null,     /* 64x16 (invalid CFL size) */         \
     };                                                                      \
     /* Modulo TX_SIZES_ALL to ensure that an attacker won't be able to */   \
     /* index the function pointer array out of bounds. */                   \
