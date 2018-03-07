@@ -54,17 +54,17 @@ void U2fSign::TryDevice() {
     current_device_->Register(
         U2fRequest::GetBogusApplicationParameter(),
         U2fRequest::GetBogusChallenge(), false /* no individual attestation */,
-        base::Bind(&U2fSign::OnTryDevice, weak_factory_.GetWeakPtr(),
-                   registered_keys_.cend(),
-                   ApplicationParameterType::kPrimary));
+        base::BindOnce(&U2fSign::OnTryDevice, weak_factory_.GetWeakPtr(),
+                       registered_keys_.cend(),
+                       ApplicationParameterType::kPrimary));
     return;
   }
   // Try signing current device with the first registered key
   auto it = registered_keys_.cbegin();
   current_device_->Sign(
       application_parameter_, challenge_digest_, *it,
-      base::Bind(&U2fSign::OnTryDevice, weak_factory_.GetWeakPtr(), it,
-                 ApplicationParameterType::kPrimary));
+      base::BindOnce(&U2fSign::OnTryDevice, weak_factory_.GetWeakPtr(), it,
+                     ApplicationParameterType::kPrimary));
 }
 
 void U2fSign::OnTryDevice(std::vector<std::vector<uint8_t>>::const_iterator it,
@@ -109,14 +109,14 @@ void U2fSign::OnTryDevice(std::vector<std::vector<uint8_t>>::const_iterator it,
         // |alt_application_parameter_| to try.
         current_device_->Sign(
             *alt_application_parameter_, challenge_digest_, *it,
-            base::Bind(&U2fSign::OnTryDevice, weak_factory_.GetWeakPtr(), it,
-                       ApplicationParameterType::kAlternative));
+            base::BindOnce(&U2fSign::OnTryDevice, weak_factory_.GetWeakPtr(),
+                           it, ApplicationParameterType::kAlternative));
       } else if (++it != registered_keys_.end()) {
         // Key is not for this device. Try signing with the next key.
         current_device_->Sign(
             application_parameter_, challenge_digest_, *it,
-            base::Bind(&U2fSign::OnTryDevice, weak_factory_.GetWeakPtr(), it,
-                       ApplicationParameterType::kPrimary));
+            base::BindOnce(&U2fSign::OnTryDevice, weak_factory_.GetWeakPtr(),
+                           it, ApplicationParameterType::kPrimary));
       } else {
         // No provided key was accepted by this device. Send registration
         // (Fake enroll) request to device.
@@ -124,9 +124,9 @@ void U2fSign::OnTryDevice(std::vector<std::vector<uint8_t>>::const_iterator it,
             U2fRequest::GetBogusApplicationParameter(),
             U2fRequest::GetBogusChallenge(),
             false /* no individual attestation */,
-            base::Bind(&U2fSign::OnTryDevice, weak_factory_.GetWeakPtr(),
-                       registered_keys_.cend(),
-                       ApplicationParameterType::kPrimary));
+            base::BindOnce(&U2fSign::OnTryDevice, weak_factory_.GetWeakPtr(),
+                           registered_keys_.cend(),
+                           ApplicationParameterType::kPrimary));
       }
       break;
     }

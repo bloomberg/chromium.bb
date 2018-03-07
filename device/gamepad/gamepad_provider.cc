@@ -73,8 +73,8 @@ GamepadProvider::~GamepadProvider() {
   // some of them require their destructor to be called on the same sequence as
   // their other methods.
   polling_thread_->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&GamepadFetcherVector::clear,
-                            base::Unretained(&data_fetchers_)));
+      FROM_HERE, base::BindOnce(&GamepadFetcherVector::clear,
+                                base::Unretained(&data_fetchers_)));
 
   // Use Stop() to join the polling thread, as there may be pending callbacks
   // which dereference |polling_thread_|.
@@ -153,7 +153,7 @@ void GamepadProvider::Pause() {
   base::MessageLoop* polling_loop = polling_thread_->message_loop();
   polling_loop->task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&GamepadProvider::SendPauseHint, Unretained(this), true));
+      base::BindOnce(&GamepadProvider::SendPauseHint, Unretained(this), true));
 }
 
 void GamepadProvider::Resume() {
@@ -167,10 +167,10 @@ void GamepadProvider::Resume() {
   base::MessageLoop* polling_loop = polling_thread_->message_loop();
   polling_loop->task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&GamepadProvider::SendPauseHint, Unretained(this), false));
+      base::BindOnce(&GamepadProvider::SendPauseHint, Unretained(this), false));
   polling_loop->task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&GamepadProvider::ScheduleDoPoll, Unretained(this)));
+      base::BindOnce(&GamepadProvider::ScheduleDoPoll, Unretained(this)));
 }
 
 void GamepadProvider::RegisterForUserGesture(const base::Closure& closure) {
@@ -222,8 +222,9 @@ void GamepadProvider::AddGamepadDataFetcher(
 
 void GamepadProvider::RemoveSourceGamepadDataFetcher(GamepadSource source) {
   polling_thread_->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&GamepadProvider::DoRemoveSourceGamepadDataFetcher,
-                            base::Unretained(this), source));
+      FROM_HERE,
+      base::BindOnce(&GamepadProvider::DoRemoveSourceGamepadDataFetcher,
+                     base::Unretained(this), source));
 }
 
 GamepadDataFetcher* GamepadProvider::GetSourceGamepadDataFetcher(
@@ -370,7 +371,7 @@ void GamepadProvider::ScheduleDoPoll() {
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&GamepadProvider::DoPoll, Unretained(this)),
+      FROM_HERE, base::BindOnce(&GamepadProvider::DoPoll, Unretained(this)),
       base::TimeDelta::FromMilliseconds(kDesiredSamplingIntervalMs));
   have_scheduled_do_poll_ = true;
 }

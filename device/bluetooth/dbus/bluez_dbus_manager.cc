@@ -65,10 +65,10 @@ BluezDBusManager::BluezDBusManager(dbus::Bus* bus, bool use_dbus_fakes)
               bluetooth_object_manager::kBluetoothObjectManagerServicePath))
       ->CallMethodWithErrorCallback(
           &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-          base::Bind(&BluezDBusManager::OnObjectManagerSupported,
-                     weak_ptr_factory_.GetWeakPtr()),
-          base::Bind(&BluezDBusManager::OnObjectManagerNotSupported,
-                     weak_ptr_factory_.GetWeakPtr()));
+          base::BindOnce(&BluezDBusManager::OnObjectManagerSupported,
+                         weak_ptr_factory_.GetWeakPtr()),
+          base::BindOnce(&BluezDBusManager::OnObjectManagerNotSupported,
+                         weak_ptr_factory_.GetWeakPtr()));
 }
 
 BluezDBusManager::~BluezDBusManager() {

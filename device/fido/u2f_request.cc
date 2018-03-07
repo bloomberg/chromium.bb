@@ -115,7 +115,7 @@ void U2fRequest::Transition() {
       }
       state_ = State::WINK;
       current_device_->TryWink(
-          base::Bind(&U2fRequest::Transition, weak_factory_.GetWeakPtr()));
+          base::BindOnce(&U2fRequest::Transition, weak_factory_.GetWeakPtr()));
       break;
     case State::WINK:
       state_ = State::BUSY;

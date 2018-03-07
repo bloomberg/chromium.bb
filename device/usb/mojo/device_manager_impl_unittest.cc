@@ -136,7 +136,7 @@ TEST_F(USBDeviceManagerImplTest, GetDevices) {
   base::RunLoop loop;
   device_manager->GetDevices(
       std::move(options),
-      base::Bind(&ExpectDevicesAndThen, guids, loop.QuitClosure()));
+      base::BindOnce(&ExpectDevicesAndThen, guids, loop.QuitClosure()));
   loop.Run();
 }
 
@@ -193,7 +193,8 @@ TEST_F(USBDeviceManagerImplTest, Client) {
     guids.insert(device0->guid());
     base::RunLoop loop;
     device_manager->GetDevices(
-        nullptr, base::Bind(&ExpectDevicesAndThen, guids, loop.QuitClosure()));
+        nullptr,
+        base::BindOnce(&ExpectDevicesAndThen, guids, loop.QuitClosure()));
     loop.Run();
   }
 

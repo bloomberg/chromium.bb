@@ -315,9 +315,9 @@ void UsbDeviceHandleUsbfs::FileThreadHelper::DiscardUrb(Transfer* transfer) {
 
   HANDLE_EINTR(ioctl(fd_.get(), USBDEVFS_DISCARDURB, &transfer->urb));
 
-  task_runner_->PostTask(
-      FROM_HERE, base::Bind(&UsbDeviceHandleUsbfs::UrbDiscarded, device_handle_,
-                            transfer));
+  task_runner_->PostTask(FROM_HERE,
+                         base::BindOnce(&UsbDeviceHandleUsbfs::UrbDiscarded,
+                                        device_handle_, transfer));
 }
 
 void UsbDeviceHandleUsbfs::FileThreadHelper::OnFileCanWriteWithoutBlocking() {
@@ -346,7 +346,7 @@ void UsbDeviceHandleUsbfs::FileThreadHelper::OnFileCanWriteWithoutBlocking() {
 
   task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&UsbDeviceHandleUsbfs::ReapedUrbs, device_handle_, urbs));
+      base::BindOnce(&UsbDeviceHandleUsbfs::ReapedUrbs, device_handle_, urbs));
 }
 
 UsbDeviceHandleUsbfs::Transfer::Transfer(
@@ -418,8 +418,8 @@ UsbDeviceHandleUsbfs::UsbDeviceHandleUsbfs(
 
   helper_.reset(new FileThreadHelper(std::move(fd), this, task_runner_));
   blocking_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&FileThreadHelper::Start, base::Unretained(helper_.get())));
+      FROM_HERE, base::BindOnce(&FileThreadHelper::Start,
+                                base::Unretained(helper_.get())));
 }
 
 scoped_refptr<UsbDevice> UsbDeviceHandleUsbfs::GetDevice() const {
@@ -446,7 +446,7 @@ void UsbDeviceHandleUsbfs::Close() {
 
   // Releases |helper_|.
   blocking_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&UsbDeviceHandleUsbfs::CloseBlocking, this));
+      FROM_HERE, base::BindOnce(&UsbDeviceHandleUsbfs::CloseBlocking, this));
 }
 
 void UsbDeviceHandleUsbfs::SetConfiguration(int configuration_value,
@@ -946,8 +946,9 @@ void UsbDeviceHandleUsbfs::CancelTransfer(Transfer* transfer,
   transfer->cancelled = true;
 
   blocking_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&UsbDeviceHandleUsbfs::FileThreadHelper::DiscardUrb,
-                            base::Unretained(helper_.get()), transfer));
+      FROM_HERE,
+      base::BindOnce(&UsbDeviceHandleUsbfs::FileThreadHelper::DiscardUrb,
+                     base::Unretained(helper_.get()), transfer));
 
   // Cancelling |timeout_closure| and running completion callbacks may free
   // |this| so these operations must be performed at the end of this function.

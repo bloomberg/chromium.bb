@@ -287,7 +287,7 @@ TEST_F(U2fHidDeviceTest, TestConnectionFailure) {
   std::unique_ptr<U2fApduResponse> response3(
       U2fApduResponse::CreateFromMessage(std::vector<uint8_t>({0x0, 0x0})));
   device->DeviceTransact(U2fApduCommand::CreateVersion()->GetEncodedCommand(),
-                         base::Bind(&ResponseCallback, &response3));
+                         base::BindOnce(&ResponseCallback, &response3));
   EXPECT_EQ(U2fHidDevice::State::DEVICE_ERROR, device->state_);
   EXPECT_EQ(nullptr, response1);
   EXPECT_EQ(nullptr, response2);
@@ -314,7 +314,7 @@ TEST_F(U2fHidDeviceTest, TestDeviceError) {
   std::unique_ptr<U2fApduResponse> response0(
       U2fApduResponse::CreateFromMessage(std::vector<uint8_t>({0x0, 0x0})));
   device->DeviceTransact(U2fApduCommand::CreateVersion()->GetEncodedCommand(),
-                         base::Bind(&ResponseCallback, &response0));
+                         base::BindOnce(&ResponseCallback, &response0));
   EXPECT_EQ(nullptr, response0);
   EXPECT_EQ(U2fHidDevice::State::DEVICE_ERROR, device->state_);
 
@@ -332,7 +332,7 @@ TEST_F(U2fHidDeviceTest, TestDeviceError) {
   std::unique_ptr<U2fApduResponse> response3(
       U2fApduResponse::CreateFromMessage(std::vector<uint8_t>({0x0, 0x0})));
   device->DeviceTransact(U2fApduCommand::CreateVersion()->GetEncodedCommand(),
-                         base::Bind(&ResponseCallback, &response3));
+                         base::BindOnce(&ResponseCallback, &response3));
   FakeHidConnection::mock_connection_error_ = false;
 
   EXPECT_EQ(U2fHidDevice::State::DEVICE_ERROR, device->state_);

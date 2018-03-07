@@ -97,7 +97,7 @@ void UsbService::GetDevices(const GetDevicesCallback& callback) {
   for (const auto& map_entry : devices_)
     devices.push_back(map_entry.second);
   if (task_runner_)
-    task_runner_->PostTask(FROM_HERE, base::Bind(callback, devices));
+    task_runner_->PostTask(FROM_HERE, base::BindOnce(callback, devices));
   else
     callback.Run(devices);
 }

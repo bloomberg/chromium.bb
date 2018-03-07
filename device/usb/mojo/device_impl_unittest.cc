@@ -445,16 +445,16 @@ TEST_F(USBDeviceImplTest, Open) {
 
   {
     base::RunLoop loop;
-    device->Open(base::Bind(&ExpectOpenAndThen, mojom::UsbOpenDeviceError::OK,
-                            loop.QuitClosure()));
+    device->Open(base::BindOnce(
+        &ExpectOpenAndThen, mojom::UsbOpenDeviceError::OK, loop.QuitClosure()));
     loop.Run();
   }
 
   {
     base::RunLoop loop;
-    device->Open(base::Bind(&ExpectOpenAndThen,
-                            mojom::UsbOpenDeviceError::ALREADY_OPEN,
-                            loop.QuitClosure()));
+    device->Open(base::BindOnce(&ExpectOpenAndThen,
+                                mojom::UsbOpenDeviceError::ALREADY_OPEN,
+                                loop.QuitClosure()));
     loop.Run();
   }
 
@@ -471,8 +471,8 @@ TEST_F(USBDeviceImplTest, Close) {
 
   {
     base::RunLoop loop;
-    device->Open(base::Bind(&ExpectOpenAndThen, mojom::UsbOpenDeviceError::OK,
-                            loop.QuitClosure()));
+    device->Open(base::BindOnce(
+        &ExpectOpenAndThen, mojom::UsbOpenDeviceError::OK, loop.QuitClosure()));
     loop.Run();
   }
 
@@ -494,8 +494,8 @@ TEST_F(USBDeviceImplTest, SetInvalidConfiguration) {
 
   {
     base::RunLoop loop;
-    device->Open(base::Bind(&ExpectOpenAndThen, mojom::UsbOpenDeviceError::OK,
-                            loop.QuitClosure()));
+    device->Open(base::BindOnce(
+        &ExpectOpenAndThen, mojom::UsbOpenDeviceError::OK, loop.QuitClosure()));
     loop.Run();
   }
 
@@ -506,7 +506,7 @@ TEST_F(USBDeviceImplTest, SetInvalidConfiguration) {
     // configuration.
     base::RunLoop loop;
     device->SetConfiguration(
-        42, base::Bind(&ExpectResultAndThen, false, loop.QuitClosure()));
+        42, base::BindOnce(&ExpectResultAndThen, false, loop.QuitClosure()));
     loop.Run();
   }
 
@@ -520,8 +520,8 @@ TEST_F(USBDeviceImplTest, SetValidConfiguration) {
 
   {
     base::RunLoop loop;
-    device->Open(base::Bind(&ExpectOpenAndThen, mojom::UsbOpenDeviceError::OK,
-                            loop.QuitClosure()));
+    device->Open(base::BindOnce(
+        &ExpectOpenAndThen, mojom::UsbOpenDeviceError::OK, loop.QuitClosure()));
     loop.Run();
   }
 
@@ -533,7 +533,7 @@ TEST_F(USBDeviceImplTest, SetValidConfiguration) {
     // SetConfiguration should succeed because 42 is a valid mock configuration.
     base::RunLoop loop;
     device->SetConfiguration(
-        42, base::Bind(&ExpectResultAndThen, true, loop.QuitClosure()));
+        42, base::BindOnce(&ExpectResultAndThen, true, loop.QuitClosure()));
     loop.Run();
   }
 
@@ -549,8 +549,8 @@ TEST_F(USBDeviceImplTest, Reset) {
 
   {
     base::RunLoop loop;
-    device->Open(base::Bind(&ExpectOpenAndThen, mojom::UsbOpenDeviceError::OK,
-                            loop.QuitClosure()));
+    device->Open(base::BindOnce(
+        &ExpectOpenAndThen, mojom::UsbOpenDeviceError::OK, loop.QuitClosure()));
     loop.Run();
   }
 
@@ -560,7 +560,8 @@ TEST_F(USBDeviceImplTest, Reset) {
 
   {
     base::RunLoop loop;
-    device->Reset(base::Bind(&ExpectResultAndThen, true, loop.QuitClosure()));
+    device->Reset(
+        base::BindOnce(&ExpectResultAndThen, true, loop.QuitClosure()));
     loop.Run();
   }
 
@@ -570,7 +571,8 @@ TEST_F(USBDeviceImplTest, Reset) {
 
   {
     base::RunLoop loop;
-    device->Reset(base::Bind(&ExpectResultAndThen, false, loop.QuitClosure()));
+    device->Reset(
+        base::BindOnce(&ExpectResultAndThen, false, loop.QuitClosure()));
     loop.Run();
   }
 
@@ -584,8 +586,8 @@ TEST_F(USBDeviceImplTest, ClaimAndReleaseInterface) {
 
   {
     base::RunLoop loop;
-    device->Open(base::Bind(&ExpectOpenAndThen, mojom::UsbOpenDeviceError::OK,
-                            loop.QuitClosure()));
+    device->Open(base::BindOnce(
+        &ExpectOpenAndThen, mojom::UsbOpenDeviceError::OK, loop.QuitClosure()));
     loop.Run();
   }
 
@@ -597,7 +599,7 @@ TEST_F(USBDeviceImplTest, ClaimAndReleaseInterface) {
   {
     base::RunLoop loop;
     device->SetConfiguration(
-        1, base::Bind(&ExpectResultAndThen, true, loop.QuitClosure()));
+        1, base::BindOnce(&ExpectResultAndThen, true, loop.QuitClosure()));
     loop.Run();
   }
 
@@ -605,7 +607,7 @@ TEST_F(USBDeviceImplTest, ClaimAndReleaseInterface) {
     // Try to claim an invalid interface and expect failure.
     base::RunLoop loop;
     device->ClaimInterface(
-        2, base::Bind(&ExpectResultAndThen, false, loop.QuitClosure()));
+        2, base::BindOnce(&ExpectResultAndThen, false, loop.QuitClosure()));
     loop.Run();
   }
 
@@ -614,7 +616,7 @@ TEST_F(USBDeviceImplTest, ClaimAndReleaseInterface) {
   {
     base::RunLoop loop;
     device->ClaimInterface(
-        1, base::Bind(&ExpectResultAndThen, true, loop.QuitClosure()));
+        1, base::BindOnce(&ExpectResultAndThen, true, loop.QuitClosure()));
     loop.Run();
   }
 
@@ -624,7 +626,7 @@ TEST_F(USBDeviceImplTest, ClaimAndReleaseInterface) {
     // Releasing a non-existent interface should fail.
     base::RunLoop loop;
     device->ReleaseInterface(
-        2, base::Bind(&ExpectResultAndThen, false, loop.QuitClosure()));
+        2, base::BindOnce(&ExpectResultAndThen, false, loop.QuitClosure()));
     loop.Run();
   }
 
@@ -634,7 +636,7 @@ TEST_F(USBDeviceImplTest, ClaimAndReleaseInterface) {
     // Now this should release the claimed interface and close the handle.
     base::RunLoop loop;
     device->ReleaseInterface(
-        1, base::Bind(&ExpectResultAndThen, true, loop.QuitClosure()));
+        1, base::BindOnce(&ExpectResultAndThen, true, loop.QuitClosure()));
     loop.Run();
   }
 
@@ -648,8 +650,8 @@ TEST_F(USBDeviceImplTest, SetInterfaceAlternateSetting) {
 
   {
     base::RunLoop loop;
-    device->Open(base::Bind(&ExpectOpenAndThen, mojom::UsbOpenDeviceError::OK,
-                            loop.QuitClosure()));
+    device->Open(base::BindOnce(
+        &ExpectOpenAndThen, mojom::UsbOpenDeviceError::OK, loop.QuitClosure()));
     loop.Run();
   }
 
@@ -663,7 +665,7 @@ TEST_F(USBDeviceImplTest, SetInterfaceAlternateSetting) {
   {
     base::RunLoop loop;
     device->SetInterfaceAlternateSetting(
-        1, 42, base::Bind(&ExpectResultAndThen, true, loop.QuitClosure()));
+        1, 42, base::BindOnce(&ExpectResultAndThen, true, loop.QuitClosure()));
     loop.Run();
   }
 
@@ -672,7 +674,8 @@ TEST_F(USBDeviceImplTest, SetInterfaceAlternateSetting) {
   {
     base::RunLoop loop;
     device->SetInterfaceAlternateSetting(
-        1, 100, base::Bind(&ExpectResultAndThen, false, loop.QuitClosure()));
+        1, 100,
+        base::BindOnce(&ExpectResultAndThen, false, loop.QuitClosure()));
     loop.Run();
   }
 
@@ -686,8 +689,8 @@ TEST_F(USBDeviceImplTest, ControlTransfer) {
 
   {
     base::RunLoop loop;
-    device->Open(base::Bind(&ExpectOpenAndThen, mojom::UsbOpenDeviceError::OK,
-                            loop.QuitClosure()));
+    device->Open(base::BindOnce(
+        &ExpectOpenAndThen, mojom::UsbOpenDeviceError::OK, loop.QuitClosure()));
     loop.Run();
   }
 
@@ -698,7 +701,7 @@ TEST_F(USBDeviceImplTest, ControlTransfer) {
   {
     base::RunLoop loop;
     device->SetConfiguration(
-        1, base::Bind(&ExpectResultAndThen, true, loop.QuitClosure()));
+        1, base::BindOnce(&ExpectResultAndThen, true, loop.QuitClosure()));
     loop.Run();
   }
 
@@ -723,11 +726,11 @@ TEST_F(USBDeviceImplTest, ControlTransfer) {
     params->value = 6;
     params->index = 7;
     base::RunLoop loop;
-    device->ControlTransferIn(std::move(params),
-                              static_cast<uint32_t>(fake_data.size()), 0,
-                              base::Bind(&ExpectTransferInAndThen,
-                                         mojom::UsbTransferStatus::COMPLETED,
-                                         fake_data, loop.QuitClosure()));
+    device->ControlTransferIn(
+        std::move(params), static_cast<uint32_t>(fake_data.size()), 0,
+        base::BindOnce(&ExpectTransferInAndThen,
+                       mojom::UsbTransferStatus::COMPLETED, fake_data,
+                       loop.QuitClosure()));
     loop.Run();
   }
 
@@ -749,8 +752,9 @@ TEST_F(USBDeviceImplTest, ControlTransfer) {
     base::RunLoop loop;
     device->ControlTransferOut(
         std::move(params), fake_data, 0,
-        base::Bind(&ExpectTransferStatusAndThen,
-                   mojom::UsbTransferStatus::COMPLETED, loop.QuitClosure()));
+        base::BindOnce(&ExpectTransferStatusAndThen,
+                       mojom::UsbTransferStatus::COMPLETED,
+                       loop.QuitClosure()));
     loop.Run();
   }
 
@@ -764,8 +768,8 @@ TEST_F(USBDeviceImplTest, GenericTransfer) {
 
   {
     base::RunLoop loop;
-    device->Open(base::Bind(&ExpectOpenAndThen, mojom::UsbOpenDeviceError::OK,
-                            loop.QuitClosure()));
+    device->Open(base::BindOnce(
+        &ExpectOpenAndThen, mojom::UsbOpenDeviceError::OK, loop.QuitClosure()));
     loop.Run();
   }
 
@@ -790,8 +794,9 @@ TEST_F(USBDeviceImplTest, GenericTransfer) {
     base::RunLoop loop;
     device->GenericTransferOut(
         1, fake_outbound_data, 0,
-        base::Bind(&ExpectTransferStatusAndThen,
-                   mojom::UsbTransferStatus::COMPLETED, loop.QuitClosure()));
+        base::BindOnce(&ExpectTransferStatusAndThen,
+                       mojom::UsbTransferStatus::COMPLETED,
+                       loop.QuitClosure()));
     loop.Run();
   }
 
@@ -803,9 +808,9 @@ TEST_F(USBDeviceImplTest, GenericTransfer) {
     base::RunLoop loop;
     device->GenericTransferIn(
         1, fake_inbound_data.size(), 0,
-        base::Bind(&ExpectTransferInAndThen,
-                   mojom::UsbTransferStatus::COMPLETED, fake_inbound_data,
-                   loop.QuitClosure()));
+        base::BindOnce(&ExpectTransferInAndThen,
+                       mojom::UsbTransferStatus::COMPLETED, fake_inbound_data,
+                       loop.QuitClosure()));
     loop.Run();
   }
 
@@ -819,8 +824,8 @@ TEST_F(USBDeviceImplTest, IsochronousTransfer) {
 
   {
     base::RunLoop loop;
-    device->Open(base::Bind(&ExpectOpenAndThen, mojom::UsbOpenDeviceError::OK,
-                            loop.QuitClosure()));
+    device->Open(base::BindOnce(
+        &ExpectOpenAndThen, mojom::UsbOpenDeviceError::OK, loop.QuitClosure()));
     loop.Run();
   }
 
@@ -855,8 +860,8 @@ TEST_F(USBDeviceImplTest, IsochronousTransfer) {
     base::RunLoop loop;
     device->IsochronousTransferOut(
         1, fake_outbound_data, fake_packet_lengths, 0,
-        base::Bind(&ExpectPacketsOutAndThen, expected_transferred_lengths,
-                   loop.QuitClosure()));
+        base::BindOnce(&ExpectPacketsOutAndThen, expected_transferred_lengths,
+                       loop.QuitClosure()));
     loop.Run();
   }
 
@@ -867,8 +872,8 @@ TEST_F(USBDeviceImplTest, IsochronousTransfer) {
     base::RunLoop loop;
     device->IsochronousTransferIn(
         1, fake_packet_lengths, 0,
-        base::Bind(&ExpectPacketsInAndThen, fake_inbound_data,
-                   expected_transferred_lengths, loop.QuitClosure()));
+        base::BindOnce(&ExpectPacketsInAndThen, fake_inbound_data,
+                       expected_transferred_lengths, loop.QuitClosure()));
     loop.Run();
   }
 

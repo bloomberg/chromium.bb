@@ -76,8 +76,9 @@ void WifiDataProviderCommon::DoWifiScanTask() {
 
 void WifiDataProviderCommon::ScheduleNextScan(int interval) {
   client_task_runner()->PostDelayedTask(
-      FROM_HERE, base::Bind(&WifiDataProviderCommon::DoWifiScanTask,
-                            weak_factory_.GetWeakPtr()),
+      FROM_HERE,
+      base::BindOnce(&WifiDataProviderCommon::DoWifiScanTask,
+                     weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(interval));
 }
 

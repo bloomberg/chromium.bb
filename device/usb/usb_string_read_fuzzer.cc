@@ -29,7 +29,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   scoped_refptr<UsbDeviceHandle> device_handle =
       new FakeUsbDeviceHandle(data + used, size - used);
   ReadUsbStringDescriptors(device_handle, std::move(index_map),
-                           base::Bind(&Done));
+                           base::BindOnce(&Done));
   return 0;
 }
 

@@ -138,10 +138,11 @@ class BluetoothMediaTransportClientImpl
     // Call Acquire method of Media Transport interface.
     object_proxy->CallMethodWithErrorCallback(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&BluetoothMediaTransportClientImpl::OnAcquireSuccess,
-                   weak_ptr_factory_.GetWeakPtr(), callback, error_callback),
-        base::Bind(&BluetoothMediaTransportClientImpl::OnError,
-                   weak_ptr_factory_.GetWeakPtr(), error_callback));
+        base::BindOnce(&BluetoothMediaTransportClientImpl::OnAcquireSuccess,
+                       weak_ptr_factory_.GetWeakPtr(), callback,
+                       error_callback),
+        base::BindOnce(&BluetoothMediaTransportClientImpl::OnError,
+                       weak_ptr_factory_.GetWeakPtr(), error_callback));
   }
 
   void TryAcquire(const dbus::ObjectPath& object_path,
@@ -161,10 +162,11 @@ class BluetoothMediaTransportClientImpl
     // Call TryAcquire method of Media Transport interface.
     object_proxy->CallMethodWithErrorCallback(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&BluetoothMediaTransportClientImpl::OnAcquireSuccess,
-                   weak_ptr_factory_.GetWeakPtr(), callback, error_callback),
-        base::Bind(&BluetoothMediaTransportClientImpl::OnError,
-                   weak_ptr_factory_.GetWeakPtr(), error_callback));
+        base::BindOnce(&BluetoothMediaTransportClientImpl::OnAcquireSuccess,
+                       weak_ptr_factory_.GetWeakPtr(), callback,
+                       error_callback),
+        base::BindOnce(&BluetoothMediaTransportClientImpl::OnError,
+                       weak_ptr_factory_.GetWeakPtr(), error_callback));
   }
 
   void Release(const dbus::ObjectPath& object_path,
@@ -183,10 +185,10 @@ class BluetoothMediaTransportClientImpl
     // Call TryAcquire method of Media Transport interface.
     object_proxy->CallMethodWithErrorCallback(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&BluetoothMediaTransportClientImpl::OnSuccess,
-                   weak_ptr_factory_.GetWeakPtr(), callback),
-        base::Bind(&BluetoothMediaTransportClientImpl::OnError,
-                   weak_ptr_factory_.GetWeakPtr(), error_callback));
+        base::BindOnce(&BluetoothMediaTransportClientImpl::OnSuccess,
+                       weak_ptr_factory_.GetWeakPtr(), callback),
+        base::BindOnce(&BluetoothMediaTransportClientImpl::OnError,
+                       weak_ptr_factory_.GetWeakPtr(), error_callback));
   }
 
  protected:

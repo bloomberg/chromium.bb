@@ -52,26 +52,22 @@ BluetoothSocketNet::BluetoothSocketNet(
 BluetoothSocketNet::~BluetoothSocketNet() {
   DCHECK(!tcp_socket_);
   ui_task_runner_->PostTask(FROM_HERE,
-                            base::Bind(&DeactivateSocket, socket_thread_));
+                            base::BindOnce(&DeactivateSocket, socket_thread_));
 }
 
 void BluetoothSocketNet::Close() {
   DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
   socket_thread_->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&BluetoothSocketNet::DoClose, this));
+      FROM_HERE, base::BindOnce(&BluetoothSocketNet::DoClose, this));
 }
 
 void BluetoothSocketNet::Disconnect(
     const base::Closure& success_callback) {
   DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
   socket_thread_->task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(
-          &BluetoothSocketNet::DoDisconnect,
-          this,
-          base::Bind(&BluetoothSocketNet::PostSuccess,
-                     this,
-                     success_callback)));
+      FROM_HERE, base::BindOnce(&BluetoothSocketNet::DoDisconnect, this,
+                                base::Bind(&BluetoothSocketNet::PostSuccess,
+                                           this, success_callback)));
 }
 
 void BluetoothSocketNet::Receive(
@@ -81,16 +77,11 @@ void BluetoothSocketNet::Receive(
   DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
   socket_thread_->task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(
-          &BluetoothSocketNet::DoReceive,
-          this,
-          buffer_size,
-          base::Bind(&BluetoothSocketNet::PostReceiveCompletion,
-                     this,
-                     success_callback),
-          base::Bind(&BluetoothSocketNet::PostReceiveErrorCompletion,
-                     this,
-                     error_callback)));
+      base::BindOnce(&BluetoothSocketNet::DoReceive, this, buffer_size,
+                     base::Bind(&BluetoothSocketNet::PostReceiveCompletion,
+                                this, success_callback),
+                     base::Bind(&BluetoothSocketNet::PostReceiveErrorCompletion,
+                                this, error_callback)));
 }
 
 void BluetoothSocketNet::Send(
@@ -101,17 +92,11 @@ void BluetoothSocketNet::Send(
   DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
   socket_thread_->task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(
-          &BluetoothSocketNet::DoSend,
-          this,
-          buffer,
-          buffer_size,
-          base::Bind(&BluetoothSocketNet::PostSendCompletion,
-                     this,
-                     success_callback),
-          base::Bind(&BluetoothSocketNet::PostErrorCompletion,
-                     this,
-                     error_callback)));
+      base::BindOnce(&BluetoothSocketNet::DoSend, this, buffer, buffer_size,
+                     base::Bind(&BluetoothSocketNet::PostSendCompletion, this,
+                                success_callback),
+                     base::Bind(&BluetoothSocketNet::PostErrorCompletion, this,
+                                error_callback)));
 }
 
 void BluetoothSocketNet::ResetData() {
@@ -133,7 +118,7 @@ void BluetoothSocketNet::PostSuccess(const base::Closure& callback) {
 void BluetoothSocketNet::PostErrorCompletion(
     const ErrorCompletionCallback& callback,
     const std::string& error) {
-  ui_task_runner_->PostTask(FROM_HERE, base::Bind(callback, error));
+  ui_task_runner_->PostTask(FROM_HERE, base::BindOnce(callback, error));
 }
 
 void BluetoothSocketNet::DoClose() {
@@ -310,15 +295,15 @@ void BluetoothSocketNet::OnSocketWriteComplete(
   // Don't call directly to avoid potentail large recursion.
   socket_thread_->task_runner()->PostNonNestableTask(
       FROM_HERE,
-      base::Bind(&BluetoothSocketNet::SendFrontWriteRequest, this));
+      base::BindOnce(&BluetoothSocketNet::SendFrontWriteRequest, this));
 }
 
 void BluetoothSocketNet::PostReceiveCompletion(
     const ReceiveCompletionCallback& callback,
     int io_buffer_size,
     scoped_refptr<net::IOBuffer> io_buffer) {
-  ui_task_runner_->PostTask(FROM_HERE,
-                            base::Bind(callback, io_buffer_size, io_buffer));
+  ui_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(callback, io_buffer_size, io_buffer));
 }
 
 void BluetoothSocketNet::PostReceiveErrorCompletion(
@@ -326,13 +311,13 @@ void BluetoothSocketNet::PostReceiveErrorCompletion(
     ErrorReason reason,
     const std::string& error_message) {
   ui_task_runner_->PostTask(FROM_HERE,
-                            base::Bind(callback, reason, error_message));
+                            base::BindOnce(callback, reason, error_message));
 }
 
 void BluetoothSocketNet::PostSendCompletion(
     const SendCompletionCallback& callback,
     int bytes_written) {
-  ui_task_runner_->PostTask(FROM_HERE, base::Bind(callback, bytes_written));
+  ui_task_runner_->PostTask(FROM_HERE, base::BindOnce(callback, bytes_written));
 }
 
 }  // namespace device

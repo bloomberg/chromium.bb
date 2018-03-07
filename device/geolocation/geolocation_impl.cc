@@ -66,8 +66,8 @@ GeolocationImpl::GeolocationImpl(mojo::InterfaceRequest<Geolocation> request,
       high_accuracy_(false),
       has_position_to_report_(false) {
   DCHECK(context_);
-  binding_.set_connection_error_handler(
-      base::Bind(&GeolocationImpl::OnConnectionError, base::Unretained(this)));
+  binding_.set_connection_error_handler(base::BindOnce(
+      &GeolocationImpl::OnConnectionError, base::Unretained(this)));
 }
 
 GeolocationImpl::~GeolocationImpl() {

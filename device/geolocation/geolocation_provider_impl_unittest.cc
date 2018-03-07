@@ -148,8 +148,9 @@ bool GeolocationProviderTest::ProvidersStarted() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   provider()->task_runner()->PostTaskAndReply(
-      FROM_HERE, base::Bind(&GeolocationProviderTest::GetProvidersStarted,
-                            base::Unretained(this)),
+      FROM_HERE,
+      base::BindOnce(&GeolocationProviderTest::GetProvidersStarted,
+                     base::Unretained(this)),
       base::MessageLoop::QuitWhenIdleClosure());
   base::RunLoop().Run();
   return is_started_;
@@ -166,8 +167,8 @@ void GeolocationProviderTest::SendMockLocation(
   DCHECK(thread_checker_.CalledOnValidThread());
   provider()->task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&GeolocationProviderImpl::OnLocationUpdate,
-                 base::Unretained(provider()), arbitrator_, position));
+      base::BindOnce(&GeolocationProviderImpl::OnLocationUpdate,
+                     base::Unretained(provider()), arbitrator_, position));
 }
 
 // Regression test for http://crbug.com/59377

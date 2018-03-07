@@ -49,7 +49,7 @@ class TestOpenCallback {
   }
 
   UsbDevice::OpenCallback GetCallback() {
-    return base::Bind(&TestOpenCallback::SetResult, base::Unretained(this));
+    return base::BindOnce(&TestOpenCallback::SetResult, base::Unretained(this));
   }
 
  private:
@@ -72,7 +72,8 @@ class TestResultCallback {
   }
 
   UsbDeviceHandle::ResultCallback GetCallback() {
-    return base::Bind(&TestResultCallback::SetResult, base::Unretained(this));
+    return base::BindOnce(&TestResultCallback::SetResult,
+                          base::Unretained(this));
   }
 
  private:
@@ -92,8 +93,8 @@ class TestCompletionCallback {
   void WaitForResult() { run_loop_.Run(); }
 
   UsbDeviceHandle::TransferCallback GetCallback() {
-    return base::Bind(&TestCompletionCallback::SetResult,
-                      base::Unretained(this));
+    return base::BindOnce(&TestCompletionCallback::SetResult,
+                          base::Unretained(this));
   }
   UsbTransferStatus status() const { return status_; }
   size_t transferred() const { return transferred_; }
@@ -436,7 +437,7 @@ TEST_F(UsbDeviceHandleTest, CloseReentrancy) {
   handle->GenericTransfer(
       UsbTransferDirection::INBOUND, 0x82, buffer,
       10,  // 10 millisecond timeout
-      base::Bind(&ExpectTimeoutAndClose, handle, run_loop.QuitClosure()));
+      base::BindOnce(&ExpectTimeoutAndClose, handle, run_loop.QuitClosure()));
   // Drop handle so that the completion callback holds the last reference.
   handle = nullptr;
   run_loop.Run();
