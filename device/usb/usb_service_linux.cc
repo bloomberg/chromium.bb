@@ -106,8 +106,8 @@ void UsbServiceLinux::FileThreadHelper::Start() {
 
   watcher_ = UdevWatcher::StartWatching(this);
   watcher_->EnumerateExistingDevices();
-  task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&UsbServiceLinux::HelperStarted, service_));
+  task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&UsbServiceLinux::HelperStarted, service_));
 }
 
 void UsbServiceLinux::FileThreadHelper::OnDeviceAdded(
@@ -164,9 +164,9 @@ void UsbServiceLinux::FileThreadHelper::OnDeviceAdded(
     base::StringToUint(value, &active_configuration);
 
   task_runner_->PostTask(
-      FROM_HERE, base::Bind(&UsbServiceLinux::OnDeviceAdded, service_,
-                            device_path, descriptor, manufacturer, product,
-                            serial_number, active_configuration));
+      FROM_HERE, base::BindOnce(&UsbServiceLinux::OnDeviceAdded, service_,
+                                device_path, descriptor, manufacturer, product,
+                                serial_number, active_configuration));
 }
 
 void UsbServiceLinux::FileThreadHelper::OnDeviceRemoved(
@@ -175,8 +175,8 @@ void UsbServiceLinux::FileThreadHelper::OnDeviceRemoved(
   const char* device_path = udev_device_get_devnode(device.get());
   if (device_path) {
     task_runner_->PostTask(
-        FROM_HERE, base::Bind(&UsbServiceLinux::OnDeviceRemoved, service_,
-                              std::string(device_path)));
+        FROM_HERE, base::BindOnce(&UsbServiceLinux::OnDeviceRemoved, service_,
+                                  std::string(device_path)));
   }
 }
 
@@ -184,8 +184,8 @@ UsbServiceLinux::UsbServiceLinux()
     : UsbService(CreateBlockingTaskRunner()), weak_factory_(this) {
   helper_ = std::make_unique<FileThreadHelper>(weak_factory_.GetWeakPtr());
   blocking_task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&FileThreadHelper::Start, base::Unretained(helper_.get())));
+      FROM_HERE, base::BindOnce(&FileThreadHelper::Start,
+                                base::Unretained(helper_.get())));
 }
 
 UsbServiceLinux::~UsbServiceLinux() {
@@ -224,9 +224,10 @@ void UsbServiceLinux::OnDeviceAdded(const std::string& device_path,
                          serial_number, active_configuration));
   devices_by_path_[device->device_path()] = device;
   if (device->usb_version() >= kUsbVersion2_1) {
-    device->Open(base::Bind(&OnDeviceOpenedToReadDescriptors,
-                            base::Bind(&UsbServiceLinux::DeviceReady,
-                                       weak_factory_.GetWeakPtr(), device)));
+    device->Open(
+        base::BindOnce(&OnDeviceOpenedToReadDescriptors,
+                       base::Bind(&UsbServiceLinux::DeviceReady,
+                                  weak_factory_.GetWeakPtr(), device)));
   } else {
     DeviceReady(device, true /* success */);
   }

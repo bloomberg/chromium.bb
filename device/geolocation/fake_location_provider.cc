@@ -34,8 +34,8 @@ void FakeLocationProvider::HandlePositionChanged(
       callback_.Run(this, position_);
   } else {
     provider_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&FakeLocationProvider::HandlePositionChanged,
-                              base::Unretained(this), position));
+        FROM_HERE, base::BindOnce(&FakeLocationProvider::HandlePositionChanged,
+                                  base::Unretained(this), position));
   }
 }
 

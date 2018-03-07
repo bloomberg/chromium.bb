@@ -241,8 +241,8 @@ BluetoothAdapterBlueZ::BluetoothAdapterBlueZ(const InitCallback& init_callback)
   // Can't initialize the adapter until DBus clients are ready.
   if (bluez::BluezDBusManager::Get()->IsObjectManagerSupportKnown()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&BluetoothAdapterBlueZ::Init,
-                              weak_ptr_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&BluetoothAdapterBlueZ::Init,
+                                  weak_ptr_factory_.GetWeakPtr()));
     return;
   }
   bluez::BluezDBusManager::Get()->CallWhenObjectManagerSupportIsKnown(

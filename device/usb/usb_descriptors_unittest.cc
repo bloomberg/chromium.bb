@@ -441,7 +441,7 @@ TEST_F(UsbDescriptorsTest, ReadStringDescriptors) {
       .WillOnce(InvokeCallback(kStringDescriptor3, sizeof(kStringDescriptor3)));
 
   ReadUsbStringDescriptors(device_handle, std::move(string_map),
-                           base::Bind(&ExpectStringDescriptors));
+                           base::BindOnce(&ExpectStringDescriptors));
 }
 
 }  // namespace

@@ -64,8 +64,8 @@ void FakeRemoteGattDescriptor::ReadRemoteDescriptor(
     const ErrorCallback& error_callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&FakeRemoteGattDescriptor::DispatchReadResponse,
-                 weak_ptr_factory_.GetWeakPtr(), callback, error_callback));
+      base::BindOnce(&FakeRemoteGattDescriptor::DispatchReadResponse,
+                     weak_ptr_factory_.GetWeakPtr(), callback, error_callback));
 }
 
 void FakeRemoteGattDescriptor::WriteRemoteDescriptor(

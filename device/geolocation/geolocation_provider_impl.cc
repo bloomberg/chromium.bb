@@ -84,8 +84,8 @@ void GeolocationProviderImpl::OnLocationUpdate(
   if (ignore_location_updates_)
     return;
   main_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&GeolocationProviderImpl::NotifyClients,
-                            base::Unretained(this), position));
+      FROM_HERE, base::BindOnce(&GeolocationProviderImpl::NotifyClients,
+                                base::Unretained(this), position));
 }
 
 // static
@@ -183,8 +183,9 @@ void GeolocationProviderImpl::InformProvidersPermissionGranted() {
   if (!OnGeolocationThread()) {
     task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&GeolocationProviderImpl::InformProvidersPermissionGranted,
-                   base::Unretained(this)));
+        base::BindOnce(
+            &GeolocationProviderImpl::InformProvidersPermissionGranted,
+            base::Unretained(this)));
     return;
   }
   DCHECK(OnGeolocationThread());

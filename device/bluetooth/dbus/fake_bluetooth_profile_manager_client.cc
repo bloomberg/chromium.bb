@@ -41,9 +41,10 @@ void FakeBluetoothProfileManagerClient::RegisterProfile(
 
   if (uuid == kUnregisterableUuid) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(error_callback,
-                              bluetooth_profile_manager::kErrorInvalidArguments,
-                              "Can't register this UUID"));
+        FROM_HERE,
+        base::BindOnce(error_callback,
+                       bluetooth_profile_manager::kErrorInvalidArguments,
+                       "Can't register this UUID"));
     return;
   }
 

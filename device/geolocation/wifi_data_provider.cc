@@ -32,7 +32,7 @@ bool WifiDataProvider::has_callbacks() const {
 
 void WifiDataProvider::RunCallbacks() {
   client_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&WifiDataProvider::DoRunCallbacks, this));
+      FROM_HERE, base::BindOnce(&WifiDataProvider::DoRunCallbacks, this));
 }
 
 bool WifiDataProvider::CalledOnClientThread() const {

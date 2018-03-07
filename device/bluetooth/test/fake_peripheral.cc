@@ -291,8 +291,8 @@ bool FakePeripheral::IsGattServicesDiscoveryComplete() const {
   if (!pending_gatt_discovery_ && !discovery_complete) {
     pending_gatt_discovery_ = true;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&FakePeripheral::DispatchDiscoveryResponse,
-                              weak_ptr_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&FakePeripheral::DispatchDiscoveryResponse,
+                                  weak_ptr_factory_.GetWeakPtr()));
   }
 
   return discovery_complete;
@@ -300,8 +300,8 @@ bool FakePeripheral::IsGattServicesDiscoveryComplete() const {
 
 void FakePeripheral::CreateGattConnectionImpl() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&FakePeripheral::DispatchConnectionResponse,
-                            weak_ptr_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&FakePeripheral::DispatchConnectionResponse,
+                                weak_ptr_factory_.GetWeakPtr()));
 }
 
 void FakePeripheral::DispatchConnectionResponse() {

@@ -114,7 +114,7 @@ void FakeBluetoothGattServiceClient::ExposeHeartRateService(
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &FakeBluetoothGattServiceClient::ExposeHeartRateCharacteristics,
           weak_ptr_factory_.GetWeakPtr()));
 }

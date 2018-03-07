@@ -243,8 +243,9 @@ class UsbGadgetFactory : public UsbService::Observer,
       // TODO(reillyg): This timer could be replaced by a way to use long-
       // polling to wait for claimed devices to become unclaimed.
       base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-          FROM_HERE, base::Bind(&UsbGadgetFactory::EnumerateDevices,
-                                weak_factory_.GetWeakPtr()),
+          FROM_HERE,
+          base::BindOnce(&UsbGadgetFactory::EnumerateDevices,
+                         weak_factory_.GetWeakPtr()),
           base::TimeDelta::FromMilliseconds(kReenumeratePeriod));
     }
   }
@@ -383,8 +384,9 @@ class UsbGadgetFactory : public UsbService::Observer,
 
     // Wait a bit and then try again to find an available device.
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(&UsbGadgetFactory::EnumerateDevices,
-                              weak_factory_.GetWeakPtr()),
+        FROM_HERE,
+        base::BindOnce(&UsbGadgetFactory::EnumerateDevices,
+                       weak_factory_.GetWeakPtr()),
         base::TimeDelta::FromMilliseconds(kReenumeratePeriod));
   }
 

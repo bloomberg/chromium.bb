@@ -140,12 +140,12 @@ void GamepadService::OnGamepadConnectionChange(bool connected,
                                                const Gamepad& pad) {
   if (connected) {
     main_thread_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&GamepadService::OnGamepadConnected,
-                              base::Unretained(this), index, pad));
+        FROM_HERE, base::BindOnce(&GamepadService::OnGamepadConnected,
+                                  base::Unretained(this), index, pad));
   } else {
     main_thread_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&GamepadService::OnGamepadDisconnected,
-                              base::Unretained(this), index, pad));
+        FROM_HERE, base::BindOnce(&GamepadService::OnGamepadDisconnected,
+                                  base::Unretained(this), index, pad));
   }
 }
 

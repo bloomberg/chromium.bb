@@ -52,7 +52,7 @@ void BluetoothAdapterFactoryWrapper::AcquireAdapter(
   AddAdapterObserver(observer);
   if (adapter_.get()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, base::Unretained(adapter_.get())));
+        FROM_HERE, base::BindOnce(callback, base::Unretained(adapter_.get())));
     return;
   }
 

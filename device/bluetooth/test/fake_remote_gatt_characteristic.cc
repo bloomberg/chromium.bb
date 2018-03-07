@@ -142,8 +142,8 @@ void FakeRemoteGattCharacteristic::ReadRemoteCharacteristic(
     const ErrorCallback& error_callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&FakeRemoteGattCharacteristic::DispatchReadResponse,
-                 weak_ptr_factory_.GetWeakPtr(), callback, error_callback));
+      base::BindOnce(&FakeRemoteGattCharacteristic::DispatchReadResponse,
+                     weak_ptr_factory_.GetWeakPtr(), callback, error_callback));
 }
 
 void FakeRemoteGattCharacteristic::WriteRemoteCharacteristic(
@@ -161,9 +161,9 @@ void FakeRemoteGattCharacteristic::WriteRemoteCharacteristic(
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&FakeRemoteGattCharacteristic::DispatchWriteResponse,
-                 weak_ptr_factory_.GetWeakPtr(), callback, error_callback,
-                 value));
+      base::BindOnce(&FakeRemoteGattCharacteristic::DispatchWriteResponse,
+                     weak_ptr_factory_.GetWeakPtr(), callback, error_callback,
+                     value));
 }
 
 void FakeRemoteGattCharacteristic::SubscribeToNotifications(
@@ -172,9 +172,9 @@ void FakeRemoteGattCharacteristic::SubscribeToNotifications(
     const ErrorCallback& error_callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&FakeRemoteGattCharacteristic::
-                     DispatchSubscribeToNotificationsResponse,
-                 weak_ptr_factory_.GetWeakPtr(), callback, error_callback));
+      base::BindOnce(&FakeRemoteGattCharacteristic::
+                         DispatchSubscribeToNotificationsResponse,
+                     weak_ptr_factory_.GetWeakPtr(), callback, error_callback));
 }
 
 void FakeRemoteGattCharacteristic::UnsubscribeFromNotifications(

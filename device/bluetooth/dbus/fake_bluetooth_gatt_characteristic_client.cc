@@ -487,9 +487,10 @@ void FakeBluetoothGattCharacteristicClient::
   heart_rate_measurement_properties_->value.ReplaceValue(measurement);
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&FakeBluetoothGattCharacteristicClient::
-                                ScheduleHeartRateMeasurementValueChange,
-                            weak_ptr_factory_.GetWeakPtr()),
+      FROM_HERE,
+      base::BindOnce(&FakeBluetoothGattCharacteristicClient::
+                         ScheduleHeartRateMeasurementValueChange,
+                     weak_ptr_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(
           kHeartRateMeasurementNotificationIntervalMs));
 }

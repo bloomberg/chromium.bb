@@ -455,13 +455,13 @@ void BluetoothSocketBlueZ::DoNewConnection(
   if (!fd.is_valid()) {
     LOG(WARNING) << uuid_.canonical_value() << " :" << fd.get()
                  << ": Invalid file descriptor received from Bluetooth Daemon.";
-    ui_task_runner()->PostTask(FROM_HERE, base::Bind(callback, REJECTED));
+    ui_task_runner()->PostTask(FROM_HERE, base::BindOnce(callback, REJECTED));
     return;
   }
 
   if (tcp_socket()) {
     LOG(WARNING) << uuid_.canonical_value() << ": Already connected";
-    ui_task_runner()->PostTask(FROM_HERE, base::Bind(callback, REJECTED));
+    ui_task_runner()->PostTask(FROM_HERE, base::BindOnce(callback, REJECTED));
     return;
   }
 
@@ -474,10 +474,10 @@ void BluetoothSocketBlueZ::DoNewConnection(
   if (net_result != net::OK) {
     LOG(WARNING) << uuid_.canonical_value() << ": Error adopting socket: "
                  << std::string(net::ErrorToString(net_result));
-    ui_task_runner()->PostTask(FROM_HERE, base::Bind(callback, REJECTED));
+    ui_task_runner()->PostTask(FROM_HERE, base::BindOnce(callback, REJECTED));
     return;
   }
-  ui_task_runner()->PostTask(FROM_HERE, base::Bind(callback, SUCCESS));
+  ui_task_runner()->PostTask(FROM_HERE, base::BindOnce(callback, SUCCESS));
 }
 
 void BluetoothSocketBlueZ::OnNewConnection(
