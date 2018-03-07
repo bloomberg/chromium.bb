@@ -365,10 +365,7 @@ static_library("test_support") {
   }
 
   if (is_chromeos) {
-    deps += [
-      "//chrome/browser/chromeos",
-      "//components/metrics/leak_detector:leak_detector",
-    ]
+    deps += [ "//chrome/browser/chromeos" ]
   }
 
   if (enable_plugins && enable_nacl) {

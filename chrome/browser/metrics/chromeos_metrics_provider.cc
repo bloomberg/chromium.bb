@@ -20,7 +20,6 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/system/statistics_provider.h"
-#include "components/metrics/leak_detector/leak_detector.h"
 #include "components/metrics/metrics_service.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -146,14 +145,6 @@ ChromeOSMetricsProvider::GetEnrollmentStatus() {
 
 void ChromeOSMetricsProvider::Init() {
   perf_provider_.Init();
-
-#if defined(ARCH_CPU_X86_64)
-  // Currently, the runtime memory leak detector is only supported on x86_64
-  // systems.
-  if (base::FeatureList::IsEnabled(features::kRuntimeMemoryLeakDetector)) {
-    leak_detector_controller_.reset(new metrics::LeakDetectorController);
-  }
-#endif
 }
 
 void ChromeOSMetricsProvider::AsyncInit(const base::Closure& done_callback) {
@@ -249,14 +240,6 @@ void ChromeOSMetricsProvider::ProvideCurrentSessionData(
   if (perf_provider_.GetSampledProfiles(&sampled_profiles)) {
     for (auto& profile : sampled_profiles) {
       uma_proto->add_sampled_profile()->Swap(&profile);
-    }
-  }
-
-  if (leak_detector_controller_) {
-    std::vector<metrics::MemoryLeakReportProto> reports;
-    leak_detector_controller_->GetLeakReports(&reports);
-    for (auto& report : reports) {
-      uma_proto->add_memory_leak_report()->Swap(&report);
     }
   }
 

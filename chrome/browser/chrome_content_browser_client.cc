@@ -289,7 +289,6 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/mash_service_registry.h"
-#include "chrome/browser/metrics/leak_detector/leak_detector_remote_controller.h"
 #include "chrome/browser/ui/ash/chrome_browser_main_extra_parts_ash.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -3112,11 +3111,6 @@ void ChromeContentBrowserClient::ExposeInterfacesToRenderer(
   }
 #endif
 
-#if defined(OS_CHROMEOS)
-  registry->AddInterface<metrics::mojom::LeakDetector>(
-      base::Bind(&metrics::LeakDetectorRemoteController::Create),
-      ui_task_runner);
-#endif
   for (auto* ep : extra_parts_) {
     ep->ExposeInterfacesToRenderer(registry, associated_registry,
                                    render_process_host);

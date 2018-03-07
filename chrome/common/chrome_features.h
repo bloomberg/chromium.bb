@@ -269,10 +269,6 @@ extern const base::Feature kPushMessagingBackgroundMode;
 extern const base::Feature kRemoveUsageOfDeprecatedGaiaSigninEndpoint;
 #endif
 
-#if defined(OS_CHROMEOS)
-extern const base::Feature kRuntimeMemoryLeakDetector;
-#endif  // defined(OS_CHROMEOS)
-
 extern const base::Feature kSafeSearchUrlReporting;
 
 extern const base::Feature kSecurityKeyAttestationPrompt;

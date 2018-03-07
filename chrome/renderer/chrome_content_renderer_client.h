@@ -35,10 +35,6 @@
 #include "services/service_manager/public/cpp/service.h"
 #include "v8/include/v8.h"
 
-#if defined (OS_CHROMEOS)
-#include "chrome/renderer/leak_detector/leak_detector_remote_client.h"
-#endif
-
 #if defined(OS_WIN)
 #include "chrome/common/conflicts/module_event_sink_win.mojom.h"
 #include "chrome/common/conflicts/module_watcher_win.h"
@@ -325,10 +321,6 @@ class ChromeContentRendererClient
 #if BUILDFLAG(ENABLE_PLUGINS)
   std::set<std::string> allowed_camera_device_origins_;
   std::set<std::string> allowed_compositor_origins_;
-#endif
-
-#if defined(OS_CHROMEOS)
-  std::unique_ptr<LeakDetectorRemoteClient> leak_detector_remote_client_;
 #endif
 
 #if defined(OS_WIN)
