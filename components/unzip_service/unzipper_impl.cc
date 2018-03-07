@@ -4,6 +4,9 @@
 
 #include "components/unzip_service/unzipper_impl.h"
 
+#include <string>
+#include <utility>
+
 #include "base/compiler_specific.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -40,25 +43,25 @@ std::string PathToMojoString(const base::FilePath& path) {
 // Modifies output_dir to point to the final directory.
 bool CreateDirectory(filesystem::mojom::DirectoryPtr* output_dir,
                      const base::FilePath& path) {
-  filesystem::mojom::FileError err = filesystem::mojom::FileError::OK;
+  base::File::Error err = base::File::Error::FILE_OK;
   return (*output_dir)
              ->OpenDirectory(PathToMojoString(path), nullptr,
                              filesystem::mojom::kFlagOpenAlways, &err) &&
-         err == filesystem::mojom::FileError::OK;
+         err == base::File::Error::FILE_OK;
 }
 
 std::unique_ptr<zip::WriterDelegate> MakeFileWriterDelegateNoParent(
     filesystem::mojom::DirectoryPtr* output_dir,
     const base::FilePath& path) {
   auto file = std::make_unique<base::File>();
-  filesystem::mojom::FileError err;
+  base::File::Error err;
   if (!(*output_dir)
            ->OpenFileHandle(PathToMojoString(path),
                             filesystem::mojom::kFlagCreate |
                                 filesystem::mojom::kFlagWrite |
                                 filesystem::mojom::kFlagWriteAttributes,
                             &err, file.get()) ||
-      err != filesystem::mojom::FileError::OK) {
+      err != base::File::Error::FILE_OK) {
     return std::make_unique<DudWriterDelegate>();
   }
   return std::make_unique<zip::FileWriterDelegate>(std::move(file));
@@ -70,12 +73,12 @@ std::unique_ptr<zip::WriterDelegate> MakeFileWriterDelegate(
   if (path == path.BaseName())
     return MakeFileWriterDelegateNoParent(output_dir, path);
   filesystem::mojom::DirectoryPtr parent;
-  filesystem::mojom::FileError err;
+  base::File::Error err;
   if (!(*output_dir)
            ->OpenDirectory(PathToMojoString(path.DirName()),
                            mojo::MakeRequest(&parent),
                            filesystem::mojom::kFlagOpenAlways, &err) ||
-      err != filesystem::mojom::FileError::OK) {
+      err != base::File::Error::FILE_OK) {
     return std::make_unique<DudWriterDelegate>();
   }
   return MakeFileWriterDelegateNoParent(&parent, path.BaseName());

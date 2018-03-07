@@ -57,47 +57,44 @@ class LevelDBMojoProxy : public base::RefCountedThreadSafe<LevelDBMojoProxy> {
                             uint32_t open_flags);
 
   // Synchronously syncs |directory_|.
-  filesystem::mojom::FileError SyncDirectory(OpaqueDir* dir,
-                                             const std::string& name);
+  base::File::Error SyncDirectory(OpaqueDir* dir, const std::string& name);
 
   // Synchronously checks whether |name| exists.
   bool FileExists(OpaqueDir* dir, const std::string& name);
 
   // Synchronously returns the filenames of all files in |path|.
-  filesystem::mojom::FileError GetChildren(OpaqueDir* dir,
-                                           const std::string& path,
-                                           std::vector<std::string>* result);
+  base::File::Error GetChildren(OpaqueDir* dir,
+                                const std::string& path,
+                                std::vector<std::string>* result);
 
   // Synchronously deletes |path|.
-  filesystem::mojom::FileError Delete(OpaqueDir* dir,
-                                      const std::string& path,
-                                      uint32_t delete_flags);
+  base::File::Error Delete(OpaqueDir* dir,
+                           const std::string& path,
+                           uint32_t delete_flags);
 
   // Synchronously creates |path|.
-  filesystem::mojom::FileError CreateDir(OpaqueDir* dir,
-                                         const std::string& path);
+  base::File::Error CreateDir(OpaqueDir* dir, const std::string& path);
 
   // Synchronously gets the size of a file.
-  filesystem::mojom::FileError GetFileSize(OpaqueDir* dir,
-                                           const std::string& path,
-                                           uint64_t* file_size);
+  base::File::Error GetFileSize(OpaqueDir* dir,
+                                const std::string& path,
+                                uint64_t* file_size);
 
   // Synchronously renames a file.
-  filesystem::mojom::FileError RenameFile(OpaqueDir* dir,
-                                          const std::string& old_path,
-                                          const std::string& new_path);
+  base::File::Error RenameFile(OpaqueDir* dir,
+                               const std::string& old_path,
+                               const std::string& new_path);
 
   // Synchronously locks a file. Returns both the file return code, and if OK,
   // an opaque object to the lock to enforce going through this interface to
   // unlock the file so that unlocking happens on the correct thread.
-  std::pair<filesystem::mojom::FileError, OpaqueLock*> LockFile(
-      OpaqueDir* dir,
-      const std::string& path);
+  std::pair<base::File::Error, OpaqueLock*> LockFile(OpaqueDir* dir,
+                                                     const std::string& path);
 
   // Unlocks a file. LevelDBMojoProxy takes ownership of lock. (We don't make
   // this a scoped_ptr because exporting the ctor/dtor for this struct publicly
   // defeats the purpose of the struct.)
-  filesystem::mojom::FileError UnlockFile(OpaqueLock* lock);
+  base::File::Error UnlockFile(OpaqueLock* lock);
 
  private:
   friend class base::RefCountedThreadSafe<LevelDBMojoProxy>;
@@ -120,35 +117,35 @@ class LevelDBMojoProxy : public base::RefCountedThreadSafe<LevelDBMojoProxy> {
                           base::File* out_file);
   void SyncDirectoryImpl(OpaqueDir* dir,
                          std::string name,
-                         filesystem::mojom::FileError* out_error);
+                         base::File::Error* out_error);
   void FileExistsImpl(OpaqueDir* dir,
                       std::string name,
                       bool* exists);
   void GetChildrenImpl(OpaqueDir* dir,
                        std::string name,
                        std::vector<std::string>* contents,
-                       filesystem::mojom::FileError* out_error);
+                       base::File::Error* out_error);
   void DeleteImpl(OpaqueDir* dir,
                   std::string name,
                   uint32_t delete_flags,
-                  filesystem::mojom::FileError* out_error);
+                  base::File::Error* out_error);
   void CreateDirImpl(OpaqueDir* dir,
                      std::string name,
-                     filesystem::mojom::FileError* out_error);
+                     base::File::Error* out_error);
   void GetFileSizeImpl(OpaqueDir* dir,
                        const std::string& path,
                        uint64_t* file_size,
-                       filesystem::mojom::FileError* out_error);
+                       base::File::Error* out_error);
   void RenameFileImpl(OpaqueDir* dir,
                       const std::string& old_path,
                       const std::string& new_path,
-                      filesystem::mojom::FileError* out_error);
+                      base::File::Error* out_error);
   void LockFileImpl(OpaqueDir* dir,
                     const std::string& path,
-                    filesystem::mojom::FileError* out_error,
+                    base::File::Error* out_error,
                     OpaqueLock** out_lock);
   void UnlockFileImpl(std::unique_ptr<OpaqueLock> lock,
-                      filesystem::mojom::FileError* out_error);
+                      base::File::Error* out_error);
 
   // The task runner which represents the sequence that all mojo objects are
   // bound to.

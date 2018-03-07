@@ -5,7 +5,13 @@
 #include "content/browser/dom_storage/local_storage_context_mojo.h"
 
 #include <inttypes.h>
+
+#include <algorithm>
 #include <cctype>  // for std::isalnum
+#include <set>
+#include <string>
+#include <utility>
+
 #include "base/barrier_closure.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
@@ -680,13 +686,11 @@ void LocalStorageContextMojo::InitiateConnection(bool in_memory_only) {
   }
 }
 
-void LocalStorageContextMojo::OnDirectoryOpened(
-    filesystem::mojom::FileError err) {
-  if (err != filesystem::mojom::FileError::OK) {
+void LocalStorageContextMojo::OnDirectoryOpened(base::File::Error err) {
+  if (err != base::File::Error::FILE_OK) {
     // We failed to open the directory; continue with startup so that we create
     // the |level_db_wrappers_|.
-    UMA_HISTOGRAM_ENUMERATION("LocalStorageContext.DirectoryOpenError",
-                              -static_cast<base::File::Error>(err),
+    UMA_HISTOGRAM_ENUMERATION("LocalStorageContext.DirectoryOpenError", -err,
                               -base::File::FILE_ERROR_MAX);
     LogDatabaseOpenResult(OpenResult::DIRECTORY_OPEN_FAILED);
     OnDatabaseOpened(false, leveldb::mojom::DatabaseError::OK);

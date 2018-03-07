@@ -10,6 +10,7 @@
 #include <time.h>
 
 #include <limits>
+#include <string>
 
 #include "base/logging.h"
 #include "base/strings/string_util.h"
@@ -46,60 +47,6 @@ static_assert(filesystem::mojom::kFlagAppend ==
                   static_cast<uint32_t>(base::File::FLAG_APPEND),
               "");
 
-// filesystem.Error in types.mojom must be the same as base::File::Error.
-static_assert(static_cast<int>(filesystem::mojom::FileError::OK) ==
-                  static_cast<int>(base::File::FILE_OK),
-              "");
-static_assert(static_cast<int>(filesystem::mojom::FileError::FAILED) ==
-                  static_cast<int>(base::File::FILE_ERROR_FAILED),
-              "");
-static_assert(static_cast<int>(filesystem::mojom::FileError::IN_USE) ==
-                  static_cast<int>(base::File::FILE_ERROR_IN_USE),
-              "");
-static_assert(static_cast<int>(filesystem::mojom::FileError::EXISTS) ==
-                  static_cast<int>(base::File::FILE_ERROR_EXISTS),
-              "");
-static_assert(static_cast<int>(filesystem::mojom::FileError::NOT_FOUND) ==
-                  static_cast<int>(base::File::FILE_ERROR_NOT_FOUND),
-              "");
-static_assert(static_cast<int>(filesystem::mojom::FileError::ACCESS_DENIED) ==
-                  static_cast<int>(base::File::FILE_ERROR_ACCESS_DENIED),
-              "");
-static_assert(static_cast<int>(filesystem::mojom::FileError::TOO_MANY_OPENED) ==
-                  static_cast<int>(base::File::FILE_ERROR_TOO_MANY_OPENED),
-              "");
-static_assert(static_cast<int>(filesystem::mojom::FileError::NO_MEMORY) ==
-                  static_cast<int>(base::File::FILE_ERROR_NO_MEMORY),
-              "");
-static_assert(static_cast<int>(filesystem::mojom::FileError::NO_SPACE) ==
-                  static_cast<int>(base::File::FILE_ERROR_NO_SPACE),
-              "");
-static_assert(static_cast<int>(filesystem::mojom::FileError::NOT_A_DIRECTORY) ==
-                  static_cast<int>(base::File::FILE_ERROR_NOT_A_DIRECTORY),
-              "");
-static_assert(
-    static_cast<int>(filesystem::mojom::FileError::INVALID_OPERATION) ==
-        static_cast<int>(base::File::FILE_ERROR_INVALID_OPERATION),
-    "");
-static_assert(static_cast<int>(filesystem::mojom::FileError::SECURITY) ==
-                  static_cast<int>(base::File::FILE_ERROR_SECURITY),
-              "");
-static_assert(static_cast<int>(filesystem::mojom::FileError::ABORT) ==
-                  static_cast<int>(base::File::FILE_ERROR_ABORT),
-              "");
-static_assert(static_cast<int>(filesystem::mojom::FileError::NOT_A_FILE) ==
-                  static_cast<int>(base::File::FILE_ERROR_NOT_A_FILE),
-              "");
-static_assert(static_cast<int>(filesystem::mojom::FileError::NOT_EMPTY) ==
-                  static_cast<int>(base::File::FILE_ERROR_NOT_EMPTY),
-              "");
-static_assert(static_cast<int>(filesystem::mojom::FileError::INVALID_URL) ==
-                  static_cast<int>(base::File::FILE_ERROR_INVALID_URL),
-              "");
-static_assert(static_cast<int>(filesystem::mojom::FileError::IO) ==
-                  static_cast<int>(base::File::FILE_ERROR_IO),
-              "");
-
 // filesystem.Whence in types.mojom must be the same as base::File::Whence.
 static_assert(static_cast<int>(filesystem::mojom::Whence::FROM_BEGIN) ==
                   static_cast<int>(base::File::FROM_BEGIN),
@@ -113,23 +60,23 @@ static_assert(static_cast<int>(filesystem::mojom::Whence::FROM_END) ==
 
 namespace filesystem {
 
-mojom::FileError IsWhenceValid(mojom::Whence whence) {
+base::File::Error IsWhenceValid(mojom::Whence whence) {
   return (whence == mojom::Whence::FROM_CURRENT ||
           whence == mojom::Whence::FROM_BEGIN ||
           whence == mojom::Whence::FROM_END)
-             ? mojom::FileError::OK
-             : mojom::FileError::INVALID_OPERATION;
+             ? base::File::Error::FILE_OK
+             : base::File::Error::FILE_ERROR_INVALID_OPERATION;
 }
 
-mojom::FileError IsOffsetValid(int64_t offset) {
+base::File::Error IsOffsetValid(int64_t offset) {
   return (offset >= std::numeric_limits<off_t>::min() &&
           offset <= std::numeric_limits<off_t>::max())
-             ? mojom::FileError::OK
-             : mojom::FileError::INVALID_OPERATION;
+             ? base::File::Error::FILE_OK
+             : base::File::Error::FILE_ERROR_INVALID_OPERATION;
 }
 
-mojom::FileError GetError(const base::File& file) {
-  return static_cast<filesystem::mojom::FileError>(file.error_details());
+base::File::Error GetError(const base::File& file) {
+  return file.error_details();
 }
 
 mojom::FileInformationPtr MakeFileInformation(const base::File::Info& info) {
@@ -145,11 +92,11 @@ mojom::FileInformationPtr MakeFileInformation(const base::File::Info& info) {
   return file_info;
 }
 
-mojom::FileError ValidatePath(const std::string& raw_path,
-                              const base::FilePath& filesystem_base,
-                              base::FilePath* out) {
+base::File::Error ValidatePath(const std::string& raw_path,
+                               const base::FilePath& filesystem_base,
+                               base::FilePath* out) {
   if (!base::IsStringUTF8(raw_path))
-    return mojom::FileError::INVALID_OPERATION;
+    return base::File::Error::FILE_ERROR_INVALID_OPERATION;
 
 #if defined(OS_POSIX)
   base::FilePath::StringType path = raw_path;
@@ -164,11 +111,11 @@ mojom::FileError ValidatePath(const std::string& raw_path,
   base::FilePath full_path = filesystem_base.Append(path);
   if (full_path.ReferencesParent()) {
     // TODO(erg): For now, if it references a parent, we'll consider this bad.
-    return mojom::FileError::ACCESS_DENIED;
+    return base::File::Error::FILE_ERROR_ACCESS_DENIED;
   }
 
   *out = full_path;
-  return mojom::FileError::OK;
+  return base::File::Error::FILE_OK;
 }
 
 }  // namespace filesystem
