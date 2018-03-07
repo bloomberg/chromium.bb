@@ -312,6 +312,11 @@ void OfflinePageTabHelper::SetOfflinePage(
   provisional_offline_info_.is_showing_offline_preview = is_offline_preview;
 }
 
+void OfflinePageTabHelper::ClearOfflinePage() {
+  provisional_offline_info_.Clear();
+  offline_info_.Clear();
+}
+
 bool OfflinePageTabHelper::IsShowingTrustedOfflinePage() const {
   return offline_info_.offline_page && offline_info_.is_trusted;
 }
