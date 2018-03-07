@@ -83,7 +83,7 @@ class DeviceTarget(target.Target):
                             boot_data.GetTargetFile(self._GetTargetSdkArch(),
                                                     'zircon.bin'),
                             boot_data.GetTargetFile(self._GetTargetSdkArch(),
-                                                    'bootdata-blobstore.bin'),
+                                                    'bootdata-blob.bin'),
                             '--'] + \
                             boot_data.GetKernelArgs(self._output_dir)
       logging.debug(' '.join(bootserver_command))
