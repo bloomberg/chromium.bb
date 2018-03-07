@@ -231,6 +231,36 @@ def RunTestOnSwarming(args, unknown_args, output_dir):
     for key, val in pair.iteritems():
       swarming_args.extend(['--dimension', key, val])
 
+  # Temporary workaround for https://crbug.com/812428. We could get the same
+  # effect by isolating/uploading/running using "mb.py run -s", but that has
+  # the issue of apparently not having a way to spcify a task output directory.
+  # So instead, manually append the additional arguments that running that way
+  # would do for us to work around the vpython issues until they're fixed.
+  # TODO(https://crbug.com/819719): Remove this when possible.
+  cipd_packages = [
+    '.swarming_module:infra/python/cpython/'
+    '${platform}:version:2.7.14.chromium14',
+
+    '.swarming_module:infra/tools/luci/logdog/butler/'
+    '${platform}:git_revision:e1abc57be62d198b5c2f487bfb2fa2d2eb0e867c',
+
+    '.swarming_module:infra/tools/luci/vpython-native/'
+    '${platform}:git_revision:e1abc57be62d198b5c2f487bfb2fa2d2eb0e867c',
+
+    '.swarming_module:infra/tools/luci/vpython/'
+    '${platform}:git_revision:e1abc57be62d198b5c2f487bfb2fa2d2eb0e867c',
+  ]
+  for package in cipd_packages:
+    swarming_args.extend(['--cipd-package', package])
+  swarming_args.extend([
+    '--named-cache',
+    'swarming_module_cache_vpython', '.swarming_module_cache/vpython',
+
+    '--env-prefix', 'PATH', '.swarming_module',
+    '--env-prefix', 'PATH', '.swarming_module/bin',
+    '--env-prefix', 'VPYTHON_VIRTUALENV_ROOT', '.swarming_module_cache/vpython',
+  ])
+
   swarming_args.append('--')
   swarming_args.extend(unknown_args)
   swarming_args.extend([
