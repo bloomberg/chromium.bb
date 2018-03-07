@@ -213,7 +213,6 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
 
   void RegisterViewportLayers() const override;
 
-  void ShowUnhandledTapUIIfNeeded(WebTappedInfo&) override;
   void OnMouseDown(Node&) override;
   void DidUpdateBrowserControls() const override;
   void SetOverscrollBehavior(const WebOverscrollBehavior&) override;

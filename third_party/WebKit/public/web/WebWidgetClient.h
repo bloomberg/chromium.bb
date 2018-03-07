@@ -50,7 +50,6 @@ class WebDragData;
 class WebGestureEvent;
 class WebImage;
 class WebString;
-class WebTappedInfo;
 class WebWidget;
 struct WebCursorInfo;
 struct WebFloatPoint;
@@ -160,13 +159,6 @@ class WebWidgetClient {
 
   // Request the browser to show virtual keyboard for current input type.
   virtual void ShowVirtualKeyboardOnElementFocus() {}
-
-  // Request that the browser show a UI for an unhandled tap, if needed.
-  // Invoked during the handling of a GestureTap input event whenever the
-  // event is not consumed.
-  // |tappedInfo| has all the details about what was tapped and where the tap
-  // occurred.
-  virtual void ShowUnhandledTapUIIfNeeded(const WebTappedInfo& tappedInfo) {}
 
   // Converts the |rect| from Blink's Viewport coordinates to the
   // coordinates in the native window used to display the content, in
