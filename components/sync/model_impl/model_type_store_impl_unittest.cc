@@ -105,31 +105,6 @@ class ModelTypeStoreImplTest : public testing::Test {
     ASSERT_FALSE(error) << error->ToString();
   }
 
-  static void WriteRawMetadata(ModelTypeStore* store,
-                               const std::string& key,
-                               const std::string& raw_metadata) {
-    auto write_batch = store->CreateWriteBatch();
-    store->WriteMetadata(write_batch.get(), key, raw_metadata);
-
-    base::Optional<ModelError> error;
-    store->CommitWriteBatch(std::move(write_batch),
-                            base::BindOnce(&CaptureError, &error));
-    PumpLoop();
-    ASSERT_FALSE(error) << error->ToString();
-  }
-
-  static void WriteRawModelTypeState(ModelTypeStore* store,
-                                     const std::string& raw_model_type_state) {
-    auto write_batch = store->CreateWriteBatch();
-    store->WriteGlobalMetadata(write_batch.get(), raw_model_type_state);
-
-    base::Optional<ModelError> error;
-    store->CommitWriteBatch(std::move(write_batch),
-                            base::BindOnce(&CaptureError, &error));
-    PumpLoop();
-    ASSERT_FALSE(error) << error->ToString();
-  }
-
   void WriteTestData() {
     WriteData(store(), "id1", "data1");
     WriteMetadata(store(), "id1", CreateEntityMetadata("metadata1"));
@@ -277,42 +252,6 @@ TEST_F(ModelTypeStoreImplTest, MissingModelTypeState) {
   ASSERT_FALSE(error) << error->ToString();
   VerifyMetadata(std::move(metadata_batch), sync_pb::ModelTypeState(),
                  {{"id1", CreateEntityMetadata("metadata1")}});
-}
-
-// Tests that unparseable metadata results in an error being set.
-TEST_F(ModelTypeStoreImplTest, CorruptModelTypeState) {
-  CreateStore();
-  WriteTestData();
-
-  // Write a ModelTypeState that can't be parsed.
-  WriteRawModelTypeState(store(), "unparseable");
-
-  base::Optional<ModelError> error;
-  std::unique_ptr<MetadataBatch> metadata_batch;
-  store()->ReadAllMetadata(
-      base::BindOnce(&CaptureErrorAndMetadataBatch, &error, &metadata_batch));
-  PumpLoop();
-  ASSERT_TRUE(error);
-  VerifyMetadata(std::move(metadata_batch), sync_pb::ModelTypeState(),
-                 std::map<std::string, sync_pb::EntityMetadata>());
-}
-
-// Tests that unparseable metadata results in an error being set.
-TEST_F(ModelTypeStoreImplTest, CorruptEntityMetadata) {
-  CreateStore();
-  WriteTestData();
-
-  // Write an EntityMetadata that can't be parsed.
-  WriteRawMetadata(store(), "id", "unparseable");
-
-  base::Optional<ModelError> error;
-  std::unique_ptr<MetadataBatch> metadata_batch;
-  store()->ReadAllMetadata(
-      base::BindOnce(&CaptureErrorAndMetadataBatch, &error, &metadata_batch));
-  PumpLoop();
-  ASSERT_TRUE(error);
-  VerifyMetadata(std::move(metadata_batch), sync_pb::ModelTypeState(),
-                 std::map<std::string, sync_pb::EntityMetadata>());
 }
 
 // Test that when reading data records by id, if one of the ids is missing

@@ -64,35 +64,27 @@ class ModelTypeStore {
     // you need a MetadataChangeList and do not have a WriteBatch in scope.
     static std::unique_ptr<MetadataChangeList> CreateMetadataChangeList();
 
+    WriteBatch();
     virtual ~WriteBatch();
 
     // Write the given |value| for data with |id|.
-    void WriteData(const std::string& id, const std::string& value);
+    virtual void WriteData(const std::string& id, const std::string& value) = 0;
 
     // Delete the record for data with |id|.
-    void DeleteData(const std::string& id);
+    virtual void DeleteData(const std::string& id) = 0;
 
     // Provides access to a MetadataChangeList that will pass its changes
-    // directly into this WriteBatch. Use this when you need a
-    // MetadataChangeList and already have a WriteBatch in scope.
-    MetadataChangeList* GetMetadataChangeList();
+    // directly into this WriteBatch.
+    virtual MetadataChangeList* GetMetadataChangeList() = 0;
 
     // Transfers the changes from a MetadataChangeList into this WriteBatch.
     // |mcl| must have previously been created by CreateMetadataChangeList().
-    void TransferMetadataChanges(std::unique_ptr<MetadataChangeList> mcl);
-
-   protected:
-    friend class MockModelTypeStore;
-    explicit WriteBatch(ModelTypeStore* store);
+    // TODO(mastiz): Revisit whether the last requirement above can be removed
+    // and make this API more type-safe.
+    void TakeMetadataChangesFrom(std::unique_ptr<MetadataChangeList> mcl);
 
    private:
-    // A pointer to the store that generated this WriteBatch.
-    ModelTypeStore* store_;
-
-    // A MetadataChangeList that is being used to pass changes directly into the
-    // WriteBatch. Only accessible via GetMetadataChangeList(), and not created
-    // unless necessary.
-    std::unique_ptr<MetadataChangeList> metadata_change_list_;
+    DISALLOW_COPY_AND_ASSIGN(WriteBatch);
   };
 
   using RecordList = std::vector<Record>;
@@ -145,29 +137,6 @@ class ModelTypeStore {
   // reflected in the store.
   virtual void CommitWriteBatch(std::unique_ptr<WriteBatch> write_batch,
                                 CallbackWithResult callback) = 0;
-
- protected:
-  friend class AccumulatingMetadataChangeList;
-  friend class ModelTypeStoreImplTest;
-  friend class PassthroughMetadataChangeList;
-
-  // Write operations; access via WriteBatch.
-  virtual void WriteData(WriteBatch* write_batch,
-                         const std::string& id,
-                         const std::string& value) = 0;
-  virtual void WriteMetadata(WriteBatch* write_batch,
-                             const std::string& id,
-                             const std::string& value) = 0;
-  virtual void WriteGlobalMetadata(WriteBatch* write_batch,
-                                   const std::string& value) = 0;
-  virtual void DeleteData(WriteBatch* write_batch, const std::string& id) = 0;
-  virtual void DeleteMetadata(WriteBatch* write_batch,
-                              const std::string& id) = 0;
-  virtual void DeleteGlobalMetadata(WriteBatch* write_batch) = 0;
-  // TODO(pavely): Consider implementing DeleteAllMetadata with following
-  // signature:
-  // virtual void DeleteAllMetadata(CallbackWithResult callback) = 0.
-  // It will delete all metadata records and global metadata record.
 };
 
 // Typedef for a store factory that has all params bound except InitCallback.

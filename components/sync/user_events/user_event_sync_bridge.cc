@@ -116,7 +116,7 @@ base::Optional<ModelError> UserEventSyncBridge::ApplySyncChanges(
                                            kv.second.event_time_usec());
                 });
 
-  batch->TransferMetadataChanges(std::move(metadata_change_list));
+  batch->TakeMetadataChangesFrom(std::move(metadata_change_list));
   store_->CommitWriteBatch(
       std::move(batch),
       base::Bind(&UserEventSyncBridge::OnCommit, base::AsWeakPtr(this)));

@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/stl_util.h"
 #include "components/sync/base/hash_util.h"
+#include "components/sync/model/model_type_store.h"
 #include "components/sync/model/mutable_data_batch.h"
 #include "components/sync/model_impl/in_memory_metadata_change_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,34 +23,36 @@ namespace syncer {
 
 namespace {
 
-// A simple InMemoryMetadataChangeList that provides accessors for its data.
-class TestMetadataChangeList : public InMemoryMetadataChangeList {
+// MetadataChangeList implementaton that forwards writes metadata to a store.
+class TestMetadataChangeList : public MetadataChangeList {
  public:
-  TestMetadataChangeList() {}
+  explicit TestMetadataChangeList(FakeModelTypeSyncBridge::Store* db)
+      : db_(db) {}
   ~TestMetadataChangeList() override {}
+
+  // MetadataChangeList implementation.
+  void UpdateModelTypeState(
+      const sync_pb::ModelTypeState& model_type_state) override {
+    db_->set_model_type_state(model_type_state);
+  }
+
+  void ClearModelTypeState() override {
+    db_->set_model_type_state(ModelTypeState());
+  }
 
   void UpdateMetadata(const std::string& storage_key,
                       const sync_pb::EntityMetadata& metadata) override {
     DCHECK(!storage_key.empty());
-    InMemoryMetadataChangeList::UpdateMetadata(storage_key, metadata);
+    db_->PutMetadata(storage_key, metadata);
   }
 
   void ClearMetadata(const std::string& storage_key) override {
     DCHECK(!storage_key.empty());
-    InMemoryMetadataChangeList::ClearMetadata(storage_key);
+    db_->RemoveMetadata(storage_key);
   }
 
-  const std::map<std::string, MetadataChange>& GetMetadataChanges() const {
-    return metadata_changes_;
-  }
-
-  bool HasModelTypeStateChange() const {
-    return state_change_.get() != nullptr;
-  }
-
-  const ModelTypeStateChange& GetModelTypeStateChange() const {
-    return *state_change_.get();
-  }
+ private:
+  FakeModelTypeSyncBridge::Store* db_;
 };
 
 }  // namespace
@@ -193,7 +196,7 @@ void FakeModelTypeSyncBridge::DeleteItem(const std::string& key) {
 
 std::unique_ptr<MetadataChangeList>
 FakeModelTypeSyncBridge::CreateMetadataChangeList() {
-  return std::make_unique<TestMetadataChangeList>();
+  return std::make_unique<InMemoryMetadataChangeList>();
 }
 
 base::Optional<ModelError> FakeModelTypeSyncBridge::MergeSyncData(
@@ -274,31 +277,11 @@ base::Optional<ModelError> FakeModelTypeSyncBridge::ApplySyncChanges(
 
 void FakeModelTypeSyncBridge::ApplyMetadataChangeList(
     std::unique_ptr<MetadataChangeList> mcl) {
-  DCHECK(mcl);
-  TestMetadataChangeList* tmcl =
-      static_cast<TestMetadataChangeList*>(mcl.get());
-  const auto& metadata_changes = tmcl->GetMetadataChanges();
-  for (const auto& kv : metadata_changes) {
-    switch (kv.second.type) {
-      case TestMetadataChangeList::UPDATE:
-        db_->PutMetadata(kv.first, kv.second.metadata);
-        break;
-      case TestMetadataChangeList::CLEAR:
-        db_->RemoveMetadata(kv.first);
-        break;
-    }
-  }
-  if (tmcl->HasModelTypeStateChange()) {
-    const auto& state_change = tmcl->GetModelTypeStateChange();
-    switch (state_change.type) {
-      case TestMetadataChangeList::UPDATE:
-        db_->set_model_type_state(state_change.state);
-        break;
-      case TestMetadataChangeList::CLEAR:
-        db_->set_model_type_state(ModelTypeState());
-        break;
-    }
-  }
+  InMemoryMetadataChangeList* in_memory_mcl =
+      static_cast<InMemoryMetadataChangeList*>(mcl.get());
+  // Use TestMetadataChangeList to commit all metadata changes to the store.
+  TestMetadataChangeList db_mcl(db_.get());
+  in_memory_mcl->TransferChangesTo(&db_mcl);
 }
 
 void FakeModelTypeSyncBridge::GetData(StorageKeyList keys,
