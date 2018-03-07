@@ -582,8 +582,16 @@ IN_PROC_BROWSER_TEST_P(BrowserCloseManagerBrowserTest,
 // are treated the same as the user accepting the close, but do not close the
 // tab early.
 // Regression for crbug.com/365052 caused CHECK in tabstrip.
+// Flaky on Mac and Linux: https://crbug.com/819541
+#if defined(OS_LINUX) || defined(OS_MACOSX)
+#define MAYBE_TestBeforeUnloadMultipleSlowWindows \
+  DISABLED_TestBeforeUnloadMultipleSlowWindows
+#else
+#define MAYBE_TestBeforeUnloadMultipleSlowWindows \
+  TestBeforeUnloadMultipleSlowWindows
+#endif
 IN_PROC_BROWSER_TEST_P(BrowserCloseManagerBrowserTest,
-                       TestBeforeUnloadMultipleSlowWindows) {
+                       MAYBE_TestBeforeUnloadMultipleSlowWindows) {
   const int kBrowserCount = 5;
   const int kResposiveBrowserIndex = 2;
   // Create multiple browsers with all tabs except one responding after
