@@ -30,13 +30,14 @@
 
 #include <math.h>
 
+#include <algorithm>
 #include <memory>
+#include <utility>
 
 #include "build/build_config.h"
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/VectorMath.h"
 #include "platform/wtf/MathExtras.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -129,9 +130,10 @@ void Reverb::Initialize(AudioBus* impulse_response_buffer,
     AudioChannel* channel = impulse_response_buffer->Channel(
         std::min(i, number_of_response_channels_ - 1));
 
-    std::unique_ptr<ReverbConvolver> convolver = WTF::WrapUnique(
-        new ReverbConvolver(channel, render_slice_size, max_fft_size,
-                            convolver_render_phase, use_background_threads));
+    std::unique_ptr<ReverbConvolver> convolver =
+        std::make_unique<ReverbConvolver>(channel, render_slice_size,
+                                          max_fft_size, convolver_render_phase,
+                                          use_background_threads);
     convolvers_.push_back(std::move(convolver));
 
     convolver_render_phase += render_slice_size;

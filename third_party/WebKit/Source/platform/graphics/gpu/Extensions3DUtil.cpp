@@ -5,8 +5,9 @@
 #include "platform/graphics/gpu/Extensions3DUtil.h"
 
 #include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/CString.h"
 #include "platform/wtf/text/StringHash.h"
 
@@ -26,7 +27,7 @@ void SplitStringHelper(const String& str, HashSet<String>& set) {
 std::unique_ptr<Extensions3DUtil> Extensions3DUtil::Create(
     gpu::gles2::GLES2Interface* gl) {
   std::unique_ptr<Extensions3DUtil> out =
-      WTF::WrapUnique(new Extensions3DUtil(gl));
+      base::WrapUnique(new Extensions3DUtil(gl));
   out->InitializeExtensions();
   return out;
 }

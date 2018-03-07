@@ -5,6 +5,9 @@
 #include "public/platform/modules/serviceworker/WebServiceWorkerInstalledScriptsManager.h"
 
 #include <memory>
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 
 namespace blink {
 
@@ -14,7 +17,7 @@ WebServiceWorkerInstalledScriptsManager::RawScriptData::Create(
     WebString encoding,
     WebVector<BytesChunk> script_text,
     WebVector<BytesChunk> meta_data) {
-  return WTF::WrapUnique(
+  return base::WrapUnique(
       new RawScriptData(std::move(encoding), std::move(script_text),
                         std::move(meta_data), true /* is_valid */));
 }
@@ -23,7 +26,7 @@ WebServiceWorkerInstalledScriptsManager::RawScriptData::Create(
 std::unique_ptr<WebServiceWorkerInstalledScriptsManager::RawScriptData>
 WebServiceWorkerInstalledScriptsManager::RawScriptData::
     CreateInvalidInstance() {
-  return WTF::WrapUnique(
+  return base::WrapUnique(
       new RawScriptData(WebString() /* encoding */, WebVector<BytesChunk>(),
                         WebVector<BytesChunk>(), false /* is_valid */));
 }

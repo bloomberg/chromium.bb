@@ -32,6 +32,8 @@
 
 #include <algorithm>
 #include <memory>
+#include <utility>
+#include <vector>
 
 #include "build/build_config.h"
 #include "components/viz/common/quads/shared_bitmap.h"
@@ -165,8 +167,8 @@ DrawingBuffer::DrawingBuffer(
     : client_(client),
       preserve_drawing_buffer_(preserve),
       webgl_version_(webgl_version),
-      context_provider_(WTF::WrapUnique(new WebGraphicsContext3DProviderWrapper(
-          std::move(context_provider)))),
+      context_provider_(std::make_unique<WebGraphicsContext3DProviderWrapper>(
+          std::move(context_provider))),
       gl_(this->ContextProvider()->ContextGL()),
       extensions_util_(std::move(extensions_util)),
       discard_framebuffer_supported_(discard_framebuffer_supported),

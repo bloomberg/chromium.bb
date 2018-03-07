@@ -26,6 +26,8 @@
 #include "platform/graphics/GraphicsLayer.h"
 
 #include <memory>
+#include <utility>
+
 #include "platform/animation/CompositorAnimation.h"
 #include "platform/animation/CompositorAnimationClient.h"
 #include "platform/animation/CompositorAnimationHost.h"
@@ -47,7 +49,6 @@
 #include "platform/transforms/Matrix3DTransformOperation.h"
 #include "platform/transforms/RotateTransformOperation.h"
 #include "platform/transforms/TranslateTransformOperation.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebLayer.h"
@@ -61,10 +62,10 @@ class GraphicsLayerTest : public ::testing::Test,
                           public PaintTestConfigurations {
  public:
   GraphicsLayerTest() {
-    clip_layer_ = WTF::WrapUnique(new FakeGraphicsLayer(client_));
-    scroll_elasticity_layer_ = WTF::WrapUnique(new FakeGraphicsLayer(client_));
-    page_scale_layer_ = WTF::WrapUnique(new FakeGraphicsLayer(client_));
-    graphics_layer_ = WTF::WrapUnique(new FakeGraphicsLayer(client_));
+    clip_layer_ = std::make_unique<FakeGraphicsLayer>(client_);
+    scroll_elasticity_layer_ = std::make_unique<FakeGraphicsLayer>(client_);
+    page_scale_layer_ = std::make_unique<FakeGraphicsLayer>(client_);
+    graphics_layer_ = std::make_unique<FakeGraphicsLayer>(client_);
     graphics_layer_->SetDrawsContent(true);
     clip_layer_->AddChild(scroll_elasticity_layer_.get());
     scroll_elasticity_layer_->AddChild(page_scale_layer_.get());
@@ -72,7 +73,7 @@ class GraphicsLayerTest : public ::testing::Test,
     graphics_layer_->PlatformLayer()->SetScrollable(
         clip_layer_->PlatformLayer()->Bounds());
     platform_layer_ = graphics_layer_->PlatformLayer();
-    layer_tree_view_ = WTF::WrapUnique(new WebLayerTreeViewImplForTesting);
+    layer_tree_view_ = std::make_unique<WebLayerTreeViewImplForTesting>();
     DCHECK(layer_tree_view_);
     layer_tree_view_->SetRootLayer(*clip_layer_->PlatformLayer());
     WebLayerTreeView::ViewportLayers viewport_layers;

@@ -26,6 +26,10 @@
 #include "platform/graphics/DeferredImageDecoder.h"
 
 #include <memory>
+#include <utility>
+#include <vector>
+
+#include "base/memory/ptr_util.h"
 #include "platform/SharedBuffer.h"
 #include "platform/graphics/DecodingImageGenerator.h"
 #include "platform/graphics/ImageDecodingStore.h"
@@ -33,7 +37,6 @@
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/image-decoders/SegmentReader.h"
 #include "platform/runtime_enabled_features.h"
-#include "platform/wtf/PtrUtil.h"
 #include "third_party/skia/include/core/SkImage.h"
 
 namespace blink {
@@ -74,7 +77,8 @@ std::unique_ptr<DeferredImageDecoder> DeferredImageDecoder::Create(
 
 std::unique_ptr<DeferredImageDecoder> DeferredImageDecoder::CreateForTesting(
     std::unique_ptr<ImageDecoder> metadata_decoder) {
-  return WTF::WrapUnique(new DeferredImageDecoder(std::move(metadata_decoder)));
+  return base::WrapUnique(
+      new DeferredImageDecoder(std::move(metadata_decoder)));
 }
 
 DeferredImageDecoder::DeferredImageDecoder(
@@ -165,7 +169,7 @@ void DeferredImageDecoder::SetDataInternal(scoped_refptr<SharedBuffer> data,
 
   if (frame_generator_) {
     if (!rw_buffer_)
-      rw_buffer_ = WTF::WrapUnique(new SkRWBuffer(data->size()));
+      rw_buffer_ = std::make_unique<SkRWBuffer>(data->size());
 
     const char* segment = nullptr;
     for (size_t length = data->GetSomeData(segment, rw_buffer_->size()); length;

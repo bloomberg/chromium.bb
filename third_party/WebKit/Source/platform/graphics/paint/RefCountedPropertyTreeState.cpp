@@ -4,14 +4,16 @@
 
 #include "platform/graphics/paint/RefCountedPropertyTreeState.h"
 
+#include <memory>
+
 namespace blink {
 
 const RefCountedPropertyTreeState& RefCountedPropertyTreeState::Root() {
   DEFINE_STATIC_LOCAL(
       std::unique_ptr<RefCountedPropertyTreeState>, root,
-      (WTF::WrapUnique(new RefCountedPropertyTreeState(
+      (std::make_unique<RefCountedPropertyTreeState>(
           TransformPaintPropertyNode::Root(), ClipPaintPropertyNode::Root(),
-          EffectPaintPropertyNode::Root()))));
+          EffectPaintPropertyNode::Root())));
   return *root;
 }
 

@@ -33,9 +33,9 @@
 #include <memory>
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "platform/audio/AudioBus.h"
 #include "platform/mediastream/MediaStreamSource.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Vector.h"
 #include "public/platform/WebAudioDestinationConsumer.h"
 #include "public/platform/WebMediaConstraints.h"
@@ -152,8 +152,8 @@ void WebMediaStreamSource::SetExtraData(ExtraData* extra_data) {
   if (extra_data)
     extra_data->SetOwner(private_.Get());
 
-  private_->SetExtraData(WTF::WrapUnique(
-      new MediaStreamSourceExtraDataContainer(WTF::WrapUnique(extra_data))));
+  private_->SetExtraData(std::make_unique<MediaStreamSourceExtraDataContainer>(
+      base::WrapUnique(extra_data)));
 }
 
 void WebMediaStreamSource::SetEchoCancellation(bool echo_cancellation) {

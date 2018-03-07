@@ -10,7 +10,6 @@
 #include "platform/audio/AudioUtilities.h"
 #include "platform/testing/TestingPlatformSupport.h"
 #include "platform/wtf/Functional.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -31,7 +30,7 @@ TEST(PushPullFIFOBasicTest, BasicTests) {
   EXPECT_DEATH(new PushPullFIFO(2, PushPullFIFO::kMaxFIFOLength + 1), "");
 
   std::unique_ptr<PushPullFIFO> test_fifo =
-      WTF::WrapUnique(new PushPullFIFO(2, 1024));
+      std::make_unique<PushPullFIFO>(2, 1024);
 
   // The input bus length must be |AudioUtilities::kRenderQuantumFrames|.
   // i.e.) input_bus->length() == kRenderQuantumFrames
@@ -140,8 +139,8 @@ TEST_P(PushPullFIFOFeatureTest, FeatureTests) {
   const FIFOTestExpectedState expected_state = GetParam().expected_state;
 
   // Create a FIFO with a specified configuration.
-  std::unique_ptr<PushPullFIFO> fifo = WTF::WrapUnique(
-      new PushPullFIFO(setup.number_of_channels, setup.fifo_length));
+  std::unique_ptr<PushPullFIFO> fifo = std::make_unique<PushPullFIFO>(
+      setup.number_of_channels, setup.fifo_length);
 
   scoped_refptr<AudioBus> output_bus;
 

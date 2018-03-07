@@ -5,6 +5,10 @@
 #ifndef WebGraphicsContext3DProviderWrapper_h
 #define WebGraphicsContext3DProviderWrapper_h
 
+#include <memory>
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "platform/PlatformExport.h"
@@ -25,7 +29,7 @@ class PLATFORM_EXPORT WebGraphicsContext3DProviderWrapper {
       std::unique_ptr<WebGraphicsContext3DProvider> provider)
       : context_provider_(std::move(provider)), weak_ptr_factory_(this) {
     DCHECK(context_provider_);
-    utils_ = WTF::WrapUnique(new GraphicsContext3DUtils(GetWeakPtr()));
+    utils_ = base::WrapUnique(new GraphicsContext3DUtils(GetWeakPtr()));
   }
   ~WebGraphicsContext3DProviderWrapper();
 

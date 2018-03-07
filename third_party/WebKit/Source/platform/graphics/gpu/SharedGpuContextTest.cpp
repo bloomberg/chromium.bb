@@ -4,6 +4,8 @@
 
 #include "platform/graphics/gpu/SharedGpuContext.h"
 
+#include <memory>
+
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "platform/graphics/Canvas2DLayerBridge.h"
 #include "platform/graphics/CanvasResourceProvider.h"
@@ -125,9 +127,10 @@ TEST_F(SharedGpuContextTest, Canvas2DLayerBridgeAutoRecovery) {
   IntSize size(10, 10);
   CanvasColorParams color_params;
   std::unique_ptr<Canvas2DLayerBridge> bridge =
-      WTF::WrapUnique(new Canvas2DLayerBridge(
-          size, 0, /*msaa sample count*/
-          Canvas2DLayerBridge::kEnableAcceleration, color_params));
+      std::make_unique<Canvas2DLayerBridge>(
+          size, 0,
+          /*msaa sample count*/ Canvas2DLayerBridge::kEnableAcceleration,
+          color_params);
   EXPECT_TRUE(bridge->IsAccelerated());
   EXPECT_TRUE(SharedGpuContext::IsValidWithoutRestoring());
   bridge->BeginDestruction();

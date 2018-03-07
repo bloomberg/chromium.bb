@@ -33,7 +33,6 @@
 #include "platform/PlatformExport.h"
 #include "platform/audio/AudioArray.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -55,7 +54,7 @@ class PLATFORM_EXPORT AudioChannel {
   // Manage storage for us.
   explicit AudioChannel(size_t length)
       : length_(length), raw_pointer_(nullptr), silent_(true) {
-    mem_buffer_ = WTF::WrapUnique(new AudioFloatArray(length));
+    mem_buffer_ = std::make_unique<AudioFloatArray>(length);
   }
 
   // A "blank" audio channel -- must call set() before it's useful...

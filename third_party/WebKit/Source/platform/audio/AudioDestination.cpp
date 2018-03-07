@@ -28,7 +28,10 @@
 
 #include "platform/audio/AudioDestination.h"
 
+#include <algorithm>
 #include <memory>
+#include <utility>
+
 #include "platform/CrossThreadFunctional.h"
 #include "platform/Histogram.h"
 #include "platform/WebTaskRunner.h"
@@ -36,7 +39,6 @@
 #include "platform/audio/PushPullFIFO.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebAudioLatencyHint.h"
 #include "public/platform/WebSecurityOrigin.h"
@@ -68,8 +70,8 @@ AudioDestination::AudioDestination(
     scoped_refptr<const SecurityOrigin> security_origin)
     : number_of_output_channels_(number_of_output_channels),
       is_playing_(false),
-      fifo_(WTF::WrapUnique(
-          new PushPullFIFO(number_of_output_channels, kFIFOSize))),
+      fifo_(
+          std::make_unique<PushPullFIFO>(number_of_output_channels, kFIFOSize)),
       output_bus_(AudioBus::Create(number_of_output_channels,
                                    AudioUtilities::kRenderQuantumFrames,
                                    false)),

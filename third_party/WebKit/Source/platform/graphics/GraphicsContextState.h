@@ -30,13 +30,14 @@
 #define GraphicsContextState_h
 
 #include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "platform/graphics/DrawLooperBuilder.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/StrokeData.h"
 #include "platform/graphics/paint/PaintFlags.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/PtrUtil.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
@@ -49,12 +50,12 @@ class PLATFORM_EXPORT GraphicsContextState final {
 
  public:
   static std::unique_ptr<GraphicsContextState> Create() {
-    return WTF::WrapUnique(new GraphicsContextState());
+    return base::WrapUnique(new GraphicsContextState());
   }
 
   static std::unique_ptr<GraphicsContextState> CreateAndCopy(
       const GraphicsContextState& other) {
-    return WTF::WrapUnique(new GraphicsContextState(other));
+    return base::WrapUnique(new GraphicsContextState(other));
   }
 
   void Copy(const GraphicsContextState&);

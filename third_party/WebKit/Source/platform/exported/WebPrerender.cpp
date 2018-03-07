@@ -31,9 +31,10 @@
 #include "public/platform/WebPrerender.h"
 
 #include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "platform/Prerender.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -52,7 +53,7 @@ class PrerenderExtraDataContainer : public Prerender::ExtraData {
 
  private:
   explicit PrerenderExtraDataContainer(WebPrerender::ExtraData* extra_data)
-      : extra_data_(WTF::WrapUnique(extra_data)) {}
+      : extra_data_(base::WrapUnique(extra_data)) {}
 
   std::unique_ptr<WebPrerender::ExtraData> extra_data_;
 };

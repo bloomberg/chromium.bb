@@ -31,10 +31,12 @@
 #include "public/platform/WebFileSystemCallbacks.h"
 
 #include <memory>
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "platform/AsyncFileSystemCallbacks.h"
 #include "platform/FileMetadata.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/RefCounted.h"
 #include "public/platform/WebFileInfo.h"
 #include "public/platform/WebFileSystem.h"
@@ -146,7 +148,7 @@ void WebFileSystemCallbacks::DidResolveURL(const WebString& name,
 void WebFileSystemCallbacks::DidCreateFileWriter(WebFileWriter* web_file_writer,
                                                  long long length) {
   DCHECK(!private_.IsNull());
-  private_->Callbacks()->DidCreateFileWriter(WTF::WrapUnique(web_file_writer),
+  private_->Callbacks()->DidCreateFileWriter(base::WrapUnique(web_file_writer),
                                              length);
   private_.Reset();
 }

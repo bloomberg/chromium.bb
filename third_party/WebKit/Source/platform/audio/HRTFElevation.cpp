@@ -31,6 +31,9 @@
 #include <math.h>
 #include <algorithm>
 #include <memory>
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/HRTFPanner.h"
 #include "platform/wtf/ThreadingPrimitives.h"
@@ -270,7 +273,7 @@ std::unique_ptr<HRTFElevation> HRTFElevation::CreateForSubject(
     }
   }
 
-  std::unique_ptr<HRTFElevation> hrtf_elevation = WTF::WrapUnique(
+  std::unique_ptr<HRTFElevation> hrtf_elevation = base::WrapUnique(
       new HRTFElevation(std::move(kernel_list_l), std::move(kernel_list_r),
                         elevation, sample_rate));
   return hrtf_elevation;
@@ -311,7 +314,7 @@ std::unique_ptr<HRTFElevation> HRTFElevation::CreateByInterpolatingSlices(
   double angle = (1.0 - x) * hrtf_elevation1->ElevationAngle() +
                  x * hrtf_elevation2->ElevationAngle();
 
-  std::unique_ptr<HRTFElevation> hrtf_elevation = WTF::WrapUnique(
+  std::unique_ptr<HRTFElevation> hrtf_elevation = base::WrapUnique(
       new HRTFElevation(std::move(kernel_list_l), std::move(kernel_list_r),
                         static_cast<int>(angle), sample_rate));
   return hrtf_elevation;

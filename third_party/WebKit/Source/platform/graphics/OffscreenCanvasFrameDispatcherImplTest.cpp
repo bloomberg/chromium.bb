@@ -4,7 +4,8 @@
 
 #include "platform/graphics/OffscreenCanvasFrameDispatcherImpl.h"
 
-#include "platform/wtf/PtrUtil.h"
+#include <memory>
+
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -45,7 +46,7 @@ class OffscreenCanvasFrameDispatcherImplTest : public ::testing::Test {
 
  protected:
   OffscreenCanvasFrameDispatcherImplTest() {
-    dispatcher_ = WTF::WrapUnique(new MockOffscreenCanvasFrameDispatcherImpl());
+    dispatcher_ = std::make_unique<MockOffscreenCanvasFrameDispatcherImpl>();
   }
 
   MockOffscreenCanvasFrameDispatcherImpl* Dispatcher() {

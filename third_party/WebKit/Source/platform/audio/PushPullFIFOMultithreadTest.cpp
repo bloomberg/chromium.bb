@@ -161,12 +161,12 @@ TEST_P(PushPullFIFOSmokeTest, SmokeTests) {
   const double push_interval_ms =
       param.push_buffer_size / sample_rate * 1000;
 
-  std::unique_ptr<PushPullFIFO> test_fifo = WTF::WrapUnique(
-      new PushPullFIFO(param.number_of_channels, param.fifo_length));
-  std::unique_ptr<PullClient> pull_client = WTF::WrapUnique(new PullClient(
-      test_fifo.get(), param.pull_buffer_size, param.pull_jitter_range_ms));
-  std::unique_ptr<PushClient> push_client = WTF::WrapUnique(new PushClient(
-      test_fifo.get(), param.push_buffer_size, param.push_jitter_range_ms));
+  std::unique_ptr<PushPullFIFO> test_fifo = std::make_unique<PushPullFIFO>(
+      param.number_of_channels, param.fifo_length);
+  std::unique_ptr<PullClient> pull_client = std::make_unique<PullClient>(
+      test_fifo.get(), param.pull_buffer_size, param.pull_jitter_range_ms);
+  std::unique_ptr<PushClient> push_client = std::make_unique<PushClient>(
+      test_fifo.get(), param.push_buffer_size, param.push_jitter_range_ms);
 
   Vector<WaitableEvent*> done_events;
   done_events.push_back(

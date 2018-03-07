@@ -31,7 +31,9 @@
 #include "public/platform/WebCryptoKey.h"
 
 #include <memory>
-#include "platform/wtf/PtrUtil.h"
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "platform/wtf/ThreadSafeRefCounted.h"
 #include "public/platform/WebCryptoAlgorithm.h"
 #include "public/platform/WebCryptoAlgorithmParams.h"
@@ -68,7 +70,7 @@ WebCryptoKey WebCryptoKey::Create(WebCryptoKeyHandle* handle,
                                   WebCryptoKeyUsageMask usages) {
   WebCryptoKey key;
   key.private_ = base::AdoptRef(new WebCryptoKeyPrivate(
-      WTF::WrapUnique(handle), type, extractable, algorithm, usages));
+      base::WrapUnique(handle), type, extractable, algorithm, usages));
   return key;
 }
 

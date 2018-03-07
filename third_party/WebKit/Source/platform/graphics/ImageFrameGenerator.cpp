@@ -26,6 +26,9 @@
 #include "platform/graphics/ImageFrameGenerator.h"
 
 #include <memory>
+#include <utility>
+#include <vector>
+
 #include "SkData.h"
 #include "platform/graphics/ImageDecodingStore.h"
 #include "platform/image-decoders/ImageDecoder.h"
@@ -248,7 +251,7 @@ SkBitmap ImageFrameGenerator::TryToResumeDecode(
   // the decoder is owned by ImageDecodingStore.
   std::unique_ptr<ImageDecoder> decoder_container;
   if (!resume_decoding)
-    decoder_container = WTF::WrapUnique(decoder);
+    decoder_container = base::WrapUnique(decoder);
 
   if (!current_frame || current_frame->Bitmap().isNull()) {
     // If decoding has failed, we can save work in the future by
@@ -415,7 +418,7 @@ bool ImageFrameGenerator::GetYUVComponentSizes(SegmentReader* data,
   // Setting a dummy ImagePlanes object signals to the decoder that we want to
   // do YUV decoding.
   std::unique_ptr<ImagePlanes> dummy_image_planes =
-      WTF::WrapUnique(new ImagePlanes);
+      std::make_unique<ImagePlanes>();
   decoder->SetImagePlanes(std::move(dummy_image_planes));
 
   return UpdateYUVComponentSizes(decoder.get(), size_info->fSizes,

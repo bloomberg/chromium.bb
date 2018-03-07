@@ -5,6 +5,9 @@
 #include "platform/graphics/compositing/PaintArtifactCompositor.h"
 
 #include <memory>
+#include <utility>
+#include <vector>
+
 #include "cc/layers/layer.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/paint/display_item_list.h"
@@ -53,7 +56,7 @@ PaintArtifactCompositor::~PaintArtifactCompositor() {
 
 void PaintArtifactCompositor::EnableExtraDataForTesting() {
   extra_data_for_testing_enabled_ = true;
-  extra_data_for_testing_ = WTF::WrapUnique(new ExtraDataForTesting);
+  extra_data_for_testing_ = std::make_unique<ExtraDataForTesting>();
 }
 
 void PaintArtifactCompositor::SetTracksRasterInvalidations(bool should_track) {

@@ -25,11 +25,11 @@
 #ifndef WebScrollbarImpl_h
 #define WebScrollbarImpl_h
 
+#include "base/memory/ptr_util.h"
 #include "platform/PlatformExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebScrollbar.h"
 
 #include <memory>
@@ -43,7 +43,7 @@ class PLATFORM_EXPORT WebScrollbarImpl final : public WebScrollbar {
 
  public:
   static std::unique_ptr<WebScrollbarImpl> Create(Scrollbar* scrollbar) {
-    return WTF::WrapUnique(new WebScrollbarImpl(scrollbar));
+    return base::WrapUnique(new WebScrollbarImpl(scrollbar));
   }
 
   // Implement WebScrollbar methods

@@ -31,8 +31,10 @@
 #include "public/platform/WebCryptoAlgorithm.h"
 
 #include <memory>
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "platform/wtf/Assertions.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "platform/wtf/ThreadSafeRefCounted.h"
 #include "public/platform/WebCryptoAlgorithmParams.h"
@@ -335,7 +337,7 @@ WebCryptoAlgorithm WebCryptoAlgorithm::CreateNull() {
 WebCryptoAlgorithm WebCryptoAlgorithm::AdoptParamsAndCreate(
     WebCryptoAlgorithmId id,
     WebCryptoAlgorithmParams* params) {
-  return WebCryptoAlgorithm(id, WTF::WrapUnique(params));
+  return WebCryptoAlgorithm(id, base::WrapUnique(params));
 }
 
 const WebCryptoAlgorithmInfo* WebCryptoAlgorithm::LookupAlgorithmInfo(

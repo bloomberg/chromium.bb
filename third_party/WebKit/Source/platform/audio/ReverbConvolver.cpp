@@ -29,12 +29,13 @@
 #include "platform/audio/ReverbConvolver.h"
 
 #include <memory>
+#include <utility>
+
 #include "base/location.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/VectorMath.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
 
@@ -105,10 +106,10 @@ ReverbConvolver::ReverbConvolver(AudioChannel* impulse_response,
     bool use_direct_convolver = !stage_offset;
 
     std::unique_ptr<ReverbConvolverStage> stage =
-        WTF::WrapUnique(new ReverbConvolverStage(
+        std::make_unique<ReverbConvolverStage>(
             response, total_response_length, reverb_total_latency, stage_offset,
             stage_size, fft_size, render_phase, render_slice_size,
-            &accumulation_buffer_, use_direct_convolver));
+            &accumulation_buffer_, use_direct_convolver);
 
     bool is_background_stage = false;
 

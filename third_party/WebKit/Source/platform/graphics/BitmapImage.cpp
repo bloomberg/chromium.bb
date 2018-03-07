@@ -26,6 +26,10 @@
 
 #include "platform/graphics/BitmapImage.h"
 
+#include <algorithm>
+#include <memory>
+#include <utility>
+
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "platform/Timer.h"
@@ -43,7 +47,6 @@
 #include "platform/runtime_enabled_features.h"
 #include "platform/scheduler/child/web_scheduler.h"
 #include "platform/wtf/Assertions.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/web/WebSettings.h"
 

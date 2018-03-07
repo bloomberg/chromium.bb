@@ -27,6 +27,8 @@
 #define MockImageDecoder_h
 
 #include <memory>
+#include <utility>
+
 #include "platform/graphics/ImageFrameGenerator.h"
 #include "platform/image-decoders/ImageDecoder.h"
 
@@ -133,14 +135,14 @@ class MockImageDecoderFactory : public ImageDecoderFactory {
   static std::unique_ptr<MockImageDecoderFactory> Create(
       MockImageDecoderClient* client,
       const SkISize& decoded_size) {
-    return WTF::WrapUnique(new MockImageDecoderFactory(
+    return base::WrapUnique(new MockImageDecoderFactory(
         client, IntSize(decoded_size.width(), decoded_size.height())));
   }
 
   static std::unique_ptr<MockImageDecoderFactory> Create(
       MockImageDecoderClient* client,
       const IntSize& decoded_size) {
-    return WTF::WrapUnique(new MockImageDecoderFactory(client, decoded_size));
+    return base::WrapUnique(new MockImageDecoderFactory(client, decoded_size));
   }
 
   std::unique_ptr<ImageDecoder> Create() override {

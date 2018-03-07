@@ -12,7 +12,6 @@
 #include "platform/graphics/SkiaTextureHolder.h"
 #include "platform/graphics/gpu/SharedGpuContext.h"
 #include "platform/graphics/skia/SkiaUtils.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
 #include "third_party/skia/include/core/SkImage.h"
@@ -52,8 +51,8 @@ AcceleratedStaticBitmapImage::AcceleratedStaticBitmapImage(
         context_provider_wrapper)
     : paint_image_content_id_(cc::PaintImage::GetNextContentId()) {
   CHECK(image && image->isTextureBacked());
-  texture_holder_ = WTF::WrapUnique(new SkiaTextureHolder(
-      std::move(image), std::move(context_provider_wrapper)));
+  texture_holder_ = std::make_unique<SkiaTextureHolder>(
+      std::move(image), std::move(context_provider_wrapper));
   thread_checker_.DetachFromThread();
 }
 
@@ -65,9 +64,9 @@ AcceleratedStaticBitmapImage::AcceleratedStaticBitmapImage(
         context_provider_wrapper,
     IntSize mailbox_size)
     : paint_image_content_id_(cc::PaintImage::GetNextContentId()) {
-  texture_holder_ = WTF::WrapUnique(new MailboxTextureHolder(
+  texture_holder_ = std::make_unique<MailboxTextureHolder>(
       mailbox, sync_token, texture_id, std::move(context_provider_wrapper),
-      mailbox_size));
+      mailbox_size);
   thread_checker_.DetachFromThread();
 }
 
@@ -247,7 +246,7 @@ void AcceleratedStaticBitmapImage::CreateImageFromMailboxIfNeeded() {
   if (texture_holder_->IsSkiaTextureHolder())
     return;
   texture_holder_ =
-      WTF::WrapUnique(new SkiaTextureHolder(std::move(texture_holder_)));
+      std::make_unique<SkiaTextureHolder>(std::move(texture_holder_));
 }
 
 void AcceleratedStaticBitmapImage::EnsureMailbox(MailboxSyncMode mode,
@@ -260,8 +259,8 @@ void AcceleratedStaticBitmapImage::EnsureMailbox(MailboxSyncMode mode,
       RetainOriginalSkImage();
     }
 
-    texture_holder_ = WTF::WrapUnique(
-        new MailboxTextureHolder(std::move(texture_holder_), filter));
+    texture_holder_ = std::make_unique<MailboxTextureHolder>(
+        std::move(texture_holder_), filter);
   }
   texture_holder_->Sync(mode);
 }
