@@ -460,6 +460,7 @@ jumbo_static_library("test_support") {
       "//content:sandbox_helper_win",
       "//third_party/iaccessible2",
     ]
+    libs = [ "oleacc.lib" ]
   }
 
   if (is_android) {
@@ -992,8 +993,6 @@ test("content_browsertests") {
       "//third_party/iaccessible2",
       "//third_party/isimpledom",
     ]
-
-    libs = [ "oleacc.lib" ]
 
     if (symbol_level != 0) {
       data += [ "$root_out_dir/content_browsertests.exe.pdb" ]
