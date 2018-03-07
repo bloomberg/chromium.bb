@@ -19,6 +19,7 @@ namespace zucchini {
 constexpr double kMismatchFatal = -std::numeric_limits<double>::infinity();
 
 class EncodedView;
+class EquivalenceSource;
 
 // Returns similarity score between a token (raw byte or first byte of a
 // reference) in |old_image_index| at |src| and a token in |new_image_index|
@@ -75,6 +76,56 @@ EquivalenceCandidate VisitEquivalenceSeed(
     offset_t dst,
     double min_similarity);
 
+// Container of pruned equivalences used to map offsets from |old_image| to
+// offsets in |new_image|. Equivalences are pruned by cropping smaller
+// equivalences to avoid overlaps, to make the equivalence map (for covered
+// bytes in |old_image| and |new_image|) one-to-one.
+class OffsetMapper {
+ public:
+  using const_iterator = std::vector<Equivalence>::const_iterator;
+
+  // Constructors for various data sources.
+  // - From a list of |equivalences|, already sorted (by |src_offset|) and
+  //   pruned, useful for tests.
+  explicit OffsetMapper(std::vector<Equivalence>&& equivalences);
+  // - From a generator, useful for Zucchini-apply.
+  explicit OffsetMapper(EquivalenceSource&& equivalence_source);
+  // - From an EquivalenceMap that needs to be processed, useful for
+  //   Zucchini-gen.
+  explicit OffsetMapper(const EquivalenceMap& equivalence_map);
+  ~OffsetMapper();
+
+  size_t size() const { return equivalences_.size(); }
+  const_iterator begin() const { return equivalences_.begin(); }
+  const_iterator end() const { return equivalences_.end(); }
+
+  // Returns an offset in |new_image| corresponding to |offset| in |old_image|.
+  // If |offset| is not part of an equivalence, the equivalence nearest to
+  // |offset| is used as if it contained |offset|. This assumes |equivalences_|
+  // is not empty.
+  offset_t ForwardProject(offset_t offset) const;
+
+  // Given sorted |offsets|, applies a projection in-place of all offsets that
+  // are part of a pruned equivalence from |old_image| to |new_image|. Other
+  // offsets are removed from |offsets|.
+  void ForwardProjectAll(std::vector<offset_t>* offsets) const;
+
+  // Accessor for testing.
+  const std::vector<Equivalence> equivalences() const { return equivalences_; }
+
+  // Sorts |equivalences| by |src_offset| and removes all source overlaps; so a
+  // source location that was covered by some Equivalence would become covered
+  // by exactly one Equivalence. Moreover, for the offset, the equivalence
+  // corresponds to the largest (pre-pruning) covering Equivalence, and in case
+  // of a tie, the Equivalence with minimal |src_offset|. |equivalences| may
+  // change in size since empty Equivalences are removed.
+  static void PruneEquivalencesAndSortBySource(
+      std::vector<Equivalence>* equivalences);
+
+ private:
+  std::vector<Equivalence> equivalences_;
+};
+
 // Container of equivalences between |old_image_index| and |new_image_index|,
 // sorted by |Equivalence::dst_offset|, only used during patch generation.
 class EquivalenceMap {
@@ -83,8 +134,7 @@ class EquivalenceMap {
 
   EquivalenceMap();
   // Initializes the object with |equivalences|.
-  explicit EquivalenceMap(
-      const std::vector<EquivalenceCandidate>& equivalences);
+  explicit EquivalenceMap(std::vector<EquivalenceCandidate>&& candidates);
   EquivalenceMap(EquivalenceMap&&);
   EquivalenceMap(const EquivalenceMap&) = delete;
   ~EquivalenceMap();
@@ -105,10 +155,6 @@ class EquivalenceMap {
   size_t size() const { return candidates_.size(); }
   const_iterator begin() const { return candidates_.begin(); }
   const_iterator end() const { return candidates_.end(); }
-
-  // Returns a vector containing equivalences sorted by
-  // |Equivalence::src_offset|.
-  std::vector<Equivalence> MakeForwardEquivalences() const;
 
  private:
   // Discovers equivalence candidates between |old_view| and |new_view| and

@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "chrome/installer/zucchini/image_index.h"
-#include "chrome/installer/zucchini/label_manager.h"
 #include "chrome/installer/zucchini/test_disassembler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

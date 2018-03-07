@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "chrome/installer/zucchini/encoded_view.h"
+#include "chrome/installer/zucchini/patch_reader.h"
 #include "chrome/installer/zucchini/suffix_array.h"
 
 namespace zucchini {
@@ -187,13 +188,136 @@ EquivalenceCandidate VisitEquivalenceSeed(
                                    min_similarity);
 }
 
+/******** OffsetMapper ********/
+
+OffsetMapper::OffsetMapper(std::vector<Equivalence>&& equivalences)
+    : equivalences_(std::move(equivalences)) {
+  DCHECK(std::is_sorted(equivalences_.begin(), equivalences_.end(),
+                        [](const Equivalence& a, const Equivalence& b) {
+                          return a.src_offset < b.src_offset;
+                        }));
+}
+
+OffsetMapper::OffsetMapper(EquivalenceSource&& equivalence_source) {
+  for (auto e = equivalence_source.GetNext(); e.has_value();
+       e = equivalence_source.GetNext()) {
+    equivalences_.push_back(*e);
+  }
+  PruneEquivalencesAndSortBySource(&equivalences_);
+}
+
+OffsetMapper::OffsetMapper(const EquivalenceMap& equivalence_map)
+    : equivalences_(equivalence_map.size()) {
+  std::transform(equivalence_map.begin(), equivalence_map.end(),
+                 equivalences_.begin(),
+                 [](const EquivalenceCandidate& c) { return c.eq; });
+  PruneEquivalencesAndSortBySource(&equivalences_);
+}
+
+OffsetMapper::~OffsetMapper() = default;
+
+offset_t OffsetMapper::ForwardProject(offset_t offset) const {
+  auto pos = std::upper_bound(
+      equivalences_.begin(), equivalences_.end(), offset,
+      [](offset_t a, const Equivalence& b) { return a < b.src_offset; });
+  if (pos != equivalences_.begin()) {
+    if (pos == equivalences_.end() || offset < pos[-1].src_end() ||
+        offset - pos[-1].src_end() < pos->src_offset - offset) {
+      --pos;
+    }
+  }
+  return offset - pos->src_offset + pos->dst_offset;
+}
+
+void OffsetMapper::ForwardProjectAll(std::vector<offset_t>* offsets) const {
+  DCHECK(std::is_sorted(offsets->begin(), offsets->end()));
+  auto current = equivalences_.begin();
+  for (auto& src : *offsets) {
+    while (current != end() && current->src_end() <= src) {
+      ++current;
+    }
+
+    if (current != end() && current->src_offset <= src) {
+      src = src - current->src_offset + current->dst_offset;
+    } else {
+      src = kInvalidOffset;
+    }
+  }
+  offsets->erase(std::remove(offsets->begin(), offsets->end(), kInvalidOffset),
+                 offsets->end());
+  offsets->shrink_to_fit();
+}
+
+void OffsetMapper::PruneEquivalencesAndSortBySource(
+    std::vector<Equivalence>* equivalences) {
+  std::sort(equivalences->begin(), equivalences->end(),
+            [](const Equivalence& a, const Equivalence& b) {
+              return a.src_offset < b.src_offset;
+            });
+
+  for (auto current = equivalences->begin(); current != equivalences->end();
+       ++current) {
+    // A "reaper" is an equivalence after |current| that overlaps with it, but
+    // is longer, and so truncates |current|.  For example:
+    //  ******  <=  |current|
+    //    **
+    //    ****
+    //      ****
+    //      **********  <= |next| as reaper.
+    // If a reaper is found (as |next|), every equivalence strictly between
+    // |current| and |next| would be truncated to 0 and discarded. Handling this
+    // case is important to avoid O(n^2) behavior.
+    bool next_is_reaper = false;
+
+    // Look ahead to resolve overlaps, until a better candidate is found.
+    auto next = current + 1;
+    for (; next != equivalences->end(); ++next) {
+      DCHECK_GE(next->src_offset, current->src_offset);
+      if (next->src_offset >= current->src_end())
+        break;  // No more overlap.
+
+      if (current->length < next->length) {
+        // |next| is better: So it is a reaper that shrinks |current|.
+        offset_t delta = current->src_end() - next->src_offset;
+        current->length -= delta;
+        next_is_reaper = true;
+        break;
+      }
+    }
+
+    if (next_is_reaper) {
+      // Discard all equivalences strictly between |cur| and |next|.
+      for (auto reduced = current + 1; reduced != next; ++reduced)
+        reduced->length = 0;
+      current = next - 1;
+    } else {
+      // Shrink all equivalences that overlap with |current|. These are all
+      // worse than |current| since no reaper is found.
+      for (auto reduced = current + 1; reduced != next; ++reduced) {
+        offset_t delta =
+            std::min(reduced->length, current->src_end() - reduced->src_offset);
+        reduced->length -= delta;
+        reduced->src_offset += delta;
+        reduced->dst_offset += delta;
+        DCHECK_EQ(reduced->src_offset, current->src_end());
+      }
+    }
+  }
+
+  // Discard all equivalences with length == 0.
+  equivalences->erase(std::remove_if(equivalences->begin(), equivalences->end(),
+                                     [](const Equivalence& equivalence) {
+                                       return equivalence.length == 0;
+                                     }),
+                      equivalences->end());
+}
+
 /******** EquivalenceMap ********/
 
 EquivalenceMap::EquivalenceMap() = default;
 
-EquivalenceMap::EquivalenceMap(
-    const std::vector<EquivalenceCandidate>& equivalences)
-    : candidates_(equivalences) {
+EquivalenceMap::EquivalenceMap(std::vector<EquivalenceCandidate>&& equivalences)
+    : candidates_(std::move(equivalences)) {
   SortByDestination();
 }
 
@@ -224,17 +348,6 @@ void EquivalenceMap::Build(
   LOG(INFO) << "Equivalence Count: " << size();
   LOG(INFO) << "Coverage / Extra / Total: " << coverage << " / "
             << new_view.size() - coverage << " / " << new_view.size();
-}
-
-std::vector<Equivalence> EquivalenceMap::MakeForwardEquivalences() const {
-  std::vector<Equivalence> equivalences(size());
-  std::transform(begin(), end(), equivalences.begin(),
-                 [](const EquivalenceCandidate& c) { return c.eq; });
-  std::sort(equivalences.begin(), equivalences.end(),
-            [](const Equivalence& a, const Equivalence& b) {
-              return a.src_offset < b.src_offset;
-            });
-  return equivalences;
 }
 
 void EquivalenceMap::CreateCandidates(
@@ -306,42 +419,55 @@ void EquivalenceMap::Prune(
     const EncodedView& new_view,
     const std::vector<TargetsAffinity>& target_affinities,
     double min_similarity) {
+  // TODO(etiennep): unify with
+  // OffsetMapper::PruneEquivalencesAndSortBySource().
   for (auto current = candidates_.begin(); current != candidates_.end();
        ++current) {
     if (current->similarity < min_similarity)
       continue;  // This candidate will be discarded anyways.
 
+    bool next_is_reaper = false;
+
     // Look ahead to resolve overlaps, until a better candidate is found.
-    for (auto next = current + 1; next != candidates_.end(); ++next) {
+    auto next = current + 1;
+    for (; next != candidates_.end(); ++next) {
       DCHECK_GE(next->eq.dst_offset, current->eq.dst_offset);
       if (next->eq.dst_offset >= current->eq.dst_offset + current->eq.length)
         break;  // No more overlap.
 
-      offset_t delta = current->eq.dst_end() - next->eq.dst_offset;
-
-      // |next| is better, so |current| shrinks.
       if (current->similarity < next->similarity) {
+        // |next| is better: So it is a reaper that shrinks |current|.
+        offset_t delta = current->eq.dst_end() - next->eq.dst_offset;
         current->eq.length -= delta;
         current->similarity = GetEquivalenceSimilarity(
             old_view.image_index(), new_view.image_index(), target_affinities,
             current->eq);
+
+        next_is_reaper = true;
         break;
       }
     }
 
-    // Shrinks all overlapping candidates following and worse than |current|.
-    for (auto next = current + 1; next != candidates_.end(); ++next) {
-      if (next->eq.dst_offset >= current->eq.dst_offset + current->eq.length)
-        break;  // No more overlap.
-
-      offset_t delta = current->eq.dst_end() - next->eq.dst_offset;
-      next->eq.length = next->eq.length > delta ? next->eq.length - delta : 0;
-      next->eq.src_offset += delta;
-      next->eq.dst_offset += delta;
-      next->similarity = GetEquivalenceSimilarity(old_view.image_index(),
-                                                  new_view.image_index(),
-                                                  target_affinities, next->eq);
-      DCHECK_EQ(next->eq.dst_offset, current->eq.dst_end());
+    if (next_is_reaper) {
+      // Discard all equivalences strictly between |cur| and |next|.
+      for (auto reduced = current + 1; reduced != next; ++reduced) {
+        reduced->eq.length = 0;
+        reduced->similarity = 0;
+      }
+      current = next - 1;
+    } else {
+      // Shrinks all overlapping candidates following and worse than |current|.
+      for (auto reduced = current + 1; reduced != next; ++reduced) {
+        offset_t delta = std::min(
+            reduced->eq.length, current->eq.dst_end() - reduced->eq.dst_offset);
+        reduced->eq.length -= delta;
+        reduced->eq.src_offset += delta;
+        reduced->eq.dst_offset += delta;
+        reduced->similarity = GetEquivalenceSimilarity(
+            old_view.image_index(), new_view.image_index(), target_affinities,
+            reduced->eq);
+        DCHECK_EQ(reduced->eq.dst_offset, current->eq.dst_end());
+      }
     }
   }
 

@@ -12,61 +12,10 @@
 #include "base/logging.h"
 #include "chrome/installer/zucchini/disassembler.h"
 #include "chrome/installer/zucchini/element_detection.h"
-#include "chrome/installer/zucchini/label_manager.h"
+#include "chrome/installer/zucchini/equivalence_map.h"
+#include "chrome/installer/zucchini/image_index.h"
 
 namespace zucchini {
-
-std::vector<offset_t> MakeNewTargetsFromPatch(
-    const std::vector<offset_t>& old_targets,
-    const EquivalenceSource& equivalence_source) {
-  // |old_targets| is sorted. This enables binary search usage below.
-  std::vector<offset_t> new_targets(old_targets.size(), kUnusedIndex);
-
-  // First pass: For each equivalence, attempt to claim target in |new_targets|
-  // associated with each target in the "old" interval of the equivalence. "Old"
-  // interval collisions may occur.
-  {
-    EquivalenceSource tmp_equiv_source(equivalence_source);
-    for (auto equivalence = tmp_equiv_source.GetNext(); equivalence.has_value();
-         equivalence = tmp_equiv_source.GetNext()) {
-      auto it = std::lower_bound(old_targets.begin(), old_targets.end(),
-                                 equivalence->src_offset);
-      offset_t idx = it - old_targets.begin();
-      for (; it != old_targets.end() && *it < equivalence->src_end();
-           ++it, ++idx) {
-        // To resolve collisions, |new_targets[idx]| is temporarily assigned the
-        // marked maximal length of competing equivalences that contain
-        // |new_tagets[idx]|. As a result, longer equivalences are favored.
-        if (new_targets[idx] == kUnusedIndex ||
-            UnmarkIndex(new_targets[idx]) < equivalence->length) {
-          new_targets[idx] = MarkIndex(equivalence->length);
-        }
-      }
-    }
-  }
-
-  // Second pass: Assign each claimed target in |new_targets|.
-  {
-    EquivalenceSource tmp_equiv_source(equivalence_source);
-    for (auto equivalence = tmp_equiv_source.GetNext(); equivalence.has_value();
-         equivalence = tmp_equiv_source.GetNext()) {
-      auto it = std::lower_bound(old_targets.begin(), old_targets.end(),
-                                 equivalence->src_offset);
-      offset_t idx = it - old_targets.begin();
-      for (; it != old_targets.end() && *it < equivalence->src_end();
-           ++it, ++idx) {
-        // First |equivalence| (ordered by |Equivalence::dst_offset|) with
-        // designed length claims the target. This is how ties are resolved.
-        if (IsMarked(new_targets[idx]) &&
-            UnmarkIndex(new_targets[idx]) == equivalence->length) {
-          new_targets[idx] =
-              *it - equivalence->src_offset + equivalence->dst_offset;
-        }
-      }
-    }
-  }
-  return new_targets;
-}
 
 bool ApplyEquivalenceAndExtraData(ConstBufferView old_image,
                                   const PatchElementReader& patch_reader,
@@ -157,28 +106,22 @@ bool ApplyReferencesCorrection(ExecutableType exe_type,
   for (const auto& ref_group : old_disasm->MakeReferenceGroups())
     pool_groups[ref_group.pool_tag()].push_back(ref_group);
 
+  OffsetMapper offset_mapper(patch.GetEquivalenceSource());
+
   std::vector<ReferenceGroup> new_groups = new_disasm->MakeReferenceGroups();
   for (const auto& pool_and_sub_groups : pool_groups) {
     PoolTag pool_tag = pool_and_sub_groups.first;
     const std::vector<ReferenceGroup>& sub_groups = pool_and_sub_groups.second;
 
-    // Load all old targets for the pool.
-    OrderedLabelManager old_label_manager;
+    TargetPool targets;
+    // Load "old" targets, then filter and map them to "new" targets.
     for (ReferenceGroup group : sub_groups)
-      old_label_manager.InsertTargets(
-          std::move(*group.GetReader(old_disasm.get())));
-
-    // Generate estimated new targets for the pool.
-    std::vector<offset_t> new_targets = MakeNewTargetsFromPatch(
-        old_label_manager.Labels(), patch.GetEquivalenceSource());
-    UnorderedLabelManager new_label_manager;
-    new_label_manager.Init(std::move(new_targets));
+      targets.InsertTargets(std::move(*group.GetReader(old_disasm.get())));
+    targets.FilterAndProject(offset_mapper);
 
     // Load extra targets from patch.
     TargetSource target_source = patch.GetExtraTargetSource(pool_tag);
-    for (auto offset = target_source.GetNext(); offset.has_value();
-         offset = target_source.GetNext())
-      new_label_manager.InsertNewOffset(offset.value());
+    targets.InsertTargets(&target_source);
     if (!target_source.Done()) {
       LOG(ERROR) << "Found trailing extra_targets";
       return false;
@@ -199,13 +142,15 @@ bool ApplyReferencesCorrection(ExecutableType exe_type,
              ref = ref_gen->GetNext()) {
           DCHECK_GE(ref->location, equivalence->src_offset);
           DCHECK_LT(ref->location, equivalence->src_end());
-          offset_t index = old_label_manager.IndexOfOffset(ref->target);
+
+          offset_t projected_target = offset_mapper.ForwardProject(ref->target);
+          offset_t expected_key = targets.KeyForNearestOffset(projected_target);
           auto delta = ref_delta_source.GetNext();
           if (!delta.has_value()) {
             LOG(ERROR) << "Error reading reference_delta";
             return false;
           }
-          ref->target = new_label_manager.OffsetOfIndex(index + delta.value());
+          ref->target = targets.OffsetForKey(expected_key + delta.value());
           ref->location =
               ref->location - equivalence->src_offset + equivalence->dst_offset;
           ref_writer->PutNext(*ref);

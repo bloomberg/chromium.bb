@@ -19,6 +19,8 @@ namespace zucchini {
 
 namespace {
 
+using OffsetVector = std::vector<offset_t>;
+
 // Make all references 2 bytes long.
 constexpr offset_t kReferenceSize = 2;
 
@@ -245,6 +247,108 @@ TEST(EquivalenceMapTest, ExtendEquivalenceBackward) {
           {{22, 19, 0}, 0.0}, 8.0));
 }
 
+TEST(EquivalenceMapTest, PruneEquivalencesAndSortBySource) {
+  auto PruneEquivalencesAndSortBySourceTest =
+      [](std::vector<Equivalence>&& equivalences) {
+        OffsetMapper::PruneEquivalencesAndSortBySource(&equivalences);
+        return equivalences;
+      };
+
+  EXPECT_EQ(std::vector<Equivalence>(),
+            PruneEquivalencesAndSortBySourceTest({}));
+  EXPECT_EQ(std::vector<Equivalence>({{0, 10, 1}}),
+            PruneEquivalencesAndSortBySourceTest({{0, 10, 1}}));
+  EXPECT_EQ(std::vector<Equivalence>(),
+            PruneEquivalencesAndSortBySourceTest({{0, 10, 0}}));
+  EXPECT_EQ(std::vector<Equivalence>({{0, 10, 1}, {1, 11, 1}}),
+            PruneEquivalencesAndSortBySourceTest({{0, 10, 1}, {1, 11, 1}}));
+  EXPECT_EQ(std::vector<Equivalence>({{0, 10, 2}, {2, 13, 1}}),
+            PruneEquivalencesAndSortBySourceTest({{0, 10, 2}, {1, 12, 2}}));
+  EXPECT_EQ(std::vector<Equivalence>({{0, 10, 2}}),
+            PruneEquivalencesAndSortBySourceTest({{0, 10, 2}, {1, 12, 1}}));
+  EXPECT_EQ(std::vector<Equivalence>({{0, 10, 2}, {2, 14, 1}}),
+            PruneEquivalencesAndSortBySourceTest({{0, 10, 2}, {1, 13, 2}}));
+  EXPECT_EQ(std::vector<Equivalence>({{0, 10, 1}, {1, 12, 3}}),
+            PruneEquivalencesAndSortBySourceTest({{0, 10, 2}, {1, 12, 3}}));
+  EXPECT_EQ(std::vector<Equivalence>({{0, 10, 3}, {3, 16, 2}}),
+            PruneEquivalencesAndSortBySourceTest(
+                {{0, 10, 3}, {1, 13, 3}, {3, 16, 2}}));  // Pruning is greedy
+
+  // Consider following pattern that may cause O(n^2) behavior if not handled
+  // properly.
+  //  ***************
+  //            **********
+  //             ********
+  //              ******
+  //               ****
+  //                **
+  //                 ***************
+  // This test case makes sure the function does not stall on a large instance
+  // of this pattern.
+  EXPECT_EQ(std::vector<Equivalence>({{0, 10, +300000}, {300000, 30, +300000}}),
+            PruneEquivalencesAndSortBySourceTest([] {
+              std::vector<Equivalence> equivalenses;
+              equivalenses.push_back({0, 10, +300000});
+              for (offset_t i = 0; i < 100000; ++i)
+                equivalenses.push_back({200000 + i, 20, +200000 - 2 * i});
+              equivalenses.push_back({300000, 30, +300000});
+              return equivalenses;
+            }()));
+}
+
+TEST(EquivalenceMapTest, ForwardProject) {
+  auto ForwardProjectAllTest = [](const OffsetMapper& offset_mapper,
+                                  std::initializer_list<offset_t> offsets) {
+    OffsetVector offsets_vec(offsets);
+    offset_mapper.ForwardProjectAll(&offsets_vec);
+    return offsets_vec;
+  };
+
+  OffsetMapper offset_mapper1({{0, 10, 2}, {2, 13, 1}, {4, 16, 2}});
+  EXPECT_EQ(OffsetVector({10}), ForwardProjectAllTest(offset_mapper1, {0}));
+  EXPECT_EQ(OffsetVector({13}), ForwardProjectAllTest(offset_mapper1, {2}));
+  EXPECT_EQ(OffsetVector({}), ForwardProjectAllTest(offset_mapper1, {3}));
+  EXPECT_EQ(OffsetVector({10, 13}),
+            ForwardProjectAllTest(offset_mapper1, {0, 2}));
+  EXPECT_EQ(OffsetVector({11, 13, 17}),
+            ForwardProjectAllTest(offset_mapper1, {1, 2, 5}));
+  EXPECT_EQ(OffsetVector({11, 17}),
+            ForwardProjectAllTest(offset_mapper1, {1, 3, 5}));
+  EXPECT_EQ(OffsetVector({10, 11, 13, 16, 17}),
+            ForwardProjectAllTest(offset_mapper1, {0, 1, 2, 3, 4, 5, 6}));
+
+  OffsetMapper offset_mapper2({{0, 10, 2}, {13, 2, 1}, {16, 4, 2}});
+  EXPECT_EQ(OffsetVector({2}), ForwardProjectAllTest(offset_mapper2, {13}));
+  EXPECT_EQ(OffsetVector({10, 2}),
+            ForwardProjectAllTest(offset_mapper2, {0, 13}));
+  EXPECT_EQ(OffsetVector({11, 2, 5}),
+            ForwardProjectAllTest(offset_mapper2, {1, 13, 17}));
+  EXPECT_EQ(OffsetVector({11, 5}),
+            ForwardProjectAllTest(offset_mapper2, {1, 14, 17}));
+  EXPECT_EQ(OffsetVector({10, 11, 2, 4, 5}),
+            ForwardProjectAllTest(offset_mapper2, {0, 1, 13, 14, 16, 17, 18}));
+}
+
+TEST(EquivalenceMapTest, ProjectOffset) {
+  OffsetMapper offset_mapper1({{0, 10, 2}, {2, 13, 1}, {4, 16, 2}});
+  EXPECT_EQ(10U, offset_mapper1.ForwardProject(0));
+  EXPECT_EQ(11U, offset_mapper1.ForwardProject(1));
+  EXPECT_EQ(13U, offset_mapper1.ForwardProject(2));
+  EXPECT_EQ(14U, offset_mapper1.ForwardProject(3));  // Previous equivalence.
+  EXPECT_EQ(16U, offset_mapper1.ForwardProject(4));
+  EXPECT_EQ(17U, offset_mapper1.ForwardProject(5));
+  EXPECT_EQ(18U, offset_mapper1.ForwardProject(6));  // Previous equivalence.
+
+  OffsetMapper offset_mapper2({{0, 10, 2}, {13, 2, 1}, {16, 4, 2}});
+  EXPECT_EQ(10U, offset_mapper2.ForwardProject(0));
+  EXPECT_EQ(11U, offset_mapper2.ForwardProject(1));
+  EXPECT_EQ(2U, offset_mapper2.ForwardProject(13));
+  EXPECT_EQ(3U, offset_mapper2.ForwardProject(14));  // Previous equivalence.
+  EXPECT_EQ(4U, offset_mapper2.ForwardProject(16));
+  EXPECT_EQ(5U, offset_mapper2.ForwardProject(17));
+  EXPECT_EQ(6U, offset_mapper2.ForwardProject(18));  // Previous equivalence.
+}
+
 TEST(EquivalenceMapTest, Build) {
   auto test_build_equivalence = [](const ImageIndex old_index,
                                    const ImageIndex new_index,
@@ -337,23 +441,6 @@ TEST(EquivalenceMapTest, Build) {
           MakeImageIndexForTesting("foobanana11xxpineapplexx", {{9, 0}}, {}),
           MakeImageIndexForTesting("banana11yypineappleyy", {{6, 0}}, {}),
           4.0));
-}
-
-TEST(EquivalenceMapTest, MakeForwardEquivalences) {
-  EXPECT_EQ(std::vector<Equivalence>(),
-            EquivalenceMap().MakeForwardEquivalences());
-  EXPECT_EQ(std::vector<Equivalence>({{0, 0, 1}}),
-            EquivalenceMap({{{0, 0, 1}, 0.0}}).MakeForwardEquivalences());
-  EXPECT_EQ(std::vector<Equivalence>({{0, 0, 1}, {1, 1, 1}}),
-            EquivalenceMap({{{0, 0, 1}, 0.0}, {{1, 1, 1}, 0.0}})
-                .MakeForwardEquivalences());
-  EXPECT_EQ(std::vector<Equivalence>({{0, 1, 1}, {1, 0, 1}}),
-            EquivalenceMap({{{1, 0, 1}, 0.0}, {{0, 1, 1}, 0.0}})
-                .MakeForwardEquivalences());
-  EXPECT_EQ(
-      std::vector<Equivalence>({{0, 2, 1}, {1, 0, 1}, {4, 1, 1}}),
-      EquivalenceMap({{{1, 0, 1}, 0.0}, {{4, 1, 1}, 0.0}, {{0, 2, 1}, 0.0}})
-          .MakeForwardEquivalences());
 }
 
 }  // namespace zucchini
