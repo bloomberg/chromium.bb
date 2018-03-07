@@ -8,6 +8,7 @@
 #include "components/web_modal/single_web_contents_dialog_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/base/ui_features.h"
 #include "ui/gfx/native_widget_types.h"
 
 // TODO(patricialor): This is a layering violation and should be deleted.
@@ -20,8 +21,8 @@
 
 namespace constrained_window {
 
-void ShowModalDialog(gfx::NativeWindow dialog,
-                     content::WebContents* initiator_web_contents) {
+void ShowModalDialogCocoa(gfx::NativeWindow dialog,
+                          content::WebContents* initiator_web_contents) {
   web_modal::WebContentsModalDialogManager* manager =
       web_modal::WebContentsModalDialogManager::FromWebContents(
           initiator_web_contents);
@@ -30,5 +31,12 @@ void ShowModalDialog(gfx::NativeWindow dialog,
           dialog, manager));
   manager->ShowDialogWithManager(dialog, std::move(dialog_manager));
 }
+
+#if !BUILDFLAG(MAC_VIEWS_BROWSER)
+void ShowModalDialog(gfx::NativeWindow dialog,
+                     content::WebContents* initiator_web_contents) {
+  ShowModalDialogCocoa(dialog, initiator_web_contents);
+}
+#endif
 
 }  // namespace constrained_window
