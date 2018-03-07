@@ -50,13 +50,9 @@ class RequestInit {
   friend struct NativeValueTraits<IDLPassThrough>;
   friend struct NativeValueTraitsBase<IDLPassThrough>;
 
-  void SetUpReferrer(const WTF::Optional<String>& referrer_string,
-                     const WTF::Optional<String>& referrer_policy_string,
-                     ExceptionState&);
-  void SetUpCredentials(ExecutionContext*,
-                        v8::Isolate*,
-                        v8::Local<v8::Value> v8_credentials,
-                        ExceptionState&);
+  void CheckEnumValues(const WTF::Optional<String>& referrer_string,
+                       const WTF::Optional<String>& referrer_policy_string,
+                       ExceptionState&);
   void SetUpBody(ExecutionContext*,
                  v8::Isolate*,
                  v8::Local<v8::Value> v8_body,

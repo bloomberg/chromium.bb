@@ -11,10 +11,10 @@ PASS RequestInit's cache mode is only-if-cached and mode is not same-origin
 PASS Request with cache mode: only-if-cached and fetch mode cors
 PASS Request with cache mode: only-if-cached and fetch mode no-cors
 PASS Bad referrerPolicy init parameter value
-FAIL Bad mode init parameter value assert_throws: Expect TypeError exception function "() => new Request(...args)" did not throw
-FAIL Bad credentials init parameter value assert_throws: Expect TypeError exception function "() => new Request(...args)" did not throw
-FAIL Bad cache init parameter value assert_throws: Expect TypeError exception function "() => new Request(...args)" did not throw
-FAIL Bad redirect init parameter value assert_throws: Expect TypeError exception function "() => new Request(...args)" did not throw
+PASS Bad mode init parameter value
+PASS Bad credentials init parameter value
+PASS Bad cache init parameter value
+PASS Bad redirect init parameter value
 PASS Request should get its content-type from the init request
 PASS Request should not get its content-type from the init request if init headers are provided
 PASS Request should get its content-type from the body if none is provided
