@@ -38,9 +38,7 @@ class RTCPeerConnectionIceEvent final : public Event {
  public:
   ~RTCPeerConnectionIceEvent() override;
 
-  static RTCPeerConnectionIceEvent* Create(bool can_bubble,
-                                           bool cancelable,
-                                           RTCIceCandidate*);
+  static RTCPeerConnectionIceEvent* Create(RTCIceCandidate*);
 
   static RTCPeerConnectionIceEvent* Create(
       const AtomicString& type,
@@ -53,7 +51,7 @@ class RTCPeerConnectionIceEvent final : public Event {
   virtual void Trace(blink::Visitor*);
 
  private:
-  RTCPeerConnectionIceEvent(bool can_bubble, bool cancelable, RTCIceCandidate*);
+  RTCPeerConnectionIceEvent(RTCIceCandidate*);
 
   RTCPeerConnectionIceEvent(const AtomicString& type,
                             const RTCPeerConnectionIceEventInit&);

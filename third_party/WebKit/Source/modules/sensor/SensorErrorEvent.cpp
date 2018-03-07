@@ -13,9 +13,7 @@ SensorErrorEvent::~SensorErrorEvent() = default;
 
 SensorErrorEvent::SensorErrorEvent(const AtomicString& event_type,
                                    DOMException* error)
-    : Event(event_type, false, false)  // does not bubble, is not cancelable.
-      ,
-      error_(error) {
+    : Event(event_type, Bubbles::kNo, Cancelable::kNo), error_(error) {
   DCHECK(error_);
 }
 

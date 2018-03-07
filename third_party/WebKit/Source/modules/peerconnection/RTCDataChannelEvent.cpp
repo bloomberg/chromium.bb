@@ -27,10 +27,8 @@
 namespace blink {
 
 RTCDataChannelEvent* RTCDataChannelEvent::Create(const AtomicString& type,
-                                                 bool can_bubble,
-                                                 bool cancelable,
                                                  RTCDataChannel* channel) {
-  return new RTCDataChannelEvent(type, can_bubble, cancelable, channel);
+  return new RTCDataChannelEvent(type, channel);
 }
 
 RTCDataChannelEvent* RTCDataChannelEvent::Create(
@@ -40,10 +38,8 @@ RTCDataChannelEvent* RTCDataChannelEvent::Create(
 }
 
 RTCDataChannelEvent::RTCDataChannelEvent(const AtomicString& type,
-                                         bool can_bubble,
-                                         bool cancelable,
                                          RTCDataChannel* channel)
-    : Event(type, can_bubble, cancelable), channel_(channel) {}
+    : Event(type, Bubbles::kNo, Cancelable::kNo), channel_(channel) {}
 
 RTCDataChannelEvent::RTCDataChannelEvent(
     const AtomicString& type,

@@ -48,7 +48,7 @@ SpeechSynthesisEvent::SpeechSynthesisEvent(const AtomicString& type,
                                            unsigned char_index,
                                            float elapsed_time,
                                            const String& name)
-    : Event(type, false, false),
+    : Event(type, Bubbles::kNo, Cancelable::kNo),
       utterance_(utterance),
       char_index_(char_index),
       elapsed_time_(elapsed_time),

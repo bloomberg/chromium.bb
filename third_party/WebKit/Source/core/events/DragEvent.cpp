@@ -11,8 +11,8 @@
 namespace blink {
 
 DragEvent* DragEvent::Create(const AtomicString& type,
-                             bool can_bubble,
-                             bool cancelable,
+                             Bubbles bubbles,
+                             Cancelable cancelable,
                              AbstractView* view,
                              int detail,
                              double screen_x,
@@ -29,7 +29,7 @@ DragEvent* DragEvent::Create(const AtomicString& type,
                              DataTransfer* data_transfer,
                              SyntheticEventType synthetic_event_type) {
   return new DragEvent(
-      type, can_bubble, cancelable, view, detail, screen_x, screen_y, window_x,
+      type, bubbles, cancelable, view, detail, screen_x, screen_y, window_x,
       window_y, movement_x, movement_y, modifiers, button, buttons,
       related_target, platform_time_stamp, data_transfer, synthetic_event_type);
 }
@@ -40,8 +40,8 @@ DragEvent::DragEvent(DataTransfer* data_transfer)
     : data_transfer_(data_transfer) {}
 
 DragEvent::DragEvent(const AtomicString& event_type,
-                     bool can_bubble,
-                     bool cancelable,
+                     Bubbles bubbles,
+                     Cancelable cancelable,
                      AbstractView* view,
                      int detail,
                      double screen_x,
@@ -59,7 +59,7 @@ DragEvent::DragEvent(const AtomicString& event_type,
                      SyntheticEventType synthetic_event_type)
     : MouseEvent(
           event_type,
-          can_bubble,
+          bubbles,
           cancelable,
           view,
           detail,

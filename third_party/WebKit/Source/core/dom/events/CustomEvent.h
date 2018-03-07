@@ -50,7 +50,7 @@ class CORE_EXPORT CustomEvent final : public Event {
 
   void initCustomEvent(ScriptState*,
                        const AtomicString& type,
-                       bool can_bubble,
+                       bool bubbles,
                        bool cancelable,
                        const ScriptValue& detail);
 

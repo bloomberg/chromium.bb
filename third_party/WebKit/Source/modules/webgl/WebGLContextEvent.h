@@ -37,10 +37,8 @@ class WebGLContextEvent final : public Event {
  public:
   static WebGLContextEvent* Create() { return new WebGLContextEvent; }
   static WebGLContextEvent* Create(const AtomicString& type,
-                                   bool can_bubble,
-                                   bool cancelable,
                                    const String& status_message) {
-    return new WebGLContextEvent(type, can_bubble, cancelable, status_message);
+    return new WebGLContextEvent(type, status_message);
   }
   static WebGLContextEvent* Create(const AtomicString& type,
                                    const WebGLContextEventInit& initializer) {
@@ -57,8 +55,6 @@ class WebGLContextEvent final : public Event {
  private:
   WebGLContextEvent();
   WebGLContextEvent(const AtomicString& type,
-                    bool can_bubble,
-                    bool cancelable,
                     const String& status_message);
   WebGLContextEvent(const AtomicString&, const WebGLContextEventInit&);
 

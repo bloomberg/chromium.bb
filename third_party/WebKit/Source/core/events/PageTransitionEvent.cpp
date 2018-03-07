@@ -31,7 +31,7 @@ PageTransitionEvent::PageTransitionEvent() : persisted_(false) {}
 
 PageTransitionEvent::PageTransitionEvent(const AtomicString& type,
                                          bool persisted)
-    : Event(type, true, true), persisted_(persisted) {}
+    : Event(type, Bubbles::kYes, Cancelable::kYes), persisted_(persisted) {}
 
 PageTransitionEvent::PageTransitionEvent(
     const AtomicString& type,

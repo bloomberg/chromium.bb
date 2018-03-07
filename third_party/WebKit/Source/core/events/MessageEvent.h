@@ -87,7 +87,7 @@ class CORE_EXPORT MessageEvent final : public Event {
   ~MessageEvent() override;
 
   void initMessageEvent(const AtomicString& type,
-                        bool can_bubble,
+                        bool bubbles,
                         bool cancelable,
                         ScriptValue data,
                         const String& origin,
@@ -95,7 +95,7 @@ class CORE_EXPORT MessageEvent final : public Event {
                         EventTarget* source,
                         MessagePortArray*);
   void initMessageEvent(const AtomicString& type,
-                        bool can_bubble,
+                        bool bubbles,
                         bool cancelable,
                         scoped_refptr<SerializedScriptValue> data,
                         const String& origin,
@@ -103,7 +103,7 @@ class CORE_EXPORT MessageEvent final : public Event {
                         EventTarget* source,
                         MessagePortArray*);
   void initMessageEvent(const AtomicString& type,
-                        bool can_bubble,
+                        bool bubbles,
                         bool cancelable,
                         const String& data,
                         const String& origin,

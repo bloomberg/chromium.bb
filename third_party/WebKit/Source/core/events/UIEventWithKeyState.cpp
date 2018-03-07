@@ -26,15 +26,15 @@ namespace blink {
 
 UIEventWithKeyState::UIEventWithKeyState(
     const AtomicString& type,
-    bool can_bubble,
-    bool cancelable,
+    Bubbles bubbles,
+    Cancelable cancelable,
     AbstractView* view,
     int detail,
     WebInputEvent::Modifiers modifiers,
     TimeTicks platform_time_stamp,
     InputDeviceCapabilities* source_capabilities)
     : UIEvent(type,
-              can_bubble,
+              bubbles,
               cancelable,
               ComposedMode::kComposed,
               platform_time_stamp,

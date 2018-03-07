@@ -40,9 +40,9 @@ namespace blink {
 static bool ShouldCreateContext(WebGraphicsContext3DProvider* context_provider,
                                 CanvasRenderingContextHost* host) {
   if (!context_provider) {
-    host->HostDispatchEvent(WebGLContextEvent::Create(
-        EventTypeNames::webglcontextcreationerror, false, true,
-        "Failed to create a WebGL2 context."));
+    host->HostDispatchEvent(
+        WebGLContextEvent::Create(EventTypeNames::webglcontextcreationerror,
+                                  "Failed to create a WebGL2 context."));
     return false;
   }
 
@@ -72,9 +72,9 @@ CanvasRenderingContext* WebGL2RenderingContext::Factory::Create(
       host, std::move(context_provider), using_gpu_compositing, attrs);
 
   if (!rendering_context->GetDrawingBuffer()) {
-    host->HostDispatchEvent(WebGLContextEvent::Create(
-        EventTypeNames::webglcontextcreationerror, false, true,
-        "Could not create a WebGL2 context."));
+    host->HostDispatchEvent(
+        WebGLContextEvent::Create(EventTypeNames::webglcontextcreationerror,
+                                  "Could not create a WebGL2 context."));
     return nullptr;
   }
 
@@ -87,7 +87,7 @@ CanvasRenderingContext* WebGL2RenderingContext::Factory::Create(
 void WebGL2RenderingContext::Factory::OnError(HTMLCanvasElement* canvas,
                                               const String& error) {
   canvas->DispatchEvent(WebGLContextEvent::Create(
-      EventTypeNames::webglcontextcreationerror, false, true, error));
+      EventTypeNames::webglcontextcreationerror, error));
 }
 
 WebGL2RenderingContext::WebGL2RenderingContext(

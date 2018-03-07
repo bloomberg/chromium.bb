@@ -9,7 +9,7 @@ namespace blink {
 AnimationPlaybackEvent::AnimationPlaybackEvent(const AtomicString& type,
                                                double current_time,
                                                double timeline_time)
-    : Event(type, false, false),
+    : Event(type, Bubbles::kNo, Cancelable::kNo),
       current_time_(current_time),
       timeline_time_(timeline_time) {}
 

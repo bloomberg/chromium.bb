@@ -101,10 +101,11 @@ MouseEvent* MouseEvent::Create(const AtomicString& event_type,
                                Node* related_target) {
   bool is_mouse_enter_or_leave = event_type == EventTypeNames::mouseenter ||
                                  event_type == EventTypeNames::mouseleave;
-  bool is_cancelable = !is_mouse_enter_or_leave;
-  bool is_bubbling = !is_mouse_enter_or_leave;
-  return new MouseEvent(event_type, is_bubbling, is_cancelable, view, event,
-                        detail, canvas_region_id, related_target);
+  Cancelable cancelable =
+      (!is_mouse_enter_or_leave) ? Cancelable::kYes : Cancelable::kNo;
+  Bubbles bubbles = (!is_mouse_enter_or_leave) ? Bubbles::kYes : Bubbles::kNo;
+  return new MouseEvent(event_type, bubbles, cancelable, view, event, detail,
+                        canvas_region_id, related_target);
 }
 
 MouseEvent* MouseEvent::Create(const AtomicString& event_type,
@@ -129,9 +130,10 @@ MouseEvent* MouseEvent::Create(const AtomicString& event_type,
 
   TimeTicks timestamp = underlying_event ? underlying_event->PlatformTimeStamp()
                                          : CurrentTimeTicks();
-  MouseEvent* created_event = new MouseEvent(
-      event_type, true, true, view, 0, screen_x, screen_y, 0, 0, 0, 0,
-      modifiers, 0, 0, nullptr, timestamp, synthetic_type, String());
+  MouseEvent* created_event =
+      new MouseEvent(event_type, Bubbles::kYes, Cancelable::kYes, view, 0,
+                     screen_x, screen_y, 0, 0, 0, 0, modifiers, 0, 0, nullptr,
+                     timestamp, synthetic_type, String());
 
   created_event->SetTrusted(creation_scope ==
                             SimulatedClickCreationScope::kFromUserAgent);
@@ -154,8 +156,8 @@ MouseEvent::MouseEvent()
       synthetic_event_type_(kRealOrIndistinguishable) {}
 
 MouseEvent::MouseEvent(const AtomicString& event_type,
-                       bool can_bubble,
-                       bool cancelable,
+                       Bubbles bubbles,
+                       Cancelable cancelable,
                        AbstractView* abstract_view,
                        const WebMouseEvent& event,
                        int detail,
@@ -163,7 +165,7 @@ MouseEvent::MouseEvent(const AtomicString& event_type,
                        EventTarget* related_target)
     : UIEventWithKeyState(
           event_type,
-          can_bubble,
+          bubbles,
           cancelable,
           abstract_view,
           detail,
@@ -189,8 +191,8 @@ MouseEvent::MouseEvent(const AtomicString& event_type,
 }
 
 MouseEvent::MouseEvent(const AtomicString& event_type,
-                       bool can_bubble,
-                       bool cancelable,
+                       Bubbles bubbles,
+                       Cancelable cancelable,
                        AbstractView* abstract_view,
                        int detail,
                        double screen_x,
@@ -208,7 +210,7 @@ MouseEvent::MouseEvent(const AtomicString& event_type,
                        const String& region)
     : UIEventWithKeyState(
           event_type,
-          can_bubble,
+          bubbles,
           cancelable,
           abstract_view,
           detail,
@@ -321,7 +323,7 @@ unsigned short MouseEvent::WebInputEventModifiersToButtons(unsigned modifiers) {
 
 void MouseEvent::initMouseEvent(ScriptState* script_state,
                                 const AtomicString& type,
-                                bool can_bubble,
+                                bool bubbles,
                                 bool cancelable,
                                 AbstractView* view,
                                 int detail,
@@ -344,14 +346,14 @@ void MouseEvent::initMouseEvent(ScriptState* script_state,
                                                        shift_key, meta_key);
 
   InitModifiers(ctrl_key, alt_key, shift_key, meta_key);
-  InitMouseEventInternal(type, can_bubble, cancelable, view, detail, screen_x,
+  InitMouseEventInternal(type, bubbles, cancelable, view, detail, screen_x,
                          screen_y, client_x, client_y, GetModifiers(), button,
                          related_target, nullptr, buttons);
 }
 
 void MouseEvent::InitMouseEventInternal(
     const AtomicString& type,
-    bool can_bubble,
+    bool bubbles,
     bool cancelable,
     AbstractView* view,
     int detail,
@@ -364,8 +366,8 @@ void MouseEvent::InitMouseEventInternal(
     EventTarget* related_target,
     InputDeviceCapabilities* source_capabilities,
     unsigned short buttons) {
-  InitUIEventInternal(type, can_bubble, cancelable, related_target, view,
-                      detail, source_capabilities);
+  InitUIEventInternal(type, bubbles, cancelable, related_target, view, detail,
+                      source_capabilities);
 
   screen_location_ = DoublePoint(screen_x, screen_y);
   button_ = button;

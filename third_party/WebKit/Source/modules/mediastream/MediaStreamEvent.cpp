@@ -39,7 +39,7 @@ MediaStreamEvent* MediaStreamEvent::Create(
 
 MediaStreamEvent::MediaStreamEvent(const AtomicString& type,
                                    MediaStream* stream)
-    : Event(type, false, false), stream_(stream) {}
+    : Event(type, Bubbles::kNo, Cancelable::kNo), stream_(stream) {}
 
 MediaStreamEvent::MediaStreamEvent(const AtomicString& type,
                                    const MediaStreamEventInit& initializer)

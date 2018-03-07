@@ -30,10 +30,9 @@ namespace blink {
 WebGLContextEvent::WebGLContextEvent() = default;
 
 WebGLContextEvent::WebGLContextEvent(const AtomicString& type,
-                                     bool can_bubble,
-                                     bool cancelable,
                                      const String& status_message)
-    : Event(type, can_bubble, cancelable), status_message_(status_message) {}
+    : Event(type, Bubbles::kNo, Cancelable::kYes),
+      status_message_(status_message) {}
 
 WebGLContextEvent::WebGLContextEvent(const AtomicString& type,
                                      const WebGLContextEventInit& initializer)

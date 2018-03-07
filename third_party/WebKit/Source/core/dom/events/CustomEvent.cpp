@@ -47,10 +47,10 @@ CustomEvent::~CustomEvent() = default;
 
 void CustomEvent::initCustomEvent(ScriptState* script_state,
                                   const AtomicString& type,
-                                  bool can_bubble,
+                                  bool bubbles,
                                   bool cancelable,
                                   const ScriptValue& script_value) {
-  initEvent(type, can_bubble, cancelable);
+  initEvent(type, bubbles, cancelable);
   world_ = WrapRefCounted(&script_state->World());
   if (!IsBeingDispatched() && !script_value.IsEmpty())
     detail_.Set(script_value.GetIsolate(), script_value.V8Value());

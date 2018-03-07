@@ -72,7 +72,7 @@ SpeechRecognitionEvent::SpeechRecognitionEvent(
     const AtomicString& event_name,
     unsigned long result_index,
     SpeechRecognitionResultList* results)
-    : Event(event_name, /*canBubble=*/false, /*cancelable=*/false),
+    : Event(event_name, Bubbles::kNo, Cancelable::kNo),
       result_index_(result_index),
       results_(results) {}
 

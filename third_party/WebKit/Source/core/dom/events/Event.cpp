@@ -53,38 +53,38 @@ static bool IsEventTypeScopedInV0(const AtomicString& event_type) {
          event_type == EventTypeNames::slotchange;
 }
 
-Event::Event() : Event("", false, false) {
+Event::Event() : Event("", Bubbles::kNo, Cancelable::kNo) {
   was_initialized_ = false;
 }
 
 Event::Event(const AtomicString& event_type,
-             bool can_bubble_arg,
-             bool cancelable_arg,
+             Bubbles bubbles,
+             Cancelable cancelable,
              TimeTicks platform_time_stamp)
     : Event(event_type,
-            can_bubble_arg,
-            cancelable_arg,
+            bubbles,
+            cancelable,
             ComposedMode::kScoped,
             platform_time_stamp) {}
 
 Event::Event(const AtomicString& event_type,
-             bool can_bubble_arg,
-             bool cancelable_arg,
+             Bubbles bubbles,
+             Cancelable cancelable,
              ComposedMode composed_mode)
     : Event(event_type,
-            can_bubble_arg,
-            cancelable_arg,
+            bubbles,
+            cancelable,
             composed_mode,
             CurrentTimeTicks()) {}
 
 Event::Event(const AtomicString& event_type,
-             bool can_bubble_arg,
-             bool cancelable_arg,
+             Bubbles bubbles,
+             Cancelable cancelable,
              ComposedMode composed_mode,
              TimeTicks platform_time_stamp)
     : type_(event_type),
-      can_bubble_(can_bubble_arg),
-      cancelable_(cancelable_arg),
+      bubbles_(bubbles == Bubbles::kYes),
+      cancelable_(cancelable == Cancelable::kYes),
       composed_(composed_mode == ComposedMode::kComposed),
       is_event_type_scoped_in_v0_(IsEventTypeScopedInV0(event_type)),
       propagation_stopped_(false),
@@ -103,8 +103,8 @@ Event::Event(const AtomicString& event_type,
              const EventInit& initializer,
              TimeTicks platform_time_stamp)
     : Event(event_type,
-            initializer.bubbles(),
-            initializer.cancelable(),
+            initializer.bubbles() ? Bubbles::kYes : Bubbles::kNo,
+            initializer.cancelable() ? Cancelable::kYes : Cancelable::kNo,
             initializer.composed() ? ComposedMode::kComposed
                                    : ComposedMode::kScoped,
             platform_time_stamp) {}
@@ -116,13 +116,13 @@ bool Event::IsScopedInV0() const {
 }
 
 void Event::initEvent(const AtomicString& event_type_arg,
-                      bool can_bubble_arg,
+                      bool bubbles_arg,
                       bool cancelable_arg) {
-  initEvent(event_type_arg, can_bubble_arg, cancelable_arg, nullptr);
+  initEvent(event_type_arg, bubbles_arg, cancelable_arg, nullptr);
 }
 
 void Event::initEvent(const AtomicString& event_type_arg,
-                      bool can_bubble_arg,
+                      bool bubbles_arg,
                       bool cancelable_arg,
                       EventTarget* related_target) {
   if (IsBeingDispatched())
@@ -136,7 +136,7 @@ void Event::initEvent(const AtomicString& event_type_arg,
   prevent_default_called_on_uncancelable_event_ = false;
 
   type_ = event_type_arg;
-  can_bubble_ = can_bubble_arg;
+  bubbles_ = bubbles_arg;
   cancelable_ = cancelable_arg;
 }
 

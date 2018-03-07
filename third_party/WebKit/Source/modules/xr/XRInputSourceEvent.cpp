@@ -11,7 +11,9 @@ XRInputSourceEvent::XRInputSourceEvent() {}
 XRInputSourceEvent::XRInputSourceEvent(const AtomicString& type,
                                        XRPresentationFrame* frame,
                                        XRInputSource* input_source)
-    : Event(type, true, false), frame_(frame), input_source_(input_source) {}
+    : Event(type, Bubbles::kYes, Cancelable::kNo),
+      frame_(frame),
+      input_source_(input_source) {}
 
 XRInputSourceEvent::XRInputSourceEvent(
     const AtomicString& type,

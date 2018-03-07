@@ -92,8 +92,8 @@ KeyboardEvent::KeyboardEvent(const WebKeyboardEvent& key,
                              LocalDOMWindow* dom_window)
     : UIEventWithKeyState(
           EventTypeForKeyboardEventType(key.GetType()),
-          true,
-          true,
+          Bubbles::kYes,
+          Cancelable::kYes,
           dom_window,
           0,
           static_cast<WebInputEvent::Modifiers>(key.GetModifiers()),
@@ -146,7 +146,7 @@ KeyboardEvent::~KeyboardEvent() = default;
 
 void KeyboardEvent::initKeyboardEvent(ScriptState* script_state,
                                       const AtomicString& type,
-                                      bool can_bubble,
+                                      bool bubbles,
                                       bool cancelable,
                                       AbstractView* view,
                                       const String& key_identifier,
@@ -162,7 +162,7 @@ void KeyboardEvent::initKeyboardEvent(ScriptState* script_state,
     UIEventWithKeyState::DidCreateEventInIsolatedWorld(ctrl_key, alt_key,
                                                        shift_key, meta_key);
 
-  initUIEvent(type, can_bubble, cancelable, view, 0);
+  initUIEvent(type, bubbles, cancelable, view, 0);
 
   location_ = location;
   InitModifiers(ctrl_key, alt_key, shift_key, meta_key);

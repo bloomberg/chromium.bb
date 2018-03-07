@@ -29,16 +29,16 @@ namespace blink {
 UIEvent::UIEvent() : detail_(0), source_capabilities_(nullptr) {}
 
 UIEvent::UIEvent(const AtomicString& event_type,
-                 bool can_bubble_arg,
-                 bool cancelable_arg,
+                 Bubbles bubbles,
+                 Cancelable cancelable,
                  ComposedMode composed_mode,
                  TimeTicks platform_time_stamp,
                  AbstractView* view_arg,
                  int detail_arg,
                  InputDeviceCapabilities* source_capabilities_arg)
     : Event(event_type,
-            can_bubble_arg,
-            cancelable_arg,
+            bubbles,
+            cancelable,
             composed_mode,
             platform_time_stamp),
       view_(view_arg),
@@ -56,17 +56,17 @@ UIEvent::UIEvent(const AtomicString& event_type,
 UIEvent::~UIEvent() = default;
 
 void UIEvent::initUIEvent(const AtomicString& type_arg,
-                          bool can_bubble_arg,
+                          bool bubbles_arg,
                           bool cancelable_arg,
                           AbstractView* view_arg,
                           int detail_arg) {
-  InitUIEventInternal(type_arg, can_bubble_arg, cancelable_arg, nullptr,
-                      view_arg, detail_arg, nullptr);
+  InitUIEventInternal(type_arg, bubbles_arg, cancelable_arg, nullptr, view_arg,
+                      detail_arg, nullptr);
 }
 
 void UIEvent::InitUIEventInternal(
     const AtomicString& type_arg,
-    bool can_bubble_arg,
+    bool bubbles_arg,
     bool cancelable_arg,
     EventTarget* related_target,
     AbstractView* view_arg,
@@ -75,7 +75,7 @@ void UIEvent::InitUIEventInternal(
   if (IsBeingDispatched())
     return;
 
-  initEvent(type_arg, can_bubble_arg, cancelable_arg, related_target);
+  initEvent(type_arg, bubbles_arg, cancelable_arg, related_target);
 
   view_ = view_arg;
   detail_ = detail_arg;

@@ -73,7 +73,7 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
 
   void initMouseEvent(ScriptState*,
                       const AtomicString& type,
-                      bool can_bubble,
+                      bool bubbles,
                       bool cancelable,
                       AbstractView*,
                       int detail,
@@ -192,8 +192,8 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
 
  protected:
   MouseEvent(const AtomicString& type,
-             bool can_bubble,
-             bool cancelable,
+             Bubbles,
+             Cancelable,
              AbstractView*,
              const WebMouseEvent&,
              int detail,
@@ -201,8 +201,8 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
              EventTarget* related_target);
 
   MouseEvent(const AtomicString& type,
-             bool can_bubble,
-             bool cancelable,
+             Bubbles,
+             Cancelable,
              AbstractView*,
              int detail,
              double screen_x,
@@ -239,7 +239,7 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
 
  private:
   void InitMouseEventInternal(const AtomicString& type,
-                              bool can_bubble,
+                              bool bubbles,
                               bool cancelable,
                               AbstractView*,
                               int detail,

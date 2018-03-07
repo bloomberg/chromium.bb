@@ -34,7 +34,7 @@ TransitionEvent::TransitionEvent(const AtomicString& type,
                                  const String& property_name,
                                  double elapsed_time,
                                  const String& pseudo_element)
-    : Event(type, true, true),
+    : Event(type, Bubbles::kYes, Cancelable::kYes),
       property_name_(property_name),
       elapsed_time_(elapsed_time),
       pseudo_element_(pseudo_element) {}

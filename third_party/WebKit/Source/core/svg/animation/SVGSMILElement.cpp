@@ -47,7 +47,7 @@ namespace blink {
 class RepeatEvent final : public Event {
  public:
   static RepeatEvent* Create(const AtomicString& type, int repeat) {
-    return new RepeatEvent(type, false, false, repeat);
+    return new RepeatEvent(type, Bubbles::kNo, Cancelable::kNo, repeat);
   }
 
   ~RepeatEvent() override = default;
@@ -58,10 +58,10 @@ class RepeatEvent final : public Event {
 
  protected:
   RepeatEvent(const AtomicString& type,
-              bool can_bubble,
-              bool cancelable,
+              Bubbles bubbles,
+              Cancelable cancelable,
               int repeat = -1)
-      : Event(type, can_bubble, cancelable), repeat_(repeat) {}
+      : Event(type, bubbles, cancelable), repeat_(repeat) {}
 
  private:
   int repeat_;

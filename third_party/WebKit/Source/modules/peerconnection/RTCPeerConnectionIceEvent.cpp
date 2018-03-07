@@ -30,10 +30,8 @@
 namespace blink {
 
 RTCPeerConnectionIceEvent* RTCPeerConnectionIceEvent::Create(
-    bool can_bubble,
-    bool cancelable,
     RTCIceCandidate* candidate) {
-  return new RTCPeerConnectionIceEvent(can_bubble, cancelable, candidate);
+  return new RTCPeerConnectionIceEvent(candidate);
 }
 
 RTCPeerConnectionIceEvent* RTCPeerConnectionIceEvent::Create(
@@ -42,10 +40,8 @@ RTCPeerConnectionIceEvent* RTCPeerConnectionIceEvent::Create(
   return new RTCPeerConnectionIceEvent(type, initializer);
 }
 
-RTCPeerConnectionIceEvent::RTCPeerConnectionIceEvent(bool can_bubble,
-                                                     bool cancelable,
-                                                     RTCIceCandidate* candidate)
-    : Event(EventTypeNames::icecandidate, can_bubble, cancelable),
+RTCPeerConnectionIceEvent::RTCPeerConnectionIceEvent(RTCIceCandidate* candidate)
+    : Event(EventTypeNames::icecandidate, Bubbles::kNo, Cancelable::kNo),
       candidate_(candidate) {}
 
 RTCPeerConnectionIceEvent::RTCPeerConnectionIceEvent(

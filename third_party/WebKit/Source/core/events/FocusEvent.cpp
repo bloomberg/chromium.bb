@@ -41,15 +41,14 @@ bool FocusEvent::IsFocusEvent() const {
 FocusEvent::FocusEvent() = default;
 
 FocusEvent::FocusEvent(const AtomicString& type,
-                       bool can_bubble,
-                       bool cancelable,
+                       Bubbles bubbles,
                        AbstractView* view,
                        int detail,
                        EventTarget* related_target,
                        InputDeviceCapabilities* source_capabilities)
     : UIEvent(type,
-              can_bubble,
-              cancelable,
+              bubbles,
+              Cancelable::kNo,
               ComposedMode::kComposed,
               CurrentTimeTicks(),
               view,

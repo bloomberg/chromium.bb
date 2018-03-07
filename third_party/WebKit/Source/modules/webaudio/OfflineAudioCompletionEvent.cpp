@@ -46,7 +46,7 @@ OfflineAudioCompletionEvent::OfflineAudioCompletionEvent() = default;
 
 OfflineAudioCompletionEvent::OfflineAudioCompletionEvent(
     AudioBuffer* rendered_buffer)
-    : Event(EventTypeNames::complete, true, false),
+    : Event(EventTypeNames::complete, Bubbles::kYes, Cancelable::kNo),
       rendered_buffer_(rendered_buffer) {}
 
 OfflineAudioCompletionEvent::OfflineAudioCompletionEvent(

@@ -3133,7 +3133,7 @@ Element* Element::AdjustedFocusedElementInTreeScope() const {
 void Element::DispatchFocusEvent(Element* old_focused_element,
                                  WebFocusType type,
                                  InputDeviceCapabilities* source_capabilities) {
-  DispatchEvent(FocusEvent::Create(EventTypeNames::focus, false, false,
+  DispatchEvent(FocusEvent::Create(EventTypeNames::focus, Event::Bubbles::kNo,
                                    GetDocument().domWindow(), 0,
                                    old_focused_element, source_capabilities));
 }
@@ -3141,7 +3141,7 @@ void Element::DispatchFocusEvent(Element* old_focused_element,
 void Element::DispatchBlurEvent(Element* new_focused_element,
                                 WebFocusType type,
                                 InputDeviceCapabilities* source_capabilities) {
-  DispatchEvent(FocusEvent::Create(EventTypeNames::blur, false, false,
+  DispatchEvent(FocusEvent::Create(EventTypeNames::blur, Event::Bubbles::kNo,
                                    GetDocument().domWindow(), 0,
                                    new_focused_element, source_capabilities));
 }
@@ -3156,9 +3156,9 @@ void Element::DispatchFocusInEvent(
 #endif
   DCHECK(event_type == EventTypeNames::focusin ||
          event_type == EventTypeNames::DOMFocusIn);
-  DispatchScopedEvent(
-      FocusEvent::Create(event_type, true, false, GetDocument().domWindow(), 0,
-                         old_focused_element, source_capabilities));
+  DispatchScopedEvent(FocusEvent::Create(
+      event_type, Event::Bubbles::kYes, GetDocument().domWindow(), 0,
+      old_focused_element, source_capabilities));
 }
 
 void Element::DispatchFocusOutEvent(
@@ -3170,9 +3170,9 @@ void Element::DispatchFocusOutEvent(
 #endif
   DCHECK(event_type == EventTypeNames::focusout ||
          event_type == EventTypeNames::DOMFocusOut);
-  DispatchScopedEvent(
-      FocusEvent::Create(event_type, true, false, GetDocument().domWindow(), 0,
-                         new_focused_element, source_capabilities));
+  DispatchScopedEvent(FocusEvent::Create(
+      event_type, Event::Bubbles::kYes, GetDocument().domWindow(), 0,
+      new_focused_element, source_capabilities));
 }
 
 String Element::InnerHTMLAsString() const {

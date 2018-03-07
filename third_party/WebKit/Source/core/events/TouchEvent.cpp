@@ -221,8 +221,9 @@ TouchEvent::TouchEvent(const WebCoalescedInputEvent& event,
     // capabilities from EventHandler.
     : UIEventWithKeyState(
           type,
-          true,
-          GetWebTouchEvent(event)->IsCancelable(),
+          Bubbles::kYes,
+          GetWebTouchEvent(event)->IsCancelable() ? Cancelable::kYes
+                                                  : Cancelable::kNo,
           view,
           0,
           static_cast<WebInputEvent::Modifiers>(event.Event().GetModifiers()),

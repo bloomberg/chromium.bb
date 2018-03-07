@@ -38,7 +38,7 @@ AnimationEvent::AnimationEvent(const AtomicString& type,
 AnimationEvent::AnimationEvent(const AtomicString& type,
                                const String& animation_name,
                                double elapsed_time)
-    : Event(type, true, true),
+    : Event(type, Bubbles::kYes, Cancelable::kYes),
       animation_name_(animation_name),
       elapsed_time_(elapsed_time) {}
 

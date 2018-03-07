@@ -78,8 +78,8 @@ GestureEvent::GestureEvent(const AtomicString& event_type,
                            const WebGestureEvent& event)
     : UIEventWithKeyState(
           event_type,
-          true,
-          true,
+          Bubbles::kYes,
+          Cancelable::kYes,
           view,
           0,
           static_cast<WebInputEvent::Modifiers>(event.GetModifiers()),

@@ -69,8 +69,8 @@ WheelEvent::WheelEvent(const AtomicString& type,
 
 WheelEvent::WheelEvent(const WebMouseWheelEvent& event, AbstractView* view)
     : MouseEvent(EventTypeNames::wheel,
-                 true,
-                 event.IsCancelable(),
+                 Bubbles::kYes,
+                 event.IsCancelable() ? Cancelable::kYes : Cancelable::kNo,
                  view,
                  event,
                  event.click_count,

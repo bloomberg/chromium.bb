@@ -39,7 +39,7 @@ BlobEvent::BlobEvent(const AtomicString& type, const BlobEventInit& initializer)
                     : WTF::double_conversion::Double::NaN()) {}
 
 BlobEvent::BlobEvent(const AtomicString& type, Blob* blob, double timecode)
-    : Event(type, false /* canBubble */, false /* cancelable */),
+    : Event(type, Bubbles::kNo, Cancelable::kNo),
       blob_(blob),
       timecode_(timecode) {}
 

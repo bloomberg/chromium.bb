@@ -60,7 +60,7 @@ class CORE_EXPORT KeyboardEvent final : public UIEventWithKeyState {
 
   void initKeyboardEvent(ScriptState*,
                          const AtomicString& type,
-                         bool can_bubble,
+                         bool bubbles,
                          bool cancelable,
                          AbstractView*,
                          const String& key_identifier,

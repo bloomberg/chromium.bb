@@ -56,7 +56,7 @@ class StorageEvent final : public Event {
   Storage* storageArea() const { return storage_area_.Get(); }
 
   void initStorageEvent(const AtomicString& type,
-                        bool can_bubble,
+                        bool bubbles,
                         bool cancelable,
                         const String& key,
                         const String& old_value,

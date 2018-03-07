@@ -1007,15 +1007,18 @@ WebInputEventResult MouseEventManager::DispatchDragEvent(
       related_target->GetDocument() != drag_target->GetDocument())
     related_target = nullptr;
 
-  const bool cancelable = event_type != EventTypeNames::dragleave &&
-                          event_type != EventTypeNames::dragend;
+  const Event::Cancelable cancelable =
+      (event_type != EventTypeNames::dragleave &&
+       event_type != EventTypeNames::dragend)
+          ? Event::Cancelable::kYes
+          : Event::Cancelable::kNo;
 
   IntPoint movement = FlooredIntPoint(event.MovementInRootFrame());
   DragEvent* me = DragEvent::Create(
-      event_type, true, cancelable, frame_->GetDocument()->domWindow(), 0,
-      event.PositionInScreen().x, event.PositionInScreen().y,
-      event.PositionInRootFrame().x, event.PositionInRootFrame().y,
-      movement.X(), movement.Y(),
+      event_type, Event::Bubbles::kYes, cancelable,
+      frame_->GetDocument()->domWindow(), 0, event.PositionInScreen().x,
+      event.PositionInScreen().y, event.PositionInRootFrame().x,
+      event.PositionInRootFrame().y, movement.X(), movement.Y(),
       static_cast<WebInputEvent::Modifiers>(event.GetModifiers()), 0,
       MouseEvent::WebInputEventModifiersToButtons(event.GetModifiers()),
       related_target, TimeTicksFromSeconds(event.TimeStampSeconds()),

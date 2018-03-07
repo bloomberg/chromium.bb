@@ -29,22 +29,20 @@ String VRDisplayEventReasonToString(
 
 VRDisplayEvent* VRDisplayEvent::Create(
     const AtomicString& type,
-    bool can_bubble,
-    bool cancelable,
     VRDisplay* display,
     device::mojom::blink::VRDisplayEventReason reason) {
-  return new VRDisplayEvent(type, can_bubble, cancelable, display,
+  return new VRDisplayEvent(type, display,
                             VRDisplayEventReasonToString(reason));
 }
 
 VRDisplayEvent::VRDisplayEvent() = default;
 
 VRDisplayEvent::VRDisplayEvent(const AtomicString& type,
-                               bool can_bubble,
-                               bool cancelable,
                                VRDisplay* display,
                                String reason)
-    : Event(type, can_bubble, cancelable), display_(display), reason_(reason) {}
+    : Event(type, Bubbles::kYes, Cancelable::kNo),
+      display_(display),
+      reason_(reason) {}
 
 VRDisplayEvent::VRDisplayEvent(const AtomicString& type,
                                const VRDisplayEventInit& initializer)

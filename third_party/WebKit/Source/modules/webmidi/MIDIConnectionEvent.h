@@ -62,7 +62,8 @@ class MIDIConnectionEvent final : public Event {
 
  private:
   MIDIConnectionEvent(MIDIPort* port)
-      : Event(EventTypeNames::statechange, false, false), port_(port) {}
+      : Event(EventTypeNames::statechange, Bubbles::kNo, Cancelable::kNo),
+        port_(port) {}
 
   MIDIConnectionEvent(const AtomicString&, const MIDIConnectionEventInit&);
 
