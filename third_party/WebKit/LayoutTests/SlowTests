@@ -304,8 +304,10 @@ crbug.com/791659 [ Win Linux ] fast/webgl/webgl-composite-modes-repaint.html [ S
 
 # Slow on Win Debug in part due to incremental linking.
 crbug.com/647192 [ Win Debug ] fast/css3-text/css3-word-break/word-break-all-ascii.html [ Slow ]
-crbug.com/647192 [ Win Debug ] virtual/stable/webexposed/global-interface-listing.html [ Slow ]
-crbug.com/647192 [ Win Debug ] webexposed/global-interface-listing.html [ Slow ]
+
+# Slow in Debug on all platforms.
+crbug.com/819641 [ Debug ] virtual/stable/webexposed/global-interface-listing.html [ Slow ]
+crbug.com/819641 [ Debug ] webexposed/global-interface-listing.html [ Slow ]
 
 # These tests are slow with our MESA backend. They may be less slow when we have
 # bots running tests on real hardware or maybe when using SwiftShader.
