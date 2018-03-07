@@ -98,6 +98,11 @@ UIAlertController* NotImplementedAlert() {
   // Call the current page setter to sync the scroll view offset to the current
   // page value.
   self.currentPage = _currentPage;
+
+  if (animated && self.transitionCoordinator) {
+    [self animateToolbarsForAppearance];
+  }
+
   [super viewWillAppear:animated];
 }
 
@@ -423,6 +428,36 @@ UIAlertController* NotImplementedAlert() {
   [self.bottomToolbar.roundButton addTarget:self
                                      action:@selector(newTabButtonTapped:)
                            forControlEvents:UIControlEventTouchUpInside];
+}
+
+// Translates the toolbar views offscreen and then animates them back in using
+// the transition coordinator. Transitions are preferred here since they don't
+// interact with the layout system at all.
+- (void)animateToolbarsForAppearance {
+  DCHECK(self.transitionCoordinator);
+  // Capture the current toolbar transforms.
+  CGAffineTransform topToolbarBaseTransform = self.topToolbar.transform;
+  CGAffineTransform bottomToolbarBaseTransform = self.bottomToolbar.transform;
+  // Translate the top toolbar up offscreen by shifting it up by its height.
+  self.topToolbar.transform =
+      CGAffineTransformTranslate(self.topToolbar.transform, /*tx=*/0,
+                                 /*ty=*/-self.topToolbar.bounds.size.height);
+  // Translate the bottom toolbar down offscreen by shifting it down by its
+  // height.
+  self.bottomToolbar.transform =
+      CGAffineTransformTranslate(self.bottomToolbar.transform, /*tx=*/0,
+                                 /*ty=*/self.topToolbar.bounds.size.height);
+  // Block that restores the toolbar transforms, suitable for using with the
+  // transition coordinator.
+  void (^animation)(id<UIViewControllerTransitionCoordinatorContext>) =
+      ^(id<UIViewControllerTransitionCoordinatorContext> context) {
+        self.topToolbar.transform = topToolbarBaseTransform;
+        self.bottomToolbar.transform = bottomToolbarBaseTransform;
+      };
+  // Animate the toolbars into place alongside the current transition by
+  // restoring their transforms.
+  [self.transitionCoordinator animateAlongsideTransition:animation
+                                              completion:nil];
 }
 
 #pragma mark - GridViewControllerDelegate
