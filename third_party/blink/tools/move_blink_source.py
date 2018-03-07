@@ -551,10 +551,10 @@ Bug: 768828
                       partial(self._replace_basename_only_include, subdir, source_path), content)
 
     def _update_include_guard(self, content, source_path):
-        current_guard = re.sub(r'[.]', '_', self._fs.basename(source_path))
+        current_guard = re.sub(r'[-.]', '_', self._fs.basename(source_path))
         new_path = relative_dest(self._fs, self._fs.relpath(
             source_path, start=self._fs.join(self._repo_root, 'third_party', 'WebKit')))
-        new_guard = 'THIRD_PARTY_BLINK_' + re.sub(r'[\\/.]', '_', new_path.upper()) + '_'
+        new_guard = 'THIRD_PARTY_BLINK_' + re.sub(r'[-\\/.]', '_', new_path.upper()) + '_'
         content = re.sub(r'#ifndef\s+(WTF_)?' + current_guard, '#ifndef ' + new_guard, content);
         content = re.sub(r'#define\s+(WTF_)?' + current_guard, '#define ' + new_guard, content);
         content = re.sub(r'#endif\s+//\s+(WTF_)?' + current_guard, '#endif  // ' + new_guard, content);
