@@ -313,7 +313,7 @@ void FileReader::ExecutePendingRead() {
   loader_ = FileReaderLoader::Create(read_type_, this);
   loader_->SetEncoding(encoding_);
   loader_->SetDataType(blob_type_);
-  loader_->Start(GetExecutionContext(), blob_data_handle_);
+  loader_->Start(blob_data_handle_);
   blob_data_handle_ = nullptr;
 }
 

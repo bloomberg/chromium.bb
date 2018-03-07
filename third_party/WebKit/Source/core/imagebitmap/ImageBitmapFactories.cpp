@@ -132,7 +132,7 @@ ScriptPromise ImageBitmapFactories::CreateImageBitmapFromBlob(
       From(event_target), crop_rect, options, script_state);
   ScriptPromise promise = loader->Promise();
   From(event_target).AddLoader(loader);
-  loader->LoadBlobAsync(event_target.GetExecutionContext(), blob);
+  loader->LoadBlobAsync(blob);
   return promise;
 }
 
@@ -251,9 +251,8 @@ ImageBitmapFactories::ImageBitmapLoader::ImageBitmapLoader(
       options_(options) {}
 
 void ImageBitmapFactories::ImageBitmapLoader::LoadBlobAsync(
-    ExecutionContext* context,
     Blob* blob) {
-  loader_->Start(context, blob->GetBlobDataHandle());
+  loader_->Start(blob->GetBlobDataHandle());
 }
 
 void ImageBitmapFactories::Trace(blink::Visitor* visitor) {

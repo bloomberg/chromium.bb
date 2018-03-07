@@ -76,8 +76,7 @@ FileReaderLoader::~FileReaderLoader() {
   UnadjustReportedMemoryUsageToV8();
 }
 
-void FileReaderLoader::Start(ExecutionContext*,
-                             scoped_refptr<BlobDataHandle> blob_data) {
+void FileReaderLoader::Start(scoped_refptr<BlobDataHandle> blob_data) {
 #if DCHECK_IS_ON()
   DCHECK(!started_loading_) << "FileReaderLoader can only be used once";
   started_loading_ = true;

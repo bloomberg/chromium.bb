@@ -128,8 +128,7 @@ DocumentWebSocketChannel::BlobLoader::BlobLoader(
     : channel_(channel),
       loader_(FileReaderLoader::Create(FileReaderLoader::kReadAsArrayBuffer,
                                        this)) {
-  // TODO(kinuko): Remove dependency to document.
-  loader_->Start(channel->GetDocument(), std::move(blob_data_handle));
+  loader_->Start(std::move(blob_data_handle));
 }
 
 void DocumentWebSocketChannel::BlobLoader::Cancel() {

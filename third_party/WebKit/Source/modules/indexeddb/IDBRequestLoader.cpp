@@ -67,19 +67,13 @@ void IDBRequestLoader::StartNextValue() {
 
   DCHECK(current_value_ != values_.end());
 
-  ExecutionContext* context = queue_item_->Request()->GetExecutionContext();
-  if (!context) {
-    ReportError();
-    return;
-  }
-
   wrapped_data_.ReserveCapacity(unwrapper.WrapperBlobSize());
 #if DCHECK_IS_ON()
   DCHECK(!file_reader_loading_);
   file_reader_loading_ = true;
 #endif  // DCHECK_IS_ON()
   loader_ = FileReaderLoader::Create(FileReaderLoader::kReadByClient, this);
-  loader_->Start(context, unwrapper.WrapperBlobHandle());
+  loader_->Start(unwrapper.WrapperBlobHandle());
 }
 
 void IDBRequestLoader::DidStartLoading() {}

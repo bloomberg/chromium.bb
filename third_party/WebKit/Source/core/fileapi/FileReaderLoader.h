@@ -48,7 +48,6 @@ namespace blink {
 
 class BlobDataHandle;
 class DOMArrayBuffer;
-class ExecutionContext;
 class FileReaderLoaderClient;
 class TextResourceDecoder;
 
@@ -80,7 +79,7 @@ class CORE_EXPORT FileReaderLoader : public mojom::blink::BlobReaderClient {
   FileReaderLoader(ReadType, FileReaderLoaderClient*);
   ~FileReaderLoader() override;
 
-  void Start(ExecutionContext*, scoped_refptr<BlobDataHandle>);
+  void Start(scoped_refptr<BlobDataHandle>);
   void Cancel();
 
   DOMArrayBuffer* ArrayBufferResult();

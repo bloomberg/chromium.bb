@@ -251,7 +251,7 @@ class XMLHttpRequest::BlobLoader final
       : xhr_(xhr),
         loader_(
             FileReaderLoader::Create(FileReaderLoader::kReadByClient, this)) {
-    loader_->Start(xhr_->GetExecutionContext(), std::move(handle));
+    loader_->Start(std::move(handle));
   }
 
   Member<XMLHttpRequest> xhr_;

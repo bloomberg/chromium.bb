@@ -170,9 +170,9 @@ class InspectorFileReaderLoaderClient final : public FileReaderLoaderClient {
 
   ~InspectorFileReaderLoaderClient() override = default;
 
-  void Start(ExecutionContext* execution_context) {
+  void Start() {
     raw_data_ = SharedBuffer::Create();
-    loader_->Start(execution_context, blob_);
+    loader_->Start(blob_);
   }
 
   void DidStartLoading() override {}
@@ -229,7 +229,7 @@ class InspectorPostBodyParser
       std::unique_ptr<GetRequestPostDataCallback> callback)
       : callback_(std::move(callback)), error_(false) {}
 
-  void Parse(ExecutionContext* context, EncodedFormData* request_body) {
+  void Parse(EncodedFormData* request_body) {
     if (!request_body || request_body->IsEmpty())
       return;
 
@@ -242,7 +242,7 @@ class InspectorPostBodyParser
                                                          data.data_.size());
           break;
         case FormDataElement::kEncodedBlob:
-          ReadDataBlob(context, data.optional_blob_data_handle_, &parts_[i]);
+          ReadDataBlob(data.optional_blob_data_handle_, &parts_[i]);
           break;
         case FormDataElement::kEncodedFile:
         case FormDataElement::kDataPipe:
@@ -274,8 +274,7 @@ class InspectorPostBodyParser
     }
   }
 
-  void ReadDataBlob(ExecutionContext* context,
-                    scoped_refptr<blink::BlobDataHandle> blob_handle,
+  void ReadDataBlob(scoped_refptr<blink::BlobDataHandle> blob_handle,
                     String* destination) {
     if (!blob_handle)
       return;
@@ -283,7 +282,7 @@ class InspectorPostBodyParser
         blob_handle,
         WTF::Bind(&InspectorPostBodyParser::BlobReadCallback,
                   WTF::RetainedRef(this), WTF::Unretained(destination)));
-    reader->Start(context);
+    reader->Start();
   }
 
   std::unique_ptr<GetRequestPostDataCallback> callback_;
@@ -1457,14 +1456,7 @@ void InspectorNetworkAgent::GetResponseBodyBlob(
       WTF::Bind(ResponseBodyFileReaderLoaderDone, resource_data->MimeType(),
                 resource_data->TextEncodingName(),
                 WTF::Passed(std::move(callback))));
-  if (worker_global_scope_) {
-    client->Start(worker_global_scope_);
-    return;
-  }
-  LocalFrame* frame = IdentifiersFactory::FrameById(inspected_frames_,
-                                                    resource_data->FrameId());
-  Document* document = frame->GetDocument();
-  client->Start(document);
+  client->Start();
 }
 
 void InspectorNetworkAgent::getResponseBody(
@@ -1806,7 +1798,7 @@ void InspectorNetworkAgent::getRequestPostData(
   scoped_refptr<InspectorPostBodyParser> parser =
       base::MakeRefCounted<InspectorPostBodyParser>(std::move(callback));
   // TODO(crbug.com/810554): Extend protocol to fetch body parts separately
-  parser->Parse(resource_data->GetExecutionContext(), post_data.get());
+  parser->Parse(post_data.get());
 }
 
 }  // namespace blink

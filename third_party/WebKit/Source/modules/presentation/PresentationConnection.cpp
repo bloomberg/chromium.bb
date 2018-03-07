@@ -126,8 +126,7 @@ class PresentationConnection::BlobLoader final
       : presentation_connection_(presentation_connection),
         loader_(FileReaderLoader::Create(FileReaderLoader::kReadAsArrayBuffer,
                                          this)) {
-    loader_->Start(presentation_connection_->GetExecutionContext(),
-                   std::move(blob_data_handle));
+    loader_->Start(std::move(blob_data_handle));
   }
   ~BlobLoader() override = default;
 

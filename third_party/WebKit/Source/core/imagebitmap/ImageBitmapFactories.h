@@ -52,7 +52,6 @@ namespace blink {
 
 class Blob;
 class EventTarget;
-class ExecutionContext;
 class ImageBitmapSource;
 class ImageBitmapOptions;
 
@@ -109,7 +108,7 @@ class ImageBitmapFactories final
       return new ImageBitmapLoader(factory, crop_rect, script_state, options);
     }
 
-    void LoadBlobAsync(ExecutionContext*, Blob*);
+    void LoadBlobAsync(Blob*);
     ScriptPromise Promise() { return resolver_->Promise(); }
 
     void Trace(blink::Visitor*);
