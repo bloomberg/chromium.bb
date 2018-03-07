@@ -1516,7 +1516,7 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
 
     @Override
     public TextClassifier getTextClassifier() {
-        return (TextClassifier) mAwContents.getTextClassifier();
+        return mAwContents.getTextClassifier();
     }
 
     @Override
@@ -2134,6 +2134,23 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
     @Override
     public void onFinishTemporaryDetach() {
         mAwContents.onFinishTemporaryDetach();
+    }
+
+    // TODO(changwan): override WebViewProvider.ViewDelegate method once the framework change has
+    // rolled in.
+    // (not called in O-MR1 and below)
+    // @Override
+    public boolean onCheckIsTextEditor() {
+        mFactory.startYourEngines(false);
+        if (checkNeedsPost()) {
+            return mFactory.runOnUiThreadBlocking(new Callable<Boolean>() {
+                @Override
+                public Boolean call() {
+                    return onCheckIsTextEditor();
+                }
+            });
+        }
+        return mAwContents.onCheckIsTextEditor();
     }
 
     // WebViewProvider.ScrollDelegate implementation ----------------------------------------------

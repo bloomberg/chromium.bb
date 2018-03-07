@@ -1966,6 +1966,13 @@ public class AwContents implements SmartClipProvider {
     }
 
     /**
+     * @see View#onCheckIsTextEditor()
+     */
+    public boolean onCheckIsTextEditor() {
+        return mAwViewMethods.onCheckIsTextEditor();
+    }
+
+    /**
      * @see android.webkit.WebView#stopLoading()
      */
     public void stopLoading() {
@@ -3569,6 +3576,13 @@ public class AwContents implements SmartClipProvider {
         public void computeScroll() {
             if (isDestroyedOrNoOperation(NO_WARN)) return;
             nativeOnComputeScroll(mNativeAwContents, AnimationUtils.currentAnimationTimeMillis());
+        }
+
+        @Override
+        public boolean onCheckIsTextEditor() {
+            return isDestroyedOrNoOperation(NO_WARN)
+                    ? false
+                    : ImeAdapter.fromWebContents(mWebContents).onCheckIsTextEditor();
         }
 
         @Override
