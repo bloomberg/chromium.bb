@@ -76,29 +76,24 @@ def ToolPath(tool, toolchain_info=None):
   if ARCH == "arm":
     toolchain_source = "arm-linux-androideabi-4.9"
     toolchain_prefix = "arm-linux-androideabi"
-    ndk = "ndk"
   elif ARCH == "arm64":
     toolchain_source = "aarch64-linux-android-4.9"
     toolchain_prefix = "aarch64-linux-android"
-    ndk = "ndk"
   elif ARCH == "x86":
     toolchain_source = "x86-4.9"
     toolchain_prefix = "i686-linux-android"
-    ndk = "ndk"
   elif ARCH == "x86_64" or ARCH == "x64":
     toolchain_source = "x86_64-4.9"
     toolchain_prefix = "x86_64-linux-android"
-    ndk = "ndk"
   elif ARCH == "mips":
     toolchain_source = "mipsel-linux-android-4.9"
     toolchain_prefix = "mipsel-linux-android"
-    ndk = "ndk"
   else:
     raise Exception("Could not find tool chain for " + ARCH)
 
   toolchain_subdir = (
-      "third_party/android_tools/%s/toolchains/%s/prebuilt/linux-x86_64/bin" %
-       (ndk, toolchain_source))
+      "third_party/android_ndk/toolchains/%s/prebuilt/linux-x86_64/bin" %
+       toolchain_source)
 
   return os.path.join(CHROME_SRC,
                       toolchain_subdir,
