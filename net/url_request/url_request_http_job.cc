@@ -69,7 +69,7 @@
 #include "net/url_request/url_request_job_factory.h"
 #include "net/url_request/url_request_redirect_job.h"
 #include "net/url_request/url_request_throttler_manager.h"
-#include "net/websockets/websocket_handshake_stream_base.h"
+#include "net/url_request/websocket_handshake_userdata_key.h"
 #include "url/origin.h"
 
 #if defined(OS_ANDROID)
@@ -552,8 +552,8 @@ void URLRequestHttpJob::StartTransactionInternal() {
         priority_, &transaction_);
 
     if (rv == OK && request_info_.url.SchemeIsWSOrWSS()) {
-      base::SupportsUserData::Data* data = request_->GetUserData(
-          WebSocketHandshakeStreamBase::CreateHelper::DataKey());
+      base::SupportsUserData::Data* data =
+          request_->GetUserData(kWebSocketHandshakeUserDataKey);
       if (data) {
         transaction_->SetWebSocketHandshakeStreamCreateHelper(
             static_cast<WebSocketHandshakeStreamBase::CreateHelper*>(data));

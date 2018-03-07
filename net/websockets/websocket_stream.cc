@@ -21,6 +21,7 @@
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/websocket_handshake_userdata_key.h"
 #include "net/websockets/websocket_errors.h"
 #include "net/websockets/websocket_event_interface.h"
 #include "net/websockets/websocket_handshake_constants.h"
@@ -140,9 +141,8 @@ class WebSocketStreamRequestImpl : public WebSocketStreamRequest {
     url_request_->set_initiator(origin);
     url_request_->set_site_for_cookies(site_for_cookies);
 
-    url_request_->SetUserData(
-        WebSocketHandshakeStreamBase::CreateHelper::DataKey(),
-        std::move(create_helper));
+    url_request_->SetUserData(kWebSocketHandshakeUserDataKey,
+                              std::move(create_helper));
     url_request_->SetLoadFlags(LOAD_DISABLE_CACHE | LOAD_BYPASS_CACHE);
     connect_delegate_->OnCreateRequest(url_request_.get());
   }

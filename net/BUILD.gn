@@ -1802,10 +1802,6 @@ component("net") {
       "url_request/view_cache_helper.h",
       "url_request/websocket_handshake_userdata_key.cc",
       "url_request/websocket_handshake_userdata_key.h",
-      "websockets/websocket_handshake_request_info.h",
-      "websockets/websocket_handshake_response_info.h",
-      "websockets/websocket_handshake_stream_base.h",
-      "websockets/websocket_stream.h",
     ]
     deps += [
       "//base/third_party/dynamic_annotations",
