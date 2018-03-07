@@ -844,7 +844,9 @@ public class WebappActivity extends SingleTabActivity {
         if (mBrandColor != null && mWebappInfo.displayMode() != WebDisplayMode.FULLSCREEN) {
             taskDescriptionColor = mBrandColor;
             statusBarColor = ColorUtils.getDarkenedColorForStatusBar(mBrandColor);
-            getToolbarManager().updatePrimaryColor(mBrandColor, false);
+            if (getToolbarManager() != null) {
+                getToolbarManager().updatePrimaryColor(mBrandColor, false);
+            }
         }
 
         ApiCompatibilityUtils.setTaskDescription(this, title, icon,
