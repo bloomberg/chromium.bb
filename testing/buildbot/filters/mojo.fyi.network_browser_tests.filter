@@ -4,7 +4,6 @@
 # Uncategorized timeouts or test failures.
 -AdsPageLoadMetricsObserverBrowserTest.DocOverwritesNavigation
 -AdsPageLoadMetricsObserverBrowserTest.SubresourceFilter
--AppBackgroundPageNaClTest.BackgroundKeepaliveActive
 -BackgroundXhrTest.HttpAuth
 -BackgroundXhrTest.TlsClientAuth
 -BrowsingDataRemoverBrowserTest.CookieDeletion
@@ -22,21 +21,13 @@
 -InstantThemeTest.ThemeBackgroundAccess
 -IsolatedAppTest.CookieIsolation
 -IsolatedAppTest.SubresourceCookieIsolation
--LazyBackgroundPageApiTest.NaClInBackgroundPage
--LazyBackgroundPageApiTest.NaClInView
 -LocalNTPJavascriptTest.SimpleJavascriptTests
 -LocalNTPVoiceJavascriptTest.MicrophoneTests
 -LocalNTPVoiceJavascriptTest.SpeechTests
 -LocalNTPVoiceJavascriptTest.TextTests
 -LocalNTPVoiceJavascriptTest.ViewTests
 -MediaGalleriesPlatformAppBrowserTest.ToURL
--MediaGalleriesPlatformAppPpapiTest.SendFilesystem
--NaClBrowserTestGLibcVcacheExtension.ValidationCacheOfMainNexe
--NaClBrowserTestNewlibVcacheExtension.ValidationCacheOfMainNexe
 -NetInternalsTest.netInternalsSessionBandwidthSucceed
--NewlibPackagedAppTest.MulticastPermissions
--NewlibPackagedAppTest.NoSocketPermissions
--NewlibPackagedAppTest.SocketPermissions
 -NewlibPackagedAppTest.SuccessfulLoad
 -PageLoadMetricsBrowserTest.LoadingMetrics
 -PageLoadMetricsBrowserTest.LoadingMetricsFailed
@@ -59,7 +50,6 @@
 -RegisterProtocolHandlerBrowserTest.CustomHandler
 -SafeBrowsingTriggeredPopupBlockerBrowserTest.NoFeature_NoMessages
 -SubresourceFilterBrowserTest.FailedProvisionalLoadInMainframe
--TabManagerTest.DiscardTabsWithMinimizedAndOccludedWindows
 -TaskManagerBrowserTest.SentDataObserved
 -TaskManagerBrowserTest.TotalSentDataObserved
 -TaskManagerUtilityProcessBrowserTest.UtilityJSHeapMemory
@@ -99,8 +89,6 @@
 # Need support for blocking cookies via content settings:
 # https://crbug.com/803452.
 -ContentSettingsTest.AllowCookiesForASessionUsingExceptions
--ContentSettingsTest.BasicCookies
--ContentSettingsTest.BasicCookiesHttps
 -ContentSettingsTest.RedirectCrossOrigin
 -ContentSettingsTest.RedirectLoopCookies
 
