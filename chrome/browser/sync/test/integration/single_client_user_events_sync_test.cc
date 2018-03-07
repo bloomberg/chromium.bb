@@ -274,7 +274,6 @@ IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, LoggedBeforeSyncSetup) {
   auto bridge = event_service->GetSyncBridge();
   // Wait for UserEventSyncBridge to be ready to receive events.
   // TODO(crbug.com/761485): Remove when the store is initialized instantly.
-  ASSERT_TRUE(!bridge->change_processor()->IsTrackingMetadata());
   while (!bridge->change_processor()->IsTrackingMetadata())
     base::RunLoop().RunUntilIdle();
   event_service->RecordUserEvent(consent1);
