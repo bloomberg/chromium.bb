@@ -29,6 +29,9 @@ namespace content {
 
 namespace {
 
+using SharedURLLoaderFactoryGetterCallback =
+    base::OnceCallback<scoped_refptr<SharedURLLoaderFactory>()>;
+
 network::mojom::NetworkContextPtr CreateNetworkContext() {
   network::mojom::NetworkContextPtr network_context;
   network::mojom::NetworkContextParamsPtr context_params =
@@ -89,21 +92,34 @@ int LoadBasicRequestOnUIThread(
 }
 
 scoped_refptr<SharedURLLoaderFactory> GetSharedFactoryOnIOThread(
-    URLLoaderFactoryGetter* url_loader_factory_getter) {
+    SharedURLLoaderFactoryGetterCallback shared_url_loader_factory_getter) {
   scoped_refptr<SharedURLLoaderFactory> shared_factory;
   base::RunLoop run_loop;
   BrowserThread::PostTaskAndReply(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(
-          [](URLLoaderFactoryGetter* getter,
+          [](SharedURLLoaderFactoryGetterCallback getter,
              scoped_refptr<SharedURLLoaderFactory>* shared_factory_ptr) {
-            *shared_factory_ptr = getter->GetNetworkFactory();
+            *shared_factory_ptr = std::move(getter).Run();
           },
-          base::Unretained(url_loader_factory_getter),
+          std::move(shared_url_loader_factory_getter),
           base::Unretained(&shared_factory)),
       run_loop.QuitClosure());
   run_loop.Run();
   return shared_factory;
+}
+
+scoped_refptr<SharedURLLoaderFactory> GetSharedFactoryOnIOThread(
+    URLLoaderFactoryGetter* url_loader_factory_getter) {
+  return GetSharedFactoryOnIOThread(
+      base::BindOnce(&URLLoaderFactoryGetter::GetNetworkFactory,
+                     base::Unretained(url_loader_factory_getter)));
+}
+
+scoped_refptr<SharedURLLoaderFactory> GetSharedFactoryOnIOThread(
+    std::unique_ptr<SharedURLLoaderFactoryInfo> info) {
+  return GetSharedFactoryOnIOThread(
+      base::BindOnce(&SharedURLLoaderFactory::Create, std::move(info)));
 }
 
 void ReleaseOnIOThread(scoped_refptr<SharedURLLoaderFactory> shared_factory) {
@@ -479,6 +495,80 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
 
   EXPECT_EQ(net::ERR_FAILED,
             LoadBasicRequestOnUIThread(factory.get(), GetTestURL()));
+}
+
+// Make sure the factory returned from
+// |StoragePartition::GetURLLoaderFactoryForBrowserProcessIOThread()| continues
+// to work after crashes.
+IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, BrowserIOFactory) {
+  auto* partition =
+      BrowserContext::GetDefaultStoragePartition(browser_context());
+  scoped_refptr<SharedURLLoaderFactory> shared_url_loader_factory =
+      GetSharedFactoryOnIOThread(
+          partition->GetURLLoaderFactoryForBrowserProcessIOThread());
+
+  EXPECT_EQ(net::OK, LoadBasicRequestOnIOThread(shared_url_loader_factory.get(),
+                                                GetTestURL()));
+
+  SimulateNetworkServiceCrash();
+  // Flush the interface to make sure the error notification was received.
+  partition->FlushNetworkInterfaceForTesting();
+  static_cast<StoragePartitionImpl*>(partition)
+      ->url_loader_factory_getter()
+      ->FlushNetworkInterfaceOnIOThreadForTesting();
+
+  EXPECT_EQ(net::OK, LoadBasicRequestOnIOThread(shared_url_loader_factory.get(),
+                                                GetTestURL()));
+  ReleaseOnIOThread(std::move(shared_url_loader_factory));
+}
+
+// Make sure the factory getter returned from
+// |StoragePartition::GetURLLoaderFactoryForBrowserProcessIOThread()| doesn't
+// crash if it's called after the StoragePartition is deleted.
+IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
+                       BrowserIOFactoryGetterAfterStoragePartitionGone) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  std::unique_ptr<ShellBrowserContext> browser_context =
+      std::make_unique<ShellBrowserContext>(true, nullptr);
+  auto* partition =
+      BrowserContext::GetDefaultStoragePartition(browser_context.get());
+  auto shared_url_loader_factory_info =
+      partition->GetURLLoaderFactoryForBrowserProcessIOThread();
+
+  browser_context.reset();
+
+  scoped_refptr<SharedURLLoaderFactory> shared_url_loader_factory =
+      GetSharedFactoryOnIOThread(std::move(shared_url_loader_factory_info));
+
+  EXPECT_EQ(net::ERR_FAILED,
+            LoadBasicRequestOnIOThread(shared_url_loader_factory.get(),
+                                       GetTestURL()));
+  ReleaseOnIOThread(std::move(shared_url_loader_factory));
+}
+
+// Make sure the factory returned from
+// |StoragePartition::GetURLLoaderFactoryForBrowserProcessIOThread()| doesn't
+// crash if it's called after the StoragePartition is deleted.
+IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
+                       BrowserIOFactoryAfterStoragePartitionGone) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  std::unique_ptr<ShellBrowserContext> browser_context =
+      std::make_unique<ShellBrowserContext>(true, nullptr);
+  auto* partition =
+      BrowserContext::GetDefaultStoragePartition(browser_context.get());
+  scoped_refptr<SharedURLLoaderFactory> shared_url_loader_factory =
+      GetSharedFactoryOnIOThread(
+          partition->GetURLLoaderFactoryForBrowserProcessIOThread());
+
+  EXPECT_EQ(net::OK, LoadBasicRequestOnIOThread(shared_url_loader_factory.get(),
+                                                GetTestURL()));
+
+  browser_context.reset();
+
+  EXPECT_EQ(net::ERR_FAILED,
+            LoadBasicRequestOnIOThread(shared_url_loader_factory.get(),
+                                       GetTestURL()));
+  ReleaseOnIOThread(std::move(shared_url_loader_factory));
 }
 
 // Make sure the window from |window.open()| can load XHR after crash.

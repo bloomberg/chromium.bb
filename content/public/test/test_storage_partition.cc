@@ -31,6 +31,11 @@ TestStoragePartition::GetURLLoaderFactoryForBrowserProcess() {
   return nullptr;
 }
 
+std::unique_ptr<SharedURLLoaderFactoryInfo>
+TestStoragePartition::GetURLLoaderFactoryForBrowserProcessIOThread() {
+  return nullptr;
+}
+
 network::mojom::CookieManager*
 TestStoragePartition::GetCookieManagerForBrowserProcess() {
   return cookie_manager_for_browser_process_;

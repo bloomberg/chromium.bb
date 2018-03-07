@@ -17,12 +17,42 @@ base::LazyInstance<URLLoaderFactoryGetter::GetNetworkFactoryCallback>::Leaky
     g_get_network_factory_callback = LAZY_INSTANCE_INITIALIZER;
 }
 
+class URLLoaderFactoryGetter::URLLoaderFactoryForIOThreadInfo
+    : public SharedURLLoaderFactoryInfo {
+ public:
+  URLLoaderFactoryForIOThreadInfo() = default;
+  explicit URLLoaderFactoryForIOThreadInfo(
+      scoped_refptr<URLLoaderFactoryGetter> factory_getter)
+      : factory_getter_(std::move(factory_getter)) {}
+  ~URLLoaderFactoryForIOThreadInfo() override = default;
+
+  scoped_refptr<URLLoaderFactoryGetter>& url_loader_factory_getter() {
+    return factory_getter_;
+  }
+
+ protected:
+  // SharedURLLoaderFactoryInfo implementation.
+  scoped_refptr<SharedURLLoaderFactory> CreateFactory() override;
+
+  scoped_refptr<URLLoaderFactoryGetter> factory_getter_;
+
+  DISALLOW_COPY_AND_ASSIGN(URLLoaderFactoryForIOThreadInfo);
+};
+
 class URLLoaderFactoryGetter::URLLoaderFactoryForIOThread
     : public SharedURLLoaderFactory {
  public:
   explicit URLLoaderFactoryForIOThread(
       scoped_refptr<URLLoaderFactoryGetter> factory_getter)
-      : factory_getter_(std::move(factory_getter)) {}
+      : factory_getter_(std::move(factory_getter)) {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  }
+
+  explicit URLLoaderFactoryForIOThread(
+      std::unique_ptr<URLLoaderFactoryForIOThreadInfo> info)
+      : factory_getter_(std::move(info->url_loader_factory_getter())) {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  }
 
   // mojom::URLLoaderFactory implementation:
   void CreateLoaderAndStart(network::mojom::URLLoaderRequest request,
@@ -57,6 +87,16 @@ class URLLoaderFactoryGetter::URLLoaderFactoryForIOThread
   DISALLOW_COPY_AND_ASSIGN(URLLoaderFactoryForIOThread);
 };
 
+scoped_refptr<SharedURLLoaderFactory>
+URLLoaderFactoryGetter::URLLoaderFactoryForIOThreadInfo::CreateFactory() {
+  auto other = std::make_unique<URLLoaderFactoryForIOThreadInfo>();
+  other->factory_getter_ = std::move(factory_getter_);
+
+  return base::MakeRefCounted<URLLoaderFactoryForIOThread>(std::move(other));
+}
+
+// -----------------------------------------------------------------------------
+
 URLLoaderFactoryGetter::URLLoaderFactoryGetter() {}
 
 void URLLoaderFactoryGetter::Initialize(StoragePartitionImpl* partition) {
@@ -85,16 +125,22 @@ void URLLoaderFactoryGetter::OnStoragePartitionDestroyed() {
 scoped_refptr<SharedURLLoaderFactory>
 URLLoaderFactoryGetter::GetNetworkFactory() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (g_get_network_factory_callback.Get() && !test_factory_)
-    g_get_network_factory_callback.Get().Run(this);
-
   return base::MakeRefCounted<URLLoaderFactoryForIOThread>(
+      base::WrapRefCounted(this));
+}
+
+std::unique_ptr<SharedURLLoaderFactoryInfo>
+URLLoaderFactoryGetter::GetNetworkFactoryInfo() {
+  return std::make_unique<URLLoaderFactoryForIOThreadInfo>(
       base::WrapRefCounted(this));
 }
 
 network::mojom::URLLoaderFactory*
 URLLoaderFactoryGetter::GetURLLoaderFactory() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (g_get_network_factory_callback.Get() && !test_factory_)
+    g_get_network_factory_callback.Get().Run(this);
+
   if (test_factory_)
     return test_factory_;
 
@@ -111,9 +157,6 @@ URLLoaderFactoryGetter::GetURLLoaderFactory() {
 void URLLoaderFactoryGetter::CloneNetworkFactory(
     network::mojom::URLLoaderFactoryRequest network_factory_request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (g_get_network_factory_callback.Get() && !test_factory_)
-    g_get_network_factory_callback.Get().Run(this);
-
   GetURLLoaderFactory()->Clone(std::move(network_factory_request));
 }
 
