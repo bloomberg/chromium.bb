@@ -49,10 +49,11 @@ class CompositingInputsUpdater {
     // containing block chain.
     PaintLayer* last_scrolling_ancestor;
     bool has_ancestor_with_clip_related_property;
-    bool has_ancestor_with_clip_path;
   };
 
   void UpdateRecursive(PaintLayer*, UpdateType, AncestorInfo);
+  void UpdateAncestorDependentCompositingInputs(PaintLayer*,
+                                                const AncestorInfo&);
 
   LayoutGeometryMap geometry_map_;
   PaintLayer* root_layer_;
