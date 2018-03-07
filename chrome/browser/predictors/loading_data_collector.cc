@@ -26,7 +26,7 @@ namespace predictors {
 
 namespace {
 
-bool g_allow_port_in_urls = false;
+bool g_allow_port_in_urls = true;
 
 // Sorted by decreasing likelihood according to HTTP archive.
 const char* const kFontMimeTypes[] = {"font/woff2",
