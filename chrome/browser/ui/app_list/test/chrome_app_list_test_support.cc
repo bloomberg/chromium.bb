@@ -60,12 +60,6 @@ AppListModelUpdater* GetModelUpdater(AppListService* service) {
       ->GetModelUpdater();
 }
 
-app_list::SearchModel* GetSearchModel(AppListService* service) {
-  return app_list::AppListSyncableServiceFactory::GetForProfile(
-             service->GetCurrentAppListProfile())
-      ->GetSearchModel();
-}
-
 AppListServiceImpl* GetAppListServiceImpl() {
   // AppListServiceImpl is the only subclass of AppListService, which has pure
   // virtuals. So this must either be NULL, or an AppListServiceImpl.

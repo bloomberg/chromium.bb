@@ -450,16 +450,6 @@ AppListModelUpdater* AppListSyncableService::GetModelUpdater() {
   return model_updater_.get();
 }
 
-AppListModel* AppListSyncableService::GetModel() {
-  DCHECK(IsInitialized());
-  return model_updater_->GetModel();
-}
-
-SearchModel* AppListSyncableService::GetSearchModel() {
-  DCHECK(IsInitialized());
-  return model_updater_->GetSearchModel();
-}
-
 void AppListSyncableService::HandleUpdateStarted() {
   // Don't observe the model while processing update changes.
   model_updater_delegate_.reset();

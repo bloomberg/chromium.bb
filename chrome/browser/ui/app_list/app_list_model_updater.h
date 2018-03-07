@@ -10,8 +10,8 @@
 #include <unordered_map>
 #include <vector>
 
-#include "ash/app_list/model/app_list_folder_item.h"
 #include "ash/app_list/model/app_list_model.h"
+#include "ash/app_list/model/search/search_model.h"
 #include "ash/app_list/model/search/search_result.h"
 #include "ash/public/interfaces/app_list.mojom.h"
 #include "base/callback_forward.h"

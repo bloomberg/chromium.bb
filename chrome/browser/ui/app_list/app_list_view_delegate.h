@@ -110,10 +110,6 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   // Unowned pointer to the associated profile. May change if SetProfileByPath
   // is called.
   Profile* profile_;
-  // Unowned pointer to the models owned by AppListSyncableService. Will change
-  // if |profile_| changes.
-  app_list::AppListModel* model_;
-  app_list::SearchModel* search_model_;
 
   // Unowned pointer to the model updater owned by AppListSyncableService.
   // Will change if |profile_| changes.

@@ -47,10 +47,6 @@ class PrefRegistrySyncable;
 
 namespace app_list {
 
-// TODO(hejq): Remove these when we get rid of |GetModel| and |GetSearchModel|.
-class AppListModel;
-class SearchModel;
-
 // Keyed Service that owns, stores, and syncs an AppListModel for a profile.
 class AppListSyncableService : public syncer::SyncableService,
                                public KeyedService {
@@ -139,14 +135,6 @@ class AppListSyncableService : public syncer::SyncableService,
 
   // Gets the app list model updater.
   AppListModelUpdater* GetModelUpdater();
-
-  // Gets the app list model.
-  // Note: This will be removed. Use |GetModelUpdater| instead.
-  AppListModel* GetModel();
-
-  // Gets the search model.
-  // Note: This will be removed. Use |GetModelUpdater| instead.
-  SearchModel* GetSearchModel();
 
   // Returns true if this service was initialized.
   bool IsInitialized() const;
