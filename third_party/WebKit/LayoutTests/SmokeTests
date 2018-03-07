@@ -320,6 +320,7 @@ external/wpt/web-animations/timing-model/animations/set-the-animation-start-time
 external/wpt/web-animations/timing-model/time-transformations/transformed-progress.html
 external/wpt/webaudio/the-audio-api/the-audioworklet-interface/baseaudiocontext-audioworklet.https.html
 external/wpt/webaudio/the-audio-api/the-constantsourcenode-interface/constant-source-onended.html
+external/wpt/webaudio/the-audio-api/the-channelsplitternode-interface/audiochannelsplitter.html
 external/wpt/webaudio/the-audio-api/the-delaynode-interface/delaynode-scheduling.html
 external/wpt/webaudio/the-audio-api/the-iirfilternode-interface/iirfilter-getFrequencyResponse.html
 external/wpt/webaudio/the-audio-api/the-pannernode-interface/distance-linear.html
@@ -999,7 +1000,6 @@ webaudio/AudioBufferSource/audiobuffersource-ended.html
 webaudio/AudioBufferSource/audiobuffersource-playbackrate-zero.html
 webaudio/AudioNode/channel-mode-interp-basic.html
 webaudio/AudioParam/audioparam-setValueCurve-duration.html
-webaudio/ChannelSplitter/audiochannelsplitter.html
 webaudio/codec-tests/flac/flac-decode.html
 webaudio/codec-tests/vorbis/vbr-128kbps-44khz.html
 webaudio/codec-tests/vorbis/vbr-70kbps-44khz.html
