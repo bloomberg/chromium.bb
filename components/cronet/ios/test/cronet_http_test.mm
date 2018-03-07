@@ -275,7 +275,8 @@ TEST_F(HttpTest, SetCookie) {
 
   StartDataTaskAndWaitForCompletion([session_ dataTaskWithURL:cookieUrl]);
   EXPECT_EQ(nil, [delegate_ error]);
-  EXPECT_EQ(nil, [delegate_ responseBody]);
+  EXPECT_STREQ("Header not found. :(",
+               base::SysNSStringToUTF8([delegate_ responseBody]).c_str());
 
   NSURL* setCookieUrl = net::NSURLWithGURL(
       GURL(TestServer::GetSetCookieURL(base::SysNSStringToUTF8(cookieLine))));
@@ -469,7 +470,7 @@ TEST_F(HttpTest, PostRequest) {
   NSData* post_data = [request_body dataUsingEncoding:NSUTF8StringEncoding];
 
   // Prepare the request.
-  NSURL* url = net::NSURLWithGURL(GURL(TestServer::EchoRequestBodyURL()));
+  NSURL* url = net::NSURLWithGURL(GURL(TestServer::GetEchoRequestBodyURL()));
   NSMutableURLRequest* request = [[NSMutableURLRequest alloc] initWithURL:url];
   request.HTTPMethod = @"POST";
   request.HTTPBody = post_data;
@@ -526,7 +527,7 @@ TEST_F(HttpTest, PostRequestWithBodyStream) {
   });
 
   // Prepare the request.
-  NSURL* url = net::NSURLWithGURL(GURL(TestServer::EchoRequestBodyURL()));
+  NSURL* url = net::NSURLWithGURL(GURL(TestServer::GetEchoRequestBodyURL()));
   NSMutableURLRequest* request = [[NSMutableURLRequest alloc] initWithURL:url];
   request.HTTPMethod = @"POST";
   request.HTTPBodyStream = input_stream;
@@ -579,7 +580,7 @@ TEST_F(HttpTest, PostRequestWithLargeBodyStream) {
   [output_stream close];
 
   // Prepare the request.
-  NSURL* url = net::NSURLWithGURL(GURL(TestServer::EchoRequestBodyURL()));
+  NSURL* url = net::NSURLWithGURL(GURL(TestServer::GetEchoRequestBodyURL()));
   NSMutableURLRequest* request = [[NSMutableURLRequest alloc] initWithURL:url];
   request.HTTPMethod = @"POST";
   request.HTTPBodyStream = input_stream;

@@ -8,207 +8,99 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
-#include "base/android/path_utils.h"
-#include "base/bind.h"
 #include "base/files/file_path.h"
-#include "base/files/file_util.h"
-#include "base/macros.h"
-#include "base/memory/ptr_util.h"
-#include "base/path_service.h"
-#include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/test/test_support_android.h"
-#include "base/threading/thread_task_runner_handle.h"
-#include "components/cronet/android/test/cronet_test_util.h"
+#include "components/cronet/test/test_server.h"
 #include "jni/NativeTestServer_jni.h"
-#include "net/base/host_port_pair.h"
-#include "net/base/url_util.h"
-#include "net/http/http_status_code.h"
-#include "net/test/embedded_test_server/default_handlers.h"
-#include "net/test/embedded_test_server/embedded_test_server.h"
-#include "net/test/embedded_test_server/http_request.h"
-#include "net/test/embedded_test_server/http_response.h"
-#include "net/test/embedded_test_server/request_handler_util.h"
-#include "url/gurl.h"
 
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 
 namespace cronet {
 
-namespace {
-
-const char kEchoBodyPath[] = "/echo_body";
-const char kEchoHeaderPath[] = "/echo_header";
-const char kEchoAllHeadersPath[] = "/echo_all_headers";
-const char kEchoMethodPath[] = "/echo_method";
-const char kRedirectToEchoBodyPath[] = "/redirect_to_echo_body";
-
-net::EmbeddedTestServer* g_test_server = nullptr;
-
-std::unique_ptr<net::test_server::HttpResponse> NativeTestServerRequestHandler(
-    const net::test_server::HttpRequest& request) {
-  DCHECK(g_test_server);
-  std::unique_ptr<net::test_server::BasicHttpResponse> response(
-      new net::test_server::BasicHttpResponse());
-  response->set_content_type("text/plain");
-
-  if (request.relative_url == kEchoBodyPath) {
-    if (request.has_content) {
-      response->set_content(request.content);
-    } else {
-      response->set_content("Request has no body. :(");
-    }
-    return std::move(response);
-  }
-
-  if (base::StartsWith(request.relative_url, kEchoHeaderPath,
-                       base::CompareCase::SENSITIVE)) {
-    GURL url = g_test_server->GetURL(request.relative_url);
-    auto it = request.headers.find(url.query());
-    if (it != request.headers.end()) {
-      response->set_content(it->second);
-    } else {
-      response->set_content("Header not found. :(");
-    }
-    return std::move(response);
-  }
-
-  if (request.relative_url == kEchoAllHeadersPath) {
-    response->set_content(request.all_headers);
-    return std::move(response);
-  }
-
-  if (request.relative_url == kEchoMethodPath) {
-    response->set_content(request.method_string);
-    return std::move(response);
-  }
-
-  if (request.relative_url == kRedirectToEchoBodyPath) {
-    response->set_code(net::HTTP_TEMPORARY_REDIRECT);
-    response->AddCustomHeader("Location", kEchoBodyPath);
-    return std::move(response);
-  }
-
-  // Unhandled requests result in the Embedded test server sending a 404.
-  return std::unique_ptr<net::test_server::BasicHttpResponse>();
-}
-
-}  // namespace
-
 jboolean JNI_NativeTestServer_StartNativeTestServer(
     JNIEnv* env,
     const JavaParamRef<jclass>& jcaller,
     const JavaParamRef<jstring>& jtest_files_root,
     const JavaParamRef<jstring>& jtest_data_dir) {
-  // Shouldn't happen.
-  if (g_test_server)
-    return false;
-
   base::FilePath test_data_dir(
       base::android::ConvertJavaStringToUTF8(env, jtest_data_dir));
   base::InitAndroidTestPaths(test_data_dir);
 
-  g_test_server = new net::EmbeddedTestServer();
-  g_test_server->RegisterRequestHandler(
-      base::Bind(&NativeTestServerRequestHandler));
   base::FilePath test_files_root(
       base::android::ConvertJavaStringToUTF8(env, jtest_files_root));
-
-  // Add a third handler for paths that NativeTestServerRequestHandler does not
-  // handle.
-  g_test_server->ServeFilesFromDirectory(test_files_root);
-
-  RegisterDefaultHandlers(g_test_server);
-
-  return g_test_server->Start();
+  return cronet::TestServer::StartServeFilesFromDirectory(test_files_root);
 }
 
 void JNI_NativeTestServer_ShutdownNativeTestServer(
     JNIEnv* env,
     const JavaParamRef<jclass>& jcaller) {
-  if (!g_test_server)
-    return;
-  delete g_test_server;
-  g_test_server = NULL;
+  cronet::TestServer::Shutdown();
 }
 
 ScopedJavaLocalRef<jstring> JNI_NativeTestServer_GetEchoBodyURL(
     JNIEnv* env,
     const JavaParamRef<jclass>& jcaller) {
-  DCHECK(g_test_server);
-  GURL url = g_test_server->GetURL(kEchoBodyPath);
-  return base::android::ConvertUTF8ToJavaString(env, url.spec());
+  return base::android::ConvertUTF8ToJavaString(
+      env, cronet::TestServer::GetEchoRequestBodyURL());
 }
 
 ScopedJavaLocalRef<jstring> JNI_NativeTestServer_GetEchoHeaderURL(
     JNIEnv* env,
     const JavaParamRef<jclass>& jcaller,
     const JavaParamRef<jstring>& jheader) {
-  DCHECK(g_test_server);
-  GURL url = g_test_server->GetURL(kEchoHeaderPath);
-  GURL::Replacements replacements;
-  std::string header = base::android::ConvertJavaStringToUTF8(env, jheader);
-  replacements.SetQueryStr(header.c_str());
-  url = url.ReplaceComponents(replacements);
-  return base::android::ConvertUTF8ToJavaString(env, url.spec());
+  return base::android::ConvertUTF8ToJavaString(
+      env, cronet::TestServer::GetEchoHeaderURL(
+               base::android::ConvertJavaStringToUTF8(env, jheader)));
 }
 
 ScopedJavaLocalRef<jstring> JNI_NativeTestServer_GetEchoAllHeadersURL(
     JNIEnv* env,
     const JavaParamRef<jclass>& jcaller) {
-  DCHECK(g_test_server);
-  GURL url = g_test_server->GetURL(kEchoAllHeadersPath);
-  return base::android::ConvertUTF8ToJavaString(env, url.spec());
+  return base::android::ConvertUTF8ToJavaString(
+      env, cronet::TestServer::GetEchoAllHeadersURL());
 }
 
 ScopedJavaLocalRef<jstring> JNI_NativeTestServer_GetEchoMethodURL(
     JNIEnv* env,
     const JavaParamRef<jclass>& jcaller) {
-  DCHECK(g_test_server);
-  GURL url = g_test_server->GetURL(kEchoMethodPath);
-  return base::android::ConvertUTF8ToJavaString(env, url.spec());
+  return base::android::ConvertUTF8ToJavaString(
+      env, cronet::TestServer::GetEchoMethodURL());
 }
 
 ScopedJavaLocalRef<jstring> JNI_NativeTestServer_GetRedirectToEchoBody(
     JNIEnv* env,
     const JavaParamRef<jclass>& jcaller) {
-  DCHECK(g_test_server);
-  GURL url = g_test_server->GetURL(kRedirectToEchoBodyPath);
-  return base::android::ConvertUTF8ToJavaString(env, url.spec());
+  return base::android::ConvertUTF8ToJavaString(
+      env, cronet::TestServer::GetRedirectToEchoBodyURL());
 }
 
 ScopedJavaLocalRef<jstring> JNI_NativeTestServer_GetFileURL(
     JNIEnv* env,
     const JavaParamRef<jclass>& jcaller,
     const JavaParamRef<jstring>& jfile_path) {
-  DCHECK(g_test_server);
-  std::string file = base::android::ConvertJavaStringToUTF8(env, jfile_path);
-  GURL url = g_test_server->GetURL(file);
-  return base::android::ConvertUTF8ToJavaString(env, url.spec());
+  return base::android::ConvertUTF8ToJavaString(
+      env, cronet::TestServer::GetFileURL(
+               base::android::ConvertJavaStringToUTF8(env, jfile_path)));
 }
 
-int JNI_NativeTestServer_GetPort(JNIEnv* env,
-                                 const JavaParamRef<jclass>& jcaller) {
-  DCHECK(g_test_server);
-  return g_test_server->port();
+jint JNI_NativeTestServer_GetPort(JNIEnv* env,
+                                  const JavaParamRef<jclass>& jcaller) {
+  return cronet::TestServer::GetPort();
 }
 
 ScopedJavaLocalRef<jstring> JNI_NativeTestServer_GetExabyteResponseURL(
     JNIEnv* env,
     const JavaParamRef<jclass>& jcaller) {
-  DCHECK(g_test_server);
-  GURL url = g_test_server->GetURL("/exabyte_response");
-  return base::android::ConvertUTF8ToJavaString(env, url.spec());
+  return base::android::ConvertUTF8ToJavaString(
+      env, cronet::TestServer::GetExabyteResponseURL());
 }
 
 ScopedJavaLocalRef<jstring> JNI_NativeTestServer_GetHostPort(
     JNIEnv* env,
     const JavaParamRef<jclass>& jcaller) {
-  DCHECK(g_test_server);
-  std::string host_port =
-      net::HostPortPair::FromURL(g_test_server->base_url()).ToString();
-  return base::android::ConvertUTF8ToJavaString(env, host_port);
+  return base::android::ConvertUTF8ToJavaString(
+      env, cronet::TestServer::GetHostPort());
 }
 
 }  // namespace cronet

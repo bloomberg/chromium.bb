@@ -5,7 +5,6 @@
 #ifndef COMPONENTS_CRONET_NATIVE_URL_REQUEST_H_
 #define COMPONENTS_CRONET_NATIVE_URL_REQUEST_H_
 
-#include <list>
 #include <memory>
 #include <string>
 
@@ -65,10 +64,6 @@ class Cronet_UrlRequestImpl : public Cronet_UrlRequest {
   std::unique_ptr<Cronet_UrlResponseInfo> response_info_;
   // The error reported by request. May be nullptr if no error has occurred.
   std::unique_ptr<Cronet_Error> error_;
-  // URL chain contains the URL currently being requested, and
-  // all URLs previously requested. New URLs are added before
-  // Cronet_UrlRequestCallback::OnRedirectReceived is called.
-  std::list<std::string> url_chain_;
 
   // Cronet Engine used to run network operations. Not owned, accessed from
   // client thread. Must outlive this request.

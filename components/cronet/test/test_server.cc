@@ -7,26 +7,35 @@
 #include <memory>
 #include <utility>
 
+#include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/format_macros.h"
 #include "base/lazy_instance.h"
+#include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "net/http/http_status_code.h"
+#include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 
 namespace {
 
-const char kSimplePath[] = "/Simple";
-const char kEchoHeaderPath[] = "/EchoHeader?";
-const char kEchoMethodPath[] = "/EchoMethod";
-const char kSetCookiePath[] = "/SetCookie?";
-const char kBigDataPath[] = "/BigData?";
-const char kUseEncodingPath[] = "/UseEncoding?";
-const char kEchoRequestBodyPath[] = "/EchoRequestBody";
+// Cronet test data directory, relative to source root.
+const base::FilePath::CharType kTestDataRelativePath[] =
+    FILE_PATH_LITERAL("components/cronet/test/data");
+
+const char kSimplePath[] = "/simple";
+const char kEchoHeaderPath[] = "/echo_header?";
+const char kEchoMethodPath[] = "/echo_method";
+const char kEchoAllHeadersPath[] = "/echo_all_headers";
+const char kRedirectToEchoBodyPath[] = "/redirect_to_echo_body";
+const char kSetCookiePath[] = "/set_cookie?";
+const char kBigDataPath[] = "/big_data?";
+const char kUseEncodingPath[] = "/use_encoding?";
+const char kEchoBodyPath[] = "/echo_body";
 
 const char kSimpleResponse[] = "The quick brown fox jumps over the lazy dog.";
 
@@ -38,32 +47,6 @@ std::unique_ptr<net::test_server::HttpResponse> SimpleRequest() {
   auto http_response = std::make_unique<net::test_server::BasicHttpResponse>();
   http_response->set_code(net::HTTP_OK);
   http_response->set_content(kSimpleResponse);
-  return std::move(http_response);
-}
-
-std::unique_ptr<net::test_server::HttpResponse> EchoMethodInRequest(
-    const net::test_server::HttpRequest& request) {
-  auto http_response = std::make_unique<net::test_server::BasicHttpResponse>();
-  http_response->set_code(net::HTTP_OK);
-  http_response->set_content(request.method_string);
-  http_response->set_content_type("text/plain");
-  return std::move(http_response);
-}
-
-std::unique_ptr<net::test_server::HttpResponse> EchoHeaderInRequest(
-    const net::test_server::HttpRequest& request) {
-  std::string header_name;
-  std::string header_value;
-  DCHECK(base::StartsWith(request.relative_url, kEchoHeaderPath,
-                          base::CompareCase::INSENSITIVE_ASCII));
-
-  header_name = request.relative_url.substr(strlen(kEchoHeaderPath));
-  auto it = request.headers.find(header_name);
-  if (it != request.headers.end())
-    header_value = it->second;
-  auto http_response = std::make_unique<net::test_server::BasicHttpResponse>();
-  http_response->set_code(net::HTTP_OK);
-  http_response->set_content(header_value);
   return std::move(http_response);
 }
 
@@ -89,17 +72,6 @@ std::unique_ptr<net::test_server::HttpResponse> UseEncodingInResponse(
                                    std::string("br"));
   }
   return std::move(http_response);
-}
-
-std::unique_ptr<net::test_server::HttpResponse> EchoResponseBody(
-    const net::test_server::HttpRequest& request) {
-  DCHECK(base::StartsWith(request.relative_url, kEchoRequestBodyPath,
-                          base::CompareCase::INSENSITIVE_ASCII));
-  std::string request_content = request.content;
-  auto http_response = std::make_unique<net::test_server::BasicHttpResponse>();
-  http_response->set_code(net::HTTP_OK);
-  http_response->set_content(request_content);
-  return http_response;
 }
 
 std::unique_ptr<net::test_server::HttpResponse> ReturnBigDataInResponse(
@@ -133,13 +105,6 @@ std::unique_ptr<net::test_server::HttpResponse> CronetTestRequestHandler(
                        base::CompareCase::INSENSITIVE_ASCII)) {
     return SimpleRequest();
   }
-  if (base::StartsWith(request.relative_url, kEchoHeaderPath,
-                       base::CompareCase::INSENSITIVE_ASCII)) {
-    return EchoHeaderInRequest(request);
-  }
-  if (request.relative_url == kEchoMethodPath) {
-    return EchoMethodInRequest(request);
-  }
   if (base::StartsWith(request.relative_url, kSetCookiePath,
                        base::CompareCase::INSENSITIVE_ASCII)) {
     return SetAndEchoCookieInResponse(request);
@@ -152,11 +117,50 @@ std::unique_ptr<net::test_server::HttpResponse> CronetTestRequestHandler(
                        base::CompareCase::INSENSITIVE_ASCII)) {
     return UseEncodingInResponse(request);
   }
-  if (base::StartsWith(request.relative_url, kEchoRequestBodyPath,
-                       base::CompareCase::INSENSITIVE_ASCII)) {
-    return EchoResponseBody(request);
+
+  std::unique_ptr<net::test_server::BasicHttpResponse> response(
+      new net::test_server::BasicHttpResponse());
+  response->set_content_type("text/plain");
+
+  if (request.relative_url == kEchoBodyPath) {
+    if (request.has_content) {
+      response->set_content(request.content);
+    } else {
+      response->set_content("Request has no body. :(");
+    }
+    return std::move(response);
   }
-  return std::make_unique<net::test_server::BasicHttpResponse>();
+
+  if (base::StartsWith(request.relative_url, kEchoHeaderPath,
+                       base::CompareCase::SENSITIVE)) {
+    GURL url = g_test_server->GetURL(request.relative_url);
+    auto it = request.headers.find(url.query());
+    if (it != request.headers.end()) {
+      response->set_content(it->second);
+    } else {
+      response->set_content("Header not found. :(");
+    }
+    return std::move(response);
+  }
+
+  if (request.relative_url == kEchoAllHeadersPath) {
+    response->set_content(request.all_headers);
+    return std::move(response);
+  }
+
+  if (request.relative_url == kEchoMethodPath) {
+    response->set_content(request.method_string);
+    return std::move(response);
+  }
+
+  if (request.relative_url == kRedirectToEchoBodyPath) {
+    response->set_code(net::HTTP_TEMPORARY_REDIRECT);
+    response->AddCustomHeader("Location", kEchoBodyPath);
+    return std::move(response);
+  }
+
+  // Unhandled requests result in the Embedded test server sending a 404.
+  return std::unique_ptr<net::test_server::BasicHttpResponse>();
 }
 
 }  // namespace
@@ -164,51 +168,93 @@ std::unique_ptr<net::test_server::HttpResponse> CronetTestRequestHandler(
 namespace cronet {
 
 /* static */
-bool TestServer::Start() {
-  DCHECK(!g_test_server.get());
+bool TestServer::StartServeFilesFromDirectory(
+    const base::FilePath& test_files_root) {
+  // Shouldn't happen.
+  if (g_test_server)
+    return false;
+
   g_test_server = std::make_unique<net::EmbeddedTestServer>(
       net::EmbeddedTestServer::TYPE_HTTP);
   g_test_server->RegisterRequestHandler(
       base::BindRepeating(&CronetTestRequestHandler));
+  g_test_server->ServeFilesFromDirectory(test_files_root);
+  net::test_server::RegisterDefaultHandlers(g_test_server.get());
   CHECK(g_test_server->Start());
   return true;
 }
 
+bool TestServer::Start() {
+  base::FilePath src_root;
+  CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &src_root));
+  return StartServeFilesFromDirectory(src_root.Append(kTestDataRelativePath));
+}
+
+/* static */
 void TestServer::Shutdown() {
-  DCHECK(g_test_server.get());
+  if (!g_test_server)
+    return;
   g_test_server.reset();
 }
 
+/* static */
+int TestServer::GetPort() {
+  DCHECK(g_test_server.get());
+  return g_test_server->port();
+}
+
+/* static */
+std::string TestServer::GetHostPort() {
+  DCHECK(g_test_server.get());
+  return net::HostPortPair::FromURL(g_test_server->base_url()).ToString();
+}
+
+/* static */
 std::string TestServer::GetSimpleURL() {
-  DCHECK(g_test_server);
-  return g_test_server->GetURL(kSimplePath).spec();
+  return GetFileURL(kSimplePath);
 }
 
+/* static */
 std::string TestServer::GetEchoMethodURL() {
-  DCHECK(g_test_server);
-  return g_test_server->GetURL(kEchoMethodPath).spec();
+  return GetFileURL(kEchoMethodPath);
 }
 
+/* static */
 std::string TestServer::GetEchoHeaderURL(const std::string& header_name) {
-  DCHECK(g_test_server);
-  return g_test_server->GetURL(kEchoHeaderPath + header_name).spec();
+  return GetFileURL(kEchoHeaderPath + header_name);
 }
 
-std::string TestServer::GetUseEncodingURL(const std::string& header_name) {
-  DCHECK(g_test_server);
-  return g_test_server->GetURL(kUseEncodingPath + header_name).spec();
+/* static */
+std::string TestServer::GetUseEncodingURL(const std::string& encoding_name) {
+  return GetFileURL(kUseEncodingPath + encoding_name);
 }
 
+/* static */
 std::string TestServer::GetSetCookieURL(const std::string& cookie_line) {
-  DCHECK(g_test_server);
-  return g_test_server->GetURL(kSetCookiePath + cookie_line).spec();
+  return GetFileURL(kSetCookiePath + cookie_line);
 }
 
-std::string TestServer::EchoRequestBodyURL() {
-  DCHECK(g_test_server);
-  return g_test_server->GetURL(kEchoRequestBodyPath).spec();
+/* static */
+std::string TestServer::GetEchoAllHeadersURL() {
+  return GetFileURL(kEchoAllHeadersPath);
 }
 
+/* static */
+std::string TestServer::GetEchoRequestBodyURL() {
+  return GetFileURL(kEchoBodyPath);
+}
+
+/* static */
+std::string TestServer::GetRedirectToEchoBodyURL() {
+  return GetFileURL(kRedirectToEchoBodyPath);
+}
+
+/* static */
+std::string TestServer::GetExabyteResponseURL() {
+  return GetFileURL("/exabyte_response");
+}
+
+/* static */
 std::string TestServer::PrepareBigDataURL(size_t data_size) {
   DCHECK(g_test_server);
   DCHECK(g_big_data_body.Get().empty());
@@ -225,9 +271,16 @@ std::string TestServer::PrepareBigDataURL(size_t data_size) {
       .spec();
 }
 
+/* static */
 void TestServer::ReleaseBigDataURL() {
   DCHECK(!g_big_data_body.Get().empty());
   g_big_data_body.Get() = std::string();
+}
+
+/* static */
+std::string TestServer::GetFileURL(const std::string& file_path) {
+  DCHECK(g_test_server);
+  return g_test_server->GetURL(file_path).spec();
 }
 
 }  // namespace cronet

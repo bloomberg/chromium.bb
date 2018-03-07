@@ -35,17 +35,17 @@ net::RequestPriority ConvertRequestPriority(
 }
 
 std::unique_ptr<Cronet_UrlResponseInfo> CreateCronet_UrlResponseInfo(
-    const std::list<std::string>& url_chain,
+    const std::vector<std::string>& url_chain,
     int http_status_code,
     const std::string& http_status_text,
     const net::HttpResponseHeaders* headers,
     bool was_cached,
     const std::string& negotiated_protocol,
-    const std::string& proxy_server) {
+    const std::string& proxy_server,
+    int64_t received_byte_count) {
   auto response_info = std::make_unique<Cronet_UrlResponseInfo>();
   response_info->url = url_chain.back();
-  for (const auto& url : url_chain)
-    response_info->url_chain.push_back(url);
+  response_info->url_chain = url_chain;
   response_info->http_status_code = http_status_code;
   response_info->http_status_text = http_status_text;
   // |headers| could be nullptr.
@@ -63,6 +63,7 @@ std::unique_ptr<Cronet_UrlResponseInfo> CreateCronet_UrlResponseInfo(
   response_info->was_cached = was_cached;
   response_info->negotiated_protocol = negotiated_protocol;
   response_info->proxy_server = proxy_server;
+  response_info->received_byte_count = received_byte_count;
   return response_info;
 }
 
@@ -133,7 +134,8 @@ namespace cronet {
 // but invoked and deleted on the network thread.
 class Cronet_UrlRequestImpl::Callback : public CronetURLRequest::Callback {
  public:
-  Callback(Cronet_UrlRequestImpl* url_request,
+  Callback(const std::string& url,
+           Cronet_UrlRequestImpl* url_request,
            Cronet_UrlRequestCallbackPtr callback,
            Cronet_ExecutorPtr executor);
   ~Callback() override = default;
@@ -189,6 +191,14 @@ class Cronet_UrlRequestImpl::Callback : public CronetURLRequest::Callback {
   // Executor for application callback, used, but not owned, by |this|.
   Cronet_ExecutorPtr executor_ = nullptr;
 
+  // URL chain contains the URL currently being requested, and
+  // all URLs previously requested. New URLs are added before
+  // Cronet_UrlRequestCallback::OnRedirectReceived is called.
+  std::vector<std::string> url_chain_;
+  // Count of bytes received during redirect is added to received byte count in
+  // |response_info_|.
+  int64_t received_byte_count_from_redirects_ = 0l;
+
   // All methods except constructor are invoked on the network thread.
   THREAD_CHECKER(network_thread_checker_);
   DISALLOW_COPY_AND_ASSIGN(Callback);
@@ -220,11 +230,10 @@ Cronet_RESULT Cronet_UrlRequestImpl::InitWithParams(
   if (!executor)
     return engine_->CheckResult(Cronet_RESULT_NULL_POINTER_EXECUTOR);
 
-  url_chain_.push_front(url);
   VLOG(1) << "New Cronet_UrlRequest: " << url;
   request_ = new CronetURLRequest(
       engine_->cronet_url_request_context(),
-      std::make_unique<Callback>(this, callback, executor), GURL(url),
+      std::make_unique<Callback>(url, this, callback, executor), GURL(url),
       ConvertRequestPriority(params->priority), params->disable_cache,
       true /* params->disableConnectionMigration */,
       false /* params->enableMetrics */,
@@ -333,10 +342,14 @@ void Cronet_UrlRequestImpl::GetStatus(
   NOTIMPLEMENTED();
 }
 
-Cronet_UrlRequestImpl::Callback::Callback(Cronet_UrlRequestImpl* url_request,
+Cronet_UrlRequestImpl::Callback::Callback(const std::string& url,
+                                          Cronet_UrlRequestImpl* url_request,
                                           Cronet_UrlRequestCallbackPtr callback,
                                           Cronet_ExecutorPtr executor)
-    : url_request_(url_request), callback_(callback), executor_(executor) {
+    : url_request_(url_request),
+      callback_(callback),
+      executor_(executor),
+      url_chain_({url}) {
   DETACH_FROM_THREAD(network_thread_checker_);
   DCHECK(url_request);
   DCHECK(callback);
@@ -356,10 +369,13 @@ void Cronet_UrlRequestImpl::Callback::OnReceivedRedirect(
   DCHECK_CALLED_ON_VALID_THREAD(network_thread_checker_);
   base::AutoLock lock(url_request_->lock_);
   url_request_->waiting_on_redirect_ = true;
-  url_request_->url_chain_.push_front(new_location);
+  received_byte_count_from_redirects_ += received_byte_count;
   url_request_->response_info_ = CreateCronet_UrlResponseInfo(
-      url_request_->url_chain_, http_status_code, http_status_text, headers,
-      was_cached, negotiated_protocol, proxy_server);
+      url_chain_, http_status_code, http_status_text, headers, was_cached,
+      negotiated_protocol, proxy_server, received_byte_count_from_redirects_);
+  // Have to do this after creating responseInfo.
+  url_chain_.push_back(new_location);
+
   // Invoke Cronet_UrlRequestCallback_OnRedrectReceived using OnceClosure.
   Cronet_RunnablePtr runnable = new cronet::OnceClosureRunnable(
       base::BindOnce(Cronet_UrlRequestCallback_OnRedirectReceived, callback_,
@@ -380,8 +396,8 @@ void Cronet_UrlRequestImpl::Callback::OnResponseStarted(
   base::AutoLock lock(url_request_->lock_);
   url_request_->waiting_on_read_ = true;
   url_request_->response_info_ = CreateCronet_UrlResponseInfo(
-      url_request_->url_chain_, http_status_code, http_status_text, headers,
-      was_cached, negotiated_protocol, proxy_server);
+      url_chain_, http_status_code, http_status_text, headers, was_cached,
+      negotiated_protocol, proxy_server, received_byte_count_from_redirects_);
   // Invoke Cronet_UrlRequestCallback_OnResponseStarted using OnceClosure.
   Cronet_RunnablePtr runnable = new cronet::OnceClosureRunnable(
       base::BindOnce(Cronet_UrlRequestCallback_OnResponseStarted, callback_,
@@ -400,7 +416,8 @@ void Cronet_UrlRequestImpl::Callback::OnReadCompleted(
   Cronet_BufferPtr cronet_buffer = io_buffer->Release();
   base::AutoLock lock(url_request_->lock_);
   url_request_->waiting_on_read_ = true;
-  url_request_->response_info_->received_byte_count = received_byte_count;
+  url_request_->response_info_->received_byte_count =
+      received_byte_count_from_redirects_ + received_byte_count;
   // Invoke Cronet_UrlRequestCallback_OnReadCompleted using OnceClosure.
   Cronet_RunnablePtr runnable = new cronet::OnceClosureRunnable(base::BindOnce(
       Cronet_UrlRequestCallback_OnReadCompleted, callback_, url_request_,
@@ -412,7 +429,8 @@ void Cronet_UrlRequestImpl::Callback::OnReadCompleted(
 void Cronet_UrlRequestImpl::Callback::OnSucceeded(int64_t received_byte_count) {
   DCHECK_CALLED_ON_VALID_THREAD(network_thread_checker_);
   base::AutoLock lock(url_request_->lock_);
-  url_request_->response_info_->received_byte_count = received_byte_count;
+  url_request_->response_info_->received_byte_count =
+      received_byte_count_from_redirects_ + received_byte_count;
   // Invoke Cronet_UrlRequestCallback_OnSucceeded using OnceClosure.
   Cronet_RunnablePtr runnable = new cronet::OnceClosureRunnable(
       base::BindOnce(Cronet_UrlRequestCallback_OnSucceeded, callback_,
@@ -429,8 +447,10 @@ void Cronet_UrlRequestImpl::Callback::OnError(int net_error,
                                               int64_t received_byte_count) {
   DCHECK_CALLED_ON_VALID_THREAD(network_thread_checker_);
   base::AutoLock lock(url_request_->lock_);
-  if (url_request_->response_info_)
-    url_request_->response_info_->received_byte_count = received_byte_count;
+  if (url_request_->response_info_) {
+    url_request_->response_info_->received_byte_count =
+        received_byte_count_from_redirects_ + received_byte_count;
+  }
   url_request_->error_ =
       CreateCronet_Error(net_error, quic_error, error_string);
   // Invoke Cronet_UrlRequestCallback_OnFailed on client executor.
