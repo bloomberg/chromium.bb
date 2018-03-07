@@ -35,6 +35,7 @@
 #include "ui/views/widget/widget.h"
 
 #if defined(OS_MACOSX)
+#include "chrome/browser/platform_util.h"
 #if BUILDFLAG(MAC_VIEWS_BROWSER)
 #include "chrome/browser/ui/views_mode_controller.h"
 #endif  // BUILDFLAG(MAC_VIEWS_BROWSER)
@@ -79,6 +80,14 @@ views::Widget* RelaunchRecommendedBubbleView::ShowBubble(
   auto* bubble_view = new RelaunchRecommendedBubbleView(
       anchor_button, anchor_point, detection_time, std::move(on_accept));
   bubble_view->set_arrow(views::BubbleBorder::TOP_RIGHT);
+
+#if defined(OS_MACOSX)
+  // Parent the bubble to the browser window when there is no anchor view.
+  if (!anchor_button) {
+    bubble_view->set_parent_window(
+        platform_util::GetViewForWindow(browser->window()->GetNativeWindow()));
+  }
+#endif  // defined(OS_MACOSX)
 
   views::Widget* bubble_widget =
       views::BubbleDialogDelegateView::CreateBubble(bubble_view);
