@@ -106,8 +106,8 @@ ChromeAppListItem* FakeAppListModelUpdater::FindFolderItem(
 
 void FakeAppListModelUpdater::GetIdToAppListIndexMap(
     GetIdToAppListIndexMapCallback callback) {
-  std::unordered_map<std::string, size_t> id_to_app_list_index;
-  for (size_t i = 0; i < items_.size(); ++i)
+  std::unordered_map<std::string, uint16_t> id_to_app_list_index;
+  for (uint16_t i = 0; i < items_.size(); ++i)
     id_to_app_list_index[items_[i]->id()] = i;
   std::move(callback).Run(id_to_app_list_index);
 }
