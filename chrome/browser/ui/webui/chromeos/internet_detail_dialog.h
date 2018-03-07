@@ -31,7 +31,9 @@ class InternetDetailDialog : public SystemWebDialogDelegate {
   std::string GetDialogArgs() const override;
 
  private:
-  std::string guid_;
+  std::string network_id_;
+  std::string network_type_;
+  std::string network_name_;
 
   DISALLOW_COPY_AND_ASSIGN(InternetDetailDialog);
 };

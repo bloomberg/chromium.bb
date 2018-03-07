@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/chromeos/internet_detail_dialog.h"
 
+#include "base/json/json_writer.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/network_element_localized_strings_provider.h"
@@ -13,6 +14,7 @@
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/network_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -54,10 +56,16 @@ void AddInternetStrings(content::WebUIDataSource* html_source) {
     html_source->AddLocalizedString(entry.name, entry.id);
 }
 
-base::string16 GetNetworkName(const NetworkState& network) {
+base::string16 GetNetworkName16(const NetworkState& network) {
   return network.Matches(NetworkTypePattern::Ethernet())
              ? l10n_util::GetStringUTF16(IDS_NETWORK_TYPE_ETHERNET)
              : base::UTF8ToUTF16(network.name());
+}
+
+std::string GetNetworkName8(const NetworkState& network) {
+  return network.Matches(NetworkTypePattern::Ethernet())
+             ? l10n_util::GetStringUTF8(IDS_NETWORK_TYPE_ETHERNET)
+             : network.name();
 }
 
 }  // namespace
@@ -85,8 +93,10 @@ void InternetDetailDialog::ShowDialog(const std::string& network_id) {
 
 InternetDetailDialog::InternetDetailDialog(const NetworkState& network)
     : SystemWebDialogDelegate(GURL(chrome::kChromeUIIntenetDetailDialogURL),
-                              GetNetworkName(network)),
-      guid_(network.guid()) {
+                              GetNetworkName16(network)),
+      network_id_(network.guid()),
+      network_type_(network_util::TranslateShillTypeToONC(network.type())),
+      network_name_(GetNetworkName8(network)) {
   ++s_internet_detail_dialog_count;
 }
 
@@ -100,7 +110,13 @@ void InternetDetailDialog::GetDialogSize(gfx::Size* size) const {
 }
 
 std::string InternetDetailDialog::GetDialogArgs() const {
-  return guid_;
+  base::DictionaryValue args;
+  args.SetKey("type", base::Value(network_type_));
+  args.SetKey("guid", base::Value(network_id_));
+  args.SetKey("name", base::Value(network_name_));
+  std::string json;
+  base::JSONWriter::Write(args, &json);
+  return json;
 }
 
 // InternetDetailDialogUI
