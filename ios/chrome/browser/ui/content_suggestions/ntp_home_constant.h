@@ -40,6 +40,9 @@ extern const CGFloat kMostVisitedBottomMarginIPhone;
 // Height of the first suggestions peeking at the bottom of the screen.
 extern const CGFloat kSuggestionPeekingHeight;
 
+// The background color of the NTP.
+UIColor* kNTPBackgroundColor();
+
 }  // namespace ntp_home
 
 #endif  // IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_NTP_HOME_CONSTANT_H_

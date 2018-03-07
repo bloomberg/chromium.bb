@@ -231,7 +231,7 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
   _collectionUpdater.collectionViewController = self;
 
   self.collectionView.delegate = self;
-  self.collectionView.backgroundColor = [UIColor whiteColor];
+  self.collectionView.backgroundColor = ntp_home::kNTPBackgroundColor();
   if (ShouldCellsBeFullWidth(
           [UIApplication sharedApplication].keyWindow.traitCollection)) {
     self.styler.cellStyle = MDCCollectionViewCellStyleGrouped;
@@ -474,7 +474,7 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
           shouldUseCustomStyleForSection:indexPath.section]) {
     return [UIColor clearColor];
   }
-  return [UIColor whiteColor];
+  return ntp_home::kNTPBackgroundColor();
 }
 
 - (CGSize)collectionView:(UICollectionView*)collectionView
