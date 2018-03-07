@@ -2432,9 +2432,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'eve-arcnext',
       'falco',
       'fizz',
-      'gale',
       'glados',
-      'guado_moblab',
       'hana',
       'kahlee',
       'kevin',
@@ -2444,7 +2442,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'lakitu-st',
       'leon',
       'link',
-      'moblab-generic-vm',
       'monroe',
       'nyan_big',
       'nyan_kitty',
@@ -2497,17 +2494,20 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'capri-zfpga', # contact:victoryang@
       'cobblepot', # contact:jkoleszar@
       'fizz-accelerator', # contact:perley@
+      'gale', # contact:mxt@ (crbug.com/794242, crbug.com/819287)
       'gonzo', # contact:icoolidge@
       'guado', # contact:egemih@
+      'guado_moblab', # contact:haddowk@ (crbug.com/819695, crbug.com/819017)
       'guado-accelerator', # contact:perley@ (crbug.com/748635)
       'lasilla-ground', # contact:jemele@
       'lasilla-sky', # contact:jemele@
       'macchiato-ground', # contact:jemele@
+      'moblab-generic-vm', # contact:pprabhu@ (crbug.com/819695)
       'octavius', # contact:dpjacques@
       'romer', # contact:michaelho@
       'tatl', # Still volatile - contact:smbarber@ - crbug.com/705598
       'terra', # contact:yunlian@ (Testing thinlto)
-      'whirlwind', # contact:mxt@ (crbug.com/794242)
+      'whirlwind', # contact:mxt@ (crbug.com/794242, crbug.com/819287)
       'wooten', # contact:icoolidge@
   ])
 
