@@ -22,19 +22,6 @@
   perspective: 600px;
 }
 
-.pin-container.pin-enabled {
-  opacity: 1;
-  transition: opacity 200ms ease-in-out 180ms;
-  visibility: visible;
-}
-
-.pin-container.pin-disabled {
-  opacity: 0; /* Opacity is set to 1 after the pin element is loaded. */
-  transition: none;
-  visibility: hidden; /* Needed because pin-keyboard's offsetHeight is
-                         checked to determine if loaded. */
-}
-
 #scroll-container {
   bottom: 0;        /* Allows content overlap with control bar. */
   left: 0;
