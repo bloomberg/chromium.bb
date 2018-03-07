@@ -35,8 +35,8 @@ class PLATFORM_EXPORT ShapeResultBuffer {
 
   int OffsetForPosition(const TextRun&,
                         float target_x,
-                        OffsetForPositionType) const;
-  CharacterRange GetCharacterRange(const TextRun&,
+                        bool include_partial_glyphs) const;
+  CharacterRange GetCharacterRange(TextDirection,
                                    float total_width,
                                    unsigned from,
                                    unsigned to) const;
@@ -58,12 +58,9 @@ class PLATFORM_EXPORT ShapeResultBuffer {
 
   GlyphData EmphasisMarkGlyphData(const FontDescription&) const;
 
-  void ExpandRangeToIncludePartialGlyphs(int& from, int& to) const;
-
  private:
   friend class ShapeResultBloberizer;
   static CharacterRange GetCharacterRangeInternal(
-      const TextRun*,
       const Vector<scoped_refptr<const ShapeResult>, 64>&,
       TextDirection,
       float total_width,

@@ -85,12 +85,6 @@ class InlineTextBoxPainter {
                       Color text_color,
                       LayoutTextCombine* = nullptr);
 
-  template <PaintOptions>
-  LayoutRect GetSelectionRect(const LayoutRect& box_rect,
-                              const ComputedStyle&,
-                              const Font&,
-                              LayoutTextCombine* = nullptr);
-
   void PaintStyleableMarkerUnderline(GraphicsContext&,
                                      const LayoutPoint& box_origin,
                                      const StyleableMarker&,

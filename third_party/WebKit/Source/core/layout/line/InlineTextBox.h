@@ -205,7 +205,8 @@ class CORE_EXPORT InlineTextBox : public InlineBox {
   LayoutUnit TextPos() const;
 
  public:
-  virtual int OffsetForPosition(LayoutUnit x, OffsetForPositionType) const;
+  virtual int OffsetForPosition(LayoutUnit x,
+                                bool include_partial_glyphs = true) const;
   virtual LayoutUnit PositionForOffset(int offset) const;
 
   // Returns false for offset after line break.
