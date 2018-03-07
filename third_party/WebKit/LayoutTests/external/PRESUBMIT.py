@@ -20,7 +20,7 @@ def _LintWPT(input_api, output_api):
     for f in input_api.AffectedFiles():
         abs_path = f.AbsoluteLocalPath()
         if abs_path.startswith(wpt_path):
-            paths_in_wpt.append(abs_path[len(wpt_path) + 1:])
+            paths_in_wpt.append(abs_path)
 
     # If there are changes in LayoutTests/external that aren't in wpt, e.g.
     # changes to wpt_automation or this presubmit script, then we can return
