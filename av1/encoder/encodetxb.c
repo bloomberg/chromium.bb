@@ -600,6 +600,15 @@ static INLINE int get_br_cost(tran_low_t abs_qc, int ctx,
   }
 }
 
+static INLINE int get_golomb_cost(int abs_qc) {
+  if (abs_qc >= 1 + NUM_BASE_LEVELS + COEFF_BASE_RANGE) {
+    const int r = abs_qc - COEFF_BASE_RANGE - NUM_BASE_LEVELS;
+    const int length = get_msb(r) + 1;
+    return av1_cost_literal(2 * length - 1);
+  }
+  return 0;
+}
+
 // Note: don't call this function when eob is 0.
 int av1_cost_coeffs_txb(const AV1_COMMON *const cm, const MACROBLOCK *x,
                         const int plane, const int blk_row, const int blk_col,
@@ -677,10 +686,7 @@ int av1_cost_coeffs_txb(const AV1_COMMON *const cm, const MACROBLOCK *x,
         }
 
         if (level >= 1 + NUM_BASE_LEVELS + COEFF_BASE_RANGE) {
-          // residual cost
-          const int ri = level - COEFF_BASE_RANGE - NUM_BASE_LEVELS;
-          const int length = get_msb(ri) + 1;
-          cost += av1_cost_literal(2 * length);
+          cost += get_golomb_cost(level);
         }
       }
     }
@@ -706,23 +712,6 @@ static INLINE int get_sign_bit_cost(tran_low_t qc, int coeff_idx,
     return dc_sign_cost[dc_sign_ctx][sign];
   } else {
     return av1_cost_literal(1);
-  }
-}
-static INLINE int get_golomb_cost(int abs_qc) {
-  if (abs_qc >= 1 + NUM_BASE_LEVELS + COEFF_BASE_RANGE) {
-    // residual cost
-    int r = abs_qc - COEFF_BASE_RANGE - NUM_BASE_LEVELS;
-    int ri = r;
-    int length = 0;
-
-    while (ri) {
-      ri >>= 1;
-      ++length;
-    }
-
-    return av1_cost_literal(2 * length - 1);
-  } else {
-    return 0;
   }
 }
 
