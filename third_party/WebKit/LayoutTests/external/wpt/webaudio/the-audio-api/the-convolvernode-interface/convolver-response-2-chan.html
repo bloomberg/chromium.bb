@@ -2,17 +2,17 @@
 <html>
   <head>
     <title>
-      Test Convolver Channel Outputs for Response with 4 channels
+      Test Convolver Channel Outputs for Response with 2 channels
     </title>
-    <script src="../../resources/testharness.js"></script>
-    <script src="../../resources/testharnessreport.js"></script>
-    <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audit.js"></script>
+    <script src="/resources/testharness.js"></script>
+    <script src="/resources/testharnessreport.js"></script>
+    <script src="/webaudio/resources/audit-util.js"></script>
+    <script src="/webaudio/resources/audit.js"></script>
   </head>
   <body>
     <script id="layout-test-code">
       // Test various convolver configurations when the convolver response has
-      // a four channels.
+      // a stereo response.
 
       // Fairly arbitrary sample rate, except that we want the rate to be a
       // power of two so that 1/sampleRate is exactly respresentable as a
@@ -38,7 +38,7 @@
             should(
                 () => {
                   response = new AudioBuffer(
-                      {numberOfChannels: 4, length: 8, sampleRate: sampleRate});
+                      {numberOfChannels: 2, length: 4, sampleRate: sampleRate});
                   // Each channel of the response is a simple impulse (with
                   // different delay) so that we can use a DelayNode to simulate
                   // the convolver output.  Channel k is delayed by k+1 frames.
@@ -56,14 +56,16 @@
       audit.define(
           {label: '1-channel input', description: 'produces 2-channel output'},
           (task, should) => {
-            fourChannelResponseTest({numberOfInputs: 1, prefix: '1'}, should)
+            stereoResponseTest({numberOfInputs: 1, prefix: '1', absoluteThresholds:
+            [3.5763e-7, 4.7684e-7]}, should)
                 .then(() => task.done());
           });
 
       audit.define(
           {label: '2-channel input', description: 'produces 2-channel output'},
           (task, should) => {
-            fourChannelResponseTest({numberOfInputs: 2, prefix: '2'}, should)
+            stereoResponseTest({numberOfInputes: 2, prefix: '2', absoluteThresholds:
+            [3.5763e-7, 4.7684e-7]}, should)
                 .then(() => task.done());
           });
 
@@ -73,7 +75,8 @@
             description: '3->2 downmix producing 2-channel output'
           },
           (task, should) => {
-            fourChannelResponseTest({numberOfInputs: 3, prefix: '3'}, should)
+            stereoResponseTest({numberOfInputs: 3, prefix: '3', absoluteThresholds:
+            [3.5763e-7, 3.5763e-7]}, should)
                 .then(() => task.done());
           });
 
@@ -83,7 +86,8 @@
             description: '4->2 downmix producing 2-channel output'
           },
           (task, should) => {
-            fourChannelResponseTest({numberOfInputs: 4, prefix: '4'}, should)
+            stereoResponseTest({numberOfInputs: 4, prefix: '4', absoluteThresholds:
+            [3.5763e-7, 2.9803e-7]}, should)
                 .then(() => task.done());
           });
 
@@ -93,56 +97,12 @@
             description: '5.1->2 downmix producing 2-channel output'
           },
           (task, should) => {
-            fourChannelResponseTest({numberOfInputs: 6, prefix: '5.1'}, should)
+            stereoResponseTest({numberOfInputs: 6, prefix: '5.1', absoluteThresholds:
+            [7.1526e-7, 7.1526e-7]}, should)
                 .then(() => task.done());
           });
 
-      audit.define(
-          {
-            label: 'delayed buffer set',
-            description: 'Delayed set of 4-channel response'
-          },
-          (task, should) => {
-            // Don't really care about the output for this test.  It's to verify
-            // we don't crash in a debug build when setting the convolver buffer
-            // after creating the graph.
-            let context = new OfflineAudioContext(1, renderFrames, sampleRate);
-            let src = new OscillatorNode(context);
-            let convolver =
-                new ConvolverNode(context, {disableNormalization: true});
-            let buffer = new AudioBuffer({
-              numberOfChannels: 4,
-              length: 4,
-              sampleRate: context.sampleRate
-            });
-
-            // Impulse responses for the convolver aren't important, as long as
-            // it's not all zeroes.
-            for (let k = 0; k < buffer.numberOfChannels; ++k) {
-              buffer.getChannelData(k).fill(1);
-            }
-
-            src.connect(convolver).connect(context.destination);
-
-            // Set the buffer after a few render quanta have passed.  The actual
-            // value must be least one, but is otherwise arbitrary.
-            context.suspend(512 / context.sampleRate)
-                .then(() => convolver.buffer = buffer)
-                .then(() => context.resume());
-
-            src.start();
-            context.startRendering()
-                .then(audioBuffer => {
-                  // Just make sure output is not silent.
-                  should(
-                      audioBuffer.getChannelData(0),
-                      'Output with delayed setting of convolver buffer')
-                      .notBeConstantValueOf(0);
-                })
-                .then(() => task.done());
-          });
-
-      function fourChannelResponseTest(options, should) {
+      function stereoResponseTest(options, should) {
         // Create an 4-channel offline context.  The first two channels are for
         // the stereo output of the convolver and the next two channels are for
         // the reference stereo signal.
@@ -177,7 +137,7 @@
 
         // Reference graph consists of a delays node to simulate the response of
         // the convolver.  (The convolver response is designed this way.)
-        let delay = new Array(4);
+        let delay = new Array(2);
         for (let k = 0; k < delay.length; ++k) {
           delay[k] = new DelayNode(context, {
             delayTime: (k + 1) / context.sampleRate,
@@ -198,27 +158,10 @@
             new ChannelSplitterNode(context, {numberOfOutputs: 2});
         gainMixer.connect(refSplitter);
 
-        // Connect the left channel to the first two nodes and the right channel
-        // to the second two as required for "true" stereo matrix response.
-        for (let k = 0; k < 2; ++k) {
-          refSplitter.connect(delay[k], 0, 0);
-          refSplitter.connect(delay[k + 2], 1, 0);
+        // Connect each channel to the delay nodes
+        for (let k = 0; k < delay.length; ++k) {
+          refSplitter.connect(delay[k], k);
         }
-
-        // Gain nodes to sum the responses to stereo
-        let gain = new Array(2);
-        for (let k = 0; k < gain.length; ++k) {
-          gain[k] = new GainNode(context, {
-            channelCount: 1,
-            channelCountMode: 'explicit',
-            channelInterpretation: 'discrete'
-          });
-        }
-
-        delay[0].connect(gain[0]);
-        delay[2].connect(gain[0]);
-        delay[1].connect(gain[1]);
-        delay[3].connect(gain[1]);
 
         // Final merger to bring back the individual channels from the convolver
         // and the reference in the right order for the destination.
@@ -229,8 +172,8 @@
         // for the reference.
         splitter.connect(finalMerger, 0, 0);
         splitter.connect(finalMerger, 1, 1);
-        gain[0].connect(finalMerger, 0, 2);
-        gain[1].connect(finalMerger, 0, 3);
+        delay[0].connect(finalMerger, 0, 2);
+        delay[1].connect(finalMerger, 0, 3);
 
         finalMerger.connect(context.destination);
 
@@ -249,9 +192,9 @@
           // Verify that each output channel of the convolver matches
           // the delayed signal from the reference
           should(actual0, options.prefix + ': Channel 0')
-              .beEqualToArray(expected0);
+              .beCloseToArray(expected0, {absoluteThreshold: options.absoluteThresholds[0]});
           should(actual1, options.prefix + ': Channel 1')
-              .beEqualToArray(expected1);
+              .beCloseToArray(expected1, {absoluteThreshold: options.absoluteThresholds[1]});
         });
       }
 
