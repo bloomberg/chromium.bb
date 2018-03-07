@@ -17,6 +17,10 @@
 <dom-module id="network-siminfo">
   <template>
     <style include="network-shared iron-flex">
+      :host {
+        cursor: default
+      }
+
       iron-icon {
        -webkit-margin-end: 10px;
       }
@@ -43,6 +47,7 @@
 
       paper-toggle-button {
         -webkit-margin-start: var(--cr-button-edge-spacing);
+        @apply --cr-actionable;
       }
     </style>
 
