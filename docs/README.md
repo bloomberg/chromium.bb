@@ -246,6 +246,12 @@ used when committed.
     `android.util.Log` on Android, and usage guidelines.
 *   [Chromoting Android Hacking](chromoting_android_hacking.md) - Viewing the
     logs and debugging the Chrome Remote Desktop Android client.
+*   [Android Java Static Analysis](../build/android/docs/lint.md) - Catching
+    Java related issues at compile time with the 'lint' tool.
+*   [Java Code Coverage](../build/android/docs/coverage.md) - Collecting code
+    coverage data with the EMMA tool.
+*   [Android BuildConfig files](../build/android/docs/build_config.md) -
+    What are .build_config files and how they are used.
 
 ### Misc iOS-Specific Docs
 *   [Continuous Build and Test Infrastructure for Chromium for iOS](ios/infra.md)
