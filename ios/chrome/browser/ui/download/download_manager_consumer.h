@@ -27,8 +27,11 @@ typedef NS_ENUM(NSInteger, DownloadManagerState) {
 // Sets the received size of the file being downloaded in bytes.
 - (void)setCountOfBytesReceived:(int64_t)value;
 
-// Sets the expected size of the file being downloaded in bytes.
+// Sets the expected size of the file being downloaded in bytes. -1 if unknown.
 - (void)setCountOfBytesExpectedToReceive:(int64_t)value;
+
+// Sets the download progress. 1.0 if the download is complete.
+- (void)setProgress:(float)progress;
 
 // Sets the state of the download task. Default is
 // kDownloadManagerStateNotStarted.

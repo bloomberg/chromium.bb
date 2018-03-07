@@ -4,6 +4,9 @@
 
 #import "ios/chrome/browser/ui/download/download_manager_view_controller.h"
 
+#import <UIKit/UIKit.h>
+
+#import "ios/chrome/browser/ui/download/radial_progress_view.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
@@ -34,6 +37,7 @@ TEST_F(DownloadManagerViewControllerTest, NotStartedWithLongFileName) {
                                titleForState:UIControlStateNormal]);
   EXPECT_NSEQ([UIImage imageNamed:kDownloadManagerNotStartedImage],
               view_controller_.statusIcon.image);
+  EXPECT_TRUE(view_controller_.progressView.hidden);
 }
 
 // Tests label and button titles with kDownloadManagerStateNotStarted state
@@ -49,6 +53,7 @@ TEST_F(DownloadManagerViewControllerTest,
                                titleForState:UIControlStateNormal]);
   EXPECT_NSEQ([UIImage imageNamed:kDownloadManagerNotStartedImage],
               view_controller_.statusIcon.image);
+  EXPECT_TRUE(view_controller_.progressView.hidden);
 }
 
 // Tests label and button hidden state with kDownloadManagerStateInProgress
@@ -57,11 +62,14 @@ TEST_F(DownloadManagerViewControllerTest, InProgressWithLongFileName) {
   view_controller_.state = kDownloadManagerStateInProgress;
   view_controller_.fileName = @"longfilenamesolongthatitbarelyfitwidthlimit";
   view_controller_.countOfBytesExpectedToReceive = 10 * 1024;
+  view_controller_.progress = 0.0f;
 
   EXPECT_NSEQ(@"Downloading… Zero KB/10 KB", view_controller_.statusLabel.text);
   EXPECT_TRUE(view_controller_.actionButton.hidden);
   EXPECT_NSEQ([UIImage imageNamed:kDownloadManagerInProgressImage],
               view_controller_.statusIcon.image);
+  EXPECT_FALSE(view_controller_.progressView.hidden);
+  EXPECT_EQ(0.0f, view_controller_.progressView.progress);
 }
 
 // Tests label and button hidden state with kDownloadManagerStateInProgress
@@ -72,11 +80,14 @@ TEST_F(DownloadManagerViewControllerTest,
   view_controller_.fileName = @"file.zip";
   view_controller_.countOfBytesReceived = 900;
   view_controller_.countOfBytesExpectedToReceive = -1;
+  view_controller_.progress = 0.9f;
 
   EXPECT_NSEQ(@"Downloading… 900 bytes", view_controller_.statusLabel.text);
   EXPECT_TRUE(view_controller_.actionButton.hidden);
   EXPECT_NSEQ([UIImage imageNamed:kDownloadManagerInProgressImage],
               view_controller_.statusIcon.image);
+  EXPECT_FALSE(view_controller_.progressView.hidden);
+  EXPECT_EQ(0.9f, view_controller_.progressView.progress);
 }
 
 // Tests label and button titles with kDownloadManagerStateSucceeded state.
@@ -90,6 +101,7 @@ TEST_F(DownloadManagerViewControllerTest, SuceededWithWithLongFileName) {
                                titleForState:UIControlStateNormal]);
   EXPECT_NSEQ([UIImage imageNamed:kDownloadManagerSucceededImage],
               view_controller_.statusIcon.image);
+  EXPECT_TRUE(view_controller_.progressView.hidden);
 }
 
 // Tests label and button titles with kDownloadManagerStateFailed state.
@@ -103,6 +115,7 @@ TEST_F(DownloadManagerViewControllerTest, Failed) {
                                 titleForState:UIControlStateNormal]);
   EXPECT_NSEQ([UIImage imageNamed:kDownloadManagerFailedImage],
               view_controller_.statusIcon.image);
+  EXPECT_TRUE(view_controller_.progressView.hidden);
 }
 
 // Tests that tapping close button calls downloadManagerViewControllerDidClose:.

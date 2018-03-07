@@ -99,11 +99,12 @@ void DownloadManagerMediator::UpdateConsumer() {
   [consumer_ setState:state];
   [consumer_ setCountOfBytesReceived:task_->GetReceivedBytes()];
   [consumer_ setCountOfBytesExpectedToReceive:task_->GetTotalBytes()];
+  [consumer_ setProgress:GetDownloadManagerProgress()];
   [consumer_
       setFileName:base::SysUTF16ToNSString(task_->GetSuggestedFilename())];
 }
 
-DownloadManagerState DownloadManagerMediator::GetDownloadManagerState() {
+DownloadManagerState DownloadManagerMediator::GetDownloadManagerState() const {
   switch (task_->GetState()) {
     case web::DownloadTask::State::kNotStarted:
       return kDownloadManagerStateNotStarted;
@@ -116,4 +117,10 @@ DownloadManagerState DownloadManagerMediator::GetDownloadManagerState() {
       // Download Manager should dismiss the UI after download cancellation.
       return kDownloadManagerStateNotStarted;
   }
+}
+
+float DownloadManagerMediator::GetDownloadManagerProgress() const {
+  if (task_->GetPercentComplete() == -1)
+    return 0.0f;
+  return static_cast<float>(task_->GetPercentComplete()) / 100.0f;
 }

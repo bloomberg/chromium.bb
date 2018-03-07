@@ -55,7 +55,10 @@ class DownloadManagerMediator : public web::DownloadTaskObserver {
   void UpdateConsumer();
 
   // Converts web::DownloadTask::State to DownloadManagerState.
-  DownloadManagerState GetDownloadManagerState();
+  DownloadManagerState GetDownloadManagerState() const;
+
+  // Converts DownloadTask progress [0;100] to float progress [0.0f;1.0f].
+  float GetDownloadManagerProgress() const;
 
   // web::DownloadTaskObserver overrides:
   void OnDownloadUpdated(web::DownloadTask* task) override;
