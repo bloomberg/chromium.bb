@@ -39,6 +39,7 @@ class LoadingDataCollectorTest : public testing::Test {
   }
 
   void SetUp() override {
+    LoadingDataCollector::SetAllowPortInUrlsForTesting(false);
     content::RunAllTasksUntilIdle();  // Runs the DB lookup.
 
     url_request_job_factory_.Reset();

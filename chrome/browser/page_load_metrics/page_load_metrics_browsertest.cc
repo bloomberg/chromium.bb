@@ -175,11 +175,7 @@ class PageLoadMetricsWaiter
       return;
     }
 
-    if (!extra_request_complete_info.load_timing_info->connect_timing.dns_start
-             .is_null() &&
-        !extra_request_complete_info.load_timing_info->connect_timing.dns_end
-             .is_null() &&
-        !extra_request_complete_info.load_timing_info->send_start.is_null() &&
+    if (!extra_request_complete_info.load_timing_info->send_start.is_null() &&
         !extra_request_complete_info.load_timing_info->send_end.is_null() &&
         !extra_request_complete_info.load_timing_info->request_start
              .is_null()) {
