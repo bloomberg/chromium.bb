@@ -150,7 +150,6 @@ void CastContentRendererClient::RenderViewCreated(
 void CastContentRendererClient::RenderFrameCreated(
     content::RenderFrame* render_frame) {
   DCHECK(render_frame);
-#if BUILDFLAG(ENABLE_APPLICATION_MEDIA_CAPABILITIES)
   if (!app_media_capabilities_observer_binding_.is_bound()) {
     mojom::ApplicationMediaCapabilitiesObserverPtr observer;
     app_media_capabilities_observer_binding_.Bind(mojo::MakeRequest(&observer));
@@ -159,7 +158,6 @@ void CastContentRendererClient::RenderFrameCreated(
         mojo::MakeRequest(&app_media_capabilities));
     app_media_capabilities->AddObserver(std::move(observer));
   }
-#endif
 
 #if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
   extensions::Dispatcher* dispatcher =
