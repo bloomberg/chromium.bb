@@ -13,7 +13,9 @@
 #include "chromeos/assistant/internal/cros_display_connection.h"
 #include "chromeos/services/assistant/assistant_manager_service.h"
 #include "chromeos/services/assistant/platform_api_impl.h"
+#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "libassistant/contrib/core/macros.h"
+#include "mojo/public/cpp/bindings/interface_ptr_set.h"
 
 namespace assistant_client {
 class AssistantManager;
@@ -24,7 +26,8 @@ namespace chromeos {
 namespace assistant {
 
 // Implementation of AssistantManagerService based on libassistant.
-class AssistantManagerServiceImpl : public AssistantManagerService {
+class AssistantManagerServiceImpl : public AssistantManagerService,
+                                    public AssistantEventObserver {
  public:
   AssistantManagerServiceImpl();
   ~AssistantManagerServiceImpl() override;
@@ -34,11 +37,21 @@ class AssistantManagerServiceImpl : public AssistantManagerService {
   void SetAccessToken(const std::string& access_token) override;
   void EnableListening(bool enable) override;
 
+  // mojom::Assistant overrides:
+  void SendTextQuery(const std::string& query) override;
+  void AddAssistantEventSubscriber(
+      mojom::AssistantEventSubscriberPtr subscriber) override;
+
+  // AssistantEventObserver overrides:
+  void OnShowHtml(const std::string& html) override;
+  void OnShowText(const std::string& html) override;
+
  private:
-  CrosDisplayConnection display_connection_;
   PlatformApiImpl platform_api_;
+  CrosDisplayConnection display_connection_;
   std::unique_ptr<assistant_client::AssistantManager> assistant_manager_;
   assistant_client::AssistantManagerInternal* const assistant_manager_internal_;
+  mojo::InterfacePtrSet<mojom::AssistantEventSubscriber> subscribers_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantManagerServiceImpl);
 };
