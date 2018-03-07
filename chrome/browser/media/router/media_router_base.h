@@ -40,6 +40,7 @@ class MediaRouterBase : public MediaRouter {
   void RegisterRemotingSource(int32_t tab_id,
                               CastRemotingConnector* remoting_source) override;
   void UnregisterRemotingSource(int32_t tab_id) override;
+  base::Value GetState() const override;
 
  protected:
   FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoImplTest,

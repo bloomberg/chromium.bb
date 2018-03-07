@@ -170,6 +170,7 @@ class MockMediaRouter : public MediaRouterBase {
                void(RouteMessageObserver* observer));
   MOCK_METHOD1(UnregisterRouteMessageObserver,
                void(RouteMessageObserver* observer));
+  MOCK_METHOD0(GetMediaSinkServiceStatus, std::string());
 #if !defined(OS_ANDROID)
   MOCK_METHOD2(DetachRouteController,
                void(const MediaRoute::Id& route_id,

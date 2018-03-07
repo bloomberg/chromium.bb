@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/callback_list.h"
 #include "base/time/time.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/media/cast_remoting_connector.h"
 #include "chrome/browser/media/router/route_message_observer.h"
@@ -202,6 +203,10 @@ class MediaRouter : public KeyedService {
       int32_t tab_id,
       CastRemotingConnector* remoting_source) = 0;
   virtual void UnregisterRemotingSource(int32_t tab_id) = 0;
+
+  // Returns media router state as a JSON string represented by base::Vaule.
+  // Used by media-router-internals page.
+  virtual base::Value GetState() const = 0;
 
  private:
   friend class IssuesObserver;

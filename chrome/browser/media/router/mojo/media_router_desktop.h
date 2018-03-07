@@ -47,6 +47,7 @@ class MediaRouterDesktop : public MediaRouterMojoImpl {
 
   // MediaRouter implementation.
   void OnUserGesture() override;
+  base::Value GetState() const override;
 
  protected:
   // MediaRouterMojoImpl override:

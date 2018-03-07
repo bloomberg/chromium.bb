@@ -93,6 +93,9 @@ const char kChromeUIMdUserManagerUrl[] = "chrome://md-user-manager/";
 const char kChromeUIMediaEngagementHost[] = "media-engagement";
 const char kChromeUIMediaRouterHost[] = "media-router";
 const char kChromeUIMediaRouterURL[] = "chrome://media-router/";
+const char kChromeUIMediaRouterInternalsHost[] = "media-router-internals";
+const char kChromeUIMediaRouterInternalsURL[] =
+    "chrome://media-router-internals/";
 const char kChromeUIMemoryInternalsHost[] = "memory-internals";
 const char kChromeUINTPTilesInternalsHost[] = "ntp-tiles-internals";
 const char kChromeUINaClHost[] = "nacl";

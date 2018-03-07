@@ -6,6 +6,9 @@
   <include name="IDR_MEDIA_ROUTER_DATA_JS" file="resources\media_router\media_router_data.js" type="BINDATA" />
   <include name="IDR_MEDIA_ROUTER_JS" file="resources\media_router\media_router.js" flattenhtml="true" type="BINDATA" />
   <include name="IDR_MEDIA_ROUTER_HTML" file="resources\media_router\media_router.html" type="BINDATA" />
+  <include name="IDR_MEDIA_ROUTER_INTERNALS_HTML" file="resources\media_router\media_router_internals.html" type="BINDATA" />
+  <include name="IDR_MEDIA_ROUTER_INTERNALS_CSS" file="resources\media_router\media_router_internals.css" type="BINDATA" />
+  <include name="IDR_MEDIA_ROUTER_INTERNALS_JS" file="resources\media_router\media_router_internals.js" type="BINDATA" />
   <include name="IDR_MEDIA_ROUTER_UI_INTERFACE_JS" file="resources\media_router\media_router_ui_interface.js" type="BINDATA" />
 
   <!-- Polymer -->
