@@ -138,7 +138,7 @@ base::string16 DownloadDangerPromptViews::GetDialogButtonLabel(
 }
 
 base::string16 DownloadDangerPromptViews::GetWindowTitle() const {
-  if (show_context_)
+  if (show_context_ || !download_)  // |download_| may be null in tests.
     return l10n_util::GetStringUTF16(IDS_CONFIRM_KEEP_DANGEROUS_DOWNLOAD_TITLE);
   switch (download_->GetDangerType()) {
     case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL:
