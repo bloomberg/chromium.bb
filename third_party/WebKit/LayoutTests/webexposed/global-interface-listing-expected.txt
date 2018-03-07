@@ -637,6 +637,7 @@ interface CSSKeyframeRule : CSSRule
     getter style
     method constructor
     setter keyText
+    setter style
 interface CSSKeyframesRule : CSSRule
     attribute @@toStringTag
     getter cssRules

@@ -30,5 +30,5 @@
 
 interface CSSKeyframeRule : CSSRule {
     [RaisesException=Setter] attribute DOMString keyText;
-    readonly attribute CSSStyleDeclaration style;
+    [SameObject, PutForwards=cssText] readonly attribute CSSStyleDeclaration style;
 };
