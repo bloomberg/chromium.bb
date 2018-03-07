@@ -251,6 +251,7 @@ bool IsPseudoClassValidAfterPseudoElement(
       return IsScrollbarPseudoClass(pseudo_class);
     case CSSSelector::kPseudoSelection:
       return pseudo_class == CSSSelector::kPseudoWindowInactive;
+    case CSSSelector::kPseudoPart:
     case CSSSelector::kPseudoWebKitCustomElement:
     case CSSSelector::kPseudoBlinkInternalElement:
       return IsUserActionPseudoClass(pseudo_class);
@@ -573,6 +574,15 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumePseudo(
       Vector<std::unique_ptr<CSSParserSelector>> selector_vector;
       selector_vector.push_back(std::move(inner_selector));
       selector->AdoptSelectorVector(selector_vector);
+      return selector;
+    }
+    case CSSSelector::kPseudoPart: {
+      if (!RuntimeEnabledFeatures::CSSPartPseudoElementEnabled())
+        return nullptr;
+      const CSSParserToken& ident = block.ConsumeIncludingWhitespace();
+      if (ident.GetType() != kIdentToken || !block.AtEnd())
+        return nullptr;
+      selector->SetArgument(ident.Value().ToAtomicString());
       return selector;
     }
     case CSSSelector::kPseudoSlotted: {
