@@ -18,6 +18,7 @@
 
 #include "base/command_line.h"
 #include "base/debug/leak_annotations.h"
+#include "base/files/file_path.h"
 #include "base/format_macros.h"
 #include "base/rand_util.h"
 #include "chrome/common/chrome_result_codes.h"
@@ -54,10 +55,10 @@ void ChromeCrashReporterClient::InitializeCrashReportingForProcess() {
 
     crash_reporter::InitializeCrashpadWithEmbeddedHandler(
         process_type.empty(), install_static::UTF16ToUTF8(process_type),
-        install_static::UTF16ToUTF8(user_data_dir));
+        install_static::UTF16ToUTF8(user_data_dir), base::FilePath());
   }
 }
-#endif  // NACL_WIN64
+#endif  // !defined(NACL_WIN64)
 
 bool ChromeCrashReporterClient::GetAlternativeCrashDumpLocation(
     base::string16* crash_dir) {

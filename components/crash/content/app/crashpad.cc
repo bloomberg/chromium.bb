@@ -99,6 +99,7 @@ void InitializeDatabasePath(const base::FilePath& database_path) {
 void InitializeCrashpadImpl(bool initial_client,
                             const std::string& process_type,
                             const std::string& user_data_dir,
+                            const base::FilePath& exe_path,
                             bool embedded_handler) {
   static bool initialized = false;
   DCHECK(!initialized);
@@ -116,7 +117,8 @@ void InitializeCrashpadImpl(bool initial_client,
 #elif defined(OS_WIN)
     // "Chrome Installer" is the name historically used for installer binaries
     // as processed by the backend.
-    DCHECK(browser_process || process_type == "Chrome Installer");
+    DCHECK(browser_process || process_type == "Chrome Installer" ||
+           process_type == "notification-helper");
 #else
 #error Port.
 #endif  // OS_MACOSX
@@ -126,7 +128,8 @@ void InitializeCrashpadImpl(bool initial_client,
 
   // database_path is only valid in the browser process.
   base::FilePath database_path = internal::PlatformCrashpadInitialization(
-      initial_client, browser_process, embedded_handler, user_data_dir);
+      initial_client, browser_process, embedded_handler, user_data_dir,
+      exe_path);
 
 #if defined(OS_MACOSX)
 #if defined(NDEBUG)
@@ -193,14 +196,17 @@ void InitializeCrashpadImpl(bool initial_client,
 }  // namespace
 
 void InitializeCrashpad(bool initial_client, const std::string& process_type) {
-  InitializeCrashpadImpl(initial_client, process_type, std::string(), false);
+  InitializeCrashpadImpl(initial_client, process_type, std::string(),
+                         base::FilePath(), false);
 }
 
 #if defined(OS_WIN)
 void InitializeCrashpadWithEmbeddedHandler(bool initial_client,
                                            const std::string& process_type,
-                                           const std::string& user_data_dir) {
-  InitializeCrashpadImpl(initial_client, process_type, user_data_dir, true);
+                                           const std::string& user_data_dir,
+                                           const base::FilePath& exe_path) {
+  InitializeCrashpadImpl(initial_client, process_type, user_data_dir, exe_path,
+                         true);
 }
 #endif  // OS_WIN
 
