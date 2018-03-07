@@ -38,8 +38,7 @@ class SVGInlineTextBox final : public InlineTextBox {
   LayoutUnit VirtualLogicalHeight() const override { return logical_height_; }
   void SetLogicalHeight(LayoutUnit height) { logical_height_ = height; }
 
-  int OffsetForPosition(LayoutUnit x,
-                        bool include_partial_glyphs = true) const override;
+  int OffsetForPosition(LayoutUnit x, OffsetForPositionType) const override;
   LayoutUnit PositionForOffset(int offset) const override;
 
   void Paint(const PaintInfo&,
