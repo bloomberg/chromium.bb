@@ -39,6 +39,8 @@ blink_modules_sources("xr") {
     "XRStageBounds.cpp",
     "XRStageBounds.h",
     "XRStageBoundsPoint.h",
+    "XRUtils.cpp",
+    "XRUtils.h",
     "XRView.cpp",
     "XRView.h",
     "XRViewport.h",
