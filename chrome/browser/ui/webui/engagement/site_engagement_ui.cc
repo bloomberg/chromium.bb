@@ -76,7 +76,7 @@ class SiteEngagementDetailsProviderImpl
 }  // namespace
 
 SiteEngagementUI::SiteEngagementUI(content::WebUI* web_ui)
-    : MojoWebUIController<mojom::SiteEngagementDetailsProvider>(web_ui) {
+    : ui::MojoWebUIController<mojom::SiteEngagementDetailsProvider>(web_ui) {
   // Set up the chrome://site-engagement/ source.
   std::unique_ptr<content::WebUIDataSource> source(
       content::WebUIDataSource::Create(chrome::kChromeUISiteEngagementHost));

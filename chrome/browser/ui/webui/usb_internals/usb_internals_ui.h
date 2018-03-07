@@ -6,20 +6,20 @@
 #define CHROME_BROWSER_UI_WEBUI_USB_INTERNALS_USB_INTERNALS_UI_H_
 
 #include "base/macros.h"
-#include "chrome/browser/ui/webui/mojo_web_ui_controller.h"
 #include "chrome/browser/ui/webui/usb_internals/usb_internals.mojom.h"
+#include "ui/webui/mojo_web_ui_controller.h"
 
 class UsbInternalsPageHandler;
 
 // The WebUI for chrome://usb-internals.
 class UsbInternalsUI
-    : public MojoWebUIController<mojom::UsbInternalsPageHandler> {
+    : public ui::MojoWebUIController<mojom::UsbInternalsPageHandler> {
  public:
   explicit UsbInternalsUI(content::WebUI* web_ui);
   ~UsbInternalsUI() override;
 
  private:
-  // MojoWebUIController overrides:
+  // ui::MojoWebUIController overrides:
   void BindUIHandler(mojom::UsbInternalsPageHandlerRequest request) override;
 
   std::unique_ptr<UsbInternalsPageHandler> page_handler_;

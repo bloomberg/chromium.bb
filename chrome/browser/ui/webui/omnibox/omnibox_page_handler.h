@@ -12,7 +12,6 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "chrome/browser/ui/webui/mojo_web_ui_handler.h"
 #include "chrome/browser/ui/webui/omnibox/omnibox.mojom.h"
 #include "components/omnibox/browser/autocomplete_controller_delegate.h"
 #include "components/omnibox/browser/autocomplete_input.h"
@@ -27,8 +26,7 @@ class Profile;
 // AutocompleteController to OnResultChanged() and passes those results to
 // the OmniboxPage.
 class OmniboxPageHandler : public AutocompleteControllerDelegate,
-                           public mojom::OmniboxPageHandler,
-                           public MojoWebUIHandler {
+                           public mojom::OmniboxPageHandler {
  public:
   // OmniboxPageHandler is deleted when the supplied pipe is destroyed.
   OmniboxPageHandler(Profile* profile,

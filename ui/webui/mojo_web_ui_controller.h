@@ -2,29 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_MOJO_WEB_UI_CONTROLLER_H_
-#define CHROME_BROWSER_UI_WEBUI_MOJO_WEB_UI_CONTROLLER_H_
+#ifndef UI_WEBUI_MOJO_WEB_UI_CONTROLLER_H_
+#define UI_WEBUI_MOJO_WEB_UI_CONTROLLER_H_
 
-#include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/ui/webui/mojo_web_ui_handler.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_view_host.h"
-#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "mojo/public/cpp/system/core.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
+
+namespace ui {
 
 class MojoWebUIControllerBase : public content::WebUIController {
  public:
   explicit MojoWebUIControllerBase(content::WebUI* contents);
   ~MojoWebUIControllerBase() override;
 
-  // WebUIController overrides:
+  // content::WebUIController overrides:
   void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
 
  private:
@@ -74,4 +73,6 @@ class MojoWebUIController : public MojoWebUIControllerBase,
   DISALLOW_COPY_AND_ASSIGN(MojoWebUIController);
 };
 
-#endif  // CHROME_BROWSER_UI_WEBUI_MOJO_WEB_UI_CONTROLLER_H_
+}  // namespace ui
+
+#endif  // UI_WEBUI_MOJO_WEB_UI_CONTROLLER_H_

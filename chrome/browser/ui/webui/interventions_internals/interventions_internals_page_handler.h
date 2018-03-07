@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/webui/interventions_internals/interventions_internals.mojom.h"
-#include "chrome/browser/ui/webui/mojo_web_ui_handler.h"
 #include "components/previews/content/previews_ui_service.h"
 #include "components/previews/core/previews_logger.h"
 #include "components/previews/core/previews_logger_observer.h"
@@ -23,8 +22,7 @@ class UINetworkQualityEstimatorService;
 class InterventionsInternalsPageHandler
     : public previews::PreviewsLoggerObserver,
       public net::EffectiveConnectionTypeObserver,
-      public mojom::InterventionsInternalsPageHandler,
-      public MojoWebUIHandler {
+      public mojom::InterventionsInternalsPageHandler {
  public:
   InterventionsInternalsPageHandler(
       mojom::InterventionsInternalsPageHandlerRequest request,

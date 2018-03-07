@@ -9,17 +9,18 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/webui/discards/discards.mojom.h"
-#include "chrome/browser/ui/webui/mojo_web_ui_controller.h"
+#include "ui/webui/mojo_web_ui_controller.h"
 
 // Controller for chrome://discards. Corresponding resources are in
 // file://chrome/browser/resources/discards.
-class DiscardsUI : public MojoWebUIController<mojom::DiscardsDetailsProvider> {
+class DiscardsUI
+    : public ui::MojoWebUIController<mojom::DiscardsDetailsProvider> {
  public:
   explicit DiscardsUI(content::WebUI* web_ui);
   ~DiscardsUI() override;
 
  private:
-  // MojoWebUIController overrides:
+  // ui::MojoWebUIController overrides:
   void BindUIHandler(mojom::DiscardsDetailsProviderRequest request) override;
 
   std::unique_ptr<mojom::DiscardsDetailsProvider> ui_handler_;

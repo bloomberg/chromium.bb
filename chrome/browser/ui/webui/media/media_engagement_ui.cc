@@ -64,8 +64,8 @@ class MediaEngagementScoreDetailsProviderImpl
 }  // namespace
 
 MediaEngagementUI::MediaEngagementUI(content::WebUI* web_ui)
-    : MojoWebUIController<media::mojom::MediaEngagementScoreDetailsProvider>(
-          web_ui) {
+    : ui::MojoWebUIController<
+          media::mojom::MediaEngagementScoreDetailsProvider>(web_ui) {
   // Setup the data source behind chrome://media-engagement.
   std::unique_ptr<content::WebUIDataSource> source(
       content::WebUIDataSource::Create(chrome::kChromeUIMediaEngagementHost));
