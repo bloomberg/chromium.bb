@@ -8,7 +8,10 @@
 // the page has been populated with site engagement details.
 var whenPageIsPopulatedForTest;
 
+/** @type {function()} */
 var disableAutoupdateForTests;
+
+/** @type {mojom.SiteEngagementDetailsProviderPtr} */
 var uiHandler;
 
 (function() {
@@ -27,10 +30,15 @@ function initialize() {
       mojom.SiteEngagementDetailsProvider.name,
       mojo.makeRequest(uiHandler).handle);
 
+  /** @type {?HTMLElement} */
   var engagementTableBody = $('engagement-table-body');
+  /** @type {?number} */
   var updateInterval = null;
+  /** @type {?Array<!mojom.SiteEngagementDetails>} */
   var info = null;
+  /** @type {string} */
   var sortKey = 'totalScore';
+  /** @type {boolean} */
   var sortReverse = true;
 
   // Set table header sort handlers.
@@ -58,7 +66,7 @@ function initialize() {
 
   /**
    * Creates a single row in the engagement table.
-   * @param {SiteEngagementDetails} info The info to create the row from.
+   * @param {mojom.SiteEngagementDetails} info The info to create the row from.
    * @return {HTMLElement}
    */
   function createRow(info) {
@@ -77,7 +85,7 @@ function initialize() {
     baseScoreCell.appendChild(baseScoreInput);
 
     var bonusScoreCell = createElementWithClassName('td', 'bonus-score-cell');
-    bonusScoreCell.textContent = info.bonusScore;
+    bonusScoreCell.textContent = info.installedBonus;
 
     var totalScoreCell = createElementWithClassName('td', 'total-score-cell');
     totalScoreCell.textContent = info.totalScore;
@@ -89,7 +97,7 @@ function initialize() {
         createElementWithClassName('td', 'engagement-bar-cell');
     engagementBarCell.appendChild(engagementBar);
 
-    var row = document.createElement('tr');
+    var row = /** @type {HTMLElement} */ (document.createElement('tr'));
     row.appendChild(originCell);
     row.appendChild(baseScoreCell);
     row.appendChild(bonusScoreCell);
@@ -119,7 +127,7 @@ function initialize() {
    * Sets the base engagement score when a score input is changed.
    * Resets the length of engagement-bar-cell to match the new score.
    * Also resets the update interval.
-   * @param {string} origin The origin of the engagement score to set.
+   * @param {!url.mojom.Url} origin The origin of the engagement score to set.
    * @param {Event} e
    */
   function handleBaseScoreChange(origin, e) {
@@ -191,9 +199,6 @@ function initialize() {
       info.installedBonus = roundScore(info.installedBonus);
       info.totalScore = roundScore(info.totalScore);
 
-      // Collate the bonuses into a value for the bonusScore column.
-      info.bonusScore = info.installedBonus;
-
       engagementTableBody.appendChild(createRow(info));
     });
   }
@@ -205,7 +210,7 @@ function initialize() {
     // Populate engagement table.
     uiHandler.getSiteEngagementDetails().then((response) => {
       info = response.info;
-      renderTable(info);
+      renderTable();
       resolvePageIsPopulated();
     });
   }

@@ -1156,6 +1156,7 @@ template("assert_valid_out_dir") {
 if (!is_win) {
   group("webui_closure_compile") {
     data_deps = [
+      "chrome/browser/resources/engagement:closure_compile",
       "ui/webui/resources:closure_compile",
     ]
   }
