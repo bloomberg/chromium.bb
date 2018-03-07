@@ -42,13 +42,12 @@ void ModelTypeSyncBridge::OnSyncStarting(
 
 void ModelTypeSyncBridge::DisableSync() {
   DCHECK(change_processor_);
+  const bool model_ready_to_sync = change_processor_->IsTrackingMetadata();
   change_processor_->DisableSync();
   change_processor_ = change_processor_factory_.Run(type_, this);
-  // DisableSync() should delete all metadata, so it'll be safe to tell the new
-  // processor that there is no metadata. DisableSync() should never be called
-  // while the models are loading, aka before the service has finished loading
-  // the initial metadata.
-  change_processor_->ModelReadyToSync(std::make_unique<MetadataBatch>());
+  if (model_ready_to_sync) {
+    change_processor_->ModelReadyToSync(std::make_unique<MetadataBatch>());
+  }
 }
 
 ModelTypeChangeProcessor* ModelTypeSyncBridge::change_processor() const {

@@ -11,9 +11,11 @@
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/stub_model_type_sync_bridge.h"
 #include "components/sync/protocol/model_type_state.pb.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
+namespace {
 
 // A mock MTCP that lets verify DisableSync and ModelReadyToSync were called in
 // the ways that we expect.
@@ -25,7 +27,10 @@ class MockModelTypeChangeProcessor : public FakeModelTypeChangeProcessor {
 
   void DisableSync() override { disabled_callback_.Run(); }
 
+  bool IsTrackingMetadata() override { return metadata_batch_ != nullptr; }
+
   void ModelReadyToSync(std::unique_ptr<MetadataBatch> batch) override {
+    EXPECT_NE(nullptr, batch);
     metadata_batch_ = std::move(batch);
   }
 
@@ -110,15 +115,48 @@ TEST_F(ModelTypeSyncBridgeTest, OnSyncStarting) {
 
 // DisableSync should call DisableSync on the processor and then delete it.
 TEST_F(ModelTypeSyncBridgeTest, DisableSync) {
-  EXPECT_FALSE(bridge()->processor_disable_sync_called());
+  ASSERT_FALSE(bridge()->processor_disable_sync_called());
   bridge()->DisableSync();
 
   // Disabling also wipes out metadata, and the bridge should have told the new
   // processor about this.
   EXPECT_TRUE(bridge()->processor_disable_sync_called());
+  EXPECT_EQ(nullptr, bridge()->change_processor()->metadata_batch());
+}
 
+// DisableSync should propagate the model readiness (IsTrackingMetadata()).
+TEST_F(ModelTypeSyncBridgeTest, PropagateModelReadyToSyncInDisableSync) {
+  ASSERT_EQ(nullptr, bridge()->change_processor()->metadata_batch());
+  ASSERT_FALSE(bridge()->change_processor()->IsTrackingMetadata());
+
+  // Model is not ready to sync, so it should remain so after DisableSync().
+  bridge()->DisableSync();
+  EXPECT_EQ(nullptr, bridge()->change_processor()->metadata_batch());
+  EXPECT_FALSE(bridge()->change_processor()->IsTrackingMetadata());
+
+  // Mimic the model being ready to sync.
+  sync_pb::ModelTypeState initial_state;
+  initial_state.set_initial_sync_done(true);
+  auto initial_batch = std::make_unique<MetadataBatch>();
+  initial_batch->SetModelTypeState(initial_state);
+  bridge()->change_processor()->ModelReadyToSync(std::move(initial_batch));
+
+  ASSERT_TRUE(bridge()->change_processor()->IsTrackingMetadata());
+  ASSERT_NE(nullptr, bridge()->change_processor()->metadata_batch());
+  ASSERT_TRUE(bridge()
+                  ->change_processor()
+                  ->metadata_batch()
+                  ->GetModelTypeState()
+                  .initial_sync_done());
+
+  // Model is ready to sync, so it should remain so after DisableSync().
+  // However, the metadata should have been cleared.
+  bridge()->DisableSync();
+  EXPECT_TRUE(bridge()->change_processor()->IsTrackingMetadata());
   MetadataBatch* batch = bridge()->change_processor()->metadata_batch();
-  EXPECT_NE(nullptr, batch);
+  ASSERT_NE(nullptr, batch);
+
+  EXPECT_FALSE(batch->GetModelTypeState().initial_sync_done());
   EXPECT_EQ(sync_pb::ModelTypeState().SerializeAsString(),
             batch->GetModelTypeState().SerializeAsString());
   EXPECT_EQ(0U, batch->TakeAllMetadata().size());
@@ -150,4 +188,5 @@ TEST_F(ModelTypeSyncBridgeTest, DefaultConflictResolution) {
             bridge()->ResolveConflict(local_data, remote_data).type());
 }
 
+}  // namespace
 }  // namespace syncer
