@@ -157,16 +157,17 @@ void AppListControllerImpl::SetItemPercentDownloaded(
 void AppListControllerImpl::SetModelData(
     std::vector<AppListItemMetadataPtr> apps,
     bool is_search_engine_google) {
-  // Populate new models.
+  // Clear old model data.
   model_.DeleteAllItems();
   search_model_.DeleteAllResults();
-  for (size_t i = 0; i < apps.size(); ++i) {
-    AppListItemMetadataPtr item = std::move(apps[i]);
-    const std::string& folder_id = item->folder_id;
+
+  // Populate new models.
+  for (auto& app : apps) {
+    const std::string folder_id = app->folder_id;
     if (folder_id.empty())
-      AddItem(std::move(item));
+      AddItem(std::move(app));
     else
-      AddItemToFolder(std::move(item), folder_id);
+      AddItemToFolder(std::move(app), folder_id);
   }
   search_model_.SetSearchEngineIsGoogle(is_search_engine_google);
 }
