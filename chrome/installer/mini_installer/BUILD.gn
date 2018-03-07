@@ -270,19 +270,30 @@ template("generate_mini_installer") {
       "/NXCOMPAT",
     ]
 
-    if (!is_asan) {
-      ldflags += [ "/ENTRY:MainEntryPoint" ]
-    }
-
     libs = [ "setupapi.lib" ]
 
     deps = [
       ":$archive_name",
       ":lib",
       ":version",
-      "//build/config:exe_and_shlib_deps",
       "//build/win:default_exe_manifest",
     ]
+
+    # In general, mini_installer tries to avoid depending on the C++ standard
+    # library for size reasons. This is achieved by setting a custom entry point
+    # (which avoids pulling in the standard library via a link dependency) as
+    # well as by not depending on exe_and_shlib_deps (which depends on
+    # libc++ in use_custom_libcxx=true builds).
+    #
+    # But in asan builds we need to link against the asan runtime library, which
+    # in turn depends on the standard library and relies on it to run
+    # initializers. So in asan builds we depend on exe_and_shlib_deps for the
+    # asan runtime and use the standard entry point.
+    if (is_asan) {
+      deps += [ "//build/config:exe_and_shlib_deps" ]
+    } else {
+      ldflags += [ "/ENTRY:MainEntryPoint" ]
+    }
   }
 }
 
