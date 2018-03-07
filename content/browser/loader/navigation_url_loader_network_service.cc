@@ -595,8 +595,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
       if (proxied_factory_request_.is_pending() &&
           !resource_request_->url.SchemeIs(url::kDataScheme)) {
         DCHECK(proxied_factory_info_.is_valid());
-        // TODO(chongz): |CloneNetworkFactory| doesn't support reconnection and
-        // we should find a way to avoid using it.
+        // We don't worry about reconnection since it's a single navigation.
         default_url_loader_factory_getter_->CloneNetworkFactory(
             std::move(proxied_factory_request_));
         factory = base::MakeRefCounted<WrapperSharedURLLoaderFactory>(
