@@ -261,6 +261,10 @@ camera.views.Camera = function(context, router) {
    */
   this.toolbarEffect_ = new camera.util.StyleEffect(
       function(args, callback) {
+        var toggleFilters = document.querySelector('#filters-toggle');
+        if (toggleFilters.disabled) {
+          return;
+        }
         var toolbar = document.querySelector('#toolbar');
         var activeEffect = document.querySelector('#effects #effect-' +
             this.currentEffectIndex_);
@@ -274,8 +278,9 @@ camera.views.Camera = function(context, router) {
             elements[index].tabIndex = -1;
           }
           // If something was focused before, then focus the toggle button.
-          if (document.activeElement != document.body)
-            document.querySelector('#filters-toggle').focus();
+          if (document.activeElement != document.body) {
+            toggleFilters.focus();
+          }
         }
         camera.util.waitForTransitionCompletion(
             document.querySelector('#toolbar'), 500, function() {
@@ -285,8 +290,7 @@ camera.views.Camera = function(context, router) {
 
             // If the filters button was previously selected, then advance to
             // the ribbon.
-            if (document.activeElement ==
-                document.querySelector('#filters-toggle')) {
+            if (document.activeElement == toggleFilters) {
               activeEffect.focus();
             }
           }
@@ -433,16 +437,6 @@ camera.views.Camera = function(context, router) {
    * @private
    */
   this.performanceMonitors_ = new camera.util.NamedPerformanceMonitors();
-
-  /**
-   * Makes the toolbar pullable.
-   * @type {camera.util.Puller}
-   * @private
-   */
-  this.puller_ = new camera.util.Puller(
-      document.querySelector('#toolbar-puller-wrapper'),
-      document.querySelector('#toolbar-stripe'),
-      this.onRibbonPullReleased_.bind(this));
 
   /**
    * Counter used to refresh periodically invisible images on the ribbons, to
@@ -863,20 +857,6 @@ camera.views.Camera.prototype.onFiltersToggleClicked_ = function(event) {
 };
 
 /**
- * Handles releasing the puller on the ribbon, and toggles it.
- * @param {number} distance Pulled distance in pixels.
- * @private
- */
-camera.views.Camera.prototype.onRibbonPullReleased_ = function(distance) {
-  if (this.performanceTestTimer_)
-    return;
-  if (distance < -50)
-    this.setExpanded_(!this.expanded_);
-  else if (distance > 25)
-    this.setExpanded_(false);
-};
-
-/**
  * Handles moving the mouse outside of the window.
  * @param {Event} event Mouse event
  * @private
@@ -1047,15 +1027,11 @@ camera.views.Camera.prototype.onToggleRecordClicked_ = function(event) {
   takePictureButton.setAttribute('i18n-label', label);
   takePictureButton.setAttribute('aria-label', chrome.i18n.getMessage(label));
 
-  // Disable effects as recording with effects is not supported yet.
-  var toggleFilters = document.querySelector('#toolbar #filters-toggle');
-  toggleFilters.disabled = this.is_recording_mode_;
-  this.mainProcessor_.effectDisabled = this.is_recording_mode_;
-  this.mainPreviewProcessor_.effectDisabled = this.is_recording_mode_;
-  this.mainFastProcessor_.effectDisabled = this.is_recording_mode_;
-  if (toggleFilters.disabled) {
-    this.setExpanded_(false);
-  }
+  // Disable effects for both photo-taking and video-recording.
+  // TODO(yuli): Remove effects completely.
+  this.mainProcessor_.effectDisabled = true;
+  this.mainPreviewProcessor_.effectDisabled = true;
+  this.mainFastProcessor_.effectDisabled = true;
 
   document.querySelector('#toggle-multi').hidden = this.is_recording_mode_;
   document.querySelector('#toggle-timer').hidden = this.is_recording_mode_;
@@ -1230,6 +1206,9 @@ camera.views.Camera.prototype.addEffect_ = function(effect) {
  * @private
  */
 camera.views.Camera.prototype.setCurrentEffect_ = function(effectIndex) {
+  if (document.querySelector('#filters-toggle').disabled)
+    return;
+
   var previousEffect =
       document.querySelector('#effects #effect-' + this.currentEffectIndex_);
   previousEffect.removeAttribute('selected');
@@ -1277,9 +1256,11 @@ camera.views.Camera.prototype.setCurrentEffect_ = function(effectIndex) {
  */
 camera.views.Camera.prototype.onResize = function() {
   this.synchronizeBounds_();
-  camera.util.ensureVisible(
-      document.querySelector('#effect-' + this.currentEffectIndex_),
-      this.scroller_);
+  if (this.expanded_) {
+    camera.util.ensureVisible(
+        document.querySelector('#effect-' + this.currentEffectIndex_),
+        this.scroller_);
+  }
 };
 
 /**
@@ -1442,7 +1423,7 @@ camera.views.Camera.prototype.setExpanded_ = function(expanded) {
     this.collapseTimer_ = null;
   }
   // Don't expand to show the effects if they are not supported.
-  if (!document.querySelector('#toolbar #filters-toggle').disabled &&
+  if (!document.querySelector('#filters-toggle').disabled &&
       expanded) {
     var isRibbonHovered =
         document.querySelector('#toolbar').webkitMatchesSelector(':hover');
@@ -1918,7 +1899,7 @@ camera.views.Camera.prototype.createMediaRecorder_ = function(stream) {
     return new MediaRecorder(stream, options);
   } catch (e) {
     console.error('Unable to create MediaRecorder: ' + e + '. mimeType: ' +
-        options.mimeType);
+        type);
     return null;
   }
 };
@@ -2339,6 +2320,10 @@ camera.views.Camera.prototype.start_ = function() {
  * @private
  */
 camera.views.Camera.prototype.drawEffectsRibbon_ = function(mode) {
+  if (document.querySelector('#filters-toggle').disabled) {
+    return;
+  }
+
   var notDrawn = [];
 
   // Draw visible frames only when in DrawMode.NORMAL mode. Otherwise, only one
@@ -2357,8 +2342,9 @@ camera.views.Camera.prototype.drawEffectsRibbon_ = function(mode) {
   // Additionally, draw one frame which is not visible. This is to avoid stale
   // images when scrolling.
   this.staleEffectsRefreshIndex_++;
-  if (notDrawn.length)
+  if (notDrawn.length) {
     notDrawn[this.staleEffectsRefreshIndex_ % notDrawn.length].processFrame();
+  }
 };
 
 /**
