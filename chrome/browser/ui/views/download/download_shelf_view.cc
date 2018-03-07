@@ -30,6 +30,7 @@
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
@@ -118,6 +119,10 @@ DownloadShelfView::DownloadShelfView(Browser* browser, BrowserView* parent)
 
   new_item_animation_.SetSlideDuration(kNewItemAnimationDurationMs);
   shelf_animation_.SetSlideDuration(kShelfAnimationDurationMs);
+
+  GetViewAccessibility().OverrideName(
+      l10n_util::GetStringUTF16(IDS_ACCNAME_DOWNLOADS_BAR));
+  GetViewAccessibility().OverrideRole(ax::mojom::Role::kGroup);
 }
 
 DownloadShelfView::~DownloadShelfView() {
