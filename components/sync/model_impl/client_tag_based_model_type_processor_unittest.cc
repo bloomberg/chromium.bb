@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/model_impl/shared_model_type_processor.h"
+#include "components/sync/model_impl/client_tag_based_model_type_processor.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -20,8 +20,8 @@
 #include "components/sync/test/engine/mock_model_type_worker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using sync_pb::EntitySpecifics;
 using sync_pb::EntityMetadata;
+using sync_pb::EntitySpecifics;
 using sync_pb::ModelTypeState;
 
 namespace syncer {
@@ -58,7 +58,7 @@ std::unique_ptr<EntityData> GenerateEntityData(const std::string& key,
 
 std::unique_ptr<ModelTypeChangeProcessor>
 CreateProcessor(bool commit_only, ModelType type, ModelTypeSyncBridge* bridge) {
-  return std::make_unique<SharedModelTypeProcessor>(
+  return std::make_unique<ClientTagBasedModelTypeProcessor>(
       type, bridge, base::RepeatingClosure(), commit_only);
 }
 
@@ -162,7 +162,7 @@ class TestModelTypeSyncBridge : public FakeModelTypeSyncBridge {
 
 }  // namespace
 
-// Tests the various functionality of SharedModelTypeProcessor.
+// Tests the various functionality of ClientTagBasedModelTypeProcessor.
 //
 // The processor sits between the bridge (implemented by this test class) and
 // the worker, which is represented by a MockModelTypeWorker. This test suite
@@ -177,12 +177,12 @@ class TestModelTypeSyncBridge : public FakeModelTypeSyncBridge {
 //   storage and the correct commit requests on the worker side.
 // - Updates and commit responses from the worker correctly affect data and
 //   metadata in storage on the bridge side.
-class SharedModelTypeProcessorTest : public ::testing::Test {
+class ClientTagBasedModelTypeProcessorTest : public ::testing::Test {
  public:
-  SharedModelTypeProcessorTest()
+  ClientTagBasedModelTypeProcessorTest()
       : bridge_(std::make_unique<TestModelTypeSyncBridge>(false)) {}
 
-  ~SharedModelTypeProcessorTest() override { CheckPostConditions(); }
+  ~ClientTagBasedModelTypeProcessorTest() override { CheckPostConditions(); }
 
   void InitializeToMetadataLoaded() {
     bridge()->SetInitialSyncDone(true);
@@ -204,9 +204,10 @@ class SharedModelTypeProcessorTest : public ::testing::Test {
 
   void OnSyncStarting() {
     type_processor()->OnSyncStarting(
-        base::BindRepeating(&SharedModelTypeProcessorTest::ErrorReceived,
-                            base::Unretained(this)),
-        base::Bind(&SharedModelTypeProcessorTest::OnReadyToConnect,
+        base::BindRepeating(
+            &ClientTagBasedModelTypeProcessorTest::ErrorReceived,
+            base::Unretained(this)),
+        base::Bind(&ClientTagBasedModelTypeProcessorTest::OnReadyToConnect,
                    base::Unretained(this)));
   }
 
@@ -286,8 +287,9 @@ class SharedModelTypeProcessorTest : public ::testing::Test {
 
   MockModelTypeWorker* worker() const { return worker_; }
 
-  SharedModelTypeProcessor* type_processor() const {
-    return static_cast<SharedModelTypeProcessor*>(bridge()->change_processor());
+  ClientTagBasedModelTypeProcessor* type_processor() const {
+    return static_cast<ClientTagBasedModelTypeProcessor*>(
+        bridge()->change_processor());
   }
 
  private:
@@ -323,7 +325,7 @@ class SharedModelTypeProcessorTest : public ::testing::Test {
 };
 
 // Test that an initial sync handles local and remote items properly.
-TEST_F(SharedModelTypeProcessorTest, InitialSync) {
+TEST_F(ClientTagBasedModelTypeProcessorTest, InitialSync) {
   ModelReadyToSync();
   OnSyncStarting();
 
@@ -352,7 +354,7 @@ TEST_F(SharedModelTypeProcessorTest, InitialSync) {
 }
 
 // Test that an initial sync filters out tombstones in the processor.
-TEST_F(SharedModelTypeProcessorTest, InitialSyncWithTombstone) {
+TEST_F(ClientTagBasedModelTypeProcessorTest, InitialSyncWithTombstone) {
   ModelReadyToSync();
   OnSyncStarting();
 
@@ -370,7 +372,7 @@ TEST_F(SharedModelTypeProcessorTest, InitialSyncWithTombstone) {
 }
 
 // Test that subsequent starts don't call MergeSyncData.
-TEST_F(SharedModelTypeProcessorTest, NonInitialSync) {
+TEST_F(ClientTagBasedModelTypeProcessorTest, NonInitialSync) {
   // This sets initial_sync_done to true.
   InitializeToMetadataLoaded();
 
@@ -388,7 +390,7 @@ TEST_F(SharedModelTypeProcessorTest, NonInitialSync) {
 }
 
 // Test that an error during the merge is propagated to the error handler.
-TEST_F(SharedModelTypeProcessorTest, MergeError) {
+TEST_F(ClientTagBasedModelTypeProcessorTest, MergeError) {
   ModelReadyToSync();
   OnSyncStarting();
 
@@ -398,7 +400,7 @@ TEST_F(SharedModelTypeProcessorTest, MergeError) {
 }
 
 // Test that errors before it's called are passed to |start_callback| correctly.
-TEST_F(SharedModelTypeProcessorTest, StartErrors) {
+TEST_F(ClientTagBasedModelTypeProcessorTest, StartErrors) {
   type_processor()->ReportError({FROM_HERE, "boom"});
   ExpectError();
   OnSyncStarting();
@@ -442,7 +444,7 @@ TEST_F(SharedModelTypeProcessorTest, StartErrors) {
 // - Optionally, a put or delete happens to the item.
 //
 // This results in 2 + 12 = 14 orderings of the events.
-TEST_F(SharedModelTypeProcessorTest, LoadPendingCommit) {
+TEST_F(ClientTagBasedModelTypeProcessorTest, LoadPendingCommit) {
   // Data, connect.
   EntitySpecifics specifics1 = ResetStateWriteItem(kKey1, kValue1);
   InitializeToMetadataLoaded();
@@ -578,7 +580,7 @@ TEST_F(SharedModelTypeProcessorTest, LoadPendingCommit) {
 }
 
 // Tests cases where pending data loads synchronously.
-TEST_F(SharedModelTypeProcessorTest, LoadPendingSynchronous) {
+TEST_F(ClientTagBasedModelTypeProcessorTest, LoadPendingSynchronous) {
   // Model, sync.
   EntitySpecifics specifics1 = ResetStateWriteItem(kKey1, kValue1);
   bridge()->ExpectSynchronousDataCallback();
@@ -606,7 +608,7 @@ TEST_F(SharedModelTypeProcessorTest, LoadPendingSynchronous) {
 //   handled properly).
 //
 // This results in 1 + 4 = 5 orderings of the events.
-TEST_F(SharedModelTypeProcessorTest, LoadPendingDelete) {
+TEST_F(ClientTagBasedModelTypeProcessorTest, LoadPendingDelete) {
   // Connect.
   ResetStateDeleteItem(kKey1, kValue1);
   InitializeToMetadataLoaded();
@@ -652,7 +654,7 @@ TEST_F(SharedModelTypeProcessorTest, LoadPendingDelete) {
 }
 
 // Test that loading a committed item does not queue another commit.
-TEST_F(SharedModelTypeProcessorTest, LoadCommited) {
+TEST_F(ClientTagBasedModelTypeProcessorTest, LoadCommited) {
   InitializeToReadyState();
   WriteItemAndAck(kKey1, kValue1);
   ResetState(true);
@@ -665,7 +667,7 @@ TEST_F(SharedModelTypeProcessorTest, LoadCommited) {
 
 // Creates a new item locally.
 // Thoroughly tests the data generated by a local item creation.
-TEST_F(SharedModelTypeProcessorTest, LocalCreateItem) {
+TEST_F(ClientTagBasedModelTypeProcessorTest, LocalCreateItem) {
   InitializeToReadyState();
   EXPECT_EQ(0U, worker()->GetNumPendingCommits());
 
@@ -708,7 +710,7 @@ TEST_F(SharedModelTypeProcessorTest, LocalCreateItem) {
 }
 
 // Test that commit only types are deleted after commit response.
-TEST_F(SharedModelTypeProcessorTest, CommitOnlySimple) {
+TEST_F(ClientTagBasedModelTypeProcessorTest, CommitOnlySimple) {
   ResetState(false, true);
   InitializeToReadyState();
 
@@ -724,7 +726,7 @@ TEST_F(SharedModelTypeProcessorTest, CommitOnlySimple) {
 
 // Test that commit only types maintain tracking of entities while unsynced
 // changes exist.
-TEST_F(SharedModelTypeProcessorTest, CommitOnlyUnsyncedChanges) {
+TEST_F(ClientTagBasedModelTypeProcessorTest, CommitOnlyUnsyncedChanges) {
   ResetState(false, true);
   InitializeToReadyState();
 
@@ -753,7 +755,7 @@ TEST_F(SharedModelTypeProcessorTest, CommitOnlyUnsyncedChanges) {
 
 // Test that an error applying metadata changes from a commit response is
 // propagated to the error handler.
-TEST_F(SharedModelTypeProcessorTest, ErrorApplyingAck) {
+TEST_F(ClientTagBasedModelTypeProcessorTest, ErrorApplyingAck) {
   InitializeToReadyState();
   bridge()->WriteItem(kKey1, kValue1);
   bridge()->ErrorOnNextCall();
@@ -763,7 +765,7 @@ TEST_F(SharedModelTypeProcessorTest, ErrorApplyingAck) {
 
 // The purpose of this test case is to test setting |client_tag_hash| and |id|
 // on the EntityData object as we pass it into the Put method of the processor.
-TEST_F(SharedModelTypeProcessorTest, LocalUpdateItemWithOverrides) {
+TEST_F(ClientTagBasedModelTypeProcessorTest, LocalUpdateItemWithOverrides) {
   const std::string kId1 = "cid1";
   const std::string kId2 = "cid2";
 
@@ -824,7 +826,7 @@ TEST_F(SharedModelTypeProcessorTest, LocalUpdateItemWithOverrides) {
 
 // Creates a new local item then modifies it.
 // Thoroughly tests data generated by modification of server-unknown item.
-TEST_F(SharedModelTypeProcessorTest, LocalUpdateItem) {
+TEST_F(ClientTagBasedModelTypeProcessorTest, LocalUpdateItem) {
   InitializeToReadyState();
 
   bridge()->WriteItem(kKey1, kValue1);
@@ -877,7 +879,7 @@ TEST_F(SharedModelTypeProcessorTest, LocalUpdateItem) {
 
 // Tests that a local update that doesn't change specifics doesn't generate a
 // commit request.
-TEST_F(SharedModelTypeProcessorTest, LocalUpdateItemRedundant) {
+TEST_F(ClientTagBasedModelTypeProcessorTest, LocalUpdateItemRedundant) {
   InitializeToReadyState();
   bridge()->WriteItem(kKey1, kValue1);
   EXPECT_EQ(1U, db().metadata_count());
@@ -888,7 +890,7 @@ TEST_F(SharedModelTypeProcessorTest, LocalUpdateItemRedundant) {
 }
 
 // Thoroughly tests the data generated by a server item creation.
-TEST_F(SharedModelTypeProcessorTest, ServerCreateItem) {
+TEST_F(ClientTagBasedModelTypeProcessorTest, ServerCreateItem) {
   InitializeToReadyState();
   worker()->UpdateFromServer(kHash1, GenerateSpecifics(kKey1, kValue1));
   EXPECT_EQ(1U, db().data_count());
@@ -919,7 +921,7 @@ TEST_F(SharedModelTypeProcessorTest, ServerCreateItem) {
 
 // Test that an error applying changes from a server update is
 // propagated to the error handler.
-TEST_F(SharedModelTypeProcessorTest, ErrorApplyingUpdate) {
+TEST_F(ClientTagBasedModelTypeProcessorTest, ErrorApplyingUpdate) {
   InitializeToReadyState();
   bridge()->ErrorOnNextCall();
   ExpectError();
@@ -927,7 +929,7 @@ TEST_F(SharedModelTypeProcessorTest, ErrorApplyingUpdate) {
 }
 
 // Thoroughly tests the data generated by a server item creation.
-TEST_F(SharedModelTypeProcessorTest, ServerUpdateItem) {
+TEST_F(ClientTagBasedModelTypeProcessorTest, ServerUpdateItem) {
   InitializeToReadyState();
 
   // Local add writes data and metadata; ack writes metadata again.
@@ -948,7 +950,7 @@ TEST_F(SharedModelTypeProcessorTest, ServerUpdateItem) {
 }
 
 // Tests locally deleting an acknowledged item.
-TEST_F(SharedModelTypeProcessorTest, LocalDeleteItem) {
+TEST_F(ClientTagBasedModelTypeProcessorTest, LocalDeleteItem) {
   InitializeToReadyState();
   WriteItemAndAck(kKey1, kValue1);
   EXPECT_EQ(0U, worker()->GetNumPendingCommits());
@@ -987,7 +989,7 @@ TEST_F(SharedModelTypeProcessorTest, LocalDeleteItem) {
 }
 
 // Tests that item created and deleted before sync cycle doesn't get committed.
-TEST_F(SharedModelTypeProcessorTest, LocalDeleteItemUncommitted) {
+TEST_F(ClientTagBasedModelTypeProcessorTest, LocalDeleteItemUncommitted) {
   InitializeToMetadataLoaded();
   bridge()->WriteItem(kKey1, kValue1);
   bridge()->DeleteItem(kKey1);
@@ -998,7 +1000,7 @@ TEST_F(SharedModelTypeProcessorTest, LocalDeleteItemUncommitted) {
 
 // Tests creating and deleting an item locally before receiving a commit
 // response, then getting the commit responses.
-TEST_F(SharedModelTypeProcessorTest, LocalDeleteItemInterleaved) {
+TEST_F(ClientTagBasedModelTypeProcessorTest, LocalDeleteItemInterleaved) {
   InitializeToReadyState();
   bridge()->WriteItem(kKey1, kValue1);
   worker()->VerifyPendingCommits({kHash1});
@@ -1048,7 +1050,7 @@ TEST_F(SharedModelTypeProcessorTest, LocalDeleteItemInterleaved) {
   EXPECT_EQ(0U, ProcessorEntityCount());
 }
 
-TEST_F(SharedModelTypeProcessorTest, ServerDeleteItem) {
+TEST_F(ClientTagBasedModelTypeProcessorTest, ServerDeleteItem) {
   InitializeToReadyState();
   WriteItemAndAck(kKey1, kValue1);
   EXPECT_EQ(1U, ProcessorEntityCount());
@@ -1074,7 +1076,7 @@ TEST_F(SharedModelTypeProcessorTest, ServerDeleteItem) {
 
 // Deletes an item we've never seen before.
 // Should have no effect and not crash.
-TEST_F(SharedModelTypeProcessorTest, LocalDeleteUnknown) {
+TEST_F(ClientTagBasedModelTypeProcessorTest, LocalDeleteUnknown) {
   InitializeToReadyState();
   bridge()->DeleteItem(kKey1);
   EXPECT_EQ(0U, db().data_count());
@@ -1085,7 +1087,7 @@ TEST_F(SharedModelTypeProcessorTest, LocalDeleteUnknown) {
 
 // Deletes an item we've never seen before.
 // Should have no effect and not crash.
-TEST_F(SharedModelTypeProcessorTest, ServerDeleteUnknown) {
+TEST_F(ClientTagBasedModelTypeProcessorTest, ServerDeleteUnknown) {
   InitializeToReadyState();
   worker()->TombstoneFromServer(kHash1);
   EXPECT_EQ(0U, db().data_count());
@@ -1096,7 +1098,7 @@ TEST_F(SharedModelTypeProcessorTest, ServerDeleteUnknown) {
 
 // Tests that after committing entity fails, processor includes this entity in
 // consecutive commits.
-TEST_F(SharedModelTypeProcessorTest, CommitFailedOnServer) {
+TEST_F(ClientTagBasedModelTypeProcessorTest, CommitFailedOnServer) {
   InitializeToReadyState();
   bridge()->WriteItem(kKey1, kValue1);
   worker()->VerifyPendingCommits({kHash1});
@@ -1117,7 +1119,7 @@ TEST_F(SharedModelTypeProcessorTest, CommitFailedOnServer) {
 }
 
 // Tests that GetLocalChanges honors max_entries parameter.
-TEST_F(SharedModelTypeProcessorTest, LocalChangesPagination) {
+TEST_F(ClientTagBasedModelTypeProcessorTest, LocalChangesPagination) {
   InitializeToMetadataLoaded();
   bridge()->WriteItem(kKey1, kValue1);
   bridge()->WriteItem(kKey2, kValue2);
@@ -1131,7 +1133,7 @@ TEST_F(SharedModelTypeProcessorTest, LocalChangesPagination) {
 
 // Creates two different sync items.
 // Verifies that the second has no effect on the first.
-TEST_F(SharedModelTypeProcessorTest, TwoIndependentItems) {
+TEST_F(ClientTagBasedModelTypeProcessorTest, TwoIndependentItems) {
   InitializeToReadyState();
   EXPECT_EQ(0U, worker()->GetNumPendingCommits());
 
@@ -1162,7 +1164,7 @@ TEST_F(SharedModelTypeProcessorTest, TwoIndependentItems) {
   EXPECT_EQ(kUncommittedVersion, metadata2.server_version());
 }
 
-TEST_F(SharedModelTypeProcessorTest, ConflictResolutionChangesMatch) {
+TEST_F(ClientTagBasedModelTypeProcessorTest, ConflictResolutionChangesMatch) {
   InitializeToReadyState();
   EntitySpecifics specifics = bridge()->WriteItem(kKey1, kValue1);
   EXPECT_EQ(1U, db().data_change_count());
@@ -1181,7 +1183,7 @@ TEST_F(SharedModelTypeProcessorTest, ConflictResolutionChangesMatch) {
   worker()->VerifyPendingCommits({kHash1});
 }
 
-TEST_F(SharedModelTypeProcessorTest, ConflictResolutionUseLocal) {
+TEST_F(ClientTagBasedModelTypeProcessorTest, ConflictResolutionUseLocal) {
   InitializeToReadyState();
   // WriteAndAck entity to get id from the server.
   WriteItemAndAck(kKey1, kValue1);
@@ -1200,7 +1202,7 @@ TEST_F(SharedModelTypeProcessorTest, ConflictResolutionUseLocal) {
   worker()->VerifyNthPendingCommit(1, kHash1, specifics2);
 }
 
-TEST_F(SharedModelTypeProcessorTest, ConflictResolutionUseRemote) {
+TEST_F(ClientTagBasedModelTypeProcessorTest, ConflictResolutionUseRemote) {
   InitializeToReadyState();
   bridge()->WriteItem(kKey1, kValue1);
   bridge()->SetConflictResolution(ConflictResolution::UseRemote());
@@ -1214,7 +1216,7 @@ TEST_F(SharedModelTypeProcessorTest, ConflictResolutionUseRemote) {
   worker()->VerifyPendingCommits({kHash1});
 }
 
-TEST_F(SharedModelTypeProcessorTest, ConflictResolutionUseNew) {
+TEST_F(ClientTagBasedModelTypeProcessorTest, ConflictResolutionUseNew) {
   InitializeToReadyState();
   bridge()->WriteItem(kKey1, kValue1);
   bridge()->SetConflictResolution(
@@ -1234,7 +1236,7 @@ TEST_F(SharedModelTypeProcessorTest, ConflictResolutionUseNew) {
 //
 // Creates items in various states of commit and verifies they re-attempt to
 // commit on reconnect.
-TEST_F(SharedModelTypeProcessorTest, Disconnect) {
+TEST_F(ClientTagBasedModelTypeProcessorTest, Disconnect) {
   InitializeToReadyState();
 
   // The first item is fully committed.
@@ -1269,7 +1271,7 @@ TEST_F(SharedModelTypeProcessorTest, Disconnect) {
 //
 // Creates items in various states of commit and verifies they re-attempt to
 // commit on re-enable.
-TEST_F(SharedModelTypeProcessorTest, Disable) {
+TEST_F(ClientTagBasedModelTypeProcessorTest, Disable) {
   InitializeToReadyState();
 
   // The first item is fully committed.
@@ -1296,7 +1298,7 @@ TEST_F(SharedModelTypeProcessorTest, Disable) {
 }
 
 // Test re-encrypt everything when desired encryption key changes.
-TEST_F(SharedModelTypeProcessorTest, ReEncryptCommitsWithNewKey) {
+TEST_F(ClientTagBasedModelTypeProcessorTest, ReEncryptCommitsWithNewKey) {
   InitializeToReadyState();
 
   // Commit an item.
@@ -1324,7 +1326,7 @@ TEST_F(SharedModelTypeProcessorTest, ReEncryptCommitsWithNewKey) {
 
 // Test that an error loading pending commit data for re-encryption is
 // propagated to the error handler.
-TEST_F(SharedModelTypeProcessorTest, ReEncryptErrorLoadingData) {
+TEST_F(ClientTagBasedModelTypeProcessorTest, ReEncryptErrorLoadingData) {
   InitializeToReadyState();
   WriteItemAndAck(kKey1, kValue1);
   bridge()->ErrorOnNextCall();
@@ -1333,7 +1335,7 @@ TEST_F(SharedModelTypeProcessorTest, ReEncryptErrorLoadingData) {
 }
 
 // Test receipt of updates with new and old keys.
-TEST_F(SharedModelTypeProcessorTest, ReEncryptUpdatesWithNewKey) {
+TEST_F(ClientTagBasedModelTypeProcessorTest, ReEncryptUpdatesWithNewKey) {
   InitializeToReadyState();
 
   // Receive an unencrypted update.
@@ -1370,7 +1372,8 @@ TEST_F(SharedModelTypeProcessorTest, ReEncryptUpdatesWithNewKey) {
 }
 
 // Test that re-encrypting enqueues the right data for USE_LOCAL conflicts.
-TEST_F(SharedModelTypeProcessorTest, ReEncryptConflictResolutionUseLocal) {
+TEST_F(ClientTagBasedModelTypeProcessorTest,
+       ReEncryptConflictResolutionUseLocal) {
   InitializeToReadyState();
   // WriteAndAck entity to get id from the server.
   WriteItemAndAck(kKey1, kValue1);
@@ -1395,7 +1398,8 @@ TEST_F(SharedModelTypeProcessorTest, ReEncryptConflictResolutionUseLocal) {
 }
 
 // Test that re-encrypting enqueues the right data for USE_REMOTE conflicts.
-TEST_F(SharedModelTypeProcessorTest, ReEncryptConflictResolutionUseRemote) {
+TEST_F(ClientTagBasedModelTypeProcessorTest,
+       ReEncryptConflictResolutionUseRemote) {
   InitializeToReadyState();
   worker()->UpdateWithEncryptionKey("k1");
   bridge()->WriteItem(kKey1, kValue1);
@@ -1412,7 +1416,8 @@ TEST_F(SharedModelTypeProcessorTest, ReEncryptConflictResolutionUseRemote) {
 }
 
 // Test that re-encrypting enqueues the right data for USE_NEW conflicts.
-TEST_F(SharedModelTypeProcessorTest, ReEncryptConflictResolutionUseNew) {
+TEST_F(ClientTagBasedModelTypeProcessorTest,
+       ReEncryptConflictResolutionUseNew) {
   InitializeToReadyState();
   worker()->UpdateWithEncryptionKey("k1");
   bridge()->WriteItem(kKey1, kValue1);
@@ -1429,7 +1434,7 @@ TEST_F(SharedModelTypeProcessorTest, ReEncryptConflictResolutionUseNew) {
   EXPECT_EQ(kValue3, db().GetValue(kKey1));
 }
 
-TEST_F(SharedModelTypeProcessorTest, ReEncryptConflictWhileLoading) {
+TEST_F(ClientTagBasedModelTypeProcessorTest, ReEncryptConflictWhileLoading) {
   InitializeToReadyState();
   // Create item and ack so its data is no longer cached.
   WriteItemAndAck(kKey1, kValue1);
@@ -1452,7 +1457,7 @@ TEST_F(SharedModelTypeProcessorTest, ReEncryptConflictWhileLoading) {
 }
 
 // Tests that a real remote change wins over a local encryption-only change.
-TEST_F(SharedModelTypeProcessorTest, IgnoreLocalEncryption) {
+TEST_F(ClientTagBasedModelTypeProcessorTest, IgnoreLocalEncryption) {
   InitializeToReadyState();
   EntitySpecifics specifics = WriteItemAndAck(kKey1, kValue1);
   worker()->UpdateWithEncryptionKey("k1");
@@ -1465,7 +1470,7 @@ TEST_F(SharedModelTypeProcessorTest, IgnoreLocalEncryption) {
 }
 
 // Tests that a real local change wins over a remote encryption-only change.
-TEST_F(SharedModelTypeProcessorTest, IgnoreRemoteEncryption) {
+TEST_F(ClientTagBasedModelTypeProcessorTest, IgnoreRemoteEncryption) {
   InitializeToReadyState();
   EntitySpecifics specifics1 = WriteItemAndAck(kKey1, kValue1);
 
@@ -1479,7 +1484,8 @@ TEST_F(SharedModelTypeProcessorTest, IgnoreRemoteEncryption) {
 }
 
 // Same as above but with two commit requests before one ack.
-TEST_F(SharedModelTypeProcessorTest, IgnoreRemoteEncryptionInterleaved) {
+TEST_F(ClientTagBasedModelTypeProcessorTest,
+       IgnoreRemoteEncryptionInterleaved) {
   InitializeToReadyState();
   // WriteAndAck entity to get id from the server.
   WriteItemAndAck(kKey1, kValue1);
@@ -1502,7 +1508,7 @@ TEST_F(SharedModelTypeProcessorTest, IgnoreRemoteEncryptionInterleaved) {
 // and updates corresponding entity's metadata in MetadataChangeList, and
 // UntrackEntity will remove corresponding ProcessorEntityTracker and do not add
 // any entity's metadata into MetadataChangeList.
-TEST_F(SharedModelTypeProcessorTest, UpdateStorageKey) {
+TEST_F(ClientTagBasedModelTypeProcessorTest, UpdateStorageKey) {
   // Setup bridge to not support calls to GetStorageKey. This will cause
   // FakeModelTypeSyncBridge to call UpdateStorageKey for new entities and will
   // DCHECK if GetStorageKey gets called.
@@ -1546,7 +1552,7 @@ TEST_F(SharedModelTypeProcessorTest, UpdateStorageKey) {
 // GetStorageKey(). When update from server delivers updated encryption key, all
 // entities should be reencrypted including new entity that just got received
 // from server.
-TEST_F(SharedModelTypeProcessorTest, ReencryptionWithEmptyStorageKeys) {
+TEST_F(ClientTagBasedModelTypeProcessorTest, ReencryptionWithEmptyStorageKeys) {
   bridge()->SetSupportsGetStorageKey(false);
   InitializeToReadyState();
 
@@ -1560,7 +1566,7 @@ TEST_F(SharedModelTypeProcessorTest, ReencryptionWithEmptyStorageKeys) {
 // Tests that UntrackEntity won't propagate storage key to
 // ProcessorEntityTracker, and no entity's metadata are added into
 // MetadataChangeList.
-TEST_F(SharedModelTypeProcessorTest, UntrackEntity) {
+TEST_F(ClientTagBasedModelTypeProcessorTest, UntrackEntity) {
   // Setup bridge to not support calls to GetStorageKey. This will cause
   // FakeModelTypeSyncBridge to call UpdateStorageKey for new entities and will
   // DCHECK if GetStorageKey gets called.
@@ -1581,10 +1587,10 @@ TEST_F(SharedModelTypeProcessorTest, UntrackEntity) {
   EXPECT_EQ(0, bridge()->get_storage_key_call_count());
 }
 
-// Tests that SharedModelTypeProcessor can do garbage collection by version.
-// Create 2 entries, one is version 1, another is version 3. Check if sync
-// will delete version 1 entry when server set expired version is 2.
-TEST_F(SharedModelTypeProcessorTest, GarbageCollectionByVersion) {
+// Tests that ClientTagBasedModelTypeProcessor can do garbage collection by
+// version. Create 2 entries, one is version 1, another is version 3. Check if
+// sync will delete version 1 entry when server set expired version is 2.
+TEST_F(ClientTagBasedModelTypeProcessorTest, GarbageCollectionByVersion) {
   InitializeToReadyState();
 
   // Create 2 entries, one is version 3, another is version 1.
@@ -1612,10 +1618,10 @@ TEST_F(SharedModelTypeProcessorTest, GarbageCollectionByVersion) {
   EXPECT_EQ(0U, worker()->GetNumPendingCommits());
 }
 
-// Tests that SharedModelTypeProcessor can do garbage collection by age.
+// Tests that ClientTagBasedModelTypeProcessor can do garbage collection by age.
 // Create 2 entries, one is 15-days-old, another is 5-days-old. Check if sync
 // will delete 15-days-old entry when server set expired age is 10 days.
-TEST_F(SharedModelTypeProcessorTest, GarbageCollectionByAge) {
+TEST_F(ClientTagBasedModelTypeProcessorTest, GarbageCollectionByAge) {
   InitializeToReadyState();
 
   // Create 2 entries, one is 15-days-old, another is 5-days-old.
@@ -1646,11 +1652,11 @@ TEST_F(SharedModelTypeProcessorTest, GarbageCollectionByAge) {
   EXPECT_EQ(0U, worker()->GetNumPendingCommits());
 }
 
-// Tests that SharedModelTypeProcessor can do garbage collection by item limit.
-// Create 3 entries, one is 15-days-old, one is 10-days-old, another is
+// Tests that ClientTagBasedModelTypeProcessor can do garbage collection by item
+// limit. Create 3 entries, one is 15-days-old, one is 10-days-old, another is
 // 5-days-old. Check if sync will delete 15-days-old entry when server set
 // limited item is 2 days.
-TEST_F(SharedModelTypeProcessorTest, GarbageCollectionByItemLimit) {
+TEST_F(ClientTagBasedModelTypeProcessorTest, GarbageCollectionByItemLimit) {
   InitializeToReadyState();
 
   // Create 3 entries, one is 15-days-old, one is 10-days-old, another is

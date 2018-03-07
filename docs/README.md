@@ -127,7 +127,7 @@ used when committed.
 *   [base::Optional](optional.md) - How to use `base::Optional` in C++ code.
 *   [Using the Origin Trials Framework](origin_trials_integration.md) - A
     framework for conditionally enabling experimental APIs for testing.
-*   [`SharedModelTypeProcessor` in Unified Sync and Storage](sync/uss/shared_model_type_processor.md) -
+*   [`ClientTagBasedModelTypeProcessor` in Unified Sync and Storage](sync/uss/client_tag_based_model_type_processor.md) -
     Notes on the central data structure used in Chrome Sync.
 *   [Chrome Sync's Model API](sync/model_api.md) - Data models used for syncing
     information across devices using Chrome Sync.

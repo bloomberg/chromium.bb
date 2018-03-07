@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/model_impl/shared_model_type_processor.h"
+#include "components/sync/model_impl/client_tag_based_model_type_processor.h"
 
 #include <utility>
 #include <vector>
@@ -44,7 +44,7 @@ int64_t FindTheNthBigestProtoTimeStamp(std::vector<int64_t> time_stamps,
 }
 }  // namespace
 
-SharedModelTypeProcessor::SharedModelTypeProcessor(
+ClientTagBasedModelTypeProcessor::ClientTagBasedModelTypeProcessor(
     ModelType type,
     ModelTypeSyncBridge* bridge,
     const base::RepeatingClosure& dump_stack,
@@ -59,11 +59,11 @@ SharedModelTypeProcessor::SharedModelTypeProcessor(
   DCHECK(bridge);
 }
 
-SharedModelTypeProcessor::~SharedModelTypeProcessor() {
+ClientTagBasedModelTypeProcessor::~ClientTagBasedModelTypeProcessor() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-void SharedModelTypeProcessor::OnSyncStarting(
+void ClientTagBasedModelTypeProcessor::OnSyncStarting(
     const ModelErrorHandler& error_handler,
     const StartCallback& start_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -77,7 +77,7 @@ void SharedModelTypeProcessor::OnSyncStarting(
   ConnectIfReady();
 }
 
-void SharedModelTypeProcessor::ModelReadyToSync(
+void ClientTagBasedModelTypeProcessor::ModelReadyToSync(
     std::unique_ptr<MetadataBatch> batch) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(waiting_for_metadata_);
@@ -108,8 +108,9 @@ void SharedModelTypeProcessor::ModelReadyToSync(
       waiting_for_pending_data_ = true;
       bridge_->GetData(
           std::move(entities_to_commit),
-          base::Bind(&SharedModelTypeProcessor::OnInitialPendingDataLoaded,
-                     weak_ptr_factory_.GetWeakPtr()));
+          base::BindOnce(
+              &ClientTagBasedModelTypeProcessor::OnInitialPendingDataLoaded,
+              weak_ptr_factory_.GetWeakPtr()));
     }
   } else {
     DCHECK_EQ(0u, batch->TakeAllMetadata().size());
@@ -121,11 +122,11 @@ void SharedModelTypeProcessor::ModelReadyToSync(
   ConnectIfReady();
 }
 
-bool SharedModelTypeProcessor::IsModelReadyOrError() const {
+bool ClientTagBasedModelTypeProcessor::IsModelReadyOrError() const {
   return model_error_ || (!waiting_for_metadata_ && !waiting_for_pending_data_);
 }
 
-void SharedModelTypeProcessor::ConnectIfReady() {
+void ClientTagBasedModelTypeProcessor::ConnectIfReady() {
   if (!IsModelReadyOrError() || !start_callback_)
     return;
 
@@ -144,18 +145,18 @@ void SharedModelTypeProcessor::ConnectIfReady() {
   start_callback_.Reset();
 }
 
-bool SharedModelTypeProcessor::IsAllowingChanges() const {
+bool ClientTagBasedModelTypeProcessor::IsAllowingChanges() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Changes can be handled correctly even before pending data is loaded.
   return !waiting_for_metadata_;
 }
 
-bool SharedModelTypeProcessor::IsConnected() const {
+bool ClientTagBasedModelTypeProcessor::IsConnected() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return !!worker_;
 }
 
-void SharedModelTypeProcessor::DisableSync() {
+void ClientTagBasedModelTypeProcessor::DisableSync() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::unique_ptr<MetadataChangeList> change_list =
       bridge_->CreateMetadataChangeList();
@@ -167,11 +168,11 @@ void SharedModelTypeProcessor::DisableSync() {
   bridge_->ApplySyncChanges(std::move(change_list), EntityChangeList());
 }
 
-bool SharedModelTypeProcessor::IsTrackingMetadata() {
+bool ClientTagBasedModelTypeProcessor::IsTrackingMetadata() {
   return model_type_state_.initial_sync_done();
 }
 
-void SharedModelTypeProcessor::ReportError(const ModelError& error) {
+void ClientTagBasedModelTypeProcessor::ReportError(const ModelError& error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Ignore all errors after the first.
@@ -195,7 +196,7 @@ void SharedModelTypeProcessor::ReportError(const ModelError& error) {
   }
 }
 
-void SharedModelTypeProcessor::ConnectSync(
+void ClientTagBasedModelTypeProcessor::ConnectSync(
     std::unique_ptr<CommitQueue> worker) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(1) << "Successfully connected " << ModelTypeToString(type_);
@@ -205,7 +206,7 @@ void SharedModelTypeProcessor::ConnectSync(
   NudgeForCommitIfNeeded();
 }
 
-void SharedModelTypeProcessor::DisconnectSync() {
+void ClientTagBasedModelTypeProcessor::DisconnectSync() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(IsConnected());
 
@@ -218,9 +219,10 @@ void SharedModelTypeProcessor::DisconnectSync() {
   }
 }
 
-void SharedModelTypeProcessor::Put(const std::string& storage_key,
-                                   std::unique_ptr<EntityData> data,
-                                   MetadataChangeList* metadata_change_list) {
+void ClientTagBasedModelTypeProcessor::Put(
+    const std::string& storage_key,
+    std::unique_ptr<EntityData> data,
+    MetadataChangeList* metadata_change_list) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(IsAllowingChanges());
   DCHECK(data);
@@ -253,7 +255,7 @@ void SharedModelTypeProcessor::Put(const std::string& storage_key,
   NudgeForCommitIfNeeded();
 }
 
-void SharedModelTypeProcessor::Delete(
+void ClientTagBasedModelTypeProcessor::Delete(
     const std::string& storage_key,
     MetadataChangeList* metadata_change_list) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -281,7 +283,7 @@ void SharedModelTypeProcessor::Delete(
   NudgeForCommitIfNeeded();
 }
 
-void SharedModelTypeProcessor::UpdateStorageKey(
+void ClientTagBasedModelTypeProcessor::UpdateStorageKey(
     const EntityData& entity_data,
     const std::string& storage_key,
     MetadataChangeList* metadata_change_list) {
@@ -299,14 +301,15 @@ void SharedModelTypeProcessor::UpdateStorageKey(
   metadata_change_list->UpdateMetadata(storage_key, entity->metadata());
 }
 
-void SharedModelTypeProcessor::UntrackEntity(const EntityData& entity_data) {
+void ClientTagBasedModelTypeProcessor::UntrackEntity(
+    const EntityData& entity_data) {
   const std::string& client_tag_hash = entity_data.client_tag_hash;
   DCHECK(!client_tag_hash.empty());
   DCHECK(GetEntityForTagHash(client_tag_hash)->storage_key().empty());
   entities_.erase(client_tag_hash);
 }
 
-void SharedModelTypeProcessor::NudgeForCommitIfNeeded() {
+void ClientTagBasedModelTypeProcessor::NudgeForCommitIfNeeded() {
   // Don't bother sending anything if there's no one to send to.
   if (!IsConnected())
     return;
@@ -329,7 +332,7 @@ void SharedModelTypeProcessor::NudgeForCommitIfNeeded() {
     worker_->NudgeForCommit();
 }
 
-void SharedModelTypeProcessor::GetLocalChanges(
+void ClientTagBasedModelTypeProcessor::GetLocalChanges(
     size_t max_entries,
     const GetLocalChangesCallback& callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -352,7 +355,7 @@ void SharedModelTypeProcessor::GetLocalChanges(
   callback.Run(std::move(commit_requests));
 }
 
-void SharedModelTypeProcessor::OnCommitCompleted(
+void ClientTagBasedModelTypeProcessor::OnCommitCompleted(
     const sync_pb::ModelTypeState& model_type_state,
     const CommitResponseDataList& response_list) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -412,7 +415,7 @@ void SharedModelTypeProcessor::OnCommitCompleted(
   }
 }
 
-void SharedModelTypeProcessor::OnUpdateReceived(
+void ClientTagBasedModelTypeProcessor::OnUpdateReceived(
     const sync_pb::ModelTypeState& model_type_state,
     const UpdateResponseDataList& updates) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -486,7 +489,7 @@ void SharedModelTypeProcessor::OnUpdateReceived(
   NudgeForCommitIfNeeded();
 }
 
-ProcessorEntityTracker* SharedModelTypeProcessor::ProcessUpdate(
+ProcessorEntityTracker* ClientTagBasedModelTypeProcessor::ProcessUpdate(
     const UpdateResponseData& update,
     EntityChangeList* entity_changes) {
   const EntityData& data = update.entity.value();
@@ -551,7 +554,7 @@ ProcessorEntityTracker* SharedModelTypeProcessor::ProcessUpdate(
   return entity;
 }
 
-ConflictResolution::Type SharedModelTypeProcessor::ResolveConflict(
+ConflictResolution::Type ClientTagBasedModelTypeProcessor::ResolveConflict(
     const UpdateResponseData& update,
     ProcessorEntityTracker* entity,
     EntityChangeList* changes) {
@@ -621,7 +624,7 @@ ConflictResolution::Type SharedModelTypeProcessor::ResolveConflict(
   return resolution_type;
 }
 
-void SharedModelTypeProcessor::RecommitAllForEncryption(
+void ClientTagBasedModelTypeProcessor::RecommitAllForEncryption(
     std::unordered_set<std::string> already_updated,
     MetadataChangeList* metadata_changes) {
   ModelTypeSyncBridge::StorageKeyList entities_needing_data;
@@ -646,12 +649,13 @@ void SharedModelTypeProcessor::RecommitAllForEncryption(
   if (!entities_needing_data.empty()) {
     bridge_->GetData(
         std::move(entities_needing_data),
-        base::Bind(&SharedModelTypeProcessor::OnDataLoadedForReEncryption,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(
+            &ClientTagBasedModelTypeProcessor::OnDataLoadedForReEncryption,
+            weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
-void SharedModelTypeProcessor::OnInitialUpdateReceived(
+void ClientTagBasedModelTypeProcessor::OnInitialUpdateReceived(
     const sync_pb::ModelTypeState& model_type_state,
     const UpdateResponseDataList& updates) {
   DCHECK(entities_.empty());
@@ -697,7 +701,7 @@ void SharedModelTypeProcessor::OnInitialUpdateReceived(
   NudgeForCommitIfNeeded();
 }
 
-void SharedModelTypeProcessor::OnInitialPendingDataLoaded(
+void ClientTagBasedModelTypeProcessor::OnInitialPendingDataLoaded(
     std::unique_ptr<DataBatch> data_batch) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(waiting_for_pending_data_);
@@ -712,7 +716,7 @@ void SharedModelTypeProcessor::OnInitialPendingDataLoaded(
   ConnectIfReady();
 }
 
-void SharedModelTypeProcessor::OnDataLoadedForReEncryption(
+void ClientTagBasedModelTypeProcessor::OnDataLoadedForReEncryption(
     std::unique_ptr<DataBatch> data_batch) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!waiting_for_pending_data_);
@@ -721,7 +725,7 @@ void SharedModelTypeProcessor::OnDataLoadedForReEncryption(
   NudgeForCommitIfNeeded();
 }
 
-void SharedModelTypeProcessor::ConsumeDataBatch(
+void ClientTagBasedModelTypeProcessor::ConsumeDataBatch(
     std::unique_ptr<DataBatch> data_batch) {
   while (data_batch->HasNext()) {
     KeyAndData data = data_batch->Next();
@@ -735,11 +739,12 @@ void SharedModelTypeProcessor::ConsumeDataBatch(
   }
 }
 
-std::string SharedModelTypeProcessor::GetHashForTag(const std::string& tag) {
+std::string ClientTagBasedModelTypeProcessor::GetHashForTag(
+    const std::string& tag) {
   return GenerateSyncableHash(type_, tag);
 }
 
-std::string SharedModelTypeProcessor::GetClientTagHash(
+std::string ClientTagBasedModelTypeProcessor::GetClientTagHash(
     const std::string& storage_key,
     const EntityData& data) {
   auto iter = storage_key_to_tag_hash_.find(storage_key);
@@ -748,7 +753,8 @@ std::string SharedModelTypeProcessor::GetClientTagHash(
              : iter->second;
 }
 
-ProcessorEntityTracker* SharedModelTypeProcessor::GetEntityForStorageKey(
+ProcessorEntityTracker*
+ClientTagBasedModelTypeProcessor::GetEntityForStorageKey(
     const std::string& storage_key) {
   auto iter = storage_key_to_tag_hash_.find(storage_key);
   return iter == storage_key_to_tag_hash_.end()
@@ -756,13 +762,13 @@ ProcessorEntityTracker* SharedModelTypeProcessor::GetEntityForStorageKey(
              : GetEntityForTagHash(iter->second);
 }
 
-ProcessorEntityTracker* SharedModelTypeProcessor::GetEntityForTagHash(
+ProcessorEntityTracker* ClientTagBasedModelTypeProcessor::GetEntityForTagHash(
     const std::string& tag_hash) {
   auto it = entities_.find(tag_hash);
   return it != entities_.end() ? it->second.get() : nullptr;
 }
 
-ProcessorEntityTracker* SharedModelTypeProcessor::CreateEntity(
+ProcessorEntityTracker* ClientTagBasedModelTypeProcessor::CreateEntity(
     const std::string& storage_key,
     const EntityData& data) {
   DCHECK(entities_.find(data.client_tag_hash) == entities_.end());
@@ -779,7 +785,7 @@ ProcessorEntityTracker* SharedModelTypeProcessor::CreateEntity(
   return entity_ptr;
 }
 
-ProcessorEntityTracker* SharedModelTypeProcessor::CreateEntity(
+ProcessorEntityTracker* ClientTagBasedModelTypeProcessor::CreateEntity(
     const EntityData& data) {
   // Verify the tag hash matches, may be relaxed in the future.
   DCHECK_EQ(data.client_tag_hash, GetHashForTag(bridge_->GetClientTag(data)));
@@ -789,7 +795,7 @@ ProcessorEntityTracker* SharedModelTypeProcessor::CreateEntity(
   return CreateEntity(storage_key, data);
 }
 
-bool SharedModelTypeProcessor::AllStorageKeysPopulated() const {
+bool ClientTagBasedModelTypeProcessor::AllStorageKeysPopulated() const {
   for (const auto& kv : entities_) {
     ProcessorEntityTracker* entity = kv.second.get();
     if (entity->storage_key().empty())
@@ -798,7 +804,7 @@ bool SharedModelTypeProcessor::AllStorageKeysPopulated() const {
   return true;
 }
 
-size_t SharedModelTypeProcessor::EstimateMemoryUsage() const {
+size_t ClientTagBasedModelTypeProcessor::EstimateMemoryUsage() const {
   using base::trace_event::EstimateMemoryUsage;
   size_t memory_usage = 0;
   memory_usage += EstimateMemoryUsage(model_type_state_);
@@ -807,7 +813,7 @@ size_t SharedModelTypeProcessor::EstimateMemoryUsage() const {
   return memory_usage;
 }
 
-void SharedModelTypeProcessor::ExpireEntriesIfNeeded(
+void ClientTagBasedModelTypeProcessor::ExpireEntriesIfNeeded(
     const sync_pb::DataTypeProgressMarker& progress_marker) {
   if (!progress_marker.has_gc_directive())
     return;
@@ -853,7 +859,7 @@ void SharedModelTypeProcessor::ExpireEntriesIfNeeded(
     bridge_->ApplySyncChanges(std::move(metadata_changes), EntityChangeList());
 }
 
-void SharedModelTypeProcessor::ClearMetadataForEntries(
+void ClientTagBasedModelTypeProcessor::ClearMetadataForEntries(
     const std::vector<std::string>& storage_key_to_be_deleted,
     MetadataChangeList* metadata_changes) {
   for (const std::string& key : storage_key_to_be_deleted) {
@@ -865,7 +871,7 @@ void SharedModelTypeProcessor::ClearMetadataForEntries(
   }
 }
 
-void SharedModelTypeProcessor::ExpireEntriesByVersion(
+void ClientTagBasedModelTypeProcessor::ExpireEntriesByVersion(
     int64_t version_watermark,
     MetadataChangeList* metadata_changes) {
   DCHECK(metadata_changes);
@@ -882,7 +888,7 @@ void SharedModelTypeProcessor::ExpireEntriesByVersion(
   ClearMetadataForEntries(storage_key_to_be_deleted, metadata_changes);
 }
 
-void SharedModelTypeProcessor::ExpireEntriesByAge(
+void ClientTagBasedModelTypeProcessor::ExpireEntriesByAge(
     int32_t age_watermark_in_days,
     MetadataChangeList* metadata_changes) {
   DCHECK(metadata_changes);
@@ -902,7 +908,7 @@ void SharedModelTypeProcessor::ExpireEntriesByAge(
   ClearMetadataForEntries(storage_key_to_be_deleted, metadata_changes);
 }
 
-void SharedModelTypeProcessor::ExpireEntriesByItemLimit(
+void ClientTagBasedModelTypeProcessor::ExpireEntriesByItemLimit(
     int32_t max_number_of_items,
     MetadataChangeList* metadata_changes) {
   DCHECK(metadata_changes);
@@ -931,7 +937,7 @@ void SharedModelTypeProcessor::ExpireEntriesByItemLimit(
   ClearMetadataForEntries(storage_key_to_be_deleted, metadata_changes);
 }
 
-void SharedModelTypeProcessor::RemoveEntity(
+void ClientTagBasedModelTypeProcessor::RemoveEntity(
     ProcessorEntityTracker* entity,
     MetadataChangeList* metadata_change_list) {
   metadata_change_list->ClearMetadata(entity->storage_key());

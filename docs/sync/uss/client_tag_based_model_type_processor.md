@@ -1,6 +1,6 @@
-# SharedModelTypeProcessor
+# ClientTagBasedModelTypeProcessor
 
-The [`SharedModelTypeProcessor`][SMTP] is a crucial piece of the USS codepath.
+The [`ClientTagBasedModelTypeProcessor`][SMTP] is a crucial piece of the USS codepath.
 It lives on the model thread and performs the tracking of sync metadata for the
 [`ModelTypeSyncBridge`][MTSB] that owns it by implementing the
 [`ModelTypeChangeProcessor`][MTCP] interface, as well as sending commit requests
@@ -8,7 +8,7 @@ to the [`ModelTypeWorker`][MTW] on the sync thread via the [`CommitQueue`][CQ]
 interface and receiving updates from the same worker via the
 [`ModelTypeProcessor`][MTP] interface.
 
-[SMTP]: https://cs.chromium.org/chromium/src/components/sync/model_impl/shared_model_type_processor.h
+[SMTP]: https://cs.chromium.org/chromium/src/components/sync/model_impl/client_tag_based_model_type_processor.h
 [MTSB]: https://cs.chromium.org/chromium/src/components/sync/model/model_type_sync_bridge.h
 [MTCP]: https://cs.chromium.org/chromium/src/components/sync/model/model_type_change_processor.h
 [MTW]: https://cs.chromium.org/chromium/src/components/sync/engine_impl/model_type_worker.h
