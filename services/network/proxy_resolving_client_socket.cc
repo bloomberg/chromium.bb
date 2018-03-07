@@ -273,9 +273,6 @@ void ProxyResolvingClientSocket::CloseTransportSocket() {
   transport_.reset();
 }
 
-// TODO(xunjieli): This following method is out of sync with
-// HttpStreamFactoryImpl::JobController. The logic should be refactored into a
-// common place.
 // This method reconsiders the proxy on certain errors. If it does
 // reconsider a proxy it always returns ERR_IO_PENDING and posts a call to
 // ConnectToProxy with the result of the reconsideration.
@@ -284,28 +281,16 @@ int ProxyResolvingClientSocket::ReconsiderProxyAfterError(int error) {
   DCHECK_NE(error, net::OK);
   DCHECK_NE(error, net::ERR_IO_PENDING);
 
-  switch (error) {
-    case net::ERR_CONNECTION_TIMED_OUT:
-    case net::ERR_PROXY_CERTIFICATE_INVALID:
-    case net::ERR_QUIC_PROTOCOL_ERROR:
-    case net::ERR_QUIC_HANDSHAKE_FAILED:
-    case net::ERR_SSL_PROTOCOL_ERROR:
-    case net::ERR_MSG_TOO_BIG:
-      // TODO(crbug.com/817052): Delete this special case. These errors are
-      // currently not considered fallback errors by ProxyResolvingClientSocket,
-      // however are by CanFalloverToNextProxy().
-      return error;
-    case net::ERR_PROXY_AUTH_REQUESTED: {
-      net::ProxyClientSocket* proxy_socket =
-          static_cast<net::ProxyClientSocket*>(transport_->socket());
+  if (error == net::ERR_PROXY_AUTH_REQUESTED) {
+    net::ProxyClientSocket* proxy_socket =
+        static_cast<net::ProxyClientSocket*>(transport_->socket());
 
-      if (proxy_socket->GetAuthController()->HaveAuth()) {
-        return proxy_socket->RestartWithAuth(
-            base::BindRepeating(&ProxyResolvingClientSocket::ConnectToProxyDone,
-                                base::Unretained(this)));
-      }
-      return error;
+    if (proxy_socket->GetAuthController()->HaveAuth()) {
+      return proxy_socket->RestartWithAuth(
+          base::BindRepeating(&ProxyResolvingClientSocket::ConnectToProxyDone,
+                              base::Unretained(this)));
     }
+    return error;
   }
 
   // Check if the error was a proxy failure.
