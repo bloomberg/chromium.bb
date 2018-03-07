@@ -16,6 +16,8 @@ class CHROMEOS_EXPORT FakeUpstartClient : public UpstartClient {
   FakeUpstartClient();
   ~FakeUpstartClient() override;
 
+  int hammerd_start_count() const { return hammerd_start_count_; }
+
   // DBusClient overrides.
   void Init(dbus::Bus* bus) override;
 
@@ -27,8 +29,12 @@ class CHROMEOS_EXPORT FakeUpstartClient : public UpstartClient {
   void RestartMediaAnalytics(VoidDBusMethodCallback callback) override;
   void StopMediaAnalytics() override;
   void StopMediaAnalytics(VoidDBusMethodCallback callback) override;
+  void StartHammerd() override;
 
  private:
+  // The number of times hammerd was started.
+  int hammerd_start_count_ = 0;
+
   DISALLOW_COPY_AND_ASSIGN(FakeUpstartClient);
 };
 

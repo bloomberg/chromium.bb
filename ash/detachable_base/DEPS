@@ -1,4 +1,6 @@
 include_rules = [
   "+chromeos/dbus/fake_hammerd_client.h",
-  "+chromeos/dbus/hammerd_client.h"
+  "+chromeos/dbus/fake_upstart_client.h",
+  "+chromeos/dbus/hammerd_client.h",
+  "+chromeos/dbus/upstart_client.h",
 ]
