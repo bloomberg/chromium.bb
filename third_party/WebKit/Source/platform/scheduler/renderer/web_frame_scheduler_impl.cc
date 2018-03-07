@@ -289,6 +289,7 @@ WebFrameSchedulerImpl::GetTaskRunner(TaskType type) {
     case TaskType::kInternalWebCrypto:
     case TaskType::kInternalIPC:
       return TaskRunnerImpl::Create(UnpausableTaskQueue(), type);
+    case TaskType::kDeprecatedNone:
     case TaskType::kCount:
       NOTREACHED();
       break;
