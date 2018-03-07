@@ -148,7 +148,7 @@ class BuildResultCommand(command.CliCommand):
 
   EPILOG = """
 Look up a single build result:
-  cros buildresult --buildbot-id 1234567890123
+  cros buildresult --buildbucket-id 1234567890123
   cros buildresult --cidb-id 1234
 
 Look up results by build config name:
@@ -158,7 +158,11 @@ Look up results by build config name:
       --start-date 2018-1-2 --end-date 2018-1-7
 
 Output can be json formatted with:
-  cros buildresult --buildbot-id 1234567890123 --report json
+  cros buildresult --buildbucket-id 1234567890123 --report json
+
+Note:
+  This tool does NOT work for master-*-tryjob, precq-launcher-try, or
+  builds on branches older than CL:942097.
 
 Note:
   Exit code 1: A script error or bad options combination.
