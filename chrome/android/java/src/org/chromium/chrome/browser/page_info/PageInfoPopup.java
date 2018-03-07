@@ -47,6 +47,7 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.StrictModeContext;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
@@ -838,7 +839,10 @@ public class PageInfoPopup implements OnClickListener {
                             mContext, SingleWebsitePreferences.class.getName());
                     preferencesIntent.putExtra(
                             Preferences.EXTRA_SHOW_FRAGMENT_ARGUMENTS, fragmentArguments);
-                    mContext.startActivity(preferencesIntent);
+                    // Disabling StrictMode to avoid violations (https://crbug.com/819410).
+                    try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+                        mContext.startActivity(preferencesIntent);
+                    }
                 }
             });
         } else if (view == mInstantAppButton) {
