@@ -107,9 +107,6 @@ class SyncTest : public InProcessBrowserTest {
     SERVER_TYPE_UNDECIDED,
     LOCAL_PYTHON_SERVER,   // The mock python server that runs locally and is
                            // part of the Chromium checkout.
-    LOCAL_LIVE_SERVER,     // Some other server (maybe the real binary used by
-                           // Google's sync service) that can be started on
-                           // a per-test basis by running a command
     EXTERNAL_LIVE_SERVER,  // A remote server that the test code has no control
                            // over whatsoever; cross your fingers that the
                            // account state is initially clean.
@@ -246,10 +243,6 @@ class SyncTest : public InProcessBrowserTest {
   // only if ServerSupportsErrorTriggering() returned true.
   void TriggerMigrationDoneError(syncer::ModelTypeSet model_types);
 
-  // Triggers an XMPP auth error on the server.  Note the server will
-  // stay in this state until shut down.
-  void TriggerXmppAuthError();
-
   // Returns the FakeServer being used for the test or null if FakeServer is
   // not being used.
   fake_server::FakeServer* GetFakeServer() const;
@@ -333,14 +326,9 @@ class SyncTest : public InProcessBrowserTest {
   // Helper method that starts up a sync test server if required.
   void SetUpTestServerIfRequired();
 
-  // Helper method used to start up a local python test server. Note: We set up
-  // an XMPP-only python server if |server_type_| is LOCAL_LIVE_SERVER and mock
-  // gaia credentials are in use. Returns true if successful.
-  bool SetUpLocalPythonTestServer();
-
-  // Helper method used to start up a local sync test server. Returns true if
+  // Helper method used to start up a local python test server. Returns true if
   // successful.
-  bool SetUpLocalTestServer();
+  bool SetUpLocalPythonTestServer();
 
   // Helper method used to destroy the local python sync test server if one was
   // created. Returns true if successful.
