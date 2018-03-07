@@ -1,39 +1,35 @@
 <!DOCTYPE html>
-<pre id="log"></pre>
-
-<div id="ltrTextContainer" contenteditable>foo bar <span contenteditable=false>baz</span> qux quux</div>
-<div id="rtlTextContainer" contenteditable dir="rtl">&#x05E9;&#x05D5;&#x05BC;&#x05E8;&#x05D4; &#x05E9;&#x05D5;&#x05BC;&#x05E8;&#x05D4;
-<span contenteditable=false>&#x05E9;&#x05D5;&#x05BC;&#x05E8;&#x05D4;</span>
-&#x05E9;&#x05D5;&#x05BC;&#x05E8;&#x05D4; &#x05E9;&#x05D5;&#x05BC;&#x05E8;&#x05D4;</div>
-
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
 <script>
-function log(s) {
-  document.getElementById("log").appendChild(document.createTextNode(s + "\n"));
-}
+selection_test(
+  [
+    '<div contenteditable>',
+      'foo bar <span contenteditable="false">baz</span>| qux quux',
+    '</div>',
+  ],
+  selection => selection.modify('extend', 'backward', 'word'),
+  [
+    '<div contenteditable>',
+      'foo bar |<span contenteditable="false">baz</span>^ qux quux',
+    '</div>',
+  ],
+  '1 LTR extend backward word');
 
-function placeCursorAfterFirstNoneditableChild(container) {
-  for (var i = 0; i < container.childNodes.length; i++) {
-    var node = container.childNodes[i];
-    if (node.isContentEditable !== undefined && !node.isContentEditable) {
-      getSelection().collapse(node.nextSibling, 0);
-      return node;
-    }
-  }
-  throw "Couldn't find noneditable child of " + container.textContent;
-}
-
-function extendBackwardByWord(container, bidiName) {
-  noneditableChild = placeCursorAfterFirstNoneditableChild(container);
-  getSelection().modify("extend", "backward", "word");
-  if (getSelection().toString() === noneditableChild.textContent)
-    log("PASS for " + bidiName);
-  else
-    log("FAIL for " + bidiName + ", selection is \"" + getSelection() + "\" but should be \"" + noneditableChild.textContent + "\"");
-}
-
-extendBackwardByWord(document.getElementById("ltrTextContainer"), "LTR");
-extendBackwardByWord(document.getElementById("rtlTextContainer"), "RTL");
-
-if (window.testRunner)
-    testRunner.dumpAsText();
+const kWord = '\u05E9\u05D5\u05BC\u05E8\u05D4';
+selection_test(
+  [
+    '<div contenteditable>',
+      `${kWord} ${kWord} `,
+      `<span contenteditable="false">${kWord}</span>| ${kWord} ${kWord}`,
+    '</div>',
+  ],
+  selection => selection.modify('extend', 'backward', 'word'),
+  [
+    '<div contenteditable>',
+      `${kWord} ${kWord} |<span contenteditable="false">${kWord}</span>^ ${kWord} ${kWord}`,
+    '</div>',
+  ],
+  '2 RTL extend backward word');
 </script>
