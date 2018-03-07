@@ -17,8 +17,8 @@ int ScopedErrorExpecter::SQLiteLibVersionNumber() {
 
 ScopedErrorExpecter::ScopedErrorExpecter()
     : checked_(false) {
-  callback_ =
-      base::Bind(&ScopedErrorExpecter::ErrorSeen, base::Unretained(this));
+  callback_ = base::BindRepeating(&ScopedErrorExpecter::ErrorSeen,
+                                  base::Unretained(this));
   Connection::SetErrorExpecter(&callback_);
 }
 

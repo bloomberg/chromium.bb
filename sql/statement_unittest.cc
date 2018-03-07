@@ -66,7 +66,7 @@ TEST_F(SQLStatementTest, ErrorCallback) {
 
   int error = SQLITE_OK;
   sql::ScopedErrorCallback sec(
-      &db(), base::Bind(&sql::CaptureErrorCallback, &error));
+      &db(), base::BindRepeating(&sql::CaptureErrorCallback, &error));
 
   // Insert in the foo table the primary key. It is an error to insert
   // something other than an number. This error causes the error callback

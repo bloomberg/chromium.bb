@@ -248,8 +248,8 @@ TEST_F(SQLRecoveryTest, RecoverCorruptIndex) {
   ASSERT_TRUE(Reopen());
 
   int error = SQLITE_OK;
-  db().set_error_callback(base::Bind(&RecoveryCallback, &db(), db_path(),
-                                     kCreateTable, kCreateIndex, &error));
+  db().set_error_callback(base::BindRepeating(
+      &RecoveryCallback, &db(), db_path(), kCreateTable, kCreateIndex, &error));
 
   // This works before the callback is called.
   const char kTrivialSql[] = "SELECT COUNT(*) FROM sqlite_master";
@@ -307,8 +307,8 @@ TEST_F(SQLRecoveryTest, RecoverCorruptTable) {
   ASSERT_TRUE(Reopen());
 
   int error = SQLITE_OK;
-  db().set_error_callback(base::Bind(&RecoveryCallback, &db(), db_path(),
-                                     kCreateTable, kCreateIndex, &error));
+  db().set_error_callback(base::BindRepeating(
+      &RecoveryCallback, &db(), db_path(), kCreateTable, kCreateIndex, &error));
 
   // Index shows one less than originally inserted.
   const char kCountSql[] = "SELECT COUNT (*) FROM x";
