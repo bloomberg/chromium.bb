@@ -179,6 +179,10 @@ static_assert(
     !std::is_trivially_destructible<Optional<NonTriviallyDestructible>>::value,
     "OptionalIsTriviallyDestructible");
 
+static_assert(sizeof(Optional<int>) == sizeof(internal::OptionalBase<int>),
+              "internal::{Copy,Move}{Constructible,Assignable} structs "
+              "should be 0-sized");
+
 TEST(OptionalTest, DefaultConstructor) {
   {
     constexpr Optional<float> o;
