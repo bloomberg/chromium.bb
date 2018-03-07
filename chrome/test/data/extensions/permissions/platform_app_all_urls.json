@@ -1,5 +1,6 @@
 {
   "name": "Platform app <all_urls>",
+  "manifest_version": 2,
   "version": "1.0",
   "app": {
     "background": {
