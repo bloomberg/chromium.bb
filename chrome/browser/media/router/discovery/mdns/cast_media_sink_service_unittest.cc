@@ -56,9 +56,11 @@ class MockCastMediaSinkServiceImpl : public CastMediaSinkServiceImpl {
  public:
   MockCastMediaSinkServiceImpl(
       const OnSinksDiscoveredCallback& callback,
+      CastMediaSinkServiceImpl::Observer* observer,
       cast_channel::CastSocketService* cast_socket_service,
       DiscoveryNetworkMonitor* network_monitor)
       : CastMediaSinkServiceImpl(callback,
+                                 observer,
                                  cast_socket_service,
                                  network_monitor),
         sinks_discovered_cb_(callback) {}
@@ -87,11 +89,13 @@ class TestCastMediaSinkService : public CastMediaSinkService {
   ~TestCastMediaSinkService() override = default;
 
   std::unique_ptr<CastMediaSinkServiceImpl, base::OnTaskRunnerDeleter>
-  CreateImpl(const OnSinksDiscoveredCallback& sinks_discovered_cb) override {
+  CreateImpl(const OnSinksDiscoveredCallback& sinks_discovered_cb,
+             CastMediaSinkServiceImpl::Observer* observer) override {
     auto mock_impl = std::unique_ptr<MockCastMediaSinkServiceImpl,
                                      base::OnTaskRunnerDeleter>(
-        new MockCastMediaSinkServiceImpl(
-            sinks_discovered_cb, cast_socket_service_, network_monitor_),
+        new MockCastMediaSinkServiceImpl(sinks_discovered_cb, observer,
+                                         cast_socket_service_,
+                                         network_monitor_),
         base::OnTaskRunnerDeleter(cast_socket_service_->task_runner()));
     mock_impl_ = mock_impl.get();
     return mock_impl;
@@ -121,7 +125,8 @@ class CastMediaSinkServiceTest : public ::testing::Test {
     EXPECT_CALL(test_dns_sd_registry_, AddObserver(media_sink_service_.get()));
     EXPECT_CALL(test_dns_sd_registry_, RegisterDnsSdListener(_));
     media_sink_service_->SetDnsSdRegistryForTest(&test_dns_sd_registry_);
-    media_sink_service_->Start(mock_sink_discovered_ui_cb_.Get());
+    media_sink_service_->Start(mock_sink_discovered_ui_cb_.Get(),
+                               /* observer */ nullptr);
     mock_impl_ = media_sink_service_->mock_impl();
     ASSERT_TRUE(mock_impl_);
     EXPECT_CALL(*mock_impl_, DoStart()).WillOnce(InvokeWithoutArgs([this]() {

@@ -28,6 +28,9 @@ const base::Feature kEnableDialSinkQuery{"EnableDialSinkQuery",
 const base::Feature kEnableCastDiscovery{"EnableCastDiscovery",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kCastMediaRouteProvider{"CastMediaRouteProvider",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls if local media casting is enabled.
 const base::Feature kEnableCastLocalMedia{"EnableCastLocalMedia",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
@@ -70,6 +73,10 @@ bool DialSinkQueryEnabled() {
 // Returns true if browser side Cast discovery is enabled.
 bool CastDiscoveryEnabled() {
   return base::FeatureList::IsEnabled(kEnableCastDiscovery);
+}
+
+bool CastMediaRouteProviderEnabled() {
+  return base::FeatureList::IsEnabled(kCastMediaRouteProvider);
 }
 
 // Returns true if local media casting is enabled.

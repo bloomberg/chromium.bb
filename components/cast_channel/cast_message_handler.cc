@@ -84,7 +84,11 @@ CastMessageHandler::CastMessageHandler(CastSocketService* socket_service,
       socket_service_(socket_service),
       clock_(base::DefaultTickClock::GetInstance()),
       weak_ptr_factory_(this) {
-  socket_service_->AddObserver(this);
+  DETACH_FROM_SEQUENCE(sequence_checker_);
+  socket_service_->task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&CastSocketService::AddObserver,
+                                base::Unretained(socket_service_),
+                                base::Unretained(this)));
 }
 
 CastMessageHandler::~CastMessageHandler() {

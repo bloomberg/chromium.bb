@@ -201,6 +201,13 @@ void MediaRouterMojoImpl::CreateRoute(
 
   MediaRouterMetrics::RecordMediaSinkType(sink->icon_type());
   MediaRouteProviderId provider_id = sink->provider_id();
+  // This is a hack to ensure the extension handles the CreateRoute call until
+  // the CastMediaRouteProvider supports it.
+  // TODO(crbug.com/698940): Remove this hack when CastMediaRouteProvider
+  // supports route management.
+  if (provider_id == MediaRouteProviderId::CAST)
+    provider_id = MediaRouteProviderId::EXTENSION;
+
   int tab_id = SessionTabHelper::IdForTab(web_contents);
   std::string presentation_id = MediaRouterBase::CreatePresentationId();
   auto callback = base::BindOnce(

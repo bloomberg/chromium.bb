@@ -785,6 +785,7 @@ MediaRouter.prototype.start = function() {
                 'enable_dial_discovery': response.config.enableDialDiscovery,
                 'enable_cast_discovery': response.config.enableCastDiscovery,
                 'enable_dial_sink_query': response.config.enableDialSinkQuery,
+                'enable_cast_sink_query': response.config.enableCastSinkQuery,
               }
             };
           });

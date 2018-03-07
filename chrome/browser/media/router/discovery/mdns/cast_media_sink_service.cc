@@ -10,9 +10,6 @@
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "chrome/browser/media/router/discovery/discovery_network_monitor.h"
-#include "chrome/browser/media/router/discovery/mdns/cast_media_sink_service_impl.h"
-#include "chrome/browser/media/router/discovery/mdns/dns_sd_delegate.h"
-#include "chrome/browser/media/router/discovery/mdns/dns_sd_registry.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/media_router/media_sink.h"
 #include "components/cast_channel/cast_socket_service.h"
@@ -68,7 +65,7 @@ ErrorType CreateCastMediaSink(const DnsSdService& service,
   std::string processed_uuid = MediaSinkInternal::ProcessDeviceUUID(unique_id);
   std::string sink_id = base::StringPrintf("cast:<%s>", processed_uuid.c_str());
   MediaSink sink(sink_id, friendly_name, SinkIconType::CAST,
-                 MediaRouteProviderId::EXTENSION);
+                 MediaRouteProviderId::CAST);
 
   CastSinkExtraData extra_data;
   extra_data.ip_endpoint =
@@ -105,19 +102,25 @@ CastMediaSinkService::~CastMediaSinkService() {
 }
 
 void CastMediaSinkService::Start(
-    const OnSinksDiscoveredCallback& sinks_discovered_cb) {
+    const OnSinksDiscoveredCallback& sinks_discovered_cb,
+    CastMediaSinkServiceImpl::Observer* observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!impl_);
 
   // |sinks_discovered_cb| should only be invoked on the current sequence.
   // We wrap |sinks_discovered_cb| in a member function bound with WeakPtr to
   // ensure it will only be invoked while |this| is still valid.
-  impl_ = CreateImpl(base::BindRepeating(
-      &RunSinksDiscoveredCallbackOnSequence,
-      base::SequencedTaskRunnerHandle::Get(),
-      base::BindRepeating(&CastMediaSinkService::RunSinksDiscoveredCallback,
-                          weak_ptr_factory_.GetWeakPtr(),
-                          sinks_discovered_cb)));
+  // TODO(imcheng): Simplify this by only using observers instead of callback.
+  // This would require us to move the timer logic from MediaSinkServiceBase up
+  // to DualMediaSinkService, but will allow us to remove MediaSinkServiceBase.
+  impl_ =
+      CreateImpl(base::BindRepeating(
+                     &RunSinksDiscoveredCallbackOnSequence,
+                     base::SequencedTaskRunnerHandle::Get(),
+                     base::BindRepeating(
+                         &CastMediaSinkService::RunSinksDiscoveredCallback,
+                         weak_ptr_factory_.GetWeakPtr(), sinks_discovered_cb)),
+                 observer);
   impl_->task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&CastMediaSinkServiceImpl::Start,
                                 base::Unretained(impl_.get())));
@@ -129,13 +132,15 @@ void CastMediaSinkService::Start(
 
 std::unique_ptr<CastMediaSinkServiceImpl, base::OnTaskRunnerDeleter>
 CastMediaSinkService::CreateImpl(
-    const OnSinksDiscoveredCallback& sinks_discovered_cb) {
+    const OnSinksDiscoveredCallback& sinks_discovered_cb,
+    CastMediaSinkServiceImpl::Observer* observer) {
   cast_channel::CastSocketService* cast_socket_service =
       cast_channel::CastSocketService::GetInstance();
   scoped_refptr<base::SequencedTaskRunner> task_runner =
       cast_socket_service->task_runner();
   return std::unique_ptr<CastMediaSinkServiceImpl, base::OnTaskRunnerDeleter>(
-      new CastMediaSinkServiceImpl(sinks_discovered_cb, cast_socket_service,
+      new CastMediaSinkServiceImpl(sinks_discovered_cb, observer,
+                                   cast_socket_service,
                                    DiscoveryNetworkMonitor::GetInstance()),
       base::OnTaskRunnerDeleter(task_runner));
 }

@@ -234,4 +234,10 @@ bool CastMediaSource::ContainsApp(const std::string& app_id) const {
   return false;
 }
 
+bool CastMediaSource::ContainsAnyAppFrom(
+    const std::vector<std::string>& app_ids) const {
+  return std::any_of(
+      app_ids.begin(), app_ids.end(),
+      [this](const std::string& app_id) { return ContainsApp(app_id); });
+}
 }  // namespace media_router

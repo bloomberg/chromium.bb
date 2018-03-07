@@ -10,10 +10,12 @@
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/media/router/mojo/media_route_controller.h"
 #include "chrome/browser/media/router/mojo/media_router_mojo_metrics.h"
+#include "chrome/browser/media/router/providers/cast/cast_media_route_provider.h"
 #include "chrome/browser/media/router/providers/wired_display/wired_display_media_route_provider.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/media_router/media_source_helper.h"
+#include "components/cast_channel/cast_socket_service.h"
 #include "extensions/common/extension.h"
 #if defined(OS_WIN)
 #include "chrome/browser/media/router/mojo/media_route_provider_util_win.h"
@@ -64,6 +66,7 @@ MediaRouterDesktop::GetProviderIdForPresentation(
 
 MediaRouterDesktop::MediaRouterDesktop(content::BrowserContext* context)
     : MediaRouterMojoImpl(context),
+      cast_provider_(nullptr, base::OnTaskRunnerDeleter(nullptr)),
       media_sink_service_(DualMediaSinkService::GetInstance()),
       weak_factory_(this) {
   InitializeMediaRouteProviders();
@@ -77,6 +80,7 @@ MediaRouterDesktop::MediaRouterDesktop(content::BrowserContext* context)
 MediaRouterDesktop::MediaRouterDesktop(content::BrowserContext* context,
                                        DualMediaSinkService* media_sink_service)
     : MediaRouterMojoImpl(context),
+      cast_provider_(nullptr, base::OnTaskRunnerDeleter(nullptr)),
       media_sink_service_(media_sink_service),
       weak_factory_(this) {
   InitializeMediaRouteProviders();
@@ -93,6 +97,8 @@ void MediaRouterDesktop::RegisterMediaRouteProvider(
   // to disable it in the provider.
   config->enable_cast_discovery = !media_router::CastDiscoveryEnabled();
   config->enable_dial_sink_query = !media_router::DialSinkQueryEnabled();
+  config->enable_cast_sink_query =
+      !media_router::CastMediaRouteProviderEnabled();
   std::move(callback).Run(instance_id(), std::move(config));
 
   SyncStateToMediaRouteProvider(provider_id);
@@ -194,6 +200,8 @@ void MediaRouterDesktop::InitializeMediaRouteProviders() {
   InitializeExtensionMediaRouteProviderProxy();
   if (base::FeatureList::IsEnabled(features::kLocalScreenCasting))
     InitializeWiredDisplayMediaRouteProvider();
+  if (CastMediaRouteProviderEnabled())
+    InitializeCastMediaRouteProvider();
 }
 
 void MediaRouterDesktop::InitializeExtensionMediaRouteProviderProxy() {
@@ -212,11 +220,26 @@ void MediaRouterDesktop::InitializeWiredDisplayMediaRouteProvider() {
   wired_display_provider_ = std::make_unique<WiredDisplayMediaRouteProvider>(
       mojo::MakeRequest(&wired_display_provider_ptr),
       std::move(media_router_ptr), Profile::FromBrowserContext(context()));
-  RegisterMediaRouteProvider(
-      MediaRouteProviderId::WIRED_DISPLAY,
-      std::move(wired_display_provider_ptr),
-      base::BindOnce([](const std::string& instance_id,
-                        mojom::MediaRouteProviderConfigPtr config) {}));
+  RegisterMediaRouteProvider(MediaRouteProviderId::WIRED_DISPLAY,
+                             std::move(wired_display_provider_ptr),
+                             base::DoNothing());
+}
+
+void MediaRouterDesktop::InitializeCastMediaRouteProvider() {
+  auto task_runner =
+      cast_channel::CastSocketService::GetInstance()->task_runner();
+  mojom::MediaRouterPtr media_router_ptr;
+  MediaRouterMojoImpl::BindToMojoRequest(mojo::MakeRequest(&media_router_ptr));
+  mojom::MediaRouteProviderPtr cast_provider_ptr;
+  cast_provider_ =
+      std::unique_ptr<CastMediaRouteProvider, base::OnTaskRunnerDeleter>(
+          new CastMediaRouteProvider(
+              mojo::MakeRequest(&cast_provider_ptr),
+              media_router_ptr.PassInterface(),
+              media_sink_service_->cast_app_discovery_service(), task_runner),
+          base::OnTaskRunnerDeleter(task_runner));
+  RegisterMediaRouteProvider(MediaRouteProviderId::CAST,
+                             std::move(cast_provider_ptr), base::DoNothing());
 }
 
 #if defined(OS_WIN)
