@@ -32,8 +32,9 @@ class CONTENT_EXPORT DownloadJob {
   // TODO(qinmin): Remove the |callback| and |download_file_| parameter if
   // DownloadJob owns download file.
   void Start(DownloadFile* download_file_,
-             const DownloadFile::InitializeCallback& callback,
+             DownloadFile::InitializeCallback callback,
              const download::DownloadItem::ReceivedSlices& received_slices);
+
   virtual void Cancel(bool user_cancel);
   virtual void Pause();
   virtual void Resume(bool resume_request);
@@ -55,8 +56,9 @@ class CONTENT_EXPORT DownloadJob {
  protected:
   // Callback from file thread when we initialize the DownloadFile.
   virtual void OnDownloadFileInitialized(
-      const DownloadFile::InitializeCallback& callback,
-      download::DownloadInterruptReason result);
+      DownloadFile::InitializeCallback callback,
+      download::DownloadInterruptReason result,
+      int64_t bytes_wasted);
 
   // Add an input stream to the download sink. Return false if we start to
   // destroy download file.

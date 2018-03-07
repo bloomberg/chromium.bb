@@ -41,9 +41,11 @@ ParallelDownloadJob::ParallelDownloadJob(
 ParallelDownloadJob::~ParallelDownloadJob() = default;
 
 void ParallelDownloadJob::OnDownloadFileInitialized(
-    const DownloadFile::InitializeCallback& callback,
-    download::DownloadInterruptReason result) {
-  DownloadJobImpl::OnDownloadFileInitialized(callback, result);
+    DownloadFile::InitializeCallback callback,
+    download::DownloadInterruptReason result,
+    int64_t bytes_wasted) {
+  DownloadJobImpl::OnDownloadFileInitialized(std::move(callback), result,
+                                             bytes_wasted);
   if (result == download::DOWNLOAD_INTERRUPT_REASON_NONE)
     BuildParallelRequestAfterDelay();
 }

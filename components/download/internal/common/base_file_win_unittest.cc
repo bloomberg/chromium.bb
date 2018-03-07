@@ -67,11 +67,13 @@ TEST(BaseFileWin, AnnotateWithSourceInformation) {
     SCOPED_TRACE(::testing::Message() << "Source URL: " << url.spec()
                                       << " Referrer: " << test_case.referrer);
 
-    BaseFile base_file(DownloadItem::kInvalidId);
+    BaseFile base_file(download::DownloadItem::kInvalidId);
+    int64_t bytes_wasted = 0;  // unused
     ASSERT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
-              base_file.Initialize(
-                  base::FilePath(), target_directory.GetPath(), base::File(), 0,
-                  std::string(), std::unique_ptr<crypto::SecureHash>(), false));
+              base_file.Initialize(base::FilePath(), target_directory.GetPath(),
+                                   base::File(), 0, std::string(),
+                                   std::unique_ptr<crypto::SecureHash>(), false,
+                                   &bytes_wasted));
     ASSERT_FALSE(base_file.full_path().empty());
     ASSERT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
               base_file.Rename(

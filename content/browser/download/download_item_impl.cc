@@ -721,6 +721,10 @@ bool DownloadItemImpl::IsDone() const {
   return false;
 }
 
+int64_t DownloadItemImpl::GetBytesWasted() const {
+  return bytes_wasted_;
+}
+
 const GURL& DownloadItemImpl::GetURL() const {
   return request_info_.url_chain.empty() ? GURL::EmptyGURL()
                                          : request_info_.url_chain.back();
@@ -1511,7 +1515,8 @@ void DownloadItemImpl::Start(
 }
 
 void DownloadItemImpl::OnDownloadFileInitialized(
-    download::DownloadInterruptReason result) {
+    download::DownloadInterruptReason result,
+    int64_t bytes_wasted) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(state_ == TARGET_PENDING_INTERNAL ||
          state_ == INTERRUPTED_TARGET_PENDING_INTERNAL)
@@ -1519,6 +1524,36 @@ void DownloadItemImpl::OnDownloadFileInitialized(
 
   DVLOG(20) << __func__
             << "() result:" << DownloadInterruptReasonToString(result);
+
+  // Record bytes wasted.
+  if (bytes_wasted > 0) {
+    // Since |bytes_wasted_| is only used for testing, set it here.
+    bytes_wasted_ = bytes_wasted;
+
+    if (!GetBrowserContext())
+      return;
+
+    // Get in-progress cache entry.
+    DownloadManagerDelegate* manager_delegate =
+        GetBrowserContext()->GetDownloadManagerDelegate();
+    if (manager_delegate) {
+      download::InProgressCache* in_progress_cache =
+          manager_delegate->GetInProgressCache();
+      if (in_progress_cache) {
+        // Add |bytes_wasted| to tallying count.
+        base::Optional<download::DownloadEntry> entry_opt =
+            in_progress_cache->RetrieveEntry(guid_);
+        if (entry_opt.has_value()) {
+          download::DownloadEntry entry = entry_opt.value();
+          entry.bytes_wasted += bytes_wasted;
+          bytes_wasted_ = entry.bytes_wasted;
+          in_progress_cache->AddOrReplaceEntry(entry);
+        }
+      }
+    }
+  }
+
+  // Handle download interrupt reason.
   if (result != download::DOWNLOAD_INTERRUPT_REASON_NONE) {
     ReleaseDownloadFile(true);
     InterruptAndDiscardPartialState(result);
@@ -1845,7 +1880,6 @@ void DownloadItemImpl::Completed() {
 
     auto_opened_ = true;
   }
-  UpdateObservers();
 
   base::TimeDelta time_since_start = GetEndTime() - GetStartTime();
 
@@ -1856,8 +1890,11 @@ void DownloadItemImpl::Completed() {
   if (in_progress_entry) {
     download::DownloadUkmHelper::RecordDownloadCompleted(
         in_progress_entry->ukm_download_id, resulting_file_size,
-        time_since_start);
+        time_since_start, in_progress_entry->bytes_wasted);
   }
+
+  // After all of the records are done, then update the observers.
+  UpdateObservers();
 }
 
 // **** End of Download progression cascade
@@ -2017,7 +2054,7 @@ void DownloadItemImpl::InterruptWithPartialState(
 
     download::DownloadUkmHelper::RecordDownloadInterrupted(
         in_progress_entry->ukm_download_id, change_in_file_size, reason,
-        resulting_file_size, time_since_start);
+        resulting_file_size, time_since_start, in_progress_entry->bytes_wasted);
   }
   if (reason ==
       download::DOWNLOAD_INTERRUPT_REASON_SERVER_CONTENT_LENGTH_MISMATCH) {

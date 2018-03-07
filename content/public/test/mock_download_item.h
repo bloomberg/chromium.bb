@@ -56,6 +56,7 @@ class MockDownloadItem : public download::DownloadItem {
   MOCK_CONST_METHOD0(IsTemporary, bool());
   MOCK_CONST_METHOD0(CanResume, bool());
   MOCK_CONST_METHOD0(IsDone, bool());
+  MOCK_CONST_METHOD0(GetBytesWasted, int64_t());
   MOCK_CONST_METHOD0(GetURL, const GURL&());
   MOCK_CONST_METHOD0(GetUrlChain, const std::vector<GURL>&());
   MOCK_CONST_METHOD0(GetOriginalUrl, const GURL&());

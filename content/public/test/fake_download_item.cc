@@ -258,6 +258,11 @@ bool FakeDownloadItem::CanResume() const {
   return false;
 }
 
+int64_t FakeDownloadItem::GetBytesWasted() const {
+  NOTREACHED();
+  return 0;
+}
+
 const GURL& FakeDownloadItem::GetReferrerUrl() const {
   NOTREACHED();
   return dummy_url;

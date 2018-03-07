@@ -220,6 +220,7 @@ class CONTENT_EXPORT DownloadItemImpl : public download::DownloadItem,
   bool IsTemporary() const override;
   bool CanResume() const override;
   bool IsDone() const override;
+  int64_t GetBytesWasted() const override;
   const GURL& GetURL() const override;
   const std::vector<GURL>& GetUrlChain() const override;
   const GURL& GetOriginalUrl() const override;
@@ -501,7 +502,8 @@ class CONTENT_EXPORT DownloadItemImpl : public download::DownloadItem,
   void Init(bool active, download::DownloadItem::DownloadType download_type);
 
   // Callback from file thread when we initialize the DownloadFile.
-  void OnDownloadFileInitialized(download::DownloadInterruptReason result);
+  void OnDownloadFileInitialized(download::DownloadInterruptReason result,
+                                 int64_t bytes_wasted);
 
   // Called to determine the target path. Will cause OnDownloadTargetDetermined
   // to be called when the target information is available.
@@ -638,6 +640,9 @@ class CONTENT_EXPORT DownloadItemImpl : public download::DownloadItem,
   // Display name for the download. If this is empty, then the display name is
   // considered to be |GetTargetFilePath().BaseName()|.
   base::FilePath display_name_;
+
+  // Number of bytes wasted.
+  int64_t bytes_wasted_ = 0;
 
   // Information from the response.
 

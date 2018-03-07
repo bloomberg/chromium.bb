@@ -12,6 +12,7 @@
 
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
+#include "components/download/public/common/base_file.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_item.h"
 #include "content/common/content_export.h"
@@ -28,11 +29,20 @@ namespace content {
 // cancelled, the DownloadFile is destroyed.
 class CONTENT_EXPORT DownloadFile {
  public:
-  // Callback used with Initialize.  On a successful initialize, |reason| will
-  // be DOWNLOAD_INTERRUPT_REASON_NONE; on a failed initialize, it will be
-  // set to the reason for the failure.
-  typedef base::Callback<void(download::DownloadInterruptReason reason)>
-      InitializeCallback;
+  // Callback used with Initialize.
+  //
+  // On a successful initialize, |reason| = DOWNLOAD_INTERRUPT_REASON_NONE;
+  // on a failed initialize, it will be set to the reason for the failure.
+  //
+  // In the case that the originally downloaded file had to be deleted,
+  // |bytes_wasted| would be set to > 0.
+  //
+  // TODO(b/73967242): Change this to a OnceCallback. This is currently a
+  // repeating callback because gMock does not support all built in actions for
+  // move-only arguments (specifically SaveArg from download_item_impl_unittest.
+  using InitializeCallback =
+      base::RepeatingCallback<void(download::DownloadInterruptReason reason,
+                                   int64_t bytes_wasted)>;
 
   // Callback used with Rename*().  On a successful rename |reason| will be
   // DOWNLOAD_INTERRUPT_REASON_NONE and |path| the path the rename
@@ -52,7 +62,7 @@ class CONTENT_EXPORT DownloadFile {
   // thread as per the comment above, passing DOWNLOAD_INTERRUPT_REASON_NONE
   // on success, or a network download interrupt reason on failure.
   virtual void Initialize(
-      const InitializeCallback& initialize_callback,
+      InitializeCallback initialize_callback,
       const CancelRequestCallback& cancel_request_callback,
       const download::DownloadItem::ReceivedSlices& received_slices,
       bool is_parallelizable) = 0;

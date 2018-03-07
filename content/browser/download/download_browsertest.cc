@@ -343,7 +343,7 @@ class CountingDownloadFile : public DownloadFileImpl {
     active_files_--;
   }
 
-  void Initialize(const InitializeCallback& callback,
+  void Initialize(InitializeCallback callback,
                   const CancelRequestCallback& cancel_request_callback,
                   const download::DownloadItem::ReceivedSlices& received_slices,
                   bool is_parallelizable) override {
@@ -1633,6 +1633,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RestartIfNotPartialResponse) {
   download->Resume();
   WaitForCompletion(download);
 
+  ASSERT_EQ(interruption_offset, download->GetBytesWasted());
   ASSERT_EQ(parameters.size, download->GetReceivedBytes());
   ASSERT_EQ(parameters.size, download->GetTotalBytes());
   ASSERT_NO_FATAL_FAILURE(
@@ -1724,6 +1725,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RestartIfNoPartialFile) {
   TestDownloadHttpResponse::Parameters parameters =
       TestDownloadHttpResponse::Parameters::WithSingleInterruption(
           inject_error_callback());
+  int64_t interruption_offset = parameters.injected_errors.front();
 
   TestDownloadHttpResponse::StartServing(parameters, server_url);
   download::DownloadItem* download =
@@ -1743,6 +1745,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RestartIfNoPartialFile) {
   download->Resume();
   WaitForCompletion(download);
 
+  ASSERT_EQ(interruption_offset, download->GetBytesWasted());
   ASSERT_EQ(parameters.size, download->GetReceivedBytes());
   ASSERT_EQ(parameters.size, download->GetTotalBytes());
   ASSERT_NO_FATAL_FAILURE(ReadAndVerifyFileContents(
@@ -2325,6 +2328,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
   download->Resume();
   WaitForCompletion(download);
 
+  EXPECT_EQ(kIntermediateSize, download->GetBytesWasted());
   EXPECT_FALSE(PathExists(intermediate_file_path));
   ReadAndVerifyFileContents(parameters.pattern_generator_seed,
                             parameters.size,
@@ -2598,6 +2602,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_LongFile) {
   download->Resume();
   WaitForCompletion(download);
 
+  // The amount "extra" that was added to the file.
+  EXPECT_EQ(100, download->GetBytesWasted());
   EXPECT_FALSE(PathExists(intermediate_file_path));
   ReadAndVerifyFileContents(parameters.pattern_generator_seed,
                             parameters.size,

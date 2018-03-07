@@ -206,7 +206,8 @@ class DownloadFileTest : public testing::Test {
 
   void SetInterruptReasonCallback(const base::Closure& closure,
                                   download::DownloadInterruptReason* reason_p,
-                                  download::DownloadInterruptReason reason) {
+                                  download::DownloadInterruptReason reason,
+                                  int64_t bytes_wasted) {
     *reason_p = reason;
     closure.Run();
   }
@@ -252,9 +253,9 @@ class DownloadFileTest : public testing::Test {
         download::DOWNLOAD_INTERRUPT_REASON_NONE;
     base::RunLoop loop_runner;
     download_file_->Initialize(
-        base::Bind(&DownloadFileTest::SetInterruptReasonCallback,
-                   weak_ptr_factory.GetWeakPtr(), loop_runner.QuitClosure(),
-                   &result),
+        base::BindRepeating(&DownloadFileTest::SetInterruptReasonCallback,
+                            weak_ptr_factory.GetWeakPtr(),
+                            loop_runner.QuitClosure(), &result),
         DownloadFile::CancelRequestCallback(), received_slices, true);
     loop_runner.Run();
 

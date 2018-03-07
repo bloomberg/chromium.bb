@@ -20,6 +20,10 @@ int DownloadUkmHelper::CalcExponentialBucket(int value) {
   return static_cast<int>(floor(log10(value + 1) / CalcBucketIncrement()));
 }
 
+int DownloadUkmHelper::CalcNearestKB(int num_bytes) {
+  return num_bytes / 1024;
+}
+
 void DownloadUkmHelper::RecordDownloadStarted(int download_id,
                                               ukm::SourceId source_id,
                                               DownloadContent file_type,
@@ -36,14 +40,16 @@ void DownloadUkmHelper::RecordDownloadInterrupted(
     base::Optional<int> change_in_file_size,
     DownloadInterruptReason reason,
     int resulting_file_size,
-    const base::TimeDelta& time_since_start) {
+    const base::TimeDelta& time_since_start,
+    int64_t bytes_wasted) {
   ukm::SourceId source_id = ukm::UkmRecorder::GetNewSourceID();
   ukm::builders::Download_Interrupted builder(source_id);
   builder.SetDownloadId(download_id)
       .SetReason(static_cast<int>(reason))
       .SetResultingFileSize(
           DownloadUkmHelper::CalcExponentialBucket(resulting_file_size))
-      .SetTimeSinceStart(time_since_start.InMilliseconds());
+      .SetTimeSinceStart(time_since_start.InMilliseconds())
+      .SetBytesWasted(DownloadUkmHelper::CalcNearestKB(bytes_wasted));
   if (change_in_file_size.has_value()) {
     builder.SetChangeInFileSize(
         DownloadUkmHelper::CalcExponentialBucket(change_in_file_size.value()));
@@ -66,13 +72,15 @@ void DownloadUkmHelper::RecordDownloadResumed(
 void DownloadUkmHelper::RecordDownloadCompleted(
     int download_id,
     int resulting_file_size,
-    const base::TimeDelta& time_since_start) {
+    const base::TimeDelta& time_since_start,
+    int64_t bytes_wasted) {
   ukm::SourceId source_id = ukm::UkmRecorder::GetNewSourceID();
   ukm::builders::Download_Completed(source_id)
       .SetDownloadId(download_id)
       .SetResultingFileSize(
           DownloadUkmHelper::CalcExponentialBucket(resulting_file_size))
       .SetTimeSinceStart(time_since_start.InMilliseconds())
+      .SetBytesWasted(DownloadUkmHelper::CalcNearestKB(bytes_wasted))
       .Record(ukm::UkmRecorder::Get());
 }
 

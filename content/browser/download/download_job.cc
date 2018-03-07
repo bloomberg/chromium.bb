@@ -4,6 +4,7 @@
 
 #include "content/browser/download/download_job.h"
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "components/download/public/common/download_task_runner.h"
 #include "content/browser/download/download_item_impl.h"
@@ -62,24 +63,26 @@ void DownloadJob::Resume(bool resume_request) {
 
 void DownloadJob::Start(
     DownloadFile* download_file_,
-    const DownloadFile::InitializeCallback& callback,
+    DownloadFile::InitializeCallback callback,
     const download::DownloadItem::ReceivedSlices& received_slices) {
   download::GetDownloadTaskRunner()->PostTask(
       FROM_HERE,
-      base::BindOnce(&DownloadFile::Initialize,
-                     // Safe because we control download file lifetime.
-                     base::Unretained(download_file_),
-                     base::Bind(&DownloadJob::OnDownloadFileInitialized,
-                                weak_ptr_factory_.GetWeakPtr(), callback),
-                     base::Bind(&DownloadJob::CancelRequestWithOffset,
-                                weak_ptr_factory_.GetWeakPtr()),
-                     received_slices, IsParallelizable()));
+      base::BindOnce(
+          &DownloadFile::Initialize,
+          // Safe because we control download file lifetime.
+          base::Unretained(download_file_),
+          base::BindRepeating(&DownloadJob::OnDownloadFileInitialized,
+                              weak_ptr_factory_.GetWeakPtr(), callback),
+          base::BindRepeating(&DownloadJob::CancelRequestWithOffset,
+                              weak_ptr_factory_.GetWeakPtr()),
+          received_slices, IsParallelizable()));
 }
 
 void DownloadJob::OnDownloadFileInitialized(
-    const DownloadFile::InitializeCallback& callback,
-    download::DownloadInterruptReason result) {
-  callback.Run(result);
+    DownloadFile::InitializeCallback callback,
+    download::DownloadInterruptReason result,
+    int64_t bytes_wasted) {
+  std::move(callback).Run(result, bytes_wasted);
 }
 
 bool DownloadJob::AddInputStream(

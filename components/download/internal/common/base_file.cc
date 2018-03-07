@@ -82,7 +82,8 @@ DownloadInterruptReason BaseFile::Initialize(
     int64_t bytes_so_far,
     const std::string& hash_so_far,
     std::unique_ptr<crypto::SecureHash> hash_state,
-    bool is_sparse_file) {
+    bool is_sparse_file,
+    int64_t* const bytes_wasted) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!detached_);
 
@@ -107,7 +108,7 @@ DownloadInterruptReason BaseFile::Initialize(
     secure_hash_.reset();
   file_ = std::move(file);
 
-  return Open(hash_so_far);
+  return Open(hash_so_far, bytes_wasted);
 }
 
 DownloadInterruptReason BaseFile::AppendDataToFile(const char* data,
@@ -194,8 +195,10 @@ DownloadInterruptReason BaseFile::Rename(const base::FilePath& new_path) {
   // Re-open the file if we were still using it regardless of the interrupt
   // reason.
   DownloadInterruptReason open_result = DOWNLOAD_INTERRUPT_REASON_NONE;
-  if (was_in_progress)
-    open_result = Open(std::string());
+  if (was_in_progress) {
+    int64_t bytes_wasted;  // Do not need to use bytes_wasted.
+    open_result = Open(std::string(), &bytes_wasted);
+  }
 
   return rename_result == DOWNLOAD_INTERRUPT_REASON_NONE ? open_result
                                                          : rename_result;
@@ -309,7 +312,8 @@ DownloadInterruptReason BaseFile::CalculatePartialHash(
   return DOWNLOAD_INTERRUPT_REASON_NONE;
 }
 
-DownloadInterruptReason BaseFile::Open(const std::string& hash_so_far) {
+DownloadInterruptReason BaseFile::Open(const std::string& hash_so_far,
+                                       int64_t* const bytes_wasted) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!detached_);
   DCHECK(!full_path_.empty());
@@ -332,6 +336,7 @@ DownloadInterruptReason BaseFile::Open(const std::string& hash_so_far) {
   // For sparse file, skip hash validation.
   if (is_sparse_file_) {
     if (file_.GetLength() < bytes_so_far_) {
+      *bytes_wasted = bytes_so_far_;
       ClearFile();
       return LogInterruptReason("File has fewer written bytes than expected", 0,
                                 DOWNLOAD_INTERRUPT_REASON_FILE_TOO_SHORT);
@@ -342,6 +347,7 @@ DownloadInterruptReason BaseFile::Open(const std::string& hash_so_far) {
   if (!secure_hash_) {
     DownloadInterruptReason reason = CalculatePartialHash(hash_so_far);
     if (reason != DOWNLOAD_INTERRUPT_REASON_NONE) {
+      *bytes_wasted = file_.GetLength();
       ClearFile();
       return reason;
     }
@@ -356,14 +362,17 @@ DownloadInterruptReason BaseFile::Open(const std::string& hash_so_far) {
     // The file is larger than we expected.
     // This is OK, as long as we don't use the extra.
     // Truncate the file.
+    *bytes_wasted = file_size - bytes_so_far_;
     if (!file_.SetLength(bytes_so_far_) ||
         file_.Seek(base::File::FROM_BEGIN, bytes_so_far_) != bytes_so_far_) {
       logging::SystemErrorCode error = logging::GetLastSystemErrorCode();
+      *bytes_wasted = file_size;
       ClearFile();
       return LogSystemError("Truncating to last known offset", error);
     }
   } else if (file_size < bytes_so_far_) {
     // The file is shorter than we expected.  Our hashes won't be valid.
+    *bytes_wasted = bytes_so_far_;
     ClearFile();
     return LogInterruptReason("Unable to seek to last written point", 0,
                               DOWNLOAD_INTERRUPT_REASON_FILE_TOO_SHORT);

@@ -127,16 +127,27 @@ void CreateInterruptedDownload(
                      params->callback()));
 }
 
-download::DownloadEntry CreateDownloadEntryFromItem(
-    const DownloadItemImpl& item) {
+// Helper functions for DownloadItem -> DownloadEntry for InProgressCache.
+
+uint64_t GetUniqueDownloadId() {
   // Get a new UKM download_id that is not 0.
   uint64_t download_id = 0;
   do {
     download_id = base::RandUint64();
   } while (download_id == 0);
+  return download_id;
+}
 
+download::DownloadEntry CreateDownloadEntryFromItemImpl(
+    const DownloadItemImpl& item) {
   return download::DownloadEntry(item.GetGuid(), item.download_source(),
-                                 download_id);
+                                 GetUniqueDownloadId());
+}
+
+download::DownloadEntry CreateDownloadEntryFromItem(
+    const download::DownloadItem& item) {
+  return download::DownloadEntry(
+      item.GetGuid(), download::DownloadSource::UNKNOWN, GetUniqueDownloadId());
 }
 
 DownloadManagerImpl::UniqueUrlDownloadHandlerPtr BeginDownload(
@@ -331,14 +342,28 @@ void InProgressDownloadObserver::OnDownloadUpdated(
 
   switch (download->GetState()) {
     case download::DownloadItem::DownloadState::COMPLETE:
+    // Intentional fallthrough.
     case download::DownloadItem::DownloadState::CANCELLED:
       if (in_progress_cache_)
         in_progress_cache_->RemoveEntry(download->GetGuid());
       break;
-    case download::DownloadItem::DownloadState::IN_PROGRESS:
-      // TODO(crbug.com/778425): After RetrieveEntry has been implemented, do a
-      // check to make sure the entry exists in the cache.
+
+    case download::DownloadItem::DownloadState::INTERRUPTED:
+    // Intentional fallthrough.
+    case download::DownloadItem::DownloadState::IN_PROGRESS: {
+      // Make sure the entry exists in the cache.
+      base::Optional<download::DownloadEntry> entry_opt =
+          in_progress_cache_->RetrieveEntry(download->GetGuid());
+      download::DownloadEntry entry;
+      if (!entry_opt.has_value()) {
+        entry = CreateDownloadEntryFromItem(*download);
+        in_progress_cache_->AddOrReplaceEntry(entry);
+        break;
+      }
+      entry = entry_opt.value();
       break;
+    }
+
     default:
       break;
   }
@@ -615,7 +640,7 @@ void DownloadManagerImpl::StartDownloadWithId(
           in_progress_cache->RetrieveEntry(download->GetGuid());
       if (!entry_opt.has_value()) {
         in_progress_cache->AddOrReplaceEntry(
-            CreateDownloadEntryFromItem(*download));
+            CreateDownloadEntryFromItemImpl(*download));
       }
     }
 
@@ -748,7 +773,7 @@ void DownloadManagerImpl::CreateSavePackageDownloadItemWithId(
           in_progress_cache->RetrieveEntry(download_item->GetGuid());
       if (!entry_opt.has_value()) {
         in_progress_cache->AddOrReplaceEntry(
-            CreateDownloadEntryFromItem(*download_item));
+            CreateDownloadEntryFromItemImpl(*download_item));
       }
     }
   }
