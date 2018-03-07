@@ -655,6 +655,11 @@ class TestConnection : public QuicConnection {
         QuicConnectionPeer::GetMtuDiscoveryAlarm(this));
   }
 
+  TestAlarmFactory::TestAlarm* GetRetransmittableOnWireAlarm() {
+    return reinterpret_cast<TestAlarmFactory::TestAlarm*>(
+        QuicConnectionPeer::GetRetransmittableOnWireAlarm(this));
+  }
+
   void SetMaxTailLossProbes(size_t max_tail_loss_probes) {
     QuicSentPacketManagerPeer::SetMaxTailLossProbes(
         QuicConnectionPeer::GetSentPacketManager(this), max_tail_loss_probes);
@@ -3230,6 +3235,7 @@ TEST_P(QuicConnectionTest, InitialTimeout) {
   EXPECT_FALSE(connection_.GetRetransmissionAlarm()->IsSet());
   EXPECT_FALSE(connection_.GetSendAlarm()->IsSet());
   EXPECT_FALSE(connection_.GetMtuDiscoveryAlarm()->IsSet());
+  EXPECT_FALSE(connection_.GetRetransmittableOnWireAlarm()->IsSet());
 }
 
 TEST_P(QuicConnectionTest, HandshakeTimeout) {
@@ -3288,7 +3294,7 @@ TEST_P(QuicConnectionTest, PingAfterSend) {
   EXPECT_EQ(clock_.ApproximateNow() + QuicTime::Delta::FromSeconds(15),
             connection_.GetPingAlarm()->deadline());
 
-  // Now recevie and ACK of the previous packet, which will move the
+  // Now recevie an ACK of the previous packet, which will move the
   // ping alarm forward.
   clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(5));
   QuicAckFrame frame = InitAckFrame(1);
@@ -3338,7 +3344,7 @@ TEST_P(QuicConnectionTest, ReducedPingTimeout) {
   EXPECT_EQ(clock_.ApproximateNow() + QuicTime::Delta::FromSeconds(10),
             connection_.GetPingAlarm()->deadline());
 
-  // Now recevie and ACK of the previous packet, which will move the
+  // Now recevie an ACK of the previous packet, which will move the
   // ping alarm forward.
   clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(5));
   QuicAckFrame frame = InitAckFrame(1);
@@ -5791,6 +5797,145 @@ TEST_P(QuicConnectionTest, HasPendingControlFramesWhenRetransmittingPackets) {
     EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(5);
   }
   connection_.OnCanWrite();
+}
+
+TEST_P(QuicConnectionTest, PingAfterLastRetransmittablePacketAcked) {
+  const QuicTime::Delta retransmittable_on_wire_timeout =
+      QuicTime::Delta::FromMilliseconds(50);
+  connection_.set_retransmittable_on_wire_timeout(
+      retransmittable_on_wire_timeout);
+
+  EXPECT_TRUE(connection_.connected());
+  EXPECT_CALL(visitor_, HasOpenDynamicStreams()).WillRepeatedly(Return(true));
+
+  const char data[] = "data";
+  size_t data_size = strlen(data);
+  QuicStreamOffset offset = 0;
+
+  // Advance 5ms, send a retransmittable packet to the peer.
+  clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(5));
+  EXPECT_FALSE(connection_.GetRetransmittableOnWireAlarm()->IsSet());
+  connection_.SendStreamDataWithString(1, data, offset, NO_FIN);
+  offset += data_size;
+  EXPECT_FALSE(connection_.GetRetransmittableOnWireAlarm()->IsSet());
+
+  // Advance 5ms, send a second retransmittable packet to the peer.
+  clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(5));
+  EXPECT_FALSE(connection_.GetRetransmittableOnWireAlarm()->IsSet());
+  connection_.SendStreamDataWithString(1, data, offset, NO_FIN);
+  offset += data_size;
+  EXPECT_FALSE(connection_.GetRetransmittableOnWireAlarm()->IsSet());
+
+  // Now receive an ACK of the first packet. This should not set the
+  // retransmittable-on-wire alarm since packet 2 is still on the wire.
+  clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(5));
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+  EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _, _));
+  QuicAckFrame frame = InitAckFrame({{1, 2}});
+  ProcessAckPacket(&frame);
+  EXPECT_FALSE(connection_.GetRetransmittableOnWireAlarm()->IsSet());
+
+  // Now receive an ACK of the second packet. This should set the
+  // retransmittable-on-wire alarm now that no retransmittable packets are on
+  // the wire.
+  clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(5));
+  EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _, _));
+  frame = InitAckFrame({{2, 3}});
+  ProcessAckPacket(&frame);
+  EXPECT_TRUE(connection_.GetRetransmittableOnWireAlarm()->IsSet());
+  EXPECT_EQ(clock_.ApproximateNow() + retransmittable_on_wire_timeout,
+            connection_.GetRetransmittableOnWireAlarm()->deadline());
+
+  // Now receive a duplicate ACK of the second packet. This should not update
+  // the retransmittable-on-wire alarm.
+  QuicTime prev_deadline =
+      connection_.GetRetransmittableOnWireAlarm()->deadline();
+  clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(5));
+  frame = InitAckFrame({{2, 3}});
+  ProcessAckPacket(&frame);
+  EXPECT_TRUE(connection_.GetRetransmittableOnWireAlarm()->IsSet());
+  EXPECT_EQ(prev_deadline,
+            connection_.GetRetransmittableOnWireAlarm()->deadline());
+
+  // Simulate the alarm firing and check that a PING is sent.
+  if (connection_.use_control_frame_manager()) {
+    EXPECT_CALL(visitor_, SendPing()).WillOnce(Invoke([this]() {
+      connection_.SendControlFrame(QuicFrame(QuicPingFrame(1)));
+    }));
+  }
+  connection_.GetRetransmittableOnWireAlarm()->Fire();
+  if (GetParam().no_stop_waiting) {
+    EXPECT_EQ(2u, writer_->frame_count());
+  } else {
+    EXPECT_EQ(3u, writer_->frame_count());
+  }
+  ASSERT_EQ(1u, writer_->ping_frames().size());
+}
+
+TEST_P(QuicConnectionTest, NoPingIfRetransmittablePacketSent) {
+  const QuicTime::Delta retransmittable_on_wire_timeout =
+      QuicTime::Delta::FromMilliseconds(50);
+  connection_.set_retransmittable_on_wire_timeout(
+      retransmittable_on_wire_timeout);
+
+  EXPECT_TRUE(connection_.connected());
+  EXPECT_CALL(visitor_, HasOpenDynamicStreams()).WillRepeatedly(Return(true));
+
+  const char data[] = "data";
+  size_t data_size = strlen(data);
+  QuicStreamOffset offset = 0;
+
+  // Advance 5ms, send a retransmittable packet to the peer.
+  clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(5));
+  EXPECT_FALSE(connection_.GetRetransmittableOnWireAlarm()->IsSet());
+  connection_.SendStreamDataWithString(1, data, offset, NO_FIN);
+  offset += data_size;
+  EXPECT_FALSE(connection_.GetRetransmittableOnWireAlarm()->IsSet());
+
+  // Now receive an ACK of the first packet. This should set the
+  // retransmittable-on-wire alarm now that no retransmittable packets are on
+  // the wire.
+  clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(5));
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+  EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _, _));
+  QuicAckFrame frame = InitAckFrame({{1, 2}});
+  ProcessAckPacket(&frame);
+  EXPECT_TRUE(connection_.GetRetransmittableOnWireAlarm()->IsSet());
+  EXPECT_EQ(clock_.ApproximateNow() + retransmittable_on_wire_timeout,
+            connection_.GetRetransmittableOnWireAlarm()->deadline());
+
+  // Before the alarm fires, send another retransmittable packet. This should
+  // cancel the retransmittable-on-wire alarm since now there's a
+  // retransmittable packet on the wire.
+  connection_.SendStreamDataWithString(1, data, offset, NO_FIN);
+  offset += data_size;
+  EXPECT_FALSE(connection_.GetRetransmittableOnWireAlarm()->IsSet());
+
+  // Now receive an ACK of the second packet. This should set the
+  // retransmittable-on-wire alarm now that no retransmittable packets are on
+  // the wire.
+  clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(5));
+  EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _, _));
+  frame = InitAckFrame({{2, 3}});
+  ProcessAckPacket(&frame);
+  EXPECT_TRUE(connection_.GetRetransmittableOnWireAlarm()->IsSet());
+  EXPECT_EQ(clock_.ApproximateNow() + retransmittable_on_wire_timeout,
+            connection_.GetRetransmittableOnWireAlarm()->deadline());
+
+  // Simulate the alarm firing and check that a PING is sent.
+  writer_->Reset();
+  if (connection_.use_control_frame_manager()) {
+    EXPECT_CALL(visitor_, SendPing()).WillOnce(Invoke([this]() {
+      connection_.SendControlFrame(QuicFrame(QuicPingFrame(1)));
+    }));
+  }
+  connection_.GetRetransmittableOnWireAlarm()->Fire();
+  if (GetParam().no_stop_waiting) {
+    EXPECT_EQ(2u, writer_->frame_count());
+  } else {
+    EXPECT_EQ(3u, writer_->frame_count());
+  }
+  ASSERT_EQ(1u, writer_->ping_frames().size());
 }
 
 }  // namespace

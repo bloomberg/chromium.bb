@@ -172,6 +172,12 @@ QuicAlarm* QuicConnectionPeer::GetMtuDiscoveryAlarm(
 }
 
 // static
+QuicAlarm* QuicConnectionPeer::GetRetransmittableOnWireAlarm(
+    QuicConnection* connection) {
+  return connection->retransmittable_on_wire_alarm_.get();
+}
+
+// static
 QuicPacketWriter* QuicConnectionPeer::GetWriter(QuicConnection* connection) {
   return connection->writer_;
 }
