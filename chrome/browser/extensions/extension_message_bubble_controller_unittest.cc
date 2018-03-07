@@ -696,6 +696,75 @@ TEST_F(ExtensionMessageBubbleTest, DevModeControllerTest) {
   EXPECT_EQ(0U, dev_mode_extensions.size());
 }
 
+// Test that if we show the dev mode bubble for the regular profile, we won't
+// show it for its incognito profile.
+// Regression test for crbug.com/819309.
+TEST_F(ExtensionMessageBubbleTest, ShowDevModeBubbleOncePerOriginalProfile) {
+  FeatureSwitch::ScopedOverride force_dev_mode_highlighting(
+      FeatureSwitch::force_dev_mode_highlighting(), true);
+  Init();
+
+  ASSERT_TRUE(LoadGenericExtension("1", kId1, Manifest::UNPACKED));
+
+  auto get_controller = [](Browser* browser) {
+    auto controller = std::make_unique<TestExtensionMessageBubbleController>(
+        new DevModeBubbleDelegate(browser->profile()), browser);
+    controller->SetIsActiveBubble();
+    return controller;
+  };
+
+  {
+    // Show the bubble for the regular profile, and dismiss it.
+    auto controller = get_controller(browser());
+    EXPECT_TRUE(controller->ShouldShow());
+    FakeExtensionMessageBubble bubble;
+    bubble.set_action_on_show(
+        FakeExtensionMessageBubble::BUBBLE_ACTION_CLICK_DISMISS_BUTTON);
+    bubble.set_controller(controller.get());
+    bubble.Show();
+  }
+
+  {
+    // The bubble shouldn't want to show twice for the same profile.
+    auto controller = get_controller(browser());
+    EXPECT_FALSE(controller->ShouldShow());
+  }
+
+  {
+    // Construct an off-the-record profile and browser.
+    Profile* off_the_record_profile = profile()->GetOffTheRecordProfile();
+
+    ToolbarActionsModelFactory::GetInstance()->SetTestingFactory(
+        off_the_record_profile, &BuildToolbarModel);
+
+    std::unique_ptr<BrowserWindow> off_the_record_window(CreateBrowserWindow());
+    std::unique_ptr<Browser> off_the_record_browser(
+        CreateBrowser(off_the_record_profile, Browser::TYPE_TABBED, false,
+                      off_the_record_window.get()));
+
+    // The bubble shouldn't want to show for an incognito version of the same
+    // profile.
+    auto controller = get_controller(browser());
+    EXPECT_FALSE(controller->ShouldShow());
+
+    // Now, try the inverse - show the bubble for the incognito profile, and
+    // dismiss it.
+    controller->delegate()->ClearProfileSetForTesting();
+    EXPECT_TRUE(controller->ShouldShow());
+    FakeExtensionMessageBubble bubble;
+    bubble.set_action_on_show(
+        FakeExtensionMessageBubble::BUBBLE_ACTION_CLICK_DISMISS_BUTTON);
+    bubble.set_controller(controller.get());
+    bubble.Show();
+  }
+
+  {
+    // The bubble shouldn't want to show for the regular profile.
+    auto controller = get_controller(browser());
+    EXPECT_FALSE(controller->ShouldShow());
+  }
+}
+
 // The feature this is meant to test is only implemented on Windows and Mac.
 #if defined(OS_WIN) || defined(OS_MACOSX)
 #define MAYBE_SettingsApiControllerTest SettingsApiControllerTest

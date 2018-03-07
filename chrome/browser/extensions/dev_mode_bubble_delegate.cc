@@ -95,13 +95,13 @@ bool DevModeBubbleDelegate::ShouldAcknowledgeOnDeactivate() const {
 bool DevModeBubbleDelegate::ShouldShow(
     const ExtensionIdList& extensions) const {
   DCHECK_LE(1u, extensions.size());
-  return !g_shown.Get().count(profile_);
+  return !g_shown.Get().count(profile_->GetOriginalProfile());
 }
 
 void DevModeBubbleDelegate::OnShown(const ExtensionIdList& extensions) {
   DCHECK_LE(1u, extensions.size());
   DCHECK(!g_shown.Get().count(profile_));
-  g_shown.Get().insert(profile_);
+  g_shown.Get().insert(profile_->GetOriginalProfile());
 }
 
 void DevModeBubbleDelegate::OnAction() {}
