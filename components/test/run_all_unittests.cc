@@ -17,5 +17,5 @@ int main(int argc, char** argv) {
       components::CreateUnittestsCatalog());
 #endif
 
-  return base::LaunchUnitTests(argc, argv, callback);
+  return base::LaunchUnitTests(argc, argv, std::move(callback));
 }

@@ -23,10 +23,9 @@
 
 namespace service_manager {
 
-int InitializeAndLaunchUnitTests(
-    int argc,
-    char** argv,
-    const base::RunTestSuiteCallback& run_test_suite) {
+int InitializeAndLaunchUnitTests(int argc,
+                                 char** argv,
+                                 base::RunTestSuiteCallback run_test_suite) {
   catalog::Catalog::SetDefaultCatalogManifest(
       service_manager::test::CreateTestCatalog());
 
@@ -44,7 +43,7 @@ int InitializeAndLaunchUnitTests(
       ipc_thread.task_runner(),
       mojo::edk::ScopedIPCSupport::ShutdownPolicy::CLEAN);
 
-  return base::LaunchUnitTests(argc, argv, run_test_suite);
+  return base::LaunchUnitTests(argc, argv, std::move(run_test_suite));
 }
 
 }  // namespace service_manager

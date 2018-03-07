@@ -13,10 +13,9 @@ namespace service_manager {
 // service tests. This method exists so that different test runners can use
 // different base::TestSuite instances, but still use the common mojo
 // initialization.
-int InitializeAndLaunchUnitTests(
-    int argc,
-    char** argv,
-    const base::RunTestSuiteCallback& run_test_suite);
+int InitializeAndLaunchUnitTests(int argc,
+                                 char** argv,
+                                 base::RunTestSuiteCallback run_test_suite);
 
 }  // namespace service_manager
 
