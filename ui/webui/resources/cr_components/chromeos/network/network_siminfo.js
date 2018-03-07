@@ -5,7 +5,6 @@
 /**
  * @fileoverview Polymer element for displaying and modifying cellular sim info.
  */
-(function() {
 
 /** @enum {string} */
 var ErrorType = {
@@ -16,6 +15,8 @@ var ErrorType = {
   INVALID_PIN: 'invalid-pin',
   INVALID_PUK: 'invalid-puk'
 };
+
+(function() {
 
 var PIN_MIN_LENGTH = 4;
 var PUK_MIN_LENGTH = 8;
