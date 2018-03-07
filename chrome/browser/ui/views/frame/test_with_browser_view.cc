@@ -33,6 +33,7 @@
 
 #if defined(OS_MACOSX)
 #include "chrome/common/chrome_features.h"
+#include "ui/base/ui_base_features.h"
 #endif
 
 namespace {
