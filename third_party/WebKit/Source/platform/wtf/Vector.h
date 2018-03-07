@@ -28,6 +28,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/template_util.h"
 #include "build/build_config.h"
 #include "platform/wtf/Alignment.h"
 #include "platform/wtf/ConditionalDestructor.h"
@@ -1994,6 +1995,22 @@ Vector<T, inlineCapacity, Allocator>::Trace(VisitorDispatcher visitor) {
 }
 
 }  // namespace WTF
+
+namespace base {
+
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ <= 7
+// Workaround for g++7 and earlier family.
+// Due to https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80654, without this
+// Optional<WTF::Vector<T>> where T is non-copyable causes a compile error.
+// As we know it is not trivially copy constructible, explicitly declare so.
+//
+// It completes the declaration in base/template_util.h that was provided
+// for std::vector
+template <typename T>
+struct is_trivially_copy_constructible<WTF::Vector<T>> : std::false_type {};
+#endif
+
+}  // namespace base
 
 using WTF::Vector;
 
