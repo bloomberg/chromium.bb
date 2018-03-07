@@ -341,7 +341,7 @@ const base::Feature kMaterialDesignBookmarks{"MaterialDesignBookmarks",
 #if defined(OS_MACOSX)
 // Enables the Material Design download shelf on Mac.
 const base::Feature kMacMaterialDesignDownloadShelf{
-    "MacMDDownloadShelf", base::FEATURE_DISABLED_BY_DEFAULT};
+    "MacMDDownloadShelf", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)

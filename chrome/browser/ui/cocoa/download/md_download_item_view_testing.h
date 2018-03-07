@@ -10,6 +10,7 @@
 @interface MDDownloadItemView (Testing)
 @property(readonly) NSButton* primaryButton;
 @property(readonly) NSButton* menuButton;
+@property(readonly) NSView* dangerView;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_DOWNLOAD_MD_DOWNLOAD_ITEM_VIEW_TESTING_H_

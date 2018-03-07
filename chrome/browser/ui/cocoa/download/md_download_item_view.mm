@@ -656,4 +656,8 @@ NSTextField* MakeLabel(
   return menuButton_;
 }
 
+- (NSView*)dangerView {
+  return dangerView_;
+}
+
 @end

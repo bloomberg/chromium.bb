@@ -41,21 +41,24 @@ class MDDownloadItemViewTest : public ui::CocoaTest {
 
 TEST_VIEW(MDDownloadItemViewTest, view_)
 
-// Run the download item through a few states, including a danger state, to
-// prod for crashes. It isn't intended to cover every possible state.
+// Run the download item through a few states, including a danger state, mostly
+// to prod for crashes. It isn't intended to cover every possible state.
 TEST_F(MDDownloadItemViewTest, TestStates) {
   ON_CALL(item_, GetState())
       .WillByDefault(testing::Return(download::DownloadItem::IN_PROGRESS));
   set_state_and_display();
+  EXPECT_NSEQ(nil, view_.dangerView);
 
   ON_CALL(item_, GetDangerType())
       .WillByDefault(
           testing::Return(download::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL));
   ON_CALL(item_, IsDangerous()).WillByDefault(testing::Return(true));
   set_state_and_display();
+  EXPECT_NSNE(nil, view_.dangerView);
 
   ON_CALL(item_, IsDangerous()).WillByDefault(testing::Return(false));
   set_state_and_display();
+  EXPECT_NSEQ(nil, view_.dangerView);
 
   ON_CALL(item_, GetState())
       .WillByDefault(testing::Return(download::DownloadItem::COMPLETE));
