@@ -47,7 +47,9 @@ class CastDisplayConfigurator : public display::NativeDisplayObserver {
   void ConfigureDisplayFromCommandLine();
 
  private:
+  void ForceInitialConfigure();
   void OnDisplaysAcquired(
+      bool force_initial_configure,
       const std::vector<display::DisplaySnapshot*>& displays);
   void OnDisplayConfigured(display::DisplaySnapshot* display,
                            const display::DisplayMode* mode,
