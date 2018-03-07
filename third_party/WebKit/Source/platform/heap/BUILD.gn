@@ -76,6 +76,7 @@ blink_platform_sources("heap") {
   ]
 
   deps = [
+    ":blink_heap_flags",
     "//base",
     "//third_party/WebKit/Source/platform:make_platform_generated",
     "//third_party/WebKit/Source/platform/heap/asm",
