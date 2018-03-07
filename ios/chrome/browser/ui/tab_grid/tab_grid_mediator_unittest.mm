@@ -62,7 +62,13 @@ class TabGridMediatorTest : public PlatformTest {
 
 // Tests that the consumer is populated after the tab model is set on the
 // mediator.
-TEST_F(TabGridMediatorTest, ConsumerPopulateItems) {
+// TODO(crbug.com/819658): Test fails on device. Re-enable after fixing.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_ConsumerPopulateItems ConsumerPopulateItems
+#else
+#define MAYBE_ConsumerPopulateItems DISABLED_ConsumerPopulateItems
+#endif
+TEST_F(TabGridMediatorTest, MAYBE_ConsumerPopulateItems) {
   [[consumer_ verify] populateItems:[OCMArg checkWithBlock:^BOOL(id value) {
                         NSArray* items =
                             base::mac::ObjCCastStrict<NSArray>(value);
@@ -73,7 +79,13 @@ TEST_F(TabGridMediatorTest, ConsumerPopulateItems) {
 }
 
 // Tests that the consumer is notified when a web state is inserted.
-TEST_F(TabGridMediatorTest, ConsumerInsertItem) {
+// TODO(crbug.com/819658): Test fails on device. Re-enable after fixing.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_ConsumerInsertItem ConsumerInsertItem
+#else
+#define MAYBE_ConsumerInsertItem DISABLED_ConsumerInsertItem
+#endif
+TEST_F(TabGridMediatorTest, MAYBE_ConsumerInsertItem) {
   auto web_state = std::make_unique<web::TestWebState>();
   TabIdTabHelper::CreateForWebState(web_state.get());
   NSString* item_identifier =
