@@ -57,8 +57,7 @@ class IntentPickerLabelButton;
 //   +--------------------------------+
 
 class IntentPickerBubbleView : public LocationBarBubbleDelegateView,
-                               public views::ButtonListener,
-                               public content::WebContentsObserver {
+                               public views::ButtonListener {
  public:
   using AppInfo = arc::ArcNavigationThrottle::AppInfo;
 
@@ -118,9 +117,6 @@ class IntentPickerBubbleView : public LocationBarBubbleDelegateView,
   // Similar to ButtonPressed, except this controls the up/down/right/left input
   // while focusing on the |scroll_view_|.
   void ArrowButtonPressed(int index);
-
-  // content::WebContentsObserver overrides:
-  void WebContentsDestroyed() override;
 
   // ui::EventHandler overrides:
   void OnKeyEvent(ui::KeyEvent* event) override;

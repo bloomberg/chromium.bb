@@ -88,6 +88,29 @@ IN_PROC_BROWSER_TEST_F(LocationBarViewBrowserTest, LocationBarDecoration) {
   EXPECT_FALSE(ZoomBubbleView::GetZoomBubble());
 }
 
+// Ensure that location bar bubbles close when the webcontents hides.
+IN_PROC_BROWSER_TEST_F(LocationBarViewBrowserTest, BubblesCloseOnHide) {
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  zoom::ZoomController* zoom_controller =
+      zoom::ZoomController::FromWebContents(web_contents);
+  ZoomView* zoom_view = GetLocationBarView()->zoom_view();
+
+  ASSERT_TRUE(zoom_view);
+  EXPECT_FALSE(zoom_view->visible());
+
+  zoom_controller->SetZoomLevel(content::ZoomFactorToZoomLevel(1.5));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(zoom_view->visible());
+  EXPECT_TRUE(ZoomBubbleView::GetZoomBubble());
+
+  chrome::NewTab(browser());
+  chrome::SelectNextTab(browser());
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(ZoomBubbleView::GetZoomBubble());
+}
+
 // After AddUrlHandler() is called, requests to this hostname will be mocked
 // and use specified certificate validation results. This allows tests to mock
 // Extended Validation (EV) certificate connections.

@@ -306,7 +306,6 @@ IntentPickerBubbleView::IntentPickerBubbleView(
     : LocationBarBubbleDelegateView(nullptr /* anchor_view */,
                                     gfx::Point(),
                                     web_contents),
-      content::WebContentsObserver(web_contents),
       intent_picker_cb_(intent_picker_cb),
       selected_app_tag_(0),
       scroll_view_(nullptr),
@@ -336,12 +335,6 @@ void IntentPickerBubbleView::ButtonPressed(views::Button* sender,
 void IntentPickerBubbleView::ArrowButtonPressed(int index) {
   SetSelectedAppIndex(index, nullptr);
   AdjustScrollViewVisibleRegion();
-}
-
-// If the actual web_contents gets destroyed in the middle of the process we
-// should inform the caller about this error.
-void IntentPickerBubbleView::WebContentsDestroyed() {
-  GetWidget()->Close();
 }
 
 void IntentPickerBubbleView::OnKeyEvent(ui::KeyEvent* event) {

@@ -41,8 +41,7 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
                             public views::ComboboxListener,
                             public views::LinkListener,
                             public ui::SimpleMenuModel::Delegate,
-                            public views::StyledLabelListener,
-                            public content::WebContentsObserver {
+                            public views::StyledLabelListener {
  public:
   // Item IDs for the option button's menu.
   enum OptionsMenuItem {
@@ -105,9 +104,6 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   void StyledLabelLinkClicked(views::StyledLabel* label,
                               const gfx::Range& range,
                               int event_flags) override;
-
-  // content::WebContentsObserver method.
-  void WebContentsDestroyed() override;
 
   // Overridden from views::WidgetObserver:
   void OnWidgetClosing(views::Widget* widget) override;

@@ -224,7 +224,6 @@ ZoomBubbleView::ZoomBubbleView(
     DisplayReason reason,
     ImmersiveModeController* immersive_mode_controller)
     : LocationBarBubbleDelegateView(anchor_view, anchor_point, web_contents),
-      WebContentsObserver(web_contents),
       auto_close_duration_(kBubbleCloseDelayDefault),
       image_button_(nullptr),
       label_(nullptr),
@@ -415,15 +414,6 @@ void ZoomBubbleView::OnExtensionIconImageChanged(
   image_button_->SetImage(views::Button::STATE_NORMAL,
                           &extension_info_.icon_image->image_skia());
   image_button_->SchedulePaint();
-}
-
-void ZoomBubbleView::OnVisibilityChanged(content::Visibility visibility) {
-  if (visibility == content::Visibility::HIDDEN)
-    CloseBubble();
-}
-
-void ZoomBubbleView::WebContentsDestroyed() {
-  CloseBubble();
 }
 
 void ZoomBubbleView::SetExtensionInfo(const extensions::Extension* extension) {

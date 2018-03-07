@@ -83,8 +83,10 @@ IN_PROC_BROWSER_TEST_F(TranslateBubbleViewBrowserTest,
   NavigateAndWaitForLanguageDetection(french_url, "fr");
   EXPECT_TRUE(TranslateBubbleView::GetCurrentBubble());
 
-  // Close the window without translating.
+  // Close the window without translating. Spin the runloop to allow
+  // asynchronous window closure to happen.
   chrome::CloseWindow(browser());
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(TranslateBubbleView::GetCurrentBubble());
 }
 
@@ -100,9 +102,11 @@ IN_PROC_BROWSER_TEST_F(TranslateBubbleViewBrowserTest,
   NavigateAndWaitForLanguageDetection(french_url, "fr");
   EXPECT_TRUE(TranslateBubbleView::GetCurrentBubble());
 
-  // Close the tab without translating.
+  // Close the tab without translating. Spin the runloop to allow asynchronous
+  // window closure to happen.
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
   chrome::CloseWebContents(browser(), current_web_contents, false);
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(TranslateBubbleView::GetCurrentBubble());
 }
 
