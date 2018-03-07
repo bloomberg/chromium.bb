@@ -1246,6 +1246,12 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         mToolbarModel.setTab(tab, isIncognito);
 
         updateCurrentTabDisplayStatus();
+
+        // This method is called prior to action mode destroy callback for incognito <-> normal
+        // tab switch. Makes sure the action mode toolbar is hidden before selecting the new tab.
+        if (previousTab != null && wasIncognito != isIncognito && DeviceFormFactor.isTablet()) {
+            mActionModeController.startHideAnimation();
+        }
         if (previousTab != tab || wasIncognito != isIncognito) {
             if (previousTab != tab) {
                 if (previousTab != null) {
