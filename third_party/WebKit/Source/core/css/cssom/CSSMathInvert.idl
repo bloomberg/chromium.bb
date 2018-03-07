@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // Represents the inverse a CSSNumericValue.
-// https://drafts.css-houdini.org/css-typed-om-1/#cssmathinvert
+// https://drafts.css-houdini.org/css-typed-om/#cssmathinvert
 [
   Constructor(CSSNumberish arg),
   RuntimeEnabled=CSSTypedOM,

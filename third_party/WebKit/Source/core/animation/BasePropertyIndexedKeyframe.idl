@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://drafts.csswg.org/web-animations-1/#dictdef-basepropertyindexedkeyframe
+// https://drafts.csswg.org/web-animations/#dictdef-basepropertyindexedkeyframe
 
 dictionary BasePropertyIndexedKeyframe {
   (double? or sequence<double?>) offset = [];

@@ -2,7 +2,7 @@
 
 [Rendered](https://chromium.googlesource.com/chromium/src/+/master/third_party/WebKit/Source/core/css/cssom/README.md)
 
-The `Source/core/css/cssom` directory contains the implementation of [CSS Typed OM](https://drafts.css-houdini.org/css-typed-om-1).
+The `Source/core/css/cssom` directory contains the implementation of [CSS Typed OM](https://drafts.css-houdini.org/css-typed-om).
 
 # Appendix
 

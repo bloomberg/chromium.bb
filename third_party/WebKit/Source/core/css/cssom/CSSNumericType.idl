@@ -15,7 +15,7 @@
     "percent",
 };
 
-// https://drafts.css-houdini.org/css-typed-om-1/#cssnumerictype
+// https://drafts.css-houdini.org/css-typed-om/#cssnumerictype
 [
   Exposed=(Window,LayoutWorklet,PaintWorklet)
 ] dictionary CSSNumericType {

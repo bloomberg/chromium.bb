@@ -67,7 +67,7 @@ ClipStrategy DetermineClipStrategy(const SVGGraphicsElement& element) {
 
 ClipStrategy DetermineClipStrategy(const SVGElement& element) {
   // <use> within <clipPath> have a restricted content model.
-  // (https://drafts.fxtf.org/css-masking-1/#ClipPathElement)
+  // (https://drafts.fxtf.org/css-masking/#ClipPathElement)
   if (IsSVGUseElement(element)) {
     const LayoutObject* use_layout_object = element.GetLayoutObject();
     if (!use_layout_object ||
