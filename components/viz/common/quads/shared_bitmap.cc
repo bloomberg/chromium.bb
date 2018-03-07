@@ -13,6 +13,7 @@
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "components/viz/common/resources/resource_format_utils.h"
 
 namespace viz {
 
@@ -24,10 +25,22 @@ SharedBitmap::SharedBitmap(uint8_t* pixels,
 SharedBitmap::~SharedBitmap() {}
 
 // static
-bool SharedBitmap::SizeInBytes(const gfx::Size& size, size_t* size_in_bytes) {
+SharedBitmapId SharedBitmap::GenerateId() {
+  SharedBitmapId id;
+  // Needs cryptographically-secure random numbers.
+  base::RandBytes(id.name, sizeof(id.name));
+  return id;
+}
+
+// static
+bool SharedBitmap::SizeInBytes(const gfx::Size& size,
+                               ResourceFormat format,
+                               size_t* size_in_bytes) {
+  DCHECK(IsBitmapFormatSupported(format));
   if (size.IsEmpty())
     return false;
-  base::CheckedNumeric<size_t> s = 4;
+  DCHECK_EQ(0, BitsPerPixel(format) % 8);
+  base::CheckedNumeric<size_t> s = BitsPerPixel(format) / 8;
   s *= size.width();
   s *= size.height();
   if (!s.IsValid())
@@ -37,39 +50,40 @@ bool SharedBitmap::SizeInBytes(const gfx::Size& size, size_t* size_in_bytes) {
 }
 
 // static
-size_t SharedBitmap::CheckedSizeInBytes(const gfx::Size& size) {
+size_t SharedBitmap::CheckedSizeInBytes(const gfx::Size& size,
+                                        ResourceFormat format) {
+  DCHECK(IsBitmapFormatSupported(format));
   CHECK(!size.IsEmpty());
-  base::CheckedNumeric<size_t> s = 4;
+  DCHECK_EQ(0, BitsPerPixel(format) % 8);
+  base::CheckedNumeric<size_t> s = BitsPerPixel(format) / 8;
   s *= size.width();
   s *= size.height();
   return s.ValueOrDie();
 }
 
 // static
-size_t SharedBitmap::UncheckedSizeInBytes(const gfx::Size& size) {
-  DCHECK(VerifySizeInBytes(size));
-  size_t s = 4;
+size_t SharedBitmap::UncheckedSizeInBytes(const gfx::Size& size,
+                                          ResourceFormat format) {
+  DCHECK(IsBitmapFormatSupported(format));
+  DCHECK(VerifySizeInBytes(size, format));
+  DCHECK_EQ(0, BitsPerPixel(format) % 8);
+  size_t s = BitsPerPixel(format) / 8;
   s *= size.width();
   s *= size.height();
   return s;
 }
 
 // static
-bool SharedBitmap::VerifySizeInBytes(const gfx::Size& size) {
+bool SharedBitmap::VerifySizeInBytes(const gfx::Size& size,
+                                     ResourceFormat format) {
+  DCHECK(IsBitmapFormatSupported(format));
   if (size.IsEmpty())
     return false;
-  base::CheckedNumeric<size_t> s = 4;
+  DCHECK_EQ(0, BitsPerPixel(format) % 8);
+  base::CheckedNumeric<size_t> s = BitsPerPixel(format) / 8;
   s *= size.width();
   s *= size.height();
   return s.IsValid();
-}
-
-// static
-SharedBitmapId SharedBitmap::GenerateId() {
-  SharedBitmapId id;
-  // Needs cryptographically-secure random numbers.
-  base::RandBytes(id.name, sizeof(id.name));
-  return id;
 }
 
 base::trace_event::MemoryAllocatorDumpGuid GetSharedBitmapGUIDForTracing(

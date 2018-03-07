@@ -10,7 +10,9 @@
 
 #include "base/debug/alias.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "components/viz/common/resources/bitmap_allocation.h"
+#include "components/viz/common/resources/resource_format_utils.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -73,12 +75,14 @@ ClientSharedBitmapManager::ClientSharedBitmapManager(
 ClientSharedBitmapManager::~ClientSharedBitmapManager() = default;
 
 std::unique_ptr<SharedBitmap> ClientSharedBitmapManager::AllocateSharedBitmap(
-    const gfx::Size& size) {
+    const gfx::Size& size,
+    ResourceFormat format) {
+  DCHECK(IsBitmapFormatSupported(format));
   TRACE_EVENT2("renderer", "ClientSharedBitmapManager::AllocateSharedBitmap",
                "width", size.width(), "height", size.height());
   SharedBitmapId id = SharedBitmap::GenerateId();
   std::unique_ptr<base::SharedMemory> memory =
-      bitmap_allocation::AllocateMappedBitmap(size);
+      bitmap_allocation::AllocateMappedBitmap(size, format);
   uint32_t sequence_number = NotifyAllocatedSharedBitmap(memory.get(), id);
   return std::make_unique<ClientSharedBitmap>(
       shared_bitmap_allocation_notifier_, std::move(memory), id,
@@ -87,6 +91,7 @@ std::unique_ptr<SharedBitmap> ClientSharedBitmapManager::AllocateSharedBitmap(
 
 std::unique_ptr<SharedBitmap> ClientSharedBitmapManager::GetSharedBitmapFromId(
     const gfx::Size&,
+    ResourceFormat,
     const SharedBitmapId&) {
   NOTREACHED();
   return nullptr;
@@ -120,7 +125,8 @@ uint32_t ClientSharedBitmapManager::NotifyAllocatedSharedBitmap(
     base::SharedMemory* memory,
     const SharedBitmapId& id) {
   mojo::ScopedSharedBufferHandle buffer_handle =
-      bitmap_allocation::DuplicateAndCloseMappedBitmap(memory, gfx::Size());
+      bitmap_allocation::DuplicateAndCloseMappedBitmap(memory, gfx::Size(),
+                                                       RGBA_8888);
   {
     base::AutoLock lock(lock_);
     (*shared_bitmap_allocation_notifier_)

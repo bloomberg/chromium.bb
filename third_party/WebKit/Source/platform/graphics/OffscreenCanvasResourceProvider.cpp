@@ -56,8 +56,8 @@ void OffscreenCanvasResourceProvider::SetTransferableResourceToSharedBitmap(
   std::unique_ptr<FrameResource> frame_resource =
       CreateOrRecycleFrameResource();
   if (!frame_resource->shared_bitmap_) {
-    frame_resource->shared_bitmap_ =
-        Platform::Current()->AllocateSharedBitmap(IntSize(width_, height_));
+    frame_resource->shared_bitmap_ = Platform::Current()->AllocateSharedBitmap(
+        IntSize(width_, height_), viz::ResourceFormat::RGBA_8888);
     if (!frame_resource->shared_bitmap_)
       return;
   }

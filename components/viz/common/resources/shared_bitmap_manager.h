@@ -21,7 +21,8 @@ class SharedBitmapManager {
 
   // Allocate a shared bitmap that can be given to the display compositor.
   virtual std::unique_ptr<SharedBitmap> AllocateSharedBitmap(
-      const gfx::Size&) = 0;
+      const gfx::Size&,
+      ResourceFormat) = 0;
 
   // The following methods are only used by the display compositor, but are on
   // the base interface in order to allow tests (or prod) to implement the
@@ -34,6 +35,7 @@ class SharedBitmapManager {
   // Used in the display compositor to find the bitmap associated with an id.
   virtual std::unique_ptr<SharedBitmap> GetSharedBitmapFromId(
       const gfx::Size&,
+      ResourceFormat,
       const SharedBitmapId&) = 0;
   // Used in the display compositor to associate an id to a shm handle.
   virtual bool ChildAllocatedSharedBitmap(mojo::ScopedSharedBufferHandle buffer,

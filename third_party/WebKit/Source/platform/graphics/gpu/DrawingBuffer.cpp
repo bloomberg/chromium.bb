@@ -263,7 +263,7 @@ std::unique_ptr<viz::SharedBitmap> DrawingBuffer::CreateOrRecycleBitmap() {
     return std::move(recycled.bitmap);
   }
 
-  return Platform::Current()->AllocateSharedBitmap(size_);
+  return Platform::Current()->AllocateSharedBitmap(size_, viz::RGBA_8888);
 }
 
 bool DrawingBuffer::PrepareTransferableResource(
@@ -335,7 +335,7 @@ bool DrawingBuffer::FinishPrepareTransferableResourceSoftware(
   }
 
   *out_resource = viz::TransferableResource::MakeSoftware(
-      bitmap->id(), bitmap->sequence_number(), size_);
+      bitmap->id(), bitmap->sequence_number(), size_, viz::RGBA_8888);
   out_resource->color_space = storage_color_space_;
 
   // This holds a ref on the DrawingBuffer that will keep it alive until the
@@ -431,6 +431,7 @@ bool DrawingBuffer::FinishPrepareTransferableResourceGpu(
         color_buffer_for_mailbox->produce_sync_token, gfx::Size(size_),
         is_overlay_candidate);
     out_resource->color_space = sampler_color_space_;
+    out_resource->format = viz::RGBA_8888;
 
     // This holds a ref on the DrawingBuffer that will keep it alive until the
     // mailbox is released (and while the release callback is running).
@@ -510,7 +511,8 @@ scoped_refptr<StaticBitmapImage> DrawingBuffer::TransferToStaticBitmapImage(
     // If we can't get a mailbox, return an transparent black ImageBitmap.
     // The only situation in which this could happen is when two or more calls
     // to transferToImageBitmap are made back-to-back, or when the context gets
-    // lost.
+    // lost. We intentionally leave the transparent black image in legacy color
+    // space.
     sk_sp<SkSurface> surface =
         SkSurface::MakeRasterN32Premul(size_.Width(), size_.Height());
     return StaticBitmapImage::Create(surface->makeImageSnapshot());

@@ -23,9 +23,11 @@
 #include "components/viz/common/quads/picture_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/service/display/gl_renderer.h"
+#include "components/viz/test/test_shared_bitmap_manager.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "media/base/video_frame.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
+#include "third_party/skia/include/core/SkColorSpaceXform.h"
 #include "third_party/skia/include/core/SkMatrix.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -153,8 +155,8 @@ void CreateTestTwoColoredTextureDrawQuad(
         rect.size(), ResourceTextureHint::kDefault, RGBA_8888,
         gfx::ColorSpace());
   } else {
-    resource = child_resource_provider->CreateBitmapResource(rect.size(),
-                                                             gfx::ColorSpace());
+    resource = child_resource_provider->CreateBitmapResource(
+        rect.size(), gfx::ColorSpace(), RGBA_8888);
   }
   child_resource_provider->CopyToResource(
       resource, reinterpret_cast<uint8_t*>(&pixels.front()), rect.size());
@@ -204,8 +206,8 @@ void CreateTestTextureDrawQuad(
         rect.size(), ResourceTextureHint::kDefault, RGBA_8888,
         gfx::ColorSpace());
   } else {
-    resource = child_resource_provider->CreateBitmapResource(rect.size(),
-                                                             gfx::ColorSpace());
+    resource = child_resource_provider->CreateBitmapResource(
+        rect.size(), gfx::ColorSpace(), RGBA_8888);
   }
   child_resource_provider->CopyToResource(
       resource, reinterpret_cast<uint8_t*>(&pixels.front()), rect.size());
@@ -2199,7 +2201,7 @@ TYPED_TEST(RendererPixelTest, RenderPassAndMaskWithPartialQuad) {
         gfx::ColorSpace());
   } else {
     mask_resource_id = this->child_resource_provider_->CreateBitmapResource(
-        mask_rect.size(), gfx::ColorSpace());
+        mask_rect.size(), gfx::ColorSpace(), RGBA_8888);
   }
 
   this->child_resource_provider_->CopyToResource(
@@ -2298,7 +2300,7 @@ TYPED_TEST(RendererPixelTest, RenderPassAndMaskWithPartialQuad2) {
         gfx::ColorSpace());
   } else {
     mask_resource_id = this->child_resource_provider_->CreateBitmapResource(
-        mask_rect.size(), gfx::ColorSpace());
+        mask_rect.size(), gfx::ColorSpace(), RGBA_8888);
   }
 
   this->child_resource_provider_->CopyToResource(
@@ -2783,7 +2785,7 @@ TEST_F(GLRendererPixelTest, TileDrawQuadForceAntiAliasingOff) {
         tile_size, ResourceTextureHint::kDefault, RGBA_8888, gfx::ColorSpace());
   } else {
     resource = this->child_resource_provider_->CreateBitmapResource(
-        tile_size, gfx::ColorSpace());
+        tile_size, gfx::ColorSpace(), RGBA_8888);
   }
 
   this->child_resource_provider_->CopyToResource(
@@ -3216,7 +3218,7 @@ TYPED_TEST(RendererPixelTest, TileDrawQuadNearestNeighbor) {
         tile_size, ResourceTextureHint::kDefault, RGBA_8888, gfx::ColorSpace());
   } else {
     resource = this->child_resource_provider_->CreateBitmapResource(
-        tile_size, gfx::ColorSpace());
+        tile_size, gfx::ColorSpace(), RGBA_8888);
   }
   this->child_resource_provider_->CopyToResource(
       resource, static_cast<uint8_t*>(bitmap.getPixels()), tile_size);
@@ -3267,7 +3269,7 @@ TYPED_TEST(SoftwareRendererPixelTest, TextureDrawQuadNearestNeighbor) {
 
   gfx::Size tile_size(2, 2);
   ResourceId resource = this->child_resource_provider_->CreateBitmapResource(
-      tile_size, gfx::ColorSpace());
+      tile_size, gfx::ColorSpace(), RGBA_8888);
 
   this->child_resource_provider_->CopyToResource(
       resource, static_cast<uint8_t*>(bitmap.getPixels()), tile_size);
@@ -3322,7 +3324,7 @@ TYPED_TEST(SoftwareRendererPixelTest, TextureDrawQuadLinear) {
 
   gfx::Size tile_size(2, 2);
   ResourceId resource = this->child_resource_provider_->CreateBitmapResource(
-      tile_size, gfx::ColorSpace());
+      tile_size, gfx::ColorSpace(), RGBA_8888);
 
   this->child_resource_provider_->CopyToResource(
       resource, static_cast<uint8_t*>(bitmap.getPixels()), tile_size);
@@ -3755,7 +3757,7 @@ TEST_F(GLRendererPixelTest, TileQuadClamping) {
         tile_size, ResourceTextureHint::kDefault, RGBA_8888, gfx::ColorSpace());
   } else {
     resource = this->child_resource_provider_->CreateBitmapResource(
-        tile_size, gfx::ColorSpace());
+        tile_size, gfx::ColorSpace(), RGBA_8888);
   }
   this->child_resource_provider_->CopyToResource(
       resource, static_cast<uint8_t*>(bitmap.getPixels()), tile_size);

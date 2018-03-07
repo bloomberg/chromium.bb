@@ -1202,9 +1202,10 @@ RendererBlinkPlatformImpl::GetGpuMemoryBufferManager() {
 //------------------------------------------------------------------------------
 
 std::unique_ptr<viz::SharedBitmap>
-RendererBlinkPlatformImpl::AllocateSharedBitmap(const blink::WebSize& size) {
-  return shared_bitmap_manager_
-      ->AllocateSharedBitmap(gfx::Size(size.width, size.height));
+RendererBlinkPlatformImpl::AllocateSharedBitmap(const blink::WebSize& size,
+                                                viz::ResourceFormat format) {
+  return shared_bitmap_manager_->AllocateSharedBitmap(
+      gfx::Size(size.width, size.height), format);
 }
 
 //------------------------------------------------------------------------------

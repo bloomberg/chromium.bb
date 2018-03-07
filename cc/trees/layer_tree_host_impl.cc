@@ -4464,7 +4464,7 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
   } else {
     DCHECK_EQ(format, viz::RGBA_8888);
     id = resource_provider_->CreateBitmapResource(
-        upload_size, gfx::ColorSpace::CreateSRGB());
+        upload_size, gfx::ColorSpace::CreateSRGB(), viz::RGBA_8888);
   }
 
   if (!scaled) {

@@ -13,6 +13,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/synchronization/lock.h"
 #include "base/trace_event/memory_dump_provider.h"
+#include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/shared_bitmap_manager.h"
 #include "components/viz/service/viz_service_export.h"
 
@@ -36,10 +37,12 @@ class VIZ_SERVICE_EXPORT ServerSharedBitmapManager
 
   // SharedBitmapManager implementation.
   std::unique_ptr<SharedBitmap> AllocateSharedBitmap(
-      const gfx::Size& size) override;
+      const gfx::Size& size,
+      ResourceFormat format) override;
   std::unique_ptr<SharedBitmap> GetSharedBitmapFromId(
       const gfx::Size& size,
-      const SharedBitmapId&) override;
+      ResourceFormat format,
+      const SharedBitmapId& id) override;
   bool ChildAllocatedSharedBitmap(mojo::ScopedSharedBufferHandle buffer,
                                   const SharedBitmapId& id) override;
   void ChildDeletedSharedBitmap(const SharedBitmapId& id) override;

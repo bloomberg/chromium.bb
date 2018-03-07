@@ -55,7 +55,7 @@ base::SharedMemory* OutputDeviceBacking::GetSharedMemory(
     return backing_.get();
   size_t expected_byte_size = GetMaxByteSize();
   size_t required_size;
-  if (!SharedBitmap::SizeInBytes(size, &required_size))
+  if (!SharedBitmap::SizeInBytes(size, RGBA_8888, &required_size))
     return nullptr;
   if (required_size > expected_byte_size)
     return nullptr;
@@ -73,7 +73,7 @@ size_t OutputDeviceBacking::GetMaxByteSize() {
   size_t max_size = 1;
   for (const SoftwareOutputDeviceWin* device : devices_) {
     size_t current_size;
-    if (!SharedBitmap::SizeInBytes(device->viewport_pixel_size(),
+    if (!SharedBitmap::SizeInBytes(device->viewport_pixel_size(), RGBA_8888,
                                    &current_size))
       continue;
     if (current_size > kMaxBitmapSizeBytes)

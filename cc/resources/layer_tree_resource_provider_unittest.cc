@@ -358,8 +358,8 @@ TEST_P(LayerTreeResourceProviderTest,
         gfx::Size(3, 4), viz::ResourceTextureHint::kDefault, viz::RGBA_8888,
         gfx::ColorSpace());
   } else {
-    norm_id =
-        provider().CreateBitmapResource(gfx::Size(3, 4), gfx::ColorSpace());
+    norm_id = provider().CreateBitmapResource(
+        gfx::Size(3, 4), gfx::ColorSpace(), viz::RGBA_8888);
   }
   provider().AllocateForTesting(norm_id);
 

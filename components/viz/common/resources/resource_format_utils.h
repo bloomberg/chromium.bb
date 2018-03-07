@@ -41,6 +41,10 @@ VIZ_RESOURCE_FORMAT_EXPORT unsigned int TextureStorageFormat(
 VIZ_RESOURCE_FORMAT_EXPORT bool IsGpuMemoryBufferFormatSupported(
     ResourceFormat format);
 
+// Returns whether the format can be used as a software bitmap for export to the
+// display compositor.
+VIZ_RESOURCE_FORMAT_EXPORT bool IsBitmapFormatSupported(ResourceFormat format);
+
 }  // namespace viz
 
 #endif  // COMPONENTS_VIZ_COMMON_RESOURCES_RESOURCE_FORMAT_UTILS_H_

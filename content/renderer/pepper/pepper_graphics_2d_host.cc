@@ -758,19 +758,22 @@ bool PepperGraphics2DHost::PrepareTransferableResource(
       cached_bitmap_.reset();
   }
   if (!shared_bitmap) {
-    shared_bitmap = RenderThreadImpl::current()
-                        ->shared_bitmap_manager()
-                        ->AllocateSharedBitmap(pixel_image_size);
+    shared_bitmap =
+        RenderThreadImpl::current()
+            ->shared_bitmap_manager()
+            ->AllocateSharedBitmap(pixel_image_size, viz::RGBA_8888);
   }
   if (!shared_bitmap)
     return false;
   void* src = image_data_->Map();
-  memcpy(shared_bitmap->pixels(), src,
-         viz::SharedBitmap::CheckedSizeInBytes(pixel_image_size));
+  memcpy(
+      shared_bitmap->pixels(), src,
+      viz::SharedBitmap::CheckedSizeInBytes(pixel_image_size, viz::RGBA_8888));
   image_data_->Unmap();
 
   *transferable_resource = viz::TransferableResource::MakeSoftware(
-      shared_bitmap->id(), shared_bitmap->sequence_number(), pixel_image_size);
+      shared_bitmap->id(), shared_bitmap->sequence_number(), pixel_image_size,
+      viz::RGBA_8888);
   *release_callback = viz::SingleReleaseCallback::Create(base::BindOnce(
       &PepperGraphics2DHost::ReleaseSoftwareCallback, this->AsWeakPtr(),
       base::Passed(&shared_bitmap), pixel_image_size));

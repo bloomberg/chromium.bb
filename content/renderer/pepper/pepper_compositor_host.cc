@@ -320,7 +320,8 @@ void PepperCompositorHost::UpdateLayer(
               ->GetBitmapForSharedMemory(image_shm.get());
 
       auto resource = viz::TransferableResource::MakeSoftware(
-          bitmap->id(), bitmap->sequence_number(), PP_ToGfxSize(desc.size));
+          bitmap->id(), bitmap->sequence_number(), PP_ToGfxSize(desc.size),
+          viz::RGBA_8888);
       image_layer->SetTransferableResource(
           resource,
           viz::SingleReleaseCallback::Create(base::BindOnce(

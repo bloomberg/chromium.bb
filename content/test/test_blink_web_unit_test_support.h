@@ -69,7 +69,8 @@ class TestBlinkWebUnitTestSupport : public BlinkPlatformImpl {
   blink::WebThread* CurrentThread() override;
 
   std::unique_ptr<viz::SharedBitmap> AllocateSharedBitmap(
-      const blink::WebSize& size) override;
+      const blink::WebSize& size,
+      viz::ResourceFormat format) override;
 
   void GetPluginList(bool refresh,
                      const blink::WebSecurityOrigin& mainFrameOrigin,

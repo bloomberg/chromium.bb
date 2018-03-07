@@ -36,12 +36,14 @@ struct VIZ_COMMON_EXPORT TransferableResource {
 
   static TransferableResource MakeSoftware(const SharedBitmapId& id,
                                            uint32_t sequence_number,
-                                           const gfx::Size& size) {
+                                           const gfx::Size& size,
+                                           ResourceFormat format) {
     TransferableResource r;
     r.is_software = true;
     r.mailbox_holder.mailbox = id;
     r.shared_bitmap_sequence_number = sequence_number;
     r.size = size;
+    r.format = format;
     return r;
   }
 

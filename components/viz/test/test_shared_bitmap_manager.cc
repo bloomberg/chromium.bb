@@ -8,6 +8,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory.h"
+#include "components/viz/common/resources/resource_format_utils.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
 namespace viz {
@@ -60,10 +61,14 @@ TestSharedBitmapManager::TestSharedBitmapManager() = default;
 TestSharedBitmapManager::~TestSharedBitmapManager() = default;
 
 std::unique_ptr<SharedBitmap> TestSharedBitmapManager::AllocateSharedBitmap(
-    const gfx::Size& size) {
+    const gfx::Size& size,
+    ResourceFormat resource_format) {
+  DCHECK(IsBitmapFormatSupported(resource_format));
   base::AutoLock lock(lock_);
   std::unique_ptr<base::SharedMemory> memory(new base::SharedMemory);
-  memory->CreateAndMapAnonymous(size.GetArea() * 4);
+  DCHECK_EQ(0, BitsPerPixel(resource_format) % 8);
+  size_t memory_size = size.GetArea() * BitsPerPixel(resource_format) / 8;
+  memory->CreateAndMapAnonymous(memory_size);
   SharedBitmapId id = SharedBitmap::GenerateId();
   bitmap_map_[id] = memory.get();
   return std::make_unique<OwnedSharedBitmap>(std::move(memory), id);
@@ -71,6 +76,7 @@ std::unique_ptr<SharedBitmap> TestSharedBitmapManager::AllocateSharedBitmap(
 
 std::unique_ptr<SharedBitmap> TestSharedBitmapManager::GetSharedBitmapFromId(
     const gfx::Size&,
+    ResourceFormat,
     const SharedBitmapId& id) {
   base::AutoLock lock(lock_);
   if (bitmap_map_.find(id) == bitmap_map_.end())

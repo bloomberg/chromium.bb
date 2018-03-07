@@ -240,4 +240,24 @@ bool IsGpuMemoryBufferFormatSupported(ResourceFormat format) {
   return false;
 }
 
+bool IsBitmapFormatSupported(ResourceFormat format) {
+  switch (format) {
+    case RGBA_8888:
+      return true;
+    case RGBA_4444:
+    case BGRA_8888:
+    case ALPHA_8:
+    case LUMINANCE_8:
+    case RGB_565:
+    case ETC1:
+    case RED_8:
+    case LUMINANCE_F16:
+    case RGBA_F16:
+    case R16_EXT:
+      return false;
+  }
+  NOTREACHED();
+  return false;
+}
+
 }  // namespace viz

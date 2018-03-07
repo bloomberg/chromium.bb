@@ -378,11 +378,12 @@ void DisplayResourceProvider::ReceiveFromChild(
     viz::ResourceId local_id = next_id_++;
     viz::internal::Resource* resource = nullptr;
     if (it->is_software) {
+      DCHECK(IsBitmapFormatSupported(it->format));
       resource = InsertResource(
           local_id,
           viz::internal::Resource(it->size, viz::internal::Resource::DELEGATED,
                                   viz::ResourceTextureHint::kDefault,
-                                  viz::ResourceType::kBitmap, viz::RGBA_8888,
+                                  viz::ResourceType::kBitmap, it->format,
                                   it->color_space));
       resource->has_shared_bitmap_id = true;
       resource->shared_bitmap_id = it->mailbox_holder.mailbox;
@@ -537,7 +538,7 @@ const viz::internal::Resource* DisplayResourceProvider::LockForRead(
       shared_bitmap_manager_) {
     std::unique_ptr<viz::SharedBitmap> bitmap =
         shared_bitmap_manager_->GetSharedBitmapFromId(
-            resource->size, resource->shared_bitmap_id);
+            resource->size, resource->format, resource->shared_bitmap_id);
     if (bitmap) {
       resource->SetSharedBitmap(bitmap.get());
       resource->owned_shared_bitmap = std::move(bitmap);
