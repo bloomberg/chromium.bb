@@ -58,8 +58,6 @@
 AppListViewDelegate::AppListViewDelegate(AppListControllerDelegate* controller)
     : controller_(controller),
       profile_(nullptr),
-      model_(nullptr),
-      search_model_(nullptr),
       model_updater_(nullptr),
       template_url_service_observer_(this),
       observer_binding_(this),
@@ -89,18 +87,14 @@ void AppListViewDelegate::SetProfile(Profile* new_profile) {
     return;
 
   if (profile_) {
-    DCHECK(model_);
-    DCHECK(search_model_);
     DCHECK(model_updater_);
     // |search_controller_| will be destroyed on profile switch. Before that,
     // delete |model_|'s search results to clear any dangling pointers.
-    search_model_->results()->DeleteAll();
+    model_updater_->GetSearchModel()->results()->DeleteAll();
 
     search_resource_manager_.reset();
     search_controller_.reset();
     app_sync_ui_state_watcher_.reset();
-    model_ = nullptr;
-    search_model_ = nullptr;
     model_updater_ = nullptr;
   }
 
@@ -123,12 +117,10 @@ void AppListViewDelegate::SetProfile(Profile* new_profile) {
 
   app_list::AppListSyncableService* syncable_service =
       app_list::AppListSyncableServiceFactory::GetForProfile(profile_);
-  model_ = syncable_service->GetModel();
-  search_model_ = syncable_service->GetSearchModel();
   model_updater_ = syncable_service->GetModelUpdater();
 
-  // After |model_| is initialized, make a GetWallpaperColors mojo call to set
-  // wallpaper colors for |model_|.
+  // After |model_updater_| is initialized, make a GetWallpaperColors mojo call
+  // to set wallpaper colors for |model_updater_|.
   wallpaper_controller_ptr_->GetWallpaperColors(
       base::Bind(&AppListViewDelegate::OnGetWallpaperColorsCallback,
                  weak_ptr_factory_.GetWeakPtr()));
@@ -172,11 +164,11 @@ AppListModelUpdater* AppListViewDelegate::GetModelUpdater() {
 }
 
 app_list::AppListModel* AppListViewDelegate::GetModel() {
-  return model_;
+  return model_updater_->GetModel();
 }
 
 app_list::SearchModel* AppListViewDelegate::GetSearchModel() {
-  return search_model_;
+  return model_updater_->GetSearchModel();
 }
 
 void AppListViewDelegate::StartSearch(const base::string16& raw_query) {
