@@ -385,6 +385,12 @@
   <message name="IDS_AUTOFILL_CARD_UNMASK_CONFIRM_BUTTON" desc="Text for button that confirms the credit card CVC entry dialog.">
     Confirm
   </message>
+  <message name="IDS_AUTOFILL_CARD_UNMASK_EXPIRATION_MONTH" desc="Accessible name for card expiry month field.">
+    Month
+  </message>
+  <message name="IDS_AUTOFILL_CARD_UNMASK_EXPIRATION_YEAR" desc="Accessible name for card expiry year field.">
+    Year
+  </message>
   <message name="IDS_AUTOFILL_CARD_UNMASK_VERIFICATION_IN_PROGRESS" desc="Message displayed while credit card is being verified." formatter_data="android_java">
     Confirming card
   </message>

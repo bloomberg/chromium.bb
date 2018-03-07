@@ -486,7 +486,7 @@ void GenerateTestAutofillPopup(
   autofill_external_delegate->OnQuery(query_id, form, field, bounds);
 
   std::vector<Suggestion> suggestions;
-  suggestions.push_back(Suggestion());
+  suggestions.push_back(Suggestion(base::ASCIIToUTF16("Test suggestion")));
   autofill_external_delegate->OnSuggestionsReturned(query_id, suggestions);
 }
 
