@@ -46,6 +46,7 @@ class InspectorSession;
 class LocalFrame;
 class MediaControls;
 class Page;
+class PictureInPictureController;
 class Settings;
 class ShadowRoot;
 class WebFrameClient;
@@ -86,6 +87,8 @@ class CORE_EXPORT CoreInitializer {
   virtual void ProvideIndexedDBClientToWorker(WorkerClients&) const = 0;
   virtual MediaControls* CreateMediaControls(HTMLMediaElement&,
                                              ShadowRoot&) const = 0;
+  virtual PictureInPictureController* CreatePictureInPictureController(
+      Document&) const = 0;
   // Session Initializers for Inspector Agents in modules/
   // These methods typically create agents and append them to a session.
   // TODO(nverne): remove this and restore to WebDevToolsAgentImpl once that

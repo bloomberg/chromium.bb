@@ -97,6 +97,8 @@ blink_core_sources("frame") {
     "PausableTimer.h",
     "PerformanceMonitor.cpp",
     "PerformanceMonitor.h",
+    "PictureInPictureController.cpp",
+    "PictureInPictureController.h",
     "PlatformEventController.cpp",
     "PlatformEventController.h",
     "PlatformEventDispatcher.cpp",

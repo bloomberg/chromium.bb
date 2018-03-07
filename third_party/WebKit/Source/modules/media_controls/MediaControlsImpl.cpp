@@ -79,7 +79,6 @@
 #include "modules/media_controls/elements/MediaControlTimelineElement.h"
 #include "modules/media_controls/elements/MediaControlToggleClosedCaptionsButtonElement.h"
 #include "modules/media_controls/elements/MediaControlVolumeSliderElement.h"
-#include "modules/picture_in_picture/PictureInPictureController.h"
 #include "modules/remoteplayback/HTMLMediaElementRemotePlayback.h"
 #include "modules/remoteplayback/RemotePlayback.h"
 #include "platform/EventDispatchForbiddenScope.h"
@@ -157,15 +156,7 @@ bool ShouldShowFullscreenButton(const HTMLMediaElement& media_element) {
 }
 
 bool ShouldShowPictureInPictureButton(HTMLMediaElement& media_element) {
-  if (!media_element.IsHTMLVideoElement())
-    return false;
-
-  if (!media_element.HasVideo())
-    return false;
-
-  return PictureInPictureController::Ensure(media_element.GetDocument())
-             .IsElementAllowed(ToHTMLVideoElement(media_element)) ==
-         PictureInPictureController::Status::kEnabled;
+  return media_element.SupportsPictureInPicture();
 }
 
 bool ShouldShowCastButton(HTMLMediaElement& media_element) {

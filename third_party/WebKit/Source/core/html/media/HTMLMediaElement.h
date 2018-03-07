@@ -210,6 +210,7 @@ class CORE_EXPORT HTMLMediaElement
   void setVolume(double, ExceptionState& = ASSERT_NO_EXCEPTION);
   bool muted() const;
   void setMuted(bool);
+  virtual bool SupportsPictureInPicture() const { return false; }
   void enterPictureInPicture();
 
   void TogglePlayState();

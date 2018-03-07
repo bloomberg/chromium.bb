@@ -8,7 +8,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/events/Event.h"
-#include "modules/picture_in_picture/PictureInPictureController.h"
+#include "modules/picture_in_picture/PictureInPictureControllerImpl.h"
 
 namespace blink {
 
@@ -21,16 +21,18 @@ const char kNoPictureInPictureElement[] =
 
 // static
 bool DocumentPictureInPicture::pictureInPictureEnabled(Document& document) {
-  return PictureInPictureController::Ensure(document).PictureInPictureEnabled();
+  return PictureInPictureControllerImpl::From(document)
+      .PictureInPictureEnabled();
 }
 
 // static
 ScriptPromise DocumentPictureInPicture::exitPictureInPicture(
     ScriptState* script_state,
     Document& document) {
+  PictureInPictureControllerImpl& controller =
+      PictureInPictureControllerImpl::From(document);
   Element* picture_in_picture_element =
-      PictureInPictureController::Ensure(document).PictureInPictureElement(
-          ToTreeScope(document));
+      controller.PictureInPictureElement(ToTreeScope(document));
 
   if (!picture_in_picture_element) {
     return ScriptPromise::RejectWithDOMException(
@@ -40,9 +42,9 @@ ScriptPromise DocumentPictureInPicture::exitPictureInPicture(
 
   // TODO(crbug.com/806249): Call element.exitPictureInPicture().
 
-  PictureInPictureController::Ensure(document).OnClosePictureInPictureWindow();
+  controller.OnClosePictureInPictureWindow();
 
-  PictureInPictureController::Ensure(document).UnsetPictureInPictureElement();
+  controller.UnsetPictureInPictureElement();
 
   picture_in_picture_element->DispatchEvent(
       Event::CreateBubble(EventTypeNames::leavepictureinpicture));
@@ -52,7 +54,7 @@ ScriptPromise DocumentPictureInPicture::exitPictureInPicture(
 
 // static
 Element* DocumentPictureInPicture::pictureInPictureElement(TreeScope& scope) {
-  return PictureInPictureController::Ensure(scope.GetDocument())
+  return PictureInPictureControllerImpl::From(scope.GetDocument())
       .PictureInPictureElement(scope);
 }
 

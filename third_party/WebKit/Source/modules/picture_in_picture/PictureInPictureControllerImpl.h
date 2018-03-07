@@ -2,58 +2,49 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PictureInPictureController_h
-#define PictureInPictureController_h
+#ifndef PictureInPictureControllerImpl_h
+#define PictureInPictureControllerImpl_h
 
-#include "core/frame/LocalFrame.h"
+#include "core/frame/PictureInPictureController.h"
 
 namespace blink {
 
 class HTMLVideoElement;
 class PictureInPictureWindow;
 
-// The PictureInPictureController is keeping the state and implementing the
+// The PictureInPictureControllerImpl is keeping the state and implementing the
 // logic around the Picture-in-Picture feature. It is meant to be used as well
 // by the Picture-in-Picture Web API and internally (eg. media controls). All
-// consumers inside Blink should use this class to access Picture-in-Picture. A
-// PictureInPictureController instance is associated to a Document. It is
+// consumers inside Blink modules/ should use this class to access
+// Picture-in-Picture. In core/, they should use PictureInPictureController.
+// PictureInPictureControllerImpl instance is associated to a Document. It is
 // supplement and therefore can be lazy-initiated. Callers should consider
 // whether they want to instantiate an object when they make a call.
-class PictureInPictureController
-    : public GarbageCollectedFinalized<PictureInPictureController>,
-      public Supplement<Document> {
-  USING_GARBAGE_COLLECTED_MIXIN(PictureInPictureController);
-  WTF_MAKE_NONCOPYABLE(PictureInPictureController);
+class PictureInPictureControllerImpl : public PictureInPictureController {
+  USING_GARBAGE_COLLECTED_MIXIN(PictureInPictureControllerImpl);
+  WTF_MAKE_NONCOPYABLE(PictureInPictureControllerImpl);
 
  public:
-  static const char kSupplementName[];
+  ~PictureInPictureControllerImpl() override;
 
-  virtual ~PictureInPictureController();
+  // Meant to be called internally by PictureInPictureController::From()
+  // through ModulesInitializer.
+  static PictureInPictureControllerImpl* Create(Document&);
 
-  static PictureInPictureController& Ensure(Document&);
+  // Gets, or creates, PictureInPictureControllerImpl supplement on Document.
+  // Should be called before any other call to make sure a document is attached.
+  static PictureInPictureControllerImpl& From(Document&);
 
   // Returns whether system allows Picture-in-Picture feature or not for
   // the associated document.
   bool PictureInPictureEnabled() const;
 
-  // List of Picture-in-Picture support statuses. If status is kEnabled,
-  // Picture-in-Picture is enabled for a document or element, otherwise it is
-  // not supported.
-  enum class Status {
-    kEnabled,
-    kFrameDetached,
-    kDisabledBySystem,
-    kDisabledByFeaturePolicy,
-    kDisabledByAttribute,
-  };
-
   // Returns whether the document associated with the controller is allowed to
   // request Picture-in-Picture.
   Status IsDocumentAllowed() const;
 
-  // Returns whether a given video element in a document associated with the
-  // controller is allowed to request Picture-in-Picture.
-  Status IsElementAllowed(HTMLVideoElement&) const;
+  // Implementation of PictureInPictureController.
+  Status IsElementAllowed(const HTMLVideoElement&) const override;
 
   // Meant to be called by HTMLVideoElementPictureInPicture and DOM objects
   // but not internally.
@@ -77,7 +68,7 @@ class PictureInPictureController
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit PictureInPictureController(Document&);
+  explicit PictureInPictureControllerImpl(Document&);
 
   // The Picture-in-Picture element for the associated document.
   Member<HTMLVideoElement> picture_in_picture_element_;
@@ -88,4 +79,4 @@ class PictureInPictureController
 
 }  // namespace blink
 
-#endif  // PictureInPictureController_h
+#endif  // PictureInPictureControllerImpl_h

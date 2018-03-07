@@ -1741,9 +1741,11 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       return IsRouteMediaEnabled();
 
     case IDC_CONTENT_CONTEXT_EXIT_FULLSCREEN:
-    // TODO(apacible): Update PIP conditions when finalized.
-    case IDC_CONTENT_CONTENT_PICTUREINPICTURE:
       return true;
+
+    case IDC_CONTENT_CONTENT_PICTUREINPICTURE:
+      return !!(params_.media_flags &
+                WebContextMenuData::kMediaCanPictureInPicture);
 
     default:
       NOTREACHED();

@@ -8,13 +8,13 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/events/Event.h"
 #include "core/html/media/HTMLVideoElement.h"
-#include "modules/picture_in_picture/PictureInPictureController.h"
+#include "modules/picture_in_picture/PictureInPictureControllerImpl.h"
 #include "modules/picture_in_picture/PictureInPictureWindow.h"
 #include "platform/feature_policy/FeaturePolicy.h"
 
 namespace blink {
 
-using Status = PictureInPictureController::Status;
+using Status = PictureInPictureControllerImpl::Status;
 
 namespace {
 
@@ -35,8 +35,10 @@ ScriptPromise HTMLVideoElementPictureInPicture::requestPictureInPicture(
     ScriptState* script_state,
     HTMLVideoElement& element) {
   Document& document = element.GetDocument();
-  switch (
-      PictureInPictureController::Ensure(document).IsElementAllowed(element)) {
+  PictureInPictureControllerImpl& controller =
+      PictureInPictureControllerImpl::From(document);
+
+  switch (controller.IsElementAllowed(element)) {
     case Status::kFrameDetached:
       return ScriptPromise::RejectWithDOMException(
           script_state,
@@ -70,12 +72,10 @@ ScriptPromise HTMLVideoElementPictureInPicture::requestPictureInPicture(
   // TODO(crbug.com/806249): Call element.enterPictureInPicture().
 
   // TODO(crbug.com/806249): Don't use fake width and height.
-  PictureInPictureWindow* window =
-      PictureInPictureController::Ensure(document).CreatePictureInPictureWindow(
-          500 /* width */, 300 /* height */);
+  PictureInPictureWindow* window = controller.CreatePictureInPictureWindow(
+      500 /* width */, 300 /* height */);
 
-  PictureInPictureController::Ensure(document).SetPictureInPictureElement(
-      element);
+  controller.SetPictureInPictureElement(element);
 
   element.DispatchEvent(
       Event::CreateBubble(EventTypeNames::enterpictureinpicture));
@@ -111,14 +111,14 @@ void HTMLVideoElementPictureInPicture::SetBooleanAttribute(
 
   Document& document = element.GetDocument();
   TreeScope& scope = element.GetTreeScope();
-  if (PictureInPictureController::Ensure(document).PictureInPictureElement(
-          scope) == &element) {
+  PictureInPictureControllerImpl& controller =
+      PictureInPictureControllerImpl::From(document);
+  if (controller.PictureInPictureElement(scope) == &element) {
     // TODO(crbug.com/806249): Call element.exitPictureInPicture().
 
-    PictureInPictureController::Ensure(document)
-        .OnClosePictureInPictureWindow();
+    controller.OnClosePictureInPictureWindow();
 
-    PictureInPictureController::Ensure(document).UnsetPictureInPictureElement();
+    controller.UnsetPictureInPictureElement();
 
     element.DispatchEvent(
         Event::CreateBubble(EventTypeNames::leavepictureinpicture));

@@ -335,9 +335,11 @@ bool ContextMenuController::ShowContextMenu(const ContextMenu* default_menu,
     // We know that if absoluteMediaURL() is not empty, then this
     // is a media element.
     HTMLMediaElement* media_element = ToHTMLMediaElement(r.InnerNode());
-    if (IsHTMLVideoElement(*media_element))
+    if (IsHTMLVideoElement(*media_element)) {
       data.media_type = WebContextMenuData::kMediaTypeVideo;
-    else if (IsHTMLAudioElement(*media_element))
+      if (media_element->SupportsPictureInPicture())
+        data.media_flags |= WebContextMenuData::kMediaCanPictureInPicture;
+    } else if (IsHTMLAudioElement(*media_element))
       data.media_type = WebContextMenuData::kMediaTypeAudio;
 
     if (media_element->error())

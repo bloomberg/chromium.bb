@@ -62,6 +62,7 @@
 #include "modules/mediastream/UserMediaController.h"
 #include "modules/navigatorcontentutils/NavigatorContentUtils.h"
 #include "modules/navigatorcontentutils/NavigatorContentUtilsClient.h"
+#include "modules/picture_in_picture/PictureInPictureControllerImpl.h"
 #include "modules/presentation/PresentationController.h"
 #include "modules/presentation/PresentationReceiver.h"
 #include "modules/push_messaging/PushController.h"
@@ -196,6 +197,11 @@ MediaControls* ModulesInitializer::CreateMediaControls(
     HTMLMediaElement& media_element,
     ShadowRoot& shadow_root) const {
   return MediaControlsImpl::Create(media_element, shadow_root);
+}
+
+PictureInPictureController*
+ModulesInitializer::CreatePictureInPictureController(Document& document) const {
+  return PictureInPictureControllerImpl::Create(document);
 }
 
 void ModulesInitializer::InitInspectorAgentSession(

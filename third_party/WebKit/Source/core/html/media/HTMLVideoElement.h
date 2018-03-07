@@ -147,6 +147,7 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
   bool IsRemotingInterstitialVisible() const;
 
   void MediaRemotingStarted(const WebString& remote_device_friendly_name) final;
+  bool SupportsPictureInPicture() const final;
   void PictureInPictureStarted() final;
   void PictureInPictureStopped() final;
   bool IsInPictureInPictureMode() final;

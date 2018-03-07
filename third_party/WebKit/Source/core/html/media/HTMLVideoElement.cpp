@@ -33,6 +33,7 @@
 #include "core/dom/ShadowRoot.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/frame/LocalDOMWindow.h"
+#include "core/frame/PictureInPictureController.h"
 #include "core/frame/Settings.h"
 #include "core/fullscreen/Fullscreen.h"
 #include "core/html/media/MediaCustomControlsFullscreenDetector.h"
@@ -532,6 +533,15 @@ void HTMLVideoElement::MediaRemotingStopped(
     WebLocalizedString::Name error_msg) {
   if (remoting_interstitial_)
     remoting_interstitial_->Hide(error_msg);
+}
+
+bool HTMLVideoElement::SupportsPictureInPicture() const {
+  if (!HasVideo())
+    return false;
+
+  return PictureInPictureController::From(GetDocument())
+             .IsElementAllowed(*this) ==
+         PictureInPictureController::Status::kEnabled;
 }
 
 void HTMLVideoElement::PictureInPictureStarted() {
