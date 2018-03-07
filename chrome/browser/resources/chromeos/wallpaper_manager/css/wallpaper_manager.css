@@ -560,6 +560,15 @@ body.v2 {
   display: flex;
 }
 
+.v2.preview-mode .dialog-container,
+.v2.preview-mode .more-options :not(.preview-option) {
+  display: none;
+}
+
+.v2.preview-mode .more-options .preview-option {
+  display: flex;
+}
+
 .v2.no-images #no-images-message {
   display: block;
   left: 180px;

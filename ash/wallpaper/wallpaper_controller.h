@@ -236,9 +236,12 @@ class ASH_EXPORT WallpaperController
   // Returns true if the active user is allowed to open the wallpaper picker.
   bool CanOpenWallpaperPicker();
 
-  // Sets the wallpaper and alerts observers of changes.
-  void SetWallpaperImage(const gfx::ImageSkia& image,
-                         wallpaper::WallpaperInfo info);
+  // Shows the wallpaper and alerts observers of changes. Does not show the
+  // image if |preview_mode| is false and the current wallpaper is still being
+  // previewed. See comments for |confirm_preview_wallpaper_callback_|.
+  void ShowWallpaperImage(const gfx::ImageSkia& image,
+                          wallpaper::WallpaperInfo info,
+                          bool preview_mode);
 
   // Implementation of |SetDefaultWallpaper|. Sets wallpaper to default if
   // |show_wallpaper| is true. Otherwise just save the defaut wallpaper to
@@ -356,7 +359,7 @@ class ASH_EXPORT WallpaperController
                           const std::string& file_name,
                           wallpaper::WallpaperLayout layout,
                           const SkBitmap& image,
-                          bool show_wallpaper) override;
+                          bool preview_mode) override;
   void SetOnlineWallpaper(mojom::WallpaperUserInfoPtr user_info,
                           const SkBitmap& image,
                           const std::string& url,
@@ -372,6 +375,8 @@ class ASH_EXPORT WallpaperController
                           const std::string& wallpaper_files_id,
                           const std::string& data) override;
   void SetDeviceWallpaperPolicyEnforced(bool enforced) override;
+  void ConfirmPreviewWallpaper() override;
+  void CancelPreviewWallpaper() override;
   void UpdateCustomWallpaperLayout(mojom::WallpaperUserInfoPtr user_info,
                                    wallpaper::WallpaperLayout layout) override;
   void ShowUserWallpaper(mojom::WallpaperUserInfoPtr user_info) override;
@@ -615,6 +620,13 @@ class ASH_EXPORT WallpaperController
   ScopedSessionObserver scoped_session_observer_;
 
   std::unique_ptr<ui::CompositorLock> compositor_lock_;
+
+  // A non-empty value indicates the current wallpaper is in preview mode, which
+  // expects either |ConfirmPreviewWallpaper| or |CancelPreviewWallpaper| to be
+  // called to exit preview. In preview mode, other types of wallpaper requests
+  // may still update wallpaper info for the user, but the preview wallpaper
+  // cannot be replaced, except by another preview wallpaper.
+  base::OnceClosure confirm_preview_wallpaper_callback_;
 
   // If true, use a solid color wallpaper as if it is the decoded image.
   bool bypass_decode_for_testing_ = false;

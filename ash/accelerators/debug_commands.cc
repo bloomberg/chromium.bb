@@ -117,18 +117,21 @@ void HandleToggleWallpaperMode() {
       wallpaper_controller->ShowDefaultWallpaperForTesting();
       break;
     case 1:
-      wallpaper_controller->SetWallpaperImage(
-          CreateWallpaperImage(SK_ColorRED, SK_ColorBLUE), info);
+      wallpaper_controller->ShowWallpaperImage(
+          CreateWallpaperImage(SK_ColorRED, SK_ColorBLUE), info,
+          false /*preview_mode=*/);
       break;
     case 2:
       info.layout = wallpaper::WALLPAPER_LAYOUT_CENTER;
-      wallpaper_controller->SetWallpaperImage(
-          CreateWallpaperImage(SK_ColorBLUE, SK_ColorGREEN), info);
+      wallpaper_controller->ShowWallpaperImage(
+          CreateWallpaperImage(SK_ColorBLUE, SK_ColorGREEN), info,
+          false /*preview_mode=*/);
       break;
     case 3:
       info.layout = wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED;
-      wallpaper_controller->SetWallpaperImage(
-          CreateWallpaperImage(SK_ColorGREEN, SK_ColorRED), info);
+      wallpaper_controller->ShowWallpaperImage(
+          CreateWallpaperImage(SK_ColorGREEN, SK_ColorRED), info,
+          false /*preview_mode=*/);
       break;
   }
 }

@@ -723,8 +723,14 @@ bool WallpaperController::CanOpenWallpaperPicker() {
          !IsActiveUserWallpaperControlledByPolicyImpl();
 }
 
-void WallpaperController::SetWallpaperImage(const gfx::ImageSkia& image,
-                                            WallpaperInfo info) {
+void WallpaperController::ShowWallpaperImage(const gfx::ImageSkia& image,
+                                             WallpaperInfo info,
+                                             bool preview_mode) {
+  // Ignore show wallpaper requests during preview mode. This could happen if a
+  // custom wallpaper previously set on another device is being synced.
+  if (confirm_preview_wallpaper_callback_ && !preview_mode)
+    return;
+
   // 1x1 wallpaper should be stretched to fill the entire screen.
   // (WALLPAPER_LAYOUT_TILE also serves this purpose.)
   if (image.width() == 1 && image.height() == 1)
@@ -1094,12 +1100,36 @@ void WallpaperController::SetCustomWallpaper(
     const std::string& file_name,
     wallpaper::WallpaperLayout layout,
     const SkBitmap& image,
-    bool show_wallpaper) {
+    bool preview_mode) {
+  DCHECK(Shell::Get()->session_controller()->IsActiveUserSessionStarted());
   if (!CanSetUserWallpaper(user_info->account_id, user_info->is_ephemeral))
     return;
-  SaveAndSetWallpaper(std::move(user_info), wallpaper_files_id, file_name,
-                      wallpaper::CUSTOMIZED, layout, show_wallpaper,
-                      gfx::ImageSkia::CreateFrom1xBitmap(image));
+
+  // The currently active user has index 0.
+  const mojom::UserSession* const active_user_session =
+      Shell::Get()->session_controller()->GetUserSession(0 /*user index=*/);
+  const bool is_active_user =
+      active_user_session->user_info->account_id == user_info->account_id;
+
+  const gfx::ImageSkia custom_wallpaper =
+      gfx::ImageSkia::CreateFrom1xBitmap(image);
+  if (preview_mode) {
+    DCHECK(is_active_user);
+    confirm_preview_wallpaper_callback_ =
+        base::BindOnce(&WallpaperController::SaveAndSetWallpaper,
+                       weak_factory_.GetWeakPtr(), base::Passed(&user_info),
+                       wallpaper_files_id, file_name, wallpaper::CUSTOMIZED,
+                       layout, false /*show_wallpaper=*/, custom_wallpaper);
+    ShowWallpaperImage(
+        custom_wallpaper,
+        wallpaper::WallpaperInfo{std::string(), layout, wallpaper::CUSTOMIZED,
+                                 base::Time::Now().LocalMidnight()},
+        true /*preview_mode=*/);
+  } else {
+    SaveAndSetWallpaper(std::move(user_info), wallpaper_files_id, file_name,
+                        wallpaper::CUSTOMIZED, layout,
+                        is_active_user /*show_wallpaper=*/, custom_wallpaper);
+  }
 }
 
 void WallpaperController::SetOnlineWallpaper(
@@ -1124,7 +1154,7 @@ void WallpaperController::SetOnlineWallpaper(
                         base::Time::Now().LocalMidnight()};
   SetUserWallpaperInfo(user_info->account_id, info, user_info->is_ephemeral);
   if (show_wallpaper)
-    SetWallpaperImage(online_wallpaper, info);
+    ShowWallpaperImage(online_wallpaper, info, false /*preview_mode=*/);
 
   // Leave the file path empty, because in most cases the file path is not used
   // when fetching cache, but in case it needs to be checked, we should avoid
@@ -1209,6 +1239,17 @@ void WallpaperController::SetDeviceWallpaperPolicyEnforced(bool enforced) {
   }
 }
 
+void WallpaperController::ConfirmPreviewWallpaper() {
+  DCHECK(confirm_preview_wallpaper_callback_);
+  std::move(confirm_preview_wallpaper_callback_).Run();
+}
+
+void WallpaperController::CancelPreviewWallpaper() {
+  DCHECK(confirm_preview_wallpaper_callback_);
+  confirm_preview_wallpaper_callback_.Reset();
+  ReloadWallpaper(false /*clear_cache=*/);
+}
+
 void WallpaperController::UpdateCustomWallpaperLayout(
     mojom::WallpaperUserInfoPtr user_info,
     wallpaper::WallpaperLayout layout) {
@@ -1272,7 +1313,7 @@ void WallpaperController::ShowUserWallpaper(
 
   gfx::ImageSkia user_wallpaper;
   if (GetWallpaperFromCache(account_id, &user_wallpaper)) {
-    SetWallpaperImage(user_wallpaper, info);
+    ShowWallpaperImage(user_wallpaper, info, false /*preview_mode=*/);
     return;
   }
 
@@ -1623,7 +1664,8 @@ void WallpaperController::OnDefaultWallpaperDecoded(
   if (show_wallpaper) {
     WallpaperInfo info(cached_default_wallpaper_.file_path.value(), layout,
                        wallpaper::DEFAULT, base::Time::Now().LocalMidnight());
-    SetWallpaperImage(cached_default_wallpaper_.image, info);
+    ShowWallpaperImage(cached_default_wallpaper_.image, info,
+                       false /*preview_mode=*/);
   }
 }
 
@@ -1676,7 +1718,7 @@ void WallpaperController::SaveAndSetWallpaper(
                         base::Time::Now().LocalMidnight()};
   SetUserWallpaperInfo(user_info->account_id, info, user_info->is_ephemeral);
   if (show_wallpaper)
-    SetWallpaperImage(image, info);
+    ShowWallpaperImage(image, info, false /*preview_mode=*/);
 
   wallpaper_cache_map_[user_info->account_id] =
       CustomWallpaperElement(wallpaper_path, image);
@@ -1712,7 +1754,7 @@ void WallpaperController::OnWallpaperDecoded(
 
   wallpaper_cache_map_[account_id] = CustomWallpaperElement(path, image);
   if (show_wallpaper)
-    SetWallpaperImage(image, info);
+    ShowWallpaperImage(image, info, false /*preview_mode=*/);
 }
 
 void WallpaperController::ReloadWallpaper(bool clear_cache) {
@@ -1835,7 +1877,7 @@ void WallpaperController::OnDevicePolicyWallpaperDecoded(
     WallpaperInfo info(GetDevicePolicyWallpaperFilePath().value(),
                        wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED,
                        wallpaper::DEVICE, base::Time::Now().LocalMidnight());
-    SetWallpaperImage(image, info);
+    ShowWallpaperImage(image, info, false /*preview_mode=*/);
   }
 }
 

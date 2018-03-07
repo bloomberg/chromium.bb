@@ -34,7 +34,7 @@ void TestWallpaperController::SetCustomWallpaper(
     const std::string& file_name,
     wallpaper::WallpaperLayout layout,
     const SkBitmap& image,
-    bool show_wallpaper) {
+    bool preview_mode) {
   set_custom_wallpaper_count_++;
 }
 
@@ -68,6 +68,14 @@ void TestWallpaperController::SetPolicyWallpaper(
 }
 
 void TestWallpaperController::SetDeviceWallpaperPolicyEnforced(bool enforced) {
+  NOTIMPLEMENTED();
+}
+
+void TestWallpaperController::ConfirmPreviewWallpaper() {
+  NOTIMPLEMENTED();
+}
+
+void TestWallpaperController::CancelPreviewWallpaper() {
   NOTIMPLEMENTED();
 }
 

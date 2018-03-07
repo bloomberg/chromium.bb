@@ -24,7 +24,8 @@ function testSyncCustomWallpaperSet() {
   var mockSetCustomWallpaper = mockController.createFunctionMock(
       chrome.wallpaperPrivate, 'setCustomWallpaper');
   mockSetCustomWallpaper.addExpectation(
-      TestConstants.FILESTRING, 'dummy', true, TestConstants.wallpaperUrl);
+      TestConstants.FILESTRING, 'dummy', true /*generateThumbnail=*/,
+      TestConstants.wallpaperUrl, false /*previewMode=*/);
   var syncFSChanges = {};
   syncFSChanges.status = 'synced';
   syncFSChanges.direction = 'remote_to_local';

@@ -185,14 +185,14 @@ void WallpaperControllerClient::SetCustomWallpaper(
     const std::string& file_name,
     wallpaper::WallpaperLayout layout,
     const gfx::ImageSkia& image,
-    bool show_wallpaper) {
+    bool preview_mode) {
   ash::mojom::WallpaperUserInfoPtr user_info =
       AccountIdToWallpaperUserInfo(account_id);
   if (!user_info)
     return;
   wallpaper_controller_->SetCustomWallpaper(
       std::move(user_info), wallpaper_files_id.id(), file_name, layout,
-      *image.bitmap(), show_wallpaper);
+      *image.bitmap(), preview_mode);
 }
 
 void WallpaperControllerClient::SetOnlineWallpaper(
@@ -260,6 +260,14 @@ void WallpaperControllerClient::SetPolicyWallpaper(
 
   wallpaper_controller_->SetPolicyWallpaper(std::move(user_info),
                                             GetFilesId(account_id).id(), *data);
+}
+
+void WallpaperControllerClient::ConfirmPreviewWallpaper() {
+  wallpaper_controller_->ConfirmPreviewWallpaper();
+}
+
+void WallpaperControllerClient::CancelPreviewWallpaper() {
+  wallpaper_controller_->CancelPreviewWallpaper();
 }
 
 void WallpaperControllerClient::UpdateCustomWallpaperLayout(

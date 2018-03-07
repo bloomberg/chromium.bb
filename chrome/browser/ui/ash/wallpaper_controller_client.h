@@ -41,7 +41,7 @@ class WallpaperControllerClient : public ash::mojom::WallpaperControllerClient,
                           const std::string& file_name,
                           wallpaper::WallpaperLayout layout,
                           const gfx::ImageSkia& image,
-                          bool show_wallpaper);
+                          bool preview_mode);
   void SetOnlineWallpaper(const AccountId& account_id,
                           const gfx::ImageSkia& image,
                           const std::string& url,
@@ -53,6 +53,8 @@ class WallpaperControllerClient : public ash::mojom::WallpaperControllerClient,
       const base::FilePath& customized_default_large_path);
   void SetPolicyWallpaper(const AccountId& account_id,
                           std::unique_ptr<std::string> data);
+  void ConfirmPreviewWallpaper();
+  void CancelPreviewWallpaper();
   void UpdateCustomWallpaperLayout(const AccountId& account_id,
                                    wallpaper::WallpaperLayout layout);
   void ShowUserWallpaper(const AccountId& account_id);

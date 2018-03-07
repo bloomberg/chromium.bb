@@ -326,8 +326,9 @@ class WallpaperControllerTest : public AshTestBase {
   // Convenience function to ensure ShouldCalculateColors() returns true.
   void EnableShelfColoring() {
     const gfx::ImageSkia kImage = CreateImage(10, 10, kWallpaperColor);
-    controller_->SetWallpaperImage(
-        kImage, CreateWallpaperInfo(WALLPAPER_LAYOUT_STRETCH));
+    controller_->ShowWallpaperImage(
+        kImage, CreateWallpaperInfo(WALLPAPER_LAYOUT_STRETCH),
+        false /*preview_mode=*/);
     SetSessionState(SessionState::ACTIVE);
 
     EXPECT_TRUE(ShouldCalculateColors());
@@ -455,6 +456,14 @@ class WallpaperControllerTest : public AshTestBase {
         child_small_file, kWallpaperSize, kWallpaperSize, kWallpaperColor));
     ASSERT_TRUE(WallpaperController::WriteJPEGFileForTesting(
         child_large_file, kWallpaperSize, kWallpaperSize, kWallpaperColor));
+  }
+
+  // Returns color of the current wallpaper. Note: this function assumes the
+  // wallpaper has a solid color.
+  SkColor GetWallpaperColor() {
+    const gfx::ImageSkiaRep& representation =
+        controller_->GetWallpaper().GetRepresentation(1.0f);
+    return representation.sk_bitmap().getColor(0, 0);
   }
 
   // Wrapper for private ShouldCalculateColors().
@@ -649,8 +658,9 @@ TEST_F(WallpaperControllerTest, ResizeCustomWallpaper) {
 
   // Set the image as custom wallpaper, wait for the resize to finish, and check
   // that the resized image is the expected size.
-  controller_->SetWallpaperImage(image,
-                                 CreateWallpaperInfo(WALLPAPER_LAYOUT_STRETCH));
+  controller_->ShowWallpaperImage(image,
+                                  CreateWallpaperInfo(WALLPAPER_LAYOUT_STRETCH),
+                                  false /*preview_mode=*/);
   EXPECT_TRUE(image.BackedBySameObjectAs(controller_->GetWallpaper()));
   RunAllTasksUntilIdle();
   gfx::ImageSkia resized_image = controller_->GetWallpaper();
@@ -660,8 +670,9 @@ TEST_F(WallpaperControllerTest, ResizeCustomWallpaper) {
   // Load the original wallpaper again and check that we're still using the
   // previously-resized image instead of doing another resize
   // (http://crbug.com/321402).
-  controller_->SetWallpaperImage(image,
-                                 CreateWallpaperInfo(WALLPAPER_LAYOUT_STRETCH));
+  controller_->ShowWallpaperImage(image,
+                                  CreateWallpaperInfo(WALLPAPER_LAYOUT_STRETCH),
+                                  false /*preview_mode=*/);
   RunAllTasksUntilIdle();
   EXPECT_TRUE(resized_image.BackedBySameObjectAs(controller_->GetWallpaper()));
 }
@@ -718,16 +729,18 @@ TEST_F(WallpaperControllerTest, DontScaleWallpaperWithCenterLayout) {
   UpdateDisplay("1200x600*2");
   {
     SCOPED_TRACE(base::StringPrintf("1200x600*2 high resolution"));
-    controller_->SetWallpaperImage(
-        image_high_res, CreateWallpaperInfo(WALLPAPER_LAYOUT_CENTER));
+    controller_->ShowWallpaperImage(
+        image_high_res, CreateWallpaperInfo(WALLPAPER_LAYOUT_CENTER),
+        false /*preview_mode=*/);
     WallpaperFitToNativeResolution(wallpaper_view(), high_dsf,
                                    high_resolution.width(),
                                    high_resolution.height(), kWallpaperColor);
   }
   {
     SCOPED_TRACE(base::StringPrintf("1200x600*2 low resolution"));
-    controller_->SetWallpaperImage(
-        image_low_res, CreateWallpaperInfo(WALLPAPER_LAYOUT_CENTER));
+    controller_->ShowWallpaperImage(
+        image_low_res, CreateWallpaperInfo(WALLPAPER_LAYOUT_CENTER),
+        false /*preview_mode=*/);
     WallpaperFitToNativeResolution(wallpaper_view(), high_dsf,
                                    low_resolution.width(),
                                    low_resolution.height(), kWallpaperColor);
@@ -736,16 +749,18 @@ TEST_F(WallpaperControllerTest, DontScaleWallpaperWithCenterLayout) {
   UpdateDisplay("1200x600");
   {
     SCOPED_TRACE(base::StringPrintf("1200x600 high resolution"));
-    controller_->SetWallpaperImage(
-        image_high_res, CreateWallpaperInfo(WALLPAPER_LAYOUT_CENTER));
+    controller_->ShowWallpaperImage(
+        image_high_res, CreateWallpaperInfo(WALLPAPER_LAYOUT_CENTER),
+        false /*preview_mode=*/);
     WallpaperFitToNativeResolution(wallpaper_view(), low_dsf,
                                    high_resolution.width(),
                                    high_resolution.height(), kWallpaperColor);
   }
   {
     SCOPED_TRACE(base::StringPrintf("1200x600 low resolution"));
-    controller_->SetWallpaperImage(
-        image_low_res, CreateWallpaperInfo(WALLPAPER_LAYOUT_CENTER));
+    controller_->ShowWallpaperImage(
+        image_low_res, CreateWallpaperInfo(WALLPAPER_LAYOUT_CENTER),
+        false /*preview_mode=*/);
     WallpaperFitToNativeResolution(wallpaper_view(), low_dsf,
                                    low_resolution.width(),
                                    low_resolution.height(), kWallpaperColor);
@@ -754,16 +769,18 @@ TEST_F(WallpaperControllerTest, DontScaleWallpaperWithCenterLayout) {
   UpdateDisplay("1200x600/u@1.5");  // 1.5 ui scale
   {
     SCOPED_TRACE(base::StringPrintf("1200x600/u@1.5 high resolution"));
-    controller_->SetWallpaperImage(
-        image_high_res, CreateWallpaperInfo(WALLPAPER_LAYOUT_CENTER));
+    controller_->ShowWallpaperImage(
+        image_high_res, CreateWallpaperInfo(WALLPAPER_LAYOUT_CENTER),
+        false /*preview_mode=*/);
     WallpaperFitToNativeResolution(wallpaper_view(), low_dsf,
                                    high_resolution.width(),
                                    high_resolution.height(), kWallpaperColor);
   }
   {
     SCOPED_TRACE(base::StringPrintf("1200x600/u@1.5 low resolution"));
-    controller_->SetWallpaperImage(
-        image_low_res, CreateWallpaperInfo(WALLPAPER_LAYOUT_CENTER));
+    controller_->ShowWallpaperImage(
+        image_low_res, CreateWallpaperInfo(WALLPAPER_LAYOUT_CENTER),
+        false /*preview_mode=*/);
     WallpaperFitToNativeResolution(wallpaper_view(), low_dsf,
                                    low_resolution.width(),
                                    low_resolution.height(), kWallpaperColor);
@@ -832,12 +849,14 @@ TEST_F(WallpaperControllerTest, SetCustomWallpaper) {
 
   SimulateUserLogin(user_1);
 
-  // Verify the wallpaper is set successfully and wallpaper info is updated.
+  // Set a custom wallpaper for |user_1|. Verify the wallpaper is set
+  // successfully and wallpaper info is updated.
   controller_->SetCustomWallpaper(InitializeUser(account_id_1),
                                   wallpaper_files_id_1, file_name_1, layout,
-                                  *image.bitmap(), true /*show_wallpaper=*/);
+                                  *image.bitmap(), false /*preview_mode=*/);
   RunAllTasksUntilIdle();
   EXPECT_EQ(1, GetWallpaperCount());
+  EXPECT_EQ(kWallpaperColor, GetWallpaperColor());
   EXPECT_EQ(controller_->GetWallpaperType(), wallpaper::CUSTOMIZED);
   wallpaper::WallpaperInfo wallpaper_info;
   EXPECT_TRUE(controller_->GetUserWallpaperInfo(account_id_1, &wallpaper_info,
@@ -847,16 +866,28 @@ TEST_F(WallpaperControllerTest, SetCustomWallpaper) {
       wallpaper::CUSTOMIZED, base::Time::Now().LocalMidnight());
   EXPECT_EQ(wallpaper_info, expected_wallpaper_info);
 
-  // Verify that the wallpaper is not set when |show_wallpaper| is false, but
-  // wallpaper info is updated properly.
+  // Now set another custom wallpaper for |user_1|. Verify that the on-screen
+  // wallpaper doesn't change since |user_1| is not active, but wallpaper info
+  // is updated properly.
+  SimulateUserLogin(user_2);
+  const SkColor custom_wallpaper_color = SK_ColorCYAN;
+  image = CreateImage(640, 480, custom_wallpaper_color);
   controller_->SetCustomWallpaper(InitializeUser(account_id_1),
                                   wallpaper_files_id_1, file_name_1, layout,
-                                  *image.bitmap(), true /*show_wallpaper=*/);
+                                  *image.bitmap(), false /*preview_mode=*/);
   RunAllTasksUntilIdle();
   EXPECT_EQ(0, GetWallpaperCount());
+  EXPECT_EQ(kWallpaperColor, GetWallpaperColor());
   EXPECT_TRUE(controller_->GetUserWallpaperInfo(account_id_1, &wallpaper_info,
                                                 false /*is_ephemeral=*/));
   EXPECT_EQ(wallpaper_info, expected_wallpaper_info);
+
+  // Verify the updated wallpaper is shown after |user_1| becomes active again.
+  SimulateUserLogin(user_1);
+  controller_->ShowUserWallpaper(InitializeUser(account_id_1));
+  RunAllTasksUntilIdle();
+  EXPECT_EQ(1, GetWallpaperCount());
+  EXPECT_EQ(custom_wallpaper_color, GetWallpaperColor());
 }
 
 TEST_F(WallpaperControllerTest, SetOnlineWallpaper) {
@@ -1130,7 +1161,7 @@ TEST_F(WallpaperControllerTest, IgnoreWallpaperRequestInKioskMode) {
   // |account_id|'s wallpaper info is not updated.
   controller_->SetCustomWallpaper(
       InitializeUser(account_id_1), wallpaper_files_id_1, file_name_1,
-      WALLPAPER_LAYOUT_CENTER, *image.bitmap(), true /*show_wallpaper=*/);
+      WALLPAPER_LAYOUT_CENTER, *image.bitmap(), false /*preview_mode=*/);
   RunAllTasksUntilIdle();
   EXPECT_EQ(0, GetWallpaperCount());
   wallpaper::WallpaperInfo wallpaper_info;
@@ -1176,7 +1207,7 @@ TEST_F(WallpaperControllerTest, IgnoreWallpaperRequestWhenPolicyIsEnforced) {
   // enforced, and |account_id|'s wallpaper info is not updated.
   controller_->SetCustomWallpaper(
       InitializeUser(account_id_1), wallpaper_files_id_1, file_name_1,
-      WALLPAPER_LAYOUT_CENTER, *image.bitmap(), true /*show_wallpaper=*/);
+      WALLPAPER_LAYOUT_CENTER, *image.bitmap(), false /*preview_mode=*/);
   RunAllTasksUntilIdle();
   EXPECT_EQ(0, GetWallpaperCount());
   wallpaper::WallpaperInfo wallpaper_info;
@@ -1246,7 +1277,7 @@ TEST_F(WallpaperControllerTest, VerifyWallpaperCache) {
   // Verify |SetCustomWallpaper| updates wallpaper cache for |user1|.
   controller_->SetCustomWallpaper(
       InitializeUser(account_id_1), wallpaper_files_id_1, file_name_1,
-      WALLPAPER_LAYOUT_CENTER, *image.bitmap(), true /*show_wallpaper=*/);
+      WALLPAPER_LAYOUT_CENTER, *image.bitmap(), false /*preview_mode=*/);
   RunAllTasksUntilIdle();
   EXPECT_TRUE(
       controller_->GetWallpaperFromCache(account_id_1, &cached_wallpaper));
@@ -1371,7 +1402,7 @@ TEST_F(WallpaperControllerTest, UpdateCustomWallpaperLayout) {
   // and the wallpaper info is updated.
   controller_->SetCustomWallpaper(InitializeUser(account_id_1),
                                   wallpaper_files_id_1, file_name_1, layout,
-                                  *image.bitmap(), true /*show_wallpaper=*/);
+                                  *image.bitmap(), false /*preview_mode=*/);
   RunAllTasksUntilIdle();
   EXPECT_EQ(1, GetWallpaperCount());
   EXPECT_EQ(controller_->GetWallpaperLayout(), layout);
@@ -1552,7 +1583,7 @@ TEST_F(WallpaperControllerTest, WallpaperBlurDisabledByPolicy) {
   const wallpaper::WallpaperInfo info("", WALLPAPER_LAYOUT_CENTER,
                                       wallpaper::DEVICE, base::Time::Now());
   const gfx::ImageSkia image = CreateImage(10, 10, kWallpaperColor);
-  controller_->SetWallpaperImage(image, info);
+  controller_->ShowWallpaperImage(image, info, false /*preview_mode=*/);
   ASSERT_FALSE(controller_->IsBlurEnabled());
   ASSERT_FALSE(controller_->IsWallpaperBlurred());
 
@@ -1712,6 +1743,165 @@ TEST_F(WallpaperControllerTest, ShouldNotShowInitialAnimationAfterSignOut) {
   RunAllTasksUntilIdle();
   EXPECT_FALSE(controller_->ShouldShowInitialAnimation());
   EXPECT_EQ(1, GetWallpaperCount());
+}
+
+TEST_F(WallpaperControllerTest, ConfirmPreviewWallpaper) {
+  // Verify the user starts with a default wallpaper and the user wallpaper info
+  // is initialized with default values.
+  SimulateUserLogin(user_1);
+  controller_->ShowUserWallpaper(InitializeUser(account_id_1));
+  RunAllTasksUntilIdle();
+  EXPECT_EQ(1, GetWallpaperCount());
+  wallpaper::WallpaperInfo user_wallpaper_info;
+  wallpaper::WallpaperInfo default_wallpaper_info(
+      std::string(), wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED,
+      wallpaper::DEFAULT, base::Time::Now().LocalMidnight());
+  EXPECT_TRUE(controller_->GetUserWallpaperInfo(
+      account_id_1, &user_wallpaper_info, false /*is_ephemeral=*/));
+  EXPECT_EQ(user_wallpaper_info, default_wallpaper_info);
+
+  // Set a custom wallpaper for the user and enable preview. Verify that the
+  // wallpaper is changed to the expected color.
+  const WallpaperLayout custom_wallpaper_layout = WALLPAPER_LAYOUT_CENTER;
+  gfx::ImageSkia custom_wallpaper = CreateImage(640, 480, kWallpaperColor);
+  EXPECT_NE(kWallpaperColor, GetWallpaperColor());
+  controller_->SetCustomWallpaper(
+      InitializeUser(account_id_1), wallpaper_files_id_1, file_name_1,
+      custom_wallpaper_layout, *custom_wallpaper.bitmap(),
+      true /*preview_mode=*/);
+  RunAllTasksUntilIdle();
+  EXPECT_EQ(1, GetWallpaperCount());
+  EXPECT_EQ(kWallpaperColor, GetWallpaperColor());
+  // Verify that the user wallpaper info remains unchanged during the preview.
+  EXPECT_TRUE(controller_->GetUserWallpaperInfo(
+      account_id_1, &user_wallpaper_info, false /*is_ephemeral=*/));
+  EXPECT_EQ(user_wallpaper_info, default_wallpaper_info);
+
+  // Now confirm the preview wallpaper, verify that there's no wallpaper change
+  // because the wallpaper is already shown.
+  ClearWallpaperCount();
+  controller_->ConfirmPreviewWallpaper();
+  RunAllTasksUntilIdle();
+  EXPECT_EQ(0, GetWallpaperCount());
+  EXPECT_EQ(kWallpaperColor, GetWallpaperColor());
+  // Verify that the user wallpaper info is now updated to the custom wallpaper
+  // info.
+  wallpaper::WallpaperInfo custom_wallpaper_info(
+      base::FilePath(wallpaper_files_id_1).Append(file_name_1).value(),
+      custom_wallpaper_layout, wallpaper::CUSTOMIZED,
+      base::Time::Now().LocalMidnight());
+  EXPECT_TRUE(controller_->GetUserWallpaperInfo(
+      account_id_1, &user_wallpaper_info, false /*is_ephemeral=*/));
+  EXPECT_EQ(user_wallpaper_info, custom_wallpaper_info);
+}
+
+TEST_F(WallpaperControllerTest, CancelPreviewWallpaper) {
+  // Verify the user starts with a default wallpaper and the user wallpaper info
+  // is initialized with default values.
+  SimulateUserLogin(user_1);
+  controller_->ShowUserWallpaper(InitializeUser(account_id_1));
+  RunAllTasksUntilIdle();
+  EXPECT_EQ(1, GetWallpaperCount());
+  wallpaper::WallpaperInfo user_wallpaper_info;
+  wallpaper::WallpaperInfo default_wallpaper_info(
+      std::string(), wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED,
+      wallpaper::DEFAULT, base::Time::Now().LocalMidnight());
+  EXPECT_TRUE(controller_->GetUserWallpaperInfo(
+      account_id_1, &user_wallpaper_info, false /*is_ephemeral=*/));
+  EXPECT_EQ(user_wallpaper_info, default_wallpaper_info);
+
+  // Set a custom wallpaper for the user and enable preview. Verify that the
+  // wallpaper is changed to the expected color.
+  const WallpaperLayout custom_wallpaper_layout = WALLPAPER_LAYOUT_CENTER;
+  gfx::ImageSkia custom_wallpaper = CreateImage(640, 480, kWallpaperColor);
+  EXPECT_NE(kWallpaperColor, GetWallpaperColor());
+  controller_->SetCustomWallpaper(
+      InitializeUser(account_id_1), wallpaper_files_id_1, file_name_1,
+      custom_wallpaper_layout, *custom_wallpaper.bitmap(),
+      true /*preview_mode=*/);
+  RunAllTasksUntilIdle();
+  EXPECT_EQ(1, GetWallpaperCount());
+  EXPECT_EQ(kWallpaperColor, GetWallpaperColor());
+  // Verify that the user wallpaper info remains unchanged during the preview.
+  EXPECT_TRUE(controller_->GetUserWallpaperInfo(
+      account_id_1, &user_wallpaper_info, false /*is_ephemeral=*/));
+  EXPECT_EQ(user_wallpaper_info, default_wallpaper_info);
+
+  // Now cancel the preview. Verify the wallpaper changes back to the default
+  // and the user wallpaper info remains unchanged.
+  ClearWallpaperCount();
+  controller_->CancelPreviewWallpaper();
+  RunAllTasksUntilIdle();
+  EXPECT_EQ(1, GetWallpaperCount());
+  EXPECT_NE(kWallpaperColor, GetWallpaperColor());
+  EXPECT_EQ(controller_->GetWallpaperType(), wallpaper::DEFAULT);
+  EXPECT_EQ(user_wallpaper_info, default_wallpaper_info);
+}
+
+TEST_F(WallpaperControllerTest, SetCustomWallpaperDuringPreview) {
+  // Verify the user starts with a default wallpaper and the user wallpaper info
+  // is initialized with default values.
+  SimulateUserLogin(user_1);
+  controller_->ShowUserWallpaper(InitializeUser(account_id_1));
+  RunAllTasksUntilIdle();
+  EXPECT_EQ(1, GetWallpaperCount());
+  wallpaper::WallpaperInfo user_wallpaper_info;
+  wallpaper::WallpaperInfo default_wallpaper_info(
+      std::string(), wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED,
+      wallpaper::DEFAULT, base::Time::Now().LocalMidnight());
+  EXPECT_TRUE(controller_->GetUserWallpaperInfo(
+      account_id_1, &user_wallpaper_info, false /*is_ephemeral=*/));
+  EXPECT_EQ(user_wallpaper_info, default_wallpaper_info);
+
+  // Set a custom wallpaper for the user and enable preview. Verify that the
+  // wallpaper is changed to the expected color.
+  const WallpaperLayout custom_wallpaper_layout = WALLPAPER_LAYOUT_CENTER;
+  gfx::ImageSkia custom_wallpaper = CreateImage(640, 480, kWallpaperColor);
+  EXPECT_NE(kWallpaperColor, GetWallpaperColor());
+  controller_->SetCustomWallpaper(
+      InitializeUser(account_id_1), wallpaper_files_id_1, file_name_1,
+      custom_wallpaper_layout, *custom_wallpaper.bitmap(),
+      true /*preview_mode=*/);
+  RunAllTasksUntilIdle();
+  EXPECT_EQ(1, GetWallpaperCount());
+  EXPECT_EQ(kWallpaperColor, GetWallpaperColor());
+  // Verify that the user wallpaper info remains unchanged during the preview.
+  EXPECT_TRUE(controller_->GetUserWallpaperInfo(
+      account_id_1, &user_wallpaper_info, false /*is_ephemeral=*/));
+  EXPECT_EQ(user_wallpaper_info, default_wallpaper_info);
+
+  // Now set another custom wallpaper for the user and disable preview. Verify
+  // there's no wallpaper change since preview mode shouldn't be interrupted.
+  const SkColor sync_wallpaper_color = SK_ColorBLUE;
+  gfx::ImageSkia sync_wallpaper = CreateImage(640, 480, sync_wallpaper_color);
+  ClearWallpaperCount();
+  controller_->SetCustomWallpaper(
+      InitializeUser(account_id_1), wallpaper_files_id_2, file_name_2,
+      custom_wallpaper_layout, *sync_wallpaper.bitmap(),
+      false /*preview_mode=*/);
+  RunAllTasksUntilIdle();
+  EXPECT_EQ(0, GetWallpaperCount());
+  EXPECT_EQ(kWallpaperColor, GetWallpaperColor());
+  // However, the user wallpaper info should already be updated to the new info.
+  wallpaper::WallpaperInfo sync_wallpaper_info(
+      base::FilePath(wallpaper_files_id_2).Append(file_name_2).value(),
+      custom_wallpaper_layout, wallpaper::CUSTOMIZED,
+      base::Time::Now().LocalMidnight());
+  EXPECT_TRUE(controller_->GetUserWallpaperInfo(
+      account_id_1, &user_wallpaper_info, false /*is_ephemeral=*/));
+  EXPECT_EQ(user_wallpaper_info, sync_wallpaper_info);
+
+  // Now cancel the preview. Verify the synced custom wallpaper is shown instead
+  // of the initial default wallpaper, and the user wallpaper info is still
+  // correct.
+  ClearWallpaperCount();
+  controller_->CancelPreviewWallpaper();
+  RunAllTasksUntilIdle();
+  EXPECT_EQ(1, GetWallpaperCount());
+  EXPECT_EQ(sync_wallpaper_color, GetWallpaperColor());
+  EXPECT_TRUE(controller_->GetUserWallpaperInfo(
+      account_id_1, &user_wallpaper_info, false /*is_ephemeral=*/));
+  EXPECT_EQ(user_wallpaper_info, sync_wallpaper_info);
 }
 
 }  // namespace ash
