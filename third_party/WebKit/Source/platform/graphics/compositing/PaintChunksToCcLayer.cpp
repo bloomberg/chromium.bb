@@ -216,9 +216,10 @@ void ConversionContext::SwitchToClip(const ClipPaintPropertyNode* target_clip) {
     cc_list_.StartPaint();
     cc_list_.push<cc::SaveOp>();
     ApplyTransform(last_pending_combined_clip->LocalTransformSpace());
+    const bool antialias = true;
     cc_list_.push<cc::ClipRectOp>(
         static_cast<SkRect>(*pending_combined_clip_rect), SkClipOp::kIntersect,
-        false);
+        antialias);
 
     cc_list_.EndPaintOfPairedBegin();
     state_stack_.emplace_back(StateEntry{StateEntry::kClip, 1,
@@ -254,16 +255,17 @@ void ConversionContext::SwitchToClip(const ClipPaintPropertyNode* target_clip) {
     cc_list_.StartPaint();
     cc_list_.push<cc::SaveOp>();
     ApplyTransform(sub_clip->LocalTransformSpace());
+    const bool antialias = true;
     cc_list_.push<cc::ClipRectOp>(
         static_cast<SkRect>(sub_clip->ClipRect().Rect()), SkClipOp::kIntersect,
-        false);
+        antialias);
     if (sub_clip->ClipRect().IsRounded()) {
       cc_list_.push<cc::ClipRRectOp>(static_cast<SkRRect>(sub_clip->ClipRect()),
-                                     SkClipOp::kIntersect, true);
+                                     SkClipOp::kIntersect, antialias);
     }
     if (sub_clip->ClipPath()) {
       cc_list_.push<cc::ClipPathOp>(sub_clip->ClipPath()->GetSkPath(),
-                                    SkClipOp::kIntersect, true);
+                                    SkClipOp::kIntersect, antialias);
     }
     cc_list_.EndPaintOfPairedBegin();
     state_stack_.emplace_back(StateEntry{StateEntry::kClip, 1,
