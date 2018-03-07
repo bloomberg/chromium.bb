@@ -71,7 +71,6 @@ class CONTENT_EXPORT RenderWidgetCompositor
   static cc::LayerTreeSettings GenerateLayerTreeSettings(
       const base::CommandLine& cmd,
       CompositorDependencies* compositor_deps,
-      float device_scale_factor,
       bool is_for_subframe,
       const ScreenInfo& screen_info,
       bool is_threaded);
@@ -80,7 +79,6 @@ class CONTENT_EXPORT RenderWidgetCompositor
       cc::LayerTreeHostSingleThreadClient* single_thread_client,
       cc::MutatorHost* mutator_host,
       CompositorDependencies* deps,
-      float device_scale_factor,
       const ScreenInfo& screen_info);
 
   void Initialize(std::unique_ptr<cc::LayerTreeHost> layer_tree_host,

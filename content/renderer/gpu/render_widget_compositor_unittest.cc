@@ -236,12 +236,9 @@ class RenderWidgetLayerTreeFrameSinkTest : public testing::Test {
     auto animation_host = cc::AnimationHost::CreateMainInstance();
 
     ScreenInfo dummy_screen_info;
-    const float initial_device_scale_factor = 1.f;
-
     auto layer_tree_host = RenderWidgetCompositor::CreateLayerTreeHost(
         &render_widget_compositor_, &render_widget_compositor_,
-        animation_host.get(), &compositor_deps_, initial_device_scale_factor,
-        dummy_screen_info);
+        animation_host.get(), &compositor_deps_, dummy_screen_info);
     render_widget_compositor_.Initialize(std::move(layer_tree_host),
                                          std::move(animation_host));
   }
@@ -359,11 +356,9 @@ TEST(RenderWidgetCompositorTest, VisibilityTest) {
 
   auto animation_host = cc::AnimationHost::CreateMainInstance();
   ScreenInfo dummy_screen_info;
-  const float initial_device_scale_factor = 1.f;
   auto layer_tree_host = RenderWidgetCompositor::CreateLayerTreeHost(
       &render_widget_compositor, &render_widget_compositor,
-      animation_host.get(), &compositor_deps, initial_device_scale_factor,
-      dummy_screen_info);
+      animation_host.get(), &compositor_deps, dummy_screen_info);
   render_widget_compositor.Initialize(std::move(layer_tree_host),
                                       std::move(animation_host));
 
