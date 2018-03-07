@@ -5,7 +5,9 @@
 #include "chrome/installer/setup/setup_main.h"
 
 #include <windows.h>
+
 #include <msi.h>
+#include <psapi.h>
 #include <shellapi.h>
 #include <shlobj.h>
 #include <stddef.h>
@@ -40,7 +42,6 @@
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/win_util.h"
-#include "build/build_config.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -82,12 +83,6 @@
 #include "components/crash/content/app/crash_switches.h"
 #include "components/crash/content/app/run_as_crashpad_handler_win.h"
 #include "content/public/common/content_switches.h"
-
-#if defined(OS_WIN)
-#include <windows.h>  // This include must come first.
-
-#include <psapi.h>
-#endif
 
 using installer::InstallerState;
 using installer::InstallationState;
