@@ -276,7 +276,6 @@ class VariationsServiceTest : public ::testing::Test {
   VariationsServiceTest()
       : enabled_state_provider_(
             new metrics::TestEnabledStateProvider(false, false)) {
-    VariationsService::EnableForTesting();
     VariationsService::RegisterPrefs(prefs_.registry());
     metrics::CleanExitBeacon::RegisterPrefs(prefs_.registry());
     metrics::MetricsStateManager::RegisterPrefs(prefs_.registry());
@@ -414,12 +413,13 @@ TEST_F(VariationsServiceTest, RequestsInitiallyAllowed) {
 }
 
 TEST_F(VariationsServiceTest, SeedStoredWhenOKStatus) {
+  net::TestURLFetcherFactory factory;
+  VariationsService::EnableFetchForTesting();
+
   TestVariationsService service(
       std::make_unique<web_resource::TestRequestAllowedNotifier>(&prefs_),
       &prefs_, GetMetricsStateManager(), true);
   service.set_intercepts_fetch(false);
-
-  net::TestURLFetcherFactory factory;
   service.DoActualFetch();
 
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
@@ -439,6 +439,8 @@ TEST_F(VariationsServiceTest, SeedNotStoredWhenNonOKStatus) {
     net::HTTP_INTERNAL_SERVER_ERROR,
     net::HTTP_SERVICE_UNAVAILABLE,
   };
+
+  VariationsService::EnableFetchForTesting();
 
   TestVariationsService service(
       std::make_unique<web_resource::TestRequestAllowedNotifier>(&prefs_),
@@ -461,6 +463,7 @@ TEST_F(VariationsServiceTest, SeedNotStoredWhenNonOKStatus) {
 
 TEST_F(VariationsServiceTest, RequestGzipCompressedSeed) {
   net::TestURLFetcherFactory factory;
+  VariationsService::EnableFetchForTesting();
 
   TestVariationsService service(
       std::make_unique<web_resource::TestRequestAllowedNotifier>(&prefs_),
@@ -494,6 +497,7 @@ TEST_F(VariationsServiceTest, InstanceManipulations) {
 
   std::string serialized_seed = SerializeSeed(CreateTestSeed());
   net::TestURLFetcherFactory factory;
+  VariationsService::EnableFetchForTesting();
 
   for (size_t i = 0; i < arraysize(cases); ++i) {
     TestVariationsService service(
@@ -517,12 +521,13 @@ TEST_F(VariationsServiceTest, InstanceManipulations) {
 }
 
 TEST_F(VariationsServiceTest, CountryHeader) {
+  net::TestURLFetcherFactory factory;
+  VariationsService::EnableFetchForTesting();
+
   TestVariationsService service(
       std::make_unique<web_resource::TestRequestAllowedNotifier>(&prefs_),
       &prefs_, GetMetricsStateManager(), true);
   service.set_intercepts_fetch(false);
-
-  net::TestURLFetcherFactory factory;
   service.DoActualFetch();
 
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
@@ -747,12 +752,14 @@ TEST_F(VariationsServiceTest, OverrideStoredPermanentCountry) {
 TEST_F(VariationsServiceTest, SafeMode_StartingRequestIncrementsFetchFailures) {
   prefs_.SetInteger(prefs::kVariationsFailedToFetchSeedStreak, 1);
 
+  net::TestURLFetcherFactory factory;
+  VariationsService::EnableFetchForTesting();
+
   // Create a variations service and start the fetch.
   TestVariationsService service(
       std::make_unique<web_resource::TestRequestAllowedNotifier>(&prefs_),
       &prefs_, GetMetricsStateManager(), true);
   service.set_intercepts_fetch(false);
-  net::TestURLFetcherFactory factory;
   service.DoActualFetch();
 
   EXPECT_EQ(2, prefs_.GetInteger(prefs::kVariationsFailedToFetchSeedStreak));
@@ -761,6 +768,8 @@ TEST_F(VariationsServiceTest, SafeMode_StartingRequestIncrementsFetchFailures) {
 TEST_F(VariationsServiceTest, SafeMode_SuccessfulFetchClearsFailureStreaks) {
   prefs_.SetInteger(prefs::kVariationsCrashStreak, 2);
   prefs_.SetInteger(prefs::kVariationsFailedToFetchSeedStreak, 1);
+
+  VariationsService::EnableFetchForTesting();
 
   // Create a variations service and perform a successful fetch.
   VariationsService service(
@@ -802,13 +811,14 @@ TEST_F(VariationsServiceTest, SafeMode_NotModifiedFetchClearsFailureStreaks) {
   prefs_.SetInteger(prefs::kVariationsCrashStreak, 2);
   prefs_.SetInteger(prefs::kVariationsFailedToFetchSeedStreak, 1);
 
+  net::TestURLFetcherFactory factory;
+  VariationsService::EnableFetchForTesting();
+
   // Create a variations service and perform a successful fetch.
   TestVariationsService service(
       std::make_unique<web_resource::TestRequestAllowedNotifier>(&prefs_),
       &prefs_, GetMetricsStateManager(), true);
   service.set_intercepts_fetch(false);
-
-  net::TestURLFetcherFactory factory;
   service.DoActualFetch();
 
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
@@ -832,6 +842,7 @@ TEST_F(VariationsServiceTest, FieldTrialCreatorInitializedCorrectly) {
 TEST_F(VariationsServiceTest, InsecurelyFetchedSetWhenHTTP) {
   std::string serialized_seed = SerializeSeed(CreateTestSeed());
   net::TestURLFetcherFactory factory;
+  VariationsService::EnableFetchForTesting();
   TestVariationsService service(
       std::make_unique<web_resource::TestRequestAllowedNotifier>(&prefs_),
       &prefs_, GetMetricsStateManager(), false);
@@ -851,6 +862,7 @@ TEST_F(VariationsServiceTest, InsecurelyFetchedNotSetWhenHTTPS) {
   TestVariationsService service(
       std::make_unique<web_resource::TestRequestAllowedNotifier>(&prefs_),
       &prefs_, GetMetricsStateManager(), true);
+  VariationsService::EnableFetchForTesting();
   service.set_intercepts_fetch(false);
   service.DoActualFetch();
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);

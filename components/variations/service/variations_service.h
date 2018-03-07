@@ -147,8 +147,10 @@ class VariationsService
       const char* disable_network_switch,
       const UIStringOverrider& ui_string_overrider);
 
-  // Enables the VariationsService for testing, even in Chromium builds.
-  static void EnableForTesting();
+  // Enables fetching the seed for testing, even for unofficial builds. This
+  // should be used along with overriding |DoActualFetch| or using
+  // |net::TestURLFetcherFactory|.
+  static void EnableFetchForTesting();
 
   // Set the PrefService responsible for getting policy-related preferences,
   // such as the restrict parameter.

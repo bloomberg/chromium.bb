@@ -81,9 +81,8 @@ const uint32_t kServerPublicKeyVersion = 1;
 // For the HTTP date headers, the resolution of the server time is 1 second.
 const int64_t kServerTimeResolutionMs = 1000;
 
-// Whether the VariationsService should always be created, even in Chromium
-// builds.
-bool g_enabled_for_testing = false;
+// Whether the VariationsService should fetch the seed for testing.
+bool g_should_fetch_for_testing = false;
 
 // Returns a string that will be used for the value of the 'osname' URL param
 // to the variations server.
@@ -223,7 +222,7 @@ bool IsFetchingEnabled() {
 #if !defined(GOOGLE_CHROME_BUILD)
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kVariationsServerURL) &&
-      !g_enabled_for_testing) {
+      !g_should_fetch_for_testing) {
     DVLOG(1)
         << "Not performing repeated fetching in unofficial build without --"
         << switches::kVariationsServerURL << " specified.";
@@ -411,8 +410,8 @@ std::unique_ptr<VariationsService> VariationsService::Create(
 }
 
 // static
-void VariationsService::EnableForTesting() {
-  g_enabled_for_testing = true;
+void VariationsService::EnableFetchForTesting() {
+  g_should_fetch_for_testing = true;
 }
 
 void VariationsService::DoActualFetch() {

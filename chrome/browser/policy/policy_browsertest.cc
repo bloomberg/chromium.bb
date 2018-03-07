@@ -4580,10 +4580,6 @@ IN_PROC_BROWSER_TEST_F(ComponentUpdaterPolicyTest, EnabledComponentUpdates) {
 // started.
 class PolicyVariationsServiceTest : public PolicyTest {
  public:
-  PolicyVariationsServiceTest() {
-    variations::VariationsService::EnableForTesting();
-  }
-
   void SetUpInProcessBrowserTestFixture() override {
     PolicyTest::SetUpInProcessBrowserTestFixture();
     PolicyMap policies;
