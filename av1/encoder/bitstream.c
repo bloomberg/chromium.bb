@@ -429,7 +429,7 @@ static INLINE void set_spatial_segment_id(const AV1_COMMON *const cm,
 static int neg_interleave(int x, int ref, int max) {
   const int diff = x - ref;
   if (!ref) return x;
-  if (ref >= (max - 1)) return -diff;
+  if (ref >= (max - 1)) return -x + max - 1;
   if (2 * ref < max) {
     if (abs(diff) <= ref) {
       if (diff > 0)
