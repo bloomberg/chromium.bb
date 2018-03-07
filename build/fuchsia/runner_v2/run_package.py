@@ -43,7 +43,7 @@ def _Deploy(target, output_dir, archive_path):
                            '--output=%s' % far_contents_dir])
 
     logging.debug('Building package metadata.')
-    with open(os.path.join(far_contents_dir, 'meta', 'package.json'), 'w') \
+    with open(os.path.join(far_contents_dir, 'meta', 'package'), 'w') \
         as package_json:
       json.dump({'version': '0', 'name': package_name}, package_json)
     manifest = tempfile.NamedTemporaryFile()

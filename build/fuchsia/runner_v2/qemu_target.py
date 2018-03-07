@@ -62,7 +62,7 @@ class QemuTarget(target.Target):
         '-kernel', boot_data.GetTargetFile(self._GetTargetSdkArch(),
                                            'zircon.bin'),
         '-initrd', boot_data.GetTargetFile(self._GetTargetSdkArch(),
-                                           'bootdata-blobstore.bin'),
+                                           'bootdata-blob.bin'),
         '-smp', '4',
 
         # Attach the blobstore and data volumes. Use snapshot mode to discard
