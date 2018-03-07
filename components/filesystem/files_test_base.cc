@@ -25,10 +25,10 @@ void FilesTestBase::SetUp() {
 }
 
 void FilesTestBase::GetTemporaryRoot(mojom::DirectoryPtr* directory) {
-  mojom::FileError error = mojom::FileError::FAILED;
+  base::File::Error error = base::File::Error::FILE_ERROR_FAILED;
   bool handled = files()->OpenTempDirectory(MakeRequest(directory), &error);
   ASSERT_TRUE(handled);
-  ASSERT_EQ(mojom::FileError::OK, error);
+  ASSERT_EQ(base::File::Error::FILE_OK, error);
 }
 
 }  // namespace filesystem

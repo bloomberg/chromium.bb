@@ -46,7 +46,7 @@ void FileSystemImpl::OpenTempDirectory(mojom::DirectoryRequest directory,
   mojo::MakeStrongBinding(std::make_unique<DirectoryImpl>(
                               path, std::move(shared_temp_dir), lock_table_),
                           std::move(directory));
-  std::move(callback).Run(mojom::FileError::OK);
+  std::move(callback).Run(base::File::Error::FILE_OK);
 }
 
 void FileSystemImpl::OpenPersistentFileSystem(
@@ -63,7 +63,7 @@ void FileSystemImpl::OpenPersistentFileSystem(
   mojo::MakeStrongBinding(std::make_unique<DirectoryImpl>(
                               path, std::move(shared_temp_dir), lock_table_),
                           std::move(directory));
-  std::move(callback).Run(mojom::FileError::OK);
+  std::move(callback).Run(base::File::Error::FILE_OK);
 }
 
 }  // namespace filesystem

@@ -5,7 +5,7 @@
 module file.mojom;
 
 import "components/filesystem/public/interfaces/directory.mojom";
-import "components/filesystem/public/interfaces/types.mojom";
+import "mojo/public/mojom/base/file_error.mojom";
 
 // Provide access to various directories within the requesting user's directory.
 interface FileSystem {
@@ -15,5 +15,5 @@ interface FileSystem {
   // Returns a subdirectory under the user's dir. Returns a filesystem error
   // when we fail to create the subdirectory.
   GetSubDirectory(string dir_path, filesystem.mojom.Directory& dir)
-      => (filesystem.mojom.FileError err);
+      => (mojo_base.mojom.FileError err);
 };

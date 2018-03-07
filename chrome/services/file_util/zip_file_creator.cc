@@ -5,6 +5,7 @@
 #include "chrome/services/file_util/zip_file_creator.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/files/file.h"
 #include "base/files/file_path.h"
@@ -78,11 +79,11 @@ class MojoFileAccessor : public zip::FileAccessor {
       dir_mojo = source_dir_mojo_.get();
     } else {
       base::FilePath relative_path = GetRelativePath(dir_path);
-      filesystem::mojom::FileError error;
+      base::File::Error error;
       source_dir_mojo_->OpenDirectory(
           relative_path.value(), mojo::MakeRequest(&dir_mojo_ptr),
           filesystem::mojom::kFlagRead | filesystem::mojom::kFlagOpen, &error);
-      if (error != filesystem::mojom::FileError::OK) {
+      if (error != base::File::Error::FILE_OK) {
         LOG(ERROR) << "Failed to open " << dir_path.value() << " error "
                    << error;
         return results;
@@ -92,9 +93,9 @@ class MojoFileAccessor : public zip::FileAccessor {
 
     base::Optional<std::vector<filesystem::mojom::DirectoryEntryPtr>>
         directory_contents;
-    filesystem::mojom::FileError error;
+    base::File::Error error;
     dir_mojo->Read(&error, &directory_contents);
-    if (error != filesystem::mojom::FileError::OK) {
+    if (error != base::File::Error::FILE_OK) {
       LOG(ERROR) << "Failed to list content of " << dir_path.value()
                  << " error " << error;
       return results;
@@ -119,10 +120,10 @@ class MojoFileAccessor : public zip::FileAccessor {
 
   FileInfo GetFileInfo(const base::FilePath& absolute_path) {
     base::FilePath relative_path = GetRelativePath(absolute_path);
-    filesystem::mojom::FileError error;
+    base::File::Error error;
     filesystem::mojom::FileInformationPtr file_info_mojo;
     source_dir_mojo_->StatFile(relative_path.value(), &error, &file_info_mojo);
-    if (error != filesystem::mojom::FileError::OK) {
+    if (error != base::File::Error::FILE_OK) {
       LOG(ERROR) << "Failed to get last modified time of "
                  << absolute_path.value() << " error " << error;
       return FileInfo();

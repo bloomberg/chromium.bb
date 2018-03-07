@@ -6,9 +6,11 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <limits>
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/files/file_path.h"
 #include "base/files/scoped_file.h"
@@ -80,7 +82,7 @@ void FileImpl::Close(CloseCallback callback) {
 
   lock_table_->RemoveFromLockTable(path_);
   file_.Close();
-  std::move(callback).Run(mojom::FileError::OK);
+  std::move(callback).Run(base::File::Error::FILE_OK);
 }
 
 // TODO(vtl): Move the implementation to a thread pool.
@@ -93,22 +95,24 @@ void FileImpl::Read(uint32_t num_bytes_to_read,
     return;
   }
   if (num_bytes_to_read > kMaxReadSize) {
-    std::move(callback).Run(mojom::FileError::INVALID_OPERATION, base::nullopt);
+    std::move(callback).Run(base::File::Error::FILE_ERROR_INVALID_OPERATION,
+                            base::nullopt);
     return;
   }
-  mojom::FileError error = IsOffsetValid(offset);
-  if (error != mojom::FileError::OK) {
+  base::File::Error error = IsOffsetValid(offset);
+  if (error != base::File::Error::FILE_OK) {
     std::move(callback).Run(error, base::nullopt);
     return;
   }
   error = IsWhenceValid(whence);
-  if (error != mojom::FileError::OK) {
+  if (error != base::File::Error::FILE_OK) {
     std::move(callback).Run(error, base::nullopt);
     return;
   }
 
   if (file_.Seek(static_cast<base::File::Whence>(whence), offset) == -1) {
-    std::move(callback).Run(mojom::FileError::FAILED, base::nullopt);
+    std::move(callback).Run(base::File::Error::FILE_ERROR_FAILED,
+                            base::nullopt);
     return;
   }
 
@@ -116,13 +120,14 @@ void FileImpl::Read(uint32_t num_bytes_to_read,
   int num_bytes_read = file_.ReadAtCurrentPos(
       reinterpret_cast<char*>(&bytes_read.front()), num_bytes_to_read);
   if (num_bytes_read < 0) {
-    std::move(callback).Run(mojom::FileError::FAILED, base::nullopt);
+    std::move(callback).Run(base::File::Error::FILE_ERROR_FAILED,
+                            base::nullopt);
     return;
   }
 
   DCHECK_LE(static_cast<size_t>(num_bytes_read), num_bytes_to_read);
   bytes_read.resize(static_cast<size_t>(num_bytes_read));
-  std::move(callback).Run(mojom::FileError::OK, std::move(bytes_read));
+  std::move(callback).Run(base::File::Error::FILE_OK, std::move(bytes_read));
 }
 
 // TODO(vtl): Move the implementation to a thread pool.
@@ -142,22 +147,22 @@ void FileImpl::Write(const std::vector<uint8_t>& bytes_to_write,
 #else
       static_cast<size_t>(std::numeric_limits<ssize_t>::max())) {
 #endif
-    std::move(callback).Run(mojom::FileError::INVALID_OPERATION, 0);
+    std::move(callback).Run(base::File::Error::FILE_ERROR_INVALID_OPERATION, 0);
     return;
   }
-  mojom::FileError error = IsOffsetValid(offset);
-  if (error != mojom::FileError::OK) {
+  base::File::Error error = IsOffsetValid(offset);
+  if (error != base::File::Error::FILE_OK) {
     std::move(callback).Run(error, 0);
     return;
   }
   error = IsWhenceValid(whence);
-  if (error != mojom::FileError::OK) {
+  if (error != base::File::Error::FILE_OK) {
     std::move(callback).Run(error, 0);
     return;
   }
 
   if (file_.Seek(static_cast<base::File::Whence>(whence), offset) == -1) {
-    std::move(callback).Run(mojom::FileError::FAILED, 0);
+    std::move(callback).Run(base::File::Error::FILE_ERROR_FAILED, 0);
     return;
   }
 
@@ -167,13 +172,13 @@ void FileImpl::Write(const std::vector<uint8_t>& bytes_to_write,
   int num_bytes_written = file_.WriteAtCurrentPos(
       buf, static_cast<int>(bytes_to_write.size()));
   if (num_bytes_written < 0) {
-    std::move(callback).Run(mojom::FileError::FAILED, 0);
+    std::move(callback).Run(base::File::Error::FILE_ERROR_FAILED, 0);
     return;
   }
 
   DCHECK_LE(static_cast<size_t>(num_bytes_written),
             std::numeric_limits<uint32_t>::max());
-  std::move(callback).Run(mojom::FileError::OK,
+  std::move(callback).Run(base::File::Error::FILE_OK,
                           static_cast<uint32_t>(num_bytes_written));
 }
 
@@ -188,13 +193,13 @@ void FileImpl::Seek(int64_t offset,
     std::move(callback).Run(GetError(file_), 0);
     return;
   }
-  mojom::FileError error = IsOffsetValid(offset);
-  if (error != mojom::FileError::OK) {
+  base::File::Error error = IsOffsetValid(offset);
+  if (error != base::File::Error::FILE_OK) {
     std::move(callback).Run(error, 0);
     return;
   }
   error = IsWhenceValid(whence);
-  if (error != mojom::FileError::OK) {
+  if (error != base::File::Error::FILE_OK) {
     std::move(callback).Run(error, 0);
     return;
   }
@@ -202,11 +207,12 @@ void FileImpl::Seek(int64_t offset,
   int64_t position =
       file_.Seek(static_cast<base::File::Whence>(whence), offset);
   if (position < 0) {
-    std::move(callback).Run(mojom::FileError::FAILED, 0);
+    std::move(callback).Run(base::File::Error::FILE_ERROR_FAILED, 0);
     return;
   }
 
-  std::move(callback).Run(mojom::FileError::OK, static_cast<int64_t>(position));
+  std::move(callback).Run(base::File::Error::FILE_OK,
+                          static_cast<int64_t>(position));
 }
 
 void FileImpl::Stat(StatCallback callback) {
@@ -217,11 +223,12 @@ void FileImpl::Stat(StatCallback callback) {
 
   base::File::Info info;
   if (!file_.GetInfo(&info)) {
-    std::move(callback).Run(mojom::FileError::FAILED, nullptr);
+    std::move(callback).Run(base::File::Error::FILE_ERROR_FAILED, nullptr);
     return;
   }
 
-  std::move(callback).Run(mojom::FileError::OK, MakeFileInformation(info));
+  std::move(callback).Run(base::File::Error::FILE_OK,
+                          MakeFileInformation(info));
 }
 
 void FileImpl::Truncate(int64_t size, TruncateCallback callback) {
@@ -230,21 +237,21 @@ void FileImpl::Truncate(int64_t size, TruncateCallback callback) {
     return;
   }
   if (size < 0) {
-    std::move(callback).Run(mojom::FileError::INVALID_OPERATION);
+    std::move(callback).Run(base::File::Error::FILE_ERROR_INVALID_OPERATION);
     return;
   }
-  mojom::FileError error = IsOffsetValid(size);
-  if (error != mojom::FileError::OK) {
+  base::File::Error error = IsOffsetValid(size);
+  if (error != base::File::Error::FILE_OK) {
     std::move(callback).Run(error);
     return;
   }
 
   if (!file_.SetLength(size)) {
-    std::move(callback).Run(mojom::FileError::NOT_FOUND);
+    std::move(callback).Run(base::File::Error::FILE_ERROR_NOT_FOUND);
     return;
   }
 
-  std::move(callback).Run(mojom::FileError::OK);
+  std::move(callback).Run(base::File::Error::FILE_OK);
 }
 
 void FileImpl::Touch(mojom::TimespecOrNowPtr atime,
@@ -259,7 +266,7 @@ void FileImpl::Touch(mojom::TimespecOrNowPtr atime,
   if (!atime) {
     base::File::Info info;
     if (!file_.GetInfo(&info)) {
-      std::move(callback).Run(mojom::FileError::FAILED);
+      std::move(callback).Run(base::File::Error::FILE_ERROR_FAILED);
       return;
     }
 
@@ -272,7 +279,7 @@ void FileImpl::Touch(mojom::TimespecOrNowPtr atime,
   if (!mtime) {
     base::File::Info info;
     if (!file_.GetInfo(&info)) {
-      std::move(callback).Run(mojom::FileError::FAILED);
+      std::move(callback).Run(base::File::Error::FILE_ERROR_FAILED);
       return;
     }
 
@@ -282,7 +289,7 @@ void FileImpl::Touch(mojom::TimespecOrNowPtr atime,
   }
 
   file_.SetTimes(base_atime, base_mtime);
-  std::move(callback).Run(mojom::FileError::OK);
+  std::move(callback).Run(base::File::Error::FILE_OK);
 }
 
 void FileImpl::Dup(mojom::FileRequest file, DupCallback callback) {
@@ -303,7 +310,7 @@ void FileImpl::Dup(mojom::FileRequest file, DupCallback callback) {
                                    lock_table_),
         std::move(file));
   }
-  std::move(callback).Run(mojom::FileError::OK);
+  std::move(callback).Run(base::File::Error::FILE_OK);
 }
 
 void FileImpl::Flush(FlushCallback callback) {
@@ -313,18 +320,18 @@ void FileImpl::Flush(FlushCallback callback) {
   }
 
   bool ret = file_.Flush();
-  std::move(callback).Run(ret ? mojom::FileError::OK
-                              : mojom::FileError::FAILED);
+  std::move(callback).Run(ret ? base::File::Error::FILE_OK
+                              : base::File::Error::FILE_ERROR_FAILED);
 }
 
 void FileImpl::Lock(LockCallback callback) {
   std::move(callback).Run(
-      static_cast<filesystem::mojom::FileError>(lock_table_->LockFile(this)));
+      static_cast<base::File::Error>(lock_table_->LockFile(this)));
 }
 
 void FileImpl::Unlock(UnlockCallback callback) {
   std::move(callback).Run(
-      static_cast<filesystem::mojom::FileError>(lock_table_->UnlockFile(this)));
+      static_cast<base::File::Error>(lock_table_->UnlockFile(this)));
 }
 
 void FileImpl::AsHandle(AsHandleCallback callback) {
@@ -341,7 +348,7 @@ void FileImpl::AsHandle(AsHandleCallback callback) {
 
   base::File::Info info;
   if (!new_file.GetInfo(&info)) {
-    std::move(callback).Run(mojom::FileError::FAILED, base::File());
+    std::move(callback).Run(base::File::Error::FILE_ERROR_FAILED, base::File());
     return;
   }
 
@@ -350,11 +357,12 @@ void FileImpl::AsHandle(AsHandleCallback callback) {
   // passing a file descriptor to a directory is a sandbox escape on Windows,
   // we should be absolutely paranoid.
   if (info.is_directory) {
-    std::move(callback).Run(mojom::FileError::NOT_A_FILE, base::File());
+    std::move(callback).Run(base::File::Error::FILE_ERROR_NOT_A_FILE,
+                            base::File());
     return;
   }
 
-  std::move(callback).Run(mojom::FileError::OK, std::move(new_file));
+  std::move(callback).Run(base::File::Error::FILE_OK, std::move(new_file));
 }
 
 }  // namespace filesystem

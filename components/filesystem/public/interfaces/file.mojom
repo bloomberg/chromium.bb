@@ -11,6 +11,7 @@ module filesystem.mojom;
 
 import "components/filesystem/public/interfaces/types.mojom";
 import "mojo/common/file.mojom";
+import "mojo/public/mojom/base/file_error.mojom";
 
 // TODO(vtl): Write comments.
 interface File {
@@ -18,7 +19,7 @@ interface File {
   // this. Note that any error code is strictly informational -- the close may
   // not be retried.
   [Sync]
-  Close() => (FileError err);
+  Close() => (mojo_base.mojom.FileError err);
 
   // Reads (at most) |num_bytes_to_read| from the location specified by
   // |offset|/|whence|. On success, |bytes_read| is set to the data read.
@@ -28,62 +29,66 @@ interface File {
   // modifies the file position. Or maybe there should be a flag?
   [Sync]
   Read(uint32 num_bytes_to_read, int64 offset, Whence whence)
-      => (FileError error, array<uint8>? bytes_read);
+      => (mojo_base.mojom.FileError error, array<uint8>? bytes_read);
 
   // Writes |bytes_to_write| to the location specified by |offset|/|whence|.
   // TODO(vtl): Clarify behavior when |num_bytes_written| is less than the size
   // of |bytes_to_write|.
   [Sync]
   Write(array<uint8> bytes_to_write, int64 offset, Whence whence)
-      => (FileError error, uint32 num_bytes_written);
+      => (mojo_base.mojom.FileError error, uint32 num_bytes_written);
 
   // Gets the current file position. On success, |position| is the current
   // offset (in bytes) from the beginning of the file).
   [Sync]
-  Tell() => (FileError error, int64 position);
+  Tell() => (mojo_base.mojom.FileError error, int64 position);
 
   // Sets the current file position to that specified by |offset|/|whence|. On
   // success, |position| is the offset (in bytes) from the beginning of the
   // file.
   [Sync]
-  Seek(int64 offset, Whence whence) => (FileError error, int64 position);
+  Seek(int64 offset, Whence whence)
+      => (mojo_base.mojom.FileError error, int64 position);
 
   // Gets information about this file. On success, |file_information| is
   // non-null and will contain this information.
   [Sync]
-  Stat() => (FileError error, FileInformation? file_information);
+  Stat()
+      => (mojo_base.mojom.FileError error, FileInformation? file_information);
 
   // Truncates this file to the size specified by |size| (in bytes).
   [Sync]
-  Truncate(int64 size) => (FileError error);
+  Truncate(int64 size) => (mojo_base.mojom.FileError error);
 
   // Updates this file's atime and/or mtime to the time specified by |atime| (or
   // |mtime|, respectively), which may also indicate "now". If |atime| or
   // |mtime| is null, then the corresponding time is not modified.
   [Sync]
-  Touch(TimespecOrNow? atime, TimespecOrNow? mtime) => (FileError error);
+  Touch(TimespecOrNow? atime, TimespecOrNow? mtime)
+      => (mojo_base.mojom.FileError error);
 
   // Creates a new |File| instance, which shares the same "file description".
   // I.e., the access mode, etc. (as specified to |Directory::OpenFile()| by the
   // |open_flags| argument) as well as file position.
   [Sync]
-  Dup(File& file) => (FileError error);
+  Dup(File& file) => (mojo_base.mojom.FileError error);
 
   // Syncs data to disk.
   [Sync]
-  Flush() => (FileError error);
+  Flush() => (mojo_base.mojom.FileError error);
 
   // Attempts to take an exclusive write lock on the file. This both takes a
   // native OS file lock (so that non-chrome, non-mojo processes can't write to
   // this file).
   [Sync]
-  Lock() => (FileError error);
+  Lock() => (mojo_base.mojom.FileError error);
 
   // Unlocks a previously locked file.
   [Sync]
-  Unlock() => (FileError error);
+  Unlock() => (mojo_base.mojom.FileError error);
 
   // Returns a handle to the file for raw access.
   [Sync]
-  AsHandle() => (FileError error, mojo.common.mojom.File? file_handle);
+  AsHandle() => (mojo_base.mojom.FileError error,
+                 mojo.common.mojom.File? file_handle);
 };

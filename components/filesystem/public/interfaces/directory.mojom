@@ -7,6 +7,7 @@ module filesystem.mojom;
 import "components/filesystem/public/interfaces/file.mojom";
 import "components/filesystem/public/interfaces/types.mojom";
 import "mojo/common/file.mojom";
+import "mojo/public/mojom/base/file_error.mojom";
 
 struct FileOpenDetails {
   string path;
@@ -15,7 +16,7 @@ struct FileOpenDetails {
 
 struct FileOpenResult {
   string path;
-  FileError error;
+  mojo_base.mojom.FileError error;
   mojo.common.mojom.File? file_handle;
 };
 
@@ -32,7 +33,8 @@ interface Directory {
   // Reads the contents of this directory.
   // TODO(vtl): Clarify error codes versus |directory_contents|.
   [Sync]
-  Read() => (FileError error, array<DirectoryEntry>? directory_contents);
+  Read() => (mojo_base.mojom.FileError error,
+             array<DirectoryEntry>? directory_contents);
 
   // Operations *in* "this" |Directory|:
 
@@ -41,13 +43,14 @@ interface Directory {
   // together with |kOpenFlagCreate|, for "touching" a file).
   [Sync]
   OpenFile(string path, File&? file, uint32 open_flags)
-      => (FileError error);
+      => (mojo_base.mojom.FileError error);
 
   // Opens the file specified by |path| with the given |open_flags|. Returns a
   // native file descriptor wrapped in a MojoHandle.
   [Sync]
   OpenFileHandle(string path, uint32 open_flags)
-      => (FileError error, mojo.common.mojom.File? file_handle);
+      => (mojo_base.mojom.FileError error,
+          mojo.common.mojom.File? file_handle);
 
   // Like OpenFileHandle, but opens multiple files.
   [Sync]
@@ -59,52 +62,57 @@ interface Directory {
   [Sync]
   OpenDirectory(string path,
                 Directory&? directory,
-                uint32 open_flags) => (FileError error);
+                uint32 open_flags) => (mojo_base.mojom.FileError error);
 
   // Renames/moves the file/directory given by |path| to |new_path|.
   [Sync]
-  Rename(string path, string new_path) => (FileError error);
+  Rename(string path, string new_path) => (mojo_base.mojom.FileError error);
 
   // Renames file |path| to |new_path|. Both paths must be on the same volume,
   // or the function will fail. Destination file will be created if it doesn't
   // exist. Prefer this function over Rename when dealing with temporary files.
   // On Windows it preserves attributes of the target file.
   [Sync]
-  Replace(string path, string new_path) => (FileError error);
+  Replace(string path, string new_path) => (mojo_base.mojom.FileError error);
 
   // Deletes the given path, which may be a file or a directory (see
   // |kDeleteFlag...| for details).
   [Sync]
-  Delete(string path, uint32 delete_flags) => (FileError error);
+  Delete(string path, uint32 delete_flags)
+      => (mojo_base.mojom.FileError error);
 
   // Returns true if |path| exists.
   [Sync]
-  Exists(string path) => (FileError error, bool exists);
+  Exists(string path) => (mojo_base.mojom.FileError error, bool exists);
 
   // Returns true if |path| is writable.
   [Sync]
-  IsWritable(string path) => (FileError error, bool is_writable);
+  IsWritable(string path)
+      => (mojo_base.mojom.FileError error, bool is_writable);
 
   // Opens a file descriptor on this directory and calls
   // fsync()/FlushFileBuffers().
   [Sync]
-  Flush() => (FileError error);
+  Flush() => (mojo_base.mojom.FileError error);
 
   // Gets information about this file. On success, |file_information| is
   // non-null and will contain this information.
   [Sync]
-  StatFile(string path) => (FileError error, FileInformation? file_information);
+  StatFile(string path)
+      => (mojo_base.mojom.FileError error, FileInformation? file_information);
 
   // Creates a copy of this directory.
   Clone(Directory& directory);
 
   // Reads the contents of an entire file.
   [Sync]
-  ReadEntireFile(string path) => (FileError error, array<uint8> data);
+  ReadEntireFile(string path)
+      => (mojo_base.mojom.FileError error, array<uint8> data);
 
   // Writes |data| to |path|, overwriting the file if it already exists.
   [Sync]
-  WriteFile(string path, array<uint8> data) => (FileError error);
+  WriteFile(string path, array<uint8> data)
+      => (mojo_base.mojom.FileError error);
 
   // TODO(vtl): directory "streaming"?
   // TODO(vtl): "make root" (i.e., prevent cd-ing, etc., to parent); note that

@@ -5,6 +5,9 @@
 #include "components/leveldb/env_mojo.h"
 
 #include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -14,7 +17,6 @@
 #include "third_party/leveldatabase/chromium_logger.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
 
-using filesystem::mojom::FileError;
 using leveldb_env::UMALogger;
 
 namespace leveldb {
@@ -23,21 +25,20 @@ namespace {
 
 const base::FilePath::CharType table_extension[] = FILE_PATH_LITERAL(".ldb");
 
-Status FilesystemErrorToStatus(FileError error,
+Status FilesystemErrorToStatus(base::File::Error error,
                                const std::string& filename,
                                leveldb_env::MethodID method) {
-  if (error == FileError::OK)
+  if (error == base::File::Error::FILE_OK)
     return Status::OK();
 
-  std::string err_str =
-      base::File::ErrorToString(base::File::Error(static_cast<int>(error)));
+  std::string err_str = base::File::ErrorToString(error);
 
   char buf[512];
   snprintf(buf, sizeof(buf), "%s (MojoFSError: %d::%s)", err_str.c_str(),
            method, MethodIDToString(method));
 
-  // TOOD(crbug.com/760362): Map FileError::NOT_FOUND to Status::NotFound, after
-  //                         fixing LevelDB to handle the NotFound correctly.
+  // TOOD(https://crbug.com/760362): Map base::File::Error::NOT_FOUND to
+  // Status::NotFound, after fixing LevelDB to handle the NotFound correctly.
   return Status::IOError(filename, buf);
 }
 
@@ -209,12 +210,12 @@ class MojoWritableFile : public leveldb::WritableFile {
   enum Type { kManifest, kTable, kOther };
 
   leveldb::Status SyncParent() {
-    FileError error = thread_->SyncDirectory(dir_, parent_dir_);
-    if (error != FileError::OK) {
+    base::File::Error error = thread_->SyncDirectory(dir_, parent_dir_);
+    if (error != base::File::Error::FILE_OK) {
       uma_logger_->RecordOSError(leveldb_env::kSyncParent,
                                  static_cast<base::File::Error>(error));
     }
-    return error == FileError::OK
+    return error == base::File::Error::FILE_OK
                ? Status::OK()
                : Status::IOError(filename_,
                                  base::File::ErrorToString(base::File::Error(
@@ -274,10 +275,6 @@ class Retrier {
         provider_->RecordRecoveredFromError(method_, last_error_);
       }
     }
-  }
-
-  bool ShouldKeepTrying(FileError error) {
-    return ShouldKeepTrying(static_cast<base::File::Error>(error));
   }
 
   bool ShouldKeepTrying(base::File::Error last_error) {
@@ -390,16 +387,16 @@ bool MojoEnv::FileExists(const std::string& fname) {
 Status MojoEnv::GetChildren(const std::string& path,
                             std::vector<std::string>* result) {
   TRACE_EVENT1("leveldb", "MojoEnv::GetChildren", "path", path);
-  FileError error = thread_->GetChildren(dir_, path, result);
-  if (error != FileError::OK)
+  base::File::Error error = thread_->GetChildren(dir_, path, result);
+  if (error != base::File::Error::FILE_OK)
     RecordFileError(leveldb_env::kGetChildren, error);
   return FilesystemErrorToStatus(error, path, leveldb_env::kGetChildren);
 }
 
 Status MojoEnv::DeleteFile(const std::string& fname) {
   TRACE_EVENT1("leveldb", "MojoEnv::DeleteFile", "fname", fname);
-  FileError error = thread_->Delete(dir_, fname, 0);
-  if (error != FileError::OK)
+  base::File::Error error = thread_->Delete(dir_, fname, 0);
+  if (error != base::File::Error::FILE_OK)
     RecordFileError(leveldb_env::kDeleteFile, error);
   return FilesystemErrorToStatus(error, fname, leveldb_env::kDeleteFile);
 }
@@ -407,28 +404,29 @@ Status MojoEnv::DeleteFile(const std::string& fname) {
 Status MojoEnv::CreateDir(const std::string& dirname) {
   TRACE_EVENT1("leveldb", "MojoEnv::CreateDir", "dirname", dirname);
   Retrier retrier(leveldb_env::kCreateDir, this);
-  FileError error;
+  base::File::Error error;
   do {
     error = thread_->CreateDir(dir_, dirname);
-  } while (error != FileError::OK && retrier.ShouldKeepTrying(error));
-  if (error != FileError::OK)
+  } while (error != base::File::Error::FILE_OK &&
+           retrier.ShouldKeepTrying(error));
+  if (error != base::File::Error::FILE_OK)
     RecordFileError(leveldb_env::kCreateDir, error);
   return FilesystemErrorToStatus(error, dirname, leveldb_env::kCreateDir);
 }
 
 Status MojoEnv::DeleteDir(const std::string& dirname) {
   TRACE_EVENT1("leveldb", "MojoEnv::DeleteDir", "dirname", dirname);
-  FileError error =
+  base::File::Error error =
       thread_->Delete(dir_, dirname, filesystem::mojom::kDeleteFlagRecursive);
-  if (error != FileError::OK)
+  if (error != base::File::Error::FILE_OK)
     RecordFileError(leveldb_env::kDeleteDir, error);
   return FilesystemErrorToStatus(error, dirname, leveldb_env::kDeleteDir);
 }
 
 Status MojoEnv::GetFileSize(const std::string& fname, uint64_t* file_size) {
   TRACE_EVENT1("leveldb", "MojoEnv::GetFileSize", "fname", fname);
-  FileError error = thread_->GetFileSize(dir_, fname, file_size);
-  if (error != FileError::OK)
+  base::File::Error error = thread_->GetFileSize(dir_, fname, file_size);
+  if (error != base::File::Error::FILE_OK)
     RecordFileError(leveldb_env::kGetFileSize, error);
   return FilesystemErrorToStatus(error, fname, leveldb_env::kGetFileSize);
 }
@@ -438,11 +436,12 @@ Status MojoEnv::RenameFile(const std::string& src, const std::string& target) {
   if (!thread_->FileExists(dir_, src))
     return Status::OK();
   Retrier retrier(leveldb_env::kRenameFile, this);
-  FileError error;
+  base::File::Error error;
   do {
     error = thread_->RenameFile(dir_, src, target);
-  } while (error != FileError::OK && retrier.ShouldKeepTrying(error));
-  if (error != FileError::OK)
+  } while (error != base::File::Error::FILE_OK &&
+           retrier.ShouldKeepTrying(error));
+  if (error != base::File::Error::FILE_OK)
     RecordFileError(leveldb_env::kRenameFile, error);
   return FilesystemErrorToStatus(error, src, leveldb_env::kRenameFile);
 }
@@ -451,12 +450,13 @@ Status MojoEnv::LockFile(const std::string& fname, FileLock** lock) {
   TRACE_EVENT1("leveldb", "MojoEnv::LockFile", "fname", fname);
 
   Retrier retrier(leveldb_env::kLockFile, this);
-  std::pair<FileError, LevelDBMojoProxy::OpaqueLock*> p;
+  std::pair<base::File::Error, LevelDBMojoProxy::OpaqueLock*> p;
   do {
     p = thread_->LockFile(dir_, fname);
-  } while (p.first != FileError::OK && retrier.ShouldKeepTrying(p.first));
+  } while (p.first != base::File::Error::FILE_OK &&
+           retrier.ShouldKeepTrying(p.first));
 
-  if (p.first != FileError::OK)
+  if (p.first != base::File::Error::FILE_OK)
     RecordFileError(leveldb_env::kLockFile, p.first);
 
   if (p.second)
@@ -471,8 +471,8 @@ Status MojoEnv::UnlockFile(FileLock* lock) {
   std::string fname = my_lock ? my_lock->name() : "(invalid)";
   TRACE_EVENT1("leveldb", "MojoEnv::UnlockFile", "fname", fname);
 
-  FileError error = thread_->UnlockFile(my_lock->TakeLock());
-  if (error != FileError::OK)
+  base::File::Error error = thread_->UnlockFile(my_lock->TakeLock());
+  if (error != base::File::Error::FILE_OK)
     RecordFileError(leveldb_env::kUnlockFile, error);
   delete my_lock;
   return FilesystemErrorToStatus(error, fname, leveldb_env::kUnlockFile);
@@ -565,7 +565,7 @@ void MojoEnv::RecordRecoveredFromError(leveldb_env::MethodID method,
 }
 
 void MojoEnv::RecordFileError(leveldb_env::MethodID method,
-                              FileError error) const {
+                              base::File::Error error) const {
   RecordOSError(method, static_cast<base::File::Error>(error));
 }
 

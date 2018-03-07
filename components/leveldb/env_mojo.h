@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_LEVELDB_ENV_MOJO_H_
 #define COMPONENTS_LEVELDB_ENV_MOJO_H_
 
+#include <string>
+#include <vector>
+
 #include "components/filesystem/public/interfaces/directory.mojom.h"
 #include "components/leveldb/leveldb_mojo_proxy.h"
 #include "third_party/leveldatabase/env_chromium.h"
@@ -74,7 +77,7 @@ class MojoEnv : public Env,
                                 base::File::Error error) const override;
 
   void RecordFileError(leveldb_env::MethodID method,
-                       filesystem::mojom::FileError error) const;
+                       base::File::Error error) const;
 
   scoped_refptr<LevelDBMojoProxy> thread_;
   LevelDBMojoProxy::OpaqueDir* dir_;

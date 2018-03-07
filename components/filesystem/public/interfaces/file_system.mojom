@@ -5,15 +5,17 @@
 module filesystem.mojom;
 
 import "components/filesystem/public/interfaces/directory.mojom";
-import "components/filesystem/public/interfaces/types.mojom";
+import "mojo/public/mojom/base/file_error.mojom";
 
 interface FileSystem {
   // Opens a temporary filesystem. Will return a different directory each time
   // it is called.
   [Sync]
-  OpenTempDirectory(Directory& directory) => (FileError error);
+  OpenTempDirectory(Directory& directory)
+      => (mojo_base.mojom.FileError error);
 
   // Returns a directory which will persist to disk.
   [Sync]
-  OpenPersistentFileSystem(Directory& directory) => (FileError error);
+  OpenPersistentFileSystem(Directory& directory)
+      => (mojo_base.mojom.FileError error);
 };

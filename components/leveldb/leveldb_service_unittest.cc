@@ -14,8 +14,6 @@
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_test.h"
 
-using filesystem::mojom::FileError;
-
 namespace leveldb {
 namespace {
 
@@ -136,10 +134,10 @@ class LevelDBServiceTest : public service_manager::test::ServiceTest {
   // Note: This has an out parameter rather than returning the |DirectoryPtr|,
   // since |ASSERT_...()| doesn't work with return values.
   void GetTempDirectory(filesystem::mojom::DirectoryPtr* directory) {
-    FileError error = FileError::FAILED;
+    base::File::Error error = base::File::Error::FILE_ERROR_FAILED;
     bool handled = files()->OpenTempDirectory(MakeRequest(directory), &error);
     ASSERT_TRUE(handled);
-    ASSERT_EQ(FileError::OK, error);
+    ASSERT_EQ(base::File::Error::FILE_OK, error);
   }
 
   filesystem::mojom::FileSystemPtr& files() { return files_; }
