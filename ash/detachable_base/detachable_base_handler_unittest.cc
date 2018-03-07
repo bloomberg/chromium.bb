@@ -17,6 +17,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_hammerd_client.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
+#include "chromeos/dbus/fake_upstart_client.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -87,6 +88,10 @@ class DetachableBaseHandlerTest : public testing::Test {
     power_manager_client_ = power_manager_client.get();
     dbus_setter->SetPowerManagerClient(std::move(power_manager_client));
 
+    auto upstart_client = std::make_unique<chromeos::FakeUpstartClient>();
+    upstart_client_ = upstart_client.get();
+    dbus_setter->SetUpstartClient(std::move(upstart_client));
+
     default_user_ = CreateUser("user_1@foo.bar", "111111", UserType::kNormal);
 
     ash::DetachableBaseHandler::RegisterPrefs(local_state_.registry());
@@ -99,6 +104,7 @@ class DetachableBaseHandlerTest : public testing::Test {
     handler_.reset();
     hammerd_client_ = nullptr;
     power_manager_client_ = nullptr;
+    upstart_client_ = nullptr;
     chromeos::DBusThreadManager::Shutdown();
   }
 
@@ -134,6 +140,7 @@ class DetachableBaseHandlerTest : public testing::Test {
   // Owned by DBusThreadManager:
   chromeos::FakeHammerdClient* hammerd_client_ = nullptr;
   chromeos::FakePowerManagerClient* power_manager_client_ = nullptr;
+  chromeos::FakeUpstartClient* upstart_client_ = nullptr;
 
   TestBaseObserver detachable_base_observer_;
 
@@ -151,6 +158,7 @@ TEST_F(DetachableBaseHandlerTest, NoDetachableBase) {
   // Run loop so the handler picks up initial power manager state.
   base::RunLoop().RunUntilIdle();
 
+  EXPECT_EQ(1, upstart_client_->hammerd_start_count());
   EXPECT_EQ(DetachableBasePairingStatus::kNone, handler_->GetPairingStatus());
   EXPECT_EQ(0, detachable_base_observer_.pairing_status_changed_count());
   EXPECT_FALSE(handler_->PairedBaseMatchesLastUsedByUser(*default_user_));
@@ -168,6 +176,7 @@ TEST_F(DetachableBaseHandlerTest, TabletModeOnOnStartup) {
   // Run loop so the handler picks up initial power manager state.
   base::RunLoop().RunUntilIdle();
 
+  EXPECT_EQ(0, upstart_client_->hammerd_start_count());
   EXPECT_EQ(DetachableBasePairingStatus::kAuthenticated,
             handler_->GetPairingStatus());
   EXPECT_EQ(1, detachable_base_observer_.pairing_status_changed_count());
@@ -178,6 +187,7 @@ TEST_F(DetachableBaseHandlerTest, SuccessfullPairing) {
   // Run loop so the handler picks up initial power manager state.
   base::RunLoop().RunUntilIdle();
 
+  EXPECT_EQ(1, upstart_client_->hammerd_start_count());
   EXPECT_EQ(DetachableBasePairingStatus::kNone, handler_->GetPairingStatus());
   hammerd_client_->FirePairChallengeSucceededSignal({0x01, 0x02, 0x03, 0x04});
 
@@ -211,6 +221,8 @@ TEST_F(DetachableBaseHandlerTest, SuccessfullPairing) {
   EXPECT_EQ(1, detachable_base_observer_.pairing_status_changed_count());
   EXPECT_TRUE(handler_->PairedBaseMatchesLastUsedByUser(*default_user_));
   detachable_base_observer_.reset_pairing_status_changed_count();
+
+  EXPECT_EQ(1, upstart_client_->hammerd_start_count());
 }
 
 TEST_F(DetachableBaseHandlerTest, DetachableBasePairingFailure) {
@@ -326,6 +338,7 @@ TEST_F(DetachableBaseHandlerTest, TabletModeTurnedOnDuringHandlerInit) {
   // run.
   base::RunLoop().RunUntilIdle();
 
+  EXPECT_EQ(0, upstart_client_->hammerd_start_count());
   EXPECT_EQ(0, detachable_base_observer_.pairing_status_changed_count());
   EXPECT_EQ(DetachableBasePairingStatus::kNone, handler_->GetPairingStatus());
   EXPECT_FALSE(handler_->PairedBaseMatchesLastUsedByUser(*default_user_));
@@ -337,7 +350,7 @@ TEST_F(DetachableBaseHandlerTest, DetachableBaseChangeDetection) {
   // Run loop so the callback for getting the initial power manager state gets
   // run.
   base::RunLoop().RunUntilIdle();
-
+  EXPECT_EQ(0, upstart_client_->hammerd_start_count());
   hammerd_client_->FirePairChallengeSucceededSignal({0x01, 0x02, 0x03, 0x04});
 
   EXPECT_EQ(DetachableBasePairingStatus::kAuthenticated,
@@ -379,6 +392,7 @@ TEST_F(DetachableBaseHandlerTest, DetachableBaseChangeDetection) {
   EXPECT_EQ(1, detachable_base_observer_.pairing_status_changed_count());
   EXPECT_FALSE(handler_->PairedBaseMatchesLastUsedByUser(*default_user_));
   detachable_base_observer_.reset_pairing_status_changed_count();
+  EXPECT_EQ(1, upstart_client_->hammerd_start_count());
 }
 
 TEST_F(DetachableBaseHandlerTest, MultiUser) {
