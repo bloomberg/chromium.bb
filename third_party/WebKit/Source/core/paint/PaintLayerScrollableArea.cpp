@@ -464,9 +464,8 @@ void PaintLayerScrollableArea::UpdateScrollOffset(
     // As a performance optimization, the scroll offset of the root layer is
     // not included in EmbeddedContentView's stored frame rect, so there is no
     // reason to mark the FrameView as needing a geometry update here.
-    // However plugins still need to be notified, so we call FrameRectsChanged.
     if (is_root_layer)
-      frame_view->FrameRectsChanged();
+      frame_view->SetRootLayerDidScroll();
     else
       frame_view->SetNeedsUpdateGeometries();
     UpdateCompositingLayersAfterScroll();
