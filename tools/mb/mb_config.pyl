@@ -407,6 +407,8 @@
       'Linux Compile FYI': 'official_goma_perf',
       'Android Builder FYI': 'official_goma_minimal_symbols_android',
       'Android arm64 Builder FYI': 'official_goma_minimal_symbols_android_arm64',
+      'Android CFI Builder FYI': 'official_goma_minimal_symbols_android_cfi',
+      'Android CFI arm64 Builder FYI': 'official_goma_minimal_symbols_android_cfi_arm64',
       'Battor Agent Linux': 'release_bot',
       'Battor Agent Mac': 'release_bot',
       'Battor Agent Win': 'release_bot',
@@ -1456,6 +1458,14 @@
       'official', 'goma', 'minimal_symbols', 'android', 'arm64',
     ],
 
+    'official_goma_minimal_symbols_android_cfi': [
+      'official', 'goma', 'minimal_symbols', 'android', 'cfi',
+    ],
+
+    'official_goma_minimal_symbols_android_cfi_arm64': [
+      'official', 'goma', 'minimal_symbols', 'android', 'cfi', 'arm64',
+    ],
+
     'official_goma_x86': [
       'official', 'goma', 'x86',
     ],
@@ -1781,8 +1791,13 @@
       'gn_args': 'is_cast_audio_only=true enable_webrtc=false'
     },
 
+    'cfi': {
+      'gn_args': 'is_cfi=true',
+    },
+
     'cfi_full': {
-      'gn_args': 'is_cfi=true use_cfi_cast=true',
+      'mixins': ['cfi'],
+      'gn_args': 'use_cfi_cast=true',
     },
 
     'cfi_icall': {
