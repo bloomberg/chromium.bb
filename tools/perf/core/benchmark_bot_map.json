@@ -1,12 +1,17 @@
 {
   "0": {
     "benchmarks": [
-      "dummy_benchmark.stable_benchmark_1"
+      "dummy_benchmark.stable_benchmark_1",
+      "blink_perf.owp_storage",
+      "system_health.memory_mobile"
+
     ]
   },
   "1": {
     "benchmarks": [
-      "dummy_benchmark.histogram_benchmark_1"
+      "dummy_benchmark.histogram_benchmark_1",
+      "memory.top_10_mobile",
+      "scheduler.tough_scheduling_cases"
     ]
   }
 }
