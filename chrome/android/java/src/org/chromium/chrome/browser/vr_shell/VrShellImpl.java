@@ -54,6 +54,7 @@ import org.chromium.chrome.browser.widget.newtab.NewTabButton;
 import org.chromium.content_public.browser.ContentViewCore;
 import org.chromium.content_public.browser.ImeAdapter;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.common.BrowserControlsState;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.base.WindowAndroid.PermissionCallback;
 import org.chromium.ui.display.DisplayAndroid;
@@ -392,14 +393,13 @@ public class VrShellImpl
         if (mTab != null) {
             mTab.removeObserver(mTabObserver);
             restoreTabFromVR();
-            mTab.updateFullscreenEnabledState();
         }
 
         mTab = tab;
         if (mTab != null) {
             initializeTabForVR();
             mTab.addObserver(mTabObserver);
-            mTab.updateFullscreenEnabledState();
+            mTab.updateBrowserControlsState(BrowserControlsState.HIDDEN, true);
         }
         mTabObserver.onContentChanged(mTab);
     }
@@ -675,7 +675,7 @@ public class VrShellImpl
                 View parent = mTab.getContentViewCore().getContainerView();
                 mTab.getWebContents().setSize(parent.getWidth(), parent.getHeight());
             }
-            mTab.updateFullscreenEnabledState();
+            mTab.updateBrowserControlsState(BrowserControlsState.SHOWN, true);
         }
 
         mContentVirtualDisplay.destroy();
@@ -686,17 +686,8 @@ public class VrShellImpl
             mActivity.getToolbarManager().setProgressBarEnabled(true);
         }
 
-        // Since VSync was paused, control heights may not have been propagated. If we request to
-        // show the controls before the old values have propagated we'll end up with the old values
-        // (ie. the controls hidden). The values will have propagated with the next frame received
-        // from the compositor, so we can tell the controls to show at that point.
-        if (mActivity.getCompositorViewHolder() != null
-                && mActivity.getCompositorViewHolder().getCompositorView() != null) {
-            mActivity.getCompositorViewHolder().getCompositorView().surfaceRedrawNeededAsync(() -> {
-                ChromeFullscreenManager manager = mActivity.getFullscreenManager();
-                manager.getBrowserVisibilityDelegate().showControlsTransient();
-            });
-        }
+        ChromeFullscreenManager manager = mActivity.getFullscreenManager();
+        manager.getBrowserVisibilityDelegate().showControlsTransient();
 
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.VR_BROWSING_NATIVE_ANDROID_UI)) {
             mActivity.getModalDialogManager().cancelAllDialogs();
