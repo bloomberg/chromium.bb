@@ -412,10 +412,8 @@ GURL SiteInstance::GetSiteForURL(BrowserContext* browser_context,
   // origin lookup.
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
   url::Origin isolated_origin;
-  if (policy->GetMatchingIsolatedOrigin(url::Origin::Create(url),
-                                        &isolated_origin)) {
+  if (policy->GetMatchingIsolatedOrigin(origin, &isolated_origin))
     return isolated_origin.GetURL();
-  }
 
   // If the url has a host, then determine the site.  Skip file URLs to avoid a
   // situation where site URL of file://localhost/ would mismatch Blink's origin
@@ -433,11 +431,16 @@ GURL SiteInstance::GetSiteForURL(BrowserContext* browser_context,
 
   // If there is no host but there is a scheme, return the scheme.
   // This is useful for cases like file URLs.
-  if (url.has_scheme())
+  if (!origin.unique()) {
+    // Prefer to use the scheme of |origin| rather than |url|, to correctly
+    // cover blob: and filesystem: URIs (see also https://crbug.com/697111).
+    DCHECK(origin.GetURL().has_scheme()) << origin;
+    return GURL(origin.GetURL().scheme() + ":");
+  } else if (url.has_scheme())
     return GURL(url.scheme() + ":");
 
   // Otherwise the URL should be invalid; return an empty site.
-  DCHECK(!url.is_valid());
+  DCHECK(!url.is_valid()) << url;
   return GURL();
 }
 

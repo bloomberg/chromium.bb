@@ -361,6 +361,13 @@ TEST_F(SiteInstanceTest, GetSiteForURL) {
   site_url = SiteInstanceImpl::GetSiteForURL(nullptr, test_url);
   EXPECT_EQ(GURL("gopher://chromium.org"), site_url);
 
+  // Blob URLs with file origin also extract the site from the origin.
+  test_url = GURL("blob:file:///1029e5a4-2983-4b90-a585-ed217563acfeb");
+  site_url = SiteInstanceImpl::GetSiteForURL(nullptr, test_url);
+  EXPECT_EQ(GURL("file:"), site_url);
+  EXPECT_EQ("file", site_url.scheme());
+  EXPECT_FALSE(site_url.has_host());
+
   // Private domains are preserved, appspot being such a site.
   test_url = GURL(
       "blob:http://www.example.appspot.com:44/"
