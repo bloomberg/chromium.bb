@@ -291,7 +291,8 @@ SynchronousCompositorHost::DemandDrawHwAsync(
     const gfx::Rect& viewport_rect_for_tile_priority,
     const gfx::Transform& transform_for_tile_priority) {
   scoped_refptr<FrameFuture> frame_future = new FrameFuture();
-  if (compute_scroll_needs_synchronous_draw_) {
+  if (compute_scroll_needs_synchronous_draw_ || !allow_async_draw_) {
+    allow_async_draw_ = allow_async_draw_ || IsReadyForSynchronousCall();
     compute_scroll_needs_synchronous_draw_ = false;
     auto frame_ptr = std::make_unique<Frame>();
     *frame_ptr = DemandDrawHw(viewport_size, viewport_rect_for_tile_priority,
