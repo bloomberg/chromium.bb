@@ -7,7 +7,7 @@ PASS insertDTMF() with interToneGap less than 30 should be clamped to 30
 PASS insertDTMF with comma should delay next tonechange event for a constant 2000ms
 FAIL insertDTMF() with transceiver stopped in the middle should stop future tonechange events from firing assert_unreached: Unexpected promise rejection: TypeError: pc.getTransceivers is not a function Reached unreachable code
 PASS Calling insertDTMF() in the middle of tonechange events should cause future tonechanges to be updated to new tones
-FAIL Calling insertDTMF() multiple times in the middle of tonechange events should cause future tonechanges to be updated the last provided tones assert_equals: Expect current event.tone to be 3 expected "3" but got "1"
+PASS Calling insertDTMF() multiple times in the middle of tonechange events should cause future tonechanges to be updated the last provided tones
 PASS Calling insertDTMF('') in the middle of tonechange events should stop future tonechange events from firing
 FAIL Setting transceiver.currentDirection to recvonly in the middle of tonechange events should stop future tonechange events from firing pc.addTransceiver is not a function
 Harness: the test ran to completion.

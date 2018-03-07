@@ -3359,14 +3359,10 @@ crbug.com/811977 media/controls/picture-in-picture-interstitial.html [ Skip ]
 crbug.com/811977 virtual/new-remote-playback-pipeline/media/controls/picture-in-picture-interstitial.html [ Skip ]
 
 # Sheriff 2018-02-26
-# NOT FIXED - must be commented out to let temp disable below be committed: crbug.com/816475 [ Win7 ] external/wpt/webrtc/RTCDTMFSender-ontonechange.https.html [ Failure Pass ]
+crbug.com/816475 [ Win7 ] external/wpt/webrtc/RTCDTMFSender-ontonechange.https.html [ Failure Pass ]
 crbug.com/816914 [ Mac ] fast/canvas/canvas-drawImage-live-video.html [ Failure Pass ]
 crbug.com/816766 [ Mac ] fast/dom/Window/window-focus-self.html [ Failure Pass ]
 crbug.com/817167 http/tests/devtools/oopif/oopif-cookies-refresh.js [ Failure Timeout Pass ]
-
-# Temporary disable to allow webrtc bugfix to land
-crbug.com/819118 external/wpt/webrtc/RTCDTMFSender-ontonechange.https.html [ Skip ]
-crbug.com/819118 external/wpt/webrtc/RTCDTMFSender-insertDTMF.https.html [ Skip ]
 
 # Sheriff 2018-03-01
 crbug.com/817678 [ Win ] http/tests/devtools/console/console-group-similar.js [ Failure Pass ]

@@ -4,6 +4,6 @@ PASS insertDTMF() should throw InvalidCharacterError if tones contains invalid D
 FAIL insertDTMF() should throw InvalidStateError if transceiver is stopped pc.addTransceiver is not a function
 FAIL insertDTMF() should throw InvalidStateError if transceiver.currentDirection is recvonly pc.addTransceiver is not a function
 FAIL insertDTMF() should throw InvalidStateError if transceiver.currentDirection is inactive pc.addTransceiver is not a function
-FAIL insertDTMF() should set toneBuffer to provided tones normalized, with old tones overridden assert_equals: expected "123" but got "23"
+PASS insertDTMF() should set toneBuffer to provided tones normalized, with old tones overridden
 Harness: the test ran to completion.
 
