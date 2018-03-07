@@ -40,8 +40,7 @@ void TaskSendUninstallPing::Run() {
 
   update_engine_->SendUninstallPing(
       id_, version_, reason_,
-      base::BindOnce(&TaskSendUninstallPing::TaskComplete,
-                     base::Unretained(this)));
+      base::BindOnce(&TaskSendUninstallPing::TaskComplete, this));
 }
 
 void TaskSendUninstallPing::Cancel() {
@@ -58,7 +57,8 @@ void TaskSendUninstallPing::TaskComplete(Error error) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback_), this, error));
+      FROM_HERE,
+      base::BindOnce(std::move(callback_), scoped_refptr<Task>(this), error));
 }
 
 }  // namespace update_client

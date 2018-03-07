@@ -5,12 +5,11 @@
 #ifndef COMPONENTS_UPDATE_CLIENT_TASK_H_
 #define COMPONENTS_UPDATE_CLIENT_TASK_H_
 
-#include <memory>
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
-#include "components/update_client/update_client.h"
+#include "base/macros.h"
+#include "base/memory/ref_counted.h"
 
 namespace update_client {
 
@@ -20,10 +19,9 @@ class Task;
 // Each invocation of the update client API results in a task being created and
 // run. In most cases, a task corresponds to a set of CRXs, which are updated
 // together.
-class Task {
+class Task : public base::RefCounted<Task> {
  public:
-  virtual ~Task() {}
-
+  Task() = default;
   virtual void Run() = 0;
 
   // Does a best effort attempt to make a task release its resources and stop
@@ -33,6 +31,13 @@ class Task {
 
   // Returns the ids corresponding to the CRXs associated with this update task.
   virtual std::vector<std::string> GetIds() const = 0;
+
+ protected:
+  friend class base::RefCounted<Task>;
+  virtual ~Task() = default;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(Task);
 };
 
 }  // namespace update_client

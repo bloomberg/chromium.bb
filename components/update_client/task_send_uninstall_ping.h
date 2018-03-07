@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
 #include "components/update_client/task.h"
 #include "components/update_client/update_client.h"
@@ -26,7 +27,8 @@ enum class Error;
 // Defines a specialized task for sending the uninstall ping.
 class TaskSendUninstallPing : public Task {
  public:
-  using Callback = base::OnceCallback<void(Task* task, Error error)>;
+  using Callback =
+      base::OnceCallback<void(scoped_refptr<Task> task, Error error)>;
 
   // |update_engine| is injected here to handle the task.
   // |id| represents the CRX to send the ping for.
@@ -37,7 +39,6 @@ class TaskSendUninstallPing : public Task {
                         const base::Version& version,
                         int reason,
                         Callback callback);
-  ~TaskSendUninstallPing() override;
 
   void Run() override;
 
@@ -46,6 +47,8 @@ class TaskSendUninstallPing : public Task {
   std::vector<std::string> GetIds() const override;
 
  private:
+  ~TaskSendUninstallPing() override;
+
   // Called when the task has completed either because the task has run or
   // it has been canceled.
   void TaskComplete(Error error);
