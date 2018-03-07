@@ -214,7 +214,7 @@ def main():
 
     # Windows build numbers
     elif util.IsWindows():
-      versions['66'] = '540270'
+      versions['66'] = '540272'
       versions['65'] = '530366'
       versions['64'] = '520840'
 
