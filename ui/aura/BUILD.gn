@@ -277,6 +277,7 @@ jumbo_static_library("test_support") {
     "//base/test:test_support",
     "//cc:test_support",
     "//components/viz/test:test_support",
+    "//services/service_manager/public/cpp",
     "//services/ui/public/cpp/input_devices",
     "//services/ui/public/interfaces",
     "//skia",
