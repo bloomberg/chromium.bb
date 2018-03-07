@@ -570,10 +570,6 @@ cr.define('cr.ui.login', function() {
         newStep.setAttribute(
             'aria-label',
             loadTimeData.getString('signinScreenTitle'));
-      } else if (nextStepId == SCREEN_OOBE_NETWORK) {
-        newStep.setAttribute(
-            'aria-label',
-            loadTimeData.getString('networkScreenAccessibleTitle'));
       }
 
       // Default control to be focused (if specified).
