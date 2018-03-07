@@ -292,6 +292,8 @@
       'Android FYI Release (Nexus 6P)': 'android_release_trybot_arm64',
       'Android FYI Release (Nexus 9)': 'android_release_trybot_arm64',
       'Android FYI Release (NVIDIA Shield TV)': 'android_release_trybot_arm64',
+      'Android FYI 32 Vk Release (Nexus 5X)': 'gpu_tests_android_vulkan_release_trybot',
+      'Android FYI 64 Vk Release (Nexus 5X)': 'gpu_tests_android_vulkan_release_trybot_arm64',
       'GPU FYI Linux Builder': 'gpu_fyi_tests_release_trybot',
       'GPU FYI Linux Ozone Builder': 'gpu_fyi_tests_ozone_linux_system_gbm_libdrm_release_trybot',
       'GPU FYI Linux Builder (dbg)': 'gpu_fyi_tests_debug_trybot',
@@ -1343,6 +1345,14 @@
       'gpu_tests', 'android', 'release_trybot', 'arm64',
     ],
 
+    'gpu_tests_android_vulkan_release_trybot': [
+      'gpu_tests', 'android', 'vulkan', 'release_trybot',
+    ],
+
+    'gpu_tests_android_vulkan_release_trybot_arm64': [
+      'gpu_tests', 'android', 'vulkan', 'release_trybot', 'arm64',
+    ],
+
     'gpu_tests_debug_trybot': [
       'gpu_tests', 'debug_trybot',
     ],
@@ -2163,6 +2173,10 @@
 
     'vr': {
       'gn_args': 'enable_vr=true',
+    },
+
+    'vulkan': {
+      'gn_args': 'android32_ndk_api_level=24 android64_ndk_api_level=24',
     },
 
     'win_cross': {
