@@ -3055,9 +3055,6 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   unlock_buffer_pool(pool);
   pbi->hold_ref_buf = 1;
 
-  if (frame_is_intra_only(cm) || cm->error_resilient_mode)
-    av1_setup_past_independence(cm);
-
   if (cm->allow_intrabc && NO_FILTER_FOR_IBC) {
     // Set parameters corresponding to no filtering.
     struct loopfilter *lf = &cm->lf;
@@ -3080,9 +3077,19 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   xd->bd = (int)cm->bit_depth;
 
   if (frame_is_intra_only(cm) || cm->error_resilient_mode) {
-    av1_default_coef_probs(cm);
+    av1_setup_past_independence(cm);
     av1_setup_frame_contexts(cm);
   }
+#if CONFIG_NO_FRAME_CONTEXT_SIGNALING
+  else if (cm->primary_ref_frame == PRIMARY_REF_NONE) {
+    // The default coefficient CDFs depend on base_qindex. So, in order to
+    // ensure that we don't depend on the frame decoding order, we explicitly
+    // reset the coefficient CDFs with the value of base_qindex for this frame.
+    *cm->fc = cm->frame_contexts[FRAME_CONTEXT_DEFAULTS];
+    av1_default_coef_probs(cm);
+    cm->frame_contexts[FRAME_CONTEXT_DEFAULTS] = *cm->fc;
+  }
+#endif  // CONFIG_NO_FRAME_CONTEXT_SIGNALING
 
   setup_segmentation(cm, rb);
 
