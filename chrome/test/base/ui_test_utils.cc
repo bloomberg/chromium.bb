@@ -60,7 +60,6 @@
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
-#include "device/geolocation/geolocation_provider.h"
 #include "net/base/filename_util.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_constants.h"
@@ -498,17 +497,6 @@ Browser* BrowserAddedObserver::WaitForSingleNewBrowser() {
   // Ensure that only a single new browser has appeared.
   EXPECT_EQ(original_browsers_.size() + 1, chrome::GetTotalBrowserCount());
   return GetBrowserNotInSet(original_browsers_);
-}
-
-void OverrideGeolocation(double latitude, double longitude) {
-  device::mojom::Geoposition position;
-  position.latitude = latitude;
-  position.longitude = longitude;
-  position.altitude = 0.;
-  position.accuracy = 0.;
-  position.timestamp = base::Time::Now();
-  device::GeolocationProvider::GetInstance()->OverrideLocationForTesting(
-      position);
 }
 
 HistoryEnumerator::HistoryEnumerator(Profile* profile) {
