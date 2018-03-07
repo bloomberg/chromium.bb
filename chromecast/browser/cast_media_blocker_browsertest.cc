@@ -10,7 +10,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromecast/browser/cast_media_blocker.h"
 #include "chromecast/browser/test/cast_browser_test.h"
-#include "chromecast/browser/test/fake_web_contents_observer.h"
 #include "chromecast/chromecast_buildflags.h"
 #include "content/public/browser/media_session.h"
 #include "content/public/browser/web_contents.h"
@@ -43,10 +42,7 @@ class CastMediaBlockerBrowserTest : public CastBrowserTest {
     GURL gurl = content::GetFileUrlWithQuery(
         media::GetTestDataFilePath("player.html"), query);
 
-    web_contents_ = CreateWebView();
-    web_contents_observer_ =
-        std::make_unique<FakeWebContentsObserver>(web_contents_);
-    NavigateToURL(gurl);
+    web_contents_ = NavigateToURL(gurl);
     WaitForLoadStop(web_contents_);
 
     blocker_ = std::make_unique<CastMediaBlocker>(
@@ -85,7 +81,6 @@ class CastMediaBlockerBrowserTest : public CastBrowserTest {
 
  private:
   content::WebContents* web_contents_;
-  std::unique_ptr<FakeWebContentsObserver> web_contents_observer_;
   std::unique_ptr<CastMediaBlocker> blocker_;
 
   DISALLOW_COPY_AND_ASSIGN(CastMediaBlockerBrowserTest);
