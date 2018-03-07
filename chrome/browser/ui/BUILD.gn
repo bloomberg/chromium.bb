@@ -3896,7 +3896,7 @@ static_library("test_support") {
       }
     } else {
       sources += [
-        "cocoa/extensions/browser_action_test_util_views_mac.mm",
+        "cocoa/extensions/browser_action_test_util_views_cocoa.mm",
         "cocoa/find_bar/find_bar_host_unittest_util_cocoa.mm",
       ]
     }
