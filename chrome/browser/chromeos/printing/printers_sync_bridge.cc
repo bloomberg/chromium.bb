@@ -14,13 +14,13 @@
 #include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/task_scheduler/post_task.h"
+#include "chrome/browser/chromeos/printing/specifics_translation.h"
 #include "components/sync/base/report_unrecoverable_error.h"
 #include "components/sync/model/model_type_change_processor.h"
 #include "components/sync/model/model_type_store.h"
 #include "components/sync/model/mutable_data_batch.h"
 #include "components/sync/protocol/model_type_state.pb.h"
 #include "components/sync/protocol/sync.pb.h"
-#include "specifics_translation.h"
 
 namespace chromeos {
 
@@ -200,7 +200,7 @@ base::Optional<syncer::ModelError> PrintersSyncBridge::MergeSyncData(
   }
 
   NotifyPrintersUpdated();
-  batch->TransferMetadataChanges(std::move(metadata_change_list));
+  batch->TakeMetadataChangesFrom(std::move(metadata_change_list));
   store_delegate_->Commit(std::move(batch));
   return {};
 }
@@ -234,7 +234,7 @@ base::Optional<syncer::ModelError> PrintersSyncBridge::ApplySyncChanges(
 
   NotifyPrintersUpdated();
   // Update the local database with metadata for the incoming changes.
-  batch->TransferMetadataChanges(std::move(metadata_change_list));
+  batch->TakeMetadataChangesFrom(std::move(metadata_change_list));
 
   store_delegate_->Commit(std::move(batch));
   return {};

@@ -160,7 +160,7 @@ base::Optional<ModelError> DeviceInfoSyncBridge::MergeSyncData(
                             metadata_change_list.get());
   }
 
-  batch->TransferMetadataChanges(std::move(metadata_change_list));
+  batch->TakeMetadataChangesFrom(std::move(metadata_change_list));
   CommitAndNotify(std::move(batch), has_changes);
   return {};
 }
@@ -199,7 +199,7 @@ base::Optional<ModelError> DeviceInfoSyncBridge::ApplySyncChanges(
     }
   }
 
-  batch->TransferMetadataChanges(std::move(metadata_change_list));
+  batch->TakeMetadataChangesFrom(std::move(metadata_change_list));
   CommitAndNotify(std::move(batch), has_changes);
   return {};
 }

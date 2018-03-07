@@ -193,7 +193,7 @@ base::Optional<ModelError> DeviceInfoSyncBridge::ApplySyncChanges(
     }
   }
 
-  batch->TransferMetadataChanges(std::move(metadata_change_list));
+  batch->TakeMetadataChangesFrom(std::move(metadata_change_list));
   store_->CommitWriteBatch(std::move(batch), base::Bind(...));
   NotifyModelOfChanges();
   return {};

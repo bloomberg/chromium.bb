@@ -84,21 +84,104 @@ class TaskRunnerMap {
 base::LazyInstance<TaskRunnerMap>::Leaky task_runner_map_singleton =
     LAZY_INSTANCE_INITIALIZER;
 
+class LevelDbMetadataChangeList : public MetadataChangeList {
+ public:
+  LevelDbMetadataChangeList(ModelType type,
+                            leveldb::WriteBatch* leveldb_write_batch)
+      : leveldb_write_batch_(leveldb_write_batch),
+        metadata_prefix_(FormatMetaPrefix(type)),
+        global_metadata_key_(FormatGlobalMetadataKey(type)) {
+    DCHECK(leveldb_write_batch_);
+  }
+
+  // MetadataChangeList implementation.
+  void UpdateModelTypeState(
+      const sync_pb::ModelTypeState& model_type_state) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    leveldb_write_batch_->Put(global_metadata_key_,
+                              model_type_state.SerializeAsString());
+  }
+
+  void ClearModelTypeState() override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    leveldb_write_batch_->Delete(global_metadata_key_);
+  }
+
+  void UpdateMetadata(const std::string& storage_key,
+                      const sync_pb::EntityMetadata& metadata) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    leveldb_write_batch_->Put(FormatMetadataKey(storage_key),
+                              metadata.SerializeAsString());
+  }
+
+  void ClearMetadata(const std::string& storage_key) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    leveldb_write_batch_->Delete(FormatMetadataKey(storage_key));
+  }
+
+ private:
+  // Format key for metadata records with given id.
+  std::string FormatMetadataKey(const std::string& id) const {
+    return metadata_prefix_ + id;
+  }
+
+  leveldb::WriteBatch* const leveldb_write_batch_;
+
+  // Key for this type's metadata records.
+  const std::string metadata_prefix_;
+  const std::string global_metadata_key_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
+};
+
+class LevelDbWriteBatch : public ModelTypeStore::WriteBatch {
+ public:
+  static std::unique_ptr<leveldb::WriteBatch> ToLevelDbWriteBatch(
+      std::unique_ptr<LevelDbWriteBatch> batch) {
+    return std::move(batch->leveldb_write_batch_);
+  }
+
+  explicit LevelDbWriteBatch(ModelType type)
+      : data_prefix_(FormatDataPrefix(type)),
+        leveldb_write_batch_(std::make_unique<leveldb::WriteBatch>()),
+        metadata_change_list_(type, leveldb_write_batch_.get()) {}
+
+  ~LevelDbWriteBatch() override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  }
+
+  // WriteBatch implementation.
+  void WriteData(const std::string& id, const std::string& value) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    leveldb_write_batch_->Put(FormatDataKey(id), value);
+  }
+
+  void DeleteData(const std::string& id) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    leveldb_write_batch_->Delete(FormatDataKey(id));
+  }
+
+  MetadataChangeList* GetMetadataChangeList() override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return &metadata_change_list_;
+  }
+
+ private:
+  // Format key for data records with given id.
+  std::string FormatDataKey(const std::string& id) const {
+    return data_prefix_ + id;
+  }
+
+  // Key prefix for data records of this model type.
+  const std::string data_prefix_;
+
+  std::unique_ptr<leveldb::WriteBatch> leveldb_write_batch_;
+  LevelDbMetadataChangeList metadata_change_list_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
+};
+
 }  // namespace
-
-// static
-leveldb::WriteBatch* ModelTypeStoreImpl::GetLeveldbWriteBatch(
-    WriteBatch* write_batch) {
-  return static_cast<WriteBatchImpl*>(write_batch)->leveldb_write_batch_.get();
-}
-
-std::string ModelTypeStoreImpl::FormatDataKey(const std::string& id) {
-  return data_prefix_ + id;
-}
-
-std::string ModelTypeStoreImpl::FormatMetadataKey(const std::string& id) {
-  return metadata_prefix_ + id;
-}
 
 ModelTypeStoreImpl::ModelTypeStoreImpl(
     ModelType type,
@@ -106,6 +189,7 @@ ModelTypeStoreImpl::ModelTypeStoreImpl(
     scoped_refptr<base::SequencedTaskRunner> backend_task_runner)
     : backend_(backend),
       backend_task_runner_(backend_task_runner),
+      type_(type),
       data_prefix_(FormatDataPrefix(type)),
       metadata_prefix_(FormatMetaPrefix(type)),
       global_metadata_key_(FormatGlobalMetadataKey(type)),
@@ -353,7 +437,7 @@ void ModelTypeStoreImpl::DeserializeMetadata(
 std::unique_ptr<ModelTypeStore::WriteBatch>
 ModelTypeStoreImpl::CreateWriteBatch() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return std::make_unique<WriteBatchImpl>(this);
+  return std::make_unique<LevelDbWriteBatch>(type_);
 }
 
 void ModelTypeStoreImpl::CommitWriteBatch(
@@ -361,11 +445,12 @@ void ModelTypeStoreImpl::CommitWriteBatch(
     CallbackWithResult callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!callback.is_null());
-  WriteBatchImpl* write_batch_impl =
-      static_cast<WriteBatchImpl*>(write_batch.get());
-  auto task = base::BindOnce(&ModelTypeStoreBackend::WriteModifications,
-                             base::Unretained(backend_.get()),
-                             std::move(write_batch_impl->leveldb_write_batch_));
+  std::unique_ptr<LevelDbWriteBatch> write_batch_impl(
+      static_cast<LevelDbWriteBatch*>(write_batch.release()));
+  auto task = base::BindOnce(
+      &ModelTypeStoreBackend::WriteModifications,
+      base::Unretained(backend_.get()),
+      LevelDbWriteBatch::ToLevelDbWriteBatch(std::move(write_batch_impl)));
   auto reply =
       base::BindOnce(&ModelTypeStoreImpl::WriteModificationsDone,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback));
@@ -379,49 +464,5 @@ void ModelTypeStoreImpl::WriteModificationsDone(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::move(callback).Run(error);
 }
-
-void ModelTypeStoreImpl::WriteData(WriteBatch* write_batch,
-                                   const std::string& id,
-                                   const std::string& value) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  GetLeveldbWriteBatch(write_batch)->Put(FormatDataKey(id), value);
-}
-
-void ModelTypeStoreImpl::WriteMetadata(WriteBatch* write_batch,
-                                       const std::string& id,
-                                       const std::string& value) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  GetLeveldbWriteBatch(write_batch)->Put(FormatMetadataKey(id), value);
-}
-
-void ModelTypeStoreImpl::WriteGlobalMetadata(WriteBatch* write_batch,
-                                             const std::string& value) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  GetLeveldbWriteBatch(write_batch)->Put(global_metadata_key_, value);
-}
-
-void ModelTypeStoreImpl::DeleteData(WriteBatch* write_batch,
-                                    const std::string& id) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  GetLeveldbWriteBatch(write_batch)->Delete(FormatDataKey(id));
-}
-
-void ModelTypeStoreImpl::DeleteMetadata(WriteBatch* write_batch,
-                                        const std::string& id) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  GetLeveldbWriteBatch(write_batch)->Delete(FormatMetadataKey(id));
-}
-
-void ModelTypeStoreImpl::DeleteGlobalMetadata(WriteBatch* write_batch) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  GetLeveldbWriteBatch(write_batch)->Delete(global_metadata_key_);
-}
-
-ModelTypeStoreImpl::WriteBatchImpl::WriteBatchImpl(ModelTypeStore* store)
-    : WriteBatch(store) {
-  leveldb_write_batch_ = std::make_unique<leveldb::WriteBatch>();
-}
-
-ModelTypeStoreImpl::WriteBatchImpl::~WriteBatchImpl() {}
 
 }  // namespace syncer

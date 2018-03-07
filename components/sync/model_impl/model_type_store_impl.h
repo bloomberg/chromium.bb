@@ -15,10 +15,6 @@
 #include "components/sync/base/model_type.h"
 #include "components/sync/model/model_type_store.h"
 
-namespace leveldb {
-class WriteBatch;
-}  // namespace leveldb
-
 namespace syncer {
 
 class ModelTypeStoreBackend;
@@ -43,40 +39,13 @@ class ModelTypeStoreImpl : public ModelTypeStore {
   void CommitWriteBatch(std::unique_ptr<WriteBatch> write_batch,
                         CallbackWithResult callback) override;
 
- protected:
-  // ModelTypeStore implementation.
-  void WriteData(WriteBatch* write_batch,
-                 const std::string& id,
-                 const std::string& value) override;
-  void WriteMetadata(WriteBatch* write_batch,
-                     const std::string& id,
-                     const std::string& value) override;
-  void WriteGlobalMetadata(WriteBatch* write_batch,
-                           const std::string& value) override;
-  void DeleteData(WriteBatch* write_batch, const std::string& id) override;
-  void DeleteMetadata(WriteBatch* write_batch, const std::string& id) override;
-  void DeleteGlobalMetadata(WriteBatch* write_batch) override;
-
  private:
-  class WriteBatchImpl : public WriteBatch {
-   public:
-    explicit WriteBatchImpl(ModelTypeStore* store);
-    ~WriteBatchImpl() override;
-    std::unique_ptr<leveldb::WriteBatch> leveldb_write_batch_;
-  };
-
   static void BackendInitDone(
       const ModelType type,
       std::unique_ptr<base::Optional<ModelError>> result,
       scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
       InitCallback callback,
       scoped_refptr<ModelTypeStoreBackend> backend);
-
-  static leveldb::WriteBatch* GetLeveldbWriteBatch(WriteBatch* write_batch);
-
-  // Format key for data/metadata records with given id.
-  std::string FormatDataKey(const std::string& id);
-  std::string FormatMetadataKey(const std::string& id);
 
   ModelTypeStoreImpl(
       const ModelType type,
@@ -112,6 +81,8 @@ class ModelTypeStoreImpl : public ModelTypeStore {
   // backend ownership to task parameter.
   scoped_refptr<ModelTypeStoreBackend> backend_;
   scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;
+
+  const ModelType type_;
 
   // Key prefix for data/metadata records of this model type.
   const std::string data_prefix_;

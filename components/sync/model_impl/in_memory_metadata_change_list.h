@@ -17,9 +17,26 @@
 namespace syncer {
 
 // A MetadataChangeList base class that stores changes in member fields.
-// There are no accessors; subclasses can decide how to expose the changes.
+// There are no accessors; TransferChangesTo() can be used to forward all
+// changes to another instance.
 class InMemoryMetadataChangeList : public MetadataChangeList {
  public:
+  InMemoryMetadataChangeList();
+  ~InMemoryMetadataChangeList() override;
+
+  // Moves all currently accumulated changes into |*other|, resetting the state
+  // of |*this| to the default, empty state.
+  void TransferChangesTo(MetadataChangeList* other);
+
+  // MetadataChangeList implementation.
+  void UpdateModelTypeState(
+      const sync_pb::ModelTypeState& model_type_state) override;
+  void ClearModelTypeState() override;
+  void UpdateMetadata(const std::string& storage_key,
+                      const sync_pb::EntityMetadata& metadata) override;
+  void ClearMetadata(const std::string& storage_key) override;
+
+ private:
   enum ChangeType { UPDATE, CLEAR };
 
   struct MetadataChange {
@@ -31,20 +48,6 @@ class InMemoryMetadataChangeList : public MetadataChangeList {
     ChangeType type;
     sync_pb::ModelTypeState state;
   };
-
-  ~InMemoryMetadataChangeList() override;
-
-  // MetadataChangeList implementation.
-  void UpdateModelTypeState(
-      const sync_pb::ModelTypeState& model_type_state) override;
-  void ClearModelTypeState() override;
-  void UpdateMetadata(const std::string& storage_key,
-                      const sync_pb::EntityMetadata& metadata) override;
-  void ClearMetadata(const std::string& storage_key) override;
-
- protected:
-  // Protected because this class is useless to instantiate directly.
-  InMemoryMetadataChangeList();
 
   std::map<std::string, MetadataChange> metadata_changes_;
   std::unique_ptr<ModelTypeStateChange> state_change_;

@@ -6,9 +6,8 @@
 
 #include <utility>
 
-#include "components/sync/model_impl/accumulating_metadata_change_list.h"
+#include "components/sync/model_impl/in_memory_metadata_change_list.h"
 #include "components/sync/model_impl/model_type_store_impl.h"
-#include "components/sync/model_impl/passthrough_metadata_change_list.h"
 
 namespace syncer {
 
@@ -30,34 +29,17 @@ ModelTypeStore::~ModelTypeStore() {}
 // static
 std::unique_ptr<MetadataChangeList>
 ModelTypeStore::WriteBatch::CreateMetadataChangeList() {
-  return std::make_unique<AccumulatingMetadataChangeList>();
+  return std::make_unique<InMemoryMetadataChangeList>();
 }
 
-ModelTypeStore::WriteBatch::WriteBatch(ModelTypeStore* store) : store_(store) {}
+ModelTypeStore::WriteBatch::WriteBatch() {}
 
 ModelTypeStore::WriteBatch::~WriteBatch() {}
 
-void ModelTypeStore::WriteBatch::WriteData(const std::string& id,
-                                           const std::string& value) {
-  store_->WriteData(this, id, value);
-}
-
-void ModelTypeStore::WriteBatch::DeleteData(const std::string& id) {
-  store_->DeleteData(this, id);
-}
-
-MetadataChangeList* ModelTypeStore::WriteBatch::GetMetadataChangeList() {
-  if (!metadata_change_list_) {
-    metadata_change_list_ =
-        std::make_unique<PassthroughMetadataChangeList>(store_, this);
-  }
-  return metadata_change_list_.get();
-}
-
-void ModelTypeStore::WriteBatch::TransferMetadataChanges(
+void ModelTypeStore::WriteBatch::TakeMetadataChangesFrom(
     std::unique_ptr<MetadataChangeList> mcl) {
-  static_cast<AccumulatingMetadataChangeList*>(mcl.get())->TransferChanges(
-      store_, this);
+  static_cast<InMemoryMetadataChangeList*>(mcl.get())->TransferChangesTo(
+      GetMetadataChangeList());
 }
 
 }  // namespace syncer

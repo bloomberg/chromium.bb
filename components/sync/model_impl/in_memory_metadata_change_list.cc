@@ -9,6 +9,34 @@ namespace syncer {
 InMemoryMetadataChangeList::InMemoryMetadataChangeList() {}
 InMemoryMetadataChangeList::~InMemoryMetadataChangeList() {}
 
+void InMemoryMetadataChangeList::TransferChangesTo(MetadataChangeList* other) {
+  DCHECK(other);
+  for (const auto& pair : metadata_changes_) {
+    const std::string& storage_key = pair.first;
+    const MetadataChange& change = pair.second;
+    switch (change.type) {
+      case UPDATE:
+        other->UpdateMetadata(storage_key, change.metadata);
+        break;
+      case CLEAR:
+        other->ClearMetadata(storage_key);
+        break;
+    }
+  }
+  metadata_changes_.clear();
+  if (state_change_) {
+    switch (state_change_->type) {
+      case UPDATE:
+        other->UpdateModelTypeState(state_change_->state);
+        break;
+      case CLEAR:
+        other->ClearModelTypeState();
+        break;
+    }
+    state_change_.reset();
+  }
+}
+
 void InMemoryMetadataChangeList::UpdateModelTypeState(
     const sync_pb::ModelTypeState& model_type_state) {
   state_change_.reset(new ModelTypeStateChange{UPDATE, model_type_state});
