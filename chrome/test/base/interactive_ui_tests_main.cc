@@ -107,6 +107,29 @@ class InteractiveUITestLauncherDelegate : public ChromeTestLauncherDelegate {
     ChromeTestLauncherDelegate::OnTestTimedOut(command_line);
   }
 
+#if defined(OS_MACOSX)
+  std::unique_ptr<content::TestState> PreRunTest(
+      base::CommandLine* command_line,
+      base::TestLauncher::LaunchOptions* test_launch_options) override {
+    auto test_state = ChromeTestLauncherDelegate::PreRunTest(
+        command_line, test_launch_options);
+    // Clear currently pressed modifier keys (if any) before the test starts.
+    ui_test_utils::ClearKeyEventModifiers();
+    return test_state;
+  }
+
+  void PostRunTest(base::TestResult* test_result) override {
+    // Clear currently pressed modifier keys (if any) after the test finishes
+    // and report an error if there were some.
+    bool had_hanging_modifiers = ui_test_utils::ClearKeyEventModifiers();
+    if (had_hanging_modifiers &&
+        test_result->status == base::TestResult::TEST_SUCCESS) {
+      test_result->status = base::TestResult::TEST_FAILURE_ON_EXIT;
+    }
+    ChromeTestLauncherDelegate::PostRunTest(test_result);
+  }
+#endif  // defined(OS_MACOSX)
+
  private:
   DISALLOW_COPY_AND_ASSIGN(InteractiveUITestLauncherDelegate);
 };

@@ -24,8 +24,6 @@
 
 #if defined(OS_MACOSX)
 #include <Carbon/Carbon.h>
-
-#include "base/mac/scoped_cftyperef.h"
 #endif
 
 namespace extensions {
@@ -74,46 +72,6 @@ void SendNativeKeyEventToXDisplay(ui::KeyboardCode key,
   XFlush(display);
 }
 #endif  // defined(USE_X11)
-
-#if defined(OS_MACOSX)
-using base::ScopedCFTypeRef;
-
-void SendNativeCommandShift(int key_code) {
-  CGEventSourceRef event_source =
-      CGEventSourceCreate(kCGEventSourceStateHIDSystemState);
-  CGEventTapLocation event_tap_location = kCGHIDEventTap;
-
-  // Create the keyboard press events.
-  ScopedCFTypeRef<CGEventRef> command_down(CGEventCreateKeyboardEvent(
-      event_source, kVK_Command, true));
-  ScopedCFTypeRef<CGEventRef> shift_down(CGEventCreateKeyboardEvent(
-      event_source, kVK_Shift, true));
-  ScopedCFTypeRef<CGEventRef> key_down(CGEventCreateKeyboardEvent(
-      event_source, key_code, true));
-  CGEventSetFlags(key_down, static_cast<CGEventFlags>(kCGEventFlagMaskCommand |
-                                                      kCGEventFlagMaskShift));
-
-  // Create the keyboard release events.
-  ScopedCFTypeRef<CGEventRef> command_up(CGEventCreateKeyboardEvent(
-      event_source, kVK_Command, false));
-  ScopedCFTypeRef<CGEventRef> shift_up(CGEventCreateKeyboardEvent(
-      event_source, kVK_Shift, false));
-  ScopedCFTypeRef<CGEventRef> key_up(CGEventCreateKeyboardEvent(
-      event_source, key_code, false));
-  CGEventSetFlags(key_up, static_cast<CGEventFlags>(kCGEventFlagMaskCommand |
-                                                    kCGEventFlagMaskShift));
-
-  // Post all of the events.
-  CGEventPost(event_tap_location, command_down);
-  CGEventPost(event_tap_location, shift_down);
-  CGEventPost(event_tap_location, key_down);
-  CGEventPost(event_tap_location, key_up);
-  CGEventPost(event_tap_location, shift_up);
-  CGEventPost(event_tap_location, command_up);
-
-  CFRelease(event_source);
-}
-#endif
 
 // Test the basics of global commands and make sure they work when Chrome
 // doesn't have focus. Also test that non-global commands are not treated as
@@ -184,12 +142,23 @@ IN_PROC_BROWSER_TEST_F(GlobalCommandsApiTest, MAYBE_GlobalCommand) {
 
 #elif defined(OS_MACOSX)
   // Create an incognito browser to capture the focus.
-  CreateIncognitoBrowser();
+  Browser* incognito_browser = CreateIncognitoBrowser();
+  // Activate Chrome.app so that events are seen on [NSApplication sendEvent:].
+  // This is not necessary to detect these system events in release code, but is
+  // a necessary trade-off to ensure all parts of the generated events have been
+  // consumed. Without that, the test can leave the system in a state with the
+  // Shift key permanently pressed and cause other tests to fail. But since it
+  // is an incognito window that has focus, we still get good coverage of the
+  // global hotkey logic.
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(incognito_browser));
 
   // Send some native mac key events.
-  SendNativeCommandShift(kVK_ANSI_1);
-  SendNativeCommandShift(kVK_ANSI_A);
-  SendNativeCommandShift(kVK_ANSI_8);
+  ui_test_utils::SendGlobalKeyEventsAndWait(
+      kVK_ANSI_1, ui::EF_SHIFT_DOWN | ui::EF_COMMAND_DOWN);
+  ui_test_utils::SendGlobalKeyEventsAndWait(
+      kVK_ANSI_A, ui::EF_SHIFT_DOWN | ui::EF_COMMAND_DOWN);
+  ui_test_utils::SendGlobalKeyEventsAndWait(
+      kVK_ANSI_8, ui::EF_SHIFT_DOWN | ui::EF_COMMAND_DOWN);
 #endif
 
   // If this fails, it might be because the global shortcut failed to work,
