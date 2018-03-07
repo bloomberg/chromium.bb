@@ -11,11 +11,14 @@
 #include <memory>
 #include <string>
 
+#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "components/download/public/common/download_export.h"
@@ -86,6 +89,9 @@ class COMPONENTS_DOWNLOAD_EXPORT BaseFile {
   // |is_sparse_file|: Specifies whether the file is a sparse file. If so, it is
   //     possible that a write can happen at an offset that is larger than the
   //     file size, thus creating holes in it.
+  //
+  // |bytes_wasted|: Address of an integer that will handle bytes_wasted if
+  //     there is a significant amount (ie. greater than 0).
   DownloadInterruptReason Initialize(
       const base::FilePath& full_path,
       const base::FilePath& default_directory,
@@ -93,7 +99,8 @@ class COMPONENTS_DOWNLOAD_EXPORT BaseFile {
       int64_t bytes_so_far,
       const std::string& hash_so_far,
       std::unique_ptr<crypto::SecureHash> hash_state,
-      bool is_sparse_file);
+      bool is_sparse_file,
+      int64_t* const bytes_wasted);
 
   // Write a new chunk of data to the file. Returns a DownloadInterruptReason
   // indicating the result of the operation. Works only if |is_sparse_file| is
@@ -181,7 +188,8 @@ class COMPONENTS_DOWNLOAD_EXPORT BaseFile {
   // relevant interrupt reason. Unless Open() return
   // DOWNLOAD_INTERRUPT_REASON_NONE, it should be assumed that |file_| is not
   // valid.
-  DownloadInterruptReason Open(const std::string& hash_so_far);
+  DownloadInterruptReason Open(const std::string& hash_so_far,
+                               int64_t* const bytes_wasted);
 
   // Closes and resets file_.
   void Close();

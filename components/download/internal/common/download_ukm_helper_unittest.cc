@@ -71,9 +71,10 @@ TEST_F(DownloadUkmHelperTest, TestBasicReporting) {
   DownloadInterruptReason reason = DOWNLOAD_INTERRUPT_REASON_NONE;
   int resulting_file_size = 2000;
   int time_since_start = 250;
+  int bytes_wasted = 1234;
   DownloadUkmHelper::RecordDownloadInterrupted(
       download_id_, change_in_file_size, reason, resulting_file_size,
-      base::TimeDelta::FromMilliseconds(time_since_start));
+      base::TimeDelta::FromMilliseconds(time_since_start), bytes_wasted);
 
   ExpectUkmMetrics(
       UkmDownloadInterrupted::kEntryName,
@@ -81,12 +82,13 @@ TEST_F(DownloadUkmHelperTest, TestBasicReporting) {
        UkmDownloadInterrupted::kChangeInFileSizeName,
        UkmDownloadInterrupted::kReasonName,
        UkmDownloadInterrupted::kResultingFileSizeName,
-       UkmDownloadInterrupted::kTimeSinceStartName},
+       UkmDownloadInterrupted::kTimeSinceStartName,
+       UkmDownloadInterrupted::kBytesWastedName},
       {download_id_,
        DownloadUkmHelper::CalcExponentialBucket(change_in_file_size),
        static_cast<int>(reason),
        DownloadUkmHelper::CalcExponentialBucket(resulting_file_size),
-       time_since_start});
+       time_since_start, DownloadUkmHelper::CalcNearestKB(bytes_wasted)});
 
   // RecordDownloadResumed.
   ResumeMode mode = ResumeMode::IMMEDIATE_RESTART;
@@ -104,18 +106,22 @@ TEST_F(DownloadUkmHelperTest, TestBasicReporting) {
   // RecordDownloadCompleted.
   int resulting_file_size_completed = 3000;
   int time_since_start_completed = 400;
+  int bytes_wasted_completed = 2345;
   DownloadUkmHelper::RecordDownloadCompleted(
       download_id_, resulting_file_size_completed,
-      base::TimeDelta::FromMilliseconds(time_since_start_completed));
+      base::TimeDelta::FromMilliseconds(time_since_start_completed),
+      bytes_wasted_completed);
 
   ExpectUkmMetrics(
       UkmDownloadCompleted::kEntryName,
       {UkmDownloadCompleted::kDownloadIdName,
        UkmDownloadCompleted::kResultingFileSizeName,
-       UkmDownloadCompleted::kTimeSinceStartName},
+       UkmDownloadCompleted::kTimeSinceStartName,
+       UkmDownloadCompleted::kBytesWastedName},
       {download_id_,
        DownloadUkmHelper::CalcExponentialBucket(resulting_file_size_completed),
-       time_since_start_completed});
+       time_since_start_completed,
+       DownloadUkmHelper::CalcNearestKB(bytes_wasted_completed)});
 }
 
 }  // namespace download

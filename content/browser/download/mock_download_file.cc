@@ -14,17 +14,15 @@ using ::testing::Return;
 namespace content {
 namespace {
 
-void SuccessRun(const DownloadFile::InitializeCallback& initialize_callback) {
-  initialize_callback.Run(download::DOWNLOAD_INTERRUPT_REASON_NONE);
-}
-
 void PostSuccessRun(
-    const DownloadFile::InitializeCallback& initialize_callback,
+    DownloadFile::InitializeCallback initialize_callback,
     const DownloadFile::CancelRequestCallback& cancel_request_callback,
     const download::DownloadItem::ReceivedSlices& received_slices,
     bool is_parallelizable) {
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::BindOnce(&SuccessRun, initialize_callback));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(std::move(initialize_callback),
+                     download::DOWNLOAD_INTERRUPT_REASON_NONE, 0));
 }
 
 }  // namespace

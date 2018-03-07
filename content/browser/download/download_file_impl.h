@@ -54,7 +54,7 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
   ~DownloadFileImpl() override;
 
   // DownloadFile functions.
-  void Initialize(const InitializeCallback& initialize_callback,
+  void Initialize(InitializeCallback initialize_callback,
                   const CancelRequestCallback& cancel_request_callback,
                   const download::DownloadItem::ReceivedSlices& received_slices,
                   bool is_parallelizable) override;

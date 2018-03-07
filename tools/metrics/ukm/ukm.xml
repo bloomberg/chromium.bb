@@ -633,6 +633,12 @@ be describing additional metrics about the same event.
     Metrics taken when a download completes. Its parent event is
     Download.Started.
   </summary>
+  <metric name="BytesWasted">
+    <summary>
+      The number of bytes that have been used in an excess (ie. download
+      restarting the middle of a download).
+    </summary>
+  </metric>
   <metric name="DownloadId">
     <summary>
       The id of the download that is used to associate separate events.
@@ -658,6 +664,12 @@ be describing additional metrics about the same event.
     Metrics taken when a download is interrupted. Its parent event is
     Download.Started.
   </summary>
+  <metric name="BytesWasted">
+    <summary>
+      The number of bytes that have been used in an excess (ie. download
+      restarting the middle of a download).
+    </summary>
+  </metric>
   <metric name="ChangeInFileSize">
     <summary>
       The difference in the size of the file that is downloaded compared to the

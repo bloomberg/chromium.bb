@@ -23,6 +23,7 @@ TEST_F(InProgressConversionsTest, DownloadEntry) {
   entry.request_origin = "request origin";
   entry.download_source = DownloadSource::DRAG_AND_DROP;
   entry.ukm_download_id = 123;
+  entry.bytes_wasted = 1234;
   EXPECT_EQ(entry, DownloadEntryFromProto(DownloadEntryToProto(entry)));
 }
 

@@ -247,7 +247,7 @@ DownloadFileImpl::~DownloadFileImpl() {
 }
 
 void DownloadFileImpl::Initialize(
-    const InitializeCallback& initialize_callback,
+    InitializeCallback initialize_callback,
     const CancelRequestCallback& cancel_request_callback,
     const download::DownloadItem::ReceivedSlices& received_slices,
     bool is_parallelizable) {
@@ -271,14 +271,16 @@ void DownloadFileImpl::Initialize(
   } else {
     bytes_so_far = save_info_->offset;
   }
-  download::DownloadInterruptReason result =
-      file_.Initialize(save_info_->file_path, default_download_directory_,
-                       std::move(save_info_->file), bytes_so_far,
-                       save_info_->hash_of_partial_file,
-                       std::move(save_info_->hash_state), IsSparseFile());
-  if (result != download::DOWNLOAD_INTERRUPT_REASON_NONE) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::BindOnce(initialize_callback, result));
+  int64_t bytes_wasted = 0;
+  download::DownloadInterruptReason reason = file_.Initialize(
+      save_info_->file_path, default_download_directory_,
+      std::move(save_info_->file), bytes_so_far,
+      save_info_->hash_of_partial_file, std::move(save_info_->hash_state),
+      IsSparseFile(), &bytes_wasted);
+  if (reason != download::DOWNLOAD_INTERRUPT_REASON_NONE) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(std::move(initialize_callback), reason, bytes_wasted));
     return;
   }
   download_start_ = base::TimeTicks::Now();
@@ -290,8 +292,8 @@ void DownloadFileImpl::Initialize(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::BindOnce(initialize_callback,
-                     download::DOWNLOAD_INTERRUPT_REASON_NONE));
+      base::BindOnce(std::move(initialize_callback),
+                     download::DOWNLOAD_INTERRUPT_REASON_NONE, bytes_wasted));
 
   // Initial pull from the straw from all source streams.
   for (auto& source_stream : source_streams_)

@@ -42,7 +42,7 @@ class DownloadFileWithError: public DownloadFileImpl {
 
   ~DownloadFileWithError() override;
 
-  void Initialize(const InitializeCallback& initialize_callback,
+  void Initialize(InitializeCallback initialize_callback,
                   const CancelRequestCallback& cancel_request_callback,
                   const download::DownloadItem::ReceivedSlices& received_slices,
                   bool is_parallelizable) override;
@@ -89,10 +89,11 @@ class DownloadFileWithError: public DownloadFileImpl {
 };
 
 static void InitializeErrorCallback(
-    const DownloadFile::InitializeCallback original_callback,
+    DownloadFile::InitializeCallback original_callback,
     download::DownloadInterruptReason overwrite_error,
-    download::DownloadInterruptReason original_error) {
-  original_callback.Run(overwrite_error);
+    download::DownloadInterruptReason original_error,
+    int64_t bytes_wasted) {
+  std::move(original_callback).Run(overwrite_error, bytes_wasted);
 }
 
 static void RenameErrorCallback(
@@ -138,13 +139,13 @@ DownloadFileWithError::~DownloadFileWithError() {
 }
 
 void DownloadFileWithError::Initialize(
-    const InitializeCallback& initialize_callback,
+    InitializeCallback initialize_callback,
     const CancelRequestCallback& cancel_request_callback,
     const download::DownloadItem::ReceivedSlices& received_slices,
     bool is_parallelizable) {
   download::DownloadInterruptReason error_to_return =
       download::DOWNLOAD_INTERRUPT_REASON_NONE;
-  InitializeCallback callback_to_use = initialize_callback;
+  InitializeCallback callback_to_use = std::move(initialize_callback);
 
   // Replace callback if the error needs to be overwritten.
   if (OverwriteError(
@@ -155,17 +156,18 @@ void DownloadFileWithError::Initialize(
       // return the error.
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
-          base::BindOnce(initialize_callback, error_to_return));
+          base::BindOnce(std::move(callback_to_use), error_to_return, 0));
       return;
     }
 
     // Otherwise, just wrap the return.
-    callback_to_use = base::Bind(&InitializeErrorCallback, initialize_callback,
-                                 error_to_return);
+    callback_to_use = base::BindRepeating(
+        &InitializeErrorCallback, std::move(callback_to_use), error_to_return);
   }
 
-  DownloadFileImpl::Initialize(callback_to_use, cancel_request_callback,
-                               received_slices, is_parallelizable);
+  DownloadFileImpl::Initialize(std::move(callback_to_use),
+                               cancel_request_callback, received_slices,
+                               is_parallelizable);
 }
 
 download::DownloadInterruptReason DownloadFileWithError::WriteDataToFile(

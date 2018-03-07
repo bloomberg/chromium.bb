@@ -12,6 +12,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/containers/circular_deque.h"
@@ -229,12 +230,12 @@ ACTION_P2(ScheduleRenameAndAnnotateCallback, interrupt_reason, new_path) {
 // E.g.:
 //
 //   EXPECT_CALL(foo, Bar(1, _))
-//     .WithArg<1>(ScheduleCallbackWithParam(0));
+//     .WithArg<1>(ScheduleCallbackWithParams(0, 0));
 //
 //   .. will invoke the second argument to Bar with 0 as the parameter.
-ACTION_P(ScheduleCallbackWithParam, param) {
+ACTION_P2(ScheduleCallbackWithParams, param1, param2) {
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::BindOnce(arg0, param));
+                          base::BindOnce(std::move(arg0), param1, param2));
 }
 
 // Schedules a task to invoke a closure.
@@ -312,8 +313,8 @@ class DownloadItemTest : public testing::Test {
       mock_download_file = new StrictMock<MockDownloadFile>;
       download_file.reset(mock_download_file);
       EXPECT_CALL(*mock_download_file, Initialize(_, _, _, _))
-          .WillOnce(ScheduleCallbackWithParam(
-              download::DOWNLOAD_INTERRUPT_REASON_NONE));
+          .WillOnce(ScheduleCallbackWithParams(
+              download::DOWNLOAD_INTERRUPT_REASON_NONE, 0));
       EXPECT_CALL(*mock_download_file, FullPath())
           .WillRepeatedly(ReturnRefOfCopy(base::FilePath()));
     }
@@ -1185,8 +1186,8 @@ TEST_F(DownloadItemTest, InitDownloadFileFails) {
   EXPECT_CALL(*file, Cancel());
   EXPECT_CALL(*request_handle, CancelRequest(_));
   EXPECT_CALL(*file, Initialize(_, _, _, _))
-      .WillOnce(ScheduleCallbackWithParam(
-          download::DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED));
+      .WillOnce(ScheduleCallbackWithParams(
+          download::DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED, 0));
 
   DownloadTargetCallback download_target_callback;
   EXPECT_CALL(*mock_delegate(), DetermineDownloadTarget(item, _))
@@ -2310,7 +2311,8 @@ TEST_P(DownloadItemDestinationUpdateRaceTest, DownloadCancelledByUser) {
   EXPECT_CALL(*mock_delegate(), DetermineDownloadTarget(_, _))
       .WillOnce(SaveArg<1>(&target_callback));
   ScheduleObservations(PostInitializeFileObservations(), destination_observer);
-  initialize_callback.Run(download::DOWNLOAD_INTERRUPT_REASON_NONE);
+  std::move(initialize_callback)
+      .Run(download::DOWNLOAD_INTERRUPT_REASON_NONE, 0);
 
   task_environment_.RunUntilIdle();
 
@@ -2356,7 +2358,8 @@ TEST_P(DownloadItemDestinationUpdateRaceTest, IntermediateRenameFails) {
   EXPECT_CALL(*mock_delegate(), DetermineDownloadTarget(_, _))
       .WillOnce(SaveArg<1>(&target_callback));
   ScheduleObservations(PostInitializeFileObservations(), destination_observer);
-  initialize_callback.Run(download::DOWNLOAD_INTERRUPT_REASON_NONE);
+  std::move(initialize_callback)
+      .Run(download::DOWNLOAD_INTERRUPT_REASON_NONE, 0);
 
   task_environment_.RunUntilIdle();
   ASSERT_FALSE(target_callback.is_null());
@@ -2419,7 +2422,8 @@ TEST_P(DownloadItemDestinationUpdateRaceTest, IntermediateRenameSucceeds) {
   EXPECT_CALL(*mock_delegate(), DetermineDownloadTarget(_, _))
       .WillOnce(SaveArg<1>(&target_callback));
   ScheduleObservations(PostInitializeFileObservations(), destination_observer);
-  initialize_callback.Run(download::DOWNLOAD_INTERRUPT_REASON_NONE);
+  std::move(initialize_callback)
+      .Run(download::DOWNLOAD_INTERRUPT_REASON_NONE, 0);
 
   task_environment_.RunUntilIdle();
   ASSERT_FALSE(target_callback.is_null());

@@ -42,6 +42,9 @@ struct DownloadEntry {
   // Unique ID that tracks the download UKM entry, where 0 means the
   // download_id is not yet initialized.
   uint64_t ukm_download_id = 0;
+
+  // Count for how many (extra) bytes were used (including resumption).
+  int64_t bytes_wasted = 0;
 };
 
 }  // namespace download
