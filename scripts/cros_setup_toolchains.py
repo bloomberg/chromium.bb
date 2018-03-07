@@ -90,6 +90,7 @@ TARGET_COMPILER_RT_ENABLED = (
     'armv7a-cros-linux-gnueabi',
     'armv7a-cros-linux-gnueabihf',
     'aarch64-cros-linux-gnu',
+    'armv7m-cros-eabi',
 )
 CROSSDEV_COMPILER_RT_ARGS = ['--ex-pkg', 'sys-libs/compiler-rt']
 
