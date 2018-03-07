@@ -6111,7 +6111,7 @@
       'schema': {
         'type': 'integer',
         'minimum': 0,
-        'maximum': 8,
+        'maximum': 4,
       },
       'supported_on': ['chrome_os:67-'],
       'device_only': True,
@@ -6124,7 +6124,7 @@
       'tags': ['system-security'],
       'desc': '''Specifies the minimum number of <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> milestones rollback should be allowed starting from the stable version at any time.
 
-      Default is 0 for consumer, 8 (approx. 1 year) for enterprise enrolled devices.
+      Default is 0 for consumer, 4 (approx. half a year) for enterprise enrolled devices.
 
       Setting this policy prevents rollback protection to apply for at least this number of milestones.
 
