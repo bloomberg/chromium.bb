@@ -48,7 +48,6 @@ Polymer({
     'blur': 'updatePressed_',
     'down': 'updatePressed_',
     'focus': 'updatePressed_',
-    'click': 'onTap_',
     'up': 'updatePressed_',
   },
 
@@ -91,12 +90,6 @@ Polymer({
     // Disallow <controlled-radio-button on-click="..."> when controlled.
     e.preventDefault();
     e.stopPropagation();
-  },
-
-  /** @private */
-  onTap_: function() {
-    if (!this.controlled_)
-      this.checked = true;
   },
 
   /**
