@@ -84,7 +84,6 @@ void av1_idct4_new(const int32_t *input, int32_t *output, int8_t cos_bit,
   int32_t step[4];
 
   // stage 0;
-  apply_range(stage, input, input, size, stage_range[stage]);
 
   // stage 1;
   stage++;
@@ -113,7 +112,6 @@ void av1_idct4_new(const int32_t *input, int32_t *output, int8_t cos_bit,
   bf1[1] = apply_value(bf0[1] + bf0[2], stage_range[stage]);
   bf1[2] = apply_value(bf0[1] - bf0[2], stage_range[stage]);
   bf1[3] = apply_value(bf0[0] - bf0[3], stage_range[stage]);
-  apply_range(stage, input, output, size, stage_range[stage]);
 }
 
 void av1_idct8_new(const int32_t *input, int32_t *output, int8_t cos_bit,
@@ -127,7 +125,6 @@ void av1_idct8_new(const int32_t *input, int32_t *output, int8_t cos_bit,
   int32_t step[8];
 
   // stage 0;
-  apply_range(stage, input, input, size, stage_range[stage]);
 
   // stage 1;
   stage++;
@@ -196,7 +193,6 @@ void av1_idct8_new(const int32_t *input, int32_t *output, int8_t cos_bit,
   bf1[5] = apply_value(bf0[2] - bf0[5], stage_range[stage]);
   bf1[6] = apply_value(bf0[1] - bf0[6], stage_range[stage]);
   bf1[7] = apply_value(bf0[0] - bf0[7], stage_range[stage]);
-  apply_range(stage, input, output, size, stage_range[stage]);
 }
 
 void av1_idct16_new(const int32_t *input, int32_t *output, int8_t cos_bit,
@@ -210,7 +206,6 @@ void av1_idct16_new(const int32_t *input, int32_t *output, int8_t cos_bit,
   int32_t step[16];
 
   // stage 0;
-  apply_range(stage, input, input, size, stage_range[stage]);
 
   // stage 1;
   stage++;
@@ -363,7 +358,6 @@ void av1_idct16_new(const int32_t *input, int32_t *output, int8_t cos_bit,
   bf1[13] = apply_value(bf0[2] - bf0[13], stage_range[stage]);
   bf1[14] = apply_value(bf0[1] - bf0[14], stage_range[stage]);
   bf1[15] = apply_value(bf0[0] - bf0[15], stage_range[stage]);
-  apply_range(stage, input, output, size, stage_range[stage]);
 }
 
 void av1_idct32_new(const int32_t *input, int32_t *output, int8_t cos_bit,
@@ -377,7 +371,6 @@ void av1_idct32_new(const int32_t *input, int32_t *output, int8_t cos_bit,
   int32_t step[32];
 
   // stage 0;
-  apply_range(stage, input, input, size, stage_range[stage]);
 
   // stage 1;
   stage++;
@@ -718,18 +711,13 @@ void av1_idct32_new(const int32_t *input, int32_t *output, int8_t cos_bit,
   bf1[29] = apply_value(bf0[2] - bf0[29], stage_range[stage]);
   bf1[30] = apply_value(bf0[1] - bf0[30], stage_range[stage]);
   bf1[31] = apply_value(bf0[0] - bf0[31], stage_range[stage]);
-  apply_range(stage, input, output, size, stage_range[stage]);
 }
 
 void av1_iadst4_new(const int32_t *input, int32_t *output, int8_t cos_bit,
                     const int8_t *stage_range) {
-  const int32_t size = 4;
-  int32_t stage = 0;
   int bit = cos_bit;
   const int32_t *sinpi = sinpi_arr(bit);
   int32_t s0, s1, s2, s3, s4, s5, s6, s7;
-  // stage 0;
-  apply_range(stage, input, input, size, stage_range[stage]);
 
   int32_t x0 = input[0];
   int32_t x1 = input[1];
@@ -780,7 +768,6 @@ void av1_iadst4_new(const int32_t *input, int32_t *output, int8_t cos_bit,
   output[1] = round_shift(x1, bit);
   output[2] = round_shift(x2, bit);
   output[3] = round_shift(x3, bit);
-  apply_range(6, input, output, size, stage_range[6]);
 }
 
 void av1_iadst8_new(const int32_t *input, int32_t *output, int8_t cos_bit,
@@ -794,7 +781,6 @@ void av1_iadst8_new(const int32_t *input, int32_t *output, int8_t cos_bit,
   int32_t step[8];
 
   // stage 0;
-  apply_range(stage, input, input, size, stage_range[stage]);
 
   // stage 1;
   stage++;
@@ -891,7 +877,6 @@ void av1_iadst8_new(const int32_t *input, int32_t *output, int8_t cos_bit,
   bf1[5] = -bf0[7];
   bf1[6] = bf0[5];
   bf1[7] = -bf0[1];
-  apply_range(stage, input, output, size, stage_range[stage]);
 }
 
 void av1_iadst16_new(const int32_t *input, int32_t *output, int8_t cos_bit,
@@ -905,7 +890,6 @@ void av1_iadst16_new(const int32_t *input, int32_t *output, int8_t cos_bit,
   int32_t step[16];
 
   // stage 0;
-  apply_range(stage, input, input, size, stage_range[stage]);
 
   // stage 1;
   stage++;
@@ -1102,7 +1086,6 @@ void av1_iadst16_new(const int32_t *input, int32_t *output, int8_t cos_bit,
   bf1[13] = -bf0[13];
   bf1[14] = bf0[9];
   bf1[15] = -bf0[1];
-  apply_range(stage, input, output, size, stage_range[stage]);
 }
 
 void av1_iadst32_new(const int32_t *input, int32_t *output, int8_t cos_bit,
@@ -1544,42 +1527,42 @@ void av1_iadst32_new(const int32_t *input, int32_t *output, int8_t cos_bit,
 void av1_iidentity4_c(const int32_t *input, int32_t *output, int8_t cos_bit,
                       const int8_t *stage_range) {
   (void)cos_bit;
+  (void)stage_range;
   for (int i = 0; i < 4; ++i)
     output[i] = round_shift(NewSqrt2 * input[i], NewSqrt2Bits);
   assert(stage_range[0] + NewSqrt2Bits <= 32);
-  apply_range(0, input, output, 4, stage_range[0]);
 }
 
 void av1_iidentity8_c(const int32_t *input, int32_t *output, int8_t cos_bit,
                       const int8_t *stage_range) {
   (void)cos_bit;
+  (void)stage_range;
   for (int i = 0; i < 8; ++i) output[i] = (int32_t)((int64_t)input[i] * 2);
-  apply_range(0, input, output, 8, stage_range[0]);
 }
 
 void av1_iidentity16_c(const int32_t *input, int32_t *output, int8_t cos_bit,
                        const int8_t *stage_range) {
   (void)cos_bit;
+  (void)stage_range;
   for (int i = 0; i < 16; ++i)
     output[i] = round_shift(NewSqrt2 * 2 * input[i], NewSqrt2Bits);
   assert(stage_range[0] + NewSqrt2Bits <= 32);
-  apply_range(0, input, output, 16, stage_range[0]);
 }
 
 void av1_iidentity32_c(const int32_t *input, int32_t *output, int8_t cos_bit,
                        const int8_t *stage_range) {
   (void)cos_bit;
+  (void)stage_range;
   for (int i = 0; i < 32; ++i) output[i] = (int32_t)((int64_t)input[i] * 4);
-  apply_range(0, input, output, 32, stage_range[0]);
 }
 
 void av1_iidentity64_c(const int32_t *input, int32_t *output, int8_t cos_bit,
                        const int8_t *stage_range) {
   (void)cos_bit;
+  (void)stage_range;
   for (int i = 0; i < 64; ++i)
     output[i] = round_shift(NewSqrt2 * 4 * input[i], NewSqrt2Bits);
   assert(stage_range[0] + NewSqrt2Bits <= 32);
-  apply_range(0, input, output, 64, stage_range[0]);
 }
 
 void av1_idct64_new(const int32_t *input, int32_t *output, int8_t cos_bit,
@@ -1593,7 +1576,6 @@ void av1_idct64_new(const int32_t *input, int32_t *output, int8_t cos_bit,
   int32_t step[64];
 
   // stage 0;
-  apply_range(stage, input, input, size, stage_range[stage]);
 
   // stage 1;
   stage++;
@@ -2362,5 +2344,4 @@ void av1_idct64_new(const int32_t *input, int32_t *output, int8_t cos_bit,
   bf1[61] = apply_value(bf0[2] - bf0[61], stage_range[stage]);
   bf1[62] = apply_value(bf0[1] - bf0[62], stage_range[stage]);
   bf1[63] = apply_value(bf0[0] - bf0[63], stage_range[stage]);
-  apply_range(stage, input, output, size, stage_range[stage]);
 }
