@@ -16,7 +16,7 @@ android_resources("chrome_tabs_client_example_apk_resources") {
 android_resources("custom_tabs_support_resources") {
   resource_dirs = [ "src/customtabs/res" ]
   android_manifest = "src/customtabs/AndroidManifest.xml"
-  custom_package = "android.support.customtabs.browseractions"
+  custom_package = "android.support.customtabs"
 }
 
 android_apk("custom_tabs_client_example_apk") {
