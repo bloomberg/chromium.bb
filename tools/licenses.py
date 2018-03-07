@@ -279,6 +279,7 @@ KNOWN_NON_IOS_LIBRARIES = set([
     os.path.join('third_party', 'apple_apsl'),
     os.path.join('third_party', 'apple_sample_code'),
     os.path.join('third_party', 'ashmem'),
+    os.path.join('third_party', 'blink'),
     os.path.join('third_party', 'bspatch'),
     os.path.join('third_party', 'cacheinvalidation'),
     os.path.join('third_party', 'cld'),
