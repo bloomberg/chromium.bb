@@ -500,13 +500,6 @@ const base::Feature kRemoveUsageOfDeprecatedGaiaSigninEndpoint{
     base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
-#if defined(OS_CHROMEOS)
-// Runtime flag that indicates whether this leak detector should be enabled in
-// the current instance of Chrome.
-const base::Feature kRuntimeMemoryLeakDetector{
-    "RuntimeMemoryLeakDetector", base::FEATURE_DISABLED_BY_DEFAULT};
-#endif  // defined(OS_CHROMEOS)
-
 const base::Feature kSafeSearchUrlReporting{"SafeSearchUrlReporting",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 

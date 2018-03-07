@@ -2817,10 +2817,6 @@ jumbo_split_static_library("browser") {
       "memory/memory_kills_monitor.h",
       "metrics/chromeos_metrics_provider.cc",
       "metrics/chromeos_metrics_provider.h",
-      "metrics/leak_detector/leak_detector_controller.cc",
-      "metrics/leak_detector/leak_detector_controller.h",
-      "metrics/leak_detector/leak_detector_remote_controller.cc",
-      "metrics/leak_detector/leak_detector_remote_controller.h",
       "metrics/perf/cpu_identity.cc",
       "metrics/perf/cpu_identity.h",
       "metrics/perf/perf_output.cc",
@@ -2864,10 +2860,6 @@ jumbo_split_static_library("browser") {
       "//services/ui/public/cpp/input_devices:input_device_controller",
       "//services/ui/public/interfaces",
       "//ui/ozone",
-    ]
-    public_deps += [
-      "//components/metrics/leak_detector:interfaces",
-      "//components/metrics/leak_detector:leak_detector",
     ]
     allow_circular_includes_from += [ "//chrome/browser/chromeos" ]
 

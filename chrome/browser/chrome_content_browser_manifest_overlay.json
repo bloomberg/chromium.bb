@@ -11,7 +11,6 @@
           "chrome::mojom::NetBenchmarking",
           "extensions::StashService",
           "metrics::mojom::CallStackProfileCollector",
-          "metrics::mojom::LeakDetector",
           "mojom::ModuleEventSink",
           "rappor::mojom::RapporRecorder",
           "safe_browsing::mojom::SafeBrowsing",

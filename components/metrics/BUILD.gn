@@ -383,10 +383,7 @@ source_set("unit_tests") {
   }
 
   if (is_chromeos) {
-    deps += [
-      "leak_detector:unit_tests",
-      "//chromeos",
-    ]
+    deps += [ "//chromeos" ]
   }
 
   # iOS is not supported by the profiler and the ios-simulator bot chokes on

@@ -389,7 +389,6 @@ static_library("renderer") {
   }
 
   if (is_chromeos) {
-    deps += [ "//chrome/renderer/leak_detector:leak_detector" ]
     sources += [
       "extensions/file_browser_handler_custom_bindings.cc",
       "extensions/file_browser_handler_custom_bindings.h",

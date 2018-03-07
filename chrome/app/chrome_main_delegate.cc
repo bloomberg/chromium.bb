@@ -109,7 +109,6 @@
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/hugepage_text/hugepage_text.h"
-#include "components/metrics/leak_detector/leak_detector.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -693,15 +692,6 @@ bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
   // this causes re-entrancy into the allocator shim, while the TLS object is
   // partially-initialized, which the TLS object is supposed to protect again.
   profiling::InitTLSSlot();
-
-#if defined (OS_CHROMEOS)
-  // The TLS slot used by metrics::LeakDetector needs to be initialized early to
-  // ensure that it gets assigned a low slow number. If it gets initialized too
-  // late, the glibc TLS system will require a malloc call in order to allocate
-  // storage for a higher slot number. Normally that's not a problem, but in
-  // LeakDetector it will result in recursive alloc hook function calls.
-  metrics::LeakDetector::InitTLSSlot();
-#endif
 
   return false;
 }

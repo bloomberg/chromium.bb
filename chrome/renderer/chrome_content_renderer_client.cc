@@ -498,11 +498,6 @@ void ChromeContentRendererClient::RenderThreadStarted() {
         WebString::FromASCII(scheme));
   }
 
-#if defined(OS_CHROMEOS)
-  leak_detector_remote_client_.reset(new LeakDetectorRemoteClient());
-  thread->AddObserver(leak_detector_remote_client_.get());
-#endif
-
   ThreadProfiler::SetServiceManagerConnectorForChildProcess(
       thread->GetConnector());
 }
